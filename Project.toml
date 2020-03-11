@@ -1,0 +1,13 @@
+name = "Wflow"
+uuid = "d48b7d99-76e7-47ae-b1d5-ff0c1cf9a818"
+authors = ["Deltares"]
+version = "0.1.0"
+
+[compat]
+julia = "1.3"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
