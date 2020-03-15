@@ -1,5 +1,8 @@
 module Wflow
 
-greet() = print("Hello World!")
+using LightGraphs
+using NCDatasets
+
+include("kinematic_wave.jl")
 
 end # module
