@@ -5,6 +5,6 @@ using NCDatasets
 using Dates
 
 include("kinematic_wave.jl")
-include("wflow_sbm.jl")
+include("sbm.jl")
 
 end # module
