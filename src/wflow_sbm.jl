@@ -1,14 +1,4 @@
-using NCDatasets
-using Dates
-using Wflow
-using Logging
-
-# from argv
-staticmaps_path = "wflow_testmodel\\moselle\\staticmaps\\staticmaps.nc"
-# from ini file
-clim_path = "wflow_testmodel\\moselle\\staticmaps\\clim\\lai_clim.nc"
-
-mv = NaN
+const mv = NaN
 
 # from ini file
 # [run]
@@ -88,7 +78,7 @@ function readnetcdf(nc,var,inds,dpars)
 end
 
 "Initial part of the model. Reads model parameters from disk"
-function initial()
+function initial(staticmaps_path, leafarea_path)
 
     basetimestep = 86400.0
     nLayers = 4 #max number of soil layers (ini file setting)
@@ -161,7 +151,7 @@ function initial()
 
     # set in inifile? Also type (monthly, daily, hourly) as part of netcdf variable attribute?
     # in original inifile: LAI=staticmaps/clim/LAI,monthlyclim,1.0,1
-    lai_clim = NCDataset(clim_path) #TODO:include LAI climatology in update() vertical SBM model
+    lai_clim = NCDataset(leafarea_path) #TODO:include LAI climatology in update() vertical SBM model
 
     params = Vector{SBMParams}(undef, n)
     for i in 1:n

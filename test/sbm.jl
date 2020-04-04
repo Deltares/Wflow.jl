@@ -1,0 +1,1 @@
+Wflow.initial(staticmaps_moselle_path, leafarea_moselle_path)

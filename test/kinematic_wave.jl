@@ -2,7 +2,7 @@ const Δt = 86400.0
 const ldd_mv = 255
 
 # read the staticmaps into memory
-nc = NCDataset(staticmaps_path)
+nc = NCDataset(staticmaps_rhine_path)
 ldd_2d = nc["ldd"][:]
 slope_2d = nc["slope"][:]
 N_2d = nc["N"][:]
