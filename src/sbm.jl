@@ -5,7 +5,7 @@ const mv = NaN
 # timestepsecs = 86400
 timestepsecs = 86400.0
 
-Base.@kwdef struct SBMParams
+Base.@kwdef struct SBMParams{N}
     Cfmax::Float64
     TT::Float64
     TTM::Float64
@@ -14,7 +14,6 @@ Base.@kwdef struct SBMParams
     cf_soil::Float64
     w_soil::Float64
     SoilThickness::Float64
-    nLayers::Float64
     InfiltCapSoil::Float64
     InfiltCapPath::Float64
     PathFrac::Float64
@@ -24,7 +23,7 @@ Base.@kwdef struct SBMParams
     AirEntryPressure::Float64
     KsatVer::Float64
     MaxLeakage::Float64
-    c::Vector
+    c::SVector{N, Float64}
     M::Float64
     f::Float64 = (thetaS - thetaR) / M
     CapScale::Float64
@@ -49,7 +48,7 @@ Base.@kwdef struct SBMParams
     ActEvapOpenWaterRiver::Float64 = mv
     AvailableForInfiltration::Float64 = mv
     zi::Float64 = mv
-    UStoreLayerDepth::Vector = fill(mv, nLayers) #TODO:define nLayers per grid cell
+    UStoreLayerDepth::SVector{N, Float64} = fill(mv, SVector{N, Float64}) #TODO:define nLayers per grid cell
     UstoreDepth::Float64 = mv
     Transfer::Float64 = mv
     CapFlux::Float64 = mv
@@ -169,7 +168,7 @@ function initialize(staticmaps_path, leafarea_path)
 
     params = Vector{SBMParams}(undef, n)
     for i = 1:n
-        params[i] = SBMParams(
+        params[i] = SBMParams{nLayers}(
             Cfmax = Cfmax[i],
             TT = TT[i],
             TTI = TTI[i],
@@ -182,7 +181,6 @@ function initialize(staticmaps_path, leafarea_path)
             KsatVer = KsatVer[i],
             M = M[i],
             AirEntryPressure = AirEntryPressure[i],
-            nLayers = nLayers,
             SoilThickness = SoilThickness[i],
             InfiltCapPath = InfiltCapPath[i],
             InfiltCapSoil = InfiltCapSoil[i],

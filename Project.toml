@@ -7,6 +7,7 @@ version = "0.1.0"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 LightGraphs = "093fc24a-ae57-5d10-9952-331d41423f4d"
 NCDatasets = "85f8d34a-cbdd-5861-8df4-14fed0d494ab"
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [compat]
 julia = "1.3"
