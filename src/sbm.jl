@@ -5,7 +5,7 @@ const mv = NaN
 # timestepsecs = 86400
 timestepsecs = 86400.0
 
-Base.@kwdef struct SBMParams{N}
+Base.@kwdef struct SBM{N}
     Cfmax::Float64
     TT::Float64
     TTM::Float64
@@ -23,7 +23,7 @@ Base.@kwdef struct SBMParams{N}
     AirEntryPressure::Float64
     KsatVer::Float64
     MaxLeakage::Float64
-    c::SVector{N, Float64}
+    c::SVector{N,Float64}
     M::Float64
     f::Float64 = (thetaS - thetaR) / M
     CapScale::Float64
@@ -48,7 +48,7 @@ Base.@kwdef struct SBMParams{N}
     ActEvapOpenWaterRiver::Float64 = mv
     AvailableForInfiltration::Float64 = mv
     zi::Float64 = mv
-    UStoreLayerDepth::SVector{N, Float64} = fill(mv, SVector{N, Float64}) #TODO:define nLayers per grid cell
+    UStoreLayerDepth::SVector{N,Float64} = fill(mv, SVector{N,Float64}) #TODO:define nLayers per grid cell
     UstoreDepth::Float64 = mv
     Transfer::Float64 = mv
     CapFlux::Float64 = mv
@@ -61,11 +61,6 @@ Base.@kwdef struct SBMParams{N}
     CanopyStorage::Float64 = 0.0
 end
 
-struct SBM
-    states::Vector
-    params::Vector{SBMParams}
-end
-
 function readnetcdf(nc, var, inds, dpars)
     if haskey(nc, var)
         @info(string("read parameter ", var))
@@ -74,6 +69,21 @@ function readnetcdf(nc, var, inds, dpars)
         @warn(string(var, " not found, set to default value ", dpars[var]))
         fill(dpars[var], length(inds))
     end
+end
+
+function StateVariables()
+
+    # depends on ini file settings (optional: glaciers, snow, irrigation)
+    states = [
+        :SatWaterDepth,
+        :Snow,
+        :Tsoil,
+        :UStoreLayerDepth,
+        :SnowWater,
+        :CanopyStorage,
+    ]
+    #TODO: (warm) states read from netcdf file or cold state (reinit=1, setting in ini file)
+
 end
 
 "Initial part of the model. Reads model parameters from disk"
@@ -119,7 +129,8 @@ function initialize(staticmaps_path, leafarea_path)
     inds = Wflow.active_indices(subcatch_2d, missing)
     n = length(inds)
 
-    Altitude = "wflow_dem" in keys(nc) ? readnetcdf(nc, "wflow_dem", inds, dParams) :
+    Altitude =
+        "wflow_dem" in keys(nc) ? readnetcdf(nc, "wflow_dem", inds, dParams) :
         @error("wflow_dem not found")
 
     # snow parameters (also set in ini file (snow=True or False)?)
@@ -166,9 +177,9 @@ function initialize(staticmaps_path, leafarea_path)
     # in original inifile: LAI=staticmaps/clim/LAI,monthlyclim,1.0,1
     lai_clim = NCDataset(leafarea_path) #TODO:include LAI climatology in update() vertical SBM model
 
-    params = Vector{SBMParams}(undef, n)
+    sbm = Vector{SBM}(undef, n)
     for i = 1:n
-        params[i] = SBMParams{nLayers}(
+        sbm[i] = SBM{nLayers}(
             Cfmax = Cfmax[i],
             TT = TT[i],
             TTI = TTI[i],
@@ -198,12 +209,9 @@ function initialize(staticmaps_path, leafarea_path)
             c = c[:, i],
             LAI = 1.0,
         )
+
     end
 
-    # depends on ini file settings (optional: glaciers, snow, irrigation)
-    states = [:SatWaterDepth, :Snow, :Tsoil, :UStoreLayerDepth, :SnowWater, :CanopyStorage]
-    #TODO: (warm) states read from netcdf file or cold state (reinit=1, setting in ini file)
-
-    SBM(states, params)
+    return sbm
 
 end
