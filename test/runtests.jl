@@ -1,7 +1,10 @@
+## load test dependencies and set paths to testing data
 using Wflow
 using Test
 using NCDatasets
+using Dates
 using LightGraphs
+using Pkg.TOML
 
 # ensure test data is present
 datadir = joinpath(@__DIR__, "data")
@@ -13,7 +16,10 @@ isfile(staticmaps_moselle_path) || download("https://github.com/visr/wflow-artif
 leafarea_moselle_path = joinpath(datadir, "lai_clim-moselle.nc")
 isfile(leafarea_moselle_path) || download("https://github.com/visr/wflow-artifacts/releases/download/v0.2.0/lai_clim.nc", leafarea_moselle_path)
 
+## run all tests
+
 @testset "Wflow.jl" begin
+    include("config.jl")
     include("kinematic_wave.jl")
     include("sbm.jl")
 end
