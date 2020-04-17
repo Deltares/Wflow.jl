@@ -3,11 +3,14 @@ module Wflow
 using Dates
 using LightGraphs
 using NCDatasets
-using StaticArrays
 using Pkg.TOML
+using StaticArrays
+using Statistics
 
 include("config.jl")
 include("kinematic_wave.jl")
 include("sbm.jl")
+include("vertical_process.jl")
+include("utils.jl")
 
 end # module

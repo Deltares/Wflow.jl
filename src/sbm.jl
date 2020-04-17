@@ -5,7 +5,9 @@ const mv = NaN
 # timestepsecs = 86400
 timestepsecs = 86400.0
 
-Base.@kwdef struct SBM{N}
+Base.@kwdef struct SBM{N,M}
+    maxlayers::Int
+    nlayers::Int
     cfmax::Float64
     tt::Float64
     ttm::Float64
@@ -18,10 +20,12 @@ Base.@kwdef struct SBM{N}
     infiltcappath::Float64
     pathfrac::Float64
     waterfrac::Float64
+    riverfrac::Float64
     θₛ::Float64
     θᵣ::Float64
-    hb ::Float64
-    kv ::Float64
+    hb::Float64
+    kv::Float64
+    kvfrac::SVector{N,Float64}
     maxleakage::Float64
     c::SVector{N,Float64}
     m::Float64
@@ -47,14 +51,16 @@ Base.@kwdef struct SBM{N}
     ae_openw_l::Float64 = mv
     ae_openw_r::Float64 = mv
     avail_forinfilt::Float64 = mv
-    zi::Float64 = mv
-    ustorelayerdepth::SVector{N,Float64} = fill(mv, SVector{N,Float64}) #TODO:define nLayers per grid cell
+    ustorelayerdepth::SVector{N,Float64} = fill(0.0, SVector{N,Float64})
+    act_thickl::SVector{N,Float64}
+    sumlayers::SVector{M,Float64}
     ustoredepth::Float64 = mv
     transfer::Float64 = mv
     capflux::Float64 = mv
     recharge::Float64 = mv
     soilwatercapacity::Float64 = soilthickness * (θₛ - θᵣ)
     satwaterdepth::Float64 = 0.85 * soilwatercapacity
+    zi::Float64 = max(0.0, soilthickness - satwaterdepth / (θₛ - θᵣ))
     snow::Float64 = 0.0
     snowwater::Float64 = 0.0
     tsoil::Float64 = 10.0
@@ -86,12 +92,22 @@ function statenames()
 
 end
 
+function set_layerthickness(d::Float64, sl::SVector)
+    act_d = sl[sl.<d]
+    if d - act_d[end] > 0
+        push!(act_d, d)
+    end
+    diff(act_d)
+end
+
 "Initial part of the model. Reads model parameters from disk"
 function initialize(staticmaps_path, leafarea_path)
 
     basetimestep = 86400.0
-    nlayers = 4 #max number of soil layers (ini file setting)
-    #TODO: generate layer thickness for each grid cell (input SoilThicknes and vector with UStoreLayerThickness)
+    sizeinmetres = Bool(0)
+    thicknesslayers = SVector(100.0, 300.0, 800.0)
+    maxlayers = length(thicknesslayers) + 1 #max number of soil layers
+    sumlayers = SVector(pushfirst(cumsum(thicknesslayers), 0.0))
 
     #default parameter values (dict)
     dparams = Dict(
@@ -119,6 +135,7 @@ function initialize(staticmaps_path, leafarea_path)
         "RootingDepth" => 750.0,
         "LAI" => 1.0,
         "et_reftopot" => 1.0,
+        "kvfrac" => 1.0,
     )
 
     nc = NCDataset(staticmaps_path)
@@ -129,9 +146,27 @@ function initialize(staticmaps_path, leafarea_path)
     inds = Wflow.active_indices(subcatch_2d, missing)
     n = length(inds)
 
-    altitude =
-        "wflow_dem" in keys(nc) ? readnetcdf(nc, "wflow_dem", inds, dparams) :
+    altitude = "wflow_dem" in keys(nc) ? Float64.(nc["wflow_dem"][:][inds]) :
         @error("wflow_dem not found")
+    river =
+        "wflow_river" in keys(nc) ? nomissing(nc["wflow_river"][:], 0)[inds] :
+        @error("wflow_river not found")
+    riverwidth = "wflow_riverwidth" in keys(nc) ?
+        Float64.(nc["wflow_riverwidth"][:][inds]) :
+        @error("wflow_riverwidth not found")
+    ldd = "wflow_ldd" in keys(nc) ? Float64.(nc["wflow_ldd"][:][inds]) :
+        @error("wflow_ldd not found")
+    if "wflow_riverlength" in keys(nc)
+        riverlength = Float64.(nc["wflow_riverlength"][:][inds])
+    else
+        @warn("wflow_riverlength not found, riverlength based on ldd...")
+    end
+
+    y_nc = "y" in keys(nc.dim) ? nomissing(nc["y"][:]) : nomissing(nc["lat"][:])
+    x_nc = "x" in keys(nc.dim) ? nomissing(nc["x"][:]) : nomissing(nc["lon"][:])
+    y = repeat(y_nc', outer = (length(x_nc), 1))[inds]
+
+    cellength = abs(mean(diff(x_nc)))
 
     # snow parameters (also set in ini file (snow=True or False)?)
     cfmax = readnetcdf(nc, "Cfmax", inds, dparams)
@@ -167,10 +202,30 @@ function initialize(staticmaps_path, leafarea_path)
     kext = readnetcdf(nc, "Kext", inds, dparams)
     # otherwise SBM needs EoverR, Cmax and CanopyGapFraction
 
-    #TODO: store c in staticmaps.nc as Array (4,:)
-    c = zeros(nlayers, n)
-    for i in [0:1:nlayers-1;]
-        c[i+1, :] = readnetcdf(nc, string("c_", i), inds, dparams)
+    #TODO: store c, kvfrac in staticmaps.nc start at index 1
+    c = fill(dparams["c"], (maxlayers, n))
+    kvfrac = fill(dparams["kvfrac"], (maxlayers, n))
+    for i in [0:1:maxlayers-1;]
+        if string("c_", i) in keys(nc)
+            c[i+1, :] = Float64.(nc[string("c_", i)][:][inds])
+        else
+            @warn(string(
+                "c_",
+                i,
+                " not found, set to default value ",
+                dparams["c"],
+            ))
+        end
+        if string("kvfrac_", i) in keys(nc)
+            kvfrac[i+1, :] = Float64.(nc[string("kvfrac_", i)][:][inds])
+        else
+            @warn(string(
+                "kvfrac_",
+                i,
+                " not found, set to default value ",
+                dparams["kvfrac"],
+            ))
+        end
     end
 
     # set in inifile? Also type (monthly, daily, hourly) as part of netcdf variable attribute?
@@ -179,7 +234,19 @@ function initialize(staticmaps_path, leafarea_path)
 
     sbm = Vector{SBM}(undef, n)
     for i = 1:n
-        sbm[i] = SBM{nlayers}(
+        act_thickl = set_layerthickness(soilthickness[i], sumlayers)
+        nlayers = length(act_thickl)
+        s_layers = pushfirst(cumsum(SVector{nlayers,Float64}(act_thickl)), 0.0)
+
+        xl = sizeinmetres ? cellength : lattometres(y[i])[1] * cellength
+        yl = sizeinmetres ? cellength : lattometres(y[i])[2] * cellength
+        riverfrac = Bool(river[i]) ?
+            min((riverlength[i] * riverwidth[i]) / (xl * yl), 1.0) : 0.0
+
+        sbm[i] = SBM{nlayers,nlayers + 1}(
+            maxlayers = maxlayers,
+            nlayers = nlayers,
+            riverfrac = riverfrac,
             cfmax = cfmax[i],
             tt = tt[i],
             tti = tti[i],
@@ -190,13 +257,16 @@ function initialize(staticmaps_path, leafarea_path)
             θₛ = θₛ[i],
             θᵣ = θᵣ[i],
             kv = kv[i],
+            kvfrac = kvfrac[1:nlayers, i],
             m = m[i],
             hb = hb[i],
             soilthickness = soilthickness[i],
+            act_thickl = act_thickl,
+            sumlayers = s_layers,
             infiltcappath = infiltcappath[i],
             infiltcapsoil = infiltcapsoil[i],
             maxleakage = maxleakage[i],
-            waterfrac = waterfrac[i],
+            waterfrac = max(waterfrac[i] - riverfrac, 0.0),
             pathfrac = pathfrac[i],
             altitude = altitude[i],
             rootingdepth = rootingdepth[i],
@@ -206,12 +276,350 @@ function initialize(staticmaps_path, leafarea_path)
             sl = sl[i],
             swood = swood[i],
             kext = kext[i],
-            c = c[:, i],
+            c = c[1:nlayers, i],
             lai = 1.0,
         )
 
     end
 
     return sbm
+
+end
+
+function update(sbm)
+
+    #start dummy variables (should be generated from model reader and ini file)
+    lai = Bool(1)
+    glacierfrac = Bool(0)
+    modelsnow = Bool(1)
+    soilinfreduction = Bool(0)
+    transfermethod = 0
+    potevap = 4.0
+    precipitation = 3.0
+    temperature = 10.0
+    wl_land = 0.0 #from kinematic wave alnd
+    wl_river = 0.10 #from kinematic river
+    irsupply_mm = 0.0
+    nrpaddyirri = 0
+    ust = 0
+    #end dummpy variables
+
+    if lai
+        cmax = sbm.sl * sbm.lai + sbm.swood
+        canopygapfraction = exp(-sbm.kext * sbm.lai)
+        ewet = (1.0 - exp(-sbm.kext * sbm.lai)) * potevap
+        e_r =
+            precipitation > 0.0 ? min(0.25, ewet / max(0.0001, precipitation)) :
+            0.0
+    end
+
+    potevap = potevap * sbm.et_reftopot
+    # should we include tempcor in SBM?
+    # PotEvap = PotenEvap #??
+
+    if timestepsecs >= (23 * 3600)
+        throughfall, interception, stemflow, canopystorage =
+            rainfall_interception_gash(
+                cmax,
+                e_r,
+                canopygapfraction,
+                precipitation,
+                sbm.canopystorage,
+                maxevap = potevap,
+            )
+        pottrans_soil = max(0.0, potevap - interception) # now in mm
+    else
+        netinterception,
+        throughfall,
+        stemflow,
+        leftover,
+        interception,
+        canopystorage = rainfall_interception_modrut(
+            precipitation,
+            potevap,
+            sbm.canopystorage,
+            canopygapfraction,
+            cmax,
+        )
+        pottrans_soil = max(0.0, leftover)  # now in mm
+        interception = netinterception
+    end
+
+    eff_precipitation = throughfall + stemflow
+
+    if modelsnow
+        tsoil = sbm.tsoil + sbm.w_soil * (temperature - sbm.tsoil)
+        snow, snowwater, snowmelt, rainfallplusmelt, snowfall = snowpack_hbv(
+            sbm.snow,
+            sbm.snowwater,
+            eff_precipitation,
+            temperature,
+            sbm.tti,
+            sbm.tt,
+            sbm.ttm,
+            sbm.cfmax,
+            sbm.whc,
+        )
+        if glacierfrac
+            """
+            Run Glacier module and add the snowpack on-top of it.
+            Estimate the fraction of snow turned into ice (HBV-light).
+            Estimate glacier melt.
+            """
+
+            snow, snow2glacier, glacierstore, glaciermelt = glacier_hbv(
+                sbm.glacierfrac,
+                sbm.glacierstore,
+                sbm.snow,
+                temperature,
+                sbm.g_tt,
+                sbm.g_cfmax,
+                sbm.g_sifrac,
+                timestepsecs,
+                basetimestep,
+            )
+            # Convert to mm per grid cell and add to snowmelt
+            glaciermelt = glaciermelt * sbm.glacierfrac
+            rainfallplusmelt = rainfallplusmelt + glaciermelt
+
+        end
+    else
+        rainfallplusmelt = eff_precipitation
+    end
+
+    avail_forinfilt = rainfallplusmelt + irsupply_mm
+    ustoredepth = sum(sbm.ustorelayerdepth)
+    uStorecapacity = sbm.soilwatercapacity - sbm.satwaterdepth - ustoredepth
+
+    runoff_river = min(1.0, sbm.riverfrac) * avail_forinfilt
+    runoff_land = min(1.0, sbm.waterfrac) * avail_forinfilt
+    avail_forinfilt = max(avail_forinfilt - runoff_river - runoff_land, 0.0)
+
+    rootingdepth = min(sbm.soilthickness * 0.99, sbm.rootingdepth)
+
+    ae_openw_r =
+        min(wl_river * 1000.0 * sbm.riverfrac, sbm.riverfrac * pottrans_soil)
+    ae_openw_l =
+        min(wl_land * 1000.0 * sbm.waterfrac, sbm.waterfrac * pottrans_soil)
+
+    restevap = pottrans_soil - ae_openw_r - ae_openw_l
+
+    if nrpaddyirri > 0
+        ae_pond = min(sbm.pondingdepth, restevap)
+        PondingDepth = sbm.PondingDepth - ActEvapPond
+        restevap = restevap - ae_pond
+    end
+
+    restevap = restevap * canopygapfraction
+
+    # Calculate the initial capacity of the unsaturated store
+    ustorecapacity = sbm.soilwatercapacity - sbm.satwaterdepth - ustoredepth
+
+    # Calculate the infiltration flux into the soil column
+    infiltsoilpath, infiltsoil, infiltpath, soilinf, pathinf, infiltexcess =
+        infiltration(
+            avail_forinfilt,
+            sbm.pathfrac,
+            sbm.cf_soil,
+            tsoil,
+            sbm.infiltcapsoil,
+            sbm.infiltcappath,
+            ustorecapacity,
+            modelsnow,
+            soilinfreduction,
+        )
+
+    usl = set_layerthickness(sbm.zi, sbm.sumlayers)
+    z = cumsum(usl)
+    n_usl = length(usl)
+
+    usld = copy(sbm.ustorelayerdepth)
+    # Using the surface infiltration rate, calculate the flow rate between the
+    # different soil layers that contain unsaturated storage assuming gravity
+    # based flow only, estimate the gravity based flux rate to the saturated zone
+    # (ast) and the updated unsaturated storage for each soil layer.
+    if transfermethod == 1 && sbm.maxlayers == 1
+        ustorelayerdepth = sbm.ustorelayerdepth[1] + infiltsoilpath
+        ustorelayerdepth, ast = unsatzone_flow_sbm(
+            ustorelayerdepth,
+            sbm.soilwatercapacity,
+            sbm.satwaterdepth,
+            sbm.kvfrac[1],
+            sbm.kv,
+            sbm.usl[1],
+            sbm.θₛ,
+            sbm.θᵣ,
+        )
+        usld = setindex(usld, ustorelayerdepth, m)
+    else
+        for m = 1:n_usl
+            l_sat = usl[m] * (sbm.θₛ - sbm.θᵣ)
+            ustorelayerdepth =
+                m == 1 ? sbm.ustorelayerdepth[m] + infiltsoilpath :
+                sbm.ustorelayerdepth[m] + ast
+            ustorelayerdepth, ast = unsatzone_flow_layer(
+                ustorelayerdepth,
+                sbm.kvfrac[m],
+                sbm.kv,
+                sbm.f,
+                z[m],
+                l_sat,
+                sbm.c[m],
+            )
+            usld = setindex(usld, ustorelayerdepth, m)
+        end
+    end
+
+    transfer = ast
+
+    # then evapotranspiration from layers
+
+    # Calculate saturation deficity
+    saturationdeficit = sbm.soilwatercapacity - sbm.satwaterdepth
+
+    # First calculate the evaporation of unsaturated storage into the
+    # atmosphere from the upper layer.
+    if sbm.maxlayers == 1
+        soilevapunsat =
+            restevap * min(1.0, saturationdeficit / sbm.soilwatercapacity)
+    else
+        #In case only the most upper soil layer contains unsaturated storage
+        if n_usl == 1
+            # Check if groundwater level lies below the surface
+            soilevapunsat = sbm.zi > 0 ?
+                restevap * min(1.0, usld[k] / (sbm.zi * (sbm.θₛ - sbm.θᵣ))) :
+                0.0
+        else
+            # In case first layer contains no saturated storage
+            soilevapunsat =
+                restevap * min(1.0, usld[1] / (usld[1] * ((sbm.θₛ - sbm.θᵣ))))
+        end
+    end
+    # Ensure that the unsaturated evaporation rate does not exceed the
+    # available unsaturated moisture
+    soilevapunsat = min(soilevapunsat, usld[1])
+    # Update the additional atmospheric demand
+    restevap = restevap - soilevapunsat
+    usld = setindex(usld, usld[1] - soilevapunsat, 1)
+
+    if sbm.maxlayers == 1
+        soilevapsat = 0.0
+    else
+        if n_usl == 1
+            soilevapsat = restevap * min(1.0, (usl[1] - sbm.zi) / usl[k])
+            soilevapsat =
+                min(soilevapsat, (usl[1] - sbm.zi) * (sbm.θₛ - sbm.θᵣ))
+        else
+            soilevapsat = 0.0
+        end
+    end
+    soilevap = soilevapunsat + soilevapsat
+    satwaterdepth = sbm.satwaterdepth - soilevapsat
+    # evaporation available for transpiration
+    pottrans = (pottrans_soil - ae_openw_r - ae_openw_l - soilevap)  * (1-canopygapfraction)
+    #pottrans = pottrans_soil - ae_openw_r - ae_openw_l - soilevap
+
+
+    # transpiration from saturated store
+    wetroots = scurve(sbm.zi, a = rootingdepth, c = sbm.rootdistpar)
+    actevapsat = min(pottrans * wetroots, satwaterdepth)
+    satwaterdepth = satwaterdepth - actevapsat
+    restpotevap = pottrans - actevapsat
+
+    # actual transpiration from ustore
+    actevapustore = 0.0
+    for k = 1:n_usl
+        ustorelayerdepth, actevapustore, restpotevap = acttransp_unsat_sbm(
+            rootingdepth,
+            usld[k],
+            sbm.sumlayers[k],
+            restpotevap,
+            actevapustore,
+            sbm.c[k],
+            usl[k],
+            sbm.θₛ,
+            sbm.θᵣ,
+            sbm.hb,
+            ust,
+        )
+        usld = setindex(usld, ustorelayerdepth, k)
+    end
+
+    #check soil moisture balance per layer
+    du = 0.0
+    for k in n_usl:-1:1
+        du = max(0, usld[k] - usl[k]*(sbm.θₛ - sbm.θᵣ))
+        usld = setindex(usld, usld[k] - du, k)
+        if k > 1
+            usld = setindex(usld, usld[k-1] + du, k-1)
+        end
+    end
+
+    ksat = sbm.kvfrac[n_usl] * sbm.kv * exp(-sbm.f * sbm.zi)
+    ustorecapacity = sbm.soilwatercapacity - sbm.satwaterdepth - sum(usld)
+
+    maxcapflux = max(0.0, min(ksat, actevapustore, ustorecapacity, sbm.satwaterdepth))
+
+    if sbm.zi > rootingdepth
+        capfluxscale = sbm.capscale / (sbm.capscale + sbm.zi - rootingdepth) * timestepsecs / basetimestep
+    else
+        capfluxscale = 0.0
+    end
+    capflux = maxcapflux * capfluxscale
+
+    netcapflux = capflux
+    actcapflux = 0.0
+    for k in n_usl:-1:1
+        toadd = min(netcapflux, max(usl[k]*(sbm.θₛ - sbm.θᵣ) - usld[k], 0.0))
+        usld = setindex(usld, usld[k] + toadd, k)
+        netcapflux = netcapflux - toadd
+        actcapflux = actcapflux + toadd
+    end
+
+    deepksat = sbm.kv * exp(-sbm.f * sbm.soilthickness)
+    deeptransfer = min(sbm.satwaterdepth, deepksat)
+    actleakage = max(0.0, min(sbm.maxleakage, deeptransfer))
+
+    # recharge (mm) for saturated zone, multiply by 1000 * DW (flowlength) for
+    # ssf kinematic wave
+    recharge = (transfer - actcapflux - actleakage - actevapsat - soilevapsat)
+
+    SBM{sbm.nlayers,sbm.nlayers+1}(
+        maxlayers = sbm.maxlayers,
+        nlayers = sbm.nlayers,
+        riverfrac = sbm.riverfrac,
+        cfmax = sbm.cfmax,
+        tt = sbm.tt,
+        tti = sbm.tti,
+        ttm = sbm.ttm,
+        whc = sbm.whc,
+        w_soil = sbm.w_soil,
+        cf_soil = sbm.cf_soil,
+        θₛ = sbm.θₛ,
+        θᵣ = sbm.θᵣ,
+        kv = sbm.kv,
+        kvfrac = sbm.kvfrac,
+        m = sbm.m,
+        hb = sbm.hb,
+        soilthickness = sbm.soilthickness,
+        act_thickl = sbm.act_thickl,
+        sumlayers = sbm.sumlayers,
+        infiltcappath = sbm.infiltcappath,
+        infiltcapsoil = sbm.infiltcapsoil,
+        maxleakage = sbm.maxleakage,
+        waterfrac = sbm.waterfrac,
+        pathfrac = sbm.pathfrac,
+        altitude = sbm.altitude,
+        rootingdepth = sbm.rootingdepth,
+        rootdistpar = sbm.rootdistpar,
+        capscale = sbm.capscale,
+        et_reftopot = sbm.et_reftopot,
+        sl = sbm.sl,
+        swood = sbm.swood,
+        kext = sbm.kext,
+        c = sbm.c,
+        lai = lai,
+        recharge = recharge,
+    )
 
 end
