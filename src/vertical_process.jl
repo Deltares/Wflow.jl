@@ -11,7 +11,7 @@ Input:
 Output:
     - result
 """
-function scurve(x::Float64; a = 0.0, b = 1.0, c = 1.0)
+function scurve(x; a = 0.0, b = 1.0, c = 1.0)
     s = 1.0 / (b + exp(-c * (x - a)))
     return s
 end
@@ -20,11 +20,11 @@ end
 Interception according to the Gash model (For daily timesteps).
 """
 function rainfall_interception_gash(
-    cmax::Float64,
-    e_r::Float64,
-    canopygapfraction::Float64,
-    precipitation::Float64,
-    canopystorage::Float64;
+    cmax,
+    e_r,
+    canopygapfraction,
+    precipitation,
+    canopystorage;
     maxevap = 9999.0,
 )
     # TODO:  add other rainfall interception method (lui)
@@ -68,7 +68,7 @@ end
 """
 Actual transpiration function for unsaturated zone:
 
-  if ust is True, all ustore is available for transpiration
+  if ust is true, all ustore is available for transpiration
 
 Input:
 
@@ -81,21 +81,21 @@ Output:
     - UStoreLayerDepth,  sumActEvapUStore, ActEvapUStore
 """
 function acttransp_unsat_sbm(
-    rootingdepth::Float64,
-    ustorelayerdepth::Float64,
-    sumlayer::Float64,
-    restpotevap::Float64,
-    sum_actevapustore::Float64,
-    c::Float64,
-    usl::Float64,
-    θₛ::Float64,
-    θᵣ::Float64,
-    hb::Float64,
-    ust = 0::Int,
+    rootingdepth,
+    ustorelayerdepth,
+    sumlayer,
+    restpotevap,
+    sum_actevapustore,
+    c,
+    usl,
+    θₛ,
+    θᵣ,
+    hb,
+    ust::Bool = false,
 )
 
     # AvailCap is fraction of unsat zone containing roots
-    if ust >= 1
+    if ust
         availcap = ustorelayerdepth * 0.99
     else
         if usl > 0
@@ -151,13 +151,13 @@ end
 
 
 function infiltration(
-    avail_forinfilt::Float64,
-    pathfrac::Float64,
-    cf_soil::Float64,
-    tsoil::Float64,
-    infiltcapsoil::Float64,
-    infiltcappath::Float64,
-    ustorecapacity::Float64,
+    avail_forinfilt,
+    pathfrac,
+    cf_soil,
+    tsoil,
+    infiltcapsoil,
+    infiltcappath,
+    ustorecapacity,
     modelsnow::Bool,
     soilinfreduction::Bool,
 )
@@ -192,15 +192,7 @@ function infiltration(
     return infiltsoilpath, infiltsoil, infiltpath, soilinf, pathinf, infiltexcess
 end
 
-function unsatzone_flow_layer(
-    usd::Float64,
-    kvfrac::Float64,
-    kv::Float64,
-    f::Float64,
-    z::Float64,
-    l_sat::Float64,
-    c::Float64,
-)
+function unsatzone_flow_layer(usd, kvfrac, kv, f, z, l_sat, c)
 
     sum_ast = 0
     #first transfer soil water > maximum soil water capacity layer (iteration is not required because of steady theta (usd))
@@ -224,14 +216,14 @@ end
 
 
 function unsatzone_flow_sbm(
-    ustorelayerdepth::Float64,
-    soilwatercapacity::Float64,
-    satwaterdepth::Float64,
-    kvfrac::Float64,
-    kv::Float64,
-    usl::Float64,
-    θₛ::Float64,
-    θᵣ::Float64,
+    ustorelayerdepth,
+    soilwatercapacity,
+    satwaterdepth,
+    kvfrac,
+    kv,
+    usl,
+    θₛ,
+    θᵣ,
 )
 
     sd = soilwatercapacity - satwaterdepth
@@ -255,17 +247,7 @@ HBV type snowpack modeling using a temperature degree factor.
 All correction factors (RFCF and SFCF) are set to 1.
 The refreezing efficiency factor is set to 0.05.
 """
-function snowpack_hbv(
-    snow::Float64,
-    snowwater::Float64,
-    precipitation::Float64,
-    temperature::Float64,
-    tti::Float64,
-    tt::Float64,
-    ttm::Float64,
-    cfmax::Float64,
-    whc::Float64,
-)
+function snowpack_hbv(snow, snowwater, precipitation, temperature, tti, tt, ttm, cfmax, whc)
 
     rfcf = 1.0  # correction factor for rainfall
     cfr = 0.05  # refreeing efficiency constant in refreezing of freewater in snow
