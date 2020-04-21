@@ -1,10 +1,5 @@
 const mv = NaN
 
-# from ini file
-# [run]
-# timestepsecs = 86400
-timestepsecs = 86400.0
-
 Base.@kwdef struct SBM{T,N,M}
     maxlayers::Int
     nlayers::Int
@@ -96,7 +91,9 @@ end
 "Initial part of the model. Reads model parameters from disk"
 function initialize(staticmaps_path, leafarea_path)
 
-    basetimestep = 86400.0
+    # timestep that the parameter units are defined in
+    basetimestep = Second(Day(1))
+    Δt = Second(Day(1))
     sizeinmetres = Bool(0)
     thicknesslayers = SVector(100.0, 300.0, 800.0)
     maxlayers = length(thicknesslayers) + 1 #max number of soil layers
@@ -104,13 +101,13 @@ function initialize(staticmaps_path, leafarea_path)
 
     #default parameter values (dict)
     dparams = Dict(
-        "Cfmax" => 3.75653 * (timestepsecs / basetimestep),
+        "Cfmax" => 3.75653 * (Δt / basetimestep),
         "TT" => 0.0,
         "TTM" => 0.0,
         "TTI" => 1.0,
         "WHC" => 0.1,
         "cf_soil" => 0.038,
-        "w_soil" => 0.1125 * (timestepsecs / basetimestep),
+        "w_soil" => 0.1125 * (Δt / basetimestep),
         "SoilThickness" => 2000.0,
         "InfiltCapSoil" => 100.0,
         "InfiltCapPath" => 10.0,
@@ -119,7 +116,7 @@ function initialize(staticmaps_path, leafarea_path)
         "thetaS" => 0.6,
         "thetaR" => 0.01,
         "AirEntryPressure" => 10.0,
-        "KsatVer" => 3000.0 * (timestepsecs / basetimestep),
+        "KsatVer" => 3000.0 * (Δt / basetimestep),
         "MaxLeakage" => 0.0,
         "c" => 10.0,
         "M" => 300.0,
@@ -302,7 +299,7 @@ function update(sbm)
     # should we include tempcor in SBM?
     # PotEvap = PotenEvap #??
 
-    if timestepsecs >= (23 * 3600)
+    if Δt >= Hour(23)
         throughfall, interception, stemflow, canopystorage = rainfall_interception_gash(
             cmax,
             e_r,
@@ -353,7 +350,7 @@ function update(sbm)
                 sbm.g_tt,
                 sbm.g_cfmax,
                 sbm.g_sifrac,
-                timestepsecs,
+                Δt,
                 basetimestep,
             )
             # Convert to mm per grid cell and add to snowmelt
@@ -534,7 +531,7 @@ function update(sbm)
 
     if sbm.zi > rootingdepth
         capfluxscale =
-            sbm.capscale / (sbm.capscale + sbm.zi - rootingdepth) * timestepsecs /
+            sbm.capscale / (sbm.capscale + sbm.zi - rootingdepth) * Δt /
             basetimestep
     else
         capfluxscale = 0.0
