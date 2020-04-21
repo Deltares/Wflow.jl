@@ -361,11 +361,9 @@ function update(sbm)
             sbm.whc,
         )
         if glacierfrac
-            """
-            Run Glacier module and add the snowpack on-top of it.
-            Estimate the fraction of snow turned into ice (HBV-light).
-            Estimate glacier melt.
-            """
+            # Run Glacier module and add the snowpack on-top of it.
+            # Estimate the fraction of snow turned into ice (HBV-light).
+            # Estimate glacier melt.
 
             snow, snow2glacier, glacierstore, glaciermelt = glacier_hbv(
                 sbm.glacierfrac,

@@ -1,21 +1,24 @@
+"""
+sCurve function:
+
+Input:
+    - x input
+    - c determines the steepness or "stepwiseness" of the curve.
+      The higher c the sharper the function. A negative c reverses the function.
+    - b determines the amplitude of the curve
+    - a determines the centre level (default = 0)
+
+Output:
+    - result
+"""
 function scurve(x::Float64; a = 0.0, b = 1.0, c = 1.0)
-    """
-    sCurve function:
-
-    Input:
-        - x input
-        - c determines the steepness or "stepwiseness" of the curve.
-          The higher c the sharper the function. A negative c reverses the function.
-        - b determines the amplitude of the curve
-        - a determines the centre level (default = 0)
-
-    Output:
-        - result
-    """
     s = 1.0 / (b + exp(-c * (x - a)))
-
+    return s
 end
 
+"""
+Interception according to the Gash model (For daily timesteps).
+"""
 function rainfall_interception_gash(
     cmax::Float64,
     e_r::Float64,
@@ -24,9 +27,6 @@ function rainfall_interception_gash(
     canopystorage::Float64;
     maxevap = 9999.0,
 )
-    """
-    Interception according to the Gash model (For daily timesteps).
-    """
     # TODO:  add other rainfall interception method (lui)
     # TODO: Include subdaily Gash model
     # TODO: add LAI variation in year
@@ -68,6 +68,21 @@ function rainfall_interception_gash(
 
 end
 
+"""
+Actual transpiration function for unsaturated zone:
+
+  if ust is True, all ustore is available for transpiration
+
+Input:
+
+    - RootingDepth, UStoreLayerDepth, sumLayer (depth (z) of upper boundary unsaturated layer),
+      RestPotEvap (remaining evaporation), sumActEvapUStore (cumulative actual transpiration (more than one UStore layers))
+      c (Brooks-Corey coefficient), L (thickness of unsaturated zone), thetaS, thetaR, hb (air entry pressure), ust
+
+Output:
+
+    - UStoreLayerDepth,  sumActEvapUStore, ActEvapUStore
+"""
 function acttransp_unsat_sbm(
     rootingdepth::Float64,
     ustorelayerdepth::Float64,
@@ -81,22 +96,6 @@ function acttransp_unsat_sbm(
     hb::Float64,
     ust = 0::Int,
 )
-
-    """
-    Actual transpiration function for unsaturated zone:
-
-      if ust is True, all ustore is available for transpiration
-
-    Input:
-
-        - RootingDepth, UStoreLayerDepth, sumLayer (depth (z) of upper boundary unsaturated layer),
-          RestPotEvap (remaining evaporation), sumActEvapUStore (cumulative actual transpiration (more than one UStore layers))
-          c (Brooks-Corey coefficient), L (thickness of unsaturated zone), thetaS, thetaR, hb (air entry pressure), ust
-
-    Output:
-
-        - UStoreLayerDepth,  sumActEvapUStore, ActEvapUStore
-    """
 
     # AvailCap is fraction of unsat zone containing roots
     if ust >= 1
@@ -262,6 +261,13 @@ function unsatzone_flow_sbm(
 end
 
 
+"""
+snowpack(snow, snowwater, precipitation, temperature, tti, tt, ttm, cfmax, whc)
+
+HBV type snowpack modeling using a temperature degree factor.
+All correction factors (RFCF and SFCF) are set to 1.
+The refreezing efficiency factor is set to 0.05.
+"""
 function snowpack_hbv(
     snow::Float64,
     snowwater::Float64,
@@ -273,13 +279,6 @@ function snowpack_hbv(
     cfmax::Float64,
     whc::Float64,
 )
-    """
-        snowpack(snow, snowwater, precipitation, temperature, tti, tt, ttm, cfmax, whc)
-
-    HBV type snowpack modeling using a temperature degree factor.
-    All correction factors (RFCF and SFCF) are set to 1.
-    The refreezing efficiency factor is set to 0.05.
-    """
 
     rfcf = 1.0  # correction factor for rainfall
     cfr = 0.05  # refreeing efficiency constant in refreezing of freewater in snow
