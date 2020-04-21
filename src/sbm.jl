@@ -94,7 +94,7 @@ function initialize(staticmaps_path, leafarea_path)
     # timestep that the parameter units are defined in
     basetimestep = Second(Day(1))
     Δt = Second(Day(1))
-    sizeinmetres = Bool(0)
+    sizeinmetres = false
     thicknesslayers = SVector(100.0, 300.0, 800.0)
     maxlayers = length(thicknesslayers) + 1 #max number of soil layers
     sumlayers = SVector(pushfirst(cumsum(thicknesslayers), 0.0))
@@ -265,13 +265,13 @@ function initialize(staticmaps_path, leafarea_path)
 
 end
 
-function update(sbm)
+function update(sbm::SBM)
 
     #start dummy variables (should be generated from model reader and ini file)
-    lai = Bool(1)
-    glacierfrac = Bool(0)
-    modelsnow = Bool(1)
-    soilinfreduction = Bool(0)
+    lai = true
+    glacierfrac = false
+    modelsnow = true
+    soilinfreduction = false
     transfermethod = 0
     potevap = 4.0
     precipitation = 3.0
