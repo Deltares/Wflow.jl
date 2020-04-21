@@ -33,10 +33,7 @@ function rainfall_interception_gash(
     # Hack for stemflow
 
     pt = 0.1 * canopygapfraction
-    p_sat = max(
-        0.0,
-        (-cmax / e_r) * log(1.0 - (e_r / (1.0 - canopygapfraction - pt))),
-    )
+    p_sat = max(0.0, (-cmax / e_r) * log(1.0 - (e_r / (1.0 - canopygapfraction - pt))))
     # large storms P > P_sat
     largestorms = precipitation > p_sat
 
@@ -176,20 +173,15 @@ function infiltration(
     end
     max_infiltsoil = min(infiltcapsoil * soilinfredu, soilinf)
     max_infiltpath = min(infiltcappath * soilinfredu, pathinf)
-    infiltsoilpath =
-        min(max_infiltpath + max_infiltsoil, max(0.0, ustorecapacity))
+    infiltsoilpath = min(max_infiltpath + max_infiltsoil, max(0.0, ustorecapacity))
 
     if max_infiltpath + max_infiltsoil > 0.0
         infiltsoil =
-            max_infiltsoil * min(
-                1.0,
-                max(0.0, ustorecapacity) / (max_infiltpath + max_infiltsoil),
-            )
+            max_infiltsoil *
+            min(1.0, max(0.0, ustorecapacity) / (max_infiltpath + max_infiltsoil))
         infiltpath =
-            max_infiltpath * min(
-                1.0,
-                max(0.0, ustorecapacity) / (max_infiltpath + max_infiltsoil),
-            )
+            max_infiltpath *
+            min(1.0, max(0.0, ustorecapacity) / (max_infiltpath + max_infiltsoil))
     else
         infiltsoil = 0.0
         infiltpath = 0.0
@@ -197,12 +189,7 @@ function infiltration(
 
     infiltexcess = (soilinf - max_infiltsoil) + (pathinf - max_infiltpath)
 
-    return infiltsoilpath,
-    infiltsoil,
-    infiltpath,
-    soilinf,
-    pathinf,
-    infiltexcess
+    return infiltsoilpath, infiltsoil, infiltpath, soilinf, pathinf, infiltexcess
 end
 
 function unsatzone_flow_layer(
@@ -296,8 +283,7 @@ function snowpack_hbv(
     # fraction of precipitation which falls as snow
     snowfrac = 1.0 - rainfrac
     # different correction for rainfall and snowfall
-    precipitation =
-        sfcf * snowfrac * precipitation + rfcf * rainfrac * precipitation
+    precipitation = sfcf * snowfrac * precipitation + rfcf * rainfrac * precipitation
 
     snowfall = snowfrac * precipitation  #snowfall depth
     rainfall = rainfrac * precipitation  #rainfall depth
