@@ -130,25 +130,20 @@ function initialize(staticmaps_path, leafarea_path)
 
     nc = NCDataset(staticmaps_path)
 
-    subcatch_2d = "wflow_subcatch" in keys(nc) ? nc["wflow_subcatch"][:] :
-        @error("wflow_subcatch not found")
+    subcatch_2d = nc["wflow_subcatch"][:]
     # indices based on catchment
     inds = Wflow.active_indices(subcatch_2d, missing)
     n = length(inds)
 
-    altitude = "wflow_dem" in keys(nc) ? Float64.(nc["wflow_dem"][:][inds]) :
-        @error("wflow_dem not found")
-    river = "wflow_river" in keys(nc) ? nomissing(nc["wflow_river"][:], 0)[inds] :
-        @error("wflow_river not found")
-    riverwidth =
-        "wflow_riverwidth" in keys(nc) ? Float64.(nc["wflow_riverwidth"][:][inds]) :
-        @error("wflow_riverwidth not found")
-    ldd = "wflow_ldd" in keys(nc) ? Float64.(nc["wflow_ldd"][:][inds]) :
-        @error("wflow_ldd not found")
+    altitude = Float64.(nc["wflow_dem"][:][inds])
+    river = nomissing(nc["wflow_river"][:], 0)[inds]
+    riverwidth = Float64.(nc["wflow_riverwidth"][:][inds])
+    ldd = Float64.(nc["wflow_ldd"][:][inds])
     if "wflow_riverlength" in keys(nc)
         riverlength = Float64.(nc["wflow_riverlength"][:][inds])
     else
         @warn("wflow_riverlength not found, riverlength based on ldd...")
+        # TODO calculate river based on ldd
     end
 
     y_nc = "y" in keys(nc.dim) ? nomissing(nc["y"][:]) : nomissing(nc["lat"][:])
