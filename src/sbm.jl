@@ -550,7 +550,7 @@ function update(sbm::SBM)
     # ssf kinematic wave
     recharge = (transfer - actcapflux - actleakage - actevapsat - soilevapsat)
 
-    SBM{Float64,sbm.nlayers,sbm.nlayers + 1}(
+    return SBM{Float64,sbm.nlayers,sbm.nlayers + 1}(
         maxlayers = sbm.maxlayers,
         nlayers = sbm.nlayers,
         riverfrac = sbm.riverfrac,
@@ -587,5 +587,4 @@ function update(sbm::SBM)
         lai = lai,
         recharge = recharge,
     )
-
 end

@@ -1,15 +1,14 @@
 """
-sCurve function:
+    scurve(x; a = 0.0, b = 1.0, c = 1.0)
 
-Input:
-    - x input
-    - c determines the steepness or "stepwiseness" of the curve.
-      The higher c the sharper the function. A negative c reverses the function.
-    - b determines the amplitude of the curve
-    - a determines the centre level (default = 0)
+Sigmoid "S"-shaped curve.
 
-Output:
-    - result
+# Arguments
+- `x::Real`: input
+- `a::Real`: determines the centre level (default = 0.0)
+- `b::Real`: determines the amplitude of the curve
+- `c::Real`: determines the steepness or "stepwiseness" of the curve.
+             The higher c the sharper the function. A negative c reverses the function.
 """
 function scurve(x; a = 0.0, b = 1.0, c = 1.0)
     s = 1.0 / (b + exp(-c * (x - a)))
@@ -66,19 +65,27 @@ function rainfall_interception_gash(
 end
 
 """
-Actual transpiration function for unsaturated zone:
+Actual transpiration function for unsaturated zone.
 
-  if ust is true, all ustore is available for transpiration
+If `ust` is `true`, the whole unsaturated store is available for transpiration.
 
-Input:
+# Arguments
+- `RootingDepth`
+- `UStoreLayerDepth`
+- `sumLayer` (depth (z) of upper boundary unsaturated layer)
+- `RestPotEvap` (remaining evaporation)
+- `sumActEvapUStore` (cumulative actual transpiration (more than one UStore layers))
+- `c` (Brooks-Corey coefficient)
+- `L` (thickness of unsaturated zone)
+- `thetaS`
+- `thetaR`
+- `hb` (air entry pressure)
+- `ust`
 
-    - RootingDepth, UStoreLayerDepth, sumLayer (depth (z) of upper boundary unsaturated layer),
-      RestPotEvap (remaining evaporation), sumActEvapUStore (cumulative actual transpiration (more than one UStore layers))
-      c (Brooks-Corey coefficient), L (thickness of unsaturated zone), thetaS, thetaR, hb (air entry pressure), ust
-
-Output:
-
-    - UStoreLayerDepth,  sumActEvapUStore, ActEvapUStore
+# Output
+- `UStoreLayerDepth`
+- `sumActEvapUStore`
+- `ActEvapUStore`
 """
 function acttransp_unsat_sbm(
     rootingdepth,
@@ -241,7 +248,7 @@ end
 
 
 """
-snowpack(snow, snowwater, precipitation, temperature, tti, tt, ttm, cfmax, whc)
+    snowpack(snow, snowwater, precipitation, temperature, tti, tt, ttm, cfmax, whc)
 
 HBV type snowpack modeling using a temperature degree factor.
 All correction factors (RFCF and SFCF) are set to 1.
