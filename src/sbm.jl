@@ -5,66 +5,66 @@ const mv = NaN
 # timestepsecs = 86400
 timestepsecs = 86400.0
 
-Base.@kwdef struct SBM{N,M}
+Base.@kwdef struct SBM{T,N,M}
     maxlayers::Int
     nlayers::Int
-    cfmax::Float64
-    tt::Float64
-    ttm::Float64
-    tti::Float64
-    whc::Float64
-    cf_soil::Float64
-    w_soil::Float64
-    soilthickness::Float64
-    infiltcapsoil::Float64
-    infiltcappath::Float64
-    pathfrac::Float64
-    waterfrac::Float64
-    riverfrac::Float64
-    θₛ::Float64
-    θᵣ::Float64
-    hb::Float64
-    kv::Float64
-    kvfrac::SVector{N,Float64}
-    maxleakage::Float64
-    c::SVector{N,Float64}
-    m::Float64
-    f::Float64 = (θₛ - θᵣ) / m
-    capscale::Float64
-    rootdistpar::Float64
-    rootingdepth::Float64
-    lai::Float64
-    sl::Float64
-    kext::Float64
-    swood::Float64
-    et_reftopot::Float64
-    altitude::Float64
-    precipitation::Float64 = mv
-    temperature::Float64 = mv
-    potevap::Float64 = mv
-    pottrans_soil::Float64 = mv
-    transpiration::Float64 = mv
-    ae_ustore::Float64 = mv
-    ae_sat::Float64 = mv
-    interception::Float64 = mv
-    ae::Float64 = mv
-    ae_openw_l::Float64 = mv
-    ae_openw_r::Float64 = mv
-    avail_forinfilt::Float64 = mv
-    ustorelayerdepth::SVector{N,Float64} = fill(0.0, SVector{N,Float64})
-    act_thickl::SVector{N,Float64}
-    sumlayers::SVector{M,Float64}
-    ustoredepth::Float64 = mv
-    transfer::Float64 = mv
-    capflux::Float64 = mv
-    recharge::Float64 = mv
-    soilwatercapacity::Float64 = soilthickness * (θₛ - θᵣ)
-    satwaterdepth::Float64 = 0.85 * soilwatercapacity
-    zi::Float64 = max(0.0, soilthickness - satwaterdepth / (θₛ - θᵣ))
-    snow::Float64 = 0.0
-    snowwater::Float64 = 0.0
-    tsoil::Float64 = 10.0
-    canopystorage::Float64 = 0.0
+    cfmax::T
+    tt::T
+    ttm::T
+    tti::T
+    whc::T
+    cf_soil::T
+    w_soil::T
+    soilthickness::T
+    infiltcapsoil::T
+    infiltcappath::T
+    pathfrac::T
+    waterfrac::T
+    riverfrac::T
+    θₛ::T
+    θᵣ::T
+    hb::T
+    kv::T
+    kvfrac::SVector{N,T}
+    maxleakage::T
+    c::SVector{N,T}
+    m::T
+    f::T = (θₛ - θᵣ) / m
+    capscale::T
+    rootdistpar::T
+    rootingdepth::T
+    lai::T
+    sl::T
+    kext::T
+    swood::T
+    et_reftopot::T
+    altitude::T
+    precipitation::T = mv
+    temperature::T = mv
+    potevap::T = mv
+    pottrans_soil::T = mv
+    transpiration::T = mv
+    ae_ustore::T = mv
+    ae_sat::T = mv
+    interception::T = mv
+    ae::T = mv
+    ae_openw_l::T = mv
+    ae_openw_r::T = mv
+    avail_forinfilt::T = mv
+    ustorelayerdepth::SVector{N,T} = fill(0.0, SVector{N,T})
+    act_thickl::SVector{N,T}
+    sumlayers::SVector{M,T}
+    ustoredepth::T = mv
+    transfer::T = mv
+    capflux::T = mv
+    recharge::T = mv
+    soilwatercapacity::T = soilthickness * (θₛ - θᵣ)
+    satwaterdepth::T = 0.85 * soilwatercapacity
+    zi::T = max(0.0, soilthickness - satwaterdepth / (θₛ - θᵣ))
+    snow::T = 0.0
+    snowwater::T = 0.0
+    tsoil::T = 10.0
+    canopystorage::T = 0.0
 end
 
 function readnetcdf(nc, var, inds, dpars)
@@ -230,7 +230,7 @@ function initialize(staticmaps_path, leafarea_path)
         riverfrac =
             Bool(river[i]) ? min((riverlength[i] * riverwidth[i]) / (xl * yl), 1.0) : 0.0
 
-        sbm[i] = SBM{nlayers,nlayers + 1}(
+        sbm[i] = SBM{Float64,nlayers,nlayers + 1}(
             maxlayers = maxlayers,
             nlayers = nlayers,
             riverfrac = riverfrac,
@@ -558,7 +558,7 @@ function update(sbm)
     # ssf kinematic wave
     recharge = (transfer - actcapflux - actleakage - actevapsat - soilevapsat)
 
-    SBM{sbm.nlayers,sbm.nlayers + 1}(
+    SBM{Float64,sbm.nlayers,sbm.nlayers + 1}(
         maxlayers = sbm.maxlayers,
         nlayers = sbm.nlayers,
         riverfrac = sbm.riverfrac,
