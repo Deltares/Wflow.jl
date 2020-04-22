@@ -267,7 +267,7 @@ end
 
 function update(sbm::SBM)
 
-    #start dummy variables (should be generated from model reader and ini file)
+    #start dummy variables (should be generated from model reader and from Config.jl TOML)
     lai = true
     glacierfrac = false
     modelsnow = true
@@ -276,11 +276,12 @@ function update(sbm::SBM)
     potevap = 4.0
     precipitation = 3.0
     temperature = 10.0
-    wl_land = 0.0 #from kinematic wave alnd
+    wl_land = 0.0 #from kinematic wave land
     wl_river = 0.10 #from kinematic river
     irsupply_mm = 0.0
     nrpaddyirri = 0
-    ust = 0
+    ust = false
+    Δt = Second(Day(1))
     #end dummpy variables
 
     if lai
@@ -409,12 +410,12 @@ function update(sbm::SBM)
     # (ast) and the updated unsaturated storage for each soil layer.
     if transfermethod == 1 && sbm.maxlayers == 1
         ustorelayerdepth = sbm.ustorelayerdepth[1] + infiltsoilpath
+        kv_z = sbm.kvfrac[1] * sbm.kv * exp(-sbm.f * sbm.zi)
         ustorelayerdepth, ast = unsatzone_flow_sbm(
             ustorelayerdepth,
             sbm.soilwatercapacity,
             sbm.satwaterdepth,
-            sbm.kvfrac[1],
-            sbm.kv,
+            kv_z,
             sbm.usl[1],
             sbm.θₛ,
             sbm.θᵣ,
@@ -423,14 +424,12 @@ function update(sbm::SBM)
     else
         for m = 1:n_usl
             l_sat = usl[m] * (sbm.θₛ - sbm.θᵣ)
+            kv_z = sbm.kvfrac[m] * sbm.kv * exp(-sbm.f * z[m])
             ustorelayerdepth = m == 1 ? sbm.ustorelayerdepth[m] + infiltsoilpath :
                 sbm.ustorelayerdepth[m] + ast
             ustorelayerdepth, ast = unsatzone_flow_layer(
                 ustorelayerdepth,
-                sbm.kvfrac[m],
-                sbm.kv,
-                sbm.f,
-                z[m],
+                kv_z,
                 l_sat,
                 sbm.c[m],
             )

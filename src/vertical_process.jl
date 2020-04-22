@@ -16,7 +16,11 @@ function scurve(x; a = 0.0, b = 1.0, c = 1.0)
 end
 
 """
-Interception according to the Gash model (For daily timesteps).
+    rainfall_interception_gash(cmax, e_r, canopygapfraction, precipitation, canopystorage;maxevap = 9999.0)
+
+Interception according to the Gash model (for daily timesteps). `cmax` is the maximum canopy storage and
+`e_r` is the ratio of the average evaporation from the wet canopy and the average precipitation intensity on
+a saturated canopy.
 """
 function rainfall_interception_gash(
     cmax,
@@ -32,7 +36,10 @@ function rainfall_interception_gash(
     # Hack for stemflow
 
     pt = 0.1 * canopygapfraction
-    p_sat = max(0.0, (-cmax / e_r) * log(1.0 - (e_r / (1.0 - canopygapfraction - pt))))
+    p_sat = max(
+        0.0,
+        (-cmax / e_r) * log(1.0 - (e_r / (1.0 - canopygapfraction - pt))),
+    )
     # large storms P > P_sat
     largestorms = precipitation > p_sat
 
@@ -65,27 +72,28 @@ function rainfall_interception_gash(
 end
 
 """
-Actual transpiration function for unsaturated zone.
+    acttransp_unsat_sbm(rootingdepth, ustorelayerdepth, sumlayer, restpotevap, sum_actevapustore, c, usl, θₛ, θᵣ, hb, ust::Bool = false)
 
+Compute actual transpiration for unsaturated zone.
 If `ust` is `true`, the whole unsaturated store is available for transpiration.
 
 # Arguments
-- `RootingDepth`
-- `UStoreLayerDepth`
-- `sumLayer` (depth (z) of upper boundary unsaturated layer)
-- `RestPotEvap` (remaining evaporation)
-- `sumActEvapUStore` (cumulative actual transpiration (more than one UStore layers))
+- `rootingdepth`
+- `ustorelayerdepth`
+- `sumlayer` (depth (z) of upper boundary unsaturated layer)
+- `restpotevap` (remaining evaporation)
+- `sum_actevapustore` (cumulative actual transpiration (more than one unsaturated layers))
 - `c` (Brooks-Corey coefficient)
-- `L` (thickness of unsaturated zone)
-- `thetaS`
-- `thetaR`
+- `usl` (thickness of unsaturated zone)
+- `θₛ`
+- `θᵣ`
 - `hb` (air entry pressure)
 - `ust`
 
 # Output
-- `UStoreLayerDepth`
-- `sumActEvapUStore`
-- `ActEvapUStore`
+- `ustorelayerdepth`
+- `sum_actevapustore`
+- `restpotevap`
 """
 function acttransp_unsat_sbm(
     rootingdepth,
@@ -114,7 +122,7 @@ function acttransp_unsat_sbm(
 
     maxextr = availcap * ustorelayerdepth
 
-    # Next step is to make use of the Feddes curve in order to decrease ActEvapUstore when soil moisture values
+    # Next step is to make use of the Feddes curve in order to decrease actevapustore when soil moisture values
     # occur above or below ideal plant growing conditions (see also Feddes et al., 1978). h1-h4 values are
     # actually negative, but all values are made positive for simplicity.
     h1 = hb  # cm (air entry pressure)
@@ -156,7 +164,14 @@ function acttransp_unsat_sbm(
     return ustorelayerdepth, sum_actevapustore, restpotevap
 end
 
+"""
+    infiltration(avail_forinfilt, pathfrac, cf_soil, tsoil, infiltcapsoil, infiltcappath, ustorecapacity, modelsnow::Bool, soilinfreduction::Bool)
 
+Soil infiltration based on infiltration capacity soil `infiltcapsoil`, infiltration capacity compacted area
+`infiltcappath` and capacity unsatured zone `ustorecapacity`. The soil infiltration capacity can be adjusted
+in case the soil is frozen (`modelsnow` and `soilinfreduction` is `true`).
+
+"""
 function infiltration(
     avail_forinfilt,
     pathfrac,
@@ -180,15 +195,20 @@ function infiltration(
     end
     max_infiltsoil = min(infiltcapsoil * soilinfredu, soilinf)
     max_infiltpath = min(infiltcappath * soilinfredu, pathinf)
-    infiltsoilpath = min(max_infiltpath + max_infiltsoil, max(0.0, ustorecapacity))
+    infiltsoilpath =
+        min(max_infiltpath + max_infiltsoil, max(0.0, ustorecapacity))
 
     if max_infiltpath + max_infiltsoil > 0.0
         infiltsoil =
-            max_infiltsoil *
-            min(1.0, max(0.0, ustorecapacity) / (max_infiltpath + max_infiltsoil))
+            max_infiltsoil * min(
+                1.0,
+                max(0.0, ustorecapacity) / (max_infiltpath + max_infiltsoil),
+            )
         infiltpath =
-            max_infiltpath *
-            min(1.0, max(0.0, ustorecapacity) / (max_infiltpath + max_infiltsoil))
+            max_infiltpath * min(
+                1.0,
+                max(0.0, ustorecapacity) / (max_infiltpath + max_infiltsoil),
+            )
     else
         infiltsoil = 0.0
         infiltpath = 0.0
@@ -196,23 +216,34 @@ function infiltration(
 
     infiltexcess = (soilinf - max_infiltsoil) + (pathinf - max_infiltpath)
 
-    return infiltsoilpath, infiltsoil, infiltpath, soilinf, pathinf, infiltexcess
+    return infiltsoilpath,
+    infiltsoil,
+    infiltpath,
+    soilinf,
+    pathinf,
+    infiltexcess
 end
 
-function unsatzone_flow_layer(usd, kvfrac, kv, f, z, l_sat, c)
+"""
+    unsatzone_flow_layer(usd, kv_z, l_sat, c)
+
+Assuming a unit head gradient, the transfer of water from an unsaturated store layer `usd` is controlled by the
+vertical saturated hydraulic conductivity `kv_z` (bottom layer or water table), the effective saturation
+degree of the layer (ratio `usd` and `l_sat`), and a Brooks-Corey power coefficient `c`.
+"""
+function unsatzone_flow_layer(usd, kv_z, l_sat, c)
 
     sum_ast = 0
     #first transfer soil water > maximum soil water capacity layer (iteration is not required because of steady theta (usd))
-    st = kvfrac * kv * exp(-f * z) * min((usd / l_sat)^c, 1.0)
+    st = kv_z * min((usd / l_sat)^c, 1.0)
     st_sat = max(0, usd - l_sat)
     usd = usd - min(st, st_sat)
     sum_ast = sum_ast + min(st, st_sat)
     ast = min(st - min(st, st_sat), usd)
     #number of iterations (to reduce "overshooting") based on fixed maximum change in soil water per iteration step (0.02 x maximum soil water capacity layer)
     its = max(Int(ceil(ast / (l_sat * 0.02))), 1)
-    k = kvfrac * kv / its * exp(-f * z)
     for i = 1:its
-        st = k * min((usd / l_sat)^c, 1.0)
+        st = (kv_z / its) * min((usd / l_sat)^c, 1.0)
         ast = min(st, usd)
         usd = usd - ast
         sum_ast = sum_ast + ast
@@ -221,13 +252,20 @@ function unsatzone_flow_layer(usd, kvfrac, kv, f, z, l_sat, c)
     return usd, sum_ast
 end
 
+"""
+    unsatzone_flow_sbm(ustorelayerdepth, soilwatercapacity, satwaterdepth, kv_z, usl, θₛ, θᵣ)
 
+The transfer of water from the unsaturated store `ustorelayerdepth` to the saturated store `satwaterdepth`
+is controlled by the vertical saturated hydraulic conductivity `kv_z` at the water table and the ratio between
+`ustorelayerdepth` and the saturation deficit (`soilwatercapacity` minus `satwaterdepth`). This is the
+original Topog_SBM vertical transfer formulation.
+
+"""
 function unsatzone_flow_sbm(
     ustorelayerdepth,
     soilwatercapacity,
     satwaterdepth,
-    kvfrac,
-    kv,
+    kv_z,
     usl,
     θₛ,
     θᵣ,
@@ -237,7 +275,7 @@ function unsatzone_flow_sbm(
     if sd <= 0.00001
         ast = 0.0
     else
-        st = kvfrac * kv * min(ustorelayerdepth, usl * (θₛ - θᵣ)) / sd
+        st =  kv_z * min(ustorelayerdepth, usl * (θₛ - θᵣ)) / sd
         ast = min(st, ustorelayerdepth)
         ustorelayerdepth = ustorelayerdepth - ast
     end
@@ -248,13 +286,41 @@ end
 
 
 """
-    snowpack(snow, snowwater, precipitation, temperature, tti, tt, ttm, cfmax, whc)
+    snowpack_hbv(snow, snowwater, precipitation, temperature, tti, tt, ttm, cfmax, whc)
 
 HBV type snowpack modeling using a temperature degree factor.
 All correction factors (RFCF and SFCF) are set to 1.
 The refreezing efficiency factor is set to 0.05.
+
+# Arguments
+- `snow` (snow storage)
+- `snowwater` (liquid water content in the snow pack)
+- `precipitation` (throughfall + stemflow)
+- `temperature`
+- `tti` (snowfall threshold interval length)
+- `tt` (threshold temperature for snowfall)
+- `ttm` (melting threshold)
+- `cfmax` (degree day factor, rate of snowmelt)
+- `whc` (Water holding capacity of snow)
+
+# Output
+- `snow`
+- `snowwater`
+- `snowmelt`
+- `rainfall` (precipitation that occurs as rainfall)
+- `snowfall` (precipitation that occurs as snowfall)
 """
-function snowpack_hbv(snow, snowwater, precipitation, temperature, tti, tt, ttm, cfmax, whc)
+function snowpack_hbv(
+    snow,
+    snowwater,
+    precipitation,
+    temperature,
+    tti,
+    tt,
+    ttm,
+    cfmax,
+    whc,
+)
 
     rfcf = 1.0  # correction factor for rainfall
     cfr = 0.05  # refreeing efficiency constant in refreezing of freewater in snow
@@ -272,7 +338,8 @@ function snowpack_hbv(snow, snowwater, precipitation, temperature, tti, tt, ttm,
     # fraction of precipitation which falls as snow
     snowfrac = 1.0 - rainfrac
     # different correction for rainfall and snowfall
-    precipitation = sfcf * snowfrac * precipitation + rfcf * rainfrac * precipitation
+    precipitation =
+        sfcf * snowfrac * precipitation + rfcf * rainfrac * precipitation
 
     snowfall = snowfrac * precipitation  #snowfall depth
     rainfall = rainfrac * precipitation  #rainfall depth
