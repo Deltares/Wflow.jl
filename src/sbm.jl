@@ -42,10 +42,18 @@ Base.@kwdef struct SBM{T,N,M}
     ae_ustore::T = mv
     ae_sat::T = mv
     interception::T = mv
-    ae::T = mv
+    soilevap::T = mv
+    actevapsat::T = mv
+    actevap::T = mv
     ae_openw_l::T = mv
     ae_openw_r::T = mv
     avail_forinfilt::T = mv
+    actinfilt::T = mv
+    actinfiltsoil::T = mv
+    actinfiltpath::T = mv
+    excesswater::T = mv
+    excesswatersoil::T = mv
+    excesswaterpath::T = mv
     ustorelayerdepth::SVector{N,T} = fill(0.0, SVector{N,T})
     act_thickl::SVector{N,T}
     sumlayers::SVector{M,T}
@@ -373,6 +381,7 @@ function update(sbm::SBM)
 
     restevap = pottrans_soil - ae_openw_r - ae_openw_l
 
+    ae_pond = 0.0
     if nrpaddyirri > 0
         ae_pond = min(sbm.pondingdepth, restevap)
         PondingDepth = sbm.PondingDepth - ActEvapPond
@@ -515,9 +524,23 @@ function update(sbm::SBM)
         end
     end
 
+    actinfilt = infiltsoilpath - du
+    excesswater = avail_forinfilt - infiltsoilpath - infiltexcess + du
+
+    # Separation between compacted and non compacted areas (correction with the satflow du)
+    # This is required for D-Emission/Delwaq
+    if infiltsoil + infiltpath > 0.0
+        actinfiltsoil = infiltsoil - du * infiltsoil / (infiltpath + infiltsoil)
+        actinfiltpath = infiltpath - du * infiltpath / (infiltpath + infiltsoil)
+    else
+        actinfiltsoil = 0.0
+        actinfiltpath = 0.0
+    end
+    excesswatersoil = max(soilinf - actinfiltsoil, 0.0)
+    excesswaterpath = max(pathinf - actinfiltpath, 0.0)
+
     ksat = sbm.kvfrac[n_usl] * sbm.kv * exp(-sbm.f * sbm.zi)
     ustorecapacity = sbm.soilwatercapacity - sbm.satwaterdepth - sum(usld)
-
     maxcapflux = max(0.0, min(ksat, actevapustore, ustorecapacity, sbm.satwaterdepth))
 
     if sbm.zi > rootingdepth
@@ -545,6 +568,10 @@ function update(sbm::SBM)
     # recharge (mm) for saturated zone, multiply by 1000 * DW (flowlength) for
     # ssf kinematic wave
     recharge = (transfer - actcapflux - actleakage - actevapsat - soilevapsat)
+    transpiration = actevapsat + actevapustore
+    actevap = soilevap + transpiration + ae_openw_r + ae_openw_l + ae_pond
+
+
 
     return SBM{Float64,sbm.nlayers,sbm.nlayers + 1}(
         maxlayers = sbm.maxlayers,
@@ -581,6 +608,26 @@ function update(sbm::SBM)
         kext = sbm.kext,
         c = sbm.c,
         lai = lai,
+        canopystorage = canopystorage,
+        snow = snow,
+        snowwater = snowwater,
+        tsoil = tsoil,
+        actinfilt = actinfilt,
         recharge = recharge,
+        transpiration = transpiration,
+        soilevap = soilevap,
+        interception = interception,
+        ae_openw_r = ae_openw_r,
+        ae_openw_l = ae_openw_l,
+        actevapsat = actevapsat,
+        actevap = actevap,
+        ustorelayerdepth = usld,
+        transfer = transfer,
+        satwaterdepth = satwaterdepth,
+        actinfiltsoil = actinfiltsoil,
+        actinfiltpath = actinfiltpath,
+        excesswater = excesswater,
+        excesswatersoil = excesswatersoil,
+        excesswaterpath = excesswaterpath,
     )
 end
