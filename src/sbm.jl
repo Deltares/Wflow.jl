@@ -378,7 +378,9 @@ function update(sbm::SBM)
         restevap = restevap - ae_pond
     end
 
-    restevap = restevap * canopygapfraction
+    # evap available for soil evaporation and transpiration
+    potsoilevap = restevap * canopygapfraction
+    pottrans = restevap * (1 - canopygapfraction)
 
     # Calculate the initial capacity of the unsaturated store
     ustorecapacity = sbm.soilwatercapacity - sbm.satwaterdepth - ustoredepth
@@ -446,31 +448,31 @@ function update(sbm::SBM)
     # First calculate the evaporation of unsaturated storage into the
     # atmosphere from the upper layer.
     if sbm.maxlayers == 1
-        soilevapunsat = restevap * min(1.0, saturationdeficit / sbm.soilwatercapacity)
+        soilevapunsat = potsoilevap * min(1.0, saturationdeficit / sbm.soilwatercapacity)
     else
         #In case only the most upper soil layer contains unsaturated storage
         if n_usl == 1
             # Check if groundwater level lies below the surface
             soilevapunsat =
-                sbm.zi > 0 ? restevap * min(1.0, usld[k] / (sbm.zi * (sbm.θₛ - sbm.θᵣ))) :
+                sbm.zi > 0 ? potsoilevap * min(1.0, usld[k] / (sbm.zi * (sbm.θₛ - sbm.θᵣ))) :
                 0.0
         else
             # In case first layer contains no saturated storage
-            soilevapunsat = restevap * min(1.0, usld[1] / (usld[1] * ((sbm.θₛ - sbm.θᵣ))))
+            soilevapunsat = potsoilevap * min(1.0, usld[1] / (usld[1] * ((sbm.θₛ - sbm.θᵣ))))
         end
     end
     # Ensure that the unsaturated evaporation rate does not exceed the
     # available unsaturated moisture
     soilevapunsat = min(soilevapunsat, usld[1])
     # Update the additional atmospheric demand
-    restevap = restevap - soilevapunsat
+    potsoilevap = potsoilevap - soilevapunsat
     usld = setindex(usld, usld[1] - soilevapunsat, 1)
 
     if sbm.maxlayers == 1
         soilevapsat = 0.0
     else
         if n_usl == 1
-            soilevapsat = restevap * min(1.0, (usl[1] - sbm.zi) / usl[k])
+            soilevapsat = potsoilevap * min(1.0, (usl[1] - sbm.zi) / usl[k])
             soilevapsat = min(soilevapsat, (usl[1] - sbm.zi) * (sbm.θₛ - sbm.θᵣ))
         else
             soilevapsat = 0.0
@@ -478,26 +480,21 @@ function update(sbm::SBM)
     end
     soilevap = soilevapunsat + soilevapsat
     satwaterdepth = sbm.satwaterdepth - soilevapsat
-    # evaporation available for transpiration
-    pottrans =
-        (pottrans_soil - ae_openw_r - ae_openw_l - soilevap) * (1 - canopygapfraction)
-    #pottrans = pottrans_soil - ae_openw_r - ae_openw_l - soilevap
-
 
     # transpiration from saturated store
     wetroots = scurve(sbm.zi, a = rootingdepth, c = sbm.rootdistpar)
     actevapsat = min(pottrans * wetroots, satwaterdepth)
     satwaterdepth = satwaterdepth - actevapsat
-    restpotevap = pottrans - actevapsat
+    restpottrans = pottrans - actevapsat
 
     # actual transpiration from ustore
     actevapustore = 0.0
     for k = 1:n_usl
-        ustorelayerdepth, actevapustore, restpotevap = acttransp_unsat_sbm(
+        ustorelayerdepth, actevapustore, restpottrans = acttransp_unsat_sbm(
             rootingdepth,
             usld[k],
             sbm.sumlayers[k],
-            restpotevap,
+            restpottrans,
             actevapustore,
             sbm.c[k],
             usl[k],
