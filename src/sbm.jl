@@ -1,73 +1,73 @@
 const mv = NaN
 
 Base.@kwdef struct SBM{T,N,M}
-    maxlayers::Int
-    nlayers::Int
-    cfmax::T
-    tt::T
-    ttm::T
-    tti::T
-    whc::T
-    cf_soil::T
-    w_soil::T
-    soilthickness::T
-    infiltcapsoil::T
-    infiltcappath::T
-    pathfrac::T
-    waterfrac::T
-    riverfrac::T
-    θₛ::T
-    θᵣ::T
-    hb::T
-    kv::T
-    kvfrac::SVector{N,T}
-    maxleakage::T
-    c::SVector{N,T}
-    m::T
-    f::T = (θₛ - θᵣ) / m
-    capscale::T
-    rootdistpar::T
-    rootingdepth::T
-    lai::T
-    sl::T
-    kext::T
-    swood::T
-    et_reftopot::T
-    altitude::T
-    precipitation::T = mv
-    temperature::T = mv
-    potevap::T = mv
-    pottrans_soil::T = mv
-    transpiration::T = mv
-    ae_ustore::T = mv
-    ae_sat::T = mv
-    interception::T = mv
-    soilevap::T = mv
-    actevapsat::T = mv
-    actevap::T = mv
-    ae_openw_l::T = mv
-    ae_openw_r::T = mv
-    avail_forinfilt::T = mv
-    actinfilt::T = mv
-    actinfiltsoil::T = mv
-    actinfiltpath::T = mv
-    excesswater::T = mv
-    excesswatersoil::T = mv
-    excesswaterpath::T = mv
+    maxlayers::Int              # Maximum number of soil layers
+    nlayers::Int                # Number of soil layers
+    cfmax::T                    # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹]
+    tt::T                       # Threshold temperature for snowfall [ᵒC]
+    ttm::T                      # Threshold temperature for snowmelt [ᵒC]
+    tti::T                      # Threshold temperature interval length [ᵒC]
+    whc::T                      # Water holding capacity as fraction of current snow pack [-]
+    cf_soil::T                  # Controls soil infiltration reduction factor when soil is frozen [-]
+    w_soil::T                   # Soil temperature smooth factor [-]
+    soilthickness::T            # Soil thickness [mm]
+    infiltcapsoil::T            # Soil infiltration capacity [mm/Δt]
+    infiltcappath::T            # Infiltration capacity of the compacted areas [mm Δt⁻¹]
+    pathfrac::T                 # Fraction of compacted area  [-]
+    waterfrac::T                # Fraction of open water (excluding rivers) [-]
+    riverfrac::T                # Fraction of river [-]
+    θₛ::T                       # Saturated water content (porosity) [mm mm⁻¹]
+    θᵣ::T                       # Residual water content [mm mm⁻¹]
+    hb::T                       # Air entry pressure [cm] of soil (Brooks-Corey)
+    kv::T                       # Vertical hydraulic conductivity [mm Δt⁻¹]
+    kvfrac::SVector{N,T}        # Muliplication factor [-] applied to kv (vertical flow)
+    maxleakage::T               # Maximum leakage [mm/Δt] from saturated zone
+    c::SVector{N,T}             # Brooks-Corey power coefﬁcient [-] for each soil layer
+    m::T                        # Parameter [mm] controlling f
+    f::T = (θₛ - θᵣ) / m        # A scaling parameter [mm⁻¹] (controls exponential decline of kv)
+    capscale::T                 # Parameter [mm] controlling capilary rise
+    rootdistpar::T              # Controls how roots are linked to water table [-]
+    rootingdepth::T             # Rooting depth [mm]
+    lai::T                      # Leaf area index [m² m⁻²]
+    sl::T                       # Specific leaf storage [mm]
+    kext::T                     # Extinction coefficient [-] (to calculate canopy gap fraction)
+    swood::T                    # Storage woody part of vegetation [mm]
+    et_reftopot::T              # Multiplication factor [-] to correct
+    altitude::T                 # Vertical elevation [m]
+    precipitation::T = mv       # Precipitation [mm]
+    temperature::T = mv         # Temperature [ᵒC]
+    potevap::T = mv             # Potential evapotranspiration [mm]
+    pottrans_soil::T = mv       # Potential transpiration, open water, river and soil evaporation (after subtracting interception from potevap)
+    transpiration::T = mv       # Transpiration [mm]
+    ae_ustore::T = mv           # Actual evaporation from unsaturated store [mm]
+    ae_sat::T = mv              # Actual evaporation from saturated store [mm]
+    interception::T = mv        # Interception [mm]
+    soilevap::T = mv            # Soil evaporation [mm]
+    actevapsat::T = mv          # Actual evaporation from saturated store (transpiration and soil evaporation) [mm]
+    actevap::T = mv             # Total actual evaporation (transpiration + soil evapation + open water evaporation) [mm]
+    ae_openw_l::T = mv          # Actual evaporation from open water (land) [mm]
+    ae_openw_r::T = mv          # Actual evaporation from river [mm]
+    avail_forinfilt::T = mv     # Water available for infiltration [mm]
+    actinfilt::T = mv           # Actual infiltration into the unsaturated zone [mm]
+    actinfiltsoil::T = mv       # Actual infiltration non-compacted fraction [mm]
+    actinfiltpath::T = mv       # Actual infiltration compacted fraction [mm]
+    excesswater::T = mv         # Water that cannot infiltrate due to saturated soil (saturation excess) [mm]
+    excesswatersoil::T = mv     # Excess water for non-compacted fraction [mm]
+    excesswaterpath::T = mv     # Excess water for compacted fraction [mm]
     ustorelayerdepth::SVector{N,T} = fill(0.0, SVector{N,T})
-    act_thickl::SVector{N,T}
-    sumlayers::SVector{M,T}
-    ustoredepth::T = mv
-    transfer::T = mv
-    capflux::T = mv
-    recharge::T = mv
-    soilwatercapacity::T = soilthickness * (θₛ - θᵣ)
-    satwaterdepth::T = 0.85 * soilwatercapacity
-    zi::T = max(0.0, soilthickness - satwaterdepth / (θₛ - θᵣ))
-    snow::T = 0.0
-    snowwater::T = 0.0
-    tsoil::T = 10.0
-    canopystorage::T = 0.0
+    act_thickl::SVector{N,T}    # Thickness of soil layers [mm]
+    sumlayers::SVector{M,T}     # Cumulative sum of soil layers [mm], starting at soil surface (0)
+    ustoredepth::T = mv         # Amount of available water in the unsaturated zone [mm]
+    transfer::T = mv            # Downward flux from unsaturated to saturated zone [mm]
+    capflux::T = mv             # Capilary rise [mm]
+    recharge::T = mv            # Net recharge to saturated store [mm]
+    soilwatercapacity::T = soilthickness * (θₛ - θᵣ)            # Soilwater capacity [mm]
+    satwaterdepth::T = 0.85 * soilwatercapacity                 # Saturated store [mm]
+    zi::T = max(0.0, soilthickness - satwaterdepth / (θₛ - θᵣ)) # Pseudo-water table depth [mm] (top of the saturated zone)
+    snow::T = 0.0               # Snow storage [mm]
+    snowwater::T = 0.0          # Liquid water content in the snow pack [mm]
+    tsoil::T = 10.0             # Top soil temperature [ᵒC]
+    canopystorage::T = 0.0      # Canopy storage [mm]
 end
 
 function readnetcdf(nc, var, inds, dpars)
