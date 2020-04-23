@@ -22,4 +22,5 @@ isfile(leafarea_moselle_path) || download("https://github.com/visr/wflow-artifac
     include("config.jl")
     include("kinematic_wave.jl")
     include("sbm.jl")
+    include("vertical_process.jl")
 end
