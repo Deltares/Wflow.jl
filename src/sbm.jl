@@ -32,6 +32,9 @@ Base.@kwdef struct SBM{T,N,M}
     sl::T                       # Specific leaf storage [mm]
     kext::T                     # Extinction coefficient [-] (to calculate canopy gap fraction)
     swood::T                    # Storage woody part of vegetation [mm]
+    cmax::T                     # Maximum canopy storage [mm]
+    canopygapfraction::T        # Canopy gap fraction [-]
+    e_r::T                      # Gash interception model parameter, ratio of the average evaporation from the wet canopy [mm Δt⁻¹] and the average precipitation intensity [mm Δt⁻¹] on a saturated canopy
     et_reftopot::T              # Multiplication factor [-] to correct
     altitude::T                 # Vertical elevation [m]
     precipitation::T = mv       # Precipitation [mm]
@@ -70,6 +73,12 @@ Base.@kwdef struct SBM{T,N,M}
     canopystorage::T = 0.0      # Canopy storage [mm]
 end
 
+"""
+    readnetcdf(nc, var, inds, dpars)
+
+Read parameter `var` from NetCDF file `nc` for indices `inds`. If `var` is not
+available, a default value based on dict 'dpars' is returned.
+"""
 function readnetcdf(nc, var, inds, dpars)
     if haskey(nc, var)
         @info(string("read parameter ", var))
@@ -80,6 +89,11 @@ function readnetcdf(nc, var, inds, dpars)
     end
 end
 
+"""
+    statenames()
+
+Returns Array{Symbol,1} for extracting model state fields from SBM struct.
+"""
 function statenames()
 
     # depends on ini file settings (optional: glaciers, snow, irrigation)
@@ -88,6 +102,12 @@ function statenames()
 
 end
 
+"""
+    set_layerthickness(d::Float64, sl::SVector)
+
+Calculate actual soil thickness of layers based on a reference depth (e.g. soil depth or water table depth) `d`,
+and a SVector `sl` with cumulative soil depth starting at soil surface (0).
+"""
 function set_layerthickness(d::Float64, sl::SVector)
     act_d = sl[sl.<d]
     if d - act_d[end] > 0
@@ -96,7 +116,13 @@ function set_layerthickness(d::Float64, sl::SVector)
     diff(act_d)
 end
 
-"Initial part of the model. Reads model parameters from disk"
+"""
+    initialize(staticmaps_path, leafarea_path)
+
+Initial part of the SBM model concept. Reads model parameters from disk, `staticmaps_path` is the file path
+of the NetCDF file with model parameters, `leafarea_path` is an optional file path for a NetCDF file with leaf
+area index (LAI) values (climatology).
+"""
 function initialize(staticmaps_path, leafarea_path)
 
     # timestep that the parameter units are defined in
@@ -104,10 +130,10 @@ function initialize(staticmaps_path, leafarea_path)
     Δt = Second(Day(1))
     sizeinmetres = false
     thicknesslayers = SVector(100.0, 300.0, 800.0)
-    maxlayers = length(thicknesslayers) + 1 #max number of soil layers
+    maxlayers = length(thicknesslayers) + 1 # max number of soil layers
     sumlayers = SVector(pushfirst(cumsum(thicknesslayers), 0.0))
 
-    #default parameter values (dict)
+    # default parameter values (dict)
     dparams = Dict(
         "Cfmax" => 3.75653 * (Δt / basetimestep),
         "TT" => 0.0,
@@ -132,6 +158,9 @@ function initialize(staticmaps_path, leafarea_path)
         "rootdistpar" => -500.0,
         "RootingDepth" => 750.0,
         "LAI" => 1.0,
+        "Cmax" => 1.0,
+        "CanopyGapFraction" => 0.1,
+        "EoverR" => 0.1,
         "et_reftopot" => 1.0,
         "kvfrac" => 1.0,
     )
@@ -154,10 +183,10 @@ function initialize(staticmaps_path, leafarea_path)
         # TODO calculate river based on ldd
     end
 
+    # read x, y coordinates and calculate cell length [m]
     y_nc = "y" in keys(nc.dim) ? nomissing(nc["y"][:]) : nomissing(nc["lat"][:])
     x_nc = "x" in keys(nc.dim) ? nomissing(nc["x"][:]) : nomissing(nc["lon"][:])
     y = repeat(y_nc', outer = (length(x_nc), 1))[inds]
-
     cellength = abs(mean(diff(x_nc)))
 
     # snow parameters (also set in ini file (snow=True or False)?)
@@ -179,21 +208,6 @@ function initialize(staticmaps_path, leafarea_path)
     infiltcappath = readnetcdf(nc, "InfiltCapPath", inds, dparams)
     infiltcapsoil = readnetcdf(nc, "InfiltCapSoil", inds, dparams)
     maxleakage = readnetcdf(nc, "MaxLeakage", inds, dparams)
-
-    waterfrac = readnetcdf(nc, "WaterFrac", inds, dparams)
-    pathfrac = readnetcdf(nc, "PathFrac", inds, dparams)
-
-    rootingdepth = readnetcdf(nc, "RootingDepth", inds, dparams)
-    rootdistpar = readnetcdf(nc, "rootdistpar", inds, dparams)
-    capscale = readnetcdf(nc, "CapScale", inds, dparams)
-    et_reftopot = readnetcdf(nc, "et_reftopot", inds, dparams)
-
-    # only read Sl, Swood and Kext if LAI attribute (ini file)
-    sl = readnetcdf(nc, "Sl", inds, dparams)
-    swood = readnetcdf(nc, "Swood", inds, dparams)
-    kext = readnetcdf(nc, "Kext", inds, dparams)
-    # otherwise SBM needs EoverR, Cmax and CanopyGapFraction
-
     #TODO: store c, kvfrac in staticmaps.nc start at index 1
     c = fill(dparams["c"], (maxlayers, n))
     kvfrac = fill(dparams["kvfrac"], (maxlayers, n))
@@ -215,9 +229,29 @@ function initialize(staticmaps_path, leafarea_path)
         end
     end
 
-    # set in inifile? Also type (monthly, daily, hourly) as part of netcdf variable attribute?
-    # in original inifile: LAI=staticmaps/clim/LAI,monthlyclim,1.0,1
-    lai_clim = NCDataset(leafarea_path) #TODO:include LAI climatology in update() vertical SBM model
+    # fraction open water and compacted area (land cover)
+    waterfrac = readnetcdf(nc, "WaterFrac", inds, dparams)
+    pathfrac = readnetcdf(nc, "PathFrac", inds, dparams)
+
+    # vegetation parameters
+    rootingdepth = readnetcdf(nc, "RootingDepth", inds, dparams)
+    rootdistpar = readnetcdf(nc, "rootdistpar", inds, dparams)
+    capscale = readnetcdf(nc, "CapScale", inds, dparams)
+    et_reftopot = readnetcdf(nc, "et_reftopot", inds, dparams)
+    # cmax, e_r, canopygapfraction only required when lai climatoly not provided
+    cmax = readnetcdf(nc, "Cmax", inds, dparams)
+    e_r = readnetcdf(nc, "EoverR", inds, dparams)
+    canopygapfraction = readnetcdf(nc, "CanopyGapFraction", inds, dparams)
+
+    # if lai climatology provided use sl, swood and kext to calculate cmax
+    if isnothing(leafarea_path) == false
+        sl = readnetcdf(nc, "Sl", inds, dparams)
+        swood = readnetcdf(nc, "Swood", inds, dparams)
+        kext = readnetcdf(nc, "Kext", inds, dparams)
+        # set in inifile? Also type (monthly, daily, hourly) as part of netcdf variable attribute?
+        # in original inifile: LAI=staticmaps/clim/LAI,monthlyclim,1.0,1
+        lai_clim = NCDataset(leafarea_path) #TODO:include LAI climatology in update() vertical SBM model
+    end
 
     sbm = Vector{SBM}(undef, n)
     for i = 1:n
@@ -265,6 +299,9 @@ function initialize(staticmaps_path, leafarea_path)
             kext = kext[i],
             c = c[1:nlayers, i],
             lai = 1.0,
+            cmax = cmax[i],
+            canopygapfraction = canopygapfraction[i],
+            e_r = e_r[i],
         )
 
     end
@@ -607,6 +644,9 @@ function update(sbm::SBM)
         swood = sbm.swood,
         kext = sbm.kext,
         c = sbm.c,
+        e_r = sbm.e_r,
+        cmax = cmax,
+        canopygapfraction = canopygapfraction,
         lai = lai,
         canopystorage = canopystorage,
         snow = snow,
