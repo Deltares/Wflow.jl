@@ -5,3 +5,12 @@
     @test isbits(param)
     @test param.tt ≈ 1.2999999523162842
 end
+
+tomlpath = joinpath(@__DIR__, "config.toml")
+config = Wflow.Config(TOML.parsefile(tomlpath))
+tomldir = dirname(tomlpath)
+
+sbm = Wflow.initialize(
+    joinpath(tomldir, config.input.staticmaps),
+    joinpath(tomldir, config.input.leafarea)
+)

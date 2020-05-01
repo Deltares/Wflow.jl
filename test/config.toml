@@ -1,6 +1,7 @@
 # This is an example TOML configuration file. It is used to test the wflow configuration
 # features, and can also be used to work towards an example of what we want the
 # configuration file to look like.
+# Relative file paths are interpreted as being relative to this TOML file.
 # TOML documentation: https://github.com/toml-lang/toml
 
 casename = "testcase"
@@ -9,6 +10,8 @@ casename = "testcase"
 [input]
 starttime = 2000-01-01T00:00:00Z
 endtime = 2000-02-01T00:00:00Z
+staticmaps = "data/staticmaps-moselle.nc"
+leafarea = "data/lai_clim-moselle.nc"
 
 [output]
 path = "specified_output.nc"

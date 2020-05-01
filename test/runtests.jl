@@ -10,7 +10,8 @@ using UnPack
 using Wflow
 
 # ensure test data is present
-const datadir = joinpath(@__DIR__, "data")
+testdir = @__DIR__
+datadir = joinpath(testdir, "data")
 isdir(datadir) || mkdir(datadir)
 
 "Download a test data file if it does not already exist"
