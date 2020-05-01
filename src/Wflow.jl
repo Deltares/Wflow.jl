@@ -17,5 +17,6 @@ include("sbm_model.jl")
 include("subsurface_flow.jl")
 include("vertical_process.jl")
 include("utils.jl")
+include("model.jl")
 
 end # module
