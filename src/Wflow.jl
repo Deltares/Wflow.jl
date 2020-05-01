@@ -11,6 +11,7 @@ include("config.jl")
 include("kinematic_wave.jl")
 include("sbm.jl")
 include("sbm_model.jl")
+include("subsurface_flow.jl")
 include("vertical_process.jl")
 include("utils.jl")
 

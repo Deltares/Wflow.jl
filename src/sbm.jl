@@ -74,11 +74,11 @@ Base.@kwdef struct SBM{T,N,M}
 end
 
 """
-    statenames()
+    statenames(::Type{SBM})
 
 Returns Array{Symbol,1} for extracting model state fields from SBM struct.
 """
-function statenames()
+function statenames(::Type{SBM})
 
     # depends on ini file settings (optional: glaciers, snow, irrigation)
     states = [:satwaterdepth, :snow, :tsoil, :ustorelayerdepth, :snowwater, :canopystorage]

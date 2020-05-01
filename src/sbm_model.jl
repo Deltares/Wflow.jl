@@ -31,7 +31,8 @@ dparams = Dict(
     "CanopyGapFraction" => 0.1,
     "EoverR" => 0.1,
     "et_reftopot" => 1.0,
-    "kvfrac" => 1.0,
+    "KsatVerFrac" => 1.0,
+    "KsatHorFrac" => 1.0,
 )
 
 """
@@ -106,10 +107,12 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
     maxleakage = readnetcdf(nc, "MaxLeakage", inds, dparams, transp = trsp)
     #TODO: store c, kvfrac in staticmaps.nc start at index 1
     c = fill(dparams["c"], (maxlayers, n))
-    kvfrac = fill(dparams["kvfrac"], (maxlayers, n))
+    kvfrac = fill(dparams["KsatVerFrac"], (maxlayers, n))
     for i in [0:1:maxlayers-1;]
         if string("c_", i) in keys(nc)
-            c[i+1, :] = trsp ? Float64.(permutedims(nc[string("c_", i)][:])[inds]) : Float64.(nc[string("c_", i)][:][inds])
+            c[i+1, :] =
+                trsp ? Float64.(permutedims(nc[string("c_", i)][:])[inds]) :
+                Float64.(nc[string("c_", i)][:][inds])
         else
             @warn(string(
                 "c_",
@@ -118,14 +121,16 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
                 dparams["c"],
             ))
         end
-        if string("kvfrac_", i) in keys(nc)
-            kvfrac[i+1, :] = trsp ? Float64.(permutedims(nc[string("kvfrac_", i)][:])[inds]) : Float64.(nc[string("kvfrac_", i)][:][inds])
+        if string("KsatVerFrac_", i) in keys(nc)
+            kvfrac[i+1, :] = trsp ?
+                Float64.(permutedims(nc[string("KsatVerFrac_", i)][:])[inds]) :
+                Float64.(nc[string("KsatVerFrac_", i)][:][inds])
         else
             @warn(string(
-                "kvfrac_",
+                "KsatVerFrac_",
                 i,
                 " not found, set to default value ",
-                dparams["kvfrac"],
+                dparams["KsatVerFrac"],
             ))
         end
     end
@@ -207,6 +212,25 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
         )
 
     end
+
+    # lateral part for sbm
+    khfrac = readnetcdf(nc, "KsatHorFrac", inds, dparams, transp = trsp)
+    βₗ = trsp ? Float64.(permutedims(nc["Slope"][:])[inds]) : Float64.(nc["Slope"][:][inds])
+    k₀ = khfrac .* kv
+    dl = zeros(n)
+    dw = zeros(n)
+    f = zeros(n)
+
+    ssf = SubSurfaceFlow{Float64, n}(
+        k₀ = k₀,
+        f = f,
+        soilthickness = soilthickness,
+        θₑ = θₛ - θᵣ,
+        Δt = Δt,
+        βₗ = βₗ,
+        dl = dl,
+        dw = dw,
+            )
 
     return sbm
 
