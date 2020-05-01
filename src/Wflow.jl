@@ -10,6 +10,7 @@ using Statistics
 include("config.jl")
 include("kinematic_wave.jl")
 include("sbm.jl")
+include("sbm_model.jl")
 include("vertical_process.jl")
 include("utils.jl")
 

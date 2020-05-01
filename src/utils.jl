@@ -18,3 +18,33 @@ function lattometres(lat::Float64)
 
     return longlen, latlen
 end
+
+"""
+    readnetcdf(nc, var, inds, dpars)
+
+Read parameter `var` from NetCDF file `nc` for indices `inds`. If `var` is not
+available, a default value based on dict 'dpars' is returned.
+"""
+function readnetcdf(nc, var, inds, dpars)
+    if haskey(nc, var)
+        @info(string("read parameter ", var))
+        Float64.(nc[var][:][inds])
+    else
+        @warn(string(var, " not found, set to default value ", dpars[var]))
+        fill(dpars[var], length(inds))
+    end
+end
+
+"""
+    set_layerthickness(d::Float64, sl::SVector)
+
+Calculate actual soil thickness of layers based on a reference depth (e.g. soil depth or water table depth) `d`,
+and a SVector `sl` with cumulative soil depth starting at soil surface (0).
+"""
+function set_layerthickness(d::Float64, sl::SVector)
+    act_d = sl[sl.<d]
+    if d - act_d[end] > 0
+        push!(act_d, d)
+    end
+    diff(act_d)
+end
