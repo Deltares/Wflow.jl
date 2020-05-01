@@ -217,13 +217,13 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
     khfrac = readnetcdf(nc, "KsatHorFrac", inds, dparams, transp = trsp)
     βₗ = trsp ? Float64.(permutedims(nc["Slope"][:])[inds]) : Float64.(nc["Slope"][:][inds])
     k₀ = khfrac .* kv
-    dl = zeros(n)
-    dw = zeros(n)
-    f = zeros(n)
+    dl = fill(1000.0, n) # TODO: generate dl, now dummy value
+    dw = fill(1000.0, n) # TODO: generate dw, now dummy value
 
     ssf = SubSurfaceFlow{Float64, n}(
         k₀ = k₀,
-        f = f,
+        f = getfield.(sbm, :f),
+        zi = getfield.(sbm, :zi),
         soilthickness = soilthickness,
         θₑ = θₛ - θᵣ,
         Δt = Δt,
@@ -232,6 +232,6 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
         dw = dw,
             )
 
-    return sbm
+    return sbm, ssf
 
 end
