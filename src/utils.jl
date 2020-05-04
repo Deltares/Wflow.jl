@@ -25,10 +25,11 @@ end
 Read parameter `var` from NetCDF file `nc` for indices `inds`. If `var` is not
 available, a default value based on dict 'dpars' is returned.
 """
-function readnetcdf(nc, var, inds, dpars; transp=false)
+function readnetcdf(nc, var, inds, dpars; transp = false)
     if haskey(nc, var)
         @info(string("read parameter ", var))
-        ncvar = transp ? Float64.(permutedims(nc[var][:])[inds]) : Float64.(nc[var][:][inds])
+        ncvar = transp ? Float64.(permutedims(nc[var][:])[inds]) :
+            Float64.(nc[var][:][inds])
     else
         @warn(string(var, " not found, set to default value ", dpars[var]))
         ncvar = fill(dpars[var], length(inds))
@@ -47,4 +48,44 @@ function set_layerthickness(d::Float64, sl::SVector)
         push!(act_d, d)
     end
     diff(act_d)
+end
+
+"""
+    detdrainlength(ldd, xl, yl)
+
+Determines the drainaige length for a non square grid. Input `ldd` (drainage network), `xl` (length of cells in x direction),
+`yl` (length of cells in y direction). Output is drainage length.
+"""
+function detdrainlength(ldd, xl, yl)
+    # take into account non-square cells
+    # if ldd is 8 or 2 use ylength
+    # if ldd is 4 or 6 use xlength
+    if ldd == 2 || ldd ==  8
+        yl
+    elseif ldd == 4 || ldd == 6
+        xl
+    else
+        sqrt(xl^2 + yl^2)
+    end
+end
+
+"""
+    detdrainwidth(ldd, xl, yl)
+
+Determines the drainaige width for a non square grid. Input `ldd` (drainage network), `xl` (length of cells in x direction),
+`yl` (length of cells in y direction). Output is drainage width.
+"""
+
+function detdrainwidth(ldd, xl, yl)
+    # take into account non-square cells
+    # if ldd is 8 or 2 use xlength
+    # if ldd is 4 or 6 use ylength
+    slantwidth = (xl + yl) * 0.5
+    if ldd == 2 || ldd == 8
+        xl
+    elseif ldd == 4 || ldd == 6
+        yl
+    else
+        slantwidth
+    end
 end

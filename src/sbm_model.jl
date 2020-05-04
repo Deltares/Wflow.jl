@@ -66,16 +66,10 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
         nomissing(nc["wflow_river"][:][inds], 0)
     riverwidth = trsp ? Float64.(permutedims(nc["wflow_riverwidth"][:])[inds]) :
         Float64.(nc["wflow_riverwidth"][:][inds])
-    ldd =
-        trsp ? permutedims(nc["wflow_ldd"][:])[inds] : nc["wflow_ldd"][:][inds]
-    if "wflow_riverlength" in keys(nc)
-        riverlength =
-            trsp ? Float64.(permutedims(nc["wflow_riverlength"][:])[inds]) :
-            Float64.(nc["wflow_riverlength"][:][inds])
-    else
-        @warn("wflow_riverlength not found, riverlength based on ldd...")
-        # TODO calculate river based on ldd
-    end
+    riverlength =
+        trsp ? Float64.(permutedims(nc["wflow_riverlength"][:])[inds]) :
+        Float64.(nc["wflow_riverlength"][:][inds])
+
 
     # read x, y coordinates and calculate cell length [m]
     y_nc = "y" in keys(nc.dim) ? nomissing(nc["y"][:]) : nomissing(nc["lat"][:])
@@ -160,16 +154,19 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
         lai_clim = NCDataset(leafarea_path) #TODO:include LAI climatology in update() vertical SBM model
     end
 
+    xl = fill(mv, n)
+    yl = fill(mv, n)
+
     sbm = Vector{SBM}(undef, n)
     for i = 1:n
         act_thickl = set_layerthickness(soilthickness[i], sumlayers)
         nlayers = length(act_thickl)
         s_layers = pushfirst(cumsum(SVector{nlayers,Float64}(act_thickl)), 0.0)
 
-        xl = sizeinmetres ? cellength : lattometres(y[i])[1] * cellength
-        yl = sizeinmetres ? cellength : lattometres(y[i])[2] * cellength
+        xl[i] = sizeinmetres ? cellength : lattometres(y[i])[1] * cellength
+        yl[i] = sizeinmetres ? cellength : lattometres(y[i])[2] * cellength
         riverfrac = Bool(river[i]) ?
-            min((riverlength[i] * riverwidth[i]) / (xl * yl), 1.0) : 0.0
+            min((riverlength[i] * riverwidth[i]) / (xl[i] * yl[i]), 1.0) : 0.0
 
         sbm[i] = SBM{Float64,nlayers,nlayers + 1}(
             maxlayers = maxlayers,
@@ -213,14 +210,22 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
 
     end
 
-    # lateral part for sbm
+    # lateral part sbm
     khfrac = readnetcdf(nc, "KsatHorFrac", inds, dparams, transp = trsp)
-    βₗ = trsp ? Float64.(permutedims(nc["Slope"][:])[inds]) : Float64.(nc["Slope"][:][inds])
+    βₗ = trsp ? Float64.(permutedims(nc["Slope"][:])[inds]) :
+        Float64.(nc["Slope"][:][inds])
+    ldd =
+        trsp ? permutedims(nc["wflow_ldd"][:])[inds] : nc["wflow_ldd"][:][inds]
     k₀ = khfrac .* kv
-    dl = fill(1000.0, n) # TODO: generate dl, now dummy value
-    dw = fill(1000.0, n) # TODO: generate dw, now dummy value
+    dl = fill(mv, n)
+    dw = fill(mv, n)
 
-    ssf = SubSurfaceFlow{Float64, n}(
+    for i = 1:n
+        dl[i] = detdrainlength(ldd[i], xl[i], yl[i])
+        dw[i] = detdrainwidth(ldd[i], xl[i], yl[i])
+    end
+
+    ssf = SubSurfaceFlow{Float64,n}(
         k₀ = k₀,
         f = getfield.(sbm, :f),
         zi = getfield.(sbm, :zi),
@@ -230,7 +235,7 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
         βₗ = βₗ,
         dl = dl,
         dw = dw,
-            )
+    )
 
     return sbm, ssf
 

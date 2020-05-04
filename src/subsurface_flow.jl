@@ -8,7 +8,7 @@ Base.@kwdef struct SubSurfaceFlow{T,N}
     Δt::Dates.Second
     βₗ::Vector{T}               # Slope [m m⁻¹]
     dl::Vector{T}               # Drain length [mm]
-    dw::Vector{T}                # Flow width [mm]
+    dw::Vector{T}               # Flow width [mm]
     zi::Vector{T} = fill(mv, N)              # Pseudo-water table depth [mm] (top of the saturated zone)
     exfiltwater::Vector{T} = fill(mv, N)
     ssfin::Vector{T} = fill(mv, N)
