@@ -216,7 +216,7 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
         Float64.(nc["Slope"][:][inds])
     ldd =
         trsp ? permutedims(nc["wflow_ldd"][:])[inds] : nc["wflow_ldd"][:][inds]
-    k₀ = khfrac .* kv
+    kh₀ = khfrac .* kv
     dl = fill(mv, n)
     dw = fill(mv, n)
 
@@ -226,17 +226,28 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
     end
 
     ssf = SubSurfaceFlow{Float64,n}(
-        k₀ = k₀,
+        kh₀ = kh₀,
         f = getfield.(sbm, :f),
         zi = getfield.(sbm, :zi),
         soilthickness = soilthickness,
         θₑ = θₛ - θᵣ,
         Δt = Δt,
         βₗ = βₗ,
-        dl = dl,
-        dw = dw,
+        dl = dl * 1000.0,
+        dw = dw * 1000.0,
     )
 
-    return sbm, ssf
+    dag = flowgraph(ldd, inds, Wflow.pcrdir)
+    starttime = DateTime(2000,1,1)
+
+    # create a Model
+    model = Model(
+        dag,
+        ssf,
+        sbm,
+        Clock(starttime, 1, Δt),
+        nothing,
+        nothing,
+    )
 
 end

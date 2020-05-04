@@ -275,7 +275,7 @@ function update(sbm::SBM)
         if n_usl == 1
             # Check if groundwater level lies below the surface
             soilevapunsat =
-                sbm.zi > 0 ? potsoilevap * min(1.0, usld[k] / (sbm.zi * (sbm.θₛ - sbm.θᵣ))) :
+                sbm.zi > 0 ? potsoilevap * min(1.0, usld[1] / (sbm.zi * (sbm.θₛ - sbm.θᵣ))) :
                 0.0
         else
             # In case first layer contains no saturated storage
@@ -293,7 +293,7 @@ function update(sbm::SBM)
         soilevapsat = 0.0
     else
         if n_usl == 1
-            soilevapsat = potsoilevap * min(1.0, (usl[1] - sbm.zi) / usl[k])
+            soilevapsat = potsoilevap * min(1.0, (usl[1] - sbm.zi) / usl[1])
             soilevapsat = min(soilevapsat, (usl[1] - sbm.zi) * (sbm.θₛ - sbm.θᵣ))
         else
             soilevapsat = 0.0

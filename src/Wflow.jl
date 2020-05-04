@@ -9,6 +9,7 @@ using Statistics
 
 include("config.jl")
 include("kinematic_wave.jl")
+include("model.jl")
 include("sbm.jl")
 include("sbm_model.jl")
 include("subsurface_flow.jl")
