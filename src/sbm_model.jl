@@ -89,7 +89,7 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
     # soil parameters
     θₛ = readnetcdf(nc, "thetaS", inds, dparams, transp = trsp)
     θᵣ = readnetcdf(nc, "thetaR", inds, dparams, transp = trsp)
-    kv = readnetcdf(nc, "KsatVer", inds, dparams, transp = trsp)
+    kv₀ = readnetcdf(nc, "KsatVer", inds, dparams, transp = trsp)
     m = readnetcdf(nc, "M", inds, dparams, transp = trsp)
     hb = readnetcdf(nc, "AirEntryPressure", inds, dparams, transp = trsp)
     soilthickness =
@@ -181,7 +181,7 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
             cf_soil = cf_soil[i],
             θₛ = θₛ[i],
             θᵣ = θᵣ[i],
-            kv = kv[i],
+            kv₀ = kv₀[i],
             kvfrac = kvfrac[1:nlayers, i],
             m = m[i],
             hb = hb[i],
@@ -216,7 +216,7 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
         Float64.(nc["Slope"][:][inds])
     ldd =
         trsp ? permutedims(nc["wflow_ldd"][:])[inds] : nc["wflow_ldd"][:][inds]
-    kh₀ = khfrac .* kv
+    kh₀ = khfrac .* kv₀
     dl = fill(mv, n)
     dw = fill(mv, n)
 

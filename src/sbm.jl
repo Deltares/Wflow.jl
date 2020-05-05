@@ -19,12 +19,12 @@ Base.@kwdef struct SBM{T,N,M}
     θₛ::T                       # Saturated water content (porosity) [mm mm⁻¹]
     θᵣ::T                       # Residual water content [mm mm⁻¹]
     hb::T                       # Air entry pressure [cm] of soil (Brooks-Corey)
-    kv::T                       # Vertical hydraulic conductivity [mm Δt⁻¹]
-    kvfrac::SVector{N,T}        # Muliplication factor [-] applied to kv (vertical flow)
+    kv₀::T                      # Vertical hydraulic conductivity [mm Δt⁻¹] at soil surface
+    kvfrac::SVector{N,T}        # Muliplication factor [-] applied to kv_z (vertical flow)
     maxleakage::T               # Maximum leakage [mm/Δt] from saturated zone
     c::SVector{N,T}             # Brooks-Corey power coefﬁcient [-] for each soil layer
     m::T                        # Parameter [mm] controlling f
-    f::T = (θₛ - θᵣ) / m        # A scaling parameter [mm⁻¹] (controls exponential decline of kv)
+    f::T = (θₛ - θᵣ) / m        # A scaling parameter [mm⁻¹] (controls exponential decline of kv₀)
     capscale::T                 # Parameter [mm] controlling capilary rise
     rootdistpar::T              # Controls how roots are linked to water table [-]
     rootingdepth::T             # Rooting depth [mm]
@@ -232,7 +232,7 @@ function update(sbm::SBM)
     # (ast) and the updated unsaturated storage for each soil layer.
     if transfermethod == 1 && sbm.maxlayers == 1
         ustorelayerdepth = sbm.ustorelayerdepth[1] + infiltsoilpath
-        kv_z = sbm.kvfrac[1] * sbm.kv * exp(-sbm.f * sbm.zi)
+        kv_z = sbm.kvfrac[1] * sbm.kv₀ * exp(-sbm.f * sbm.zi)
         ustorelayerdepth, ast = unsatzone_flow_sbm(
             ustorelayerdepth,
             sbm.soilwatercapacity,
@@ -246,7 +246,7 @@ function update(sbm::SBM)
     else
         for m = 1:n_usl
             l_sat = usl[m] * (sbm.θₛ - sbm.θᵣ)
-            kv_z = sbm.kvfrac[m] * sbm.kv * exp(-sbm.f * z[m])
+            kv_z = sbm.kvfrac[m] * sbm.kv₀ * exp(-sbm.f * z[m])
             ustorelayerdepth = m == 1 ? sbm.ustorelayerdepth[m] + infiltsoilpath :
                 sbm.ustorelayerdepth[m] + ast
             ustorelayerdepth, ast = unsatzone_flow_layer(
@@ -352,7 +352,7 @@ function update(sbm::SBM)
     excesswatersoil = max(soilinf - actinfiltsoil, 0.0)
     excesswaterpath = max(pathinf - actinfiltpath, 0.0)
 
-    ksat = sbm.kvfrac[n_usl] * sbm.kv * exp(-sbm.f * sbm.zi)
+    ksat = sbm.kvfrac[n_usl] * sbm.kv₀ * exp(-sbm.f * sbm.zi)
     ustorecapacity = sbm.soilwatercapacity - sbm.satwaterdepth - sum(usld)
     maxcapflux = max(0.0, min(ksat, actevapustore, ustorecapacity, sbm.satwaterdepth))
 
@@ -374,7 +374,7 @@ function update(sbm::SBM)
         actcapflux = actcapflux + toadd
     end
 
-    deepksat = sbm.kv * exp(-sbm.f * sbm.soilthickness)
+    deepksat = sbm.kv₀ * exp(-sbm.f * sbm.soilthickness)
     deeptransfer = min(sbm.satwaterdepth, deepksat)
     actleakage = max(0.0, min(sbm.maxleakage, deeptransfer))
 
@@ -399,7 +399,7 @@ function update(sbm::SBM)
         cf_soil = sbm.cf_soil,
         θₛ = sbm.θₛ,
         θᵣ = sbm.θᵣ,
-        kv = sbm.kv,
+        kv₀ = sbm.kv₀,
         kvfrac = sbm.kvfrac,
         m = sbm.m,
         hb = sbm.hb,
