@@ -225,7 +225,7 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
         dw[i] = detdrainwidth(ldd[i], xl[i], yl[i])
     end
 
-    ssf = SubSurfaceFlow{Float64,n}(
+    ssf = LateralSSF{Float64,n}(
         kh₀ = kh₀,
         f = getfield.(sbm, :f),
         zi = getfield.(sbm, :zi),
@@ -238,16 +238,9 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
     )
 
     dag = flowgraph(ldd, inds, Wflow.pcrdir)
-    starttime = DateTime(2000,1,1)
+    starttime = DateTime(2000, 1, 1)
 
     # create a Model
-    model = Model(
-        dag,
-        ssf,
-        sbm,
-        Clock(starttime, 1, Δt),
-        nothing,
-        nothing,
-    )
+    model = Model(dag, ssf, sbm, Clock(starttime, 1, Δt), nothing, nothing)
 
 end

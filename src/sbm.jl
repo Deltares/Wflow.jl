@@ -103,6 +103,7 @@ function update(sbm::SBM)
     nrpaddyirri = 0
     ust = false
     Δt = Second(Day(1))
+    basetimestep = Second(Day(1))
     #end dummpy variables
 
     if lai
@@ -358,8 +359,8 @@ function update(sbm::SBM)
 
     if sbm.zi > rootingdepth
         capfluxscale =
-            sbm.capscale / (sbm.capscale + sbm.zi - rootingdepth) * Δt /
-            basetimestep
+            sbm.capscale / (sbm.capscale + sbm.zi - rootingdepth) * Float64(Δt.value) /
+            Float64(basetimestep.value)
     else
         capfluxscale = 0.0
     end
