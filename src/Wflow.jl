@@ -8,6 +8,7 @@ using StaticArrays
 using Statistics
 
 include("config.jl")
+include("horizontal_process.jl")
 include("kinematic_wave.jl")
 include("model.jl")
 include("sbm.jl")

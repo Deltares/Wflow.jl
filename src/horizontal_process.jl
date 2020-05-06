@@ -1,5 +1,19 @@
 
-function kinematic_wave_ssf(ssfin, ssfₜ₋₁, ziₜ₋₁, r, kh₀, β, θₑ, f, d, Δt, Δx, dw, ssfmax)
+function kinematic_wave_ssf(
+    ssfin,
+    ssfₜ₋₁,
+    ziₜ₋₁,
+    r,
+    kh₀,
+    β,
+    θₑ,
+    f,
+    d,
+    Δt,
+    Δx,
+    dw,
+    ssfmax,
+)
 
     ϵ = 1.0e-3
     max_iters = 3000
@@ -18,14 +32,17 @@ function kinematic_wave_ssf(ssfin, ssfₜ₋₁, ziₜ₋₁, r, kh₀, β, θ�
         # Term of the continuity equation for Newton-Raphson iteration for iteration 1
         # because celerity Cn is depending on zi, the increase or decrease of zi is moved to the recharge term of the continuity equation
         # then (1./Cn)*ssfₜ₋₁ can be replaced with (1./Cn)*ssf, and thus celerity and lateral flow rate ssf are then in line
-        c = (Δt / Δx) * ssfin + (1.0 / Cn) * ssf + Δt * (r - (ziₜ₋₁ - zi) *  θₑ * dw)
+        c =
+            (Δt / Δx) * ssfin +
+            (1.0 / Cn) * ssf +
+            Δt * (r - (ziₜ₋₁ - zi) * θₑ * dw)
 
         # Continuity equation of which solution should be zero
         fQ = (Δt / Δx) * ssf + (1.0 / Cn) * ssf - c
         # Derivative of the continuity equation w.r.t. Q_out for iteration 1
-        dfQ = (Δt / Δx) +  1.0 / Cn
+        dfQ = (Δt / Δx) + 1.0 / Cn
         # Update lateral outflow estimate ssf (Q_out) for iteration 1
-        ssf =  ssf - (fQ / dfQ)
+        ssf = ssf - (fQ / dfQ)
         if isnan(ssf)
             ssf = 0.0
         end
@@ -41,23 +58,26 @@ function kinematic_wave_ssf(ssfin, ssfₜ₋₁, ziₜ₋₁, r, kh₀, β, θ�
             # Term of the continuity equation for given Newton-Raphson iteration m
             # because celerity Cn is depending on zi, the increase or decrease of zi is moved to the recharge term of the continuity equation
             # then (1./Cn)*ssfₜ₋₁ can be replaced with (1./Cn)*ssf, and thus celerity and lateral flow rate ssf are then in line
-            c = (Δt / Δx) * ssfin + (1.0 / Cn) * ssf + Δt * (r - (ziₜ₋₁ - zi) * θₑ * dw)
+            c =
+                (Δt / Δx) * ssfin +
+                (1.0 / Cn) * ssf +
+                Δt * (r - (ziₜ₋₁ - zi) * θₑ * dw)
 
             # Continuity equation of which solution should be zero
             fQ = (Δt / Δx) * ssf + (1.0 / Cn) * ssf - c
             # Derivative of the continuity equation w.r.t. Q_out for iteration m+1
-            dfQ = (Δt / Δx) +  1.0 / Cn
+            dfQ = (Δt / Δx) + 1.0 / Cn
             # Update lateral outflow estimate ssf (Q_out) for iteration m+1
-            ssf =  ssf - (fQ / dfQ)
+            ssf = ssf - (fQ / dfQ)
             if isnan(ssf)
-                ssf = 0.
+                ssf = 0.0
             end
             ssf = max(ssf, 1.0e-30)
             count += 1
         end
 
         # Constrain the lateral flow rate ssf
-        ssf =  min(ssf, (ssfmax * dw))
+        ssf = min(ssf, (ssfmax * dw))
         # On the basis of the lateral flow rate, estimate the amount of groundwater level above surface (saturation excess conditions), then rest = negative
         rest = ziₜ₋₁ - (ssfin + r * Δx - ssf) / (dw * Δx) / θₑ
         # In case the groundwater level lies above surface (saturation excess conditions, rest = negative), calculate the exfiltration rate and set groundwater back to zero.
