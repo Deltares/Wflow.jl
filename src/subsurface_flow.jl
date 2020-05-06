@@ -5,7 +5,7 @@ Base.@kwdef struct LateralSSF{T,N}
     f::Vector{T}                            # A scaling parameter [mm⁻¹] (controls exponential decline of kh₀)
     soilthickness::Vector{T}                # Soil thickness [mm]
     θₑ::Vector{T}                           # Effective porosity [-]
-    Δt::Dates.Second                        # model time step [s]
+    Δt::T                                   # model time step [s]
     βₗ::Vector{T}                           # Slope [m m⁻¹]
     dl::Vector{T}                           # Drain length [mm]
     dw::Vector{T}                           # Flow width [mm]
@@ -50,7 +50,7 @@ function update(ssf::LateralSSF, dag, toposort, n)
             ssf.θₑ[v],
             ssf.f[v],
             ssf.soilthickness[v],
-            Float64(ssf.Δt.value),
+            ssf.Δt,
             ssf.dl[v],
             ssf.dw[v],
             ssf.ssfmax[v],

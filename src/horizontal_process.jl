@@ -23,7 +23,7 @@ function kinematic_wave_ssf(
     else
         #initial estimate
         ssf = (ssfₜ₋₁ + ssfin) / 2.0
-        count = 0
+        count = 1
 
         # Estimate zi on the basis of the relation between subsurfacel flow and zi
         zi = log((f * ssf) / (dw * kh₀ * β) + exp(-f * d)) / -f
@@ -49,7 +49,7 @@ function kinematic_wave_ssf(
         ssf = max(ssf, 1.0e-30)
 
         # Start while loop of Newton-Raphson iteration m until continuity equation approaches zero
-        while abs(fQ) > ϵ && count < max_iters
+        while true
             # Estimate zi on the basis of the relation between lateral flow rate and groundwater level
             zi = log((f * ssf) / (dw * kh₀ * β) + exp(-f * d)) / -f
             # Reciprocal of derivative delta Q/ delta z_i, constrained w.r.t. neff on the basis of the continuity equation
@@ -73,6 +73,9 @@ function kinematic_wave_ssf(
                 ssf = 0.0
             end
             ssf = max(ssf, 1.0e-30)
+            if (abs(fQ) <= ϵ) || (count >= max_iters)
+                break
+            end
             count += 1
         end
 
@@ -84,7 +87,7 @@ function kinematic_wave_ssf(
         exfilt = min(rest, 0.0) * -θₑ
         zi = max(0, zi)
 
-        return ssf, zi, exfilt
+        return ssf, zi, exfilt, count, fQ
 
     end
 end

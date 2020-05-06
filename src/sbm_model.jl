@@ -231,7 +231,7 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
         zi = getfield.(sbm, :zi),
         soilthickness = soilthickness,
         θₑ = θₛ - θᵣ,
-        Δt = Δt,
+        Δt = 1.0,
         βₗ = βₗ,
         dl = dl * 1000.0,
         dw = dw * 1000.0,
