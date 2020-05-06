@@ -14,7 +14,7 @@ function update(model, toposort, n)
         model.lateral.recharge[i] = model.vertical[i].recharge  * model.lateral.dl[i]
         model.lateral.zi[i] = model.vertical[i].zi
     end
-    model.lateral = Wflow.update(model.lateral, model.network, toposort, n)
+    Wflow.update(model.lateral, model.network, toposort, n)
     # update the clock
     model.clock.iteration += 1
     model.clock.time += model.clock.Δt

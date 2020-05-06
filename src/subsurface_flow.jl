@@ -32,15 +32,15 @@ end
 
 function update(ssf::LateralSSF, dag, toposort, n)
 
-    ssf = zeros(n)
+    ssfn = zeros(n)
     zi = zeros(n)
     exfiltwater = zeros(n)
 
     for v in toposort
         upstream_nodes = inneighbors(dag, v)
         ssfin =
-            isempty(upstream_nodes) ? 0.0 : sum(ssf[i] for i in upstream_nodes)
-        ssf[v], zi[v], exfiltwater[v] = kinematic_wave_ssf(
+            isempty(upstream_nodes) ? 0.0 : sum(ssfn[i] for i in upstream_nodes)
+        ssfn[v], zi[v], exfiltwater[v] = kinematic_wave_ssf(
             ssfin,
             ssf.ssf[v],
             ssf.zi[v],
@@ -68,7 +68,7 @@ function update(ssf::LateralSSF, dag, toposort, n)
         zi = ssf.zi,
         exfiltwater = exfiltwater,
         recharge = ssf.recharge,
-        ssf = ssf,
+        ssf = ssfn,
     )
 
 end

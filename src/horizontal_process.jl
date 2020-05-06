@@ -51,7 +51,7 @@ function kinematic_wave_ssf(
         # Start while loop of Newton-Raphson iteration m until continuity equation approaches zero
         while abs(fQ) > ϵ && count < max_iters
             # Estimate zi on the basis of the relation between lateral flow rate and groundwater level
-            zi = log((f * ssf) / (w * kh₀ * β) + exp(-f * d)) / -f
+            zi = log((f * ssf) / (dw * kh₀ * β) + exp(-f * d)) / -f
             # Reciprocal of derivative delta Q/ delta z_i, constrained w.r.t. neff on the basis of the continuity equation
             Cn = (kh₀ * exp(-f * zi) * β) / θₑ
 
