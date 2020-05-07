@@ -1,5 +1,3 @@
-const mv = NaN
-
 Base.@kwdef struct LateralSSF{T,N}
     kh₀::Vector{T}                          # Horizontal hydraulic conductivity at soil surface [mm Δt⁻¹]
     f::Vector{T}                            # A scaling parameter [mm⁻¹] (controls exponential decline of kh₀)
