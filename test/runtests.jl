@@ -7,14 +7,21 @@ using LightGraphs
 using Pkg.TOML
 
 # ensure test data is present
-datadir = joinpath(@__DIR__, "data")
+const datadir = joinpath(@__DIR__, "data")
 isdir(datadir) || mkdir(datadir)
-staticmaps_rhine_path = joinpath(datadir, "staticmaps-rhine.nc")
-isfile(staticmaps_rhine_path) || download("https://github.com/visr/wflow-artifacts/releases/download/v0.1.0/staticmaps.nc", staticmaps_rhine_path)
-staticmaps_moselle_path = joinpath(datadir, "staticmaps-moselle.nc")
-isfile(staticmaps_moselle_path) || download("https://github.com/visr/wflow-artifacts/releases/download/v0.2.0/staticmaps.nc", staticmaps_moselle_path)
-leafarea_moselle_path = joinpath(datadir, "lai_clim-moselle.nc")
-isfile(leafarea_moselle_path) || download("https://github.com/visr/wflow-artifacts/releases/download/v0.2.0/lai_clim.nc", leafarea_moselle_path)
+
+"Download a test data file if it does not already exist"
+function testdata(version, source_filename, target_filename)
+    target_path = joinpath(datadir, target_filename)
+    base_url = "https://github.com/visr/wflow-artifacts/releases/download"
+    url = joinpath(base_url, string(version), source_filename)
+    isfile(target_path) || download(url, target_path)
+    return target_path
+end
+
+staticmaps_rhine_path = testdata(v"0.1", "staticmaps.nc", "staticmaps-rhine.nc")
+staticmaps_moselle_path = testdata(v"0.2", "staticmaps.nc", "staticmaps-moselle.nc")
+leafarea_moselle_path = testdata(v"0.1", "lai_clim.nc", "lai_clim-moselle.nc")
 
 ## run all tests
 
