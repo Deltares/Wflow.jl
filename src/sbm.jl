@@ -298,9 +298,10 @@ function update_before_lateralflow(sbm::SBM)
             # In case first layer contains no saturated storage
             soilevapunsat =
                 potsoilevap *
-                min(1.0, usld[1] / (usld[1] * ((sbm.θₛ - sbm.θᵣ))))
+                min(1.0, usld[1] / (usl[1] * ((sbm.θₛ - sbm.θᵣ))))
         end
     end
+    usld[1]
     # Ensure that the unsaturated evaporation rate does not exceed the
     # available unsaturated moisture
     soilevapunsat = min(soilevapunsat, usld[1])
