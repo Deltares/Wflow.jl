@@ -43,11 +43,11 @@ function rainfall_interception_gash(
     # large storms P > P_sat
     largestorms = precipitation > p_sat
 
-    iwet = largestorms ? ((1 - canopygapfraction - pt) * p_sat) - cmax :
-        precipitation * (1 - canopygapfraction - pt)
+    iwet = largestorms ? ((1.0 - canopygapfraction - pt) * p_sat) - cmax :
+        precipitation * (1.0 - canopygapfraction - pt)
     isat = largestorms ? (e_r) * (precipitation - p_sat) : 0.0
     idry = largestorms ? cmax : 0.0
-    itrunc = 0
+    itrunc = 0.0
 
     stemflow = pt * precipitation
 
@@ -113,7 +113,7 @@ function acttransp_unsat_sbm(
     if ust
         availcap = ustorelayerdepth * 0.99
     else
-        if usl > 0
+        if usl > 0.0
             availcap = min(1.0, max(0.0, (rootingdepth - sumlayer) / usl))
         else
             availcap = 0.0
@@ -131,29 +131,29 @@ function acttransp_unsat_sbm(
     h4 = 15849.0  # cm (pF 4.2, wilting point)
 
     # According to Brooks-Corey
-    par_lambda = 2 / (c - 3)
+    par_lambda = 2.0 / (c - 3.0)
     if usl > 0.0
         vwc = ustorelayerdepth / usl
     else
         vwc = 0.0
     end
     vwc = max(vwc, 0.0000001)
-    head = hb / (((vwc) / (θₛ - θᵣ))^(1 / par_lambda))  # Note that in the original formula, thetaR is extracted from vwc, but thetaR is not part of the numerical vwc calculation
+    head = hb / (((vwc) / (θₛ - θᵣ))^(1.0 / par_lambda))  # Note that in the original formula, thetaR is extracted from vwc, but thetaR is not part of the numerical vwc calculation
     head = max(head, hb)
 
     # Transform h to a reduction coefficient value according to Feddes et al. (1978).
     # For now: no reduction for head < h2 until following improvement (todo):
     #       - reduction only applied to crops
     if (head <= h1)
-        alpha = 1
+        alpha = 1.0
     elseif (head >= h4)
-        alpha = 0
+        alpha = 0.0
     elseif ((head < h2) & (head > h1))
-        alpha = 1
+        alpha = 1.0
     elseif ((head > h3) & (head < h4))
-        alpha = 1 - (head - h3) / (h4 - h3)
+        alpha = 1.0 - (head - h3) / (h4 - h3)
     else
-        alpha = 1
+        alpha = 1.0
     end
 
     actevapustore = (min(maxextr, restpotevap, ustorelayerdepth)) * alpha

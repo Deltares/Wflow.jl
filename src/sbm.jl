@@ -221,7 +221,7 @@ function update_before_lateralflow(sbm::SBM)
 
     # evap available for soil evaporation and transpiration
     potsoilevap = restevap * canopygapfraction
-    pottrans = restevap * (1 - canopygapfraction)
+    pottrans = restevap * (1.0 - canopygapfraction)
 
     # Calculate the initial capacity of the unsaturated store
     ustorecapacity = sbm.soilwatercapacity - sbm.satwaterdepth - ustoredepth
@@ -291,14 +291,13 @@ function update_before_lateralflow(sbm::SBM)
         #In case only the most upper soil layer contains unsaturated storage
         if n_usl == 1
             # Check if groundwater level lies below the surface
-            soilevapunsat = sbm.zi > 0 ?
+            soilevapunsat = sbm.zi > 0.0 ?
                 potsoilevap * min(1.0, usld[1] / (sbm.zi * (sbm.θₛ - sbm.θᵣ))) :
                 0.0
         else
             # In case first layer contains no saturated storage
             soilevapunsat =
-                potsoilevap *
-                min(1.0, usld[1] / (usl[1] * ((sbm.θₛ - sbm.θᵣ))))
+                potsoilevap * min(1.0, usld[1] / (usl[1] * ((sbm.θₛ - sbm.θᵣ))))
         end
     end
     usld[1]
@@ -352,7 +351,7 @@ function update_before_lateralflow(sbm::SBM)
     #check soil moisture balance per layer
     du = 0.0
     for k = n_usl:-1:1
-        du = max(0, usld[k] - usl[k] * (sbm.θₛ - sbm.θᵣ))
+        du = max(0.0, usld[k] - usl[k] * (sbm.θₛ - sbm.θᵣ))
         usld = setindex(usld, usld[k] - du, k)
         if k > 1
             usld = setindex(usld, usld[k-1] + du, k - 1)
@@ -498,9 +497,11 @@ function update_after_lateralflow(sbm::SBM)
     for k = 1:sbm.nlayers
         if k <= n_usl
 
-            vwc = setindex(vwc,
-                (usld[k] + (sbm.act_thickl[k] - usl[k]) * (sbm.θₛ - sbm.θᵣ)) /
-                usl[k] + sbm.θᵣ, k)
+            vwc = setindex(
+                vwc,
+                (usld[k] + (sbm.act_thickl[k] - usl[k]) * (sbm.θₛ - sbm.θᵣ)) / usl[k] + sbm.θᵣ,
+                k,
+            )
         else
             vwc = setindex(vwc, sbm.θₛ, k)
         end

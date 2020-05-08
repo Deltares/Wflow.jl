@@ -44,7 +44,7 @@ and a SVector `sl` with cumulative soil depth starting at soil surface (0).
 """
 function set_layerthickness(d::Float64, sl::SVector)
     act_d = sl[sl.<d]
-    if d - act_d[end] > 0
+    if d - act_d[end] > 0.0
         push!(act_d, d)
     end
     diff(act_d)
