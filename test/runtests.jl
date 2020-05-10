@@ -5,6 +5,7 @@ using NCDatasets
 using Dates
 using LightGraphs
 using Pkg.TOML
+using Setfield: setproperties
 
 # ensure test data is present
 const datadir = joinpath(@__DIR__, "data")
@@ -30,4 +31,5 @@ leafarea_moselle_path = testdata(v"0.1", "lai_clim.nc", "lai_clim-moselle.nc")
     include("kinematic_wave.jl")
     include("sbm.jl")
     include("vertical_process.jl")
+    # include("run_sbm.jl")
 end
