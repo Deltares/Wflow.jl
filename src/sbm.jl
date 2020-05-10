@@ -105,7 +105,7 @@ end
 function update_before_lateralflow(sbm::SBM)
 
     #start dummy variables (should be generated from model reader and from Config.jl TOML)
-    lai = true
+    do_lai = true
     glacierfrac = false
     modelsnow = true
     soilinfreduction = false
@@ -121,7 +121,7 @@ function update_before_lateralflow(sbm::SBM)
     basetimestep = Second(Day(1))
     #end dummpy variables
 
-    if lai
+    if do_lai
         cmax = sbm.sl * sbm.lai + sbm.swood
         canopygapfraction = exp(-sbm.kext * sbm.lai)
         ewet = (1.0 - exp(-sbm.kext * sbm.lai)) * potevap
