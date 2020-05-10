@@ -300,7 +300,7 @@ function update_before_lateralflow(sbm::SBM)
                 potsoilevap * min(1.0, usld[1] / (usl[1] * ((sbm.θₛ - sbm.θᵣ))))
         end
     end
-    usld[1]
+
     # Ensure that the unsaturated evaporation rate does not exceed the
     # available unsaturated moisture
     soilevapunsat = min(soilevapunsat, usld[1])
@@ -431,9 +431,9 @@ function update_before_lateralflow(sbm::SBM)
         excesswaterpath = excesswaterpath))
 end
 
-function update_after_lateralflow(sbm::SBM)
+function update_after_lateralflow(sbm::SBM, zi, exfiltsatwater)
 
-    usl = set_layerthickness(sbm.zi, sbm.sumlayers)
+    usl = set_layerthickness(zi, sbm.sumlayers)
     n_usl = length(usl)
     # exfiltration from ustore
     usld = copy(sbm.ustorelayerdepth)
@@ -448,7 +448,7 @@ function update_after_lateralflow(sbm::SBM)
 
     runoff = max(
         exfiltustore +
-        sbm.exfiltsatwater +
+        exfiltsatwater +
         sbm.excesswater +
         sbm.infiltexcess +
         sbm.ae_openw_l,
@@ -479,7 +479,7 @@ function update_after_lateralflow(sbm::SBM)
             (max(0.0, sbm.rootingdepth - sbm.sumlayers[k]) / usl[k]) * usld[k]
     end
 
-    rootstore_sat = max(0.0, sbm.rootingdepth - sbm.zi) * (sbm.θₛ - sbm.θᵣ)
+    rootstore_sat = max(0.0, sbm.rootingdepth - zi) * (sbm.θₛ - sbm.θᵣ)
     rootstore = rootstore_sat + rootstore_unsat
     vwc_root = rootstore / sbm.rootingdepth + sbm.θᵣ
     vwc_percroot = (vwc_root / sbm.θₛ) * 100.0

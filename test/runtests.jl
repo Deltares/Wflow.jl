@@ -6,6 +6,8 @@ using Dates
 using LightGraphs
 using Pkg.TOML
 using Setfield: setproperties
+using UnPack
+using StaticArrays
 
 # ensure test data is present
 const datadir = joinpath(@__DIR__, "data")
