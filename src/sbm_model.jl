@@ -225,7 +225,7 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
         dw[i] = detdrainwidth(ldd[i], xl[i], yl[i])
     end
 
-    ssf = LateralSSF{Float64,n}(
+    ssf = LateralSSF{Float64}(
         kh₀ = kh₀,
         f = getfield.(sbm, :f),
         zi = getfield.(sbm, :zi),

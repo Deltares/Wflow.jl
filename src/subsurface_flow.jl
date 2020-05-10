@@ -1,4 +1,4 @@
-Base.@kwdef struct LateralSSF{T,N}
+Base.@kwdef struct LateralSSF{T}
     kh₀::Vector{T}                          # Horizontal hydraulic conductivity at soil surface [mm Δt⁻¹]
     f::Vector{T}                            # A scaling parameter [mm⁻¹] (controls exponential decline of kh₀)
     soilthickness::Vector{T}                # Soil thickness [mm]
@@ -7,9 +7,9 @@ Base.@kwdef struct LateralSSF{T,N}
     βₗ::Vector{T}                           # Slope [m m⁻¹]
     dl::Vector{T}                           # Drain length [mm]
     dw::Vector{T}                           # Flow width [mm]
-    zi::Vector{T} = fill(mv, N)             # Pseudo-water table depth [mm] (top of the saturated zone)
-    exfiltwater::Vector{T} = fill(mv, N)    # Exfiltration [mm]  (groundwater above surface level, saturated excess conditions)
-    recharge::Vector{T} = fill(mv, N)       # Net recharge to saturated store [mm]
+    zi::Vector{T} = fill(mv, length(f))     # Pseudo-water table depth [mm] (top of the saturated zone)
+    exfiltwater::Vector{T} = fill(mv, length(f))  # Exfiltration [mm]  (groundwater above surface level, saturated excess conditions)
+    recharge::Vector{T} = fill(mv, length(f))     # Net recharge to saturated store [mm]
     ssf::Vector{T} =
         ((kh₀ .* βₗ) ./ f) .* (exp.(-f .* zi) - exp.(-f .* soilthickness)) .* dw    # Subsurface flow [mm³ Δt⁻¹]
     ssfmax::Vector{T} = ((kh₀ .* βₗ) ./ f) .* (1.0 .- exp.(-f .* soilthickness))     # Maximum subsurface flow [mm² Δt⁻¹]
@@ -54,7 +54,7 @@ function update(ssf::LateralSSF, dag, toposort, n)
             ssf.ssfmax[v],
         )
     end
-    return LateralSSF{Float64,n}(
+    return LateralSSF{Float64}(
         kh₀ = ssf.kh₀,
         f = ssf.f,
         soilthickness = ssf.soilthickness,
