@@ -157,18 +157,26 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
     xl = fill(mv, n)
     yl = fill(mv, n)
 
-    sbm = Vector{SBM}(undef, n)
+    sbm = Vector{SBM{Float64,maxlayers,maxlayers + 1}}(undef, n)
     for i = 1:n
         act_thickl = set_layerthickness(soilthickness[i], sumlayers)
         nlayers = length(act_thickl)
-        s_layers = pushfirst(cumsum(SVector{nlayers,Float64}(act_thickl)), 0.0)
+        nlayer_diff = maxlayers - nlayers
+        # increase the size to max_nlayers TODO fix in set_layerthickness
+        if nlayer_diff > 0
+            for i in 1:nlayer_diff
+                push!(act_thickl, 0.0)
+            end
+        end
+
+        s_layers = pushfirst!(cumsum(act_thickl), 0.0)
 
         xl[i] = sizeinmetres ? cellength : lattometres(y[i])[1] * cellength
         yl[i] = sizeinmetres ? cellength : lattometres(y[i])[2] * cellength
         riverfrac = Bool(river[i]) ?
             min((riverlength[i] * riverwidth[i]) / (xl[i] * yl[i]), 1.0) : 0.0
 
-        sbm[i] = SBM{Float64,nlayers,nlayers + 1}(
+        sbm[i] = SBM{Float64,maxlayers,maxlayers + 1}(
             maxlayers = maxlayers,
             nlayers = nlayers,
             riverfrac = riverfrac,
@@ -182,7 +190,7 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
             θₛ = θₛ[i],
             θᵣ = θᵣ[i],
             kv₀ = kv₀[i],
-            kvfrac = kvfrac[1:nlayers, i],
+            kvfrac = kvfrac[:, i],
             m = m[i],
             hb = hb[i],
             soilthickness = soilthickness[i],
@@ -201,7 +209,7 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
             sl = sl[i],
             swood = swood[i],
             kext = kext[i],
-            c = c[1:nlayers, i],
+            c = c[:, i],
             lai = 1.0,
             cmax = cmax[i],
             canopygapfraction = canopygapfraction[i],
