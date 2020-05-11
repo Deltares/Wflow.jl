@@ -486,11 +486,13 @@ function update_after_lateralflow(sbm::SBM, zi, exfiltsatwater)
 
     return setproperties(sbm, (
         ustorelayerdepth = usld,
+        exfiltsatwater = exfiltsatwater,
         exfiltustore = exfiltustore,
         runoff = runoff,
         vwc = vwc,
         vwc_perc = vwc_perc,
         rootstore = rootstore,
         vwc_root = vwc_root,
-        vwc_percroot = vwc_percroot))
+        vwc_percroot = vwc_percroot,
+        zi = zi))
 end
