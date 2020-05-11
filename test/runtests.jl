@@ -17,7 +17,7 @@ isdir(datadir) || mkdir(datadir)
 function testdata(version, source_filename, target_filename)
     target_path = joinpath(datadir, target_filename)
     base_url = "https://github.com/visr/wflow-artifacts/releases/download"
-    url = joinpath(base_url, string(version), source_filename)
+    url = joinpath(base_url, string('v', version), source_filename)
     isfile(target_path) || download(url, target_path)
     return target_path
 end
