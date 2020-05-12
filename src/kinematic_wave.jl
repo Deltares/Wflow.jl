@@ -39,10 +39,6 @@ function flowgraph(ldd::AbstractVector, inds::AbstractVector, pcrdir::AbstractVe
     return dag
 end
 
-# 2.5x faster power method
-"Faster method for exponentiation"
-pow(x, y) = exp2(y * log2(x))
-
 "Kinematic wave flow rate for a single cell and timestep"
 function kinematic_wave(Qin, Qold, q, α, β, Δt, Δx)
     ϵ = 1.0e-12

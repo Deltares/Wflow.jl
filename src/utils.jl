@@ -73,7 +73,7 @@ function detdrainlength(ldd, xl, yl)
     elseif ldd == 4 || ldd == 6
         xl
     else
-        sqrt(xl^2 + yl^2)
+        hypot(xl, yl)
     end
 end
 
@@ -97,3 +97,7 @@ function detdrainwidth(ldd, xl, yl)
         slantwidth
     end
 end
+
+# 2.5x faster power method
+"Faster method for exponentiation"
+pow(x, y) = exp(y * log(x))
