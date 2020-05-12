@@ -236,16 +236,16 @@ function unsatzone_flow_layer(usd, kv_z, l_sat, c)
     #first transfer soil water > maximum soil water capacity layer (iteration is not required because of steady theta (usd))
     st = kv_z * min(pow(usd / l_sat, c), 1.0)
     st_sat = max(0.0, usd - l_sat)
-    usd = usd - min(st, st_sat)
+    usd -= min(st, st_sat)
     sum_ast = sum_ast + min(st, st_sat)
     ast = min(st - min(st, st_sat), usd)
     #number of iterations (to reduce "overshooting") based on fixed maximum change in soil water per iteration step (0.02 x maximum soil water capacity layer)
-    its = max(Int(ceil(ast / (l_sat * 0.02))), 1)
-    for i = 1:its
+    its = max(Int(cld(ast, (l_sat * 0.02))), 1)
+    for _ = 1:its
         st = (kv_z / its) * min(pow(usd / l_sat, c), 1.0)
         ast = min(st, usd)
-        usd = usd - ast
-        sum_ast = sum_ast + ast
+        usd -= ast
+        sum_ast += ast
     end
 
     return usd, sum_ast
