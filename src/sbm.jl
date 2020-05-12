@@ -62,7 +62,7 @@ Base.@kwdef struct SBM{T,N,M}
     excesswaterpath::T = mv     # Excess water for compacted fraction [mm]
     runoff::T = mv              # Total surface runoff from infiltration and saturation excess [mm]
     act_thickl::SVector{N,T}    # Thickness of soil layers [mm]
-    ustorelayerdepth::SVector{N,T} = fill(0.0, SVector{N,T}) .* act_thickl # Amount of water in the unsaturated store, per layer [mm]
+    ustorelayerdepth::SVector{N,T} = fill(0.0, SVector{N,T}) # Amount of water in the unsaturated store, per layer [mm]
     vwc::SVector{N,T} = fill(mv, SVector{N,T})              # Volumetric water content [mm mm⁻¹] per soil layer (including θᵣ and saturated zone)
     vwc_perc::SVector{N,T} = fill(mv, SVector{N,T})         # Volumetric water content [%] per soil layer (including θᵣ and saturated zone)
     rootstore::T = mv           # Root water storage [mm] in unsaturated and saturated zone (excluding θᵣ)
