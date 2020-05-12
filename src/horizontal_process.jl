@@ -85,9 +85,9 @@ function kinematic_wave_ssf(
         rest = ziₜ₋₁ - (ssfin + r * Δx - ssf) / (dw * Δx) / θₑ
         # In case the groundwater level lies above surface (saturation excess conditions, rest = negative), calculate the exfiltration rate and set groundwater back to zero.
         exfilt = min(rest, 0.0) * -θₑ
-        zi = max(0, zi)
+        zi = max(0.0, zi)
 
-        return ssf, zi, exfilt, count, fQ
+        return ssf, zi, exfilt
 
     end
 end
