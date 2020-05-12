@@ -203,7 +203,7 @@ function update_before_lateralflow(sbm::SBM)
     end
 
     avail_forinfilt = rainfallplusmelt + irsupply_mm
-    ustoredepth = sum(sbm.ustorelayerdepth[1:sbm.nlayers])
+    ustoredepth = sum(@view sbm.ustorelayerdepth[1:sbm.nlayers])
     uStorecapacity = sbm.soilwatercapacity - sbm.satwaterdepth - ustoredepth
 
     runoff_river = min(1.0, sbm.riverfrac) * avail_forinfilt
@@ -372,7 +372,7 @@ function update_before_lateralflow(sbm::SBM)
     excesswaterpath = max(pathinf - actinfiltpath, 0.0)
 
     ksat = sbm.kvfrac[n_usl] * sbm.kv₀ * exp(-sbm.f * sbm.zi)
-    ustorecapacity = sbm.soilwatercapacity - sbm.satwaterdepth - sum(usld[1:sbm.nlayers])
+    ustorecapacity = sbm.soilwatercapacity - sbm.satwaterdepth - sum(@view usld[1:sbm.nlayers])
     maxcapflux =
         max(0.0, min(ksat, actevapustore, ustorecapacity, sbm.satwaterdepth))
 
@@ -441,7 +441,7 @@ function update_after_lateralflow(sbm::SBM, zi, exfiltsatwater)
         end
     end
 
-    ustoredepth = sum(usld[1:n_usl])
+    ustoredepth = sum(@view usld[1:n_usl])
 
     runoff = max(
         exfiltustore +
