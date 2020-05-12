@@ -61,13 +61,13 @@ Base.@kwdef struct SBM{T,N,M}
     excesswatersoil::T = mv     # Excess water for non-compacted fraction [mm]
     excesswaterpath::T = mv     # Excess water for compacted fraction [mm]
     runoff::T = mv              # Total surface runoff from infiltration and saturation excess [mm]
-    ustorelayerdepth::SVector{N,T} = fill(0.0, SVector{N,T}) # Amount of water in the unsaturated store, per layer [mm]
+    act_thickl::SVector{N,T}    # Thickness of soil layers [mm]
+    ustorelayerdepth::SVector{N,T} = fill(0.0, SVector{N,T}) .* act_thickl # Amount of water in the unsaturated store, per layer [mm]
     vwc::SVector{N,T} = fill(mv, SVector{N,T})              # Volumetric water content [mm mm⁻¹] per soil layer (including θᵣ and saturated zone)
     vwc_perc::SVector{N,T} = fill(mv, SVector{N,T})         # Volumetric water content [%] per soil layer (including θᵣ and saturated zone)
     rootstore::T = mv           # Root water storage [mm] in unsaturated and saturated zone (excluding θᵣ)
     vwc_root::T = mv            # Volumetric water content [mm mm⁻¹] in root zone (including θᵣ and saturated zone)
     vwc_percroot::T = mv        # Volumetric water content [%] in root zone (including θᵣ and saturated zone)
-    act_thickl::SVector{N,T}    # Thickness of soil layers [mm]
     sumlayers::SVector{M,T}     # Cumulative sum of soil layers [mm], starting at soil surface (0)
     ustoredepth::T = mv         # Amount of available water in the unsaturated zone [mm]
     transfer::T = mv            # Downward flux from unsaturated to saturated zone [mm]
@@ -203,7 +203,7 @@ function update_before_lateralflow(sbm::SBM)
     end
 
     avail_forinfilt = rainfallplusmelt + irsupply_mm
-    ustoredepth = sum(sbm.ustorelayerdepth)
+    ustoredepth = sum(sbm.ustorelayerdepth[1:sbm.nlayers])
     uStorecapacity = sbm.soilwatercapacity - sbm.satwaterdepth - ustoredepth
 
     runoff_river = min(1.0, sbm.riverfrac) * avail_forinfilt
@@ -240,9 +240,8 @@ function update_before_lateralflow(sbm::SBM)
             soilinfreduction,
         )
 
-    usl = set_layerthickness(sbm.zi, sbm.sumlayers)
+    usl, n_usl = set_layerthickness(sbm.zi, sbm.sumlayers, sbm.act_thickl)
     z = cumsum(usl)
-    n_usl = length(usl)
 
     usld = copy(sbm.ustorelayerdepth)
     # Using the surface infiltration rate, calculate the flow rate between the
@@ -257,7 +256,7 @@ function update_before_lateralflow(sbm::SBM)
             sbm.soilwatercapacity,
             sbm.satwaterdepth,
             kv_z,
-            sbm.usl[1],
+            usl[1],
             sbm.θₛ,
             sbm.θᵣ,
         )
@@ -278,7 +277,6 @@ function update_before_lateralflow(sbm::SBM)
     transfer = ast
 
     # then evapotranspiration from layers
-
     # Calculate saturation deficity
     saturationdeficit = sbm.soilwatercapacity - sbm.satwaterdepth
 
@@ -313,9 +311,9 @@ function update_before_lateralflow(sbm::SBM)
     else
         # this check is an improvement compared to Python (only checked for n_usl == 1)
         if n_usl == 0 || n_usl == 1
-            soilevapsat = potsoilevap * min(1.0, (usl[1] - sbm.zi) / usl[1])
+            soilevapsat = potsoilevap * min(1.0, (sbm.act_thickl[1] - sbm.zi) / sbm.act_thickl[1])
             soilevapsat =
-                min(soilevapsat, (usl[1] - sbm.zi) * (sbm.θₛ - sbm.θᵣ))
+                min(soilevapsat, (sbm.act_thickl[1] - sbm.zi) * (sbm.θₛ - sbm.θᵣ))
         else
             soilevapsat = 0.0
         end
@@ -374,7 +372,7 @@ function update_before_lateralflow(sbm::SBM)
     excesswaterpath = max(pathinf - actinfiltpath, 0.0)
 
     ksat = sbm.kvfrac[n_usl] * sbm.kv₀ * exp(-sbm.f * sbm.zi)
-    ustorecapacity = sbm.soilwatercapacity - sbm.satwaterdepth - sum(usld)
+    ustorecapacity = sbm.soilwatercapacity - sbm.satwaterdepth - sum(usld[1:sbm.nlayers])
     maxcapflux =
         max(0.0, min(ksat, actevapustore, ustorecapacity, sbm.satwaterdepth))
 
@@ -395,7 +393,6 @@ function update_before_lateralflow(sbm::SBM)
         netcapflux = netcapflux - toadd
         actcapflux = actcapflux + toadd
     end
-
     deepksat = sbm.kv₀ * exp(-sbm.f * sbm.soilthickness)
     deeptransfer = min(sbm.satwaterdepth, deepksat)
     actleakage = max(0.0, min(sbm.maxleakage, deeptransfer))
@@ -423,7 +420,6 @@ function update_before_lateralflow(sbm::SBM)
         actevap = actevap,
         ustorelayerdepth = usld,
         transfer = transfer,
-        satwaterdepth = satwaterdepth,
         actinfiltsoil = actinfiltsoil,
         actinfiltpath = actinfiltpath,
         excesswater = excesswater,
@@ -433,8 +429,7 @@ end
 
 function update_after_lateralflow(sbm::SBM, zi, exfiltsatwater)
 
-    usl = set_layerthickness(zi, sbm.sumlayers)
-    n_usl = length(usl)
+    usl, n_usl = set_layerthickness(zi, sbm.sumlayers, sbm.act_thickl)
     # exfiltration from ustore
     usld = copy(sbm.ustorelayerdepth)
     exfiltustore = 0.0
@@ -445,6 +440,8 @@ function update_after_lateralflow(sbm::SBM, zi, exfiltsatwater)
             usld = setindex(usld, usld[k-1] + exfiltustore, k - 1)
         end
     end
+
+    ustoredepth = sum(usld[1:n_usl])
 
     runoff = max(
         exfiltustore +
@@ -460,7 +457,6 @@ function update_after_lateralflow(sbm::SBM, zi, exfiltsatwater)
     vwc_perc = copy(sbm.vwc_perc)
     for k = 1:sbm.nlayers
         if k <= n_usl
-
             vwc = setindex(
                 vwc,
                 (usld[k] + (sbm.act_thickl[k] - usl[k]) * (sbm.θₛ - sbm.θᵣ)) / usl[k] + sbm.θᵣ,
@@ -484,8 +480,12 @@ function update_after_lateralflow(sbm::SBM, zi, exfiltsatwater)
     vwc_root = rootstore / sbm.rootingdepth + sbm.θᵣ
     vwc_percroot = (vwc_root / sbm.θₛ) * 100.0
 
+    satwaterdepth =  (sbm.soilthickness - zi) * (sbm.θₛ - sbm.θᵣ)
+
     return setproperties(sbm, (
         ustorelayerdepth = usld,
+        ustoredepth = ustoredepth,
+        satwaterdepth = satwaterdepth,
         exfiltsatwater = exfiltsatwater,
         exfiltustore = exfiltustore,
         runoff = runoff,

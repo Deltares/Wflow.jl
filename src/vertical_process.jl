@@ -138,7 +138,7 @@ function acttransp_unsat_sbm(
         vwc = 0.0
     end
     vwc = max(vwc, 0.0000001)
-    head = hb / (((vwc) / (θₛ - θᵣ))^(1.0 / par_lambda))  # Note that in the original formula, thetaR is extracted from vwc, but thetaR is not part of the numerical vwc calculation
+    head = hb / (pow(((vwc) / (θₛ - θᵣ)), (1.0 / par_lambda)))  # Note that in the original formula, thetaR is extracted from vwc, but thetaR is not part of the numerical vwc calculation
     head = max(head, hb)
 
     # Transform h to a reduction coefficient value according to Feddes et al. (1978).
@@ -185,7 +185,7 @@ function infiltration(
 )
     # First determine if the soil infiltration capacity can deal with the amount of water
     # split between infiltration in undisturbed soil and compacted areas (paths)
-    soilinf = avail_forinfilt * (1 - pathfrac)
+    soilinf = avail_forinfilt * (1.0 - pathfrac)
     pathinf = avail_forinfilt * pathfrac
     if modelsnow & soilinfreduction
         bb = 1.0 / (1.0 - cf_soil)

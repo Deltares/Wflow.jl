@@ -40,14 +40,22 @@ end
     set_layerthickness(d::Float64, sl::SVector)
 
 Calculate actual soil thickness of layers based on a reference depth (e.g. soil depth or water table depth) `d`,
-and a SVector `sl` with cumulative soil depth starting at soil surface (0).
+a SVector `sl` with cumulative soil depth starting at soil surface (0), and a SVector `tl` with actual thickness
+per soil layer.
 """
-function set_layerthickness(d::Float64, sl::SVector)
-    act_d = sl[sl.<d]
-    if d - act_d[end] > 0.0
-        push!(act_d, d)
+function set_layerthickness(d::Float64, sl::SVector, tl::SVector)
+
+    act_d = tl .* mv
+    for i = 1:length(act_d)
+        if d > sl[i+1]
+            act_d = setindex(act_d, tl[i], i)
+        elseif d-sl[i] > 0.0
+            act_d = setindex(act_d, d-sl[i], i)
+        end
     end
-    diff(act_d)
+
+    nlayers = length(act_d) - sum(isnan.(act_d))
+    return act_d, nlayers
 end
 
 """

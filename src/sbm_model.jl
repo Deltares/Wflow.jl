@@ -45,8 +45,8 @@ area index (LAI) values (climatology).
 function initialize_sbm_model(staticmaps_path, leafarea_path)
 
     sizeinmetres = false
-    thicknesslayers = SVector(100.0, 300.0, 800.0)
-    maxlayers = length(thicknesslayers) + 1 # max number of soil layers
+    thicknesslayers = SVector(100.0, 300.0, 800.0, mv)
+    maxlayers = length(thicknesslayers) # max number of soil layers
     sumlayers = SVector(pushfirst(cumsum(thicknesslayers), 0.0))
 
     nc = NCDataset(staticmaps_path)
@@ -157,26 +157,17 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
     xl = fill(mv, n)
     yl = fill(mv, n)
 
-    sbm = Vector{SBM{Float64,maxlayers,maxlayers + 1}}(undef, n)
+    sbm = Vector{SBM{Float64,maxlayers, maxlayers+1}}(undef, n)
     for i = 1:n
-        act_thickl = set_layerthickness(soilthickness[i], sumlayers)
-        nlayers = length(act_thickl)
-        nlayer_diff = maxlayers - nlayers
-        # increase the size to max_nlayers TODO fix in set_layerthickness
-        if nlayer_diff > 0
-            for i in 1:nlayer_diff
-                push!(act_thickl, 0.0)
-            end
-        end
-
-        s_layers = pushfirst!(cumsum(act_thickl), 0.0)
+        act_thickl, nlayers = set_layerthickness(soilthickness[i], sumlayers, thicknesslayers)
+        s_layers = pushfirst(cumsum(act_thickl), 0.0)
 
         xl[i] = sizeinmetres ? cellength : lattometres(y[i])[1] * cellength
         yl[i] = sizeinmetres ? cellength : lattometres(y[i])[2] * cellength
         riverfrac = Bool(river[i]) ?
             min((riverlength[i] * riverwidth[i]) / (xl[i] * yl[i]), 1.0) : 0.0
 
-        sbm[i] = SBM{Float64,maxlayers,maxlayers + 1}(
+        sbm[i] = SBM{Float64,maxlayers, maxlayers+1}(
             maxlayers = maxlayers,
             nlayers = nlayers,
             riverfrac = riverfrac,
