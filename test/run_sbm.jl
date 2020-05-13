@@ -1,5 +1,3 @@
-using BenchmarkTools, Juno
-
 function update(model, toposort, n)
     @unpack lateral, vertical, network, clock = model
 
@@ -26,23 +24,30 @@ model = Wflow.initialize_sbm_model(staticmaps_moselle_path, leafarea_moselle_pat
 toposort = Wflow.topological_sort_by_dfs(model.network)
 n = length(toposort)
 model = update(model, toposort, n)
-@test model.clock.iteration == 2
-sbm = model.vertical[1]
-@test sbm.altitude == 345.1470031738281
-@test sbm.θₛ == 0.46367356181144714
-@test isnan(sbm.runoff)  # should probably be initialized to 0.0
-@test sbm.soilevap == 0.08821308159314034
+
+@testset "first timestep" begin
+    sbm = model.vertical[1]
+    @test model.clock.iteration == 2
+    @test sbm.altitude == 345.1470031738281
+    @test sbm.θₛ == 0.46367356181144714
+    @test isnan(sbm.runoff)  # should probably be initialized to 0.0
+    @test sbm.soilevap == 0.08821308159314034
+end
+
 # run the second timestep
 model = update(model, toposort, n)
-sbm = model.vertical[1]
-@test sbm.altitude == 345.1470031738281
-@test sbm.θₛ == 0.46367356181144714
-@test isnan(sbm.runoff)
-@test sbm.soilevap == 0.17235604508244792
 
-@test_broken "subsurface flow" begin
+@testset "second timestep" begin
+    sbm = model.vertical[1]
+    @test sbm.altitude == 345.1470031738281
+    @test sbm.θₛ == 0.46367356181144714
+    @test isnan(sbm.runoff)
+    @test sbm.soilevap == 0.17235604508244792
+end
+
+@testset "subsurface flow" begin
     ssf = model.lateral.ssf
-    @test sum(ssf) ≈ 6.773066987298085e16
+    @test sum(ssf) ≈ 6.959580661699383e16
     @test ssf[toposort[1]] ≈ 4.392529226944353e11
     @test ssf[toposort[n - 100]] ≈ 8.003673229321337e11
     @test ssf[sink] ≈ 6.92054650606041e11
