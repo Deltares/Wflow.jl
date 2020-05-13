@@ -27,7 +27,7 @@ available, a default value based on dict 'dpars' is returned.
 """
 function readnetcdf(nc, var, inds, dpars; transp = false)
     if haskey(nc, var)
-        @info(string("read parameter ", var))
+        @debug(string("read parameter ", var))
         ncvar = transp ? Float64.(permutedims(nc[var][:])[inds]) :
             Float64.(nc[var][:][inds])
     else
