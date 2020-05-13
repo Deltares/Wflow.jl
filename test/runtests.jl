@@ -1,13 +1,13 @@
 ## load test dependencies and set paths to testing data
-using Wflow
-using Test
-using NCDatasets
 using Dates
 using LightGraphs
+using NCDatasets
 using Pkg.TOML
 using Setfield: setproperties
-using UnPack
 using StaticArrays
+using Test
+using UnPack
+using Wflow
 
 # ensure test data is present
 const datadir = joinpath(@__DIR__, "data")

@@ -99,12 +99,12 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
     infiltcapsoil =
         readnetcdf(nc, "InfiltCapSoil", inds, dparams, transp = trsp)
     maxleakage = readnetcdf(nc, "MaxLeakage", inds, dparams, transp = trsp)
-    #TODO: store c, kvfrac in staticmaps.nc start at index 1
+    # TODO: store c, kvfrac in staticmaps.nc start at index 1
     c = fill(dparams["c"], (maxlayers, n))
     kvfrac = fill(dparams["KsatVerFrac"], (maxlayers, n))
-    for i in [0:1:maxlayers-1;]
+    for i in [0:1:maxlayers - 1;]
         if string("c_", i) in keys(nc)
-            c[i+1, :] =
+            c[i + 1, :] =
                 trsp ? Float64.(permutedims(nc[string("c_", i)][:])[inds]) :
                 Float64.(nc[string("c_", i)][:][inds])
         else
@@ -116,7 +116,7 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
             ))
         end
         if string("KsatVerFrac_", i) in keys(nc)
-            kvfrac[i+1, :] = trsp ?
+            kvfrac[i + 1, :] = trsp ?
                 Float64.(permutedims(nc[string("KsatVerFrac_", i)][:])[inds]) :
                 Float64.(nc[string("KsatVerFrac_", i)][:][inds])
         else
@@ -151,13 +151,13 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
         kext = readnetcdf(nc, "Kext", inds, dparams, transp = trsp)
         # set in inifile? Also type (monthly, daily, hourly) as part of netcdf variable attribute?
         # in original inifile: LAI=staticmaps/clim/LAI,monthlyclim,1.0,1
-        lai_clim = NCDataset(leafarea_path) #TODO:include LAI climatology in update() vertical SBM model
+        lai_clim = NCDataset(leafarea_path) # TODO:include LAI climatology in update() vertical SBM model
     end
 
     xl = fill(mv, n)
     yl = fill(mv, n)
 
-    sbm = Vector{SBM{Float64,maxlayers, maxlayers+1}}(undef, n)
+    sbm = Vector{SBM{Float64,maxlayers,maxlayers + 1}}(undef, n)
     for i = 1:n
         act_thickl, nlayers = set_layerthickness(soilthickness[i], sumlayers, thicknesslayers)
         s_layers = pushfirst(cumsum(act_thickl), 0.0)
@@ -167,7 +167,7 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
         riverfrac = Bool(river[i]) ?
             min((riverlength[i] * riverwidth[i]) / (xl[i] * yl[i]), 1.0) : 0.0
 
-        sbm[i] = SBM{Float64,maxlayers, maxlayers+1}(
+        sbm[i] = SBM{Float64,maxlayers,maxlayers + 1}(
             maxlayers = maxlayers,
             nlayers = nlayers,
             riverfrac = riverfrac,

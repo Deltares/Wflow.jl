@@ -44,6 +44,6 @@ sbm = model.vertical[1]
     ssf = model.lateral.ssf
     @test sum(ssf) ≈ 6.773066987298085e16
     @test ssf[toposort[1]] ≈ 4.392529226944353e11
-    @test ssf[toposort[n-100]] ≈ 8.003673229321337e11
+    @test ssf[toposort[n - 100]] ≈ 8.003673229321337e11
     @test ssf[sink] ≈ 6.92054650606041e11
 end

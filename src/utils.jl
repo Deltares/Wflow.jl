@@ -1,14 +1,14 @@
 
 function lattometres(lat::Float64)
-    m1 = 111132.92     #latitude calculation term 1
-    m2 = -559.82       #latitude calculation term 2
-    m3 = 1.175         #latitude calculation term 3
-    m4 = -0.0023       #latitude calculation term 4
-    p1 = 111412.84     #longitude calculation term 1
-    p2 = -93.5         #longitude calculation term 2
-    p3 = 0.118         #longitude calculation term 3
+    m1 = 111132.92     # latitude calculation term 1
+    m2 = -559.82       # latitude calculation term 2
+    m3 = 1.175         # latitude calculation term 3
+    m4 = -0.0023       # latitude calculation term 4
+    p1 = 111412.84     # longitude calculation term 1
+    p2 = -93.5         # longitude calculation term 2
+    p3 = 0.118         # longitude calculation term 3
 
-    #Calculate the length of a degree of latitude and longitude in meters
+    # Calculate the length of a degree of latitude and longitude in meters
     latlen =
         m1 +
         (m2 * cosd(2.0 * lat)) +
@@ -47,10 +47,10 @@ function set_layerthickness(d::Float64, sl::SVector, tl::SVector)
 
     act_d = tl .* mv
     for i = 1:length(act_d)
-        if d > sl[i+1]
+        if d > sl[i + 1]
             act_d = setindex(act_d, tl[i], i)
-        elseif d-sl[i] > 0.0
-            act_d = setindex(act_d, d-sl[i], i)
+        elseif d - sl[i] > 0.0
+            act_d = setindex(act_d, d - sl[i], i)
         end
     end
 

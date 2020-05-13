@@ -1,6 +1,6 @@
 "Parsed TOML configuration"
 struct Config
-    dict::Dict{String, Any}
+    dict::Dict{String,Any}
 end
 
 # allows using getproperty, e.g. config.input.time instead of config["input"]["time"]

@@ -21,7 +21,7 @@ function kinematic_wave_ssf(
     if ssfin + ssfₜ₋₁ ≈ 0.0 && r <= 0.0
         return 0.0, d, 0.0
     else
-        #initial estimate
+        # initial estimate
         ssf = (ssfₜ₋₁ + ssfin) / 2.0
         count = 1
 

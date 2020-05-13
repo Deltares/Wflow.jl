@@ -233,13 +233,13 @@ degree of the layer (ratio `usd` and `l_sat`), and a Brooks-Corey power coeffici
 """
 function unsatzone_flow_layer(usd, kv_z, l_sat, c)
     sum_ast = 0.0
-    #first transfer soil water > maximum soil water capacity layer (iteration is not required because of steady theta (usd))
+    # first transfer soil water > maximum soil water capacity layer (iteration is not required because of steady theta (usd))
     st = kv_z * min(pow(usd / l_sat, c), 1.0)
     st_sat = max(0.0, usd - l_sat)
     usd -= min(st, st_sat)
     sum_ast = sum_ast + min(st, st_sat)
     ast = min(st - min(st, st_sat), usd)
-    #number of iterations (to reduce "overshooting") based on fixed maximum change in soil water per iteration step (0.02 x maximum soil water capacity layer)
+    # number of iterations (to reduce "overshooting") based on fixed maximum change in soil water per iteration step (0.02 x maximum soil water capacity layer)
     its = max(Int(cld(ast, (l_sat * 0.02))), 1)
     for _ = 1:its
         st = (kv_z / its) * min(pow(usd / l_sat, c), 1.0)
@@ -340,8 +340,8 @@ function snowpack_hbv(
     precipitation =
         sfcf * snowfrac * precipitation + rfcf * rainfrac * precipitation
 
-    snowfall = snowfrac * precipitation  #snowfall depth
-    rainfall = rainfrac * precipitation  #rainfall depth
+    snowfall = snowfrac * precipitation  # snowfall depth
+    rainfall = rainfrac * precipitation  # rainfall depth
     # potential snow melt, based on temperature
     potsnowmelt = temperature > ttm ? cfmax * (temperature - ttm) : 0.0
     # potential refreezing, based on temperature
@@ -350,9 +350,9 @@ function snowpack_hbv(
     refreezing = temperature < ttm ? min(potrefreezing, snowwater) : 0.0
 
     # no landuse correction here
-    snowmelt = min(potsnowmelt, snow)  #actual snow melt
-    snow = snow + snowfall + refreezing - snowmelt  #dry snow content
-    snowwater = snowwater - refreezing  #free water content in snow
+    snowmelt = min(potsnowmelt, snow)  # actual snow melt
+    snow = snow + snowfall + refreezing - snowmelt  # dry snow content
+    snowwater = snowwater - refreezing  # free water content in snow
     maxsnowwater = snow * whc  # max water in the snow
     snowwater = snowwater + snowmelt + rainfall  # add all water and potentially supersaturate the snowpack
     rainfall = max(snowwater - maxsnowwater, 0.0)  # rain + surpluss snowwater

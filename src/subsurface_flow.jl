@@ -24,7 +24,7 @@ function statenames(::Type{LateralSSF})
 
     # depends on ini file settings (optional: glaciers, snow, irrigation)
     states = [:ssf]
-    #TODO: (warm) states read from netcdf file or cold state (reinit=1, setting in ini file)
+    # TODO: (warm) states read from netcdf file or cold state (reinit=1, setting in ini file)
 
 end
 

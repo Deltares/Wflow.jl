@@ -98,13 +98,13 @@ function statenames(::Type{SBM})
         :snowwater,
         :canopystorage,
     ]
-    #TODO: (warm) states read from netcdf file or cold state (reinit=1, setting in ini file)
+    # TODO: (warm) states read from netcdf file or cold state (reinit=1, setting in ini file)
 
 end
 
 function update_before_lateralflow(sbm::SBM)
 
-    #start dummy variables (should be generated from model reader and from Config.jl TOML)
+    # start dummy variables (should be generated from model reader and from Config.jl TOML)
     do_lai = true
     glacierfrac = false
     modelsnow = true
@@ -113,13 +113,13 @@ function update_before_lateralflow(sbm::SBM)
     potevap = 4.0
     precipitation = 3.0
     temperature = 10.0
-    wl_land = 0.0 #from kinematic wave land
-    wl_river = 0.10 #from kinematic river
+    wl_land = 0.0 # from kinematic wave land
+    wl_river = 0.10 # from kinematic river
     irsupply_mm = 0.0
     ust = false
     Δt = Second(Day(1))
     basetimestep = Second(Day(1))
-    #end dummpy variables
+    # end dummpy variables
 
     if do_lai
         cmax = sbm.sl * sbm.lai + sbm.swood
@@ -293,7 +293,7 @@ function update_before_lateralflow(sbm::SBM)
                 potsoilevap *
                 min(1.0, saturationdeficit / sbm.soilwatercapacity)
         else
-            #In case only the most upper soil layer contains unsaturated storage
+            # In case only the most upper soil layer contains unsaturated storage
             if n_usl == 1
                 # Check if groundwater level lies below the surface
                 soilevapunsat =
@@ -359,13 +359,13 @@ function update_before_lateralflow(sbm::SBM)
         usld = setindex(usld, ustorelayerdepth, k)
     end
 
-    #check soil moisture balance per layer
+    # check soil moisture balance per layer
     du = 0.0
     for k = n_usl:-1:1
         du = max(0.0, usld[k] - usl[k] * (sbm.θₛ - sbm.θᵣ))
         usld = setindex(usld, usld[k] - du, k)
         if k > 1
-            usld = setindex(usld, usld[k-1] + du, k - 1)
+            usld = setindex(usld, usld[k - 1] + du, k - 1)
         end
     end
 
@@ -424,8 +424,7 @@ function update_before_lateralflow(sbm::SBM)
 
     return setproperties(
         sbm,
-        (
-            cmax = cmax,
+        (cmax = cmax,
             canopygapfraction = canopygapfraction,
             canopystorage = canopystorage,
             snow = snow,
@@ -446,8 +445,7 @@ function update_before_lateralflow(sbm::SBM)
             actinfiltpath = actinfiltpath,
             excesswater = excesswater,
             excesswatersoil = excesswatersoil,
-            excesswaterpath = excesswaterpath,
-        ),
+            excesswaterpath = excesswaterpath,),
     )
 end
 
@@ -461,7 +459,7 @@ function update_after_lateralflow(sbm::SBM, zi, exfiltsatwater)
         exfiltustore = max(0, usld[k] - usl[k] * (sbm.θₛ - sbm.θᵣ))
         usld = setindex(usld, usld[k] - exfiltustore, k)
         if k > 1
-            usld = setindex(usld, usld[k-1] + exfiltustore, k - 1)
+            usld = setindex(usld, usld[k - 1] + exfiltustore, k - 1)
         end
     end
 
@@ -508,8 +506,7 @@ function update_after_lateralflow(sbm::SBM, zi, exfiltsatwater)
 
     return setproperties(
         sbm,
-        (
-            ustorelayerdepth = usld,
+        (ustorelayerdepth = usld,
             ustoredepth = ustoredepth,
             satwaterdepth = satwaterdepth,
             exfiltsatwater = exfiltsatwater,
@@ -520,7 +517,6 @@ function update_after_lateralflow(sbm::SBM, zi, exfiltsatwater)
             rootstore = rootstore,
             vwc_root = vwc_root,
             vwc_percroot = vwc_percroot,
-            zi = zi,
-        ),
+            zi = zi,),
     )
 end
