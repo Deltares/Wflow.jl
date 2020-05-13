@@ -33,5 +33,5 @@ leafarea_moselle_path = testdata(v"0.2", "lai_clim.nc", "lai_clim-moselle.nc")
     include("kinematic_wave.jl")
     include("sbm.jl")
     include("vertical_process.jl")
-    # include("run_sbm.jl")
+    include("run_sbm.jl")
 end

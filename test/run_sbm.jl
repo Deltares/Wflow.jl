@@ -40,8 +40,10 @@ sbm = model.vertical[1]
 @test isnan(sbm.runoff)
 @test sbm.soilevap == 0.17235604508244792
 
-
-@time update(model, toposort, n)
-@btime update(model, toposort, n)
-@profiler foreach(x -> update(model, toposort, n), 1:10)  # run a few times for more accuracy
-
+@test_broken "subsurface flow" begin
+    ssf = model.lateral.ssf
+    @test sum(ssf) ≈ 6.773066987298085e16
+    @test ssf[toposort[1]] ≈ 4.392529226944353e11
+    @test ssf[toposort[n-100]] ≈ 8.003673229321337e11
+    @test ssf[sink] ≈ 6.92054650606041e11
+end
