@@ -1,4 +1,4 @@
-const Δt = 86400.0
+const Δt_sec = 86400.0
 const ldd_mv = 255
 
 # read the staticmaps into memory
@@ -40,7 +40,7 @@ P = Bw + (2.0 * waterlevel)
 α = AlpTermR .* P .^ AlpPow
 
 Q = zeros(n)
-Q = Wflow.kin_wave!(Q, dag, toposort, Qold, q, α, β, DCL, Δt)
+Q = Wflow.kin_wave!(Q, dag, toposort, Qold, q, α, β, DCL, Δt_sec)
 
 @testset "flow rate" begin
     @test sum(Q) ≈ 2.957806043289641e6

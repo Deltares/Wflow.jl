@@ -1,9 +1,9 @@
 # timestep that the parameter units are defined in
-basetimestep = Second(Day(1))
-Δt = Second(Day(1))
+const basetimestep = Second(Day(1))
+const Δt = Second(Day(1))
 
 # default parameter values (dict)
-dparams = Dict(
+const dparams = Dict(
     "Cfmax" => 3.75653 * (Δt / basetimestep),
     "TT" => 0.0,
     "TTM" => 0.0,

@@ -11,7 +11,7 @@
     @test config.λ == 1.2
     @test config.input.starttime == DateTime(2000)
     @test config.input.endtime == DateTime(2000, 2)
-    @test config.output.path == "specified_output.nc"
+    @test config.output.path == "data/specified_output.nc"
     @test config.output.parameters isa Vector{String}
     @test config.output.parameters == ["q", "h"]
 end

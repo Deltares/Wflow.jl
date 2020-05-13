@@ -19,9 +19,9 @@ function forcing(dataset::NCDataset, time::DateTime)
 
     # return only the active cells
     # TODO, the active cells need to be passed as input, not be derived independently here
-    p = Float64.(filter(!ismissing, meteo.p))
-    temp = Float64.(filter(!ismissing, meteo.temp))
-    pet = Float64.(filter(!ismissing, meteo.pet))
+    p = Float64.(filter(!ismissing, p_))
+    temp = Float64.(filter(!ismissing, temp_))
+    pet = Float64.(filter(!ismissing, pet_))
     @assert length(p) == length(temp) == length(pet)
 
     return (p = p, temp = temp, pet = pet)
@@ -125,9 +125,6 @@ p = get_at(dataset["P"], nctimes, starttime)
 temp = get_at(dataset["TEMP"], nctimes, starttime)
 pet = get_at(dataset["PET"], nctimes, starttime)
 
-Model = Wflow.Model1
-Model
-
 meteo = forcing(dataset, starttime)
 @test keys(meteo) === (:p, :temp, :pet)
 typeof(keys(meteo))
@@ -153,27 +150,3 @@ ds_out = setup_netcdf(output_path, nclon, nclat)
 
 # q = rand(291, 313)
 # grow_netcdf!(ds_out, "q", 1, q)
-
-
-# create a Model with only SBM
-model = Model(
-    nothing,  # no network
-    nothing,  # no lateral model,
-    sbm,
-    Wflow.Clock(starttime, 1, Δt),
-    dataset,
-    ds_out,
-)
-
-model.vertical
-
-for simtime in simtimes
-    meteo = forcing(dataset, simtime)
-    # put meteo forcing in vertical cells
-    update.(model.vertical)
-    
-end
-
-# close(dataset)
-# synchronize the state from vertical to lateral
-model.lateral.volume[i] = model.vertical[i].volume
