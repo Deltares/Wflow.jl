@@ -102,7 +102,7 @@ function statenames(::Type{SBM})
 
 end
 
-function update_before_lateralflow(sbm)
+function update_before_lateralflow(t)
 
     # start dummy variables (should be generated from model reader and from Config.jl TOML)
     do_lai = true
@@ -121,18 +121,17 @@ function update_before_lateralflow(sbm)
     basetimestep = Second(Day(1))
     # end dummpy variables
 
-    # TODO iterate over typedtable?
-    for v in eachindex(sbm.nlayers)
+    for r in eachindex(t.nlayers)
         if do_lai
-            cmax = sbm.sl[v] * sbm.lai[v] + sbm.swood[v]
-            canopygapfraction = exp(-sbm.kext[v] * sbm.lai[v])
-            ewet = (1.0 - exp(-sbm.kext[v] * sbm.lai[v])) * potevap
+            cmax = t.sl[r] * t.lai[r] + t.swood[r]
+            canopygapfraction = exp(-t.kext[r] * t.lai[r])
+            ewet = (1.0 - exp(-t.kext[r] * t.lai[r])) * potevap
             e_r =
                 precipitation > 0.0 ? min(0.25, ewet / max(0.0001, precipitation)) :
                 0.0
         end
 
-        potevap = potevap * sbm.et_reftopot[v]
+        potevap = potevap * t.et_reftopot[r]
         # should we include tempcor in SBM?
         # PotEvap = PotenEvap #??
 
@@ -143,7 +142,7 @@ function update_before_lateralflow(sbm)
                     e_r,
                     canopygapfraction,
                     precipitation,
-                    sbm.canopystorage[v],
+                    t.canopystorage[r],
                     maxevap = potevap,
                 )
             pottrans_soil = max(0.0, potevap - interception) # now in mm
@@ -156,7 +155,7 @@ function update_before_lateralflow(sbm)
             canopystorage = rainfall_interception_modrut(
                 precipitation,
                 potevap,
-                sbm.canopystorage[v],
+                t.canopystorage[r],
                 canopygapfraction,
                 cmax,
             )
@@ -167,17 +166,17 @@ function update_before_lateralflow(sbm)
         eff_precipitation = throughfall + stemflow
 
         if modelsnow
-            tsoil = sbm.tsoil[v] + sbm.w_soil[v] * (temperature - sbm.tsoil[v])
+            tsoil = t.tsoil[r] + t.w_soil[r] * (temperature - t.tsoil[r])
             snow, snowwater, snowmelt, rainfallplusmelt, snowfall = snowpack_hbv(
-                sbm.snow[v],
-                sbm.snowwater[v],
+                t.snow[r],
+                t.snowwater[r],
                 eff_precipitation,
                 temperature,
-                sbm.tti[v],
-                sbm.tt[v],
-                sbm.ttm[v],
-                sbm.cfmax[v],
-                sbm.whc[v],
+                t.tti[r],
+                t.tt[r],
+                t.ttm[r],
+                t.cfmax[r],
+                t.whc[r],
             )
             if glacierfrac
                 # Run Glacier module and add the snowpack on-top of it.
@@ -185,18 +184,18 @@ function update_before_lateralflow(sbm)
                 # Estimate glacier melt.
 
                 snow, snow2glacier, glacierstore, glaciermelt = glacier_hbv(
-                    sbm.glacierfrac[v],
-                    sbm.glacierstore[v],
-                    sbm.snow[v],
+                    t.glacierfrac[r],
+                    t.glacierstore[r],
+                    t.snow[r],
                     temperature,
-                    sbm.g_tt[v],
-                    sbm.g_cfmax[v],
-                    sbm.g_sifrac[v],
+                    t.g_tt[r],
+                    t.g_cfmax[r],
+                    t.g_sifrac[r],
                     Δt,
                     basetimestep,
                 )
                 # Convert to mm per grid cell and add to snowmelt
-                glaciermelt = glaciermelt * sbm.glacierfrac[v]
+                glaciermelt = glaciermelt * t.glacierfrac[r]
                 rainfallplusmelt = rainfallplusmelt + glaciermelt
 
             end
@@ -205,19 +204,19 @@ function update_before_lateralflow(sbm)
         end
 
         avail_forinfilt = rainfallplusmelt + irsupply_mm
-        ustoredepth = sum(@view sbm.ustorelayerdepth[v][1:sbm.nlayers[v]])
-        uStorecapacity = sbm.soilwatercapacity[v] - sbm.satwaterdepth[v] - ustoredepth
+        ustoredepth = sum(@view t.ustorelayerdepth[r][1:t.nlayers[r]])
+        uStorecapacity = t.soilwatercapacity[r] - t.satwaterdepth[r] - ustoredepth
 
-        runoff_river = min(1.0, sbm.riverfrac[v]) * avail_forinfilt
-        runoff_land = min(1.0, sbm.waterfrac[v]) * avail_forinfilt
+        runoff_river = min(1.0, t.riverfrac[r]) * avail_forinfilt
+        runoff_land = min(1.0, t.waterfrac[r]) * avail_forinfilt
         avail_forinfilt = max(avail_forinfilt - runoff_river - runoff_land, 0.0)
 
-        rootingdepth = min(sbm.soilthickness[v] * 0.99, sbm.rootingdepth[v])
+        rootingdepth = min(t.soilthickness[r] * 0.99, t.rootingdepth[r])
 
         ae_openw_r =
-            min(wl_river * 1000.0 * sbm.riverfrac[v], sbm.riverfrac[v] * pottrans_soil)
+            min(wl_river * 1000.0 * t.riverfrac[r], t.riverfrac[r] * pottrans_soil)
         ae_openw_l =
-            min(wl_land * 1000.0 * sbm.waterfrac[v], sbm.waterfrac[v] * pottrans_soil)
+            min(wl_land * 1000.0 * t.waterfrac[r], t.waterfrac[r] * pottrans_soil)
 
         restevap = pottrans_soil - ae_openw_r - ae_openw_l
 
@@ -226,26 +225,26 @@ function update_before_lateralflow(sbm)
         pottrans = restevap * (1.0 - canopygapfraction)
 
         # Calculate the initial capacity of the unsaturated store
-        ustorecapacity = sbm.soilwatercapacity[v] - sbm.satwaterdepth[v] - ustoredepth
+        ustorecapacity = t.soilwatercapacity[r] - t.satwaterdepth[r] - ustoredepth
 
         # Calculate the infiltration flux into the soil column
         infiltsoilpath, infiltsoil, infiltpath, soilinf, pathinf, infiltexcess =
             infiltration(
                 avail_forinfilt,
-                sbm.pathfrac[v],
-                sbm.cf_soil[v],
+                t.pathfrac[r],
+                t.cf_soil[r],
                 tsoil,
-                sbm.infiltcapsoil[v],
-                sbm.infiltcappath[v],
+                t.infiltcapsoil[r],
+                t.infiltcappath[r],
                 ustorecapacity,
                 modelsnow,
                 soilinfreduction,
             )
 
 
-        usl, n_usl = set_layerthickness(sbm.zi[v], sbm.sumlayers[v], sbm.act_thickl[v])
+        usl, n_usl = set_layerthickness(t.zi[r], t.sumlayers[r], t.act_thickl[r])
         z = cumsum(usl)
-        usld = copy(sbm.ustorelayerdepth[v])
+        usld = copy(t.ustorelayerdepth[r])
 
         ast = 0.0
         soilevapunsat = 0.0
@@ -254,31 +253,31 @@ function update_before_lateralflow(sbm)
             # different soil layers that contain unsaturated storage assuming gravity
             # based flow only, estimate the gravity based flux rate to the saturated zone
             # (ast) and the updated unsaturated storage for each soil layer.
-            if transfermethod == 1 && sbm.maxlayers[v] == 1
-                ustorelayerdepth = sbm.ustorelayerdepth[v][1] + infiltsoilpath
-                kv_z = sbm.kvfrac[v][1] * sbm.kv₀[v] * exp(-sbm.f[v] * sbm.zi[v])
+            if transfermethod == 1 && t.maxlayers[r] == 1
+                ustorelayerdepth = t.ustorelayerdepth[r][1] + infiltsoilpath
+                kv_z = t.kvfrac[r][1] * t.kv₀[r] * exp(-t.f[r] * t.zi[r])
                 ustorelayerdepth, ast = unsatzone_flow_sbm(
                     ustorelayerdepth,
-                    sbm.soilwatercapacity[v],
-                    sbm.satwaterdepth[v],
+                    t.soilwatercapacity[r],
+                    t.satwaterdepth[r],
                     kv_z,
                     usl[1],
-                    sbm.θₛ[v],
-                    sbm.θᵣ[v],
+                    t.θₛ[r],
+                    t.θᵣ[r],
                 )
                 usld = setindex(usld, ustorelayerdepth, m)
             else
                 for m = 1:n_usl
-                    l_sat = usl[m] * (sbm.θₛ[v] - sbm.θᵣ[v])
-                    kv_z = sbm.kvfrac[v][m] * sbm.kv₀[v] * exp(-sbm.f[v] * z[m])
+                    l_sat = usl[m] * (t.θₛ[r] - t.θᵣ[r])
+                    kv_z = t.kvfrac[r][m] * t.kv₀[r] * exp(-t.f[r] * z[m])
                     ustorelayerdepth =
-                        m == 1 ? sbm.ustorelayerdepth[v][m] + infiltsoilpath :
-                        sbm.ustorelayerdepth[v][m] + ast
+                        m == 1 ? t.ustorelayerdepth[r][m] + infiltsoilpath :
+                        t.ustorelayerdepth[r][m] + ast
                     ustorelayerdepth, ast = unsatzone_flow_layer(
                         ustorelayerdepth,
                         kv_z,
                         l_sat,
-                        sbm.c[v][m],
+                        t.c[r][m],
                     )
                     usld = setindex(usld, ustorelayerdepth, m)
                 end
@@ -286,26 +285,26 @@ function update_before_lateralflow(sbm)
 
             # then evapotranspiration from layers
             # Calculate saturation deficity
-            saturationdeficit = sbm.soilwatercapacity[v] - sbm.satwaterdepth[v]
+            saturationdeficit = t.soilwatercapacity[r] - t.satwaterdepth[r]
 
             # First calculate the evaporation of unsaturated storage into the
             # atmosphere from the upper layer.
-            if sbm.maxlayers[v] == 1
+            if t.maxlayers[r] == 1
                 soilevapunsat =
                     potsoilevap *
-                    min(1.0, saturationdeficit / sbm.soilwatercapacity[v])
+                    min(1.0, saturationdeficit / t.soilwatercapacity[r])
             else
                 # In case only the most upper soil layer contains unsaturated storage
                 if n_usl == 1
                     # Check if groundwater level lies below the surface
                     soilevapunsat =
                         potsoilevap *
-                        min(1.0, usld[1] / (sbm.zi[v] * (sbm.θₛ[v] - sbm.θᵣ[v])))
+                        min(1.0, usld[1] / (t.zi[r] * (t.θₛ[r] - t.θᵣ[r])))
                 else
                     # In case first layer contains no saturated storage
                     soilevapunsat =
                         potsoilevap *
-                        min(1.0, usld[1] / (usl[1] * ((sbm.θₛ[v] - sbm.θᵣ[v]))))
+                        min(1.0, usld[1] / (usl[1] * ((t.θₛ[r] - t.θᵣ[r]))))
                 end
             end
             # Ensure that the unsaturated evaporation rate does not exceed the
@@ -317,27 +316,27 @@ function update_before_lateralflow(sbm)
         end
         transfer = ast
 
-        if sbm.maxlayers[v] == 1
+        if t.maxlayers[r] == 1
             soilevapsat = 0.0
         else
             # this check is an improvement compared to Python (only checked for n_usl == 1)
             if n_usl == 0 || n_usl == 1
                 soilevapsat =
                     potsoilevap *
-                    min(1.0, (sbm.act_thickl[v][1] - sbm.zi[v]) / sbm.act_thickl[v][1])
+                    min(1.0, (t.act_thickl[r][1] - t.zi[r]) / t.act_thickl[r][1])
                 soilevapsat = min(
                     soilevapsat,
-                    (sbm.act_thickl[v][1] - sbm.zi[v]) * (sbm.θₛ[v] - sbm.θᵣ[v]),
+                    (t.act_thickl[r][1] - t.zi[r]) * (t.θₛ[r] - t.θᵣ[r]),
                 )
             else
                 soilevapsat = 0.0
             end
         end
         soilevap = soilevapunsat + soilevapsat
-        satwaterdepth = sbm.satwaterdepth[v] - soilevapsat
+        satwaterdepth = t.satwaterdepth[r] - soilevapsat
 
         # transpiration from saturated store
-        wetroots = scurve(sbm.zi[v], a = rootingdepth, c = sbm.rootdistpar[v])
+        wetroots = scurve(t.zi[r], a = rootingdepth, c = t.rootdistpar[r])
         actevapsat = min(pottrans * wetroots, satwaterdepth)
         satwaterdepth = satwaterdepth - actevapsat
         restpottrans = pottrans - actevapsat
@@ -348,14 +347,14 @@ function update_before_lateralflow(sbm)
             ustorelayerdepth, actevapustore, restpottrans = acttransp_unsat_sbm(
                 rootingdepth,
                 usld[k],
-                sbm.sumlayers[v][k],
+                t.sumlayers[r][k],
                 restpottrans,
                 actevapustore,
-                sbm.c[v][k],
+                t.c[r][k],
                 usl[k],
-                sbm.θₛ[v],
-                sbm.θᵣ[v],
-                sbm.hb[v],
+                t.θₛ[r],
+                t.θᵣ[r],
+                t.hb[r],
                 ust,
             )
             usld = setindex(usld, ustorelayerdepth, k)
@@ -364,7 +363,7 @@ function update_before_lateralflow(sbm)
         # check soil moisture balance per layer
         du = 0.0
         for k = n_usl:-1:1
-            du = max(0.0, usld[k] - usl[k] * (sbm.θₛ[v] - sbm.θᵣ[v]))
+            du = max(0.0, usld[k] - usl[k] * (t.θₛ[r] - t.θᵣ[r]))
             usld = setindex(usld, usld[k] - du, k)
             if k > 1
                 usld = setindex(usld, usld[k - 1] + du, k - 1)
@@ -388,18 +387,18 @@ function update_before_lateralflow(sbm)
 
         actcapflux = 0.0
         if n_usl > 0
-            ksat = sbm.kvfrac[v][n_usl] * sbm.kv₀[v] * exp(-sbm.f[v] * sbm.zi[v])
+            ksat = t.kvfrac[r][n_usl] * t.kv₀[r] * exp(-t.f[r] * t.zi[r])
             ustorecapacity =
-                sbm.soilwatercapacity[v] -
-                sbm.satwaterdepth[v] - sum(@view usld[1:sbm.nlayers[v]])
+                t.soilwatercapacity[r] -
+                t.satwaterdepth[r] - sum(@view usld[1:t.nlayers[r]])
             maxcapflux = max(
                 0.0,
-                min(ksat, actevapustore, ustorecapacity, sbm.satwaterdepth[v]),
+                min(ksat, actevapustore, ustorecapacity, t.satwaterdepth[r]),
             )
 
-            if sbm.zi[v] > rootingdepth
+            if t.zi[r] > rootingdepth
                 capfluxscale =
-                    sbm.capscale[v] / (sbm.capscale[v] + sbm.zi[v] - rootingdepth) *
+                    t.capscale[r] / (t.capscale[r] + t.zi[r] - rootingdepth) *
                     Float64(Δt.value) / Float64(basetimestep.value)
             else
                 capfluxscale = 0.0
@@ -409,15 +408,15 @@ function update_before_lateralflow(sbm)
             netcapflux = capflux
             for k = n_usl:-1:1
                 toadd =
-                    min(netcapflux, max(usl[k] * (sbm.θₛ[v] - sbm.θᵣ[v]) - usld[k], 0.0))
+                    min(netcapflux, max(usl[k] * (t.θₛ[r] - t.θᵣ[r]) - usld[k], 0.0))
                 usld = setindex(usld, usld[k] + toadd, k)
                 netcapflux = netcapflux - toadd
                 actcapflux = actcapflux + toadd
             end
         end
-        deepksat = sbm.kv₀[v] * exp(-sbm.f[v] * sbm.soilthickness[v])
-        deeptransfer = min(sbm.satwaterdepth[v], deepksat)
-        actleakage = max(0.0, min(sbm.maxleakage[v], deeptransfer))
+        deepksat = t.kv₀[r] * exp(-t.f[r] * t.soilthickness[r])
+        deeptransfer = min(t.satwaterdepth[r], deepksat)
+        actleakage = max(0.0, min(t.maxleakage[r], deeptransfer))
 
         # recharge (mm) for saturated zone
         recharge = (transfer - actcapflux - actleakage - actevapsat - soilevapsat)
@@ -425,40 +424,40 @@ function update_before_lateralflow(sbm)
         actevap = soilevap + transpiration + ae_openw_r + ae_openw_l
 
         # update the outputs and states
-        sbm.cmax[v] = cmax
-        sbm.canopygapfraction[v] = canopygapfraction
-        sbm.canopystorage[v] = canopystorage
-        sbm.snow[v] = snow
-        sbm.snowwater[v] = snowwater
-        sbm.tsoil[v] = tsoil
-        sbm.actinfilt[v] = actinfilt
-        sbm.recharge[v] = recharge
-        sbm.transpiration[v] = transpiration
-        sbm.soilevap[v] = soilevap
-        sbm.interception[v] = interception
-        sbm.ae_openw_r[v] = ae_openw_r
-        sbm.ae_openw_l[v] = ae_openw_l
-        sbm.actevapsat[v] = actevapsat
-        sbm.actevap[v] = actevap
-        sbm.ustorelayerdepth[v] = usld
-        sbm.transfer[v] = transfer
-        sbm.actinfiltsoil[v] = actinfiltsoil
-        sbm.actinfiltpath[v] = actinfiltpath
-        sbm.excesswater[v] = excesswater
-        sbm.excesswatersoil[v] = excesswatersoil
-        sbm.excesswaterpath[v] = excesswaterpath
+        t.cmax[r] = cmax
+        t.canopygapfraction[r] = canopygapfraction
+        t.canopystorage[r] = canopystorage
+        t.snow[r] = snow
+        t.snowwater[r] = snowwater
+        t.tsoil[r] = tsoil
+        t.actinfilt[r] = actinfilt
+        t.recharge[r] = recharge
+        t.transpiration[r] = transpiration
+        t.soilevap[r] = soilevap
+        t.interception[r] = interception
+        t.ae_openw_r[r] = ae_openw_r
+        t.ae_openw_l[r] = ae_openw_l
+        t.actevapsat[r] = actevapsat
+        t.actevap[r] = actevap
+        t.ustorelayerdepth[r] = usld
+        t.transfer[r] = transfer
+        t.actinfiltsoil[r] = actinfiltsoil
+        t.actinfiltpath[r] = actinfiltpath
+        t.excesswater[r] = excesswater
+        t.excesswatersoil[r] = excesswatersoil
+        t.excesswaterpath[r] = excesswaterpath
     end
 end
 
-function update_after_lateralflow(sbm, zi, exfiltsatwater)
+function update_after_lateralflow(t, zi, exfiltsatwater)
 
-    for v in eachindex(sbm.nlayers)
-        usl, n_usl = set_layerthickness(zi[v], sbm.sumlayers[v], sbm.act_thickl[v])
+    for r in eachindex(t.nlayers)
+        usl, n_usl = set_layerthickness(zi[r], t.sumlayers[r], t.act_thickl[r])
         # exfiltration from ustore
-        usld = copy(sbm.ustorelayerdepth[v])
+        usld = copy(t.ustorelayerdepth[r])
         exfiltustore = 0.0
         for k = n_usl:-1:1
-            exfiltustore = max(0, usld[k] - usl[k] * (sbm.θₛ[v] - sbm.θᵣ[v]))
+            exfiltustore = max(0, usld[k] - usl[k] * (t.θₛ[r] - t.θᵣ[r]))
             usld = setindex(usld, usld[k] - exfiltustore, k)
             if k > 1
                 usld = setindex(usld, usld[k - 1] + exfiltustore, k - 1)
@@ -469,55 +468,55 @@ function update_after_lateralflow(sbm, zi, exfiltsatwater)
 
         runoff = max(
             exfiltustore +
-            exfiltsatwater[v] +
-            sbm.excesswater[v] +
-            sbm.infiltexcess[v] +
-            sbm.ae_openw_l[v],
+            exfiltsatwater[r] +
+            t.excesswater[r] +
+            t.infiltexcess[r] +
+            t.ae_openw_l[r],
             0.0,
         )
 
         # volumetric water content per soil layer and root zone
-        vwc = copy(sbm.vwc[v])
-        vwc_perc = copy(sbm.vwc_perc[v])
-        for k = 1:sbm.nlayers[v]
+        vwc = copy(t.vwc[r])
+        vwc_perc = copy(t.vwc_perc[r])
+        for k = 1:t.nlayers[r]
             if k <= n_usl
                 vwc = setindex(
                     vwc,
-                    (usld[k] + (sbm.act_thickl[v][k] - usl[k]) * (sbm.θₛ[v] - sbm.θᵣ[v])) / usl[k] + sbm.θᵣ[v],
+                    (usld[k] + (t.act_thickl[r][k] - usl[k]) * (t.θₛ[r] - t.θᵣ[r])) / usl[k] + t.θᵣ[r],
                     k,
                 )
             else
-                vwc = setindex(vwc, sbm.θₛ[v], k)
+                vwc = setindex(vwc, t.θₛ[r], k)
             end
-            vwc_perc = setindex(vwc_perc, (vwc[k] / sbm.θₛ[v]) * 100.0, k)
+            vwc_perc = setindex(vwc_perc, (vwc[k] / t.θₛ[r]) * 100.0, k)
         end
 
         rootstore_unsat = 0
         for k = 1:n_usl
             rootstore_unsat =
                 rootstore_unsat +
-                (max(0.0, sbm.rootingdepth[v] - sbm.sumlayers[v][k]) / usl[k]) * usld[k]
+                (max(0.0, t.rootingdepth[r] - t.sumlayers[r][k]) / usl[k]) * usld[k]
         end
 
-        rootstore_sat = max(0.0, sbm.rootingdepth[v] - zi[v]) * (sbm.θₛ[v] - sbm.θᵣ[v])
+        rootstore_sat = max(0.0, t.rootingdepth[r] - zi[r]) * (t.θₛ[r] - t.θᵣ[r])
         rootstore = rootstore_sat + rootstore_unsat
-        vwc_root = rootstore / sbm.rootingdepth[v] + sbm.θᵣ[v]
-        vwc_percroot = (vwc_root / sbm.θₛ[v]) * 100.0
+        vwc_root = rootstore / t.rootingdepth[r] + t.θᵣ[r]
+        vwc_percroot = (vwc_root / t.θₛ[r]) * 100.0
 
-        satwaterdepth = (sbm.soilthickness[v] - zi[v]) * (sbm.θₛ[v] - sbm.θᵣ[v])
+        satwaterdepth = (t.soilthickness[r] - zi[r]) * (t.θₛ[r] - t.θᵣ[r])
 
         # update the outputs and states
-        sbm.ustorelayerdepth[v] = usld
-        sbm.ustoredepth[v] = ustoredepth
-        sbm.satwaterdepth[v] = satwaterdepth
-        sbm.exfiltsatwater[v] = exfiltsatwater[v]
-        sbm.exfiltustore[v] = exfiltustore
-        sbm.runoff[v] = runoff
-        sbm.vwc[v] = vwc
-        sbm.vwc_perc[v] = vwc_perc
-        sbm.rootstore[v] = rootstore
-        sbm.vwc_root[v] = vwc_root
-        sbm.vwc_percroot[v] = vwc_percroot
-        sbm.zi[v] = zi[v]
+        t.ustorelayerdepth[r] = usld
+        t.ustoredepth[r] = ustoredepth
+        t.satwaterdepth[r] = satwaterdepth
+        t.exfiltsatwater[r] = exfiltsatwater[r]
+        t.exfiltustore[r] = exfiltustore
+        t.runoff[r] = runoff
+        t.vwc[r] = vwc
+        t.vwc_perc[r] = vwc_perc
+        t.rootstore[r] = rootstore
+        t.vwc_root[r] = vwc_root
+        t.vwc_percroot[r] = vwc_percroot
+        t.zi[r] = zi[r]
     end
 end
