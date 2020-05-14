@@ -179,7 +179,8 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
 
     # needed for derived parameters below
     act_thickl = svectorscopy(act_thickl, Val{maxlayers}())
-    soilwatercapacity = soilthickness .* (θₛ .- θᵣ)
+    θₑ = θₛ .- θᵣ
+    soilwatercapacity = soilthickness .* θₑ
     satwaterdepth = 0.85 .* soilwatercapacity
 
     # copied to array of sarray below
@@ -226,10 +227,10 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
         e_r = e_r,  # Vector{Float64}
 
         # filled in by SBM struct defaults
-        f = (θₛ .- θᵣ) ./ m,
+        f = θₑ ./ m,
         ustorelayerdepth = act_thickl .* 0.0,
         satwaterdepth = satwaterdepth,
-        zi = max.(0.0, soilthickness .- satwaterdepth ./ (θₛ .- θᵣ)),
+        zi = max.(0.0, soilthickness .- satwaterdepth ./ θₑ),
         soilwatercapacity = soilwatercapacity,
         snow = fill(0.0, n),
         snowwater = fill(0.0, n),
@@ -291,14 +292,14 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
 
     ssf = LateralSSF{Float64}(
         kh₀ = kh₀,
-        f = getfield.(sbm, :f),
-        zi = getfield.(sbm, :zi),
+        f = sbm.f,
+        zi = sbm.zi,
         soilthickness = soilthickness,
-        θₑ = θₛ - θᵣ,
+        θₑ = θₛ .- θᵣ,
         Δt = 1.0,
         βₗ = βₗ,
-        dl = dl * 1000.0,
-        dw = dw * 1000.0,
+        dl = dl .* 1000.0,
+        dw = dw .* 1000.0,
     )
 
     dag = flowgraph(ldd, inds, Wflow.pcrdir)
