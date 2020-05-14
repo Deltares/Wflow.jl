@@ -8,6 +8,8 @@ using StaticArrays
 using Test
 using UnPack
 using Wflow
+using FillArrays
+using TypedTables
 
 # ensure test data is present
 testdir = @__DIR__

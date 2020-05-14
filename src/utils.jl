@@ -101,3 +101,10 @@ end
 # 2.5x faster power method
 "Faster method for exponentiation"
 pow(x, y) = exp(y * log(x))
+
+# https://juliaarrays.github.io/StaticArrays.jl/latest/pages/api/#Arrays-of-static-arrays-1
+function svectorscopy(x::Matrix{T}, ::Val{N}) where {T,N}
+    size(x,1) == N || error("sizes mismatch")
+    isbitstype(T) || error("use for bitstypes only")
+    copy(reinterpret(SVector{N,T}, vec(x)))
+end
