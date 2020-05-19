@@ -73,7 +73,7 @@ trialallocs = BenchmarkTools.allocs(trialmin)
 trialtime = BenchmarkTools.time(trialmin)
 
 @test trialtime < 1e9  # 1 second
-@test trialtime < 200e6  # 200 ms
+@test trialtime < 300e6  # 300 ms
 if VERSION >= v"1.5"
     # views don't allocate anymore in julia 1.5
     @test trialallocs == 0
