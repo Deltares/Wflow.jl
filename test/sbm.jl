@@ -150,3 +150,8 @@ ds_out = setup_netcdf(output_path, nclon, nclat)
 
 # q = rand(291, 313)
 # grow_netcdf!(ds_out, "q", 1, q)
+
+# close both input and output datasets
+close(dataset)
+close(ds_out)
+rm(output_path)

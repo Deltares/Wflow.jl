@@ -52,14 +52,31 @@ end
 
 using BenchmarkTools, Juno
 
+benchmark = @benchmark update(model, toposort, n)
 # @time update(model, toposort, n)
-@btime update(model, toposort, n)
-# 120.086 ms (0 allocations: 0 bytes) # false
-# 62.698 s (568695060 allocations: 22.45 GiB) # naive structarrays
-# 206.280 ms (3387386 allocations: 57.80 MiB) # lazyrow, spends half the time updating fields
-# 115.491 ms (8 allocations: 1.53 MiB) # namedtuple of vectors with @inbound, same with @simd
-# 201.162 ms (11189802 allocations: 210.96 MiB) # namedtuple of vectors with 4 @threads
-# 116.777 ms (8 allocations: 1.53 MiB) # namedtuple of vectors with @fastmath
-# 116.249 ms (0 allocations: 0 bytes) # namedtuple of vectors (no allocations from state transfer)
-
+# @btime update(model, toposort, n)
 # @profiler foreach(x -> update(model, toposort, n), 1:10)  # run a few times for more accuracy
+
+"Prints a benchmark results just like btime"
+function print_benchmark(trialmin)
+    trialtime = BenchmarkTools.time(trialmin)
+    trialallocs = BenchmarkTools.allocs(trialmin)
+    println("  ",
+        BenchmarkTools.prettytime(trialtime),
+        " (", trialallocs , " allocation",
+        trialallocs == 1 ? "" : "s", ": ",
+        BenchmarkTools.prettymemory(BenchmarkTools.memory(trialmin)), ")")
+end
+
+trialmin = BenchmarkTools.minimum(benchmark)
+trialallocs = BenchmarkTools.allocs(trialmin)
+trialtime = BenchmarkTools.time(trialmin)
+
+@test trialtime < 1e9  # 1 second
+@test trialtime < 200e6  # 200 ms
+if VERSION >= v"1.5"
+    # views don't allocate anymore in julia 1.5
+    @test trialallocs == 0
+end
+println("Model update")
+print_benchmark(trialmin)
