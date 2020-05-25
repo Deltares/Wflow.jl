@@ -8,9 +8,12 @@ using StaticArrays
 using Test
 using UnPack
 using Wflow
+using FillArrays
+using TypedTables
 
 # ensure test data is present
-const datadir = joinpath(@__DIR__, "data")
+testdir = @__DIR__
+datadir = joinpath(testdir, "data")
 isdir(datadir) || mkdir(datadir)
 
 "Download a test data file if it does not already exist"
@@ -25,6 +28,7 @@ end
 staticmaps_rhine_path = testdata(v"0.1", "staticmaps.nc", "staticmaps-rhine.nc")
 staticmaps_moselle_path = testdata(v"0.2", "staticmaps.nc", "staticmaps-moselle.nc")
 leafarea_moselle_path = testdata(v"0.2", "lai_clim.nc", "lai_clim-moselle.nc")
+forcing_moselle_path = testdata(v"0.2", "forcing-2000.nc", "forcing-moselle.nc")
 
 ## run all tests
 

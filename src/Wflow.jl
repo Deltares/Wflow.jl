@@ -7,6 +7,8 @@ using Pkg.TOML
 using StaticArrays
 using Statistics
 using Setfield: setproperties
+using FillArrays
+using TypedTables
 
 include("config.jl")
 include("horizontal_process.jl")
