@@ -36,10 +36,7 @@ function rainfall_interception_gash(
     # Hack for stemflow
 
     pt = 0.1 * canopygapfraction
-    p_sat = max(
-        0.0,
-        (-cmax / e_r) * log(1.0 - (e_r / (1.0 - canopygapfraction - pt))),
-    )
+    p_sat = max(0.0, (-cmax / e_r) * log(1.0 - (e_r / (1.0 - canopygapfraction - pt))))
     # large storms P > P_sat
     largestorms = precipitation > p_sat
 
@@ -195,20 +192,15 @@ function infiltration(
     end
     max_infiltsoil = min(infiltcapsoil * soilinfredu, soilinf)
     max_infiltpath = min(infiltcappath * soilinfredu, pathinf)
-    infiltsoilpath =
-        min(max_infiltpath + max_infiltsoil, max(0.0, ustorecapacity))
+    infiltsoilpath = min(max_infiltpath + max_infiltsoil, max(0.0, ustorecapacity))
 
     if max_infiltpath + max_infiltsoil > 0.0
         infiltsoil =
-            max_infiltsoil * min(
-                1.0,
-                max(0.0, ustorecapacity) / (max_infiltpath + max_infiltsoil),
-            )
+            max_infiltsoil *
+            min(1.0, max(0.0, ustorecapacity) / (max_infiltpath + max_infiltsoil))
         infiltpath =
-            max_infiltpath * min(
-                1.0,
-                max(0.0, ustorecapacity) / (max_infiltpath + max_infiltsoil),
-            )
+            max_infiltpath *
+            min(1.0, max(0.0, ustorecapacity) / (max_infiltpath + max_infiltsoil))
     else
         infiltsoil = 0.0
         infiltpath = 0.0
@@ -216,12 +208,7 @@ function infiltration(
 
     infiltexcess = (soilinf - max_infiltsoil) + (pathinf - max_infiltpath)
 
-    return infiltsoilpath,
-    infiltsoil,
-    infiltpath,
-    soilinf,
-    pathinf,
-    infiltexcess
+    return infiltsoilpath, infiltsoil, infiltpath, soilinf, pathinf, infiltexcess
 end
 
 """
@@ -274,7 +261,7 @@ function unsatzone_flow_sbm(
     if sd <= 0.00001
         ast = 0.0
     else
-        st =  kv_z * min(ustorelayerdepth, usl * (θₛ - θᵣ)) / sd
+        st = kv_z * min(ustorelayerdepth, usl * (θₛ - θᵣ)) / sd
         ast = min(st, ustorelayerdepth)
         ustorelayerdepth = ustorelayerdepth - ast
     end
@@ -309,17 +296,7 @@ The refreezing efficiency factor is set to 0.05.
 - `rainfall` (precipitation that occurs as rainfall)
 - `snowfall` (precipitation that occurs as snowfall)
 """
-function snowpack_hbv(
-    snow,
-    snowwater,
-    precipitation,
-    temperature,
-    tti,
-    tt,
-    ttm,
-    cfmax,
-    whc,
-)
+function snowpack_hbv(snow, snowwater, precipitation, temperature, tti, tt, ttm, cfmax, whc)
 
     rfcf = 1.0  # correction factor for rainfall
     cfr = 0.05  # refreeing efficiency constant in refreezing of freewater in snow
@@ -337,8 +314,7 @@ function snowpack_hbv(
     # fraction of precipitation which falls as snow
     snowfrac = 1.0 - rainfrac
     # different correction for rainfall and snowfall
-    precipitation =
-        sfcf * snowfrac * precipitation + rfcf * rainfrac * precipitation
+    precipitation = sfcf * snowfrac * precipitation + rfcf * rainfrac * precipitation
 
     snowfall = snowfrac * precipitation  # snowfall depth
     rainfall = rainfrac * precipitation  # rainfall depth

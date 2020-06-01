@@ -24,9 +24,7 @@ function update_before_lateralflow(t)
             cmax = t.sl[r] * t.lai[r] + t.swood[r]
             canopygapfraction = exp(-t.kext[r] * t.lai[r])
             ewet = (1.0 - exp(-t.kext[r] * t.lai[r])) * potevap
-            e_r =
-                precipitation > 0.0 ? min(0.25, ewet / max(0.0001, precipitation)) :
-                0.0
+            e_r = precipitation > 0.0 ? min(0.25, ewet / max(0.0001, precipitation)) : 0.0
         end
 
         potevap = potevap * t.et_reftopot[r]
@@ -34,29 +32,24 @@ function update_before_lateralflow(t)
         # PotEvap = PotenEvap #??
 
         if Δt >= Hour(23)
-            throughfall, interception, stemflow, canopystorage =
-                rainfall_interception_gash(
-                    cmax,
-                    e_r,
-                    canopygapfraction,
-                    precipitation,
-                    t.canopystorage[r],
-                    maxevap = potevap,
-                )
+            throughfall, interception, stemflow, canopystorage = rainfall_interception_gash(
+                cmax,
+                e_r,
+                canopygapfraction,
+                precipitation,
+                t.canopystorage[r],
+                maxevap = potevap,
+            )
             pottrans_soil = max(0.0, potevap - interception) # now in mm
         else
-            netinterception,
-            throughfall,
-            stemflow,
-            leftover,
-            interception,
-            canopystorage = rainfall_interception_modrut(
-                precipitation,
-                potevap,
-                t.canopystorage[r],
-                canopygapfraction,
-                cmax,
-            )
+            netinterception, throughfall, stemflow, leftover, interception, canopystorage =
+                rainfall_interception_modrut(
+                    precipitation,
+                    potevap,
+                    t.canopystorage[r],
+                    canopygapfraction,
+                    cmax,
+                )
             pottrans_soil = max(0.0, leftover)  # now in mm
             interception = netinterception
         end
@@ -111,10 +104,8 @@ function update_before_lateralflow(t)
 
         rootingdepth = min(t.soilthickness[r] * 0.99, t.rootingdepth[r])
 
-        ae_openw_r =
-            min(wl_river * 1000.0 * t.riverfrac[r], t.riverfrac[r] * pottrans_soil)
-        ae_openw_l =
-            min(wl_land * 1000.0 * t.waterfrac[r], t.waterfrac[r] * pottrans_soil)
+        ae_openw_r = min(wl_river * 1000.0 * t.riverfrac[r], t.riverfrac[r] * pottrans_soil)
+        ae_openw_l = min(wl_land * 1000.0 * t.waterfrac[r], t.waterfrac[r] * pottrans_soil)
 
         restevap = pottrans_soil - ae_openw_r - ae_openw_l
 
@@ -168,15 +159,10 @@ function update_before_lateralflow(t)
                 for m = 1:n_usl
                     l_sat = usl[m] * (t.θₛ[r] - t.θᵣ[r])
                     kv_z = t.kvfrac[r][m] * t.kv₀[r] * exp(-t.f[r] * z[m])
-                    ustorelayerdepth =
-                        m == 1 ? t.ustorelayerdepth[r][m] + infiltsoilpath :
+                    ustorelayerdepth = m == 1 ? t.ustorelayerdepth[r][m] + infiltsoilpath :
                         t.ustorelayerdepth[r][m] + ast
-                    ustorelayerdepth, ast = unsatzone_flow_layer(
-                        ustorelayerdepth,
-                        kv_z,
-                        l_sat,
-                        t.c[r][m],
-                    )
+                    ustorelayerdepth, ast =
+                        unsatzone_flow_layer(ustorelayerdepth, kv_z, l_sat, t.c[r][m])
                     usld = setindex(usld, ustorelayerdepth, m)
                 end
             end
@@ -189,20 +175,17 @@ function update_before_lateralflow(t)
             # atmosphere from the upper layer.
             if t.maxlayers[r] == 1
                 soilevapunsat =
-                    potsoilevap *
-                    min(1.0, saturationdeficit / t.soilwatercapacity[r])
+                    potsoilevap * min(1.0, saturationdeficit / t.soilwatercapacity[r])
             else
                 # In case only the most upper soil layer contains unsaturated storage
                 if n_usl == 1
                     # Check if groundwater level lies below the surface
                     soilevapunsat =
-                        potsoilevap *
-                        min(1.0, usld[1] / (t.zi[r] * (t.θₛ[r] - t.θᵣ[r])))
+                        potsoilevap * min(1.0, usld[1] / (t.zi[r] * (t.θₛ[r] - t.θᵣ[r])))
                 else
                     # In case first layer contains no saturated storage
                     soilevapunsat =
-                        potsoilevap *
-                        min(1.0, usld[1] / (usl[1] * ((t.θₛ[r] - t.θᵣ[r]))))
+                        potsoilevap * min(1.0, usld[1] / (usl[1] * ((t.θₛ[r] - t.θᵣ[r]))))
                 end
             end
             # Ensure that the unsaturated evaporation rate does not exceed the
@@ -222,10 +205,8 @@ function update_before_lateralflow(t)
                 soilevapsat =
                     potsoilevap *
                     min(1.0, (t.act_thickl[r][1] - t.zi[r]) / t.act_thickl[r][1])
-                soilevapsat = min(
-                    soilevapsat,
-                    (t.act_thickl[r][1] - t.zi[r]) * (t.θₛ[r] - t.θᵣ[r]),
-                )
+                soilevapsat =
+                    min(soilevapsat, (t.act_thickl[r][1] - t.zi[r]) * (t.θₛ[r] - t.θᵣ[r]))
             else
                 soilevapsat = 0.0
             end
@@ -264,7 +245,7 @@ function update_before_lateralflow(t)
             du = max(0.0, usld[k] - usl[k] * (t.θₛ[r] - t.θᵣ[r]))
             usld = setindex(usld, usld[k] - du, k)
             if k > 1
-                usld = setindex(usld, usld[k - 1] + du, k - 1)
+                usld = setindex(usld, usld[k-1] + du, k - 1)
             end
         end
 
@@ -287,12 +268,10 @@ function update_before_lateralflow(t)
         if n_usl > 0
             ksat = t.kvfrac[r][n_usl] * t.kv₀[r] * exp(-t.f[r] * t.zi[r])
             ustorecapacity =
-                t.soilwatercapacity[r] -
-                t.satwaterdepth[r] - sum(@view usld[1:t.nlayers[r]])
-            maxcapflux = max(
-                0.0,
-                min(ksat, actevapustore, ustorecapacity, t.satwaterdepth[r]),
-            )
+                t.soilwatercapacity[r] - t.satwaterdepth[r] -
+                sum(@view usld[1:t.nlayers[r]])
+            maxcapflux =
+                max(0.0, min(ksat, actevapustore, ustorecapacity, t.satwaterdepth[r]))
 
             if t.zi[r] > rootingdepth
                 capfluxscale =
@@ -305,8 +284,7 @@ function update_before_lateralflow(t)
 
             netcapflux = capflux
             for k = n_usl:-1:1
-                toadd =
-                    min(netcapflux, max(usl[k] * (t.θₛ[r] - t.θᵣ[r]) - usld[k], 0.0))
+                toadd = min(netcapflux, max(usl[k] * (t.θₛ[r] - t.θᵣ[r]) - usld[k], 0.0))
                 usld = setindex(usld, usld[k] + toadd, k)
                 netcapflux = netcapflux - toadd
                 actcapflux = actcapflux + toadd
@@ -358,7 +336,7 @@ function update_after_lateralflow(t, zi, exfiltsatwater)
             exfiltustore = max(0, usld[k] - usl[k] * (t.θₛ[r] - t.θᵣ[r]))
             usld = setindex(usld, usld[k] - exfiltustore, k)
             if k > 1
-                usld = setindex(usld, usld[k - 1] + exfiltustore, k - 1)
+                usld = setindex(usld, usld[k-1] + exfiltustore, k - 1)
             end
         end
 
@@ -380,7 +358,8 @@ function update_after_lateralflow(t, zi, exfiltsatwater)
             if k <= n_usl
                 vwc = setindex(
                     vwc,
-                    (usld[k] + (t.act_thickl[r][k] - usl[k]) * (t.θₛ[r] - t.θᵣ[r])) / usl[k] + t.θᵣ[r],
+                    (usld[k] + (t.act_thickl[r][k] - usl[k]) * (t.θₛ[r] - t.θᵣ[r])) /
+                    usl[k] + t.θᵣ[r],
                     k,
                 )
             else

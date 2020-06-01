@@ -15,7 +15,7 @@ const pcrdir = [
 "Get a list of indices that are active, based on a nodata value"
 function active_indices(A, nodata)
     inds = CartesianIndices(size(A))
-    filter(i->!isequal(A[i], nodata), inds)
+    filter(i -> !isequal(A[i], nodata), inds)
 end
 
 "Convert a gridded drainage direction to a directed graph"
@@ -38,7 +38,7 @@ function flowgraph(ldd::AbstractVector, inds::AbstractVector, pcrdir::AbstractVe
     @assert !is_cyclic(dag)
     return dag
 end
-    
+
 "Kinematic wave flow rate for a single cell and timestep"
 function kinematic_wave(Qin, Qold, q, α, β, Δt, Δx)
     ϵ = 1.0e-12

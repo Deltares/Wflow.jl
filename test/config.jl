@@ -1,8 +1,9 @@
-@testset begin "configuration file"
+@testset begin
+    "configuration file"
     tomlpath = joinpath(@__DIR__, "config.toml")
     parsed_toml = TOML.parsefile(tomlpath)
     config = Wflow.Config(parsed_toml)
-    @test parsed_toml isa Dict{String, Any}
+    @test parsed_toml isa Dict{String,Any}
     @test config isa Wflow.Config
     @test getfield(config, :dict) === parsed_toml
 

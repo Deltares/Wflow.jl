@@ -46,7 +46,7 @@ end
     ssf = model.lateral.ssf
     @test sum(ssf) ≈ 6.959580661699383e16
     @test ssf[toposort[1]] ≈ 4.392529226944353e11
-    @test ssf[toposort[n - 100]] ≈ 8.003673229321337e11
+    @test ssf[toposort[n-100]] ≈ 8.003673229321337e11
     @test ssf[sink] ≈ 6.92054650606041e11
 end
 
@@ -61,11 +61,17 @@ benchmark = @benchmark update(model, toposort, n)
 function print_benchmark(trialmin)
     trialtime = BenchmarkTools.time(trialmin)
     trialallocs = BenchmarkTools.allocs(trialmin)
-    println("  ",
+    println(
+        "  ",
         BenchmarkTools.prettytime(trialtime),
-        " (", trialallocs , " allocation",
-        trialallocs == 1 ? "" : "s", ": ",
-        BenchmarkTools.prettymemory(BenchmarkTools.memory(trialmin)), ")")
+        " (",
+        trialallocs,
+        " allocation",
+        trialallocs == 1 ? "" : "s",
+        ": ",
+        BenchmarkTools.prettymemory(BenchmarkTools.memory(trialmin)),
+        ")",
+    )
 end
 
 trialmin = BenchmarkTools.minimum(benchmark)

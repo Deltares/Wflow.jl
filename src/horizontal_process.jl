@@ -1,19 +1,5 @@
 
-function kinematic_wave_ssf(
-    ssfin,
-    ssfₜ₋₁,
-    ziₜ₋₁,
-    r,
-    kh₀,
-    β,
-    θₑ,
-    f,
-    d,
-    Δt,
-    Δx,
-    dw,
-    ssfmax,
-)
+function kinematic_wave_ssf(ssfin, ssfₜ₋₁, ziₜ₋₁, r, kh₀, β, θₑ, f, d, Δt, Δx, dw, ssfmax)
 
     ϵ = 1.0e-3
     max_iters = 3000
@@ -32,10 +18,7 @@ function kinematic_wave_ssf(
         # Term of the continuity equation for Newton-Raphson iteration for iteration 1
         # because celerity Cn is depending on zi, the increase or decrease of zi is moved to the recharge term of the continuity equation
         # then (1./Cn)*ssfₜ₋₁ can be replaced with (1./Cn)*ssf, and thus celerity and lateral flow rate ssf are then in line
-        c =
-            (Δt / Δx) * ssfin +
-            (1.0 / Cn) * ssf +
-            Δt * (r - (ziₜ₋₁ - zi) * θₑ * dw)
+        c = (Δt / Δx) * ssfin + (1.0 / Cn) * ssf + Δt * (r - (ziₜ₋₁ - zi) * θₑ * dw)
 
         # Continuity equation of which solution should be zero
         fQ = (Δt / Δx) * ssf + (1.0 / Cn) * ssf - c
@@ -58,10 +41,7 @@ function kinematic_wave_ssf(
             # Term of the continuity equation for given Newton-Raphson iteration m
             # because celerity Cn is depending on zi, the increase or decrease of zi is moved to the recharge term of the continuity equation
             # then (1./Cn)*ssfₜ₋₁ can be replaced with (1./Cn)*ssf, and thus celerity and lateral flow rate ssf are then in line
-            c =
-                (Δt / Δx) * ssfin +
-                (1.0 / Cn) * ssf +
-                Δt * (r - (ziₜ₋₁ - zi) * θₑ * dw)
+            c = (Δt / Δx) * ssfin + (1.0 / Cn) * ssf + Δt * (r - (ziₜ₋₁ - zi) * θₑ * dw)
 
             # Continuity equation of which solution should be zero
             fQ = (Δt / Δx) * ssf + (1.0 / Cn) * ssf - c
