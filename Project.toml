@@ -1,6 +1,6 @@
 name = "Wflow"
 uuid = "d48b7d99-76e7-47ae-b1d5-ff0c1cf9a818"
-authors = ["Deltares"]
+authors = ["Deltares and contributors"]
 version = "0.1.0"
 
 [deps]
