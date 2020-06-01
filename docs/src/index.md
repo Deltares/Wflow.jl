@@ -1,4 +1,8 @@
-# Wflow.jl
+```@meta
+CurrentModule = Wflow
+```
+
+# Wflow
 
 ```@index
 ```
