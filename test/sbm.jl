@@ -96,7 +96,7 @@ config = Wflow.Config(TOML.parsefile(tomlpath))
 # initialize a vector of SBM structs
 sbm = Wflow.initialize_sbm_model(
     joinpath(tomldir, config.input.staticmaps),
-    joinpath(tomldir, config.input.leafarea)
+    joinpath(tomldir, config.input.leafarea),
 )
 
 

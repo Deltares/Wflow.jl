@@ -9,11 +9,7 @@ function lattometres(lat::Float64)
     p3 = 0.118         # longitude calculation term 3
 
     # Calculate the length of a degree of latitude and longitude in meters
-    latlen =
-        m1 +
-        (m2 * cosd(2.0 * lat)) +
-        (m3 * cosd(4.0 * lat)) +
-        (m4 * cosd(6.0 * lat))
+    latlen = m1 + (m2 * cosd(2.0 * lat)) + (m3 * cosd(4.0 * lat)) + (m4 * cosd(6.0 * lat))
     longlen = (p1 * cosd(lat)) + (p2 * cosd(3.0 * lat)) + (p3 * cosd(5.0 * lat))
 
     return longlen, latlen
@@ -28,8 +24,8 @@ available, a default value based on dict 'dpars' is returned.
 function readnetcdf(nc, var, inds, dpars; transp = false)
     if haskey(nc, var)
         @debug(string("read parameter ", var))
-        ncvar = transp ? Float64.(permutedims(nc[var][:])[inds]) :
-            Float64.(nc[var][:][inds])
+        ncvar =
+            transp ? Float64.(permutedims(nc[var][:])[inds]) : Float64.(nc[var][:][inds])
     else
         @warn(string(var, " not found, set to default value ", dpars[var]))
         ncvar = fill(dpars[var], length(inds))
@@ -47,7 +43,7 @@ function set_layerthickness(d::Float64, sl::SVector, tl::SVector)
 
     act_d = tl .* mv
     for i = 1:length(act_d)
-        if d > sl[i + 1]
+        if d > sl[i+1]
             act_d = setindex(act_d, tl[i], i)
         elseif d - sl[i] > 0.0
             act_d = setindex(act_d, d - sl[i], i)
@@ -68,7 +64,7 @@ function detdrainlength(ldd, xl, yl)
     # take into account non-square cells
     # if ldd is 8 or 2 use ylength
     # if ldd is 4 or 6 use xlength
-    if ldd == 2 || ldd ==  8
+    if ldd == 2 || ldd == 8
         yl
     elseif ldd == 4 || ldd == 6
         xl
@@ -104,7 +100,7 @@ pow(x, y) = exp(y * log(x))
 
 # https://juliaarrays.github.io/StaticArrays.jl/latest/pages/api/#Arrays-of-static-arrays-1
 function svectorscopy(x::Matrix{T}, ::Val{N}) where {T,N}
-    size(x,1) == N || error("sizes mismatch")
+    size(x, 1) == N || error("sizes mismatch")
     isbitstype(T) || error("use for bitstypes only")
     copy(reinterpret(SVector{N,T}, vec(x)))
 end
