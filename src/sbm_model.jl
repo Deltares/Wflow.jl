@@ -378,7 +378,8 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
     # lateral part sbm
     khfrac = readnetcdf(nc, "KsatHorFrac", inds, dparams, transp = trsp)
     βₗ = trsp ? Float64.(permutedims(nc["Slope"][:])[inds]) : Float64.(nc["Slope"][:][inds])
-    ldd = trsp ? permutedims(nc["wflow_ldd"][:])[inds] : nc["wflow_ldd"][:][inds]
+    ldd_2d = trsp ? permutedims(nc["wflow_ldd"][:]) : nc["wflow_ldd"][:]
+    ldd = ldd_2d[inds]
     kh₀ = khfrac .* kv₀
     dl = fill(mv, n)
     dw = fill(mv, n)
@@ -401,6 +402,13 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
     )
 
     dag = flowgraph(ldd, inds, Wflow.pcrdir)
+
+    river_2d = trsp ? nomissing(permutedims(nc["wflow_river"][:]), 0) :
+        nomissing(nc["wflow_river"][:], 0)
+    inds_riv = Wflow.active_indices(river_2d, 0)
+    ldd_riv = ldd_2d[inds_riv]
+    dag_riv = flowgraph(ldd_riv, inds_riv, Wflow.pcrdir)
+
     starttime = DateTime(2000, 1, 1)
 
     model = Model(dag, ssf, sbm, Clock(starttime, 1, Δt), nothing, nothing)
