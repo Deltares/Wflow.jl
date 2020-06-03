@@ -38,13 +38,13 @@ const dparams = Dict(
 )
 
 """
-    initialize_sbm_model(staticmaps_path, leafarea_path)
+    initialize_sbm_model(staticmaps_path, leafarea_path, reader, writer)
 
 Initial part of the SBM model concept. Reads model parameters from disk, `staticmaps_path` is the file path
 of the NetCDF file with model parameters, `leafarea_path` is an optional file path for a NetCDF file with leaf
 area index (LAI) values (climatology).
 """
-function initialize_sbm_model(staticmaps_path, leafarea_path)
+function initialize_sbm_model(staticmaps_path, leafarea_path, reader, writer)
 
     sizeinmetres = false
     thicknesslayers = SVector(100.0, 300.0, 800.0, mv)
@@ -449,13 +449,13 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
 
     starttime = DateTime(2000, 1, 1)
 
-    model = Model(
+    return Model(
         (land = dag, river = dag_riv),
         (subsurface = ssf, land = olf, river = rf),
         sbm,
         Clock(starttime, 1, Δt),
-        nothing,
-        nothing,
+        reader,
+        writer,
+        inds,
     )
-    return model
 end

@@ -10,6 +10,7 @@ using UnPack
 using Wflow
 using FillArrays
 using TypedTables
+using CSV
 
 # ensure test data is present
 testdir = @__DIR__

@@ -1,6 +1,9 @@
 function update(model, toposort_land, toposort_river, frac_toriver, index_river, nl, nr)
     @unpack lateral, vertical, network, clock = model
 
+    # increases time from 115ms to 3.6s and allocations from 0 to 150MB
+    Wflow.update_forcing!(model)
+
     Wflow.update_before_lateralflow(vertical)
     lateral.subsurface.recharge[:] = vertical.recharge
     lateral.subsurface.recharge .*= lateral.subsurface.dl
@@ -49,7 +52,16 @@ function update(model, toposort_land, toposort_river, frac_toriver, index_river,
     return model
 end
 
-model = Wflow.initialize_sbm_model(staticmaps_moselle_path, leafarea_moselle_path)
+reader = NCDataset(forcing_moselle_path)
+writer = nothing  # TODO use a CSV writer, RowWriter?
+
+model = Wflow.initialize_sbm_model(
+    staticmaps_moselle_path,
+    leafarea_moselle_path,
+    reader,
+    writer,
+)
+
 toposort_land = Wflow.topological_sort_by_dfs(model.network.land)
 toposort_river = Wflow.topological_sort_by_dfs(model.network.river)
 nl = length(toposort_land)
@@ -63,9 +75,14 @@ frac_toriver = Wflow.fraction_runoff_toriver(
 )
 model = update(model, toposort_land, toposort_river, frac_toriver, index_river, nl, nr)
 
-
 @testset "first timestep" begin
     sbm = model.vertical
+
+    vcell = model.vertical[1]
+    @test vcell isa NamedTuple
+    @test isbits(vcell)
+    @test vcell.tt ≈ 1.2999999523162842
+
     @test model.clock.iteration == 2
     @test sbm.altitude[1] == 345.1470031738281
     @test sbm.θₛ[1] == 0.46367356181144714
