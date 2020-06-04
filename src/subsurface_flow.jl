@@ -28,7 +28,7 @@ function statenames(::Type{LateralSSF})
 
 end
 
-function update(ssf::LateralSSF, dag, toposort, n)
+function update(ssf::LateralSSF, dag, toposort)
     for v in toposort
         upstream_nodes = inneighbors(dag, v)
         ssfin = isempty(upstream_nodes) ? 0.0 : sum(ssf.ssf[i] for i in upstream_nodes)

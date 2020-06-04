@@ -313,6 +313,8 @@ function update_before_lateralflow(t)
         t.interception[r] = interception
         t.ae_openw_r[r] = ae_openw_r
         t.ae_openw_l[r] = ae_openw_l
+        t.runoff_land[r] = runoff_land
+        t.runoff_river[r] = runoff_river
         t.actevapsat[r] = actevapsat
         t.actevap[r] = actevap
         t.ustorelayerdepth[r] = usld
@@ -346,7 +348,8 @@ function update_after_lateralflow(t, zi, exfiltsatwater)
             exfiltustore +
             exfiltsatwater[r] +
             t.excesswater[r] +
-            t.infiltexcess[r] +
+            t.runoff_land[r] +
+            t.infiltexcess[r] -
             t.ae_openw_l[r],
             0.0,
         )
