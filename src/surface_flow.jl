@@ -52,7 +52,7 @@ function update(
                 end
             end
             courant = (sf.Δt ./ sf.dl) .* sf.cel
-            ts = max(ceil(Int, (1.25 * quantile!(courant, 0.95))),1)
+            ts = max(ceil(Int, (1.25 * quantile!(courant, 0.95))), 1)
         end
     end
 
@@ -63,17 +63,8 @@ function update(
     for _ = 1:ts
         for v in toposort
             upstream_nodes = inneighbors(dag, v)
-            qin = isempty(upstream_nodes) ? 0.0 :
-                sum(sf.q[i] for i in upstream_nodes)
-            sf.q[v] = kinematic_wave(
-                qin,
-                sf.q[v],
-                sf.qlat[v],
-                sf.α[v],
-                sf.β,
-                adt,
-                sf.dl[v],
-            )
+            qin = isempty(upstream_nodes) ? 0.0 : sum(sf.q[i] for i in upstream_nodes)
+            sf.q[v] = kinematic_wave(qin, sf.q[v], sf.qlat[v], sf.α[v], sf.β, adt, sf.dl[v])
 
             # update alpha
             crossarea = sf.α[v] * pow(sf.q[v], sf.β)

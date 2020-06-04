@@ -56,8 +56,7 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
         trsp = true
     end
 
-    subcatch_2d =
-        trsp ? permutedims(nc["wflow_subcatch"][:]) : nc["wflow_subcatch"][:]
+    subcatch_2d = trsp ? permutedims(nc["wflow_subcatch"][:]) : nc["wflow_subcatch"][:]
     # indices based on catchment
     inds = Wflow.active_indices(subcatch_2d, missing)
     n = length(inds)
@@ -67,8 +66,7 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
     river_2d = trsp ? nomissing(permutedims(nc["wflow_river"][:]), 0) :
         nomissing(nc["wflow_river"][:], 0)
     river = river_2d[inds]
-    riverwidth_2d =
-        trsp ? Float64.(nomissing(permutedims(nc["wflow_riverwidth"][:]), 0)) :
+    riverwidth_2d = trsp ? Float64.(nomissing(permutedims(nc["wflow_riverwidth"][:]), 0)) :
         Float64.(nomissing(nc["wflow_riverwidth"][:], 0))
     riverwidth = riverwidth_2d[inds]
     riverlength_2d =
@@ -97,32 +95,23 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
     kv₀ = readnetcdf(nc, "KsatVer", inds, dparams, transp = trsp)
     m = readnetcdf(nc, "M", inds, dparams, transp = trsp)
     hb = readnetcdf(nc, "AirEntryPressure", inds, dparams, transp = trsp)
-    soilthickness =
-        readnetcdf(nc, "SoilThickness", inds, dparams, transp = trsp)
-    infiltcappath =
-        readnetcdf(nc, "InfiltCapPath", inds, dparams, transp = trsp)
-    infiltcapsoil =
-        readnetcdf(nc, "InfiltCapSoil", inds, dparams, transp = trsp)
+    soilthickness = readnetcdf(nc, "SoilThickness", inds, dparams, transp = trsp)
+    infiltcappath = readnetcdf(nc, "InfiltCapPath", inds, dparams, transp = trsp)
+    infiltcapsoil = readnetcdf(nc, "InfiltCapSoil", inds, dparams, transp = trsp)
     maxleakage = readnetcdf(nc, "MaxLeakage", inds, dparams, transp = trsp)
     # TODO: store c, kvfrac in staticmaps.nc start at index 1
     c = fill(dparams["c"], (maxlayers, n))
     kvfrac = fill(dparams["KsatVerFrac"], (maxlayers, n))
     for i in [0:1:maxlayers-1;]
         if string("c_", i) in keys(nc)
-            c[i+1, :] =
-                trsp ? Float64.(permutedims(nc[string("c_", i)][:])[inds]) :
+            c[i+1, :] = trsp ? Float64.(permutedims(nc[string("c_", i)][:])[inds]) :
                 Float64.(nc[string("c_", i)][:][inds])
         else
-            @warn(string(
-                "c_",
-                i,
-                " not found, set to default value ",
-                dparams["c"],
-            ))
+            @warn(string("c_", i, " not found, set to default value ", dparams["c"]))
         end
         if string("KsatVerFrac_", i) in keys(nc)
-            kvfrac[i+1, :] = trsp ?
-                Float64.(permutedims(nc[string("KsatVerFrac_", i)][:])[inds]) :
+            kvfrac[i+1, :] =
+                trsp ? Float64.(permutedims(nc[string("KsatVerFrac_", i)][:])[inds]) :
                 Float64.(nc[string("KsatVerFrac_", i)][:][inds])
         else
             @warn(string(
@@ -146,8 +135,7 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
     # cmax, e_r, canopygapfraction only required when lai climatoly not provided
     cmax = readnetcdf(nc, "Cmax", inds, dparams, transp = trsp)
     e_r = readnetcdf(nc, "EoverR", inds, dparams, transp = trsp)
-    canopygapfraction =
-        readnetcdf(nc, "CanopyGapFraction", inds, dparams, transp = trsp)
+    canopygapfraction = readnetcdf(nc, "CanopyGapFraction", inds, dparams, transp = trsp)
 
     # if lai climatology provided use sl, swood and kext to calculate cmax
     if isnothing(leafarea_path) == false
@@ -175,8 +163,9 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
 
         xl[i] = sizeinmetres ? cellength : lattometres(y[i])[1] * cellength
         yl[i] = sizeinmetres ? cellength : lattometres(y[i])[2] * cellength
-        riverfrac[i] = Bool(river[i]) ?
-            min((riverlength[i] * riverwidth[i]) / (xl[i] * yl[i]), 1.0) : 0.0
+        riverfrac[i] =
+            Bool(river[i]) ? min((riverlength[i] * riverwidth[i]) / (xl[i] * yl[i]), 1.0) :
+            0.0
 
         nlayers[i] = nlayers_
         act_thickl[:, i] = act_thickl_
@@ -401,8 +390,7 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
 
     # lateral part sbm
     khfrac = readnetcdf(nc, "KsatHorFrac", inds, dparams, transp = trsp)
-    βₗ = trsp ? Float64.(permutedims(nc["Slope"][:])[inds]) :
-        Float64.(nc["Slope"][:][inds])
+    βₗ = trsp ? Float64.(permutedims(nc["Slope"][:])[inds]) : Float64.(nc["Slope"][:][inds])
     ldd_2d = trsp ? permutedims(nc["wflow_ldd"][:]) : nc["wflow_ldd"][:]
     ldd = ldd_2d[inds]
     kh₀ = khfrac .* kv₀
