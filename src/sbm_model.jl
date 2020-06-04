@@ -33,6 +33,8 @@ const dparams = Dict(
     "et_reftopot" => 1.0,
     "KsatVerFrac" => 1.0,
     "KsatHorFrac" => 1.0,
+    "N" => 0.072,
+    "NRiver" => 0.036,
 )
 
 """
@@ -59,15 +61,13 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
     inds = Wflow.active_indices(subcatch_2d, missing)
     n = length(inds)
 
-    altitude = trsp ? Float64.(permutedims(nc["wflow_dem"][:])[inds]) :
-        Float64.(nc["wflow_dem"][:][inds])
-    river = trsp ? nomissing(permutedims(nc["wflow_river"][:])[inds], 0) :
-        nomissing(nc["wflow_river"][:][inds], 0)
-    riverwidth = trsp ? Float64.(permutedims(nc["wflow_riverwidth"][:])[inds]) :
-        Float64.(nc["wflow_riverwidth"][:][inds])
-    riverlength = trsp ? Float64.(permutedims(nc["wflow_riverlength"][:])[inds]) :
-        Float64.(nc["wflow_riverlength"][:][inds])
-
+    altitude = trsp ? Float64.(permutedims(nc["wflow_dem"][:])[inds]) : Float64.(nc["wflow_dem"][:][inds])
+    river_2d = trsp ? nomissing(permutedims(nc["wflow_river"][:]), 0) : nomissing(nc["wflow_river"][:], 0)
+    river = river_2d[inds]
+    riverwidth_2d = trsp ? Float64.(nomissing(permutedims(nc["wflow_riverwidth"][:]), 0)) : Float64.(nomissing(nc["wflow_riverwidth"][:], 0))
+    riverwidth = riverwidth_2d[inds]
+    riverlength_2d = trsp ? Float64.(nomissing(permutedims(nc["wflow_riverlength"][:]), 0)) : Float64.(nomissing(nc["wflow_riverlength"][:], 0))
+    riverlength = riverlength_2d[inds]
 
     # read x, y coordinates and calculate cell length [m]
     y_nc = "y" in keys(nc.dim) ? nomissing(nc["y"][:]) : nomissing(nc["lat"][:])
@@ -401,16 +401,45 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
         dw = dw .* 1000.0,
     )
 
+    n_land = readnetcdf(nc, "N", inds, dparams, transp = trsp)
+
+    olf = SurfaceFlow{Float64}(
+        sl = βₗ,
+        n = n_land,
+        dl = dl,
+        Δt = Float64(Δt.value),
+        width = dw,
+    )
+
     dag = flowgraph(ldd, inds, Wflow.pcrdir)
 
-    river_2d = trsp ? nomissing(permutedims(nc["wflow_river"][:]), 0) :
-        nomissing(nc["wflow_river"][:], 0)
+
     inds_riv = Wflow.active_indices(river_2d, 0)
+    riverslope = trsp ? Float64.(permutedims(nc["RiverSlope"][:])[inds_riv]) :
+        Float64.(nc["RiverSlope"][:][inds_riv])
+    riverlength = riverlength_2d[inds_riv]
+    riverwidth = riverwidth_2d[inds_riv]
+    n_river = readnetcdf(nc, "NRiver", inds_riv, dparams, transp = trsp)
     ldd_riv = ldd_2d[inds_riv]
     dag_riv = flowgraph(ldd_riv, inds_riv, Wflow.pcrdir)
 
+    rf = SurfaceFlow{Float64}(
+        sl = riverslope,
+        n = n_river,
+        dl = riverlength,
+        Δt = Float64(Δt.value),
+        width = riverwidth,
+    )
+
     starttime = DateTime(2000, 1, 1)
 
-    model = Model(dag, ssf, sbm, Clock(starttime, 1, Δt), nothing, nothing)
+    model = Model(
+        [dag, dag_riv],
+        [ssf, olf, rf],
+        sbm,
+        Clock(starttime, 1, Δt),
+        nothing,
+        nothing,
+    )
     return model
 end
