@@ -17,6 +17,7 @@ include("model.jl")
 include("sbm.jl")
 include("sbm_model.jl")
 include("subsurface_flow.jl")
+include("surface_flow.jl")
 include("vertical_process.jl")
 include("utils.jl")
 

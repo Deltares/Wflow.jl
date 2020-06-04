@@ -2,17 +2,17 @@ Base.@kwdef struct SurfaceFlow{T}
     β::T = 0.6                              # constant in Manning's equation
     sl::Vector{T}                           # Slope [m m⁻¹]
     n::Vector{T}                            # Manning's roughness [sl m⁻⅓]
-    dcl::Vector{T}                          # Drain length [m]
+    dl::Vector{T}                           # Drain length [m]
     q::Vector{T} = fill(0.0, length(sl))    # Discharge [m³ s⁻¹]
     q_av::Vector{T} = fill(0.0, length(sl)) # Average discharge [m³ s⁻¹]
     qlat::Vector{T} = fill(0.0, length(sl)) # Lateral discharge [m³ s⁻¹]
     h::Vector{T} = fill(0.0, length(sl))    # Water level [m]
     h_av::Vector{T} = fill(0.0, length(sl)) # Average water level [m]
     Δt::T                                   # Model time step [s]
-    riverwidth::Vector{T}                   # River width [m]
+    width::Vector{T}                        # Flow width [m]
     alpha_term::Vector{T} = pow.(n ./ sqrt.(sl), β)
     alpha_pow::T = (2.0 / 3.0) * β
-    α::Vector{T} = alpha_term .* pow.(riverwidth .+ 2.0 .* h, alpha_pow) # constant in Manning's equation
+    α::Vector{T} = alpha_term .* pow.(width .+ 2.0 .* h, alpha_pow) # constant in Manning's equation
     eps::T = 1e-03
     cel::Vector{T} = fill(0.0, length(sl))
 end
