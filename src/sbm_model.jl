@@ -234,6 +234,10 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
         maxlayers = Fill(maxlayers, n),
         # Number of soil layers
         nlayers = nlayers,
+        # length of cells in y direction [m]
+        yl = yl,
+        # length of cells in x direction [m]
+        xl = xl,
         # Fraction of river [-]
         riverfrac = riverfrac,
         # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹]
