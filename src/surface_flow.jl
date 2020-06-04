@@ -37,18 +37,22 @@ function update(
     n;
     do_iter = false,
     do_tstep = false,
-    ts = 1,
+    tstep = 0.0,
 )
 
     if do_iter
         if do_tstep
             ts = ceil(Int(sf.Δt / tstep))
         else
-            sf.cel[sf.q>0.0] =
-                1.0 ./
-                (sf.α[sf.q>0.0] .* sf.β * pow.(sf.q[sf.q>0.0], (sf.β - 1.0)))
-            courant = (sf.Δt ./ sf.dcl) .* sf.cel
-            ts = ceil(Int, (1.25 * quantile!(courant, 0.95)))
+            for v in toposort
+                if sf.q[v] > 0.0
+                    sf.cel[v] = 1.0 / (sf.α[v] * sf.β * pow(sf.q[v], (sf.β - 1.0)))
+                else
+                    sf.cel[v] = 0.0
+                end
+            end
+            courant = (sf.Δt ./ sf.dl) .* sf.cel
+            ts = max(ceil(Int, (1.25 * quantile!(courant, 0.95))),1)
         end
     end
 
@@ -68,19 +72,19 @@ function update(
                 sf.α[v],
                 sf.β,
                 adt,
-                sf.dcl[v],
+                sf.dl[v],
             )
 
             # update alpha
             crossarea = sf.α[v] * pow(sf.q[v], sf.β)
-            sf.h[v] = crossarea / sf.riverwidth[v]
-            wetper = sf.riverwidth[v] + (2.0 * sf.h[v]) # wetted perimeter
+            sf.h[v] = crossarea / sf.width[v]
+            wetper = sf.width[v] + (2.0 * sf.h[v]) # wetted perimeter
             α = sf.α[v]
             sf.α[v] = sf.alpha_term[v] * pow(wetper, sf.alpha_pow)
 
             if abs(α - sf.α[v]) > sf.eps
                 crossarea = sf.α[v] * pow(sf.q[v], sf.β)
-                sf.h[v] = crossarea / sf.riverwidth[v]
+                sf.h[v] = crossarea / sf.width[v]
             end
 
             q_sum[v] += sf.h[v]
@@ -88,8 +92,8 @@ function update(
 
         end
 
-        sf.q_av = q_sum ./ ts
-        sf.h_av = h_sum ./ ts
+        sf.q_av[:] = q_sum ./ ts
+        sf.h_av[:] = h_sum ./ ts
 
     end
 

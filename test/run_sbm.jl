@@ -1,4 +1,4 @@
-function update(model, toposort)
+function update(model, toposort, n)
     @unpack lateral, vertical, network, clock = model
 
     Wflow.update_before_lateralflow(vertical)
@@ -8,7 +8,17 @@ function update(model, toposort)
 
     Wflow.update(lateral.subsurface, network.land, toposort)
 
-    Wflow.update_after_lateralflow(vertical, lateral.subsurface.zi, lateral.subsurface.exfiltwater)
+    Wflow.update_after_lateralflow(
+        vertical,
+        lateral.subsurface.zi,
+        lateral.subsurface.exfiltwater,
+    )
+
+    lateral.land.qlat[:] =
+        (vertical.runoff .* vertical.xl .* vertical.yl .* 0.001) ./ 86400.0 ./
+        lateral.land.dl
+
+    Wflow.update(lateral.land, network.land, toposort, n, do_iter = true)
 
     # update the clock
     clock.iteration += 1
@@ -17,28 +27,30 @@ function update(model, toposort)
     return model
 end
 
-model = Wflow.initialize_sbm_model(staticmaps_moselle_path, leafarea_moselle_path)
+model =
+    Wflow.initialize_sbm_model(staticmaps_moselle_path, leafarea_moselle_path)
 toposort = Wflow.topological_sort_by_dfs(model.network.land)
 n = length(toposort)
-model = update(model, toposort)
+model = update(model, toposort, n)
+
 
 @testset "first timestep" begin
     sbm = model.vertical
     @test model.clock.iteration == 2
     @test sbm.altitude[1] == 345.1470031738281
     @test sbm.θₛ[1] == 0.46367356181144714
-    @test isnan(sbm.runoff[1])  # should probably be initialized to 0.0
+    @test sbm.runoff[1] == 0.0
     @test sbm.soilevap[1] == 0.08821308159314034
 end
 
 # run the second timestep
-model = update(model, toposort)
+model = update(model, toposort, n)
 
 @testset "second timestep" begin
     sbm = model.vertical
     @test sbm.altitude[1] == 345.1470031738281
     @test sbm.θₛ[1] == 0.46367356181144714
-    @test isnan(sbm.runoff[1])
+    @test sbm.runoff[1] == 0.0
     @test sbm.soilevap[1] == 0.17235604508244792
 end
 
@@ -52,7 +64,7 @@ end
 
 using BenchmarkTools, Juno
 
-benchmark = @benchmark update(model, toposort)
+benchmark = @benchmark update(model, toposort, n)
 # @time update(model, toposort, n)
 # @btime update(model, toposort, n)
 # @profiler foreach(x -> update(model, toposort, n), 1:10)  # run a few times for more accuracy
