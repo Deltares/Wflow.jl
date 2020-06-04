@@ -1,14 +1,14 @@
-function update(model, toposort, n)
+function update(model, toposort)
     @unpack lateral, vertical, network, clock = model
 
     Wflow.update_before_lateralflow(vertical)
-    lateral.recharge[:] = vertical.recharge
-    lateral.recharge .*= lateral.dl
-    lateral.zi[:] = vertical.zi
+    lateral.subsurface.recharge[:] = vertical.recharge
+    lateral.subsurface.recharge .*= lateral.subsurface.dl
+    lateral.subsurface.zi[:] = vertical.zi
 
-    Wflow.update(lateral, network, toposort, n)
+    Wflow.update(lateral.subsurface, network.land, toposort)
 
-    Wflow.update_after_lateralflow(vertical, lateral.zi, lateral.exfiltwater)
+    Wflow.update_after_lateralflow(vertical, lateral.subsurface.zi, lateral.subsurface.exfiltwater)
 
     # update the clock
     clock.iteration += 1
@@ -18,9 +18,9 @@ function update(model, toposort, n)
 end
 
 model = Wflow.initialize_sbm_model(staticmaps_moselle_path, leafarea_moselle_path)
-toposort = Wflow.topological_sort_by_dfs(model.network)
+toposort = Wflow.topological_sort_by_dfs(model.network.land)
 n = length(toposort)
-model = update(model, toposort, n)
+model = update(model, toposort)
 
 @testset "first timestep" begin
     sbm = model.vertical
@@ -32,7 +32,7 @@ model = update(model, toposort, n)
 end
 
 # run the second timestep
-model = update(model, toposort, n)
+model = update(model, toposort)
 
 @testset "second timestep" begin
     sbm = model.vertical
@@ -43,7 +43,7 @@ model = update(model, toposort, n)
 end
 
 @testset "subsurface flow" begin
-    ssf = model.lateral.ssf
+    ssf = model.lateral.subsurface.ssf
     @test sum(ssf) ≈ 6.959580661699383e16
     @test ssf[toposort[1]] ≈ 4.392529226944353e11
     @test ssf[toposort[n-100]] ≈ 8.003673229321337e11
@@ -52,7 +52,7 @@ end
 
 using BenchmarkTools, Juno
 
-benchmark = @benchmark update(model, toposort, n)
+benchmark = @benchmark update(model, toposort)
 # @time update(model, toposort, n)
 # @btime update(model, toposort, n)
 # @profiler foreach(x -> update(model, toposort, n), 1:10)  # run a few times for more accuracy
