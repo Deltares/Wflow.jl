@@ -27,8 +27,7 @@ function update(model, toposort, n)
     return model
 end
 
-model =
-    Wflow.initialize_sbm_model(staticmaps_moselle_path, leafarea_moselle_path)
+model = Wflow.initialize_sbm_model(staticmaps_moselle_path, leafarea_moselle_path)
 toposort = Wflow.topological_sort_by_dfs(model.network.land)
 n = length(toposort)
 model = update(model, toposort, n)
