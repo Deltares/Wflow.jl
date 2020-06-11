@@ -3,7 +3,7 @@ Base.@kwdef struct LateralSSF{T}
     f::Vector{T}                            # A scaling parameter [mm⁻¹] (controls exponential decline of kh₀)
     soilthickness::Vector{T}                # Soil thickness [mm]
     θₑ::Vector{T}                           # Effective porosity [-]
-    Δt::T                                   # model time step
+    Δt::T=1.0                               # model time step
     βₗ::Vector{T}                           # Slope [m m⁻¹]
     dl::Vector{T}                           # Drain length [mm]
     dw::Vector{T}                           # Flow width [mm]
@@ -13,7 +13,7 @@ Base.@kwdef struct LateralSSF{T}
     ssf::Vector{T} =
         ((kh₀ .* βₗ) ./ f) .* (exp.(-f .* zi) - exp.(-f .* soilthickness)) .* dw    # Subsurface flow [mm³ Δt⁻¹]
     ssfmax::Vector{T} = ((kh₀ .* βₗ) ./ f) .* (1.0 .- exp.(-f .* soilthickness))     # Maximum subsurface flow [mm² Δt⁻¹]
-    to_river::Vector{T} = zeros(length(f))
+    to_river::Vector{T} = zeros(length(f))  # Part of subsurface flow [mm³ Δt⁻¹] that flows to the river
 end
 
 """
