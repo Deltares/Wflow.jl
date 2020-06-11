@@ -227,6 +227,8 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
         yl = yl,
         # length of cells in x direction [m]
         xl = xl,
+        #
+        river = river,
         # Fraction of river [-]
         riverfrac = riverfrac,
         # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹]
@@ -391,6 +393,7 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
     # lateral part sbm
     khfrac = readnetcdf(nc, "KsatHorFrac", inds, dparams, transp = trsp)
     βₗ = trsp ? Float64.(permutedims(nc["Slope"][:])[inds]) : Float64.(nc["Slope"][:][inds])
+    βₗ[βₗ.<0.00001] .= 0.00001
     ldd_2d = trsp ? permutedims(nc["wflow_ldd"][:]) : nc["wflow_ldd"][:]
     ldd = ldd_2d[inds]
     kh₀ = khfrac .* kv₀
@@ -426,13 +429,13 @@ function initialize_sbm_model(staticmaps_path, leafarea_path)
 
     dag = flowgraph(ldd, inds, Wflow.pcrdir)
 
-
-    inds_riv = Wflow.active_indices(river_2d, 0)
+    inds_riv = filter(i -> !isequal(river_2d[i], 0), inds)
     riverslope = trsp ? Float64.(permutedims(nc["RiverSlope"][:])[inds_riv]) :
         Float64.(nc["RiverSlope"][:][inds_riv])
+    riverslope[riverslope.<0.00001] .= 0.00001
     riverlength = riverlength_2d[inds_riv]
     riverwidth = riverwidth_2d[inds_riv]
-    n_river = readnetcdf(nc, "NRiver", inds_riv, dparams, transp = trsp)
+    n_river = readnetcdf(nc, "N_River", inds_riv, dparams, transp = trsp)
     ldd_riv = ldd_2d[inds_riv]
     dag_riv = flowgraph(ldd_riv, inds_riv, Wflow.pcrdir)
 

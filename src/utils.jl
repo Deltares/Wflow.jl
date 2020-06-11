@@ -104,3 +104,12 @@ function svectorscopy(x::Matrix{T}, ::Val{N}) where {T,N}
     isbitstype(T) || error("use for bitstypes only")
     copy(reinterpret(SVector{N,T}, vec(x)))
 end
+
+function fraction_runoff_toriver(dag, index_river, slope, n)
+    frac = zeros(n)
+    for i in index_river
+        nbs = inneighbors(dag, i)
+        frac[nbs] = slope[i] ./ (slope[i] .+ slope[nbs])
+    end
+    return frac
+end
