@@ -10,12 +10,12 @@ Base.@kwdef struct SurfaceFlow{T}
     h_av::Vector{T} = fill(0.0, length(sl)) # Average water level [m]
     Δt::T                                   # Model time step [s]
     width::Vector{T}                        # Flow width [m]
-    alpha_term::Vector{T} = pow.(n ./ sqrt.(sl), β)
-    alpha_pow::T = (2.0 / 3.0) * β
-    α::Vector{T} = alpha_term .* pow.(width .+ 2.0 .* h, alpha_pow) # constant in Manning's equation
-    eps::T = 1e-03
-    cel::Vector{T} = fill(0.0, length(sl))
-    to_river::Vector{T} = fill(0.0, length(sl))
+    alpha_term::Vector{T} = pow.(n ./ sqrt.(sl), β)  # Constant part of α
+    alpha_pow::T = (2.0 / 3.0) * β          # Used in the power part of α
+    α::Vector{T} = alpha_term .* pow.(width .+ 2.0 .* h, alpha_pow) # Constant in momentum equation A = αQᵝ, based on Manning's equation
+    eps::T = 1e-03                          # Maximum allowed change in α, if exceeded cross sectional area and h is recalculated
+    cel::Vector{T} = fill(0.0, length(sl))  # Celerity of the kinematic wave
+    to_river::Vector{T} = fill(0.0, length(sl)) # Part of overland flow [m³ s⁻¹] that flows to the river
 end
 
 

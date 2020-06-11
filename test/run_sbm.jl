@@ -92,6 +92,22 @@ end
     @test ssf[sink] ≈ 6.92054650606041e11
 end
 
+@testset "overland flow" begin
+    q = model.lateral.land.q_av
+    @test sum(q) ≈ 6.047157300328484
+    @test q[26625] ≈ 0.012407311034013137
+    @test q[39308] ≈ 0.05432182884369439
+    @test q[sink] ≈ 0.0
+end
+
+@testset "river flow" begin
+    q = model.lateral.river.q_av
+    @test sum(q) ≈ 634.3032031906259
+    @test q[4061] ≈ 2.8102258534693054
+    @test q[5617] ≈ 0.6945538314413997
+    @test q[toposort_river[end]] ≈ 0.004345249971296487
+end
+
 using BenchmarkTools, Juno
 
 benchmark = @benchmark update(

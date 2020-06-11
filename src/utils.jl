@@ -79,7 +79,6 @@ end
 Determines the drainaige width for a non square grid. Input `ldd` (drainage network), `xl` (length of cells in x direction),
 `yl` (length of cells in y direction). Output is drainage width.
 """
-
 function detdrainwidth(ldd, xl, yl)
     # take into account non-square cells
     # if ldd is 8 or 2 use xlength
@@ -105,6 +104,12 @@ function svectorscopy(x::Matrix{T}, ::Val{N}) where {T,N}
     copy(reinterpret(SVector{N,T}, vec(x)))
 end
 
+"""
+    fraction_runoff_toriver(dag, index_river, slope, n)
+
+Determine ratio `frac` between slope river cell `index_river` and slope of each upstream neighbor (based on directed acyclic graph
+`dag`).
+"""
 function fraction_runoff_toriver(dag, index_river, slope, n)
     frac = zeros(n)
     for i in index_river
