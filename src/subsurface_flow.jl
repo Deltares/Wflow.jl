@@ -3,7 +3,7 @@ Base.@kwdef struct LateralSSF{T}
     f::Vector{T}                            # A scaling parameter [mm⁻¹] (controls exponential decline of kh₀)
     soilthickness::Vector{T}                # Soil thickness [mm]
     θₑ::Vector{T}                           # Effective porosity [-]
-    Δt::T                                   # model time step [s]
+    Δt::T                                   # model time step
     βₗ::Vector{T}                           # Slope [m m⁻¹]
     dl::Vector{T}                           # Drain length [mm]
     dw::Vector{T}                           # Flow width [mm]
@@ -13,6 +13,7 @@ Base.@kwdef struct LateralSSF{T}
     ssf::Vector{T} =
         ((kh₀ .* βₗ) ./ f) .* (exp.(-f .* zi) - exp.(-f .* soilthickness)) .* dw    # Subsurface flow [mm³ Δt⁻¹]
     ssfmax::Vector{T} = ((kh₀ .* βₗ) ./ f) .* (1.0 .- exp.(-f .* soilthickness))     # Maximum subsurface flow [mm² Δt⁻¹]
+    to_river::Vector{T} = zeros(length(f))
 end
 
 """
@@ -28,10 +29,17 @@ function statenames(::Type{LateralSSF})
 
 end
 
-function update(ssf::LateralSSF, dag, toposort)
+function update(ssf::LateralSSF, dag, toposort, frac_toriver, river)
     for v in toposort
         upstream_nodes = inneighbors(dag, v)
-        ssfin = isempty(upstream_nodes) ? 0.0 : sum(ssf.ssf[i] for i in upstream_nodes)
+        if Bool(river[v])
+            ssfin = isempty(upstream_nodes) ? 0.0 :
+                sum(ssf.ssf[i] * (1.0 - frac_toriver[i]) for i in upstream_nodes)
+            ssf.to_river[v] = isempty(upstream_nodes) ? 0.0 :
+                sum(ssf.ssf[i] * frac_toriver[i] for i in upstream_nodes)
+        else
+            ssfin = isempty(upstream_nodes) ? 0.0 : sum(ssf.ssf[i] for i in upstream_nodes)
+        end
         ssf.ssf[v], ssf.zi[v], ssf.exfiltwater[v] = kinematic_wave_ssf(
             ssfin,
             ssf.ssf[v],

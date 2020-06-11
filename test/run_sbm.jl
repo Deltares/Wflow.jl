@@ -1,4 +1,4 @@
-function update(model, toposort, n)
+function update(model, toposort_land, toposort_river, frac_toriver, index_river, nl, nr)
     @unpack lateral, vertical, network, clock = model
 
     Wflow.update_before_lateralflow(vertical)
@@ -6,7 +6,13 @@ function update(model, toposort, n)
     lateral.subsurface.recharge .*= lateral.subsurface.dl
     lateral.subsurface.zi[:] = vertical.zi
 
-    Wflow.update(lateral.subsurface, network.land, toposort)
+    Wflow.update(
+        lateral.subsurface,
+        network.land,
+        toposort_land,
+        frac_toriver,
+        vertical.river,
+    )
 
     Wflow.update_after_lateralflow(
         vertical,
@@ -18,7 +24,23 @@ function update(model, toposort, n)
         (vertical.runoff .* vertical.xl .* vertical.yl .* 0.001) ./ 86400.0 ./
         lateral.land.dl
 
-    Wflow.update(lateral.land, network.land, toposort, n, do_iter = true)
+    Wflow.update(
+        lateral.land,
+        network.land,
+        toposort_land,
+        nl,
+        frac_toriver = frac_toriver,
+        river = vertical.river,
+        do_iter = true,
+    )
+
+    lateral.river.qlat[:] =
+        (
+            lateral.subsurface.to_river[index_river] ./ 1.0e9 ./ lateral.river.Δt .+
+            lateral.land.to_river[index_river]
+        ) ./ lateral.river.dl
+
+    Wflow.update(lateral.river, network.river, toposort_river, nr, do_iter = true)
 
     # update the clock
     clock.iteration += 1
@@ -28,9 +50,18 @@ function update(model, toposort, n)
 end
 
 model = Wflow.initialize_sbm_model(staticmaps_moselle_path, leafarea_moselle_path)
-toposort = Wflow.topological_sort_by_dfs(model.network.land)
-n = length(toposort)
-model = update(model, toposort, n)
+toposort_land = Wflow.topological_sort_by_dfs(model.network.land)
+toposort_river = Wflow.topological_sort_by_dfs(model.network.river)
+nl = length(toposort_land)
+nr = length(toposort_river)
+index_river = filter(i -> !isequal(model.vertical.river[i], 0), 1:nl)
+frac_toriver = Wflow.fraction_runoff_toriver(
+    model.network.land,
+    index_river,
+    model.lateral.subsurface.βₗ,
+    nl,
+)
+model = update(model, toposort_land, toposort_river, frac_toriver, index_river, nl, nr)
 
 
 @testset "first timestep" begin
@@ -43,7 +74,7 @@ model = update(model, toposort, n)
 end
 
 # run the second timestep
-model = update(model, toposort, n)
+model = update(model, toposort_land, toposort_river, frac_toriver, index_river, nl, nr)
 
 @testset "second timestep" begin
     sbm = model.vertical
@@ -55,15 +86,23 @@ end
 
 @testset "subsurface flow" begin
     ssf = model.lateral.subsurface.ssf
-    @test sum(ssf) ≈ 6.959580661699383e16
-    @test ssf[toposort[1]] ≈ 4.392529226944353e11
-    @test ssf[toposort[n-100]] ≈ 8.003673229321337e11
+    @test sum(ssf) ≈ 6.910379443903996e16
+    @test ssf[toposort_land[1]] ≈ 4.392529226944353e11
+    @test ssf[toposort_land[nl-100]] ≈ 7.555413711433021e11
     @test ssf[sink] ≈ 6.92054650606041e11
 end
 
 using BenchmarkTools, Juno
 
-benchmark = @benchmark update(model, toposort, n)
+benchmark = @benchmark update(
+    model,
+    toposort_land,
+    toposort_river,
+    frac_toriver,
+    index_river,
+    nl,
+    nr,
+)
 # @time update(model, toposort, n)
 # @btime update(model, toposort, n)
 # @profiler foreach(x -> update(model, toposort, n), 1:10)  # run a few times for more accuracy

@@ -15,6 +15,7 @@ Base.@kwdef struct SurfaceFlow{T}
     α::Vector{T} = alpha_term .* pow.(width .+ 2.0 .* h, alpha_pow) # constant in Manning's equation
     eps::T = 1e-03
     cel::Vector{T} = fill(0.0, length(sl))
+    to_river::Vector{T} = fill(0.0, length(sl))
 end
 
 
@@ -35,6 +36,8 @@ function update(
     dag,
     toposort,
     n;
+    frac_toriver = nothing,
+    river = nothing,
     do_iter = false,
     do_tstep = false,
     tstep = 0.0,
@@ -63,7 +66,19 @@ function update(
     for _ = 1:ts
         for v in toposort
             upstream_nodes = inneighbors(dag, v)
-            qin = isempty(upstream_nodes) ? 0.0 : sum(sf.q[i] for i in upstream_nodes)
+            if (frac_toriver != nothing) & (river != nothing)
+                if Bool(river[v])
+                    qin = isempty(upstream_nodes) ? 0.0 :
+                        sum(sf.q[i] * (1.0 - frac_toriver[i]) for i in upstream_nodes)
+                    sf.to_river[v] = isempty(upstream_nodes) ? 0.0 :
+                        sum(sf.q[i] * frac_toriver[i] for i in upstream_nodes)
+                else
+                    qin =
+                        isempty(upstream_nodes) ? 0.0 : sum(sf.q[i] for i in upstream_nodes)
+                end
+            else
+                qin = isempty(upstream_nodes) ? 0.0 : sum(sf.q[i] for i in upstream_nodes)
+            end
             sf.q[v] = kinematic_wave(qin, sf.q[v], sf.qlat[v], sf.α[v], sf.β, adt, sf.dl[v])
 
             # update alpha
