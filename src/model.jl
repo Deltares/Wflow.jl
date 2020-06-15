@@ -14,5 +14,4 @@ struct Model{N,L,V,R,W}
     clock::Clock  # to keep track of simulation time
     reader::R  # provides the model with dynamic input
     writer::W  # writes model output
-    inds::Vector{CartesianIndex{2}}
 end

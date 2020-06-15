@@ -52,13 +52,12 @@ function update(model, toposort_land, toposort_river, frac_toriver, index_river,
     return model
 end
 
-reader = NCDataset(forcing_moselle_path)
 writer = nothing  # TODO use a CSV writer, RowWriter?
 
 model = Wflow.initialize_sbm_model(
     staticmaps_moselle_path,
     leafarea_moselle_path,
-    reader,
+    forcing_moselle_path,
     writer,
 )
 
@@ -84,10 +83,11 @@ model = update(model, toposort_land, toposort_river, frac_toriver, index_river, 
     @test vcell.tt ≈ 1.2999999523162842
 
     @test model.clock.iteration == 2
-    @test sbm.altitude[1] == 345.1470031738281
-    @test sbm.θₛ[1] == 0.46367356181144714
+
+    @test sbm.altitude[1] == 643.5469970703125
+    @test sbm.θₛ[1] == 0.48343977332115173
     @test sbm.runoff[1] == 0.0
-    @test sbm.soilevap[1] == 0.08821308159314034
+    @test sbm.soilevap[1] == 0.07996413903665732
 end
 
 # run the second timestep
@@ -95,18 +95,18 @@ model = update(model, toposort_land, toposort_river, frac_toriver, index_river, 
 
 @testset "second timestep" begin
     sbm = model.vertical
-    @test sbm.altitude[1] == 345.1470031738281
-    @test sbm.θₛ[1] == 0.46367356181144714
-    @test sbm.runoff[1] == 0.0
-    @test sbm.soilevap[1] == 0.17235604508244792
+    @test sbm.altitude[1] == 643.5469970703125
+    @test sbm.θₛ[1] == 0.48343977332115173
+    @test isnan(sbm.runoff[1])
+    @test sbm.soilevap[1] == 0.15658817917471723
 end
 
 @testset "subsurface flow" begin
-    ssf = model.lateral.subsurface.ssf
-    @test sum(ssf) ≈ 6.910379443903996e16
-    @test ssf[toposort_land[1]] ≈ 4.392529226944353e11
-    @test ssf[toposort_land[nl-100]] ≈ 7.555413711433021e11
-    @test ssf[sink] ≈ 6.92054650606041e11
+    ssf = model.lateral.ssf
+    @test sum(ssf) ≈ 6.959580661699383e16
+    @test ssf[toposort[1]] ≈ 3.0271045626104652e13
+    @test ssf[toposort[n-100]] ≈ 8.003673229321337e11
+    @test ssf[sink] ≈ 2.177681570044858e11
 end
 
 @testset "overland flow" begin

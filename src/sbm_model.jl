@@ -38,13 +38,13 @@ const dparams = Dict(
 )
 
 """
-    initialize_sbm_model(staticmaps_path, leafarea_path, reader, writer)
+    initialize_sbm_model(staticmaps_path, leafarea_path, forcing_path, writer)
 
 Initial part of the SBM model concept. Reads model parameters from disk, `staticmaps_path` is the file path
 of the NetCDF file with model parameters, `leafarea_path` is an optional file path for a NetCDF file with leaf
 area index (LAI) values (climatology).
 """
-function initialize_sbm_model(staticmaps_path, leafarea_path, reader, writer)
+function initialize_sbm_model(staticmaps_path, leafarea_path, forcing_path, writer)
 
     sizeinmetres = false
     thicknesslayers = SVector(100.0, 300.0, 800.0, mv)
@@ -52,67 +52,67 @@ function initialize_sbm_model(staticmaps_path, leafarea_path, reader, writer)
     sumlayers = SVector(pushfirst(cumsum(thicknesslayers), 0.0))
 
     nc = NCDataset(staticmaps_path)
-    if keys(nc.dim)[1] == "y" || "lat"
-        trsp = true
-    end
+    dims = dimnames(nc["wflow_subcatch"])
 
-    subcatch_2d = trsp ? permutedims(nc["wflow_subcatch"][:]) : nc["wflow_subcatch"][:]
+    # There is no need to permute the dimensions of the data, since the active indices are
+    # correctly calculated in both ways.
+    # The dimension order only needs to be known for interpreting the LDD directions
+    # and creating the coordinate maps.
+    trsp = dims[2] in ("y", "lat")
+
+    subcatch_2d = nc["wflow_subcatch"][:]
     # indices based on catchment
     inds = Wflow.active_indices(subcatch_2d, missing)
     n = length(inds)
 
-    altitude = trsp ? Float64.(permutedims(nc["wflow_dem"][:])[inds]) :
-        Float64.(nc["wflow_dem"][:][inds])
-    river_2d = trsp ? nomissing(permutedims(nc["wflow_river"][:]), 0) :
-        nomissing(nc["wflow_river"][:], 0)
+    altitude = Float64.(nc["wflow_dem"][:][inds])
+    river_2d = nomissing(nc["wflow_river"][:], 0)
     river = river_2d[inds]
-    riverwidth_2d = trsp ? Float64.(nomissing(permutedims(nc["wflow_riverwidth"][:]), 0)) :
-        Float64.(nomissing(nc["wflow_riverwidth"][:], 0))
+    riverwidth_2d = Float64.(nomissing(nc["wflow_riverwidth"][:], 0))
     riverwidth = riverwidth_2d[inds]
-    riverlength_2d =
-        trsp ? Float64.(nomissing(permutedims(nc["wflow_riverlength"][:]), 0)) :
-        Float64.(nomissing(nc["wflow_riverlength"][:], 0))
+    riverlength_2d = Float64.(nomissing(nc["wflow_riverlength"][:], 0))
     riverlength = riverlength_2d[inds]
 
     # read x, y coordinates and calculate cell length [m]
     y_nc = "y" in keys(nc.dim) ? nomissing(nc["y"][:]) : nomissing(nc["lat"][:])
     x_nc = "x" in keys(nc.dim) ? nomissing(nc["x"][:]) : nomissing(nc["lon"][:])
-    y = repeat(y_nc, outer = (1, length(x_nc)))[inds]
+    if trsp
+        y = permutedims(repeat(y_nc, outer = (1, length(x_nc))))[inds]
+    else
+        y = repeat(y_nc, outer = (1, length(x_nc)))[inds]
+    end
     cellength = abs(mean(diff(x_nc)))
 
     # snow parameters (also set in ini file (snow=True or False)?)
-    cfmax = readnetcdf(nc, "Cfmax", inds, dparams, transp = trsp)
-    tt = readnetcdf(nc, "TT", inds, dparams, transp = trsp)
-    tti = readnetcdf(nc, "TTI", inds, dparams, transp = trsp)
-    ttm = readnetcdf(nc, "TTM", inds, dparams, transp = trsp)
-    whc = readnetcdf(nc, "WHC", inds, dparams, transp = trsp)
-    w_soil = readnetcdf(nc, "w_soil", inds, dparams, transp = trsp)
-    cf_soil = readnetcdf(nc, "cf_soil", inds, dparams, transp = trsp)
+    cfmax = readnetcdf(nc, "Cfmax", inds, dparams)
+    tt = readnetcdf(nc, "TT", inds, dparams)
+    tti = readnetcdf(nc, "TTI", inds, dparams)
+    ttm = readnetcdf(nc, "TTM", inds, dparams)
+    whc = readnetcdf(nc, "WHC", inds, dparams)
+    w_soil = readnetcdf(nc, "w_soil", inds, dparams)
+    cf_soil = readnetcdf(nc, "cf_soil", inds, dparams)
 
     # soil parameters
-    θₛ = readnetcdf(nc, "thetaS", inds, dparams, transp = trsp)
-    θᵣ = readnetcdf(nc, "thetaR", inds, dparams, transp = trsp)
-    kv₀ = readnetcdf(nc, "KsatVer", inds, dparams, transp = trsp)
-    m = readnetcdf(nc, "M", inds, dparams, transp = trsp)
-    hb = readnetcdf(nc, "AirEntryPressure", inds, dparams, transp = trsp)
-    soilthickness = readnetcdf(nc, "SoilThickness", inds, dparams, transp = trsp)
-    infiltcappath = readnetcdf(nc, "InfiltCapPath", inds, dparams, transp = trsp)
-    infiltcapsoil = readnetcdf(nc, "InfiltCapSoil", inds, dparams, transp = trsp)
-    maxleakage = readnetcdf(nc, "MaxLeakage", inds, dparams, transp = trsp)
+    θₛ = readnetcdf(nc, "thetaS", inds, dparams)
+    θᵣ = readnetcdf(nc, "thetaR", inds, dparams)
+    kv₀ = readnetcdf(nc, "KsatVer", inds, dparams)
+    m = readnetcdf(nc, "M", inds, dparams)
+    hb = readnetcdf(nc, "AirEntryPressure", inds, dparams)
+    soilthickness = readnetcdf(nc, "SoilThickness", inds, dparams)
+    infiltcappath = readnetcdf(nc, "InfiltCapPath", inds, dparams)
+    infiltcapsoil = readnetcdf(nc, "InfiltCapSoil", inds, dparams)
+    maxleakage = readnetcdf(nc, "MaxLeakage", inds, dparams)
     # TODO: store c, kvfrac in staticmaps.nc start at index 1
     c = fill(dparams["c"], (maxlayers, n))
     kvfrac = fill(dparams["KsatVerFrac"], (maxlayers, n))
     for i in [0:1:maxlayers-1;]
         if string("c_", i) in keys(nc)
-            c[i+1, :] = trsp ? Float64.(permutedims(nc[string("c_", i)][:])[inds]) :
-                Float64.(nc[string("c_", i)][:][inds])
+            c[i+1, :] = Float64.(nc[string("c_", i)][:][inds])
         else
             @warn(string("c_", i, " not found, set to default value ", dparams["c"]))
         end
         if string("KsatVerFrac_", i) in keys(nc)
-            kvfrac[i+1, :] =
-                trsp ? Float64.(permutedims(nc[string("KsatVerFrac_", i)][:])[inds]) :
-                Float64.(nc[string("KsatVerFrac_", i)][:][inds])
+            kvfrac[i+1, :] = Float64.(nc[string("KsatVerFrac_", i)][:][inds])
         else
             @warn(string(
                 "KsatVerFrac_",
@@ -124,24 +124,24 @@ function initialize_sbm_model(staticmaps_path, leafarea_path, reader, writer)
     end
 
     # fraction open water and compacted area (land cover)
-    waterfrac = readnetcdf(nc, "WaterFrac", inds, dparams, transp = trsp)
-    pathfrac = readnetcdf(nc, "PathFrac", inds, dparams, transp = trsp)
+    waterfrac = readnetcdf(nc, "WaterFrac", inds, dparams)
+    pathfrac = readnetcdf(nc, "PathFrac", inds, dparams)
 
     # vegetation parameters
-    rootingdepth = readnetcdf(nc, "RootingDepth", inds, dparams, transp = trsp)
-    rootdistpar = readnetcdf(nc, "rootdistpar", inds, dparams, transp = trsp)
-    capscale = readnetcdf(nc, "CapScale", inds, dparams, transp = trsp)
-    et_reftopot = readnetcdf(nc, "et_reftopot", inds, dparams, transp = trsp)
+    rootingdepth = readnetcdf(nc, "RootingDepth", inds, dparams)
+    rootdistpar = readnetcdf(nc, "rootdistpar", inds, dparams)
+    capscale = readnetcdf(nc, "CapScale", inds, dparams)
+    et_reftopot = readnetcdf(nc, "et_reftopot", inds, dparams)
     # cmax, e_r, canopygapfraction only required when lai climatoly not provided
-    cmax = readnetcdf(nc, "Cmax", inds, dparams, transp = trsp)
-    e_r = readnetcdf(nc, "EoverR", inds, dparams, transp = trsp)
-    canopygapfraction = readnetcdf(nc, "CanopyGapFraction", inds, dparams, transp = trsp)
+    cmax = readnetcdf(nc, "Cmax", inds, dparams)
+    e_r = readnetcdf(nc, "EoverR", inds, dparams)
+    canopygapfraction = readnetcdf(nc, "CanopyGapFraction", inds, dparams)
 
     # if lai climatology provided use sl, swood and kext to calculate cmax
     if isnothing(leafarea_path) == false
-        sl = readnetcdf(nc, "Sl", inds, dparams, transp = trsp)
-        swood = readnetcdf(nc, "Swood", inds, dparams, transp = trsp)
-        kext = readnetcdf(nc, "Kext", inds, dparams, transp = trsp)
+        sl = readnetcdf(nc, "Sl", inds, dparams)
+        swood = readnetcdf(nc, "Swood", inds, dparams)
+        kext = readnetcdf(nc, "Kext", inds, dparams)
         # set in inifile? Also type (monthly, daily, hourly) as part of netcdf variable attribute?
         # in original inifile: LAI=staticmaps/clim/LAI,monthlyclim,1.0,1
         lai_clim = NCDataset(leafarea_path) # TODO:include LAI climatology in update() vertical SBM model
@@ -391,10 +391,10 @@ function initialize_sbm_model(staticmaps_path, leafarea_path, reader, writer)
     )
 
     # lateral part sbm
-    khfrac = readnetcdf(nc, "KsatHorFrac", inds, dparams, transp = trsp)
-    βₗ = trsp ? Float64.(permutedims(nc["Slope"][:])[inds]) : Float64.(nc["Slope"][:][inds])
-    βₗ[βₗ.<0.00001] .= 0.00001
-    ldd_2d = trsp ? permutedims(nc["wflow_ldd"][:]) : nc["wflow_ldd"][:]
+    khfrac = readnetcdf(nc, "KsatHorFrac", inds, dparams)
+    βₗ = Float64.(nc["Slope"][:][inds])
+    clamp!(βₗ, 0.00001, Inf)
+    ldd_2d = nc["wflow_ldd"][:]
     ldd = ldd_2d[inds]
     kh₀ = khfrac .* kv₀
     dl = fill(mv, n)
@@ -417,7 +417,7 @@ function initialize_sbm_model(staticmaps_path, leafarea_path, reader, writer)
         dw = dw .* 1000.0,
     )
 
-    n_land = readnetcdf(nc, "N", inds, dparams, transp = trsp)
+    n_land = readnetcdf(nc, "N", inds, dparams)
 
     olf = SurfaceFlow{Float64}(
         sl = βₗ,
@@ -427,17 +427,17 @@ function initialize_sbm_model(staticmaps_path, leafarea_path, reader, writer)
         width = dw,
     )
 
-    dag = flowgraph(ldd, inds, Wflow.pcrdir)
+    pcr_dir = trsp ? permute_indices(Wflow.pcrdir) : Wflow.pcrdir
+    dag = flowgraph(ldd, inds, pcr_dir)
 
     inds_riv = filter(i -> !isequal(river_2d[i], 0), inds)
-    riverslope = trsp ? Float64.(permutedims(nc["RiverSlope"][:])[inds_riv]) :
-        Float64.(nc["RiverSlope"][:][inds_riv])
-    riverslope[riverslope.<0.00001] .= 0.00001
+    riverslope = Float64.(nc["RiverSlope"][:][inds_riv])
+    clamp!(riverslope, 0.00001, Inf)
     riverlength = riverlength_2d[inds_riv]
     riverwidth = riverwidth_2d[inds_riv]
-    n_river = readnetcdf(nc, "N_River", inds_riv, dparams, transp = trsp)
+    n_river = readnetcdf(nc, "N_River", inds_riv, dparams)
     ldd_riv = ldd_2d[inds_riv]
-    dag_riv = flowgraph(ldd_riv, inds_riv, Wflow.pcrdir)
+    dag_riv = flowgraph(ldd_riv, inds_riv, pcr_dir)
 
     rf = SurfaceFlow{Float64}(
         sl = riverslope,
@@ -448,14 +448,19 @@ function initialize_sbm_model(staticmaps_path, leafarea_path, reader, writer)
     )
 
     starttime = DateTime(2000, 1, 1)
+    reader = prepare_reader(forcing_path, "P", inds)
 
-    return Model(
+    model = Model(
         (land = dag, river = dag_riv),
         (subsurface = ssf, land = olf, river = rf),
         sbm,
         Clock(starttime, 1, Δt),
         reader,
         writer,
-        inds,
     )
+
+    # make sure the forcing is already loaded
+    # it's fine to run twice, and may help catching errors earlier
+    update_forcing!(model)
+    return model
 end

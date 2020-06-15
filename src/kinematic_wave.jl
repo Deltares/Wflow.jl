@@ -12,6 +12,9 @@ const pcrdir = [
     CartesianIndex(-1, 1),  # 9
 ]
 
+# in case the input data is permuted the other way
+permute_indices(inds) = [CartesianIndex(i[2], i[1]) for i in inds]
+
 "Get a list of indices that are active, based on a nodata value"
 function active_indices(A, nodata)
     inds = CartesianIndices(size(A))
