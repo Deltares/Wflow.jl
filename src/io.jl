@@ -1,6 +1,11 @@
 
 "Extract a NetCDF variable at a given time"
-function get_at!(buffer, var::NCDatasets.CFVariable, times::AbstractVector{<:TimeType}, t::TimeType)
+function get_at!(
+    buffer,
+    var::NCDatasets.CFVariable,
+    times::AbstractVector{<:TimeType},
+    t::TimeType,
+)
     dim = findfirst(==("time"), NCDatasets.dimnames(var))
     i = findfirst(>=(t), times)
     i === nothing && throw(DomainError("time $t after dataset end $(last(times))"))
@@ -124,8 +129,5 @@ function prepare_reader(path, varname, inds)
     timelast = last(dims) == "time"
     lateral_size = timelast ? size(var)[1:2] : size(var)[2:3]
     buffer = zeros(T, lateral_size)
-    return NCReader(
-        dataset,
-        buffer,
-        inds)
+    return NCReader(dataset, buffer, inds)
 end
