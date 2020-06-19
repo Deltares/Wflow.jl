@@ -22,6 +22,7 @@ UnPack = "3a884ed6-31ef-47d7-9d2a-63182c4928ed"
 [compat]
 BenchmarkTools = "0.5"
 CFTime = "0.1"
+CSV = "0.6"
 FillArrays = "0.8"
 Juno = "0.8"
 LightGraphs = "1.3"
