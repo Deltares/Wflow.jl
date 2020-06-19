@@ -21,11 +21,10 @@ end
 Read parameter `var` from NetCDF file `nc` for indices `inds`. If `var` is not
 available, a default value based on dict 'dpars' is returned.
 """
-function readnetcdf(nc, var, inds, dpars; transp = false)
+function readnetcdf(nc, var, inds, dpars)
     if haskey(nc, var)
         @debug(string("read parameter ", var))
-        ncvar =
-            transp ? Float64.(permutedims(nc[var][:])[inds]) : Float64.(nc[var][:][inds])
+        ncvar = Float64.(nc[var][:][inds])
     else
         @warn(string(var, " not found, set to default value ", dpars[var]))
         ncvar = fill(dpars[var], length(inds))

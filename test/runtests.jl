@@ -10,6 +10,7 @@ using UnPack
 using Wflow
 using FillArrays
 using TypedTables
+using CSV
 
 # ensure test data is present
 testdir = @__DIR__
@@ -35,7 +36,7 @@ forcing_moselle_path = testdata(v"0.2", "forcing-2000.nc", "forcing-moselle.nc")
 @testset "Wflow.jl" begin
     include("config.jl")
     include("kinematic_wave.jl")
-    include("sbm.jl")
+    include("io.jl")
     include("vertical_process.jl")
     include("run_sbm.jl")
 end
