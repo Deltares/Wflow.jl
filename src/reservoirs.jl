@@ -28,7 +28,8 @@ function update(res::SimpleReservoir, inflow, p, pet)
     vol = 0.0
     for n = 1:its
         vol = (
-            res.volume + (inflow * res.Δt / its) + (p / its / 1000.0) * res.area - (pet / its / 1000.0) * res.area
+            res.volume + (inflow * res.Δt / its) + (p / its / 1000.0) * res.area -
+            (pet / its / 1000.0) * res.area
         )
 
         percfull = vol / res.maxvolume
@@ -40,8 +41,7 @@ function update(res::SimpleReservoir, inflow, p, pet)
         wantrel = max(0.0, vol - (res.maxvolume * res.targetfullfrac))
         # Assume extra maximum Q if spilling
         overflow_q = max((vol - res.maxvolume), 0.0)
-        torelease =
-            min(wantrel, overflow_q + res.maxrelease * res.Δt / its - demandrelease)
+        torelease = min(wantrel, overflow_q + res.maxrelease * res.Δt / its - demandrelease)
         vol = vol - torelease
         outflow = torelease + demandrelease
         percfull = vol / res.maxvolume
