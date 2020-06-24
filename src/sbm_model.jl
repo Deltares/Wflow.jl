@@ -227,8 +227,6 @@ function initialize_sbm_model(staticmaps_path, leafarea_path, forcing_path, writ
         yl = yl,
         # length of cells in x direction [m]
         xl = xl,
-        #
-        river = river,
         # Fraction of river [-]
         riverfrac = riverfrac,
         # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹]
@@ -390,6 +388,33 @@ function initialize_sbm_model(staticmaps_path, leafarea_path, forcing_path, writ
         recharge = fill(mv, n),
     )
 
+    inds_riv = filter(i -> !isequal(river_2d[i], 0), inds)
+    # reservoirs
+    # read only reservoir data if reservoirs true (from model reader, setting Config.jl TOML)
+    reslocs_2d = Int.(nomissing(nc["wflow_reservoirlocs"][:],0))
+    # allow reservoirs only in river cells
+    inds_res = filter(i -> reslocs_2d[inds][i] > 0 & isequal(river[i], 1), 1:n)
+    resdemand = Float64.(nomissing(nc["ResDemand"][:][inds_riv],0))
+    resmaxrelease = Float64.(nomissing(nc["ResMaxRelease"][:][inds_riv],0))
+    resmaxvolume = Float64.(nomissing(nc["ResMaxVolume"][:][inds_riv],0))
+    resarea = Float64.(nomissing(nc["ResSimpleArea"][:][inds_riv],0))
+    res_targetfullfrac = Float64.(nomissing(nc["ResTargetFullFrac"][:][inds_riv],0))
+    res_targetminfrac = Float64.(nomissing(nc["ResTargetMinFrac"][:][inds_riv],0))
+    reslocs = reslocs_2d[inds_riv]
+
+    pits = zeros(Int,n)
+    pits[inds_res] .= 1
+
+    reservoirs = [reslocs[i] == 0 ? nothing : SimpleReservoir{Float64}(
+        demand = resdemand[i],
+        maxrelease = resmaxrelease[i],
+        maxvolume = resmaxvolume[i],
+        area = resarea[i],
+        targetfullfrac = res_targetfullfrac[i],
+        targetminfrac = res_targetminfrac[i],
+        Δt = Float64(Δt.value),
+        ) for i in 1:length(reslocs)]
+
     # lateral part sbm
     khfrac = readnetcdf(nc, "KsatHorFrac", inds, dparams)
     βₗ = Float64.(nc["Slope"][:][inds])
@@ -415,22 +440,24 @@ function initialize_sbm_model(staticmaps_path, leafarea_path, forcing_path, writ
         βₗ = βₗ,
         dl = dl .* 1000.0,
         dw = dw .* 1000.0,
+        pits = pits,
     )
 
     n_land = readnetcdf(nc, "N", inds, dparams)
 
-    olf = SurfaceFlow{Float64}(
+    olf = SurfaceFlow(
         sl = βₗ,
         n = n_land,
         dl = dl,
         Δt = Float64(Δt.value),
         width = dw,
+        pits = pits,
     )
 
     pcr_dir = trsp ? permute_indices(Wflow.pcrdir) : Wflow.pcrdir
     dag = flowgraph(ldd, inds, pcr_dir)
 
-    inds_riv = filter(i -> !isequal(river_2d[i], 0), inds)
+
     riverslope = Float64.(nc["RiverSlope"][:][inds_riv])
     clamp!(riverslope, 0.00001, Inf)
     riverlength = riverlength_2d[inds_riv]
@@ -439,12 +466,14 @@ function initialize_sbm_model(staticmaps_path, leafarea_path, forcing_path, writ
     ldd_riv = ldd_2d[inds_riv]
     dag_riv = flowgraph(ldd_riv, inds_riv, pcr_dir)
 
-    rf = SurfaceFlow{Float64}(
+    rf = SurfaceFlow(
         sl = riverslope,
         n = n_river,
         dl = riverlength,
         Δt = Float64(Δt.value),
         width = riverwidth,
+        reservoir = reservoirs,
+        rivercells = river,
     )
 
     starttime = DateTime(2000, 1, 1)

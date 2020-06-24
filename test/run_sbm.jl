@@ -14,7 +14,7 @@ function update(model, toposort_land, toposort_river, frac_toriver, index_river,
         network.land,
         toposort_land,
         frac_toriver,
-        vertical.river,
+        lateral.river.rivercells,
     )
 
     Wflow.update_after_lateralflow(
@@ -33,7 +33,7 @@ function update(model, toposort_land, toposort_river, frac_toriver, index_river,
         toposort_land,
         nl,
         frac_toriver = frac_toriver,
-        river = vertical.river,
+        river = lateral.river.rivercells,
         do_iter = true,
     )
 
@@ -65,13 +65,14 @@ toposort_land = Wflow.topological_sort_by_dfs(model.network.land)
 toposort_river = Wflow.topological_sort_by_dfs(model.network.river)
 nl = length(toposort_land)
 nr = length(toposort_river)
-index_river = filter(i -> !isequal(model.vertical.river[i], 0), 1:nl)
+index_river = filter(i -> !isequal(model.lateral.river.rivercells[i], 0), 1:nl)
 frac_toriver = Wflow.fraction_runoff_toriver(
     model.network.land,
     index_river,
     model.lateral.subsurface.βₗ,
     nl,
 )
+
 model = update(model, toposort_land, toposort_river, frac_toriver, index_river, nl, nr)
 
 @testset "first timestep" begin
@@ -103,7 +104,7 @@ end
 
 @testset "subsurface flow" begin
     ssf = model.lateral.subsurface.ssf
-    @test sum(ssf) ≈ 6.910379443903999e16
+    @test sum(ssf) ≈ 6.910372076543659e16
     @test ssf[toposort_land[1]] ≈ 3.0271045626104652e13
     @test ssf[toposort_land[nl-100]] ≈ 7.555413711433021e11
     @test ssf[sink] ≈ 2.177681570044858e11
@@ -111,7 +112,7 @@ end
 
 @testset "overland flow" begin
     q = model.lateral.land.q_av
-    @test sum(q) ≈ 6.047157300328484
+    @test sum(q) ≈ 6.044737022735466
     @test q[26625] ≈ 0.0
     @test q[39308] ≈ 0.0
     @test q[sink] ≈ 0.0
@@ -119,10 +120,10 @@ end
 
 @testset "river flow" begin
     q = model.lateral.river.q_av
-    @test sum(q) ≈ 634.3032031906259
-    @test q[4061] ≈ 0.011401684265451576
-    @test q[5617] ≈ 0.9858478384045972
-    @test q[toposort_river[end]] ≈ 0.004345249971296487
+    @test sum(q) ≈ 656.6441748952489
+    @test q[4061] ≈ 0.011400418905152046
+    @test q[5617] ≈ 0.9858388071125663
+    @test q[toposort_river[end]] ≈ 0.004344447476624051
 end
 
 using BenchmarkTools, Juno
