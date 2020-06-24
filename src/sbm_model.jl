@@ -391,29 +391,32 @@ function initialize_sbm_model(staticmaps_path, leafarea_path, forcing_path, writ
     inds_riv = filter(i -> !isequal(river_2d[i], 0), inds)
     # reservoirs
     # read only reservoir data if reservoirs true (from model reader, setting Config.jl TOML)
-    reslocs_2d = Int.(nomissing(nc["wflow_reservoirlocs"][:],0))
+    reslocs_2d = Int.(nomissing(nc["wflow_reservoirlocs"][:], 0))
     # allow reservoirs only in river cells
     inds_res = filter(i -> reslocs_2d[inds][i] > 0 & isequal(river[i], 1), 1:n)
-    resdemand = Float64.(nomissing(nc["ResDemand"][:][inds_riv],0))
-    resmaxrelease = Float64.(nomissing(nc["ResMaxRelease"][:][inds_riv],0))
-    resmaxvolume = Float64.(nomissing(nc["ResMaxVolume"][:][inds_riv],0))
-    resarea = Float64.(nomissing(nc["ResSimpleArea"][:][inds_riv],0))
-    res_targetfullfrac = Float64.(nomissing(nc["ResTargetFullFrac"][:][inds_riv],0))
-    res_targetminfrac = Float64.(nomissing(nc["ResTargetMinFrac"][:][inds_riv],0))
+    resdemand = Float64.(nomissing(nc["ResDemand"][:][inds_riv], 0))
+    resmaxrelease = Float64.(nomissing(nc["ResMaxRelease"][:][inds_riv], 0))
+    resmaxvolume = Float64.(nomissing(nc["ResMaxVolume"][:][inds_riv], 0))
+    resarea = Float64.(nomissing(nc["ResSimpleArea"][:][inds_riv], 0))
+    res_targetfullfrac = Float64.(nomissing(nc["ResTargetFullFrac"][:][inds_riv], 0))
+    res_targetminfrac = Float64.(nomissing(nc["ResTargetMinFrac"][:][inds_riv], 0))
     reslocs = reslocs_2d[inds_riv]
 
-    pits = zeros(Int,n)
+    pits = zeros(Int, n)
     pits[inds_res] .= 1
 
-    reservoirs = [reslocs[i] == 0 ? nothing : SimpleReservoir{Float64}(
-        demand = resdemand[i],
-        maxrelease = resmaxrelease[i],
-        maxvolume = resmaxvolume[i],
-        area = resarea[i],
-        targetfullfrac = res_targetfullfrac[i],
-        targetminfrac = res_targetminfrac[i],
-        Δt = Float64(Δt.value),
-        ) for i in 1:length(reslocs)]
+    reservoirs = [
+        reslocs[i] == 0 ? nothing :
+            SimpleReservoir{Float64}(
+            demand = resdemand[i],
+            maxrelease = resmaxrelease[i],
+            maxvolume = resmaxvolume[i],
+            area = resarea[i],
+            targetfullfrac = res_targetfullfrac[i],
+            targetminfrac = res_targetminfrac[i],
+            Δt = Float64(Δt.value),
+        ) for i = 1:length(reslocs)
+    ]
 
     # lateral part sbm
     khfrac = readnetcdf(nc, "KsatHorFrac", inds, dparams)
