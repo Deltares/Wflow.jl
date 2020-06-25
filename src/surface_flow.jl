@@ -16,9 +16,9 @@ Base.@kwdef struct SurfaceFlow{T,R}
     eps::T = 1e-03                          # Maximum allowed change in α, if exceeded cross sectional area and h is recalculated
     cel::Vector{T} = fill(0.0, length(sl))  # Celerity of the kinematic wave
     to_river::Vector{T} = fill(0.0, length(sl)) # Part of overland flow [m³ s⁻¹] that flows to the river
-    rivercells::Vector{UInt8} = fill(UInt8(0), 1)
-    pits::Vector{Int64} = zeros(Int64, length(sl))
-    reservoir::R = fill(nothing, length(sl))
+    rivercells::Vector{UInt8} = fill(UInt8(0), 1) # Location of river cells (0 or 1)
+    wb_pit::Vector{Int64} = zeros(Int64, length(sl)) # Boolean location (0 or 1) of a waterbody (wb, reservoir or lake).
+    reservoir::R = fill(nothing, length(sl)) # Reservoir model, only located in river cells
 end
 
 
@@ -45,11 +45,13 @@ function update(
     do_tstep = false,
     tstep = 0.0,
 )
-
+    # two options for iteration, a fixed sub time step or based on courant number.
     if do_iter
         if do_tstep
+            # better to set this during initialization
             ts = ceil(Int(sf.Δt / tstep))
         else
+            # calculate celerity
             for v in toposort
                 if sf.q[v] > 0.0
                     sf.cel[v] = 1.0 / (sf.α[v] * sf.β * pow(sf.q[v], (sf.β - 1.0)))
@@ -62,6 +64,7 @@ function update(
         end
     end
 
+    # sub time step
     adt = sf.Δt / ts
 
     q_sum = zeros(n)
@@ -69,19 +72,25 @@ function update(
     for _ = 1:ts
         for v in toposort
             upstream_nodes = inneighbors(dag, v)
+            # for overland flow frac_toriver and river cells need to be defined
             if (frac_toriver != nothing) & (river != nothing)
-                if Bool(river[v]) & (sf.pits[v] == 0)
+                # for a river cell without a reservoir or lake (wb_pit = 0) part of the upstream surface flow
+                # goes to the river (frac_toriver) and part goes to the surface flow reservoir (1.0 - frac_toriver)
+                # upstream nodes with a reservoir or lake are excluded
+                if Bool(river[v]) & (sf.wb_pit[v] == 0)
                     qin = isempty(upstream_nodes) ? 0.0 :
                         sum(
                         sf.q[i] * (1.0 - frac_toriver[i])
-                        for i in upstream_nodes if sf.pits[i] == 0
+                        for i in upstream_nodes if sf.wb_pit[i] == 0
                     )
                     sf.to_river[v] = isempty(upstream_nodes) ? 0.0 :
                         sum(
                         sf.q[i] * frac_toriver[i]
-                        for i in upstream_nodes if sf.pits[i] == 0
+                        for i in upstream_nodes if sf.wb_pit[i] == 0
                     )
-                elseif Bool(river[v]) & (sf.pits[v] == 1)
+                    # for a river cell with a reservoir or lake (wb_pit = 1) all upstream surface flow goes
+                    # to the river.
+                elseif Bool(river[v]) & (sf.wb_pit[v] == 1)
                     sf.to_river[v] =
                         isempty(upstream_nodes) ? 0.0 : sum(sf.q[i] for i in upstream_nodes)
                     qin = 0.0
@@ -89,11 +98,14 @@ function update(
                     qin =
                         isempty(upstream_nodes) ? 0.0 : sum(sf.q[i] for i in upstream_nodes)
                 end
+                # for all the other cells all upstream surface flow goes to the surface flow reservoir.
             else
                 qin = isempty(upstream_nodes) ? 0.0 : sum(sf.q[i] for i in upstream_nodes)
             end
+            # run reservoir model and copy reservoir outflow to river cell
+            # dummy values now for reservoir precipitation and evaporation (3.0 and 4.0)
             if sf.reservoir[v] != nothing
-                sf.reservoir[v] = update(sf.reservoir[v], qin, 0.0, 0.0)
+                sf.reservoir[v] = update(sf.reservoir[v], qin, 3.0, 4.0)
                 sf.q[v] = sf.reservoir[v].outflow
             else
                 sf.q[v] =

@@ -38,5 +38,6 @@ forcing_moselle_path = testdata(v"0.2", "forcing-2000.nc", "forcing-moselle.nc")
     include("kinematic_wave.jl")
     include("io.jl")
     include("vertical_process.jl")
+    include("reservoirs.jl")
     include("run_sbm.jl")
 end

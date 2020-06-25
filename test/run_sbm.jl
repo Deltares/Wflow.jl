@@ -126,6 +126,16 @@ end
     @test q[toposort_river[end]] ≈ 0.004344447476624051
 end
 
+@testset "reservoir simple" begin
+    res = model.lateral.river.reservoir
+    inds = filter(i -> !isequal(res[i], nothing), 1:nr)
+    @test res[inds[2]].outflow ≈ 0.21749979713718748
+    @test res[inds[2]].inflow ≈ 0.051269540649685884
+    @test res[inds[2]].volume ≈ 2.7357871245776203e7
+    @test res[inds[2]].precipitation ≈ 3.0
+    @test res[inds[2]].evaporation ≈ 4.0
+end
+
 using BenchmarkTools, Juno
 
 benchmark = @benchmark update(

@@ -17,10 +17,6 @@ end
 
 function update(res::SimpleReservoir, inflow, p, pet)
 
-    # dummy meteo variables pet and p
-    pet = 4.0
-    p = 3.0
-
     its = max(ceil(res.Δt / 21600.0), 1)
     _outflow = 0.0
     _demandrelease = 0.0
