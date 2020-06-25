@@ -14,7 +14,7 @@ Base.@kwdef struct LateralSSF{T}
         ((kh₀ .* βₗ) ./ f) .* (exp.(-f .* zi) - exp.(-f .* soilthickness)) .* dw    # Subsurface flow [mm³ Δt⁻¹]
     ssfmax::Vector{T} = ((kh₀ .* βₗ) ./ f) .* (1.0 .- exp.(-f .* soilthickness))     # Maximum subsurface flow [mm² Δt⁻¹]
     to_river::Vector{T} = zeros(length(f))  # Part of subsurface flow [mm³ Δt⁻¹] that flows to the river
-    pits::Vector{Int64} = zeros(Int64, length(f))
+    wb_pit::Vector{Int64} = zeros(Int64, length(f)) # Boolean location (0 or 1) of a waterbody (wb, reservoir or lake).
 end
 
 """
@@ -33,20 +33,26 @@ end
 function update(ssf::LateralSSF, dag, toposort, frac_toriver, river)
     for v in toposort
         upstream_nodes = inneighbors(dag, v)
-        if Bool(river[v]) & (ssf.pits[v] == 0)
+        # for a river cell without a reservoir or lake (wb_pit = 0) part of the upstream subsurface flow
+        # goes to the river (frac_toriver) and part goes to the subsurface flow reservoir (1.0 - frac_toriver)
+        # upstream nodes with a reservoir or lake are excluded
+        if Bool(river[v]) & (ssf.wb_pit[v] == 0)
             ssfin = isempty(upstream_nodes) ? 0.0 :
                 sum(
                 ssf.ssf[i] * (1.0 - frac_toriver[i])
-                for i in upstream_nodes if ssf.pits[i] == 0
+                for i in upstream_nodes if ssf.wb_pit[i] == 0
             )
             ssf.to_river[v] = isempty(upstream_nodes) ? 0.0 :
                 sum(
-                ssf.ssf[i] * frac_toriver[i] for i in upstream_nodes if ssf.pits[i] == 0
+                ssf.ssf[i] * frac_toriver[i] for i in upstream_nodes if ssf.wb_pit[i] == 0
             )
-        elseif Bool(river[v]) & (ssf.pits[v] == 1)
+            # for a river cell with a reservoir or lake (wb_pit = 1) all upstream subsurface flow goes
+            # to the river.
+        elseif Bool(river[v]) & (ssf.wb_pit[v] == 1)
             ssf.to_river[v] =
                 isempty(upstream_nodes) ? 0.0 : sum(ssf.ssf[i] for i in upstream_nodes)
             ssfin = 0.0
+            # for all the other cells all upstream subsurface flow goes to the subsurface flow reservoir.
         else
             ssfin = isempty(upstream_nodes) ? 0.0 : sum(ssf.ssf[i] for i in upstream_nodes)
         end

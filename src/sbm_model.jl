@@ -443,7 +443,7 @@ function initialize_sbm_model(staticmaps_path, leafarea_path, forcing_path, writ
         βₗ = βₗ,
         dl = dl .* 1000.0,
         dw = dw .* 1000.0,
-        pits = pits,
+        wb_pit = pits,
     )
 
     n_land = readnetcdf(nc, "N", inds, dparams)
@@ -454,7 +454,7 @@ function initialize_sbm_model(staticmaps_path, leafarea_path, forcing_path, writ
         dl = dl,
         Δt = Float64(Δt.value),
         width = dw,
-        pits = pits,
+        wb_pit = pits,
     )
 
     pcr_dir = trsp ? permute_indices(Wflow.pcrdir) : Wflow.pcrdir
