@@ -298,6 +298,10 @@ function initialize_sbm_model(staticmaps_path, leafarea_path, forcing_path, writ
         # Gash interception model parameter, ratio of the average evaporation from the
         # wet canopy [mm Δt⁻¹] and the average precipitation intensity [mm Δt⁻¹] on a saturated canopy
         e_r = e_r,
+        # Stemflow [mm]
+        stemflow = fill(mv, n),
+        # Throughfall [mm]
+        throughfall = fill(mv, n),
         # A scaling parameter [mm⁻¹] (controls exponential decline of kv₀)
         f = θₑ ./ m,
         # Amount of water in the unsaturated store, per layer [mm]
@@ -312,6 +316,8 @@ function initialize_sbm_model(staticmaps_path, leafarea_path, forcing_path, writ
         snow = fill(0.0, n),
         # Liquid water content in the snow pack [mm]
         snowwater = fill(0.0, n),
+        # Snow melt + precipitation as rainfall [mm]
+        rainfallplusmelt = fill(mv, n),
         # Top soil temperature [ᵒC]
         tsoil = Fill(10.0, n),
         # Canopy storage [mm]
