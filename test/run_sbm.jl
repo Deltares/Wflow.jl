@@ -1,10 +1,27 @@
-function update(model, toposort_land, toposort_river, frac_toriver, index_river, nl, nr)
+function update(
+    model,
+    toposort_land,
+    toposort_river,
+    frac_toriver,
+    index_river,
+    nl,
+    nr;
+    masswasting = false,
+)
     @unpack lateral, vertical, network, clock = model
 
     # increases time from 115ms to 3.6s and allocations from 0 to 150MB
     Wflow.update_forcing!(model)
 
     Wflow.update_until_snow(vertical)
+
+    if masswasting
+        snowflux_frac =
+            min.(0.5, lateral.land.sl ./ 5.67) .* min.(1.0, vertical.snow ./ 10000.0)
+        maxflux = snowflux_frac .* vertical.snow
+        vertical.snow .=
+            Wflow.accucapacityflux(network.land, toposort_land, vertical.snow, maxflux)
+    end
 
     Wflow.update_until_recharge(vertical)
     lateral.subsurface.recharge[:] = vertical.recharge
@@ -75,7 +92,16 @@ frac_toriver = Wflow.fraction_runoff_toriver(
     nl,
 )
 
-model = update(model, toposort_land, toposort_river, frac_toriver, index_river, nl, nr)
+model = update(
+    model,
+    toposort_land,
+    toposort_river,
+    frac_toriver,
+    index_river,
+    nl,
+    nr,
+    masswasting = true,
+)
 
 @testset "first timestep" begin
     sbm = model.vertical
@@ -94,7 +120,16 @@ model = update(model, toposort_land, toposort_river, frac_toriver, index_river, 
 end
 
 # run the second timestep
-model = update(model, toposort_land, toposort_river, frac_toriver, index_river, nl, nr)
+model = update(
+    model,
+    toposort_land,
+    toposort_river,
+    frac_toriver,
+    index_river,
+    nl,
+    nr,
+    masswasting = true,
+)
 
 @testset "second timestep" begin
     sbm = model.vertical
@@ -148,6 +183,7 @@ benchmark = @benchmark update(
     index_river,
     nl,
     nr,
+    masswasting = true,
 )
 # @time update(model, toposort, n)
 # @btime update(model, toposort, n)
