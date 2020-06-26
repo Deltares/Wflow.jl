@@ -117,6 +117,7 @@ model = update(
     @test sbm.θₛ[1] == 0.48343977332115173
     @test sbm.runoff[1] == 0.0
     @test sbm.soilevap[1] == 0.07996413903665732
+    @test sbm.snow[1] == 0.0
 end
 
 # run the second timestep
@@ -137,6 +138,7 @@ model = update(
     @test sbm.θₛ[1] == 0.48343977332115173
     @test sbm.runoff[1] == 0.0
     @test sbm.soilevap[1] == 0.15658817917471723
+    @test sbm.snow[1] == 0.0
 end
 
 @testset "subsurface flow" begin
