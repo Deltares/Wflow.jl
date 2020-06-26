@@ -1,20 +1,14 @@
 const mv = NaN
 
-function update_before_lateralflow(t)
+function update_until_snow(t)
 
-    # start dummy variables (should be generated from model reader and from Config.jl TOML)
+    # # start dummy variables (should be generated from model reader and from Config.jl TOML)
     do_lai = true
     glacierfrac = false
     modelsnow = true
-    soilinfreduction = false
-    transfermethod = 0
     potevap = 4.0
     precipitation = 3.0
     temperature = 10.0
-    wl_land = 0.0 # from kinematic wave land
-    wl_river = 0.10 # from kinematic river
-    irsupply_mm = 0.0
-    ust = false
     Δt = Second(Day(1))
     basetimestep = Second(Day(1))
     # end dummpy variables
@@ -54,14 +48,12 @@ function update_before_lateralflow(t)
             interception = netinterception
         end
 
-        eff_precipitation = throughfall + stemflow
-
         if modelsnow
             tsoil = t.tsoil[r] + t.w_soil[r] * (temperature - t.tsoil[r])
             snow, snowwater, snowmelt, rainfallplusmelt, snowfall = snowpack_hbv(
                 t.snow[r],
                 t.snowwater[r],
-                eff_precipitation,
+                throughfall + stemflow,
                 temperature,
                 t.tti[r],
                 t.tt[r],
@@ -69,6 +61,44 @@ function update_before_lateralflow(t)
                 t.cfmax[r],
                 t.whc[r],
             )
+        end
+
+        # update the outputs and states
+        t.cmax[r] = cmax
+        t.canopygapfraction[r] = canopygapfraction
+        t.canopystorage[r] = canopystorage
+        t.interception[r] = interception
+        t.snow[r] = snow
+        t.snowwater[r] = snowwater
+        t.tsoil[r] = tsoil
+        t.rainfallplusmelt[r] = rainfallplusmelt
+        t.stemflow[r] = stemflow
+        t.throughfall[r] = throughfall
+        t.pottrans_soil[r] = pottrans_soil
+    end
+end
+
+function update_until_recharge(t)
+
+    # start dummy variables (should be generated from model reader and from Config.jl TOML)
+    soilinfreduction = false
+    glacierfrac = false
+    modelsnow = true
+    transfermethod = 0
+    potevap = 4.0
+    precipitation = 3.0
+    temperature = 10.0
+    wl_land = 0.0 # from kinematic wave land
+    wl_river = 0.10 # from kinematic river
+    irsupply_mm = 0.0
+    ust = false
+    Δt = Second(Day(1))
+    basetimestep = Second(Day(1))
+    # end dummpy variables
+
+    for r in eachindex(t.nlayers)
+        if modelsnow
+            rainfallplusmelt = t.rainfallplusmelt[r]
             if glacierfrac
                 # Run Glacier module and add the snowpack on-top of it.
                 # Estimate the fraction of snow turned into ice (HBV-light).
@@ -91,7 +121,7 @@ function update_before_lateralflow(t)
 
             end
         else
-            rainfallplusmelt = eff_precipitation
+            rainfallplusmelt = t.stemflow[r] + t.throughfall[r]
         end
 
         avail_forinfilt = rainfallplusmelt + irsupply_mm
@@ -104,14 +134,16 @@ function update_before_lateralflow(t)
 
         rootingdepth = min(t.soilthickness[r] * 0.99, t.rootingdepth[r])
 
-        ae_openw_r = min(wl_river * 1000.0 * t.riverfrac[r], t.riverfrac[r] * pottrans_soil)
-        ae_openw_l = min(wl_land * 1000.0 * t.waterfrac[r], t.waterfrac[r] * pottrans_soil)
+        ae_openw_r =
+            min(wl_river * 1000.0 * t.riverfrac[r], t.riverfrac[r] * t.pottrans_soil[r])
+        ae_openw_l =
+            min(wl_land * 1000.0 * t.waterfrac[r], t.waterfrac[r] * t.pottrans_soil[r])
 
-        restevap = pottrans_soil - ae_openw_r - ae_openw_l
+        restevap = t.pottrans_soil[r] - ae_openw_r - ae_openw_l
 
         # evap available for soil evaporation and transpiration
-        potsoilevap = restevap * canopygapfraction
-        pottrans = restevap * (1.0 - canopygapfraction)
+        potsoilevap = restevap * t.canopygapfraction[r]
+        pottrans = restevap * (1.0 - t.canopygapfraction[r])
 
         # Calculate the initial capacity of the unsaturated store
         ustorecapacity = t.soilwatercapacity[r] - t.satwaterdepth[r] - ustoredepth
@@ -122,7 +154,7 @@ function update_before_lateralflow(t)
                 avail_forinfilt,
                 t.pathfrac[r],
                 t.cf_soil[r],
-                tsoil,
+                t.tsoil[r],
                 t.infiltcapsoil[r],
                 t.infiltcappath[r],
                 ustorecapacity,
@@ -300,18 +332,11 @@ function update_before_lateralflow(t)
         actevap = soilevap + transpiration + ae_openw_r + ae_openw_l
 
         # update the outputs and states
-        t.cmax[r] = cmax
-        t.canopygapfraction[r] = canopygapfraction
-        t.canopystorage[r] = canopystorage
-        t.snow[r] = snow
-        t.snowwater[r] = snowwater
-        t.tsoil[r] = tsoil
         t.actinfilt[r] = actinfilt
         t.infiltexcess[r] = infiltexcess
         t.recharge[r] = recharge
         t.transpiration[r] = transpiration
         t.soilevap[r] = soilevap
-        t.interception[r] = interception
         t.ae_openw_r[r] = ae_openw_r
         t.ae_openw_l[r] = ae_openw_l
         t.runoff_land[r] = runoff_land
@@ -325,6 +350,7 @@ function update_before_lateralflow(t)
         t.excesswater[r] = excesswater
         t.excesswatersoil[r] = excesswatersoil
         t.excesswaterpath[r] = excesswaterpath
+        t.rainfallplusmelt[r] = rainfallplusmelt
     end
 end
 

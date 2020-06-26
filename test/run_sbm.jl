@@ -4,7 +4,9 @@ function update(model, toposort_land, toposort_river, frac_toriver, index_river,
     # increases time from 115ms to 3.6s and allocations from 0 to 150MB
     Wflow.update_forcing!(model)
 
-    Wflow.update_before_lateralflow(vertical)
+    Wflow.update_until_snow(vertical)
+
+    Wflow.update_until_recharge(vertical)
     lateral.subsurface.recharge[:] = vertical.recharge
     lateral.subsurface.recharge .*= lateral.subsurface.dl
     lateral.subsurface.zi[:] = vertical.zi
