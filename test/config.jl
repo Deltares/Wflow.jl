@@ -14,5 +14,5 @@
     @test config.input.endtime == DateTime(2000, 2)
     @test config.output.path == "data/specified_output.nc"
     @test config.output.parameters isa Vector{String}
-    @test config.output.parameters == ["q", "h"]
+    @test config.output.parameters == ["satwaterdepth", "snow", "tsoil", "ustorelayerdepth", "snowwater", "canopystorage"]
 end

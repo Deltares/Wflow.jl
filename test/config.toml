@@ -14,10 +14,13 @@ timestepsecs 	= 86400
 staticmaps = "data/staticmaps-moselle.nc"
 leafarea = "data/lai_clim-moselle.nc"
 forcing = "data/forcing-moselle.nc"
+# TODO add option for same timing as forcing
+calendar = "proleptic_gregorian"
+time_units = "days since 1900-01-01 00:00:00"
 
 [output]
 path = "data/specified_output.nc"
-parameters = [ "q", "h" ]
+parameters = ["satwaterdepth", "snow", "tsoil", "ustorelayerdepth", "snowwater", "canopystorage"]
 
 # all these are not yet supported by Pkg.TOML as of Julia 1.4
 # https://github.com/toml-lang/toml#local-date-time

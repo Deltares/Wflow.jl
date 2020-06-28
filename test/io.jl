@@ -17,37 +17,27 @@ tomlpath = joinpath(@__DIR__, "config.toml")
 tomldir = dirname(tomlpath)
 config = Wflow.Config(TOML.parsefile(tomlpath))
 
-# TODO remove random string from the filename
-# this makes it easier to develop for now, since we don't run into issues with open files
-base, ext = splitext(config.output.path)
-randomized_path = string(base, '_', randstring('a':'z', 4), ext)
-output_path = joinpath(tomldir, randomized_path)
-
 # initialize a vector of SBM structs
 model = Wflow.initialize_sbm_model(
+    config,
     joinpath(tomldir, config.input.staticmaps),
     joinpath(tomldir, config.input.leafarea),
     joinpath(tomldir, config.input.forcing),
-    output_path,
+    joinpath(tomldir, config.output.path),
 )
 
-@unpack vertical, clock, reader = model
+@unpack vertical, clock, reader, writer = model
 @unpack dataset, buffer, inds = reader
 
 Wflow.update_forcing!(model)
 
-## write output function
-
-nclon = Float64.(nomissing(reader.dataset["lon"][:]))
-nclat = Float64.(nomissing(reader.dataset["lat"][:]))
-
-# writer = model.writer
-# writer = Wflow.setup_netcdf(output_path, nclon, nclat)
-
-# q = rand(291, 313)
-# grow_netcdf!(writer, "q", 1, q)
+for parameter in writer.parameters
+    A = rand(Float32, size(buffer))
+    Wflow.grow_netcdf!(writer.dataset, parameter, clock.time, A)
+end
 
 # close both input and output datasets
 close(reader.dataset)
-# close(writer)
-# rm(output_path)
+output_path = path(writer.dataset)
+close(writer.dataset)
+rm(output_path)

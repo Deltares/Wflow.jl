@@ -13,3 +13,4 @@ end
 
 # also used in autocomplete
 Base.propertynames(config::Config) = collect(keys(getfield(config, :dict)))
+Base.get(config::Config, key, default) = get(getfield(config, :dict), key, default)

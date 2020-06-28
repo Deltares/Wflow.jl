@@ -42,7 +42,7 @@ function update_forcing!(model)
 end
 
 "prepare an output dataset"
-function setup_netcdf(output_path, nclon, nclat)
+function setup_netcdf(output_path, nclon, nclat, parameters, calendar, time_units)
     ds = NCDataset(output_path, "c")
     defDim(ds, "time", Inf)  # unlimited
     defVar(
@@ -73,17 +73,19 @@ function setup_netcdf(output_path, nclon, nclat)
         Float64,
         ("time",),
         attrib = [
-            "units" => CFTime.DEFAULT_TIME_UNITS,
-            "calendar" => "proleptic_gregorian",
+            "units" => time_units,
+            "calendar" => calendar,
         ],
     )
-    defVar(
-        ds,
-        "q",
-        Float32,
-        ("lon", "lat", "time"),
-        attrib = ["_FillValue" => Float32(NaN)],
-    )
+    for parameter in parameters
+        defVar(
+            ds,
+            parameter,
+            Float32,
+            ("lon", "lat", "time"),
+            attrib = ["_FillValue" => Float32(NaN)],
+        )
+    end
     return ds
 end
 
@@ -111,6 +113,11 @@ struct NCReader{T}
     inds::Vector{CartesianIndex{2}}
 end
 
+struct NCWriter
+    dataset::NCDataset
+    parameters::Vector{String}
+end
+
 function prepare_reader(path, varname, inds)
     dataset = NCDataset(path)
     var = dataset[varname].var
@@ -131,4 +138,20 @@ function prepare_reader(path, varname, inds)
     lateral_size = timelast ? size(var)[1:2] : size(var)[2:3]
     buffer = zeros(T, lateral_size)
     return NCReader(dataset, buffer, inds)
+end
+
+function prepare_writer(config, reader, output_path)
+    # TODO remove random string from the filename
+    # this makes it easier to develop for now, since we don't run into issues with open files
+    base, ext = splitext(output_path)
+    randomized_path = string(base, '_', randstring('a':'z', 4), ext)
+
+    nclon = Float64.(nomissing(reader.dataset["lon"][:]))
+    nclat = Float64.(nomissing(reader.dataset["lat"][:]))
+
+    output_parameters = config.output.parameters
+    calendar = get(config.input, "calendar", "proleptic_gregorian")
+    time_units = get(config.input, "time_units", CFTime.DEFAULT_TIME_UNITS)
+    ds = Wflow.setup_netcdf(randomized_path, nclon, nclat, output_parameters, calendar, time_units)
+    return NCWriter(ds, output_parameters)
 end

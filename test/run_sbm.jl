@@ -10,7 +10,6 @@ function update(
 )
     @unpack lateral, vertical, network, clock = model
 
-    # increases time from 115ms to 3.6s and allocations from 0 to 150MB
     Wflow.update_forcing!(model)
 
     Wflow.update_until_snow(vertical)
@@ -71,13 +70,17 @@ function update(
     return model
 end
 
-writer = nothing  # TODO use a CSV writer, RowWriter?
+tomlpath = joinpath(@__DIR__, "config.toml")
+tomldir = dirname(tomlpath)
+config = Wflow.Config(TOML.parsefile(tomlpath))
+output_path = joinpath(@__DIR__, "data", "output_run_sbm.nc")
 
 model = Wflow.initialize_sbm_model(
+    config,
     staticmaps_moselle_path,
     leafarea_moselle_path,
     forcing_moselle_path,
-    writer,
+    output_path,
 )
 
 toposort_land = Wflow.topological_sort_by_dfs(model.network.land)
