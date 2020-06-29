@@ -141,13 +141,13 @@ function acttransp_unsat_sbm(
     # Transform h to a reduction coefficient value according to Feddes et al. (1978).
     # For now: no reduction for head < h2 until following improvement (todo):
     #       - reduction only applied to crops
-    if (head <= h1)
+    if head <= h1
         alpha = 1.0
-    elseif (head >= h4)
+    elseif head >= h4
         alpha = 0.0
-    elseif ((head < h2) & (head > h1))
+    elseif (head < h2) && (head > h1)
         alpha = 1.0
-    elseif ((head > h3) & (head < h4))
+    elseif (head > h3) && (head < h4)
         alpha = 1.0 - (head - h3) / (h4 - h3)
     else
         alpha = 1.0
@@ -184,7 +184,7 @@ function infiltration(
     # split between infiltration in undisturbed soil and compacted areas (paths)
     soilinf = avail_forinfilt * (1.0 - pathfrac)
     pathinf = avail_forinfilt * pathfrac
-    if modelsnow & soilinfreduction
+    if modelsnow && soilinfreduction
         bb = 1.0 / (1.0 - cf_soil)
         soilinfredu = scurve(tsoil, a = 0.0, b = bb, c = 8.0) + cf_soil
     else
