@@ -77,7 +77,7 @@ function accucapacityflux(dag, toposort, material, capacity)
         upstream_nodes = inneighbors(dag, v)
         flux = isempty(upstream_nodes) ? 0.0 :
             sum(min(material[i], capacity[i]) for i in upstream_nodes)
-        material[v] = material[v] + flux
+        material[v] += flux
     end
     return material
 end
