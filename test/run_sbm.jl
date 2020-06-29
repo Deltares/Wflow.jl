@@ -209,12 +209,6 @@ function print_benchmark(trialmin)
 end
 
 trialmin = BenchmarkTools.minimum(benchmark)
-trialallocs = BenchmarkTools.allocs(trialmin)
-trialtime = BenchmarkTools.time(trialmin)
 
-if VERSION >= v"1.5"
-    # views don't allocate anymore in julia 1.5
-    @test trialallocs == 0
-end
 println("Model update")
 print_benchmark(trialmin)
