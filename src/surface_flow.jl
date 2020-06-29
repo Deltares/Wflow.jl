@@ -127,8 +127,8 @@ function update(
 
         end
 
-        sf.q_av[:] = q_sum ./ ts
-        sf.h_av[:] = h_sum ./ ts
+        sf.q_av .= q_sum ./ ts
+        sf.h_av .= h_sum ./ ts
 
     end
 

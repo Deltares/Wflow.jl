@@ -24,9 +24,9 @@ function update(
     end
 
     Wflow.update_until_recharge(vertical)
-    lateral.subsurface.recharge[:] = vertical.recharge
+    lateral.subsurface.recharge .= vertical.recharge
     lateral.subsurface.recharge .*= lateral.subsurface.dl
-    lateral.subsurface.zi[:] = vertical.zi
+    lateral.subsurface.zi .= vertical.zi
 
     Wflow.update(
         lateral.subsurface,
@@ -42,7 +42,7 @@ function update(
         lateral.subsurface.exfiltwater,
     )
 
-    lateral.land.qlat[:] =
+    lateral.land.qlat .=
         (vertical.runoff .* vertical.xl .* vertical.yl .* 0.001) ./ 86400.0 ./
         lateral.land.dl
 
@@ -56,7 +56,7 @@ function update(
         do_iter = true,
     )
 
-    lateral.river.qlat[:] =
+    lateral.river.qlat .=
         (
             lateral.subsurface.to_river[index_river] ./ 1.0e9 ./ lateral.river.Δt .+
             lateral.land.to_river[index_river]
@@ -187,9 +187,6 @@ benchmark = @benchmark update(
     nr,
     masswasting = true,
 )
-# @time update(model, toposort, n)
-# @btime update(model, toposort, n)
-# @profiler foreach(x -> update(model, toposort, n), 1:10)  # run a few times for more accuracy
 
 "Prints a benchmark results just like btime"
 function print_benchmark(trialmin)
