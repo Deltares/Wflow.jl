@@ -81,7 +81,7 @@ end
 function kin_wave!(Q, dag, toposort, Qold, q, α, β, DCL, Δt)
     for v in toposort
         upstream_nodes = inneighbors(dag, v)
-        Qin = isempty(upstream_nodes) ? 0.0 : sum(Q[i] for i in upstream_nodes)
+        Qin = sum_at(Q, upstream_nodes)
         Q[v] = kinematic_wave(Qin, Qold[v], q, α[v], β, Δt, DCL[v])
     end
     return Q

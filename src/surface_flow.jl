@@ -91,16 +91,14 @@ function update(
                     # for a river cell with a reservoir or lake (wb_pit = 1) all upstream surface flow goes
                     # to the river.
                 elseif Bool(river[v]) && (sf.wb_pit[v] == 1)
-                    sf.to_river[v] =
-                        isempty(upstream_nodes) ? 0.0 : sum(sf.q[i] for i in upstream_nodes)
+                    sf.to_river[v] = sum_at(sf.q, upstream_nodes)
                     qin = 0.0
                 else
-                    qin =
-                        isempty(upstream_nodes) ? 0.0 : sum(sf.q[i] for i in upstream_nodes)
+                    qin = sum_at(sf.q, upstream_nodes)
                 end
                 # for all the other cells all upstream surface flow goes to the surface flow reservoir.
             else
-                qin = isempty(upstream_nodes) ? 0.0 : sum(sf.q[i] for i in upstream_nodes)
+                qin = sum_at(sf.q, upstream_nodes)
             end
             # run reservoir model and copy reservoir outflow to river cell
             # dummy values now for reservoir precipitation and evaporation (3.0 and 4.0)
