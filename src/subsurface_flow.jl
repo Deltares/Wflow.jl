@@ -36,7 +36,7 @@ function update(ssf::LateralSSF, dag, toposort, frac_toriver, river)
         # for a river cell without a reservoir or lake (wb_pit = 0) part of the upstream subsurface flow
         # goes to the river (frac_toriver) and part goes to the subsurface flow reservoir (1.0 - frac_toriver)
         # upstream nodes with a reservoir or lake are excluded
-        if Bool(river[v]) & (ssf.wb_pit[v] == 0)
+        if Bool(river[v]) && (ssf.wb_pit[v] == 0)
             ssfin = isempty(upstream_nodes) ? 0.0 :
                 sum(
                 ssf.ssf[i] * (1.0 - frac_toriver[i])
@@ -48,7 +48,7 @@ function update(ssf::LateralSSF, dag, toposort, frac_toriver, river)
             )
             # for a river cell with a reservoir or lake (wb_pit = 1) all upstream subsurface flow goes
             # to the river.
-        elseif Bool(river[v]) & (ssf.wb_pit[v] == 1)
+        elseif Bool(river[v]) && (ssf.wb_pit[v] == 1)
             ssf.to_river[v] =
                 isempty(upstream_nodes) ? 0.0 : sum(ssf.ssf[i] for i in upstream_nodes)
             ssfin = 0.0

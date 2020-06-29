@@ -399,7 +399,7 @@ function initialize_sbm_model(staticmaps_path, leafarea_path, forcing_path, writ
     # read only reservoir data if reservoirs true (from model reader, setting Config.jl TOML)
     reslocs_2d = Int.(nomissing(nc["wflow_reservoirlocs"][:], 0))
     # allow reservoirs only in river cells
-    inds_res = filter(i -> reslocs_2d[inds][i] > 0 & isequal(river[i], 1), 1:n)
+    inds_res = filter(i -> reslocs_2d[inds][i] > 0 && isequal(river[i], 1), 1:n)
     resdemand = Float64.(nomissing(nc["ResDemand"][:][inds_riv], 0))
     resmaxrelease = Float64.(nomissing(nc["ResMaxRelease"][:][inds_riv], 0))
     resmaxvolume = Float64.(nomissing(nc["ResMaxVolume"][:][inds_riv], 0))
