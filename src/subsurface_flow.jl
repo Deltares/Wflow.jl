@@ -49,12 +49,11 @@ function update(ssf::LateralSSF, dag, toposort, frac_toriver, river)
             # for a river cell with a reservoir or lake (wb_pit = 1) all upstream subsurface flow goes
             # to the river.
         elseif Bool(river[v]) && (ssf.wb_pit[v] == 1)
-            ssf.to_river[v] =
-                isempty(upstream_nodes) ? 0.0 : sum(ssf.ssf[i] for i in upstream_nodes)
+            ssf.to_river[v] = sum_at(ssf.ssf, upstream_nodes)
             ssfin = 0.0
             # for all the other cells all upstream subsurface flow goes to the subsurface flow reservoir.
         else
-            ssfin = isempty(upstream_nodes) ? 0.0 : sum(ssf.ssf[i] for i in upstream_nodes)
+            ssfin = sum_at(ssf.ssf, upstream_nodes)
         end
         ssf.ssf[v], ssf.zi[v], ssf.exfiltwater[v] = kinematic_wave_ssf(
             ssfin,

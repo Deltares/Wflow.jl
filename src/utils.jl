@@ -96,6 +96,15 @@ end
 "Faster method for exponentiation"
 pow(x, y) = exp(y * log(x))
 
+"Return the of the array `A` at indices `inds`"
+function sum_at(A, inds)
+    v = zero(eltype(A))
+    for i in inds
+        v += A[i]
+    end
+    return v
+end
+
 # https://juliaarrays.github.io/StaticArrays.jl/latest/pages/api/#Arrays-of-static-arrays-1
 function svectorscopy(x::Matrix{T}, ::Val{N}) where {T,N}
     size(x, 1) == N || error("sizes mismatch")
