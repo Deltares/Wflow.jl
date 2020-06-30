@@ -42,7 +42,16 @@ function update_forcing!(model)
 end
 
 "prepare an output dataset"
-function setup_netcdf(output_path, nclon, nclat, parameters, calendar, time_units)
+function setup_netcdf(
+    output_path,
+    nclon,
+    nclat,
+    parameters,
+    calendar,
+    time_units,
+    row,
+    maxlayers,
+)
     ds = NCDataset(output_path, "c")
     defDim(ds, "time", Inf)  # unlimited
     defVar(
@@ -67,34 +76,46 @@ function setup_netcdf(output_path, nclon, nclat, parameters, calendar, time_unit
             "units" => "degrees_north",
         ],
     )
+    defVar(ds, "layer", collect(1:maxlayers), ("layer",))
     defVar(
         ds,
         "time",
         Float64,
         ("time",),
-        attrib = [
-            "units" => time_units,
-            "calendar" => calendar,
-        ],
+        attrib = ["units" => time_units, "calendar" => calendar],
     )
     for parameter in parameters
-        defVar(
-            ds,
-            parameter,
-            Float32,
-            ("lon", "lat", "time"),
-            attrib = ["_FillValue" => Float32(NaN)],
-        )
+        srctype = eltype(getproperty(row, Symbol(parameter)))
+        if srctype <: AbstractFloat
+            # all floats are saved as Float32
+            defVar(
+                ds,
+                parameter,
+                Float32,
+                ("lon", "lat", "time"),
+                attrib = ["_FillValue" => Float32(NaN)],
+            )
+        elseif srctype <: SVector
+            # SVectors are used to store layers
+            defVar(
+                ds,
+                parameter,
+                Float32,
+                ("lon", "lat", "layer", "time"),
+                attrib = ["_FillValue" => Float32(NaN)],
+            )
+        else
+            error("Unsupported output type: ", srctype)
+        end
     end
     return ds
 end
 
-function grow_netcdf!(ds, var::AbstractString, time, A::AbstractArray)
-    # index in the time dimension we want to add
+"Add a new time to the unlimited time dimension, and return the index"
+function add_time(ds, time)
     i = length(ds["time"]) + 1
     ds["time"][i] = time
-    ds[var][:, :, i] = A
-    return ds
+    return i
 end
 
 function checkdims(dims)
@@ -140,7 +161,7 @@ function prepare_reader(path, varname, inds)
     return NCReader(dataset, buffer, inds)
 end
 
-function prepare_writer(config, reader, output_path)
+function prepare_writer(config, reader, output_path, row, maxlayers)
     # TODO remove random string from the filename
     # this makes it easier to develop for now, since we don't run into issues with open files
     base, ext = splitext(output_path)
@@ -152,6 +173,50 @@ function prepare_writer(config, reader, output_path)
     output_parameters = config.output.parameters
     calendar = get(config.input, "calendar", "proleptic_gregorian")
     time_units = get(config.input, "time_units", CFTime.DEFAULT_TIME_UNITS)
-    ds = Wflow.setup_netcdf(randomized_path, nclon, nclat, output_parameters, calendar, time_units)
+    ds = Wflow.setup_netcdf(
+        randomized_path,
+        nclon,
+        nclat,
+        output_parameters,
+        calendar,
+        time_units,
+        row,
+        maxlayers,
+    )
     return NCWriter(ds, output_parameters)
+end
+
+"Write NetCDF output"
+function write_output(model, writer::NCWriter)
+    @unpack vertical, clock, reader = model
+    @unpack buffer, inds = reader
+    @unpack dataset, parameters = writer
+
+    time_index = add_time(dataset, clock.time)
+
+    for parameter in parameters
+        # write the active cells vector to the 2d buffer matrix
+        param = Symbol(parameter)
+        vector = getproperty(vertical, param)
+
+        elemtype = eltype(vector)
+        if elemtype <: AbstractFloat
+            # ensure no other information is written
+            fill!(buffer, NaN)
+            buffer[inds] .= vector
+            dataset[parameter][:, :, time_index] = buffer
+        elseif elemtype <: SVector
+            nlayer = length(first(vector))
+            for i = 1:nlayer
+                # ensure no other information is written
+                fill!(buffer, NaN)
+                buffer[inds] .= getindex.(vector, i)
+                dataset[parameter][:, :, i, time_index] = buffer
+            end
+        else
+            error("Unsupported output type: ", srctype)
+        end
+    end
+
+    return model
 end

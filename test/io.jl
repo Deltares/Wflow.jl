@@ -29,12 +29,6 @@ model = Wflow.initialize_sbm_model(
 @unpack vertical, clock, reader, writer = model
 @unpack dataset, buffer, inds = reader
 
-Wflow.update_forcing!(model)
-
-for parameter in writer.parameters
-    A = rand(Float32, size(buffer))
-    Wflow.grow_netcdf!(writer.dataset, parameter, clock.time, A)
-end
 
 # close both input and output datasets
 close(reader.dataset)

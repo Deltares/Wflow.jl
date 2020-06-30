@@ -63,6 +63,8 @@ function update(
 
     Wflow.update(lateral.river, network.river, toposort_river, nr, do_iter = true)
 
+    Wflow.write_output(model, model.writer)
+
     # update the clock
     clock.iteration += 1
     clock.time += clock.Δt
