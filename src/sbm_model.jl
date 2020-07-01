@@ -38,16 +38,16 @@ const dparams = Dict(
 )
 
 """
-    initialize_sbm_model(config, staticmaps_path, leafarea_path, forcing_path, output_path)
+    initialize_sbm_model(config, staticmaps_path, cyclic_path, forcing_path, output_path)
 
 Initial part of the SBM model concept. Reads model parameters from disk, `staticmaps_path` is the file path
-of the NetCDF file with model parameters, `leafarea_path` is an optional file path for a NetCDF file with leaf
+of the NetCDF file with model parameters, `cyclic_path` is an optional file path for a NetCDF file with leaf
 area index (LAI) values (climatology).
 """
 function initialize_sbm_model(
     config,
     staticmaps_path,
-    leafarea_path,
+    cyclic_path,
     forcing_path,
     output_path,
 )
@@ -144,7 +144,8 @@ function initialize_sbm_model(
     canopygapfraction = readnetcdf(nc, "CanopyGapFraction", inds, dparams)
 
     # if lai climatology provided use sl, swood and kext to calculate cmax
-    if isnothing(leafarea_path) == false
+    if isnothing(cyclic_path) == false
+        # TODO confirm if lai climatology is present in the NetCDF
         sl = readnetcdf(nc, "Sl", inds, dparams)
         swood = readnetcdf(nc, "Swood", inds, dparams)
         kext = readnetcdf(nc, "Kext", inds, dparams)
@@ -489,7 +490,7 @@ function initialize_sbm_model(
     )
 
     starttime = DateTime(2000, 1, 1)
-    reader = prepare_reader(forcing_path, leafarea_path, "P", inds)
+    reader = prepare_reader(forcing_path, cyclic_path, "P", inds)
     writer = prepare_writer(config, reader, output_path, first(sbm), maxlayers)
 
     model = Model(

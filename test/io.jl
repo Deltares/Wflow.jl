@@ -21,7 +21,7 @@ config = Wflow.Config(TOML.parsefile(tomlpath))
 model = Wflow.initialize_sbm_model(
     config,
     joinpath(tomldir, config.input.staticmaps),
-    joinpath(tomldir, config.input.leafarea),
+    joinpath(tomldir, config.input.cyclic),
     joinpath(tomldir, config.input.forcing),
     joinpath(tomldir, config.output.path),
 )

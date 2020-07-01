@@ -80,7 +80,7 @@ output_path = joinpath(@__DIR__, "data", "output_run_sbm.nc")
 model = Wflow.initialize_sbm_model(
     config,
     staticmaps_moselle_path,
-    leafarea_moselle_path,
+    cyclic_moselle_path,
     forcing_moselle_path,
     output_path,
 )
