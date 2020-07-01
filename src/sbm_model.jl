@@ -148,9 +148,6 @@ function initialize_sbm_model(
         sl = readnetcdf(nc, "Sl", inds, dparams)
         swood = readnetcdf(nc, "Swood", inds, dparams)
         kext = readnetcdf(nc, "Kext", inds, dparams)
-        # set in inifile? Also type (monthly, daily, hourly) as part of netcdf variable attribute?
-        # in original inifile: LAI=staticmaps/clim/LAI,monthlyclim,1.0,1
-        lai_clim = NCDataset(leafarea_path) # TODO:include LAI climatology in update() vertical SBM model
     end
 
     # these are filled in the loop below
@@ -296,7 +293,7 @@ function initialize_sbm_model(
         # Brooks-Corey power coefﬁcient [-] for each soil layer
         c = svectorscopy(c, Val{maxlayers}()),
         # Leaf area index [m² m⁻²]
-        lai = Fill(1.0, n),
+        lai = fill(mv, n),
         # Maximum canopy storage [mm]
         cmax = cmax,
         # Canopy gap fraction [-]
@@ -492,7 +489,7 @@ function initialize_sbm_model(
     )
 
     starttime = DateTime(2000, 1, 1)
-    reader = prepare_reader(forcing_path, "P", inds)
+    reader = prepare_reader(forcing_path, leafarea_path, "P", inds)
     writer = prepare_writer(config, reader, output_path, first(sbm), maxlayers)
 
     model = Model(

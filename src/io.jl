@@ -25,10 +25,29 @@ function get_at!(
     return buffer
 end
 
+function get_at_month!(buffer, var::NCDatasets.CFVariable, m)
+    # assumes the dataset has 12 time steps, from January to December
+    dim = findfirst(==("time"), NCDatasets.dimnames(var))
+    # load in place, using a lower level NCDatasets function
+    # currently all indices must be of the same type, so create three ranges
+    # https://github.com/Alexander-Barth/NCDatasets.jl/blob/fa742ee1b36c9e4029a40581751a21c140f01f84/src/variable.jl#L372
+    spatialdim1 = 1:size(buffer, 1)
+    spatialdim2 = 1:size(buffer, 2)
+
+    if dim == 1
+        NCDatasets.load!(var.var, buffer, m:m, spatialdim1, spatialdim2)
+    elseif dim == 3
+        NCDatasets.load!(var.var, buffer, spatialdim1, spatialdim2, m:m)
+    else
+        error("Time dimension expected at position 1 or 3")
+    end
+    return buffer
+end
+
 "Get dynamic NetCDF input for the given time"
 function update_forcing!(model)
     @unpack vertical, clock, reader = model
-    @unpack dataset, buffer, inds = reader
+    @unpack dataset, leafarea_dataset, buffer, inds = reader
     nctimes = nomissing(dataset["time"][:])
 
     # TODO allow configurable variable names
@@ -38,6 +57,11 @@ function update_forcing!(model)
     vertical.temperature .= buffer[inds]
     potevap = get_at!(buffer, dataset["PET"], nctimes, clock.time)
     vertical.potevap .= buffer[inds]
+
+    # TODO perhaps we should only read this when a new month came
+    lai = get_at_month!(buffer, leafarea_dataset["LAI"], month(clock.time))
+    vertical.lai .= buffer[inds]
+
     return model
 end
 
@@ -130,6 +154,7 @@ end
 
 struct NCReader{T}
     dataset::NCDataset
+    leafarea_dataset::NCDataset
     buffer::Matrix{T}
     inds::Vector{CartesianIndex{2}}
 end
@@ -139,7 +164,7 @@ struct NCWriter
     parameters::Vector{String}
 end
 
-function prepare_reader(path, varname, inds)
+function prepare_reader(path, leafarea_path, varname, inds)
     dataset = NCDataset(path)
     var = dataset[varname].var
 
@@ -158,7 +183,14 @@ function prepare_reader(path, varname, inds)
     timelast = last(dims) == "time"
     lateral_size = timelast ? size(var)[1:2] : size(var)[2:3]
     buffer = zeros(T, lateral_size)
-    return NCReader(dataset, buffer, inds)
+
+    # set in inifile? Also type (monthly, daily, hourly) as part of netcdf variable attribute?
+    # in original inifile: LAI=staticmaps/clim/LAI,monthlyclim,1.0,1
+    # TODO:include LAI climatology in update() vertical SBM model
+    # we currently assume the same dimension ordering as the forcing
+    leafarea_dataset = NCDataset(leafarea_path)
+
+    return NCReader(dataset, leafarea_dataset, buffer, inds)
 end
 
 function prepare_writer(config, reader, output_path, row, maxlayers)

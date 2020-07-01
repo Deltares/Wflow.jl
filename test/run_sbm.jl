@@ -121,7 +121,7 @@ model = update(
     @test sbm.altitude[1] == 643.5469970703125
     @test sbm.θₛ[1] == 0.48343977332115173
     @test sbm.runoff[1] == 0.0
-    @test sbm.soilevap[1] == 0.07996413903665732
+    @test sbm.soilevap[1] == 0.048453431759442424
     @test sbm.snow[1] == 0.0
 end
 
@@ -142,21 +142,21 @@ model = update(
     @test sbm.altitude[1] == 643.5469970703125
     @test sbm.θₛ[1] == 0.48343977332115173
     @test sbm.runoff[1] == 0.0
-    @test sbm.soilevap[1] == 0.15658817917471723
+    @test sbm.soilevap[1] == 0.09563376762901096
     @test sbm.snow[1] == 0.0
 end
 
 @testset "subsurface flow" begin
     ssf = model.lateral.subsurface.ssf
-    @test sum(ssf) ≈ 6.910372076543659e16
-    @test ssf[toposort_land[1]] ≈ 3.0271045626104652e13
-    @test ssf[toposort_land[nl-100]] ≈ 7.555413711433021e11
-    @test ssf[sink] ≈ 2.177681570044858e11
+    @test sum(ssf) ≈ 6.8949450377727496e16
+    @test ssf[toposort_land[1]] ≈ 3.0293145813424688e13
+    @test ssf[toposort_land[nl-100]] ≈ 7.566873257040469e11
+    @test ssf[sink] ≈ 2.1952330312819342e11
 end
 
 @testset "overland flow" begin
     q = model.lateral.land.q_av
-    @test sum(q) ≈ 6.044737022735466
+    @test sum(q) ≈ 6.012832744996996
     @test q[26625] ≈ 0.0
     @test q[39308] ≈ 0.0
     @test q[sink] ≈ 0.0
@@ -164,18 +164,18 @@ end
 
 @testset "river flow" begin
     q = model.lateral.river.q_av
-    @test sum(q) ≈ 656.6441748952489
-    @test q[4061] ≈ 0.011400418905152046
-    @test q[5617] ≈ 0.9858388071125663
-    @test q[toposort_river[end]] ≈ 0.004344447476624051
+    @test sum(q) ≈ 655.0918562695385
+    @test q[4061] ≈ 0.011394640544977987
+    @test q[5617] ≈ 0.986801851306535
+    @test q[toposort_river[end]] ≈ 0.004621542892763028
 end
 
 @testset "reservoir simple" begin
     res = model.lateral.river.reservoir
     inds = filter(i -> !isequal(res[i], nothing), 1:nr)
-    @test res[inds[2]].outflow ≈ 0.21749979713718748
-    @test res[inds[2]].inflow ≈ 0.051269540649685884
-    @test res[inds[2]].volume ≈ 2.7357871245776203e7
+    @test res[inds[2]].outflow ≈ 0.2174998021586705
+    @test res[inds[2]].inflow ≈ 0.07074779883466663
+    @test res[inds[2]].volume ≈ 2.7385279244359117e7
     @test res[inds[2]].precipitation ≈ 3.0
     @test res[inds[2]].evaporation ≈ 4.0
 end
