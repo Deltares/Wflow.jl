@@ -11,6 +11,7 @@ function update(
     @unpack lateral, vertical, network, clock = model
 
     Wflow.update_forcing!(model)
+    Wflow.update_cyclic!(model)
 
     Wflow.update_until_snow(vertical)
 

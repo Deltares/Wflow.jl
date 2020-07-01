@@ -6,9 +6,15 @@ function get_at!(
     times::AbstractVector{<:TimeType},
     t::TimeType,
 )
-    dim = findfirst(==("time"), NCDatasets.dimnames(var))
+    # this behaves like a forward fill interpolation
     i = findfirst(>=(t), times)
     i === nothing && throw(DomainError("time $t after dataset end $(last(times))"))
+    return get_at!(buffer, var, i)
+end
+
+function get_at!(buffer, var::NCDatasets.CFVariable, i)
+    # assumes the dataset has 12 time steps, from January to December
+    dim = findfirst(==("time"), NCDatasets.dimnames(var))
     # load in place, using a lower level NCDatasets function
     # currently all indices must be of the same type, so create three ranges
     # https://github.com/Alexander-Barth/NCDatasets.jl/blob/fa742ee1b36c9e4029a40581751a21c140f01f84/src/variable.jl#L372
@@ -25,44 +31,39 @@ function get_at!(
     return buffer
 end
 
-function get_at_month!(buffer, var::NCDatasets.CFVariable, m)
-    # assumes the dataset has 12 time steps, from January to December
-    dim = findfirst(==("time"), NCDatasets.dimnames(var))
-    # load in place, using a lower level NCDatasets function
-    # currently all indices must be of the same type, so create three ranges
-    # https://github.com/Alexander-Barth/NCDatasets.jl/blob/fa742ee1b36c9e4029a40581751a21c140f01f84/src/variable.jl#L372
-    spatialdim1 = 1:size(buffer, 1)
-    spatialdim2 = 1:size(buffer, 2)
-
-    if dim == 1
-        NCDatasets.load!(var.var, buffer, m:m, spatialdim1, spatialdim2)
-    elseif dim == 3
-        NCDatasets.load!(var.var, buffer, spatialdim1, spatialdim2, m:m)
-    else
-        error("Time dimension expected at position 1 or 3")
-    end
-    return buffer
-end
-
 "Get dynamic NetCDF input for the given time"
 function update_forcing!(model)
     @unpack vertical, clock, reader = model
-    @unpack dataset, cyclic_dataset, buffer, inds = reader
+    @unpack dataset, forcing_parameters, buffer, inds = reader
     nctimes = nomissing(dataset["time"][:])
 
-    # TODO allow configurable variable names
-    precipitation = get_at!(buffer, dataset["P"], nctimes, clock.time)
-    vertical.precipitation .= buffer[inds]
-    temperature = get_at!(buffer, dataset["TEMP"], nctimes, clock.time)
-    vertical.temperature .= buffer[inds]
-    potevap = get_at!(buffer, dataset["PET"], nctimes, clock.time)
-    vertical.potevap .= buffer[inds]
-
-    # TODO perhaps we should only read this when a new month came
-    lai = get_at_month!(buffer, cyclic_dataset["LAI"], month(clock.time))
-    vertical.lai .= buffer[inds]
+    # load from NetCDF into the model according to the mapping
+    for (param, ncvarname) in forcing_parameters
+        buffer = get_at!(buffer, dataset[ncvarname], nctimes, clock.time)
+        param_vector = getproperty(vertical, param)
+        param_vector .= buffer[inds]
+    end
 
     return model
+end
+
+"Get cyclic NetCDF input for the given time"
+function update_cyclic!(model)
+    @unpack vertical, clock, reader = model
+    @unpack cyclic_dataset, cyclic_times, cyclic_parameters, buffer, inds = reader
+
+    month_day = monthday(clock.time)
+    if monthday(clock.time) in cyclic_times
+        # time for an update of the cyclic forcing
+        i = findfirst(==(month_day), cyclic_times)
+
+        # load from NetCDF into the model according to the mapping
+        for (param, ncvarname) in cyclic_parameters
+            buffer = get_at!(buffer, cyclic_dataset[ncvarname], i)
+            param_vector = getproperty(vertical, param)
+            param_vector .= buffer[inds]
+        end
+    end
 end
 
 "prepare an output dataset"
@@ -155,6 +156,9 @@ end
 struct NCReader{T}
     dataset::NCDataset
     cyclic_dataset::NCDataset
+    cyclic_times::Vector{Tuple{Int64, Int64}}
+    forcing_parameters::Dict{Symbol, String}
+    cyclic_parameters::Dict{Symbol, String}
     buffer::Matrix{T}
     inds::Vector{CartesianIndex{2}}
 end
@@ -164,7 +168,10 @@ struct NCWriter
     parameters::Vector{String}
 end
 
-function prepare_reader(path, cyclic_path, varname, inds)
+"Convert a piece of Config to a Dict{Symbol, String} used for parameter lookup"
+parameter_lookup_table(config) = Dict(Symbol(k) => String(v) for (k, v) in Dict(config))
+
+function prepare_reader(path, cyclic_path, varname, inds, config)
     dataset = NCDataset(path)
     var = dataset[varname].var
 
@@ -184,13 +191,19 @@ function prepare_reader(path, cyclic_path, varname, inds)
     lateral_size = timelast ? size(var)[1:2] : size(var)[2:3]
     buffer = zeros(T, lateral_size)
 
-    # set in inifile? Also type (monthly, daily, hourly) as part of netcdf variable attribute?
-    # in original inifile: LAI=staticmaps/clim/LAI,monthlyclim,1.0,1
     # TODO:include LAI climatology in update() vertical SBM model
     # we currently assume the same dimension ordering as the forcing
     cyclic_dataset = NCDataset(cyclic_path)
+    cyclic_nc_times = collect(cyclic_dataset["time"])
+    cyclic_times = Wflow.timecycles(cyclic_nc_times)
 
-    return NCReader(dataset, cyclic_dataset, buffer, inds)
+    forcing_parameters = parameter_lookup_table(config.forcing_parameters)
+    cyclic_parameters = parameter_lookup_table(config.cyclic_parameters)
+    if !isdisjoint(keys(forcing_parameters), keys(cyclic_parameters))
+        error("parameter specified in both forcing and cyclic")
+    end
+
+    return NCReader(dataset, cyclic_dataset, cyclic_times, forcing_parameters, cyclic_parameters, buffer, inds)
 end
 
 function prepare_writer(config, reader, output_path, row, maxlayers)
@@ -251,4 +264,41 @@ function write_output(model, writer::NCWriter)
     end
 
     return model
+end
+
+"""
+    timecycles(times)
+
+Given a vector of times, return a tuple of (month, day) for each time entry, to use as a
+cyclic time series that repeats every year. By using `monthday` rather than `dayofyear`,
+leap year offsets are avoided.
+
+It can generate such a series from eiher TimeTypes given that the year is constant, or
+it will interpret integers as either months or days of year if possible.
+"""
+function timecycles(times)
+    if eltype(times) <: TimeType
+        # all timestamps are from the same year
+        year1 = year(first(times))
+        if !all(==(year1), year.(times))
+            error("unsupported cyclic timeseries")
+        end
+        # returns a (month, day) tuple for each date
+        return monthday.(times)
+    elseif eltype(times) <: Integer
+        if length(times) == 12
+            months = Date(2000, 1, 1):Month(1):Date(2000, 12, 31)
+            return monthday.(months)
+        elseif length(times) == 365
+            days = Date(2001, 1, 1):Day(1):Date(2001, 12, 31)
+            return monthday.(days)
+        elseif length(times) == 366
+            days = Date(2000, 1, 1):Day(1):Date(2000, 12, 31)
+            return monthday.(days)
+        else
+            error("unsupported cyclic timeseries")
+        end
+    else
+        error("unsupported cyclic timeseries")
+    end
 end

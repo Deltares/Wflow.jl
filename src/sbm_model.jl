@@ -490,7 +490,7 @@ function initialize_sbm_model(
     )
 
     starttime = DateTime(2000, 1, 1)
-    reader = prepare_reader(forcing_path, cyclic_path, "P", inds)
+    reader = prepare_reader(forcing_path, cyclic_path, "P", inds, config)
     writer = prepare_writer(config, reader, output_path, first(sbm), maxlayers)
 
     model = Model(
@@ -505,5 +505,6 @@ function initialize_sbm_model(
     # make sure the forcing is already loaded
     # it's fine to run twice, and may help catching errors earlier
     update_forcing!(model)
+    update_cyclic!(model)
     return model
 end
