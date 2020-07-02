@@ -18,7 +18,8 @@ end
     @test_throws ErrorException Wflow.timecycles([Date(2020, 4, 21), Date(2021, 10, 21)])
     @test_throws ErrorException Wflow.timecycles(collect(1:400))
     @test Wflow.timecycles(collect(1:12)) == collect(zip(1:12, fill(1, 12)))
-    @test Wflow.timecycles(collect(1:366)) == monthday.(Date(2000, 1, 1):Day(1):Date(2000, 12, 31))
+    @test Wflow.timecycles(collect(1:366)) ==
+          monthday.(Date(2000, 1, 1):Day(1):Date(2000, 12, 31))
 end
 
 tomlpath = joinpath(@__DIR__, "config.toml")

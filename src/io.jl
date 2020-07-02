@@ -156,9 +156,9 @@ end
 struct NCReader{T}
     dataset::NCDataset
     cyclic_dataset::NCDataset
-    cyclic_times::Vector{Tuple{Int64, Int64}}
-    forcing_parameters::Dict{Symbol, String}
-    cyclic_parameters::Dict{Symbol, String}
+    cyclic_times::Vector{Tuple{Int64,Int64}}
+    forcing_parameters::Dict{Symbol,String}
+    cyclic_parameters::Dict{Symbol,String}
     buffer::Matrix{T}
     inds::Vector{CartesianIndex{2}}
 end
@@ -203,7 +203,15 @@ function prepare_reader(path, cyclic_path, varname, inds, config)
         error("parameter specified in both forcing and cyclic")
     end
 
-    return NCReader(dataset, cyclic_dataset, cyclic_times, forcing_parameters, cyclic_parameters, buffer, inds)
+    return NCReader(
+        dataset,
+        cyclic_dataset,
+        cyclic_times,
+        forcing_parameters,
+        cyclic_parameters,
+        buffer,
+        inds,
+    )
 end
 
 function prepare_writer(config, reader, output_path, row, maxlayers)
