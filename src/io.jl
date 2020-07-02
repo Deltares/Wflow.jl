@@ -199,8 +199,12 @@ function prepare_reader(path, cyclic_path, varname, inds, config)
 
     forcing_parameters = parameter_lookup_table(config.forcing_parameters)
     cyclic_parameters = parameter_lookup_table(config.cyclic_parameters)
-    if !isdisjoint(keys(forcing_parameters), keys(cyclic_parameters))
-        error("parameter specified in both forcing and cyclic")
+    forcing_keys = keys(forcing_parameters)
+    cyclic_keys = keys(cyclic_parameters)
+    for forcing_key in forcing_keys
+        if forcing_key in cyclic_keys
+            error("parameter specified in both forcing and cyclic")
+        end
     end
 
     return NCReader(
