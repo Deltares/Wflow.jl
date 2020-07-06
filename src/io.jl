@@ -110,8 +110,8 @@ function setup_netcdf(
         attrib = ["units" => time_units, "calendar" => calendar],
     )
     for parameter in parameters
-        srctype = eltype(getproperty(row, Symbol(parameter)))
-        if srctype <: AbstractFloat
+        cell = getproperty(row, Symbol(parameter))
+        if cell isa AbstractFloat
             # all floats are saved as Float32
             defVar(
                 ds,
@@ -120,7 +120,7 @@ function setup_netcdf(
                 ("lon", "lat", "time"),
                 attrib = ["_FillValue" => Float32(NaN)],
             )
-        elseif srctype <: SVector
+        elseif cell isa SVector
             # SVectors are used to store layers
             defVar(
                 ds,
@@ -130,7 +130,7 @@ function setup_netcdf(
                 attrib = ["_FillValue" => Float32(NaN)],
             )
         else
-            error("Unsupported output type: ", srctype)
+            error("Unsupported output type: ", typeof(cell))
         end
     end
     return ds
@@ -271,7 +271,7 @@ function write_output(model, writer::NCWriter)
                 dataset[parameter][:, :, i, time_index] = buffer
             end
         else
-            error("Unsupported output type: ", srctype)
+            error("Unsupported output type: ", elemtype)
         end
     end
 
