@@ -1,41 +1,5 @@
 # timestep that the parameter units are defined in
 const basetimestep = Second(Day(1))
-const Δt = Second(Day(1))
-
-# default parameter values (dict)
-const dparams = Dict(
-    "Cfmax" => 3.75653 * (Δt / basetimestep),
-    "TT" => 0.0,
-    "TTM" => 0.0,
-    "TTI" => 1.0,
-    "WHC" => 0.1,
-    "cf_soil" => 0.038,
-    "w_soil" => 0.1125 * (Δt / basetimestep),
-    "SoilThickness" => 2000.0,
-    "InfiltCapSoil" => 100.0,
-    "InfiltCapPath" => 10.0,
-    "PathFrac" => 0.01,
-    "WaterFrac" => 0.0,
-    "thetaS" => 0.6,
-    "thetaR" => 0.01,
-    "AirEntryPressure" => 10.0,
-    "KsatVer" => 3000.0 * (Δt / basetimestep),
-    "MaxLeakage" => 0.0,
-    "c" => 10.0,
-    "M" => 300.0,
-    "CapScale" => 100.0,
-    "rootdistpar" => -500.0,
-    "RootingDepth" => 750.0,
-    "LAI" => 1.0,
-    "Cmax" => 1.0,
-    "CanopyGapFraction" => 0.1,
-    "EoverR" => 0.1,
-    "et_reftopot" => 1.0,
-    "KsatVerFrac" => 1.0,
-    "KsatHorFrac" => 1.0,
-    "N" => 0.072,
-    "NRiver" => 0.036,
-)
 
 """
     initialize_sbm_model(config, staticmaps_path, cyclic_path, forcing_path, output_path)
@@ -51,6 +15,42 @@ function initialize_sbm_model(
     forcing_path,
     output_path,
 )
+
+    Δt = Second(config.input.timestepsecs)
+    # default parameter values (dict)
+    dparams = Dict(
+        "Cfmax" => 3.75653 * (Δt / basetimestep),
+        "TT" => 0.0,
+        "TTM" => 0.0,
+        "TTI" => 1.0,
+        "WHC" => 0.1,
+        "cf_soil" => 0.038,
+        "w_soil" => 0.1125 * (Δt / basetimestep),
+        "SoilThickness" => 2000.0,
+        "InfiltCapSoil" => 100.0,
+        "InfiltCapPath" => 10.0,
+        "PathFrac" => 0.01,
+        "WaterFrac" => 0.0,
+        "thetaS" => 0.6,
+        "thetaR" => 0.01,
+        "AirEntryPressure" => 10.0,
+        "KsatVer" => 3000.0 * (Δt / basetimestep),
+        "MaxLeakage" => 0.0,
+        "c" => 10.0,
+        "M" => 300.0,
+        "CapScale" => 100.0,
+        "rootdistpar" => -500.0,
+        "RootingDepth" => 750.0,
+        "LAI" => 1.0,
+        "Cmax" => 1.0,
+        "CanopyGapFraction" => 0.1,
+        "EoverR" => 0.1,
+        "et_reftopot" => 1.0,
+        "KsatVerFrac" => 1.0,
+        "KsatHorFrac" => 1.0,
+        "N" => 0.072,
+        "NRiver" => 0.036,
+    )
 
     sizeinmetres = false
     thicknesslayers = SVector(100.0, 300.0, 800.0, mv)
@@ -489,15 +489,14 @@ function initialize_sbm_model(
         rivercells = river,
     )
 
-    starttime = DateTime(2000, 1, 1)
-    reader = prepare_reader(forcing_path, cyclic_path, "P", inds, config)
+    reader = prepare_reader(forcing_path, cyclic_path, inds, config)
     writer = prepare_writer(config, reader, output_path, first(sbm), maxlayers)
 
     model = Model(
         (land = dag, river = dag_riv),
         (subsurface = ssf, land = olf, river = rf),
         sbm,
-        Clock(starttime, 1, Δt),
+        Clock(config.input.starttime, 1, Δt),
         reader,
         writer,
     )

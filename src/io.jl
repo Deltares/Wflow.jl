@@ -171,9 +171,9 @@ end
 "Convert a piece of Config to a Dict{Symbol, String} used for parameter lookup"
 parameter_lookup_table(config) = Dict(Symbol(k) => String(v) for (k, v) in Dict(config))
 
-function prepare_reader(path, cyclic_path, varname, inds, config)
+function prepare_reader(path, cyclic_path, inds, config)
     dataset = NCDataset(path)
-    var = dataset[varname].var
+    var = dataset[config.forcing_parameters.precipitation].var
 
     fillvalue = get(var.attrib, "_FillValue", nothing)
     scale_factor = get(var.attrib, "scale_factor", nothing)
