@@ -10,18 +10,33 @@ casename = "testcase"
 [input]
 starttime = 2000-01-01T00:00:00Z
 endtime = 2000-02-01T00:00:00Z
-timestepsecs 	= 86400
+timestepsecs = 86400
 staticmaps = "data/staticmaps-moselle.nc"
-leafarea = "data/lai_clim-moselle.nc"
+# all parameters that have a cyclic timeseries such as climatologies
+cyclic = "data/lai_clim-moselle.nc"
 forcing = "data/forcing-moselle.nc"
+# TODO add option for same timing as forcing
+calendar = "proleptic_gregorian"
+time_units = "days since 1900-01-01 00:00:00"
+
+[forcing_parameters]
+precipitation = "P"
+temperature = "TEMP"
+potevap = "PET"
+
+[cyclic_parameters]
+lai = "LAI"
 
 [output]
 path = "data/specified_output.nc"
-parameters = [ "q", "h" ]
+parameters = ["satwaterdepth", "snow", "tsoil", "ustorelayerdepth", "snowwater", "canopystorage"]
 
 # all these are not yet supported by Pkg.TOML as of Julia 1.4
 # https://github.com/toml-lang/toml#local-date-time
 # https://github.com/JuliaLang/Pkg.jl/issues/1011
+# for Julia 1.6 TOML will likely be part of Base:
+# https://github.com/JuliaLang/julia/pull/36018
+# perhaps it would be good to vendor https://github.com/KristofferC/TOMLX.jl until then.
 # file issues/PRs as needed, but we can use zulu time syntax in the meanwhile
 # odt4 = 1979-05-27 07:32:00Z
 # ldt1 = 1979-05-27T07:32:00

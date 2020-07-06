@@ -13,41 +13,34 @@ using UnPack
     @test Wflow.checkdims(("time", "lat", "lon")) == ("time", "lat", "lon")
 end
 
+@testset "timecycles" begin
+    @test Wflow.timecycles([Date(2020, 4, 21), Date(2020, 10, 21)]) == [(4, 21), (10, 21)]
+    @test_throws ErrorException Wflow.timecycles([Date(2020, 4, 21), Date(2021, 10, 21)])
+    @test_throws ErrorException Wflow.timecycles(collect(1:400))
+    @test Wflow.timecycles(collect(1:12)) == collect(zip(1:12, fill(1, 12)))
+    @test Wflow.timecycles(collect(1:366)) ==
+          monthday.(Date(2000, 1, 1):Day(1):Date(2000, 12, 31))
+end
+
 tomlpath = joinpath(@__DIR__, "config.toml")
 tomldir = dirname(tomlpath)
 config = Wflow.Config(TOML.parsefile(tomlpath))
 
-# TODO remove random string from the filename
-# this makes it easier to develop for now, since we don't run into issues with open files
-base, ext = splitext(config.output.path)
-randomized_path = string(base, '_', randstring('a':'z', 4), ext)
-output_path = joinpath(tomldir, randomized_path)
-
 # initialize a vector of SBM structs
 model = Wflow.initialize_sbm_model(
+    config,
     joinpath(tomldir, config.input.staticmaps),
-    joinpath(tomldir, config.input.leafarea),
+    joinpath(tomldir, config.input.cyclic),
     joinpath(tomldir, config.input.forcing),
-    output_path,
+    joinpath(tomldir, config.output.path),
 )
 
-@unpack vertical, clock, reader = model
+@unpack vertical, clock, reader, writer = model
 @unpack dataset, buffer, inds = reader
-
-Wflow.update_forcing!(model)
-
-## write output function
-
-nclon = Float64.(nomissing(reader.dataset["lon"][:]))
-nclat = Float64.(nomissing(reader.dataset["lat"][:]))
-
-# writer = model.writer
-# writer = Wflow.setup_netcdf(output_path, nclon, nclat)
-
-# q = rand(291, 313)
-# grow_netcdf!(writer, "q", 1, q)
 
 # close both input and output datasets
 close(reader.dataset)
-# close(writer)
-# rm(output_path)
+close(reader.cyclic_dataset)
+output_path = path(writer.dataset)
+close(writer.dataset)
+rm(output_path)

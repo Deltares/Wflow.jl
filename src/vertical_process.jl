@@ -36,7 +36,9 @@ function rainfall_interception_gash(
     # Hack for stemflow
 
     pt = 0.1 * canopygapfraction
-    p_sat = max(0.0, (-cmax / e_r) * log(1.0 - (e_r / (1.0 - canopygapfraction - pt))))
+    # avoid a negative log
+    logarg = max(1.0 - (e_r / (1.0 - canopygapfraction - pt)), 1e-10)
+    p_sat = max(0.0, (-cmax / e_r) * log(logarg))
     # large storms P > P_sat
     largestorms = precipitation > p_sat
 

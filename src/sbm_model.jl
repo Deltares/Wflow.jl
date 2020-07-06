@@ -1,50 +1,56 @@
 # timestep that the parameter units are defined in
 const basetimestep = Second(Day(1))
-const Δt = Second(Day(1))
-
-# default parameter values (dict)
-const dparams = Dict(
-    "Cfmax" => 3.75653 * (Δt / basetimestep),
-    "TT" => 0.0,
-    "TTM" => 0.0,
-    "TTI" => 1.0,
-    "WHC" => 0.1,
-    "cf_soil" => 0.038,
-    "w_soil" => 0.1125 * (Δt / basetimestep),
-    "SoilThickness" => 2000.0,
-    "InfiltCapSoil" => 100.0,
-    "InfiltCapPath" => 10.0,
-    "PathFrac" => 0.01,
-    "WaterFrac" => 0.0,
-    "thetaS" => 0.6,
-    "thetaR" => 0.01,
-    "AirEntryPressure" => 10.0,
-    "KsatVer" => 3000.0 * (Δt / basetimestep),
-    "MaxLeakage" => 0.0,
-    "c" => 10.0,
-    "M" => 300.0,
-    "CapScale" => 100.0,
-    "rootdistpar" => -500.0,
-    "RootingDepth" => 750.0,
-    "LAI" => 1.0,
-    "Cmax" => 1.0,
-    "CanopyGapFraction" => 0.1,
-    "EoverR" => 0.1,
-    "et_reftopot" => 1.0,
-    "KsatVerFrac" => 1.0,
-    "KsatHorFrac" => 1.0,
-    "N" => 0.072,
-    "NRiver" => 0.036,
-)
 
 """
-    initialize_sbm_model(staticmaps_path, leafarea_path, forcing_path, writer)
+    initialize_sbm_model(config, staticmaps_path, cyclic_path, forcing_path, output_path)
 
 Initial part of the SBM model concept. Reads model parameters from disk, `staticmaps_path` is the file path
-of the NetCDF file with model parameters, `leafarea_path` is an optional file path for a NetCDF file with leaf
+of the NetCDF file with model parameters, `cyclic_path` is an optional file path for a NetCDF file with leaf
 area index (LAI) values (climatology).
 """
-function initialize_sbm_model(staticmaps_path, leafarea_path, forcing_path, writer)
+function initialize_sbm_model(
+    config,
+    staticmaps_path,
+    cyclic_path,
+    forcing_path,
+    output_path,
+)
+
+    Δt = Second(config.input.timestepsecs)
+    # default parameter values (dict)
+    dparams = Dict(
+        "Cfmax" => 3.75653 * (Δt / basetimestep),
+        "TT" => 0.0,
+        "TTM" => 0.0,
+        "TTI" => 1.0,
+        "WHC" => 0.1,
+        "cf_soil" => 0.038,
+        "w_soil" => 0.1125 * (Δt / basetimestep),
+        "SoilThickness" => 2000.0,
+        "InfiltCapSoil" => 100.0,
+        "InfiltCapPath" => 10.0,
+        "PathFrac" => 0.01,
+        "WaterFrac" => 0.0,
+        "thetaS" => 0.6,
+        "thetaR" => 0.01,
+        "AirEntryPressure" => 10.0,
+        "KsatVer" => 3000.0 * (Δt / basetimestep),
+        "MaxLeakage" => 0.0,
+        "c" => 10.0,
+        "M" => 300.0,
+        "CapScale" => 100.0,
+        "rootdistpar" => -500.0,
+        "RootingDepth" => 750.0,
+        "LAI" => 1.0,
+        "Cmax" => 1.0,
+        "CanopyGapFraction" => 0.1,
+        "EoverR" => 0.1,
+        "et_reftopot" => 1.0,
+        "KsatVerFrac" => 1.0,
+        "KsatHorFrac" => 1.0,
+        "N" => 0.072,
+        "NRiver" => 0.036,
+    )
 
     sizeinmetres = false
     thicknesslayers = SVector(100.0, 300.0, 800.0, mv)
@@ -138,13 +144,11 @@ function initialize_sbm_model(staticmaps_path, leafarea_path, forcing_path, writ
     canopygapfraction = readnetcdf(nc, "CanopyGapFraction", inds, dparams)
 
     # if lai climatology provided use sl, swood and kext to calculate cmax
-    if isnothing(leafarea_path) == false
+    if isnothing(cyclic_path) == false
+        # TODO confirm if lai climatology is present in the NetCDF
         sl = readnetcdf(nc, "Sl", inds, dparams)
         swood = readnetcdf(nc, "Swood", inds, dparams)
         kext = readnetcdf(nc, "Kext", inds, dparams)
-        # set in inifile? Also type (monthly, daily, hourly) as part of netcdf variable attribute?
-        # in original inifile: LAI=staticmaps/clim/LAI,monthlyclim,1.0,1
-        lai_clim = NCDataset(leafarea_path) # TODO:include LAI climatology in update() vertical SBM model
     end
 
     # these are filled in the loop below
@@ -290,7 +294,7 @@ function initialize_sbm_model(staticmaps_path, leafarea_path, forcing_path, writ
         # Brooks-Corey power coefﬁcient [-] for each soil layer
         c = svectorscopy(c, Val{maxlayers}()),
         # Leaf area index [m² m⁻²]
-        lai = Fill(1.0, n),
+        lai = fill(mv, n),
         # Maximum canopy storage [mm]
         cmax = cmax,
         # Canopy gap fraction [-]
@@ -485,14 +489,14 @@ function initialize_sbm_model(staticmaps_path, leafarea_path, forcing_path, writ
         rivercells = river,
     )
 
-    starttime = DateTime(2000, 1, 1)
-    reader = prepare_reader(forcing_path, "P", inds)
+    reader = prepare_reader(forcing_path, cyclic_path, inds, config)
+    writer = prepare_writer(config, reader, output_path, first(sbm), maxlayers)
 
     model = Model(
         (land = dag, river = dag_riv),
         (subsurface = ssf, land = olf, river = rf),
         sbm,
-        Clock(starttime, 1, Δt),
+        Clock(config.input.starttime, 1, Δt),
         reader,
         writer,
     )
@@ -500,5 +504,6 @@ function initialize_sbm_model(staticmaps_path, leafarea_path, forcing_path, writ
     # make sure the forcing is already loaded
     # it's fine to run twice, and may help catching errors earlier
     update_forcing!(model)
+    update_cyclic!(model)
     return model
 end

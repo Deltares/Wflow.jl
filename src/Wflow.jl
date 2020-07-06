@@ -11,6 +11,7 @@ using FillArrays
 using TypedTables
 using UnPack
 using CSV
+using Random
 
 include("config.jl")
 include("horizontal_process.jl")
