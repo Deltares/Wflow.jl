@@ -66,6 +66,8 @@ function update(
 
     # sub time step
     adt = sf.Δt / ts
+    p = 3.0/ts
+    pet = 4.0/ts
 
     q_sum = zeros(n)
     h_sum = zeros(n)
@@ -103,7 +105,7 @@ function update(
             # run reservoir model and copy reservoir outflow to river cell
             # dummy values now for reservoir precipitation and evaporation (3.0 and 4.0)
             if sf.reservoir[v] != nothing
-                sf.reservoir[v] = update(sf.reservoir[v], qin, 3.0, 4.0)
+                sf.reservoir[v] = update(sf.reservoir[v], qin, p, pet, adt)
                 sf.q[v] = sf.reservoir[v].outflow
             else
                 sf.q[v] =

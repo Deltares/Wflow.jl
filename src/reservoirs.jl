@@ -1,9 +1,8 @@
 Base.@kwdef struct SimpleReservoir{T}
-    maxvolume::T
-    Δt::T
-    area::T
-    maxrelease::T
-    demand::T
+    maxvolume::T                                # maximum storage (above which water is spilled) [m³]
+    area::T                                     # reservoir area [m²]
+    maxrelease::T                               # maximum amount that can be released if below spillway [m³ s⁻¹]
+    demand::T                                   # minimum (environmental) flow requirement downstream of the reservoir [m³ s⁻¹]
     targetminfrac::T
     targetfullfrac::T
     volume::T = targetfullfrac * maxvolume
@@ -15,44 +14,46 @@ Base.@kwdef struct SimpleReservoir{T}
     evaporation::T = mv
 end
 
-function update(res::SimpleReservoir, inflow, p, pet)
+"""
+    statenames(::Type{SimpleReservoir})
 
-    its = max(ceil(res.Δt / 21600.0), 1)
-    _outflow = 0.0
-    _demandrelease = 0.0
-    percfull = 0.0
-    vol = 0.0
-    for n = 1:its
-        vol = (
-            res.volume + (inflow * res.Δt / its) + (p / its / 1000.0) * res.area -
-            (pet / its / 1000.0) * res.area
-        )
+Returns Array{Symbol,1} for extracting model state fields.
+"""
+function statenames(::Type{SimpleReservoir})
 
-        percfull = vol / res.maxvolume
-        # first determine minimum (environmental) flow using a simple sigmoid curve to scale for target level
-        fac = scurve(percfull, a = res.targetminfrac, c = 30.0)
-        demandrelease = min(fac * res.demand * res.Δt / its, vol)
-        vol = vol - demandrelease
+    states = [:volume,]
+    # TODO: (warm) states read from netcdf file or cold state (reinit=1, setting in ini file)
 
-        wantrel = max(0.0, vol - (res.maxvolume * res.targetfullfrac))
-        # Assume extra maximum Q if spilling
-        overflow_q = max((vol - res.maxvolume), 0.0)
-        torelease = min(wantrel, overflow_q + res.maxrelease * res.Δt / its - demandrelease)
-        vol = vol - torelease
-        outflow = torelease + demandrelease
-        percfull = vol / res.maxvolume
+end
 
-        _outflow = _outflow + outflow
-        _demandrelease = _demandrelease + demandrelease
+function update(res::SimpleReservoir, inflow, p, pet, timestepsecs)
 
-    end
+    vol = (
+        res.volume + (inflow * timestepsecs) + (p / 1000.0) * res.area -
+        (pet / 1000.0) * res.area
+    )
+
+    percfull = vol / res.maxvolume
+    # first determine minimum (environmental) flow using a simple sigmoid curve to scale for target level
+    fac = scurve(percfull, a = res.targetminfrac, c = 30.0)
+    demandrelease = min(fac * res.demand * timestepsecs, vol)
+    vol = vol - demandrelease
+
+    wantrel = max(0.0, vol - (res.maxvolume * res.targetfullfrac))
+    # Assume extra maximum Q if spilling
+    overflow_q = max((vol - res.maxvolume), 0.0)
+    torelease = min(wantrel, overflow_q + res.maxrelease * timestepsecs - demandrelease)
+    vol = vol - torelease
+    outflow = torelease + demandrelease
+    percfull = vol / res.maxvolume
+
 
     return setproperties(
         res,
         (
-            outflow = _outflow / res.Δt,
+            outflow = outflow / timestepsecs,
             inflow = inflow,
-            demandrelease = _demandrelease / res.Δt,
+            demandrelease = demandrelease / timestepsecs,
             percfull = percfull,
             precipitation = p,
             evaporation = pet,

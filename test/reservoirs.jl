@@ -7,11 +7,10 @@
         area = 1885665.353626924,
         targetfullfrac = 0.8,
         targetminfrac = 0.2425554726620697,
-        Δt = 86400.0,
     )
 
-    res_update = Wflow.update(res, 100.0, 4.2, 1.5)
-    @test res_update.outflow ≈ 65.33670482007858
+    res_update = Wflow.update(res, 100.0, 4.2, 1.5, 86400.0)
+    @test res_update.outflow ≈ 91.3783714867453
     @test res_update.volume ≈ 2.0e7
     @test res_update.percfull ≈ 0.80
     @test res_update.demandrelease ≈ 52.5229994727611

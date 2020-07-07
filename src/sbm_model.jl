@@ -52,8 +52,11 @@ function initialize_sbm_model(
         "NRiver" => 0.036,
     )
 
+    # these settings should come from config TOML file:
     sizeinmetres = false
     thicknesslayers = SVector(100.0, 300.0, 800.0, mv)
+    do_reservoirs = true
+    # end settings
     maxlayers = length(thicknesslayers) # max number of soil layers
     sumlayers = SVector(pushfirst(cumsum(thicknesslayers), 0.0))
 
@@ -400,33 +403,36 @@ function initialize_sbm_model(
 
     inds_riv = filter(i -> !isequal(river_2d[i], 0), inds)
     # reservoirs
-    # read only reservoir data if reservoirs true (from model reader, setting Config.jl TOML)
-    reslocs_2d = Int.(nomissing(nc["wflow_reservoirlocs"][:], 0))
-    # allow reservoirs only in river cells
-    inds_res = filter(i -> reslocs_2d[inds][i] > 0 && isequal(river[i], 1), 1:n)
-    resdemand = Float64.(nomissing(nc["ResDemand"][:][inds_riv], 0))
-    resmaxrelease = Float64.(nomissing(nc["ResMaxRelease"][:][inds_riv], 0))
-    resmaxvolume = Float64.(nomissing(nc["ResMaxVolume"][:][inds_riv], 0))
-    resarea = Float64.(nomissing(nc["ResSimpleArea"][:][inds_riv], 0))
-    res_targetfullfrac = Float64.(nomissing(nc["ResTargetFullFrac"][:][inds_riv], 0))
-    res_targetminfrac = Float64.(nomissing(nc["ResTargetMinFrac"][:][inds_riv], 0))
-    reslocs = reslocs_2d[inds_riv]
-
     pits = zeros(Int, n)
-    pits[inds_res] .= 1
+    if do_reservoirs
+        # read only reservoir data if reservoirs true (from model reader, setting Config.jl TOML)
+        reslocs_2d = Int.(nomissing(nc["wflow_reservoirlocs"][:], 0))
+        # allow reservoirs only in river cells
+        inds_res = filter(i -> reslocs_2d[inds][i] > 0 && isequal(river[i], 1), 1:n)
+        resdemand = Float64.(nomissing(nc["ResDemand"][:][inds_riv], 0))
+        resmaxrelease = Float64.(nomissing(nc["ResMaxRelease"][:][inds_riv], 0))
+        resmaxvolume = Float64.(nomissing(nc["ResMaxVolume"][:][inds_riv], 0))
+        resarea = Float64.(nomissing(nc["ResSimpleArea"][:][inds_riv], 0))
+        res_targetfullfrac = Float64.(nomissing(nc["ResTargetFullFrac"][:][inds_riv], 0))
+        res_targetminfrac = Float64.(nomissing(nc["ResTargetMinFrac"][:][inds_riv], 0))
+        reslocs = reslocs_2d[inds_riv]
 
-    reservoirs = [
-        reslocs[i] == 0 ? nothing :
-            SimpleReservoir{Float64}(
-            demand = resdemand[i],
-            maxrelease = resmaxrelease[i],
-            maxvolume = resmaxvolume[i],
-            area = resarea[i],
-            targetfullfrac = res_targetfullfrac[i],
-            targetminfrac = res_targetminfrac[i],
-            Δt = Float64(Δt.value),
-        ) for i = 1:length(reslocs)
-    ]
+        # for surface water routing reservoir locations are considered pits in the flow network
+        # all upstream flow goes to the river and flows into the reservoir
+        pits[inds_res] .= 1
+
+        reservoirs = [
+            reslocs[i] == 0 ? nothing :
+                SimpleReservoir{Float64}(
+                demand = resdemand[i],
+                maxrelease = resmaxrelease[i],
+                maxvolume = resmaxvolume[i],
+                area = resarea[i],
+                targetfullfrac = res_targetfullfrac[i],
+                targetminfrac = res_targetminfrac[i],
+            ) for i = 1:length(reslocs)
+        ]
+    end
 
     # lateral part sbm
     khfrac = readnetcdf(nc, "KsatHorFrac", inds, dparams)
@@ -478,6 +484,7 @@ function initialize_sbm_model(
     n_river = readnetcdf(nc, "N_River", inds_riv, dparams)
     ldd_riv = ldd_2d[inds_riv]
     dag_riv = flowgraph(ldd_riv, inds_riv, pcr_dir)
+    nr = length(inds_riv)
 
     rf = SurfaceFlow(
         sl = riverslope,
@@ -485,7 +492,7 @@ function initialize_sbm_model(
         dl = riverlength,
         Δt = Float64(Δt.value),
         width = riverwidth,
-        reservoir = reservoirs,
+        reservoir = do_reservoirs ? reservoirs : fill(nothing,nr),
         rivercells = river,
     )
 

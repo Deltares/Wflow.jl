@@ -174,11 +174,11 @@ end
 @testset "reservoir simple" begin
     res = model.lateral.river.reservoir
     inds = filter(i -> !isequal(res[i], nothing), 1:nr)
-    @test res[inds[2]].outflow ≈ 0.2174998021586705
+    @test res[inds[2]].outflow ≈ 0.2174998580279266
     @test res[inds[2]].inflow ≈ 0.07074779883466663
-    @test res[inds[2]].volume ≈ 2.7385279244359117e7
-    @test res[inds[2]].precipitation ≈ 3.0
-    @test res[inds[2]].evaporation ≈ 4.0
+    @test res[inds[2]].volume ≈ 2.77521453748098e7
+    @test res[inds[2]].precipitation ≈ 0.041666666666666664
+    @test res[inds[2]].evaporation ≈ 0.05555555555555555
 end
 
 using BenchmarkTools, Juno
