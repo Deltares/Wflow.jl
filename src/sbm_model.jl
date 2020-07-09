@@ -55,7 +55,8 @@ function initialize_sbm_model(
     # these settings should come from config TOML file:
     sizeinmetres = false
     thicknesslayers = SVector(100.0, 300.0, 800.0, mv)
-    do_reservoirs = true
+    do_reservoirs = false
+    do_lakes = true
     # end settings
     maxlayers = length(thicknesslayers) # max number of soil layers
     sumlayers = SVector(pushfirst(cumsum(thicknesslayers), 0.0))
@@ -434,6 +435,54 @@ function initialize_sbm_model(
         ]
     end
 
+    # lakes
+    if do_lakes
+        # read only lake data if lakes true (from model reader, setting Config.jl TOML)
+        lakelocs_2d = Int.(nomissing(nc["wflow_lakelocs"][:], 0))
+        # allow lakes only in river cells
+        inds_lakes = filter(i -> lakelocs_2d[inds][i] > 0 && isequal(river[i], 1), 1:n)
+        lakearea = Float64.(nomissing(nc["LakeArea"][:][inds_riv], 0))
+        lake_b = Float64.(nomissing(nc["Lake_b"][:][inds_riv], 0))
+        lake_e = Float64.(nomissing(nc["Lake_e"][:][inds_riv], 0))
+        lake_threshold = Float64.(nomissing(nc["LakeThreshold"][:][inds_riv], 0))
+        linked_lakelocs = Int.(nomissing(nc["LinkedLakeLocs"][:][inds_riv], 0))
+        lake_storfunc = Int.(nomissing(nc["LakeStorFunc"][:][inds_riv], 0))
+        lake_outflowfunc = Int.(nomissing(nc["LakeOutflowFunc"][:][inds_riv], 0))
+        lake_avglevel = Float64.(nomissing(nc["LakeAvgLevel"][:][inds_riv], 0))
+        lakelocs = lakelocs_2d[inds_riv]
+
+        # for surface water routing lake locations are considered pits in the flow network
+        # all upstream flow goes to the river and flows into the lake
+        pits[inds_lakes] .= 1
+
+        n_lakes = length(lakelocs)
+        lakes = Vector{Union{Nothing,NaturalLake{Float64}}}(nothing, n_lakes)
+        for i = 1:length(n_lakes)
+            if lakelocs[i] > 0
+                lakes[i] = NaturalLake(
+                    loc_id = lakelocs[i],
+                    lowerlake_ind = linked_lakelocs[i] > 0 ? i : 0,
+                    area = lakearea[i],
+                    threshold = lake_threshold[i],
+                    storfunc = lake_storfunc[i],
+                    outflowfunc = lake_outflowfunc[i],
+                    b = lake_b[i],
+                    e = lake_e[i],
+                    avg_waterlevel = lake_avglevel[i],
+                    sh = lake_storfunc[i] == 2 ?
+                             CSV.read(("Lake_SH_", string(lakelocs[i])), type = Float64) :
+                             DataFrame(),
+                    hq = lake_outflowfunc[i] == 1 ?
+                             CSV.read(("Lake_HQ_", string(lakelocs[i])), type = Float64) :
+                             DataFrame(),
+                )
+
+                if lake_outflowfunc[i] == 3 && lake_storfunc[i] != 1
+                    @warn("For the modified pulse approach (LakeOutflowFunc = 3) the LakeStorFunc should be 1")
+                end
+            end
+        end
+    end
     # lateral part sbm
     khfrac = readnetcdf(nc, "KsatHorFrac", inds, dparams)
     βₗ = Float64.(nc["Slope"][:][inds])
@@ -492,7 +541,8 @@ function initialize_sbm_model(
         dl = riverlength,
         Δt = Float64(Δt.value),
         width = riverwidth,
-        reservoir = do_reservoirs ? reservoirs : fill(nothing,nr),
+        reservoir = do_reservoirs ? reservoirs : fill(nothing, nr),
+        lake = do_lakes ? lakes : fill(nothing, nr),
         rivercells = river,
     )
 

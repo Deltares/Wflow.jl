@@ -15,6 +15,7 @@ function update(
 
     Wflow.update_until_snow(vertical)
 
+    masswasting = true
     if masswasting
         snowflux_frac =
             min.(0.5, lateral.land.sl ./ 5.67) .* min.(1.0, vertical.snow ./ 10000.0)
@@ -77,6 +78,10 @@ tomlpath = joinpath(@__DIR__, "config.toml")
 tomldir = dirname(tomlpath)
 config = Wflow.Config(TOML.parsefile(tomlpath))
 output_path = joinpath(@__DIR__, "data", "output_run_sbm.nc")
+
+forcing_moselle_path = "d:\\software\\openstream_julia\\Wflow.jl\\test\\data\\forcing-rhine_basel.nc"
+staticmaps_moselle_path = "d:\\software\\openstream_julia\\Wflow.jl\\test\\data\\staticmaps-rhine_basel.nc"
+cyclic_moselle_path = "d:\\software\\openstream_julia\\Wflow.jl\\test\\data\\lai_clim-rhine_basel.nc"
 
 model = Wflow.initialize_sbm_model(
     config,

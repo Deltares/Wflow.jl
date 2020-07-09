@@ -1,4 +1,4 @@
-Base.@kwdef struct SurfaceFlow{T,R}
+Base.@kwdef struct SurfaceFlow{T,R,L}
     β::T = 0.6                              # constant in Manning's equation
     sl::Vector{T}                           # Slope [m m⁻¹]
     n::Vector{T}                            # Manning's roughness [sl m⁻⅓]
@@ -19,6 +19,7 @@ Base.@kwdef struct SurfaceFlow{T,R}
     rivercells::Vector{UInt8} = fill(UInt8(0), 1) # Location of river cells (0 or 1)
     wb_pit::Vector{Int64} = zeros(Int64, length(sl)) # Boolean location (0 or 1) of a waterbody (wb, reservoir or lake).
     reservoir::R = fill(nothing, length(sl)) # Reservoir model, only located in river cells
+    lake::L = fill(nothing, length(sl))                 # Lake model, only located in river cells
 end
 
 
@@ -66,8 +67,8 @@ function update(
 
     # sub time step
     adt = sf.Δt / ts
-    p = 3.0/ts
-    pet = 4.0/ts
+    p = 3.0 / ts
+    pet = 4.0 / ts
 
     q_sum = zeros(n)
     h_sum = zeros(n)
@@ -81,15 +82,15 @@ function update(
                 # upstream nodes with a reservoir or lake are excluded
                 if Bool(river[v]) && (sf.wb_pit[v] == 0)
                     qin = isempty(upstream_nodes) ? 0.0 :
-                        sum(
+                        sum_empty([
                         sf.q[i] * (1.0 - frac_toriver[i])
                         for i in upstream_nodes if sf.wb_pit[i] == 0
-                    )
+                    ])
                     sf.to_river[v] = isempty(upstream_nodes) ? 0.0 :
-                        sum(
+                        sum_empty([
                         sf.q[i] * frac_toriver[i]
                         for i in upstream_nodes if sf.wb_pit[i] == 0
-                    )
+                    ])
                     # for a river cell with a reservoir or lake (wb_pit = 1) all upstream surface flow goes
                     # to the river.
                 elseif Bool(river[v]) && (sf.wb_pit[v] == 1)
@@ -107,6 +108,18 @@ function update(
             if sf.reservoir[v] != nothing
                 sf.reservoir[v] = update(sf.reservoir[v], qin, p, pet, adt)
                 sf.q[v] = sf.reservoir[v].outflow
+                # run lake model and copy lake outflow to river cell
+                # dummy values now for lake precipitation and evaporation (3.0 and 4.0)
+            elseif sf.lake[v] != nothing
+                if sf.lake[v].lowerlake_ind != 0
+                    lower_lake = sf.lake[sf.lake[v].lowerlake_ind]
+                    sf.lake[v] = update(sf.lake[v], qin, p, pet, 180.0, lower_lake)
+                    sf.q[v] = sf.lake[v].outflow
+                else
+                    sf.lake[v] = update(sf.lake[v], qin, p, pet, 180.0)
+                    sf.q[v] = sf.lake[v].outflow
+                end
+
             else
                 sf.q[v] =
                     kinematic_wave(qin, sf.q[v], sf.qlat[v], sf.α[v], sf.β, adt, sf.dl[v])

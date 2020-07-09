@@ -96,13 +96,22 @@ end
 "Faster method for exponentiation"
 pow(x, y) = exp(y * log(x))
 
-"Return the of the array `A` at indices `inds`"
+"Return the sum of the array `A` at indices `inds`"
 function sum_at(A, inds)
     v = zero(eltype(A))
     for i in inds
         v += A[i]
     end
     return v
+end
+
+"Return the sum of the array `A`, if 'A' is empty return 0.0"
+function sum_empty(A)
+    if length(A) > 0
+        sum(A)
+    else
+        0.0
+    end
 end
 
 # https://juliaarrays.github.io/StaticArrays.jl/latest/pages/api/#Arrays-of-static-arrays-1
