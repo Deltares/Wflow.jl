@@ -52,14 +52,17 @@ function initialize_sbm_model(
         "NRiver" => 0.036,
     )
 
-    # these settings should come from config TOML file:
-    sizeinmetres = false
-    thicknesslayers = SVector(100.0, 300.0, 800.0, mv)
-    do_reservoirs = false
-    do_lakes = true
-    # end settings
-    maxlayers = length(thicknesslayers) # max number of soil layers
-    sumlayers = SVector(pushfirst(cumsum(thicknesslayers), 0.0))
+    sizeinmetres = Bool(get(config.model,"sizeinmetres", 0))
+    config_thicknesslayers = get(config.model,"thicknesslayers", 0.0 )
+    if length(config_thicknesslayers) > 0
+        thicknesslayers = SVector(Tuple(push!(Float64.(config_thicknesslayers), mv)))
+        sumlayers = pushfirst(cumsum(thicknesslayers), 0.0)
+        maxlayers = length(thicknesslayers) # max number of soil layers
+    else
+        maxlayers = 1
+    end
+    do_reservoirs = Bool(get(config.model,"reservoirs",0))
+    do_lakes = Bool(get(config.model,"lakes",0))
 
     nc = NCDataset(staticmaps_path)
     dims = dimnames(nc["wflow_subcatch"])
@@ -142,18 +145,19 @@ function initialize_sbm_model(
     rootdistpar = readnetcdf(nc, "rootdistpar", inds, dparams)
     capscale = readnetcdf(nc, "CapScale", inds, dparams)
     et_reftopot = readnetcdf(nc, "et_reftopot", inds, dparams)
-    # cmax, e_r, canopygapfraction only required when lai climatoly not provided
-    cmax = readnetcdf(nc, "Cmax", inds, dparams)
-    e_r = readnetcdf(nc, "EoverR", inds, dparams)
-    canopygapfraction = readnetcdf(nc, "CanopyGapFraction", inds, dparams)
 
-    # if lai climatology provided use sl, swood and kext to calculate cmax
+    # if lai climatology provided use sl, swood and kext to calculate cmax, e_r and canopygapfraction
     if isnothing(cyclic_path) == false
         # TODO confirm if lai climatology is present in the NetCDF
         sl = readnetcdf(nc, "Sl", inds, dparams)
         swood = readnetcdf(nc, "Swood", inds, dparams)
         kext = readnetcdf(nc, "Kext", inds, dparams)
     end
+    # cmax, e_r, canopygapfraction only required when lai climatoly not provided
+    cmax = readnetcdf(nc, "Cmax", inds, dparams)
+    e_r = readnetcdf(nc, "EoverR", inds, dparams)
+    canopygapfraction = readnetcdf(nc, "CanopyGapFraction", inds, dparams)
+
 
     # these are filled in the loop below
     # TODO see if we can replace this approach
@@ -165,9 +169,6 @@ function initialize_sbm_model(
     riverfrac = fill(mv, n)
 
     for i = 1:n
-        act_thickl_, nlayers_ =
-            set_layerthickness(soilthickness[i], sumlayers, thicknesslayers)
-        s_layers_ = pushfirst(cumsum(act_thickl_), 0.0)
 
         xl[i] = sizeinmetres ? cellength : lattometres(y[i])[1] * cellength
         yl[i] = sizeinmetres ? cellength : lattometres(y[i])[2] * cellength
@@ -175,9 +176,19 @@ function initialize_sbm_model(
             Bool(river[i]) ? min((riverlength[i] * riverwidth[i]) / (xl[i] * yl[i]), 1.0) :
             0.0
 
-        nlayers[i] = nlayers_
-        act_thickl[:, i] = act_thickl_
-        s_layers[:, i] = s_layers_
+        if length(config_thicknesslayers) > 0
+            act_thickl_, nlayers_ =
+                set_layerthickness(soilthickness[i], sumlayers, thicknesslayers)
+            s_layers_ = pushfirst(cumsum(act_thickl_), 0.0)
+
+            nlayers[i] = nlayers_
+            act_thickl[:, i] = act_thickl_
+            s_layers[:, i] = s_layers_
+        else
+            nlayers[i] = 1
+            act_thickl[:, i] = SVector(soilthickness[i])
+            s_layers[:, i] = pushfirst(cumsum(SVector(soilthickness[i])), 0.0)
+        end
     end
 
     # needed for derived parameters below
