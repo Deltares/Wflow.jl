@@ -45,6 +45,7 @@ function update(
     do_iter = false,
     do_tstep = false,
     tstep = 0.0,
+    doy = 0,
 )
     # two options for iteration, a fixed sub time step or based on courant number.
     if do_iter
@@ -113,7 +114,7 @@ function update(
             elseif sf.lake[v] != nothing
                 if sf.lake[v].lowerlake_ind != 0
                     lower_lake = sf.lake[sf.lake[v].lowerlake_ind]
-                    sf.lake[v] = update(sf.lake[v], qin, p, pet, 180.0, lower_lake)
+                    sf.lake[v] = update(sf.lake[v], qin, p, pet, doy, lower_lake)
                     sf.q[v] = sf.lake[v].outflow
                 else
                     sf.lake[v] = update(sf.lake[v], qin, p, pet, 180.0)

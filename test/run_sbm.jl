@@ -1,21 +1,21 @@
 function update(
     model,
+    config,
     toposort_land,
     toposort_river,
     frac_toriver,
     index_river,
     nl,
-    nr;
-    masswasting = false,
+    nr,
 )
     @unpack lateral, vertical, network, clock = model
 
     Wflow.update_forcing!(model)
     Wflow.update_cyclic!(model)
 
-    Wflow.update_until_snow(vertical)
+    Wflow.update_until_snow(vertical, config)
 
-    if masswasting
+    if Bool(get(config.model,"masswasting",0))
         snowflux_frac =
             min.(0.5, lateral.land.sl ./ 5.67) .* min.(1.0, vertical.snow ./ 10000.0)
         maxflux = snowflux_frac .* vertical.snow
@@ -23,7 +23,7 @@ function update(
             Wflow.accucapacityflux(network.land, toposort_land, vertical.snow, maxflux)
     end
 
-    Wflow.update_until_recharge(vertical)
+    Wflow.update_until_recharge(vertical, config)
     lateral.subsurface.recharge .= vertical.recharge
     lateral.subsurface.recharge .*= lateral.subsurface.dl
     lateral.subsurface.zi .= vertical.zi
@@ -62,7 +62,7 @@ function update(
             lateral.land.to_river[index_river]
         ) ./ lateral.river.dl
 
-    Wflow.update(lateral.river, network.river, toposort_river, nr, do_iter = true)
+    Wflow.update(lateral.river, network.river, toposort_river, nr, do_iter = true, doy=day(clock.time))
 
     Wflow.write_output(model, model.writer)
 
@@ -100,13 +100,13 @@ frac_toriver = Wflow.fraction_runoff_toriver(
 
 model = update(
     model,
+    config,
     toposort_land,
     toposort_river,
     frac_toriver,
     index_river,
     nl,
     nr,
-    masswasting = Bool(get(config.model,"masswasting",0)),
 )
 
 @testset "first timestep" begin
@@ -122,20 +122,20 @@ model = update(
     @test sbm.altitude[1] == 643.5469970703125
     @test sbm.θₛ[1] == 0.48343977332115173
     @test sbm.runoff[1] == 0.0
-    @test sbm.soilevap[1] == 0.048453431759442424
-    @test sbm.snow[1] == 0.0
+    @test sbm.soilevap[1] == 0.0
+    @test sbm.snow[1] == 0.6029994894902302
 end
 
 # run the second timestep
 model = update(
     model,
+    config,
     toposort_land,
     toposort_river,
     frac_toriver,
     index_river,
     nl,
     nr,
-    masswasting = true,
 )
 
 @testset "second timestep" begin
@@ -143,21 +143,21 @@ model = update(
     @test sbm.altitude[1] == 643.5469970703125
     @test sbm.θₛ[1] == 0.48343977332115173
     @test sbm.runoff[1] == 0.0
-    @test sbm.soilevap[1] == 0.09563376762901096
-    @test sbm.snow[1] == 0.0
+    @test sbm.soilevap[1] == 0.00586565362774996
+    @test sbm.snow[1] == 0.009696763863612956
 end
 
 @testset "subsurface flow" begin
     ssf = model.lateral.subsurface.ssf
-    @test sum(ssf) ≈ 6.8949450377727496e16
-    @test ssf[toposort_land[1]] ≈ 3.0293145813424688e13
-    @test ssf[toposort_land[nl-100]] ≈ 7.566873257040469e11
-    @test ssf[sink] ≈ 2.1952330312819342e11
+    @test sum(ssf) ≈ 7.005489495052358e16
+    @test ssf[toposort_land[1]] ≈ 3.0449782003445332e13
+    @test ssf[toposort_land[nl-100]] ≈ 7.87333555063647e11
+    @test ssf[sink] ≈ 2.2998636307068414e11
 end
 
 @testset "overland flow" begin
     q = model.lateral.land.q_av
-    @test sum(q) ≈ 6.012832744996996
+    @test sum(q) ≈ 6.1333024054146446
     @test q[26625] ≈ 0.0
     @test q[39308] ≈ 0.0
     @test q[sink] ≈ 0.0
@@ -165,18 +165,18 @@ end
 
 @testset "river flow" begin
     q = model.lateral.river.q_av
-    @test sum(q) ≈ 655.0918562695385
-    @test q[4061] ≈ 0.011394640544977987
-    @test q[5617] ≈ 0.986801851306535
-    @test q[toposort_river[end]] ≈ 0.004621542892763028
+    @test sum(q) ≈ 671.4362633660646
+    @test q[4061] ≈ 0.011731014256037769
+    @test q[5617] ≈ 1.0080691890749913
+    @test q[toposort_river[end]] ≈ 0.0043612246315573805
 end
 
 @testset "reservoir simple" begin
     res = model.lateral.river.reservoir
     inds = filter(i -> !isequal(res[i], nothing), 1:nr)
     @test res[inds[2]].outflow ≈ 0.2174998580279266
-    @test res[inds[2]].inflow ≈ 0.07074779883466663
-    @test res[inds[2]].volume ≈ 2.77521453748098e7
+    @test res[inds[2]].inflow ≈ 0.004452979665488473
+    @test res[inds[2]].volume ≈ 2.7745799188635208e7
     @test res[inds[2]].precipitation ≈ 0.041666666666666664
     @test res[inds[2]].evaporation ≈ 0.05555555555555555
 end
@@ -185,13 +185,13 @@ using BenchmarkTools, Juno
 
 benchmark = @benchmark update(
     model,
+    config,
     toposort_land,
     toposort_river,
     frac_toriver,
     index_river,
     nl,
     nr,
-    masswasting = true,
 )
 
 "Prints a benchmark results just like btime"

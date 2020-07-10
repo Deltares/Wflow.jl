@@ -412,7 +412,7 @@ function initialize_sbm_model(
             # Snow melt + precipitation as rainfall [mm]
             rainfallplusmelt = fill(mv, n),
             # Top soil temperature [ᵒC]
-            tsoil = Fill(10.0, n),
+            tsoil = fill(10.0, n),
         )
     end
 
