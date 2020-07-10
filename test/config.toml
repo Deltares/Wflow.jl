@@ -30,6 +30,7 @@ lai = "LAI"
 [model]
 reservoirs = 1
 masswasting = 1
+modelsnow = 1
 thicknesslayers = [100, 300, 800]
 
 [output]

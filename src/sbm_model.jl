@@ -63,6 +63,7 @@ function initialize_sbm_model(
     end
     do_reservoirs = Bool(get(config.model,"reservoirs",0))
     do_lakes = Bool(get(config.model,"lakes",0))
+    do_snow = Bool(get(config.model,"modelsnow",0))
 
     nc = NCDataset(staticmaps_path)
     dims = dimnames(nc["wflow_subcatch"])
@@ -96,14 +97,15 @@ function initialize_sbm_model(
     end
     cellength = abs(mean(diff(x_nc)))
 
-    # snow parameters (also set in ini file (snow=True or False)?)
-    cfmax = readnetcdf(nc, "Cfmax", inds, dparams)
-    tt = readnetcdf(nc, "TT", inds, dparams)
-    tti = readnetcdf(nc, "TTI", inds, dparams)
-    ttm = readnetcdf(nc, "TTM", inds, dparams)
-    whc = readnetcdf(nc, "WHC", inds, dparams)
-    w_soil = readnetcdf(nc, "w_soil", inds, dparams)
-    cf_soil = readnetcdf(nc, "cf_soil", inds, dparams)
+    if do_snow
+        cfmax = readnetcdf(nc, "Cfmax", inds, dparams)
+        tt = readnetcdf(nc, "TT", inds, dparams)
+        tti = readnetcdf(nc, "TTI", inds, dparams)
+        ttm = readnetcdf(nc, "TTM", inds, dparams)
+        whc = readnetcdf(nc, "WHC", inds, dparams)
+        w_soil = readnetcdf(nc, "w_soil", inds, dparams)
+        cf_soil = readnetcdf(nc, "cf_soil", inds, dparams)
+    end
 
     # soil parameters
     θₛ = readnetcdf(nc, "thetaS", inds, dparams)
@@ -152,11 +154,15 @@ function initialize_sbm_model(
         sl = readnetcdf(nc, "Sl", inds, dparams)
         swood = readnetcdf(nc, "Swood", inds, dparams)
         kext = readnetcdf(nc, "Kext", inds, dparams)
+        cmax = fill(mv,n)
+        e_r = fill(mv,n)
+        canopygapfraction = fill(mv,n)
+    else
+        # cmax, e_r, canopygapfraction only required when lai climatoly not provided
+        cmax = readnetcdf(nc, "Cmax", inds, dparams)
+        e_r = readnetcdf(nc, "EoverR", inds, dparams)
+        canopygapfraction = readnetcdf(nc, "CanopyGapFraction", inds, dparams)
     end
-    # cmax, e_r, canopygapfraction only required when lai climatoly not provided
-    cmax = readnetcdf(nc, "Cmax", inds, dparams)
-    e_r = readnetcdf(nc, "EoverR", inds, dparams)
-    canopygapfraction = readnetcdf(nc, "CanopyGapFraction", inds, dparams)
 
 
     # these are filled in the loop below
@@ -248,20 +254,6 @@ function initialize_sbm_model(
         xl = xl,
         # Fraction of river [-]
         riverfrac = riverfrac,
-        # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹]
-        cfmax = cfmax,
-        # Threshold temperature for snowfall [ᵒC]
-        tt = tt,
-        # Threshold temperature interval length [ᵒC]
-        tti = tti,
-        # Threshold temperature for snowmelt [ᵒC]
-        ttm = ttm,
-        # Water holding capacity as fraction of current snow pack [-]
-        whc = whc,
-        # Soil temperature smooth factor [-]
-        w_soil = w_soil,
-        # Controls soil infiltration reduction factor when soil is frozen [-]
-        cf_soil = cf_soil,
         # Saturated water content (porosity) [mm mm⁻¹]
         θₛ = θₛ,
         # Residual water content [mm mm⁻¹]
@@ -300,23 +292,8 @@ function initialize_sbm_model(
         capscale = capscale,
         # Multiplication factor [-] to correct
         et_reftopot = et_reftopot,
-        # Specific leaf storage [mm]
-        sl = sl,
-        # Storage woody part of vegetation [mm]
-        swood = swood,
-        # Extinction coefficient [-] (to calculate canopy gap fraction)
-        kext = kext,
         # Brooks-Corey power coefﬁcient [-] for each soil layer
         c = svectorscopy(c, Val{maxlayers}()),
-        # Leaf area index [m² m⁻²]
-        lai = fill(mv, n),
-        # Maximum canopy storage [mm]
-        cmax = cmax,
-        # Canopy gap fraction [-]
-        canopygapfraction = canopygapfraction,
-        # Gash interception model parameter, ratio of the average evaporation from the
-        # wet canopy [mm Δt⁻¹] and the average precipitation intensity [mm Δt⁻¹] on a saturated canopy
-        e_r = e_r,
         # Stemflow [mm]
         stemflow = fill(mv, n),
         # Throughfall [mm]
@@ -331,16 +308,15 @@ function initialize_sbm_model(
         zi = max.(0.0, soilthickness .- satwaterdepth ./ θₑ),
         # Soilwater capacity [mm]
         soilwatercapacity = soilwatercapacity,
-        # Snow storage [mm]
-        snow = fill(0.0, n),
-        # Liquid water content in the snow pack [mm]
-        snowwater = fill(0.0, n),
-        # Snow melt + precipitation as rainfall [mm]
-        rainfallplusmelt = fill(mv, n),
-        # Top soil temperature [ᵒC]
-        tsoil = Fill(10.0, n),
         # Canopy storage [mm]
         canopystorage = fill(0.0, n),
+        # Maximum canopy storage [mm]
+        cmax = cmax,
+        # Canopy gap fraction [-]
+        canopygapfraction = canopygapfraction,
+        # Gash interception model parameter, ratio of the average evaporation from the
+        # wet canopy [mm Δt⁻¹] and the average precipitation intensity [mm Δt⁻¹] on a saturated canopy
+        e_r = e_r,
         # Precipitation [mm]
         precipitation = fill(mv, n),
         # Temperature [ᵒC]
@@ -413,11 +389,51 @@ function initialize_sbm_model(
         recharge = fill(mv, n),
     )
 
+    if do_snow
+        sbm = Table(sbm,
+            # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹]
+            cfmax = cfmax,
+            # Threshold temperature for snowfall [ᵒC]
+            tt = tt,
+            # Threshold temperature interval length [ᵒC]
+            tti = tti,
+            # Threshold temperature for snowmelt [ᵒC]
+            ttm = ttm,
+            # Water holding capacity as fraction of current snow pack [-]
+            whc = whc,
+            # Soil temperature smooth factor [-]
+            w_soil = w_soil,
+            # Controls soil infiltration reduction factor when soil is frozen [-]
+            cf_soil = cf_soil,
+            # Snow storage [mm]
+            snow = fill(0.0, n),
+            # Liquid water content in the snow pack [mm]
+            snowwater = fill(0.0, n),
+            # Snow melt + precipitation as rainfall [mm]
+            rainfallplusmelt = fill(mv, n),
+            # Top soil temperature [ᵒC]
+            tsoil = Fill(10.0, n),
+        )
+    end
+
+    if isnothing(cyclic_path) == false
+        sbm = Table(sbm,
+            # Specific leaf storage [mm]
+            sl = sl,
+            # Storage woody part of vegetation [mm]
+            swood = swood,
+            # Extinction coefficient [-] (to calculate canopy gap fraction)
+            kext = kext,
+            # Leaf area index [m² m⁻²]
+            lai = fill(mv, n),
+            )
+    end
+
     inds_riv = filter(i -> !isequal(river_2d[i], 0), inds)
     # reservoirs
     pits = zeros(Int, n)
     if do_reservoirs
-        # read only reservoir data if reservoirs true (from model reader, setting Config.jl TOML)
+        # read only reservoir data if reservoirs true
         reslocs_2d = Int.(nomissing(nc["wflow_reservoirlocs"][:], 0))
         # allow reservoirs only in river cells
         inds_res = filter(i -> reslocs_2d[inds][i] > 0 && isequal(river[i], 1), 1:n)
@@ -448,7 +464,7 @@ function initialize_sbm_model(
 
     # lakes
     if do_lakes
-        # read only lake data if lakes true (from model reader, setting Config.jl TOML)
+        # read only lake data if lakes true
         lakelocs_2d = Int.(nomissing(nc["wflow_lakelocs"][:], 0))
         # allow lakes only in river cells
         inds_lakes = filter(i -> lakelocs_2d[inds][i] > 0 && isequal(river[i], 1), 1:n)
