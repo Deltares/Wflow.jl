@@ -156,7 +156,7 @@ end
 struct NCReader{T}
     dataset::NCDataset
     cyclic_dataset::NCDataset
-    cyclic_times::Vector{Tuple{Int64,Int64}}
+    cyclic_times::Vector{Tuple{Int,Int}}
     forcing_parameters::Dict{Symbol,String}
     cyclic_parameters::Dict{Symbol,String}
     buffer::Matrix{T}

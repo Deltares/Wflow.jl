@@ -14,7 +14,7 @@ Base.@kwdef struct LateralSSF{T}
         ((kh₀ .* βₗ) ./ f) .* (exp.(-f .* zi) - exp.(-f .* soilthickness)) .* dw    # Subsurface flow [mm³ Δt⁻¹]
     ssfmax::Vector{T} = ((kh₀ .* βₗ) ./ f) .* (1.0 .- exp.(-f .* soilthickness))     # Maximum subsurface flow [mm² Δt⁻¹]
     to_river::Vector{T} = zeros(length(f))  # Part of subsurface flow [mm³ Δt⁻¹] that flows to the river
-    wb_pit::Vector{Int64} = zeros(Int64, length(f)) # Boolean location (0 or 1) of a waterbody (wb, reservoir or lake).
+    wb_pit::Vector{Int} = zeros(Int, length(f)) # Boolean location (0 or 1) of a waterbody (wb, reservoir or lake).
 end
 
 # depends on ini file settings (optional: glaciers, snow, irrigation)

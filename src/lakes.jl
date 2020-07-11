@@ -1,10 +1,10 @@
 Base.@kwdef struct NaturalLake{T}
-    loc_id::Int64                   # location id of lake outlet
-    lowerlake_ind::Int64            # Index of lower lake (linked lakes)
+    loc_id::Int                   # location id of lake outlet
+    lowerlake_ind::Int            # Index of lower lake (linked lakes)
     area::T                         # lake area [m²]
     threshold::T                    # water level threshold H₀ [m] below that level outflow is zero
-    storfunc::Int64                 # type of lake storage curve, 1: S = AH, 2: S = f(H) from lake data and interpolation
-    outflowfunc::Int64              # type of lake rating curve, 1: Q = f(H) from lake data and interpolation, 2: General Q = b(H - H₀)ᵉ, 3: Case of Puls Approach Q = b(H - H₀)²
+    storfunc::Int                 # type of lake storage curve, 1: S = AH, 2: S = f(H) from lake data and interpolation
+    outflowfunc::Int              # type of lake rating curve, 1: Q = f(H) from lake data and interpolation, 2: General Q = b(H - H₀)ᵉ, 3: Case of Puls Approach Q = b(H - H₀)²
     b::T                            # rating curve coefficient
     e::T                            # rating curve exponent
     sh::DataFrame                   # data for storage curve
