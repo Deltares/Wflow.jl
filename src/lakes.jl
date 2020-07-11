@@ -1,4 +1,4 @@
-Base.@kwdef struct NaturalLake{T,L}
+Base.@kwdef struct NaturalLake{T}
     loc_id::Int64                   # location id of lake outlet
     lowerlake_ind::Int64            # Index of lower lake (linked lakes)
     area::T                         # lake area [m²]
@@ -12,7 +12,7 @@ Base.@kwdef struct NaturalLake{T,L}
     avg_waterlevel::T               # average water level [m] (cold state)
     waterlevel::T = avg_waterlevel  # waterlevel H [m] of lake
     inflow::T = mv                  # inflow to the lake [m³ s⁻¹]
-    storage::T = mv                 # storage lake [m³]
+    storage::T = storfunc == 1 ? area * waterlevel : interpolate_linear(waterlevel, sh.H, sh.S) # storage lake [m³]
     outflow::T = mv                 # outflow lake [m³ s⁻¹]
     precipitation::T = mv           # average precipitation for lake area [mm]
     evaporation::T = mv             # average evaporation for lake area [mm]
@@ -53,10 +53,8 @@ function update(lake::NaturalLake, inflow, p, pet, doy, timestepsecs; lower_lake
     # outflowfunc = 3
     # Calculate lake factor and SI parameter
     if lake.outflowfunc == 3
-        lakefactor =
-            lake.outflowfunc == 3 ? lake.area / (timestepsecs * pow(lake_b, 0.5)) : mv
-        si_factor = lake.outflowfunc == 3 ?
-            lake.storage + (p - pet) * lake.area / 1000.0 / timestepsecs + inflow : mv
+        lakefactor = lake.area / (timestepsecs * pow(lake.b, 0.5))
+        si_factor = (lake.storage + (p - pet) * lake.area / 1000.0) / timestepsecs + inflow
         #Adjust SIFactor for ResThreshold != 0
         si_factor_adj = si_factor - lake.area * lake.threshold / timestepsecs
         #Calculate the new lake outflow/waterlevel/storage
@@ -101,7 +99,7 @@ function update(lake::NaturalLake, inflow, p, pet, doy, timestepsecs; lower_lake
 
         # update lower lake (linked lakes) in case flow from lower lake to upper lake occurs
         if diff_wl < 0.0
-            lowerlake_storage = lower_lake.storage + outflow * timestepsecs
+            lowerlake_storage = lowerlake_storage + outflow * timestepsecs
             lowerlake_waterlevel = lower_lake.storfunc == 1 ?
                 lower_lake.waterlevel +
             (lowerlake_storage - lower_lake.storage) / lower_lake.area :

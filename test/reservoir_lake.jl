@@ -17,3 +17,26 @@
     @test res_update.precipitation ≈ 4.2
     @test res_update.evaporation ≈ 1.5
 end
+
+@testset "natural lake" begin
+    lake = Wflow.NaturalLake{Float64}(
+    loc_id = 1,
+    lowerlake_ind = 0,
+    area = 180510409.0,
+    threshold = 0.0,
+    storfunc = 1,
+    outflowfunc = 3,
+    b = 0.22,
+    e = 2.0,
+    sh = Wflow.DataFrame(),
+    hq = Wflow.DataFrame(),
+    avg_waterlevel = 18.5,
+    )
+
+    lake_update = Wflow.update(lake, 2500.0, 20.0, 3.2, 181, 86400.0)
+    @test lake_update.outflow ≈ 85.31903276150577
+    @test lake_update.storage ≈ 3.551103576940606e9
+    @test lake_update.waterlevel ≈ 19.672569557695734
+    @test lake_update.precipitation ≈ 20.0
+    @test lake_update.evaporation ≈ 3.2
+end
