@@ -32,18 +32,16 @@ Get a tuple of symbols representing the fields that are model states.
 function statenames end
 
 function interpolate_linear(x, xp, fp)
-
     if x <= min(xp)
-        f_interp = min(xp)
+        return min(xp)
     elseif x >= max(xp)
-        f_interp = max(xp)
+        return max(xp)
     else
         idx = findall(i -> i <= x, xp)
         i1 = last(idx)
         i2 = i1 + 1
-        f_interp =
-            fp[id1] * (1.0 - (x - xp[i1]) / (xp[i2] - xp[i1])) +
-            fp[i2] * (x - xp[i1]) / (xp[i2] - xp[i1])
+        return fp[i1] * (1.0 - (x - xp[i1]) / (xp[i2] - xp[i1])) +
+               fp[i2] * (x - xp[i1]) / (xp[i2] - xp[i1])
     end
 end
 
