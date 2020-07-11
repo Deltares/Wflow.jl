@@ -168,8 +168,8 @@ end
     @test res[inds[2]].outflow ≈ 0.2174998580279266
     @test res[inds[2]].inflow ≈ 0.004452979665488473
     @test res[inds[2]].volume ≈ 2.7745799188635208e7
-    @test res[inds[2]].precipitation ≈ 0.041666666666666664
-    @test res[inds[2]].evaporation ≈ 0.05555555555555555
+    @test res[inds[2]].precipitation ≈ 3.0
+    @test res[inds[2]].evaporation ≈ 4.0
 end
 
 using BenchmarkTools, Juno

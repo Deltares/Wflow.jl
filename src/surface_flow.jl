@@ -68,8 +68,8 @@ function update(
 
     # sub time step
     adt = sf.Δt / ts
-    p = 3.0 / ts
-    pet = 4.0 / ts
+    p = 3.0 / ts # dummy precipitation
+    pet = 4.0 / ts # dummy evaporation
 
     q_sum = zeros(n)
     h_sum = zeros(n)
@@ -117,7 +117,7 @@ function update(
                     sf.lake[v] = update(sf.lake[v], qin, p, pet, doy, lower_lake)
                     sf.q[v] = sf.lake[v].outflow
                 else
-                    sf.lake[v] = update(sf.lake[v], qin, p, pet, 180.0)
+                    sf.lake[v] = update(sf.lake[v], qin, p, pet, doy)
                     sf.q[v] = sf.lake[v].outflow
                 end
 

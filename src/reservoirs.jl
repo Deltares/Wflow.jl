@@ -3,15 +3,15 @@ Base.@kwdef struct SimpleReservoir{T}
     area::T                                     # reservoir area [m²]
     maxrelease::T                               # maximum amount that can be released if below spillway [m³ s⁻¹]
     demand::T                                   # minimum (environmental) flow requirement downstream of the reservoir [m³ s⁻¹]
-    targetminfrac::T
-    targetfullfrac::T
-    volume::T = targetfullfrac * maxvolume
-    inflow::T = mv
-    outflow::T = mv
-    percfull::T = mv
-    demandrelease::T = mv
-    precipitation::T = mv
-    evaporation::T = mv
+    targetminfrac::T                            # target minimum full fraction (of max storage) [-]
+    targetfullfrac::T                           # target fraction full (of max storage) [-]
+    volume::T = targetfullfrac * maxvolume      # reservoir volume [m³]
+    inflow::T = mv                              # inflow into reservoir [m³]
+    outflow::T = mv                             # outflow from reservoir [m³ s⁻¹]
+    percfull::T = mv                            # fraction full (of max storage) [-]
+    demandrelease::T = mv                       # minimum (environmental) flow released from reservoir [m³ s⁻¹]
+    precipitation::T = mv                       # average precipitation for reservoir area [mm]
+    evaporation::T = mv                         # average evaporation for reservoir area [mm]
 end
 
 """
@@ -55,8 +55,8 @@ function update(res::SimpleReservoir, inflow, p, pet, timestepsecs)
             inflow = inflow,
             demandrelease = demandrelease / timestepsecs,
             percfull = percfull,
-            precipitation = p,
-            evaporation = pet,
+            precipitation = p * basetimestep.value / timestepsecs,
+            evaporation = pet * basetimestep.value / timestepsecs,
             volume = vol,
         ),
     )

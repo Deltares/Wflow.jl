@@ -125,8 +125,8 @@ function update(lake::NaturalLake, inflow, p, pet, doy, timestepsecs; lower_lake
             waterlevel = waterlevel,
             inflow = inflow,
             storage = storage,
-            precipitation = p,
-            evaporation = pet,
+            precipitation = p * basetimestep.value / timestepsecs,
+            evaporation = pet * basetimestep.value / timestepsecs,
         ),
     )
 
