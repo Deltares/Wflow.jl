@@ -16,16 +16,17 @@ function lattometres(lat::Float64)
 end
 
 """
-    readnetcdf(nc, var, inds, dpars)
+    ncread(nc, var, inds, dpars)
 
 Read parameter `var` from NetCDF file `nc` for indices `inds`. If `var` is not
 available, a default value based on dict 'dpars' is returned.
 """
-function readnetcdf(nc, var, inds, dpars)
+function ncread(nc, var, inds, dpars::Dict)
     if haskey(nc, var)
         @debug(string("read parameter ", var))
         ncvar = Float64.(nc[var][:][inds])
     else
+        # TODO move away from this strategy for defaults
         @warn(string(var, " not found, set to default value ", dpars[var]))
         ncvar = fill(dpars[var], length(inds))
     end

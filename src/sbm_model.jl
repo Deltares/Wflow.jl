@@ -98,25 +98,25 @@ function initialize_sbm_model(
     cellength = abs(mean(diff(x_nc)))
 
     if do_snow
-        cfmax = readnetcdf(nc, "Cfmax", inds, dparams)
-        tt = readnetcdf(nc, "TT", inds, dparams)
-        tti = readnetcdf(nc, "TTI", inds, dparams)
-        ttm = readnetcdf(nc, "TTM", inds, dparams)
-        whc = readnetcdf(nc, "WHC", inds, dparams)
-        w_soil = readnetcdf(nc, "w_soil", inds, dparams)
-        cf_soil = readnetcdf(nc, "cf_soil", inds, dparams)
+        cfmax = ncread(nc, "Cfmax", inds, dparams)
+        tt = ncread(nc, "TT", inds, dparams)
+        tti = ncread(nc, "TTI", inds, dparams)
+        ttm = ncread(nc, "TTM", inds, dparams)
+        whc = ncread(nc, "WHC", inds, dparams)
+        w_soil = ncread(nc, "w_soil", inds, dparams)
+        cf_soil = ncread(nc, "cf_soil", inds, dparams)
     end
 
     # soil parameters
-    θₛ = readnetcdf(nc, "thetaS", inds, dparams)
-    θᵣ = readnetcdf(nc, "thetaR", inds, dparams)
-    kv₀ = readnetcdf(nc, "KsatVer", inds, dparams)
-    m = readnetcdf(nc, "M", inds, dparams)
-    hb = readnetcdf(nc, "AirEntryPressure", inds, dparams)
-    soilthickness = readnetcdf(nc, "SoilThickness", inds, dparams)
-    infiltcappath = readnetcdf(nc, "InfiltCapPath", inds, dparams)
-    infiltcapsoil = readnetcdf(nc, "InfiltCapSoil", inds, dparams)
-    maxleakage = readnetcdf(nc, "MaxLeakage", inds, dparams)
+    θₛ = ncread(nc, "thetaS", inds, dparams)
+    θᵣ = ncread(nc, "thetaR", inds, dparams)
+    kv₀ = ncread(nc, "KsatVer", inds, dparams)
+    m = ncread(nc, "M", inds, dparams)
+    hb = ncread(nc, "AirEntryPressure", inds, dparams)
+    soilthickness = ncread(nc, "SoilThickness", inds, dparams)
+    infiltcappath = ncread(nc, "InfiltCapPath", inds, dparams)
+    infiltcapsoil = ncread(nc, "InfiltCapSoil", inds, dparams)
+    maxleakage = ncread(nc, "MaxLeakage", inds, dparams)
     # TODO: store c, kvfrac in staticmaps.nc start at index 1
     c = fill(dparams["c"], (maxlayers, n))
     kvfrac = fill(dparams["KsatVerFrac"], (maxlayers, n))
@@ -139,29 +139,29 @@ function initialize_sbm_model(
     end
 
     # fraction open water and compacted area (land cover)
-    waterfrac = readnetcdf(nc, "WaterFrac", inds, dparams)
-    pathfrac = readnetcdf(nc, "PathFrac", inds, dparams)
+    waterfrac = ncread(nc, "WaterFrac", inds, dparams)
+    pathfrac = ncread(nc, "PathFrac", inds, dparams)
 
     # vegetation parameters
-    rootingdepth = readnetcdf(nc, "RootingDepth", inds, dparams)
-    rootdistpar = readnetcdf(nc, "rootdistpar", inds, dparams)
-    capscale = readnetcdf(nc, "CapScale", inds, dparams)
-    et_reftopot = readnetcdf(nc, "et_reftopot", inds, dparams)
+    rootingdepth = ncread(nc, "RootingDepth", inds, dparams)
+    rootdistpar = ncread(nc, "rootdistpar", inds, dparams)
+    capscale = ncread(nc, "CapScale", inds, dparams)
+    et_reftopot = ncread(nc, "et_reftopot", inds, dparams)
 
     # if lai climatology provided use sl, swood and kext to calculate cmax, e_r and canopygapfraction
     if isnothing(cyclic_path) == false
         # TODO confirm if lai climatology is present in the NetCDF
-        sl = readnetcdf(nc, "Sl", inds, dparams)
-        swood = readnetcdf(nc, "Swood", inds, dparams)
-        kext = readnetcdf(nc, "Kext", inds, dparams)
+        sl = ncread(nc, "Sl", inds, dparams)
+        swood = ncread(nc, "Swood", inds, dparams)
+        kext = ncread(nc, "Kext", inds, dparams)
         cmax = fill(mv, n)
         e_r = fill(mv, n)
         canopygapfraction = fill(mv, n)
     else
         # cmax, e_r, canopygapfraction only required when lai climatoly not provided
-        cmax = readnetcdf(nc, "Cmax", inds, dparams)
-        e_r = readnetcdf(nc, "EoverR", inds, dparams)
-        canopygapfraction = readnetcdf(nc, "CanopyGapFraction", inds, dparams)
+        cmax = ncread(nc, "Cmax", inds, dparams)
+        e_r = ncread(nc, "EoverR", inds, dparams)
+        canopygapfraction = ncread(nc, "CanopyGapFraction", inds, dparams)
     end
 
 
@@ -512,7 +512,7 @@ function initialize_sbm_model(
         end
     end
     # lateral part sbm
-    khfrac = readnetcdf(nc, "KsatHorFrac", inds, dparams)
+    khfrac = ncread(nc, "KsatHorFrac", inds, dparams)
     βₗ = Float64.(nc["Slope"][:][inds])
     clamp!(βₗ, 0.00001, Inf)
     ldd_2d = nc["wflow_ldd"][:]
@@ -539,7 +539,7 @@ function initialize_sbm_model(
         wb_pit = pits,
     )
 
-    n_land = readnetcdf(nc, "N", inds, dparams)
+    n_land = ncread(nc, "N", inds, dparams)
 
     olf = SurfaceFlow(
         sl = βₗ,
@@ -558,7 +558,7 @@ function initialize_sbm_model(
     clamp!(riverslope, 0.00001, Inf)
     riverlength = riverlength_2d[inds_riv]
     riverwidth = riverwidth_2d[inds_riv]
-    n_river = readnetcdf(nc, "N_River", inds_riv, dparams)
+    n_river = ncread(nc, "N_River", inds_riv, dparams)
     ldd_riv = ldd_2d[inds_riv]
     dag_riv = flowgraph(ldd_riv, inds_riv, pcr_dir)
     nr = length(inds_riv)
