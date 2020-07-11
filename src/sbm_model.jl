@@ -52,8 +52,8 @@ function initialize_sbm_model(
         "NRiver" => 0.036,
     )
 
-    sizeinmetres = Bool(get(config.model,"sizeinmetres", 0))
-    config_thicknesslayers = get(config.model,"thicknesslayers", 0.0 )
+    sizeinmetres = Bool(get(config.model, "sizeinmetres", 0))
+    config_thicknesslayers = get(config.model, "thicknesslayers", 0.0)
     if length(config_thicknesslayers) > 0
         thicknesslayers = SVector(Tuple(push!(Float64.(config_thicknesslayers), mv)))
         sumlayers = pushfirst(cumsum(thicknesslayers), 0.0)
@@ -61,9 +61,9 @@ function initialize_sbm_model(
     else
         maxlayers = 1
     end
-    do_reservoirs = Bool(get(config.model,"reservoirs",0))
-    do_lakes = Bool(get(config.model,"lakes",0))
-    do_snow = Bool(get(config.model,"modelsnow",0))
+    do_reservoirs = Bool(get(config.model, "reservoirs", 0))
+    do_lakes = Bool(get(config.model, "lakes", 0))
+    do_snow = Bool(get(config.model, "modelsnow", 0))
 
     nc = NCDataset(staticmaps_path)
     dims = dimnames(nc["wflow_subcatch"])
@@ -154,9 +154,9 @@ function initialize_sbm_model(
         sl = readnetcdf(nc, "Sl", inds, dparams)
         swood = readnetcdf(nc, "Swood", inds, dparams)
         kext = readnetcdf(nc, "Kext", inds, dparams)
-        cmax = fill(mv,n)
-        e_r = fill(mv,n)
-        canopygapfraction = fill(mv,n)
+        cmax = fill(mv, n)
+        e_r = fill(mv, n)
+        canopygapfraction = fill(mv, n)
     else
         # cmax, e_r, canopygapfraction only required when lai climatoly not provided
         cmax = readnetcdf(nc, "Cmax", inds, dparams)
@@ -175,7 +175,6 @@ function initialize_sbm_model(
     riverfrac = fill(mv, n)
 
     for i = 1:n
-
         xl[i] = sizeinmetres ? cellength : lattometres(y[i])[1] * cellength
         yl[i] = sizeinmetres ? cellength : lattometres(y[i])[2] * cellength
         riverfrac[i] =
@@ -390,7 +389,8 @@ function initialize_sbm_model(
     )
 
     if do_snow
-        sbm = Table(sbm,
+        sbm = Table(
+            sbm,
             # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹]
             cfmax = cfmax,
             # Threshold temperature for snowfall [ᵒC]
@@ -417,7 +417,8 @@ function initialize_sbm_model(
     end
 
     if isnothing(cyclic_path) == false
-        sbm = Table(sbm,
+        sbm = Table(
+            sbm,
             # Specific leaf storage [mm]
             sl = sl,
             # Storage woody part of vegetation [mm]
@@ -426,7 +427,7 @@ function initialize_sbm_model(
             kext = kext,
             # Leaf area index [m² m⁻²]
             lai = fill(mv, n),
-            )
+        )
     end
 
     inds_riv = filter(i -> !isequal(river_2d[i], 0), inds)

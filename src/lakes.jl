@@ -12,7 +12,8 @@ Base.@kwdef struct NaturalLake{T}
     avg_waterlevel::T               # average water level [m] (cold state)
     waterlevel::T = avg_waterlevel  # waterlevel H [m] of lake
     inflow::T = mv                  # inflow to the lake [m³ s⁻¹]
-    storage::T = storfunc == 1 ? area * waterlevel : interpolate_linear(waterlevel, sh.H, sh.S) # storage lake [m³]
+    storage::T =
+        storfunc == 1 ? area * waterlevel : interpolate_linear(waterlevel, sh.H, sh.S) # storage lake [m³]
     outflow::T = mv                 # outflow lake [m³ s⁻¹]
     precipitation::T = mv           # average precipitation for lake area [mm]
     evaporation::T = mv             # average evaporation for lake area [mm]

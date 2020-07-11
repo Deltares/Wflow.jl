@@ -3,9 +3,9 @@ const mv = NaN
 function update_until_snow(t, config)
 
     # # start dummy variables (should be generated from model reader and from Config.jl TOML)
-    do_lai = !isequal(get(config.cyclic_parameters,"lai", nothing), nothing) ? true : false
-    modelglacier = Bool(get(config.model,"modelglacier",0))
-    modelsnow = Bool(get(config.model,"modelsnow",0))
+    do_lai = !isequal(get(config.cyclic_parameters, "lai", nothing), nothing) ? true : false
+    modelglacier = Bool(get(config.model, "modelglacier", 0))
+    modelsnow = Bool(get(config.model, "modelsnow", 0))
     #potevap = 4.0
     #precipitation = 3.0
     #temperature = 10.0
@@ -18,7 +18,8 @@ function update_until_snow(t, config)
             cmax = t.sl[r] * t.lai[r] + t.swood[r]
             canopygapfraction = exp(-t.kext[r] * t.lai[r])
             ewet = (1.0 - exp(-t.kext[r] * t.lai[r])) * t.potevap[r]
-            e_r = t.precipitation[r] > 0.0 ? min(0.25, ewet / max(0.0001, t.precipitation[r])) : 0.0
+            e_r = t.precipitation[r] > 0.0 ?
+                min(0.25, ewet / max(0.0001, t.precipitation[r])) : 0.0
         end
 
         potevap = t.potevap[r] * t.et_reftopot[r]
@@ -83,17 +84,17 @@ end
 function update_until_recharge(t, config)
 
     # start dummy variables (should be generated from model reader and from Config.jl TOML)
-    soilinfreduction = Bool(get(config.model,"soilinfreduction",0))
-    modelglacier = Bool(get(config.model,"modelglacier",0))
-    modelsnow = Bool(get(config.model,"modelsnow",0))
-    transfermethod = Bool(get(config.model,"transfermethod",0))
+    soilinfreduction = Bool(get(config.model, "soilinfreduction", 0))
+    modelglacier = Bool(get(config.model, "modelglacier", 0))
+    modelsnow = Bool(get(config.model, "modelsnow", 0))
+    transfermethod = Bool(get(config.model, "transfermethod", 0))
     #potevap = 4.0
     #precipitation = 3.0
     #temperature = 10.0
     wl_land = 0.0 # from kinematic wave land
     wl_river = 0.10 # from kinematic river
     irsupply_mm = 0.0
-    ust = Bool(get(config.model,"whole_ust_available",0)) # should be removed from optional setting and code?
+    ust = Bool(get(config.model, "whole_ust_available", 0)) # should be removed from optional setting and code?
     Δt = Second(config.input.timestepsecs)
     #basetimestep = Second(Day(1))
     # end dummpy variables

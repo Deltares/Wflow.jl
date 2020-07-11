@@ -15,7 +15,7 @@ function update(
 
     Wflow.update_until_snow(vertical, config)
 
-    if Bool(get(config.model,"masswasting",0))
+    if Bool(get(config.model, "masswasting", 0))
         snowflux_frac =
             min.(0.5, lateral.land.sl ./ 5.67) .* min.(1.0, vertical.snow ./ 10000.0)
         maxflux = snowflux_frac .* vertical.snow
@@ -62,7 +62,14 @@ function update(
             lateral.land.to_river[index_river]
         ) ./ lateral.river.dl
 
-    Wflow.update(lateral.river, network.river, toposort_river, nr, do_iter = true, doy=day(clock.time))
+    Wflow.update(
+        lateral.river,
+        network.river,
+        toposort_river,
+        nr,
+        do_iter = true,
+        doy = day(clock.time),
+    )
 
     Wflow.write_output(model, model.writer)
 
@@ -98,16 +105,8 @@ frac_toriver = Wflow.fraction_runoff_toriver(
     nl,
 )
 
-model = update(
-    model,
-    config,
-    toposort_land,
-    toposort_river,
-    frac_toriver,
-    index_river,
-    nl,
-    nr,
-)
+model =
+    update(model, config, toposort_land, toposort_river, frac_toriver, index_river, nl, nr)
 
 @testset "first timestep" begin
     sbm = model.vertical
@@ -127,16 +126,8 @@ model = update(
 end
 
 # run the second timestep
-model = update(
-    model,
-    config,
-    toposort_land,
-    toposort_river,
-    frac_toriver,
-    index_river,
-    nl,
-    nr,
-)
+model =
+    update(model, config, toposort_land, toposort_river, frac_toriver, index_river, nl, nr)
 
 @testset "second timestep" begin
     sbm = model.vertical
