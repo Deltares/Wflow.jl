@@ -19,17 +19,17 @@ Base.@kwdef struct NaturalLake{T}
     evaporation::T = mv             # average evaporation for lake area [mm]
 end
 
+statenames(::NaturalLake) = (:waterlevel,)
+
 """
-    statenames(::Type{NaturalLake})
+    statenames(::NaturalLake)
+    statenames(::SimpleReservoir)
+    statenames(::LateralSSF)
+    statenames(::SurfaceFlow)
 
-Returns Array{Symbol,1} for extracting model state fields.
+Get a tuple of symbols representing the fields that are model states.
 """
-function statenames(::Type{NaturalLake})
-
-    states = [:waterlevel]
-    # TODO: (warm) states read from netcdf file or cold state (reinit=1, setting in ini file)
-
-end
+function statenames end
 
 function interpolate_linear(x, xp, fp)
 

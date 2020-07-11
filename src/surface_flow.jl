@@ -22,18 +22,7 @@ Base.@kwdef struct SurfaceFlow{T,R,L}
     lake::L = fill(nothing, length(sl))                 # Lake model, only located in river cells
 end
 
-
-"""
-    statenames(::Type{SurfaceFlow})
-
-Returns Array{Symbol,1} for extracting model state fields.
-"""
-function statenames(::Type{SurfaceFlow})
-
-    states = [:q, :h]
-    # TODO: (warm) states read from netcdf file or cold state (reinit=1, setting in ini file)
-
-end
+statenames(::SurfaceFlow) = (:q, :h)
 
 function update(
     sf::SurfaceFlow,

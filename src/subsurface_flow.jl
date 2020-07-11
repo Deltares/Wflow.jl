@@ -17,18 +17,8 @@ Base.@kwdef struct LateralSSF{T}
     wb_pit::Vector{Int64} = zeros(Int64, length(f)) # Boolean location (0 or 1) of a waterbody (wb, reservoir or lake).
 end
 
-"""
-    statenames(::Type{LateralSSF})
-
-Returns Array{Symbol,1} for extracting model state fields from SBM struct.
-"""
-function statenames(::Type{LateralSSF})
-
-    # depends on ini file settings (optional: glaciers, snow, irrigation)
-    states = [:ssf]
-    # TODO: (warm) states read from netcdf file or cold state (reinit=1, setting in ini file)
-
-end
+# depends on ini file settings (optional: glaciers, snow, irrigation)
+statenames(::LateralSSF) = (:ssf,)
 
 function update(ssf::LateralSSF, dag, toposort, frac_toriver, river)
     for v in toposort
