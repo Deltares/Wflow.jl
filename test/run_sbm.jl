@@ -68,7 +68,7 @@ function update(
         toposort_river,
         nr,
         do_iter = true,
-        doy = day(clock.time),
+        doy = dayofyear(clock.time),
     )
 
     Wflow.write_output(model, model.writer)
