@@ -3,7 +3,7 @@ const mv = NaN
 function update_until_snow(t, config)
 
     # # start dummy variables (should be generated from model reader and from Config.jl TOML)
-    do_lai = !isequal(get(config.cyclic_parameters, "lai", nothing), nothing) ? true : false
+    do_lai = haskey(config.cyclic_parameters, "lai")
     modelglacier = Bool(get(config.model, "modelglacier", 0))
     modelsnow = Bool(get(config.model, "modelsnow", 0))
     #potevap = 4.0

@@ -154,7 +154,13 @@ function initialize_sbm_model(
     et_reftopot = ncread(nc, "et_reftopot"; sel = inds, defaults = dparams, type = Float64)
 
     # if lai climatology provided use sl, swood and kext to calculate cmax, e_r and canopygapfraction
-    if isnothing(cyclic_path) == false
+    if isnothing(cyclic_path)
+        # cmax, e_r, canopygapfraction only required when lai climatoly not provided
+        cmax = ncread(nc, "Cmax"; sel = inds, defaults = dparams, type = Float64)
+        e_r = ncread(nc, "EoverR"; sel = inds, defaults = dparams, type = Float64)
+        canopygapfraction =
+            ncread(nc, "CanopyGapFraction"; sel = inds, defaults = dparams, type = Float64)
+    else
         # TODO confirm if lai climatology is present in the NetCDF
         sl = ncread(nc, "Sl"; sel = inds, defaults = dparams, type = Float64)
         swood = ncread(nc, "Swood"; sel = inds, defaults = dparams, type = Float64)
@@ -162,12 +168,6 @@ function initialize_sbm_model(
         cmax = fill(mv, n)
         e_r = fill(mv, n)
         canopygapfraction = fill(mv, n)
-    else
-        # cmax, e_r, canopygapfraction only required when lai climatoly not provided
-        cmax = ncread(nc, "Cmax"; sel = inds, defaults = dparams, type = Float64)
-        e_r = ncread(nc, "EoverR"; sel = inds, defaults = dparams, type = Float64)
-        canopygapfraction =
-            ncread(nc, "CanopyGapFraction"; sel = inds, defaults = dparams, type = Float64)
     end
 
 
@@ -421,7 +421,7 @@ function initialize_sbm_model(
         )
     end
 
-    if isnothing(cyclic_path) == false
+    if !isnothing(cyclic_path)
         sbm = Table(
             sbm,
             # Specific leaf storage [mm]

@@ -13,5 +13,6 @@ end
 
 # also used in autocomplete
 Base.propertynames(config::Config) = collect(keys(Dict(config)))
+Base.haskey(config::Config, key) = haskey(Dict(config), key)
 Base.get(config::Config, key, default) = get(Dict(config), key, default)
 Dict(config::Config) = getfield(config, :dict)
