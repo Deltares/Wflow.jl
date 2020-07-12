@@ -184,7 +184,7 @@ function initialize_sbm_model(
         xl[i] = sizeinmetres ? cellength : lattometres(y[i])[1] * cellength
         yl[i] = sizeinmetres ? cellength : lattometres(y[i])[2] * cellength
         riverfrac[i] =
-            Bool(river[i]) ? min((riverlength[i] * riverwidth[i]) / (xl[i] * yl[i]), 1.0) :
+            river[i] ? min((riverlength[i] * riverwidth[i]) / (xl[i] * yl[i]), 1.0) :
             0.0
 
         if length(config_thicknesslayers) > 0
@@ -458,10 +458,10 @@ function initialize_sbm_model(
 
         # for surface water routing reservoir locations are considered pits in the flow network
         # all upstream flow goes to the river and flows into the reservoir
-        pits[inds_res] .= 1
+        pits[inds_res] .= true
 
         reservoirs = [
-            reslocs[i] == 0 ? nothing :
+            reslocs[i] == 0 ? missing :
                 SimpleReservoir{Float64}(
                 demand = resdemand[i],
                 maxrelease = resmaxrelease[i],
@@ -493,10 +493,10 @@ function initialize_sbm_model(
 
         # for surface water routing lake locations are considered pits in the flow network
         # all upstream flow goes to the river and flows into the lake
-        pits[inds_lakes] .= 1
+        pits[inds_lakes] .= true
 
         n_lakes = length(lakelocs)
-        lakes = Vector{Union{Nothing,NaturalLake{Float64}}}(nothing, n_lakes)
+        lakes = Vector{Union{Missing,NaturalLake{Float64}}}(missing, n_lakes)
         for i = 1:length(n_lakes)
             if lakelocs[i] > 0
                 lakes[i] = NaturalLake(
@@ -581,8 +581,8 @@ function initialize_sbm_model(
         dl = riverlength,
         Δt = Float64(Δt.value),
         width = riverwidth,
-        reservoir = do_reservoirs ? reservoirs : fill(nothing, nr),
-        lake = do_lakes ? lakes : fill(nothing, nr),
+        reservoir = do_reservoirs ? reservoirs : Fill(missing, nr),
+        lake = do_lakes ? lakes : Fill(missing, nr),
         rivercells = river,
     )
 

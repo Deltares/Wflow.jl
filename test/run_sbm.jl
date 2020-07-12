@@ -164,7 +164,7 @@ end
 
 @testset "reservoir simple" begin
     res = model.lateral.river.reservoir
-    inds = filter(i -> !isequal(res[i], nothing), 1:nr)
+    inds = filter(i -> !ismissing(res[i]), 1:nr)
     @test res[inds[2]].outflow ≈ 0.2174998580279266
     @test res[inds[2]].inflow ≈ 0.004452979665488473
     @test res[inds[2]].volume ≈ 2.7745799188635208e7

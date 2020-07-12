@@ -18,8 +18,8 @@ Base.@kwdef struct SurfaceFlow{T,R,L}
     to_river::Vector{T} = fill(0.0, length(sl)) # Part of overland flow [m³ s⁻¹] that flows to the river
     rivercells::Vector{Bool} = fill(false, length(sl)) # Location of river cells (0 or 1)
     wb_pit::Vector{Bool} = fill(false, length(sl)) # Boolean location (0 or 1) of a waterbody (wb, reservoir or lake).
-    reservoir::R = fill(nothing, length(sl)) # Reservoir model, only located in river cells
-    lake::L = fill(nothing, length(sl))                 # Lake model, only located in river cells
+    reservoir::R = Fill(missing, length(sl)) # Reservoir model, only located in river cells
+    lake::L = Fill(missing, length(sl))                 # Lake model, only located in river cells
 end
 
 statenames(::SurfaceFlow) = (:q, :h)
@@ -70,7 +70,7 @@ function update(
                 # for a river cell without a reservoir or lake (wb_pit = 0) part of the upstream surface flow
                 # goes to the river (frac_toriver) and part goes to the surface flow reservoir (1.0 - frac_toriver)
                 # upstream nodes with a reservoir or lake are excluded
-                if Bool(river[v]) && (sf.wb_pit[v] == 0)
+                if river[v] && !sf.wb_pit[v]
                     qin = isempty(upstream_nodes) ? 0.0 :
                         sum_empty([
                         sf.q[i] * (1.0 - frac_toriver[i])
@@ -83,7 +83,7 @@ function update(
                     ])
                     # for a river cell with a reservoir or lake (wb_pit = 1) all upstream surface flow goes
                     # to the river.
-                elseif Bool(river[v]) && (sf.wb_pit[v] == 1)
+                elseif river[v] && sf.wb_pit[v]
                     sf.to_river[v] = sum_at(sf.q, upstream_nodes)
                     qin = 0.0
                 else
@@ -95,12 +95,12 @@ function update(
             end
             # run reservoir model and copy reservoir outflow to river cell
             # dummy values now for reservoir precipitation and evaporation (3.0 and 4.0)
-            if sf.reservoir[v] != nothing
+            if !ismissing(sf.reservoir[v])
                 sf.reservoir[v] = update(sf.reservoir[v], qin, p, pet, adt)
                 sf.q[v] = sf.reservoir[v].outflow
                 # run lake model and copy lake outflow to river cell
                 # dummy values now for lake precipitation and evaporation (3.0 and 4.0)
-            elseif sf.lake[v] != nothing
+            elseif !ismissing(sf.lake[v])
                 if sf.lake[v].lowerlake_ind != 0
                     lower_lake = sf.lake[sf.lake[v].lowerlake_ind]
                     sf.lake[v] = update(sf.lake[v], qin, p, pet, doy, lower_lake)

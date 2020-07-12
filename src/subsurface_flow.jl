@@ -14,7 +14,7 @@ Base.@kwdef struct LateralSSF{T}
         ((kh₀ .* βₗ) ./ f) .* (exp.(-f .* zi) - exp.(-f .* soilthickness)) .* dw    # Subsurface flow [mm³ Δt⁻¹]
     ssfmax::Vector{T} = ((kh₀ .* βₗ) ./ f) .* (1.0 .- exp.(-f .* soilthickness))     # Maximum subsurface flow [mm² Δt⁻¹]
     to_river::Vector{T} = zeros(length(f))  # Part of subsurface flow [mm³ Δt⁻¹] that flows to the river
-    wb_pit::Vector{Int} = zeros(Int, length(f)) # Boolean location (0 or 1) of a waterbody (wb, reservoir or lake).
+    wb_pit::Vector{Bool} = zeros(Bool, length(f)) # Boolean location (0 or 1) of a waterbody (wb, reservoir or lake).
 end
 
 # depends on ini file settings (optional: glaciers, snow, irrigation)
@@ -26,7 +26,7 @@ function update(ssf::LateralSSF, dag, toposort, frac_toriver, river)
         # for a river cell without a reservoir or lake (wb_pit = 0) part of the upstream subsurface flow
         # goes to the river (frac_toriver) and part goes to the subsurface flow reservoir (1.0 - frac_toriver)
         # upstream nodes with a reservoir or lake are excluded
-        if Bool(river[v]) && (ssf.wb_pit[v] == 0)
+        if river[v] && !ssf.wb_pit[v]
             ssfin = isempty(upstream_nodes) ? 0.0 :
                 sum_empty([
                 ssf.ssf[i] * (1.0 - frac_toriver[i])
@@ -38,7 +38,7 @@ function update(ssf::LateralSSF, dag, toposort, frac_toriver, river)
             ])
             # for a river cell with a reservoir or lake (wb_pit = 1) all upstream subsurface flow goes
             # to the river.
-        elseif Bool(river[v]) && (ssf.wb_pit[v] == 1)
+        elseif river[v] && ssf.wb_pit[v]
             ssf.to_river[v] = sum_at(ssf.ssf, upstream_nodes)
             ssfin = 0.0
             # for all the other cells all upstream subsurface flow goes to the subsurface flow reservoir.

@@ -73,7 +73,7 @@ function update(lake::NaturalLake, inflow, p, pet, doy, timestepsecs; lower_lake
     ### Linearisation for specific storage/rating curves ###
     if lake.outflowfunc == 1 || lake.outflowfunc == 2
 
-        diff_wl = lower_lake != nothing ? lake.waterlevel - lower_lake.waterlevel : 0.0
+        diff_wl = ismissing(lower_lake) ? 0.0 : lake.waterlevel - lower_lake.waterlevel
 
         if lake.outflowfunc == 1
             outflow = interpolate_linear(lake.waterlevel, lake.hq[!, 1], lake.hq[!, col])
