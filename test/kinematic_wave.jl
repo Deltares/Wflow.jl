@@ -3,26 +3,20 @@ const ldd_mv = 255
 
 # read the staticmaps into memory
 nc = NCDataset(staticmaps_rhine_path)
-ldd_2d = nc["ldd"][:]
-slope_2d = nc["slope"][:]
-N_2d = nc["N"][:]
-Qold_2d = nc["Qold"][:]
-Bw_2d = nc["Bw"][:]
-waterlevel_2d = nc["waterlevel"][:]
-DCL_2d = nc["DCL"][:]
-close(nc)
+ldd_2d = Wflow.ncread(nc, "ldd")
 
 inds = Wflow.active_indices(ldd_2d, ldd_mv)
 n = length(inds)
 
 # take out only the active cells
 ldd = ldd_2d[inds]
-slope = slope_2d[inds]
-N = N_2d[inds]
-Qold = Qold_2d[inds]
-Bw = Bw_2d[inds]
-waterlevel = waterlevel_2d[inds]
-DCL = DCL_2d[inds]
+slope = Wflow.ncread(nc, "slope"; sel = inds)
+N = Wflow.ncread(nc, "N"; sel = inds)
+Qold = Wflow.ncread(nc, "Qold"; sel = inds)
+Bw = Wflow.ncread(nc, "Bw"; sel = inds)
+waterlevel = Wflow.ncread(nc, "waterlevel"; sel = inds)
+DCL = Wflow.ncread(nc, "DCL"; sel = inds)
+close(nc)
 
 # create the directed acyclic graph from the drainage direction array
 dag = Wflow.flowgraph(ldd, inds, Wflow.pcrdir)

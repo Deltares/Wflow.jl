@@ -74,22 +74,22 @@ function initialize_sbm_model(
     # and creating the coordinate maps.
     trsp = dims[2] in ("y", "lat")
 
-    subcatch_2d = nc["wflow_subcatch"][:]
+    subcatch_2d = ncread(nc, "wflow_subcatch", allow_missing = true)
     # indices based on catchment
     inds = Wflow.active_indices(subcatch_2d, missing)
     n = length(inds)
 
-    altitude = Float64.(nc["wflow_dem"][:][inds])
-    river_2d = nomissing(nc["wflow_river"][:], 0)
+    altitude = ncread(nc, "wflow_dem"; sel = inds, type = Float64)
+    river_2d = ncread(nc, "wflow_river"; type = Bool, fill = false)
     river = river_2d[inds]
-    riverwidth_2d = Float64.(nomissing(nc["wflow_riverwidth"][:], 0))
+    riverwidth_2d = ncread(nc, "wflow_riverwidth"; type = Float64, fill = 0)
     riverwidth = riverwidth_2d[inds]
-    riverlength_2d = Float64.(nomissing(nc["wflow_riverlength"][:], 0))
+    riverlength_2d = ncread(nc, "wflow_riverlength"; type = Float64, fill = 0)
     riverlength = riverlength_2d[inds]
 
     # read x, y coordinates and calculate cell length [m]
-    y_nc = "y" in keys(nc.dim) ? nomissing(nc["y"][:]) : nomissing(nc["lat"][:])
-    x_nc = "x" in keys(nc.dim) ? nomissing(nc["x"][:]) : nomissing(nc["lon"][:])
+    y_nc = "y" in keys(nc.dim) ? ncread(nc, "y") : ncread(nc, "lat")
+    x_nc = "x" in keys(nc.dim) ? ncread(nc, "x") : ncread(nc, "lon")
     if trsp
         y = permutedims(repeat(y_nc, outer = (1, length(x_nc))))[inds]
     else
@@ -98,36 +98,40 @@ function initialize_sbm_model(
     cellength = abs(mean(diff(x_nc)))
 
     if do_snow
-        cfmax = ncread(nc, "Cfmax", inds, dparams)
-        tt = ncread(nc, "TT", inds, dparams)
-        tti = ncread(nc, "TTI", inds, dparams)
-        ttm = ncread(nc, "TTM", inds, dparams)
-        whc = ncread(nc, "WHC", inds, dparams)
-        w_soil = ncread(nc, "w_soil", inds, dparams)
-        cf_soil = ncread(nc, "cf_soil", inds, dparams)
+        cfmax = ncread(nc, "Cfmax"; sel = inds, defaults = dparams, type = Float64)
+        tt = ncread(nc, "TT"; sel = inds, defaults = dparams, type = Float64)
+        tti = ncread(nc, "TTI"; sel = inds, defaults = dparams, type = Float64)
+        ttm = ncread(nc, "TTM"; sel = inds, defaults = dparams, type = Float64)
+        whc = ncread(nc, "WHC"; sel = inds, defaults = dparams, type = Float64)
+        w_soil = ncread(nc, "w_soil"; sel = inds, defaults = dparams, type = Float64)
+        cf_soil = ncread(nc, "cf_soil"; sel = inds, defaults = dparams, type = Float64)
     end
 
     # soil parameters
-    θₛ = ncread(nc, "thetaS", inds, dparams)
-    θᵣ = ncread(nc, "thetaR", inds, dparams)
-    kv₀ = ncread(nc, "KsatVer", inds, dparams)
-    m = ncread(nc, "M", inds, dparams)
-    hb = ncread(nc, "AirEntryPressure", inds, dparams)
-    soilthickness = ncread(nc, "SoilThickness", inds, dparams)
-    infiltcappath = ncread(nc, "InfiltCapPath", inds, dparams)
-    infiltcapsoil = ncread(nc, "InfiltCapSoil", inds, dparams)
-    maxleakage = ncread(nc, "MaxLeakage", inds, dparams)
+    θₛ = ncread(nc, "thetaS"; sel = inds, defaults = dparams, type = Float64)
+    θᵣ = ncread(nc, "thetaR"; sel = inds, defaults = dparams, type = Float64)
+    kv₀ = ncread(nc, "KsatVer"; sel = inds, defaults = dparams, type = Float64)
+    m = ncread(nc, "M"; sel = inds, defaults = dparams, type = Float64)
+    hb = ncread(nc, "AirEntryPressure"; sel = inds, defaults = dparams, type = Float64)
+    soilthickness =
+        ncread(nc, "SoilThickness"; sel = inds, defaults = dparams, type = Float64)
+    infiltcappath =
+        ncread(nc, "InfiltCapPath"; sel = inds, defaults = dparams, type = Float64)
+    infiltcapsoil =
+        ncread(nc, "InfiltCapSoil"; sel = inds, defaults = dparams, type = Float64)
+    maxleakage = ncread(nc, "MaxLeakage"; sel = inds, defaults = dparams, type = Float64)
     # TODO: store c, kvfrac in staticmaps.nc start at index 1
     c = fill(dparams["c"], (maxlayers, n))
     kvfrac = fill(dparams["KsatVerFrac"], (maxlayers, n))
     for i in [0:1:maxlayers-1;]
         if string("c_", i) in keys(nc)
-            c[i+1, :] = Float64.(nc[string("c_", i)][:][inds])
+            c[i+1, :] = ncread(nc, string("c_", i); sel = inds, type = Float64)
         else
             @warn(string("c_", i, " not found, set to default value ", dparams["c"]))
         end
         if string("KsatVerFrac_", i) in keys(nc)
-            kvfrac[i+1, :] = Float64.(nc[string("KsatVerFrac_", i)][:][inds])
+            kvfrac[i+1, :] =
+                ncread(nc, string("KsatVerFrac_", i); sel = inds, type = Float64)
         else
             @warn(string(
                 "KsatVerFrac_",
@@ -139,29 +143,31 @@ function initialize_sbm_model(
     end
 
     # fraction open water and compacted area (land cover)
-    waterfrac = ncread(nc, "WaterFrac", inds, dparams)
-    pathfrac = ncread(nc, "PathFrac", inds, dparams)
+    waterfrac = ncread(nc, "WaterFrac"; sel = inds, defaults = dparams, type = Float64)
+    pathfrac = ncread(nc, "PathFrac"; sel = inds, defaults = dparams, type = Float64)
 
     # vegetation parameters
-    rootingdepth = ncread(nc, "RootingDepth", inds, dparams)
-    rootdistpar = ncread(nc, "rootdistpar", inds, dparams)
-    capscale = ncread(nc, "CapScale", inds, dparams)
-    et_reftopot = ncread(nc, "et_reftopot", inds, dparams)
+    rootingdepth =
+        ncread(nc, "RootingDepth"; sel = inds, defaults = dparams, type = Float64)
+    rootdistpar = ncread(nc, "rootdistpar"; sel = inds, defaults = dparams, type = Float64)
+    capscale = ncread(nc, "CapScale"; sel = inds, defaults = dparams, type = Float64)
+    et_reftopot = ncread(nc, "et_reftopot"; sel = inds, defaults = dparams, type = Float64)
 
     # if lai climatology provided use sl, swood and kext to calculate cmax, e_r and canopygapfraction
     if isnothing(cyclic_path) == false
         # TODO confirm if lai climatology is present in the NetCDF
-        sl = ncread(nc, "Sl", inds, dparams)
-        swood = ncread(nc, "Swood", inds, dparams)
-        kext = ncread(nc, "Kext", inds, dparams)
+        sl = ncread(nc, "Sl"; sel = inds, defaults = dparams, type = Float64)
+        swood = ncread(nc, "Swood"; sel = inds, defaults = dparams, type = Float64)
+        kext = ncread(nc, "Kext"; sel = inds, defaults = dparams, type = Float64)
         cmax = fill(mv, n)
         e_r = fill(mv, n)
         canopygapfraction = fill(mv, n)
     else
         # cmax, e_r, canopygapfraction only required when lai climatoly not provided
-        cmax = ncread(nc, "Cmax", inds, dparams)
-        e_r = ncread(nc, "EoverR", inds, dparams)
-        canopygapfraction = ncread(nc, "CanopyGapFraction", inds, dparams)
+        cmax = ncread(nc, "Cmax"; sel = inds, defaults = dparams, type = Float64)
+        e_r = ncread(nc, "EoverR"; sel = inds, defaults = dparams, type = Float64)
+        canopygapfraction =
+            ncread(nc, "CanopyGapFraction"; sel = inds, defaults = dparams, type = Float64)
     end
 
 
@@ -432,18 +438,22 @@ function initialize_sbm_model(
 
     inds_riv = filter(i -> !isequal(river_2d[i], 0), inds)
     # reservoirs
-    pits = zeros(Int, n)
+    pits = zeros(Bool, n)
     if do_reservoirs
         # read only reservoir data if reservoirs true
-        reslocs_2d = Int.(nomissing(nc["wflow_reservoirlocs"][:], 0))
+        reslocs_2d = ncread(nc, "wflow_reservoirlocs"; type = Int, fill = 0)
         # allow reservoirs only in river cells
         inds_res = filter(i -> reslocs_2d[inds][i] > 0 && isequal(river[i], 1), 1:n)
-        resdemand = Float64.(nomissing(nc["ResDemand"][:][inds_riv], 0))
-        resmaxrelease = Float64.(nomissing(nc["ResMaxRelease"][:][inds_riv], 0))
-        resmaxvolume = Float64.(nomissing(nc["ResMaxVolume"][:][inds_riv], 0))
-        resarea = Float64.(nomissing(nc["ResSimpleArea"][:][inds_riv], 0))
-        res_targetfullfrac = Float64.(nomissing(nc["ResTargetFullFrac"][:][inds_riv], 0))
-        res_targetminfrac = Float64.(nomissing(nc["ResTargetMinFrac"][:][inds_riv], 0))
+        resdemand =
+            ncread(nc, "ResDemand"; sel = inds_riv, type = Float64, fill = 0)
+        resmaxrelease =
+            ncread(nc, "ResMaxRelease"; sel = inds_riv, type = Float64, fill = 0)
+        resmaxvolume = ncread(nc, "ResMaxVolume"; sel = inds_riv, type = Float64, fill = 0)
+        resarea = ncread(nc, "ResSimpleArea"; sel = inds_riv, type = Float64, fill = 0)
+        res_targetfullfrac =
+            ncread(nc, "ResTargetFullFrac"; sel = inds_riv, type = Float64, fill = 0)
+        res_targetminfrac =
+            ncread(nc, "ResTargetMinFrac"; sel = inds_riv, type = Float64, fill = 0)
         reslocs = reslocs_2d[inds_riv]
 
         # for surface water routing reservoir locations are considered pits in the flow network
@@ -466,17 +476,19 @@ function initialize_sbm_model(
     # lakes
     if do_lakes
         # read only lake data if lakes true
-        lakelocs_2d = Int.(nomissing(nc["wflow_lakelocs"][:], 0))
+        lakelocs_2d = ncread(nc, "wflow_lakelocs"; type = Int, fill = 0)
         # allow lakes only in river cells
         inds_lakes = filter(i -> lakelocs_2d[inds][i] > 0 && isequal(river[i], 1), 1:n)
-        lakearea = Float64.(nomissing(nc["LakeArea"][:][inds_riv], 0))
-        lake_b = Float64.(nomissing(nc["Lake_b"][:][inds_riv], 0))
-        lake_e = Float64.(nomissing(nc["Lake_e"][:][inds_riv], 0))
-        lake_threshold = Float64.(nomissing(nc["LakeThreshold"][:][inds_riv], 0))
-        linked_lakelocs = Int.(nomissing(nc["LinkedLakeLocs"][:][inds_riv], 0))
-        lake_storfunc = Int.(nomissing(nc["LakeStorFunc"][:][inds_riv], 0))
-        lake_outflowfunc = Int.(nomissing(nc["LakeOutflowFunc"][:][inds_riv], 0))
-        lake_avglevel = Float64.(nomissing(nc["LakeAvgLevel"][:][inds_riv], 0))
+        lakearea = ncread(nc, "LakeArea"; sel = inds_riv, type = Float64, fill = 0)
+        lake_b = ncread(nc, "Lake_b"; sel = inds_riv, type = Float64, fill = 0)
+        lake_e = ncread(nc, "Lake_e"; sel = inds_riv, type = Float64, fill = 0)
+        lake_threshold =
+            ncread(nc, "LakeThreshold"; sel = inds_riv, type = Float64, fill = 0)
+        linked_lakelocs = ncread(nc, "LinkedLakeLocs"; sel = inds_riv, type = Int, fill = 0)
+        lake_storfunc = ncread(nc, "LakeStorFunc"; sel = inds_riv, type = Int, fill = 0)
+        lake_outflowfunc =
+            ncread(nc, "LakeOutflowFunc"; sel = inds_riv, type = Int, fill = 0)
+        lake_avglevel = ncread(nc, "LakeAvgLevel"; sel = inds_riv, type = Float64, fill = 0)
         lakelocs = lakelocs_2d[inds_riv]
 
         # for surface water routing lake locations are considered pits in the flow network
@@ -512,10 +524,10 @@ function initialize_sbm_model(
         end
     end
     # lateral part sbm
-    khfrac = ncread(nc, "KsatHorFrac", inds, dparams)
-    βₗ = Float64.(nc["Slope"][:][inds])
+    khfrac = ncread(nc, "KsatHorFrac"; sel = inds, defaults = dparams, type = Float64)
+    βₗ = ncread(nc, "Slope"; sel = inds, type = Float64)
     clamp!(βₗ, 0.00001, Inf)
-    ldd_2d = nc["wflow_ldd"][:]
+    ldd_2d = ncread(nc, "wflow_ldd", allow_missing = true)
     ldd = ldd_2d[inds]
     kh₀ = khfrac .* kv₀
     dl = fill(mv, n)
@@ -539,7 +551,7 @@ function initialize_sbm_model(
         wb_pit = pits,
     )
 
-    n_land = ncread(nc, "N", inds, dparams)
+    n_land = ncread(nc, "N"; sel = inds, defaults = dparams, type = Float64)
 
     olf = SurfaceFlow(
         sl = βₗ,
@@ -554,11 +566,11 @@ function initialize_sbm_model(
     dag = flowgraph(ldd, inds, pcr_dir)
 
 
-    riverslope = Float64.(nc["RiverSlope"][:][inds_riv])
+    riverslope = ncread(nc, "RiverSlope"; sel = inds_riv, type = Float64)
     clamp!(riverslope, 0.00001, Inf)
     riverlength = riverlength_2d[inds_riv]
     riverwidth = riverwidth_2d[inds_riv]
-    n_river = ncread(nc, "N_River", inds_riv, dparams)
+    n_river = ncread(nc, "N_River"; sel = inds_riv, defaults = dparams, type = Float64)
     ldd_riv = ldd_2d[inds_riv]
     dag_riv = flowgraph(ldd_riv, inds_riv, pcr_dir)
     nr = length(inds_riv)

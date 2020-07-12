@@ -16,8 +16,8 @@ Base.@kwdef struct SurfaceFlow{T,R,L}
     eps::T = 1e-03                          # Maximum allowed change in α, if exceeded cross sectional area and h is recalculated
     cel::Vector{T} = fill(0.0, length(sl))  # Celerity of the kinematic wave
     to_river::Vector{T} = fill(0.0, length(sl)) # Part of overland flow [m³ s⁻¹] that flows to the river
-    rivercells::Vector{UInt8} = fill(UInt8(0), 1) # Location of river cells (0 or 1)
-    wb_pit::Vector{Int} = zeros(Int, length(sl)) # Boolean location (0 or 1) of a waterbody (wb, reservoir or lake).
+    rivercells::Vector{Bool} = fill(false, length(sl)) # Location of river cells (0 or 1)
+    wb_pit::Vector{Bool} = fill(false, length(sl)) # Boolean location (0 or 1) of a waterbody (wb, reservoir or lake).
     reservoir::R = fill(nothing, length(sl)) # Reservoir model, only located in river cells
     lake::L = fill(nothing, length(sl))                 # Lake model, only located in river cells
 end

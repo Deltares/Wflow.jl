@@ -16,20 +16,64 @@ function lattometres(lat::Float64)
 end
 
 """
-    ncread(nc, var, inds, dpars)
+    ncread(nc, var; <keyword arguments>)
 
-Read parameter `var` from NetCDF file `nc` for indices `inds`. If `var` is not
-available, a default value based on dict 'dpars' is returned.
+Read parameter `var` from NetCDF file `nc`. Supports various keyword arguments to get
+selections of data in desired types, with or without missing values.
+
+# Arguments
+- `sel=nothing`: a selection of indices, such as a `Vector{CartesianIndex}` of active cells,
+        to return from the NetCDF. By default all cells are returned.
+- `defaults=nothing`: a dictionary in which default values are looked up if `var` is not
+        in `nc`. By default it gives an error in this case.
+- `type=nothing`: type to convert data to after reading. By default no conversion is done.
+- `allow_missing=false`: Missing values within `sel` is not allowed by default. Set to
+        `true` to allow missing values.
+- `fill=nothing`: Missing values are replaced by this fill value if `allow_missing` is `false`.
 """
-function ncread(nc, var, inds, dpars::Dict)
-    if haskey(nc, var)
-        @debug(string("read parameter ", var))
-        ncvar = Float64.(nc[var][:][inds])
-    else
+function ncread(
+    nc,
+    var;
+    sel = nothing,
+    defaults = nothing,
+    type = nothing,
+    allow_missing = false,
+    fill = nothing,
+)
+
+    if !haskey(nc, var) && !isnothing(defaults)
         # TODO move away from this strategy for defaults
-        @warn(string(var, " not found, set to default value ", dpars[var]))
-        ncvar = fill(dpars[var], length(inds))
+        @warn(string(var, " not found, set to default value ", defaults[var]))
+        return Fill(defaults[var], length(sel))
     end
+
+    # Read the entire variable into memory, applying scale, offset and
+    # set fill_values to missing.
+    A = nc[var][:]
+
+    # Take out only the active cells
+    if !isnothing(sel)
+        A = A[sel]
+    end
+
+    if !allow_missing
+        if isnothing(fill)
+            # errors if missings are found
+            A = nomissing(A)
+        else
+            # replaces missings with a fill value
+            A = nomissing(A, fill)
+        end
+    end
+
+    # Convert to desired type if needed
+    if !isnothing(type)
+        if eltype(A) != type
+            A = map(type, A)
+        end
+    end
+
+    return A
 end
 
 """
