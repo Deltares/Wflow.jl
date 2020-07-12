@@ -23,20 +23,17 @@ statenames(::LateralSSF) = (:ssf,)
 function update(ssf::LateralSSF, dag, toposort, frac_toriver, river)
     for v in toposort
         upstream_nodes = inneighbors(dag, v)
-        # for a river cell without a reservoir or lake (wb_pit = 0) part of the upstream subsurface flow
+        # for a river cell without a reservoir or lake (wb_pit is false) part of the upstream subsurface flow
         # goes to the river (frac_toriver) and part goes to the subsurface flow reservoir (1.0 - frac_toriver)
         # upstream nodes with a reservoir or lake are excluded
         if river[v] && !ssf.wb_pit[v]
-            ssfin = isempty(upstream_nodes) ? 0.0 :
-                sum_empty([
+            ssfin = sum(
                 ssf.ssf[i] * (1.0 - frac_toriver[i])
-                for i in upstream_nodes if ssf.wb_pit[i] == 0
-            ])
-            ssf.to_river[v] = isempty(upstream_nodes) ? 0.0 :
-                sum_empty([
-                ssf.ssf[i] * frac_toriver[i] for i in upstream_nodes if ssf.wb_pit[i] == 0
-            ])
-            # for a river cell with a reservoir or lake (wb_pit = 1) all upstream subsurface flow goes
+                for i in upstream_nodes if !ssf.wb_pit[i]
+            )
+            ssf.to_river[v] =
+                sum(ssf.ssf[i] * frac_toriver[i] for i in upstream_nodes if !ssf.wb_pit[i])
+            # for a river cell with a reservoir or lake (wb_pit is true) all upstream subsurface flow goes
             # to the river.
         elseif river[v] && ssf.wb_pit[v]
             ssf.to_river[v] = sum_at(ssf.ssf, upstream_nodes)

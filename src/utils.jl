@@ -150,15 +150,6 @@ function sum_at(A, inds)
     return v
 end
 
-"Return the sum of the array `A`, if 'A' is empty return 0.0"
-function sum_empty(A)
-    if length(A) > 0
-        sum(A)
-    else
-        0.0
-    end
-end
-
 # https://juliaarrays.github.io/StaticArrays.jl/latest/pages/api/#Arrays-of-static-arrays-1
 function svectorscopy(x::Matrix{T}, ::Val{N}) where {T,N}
     size(x, 1) == N || error("sizes mismatch")

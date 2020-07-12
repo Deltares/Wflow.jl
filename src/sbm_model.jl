@@ -184,8 +184,7 @@ function initialize_sbm_model(
         xl[i] = sizeinmetres ? cellength : lattometres(y[i])[1] * cellength
         yl[i] = sizeinmetres ? cellength : lattometres(y[i])[2] * cellength
         riverfrac[i] =
-            river[i] ? min((riverlength[i] * riverwidth[i]) / (xl[i] * yl[i]), 1.0) :
-            0.0
+            river[i] ? min((riverlength[i] * riverwidth[i]) / (xl[i] * yl[i]), 1.0) : 0.0
 
         if length(config_thicknesslayers) > 0
             act_thickl_, nlayers_ =
@@ -444,8 +443,7 @@ function initialize_sbm_model(
         reslocs_2d = ncread(nc, "wflow_reservoirlocs"; type = Int, fill = 0)
         # allow reservoirs only in river cells
         inds_res = filter(i -> reslocs_2d[inds][i] > 0 && isequal(river[i], 1), 1:n)
-        resdemand =
-            ncread(nc, "ResDemand"; sel = inds_riv, type = Float64, fill = 0)
+        resdemand = ncread(nc, "ResDemand"; sel = inds_riv, type = Float64, fill = 0)
         resmaxrelease =
             ncread(nc, "ResMaxRelease"; sel = inds_riv, type = Float64, fill = 0)
         resmaxvolume = ncread(nc, "ResMaxVolume"; sel = inds_riv, type = Float64, fill = 0)

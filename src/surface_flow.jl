@@ -67,21 +67,18 @@ function update(
             upstream_nodes = inneighbors(dag, v)
             # for overland flow frac_toriver and river cells need to be defined
             if (frac_toriver != nothing) && (river != nothing)
-                # for a river cell without a reservoir or lake (wb_pit = 0) part of the upstream surface flow
+                # for a river cell without a reservoir or lake (wb_pit is false) part of the upstream surface flow
                 # goes to the river (frac_toriver) and part goes to the surface flow reservoir (1.0 - frac_toriver)
                 # upstream nodes with a reservoir or lake are excluded
                 if river[v] && !sf.wb_pit[v]
-                    qin = isempty(upstream_nodes) ? 0.0 :
-                        sum_empty([
+                    qin = sum(
                         sf.q[i] * (1.0 - frac_toriver[i])
-                        for i in upstream_nodes if sf.wb_pit[i] == 0
-                    ])
-                    sf.to_river[v] = isempty(upstream_nodes) ? 0.0 :
-                        sum_empty([
-                        sf.q[i] * frac_toriver[i]
-                        for i in upstream_nodes if sf.wb_pit[i] == 0
-                    ])
-                    # for a river cell with a reservoir or lake (wb_pit = 1) all upstream surface flow goes
+                        for i in upstream_nodes if !sf.wb_pit[i]
+                    )
+                    sf.to_river[v] = sum(
+                        sf.q[i] * frac_toriver[i] for i in upstream_nodes if !sf.wb_pit[i]
+                    )
+                    # for a river cell with a reservoir or lake (wb_pit is true) all upstream surface flow goes
                     # to the river.
                 elseif river[v] && sf.wb_pit[v]
                     sf.to_river[v] = sum_at(sf.q, upstream_nodes)
