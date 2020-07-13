@@ -24,7 +24,7 @@ end
 
 tomlpath = joinpath(@__DIR__, "config.toml")
 tomldir = dirname(tomlpath)
-config = Wflow.Config(TOML.parsefile(tomlpath))
+config = Wflow.Config(Wflow.parsefile(tomlpath))
 
 # initialize a vector of SBM structs
 model = Wflow.initialize_sbm_model(

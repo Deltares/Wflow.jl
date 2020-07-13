@@ -3,7 +3,6 @@ module Wflow
 using Dates
 using LightGraphs
 using NCDatasets
-using Pkg.TOML
 using StaticArrays
 using Statistics
 using Setfield: setproperties
@@ -14,6 +13,7 @@ using CSV
 using Random
 using CSV.DataFrames
 
+include("toml.jl")
 include("config.jl")
 include("horizontal_process.jl")
 include("kinematic_wave.jl")
