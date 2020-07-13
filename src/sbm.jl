@@ -1,27 +1,28 @@
 const mv = NaN
 
-function update_until_snow(t)
+function update_until_snow(t, config)
 
     # # start dummy variables (should be generated from model reader and from Config.jl TOML)
-    do_lai = true
-    glacierfrac = false
-    modelsnow = true
-    potevap = 4.0
-    precipitation = 3.0
-    temperature = 10.0
-    Δt = Second(Day(1))
-    basetimestep = Second(Day(1))
+    do_lai = haskey(config.cyclic_parameters, "lai")
+    modelglacier = Bool(get(config.model, "modelglacier", 0))
+    modelsnow = Bool(get(config.model, "modelsnow", 0))
+    #potevap = 4.0
+    #precipitation = 3.0
+    #temperature = 10.0
+    Δt = Second(config.input.timestepsecs)
+    #basetimestep = Second(Day(1))
     # end dummpy variables
 
     for r in eachindex(t.nlayers)
         if do_lai
             cmax = t.sl[r] * t.lai[r] + t.swood[r]
             canopygapfraction = exp(-t.kext[r] * t.lai[r])
-            ewet = (1.0 - exp(-t.kext[r] * t.lai[r])) * potevap
-            e_r = precipitation > 0.0 ? min(0.25, ewet / max(0.0001, precipitation)) : 0.0
+            ewet = (1.0 - exp(-t.kext[r] * t.lai[r])) * t.potevap[r]
+            e_r = t.precipitation[r] > 0.0 ?
+                min(0.25, ewet / max(0.0001, t.precipitation[r])) : 0.0
         end
 
-        potevap = potevap * t.et_reftopot[r]
+        potevap = t.potevap[r] * t.et_reftopot[r]
         # should we include tempcor in SBM?
         # PotEvap = PotenEvap #??
 
@@ -30,7 +31,7 @@ function update_until_snow(t)
                 cmax,
                 e_r,
                 canopygapfraction,
-                precipitation,
+                t.precipitation[r],
                 t.canopystorage[r],
                 maxevap = potevap,
             )
@@ -38,7 +39,7 @@ function update_until_snow(t)
         else
             netinterception, throughfall, stemflow, leftover, interception, canopystorage =
                 rainfall_interception_modrut(
-                    precipitation,
+                    t.precipitation[r],
                     potevap,
                     t.canopystorage[r],
                     canopygapfraction,
@@ -49,12 +50,12 @@ function update_until_snow(t)
         end
 
         if modelsnow
-            tsoil = t.tsoil[r] + t.w_soil[r] * (temperature - t.tsoil[r])
+            tsoil = t.tsoil[r] + t.w_soil[r] * (t.temperature[r] - t.tsoil[r])
             snow, snowwater, snowmelt, rainfallplusmelt, snowfall = snowpack_hbv(
                 t.snow[r],
                 t.snowwater[r],
                 throughfall + stemflow,
-                temperature,
+                t.temperature[r],
                 t.tti[r],
                 t.tt[r],
                 t.ttm[r],
@@ -68,38 +69,40 @@ function update_until_snow(t)
         t.canopygapfraction[r] = canopygapfraction
         t.canopystorage[r] = canopystorage
         t.interception[r] = interception
-        t.snow[r] = snow
-        t.snowwater[r] = snowwater
-        t.tsoil[r] = tsoil
-        t.rainfallplusmelt[r] = rainfallplusmelt
         t.stemflow[r] = stemflow
         t.throughfall[r] = throughfall
         t.pottrans_soil[r] = pottrans_soil
+        if modelsnow
+            t.snow[r] = snow
+            t.snowwater[r] = snowwater
+            t.tsoil[r] = tsoil
+            t.rainfallplusmelt[r] = rainfallplusmelt
+        end
     end
 end
 
-function update_until_recharge(t)
+function update_until_recharge(t, config)
 
     # start dummy variables (should be generated from model reader and from Config.jl TOML)
-    soilinfreduction = false
-    glacierfrac = false
-    modelsnow = true
-    transfermethod = 0
-    potevap = 4.0
-    precipitation = 3.0
-    temperature = 10.0
+    soilinfreduction = Bool(get(config.model, "soilinfreduction", 0))
+    modelglacier = Bool(get(config.model, "modelglacier", 0))
+    modelsnow = Bool(get(config.model, "modelsnow", 0))
+    transfermethod = Bool(get(config.model, "transfermethod", 0))
+    #potevap = 4.0
+    #precipitation = 3.0
+    #temperature = 10.0
     wl_land = 0.0 # from kinematic wave land
     wl_river = 0.10 # from kinematic river
     irsupply_mm = 0.0
-    ust = false
-    Δt = Second(Day(1))
-    basetimestep = Second(Day(1))
+    ust = Bool(get(config.model, "whole_ust_available", 0)) # should be removed from optional setting and code?
+    Δt = Second(config.input.timestepsecs)
+    #basetimestep = Second(Day(1))
     # end dummpy variables
 
     for r in eachindex(t.nlayers)
         if modelsnow
             rainfallplusmelt = t.rainfallplusmelt[r]
-            if glacierfrac
+            if modelglacier
                 # Run Glacier module and add the snowpack on-top of it.
                 # Estimate the fraction of snow turned into ice (HBV-light).
                 # Estimate glacier melt.
@@ -108,7 +111,7 @@ function update_until_recharge(t)
                     t.glacierfrac[r],
                     t.glacierstore[r],
                     t.snow[r],
-                    temperature,
+                    t.temperature[r],
                     t.g_tt[r],
                     t.g_cfmax[r],
                     t.g_sifrac[r],

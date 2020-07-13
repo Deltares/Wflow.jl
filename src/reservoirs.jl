@@ -1,61 +1,52 @@
 Base.@kwdef struct SimpleReservoir{T}
-    maxvolume::T
-    Δt::T
-    area::T
-    maxrelease::T
-    demand::T
-    targetminfrac::T
-    targetfullfrac::T
-    volume::T = targetfullfrac * maxvolume
-    inflow::T = mv
-    outflow::T = mv
-    percfull::T = mv
-    demandrelease::T = mv
-    precipitation::T = mv
-    evaporation::T = mv
+    maxvolume::T                                # maximum storage (above which water is spilled) [m³]
+    area::T                                     # reservoir area [m²]
+    maxrelease::T                               # maximum amount that can be released if below spillway [m³ s⁻¹]
+    demand::T                                   # minimum (environmental) flow requirement downstream of the reservoir [m³ s⁻¹]
+    targetminfrac::T                            # target minimum full fraction (of max storage) [-]
+    targetfullfrac::T                           # target fraction full (of max storage) [-]
+    volume::T = targetfullfrac * maxvolume      # reservoir volume [m³]
+    inflow::T = mv                              # inflow into reservoir [m³]
+    outflow::T = mv                             # outflow from reservoir [m³ s⁻¹]
+    percfull::T = mv                            # fraction full (of max storage) [-]
+    demandrelease::T = mv                       # minimum (environmental) flow released from reservoir [m³ s⁻¹]
+    precipitation::T = mv                       # average precipitation for reservoir area [mm]
+    evaporation::T = mv                         # average evaporation for reservoir area [mm]
 end
 
-function update(res::SimpleReservoir, inflow, p, pet)
+statenames(::SimpleReservoir) = (:volume,)
 
-    its = max(ceil(res.Δt / 21600.0), 1)
-    _outflow = 0.0
-    _demandrelease = 0.0
-    percfull = 0.0
-    vol = 0.0
-    for n = 1:its
-        vol = (
-            res.volume + (inflow * res.Δt / its) + (p / its / 1000.0) * res.area -
-            (pet / its / 1000.0) * res.area
-        )
+function update(res::SimpleReservoir, inflow, p, pet, timestepsecs)
 
-        percfull = vol / res.maxvolume
-        # first determine minimum (environmental) flow using a simple sigmoid curve to scale for target level
-        fac = scurve(percfull, a = res.targetminfrac, c = 30.0)
-        demandrelease = min(fac * res.demand * res.Δt / its, vol)
-        vol = vol - demandrelease
+    vol = (
+        res.volume + (inflow * timestepsecs) + (p / 1000.0) * res.area -
+        (pet / 1000.0) * res.area
+    )
 
-        wantrel = max(0.0, vol - (res.maxvolume * res.targetfullfrac))
-        # Assume extra maximum Q if spilling
-        overflow_q = max((vol - res.maxvolume), 0.0)
-        torelease = min(wantrel, overflow_q + res.maxrelease * res.Δt / its - demandrelease)
-        vol = vol - torelease
-        outflow = torelease + demandrelease
-        percfull = vol / res.maxvolume
+    percfull = vol / res.maxvolume
+    # first determine minimum (environmental) flow using a simple sigmoid curve to scale for target level
+    fac = scurve(percfull, a = res.targetminfrac, c = 30.0)
+    demandrelease = min(fac * res.demand * timestepsecs, vol)
+    vol = vol - demandrelease
 
-        _outflow = _outflow + outflow
-        _demandrelease = _demandrelease + demandrelease
+    wantrel = max(0.0, vol - (res.maxvolume * res.targetfullfrac))
+    # Assume extra maximum Q if spilling
+    overflow_q = max((vol - res.maxvolume), 0.0)
+    torelease = min(wantrel, overflow_q + res.maxrelease * timestepsecs - demandrelease)
+    vol = vol - torelease
+    outflow = torelease + demandrelease
+    percfull = vol / res.maxvolume
 
-    end
 
     return setproperties(
         res,
         (
-            outflow = _outflow / res.Δt,
+            outflow = outflow / timestepsecs,
             inflow = inflow,
-            demandrelease = _demandrelease / res.Δt,
+            demandrelease = demandrelease / timestepsecs,
             percfull = percfull,
-            precipitation = p,
-            evaporation = pet,
+            precipitation = p * basetimestep.value / timestepsecs,
+            evaporation = pet * basetimestep.value / timestepsecs,
             volume = vol,
         ),
     )

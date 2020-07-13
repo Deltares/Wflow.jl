@@ -12,6 +12,7 @@ using TypedTables
 using UnPack
 using CSV
 using Random
+using CSV.DataFrames
 
 include("config.jl")
 include("horizontal_process.jl")
@@ -19,6 +20,7 @@ include("kinematic_wave.jl")
 include("model.jl")
 include("sbm.jl")
 include("reservoirs.jl")
+include("lakes.jl")
 include("sbm_model.jl")
 include("subsurface_flow.jl")
 include("surface_flow.jl")

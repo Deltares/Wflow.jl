@@ -35,7 +35,7 @@ end
 function update_forcing!(model)
     @unpack vertical, clock, reader = model
     @unpack dataset, forcing_parameters, buffer, inds = reader
-    nctimes = nomissing(dataset["time"][:])
+    nctimes = ncread(dataset, "time")
 
     # load from NetCDF into the model according to the mapping
     for (param, ncvarname) in forcing_parameters
@@ -156,7 +156,7 @@ end
 struct NCReader{T}
     dataset::NCDataset
     cyclic_dataset::NCDataset
-    cyclic_times::Vector{Tuple{Int64,Int64}}
+    cyclic_times::Vector{Tuple{Int,Int}}
     forcing_parameters::Dict{Symbol,String}
     cyclic_parameters::Dict{Symbol,String}
     buffer::Matrix{T}
@@ -224,8 +224,8 @@ function prepare_writer(config, reader, output_path, row, maxlayers)
     base, ext = splitext(output_path)
     randomized_path = string(base, '_', randstring('a':'z', 4), ext)
 
-    nclon = Float64.(nomissing(reader.dataset["lon"][:]))
-    nclat = Float64.(nomissing(reader.dataset["lat"][:]))
+    nclon = ncread(reader.dataset, "lon"; type = Float64)
+    nclat = ncread(reader.dataset, "lat"; type = Float64)
 
     output_parameters = config.output.parameters
     calendar = get(config.input, "calendar", "proleptic_gregorian")
