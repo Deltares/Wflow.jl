@@ -13,19 +13,29 @@ using CSV
 using Random
 using CSV.DataFrames
 
+mutable struct Clock
+    time::DateTime
+    iteration::Int
+    Δt::Second
+end
+
+struct Model{N,L,V,R,W}
+    network::N  # connectivity information, directed graph
+    lateral::L  # lateral model that holds lateral state, moves along network
+    vertical::V  # vertical model that holds vertical state, independent of each other
+    clock::Clock  # to keep track of simulation time
+    reader::R  # provides the model with dynamic input
+    writer::W  # writes model output
+end
+
 include("toml.jl")
-include("config.jl")
+include("io.jl")
 include("horizontal_process.jl")
-include("kinematic_wave.jl")
-include("model.jl")
 include("sbm.jl")
-include("reservoirs.jl")
-include("lakes.jl")
+include("reservoir_lake.jl")
 include("sbm_model.jl")
-include("subsurface_flow.jl")
-include("surface_flow.jl")
+include("flow.jl")
 include("vertical_process.jl")
 include("utils.jl")
-include("io.jl")
 
 end # module

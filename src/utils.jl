@@ -1,4 +1,31 @@
 
+"Map from PCRaster LDD value to a CartesianIndex"
+const pcrdir = [
+    CartesianIndex(1, -1),  # 1
+    CartesianIndex(1, 0),  # 2
+    CartesianIndex(1, 1),  # 3
+    CartesianIndex(0, -1),  # 4
+    CartesianIndex(0, 0),  # 5
+    CartesianIndex(0, 1),  # 6
+    CartesianIndex(-1, -1),  # 7
+    CartesianIndex(-1, 0),  # 8
+    CartesianIndex(-1, 1),  # 9
+]
+
+const mv = NaN
+
+# timestep that the parameter units are defined in
+const basetimestep = Second(Day(1))
+
+# in case the input data is permuted the other way
+permute_indices(inds) = [CartesianIndex(i[2], i[1]) for i in inds]
+
+"Get a list of indices that are active, based on a nodata value"
+function active_indices(A, nodata)
+    inds = CartesianIndices(size(A))
+    filter(i -> !isequal(A[i], nodata), inds)
+end
+
 function lattometres(lat::Float64)
     m1 = 111132.92     # latitude calculation term 1
     m2 = -559.82       # latitude calculation term 2

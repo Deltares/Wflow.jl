@@ -1,6 +1,3 @@
-# timestep that the parameter units are defined in
-const basetimestep = Second(Day(1))
-
 """
     initialize_sbm_model(config, staticmaps_path, cyclic_path, forcing_path, output_path)
 

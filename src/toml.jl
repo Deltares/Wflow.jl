@@ -1,4 +1,4 @@
-"""
+#=
 Code for parsing TOML files. For informations on TOML see https://toml.io/.
 
 This code is based on https://github.com/KristofferC/TOMLX.jl, which will form the basis
@@ -11,8 +11,7 @@ https://github.com/KristofferC/TOMLX.jl/commit/4646119c785f529d59c303ad113dc43be
 
 This code is available under the MIT license, copyright (c) 2020 Julia Computing, Inc.,
 Kristoffer Carlsson.
-    
-"""
+=#
 
 using Dates
 
