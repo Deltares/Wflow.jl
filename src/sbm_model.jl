@@ -602,3 +602,85 @@ function initialize_sbm_model(
     update_cyclic!(model)
     return model
 end
+
+function update(
+    model,
+    config,
+    toposort_land,
+    toposort_river,
+    frac_toriver,
+    index_river,
+    nl,
+    nr,
+)
+    @unpack lateral, vertical, network, clock = model
+
+    update_forcing!(model)
+    update_cyclic!(model)
+
+    update_until_snow(vertical, config)
+
+    if Bool(get(config.model, "masswasting", 0))
+        snowflux_frac =
+            min.(0.5, lateral.land.sl ./ 5.67) .* min.(1.0, vertical.snow ./ 10000.0)
+        maxflux = snowflux_frac .* vertical.snow
+        vertical.snow .=
+            accucapacityflux(network.land, toposort_land, vertical.snow, maxflux)
+    end
+
+    update_until_recharge(vertical, config)
+    lateral.subsurface.recharge .= vertical.recharge
+    lateral.subsurface.recharge .*= lateral.subsurface.dl
+    lateral.subsurface.zi .= vertical.zi
+
+    update(
+        lateral.subsurface,
+        network.land,
+        toposort_land,
+        frac_toriver,
+        lateral.river.rivercells,
+    )
+
+    update_after_lateralflow(
+        vertical,
+        lateral.subsurface.zi,
+        lateral.subsurface.exfiltwater,
+    )
+
+    lateral.land.qlat .=
+        (vertical.runoff .* vertical.xl .* vertical.yl .* 0.001) ./ 86400.0 ./
+        lateral.land.dl
+
+    update(
+        lateral.land,
+        network.land,
+        toposort_land,
+        nl,
+        frac_toriver = frac_toriver,
+        river = lateral.river.rivercells,
+        do_iter = true,
+    )
+
+    lateral.river.qlat .=
+        (
+            lateral.subsurface.to_river[index_river] ./ 1.0e9 ./ lateral.river.Δt .+
+            lateral.land.to_river[index_river]
+        ) ./ lateral.river.dl
+
+    update(
+        lateral.river,
+        network.river,
+        toposort_river,
+        nr,
+        do_iter = true,
+        doy = dayofyear(clock.time),
+    )
+
+    write_output(model, model.writer)
+
+    # update the clock
+    clock.iteration += 1
+    clock.time += clock.Δt
+
+    return model
+end
