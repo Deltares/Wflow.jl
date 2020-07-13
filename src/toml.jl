@@ -22,7 +22,7 @@ using Base: IdSet
 
 const EOF_CHAR = typemax(Char)
 
-const TOMLDict  = Dict{String, Any}
+const TOMLDict = Dict{String,Any}
 const TOMLArray = Vector{Any}
 
 
@@ -75,28 +75,28 @@ mutable struct Parser
     root::TOMLDict
 
     # Filled in in case we are parsing a file to improve error messages
-    filepath::Union{String, Nothing}
+    filepath::Union{String,Nothing}
 end
 
-function Parser(str::String; filepath=nothing)
+function Parser(str::String; filepath = nothing)
     root = TOMLDict()
     l = Parser(
-            str,                  # str
-            EOF_CHAR,             # current_char
-            firstindex(str),      # pos
-            0,                    # prevpos
-            0,                    # column
-            1,                    # line
-            0,                    # marker
-            root,                 # active_table
-            String[],             # dotted_keys
-            UnitRange{Int}[],     # chunks
-            IdSet{TOMLDict}(),    # inline_tables
-            IdSet{TOMLArray}(),   # static_arrays
-            IdSet{TOMLDict}(),    # defined_tables
-            root,
-            filepath,
-        )
+        str,                  # str
+        EOF_CHAR,             # current_char
+        firstindex(str),      # pos
+        0,                    # prevpos
+        0,                    # column
+        1,                    # line
+        0,                    # marker
+        root,                 # active_table
+        String[],             # dotted_keys
+        UnitRange{Int}[],     # chunks
+        IdSet{TOMLDict}(),    # inline_tables
+        IdSet{TOMLArray}(),   # static_arrays
+        IdSet{TOMLDict}(),    # defined_tables
+        root,
+        filepath,
+    )
     startup(l)
     return l
 end
@@ -113,7 +113,7 @@ end
 Parser() = Parser("")
 Parser(io::IO) = Parser(read(io, String))
 
-function reinit!(p::Parser, str::String; filepath::Union{Nothing, String}=nothing)
+function reinit!(p::Parser, str::String; filepath::Union{Nothing,String} = nothing)
     p.str = str
     p.current_char = EOF_CHAR
     p.pos = firstindex(str)
@@ -206,36 +206,37 @@ end
 end
 
 const err_message = Dict(
-    ErrTrailingCommaInlineTable             => "trailing comma not allowed in inline table",
-    ErrExpectedCommaBetweenItemsArray       => "expected comma between items in array",
-    ErrExpectedCommaBetweenItemsInlineTable => "expected comma between items in inline table",
-    ErrExpectedEndArrayOfTable              => "expected array of table to end with ']]'",
-    ErrInvalidBareKeyCharacter              => "invalid bare key character",
-    ErrRedefineTableArray                   => "tried to redefine an existing table as an array",
-    ErrDuplicatedKey                        => "key already defined",
-    ErrKeyAlreadyHasValue                   => "key already has a value",
-    ErrEmptyBareKey                         => "bare key cannot be empty",
-    ErrExpectedNewLineKeyValue              => "expected newline after key value pair",
-    ErrNewLineInString                      => "newline character in single quoted string",
-    ErrUnexpectedEndString                  => "string literal ened unexpectedly",
-    ErrExpectedEndOfTable                   => "expected end of table ']'",
-    ErrAddKeyToInlineTable                  => "tried to add a new key to an inline table",
-    ErrArrayTreatedAsDictionary             => "tried to add a key to an array",
-    ErrAddArrayToStaticArray                => "tried to append to a statically defined array",
-    ErrGenericValueError                    => "failed to parse value",
-    ErrLeadingZeroNotAllowedInteger         => "leading zero in integer not allowed",
-    ErrUnderscoreNotSurroundedByDigits      => "underscore is not surrounded by digits",
-    ErrUnexpectedStartOfValue               => "unexpected start of value",
-    ErrOffsetDateNotSupported               => "offset date-time is not supported",
-    ErrParsingDateTime                      => "parsing date/time value failed",
-    ErrTrailingUnderscoreNumber             => "trailing underscore in number",
-    ErrLeadingDot                           => "floats require a leading zero",
-    ErrExpectedEqualAfterKey                => "expected equal sign after key",
-    ErrNoTrailingDigitAfterDot              => "expected digit after dot",
-    ErrOverflowError                        => "overflowed when parsing integer",
-    ErrInvalidUnicodeScalar                 => "invalid uncidode scalar",
-    ErrInvalidEscapeCharacter               => "invalid escape character",
-    ErrUnexpectedEofExpectedValue           => "unexpected end of file, expected a value"
+    ErrTrailingCommaInlineTable => "trailing comma not allowed in inline table",
+    ErrExpectedCommaBetweenItemsArray => "expected comma between items in array",
+    ErrExpectedCommaBetweenItemsInlineTable =>
+        "expected comma between items in inline table",
+    ErrExpectedEndArrayOfTable => "expected array of table to end with ']]'",
+    ErrInvalidBareKeyCharacter => "invalid bare key character",
+    ErrRedefineTableArray => "tried to redefine an existing table as an array",
+    ErrDuplicatedKey => "key already defined",
+    ErrKeyAlreadyHasValue => "key already has a value",
+    ErrEmptyBareKey => "bare key cannot be empty",
+    ErrExpectedNewLineKeyValue => "expected newline after key value pair",
+    ErrNewLineInString => "newline character in single quoted string",
+    ErrUnexpectedEndString => "string literal ened unexpectedly",
+    ErrExpectedEndOfTable => "expected end of table ']'",
+    ErrAddKeyToInlineTable => "tried to add a new key to an inline table",
+    ErrArrayTreatedAsDictionary => "tried to add a key to an array",
+    ErrAddArrayToStaticArray => "tried to append to a statically defined array",
+    ErrGenericValueError => "failed to parse value",
+    ErrLeadingZeroNotAllowedInteger => "leading zero in integer not allowed",
+    ErrUnderscoreNotSurroundedByDigits => "underscore is not surrounded by digits",
+    ErrUnexpectedStartOfValue => "unexpected start of value",
+    ErrOffsetDateNotSupported => "offset date-time is not supported",
+    ErrParsingDateTime => "parsing date/time value failed",
+    ErrTrailingUnderscoreNumber => "trailing underscore in number",
+    ErrLeadingDot => "floats require a leading zero",
+    ErrExpectedEqualAfterKey => "expected equal sign after key",
+    ErrNoTrailingDigitAfterDot => "expected digit after dot",
+    ErrOverflowError => "overflowed when parsing integer",
+    ErrInvalidUnicodeScalar => "invalid uncidode scalar",
+    ErrInvalidEscapeCharacter => "invalid escape character",
+    ErrUnexpectedEofExpectedValue => "unexpected end of file, expected a value",
 )
 
 for err in instances(ErrorType)
@@ -248,17 +249,18 @@ mutable struct ParserError <: Exception
     # Arbitrary data to store at the
     # call site to be used when formatting
     # the error
-    data
+    data::Any
 
     # These are filled in before returning from parse function
-    str       ::Union{String,   Nothing}
-    filepath  ::Union{String,   Nothing}
-    line      ::Union{Int,      Nothing}
-    column    ::Union{Int,      Nothing}
-    pos       ::Union{Int,      Nothing} # position of parser when
-    table     ::Union{TOMLDict, Nothing} # result parsed until error
+    str::Union{String,Nothing}
+    filepath::Union{String,Nothing}
+    line::Union{Int,Nothing}
+    column::Union{Int,Nothing}
+    pos::Union{Int,Nothing} # position of parser when
+    table::Union{TOMLDict,Nothing} # result parsed until error
 end
-ParserError(type, data) = ParserError(type, data, nothing, nothing, nothing, nothing, nothing, nothing)
+ParserError(type, data) =
+    ParserError(type, data, nothing, nothing, nothing, nothing, nothing, nothing)
 ParserError(type) = ParserError(type, nothing)
 # Defining these below can be useful when debugging code that erroneously returns a
 # ParserError because you get a stacktrace to where the ParserError was created
@@ -266,7 +268,7 @@ ParserError(type) = ParserError(type, nothing)
 #ParserError(type, data) = error(type,data)
 
 # Many functions return either a T or a ParserError
-const Err{T} = Union{T, ParserError}
+const Err{T} = Union{T,ParserError}
 
 function format_error_message_for_err_type(error::ParserError)
     msg = err_message[error.type]
@@ -292,7 +294,7 @@ function point_to_line(str::AbstractString, a::Int, b::Int, context)
     io2 = IOContext(IOBuffer(), context)
     while true
         if a <= pos <= b
-            printstyled(io2, "^"; color=:light_green)
+            printstyled(io2, "^"; color = :light_green)
         else
             print(io2, " ")
         end
@@ -306,10 +308,10 @@ function point_to_line(str::AbstractString, a::Int, b::Int, context)
 end
 
 function Base.showerror(io::IO, err::ParserError)
-    printstyled(io, "TOML Parser error:\n"; color=Base.error_color())
+    printstyled(io, "TOML Parser error:\n"; color = Base.error_color())
     f = something(err.filepath, "none")
-    printstyled(io, f, ':', err.line, ':', err.column; bold=true)
-    printstyled(io, " error: "; color=Base.error_color())
+    printstyled(io, f, ':', err.line, ':', err.column; bold = true)
+    printstyled(io, " error: "; color = Base.error_color())
     println(io, format_error_message_for_err_type(err))
     # In this case we want the arrow to point one character
     pos = err.pos
@@ -350,7 +352,7 @@ end
 
 # Return true if the character was accepted. When a character
 # is accepted it get's eaten and we move to the next character
-@inline function accept(l::Parser, f::Union{Function, Char})::Bool
+@inline function accept(l::Parser, f::Union{Function,Char})::Bool
     c = peek(l)
     c == EOF_CHAR && return false
     ok = false
@@ -374,7 +376,7 @@ end
 
 # Return true if `f` was accepted `n` times
 @inline function accept_n(l::Parser, n, f::F)::Bool where {F}
-    for i in 1:n
+    for i = 1:n
         if !accept(l, f)
             return false
         end
@@ -387,7 +389,8 @@ end
 
 skip_ws(l::Parser) = accept_batch(l, iswhitespace)
 
-skip_ws_nl_no_comment(l::Parser)::Bool = accept_batch(l, x -> iswhitespace(x) || isnewline(x))
+skip_ws_nl_no_comment(l::Parser)::Bool =
+    accept_batch(l, x -> iswhitespace(x) || isnewline(x))
 
 function skip_ws_nl(l::Parser)::Bool
     skipped = false
@@ -422,18 +425,18 @@ take_substring(l::Parser) = SubString(l.str, l.marker:(l.prevpos-1))
 
 # Driver, keeps parsing toplevel until we either get
 # a `ParserError` or eof.
-function parse(l::Parser; raise=false)::Err{TOMLDict}
+function parse(l::Parser; raise = false)::Err{TOMLDict}
     while true
         skip_ws_nl(l)
         peek(l) == EOF_CHAR && break
         v = parse_toplevel(l)
         if v isa ParserError
-            v.str      = l.str
-            v.pos      = l.prevpos-1
-            v.table    = l.root
+            v.str = l.str
+            v.pos = l.prevpos - 1
+            v.table = l.root
             v.filepath = l.filepath
-            v.line     = l.line
-            v.column   = l.column-1
+            v.line = l.line
+            v.column = l.column - 1
             raise ? throw(v) : return v
         end
     end
@@ -462,8 +465,13 @@ function parse_toplevel(l::Parser)::Err{Nothing}
     end
 end
 
-function recurse_dict!(l::Parser, d::Dict, dotted_keys::AbstractVector{String}, check=true)::Err{TOMLDict}
-    for i in 1:length(dotted_keys)
+function recurse_dict!(
+    l::Parser,
+    d::Dict,
+    dotted_keys::AbstractVector{String},
+    check = true,
+)::Err{TOMLDict}
+    for i = 1:length(dotted_keys)
         key = dotted_keys[i]
         d = get!(TOMLDict, d, key)
         if d isa TOMLArray
@@ -474,7 +482,7 @@ function recurse_dict!(l::Parser, d::Dict, dotted_keys::AbstractVector{String}, 
     return d
 end
 
-function check_allowed_add_key(l::Parser, d, check_defined=true)::Err{Nothing}
+function check_allowed_add_key(l::Parser, d, check_defined = true)::Err{Nothing}
     if !(d isa Dict)
         return ParserError(ErrKeyAlreadyHasValue)
     elseif d isa Dict && d in l.inline_tables
@@ -500,7 +508,7 @@ function parse_table(l)
     return
 end
 
-function parse_array_table(l)::Union{Nothing, ParserError}
+function parse_array_table(l)::Union{Nothing,ParserError}
     table_key = @try parse_key(l)
     skip_ws(l)
     if !(accept(l, ']') && accept(l, ']'))
@@ -524,7 +532,7 @@ function parse_array_table(l)::Union{Nothing, ParserError}
     return
 end
 
-function parse_entry(l::Parser, d)::Union{Nothing, ParserError}
+function parse_entry(l::Parser, d)::Union{Nothing,ParserError}
     key = @try parse_key(l)
     skip_ws(l)
     if !accept(l, '=')
@@ -557,10 +565,7 @@ end
 # Note that bare keys are allowed to be composed of only ASCII digits, e.g. 1234,
 # but are always interpreted as strings."
 @inline isvalid_barekey_char(c::Char) =
-    'a' <= c <= 'z' ||
-    'A' <= c <= 'Z' ||
-    isdigit(c) ||
-    c == '-' || c == '_'
+    'a' <= c <= 'z' || 'A' <= c <= 'Z' || isdigit(c) || c == '-' || c == '_'
 
 # Current key...
 function parse_key(l::Parser)
@@ -688,10 +693,10 @@ end
 parse_inf(l::Parser, sgn::Int) = accept(l, 'n') && accept(l, 'f') ? sgn * Inf : nothing
 parse_nan(l::Parser) = accept(l, 'a') && accept(l, 'n') ? NaN : nothing
 
-function parse_bool(l::Parser, v::Bool)::Union{Bool, Nothing}
+function parse_bool(l::Parser, v::Bool)::Union{Bool,Nothing}
     # Have eaten a 't' if `v` is true, otherwise have eaten a `f`.
     v ? (accept(l, 'r') && accept(l, 'u') && accept(l, 'e') && return true) :
-        (accept(l, 'a') && accept(l, 'l') && accept(l, 's') && accept(l, 'e') && return false)
+    (accept(l, 'a') && accept(l, 'l') && accept(l, 's') && accept(l, 'e') && return false)
     return nothing
 end
 
@@ -702,7 +707,11 @@ isvalid_binary(c::Char) = '0' <= c <= '1'
 const ValidSigs = Union{typeof.([isvalid_hex, isvalid_oct, isvalid_binary, isdigit])...}
 # This function eats things accepted by `f` but also allows eating `_` in between
 # digits. Retruns if it ate at lest one character and if it ate an underscore
-function accept_batch_underscore(l::Parser, f::ValidSigs, fail_if_underscore=true)::Err{Tuple{Bool, Bool}}
+function accept_batch_underscore(
+    l::Parser,
+    f::ValidSigs,
+    fail_if_underscore = true,
+)::Err{Tuple{Bool,Bool}}
     contains_underscore = false
     at_least_one = false
     last_underscore = false
@@ -810,7 +819,7 @@ function parse_number_or_date_start(l::Parser)
     end
     read_underscore |= contains_underscore
     if accept(l, x -> x == 'e' || x == 'E')
-        accept(l, x-> x == '+' || x == '-')
+        accept(l, x -> x == '+' || x == '-')
         # SPEC: (which follows the same rules as decimal integer values but may include leading zeros)
         read_digit = accept_batch(l, isdigit)
         ate, read_underscore = @try accept_batch_underscore(l, isdigit, !read_digit)
@@ -824,7 +833,7 @@ function parse_number_or_date_start(l::Parser)
 end
 
 
-function take_string_or_substring(l, contains_underscore)::Union{String, SubString}
+function take_string_or_substring(l, contains_underscore)::Union{String,SubString}
     subs = take_substring(l)
     # Need to pass a AbstractString to `parse` so materialize it in case it
     # contains underscore.
@@ -834,16 +843,16 @@ end
 function parse_float(l::Parser, contains_underscore)::Err{Float64}
     s = take_string_or_substring(l, contains_underscore)
     v = tryparse(Float64, s)
-    v === nothing && return(ParserError(ErrGenericValueError))
+    v === nothing && return (ParserError(ErrGenericValueError))
     return v
 end
 
-function parse_int(l::Parser, contains_underscore, base=nothing)::Err{Int}
+function parse_int(l::Parser, contains_underscore, base = nothing)::Err{Int}
     s = take_string_or_substring(l, contains_underscore)
     v = try
-        Base.parse(Int, s; base=base)
+        Base.parse(Int, s; base = base)
     catch e
-        e isa Base.OverflowError && return(ParserError(ErrOverflowError))
+        e isa Base.OverflowError && return (ParserError(ErrOverflowError))
         error("internal parser error: did not correctly discredit $(repr(s)) as an int")
     end
     return v
@@ -854,8 +863,15 @@ end
 # Date / Time / DateTime #
 ##########################
 
-ok_end_value(c::Char) = iswhitespace(c) || c == '#' || c == EOF_CHAR || c == ']' ||
-                               c == '}' || c == ',' || c == '\n'     || c == '\r'
+ok_end_value(c::Char) =
+    iswhitespace(c) ||
+    c == '#' ||
+    c == EOF_CHAR ||
+    c == ']' ||
+    c == '}' ||
+    c == ',' ||
+    c == '\n' ||
+    c == '\r'
 
 #=
 # https://tools.ietf.org/html/rfc3339
@@ -882,7 +898,8 @@ ok_end_value(c::Char) = iswhitespace(c) || c == '#' || c == EOF_CHAR || c == ']'
    date-time       = full-date "T" full-time
 =#
 
-accept_two(l, f::F) where {F} = accept_n(l, 2, f) || return(ParserError(ErrParsingDateTime))
+accept_two(l, f::F) where {F} =
+    accept_n(l, 2, f) || return (ParserError(ErrParsingDateTime))
 function parse_datetime(l)
     # Year has already been eaten when we reach here
     year = parse_int(l, false)::Int
@@ -968,7 +985,7 @@ function try_return_time(p, h, m, s, ms)
     end
 end
 
-function _parse_local_time(l::Parser, skip_hour=false)::Err{NTuple{4, Int}}
+function _parse_local_time(l::Parser, skip_hour = false)::Err{NTuple{4,Int}}
     # Hour has potentially been already parsed in
     # `parse_number_or_date_start` already
     if skip_hour
@@ -1001,7 +1018,7 @@ function _parse_local_time(l::Parser, skip_hour=false)::Err{NTuple{4, Int}}
     if accept(l, '.')
         set_marker!(l)
         found_fractional_digit = false
-        for i in 1:3
+        for i = 1:3
             found_fractional_digit |= accept(l, isdigit)
         end
         if !found_fractional_digit
@@ -1036,10 +1053,10 @@ function parse_string_start(l::Parser, quoted::Bool)::Err{String}
     return parse_string_continue(l, multiline, quoted)
 end
 
-@inline stop_candidates_multiline(x)         = x != '"'  &&  x != '\\'
-@inline stop_candidates_singleline(x)        = x != '"'  &&  x != '\\' && x != '\n'
-@inline stop_candidates_multiline_quoted(x)  = x != '\'' &&  x != '\\'
-@inline stop_candidates_singleline_quoted(x) = x != '\'' &&  x != '\\' && x != '\n'
+@inline stop_candidates_multiline(x) = x != '"' && x != '\\'
+@inline stop_candidates_singleline(x) = x != '"' && x != '\\' && x != '\n'
+@inline stop_candidates_multiline_quoted(x) = x != '\'' && x != '\\'
+@inline stop_candidates_singleline_quoted(x) = x != '\'' && x != '\\' && x != '\n'
 
 function parse_string_continue(l::Parser, multiline::Bool, quoted::Bool)::Err{String}
     start_chunk = l.prevpos
@@ -1051,9 +1068,16 @@ function parse_string_continue(l::Parser, multiline::Bool, quoted::Bool)::Err{St
             return ParserError(ErrUnexpectedEndString)
         end
         if quoted
-            accept_batch(l, multiline ? stop_candidates_multiline_quoted : stop_candidates_singleline_quoted)
+            accept_batch(
+                l,
+                multiline ? stop_candidates_multiline_quoted :
+                stop_candidates_singleline_quoted,
+            )
         else
-            accept_batch(l, multiline ? stop_candidates_multiline : stop_candidates_singleline)
+            accept_batch(
+                l,
+                multiline ? stop_candidates_multiline : stop_candidates_singleline,
+            )
         end
         if !multiline && peek(l) == '\n'
             return ParserError(ErrNewLineInString)
@@ -1075,7 +1099,7 @@ function parse_string_continue(l::Parser, multiline::Bool, quoted::Bool)::Err{St
                 start_chunk = l.prevpos
             else
                 c = eat_char(l) # eat the escaped character
-                if c == 'u'  || c == 'U'
+                if c == 'u' || c == 'U'
                     n = c == 'u' ? 4 : 6
                     set_marker!(l)
                     if !accept_n(l, n, isvalid_hex)
@@ -1092,7 +1116,13 @@ function parse_string_continue(l::Parser, multiline::Bool, quoted::Bool)::Err{St
                     if !(codepoint <= 0xD7FF || 0xE000 <= codepoint <= 0x10FFFF)
                         return ParserError(ErrInvalidUnicodeScalar)
                     end
-                elseif c != 'b' && c != 't' && c != 'n' && c != 'f' && c != 'r' && c != '"' && c!= '\\'
+                elseif c != 'b' &&
+                       c != 't' &&
+                       c != 'n' &&
+                       c != 'f' &&
+                       c != 'r' &&
+                       c != '"' &&
+                       c != '\\'
                     return ParserError(ErrInvalidEscapeCharacter)
                 end
                 contains_backslash = true
@@ -1144,9 +1174,11 @@ upon failure.
 See also [`tryparsefile`](@ref)
 """
 parsefile(f::AbstractString) =
-    Internals.parse(Parser(read(f, String); filepath=abspath(f)); raise=true)
-parsefile(p::Parser, f::AbstractString) =
-    Internals.parse(Internals.reinit!(p, read(f, String); filepath=abspath(f)); raise=true)
+    Internals.parse(Parser(read(f, String); filepath = abspath(f)); raise = true)
+parsefile(p::Parser, f::AbstractString) = Internals.parse(
+    Internals.reinit!(p, read(f, String); filepath = abspath(f));
+    raise = true,
+)
 
 """
     tryparsefile(f::AbstractString)
@@ -1159,9 +1191,11 @@ upon failure.
 See also [`parsefile`](@ref)
 """
 tryparsefile(f::AbstractString) =
-    Internals.parse(Parser(read(f, String); filepath=abspath(f)); raise=false)
-tryparsefile(p::Parser, f::AbstractString) =
-    Internals.parse(Internals.reinit!(p, read(f, String); filepath=abspath(f)); raise=false)
+    Internals.parse(Parser(read(f, String); filepath = abspath(f)); raise = false)
+tryparsefile(p::Parser, f::AbstractString) = Internals.parse(
+    Internals.reinit!(p, read(f, String); filepath = abspath(f));
+    raise = false,
+)
 
 """
     parsestring(str::AbstractString)
@@ -1173,10 +1207,9 @@ upon failure.
 
 See also [`tryparsestring`](@ref)
 """
-parsestring(str::AbstractString) =
-    Internals.parse(Parser(String(str)); raise=true)
+parsestring(str::AbstractString) = Internals.parse(Parser(String(str)); raise = true)
 parsestring(p::Parser, str::AbstractString) =
-    Internals.parse(Internals.reinit!(p, String(str)); raise=true)
+    Internals.parse(Internals.reinit!(p, String(str)); raise = true)
 
 """
     tryparsestring(str::AbstractString)
@@ -1188,10 +1221,9 @@ upon failure.
 1
 See also [`parsestring`](@ref)
 """
-tryparsestring(str::AbstractString) =
-    Internals.parse(Parser(String(str)); raise=false)
+tryparsestring(str::AbstractString) = Internals.parse(Parser(String(str)); raise = false)
 tryparsestring(p::Parser, str::AbstractString) =
-    Internals.parse(Internals.reinit!(p, String(str)); raise=false)
+    Internals.parse(Internals.reinit!(p, String(str)); raise = false)
 
 """
     ParserError

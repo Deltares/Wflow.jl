@@ -23,8 +23,16 @@ frac_toriver = Wflow.fraction_runoff_toriver(
     nl,
 )
 
-model =
-    Wflow.update(model, config, toposort_land, toposort_river, frac_toriver, index_river, nl, nr)
+model = Wflow.update(
+    model,
+    config,
+    toposort_land,
+    toposort_river,
+    frac_toriver,
+    index_river,
+    nl,
+    nr,
+)
 
 @testset "first timestep" begin
     sbm = model.vertical
@@ -44,8 +52,16 @@ model =
 end
 
 # run the second timestep
-model =
-    Wflow.update(model, config, toposort_land, toposort_river, frac_toriver, index_river, nl, nr)
+model = Wflow.update(
+    model,
+    config,
+    toposort_land,
+    toposort_river,
+    frac_toriver,
+    index_river,
+    nl,
+    nr,
+)
 
 @testset "second timestep" begin
     sbm = model.vertical
