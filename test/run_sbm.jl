@@ -90,8 +90,6 @@ end
     @test res[inds[2]].evaporation ≈ 4.0
 end
 
-using BenchmarkTools, Juno
-
 benchmark = @benchmark Wflow.update(
     model,
     config,
@@ -124,3 +122,4 @@ trialmin = BenchmarkTools.minimum(benchmark)
 
 println("Model update")
 print_benchmark(trialmin)
+# @profview Wflow.update(model, config, toposort_land, toposort_river, frac_toriver, index_river, nl, nr)

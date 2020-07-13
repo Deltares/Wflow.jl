@@ -10,6 +10,7 @@ using Wflow
 using FillArrays
 using TypedTables
 using CSV
+using BenchmarkTools
 
 # ensure test data is present
 testdir = @__DIR__
