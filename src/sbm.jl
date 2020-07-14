@@ -1,5 +1,3 @@
-const mv = NaN
-
 function update_until_snow(t, config)
 
     # # start dummy variables (should be generated from model reader and from Config.jl TOML)

@@ -8,8 +8,8 @@ casename = "testcase"
 "λ" = 1.2  # unicode keys are supported but only between strings
 
 [input]
-starttime = 2000-01-01T00:00:00Z
-endtime = 2000-02-01T00:00:00Z
+starttime = 2000-01-01T00:00:00
+endtime = 2000-02-01T00:00:00
 timestepsecs = 86400
 staticmaps = "data/staticmaps-moselle.nc"
 # all parameters that have a cyclic timeseries such as climatologies
@@ -36,18 +36,3 @@ thicknesslayers = [100, 300, 800]
 [output]
 path = "data/specified_output.nc"
 parameters = ["satwaterdepth", "snow", "tsoil", "ustorelayerdepth", "snowwater", "canopystorage"]
-
-# all these are not yet supported by Pkg.TOML as of Julia 1.4
-# https://github.com/toml-lang/toml#local-date-time
-# https://github.com/JuliaLang/Pkg.jl/issues/1011
-# for Julia 1.6 TOML will likely be part of Base:
-# https://github.com/JuliaLang/julia/pull/36018
-# perhaps it would be good to vendor https://github.com/KristofferC/TOMLX.jl until then.
-# file issues/PRs as needed, but we can use zulu time syntax in the meanwhile
-# odt4 = 1979-05-27 07:32:00Z
-# ldt1 = 1979-05-27T07:32:00
-# ldt2 = 1979-05-27T00:32:00.999999
-# ld1 = 1979-05-27
-# lt1 = 07:32:00
-# lt2 = 00:32:00.999999
-# physical.color = "orange"

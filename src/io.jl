@@ -1,3 +1,28 @@
+#=
+Code to support input and output of data and configuration.
+Input data can be loaded from NetCDF files.
+Output data can be written to NetCDF or CSV files.
+For configuration files we use TOML.
+=#
+
+"Parsed TOML configuration"
+struct Config
+    dict::Dict{String,Any}
+end
+
+# allows using getproperty, e.g. config.input.time instead of config["input"]["time"]
+function Base.getproperty(config::Config, f::Symbol)
+    dict = Dict(config)
+    a = dict[String(f)]
+    # if it is a Dict, wrap the result in Config to keep the getproperty behavior
+    return a isa AbstractDict ? Config(a) : a
+end
+
+# also used in autocomplete
+Base.propertynames(config::Config) = collect(keys(Dict(config)))
+Base.haskey(config::Config, key) = haskey(Dict(config), key)
+Base.get(config::Config, key, default) = get(Dict(config), key, default)
+Dict(config::Config) = getfield(config, :dict)
 
 "Extract a NetCDF variable at a given time"
 function get_at!(
@@ -313,4 +338,13 @@ function timecycles(times)
     else
         error("unsupported cyclic timeseries")
     end
+end
+
+"Close input and output datasets that are opened on model initialization"
+function close_files(model)
+    @unpack reader, writer = model
+
+    close(reader.dataset)
+    close(reader.cyclic_dataset)
+    close(writer.dataset)
 end

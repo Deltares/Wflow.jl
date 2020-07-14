@@ -4,6 +4,31 @@ using CFTime
 using Random
 using UnPack
 
+@testset "configuration file" begin
+    tomlpath = joinpath(@__DIR__, "config.toml")
+    parsed_toml = Wflow.parsefile(tomlpath)
+    config = Wflow.Config(parsed_toml)
+    @test parsed_toml isa Dict{String,Any}
+    @test config isa Wflow.Config
+    @test getfield(config, :dict) === parsed_toml
+
+    # test if the values are parsed as expected
+    @test config.casename == "testcase"
+    @test config.λ == 1.2
+    @test config.input.starttime === DateTime(2000)
+    @test config.input.endtime === DateTime(2000, 2)
+    @test config.output.path == "data/specified_output.nc"
+    @test config.output.parameters isa Vector
+    @test config.output.parameters == [
+        "satwaterdepth",
+        "snow",
+        "tsoil",
+        "ustorelayerdepth",
+        "snowwater",
+        "canopystorage",
+    ]
+end
+
 @testset "checkdims" begin
     @test_throws AssertionError Wflow.checkdims(("z", "lat", "time"))
     @test_throws AssertionError Wflow.checkdims(("z", "lat"))
@@ -24,7 +49,7 @@ end
 
 tomlpath = joinpath(@__DIR__, "config.toml")
 tomldir = dirname(tomlpath)
-config = Wflow.Config(TOML.parsefile(tomlpath))
+config = Wflow.Config(Wflow.parsefile(tomlpath))
 
 # initialize a vector of SBM structs
 model = Wflow.initialize_sbm_model(
@@ -38,9 +63,7 @@ model = Wflow.initialize_sbm_model(
 @unpack vertical, clock, reader, writer = model
 @unpack dataset, buffer, inds = reader
 
-# close both input and output datasets
-close(reader.dataset)
-close(reader.cyclic_dataset)
-output_path = path(writer.dataset)
-close(writer.dataset)
+# get the output path before it's closed, and remove up the file
+output_path = path(model.writer.dataset)
+Wflow.close_files(model)
 rm(output_path)
