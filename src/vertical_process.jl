@@ -71,6 +71,50 @@ function rainfall_interception_gash(
 end
 
 """
+    rainfall_interception_modrut(precipitation, potevap, canopystorage, canopygapfraction, cmax)
+
+Interception according to a modified Rutter model. The model is solved explicitly and there is no
+drainage below `cmax`.
+"""
+function rainfall_interception_modrut(precipitation, potevap, canopystorage, canopygapfraction, cmax)
+
+    p = canopygapfraction
+    pt = 0.1 * p
+
+    # Amount of p that falls on the canopy
+    pfrac = max((1.0 - p - pt), 0.0) * precipitation
+
+    # S cannot be larger than Cmax, no gravity drainage below that
+    dd = canopystorage > Cmax ? canopystorage - cmax : 0.0
+    canopystorage = canopystorage - dd
+
+    # Add the precipitation that falls on the canopy to the store
+    canopystorage = canopystorage + pfrac
+
+    # Now do the Evap, make sure the store does not get negative
+    dc = -1.0 * min(canopystorage, potevap)
+    canopystorage = canopystorage + dc
+
+    leftover = potevap + dc
+    # Amount of evap not used
+
+    # Now drain the canopy storage again if needed...
+    d = canopyStorage > cmax ? canopyStorage - cmax : 0.0
+    canopyStorage = canopyStorage - d
+
+    # Calculate throughfall
+    throughfall = dd + d + p * precipitation
+    stemflow = precipitation * pt
+
+    # Calculate interception, this is NET Interception
+    netinterception = precipitation - throughfall - stemflow
+    interception = -dc
+
+    return netinterception, throughfall, stemflow, leftover, interception, canopystorage
+
+end
+
+"""
     acttransp_unsat_sbm(rootingdepth, ustorelayerdepth, sumlayer, restpotevap, sum_actevapustore, c, usl, θₛ, θᵣ, hb, ust::Bool = false)
 
 Compute actual transpiration for unsaturated zone.
@@ -337,4 +381,53 @@ function snowpack_hbv(snow, snowwater, precipitation, temperature, tti, tt, ttm,
     snowwater = snowwater - rainfall
 
     return snow, snowwater, snowmelt, rainfall, snowfall
+end
+
+"""
+    glacier_hbv(glacierfrac, glacierstore, snow, temperature, tt, cfmax, g_sifrac, Δt)
+
+HBV-light type of glacier modelling.
+First, a fraction of the snowpack is converted into ice using the HBV-light
+model (fraction between 0.001-0.005 per day).
+Glacier melting is modelled using a temperature degree factor and only
+occurs if the snow cover < 10 mm.
+
+# Arguments
+- `glacierFrac` fraction covered by glaciers [-]
+- `glacierstore` volume of the glacier [mm] w.e.
+- `snow` snow pack on top of glacier [mm]
+- `temperature` air temperature [°C]
+- `tt` temperature threshold for ice melting [°C]
+- `cfmax` ice degree-day factor in [mm/(°C/day)]
+- `g_sifrac` fraction of the snow turned into ice [-]
+- `Δt` model timestep [s]
+
+# Output
+- `snow`
+- `snow2glacier`
+- `glacierstore`
+- `glaciermelt`
+
+"""
+function glacier_hbv(glacierfrac, glacierstore, snow, temperature, tt, cfmax, g_sifrac, Δt)
+
+    # Fraction of the snow transformed into ice (HBV-light model)
+    snow2glacier = g_sifrac * snow
+    snow2glacier = glacierfrac > 0.0 ? snow2glacier : 0.0
+
+    # Max conversion to 8mm/day
+    snow2glacier = min(snow2glacier, 8.0 * (Δt / basetimestep))
+
+    snow = snow - (snow2glacier * glacierfrac)
+    glacierstore = glacierstore + snow2glacier
+
+    # Potential snow melt, based on temperature
+    potmelt = temperature > tt ? cfmax * (temperature - tt) : 0.0
+
+    # actual Glacier melt
+    glaciermelt = snow < 10.0 ? min(potmelt, glacierstore) : 0.0
+    glacierstore = glacierstore - glaciermelt
+
+    return snow, snow2glacier, glacierstore, glaciermelt
+
 end
