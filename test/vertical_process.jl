@@ -4,6 +4,10 @@
         (13.568000000000001, 4.0, 0.432, 1.5),
     ))
     @test all(isapprox.(
+        Wflow.rainfall_interception_modrut(8.6, 3.8, 1.5, 0.45, 2.8),
+        (4.343, 3.87, 0.387, 0.0, 3.8, 2.043),
+    ))
+    @test all(isapprox.(
         Wflow.acttransp_unsat_sbm(
             300.0,
             55.0,
@@ -36,4 +40,8 @@
         (207.073, 20.707300000000004, 1.35, 18.819699999999997, 6.923),
     ))
     @test Wflow.scurve(2.0, a = 0.0, b = 3.0, c = 2.5) ≈ 0.3325863502664285
+    @test all(isapprox.(
+        Wflow.glacier_hbv(0.35, 500.0, 9.5, 5.0, 0.0, 3.4, 0.2, Second(Day(1))),
+        (8.835, 1.9, 484.9, 17.0),
+    ))
 end

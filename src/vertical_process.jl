@@ -85,7 +85,7 @@ function rainfall_interception_modrut(precipitation, potevap, canopystorage, can
     pfrac = max((1.0 - p - pt), 0.0) * precipitation
 
     # S cannot be larger than Cmax, no gravity drainage below that
-    dd = canopystorage > Cmax ? canopystorage - cmax : 0.0
+    dd = canopystorage > cmax ? canopystorage - cmax : 0.0
     canopystorage = canopystorage - dd
 
     # Add the precipitation that falls on the canopy to the store
@@ -99,8 +99,8 @@ function rainfall_interception_modrut(precipitation, potevap, canopystorage, can
     # Amount of evap not used
 
     # Now drain the canopy storage again if needed...
-    d = canopyStorage > cmax ? canopyStorage - cmax : 0.0
-    canopyStorage = canopyStorage - d
+    d = canopystorage > cmax ? canopystorage - cmax : 0.0
+    canopystorage = canopystorage - d
 
     # Calculate throughfall
     throughfall = dd + d + p * precipitation
