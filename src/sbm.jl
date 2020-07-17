@@ -114,7 +114,6 @@ function update_until_recharge(t, config)
                     t.g_cfmax[r],
                     t.g_sifrac[r],
                     Δt,
-                    basetimestep,
                 )
                 # Convert to mm per grid cell and add to snowmelt
                 glaciermelt = glaciermelt * t.glacierfrac[r]
