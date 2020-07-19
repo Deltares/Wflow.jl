@@ -38,4 +38,4 @@ thicknesslayers = [100, 300, 800]
 
 [output]
 path = "data/specified_output.nc"
-parameters = ["satwaterdepth", "snow", "tsoil", "ustorelayerdepth", "snowwater", "canopystorage"]
+parameters = ["satwaterdepth", "snow", "tsoil", "ustorelayerdepth", "snowwater", "canopystorage", "soilthickness", "q"]

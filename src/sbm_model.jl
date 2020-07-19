@@ -464,11 +464,12 @@ function initialize_sbm_model(config::Config)
         rivercells = river,
     )
 
-
     statenames = (statenames...,"ssf", "q_river", "h_river", "q_land", "h_land")
 
-    reader = prepare_reader(forcing_path, staticmaps_path, inds, config)
-    writer = prepare_writer(config, reader, output_path, sbm, maxlayers)
+    reader = prepare_reader(forcing_path, staticmaps_path, inds, inds_riv, config)
+
+    modelmap = (vertical = sbm, subsurface = ssf, land = olf, river = rf)
+    writer = prepare_writer(config, reader, output_path, modelmap, maxlayers)
 
     model = Model(
         (land = dag, river = dag_riv),

@@ -28,6 +28,8 @@ using UnPack
         "ustorelayerdepth",
         "snowwater",
         "canopystorage",
+        "soilthickness",
+        "q",
     ]
 end
 
@@ -58,6 +60,15 @@ model = Wflow.initialize_sbm_model(config)
 
 @unpack vertical, clock, reader, writer = model
 @unpack dataset, buffer, inds = reader
+
+@testset "output" begin
+    ncdims = ("lon", "lat", "layer", "time")
+    @test dimnames(writer.dataset["ustorelayerdepth"]) == ncdims
+    ncvars = [k for k in keys(writer.dataset) if !in(k, ncdims)]
+    @test "snow" in ncvars
+    @test "q" in ncvars
+    @test Set(keys(writer.dataset)) == Set(vcat(config.output.parameters, ncdims...))
+end
 
 # get the output path before it's closed, and remove up the file
 output_path = path(model.writer.dataset)

@@ -106,7 +106,6 @@ function setup_netcdf(
     parameters,
     calendar,
     time_units,
-    row,
     maxlayers,
 )
     ds = NCDataset(output_path, "c")
@@ -141,22 +140,21 @@ function setup_netcdf(
         ("time",),
         attrib = ["units" => time_units, "calendar" => calendar],
     )
-    for parameter in parameters
-        cell = getproperty(row, Symbol(parameter))[1]
-        if cell isa AbstractFloat
+    for (key, val) in pairs(parameters)
+        if eltype(val) <: AbstractFloat
             # all floats are saved as Float32
             defVar(
                 ds,
-                parameter,
+                key,
                 Float32,
                 ("lon", "lat", "time"),
                 attrib = ["_FillValue" => Float32(NaN)],
             )
-        elseif cell isa SVector
+        elseif eltype(val) <: SVector
             # SVectors are used to store layers
             defVar(
                 ds,
-                parameter,
+                key,
                 Float32,
                 ("lon", "lat", "layer", "time"),
                 attrib = ["_FillValue" => Float32(NaN)],
@@ -193,17 +191,18 @@ struct NCReader{T}
     cyclic_parameters::Dict{Symbol,String}
     buffer::Matrix{T}
     inds::Vector{CartesianIndex{2}}
+    inds_riv::Vector{CartesianIndex{2}}
 end
 
 struct NCWriter
     dataset::NCDataset
-    parameters::Vector{String}
+    parameters::Dict{String,Any}
 end
 
 "Convert a piece of Config to a Dict{Symbol, String} used for parameter lookup"
 parameter_lookup_table(config) = Dict(Symbol(k) => String(v) for (k, v) in Dict(config))
 
-function prepare_reader(path, cyclic_path, inds, config)
+function prepare_reader(path, cyclic_path, inds, inds_riv, config)
     dataset = NCDataset(path)
     var = dataset[config.forcing_parameters.precipitation].var
 
@@ -247,10 +246,11 @@ function prepare_reader(path, cyclic_path, inds, config)
         cyclic_parameters,
         buffer,
         inds,
+        inds_riv,
     )
 end
 
-function prepare_writer(config, reader, output_path, row, maxlayers)
+function prepare_writer(config, reader, output_path, modelmap, maxlayers)
     # TODO remove random string from the filename
     # this makes it easier to develop for now, since we don't run into issues with open files
     base, ext = splitext(output_path)
@@ -259,48 +259,63 @@ function prepare_writer(config, reader, output_path, row, maxlayers)
     nclon = ncread(reader.dataset, "lon"; type = Float64)
     nclat = ncread(reader.dataset, "lat"; type = Float64)
 
-    output_parameters = config.output.parameters
+    # fill the output_map by mapping parameters to arrays
+    output_map = Dict{String,Vector}()
+    for param in config.output.parameters
+        parsym = Symbol(param)
+        for (name, component) in pairs(modelmap)
+            if parsym in propertynames(component)
+                # this array will be reused
+                # therefore the reference in this dict can be used for all timesteps.
+                if haskey(output_map, param)
+                    @warn "output parameter $param not unique, currently set to $name"
+                end
+                output_map[param] = getproperty(component, parsym)
+            end
+        end
+        if !haskey(output_map, param)
+            error("output parameter $param not found in any model component")
+        end
+    end
+
     calendar = get(config.input, "calendar", "proleptic_gregorian")
     time_units = get(config.input, "time_units", CFTime.DEFAULT_TIME_UNITS)
-    ds = Wflow.setup_netcdf(
+    ds = setup_netcdf(
         randomized_path,
         nclon,
         nclat,
-        output_parameters,
+        output_map,
         calendar,
         time_units,
-        row,
         maxlayers,
     )
-    return NCWriter(ds, output_parameters)
+    return NCWriter(ds, output_map)
 end
 
 "Write NetCDF output"
 function write_output(model, writer::NCWriter)
     @unpack vertical, clock, reader = model
-    @unpack buffer, inds = reader
+    @unpack buffer, inds, inds_riv = reader
     @unpack dataset, parameters = writer
 
     time_index = add_time(dataset, clock.time)
 
-    for parameter in parameters
+    for (key, vector) in pairs(parameters)
+        inds_used = Symbol(key) in propertynames(model.lateral.river) ? inds_riv : inds
         # write the active cells vector to the 2d buffer matrix
-        param = Symbol(parameter)
-        vector = getproperty(vertical, param)
-
         elemtype = eltype(vector)
         if elemtype <: AbstractFloat
             # ensure no other information is written
             fill!(buffer, NaN)
-            buffer[inds] .= vector
-            dataset[parameter][:, :, time_index] = buffer
+            buffer[inds_used] .= vector
+            dataset[key][:, :, time_index] = buffer
         elseif elemtype <: SVector
             nlayer = length(first(vector))
             for i = 1:nlayer
                 # ensure no other information is written
                 fill!(buffer, NaN)
-                buffer[inds] .= getindex.(vector, i)
-                dataset[parameter][:, :, i, time_index] = buffer
+                buffer[inds_used] .= getindex.(vector, i)
+                dataset[key][:, :, i, time_index] = buffer
             end
         else
             error("Unsupported output type: ", elemtype)
