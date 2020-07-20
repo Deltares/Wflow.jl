@@ -7,27 +7,90 @@
 casename = "testcase"
 "λ" = 1.2  # unicode keys are supported but only between strings
 
-[input]
 starttime = 2000-01-01T00:00:00
 endtime = 2000-02-01T00:00:00
 timestepsecs = 86400
-staticmaps = "data/staticmaps-moselle.nc"
-forcing = "data/forcing-moselle.nc"
 # TODO add option for same timing as forcing
 calendar = "proleptic_gregorian"
 time_units = "days since 1900-01-01 00:00:00"
 
 [state]
-input.path = "data/instates-moselle.nc"
-output.path = "data/states-moselle.nc"
+input.path = ""  # TODO implement
+output.path = ""  # TODO implement
 
-[forcing_parameters]
+# key is the key in paramap
+# value is name in staticmaps NetCDF
+# if listed, the variable must be present in the NetCDF or error
+# if not listed, the variable will get a default value
+
+[static]
+path = "data/staticmaps-moselle.nc"
+
+[static.parameters]
+cfmax = "Cfmax"
+cf_soil = "cf_soil"
+# TODO this should be a 3D variable, currently "c_0" ... "c_3"
+c = "c"
+e_r = "EoverR"
+infiltcappath = "InfiltCapPath"
+infiltcapsoil = "InfiltCapSoil"
+kext = "Kext"
+khfrac = "KsatHorFrac"
+"kv₀" = "KsatVer"
+m = "M"
+maxleakage = "MaxLeakage"
+n_land = "N"
+n_river = "N_River"
+pathfrac = "PathFrac"
+resdemand = "ResDemand"
+resmaxrelease = "ResMaxRelease"
+resmaxvolume = "ResMaxVolume"
+ressimplearea = "ResSimpleArea"
+restargetfullfrac = "ResTargetFullFrac"
+restargetminfrac = "ResTargetMinFrac"
+riverslope = "RiverSlope"
+rootdistpar = "rootdistpar"
+rootingdepth = "RootingDepth"
+sl = "Sl"
+slope = "Slope"
+soilminthickness = "SoilMinThickness"
+soilthickness = "SoilThickness"
+swood = "Swood"
+"θᵣ" = "thetaR"
+"θₛ" = "thetaS"
+tt = "TT"
+tti = "TTI"
+ttm = "TTM"
+waterfrac = "WaterFrac"
+wflow_acc = "wflow_acc"
+wflow_dem = "wflow_dem"
+wflow_gauges = "wflow_gauges"
+wflow_landuse = "wflow_landuse"
+wflow_ldd = "wflow_ldd"
+wflow_reservoirareas = "wflow_reservoirareas"
+wflow_reservoirlocs = "wflow_reservoirlocs"
+wflow_river = "wflow_river"
+wflow_riverlength = "wflow_riverlength"
+wflow_riverwidth = "wflow_riverwidth"
+wflow_soil = "wflow_soil"
+wflow_streamorder = "wflow_streamorder"
+wflow_subcatch = "wflow_subcatch"
+wflow_uparea = "wflow_uparea"
+whc = "WHC"
+
+[cyclic]
+path = "data/lai_clim-moselle.nc"
+
+[cyclic.parameters]
+lai = "LAI"
+
+[dynamic]
+path = "data/forcing-moselle.nc"
+
+[dynamic.parameters]
 precipitation = "P"
 temperature = "TEMP"
 potevap = "PET"
-
-[cyclic_parameters]
-lai = "LAI"
 
 [model]
 reinit = 0
@@ -37,5 +100,34 @@ modelsnow = 1
 thicknesslayers = [100, 300, 800]
 
 [output]
+# TODO support interpolating a general output directory?
+# path = "$output_dir/data/specified_output.nc"
 path = "data/specified_output.nc"
-parameters = ["satwaterdepth", "snow", "tsoil", "ustorelayerdepth", "snowwater", "canopystorage", "soilthickness", "q"]
+
+[output.parameters]
+satwaterdepth = "satwaterdepth"
+snow = "snow"
+tsoil = "tsoil"
+ustorelayerdepth = "ustorelayerdepth"
+snowwater = "snowwater"
+canopystorage = "canopystorage"
+soilthickness = "soilthickness"
+q = "q"
+
+# code (var name)
+# unique parameter name (toml)
+# name in netcdf
+
+[csv]
+path = "data/specified_csv.csv"
+
+[[csv.column]]
+name = "q"
+parameter = "a"
+method = "mean"
+
+[[csv.column]]
+name = "discharge"
+parameter = "a"
+method = "subcatchment"
+# method = "landcover"

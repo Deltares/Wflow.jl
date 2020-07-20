@@ -13,7 +13,7 @@ function initialize_sbm_model(config::Config)
     instate_path = joinpath(tomldir, config.state.input.path)
     output_path = joinpath(tomldir, config.output.path)
 
-    Δt = Second(config.input.timestepsecs)
+    Δt = Second(config.timestepsecs)
     # default parameter values (dict)
     dparams = Dict(
         "Cfmax" => 3.75653 * (Δt / basetimestep),
@@ -475,7 +475,7 @@ function initialize_sbm_model(config::Config)
         (land = dag, river = dag_riv),
         (subsurface = ssf, land = olf, river = rf),
         sbm,
-        Clock(config.input.starttime, 1, Δt),
+        Clock(config.starttime, 1, Δt),
         reader,
         writer,
     )

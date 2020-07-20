@@ -26,6 +26,9 @@ end
 # also used in autocomplete
 Base.propertynames(config::Config) = collect(keys(Dict(config)))
 Base.haskey(config::Config, key) = haskey(Dict(config), key)
+Base.keys(config::Config) = keys(Dict(config))
+Base.values(config::Config) = values(Dict(config))
+Base.pairs(config::Config) = pairs(Dict(config))
 Base.get(config::Config, key, default) = get(Dict(config), key, default)
 Base.Dict(config::Config) = getfield(config, :dict)
 Base.pathof(config::Config) = getfield(config, :path)
@@ -194,9 +197,10 @@ struct NCReader{T}
     inds_riv::Vector{CartesianIndex{2}}
 end
 
-struct NCWriter
+struct Writer
     dataset::NCDataset
     parameters::Dict{String,Any}
+    csv_io::IO
 end
 
 "Convert a piece of Config to a Dict{Symbol, String} used for parameter lookup"
@@ -204,7 +208,7 @@ parameter_lookup_table(config) = Dict(Symbol(k) => String(v) for (k, v) in Dict(
 
 function prepare_reader(path, cyclic_path, inds, inds_riv, config)
     dataset = NCDataset(path)
-    var = dataset[config.forcing_parameters.precipitation].var
+    var = dataset[config.dynamic.parameters.precipitation].var
 
     fillvalue = get(var.attrib, "_FillValue", nothing)
     scale_factor = get(var.attrib, "scale_factor", nothing)
@@ -228,8 +232,8 @@ function prepare_reader(path, cyclic_path, inds, inds_riv, config)
     cyclic_nc_times = collect(cyclic_dataset["time"])
     cyclic_times = Wflow.timecycles(cyclic_nc_times)
 
-    forcing_parameters = parameter_lookup_table(config.forcing_parameters)
-    cyclic_parameters = parameter_lookup_table(config.cyclic_parameters)
+    forcing_parameters = parameter_lookup_table(config.dynamic.parameters)
+    cyclic_parameters = parameter_lookup_table(config.cyclic.parameters)
     forcing_keys = keys(forcing_parameters)
     cyclic_keys = keys(cyclic_parameters)
     for forcing_key in forcing_keys
@@ -261,7 +265,7 @@ function prepare_writer(config, reader, output_path, modelmap, maxlayers)
 
     # fill the output_map by mapping parameters to arrays
     output_map = Dict{String,Vector}()
-    for param in config.output.parameters
+    for (param, ncname) in pairs(config.output.parameters)
         parsym = Symbol(param)
         for (name, component) in pairs(modelmap)
             if parsym in propertynames(component)
@@ -278,8 +282,8 @@ function prepare_writer(config, reader, output_path, modelmap, maxlayers)
         end
     end
 
-    calendar = get(config.input, "calendar", "proleptic_gregorian")
-    time_units = get(config.input, "time_units", CFTime.DEFAULT_TIME_UNITS)
+    calendar = get(config, "calendar", "proleptic_gregorian")
+    time_units = get(config, "time_units", CFTime.DEFAULT_TIME_UNITS)
     ds = setup_netcdf(
         randomized_path,
         nclon,
@@ -289,11 +293,12 @@ function prepare_writer(config, reader, output_path, modelmap, maxlayers)
         time_units,
         maxlayers,
     )
-    return NCWriter(ds, output_map)
+    csv = open(config.csv.path, "w")
+    return Writer(ds, output_map, csv)
 end
 
 "Write NetCDF output"
-function write_output(model, writer::NCWriter)
+function write_output(model, writer::Writer)
     @unpack vertical, clock, reader = model
     @unpack buffer, inds, inds_riv = reader
     @unpack dataset, parameters = writer
@@ -369,4 +374,5 @@ function close_files(model)
     close(reader.dataset)
     close(reader.cyclic_dataset)
     close(writer.dataset)
+    close(writer.csv_io)
 end

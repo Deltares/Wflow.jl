@@ -183,13 +183,13 @@ end
 function update_until_snow(sbm::SBM, config)
 
     # # start dummy variables (should be generated from model reader and from Config.jl TOML)
-    do_lai = haskey(config.cyclic_parameters, "lai")
+    do_lai = haskey(config.cyclic.parameters, "lai")
     modelglacier = Bool(get(config.model, "modelglacier", 0))
     modelsnow = Bool(get(config.model, "modelsnow", 0))
     #potevap = 4.0
     #precipitation = 3.0
     #temperature = 10.0
-    Δt = Second(config.input.timestepsecs)
+    Δt = Second(config.timestepsecs)
     #basetimestep = Second(Day(1))
     # end dummpy variables
     for i = 1:sbm.n
@@ -274,7 +274,7 @@ function update_until_recharge(sbm::SBM, config)
     wl_river = 0.10 # from kinematic river
     irsupply_mm = 0.0
     ust = Bool(get(config.model, "whole_ust_available", 0)) # should be removed from optional setting and code?
-    Δt = Second(config.input.timestepsecs)
+    Δt = Second(config.timestepsecs)
     #basetimestep = Second(Day(1))
     # end dummpy variables
 

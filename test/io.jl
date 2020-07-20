@@ -17,19 +17,19 @@ using UnPack
     # test if the values are parsed as expected
     @test config.casename == "testcase"
     @test config.λ == 1.2
-    @test config.input.starttime === DateTime(2000)
-    @test config.input.endtime === DateTime(2000, 2)
+    @test config.starttime === DateTime(2000)
+    @test config.endtime === DateTime(2000, 2)
     @test config.output.path == "data/specified_output.nc"
-    @test config.output.parameters isa Vector
-    @test config.output.parameters == [
-        "satwaterdepth",
+    @test config.output.parameters isa Wflow.Config
+    @test collect(keys(config.output.parameters)) == [
         "snow",
-        "tsoil",
-        "ustorelayerdepth",
-        "snowwater",
-        "canopystorage",
         "soilthickness",
+        "snowwater",
+        "satwaterdepth",
         "q",
+        "ustorelayerdepth",
+        "canopystorage",
+        "tsoil",
     ]
 end
 
@@ -67,7 +67,6 @@ model = Wflow.initialize_sbm_model(config)
     ncvars = [k for k in keys(writer.dataset) if !in(k, ncdims)]
     @test "snow" in ncvars
     @test "q" in ncvars
-    @test Set(keys(writer.dataset)) == Set(vcat(config.output.parameters, ncdims...))
 end
 
 # get the output path before it's closed, and remove up the file
