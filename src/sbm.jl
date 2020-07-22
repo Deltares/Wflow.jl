@@ -60,7 +60,7 @@ Base.@kwdef struct SBM{T,N,M}
     # A scaling parameter [mm⁻¹] (controls exponential decline of kv₀)
     f::Vector{T} = θₑ ./ m
     # Amount of water in the unsaturated store, per layer [mm]
-    ustorelayerdepth = act_thickl .* 0.0
+    ustorelayerdepth::Vector{SVector{N,T}} = act_thickl .* 0.0
     # Saturated store [mm]
     satwaterdepth::Vector{T}
     # Pseudo-water table depth [mm] (top of the saturated zone)
@@ -107,7 +107,7 @@ Base.@kwdef struct SBM{T,N,M}
     # Actual evaporation from river [mm]
     ae_openw_r::Vector{T} = fill(mv, n)
     # Water available for infiltration [mm]
-    avail_forinfilt = fill(mv, n)
+    avail_forinfilt::Vector{T} = fill(mv, n)
     # Actual infiltration into the unsaturated zone [mm]
     actinfilt::Vector{T} = fill(mv, n)
     # Actual infiltration non-compacted fraction [mm]
