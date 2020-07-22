@@ -37,11 +37,8 @@ model = Wflow.update(
 
 @testset "first timestep" begin
     sbm = model.vertical
-
-    vcell = model.vertical[1]
-    @test vcell isa NamedTuple
-    @test isbits(vcell)
-    @test vcell.tt ≈ 1.2999999523162842
+    
+    @test sbm.tt[1] ≈ 1.2999999523162842
 
     @test model.clock.iteration == 2
 

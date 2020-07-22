@@ -57,6 +57,7 @@ model = Wflow.initialize_sbm_model(
     joinpath(tomldir, config.input.staticmaps),
     joinpath(tomldir, config.input.cyclic),
     joinpath(tomldir, config.input.forcing),
+    joinpath(tomldir, config.state.input.path),
     joinpath(tomldir, config.output.path),
 )
 

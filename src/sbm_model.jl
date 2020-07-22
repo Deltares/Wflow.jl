@@ -1,185 +1,3 @@
-Base.@kwdef struct SBM{T,N,M}
-    # Maximum number of soil layers
-    maxlayers::Int
-    # number of cells
-    n::Int
-    # Number of soil layers
-    nlayers::Vector{Int}
-    # length of cells in y direction [m]
-    yl::Vector{T}
-    # length of cells in x direction [m]
-    xl::Vector{T}
-    # Fraction of river [-]
-    riverfrac::Vector{T}
-     # Saturated water content (porosity) [mm mm⁻¹]
-    θₛ::Vector{T}
-     # Residual water content [mm mm⁻¹]
-    θᵣ::Vector{T}
-    # Effictive porosity [mm mm⁻¹]
-    θₑ::Vector{T}
-    # Vertical hydraulic conductivity [mm Δt⁻¹] at soil surface
-    kv₀::Vector{T}
-    # Muliplication factor [-] applied to kv_z (vertical flow)
-    kvfrac::Vector{SVector{N,T}}
-    # Parameter [mm] controlling f
-    m::Vector{T}
-    # Air entry pressure [cm] of soil (Brooks-Corey)
-    hb::Vector{T}
-    # Soil thickness [mm]
-    soilthickness::Vector{T}
-    # Thickness of soil layers [mm]
-    act_thickl::Vector{SVector{N,T}}
-    # Cumulative sum of soil layers [mm], starting at soil surface (0)
-    sumlayers::Vector{SVector{M,T}}
-    # Infiltration capacity of the compacted areas [mm Δt⁻¹]
-    infiltcappath::Vector{T}
-    # Soil infiltration capacity [mm/Δt]
-    infiltcapsoil::Vector{T}
-    # Maximum leakage [mm/Δt] from saturated zone
-    maxleakage::Vector{T}
-    # Fraction of open water (excluding rivers) [-]
-    waterfrac::Vector{T}
-    # Fraction of compacted area  [-]
-    pathfrac::Vector{T}
-    # Vertical elevation [m]
-    altitude::Vector{T}
-    # Rooting depth [mm]
-    rootingdepth::Vector{T}
-    # Controls how roots are linked to water table [-]
-    rootdistpar::Vector{T}
-    # Parameter [mm] controlling capilary rise
-    capscale::Vector{T}
-    #Multiplication factor [-] to correct
-    et_reftopot::Vector{T}
-    # Brooks-Corey power coefﬁcient [-] for each soil layer
-    c::Vector{SVector{N,T}}
-    # Stemflow [mm]
-    stemflow::Vector{T}
-    # Throughfall [mm]
-    throughfall::Vector{T}
-    # A scaling parameter [mm⁻¹] (controls exponential decline of kv₀)
-    f::Vector{T} = θₑ ./ m
-    # Amount of water in the unsaturated store, per layer [mm]
-    ustorelayerdepth = act_thickl .* 0.0
-    # Saturated store [mm]
-    satwaterdepth::Vector{T}
-    # Pseudo-water table depth [mm] (top of the saturated zone)
-    zi::Vector{T} = max.(0.0, soilthickness .- satwaterdepth ./ θₑ)
-    # Soilwater capacity [mm]
-    soilwatercapacity::Vector{T}
-    # Canopy storage [mm]
-    canopystorage::Vector{T} = fill(0.0, n)
-    # Maximum canopy storage [mm]
-    cmax::Vector{T}
-    # Canopy gap fraction [-]
-    canopygapfraction::Vector{T}
-    # Gash interception model parameter, ratio of the average evaporation from the
-    # wet canopy [mm Δt⁻¹] and the average precipitation intensity [mm Δt⁻¹] on a saturated canopy
-    e_r::Vector{T}
-    # Precipitation [mm]
-    precipitation::Vector{T} = fill(mv, n)
-    # Temperature [ᵒC]
-    temperature::Vector{T} = fill(mv, n)
-    # Potential evapotranspiration [mm]
-    potevap::Vector{T} = fill(mv, n)
-    # Potential transpiration, open water, river and soil evaporation (after subtracting interception from potevap)
-    pottrans_soil::Vector{T} = fill(mv, n)
-    # Transpiration [mm]
-    transpiration::Vector{T} = fill(mv, n)
-    # Actual evaporation from unsaturated store [mm]
-    ae_ustore::Vector{T} = fill(mv, n)
-    # Actual evaporation from saturated store [mm]
-    ae_sat::Vector{T} = fill(mv, n)
-    # Interception [mm]
-    interception::Vector{T} = fill(mv, n)
-    # Soil evaporation [mm]
-    soilevap::Vector{T} = fill(mv, n)
-    # Actual evaporation from saturated store (transpiration and soil evaporation) [mm]
-    actevapsat::Vector{T} = fill(mv, n)
-    # Total actual evapotranspiration [mm]
-    actevap::Vector{T} = fill(mv, n)
-    # Runoff from river based on riverfrac [mm]
-    runoff_river::Vector{T} = fill(mv, n)
-    # Runoff from land based on waterfrac [mm]
-    runoff_land::Vector{T} = fill(mv, n)
-    # Actual evaporation from open water (land) [mm]
-    ae_openw_l::Vector{T} = fill(mv, n)
-    # Actual evaporation from river [mm]
-    ae_openw_r::Vector{T} = fill(mv, n)
-    # Water available for infiltration [mm]
-    avail_forinfilt = fill(mv, n)
-    # Actual infiltration into the unsaturated zone [mm]
-    actinfilt::Vector{T} = fill(mv, n)
-    # Actual infiltration non-compacted fraction [mm]
-    actinfiltsoil::Vector{T} = fill(mv, n)
-    # Actual infiltration compacted fraction [mm]
-    actinfiltpath::Vector{T} = fill(mv, n)
-    # Infiltration excess water [mm]
-    infiltexcess::Vector{T} = fill(mv, n)
-    # Water that cannot infiltrate due to saturated soil (saturation excess) [mm]
-    excesswater::Vector{T} = fill(mv, n)
-    # Water exfiltrating during saturation excess conditions [mm]
-    exfiltsatwater::Vector{T} = fill(mv, n)
-    # Water exfiltrating from unsaturated store because of change in water table [mm]
-    exfiltustore::Vector{T} = fill(mv, n)
-    # Excess water for non-compacted fraction [mm]
-    excesswatersoil::Vector{T} = fill(mv, n)
-    # Excess water for compacted fraction [mm]
-    excesswaterpath::Vector{T} = fill(mv, n)
-    # Total surface runoff from infiltration and saturation excess [mm]
-    runoff::Vector{T} = fill(mv, n)
-    # Volumetric water content [mm mm⁻¹] per soil layer (including θᵣ and saturated zone)
-    vwc::Vector{SVector{N,T}}
-    # Volumetric water content [%] per soil layer (including θᵣ and saturated zone)
-    vwc_perc::Vector{SVector{N,T}}
-    # Root water storage [mm] in unsaturated and saturated zone (excluding θᵣ)
-    rootstore::Vector{T} = fill(mv, n)
-    # Volumetric water content [mm mm⁻¹] in root zone (including θᵣ and saturated zone)
-    vwc_root::Vector{T} = fill(mv, n)
-    # Volumetric water content [%] in root zone (including θᵣ and saturated zone)
-    vwc_percroot::Vector{T} = fill(mv, n)
-    # Amount of available water in the unsaturated zone [mm]
-    ustoredepth::Vector{T} = fill(mv, n)
-    # Downward flux from unsaturated to saturated zone [mm]
-    transfer::Vector{T} = fill(mv, n)
-    # Capillary rise [mm]
-    capflux::Vector{T} = fill(mv, n)
-    # Net recharge to saturated store [mm]
-    recharge::Vector{T} = fill(mv, n)
-    ### Snow parameters ###
-    # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹]
-    cfmax::Vector{T} = fill(mv, n)
-    # Threshold temperature for snowfall [ᵒC]
-    tt::Vector{T} = fill(mv, n)
-    # Threshold temperature interval length [ᵒC]
-    tti::Vector{T} = fill(mv, n)
-    # Threshold temperature for snowmelt [ᵒC]
-    ttm ::Vector{T} = fill(mv, n)
-    # Water holding capacity as fraction of current snow pack [-]
-    whc::Vector{T} = fill(mv, n)
-    # Soil temperature smooth factor [-]
-    w_soil::Vector{T} = fill(mv, n)
-    # Controls soil infiltration reduction factor when soil is frozen [-]
-    cf_soil::Vector{T} = fill(mv, n)
-    # Snow storage [mm]
-    snow::Vector{T} = fill(0.0, n)
-    # Liquid water content in the snow pack [mm]
-    snowwater::Vector{T} = fill(0.0, n)
-    # Snow melt + precipitation as rainfall [mm]
-    rainfallplusmelt::Vector{T} = fill(mv, n)
-    # Top soil temperature [ᵒC]
-    tsoil::Vector{T} = fill(10.0, n)
-    ## Interception related to LAI climatology ###
-    # Specific leaf storage [mm]
-    sl::Vector{T} = fill(mv, n)
-    # Storage woody part of vegetation [mm]
-    swood::Vector{T} = fill(mv, n)
-    # Extinction coefficient [-] (to calculate canopy gap fraction)
-    kext::Vector{T} = fill(mv, n)
-    # Leaf area index [m² m⁻²]
-    lai::Vector{T} = fill(mv, n)
-end
-
 """
     initialize_sbm_model(config, staticmaps_path, cyclic_path, forcing_path, output_path)
 
@@ -661,18 +479,18 @@ function initialize_sbm_model(
         writer,
     )
 
-    # if reinit
-    #     ds = NCDataset(instate_path)
-    #     for state in statenames
-    #         if "layer" in dimnames(ds[state])
-    #             var = ds[state][inds,:,1]
-    #             model = set(model, paramap[state], [SVector{nc.dim["layer"]}(var[i,:]) for i=1:inds])
-    #         else
-    #             var = ds[state][inds,1]
-    #             model = set(model, paramap[state], var)
-    #         end
-    #     end
-    # end
+    if reinit
+        ds = NCDataset(instate_path)
+        for state in statenames
+            if "layer" in dimnames(ds[state])
+                var = Float64.(ds[state][inds,:,1])
+                model = set(model, paramap[state], [SVector{ds.dim["layer"]}(var[i,:]) for i=1:n])
+            else
+                var = Float64.(nomissing(ds[state][inds,1],mv))
+                model = set(model, paramap[state], var)
+            end
+        end
+    end
 
     # make sure the forcing is already loaded
     # it's fine to run twice, and may help catching errors earlier

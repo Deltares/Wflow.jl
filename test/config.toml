@@ -32,7 +32,7 @@ potevap = "PET"
 lai = "LAI"
 
 [model]
-reinit = 1
+reinit = 0
 reservoirs = 1
 masswasting = 1
 modelsnow = 1
