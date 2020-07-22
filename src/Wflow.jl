@@ -30,6 +30,7 @@ end
 
 include("toml.jl")
 include("io.jl")
+include("name.jl")
 include("horizontal_process.jl")
 include("sbm.jl")
 include("reservoir_lake.jl")

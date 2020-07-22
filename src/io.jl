@@ -135,7 +135,7 @@ function setup_netcdf(
         attrib = ["units" => time_units, "calendar" => calendar],
     )
     for parameter in parameters
-        cell = getproperty(row, Symbol(parameter))
+        cell = getproperty(row, Symbol(parameter))[1]
         if cell isa AbstractFloat
             # all floats are saved as Float32
             defVar(

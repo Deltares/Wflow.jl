@@ -1,3 +1,185 @@
+Base.@kwdef struct SBM{T,N,M}
+    # Maximum number of soil layers
+    maxlayers::Int
+    # number of cells
+    n::Int
+    # Number of soil layers
+    nlayers::Vector{Int}
+    # length of cells in y direction [m]
+    yl::Vector{T}
+    # length of cells in x direction [m]
+    xl::Vector{T}
+    # Fraction of river [-]
+    riverfrac::Vector{T}
+     # Saturated water content (porosity) [mm mm⁻¹]
+    θₛ::Vector{T}
+     # Residual water content [mm mm⁻¹]
+    θᵣ::Vector{T}
+    # Effictive porosity [mm mm⁻¹]
+    θₑ::Vector{T}
+    # Vertical hydraulic conductivity [mm Δt⁻¹] at soil surface
+    kv₀::Vector{T}
+    # Muliplication factor [-] applied to kv_z (vertical flow)
+    kvfrac::Vector{SVector{N,T}}
+    # Parameter [mm] controlling f
+    m::Vector{T}
+    # Air entry pressure [cm] of soil (Brooks-Corey)
+    hb::Vector{T}
+    # Soil thickness [mm]
+    soilthickness::Vector{T}
+    # Thickness of soil layers [mm]
+    act_thickl::Vector{SVector{N,T}}
+    # Cumulative sum of soil layers [mm], starting at soil surface (0)
+    sumlayers::Vector{SVector{M,T}}
+    # Infiltration capacity of the compacted areas [mm Δt⁻¹]
+    infiltcappath::Vector{T}
+    # Soil infiltration capacity [mm/Δt]
+    infiltcapsoil::Vector{T}
+    # Maximum leakage [mm/Δt] from saturated zone
+    maxleakage::Vector{T}
+    # Fraction of open water (excluding rivers) [-]
+    waterfrac::Vector{T}
+    # Fraction of compacted area  [-]
+    pathfrac::Vector{T}
+    # Vertical elevation [m]
+    altitude::Vector{T}
+    # Rooting depth [mm]
+    rootingdepth::Vector{T}
+    # Controls how roots are linked to water table [-]
+    rootdistpar::Vector{T}
+    # Parameter [mm] controlling capilary rise
+    capscale::Vector{T}
+    #Multiplication factor [-] to correct
+    et_reftopot::Vector{T}
+    # Brooks-Corey power coefﬁcient [-] for each soil layer
+    c::Vector{SVector{N,T}}
+    # Stemflow [mm]
+    stemflow::Vector{T}
+    # Throughfall [mm]
+    throughfall::Vector{T}
+    # A scaling parameter [mm⁻¹] (controls exponential decline of kv₀)
+    f::Vector{T} = θₑ ./ m
+    # Amount of water in the unsaturated store, per layer [mm]
+    ustorelayerdepth = act_thickl .* 0.0
+    # Saturated store [mm]
+    satwaterdepth::Vector{T}
+    # Pseudo-water table depth [mm] (top of the saturated zone)
+    zi::Vector{T} = max.(0.0, soilthickness .- satwaterdepth ./ θₑ)
+    # Soilwater capacity [mm]
+    soilwatercapacity::Vector{T}
+    # Canopy storage [mm]
+    canopystorage::Vector{T} = fill(0.0, n)
+    # Maximum canopy storage [mm]
+    cmax::Vector{T}
+    # Canopy gap fraction [-]
+    canopygapfraction::Vector{T}
+    # Gash interception model parameter, ratio of the average evaporation from the
+    # wet canopy [mm Δt⁻¹] and the average precipitation intensity [mm Δt⁻¹] on a saturated canopy
+    e_r::Vector{T}
+    # Precipitation [mm]
+    precipitation::Vector{T} = fill(mv, n)
+    # Temperature [ᵒC]
+    temperature::Vector{T} = fill(mv, n)
+    # Potential evapotranspiration [mm]
+    potevap::Vector{T} = fill(mv, n)
+    # Potential transpiration, open water, river and soil evaporation (after subtracting interception from potevap)
+    pottrans_soil::Vector{T} = fill(mv, n)
+    # Transpiration [mm]
+    transpiration::Vector{T} = fill(mv, n)
+    # Actual evaporation from unsaturated store [mm]
+    ae_ustore::Vector{T} = fill(mv, n)
+    # Actual evaporation from saturated store [mm]
+    ae_sat::Vector{T} = fill(mv, n)
+    # Interception [mm]
+    interception::Vector{T} = fill(mv, n)
+    # Soil evaporation [mm]
+    soilevap::Vector{T} = fill(mv, n)
+    # Actual evaporation from saturated store (transpiration and soil evaporation) [mm]
+    actevapsat::Vector{T} = fill(mv, n)
+    # Total actual evapotranspiration [mm]
+    actevap::Vector{T} = fill(mv, n)
+    # Runoff from river based on riverfrac [mm]
+    runoff_river::Vector{T} = fill(mv, n)
+    # Runoff from land based on waterfrac [mm]
+    runoff_land::Vector{T} = fill(mv, n)
+    # Actual evaporation from open water (land) [mm]
+    ae_openw_l::Vector{T} = fill(mv, n)
+    # Actual evaporation from river [mm]
+    ae_openw_r::Vector{T} = fill(mv, n)
+    # Water available for infiltration [mm]
+    avail_forinfilt = fill(mv, n)
+    # Actual infiltration into the unsaturated zone [mm]
+    actinfilt::Vector{T} = fill(mv, n)
+    # Actual infiltration non-compacted fraction [mm]
+    actinfiltsoil::Vector{T} = fill(mv, n)
+    # Actual infiltration compacted fraction [mm]
+    actinfiltpath::Vector{T} = fill(mv, n)
+    # Infiltration excess water [mm]
+    infiltexcess::Vector{T} = fill(mv, n)
+    # Water that cannot infiltrate due to saturated soil (saturation excess) [mm]
+    excesswater::Vector{T} = fill(mv, n)
+    # Water exfiltrating during saturation excess conditions [mm]
+    exfiltsatwater::Vector{T} = fill(mv, n)
+    # Water exfiltrating from unsaturated store because of change in water table [mm]
+    exfiltustore::Vector{T} = fill(mv, n)
+    # Excess water for non-compacted fraction [mm]
+    excesswatersoil::Vector{T} = fill(mv, n)
+    # Excess water for compacted fraction [mm]
+    excesswaterpath::Vector{T} = fill(mv, n)
+    # Total surface runoff from infiltration and saturation excess [mm]
+    runoff::Vector{T} = fill(mv, n)
+    # Volumetric water content [mm mm⁻¹] per soil layer (including θᵣ and saturated zone)
+    vwc::Vector{SVector{N,T}}
+    # Volumetric water content [%] per soil layer (including θᵣ and saturated zone)
+    vwc_perc::Vector{SVector{N,T}}
+    # Root water storage [mm] in unsaturated and saturated zone (excluding θᵣ)
+    rootstore::Vector{T} = fill(mv, n)
+    # Volumetric water content [mm mm⁻¹] in root zone (including θᵣ and saturated zone)
+    vwc_root::Vector{T} = fill(mv, n)
+    # Volumetric water content [%] in root zone (including θᵣ and saturated zone)
+    vwc_percroot::Vector{T} = fill(mv, n)
+    # Amount of available water in the unsaturated zone [mm]
+    ustoredepth::Vector{T} = fill(mv, n)
+    # Downward flux from unsaturated to saturated zone [mm]
+    transfer::Vector{T} = fill(mv, n)
+    # Capillary rise [mm]
+    capflux::Vector{T} = fill(mv, n)
+    # Net recharge to saturated store [mm]
+    recharge::Vector{T} = fill(mv, n)
+    ### Snow parameters ###
+    # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹]
+    cfmax::Vector{T} = fill(mv, n)
+    # Threshold temperature for snowfall [ᵒC]
+    tt::Vector{T} = fill(mv, n)
+    # Threshold temperature interval length [ᵒC]
+    tti::Vector{T} = fill(mv, n)
+    # Threshold temperature for snowmelt [ᵒC]
+    ttm ::Vector{T} = fill(mv, n)
+    # Water holding capacity as fraction of current snow pack [-]
+    whc::Vector{T} = fill(mv, n)
+    # Soil temperature smooth factor [-]
+    w_soil::Vector{T} = fill(mv, n)
+    # Controls soil infiltration reduction factor when soil is frozen [-]
+    cf_soil::Vector{T} = fill(mv, n)
+    # Snow storage [mm]
+    snow::Vector{T} = fill(0.0, n)
+    # Liquid water content in the snow pack [mm]
+    snowwater::Vector{T} = fill(0.0, n)
+    # Snow melt + precipitation as rainfall [mm]
+    rainfallplusmelt::Vector{T} = fill(mv, n)
+    # Top soil temperature [ᵒC]
+    tsoil::Vector{T} = fill(10.0, n)
+    ## Interception related to LAI climatology ###
+    # Specific leaf storage [mm]
+    sl::Vector{T} = fill(mv, n)
+    # Storage woody part of vegetation [mm]
+    swood::Vector{T} = fill(mv, n)
+    # Extinction coefficient [-] (to calculate canopy gap fraction)
+    kext::Vector{T} = fill(mv, n)
+    # Leaf area index [m² m⁻²]
+    lai::Vector{T} = fill(mv, n)
+end
+
 """
     initialize_sbm_model(config, staticmaps_path, cyclic_path, forcing_path, output_path)
 
@@ -10,6 +192,7 @@ function initialize_sbm_model(
     staticmaps_path,
     cyclic_path,
     forcing_path,
+    instate_path,
     output_path,
 )
 
@@ -50,6 +233,7 @@ function initialize_sbm_model(
     )
 
     sizeinmetres = Bool(get(config.model, "sizeinmetres", 0))
+    reinit = Bool(get(config.model, "reinit", 0))
     config_thicknesslayers = get(config.model, "thicknesslayers", 0.0)
     if length(config_thicknesslayers) > 0
         thicknesslayers = SVector(Tuple(push!(Float64.(config_thicknesslayers), mv)))
@@ -94,15 +278,15 @@ function initialize_sbm_model(
     end
     cellength = abs(mean(diff(x_nc)))
 
-    if do_snow
-        cfmax = ncread(nc, "Cfmax"; sel = inds, defaults = dparams, type = Float64)
-        tt = ncread(nc, "TT"; sel = inds, defaults = dparams, type = Float64)
-        tti = ncread(nc, "TTI"; sel = inds, defaults = dparams, type = Float64)
-        ttm = ncread(nc, "TTM"; sel = inds, defaults = dparams, type = Float64)
-        whc = ncread(nc, "WHC"; sel = inds, defaults = dparams, type = Float64)
-        w_soil = ncread(nc, "w_soil"; sel = inds, defaults = dparams, type = Float64)
-        cf_soil = ncread(nc, "cf_soil"; sel = inds, defaults = dparams, type = Float64)
-    end
+
+    cfmax = ncread(nc, "Cfmax"; sel = inds, defaults = dparams, type = Float64)
+    tt = ncread(nc, "TT"; sel = inds, defaults = dparams, type = Float64)
+    tti = ncread(nc, "TTI"; sel = inds, defaults = dparams, type = Float64)
+    ttm = ncread(nc, "TTM"; sel = inds, defaults = dparams, type = Float64)
+    whc = ncread(nc, "WHC"; sel = inds, defaults = dparams, type = Float64)
+    w_soil = ncread(nc, "w_soil"; sel = inds, defaults = dparams, type = Float64)
+    cf_soil = ncread(nc, "cf_soil"; sel = inds, defaults = dparams, type = Float64)
+
 
     # soil parameters
     θₛ = ncread(nc, "thetaS"; sel = inds, defaults = dparams, type = Float64)
@@ -157,6 +341,9 @@ function initialize_sbm_model(
         e_r = ncread(nc, "EoverR"; sel = inds, defaults = dparams, type = Float64)
         canopygapfraction =
             ncread(nc, "CanopyGapFraction"; sel = inds, defaults = dparams, type = Float64)
+        sl = fill(mv, n)
+        swood = fill(mv,n)
+        kext = fill(mv,n)
     else
         # TODO confirm if lai climatology is present in the NetCDF
         sl = ncread(nc, "Sl"; sel = inds, defaults = dparams, type = Float64)
@@ -202,235 +389,111 @@ function initialize_sbm_model(
     act_thickl = svectorscopy(act_thickl, Val{maxlayers}())
     θₑ = θₛ .- θᵣ
     soilwatercapacity = soilthickness .* θₑ
-    satwaterdepth = 0.85 .* soilwatercapacity
+    satwaterdepth = 0.85 .* soilwatercapacity # cold state value for satwaterdepth
 
     # copied to array of sarray below
     vwc = fill(mv, maxlayers, n)
     vwc_perc = fill(mv, maxlayers, n)
 
-    # Create a TypedTables.Table with all parameters, forcings, output and states used by
-    # the model.
-    # Each row in the table corresponds to the values of a single cell.
-    # For parameters that are constant over space and time, use `Fill(val, n)` to reduce
-    # memory usage. This behaves like a Vector of length n, but is backed only by a single
-    # scalar value.
-    # A column needs to be added to this table, to be able to update it dynamically (input),
-    # or to output the value. States need to be in this table to bring their values to the
-    # next timestep. If a column is derived from other columns and is not a state, it does
-    # not need to be in the table. The only exception is if the column is needed in the
-    # output.
-    # This table and the memory allocated for the columns are intended to be reused for all
-    # timesteps. The Table itself is immutable so no new columns can be added after it is
-    # created. The individual columns are (with the exeption off Fill) Vectors, meaning
-    # that their values can be updated at any time. To make it easy to reason about the
-    # state of the Table at any given time, we shall take care to update the changed values
-    # only at the end of each function. This means that in a function for time step T,
-    # the table will hold the values of the end of time step T-1, and are updated to step T
-    # at the end of the function.
-    # Normally speaking a TypedTables.Table allows fast iteration over rows, creating a
-    # NamedTuple for each row. Due to the large number of columns used for SBM, it seems
-    # Julia's type inference gives up, likely because the typle inference length cutoff
-    # is set to 32. The result is that the code will become drastically slower when looping
-    # over the rows, since it doesn't know the type of the NamedTuple that represents the
-    # row. We got around this limitation by instead of iterating over the table to get rows
-    # 1 to n, to iterate over 1:n and fetch the values like t.c[r], where t is the table,
-    # c the column, and r the row number.
-
-    # states:
-    # satwaterdepth
-    # snow
-    # tsoil
-    # ustorelayerdepth
-    # snowwater
-    # canopystorage
-
-    sbm = Table(
-        # Maximum number of soil layers
-        maxlayers = Fill(maxlayers, n),
-        # Number of soil layers
-        nlayers = nlayers,
-        # length of cells in y direction [m]
-        yl = yl,
-        # length of cells in x direction [m]
-        xl = xl,
-        # Fraction of river [-]
-        riverfrac = riverfrac,
-        # Saturated water content (porosity) [mm mm⁻¹]
-        θₛ = θₛ,
-        # Residual water content [mm mm⁻¹]
-        θᵣ = θᵣ,
-        # Vertical hydraulic conductivity [mm Δt⁻¹] at soil surface
-        kv₀ = kv₀,
-        # Muliplication factor [-] applied to kv_z (vertical flow)
-        kvfrac = svectorscopy(kvfrac, Val{maxlayers}()),
-        # Parameter [mm] controlling f
-        m = m,
-        # Air entry pressure [cm] of soil (Brooks-Corey)
-        hb = hb,
-        # Soil thickness [mm]
-        soilthickness = soilthickness,
-        # Thickness of soil layers [mm]
-        act_thickl = act_thickl,
-        # Cumulative sum of soil layers [mm], starting at soil surface (0)
-        sumlayers = svectorscopy(s_layers, Val{maxlayers + 1}()),
-        # Infiltration capacity of the compacted areas [mm Δt⁻¹]
-        infiltcappath = infiltcappath,
-        # Soil infiltration capacity [mm/Δt]
-        infiltcapsoil = infiltcapsoil,
-        # Maximum leakage [mm/Δt] from saturated zone
-        maxleakage = maxleakage,
-        # Fraction of open water (excluding rivers) [-]
-        waterfrac = max.(waterfrac .- riverfrac, 0.0),
-        # Fraction of compacted area  [-]
-        pathfrac = pathfrac,
-        # Vertical elevation [m]
-        altitude = altitude,
-        # Rooting depth [mm]
-        rootingdepth = rootingdepth,
-        # Controls how roots are linked to water table [-]
-        rootdistpar = rootdistpar,
-        # Parameter [mm] controlling capilary rise
-        capscale = capscale,
-        # Multiplication factor [-] to correct
-        et_reftopot = et_reftopot,
-        # Brooks-Corey power coefﬁcient [-] for each soil layer
-        c = svectorscopy(c, Val{maxlayers}()),
-        # Stemflow [mm]
-        stemflow = fill(mv, n),
-        # Throughfall [mm]
-        throughfall = fill(mv, n),
-        # A scaling parameter [mm⁻¹] (controls exponential decline of kv₀)
-        f = θₑ ./ m,
-        # Amount of water in the unsaturated store, per layer [mm]
-        ustorelayerdepth = act_thickl .* 0.0,
-        # Saturated store [mm]
-        satwaterdepth = satwaterdepth,
-        # Pseudo-water table depth [mm] (top of the saturated zone)
-        zi = max.(0.0, soilthickness .- satwaterdepth ./ θₑ),
-        # Soilwater capacity [mm]
-        soilwatercapacity = soilwatercapacity,
-        # Canopy storage [mm]
-        canopystorage = fill(0.0, n),
-        # Maximum canopy storage [mm]
-        cmax = cmax,
-        # Canopy gap fraction [-]
-        canopygapfraction = canopygapfraction,
-        # Gash interception model parameter, ratio of the average evaporation from the
-        # wet canopy [mm Δt⁻¹] and the average precipitation intensity [mm Δt⁻¹] on a saturated canopy
-        e_r = e_r,
-        # Precipitation [mm]
-        precipitation = fill(mv, n),
-        # Temperature [ᵒC]
-        temperature = fill(mv, n),
-        # Potential evapotranspiration [mm]
-        potevap = fill(mv, n),
-        # Potential transpiration, open water, river and soil evaporation (after subtracting interception from potevap)
-        pottrans_soil = fill(mv, n),
-        # Transpiration [mm]
-        transpiration = fill(mv, n),
-        # Actual evaporation from unsaturated store [mm]
-        ae_ustore = fill(mv, n),
-        # Actual evaporation from saturated store [mm]
-        ae_sat = fill(mv, n),
-        # Interception [mm]
-        interception = fill(mv, n),
-        # Soil evaporation [mm]
-        soilevap = fill(mv, n),
-        # Actual evaporation from saturated store (transpiration and soil evaporation) [mm]
-        actevapsat = fill(mv, n),
-        # Total actual evapotranspiration [mm]
-        actevap = fill(mv, n),
-        # Runoff from river based on riverfrac [mm]
-        runoff_river = fill(mv, n),
-        # Runoff from land based on waterfrac [mm]
-        runoff_land = fill(mv, n),
-        # Actual evaporation from open water (land) [mm]
-        ae_openw_l = fill(mv, n),
-        # Actual evaporation from river [mm]
-        ae_openw_r = fill(mv, n),
-        # Water available for infiltration [mm]
-        avail_forinfilt = fill(mv, n),
-        # Actual infiltration into the unsaturated zone [mm]
-        actinfilt = fill(mv, n),
-        # Actual infiltration non-compacted fraction [mm]
-        actinfiltsoil = fill(mv, n),
-        # Actual infiltration compacted fraction [mm]
-        actinfiltpath = fill(mv, n),
-        # Infiltration excess water [mm]
-        infiltexcess = fill(mv, n),
-        # Water that cannot infiltrate due to saturated soil (saturation excess) [mm]
-        excesswater = fill(mv, n),
-        # Water exfiltrating during saturation excess conditions [mm]
-        exfiltsatwater = fill(mv, n),
-        # Water exfiltrating from unsaturated store because of change in water table [mm]
-        exfiltustore = fill(mv, n),
-        # Excess water for non-compacted fraction [mm]
-        excesswatersoil = fill(mv, n),
-        # Excess water for compacted fraction [mm]
-        excesswaterpath = fill(mv, n),
-        # Total surface runoff from infiltration and saturation excess [mm]
-        runoff = fill(mv, n),
-        # Volumetric water content [mm mm⁻¹] per soil layer (including θᵣ and saturated zone)
-        vwc = svectorscopy(vwc, Val{maxlayers}()),
-        # Volumetric water content [%] per soil layer (including θᵣ and saturated zone)
-        vwc_perc = svectorscopy(vwc_perc, Val{maxlayers}()),
-        # Root water storage [mm] in unsaturated and saturated zone (excluding θᵣ)
-        rootstore = fill(mv, n),
-        # Volumetric water content [mm mm⁻¹] in root zone (including θᵣ and saturated zone)
-        vwc_root = fill(mv, n),
-        # Volumetric water content [%] in root zone (including θᵣ and saturated zone)
-        vwc_percroot = fill(mv, n),
-        # Amount of available water in the unsaturated zone [mm]
-        ustoredepth = fill(mv, n),
-        # Downward flux from unsaturated to saturated zone [mm]
-        transfer = fill(mv, n),
-        # Capillary rise [mm]
-        capflux = fill(mv, n),
-        # Net recharge to saturated store [mm]
-        recharge = fill(mv, n),
-    )
-
+    # states sbm concept
     if do_snow
-        sbm = Table(
-            sbm,
-            # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹]
-            cfmax = cfmax,
-            # Threshold temperature for snowfall [ᵒC]
-            tt = tt,
-            # Threshold temperature interval length [ᵒC]
-            tti = tti,
-            # Threshold temperature for snowmelt [ᵒC]
-            ttm = ttm,
-            # Water holding capacity as fraction of current snow pack [-]
-            whc = whc,
-            # Soil temperature smooth factor [-]
-            w_soil = w_soil,
-            # Controls soil infiltration reduction factor when soil is frozen [-]
-            cf_soil = cf_soil,
-            # Snow storage [mm]
-            snow = fill(0.0, n),
-            # Liquid water content in the snow pack [mm]
-            snowwater = fill(0.0, n),
-            # Snow melt + precipitation as rainfall [mm]
-            rainfallplusmelt = fill(mv, n),
-            # Top soil temperature [ᵒC]
-            tsoil = fill(10.0, n),
-        )
+        statenames =("satwaterdepth", "snow", "tsoil", "ustorelayerdepth", "snowwater", "canopystorage")
+    else
+        statenames = ("satwaterdepth", "ustorelayerdepth", "canopystorage")
     end
 
-    if !isnothing(cyclic_path)
-        sbm = Table(
-            sbm,
-            # Specific leaf storage [mm]
-            sl = sl,
-            # Storage woody part of vegetation [mm]
-            swood = swood,
-            # Extinction coefficient [-] (to calculate canopy gap fraction)
-            kext = kext,
-            # Leaf area index [m² m⁻²]
-            lai = fill(mv, n),
+    sbm = SBM{Float64, maxlayers, maxlayers+1}(
+        maxlayers = maxlayers,
+        n = n,
+        nlayers = nlayers,
+        yl = yl,
+        xl = xl,
+        riverfrac = riverfrac,
+        θₛ = θₛ,
+        θᵣ = θᵣ,
+        θₑ = θₑ,
+        kv₀ = kv₀,
+        kvfrac = svectorscopy(kvfrac, Val{maxlayers}()),
+        m = m,
+        hb = hb,
+        soilthickness = soilthickness,
+        act_thickl = act_thickl,
+        sumlayers = svectorscopy(s_layers, Val{maxlayers + 1}()),
+        infiltcappath = infiltcappath,
+        infiltcapsoil = infiltcapsoil,
+        maxleakage = maxleakage,
+        waterfrac = max.(waterfrac .- riverfrac, 0.0),
+        pathfrac = pathfrac,
+        altitude = altitude,
+        rootingdepth = rootingdepth,
+        rootdistpar = rootdistpar,
+        capscale = capscale,
+        et_reftopot = et_reftopot,
+        c = svectorscopy(c, Val{maxlayers}()),
+        stemflow = fill(mv, n),
+        throughfall = fill(mv, n),
+        f = θₑ ./ m,
+        ustorelayerdepth = act_thickl .* 0.0,
+        satwaterdepth = satwaterdepth,
+        zi = max.(0.0, soilthickness .- satwaterdepth ./ θₑ),
+        soilwatercapacity = soilwatercapacity,
+        canopystorage = fill(0.0, n),
+        cmax = cmax,
+        canopygapfraction = canopygapfraction,
+        e_r = e_r,
+        precipitation = fill(mv, n),
+        temperature = fill(mv, n),
+        potevap = fill(mv, n),
+        pottrans_soil = fill(mv, n),
+        transpiration = fill(mv, n),
+        ae_ustore = fill(mv, n),
+        ae_sat = fill(mv, n),
+        interception = fill(mv, n),
+        soilevap = fill(mv, n),
+        actevapsat = fill(mv, n),
+        actevap = fill(mv, n),
+        runoff_river = fill(mv, n),
+        runoff_land = fill(mv, n),
+        ae_openw_l = fill(mv, n),
+        ae_openw_r = fill(mv, n),
+        avail_forinfilt = fill(mv, n),
+        actinfilt = fill(mv, n),
+        actinfiltsoil = fill(mv, n),
+        actinfiltpath = fill(mv, n),
+        infiltexcess = fill(mv, n),
+        excesswater = fill(mv, n),
+        exfiltsatwater = fill(mv, n),
+        exfiltustore = fill(mv, n),
+        excesswatersoil = fill(mv, n),
+        excesswaterpath = fill(mv, n),
+        runoff = fill(mv, n),
+        vwc = svectorscopy(vwc, Val{maxlayers}()),
+        vwc_perc = svectorscopy(vwc_perc, Val{maxlayers}()),
+        rootstore = fill(mv, n),
+        vwc_root = fill(mv, n),
+        vwc_percroot = fill(mv, n),
+        ustoredepth = fill(mv, n),
+        transfer = fill(mv, n),
+        capflux = fill(mv, n),
+        recharge = fill(mv, n),
+        # snow parameters
+        cfmax = cfmax,
+        tt = tt,
+        tti = tti,
+        ttm = ttm,
+        whc = whc,
+        w_soil = w_soil,
+        cf_soil = cf_soil,
+        snow = fill(0.0, n),
+        snowwater = fill(0.0, n),
+        rainfallplusmelt = fill(mv, n),
+        tsoil = fill(10.0, n),
+        # Interception related to climatology (LAI)
+        sl = sl,
+        swood = swood,
+        kext = kext,
+        lai = fill(mv, n),
         )
-    end
 
     inds_riv = filter(i -> !isequal(river_2d[i], 0), inds)
     # reservoirs
@@ -466,6 +529,7 @@ function initialize_sbm_model(
                 targetminfrac = res_targetminfrac[i],
             ) for i = 1:length(reslocs)
         ]
+        statenames =  (statenames..., "volume_reservoir")
     end
 
     # lakes
@@ -517,6 +581,7 @@ function initialize_sbm_model(
                 end
             end
         end
+        statenames = (statenames..., "waterlevel_lake")
     end
     # lateral part sbm
     khfrac = ncread(nc, "KsatHorFrac"; sel = inds, defaults = dparams, type = Float64)
@@ -581,8 +646,11 @@ function initialize_sbm_model(
         rivercells = river,
     )
 
+
+    statenames = (statenames...,"ssf", "q_river", "h_river", "q_land", "h_land")
+
     reader = prepare_reader(forcing_path, cyclic_path, inds, config)
-    writer = prepare_writer(config, reader, output_path, first(sbm), maxlayers)
+    writer = prepare_writer(config, reader, output_path, sbm, maxlayers)
 
     model = Model(
         (land = dag, river = dag_riv),
@@ -592,6 +660,19 @@ function initialize_sbm_model(
         reader,
         writer,
     )
+
+    # if reinit
+    #     ds = NCDataset(instate_path)
+    #     for state in statenames
+    #         if "layer" in dimnames(ds[state])
+    #             var = ds[state][inds,:,1]
+    #             model = set(model, paramap[state], [SVector{nc.dim["layer"]}(var[i,:]) for i=1:inds])
+    #         else
+    #             var = ds[state][inds,1]
+    #             model = set(model, paramap[state], var)
+    #         end
+    #     end
+    # end
 
     # make sure the forcing is already loaded
     # it's fine to run twice, and may help catching errors earlier

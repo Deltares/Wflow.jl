@@ -14,8 +14,6 @@ Base.@kwdef struct SimpleReservoir{T}
     evaporation::T = mv                         # average evaporation for reservoir area [mm]
 end
 
-statenames(::SimpleReservoir) = (:volume,)
-
 function update(res::SimpleReservoir, inflow, p, pet, timestepsecs)
 
     vol = (
@@ -75,7 +73,7 @@ Base.@kwdef struct NaturalLake{T}
     evaporation::T = mv             # average evaporation for lake area [mm]
 end
 
-statenames(::NaturalLake) = (:waterlevel,)
+statenames(::NaturalLake) = ("waterlevel_lake",)
 
 """
     statenames(::NaturalLake)

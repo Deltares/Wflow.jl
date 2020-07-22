@@ -8,6 +8,7 @@ model = Wflow.initialize_sbm_model(
     staticmaps_moselle_path,
     cyclic_moselle_path,
     forcing_moselle_path,
+    instates_moselle_path,
     output_path,
 )
 

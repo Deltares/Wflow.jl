@@ -22,8 +22,6 @@ Base.@kwdef struct SurfaceFlow{T,R,L}
     lake::L = Fill(missing, length(sl))                 # Lake model, only located in river cells
 end
 
-statenames(::SurfaceFlow) = (:q, :h)
-
 function update(
     sf::SurfaceFlow,
     dag,
@@ -156,7 +154,7 @@ Base.@kwdef struct LateralSSF{T}
 end
 
 # depends on ini file settings (optional: glaciers, snow, irrigation)
-statenames(::LateralSSF) = (:ssf,)
+statenames(::LateralSSF) = ("ssf")
 
 function update(ssf::LateralSSF, dag, toposort, frac_toriver, river)
     for v in toposort
