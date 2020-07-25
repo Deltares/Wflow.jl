@@ -7,22 +7,29 @@ For configuration files we use TOML.
 
 "Parsed TOML configuration"
 struct Config
-    dict::Dict{String,Any}
+    dict::Dict{String,Any}  # nested key value mapping of all settings
+    path::Union{String, Nothing}  # path to the TOML file, or nothing
 end
+
+Config(path::AbstractString) = Config(parsefile(path), path)
+Config(dict::AbstractDict) = Config(dict, nothing)
 
 # allows using getproperty, e.g. config.input.time instead of config["input"]["time"]
 function Base.getproperty(config::Config, f::Symbol)
     dict = Dict(config)
+    path = pathof(config)
     a = dict[String(f)]
     # if it is a Dict, wrap the result in Config to keep the getproperty behavior
-    return a isa AbstractDict ? Config(a) : a
+    return a isa AbstractDict ? Config(a, path) : a
 end
 
 # also used in autocomplete
 Base.propertynames(config::Config) = collect(keys(Dict(config)))
 Base.haskey(config::Config, key) = haskey(Dict(config), key)
 Base.get(config::Config, key, default) = get(Dict(config), key, default)
-Dict(config::Config) = getfield(config, :dict)
+Base.Dict(config::Config) = getfield(config, :dict)
+Base.pathof(config::Config) = getfield(config, :path)
+Base.dirname(config::Config) = dirname(pathof(config))
 
 "Extract a NetCDF variable at a given time"
 function get_at!(

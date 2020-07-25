@@ -1,6 +1,6 @@
 tomlpath = joinpath(@__DIR__, "config.toml")
 tomldir = dirname(tomlpath)
-config = Wflow.Config(Wflow.parsefile(tomlpath))
+config = Wflow.Config(tomlpath)
 output_path = joinpath(@__DIR__, "data", "output_run_sbm.nc")
 
 model = Wflow.initialize_sbm_model(

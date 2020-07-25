@@ -7,10 +7,12 @@ using UnPack
 @testset "configuration file" begin
     tomlpath = joinpath(@__DIR__, "config.toml")
     parsed_toml = Wflow.parsefile(tomlpath)
-    config = Wflow.Config(parsed_toml)
+    config = Wflow.Config(tomlpath)
     @test parsed_toml isa Dict{String,Any}
     @test config isa Wflow.Config
-    @test getfield(config, :dict) === parsed_toml
+    @test Dict(config) === parsed_toml
+    @test pathof(config) === tomlpath
+    @test dirname(config) === dirname(tomlpath)
 
     # test if the values are parsed as expected
     @test config.casename == "testcase"
@@ -49,7 +51,7 @@ end
 
 tomlpath = joinpath(@__DIR__, "config.toml")
 tomldir = dirname(tomlpath)
-config = Wflow.Config(Wflow.parsefile(tomlpath))
+config = Wflow.Config(tomlpath)
 
 # initialize a vector of SBM structs
 model = Wflow.initialize_sbm_model(
