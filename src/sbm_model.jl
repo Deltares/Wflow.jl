@@ -459,8 +459,8 @@ function initialize_sbm_model(
         dl = riverlength,
         Δt = Float64(Δt.value),
         width = riverwidth,
-        reservoir = do_reservoirs ? reservoirs : Fill(missing, nr),
-        lake = do_lakes ? lakes : Fill(missing, nr),
+        reservoir = do_reservoirs ? reservoirs : fill(missing, nr),
+        lake = do_lakes ? lakes : fill(missing, nr),
         rivercells = river,
     )
 

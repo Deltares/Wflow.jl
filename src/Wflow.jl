@@ -6,8 +6,6 @@ using NCDatasets
 using StaticArrays
 using Statistics
 using Setfield: setproperties
-using FillArrays
-using TypedTables
 using UnPack
 using CSV
 using Random

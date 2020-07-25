@@ -7,8 +7,6 @@ using StaticArrays
 using Test
 using UnPack
 using Wflow
-using FillArrays
-using TypedTables
 using CSV
 using BenchmarkTools
 

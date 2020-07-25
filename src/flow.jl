@@ -18,8 +18,8 @@ Base.@kwdef struct SurfaceFlow{T,R,L}
     to_river::Vector{T} = fill(0.0, length(sl)) # Part of overland flow [m³ s⁻¹] that flows to the river
     rivercells::Vector{Bool} = fill(false, length(sl)) # Location of river cells (0 or 1)
     wb_pit::Vector{Bool} = fill(false, length(sl)) # Boolean location (0 or 1) of a waterbody (wb, reservoir or lake).
-    reservoir::R = Fill(missing, length(sl)) # Reservoir model, only located in river cells
-    lake::L = Fill(missing, length(sl))                 # Lake model, only located in river cells
+    reservoir::R = fill(missing, length(sl)) # Reservoir model, only located in river cells
+    lake::L = fill(missing, length(sl))                 # Lake model, only located in river cells
 end
 
 function update(
