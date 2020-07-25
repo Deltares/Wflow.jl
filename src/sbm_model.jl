@@ -1,18 +1,17 @@
 """
-    initialize_sbm_model(config, staticmaps_path, cyclic_path, forcing_path, output_path)
+    initialize_sbm_model(config::Config)
 
-Initial part of the SBM model concept. Reads model parameters from disk, `staticmaps_path` is the file path
-of the NetCDF file with model parameters, `cyclic_path` is an optional file path for a NetCDF file with leaf
-area index (LAI) values (climatology).
+Initial part of the SBM model concept. Reads the input settings and data as defined in the
+Config object. Will return a Model that is ready to run.
 """
-function initialize_sbm_model(
-    config,
-    staticmaps_path,
-    cyclic_path,
-    forcing_path,
-    instate_path,
-    output_path,
-)
+function initialize_sbm_model(config::Config)
+
+    # unpack the paths to the NetCDF files
+    tomldir = dirname(config)
+    staticmaps_path = joinpath(tomldir, config.input.staticmaps)
+    forcing_path = joinpath(tomldir, config.input.forcing)
+    instate_path = joinpath(tomldir, config.state.input.path)
+    output_path = joinpath(tomldir, config.output.path)
 
     Δt = Second(config.input.timestepsecs)
     # default parameter values (dict)
@@ -153,7 +152,8 @@ function initialize_sbm_model(
     et_reftopot = ncread(nc, "et_reftopot"; sel = inds, defaults = dparams, type = Float64)
 
     # if lai climatology provided use sl, swood and kext to calculate cmax, e_r and canopygapfraction
-    if isnothing(cyclic_path)
+    # TODO replace by something else
+    if isnothing(true)
         # cmax, e_r, canopygapfraction only required when lai climatoly not provided
         cmax = ncread(nc, "Cmax"; sel = inds, defaults = dparams, type = Float64)
         e_r = ncread(nc, "EoverR"; sel = inds, defaults = dparams, type = Float64)
@@ -467,7 +467,7 @@ function initialize_sbm_model(
 
     statenames = (statenames...,"ssf", "q_river", "h_river", "q_land", "h_land")
 
-    reader = prepare_reader(forcing_path, cyclic_path, inds, config)
+    reader = prepare_reader(forcing_path, staticmaps_path, inds, config)
     writer = prepare_writer(config, reader, output_path, sbm, maxlayers)
 
     model = Model(

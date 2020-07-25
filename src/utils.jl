@@ -71,7 +71,7 @@ function ncread(
     if !haskey(nc, var) && !isnothing(defaults)
         # TODO move away from this strategy for defaults
         @warn(string(var, " not found, set to default value ", defaults[var]))
-        return fill(defaults[var], length(sel))
+        return Base.fill(defaults[var], length(sel))
     end
 
     # Read the entire variable into memory, applying scale, offset and

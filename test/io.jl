@@ -10,9 +10,9 @@ using UnPack
     config = Wflow.Config(tomlpath)
     @test parsed_toml isa Dict{String,Any}
     @test config isa Wflow.Config
-    @test Dict(config) === parsed_toml
-    @test pathof(config) === tomlpath
-    @test dirname(config) === dirname(tomlpath)
+    @test Dict(config) == parsed_toml
+    @test pathof(config) == tomlpath
+    @test dirname(config) == dirname(tomlpath)
 
     # test if the values are parsed as expected
     @test config.casename == "testcase"
@@ -54,14 +54,7 @@ tomldir = dirname(tomlpath)
 config = Wflow.Config(tomlpath)
 
 # initialize a vector of SBM structs
-model = Wflow.initialize_sbm_model(
-    config,
-    joinpath(tomldir, config.input.staticmaps),
-    joinpath(tomldir, config.input.cyclic),
-    joinpath(tomldir, config.input.forcing),
-    joinpath(tomldir, config.state.input.path),
-    joinpath(tomldir, config.output.path),
-)
+model = Wflow.initialize_sbm_model(config)
 
 @unpack vertical, clock, reader, writer = model
 @unpack dataset, buffer, inds = reader

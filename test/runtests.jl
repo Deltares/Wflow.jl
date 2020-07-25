@@ -26,7 +26,6 @@ end
 
 staticmaps_rhine_path = testdata(v"0.1", "staticmaps.nc", "staticmaps-rhine.nc")
 staticmaps_moselle_path = testdata(v"0.2", "staticmaps.nc", "staticmaps-moselle.nc")
-cyclic_moselle_path = testdata(v"0.2", "lai_clim.nc", "lai_clim-moselle.nc")
 forcing_moselle_path = testdata(v"0.2", "forcing-2000.nc", "forcing-moselle.nc")
 instates_moselle_path = testdata(v"0.2", "instates-moselle.nc", "instates-moselle.nc")
 
