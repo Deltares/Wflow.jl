@@ -18,8 +18,8 @@ Base.@kwdef struct SurfaceFlow{T,R,L}
     to_river::Vector{T} = fill(0.0, length(sl)) # Part of overland flow [m³ s⁻¹] that flows to the river
     rivercells::Vector{Bool} = fill(false, length(sl)) # Location of river cells (0 or 1)
     wb_pit::Vector{Bool} = fill(false, length(sl)) # Boolean location (0 or 1) of a waterbody (wb, reservoir or lake).
-    reservoir::R = fill(missing, length(sl)) # Reservoir model, only located in river cells
-    lake::L = fill(missing, length(sl))                 # Lake model, only located in river cells
+    reservoir::R = nothing                  # Reservoir model, only located in river cells
+    lake::L = nothing                       # Lake model, only located in river cells
 end
 
 function update(
@@ -88,23 +88,16 @@ function update(
             else
                 qin = sum_at(sf.q, upstream_nodes)
             end
-            # run reservoir model and copy reservoir outflow to river cell
-            # dummy values now for reservoir precipitation and evaporation (3.0 and 4.0)
-            if !ismissing(sf.reservoir[v])
-                sf.reservoir[v] = update(sf.reservoir[v], qin, p, pet, adt)
-                sf.q[v] = sf.reservoir[v].outflow
+            if !isnothing(sf.reservoir) && sf.reservoir.is_res[v]
+                # run reservoir model and copy reservoir outflow to river cell
+                # dummy values now for reservoir precipitation and evaporation (3.0 and 4.0)
+                update(sf.reservoir, v, qin, p, pet, adt)
+                sf.q[v] = sf.reservoir.outflow[v]
+            elseif !isnothing(sf.lake) && sf.lake.is_lake[v]
                 # run lake model and copy lake outflow to river cell
                 # dummy values now for lake precipitation and evaporation (3.0 and 4.0)
-            elseif !ismissing(sf.lake[v])
-                if sf.lake[v].lowerlake_ind != 0
-                    lower_lake = sf.lake[sf.lake[v].lowerlake_ind]
-                    sf.lake[v] = update(sf.lake[v], qin, p, pet, doy, lower_lake)
-                    sf.q[v] = sf.lake[v].outflow
-                else
-                    sf.lake[v] = update(sf.lake[v], qin, p, pet, doy)
-                    sf.q[v] = sf.lake[v].outflow
-                end
-
+                update(sf.lake, v, qin, p, pet, doy)
+                sf.q[v] = sf.lake.outflow[v]
             else
                 sf.q[v] =
                     kinematic_wave(qin, sf.q[v], sf.qlat[v], sf.α[v], sf.β, adt, sf.dl[v])

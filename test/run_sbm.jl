@@ -87,12 +87,14 @@ end
 
 @testset "reservoir simple" begin
     res = model.lateral.river.reservoir
-    inds = filter(i -> !ismissing(res[i]), 1:nr)
-    @test res[inds[2]].outflow ≈ 0.2174998580279266
-    @test res[inds[2]].inflow ≈ 0.004452979665488473
-    @test res[inds[2]].volume ≈ 2.7745799188635208e7
-    @test res[inds[2]].precipitation ≈ 3.0
-    @test res[inds[2]].evaporation ≈ 4.0
+    # the index of the second reservoir
+    i = findall(res.is_res)[2]
+
+    @test res.outflow[i] ≈ 0.2174998580279266
+    @test res.inflow[i] ≈ 0.004452979665488473
+    @test res.volume[i] ≈ 2.7745799188635208e7
+    @test res.precipitation[i] ≈ 3.0
+    @test res.evaporation[i] ≈ 4.0
 end
 
 benchmark = @benchmark Wflow.update(

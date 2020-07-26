@@ -322,6 +322,11 @@ function initialize_sbm_model(config::Config)
         reslocs_2d = ncread(nc, "wflow_reservoirlocs"; type = Int, fill = 0)
         # allow reservoirs only in river cells
         inds_res = filter(i -> reslocs_2d[inds][i] > 0 && isequal(river[i], 1), 1:n)
+        is_res = zeros(Bool, length(inds_riv))
+        for i in eachindex(is_res)
+            ind_riv = inds_riv[i]
+            is_res[i] = reslocs_2d[ind_riv] > 0
+        end
         resdemand = ncread(nc, "ResDemand"; sel = inds_riv, type = Float64, fill = 0)
         resmaxrelease =
             ncread(nc, "ResMaxRelease"; sel = inds_riv, type = Float64, fill = 0)
@@ -337,17 +342,16 @@ function initialize_sbm_model(config::Config)
         # all upstream flow goes to the river and flows into the reservoir
         pits[inds_res] .= true
 
-        reservoirs = [
-            reslocs[i] == 0 ? missing :
-                SimpleReservoir{Float64}(
-                demand = resdemand[i],
-                maxrelease = resmaxrelease[i],
-                maxvolume = resmaxvolume[i],
-                area = resarea[i],
-                targetfullfrac = res_targetfullfrac[i],
-                targetminfrac = res_targetminfrac[i],
-            ) for i = 1:length(reslocs)
-        ]
+        # TODO store reslocs inside this struct?
+        reservoirs = SimpleReservoir{Float64}(
+            demand = resdemand,
+            maxrelease = resmaxrelease,
+            maxvolume = resmaxvolume,
+            area = resarea,
+            targetfullfrac = res_targetfullfrac,
+            targetminfrac = res_targetminfrac,
+            is_res = is_res,
+        )
         statenames =  (statenames..., "volume_reservoir")
     end
 
@@ -357,6 +361,11 @@ function initialize_sbm_model(config::Config)
         lakelocs_2d = ncread(nc, "wflow_lakelocs"; type = Int, fill = 0)
         # allow lakes only in river cells
         inds_lakes = filter(i -> lakelocs_2d[inds][i] > 0 && isequal(river[i], 1), 1:n)
+        is_lake = zeros(Bool, length(inds_riv))
+        for i in eachindex(is_lake)
+            ind_riv = inds_riv[i]
+            is_lake[i] = lakelocs_2d[ind_riv] > 0
+        end
         lakearea = ncread(nc, "LakeArea"; sel = inds_riv, type = Float64, fill = 0)
         lake_b = ncread(nc, "Lake_b"; sel = inds_riv, type = Float64, fill = 0)
         lake_e = ncread(nc, "Lake_e"; sel = inds_riv, type = Float64, fill = 0)
@@ -373,35 +382,53 @@ function initialize_sbm_model(config::Config)
         # all upstream flow goes to the river and flows into the lake
         pits[inds_lakes] .= true
 
+        # This is currently the same length as all river cells, but will be the
+        # length of all lake cells. To do that we need to introduce a mapping.
         n_lakes = length(lakelocs)
-        lakes = Vector{Union{Missing,NaturalLake{Float64}}}(missing, n_lakes)
-        for i = 1:length(n_lakes)
-            if lakelocs[i] > 0
-                lakes[i] = NaturalLake(
-                    loc_id = lakelocs[i],
-                    lowerlake_ind = linked_lakelocs[i] > 0 ? i : 0,
-                    area = lakearea[i],
-                    threshold = lake_threshold[i],
-                    storfunc = lake_storfunc[i],
-                    outflowfunc = lake_outflowfunc[i],
-                    b = lake_b[i],
-                    e = lake_e[i],
-                    avg_waterlevel = lake_avglevel[i],
-                    sh = lake_storfunc[i] == 2 ?
-                             CSV.read(("Lake_SH_", string(lakelocs[i])), type = Float64) :
-                             DataFrame(),
-                    hq = lake_outflowfunc[i] == 1 ?
-                             CSV.read(("Lake_HQ_", string(lakelocs[i])), type = Float64) :
-                             DataFrame(),
-                )
 
-                if lake_outflowfunc[i] == 3 && lake_storfunc[i] != 1
-                    @warn("For the modified pulse approach (LakeOutflowFunc = 3) the LakeStorFunc should be 1")
-                end
+        sh = Vector{DataFrame}(undef, n_lakes)
+        hq = Vector{DataFrame}(undef, n_lakes)
+        for i in 1:n_lakes
+            if linked_lakelocs[i] > 0
+                linked_lakelocs[i] = i
+            else
+                linked_lakelocs[i] = 0
+            end
+
+            if lake_storfunc[i] == 2
+                sh[i] = CSV.read("Lake_SH_$(lakelocs[i])", type = Float64)
+            else
+                sh[i] = DataFrame()
+            end
+
+            if lake_outflowfunc[i] == 1
+                hq[i] = CSV.read("Lake_HQ_$(lakelocs[i])", type = Float64)
+            else
+                hq[i] = DataFrame()
+            end
+
+            if lake_outflowfunc[i] == 3 && lake_storfunc[i] != 1
+                @warn("For the modified pulse approach (LakeOutflowFunc = 3) the LakeStorFunc should be 1")
             end
         end
+
+        lakes = NaturalLake{Float64}(
+            loc_id = lakelocs,
+            lowerlake_ind = linked_lakelocs,
+            area = lakearea,
+            threshold = lake_threshold,
+            storfunc = lake_storfunc,
+            outflowfunc = lake_outflowfunc,
+            b = lake_b,
+            e = lake_e,
+            avg_waterlevel = lake_avglevel,
+            sh = sh,
+            hq = hq,
+            is_lake = is_lake,
+        )
         statenames = (statenames..., "waterlevel_lake")
     end
+
     # lateral part sbm
     khfrac = ncread(nc, "KsatHorFrac"; sel = inds, defaults = dparams, type = Float64)
     βₗ = ncread(nc, "Slope"; sel = inds, type = Float64)
@@ -460,8 +487,8 @@ function initialize_sbm_model(config::Config)
         dl = riverlength,
         Δt = Float64(Δt.value),
         width = riverwidth,
-        reservoir = do_reservoirs ? reservoirs : fill(missing, nr),
-        lake = do_lakes ? lakes : fill(missing, nr),
+        reservoir = do_reservoirs ? reservoirs : nothing,
+        lake = do_lakes ? lakes : nothing,
         rivercells = river,
     )
 
