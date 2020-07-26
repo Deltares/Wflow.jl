@@ -178,6 +178,11 @@ Base.@kwdef struct SBM{T,N,M}
     kext::Vector{T} = fill(mv, n)
     # Leaf area index [m² m⁻²]
     lai::Vector{T} = fill(mv, n)
+
+    function SBM{T,N,M}(args...) where {T,N,M}
+        equal_size_vectors(args)
+        return new(args...)
+    end
 end
 
 function update_until_snow(sbm::SBM, config)

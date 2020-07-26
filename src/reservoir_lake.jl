@@ -12,7 +12,11 @@ Base.@kwdef struct SimpleReservoir{T}
     demandrelease::Vector{T} = fill(mv, length(area))   # minimum (environmental) flow released from reservoir [m³ s⁻¹]
     precipitation::Vector{T} = fill(mv, length(area))   # average precipitation for reservoir area [mm]
     evaporation::Vector{T} = fill(mv, length(area))     # average evaporation for reservoir area [mm]
-    is_res::Vector{Bool} = zeros(Bool, length(area))    # true if this it is a reservoir
+
+    function SimpleReservoir{T}(args...) where {T}
+        equal_size_vectors(args)
+        return new(args...)
+    end
 end
 
 """
@@ -73,7 +77,11 @@ Base.@kwdef struct NaturalLake{T}
     outflow::Vector{T} = fill(mv, length(area))        # outflow lake [m³ s⁻¹]
     precipitation::Vector{T} = fill(mv, length(area))  # average precipitation for lake area [mm]
     evaporation::Vector{T} = fill(mv, length(area))    # average evaporation for lake area [mm]
-    is_lake::Vector{Bool} = zeros(Bool, length(area))  # true if this it is a lake
+
+    function NaturalLake{T}(args...) where {T}
+        equal_size_vectors(args)
+        return new(args...)
+    end
 end
 
 "Determine the initial storage depending on the storage function"

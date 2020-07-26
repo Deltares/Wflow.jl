@@ -77,6 +77,7 @@ function initialize_sbm_model(config::Config)
     # indices based on catchment
     inds = Wflow.active_indices(subcatch_2d, missing)
     n = length(inds)
+    modelsize_2d = size(subcatch_2d)
 
     altitude = ncread(nc, "wflow_dem"; sel = inds, type = Float64)
     river_2d = ncread(nc, "wflow_river"; type = Bool, fill = false)
@@ -315,34 +316,41 @@ function initialize_sbm_model(config::Config)
         )
 
     inds_riv = filter(i -> !isequal(river_2d[i], 0), inds)
+    nriv = length(inds_riv)
     # reservoirs
-    pits = zeros(Bool, n)
+    pits = zeros(Bool, modelsize_2d)
     if do_reservoirs
         # read only reservoir data if reservoirs true
-        reslocs_2d = ncread(nc, "wflow_reservoirlocs"; type = Int, fill = 0)
         # allow reservoirs only in river cells
-        inds_res = filter(i -> reslocs_2d[inds][i] > 0 && isequal(river[i], 1), 1:n)
-        is_res = zeros(Bool, length(inds_riv))
-        for i in eachindex(is_res)
-            ind_riv = inds_riv[i]
-            is_res[i] = reslocs_2d[ind_riv] > 0
+        reslocs = ncread(nc, "wflow_reservoirlocs"; sel = inds_riv, type = Int, fill = 0)
+
+        # construct a map from the rivers to the reservoirs and
+        # a map of the reservoirs to the 2D model grid
+        resindex = fill(0, nriv)
+        inds_res = CartesianIndex{2}[]
+        rescounter = 0
+        for (i, ind) in enumerate(inds_riv)
+            if reslocs[i] > 0
+                push!(inds_res, ind)
+                rescounter += 1
+                resindex[i] = rescounter
+            end
         end
-        resdemand = ncread(nc, "ResDemand"; sel = inds_riv, type = Float64, fill = 0)
+
+        resdemand = ncread(nc, "ResDemand"; sel = inds_res, type = Float64, fill = 0)
         resmaxrelease =
-            ncread(nc, "ResMaxRelease"; sel = inds_riv, type = Float64, fill = 0)
-        resmaxvolume = ncread(nc, "ResMaxVolume"; sel = inds_riv, type = Float64, fill = 0)
-        resarea = ncread(nc, "ResSimpleArea"; sel = inds_riv, type = Float64, fill = 0)
+            ncread(nc, "ResMaxRelease"; sel = inds_res, type = Float64, fill = 0)
+        resmaxvolume = ncread(nc, "ResMaxVolume"; sel = inds_res, type = Float64, fill = 0)
+        resarea = ncread(nc, "ResSimpleArea"; sel = inds_res, type = Float64, fill = 0)
         res_targetfullfrac =
-            ncread(nc, "ResTargetFullFrac"; sel = inds_riv, type = Float64, fill = 0)
+            ncread(nc, "ResTargetFullFrac"; sel = inds_res, type = Float64, fill = 0)
         res_targetminfrac =
-            ncread(nc, "ResTargetMinFrac"; sel = inds_riv, type = Float64, fill = 0)
-        reslocs = reslocs_2d[inds_riv]
+            ncread(nc, "ResTargetMinFrac"; sel = inds_res, type = Float64, fill = 0)
 
         # for surface water routing reservoir locations are considered pits in the flow network
         # all upstream flow goes to the river and flows into the reservoir
         pits[inds_res] .= true
 
-        # TODO store reslocs inside this struct?
         reservoirs = SimpleReservoir{Float64}(
             demand = resdemand,
             maxrelease = resmaxrelease,
@@ -350,7 +358,6 @@ function initialize_sbm_model(config::Config)
             area = resarea,
             targetfullfrac = res_targetfullfrac,
             targetminfrac = res_targetminfrac,
-            is_res = is_res,
         )
         statenames =  (statenames..., "volume_reservoir")
     end
@@ -358,14 +365,22 @@ function initialize_sbm_model(config::Config)
     # lakes
     if do_lakes
         # read only lake data if lakes true
-        lakelocs_2d = ncread(nc, "wflow_lakelocs"; type = Int, fill = 0)
         # allow lakes only in river cells
-        inds_lakes = filter(i -> lakelocs_2d[inds][i] > 0 && isequal(river[i], 1), 1:n)
-        is_lake = zeros(Bool, length(inds_riv))
-        for i in eachindex(is_lake)
-            ind_riv = inds_riv[i]
-            is_lake[i] = lakelocs_2d[ind_riv] > 0
+        lakelocs = ncread(nc, "wflow_lakelocs"; sel=inds_riv, type = Int, fill = 0)
+
+        # construct a map from the rivers to the lakes and
+        # a map of the lakes to the 2D model grid
+        lakeindex = fill(0, nriv)
+        inds_lake = CartesianIndex{2}[]
+        lakecounter = 0
+        for (i, ind) in enumerate(inds_riv)
+            if lakelocs[i] > 0
+                push!(inds_lake, ind)
+                lakecounter += 1
+                lakeindex[i] = lakecounter
+            end
         end
+
         lakearea = ncread(nc, "LakeArea"; sel = inds_riv, type = Float64, fill = 0)
         lake_b = ncread(nc, "Lake_b"; sel = inds_riv, type = Float64, fill = 0)
         lake_e = ncread(nc, "Lake_e"; sel = inds_riv, type = Float64, fill = 0)
@@ -376,11 +391,10 @@ function initialize_sbm_model(config::Config)
         lake_outflowfunc =
             ncread(nc, "LakeOutflowFunc"; sel = inds_riv, type = Int, fill = 0)
         lake_avglevel = ncread(nc, "LakeAvgLevel"; sel = inds_riv, type = Float64, fill = 0)
-        lakelocs = lakelocs_2d[inds_riv]
 
         # for surface water routing lake locations are considered pits in the flow network
         # all upstream flow goes to the river and flows into the lake
-        pits[inds_lakes] .= true
+        pits[inds_lake] .= true
 
         # This is currently the same length as all river cells, but will be the
         # length of all lake cells. To do that we need to introduce a mapping.
@@ -454,7 +468,7 @@ function initialize_sbm_model(config::Config)
         βₗ = βₗ,
         dl = dl .* 1000.0,
         dw = dw .* 1000.0,
-        wb_pit = pits,
+        wb_pit = pits[inds],
     )
 
     n_land = ncread(nc, "N"; sel = inds, defaults = dparams, type = Float64)
@@ -465,7 +479,7 @@ function initialize_sbm_model(config::Config)
         dl = dl,
         Δt = Float64(Δt.value),
         width = dw,
-        wb_pit = pits,
+        wb_pit = pits[inds],
     )
 
     pcr_dir = trsp ? permute_indices(Wflow.pcrdir) : Wflow.pcrdir
@@ -479,7 +493,6 @@ function initialize_sbm_model(config::Config)
     n_river = ncread(nc, "N_River"; sel = inds_riv, defaults = dparams, type = Float64)
     ldd_riv = ldd_2d[inds_riv]
     dag_riv = flowgraph(ldd_riv, inds_riv, pcr_dir)
-    nr = length(inds_riv)
 
     rf = SurfaceFlow(
         sl = riverslope,
@@ -487,6 +500,8 @@ function initialize_sbm_model(config::Config)
         dl = riverlength,
         Δt = Float64(Δt.value),
         width = riverwidth,
+        reservoir_index = do_reservoirs ? resindex : fill(0, nriv),
+        lake_index = do_lakes ? lakeindex : fill(0, nriv),
         reservoir = do_reservoirs ? reservoirs : nothing,
         lake = do_lakes ? lakes : nothing,
         rivercells = river,
@@ -536,7 +551,7 @@ function update(
     frac_toriver,
     index_river,
     nl,
-    nr,
+    nriv,
 )
     @unpack lateral, vertical, network, clock = model
 
@@ -596,7 +611,7 @@ function update(
         lateral.river,
         network.river,
         toposort_river,
-        nr,
+        nriv,
         do_iter = true,
         doy = dayofyear(clock.time),
     )

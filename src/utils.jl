@@ -198,3 +198,26 @@ function fraction_runoff_toriver(dag, index_river, slope, n)
     end
     return frac
 end
+
+"""
+    equal_size_vectors(x)
+
+Used in the structs of arrays to ensure all vectors are of equal length.
+
+`equal_size_vectors(([1,2], [1,2,3]))` would throw an ArgumentError.
+`equal_size_vectors(([4,5], [4,5]))` would pass.
+`equal_size_vectors((1, [4,5], [4,5]))` would also pass, since `1` is not an AbstractVector.
+"""
+function equal_size_vectors(x)
+    # all vectors in this struct should be the same size
+    inds_vec = findall(arg -> isa(arg, AbstractVector), x)
+    n = length(x[inds_vec[1]])
+    x_vec = x[inds_vec]
+
+    for arr in x_vec
+        if length(arr) != n
+            throw(ArgumentError("Not all vectors are of equal length"))
+        end
+    end
+    return x
+end

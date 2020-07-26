@@ -87,14 +87,11 @@ end
 
 @testset "reservoir simple" begin
     res = model.lateral.river.reservoir
-    # the index of the second reservoir
-    i = findall(res.is_res)[2]
-
-    @test res.outflow[i] ≈ 0.2174998580279266
-    @test res.inflow[i] ≈ 0.004452979665488473
-    @test res.volume[i] ≈ 2.7745799188635208e7
-    @test res.precipitation[i] ≈ 3.0
-    @test res.evaporation[i] ≈ 4.0
+    @test res.outflow[2] ≈ 0.2174998580279266
+    @test res.inflow[2] ≈ 0.004452979665488473
+    @test res.volume[2] ≈ 2.7745799188635208e7
+    @test res.precipitation[2] ≈ 3.0
+    @test res.evaporation[2] ≈ 4.0
 end
 
 benchmark = @benchmark Wflow.update(
