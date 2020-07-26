@@ -93,10 +93,10 @@ temperature = "TEMP"
 potevap = "PET"
 
 [model]
-reinit = 0
-reservoirs = 1
-masswasting = 1
-modelsnow = 1
+reinit = false
+reservoirs = true
+masswasting = true
+modelsnow = true
 thicknesslayers = [100, 300, 800]
 
 [output]

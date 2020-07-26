@@ -50,8 +50,8 @@ function initialize_sbm_model(config::Config)
         "NRiver" => 0.036,
     )
 
-    sizeinmetres = Bool(get(config.model, "sizeinmetres", 0))
-    reinit = Bool(get(config.model, "reinit", 0))
+    sizeinmetres = Bool(get(config.model, "sizeinmetres", false))
+    reinit = Bool(get(config.model, "reinit", false))
     config_thicknesslayers = get(config.model, "thicknesslayers", 0.0)
     if length(config_thicknesslayers) > 0
         thicknesslayers = SVector(Tuple(push!(Float64.(config_thicknesslayers), mv)))
@@ -60,9 +60,9 @@ function initialize_sbm_model(config::Config)
     else
         maxlayers = 1
     end
-    do_reservoirs = Bool(get(config.model, "reservoirs", 0))
-    do_lakes = Bool(get(config.model, "lakes", 0))
-    do_snow = Bool(get(config.model, "modelsnow", 0))
+    do_reservoirs = Bool(get(config.model, "reservoirs", false))
+    do_lakes = Bool(get(config.model, "lakes", false))
+    do_snow = Bool(get(config.model, "modelsnow", false))
 
     nc = NCDataset(static_path)
     dims = dimnames(nc["wflow_subcatch"])
