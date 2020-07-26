@@ -8,8 +8,9 @@ function initialize_sbm_model(config::Config)
 
     # unpack the paths to the NetCDF files
     tomldir = dirname(config)
-    staticmaps_path = joinpath(tomldir, config.input.staticmaps)
-    forcing_path = joinpath(tomldir, config.input.forcing)
+    static_path = joinpath(tomldir, config.static.path)
+    cyclic_path = joinpath(tomldir, config.cyclic.path)
+    dynamic_path = joinpath(tomldir, config.dynamic.path)
     instate_path = joinpath(tomldir, config.state.input.path)
     output_path = joinpath(tomldir, config.output.path)
 
@@ -63,7 +64,7 @@ function initialize_sbm_model(config::Config)
     do_lakes = Bool(get(config.model, "lakes", 0))
     do_snow = Bool(get(config.model, "modelsnow", 0))
 
-    nc = NCDataset(staticmaps_path)
+    nc = NCDataset(static_path)
     dims = dimnames(nc["wflow_subcatch"])
 
     # There is no need to permute the dimensions of the data, since the active indices are
@@ -466,7 +467,7 @@ function initialize_sbm_model(config::Config)
 
     statenames = (statenames...,"ssf", "q_river", "h_river", "q_land", "h_land")
 
-    reader = prepare_reader(forcing_path, staticmaps_path, inds, inds_riv, config)
+    reader = prepare_reader(dynamic_path, cyclic_path, inds, inds_riv, config)
 
     modelmap = (vertical = sbm, subsurface = ssf, land = olf, river = rf)
     writer = prepare_writer(config, reader, output_path, modelmap, maxlayers)

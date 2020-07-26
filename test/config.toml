@@ -15,8 +15,8 @@ calendar = "proleptic_gregorian"
 time_units = "days since 1900-01-01 00:00:00"
 
 [state]
-input.path = ""  # TODO implement
-output.path = ""  # TODO implement
+input.path = "data/instates-moselle.nc"
+output.path = "data/outstates-moselle.nc"  # TODO implement
 
 # key is the key in paramap
 # value is name in staticmaps NetCDF
@@ -79,7 +79,7 @@ wflow_uparea = "wflow_uparea"
 whc = "WHC"
 
 [cyclic]
-path = "data/lai_clim-moselle.nc"
+path = "data/staticmaps-moselle.nc"
 
 [cyclic.parameters]
 lai = "LAI"
