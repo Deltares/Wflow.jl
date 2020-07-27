@@ -7,25 +7,29 @@ using UnPack
 @testset "configuration file" begin
     tomlpath = joinpath(@__DIR__, "config.toml")
     parsed_toml = Wflow.parsefile(tomlpath)
-    config = Wflow.Config(parsed_toml)
+    config = Wflow.Config(tomlpath)
     @test parsed_toml isa Dict{String,Any}
     @test config isa Wflow.Config
-    @test getfield(config, :dict) === parsed_toml
+    @test Dict(config) == parsed_toml
+    @test pathof(config) == tomlpath
+    @test dirname(config) == dirname(tomlpath)
 
     # test if the values are parsed as expected
     @test config.casename == "testcase"
     @test config.λ == 1.2
-    @test config.input.starttime === DateTime(2000)
-    @test config.input.endtime === DateTime(2000, 2)
+    @test config.starttime === DateTime(2000)
+    @test config.endtime === DateTime(2000, 2)
     @test config.output.path == "data/specified_output.nc"
-    @test config.output.parameters isa Vector
-    @test config.output.parameters == [
-        "satwaterdepth",
+    @test config.output.parameters isa Wflow.Config
+    @test collect(keys(config.output.parameters)) == [
         "snow",
-        "tsoil",
-        "ustorelayerdepth",
+        "soilthickness",
         "snowwater",
+        "satwaterdepth",
+        "q",
+        "ustorelayerdepth",
         "canopystorage",
+        "tsoil",
     ]
 end
 
@@ -49,19 +53,21 @@ end
 
 tomlpath = joinpath(@__DIR__, "config.toml")
 tomldir = dirname(tomlpath)
-config = Wflow.Config(Wflow.parsefile(tomlpath))
+config = Wflow.Config(tomlpath)
 
 # initialize a vector of SBM structs
-model = Wflow.initialize_sbm_model(
-    config,
-    joinpath(tomldir, config.input.staticmaps),
-    joinpath(tomldir, config.input.cyclic),
-    joinpath(tomldir, config.input.forcing),
-    joinpath(tomldir, config.output.path),
-)
+model = Wflow.initialize_sbm_model(config)
 
 @unpack vertical, clock, reader, writer = model
 @unpack dataset, buffer, inds = reader
+
+@testset "output" begin
+    ncdims = ("lon", "lat", "layer", "time")
+    @test dimnames(writer.dataset["ustorelayerdepth"]) == ncdims
+    ncvars = [k for k in keys(writer.dataset) if !in(k, ncdims)]
+    @test "snow" in ncvars
+    @test "q" in ncvars
+end
 
 # get the output path before it's closed, and remove up the file
 output_path = path(model.writer.dataset)

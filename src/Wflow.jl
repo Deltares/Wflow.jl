@@ -6,8 +6,6 @@ using NCDatasets
 using StaticArrays
 using Statistics
 using Setfield: setproperties
-using FillArrays
-using TypedTables
 using UnPack
 using CSV
 using Random
@@ -29,6 +27,7 @@ struct Model{N,L,V,R,W}
 end
 
 include("toml.jl")
+include("name.jl")
 include("io.jl")
 include("horizontal_process.jl")
 include("sbm.jl")

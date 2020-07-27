@@ -76,7 +76,13 @@ end
 Interception according to a modified Rutter model. The model is solved explicitly and there is no
 drainage below `cmax`.
 """
-function rainfall_interception_modrut(precipitation, potevap, canopystorage, canopygapfraction, cmax)
+function rainfall_interception_modrut(
+    precipitation,
+    potevap,
+    canopystorage,
+    canopygapfraction,
+    cmax,
+)
 
     p = canopygapfraction
     pt = 0.1 * p

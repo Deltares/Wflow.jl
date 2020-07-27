@@ -7,22 +7,32 @@ For configuration files we use TOML.
 
 "Parsed TOML configuration"
 struct Config
-    dict::Dict{String,Any}
+    dict::Dict{String,Any}  # nested key value mapping of all settings
+    path::Union{String, Nothing}  # path to the TOML file, or nothing
 end
+
+Config(path::AbstractString) = Config(parsefile(path), path)
+Config(dict::AbstractDict) = Config(dict, nothing)
 
 # allows using getproperty, e.g. config.input.time instead of config["input"]["time"]
 function Base.getproperty(config::Config, f::Symbol)
     dict = Dict(config)
+    path = pathof(config)
     a = dict[String(f)]
     # if it is a Dict, wrap the result in Config to keep the getproperty behavior
-    return a isa AbstractDict ? Config(a) : a
+    return a isa AbstractDict ? Config(a, path) : a
 end
 
 # also used in autocomplete
 Base.propertynames(config::Config) = collect(keys(Dict(config)))
 Base.haskey(config::Config, key) = haskey(Dict(config), key)
+Base.keys(config::Config) = keys(Dict(config))
+Base.values(config::Config) = values(Dict(config))
+Base.pairs(config::Config) = pairs(Dict(config))
 Base.get(config::Config, key, default) = get(Dict(config), key, default)
-Dict(config::Config) = getfield(config, :dict)
+Base.Dict(config::Config) = getfield(config, :dict)
+Base.pathof(config::Config) = getfield(config, :path)
+Base.dirname(config::Config) = dirname(pathof(config))
 
 "Extract a NetCDF variable at a given time"
 function get_at!(
@@ -99,7 +109,6 @@ function setup_netcdf(
     parameters,
     calendar,
     time_units,
-    row,
     maxlayers,
 )
     ds = NCDataset(output_path, "c")
@@ -134,22 +143,21 @@ function setup_netcdf(
         ("time",),
         attrib = ["units" => time_units, "calendar" => calendar],
     )
-    for parameter in parameters
-        cell = getproperty(row, Symbol(parameter))
-        if cell isa AbstractFloat
+    for (key, val) in pairs(parameters)
+        if eltype(val) <: AbstractFloat
             # all floats are saved as Float32
             defVar(
                 ds,
-                parameter,
+                key,
                 Float32,
                 ("lon", "lat", "time"),
                 attrib = ["_FillValue" => Float32(NaN)],
             )
-        elseif cell isa SVector
+        elseif eltype(val) <: SVector
             # SVectors are used to store layers
             defVar(
                 ds,
-                parameter,
+                key,
                 Float32,
                 ("lon", "lat", "layer", "time"),
                 attrib = ["_FillValue" => Float32(NaN)],
@@ -186,19 +194,21 @@ struct NCReader{T}
     cyclic_parameters::Dict{Symbol,String}
     buffer::Matrix{T}
     inds::Vector{CartesianIndex{2}}
+    inds_riv::Vector{CartesianIndex{2}}
 end
 
-struct NCWriter
+struct Writer
     dataset::NCDataset
-    parameters::Vector{String}
+    parameters::Dict{String,Any}
+    csv_io::IO
 end
 
 "Convert a piece of Config to a Dict{Symbol, String} used for parameter lookup"
 parameter_lookup_table(config) = Dict(Symbol(k) => String(v) for (k, v) in Dict(config))
 
-function prepare_reader(path, cyclic_path, inds, config)
+function prepare_reader(path, cyclic_path, inds, inds_riv, config)
     dataset = NCDataset(path)
-    var = dataset[config.forcing_parameters.precipitation].var
+    var = dataset[config.dynamic.parameters.precipitation].var
 
     fillvalue = get(var.attrib, "_FillValue", nothing)
     scale_factor = get(var.attrib, "scale_factor", nothing)
@@ -222,8 +232,8 @@ function prepare_reader(path, cyclic_path, inds, config)
     cyclic_nc_times = collect(cyclic_dataset["time"])
     cyclic_times = Wflow.timecycles(cyclic_nc_times)
 
-    forcing_parameters = parameter_lookup_table(config.forcing_parameters)
-    cyclic_parameters = parameter_lookup_table(config.cyclic_parameters)
+    forcing_parameters = parameter_lookup_table(config.dynamic.parameters)
+    cyclic_parameters = parameter_lookup_table(config.cyclic.parameters)
     forcing_keys = keys(forcing_parameters)
     cyclic_keys = keys(cyclic_parameters)
     for forcing_key in forcing_keys
@@ -240,10 +250,11 @@ function prepare_reader(path, cyclic_path, inds, config)
         cyclic_parameters,
         buffer,
         inds,
+        inds_riv,
     )
 end
 
-function prepare_writer(config, reader, output_path, row, maxlayers)
+function prepare_writer(config, reader, output_path, modelmap, maxlayers)
     # TODO remove random string from the filename
     # this makes it easier to develop for now, since we don't run into issues with open files
     base, ext = splitext(output_path)
@@ -252,48 +263,64 @@ function prepare_writer(config, reader, output_path, row, maxlayers)
     nclon = ncread(reader.dataset, "lon"; type = Float64)
     nclat = ncread(reader.dataset, "lat"; type = Float64)
 
-    output_parameters = config.output.parameters
-    calendar = get(config.input, "calendar", "proleptic_gregorian")
-    time_units = get(config.input, "time_units", CFTime.DEFAULT_TIME_UNITS)
-    ds = Wflow.setup_netcdf(
+    # fill the output_map by mapping parameters to arrays
+    output_map = Dict{String,Vector}()
+    for (param, ncname) in pairs(config.output.parameters)
+        parsym = Symbol(param)
+        for (name, component) in pairs(modelmap)
+            if parsym in propertynames(component)
+                # this array will be reused
+                # therefore the reference in this dict can be used for all timesteps.
+                if haskey(output_map, param)
+                    @warn "output parameter $param not unique, currently set to $name"
+                end
+                output_map[param] = getproperty(component, parsym)
+            end
+        end
+        if !haskey(output_map, param)
+            error("output parameter $param not found in any model component")
+        end
+    end
+
+    calendar = get(config, "calendar", "proleptic_gregorian")
+    time_units = get(config, "time_units", CFTime.DEFAULT_TIME_UNITS)
+    ds = setup_netcdf(
         randomized_path,
         nclon,
         nclat,
-        output_parameters,
+        output_map,
         calendar,
         time_units,
-        row,
         maxlayers,
     )
-    return NCWriter(ds, output_parameters)
+    csv = open(config.csv.path, "w")
+    return Writer(ds, output_map, csv)
 end
 
 "Write NetCDF output"
-function write_output(model, writer::NCWriter)
+function write_output(model, writer::Writer)
     @unpack vertical, clock, reader = model
-    @unpack buffer, inds = reader
+    @unpack buffer, inds, inds_riv = reader
     @unpack dataset, parameters = writer
 
     time_index = add_time(dataset, clock.time)
 
-    for parameter in parameters
+    for (key, vector) in pairs(parameters)
+        inds_used = Symbol(key) in propertynames(model.lateral.river) ? inds_riv : inds
         # write the active cells vector to the 2d buffer matrix
-        param = Symbol(parameter)
-        vector = getproperty(vertical, param)
-
         elemtype = eltype(vector)
         if elemtype <: AbstractFloat
             # ensure no other information is written
             fill!(buffer, NaN)
-            buffer[inds] .= vector
-            dataset[parameter][:, :, time_index] = buffer
+            buffer[inds_used] .= vector
+            dataset[key][:, :, time_index] = buffer
         elseif elemtype <: SVector
             nlayer = length(first(vector))
             for i = 1:nlayer
                 # ensure no other information is written
                 fill!(buffer, NaN)
-                buffer[inds] .= getindex.(vector, i)
-                dataset[parameter][:, :, i, time_index] = buffer
+                buffer[inds_used] .= getindex.(vector, i)
+                dataset[key][:, :, i, time_index] = buffer
             end
         else
             error("Unsupported output type: ", elemtype)
@@ -347,4 +374,5 @@ function close_files(model)
     close(reader.dataset)
     close(reader.cyclic_dataset)
     close(writer.dataset)
+    close(writer.csv_io)
 end

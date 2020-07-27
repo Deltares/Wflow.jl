@@ -18,11 +18,17 @@ Base.@kwdef struct SurfaceFlow{T,R,L}
     to_river::Vector{T} = fill(0.0, length(sl)) # Part of overland flow [m³ s⁻¹] that flows to the river
     rivercells::Vector{Bool} = fill(false, length(sl)) # Location of river cells (0 or 1)
     wb_pit::Vector{Bool} = fill(false, length(sl)) # Boolean location (0 or 1) of a waterbody (wb, reservoir or lake).
-    reservoir::R = Fill(missing, length(sl)) # Reservoir model, only located in river cells
-    lake::L = Fill(missing, length(sl))                 # Lake model, only located in river cells
-end
+    reservoir_index::Vector{Int} = fill(0, length(sl)) # map cell to 0 (no reservoir) or i (pick reservoir i in reservoir field)
+    lake_index::Vector{Int} = fill(0, length(sl))      # map cell to 0 (no lake) or i (pick lake i in lake field)
+    reservoir::R = nothing                  # Reservoir model struct of arrays
+    lake::L = nothing                       # Lake model struct of arrays
 
-statenames(::SurfaceFlow) = (:q, :h)
+    # TODO unclear why this causes a MethodError
+    # function SurfaceFlow{T,R,L}(args...) where {T,R,L}
+    #     equal_size_vectors(args)
+    #     return new(args...)
+    # end
+end
 
 function update(
     sf::SurfaceFlow,
@@ -90,23 +96,19 @@ function update(
             else
                 qin = sum_at(sf.q, upstream_nodes)
             end
-            # run reservoir model and copy reservoir outflow to river cell
-            # dummy values now for reservoir precipitation and evaporation (3.0 and 4.0)
-            if !ismissing(sf.reservoir[v])
-                sf.reservoir[v] = update(sf.reservoir[v], qin, p, pet, adt)
-                sf.q[v] = sf.reservoir[v].outflow
+            if !isnothing(sf.reservoir) && sf.reservoir_index[v] != 0
+                # run reservoir model and copy reservoir outflow to river cell
+                # dummy values now for reservoir precipitation and evaporation (3.0 and 4.0)
+                i = sf.reservoir_index[v]
+                update(sf.reservoir, i, qin, p, pet, adt)
+                sf.q[v] = sf.reservoir.outflow[i]
+
+            elseif !isnothing(sf.lake) && sf.lake_index[v] != 0
                 # run lake model and copy lake outflow to river cell
                 # dummy values now for lake precipitation and evaporation (3.0 and 4.0)
-            elseif !ismissing(sf.lake[v])
-                if sf.lake[v].lowerlake_ind != 0
-                    lower_lake = sf.lake[sf.lake[v].lowerlake_ind]
-                    sf.lake[v] = update(sf.lake[v], qin, p, pet, doy, lower_lake)
-                    sf.q[v] = sf.lake[v].outflow
-                else
-                    sf.lake[v] = update(sf.lake[v], qin, p, pet, doy)
-                    sf.q[v] = sf.lake[v].outflow
-                end
-
+                i = sf.lake_index[v]
+                update(sf.lake, i, qin, p, pet, doy)
+                sf.q[v] = sf.lake.outflow[i]
             else
                 sf.q[v] =
                     kinematic_wave(qin, sf.q[v], sf.qlat[v], sf.α[v], sf.β, adt, sf.dl[v])
@@ -153,10 +155,15 @@ Base.@kwdef struct LateralSSF{T}
     ssfmax::Vector{T} = ((kh₀ .* βₗ) ./ f) .* (1.0 .- exp.(-f .* soilthickness))     # Maximum subsurface flow [mm² Δt⁻¹]
     to_river::Vector{T} = zeros(length(f))  # Part of subsurface flow [mm³ Δt⁻¹] that flows to the river
     wb_pit::Vector{Bool} = zeros(Bool, length(f)) # Boolean location (0 or 1) of a waterbody (wb, reservoir or lake).
+
+    function LateralSSF{T}(args...) where {T}
+        equal_size_vectors(args)
+        return new(args...)
+    end
 end
 
 # depends on ini file settings (optional: glaciers, snow, irrigation)
-statenames(::LateralSSF) = (:ssf,)
+statenames(::LateralSSF) = ("ssf")
 
 function update(ssf::LateralSSF, dag, toposort, frac_toriver, river)
     for v in toposort

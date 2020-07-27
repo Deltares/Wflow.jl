@@ -143,7 +143,7 @@ throw_internal_error(msg) = error("internal TOML parser error: $msg")
 # all the way and have this error be returned to the user
 # if the parse is called with `raise=false`. This macro
 # makes that easier
-@eval macro $(:var"try")(expr)
+@eval macro $(:(var"try"))(expr)
     return quote
         v = $(esc(expr))
         v isa ParserError && return v
