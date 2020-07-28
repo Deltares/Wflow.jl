@@ -16,7 +16,6 @@ using UnPack
 
     # test if the values are parsed as expected
     @test config.casename == "testcase"
-    @test config.λ == 1.2
     @test config.starttime === DateTime(2000)
     @test config.endtime === DateTime(2000, 2)
     @test config.output.path == "data/specified_output.nc"
