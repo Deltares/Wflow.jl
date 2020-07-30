@@ -16,6 +16,7 @@ function initialize_sbm_model(config::Config)
 
     Δt = Second(config.timestepsecs)
     # default parameter values (dict)
+    Δt = Second(86400)
     dparams = Dict(
         "Cfmax" => 3.75653 * (Δt / basetimestep),
         "TT" => 0.0,
@@ -120,27 +121,9 @@ function initialize_sbm_model(config::Config)
     infiltcapsoil =
         ncread(nc, "InfiltCapSoil"; sel = inds, defaults = dparams, type = Float64)
     maxleakage = ncread(nc, "MaxLeakage"; sel = inds, defaults = dparams, type = Float64)
-    # TODO: store c, kvfrac in staticmaps.nc start at index 1
-    c = fill(dparams["c"], (maxlayers, n))
-    kvfrac = fill(dparams["KsatVerFrac"], (maxlayers, n))
-    for i in [0:1:maxlayers-1;]
-        if string("c_", i) in keys(nc)
-            c[i+1, :] = ncread(nc, string("c_", i); sel = inds, type = Float64)
-        else
-            @warn(string("c_", i, " not found, set to default value ", dparams["c"]))
-        end
-        if string("KsatVerFrac_", i) in keys(nc)
-            kvfrac[i+1, :] =
-                ncread(nc, string("KsatVerFrac_", i); sel = inds, type = Float64)
-        else
-            @warn(string(
-                "KsatVerFrac_",
-                i,
-                " not found, set to default value ",
-                dparams["KsatVerFrac"],
-            ))
-        end
-    end
+
+    c = ncread(nc, "c"; sel = inds, defaults = dparams, type = Float64, dimname = "layer")
+    kvfrac = ncread(nc, "KsatVerFrac"; sel = inds, defaults = dparams, type = Float64, dimname = "layer")
 
     # fraction open water and compacted area (land cover)
     waterfrac = ncread(nc, "WaterFrac"; sel = inds, defaults = dparams, type = Float64)
