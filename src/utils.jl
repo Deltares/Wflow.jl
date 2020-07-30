@@ -57,6 +57,7 @@ selections of data in desired types, with or without missing values.
 - `allow_missing=false`: Missing values within `sel` is not allowed by default. Set to
         `true` to allow missing values.
 - `fill=nothing`: Missing values are replaced by this fill value if `allow_missing` is `false`.
+- `dimname` : name of third dimension of parameter `var`. By default no third dimension is expected.
 """
 function ncread(
     nc,
@@ -66,12 +67,17 @@ function ncread(
     type = nothing,
     allow_missing = false,
     fill = nothing,
+    dimname = nothing,
 )
 
     if !haskey(nc, var) && !isnothing(defaults)
         # TODO move away from this strategy for defaults
         @warn(string(var, " not found, set to default value ", defaults[var]))
-        return Base.fill(defaults[var], length(sel))
+        if isnothing(dimname)
+            return Base.fill(defaults[var], length(sel))
+        else
+            return Base.fill(defaults[var], (nc.dim[dimname],length(sel)))
+        end
     end
 
     # Read the entire variable into memory, applying scale, offset and
@@ -80,7 +86,16 @@ function ncread(
 
     # Take out only the active cells
     if !isnothing(sel)
-        A = A[sel]
+        if isnothing(dimname)
+            A = A[sel]
+        else
+            dim = findfirst(==(dimname), dimnames(nc[var]))
+            if dim == 3
+                A = A[sel,:]'
+            elseif dim == 1
+                A = A[:,sel]
+            end
+        end
     end
 
     if !allow_missing
