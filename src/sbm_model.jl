@@ -343,6 +343,8 @@ function initialize_sbm_model(config::Config)
             targetminfrac = res_targetminfrac,
         )
         statenames =  (statenames..., "volume_reservoir")
+    else
+        inds_res = nothing
     end
 
     # lakes
@@ -424,6 +426,8 @@ function initialize_sbm_model(config::Config)
             is_lake = is_lake,
         )
         statenames = (statenames..., "waterlevel_lake")
+    else
+        inds_lake = nothing
     end
 
     # lateral part sbm
@@ -506,17 +510,9 @@ function initialize_sbm_model(config::Config)
         writer,
     )
 
+    # read and set states in model object if reinit=true
     if reinit
-        ds = NCDataset(instate_path)
-        for state in statenames
-            if "layer" in dimnames(ds[state])
-                var = Float64.(ds[state][inds,:,1])
-                model = set(model, paramap[state], [SVector{ds.dim["layer"]}(var[i,:]) for i=1:n])
-            else
-                var = Float64.(nomissing(ds[state][inds,1],mv))
-                model = set(model, paramap[state], var)
-            end
-        end
+        set_states(instate_path, model, statenames, inds; type=Float64, sel_res=inds_res, sel_riv=inds_riv, sel_lake=inds_lake)
     end
 
     # make sure the forcing is already loaded
