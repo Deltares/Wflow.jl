@@ -201,6 +201,7 @@ struct Writer
     dataset::NCDataset
     parameters::Dict{String,Any}
     csv_io::IO
+    statenames::Tuple{String,Vararg{String}}
 end
 
 "Convert a piece of Config to a Dict{Symbol, String} used for parameter lookup"
@@ -254,7 +255,7 @@ function prepare_reader(path, cyclic_path, inds, inds_riv, config)
     )
 end
 
-function prepare_writer(config, reader, output_path, modelmap, maxlayers)
+function prepare_writer(config, reader, output_path, modelmap, maxlayers, statenames)
     # TODO remove random string from the filename
     # this makes it easier to develop for now, since we don't run into issues with open files
     base, ext = splitext(output_path)
@@ -294,7 +295,7 @@ function prepare_writer(config, reader, output_path, modelmap, maxlayers)
         maxlayers,
     )
     csv = open(config.csv.path, "w")
-    return Writer(ds, output_map, csv)
+    return Writer(ds, output_map, csv, statenames)
 end
 
 "Write NetCDF output"

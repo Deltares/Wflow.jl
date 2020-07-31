@@ -499,7 +499,7 @@ function initialize_sbm_model(config::Config)
     reader = prepare_reader(dynamic_path, cyclic_path, inds, inds_riv, config)
 
     modelmap = (vertical = sbm, subsurface = ssf, land = olf, river = rf)
-    writer = prepare_writer(config, reader, output_path, modelmap, maxlayers)
+    writer = prepare_writer(config, reader, output_path, modelmap, maxlayers, statenames)
 
     model = Model(
         (land = dag, river = dag_riv),

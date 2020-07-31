@@ -45,7 +45,7 @@ end
 """
     set_states(instate_path, model, statenames, sel ; <keyword arguments>)
 
-Read states contained in `NamedTuple` `statenames` from NetCDF file located in `instate_path`, and set states in 
+Read states contained in `Tuple` `statenames` from NetCDF file located in `instate_path`, and set states in 
 `model` object. Active cells are selected with `sel` (`Vector{CartesianIndex}`) from the NetCDF file. 
 
 # Arguments
