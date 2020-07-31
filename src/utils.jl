@@ -43,6 +43,63 @@ function lattometres(lat::Float64)
 end
 
 """
+    set_states(instate_path, model, statenames, sel ; <keyword arguments>)
+
+Read states contained in `NamedTuple` `statenames` from NetCDF file located in `instate_path`, and set states in 
+`model` object. Active cells are selected with `sel` (`Vector{CartesianIndex}`) from the NetCDF file. 
+
+# Arguments
+- `type=nothing`: type to convert data to after reading. By default no conversion is done.
+- `sel_res=nothing`: a selection of indices, such as a `Vector{CartesianIndex}` of active reservoir cells,
+        to return from the NetCDF. By default all active cells are returned.
+- `sel_riv=nothing`: a selection of indices, such as a `Vector{CartesianIndex}` of active river cells,
+        to return from the NetCDF. By default all active cells are returned.
+- `sel_lake=nothing`: a selection of indices, such as a `Vector{CartesianIndex}` of active lake cells,
+        to return from the NetCDF. By default all active cells are returned.
+"""
+function set_states(instate_path, model, statenames, sel; type=nothing, sel_res=nothing, sel_riv=nothing, sel_lake=nothing)
+
+    # states in NetCDF include dim time (one value) at index 3 or 4, 3 or 4 dims are allowed
+    ds = NCDataset(instate_path)
+    for state in statenames
+        dims = length(dimnames(ds[state]))
+        # 4 dims, for example (x,y,layer,time) where dim layer is an SVector for soil layers
+        if dims == 4
+            A = transpose(ds[state][sel,:,1])
+            # Convert to desired type if needed
+            if !isnothing(type)
+                if eltype(A) != type
+                    A = map(type, A)
+                end
+            end
+            # set state in model object
+            get(model, paramap[state]) .= svectorscopy(A,Val{size(A)[1]}())
+        # 3 dims (x,y,time)
+        elseif dims == 3
+            if occursin("reservoir", state)
+                A = ds[state][sel_res,1]
+            elseif occursin("river", state)
+                A = ds[state][sel_riv,1]
+            elseif occursin("lake", state)
+                A = ds[state][sel_lake,1]
+            else
+                A = ds[state][sel,1]
+            end
+            # Convert to desired type if needed
+            if !isnothing(type)
+                if eltype(A) != type
+                    A = map(type, A)
+                end
+            end
+            # set state in model object
+            get(model, paramap[state]) .= A
+        else
+            error("Number of state dims should be 3 or 4, number of dims = ", string(dims))
+        end
+    end
+end
+
+"""
     ncread(nc, var; <keyword arguments>)
 
 Read parameter `var` from NetCDF file `nc`. Supports various keyword arguments to get
@@ -91,7 +148,7 @@ function ncread(
         else
             dim = findfirst(==(dimname), dimnames(nc[var]))
             if dim == 3
-                A = A[sel,:]'
+                A = transpose(A[sel,:])
             elseif dim == 1
                 A = A[:,sel]
             end
