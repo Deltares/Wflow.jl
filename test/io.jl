@@ -50,7 +50,7 @@ end
           monthday.(Date(2000, 1, 1):Day(1):Date(2000, 12, 31))
 end
 
-tomlpath = joinpath(@__DIR__, "config.toml")
+tomlpath = joinpath(@__DIR__, "config_reinit.toml")
 tomldir = dirname(tomlpath)
 config = Wflow.Config(tomlpath)
 
@@ -60,12 +60,46 @@ model = Wflow.initialize_sbm_model(config)
 @unpack vertical, clock, reader, writer = model
 @unpack dataset, buffer, inds = reader
 
-@testset "output" begin
+@testset "output and state names" begin
     ncdims = ("lon", "lat", "layer", "time")
     @test dimnames(writer.dataset["ustorelayerdepth"]) == ncdims
     ncvars = [k for k in keys(writer.dataset) if !in(k, ncdims)]
     @test "snow" in ncvars
     @test "q" in ncvars
+    @test writer.statenames == (
+        "satwaterdepth", 
+        "snow", 
+        "tsoil", 
+        "ustorelayerdepth", 
+        "snowwater", 
+        "canopystorage", 
+        "volume_reservoir", 
+        "ssf", 
+        "q_river", 
+        "h_river", 
+        "q_land", 
+        "h_land"
+    )
+end
+
+# test reading and setting of warm states (reinit=true)
+tomlpath = joinpath(@__DIR__, "config_reinit.toml")
+config = Wflow.Config(tomlpath)
+model = Wflow.initialize_sbm_model(config)
+
+@testset "warm states" begin
+    @test get(model, Wflow.paramap["volume_reservoir"])[2] ≈ 2.7801042e7
+    @test get(model, Wflow.paramap["satwaterdepth"])[26625] ≈ 168.40777587890625
+    @test get(model, Wflow.paramap["snow"])[26625] ≈ 0.9690762758255005
+    @test get(model, Wflow.paramap["tsoil"])[26625] ≈ 2.9367642402648926
+    @test get(model, Wflow.paramap["ustorelayerdepth"])[1][1] ≈ 3.31813645362854
+    @test get(model, Wflow.paramap["snowwater"])[26625] ≈ 0.011469922959804535
+    @test get(model, Wflow.paramap["canopystorage"])[1] ≈ 0.0
+    @test get(model, Wflow.paramap["ssf"])[39308] ≈ 2.49775357952e11
+    @test get(model, Wflow.paramap["q_river"])[4061] ≈ 1.3987680673599243
+    @test get(model, Wflow.paramap["h_river"])[4061] ≈ 0.628973126411438
+    @test get(model, Wflow.paramap["q_land"])[39308] ≈ 0.08347763121128082
+    @test get(model, Wflow.paramap["h_land"])[39308] ≈ 0.008668862283229828
 end
 
 # get the output path before it's closed, and remove up the file
