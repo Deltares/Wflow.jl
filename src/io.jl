@@ -30,6 +30,7 @@ Base.keys(config::Config) = keys(Dict(config))
 Base.values(config::Config) = values(Dict(config))
 Base.pairs(config::Config) = pairs(Dict(config))
 Base.get(config::Config, key, default) = get(Dict(config), key, default)
+Base.getindex(config::Config, i) = getindex(Dict(config), i)
 Base.Dict(config::Config) = getfield(config, :dict)
 Base.pathof(config::Config) = getfield(config, :path)
 Base.dirname(config::Config) = dirname(pathof(config))
@@ -200,6 +201,7 @@ end
 struct Writer
     dataset::NCDataset
     parameters::Dict{String,Any}
+    csv_path::String
     csv_io::IO
     statenames::Tuple{String,Vararg{String}}
 end
@@ -294,8 +296,10 @@ function prepare_writer(config, reader, output_path, modelmap, maxlayers, staten
         time_units,
         maxlayers,
     )
-    csv = open(config.csv.path, "w")
-    return Writer(ds, output_map, csv, statenames)
+    tomldir = dirname(config)
+    csv_path = joinpath(tomldir, config.csv.path)
+    csv_io = open(csv_path, "w")
+    return Writer(ds, output_map, csv_path, csv_io, statenames)
 end
 
 "Write NetCDF output"
@@ -369,11 +373,18 @@ function timecycles(times)
 end
 
 "Close input and output datasets that are opened on model initialization"
-function close_files(model)
+function close_files(model; delete_output::Bool=false)
     @unpack reader, writer = model
+
+    output_nc_path = path(writer.dataset)
 
     close(reader.dataset)
     close(reader.cyclic_dataset)
     close(writer.dataset)
     close(writer.csv_io)
+
+    if delete_output
+        rm(output_nc_path)
+        rm(writer.csv_path)
+    end
 end

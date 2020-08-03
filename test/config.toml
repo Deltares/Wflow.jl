@@ -114,20 +114,23 @@ canopystorage = "canopystorage"
 soilthickness = "soilthickness"
 q = "q"
 
-# code (var name)
-# unique parameter name (toml)
-# name in netcdf
-
 [csv]
 path = "data/specified_csv.csv"
 
 [[csv.column]]
-name = "q"
-parameter = "a"
-method = "mean"
+parameter = "q_river"
+header = "Q"
+reduction = "max"
 
 [[csv.column]]
-name = "discharge"
-parameter = "a"
-method = "subcatchment"
-# method = "landcover"
+parameter = "volume_reservoir"
+header = "volume"
+index = 1
+# id = true  # creat n columns, "volume_101"
+# loc = [100,50]
+# coordinate = [53.2, 5.6]
+
+[[csv.column]]
+parameter = "precipitation"
+header = "precipitation"
+reduction = "mean"

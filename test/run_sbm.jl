@@ -128,4 +128,4 @@ println("Model update")
 print_benchmark(trialmin)
 # @profview Wflow.update(model, config, toposort_land, toposort_river, frac_toriver, index_river, nl, nr)
 
-Wflow.close_files(model)
+Wflow.close_files(model, delete_output=true)
