@@ -25,7 +25,7 @@ NCDatasets = "0.10"
 Setfield = "0.6, 0.7"
 StaticArrays = "0.12"
 UnPack = "1.0"
-julia = "1.4"
+julia = "1.5"
 
 [extras]
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
