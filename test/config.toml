@@ -120,7 +120,7 @@ path = "data/specified_csv.csv"
 [[csv.column]]
 parameter = "q_river"
 header = "Q"
-reduction = "max"
+reducer = "maximum"
 
 [[csv.column]]
 parameter = "volume_reservoir"
@@ -133,4 +133,4 @@ index = 1
 [[csv.column]]
 parameter = "precipitation"
 header = "precipitation"
-reduction = "mean"
+reducer = "mean"

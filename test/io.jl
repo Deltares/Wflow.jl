@@ -98,5 +98,13 @@ end
     @test get(model, Wflow.paramap["h_land"])[39308] ≈ 0.008668862283229828
 end
 
-Wflow.close_files(model, delete_output=true)
+@testset "reducer" begin
+    @test Wflow.reducer(Dict("reducer"=>"maximum"))([6,5,2]) == 6
+    @test Wflow.reducer(Dict("reducer"=>"mean"))([6,5,4,1]) == 4
+    @test Wflow.reducer(Dict("reducer"=>"median"))([6,5,4,1]) == 4.5
+    @test Wflow.reducer(Dict("reducer"=>"first"))([6,5,4,1]) == 6
+    @test Wflow.reducer(Dict("reducer"=>"last"))([6,5,4,1]) == 1
+    @test Wflow.reducer(Dict("index"=>2))([6,5,4,1]) == 5
+end
 
+Wflow.close_files(model, delete_output=true)

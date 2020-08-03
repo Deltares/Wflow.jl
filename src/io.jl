@@ -202,6 +202,7 @@ struct Writer
     dataset::NCDataset
     parameters::Dict{String,Any}
     csv_path::String
+    csv_cols::Vector
     csv_io::IO
     statenames::Tuple{String,Vararg{String}}
 end
@@ -297,16 +298,34 @@ function prepare_writer(config, reader, output_path, modelmap, maxlayers, staten
         maxlayers,
     )
     tomldir = dirname(config)
+
+    # open CSV file and write header
     csv_path = joinpath(tomldir, config.csv.path)
     csv_io = open(csv_path, "w")
-    return Writer(ds, output_map, csv_path, csv_io, statenames)
+    header = join((col["header"] for col in config.csv.column), ',')
+    println(csv_io, "time,", header)
+    flush(csv_io)
+
+    # cleate a vector of (lens, reducer) named tuples which will be used to
+    # retrieve and reduce the CSV data during a model run
+    csv_cols = []
+    for col in config.csv.column
+        lens = Wflow.paramap[col["parameter"]]
+        reducer = Wflow.reducer(col)
+        push!(csv_cols, (;lens, reducer))
+    end
+
+    
+    return Writer(ds, output_map, csv_path, csv_cols, csv_io, statenames)
 end
 
-"Write NetCDF output"
+"Write model output"
 function write_output(model, writer::Writer)
     @unpack vertical, clock, reader = model
     @unpack buffer, inds, inds_riv = reader
     @unpack dataset, parameters = writer
+
+    write_csv_row(model)
 
     time_index = add_time(dataset, clock.time)
 
@@ -387,4 +406,50 @@ function close_files(model; delete_output::Bool=false)
         rm(output_nc_path)
         rm(writer.csv_path)
     end
+end
+
+"Get a reducer function based on CSV output settings defined in a dictionary"
+function reducer(col)
+    if haskey(col, "reducer")
+        if col["reducer"] == "maximum"
+            return maximum
+        elseif col["reducer"] == "minimum"
+            return minimum
+        elseif col["reducer"] == "mean"
+            return mean
+        elseif col["reducer"] == "median"
+            return median
+        elseif col["reducer"] == "first"
+            return first
+        elseif col["reducer"] == "last"
+            return last
+        else
+            error("unknown reducer")
+        end
+    elseif haskey(col, "index")
+        return x -> getindex(x, col["index"])
+    elseif haskey(col, "id")
+        # id = true  # creat n columns, "volume_101"
+        error("id not implemented")
+    elseif haskey(col, "loc")
+        # loc = [100,50]
+        error("loc not implemented")
+    elseif haskey(col, "coordinate")
+        # coordinate = [53.2, 5.6]
+        error("coordinate not implemented")
+    else
+        error("unknown reducer")
+    end
+end
+
+function write_csv_row(model)
+    @unpack writer, clock = model
+    io = writer.csv_io
+    print(io, clock.time)
+    for nt in writer.csv_cols
+        A = get(model, nt.lens)
+        v = nt.reducer(A)
+        print(io, ',', v)
+    end
+    println(io)
 end
