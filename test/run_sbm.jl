@@ -26,6 +26,10 @@ model = Wflow.update(
     nr,
 )
 
+# test if the first timestep was written to the CSV file
+flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
+@test String(read(model.writer.csv_path)) == "time,Q,volume,precipitation\n2000-01-01T00:00:00,8.068415620162373,4.364435435788508e7,2.016469537990403\n"
+
 @testset "first timestep" begin
     sbm = model.vertical
     
@@ -66,7 +70,7 @@ end
     @test sum(ssf) ≈ 7.005489495052358e16
     @test ssf[toposort_land[1]] ≈ 3.0449782003445332e13
     @test ssf[toposort_land[nl-100]] ≈ 7.87333555063647e11
-    @test ssf[sink] ≈ 2.2998636307068414e11
+    @test ssf[toposort_land[end]] ≈ 3.289417561401221e11
 end
 
 @testset "overland flow" begin
@@ -74,7 +78,7 @@ end
     @test sum(q) ≈ 6.1333024054146446
     @test q[26625] ≈ 0.0
     @test q[39308] ≈ 0.0
-    @test q[sink] ≈ 0.0
+    @test q[toposort_land[end]] ≈ 6.804317844228025e-6
 end
 
 @testset "river flow" begin

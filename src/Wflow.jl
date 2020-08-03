@@ -26,6 +26,9 @@ struct Model{N,L,V,R,W}
     writer::W  # writes model output
 end
 
+# prevent a large printout of model components and arrays
+Base.show(io::IO, m::Model) = print(io, "model of type ", typeof(m))
+
 include("toml.jl")
 include("name.jl")
 include("io.jl")
