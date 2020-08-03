@@ -97,6 +97,7 @@ function set_states(instate_path, model, statenames, sel; type=nothing, sel_res=
             error("Number of state dims should be 3 or 4, number of dims = ", string(dims))
         end
     end
+    close(ds)
 end
 
 """

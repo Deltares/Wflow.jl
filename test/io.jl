@@ -4,10 +4,11 @@ using CFTime
 using Random
 using UnPack
 
+tomlpath = joinpath(@__DIR__, "config.toml")
+parsed_toml = Wflow.parsefile(tomlpath)
+config = Wflow.Config(tomlpath)
+
 @testset "configuration file" begin
-    tomlpath = joinpath(@__DIR__, "config.toml")
-    parsed_toml = Wflow.parsefile(tomlpath)
-    config = Wflow.Config(tomlpath)
     @test parsed_toml isa Dict{String,Any}
     @test config isa Wflow.Config
     @test Dict(config) == parsed_toml
@@ -50,11 +51,11 @@ end
           monthday.(Date(2000, 1, 1):Day(1):Date(2000, 12, 31))
 end
 
-tomlpath = joinpath(@__DIR__, "config_reinit.toml")
-tomldir = dirname(tomlpath)
-config = Wflow.Config(tomlpath)
-
-# initialize a vector of SBM structs
+# test reading and setting of warm states (reinit=true)
+# modify existing config an re-initialize the model
+@test !config.model.reinit
+config["model"]["reinit"] = true
+@test config.model.reinit
 model = Wflow.initialize_sbm_model(config)
 
 @unpack vertical, clock, reader, writer = model
@@ -82,11 +83,6 @@ model = Wflow.initialize_sbm_model(config)
     )
 end
 
-# test reading and setting of warm states (reinit=true)
-tomlpath = joinpath(@__DIR__, "config_reinit.toml")
-config = Wflow.Config(tomlpath)
-model = Wflow.initialize_sbm_model(config)
-
 @testset "warm states" begin
     @test get(model, Wflow.paramap["volume_reservoir"])[2] ≈ 2.7801042e7
     @test get(model, Wflow.paramap["satwaterdepth"])[26625] ≈ 168.40777587890625
@@ -102,7 +98,5 @@ model = Wflow.initialize_sbm_model(config)
     @test get(model, Wflow.paramap["h_land"])[39308] ≈ 0.008668862283229828
 end
 
-# get the output path before it's closed, and remove up the file
-output_path = path(model.writer.dataset)
-Wflow.close_files(model)
-rm(output_path)
+Wflow.close_files(model, delete_output=true)
+
