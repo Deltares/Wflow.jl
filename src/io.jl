@@ -8,7 +8,7 @@ For configuration files we use TOML.
 "Parsed TOML configuration"
 struct Config
     dict::Dict{String,Any}  # nested key value mapping of all settings
-    path::Union{String, Nothing}  # path to the TOML file, or nothing
+    path::Union{String,Nothing}  # path to the TOML file, or nothing
 end
 
 Config(path::AbstractString) = Config(parsefile(path), path)
@@ -284,15 +284,8 @@ function prepare_writer(config, reader, output_path, modelmap, maxlayers, staten
 
     calendar = get(config, "calendar", "proleptic_gregorian")
     time_units = get(config, "time_units", CFTime.DEFAULT_TIME_UNITS)
-    ds = setup_netcdf(
-        output_path,
-        nclon,
-        nclat,
-        output_map,
-        calendar,
-        time_units,
-        maxlayers,
-    )
+    ds =
+        setup_netcdf(output_path, nclon, nclat, output_map, calendar, time_units, maxlayers)
     tomldir = dirname(config)
 
     if haskey(config, "csv") && haskey(config.csv, "column")
@@ -309,7 +302,7 @@ function prepare_writer(config, reader, output_path, modelmap, maxlayers, staten
         for col in config.csv.column
             lens = Wflow.paramap[col["parameter"]]
             reducer = Wflow.reducer(col)
-            push!(csv_cols, (;lens, reducer))
+            push!(csv_cols, (; lens, reducer))
         end
     else
         # no CSV file is checked by isnothing(csv_path)
@@ -318,7 +311,7 @@ function prepare_writer(config, reader, output_path, modelmap, maxlayers, staten
         csv_io = IOBuffer()
     end
 
-    
+
     return Writer(ds, output_map, csv_path, csv_cols, csv_io, statenames)
 end
 
@@ -395,7 +388,7 @@ function timecycles(times)
 end
 
 "Close input and output datasets that are opened on model initialization"
-function close_files(model; delete_output::Bool=false)
+function close_files(model; delete_output::Bool = false)
     @unpack reader, writer = model
 
     output_nc_path = try

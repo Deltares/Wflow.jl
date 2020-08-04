@@ -72,8 +72,7 @@ Base.@kwdef struct NaturalLake{T}
     avg_waterlevel::Vector{T}               # average water level [m] (cold state)
     waterlevel::Vector{T} = copy(avg_waterlevel) # waterlevel H [m] of lake
     inflow::Vector{T} = fill(mv, length(area))   # inflow to the lake [m³ s⁻¹]
-    storage::Vector{T} = 
-        initialize_storage(storfunc, area, waterlevel, sh) # storage lake [m³]
+    storage::Vector{T} = initialize_storage(storfunc, area, waterlevel, sh) # storage lake [m³]
     outflow::Vector{T} = fill(mv, length(area))        # outflow lake [m³ s⁻¹]
     precipitation::Vector{T} = fill(mv, length(area))  # average precipitation for lake area [mm]
     evaporation::Vector{T} = fill(mv, length(area))    # average evaporation for lake area [mm]
@@ -140,7 +139,8 @@ function update(lake::NaturalLake, i, inflow, p, pet, doy, timestepsecs)
     # Calculate lake factor and SI parameter
     if lake.outflowfunc[i] == 3
         lakefactor = lake.area[i] / (timestepsecs * pow(lake.b[i], 0.5))
-        si_factor = (lake.storage[i] + (p - pet) * lake.area[i] / 1000.0) / timestepsecs + inflow
+        si_factor =
+            (lake.storage[i] + (p - pet) * lake.area[i] / 1000.0) / timestepsecs + inflow
         #Adjust SIFactor for ResThreshold != 0
         si_factor_adj = si_factor - lake.area[i] * lake.threshold[i] / timestepsecs
         #Calculate the new lake outflow/waterlevel/storage
@@ -163,14 +163,20 @@ function update(lake::NaturalLake, i, inflow, p, pet, doy, timestepsecs)
         diff_wl = has_lowerlake ? lake.waterlevel[i] - lake.waterlevel[lo] : 0.0
 
         if lake.outflowfunc[i] == 1
-            outflow = interpolate_linear(lake.waterlevel[i], lake.hq[i][!, 1], lake.hq[i][!, col])
+            outflow =
+                interpolate_linear(lake.waterlevel[i], lake.hq[i][!, 1], lake.hq[i][!, col])
         else
             if diff_wl >= 0.0
-                outflow =
-                    max(pow((lake.b[i] * (lake.waterlevel[i] - lake.threshold[i])), lake.e[i]), 0.0)
+                outflow = max(
+                    pow((lake.b[i] * (lake.waterlevel[i] - lake.threshold[i])), lake.e[i]),
+                    0.0,
+                )
             else
                 outflow = min(
-                    pow((-1.0 * lake.b[i] * (lake.waterlevel[lo] - lake.threshold[i])), lake.e[i]),
+                    pow(
+                        (-1.0 * lake.b[i] * (lake.waterlevel[lo] - lake.threshold[i])),
+                        lake.e[i],
+                    ),
                     0.0,
                 )
             end

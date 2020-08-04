@@ -11,9 +11,9 @@ Base.@kwdef struct SBM{T,N,M}
     xl::Vector{T}
     # Fraction of river [-]
     riverfrac::Vector{T}
-     # Saturated water content (porosity) [mm mm⁻¹]
+    # Saturated water content (porosity) [mm mm⁻¹]
     θₛ::Vector{T}
-     # Residual water content [mm mm⁻¹]
+    # Residual water content [mm mm⁻¹]
     θᵣ::Vector{T}
     # Effictive porosity [mm mm⁻¹]
     θₑ::Vector{T}
@@ -154,7 +154,7 @@ Base.@kwdef struct SBM{T,N,M}
     # Threshold temperature interval length [ᵒC]
     tti::Vector{T} = fill(mv, n)
     # Threshold temperature for snowmelt [ᵒC]
-    ttm ::Vector{T} = fill(mv, n)
+    ttm::Vector{T} = fill(mv, n)
     # Water holding capacity as fraction of current snow pack [-]
     whc::Vector{T} = fill(mv, n)
     # Soil temperature smooth factor [-]
@@ -320,10 +320,14 @@ function update_until_recharge(sbm::SBM, config)
 
         rootingdepth = min(sbm.soilthickness[i] * 0.99, sbm.rootingdepth[i])
 
-        ae_openw_r =
-            min(wl_river * 1000.0 * sbm.riverfrac[i], sbm.riverfrac[i] * sbm.pottrans_soil[i])
-        ae_openw_l =
-            min(wl_land * 1000.0 * sbm.waterfrac[i], sbm.waterfrac[i] * sbm.pottrans_soil[i])
+        ae_openw_r = min(
+            wl_river * 1000.0 * sbm.riverfrac[i],
+            sbm.riverfrac[i] * sbm.pottrans_soil[i],
+        )
+        ae_openw_l = min(
+            wl_land * 1000.0 * sbm.waterfrac[i],
+            sbm.waterfrac[i] * sbm.pottrans_soil[i],
+        )
 
         restevap = sbm.pottrans_soil[i] - ae_openw_r - ae_openw_l
 
@@ -377,7 +381,8 @@ function update_until_recharge(sbm::SBM, config)
                 for m = 1:n_usl
                     l_sat = usl[m] * (sbm.θₛ[i] - sbm.θᵣ[i])
                     kv_z = sbm.kvfrac[i][m] * sbm.kv₀[i] * exp(-sbm.f[i] * z[m])
-                    ustorelayerdepth = m == 1 ? sbm.ustorelayerdepth[i][m] + infiltsoilpath :
+                    ustorelayerdepth =
+                        m == 1 ? sbm.ustorelayerdepth[i][m] + infiltsoilpath :
                         sbm.ustorelayerdepth[i][m] + ast
                     ustorelayerdepth, ast =
                         unsatzone_flow_layer(ustorelayerdepth, kv_z, l_sat, sbm.c[i][m])
@@ -399,11 +404,13 @@ function update_until_recharge(sbm::SBM, config)
                 if n_usl == 1
                     # Check if groundwater level lies below the surface
                     soilevapunsat =
-                        potsoilevap * min(1.0, usld[1] / (sbm.zi[i] * (sbm.θₛ[i] - sbm.θᵣ[i])))
+                        potsoilevap *
+                        min(1.0, usld[1] / (sbm.zi[i] * (sbm.θₛ[i] - sbm.θᵣ[i])))
                 else
                     # In case first layer contains no saturated storage
                     soilevapunsat =
-                        potsoilevap * min(1.0, usld[1] / (usl[1] * ((sbm.θₛ[i] - sbm.θᵣ[i]))))
+                        potsoilevap *
+                        min(1.0, usld[1] / (usl[1] * ((sbm.θₛ[i] - sbm.θᵣ[i]))))
                 end
             end
             # Ensure that the unsaturated evaporation rate does not exceed the
@@ -423,8 +430,10 @@ function update_until_recharge(sbm::SBM, config)
                 soilevapsat =
                     potsoilevap *
                     min(1.0, (sbm.act_thickl[i][1] - sbm.zi[i]) / sbm.act_thickl[i][1])
-                soilevapsat =
-                    min(soilevapsat, (sbm.act_thickl[i][1] - sbm.zi[i]) * (sbm.θₛ[i] - sbm.θᵣ[i]))
+                soilevapsat = min(
+                    soilevapsat,
+                    (sbm.act_thickl[i][1] - sbm.zi[i]) * (sbm.θₛ[i] - sbm.θᵣ[i]),
+                )
             else
                 soilevapsat = 0.0
             end
@@ -502,7 +511,8 @@ function update_until_recharge(sbm::SBM, config)
 
             netcapflux = capflux
             for k = n_usl:-1:1
-                toadd = min(netcapflux, max(usl[k] * (sbm.θₛ[i] - sbm.θᵣ[i]) - usld[k], 0.0))
+                toadd =
+                    min(netcapflux, max(usl[k] * (sbm.θₛ[i] - sbm.θᵣ[i]) - usld[k], 0.0))
                 usld = setindex(usld, usld[k] + toadd, k)
                 netcapflux = netcapflux - toadd
                 actcapflux = actcapflux + toadd
@@ -573,8 +583,7 @@ function update_after_lateralflow(sbm::SBM, zi, exfiltsatwater)
             if k <= n_usl
                 vwc = setindex(
                     vwc,
-                    (usld[k] + (sbm.act_thickl[i][k] - usl[k]) * (sbm.θₛ[i] - sbm.θᵣ[i])) /
-                    usl[k] + sbm.θᵣ[i],
+                    (usld[k] + (sbm.act_thickl[i][k] - usl[k]) * (sbm.θₛ[i] - sbm.θᵣ[i])) / usl[k] + sbm.θᵣ[i],
                     k,
                 )
             else

@@ -123,7 +123,14 @@ function initialize_sbm_model(config::Config)
     maxleakage = ncread(nc, "MaxLeakage"; sel = inds, defaults = dparams, type = Float64)
 
     c = ncread(nc, "c"; sel = inds, defaults = dparams, type = Float64, dimname = "layer")
-    kvfrac = ncread(nc, "KsatVerFrac"; sel = inds, defaults = dparams, type = Float64, dimname = "layer")
+    kvfrac = ncread(
+        nc,
+        "KsatVerFrac";
+        sel = inds,
+        defaults = dparams,
+        type = Float64,
+        dimname = "layer",
+    )
 
     # fraction open water and compacted area (land cover)
     waterfrac = ncread(nc, "WaterFrac"; sel = inds, defaults = dparams, type = Float64)
@@ -145,8 +152,8 @@ function initialize_sbm_model(config::Config)
         canopygapfraction =
             ncread(nc, "CanopyGapFraction"; sel = inds, defaults = dparams, type = Float64)
         sl = fill(mv, n)
-        swood = fill(mv,n)
-        kext = fill(mv,n)
+        swood = fill(mv, n)
+        kext = fill(mv, n)
     else
         # TODO confirm if lai climatology is present in the NetCDF
         sl = ncread(nc, "Sl"; sel = inds, defaults = dparams, type = Float64)
@@ -200,12 +207,19 @@ function initialize_sbm_model(config::Config)
 
     # states sbm concept
     if do_snow
-        statenames =("satwaterdepth", "snow", "tsoil", "ustorelayerdepth", "snowwater", "canopystorage")
+        statenames = (
+            "satwaterdepth",
+            "snow",
+            "tsoil",
+            "ustorelayerdepth",
+            "snowwater",
+            "canopystorage",
+        )
     else
         statenames = ("satwaterdepth", "ustorelayerdepth", "canopystorage")
     end
 
-    sbm = SBM{Float64, maxlayers, maxlayers+1}(
+    sbm = SBM{Float64,maxlayers,maxlayers + 1}(
         maxlayers = maxlayers,
         n = n,
         nlayers = nlayers,
@@ -296,7 +310,7 @@ function initialize_sbm_model(config::Config)
         swood = swood,
         kext = kext,
         lai = fill(mv, n),
-        )
+    )
 
     inds_riv = filter(i -> !isequal(river_2d[i], 0), inds)
     nriv = length(inds_riv)
@@ -342,7 +356,7 @@ function initialize_sbm_model(config::Config)
             targetfullfrac = res_targetfullfrac,
             targetminfrac = res_targetminfrac,
         )
-        statenames =  (statenames..., "volume_reservoir")
+        statenames = (statenames..., "volume_reservoir")
     else
         inds_res = nothing
     end
@@ -351,7 +365,7 @@ function initialize_sbm_model(config::Config)
     if do_lakes
         # read only lake data if lakes true
         # allow lakes only in river cells
-        lakelocs = ncread(nc, "wflow_lakelocs"; sel=inds_riv, type = Int, fill = 0)
+        lakelocs = ncread(nc, "wflow_lakelocs"; sel = inds_riv, type = Int, fill = 0)
 
         # construct a map from the rivers to the lakes and
         # a map of the lakes to the 2D model grid
@@ -387,7 +401,7 @@ function initialize_sbm_model(config::Config)
 
         sh = Vector{DataFrame}(undef, n_lakes)
         hq = Vector{DataFrame}(undef, n_lakes)
-        for i in 1:n_lakes
+        for i = 1:n_lakes
             if linked_lakelocs[i] > 0
                 linked_lakelocs[i] = i
             else
@@ -494,7 +508,7 @@ function initialize_sbm_model(config::Config)
         rivercells = river,
     )
 
-    statenames = (statenames...,"ssf", "q_river", "h_river", "q_land", "h_land")
+    statenames = (statenames..., "ssf", "q_river", "h_river", "q_land", "h_land")
 
     reader = prepare_reader(dynamic_path, cyclic_path, inds, inds_riv, config)
 
@@ -512,7 +526,16 @@ function initialize_sbm_model(config::Config)
 
     # read and set states in model object if reinit=true
     if reinit
-        set_states(instate_path, model, statenames, inds; type=Float64, sel_res=inds_res, sel_riv=inds_riv, sel_lake=inds_lake)
+        set_states(
+            instate_path,
+            model,
+            statenames,
+            inds;
+            type = Float64,
+            sel_res = inds_res,
+            sel_riv = inds_riv,
+            sel_lake = inds_lake,
+        )
     end
 
     # make sure the forcing is already loaded
