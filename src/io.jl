@@ -201,7 +201,7 @@ end
 struct Writer
     dataset::NCDataset
     parameters::Dict{String,Any}
-    csv_path::String
+    csv_path::Union{String,Nothing}
     csv_cols::Vector
     csv_io::IO
     statenames::Tuple{String,Vararg{String}}
@@ -259,10 +259,6 @@ function prepare_reader(path, cyclic_path, inds, inds_riv, config)
 end
 
 function prepare_writer(config, reader, output_path, modelmap, maxlayers, statenames)
-    # TODO remove random string from the filename
-    # this makes it easier to develop for now, since we don't run into issues with open files
-    base, ext = splitext(output_path)
-    randomized_path = string(base, '_', randstring('a':'z', 4), ext)
 
     nclon = ncread(reader.dataset, "lon"; type = Float64)
     nclat = ncread(reader.dataset, "lat"; type = Float64)
@@ -289,7 +285,7 @@ function prepare_writer(config, reader, output_path, modelmap, maxlayers, staten
     calendar = get(config, "calendar", "proleptic_gregorian")
     time_units = get(config, "time_units", CFTime.DEFAULT_TIME_UNITS)
     ds = setup_netcdf(
-        randomized_path,
+        output_path,
         nclon,
         nclat,
         output_map,
@@ -299,20 +295,27 @@ function prepare_writer(config, reader, output_path, modelmap, maxlayers, staten
     )
     tomldir = dirname(config)
 
-    # open CSV file and write header
-    csv_path = joinpath(tomldir, config.csv.path)
-    csv_io = open(csv_path, "w")
-    header = join((col["header"] for col in config.csv.column), ',')
-    println(csv_io, "time,", header)
-    flush(csv_io)
+    if haskey(config, "csv") && haskey(config.csv, "column")
+        # open CSV file and write header
+        csv_path = joinpath(tomldir, config.csv.path)
+        csv_io = open(csv_path, "w")
+        header = join((col["header"] for col in config.csv.column), ',')
+        println(csv_io, "time,", header)
+        flush(csv_io)
 
-    # cleate a vector of (lens, reducer) named tuples which will be used to
-    # retrieve and reduce the CSV data during a model run
-    csv_cols = []
-    for col in config.csv.column
-        lens = Wflow.paramap[col["parameter"]]
-        reducer = Wflow.reducer(col)
-        push!(csv_cols, (;lens, reducer))
+        # cleate a vector of (lens, reducer) named tuples which will be used to
+        # retrieve and reduce the CSV data during a model run
+        csv_cols = []
+        for col in config.csv.column
+            lens = Wflow.paramap[col["parameter"]]
+            reducer = Wflow.reducer(col)
+            push!(csv_cols, (;lens, reducer))
+        end
+    else
+        # no CSV file is checked by isnothing(csv_path)
+        csv_path = nothing
+        csv_cols = []
+        csv_io = IOBuffer()
     end
 
     
@@ -395,17 +398,32 @@ end
 function close_files(model; delete_output::Bool=false)
     @unpack reader, writer = model
 
-    output_nc_path = path(writer.dataset)
-
-    close(reader.dataset)
-    close(reader.cyclic_dataset)
-    close(writer.dataset)
+    output_nc_path = try
+        path(writer.dataset)
+    catch
+        nothing
+    end
+    # TODO patch NCDatasets to not throw on calling close on closed dataset, like Base
+    # and perhaps the same for the `path` function above
+    try
+        close(reader.dataset)
+    catch
+    end
+    try
+        close(reader.cyclic_dataset)
+    catch
+    end
+    try
+        close(writer.dataset)
+    catch
+    end
     close(writer.csv_io)
 
     if delete_output
-        rm(output_nc_path)
-        rm(writer.csv_path)
+        isnothing(output_nc_path) || rm(output_nc_path)
+        isfile(writer.csv_path) && rm(writer.csv_path)
     end
+    return nothing
 end
 
 "Get a reducer function based on CSV output settings defined in a dictionary"
@@ -444,6 +462,7 @@ end
 
 function write_csv_row(model)
     @unpack writer, clock = model
+    isnothing(writer.csv_path) && return nothing
     io = writer.csv_io
     print(io, clock.time)
     for nt in writer.csv_cols
@@ -452,4 +471,10 @@ function write_csv_row(model)
         print(io, ',', v)
     end
     println(io)
+end
+
+function reset_clock!(clock::Clock, config::Config)
+    clock.time = config.starttime
+    clock.iteration = 1
+    clock.Δt = Second(config.timestepsecs)
 end
