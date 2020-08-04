@@ -40,4 +40,59 @@ include("flow.jl")
 include("vertical_process.jl")
 include("utils.jl")
 
+"""
+    run_simulation(tomlpath::String)
+    run_simulation(config::Config)
+    run_simulation(model::Model, config::Config)
+
+Run an entire simulation starting either from a path to a TOML settings file,
+a prepared `Config` object, or an initialized `Model` object. This allows more flexibility
+if you want to for example modify a `Config` before initializing the `Model`.
+"""
+function run_simulation(tomlpath)
+    config = Wflow.Config(tomlpath)
+    run_simulation(config)
+end
+
+function run_simulation(config::Config)
+    model = Wflow.initialize_sbm_model(config)
+    run_simulation(model, config)
+end
+
+function run_simulation(model::Model, config::Config; close_files=true)
+    toposort_land = Wflow.topological_sort_by_dfs(model.network.land)
+    toposort_river = Wflow.topological_sort_by_dfs(model.network.river)
+    nl = length(toposort_land)
+    nr = length(toposort_river)
+    index_river = filter(i -> !isequal(model.lateral.river.rivercells[i], 0), 1:nl)
+    frac_toriver = Wflow.fraction_runoff_toriver(
+        model.network.land,
+        index_river,
+        model.lateral.subsurface.βₗ,
+        nl,
+    )
+
+    times = config.starttime:Second(config.timestepsecs):config.endtime
+    for _ in times
+        model = Wflow.update(
+            model,
+            config,
+            toposort_land,
+            toposort_river,
+            frac_toriver,
+            index_river,
+            nl,
+            nr,
+        )
+    end
+
+    reset_clock!(model.clock, config)
+
+    # option to support running function twice without re-initializing
+    # and thus opening the NetCDF files
+    if close_files
+        Wflow.close_files(model, delete_output=false)
+    end
+end
+
 end # module
