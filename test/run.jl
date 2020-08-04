@@ -6,5 +6,5 @@ config = Wflow.Config(tomlpath)
 config["model"]["reinit"] = true
 
 model = Wflow.initialize_sbm_model(config)
-@time Wflow.run_simulation(model, config; close_files=true)
+@time Wflow.run_simulation(model, config; close_files = true)
 # Wflow.close_files(model)

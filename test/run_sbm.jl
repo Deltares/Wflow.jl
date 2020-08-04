@@ -28,11 +28,12 @@ model = Wflow.update(
 
 # test if the first timestep was written to the CSV file
 flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
-@test String(read(model.writer.csv_path)) == "time,Q,volume,precipitation\n2000-01-01T00:00:00,8.068415620162373,4.364435435788508e7,2.016469537990403\n"
+@test String(read(model.writer.csv_path)) ==
+      "time,Q,volume,precipitation\n2000-01-01T00:00:00,8.068415620162373,4.364435435788508e7,2.016469537990403\n"
 
 @testset "first timestep" begin
     sbm = model.vertical
-    
+
     @test sbm.tt[1] ≈ 1.2999999523162842
 
     @test model.clock.iteration == 2
@@ -132,4 +133,4 @@ println("Model update")
 print_benchmark(trialmin)
 # @profview Wflow.update(model, config, toposort_land, toposort_river, frac_toriver, index_river, nl, nr)
 
-Wflow.close_files(model, delete_output=true)
+Wflow.close_files(model, delete_output = true)

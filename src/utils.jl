@@ -57,7 +57,16 @@ Read states contained in `Tuple` `statenames` from NetCDF file located in `insta
 - `sel_lake=nothing`: a selection of indices, such as a `Vector{CartesianIndex}` of active lake cells,
         to return from the NetCDF. By default all active cells are returned.
 """
-function set_states(instate_path, model, statenames, sel; type=nothing, sel_res=nothing, sel_riv=nothing, sel_lake=nothing)
+function set_states(
+    instate_path,
+    model,
+    statenames,
+    sel;
+    type = nothing,
+    sel_res = nothing,
+    sel_riv = nothing,
+    sel_lake = nothing,
+)
 
     # states in NetCDF include dim time (one value) at index 3 or 4, 3 or 4 dims are allowed
     ds = NCDataset(instate_path)
@@ -65,7 +74,7 @@ function set_states(instate_path, model, statenames, sel; type=nothing, sel_res=
         dims = length(dimnames(ds[state]))
         # 4 dims, for example (x,y,layer,time) where dim layer is an SVector for soil layers
         if dims == 4
-            A = transpose(ds[state][sel,:,1])
+            A = transpose(ds[state][sel, :, 1])
             # Convert to desired type if needed
             if !isnothing(type)
                 if eltype(A) != type
@@ -73,17 +82,17 @@ function set_states(instate_path, model, statenames, sel; type=nothing, sel_res=
                 end
             end
             # set state in model object
-            get(model, paramap[state]) .= svectorscopy(A,Val{size(A)[1]}())
-        # 3 dims (x,y,time)
+            get(model, paramap[state]) .= svectorscopy(A, Val{size(A)[1]}())
+            # 3 dims (x,y,time)
         elseif dims == 3
             if occursin("reservoir", state)
-                A = ds[state][sel_res,1]
+                A = ds[state][sel_res, 1]
             elseif occursin("river", state)
-                A = ds[state][sel_riv,1]
+                A = ds[state][sel_riv, 1]
             elseif occursin("lake", state)
-                A = ds[state][sel_lake,1]
+                A = ds[state][sel_lake, 1]
             else
-                A = ds[state][sel,1]
+                A = ds[state][sel, 1]
             end
             # Convert to desired type if needed
             if !isnothing(type)
@@ -134,7 +143,7 @@ function ncread(
         if isnothing(dimname)
             return Base.fill(defaults[var], length(sel))
         else
-            return Base.fill(defaults[var], (nc.dim[dimname],length(sel)))
+            return Base.fill(defaults[var], (nc.dim[dimname], length(sel)))
         end
     end
 
@@ -149,9 +158,9 @@ function ncread(
         else
             dim = findfirst(==(dimname), dimnames(nc[var]))
             if dim == 3
-                A = transpose(A[sel,:])
+                A = transpose(A[sel, :])
             elseif dim == 1
-                A = A[:,sel]
+                A = A[:, sel]
             end
         end
     end

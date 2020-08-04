@@ -59,7 +59,7 @@ function run_simulation(config::Config)
     run_simulation(model, config)
 end
 
-function run_simulation(model::Model, config::Config; close_files=true)
+function run_simulation(model::Model, config::Config; close_files = true)
     toposort_land = Wflow.topological_sort_by_dfs(model.network.land)
     toposort_river = Wflow.topological_sort_by_dfs(model.network.river)
     nl = length(toposort_land)
@@ -91,7 +91,7 @@ function run_simulation(model::Model, config::Config; close_files=true)
     # option to support running function twice without re-initializing
     # and thus opening the NetCDF files
     if close_files
-        Wflow.close_files(model, delete_output=false)
+        Wflow.close_files(model, delete_output = false)
     end
 end
 
