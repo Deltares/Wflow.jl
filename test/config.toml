@@ -102,7 +102,7 @@ thicknesslayers = [100, 300, 800]
 [output]
 # TODO support interpolating a general output directory?
 # path = "$output_dir/data/specified_output.nc"
-path = "data/specified_output.nc"
+path = "data/output_moselle.nc"
 
 [output.parameters]
 satwaterdepth = "satwaterdepth"
@@ -115,7 +115,7 @@ soilthickness = "soilthickness"
 q = "q"
 
 [csv]
-path = "data/specified_csv.csv"
+path = "data/output_moselle.csv"
 
 [[csv.column]]
 parameter = "q_river"
@@ -129,6 +129,9 @@ index = 1
 # id = true  # creat n columns, "volume_101"
 # loc = [100,50]
 # coordinate = [53.2, 5.6]
+# per catchment
+# wflow_gauges map for stations
+# reduce per area
 
 [[csv.column]]
 parameter = "precipitation"
