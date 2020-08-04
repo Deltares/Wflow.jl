@@ -19,7 +19,7 @@ config = Wflow.Config(tomlpath)
     @test config.casename == "testcase"
     @test config.starttime === DateTime(2000)
     @test config.endtime === DateTime(2000, 2)
-    @test config.output.path == "data/specified_output.nc"
+    @test config.output.path == "data/output_moselle.nc"
     @test config.output.parameters isa Wflow.Config
     @test collect(keys(config.output.parameters)) == [
         "snow",
