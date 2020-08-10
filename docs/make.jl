@@ -8,7 +8,7 @@ makedocs(;
     sitename = "Wflow.jl",
     format = Documenter.HTML(;
         prettyurls = get(ENV, "CI", "false") == "true",
-        canonical = "https://Deltares.github.io/Wflow.jl",
+        canonical = "https://deltares.github.io/Wflow.jl",
         assets = String[],
     ),
     pages = ["Home" => "index.md"],
