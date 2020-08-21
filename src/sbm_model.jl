@@ -548,7 +548,6 @@ end
 
 function update(
     model,
-    config,
     toposort_land,
     toposort_river,
     frac_toriver,
@@ -556,7 +555,7 @@ function update(
     nl,
     nriv,
 )
-    @unpack lateral, vertical, network, clock = model
+    @unpack lateral, vertical, network, clock, config = model
 
     update_forcing!(model)
     update_cyclic!(model)

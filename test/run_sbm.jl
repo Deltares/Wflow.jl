@@ -17,7 +17,6 @@ frac_toriver = Wflow.fraction_runoff_toriver(
 
 model = Wflow.update(
     model,
-    config,
     toposort_land,
     toposort_river,
     frac_toriver,
@@ -48,7 +47,6 @@ end
 # run the second timestep
 model = Wflow.update(
     model,
-    config,
     toposort_land,
     toposort_river,
     frac_toriver,
@@ -101,7 +99,6 @@ end
 
 benchmark = @benchmark Wflow.update(
     model,
-    config,
     toposort_land,
     toposort_river,
     frac_toriver,
@@ -131,6 +128,6 @@ trialmin = BenchmarkTools.minimum(benchmark)
 
 println("Model update")
 print_benchmark(trialmin)
-# @profview Wflow.update(model, config, toposort_land, toposort_river, frac_toriver, index_river, nl, nr)
+# @profview Wflow.update(model, toposort_land, toposort_river, frac_toriver, index_river, nl, nr)
 
 Wflow.close_files(model, delete_output = true)
