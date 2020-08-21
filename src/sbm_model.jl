@@ -515,9 +515,12 @@ function initialize_sbm_model(config::Config)
     modelmap = (vertical = sbm, subsurface = ssf, land = olf, river = rf)
     writer = prepare_writer(config, reader, output_path, modelmap, maxlayers, statenames)
 
+    land = (graph = dag, order = topological_sort_by_dfs(dag))
+    river = (graph = dag_riv, order = topological_sort_by_dfs(dag_riv))
+
     model = Model(
         config,
-        (land = dag, river = dag_riv),
+        (; land, river),
         (subsurface = ssf, land = olf, river = rf),
         sbm,
         Clock(config.starttime, 1, Δt),
@@ -546,15 +549,7 @@ function initialize_sbm_model(config::Config)
     return model
 end
 
-function update(
-    model,
-    toposort_land,
-    toposort_river,
-    frac_toriver,
-    index_river,
-    nl,
-    nriv,
-)
+function update(model, frac_toriver, index_river)
     @unpack lateral, vertical, network, clock, config = model
 
     update_forcing!(model)
@@ -566,8 +561,7 @@ function update(
         snowflux_frac =
             min.(0.5, lateral.land.sl ./ 5.67) .* min.(1.0, vertical.snow ./ 10000.0)
         maxflux = snowflux_frac .* vertical.snow
-        vertical.snow .=
-            accucapacityflux(network.land, toposort_land, vertical.snow, maxflux)
+        vertical.snow .= accucapacityflux(network.land, vertical.snow, maxflux)
     end
 
     update_until_recharge(vertical, config)
@@ -575,13 +569,7 @@ function update(
     lateral.subsurface.recharge .*= lateral.subsurface.dl
     lateral.subsurface.zi .= vertical.zi
 
-    update(
-        lateral.subsurface,
-        network.land,
-        toposort_land,
-        frac_toriver,
-        lateral.river.rivercells,
-    )
+    update(lateral.subsurface, network.land, frac_toriver, lateral.river.rivercells)
 
     update_after_lateralflow(
         vertical,
@@ -596,8 +584,6 @@ function update(
     update(
         lateral.land,
         network.land,
-        toposort_land,
-        nl,
         frac_toriver = frac_toriver,
         river = lateral.river.rivercells,
         do_iter = true,
@@ -609,14 +595,7 @@ function update(
             lateral.land.to_river[index_river]
         ) ./ lateral.river.dl
 
-    update(
-        lateral.river,
-        network.river,
-        toposort_river,
-        nriv,
-        do_iter = true,
-        doy = dayofyear(clock.time),
-    )
+    update(lateral.river, network.river, do_iter = true, doy = dayofyear(clock.time))
 
     write_output(model, model.writer)
 

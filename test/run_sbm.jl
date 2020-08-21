@@ -2,28 +2,18 @@ tomlpath = joinpath(@__DIR__, "config.toml")
 config = Wflow.Config(tomlpath)
 
 model = Wflow.initialize_sbm_model(config)
+@unpack network = model
 
-toposort_land = Wflow.topological_sort_by_dfs(model.network.land)
-toposort_river = Wflow.topological_sort_by_dfs(model.network.river)
-nl = length(toposort_land)
-nr = length(toposort_river)
+nl = length(network.land.order)
 index_river = filter(i -> !isequal(model.lateral.river.rivercells[i], 0), 1:nl)
 frac_toriver = Wflow.fraction_runoff_toriver(
-    model.network.land,
+    network.land.graph,
     index_river,
     model.lateral.subsurface.βₗ,
     nl,
 )
 
-model = Wflow.update(
-    model,
-    toposort_land,
-    toposort_river,
-    frac_toriver,
-    index_river,
-    nl,
-    nr,
-)
+model = Wflow.update(model, frac_toriver, index_river)
 
 # test if the first timestep was written to the CSV file
 flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
@@ -45,15 +35,7 @@ flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
 end
 
 # run the second timestep
-model = Wflow.update(
-    model,
-    toposort_land,
-    toposort_river,
-    frac_toriver,
-    index_river,
-    nl,
-    nr,
-)
+model = Wflow.update(model, frac_toriver, index_river)
 
 @testset "second timestep" begin
     sbm = model.vertical
@@ -67,9 +49,9 @@ end
 @testset "subsurface flow" begin
     ssf = model.lateral.subsurface.ssf
     @test sum(ssf) ≈ 7.005489495052358e16
-    @test ssf[toposort_land[1]] ≈ 3.0449782003445332e13
-    @test ssf[toposort_land[nl-100]] ≈ 7.87333555063647e11
-    @test ssf[toposort_land[end]] ≈ 3.289417561401221e11
+    @test ssf[network.land.order[1]] ≈ 3.0449782003445332e13
+    @test ssf[network.land.order[nl-100]] ≈ 7.87333555063647e11
+    @test ssf[network.land.order[end]] ≈ 3.289417561401221e11
 end
 
 @testset "overland flow" begin
@@ -77,7 +59,7 @@ end
     @test sum(q) ≈ 6.1333024054146446
     @test q[26625] ≈ 0.0
     @test q[39308] ≈ 0.0
-    @test q[toposort_land[end]] ≈ 6.804317844228025e-6
+    @test q[network.land.order[end]] ≈ 6.804317844228025e-6
 end
 
 @testset "river flow" begin
@@ -85,7 +67,7 @@ end
     @test sum(q) ≈ 671.4362633660646
     @test q[4061] ≈ 0.011731014256037769
     @test q[5617] ≈ 1.0080691890749913
-    @test q[toposort_river[end]] ≈ 0.0043612246315573805
+    @test q[network.river.order[end]] ≈ 0.0043612246315573805
 end
 
 @testset "reservoir simple" begin
@@ -97,15 +79,7 @@ end
     @test res.evaporation[2] ≈ 4.0
 end
 
-benchmark = @benchmark Wflow.update(
-    model,
-    toposort_land,
-    toposort_river,
-    frac_toriver,
-    index_river,
-    nl,
-    nr,
-)
+benchmark = @benchmark Wflow.update(model, frac_toriver, index_river)
 
 "Prints a benchmark results just like btime"
 function print_benchmark(trialmin)
@@ -128,6 +102,6 @@ trialmin = BenchmarkTools.minimum(benchmark)
 
 println("Model update")
 print_benchmark(trialmin)
-# @profview Wflow.update(model, toposort_land, toposort_river, frac_toriver, index_river, nl, nr)
+# @profview Wflow.update(model, frac_toriver, index_river)
 
 Wflow.close_files(model, delete_output = true)

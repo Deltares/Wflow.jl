@@ -137,9 +137,10 @@ function kinematic_wave_ssf(ssfin, ssfₜ₋₁, ziₜ₋₁, r, kh₀, β, θ�
     end
 end
 
-function accucapacityflux(dag, toposort, material, capacity)
-    for v in toposort
-        upstream_nodes = inneighbors(dag, v)
+function accucapacityflux(network, material, capacity)
+    @unpack graph, order = network
+    for v in order
+        upstream_nodes = inneighbors(graph, v)
         if !isempty(upstream_nodes)
             flux = sum(min(material[i], capacity[i]) for i in upstream_nodes)
             material[v] += flux

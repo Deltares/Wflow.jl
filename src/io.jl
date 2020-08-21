@@ -285,8 +285,7 @@ function prepare_writer(config, reader, nc_path, modelmap, maxlayers, statenames
 
     calendar = get(config, "calendar", "proleptic_gregorian")
     time_units = get(config, "time_units", CFTime.DEFAULT_TIME_UNITS)
-    ds =
-        setup_netcdf(nc_path, nclon, nclat, output_map, calendar, time_units, maxlayers)
+    ds = setup_netcdf(nc_path, nclon, nclat, output_map, calendar, time_units, maxlayers)
     tomldir = dirname(config)
 
     if haskey(config, "csv") && haskey(config.csv, "column")

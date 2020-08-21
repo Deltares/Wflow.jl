@@ -62,14 +62,11 @@ function run_simulation(config::Config)
 end
 
 function run_simulation(model::Model; close_files = true)
-    @unpack config = model
-    toposort_land = Wflow.topological_sort_by_dfs(model.network.land)
-    toposort_river = Wflow.topological_sort_by_dfs(model.network.river)
-    nl = length(toposort_land)
-    nr = length(toposort_river)
+    @unpack network, config = model
+    nl = length(network.land.order)
     index_river = filter(i -> !isequal(model.lateral.river.rivercells[i], 0), 1:nl)
     frac_toriver = Wflow.fraction_runoff_toriver(
-        model.network.land,
+        network.land.graph,
         index_river,
         model.lateral.subsurface.βₗ,
         nl,
@@ -77,15 +74,7 @@ function run_simulation(model::Model; close_files = true)
 
     times = config.starttime:Second(config.timestepsecs):config.endtime
     for _ in times
-        model = Wflow.update(
-            model,
-            toposort_land,
-            toposort_river,
-            frac_toriver,
-            index_river,
-            nl,
-            nr,
-        )
+        model = Wflow.update(model, frac_toriver, index_river)
     end
 
     reset_clock!(model.clock, config)
