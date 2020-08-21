@@ -510,13 +510,15 @@ function initialize_sbm_model(config::Config)
 
     statenames = (statenames..., "ssf", "q_river", "h_river", "q_land", "h_land")
 
-    reader = prepare_reader(dynamic_path, cyclic_path, inds, inds_riv, config)
+    reader = prepare_reader(dynamic_path, cyclic_path, config)
 
     modelmap = (vertical = sbm, subsurface = ssf, land = olf, river = rf)
     writer = prepare_writer(config, reader, output_path, modelmap, maxlayers, statenames)
 
-    land = (graph = dag, order = topological_sort_by_dfs(dag))
-    river = (graph = dag_riv, order = topological_sort_by_dfs(dag_riv))
+    # for each domain save the directed acyclic graph, the traversion order,
+    # and the indices that map it back to the two dimensional grid
+    land = (graph = dag, order = topological_sort_by_dfs(dag), indices = inds)
+    river = (graph = dag_riv, order = topological_sort_by_dfs(dag_riv), indices = inds_riv)
 
     model = Model(
         config,

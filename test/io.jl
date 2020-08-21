@@ -59,7 +59,6 @@ config["model"]["reinit"] = true
 model = Wflow.initialize_sbm_model(config)
 
 @unpack vertical, clock, reader, writer = model
-@unpack dataset, buffer, inds = reader
 
 @testset "output and state names" begin
     ncdims = ("lon", "lat", "layer", "time")

@@ -69,15 +69,16 @@ end
 
 "Get dynamic NetCDF input for the given time"
 function update_forcing!(model)
-    @unpack vertical, clock, reader = model
-    @unpack dataset, forcing_parameters, buffer, inds = reader
+    @unpack vertical, clock, reader, network = model
+    @unpack dataset, forcing_parameters, buffer = reader
+    sel = network.land.indices
     nctimes = ncread(dataset, "time")
 
     # load from NetCDF into the model according to the mapping
     for (param, ncvarname) in forcing_parameters
         buffer = get_at!(buffer, dataset[ncvarname], nctimes, clock.time)
         param_vector = getproperty(vertical, param)
-        param_vector .= buffer[inds]
+        param_vector .= buffer[sel]
     end
 
     return model
@@ -85,8 +86,9 @@ end
 
 "Get cyclic NetCDF input for the given time"
 function update_cyclic!(model)
-    @unpack vertical, clock, reader = model
-    @unpack cyclic_dataset, cyclic_times, cyclic_parameters, buffer, inds = reader
+    @unpack vertical, clock, reader, network = model
+    @unpack cyclic_dataset, cyclic_times, cyclic_parameters, buffer = reader
+    sel = network.land.indices
 
     month_day = monthday(clock.time)
     if monthday(clock.time) in cyclic_times
@@ -97,7 +99,7 @@ function update_cyclic!(model)
         for (param, ncvarname) in cyclic_parameters
             buffer = get_at!(buffer, cyclic_dataset[ncvarname], i)
             param_vector = getproperty(vertical, param)
-            param_vector .= buffer[inds]
+            param_vector .= buffer[sel]
         end
     end
 end
@@ -194,8 +196,6 @@ struct NCReader{T}
     forcing_parameters::Dict{Symbol,String}
     cyclic_parameters::Dict{Symbol,String}
     buffer::Matrix{T}
-    inds::Vector{CartesianIndex{2}}
-    inds_riv::Vector{CartesianIndex{2}}
 end
 
 struct Writer
@@ -211,7 +211,7 @@ end
 "Convert a piece of Config to a Dict{Symbol, String} used for parameter lookup"
 parameter_lookup_table(config) = Dict(Symbol(k) => String(v) for (k, v) in Dict(config))
 
-function prepare_reader(path, cyclic_path, inds, inds_riv, config)
+function prepare_reader(path, cyclic_path, config)
     dataset = NCDataset(path)
     var = dataset[config.dynamic.parameters.precipitation].var
 
@@ -254,8 +254,6 @@ function prepare_reader(path, cyclic_path, inds, inds_riv, config)
         forcing_parameters,
         cyclic_parameters,
         buffer,
-        inds,
-        inds_riv,
     )
 end
 
@@ -317,9 +315,11 @@ end
 
 "Write model output"
 function write_output(model, writer::Writer)
-    @unpack vertical, clock, reader = model
-    @unpack buffer, inds, inds_riv = reader
+    @unpack vertical, clock, reader, network = model
+    @unpack buffer = reader
     @unpack dataset, parameters = writer
+    inds = network.land.indices
+    inds_riv = network.river.indices
 
     write_csv_row(model)
 
