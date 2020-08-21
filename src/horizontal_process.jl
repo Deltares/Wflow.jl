@@ -2,7 +2,7 @@
 function flowgraph(ldd::AbstractVector, inds::AbstractVector, pcrdir::AbstractVector)
     # prepare a directed graph to be filled
     n = length(inds)
-    dag = DiGraph(n)
+    graph = DiGraph(n)
 
     # loop over ldd, adding the edge to the downstream node
     for (from_node, from_index) in enumerate(inds)
@@ -12,11 +12,11 @@ function flowgraph(ldd::AbstractVector, inds::AbstractVector, pcrdir::AbstractVe
         to_index = from_index + pcrdir[ldd_val]
         # find the node id of the downstream cell
         to_node = searchsortedfirst(inds, to_index)
-        add_edge!(dag, from_node, to_node)
+        add_edge!(graph, from_node, to_node)
     end
-    @assert is_directed(dag)
-    @assert !is_cyclic(dag)
-    return dag
+    @assert is_directed(graph)
+    @assert !is_cyclic(graph)
+    return graph
 end
 
 "Kinematic wave flow rate for a single cell and timestep"
@@ -55,9 +55,9 @@ function kinematic_wave(Qin, Qold, q, α, β, Δt, Δx)
 end
 
 "Kinematic wave flow rate over the whole network for a single timestep"
-function kin_wave!(Q, dag, toposort, Qold, q, α, β, DCL, Δt)
+function kin_wave!(Q, graph, toposort, Qold, q, α, β, DCL, Δt)
     for v in toposort
-        upstream_nodes = inneighbors(dag, v)
+        upstream_nodes = inneighbors(graph, v)
         Qin = sum_at(Q, upstream_nodes)
         Q[v] = kinematic_wave(Qin, Qold[v], q, α[v], β, Δt, DCL[v])
     end

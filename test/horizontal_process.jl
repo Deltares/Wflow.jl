@@ -19,9 +19,9 @@ DCL = Wflow.ncread(nc, "DCL"; sel = inds)
 close(nc)
 
 # create the directed acyclic graph from the drainage direction array
-dag = Wflow.flowgraph(ldd, inds, Wflow.pcrdir)
+graph = Wflow.flowgraph(ldd, inds, Wflow.pcrdir)
 # a topological sort is used for visiting nodes in order from upstream to downstream
-toposort = topological_sort_by_dfs(dag)
+toposort = topological_sort_by_dfs(graph)
 sink = toposort[end]
 @test ldd[sink] == 5  # the most downstream node must be a sink
 
@@ -34,7 +34,7 @@ P = Bw + (2.0 * waterlevel)
 α = AlpTermR .* P .^ AlpPow
 
 Q = zeros(n)
-Q = Wflow.kin_wave!(Q, dag, toposort, Qold, q, α, β, DCL, Δt_sec)
+Q = Wflow.kin_wave!(Q, graph, toposort, Qold, q, α, β, DCL, Δt_sec)
 
 @testset "flow rate" begin
     @test sum(Q) ≈ 2.957806043289641e6

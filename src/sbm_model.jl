@@ -484,7 +484,7 @@ function initialize_sbm_model(config::Config)
     )
 
     pcr_dir = trsp ? permute_indices(Wflow.pcrdir) : Wflow.pcrdir
-    dag = flowgraph(ldd, inds, pcr_dir)
+    graph = flowgraph(ldd, inds, pcr_dir)
 
 
     riverslope = ncread(nc, "RiverSlope"; sel = inds_riv, type = Float64)
@@ -493,7 +493,7 @@ function initialize_sbm_model(config::Config)
     riverwidth = riverwidth_2d[inds_riv]
     n_river = ncread(nc, "N_River"; sel = inds_riv, defaults = dparams, type = Float64)
     ldd_riv = ldd_2d[inds_riv]
-    dag_riv = flowgraph(ldd_riv, inds_riv, pcr_dir)
+    graph_riv = flowgraph(ldd_riv, inds_riv, pcr_dir)
 
     rf = SurfaceFlow(
         sl = riverslope,
@@ -517,8 +517,9 @@ function initialize_sbm_model(config::Config)
 
     # for each domain save the directed acyclic graph, the traversion order,
     # and the indices that map it back to the two dimensional grid
-    land = (graph = dag, order = topological_sort_by_dfs(dag), indices = inds)
-    river = (graph = dag_riv, order = topological_sort_by_dfs(dag_riv), indices = inds_riv)
+    land = (graph = graph, order = topological_sort_by_dfs(graph), indices = inds)
+    river =
+        (graph = graph_riv, order = topological_sort_by_dfs(graph_riv), indices = inds_riv)
 
     model = Model(
         config,

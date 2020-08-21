@@ -267,15 +267,15 @@ function svectorscopy(x::Matrix{T}, ::Val{N}) where {T,N}
 end
 
 """
-    fraction_runoff_toriver(dag, index_river, slope, n)
+    fraction_runoff_toriver(graph, index_river, slope, n)
 
 Determine ratio `frac` between slope river cell `index_river` and slope of each upstream neighbor (based on directed acyclic graph
-`dag`).
+`graph`).
 """
-function fraction_runoff_toriver(dag, index_river, slope, n)
+function fraction_runoff_toriver(graph, index_river, slope, n)
     frac = zeros(n)
     for i in index_river
-        nbs = inneighbors(dag, i)
+        nbs = inneighbors(graph, i)
         frac[nbs] = slope[i] ./ (slope[i] .+ slope[nbs])
     end
     return frac
