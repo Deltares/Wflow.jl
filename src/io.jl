@@ -201,6 +201,7 @@ end
 struct Writer
     dataset::NCDataset
     parameters::Dict{String,Any}
+    nc_path::String
     csv_path::Union{String,Nothing}
     csv_cols::Vector
     csv_io::IO
@@ -258,7 +259,7 @@ function prepare_reader(path, cyclic_path, inds, inds_riv, config)
     )
 end
 
-function prepare_writer(config, reader, output_path, modelmap, maxlayers, statenames)
+function prepare_writer(config, reader, nc_path, modelmap, maxlayers, statenames)
 
     nclon = ncread(reader.dataset, "lon"; type = Float64)
     nclat = ncread(reader.dataset, "lat"; type = Float64)
@@ -285,7 +286,7 @@ function prepare_writer(config, reader, output_path, modelmap, maxlayers, staten
     calendar = get(config, "calendar", "proleptic_gregorian")
     time_units = get(config, "time_units", CFTime.DEFAULT_TIME_UNITS)
     ds =
-        setup_netcdf(output_path, nclon, nclat, output_map, calendar, time_units, maxlayers)
+        setup_netcdf(nc_path, nclon, nclat, output_map, calendar, time_units, maxlayers)
     tomldir = dirname(config)
 
     if haskey(config, "csv") && haskey(config.csv, "column")
@@ -312,7 +313,7 @@ function prepare_writer(config, reader, output_path, modelmap, maxlayers, staten
     end
 
 
-    return Writer(ds, output_map, csv_path, csv_cols, csv_io, statenames)
+    return Writer(ds, output_map, nc_path, csv_path, csv_cols, csv_io, statenames)
 end
 
 "Write model output"
@@ -391,29 +392,13 @@ end
 function close_files(model; delete_output::Bool = false)
     @unpack reader, writer = model
 
-    output_nc_path = try
-        path(writer.dataset)
-    catch
-        nothing
-    end
-    # TODO patch NCDatasets to not throw on calling close on closed dataset, like Base
-    # and perhaps the same for the `path` function above
-    try
-        close(reader.dataset)
-    catch
-    end
-    try
-        close(reader.cyclic_dataset)
-    catch
-    end
-    try
-        close(writer.dataset)
-    catch
-    end
+    close(reader.dataset)
+    close(reader.cyclic_dataset)
+    close(writer.dataset)
     close(writer.csv_io)
 
     if delete_output
-        isnothing(output_nc_path) || rm(output_nc_path)
+        isfile(writer.nc_path) && rm(writer.nc_path)
         isfile(writer.csv_path) && rm(writer.csv_path)
     end
     return nothing
