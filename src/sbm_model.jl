@@ -516,6 +516,7 @@ function initialize_sbm_model(config::Config)
     writer = prepare_writer(config, reader, output_path, modelmap, maxlayers, statenames)
 
     model = Model(
+        config,
         (land = dag, river = dag_riv),
         (subsurface = ssf, land = olf, river = rf),
         sbm,

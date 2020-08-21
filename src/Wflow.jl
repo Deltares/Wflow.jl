@@ -17,7 +17,10 @@ mutable struct Clock
     Δt::Second
 end
 
+include("io.jl")
+
 struct Model{N,L,V,R,W}
+    config::Config  # all configuration options
     network::N  # connectivity information, directed graph
     lateral::L  # lateral model that holds lateral state, moves along network
     vertical::V  # vertical model that holds vertical state, independent of each other
@@ -31,7 +34,6 @@ Base.show(io::IO, m::Model) = print(io, "model of type ", typeof(m))
 
 include("toml.jl")
 include("name.jl")
-include("io.jl")
 include("horizontal_process.jl")
 include("sbm.jl")
 include("reservoir_lake.jl")
