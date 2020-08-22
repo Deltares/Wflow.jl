@@ -4,16 +4,7 @@ config = Wflow.Config(tomlpath)
 model = Wflow.initialize_sbm_model(config)
 @unpack network = model
 
-nl = length(network.land.order)
-index_river = filter(i -> !isequal(model.lateral.river.rivercells[i], 0), 1:nl)
-frac_toriver = Wflow.fraction_runoff_toriver(
-    network.land.graph,
-    index_river,
-    model.lateral.subsurface.βₗ,
-    nl,
-)
-
-model = Wflow.update(model, frac_toriver, index_river)
+model = Wflow.update(model)
 
 # test if the first timestep was written to the CSV file
 flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
@@ -35,7 +26,7 @@ flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
 end
 
 # run the second timestep
-model = Wflow.update(model, frac_toriver, index_river)
+model = Wflow.update(model)
 
 @testset "second timestep" begin
     sbm = model.vertical
@@ -50,7 +41,7 @@ end
     ssf = model.lateral.subsurface.ssf
     @test sum(ssf) ≈ 7.005489495052358e16
     @test ssf[network.land.order[1]] ≈ 3.0449782003445332e13
-    @test ssf[network.land.order[nl-100]] ≈ 7.87333555063647e11
+    @test ssf[network.land.order[end-100]] ≈ 7.87333555063647e11
     @test ssf[network.land.order[end]] ≈ 3.289417561401221e11
 end
 
@@ -79,7 +70,7 @@ end
     @test res.evaporation[2] ≈ 4.0
 end
 
-benchmark = @benchmark Wflow.update(model, frac_toriver, index_river)
+benchmark = @benchmark Wflow.update(model)
 
 "Prints a benchmark results just like btime"
 function print_benchmark(trialmin)
@@ -102,6 +93,6 @@ trialmin = BenchmarkTools.minimum(benchmark)
 
 println("Model update")
 print_benchmark(trialmin)
-# @profview Wflow.update(model, frac_toriver, index_river)
+# @profview Wflow.update(model)
 
 Wflow.close_files(model, delete_output = true)

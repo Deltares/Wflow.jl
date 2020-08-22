@@ -495,6 +495,10 @@ function initialize_sbm_model(config::Config)
     ldd_riv = ldd_2d[inds_riv]
     graph_riv = flowgraph(ldd_riv, inds_riv, pcr_dir)
 
+    # the indices of the river cells in the land(+river) cell vector
+    index_river = filter(i -> !isequal(river[i], 0), 1:n)
+    frac_toriver = Wflow.fraction_runoff_toriver(graph, index_river, βₗ, n)
+
     rf = SurfaceFlow(
         sl = riverslope,
         n = n_river,
@@ -523,7 +527,7 @@ function initialize_sbm_model(config::Config)
 
     model = Model(
         config,
-        (; land, river),
+        (; land, river, index_river, frac_toriver),
         (subsurface = ssf, land = olf, river = rf),
         sbm,
         Clock(config.starttime, 1, Δt),
@@ -552,7 +556,7 @@ function initialize_sbm_model(config::Config)
     return model
 end
 
-function update(model, frac_toriver, index_river)
+function update(model)
     @unpack lateral, vertical, network, clock, config = model
 
     update_forcing!(model)
@@ -572,7 +576,7 @@ function update(model, frac_toriver, index_river)
     lateral.subsurface.recharge .*= lateral.subsurface.dl
     lateral.subsurface.zi .= vertical.zi
 
-    update(lateral.subsurface, network.land, frac_toriver, lateral.river.rivercells)
+    update(lateral.subsurface, network.land, network.frac_toriver, lateral.river.rivercells)
 
     update_after_lateralflow(
         vertical,
@@ -587,15 +591,15 @@ function update(model, frac_toriver, index_river)
     update(
         lateral.land,
         network.land,
-        frac_toriver = frac_toriver,
+        frac_toriver = network.frac_toriver,
         river = lateral.river.rivercells,
         do_iter = true,
     )
 
     lateral.river.qlat .=
         (
-            lateral.subsurface.to_river[index_river] ./ 1.0e9 ./ lateral.river.Δt .+
-            lateral.land.to_river[index_river]
+            lateral.subsurface.to_river[network.index_river] ./ 1.0e9 ./ lateral.river.Δt .+
+            lateral.land.to_river[network.index_river]
         ) ./ lateral.river.dl
 
     update(lateral.river, network.river, do_iter = true, doy = dayofyear(clock.time))

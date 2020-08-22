@@ -63,18 +63,10 @@ end
 
 function run_simulation(model::Model; close_files = true)
     @unpack network, config = model
-    nl = length(network.land.order)
-    index_river = filter(i -> !isequal(model.lateral.river.rivercells[i], 0), 1:nl)
-    frac_toriver = Wflow.fraction_runoff_toriver(
-        network.land.graph,
-        index_river,
-        model.lateral.subsurface.βₗ,
-        nl,
-    )
 
     times = config.starttime:Second(config.timestepsecs):config.endtime
     for _ in times
-        model = Wflow.update(model, frac_toriver, index_river)
+        model = Wflow.update(model)
     end
 
     reset_clock!(model.clock, config)
