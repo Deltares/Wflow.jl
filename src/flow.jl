@@ -62,8 +62,6 @@ function update(
 
     # sub time step
     adt = sf.Δt / ts
-    p = 3.0 / ts # dummy precipitation
-    pet = 4.0 / ts # dummy evaporation
 
     n = length(order)
     q_sum = zeros(n)
@@ -98,16 +96,14 @@ function update(
             end
             if !isnothing(sf.reservoir) && sf.reservoir_index[v] != 0
                 # run reservoir model and copy reservoir outflow to river cell
-                # dummy values now for reservoir precipitation and evaporation (3.0 and 4.0)
                 i = sf.reservoir_index[v]
-                update(sf.reservoir, i, qin, p, pet, adt)
+                update(sf.reservoir, i, qin, adt)
                 sf.q[v] = sf.reservoir.outflow[i]
 
             elseif !isnothing(sf.lake) && sf.lake_index[v] != 0
                 # run lake model and copy lake outflow to river cell
-                # dummy values now for lake precipitation and evaporation (3.0 and 4.0)
                 i = sf.lake_index[v]
-                update(sf.lake, i, qin, p, pet, doy)
+                update(sf.lake, i, qin, doy)
                 sf.q[v] = sf.lake.outflow[i]
             else
                 sf.q[v] =

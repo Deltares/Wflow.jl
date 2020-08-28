@@ -25,11 +25,13 @@ Update a single reservoir at position `i`.
 This is called from within the kinematic wave loop, therefore updating only for a single
 element rather than all at once.
 """
-function update(res::SimpleReservoir, i, inflow, p, pet, timestepsecs)
+function update(res::SimpleReservoir, i, inflow, timestepsecs)
 
     vol = (
-        res.volume[i] + (inflow * timestepsecs) + (p / 1000.0) * res.area[i] -
-        (pet / 1000.0) * res.area[i]
+        res.volume[i] +
+        (inflow * timestepsecs) +
+        (res.precipitation[i] / 1000.0) * res.area[i] -
+        (res.evaporation[i] / 1000.0) * res.area[i]
     )
 
     percfull = vol / res.maxvolume[i]
@@ -51,8 +53,6 @@ function update(res::SimpleReservoir, i, inflow, p, pet, timestepsecs)
     res.inflow[i] = inflow
     res.demandrelease[i] = demandrelease / timestepsecs
     res.percfull[i] = percfull
-    res.precipitation[i] = p * basetimestep.value / timestepsecs
-    res.evaporation[i] = pet * basetimestep.value / timestepsecs
     res.volume[i] = vol
 
     return res

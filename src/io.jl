@@ -69,14 +69,55 @@ end
 
 "Get dynamic NetCDF input for the given time"
 function update_forcing!(model)
-    @unpack vertical, clock, reader, network = model
+    @unpack vertical, clock, reader, network, config = model
     @unpack dataset, forcing_parameters, buffer = reader
     sel = network.land.indices
     nctimes = ncread(dataset, "time")
 
+    do_reservoirs = Bool(get(config.model, "reservoirs", false))
+    do_lakes = Bool(get(config.model, "lakes", false))
+
+    mover_params = ("precipitation", "potential_evaporation")
+    if do_reservoirs
+        sel_reservoirs = network.reservoir.indices_coverage
+        param_res = Dict(
+            "precipitation" => get(model, paramap["precipitation_reservoir"]),
+            "potential_evaporation" => get(model, paramap["evaporation_reservoir"]),
+        )
+    end
+    if do_lakes
+        sel_lakes = network.lake.indices_coverage
+        param_lake = Dict(
+            "precipitation" => get(model, paramap["precipitation_lake"]),
+            "potential_evaporation" => get(model, paramap["evaporation_lake"]),
+        )
+    end
+
+
     # load from NetCDF into the model according to the mapping
     for (param, ncvarname) in forcing_parameters
         buffer = get_at!(buffer, dataset[ncvarname], nctimes, clock.time)
+
+        # calculate the mean precipitation and evaporation over the lakes and reservoirs
+        # and put these into the lakes and reservoirs structs
+        # and set the precipitation and evaporation to 0 in the vertical model
+        if param in mover_params
+            if do_reservoirs
+                for (i, sel_reservoir) in enumerate(sel_reservoirs)
+                    avg = mean(buffer[sel_reservoir])
+                    buffer[sel_reservoir] .= 0
+                    param_res[param][i] = avg
+                end
+            end
+            if do_lakes
+                for (i, sel_lake) in enumerate(sel_lakes)
+                    avg = mean(buffer[sel_lake])
+                    buffer[sel_lake] .= 0
+                    param_lake[param][i] = avg
+                end
+            end
+        end
+
         param_vector = get(model, paramap[param])
         param_vector .= buffer[sel]
     end

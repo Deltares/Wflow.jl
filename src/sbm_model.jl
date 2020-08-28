@@ -328,7 +328,13 @@ function initialize_sbm_model(config::Config)
     if do_reservoirs
         # read only reservoir data if reservoirs true
         # allow reservoirs only in river cells
+        # note that these locations are only the reservoir outlet pixels
         reslocs = ncread(nc, "reservoirlocs"; key, sel = inds_riv, type = Int, fill = 0)
+
+        # this holds the same ids as reslocs, but covers the entire reservoir
+        rescoverage_2d = ncread(nc, "reservoirareas"; key, allow_missing = true)
+        # for each reservoir, a list of 2D indices, needed for getting the mean precipitation
+        inds_res_cov = Vector{CartesianIndex{2}}[]
 
         # construct a map from the rivers to the reservoirs and
         # a map of the reservoirs to the 2D model grid
@@ -336,10 +342,17 @@ function initialize_sbm_model(config::Config)
         inds_res = CartesianIndex{2}[]
         rescounter = 0
         for (i, ind) in enumerate(inds_riv)
-            if reslocs[i] > 0
+            res_id = reslocs[i]
+            if res_id > 0
                 push!(inds_res, ind)
                 rescounter += 1
                 resindex[i] = rescounter
+
+                # get all indices related to this reservoir outlet
+                # done in this loop to ensure that the order is equal to the order in the
+                # SimpleReservoir struct
+                res_cov = findall(isequal(res_id), rescoverage_2d)
+                push!(inds_res_cov, res_cov)
             end
         end
 
@@ -395,18 +408,31 @@ function initialize_sbm_model(config::Config)
     if do_lakes
         # read only lake data if lakes true
         # allow lakes only in river cells
+        # note that these locations are only the lake outlet pixels
         lakelocs = ncread(nc, "lakelocs"; key, sel = inds_riv, type = Int, fill = 0)
 
+        # this holds the same ids as lakelocs, but covers the entire lake
+        lakecoverage_2d = ncread(nc, "lakeareas"; key, allow_missing = true)
+        # for each lake, a list of 2D indices, needed for getting the mean precipitation
+        inds_lake_cov = Vector{CartesianIndex{2}}[]
+        
         # construct a map from the rivers to the lakes and
         # a map of the lakes to the 2D model grid
         lakeindex = fill(0, nriv)
         inds_lake = CartesianIndex{2}[]
         lakecounter = 0
         for (i, ind) in enumerate(inds_riv)
-            if lakelocs[i] > 0
+            lake_id = lakelocs[i]
+            if lake_id > 0
                 push!(inds_lake, ind)
                 lakecounter += 1
                 lakeindex[i] = lakecounter
+
+                # get all indices related to this lake outlet
+                # done in this loop to ensure that the order is equal to the order in the
+                # NaturalLake struct
+                lake_cov = findall(isequal(lake_id), lakecoverage_2d)
+                push!(inds_lake_cov, lake_cov)
             end
         end
 
@@ -575,9 +601,20 @@ function initialize_sbm_model(config::Config)
     river =
         (graph = graph_riv, order = topological_sort_by_dfs(graph_riv), indices = inds_riv)
 
+    reservoir = if do_reservoirs
+        (indices_outlet = inds_res, indices_coverage = inds_res_cov)
+    else
+        ()
+    end
+    lake = if do_lakes
+        (indices_outlet = inds_lake, indices_coverage = inds_lake_cov)
+    else
+        ()
+    end
+
     model = Model(
         config,
-        (; land, river, index_river, frac_toriver),
+        (; land, river, reservoir, lake, index_river, frac_toriver),
         (subsurface = ssf, land = olf, river = rf),
         sbm,
         Clock(config.starttime, 1, Δt),

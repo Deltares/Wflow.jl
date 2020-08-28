@@ -7,9 +7,11 @@
         area = [1885665.353626924],
         targetfullfrac = [0.8],
         targetminfrac = [0.2425554726620697],
+        precipitation = [4.2],
+        evaporation = [1.5],
     )
 
-    Wflow.update(res, 1, 100.0, 4.2, 1.5, 86400.0)
+    Wflow.update(res, 1, 100.0, 86400.0)
     @test res.outflow[1] ≈ 91.3783714867453
     @test res.volume[1] ≈ 2.0e7
     @test res.percfull[1] ≈ 0.80
