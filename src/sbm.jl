@@ -188,7 +188,7 @@ end
 function update_until_snow(sbm::SBM, config)
 
     # # start dummy variables (should be generated from model reader and from Config.jl TOML)
-    do_lai = haskey(config.cyclic.parameters, "lai")
+    do_lai = haskey(config.cyclic.parameters, "leaf_area_index")
     modelglacier = Bool(get(config.model, "modelglacier", 0))
     modelsnow = Bool(get(config.model, "modelsnow", 0))
     #potevap = 4.0

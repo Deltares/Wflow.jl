@@ -76,7 +76,7 @@ function run_simulation(model::Model; close_files = true)
     if close_files
         Wflow.close_files(model, delete_output = false)
     end
-    return nothing
+    return model
 end
 
 end # module

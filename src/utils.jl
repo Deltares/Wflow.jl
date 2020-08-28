@@ -20,10 +20,29 @@ const basetimestep = Second(Day(1))
 # in case the input data is permuted the other way
 permute_indices(inds) = [CartesianIndex(i[2], i[1]) for i in inds]
 
-"Get a list of indices that are active, based on a nodata value"
-function active_indices(A, nodata)
-    inds = CartesianIndices(size(A))
-    filter(i -> !isequal(A[i], nodata), inds)
+"""
+    active_indices(subcatch_2d, nodata)
+
+Takes a 2D array of the subcatchments. And derive forward and reverse indices.
+
+1: Get a list of `CartesianIndex{2}`` that are active, based on a nodata value.
+These map from the 1D internal domain to the 2D external domain.
+
+2: Make a reverse index, a `Matrix{Int}``, which maps from the 2D external domain to
+the 1D internal domain, providing an Int which can be used as a linear index. Values of 0
+represent inactive cells.
+"""
+function active_indices(subcatch_2d::AbstractMatrix, nodata)
+    A = subcatch_2d
+    all_inds = CartesianIndices(size(A))
+    indices = filter(i -> !isequal(A[i], nodata), all_inds)
+
+    reverse_indices = zeros(Int, size(A))
+    for (i, I) in enumerate(indices)
+        reverse_indices[I] = i
+    end
+
+    return indices, reverse_indices
 end
 
 function lattometres(lat::Float64)
@@ -116,6 +135,8 @@ Read parameter `var` from NetCDF file `nc`. Supports various keyword arguments t
 selections of data in desired types, with or without missing values.
 
 # Arguments
+- `key=identity`: `key` is a function which maps `var` to the name of the parameter in the
+        NetCDF file. The default `identity` keeps `var` as is.
 - `sel=nothing`: a selection of indices, such as a `Vector{CartesianIndex}` of active cells,
         to return from the NetCDF. By default all cells are returned.
 - `defaults=nothing`: a dictionary in which default values are looked up if `var` is not
@@ -129,6 +150,7 @@ selections of data in desired types, with or without missing values.
 function ncread(
     nc,
     var;
+    key = identity,
     sel = nothing,
     defaults = nothing,
     type = nothing,
@@ -137,7 +159,8 @@ function ncread(
     dimname = nothing,
 )
 
-    if !haskey(nc, var) && !isnothing(defaults)
+    ncvarname = key(var)  # can be nothing if not specified in TOML
+    if (isnothing(ncvarname) || !haskey(nc, ncvarname)) && !isnothing(defaults)
         # TODO move away from this strategy for defaults
         @warn(string(var, " not found, set to default value ", defaults[var]))
         if isnothing(dimname)
@@ -149,14 +172,14 @@ function ncread(
 
     # Read the entire variable into memory, applying scale, offset and
     # set fill_values to missing.
-    A = nc[var][:]
+    A = nc[ncvarname][:]
 
     # Take out only the active cells
     if !isnothing(sel)
         if isnothing(dimname)
             A = A[sel]
         else
-            dim = findfirst(==(dimname), dimnames(nc[var]))
+            dim = findfirst(==(dimname), dimnames(nc[ncvarname]))
             if dim == 3
                 A = transpose(A[sel, :])
             elseif dim == 1
@@ -178,7 +201,7 @@ function ncread(
     # Convert to desired type if needed
     if !isnothing(type)
         if eltype(A) != type
-            A = map(type, A)
+            A = convert(Array{type}, A)
         end
     end
 

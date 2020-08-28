@@ -35,54 +35,54 @@ e_r = "EoverR"
 infiltcappath = "InfiltCapPath"
 infiltcapsoil = "InfiltCapSoil"
 kext = "Kext"
-khfrac = "KsatHorFrac"
+ksathorfrac = "KsatHorFrac"
 "kv₀" = "KsatVer"
 m = "M"
 maxleakage = "MaxLeakage"
 n_land = "N"
 n_river = "N_River"
 pathfrac = "PathFrac"
-resdemand = "ResDemand"
-resmaxrelease = "ResMaxRelease"
-resmaxvolume = "ResMaxVolume"
-ressimplearea = "ResSimpleArea"
-restargetfullfrac = "ResTargetFullFrac"
-restargetminfrac = "ResTargetMinFrac"
-riverslope = "RiverSlope"
+demand_reservoir = "ResDemand"
+maxrelease_reservoir = "ResMaxRelease"
+maxvolume_reservoir = "ResMaxVolume"
+area_reservoir = "ResSimpleArea"
+targetfullfrac_reservoir = "ResTargetFullFrac"
+targetminfrac_reservoir = "ResTargetMinFrac"
+slope_river = "RiverSlope"
 rootdistpar = "rootdistpar"
 rootingdepth = "RootingDepth"
-sl = "Sl"
-slope = "Slope"
+specific_leaf = "Sl"
+slope_land = "Slope"
 soilminthickness = "SoilMinThickness"
 soilthickness = "SoilThickness"
-swood = "Swood"
+storage_wood = "Swood"
 "θᵣ" = "thetaR"
 "θₛ" = "thetaS"
 tt = "TT"
 tti = "TTI"
 ttm = "TTM"
 waterfrac = "WaterFrac"
-wflow_acc = "wflow_acc"
-wflow_dem = "wflow_dem"
-wflow_gauges = "wflow_gauges"
-wflow_landuse = "wflow_landuse"
-wflow_ldd = "wflow_ldd"
-wflow_reservoirareas = "wflow_reservoirareas"
-wflow_reservoirlocs = "wflow_reservoirlocs"
-wflow_river = "wflow_river"
-wflow_riverlength = "wflow_riverlength"
-wflow_riverwidth = "wflow_riverwidth"
-wflow_soil = "wflow_soil"
-wflow_streamorder = "wflow_streamorder"
-wflow_subcatch = "wflow_subcatch"
-wflow_uparea = "wflow_uparea"
+acc = "wflow_acc"
+altitude = "wflow_dem"
+gauges = "wflow_gauges"
+landuse = "wflow_landuse"
+ldd = "wflow_ldd"
+reservoirareas = "wflow_reservoirareas"
+reservoirlocs = "wflow_reservoirlocs"
+river = "wflow_river"
+riverlength = "wflow_riverlength"
+riverwidth = "wflow_riverwidth"
+w_soil = "wflow_soil"
+streamorder = "wflow_streamorder"
+subcatchment = "wflow_subcatch"
+upstrea_area = "wflow_uparea"
 whc = "WHC"
 
 [cyclic]
 path = "data/staticmaps-moselle.nc"
 
 [cyclic.parameters]
-lai = "LAI"
+leaf_area_index = "LAI"
 
 [dynamic]
 path = "data/forcing-moselle.nc"
@@ -90,7 +90,7 @@ path = "data/forcing-moselle.nc"
 [dynamic.parameters]
 precipitation = "P"
 temperature = "TEMP"
-potevap = "PET"
+potential_evaporation = "PET"
 
 [model]
 reinit = false
@@ -126,14 +126,26 @@ reducer = "maximum"
 parameter = "volume_reservoir"
 header = "volume"
 index = 1
-# id = true  # creat n columns, "volume_101"
-# loc = [100,50]
-# coordinate = [53.2, 5.6]
-# per catchment
-# wflow_gauges map for stations
-# reduce per area
 
 [[csv.column]]
-parameter = "precipitation"
-header = "precipitation"
+parameter = "temperature"
+header = "temp_bycoord"
+coordinate.x = 6.255
+coordinate.y = 50.012
+
+[[csv.column]]
+parameter = "temperature"
+header = "temp_byindex"
+index.x = 100
+index.y = 50
+
+[[csv.column]]
+parameter = "actevap"
+header = "actevap"
+pointmap = "gauges"
+
+[[csv.column]]
+parameter = "recharge"
+header = "recharge"
+areamap = "subcatchment"
 reducer = "mean"

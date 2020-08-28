@@ -5,7 +5,7 @@ const ldd_mv = 255
 nc = NCDataset(staticmaps_rhine_path)
 ldd_2d = Wflow.ncread(nc, "ldd")
 
-inds = Wflow.active_indices(ldd_2d, ldd_mv)
+inds, _ = Wflow.active_indices(ldd_2d, ldd_mv)
 n = length(inds)
 
 # take out only the active cells
