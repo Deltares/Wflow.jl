@@ -142,10 +142,10 @@ index.y = 50
 [[csv.column]]
 parameter = "actevap"
 header = "actevap"
-pointmap = "gauges"
+map = "gauges"
 
 [[csv.column]]
 parameter = "recharge"
 header = "recharge"
-areamap = "subcatchment"
+map = "subcatchment"
 reducer = "mean"

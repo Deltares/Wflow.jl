@@ -261,12 +261,8 @@ function csv_header(cols, dataset, config)
     header = String[]
     for col in cols
         h = col["header"]::String
-        if haskey(col, "pointmap") || haskey(col, "areamap")
-            mapname = if haskey(col, "pointmap")
-                col["pointmap"]
-            else
-                col["areamap"]
-            end
+        if haskey(col, "map")
+            mapname = col["map"]
 
             map_2d = ncread(
                 dataset,
@@ -465,62 +461,37 @@ end
 
 "Get a reducer function based on CSV output settings defined in a dictionary"
 function reducer(col, rev_inds, x_nc, y_nc, dims_xy, config, dataset)
-    if haskey(col, "areamap")
-        # assumes the parameter in areamap has a 2D input map, with
-        # integers indicating the zones that are to be aggregated
-        areamap = col["areamap"]
-        f = reducerfunction(col["reducer"])
-        areamap_2d = ncread(
+    if haskey(col, "map")
+        # assumes the parameter in "map" has a 2D input map, with
+        # integers indicating the points or zones that are to be aggregated
+        mapname = col["map"]
+        # if no reducer is given, pick "only", this is the only safe reducer,
+        # and makes sense in the case of a gauge map
+        reducer_name = get(col, "reducer", "only")
+        f = reducerfunction(reducer_name)
+        map_2d = ncread(
             dataset,
-            areamap;
-            key = x -> config.static.parameters[areamap],
+            mapname;
+            key = x -> config.static.parameters[mapname],
             type = Union{Int,Missing},
             allow_missing = true,
         )
-        area_ids = unique(skipmissing(areamap_2d))
-        # from area id to list of internal indices
-        area_inds = Dict{Int,Vector{Int}}(id => Vector{Int}() for id in area_ids)
-        for i in eachindex(areamap_2d)
-            v = areamap_2d[i]
+        ids = unique(skipmissing(map_2d))
+        # from id to list of internal indices
+        inds = Dict{Int,Vector{Int}}(id => Vector{Int}() for id in ids)
+        for i in eachindex(map_2d)
+            v = map_2d[i]
             ismissing(v) && continue
             v::Int
-            vector = area_inds[v]
+            vector = inds[v]
             ind = rev_inds[i]
             iszero(ind) && error("area $v has inactive cells")
             push!(vector, ind)
         end
-        return A -> (f(A[v]) for v in values(area_inds))
-    elseif haskey(col, "pointmap")
-        # like gauges, no reducer needed
-        # assumes the parameter in pointmap has a 2D input map, with
-        # a unique integer for each point that you want to save to CSV
-        pointmap = col["pointmap"]
-        pointmap_2d = ncread(
-            dataset,
-            pointmap;
-            key = x -> config.static.parameters[pointmap],
-            type = Union{Int,Missing},
-            allow_missing = true,
-        )
-        # from gauge id to internal index
-        point_inds = Dict{Int,Int}()
-        for i in eachindex(pointmap_2d)
-            v = pointmap_2d[i]
-            ismissing(v) && continue
-            v::Int
-            if haskey(point_inds, v)
-                error("pointmap values must be unique")
-            else
-                # get the internal vector index
-                ind = rev_inds[i]
-                iszero(ind) && error("gauge $v set on inactive cell")
-                point_inds[v] = ind
-            end
-        end
-        return A -> (A[v] for v in values(point_inds))
+        return A -> (f(A[v]) for v in values(inds))
     elseif haskey(col, "reducer")
         # reduce over all active cells
-        # needs to be behind the areamap if statement, because it also needs a reducer
+        # needs to be behind the map if statement, because it also can use a reducer
         return reducerfunction(col["reducer"])
     elseif haskey(col, "index")
         index = col["index"]
@@ -565,7 +536,7 @@ function write_csv_row(model)
     print(io, clock.time)
     for nt in writer.csv_cols
         A = get(model, nt.lens)
-        # could be a value, or a vector in case of pointmap or areamap
+        # could be a value, or a vector in case of map
         v = nt.reducer(A)
         # numbers are also iterable
         for el in v
