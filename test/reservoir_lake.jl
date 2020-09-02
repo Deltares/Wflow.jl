@@ -7,9 +7,11 @@
         area = [1885665.353626924],
         targetfullfrac = [0.8],
         targetminfrac = [0.2425554726620697],
+        precipitation = [4.2],
+        evaporation = [1.5],
     )
 
-    Wflow.update(res, 1, 100.0, 4.2, 1.5, 86400.0)
+    Wflow.update(res, 1, 100.0, 86400.0)
     @test res.outflow[1] ≈ 91.3783714867453
     @test res.volume[1] ≈ 2.0e7
     @test res.percfull[1] ≈ 0.80
@@ -31,9 +33,11 @@ end
         sh = [Wflow.DataFrame()],
         hq = [Wflow.DataFrame()],
         avg_waterlevel = [18.5],
+        precipitation = [20.0],
+        evaporation = [3.2],
     )
 
-    Wflow.update(lake, 1, 2500.0, 20.0, 3.2, 181, 86400.0)
+    Wflow.update(lake, 1, 2500.0, 181, 86400.0)
     @test lake.outflow[1] ≈ 85.31903276150577
     @test lake.storage[1] ≈ 3.551103576940606e9
     @test lake.waterlevel[1] ≈ 19.672569557695734

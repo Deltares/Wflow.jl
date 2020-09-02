@@ -271,6 +271,9 @@ vertical saturated hydraulic conductivity `kv_z` (bottom layer or water table), 
 degree of the layer (ratio `usd` and `l_sat`), and a Brooks-Corey power coefficient `c`.
 """
 function unsatzone_flow_layer(usd, kv_z, l_sat, c)
+    if usd <= 0.0
+        return 0.0, 0.0
+    end
     sum_ast = 0.0
     # first transfer soil water > maximum soil water capacity layer (iteration is not required because of steady theta (usd))
     st = kv_z * min(pow(usd / l_sat, c), 1.0)

@@ -25,11 +25,13 @@ Update a single reservoir at position `i`.
 This is called from within the kinematic wave loop, therefore updating only for a single
 element rather than all at once.
 """
-function update(res::SimpleReservoir, i, inflow, p, pet, timestepsecs)
+function update(res::SimpleReservoir, i, inflow, timestepsecs)
 
     vol = (
-        res.volume[i] + (inflow * timestepsecs) + (p / 1000.0) * res.area[i] -
-        (pet / 1000.0) * res.area[i]
+        res.volume[i] +
+        (inflow * timestepsecs) +
+        (res.precipitation[i] * (timestepsecs / basetimestep.value) / 1000.0) * res.area[i] -
+        (res.evaporation[i] * (timestepsecs / basetimestep.value) / 1000.0) * res.area[i]
     )
 
     percfull = vol / res.maxvolume[i]
@@ -51,8 +53,6 @@ function update(res::SimpleReservoir, i, inflow, p, pet, timestepsecs)
     res.inflow[i] = inflow
     res.demandrelease[i] = demandrelease / timestepsecs
     res.percfull[i] = percfull
-    res.precipitation[i] = p * basetimestep.value / timestepsecs
-    res.evaporation[i] = pet * basetimestep.value / timestepsecs
     res.volume[i] = vol
 
     return res
@@ -128,7 +128,7 @@ Update a single lake at position `i`.
 This is called from within the kinematic wave loop, therefore updating only for a single
 element rather than all at once.
 """
-function update(lake::NaturalLake, i, inflow, p, pet, doy, timestepsecs)
+function update(lake::NaturalLake, i, inflow, doy, timestepsecs)
 
     lo = lake.lowerlake_ind[i]
     has_lowerlake = lo != 0
@@ -140,7 +140,7 @@ function update(lake::NaturalLake, i, inflow, p, pet, doy, timestepsecs)
     if lake.outflowfunc[i] == 3
         lakefactor = lake.area[i] / (timestepsecs * pow(lake.b[i], 0.5))
         si_factor =
-            (lake.storage[i] + (p - pet) * lake.area[i] / 1000.0) / timestepsecs + inflow
+            (lake.storage[i] + (lake.precipitation[i] - lake.evaporation[i]) * (timestepsecs / basetimestep.value) * lake.area[i] / 1000.0) / timestepsecs + inflow
         #Adjust SIFactor for ResThreshold != 0
         si_factor_adj = si_factor - lake.area[i] * lake.threshold[i] / timestepsecs
         #Calculate the new lake outflow/waterlevel/storage
@@ -183,8 +183,8 @@ function update(lake::NaturalLake, i, inflow, p, pet, doy, timestepsecs)
         end
 
         storage =
-            lake.storage[i] + inflow * timestepsecs + (p / 1000.0) * lake.area[i] -
-            (pet / 1000.0) * lake.area[i] - outflow * timestepsecs
+            lake.storage[i] + inflow * timestepsecs + (lake.precipitation[i] / 1000.0) * (timestepsecs / basetimestep.value) * lake.area[i] -
+            (lake.evaporation[i] / 1000.0) * (timestepsecs / basetimestep.value) * lake.area[i] - outflow * timestepsecs
 
         waterlevel = if lake.storfunc[i] == 1
             lake.waterlevel[i] + (storage - lake.storage[i]) / lake.area[i]
@@ -215,8 +215,6 @@ function update(lake::NaturalLake, i, inflow, p, pet, doy, timestepsecs)
     lake.waterlevel[i] = waterlevel
     lake.inflow[i] = inflow
     lake.storage[i] = storage
-    lake.precipitation[i] = p * basetimestep.value / timestepsecs
-    lake.evaporation[i] = pet * basetimestep.value / timestepsecs
 
     return lake
 end

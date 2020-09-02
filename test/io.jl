@@ -59,7 +59,6 @@ config["model"]["reinit"] = true
 model = Wflow.initialize_sbm_model(config)
 
 @unpack vertical, clock, reader, writer = model
-@unpack dataset, buffer, inds = reader
 
 @testset "output and state names" begin
     ncdims = ("lon", "lat", "layer", "time")
@@ -99,12 +98,23 @@ end
 end
 
 @testset "reducer" begin
-    @test Wflow.reducer(Dict("reducer" => "maximum"))([6, 5, 2]) == 6
-    @test Wflow.reducer(Dict("reducer" => "mean"))([6, 5, 4, 1]) == 4
-    @test Wflow.reducer(Dict("reducer" => "median"))([6, 5, 4, 1]) == 4.5
-    @test Wflow.reducer(Dict("reducer" => "first"))([6, 5, 4, 1]) == 6
-    @test Wflow.reducer(Dict("reducer" => "last"))([6, 5, 4, 1]) == 1
-    @test Wflow.reducer(Dict("index" => 2))([6, 5, 4, 1]) == 5
+    V = [6, 5, 4, 1]
+    @test Wflow.reducerfunction("maximum")(V) == 6
+    @test Wflow.reducerfunction("mean")(V) == 4
+    @test Wflow.reducerfunction("median")(V) == 4.5
+    @test Wflow.reducerfunction("first")(V) == 6
+    @test Wflow.reducerfunction("last")(V) == 1
+    @test_throws ErrorException Wflow.reducerfunction("other")
+end
+
+@testset "network" begin
+    @unpack network = model
+    @unpack indices, reverse_indices = model.network.land
+    # test if the reverse index reverses the index
+    linear_index = 100
+    cartesian_index = indices[linear_index]
+    @test cartesian_index === CartesianIndex(115, 6)
+    @test reverse_indices[cartesian_index] === linear_index
 end
 
 Wflow.close_files(model, delete_output = true)

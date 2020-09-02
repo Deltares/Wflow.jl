@@ -69,15 +69,57 @@ end
 
 "Get dynamic NetCDF input for the given time"
 function update_forcing!(model)
-    @unpack vertical, clock, reader = model
-    @unpack dataset, forcing_parameters, buffer, inds = reader
+    @unpack vertical, clock, reader, network, config = model
+    @unpack dataset, forcing_parameters, buffer = reader
+    sel = network.land.indices
     nctimes = ncread(dataset, "time")
+
+    do_reservoirs = Bool(get(config.model, "reservoirs", false))
+    do_lakes = Bool(get(config.model, "lakes", false))
+
+    mover_params = ("precipitation", "potential_evaporation")
+    if do_reservoirs
+        sel_reservoirs = network.reservoir.indices_coverage
+        param_res = Dict(
+            "precipitation" => get(model, paramap["precipitation_reservoir"]),
+            "potential_evaporation" => get(model, paramap["evaporation_reservoir"]),
+        )
+    end
+    if do_lakes
+        sel_lakes = network.lake.indices_coverage
+        param_lake = Dict(
+            "precipitation" => get(model, paramap["precipitation_lake"]),
+            "potential_evaporation" => get(model, paramap["evaporation_lake"]),
+        )
+    end
+
 
     # load from NetCDF into the model according to the mapping
     for (param, ncvarname) in forcing_parameters
         buffer = get_at!(buffer, dataset[ncvarname], nctimes, clock.time)
-        param_vector = getproperty(vertical, param)
-        param_vector .= buffer[inds]
+
+        # calculate the mean precipitation and evaporation over the lakes and reservoirs
+        # and put these into the lakes and reservoirs structs
+        # and set the precipitation and evaporation to 0 in the vertical model
+        if param in mover_params
+            if do_reservoirs
+                for (i, sel_reservoir) in enumerate(sel_reservoirs)
+                    avg = mean(buffer[sel_reservoir])
+                    buffer[sel_reservoir] .= 0
+                    param_res[param][i] = avg
+                end
+            end
+            if do_lakes
+                for (i, sel_lake) in enumerate(sel_lakes)
+                    avg = mean(buffer[sel_lake])
+                    buffer[sel_lake] .= 0
+                    param_lake[param][i] = avg
+                end
+            end
+        end
+
+        param_vector = get(model, paramap[param])
+        param_vector .= buffer[sel]
     end
 
     return model
@@ -85,8 +127,9 @@ end
 
 "Get cyclic NetCDF input for the given time"
 function update_cyclic!(model)
-    @unpack vertical, clock, reader = model
-    @unpack cyclic_dataset, cyclic_times, cyclic_parameters, buffer, inds = reader
+    @unpack vertical, clock, reader, network = model
+    @unpack cyclic_dataset, cyclic_times, cyclic_parameters, buffer = reader
+    sel = network.land.indices
 
     month_day = monthday(clock.time)
     if monthday(clock.time) in cyclic_times
@@ -96,8 +139,8 @@ function update_cyclic!(model)
         # load from NetCDF into the model according to the mapping
         for (param, ncvarname) in cyclic_parameters
             buffer = get_at!(buffer, cyclic_dataset[ncvarname], i)
-            param_vector = getproperty(vertical, param)
-            param_vector .= buffer[inds]
+            param_vector = get(model, paramap[param])
+            param_vector .= buffer[sel]
         end
     end
 end
@@ -191,28 +234,25 @@ struct NCReader{T}
     dataset::NCDataset
     cyclic_dataset::NCDataset
     cyclic_times::Vector{Tuple{Int,Int}}
-    forcing_parameters::Dict{Symbol,String}
-    cyclic_parameters::Dict{Symbol,String}
+    forcing_parameters::Dict{String,String}
+    cyclic_parameters::Dict{String,String}
     buffer::Matrix{T}
-    inds::Vector{CartesianIndex{2}}
-    inds_riv::Vector{CartesianIndex{2}}
 end
 
 struct Writer
     dataset::NCDataset
     parameters::Dict{String,Any}
+    nc_path::String
     csv_path::Union{String,Nothing}
     csv_cols::Vector
     csv_io::IO
     statenames::Tuple{String,Vararg{String}}
 end
 
-"Convert a piece of Config to a Dict{Symbol, String} used for parameter lookup"
-parameter_lookup_table(config) = Dict(Symbol(k) => String(v) for (k, v) in Dict(config))
-
-function prepare_reader(path, cyclic_path, inds, inds_riv, config)
+function prepare_reader(path, cyclic_path, config)
     dataset = NCDataset(path)
-    var = dataset[config.dynamic.parameters.precipitation].var
+    ncvar1 = last(first(Dict(config.dynamic.parameters)))
+    var = dataset[ncvar1].var
 
     fillvalue = get(var.attrib, "_FillValue", nothing)
     scale_factor = get(var.attrib, "scale_factor", nothing)
@@ -236,8 +276,8 @@ function prepare_reader(path, cyclic_path, inds, inds_riv, config)
     cyclic_nc_times = collect(cyclic_dataset["time"])
     cyclic_times = Wflow.timecycles(cyclic_nc_times)
 
-    forcing_parameters = parameter_lookup_table(config.dynamic.parameters)
-    cyclic_parameters = parameter_lookup_table(config.cyclic.parameters)
+    forcing_parameters = Dict{String,String}(Dict(config.dynamic.parameters))
+    cyclic_parameters = Dict{String,String}(Dict(config.cyclic.parameters))
     forcing_keys = keys(forcing_parameters)
     cyclic_keys = keys(cyclic_parameters)
     for forcing_key in forcing_keys
@@ -253,12 +293,51 @@ function prepare_reader(path, cyclic_path, inds, inds_riv, config)
         forcing_parameters,
         cyclic_parameters,
         buffer,
-        inds,
-        inds_riv,
     )
 end
 
-function prepare_writer(config, reader, output_path, modelmap, maxlayers, statenames)
+"Get a Vector{String} of all columns names for the CSV header, exept the first, time"
+function csv_header(cols, dataset, config)
+    header = [col["header"] for col in cols]
+    header = String[]
+    for col in cols
+        h = col["header"]::String
+        if haskey(col, "map")
+            mapname = col["map"]
+
+            map_2d = ncread(
+                dataset,
+                mapname;
+                key = x -> config.static.parameters[mapname],
+                type = Union{Int,Missing},
+                allow_missing = true,
+            )
+
+            # results in the same order as used for the values
+            ids = unique(skipmissing(map_2d))
+            hvec = [string(h, '_', id) for id in ids]
+            append!(header, hvec)
+        else
+            push!(header, h)
+        end
+    end
+    return header
+end
+
+
+function prepare_writer(
+    config,
+    reader,
+    nc_path,
+    modelmap,
+    maxlayers,
+    statenames,
+    rev_inds,
+    x_nc,
+    y_nc,
+    dims_xy,
+    nc_static,
+)
 
     nclon = ncread(reader.dataset, "lon"; type = Float64)
     nclat = ncread(reader.dataset, "lat"; type = Float64)
@@ -284,16 +363,16 @@ function prepare_writer(config, reader, output_path, modelmap, maxlayers, staten
 
     calendar = get(config, "calendar", "proleptic_gregorian")
     time_units = get(config, "time_units", CFTime.DEFAULT_TIME_UNITS)
-    ds =
-        setup_netcdf(output_path, nclon, nclat, output_map, calendar, time_units, maxlayers)
+    ds = setup_netcdf(nc_path, nclon, nclat, output_map, calendar, time_units, maxlayers)
     tomldir = dirname(config)
 
     if haskey(config, "csv") && haskey(config.csv, "column")
         # open CSV file and write header
         csv_path = joinpath(tomldir, config.csv.path)
         csv_io = open(csv_path, "w")
-        header = join((col["header"] for col in config.csv.column), ',')
-        println(csv_io, "time,", header)
+        print(csv_io, "time,")
+        header = csv_header(config.csv.column, nc_static, config)
+        println(csv_io, join(header, ','))
         flush(csv_io)
 
         # cleate a vector of (lens, reducer) named tuples which will be used to
@@ -301,7 +380,7 @@ function prepare_writer(config, reader, output_path, modelmap, maxlayers, staten
         csv_cols = []
         for col in config.csv.column
             lens = Wflow.paramap[col["parameter"]]
-            reducer = Wflow.reducer(col)
+            reducer = Wflow.reducer(col, rev_inds, x_nc, y_nc, dims_xy, config, nc_static)
             push!(csv_cols, (; lens, reducer))
         end
     else
@@ -312,14 +391,16 @@ function prepare_writer(config, reader, output_path, modelmap, maxlayers, staten
     end
 
 
-    return Writer(ds, output_map, csv_path, csv_cols, csv_io, statenames)
+    return Writer(ds, output_map, nc_path, csv_path, csv_cols, csv_io, statenames)
 end
 
 "Write model output"
 function write_output(model, writer::Writer)
-    @unpack vertical, clock, reader = model
-    @unpack buffer, inds, inds_riv = reader
+    @unpack vertical, clock, reader, network = model
+    @unpack buffer = reader
     @unpack dataset, parameters = writer
+    inds = network.land.indices
+    inds_riv = network.river.indices
 
     write_csv_row(model)
 
@@ -391,63 +472,99 @@ end
 function close_files(model; delete_output::Bool = false)
     @unpack reader, writer = model
 
-    output_nc_path = try
-        path(writer.dataset)
-    catch
-        nothing
-    end
-    # TODO patch NCDatasets to not throw on calling close on closed dataset, like Base
-    # and perhaps the same for the `path` function above
-    try
-        close(reader.dataset)
-    catch
-    end
-    try
-        close(reader.cyclic_dataset)
-    catch
-    end
-    try
-        close(writer.dataset)
-    catch
-    end
+    close(reader.dataset)
+    close(reader.cyclic_dataset)
+    close(writer.dataset)
     close(writer.csv_io)
 
     if delete_output
-        isnothing(output_nc_path) || rm(output_nc_path)
+        isfile(writer.nc_path) && rm(writer.nc_path)
         isfile(writer.csv_path) && rm(writer.csv_path)
     end
     return nothing
 end
 
+"Mapping from reducer strings in the TOML to functions"
+function reducerfunction(reducer::AbstractString)
+    functionmap = Dict{String,Function}(
+        "maximum" => maximum,
+        "minimum" => minimum,
+        "mean" => mean,
+        "median" => median,
+        "first" => first,
+        "last" => last,
+        "only" => only,
+    )
+    f = get(functionmap, reducer, nothing)
+    isnothing(f) && error("unknown reducer")
+    return f
+end
+
 "Get a reducer function based on CSV output settings defined in a dictionary"
-function reducer(col)
-    if haskey(col, "reducer")
-        if col["reducer"] == "maximum"
-            return maximum
-        elseif col["reducer"] == "minimum"
-            return minimum
-        elseif col["reducer"] == "mean"
-            return mean
-        elseif col["reducer"] == "median"
-            return median
-        elseif col["reducer"] == "first"
-            return first
-        elseif col["reducer"] == "last"
-            return last
-        else
-            error("unknown reducer")
+function reducer(col, rev_inds, x_nc, y_nc, dims_xy, config, dataset)
+    if haskey(col, "map")
+        # assumes the parameter in "map" has a 2D input map, with
+        # integers indicating the points or zones that are to be aggregated
+        mapname = col["map"]
+        # if no reducer is given, pick "only", this is the only safe reducer,
+        # and makes sense in the case of a gauge map
+        reducer_name = get(col, "reducer", "only")
+        f = reducerfunction(reducer_name)
+        map_2d = ncread(
+            dataset,
+            mapname;
+            key = x -> config.static.parameters[mapname],
+            type = Union{Int,Missing},
+            allow_missing = true,
+        )
+        ids = unique(skipmissing(map_2d))
+        # from id to list of internal indices
+        inds = Dict{Int,Vector{Int}}(id => Vector{Int}() for id in ids)
+        for i in eachindex(map_2d)
+            v = map_2d[i]
+            ismissing(v) && continue
+            v::Int
+            vector = inds[v]
+            ind = rev_inds[i]
+            iszero(ind) && error("area $v has inactive cells")
+            push!(vector, ind)
         end
+        return A -> (f(A[v]) for v in values(inds))
+    elseif haskey(col, "reducer")
+        # reduce over all active cells
+        # needs to be behind the map if statement, because it also can use a reducer
+        return reducerfunction(col["reducer"])
     elseif haskey(col, "index")
-        return x -> getindex(x, col["index"])
-    elseif haskey(col, "id")
-        # id = true  # creat n columns, "volume_101"
-        error("id not implemented")
-    elseif haskey(col, "loc")
-        # loc = [100,50]
-        error("loc not implemented")
+        index = col["index"]
+        if index isa Int
+            # linear index into the internal vector of active cells
+            # this one mostly makes sense for debugging, or for vectors of only a few elements
+            return x -> getindex(x, index)
+        elseif index isa Dict
+            # index into the 2D input/output arrays
+            # the first always corresponds to the y dimension, then the x dimension
+            # this is 1-based
+            i = index["y"]::Int
+            j = index["x"]::Int
+            if dims_xy
+                i, j = j, i
+            end
+            ind = rev_inds[i, j]
+            iszero(ind) && error("inactive loc specified for output")
+            return A -> getindex(A, ind)
+        else
+            error("unknown index used")
+        end
     elseif haskey(col, "coordinate")
-        # coordinate = [53.2, 5.6]
-        error("coordinate not implemented")
+        x = col["coordinate"]["x"]::Float64
+        y = col["coordinate"]["y"]::Float64
+        # find the closest cell center index
+        _, iy = findmin(abs.(y_nc .- y))
+        _, ix = findmin(abs.(x_nc .- x))
+        I = dims_xy ? CartesianIndex(ix, iy) : CartesianIndex(iy, ix)
+        i = rev_inds[I]
+        iszero(i) && error("inactive coordinate specified for output")
+        return A -> getindex(A, i)
     else
         error("unknown reducer")
     end
@@ -460,8 +577,12 @@ function write_csv_row(model)
     print(io, clock.time)
     for nt in writer.csv_cols
         A = get(model, nt.lens)
+        # could be a value, or a vector in case of map
         v = nt.reducer(A)
-        print(io, ',', v)
+        # numbers are also iterable
+        for el in v
+            print(io, ',', el)
+        end
     end
     println(io)
 end

@@ -32,9 +32,7 @@ end
 
 function update(
     sf::SurfaceFlow,
-    dag,
-    toposort,
-    n;
+    network;
     frac_toriver = nothing,
     river = nothing,
     do_iter = false,
@@ -42,6 +40,7 @@ function update(
     tstep = 0.0,
     doy = 0,
 )
+    @unpack graph, order = network
     # two options for iteration, a fixed sub time step or based on courant number.
     if do_iter
         if do_tstep
@@ -49,7 +48,7 @@ function update(
             ts = ceil(Int(sf.Δt / tstep))
         else
             # calculate celerity
-            for v in toposort
+            for v in order
                 if sf.q[v] > 0.0
                     sf.cel[v] = 1.0 / (sf.α[v] * sf.β * pow(sf.q[v], (sf.β - 1.0)))
                 else
@@ -63,14 +62,13 @@ function update(
 
     # sub time step
     adt = sf.Δt / ts
-    p = 3.0 / ts # dummy precipitation
-    pet = 4.0 / ts # dummy evaporation
 
+    n = length(order)
     q_sum = zeros(n)
     h_sum = zeros(n)
     for _ = 1:ts
-        for v in toposort
-            upstream_nodes = inneighbors(dag, v)
+        for v in order
+            upstream_nodes = inneighbors(graph, v)
             # for overland flow frac_toriver and river cells need to be defined
             if (frac_toriver !== nothing) && (river !== nothing)
                 # for a river cell without a reservoir or lake (wb_pit is false) part of the upstream surface flow
@@ -98,16 +96,14 @@ function update(
             end
             if !isnothing(sf.reservoir) && sf.reservoir_index[v] != 0
                 # run reservoir model and copy reservoir outflow to river cell
-                # dummy values now for reservoir precipitation and evaporation (3.0 and 4.0)
                 i = sf.reservoir_index[v]
-                update(sf.reservoir, i, qin, p, pet, adt)
+                update(sf.reservoir, i, qin, adt)
                 sf.q[v] = sf.reservoir.outflow[i]
 
             elseif !isnothing(sf.lake) && sf.lake_index[v] != 0
                 # run lake model and copy lake outflow to river cell
-                # dummy values now for lake precipitation and evaporation (3.0 and 4.0)
                 i = sf.lake_index[v]
-                update(sf.lake, i, qin, p, pet, doy)
+                update(sf.lake, i, qin, doy)
                 sf.q[v] = sf.lake.outflow[i]
             else
                 sf.q[v] =
@@ -165,9 +161,10 @@ end
 # depends on ini file settings (optional: glaciers, snow, irrigation)
 statenames(::LateralSSF) = ("ssf")
 
-function update(ssf::LateralSSF, dag, toposort, frac_toriver, river)
-    for v in toposort
-        upstream_nodes = inneighbors(dag, v)
+function update(ssf::LateralSSF, network, frac_toriver, river)
+    @unpack graph, order = network
+    for v in order
+        upstream_nodes = inneighbors(graph, v)
         # for a river cell without a reservoir or lake (wb_pit is false) part of the upstream subsurface flow
         # goes to the river (frac_toriver) and part goes to the subsurface flow reservoir (1.0 - frac_toriver)
         # upstream nodes with a reservoir or lake are excluded

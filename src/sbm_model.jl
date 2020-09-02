@@ -17,38 +17,38 @@ function initialize_sbm_model(config::Config)
     Δt = Second(config.timestepsecs)
     # default parameter values (dict)
     Δt = Second(86400)
-    dparams = Dict(
-        "Cfmax" => 3.75653 * (Δt / basetimestep),
-        "TT" => 0.0,
-        "TTM" => 0.0,
-        "TTI" => 1.0,
-        "WHC" => 0.1,
+    defaults = Dict(
+        "cfmax" => 3.75653 * (Δt / basetimestep),
+        "tt" => 0.0,
+        "ttm" => 0.0,
+        "tti" => 1.0,
+        "whc" => 0.1,
         "cf_soil" => 0.038,
         "w_soil" => 0.1125 * (Δt / basetimestep),
-        "SoilThickness" => 2000.0,
-        "InfiltCapSoil" => 100.0,
-        "InfiltCapPath" => 10.0,
-        "PathFrac" => 0.01,
-        "WaterFrac" => 0.0,
-        "thetaS" => 0.6,
-        "thetaR" => 0.01,
-        "AirEntryPressure" => 10.0,
-        "KsatVer" => 3000.0 * (Δt / basetimestep),
-        "MaxLeakage" => 0.0,
+        "soilthickness" => 2000.0,
+        "infiltcapsoil" => 100.0,
+        "infiltcappath" => 10.0,
+        "pathfrac" => 0.01,
+        "waterfrac" => 0.0,
+        "θₛ" => 0.6,
+        "θᵣ" => 0.01,
+        "hb" => 10.0,
+        "kv₀" => 3000.0 * (Δt / basetimestep),
+        "maxleakage" => 0.0,
         "c" => 10.0,
-        "M" => 300.0,
-        "CapScale" => 100.0,
+        "m" => 300.0,
+        "capscale" => 100.0,
         "rootdistpar" => -500.0,
-        "RootingDepth" => 750.0,
-        "LAI" => 1.0,
-        "Cmax" => 1.0,
-        "CanopyGapFraction" => 0.1,
-        "EoverR" => 0.1,
+        "rootingdepth" => 750.0,
+        "leaf_area_index" => 1.0,
+        "cmax" => 1.0,
+        "canopygapfraction" => 0.1,
+        "e_r" => 0.1,
         "et_reftopot" => 1.0,
-        "KsatVerFrac" => 1.0,
-        "KsatHorFrac" => 1.0,
-        "N" => 0.072,
-        "NRiver" => 0.036,
+        "khfrac" => 1.0,
+        "ksathorfrac" => 1.0,
+        "n_land" => 0.072,
+        "n_river" => 0.036,
     )
 
     sizeinmetres = Bool(get(config.model, "sizeinmetres", false))
@@ -66,32 +66,51 @@ function initialize_sbm_model(config::Config)
     do_snow = Bool(get(config.model, "modelsnow", false))
 
     nc = NCDataset(static_path)
-    dims = dimnames(nc["wflow_subcatch"])
+    function key(param)
+        # indirect_params can be defined as keys in the TOML under static.parameters,
+        # but are not directly used in the model, hence don't appear in paramap
+        indirect_params = [
+            "subcatchment",
+            "river",
+            "riverwidth",
+            "riverlength",
+            "reservoirlocs",
+            "ldd",
+            "ksathorfrac",
+            "khfrac",
+        ]
+        if !(param in keys(paramap)) && !(param in indirect_params)
+            @warn "parameter not in paramap" param
+        end
+        return get(config.static.parameters, param, nothing)
+    end
+
+    dims = dimnames(nc[key("subcatchment")])
 
     # There is no need to permute the dimensions of the data, since the active indices are
     # correctly calculated in both ways.
     # The dimension order only needs to be known for interpreting the LDD directions
     # and creating the coordinate maps.
-    trsp = dims[2] in ("y", "lat")
+    dims_xy = dims[2] in ("y", "lat")
 
-    subcatch_2d = ncread(nc, "wflow_subcatch", allow_missing = true)
+    subcatch_2d = ncread(nc, "subcatchment"; key, allow_missing = true)
     # indices based on catchment
-    inds = Wflow.active_indices(subcatch_2d, missing)
+    inds, rev_inds = active_indices(subcatch_2d, missing)
     n = length(inds)
     modelsize_2d = size(subcatch_2d)
 
-    altitude = ncread(nc, "wflow_dem"; sel = inds, type = Float64)
-    river_2d = ncread(nc, "wflow_river"; type = Bool, fill = false)
+    altitude = ncread(nc, "altitude"; key, sel = inds, type = Float64)
+    river_2d = ncread(nc, "river"; key, type = Bool, fill = false)
     river = river_2d[inds]
-    riverwidth_2d = ncread(nc, "wflow_riverwidth"; type = Float64, fill = 0)
+    riverwidth_2d = ncread(nc, "riverwidth"; key, type = Float64, fill = 0)
     riverwidth = riverwidth_2d[inds]
-    riverlength_2d = ncread(nc, "wflow_riverlength"; type = Float64, fill = 0)
+    riverlength_2d = ncread(nc, "riverlength"; key, type = Float64, fill = 0)
     riverlength = riverlength_2d[inds]
 
     # read x, y coordinates and calculate cell length [m]
     y_nc = "y" in keys(nc.dim) ? ncread(nc, "y") : ncread(nc, "lat")
     x_nc = "x" in keys(nc.dim) ? ncread(nc, "x") : ncread(nc, "lon")
-    if trsp
+    if dims_xy
         y = permutedims(repeat(y_nc, outer = (1, length(x_nc))))[inds]
     else
         y = repeat(y_nc, outer = (1, length(x_nc)))[inds]
@@ -99,66 +118,56 @@ function initialize_sbm_model(config::Config)
     cellength = abs(mean(diff(x_nc)))
 
 
-    cfmax = ncread(nc, "Cfmax"; sel = inds, defaults = dparams, type = Float64)
-    tt = ncread(nc, "TT"; sel = inds, defaults = dparams, type = Float64)
-    tti = ncread(nc, "TTI"; sel = inds, defaults = dparams, type = Float64)
-    ttm = ncread(nc, "TTM"; sel = inds, defaults = dparams, type = Float64)
-    whc = ncread(nc, "WHC"; sel = inds, defaults = dparams, type = Float64)
-    w_soil = ncread(nc, "w_soil"; sel = inds, defaults = dparams, type = Float64)
-    cf_soil = ncread(nc, "cf_soil"; sel = inds, defaults = dparams, type = Float64)
+    cfmax = ncread(nc, "cfmax"; key, sel = inds, defaults, type = Float64)
+    tt = ncread(nc, "tt"; key, sel = inds, defaults, type = Float64)
+    tti = ncread(nc, "tti"; key, sel = inds, defaults, type = Float64)
+    ttm = ncread(nc, "ttm"; key, sel = inds, defaults, type = Float64)
+    whc = ncread(nc, "whc"; key, sel = inds, defaults, type = Float64)
+    w_soil = ncread(nc, "w_soil"; key, sel = inds, defaults, type = Float64)
+    cf_soil = ncread(nc, "cf_soil"; key, sel = inds, defaults, type = Float64)
 
 
     # soil parameters
-    θₛ = ncread(nc, "thetaS"; sel = inds, defaults = dparams, type = Float64)
-    θᵣ = ncread(nc, "thetaR"; sel = inds, defaults = dparams, type = Float64)
-    kv₀ = ncread(nc, "KsatVer"; sel = inds, defaults = dparams, type = Float64)
-    m = ncread(nc, "M"; sel = inds, defaults = dparams, type = Float64)
-    hb = ncread(nc, "AirEntryPressure"; sel = inds, defaults = dparams, type = Float64)
-    soilthickness =
-        ncread(nc, "SoilThickness"; sel = inds, defaults = dparams, type = Float64)
-    infiltcappath =
-        ncread(nc, "InfiltCapPath"; sel = inds, defaults = dparams, type = Float64)
-    infiltcapsoil =
-        ncread(nc, "InfiltCapSoil"; sel = inds, defaults = dparams, type = Float64)
-    maxleakage = ncread(nc, "MaxLeakage"; sel = inds, defaults = dparams, type = Float64)
+    θₛ = ncread(nc, "θₛ"; key, sel = inds, defaults, type = Float64)
+    θᵣ = ncread(nc, "θᵣ"; key, sel = inds, defaults, type = Float64)
+    kv₀ = ncread(nc, "kv₀"; key, sel = inds, defaults, type = Float64)
+    m = ncread(nc, "m"; key, sel = inds, defaults, type = Float64)
+    hb = ncread(nc, "hb"; key, sel = inds, defaults, type = Float64)
+    soilthickness = ncread(nc, "soilthickness"; key, sel = inds, defaults, type = Float64)
+    infiltcappath = ncread(nc, "infiltcappath"; key, sel = inds, defaults, type = Float64)
+    infiltcapsoil = ncread(nc, "infiltcapsoil"; key, sel = inds, defaults, type = Float64)
+    maxleakage = ncread(nc, "maxleakage"; key, sel = inds, defaults, type = Float64)
 
-    c = ncread(nc, "c"; sel = inds, defaults = dparams, type = Float64, dimname = "layer")
-    kvfrac = ncread(
-        nc,
-        "KsatVerFrac";
-        sel = inds,
-        defaults = dparams,
-        type = Float64,
-        dimname = "layer",
-    )
+    c = ncread(nc, "c"; key, sel = inds, defaults, type = Float64, dimname = "layer")
+    kvfrac =
+        ncread(nc, "khfrac"; key, sel = inds, defaults, type = Float64, dimname = "layer")
 
     # fraction open water and compacted area (land cover)
-    waterfrac = ncread(nc, "WaterFrac"; sel = inds, defaults = dparams, type = Float64)
-    pathfrac = ncread(nc, "PathFrac"; sel = inds, defaults = dparams, type = Float64)
+    waterfrac = ncread(nc, "waterfrac"; key, sel = inds, defaults, type = Float64)
+    pathfrac = ncread(nc, "pathfrac"; key, sel = inds, defaults, type = Float64)
 
     # vegetation parameters
-    rootingdepth =
-        ncread(nc, "RootingDepth"; sel = inds, defaults = dparams, type = Float64)
-    rootdistpar = ncread(nc, "rootdistpar"; sel = inds, defaults = dparams, type = Float64)
-    capscale = ncread(nc, "CapScale"; sel = inds, defaults = dparams, type = Float64)
-    et_reftopot = ncread(nc, "et_reftopot"; sel = inds, defaults = dparams, type = Float64)
+    rootingdepth = ncread(nc, "rootingdepth"; key, sel = inds, defaults, type = Float64)
+    rootdistpar = ncread(nc, "rootdistpar"; key, sel = inds, defaults, type = Float64)
+    capscale = ncread(nc, "capscale"; key, sel = inds, defaults, type = Float64)
+    et_reftopot = ncread(nc, "et_reftopot"; key, sel = inds, defaults, type = Float64)
 
-    # if lai climatology provided use sl, swood and kext to calculate cmax, e_r and canopygapfraction
+    # if leaf area index climatology provided use sl, swood and kext to calculate cmax, e_r and canopygapfraction
     # TODO replace by something else
     if isnothing(true)
-        # cmax, e_r, canopygapfraction only required when lai climatoly not provided
-        cmax = ncread(nc, "Cmax"; sel = inds, defaults = dparams, type = Float64)
-        e_r = ncread(nc, "EoverR"; sel = inds, defaults = dparams, type = Float64)
+        # cmax, e_r, canopygapfraction only required when leaf area index climatology not provided
+        cmax = ncread(nc, "cmax"; key, sel = inds, defaults, type = Float64)
+        e_r = ncread(nc, "eoverr"; key, sel = inds, defaults, type = Float64)
         canopygapfraction =
-            ncread(nc, "CanopyGapFraction"; sel = inds, defaults = dparams, type = Float64)
+            ncread(nc, "canopygapfraction"; key, sel = inds, defaults, type = Float64)
         sl = fill(mv, n)
         swood = fill(mv, n)
         kext = fill(mv, n)
     else
-        # TODO confirm if lai climatology is present in the NetCDF
-        sl = ncread(nc, "Sl"; sel = inds, defaults = dparams, type = Float64)
-        swood = ncread(nc, "Swood"; sel = inds, defaults = dparams, type = Float64)
-        kext = ncread(nc, "Kext"; sel = inds, defaults = dparams, type = Float64)
+        # TODO confirm if leaf area index climatology is present in the NetCDF
+        sl = ncread(nc, "specific_leaf"; key, sel = inds, defaults, type = Float64)
+        swood = ncread(nc, "storage_wood"; key, sel = inds, defaults, type = Float64)
+        kext = ncread(nc, "kext"; key, sel = inds, defaults, type = Float64)
         cmax = fill(mv, n)
         e_r = fill(mv, n)
         canopygapfraction = fill(mv, n)
@@ -319,7 +328,13 @@ function initialize_sbm_model(config::Config)
     if do_reservoirs
         # read only reservoir data if reservoirs true
         # allow reservoirs only in river cells
-        reslocs = ncread(nc, "wflow_reservoirlocs"; sel = inds_riv, type = Int, fill = 0)
+        # note that these locations are only the reservoir outlet pixels
+        reslocs = ncread(nc, "reservoirlocs"; key, sel = inds_riv, type = Int, fill = 0)
+
+        # this holds the same ids as reslocs, but covers the entire reservoir
+        rescoverage_2d = ncread(nc, "reservoirareas"; key, allow_missing = true)
+        # for each reservoir, a list of 2D indices, needed for getting the mean precipitation
+        inds_res_cov = Vector{CartesianIndex{2}}[]
 
         # construct a map from the rivers to the reservoirs and
         # a map of the reservoirs to the 2D model grid
@@ -327,22 +342,50 @@ function initialize_sbm_model(config::Config)
         inds_res = CartesianIndex{2}[]
         rescounter = 0
         for (i, ind) in enumerate(inds_riv)
-            if reslocs[i] > 0
+            res_id = reslocs[i]
+            if res_id > 0
                 push!(inds_res, ind)
                 rescounter += 1
                 resindex[i] = rescounter
+
+                # get all indices related to this reservoir outlet
+                # done in this loop to ensure that the order is equal to the order in the
+                # SimpleReservoir struct
+                res_cov = findall(isequal(res_id), rescoverage_2d)
+                push!(inds_res_cov, res_cov)
             end
         end
 
-        resdemand = ncread(nc, "ResDemand"; sel = inds_res, type = Float64, fill = 0)
-        resmaxrelease =
-            ncread(nc, "ResMaxRelease"; sel = inds_res, type = Float64, fill = 0)
-        resmaxvolume = ncread(nc, "ResMaxVolume"; sel = inds_res, type = Float64, fill = 0)
-        resarea = ncread(nc, "ResSimpleArea"; sel = inds_res, type = Float64, fill = 0)
-        res_targetfullfrac =
-            ncread(nc, "ResTargetFullFrac"; sel = inds_res, type = Float64, fill = 0)
-        res_targetminfrac =
-            ncread(nc, "ResTargetMinFrac"; sel = inds_res, type = Float64, fill = 0)
+        resdemand =
+            ncread(nc, "demand_reservoir"; key, sel = inds_res, type = Float64, fill = 0)
+        resmaxrelease = ncread(
+            nc,
+            "maxrelease_reservoir";
+            key,
+            sel = inds_res,
+            type = Float64,
+            fill = 0,
+        )
+        resmaxvolume =
+            ncread(nc, "maxvolume_reservoir"; key, sel = inds_res, type = Float64, fill = 0)
+        resarea =
+            ncread(nc, "area_reservoir"; key, sel = inds_res, type = Float64, fill = 0)
+        res_targetfullfrac = ncread(
+            nc,
+            "targetfullfrac_reservoir";
+            key,
+            sel = inds_res,
+            type = Float64,
+            fill = 0,
+        )
+        res_targetminfrac = ncread(
+            nc,
+            "targetminfrac_reservoir";
+            key,
+            sel = inds_res,
+            type = Float64,
+            fill = 0,
+        )
 
         # for surface water routing reservoir locations are considered pits in the flow network
         # all upstream flow goes to the river and flows into the reservoir
@@ -365,31 +408,47 @@ function initialize_sbm_model(config::Config)
     if do_lakes
         # read only lake data if lakes true
         # allow lakes only in river cells
-        lakelocs = ncread(nc, "wflow_lakelocs"; sel = inds_riv, type = Int, fill = 0)
+        # note that these locations are only the lake outlet pixels
+        lakelocs = ncread(nc, "lakelocs"; key, sel = inds_riv, type = Int, fill = 0)
 
+        # this holds the same ids as lakelocs, but covers the entire lake
+        lakecoverage_2d = ncread(nc, "lakeareas"; key, allow_missing = true)
+        # for each lake, a list of 2D indices, needed for getting the mean precipitation
+        inds_lake_cov = Vector{CartesianIndex{2}}[]
+        
         # construct a map from the rivers to the lakes and
         # a map of the lakes to the 2D model grid
         lakeindex = fill(0, nriv)
         inds_lake = CartesianIndex{2}[]
         lakecounter = 0
         for (i, ind) in enumerate(inds_riv)
-            if lakelocs[i] > 0
+            lake_id = lakelocs[i]
+            if lake_id > 0
                 push!(inds_lake, ind)
                 lakecounter += 1
                 lakeindex[i] = lakecounter
+
+                # get all indices related to this lake outlet
+                # done in this loop to ensure that the order is equal to the order in the
+                # NaturalLake struct
+                lake_cov = findall(isequal(lake_id), lakecoverage_2d)
+                push!(inds_lake_cov, lake_cov)
             end
         end
 
-        lakearea = ncread(nc, "LakeArea"; sel = inds_riv, type = Float64, fill = 0)
-        lake_b = ncread(nc, "Lake_b"; sel = inds_riv, type = Float64, fill = 0)
-        lake_e = ncread(nc, "Lake_e"; sel = inds_riv, type = Float64, fill = 0)
+        lakearea = ncread(nc, "lakearea"; key, sel = inds_riv, type = Float64, fill = 0)
+        lake_b = ncread(nc, "lake_b"; key, sel = inds_riv, type = Float64, fill = 0)
+        lake_e = ncread(nc, "lake_e"; key, sel = inds_riv, type = Float64, fill = 0)
         lake_threshold =
-            ncread(nc, "LakeThreshold"; sel = inds_riv, type = Float64, fill = 0)
-        linked_lakelocs = ncread(nc, "LinkedLakeLocs"; sel = inds_riv, type = Int, fill = 0)
-        lake_storfunc = ncread(nc, "LakeStorFunc"; sel = inds_riv, type = Int, fill = 0)
+            ncread(nc, "lakethreshold"; key, sel = inds_riv, type = Float64, fill = 0)
+        linked_lakelocs =
+            ncread(nc, "linkedlakelocs"; key, sel = inds_riv, type = Int, fill = 0)
+        lake_storfunc =
+            ncread(nc, "lakestorfunc"; key, sel = inds_riv, type = Int, fill = 0)
         lake_outflowfunc =
-            ncread(nc, "LakeOutflowFunc"; sel = inds_riv, type = Int, fill = 0)
-        lake_avglevel = ncread(nc, "LakeAvgLevel"; sel = inds_riv, type = Float64, fill = 0)
+            ncread(nc, "lakeoutflowfunc"; key, sel = inds_riv, type = Int, fill = 0)
+        lake_avglevel =
+            ncread(nc, "lakeavglevel"; key, sel = inds_riv, type = Float64, fill = 0)
 
         # for surface water routing lake locations are considered pits in the flow network
         # all upstream flow goes to the river and flows into the lake
@@ -445,10 +504,10 @@ function initialize_sbm_model(config::Config)
     end
 
     # lateral part sbm
-    khfrac = ncread(nc, "KsatHorFrac"; sel = inds, defaults = dparams, type = Float64)
-    βₗ = ncread(nc, "Slope"; sel = inds, type = Float64)
+    khfrac = ncread(nc, "ksathorfrac"; key, sel = inds, defaults, type = Float64)
+    βₗ = ncread(nc, "slope_land"; key, sel = inds, type = Float64)
     clamp!(βₗ, 0.00001, Inf)
-    ldd_2d = ncread(nc, "wflow_ldd", allow_missing = true)
+    ldd_2d = ncread(nc, "ldd"; key, allow_missing = true)
     ldd = ldd_2d[inds]
     kh₀ = khfrac .* kv₀
     dl = fill(mv, n)
@@ -472,7 +531,7 @@ function initialize_sbm_model(config::Config)
         wb_pit = pits[inds],
     )
 
-    n_land = ncread(nc, "N"; sel = inds, defaults = dparams, type = Float64)
+    n_land = ncread(nc, "n_land"; key, sel = inds, defaults, type = Float64)
 
     olf = SurfaceFlow(
         sl = βₗ,
@@ -483,17 +542,21 @@ function initialize_sbm_model(config::Config)
         wb_pit = pits[inds],
     )
 
-    pcr_dir = trsp ? permute_indices(Wflow.pcrdir) : Wflow.pcrdir
-    dag = flowgraph(ldd, inds, pcr_dir)
+    pcr_dir = dims_xy ? permute_indices(Wflow.pcrdir) : Wflow.pcrdir
+    graph = flowgraph(ldd, inds, pcr_dir)
 
 
-    riverslope = ncread(nc, "RiverSlope"; sel = inds_riv, type = Float64)
+    riverslope = ncread(nc, "slope_river"; key, sel = inds_riv, type = Float64)
     clamp!(riverslope, 0.00001, Inf)
     riverlength = riverlength_2d[inds_riv]
     riverwidth = riverwidth_2d[inds_riv]
-    n_river = ncread(nc, "N_River"; sel = inds_riv, defaults = dparams, type = Float64)
+    n_river = ncread(nc, "n_river"; key, sel = inds_riv, defaults, type = Float64)
     ldd_riv = ldd_2d[inds_riv]
-    dag_riv = flowgraph(ldd_riv, inds_riv, pcr_dir)
+    graph_riv = flowgraph(ldd_riv, inds_riv, pcr_dir)
+
+    # the indices of the river cells in the land(+river) cell vector
+    index_river = filter(i -> !isequal(river[i], 0), 1:n)
+    frac_toriver = Wflow.fraction_runoff_toriver(graph, index_river, βₗ, n)
 
     rf = SurfaceFlow(
         sl = riverslope,
@@ -510,13 +573,48 @@ function initialize_sbm_model(config::Config)
 
     statenames = (statenames..., "ssf", "q_river", "h_river", "q_land", "h_land")
 
-    reader = prepare_reader(dynamic_path, cyclic_path, inds, inds_riv, config)
+    reader = prepare_reader(dynamic_path, cyclic_path, config)
 
     modelmap = (vertical = sbm, subsurface = ssf, land = olf, river = rf)
-    writer = prepare_writer(config, reader, output_path, modelmap, maxlayers, statenames)
+    writer = prepare_writer(
+        config,
+        reader,
+        output_path,
+        modelmap,
+        maxlayers,
+        statenames,
+        rev_inds,
+        x_nc,
+        y_nc,
+        dims_xy,
+        nc,
+    )
+
+    # for each domain save the directed acyclic graph, the traversion order,
+    # and the indices that map it back to the two dimensional grid
+    land = (
+        graph = graph,
+        order = topological_sort_by_dfs(graph),
+        indices = inds,
+        reverse_indices = rev_inds,
+    )
+    river =
+        (graph = graph_riv, order = topological_sort_by_dfs(graph_riv), indices = inds_riv)
+
+    reservoir = if do_reservoirs
+        (indices_outlet = inds_res, indices_coverage = inds_res_cov)
+    else
+        ()
+    end
+    lake = if do_lakes
+        (indices_outlet = inds_lake, indices_coverage = inds_lake_cov)
+    else
+        ()
+    end
 
     model = Model(
-        (land = dag, river = dag_riv),
+        config,
+        (; land, river, reservoir, lake, index_river, frac_toriver),
         (subsurface = ssf, land = olf, river = rf),
         sbm,
         Clock(config.starttime, 1, Δt),
@@ -545,17 +643,8 @@ function initialize_sbm_model(config::Config)
     return model
 end
 
-function update(
-    model,
-    config,
-    toposort_land,
-    toposort_river,
-    frac_toriver,
-    index_river,
-    nl,
-    nriv,
-)
-    @unpack lateral, vertical, network, clock = model
+function update(model)
+    @unpack lateral, vertical, network, clock, config = model
 
     update_forcing!(model)
     update_cyclic!(model)
@@ -566,8 +655,7 @@ function update(
         snowflux_frac =
             min.(0.5, lateral.land.sl ./ 5.67) .* min.(1.0, vertical.snow ./ 10000.0)
         maxflux = snowflux_frac .* vertical.snow
-        vertical.snow .=
-            accucapacityflux(network.land, toposort_land, vertical.snow, maxflux)
+        vertical.snow .= accucapacityflux(network.land, vertical.snow, maxflux)
     end
 
     update_until_recharge(vertical, config)
@@ -575,13 +663,7 @@ function update(
     lateral.subsurface.recharge .*= lateral.subsurface.dl
     lateral.subsurface.zi .= vertical.zi
 
-    update(
-        lateral.subsurface,
-        network.land,
-        toposort_land,
-        frac_toriver,
-        lateral.river.rivercells,
-    )
+    update(lateral.subsurface, network.land, network.frac_toriver, lateral.river.rivercells)
 
     update_after_lateralflow(
         vertical,
@@ -596,27 +678,18 @@ function update(
     update(
         lateral.land,
         network.land,
-        toposort_land,
-        nl,
-        frac_toriver = frac_toriver,
+        frac_toriver = network.frac_toriver,
         river = lateral.river.rivercells,
         do_iter = true,
     )
 
     lateral.river.qlat .=
         (
-            lateral.subsurface.to_river[index_river] ./ 1.0e9 ./ lateral.river.Δt .+
-            lateral.land.to_river[index_river]
+            lateral.subsurface.to_river[network.index_river] ./ 1.0e9 ./ lateral.river.Δt .+
+            lateral.land.to_river[network.index_river]
         ) ./ lateral.river.dl
 
-    update(
-        lateral.river,
-        network.river,
-        toposort_river,
-        nriv,
-        do_iter = true,
-        doy = dayofyear(clock.time),
-    )
+    update(lateral.river, network.river, do_iter = true, doy = dayofyear(clock.time))
 
     write_output(model, model.writer)
 
