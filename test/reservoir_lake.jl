@@ -33,9 +33,11 @@ end
         sh = [Wflow.DataFrame()],
         hq = [Wflow.DataFrame()],
         avg_waterlevel = [18.5],
+        precipitation = [20.0],
+        evaporation = [3.2],
     )
 
-    Wflow.update(lake, 1, 2500.0, 20.0, 3.2, 181, 86400.0)
+    Wflow.update(lake, 1, 2500.0, 181, 86400.0)
     @test lake.outflow[1] ≈ 85.31903276150577
     @test lake.storage[1] ≈ 3.551103576940606e9
     @test lake.waterlevel[1] ≈ 19.672569557695734
