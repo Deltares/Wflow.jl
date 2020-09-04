@@ -321,7 +321,8 @@ function initialize_sbm_model(config::Config)
         lai = fill(mv, n),
     )
 
-    inds_riv = filter(i -> !isequal(river_2d[i], 0), inds)
+    #inds_riv = filter(i -> !isequal(river_2d[i], 0), inds)
+    inds_riv, rev_inds_riv = active_indices(river_2d, 0)
     nriv = length(inds_riv)
     # reservoirs
     pits = zeros(Bool, modelsize_2d)
@@ -584,6 +585,7 @@ function initialize_sbm_model(config::Config)
         maxlayers,
         statenames,
         rev_inds,
+        rev_inds_riv,
         x_nc,
         y_nc,
         dims_xy,
@@ -599,7 +601,7 @@ function initialize_sbm_model(config::Config)
         reverse_indices = rev_inds,
     )
     river =
-        (graph = graph_riv, order = topological_sort_by_dfs(graph_riv), indices = inds_riv)
+        (graph = graph_riv, order = topological_sort_by_dfs(graph_riv), indices = inds_riv, reverse_indices = rev_inds_riv)
 
     reservoir = if do_reservoirs
         (indices_outlet = inds_res, indices_coverage = inds_res_cov)
