@@ -333,7 +333,6 @@ function prepare_writer(
     maxlayers,
     statenames,
     rev_inds,
-    rev_inds_riv,
     x_nc,
     y_nc,
     dims_xy,
@@ -382,9 +381,13 @@ function prepare_writer(
         for col in config.csv.column
             lens = Wflow.paramap[col["parameter"]]
             if occursin("river", col["parameter"])
-                reducer = Wflow.reducer(col, rev_inds_riv, x_nc, y_nc, dims_xy, config, nc_static)
+                reducer = Wflow.reducer(col, rev_inds.river, x_nc, y_nc, dims_xy, config, nc_static)
+            elseif occursin("reservoir", col["parameter"])
+                reducer = Wflow.reducer(col, rev_inds.reservoir, x_nc, y_nc, dims_xy, config, nc_static)
+            elseif occursin("lake", col["parameter"])
+                reducer = Wflow.reducer(col, rev_inds.lake, x_nc, y_nc, dims_xy, config, nc_static)
             else
-                reducer = Wflow.reducer(col, rev_inds, x_nc, y_nc, dims_xy, config, nc_static)
+                reducer = Wflow.reducer(col, rev_inds.land, x_nc, y_nc, dims_xy, config, nc_static)
             end
             push!(csv_cols, (; lens, reducer))
         end

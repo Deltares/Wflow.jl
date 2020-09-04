@@ -321,7 +321,6 @@ function initialize_sbm_model(config::Config)
         lai = fill(mv, n),
     )
 
-    #inds_riv = filter(i -> !isequal(river_2d[i], 0), inds)
     inds_riv, rev_inds_riv = active_indices(river_2d, 0)
     nriv = length(inds_riv)
     # reservoirs
@@ -337,6 +336,8 @@ function initialize_sbm_model(config::Config)
         # for each reservoir, a list of 2D indices, needed for getting the mean precipitation
         inds_res_cov = Vector{CartesianIndex{2}}[]
 
+        rev_inds_reservoir = zeros(Int, size(rescoverage_2d))
+
         # construct a map from the rivers to the reservoirs and
         # a map of the reservoirs to the 2D model grid
         resindex = fill(0, nriv)
@@ -348,6 +349,7 @@ function initialize_sbm_model(config::Config)
                 push!(inds_res, ind)
                 rescounter += 1
                 resindex[i] = rescounter
+                rev_inds_reservoir[ind] = rescounter
 
                 # get all indices related to this reservoir outlet
                 # done in this loop to ensure that the order is equal to the order in the
@@ -403,6 +405,7 @@ function initialize_sbm_model(config::Config)
         statenames = (statenames..., "volume_reservoir")
     else
         inds_res = nothing
+        rev_inds_reservoir = nothing
     end
 
     # lakes
@@ -416,6 +419,8 @@ function initialize_sbm_model(config::Config)
         lakecoverage_2d = ncread(nc, "lakeareas"; key, allow_missing = true)
         # for each lake, a list of 2D indices, needed for getting the mean precipitation
         inds_lake_cov = Vector{CartesianIndex{2}}[]
+
+        rev_inds_lake = zeros(Int, size(lakecoverage_2d))
         
         # construct a map from the rivers to the lakes and
         # a map of the lakes to the 2D model grid
@@ -428,6 +433,7 @@ function initialize_sbm_model(config::Config)
                 push!(inds_lake, ind)
                 lakecounter += 1
                 lakeindex[i] = lakecounter
+                rev_inds_lake[ind] = lakecounter
 
                 # get all indices related to this lake outlet
                 # done in this loop to ensure that the order is equal to the order in the
@@ -502,6 +508,7 @@ function initialize_sbm_model(config::Config)
         statenames = (statenames..., "waterlevel_lake")
     else
         inds_lake = nothing
+        rev_inds_lake = nothing
     end
 
     # lateral part sbm
@@ -576,7 +583,8 @@ function initialize_sbm_model(config::Config)
 
     reader = prepare_reader(dynamic_path, cyclic_path, config)
 
-    modelmap = (vertical = sbm, subsurface = ssf, land = olf, river = rf)
+    modelmap = (vertical = sbm, subsurface = ssf, land = olf, river = rf) 
+    indices_reverse = (land=rev_inds, river = rev_inds_riv, reservoir=rev_inds_reservoir, lake = rev_inds_lake)    
     writer = prepare_writer(
         config,
         reader,
@@ -584,8 +592,7 @@ function initialize_sbm_model(config::Config)
         modelmap,
         maxlayers,
         statenames,
-        rev_inds,
-        rev_inds_riv,
+        indices_reverse,
         x_nc,
         y_nc,
         dims_xy,
@@ -604,12 +611,12 @@ function initialize_sbm_model(config::Config)
         (graph = graph_riv, order = topological_sort_by_dfs(graph_riv), indices = inds_riv, reverse_indices = rev_inds_riv)
 
     reservoir = if do_reservoirs
-        (indices_outlet = inds_res, indices_coverage = inds_res_cov)
+        (indices_outlet = inds_res, indices_coverage = inds_res_cov, reverse_indices = rev_inds_reservoir)
     else
         ()
     end
     lake = if do_lakes
-        (indices_outlet = inds_lake, indices_coverage = inds_lake_cov)
+        (indices_outlet = inds_lake, indices_coverage = inds_lake_cov, reverse_indices = rev_inds_lake)
     else
         ()
     end
