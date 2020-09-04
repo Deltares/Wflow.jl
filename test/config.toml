@@ -140,8 +140,8 @@ index.x = 100
 index.y = 50
 
 [[csv.column]]
-parameter = "actevap"
-header = "actevap"
+parameter = "q_river"
+header = "Q"
 map = "gauges"
 
 [[csv.column]]
