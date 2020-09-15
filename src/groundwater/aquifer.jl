@@ -99,6 +99,8 @@ specific_storage(A::ConfinedAquifer) = A.specific_storage
 
 
 """
+    harmonicmean_conductance(k1, k2, H1, H2, l1, l2, width)
+
 The harmonic mean is the exact interblock transmissivity for steady-state
 one-dimensional flow with no recharge if the transmissivity is assumed to be
 spatially uniform over each finite difference block, changing abruptly at the
@@ -130,6 +132,7 @@ function saturated_thickness(aquifer::ConfinedAquifer, index::Int)
     aquifer.top[index] - aquifer.bottom[index]
 end
 
+
 """
     horizontal_conductance(i, j, nzi, aquifer, C)
 
@@ -142,42 +145,39 @@ function horizontal_conductance(
     j::Int,
     i::Int,
     nzi::Int,
-    aquifer <: Aquifer,
+    aquifer::A,
     connectivity::Connectivity,
-)
+) where A <: Aquifer
     k1 = aquifer.k[j]
     k2 = aquifer.k[i]
-    D1 = saturated_thickness(aquifer, j)
-    D2 = saturated_thickness(aquifer, i)
+    H1 = saturated_thickness(aquifer, j)
+    H2 = saturated_thickness(aquifer, i)
     length1 = connectivity.length1[nzi]
     length2 = connectivity.length2[nzi]
     width = connectivity.width[nzi]
-    return harmonicmean_conductance(k1, k2, D1, D2, length1, length2, width)
+    return harmonicmean_conductance(k1, k2, H1, H2, length1, length2, width)
 end
 
 
-function flux!(aquifer::ConfinedAquifer, connectivity::Connectivity, Q)
+function conductance(aquifer::ConfinedAquifer, connectivity, i, j, nzi)
+    return aquifer.conductance[nzi]
+end
+
+
+function conductance(aquifer::UnconfinedAquifer, connectivity, i, j, nzi)
+    return horizontal_conductance(j, i, nzi, aquifer, connectivity)
+end
+
+
+function flux!(aquifer, connectivity, Q)
     for j in 1:connectivity.ncell
         # Loop over connections for cell j
         for nzi in connections(connectivity, j)
             # connection from j -> i
             i = connectivity.rowval[nzi]
             Δϕ = aquifer.head[i] - aquifer.head[j]
-            Q[nzi] = -aquifer.conductance[nzi] * Δϕ
-        end
-    end
-end
-
-
-function flux!(aquifer::UnconfinedAquifer, connectivity::Connectivity, Q)
-    for j in 1:connectivity.ncell
-        # Loop over connections for cell j
-            for nzi in connections(connectivity, j)
-            # connection from j -> i
-            i = connectivity.rowval[nzi]
-            cond = horizontal_conductance(j, i, nzi, aquifer, connectivity)
-            Δϕ = aquifer.head[i] - aquifer.head[j]
-            Q[nzi] = -cond * Δϕ
+            cond = conductance(aquifer, connectivity, i, j, nzi)
+            Q[j] = -cond * Δϕ
         end
     end
 end
