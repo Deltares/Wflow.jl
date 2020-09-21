@@ -140,7 +140,12 @@ function update(lake::NaturalLake, i, inflow, doy, timestepsecs)
     if lake.outflowfunc[i] == 3
         lakefactor = lake.area[i] / (timestepsecs * pow(lake.b[i], 0.5))
         si_factor =
-            (lake.storage[i] + (lake.precipitation[i] - lake.evaporation[i]) * (timestepsecs / basetimestep.value) * lake.area[i] / 1000.0) / timestepsecs + inflow
+            (
+                lake.storage[i] +
+                (lake.precipitation[i] - lake.evaporation[i]) *
+                (timestepsecs / basetimestep.value) *
+                lake.area[i] / 1000.0
+            ) / timestepsecs + inflow
         #Adjust SIFactor for ResThreshold != 0
         si_factor_adj = si_factor - lake.area[i] * lake.threshold[i] / timestepsecs
         #Calculate the new lake outflow/waterlevel/storage
@@ -183,8 +188,14 @@ function update(lake::NaturalLake, i, inflow, doy, timestepsecs)
         end
 
         storage =
-            lake.storage[i] + inflow * timestepsecs + (lake.precipitation[i] / 1000.0) * (timestepsecs / basetimestep.value) * lake.area[i] -
-            (lake.evaporation[i] / 1000.0) * (timestepsecs / basetimestep.value) * lake.area[i] - outflow * timestepsecs
+            lake.storage[i] +
+            inflow * timestepsecs +
+            (lake.precipitation[i] / 1000.0) *
+            (timestepsecs / basetimestep.value) *
+            lake.area[i] -
+            (lake.evaporation[i] / 1000.0) *
+            (timestepsecs / basetimestep.value) *
+            lake.area[i] - outflow * timestepsecs
 
         waterlevel = if lake.storfunc[i] == 1
             lake.waterlevel[i] + (storage - lake.storage[i]) / lake.area[i]
