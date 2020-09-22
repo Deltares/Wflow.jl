@@ -71,7 +71,7 @@ water_holding_capacity = "WHC"
 waterfrac = "WaterFrac" 
 "θᵣ" = "thetaR" 
 "θₛ" = "thetaS"
-# states, perhaps bring under separate section?
+[state.vertical]
 satwaterdepth = "satwaterdepth"
 snow = "snow"
 tsoil = "tsoil"
@@ -84,7 +84,7 @@ length = "wflow_riverlength"
 n = "N_River"
 slope = "RiverSlope"
 width = "wflow_riverwidth"
-# states, perhaps bring under separate section?
+[state.lateral.river]
 q = "q_river"
 h = "h_river"
 
@@ -97,18 +97,18 @@ maxrelease = "ResMaxRelease"
 maxvolume = "ResMaxVolume"
 targetfullfrac = "ResTargetFullFrac"
 targetminfrac = "ResTargetMinFrac"
-# states, perhaps bring under separate section?
+[state.lateral.river.reservoir]
 volume = "volume_reservoir"
 
 [input.lateral.subsurface]
 ksathorfrac = "KsatHorFrac"
-# states, perhaps bring under separate section?
+[state.lateral.subsurface]
 ssf = "ssf"
 
 [input.lateral.land]
 n = "N"
 slope = "Slope" 
-# states, perhaps bring under separate section?
+[state.lateral.land]
 q = "q_land"
 h = "h_land"
 

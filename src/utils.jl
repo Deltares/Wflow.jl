@@ -62,9 +62,9 @@ function lattometres(lat::Float64)
 end
 
 """
-    set_states(instate_path, model, statenames, sel, config ; <keyword arguments>)
+    set_states(instate_path, model, states, sel, config ; <keyword arguments>)
 
-Read states contained in `Tuple` `statenames` from NetCDF file located in `instate_path`, and set states in 
+Read states contained in `Tuple` `states` from NetCDF file located in `instate_path`, and set states in 
 `model` object. Active cells are selected with `sel` (`Vector{CartesianIndex}`) from the NetCDF file. 
 
 # Arguments
@@ -79,7 +79,7 @@ Read states contained in `Tuple` `statenames` from NetCDF file located in `insta
 function set_states(
     instate_path,
     model,
-    statenames,
+    states,
     sel,
     config;
     type = nothing,
@@ -90,8 +90,8 @@ function set_states(
 
     # states in NetCDF include dim time (one value) at index 3 or 4, 3 or 4 dims are allowed
     ds = NCDataset(instate_path)
-    for state in statenames
-        ncname = param(config.input, state)
+    for state in states
+        ncname = param(config.state, state)
         dims = length(dimnames(ds[ncname]))
         # 4 dims, for example (x,y,layer,time) where dim layer is an SVector for soil layers
         if dims == 4

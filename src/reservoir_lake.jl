@@ -19,6 +19,8 @@ Base.@kwdef struct SimpleReservoir{T}
     end
 end
 
+statevars(::SimpleReservoir) = (:volume,)
+
 """
 Update a single reservoir at position `i`.
 
@@ -96,7 +98,7 @@ function initialize_storage(storfunc, area, waterlevel, sh)
     return storage
 end
 
-statenames(::NaturalLake) = ("waterlevel_lake",)
+statevars(::NaturalLake) = (:waterlevel,)
 
 """
     statenames(::NaturalLake)
@@ -106,7 +108,7 @@ statenames(::NaturalLake) = ("waterlevel_lake",)
 
 Get a tuple of symbols representing the fields that are model states.
 """
-function statenames end
+function statevars end
 
 function interpolate_linear(x, xp, fp)
     if x <= min(xp)

@@ -269,7 +269,7 @@ struct Writer
     csv_path::Union{String,Nothing}
     csv_cols::Vector
     csv_io::IO
-    statenames::Tuple#{String,Vararg{String}}
+    states::Tuple#{String,Vararg{String}}
 end
 
 function prepare_reader(path, cyclic_path, config)
@@ -397,7 +397,7 @@ function prepare_writer(
     nc_path,
     modelmap,
     maxlayers,
-    statenames,
+    states,
     rev_inds,
     x_nc,
     y_nc,
@@ -493,7 +493,7 @@ function prepare_writer(
     end
 
 
-    return Writer(ds, output_map, nc_path, csv_path, csv_cols, csv_io, statenames)
+    return Writer(ds, output_map, nc_path, csv_path, csv_cols, csv_io, states)
 end
 
 "Write model output"

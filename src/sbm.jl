@@ -185,6 +185,8 @@ Base.@kwdef struct SBM{T,N,M}
     end
 end
 
+statevars(::SBM; snow=false) = snow ? (:satwaterdepth, :snow, :tsoil, :ustorelayerdepth, :snowwater, :canopystorage,) : (:satwaterdepth, :ustorelayerdepth, :canopystorage,)
+
 function update_until_snow(sbm::SBM, config)
 
     # # start dummy variables (should be generated from model reader and from Config.jl TOML)

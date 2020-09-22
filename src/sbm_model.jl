@@ -342,24 +342,6 @@ function initialize_sbm_model(config::Config)
     vwc = fill(mv, maxlayers, n)
     vwc_perc = fill(mv, maxlayers, n)
 
-    # states sbm concept
-    if do_snow
-        statenames = (
-            symbols"vertical.satwaterdepth",
-            symbols"vertical.snow",
-            symbols"vertical.tsoil",
-            symbols"vertical.ustorelayerdepth",
-            symbols"vertical.snowwater",
-            symbols"vertical.canopystorage",
-        )
-    else
-        statenames = (
-            symbols"vertical.satwaterdepth",
-            symbols"vertical.ustorelayerdepth",
-            symbols"vertical.canopystorage",
-        )
-    end
-
     sbm = SBM{Float64,maxlayers,maxlayers + 1}(
         maxlayers = maxlayers,
         n = n,
@@ -452,6 +434,18 @@ function initialize_sbm_model(config::Config)
         kext = kext,
         leaf_area_index = fill(mv, n),
     )
+
+    # states sbm concept
+    states = ()
+    if do_snow
+        for state in statevars(sbm, snow=true)
+            states = (states...,(:vertical,state))
+        end
+    else
+        for state in statevars(sbm)
+            states = (states...,(:vertical,state))
+        end
+    end
 
     inds_riv, rev_inds_riv = active_indices(river_2d, 0)
     nriv = length(inds_riv)
@@ -556,7 +550,9 @@ function initialize_sbm_model(config::Config)
             targetfullfrac = res_targetfullfrac,
             targetminfrac = res_targetminfrac,
         )
-        statenames = (statenames..., symbols"lateral.river.reservoir.volume")
+        for state in statevars(reservoirs)
+            states = (states...,(:lateral,:river,:reservoir,state))
+        end
     else
         inds_res = nothing
         rev_inds_reservoir = nothing
@@ -712,7 +708,9 @@ function initialize_sbm_model(config::Config)
             hq = hq,
             is_lake = is_lake,
         )
-        statenames = (statenames..., symbols"lateral.river.lake.waterlevel")
+        for state in statevars(lakes)
+            states = (states...,(:lateral,:river,:lake,state))
+        end
     else
         inds_lake = nothing
         rev_inds_lake = nothing
@@ -809,14 +807,17 @@ function initialize_sbm_model(config::Config)
         rivercells = river,
     )
 
-    statenames = (
-        statenames...,
-        symbols"lateral.subsurface.ssf",
-        symbols"lateral.river.q",
-        symbols"lateral.river.h",
-        symbols"lateral.land.q",
-        symbols"lateral.land.h",
-    )
+    for state in statevars(ssf)
+        states = (states...,(:lateral,:subsurface,state))
+    end
+
+    for state in statevars(rf)
+        states = (states...,(:lateral,:river,state))
+    end
+
+    for state in statevars(olf)
+        states = (states...,(:lateral,:land,state))
+    end
 
     reader = prepare_reader(dynamic_path, cyclic_path, config)
 
@@ -833,7 +834,7 @@ function initialize_sbm_model(config::Config)
         output_path,
         modelmap,
         maxlayers,
-        statenames,
+        states,
         indices_reverse,
         x_nc,
         y_nc,
@@ -890,7 +891,7 @@ function initialize_sbm_model(config::Config)
         set_states(
             instate_path,
             model,
-            statenames,
+            states,
             inds,
             config;
             type = Float64,
