@@ -81,8 +81,8 @@ Base.@kwdef struct SBM{T,N,M}
     # Temperature [ᵒC]
     temperature::Vector{T} = fill(mv, n)
     # Potential evapotranspiration [mm]
-    potevap::Vector{T} = fill(mv, n)
-    # Potential transpiration, open water, river and soil evaporation (after subtracting interception from potevap)
+    potential_evaporation::Vector{T} = fill(mv, n)
+    # Potential transpiration, open water, river and soil evaporation (after subtracting interception from potential_evaporation)
     pottrans_soil::Vector{T} = fill(mv, n)
     # Transpiration [mm]
     transpiration::Vector{T} = fill(mv, n)
@@ -169,7 +169,7 @@ Base.@kwdef struct SBM{T,N,M}
     rainfallplusmelt::Vector{T} = fill(mv, n)
     # Top soil temperature [ᵒC]
     tsoil::Vector{T} = fill(10.0, n)
-    ## Interception related to LAI climatology ###
+    ## Interception related to leaf_area_index climatology ###
     # Specific leaf storage [mm]
     sl::Vector{T} = fill(mv, n)
     # Storage woody part of vegetation [mm]
@@ -177,7 +177,7 @@ Base.@kwdef struct SBM{T,N,M}
     # Extinction coefficient [-] (to calculate canopy gap fraction)
     kext::Vector{T} = fill(mv, n)
     # Leaf area index [m² m⁻²]
-    lai::Vector{T} = fill(mv, n)
+    leaf_area_index::Vector{T} = fill(mv, n)
 
     function SBM{T,N,M}(args...) where {T,N,M}
         equal_size_vectors(args)
@@ -185,13 +185,15 @@ Base.@kwdef struct SBM{T,N,M}
     end
 end
 
+statevars(::SBM; snow=false) = snow ? (:satwaterdepth, :snow, :tsoil, :ustorelayerdepth, :snowwater, :canopystorage,) : (:satwaterdepth, :ustorelayerdepth, :canopystorage,)
+
 function update_until_snow(sbm::SBM, config)
 
     # # start dummy variables (should be generated from model reader and from Config.jl TOML)
-    do_lai = haskey(config.cyclic.parameters, "leaf_area_index")
-    modelglacier = Bool(get(config.model, "modelglacier", 0))
-    modelsnow = Bool(get(config.model, "modelsnow", 0))
-    #potevap = 4.0
+    do_lai = haskey(config.input.vertical, "leaf_area_index")
+    modelglacier = Bool(get(config.model, "glacier", 0))
+    modelsnow = Bool(get(config.model, "snow", 0))
+    #potential_evaporation = 4.0
     #precipitation = 3.0
     #temperature = 10.0
     Δt = Second(config.timestepsecs)
@@ -199,16 +201,19 @@ function update_until_snow(sbm::SBM, config)
     # end dummpy variables
     for i = 1:sbm.n
         if do_lai
-            cmax = sbm.sl[i] * sbm.lai[i] + sbm.swood[i]
-            canopygapfraction = exp(-sbm.kext[i] * sbm.lai[i])
-            ewet = (1.0 - exp(-sbm.kext[i] * sbm.lai[i])) * sbm.potevap[i]
-            e_r = sbm.precipitation[i] > 0.0 ?
+            cmax = sbm.sl[i] * sbm.leaf_area_index[i] + sbm.swood[i]
+            canopygapfraction = exp(-sbm.kext[i] * sbm.leaf_area_index[i])
+            ewet =
+                (1.0 - exp(-sbm.kext[i] * sbm.leaf_area_index[i])) *
+                sbm.potential_evaporation[i]
+            e_r =
+                sbm.precipitation[i] > 0.0 ?
                 min(0.25, ewet / max(0.0001, sbm.precipitation[i])) : 0.0
         end
 
-        potevap = sbm.potevap[i] * sbm.et_reftopot[i]
+        potential_evaporation = sbm.potential_evaporation[i] * sbm.et_reftopot[i]
         # should we include tempcor in SBM?
-        # PotEvap = PotenEvap #??
+        # potential_evaporation = PotenEvap #??
 
         if Δt >= Hour(23)
             throughfall, interception, stemflow, canopystorage = rainfall_interception_gash(
@@ -217,14 +222,14 @@ function update_until_snow(sbm::SBM, config)
                 canopygapfraction,
                 sbm.precipitation[i],
                 sbm.canopystorage[i],
-                maxevap = potevap,
+                maxevap = potential_evaporation,
             )
-            pottrans_soil = max(0.0, potevap - interception) # now in mm
+            pottrans_soil = max(0.0, potential_evaporation - interception) # now in mm
         else
             netinterception, throughfall, stemflow, leftover, interception, canopystorage =
                 rainfall_interception_modrut(
                     sbm.precipitation[i],
-                    potevap,
+                    potential_evaporation,
                     sbm.canopystorage[i],
                     canopygapfraction,
                     cmax,
@@ -269,10 +274,10 @@ function update_until_recharge(sbm::SBM, config)
 
     # start dummy variables (should be generated from model reader and from Config.jl TOML)
     soilinfreduction = Bool(get(config.model, "soilinfreduction", 0))
-    modelglacier = Bool(get(config.model, "modelglacier", 0))
-    modelsnow = Bool(get(config.model, "modelsnow", 0))
+    modelglacier = Bool(get(config.model, "glacier", 0))
+    modelsnow = Bool(get(config.model, "snow", 0))
     transfermethod = Bool(get(config.model, "transfermethod", 0))
-    #potevap = 4.0
+    #potential_evaporation = 4.0
     #precipitation = 3.0
     #temperature = 10.0
     wl_land = 0.0 # from kinematic wave land

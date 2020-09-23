@@ -2,7 +2,6 @@
 using Dates
 using LightGraphs
 using NCDatasets
-using Setfield: setproperties
 using StaticArrays
 using Test
 using UnPack

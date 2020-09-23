@@ -5,7 +5,6 @@ using LightGraphs
 using NCDatasets
 using StaticArrays
 using Statistics
-using Setfield: setproperties
 using UnPack
 using CSV
 using Random
@@ -33,7 +32,6 @@ end
 Base.show(io::IO, m::Model) = print(io, "model of type ", typeof(m))
 
 include("toml.jl")
-include("name.jl")
 include("horizontal_process.jl")
 include("sbm.jl")
 include("reservoir_lake.jl")

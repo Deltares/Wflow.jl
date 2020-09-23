@@ -30,6 +30,8 @@ Base.@kwdef struct SurfaceFlow{T,R,L}
     # end
 end
 
+statevars(::SurfaceFlow) = (:q,:h,)
+
 function update(
     sf::SurfaceFlow,
     network;
@@ -159,7 +161,7 @@ Base.@kwdef struct LateralSSF{T}
 end
 
 # depends on ini file settings (optional: glaciers, snow, irrigation)
-statenames(::LateralSSF) = ("ssf")
+statevars(::LateralSSF) = (:ssf,)
 
 function update(ssf::LateralSSF, network, frac_toriver, river)
     @unpack graph, order = network

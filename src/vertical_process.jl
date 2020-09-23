@@ -32,7 +32,7 @@ function rainfall_interception_gash(
 )
     # TODO:  add other rainfall interception method (lui)
     # TODO: Include subdaily Gash model
-    # TODO: add LAI variation in year
+    # TODO: add leaf_area_index variation in year
     # Hack for stemflow
 
     pt = 0.1 * canopygapfraction
@@ -42,7 +42,8 @@ function rainfall_interception_gash(
     # large storms P > P_sat
     largestorms = precipitation > p_sat
 
-    iwet = largestorms ? ((1.0 - canopygapfraction - pt) * p_sat) - cmax :
+    iwet =
+        largestorms ? ((1.0 - canopygapfraction - pt) * p_sat) - cmax :
         precipitation * (1.0 - canopygapfraction - pt)
     isat = largestorms ? (e_r) * (precipitation - p_sat) : 0.0
     idry = largestorms ? cmax : 0.0
@@ -71,14 +72,14 @@ function rainfall_interception_gash(
 end
 
 """
-    rainfall_interception_modrut(precipitation, potevap, canopystorage, canopygapfraction, cmax)
+    rainfall_interception_modrut(precipitation, potential_evaporation, canopystorage, canopygapfraction, cmax)
 
 Interception according to a modified Rutter model. The model is solved explicitly and there is no
 drainage below `cmax`.
 """
 function rainfall_interception_modrut(
     precipitation,
-    potevap,
+    potential_evaporation,
     canopystorage,
     canopygapfraction,
     cmax,
@@ -98,10 +99,10 @@ function rainfall_interception_modrut(
     canopystorage = canopystorage + pfrac
 
     # Now do the Evap, make sure the store does not get negative
-    dc = -1.0 * min(canopystorage, potevap)
+    dc = -1.0 * min(canopystorage, potential_evaporation)
     canopystorage = canopystorage + dc
 
-    leftover = potevap + dc
+    leftover = potential_evaporation + dc
     # Amount of evap not used
 
     # Now drain the canopy storage again if needed...

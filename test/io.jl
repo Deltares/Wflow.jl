@@ -20,17 +20,8 @@ config = Wflow.Config(tomlpath)
     @test config.starttime === DateTime(2000)
     @test config.endtime === DateTime(2000, 2)
     @test config.output.path == "data/output_moselle.nc"
-    @test config.output.parameters isa Wflow.Config
-    @test collect(keys(config.output.parameters)) == [
-        "snow",
-        "soilthickness",
-        "snowwater",
-        "satwaterdepth",
-        "q",
-        "ustorelayerdepth",
-        "canopystorage",
-        "tsoil",
-    ]
+    @test config.output isa Wflow.Config
+    @test collect(keys(config.output)) == ["lateral", "vertical", "path"]
 end
 
 @testset "checkdims" begin
@@ -66,35 +57,35 @@ model = Wflow.initialize_sbm_model(config)
     ncvars = [k for k in keys(writer.dataset) if !in(k, ncdims)]
     @test "snow" in ncvars
     @test "q" in ncvars
-    @test writer.statenames == (
-        "satwaterdepth",
-        "snow",
-        "tsoil",
-        "ustorelayerdepth",
-        "snowwater",
-        "canopystorage",
-        "volume_reservoir",
-        "ssf",
-        "q_river",
-        "h_river",
-        "q_land",
-        "h_land",
+    @test writer.states == (
+        Wflow.symbols"vertical.satwaterdepth",
+        Wflow.symbols"vertical.snow",
+        Wflow.symbols"vertical.tsoil",
+        Wflow.symbols"vertical.ustorelayerdepth",
+        Wflow.symbols"vertical.snowwater",
+        Wflow.symbols"vertical.canopystorage",
+        Wflow.symbols"lateral.river.reservoir.volume",
+        Wflow.symbols"lateral.subsurface.ssf",
+        Wflow.symbols"lateral.river.q",
+        Wflow.symbols"lateral.river.h",
+        Wflow.symbols"lateral.land.q",
+        Wflow.symbols"lateral.land.h",
     )
 end
 
 @testset "warm states" begin
-    @test get(model, Wflow.paramap["volume_reservoir"])[2] ≈ 2.7801042e7
-    @test get(model, Wflow.paramap["satwaterdepth"])[26625] ≈ 168.40777587890625
-    @test get(model, Wflow.paramap["snow"])[26625] ≈ 0.9690762758255005
-    @test get(model, Wflow.paramap["tsoil"])[26625] ≈ 2.9367642402648926
-    @test get(model, Wflow.paramap["ustorelayerdepth"])[1][1] ≈ 3.31813645362854
-    @test get(model, Wflow.paramap["snowwater"])[26625] ≈ 0.011469922959804535
-    @test get(model, Wflow.paramap["canopystorage"])[1] ≈ 0.0
-    @test get(model, Wflow.paramap["ssf"])[39308] ≈ 2.49775357952e11
-    @test get(model, Wflow.paramap["q_river"])[4061] ≈ 1.3987680673599243
-    @test get(model, Wflow.paramap["h_river"])[4061] ≈ 0.628973126411438
-    @test get(model, Wflow.paramap["q_land"])[39308] ≈ 0.08347763121128082
-    @test get(model, Wflow.paramap["h_land"])[39308] ≈ 0.008668862283229828
+    @test Wflow.param(model, "lateral.river.reservoir.volume")[2] ≈ 2.7801042e7
+    @test Wflow.param(model, "vertical.satwaterdepth")[26625] ≈ 168.40777587890625
+    @test Wflow.param(model, "vertical.snow")[26625] ≈ 0.9690762758255005
+    @test Wflow.param(model, "vertical.tsoil")[26625] ≈ 2.9367642402648926
+    @test Wflow.param(model, "vertical.ustorelayerdepth")[1][1] ≈ 3.31813645362854
+    @test Wflow.param(model, "vertical.snowwater")[26625] ≈ 0.011469922959804535
+    @test Wflow.param(model, "vertical.canopystorage")[1] ≈ 0.0
+    @test Wflow.param(model, "lateral.subsurface.ssf")[39308] ≈ 2.49775357952e11
+    @test Wflow.param(model, "lateral.river.q")[4061] ≈ 1.3987680673599243
+    @test Wflow.param(model, "lateral.river.h")[4061] ≈ 0.628973126411438
+    @test Wflow.param(model, "lateral.land.q")[39308] ≈ 0.08347763121128082
+    @test Wflow.param(model, "lateral.land.h")[39308] ≈ 0.008668862283229828
 end
 
 @testset "reducer" begin

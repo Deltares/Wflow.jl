@@ -5,6 +5,25 @@ Output data can be written to NetCDF or CSV files.
 For configuration files we use TOML.
 =#
 
+"""Turn "a.aa.aaa" into (:a, :aa, :aaa)"""
+symbols(s) = Tuple(Symbol(x) for x in split(s, '.'))
+
+"""Turn symbols"a.aa.aaa" into (:a, :aa, :aaa)"""
+macro symbols_str(s)
+    Tuple(Symbol(x) for x in split(s, '.'))
+end
+
+"Get a nested field using a tuple of Symbols"
+param(obj, fields) = foldl(getproperty, fields; init = obj)
+param(obj, fields::AbstractString) = param(obj, symbols(fields))
+function param(obj, fields, default)
+    try
+        return param(obj, fields)
+    catch
+        return default
+    end
+end
+
 "Parsed TOML configuration"
 struct Config
     dict::Dict{String,Any}  # nested key value mapping of all settings
@@ -77,48 +96,52 @@ function update_forcing!(model)
     do_reservoirs = Bool(get(config.model, "reservoirs", false))
     do_lakes = Bool(get(config.model, "lakes", false))
 
-    mover_params = ("precipitation", "potential_evaporation")
+    mover_params =
+        (symbols"vertical.precipitation", symbols"vertical.potential_evaporation")
     if do_reservoirs
         sel_reservoirs = network.reservoir.indices_coverage
         param_res = Dict(
-            "precipitation" => get(model, paramap["precipitation_reservoir"]),
-            "potential_evaporation" => get(model, paramap["evaporation_reservoir"]),
+            symbols"vertical.precipitation" =>
+                model.lateral.river.reservoir.precipitation,
+            symbols"vertical.potential_evaporation" =>
+                model.lateral.river.reservoir.evaporation,
         )
     end
     if do_lakes
         sel_lakes = network.lake.indices_coverage
         param_lake = Dict(
-            "precipitation" => get(model, paramap["precipitation_lake"]),
-            "potential_evaporation" => get(model, paramap["evaporation_lake"]),
+            symbols"vertical.precipitation" => model.lateral.river.lake.precipitation,
+            symbols"vertical.potential_evaporation" =>
+                model.lateral.river.lake.evaporation,
         )
     end
 
 
     # load from NetCDF into the model according to the mapping
-    for (param, ncvarname) in forcing_parameters
+    for (par, ncvarname) in forcing_parameters
         buffer = get_at!(buffer, dataset[ncvarname], nctimes, clock.time)
 
         # calculate the mean precipitation and evaporation over the lakes and reservoirs
         # and put these into the lakes and reservoirs structs
         # and set the precipitation and evaporation to 0 in the vertical model
-        if param in mover_params
+        if par in mover_params
             if do_reservoirs
                 for (i, sel_reservoir) in enumerate(sel_reservoirs)
                     avg = mean(buffer[sel_reservoir])
                     buffer[sel_reservoir] .= 0
-                    param_res[param][i] = avg
+                    param_res[par][i] = avg
                 end
             end
             if do_lakes
                 for (i, sel_lake) in enumerate(sel_lakes)
                     avg = mean(buffer[sel_lake])
                     buffer[sel_lake] .= 0
-                    param_lake[param][i] = avg
+                    param_lake[par][i] = avg
                 end
             end
         end
 
-        param_vector = get(model, paramap[param])
+        param_vector = param(model, par)
         param_vector .= buffer[sel]
     end
 
@@ -137,9 +160,9 @@ function update_cyclic!(model)
         i = findfirst(==(month_day), cyclic_times)
 
         # load from NetCDF into the model according to the mapping
-        for (param, ncvarname) in cyclic_parameters
+        for (par, ncvarname) in cyclic_parameters
             buffer = get_at!(buffer, cyclic_dataset[ncvarname], i)
-            param_vector = get(model, paramap[param])
+            param_vector = param(model, par)
             param_vector .= buffer[sel]
         end
     end
@@ -234,8 +257,8 @@ struct NCReader{T}
     dataset::NCDataset
     cyclic_dataset::NCDataset
     cyclic_times::Vector{Tuple{Int,Int}}
-    forcing_parameters::Dict{String,String}
-    cyclic_parameters::Dict{String,String}
+    forcing_parameters::Dict{Tuple{Symbol,Vararg{Symbol}},String}
+    cyclic_parameters::Dict{Tuple{Symbol,Vararg{Symbol}},String}
     buffer::Matrix{T}
 end
 
@@ -246,12 +269,12 @@ struct Writer
     csv_path::Union{String,Nothing}
     csv_cols::Vector
     csv_io::IO
-    statenames::Tuple{String,Vararg{String}}
+    states::Tuple#{String,Vararg{String}}
 end
 
 function prepare_reader(path, cyclic_path, config)
     dataset = NCDataset(path)
-    ncvar1 = last(first(Dict(config.dynamic.parameters)))
+    ncvar1 = param(config, "input." * first(config.input.forcing))
     var = dataset[ncvar1].var
 
     fillvalue = get(var.attrib, "_FillValue", nothing)
@@ -270,14 +293,29 @@ function prepare_reader(path, cyclic_path, config)
     lateral_size = timelast ? size(var)[1:2] : size(var)[2:3]
     buffer = zeros(T, lateral_size)
 
-    # TODO:include LAI climatology in update() vertical SBM model
+    # TODO:include leaf_area_index climatology in update() vertical SBM model
     # we currently assume the same dimension ordering as the forcing
     cyclic_dataset = NCDataset(cyclic_path)
     cyclic_nc_times = collect(cyclic_dataset["time"])
     cyclic_times = Wflow.timecycles(cyclic_nc_times)
 
-    forcing_parameters = Dict{String,String}(Dict(config.dynamic.parameters))
-    cyclic_parameters = Dict{String,String}(Dict(config.cyclic.parameters))
+    # create map from internal location to NetCDF variable name for forcing parameters
+    forcing_parameters = Dict{Tuple{Symbol,Vararg{Symbol}},String}()
+    for par in config.input.forcing
+        fields = symbols(par)
+        ncname = param(config.input, fields)
+        forcing_parameters[fields] = ncname
+    end
+
+    # create map from internal location to NetCDF variable name for cyclic parameters
+    cyclic_parameters = Dict{Tuple{Symbol,Vararg{Symbol}},String}()
+    for par in config.input.cyclic
+        fields = symbols(par)
+        ncname = param(config.input, fields)
+        cyclic_parameters[fields] = ncname
+    end
+
+    # check if there is overlap
     forcing_keys = keys(forcing_parameters)
     cyclic_keys = keys(cyclic_parameters)
     for forcing_key in forcing_keys
@@ -307,8 +345,7 @@ function csv_header(cols, dataset, config)
 
             map_2d = ncread(
                 dataset,
-                mapname;
-                key = x -> config.static.parameters[mapname],
+                param(config.input, mapname);
                 type = Union{Int,Missing},
                 allow_missing = true,
             )
@@ -324,6 +361,35 @@ function csv_header(cols, dataset, config)
     return header
 end
 
+"""
+Flatten a nested dictionary, keeping track of the full address of the keys.
+Useful for converting TOML of the format:
+
+    [a.b]
+    field_of_b = "name_in_output"
+
+    [a.d.c]
+    field_of_c = "other_name_in_output"
+
+to a non-nested format:
+
+Dict(
+    symbols"a.b.field_of_b" => "name_in_output,
+    symbols"a.d.c.field_of_c" => "other_name_in_output,
+)
+"""
+function flat!(d, path, el::Dict)
+    for (k, v) in pairs(el)
+        flat!(d, string(path, '.', k), v)
+    end
+    return d
+end
+
+function flat!(d, path, el)
+    k = Wflow.symbols(path)
+    d[k] = el
+    return d
+end
 
 function prepare_writer(
     config,
@@ -331,7 +397,7 @@ function prepare_writer(
     nc_path,
     modelmap,
     maxlayers,
-    statenames,
+    states,
     rev_inds,
     x_nc,
     y_nc,
@@ -342,23 +408,19 @@ function prepare_writer(
     nclon = ncread(reader.dataset, "lon"; type = Float64)
     nclat = ncread(reader.dataset, "lat"; type = Float64)
 
-    # fill the output_map by mapping parameters to arrays
+    # create a flat mapping from internal parameter locations to NetCDF variable names
+    output_ncnames = Dict{Tuple{Symbol,Vararg{Symbol}},String}()
+    for (k, v) in pairs(config.output)
+        if v isa Dict  # ignore top level values (e.g. output.path)
+            flat!(output_ncnames, k, v)
+        end
+    end
+
+    # fill the output_map by mapping parameter NetCDF names to arrays
     output_map = Dict{String,Vector}()
-    for (param, ncname) in pairs(config.output.parameters)
-        parsym = Symbol(param)
-        for (name, component) in pairs(modelmap)
-            if parsym in propertynames(component)
-                # this array will be reused
-                # therefore the reference in this dict can be used for all timesteps.
-                if haskey(output_map, param)
-                    @warn "output parameter $param not unique, currently set to $name"
-                end
-                output_map[param] = getproperty(component, parsym)
-            end
-        end
-        if !haskey(output_map, param)
-            error("output parameter $param not found in any model component")
-        end
+    for (par, ncname) in pairs(output_ncnames)
+        A = param(modelmap, par)
+        output_map[ncname] = A
     end
 
     calendar = get(config, "calendar", "proleptic_gregorian")
@@ -379,17 +441,49 @@ function prepare_writer(
         # retrieve and reduce the CSV data during a model run
         csv_cols = []
         for col in config.csv.column
-            lens = Wflow.paramap[col["parameter"]]
+            parameter = col["parameter"]
             if occursin("river", col["parameter"])
-                reducer = Wflow.reducer(col, rev_inds.river, x_nc, y_nc, dims_xy, config, nc_static)
+                reducer = Wflow.reducer(
+                    col,
+                    rev_inds.river,
+                    x_nc,
+                    y_nc,
+                    dims_xy,
+                    config,
+                    nc_static,
+                )
             elseif occursin("reservoir", col["parameter"])
-                reducer = Wflow.reducer(col, rev_inds.reservoir, x_nc, y_nc, dims_xy, config, nc_static)
+                reducer = Wflow.reducer(
+                    col,
+                    rev_inds.reservoir,
+                    x_nc,
+                    y_nc,
+                    dims_xy,
+                    config,
+                    nc_static,
+                )
             elseif occursin("lake", col["parameter"])
-                reducer = Wflow.reducer(col, rev_inds.lake, x_nc, y_nc, dims_xy, config, nc_static)
+                reducer = Wflow.reducer(
+                    col,
+                    rev_inds.lake,
+                    x_nc,
+                    y_nc,
+                    dims_xy,
+                    config,
+                    nc_static,
+                )
             else
-                reducer = Wflow.reducer(col, rev_inds.land, x_nc, y_nc, dims_xy, config, nc_static)
+                reducer = Wflow.reducer(
+                    col,
+                    rev_inds.land,
+                    x_nc,
+                    y_nc,
+                    dims_xy,
+                    config,
+                    nc_static,
+                )
             end
-            push!(csv_cols, (; lens, reducer))
+            push!(csv_cols, (; parameter, reducer))
         end
     else
         # no CSV file is checked by isnothing(csv_path)
@@ -399,7 +493,7 @@ function prepare_writer(
     end
 
 
-    return Writer(ds, output_map, nc_path, csv_path, csv_cols, csv_io, statenames)
+    return Writer(ds, output_map, nc_path, csv_path, csv_cols, csv_io, states)
 end
 
 "Write model output"
@@ -520,8 +614,7 @@ function reducer(col, rev_inds, x_nc, y_nc, dims_xy, config, dataset)
         f = reducerfunction(reducer_name)
         map_2d = ncread(
             dataset,
-            mapname;
-            key = x -> config.static.parameters[mapname],
+            param(config.input, mapname);
             type = Union{Int,Missing},
             allow_missing = true,
         )
@@ -584,7 +677,7 @@ function write_csv_row(model)
     io = writer.csv_io
     print(io, clock.time)
     for nt in writer.csv_cols
-        A = get(model, nt.lens)
+        A = param(model, nt.parameter)
         # could be a value, or a vector in case of map
         v = nt.reducer(A)
         # numbers are also iterable

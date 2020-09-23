@@ -62,9 +62,9 @@ function lattometres(lat::Float64)
 end
 
 """
-    set_states(instate_path, model, statenames, sel ; <keyword arguments>)
+    set_states(instate_path, model, states, sel, config ; <keyword arguments>)
 
-Read states contained in `Tuple` `statenames` from NetCDF file located in `instate_path`, and set states in 
+Read states contained in `Tuple` `states` from NetCDF file located in `instate_path`, and set states in 
 `model` object. Active cells are selected with `sel` (`Vector{CartesianIndex}`) from the NetCDF file. 
 
 # Arguments
@@ -79,8 +79,9 @@ Read states contained in `Tuple` `statenames` from NetCDF file located in `insta
 function set_states(
     instate_path,
     model,
-    statenames,
-    sel;
+    states,
+    sel,
+    config;
     type = nothing,
     sel_res = nothing,
     sel_riv = nothing,
@@ -89,11 +90,12 @@ function set_states(
 
     # states in NetCDF include dim time (one value) at index 3 or 4, 3 or 4 dims are allowed
     ds = NCDataset(instate_path)
-    for state in statenames
-        dims = length(dimnames(ds[state]))
+    for state in states
+        ncname = param(config.state, state)
+        dims = length(dimnames(ds[ncname]))
         # 4 dims, for example (x,y,layer,time) where dim layer is an SVector for soil layers
         if dims == 4
-            A = transpose(ds[state][sel, :, 1])
+            A = transpose(ds[ncname][sel, :, 1])
             # Convert to desired type if needed
             if !isnothing(type)
                 if eltype(A) != type
@@ -101,17 +103,17 @@ function set_states(
                 end
             end
             # set state in model object
-            get(model, paramap[state]) .= svectorscopy(A, Val{size(A)[1]}())
+            param(model, state) .= svectorscopy(A, Val{size(A)[1]}())
             # 3 dims (x,y,time)
         elseif dims == 3
-            if occursin("reservoir", state)
-                A = ds[state][sel_res, 1]
-            elseif occursin("river", state)
-                A = ds[state][sel_riv, 1]
-            elseif occursin("lake", state)
-                A = ds[state][sel_lake, 1]
+            if :reservoir in state
+                A = ds[ncname][sel_res, 1]
+            elseif :lake in state
+                A = ds[ncname][sel_lake, 1]
+            elseif :river in state
+                A = ds[ncname][sel_riv, 1]
             else
-                A = ds[state][sel, 1]
+                A = ds[ncname][sel, 1]
             end
             # Convert to desired type if needed
             if !isnothing(type)
@@ -120,7 +122,7 @@ function set_states(
                 end
             end
             # set state in model object
-            get(model, paramap[state]) .= A
+            param(model, state) .= A
         else
             error("Number of state dims should be 3 or 4, number of dims = ", string(dims))
         end
@@ -150,7 +152,6 @@ selections of data in desired types, with or without missing values.
 function ncread(
     nc,
     var;
-    key = identity,
     sel = nothing,
     defaults = nothing,
     type = nothing,
@@ -159,27 +160,25 @@ function ncread(
     dimname = nothing,
 )
 
-    ncvarname = key(var)  # can be nothing if not specified in TOML
-    if (isnothing(ncvarname) || !haskey(nc, ncvarname)) && !isnothing(defaults)
-        # TODO move away from this strategy for defaults
-        @warn(string(var, " not found, set to default value ", defaults[var]))
+    if isnothing(var)
+        @assert !isnothing(defaults)
         if isnothing(dimname)
-            return Base.fill(defaults[var], length(sel))
+            return Base.fill(defaults, length(sel))
         else
-            return Base.fill(defaults[var], (nc.dim[dimname], length(sel)))
+            return Base.fill(defaults, (nc.dim[dimname], length(sel)))
         end
     end
 
     # Read the entire variable into memory, applying scale, offset and
     # set fill_values to missing.
-    A = nc[ncvarname][:]
+    A = nc[var][:]
 
     # Take out only the active cells
     if !isnothing(sel)
         if isnothing(dimname)
             A = A[sel]
         else
-            dim = findfirst(==(dimname), dimnames(nc[ncvarname]))
+            dim = findfirst(==(dimname), dimnames(nc[var]))
             if dim == 3
                 A = transpose(A[sel, :])
             elseif dim == 1

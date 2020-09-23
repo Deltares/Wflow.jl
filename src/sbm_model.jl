@@ -8,48 +8,15 @@ function initialize_sbm_model(config::Config)
 
     # unpack the paths to the NetCDF files
     tomldir = dirname(config)
-    static_path = joinpath(tomldir, config.static.path)
-    cyclic_path = joinpath(tomldir, config.cyclic.path)
-    dynamic_path = joinpath(tomldir, config.dynamic.path)
-    instate_path = joinpath(tomldir, config.state.input.path)
+    static_path = joinpath(tomldir, config.input.path_static)
+    cyclic_path = joinpath(tomldir, config.input.path_static)
+    dynamic_path = joinpath(tomldir, config.input.path_forcing)
+    instate_path = joinpath(tomldir, config.state.path_input)
     output_path = joinpath(tomldir, config.output.path)
 
     Δt = Second(config.timestepsecs)
     # default parameter values (dict)
     Δt = Second(86400)
-    defaults = Dict(
-        "cfmax" => 3.75653 * (Δt / basetimestep),
-        "tt" => 0.0,
-        "ttm" => 0.0,
-        "tti" => 1.0,
-        "whc" => 0.1,
-        "cf_soil" => 0.038,
-        "w_soil" => 0.1125 * (Δt / basetimestep),
-        "soilthickness" => 2000.0,
-        "infiltcapsoil" => 100.0,
-        "infiltcappath" => 10.0,
-        "pathfrac" => 0.01,
-        "waterfrac" => 0.0,
-        "θₛ" => 0.6,
-        "θᵣ" => 0.01,
-        "hb" => 10.0,
-        "kv₀" => 3000.0 * (Δt / basetimestep),
-        "maxleakage" => 0.0,
-        "c" => 10.0,
-        "m" => 300.0,
-        "capscale" => 100.0,
-        "rootdistpar" => -500.0,
-        "rootingdepth" => 750.0,
-        "leaf_area_index" => 1.0,
-        "cmax" => 1.0,
-        "canopygapfraction" => 0.1,
-        "e_r" => 0.1,
-        "et_reftopot" => 1.0,
-        "khfrac" => 1.0,
-        "ksathorfrac" => 1.0,
-        "n_land" => 0.072,
-        "n_river" => 0.036,
-    )
 
     sizeinmetres = Bool(get(config.model, "sizeinmetres", false))
     reinit = Bool(get(config.model, "reinit", false))
@@ -63,29 +30,10 @@ function initialize_sbm_model(config::Config)
     end
     do_reservoirs = Bool(get(config.model, "reservoirs", false))
     do_lakes = Bool(get(config.model, "lakes", false))
-    do_snow = Bool(get(config.model, "modelsnow", false))
+    do_snow = Bool(get(config.model, "snow", false))
 
     nc = NCDataset(static_path)
-    function key(param)
-        # indirect_params can be defined as keys in the TOML under static.parameters,
-        # but are not directly used in the model, hence don't appear in paramap
-        indirect_params = [
-            "subcatchment",
-            "river",
-            "riverwidth",
-            "riverlength",
-            "reservoirlocs",
-            "ldd",
-            "ksathorfrac",
-            "khfrac",
-        ]
-        if !(param in keys(paramap)) && !(param in indirect_params)
-            @warn "parameter not in paramap" param
-        end
-        return get(config.static.parameters, param, nothing)
-    end
-
-    dims = dimnames(nc[key("subcatchment")])
+    dims = dimnames(nc[param(config, "input.subcatchment")])
 
     # There is no need to permute the dimensions of the data, since the active indices are
     # correctly calculated in both ways.
@@ -93,18 +41,26 @@ function initialize_sbm_model(config::Config)
     # and creating the coordinate maps.
     dims_xy = dims[2] in ("y", "lat")
 
-    subcatch_2d = ncread(nc, "subcatchment"; key, allow_missing = true)
+    subcatch_2d = ncread(nc, param(config, "input.subcatchment"); allow_missing = true)
     # indices based on catchment
     inds, rev_inds = active_indices(subcatch_2d, missing)
     n = length(inds)
     modelsize_2d = size(subcatch_2d)
 
-    altitude = ncread(nc, "altitude"; key, sel = inds, type = Float64)
-    river_2d = ncread(nc, "river"; key, type = Bool, fill = false)
+    # alt = Wflow.symbols"input.vertical.altitude"
+    # config
+    # ncname = Wflow.param(config, alt, nothing)
+    # nc[ncname]
+
+    altitude =
+        ncread(nc, param(config, "input.vertical.altitude"); sel = inds, type = Float64)
+    river_2d = ncread(nc, param(config, "input.river_location"); type = Bool, fill = false)
     river = river_2d[inds]
-    riverwidth_2d = ncread(nc, "riverwidth"; key, type = Float64, fill = 0)
+    riverwidth_2d =
+        ncread(nc, param(config, "input.lateral.river.width"); type = Float64, fill = 0)
     riverwidth = riverwidth_2d[inds]
-    riverlength_2d = ncread(nc, "riverlength"; key, type = Float64, fill = 0)
+    riverlength_2d =
+        ncread(nc, param(config, "input.lateral.river.length"); type = Float64, fill = 0)
     riverlength = riverlength_2d[inds]
 
     # read x, y coordinates and calculate cell length [m]
@@ -118,56 +74,228 @@ function initialize_sbm_model(config::Config)
     cellength = abs(mean(diff(x_nc)))
 
 
-    cfmax = ncread(nc, "cfmax"; key, sel = inds, defaults, type = Float64)
-    tt = ncread(nc, "tt"; key, sel = inds, defaults, type = Float64)
-    tti = ncread(nc, "tti"; key, sel = inds, defaults, type = Float64)
-    ttm = ncread(nc, "ttm"; key, sel = inds, defaults, type = Float64)
-    whc = ncread(nc, "whc"; key, sel = inds, defaults, type = Float64)
-    w_soil = ncread(nc, "w_soil"; key, sel = inds, defaults, type = Float64)
-    cf_soil = ncread(nc, "cf_soil"; key, sel = inds, defaults, type = Float64)
+    cfmax = ncread(
+        nc,
+        param(config, "cfmax", nothing);
+        sel = inds,
+        defaults = 3.75653 * (Δt / basetimestep),
+        type = Float64,
+    )
+    tt = ncread(
+        nc,
+        param(config, "input.vertical.tt", nothing);
+        sel = inds,
+        defaults = 0.0,
+        type = Float64,
+    )
+    tti = ncread(
+        nc,
+        param(config, "input.vertical.tti", nothing);
+        sel = inds,
+        defaults = 1.0,
+        type = Float64,
+    )
+    ttm = ncread(
+        nc,
+        param(config, "input.vertical.ttm", nothing);
+        sel = inds,
+        defaults = 0.0,
+        type = Float64,
+    )
+    whc = ncread(
+        nc,
+        param(config, "input.vertical.whc", nothing);
+        sel = inds,
+        defaults = 0.1,
+        type = Float64,
+    )
+    w_soil = ncread(
+        nc,
+        param(config, "input.vertical.w_soil", nothing);
+        sel = inds,
+        defaults = 0.1125 * (Δt / basetimestep),
+        type = Float64,
+    )
+    cf_soil = ncread(
+        nc,
+        param(config, "input.vertical.cf_soil", nothing);
+        sel = inds,
+        defaults = 0.038,
+        type = Float64,
+    )
 
 
     # soil parameters
-    θₛ = ncread(nc, "θₛ"; key, sel = inds, defaults, type = Float64)
-    θᵣ = ncread(nc, "θᵣ"; key, sel = inds, defaults, type = Float64)
-    kv₀ = ncread(nc, "kv₀"; key, sel = inds, defaults, type = Float64)
-    m = ncread(nc, "m"; key, sel = inds, defaults, type = Float64)
-    hb = ncread(nc, "hb"; key, sel = inds, defaults, type = Float64)
-    soilthickness = ncread(nc, "soilthickness"; key, sel = inds, defaults, type = Float64)
-    infiltcappath = ncread(nc, "infiltcappath"; key, sel = inds, defaults, type = Float64)
-    infiltcapsoil = ncread(nc, "infiltcapsoil"; key, sel = inds, defaults, type = Float64)
-    maxleakage = ncread(nc, "maxleakage"; key, sel = inds, defaults, type = Float64)
+    θₛ = ncread(
+        nc,
+        param(config, "input.vertical.θₛ", nothing);
+        sel = inds,
+        defaults = 0.6,
+        type = Float64,
+    )
+    θᵣ = ncread(
+        nc,
+        param(config, "input.vertical.θᵣ", nothing);
+        sel = inds,
+        defaults = 0.01,
+        type = Float64,
+    )
+    kv₀ = ncread(
+        nc,
+        param(config, "input.vertical.kv₀");
+        sel = inds,
+        defaults = 3000.0 * (Δt / basetimestep),
+        type = Float64,
+    )
+    m = ncread(
+        nc,
+        param(config, "input.vertical.m", nothing);
+        sel = inds,
+        defaults = 300.0,
+        type = Float64,
+    )
+    hb = ncread(
+        nc,
+        param(config, "input.vertical.hb", nothing);
+        sel = inds,
+        defaults = 10.0,
+        type = Float64,
+    )
+    soilthickness = ncread(
+        nc,
+        param(config, "input.vertical.soilthickness", nothing);
+        sel = inds,
+        defaults = 2000.0,
+        type = Float64,
+    )
+    infiltcappath = ncread(
+        nc,
+        param(config, "input.vertical.infiltcappath", nothing);
+        sel = inds,
+        defaults = 10.0,
+        type = Float64,
+    )
+    infiltcapsoil = ncread(
+        nc,
+        param(config, "input.vertical.infiltcapsoil", nothing);
+        sel = inds,
+        defaults = 100.0,
+        type = Float64,
+    )
+    maxleakage = ncread(
+        nc,
+        param(config, "input.vertical.maxleakage", nothing);
+        sel = inds,
+        defaults = 0.0,
+        type = Float64,
+    )
 
-    c = ncread(nc, "c"; key, sel = inds, defaults, type = Float64, dimname = "layer")
-    kvfrac =
-        ncread(nc, "khfrac"; key, sel = inds, defaults, type = Float64, dimname = "layer")
+    c = ncread(
+        nc,
+        param(config, "input.vertical.c", nothing);
+        sel = inds,
+        defaults = 10.0,
+        type = Float64,
+        dimname = "layer",
+    )
+    kvfrac = ncread(
+        nc,
+        param(config, "input.vertical.khfrac", nothing);
+        sel = inds,
+        defaults = 1.0,
+        type = Float64,
+        dimname = "layer",
+    )
 
     # fraction open water and compacted area (land cover)
-    waterfrac = ncread(nc, "waterfrac"; key, sel = inds, defaults, type = Float64)
-    pathfrac = ncread(nc, "pathfrac"; key, sel = inds, defaults, type = Float64)
+    waterfrac = ncread(
+        nc,
+        param(config, "input.vertical.waterfrac", nothing);
+        sel = inds,
+        defaults = 0.0,
+        type = Float64,
+    )
+    pathfrac = ncread(
+        nc,
+        param(config, "input.vertical.pathfrac", nothing);
+        sel = inds,
+        defaults = 0.01,
+        type = Float64,
+    )
 
     # vegetation parameters
-    rootingdepth = ncread(nc, "rootingdepth"; key, sel = inds, defaults, type = Float64)
-    rootdistpar = ncread(nc, "rootdistpar"; key, sel = inds, defaults, type = Float64)
-    capscale = ncread(nc, "capscale"; key, sel = inds, defaults, type = Float64)
-    et_reftopot = ncread(nc, "et_reftopot"; key, sel = inds, defaults, type = Float64)
+    rootingdepth = ncread(
+        nc,
+        param(config, "input.vertical.rootingdepth", nothing);
+        sel = inds,
+        defaults = 750.0,
+        type = Float64,
+    )
+    rootdistpar = ncread(
+        nc,
+        param(config, "input.vertical.rootdistpar", nothing);
+        sel = inds,
+        defaults = -500.0,
+        type = Float64,
+    )
+    capscale = ncread(
+        nc,
+        param(config, "input.vertical.capscale", nothing);
+        sel = inds,
+        defaults = 100.0,
+        type = Float64,
+    )
+    et_reftopot = ncread(
+        nc,
+        param(config, "input.vertical.et_reftopot", nothing);
+        sel = inds,
+        defaults = 1.0,
+        type = Float64,
+    )
 
     # if leaf area index climatology provided use sl, swood and kext to calculate cmax, e_r and canopygapfraction
     # TODO replace by something else
     if isnothing(true)
         # cmax, e_r, canopygapfraction only required when leaf area index climatology not provided
-        cmax = ncread(nc, "cmax"; key, sel = inds, defaults, type = Float64)
-        e_r = ncread(nc, "eoverr"; key, sel = inds, defaults, type = Float64)
-        canopygapfraction =
-            ncread(nc, "canopygapfraction"; key, sel = inds, defaults, type = Float64)
+        cmax = ncread(
+            nc,
+            param(config, "input.vertical.cmax", nothing);
+            sel = inds,
+            defaults = 1.0,
+            type = Float64,
+        )
+        e_r = ncread(
+            nc,
+            param(config, "input.vertical.eoverr", nothing);
+            sel = inds,
+            defaults = 0.1,
+            type = Float64,
+        )
+        canopygapfraction = ncread(
+            nc,
+            param(config, "input.vertical.canopygapfraction", nothing);
+            sel = inds,
+            defaults = 0.1,
+            type = Float64,
+        )
         sl = fill(mv, n)
         swood = fill(mv, n)
         kext = fill(mv, n)
     else
         # TODO confirm if leaf area index climatology is present in the NetCDF
-        sl = ncread(nc, "specific_leaf"; key, sel = inds, defaults, type = Float64)
-        swood = ncread(nc, "storage_wood"; key, sel = inds, defaults, type = Float64)
-        kext = ncread(nc, "kext"; key, sel = inds, defaults, type = Float64)
+        sl = ncread(
+            nc,
+            param(config, "input.vertical.specific_leaf");
+            sel = inds,
+            type = Float64,
+        )
+        swood = ncread(
+            nc,
+            param(config, "input.vertical.storage_wood");
+            sel = inds,
+            type = Float64,
+        )
+        kext = ncread(nc, param(config, "input.vertical.kext"); sel = inds, type = Float64)
         cmax = fill(mv, n)
         e_r = fill(mv, n)
         canopygapfraction = fill(mv, n)
@@ -214,20 +342,6 @@ function initialize_sbm_model(config::Config)
     vwc = fill(mv, maxlayers, n)
     vwc_perc = fill(mv, maxlayers, n)
 
-    # states sbm concept
-    if do_snow
-        statenames = (
-            "satwaterdepth",
-            "snow",
-            "tsoil",
-            "ustorelayerdepth",
-            "snowwater",
-            "canopystorage",
-        )
-    else
-        statenames = ("satwaterdepth", "ustorelayerdepth", "canopystorage")
-    end
-
     sbm = SBM{Float64,maxlayers,maxlayers + 1}(
         maxlayers = maxlayers,
         n = n,
@@ -269,7 +383,7 @@ function initialize_sbm_model(config::Config)
         e_r = e_r,
         precipitation = fill(mv, n),
         temperature = fill(mv, n),
-        potevap = fill(mv, n),
+        potential_evaporation = fill(mv, n),
         pottrans_soil = fill(mv, n),
         transpiration = fill(mv, n),
         ae_ustore = fill(mv, n),
@@ -314,12 +428,24 @@ function initialize_sbm_model(config::Config)
         snowwater = fill(0.0, n),
         rainfallplusmelt = fill(mv, n),
         tsoil = fill(10.0, n),
-        # Interception related to climatology (LAI)
+        # Interception related to climatology (leaf_area_index)
         sl = sl,
         swood = swood,
         kext = kext,
-        lai = fill(mv, n),
+        leaf_area_index = fill(mv, n),
     )
+
+    # states sbm concept
+    states = ()
+    if do_snow
+        for state in statevars(sbm, snow=true)
+            states = (states...,(:vertical,state))
+        end
+    else
+        for state in statevars(sbm)
+            states = (states...,(:vertical,state))
+        end
+    end
 
     inds_riv, rev_inds_riv = active_indices(river_2d, 0)
     nriv = length(inds_riv)
@@ -329,10 +455,20 @@ function initialize_sbm_model(config::Config)
         # read only reservoir data if reservoirs true
         # allow reservoirs only in river cells
         # note that these locations are only the reservoir outlet pixels
-        reslocs = ncread(nc, "reservoirlocs"; key, sel = inds_riv, type = Int, fill = 0)
+        reslocs = ncread(
+            nc,
+            param(config, "input.lateral.river.reservoir.locs");
+            sel = inds_riv,
+            type = Int,
+            fill = 0,
+        )
 
         # this holds the same ids as reslocs, but covers the entire reservoir
-        rescoverage_2d = ncread(nc, "reservoirareas"; key, allow_missing = true)
+        rescoverage_2d = ncread(
+            nc,
+            param(config, "input.lateral.river.reservoir.areas");
+            allow_missing = true,
+        )
         # for each reservoir, a list of 2D indices, needed for getting the mean precipitation
         inds_res_cov = Vector{CartesianIndex{2}}[]
 
@@ -359,32 +495,44 @@ function initialize_sbm_model(config::Config)
             end
         end
 
-        resdemand =
-            ncread(nc, "demand_reservoir"; key, sel = inds_res, type = Float64, fill = 0)
-        resmaxrelease = ncread(
+        resdemand = ncread(
             nc,
-            "maxrelease_reservoir";
-            key,
+            param(config, "input.lateral.river.reservoir.demand");
             sel = inds_res,
             type = Float64,
             fill = 0,
         )
-        resmaxvolume =
-            ncread(nc, "maxvolume_reservoir"; key, sel = inds_res, type = Float64, fill = 0)
-        resarea =
-            ncread(nc, "area_reservoir"; key, sel = inds_res, type = Float64, fill = 0)
+        resmaxrelease = ncread(
+            nc,
+            param(config, "input.lateral.river.reservoir.maxrelease");
+            sel = inds_res,
+            type = Float64,
+            fill = 0,
+        )
+        resmaxvolume = ncread(
+            nc,
+            param(config, "input.lateral.river.reservoir.maxvolume");
+            sel = inds_res,
+            type = Float64,
+            fill = 0,
+        )
+        resarea = ncread(
+            nc,
+            param(config, "input.lateral.river.reservoir.area");
+            sel = inds_res,
+            type = Float64,
+            fill = 0,
+        )
         res_targetfullfrac = ncread(
             nc,
-            "targetfullfrac_reservoir";
-            key,
+            param(config, "input.lateral.river.reservoir.targetfullfrac");
             sel = inds_res,
             type = Float64,
             fill = 0,
         )
         res_targetminfrac = ncread(
             nc,
-            "targetminfrac_reservoir";
-            key,
+            param(config, "input.lateral.river.reservoir.targetminfrac");
             sel = inds_res,
             type = Float64,
             fill = 0,
@@ -402,7 +550,9 @@ function initialize_sbm_model(config::Config)
             targetfullfrac = res_targetfullfrac,
             targetminfrac = res_targetminfrac,
         )
-        statenames = (statenames..., "volume_reservoir")
+        for state in statevars(reservoirs)
+            states = (states...,(:lateral,:river,:reservoir,state))
+        end
     else
         inds_res = nothing
         rev_inds_reservoir = nothing
@@ -413,15 +563,25 @@ function initialize_sbm_model(config::Config)
         # read only lake data if lakes true
         # allow lakes only in river cells
         # note that these locations are only the lake outlet pixels
-        lakelocs = ncread(nc, "lakelocs"; key, sel = inds_riv, type = Int, fill = 0)
+        lakelocs = ncread(
+            nc,
+            param(config, "input.lateral.river.lake.locs");
+            sel = inds_riv,
+            type = Int,
+            fill = 0,
+        )
 
         # this holds the same ids as lakelocs, but covers the entire lake
-        lakecoverage_2d = ncread(nc, "lakeareas"; key, allow_missing = true)
+        lakecoverage_2d = ncread(
+            nc,
+            param(config, "input.lateral.river.lake.areas");
+            allow_missing = true,
+        )
         # for each lake, a list of 2D indices, needed for getting the mean precipitation
         inds_lake_cov = Vector{CartesianIndex{2}}[]
 
         rev_inds_lake = zeros(Int, size(lakecoverage_2d))
-        
+
         # construct a map from the rivers to the lakes and
         # a map of the lakes to the 2D model grid
         lakeindex = fill(0, nriv)
@@ -443,19 +603,62 @@ function initialize_sbm_model(config::Config)
             end
         end
 
-        lakearea = ncread(nc, "lakearea"; key, sel = inds_riv, type = Float64, fill = 0)
-        lake_b = ncread(nc, "lake_b"; key, sel = inds_riv, type = Float64, fill = 0)
-        lake_e = ncread(nc, "lake_e"; key, sel = inds_riv, type = Float64, fill = 0)
-        lake_threshold =
-            ncread(nc, "lakethreshold"; key, sel = inds_riv, type = Float64, fill = 0)
-        linked_lakelocs =
-            ncread(nc, "linkedlakelocs"; key, sel = inds_riv, type = Int, fill = 0)
-        lake_storfunc =
-            ncread(nc, "lakestorfunc"; key, sel = inds_riv, type = Int, fill = 0)
-        lake_outflowfunc =
-            ncread(nc, "lakeoutflowfunc"; key, sel = inds_riv, type = Int, fill = 0)
-        lake_avglevel =
-            ncread(nc, "lakeavglevel"; key, sel = inds_riv, type = Float64, fill = 0)
+        lakearea = ncread(
+            nc,
+            param(config, "input.lateral.river.lake.area");
+            sel = inds_riv,
+            type = Float64,
+            fill = 0,
+        )
+        lake_b = ncread(
+            nc,
+            param(config, "input.lateral.river.lake.b");
+            sel = inds_riv,
+            type = Float64,
+            fill = 0,
+        )
+        lake_e = ncread(
+            nc,
+            param(config, "input.lateral.river.lake.e");
+            sel = inds_riv,
+            type = Float64,
+            fill = 0,
+        )
+        lake_threshold = ncread(
+            nc,
+            param(config, "input.lateral.river.lake.threshold");
+            sel = inds_riv,
+            type = Float64,
+            fill = 0,
+        )
+        linked_lakelocs = ncread(
+            nc,
+            param(config, "input.lateral.river.lake.linkedlakelocs");
+            sel = inds_riv,
+            type = Int,
+            fill = 0,
+        )
+        lake_storfunc = ncread(
+            nc,
+            param(config, "input.lateral.river.lake.storfunc");
+            sel = inds_riv,
+            type = Int,
+            fill = 0,
+        )
+        lake_outflowfunc = ncread(
+            nc,
+            param(config, "input.lateral.river.lake.outflowfunc");
+            sel = inds_riv,
+            type = Int,
+            fill = 0,
+        )
+        lake_avglevel = ncread(
+            nc,
+            param(config, "input.lateral.river.lake.avglevel");
+            sel = inds_riv,
+            type = Float64,
+            fill = 0,
+        )
 
         # for surface water routing lake locations are considered pits in the flow network
         # all upstream flow goes to the river and flows into the lake
@@ -505,17 +708,25 @@ function initialize_sbm_model(config::Config)
             hq = hq,
             is_lake = is_lake,
         )
-        statenames = (statenames..., "waterlevel_lake")
+        for state in statevars(lakes)
+            states = (states...,(:lateral,:river,:lake,state))
+        end
     else
         inds_lake = nothing
         rev_inds_lake = nothing
     end
 
     # lateral part sbm
-    khfrac = ncread(nc, "ksathorfrac"; key, sel = inds, defaults, type = Float64)
-    βₗ = ncread(nc, "slope_land"; key, sel = inds, type = Float64)
+    khfrac = ncread(
+        nc,
+        param(config, "input.lateral.subsurface.ksathorfrac", nothing);
+        sel = inds,
+        defaults = 1.0,
+        type = Float64,
+    )
+    βₗ = ncread(nc, param(config, "input.lateral.land.slope"); sel = inds, type = Float64)
     clamp!(βₗ, 0.00001, Inf)
-    ldd_2d = ncread(nc, "ldd"; key, allow_missing = true)
+    ldd_2d = ncread(nc, param(config, "input.ldd"); allow_missing = true)
     ldd = ldd_2d[inds]
     kh₀ = khfrac .* kv₀
     dl = fill(mv, n)
@@ -539,7 +750,13 @@ function initialize_sbm_model(config::Config)
         wb_pit = pits[inds],
     )
 
-    n_land = ncread(nc, "n_land"; key, sel = inds, defaults, type = Float64)
+    n_land = ncread(
+        nc,
+        param(config, "input.lateral.land.n", nothing);
+        sel = inds,
+        defaults = 0.072,
+        type = Float64,
+    )
 
     olf = SurfaceFlow(
         sl = βₗ,
@@ -554,11 +771,22 @@ function initialize_sbm_model(config::Config)
     graph = flowgraph(ldd, inds, pcr_dir)
 
 
-    riverslope = ncread(nc, "slope_river"; key, sel = inds_riv, type = Float64)
+    riverslope = ncread(
+        nc,
+        param(config, "input.lateral.river.slope");
+        sel = inds_riv,
+        type = Float64,
+    )
     clamp!(riverslope, 0.00001, Inf)
     riverlength = riverlength_2d[inds_riv]
     riverwidth = riverwidth_2d[inds_riv]
-    n_river = ncread(nc, "n_river"; key, sel = inds_riv, defaults, type = Float64)
+    n_river = ncread(
+        nc,
+        param(config, "input.lateral.river.n", nothing);
+        sel = inds_riv,
+        defaults = 0.036,
+        type = Float64,
+    )
     ldd_riv = ldd_2d[inds_riv]
     graph_riv = flowgraph(ldd_riv, inds_riv, pcr_dir)
 
@@ -579,19 +807,34 @@ function initialize_sbm_model(config::Config)
         rivercells = river,
     )
 
-    statenames = (statenames..., "ssf", "q_river", "h_river", "q_land", "h_land")
+    for state in statevars(ssf)
+        states = (states...,(:lateral,:subsurface,state))
+    end
+
+    for state in statevars(rf)
+        states = (states...,(:lateral,:river,state))
+    end
+
+    for state in statevars(olf)
+        states = (states...,(:lateral,:land,state))
+    end
 
     reader = prepare_reader(dynamic_path, cyclic_path, config)
 
-    modelmap = (vertical = sbm, subsurface = ssf, land = olf, river = rf) 
-    indices_reverse = (land=rev_inds, river = rev_inds_riv, reservoir=rev_inds_reservoir, lake = rev_inds_lake)    
+    modelmap = (vertical = sbm, lateral = (subsurface = ssf, land = olf, river = rf))
+    indices_reverse = (
+        land = rev_inds,
+        river = rev_inds_riv,
+        reservoir = rev_inds_reservoir,
+        lake = rev_inds_lake,
+    )
     writer = prepare_writer(
         config,
         reader,
         output_path,
         modelmap,
         maxlayers,
-        statenames,
+        states,
         indices_reverse,
         x_nc,
         y_nc,
@@ -607,16 +850,28 @@ function initialize_sbm_model(config::Config)
         indices = inds,
         reverse_indices = rev_inds,
     )
-    river =
-        (graph = graph_riv, order = topological_sort_by_dfs(graph_riv), indices = inds_riv, reverse_indices = rev_inds_riv)
+    river = (
+        graph = graph_riv,
+        order = topological_sort_by_dfs(graph_riv),
+        indices = inds_riv,
+        reverse_indices = rev_inds_riv,
+    )
 
     reservoir = if do_reservoirs
-        (indices_outlet = inds_res, indices_coverage = inds_res_cov, reverse_indices = rev_inds_reservoir)
+        (
+            indices_outlet = inds_res,
+            indices_coverage = inds_res_cov,
+            reverse_indices = rev_inds_reservoir,
+        )
     else
         ()
     end
     lake = if do_lakes
-        (indices_outlet = inds_lake, indices_coverage = inds_lake_cov, reverse_indices = rev_inds_lake)
+        (
+            indices_outlet = inds_lake,
+            indices_coverage = inds_lake_cov,
+            reverse_indices = rev_inds_lake,
+        )
     else
         ()
     end
@@ -636,8 +891,9 @@ function initialize_sbm_model(config::Config)
         set_states(
             instate_path,
             model,
-            statenames,
-            inds;
+            states,
+            inds,
+            config;
             type = Float64,
             sel_res = inds_res,
             sel_riv = inds_riv,
