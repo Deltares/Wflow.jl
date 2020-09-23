@@ -101,10 +101,11 @@ end
 statevars(::NaturalLake) = (:waterlevel,)
 
 """
-    statenames(::NaturalLake)
-    statenames(::SimpleReservoir)
-    statenames(::LateralSSF)
-    statenames(::SurfaceFlow)
+    statevars(::SBM; snow=false)
+    statevars(::LateralSSF)
+    statevars(::SurfaceFlow)
+    statevars(::NaturalLake)
+    statevars(::SimpleReservoir)
 
 Get a tuple of symbols representing the fields that are model states.
 """
