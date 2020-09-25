@@ -40,6 +40,9 @@ include("hbv_model.jl")
 include("sbm_model.jl")
 include("flow.jl")
 include("vertical_process.jl")
+include("groundwater/connectivity.jl")
+include("groundwater/boundary_conditions.jl")
+include("groundwater/aquifer.jl")
 include("utils.jl")
 
 """

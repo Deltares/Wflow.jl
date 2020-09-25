@@ -47,8 +47,13 @@ Boundary conditions can be classified into three categories:
 * specified head (Dirichlet)
 * specified flux (Neumann)
 * head-dependent flux (Robin)
+
+Neumann and Robin conditions are implemented by adding to or subtracting from a
+net (lumped) cell flux. Dirichlet conditions are special cased, since they
+cannot (easily) be implemented via the flux, but the head is set directly
+instead.
 """
-struct Aquifer end
+abstract type Aquifer end
 
 
 """
@@ -62,15 +67,20 @@ Specific storage is the amount of water an aquifer releases per unit change in
 hydraulic head, per unit volume of aquifer, as the aquifer and the groundwater
 itself is compressed. Its value is much smaller than specific yield, between
 1E-5 (stiff) and 0.01 (weak).
+
+NOTA BENE: **specific** storage is per m of aquifer (conf. specific weight).
+**Storativity** or (**storage coefficient**) is for the entire aquifer (conf.
+transmissivity).
 """
 struct ConfinedAquifer{T} <: Aquifer
     head::Vector{T}  # hydraulic head [m]
     k::Vector{T}  # horizontal conductivity [m m⁻¹]
     top::Vector{T} # top of groundwater layer [m]
     bottom::Vector{T} # bottom of groundwater layer
-    specific_storage::Vector{T} # [m m⁻¹]
-    conductance::Vector{T} # Confined aquifer conductance is constant
     area::Vector{T} # area of cell
+    specific_storage::Vector{T} # [m m⁻¹]
+    storativity::Vector{T} # [m m⁻¹]
+    conductance::Vector{T} # Confined aquifer conductance is constant
 end
 
 
@@ -88,14 +98,14 @@ struct UnconfinedAquifer{T} <: Aquifer
     k::Vector{T}  # horizontal conductivity [m d⁻¹]
     top::Vector{T} # top of groundwater layer [m]
     bottom::Vector{T} # bottom of groundwater layer
+    area::Vector{T}
     specific_yield::Vector{T} # [m m⁻¹]
     # Unconfined aquifer conductance is re-computed
-    area::Vector{T}
 end
 
 
-specific_storage(A::UnconfinedAquifer) = A.specific_yield
-specific_storage(A::ConfinedAquifer) = A.specific_storage
+storativity(A::UnconfinedAquifer) = A.specific_yield
+storativity(A::ConfinedAquifer) = A.storativity
 
 
 """
@@ -183,18 +193,31 @@ function flux!(aquifer, connectivity, Q)
 end
 
 
-function update(
-    aquifer::A,
-    connectivity::Connectivity,
-    boundaries::B,
-    Q,
-    config
-    ) where {A <: Aquifer,B <: AquiferBoundaryCondition}
+function update(gwf, Q, config) 
     Δt = Second(config.timestepsecs)
-    flux!(aquifer, connectivity, Q)
-    for boundary in boundaries
+    flux!(gwf.aquifer, connectivity, Q)
+    for boundary in gwf.boundaries
         flux!(boundary, aquifer, Q)
     end
-    # TODO: where to include Dirichlet boundaries?
-    aquifer.head .+= Q * Δt / specific_storage(aquifer)
+        gwf.aquifer.head .+= Q * Δt / storativity(aquifer)
+    # Set constant head (dirichlet) boundaries
+    if gwf.constanthead
+        gwf.aquifer.head[constant_head.index] .= gwf.constant_head.head
+    end
+    # Make sure no heads ends up below the aquifer bottom
+    gwf.aquifer.head .= max.(gwf.aquifer.head, gwf.aquifer.bottom)
 end
+
+
+struct ConstantHead{T}
+    head::Vector{T}
+    index::Vector{Int}
+end
+
+
+Base.@kwdef struct GroundwaterFlow
+    aquifer::A where A <: Aquifer
+    connectivity::Connectivity
+    constanthead::Union{ConstantHead,Nothing}
+    boundaries::Vector{B} where B <: AquiferBoundaryCondition
+end 
