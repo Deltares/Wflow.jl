@@ -38,15 +38,16 @@ connections(C::Connectivity, id::Int) = C.colptr[id]:(C.colptr[id + 1] - 1)
 Compute geometrical properties of connections for structured input.
 """
 function connection_geometry(I, J, Δx, Δy)
-    if I[1] != J[1]  # connection in x
-        length1 = 0.5 * Δx[J[1]]
-        length2 = 0.5 * Δx[I[1]]
-        width = Δy[I[2]]
-    elseif I[2] != J[2]  # connection in y
-        length1 = 0.5 * Δy[J[2]]
-        length2 = 0.5 * Δy[I[2]]
-        width = Δx[I[1]]
+    if I[1] != J[1]  # connection in y
+        length1 = 0.5 * Δy[I[1]]
+        length2 = 0.5 * Δy[J[1]]
+        width = Δx[I[2]]
+    elseif I[2] != J[2]  # connection in x 
+        length1 = 0.5 * Δx[I[2]]
+        length2 = 0.5 * Δx[J[2]]
+        width = Δy[I[1]]
     else
+        # TODO: more specific exception?
         error("Inconsistent index")
     end
     return (length1, length2, width)
@@ -61,11 +62,13 @@ const FRONT = CartesianIndex(0, 1)
 
 
 # Constructor for the Connectivity structure for structured input
-function Connectivity(indices, reverse_indices, Δx, Δy)
-    nrow, ncol = size(indices)
-    # Pre-allocate output, allocate for full number of neighbors (4)
-    # We'll store only the part we need
-    ncell = length(reverse_indices)
+function Connectivity(indices, reverse_indices, Δx::Vector{T}, Δy::Vector{T}) where T
+    # indices: These map from the 1D internal domain to the 2D external domain.
+    # reverse_indices: from the 2D external domain to the 1D internal domain,
+    # providing an Int which can be used as a linear index
+    nrow, ncol = size(reverse_indices)
+    # Pre-allocate output, allocate for full potential number of neighbors (4)
+    ncell = length(indices)
     colptr = Vector{Int}(undef, ncell + 1)
     rowval = Vector{Int}(undef, ncell * 4)
     length1 = similar(rowval, T)
@@ -74,15 +77,14 @@ function Connectivity(indices, reverse_indices, Δx, Δy)
 
     i = 1  # column index of sparse matrix
     j = 1  # row index of sparse matrix
-    colptr[1] = i
-    for I in CartesianIndices(indices)
-        row_i = i
+    for I in CartesianIndices(reverse_indices)
+        colptr[j] = i
         # Strictly increasing numbering for any row
-        # (Required by a CSCSparseMatrix)
-        for neighbor in (FRONT, LEFT, RIGHT, BACK)
+        # (Required by a CSCSparseMatrix, if you want to convert)
+        for neighbor in (BACK, LEFT, RIGHT, FRONT)
             J = I + neighbor
-            if (1 <= J[1] <= ncol) && (1 <= J[2] <= nrow) # Check if it's inbounds
-                rowval[i] = indices[J]
+            if (1 <= J[1] <= nrow) && (1 <= J[2] <= ncol) # Check if it's inbounds
+                rowval[i] = reverse_indices[J]
                 length1[i], length2[i], width[i] = connection_geometry(
                     I, J, Δx, Δy
                 )
@@ -90,8 +92,8 @@ function Connectivity(indices, reverse_indices, Δx, Δy)
             end
         end
         j += 1
-        colptr[j] = row_i
     end
+    colptr[j] = i
 
     nconnection = i - 1
     return Connectivity(
@@ -101,6 +103,6 @@ function Connectivity(indices, reverse_indices, Δx, Δy)
         length2[1:nconnection],
         width[1:nconnection],
         colptr,
-        rowval,
+        rowval[1:nconnection],
     )
 end
