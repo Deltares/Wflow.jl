@@ -78,7 +78,7 @@ struct ConfinedAquifer{T} <: Aquifer
     top::Vector{T} # top of groundwater layer [m]
     bottom::Vector{T} # bottom of groundwater layer
     area::Vector{T} # area of cell
-    specific_storage::Vector{T} # [m m⁻¹]
+    specific_storage::Vector{T} # [m m⁻¹ m⁻¹]
     storativity::Vector{T} # [m m⁻¹]
     conductance::Vector{T} # Confined aquifer conductance is constant
 end
@@ -152,16 +152,16 @@ connectivity struct `C`, using the non-zero index (nzi) of its CSC data
 structure.
 """
 function horizontal_conductance(
-    j::Int,
     i::Int,
+    j::Int,
     nzi::Int,
     aquifer::A,
     connectivity::Connectivity,
 ) where A <: Aquifer
-    k1 = aquifer.k[j]
-    k2 = aquifer.k[i]
-    H1 = saturated_thickness(aquifer, j)
-    H2 = saturated_thickness(aquifer, i)
+    k1 = aquifer.k[i]
+    k2 = aquifer.k[j]
+    H1 = saturated_thickness(aquifer, i)
+    H2 = saturated_thickness(aquifer, j)
     length1 = connectivity.length1[nzi]
     length2 = connectivity.length2[nzi]
     width = connectivity.width[nzi]
@@ -175,21 +175,27 @@ end
 
 
 function conductance(aquifer::UnconfinedAquifer, connectivity, i, j, nzi)
-    return horizontal_conductance(j, i, nzi, aquifer, connectivity)
+    return horizontal_conductance(i, j, nzi, aquifer, connectivity)
 end
 
 
-function flux!(aquifer, connectivity, Q)
-    for j in 1:connectivity.ncell
+function flux!(Q, aquifer, connectivity)
+    for i in 1:connectivity.ncell
         # Loop over connections for cell j
-        for nzi in connections(connectivity, j)
-            # connection from j -> i
-            i = connectivity.rowval[nzi]
+        for nzi in connections(connectivity, i)
+            # connection from i -> j
+            j = connectivity.rowval[nzi]
             Δϕ = aquifer.head[i] - aquifer.head[j]
             cond = conductance(aquifer, connectivity, i, j, nzi)
-            Q[j] = -cond * Δϕ
+            Q[i] = -cond * Δϕ
         end
     end
+end
+
+
+struct ConstantHead{T}
+    head::Vector{T}
+    index::Vector{Int}
 end
 
 
@@ -204,15 +210,10 @@ function update(gwf, Q, config)
     if gwf.constanthead
         gwf.aquifer.head[constant_head.index] .= gwf.constant_head.head
     end
-    # Make sure no heads ends up below the aquifer bottom
+# Make sure no heads ends up below the aquifer bottom
     gwf.aquifer.head .= max.(gwf.aquifer.head, gwf.aquifer.bottom)
 end
 
-
-struct ConstantHead{T}
-    head::Vector{T}
-    index::Vector{Int}
-end
 
 
 Base.@kwdef struct GroundwaterFlow
