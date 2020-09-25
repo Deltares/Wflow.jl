@@ -200,12 +200,15 @@ end
 
 
 function update(gwf, Q, config) 
+    Q .= 0.0  # Probably remove this when linking with other components
     Δt = Second(config.timestepsecs)
     flux!(gwf.aquifer, connectivity, Q)
     for boundary in gwf.boundaries
         flux!(boundary, aquifer, Q)
     end
-        gwf.aquifer.head .+= Q * Δt / storativity(aquifer)
+
+    gwf.aquifer.head .+= Q * Δt / storativity(aquifer)
+
     # Set constant head (dirichlet) boundaries
     if gwf.constanthead
         gwf.aquifer.head[constant_head.index] .= gwf.constant_head.head

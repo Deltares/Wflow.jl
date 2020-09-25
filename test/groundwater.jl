@@ -137,6 +137,38 @@ end
 # ϕ = [-drawdown_theis(√(x^2 + y^2), t, discharge, kD, S) for t in time, x in X, y in Y]
 
 
+function homogenous_aquifer(nrow, ncol)
+    shape = (nrow, ncol)
+    # Domain, geometry
+    domain = ones(Bool, shape)
+    Δx = fill(10.0, ncol)
+    Δy = fill(10.0, nrow)
+    indices, reverse_indices = Wflow.active_indices(domain, false)
+    connectivity = Wflow.Connectivity(indices, reverse_indices, Δx, Δy)
+    ncell = connectivity.ncell
+
+    conf_aqf = Wflow.ConfinedAquifer(
+        [0.0, 7.5, 20.0],  # head
+        fill(10.0, ncell),  # k
+        fill(10.0, ncell),  # top
+        fill(0.0, ncell),  # bottom
+        fill(100.0, ncell),  # area
+        fill(1.0e-5, ncell), # specific storage
+        fill(1.0e-4, ncell),  # storativity 
+        fill(0.0, connectivity.nconnection),  # conductance
+    )
+    unconf_aqf = Wflow.UnconfinedAquifer(
+        [0.0, 7.5, 20.0],
+        fill(10.0, ncell),
+        fill(10.0, ncell),
+        fill(0.0, ncell),
+        fill(100.0, ncell),
+        fill(0.15, ncell),
+    )
+    return (connectivity, conf_aqf, unconf_aqf)
+end
+
+
 @testset "groundwater" begin
     ncol = 2
     nrow = 3
@@ -240,34 +272,8 @@ end
 
         nrow = 1
         ncol = 3
-        shape = (nrow, ncol)
-        # Domain, geometry
-        domain = ones(Bool, shape)
-        Δx = fill(10.0, ncol)
-        Δy = fill(10.0, nrow)
-        indices, reverse_indices = Wflow.active_indices(domain, false)
-        connectivity = Wflow.Connectivity(indices, reverse_indices, Δx, Δy)
-
+        connectivity, conf_aqf, unconf_aqf = homogenous_aquifer(nrow, ncol)
         ncell = connectivity.ncell
-
-        conf_aqf = Wflow.ConfinedAquifer(
-            [0.0, 7.5, 20.0],  # head
-            fill(10.0, ncell),  # k
-            fill(10.0, ncell),  # top
-            fill(0.0, ncell),  # bottom
-            fill(100.0, ncell),  # area
-            fill(1.0e-5, ncell), # specific storage
-            fill(1.0e-4, ncell),  # storativity 
-            fill(0.0, connectivity.nconnection),  # conductance
-        )
-        unconf_aqf = Wflow.UnconfinedAquifer(
-            [0.0, 7.5, 20.0],
-            fill(10.0, ncell),
-            fill(10.0, ncell),
-            fill(0.0, ncell),
-            fill(100.0, ncell),
-            fill(0.15, ncell),
-        )
 
         @testset "saturated_thickness-confined" begin
             @test (
@@ -355,24 +361,22 @@ end
         end
     end
     
-
-#    @testset "integration: flow 1D" begin
-#        aquifer, connectivity = homogenous_aquifer(3, 1)
-#        constanthead = ConstantHead([5.0 10.0], [1 3])
-#        gwf = GroundwaterFlow(
-#            aquifer,
-#            connectivity,
-#            constanthead,
-#            [],
-#        )
-#    
-#        # A hundred timesteps
-#        Δt = 0.5 # d
-#        for _ in 1:100
-#            Wflow.update(gwf, Δt)
-#        end
-#    
-#        @test gwf.head ≈ [5.0 7.5 10.0]
-#    end
-
+    # @testset "integration: flow 1D" begin
+    #    connectivity, aquifer = homogenous_aquifer(3, 1)
+    #    constanthead = Wflow.ConstantHead([5.0, 10.0], [1, 3])
+    #    gwf = Wflow.GroundwaterFlow(
+    #        aquifer,
+    #        connectivity,
+    #        constanthead,
+    #        [],
+    #    )
+    # 
+    #    # A hundred timesteps
+    #    Δt = 0.5  # days
+    #    for _ in 1:100
+    #        Wflow.update(gwf, Δt)
+    #    end
+    # 
+    #    @test gwf.head ≈ [5.0 7.5 10.0]
+    # end
 end
