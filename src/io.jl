@@ -202,7 +202,9 @@ function setup_netcdf(
             "units" => "degrees_north",
         ],
     )
-    defVar(ds, "layer", collect(1:maxlayers), ("layer",))
+    if isnothing(maxlayers) == false
+        defVar(ds, "layer", collect(1:maxlayers), ("layer",))
+    end
     defVar(
         ds,
         "time",
@@ -255,8 +257,8 @@ end
 
 struct NCReader{T}
     dataset::NCDataset
-    cyclic_dataset::NCDataset
-    cyclic_times::Vector{Tuple{Int,Int}}
+    cyclic_dataset::Union{NCDataset, Nothing}
+    cyclic_times::Vector#{Tuple{Int,Int}}
     forcing_parameters::Dict{Tuple{Symbol,Vararg{Symbol}},String}
     cyclic_parameters::Dict{Tuple{Symbol,Vararg{Symbol}},String}
     buffer::Matrix{T}
@@ -293,11 +295,19 @@ function prepare_reader(path, cyclic_path, config)
     lateral_size = timelast ? size(var)[1:2] : size(var)[2:3]
     buffer = zeros(T, lateral_size)
 
+    # check for cyclic parameters
+    do_cyclic = haskey(config.input, "cyclic")
+
     # TODO:include leaf_area_index climatology in update() vertical SBM model
     # we currently assume the same dimension ordering as the forcing
-    cyclic_dataset = NCDataset(cyclic_path)
-    cyclic_nc_times = collect(cyclic_dataset["time"])
-    cyclic_times = Wflow.timecycles(cyclic_nc_times)
+    if do_cyclic == true
+        cyclic_dataset = NCDataset(cyclic_path)
+        cyclic_nc_times = collect(cyclic_dataset["time"])
+        cyclic_times = Wflow.timecycles(cyclic_nc_times)
+    else
+        cyclic_dataset = nothing
+        cyclic_times = []
+    end
 
     # create map from internal location to NetCDF variable name for forcing parameters
     forcing_parameters = Dict{Tuple{Symbol,Vararg{Symbol}},String}()
@@ -308,19 +318,25 @@ function prepare_reader(path, cyclic_path, config)
     end
 
     # create map from internal location to NetCDF variable name for cyclic parameters
-    cyclic_parameters = Dict{Tuple{Symbol,Vararg{Symbol}},String}()
-    for par in config.input.cyclic
-        fields = symbols(par)
-        ncname = param(config.input, fields)
-        cyclic_parameters[fields] = ncname
+    if do_cyclic == true
+        cyclic_parameters = Dict{Tuple{Symbol,Vararg{Symbol}},String}()
+        for par in config.input.cyclic
+            fields = symbols(par)
+            ncname = param(config.input, fields)
+            cyclic_parameters[fields] = ncname
+        end
+    else
+        cyclic_parameters = Dict{Tuple{Symbol,Vararg{Symbol}},String}()
     end
 
     # check if there is overlap
-    forcing_keys = keys(forcing_parameters)
-    cyclic_keys = keys(cyclic_parameters)
-    for forcing_key in forcing_keys
-        if forcing_key in cyclic_keys
-            error("parameter specified in both forcing and cyclic")
+    if do_cyclic == true
+        forcing_keys = keys(forcing_parameters)
+        cyclic_keys = keys(cyclic_parameters)
+        for forcing_key in forcing_keys
+            if forcing_key in cyclic_keys
+                error("parameter specified in both forcing and cyclic")
+            end
         end
     end
 
@@ -396,13 +412,13 @@ function prepare_writer(
     reader,
     nc_path,
     modelmap,
-    maxlayers,
     states,
     rev_inds,
     x_nc,
     y_nc,
     dims_xy,
-    nc_static,
+    nc_static;
+    maxlayers = nothing,
 )
 
     nclon = ncread(reader.dataset, "lon"; type = Float64)
@@ -572,10 +588,12 @@ end
 
 "Close input and output datasets that are opened on model initialization"
 function close_files(model; delete_output::Bool = false)
-    @unpack reader, writer = model
+    @unpack reader, writer, config = model
 
     close(reader.dataset)
-    close(reader.cyclic_dataset)
+    if haskey(config.input, "cyclic")
+        close(reader.cyclic_dataset)
+    end
     close(writer.dataset)
     close(writer.csv_io)
 

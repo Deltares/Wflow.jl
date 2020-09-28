@@ -1,0 +1,175 @@
+# This is an example TOML configuration file. It is used to test the wflow configuration
+# features, and can also be used to work towards an example of what we want the
+# configuration file to look like.
+# Relative file paths are interpreted as being relative to this TOML file.
+# TOML documentation: https://github.com/toml-lang/toml
+
+casename = "testcase"
+
+calendar = "proleptic_gregorian" 
+endtime = 2000-02-01T00:00:00 # TODO add option for same timing as forcing
+starttime = 2000-01-01T00:00:00 
+time_units = "days since 1900-01-01 00:00:00" 
+timestepsecs = 86400 
+
+[state]
+path_input = "data/instates-moselle.nc" 
+path_output = "data/outstates-moselle.nc" # TODO implement
+
+# if listed, the variable must be present in the NetCDF or error
+# if not listed, the variable can get a default value if it has one
+
+[state.vertical]
+satwaterdepth = "satwaterdepth"
+snow = "snow"
+tsoil = "tsoil"
+ustorelayerdepth = "ustorelayerdepth"
+snowwater = "snowwater"
+canopystorage = "canopystorage"
+
+[state.lateral.river]
+q = "q_river"
+h = "h_river"
+
+[state.lateral.river.reservoir]
+volume = "volume_reservoir"
+
+[state.lateral.subsurface]
+ssf = "ssf"
+
+[state.lateral.land]
+q = "q_land"
+h = "h_land"
+
+[input]
+path_forcing = "data/forcing-moselle.nc"
+path_static = "data/staticmaps-moselle.nc"
+
+# these are not directly part of the model
+gauges = "wflow_gauges"
+ldd = "wflow_ldd"
+river_location = "wflow_river"
+subcatchment = "wflow_subcatch"
+
+# specify the internal IDs of the parameters which vary over time
+# the external name mapping needs to be below together with the other mappings
+forcing = [
+  "vertical.precipitation",
+  "vertical.temperature",
+  "vertical.potential_evaporation",
+]
+
+cyclic = ["vertical.leaf_area_index"]
+
+[input.vertical]
+altitude = "wflow_dem" 
+c = "c" 
+cf_soil = "cf_soil" 
+cfmax = "Cfmax" 
+e_r = "EoverR" 
+infiltcappath = "InfiltCapPath" 
+infiltcapsoil = "InfiltCapSoil" 
+kext = "Kext" 
+"kv₀" = "KsatVer" 
+leaf_area_index = "LAI" # TODO support cyclic
+m = "M" 
+maxleakage = "MaxLeakage" 
+pathfrac = "PathFrac" 
+potential_evaporation = "PET" # forcing
+precipitation = "P" # forcing
+rootdistpar = "rootdistpar" 
+rootingdepth = "RootingDepth" 
+soilminthickness = "SoilMinThickness" 
+soilthickness = "SoilThickness" 
+specific_leaf = "Sl" 
+storage_wood = "Swood" 
+temperature = "TEMP" # forcing
+tt = "TT" 
+tti = "TTI" 
+ttm = "TTM" 
+w_soil = "wflow_soil" 
+water_holding_capacity = "WHC" 
+waterfrac = "WaterFrac" 
+"θᵣ" = "thetaR" 
+"θₛ" = "thetaS"
+
+[input.lateral.river]
+length = "wflow_riverlength"
+n = "N_River"
+slope = "RiverSlope"
+width = "wflow_riverwidth"
+
+[input.lateral.river.reservoir]
+area = "ResSimpleArea"
+areas = "wflow_reservoirareas"
+demand = "ResDemand"
+locs = "wflow_reservoirlocs"
+maxrelease = "ResMaxRelease"
+maxvolume = "ResMaxVolume"
+targetfullfrac = "ResTargetFullFrac"
+targetminfrac = "ResTargetMinFrac"
+
+[input.lateral.subsurface]
+ksathorfrac = "KsatHorFrac"
+
+[input.lateral.land]
+n = "N"
+slope = "Slope" 
+
+[model]
+masswasting = true
+snow = true
+reinit = true
+reservoirs = true
+thicknesslayers = [100, 300, 800]
+
+[output]
+path = "data/output_moselle.nc"
+
+[output.vertical]
+canopystorage = "canopystorage"
+satwaterdepth = "satwaterdepth"
+snow = "snow"
+snowwater = "snowwater"
+soilthickness = "soilthickness"
+tsoil = "tsoil"
+ustorelayerdepth = "ustorelayerdepth"
+
+[output.lateral.river]
+q = "q"
+
+[csv]
+path = "data/output_moselle.csv"
+
+[[csv.column]]
+header = "Q"
+parameter = "lateral.river.q"
+reducer = "maximum"
+
+[[csv.column]]
+header = "volume"
+index = 1
+parameter = "lateral.river.reservoir.volume"
+
+[[csv.column]]
+coordinate.x = 6.255
+coordinate.y = 50.012
+header = "temp_bycoord"
+parameter = "vertical.temperature"
+
+[[csv.column]]
+header = "temp_byindex"
+index.x = 100
+index.y = 50
+parameter = "vertical.temperature"
+
+[[csv.column]]
+header = "Q"
+map = "gauges"
+parameter = "lateral.river.q"
+
+[[csv.column]]
+header = "recharge"
+map = "subcatchment"
+parameter = "vertical.recharge"
+reducer = "mean"

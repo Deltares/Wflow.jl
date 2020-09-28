@@ -21,6 +21,109 @@ end
 
 statevars(::SimpleReservoir) = (:volume,)
 
+function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits)
+        # read only reservoir data if reservoirs true
+        # allow reservoirs only in river cells
+        # note that these locations are only the reservoir outlet pixels
+        reslocs = ncread(
+            nc,
+            param(config, "input.lateral.river.reservoir.locs");
+            sel = inds_riv,
+            type = Int,
+            fill = 0,
+        )
+
+        # this holds the same ids as reslocs, but covers the entire reservoir
+        rescoverage_2d = ncread(
+            nc,
+            param(config, "input.lateral.river.reservoir.areas");
+            allow_missing = true,
+        )
+        # for each reservoir, a list of 2D indices, needed for getting the mean precipitation
+        inds_res_cov = Vector{CartesianIndex{2}}[]
+
+        rev_inds_reservoir = zeros(Int, size(rescoverage_2d))
+
+        # construct a map from the rivers to the reservoirs and
+        # a map of the reservoirs to the 2D model grid
+        resindex = fill(0, nriv)
+        inds_res = CartesianIndex{2}[]
+        rescounter = 0
+        for (i, ind) in enumerate(inds_riv)
+            res_id = reslocs[i]
+            if res_id > 0
+                push!(inds_res, ind)
+                rescounter += 1
+                resindex[i] = rescounter
+                rev_inds_reservoir[ind] = rescounter
+
+                # get all indices related to this reservoir outlet
+                # done in this loop to ensure that the order is equal to the order in the
+                # SimpleReservoir struct
+                res_cov = findall(isequal(res_id), rescoverage_2d)
+                push!(inds_res_cov, res_cov)
+            end
+        end
+
+        resdemand = ncread(
+            nc,
+            param(config, "input.lateral.river.reservoir.demand");
+            sel = inds_res,
+            type = Float64,
+            fill = 0,
+        )
+        resmaxrelease = ncread(
+            nc,
+            param(config, "input.lateral.river.reservoir.maxrelease");
+            sel = inds_res,
+            type = Float64,
+            fill = 0,
+        )
+        resmaxvolume = ncread(
+            nc,
+            param(config, "input.lateral.river.reservoir.maxvolume");
+            sel = inds_res,
+            type = Float64,
+            fill = 0,
+        )
+        resarea = ncread(
+            nc,
+            param(config, "input.lateral.river.reservoir.area");
+            sel = inds_res,
+            type = Float64,
+            fill = 0,
+        )
+        res_targetfullfrac = ncread(
+            nc,
+            param(config, "input.lateral.river.reservoir.targetfullfrac");
+            sel = inds_res,
+            type = Float64,
+            fill = 0,
+        )
+        res_targetminfrac = ncread(
+            nc,
+            param(config, "input.lateral.river.reservoir.targetminfrac");
+            sel = inds_res,
+            type = Float64,
+            fill = 0,
+        )
+
+        # for surface water routing reservoir locations are considered pits in the flow network
+        # all upstream flow goes to the river and flows into the reservoir
+        pits[inds_res] .= true
+
+        reservoirs = SimpleReservoir{Float64}(
+            demand = resdemand,
+            maxrelease = resmaxrelease,
+            maxvolume = resmaxvolume,
+            area = resarea,
+            targetfullfrac = res_targetfullfrac,
+            targetminfrac = res_targetminfrac,
+        )
+
+        return reservoirs, resindex, (indices_outlet = inds_res, indices_coverage = inds_res_cov, reverse_indices = rev_inds_reservoir), pits
+end
+
 """
 Update a single reservoir at position `i`.
 
@@ -84,6 +187,160 @@ Base.@kwdef struct NaturalLake{T}
         return new(args...)
     end
 end
+
+function initialize_natural_lake(config, nc, inds_riv, nriv, pits)
+        # read only lake data if lakes true
+        # allow lakes only in river cells
+        # note that these locations are only the lake outlet pixels
+        lakelocs = ncread(
+            nc,
+            param(config, "input.lateral.river.lake.locs");
+            sel = inds_riv,
+            type = Int,
+            fill = 0,
+        )
+
+        # this holds the same ids as lakelocs, but covers the entire lake
+        lakecoverage_2d = ncread(
+            nc,
+            param(config, "input.lateral.river.lake.areas");
+            allow_missing = true,
+        )
+        # for each lake, a list of 2D indices, needed for getting the mean precipitation
+        inds_lake_cov = Vector{CartesianIndex{2}}[]
+
+        rev_inds_lake = zeros(Int, size(lakecoverage_2d))
+
+        # construct a map from the rivers to the lakes and
+        # a map of the lakes to the 2D model grid
+        lakeindex = fill(0, nriv)
+        inds_lake = CartesianIndex{2}[]
+        lakecounter = 0
+        for (i, ind) in enumerate(inds_riv)
+            lake_id = lakelocs[i]
+            if lake_id > 0
+                push!(inds_lake, ind)
+                lakecounter += 1
+                lakeindex[i] = lakecounter
+                rev_inds_lake[ind] = lakecounter
+
+                # get all indices related to this lake outlet
+                # done in this loop to ensure that the order is equal to the order in the
+                # NaturalLake struct
+                lake_cov = findall(isequal(lake_id), lakecoverage_2d)
+                push!(inds_lake_cov, lake_cov)
+            end
+        end
+
+        lakearea = ncread(
+            nc,
+            param(config, "input.lateral.river.lake.area");
+            sel = inds_riv,
+            type = Float64,
+            fill = 0,
+        )
+        lake_b = ncread(
+            nc,
+            param(config, "input.lateral.river.lake.b");
+            sel = inds_riv,
+            type = Float64,
+            fill = 0,
+        )
+        lake_e = ncread(
+            nc,
+            param(config, "input.lateral.river.lake.e");
+            sel = inds_riv,
+            type = Float64,
+            fill = 0,
+        )
+        lake_threshold = ncread(
+            nc,
+            param(config, "input.lateral.river.lake.threshold");
+            sel = inds_riv,
+            type = Float64,
+            fill = 0,
+        )
+        linked_lakelocs = ncread(
+            nc,
+            param(config, "input.lateral.river.lake.linkedlakelocs");
+            sel = inds_riv,
+            type = Int,
+            fill = 0,
+        )
+        lake_storfunc = ncread(
+            nc,
+            param(config, "input.lateral.river.lake.storfunc");
+            sel = inds_riv,
+            type = Int,
+            fill = 0,
+        )
+        lake_outflowfunc = ncread(
+            nc,
+            param(config, "input.lateral.river.lake.outflowfunc");
+            sel = inds_riv,
+            type = Int,
+            fill = 0,
+        )
+        lake_avglevel = ncread(
+            nc,
+            param(config, "input.lateral.river.lake.avglevel");
+            sel = inds_riv,
+            type = Float64,
+            fill = 0,
+        )
+
+        # for surface water routing lake locations are considered pits in the flow network
+        # all upstream flow goes to the river and flows into the lake
+        pits[inds_lake] .= true
+
+        # This is currently the same length as all river cells, but will be the
+        # length of all lake cells. To do that we need to introduce a mapping.
+        n_lakes = length(lakelocs)
+
+        sh = Vector{DataFrame}(undef, n_lakes)
+        hq = Vector{DataFrame}(undef, n_lakes)
+        for i = 1:n_lakes
+            if linked_lakelocs[i] > 0
+                linked_lakelocs[i] = i
+            else
+                linked_lakelocs[i] = 0
+            end
+
+            if lake_storfunc[i] == 2
+                sh[i] = CSV.read("Lake_SH_$(lakelocs[i])", type = Float64)
+            else
+                sh[i] = DataFrame()
+            end
+
+            if lake_outflowfunc[i] == 1
+                hq[i] = CSV.read("Lake_HQ_$(lakelocs[i])", type = Float64)
+            else
+                hq[i] = DataFrame()
+            end
+
+            if lake_outflowfunc[i] == 3 && lake_storfunc[i] != 1
+                @warn("For the modified pulse approach (LakeOutflowFunc = 3) the LakeStorFunc should be 1")
+            end
+        end
+
+        lakes = NaturalLake{Float64}(
+            loc_id = lakelocs,
+            lowerlake_ind = linked_lakelocs,
+            area = lakearea,
+            threshold = lake_threshold,
+            storfunc = lake_storfunc,
+            outflowfunc = lake_outflowfunc,
+            b = lake_b,
+            e = lake_e,
+            avg_waterlevel = lake_avglevel,
+            sh = sh,
+            hq = hq,
+            is_lake = is_lake,
+        )
+
+        return lakes, lakeindex, (indices_outlet = inds_lake, indices_coverage = inds_lake_cov, reverse_indices = rev_inds_lake), pits
+end
+
 
 "Determine the initial storage depending on the storage function"
 function initialize_storage(storfunc, area, waterlevel, sh)

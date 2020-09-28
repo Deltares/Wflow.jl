@@ -68,13 +68,7 @@ Read states contained in `Tuple` `states` from NetCDF file located in `instate_p
 `model` object. Active cells are selected with `sel` (`Vector{CartesianIndex}`) from the NetCDF file. 
 
 # Arguments
-- `type=nothing`: type to convert data to after reading. By default no conversion is done.
-- `sel_res=nothing`: a selection of indices, such as a `Vector{CartesianIndex}` of active reservoir cells,
-        to return from the NetCDF. By default all active cells are returned.
-- `sel_riv=nothing`: a selection of indices, such as a `Vector{CartesianIndex}` of active river cells,
-        to return from the NetCDF. By default all active cells are returned.
-- `sel_lake=nothing`: a selection of indices, such as a `Vector{CartesianIndex}` of active lake cells,
-        to return from the NetCDF. By default all active cells are returned.
+- `type = nothing`: type to convert data to after reading. By default no conversion is done.
 """
 function set_states(
     instate_path,
@@ -83,11 +77,8 @@ function set_states(
     sel,
     config;
     type = nothing,
-    sel_res = nothing,
-    sel_riv = nothing,
-    sel_lake = nothing,
 )
-
+    @unpack network = model
     # states in NetCDF include dim time (one value) at index 3 or 4, 3 or 4 dims are allowed
     ds = NCDataset(instate_path)
     for state in states
@@ -107,11 +98,11 @@ function set_states(
             # 3 dims (x,y,time)
         elseif dims == 3
             if :reservoir in state
-                A = ds[ncname][sel_res, 1]
+                A = ds[ncname][network.reservoir.indices_outlet, 1]
             elseif :lake in state
-                A = ds[ncname][sel_lake, 1]
+                A = ds[ncname][network.lake.indices_outlet, 1]
             elseif :river in state
-                A = ds[ncname][sel_riv, 1]
+                A = ds[ncname][network.river.indices, 1]
             else
                 A = ds[ncname][sel, 1]
             end

@@ -25,8 +25,11 @@ end
 
 staticmaps_rhine_path = testdata(v"0.1", "staticmaps.nc", "staticmaps-rhine.nc")
 staticmaps_moselle_path = testdata(v"0.2", "staticmaps.nc", "staticmaps-moselle.nc")
+staticmaps_lahn_path = testdata(v"0.2", "staticmaps.nc", "staticmaps-lahn.nc")
 forcing_moselle_path = testdata(v"0.2", "forcing-2000.nc", "forcing-moselle.nc")
+forcing_lahn_path = testdata(v"0.2", "forcing-2000.nc", "forcing-lahn.nc")
 instates_moselle_path = testdata(v"0.2", "instates-moselle.nc", "instates-moselle.nc")
+
 
 ## run all tests
 
@@ -36,4 +39,5 @@ instates_moselle_path = testdata(v"0.2", "instates-moselle.nc", "instates-mosell
     include("vertical_process.jl")
     include("reservoir_lake.jl")
     include("run_sbm.jl")
+    include("run_hbv.jl")
 end
