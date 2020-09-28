@@ -15,8 +15,8 @@ function initialize_sbm_model(config::Config)
     output_path = joinpath(tomldir, config.output.path)
 
     Δt = Second(config.timestepsecs)
-    sizeinmetres = Bool(get(config.model, "sizeinmetres", false))
-    reinit = Bool(get(config.model, "reinit", true))
+    sizeinmetres = get(config.model, "sizeinmetres", false)
+    reinit = get(config.model, "reinit", true)
     config_thicknesslayers = get(config.model, "thicknesslayers", 0.0)
     if length(config_thicknesslayers) > 0
         thicknesslayers = SVector(Tuple(push!(Float64.(config_thicknesslayers), mv)))
@@ -25,9 +25,9 @@ function initialize_sbm_model(config::Config)
     else
         maxlayers = 1
     end
-    do_reservoirs = Bool(get(config.model, "reservoirs", false))
-    do_lakes = Bool(get(config.model, "lakes", false))
-    do_snow = Bool(get(config.model, "snow", false))
+    do_reservoirs = get(config.model, "reservoirs", false)
+    do_lakes = get(config.model, "lakes", false)
+    do_snow = get(config.model, "snow", false)
 
     nc = NCDataset(static_path)
     dims = dimnames(nc[param(config, "input.subcatchment")])
@@ -650,7 +650,7 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
 
     update_until_snow(vertical, config)
 
-    if Bool(get(config.model, "masswasting", 0))
+    if get(config.model, "masswasting", false)
         snowflux_frac =
             min.(0.5, lateral.land.sl ./ 5.67) .* min.(1.0, vertical.snow ./ 10000.0)
         maxflux = snowflux_frac .* vertical.snow

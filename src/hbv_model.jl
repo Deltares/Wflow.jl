@@ -15,10 +15,10 @@ function initialize_hbv_model(config::Config)
 
     Δt = Second(config.timestepsecs)
 
-    sizeinmetres = Bool(get(config.model, "sizeinmetres", false))
-    reinit = Bool(get(config.model, "reinit", true))
-    do_reservoirs = Bool(get(config.model, "reservoirs", false))
-    do_lakes = Bool(get(config.model, "lakes", false))
+    sizeinmetres = get(config.model, "sizeinmetres", false)
+    reinit = get(config.model, "reinit", true)
+    do_reservoirs = get(config.model, "reservoirs", false)
+    do_lakes = get(config.model, "lakes", false)
 
     nc = NCDataset(static_path)
     dims = dimnames(nc[param(config, "input.subcatchment")])
@@ -460,7 +460,7 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:HBV,R,W}
 
     update_until_snow(vertical, config)
 
-    if Bool(get(config.model, "masswasting", 0))
+    if get(config.model, "masswasting", false)
         snowflux_frac =
             min.(0.5, lateral.land.sl ./ 5.67) .* min.(1.0, vertical.snow ./ 10000.0)
         maxflux = snowflux_frac .* vertical.snow
