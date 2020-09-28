@@ -39,7 +39,7 @@ function initialize_hbv_model(config::Config)
         sel = inds,
         defaults = 3.75653,
         type = Float64,
-    )
+    ) .* (Δt / basetimestep)
     tt = ncread(
         nc,
         param(config, "input.vertical.tt", nothing);
@@ -95,14 +95,14 @@ function initialize_hbv_model(config::Config)
         sel = inds,
         defaults = 0.02307,
         type = Float64,
-    )
+    ) .* (Δt / basetimestep)
     kquickflow = ncread(
         nc,
         param(config, "input.vertical.kquickflow", nothing);
         sel = inds,
         defaults = 0.09880,
         type = Float64,
-    )
+    ) .* (Δt / basetimestep)
     suz = ncread(
         nc,
         param(config, "input.vertical.suz", nothing);
@@ -116,21 +116,21 @@ function initialize_hbv_model(config::Config)
         sel = inds,
         defaults = 0.30,
         type = Float64,
-    )
+    ) .* (Δt / basetimestep)
     khq = ncread(
         nc,
         param(config, "input.vertical.khq", nothing);
         sel = inds,
         defaults = 0.09880,
         type = Float64,
-    )
+    ) .* (Δt / basetimestep)
     hq = ncread(
         nc,
         param(config, "input.vertical.hq", nothing);
         sel = inds,
         defaults = 3.27,
         type = Float64,
-    )
+    ) .* (Δt / basetimestep)
     alphanl = ncread(
         nc,
         param(config, "input.vertical.alphanl", nothing);
@@ -144,7 +144,7 @@ function initialize_hbv_model(config::Config)
         sel = inds,
         defaults = 0.4,
         type = Float64,
-    )
+    ) .* (Δt / basetimestep)
     cfr = ncread(
         nc,
         param(config, "input.vertical.cfr", nothing);
@@ -179,7 +179,7 @@ function initialize_hbv_model(config::Config)
         sel = inds,
         defaults = 2.0,
         type = Float64,
-    )
+    ) .* (Δt / basetimestep)
     icf = ncread(
         nc,
         param(config, "input.vertical.icf", nothing);

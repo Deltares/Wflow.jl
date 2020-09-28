@@ -75,9 +75,9 @@ function initialize_sbm_model(config::Config)
         nc,
         param(config, "cfmax", nothing);
         sel = inds,
-        defaults = 3.75653 * (Δt / basetimestep),
+        defaults = 3.75653,
         type = Float64,
-    )
+    ) .* (Δt / basetimestep)
     tt = ncread(
         nc,
         param(config, "input.vertical.tt", nothing);
@@ -110,9 +110,9 @@ function initialize_sbm_model(config::Config)
         nc,
         param(config, "input.vertical.w_soil", nothing);
         sel = inds,
-        defaults = 0.1125 * (Δt / basetimestep),
+        defaults = 0.1125,
         type = Float64,
-    )
+    ) .* (Δt / basetimestep)
     cf_soil = ncread(
         nc,
         param(config, "input.vertical.cf_soil", nothing);
@@ -141,9 +141,9 @@ function initialize_sbm_model(config::Config)
         nc,
         param(config, "input.vertical.kv₀");
         sel = inds,
-        defaults = 3000.0 * (Δt / basetimestep),
+        defaults = 3000.0,
         type = Float64,
-    )
+    ) .* (Δt / basetimestep)
     m = ncread(
         nc,
         param(config, "input.vertical.m", nothing);
