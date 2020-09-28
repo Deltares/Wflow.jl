@@ -465,6 +465,7 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:HBV,R,W}
             min.(0.5, lateral.land.sl ./ 5.67) .* min.(1.0, vertical.snow ./ 10000.0)
         maxflux = snowflux_frac .* vertical.snow
         vertical.snow .= accucapacityflux(network.land, vertical.snow, maxflux)
+        vertical.snowwater .= accucapacityflux(network.land, vertical.snowwater, vertical.snowwater .* snowflux_frac)
     end
 
     update_after_snow(vertical, config)
