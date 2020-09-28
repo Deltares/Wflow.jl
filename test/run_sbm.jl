@@ -41,33 +41,33 @@ end
 
 @testset "subsurface flow" begin
     ssf = model.lateral.subsurface.ssf
-    @test sum(ssf) ≈ 7.005493498683713e16
+    @test sum(ssf) ≈ 7.018049515925046e16
     @test ssf[network.land.order[1]] ≈ 3.0449782003445332e13
-    @test ssf[network.land.order[end-100]] ≈ 7.87333555063647e11
+    @test ssf[network.land.order[end-100]] ≈ 7.880162191955529e11 
     @test ssf[network.land.order[end]] ≈ 3.289417561401221e11
 end
 
 @testset "overland flow" begin
     q = model.lateral.land.q_av
-    @test sum(q) ≈ 6.1213772525470445
+    @test sum(q) ≈ 6.90083880140185
     @test q[26625] ≈ 0.0
     @test q[39308] ≈ 0.0
-    @test q[network.land.order[end]] ≈ 6.804317844228025e-6
+    @test q[network.land.order[end]] ≈ 6.804473627304958e-6
 end
 
 @testset "river flow" begin
     q = model.lateral.river.q_av
-    @test sum(q) ≈ 671.3851501260151
-    @test q[4061] ≈ 0.011731014256037769
-    @test q[5617] ≈ 1.0080691890749913
-    @test q[network.river.order[end]] ≈ 0.0043612246315573805
+    @test sum(q) ≈ 553.6164388201375
+    @test q[4061] ≈ 0.010026925525742442
+    @test q[5617] ≈ 0.8885914760323682
+    @test q[network.river.order[end]] ≈ 0.004354904955828351
 end
 
 @testset "reservoir simple" begin
     res = model.lateral.river.reservoir
     @test res.outflow[2] ≈ 0.2174998592483153
-    @test res.inflow[2] ≈ 0.0003260830320098207
-    @test res.volume[2] ≈ 2.776156241597619e7
+    @test res.inflow[2] ≈ 0.00023469861436165696
+    @test res.volume[2] ≈ 2.776155347023747e7
     @test res.precipitation[2] ≈ 0.1765228509902954
     @test res.evaporation[2] ≈ 0.5372688174247742
 end
