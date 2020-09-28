@@ -344,6 +344,9 @@ The refreezing efficiency factor is set to 0.05.
 - `ttm` (melting threshold)
 - `cfmax` (degree day factor, rate of snowmelt)
 - `whc` (Water holding capacity of snow)
+- `rfcf` correction factor for rainfall
+- `sfcf` correction factor for snowfall
+- `cfr` refreeing efficiency constant in refreezing of freewater in snow
 
 # Output
 - `snow`
@@ -352,11 +355,7 @@ The refreezing efficiency factor is set to 0.05.
 - `rainfall` (precipitation that occurs as rainfall)
 - `snowfall` (precipitation that occurs as snowfall)
 """
-function snowpack_hbv(snow, snowwater, precipitation, temperature, tti, tt, ttm, cfmax, whc)
-
-    rfcf = 1.0  # correction factor for rainfall
-    cfr = 0.05  # refreeing efficiency constant in refreezing of freewater in snow
-    sfcf = 1.0  # correction factor for snowfall
+function snowpack_hbv(snow, snowwater, precipitation, temperature, tti, tt, ttm, cfmax, whc; rfcf=1.0, sfcf=1.0,cfr=0.05)
 
     # fraction of precipitation which falls as rain
     rainfrac = if iszero(tti)
@@ -370,10 +369,8 @@ function snowpack_hbv(snow, snowwater, precipitation, temperature, tti, tt, ttm,
     # fraction of precipitation which falls as snow
     snowfrac = 1.0 - rainfrac
     # different correction for rainfall and snowfall
-    precipitation = sfcf * snowfrac * precipitation + rfcf * rainfrac * precipitation
-
-    snowfall = snowfrac * precipitation  # snowfall depth
-    rainfall = rainfrac * precipitation  # rainfall depth
+    snowfall = snowfrac * sfcf * precipitation  # snowfall depth
+    rainfall = rainfrac * rfcf * precipitation  # rainfall depth
     # potential snow melt, based on temperature
     potsnowmelt = temperature > ttm ? cfmax * (temperature - ttm) : 0.0
     # potential refreezing, based on temperature

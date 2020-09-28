@@ -13,37 +13,31 @@ time_units = "days since 1900-01-01 00:00:00"
 timestepsecs = 86400 
 
 [state]
-path_input = "data/instates-moselle.nc" 
-path_output = "data/outstates-moselle.nc" # TODO implement
+path_input = "data/instates-lahn.nc" 
+path_output = "data/outstates-lahn.nc" # TODO implement
 
 # if listed, the variable must be present in the NetCDF or error
 # if not listed, the variable can get a default value if it has one
 
 [state.vertical]
-satwaterdepth = "satwaterdepth"
 snow = "snow"
-tsoil = "tsoil"
-ustorelayerdepth = "ustorelayerdepth"
 snowwater = "snowwater"
-canopystorage = "canopystorage"
+soilmoisture = "soilmoisture"
+upperzonestorage = "upperzonestorage"
+lowerzonestorage = "lowerzonestorage"
+interceptionstorage = "interceptionstorage"
 
 [state.lateral.river]
 q = "q_river"
 h = "h_river"
-
-[state.lateral.river.reservoir]
-volume = "volume_reservoir"
-
-[state.lateral.subsurface]
-ssf = "ssf"
 
 [state.lateral.land]
 q = "q_land"
 h = "h_land"
 
 [input]
-path_forcing = "data/forcing-moselle.nc"
-path_static = "data/staticmaps-moselle.nc"
+path_forcing = "data/forcing-lahn.nc"
+path_static = "data/staticmaps-lahn.nc"
 
 # these are not directly part of the model
 gauges = "wflow_gauges"
@@ -59,58 +53,35 @@ forcing = [
   "vertical.potential_evaporation",
 ]
 
-cyclic = ["vertical.leaf_area_index"]
-
 [input.vertical]
-altitude = "wflow_dem" 
-c = "c" 
-cf_soil = "cf_soil" 
-cfmax = "Cfmax" 
-e_r = "EoverR" 
-infiltcappath = "InfiltCapPath" 
-infiltcapsoil = "InfiltCapSoil" 
-kext = "Kext" 
-"kv₀" = "KsatVer" 
-leaf_area_index = "LAI" # TODO support cyclic
-m = "M" 
-maxleakage = "MaxLeakage" 
-pathfrac = "PathFrac" 
+altitude = "wflow_dem"
+alphanl = "AlphaNL"
+betaseepage = "BetaSeepage"
+cevpf = "CEVPF"
+cflux = "Cflux"
+cfmax = "Cfmax"
+cfr = "CFR"
+epf = "EPF"
+fc = "FC"
+hq = "HQ"
+icf = "ICF"
+k4 = "K4"
+khq = "KHQ"
+lp = "LP"
+perc = "PERC"
 potential_evaporation = "PET" # forcing
 precipitation = "P" # forcing
-rootdistpar = "rootdistpar" 
-rootingdepth = "RootingDepth" 
-soilminthickness = "SoilMinThickness" 
-soilthickness = "SoilThickness" 
-specific_leaf = "Sl" 
-storage_wood = "Swood" 
 temperature = "TEMP" # forcing
+sfcf = "SFCF"
 tt = "TT" 
-tti = "TTI" 
-ttm = "TTM" 
-w_soil = "wflow_soil" 
-water_holding_capacity = "WHC" 
-waterfrac = "WaterFrac" 
-"θᵣ" = "thetaR" 
-"θₛ" = "thetaS"
+tti = "TTI"
+whc = "WHC"
 
 [input.lateral.river]
 length = "wflow_riverlength"
 n = "N_River"
 slope = "RiverSlope"
 width = "wflow_riverwidth"
-
-[input.lateral.river.reservoir]
-area = "ResSimpleArea"
-areas = "wflow_reservoirareas"
-demand = "ResDemand"
-locs = "wflow_reservoirlocs"
-maxrelease = "ResMaxRelease"
-maxvolume = "ResMaxVolume"
-targetfullfrac = "ResTargetFullFrac"
-targetminfrac = "ResTargetMinFrac"
-
-[input.lateral.subsurface]
-ksathorfrac = "KsatHorFrac"
 
 [input.lateral.land]
 n = "N"
@@ -119,27 +90,23 @@ slope = "Slope"
 [model]
 masswasting = true
 snow = true
-reinit = false
-reservoirs = true
-thicknesslayers = [100, 300, 800]
+reinit = true
 
 [output]
-path = "data/output_moselle.nc"
+path = "data/output_lahn.nc"
 
 [output.vertical]
-canopystorage = "canopystorage"
-satwaterdepth = "satwaterdepth"
+soilmoisture = "soilmoisture"
+upperzonestorage = "upperzonestorage"
+lowerzonestorage = "lowerzonestorage"
 snow = "snow"
 snowwater = "snowwater"
-soilthickness = "soilthickness"
-tsoil = "tsoil"
-ustorelayerdepth = "ustorelayerdepth"
 
 [output.lateral.river]
 q = "q"
 
 [csv]
-path = "data/output_moselle.csv"
+path = "data/output_lahn.csv"
 
 [[csv.column]]
 header = "Q"
@@ -147,20 +114,15 @@ parameter = "lateral.river.q"
 reducer = "maximum"
 
 [[csv.column]]
-header = "volume"
-index = 1
-parameter = "lateral.river.reservoir.volume"
-
-[[csv.column]]
-coordinate.x = 6.255
-coordinate.y = 50.012
+coordinate.x = 8.279
+coordinate.y = 50.534
 header = "temp_bycoord"
 parameter = "vertical.temperature"
 
 [[csv.column]]
 header = "temp_byindex"
-index.x = 100
-index.y = 50
+index.x = 88
+index.y = 22
 parameter = "vertical.temperature"
 
 [[csv.column]]
@@ -169,7 +131,7 @@ map = "gauges"
 parameter = "lateral.river.q"
 
 [[csv.column]]
-header = "recharge"
+header = "perc"
 map = "subcatchment"
-parameter = "vertical.recharge"
+parameter = "vertical.perc"
 reducer = "mean"

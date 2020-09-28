@@ -4,7 +4,7 @@ using CFTime
 using Random
 using UnPack
 
-tomlpath = joinpath(@__DIR__, "config.toml")
+tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 parsed_toml = Wflow.parsefile(tomlpath)
 config = Wflow.Config(tomlpath)
 
@@ -42,11 +42,11 @@ end
           monthday.(Date(2000, 1, 1):Day(1):Date(2000, 12, 31))
 end
 
-# test reading and setting of warm states (reinit=true)
-# modify existing config an re-initialize the model
-@test !config.model.reinit
-config["model"]["reinit"] = true
+# test reading and setting of warm states (reinit=false)
+# modify existing config and initialize model with warm states
 @test config.model.reinit
+config["model"]["reinit"] = false
+@test !config.model.reinit
 model = Wflow.initialize_sbm_model(config)
 
 @unpack vertical, clock, reader, writer = model
