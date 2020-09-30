@@ -9,7 +9,8 @@ with:
 * ϕ: hydraulic head (groundwater level)
 * t: time
 * k: conductivity
-* H: H the (saturated) aquifer height: groundwater level - aquifer bottom elevation
+* H: H the (saturated) aquifer height: groundwater level - aquifer bottom
+  elevation
 * η: elevation of aquifer bottom
 * Q: fluxes from boundary conditions (e.g. recharge or abstraction)
 
@@ -40,8 +41,12 @@ There is only one unknown, ϕᵢᵗ⁺¹. Reshuffling terms:
 
 ϕᵢᵗ⁺¹ = ϕᵢᵗ + (Cᵢ₋₁ * (ϕᵢ - ϕᵢ₋₁) + Cᵢ * (ϕᵢ₊₁ - ϕᵢ) + Qᵢ) * Δt / Sᵢ
 
-This can be generalized to two dimensions, for both regular and irregular
-cell connectivity.
+This can be generalized to two dimensions, for both regular and irregular cell
+connectivity.
+
+See this paper for more details:
+     Chu, W. S., & Willis, R. (1984). An explicit finite difference model for
+     unconfined aquifers. Groundwater, 22(6), 728-734. 
 
 Boundary conditions can be classified into three categories:
 * specified head (Dirichlet)
@@ -168,6 +173,19 @@ function horizontal_conductance(
     return harmonicmean_conductance(k1, k2, H1, H2, length1, length2, width)
 end
 
+"""
+Conductance for a confined aquifer is constant, and only has to be set once.
+"""
+function initialize_conductance!(aquifer::ConfinedAquifer, connectivity::Connectivity)
+    for i in 1:connectivity.ncell
+        # Loop over connections for cell j
+        for nzi in connections(connectivity, i)
+            j = connectivity.rowval[nzi]
+            aquifer.conductance[nzi] = horizontal_conductance(i, j, nzi, aquifer, connectivity)
+        end
+    end
+end
+
 
 function conductance(aquifer::ConfinedAquifer, connectivity, i, j, nzi)
     return aquifer.conductance[nzi]
@@ -187,7 +205,7 @@ function flux!(Q, aquifer, connectivity)
             j = connectivity.rowval[nzi]
             Δϕ = aquifer.head[i] - aquifer.head[j]
             cond = conductance(aquifer, connectivity, i, j, nzi)
-            Q[i] = -cond * Δϕ
+Q[i] -= cond * Δϕ
         end
     end
 end
@@ -199,29 +217,39 @@ struct ConstantHead{T}
 end
 
 
-function update(gwf, Q, config) 
-    Q .= 0.0  # Probably remove this when linking with other components
-    Δt = Second(config.timestepsecs)
-    flux!(gwf.aquifer, connectivity, Q)
-    for boundary in gwf.boundaries
-        flux!(boundary, aquifer, Q)
-    end
+"""
+Compute a stable timestep size given the forward-in-time, central in space scheme.
+The following criterion can be found in Chu & Willis (1984)
 
-    gwf.aquifer.head .+= Q * Δt / storativity(aquifer)
-
-    # Set constant head (dirichlet) boundaries
-    if gwf.constanthead
-        gwf.aquifer.head[constant_head.index] .= gwf.constant_head.head
+Δt * k * H / (Δx * Δy * S) <= 1/4
+"""
+function stable_timestep(aquifer)
+    Δtₘᵢₙ = Inf
+    for i in eachindex(aquifer.head)
+        Δt = aquifer.area[i] * storativity(aquifer)[i] / (aquifer.k[i] * saturated_thickness(aquifer, i))
+        Δtₘᵢₙ = Δt < Δtₘᵢₙ ? Δt : Δtₘᵢₙ
     end
-# Make sure no heads ends up below the aquifer bottom
-    gwf.aquifer.head .= max.(gwf.aquifer.head, gwf.aquifer.bottom)
+    return 0.25 * Δtₘᵢₙ
 end
 
+
+function update(gwf, Q, Δt)
+    Q .= 0.0  # TODO: Probably remove this when linking with other components
+    flux!(Q, gwf.aquifer, gwf.connectivity)
+    for boundary in gwf.boundaries
+        flux!(Q, boundary, gwf.aquifer)
+    end
+    gwf.aquifer.head .+= (Q ./ gwf.aquifer.area .* Δt ./ storativity(gwf.aquifer))
+    # Set constant head (dirichlet) boundaries
+    gwf.aquifer.head[gwf.constanthead.index] .= gwf.constanthead.head
+    # Make sure no heads ends up below the aquifer bottom
+    gwf.aquifer.head .= max.(gwf.aquifer.head, gwf.aquifer.bottom)
+end
 
 
 Base.@kwdef struct GroundwaterFlow
     aquifer::A where A <: Aquifer
     connectivity::Connectivity
-    constanthead::Union{ConstantHead,Nothing}
+    constanthead::ConstantHead
     boundaries::Vector{B} where B <: AquiferBoundaryCondition
 end 
