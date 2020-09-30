@@ -47,7 +47,7 @@ function connection_geometry(I, J, Δx, Δy)
         length2 = 0.5 * Δx[J[2]]
         width = Δy[I[1]]
     else
-        # TODO: more specific exception?
+        # TODO: more specific exception? --> Martijn
         error("Inconsistent index")
     end
     return (length1, length2, width)
@@ -55,11 +55,12 @@ end
 
 
 # Define cartesian indices for neighbors
-const LEFT = CartesianIndex(-1, 0)
-const RIGHT = CartesianIndex(1, 0)
-const BACK = CartesianIndex(0, -1)
-const FRONT = CartesianIndex(0, 1)
-
+const neighbors = [
+    CartesianIndex(0, -1)
+    CartesianIndex(-1, 0)
+    CartesianIndex(1, 0)
+    CartesianIndex(0, 1)
+]
 
 # Constructor for the Connectivity structure for structured input
 function Connectivity(indices, reverse_indices, Δx::Vector{T}, Δy::Vector{T}) where T
@@ -81,7 +82,7 @@ function Connectivity(indices, reverse_indices, Δx::Vector{T}, Δy::Vector{T}) 
         colptr[j] = i
         # Strictly increasing numbering for any row
         # (Required by a CSCSparseMatrix, if you want to convert)
-        for neighbor in (BACK, LEFT, RIGHT, FRONT)
+        for neighbor in neighbors
             J = I + neighbor
             if (1 <= J[1] <= nrow) && (1 <= J[2] <= ncol) # Check if it's inbounds
                 rowval[i] = reverse_indices[J]
