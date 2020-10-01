@@ -630,7 +630,7 @@ function reducer(col, rev_inds, x_nc, y_nc, dims_xy, config, dataset)
             iszero(ind) && error("area $v has inactive cells")
             push!(vector, ind)
         end
-        return A -> (f(A[v]) for v in values(inds))
+        return A -> (f(A[inds[id]]) for id in ids)
     elseif haskey(col, "reducer")
         # reduce over all active cells
         # needs to be behind the map if statement, because it also can use a reducer
