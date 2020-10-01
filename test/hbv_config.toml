@@ -55,24 +55,24 @@ forcing = [
 
 [input.vertical]
 altitude = "wflow_dem"
-alphanl = "AlphaNL"
-betaseepage = "BetaSeepage"
-cevpf = "CEVPF"
-cflux = "Cflux"
+# alphanl = "AlphaNL"
+# betaseepage = "BetaSeepage"
+# cevpf = "CEVPF"
+# cflux = "Cflux"
 cfmax = "Cfmax"
-cfr = "CFR"
-epf = "EPF"
-fc = "FC"
-hq = "HQ"
-icf = "ICF"
-k4 = "K4"
-khq = "KHQ"
-lp = "LP"
-perc = "PERC"
+# cfr = "CFR"
+# epf = "EPF"
+# fc = "FC"
+# hq = "HQ"
+# icf = "ICF"
+# k4 = "K4"
+# khq = "KHQ"
+# lp = "LP"
+# perc = "PERC"
 potential_evaporation = "PET" # forcing
 precipitation = "P" # forcing
 temperature = "TEMP" # forcing
-sfcf = "SFCF"
+# sfcf = "SFCF"
 tt = "TT" 
 tti = "TTI"
 whc = "WHC"
@@ -114,8 +114,8 @@ parameter = "lateral.river.q"
 reducer = "maximum"
 
 [[csv.column]]
-coordinate.x = 8.279
-coordinate.y = 50.534
+coordinate.x = 7.130
+coordinate.y = 50.220
 header = "temp_bycoord"
 parameter = "vertical.temperature"
 
