@@ -1,14 +1,17 @@
+include("testing_utils.jl")
+
+
+function initial_head(x)
+    2 * √x
+end
+
 """
-    transient_head(x, time, conductivity, specific_yield, aquifer_length, Β)
+    transient_aquifer_1d(x, time, conductivity, specific_yield, aquifer_length, Β)
 
 Non-steady flow in an unconfined rectangular aquifer, with Dirichlet h(0, t) = 0
 on the left edge, and a Neumann Boundary Condition (dh/dx = 0) on the right.
 """
-
-function transient_head(x, time, conductivity, specific_yield, aquifer_length, Β)
-    function initial_head(x)
-        2 * √x
-    end
+function transient_aquifer_1d(x, time, conductivity, specific_yield, aquifer_length, Β)
     initial_head(x) / 1.0 + (Β * conductivity * initial_head(aquifer_length) * time) / (specific_yield * aquifer_length * aquifer_length)
 end
 
@@ -20,7 +23,7 @@ Non-steady flow in a confined aquifer, using the well function of Theis.
 """
 function drawdown_theis(distance, time, discharge, transmissivity, storativity)
     u = (storativity * distance^2) / (4 * transmissivity * time)
-    return discharge / (4 * π  * transmissivity) * expint(1, u)
+    return discharge / (4 * π  * transmissivity) * expint(u)
 end
 
 
@@ -186,10 +189,25 @@ end
             @test Wflow.conductance(unconf_aqf, connectivity, 2, 3, 3) > 0.0   # computes a value based on head
             @test Wflow.conductance(unconf_aqf, connectivity, 1, 2, 1) == 0.0
         end
+
+        @testset "minimum_head-confined" begin
+            original_head = copy(conf_aqf.head)
+            conf_aqf.head[1] = -10.0
+            @test Wflow.minimum_head(conf_aqf)[1] == -10.0
+            conf_aqf.head .= original_head
+        end
+
+        @testset "minimum_head-unconfined" begin
+            original_head = copy(unconf_aqf.head)
+            unconf_aqf.head[1] = -10.0
+            @test Wflow.minimum_head(conf_aqf)[1] == 0.0
+            unconf_aqf.head .= original_head
+        end
         
         @testset "stable_timestep" begin
             @test Wflow.stable_timestep(conf_aqf) == 0.25
         end
+
 
         @testset "flux-confined" begin
             Q = zeros(3)
@@ -272,15 +290,16 @@ end
         @test gwf.aquifer.head ≈ [2.0, 3.0, 4.0]
     end
 
-    @testset "integration: transient 1D" begin
+    @testset "integration: unconfined transient 1D" begin
         nrow = 1
-        ncol = 50
+        ncol = 9 
         shape = (nrow, ncol)
-        conductivity = 10.0
-        top = 50.0
+        conductivity = 200.0
+        top = 150.0
         bottom = 0.0
         specific_yield = 0.15
-        cellsize = 10.0
+        cellsize = 500.0
+        Β = 1.12
         aquifer_length = cellsize * ncol 
 
         # Domain, geometry
@@ -290,9 +309,9 @@ end
         indices, reverse_indices = Wflow.active_indices(domain, false)
         connectivity = Wflow.Connectivity(indices, reverse_indices, Δx, Δy)
         ncell = connectivity.ncell
-        xc = collect(range(5.0, stop=495.0, step=10.0))
+        xc = collect(range(0.0, stop=aquifer_length - cellsize, step=cellsize))
         aquifer = Wflow.UnconfinedAquifer(
-            .√xc,  # initial head
+            initial_head.(xc),
             fill(conductivity, ncell),
             fill(top, ncell),
             fill(bottom, ncell),
@@ -300,7 +319,7 @@ end
             fill(specific_yield, ncell),
         )
         # constant head on left boundary, 0 at 0
-        constanthead = Wflow.ConstantHead([√xc[1]], [1])
+        constanthead = Wflow.ConstantHead([0.0], [1])
         gwf = Wflow.GroundwaterFlow(
            aquifer,
            connectivity,
@@ -308,36 +327,96 @@ end
            Wflow.AquiferBoundaryCondition[],
         )
 
-        Δt = 0.1
-        Q = zeros(50)
-        for _ in 1:10
+        Δt = Wflow.stable_timestep(gwf.aquifer) 
+        Q = zeros(ncell)
+        time = 20.0
+        nstep = Int(ceil(time / Δt))
+        time = nstep * Δt
+
+        for i in 1:nstep
+            Wflow.update(gwf, Q, Δt)
+            # Gradient dh/dx is positive, all flow to the left
+            @test all(diff(gwf.aquifer.head) .> 0.0)
+        end
+
+        ϕ_analytical = [transient_aquifer_1d(x, time, conductivity, specific_yield, aquifer_length, Β) for x in xc]
+        difference = gwf.aquifer.head .- ϕ_analytical
+        # @test all(difference .< ?)  #TODO
+    end
+
+    @testset "integration: confined transient radial 2D" begin
+        halfnrow = 20  
+        wellrow = halfnrow + 1
+        nrow = halfnrow * 2 + 1
+        ncol = nrow 
+        shape = (nrow, ncol)
+        conductivity = 5.0
+        top = 10.0
+        bottom = 0.0
+        transmissivity = (top - bottom) * conductivity
+        cellsize = 10.0
+        startinghead = top
+        specific_storage = 0.015
+        storativity = 0.15
+        aquifer_length = cellsize * ncol 
+        discharge = -50.0
+    
+        # Domain, geometry
+        domain = ones(Bool, shape)
+        Δx = fill(cellsize, ncol)
+        Δy = fill(cellsize, nrow)
+        indices, reverse_indices = Wflow.active_indices(domain, false)
+        connectivity = Wflow.Connectivity(indices, reverse_indices, Δx, Δy)
+        ncell = connectivity.ncell
+        aquifer = Wflow.ConfinedAquifer(
+            fill(startinghead, ncell),  
+            fill(conductivity, ncell), 
+            fill(top, ncell),
+            fill(bottom, ncell),
+            fill(cellsize * cellsize, ncell),
+            fill(specific_storage, ncell),
+            fill(storativity, ncell),
+            fill(0.0, connectivity.nconnection), # conductance, to be set
+        )
+        Wflow.initialize_conductance!(aquifer, connectivity)
+
+        cell_index = reshape(collect(range(1, ncell, step=1)), shape)
+        indices = vcat(cell_index[1, :], cell_index[end, :])# , cell_index[:, 1], cell_index[:, end],)
+        constanthead = Wflow.ConstantHead(
+            fill(10.0, size(indices)),
+            indices,
+        )
+        # Place a well in the middle of the domain
+        well = Wflow.Well([discharge], [reverse_indices[wellrow, wellrow]])
+        gwf = Wflow.GroundwaterFlow(
+            aquifer,
+            connectivity,
+            constanthead,
+            [well],
+        )
+    
+        Δt = Wflow.stable_timestep(gwf.aquifer) 
+        Q = zeros(ncell)
+        time = 20.0
+        nstep = Int(ceil(time / Δt))
+        time = nstep * Δt
+    
+        for i in 1:nstep
             Wflow.update(gwf, Q, Δt)
         end
 
-        ϕ_analytical = [transient_head(x, 20.0, conductivity, specific_yield, aquifer_length, 1.12) for x in xc]
-    end
+        # test for symmetry on x and y axes
+        ϕ = reshape(gwf.aquifer.head, shape)
+        @test ϕ[1:halfnrow, :] ≈ ϕ[end:-1:halfnrow + 2, :]
+        @test ϕ[:, 1:halfnrow] ≈ ϕ[:, end:-1:halfnrow + 2]
 
-    @testset "integration: radialflow 2D" begin
-    #    connectivity, aquifer, _ = homogenous_aquifer(50, 50)
-    #    constanthead = Wflow.ConstantHead([5.0, 10.0], [1, 3])
-    #    gwf = Wflow.GroundwaterFlow(
-    #       aquifer,
-    #       connectivity,
-    #       constanthead,
-    #       Wflow.AquiferBoundaryCondition[],
-    #   )
-# 
-    #   # A hundred timesteps
-    #    Δt = 0.5  # days
-    #    for _ in 1:100
-    #        Wflow.update(gwf, Q, Δt)
-    #    end
-# 
-    #   # Compare with analytical solution
-    #   # Avoid 0.0, since it's a singularity
-    #   # X = -9995.0:10.0:9995.0
-    #   # Y = -9995.0:10.0:9995.0
-    #   # time = 0.0:100.0:10_000.0
-    #   # ϕ = [-drawdown_theis(√(x^2 + y^2), t, discharge, kD, S) for t in time, x in X, y in Y]
+        # compare with analytical solution
+        start = -0.5 * aquifer_length + 0.5 * cellsize
+        stop =  0.5 * aquifer_length - 0.5 * cellsize
+        X = collect(range(start, stop=stop, step=cellsize))
+        ϕ_analytical = [drawdown_theis(x, time, discharge, transmissivity, storativity) for x in X] .+ 10.0
+        # compare left-side, since it's symmetric anyway. Skip the well cell, and its first neighbor
+        difference = ϕ[1:halfnrow - 1, halfnrow] - ϕ_analytical[1:halfnrow - 1]
+        @test all(difference .< 0.02)
     end
 end
