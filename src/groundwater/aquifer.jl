@@ -205,7 +205,7 @@ function flux!(Q, aquifer, connectivity)
             j = connectivity.rowval[nzi]
             Δϕ = aquifer.head[i] - aquifer.head[j]
             cond = conductance(aquifer, connectivity, i, j, nzi)
-Q[i] -= cond * Δϕ
+            Q[i] -= cond * Δϕ
         end
     end
 end
@@ -233,6 +233,10 @@ function stable_timestep(aquifer)
 end
 
 
+minimum_head(aquifer::ConfinedAquifer) = aquifer.head
+minimum_head(aquifer::UnconfinedAquifer) = max.(aquifer.head, aquifer.bottom)
+
+
 function update(gwf, Q, Δt)
     Q .= 0.0  # TODO: Probably remove this when linking with other components
     flux!(Q, gwf.aquifer, gwf.connectivity)
@@ -242,8 +246,9 @@ function update(gwf, Q, Δt)
     gwf.aquifer.head .+= (Q ./ gwf.aquifer.area .* Δt ./ storativity(gwf.aquifer))
     # Set constant head (dirichlet) boundaries
     gwf.aquifer.head[gwf.constanthead.index] .= gwf.constanthead.head
-    # Make sure no heads ends up below the aquifer bottom
-    gwf.aquifer.head .= max.(gwf.aquifer.head, gwf.aquifer.bottom)
+    # Make sure no heads ends up below an unconfined aquifer bottom
+    # TODO: this should disable a boundary condition or something?
+    gwf.aquifer.head .= minimum_head(gwf.aquifer)
 end
 
 
