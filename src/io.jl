@@ -258,7 +258,7 @@ end
 struct NCReader{T}
     dataset::NCDataset
     cyclic_dataset::Union{NCDataset, Nothing}
-    cyclic_times::Vector#{Tuple{Int,Int}}
+    cyclic_times::Vector{Tuple{Int,Int}}
     forcing_parameters::Dict{Tuple{Symbol,Vararg{Symbol}},String}
     cyclic_parameters::Dict{Tuple{Symbol,Vararg{Symbol}},String}
     buffer::Matrix{T}
@@ -306,7 +306,7 @@ function prepare_reader(path, cyclic_path, config)
         cyclic_times = Wflow.timecycles(cyclic_nc_times)
     else
         cyclic_dataset = nothing
-        cyclic_times = []
+        cyclic_times = Tuple{Int,Int}[]
     end
 
     # create map from internal location to NetCDF variable name for forcing parameters
