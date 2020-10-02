@@ -30,7 +30,7 @@ struct Config
     path::Union{String,Nothing}  # path to the TOML file, or nothing
 end
 
-Config(path::AbstractString) = Config(parsefile(path), path)
+Config(path::AbstractString) = Config(TOML.parsefile(path), path)
 Config(dict::AbstractDict) = Config(dict, nothing)
 
 # allows using getproperty, e.g. config.input.time instead of config["input"]["time"]

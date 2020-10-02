@@ -1,11 +1,12 @@
 using NCDatasets
 using Dates
+using TOML
 using CFTime
 using Random
 using UnPack
 
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
-parsed_toml = Wflow.parsefile(tomlpath)
+parsed_toml = TOML.parsefile(tomlpath)
 config = Wflow.Config(tomlpath)
 
 @testset "configuration file" begin
