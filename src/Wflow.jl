@@ -1,6 +1,7 @@
 module Wflow
 
 using Dates
+using TOML
 using LightGraphs
 using NCDatasets
 using StaticArrays
@@ -31,7 +32,6 @@ end
 # prevent a large printout of model components and arrays
 Base.show(io::IO, m::Model) = print(io, "model of type ", typeof(m))
 
-include("toml.jl")
 include("horizontal_process.jl")
 include("hbv.jl")
 include("sbm.jl")
