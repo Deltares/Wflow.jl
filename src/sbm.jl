@@ -533,6 +533,7 @@ function update_until_recharge(sbm::SBM, config)
         actevap = soilevap + transpiration + ae_openw_r + ae_openw_l
 
         # update the outputs and states
+        sbm.avail_forinfilt[i] = avail_forinfilt
         sbm.actinfilt[i] = actinfilt
         sbm.infiltexcess[i] = infiltexcess
         sbm.recharge[i] = recharge
