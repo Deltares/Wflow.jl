@@ -34,38 +34,42 @@ function rainfall_interception_gash(
     # TODO: Include subdaily Gash model
     # TODO: add leaf_area_index variation in year
     # Hack for stemflow
+    
+    if canopygapfraction < 1.0
+        pt = 0.1 * canopygapfraction
+        p_sat = max(0.0, (-cmax / e_r) * log(max(0.0, 1.0 - (e_r / (1.0 - canopygapfraction - pt)))))
+        # large storms P > P_sat
+        largestorms = precipitation > p_sat
 
-    pt = 0.1 * canopygapfraction
-    # avoid a negative log
-    logarg = max(1.0 - (e_r / (1.0 - canopygapfraction - pt)), 1e-10)
-    p_sat = max(0.0, (-cmax / e_r) * log(logarg))
-    # large storms P > P_sat
-    largestorms = precipitation > p_sat
+        iwet =
+            largestorms ? ((1.0 - canopygapfraction - pt) * p_sat) - cmax :
+            precipitation * (1.0 - canopygapfraction - pt)
+        isat = largestorms ? (e_r) * (precipitation - p_sat) : 0.0
+        idry = largestorms ? cmax : 0.0
+        itrunc = 0.0
 
-    iwet =
-        largestorms ? ((1.0 - canopygapfraction - pt) * p_sat) - cmax :
-        precipitation * (1.0 - canopygapfraction - pt)
-    isat = largestorms ? (e_r) * (precipitation - p_sat) : 0.0
-    idry = largestorms ? cmax : 0.0
-    itrunc = 0.0
+        stemflow = pt * precipitation
 
-    stemflow = pt * precipitation
+        throughfall = precipitation - iwet - idry - isat - itrunc - stemflow
+        interception = iwet + idry + isat + itrunc
 
-    throughfall = precipitation - iwet - idry - isat - itrunc - stemflow
-    interception = iwet + idry + isat + itrunc
+        # Now corect for area without any Interception (say open water Cmax -- zero)
+        cmaxzero = cmax <= 0.0
+        throughfall = cmaxzero ? precipitation : throughfall
+        interception = cmaxzero ? 0.0 : interception
+        stemflow = cmaxzero ? 0.0 : stemflow
 
-    # Now corect for area without any Interception (say open water Cmax -- zero)
-    cmaxzero = cmax <= 0.0
-    throughfall = cmaxzero ? precipitation : throughfall
-    interception = cmaxzero ? 0.0 : interception
-    stemflow = cmaxzero ? 0.0 : stemflow
+        # Now corect for maximum potential evap
+        overestimate = interception > maxevap ? interception - maxevap : 0.0
+        interception = min(interception, maxevap)
 
-    # Now corect for maximum potential evap
-    overestimate = interception > maxevap ? interception - maxevap : 0.0
-    interception = min(interception, maxevap)
-
-    # Add surpluss to the thoughdfall
-    throughfall = throughfall + overestimate
+        # Add surpluss to the thoughdfall
+        throughfall = throughfall + overestimate
+    else
+        throughfall = precipitation
+        interception = 0.0
+        stemflow = 0.0
+    end
 
     return throughfall, interception, stemflow, canopystorage
 
