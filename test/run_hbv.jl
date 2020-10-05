@@ -37,18 +37,18 @@ end
 
 @testset "overland flow" begin
     q = model.lateral.land.q_av
-    @test sum(q) ≈ 31.253033766803128
-    @test q[500] ≈ 0.004191985143195626
-    @test q[1566] ≈ 0.0011148742769519601
-    @test q[network.land.order[end]] ≈ 0.0019044602963266247
+    @test sum(q) ≈ 3537.496090574427
+    @test q[500] ≈ 0.26011192855138277
+    @test q[1566] ≈ 0.03304875329281494
+    @test q[network.land.order[end]] ≈ 0.09511073972732303
 end
 
 @testset "river flow" begin
     q = model.lateral.river.q_av
-    @test sum(q) ≈ 1912.150895778686
-    @test q[500] ≈ 0.8329338615649569
-    @test q[88] ≈ 1.3795782030215167
-    @test q[network.river.order[end]] ≈ 0.5371746434002143
+    @test sum(q) ≈ 71317.88926525884
+    @test q[500] ≈ 5.953517726653905
+    @test q[88] ≈ 9.292139384486553
+    @test q[network.river.order[end]] ≈ 3.0433969741851303
 end
 
 benchmark = @benchmark Wflow.update(model)

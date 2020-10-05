@@ -124,8 +124,8 @@ function update(
                 sf.h[v] = crossarea / sf.width[v]
             end
 
-            q_sum[v] += sf.h[v]
-            h_sum[v] += sf.q[v]
+            q_sum[v] += sf.q[v]
+            h_sum[v] += sf.h[v]
 
         end
 
