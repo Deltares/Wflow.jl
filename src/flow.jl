@@ -60,6 +60,8 @@ function update(
             courant = (sf.Δt ./ sf.dl) .* sf.cel
             ts = max(ceil(Int, (1.25 * quantile!(courant, 0.95))), 1)
         end
+    else
+        ts = 1
     end
 
     # sub time step
