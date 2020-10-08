@@ -340,6 +340,7 @@ function initialize_sbm_model(config::Config)
     vwc_perc = fill(mv, maxlayers, n)
 
     sbm = SBM{Float64,maxlayers,maxlayers + 1}(
+        Δt = Float64(Δt.value),
         maxlayers = maxlayers,
         n = n,
         nlayers = nlayers,
@@ -644,6 +645,7 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
     @unpack lateral, vertical, network, clock, config = model
 
     inds_riv = network.index_river
+    kinwave_it = get(config.model, "kin-wave-iteration", false)
 
     update_forcing!(model)
     if haskey(config.input, "cyclic")
@@ -664,6 +666,7 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
     end
 
     update_until_recharge(vertical, config)
+
     lateral.subsurface.recharge .= vertical.recharge
     lateral.subsurface.recharge .*= lateral.subsurface.dl
     lateral.subsurface.zi .= vertical.zi
@@ -685,16 +688,20 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
         network.land,
         frac_toriver = network.frac_toriver,
         river = lateral.river.rivercells,
-        do_iter = true,
+        do_iter = kinwave_it,
     )
 
-    lateral.river.qlat .=
+    net_runoff_river = 
+        (vertical.net_runoff_river[inds_riv] .* vertical.xl[inds_riv] .* 
+        vertical.yl[inds_riv] .* 0.001) ./ vertical.Δt
+
+    lateral.river.qlat .= 
         (
-            lateral.subsurface.to_river[network.index_river] ./ 1.0e9 ./ lateral.river.Δt .+
-            lateral.land.to_river[network.index_river]
+            lateral.subsurface.to_river[inds_riv] ./ 1.0e9 ./ lateral.river.Δt .+
+            lateral.land.to_river[inds_riv] .+ net_runoff_river
         ) ./ lateral.river.dl
 
-    update(lateral.river, network.river, do_iter = true, doy = dayofyear(clock.time))
+    update(lateral.river, network.river, do_iter = kinwave_it, doy = dayofyear(clock.time))
 
     write_output(model, model.writer)
 

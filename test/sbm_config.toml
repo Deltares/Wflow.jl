@@ -121,6 +121,7 @@ masswasting = true
 snow = true
 reinit = true
 reservoirs = true
+kin-wave-iteration = true
 thicknesslayers = [100, 300, 800]
 
 [output]

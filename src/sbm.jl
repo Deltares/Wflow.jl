@@ -1,4 +1,6 @@
 Base.@kwdef struct SBM{T,N,M}
+    # Model time step [s]
+    Δt::T
     # Maximum number of soil layers
     maxlayers::Int
     # number of cells
@@ -106,6 +108,8 @@ Base.@kwdef struct SBM{T,N,M}
     ae_openw_l::Vector{T} = fill(mv, n)
     # Actual evaporation from river [mm]
     ae_openw_r::Vector{T} = fill(mv, n)
+    # Net runoff from river [mm]
+    net_runoff_river::Vector{T} = fill(mv, n)
     # Water available for infiltration [mm]
     avail_forinfilt::Vector{T} = fill(mv, n)
     # Actual infiltration into the unsaturated zone [mm]
@@ -523,7 +527,10 @@ function update_until_recharge(sbm::SBM, config)
         transpiration = actevapsat + actevapustore
         actevap = soilevap + transpiration + ae_openw_r + ae_openw_l
 
+        
+
         # update the outputs and states
+        sbm.net_runoff_river[i] = runoff_river - ae_openw_r
         sbm.avail_forinfilt[i] = avail_forinfilt
         sbm.actinfilt[i] = actinfilt
         sbm.infiltexcess[i] = infiltexcess
