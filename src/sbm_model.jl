@@ -643,10 +643,15 @@ end
 function update(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
     @unpack lateral, vertical, network, clock, config = model
 
+    inds_riv = network.index_river
+
     update_forcing!(model)
     if haskey(config.input, "cyclic")
         update_cyclic!(model)
     end
+
+    vertical.waterlevel_land .= lateral.land.h_av .* 1000.0
+    vertical.waterlevel_river[inds_riv] .= lateral.river.h_av .* 1000.0
 
     update_until_snow(vertical, config)
 

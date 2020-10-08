@@ -178,6 +178,10 @@ Base.@kwdef struct SBM{T,N,M}
     kext::Vector{T} = fill(mv, n)
     # Leaf area index [m² m⁻²]
     leaf_area_index::Vector{T} = fill(mv, n)
+    # Water level land [mm]
+    waterlevel_land::Vector{T} = fill(mv, n)
+    # Water level river [mm]
+    waterlevel_river::Vector{T} = fill(0.0, n) #set to zero to account for cells outside river domain
 
     function SBM{T,N,M}(args...) where {T,N,M}
         equal_size_vectors(args)
@@ -189,16 +193,11 @@ statevars(::SBM; snow=false) = snow ? (:satwaterdepth, :snow, :tsoil, :ustorelay
 
 function update_until_snow(sbm::SBM, config)
 
-    # # start dummy variables (should be generated from model reader and from Config.jl TOML)
     do_lai = haskey(config.input.vertical, "leaf_area_index")
-    modelglacier = Bool(get(config.model, "glacier", 0))
-    modelsnow = Bool(get(config.model, "snow", 0))
-    #potential_evaporation = 4.0
-    #precipitation = 3.0
-    #temperature = 10.0
+    modelglacier = get(config.model, "glacier", false)
+    modelsnow = get(config.model, "snow", false)
     Δt = Second(config.timestepsecs)
-    #basetimestep = Second(Day(1))
-    # end dummpy variables
+
     for i = 1:sbm.n
         if do_lai
             cmax = sbm.sl[i] * sbm.leaf_area_index[i] + sbm.swood[i]
@@ -273,20 +272,12 @@ end
 function update_until_recharge(sbm::SBM, config)
 
     # start dummy variables (should be generated from model reader and from Config.jl TOML)
-    soilinfreduction = Bool(get(config.model, "soilinfreduction", 0))
-    modelglacier = Bool(get(config.model, "glacier", 0))
-    modelsnow = Bool(get(config.model, "snow", 0))
-    transfermethod = Bool(get(config.model, "transfermethod", 0))
-    #potential_evaporation = 4.0
-    #precipitation = 3.0
-    #temperature = 10.0
-    wl_land = 0.0 # from kinematic wave land
-    wl_river = 0.10 # from kinematic river
-    irsupply_mm = 0.0
-    ust = Bool(get(config.model, "whole_ust_available", 0)) # should be removed from optional setting and code?
+    soilinfreduction = get(config.model, "soilinfreduction", false)
+    modelglacier = get(config.model, "glacier", false)
+    modelsnow = get(config.model, "snow", false)
+    transfermethod = get(config.model, "transfermethod", false)
+    ust = get(config.model, "whole_ust_available", false) # should be removed from optional setting and code?
     Δt = Second(config.timestepsecs)
-    #basetimestep = Second(Day(1))
-    # end dummpy variables
 
     for i = 1:sbm.n
         if modelsnow
@@ -315,7 +306,7 @@ function update_until_recharge(sbm::SBM, config)
             rainfallplusmelt = sbm.stemflow[i] + sbm.throughfall[i]
         end
 
-        avail_forinfilt = rainfallplusmelt + irsupply_mm
+        avail_forinfilt = rainfallplusmelt
         ustoredepth = sum(@view sbm.ustorelayerdepth[i][1:sbm.nlayers[i]])
         uStorecapacity = sbm.soilwatercapacity[i] - sbm.satwaterdepth[i] - ustoredepth
 
@@ -326,11 +317,11 @@ function update_until_recharge(sbm::SBM, config)
         rootingdepth = min(sbm.soilthickness[i] * 0.99, sbm.rootingdepth[i])
 
         ae_openw_r = min(
-            wl_river * 1000.0 * sbm.riverfrac[i],
+            sbm.waterlevel_river[i] * sbm.riverfrac[i],
             sbm.riverfrac[i] * sbm.pottrans_soil[i],
         )
         ae_openw_l = min(
-            wl_land * 1000.0 * sbm.waterfrac[i],
+            sbm.waterlevel_land[i] * sbm.waterfrac[i],
             sbm.waterfrac[i] * sbm.pottrans_soil[i],
         )
 
