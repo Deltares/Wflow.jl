@@ -64,6 +64,7 @@ function kin_wave!(Q, graph, toposort, Qold, q, α, β, DCL, Δt)
     return Q
 end
 
+"Kinematic wave for lateral subsurface flow for a single cell and timestep"
 function kinematic_wave_ssf(ssfin, ssfₜ₋₁, ziₜ₋₁, r, kh₀, β, θₑ, f, d, Δt, Δx, dw, ssfmax)
 
     ϵ = 1.0e-3
@@ -137,6 +138,7 @@ function kinematic_wave_ssf(ssfin, ssfₜ₋₁, ziₜ₋₁, r, kh₀, β, θ�
     end
 end
 
+"Transport of material downstream with a limited transport capacity over a directed graph"
 function accucapacityflux(network, material, capacity)
     @unpack graph, order = network
     for v in order

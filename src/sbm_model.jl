@@ -597,6 +597,8 @@ function initialize_sbm_model(config::Config)
 
     # for each domain save the directed acyclic graph, the traversion order,
     # and the indices that map it back to the two dimensional grid
+    # for reservoirs and lakes this is information is also available (except the graph) 
+    # from the initialization functions
     land = (
         graph = graph,
         order = topological_sort_by_dfs(graph),
@@ -641,6 +643,7 @@ function initialize_sbm_model(config::Config)
     return model
 end
 
+"update SBM model for a single timestep"
 function update(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
     @unpack lateral, vertical, network, clock, config = model
 
@@ -652,11 +655,16 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
         update_cyclic!(model)
     end
 
+    # extract water levels h_av [m] from the land and river domains
+    # this is used to limit open water evaporation
     vertical.waterlevel_land .= lateral.land.h_av .* 1000.0
     vertical.waterlevel_river[inds_riv] .= lateral.river.h_av .* 1000.0
 
+    # vertical sbm concept is updated until snow state, after that (optional)
+    # snow transport is possible
     update_until_snow(vertical, config)
 
+    # lateral snow transport 
     if get(config.model, "masswasting", false)
         snowflux_frac =
             min.(0.5, lateral.land.sl ./ 5.67) .* min.(1.0, vertical.snow ./ 10000.0)
@@ -665,24 +673,28 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
         vertical.snowwater .= accucapacityflux(network.land, vertical.snowwater, vertical.snowwater .* snowflux_frac)
     end
 
+    # update vertical sbm concept until recharge [mm] to the saturated store
     update_until_recharge(vertical, config)
 
+    # exchange of recharge between vertical sbm concept and subsurface flow domain
     lateral.subsurface.recharge .= vertical.recharge
     lateral.subsurface.recharge .*= lateral.subsurface.dl
     lateral.subsurface.zi .= vertical.zi
 
+    # update lateral subsurface flow domain
     update(lateral.subsurface, network.land, network.frac_toriver, lateral.river.rivercells)
 
+    # update vertical sbm concept (runoff, ustorelayerdepth and satwaterdepth)
     update_after_lateralflow(
         vertical,
         lateral.subsurface.zi,
         lateral.subsurface.exfiltwater,
     )
 
+    # update overland flow based on vertical runoff [mm] from vertical sbm concept
     lateral.land.qlat .=
         (vertical.runoff .* vertical.xl .* vertical.yl .* 0.001) ./ lateral.land.Δt ./
         lateral.land.dl
-
     update(
         lateral.land,
         network.land,
@@ -691,16 +703,16 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
         do_iter = kinwave_it,
     )
 
+    # update river domain with net runoff from vertical sbm concept, overland flow
+    # and lateral subsurface flow to the river cells
     net_runoff_river = 
         (vertical.net_runoff_river[inds_riv] .* vertical.xl[inds_riv] .* 
         vertical.yl[inds_riv] .* 0.001) ./ vertical.Δt
-
     lateral.river.qlat .= 
         (
             lateral.subsurface.to_river[inds_riv] ./ 1.0e9 ./ lateral.river.Δt .+
             lateral.land.to_river[inds_riv] .+ net_runoff_river
         ) ./ lateral.river.dl
-
     update(lateral.river, network.river, do_iter = kinwave_it, doy = dayofyear(clock.time))
 
     write_output(model, model.writer)
