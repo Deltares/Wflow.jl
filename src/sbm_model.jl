@@ -252,7 +252,25 @@ function initialize_sbm_model(config::Config)
 
     # if leaf area index climatology provided use sl, swood and kext to calculate cmax, e_r and canopygapfraction
     # TODO replace by something else
-    if isnothing(true)
+    if haskey(config.input.vertical, "leaf_area_index")
+       # TODO confirm if leaf area index climatology is present in the NetCDF
+       sl = ncread(
+            nc,
+            param(config, "input.vertical.specific_leaf");
+            sel = inds,
+            type = Float64,
+        )
+        swood = ncread(
+            nc,
+            param(config, "input.vertical.storage_wood");
+            sel = inds,
+            type = Float64,
+        )
+        kext = ncread(nc, param(config, "input.vertical.kext"); sel = inds, type = Float64)
+        cmax = fill(mv, n)
+        e_r = fill(mv, n)
+        canopygapfraction = fill(mv, n)
+    else
         # cmax, e_r, canopygapfraction only required when leaf area index climatology not provided
         cmax = ncread(
             nc,
@@ -278,24 +296,6 @@ function initialize_sbm_model(config::Config)
         sl = fill(mv, n)
         swood = fill(mv, n)
         kext = fill(mv, n)
-    else
-        # TODO confirm if leaf area index climatology is present in the NetCDF
-        sl = ncread(
-            nc,
-            param(config, "input.vertical.specific_leaf");
-            sel = inds,
-            type = Float64,
-        )
-        swood = ncread(
-            nc,
-            param(config, "input.vertical.storage_wood");
-            sel = inds,
-            type = Float64,
-        )
-        kext = ncread(nc, param(config, "input.vertical.kext"); sel = inds, type = Float64)
-        cmax = fill(mv, n)
-        e_r = fill(mv, n)
-        canopygapfraction = fill(mv, n)
     end
 
 
@@ -388,6 +388,8 @@ function initialize_sbm_model(config::Config)
         ae_sat = fill(mv, n),
         interception = fill(mv, n),
         soilevap = fill(mv, n),
+        soilevapsat = fill(mv, n),
+        actcapflux =  fill(mv, n),
         actevapsat = fill(mv, n),
         actevap = fill(mv, n),
         runoff_river = fill(mv, n),
@@ -398,6 +400,7 @@ function initialize_sbm_model(config::Config)
         actinfilt = fill(mv, n),
         actinfiltsoil = fill(mv, n),
         actinfiltpath = fill(mv, n),
+        infiltsoilpath= fill(mv, n),
         infiltexcess = fill(mv, n),
         excesswater = fill(mv, n),
         exfiltsatwater = fill(mv, n),
@@ -405,6 +408,7 @@ function initialize_sbm_model(config::Config)
         excesswatersoil = fill(mv, n),
         excesswaterpath = fill(mv, n),
         runoff = fill(mv, n),
+        net_runoff_river = fill(mv, n),
         vwc = svectorscopy(vwc, Val{maxlayers}()),
         vwc_perc = svectorscopy(vwc_perc, Val{maxlayers}()),
         rootstore = fill(mv, n),
@@ -412,8 +416,8 @@ function initialize_sbm_model(config::Config)
         vwc_percroot = fill(mv, n),
         ustoredepth = fill(mv, n),
         transfer = fill(mv, n),
-        capflux = fill(mv, n),
         recharge = fill(mv, n),
+        actleakage = fill(mv, n),
         # snow parameters
         cfmax = cfmax,
         tt = tt,
@@ -431,6 +435,8 @@ function initialize_sbm_model(config::Config)
         swood = swood,
         kext = kext,
         leaf_area_index = fill(mv, n),
+        waterlevel_land = fill(mv, n),
+        waterlevel_river = fill(0.0, n), #set to zero to account for cells outside river domain
     )
 
     # states sbm concept
