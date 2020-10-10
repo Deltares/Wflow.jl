@@ -51,7 +51,7 @@ Base.@kwdef struct SBM{T,N,M}
     rootdistpar::Vector{T}
     # Parameter [mm] controlling capilary rise
     capscale::Vector{T}
-    #Multiplication factor [-] to correct
+    # Multiplication factor [-] to correct
     et_reftopot::Vector{T}
     # Brooks-Corey power coefﬁcient [-] for each soil layer
     c::Vector{SVector{N,T}}
@@ -60,17 +60,17 @@ Base.@kwdef struct SBM{T,N,M}
     # Throughfall [mm]
     throughfall::Vector{T}
     # A scaling parameter [mm⁻¹] (controls exponential decline of kv₀)
-    f::Vector{T} = θₑ ./ m
+    f::Vector{T}
     # Amount of water in the unsaturated store, per layer [mm]
-    ustorelayerdepth::Vector{SVector{N,T}} = act_thickl .* 0.0
+    ustorelayerdepth::Vector{SVector{N,T}}
     # Saturated store [mm]
     satwaterdepth::Vector{T}
     # Pseudo-water table depth [mm] (top of the saturated zone)
-    zi::Vector{T} = max.(0.0, soilthickness .- satwaterdepth ./ θₑ)
+    zi::Vector{T}
     # Soilwater capacity [mm]
     soilwatercapacity::Vector{T}
     # Canopy storage [mm]
-    canopystorage::Vector{T} = fill(0.0, n)
+    canopystorage::Vector{T}
     # Maximum canopy storage [mm]
     cmax::Vector{T}
     # Canopy gap fraction [-]
@@ -79,113 +79,118 @@ Base.@kwdef struct SBM{T,N,M}
     # wet canopy [mm Δt⁻¹] and the average precipitation intensity [mm Δt⁻¹] on a saturated canopy
     e_r::Vector{T}
     # Precipitation [mm]
-    precipitation::Vector{T} = fill(mv, n)
+    precipitation::Vector{T}
     # Temperature [ᵒC]
-    temperature::Vector{T} = fill(mv, n)
+    temperature::Vector{T}
     # Potential evapotranspiration [mm]
-    potential_evaporation::Vector{T} = fill(mv, n)
+    potential_evaporation::Vector{T}
     # Potential transpiration, open water, river and soil evaporation (after subtracting interception from potential_evaporation)
-    pottrans_soil::Vector{T} = fill(mv, n)
+    pottrans_soil::Vector{T}
     # Transpiration [mm]
-    transpiration::Vector{T} = fill(mv, n)
+    transpiration::Vector{T}
     # Actual evaporation from unsaturated store [mm]
-    ae_ustore::Vector{T} = fill(mv, n)
+    ae_ustore::Vector{T}
     # Actual evaporation from saturated store [mm]
-    ae_sat::Vector{T} = fill(mv, n)
+    ae_sat::Vector{T}
     # Interception [mm]
-    interception::Vector{T} = fill(mv, n)
-    # Soil evaporation [mm]
-    soilevap::Vector{T} = fill(mv, n)
+    interception::Vector{T}
+    # Soil evaporation from unsaturated store [mm]
+    soilevap::Vector{T}
+    # Soil evaporation from saturated store [mm]
+    soilevapsat::Vector{T}
+    # Actual capillary rise [mm]
+    actcapflux::Vector{T}
     # Actual evaporation from saturated store (transpiration and soil evaporation) [mm]
-    actevapsat::Vector{T} = fill(mv, n)
+    actevapsat::Vector{T}
     # Total actual evapotranspiration [mm]
-    actevap::Vector{T} = fill(mv, n)
+    actevap::Vector{T}
     # Runoff from river based on riverfrac [mm]
-    runoff_river::Vector{T} = fill(mv, n)
+    runoff_river::Vector{T}
     # Runoff from land based on waterfrac [mm]
-    runoff_land::Vector{T} = fill(mv, n)
+    runoff_land::Vector{T}
     # Actual evaporation from open water (land) [mm]
-    ae_openw_l::Vector{T} = fill(mv, n)
+    ae_openw_l::Vector{T}
     # Actual evaporation from river [mm]
-    ae_openw_r::Vector{T} = fill(mv, n)
+    ae_openw_r::Vector{T}
     # Net runoff from river [mm]
-    net_runoff_river::Vector{T} = fill(mv, n)
+    net_runoff_river::Vector{T}
     # Water available for infiltration [mm]
-    avail_forinfilt::Vector{T} = fill(mv, n)
+    avail_forinfilt::Vector{T}
     # Actual infiltration into the unsaturated zone [mm]
-    actinfilt::Vector{T} = fill(mv, n)
+    actinfilt::Vector{T}
     # Actual infiltration non-compacted fraction [mm]
-    actinfiltsoil::Vector{T} = fill(mv, n)
+    actinfiltsoil::Vector{T}
     # Actual infiltration compacted fraction [mm]
-    actinfiltpath::Vector{T} = fill(mv, n)
+    actinfiltpath::Vector{T}
     # Infiltration excess water [mm]
-    infiltexcess::Vector{T} = fill(mv, n)
+    infiltsoilpath::Vector{T}
+    infiltexcess::Vector{T}
     # Water that cannot infiltrate due to saturated soil (saturation excess) [mm]
-    excesswater::Vector{T} = fill(mv, n)
+    excesswater::Vector{T}
     # Water exfiltrating during saturation excess conditions [mm]
-    exfiltsatwater::Vector{T} = fill(mv, n)
+    exfiltsatwater::Vector{T}
     # Water exfiltrating from unsaturated store because of change in water table [mm]
-    exfiltustore::Vector{T} = fill(mv, n)
+    exfiltustore::Vector{T}
     # Excess water for non-compacted fraction [mm]
-    excesswatersoil::Vector{T} = fill(mv, n)
+    excesswatersoil::Vector{T}
     # Excess water for compacted fraction [mm]
-    excesswaterpath::Vector{T} = fill(mv, n)
+    excesswaterpath::Vector{T}
     # Total surface runoff from infiltration and saturation excess [mm]
-    runoff::Vector{T} = fill(mv, n)
+    runoff::Vector{T}
     # Volumetric water content [mm mm⁻¹] per soil layer (including θᵣ and saturated zone)
     vwc::Vector{SVector{N,T}}
     # Volumetric water content [%] per soil layer (including θᵣ and saturated zone)
     vwc_perc::Vector{SVector{N,T}}
     # Root water storage [mm] in unsaturated and saturated zone (excluding θᵣ)
-    rootstore::Vector{T} = fill(mv, n)
+    rootstore::Vector{T}
     # Volumetric water content [mm mm⁻¹] in root zone (including θᵣ and saturated zone)
-    vwc_root::Vector{T} = fill(mv, n)
+    vwc_root::Vector{T}
     # Volumetric water content [%] in root zone (including θᵣ and saturated zone)
-    vwc_percroot::Vector{T} = fill(mv, n)
+    vwc_percroot::Vector{T}
     # Amount of available water in the unsaturated zone [mm]
-    ustoredepth::Vector{T} = fill(mv, n)
+    ustoredepth::Vector{T}
     # Downward flux from unsaturated to saturated zone [mm]
-    transfer::Vector{T} = fill(mv, n)
-    # Capillary rise [mm]
-    capflux::Vector{T} = fill(mv, n)
+    transfer::Vector{T}
     # Net recharge to saturated store [mm]
-    recharge::Vector{T} = fill(mv, n)
+    recharge::Vector{T}
+    # Actual leakage from saturated store [mm]
+    actleakage::Vector{T}
     ### Snow parameters ###
     # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹]
-    cfmax::Vector{T} = fill(mv, n)
+    cfmax::Vector{T}
     # Threshold temperature for snowfall [ᵒC]
-    tt::Vector{T} = fill(mv, n)
+    tt::Vector{T}
     # Threshold temperature interval length [ᵒC]
-    tti::Vector{T} = fill(mv, n)
+    tti::Vector{T}
     # Threshold temperature for snowmelt [ᵒC]
-    ttm::Vector{T} = fill(mv, n)
+    ttm::Vector{T}
     # Water holding capacity as fraction of current snow pack [-]
-    whc::Vector{T} = fill(mv, n)
+    whc::Vector{T}
     # Soil temperature smooth factor [-]
-    w_soil::Vector{T} = fill(mv, n)
+    w_soil::Vector{T}
     # Controls soil infiltration reduction factor when soil is frozen [-]
-    cf_soil::Vector{T} = fill(mv, n)
+    cf_soil::Vector{T}
     # Snow storage [mm]
-    snow::Vector{T} = fill(0.0, n)
+    snow::Vector{T}
     # Liquid water content in the snow pack [mm]
-    snowwater::Vector{T} = fill(0.0, n)
+    snowwater::Vector{T}
     # Snow melt + precipitation as rainfall [mm]
-    rainfallplusmelt::Vector{T} = fill(mv, n)
+    rainfallplusmelt::Vector{T}
     # Top soil temperature [ᵒC]
-    tsoil::Vector{T} = fill(10.0, n)
+    tsoil::Vector{T}
     ## Interception related to leaf_area_index climatology ###
     # Specific leaf storage [mm]
-    sl::Vector{T} = fill(mv, n)
+    sl::Vector{T}
     # Storage woody part of vegetation [mm]
-    swood::Vector{T} = fill(mv, n)
+    swood::Vector{T}
     # Extinction coefficient [-] (to calculate canopy gap fraction)
-    kext::Vector{T} = fill(mv, n)
+    kext::Vector{T}
     # Leaf area index [m² m⁻²]
-    leaf_area_index::Vector{T} = fill(mv, n)
+    leaf_area_index::Vector{T}
     # Water level land [mm]
-    waterlevel_land::Vector{T} = fill(mv, n)
+    waterlevel_land::Vector{T}
     # Water level river [mm]
-    waterlevel_river::Vector{T} = fill(0.0, n) #set to zero to account for cells outside river domain
+    waterlevel_river::Vector{T}
 
     function SBM{T,N,M}(args...) where {T,N,M}
         equal_size_vectors(args)
@@ -212,6 +217,10 @@ function update_until_snow(sbm::SBM, config)
             e_r =
                 sbm.precipitation[i] > 0.0 ?
                 min(0.25, ewet / max(0.0001, sbm.precipitation[i])) : 0.0
+        else
+            cmax = sbm.cmax[i]
+            canopygapfraction = sbm.canopygapfraction[i]
+            e_r = sbm.e_r[i]
         end
 
         potential_evaporation = sbm.potential_evaporation[i] * sbm.et_reftopot[i]
@@ -537,6 +546,7 @@ function update_until_recharge(sbm::SBM, config)
         sbm.recharge[i] = recharge
         sbm.transpiration[i] = transpiration
         sbm.soilevap[i] = soilevap
+        sbm.soilevapsat[i] = soilevapsat
         sbm.ae_openw_r[i] = ae_openw_r
         sbm.ae_openw_l[i] = ae_openw_l
         sbm.runoff_land[i] = runoff_land
@@ -545,12 +555,15 @@ function update_until_recharge(sbm::SBM, config)
         sbm.actevap[i] = actevap
         sbm.ustorelayerdepth[i] = usld
         sbm.transfer[i] = transfer
+        sbm.actcapflux[i] = actcapflux
+        sbm.actleakage[i] = actleakage
         sbm.actinfiltsoil[i] = actinfiltsoil
         sbm.actinfiltpath[i] = actinfiltpath
         sbm.excesswater[i] = excesswater
         sbm.excesswatersoil[i] = excesswatersoil
         sbm.excesswaterpath[i] = excesswaterpath
         sbm.rainfallplusmelt[i] = rainfallplusmelt
+        sbm.infiltsoilpath[i] = infiltsoilpath
     end
 end
 
