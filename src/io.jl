@@ -154,8 +154,10 @@ function update_cyclic!(model)
     @unpack cyclic_dataset, cyclic_times, cyclic_parameters, buffer = reader
     sel = network.land.indices
 
-    month_day = monthday(clock.time)
-    if monthday(clock.time) in cyclic_times
+    # pick up the data that is valid for the past 24 hours
+    month_day = monthday(clock.time - Day(1))
+    is_first_timestep = clock.time == config.starttime
+    if is_first_timestep || (month_day in cyclic_times)
         # time for an update of the cyclic forcing
         i = findfirst(==(month_day), cyclic_times)
 
