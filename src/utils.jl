@@ -291,7 +291,7 @@ function fraction_runoff_toriver(graph, ldd, index_river, slope, n)
         nbs = inneighbors(graph, i)
         for j in nbs
              if ldd[j] != ldd[i]
-                 frac[j] = slope[i] / (slope[i] + slope[j])
+                 frac[j] = slope[j] / (slope[i] + slope[j])
              end
         end
     end

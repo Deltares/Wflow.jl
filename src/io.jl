@@ -150,12 +150,16 @@ end
 
 "Get cyclic NetCDF input for the given time"
 function update_cyclic!(model)
-    @unpack vertical, clock, reader, network = model
+    @unpack vertical, clock, reader, network, config = model
     @unpack cyclic_dataset, cyclic_times, cyclic_parameters, buffer = reader
     sel = network.land.indices
 
     # pick up the data that is valid for the past 24 hours
-    month_day = monthday(clock.time - Day(1))
+    if length(cyclic_times) == 12
+        month_day = monthday(clock.time - Month(1))
+    else
+        month_day = monthday(clock.time - Day(1))
+    end
     is_first_timestep = clock.time == config.starttime
     if is_first_timestep || (month_day in cyclic_times)
         # time for an update of the cyclic forcing
