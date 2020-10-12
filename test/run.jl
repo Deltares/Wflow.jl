@@ -1,7 +1,7 @@
 # simple example of running a model simulation, not part of the tests
 using Wflow
 
-tomlpath = joinpath(@__DIR__, "config.toml")
+tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 config["model"]["reinit"] = true
 

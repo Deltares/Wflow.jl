@@ -490,10 +490,12 @@ function initialize_sbm_model(config::Config)
     kh₀ = khfrac .* kv₀
     dl = fill(mv, n)
     dw = fill(mv, n)
+    sw = fill(mv, n)
 
     for i = 1:n
         dl[i] = detdrainlength(ldd[i], xl[i], yl[i])
-        dw[i] = detdrainwidth(ldd[i], xl[i], yl[i])
+        dw[i] = (xl[i] * yl[i])/dl[i]
+        sw[i] = river[i] ? max(dw[i] - riverwidth[i], 0.0) : dw[i]
     end
 
     ssf = LateralSSF{Float64}(
@@ -506,6 +508,7 @@ function initialize_sbm_model(config::Config)
         βₗ = βₗ,
         dl = dl .* 1000.0,
         dw = dw .* 1000.0,
+        ssf = ((kh₀ .* βₗ) ./ sbm.f) .* (exp.(-sbm.f .* sbm.zi) - exp.(-sbm.f .* soilthickness)) .* dw .*1000.0,
         wb_pit = pits[inds],
     )
 
@@ -522,7 +525,7 @@ function initialize_sbm_model(config::Config)
         n = n_land,
         dl = dl,
         Δt = Float64(Δt.value),
-        width = dw,
+        width = sw,
         wb_pit = pits[inds],
     )
 
@@ -684,7 +687,7 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
 
     # exchange of recharge between vertical sbm concept and subsurface flow domain
     lateral.subsurface.recharge .= vertical.recharge
-    lateral.subsurface.recharge .*= lateral.subsurface.dl
+    lateral.subsurface.recharge .*= lateral.subsurface.dw
     lateral.subsurface.zi .= vertical.zi
 
     # update lateral subsurface flow domain

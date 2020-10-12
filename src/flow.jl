@@ -39,7 +39,7 @@ function update(
     river = nothing,
     do_iter = false,
     do_tstep = false,
-    tstep = 0.0,
+    tstep = 0,
     doy = 0,
 )
     @unpack graph, order = network
@@ -78,17 +78,18 @@ function update(
                 # for a river cell without a reservoir or lake (wb_pit is false) part of the upstream surface flow
                 # goes to the river (frac_toriver) and part goes to the surface flow reservoir (1.0 - frac_toriver)
                 # upstream nodes with a reservoir or lake are excluded
-                if river[v] && !sf.wb_pit[v]
+                if river[v] && !sf.wb_pit[v] && sf.width[v] > 0.0
                     qin = sum(
                         sf.q[i] * (1.0 - frac_toriver[i])
                         for i in upstream_nodes if !sf.wb_pit[i]
                     )
+                    # TODO: if in a loop should also take average!!!
                     sf.to_river[v] = sum(
                         sf.q[i] * frac_toriver[i] for i in upstream_nodes if !sf.wb_pit[i]
                     )
                     # for a river cell with a reservoir or lake (wb_pit is true) all upstream surface flow goes
                     # to the river.
-                elseif river[v] && sf.wb_pit[v]
+                elseif river[v] && sf.wb_pit[v] && sf.width[v] == 0.0
                     sf.to_river[v] = sum_at(sf.q, upstream_nodes)
                     qin = 0.0
                 else
@@ -131,10 +132,12 @@ function update(
 
         end
 
-        sf.q_av .= q_sum ./ ts
-        sf.h_av .= h_sum ./ ts
+        #sf.q_av .= q_sum ./ ts
+        #sf.h_av .= h_sum ./ ts
 
     end
+    sf.q_av .= q_sum ./ ts
+    sf.h_av .= h_sum ./ ts
 
 end
 
@@ -150,8 +153,8 @@ Base.@kwdef struct LateralSSF{T}
     zi::Vector{T} = fill(mv, length(f))     # Pseudo-water table depth [mm] (top of the saturated zone)
     exfiltwater::Vector{T} = fill(mv, length(f))  # Exfiltration [mm]  (groundwater above surface level, saturated excess conditions)
     recharge::Vector{T} = fill(mv, length(f))     # Net recharge to saturated store [mm]
-    ssf::Vector{T} =
-        ((kh₀ .* βₗ) ./ f) .* (exp.(-f .* zi) - exp.(-f .* soilthickness)) .* dw    # Subsurface flow [mm³ Δt⁻¹]
+    ssf::Vector{T} # Subsurface flow [mm³ Δt⁻¹]
+    ssfin::Vector{T} = fill(mv, length(f))
     ssfmax::Vector{T} = ((kh₀ .* βₗ) ./ f) .* (1.0 .- exp.(-f .* soilthickness))     # Maximum subsurface flow [mm² Δt⁻¹]
     to_river::Vector{T} = zeros(length(f))  # Part of subsurface flow [mm³ Δt⁻¹] that flows to the river
     wb_pit::Vector{Bool} = zeros(Bool, length(f)) # Boolean location (0 or 1) of a waterbody (wb, reservoir or lake).
@@ -173,7 +176,7 @@ function update(ssf::LateralSSF, network, frac_toriver, river)
         # goes to the river (frac_toriver) and part goes to the subsurface flow reservoir (1.0 - frac_toriver)
         # upstream nodes with a reservoir or lake are excluded
         if river[v] && !ssf.wb_pit[v]
-            ssfin = sum(
+            ssf.ssfin[v] = sum(
                 ssf.ssf[i] * (1.0 - frac_toriver[i])
                 for i in upstream_nodes if !ssf.wb_pit[i]
             )
@@ -183,13 +186,13 @@ function update(ssf::LateralSSF, network, frac_toriver, river)
             # to the river.
         elseif river[v] && ssf.wb_pit[v]
             ssf.to_river[v] = sum_at(ssf.ssf, upstream_nodes)
-            ssfin = 0.0
+            ssf.ssfin[v] = 0.0
             # for all the other cells all upstream subsurface flow goes to the subsurface flow reservoir.
         else
-            ssfin = sum_at(ssf.ssf, upstream_nodes)
+            ssf.ssfin[v] = sum_at(ssf.ssf, upstream_nodes)
         end
         ssf.ssf[v], ssf.zi[v], ssf.exfiltwater[v] = kinematic_wave_ssf(
-            ssfin,
+            ssf.ssfin[v],
             ssf.ssf[v],
             ssf.zi[v],
             ssf.recharge[v],
