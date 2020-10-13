@@ -7,6 +7,8 @@ Base.@kwdef struct SBM{T,N,M}
     n::Int
     # Number of soil layers
     nlayers::Vector{Int}
+    # Number of unsaturated soil layers
+    n_unsatlayers::Vector{Int}
     # length of cells in y direction [m]
     yl::Vector{T}
     # length of cells in x direction [m]
@@ -400,7 +402,7 @@ function update_until_recharge(sbm::SBM, config)
             end
 
             # then evapotranspiration from layers
-            # Calculate saturation deficity
+            # Calculate saturation deficit
             saturationdeficit = sbm.soilwatercapacity[i] - sbm.satwaterdepth[i]
 
             # First calculate the evaporation of unsaturated storage into the
@@ -434,7 +436,6 @@ function update_until_recharge(sbm::SBM, config)
         if sbm.maxlayers == 1
             soilevapsat = 0.0
         else
-            # this check is an improvement compared to Python (only checked for n_usl == 1)
             if n_usl == 0 || n_usl == 1
                 soilevapsat =
                     potsoilevap *
@@ -539,6 +540,7 @@ function update_until_recharge(sbm::SBM, config)
         
 
         # update the outputs and states
+        sbm.n_unsatlayers[i] = n_usl
         sbm.net_runoff_river[i] = runoff_river - ae_openw_r
         sbm.avail_forinfilt[i] = avail_forinfilt
         sbm.actinfilt[i] = actinfilt
@@ -574,8 +576,12 @@ function update_after_lateralflow(sbm::SBM, zi, exfiltsatwater)
         # exfiltration from ustore
         usld = copy(sbm.ustorelayerdepth[i])
         exfiltustore = 0.0
-        for k = n_usl:-1:1
-            exfiltustore = max(0, usld[k] - usl[k] * (sbm.θₛ[i] - sbm.θᵣ[i]))
+        for k = sbm.n_unsatlayers[i]:-1:1
+            if k <= n_usl
+                exfiltustore = max(0, usld[k] - usl[k] * (sbm.θₛ[i] - sbm.θᵣ[i]))
+            else
+                exfiltustore = usld[k]
+            end
             usld = setindex(usld, usld[k] - exfiltustore, k)
             if k > 1
                 usld = setindex(usld, usld[k-1] + exfiltustore, k - 1)
@@ -624,6 +630,7 @@ function update_after_lateralflow(sbm::SBM, zi, exfiltsatwater)
         satwaterdepth = (sbm.soilthickness[i] - zi[i]) * (sbm.θₛ[i] - sbm.θᵣ[i])
 
         # update the outputs and states
+        sbm.n_unsatlayers[i] = n_usl
         sbm.ustorelayerdepth[i] = usld
         sbm.ustoredepth[i] = ustoredepth
         sbm.satwaterdepth[i] = satwaterdepth

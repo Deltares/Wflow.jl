@@ -45,10 +45,10 @@ end
 
 @testset "river flow" begin
     q = model.lateral.river.q_av
-    @test sum(q) ≈ 71608.03340921596
-    @test q[500] ≈ 6.234416962969839
-    @test q[88] ≈ 9.117703469765921
-    @test q[network.river.order[end]] ≈ 2.881980249485899
+    @test sum(q) ≈ 95238.16617175122
+    @test q[500] ≈ 6.6547884120641845
+    @test q[88] ≈ 10.138009383376387
+    @test q[network.river.order[end]] ≈ 3.2690469368626798 
 end
 
 benchmark = @benchmark Wflow.update(model)

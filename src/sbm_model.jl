@@ -334,6 +334,7 @@ function initialize_sbm_model(config::Config)
     θₑ = θₛ .- θᵣ
     soilwatercapacity = soilthickness .* θₑ
     satwaterdepth = 0.85 .* soilwatercapacity # cold state value for satwaterdepth
+    zi = max.(0.0, soilthickness .- satwaterdepth ./ θₑ) # cold state value for zi
 
     # copied to array of sarray below
     vwc = fill(mv, maxlayers, n)
@@ -344,6 +345,7 @@ function initialize_sbm_model(config::Config)
         maxlayers = maxlayers,
         n = n,
         nlayers = nlayers,
+        n_unsatlayers = fill(0, n),
         yl = yl,
         xl = xl,
         riverfrac = riverfrac,
@@ -373,7 +375,7 @@ function initialize_sbm_model(config::Config)
         f = θₑ ./ m,
         ustorelayerdepth = act_thickl .* 0.0,
         satwaterdepth = satwaterdepth,
-        zi = max.(0.0, soilthickness .- satwaterdepth ./ θₑ),
+        zi = zi,
         soilwatercapacity = soilwatercapacity,
         canopystorage = fill(0.0, n),
         cmax = cmax,

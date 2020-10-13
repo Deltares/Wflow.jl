@@ -43,6 +43,8 @@ function update(
     doy = 0,
 )
     @unpack graph, order = network
+
+    n = length(order)
     # two options for iteration, a fixed sub time step or based on courant number.
     if do_iter
         if do_tstep
@@ -50,15 +52,15 @@ function update(
             ts = ceil(Int(sf.Δt / tstep))
         else
             # calculate celerity
+            courant = zeros(n)
             for v in order
                 if sf.q[v] > 0.0
                     sf.cel[v] = 1.0 / (sf.α[v] * sf.β * pow(sf.q[v], (sf.β - 1.0)))
-                else
-                    sf.cel[v] = 0.0
+                    courant[v] = (sf.Δt / sf.dl[v]) * sf.cel[v]
                 end
             end
-            courant = (sf.Δt ./ sf.dl) .* sf.cel
-            ts = max(ceil(Int, (1.25 * quantile!(courant, 0.95))), 1)
+            filter!(x->x≠0.0,courant)
+            ts = isempty(courant) ? 1 : ceil(Int, (1.25 * quantile!(courant, 0.95)))
         end
     else
         ts = 1
@@ -67,9 +69,10 @@ function update(
     # sub time step
     adt = sf.Δt / ts
 
-    n = length(order)
     q_sum = zeros(n)
     h_sum = zeros(n)
+    sf.to_river .= 0.0
+
     for _ = 1:ts
         for v in order
             upstream_nodes = inneighbors(graph, v)
@@ -84,13 +87,13 @@ function update(
                         for i in upstream_nodes if !sf.wb_pit[i]
                     )
                     # TODO: if in a loop should also take average!!!
-                    sf.to_river[v] = sum(
+                    sf.to_river[v] += sum(
                         sf.q[i] * frac_toriver[i] for i in upstream_nodes if !sf.wb_pit[i]
                     )
                     # for a river cell with a reservoir or lake (wb_pit is true) all upstream surface flow goes
                     # to the river.
                 elseif river[v] && sf.wb_pit[v] && sf.width[v] == 0.0
-                    sf.to_river[v] = sum_at(sf.q, upstream_nodes)
+                    sf.to_river[v]  += sum_at(sf.q, upstream_nodes)
                     qin = 0.0
                 else
                     qin = sum_at(sf.q, upstream_nodes)
@@ -132,12 +135,10 @@ function update(
 
         end
 
-        #sf.q_av .= q_sum ./ ts
-        #sf.h_av .= h_sum ./ ts
-
     end
     sf.q_av .= q_sum ./ ts
     sf.h_av .= h_sum ./ ts
+    sf.to_river .= sf.to_river ./ ts
 
 end
 
