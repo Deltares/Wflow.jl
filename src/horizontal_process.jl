@@ -37,6 +37,10 @@ function kinematic_wave(Qin, Qold, q, α, β, Δt, Δx)
             Qkx = 0.0
         end
         Qkx = max(Qkx, 1.0e-30)
+        fQkx = Δtx * Qkx + α * pow(Qkx, β) - C
+        dfQkx = Δtx + α * β * pow(Qkx, (β - 1.0))
+        Qkx = Qkx - fQkx / dfQkx
+        Qkx = max(Qkx, 1.0e-30)
         count = 1
 
         while true
