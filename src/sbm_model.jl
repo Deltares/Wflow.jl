@@ -659,7 +659,7 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
     @unpack lateral, vertical, network, clock, config = model
 
     inds_riv = network.index_river
-    kinwave_it = get(config.model, "kin-wave-iteration", false)
+    kinwave_it = get(config.model, "kin_wave_iteration", false)
 
     update_forcing!(model)
     if haskey(config.input, "cyclic")
