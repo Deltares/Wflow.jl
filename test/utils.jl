@@ -1,6 +1,4 @@
 @testset "tosecond" begin
-    @test_throws MethodError Wflow.tosecond(Year(2))
-    @test_throws MethodError Wflow.tosecond(Quarter(2))
     @test_throws MethodError Wflow.tosecond(Month(2))
     @test Wflow.tosecond(Week(2)) == 86400 * 14
     @test Wflow.tosecond(Day(2)) == 86400 * 2
