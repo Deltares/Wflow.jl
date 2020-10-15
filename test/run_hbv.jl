@@ -7,10 +7,21 @@ model = Wflow.update(model)
 
 # test if the first timestep was written to the CSV file
 flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
-@test String(read(model.writer.csv_path)) ==
-    """time,Q,temp_bycoord,temp_byindex,Q_1,perc_33,perc_34,perc_35,perc_36,perc_37
-    2000-01-01T00:00:00,1186.2458521037543,2.965437173843384,1.1716821193695068,1127.6471572748078,2.308000087738037,1.8980000019073486,2.7100000381469727,3.818000078201294,2.1440000534057617
-    """
+@testset "CSV output" begin
+    csv = CSV.File(model.writer.csv_path)
+    row = csv[1]
+
+    @test row.time == DateTime("2000-01-01T00:00:00")
+    @test row.Q ≈ 1186.2458521037543
+    @test row.temp_bycoord ≈ 2.965437173843384
+    @test row.temp_byindex ≈ 1.1716821193695068
+    @test row.Q_1 ≈ 1127.6471572748078
+    @test row.perc_33 ≈ 2.308000087738037
+    @test row.perc_34 ≈ 1.8980000019073486
+    @test row.perc_35 ≈ 2.7100000381469727
+    @test row.perc_36 ≈ 3.818000078201294
+    @test row.perc_37 ≈ 2.1440000534057617    
+end
 
 @testset "first timestep" begin
     hbv = model.vertical
