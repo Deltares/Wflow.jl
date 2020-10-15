@@ -341,7 +341,7 @@ function initialize_sbm_model(config::Config)
     vwc_perc = fill(mv, maxlayers, n)
 
     sbm = SBM{Float64,maxlayers,maxlayers + 1}(
-        Δt = Float64(Δt.value),
+        Δt = tosecond(Δt),
         maxlayers = maxlayers,
         n = n,
         nlayers = nlayers,
@@ -526,7 +526,7 @@ function initialize_sbm_model(config::Config)
         sl = βₗ,
         n = n_land,
         dl = dl,
-        Δt = Float64(Δt.value),
+        Δt = tosecond(Δt),
         width = sw,
         wb_pit = pits[inds],
     )
@@ -562,7 +562,7 @@ function initialize_sbm_model(config::Config)
         sl = riverslope,
         n = n_river,
         dl = riverlength,
-        Δt = Float64(Δt.value),
+        Δt = tosecond(Δt),
         width = riverwidth,
         reservoir_index = do_reservoirs ? resindex : fill(0, nriv),
         lake_index = do_lakes ? lakeindex : fill(0, nriv),

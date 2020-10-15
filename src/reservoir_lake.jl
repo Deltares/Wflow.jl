@@ -135,8 +135,8 @@ function update(res::SimpleReservoir, i, inflow, timestepsecs)
     vol = (
         res.volume[i] +
         (inflow * timestepsecs) +
-        (res.precipitation[i] * (timestepsecs / basetimestep.value) / 1000.0) * res.area[i] -
-        (res.evaporation[i] * (timestepsecs / basetimestep.value) / 1000.0) * res.area[i]
+        (res.precipitation[i] * (timestepsecs / tosecond(basetimestep)) / 1000.0) * res.area[i] -
+        (res.evaporation[i] * (timestepsecs / tosecond(basetimestep)) / 1000.0) * res.area[i]
     )
 
     percfull = vol / res.maxvolume[i]
@@ -403,7 +403,7 @@ function update(lake::NaturalLake, i, inflow, doy, timestepsecs)
             (
                 lake.storage[i] +
                 (lake.precipitation[i] - lake.evaporation[i]) *
-                (timestepsecs / basetimestep.value) *
+                (timestepsecs / tosecond(basetimestep)) *
                 lake.area[i] / 1000.0
             ) / timestepsecs + inflow
         #Adjust SIFactor for ResThreshold != 0
@@ -451,10 +451,10 @@ function update(lake::NaturalLake, i, inflow, doy, timestepsecs)
             lake.storage[i] +
             inflow * timestepsecs +
             (lake.precipitation[i] / 1000.0) *
-            (timestepsecs / basetimestep.value) *
+            (timestepsecs / tosecond(basetimestep)) *
             lake.area[i] -
             (lake.evaporation[i] / 1000.0) *
-            (timestepsecs / basetimestep.value) *
+            (timestepsecs / tosecond(basetimestep)) *
             lake.area[i] - outflow * timestepsecs
 
         waterlevel = if lake.storfunc[i] == 1

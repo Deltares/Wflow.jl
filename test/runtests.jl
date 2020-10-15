@@ -40,4 +40,5 @@ instates_moselle_path = testdata(v"0.2", "instates-moselle.nc", "instates-mosell
     include("reservoir_lake.jl")
     include("run_sbm.jl")
     include("run_hbv.jl")
+    include("utils.jl")
 end
