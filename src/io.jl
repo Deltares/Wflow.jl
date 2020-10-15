@@ -277,7 +277,7 @@ struct Writer
     csv_path::Union{String,Nothing}
     csv_cols::Vector
     csv_io::IO
-    states::Tuple#{String,Vararg{String}}
+    state_ncnames::Dict{Tuple, String}
 end
 
 function prepare_reader(path, cyclic_path, config)
@@ -413,12 +413,50 @@ function flat!(d, path, el)
     return d
 end
 
+"""
+    ncnames(dict)
+
+Create a flat mapping from internal parameter locations to NetCDF variable names.
+
+Ignores top level values in the Dict. This function is used to convert a TOML such as:
+
+```toml
+[output]
+path = "path/to/file.nc"
+
+[output.vertical]
+canopystorage = "my_canopystorage"
+
+[output.lateral.river]
+q = "my_q"
+```
+
+To a dictionary of the flattened parameter locations and NetCDF names. The top level
+values are ignored since the output path is not a NetCDF name.
+
+```julia
+Dict(
+    (:vertical, :canopystorage) => "my_canopystorage,
+    (:lateral, :river, :q) => "my_q,
+)
+```
+"""
+function ncnames(dict)
+    output_ncnames = Dict{Tuple{Symbol,Vararg{Symbol}},String}()
+    for (k, v) in pairs(dict)
+        if v isa Dict  # ignore top level values (e.g. output.path)
+            flat!(output_ncnames, k, v)
+        end
+    end
+    return output_ncnames
+end
+
 function prepare_writer(
     config,
     reader,
     nc_path,
     modelmap,
-    states,
+    state_ncnames,
     rev_inds,
     x_nc,
     y_nc,
@@ -430,13 +468,7 @@ function prepare_writer(
     nclon = ncread(reader.dataset, "lon"; type = Float64)
     nclat = ncread(reader.dataset, "lat"; type = Float64)
 
-    # create a flat mapping from internal parameter locations to NetCDF variable names
-    output_ncnames = Dict{Tuple{Symbol,Vararg{Symbol}},String}()
-    for (k, v) in pairs(config.output)
-        if v isa Dict  # ignore top level values (e.g. output.path)
-            flat!(output_ncnames, k, v)
-        end
-    end
+    output_ncnames = ncnames(config.output)
 
     # fill the output_map by mapping parameter NetCDF names to arrays
     output_map = Dict{String,Vector}()
@@ -515,7 +547,7 @@ function prepare_writer(
     end
 
 
-    return Writer(ds, output_map, nc_path, csv_path, csv_cols, csv_io, states)
+    return Writer(ds, output_map, nc_path, csv_path, csv_cols, csv_io, state_ncnames)
 end
 
 "Write model output"

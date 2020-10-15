@@ -62,10 +62,11 @@ function lattometres(lat::Float64)
 end
 
 """
-    set_states(instate_path, model, states, sel, config ; <keyword arguments>)
+    set_states(instate_path, model, state_ncnames; <keyword arguments>)
 
-Read states contained in `Tuple` `states` from NetCDF file located in `instate_path`, and set states in 
-`model` object. Active cells are selected with `sel` (`Vector{CartesianIndex}`) from the NetCDF file. 
+Read states contained in `Dict` `state_ncnames` from NetCDF file located in `instate_path`,
+and set states in `model` object. Active cells are selected with the corresponding network's
+(`Vector{CartesianIndex}`) from the NetCDF file. 
 
 # Arguments
 - `type = nothing`: type to convert data to after reading. By default no conversion is done.
@@ -73,20 +74,17 @@ Read states contained in `Tuple` `states` from NetCDF file located in `instate_p
 function set_states(
     instate_path,
     model,
-    states,
-    sel,
-    config;
+    state_ncnames;
     type = nothing,
 )
     @unpack network = model
     # states in NetCDF include dim time (one value) at index 3 or 4, 3 or 4 dims are allowed
     ds = NCDataset(instate_path)
-    for state in states
-        ncname = param(config.state, state)
+    for (state, ncname) in state_ncnames
         dims = length(dimnames(ds[ncname]))
         # 4 dims, for example (x,y,layer,time) where dim layer is an SVector for soil layers
         if dims == 4
-            A = transpose(ds[ncname][sel, :, 1])
+            A = transpose(ds[ncname][network.land.indices, :, 1])
             # Convert to desired type if needed
             if !isnothing(type)
                 if eltype(A) != type
@@ -104,7 +102,7 @@ function set_states(
             elseif :river in state
                 A = ds[ncname][network.river.indices, 1]
             else
-                A = ds[ncname][sel, 1]
+                A = ds[ncname][network.land.indices, 1]
             end
             # Convert to desired type if needed
             if !isnothing(type)

@@ -58,20 +58,7 @@ model = Wflow.initialize_sbm_model(config)
     ncvars = [k for k in keys(writer.dataset) if !in(k, ncdims)]
     @test "snow" in ncvars
     @test "q" in ncvars
-    @test writer.states == (
-        Wflow.symbols"vertical.satwaterdepth",
-        Wflow.symbols"vertical.snow",
-        Wflow.symbols"vertical.tsoil",
-        Wflow.symbols"vertical.ustorelayerdepth",
-        Wflow.symbols"vertical.snowwater",
-        Wflow.symbols"vertical.canopystorage",
-        Wflow.symbols"lateral.river.reservoir.volume",
-        Wflow.symbols"lateral.subsurface.ssf",
-        Wflow.symbols"lateral.river.q",
-        Wflow.symbols"lateral.river.h",
-        Wflow.symbols"lateral.land.q",
-        Wflow.symbols"lateral.land.h",
-    )
+    @test length(writer.state_ncnames) == 12
 end
 
 @testset "warm states" begin
