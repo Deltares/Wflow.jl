@@ -251,7 +251,6 @@ function initialize_sbm_model(config::Config)
     )
 
     # if leaf area index climatology provided use sl, swood and kext to calculate cmax, e_r and canopygapfraction
-    # TODO replace by something else
     if haskey(config.input.vertical, "leaf_area_index")
        # TODO confirm if leaf area index climatology is present in the NetCDF
        sl = ncread(
