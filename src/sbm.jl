@@ -513,7 +513,7 @@ function update_until_recharge(sbm::SBM, config)
             if sbm.zi[i] > rootingdepth
                 capfluxscale =
                     sbm.capscale[i] / (sbm.capscale[i] + sbm.zi[i] - rootingdepth) *
-                    Float64(Δt.value) / Float64(basetimestep.value)
+                    tosecond(Δt) / tosecond(basetimestep)
             else
                 capfluxscale = 0.0
             end

@@ -334,7 +334,7 @@ function initialize_hbv_model(config::Config)
         sl = βₗ,
         n = n_land,
         dl = dl,
-        Δt = Float64(Δt.value),
+        Δt = tosecond(Δt),
         width = dw,
         wb_pit = pits[inds],
     )
@@ -369,7 +369,7 @@ function initialize_hbv_model(config::Config)
         sl = riverslope,
         n = n_river,
         dl = riverlength,
-        Δt = Float64(Δt.value),
+        Δt = tosecond(Δt),
         width = riverwidth,
         reservoir_index = do_reservoirs ? resindex : fill(0, nriv),
         lake_index = do_lakes ? lakeindex : fill(0, nriv),
