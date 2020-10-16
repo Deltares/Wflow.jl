@@ -66,6 +66,27 @@ function initialize_sediment_model(config::Config)
     cellength = abs(mean(diff(x_nc)))
 
     # Initialise parameters for the soil loss part EROS
+    canopyheight = ncread(
+        nc,
+        param(config, "input.vertical.canopyheight", nothing);
+        sel = inds,
+        defaults = 3.0,
+        type = Float64,
+    )
+    erosk = ncread(
+        nc,
+        param(config, "input.vertical.erosk", nothing);
+        sel = inds,
+        defaults = 0.6,
+        type = Float64,
+    )
+    erosspl = ncread(
+        nc,
+        param(config, "input.vertical.erosspl", nothing);
+        sel = inds,
+        defaults = 2.0,
+        type = Float64,
+    )
     erosov = ncread(
         nc,
         param(config, "input.vertical.erosov", nothing);
@@ -102,53 +123,53 @@ function initialize_sediment_model(config::Config)
         type = Float64,
     )
 
-    # # if leaf area index climatology provided use sl, swood and kext to calculate cmax, e_r and canopygapfraction
-    # # TODO replace by something else
-    # if isnothing(true)
-    #     # cmax, e_r, canopygapfraction only required when leaf area index climatology not provided
-    #     cmax = ncread(
-    #         nc,
-    #         param(config, "input.vertical.cmax", nothing);
-    #         sel = inds,
-    #         defaults = 1.0,
-    #         type = Float64,
-    #     )
-    #     e_r = ncread(
-    #         nc,
-    #         param(config, "input.vertical.eoverr", nothing);
-    #         sel = inds,
-    #         defaults = 0.1,
-    #         type = Float64,
-    #     )
-    #     canopygapfraction = ncread(
-    #         nc,
-    #         param(config, "input.vertical.canopygapfraction", nothing);
-    #         sel = inds,
-    #         defaults = 0.1,
-    #         type = Float64,
-    #     )
-    #     sl = fill(mv, n)
-    #     swood = fill(mv, n)
-    #     kext = fill(mv, n)
-    # else
-    #     # TODO confirm if leaf area index climatology is present in the NetCDF
-    #     sl = ncread(
-    #         nc,
-    #         param(config, "input.vertical.specific_leaf");
-    #         sel = inds,
-    #         type = Float64,
-    #     )
-    #     swood = ncread(
-    #         nc,
-    #         param(config, "input.vertical.storage_wood");
-    #         sel = inds,
-    #         type = Float64,
-    #     )
-    #     kext = ncread(nc, param(config, "input.vertical.kext"); sel = inds, type = Float64)
-    #     cmax = fill(mv, n)
-    #     e_r = fill(mv, n)
-    #     canopygapfraction = fill(mv, n)
-    # end
+    # if leaf area index climatology provided use sl, swood and kext to calculate cmax, e_r and canopygapfraction
+    # TODO replace by something else
+    if isnothing(true)
+        # cmax, e_r, canopygapfraction only required when leaf area index climatology not provided
+        cmax = ncread(
+            nc,
+            param(config, "input.vertical.cmax", nothing);
+            sel = inds,
+            defaults = 1.0,
+            type = Float64,
+        )
+        e_r = ncread(
+            nc,
+            param(config, "input.vertical.eoverr", nothing);
+            sel = inds,
+            defaults = 0.1,
+            type = Float64,
+        )
+        canopygapfraction = ncread(
+            nc,
+            param(config, "input.vertical.canopygapfraction", nothing);
+            sel = inds,
+            defaults = 0.1,
+            type = Float64,
+        )
+        sl = fill(mv, n)
+        swood = fill(mv, n)
+        kext = fill(mv, n)
+    else
+        # TODO confirm if leaf area index climatology is present in the NetCDF
+        sl = ncread(
+            nc,
+            param(config, "input.vertical.specific_leaf");
+            sel = inds,
+            type = Float64,
+        )
+        swood = ncread(
+            nc,
+            param(config, "input.vertical.storage_wood");
+            sel = inds,
+            type = Float64,
+        )
+        kext = ncread(nc, param(config, "input.vertical.kext"); sel = inds, type = Float64)
+        cmax = fill(mv, n)
+        e_r = fill(mv, n)
+        canopygapfraction = fill(mv, n)
+    end
 
 
     # these are filled in the loop below
@@ -171,14 +192,27 @@ function initialize_sediment_model(config::Config)
         yl = yl,
         xl = xl,
         riverfrac = riverfrac,
-        # Soil erosion
+        # Forcing
+        interception = fill(mv, n),
+        h_land = fill(mv, n),
         precipitation = fill(mv, n),
         q_land = fill(mv, n),
+        # Parameters
+        canopyheight = canopyheight,
+        canopygapfraction = canopygapfraction,
+        erosk = erosk,
+        erosspl = erosspl,
         erosov = erosov,
         pathfrac = pathfrac,
         slope = slope,
         usleC = usleC,
         usleK = usleK,
+        # Interception related to climatology (leaf_area_index)
+        sl = sl,
+        swood = swood,
+        kext = kext,
+        leaf_area_index = fill(mv, n),
+        # Outputs
         sedspl = fill(mv, n),
         sedov = fill(mv, n),
         soilloss = fill(mv, n),

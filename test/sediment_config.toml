@@ -32,19 +32,30 @@ subcatchment = "wflow_subcatch"
 # specify the internal IDs of the parameters which vary over time
 # the external name mapping needs to be below together with the other mappings
 forcing = [
+  "vertical.h_land",
+  "vertical.interception",
   "vertical.precipitation",
   "vertical.q_land",
 ]
 
-# cyclic = ["vertical.leaf_area_index"]
+cyclic = ["vertical.leaf_area_index"]
 
 [input.vertical]
-altitude = "wflow_dem"  
+altitude = "wflow_dem" 
+canopyheight = "CanopyHeight"
+erosk = "ErosK"
+erosspl = "eros_spl_EUROSEM"
 erosov = "eros_ov"
+h_land = "levKinL" # forcing
+interception = "int" # forcing
+kext = "Kext"
+leaf_area_index = "LAI" # cyclic 
 pathfrac = "PathFrac" 
 precipitation = "P" # forcing
 q_land = "runL" # forcing
 slope = "Slope"
+specific_leaf = "Sl" 
+storage_wood = "Swood" 
 usleC = "USLE_C"
 usleK = "USLE_K"
 
@@ -62,7 +73,7 @@ width = "wflow_riverwidth"
 reinit = true
 runrivermodel = false
 reservoirs = false
-rainerosmethod = "answers" # Rainfall erosion equation: ["answers", "eurosem"]
+rainerosmethod = "eurosem" # Rainfall erosion equation: ["answers", "eurosem"]
 landtransportmethod = "yalinpart" # Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]
 rivtransportmethod = "bagnold" # River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]
 
@@ -128,5 +139,6 @@ coordinate.x = 6.255
 coordinate.y = 50.012
 header = "yl"
 parameter = "vertical.yl"
+
 
 
