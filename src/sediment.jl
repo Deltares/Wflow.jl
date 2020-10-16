@@ -7,15 +7,27 @@ Base.@kwdef struct EROS{T}
     xl::Vector{T}
     # Fraction of river [-]
     riverfrac::Vector{T}
+    # Depth of overland flow [m]
+    h_land::Vector{T} = fill(mv, n)
+    # Canopy interception [mm]
+    interception::Vector{T} = fill(mv, n)
     # Precipitation [mm]
     precipitation::Vector{T} = fill(mv, n)
     # Overland flow [m3/s]
     q_land::Vector{T} = fill(mv, n)
+    # Canopy height [m]
+    canopyheight::Vector{T}
+    # Canopy gap fraction [mm]
+    canopygapfraction::Vector{T}
+    # Coefficient for EUROSEM rainfall erosion [-]
+    erosk::Vector{T}
+    # Exponent for EUROSEM rainfall erosion [-]
+    erosspl::Vector{T}
     # Coefficient for ANSWERS overland flow erosion [-]
     erosov::Vector{T}
     # Fraction of impervious area per grid cell [-]
     pathfrac::Vector{T}
-    #
+    # Land slope [-]
     slope::Vector{T}
     # USLE crop management factor [-]
     usleC::Vector{T}
@@ -27,6 +39,15 @@ Base.@kwdef struct EROS{T}
     sedov::Vector{T} = fill(mv, n)
     # Total eroded soil [ton]
     soilloss::Vector{T} = fill(mv, n)
+    ## Interception related to leaf_area_index climatology ###
+    # Specific leaf storage [mm]
+    sl::Vector{T} = fill(mv, n)
+    # Storage woody part of vegetation [mm]
+    swood::Vector{T} = fill(mv, n)
+    # Extinction coefficient [-] (to calculate canopy gap fraction)
+    kext::Vector{T} = fill(mv, n)
+    # Leaf area index [m² m⁻²]
+    leaf_area_index::Vector{T} = fill(mv, n)
 
     function EROS{T}(args...) where {T}
         equal_size_vectors(args)
@@ -39,6 +60,7 @@ statevars(::EROS) = ()
 function update_until_ols(eros::EROS, config)
 
     # # start dummy variables (should be generated from model reader and from Config.jl TOML)
+    do_lai = haskey(config.input.vertical, "leaf_area_index")
     rainerosmethod = get(config.model, "rainerosmethod", "answers")
     #precipitation = 3.0
     #q_land = 0.01
@@ -58,6 +80,32 @@ function update_until_ols(eros::EROS, config)
             sedspl = 0.108 * eros.usleC[i] * eros.usleK[i] * eros.xl[i] * eros.yl[i] * rintnsty^2
             # [ton/timestep]
             sedspl = sedspl * (ts/60) * 10^(-3)
+        end
+
+        if rainerosmethod == "eurosem"
+            if do_lai
+                cmax = eros.sl[i] * eros.leaf_area_index[i] + eros.swood[i]
+                canopygapfraction = exp(-eros.kext[i] * eros.leaf_area_index[i])
+            end
+            # calculate rainfall intensity [mm/h]
+            rintnsty = eros.precipitation[i] / (ts/3600)
+            # Kinetic energy of direct throughfall [J/m2/mm]
+            # kedir = max(11.87 + 8.73 * log10(max(0.0001, rintnsty)),0.0) #basis used in USLE
+            kedir = max(8.95 + 8.44 * log10(max(0.0001, rintnsty)), 0.0) #variant used in most distributed mdoels
+            # Kinetic energy of leaf drainage [J/m2/mm]
+            pheff = 0.5 * eros.canopyheight[i]
+            keleaf = max((15.8 * pheff^0.5) - 5.87, 0.0)
+
+            #Depths of rainfall (total, leaf drianage, direct) [mm]
+            rdtot = eros.precipitation[i]
+            rdleaf = rdtot * 0.1 * canopygapfraction #stemflow
+            rddir = max(rdtot - rdleaf - eros.interception[i], 0.0) #throughfall
+
+            #Total kinetic energy by rainfall [J/m2]
+            ketot = (rddir * kedir + rdleaf * keleaf) * 0.001
+            # Rainfall / splash erosion [g/m2]
+            sedspl = eros.erosk[i] * ketot * exp(-eros.erosspl[i] * eros.h_land[i])
+            sedspl = sedspl * eros.xl[i] * eros.yl[i] * 10^(6) # ton/cell
         end
 
         # Remove the impervious area
@@ -83,6 +131,7 @@ function update_until_ols(eros::EROS, config)
         
 
         # update the outputs and states
+        eros.canopygapfraction[i] = canopygapfraction
         eros.sedspl[i] = sedspl
         eros.sedov[i] = sedov
         eros.soilloss[i] = soilloss
