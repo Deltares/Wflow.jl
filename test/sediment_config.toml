@@ -1,0 +1,132 @@
+# This is an example TOML configuration file. It is used to test the wflow configuration
+# features, and can also be used to work towards an example of what we want the
+# configuration file to look like.
+# Relative file paths are interpreted as being relative to this TOML file.
+# TOML documentation: https://github.com/toml-lang/toml
+
+casename = "testcase"
+
+calendar = "proleptic_gregorian" 
+endtime = 2000-01-03T00:00:00 
+starttime = 2000-01-01T00:00:00 
+time_units = "days since 1900-01-01 00:00:00" 
+timestepsecs = 86400 
+
+[state]
+path_input = "data/instates-moselle-sed.nc" 
+path_output = "data/outstates-moselle-sed.nc" # TODO implement
+
+# if listed, the variable must be present in the NetCDF or error
+# if not listed, the variable can get a default value if it has one
+
+[input]
+path_forcing = "data/forcing-moselle-sed.nc"
+path_static = "data/staticmaps-moselle-sed.nc"
+
+# these are not directly part of the model
+gauges = "wflow_gauges"
+ldd = "wflow_ldd"
+river_location = "wflow_river"
+subcatchment = "wflow_subcatch"
+
+# specify the internal IDs of the parameters which vary over time
+# the external name mapping needs to be below together with the other mappings
+forcing = [
+  "vertical.precipitation",
+  "vertical.q_land",
+]
+
+# cyclic = ["vertical.leaf_area_index"]
+
+[input.vertical]
+altitude = "wflow_dem"  
+erosov = "eros_ov"
+pathfrac = "PathFrac" 
+precipitation = "P" # forcing
+q_land = "runL" # forcing
+slope = "Slope"
+usleC = "USLE_C"
+usleK = "USLE_K"
+
+[input.lateral.land]
+n = "N"
+slope = "Slope"
+
+[input.lateral.river]
+length = "wflow_riverlength"
+n = "N_River"
+slope = "RiverSlope"
+width = "wflow_riverwidth"
+
+[model]
+reinit = true
+runrivermodel = false
+reservoirs = false
+rainerosmethod = "answers" # Rainfall erosion equation: ["answers", "eurosem"]
+landtransportmethod = "yalinpart" # Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]
+rivtransportmethod = "bagnold" # River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]
+
+[output]
+path = "data/output-moselle-sed.nc"
+
+[output.vertical]
+sedspl = "sedspl"
+sedov = "sedov"
+soilloss = "soilloss"
+
+[csv]
+path = "data/output-moselle-sed.csv"
+
+# [[csv.column]]
+# header = "SL"
+# parameter = "vertical.soilloss"
+# reducer = "maximum"
+
+# [[csv.column]]
+# header = "SL"
+# map = "gauges"
+# parameter = "vertical.SL"
+
+[[csv.column]]
+coordinate.x = 6.255
+coordinate.y = 50.012
+header = "SL"
+parameter = "vertical.soilloss"
+
+[[csv.column]]
+coordinate.x = 6.255
+coordinate.y = 50.012
+header = "SSPL"
+parameter = "vertical.sedspl"
+
+[[csv.column]]
+coordinate.x = 6.255
+coordinate.y = 50.012
+header = "SOV"
+parameter = "vertical.sedov"
+
+[[csv.column]]
+coordinate.x = 6.255
+coordinate.y = 50.012
+header = "P"
+parameter = "vertical.precipitation"
+
+[[csv.column]]
+coordinate.x = 6.255
+coordinate.y = 50.012
+header = "ql"
+parameter = "vertical.q_land"
+
+[[csv.column]]
+coordinate.x = 6.255
+coordinate.y = 50.012
+header = "xl"
+parameter = "vertical.xl"
+
+[[csv.column]]
+coordinate.x = 6.255
+coordinate.y = 50.012
+header = "yl"
+parameter = "vertical.yl"
+
+
