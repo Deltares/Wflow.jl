@@ -43,6 +43,7 @@ function update_until_ols(eros::EROS, config)
     #precipitation = 3.0
     #q_land = 0.01
     Δt = Second(config.timestepsecs)
+    ts = Float64(Δt.value)
     #basetimestep = Second(Day(1))
     # end dummpy variables
 
@@ -52,11 +53,11 @@ function update_until_ols(eros::EROS, config)
         # ANSWERS method
         if rainerosmethod == "answers"
             # calculate rainfall intensity [mm/min]
-            rintnsty = eros.precipitation[i] / (Δt/60)
+            rintnsty = eros.precipitation[i] / (ts/60)
             # splash erosion [kg/min]
-            sedspl = 0.108 * eros.usleC[i] * eros.usleK[i] * xl[i] * yl[i] * rintnsty^2
+            sedspl = 0.108 * eros.usleC[i] * eros.usleK[i] * eros.xl[i] * eros.yl[i] * rintnsty^2
             # [ton/timestep]
-            sedspl = sedspl * (Δt/60) * 10^(-3)
+            sedspl = sedspl * (ts/60) * 10^(-3)
         end
 
         # Remove the impervious area
@@ -65,15 +66,15 @@ function update_until_ols(eros::EROS, config)
         ### Overland flow erosion ###
         # ANWERS method
         # Overland flow rate [m2/min]
-        qr_land = eros.q_land[i] * 60 / (( xl[i] + yl[i] ) / 2)
+        qr_land = eros.q_land[i] * 60 / (( eros.xl[i] + eros.yl[i] ) / 2)
         # Sine of the slope
         sinslope = sin(atan(eros.slope[i]))
 
         # Overland flow erosion [kg/min]
         # For a wide range of slope, it is better to use the sine of slope rather than tangeant
-        sedov = eros.erosov[i] * eros.usleC[i] * eros.usleK[i] * xl[i] * yl[i] * sinslope * qr_land
+        sedov = eros.erosov[i] * eros.usleC[i] * eros.usleK[i] * eros.xl[i] * eros.yl[i] * sinslope * qr_land
         # [ton/timestep]
-        sedov = sedov * (Δt/60) * 10^(-3)
+        sedov = sedov * (ts/60) * 10^(-3)
         # Remove the impervious area
         sedov = sedov * (1.0 - eros.pathfrac[i])
 

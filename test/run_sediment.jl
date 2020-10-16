@@ -1,15 +1,15 @@
-
+using Wflow
 tomlpath = joinpath(@__DIR__, "test", "sediment_config.toml")
 config = Wflow.Config(tomlpath)
 
 model = Wflow.initialize_sediment_model(config)
 #@unpack network = model
 
-#model = Wflow.update(model)
+model = Wflow.update(model)
 
-#flush(model.writer.csv_io)
+flush(model.writer.csv_io)
 
-#Wflow.close_files(model)
+Wflow.close_files(model)
 
 # benchmark = @benchmark Wflow.update(model)
 
