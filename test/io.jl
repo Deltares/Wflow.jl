@@ -58,7 +58,7 @@ model = Wflow.initialize_sbm_model(config)
     ncvars = [k for k in keys(writer.dataset) if !in(k, ncdims)]
     @test "snow" in ncvars
     @test "q" in ncvars
-    @test length(writer.state_ncnames) == 12
+    @test length(writer.state_parameters) == 12
 end
 
 @testset "warm states" begin

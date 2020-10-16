@@ -468,7 +468,7 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:HBV,R,W}
 
     update(lateral.river, network.river, do_iter = true, doy = dayofyear(clock.time))
 
-    write_output(model, model.writer)
+    write_output(model)
 
     # update the clock
     clock.iteration += 1

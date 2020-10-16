@@ -53,6 +53,8 @@ Base.getindex(config::Config, i) = getindex(Dict(config), i)
 Base.Dict(config::Config) = getfield(config, :dict)
 Base.pathof(config::Config) = getfield(config, :path)
 Base.dirname(config::Config) = dirname(pathof(config))
+Base.iterate(config::Config) = iterate(Dict(config))
+Base.iterate(config::Config, state) = iterate(Dict(config), state)
 
 "Extract a NetCDF variable at a given time"
 function get_at!(
@@ -218,8 +220,8 @@ function setup_netcdf(
         ("time",),
         attrib = ["units" => time_units, "calendar" => calendar],
     )
-    for (key, val) in pairs(parameters)
-        if eltype(val) <: AbstractFloat
+    for (key, val) in parameters
+        if eltype(val.vector) <: AbstractFloat
             # all floats are saved as Float32
             defVar(
                 ds,
@@ -228,7 +230,7 @@ function setup_netcdf(
                 ("lon", "lat", "time"),
                 attrib = ["_FillValue" => Float32(NaN)],
             )
-        elseif eltype(val) <: SVector
+        elseif eltype(val.vector) <: SVector
             # SVectors are used to store layers
             defVar(
                 ds,
@@ -238,7 +240,7 @@ function setup_netcdf(
                 attrib = ["_FillValue" => Float32(NaN)],
             )
         else
-            error("Unsupported output type: ", typeof(cell))
+            error("Unsupported output type: ", typeof(val.vector))
         end
     end
     return ds
@@ -277,7 +279,9 @@ struct Writer
     csv_path::Union{String,Nothing}
     csv_cols::Vector
     csv_io::IO
-    state_ncnames::Dict{Tuple, String}
+    state_dataset::NCDataset
+    state_parameters::Dict{String, Any}
+    state_nc_path::String
 end
 
 function prepare_reader(path, cyclic_path, config)
@@ -442,13 +446,27 @@ Dict(
 ```
 """
 function ncnames(dict)
-    output_ncnames = Dict{Tuple{Symbol,Vararg{Symbol}},String}()
-    for (k, v) in pairs(dict)
+    ncnames_dict = Dict{Tuple{Symbol,Vararg{Symbol}},String}()
+    for (k, v) in dict
         if v isa Dict  # ignore top level values (e.g. output.path)
-            flat!(output_ncnames, k, v)
+            flat!(ncnames_dict, k, v)
         end
     end
-    return output_ncnames
+    return ncnames_dict
+end
+
+"""
+    out_map(ncnames_dict, modelmap)
+
+Create a Dict that maps parameter NetCDF names to arrays in the Model.
+"""
+function out_map(ncnames_dict, modelmap)
+    output_map = Dict{String,Any}()
+    for (par, ncname) in ncnames_dict
+        A = param(modelmap, par)
+        output_map[ncname] = (par=par, vector=A)
+    end
+    return output_map
 end
 
 function prepare_writer(
@@ -471,15 +489,16 @@ function prepare_writer(
     output_ncnames = ncnames(config.output)
 
     # fill the output_map by mapping parameter NetCDF names to arrays
-    output_map = Dict{String,Vector}()
-    for (par, ncname) in pairs(output_ncnames)
-        A = param(modelmap, par)
-        output_map[ncname] = A
-    end
+    output_map = out_map(output_ncnames, modelmap)
 
     calendar = get(config, "calendar", "proleptic_gregorian")
     time_units = get(config, "time_units", CFTime.DEFAULT_TIME_UNITS)
     ds = setup_netcdf(nc_path, nclon, nclat, output_map, calendar, time_units, maxlayers)
+
+    # create a separate state output NetCDF that will hold the last timestep of all states
+    state_map = out_map(state_ncnames, modelmap)
+    nc_state_path = config.state.path_output
+    ds_outstate = setup_netcdf(nc_state_path, nclon, nclat, state_map, calendar, time_units, maxlayers)
     tomldir = dirname(config)
 
     if haskey(config, "csv") && haskey(config.csv, "column")
@@ -547,42 +566,49 @@ function prepare_writer(
     end
 
 
-    return Writer(ds, output_map, nc_path, csv_path, csv_cols, csv_io, state_ncnames)
+    return Writer(ds, output_map, nc_path, csv_path, csv_cols, csv_io, ds_outstate, state_map, nc_state_path)
 end
 
-"Write model output"
-function write_output(model, writer::Writer)
+"Write a new timestep to the NetCDF file"
+function write_netcdf_timestep(model, dataset, parameters)
     @unpack vertical, clock, reader, network = model
     @unpack buffer = reader
-    @unpack dataset, parameters = writer
-    inds = network.land.indices
-    inds_riv = network.river.indices
-
-    write_csv_row(model)
 
     time_index = add_time(dataset, clock.time)
 
-    for (key, vector) in pairs(parameters)
-        inds_used = Symbol(key) in propertynames(model.lateral.river) ? inds_riv : inds
+    for (key, val) in parameters
+        @unpack par, vector = val
+        sel = active_indices(network, par)
         # write the active cells vector to the 2d buffer matrix
         elemtype = eltype(vector)
         if elemtype <: AbstractFloat
             # ensure no other information is written
             fill!(buffer, NaN)
-            buffer[inds_used] .= vector
+            buffer[sel] .= vector
             dataset[key][:, :, time_index] = buffer
         elseif elemtype <: SVector
             nlayer = length(first(vector))
             for i = 1:nlayer
                 # ensure no other information is written
                 fill!(buffer, NaN)
-                buffer[inds_used] .= getindex.(vector, i)
+                buffer[sel] .= getindex.(vector, i)
                 dataset[key][:, :, i, time_index] = buffer
             end
         else
             error("Unsupported output type: ", elemtype)
         end
     end
+
+    return model
+end
+
+"Write model output"
+function write_output(model)
+    @unpack vertical, clock, reader, network, writer = model
+    @unpack dataset, parameters = writer
+
+    write_csv_row(model)
+    write_netcdf_timestep(model, dataset, parameters)
 
     return model
 end
@@ -628,16 +654,21 @@ end
 function close_files(model; delete_output::Bool = false)
     @unpack reader, writer, config = model
 
+    # write output state NetCDF
+    write_netcdf_timestep(model, writer.state_dataset, writer.state_parameters)
+
     close(reader.dataset)
     if haskey(config.input, "cyclic")
         close(reader.cyclic_dataset)
     end
     close(writer.dataset)
     close(writer.csv_io)
+    close(writer.state_dataset)
 
     if delete_output
         isfile(writer.nc_path) && rm(writer.nc_path)
         isfile(writer.csv_path) && rm(writer.csv_path)
+        isfile(writer.state_nc_path) && rm(writer.state_nc_path)
     end
     return nothing
 end

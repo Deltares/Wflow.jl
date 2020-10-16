@@ -695,7 +695,7 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
         ) ./ lateral.river.dl
     update(lateral.river, network.river, do_iter = kinwave_it, doy = dayofyear(clock.time))
 
-    write_output(model, model.writer)
+    write_output(model)
 
     # update the clock
     clock.iteration += 1

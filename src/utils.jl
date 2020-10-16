@@ -45,6 +45,18 @@ function active_indices(subcatch_2d::AbstractMatrix, nodata)
     return indices, reverse_indices
 end
 
+function active_indices(network, key::Tuple)
+    if :reservoir in key
+        return network.reservoir.indices_outlet
+    elseif :lake in key
+        return network.lake.indices_outlet
+    elseif :river in key
+        return network.river.indices
+    else
+        return network.land.indices
+    end
+end
+
 function lattometres(lat::Float64)
     m1 = 111132.92     # latitude calculation term 1
     m2 = -559.82       # latitude calculation term 2
@@ -81,10 +93,11 @@ function set_states(
     # states in NetCDF include dim time (one value) at index 3 or 4, 3 or 4 dims are allowed
     ds = NCDataset(instate_path)
     for (state, ncname) in state_ncnames
+        sel = active_indices(network, state)
         dims = length(dimnames(ds[ncname]))
         # 4 dims, for example (x,y,layer,time) where dim layer is an SVector for soil layers
         if dims == 4
-            A = transpose(ds[ncname][network.land.indices, :, 1])
+            A = transpose(ds[ncname][sel, :, 1])
             # Convert to desired type if needed
             if !isnothing(type)
                 if eltype(A) != type
@@ -95,15 +108,7 @@ function set_states(
             param(model, state) .= svectorscopy(A, Val{size(A)[1]}())
             # 3 dims (x,y,time)
         elseif dims == 3
-            if :reservoir in state
-                A = ds[ncname][network.reservoir.indices_outlet, 1]
-            elseif :lake in state
-                A = ds[ncname][network.lake.indices_outlet, 1]
-            elseif :river in state
-                A = ds[ncname][network.river.indices, 1]
-            else
-                A = ds[ncname][network.land.indices, 1]
-            end
+            A = ds[ncname][sel, 1]
             # Convert to desired type if needed
             if !isnothing(type)
                 if eltype(A) != type

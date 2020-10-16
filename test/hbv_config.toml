@@ -14,7 +14,7 @@ timestepsecs = 86400
 
 [state]
 path_input = "data/instates-lahn.nc" 
-path_output = "data/outstates-lahn.nc" # TODO implement
+path_output = "data/outstates-lahn.nc"
 
 # if listed, the variable must be present in the NetCDF or error
 # if not listed, the variable can get a default value if it has one
