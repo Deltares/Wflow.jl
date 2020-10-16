@@ -97,7 +97,10 @@ function set_states(
         dims = length(dimnames(ds[ncname]))
         # 4 dims, for example (x,y,layer,time) where dim layer is an SVector for soil layers
         if dims == 4
-            A = transpose(ds[ncname][sel, :, 1])
+            A = permutedims(ds[ncname][sel, :, 1])
+            # note that this array is allowed to have missings, since not every vertical
+            # column is `maxlayers` layers deep
+            A = replace!(A, missing => NaN)
             # Convert to desired type if needed
             if !isnothing(type)
                 if eltype(A) != type
@@ -109,6 +112,7 @@ function set_states(
             # 3 dims (x,y,time)
         elseif dims == 3
             A = ds[ncname][sel, 1]
+            A = nomissing(A)
             # Convert to desired type if needed
             if !isnothing(type)
                 if eltype(A) != type
@@ -174,7 +178,7 @@ function ncread(
         else
             dim = findfirst(==(dimname), dimnames(nc[var]))
             if dim == 3
-                A = transpose(A[sel, :])
+                A = permutedims(A[sel, :])
             elseif dim == 1
                 A = A[:, sel]
             end

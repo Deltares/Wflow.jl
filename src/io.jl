@@ -42,6 +42,11 @@ function Base.getproperty(config::Config, f::Symbol)
     return a isa AbstractDict ? Config(a, path) : a
 end
 
+function Base.setproperty!(config::Config, f::Symbol, x)
+    dict = Dict(config)
+    return dict[String(f)] = x
+end
+
 # also used in autocomplete
 Base.propertynames(config::Config) = collect(keys(Dict(config)))
 Base.haskey(config::Config, key) = haskey(Dict(config), key)
@@ -150,6 +155,21 @@ function update_forcing!(model)
     return model
 end
 
+"""
+    monthday_passed(curr, avail)
+
+Given two monthday tuples such as (12, 31) and (12, 15), return true if the first argument
+falls after or on the same day as the second argument, assuming the same year. The tuples
+generally come from `Dates.monthday`.
+
+# Examples
+```julia-repl
+julia> monthday_passed((12, 31), (12, 15))
+true
+```
+"""
+monthday_passed(curr, avail) = (curr[1] >= avail[1]) && (curr[2] >= avail[2])
+
 "Get cyclic NetCDF input for the given time"
 function update_cyclic!(model)
     @unpack vertical, clock, reader, network, config = model
@@ -165,7 +185,8 @@ function update_cyclic!(model)
     is_first_timestep = clock.time == config.starttime
     if is_first_timestep || (month_day in cyclic_times)
         # time for an update of the cyclic forcing
-        i = findfirst(==(month_day), cyclic_times)
+        i = findfirst(t -> monthday_passed(month_day, t), cyclic_times)
+        isnothing(i) && error("Could not find applicable cyclic timestep for $month_day")
 
         # load from NetCDF into the model according to the mapping
         for (par, ncvarname) in cyclic_parameters
@@ -653,9 +674,6 @@ end
 "Close input and output datasets that are opened on model initialization"
 function close_files(model; delete_output::Bool = false)
     @unpack reader, writer, config = model
-
-    # write output state NetCDF
-    write_netcdf_timestep(model, writer.state_dataset, writer.state_parameters)
 
     close(reader.dataset)
     if haskey(config.input, "cyclic")

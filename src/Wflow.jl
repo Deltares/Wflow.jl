@@ -62,12 +62,15 @@ function run_simulation(config::Config)
 end
 
 function run_simulation(model::Model; close_files = true)
-    @unpack network, config = model
+    @unpack network, config, writer = model
 
     times = config.starttime:Second(config.timestepsecs):config.endtime
     for _ in times
         model = Wflow.update(model)
     end
+
+    # write output state NetCDF
+    write_netcdf_timestep(model, writer.state_dataset, writer.state_parameters)
 
     reset_clock!(model.clock, config)
 
