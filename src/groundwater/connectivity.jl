@@ -78,13 +78,13 @@ function Connectivity(indices, reverse_indices, Δx::Vector{T}, Δy::Vector{T}) 
 
     i = 1  # column index of sparse matrix
     j = 1  # row index of sparse matrix
-    for I in CartesianIndices(reverse_indices)
+    for I in indices # loop over active indices
         colptr[j] = i
         # Strictly increasing numbering for any row
         # (Required by a CSCSparseMatrix, if you want to convert)
         for neighbor in neighbors
             J = I + neighbor
-            if (1 <= J[1] <= nrow) && (1 <= J[2] <= ncol) # Check if it's inbounds
+            if (1 <= J[1] <= nrow) && (1 <= J[2] <= ncol && reverse_indices[J] != 0) # Check if it's inbounds and neighbor is active
                 rowval[i] = reverse_indices[J]
                 length1[i], length2[i], width[i] = connection_geometry(
                     I, J, Δx, Δy
