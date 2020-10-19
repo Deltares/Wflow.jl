@@ -127,17 +127,39 @@ thicknesslayers = [100, 300, 800]
 [output]
 path = "data/output_moselle.nc"
 
+# [output.vertical]
+# canopystorage = "canopystorage"
+# satwaterdepth = "satwaterdepth"
+# snow = "snow"
+# snowwater = "snowwater"
+# soilthickness = "soilthickness"
+# tsoil = "tsoil"
+# ustorelayerdepth = "ustorelayerdepth"
+
+# [output.lateral.river]
+# q = "q"
+
 [output.vertical]
-canopystorage = "canopystorage"
 satwaterdepth = "satwaterdepth"
 snow = "snow"
-snowwater = "snowwater"
-soilthickness = "soilthickness"
 tsoil = "tsoil"
 ustorelayerdepth = "ustorelayerdepth"
+snowwater = "snowwater"
+canopystorage = "canopystorage"
 
 [output.lateral.river]
-q = "q"
+q = "q_river"
+h = "h_river"
+
+[output.lateral.river.reservoir]
+volume = "volume_reservoir"
+
+[output.lateral.subsurface]
+ssf = "ssf"
+
+[output.lateral.land]
+q = "q_land"
+h = "h_land"
 
 [csv]
 path = "data/output_moselle.csv"
