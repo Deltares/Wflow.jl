@@ -91,41 +91,41 @@ function set_states(
 )
     @unpack network = model
     # states in NetCDF include dim time (one value) at index 3 or 4, 3 or 4 dims are allowed
-    ds = NCDataset(instate_path)
-    for (state, ncname) in state_ncnames
-        sel = active_indices(network, state)
-        dims = length(dimnames(ds[ncname]))
-        # 4 dims, for example (x,y,layer,time) where dim layer is an SVector for soil layers
-        if dims == 4
-            A = permutedims(ds[ncname][sel, :, 1])
-            # note that this array is allowed to have missings, since not every vertical
-            # column is `maxlayers` layers deep
-            A = replace!(A, missing => NaN)
-            # Convert to desired type if needed
-            if !isnothing(type)
-                if eltype(A) != type
-                    A = map(type, A)
+    NCDataset(instate_path) do ds
+        for (state, ncname) in state_ncnames
+            sel = active_indices(network, state)
+            dims = length(dimnames(ds[ncname]))
+            # 4 dims, for example (x,y,layer,time) where dim layer is an SVector for soil layers
+            if dims == 4
+                A = permutedims(ds[ncname][sel, :, 1])
+                # note that this array is allowed to have missings, since not every vertical
+                # column is `maxlayers` layers deep
+                A = replace!(A, missing => NaN)
+                # Convert to desired type if needed
+                if !isnothing(type)
+                    if eltype(A) != type
+                        A = map(type, A)
+                    end
                 end
-            end
-            # set state in model object
-            param(model, state) .= svectorscopy(A, Val{size(A)[1]}())
-            # 3 dims (x,y,time)
-        elseif dims == 3
-            A = ds[ncname][sel, 1]
-            A = nomissing(A)
-            # Convert to desired type if needed
-            if !isnothing(type)
-                if eltype(A) != type
-                    A = map(type, A)
+                # set state in model object
+                param(model, state) .= svectorscopy(A, Val{size(A)[1]}())
+                # 3 dims (x,y,time)
+            elseif dims == 3
+                A = ds[ncname][sel, 1]
+                A = nomissing(A)
+                # Convert to desired type if needed
+                if !isnothing(type)
+                    if eltype(A) != type
+                        A = map(type, A)
+                    end
                 end
+                # set state in model object
+                param(model, state) .= A
+            else
+                error("Number of state dims should be 3 or 4, number of dims = ", string(dims))
             end
-            # set state in model object
-            param(model, state) .= A
-        else
-            error("Number of state dims should be 3 or 4, number of dims = ", string(dims))
         end
     end
-    close(ds)
 end
 
 """

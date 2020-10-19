@@ -605,7 +605,7 @@ function initialize_sbm_model(config::Config)
     )
 
     # read and set states in model object if reinit=false
-    if reinit  == false
+    if reinit == false
         set_states(
             instate_path,
             model,
