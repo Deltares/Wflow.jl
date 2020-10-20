@@ -200,38 +200,65 @@ end
 "prepare an output dataset"
 function setup_netcdf(
     output_path,
-    nclon,
-    nclat,
+    ncx,
+    ncy,
     parameters,
     calendar,
     time_units,
+    sizeinmetres,
     maxlayers;
     float_type=Float32
 )
     ds = NCDataset(output_path, "c")
     defDim(ds, "time", Inf)  # unlimited
-    defVar(
-        ds,
-        "lon",
-        nclon,
-        ("lon",),
-        attrib = [
-            "_FillValue" => NaN,
-            "long_name" => "longitude",
-            "units" => "degrees_east",
-        ],
-    )
-    defVar(
-        ds,
-        "lat",
-        nclat,
-        ("lat",),
-        attrib = [
-            "_FillValue" => NaN,
-            "long_name" => "latitude",
-            "units" => "degrees_north",
-        ],
-    )
+    if sizeinmetres
+        defVar(
+            ds,
+            "x",
+            ncx,
+            ("x",),
+            attrib = [
+                "_FillValue" => NaN,
+                "long_name" => "x-coordinate in Cartesian system",
+                "units" => "m",
+            ],
+        )
+        defVar(
+            ds,
+            "y",
+            ncy,
+            ("y",),
+            attrib = [
+                "_FillValue" => NaN,
+                "long_name" => "y-coordinate in Cartesian system",
+                "units" => "m",
+            ],
+        )
+    
+    else
+        defVar(
+            ds,
+            "lon",
+            ncx,
+            ("lon",),
+            attrib = [
+                "_FillValue" => NaN,
+                "long_name" => "longitude",
+                "units" => "degrees_east",
+            ],
+        )
+        defVar(
+            ds,
+            "lat",
+            ncy,
+            ("lat",),
+            attrib = [
+                "_FillValue" => NaN,
+                "long_name" => "latitude",
+                "units" => "degrees_north",
+            ],
+        )
+    end
     if isnothing(maxlayers) == false
         defVar(ds, "layer", collect(1:maxlayers), ("layer",))
     end
@@ -503,23 +530,46 @@ function prepare_writer(
     nc_static;
     maxlayers = nothing,
 )
+    sizeinmetres = get(config.model, "sizeinmetres", false)
 
+<<<<<<< HEAD
     nclon = ncread(reader.dataset, "lon"; type = Float64)
     nclat = ncread(reader.dataset, "lat"; type = Float64)
 
     output_ncnames = ncnames(config.output)
+=======
+    if sizeinmetres
+        ncy = ncread(reader.dataset, "y"; type = Float64)
+        ncx = ncread(reader.dataset, "x"; type = Float64)
+    else
+        ncy = ncread(reader.dataset, "lat"; type = Float64)
+        ncx = ncread(reader.dataset, "lon"; type = Float64)
+    end
+        
+    # create a flat mapping from internal parameter locations to NetCDF variable names
+    output_ncnames = Dict{Tuple{Symbol,Vararg{Symbol}},String}()
+    for (k, v) in pairs(config.output)
+        if v isa Dict  # ignore top level values (e.g. output.path)
+            flat!(output_ncnames, k, v)
+        end
+    end
+>>>>>>> netcdf writer
 
     # fill the output_map by mapping parameter NetCDF names to arrays
     output_map = out_map(output_ncnames, modelmap)
 
     calendar = get(config, "calendar", "proleptic_gregorian")
     time_units = get(config, "time_units", CFTime.DEFAULT_TIME_UNITS)
+<<<<<<< HEAD
     ds = setup_netcdf(nc_path, nclon, nclat, output_map, calendar, time_units, maxlayers)
 
     # create a separate state output NetCDF that will hold the last timestep of all states
     state_map = out_map(state_ncnames, modelmap)
     nc_state_path = config.state.path_output
     ds_outstate = setup_netcdf(nc_state_path, nclon, nclat, state_map, calendar, time_units, maxlayers; float_type=Float64)
+=======
+    ds = setup_netcdf(nc_path, ncx, ncy, output_map, calendar, time_units, maxlayers, sizeinmetres)
+>>>>>>> netcdf writer
     tomldir = dirname(config)
 
     if haskey(config, "csv") && haskey(config.csv, "column")
