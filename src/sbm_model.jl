@@ -612,6 +612,11 @@ function initialize_sbm_model(config::Config)
             state_ncnames;
             type = Float64
         )
+        @unpack lateral, vertical = model
+        # also update zi for vertical sbm and lateral subsurface flow
+        zi = max.(0.0, vertical.soilthickness .- vertical.satwaterdepth ./ θₑ)
+        vertical.zi .= zi
+        lateral.subsurface.zi .= zi
     end
 
     # make sure the forcing is already loaded
