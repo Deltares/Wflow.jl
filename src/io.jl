@@ -269,6 +269,7 @@ function setup_netcdf(
         ("time",),
         attrib = ["units" => time_units, "calendar" => calendar],
     )
+<<<<<<< HEAD
     for (key, val) in parameters
         if eltype(val.vector) <: AbstractFloat
             defVar(
@@ -289,6 +290,55 @@ function setup_netcdf(
             )
         else
             error("Unsupported output type: ", typeof(val.vector))
+=======
+    if sizeinmetres
+        for (key, val) in pairs(parameters)
+            if eltype(val) <: AbstractFloat
+                # all floats are saved as Float32
+                defVar(
+                    ds,
+                    key,
+                    Float32,
+                    ("x", "y", "time"),
+                    attrib = ["_FillValue" => Float32(NaN)],
+                )
+            elseif eltype(val) <: SVector
+                # SVectors are used to store layers
+                defVar(
+                    ds,
+                    key,
+                    Float32,
+                    ("x", "y", "layer", "time"),
+                    attrib = ["_FillValue" => Float32(NaN)],
+                )
+            else
+                error("Unsupported output type: ", typeof(cell))
+            end
+        end
+    else
+        for (key, val) in pairs(parameters)
+            if eltype(val) <: AbstractFloat
+                # all floats are saved as Float32
+                defVar(
+                    ds,
+                    key,
+                    Float32,
+                    ("lon", "lat", "time"),
+                    attrib = ["_FillValue" => Float32(NaN)],
+                )
+            elseif eltype(val) <: SVector
+                # SVectors are used to store layers
+                defVar(
+                    ds,
+                    key,
+                    Float32,
+                    ("lon", "lat", "layer", "time"),
+                    attrib = ["_FillValue" => Float32(NaN)],
+                )
+            else
+                error("Unsupported output type: ", typeof(cell))
+            end
+>>>>>>> parameters netcdf writer
         end
     end
     return ds
