@@ -703,8 +703,7 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
     write_output(model)
 
     # update the clock
-    clock.iteration += 1
-    clock.time += clock.Δt
+    advance!(clock)
 
     return model
 end

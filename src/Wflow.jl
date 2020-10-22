@@ -62,14 +62,17 @@ function run_simulation(config::Config)
 end
 
 function run_simulation(model::Model; close_files = true)
-    @unpack network, config, writer = model
+    @unpack network, config, writer, clock = model
 
-    times = config.starttime:Second(config.timestepsecs):config.endtime
-    for _ in times
+    while true
         model = Wflow.update(model)
+        is_finished(clock, config) && break
     end
 
     # write output state NetCDF
+    # undo the clock advance at the end of the last iteration, since there won't
+    # be a next step, and then the output state falls on the correct time
+    rewind!(clock)
     write_netcdf_timestep(model, writer.state_dataset, writer.state_parameters)
 
     reset_clock!(model.clock, config)
