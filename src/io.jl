@@ -185,7 +185,7 @@ function update_cyclic!(model)
     is_first_timestep = clock.time == config.starttime
     if is_first_timestep || (month_day in cyclic_times)
         # time for an update of the cyclic forcing
-        i = findfirst(t -> monthday_passed(month_day, t), cyclic_times)
+        i = findlast(t -> monthday_passed(month_day, t), cyclic_times)
         isnothing(i) && error("Could not find applicable cyclic timestep for $month_day")
 
         # load from NetCDF into the model according to the mapping

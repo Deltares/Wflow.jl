@@ -127,18 +127,6 @@ thicknesslayers = [100, 300, 800]
 [output]
 path = "data/output_moselle.nc"
 
-# [output.vertical]
-# canopystorage = "canopystorage"
-# satwaterdepth = "satwaterdepth"
-# snow = "snow"
-# snowwater = "snowwater"
-# soilthickness = "soilthickness"
-# tsoil = "tsoil"
-# ustorelayerdepth = "ustorelayerdepth"
-
-# [output.lateral.river]
-# q = "q"
-
 [output.vertical]
 satwaterdepth = "satwaterdepth"
 snow = "snow"

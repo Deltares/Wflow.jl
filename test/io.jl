@@ -42,13 +42,13 @@ end
     @test Wflow.timecycles(collect(1:366)) ==
           monthday.(Date(2000, 1, 1):Day(1):Date(2000, 12, 31))
     
-    @test monthday_passed((1,1), (1,1))  # same day
-    @test monthday_passed((1,2), (1,1))  # day later
-    @test monthday_passed((2,1), (1,1))  # month later
-    @test monthday_passed((2,2), (1,1))  # month and day later
-    @test !monthday_passed((2,1), (2,2))  # day before
-    @test !monthday_passed((1,2), (2,2))  # month before
-    @test !monthday_passed((1,1), (2,2))  # day and month before       
+    @test Wflow.monthday_passed((1,1), (1,1))  # same day
+    @test Wflow.monthday_passed((1,2), (1,1))  # day later
+    @test Wflow.monthday_passed((2,1), (1,1))  # month later
+    @test Wflow.monthday_passed((2,2), (1,1))  # month and day later
+    @test !Wflow.monthday_passed((2,1), (2,2))  # day before
+    @test !Wflow.monthday_passed((1,2), (2,2))  # month before
+    @test !Wflow.monthday_passed((1,1), (2,2))  # day and month before       
 end
 
 # test reading and setting of warm states (reinit=false)
@@ -65,7 +65,8 @@ model = Wflow.initialize_sbm_model(config)
     @test dimnames(writer.dataset["ustorelayerdepth"]) == ncdims
     ncvars = [k for k in keys(writer.dataset) if !in(k, ncdims)]
     @test "snow" in ncvars
-    @test "q" in ncvars
+    @test "q_river" in ncvars
+    @test "q_land" in ncvars
     @test length(writer.state_parameters) == 12
 end
 
