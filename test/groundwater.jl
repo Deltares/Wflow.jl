@@ -226,7 +226,7 @@ end
 
         @testset "river" begin
             river = Wflow.River(
-                [2.0, 2.0], [100.0, 100.0], [200.0, 200.0], [1.0, 1.0], [1, 3]
+                [2.0, 2.0], [100.0, 100.0], [200.0, 200.0], [1.0, 1.0], [0.0, 0.0], [1, 3]
             )
             Q = zeros(3)
             Wflow.flux!(Q, river, conf_aqf)
@@ -237,7 +237,7 @@ end
         end
 
         @testset "drainage" begin
-            drainage = Wflow.Drainage([2.0, 2.0], [100.0, 100.0], [1, 2])
+            drainage = Wflow.Drainage([2.0, 2.0], [100.0, 100.0], [0.0, 0.0], [1, 2])
             Q = zeros(3)
             Wflow.flux!(Q, drainage, conf_aqf)
             @test Q[1] == 0.0

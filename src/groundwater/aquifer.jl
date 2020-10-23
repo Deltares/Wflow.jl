@@ -237,7 +237,7 @@ minimum_head(aquifer::ConfinedAquifer) = aquifer.head
 minimum_head(aquifer::UnconfinedAquifer) = max.(aquifer.head, aquifer.bottom)
 
 
-function update(gwf, Q, Δt)
+function update(gwf, Q, Δt; wetfct = 1.0, wetthreshold=0.1)
     Q .= 0.0  # TODO: Probably remove this when linking with other components
     flux!(Q, gwf.aquifer, gwf.connectivity)
     for boundary in gwf.boundaries
@@ -248,7 +248,11 @@ function update(gwf, Q, Δt)
     gwf.aquifer.head[gwf.constanthead.index] .= gwf.constanthead.head
     # Make sure no heads ends up below an unconfined aquifer bottom
     # TODO: this should disable a boundary condition or something?
-    gwf.aquifer.head .= minimum_head(gwf.aquifer)
+    if typeof(gwf.aquifer) == UnconfinedAquifer
+        gwf.aquifer.head .= minimum_head(gwf.aquifer) + wetfct * wetthreshold
+    else
+        gwf.aquifer.head .= minimum_head(gwf.aquifer)
+    end
 end
 
 

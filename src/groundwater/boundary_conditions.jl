@@ -6,6 +6,7 @@ struct River{T} <: AquiferBoundaryCondition
     infiltration_conductance::Vector{T}
     exfiltration_conductance::Vector{T}
     bottom::Vector{T}
+    flux::Vector{T}
     index::Vector{Int}
 end
 
@@ -21,7 +22,8 @@ function flux!(Q, river::River, aquifer)
             cond = river.exfiltration_conductance[i]
             Δϕ = stage - ϕ
         end
-        Q[index] += cond * Δϕ
+        river.flux[i] = cond * Δϕ
+        Q[index] += river.flux[i]
     end
 end
             
@@ -29,6 +31,7 @@ end
 struct Drainage{T} <: AquiferBoundaryCondition
     elevation::Vector{T}
     conductance::Vector{T}
+    flux::Vector{T}
     index::Vector{Int}
 end
 
@@ -37,7 +40,8 @@ function flux!(Q, drainage::Drainage, aquifer)
     for (i, index) in enumerate(drainage.index)
         cond = drainage.conductance[i]
         Δϕ = min(0, drainage.elevation[i] - aquifer.head[index])
-        Q[index] += cond * Δϕ
+        drainage.flux[i] = cond * Δϕ
+        Q[index] += drainage.flux[i]
     end
 end
 
