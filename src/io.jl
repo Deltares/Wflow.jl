@@ -292,8 +292,8 @@ function setup_netcdf(
             error("Unsupported output type: ", typeof(val.vector))
 =======
     if sizeinmetres
-        for (key, val) in pairs(parameters)
-            if eltype(val) <: AbstractFloat
+        for (key, v) in pairs(parameters)
+            if eltype(v.vector) <: AbstractFloat
                 # all floats are saved as Float32
                 defVar(
                     ds,
@@ -302,7 +302,7 @@ function setup_netcdf(
                     ("x", "y", "time"),
                     attrib = ["_FillValue" => Float32(NaN)],
                 )
-            elseif eltype(val) <: SVector
+            elseif eltype(v.vector) <: SVector
                 # SVectors are used to store layers
                 defVar(
                     ds,
@@ -316,8 +316,8 @@ function setup_netcdf(
             end
         end
     else
-        for (key, val) in pairs(parameters)
-            if eltype(val) <: AbstractFloat
+        for (key, v) in pairs(parameters)
+            if eltype(v.vector) <: AbstractFloat
                 # all floats are saved as Float32
                 defVar(
                     ds,
@@ -326,7 +326,7 @@ function setup_netcdf(
                     ("lon", "lat", "time"),
                     attrib = ["_FillValue" => Float32(NaN)],
                 )
-            elseif eltype(val) <: SVector
+            elseif eltype(v.vector) <: SVector
                 # SVectors are used to store layers
                 defVar(
                     ds,
@@ -606,7 +606,15 @@ function prepare_writer(
 >>>>>>> netcdf writer
 
     # fill the output_map by mapping parameter NetCDF names to arrays
+<<<<<<< HEAD
     output_map = out_map(output_ncnames, modelmap)
+=======
+    output_map = Dict{String,NamedTuple}()
+    for (par, ncname) in pairs(output_ncnames)
+        A = param(modelmap, par)
+        output_map[ncname] = (parameter =par, vector= A)
+    end
+>>>>>>> sbm_gwf_model
 
     calendar = get(config, "calendar", "proleptic_gregorian")
     time_units = get(config, "time_units", CFTime.DEFAULT_TIME_UNITS)
@@ -697,22 +705,35 @@ function write_netcdf_timestep(model, dataset, parameters)
 
     time_index = add_time(dataset, clock.time)
 
+<<<<<<< HEAD
     for (key, val) in parameters
         @unpack par, vector = val
         sel = active_indices(network, par)
+=======
+    for (key, v) in pairs(parameters)
+        inds_used = :river in v.parameter ? inds_riv : inds
+>>>>>>> sbm_gwf_model
         # write the active cells vector to the 2d buffer matrix
-        elemtype = eltype(vector)
+        elemtype = eltype(v.vector)
         if elemtype <: AbstractFloat
             # ensure no other information is written
             fill!(buffer, NaN)
+<<<<<<< HEAD
             buffer[sel] .= vector
+=======
+            buffer[inds_used] .= v.vector
+>>>>>>> sbm_gwf_model
             dataset[key][:, :, time_index] = buffer
         elseif elemtype <: SVector
-            nlayer = length(first(vector))
+            nlayer = length(first(v.vector))
             for i = 1:nlayer
                 # ensure no other information is written
                 fill!(buffer, NaN)
+<<<<<<< HEAD
                 buffer[sel] .= getindex.(vector, i)
+=======
+                buffer[inds_used] .= getindex.(v.vector, i)
+>>>>>>> sbm_gwf_model
                 dataset[key][:, :, i, time_index] = buffer
             end
         else

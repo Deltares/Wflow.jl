@@ -43,6 +43,7 @@ include("vertical_process.jl")
 include("groundwater/connectivity.jl")
 include("groundwater/boundary_conditions.jl")
 include("groundwater/aquifer.jl")
+include("sbm_gwf_model.jl")
 include("utils.jl")
 
 """
@@ -67,9 +68,19 @@ end
 function run_simulation(model::Model; close_files = true)
     @unpack network, config, writer, clock = model
 
+<<<<<<< HEAD
     while true
         model = Wflow.update(model)
         is_finished(clock, config) && break
+=======
+    times = config.starttime:Second(config.timestepsecs):config.endtime
+    for _ in times
+        if config.model.type == "sbm_gwf"
+            model = Wflow.update_sbm_gwf(model)
+        else
+            model = Wflow.update(model)
+        end
+>>>>>>> sbm_gwf_model
     end
 
     # write output state NetCDF
