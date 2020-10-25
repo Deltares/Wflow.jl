@@ -30,6 +30,7 @@ canopystorage = "canopystorage"
 [state.lateral.river]
 q = "q_river"
 h = "h_river"
+h_av = "h_av_river"
 
 [state.lateral.river.reservoir]
 volume = "volume_reservoir"
@@ -40,6 +41,7 @@ ssf = "ssf"
 [state.lateral.land]
 q = "q_land"
 h = "h_land"
+h_av = "h_av_land"
 
 [input]
 path_forcing = "data/forcing-moselle.nc"

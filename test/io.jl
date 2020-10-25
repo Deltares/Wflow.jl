@@ -67,22 +67,22 @@ model = Wflow.initialize_sbm_model(config)
     @test "snow" in ncvars
     @test "q_river" in ncvars
     @test "q_land" in ncvars
-    @test length(writer.state_parameters) == 12
+    @test length(writer.state_parameters) == 14
 end
 
 @testset "warm states" begin
-    @test Wflow.param(model, "lateral.river.reservoir.volume")[2] ≈ 2.7801042e7
-    @test Wflow.param(model, "vertical.satwaterdepth")[26625] ≈ 168.40777587890625
-    @test Wflow.param(model, "vertical.snow")[26625] ≈ 0.9690762758255005
-    @test Wflow.param(model, "vertical.tsoil")[26625] ≈ 2.9367642402648926
-    @test Wflow.param(model, "vertical.ustorelayerdepth")[1][1] ≈ 3.31813645362854
-    @test Wflow.param(model, "vertical.snowwater")[26625] ≈ 0.011469922959804535
+    @test Wflow.param(model, "lateral.river.reservoir.volume")[2] ≈ 2.7393418e7
+    @test Wflow.param(model, "vertical.satwaterdepth")[41120] ≈ 201.51429748535156
+    @test Wflow.param(model, "vertical.snow")[41120] ≈ 4.21874475479126
+    @test Wflow.param(model, "vertical.tsoil")[41120] ≈ -1.9285825490951538
+    @test Wflow.param(model, "vertical.ustorelayerdepth")[1][1] ≈ 16.73013687133789
+    @test Wflow.param(model, "vertical.snowwater")[41120] ≈ 0.42188167572021484
     @test Wflow.param(model, "vertical.canopystorage")[1] ≈ 0.0
-    @test Wflow.param(model, "lateral.subsurface.ssf")[39308] ≈ 2.49775357952e11
-    @test Wflow.param(model, "lateral.river.q")[4061] ≈ 1.3987680673599243
-    @test Wflow.param(model, "lateral.river.h")[4061] ≈ 0.628973126411438
-    @test Wflow.param(model, "lateral.land.q")[39308] ≈ 0.08347763121128082
-    @test Wflow.param(model, "lateral.land.h")[39308] ≈ 0.008668862283229828
+    @test Wflow.param(model, "lateral.subsurface.ssf")[39308] ≈ 1.1614302208e11
+    @test Wflow.param(model, "lateral.river.q")[5501] ≈ 111.46229553222656
+    @test Wflow.param(model, "lateral.river.h")[5501] ≈ 8.555977821350098
+    @test Wflow.param(model, "lateral.land.q")[39626] ≈ 1.0575231313705444
+    @test Wflow.param(model, "lateral.land.h")[39626] ≈ 0.03456519544124603
 end
 
 @testset "reducer" begin
