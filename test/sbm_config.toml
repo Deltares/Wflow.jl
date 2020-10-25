@@ -14,7 +14,7 @@ timestepsecs = 86400
 
 [state]
 path_input = "data/instates-moselle.nc" 
-path_output = "data/outstates-moselle.nc" # TODO implement
+path_output = "data/outstates-moselle.nc"
 
 # if listed, the variable must be present in the NetCDF or error
 # if not listed, the variable can get a default value if it has one
@@ -30,6 +30,7 @@ canopystorage = "canopystorage"
 [state.lateral.river]
 q = "q_river"
 h = "h_river"
+h_av = "h_av_river"
 
 [state.lateral.river.reservoir]
 volume = "volume_reservoir"
@@ -40,6 +41,7 @@ ssf = "ssf"
 [state.lateral.land]
 q = "q_land"
 h = "h_land"
+h_av = "h_av_land"
 
 [input]
 path_forcing = "data/forcing-moselle.nc"
@@ -128,16 +130,26 @@ thicknesslayers = [100, 300, 800]
 path = "data/output_moselle.nc"
 
 [output.vertical]
-canopystorage = "canopystorage"
 satwaterdepth = "satwaterdepth"
 snow = "snow"
-snowwater = "snowwater"
-soilthickness = "soilthickness"
 tsoil = "tsoil"
 ustorelayerdepth = "ustorelayerdepth"
+snowwater = "snowwater"
+canopystorage = "canopystorage"
 
 [output.lateral.river]
-q = "q"
+q = "q_river"
+h = "h_river"
+
+[output.lateral.river.reservoir]
+volume = "volume_reservoir"
+
+[output.lateral.subsurface]
+ssf = "ssf"
+
+[output.lateral.land]
+q = "q_land"
+h = "h_land"
 
 [csv]
 path = "data/output_moselle.csv"

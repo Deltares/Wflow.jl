@@ -42,6 +42,11 @@ function Base.getproperty(config::Config, f::Symbol)
     return a isa AbstractDict ? Config(a, path) : a
 end
 
+function Base.setproperty!(config::Config, f::Symbol, x)
+    dict = Dict(config)
+    return dict[String(f)] = x
+end
+
 # also used in autocomplete
 Base.propertynames(config::Config) = collect(keys(Dict(config)))
 Base.haskey(config::Config, key) = haskey(Dict(config), key)
@@ -53,6 +58,8 @@ Base.getindex(config::Config, i) = getindex(Dict(config), i)
 Base.Dict(config::Config) = getfield(config, :dict)
 Base.pathof(config::Config) = getfield(config, :path)
 Base.dirname(config::Config) = dirname(pathof(config))
+Base.iterate(config::Config) = iterate(Dict(config))
+Base.iterate(config::Config, state) = iterate(Dict(config), state)
 
 "Extract a NetCDF variable at a given time"
 function get_at!(
@@ -148,6 +155,21 @@ function update_forcing!(model)
     return model
 end
 
+"""
+    monthday_passed(curr, avail)
+
+Given two monthday tuples such as (12, 31) and (12, 15), return true if the first argument
+falls after or on the same day as the second argument, assuming the same year. The tuples
+generally come from `Dates.monthday`.
+
+# Examples
+```julia-repl
+julia> monthday_passed((12, 31), (12, 15))
+true
+```
+"""
+monthday_passed(curr, avail) = (curr[1] >= avail[1]) && (curr[2] >= avail[2])
+
 "Get cyclic NetCDF input for the given time"
 function update_cyclic!(model)
     @unpack vertical, clock, reader, network, config = model
@@ -163,7 +185,8 @@ function update_cyclic!(model)
     is_first_timestep = clock.time == config.starttime
     if is_first_timestep || (month_day in cyclic_times)
         # time for an update of the cyclic forcing
-        i = findfirst(==(month_day), cyclic_times)
+        i = findlast(t -> monthday_passed(month_day, t), cyclic_times)
+        isnothing(i) && error("Could not find applicable cyclic timestep for $month_day")
 
         # load from NetCDF into the model according to the mapping
         for (par, ncvarname) in cyclic_parameters
@@ -218,8 +241,8 @@ function setup_netcdf(
         ("time",),
         attrib = ["units" => time_units, "calendar" => calendar],
     )
-    for (key, val) in pairs(parameters)
-        if eltype(val) <: AbstractFloat
+    for (key, val) in parameters
+        if eltype(val.vector) <: AbstractFloat
             # all floats are saved as Float32
             defVar(
                 ds,
@@ -228,7 +251,7 @@ function setup_netcdf(
                 ("lon", "lat", "time"),
                 attrib = ["_FillValue" => Float32(NaN)],
             )
-        elseif eltype(val) <: SVector
+        elseif eltype(val.vector) <: SVector
             # SVectors are used to store layers
             defVar(
                 ds,
@@ -238,7 +261,7 @@ function setup_netcdf(
                 attrib = ["_FillValue" => Float32(NaN)],
             )
         else
-            error("Unsupported output type: ", typeof(cell))
+            error("Unsupported output type: ", typeof(val.vector))
         end
     end
     return ds
@@ -277,7 +300,9 @@ struct Writer
     csv_path::Union{String,Nothing}
     csv_cols::Vector
     csv_io::IO
-    states::Tuple#{String,Vararg{String}}
+    state_dataset::NCDataset
+    state_parameters::Dict{String, Any}
+    state_nc_path::String
 end
 
 function prepare_reader(path, cyclic_path, config)
@@ -413,12 +438,64 @@ function flat!(d, path, el)
     return d
 end
 
+"""
+    ncnames(dict)
+
+Create a flat mapping from internal parameter locations to NetCDF variable names.
+
+Ignores top level values in the Dict. This function is used to convert a TOML such as:
+
+```toml
+[output]
+path = "path/to/file.nc"
+
+[output.vertical]
+canopystorage = "my_canopystorage"
+
+[output.lateral.river]
+q = "my_q"
+```
+
+To a dictionary of the flattened parameter locations and NetCDF names. The top level
+values are ignored since the output path is not a NetCDF name.
+
+```julia
+Dict(
+    (:vertical, :canopystorage) => "my_canopystorage,
+    (:lateral, :river, :q) => "my_q,
+)
+```
+"""
+function ncnames(dict)
+    ncnames_dict = Dict{Tuple{Symbol,Vararg{Symbol}},String}()
+    for (k, v) in dict
+        if v isa Dict  # ignore top level values (e.g. output.path)
+            flat!(ncnames_dict, k, v)
+        end
+    end
+    return ncnames_dict
+end
+
+"""
+    out_map(ncnames_dict, modelmap)
+
+Create a Dict that maps parameter NetCDF names to arrays in the Model.
+"""
+function out_map(ncnames_dict, modelmap)
+    output_map = Dict{String,Any}()
+    for (par, ncname) in ncnames_dict
+        A = param(modelmap, par)
+        output_map[ncname] = (par=par, vector=A)
+    end
+    return output_map
+end
+
 function prepare_writer(
     config,
     reader,
     nc_path,
     modelmap,
-    states,
+    state_ncnames,
     rev_inds,
     x_nc,
     y_nc,
@@ -430,24 +507,19 @@ function prepare_writer(
     nclon = ncread(reader.dataset, "lon"; type = Float64)
     nclat = ncread(reader.dataset, "lat"; type = Float64)
 
-    # create a flat mapping from internal parameter locations to NetCDF variable names
-    output_ncnames = Dict{Tuple{Symbol,Vararg{Symbol}},String}()
-    for (k, v) in pairs(config.output)
-        if v isa Dict  # ignore top level values (e.g. output.path)
-            flat!(output_ncnames, k, v)
-        end
-    end
+    output_ncnames = ncnames(config.output)
 
     # fill the output_map by mapping parameter NetCDF names to arrays
-    output_map = Dict{String,Vector}()
-    for (par, ncname) in pairs(output_ncnames)
-        A = param(modelmap, par)
-        output_map[ncname] = A
-    end
+    output_map = out_map(output_ncnames, modelmap)
 
     calendar = get(config, "calendar", "proleptic_gregorian")
     time_units = get(config, "time_units", CFTime.DEFAULT_TIME_UNITS)
     ds = setup_netcdf(nc_path, nclon, nclat, output_map, calendar, time_units, maxlayers)
+
+    # create a separate state output NetCDF that will hold the last timestep of all states
+    state_map = out_map(state_ncnames, modelmap)
+    nc_state_path = config.state.path_output
+    ds_outstate = setup_netcdf(nc_state_path, nclon, nclat, state_map, calendar, time_units, maxlayers)
     tomldir = dirname(config)
 
     if haskey(config, "csv") && haskey(config.csv, "column")
@@ -515,42 +587,49 @@ function prepare_writer(
     end
 
 
-    return Writer(ds, output_map, nc_path, csv_path, csv_cols, csv_io, states)
+    return Writer(ds, output_map, nc_path, csv_path, csv_cols, csv_io, ds_outstate, state_map, nc_state_path)
 end
 
-"Write model output"
-function write_output(model, writer::Writer)
+"Write a new timestep to the NetCDF file"
+function write_netcdf_timestep(model, dataset, parameters)
     @unpack vertical, clock, reader, network = model
     @unpack buffer = reader
-    @unpack dataset, parameters = writer
-    inds = network.land.indices
-    inds_riv = network.river.indices
-
-    write_csv_row(model)
 
     time_index = add_time(dataset, clock.time)
 
-    for (key, vector) in pairs(parameters)
-        inds_used = Symbol(key) in propertynames(model.lateral.river) ? inds_riv : inds
+    for (key, val) in parameters
+        @unpack par, vector = val
+        sel = active_indices(network, par)
         # write the active cells vector to the 2d buffer matrix
         elemtype = eltype(vector)
         if elemtype <: AbstractFloat
             # ensure no other information is written
             fill!(buffer, NaN)
-            buffer[inds_used] .= vector
+            buffer[sel] .= vector
             dataset[key][:, :, time_index] = buffer
         elseif elemtype <: SVector
             nlayer = length(first(vector))
             for i = 1:nlayer
                 # ensure no other information is written
                 fill!(buffer, NaN)
-                buffer[inds_used] .= getindex.(vector, i)
+                buffer[sel] .= getindex.(vector, i)
                 dataset[key][:, :, i, time_index] = buffer
             end
         else
             error("Unsupported output type: ", elemtype)
         end
     end
+
+    return model
+end
+
+"Write model output"
+function write_output(model)
+    @unpack vertical, clock, reader, network, writer = model
+    @unpack dataset, parameters = writer
+
+    write_csv_row(model)
+    write_netcdf_timestep(model, dataset, parameters)
 
     return model
 end
@@ -602,10 +681,12 @@ function close_files(model; delete_output::Bool = false)
     end
     close(writer.dataset)
     close(writer.csv_io)
+    close(writer.state_dataset)
 
     if delete_output
         isfile(writer.nc_path) && rm(writer.nc_path)
         isfile(writer.csv_path) && rm(writer.csv_path)
+        isfile(writer.state_nc_path) && rm(writer.state_nc_path)
     end
     return nothing
 end
@@ -717,3 +798,18 @@ function reset_clock!(clock::Clock, config::Config)
     clock.iteration = 1
     clock.Δt = Second(config.timestepsecs)
 end
+
+is_finished(clock::Clock, config::Config) = clock.time >= config.endtime
+
+function advance!(clock)
+    clock.iteration += 1
+    clock.time += clock.Δt
+    return clock
+end
+
+function rewind!(clock)
+    clock.iteration -= 1
+    clock.time -= clock.Δt
+    return clock
+end
+

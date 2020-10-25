@@ -440,18 +440,6 @@ function initialize_sbm_model(config::Config)
         waterlevel_river = fill(0.0, n), #set to zero to account for cells outside river domain
     )
 
-    # states sbm concept
-    states = ()
-    if do_snow
-        for state in statevars(sbm, snow=true)
-            states = (states...,(:vertical,state))
-        end
-    else
-        for state in statevars(sbm)
-            states = (states...,(:vertical,state))
-        end
-    end
-
     inds_riv, rev_inds_riv = active_indices(river_2d, 0)
     nriv = length(inds_riv)
 
@@ -459,9 +447,6 @@ function initialize_sbm_model(config::Config)
     pits = zeros(Bool, modelsize_2d)
     if do_reservoirs
         reservoirs, resindex, reservoir, pits = initialize_simple_reservoir(config, nc, inds_riv, nriv, pits)
-        for state in statevars(reservoirs)
-            states = (states...,(:lateral,:river,:reservoir,state))
-        end
     else
         reservoir = ()
     end
@@ -469,9 +454,6 @@ function initialize_sbm_model(config::Config)
     # lakes
     if do_lakes
         lakes, lakeindex, lake, pits = initialize_natural_lake(config, nc, inds_riv, nriv, pits)
-        for state in statevars(lakes)
-            states = (states...,(:lateral,:river,:lake,state))
-        end
     else
         lake = ()
     end
@@ -570,17 +552,7 @@ function initialize_sbm_model(config::Config)
         rivercells = river,
     )
 
-    for state in statevars(ssf)
-        states = (states...,(:lateral,:subsurface,state))
-    end
-
-    for state in statevars(rf)
-        states = (states...,(:lateral,:river,state))
-    end
-
-    for state in statevars(olf)
-        states = (states...,(:lateral,:land,state))
-    end
+    state_ncnames = ncnames(config.state)
 
     reader = prepare_reader(dynamic_path, cyclic_path, config)
 
@@ -596,7 +568,7 @@ function initialize_sbm_model(config::Config)
         reader,
         output_path,
         modelmap,
-        states,
+        state_ncnames,
         indices_reverse,
         x_nc,
         y_nc,
@@ -633,15 +605,19 @@ function initialize_sbm_model(config::Config)
     )
 
     # read and set states in model object if reinit=false
-    if reinit  == false
+    if reinit == false
         set_states(
             instate_path,
             model,
-            states,
-            inds,
-            config;
+            state_ncnames;
             type = Float64
         )
+        @unpack lateral, vertical = model
+        # update zi for vertical sbm and α for river and overland flow
+        zi = max.(0.0, vertical.soilthickness .- vertical.satwaterdepth ./ θₑ)
+        vertical.zi .= zi
+        lateral.river.α .= lateral.river.alpha_term .* pow.(lateral.river.width .+ 2.0 .* lateral.river.h, lateral.river.alpha_pow)
+        lateral.land.α .= lateral.land.alpha_term .* pow.(lateral.land.width .+ 2.0 .* lateral.land.h, lateral.land.alpha_pow)
     end
 
     # make sure the forcing is already loaded
@@ -725,11 +701,10 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
         ) ./ lateral.river.dl
     update(lateral.river, network.river, do_iter = kinwave_it, doy = dayofyear(clock.time))
 
-    write_output(model, model.writer)
+    write_output(model)
 
     # update the clock
-    clock.iteration += 1
-    clock.time += clock.Δt
+    advance!(clock)
 
     return model
 end

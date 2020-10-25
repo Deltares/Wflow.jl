@@ -505,10 +505,10 @@ function update_until_recharge(sbm::SBM, config)
         if n_usl > 0
             ksat = sbm.kvfrac[i][n_usl] * sbm.kv₀[i] * exp(-sbm.f[i] * sbm.zi[i])
             ustorecapacity =
-                sbm.soilwatercapacity[i] - sbm.satwaterdepth[i] -
+                sbm.soilwatercapacity[i] - satwaterdepth -
                 sum(@view usld[1:sbm.nlayers[i]])
             maxcapflux =
-                max(0.0, min(ksat, actevapustore, ustorecapacity, sbm.satwaterdepth[i]))
+                max(0.0, min(ksat, actevapustore, ustorecapacity, satwaterdepth))
 
             if sbm.zi[i] > rootingdepth
                 capfluxscale =
@@ -529,7 +529,7 @@ function update_until_recharge(sbm::SBM, config)
             end
         end
         deepksat = sbm.kv₀[i] * exp(-sbm.f[i] * sbm.soilthickness[i])
-        deeptransfer = min(sbm.satwaterdepth[i], deepksat)
+        deeptransfer = min(satwaterdepth, deepksat)
         actleakage = max(0.0, min(sbm.maxleakage[i], deeptransfer))
 
         # recharge (mm) for saturated zone

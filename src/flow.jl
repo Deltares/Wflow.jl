@@ -30,7 +30,7 @@ Base.@kwdef struct SurfaceFlow{T,R,L}
     # end
 end
 
-statevars(::SurfaceFlow) = (:q,:h,)
+statevars(::SurfaceFlow) = (:q,:h,:h_av,)
 
 function update(
     sf::SurfaceFlow,

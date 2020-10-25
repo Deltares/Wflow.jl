@@ -45,6 +45,18 @@ function active_indices(subcatch_2d::AbstractMatrix, nodata)
     return indices, reverse_indices
 end
 
+function active_indices(network, key::Tuple)
+    if :reservoir in key
+        return network.reservoir.indices_outlet
+    elseif :lake in key
+        return network.lake.indices_outlet
+    elseif :river in key
+        return network.river.indices
+    else
+        return network.land.indices
+    end
+end
+
 function lattometres(lat::Float64)
     m1 = 111132.92     # latitude calculation term 1
     m2 = -559.82       # latitude calculation term 2
@@ -62,10 +74,11 @@ function lattometres(lat::Float64)
 end
 
 """
-    set_states(instate_path, model, states, sel, config ; <keyword arguments>)
+    set_states(instate_path, model, state_ncnames; <keyword arguments>)
 
-Read states contained in `Tuple` `states` from NetCDF file located in `instate_path`, and set states in 
-`model` object. Active cells are selected with `sel` (`Vector{CartesianIndex}`) from the NetCDF file. 
+Read states contained in `Dict` `state_ncnames` from NetCDF file located in `instate_path`,
+and set states in `model` object. Active cells are selected with the corresponding network's
+(`Vector{CartesianIndex}`) from the NetCDF file. 
 
 # Arguments
 - `type = nothing`: type to convert data to after reading. By default no conversion is done.
@@ -73,52 +86,46 @@ Read states contained in `Tuple` `states` from NetCDF file located in `instate_p
 function set_states(
     instate_path,
     model,
-    states,
-    sel,
-    config;
+    state_ncnames;
     type = nothing,
 )
     @unpack network = model
     # states in NetCDF include dim time (one value) at index 3 or 4, 3 or 4 dims are allowed
-    ds = NCDataset(instate_path)
-    for state in states
-        ncname = param(config.state, state)
-        dims = length(dimnames(ds[ncname]))
-        # 4 dims, for example (x,y,layer,time) where dim layer is an SVector for soil layers
-        if dims == 4
-            A = transpose(ds[ncname][sel, :, 1])
-            # Convert to desired type if needed
-            if !isnothing(type)
-                if eltype(A) != type
-                    A = map(type, A)
+    NCDataset(instate_path) do ds
+        for (state, ncname) in state_ncnames
+            sel = active_indices(network, state)
+            dims = length(dimnames(ds[ncname]))
+            # 4 dims, for example (x,y,layer,time) where dim layer is an SVector for soil layers
+            if dims == 4
+                A = permutedims(ds[ncname][sel, :, 1])
+                # note that this array is allowed to have missings, since not every vertical
+                # column is `maxlayers` layers deep
+                A = replace!(A, missing => NaN)
+                # Convert to desired type if needed
+                if !isnothing(type)
+                    if eltype(A) != type
+                        A = map(type, A)
+                    end
                 end
-            end
-            # set state in model object
-            param(model, state) .= svectorscopy(A, Val{size(A)[1]}())
-            # 3 dims (x,y,time)
-        elseif dims == 3
-            if :reservoir in state
-                A = ds[ncname][network.reservoir.indices_outlet, 1]
-            elseif :lake in state
-                A = ds[ncname][network.lake.indices_outlet, 1]
-            elseif :river in state
-                A = ds[ncname][network.river.indices, 1]
-            else
+                # set state in model object
+                param(model, state) .= svectorscopy(A, Val{size(A)[1]}())
+                # 3 dims (x,y,time)
+            elseif dims == 3
                 A = ds[ncname][sel, 1]
-            end
-            # Convert to desired type if needed
-            if !isnothing(type)
-                if eltype(A) != type
-                    A = map(type, A)
+                A = nomissing(A)
+                # Convert to desired type if needed
+                if !isnothing(type)
+                    if eltype(A) != type
+                        A = map(type, A)
+                    end
                 end
+                # set state in model object
+                param(model, state) .= A
+            else
+                error("Number of state dims should be 3 or 4, number of dims = ", string(dims))
             end
-            # set state in model object
-            param(model, state) .= A
-        else
-            error("Number of state dims should be 3 or 4, number of dims = ", string(dims))
         end
     end
-    close(ds)
 end
 
 """
@@ -171,7 +178,7 @@ function ncread(
         else
             dim = findfirst(==(dimname), dimnames(nc[var]))
             if dim == 3
-                A = transpose(A[sel, :])
+                A = permutedims(A[sel, :])
             elseif dim == 1
                 A = A[:, sel]
             end

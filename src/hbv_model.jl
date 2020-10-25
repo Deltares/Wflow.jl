@@ -271,11 +271,6 @@ function initialize_hbv_model(config::Config)
         lowerzonestorage = 1.0 ./ (3.0 .* k4),
     )
 
-    states = ()
-    for state in statevars(hbv)
-        states = (states...,(:vertical,state))
-    end
-    
     modelsize_2d = size(subcatch_2d)
     river_2d = ncread(nc, param(config, "input.river_location"); type = Bool, fill = false)
     river = river_2d[inds]
@@ -293,9 +288,6 @@ function initialize_hbv_model(config::Config)
      pits = zeros(Bool, modelsize_2d)
      if do_reservoirs
          reservoirs, resindex, reservoir, pits = initialize_simple_reservoir(config, nc, inds_riv, nriv, pits)
-         for state in statevars(reservoirs)
-             states = (states...,(:lateral,:river,:reservoir,state))
-         end
      else
          reservoir = ()
      end
@@ -303,9 +295,6 @@ function initialize_hbv_model(config::Config)
      # lakes
      if do_lakes
          lakes, lakeindex, lake, pits = initialize_natural_lake(config, nc, inds_riv, nriv, pits)
-         for state in statevars(lakes)
-             states = (states...,(:lateral,:river,:lake,state))
-         end
      else
          lake = ()
      end
@@ -378,13 +367,7 @@ function initialize_hbv_model(config::Config)
         rivercells = river,
     )
 
-    for state in statevars(rf)
-        states = (states...,(:lateral,:river,state))
-    end
-
-    for state in statevars(olf)
-        states = (states...,(:lateral,:land,state))
-    end
+    state_ncnames = ncnames(config.state)
 
     reader = prepare_reader(dynamic_path, cyclic_path, config)
 
@@ -400,7 +383,7 @@ function initialize_hbv_model(config::Config)
         reader,
         output_path,
         modelmap,
-        states,
+        state_ncnames,
         indices_reverse,
         x_nc,
         y_nc,
@@ -434,9 +417,7 @@ function initialize_hbv_model(config::Config)
         set_states(
             instate_path,
             model,
-            states,
-            inds,
-            config;
+            state_ncnames;
             type = Float64,
         )
     end
@@ -487,11 +468,10 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:HBV,R,W}
 
     update(lateral.river, network.river, do_iter = true, doy = dayofyear(clock.time))
 
-    write_output(model, model.writer)
+    write_output(model)
 
     # update the clock
-    clock.iteration += 1
-    clock.time += clock.Δt
+    advance!(clock)
 
     return model
 end

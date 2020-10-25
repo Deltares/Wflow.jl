@@ -28,7 +28,7 @@ staticmaps_moselle_path = testdata(v"0.2", "staticmaps.nc", "staticmaps-moselle.
 staticmaps_lahn_path = testdata(v"0.2", "staticmaps-lahn.nc", "staticmaps-lahn.nc")
 forcing_moselle_path = testdata(v"0.2", "forcing-2000.nc", "forcing-moselle.nc")
 forcing_lahn_path = testdata(v"0.2", "forcing-lahn.nc", "forcing-lahn.nc")
-instates_moselle_path = testdata(v"0.2", "instates-moselle.nc", "instates-moselle.nc")
+instates_moselle_path = testdata(v"0.2.1", "instates-moselle.nc", "instates-moselle.nc")
 
 
 ## run all tests
