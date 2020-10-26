@@ -21,11 +21,12 @@ function initialize_sediment_model(config::Config)
     # do_rivers = get(config.model, "runrivermodel", false)
     do_reservoirs = get(config.model, "reservoirs", false)
     do_lakes = get(config.model, "lakes", false)
+    do_river = get(config.model, "runrivermodel", false)
     
     # Rainfall erosion equation: ["answers", "eurosem"]
     rainerosmethod = get(config.model, "rainerosmethod", "answers") 
     # Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]
-    # landtransportmethod = get(config.model, "landtransportmethod", "yalinpart")
+    landtransportmethod = get(config.model, "landtransportmethod", "yalinpart")
     # River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]
     # rivtransportmethod = get(config.model, "rivtransportmethod", "bagnold") 
 
@@ -65,7 +66,7 @@ function initialize_sediment_model(config::Config)
     end
     cellength = abs(mean(diff(x_nc)))
 
-    # Initialise parameters for the soil loss part EROS
+    # Initialise parameters for the soil loss part
     canopyheight = ncread(
         nc,
         param(config, "input.vertical.canopyheight", nothing);
@@ -186,12 +187,130 @@ function initialize_sediment_model(config::Config)
 
     end
 
+    # Initialise parameters for the transport capacity part
+    βₗ = slope
+    clamp!(βₗ, 0.00001, Inf)
+    ldd_2d = ncread(nc, param(config, "input.ldd"); allow_missing = true)
+    ldd = ldd_2d[inds]
+    dl = fill(mv, n)
+    dw = fill(mv, n)
 
-    eros = EROS{Float64}(
+    for i = 1:n
+        dl[i] = detdrainlength(ldd[i], xl[i], yl[i])
+        dw[i] = detdrainwidth(ldd[i], xl[i], yl[i])
+    end
+
+    dmclay = ncread(
+        nc,
+        param(config, "input.vertical.dmclay", nothing);
+        sel = inds,
+        defaults = 2.0,
+        type = Float64,
+    )
+    dmsilt = ncread(
+        nc,
+        param(config, "input.vertical.dmsilt", nothing);
+        sel = inds,
+        defaults = 10.0,
+        type = Float64,
+    )
+    dmsand = ncread(
+        nc,
+        param(config, "input.vertical.dmsand", nothing);
+        sel = inds,
+        defaults = 200.0,
+        type = Float64,
+    )
+    dmsagg = ncread(
+        nc,
+        param(config, "input.vertical.dmsagg", nothing);
+        sel = inds,
+        defaults = 30.0,
+        type = Float64,
+    )
+    dmlagg = ncread(
+        nc,
+        param(config, "input.vertical.dmlagg", nothing);
+        sel = inds,
+        defaults = 500.0,
+        type = Float64,
+    )
+    pclay = ncread(
+        nc,
+        param(config, "input.vertical.pclay", nothing);
+        sel = inds,
+        defaults = 0.1,
+        type = Float64,
+    )
+    psilt = ncread(
+        nc,
+        param(config, "input.vertical.psilt", nothing);
+        sel = inds,
+        defaults = 0.1,
+        type = Float64,
+    )
+    rhos = ncread(
+        nc,
+        param(config, "input.vertical.rhosed", nothing);
+        sel = inds,
+        defaults = 2650.0,
+        type = Float64,
+    )
+    
+    ### Initialize transport capacity variables ###
+    rivcell = float(river)
+    # Percent Sand
+    psand = 100 .- pclay .- psilt
+    # Govers coefficient for transport capacity
+    if landtransportmethod != "yalinpart"
+        # Calculation of D50 and fraction of fine and very fine sand (fvfs) from Fooladmand et al, 2006
+        psand999 = psand .* ((999 - 25) / (1000 - 25))
+        vd50 = log.((1 ./ (0.01 .* (pclay .+ psilt)) .- 1) ./ (1 ./ (0.01 .* pclay) .- 1))
+        wd50 = log.((1 ./ (0.01 .* (pclay .+ psilt .+ psand999)) .- 1) ./ (1 ./ (0.01 .* pclay) .- 1))
+        ad50 = 1 / log((25-1)/(999-1))
+        bd50 = ad50 ./ log((25-1)/1)
+        cd50 = ad50 .* log.(vd50 ./ wd50)
+        ud50 = (.- vd50) .^ (1 .- bd50) ./ (( .- wd50) .^ (.- bd50))
+        D50 = 1 .+ (-1 ./ ud50 .* log.(1 ./ (1 ./ (0.01 .* pclay) .- 1))) .^ (1 ./ cd50) #[um]
+        D50 = D50 ./ 1000 # [mm]
+    else
+        D50 = fill(mv, n)
+    end
+    if landtransportmethod == "govers"
+        cGovers = ((D50 .* 1000 .+ 5) ./ 0.32) .^ (-0.6)
+        nGovers = ((D50 .* 1000 .+ 5) ./ 300) .^ (0.25)
+    else
+        cGovers = fill(mv, n)
+        nGovers = fill(mv, n)
+    end
+    if do_river || landtransportmethod == "yalinpart"
+        # Determine sediment size distribution, estimated from primary particle size distribution (Foster et al., 1980)
+        fclay = 0.20 .* pclay ./ 100
+        fsilt = 0.13 .* psilt ./ 100
+        fsand = 0.01 .* psand .* (1 .- 0.01 .* pclay) .^ (2.4)
+        fsagg = 0.28 .* (0.01 .* pclay .- 0.25) .+ 0.5
+        for i = 1:n 
+            if pclay[i] > 50.0
+                fsagg[i] = 0.57
+            elseif pclay[i] < 25
+                fsagg[i] = 2.0 * 0.01 * pclay[i]
+            end
+        end
+        flagg = 1.0 .- fclay .- fsilt .- fsand .- fsagg
+    else
+        fclay = fill(mv, n)
+        fsilt = fill(mv, n)
+        fsand = fill(mv, n)
+        fsagg = fill(mv, n)
+        flagg = fill(mv, n)
+    end
+
+    eros = LandSed{Float64}(
         n = n,   
         yl = yl,
         xl = xl,
         riverfrac = riverfrac,
+        ### Soil erosion part ###
         # Forcing
         interception = fill(mv, n),
         h_land = fill(mv, n),
@@ -216,7 +335,37 @@ function initialize_sediment_model(config::Config)
         sedspl = fill(mv, n),
         sedov = fill(mv, n),
         soilloss = fill(mv, n),
-        
+        erosclay = fill(mv, n),
+        erossilt = fill(mv, n),
+        erossand = fill(mv, n),
+        erossagg = fill(mv, n),
+        eroslagg = fill(mv, n),
+        ### Transport capacity part ###
+        # Parameters
+        dl = dl,
+        width = dw,
+        cGovers = cGovers,
+        D50 = D50,
+        dmclay = dmclay,
+        dmsilt = dmsilt,
+        dmsand = dmsand,
+        dmsagg = dmsagg,
+        dmlagg = dmlagg,
+        fclay = fclay,
+        fsilt = fsilt,
+        fsand = fsand,
+        fsagg = fsagg,
+        flagg = flagg,
+        nGovers = nGovers,
+        rhos = rhos,
+        rivcell = rivcell,
+        # Outputs
+        TCsed = fill(mv, n),
+        TCclay = fill(mv, n),
+        TCsilt = fill(mv, n),
+        TCsand = fill(mv, n),
+        TCsagg = fill(mv, n),
+        TClagg = fill(mv, n),
     )
 
     # states sediment concept
@@ -250,33 +399,7 @@ function initialize_sediment_model(config::Config)
     end
 
     # # lateral part sediment in overland flow
-    βₗ = ncread(nc, param(config, "input.lateral.land.slope"); sel = inds, type = Float64)
-    clamp!(βₗ, 0.00001, Inf)
-    ldd_2d = ncread(nc, param(config, "input.ldd"); allow_missing = true)
-    ldd = ldd_2d[inds]
-    dl = fill(mv, n)
-    dw = fill(mv, n)
-
-    for i = 1:n
-        dl[i] = detdrainlength(ldd[i], xl[i], yl[i])
-        dw[i] = detdrainwidth(ldd[i], xl[i], yl[i])
-    end
-
-    # n_land = ncread(
-    #     nc,
-    #     param(config, "input.lateral.land.n", nothing);
-    #     sel = inds,
-    #     defaults = 0.072,
-    #     type = Float64,
-    # )
-    # ols = SurfaceSed(
-        # sl = βₗ,
-        # n = n_land,
-        # dl = dl,
-        # Δt = Float64(Δt.value),
-        # width = dw,
-        # wb_pit = pits[inds],
-    # )
+    
     ols = ()
 
     pcr_dir = dims_xy ? permute_indices(Wflow.pcrdir) : Wflow.pcrdir
@@ -385,7 +508,7 @@ function initialize_sediment_model(config::Config)
     return model
 end
 
-function update(model::Model{N,L,V,R,W}) where {N,L,V<:EROS,R,W}
+function update(model::Model{N,L,V,R,W}) where {N,L,V<:LandSed,R,W}
     @unpack lateral, vertical, network, clock, config = model
 
     update_forcing!(model)
@@ -394,7 +517,9 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:EROS,R,W}
     end
 
     update_until_ols(vertical, config)
+    #lateral.land.soilloss = vertical.soilloss
 
+    update_until_oltransport(vertical, config)
 
 
     write_output(model, model.writer)
