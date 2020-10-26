@@ -205,7 +205,8 @@ function setup_netcdf(
     parameters,
     calendar,
     time_units,
-    maxlayers,
+    maxlayers;
+    float_type=Float32
 )
     ds = NCDataset(output_path, "c")
     defDim(ds, "time", Inf)  # unlimited
@@ -243,22 +244,21 @@ function setup_netcdf(
     )
     for (key, val) in parameters
         if eltype(val.vector) <: AbstractFloat
-            # all floats are saved as Float32
             defVar(
                 ds,
                 key,
-                Float32,
+                float_type,
                 ("lon", "lat", "time"),
-                attrib = ["_FillValue" => Float32(NaN)],
+                attrib = ["_FillValue" => float_type(NaN)],
             )
         elseif eltype(val.vector) <: SVector
             # SVectors are used to store layers
             defVar(
                 ds,
                 key,
-                Float32,
+                float_type,
                 ("lon", "lat", "layer", "time"),
-                attrib = ["_FillValue" => Float32(NaN)],
+                attrib = ["_FillValue" => float_type(NaN)],
             )
         else
             error("Unsupported output type: ", typeof(val.vector))
@@ -519,7 +519,7 @@ function prepare_writer(
     # create a separate state output NetCDF that will hold the last timestep of all states
     state_map = out_map(state_ncnames, modelmap)
     nc_state_path = config.state.path_output
-    ds_outstate = setup_netcdf(nc_state_path, nclon, nclat, state_map, calendar, time_units, maxlayers)
+    ds_outstate = setup_netcdf(nc_state_path, nclon, nclat, state_map, calendar, time_units, maxlayers; float_type=Float64)
     tomldir = dirname(config)
 
     if haskey(config, "csv") && haskey(config.csv, "column")
