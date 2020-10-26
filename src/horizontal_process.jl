@@ -150,3 +150,15 @@ function accucapacityflux(network, material, capacity)
     end
     return material
 end
+
+function accucapacitystate(network, material, capacity)
+    @unpack graph, order = network
+    for v in order
+        upstream_nodes = inneighbors(graph, v)
+        if !isempty(upstream_nodes)
+            state = sum(max(material[i] - capacity[i], 0.0) for i in upstream_nodes)
+            material[v] += state
+        end
+    end
+    return material
+end

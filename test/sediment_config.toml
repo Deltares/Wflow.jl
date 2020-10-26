@@ -58,9 +58,11 @@ specific_leaf = "Sl"
 storage_wood = "Swood" 
 usleC = "USLE_C"
 usleK = "USLE_K"
+pclay = "PercentClay"
+psilt = "PercentSilt"
+rivcell = "wflow_river"
 
 [input.lateral.land]
-n = "N"
 slope = "Slope"
 
 [input.lateral.river]
@@ -74,7 +76,7 @@ reinit = true
 runrivermodel = false
 reservoirs = false
 rainerosmethod = "eurosem" # Rainfall erosion equation: ["answers", "eurosem"]
-landtransportmethod = "yalinpart" # Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]
+landtransportmethod = "govers" # Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]
 rivtransportmethod = "bagnold" # River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]
 
 [output]
@@ -84,6 +86,8 @@ path = "data/output-moselle-sed.nc"
 sedspl = "sedspl"
 sedov = "sedov"
 soilloss = "soilloss"
+TCclay = "TCclay"
+TCsed = "TCsed"
 
 [csv]
 path = "data/output-moselle-sed.csv"
@@ -139,6 +143,18 @@ coordinate.x = 6.255
 coordinate.y = 50.012
 header = "yl"
 parameter = "vertical.yl"
+
+[[csv.column]]
+coordinate.x = 6.255
+coordinate.y = 50.012
+header = "TCsed"
+parameter = "vertical.TCsed"
+
+[[csv.column]]
+coordinate.x = 6.255
+coordinate.y = 50.012
+header = "TCclay"
+parameter = "vertical.TCclay"
 
 
 
