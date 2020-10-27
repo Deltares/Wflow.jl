@@ -400,7 +400,9 @@ function initialize_sediment_model(config::Config)
 
     # # lateral part sediment in overland flow
     
-    ols = ()
+    ols = OLFSed{Float64}(
+        n = n,
+    )
 
     pcr_dir = dims_xy ? permute_indices(Wflow.pcrdir) : Wflow.pcrdir
     graph = flowgraph(ldd, inds, pcr_dir)
@@ -517,9 +519,23 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:LandSed,R,W}
     end
 
     update_until_ols(vertical, config)
-    #lateral.land.soilloss = vertical.soilloss
-
     update_until_oltransport(vertical, config)
+
+    lateral.land.soilloss .= vertical.soilloss
+    lateral.land.erosclay .= vertical.erosclay
+    lateral.land.erossilt .= vertical.erossilt
+    lateral.land.erossand .= vertical.erossand
+    lateral.land.erossagg .= vertical.erossagg
+    lateral.land.eroslagg .= vertical.eroslagg
+
+    lateral.land.TCsed .= vertical.TCsed         
+    lateral.land.TCclay .= vertical.TCclay
+    lateral.land.TCsilt .= vertical.TCsilt
+    lateral.land.TCsand .= vertical.TCsand
+    lateral.land.TCsagg .= vertical.TCsagg
+    lateral.land.TClagg .= vertical.TClagg
+
+    update(lateral.land, network.land, config)
 
 
     write_output(model, model.writer)
