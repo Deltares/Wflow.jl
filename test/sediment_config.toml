@@ -76,7 +76,7 @@ reinit = true
 runrivermodel = false
 reservoirs = false
 rainerosmethod = "eurosem" # Rainfall erosion equation: ["answers", "eurosem"]
-landtransportmethod = "govers" # Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]
+landtransportmethod = "yalinpart" # Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]
 rivtransportmethod = "bagnold" # River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]
 
 [output]
@@ -86,8 +86,15 @@ path = "data/output-moselle-sed.nc"
 sedspl = "sedspl"
 sedov = "sedov"
 soilloss = "soilloss"
+erosclay = "erosclay"
 TCclay = "TCclay"
 TCsed = "TCsed"
+precipitation = "prec"
+pathfrac = "pathfrac"
+
+[output.lateral.land]
+olsed = "olsed"
+olclay = "olclay"
 
 [csv]
 path = "data/output-moselle-sed.csv"
@@ -156,5 +163,9 @@ coordinate.y = 50.012
 header = "TCclay"
 parameter = "vertical.TCclay"
 
-
+[[csv.column]]
+coordinate.x = 6.255
+coordinate.y = 50.012
+header = "olsed"
+parameter = "lateral.land.olsed"
 

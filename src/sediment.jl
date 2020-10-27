@@ -83,13 +83,13 @@ Base.@kwdef struct LandSed{T}
     # Filter with river cells
     rivcell::Vector{T}  
     # Total transport capacity of overland flow [ton]          
-    TCsed::Vector{T} = fill(0.0, n)
+    TCsed::Vector{T} = fill(mv, n)
     # Transport capacity of overland flow per particle class [ton]          
-    TCclay::Vector{T} = fill(0.0, n)
-    TCsilt::Vector{T} = fill(0.0, n)
-    TCsand::Vector{T} = fill(0.0, n)
-    TCsagg::Vector{T} = fill(0.0, n)
-    TClagg::Vector{T} = fill(0.0, n)
+    TCclay::Vector{T} = fill(mv, n)
+    TCsilt::Vector{T} = fill(mv, n)
+    TCsand::Vector{T} = fill(mv, n)
+    TCsagg::Vector{T} = fill(mv, n)
+    TClagg::Vector{T} = fill(mv, n)
 
     function LandSed{T}(args...) where {T}
         equal_size_vectors(args)
@@ -101,7 +101,7 @@ statevars(::LandSed) = ()
 
 # Soil erosion
 function update_until_ols(eros::LandSed, config)
-
+ 
     # # start dummy variables (should be generated from model reader and from Config.jl TOML)
     do_lai = haskey(config.input.vertical, "leaf_area_index")
     rainerosmethod = get(config.model, "rainerosmethod", "answers")
@@ -113,7 +113,7 @@ function update_until_ols(eros::LandSed, config)
     # end dummpy variables
 
     for i = 1:eros.n
-        
+                
         ### Splash / Rainfall erosion ###
         # ANSWERS method
         if rainerosmethod == "answers"
@@ -324,5 +324,57 @@ function update_until_oltransport(ols::LandSed, config)
         ols.TCsagg[i] = TCsagg
         ols.TClagg[i] = TClagg
     
+    end
+end
+
+Base.@kwdef struct OLFSed{T}
+    # number of cells
+    n::Int
+    # Total eroded soil [ton]
+    soilloss::Vector{T} = fill(mv, n)
+    # Eroded soil per particle class [ton]
+    erosclay::Vector{T} = fill(mv, n)
+    erossilt::Vector{T} = fill(mv, n)
+    erossand::Vector{T} = fill(mv, n)
+    erossagg::Vector{T} = fill(mv, n)
+    eroslagg::Vector{T} = fill(mv, n)
+    # Total transport capacity of overland flow [ton]          
+    TCsed::Vector{T} = fill(mv, n)
+    # Transport capacity of overland flow per particle class [ton]          
+    TCclay::Vector{T} = fill(mv, n)
+    TCsilt::Vector{T} = fill(mv, n)
+    TCsand::Vector{T} = fill(mv, n)
+    TCsagg::Vector{T} = fill(mv, n)
+    TClagg::Vector{T} = fill(mv, n)
+    # Sediment reaching the river with overland flow [ton]
+    olsed::Vector{T} = fill(mv, n)
+    olclay::Vector{T} = fill(mv, n)
+    olsilt::Vector{T} = fill(mv, n)
+    olsand::Vector{T} = fill(mv, n)
+    olsagg::Vector{T} = fill(mv, n)
+    ollagg::Vector{T} = fill(mv, n)
+
+
+    function OLFSed{T}(args...) where {T}
+        equal_size_vectors(args)
+        return new(args...)
+    end
+end
+
+statevars(::OLFSed) = ()
+
+function update(ols::OLFSed, network, config)
+    do_river = get(config.model, "runrivermodel", false)
+    tcmethod = get(config.model, "landtransportmethod", "yalinpart")
+
+    if do_river || tcmethod == "yalinpart"
+        ols.olclay .= accucapacitystate(network, ols.erosclay, ols.TCclay)
+        ols.olsilt .= accucapacitystate(network, ols.erossilt, ols.TCsilt)
+        ols.olsand .= accucapacitystate(network, ols.erossand, ols.TCsand)
+        ols.olsagg .= accucapacitystate(network, ols.erossagg, ols.TCsagg)
+        ols.ollagg .= accucapacitystate(network, ols.eroslagg, ols.TClagg)
+        ols.olsed .= ols.olclay .+ ols.olsilt .+ ols.olsand .+ ols.olsagg .+ ols.ollagg
+    else
+        ols.olsed .= accucapacitystate(network, ols.soilloss, ols.TCsed)
     end
 end
