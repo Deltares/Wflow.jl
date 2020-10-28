@@ -1,4 +1,8 @@
 """
+    Aquifer
+
+Abstract type representing an aquifer, either confined or unconfined.
+
 The vertically averaged governing equation of an unconfined, inhomogeneous and
 isotropic aquifer in one dimension can be written as:
 
@@ -62,6 +66,8 @@ abstract type Aquifer end
 
 
 """
+    ConfinedAquifer{T} <: Aquifer
+
 Confined aquifers are overlain by a poorly permeable confining layer (e.g.
 clay). No air can get in to fill the pore space so that the aquifer always
 remains fully saturated. For a confined aquifer, water will always flow along
@@ -90,6 +96,8 @@ end
 
 
 """
+    UnconfinedAquifer{T} <: Aquifer
+
 The upper boundary of an unconfined aquifer is the water table (the phreatic
 surface).
 
@@ -174,6 +182,8 @@ function horizontal_conductance(
 end
 
 """
+    initialize_conductance!(aquifer::ConfinedAquifer, connectivity::Connectivity)
+
 Conductance for a confined aquifer is constant, and only has to be set once.
 """
 function initialize_conductance!(aquifer::ConfinedAquifer, connectivity::Connectivity)
@@ -218,6 +228,8 @@ end
 
 
 """
+    stable_timestep(aquifer)
+
 Compute a stable timestep size given the forward-in-time, central in space scheme.
 The following criterion can be found in Chu & Willis (1984)
 
@@ -261,4 +273,4 @@ Base.@kwdef struct GroundwaterFlow
     connectivity::Connectivity
     constanthead::ConstantHead
     boundaries::Vector{B} where B <: AquiferBoundaryCondition
-end 
+end

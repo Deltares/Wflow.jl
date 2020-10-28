@@ -1,4 +1,6 @@
 """
+    Connectivity{T}
+
 Stores connection data between cells. Connections are stored in a compressed
 sparse column (CSC) adjacency matrix: only non-zero values are stored.
 Primarily, this consist of two vectors:
@@ -29,12 +31,16 @@ end
 
 
 """
+    connections(C::Connectivity, id::Int)
+
 Returns connections for a single cell, identified by ``id``.
 """
 connections(C::Connectivity, id::Int) = C.colptr[id]:(C.colptr[id + 1] - 1)
 
 
 """
+    connection_geometry(I, J, Δx, Δy)
+
 Compute geometrical properties of connections for structured input.
 """
 function connection_geometry(I, J, Δx, Δy)
