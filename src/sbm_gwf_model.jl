@@ -244,7 +244,7 @@ function initialize_sbm_gwf_model(config::Config)
     )
 
     # reset zi and satwaterdepth with groundwater head from unconfined aquifer 
-    sbm.zi .= sbm.altitude .- initial_head./1000.0
+    sbm.zi .= (sbm.altitude .- initial_head) .* 1000.0
     sbm.satwaterdepth .= (sbm.soilthickness .- sbm.zi) .* sbm.θₑ
 
     # river boundary of unconfined aquifer
