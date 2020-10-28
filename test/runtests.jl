@@ -32,8 +32,12 @@ instates_moselle_path = testdata(v"0.2.1", "instates-moselle.nc", "instates-mose
 <<<<<<< HEAD
 =======
 forcing_sbm_gw_path = testdata(v"0.2.1", "forcing-sbm-groundwater.nc", "forcing-sbm-groundwater.nc")
+<<<<<<< HEAD
 staticmaps_sbm_gw_path = testdata(v"0.2.1", "staticmaps-sbm-groundwater.nc", "staticmaps-sbm-groundwater.nc.nc")
 >>>>>>> update states NetCDF and add groundwater files
+=======
+staticmaps_sbm_gw_path = testdata(v"0.2.1", "staticmaps-sbm-groundwater.nc", "staticmaps-sbm-groundwater.nc")
+>>>>>>> fix nc path
 
 
 ## run all tests
