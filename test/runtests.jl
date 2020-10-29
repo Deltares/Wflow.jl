@@ -34,7 +34,6 @@ staticmaps_sbm_gw_path = testdata(v"0.2.1", "staticmaps-sbm-groundwater.nc", "st
 
 
 ## run all tests
-
 @testset "Wflow.jl" begin
     include("horizontal_process.jl")
     include("io.jl")
@@ -42,6 +41,7 @@ staticmaps_sbm_gw_path = testdata(v"0.2.1", "staticmaps-sbm-groundwater.nc", "st
     include("reservoir_lake.jl")
     include("run_sbm.jl")
     include("run_hbv.jl")
+    include("run_sbm_gwf.jl")
     include("groundwater.jl")
     include("utils.jl")
 end
