@@ -205,8 +205,8 @@ function setup_netcdf(
     parameters,
     calendar,
     time_units,
-    sizeinmetres,
-    maxlayers;
+    maxlayers,
+    sizeinmetres;
     float_type=Float32
 )
     ds = NCDataset(output_path, "c")
@@ -269,7 +269,6 @@ function setup_netcdf(
         ("time",),
         attrib = ["units" => time_units, "calendar" => calendar],
     )
-<<<<<<< HEAD
     for (key, val) in parameters
         if eltype(val.vector) <: AbstractFloat
             defVar(
@@ -290,55 +289,6 @@ function setup_netcdf(
             )
         else
             error("Unsupported output type: ", typeof(val.vector))
-=======
-    if sizeinmetres
-        for (key, v) in pairs(parameters)
-            if eltype(v.vector) <: AbstractFloat
-                # all floats are saved as Float32
-                defVar(
-                    ds,
-                    key,
-                    Float32,
-                    ("x", "y", "time"),
-                    attrib = ["_FillValue" => Float32(NaN)],
-                )
-            elseif eltype(v.vector) <: SVector
-                # SVectors are used to store layers
-                defVar(
-                    ds,
-                    key,
-                    Float32,
-                    ("x", "y", "layer", "time"),
-                    attrib = ["_FillValue" => Float32(NaN)],
-                )
-            else
-                error("Unsupported output type: ", typeof(cell))
-            end
-        end
-    else
-        for (key, v) in pairs(parameters)
-            if eltype(v.vector) <: AbstractFloat
-                # all floats are saved as Float32
-                defVar(
-                    ds,
-                    key,
-                    Float32,
-                    ("lon", "lat", "time"),
-                    attrib = ["_FillValue" => Float32(NaN)],
-                )
-            elseif eltype(v.vector) <: SVector
-                # SVectors are used to store layers
-                defVar(
-                    ds,
-                    key,
-                    Float32,
-                    ("lon", "lat", "layer", "time"),
-                    attrib = ["_FillValue" => Float32(NaN)],
-                )
-            else
-                error("Unsupported output type: ", typeof(cell))
-            end
->>>>>>> parameters netcdf writer
         end
     end
     return ds
@@ -582,12 +532,6 @@ function prepare_writer(
 )
     sizeinmetres = get(config.model, "sizeinmetres", false)
 
-<<<<<<< HEAD
-    nclon = ncread(reader.dataset, "lon"; type = Float64)
-    nclat = ncread(reader.dataset, "lat"; type = Float64)
-
-    output_ncnames = ncnames(config.output)
-=======
     if sizeinmetres
         ncy = ncread(reader.dataset, "y"; type = Float64)
         ncx = ncread(reader.dataset, "x"; type = Float64)
@@ -603,31 +547,18 @@ function prepare_writer(
             flat!(output_ncnames, k, v)
         end
     end
->>>>>>> netcdf writer
 
     # fill the output_map by mapping parameter NetCDF names to arrays
-<<<<<<< HEAD
     output_map = out_map(output_ncnames, modelmap)
-=======
-    output_map = Dict{String,NamedTuple}()
-    for (par, ncname) in pairs(output_ncnames)
-        A = param(modelmap, par)
-        output_map[ncname] = (parameter =par, vector= A)
-    end
->>>>>>> sbm_gwf_model
 
     calendar = get(config, "calendar", "proleptic_gregorian")
     time_units = get(config, "time_units", CFTime.DEFAULT_TIME_UNITS)
-<<<<<<< HEAD
-    ds = setup_netcdf(nc_path, nclon, nclat, output_map, calendar, time_units, maxlayers)
+    ds = setup_netcdf(nc_path, ncx, ncy, output_map, calendar, time_units, maxlayers, sizeinmetres)
 
     # create a separate state output NetCDF that will hold the last timestep of all states
     state_map = out_map(state_ncnames, modelmap)
     nc_state_path = config.state.path_output
-    ds_outstate = setup_netcdf(nc_state_path, nclon, nclat, state_map, calendar, time_units, maxlayers; float_type=Float64)
-=======
-    ds = setup_netcdf(nc_path, ncx, ncy, output_map, calendar, time_units, maxlayers, sizeinmetres)
->>>>>>> netcdf writer
+    ds_outstate = setup_netcdf(nc_state_path, ncx, ncy, state_map, calendar, time_units, maxlayers, sizeinmetres; float_type=Float64)
     tomldir = dirname(config)
 
     if haskey(config, "csv") && haskey(config.csv, "column")
@@ -705,35 +636,22 @@ function write_netcdf_timestep(model, dataset, parameters)
 
     time_index = add_time(dataset, clock.time)
 
-<<<<<<< HEAD
     for (key, val) in parameters
         @unpack par, vector = val
         sel = active_indices(network, par)
-=======
-    for (key, v) in pairs(parameters)
-        inds_used = :river in v.parameter ? inds_riv : inds
->>>>>>> sbm_gwf_model
         # write the active cells vector to the 2d buffer matrix
-        elemtype = eltype(v.vector)
+        elemtype = eltype(vector)
         if elemtype <: AbstractFloat
             # ensure no other information is written
             fill!(buffer, NaN)
-<<<<<<< HEAD
             buffer[sel] .= vector
-=======
-            buffer[inds_used] .= v.vector
->>>>>>> sbm_gwf_model
             dataset[key][:, :, time_index] = buffer
         elseif elemtype <: SVector
-            nlayer = length(first(v.vector))
+            nlayer = length(first(vector))
             for i = 1:nlayer
                 # ensure no other information is written
                 fill!(buffer, NaN)
-<<<<<<< HEAD
                 buffer[sel] .= getindex.(vector, i)
-=======
-                buffer[inds_used] .= getindex.(v.vector, i)
->>>>>>> sbm_gwf_model
                 dataset[key][:, :, i, time_index] = buffer
             end
         else
