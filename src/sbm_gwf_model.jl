@@ -324,7 +324,7 @@ function initialize_sbm_gwf_model(config::Config)
     )
 
     state_ncnames = ncnames(config.state)
-    
+
     reader = prepare_reader(dynamic_path, cyclic_path, config)
 
     modelmap = (vertical = sbm,
@@ -493,7 +493,7 @@ function update_sbm_gwf(model)
         ) ./ lateral.river.dl
     update(lateral.river, network.river, do_iter = kinwave_it, doy = dayofyear(clock.time))
 
-    write_output(model, model.writer)
+    write_output(model)
 
     # update the clock
     clock.iteration += 1
