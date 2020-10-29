@@ -1,3 +1,5 @@
+include("testing_utils.jl")
+
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 
@@ -99,24 +101,6 @@ end
 end
 
 benchmark = @benchmark Wflow.update(model)
-
-"Prints a benchmark results just like btime"
-function print_benchmark(trialmin)
-    trialtime = BenchmarkTools.time(trialmin)
-    trialallocs = BenchmarkTools.allocs(trialmin)
-    println(
-        "  ",
-        BenchmarkTools.prettytime(trialtime),
-        " (",
-        trialallocs,
-        " allocation",
-        trialallocs == 1 ? "" : "s",
-        ": ",
-        BenchmarkTools.prettymemory(BenchmarkTools.memory(trialmin)),
-        ")",
-    )
-end
-
 trialmin = BenchmarkTools.minimum(benchmark)
 
 println("SBM Model update")
