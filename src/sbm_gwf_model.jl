@@ -323,6 +323,8 @@ function initialize_sbm_gwf_model(config::Config)
         AquiferBoundaryCondition[recharge, river, drain],
     )
 
+    state_ncnames = ncnames(config.state)
+    
     reader = prepare_reader(dynamic_path, cyclic_path, config)
 
     modelmap = (vertical = sbm,
@@ -340,7 +342,7 @@ function initialize_sbm_gwf_model(config::Config)
         reader,
         output_path,
         modelmap,
-        states,
+        state_ncnames,
         indices_reverse,
         x_nc,
         y_nc,

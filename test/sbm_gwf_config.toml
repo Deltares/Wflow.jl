@@ -13,8 +13,8 @@ time_units = "days since 1900-01-01 00:00:00"
 timestepsecs = 86400 
 
 [state]
-path_input = "data/instates-moselle.nc" 
-path_output = "data/outstates-moselle.nc" # TODO implement
+path_input = "data/instates-example-sbm-gwf.nc" 
+path_output = "data/outstates-example-sbm-gwf.nc"
 
 # if listed, the variable must be present in the NetCDF or error
 # if not listed, the variable can get a default value if it has one
@@ -32,7 +32,7 @@ h = "h_river"
 q = "q_land"
 h = "h_land"
 
-[state.lateral.subsurface.aquifer]
+[state.lateral.subsurface.flow.aquifer]
 head = "head"
 
 [input]
@@ -99,7 +99,7 @@ drains = true
 constanthead = true
 
 [output]
-path = "data/output_example.nc"
+path = "data/output_example-sbm-gwf.nc"
 
 [output.vertical]
 canopystorage = "canopystorage"
@@ -121,3 +121,17 @@ flux = "drain_flux"
 
 [output.lateral.subsurface.river]
 flux = "flux"
+
+[csv]
+path = "data/output_example-sbm-gwf.csv"
+
+[[csv.column]]
+header = "Q_av"
+index = 5
+parameter = "lateral.river.q_av"
+
+[[csv.column]]
+header = "head"
+index = 5
+parameter = "lateral.subsurface.flow.aquifer.head"
+

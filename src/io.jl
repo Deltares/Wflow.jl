@@ -269,26 +269,53 @@ function setup_netcdf(
         ("time",),
         attrib = ["units" => time_units, "calendar" => calendar],
     )
-    for (key, val) in parameters
-        if eltype(val.vector) <: AbstractFloat
-            defVar(
-                ds,
-                key,
-                float_type,
-                ("lon", "lat", "time"),
-                attrib = ["_FillValue" => float_type(NaN)],
-            )
-        elseif eltype(val.vector) <: SVector
-            # SVectors are used to store layers
-            defVar(
-                ds,
-                key,
-                float_type,
-                ("lon", "lat", "layer", "time"),
-                attrib = ["_FillValue" => float_type(NaN)],
-            )
-        else
-            error("Unsupported output type: ", typeof(val.vector))
+    if sizeinmetres
+        for (key, val) in pairs(parameters)
+            if eltype(val.vector) <: AbstractFloat
+                # all floats are saved as Float32
+                defVar(
+                    ds,
+                    key,
+                    float_type,
+                    ("x", "y", "time"),
+                    attrib = ["_FillValue" => float_type(NaN)],
+                )
+            elseif eltype(val.vector) <: SVector
+                # SVectors are used to store layers
+                defVar(
+                    ds,
+                    key,
+                    float_type,
+                    ("x", "y", "layer", "time"),
+                    attrib = ["_FillValue" => float_type(NaN)],
+                )
+            else
+                error("Unsupported output type: ", typeof(val.vector))
+            end
+        end
+    else
+        for (key, val) in pairs(parameters)
+            if eltype(val.vector) <: AbstractFloat
+                # all floats are saved as Float32
+                defVar(
+                    ds,
+                    key,
+                    float_type,
+                    ("lon", "lat", "time"),
+                    attrib = ["_FillValue" => float_type(NaN)],
+                )
+            elseif eltype(val.vector) <: SVector
+                # SVectors are used to store layers
+                defVar(
+                    ds,
+                    key,
+                    float_type,
+                    ("lon", "lat", "layer", "time"),
+                    attrib = ["_FillValue" => float_type(NaN)],
+                )
+            else
+                error("Unsupported output type: ", typeof(val.vector))
+            end
         end
     end
     return ds
