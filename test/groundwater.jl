@@ -145,6 +145,29 @@ end
             @test collect_connections(conn, 5) == [2, 4, 6]
             @test collect_connections(conn, 6) == [3, 5]
         end
+
+        @testset "Connectivity 2D - partially inactive" begin
+            # +---+---+
+            # | 1 | 3 |
+            # +---+---+
+            # | X | 4 |
+            # +---+---+
+            # | 2 | 5 |
+            # +---+---+
+            domain = ones(Bool, (nrow, ncol))
+            domain[2, 1] = false
+            indices, reverse_indices = Wflow.active_indices(domain, false)
+            conn = Wflow.Connectivity(indices, reverse_indices, Δx, Δy)
+            @test conn.ncell == 5
+            @test conn.nconnection == 8 
+            @test conn.colptr == [1, 2, 3, 5, 7, 9]
+            @test conn.rowval == [3, 5, 1, 4, 3, 5, 2, 4]
+            @test collect_connections(conn, 1) == [3]
+            @test collect_connections(conn, 2) == [5]
+            @test collect_connections(conn, 3) == [1, 4]
+            @test collect_connections(conn, 4) == [3, 5]
+            @test collect_connections(conn, 5) == [2, 4]
+        end
     end
 
     @testset "unit: aquifer, boundary conditions" begin
