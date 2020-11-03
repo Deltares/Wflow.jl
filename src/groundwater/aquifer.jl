@@ -65,6 +65,9 @@ instead.
 abstract type Aquifer end
 
 
+abstract type AquiferBoundaryCondition end
+
+
 """
     ConfinedAquifer{T} <: Aquifer
 
@@ -113,7 +116,8 @@ struct UnconfinedAquifer{T} <: Aquifer
     bottom::Vector{T} # bottom of groundwater layer
     area::Vector{T}
     specific_yield::Vector{T} # [m m⁻¹]
-    # Unconfined aquifer conductance is re-computed
+    conductance::Vector{T} # 
+    # Unconfined aquifer conductance is computed with degree of saturation
 end
 
 
@@ -146,20 +150,10 @@ function harmonicmean_conductance(k1, k2, H1, H2, l1, l2, width)
 end
 
 
-function saturated_thickness(aquifer::UnconfinedAquifer, index::Int)
-    min(aquifer.top[index], aquifer.head[index]) - aquifer.bottom[index]
-end
-
-
-function saturated_thickness(aquifer::ConfinedAquifer, index::Int)
-    aquifer.top[index] - aquifer.bottom[index]
-end
-
-
 """
     horizontal_conductance(i, j, nzi, aquifer, C)
 
-Compute horizontal conductance for a single connection between two cells
+Compute fully saturated horizontal conductance for a single connection between two cells
 (indexed with `i` and `j`). Geometry characteristics are taken from the
 connectivity struct `C`, using the non-zero index (nzi) of its CSC data
 structure.
@@ -173,8 +167,8 @@ function horizontal_conductance(
 ) where A <: Aquifer
     k1 = aquifer.k[i]
     k2 = aquifer.k[j]
-    H1 = saturated_thickness(aquifer, i)
-    H2 = saturated_thickness(aquifer, j)
+    H1 = aquifer.top[i] - aquifer.bottom[i]
+    H2 = aquifer.top[j] - aquifer.bottom[j]
     length1 = connectivity.length1[nzi]
     length2 = connectivity.length2[nzi]
     width = connectivity.width[nzi]
@@ -182,11 +176,13 @@ function horizontal_conductance(
 end
 
 """
-    initialize_conductance!(aquifer::ConfinedAquifer, connectivity::Connectivity)
+    initialize_conductance!(aquifer::A, connectivity::Connectivity) where A <: Aquifer
 
 Conductance for a confined aquifer is constant, and only has to be set once.
+For an unconfined aquifer, conductance is computed per timestep by multiplying by
+degree of saturation [0.0 - 1.0].
 """
-function initialize_conductance!(aquifer::ConfinedAquifer, connectivity::Connectivity)
+function initialize_conductance!(aquifer::A, connectivity::Connectivity) where A <: Aquifer
     for i in 1:connectivity.ncell
         # Loop over connections for cell j
         for nzi in connections(connectivity, i)
@@ -197,13 +193,46 @@ function initialize_conductance!(aquifer::ConfinedAquifer, connectivity::Connect
 end
 
 
-function conductance(aquifer::ConfinedAquifer, connectivity, i, j, nzi)
+function conductance(aquifer::ConfinedAquifer, i, j, nzi)
     return aquifer.conductance[nzi]
 end
 
 
-function conductance(aquifer::UnconfinedAquifer, connectivity, i, j, nzi)
-    return horizontal_conductance(i, j, nzi, aquifer, connectivity)
+"""
+    conductance(aquifer::UnconfinedAquifer, connectivity::Connectivity)
+
+This computes the conductance for an unconfined aquifer using the "upstream
+saturated fraction" as the MODFLOW documentation calls it. In this approach, the
+saturated thickness of a cell-to-cell is approximated using the cell with the
+highest head. This results in a consistent overestimation of the saturated
+thickness, but it avoids complexities related with cell drying and rewetting,
+such as having to define a "wetting threshold" or a "wetting factor".
+
+See the documentation for MODFLOW-NWT or MODFLOW6 for more background:
+Niswonger, R.G., Panday, Sorab, and Ibaraki, Motomu, 2011, MODFLOW-NWT, A Newton
+formulation for MODFLOW-2005: U.S. Geological Survey Techniques and Methods
+6-A37, 44 p.
+
+Langevin, C.D., Hughes, J.D., Banta, E.R., Niswonger, R.G., Panday, Sorab, and
+Provost, A.M., 2017, Documentation for the MODFLOW 6 Groundwater Flow Model:
+U.S. Geological Survey Techniques and Methods, book 6, chap. A55, 197 p.,
+https://doi.org/10.3133/tm6A55.
+
+For background on drying and rewetting, see:
+McDonald, M.G., Harbaugh, A.W., Orr, B.R., and Ackerman, D.J., 1991, A method of
+converting no-flow cells to variable-head cells for the U.S. Geological Survey
+modular finite-difference groundwater flow model: U.S. Geological Survey
+Open-File Report 91-536, 99 p
+"""
+function conductance(aquifer::UnconfinedAquifer, i, j, nzi)
+    ϕᵢ = aquifer.head[i]
+    ϕⱼ = aquifer.head[j]
+    if ϕᵢ >= ϕⱼ
+        saturation = (ϕᵢ - aquifer.bottom[i]) / (aquifer.top[i] - aquifer.bottom[i])
+    else
+        saturation = (ϕⱼ - aquifer.bottom[j]) / (aquifer.top[j] - aquifer.bottom[j])
+    end
+    return saturation * aquifer.conductance[nzi]
 end
 
 
@@ -214,7 +243,7 @@ function flux!(Q, aquifer, connectivity)
             # connection from i -> j
             j = connectivity.rowval[nzi]
             Δϕ = aquifer.head[i] - aquifer.head[j]
-            cond = conductance(aquifer, connectivity, i, j, nzi)
+            cond = conductance(aquifer, i, j, nzi)
             Q[i] -= cond * Δϕ
         end
     end
@@ -249,7 +278,7 @@ minimum_head(aquifer::ConfinedAquifer) = aquifer.head
 minimum_head(aquifer::UnconfinedAquifer) = max.(aquifer.head, aquifer.bottom)
 
 
-function update(gwf, Q, Δt; wetfct = 1.0, wetthreshold=0.1)
+function update(gwf, Q, Δt)
     Q .= 0.0  # TODO: Probably remove this when linking with other components
     flux!(Q, gwf.aquifer, gwf.connectivity)
     for boundary in gwf.boundaries
@@ -259,12 +288,7 @@ function update(gwf, Q, Δt; wetfct = 1.0, wetthreshold=0.1)
     # Set constant head (dirichlet) boundaries
     gwf.aquifer.head[gwf.constanthead.index] .= gwf.constanthead.head
     # Make sure no heads ends up below an unconfined aquifer bottom
-    # TODO: this should disable a boundary condition or something?
-    if typeof(gwf.aquifer) == UnconfinedAquifer
-        gwf.aquifer.head .= minimum_head(gwf.aquifer) + wetfct * wetthreshold
-    else
-        gwf.aquifer.head .= minimum_head(gwf.aquifer)
-    end
+    gwf.aquifer.head .= minimum_head(gwf.aquifer)
 end
 
 
@@ -273,4 +297,8 @@ Base.@kwdef struct GroundwaterFlow
     connectivity::Connectivity
     constanthead::ConstantHead
     boundaries::Vector{B} where B <: AquiferBoundaryCondition
+    function GroundwaterFlow(aquifer, connectivity, constanthead, boundaries)
+        new(aquifer, connectivity, constanthead, boundaries)
+        initialize_conductance!(aquifer, connectivity)
+    end 
 end
