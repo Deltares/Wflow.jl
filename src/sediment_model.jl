@@ -402,12 +402,17 @@ function initialize_sediment_model(config::Config)
     
     ols = OLFSed{Float64}(
         n = n,
+        rivcell = rivcell,
+        h_riv = fill(mv, n),
+        q_riv = fill(mv, n),
     )
 
     pcr_dir = dims_xy ? permute_indices(Wflow.pcrdir) : Wflow.pcrdir
     graph = flowgraph(ldd, inds, pcr_dir)
 
     # River processes
+    tcmethodriv = get(config.model, "rivtransportmethod", "bagnold")
+
     riverslope = ncread(
         nc,
         param(config, "input.lateral.river.slope");
@@ -418,6 +423,105 @@ function initialize_sediment_model(config::Config)
     riverlength = riverlength_2d[inds_riv]
     riverwidth = riverwidth_2d[inds_riv]
 
+
+    rhos = ncread(
+        nc,
+        param(config, "input.lateral.river.rhosed", nothing);
+        sel = inds_riv,
+        defaults = 2650.0,
+        type = Float64,
+    )
+    dmclay = ncread(
+        nc,
+        param(config, "input.lateral.river.dmclay", nothing);
+        sel = inds_riv,
+        defaults = 2.0,
+        type = Float64,
+    )
+    dmsilt = ncread(
+        nc,
+        param(config, "input.lateral.river.dmsilt", nothing);
+        sel = inds_riv,
+        defaults = 10.0,
+        type = Float64,
+    )
+    dmsand = ncread(
+        nc,
+        param(config, "input.lateral.river.dmsand", nothing);
+        sel = inds_riv,
+        defaults = 200.0,
+        type = Float64,
+    )
+    dmsagg = ncread(
+        nc,
+        param(config, "input.lateral.river.dmsagg", nothing);
+        sel = inds_riv,
+        defaults = 30.0,
+        type = Float64,
+    )
+    dmlagg = ncread(
+        nc,
+        param(config, "input.lateral.river.dmlagg", nothing);
+        sel = inds_riv,
+        defaults = 500.0,
+        type = Float64,
+    )
+    dmgrav = ncread(
+        nc,
+        param(config, "input.lateral.river.dmgrav", nothing);
+        sel = inds_riv,
+        defaults = 2000.0,
+        type = Float64,
+    )
+    fclayriv = ncread(
+        nc,
+        param(config, "input.lateral.river.fclayriv");
+        sel = inds_riv,
+        type = Float64,
+    )
+    fsiltriv = ncread(
+        nc,
+        param(config, "input.lateral.river.fsiltriv");
+        sel = inds_riv,
+        type = Float64,
+    )
+    fsandriv = ncread(
+        nc,
+        param(config, "input.lateral.river.fsandriv");
+        sel = inds_riv,
+        type = Float64,
+    )
+    fgravriv = ncread(
+        nc,
+        param(config, "input.lateral.river.fgravriv");
+        sel = inds_riv,
+        type = Float64,
+    )
+    d50riv = ncread(
+        nc,
+        param(config, "input.lateral.river.d50");
+        sel = inds_riv,
+        type = Float64,
+    )
+    d50engelund = ncread(
+        nc,
+        param(config, "input.lateral.river.d50engelund");
+        sel = inds_riv,
+        type = Float64,
+    )
+    cbagnold = ncread(
+        nc,
+        param(config, "input.lateral.river.cbagnold");
+        sel = inds_riv,
+        type = Float64,
+    )
+    ebagnold = ncread(
+        nc,
+        param(config, "input.lateral.river.ebagnold");
+        sel = inds_riv,
+        type = Float64,
+    )
+
     ldd_riv = ldd_2d[inds_riv]
     graph_riv = flowgraph(ldd_riv, inds_riv, pcr_dir)
 
@@ -425,21 +529,91 @@ function initialize_sediment_model(config::Config)
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
     frac_toriver = Wflow.fraction_runoff_toriver(graph, ldd, index_river, βₗ, n)
 
-    # rs = RiverSed(
-        # sl = riverslope,
-        # n = n_river,
-        # dl = riverlength,
-        # Δt = Float64(Δt.value),
-        # width = riverwidth,
-        # reservoir_index = do_reservoirs ? resindex : fill(0, nriv),
-        # lake_index = do_lakes ? lakeindex : fill(0, nriv),
-        # reservoir = do_reservoirs ? reservoirs : nothing,
-        # lake = do_lakes ? lakes : nothing,
-        # rivercells = river,
-    # )
-    rs = ()
+    # Initialisation of parameters for Kodatie transport capacity
+    ak = fill(0.0, nriv)
+    bk = fill(0.0, nriv)
+    ck = fill(0.0, nriv)
+    dk = fill(0.0, nriv)
+    if tcmethodriv == "kodatie"
+        for i = 1:nriv
+            if d50riv[i] <= 0.05
+                ak[i] = 281.4
+                bk[i] = 2.622
+                ck[i] = 0.182
+                dk[i] = 0.0
+            elseif d50riv[i] <= 0.25
+                ak[i] = 2829.6
+                bk[i] = 3.646
+                ck[i] = 0.406
+                dk[i] = 0.412
+            elseif d50riv[i] <= 2.0
+                ak[i] = 2123.4
+                bk[i] = 3.3
+                ck[i] = 0.468
+                dk[i] = 0.613
+            else
+                ak[i] = 431884.8
+                bk[i] = 1.0
+                ck[i] = 1.0
+                dk[i] = 2.0
+            end
+        end
+    end
+    # Initialisation of parameters for river erosion
+    # Bed and Bank from Shields diagram, Da Silva & Yalin (2017)
+    E_ = (2.65 - 1) * 9.81
+    E = (E_ .* (d50riv .* 10^(-3)).^3 ./ 10^(-12)).^0.33
+    TCrbed = (E_ .* d50riv .* (
+        0.13 .* E.^(-0.392) .* exp.(-0.015 .* E.^2)
+        .+ 0.045 .* (1 .- exp.(-0.068 .* E))
+    ))
+    TCrbank = TCrbed
+    # kd from Hanson & Simon 2001
+    kdbank = 0.2 .* TCrbank.^(-0.5) .* 10^(-6)
+    kdbed = 0.2 .* TCrbed.^(-0.5) .* 10^(-6)
 
+    rs = RiverSed{Float64}(
+        n = nriv,
+        # Parameters
+        sl = riverslope,
+        dl = riverlength,
+        Δt = Float64(Δt.value),
+        width = riverwidth,
+        dmclay = dmclay,
+        dmsilt = dmsilt,
+        dmsand = dmsand,
+        dmsagg = dmsagg,
+        dmlagg = dmlagg,
+        dmgrav = dmgrav,
+        fclayriv = fclayriv,
+        fsiltriv = fsiltriv,
+        fsandriv = fsandriv,
+        fgravriv = fgravriv,
+        d50 = d50riv,
+        d50engelund = d50engelund,
+        cbagnold = cbagnold,
+        ebagnold = ebagnold,
+        ak = ak,
+        bk = bk,
+        ck = ck,
+        dk = dk,
+        kdbank = kdbank,
+        kdbed = kdbed,
+        TCrbank = TCrbank,
+        TCrbed = TCrbed,
+        rhos = rhos,
+        # Forcing
+        #h_riv = fill(mv, nriv),
+        #q_riv = fill(mv, nriv),
+        #reservoir_index = do_reservoirs ? resindex : fill(0, nriv),
+        #lake_index = do_lakes ? lakeindex : fill(0, nriv),
+        #reservoir = do_reservoirs ? reservoirs : nothing,
+        #lake = do_lakes ? lakes : nothing,
+    )
 
+    for state in statevars(rs)
+        states = (states...,(:lateral,:river,state))
+    end
 
 
     reader = prepare_reader(dynamic_path, cyclic_path, config)
@@ -537,6 +711,22 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:LandSed,R,W}
 
     update(lateral.land, network.land, config)
 
+    do_river = get(config.model, "runrivermodel", false)
+
+    if do_river
+        # Forcing come from lateral.land instead of netcdf directly
+        # Fix update_forcing in io to allow forcing for river (problem wih sel)
+        lateral.river.h_riv .= lateral.land.h_riv[network.index_river]
+        lateral.river.q_riv .= lateral.land.q_riv[network.index_river]
+        
+        lateral.river.inlandclay .= lateral.land.inlandclay[network.index_river]
+        lateral.river.inlandsilt .= lateral.land.inlandsilt[network.index_river]
+        lateral.river.inlandsand .= lateral.land.inlandsand[network.index_river]
+        lateral.river.inlandsagg .= lateral.land.inlandsagg[network.index_river]
+        lateral.river.inlandlagg .= lateral.land.inlandlagg[network.index_river]
+
+        update(lateral.river, network.river, config)
+    end
 
     write_output(model, model.writer)
 

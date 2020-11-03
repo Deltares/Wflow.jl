@@ -36,6 +36,8 @@ forcing = [
   "vertical.interception",
   "vertical.precipitation",
   "vertical.q_land",
+  "lateral.land.h_riv",
+  "lateral.land.q_riv",
 ]
 
 cyclic = ["vertical.leaf_area_index"]
@@ -64,18 +66,27 @@ rivcell = "wflow_river"
 
 [input.lateral.land]
 slope = "Slope"
+h_riv = "h" # forcing
+q_riv = "q" # forcing
 
 [input.lateral.river]
+cbagnold = "c_Bagnold"
+d50 = "D50_River"
+d50engelund = "D50_River"
+ebagnold = "exp_Bagnold"
+fclayriv = "ClayF_River"
+fsiltriv = "SiltF_River"
+fsandriv = "SandF_River"
+fgravriv = "GravelF_River"
 length = "wflow_riverlength"
-n = "N_River"
 slope = "RiverSlope"
 width = "wflow_riverwidth"
 
 [model]
 reinit = true
-runrivermodel = false
+runrivermodel = true
 reservoirs = false
-rainerosmethod = "eurosem" # Rainfall erosion equation: ["answers", "eurosem"]
+rainerosmethod = "answers" # Rainfall erosion equation: ["answers", "eurosem"]
 landtransportmethod = "yalinpart" # Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]
 rivtransportmethod = "bagnold" # River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]
 
@@ -92,9 +103,16 @@ TCsed = "TCsed"
 precipitation = "prec"
 pathfrac = "pathfrac"
 
-[output.lateral.land]
-olsed = "olsed"
-olclay = "olclay"
+#[output.lateral.land]
+#olsed = "olsed"
+#olclay = "olclay"
+#inlandsed = "inlandsed"
+#inlandclay = "inlandclay"
+
+[output.lateral.river]
+Sedconc = "Sedconc"
+SSconc = "SSconc"
+Bedconc = "Bedconc"
 
 [csv]
 path = "data/output-moselle-sed.csv"
@@ -169,3 +187,8 @@ coordinate.y = 50.012
 header = "olsed"
 parameter = "lateral.land.olsed"
 
+[[csv.column]]
+coordinate.x = 6.255
+coordinate.y = 50.012
+header = "inlandsed"
+parameter = "lateral.land.inlandsed"
