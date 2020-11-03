@@ -1,8 +1,8 @@
 function check_flux(flux, aquifer::UnconfinedAquifer, index::Int)
     # Check if cell is dry
-    if aquifer.head[index] <= aquifer.bottom[i]
+    if aquifer.head[index] <= aquifer.bottom[index]
         # If cell is dry, no negative flux is allowed
-        return max(0, boundary.flux[i])
+        return max(0, boundary.flux[index])
     else
         return flux
     end

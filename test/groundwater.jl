@@ -209,9 +209,9 @@ end
         end
 
         @testset "conductance" begin
-            @test Wflow.conductance(conf_aqf, connectivity, 2, 3, 3) == 0.0  # just returns a set value
-            @test Wflow.conductance(unconf_aqf, connectivity, 2, 3, 3) > 0.0   # computes a value based on head
-            @test Wflow.conductance(unconf_aqf, connectivity, 1, 2, 1) == 0.0
+            @test Wflow.conductance(conf_aqf, 2, 3, 3) == 0.0  # just returns a set value
+            @test Wflow.conductance(unconf_aqf, 2, 3, 3) > 0.0   # computes a value based on head
+            @test Wflow.conductance(unconf_aqf, 1, 2, 1) == 0.0
         end
 
         @testset "minimum_head-confined" begin
@@ -339,6 +339,7 @@ end
             fill(bottom, ncell),
             fill(cellsize * cellsize, ncell),
             fill(specific_yield, ncell),
+            fill(0.0, connectivity.nconnection),
         )
         # constant head on left boundary, 0 at 0
         constanthead = Wflow.ConstantHead([0.0], [1])

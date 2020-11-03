@@ -80,18 +80,6 @@ function initialize_sbm_gwf_model(config::Config)
     # initialize vertical SBM concept
     sbm = initialize_sbm(nc, config, riverfrac, xl, yl, inds)
 
-    # states sbm concept
-    states = ()
-    if do_snow
-        for state in statevars(sbm, snow=true)
-            states = (states...,(:vertical,state))
-        end
-    else
-        for state in statevars(sbm)
-            states = (states...,(:vertical,state))
-        end
-    end
-
     inds_riv, rev_inds_riv = active_indices(river_2d, 0)
     nriv = length(inds_riv)
 
@@ -99,9 +87,6 @@ function initialize_sbm_gwf_model(config::Config)
     pits = zeros(Bool, modelsize_2d)
     if do_reservoirs
         reservoirs, resindex, reservoir, pits = initialize_simple_reservoir(config, nc, inds_riv, nriv, pits)
-        for state in statevars(reservoirs)
-            states = (states...,(:lateral,:river,:reservoir,state))
-        end
     else
         reservoir = ()
     end
@@ -109,9 +94,6 @@ function initialize_sbm_gwf_model(config::Config)
     # lakes
     if do_lakes
         lakes, lakeindex, lake, pits = initialize_natural_lake(config, nc, inds_riv, nriv, pits)
-        for state in statevars(lakes)
-            states = (states...,(:lateral,:river,:lake,state))
-        end
     else
         lake = ()
     end
@@ -187,14 +169,6 @@ function initialize_sbm_gwf_model(config::Config)
         lake = do_lakes ? lakes : nothing,
         rivercells = river,
     )
-
-    for state in statevars(rf)
-        states = (states...,(:lateral,:river,state))
-    end
-
-    for state in statevars(olf)
-        states = (states...,(:lateral,:land,state))
-    end
 
     # unconfined aquifer
     if do_constanthead
@@ -386,9 +360,7 @@ function initialize_sbm_gwf_model(config::Config)
         set_states(
             instate_path,
             model,
-            states,
-            inds,
-            config;
+            state_ncnames,
             type = Float64
         )
     end
