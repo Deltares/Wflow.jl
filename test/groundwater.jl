@@ -54,6 +54,7 @@ function homogenous_aquifer(nrow, ncol)
         fill(0.0, ncell),
         fill(100.0, ncell),
         fill(0.15, ncell),
+        fill(0.0, connectivity.nconnection),  # conductance
     )
     return (connectivity, conf_aqf, unconf_aqf)
 end
@@ -268,7 +269,7 @@ end
         end
 
         @testset "headboundary" begin
-            headboundary = Wflow.HeadBoundary([2.0, 2.0], [100.0, 100.0], [1, 2])
+            headboundary = Wflow.HeadBoundary([2.0, 2.0], [100.0, 100.0], [0.0, 0.0], [1, 2])
             Q = zeros(3)
             Wflow.flux!(Q, headboundary, conf_aqf)
             @test Q[1] == 100.0 * (2.0 - 0.0)
@@ -276,14 +277,14 @@ end
         end
 
         @testset "recharge" begin
-            recharge = Wflow.Recharge([1.0e-3, 1.0e-3, 1.0e-3], [1, 2, 3])
+            recharge = Wflow.Recharge([1.0e-3, 1.0e-3, 1.0e-3], [0.0, 0.0, 0.0], [1, 2, 3])
             Q = zeros(3)
             Wflow.flux!(Q, recharge, conf_aqf)
             @test all(Q .== 1.0e-3 * 100.0)
         end
 
         @testset "well" begin
-            well = Wflow.Well([-1000.0], [1])
+            well = Wflow.Well([-1000.0], [0.0], [1])
             Q = zeros(3)
             Wflow.flux!(Q, well, conf_aqf)
             @test Q[1] == -1000.0
@@ -299,8 +300,6 @@ end
            constanthead,
            Wflow.AquiferBoundaryCondition[],
         )
-        # Initialize conductance for confined aquifer
-        Wflow.initialize_conductance!(gwf.aquifer, gwf.connectivity)
         # Set constant head (dirichlet) boundaries
         gwf.aquifer.head[gwf.constanthead.index] .= gwf.constanthead.head
 
@@ -401,7 +400,6 @@ end
             fill(storativity, ncell),
             fill(0.0, connectivity.nconnection), # conductance, to be set
         )
-        Wflow.initialize_conductance!(aquifer, connectivity)
 
         cell_index = reshape(collect(range(1, ncell, step=1)), shape)
         indices = vcat(cell_index[1, :], cell_index[end, :])# , cell_index[:, 1], cell_index[:, end],)
@@ -410,7 +408,7 @@ end
             indices,
         )
         # Place a well in the middle of the domain
-        well = Wflow.Well([discharge], [reverse_indices[wellrow, wellrow]])
+        well = Wflow.Well([discharge], [0.0], [reverse_indices[wellrow, wellrow]])
         gwf = Wflow.GroundwaterFlow(
             aquifer,
             connectivity,

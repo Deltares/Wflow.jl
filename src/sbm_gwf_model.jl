@@ -241,6 +241,7 @@ function initialize_sbm_gwf_model(config::Config)
         sbm.altitude .- sbm.soilthickness ./ 1000.0,
         xl .* yl,
         specific_yield,
+        fill(0.0, connectivity.nconnection),  # conductance
     )
 
     # reset zi and satwaterdepth with groundwater head from unconfined aquifer 
@@ -314,7 +315,7 @@ function initialize_sbm_gwf_model(config::Config)
 
     # recharge boundary of unconfined aquifer
     r = fill(mv,n)
-    recharge = Recharge(r,collect(1:n))
+    recharge = Recharge(r, fill(0.0, n), collect(1:n))
 
     gwf = GroundwaterFlow(
         aquifer,
