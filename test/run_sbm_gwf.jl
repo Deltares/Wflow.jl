@@ -16,7 +16,7 @@ flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
 
     @test row.time == DateTime("2000-06-01T00:00:00")
     @test row.Q_av ≈ 0.016260519762890745
-    @test row.head ≈ 1.8416530860717693
+    @test row.head ≈ 1.8416896245327632
 end
 
 @testset "first timestep" begin
@@ -49,17 +49,17 @@ end
 
 @testset "river flow" begin
     q = model.lateral.river.q_av
-    @test sum(q) ≈ 0.035157124015267334
-    @test q[6] ≈ 0.007953768737691942
-    @test q[13] ≈  0.0005980951978968137
-    @test q[network.river.order[end]] ≈  0.008484191503129557
+    @test sum(q) ≈ 0.03515256649675796
+    @test q[6] ≈ 0.00795266793733648
+    @test q[13] ≈  0.0005980549864213564
+    @test q[network.river.order[end]] ≈  0.008482646477950898
 end
 
 @testset "groundwater" begin
     gw = model.lateral.subsurface
     @test gw.river.stage[1] ≈ 1.21057153442702
     @test gw.flow.aquifer.head[19] ≈ 1.7999999523162842
-    @test gw.river.flux[1] ≈  -50.76893028395041
+    @test gw.river.flux[1] ≈ -50.751898489778426
     @test gw.drain.flux[1] ≈  0.0
     @test gw.recharge.rate[19] ≈  -0.0014241196552847502
 end

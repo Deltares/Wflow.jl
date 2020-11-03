@@ -149,6 +149,15 @@ function harmonicmean_conductance(k1, k2, H1, H2, l1, l2, width)
     end
 end
 
+function saturated_thickness(aquifer::UnconfinedAquifer, index::Int)
+    min(aquifer.top[index], aquifer.head[index]) - aquifer.bottom[index]
+end
+
+
+function saturated_thickness(aquifer::ConfinedAquifer, index::Int)
+    aquifer.top[index] - aquifer.bottom[index]
+end
+
 
 """
     horizontal_conductance(i, j, nzi, aquifer, C)
@@ -298,7 +307,7 @@ Base.@kwdef struct GroundwaterFlow
     constanthead::ConstantHead
     boundaries::Vector{B} where B <: AquiferBoundaryCondition
     function GroundwaterFlow(aquifer, connectivity, constanthead, boundaries)
-        new(aquifer, connectivity, constanthead, boundaries)
         initialize_conductance!(aquifer, connectivity)
+        new(aquifer, connectivity, constanthead, boundaries)
     end 
 end
