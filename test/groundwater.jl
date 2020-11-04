@@ -48,12 +48,12 @@ function homogenous_aquifer(nrow, ncol)
         fill(0.0, connectivity.nconnection),  # conductance
     )
     unconf_aqf = Wflow.UnconfinedAquifer(
-        [0.0, 7.5, 20.0],
-        fill(10.0, ncell),
-        fill(10.0, ncell),
-        fill(0.0, ncell),
-        fill(100.0, ncell),
-        fill(0.15, ncell),
+        [0.0, 7.5, 20.0],  # head
+        fill(10.0, ncell),   # k
+        fill(10.0, ncell),  # top
+        fill(0.0, ncell),  # bottom
+        fill(100.0, ncell),  # area
+        fill(0.15, ncell),  # specific yield
         fill(0.0, connectivity.nconnection),  # conductance
     )
     return (connectivity, conf_aqf, unconf_aqf)
@@ -184,6 +184,8 @@ end
         nrow = 1
         ncol = 3
         connectivity, conf_aqf, unconf_aqf = homogenous_aquifer(nrow, ncol)
+        Wflow.initialize_conductance!(conf_aqf, connectivity)
+        Wflow.initialize_conductance!(unconf_aqf, connectivity)
         ncell = connectivity.ncell
 
         @testset "saturated_thickness-confined" begin
@@ -209,9 +211,9 @@ end
         end
 
         @testset "conductance" begin
-            @test Wflow.conductance(conf_aqf, 2, 3, 3) == 0.0  # just returns a set value
-            @test Wflow.conductance(unconf_aqf, 2, 3, 3) > 0.0   # computes a value based on head
-            @test Wflow.conductance(unconf_aqf, 1, 2, 1) == 0.0
+            @test Wflow.conductance(conf_aqf, 2, 3, 3) == 100.0 
+            @test Wflow.conductance(unconf_aqf, 2, 3, 3) == 100.0  # upstream sat. thickness
+            @test Wflow.conductance(unconf_aqf, 1, 2, 1) == 75.0  # upstream sat. thickness
         end
 
         @testset "minimum_head-confined" begin
@@ -232,20 +234,25 @@ end
             @test Wflow.stable_timestep(conf_aqf) == 0.25
         end
 
+        # Parametrization in setup is as follows:
+        # [0.0, 7.5, 20.0],  # head
+        # fill(10.0, ncell),  # k
+        # fill(10.0, ncell),  # top
+        # fill(0.0, ncell),  # bottom
 
         @testset "flux-confined" begin
             Q = zeros(3)
             Wflow.flux!(Q, conf_aqf, connectivity)
-            @test all(Q .== 0.0)
+            # kD = 10 * 10 = 100
+            # dH = 7.5, 12.5
+            @test Q == [750.0, 500.0, -1250.0]  # TODO
         end
 
         @testset "flux-unconfined" begin
             Q = zeros(3)
             Wflow.flux!(Q, unconf_aqf, connectivity)
-            @test Q[1] == 0.0 # no flow 1 <-> 2
-            @test Q[2] > 0.0 # flow 3 -> 2
-            @test Q[3] < 0.0
-            @test -Q[2] == Q[3]
+            # KD is based on upstream saturated thickness, i.e. 7.5 m and 20.0 m (which is capped to 10.0)
+            @test Q == [562.5, 687.5, -1250.0]
         end
 
         @testset "river" begin

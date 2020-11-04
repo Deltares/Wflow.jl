@@ -237,9 +237,9 @@ function conductance(aquifer::UnconfinedAquifer, i, j, nzi)
     ϕᵢ = aquifer.head[i]
     ϕⱼ = aquifer.head[j]
     if ϕᵢ >= ϕⱼ
-        saturation = (ϕᵢ - aquifer.bottom[i]) / (aquifer.top[i] - aquifer.bottom[i])
+        saturation = saturated_thickness(aquifer, i) / (aquifer.top[i] - aquifer.bottom[i])
     else
-        saturation = (ϕⱼ - aquifer.bottom[j]) / (aquifer.top[j] - aquifer.bottom[j])
+        saturation = saturated_thickness(aquifer, j) / (aquifer.top[j] - aquifer.bottom[j])
     end
     return saturation * aquifer.conductance[nzi]
 end
