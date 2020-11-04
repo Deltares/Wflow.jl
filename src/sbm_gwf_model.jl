@@ -1,5 +1,5 @@
 """
-initialize_sbm_gwf_model(config::Config)
+    initialize_sbm_gwf_model(config::Config)
 
 Initial part of the sbm_gwf model concept. The model contains:
     - the vertical SBM concept
@@ -371,8 +371,8 @@ function initialize_sbm_gwf_model(config::Config)
     if haskey(config.input, "cyclic")
         update_cyclic!(model)
     end
-    return model  
 
+    return model  
 end
 
 

@@ -256,6 +256,7 @@ function flux!(Q, aquifer, connectivity)
             Q[i] -= cond * Δϕ
         end
     end
+    return Q
 end
 
 
@@ -298,16 +299,21 @@ function update(gwf, Q, Δt)
     gwf.aquifer.head[gwf.constanthead.index] .= gwf.constanthead.head
     # Make sure no heads ends up below an unconfined aquifer bottom
     gwf.aquifer.head .= minimum_head(gwf.aquifer)
+    return gwf
 end
 
 
-Base.@kwdef struct GroundwaterFlow
-    aquifer::A where A <: Aquifer
+Base.@kwdef struct GroundwaterFlow{A, B}
+    aquifer::A
     connectivity::Connectivity
     constanthead::ConstantHead
-    boundaries::Vector{B} where B <: AquiferBoundaryCondition
-    function GroundwaterFlow(aquifer, connectivity, constanthead, boundaries)
+    boundaries::Vector{B}
+    function GroundwaterFlow(
+            aquifer::A,
+            connectivity,
+            constanthead,
+            boundaries::Vector{B}) where {A <: Aquifer, B <: AquiferBoundaryCondition}
         initialize_conductance!(aquifer, connectivity)
-        new(aquifer, connectivity, constanthead, boundaries)
+        new{A, B}(aquifer, connectivity, constanthead, boundaries)
     end 
 end

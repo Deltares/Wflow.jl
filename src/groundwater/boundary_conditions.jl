@@ -37,6 +37,7 @@ function flux!(Q, river::River, aquifer)
         river.flux[i] = check_flux(cond * Δϕ, aquifer, index)
         Q[index] += river.flux[i]
     end
+    return Q
 end
             
         
@@ -55,6 +56,7 @@ function flux!(Q, drainage::Drainage, aquifer)
         drainage.flux[i] = check_flux(cond * Δϕ, aquifer, index)
         Q[index] += drainage.flux[i]
     end
+    return Q
 end
 
 
@@ -73,6 +75,7 @@ function flux!(Q, headboundary::HeadBoundary, aquifer)
         headboundary.flux[i] = check_flux(cond * Δϕ, aquifer, index)
         Q[index] += headboundary.flux[i]
     end
+    return Q
 end
 
 
@@ -88,6 +91,7 @@ function flux!(Q, recharge::Recharge, aquifer)
         recharge.flux[i] = check_flux(recharge.rate[i] * aquifer.area[index], aquifer, index)
         Q[index] += recharge.flux[i]
     end
+    return Q
 end
 
 
@@ -103,4 +107,5 @@ function flux!(Q, well::Well, aquifer)
         well.flux[i] = check_flux(well.volumetric_rate[i], aquifer, index)
         Q[index] += well.flux[i]
     end
+    return Q
 end

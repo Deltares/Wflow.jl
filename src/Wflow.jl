@@ -9,7 +9,7 @@ using Statistics
 using UnPack
 using CSV
 using Random
-using CSV.DataFrames
+using DataFrames
 
 mutable struct Clock
     time::DateTime
