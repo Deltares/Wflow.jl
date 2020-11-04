@@ -1,3 +1,4 @@
+
 "Prints a benchmark results just like btime"
 function print_benchmark(trialmin)
     trialtime = BenchmarkTools.time(trialmin)
@@ -27,8 +28,6 @@ end
 # For more explanations, see course notes by Steven G. Johnson at
 #     https://github.com/stevengj/18S096-iap17/blob/master/pset3/pset3-solutions.ipynb
 
-using Base.MathConstants: eulergamma
-
 # n coefficients of the Taylor series of E₁(z) + log(z), in type T:
 function E₁_taylor_coefficients(::Type{T}, n::Integer) where T <: Number
     n < 0 && throw(ArgumentError("$n ≥ 0 is required"))
@@ -57,7 +56,6 @@ macro E₁_taylor64(z, n::Integer)
 end
 
 # for numeric-literal coefficients: simplify to a ratio of two polynomials:
-import Polynomials
 # return (p,q): the polynomials p(x) / q(x) corresponding to E₁_cf(x, a...),
 # but without the exp(-x) term
 function E₁_cfpoly(n::Integer, ::Type{T}=BigInt) where T <: Real
@@ -124,7 +122,7 @@ function expint(n::Integer, z)
             Eᵢ = zinv * (e⁻ᶻ + i * Eᵢ)
         end
         return Eᵢ
-    elseif n > 1
+    else
         # forwards recurrence from E₁
         e⁻ᶻ = exp(-z)
         Eᵢ = expint(z)

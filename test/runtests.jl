@@ -8,6 +8,8 @@ using UnPack
 using Wflow
 using CSV
 using BenchmarkTools
+using Base.MathConstants: eulergamma
+import Polynomials
 
 # ensure test data is present
 testdir = @__DIR__
@@ -32,6 +34,7 @@ instates_moselle_path = testdata(v"0.2.1", "instates-moselle.nc", "instates-mose
 forcing_sbm_gw_path = testdata(v"0.2.1", "forcing-sbm-groundwater.nc", "forcing-sbm-groundwater.nc")
 staticmaps_sbm_gw_path = testdata(v"0.2.1", "staticmaps-sbm-groundwater.nc", "staticmaps-sbm-groundwater.nc")
 
+include("testing_utils.jl")
 
 ## run all tests
 @testset "Wflow.jl" begin

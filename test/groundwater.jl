@@ -1,5 +1,3 @@
-include("testing_utils.jl")
-
 
 function initial_head(x)
     2 * √x

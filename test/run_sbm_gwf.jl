@@ -1,4 +1,3 @@
-include("testing_utils.jl")
 
 tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
 config = Wflow.Config(tomlpath)
