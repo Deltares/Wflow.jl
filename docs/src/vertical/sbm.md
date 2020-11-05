@@ -5,7 +5,7 @@ considerable changes over time. The main differences are:
 
 - The unsaturated zone can be split-up in different layers
 - The addition of evapotranspiration losses
-- The addition of a capilary rise
+- The addition of a capillary rise
 
 The sections below describe the working of the SBM vertical concept in more
 detail.
@@ -164,7 +164,7 @@ unsaturated and saturated) decreases linearly with decreasing water
 availability.
 
 The original Topog\_SBM model does not include transpiration or a notion of
-capilary rise. In SBM transpiration is first taken from the ``S`` store if the
+capillary rise. In SBM transpiration is first taken from the ``S`` store if the
 roots reach the water table ``z_{i}``. If the ``S`` store cannot satisfy the
 demand the ``U`` store is used next. First the number of wet roots is determined
 (going from 1 to 0) using a sigmoid function as follows:
@@ -226,8 +226,8 @@ unsaturated zone layer(s).
 Wflow.acttransp_unsat_sbm(rootingdepth, ustorelayerdepth, sumlayer, restpotevap, sum_actevapustore, c, usl, θₛ, θᵣ, hb, ust::Bool = false)
 ```
 
-Capilary rise is determined using the following approach: first ``K_{sat}`` is
-determined at the water table ``z_{i}``; next a potential capilary rise is
+Capillary rise is determined using the following approach: first ``K_{sat}`` is
+determined at the water table ``z_{i}``; next a potential capillary rise is
 determined from the minimum of the ``K_{sat}``, the actual transpiration taken
 from the ``U`` store, the available water in the ``S`` store and the deficit of
 the ``U`` store. Finally the potential rise is scaled using the distance between
@@ -239,7 +239,7 @@ CSF=CS/(CS+z_{i}-RT)
 in which ``CSF`` is the scaling factor to multiply the potential rise with,
 ``CS`` is a model parameter (default = 100) and ``RT`` the rooting depth. If the
 roots reach the water table (``RT > z_{i}``) ``CS`` is set to zero thus setting
-the capilary rise to zero.
+the capillary rise to zero.
 
 ## Leakage
 

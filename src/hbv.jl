@@ -48,7 +48,7 @@ Base.@kwdef struct HBV{T}
     quickflow::Vector{T} = fill(mv, n)              # Specific runoff (quickflow part) [mm]
     real_quickflow::Vector{T} = fill(mv, n)         # specific runoff (quickflow), if K upper zone is precalculated [mm]
     percolation::Vector{T} = fill(mv, n)            # Actual percolation to the lower zone [mm]
-    capflux::Vector{T} = fill(mv, n)                # Capilary rise [mm]
+    capflux::Vector{T} = fill(mv, n)                # Capillary rise [mm]
     lowerzonestorage::Vector{T} = fill(mv, n)       # Water content of the lower zone [mm]
     baseflow::Vector{T} = fill(mv, n)               # Specific runoff (baseflow part) per cell [mm]
     runoff::Vector{T} = fill(mv, n)                 # Total specific runoff per cell [mm]
