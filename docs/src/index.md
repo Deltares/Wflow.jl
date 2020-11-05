@@ -10,7 +10,3 @@ is not advised, please use the linked stable wflow release for that.
 
 ```@index
 ```
-
-```@autodocs
-Modules = [Wflow]
-```
