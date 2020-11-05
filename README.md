@@ -5,5 +5,11 @@
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://deltares.github.io/Wflow.jl/dev)
 <!-- [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://deltares.github.io/Wflow.jl/stable) -->
 
-This is an in development version of wflow, a continuation of the work available at https://github.com/openstreams/wflow.
-For now using this for any real calculations is not advised, please use the linked stable wflow release for that.  
+Wflow is a [Julia](https://julialang.org/) package that provides a hydrological modeling
+framework, as well as several different vertical and lateral concepts that can be used to
+run hydrological simulations.
+
+See https://deltares.github.io/Wflow.jl/dev for the documentation.
+
+This is an in development version of wflow, a continuation of the work available
+[here](https://github.com/openstreams/wflow). We will make a first release later this year.
