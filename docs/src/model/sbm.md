@@ -11,7 +11,7 @@ wflow\_sbm:
 
 - The unsaturated zone can be split-up in different layers
 - The addition of evapotranspiration losses
-- The addition of a capilary rise
+- The addition of a capillary rise
 
 The vertical SBM concept is explained in more detail in [SBM vertical
 concept](@ref).

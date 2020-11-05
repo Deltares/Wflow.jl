@@ -51,7 +51,7 @@ Base.@kwdef struct SBM{T,N,M}
     rootingdepth::Vector{T}
     # Controls how roots are linked to water table [-]
     rootdistpar::Vector{T}
-    # Parameter [mm] controlling capilary rise
+    # Parameter [mm] controlling capillary rise
     capscale::Vector{T}
     # Multiplication factor [-] to correct
     et_reftopot::Vector{T}
