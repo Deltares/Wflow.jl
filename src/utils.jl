@@ -20,6 +20,14 @@ const basetimestep = Second(Day(1))
 # in case the input data is permuted the other way
 permute_indices(inds) = [CartesianIndex(i[2], i[1]) for i in inds]
 
+"Set at indices pit values (default = 5) in a gridded local drainage direction vector"
+function set_pit_ldd(pits_2d, ldd, indices; pit = 5)
+    pits = pits_2d[indices]
+    index = filter(i -> isequal(pits[i], true), 1:length(indices))
+    ldd[index] .= pit
+    return ldd
+end
+
 """
     active_indices(subcatch_2d, nodata)
 
