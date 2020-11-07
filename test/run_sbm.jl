@@ -1,3 +1,4 @@
+using Dates
 
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
@@ -105,5 +106,23 @@ trialmin = BenchmarkTools.minimum(benchmark)
 println("SBM Model update")
 print_benchmark(trialmin)
 # @profview Wflow.update(model)
+Wflow.close_files(model, delete_output = false)
+
+# test for setting a pit
+tomlpath = joinpath(@__DIR__, "sbm_config.toml")
+config = Wflow.Config(tomlpath)
+config["model"]["pits"] = true
+config["input"]["pits"] = "wflow_pits"
+config.endtime = DateTime(2000, 1, 9)
+
+model = Wflow.run_simulation(config)
+
+# pit is at river index 1765, CartesianIndex(141, 86)
+# downstream from pit is at river index 1739, CartesianIndex(142, 85)
+@testset "river flow at and downstream of pit" begin
+    q = model.lateral.river.q_av
+    @test q[1765] ≈  3.8527832284813113
+    @test q[1739] ≈  0.0071410737598333026
+end
 
 Wflow.close_files(model, delete_output = false)
