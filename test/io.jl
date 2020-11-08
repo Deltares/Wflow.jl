@@ -106,3 +106,11 @@ end
 end
 
 Wflow.close_files(model, delete_output = true)
+
+@testset "NetCDF creation" begin
+    path = Base.Filesystem.tempname()
+    _ = Wflow.create_tracked_netcdf(path)
+    # safe to open the same path twice
+    ds = Wflow.create_tracked_netcdf(path)
+    close(ds)  # path is removed on process exit
+end

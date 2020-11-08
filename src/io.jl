@@ -197,6 +197,32 @@ function update_cyclic!(model)
     end
 end
 
+"""
+    nc_handles::Dict{String, NCDataset{Nothing}}
+
+For each NetCDF file that will be opened for writing, store an entry in this Dict from the
+absolute path of the file to the NCDataset. This allows us to close the NCDataset if we try
+to create them twice in the same session, and thus providing a workaround for this issue:
+https://github.com/Alexander-Barth/NCDatasets.jl/issues/106
+
+Note that using this will prevent automatic garbage collection and thus closure of the
+NCDataset.
+"""
+const nc_handles = Dict{String, NCDataset{Nothing}}()
+
+"Safely create a NetCDF file, even if it has already been opened for creation"
+function create_tracked_netcdf(path)
+    abs_path = abspath(path)
+    # close existing NCDataset if it exists
+    if haskey(nc_handles, abs_path)
+        # fine if it was already closed
+        close(nc_handles[abs_path])
+    end
+    ds = NCDataset(path, "c")
+    nc_handles[abs_path] = ds
+    return ds
+end
+
 "prepare an output dataset"
 function setup_netcdf(
     output_path,
@@ -209,7 +235,8 @@ function setup_netcdf(
     sizeinmetres;
     float_type=Float32
 )
-    ds = NCDataset(output_path, "c")
+
+    ds = create_tracked_netcdf(output_path)
     defDim(ds, "time", Inf)  # unlimited
     if sizeinmetres
         defVar(
