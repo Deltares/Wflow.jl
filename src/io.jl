@@ -611,9 +611,10 @@ function prepare_writer(
 
     # create a separate state output NetCDF that will hold the last timestep of all states
     state_map = out_map(state_ncnames, modelmap)
-    nc_state_path = config.state.path_output
-    ds_outstate = setup_netcdf(nc_state_path, ncx, ncy, state_map, calendar, time_units, maxlayers, sizeinmetres; float_type=Float64)
     tomldir = dirname(config)
+    nc_state_path = joinpath(tomldir, config.state.path_output)
+    static_path = joinpath(tomldir, config.input.path_static)
+    ds_outstate = setup_netcdf(nc_state_path, ncx, ncy, state_map, calendar, time_units, maxlayers, sizeinmetres; float_type=Float64)
 
     if haskey(config, "csv") && haskey(config.csv, "column")
         # open CSV file and write header
