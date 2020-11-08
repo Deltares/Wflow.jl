@@ -415,7 +415,7 @@ function update_sbm_gwf(model)
     # determine stable time step for groundwater flow
     Δt_gw = stable_timestep(lateral.subsurface.flow.aquifer) # time step in day (Float64)
     Δt_sbm = (vertical.Δt / 86400.0) # vertical.Δt is in seconds (Float64)
-    if Δt_gw <  Δt_sbm
+    if Δt_gw < Δt_sbm
         @warn("stable time step Δt $Δt for groundwater flow is smaller than sbm Δt $Δt_sbm")
     end
 
@@ -469,8 +469,7 @@ function update_sbm_gwf(model)
     write_output(model)
 
     # update the clock
-    clock.iteration += 1
-    clock.time += clock.Δt
+    advance!(clock)
 
     return model
 end

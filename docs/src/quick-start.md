@@ -16,7 +16,7 @@ instructions and if you have trouble installing Julia.
 
 If you are new to Julia, it may be a good idea to check out the [Getting Started section of
 the Julia Manual](https://docs.julialang.org/en/v1/manual/getting-started/). Links to other
-learning resources can be found at https://julialang.org/learning/.
+learning resources can be found at [julialang.org/learning](https://julialang.org/learning/).
 
 Start an interactive session (also known as a read-eval-print loop or "REPL") by
 double-clicking the Julia executable or running `julia` from the command line, in case you
