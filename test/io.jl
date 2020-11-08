@@ -105,7 +105,7 @@ end
     @test reverse_indices[cartesian_index] === linear_index
 end
 
-Wflow.close_files(model, delete_output = true)
+Wflow.close_files(model, delete_output = false)
 
 @testset "NetCDF creation" begin
     path = Base.Filesystem.tempname()

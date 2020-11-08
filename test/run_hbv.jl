@@ -69,4 +69,4 @@ trialmin = BenchmarkTools.minimum(benchmark)
 println("HBV Model update")
 print_benchmark(trialmin)
 
-Wflow.close_files(model, delete_output = true)
+Wflow.close_files(model, delete_output = false)

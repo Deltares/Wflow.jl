@@ -119,6 +119,7 @@ n = "N"
 slope = "Slope" 
 
 [model]
+type = "sbm"
 masswasting = true
 snow = true
 reinit = true

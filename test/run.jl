@@ -1,7 +1,24 @@
-# simple example of running a model simulation, not part of the tests
 using Wflow
 using Dates
+using TOML
 
+# edit existing TOML to get a short run in a temporary directory
+tomlpath = joinpath(@__DIR__, "sbm_config.toml")
+confdict = TOML.parsefile(tomlpath)
+confdict["endtime"] = DateTime("2000-01-03T00:00:00")
+# convert relative paths to absolute paths, to avoid having to copy input files
+confdict["input"]["path_forcing"] = joinpath(@__DIR__, confdict["input"]["path_forcing"])
+confdict["input"]["path_static"] = joinpath(@__DIR__, confdict["input"]["path_static"])
+tmp_dir = mktempdir()
+tomlpath = joinpath(tmp_dir, "config.toml")
+open(tomlpath, "w") do io
+    TOML.print(io, confdict)
+end
+
+Wflow.run_simulation(tomlpath)
+
+#=
+# test whether restarted runs get the same results as continuus ones, i.e. state is captured
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 
@@ -33,5 +50,4 @@ config.state.path_output = joinpath(dirname(tomlpath), "data/state-test/outstate
 config.output.path = joinpath(dirname(tomlpath), "data/state-test/output-moselle-january-2of2.nc")
 model = Wflow.initialize_sbm_model(config)
 Wflow.run_simulation(model)
-
-# Wflow.close_files(model)
+=#

@@ -45,6 +45,7 @@ include("testing_utils.jl")
     include("run_sbm.jl")
     include("run_hbv.jl")
     include("run_sbm_gwf.jl")
+    include("run.jl")
     include("groundwater.jl")
     include("utils.jl")
 end

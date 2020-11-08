@@ -88,6 +88,7 @@ n = "N"
 slope = "Slope" 
 
 [model]
+type = "hbv"
 masswasting = true
 snow = true
 reinit = true

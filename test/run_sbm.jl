@@ -106,4 +106,4 @@ println("SBM Model update")
 print_benchmark(trialmin)
 # @profview Wflow.update(model)
 
-Wflow.close_files(model, delete_output = true)
+Wflow.close_files(model, delete_output = false)

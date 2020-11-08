@@ -61,19 +61,29 @@ function run_simulation(tomlpath)
 end
 
 function run_simulation(config::Config)
-    model = Wflow.initialize_sbm_model(config)
+    modeltype = config.model.type
+
+    model = if modeltype == "sbm"
+        Wflow.initialize_sbm_model(config)
+    elseif modeltype == "sbm_gwf"
+        Wflow.initialize_sbm_gwf_model(config)
+    elseif modeltype == "hbv"
+        Wflow.initialize_hbv_model(config)
+    else
+        error("unknown model type")
+    end
+    
     run_simulation(model)
 end
 
 function run_simulation(model::Model; close_files = true)
     @unpack network, config, writer, clock = model
 
+    # in the case of sbm_gwf it's currently a bit hard to use dispatch
+    update_func = config.model.type == "sbm_gwf" ? Wflow.update_sbm_gwf : Wflow.update
+
     while true
-        if config.model.type == "sbm_gwf"
-            model = Wflow.update_sbm_gwf(model)
-        else
-            model = Wflow.update(model)
-        end
+        model = update_func(model)
         is_finished(clock, config) && break
     end
 

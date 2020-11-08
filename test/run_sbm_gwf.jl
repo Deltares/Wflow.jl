@@ -63,4 +63,4 @@ end
     @test gw.recharge.rate[19] ≈  -0.0014241196552847502
 end
 
-Wflow.close_files(model, delete_output = true)
+Wflow.close_files(model, delete_output = false)
