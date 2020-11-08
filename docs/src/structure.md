@@ -24,26 +24,27 @@ required. The `calendar` and `time_units` optional information is used by the
 `writer` of the model, for model output in netCDF format.
 
 ```toml
-    casename = "testcase"                           # optional
+casename = "testcase"                           # optional
 
-    calendar = "proleptic_gregorian"                # optional, this is default value
-    endtime = 2000-02-01T00:00:00                   # required 
-    starttime = 2000-01-01T00:00:00                 # required
-    time_units = "days since 1900-01-01 00:00:00"   # optional, this is default value
-    timestepsecs = 86400                            # required
+calendar = "proleptic_gregorian"                # optional, this is default value
+endtime = 2000-02-01T00:00:00                   # required 
+starttime = 2000-01-01T00:00:00                 # required
+time_units = "days since 1900-01-01 00:00:00"   # optional, this is default value
+timestepsecs = 86400                            # required
 ```
 
 ### Model section
 Model specific settings can be included in the model section of the TOML file.
 
 ```toml
-    [model]
-    masswasting = true                  # include lateral snow transport in the model, default is false
-    snow = true                         # include snow modelling, default is false
-    reinit = true                       # cold (reinit = true) or warm state (reinit = false), default is true
-    reservoirs = true                   # include reservoir modelling, default is false
-    kin_wave_iteration = true           # enable kinematic wave iterations in the model, default is false
-    thicknesslayers = [100, 300, 800]   # specific SBM setting: for each soil layer a thickness [mm] is specified
+[model]
+type = "sbm"                        # one of ("sbm", "sbm_gwf, "hbv")
+masswasting = true                  # include lateral snow transport in the model, default is false
+snow = true                         # include snow modelling, default is false
+reinit = true                       # cold (reinit = true) or warm state (reinit = false), default is true
+reservoirs = true                   # include reservoir modelling, default is false
+kin_wave_iteration = true           # enable kinematic wave iterations in the model, default is false
+thicknesslayers = [100, 300, 800]   # specific SBM setting: for each soil layer a thickness [mm] is specified
 ```
 
 ### State section
@@ -59,33 +60,33 @@ states are listed on the left side, and the external state names are listed on
 the right side.
 
 ```toml
-    [state]
-    path_input = "data/instates-moselle.nc" 
-    path_output = "data/outstates-moselle.nc"
+[state]
+path_input = "data/instates-moselle.nc" 
+path_output = "data/outstates-moselle.nc"
 
-    [state.vertical]
-    satwaterdepth = "satwaterdepth"
-    snow = "snow"
-    tsoil = "tsoil"
-    ustorelayerdepth = "ustorelayerdepth"
-    snowwater = "snowwater"
-    canopystorage = "canopystorage"
+[state.vertical]
+satwaterdepth = "satwaterdepth"
+snow = "snow"
+tsoil = "tsoil"
+ustorelayerdepth = "ustorelayerdepth"
+snowwater = "snowwater"
+canopystorage = "canopystorage"
 
-    [state.lateral.river]
-    q = "q_river"
-    h = "h_river"
-    h_av = "h_av_river"
+[state.lateral.river]
+q = "q_river"
+h = "h_river"
+h_av = "h_av_river"
 
-    [state.lateral.river.reservoir]
-    volume = "volume_reservoir"
+[state.lateral.river.reservoir]
+volume = "volume_reservoir"
 
-    [state.lateral.subsurface]
-    ssf = "ssf"
+[state.lateral.subsurface]
+ssf = "ssf"
 
-    [state.lateral.land]
-    q = "q_land"
-    h = "h_land"
-    h_av = "h_av_land"
+[state.lateral.land]
+q = "q_land"
+h = "h_land"
+h_av = "h_av_land"
 ```
 ### Input section
 The `input` section of the TOML file contains information about the input
@@ -102,80 +103,80 @@ below by the file staticmaps-moselle.nc) is done per model component. If a model
 parameter is not mapped a default value will be used if available.
 
 ```toml
-    [input]
-    path_forcing = "data/forcing-moselle.nc"
-    path_static = "data/staticmaps-moselle.nc"
+[input]
+path_forcing = "data/forcing-moselle.nc"
+path_static = "data/staticmaps-moselle.nc"
 
-    # these are not directly part of the model
-    gauges = "wflow_gauges"
-    ldd = "wflow_ldd"
-    river_location = "wflow_river"
-    subcatchment = "wflow_subcatch"
+# these are not directly part of the model
+gauges = "wflow_gauges"
+ldd = "wflow_ldd"
+river_location = "wflow_river"
+subcatchment = "wflow_subcatch"
 
-    # specify the internal IDs of the parameters which vary over time
-    # the external name mapping needs to be below together with the other mappings
-    forcing = [
-    "vertical.precipitation",
-    "vertical.temperature",
-    "vertical.potential_evaporation",
-    ]
+# specify the internal IDs of the parameters which vary over time
+# the external name mapping needs to be below together with the other mappings
+forcing = [
+"vertical.precipitation",
+"vertical.temperature",
+"vertical.potential_evaporation",
+]
 
-    cyclic = ["vertical.leaf_area_index"]
+cyclic = ["vertical.leaf_area_index"]
 
-    [input.vertical]
-    altitude = "wflow_dem" 
-    c = "c" 
-    cf_soil = "cf_soil" 
-    cfmax = "Cfmax" 
-    e_r = "EoverR" 
-    infiltcappath = "InfiltCapPath" 
-    infiltcapsoil = "InfiltCapSoil" 
-    kext = "Kext" 
-    "kv₀" = "KsatVer" 
-    leaf_area_index = "LAI"
-    m = "M" 
-    maxleakage = "MaxLeakage" 
-    pathfrac = "PathFrac" 
-    potential_evaporation = "PET" # forcing
-    precipitation = "P" # forcing
-    rootdistpar = "rootdistpar" 
-    rootingdepth = "RootingDepth" 
-    soilminthickness = "SoilMinThickness" 
-    soilthickness = "SoilThickness" 
-    specific_leaf = "Sl" 
-    storage_wood = "Swood" 
-    temperature = "TEMP" # forcing
-    tt = "TT" 
-    tti = "TTI" 
-    ttm = "TTM" 
-    w_soil = "wflow_soil" 
-    water_holding_capacity = "WHC" 
-    waterfrac = "WaterFrac" 
-    "θᵣ" = "thetaR" 
-    "θₛ" = "thetaS"
+[input.vertical]
+altitude = "wflow_dem" 
+c = "c" 
+cf_soil = "cf_soil" 
+cfmax = "Cfmax" 
+e_r = "EoverR" 
+infiltcappath = "InfiltCapPath" 
+infiltcapsoil = "InfiltCapSoil" 
+kext = "Kext" 
+"kv₀" = "KsatVer" 
+leaf_area_index = "LAI"
+m = "M" 
+maxleakage = "MaxLeakage" 
+pathfrac = "PathFrac" 
+potential_evaporation = "PET" # forcing
+precipitation = "P" # forcing
+rootdistpar = "rootdistpar" 
+rootingdepth = "RootingDepth" 
+soilminthickness = "SoilMinThickness" 
+soilthickness = "SoilThickness" 
+specific_leaf = "Sl" 
+storage_wood = "Swood" 
+temperature = "TEMP" # forcing
+tt = "TT" 
+tti = "TTI" 
+ttm = "TTM" 
+w_soil = "wflow_soil" 
+water_holding_capacity = "WHC" 
+waterfrac = "WaterFrac" 
+"θᵣ" = "thetaR" 
+"θₛ" = "thetaS"
 
-    [input.lateral.river]
-    length = "wflow_riverlength"
-    n = "N_River"
-    slope = "RiverSlope"
-    width = "wflow_riverwidth"
+[input.lateral.river]
+length = "wflow_riverlength"
+n = "N_River"
+slope = "RiverSlope"
+width = "wflow_riverwidth"
 
-    [input.lateral.river.reservoir]
-    area = "ResSimpleArea"
-    areas = "wflow_reservoirareas"
-    demand = "ResDemand"
-    locs = "wflow_reservoirlocs"
-    maxrelease = "ResMaxRelease"
-    maxvolume = "ResMaxVolume"
-    targetfullfrac = "ResTargetFullFrac"
-    targetminfrac = "ResTargetMinFrac"
+[input.lateral.river.reservoir]
+area = "ResSimpleArea"
+areas = "wflow_reservoirareas"
+demand = "ResDemand"
+locs = "wflow_reservoirlocs"
+maxrelease = "ResMaxRelease"
+maxvolume = "ResMaxVolume"
+targetfullfrac = "ResTargetFullFrac"
+targetminfrac = "ResTargetMinFrac"
 
-    [input.lateral.subsurface]
-    ksathorfrac = "KsatHorFrac"
+[input.lateral.subsurface]
+ksathorfrac = "KsatHorFrac"
 
-    [input.lateral.land]
-    n = "N"
-    slope = "Slope" 
+[input.lateral.land]
+n = "N"
+slope = "Slope"
 ```
 
 ### Output netCDF section
@@ -185,30 +186,30 @@ gridded model output, including a mapping between internal model parameter
 components and external netCDF variables.  
 
 ```toml
-    [output]
-    path = "data/output_moselle.nc"
+[output]
+path = "data/output_moselle.nc"
 
-    [output.vertical]
-    satwaterdepth = "satwaterdepth"
-    snow = "snow"
-    tsoil = "tsoil"
-    ustorelayerdepth = "ustorelayerdepth"
-    snowwater = "snowwater"
-    canopystorage = "canopystorage"
+[output.vertical]
+satwaterdepth = "satwaterdepth"
+snow = "snow"
+tsoil = "tsoil"
+ustorelayerdepth = "ustorelayerdepth"
+snowwater = "snowwater"
+canopystorage = "canopystorage"
 
-    [output.lateral.river]
-    q = "q_river"
-    h = "h_river"
+[output.lateral.river]
+q = "q_river"
+h = "h_river"
 
-    [output.lateral.river.reservoir]
-    volume = "volume_reservoir"
+[output.lateral.river.reservoir]
+volume = "volume_reservoir"
 
-    [output.lateral.subsurface]
-    ssf = "ssf"
+[output.lateral.subsurface]
+ssf = "ssf"
 
-    [output.lateral.land]
-    q = "q_land"
-    h = "h_land"
+[output.lateral.land]
+q = "q_land"
+h = "h_land"
 ```
 
 ### Output CSV section
@@ -234,39 +235,39 @@ Finally a `map` can be provided to extract data for certain locations (e.g.
 
 
 ```toml
-    [csv]
-    path = "data/output_moselle.csv"
+[csv]
+path = "data/output_moselle.csv"
 
-    [[csv.column]]
-    header = "Q"
-    parameter = "lateral.river.q"
-    reducer = "maximum"
+[[csv.column]]
+header = "Q"
+parameter = "lateral.river.q"
+reducer = "maximum"
 
-    [[csv.column]]
-    header = "volume"
-    index = 1
-    parameter = "lateral.river.reservoir.volume"
+[[csv.column]]
+header = "volume"
+index = 1
+parameter = "lateral.river.reservoir.volume"
 
-    [[csv.column]]
-    coordinate.x = 6.255
-    coordinate.y = 50.012
-    header = "temp_bycoord"
-    parameter = "vertical.temperature"
+[[csv.column]]
+coordinate.x = 6.255
+coordinate.y = 50.012
+header = "temp_bycoord"
+parameter = "vertical.temperature"
 
-    [[csv.column]]
-    header = "temp_byindex"
-    index.x = 100
-    index.y = 50
-    parameter = "vertical.temperature"
+[[csv.column]]
+header = "temp_byindex"
+index.x = 100
+index.y = 50
+parameter = "vertical.temperature"
 
-    [[csv.column]]
-    header = "Q"
-    map = "gauges"
-    parameter = "lateral.river.q"
+[[csv.column]]
+header = "Q"
+map = "gauges"
+parameter = "lateral.river.q"
 
-    [[csv.column]]
-    header = "recharge"
-    map = "subcatchment"
-    parameter = "vertical.recharge"
-    reducer = "mean"
+[[csv.column]]
+header = "recharge"
+map = "subcatchment"
+parameter = "vertical.recharge"
+reducer = "mean"
 ```

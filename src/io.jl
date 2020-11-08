@@ -24,7 +24,15 @@ function param(obj, fields, default)
     end
 end
 
-"Parsed TOML configuration"
+"""
+    Config(path::AbstractString)
+    Config(dict::AbstractDict)
+    Config(dict::Dict{String,Any}, path::Union{String,Nothing})
+
+Struct that contains the parsed TOML configuration, as well as a reference to the TOML path,
+if it exists. It behaves largely like a distionary, but it overloads `getproperty` and
+`setproperty` to support syntax like `config.model.reinit = false`.
+"""
 struct Config
     dict::Dict{String,Any}  # nested key value mapping of all settings
     path::Union{String,Nothing}  # path to the TOML file, or nothing

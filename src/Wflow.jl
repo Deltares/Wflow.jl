@@ -19,6 +19,12 @@ end
 
 include("io.jl")
 
+"""
+    Model{N,L,V,R,W}
+
+Composite type that represents all different aspects of a Wflow Model, such as the
+network, parameters, clock, configuration and input and output.
+"""
 struct Model{N,L,V,R,W}
     config::Config  # all configuration options
     network::N  # connectivity information, directed graph

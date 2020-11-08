@@ -94,4 +94,69 @@ experience.
 
 # Usage
 
-To be added promptly.
+To run a simulation, first the required static and dynamic input data should be prepared in
+NetCDF files. Next, we use a [TOML](https://github.com/toml-lang/toml) configuration file,
+to fully specify a model simulation. This includes the model type, the start- and endtime,
+the path to the forcing NetCDF files, as well as the mapping of parameters in the model to
+names in the NetCDF file. See the section [Config and TOML](@ref) for more details.
+
+As an example, we will run the Moselle example SBM model, of which the configuration file
+can be seen here:
+[sbm_config.toml](https://github.com/Deltares/Wflow.jl/blob/use/test/sbm_config.toml).
+First we share some code that will download the required files to your current working
+directory:
+
+```julia
+# urls to TOML and NetCDF of the Moselle example model
+staticmaps = "https://github.com/visr/wflow-artifacts/releases/download/v0.2.0/staticmaps.nc"
+forcing = "https://github.com/visr/wflow-artifacts/releases/download/v0.2.0/forcing-2000.nc"
+toml_url = "https://raw.githubusercontent.com/Deltares/Wflow.jl/use/test/sbm_config.toml"
+
+# create a "data" directory in the current directory
+datadir = joinpath(@__DIR__, "data")
+mkpath(datadir)
+toml_path = joinpath(@__DIR__, "sbm_config.toml")
+
+# download resources to current and data dirs
+download(staticmaps, joinpath(datadir, "staticmaps-moselle.nc"))
+download(forcing, joinpath(datadir, "forcing-moselle.nc"))
+download(toml_url, toml_path)
+```
+
+Now that we have our files in place, running a simulation is as simple as calling this
+function:
+
+```@docs
+Wflow.run_simulation
+```
+
+As you can see, there are three different methods for this function. We will first make
+use of the first one, where a path to a TOML file is passed as a `String`.
+
+```julia
+using Wflow
+Wflow.run_simulation(toml_path)
+```
+
+This will parse the TOML file to create a `Wflow.Config`, use that to initialize
+a `Wflow.Model`, and finally run the `Wflow.Model` for the specified duration.
+
+```@docs
+Wflow.Config
+Wflow.Model
+```
+
+If you want to try out several different settings, without having to modify the TOML file
+every time, you can create a `Wflow.Config` first, modify some settings, and then start
+the simulation:
+
+```julia
+using Dates
+config = Wflow.Config(toml_path)
+config.endtime = DateTime("2000-01-03T00:00:00")
+Wflow.run_simulation(config)
+```
+
+For even more control, you can initialize the model object yourself, and modify it directly,
+or run a custom simulation loop. See the [`Wflow.run_simulation`](@ref) source for some
+inspiration.
