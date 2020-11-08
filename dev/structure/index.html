@@ -7,172 +7,173 @@
     clock::Clock    # to keep track of simulation time
     reader::R       # provides the model with dynamic input
     writer::W       # writes model output
-end</code></pre><h2 id="Config-and-TOML"><a class="docs-heading-anchor" href="#Config-and-TOML">Config and TOML</a><a id="Config-and-TOML-1"></a><a class="docs-heading-anchor-permalink" href="#Config-and-TOML" title="Permalink"></a></h2><p><a href="https://github.com/toml-lang/toml">TOML</a> is used as the configuration format for models available in wflow. File paths included in the configuration TOML file are relative to the TOML file location. </p><h3 id="General-time-info"><a class="docs-heading-anchor" href="#General-time-info">General time info</a><a id="General-time-info-1"></a><a class="docs-heading-anchor-permalink" href="#General-time-info" title="Permalink"></a></h3><p>First information about time is provided in the TOML file, with an example below. A <code>starttime</code>, <code>endtime</code> and the model time step <code>timestepsecs</code> is required. The <code>calendar</code> and <code>time_units</code> optional information is used by the <code>writer</code> of the model, for model output in netCDF format.</p><pre><code class="language-toml">    casename = &quot;testcase&quot;                           # optional
+end</code></pre><h2 id="Config-and-TOML"><a class="docs-heading-anchor" href="#Config-and-TOML">Config and TOML</a><a id="Config-and-TOML-1"></a><a class="docs-heading-anchor-permalink" href="#Config-and-TOML" title="Permalink"></a></h2><p><a href="https://github.com/toml-lang/toml">TOML</a> is used as the configuration format for models available in wflow. File paths included in the configuration TOML file are relative to the TOML file location. </p><h3 id="General-time-info"><a class="docs-heading-anchor" href="#General-time-info">General time info</a><a id="General-time-info-1"></a><a class="docs-heading-anchor-permalink" href="#General-time-info" title="Permalink"></a></h3><p>First information about time is provided in the TOML file, with an example below. A <code>starttime</code>, <code>endtime</code> and the model time step <code>timestepsecs</code> is required. The <code>calendar</code> and <code>time_units</code> optional information is used by the <code>writer</code> of the model, for model output in netCDF format.</p><pre><code class="language-toml">casename = &quot;testcase&quot;                           # optional
 
-    calendar = &quot;proleptic_gregorian&quot;                # optional, this is default value
-    endtime = 2000-02-01T00:00:00                   # required 
-    starttime = 2000-01-01T00:00:00                 # required
-    time_units = &quot;days since 1900-01-01 00:00:00&quot;   # optional, this is default value
-    timestepsecs = 86400                            # required</code></pre><h3 id="Model-section"><a class="docs-heading-anchor" href="#Model-section">Model section</a><a id="Model-section-1"></a><a class="docs-heading-anchor-permalink" href="#Model-section" title="Permalink"></a></h3><p>Model specific settings can be included in the model section of the TOML file.</p><pre><code class="language-toml">    [model]
-    masswasting = true                  # include lateral snow transport in the model, default is false
-    snow = true                         # include snow modelling, default is false
-    reinit = true                       # cold (reinit = true) or warm state (reinit = false), default is true
-    reservoirs = true                   # include reservoir modelling, default is false
-    kin_wave_iteration = true           # enable kinematic wave iterations in the model, default is false
-    thicknesslayers = [100, 300, 800]   # specific SBM setting: for each soil layer a thickness [mm] is specified</code></pre><h3 id="State-section"><a class="docs-heading-anchor" href="#State-section">State section</a><a id="State-section-1"></a><a class="docs-heading-anchor-permalink" href="#State-section" title="Permalink"></a></h3><p>The <code>state</code> section in the TOML file provides information about the location of the state file if the model is initialized with a warm state (<code>path_input</code>) and to what file the states are written at the end of the model run (<code>path_output</code>). A mapping between external state names and internal model states is required. This information is specified for each model component, the <code>vertical</code> model and <code>lateral</code> model components. In the example below the <code>vertical</code> component represents the SBM concept, and for the <code>lateral</code> components there is a <code>river</code> (including <code>reservoir</code>), <code>land</code> and <code>subsurface</code> domain. The internal model states are listed on the left side, and the external state names are listed on the right side.</p><pre><code class="language-toml">    [state]
-    path_input = &quot;data/instates-moselle.nc&quot; 
-    path_output = &quot;data/outstates-moselle.nc&quot;
+calendar = &quot;proleptic_gregorian&quot;                # optional, this is default value
+endtime = 2000-02-01T00:00:00                   # required 
+starttime = 2000-01-01T00:00:00                 # required
+time_units = &quot;days since 1900-01-01 00:00:00&quot;   # optional, this is default value
+timestepsecs = 86400                            # required</code></pre><h3 id="Model-section"><a class="docs-heading-anchor" href="#Model-section">Model section</a><a id="Model-section-1"></a><a class="docs-heading-anchor-permalink" href="#Model-section" title="Permalink"></a></h3><p>Model specific settings can be included in the model section of the TOML file.</p><pre><code class="language-toml">[model]
+type = &quot;sbm&quot;                        # one of (&quot;sbm&quot;, &quot;sbm_gwf, &quot;hbv&quot;)
+masswasting = true                  # include lateral snow transport in the model, default is false
+snow = true                         # include snow modelling, default is false
+reinit = true                       # cold (reinit = true) or warm state (reinit = false), default is true
+reservoirs = true                   # include reservoir modelling, default is false
+kin_wave_iteration = true           # enable kinematic wave iterations in the model, default is false
+thicknesslayers = [100, 300, 800]   # specific SBM setting: for each soil layer a thickness [mm] is specified</code></pre><h3 id="State-section"><a class="docs-heading-anchor" href="#State-section">State section</a><a id="State-section-1"></a><a class="docs-heading-anchor-permalink" href="#State-section" title="Permalink"></a></h3><p>The <code>state</code> section in the TOML file provides information about the location of the state file if the model is initialized with a warm state (<code>path_input</code>) and to what file the states are written at the end of the model run (<code>path_output</code>). A mapping between external state names and internal model states is required. This information is specified for each model component, the <code>vertical</code> model and <code>lateral</code> model components. In the example below the <code>vertical</code> component represents the SBM concept, and for the <code>lateral</code> components there is a <code>river</code> (including <code>reservoir</code>), <code>land</code> and <code>subsurface</code> domain. The internal model states are listed on the left side, and the external state names are listed on the right side.</p><pre><code class="language-toml">[state]
+path_input = &quot;data/instates-moselle.nc&quot; 
+path_output = &quot;data/outstates-moselle.nc&quot;
 
-    [state.vertical]
-    satwaterdepth = &quot;satwaterdepth&quot;
-    snow = &quot;snow&quot;
-    tsoil = &quot;tsoil&quot;
-    ustorelayerdepth = &quot;ustorelayerdepth&quot;
-    snowwater = &quot;snowwater&quot;
-    canopystorage = &quot;canopystorage&quot;
+[state.vertical]
+satwaterdepth = &quot;satwaterdepth&quot;
+snow = &quot;snow&quot;
+tsoil = &quot;tsoil&quot;
+ustorelayerdepth = &quot;ustorelayerdepth&quot;
+snowwater = &quot;snowwater&quot;
+canopystorage = &quot;canopystorage&quot;
 
-    [state.lateral.river]
-    q = &quot;q_river&quot;
-    h = &quot;h_river&quot;
-    h_av = &quot;h_av_river&quot;
+[state.lateral.river]
+q = &quot;q_river&quot;
+h = &quot;h_river&quot;
+h_av = &quot;h_av_river&quot;
 
-    [state.lateral.river.reservoir]
-    volume = &quot;volume_reservoir&quot;
+[state.lateral.river.reservoir]
+volume = &quot;volume_reservoir&quot;
 
-    [state.lateral.subsurface]
-    ssf = &quot;ssf&quot;
+[state.lateral.subsurface]
+ssf = &quot;ssf&quot;
 
-    [state.lateral.land]
-    q = &quot;q_land&quot;
-    h = &quot;h_land&quot;
-    h_av = &quot;h_av_land&quot;</code></pre><h3 id="Input-section"><a class="docs-heading-anchor" href="#Input-section">Input section</a><a id="Input-section-1"></a><a class="docs-heading-anchor-permalink" href="#Input-section" title="Permalink"></a></h3><p>The <code>input</code> section of the TOML file contains information about the input forcing and model parameters files (netCDF format). Forcing is applied to the vertical component of the model, and needs to be mapped to the external netCDF variable name. <code>forcing</code> lists the internal model forcing parameters, and these are mapped to the external netCDF variables listed under the section <code>[input.vertical]</code>. It is possible to provide cyclic parameters to the model. In the example below this is done for the internal <code>vertical.leaf_area_index</code> model parameter, that is linked to the external netCDF variable &quot;LAI&quot; variable. </p><p>As for the states, mapping of external model parameters (provided in the example below by the file staticmaps-moselle.nc) is done per model component. If a model parameter is not mapped a default value will be used if available.</p><pre><code class="language-toml">    [input]
-    path_forcing = &quot;data/forcing-moselle.nc&quot;
-    path_static = &quot;data/staticmaps-moselle.nc&quot;
+[state.lateral.land]
+q = &quot;q_land&quot;
+h = &quot;h_land&quot;
+h_av = &quot;h_av_land&quot;</code></pre><h3 id="Input-section"><a class="docs-heading-anchor" href="#Input-section">Input section</a><a id="Input-section-1"></a><a class="docs-heading-anchor-permalink" href="#Input-section" title="Permalink"></a></h3><p>The <code>input</code> section of the TOML file contains information about the input forcing and model parameters files (netCDF format). Forcing is applied to the vertical component of the model, and needs to be mapped to the external netCDF variable name. <code>forcing</code> lists the internal model forcing parameters, and these are mapped to the external netCDF variables listed under the section <code>[input.vertical]</code>. It is possible to provide cyclic parameters to the model. In the example below this is done for the internal <code>vertical.leaf_area_index</code> model parameter, that is linked to the external netCDF variable &quot;LAI&quot; variable. </p><p>As for the states, mapping of external model parameters (provided in the example below by the file staticmaps-moselle.nc) is done per model component. If a model parameter is not mapped a default value will be used if available.</p><pre><code class="language-toml">[input]
+path_forcing = &quot;data/forcing-moselle.nc&quot;
+path_static = &quot;data/staticmaps-moselle.nc&quot;
 
-    # these are not directly part of the model
-    gauges = &quot;wflow_gauges&quot;
-    ldd = &quot;wflow_ldd&quot;
-    river_location = &quot;wflow_river&quot;
-    subcatchment = &quot;wflow_subcatch&quot;
+# these are not directly part of the model
+gauges = &quot;wflow_gauges&quot;
+ldd = &quot;wflow_ldd&quot;
+river_location = &quot;wflow_river&quot;
+subcatchment = &quot;wflow_subcatch&quot;
 
-    # specify the internal IDs of the parameters which vary over time
-    # the external name mapping needs to be below together with the other mappings
-    forcing = [
-    &quot;vertical.precipitation&quot;,
-    &quot;vertical.temperature&quot;,
-    &quot;vertical.potential_evaporation&quot;,
-    ]
+# specify the internal IDs of the parameters which vary over time
+# the external name mapping needs to be below together with the other mappings
+forcing = [
+&quot;vertical.precipitation&quot;,
+&quot;vertical.temperature&quot;,
+&quot;vertical.potential_evaporation&quot;,
+]
 
-    cyclic = [&quot;vertical.leaf_area_index&quot;]
+cyclic = [&quot;vertical.leaf_area_index&quot;]
 
-    [input.vertical]
-    altitude = &quot;wflow_dem&quot; 
-    c = &quot;c&quot; 
-    cf_soil = &quot;cf_soil&quot; 
-    cfmax = &quot;Cfmax&quot; 
-    e_r = &quot;EoverR&quot; 
-    infiltcappath = &quot;InfiltCapPath&quot; 
-    infiltcapsoil = &quot;InfiltCapSoil&quot; 
-    kext = &quot;Kext&quot; 
-    &quot;kv₀&quot; = &quot;KsatVer&quot; 
-    leaf_area_index = &quot;LAI&quot;
-    m = &quot;M&quot; 
-    maxleakage = &quot;MaxLeakage&quot; 
-    pathfrac = &quot;PathFrac&quot; 
-    potential_evaporation = &quot;PET&quot; # forcing
-    precipitation = &quot;P&quot; # forcing
-    rootdistpar = &quot;rootdistpar&quot; 
-    rootingdepth = &quot;RootingDepth&quot; 
-    soilminthickness = &quot;SoilMinThickness&quot; 
-    soilthickness = &quot;SoilThickness&quot; 
-    specific_leaf = &quot;Sl&quot; 
-    storage_wood = &quot;Swood&quot; 
-    temperature = &quot;TEMP&quot; # forcing
-    tt = &quot;TT&quot; 
-    tti = &quot;TTI&quot; 
-    ttm = &quot;TTM&quot; 
-    w_soil = &quot;wflow_soil&quot; 
-    water_holding_capacity = &quot;WHC&quot; 
-    waterfrac = &quot;WaterFrac&quot; 
-    &quot;θᵣ&quot; = &quot;thetaR&quot; 
-    &quot;θₛ&quot; = &quot;thetaS&quot;
+[input.vertical]
+altitude = &quot;wflow_dem&quot; 
+c = &quot;c&quot; 
+cf_soil = &quot;cf_soil&quot; 
+cfmax = &quot;Cfmax&quot; 
+e_r = &quot;EoverR&quot; 
+infiltcappath = &quot;InfiltCapPath&quot; 
+infiltcapsoil = &quot;InfiltCapSoil&quot; 
+kext = &quot;Kext&quot; 
+&quot;kv₀&quot; = &quot;KsatVer&quot; 
+leaf_area_index = &quot;LAI&quot;
+m = &quot;M&quot; 
+maxleakage = &quot;MaxLeakage&quot; 
+pathfrac = &quot;PathFrac&quot; 
+potential_evaporation = &quot;PET&quot; # forcing
+precipitation = &quot;P&quot; # forcing
+rootdistpar = &quot;rootdistpar&quot; 
+rootingdepth = &quot;RootingDepth&quot; 
+soilminthickness = &quot;SoilMinThickness&quot; 
+soilthickness = &quot;SoilThickness&quot; 
+specific_leaf = &quot;Sl&quot; 
+storage_wood = &quot;Swood&quot; 
+temperature = &quot;TEMP&quot; # forcing
+tt = &quot;TT&quot; 
+tti = &quot;TTI&quot; 
+ttm = &quot;TTM&quot; 
+w_soil = &quot;wflow_soil&quot; 
+water_holding_capacity = &quot;WHC&quot; 
+waterfrac = &quot;WaterFrac&quot; 
+&quot;θᵣ&quot; = &quot;thetaR&quot; 
+&quot;θₛ&quot; = &quot;thetaS&quot;
 
-    [input.lateral.river]
-    length = &quot;wflow_riverlength&quot;
-    n = &quot;N_River&quot;
-    slope = &quot;RiverSlope&quot;
-    width = &quot;wflow_riverwidth&quot;
+[input.lateral.river]
+length = &quot;wflow_riverlength&quot;
+n = &quot;N_River&quot;
+slope = &quot;RiverSlope&quot;
+width = &quot;wflow_riverwidth&quot;
 
-    [input.lateral.river.reservoir]
-    area = &quot;ResSimpleArea&quot;
-    areas = &quot;wflow_reservoirareas&quot;
-    demand = &quot;ResDemand&quot;
-    locs = &quot;wflow_reservoirlocs&quot;
-    maxrelease = &quot;ResMaxRelease&quot;
-    maxvolume = &quot;ResMaxVolume&quot;
-    targetfullfrac = &quot;ResTargetFullFrac&quot;
-    targetminfrac = &quot;ResTargetMinFrac&quot;
+[input.lateral.river.reservoir]
+area = &quot;ResSimpleArea&quot;
+areas = &quot;wflow_reservoirareas&quot;
+demand = &quot;ResDemand&quot;
+locs = &quot;wflow_reservoirlocs&quot;
+maxrelease = &quot;ResMaxRelease&quot;
+maxvolume = &quot;ResMaxVolume&quot;
+targetfullfrac = &quot;ResTargetFullFrac&quot;
+targetminfrac = &quot;ResTargetMinFrac&quot;
 
-    [input.lateral.subsurface]
-    ksathorfrac = &quot;KsatHorFrac&quot;
+[input.lateral.subsurface]
+ksathorfrac = &quot;KsatHorFrac&quot;
 
-    [input.lateral.land]
-    n = &quot;N&quot;
-    slope = &quot;Slope&quot; </code></pre><h3 id="Output-netCDF-section"><a class="docs-heading-anchor" href="#Output-netCDF-section">Output netCDF section</a><a id="Output-netCDF-section-1"></a><a class="docs-heading-anchor-permalink" href="#Output-netCDF-section" title="Permalink"></a></h3><p>This section of the TOML file contains the output netCDF file for writing gridded model output, including a mapping between internal model parameter components and external netCDF variables.  </p><pre><code class="language-toml">    [output]
-    path = &quot;data/output_moselle.nc&quot;
+[input.lateral.land]
+n = &quot;N&quot;
+slope = &quot;Slope&quot;</code></pre><h3 id="Output-netCDF-section"><a class="docs-heading-anchor" href="#Output-netCDF-section">Output netCDF section</a><a id="Output-netCDF-section-1"></a><a class="docs-heading-anchor-permalink" href="#Output-netCDF-section" title="Permalink"></a></h3><p>This section of the TOML file contains the output netCDF file for writing gridded model output, including a mapping between internal model parameter components and external netCDF variables.  </p><pre><code class="language-toml">[output]
+path = &quot;data/output_moselle.nc&quot;
 
-    [output.vertical]
-    satwaterdepth = &quot;satwaterdepth&quot;
-    snow = &quot;snow&quot;
-    tsoil = &quot;tsoil&quot;
-    ustorelayerdepth = &quot;ustorelayerdepth&quot;
-    snowwater = &quot;snowwater&quot;
-    canopystorage = &quot;canopystorage&quot;
+[output.vertical]
+satwaterdepth = &quot;satwaterdepth&quot;
+snow = &quot;snow&quot;
+tsoil = &quot;tsoil&quot;
+ustorelayerdepth = &quot;ustorelayerdepth&quot;
+snowwater = &quot;snowwater&quot;
+canopystorage = &quot;canopystorage&quot;
 
-    [output.lateral.river]
-    q = &quot;q_river&quot;
-    h = &quot;h_river&quot;
+[output.lateral.river]
+q = &quot;q_river&quot;
+h = &quot;h_river&quot;
 
-    [output.lateral.river.reservoir]
-    volume = &quot;volume_reservoir&quot;
+[output.lateral.river.reservoir]
+volume = &quot;volume_reservoir&quot;
 
-    [output.lateral.subsurface]
-    ssf = &quot;ssf&quot;
+[output.lateral.subsurface]
+ssf = &quot;ssf&quot;
 
-    [output.lateral.land]
-    q = &quot;q_land&quot;
-    h = &quot;h_land&quot;</code></pre><h3 id="Output-CSV-section"><a class="docs-heading-anchor" href="#Output-CSV-section">Output CSV section</a><a id="Output-CSV-section-1"></a><a class="docs-heading-anchor-permalink" href="#Output-CSV-section" title="Permalink"></a></h3><p>Model output can also be written to CSV output. Below is an example that writes model output to the file &quot;output_moselle.csv&quot;. For each CSV column a <code>header</code> and <code>parameter</code> (internal model parameter) is required. A <code>reducer</code> can be specified to apply to the model output, with the following available reducers:</p><ul><li>maximum</li><li>minimum</li><li>mean</li><li>median</li><li>first</li><li>last</li><li>only</li></ul><p>with <code>only</code> as the default. To extract data for a specific location (grid cell), the <code>index</code> of the vector, the coordinates <code>coordinate.x</code> and <code>coordinate.y</code>, or the x and y indices of the 2D array (<code>index.x</code> and <code>index.y</code>) can be provided. Finally a <code>map</code> can be provided to extract data for certain locations (e.g. <code>gauges</code>) or areas (e.g. <code>subcatchment</code>).</p><pre><code class="language-toml">    [csv]
-    path = &quot;data/output_moselle.csv&quot;
+[output.lateral.land]
+q = &quot;q_land&quot;
+h = &quot;h_land&quot;</code></pre><h3 id="Output-CSV-section"><a class="docs-heading-anchor" href="#Output-CSV-section">Output CSV section</a><a id="Output-CSV-section-1"></a><a class="docs-heading-anchor-permalink" href="#Output-CSV-section" title="Permalink"></a></h3><p>Model output can also be written to CSV output. Below is an example that writes model output to the file &quot;output_moselle.csv&quot;. For each CSV column a <code>header</code> and <code>parameter</code> (internal model parameter) is required. A <code>reducer</code> can be specified to apply to the model output, with the following available reducers:</p><ul><li>maximum</li><li>minimum</li><li>mean</li><li>median</li><li>first</li><li>last</li><li>only</li></ul><p>with <code>only</code> as the default. To extract data for a specific location (grid cell), the <code>index</code> of the vector, the coordinates <code>coordinate.x</code> and <code>coordinate.y</code>, or the x and y indices of the 2D array (<code>index.x</code> and <code>index.y</code>) can be provided. Finally a <code>map</code> can be provided to extract data for certain locations (e.g. <code>gauges</code>) or areas (e.g. <code>subcatchment</code>).</p><pre><code class="language-toml">[csv]
+path = &quot;data/output_moselle.csv&quot;
 
-    [[csv.column]]
-    header = &quot;Q&quot;
-    parameter = &quot;lateral.river.q&quot;
-    reducer = &quot;maximum&quot;
+[[csv.column]]
+header = &quot;Q&quot;
+parameter = &quot;lateral.river.q&quot;
+reducer = &quot;maximum&quot;
 
-    [[csv.column]]
-    header = &quot;volume&quot;
-    index = 1
-    parameter = &quot;lateral.river.reservoir.volume&quot;
+[[csv.column]]
+header = &quot;volume&quot;
+index = 1
+parameter = &quot;lateral.river.reservoir.volume&quot;
 
-    [[csv.column]]
-    coordinate.x = 6.255
-    coordinate.y = 50.012
-    header = &quot;temp_bycoord&quot;
-    parameter = &quot;vertical.temperature&quot;
+[[csv.column]]
+coordinate.x = 6.255
+coordinate.y = 50.012
+header = &quot;temp_bycoord&quot;
+parameter = &quot;vertical.temperature&quot;
 
-    [[csv.column]]
-    header = &quot;temp_byindex&quot;
-    index.x = 100
-    index.y = 50
-    parameter = &quot;vertical.temperature&quot;
+[[csv.column]]
+header = &quot;temp_byindex&quot;
+index.x = 100
+index.y = 50
+parameter = &quot;vertical.temperature&quot;
 
-    [[csv.column]]
-    header = &quot;Q&quot;
-    map = &quot;gauges&quot;
-    parameter = &quot;lateral.river.q&quot;
+[[csv.column]]
+header = &quot;Q&quot;
+map = &quot;gauges&quot;
+parameter = &quot;lateral.river.q&quot;
 
-    [[csv.column]]
-    header = &quot;recharge&quot;
-    map = &quot;subcatchment&quot;
-    parameter = &quot;vertical.recharge&quot;
-    reducer = &quot;mean&quot;</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../quick-start/">« Quick start</a><a class="docs-footer-nextpage" href="../model/sbm/">wflow_sbm »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Thursday 5 November 2020 13:14">Thursday 5 November 2020</span>. Using Julia version 1.5.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+[[csv.column]]
+header = &quot;recharge&quot;
+map = &quot;subcatchment&quot;
+parameter = &quot;vertical.recharge&quot;
+reducer = &quot;mean&quot;</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../quick-start/">« Quick start</a><a class="docs-footer-nextpage" href="../model/sbm/">wflow_sbm »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Sunday 8 November 2020 23:16">Sunday 8 November 2020</span>. Using Julia version 1.5.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
