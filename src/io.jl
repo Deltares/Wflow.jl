@@ -218,6 +218,8 @@ function create_tracked_netcdf(path)
         # fine if it was already closed
         close(nc_handles[abs_path])
     end
+    # create directory if needed
+    mkpath(dirname(path))
     ds = NCDataset(path, "c")
     nc_handles[abs_path] = ds
     return ds
