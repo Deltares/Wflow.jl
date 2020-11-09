@@ -67,6 +67,47 @@ function initialize_hbv_model(config::Config)
         sel = inds,
         defaults = 0.1,
         type = Float64,
+    )
+    # glacier parameters
+    g_tt = ncread(
+        nc,
+        param(config, "input.vertical.g_tt", nothing);
+        sel = inds,
+        defaults = 0.0,
+        type = Float64,
+        fill = 0.0,
+    )
+    g_cfmax = ncread(
+        nc,
+        param(config, "input.vertical.g_cfmax", nothing);
+        sel = inds,
+        defaults = 3.0,
+        type = Float64,
+        fill = 0.0,
+    ).* (Δt / basetimestep)
+    g_sifrac = ncread(
+        nc,
+        param(config, "input.vertical.g_sifrac", nothing);
+        sel = inds,
+        defaults = 0.001,
+        type = Float64,
+        fill = 0.0,
+    )
+    glacierfrac = ncread(
+        nc,
+        param(config, "input.vertical.glacierfrac", nothing);
+        sel = inds,
+        defaults = 0.0,
+        type = Float64,
+        fill = 0.0,
+    )
+    glacierstore = ncread(
+        nc,
+        param(config, "input.vertical.glacierstore", nothing);
+        sel = inds,
+        defaults = 5500.0,
+        type = Float64,
+        fill = 0.0,
     )   
     fc = ncread(
         nc,
@@ -262,6 +303,12 @@ function initialize_hbv_model(config::Config)
         ttm = ttm,
         cfmax = cfmax,
         whc = whc,
+        # glacier parameters
+        g_tt = g_tt,
+        g_sifrac = g_sifrac,
+        g_cfmax = g_cfmax,
+        glacierstore = glacierstore,
+        glacierfrac = glacierfrac,
         # default (cold) states:
         interceptionstorage = fill(0.0, n),
         snow = fill(0.0, n),

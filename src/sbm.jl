@@ -178,6 +178,16 @@ Base.@kwdef struct SBM{T,N,M}
     snowwater::Vector{T}
     # Snow melt + precipitation as rainfall [mm]
     rainfallplusmelt::Vector{T}
+    # Threshold temperature for snowfall above glacier [ᵒC]
+    g_tt::Vector{T}
+    # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹] for glacier
+    g_cfmax::Vector{T}
+    # Fraction of the snowpack on top of the glacier converted into ice [-]
+    g_sifrac::Vector{T}
+    # Water within the glacier [mm]
+    glacierstore::Vector{T}
+    # Fraction covered by a glacier [-]
+    glacierfrac::Vector{T}
     # Top soil temperature [ᵒC]
     tsoil::Vector{T}
     ## Interception related to leaf_area_index climatology ###
@@ -269,8 +279,47 @@ function initialize_sbm(nc, config, riverfrac, xl, yl, inds)
         defaults = 0.038,
         type = Float64,
     )
-
-
+    # glacier parameters
+    g_tt = ncread(
+        nc,
+        param(config, "input.vertical.g_tt", nothing);
+        sel = inds,
+        defaults = 0.0,
+        type = Float64,
+        fill = 0.0,
+    )
+    g_cfmax = ncread(
+        nc,
+        param(config, "input.vertical.g_cfmax", nothing);
+        sel = inds,
+        defaults = 3.0,
+        type = Float64,
+        fill = 0.0,
+    ).* (Δt / basetimestep)
+    g_sifrac = ncread(
+        nc,
+        param(config, "input.vertical.g_sifrac", nothing);
+        sel = inds,
+        defaults = 0.001,
+        type = Float64,
+        fill = 0.0,
+    )
+    glacierfrac = ncread(
+        nc,
+        param(config, "input.vertical.glacierfrac", nothing);
+        sel = inds,
+        defaults = 0.0,
+        type = Float64,
+        fill = 0.0,
+    )
+    glacierstore = ncread(
+        nc,
+        param(config, "input.vertical.glacierstore", nothing);
+        sel = inds,
+        defaults = 5500.0,
+        type = Float64,
+        fill = 0.0,
+    )
     # soil parameters
     θₛ = ncread(
         nc,
@@ -572,6 +621,12 @@ function initialize_sbm(nc, config, riverfrac, xl, yl, inds)
         snowwater = fill(0.0, n),
         rainfallplusmelt = fill(mv, n),
         tsoil = fill(10.0, n),
+        # glacier parameters
+        g_tt = g_tt,
+        g_sifrac = g_sifrac,
+        g_cfmax = g_cfmax,
+        glacierstore = glacierstore,
+        glacierfrac = glacierfrac,
         # Interception related to climatology (leaf_area_index)
         sl = sl,
         swood = swood,

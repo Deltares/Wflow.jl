@@ -5,7 +5,7 @@ Initial part of the SBM model concept. Reads the input settings and data as defi
 Config object. Will return a Model that is ready to run.
 """
 function initialize_sbm_model(config::Config)
-
+    
     # unpack the paths to the NetCDF files
     tomldir = dirname(config)
     static_path = joinpath(tomldir, config.input.path_static)
