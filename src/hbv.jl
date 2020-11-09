@@ -29,6 +29,11 @@ Base.@kwdef struct HBV{T}
     ttm::Vector{T}              # Threshold temperature for snowmelt [ᵒC]
     cfmax::Vector{T}            # Meltconstant in temperature-index [-]
     whc::Vector{T}              # Fraction of snow volume that can store water [-]
+    g_tt::Vector{T}             # Threshold temperature for snowfall above glacier [ᵒC]
+    g_cfmax::Vector{T}          # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹] for glacier
+    g_sifrac::Vector{T}         # Fraction of the snowpack on top of the glacier converted into ice [-]
+    glacierstore::Vector{T}     # Water within the glacier [mm]
+    glacierfrac::Vector{T}      # Fraction covered by a glacier [-]
     precipitation::Vector{T} = fill(mv, n)          # Precipitation [mm]
     temperature::Vector{T} = fill(mv, n)           # Temperature [ᵒC]
     potential_evaporation::Vector{T} = fill(mv, n)                # Potential evapotranspiration [mm]
