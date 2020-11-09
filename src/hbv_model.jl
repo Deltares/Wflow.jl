@@ -19,6 +19,7 @@ function initialize_hbv_model(config::Config)
     reinit = get(config.model, "reinit", true)
     do_reservoirs = get(config.model, "reservoirs", false)
     do_lakes = get(config.model, "lakes", false)
+    do_pits = get(config.model, "pits", false)
 
     nc = NCDataset(static_path)
     dims = dimnames(nc[param(config, "input.subcatchment")])
@@ -299,10 +300,15 @@ function initialize_hbv_model(config::Config)
          lake = ()
      end
 
+     ldd_2d = ncread(nc, param(config, "input.ldd"); allow_missing = true)
+     ldd = ldd_2d[inds]
+     if do_pits
+        pits_2d = ncread(nc, param(config, "input.pits"); type = Bool, fill = false)
+        ldd = set_pit_ldd(pits_2d, ldd, inds)
+    end
+
     βₗ = ncread(nc, param(config, "input.lateral.land.slope"); sel = inds, type = Float64)
     clamp!(βₗ, 0.00001, Inf)
-    ldd_2d = ncread(nc, param(config, "input.ldd"); allow_missing = true)
-    ldd = ldd_2d[inds]
     dl = fill(mv, n)
     dw = fill(mv, n)
 
@@ -348,6 +354,9 @@ function initialize_hbv_model(config::Config)
         type = Float64,
     )
     ldd_riv = ldd_2d[inds_riv]
+    if do_pits
+        ldd_riv = set_pit_ldd(pits_2d, ldd_riv, inds_riv)
+    end
     graph_riv = flowgraph(ldd_riv, inds_riv, pcr_dir)
 
     # the indices of the river cells in the land(+river) cell vector
