@@ -491,6 +491,8 @@ end
 function update(model::Model{N,L,V,R,W}) where {N,L,V<:HBV,R,W}
     @unpack lateral, vertical, network, clock, config = model
 
+    kinwave_it = get(config.model, "kin_wave_iteration", false)
+
     update_forcing!(model)
     if haskey(config.input, "cyclic")
         update_cyclic!(model)
@@ -517,13 +519,13 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:HBV,R,W}
         network.land,
         frac_toriver = network.frac_toriver,
         river = lateral.river.rivercells,
-        do_iter = true,
+        do_iter = kinwave_it,
     )
 
     lateral.river.qlat .=
         (lateral.land.to_river[network.index_river]) ./ lateral.river.dl
 
-    update(lateral.river, network.river, do_iter = true, doy = dayofyear(clock.time))
+    update(lateral.river, network.river, do_iter = kinwave_it, doy = dayofyear(clock.time))
 
     write_output(model)
 
