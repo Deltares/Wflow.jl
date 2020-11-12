@@ -75,6 +75,7 @@ temperature = "TEMP" # forcing
 sfcf = "SFCF"
 tt = "TT" 
 tti = "TTI"
+ttm = "TTM"
 whc = "WHC"
 
 [input.lateral.river]
@@ -92,6 +93,7 @@ type = "hbv"
 masswasting = true
 snow = true
 reinit = true
+kin_wave_iteration = true
 
 [output]
 path = "data/output_lahn.nc"
