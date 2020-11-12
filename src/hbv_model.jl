@@ -20,6 +20,7 @@ function initialize_hbv_model(config::Config)
     do_reservoirs = get(config.model, "reservoirs", false)
     do_lakes = get(config.model, "lakes", false)
     do_pits = get(config.model, "pits", false)
+    set_kquickflow = get(config.model, "set_kquickflow", false)
 
     nc = NCDataset(static_path)
     dims = dimnames(nc[param(config, "input.subcatchment")])
@@ -283,7 +284,7 @@ function initialize_hbv_model(config::Config)
         lp = lp,
         threshold = threshold,
         k4 = k4,
-        kquickflow = kquickflow,
+        kquickflow = set_kquickflow ? kquickflow : pow.(khq, 1.0 .+ alphanl) .* pow.(hq, -alphanl),
         suz = suz,
         k0 = k0,              
         khq = khq,
@@ -314,7 +315,7 @@ function initialize_hbv_model(config::Config)
         interceptionstorage = fill(0.0, n),
         snow = fill(0.0, n),
         snowwater = fill(0.0, n),
-        soilmoisture = fc,
+        soilmoisture = copy(fc),
         upperzonestorage = 0.2 .* fc,
         lowerzonestorage = 1.0 ./ (3.0 .* k4),
     )
