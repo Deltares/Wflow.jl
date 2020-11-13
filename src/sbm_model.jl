@@ -21,6 +21,9 @@ function initialize_sbm_model(config::Config)
     do_reservoirs = get(config.model, "reservoirs", false)
     do_lakes = get(config.model, "lakes", false)
     do_pits = get(config.model, "pits", false)
+
+    kw_river_tstep = get(config.model, "kw_river_tstep", 0)
+    kw_land_tstep = get(config.model, "kw_land_tstep", 0)
     
     nc = NCDataset(static_path)
     dims = dimnames(nc[param(config, "input.subcatchment")])
@@ -143,6 +146,7 @@ function initialize_sbm_model(config::Config)
         n = n_land,
         dl = dl,
         Δt = tosecond(Δt),
+        its = kw_land_tstep > 0 ? ceil(Int(tosecond(Δt) / kw_land_tstep)) : kw_land_tstep,
         width = sw,
         wb_pit = pits[inds],
     )
@@ -182,6 +186,7 @@ function initialize_sbm_model(config::Config)
         n = n_river,
         dl = riverlength,
         Δt = tosecond(Δt),
+        its = kw_river_tstep > 0 ? ceil(Int(tosecond(Δt) / kw_river_tstep)) : kw_river_tstep,
         width = riverwidth,
         reservoir_index = do_reservoirs ? resindex : fill(0, nriv),
         lake_index = do_lakes ? lakeindex : fill(0, nriv),
