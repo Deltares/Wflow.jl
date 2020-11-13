@@ -9,6 +9,7 @@ Base.@kwdef struct SurfaceFlow{T,R,L}
     h::Vector{T} = fill(0.0, length(sl))    # Water level [m]
     h_av::Vector{T} = fill(0.0, length(sl)) # Average water level [m]
     Δt::T                                   # Model time step [s]
+    its::Int                                # Number of fixed iterations
     width::Vector{T}                        # Flow width [m]
     alpha_term::Vector{T} = pow.(n ./ sqrt.(sl), β)  # Constant part of α
     alpha_pow::T = (2.0 / 3.0) * β          # Used in the power part of α
@@ -38,18 +39,15 @@ function update(
     frac_toriver = nothing,
     river = nothing,
     do_iter = false,
-    do_tstep = false,
-    tstep = 0,
     doy = 0,
 )
     @unpack graph, order = network
 
     n = length(order)
-    # two options for iteration, a fixed sub time step or based on courant number.
+    # two options for iteration, fixed or based on courant number.
     if do_iter
-        if do_tstep
-            # better to set this during initialization
-            ts = ceil(Int(sf.Δt / tstep))
+        if sf.its > 0
+            its = sf.its
         else
             # calculate celerity
             courant = zeros(n)
@@ -60,20 +58,20 @@ function update(
                 end
             end
             filter!(x->x≠0.0,courant)
-            ts = isempty(courant) ? 1 : ceil(Int, (1.25 * quantile!(courant, 0.95)))
+            its = isempty(courant) ? 1 : ceil(Int, (1.25 * quantile!(courant, 0.95)))
         end
     else
-        ts = 1
+        its = 1
     end
 
     # sub time step
-    adt = sf.Δt / ts
+    adt = sf.Δt / its
 
     q_sum = zeros(n)
     h_sum = zeros(n)
     sf.to_river .= 0.0
 
-    for _ = 1:ts
+    for _ = 1:its
         for v in order
             upstream_nodes = inneighbors(graph, v)
             # for overland flow frac_toriver and river cells need to be defined
@@ -136,9 +134,9 @@ function update(
         end
 
     end
-    sf.q_av .= q_sum ./ ts
-    sf.h_av .= h_sum ./ ts
-    sf.to_river .= sf.to_river ./ ts
+    sf.q_av .= q_sum ./ its
+    sf.h_av .= h_sum ./ its
+    sf.to_river .= sf.to_river ./ its
 
 end
 
