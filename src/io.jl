@@ -425,7 +425,7 @@ function prepare_reader(path, cyclic_path, config)
     if do_cyclic == true
         cyclic_dataset = NCDataset(cyclic_path)
         cyclic_nc_times = collect(cyclic_dataset["time"])
-        cyclic_times = Wflow.timecycles(cyclic_nc_times)
+        cyclic_times = timecycles(cyclic_nc_times)
     else
         cyclic_dataset = nothing
         cyclic_times = Tuple{Int,Int}[]
@@ -524,7 +524,7 @@ function flat!(d, path, el::Dict)
 end
 
 function flat!(d, path, el)
-    k = Wflow.symbols(path)
+    k = symbols(path)
     d[k] = el
     return d
 end
@@ -635,13 +635,13 @@ function prepare_writer(
         println(csv_io, join(header, ','))
         flush(csv_io)
 
-        # cleate a vector of (lens, reducer) named tuples which will be used to
+        # cleate a vector of (parameter, reducer) named tuples which will be used to
         # retrieve and reduce the CSV data during a model run
         csv_cols = []
         for col in config.csv.column
             parameter = col["parameter"]
             if occursin("river", col["parameter"])
-                reducer = Wflow.reducer(
+                reducer_func = reducer(
                     col,
                     rev_inds.river,
                     x_nc,
@@ -651,7 +651,7 @@ function prepare_writer(
                     nc_static,
                 )
             elseif occursin("reservoir", col["parameter"])
-                reducer = Wflow.reducer(
+                reducer_func = reducer(
                     col,
                     rev_inds.reservoir,
                     x_nc,
@@ -661,7 +661,7 @@ function prepare_writer(
                     nc_static,
                 )
             elseif occursin("lake", col["parameter"])
-                reducer = Wflow.reducer(
+                reducer_func = reducer(
                     col,
                     rev_inds.lake,
                     x_nc,
@@ -671,7 +671,7 @@ function prepare_writer(
                     nc_static,
                 )
             else
-                reducer = Wflow.reducer(
+                reducer_func = reducer(
                     col,
                     rev_inds.land,
                     x_nc,
@@ -681,7 +681,7 @@ function prepare_writer(
                     nc_static,
                 )
             end
-            push!(csv_cols, (; parameter, reducer))
+            push!(csv_cols, (parameter=parameter, reducer=reducer_func))
         end
     else
         # no CSV file is checked by isnothing(csv_path)

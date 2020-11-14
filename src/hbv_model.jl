@@ -386,7 +386,7 @@ function initialize_hbv_model(config::Config)
         wb_pit = pits[inds],
     )
 
-    pcr_dir = dims_xy ? permute_indices(Wflow.pcrdir) : Wflow.pcrdir
+    pcr_dir = dims_xy ? permute_indices(pcrdir) : pcrdir
     graph = flowgraph(ldd, inds, pcr_dir)
 
     riverslope = ncread(
@@ -413,7 +413,7 @@ function initialize_hbv_model(config::Config)
 
     # the indices of the river cells in the land(+river) cell vector
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
-    frac_toriver = Wflow.fraction_runoff_toriver(graph, ldd, index_river, βₗ, n)
+    frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, βₗ, n)
 
     rf = SurfaceFlow(
         sl = riverslope,

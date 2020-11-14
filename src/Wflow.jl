@@ -62,7 +62,7 @@ a prepared `Config` object, or an initialized `Model` object. This allows more f
 if you want to for example modify a `Config` before initializing the `Model`.
 """
 function run_simulation(tomlpath)
-    config = Wflow.Config(tomlpath)
+    config = Config(tomlpath)
     run_simulation(config)
 end
 
@@ -70,11 +70,11 @@ function run_simulation(config::Config)
     modeltype = config.model.type
 
     model = if modeltype == "sbm"
-        Wflow.initialize_sbm_model(config)
+        initialize_sbm_model(config)
     elseif modeltype == "sbm_gwf"
-        Wflow.initialize_sbm_gwf_model(config)
+        initialize_sbm_gwf_model(config)
     elseif modeltype == "hbv"
-        Wflow.initialize_hbv_model(config)
+        initialize_hbv_model(config)
     else
         error("unknown model type")
     end
@@ -86,7 +86,7 @@ function run_simulation(model::Model; close_files = true)
     @unpack network, config, writer, clock = model
 
     # in the case of sbm_gwf it's currently a bit hard to use dispatch
-    update_func = config.model.type == "sbm_gwf" ? Wflow.update_sbm_gwf : Wflow.update
+    update_func = config.model.type == "sbm_gwf" ? update_sbm_gwf : update
 
     while true
         model = update_func(model)
