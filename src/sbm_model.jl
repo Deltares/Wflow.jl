@@ -146,7 +146,7 @@ function initialize_sbm_model(config::Config)
         n = n_land,
         dl = dl,
         Δt = tosecond(Δt),
-        its = kw_land_tstep > 0 ? ceil(Int(tosecond(Δt) / kw_land_tstep)) : kw_land_tstep,
+        its = kw_land_tstep > 0 ? Int(cld(tosecond(Δt), kw_land_tstep)) : kw_land_tstep,
         width = sw,
         wb_pit = pits[inds],
     )
