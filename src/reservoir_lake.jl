@@ -174,8 +174,7 @@ Base.@kwdef struct NaturalLake{T}
     e::Vector{T}                            # rating curve exponent
     sh::Vector{DataFrame}                   # data for storage curve
     hq::Vector{DataFrame}                   # data for rating curve
-    avg_waterlevel::Vector{T}               # average water level [m] (cold state)
-    waterlevel::Vector{T} = copy(avg_waterlevel) # waterlevel H [m] of lake
+    waterlevel::Vector{T}                   # waterlevel H [m] of lake
     inflow::Vector{T} = fill(mv, length(area))   # inflow to the lake [m³ s⁻¹]
     storage::Vector{T} = initialize_storage(storfunc, area, waterlevel, sh) # storage lake [m³]
     outflow::Vector{T} = fill(mv, length(area))        # outflow lake [m³ s⁻¹]
@@ -281,9 +280,9 @@ function initialize_natural_lake(config, nc, inds_riv, nriv, pits)
             type = Int,
             fill = 0,
         )
-        lake_avglevel = ncread(
+        lake_waterlevel = ncread(
             nc,
-            param(config, "input.lateral.river.lake.avglevel");
+            param(config, "input.lateral.river.lake.waterlevel");
             sel = inds_riv,
             type = Float64,
             fill = 0,
@@ -332,7 +331,7 @@ function initialize_natural_lake(config, nc, inds_riv, nriv, pits)
             outflowfunc = lake_outflowfunc,
             b = lake_b,
             e = lake_e,
-            avg_waterlevel = lake_avglevel,
+            waterlevel = lake_waterlevel,
             sh = sh,
             hq = hq,
             is_lake = is_lake,

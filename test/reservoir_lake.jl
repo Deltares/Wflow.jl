@@ -32,7 +32,7 @@ end
         e = [2.0],
         sh = [Wflow.DataFrame()],
         hq = [Wflow.DataFrame()],
-        avg_waterlevel = [18.5],
+        waterlevel = [18.5],
         precipitation = [20.0],
         evaporation = [3.2],
     )
