@@ -306,13 +306,13 @@ function initialize_natural_lake(config, nc, inds_riv, nriv, pits)
             end
 
             if lake_storfunc[i] == 2
-                sh[i] = CSV.read("Lake_SH_$(lakelocs[i])", type = Float64)
+                sh[i] = CSV.read("lake_sh_$(lakelocs[i])", type = Float64)
             else
                 sh[i] = DataFrame()
             end
 
             if lake_outflowfunc[i] == 1
-                hq[i] = CSV.read("Lake_HQ_$(lakelocs[i])", type = Float64)
+                hq[i] = CSV.read("lake_hq_$(lakelocs[i])", type = Float64)
             else
                 hq[i] = DataFrame()
             end
@@ -348,7 +348,7 @@ function initialize_storage(storfunc, area, waterlevel, sh)
         if storfunc[i] == 1
             storage[i] = area[i] * waterlevel[i]
         else
-            storage[i] = interpolate_lineare(waterlevel[i], sh[i].H, sh[i].S)
+            storage[i] = interpolate_linear(waterlevel[i], sh[i].H, sh[i].S)
         end
     end
     return storage
@@ -368,10 +368,10 @@ Get a tuple of symbols representing the fields that are model states.
 function statevars end
 
 function interpolate_linear(x, xp, fp)
-    if x <= min(xp)
-        return min(xp)
-    elseif x >= max(xp)
-        return max(xp)
+    if x <= minimum(xp)
+        return minimum(xp)
+    elseif x >= maximum(xp)
+        return maximum(xp)
     else
         idx = findall(i -> i <= x, xp)
         i1 = last(idx)
@@ -432,15 +432,12 @@ function update(lake::NaturalLake, i, inflow, doy, timestepsecs)
         else
             if diff_wl >= 0.0
                 outflow = max(
-                    pow((lake.b[i] * (lake.waterlevel[i] - lake.threshold[i])), lake.e[i]),
+                    lake.b[i] * pow((lake.waterlevel[i] - lake.threshold[i]), lake.e[i]),
                     0.0,
                 )
             else
                 outflow = min(
-                    pow(
-                        (-1.0 * lake.b[i] * (lake.waterlevel[lo] - lake.threshold[i])),
-                        lake.e[i],
-                    ),
+                    -1.0 * lake.b[i] * pow((lake.waterlevel[lo] - lake.threshold[i]), lake.e[i]),
                     0.0,
                 )
             end

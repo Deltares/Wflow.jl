@@ -44,3 +44,29 @@ end
     @test lake.precipitation[1] ≈ 20.0
     @test lake.evaporation[1] ≈ 3.2
 end
+
+datadir = joinpath(@__DIR__, "data")
+
+@testset "linked lakes (HBV)" begin
+    lake = Wflow.NaturalLake{Float64}(
+        loc_id = [1, 2],
+        lowerlake_ind = [2, 0],
+        area = [472461536.0, 60851088.0],
+        threshold = [393.7, 0.0],
+        storfunc = [2, 2],
+        outflowfunc = [2, 1],
+        b = [140.0, 0.0],
+        e = [1.5, 1.5],
+        sh = [CSV.read(joinpath(datadir,"lake_sh_1.csv"), type = Float64), CSV.read(joinpath(datadir,"lake_sh_2.csv"), type = Float64)],
+        hq = [Wflow.DataFrame(), CSV.read(joinpath(datadir,"lake_hq_2.csv"), type = Float64)],
+        waterlevel = [395.03027, 394.87833],
+        precipitation = [10.0, 10.0],
+        evaporation = [2.0, 2.0],
+    )
+
+    Wflow.update(lake, 1, 500.0, 15, 86400.0)
+    Wflow.update(lake, 2, 500.0, 15, 86400.0)
+    @test lake.outflow ≈ [214.80170846121263, 236.83281600000214]
+    @test lake.storage ≈ [1.2737435094769483e9, 2.6019755340159863e8]
+    @test lake.waterlevel ≈ [395.0912274997361, 395.2101079057371]
+end
