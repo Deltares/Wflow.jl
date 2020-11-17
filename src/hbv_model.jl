@@ -346,7 +346,7 @@ function initialize_hbv_model(config::Config)
  
      # lakes
      if do_lakes
-         lakes, lakeindex, lake, pits = initialize_natural_lake(config, nc, inds_riv, nriv, pits)
+         lakes, lakeindex, lake, pits = initialize_natural_lake(config, static_path, nc, inds_riv, nriv, pits)
      else
          lake = ()
      end
