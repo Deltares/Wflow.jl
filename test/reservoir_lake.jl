@@ -58,12 +58,12 @@ datadir = joinpath(@__DIR__, "data")
         b = [140.0, 0.0],
         e = [1.5, 1.5],
         sh = [
-            CSV.read(joinpath(datadir, "lake_sh_1.csv"), type = Float64),
-            CSV.read(joinpath(datadir, "lake_sh_2.csv"), type = Float64),
+            CSV.read(joinpath(datadir, "lake_sh_1.csv"), Wflow.DataFrame, type = Float64),
+            CSV.read(joinpath(datadir, "lake_sh_2.csv"), Wflow.DataFrame, type = Float64),
         ],
         hq = [
             Wflow.DataFrame(),
-            CSV.read(joinpath(datadir, "lake_hq_2.csv"), type = Float64),
+            CSV.read(joinpath(datadir, "lake_hq_2.csv"), Wflow.DataFrame, type = Float64),
         ],
         waterlevel = [395.03027, 394.87833],
         precipitation = [10.0, 10.0],

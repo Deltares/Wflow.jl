@@ -313,14 +313,14 @@ function initialize_natural_lake(config, static_path, nc, inds_riv, nriv, pits)
 
         if lake_storfunc[i] == 2
             sh[i] =
-                CSV.read(joinpath(static_path, "lake_sh_$(lakelocs[i])"), type = Float64)
+                CSV.read(joinpath(static_path, "lake_sh_$(lakelocs[i])"), DataFrame, type = Float64)
         else
             sh[i] = DataFrame()
         end
 
         if lake_outflowfunc[i] == 1
             hq[i] =
-                CSV.read(joinpath(static_path, "lake_hq_$(lakelocs[i])"), type = Float64)
+                CSV.read(joinpath(static_path, "lake_hq_$(lakelocs[i])"), DataFrame, type = Float64)
         else
             hq[i] = DataFrame()
         end
