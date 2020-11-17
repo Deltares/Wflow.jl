@@ -187,7 +187,7 @@ Base.@kwdef struct NaturalLake{T}
     end
 end
 
-function initialize_natural_lake(config, nc, inds_riv, nriv, pits)
+function initialize_natural_lake(config, static_path, nc, inds_riv, nriv, pits)
         # read only lake data if lakes true
         # allow lakes only in river cells
         # note that these locations are only the lake outlet pixels
@@ -306,13 +306,13 @@ function initialize_natural_lake(config, nc, inds_riv, nriv, pits)
             end
 
             if lake_storfunc[i] == 2
-                sh[i] = CSV.read("lake_sh_$(lakelocs[i])", type = Float64)
+                sh[i] = CSV.read(joinpath(static_path, "lake_sh_$(lakelocs[i])"), type = Float64)
             else
                 sh[i] = DataFrame()
             end
 
             if lake_outflowfunc[i] == 1
-                hq[i] = CSV.read("lake_hq_$(lakelocs[i])", type = Float64)
+                hq[i] = CSV.read(joinpath(static_path, "lake_hq_$(lakelocs[i])"), type = Float64)
             else
                 hq[i] = DataFrame()
             end
