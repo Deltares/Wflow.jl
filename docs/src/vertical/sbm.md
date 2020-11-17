@@ -137,11 +137,6 @@ evaporation (rivers and water bodies) is split in potential soil evaporation and
 potential transpiration based on the canopy gap fraction (assumed to be
 identical to the amount of bare soil).
 
-The potential eveporation left over after interception and open water
-evaporation (rivers and water bodies) is split in potential soil evaporation and
-potential transpiration based on the canopy gap fraction (assumed to be
-identical to the amount of bare soil).
-
 For the case of one single soil layer, soil evaporation is scaled according to:
 
     soilevapunsat = potsoilevap * min(1.0, saturationdeficit / sbm.soilwatercapacity[i])
