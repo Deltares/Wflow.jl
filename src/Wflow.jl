@@ -10,6 +10,9 @@ using UnPack
 using CSV
 using Random
 using DataFrames
+using BasicModelInterface
+
+const BMI = BasicModelInterface
 
 mutable struct Clock
     time::DateTime
@@ -51,6 +54,7 @@ include("groundwater/aquifer.jl")
 include("groundwater/boundary_conditions.jl")
 include("sbm_gwf_model.jl")
 include("utils.jl")
+include("bmi.jl")
 
 """
     run_simulation(tomlpath::String)
