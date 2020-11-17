@@ -57,8 +57,14 @@ datadir = joinpath(@__DIR__, "data")
         outflowfunc = [2, 1],
         b = [140.0, 0.0],
         e = [1.5, 1.5],
-        sh = [CSV.read(joinpath(datadir,"lake_sh_1.csv"), type = Float64), CSV.read(joinpath(datadir,"lake_sh_2.csv"), type = Float64)],
-        hq = [Wflow.DataFrame(), CSV.read(joinpath(datadir,"lake_hq_2.csv"), type = Float64)],
+        sh = [
+            CSV.read(joinpath(datadir, "lake_sh_1.csv"), type = Float64),
+            CSV.read(joinpath(datadir, "lake_sh_2.csv"), type = Float64),
+        ],
+        hq = [
+            Wflow.DataFrame(),
+            CSV.read(joinpath(datadir, "lake_hq_2.csv"), type = Float64),
+        ],
         waterlevel = [395.03027, 394.87833],
         precipitation = [10.0, 10.0],
         evaporation = [2.0, 2.0],
@@ -69,4 +75,10 @@ datadir = joinpath(@__DIR__, "data")
     @test lake.outflow ≈ [214.80170846121263, 236.83281600000214]
     @test lake.storage ≈ [1.2737435094769483e9, 2.6019755340159863e8]
     @test lake.waterlevel ≈ [395.0912274997361, 395.2101079057371]
+    Wflow.update(lake, 1, 500.0, 15, 86400.0)
+    Wflow.update(lake, 2, 500.0, 15, 86400.0)
+    @test lake.outflow ≈ [0.0, 239.66710359986183]
+    @test lake.storage ≈ [1.3431699662524352e9, 2.6073035986708355e8]
+    @test lake.waterlevel ≈ [395.239782021054, 395.21771942667266]
+
 end
