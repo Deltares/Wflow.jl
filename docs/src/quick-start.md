@@ -16,7 +16,8 @@ instructions and if you have trouble installing Julia.
 
 If you are new to Julia, it may be a good idea to check out the [Getting Started section of
 the Julia Manual](https://docs.julialang.org/en/v1/manual/getting-started/). Links to other
-learning resources can be found at [julialang.org/learning](https://julialang.org/learning/).
+learning resources can be found at
+[julialang.org/learning](https://julialang.org/learning/).
 
 Start an interactive session (also known as a read-eval-print loop or "REPL") by
 double-clicking the Julia executable or running `julia` from the command line, in case you
@@ -102,9 +103,8 @@ names in the NetCDF file. See the section [Config and TOML](@ref) for more detai
 
 As an example, we will run the Moselle example SBM model, of which the configuration file
 can be seen here:
-[sbm_config.toml](https://github.com/Deltares/Wflow.jl/blob/use/test/sbm_config.toml).
-First we share some code that will download the required files to your current working
-directory:
+[sbm_config.toml](https://github.com/Deltares/Wflow.jl/blob/use/test/sbm_config.toml). First
+we share some code that will download the required files to your current working directory:
 
 ```julia
 # urls to TOML and NetCDF of the Moselle example model
@@ -130,16 +130,16 @@ function:
 Wflow.run_simulation
 ```
 
-As you can see, there are three different methods for this function. We will first make
-use of the first one, where a path to a TOML file is passed as a `String`.
+As you can see, there are three different methods for this function. We will first make use
+of the first one, where a path to a TOML file is passed as a `String`.
 
 ```julia
 using Wflow
 Wflow.run_simulation(toml_path)
 ```
 
-This will parse the TOML file to create a `Wflow.Config`, use that to initialize
-a `Wflow.Model`, and finally run the `Wflow.Model` for the specified duration.
+This will parse the TOML file to create a `Wflow.Config`, use that to initialize a
+`Wflow.Model`, and finally run the `Wflow.Model` for the specified duration.
 
 ```@docs
 Wflow.Config
@@ -147,8 +147,8 @@ Wflow.Model
 ```
 
 If you want to try out several different settings, without having to modify the TOML file
-every time, you can create a `Wflow.Config` first, modify some settings, and then start
-the simulation:
+every time, you can create a `Wflow.Config` first, modify some settings, and then start the
+simulation:
 
 ```julia
 using Dates
