@@ -26,7 +26,7 @@ Q_r=cfmax \, cfr(tt−T_a)\,;\, Ta < tt
 
 where ``Q_m`` is the rate of snow melt, ``Q_r`` is the rate of snow refreezing,
 and ``cfmax`` and ``cfr`` are user defined model parameters (the melting factor
-mm/((``\degree``C day) and the refreezing factor respectively).
+[mm/(``\degree``C day)] and the refreezing factor respectively).
 
 The fraction of liquid water in the snow pack is at most equal to a user defined
 fraction, `whc`, of the water equivalent of the dry snow content. If the liquid
@@ -81,7 +81,7 @@ where ``Q_m`` is the rate of glacier melt and ``g\_cfmax`` is the melting factor
 in mm/(``\degree``C day). Parameter `g_tt` can be taken as equal to the snow
 `tt` parameter. Values of the melting factor `g_cfmax` normally varies from one
 glacier to another and some values are reported in the literature. `g_cfmax` can
-also be estimated by multiplying snow `cfmax`by a factor between 1 and 2, to
+also be estimated by multiplying snow `cfmax` by a factor between 1 and 2, to
 take into account the higher albedo of ice compared to snow.
 
 ## Rainfall interception
@@ -152,7 +152,7 @@ The SBM concept can determine the interception parameters from leaf area index
 parameter in the TOML file, the parameter is read from `path_static`, as
 follows:
 
-```
+```toml
 [input] 
 path_forcing = "data/forcing-moselle.nc" 
 path_static = "data/staticmaps-moselle.nc"

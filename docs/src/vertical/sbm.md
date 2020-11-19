@@ -13,12 +13,21 @@ detail.
 ## Snow
 Snow modelling is enabled by specifying the following in the TOML file:
 
-```
+```toml
 [model]
 snow = true
 ```
 
 The snow model is described in [Snow modelling](@ref)
+
+## Glaciers
+Glacier processes are described in [Glacier modelling](@ref). Glacier modelling
+is enabled by specifying the following in the TOML file:
+
+```toml
+[model]
+glacier = true
+```
 
 ## Soil
 ### Infiltration
@@ -31,9 +40,8 @@ remaining water is determined as follows:
 The soil infiltration capacity can be adjusted in case the soil is frozen, this
 is optional and can be set in the TOML file as follows:
 
-```
+```toml
 [model]
-# Enable iterations of the kinematic wave
 soilinfreduction = true 
 ```
 The remaining storage capacity of the unsaturated store is determined.  The
@@ -83,7 +91,7 @@ can be split-up in different layers, by providing the thickness [mm] of the
 layers in the TOML file. The following example specifies three layers (from top
 to bottom) of 100, 300 and 800 mm: 
 
-```
+```toml
 [model]
 thicknesslayers = [100, 300, 800]
 ```
@@ -105,9 +113,9 @@ When the unsaturated layer is not split-up into different layers, it is possible
 to use the original Topog\_SBM vertical transfer formulation, by specifying in
 the TOML file:
 
-```
- [model]
-    transfermethod = true
+```toml
+[model]
+transfermethod = true
 ```
 The transfer of water from the ``U`` store to the ``S`` store (``st``) is in
 that case controlled by the saturated hydraulic conductivity ``K_{sat}`` at
@@ -195,7 +203,7 @@ extraction rate (`maxextr`):
 When `whole_ust_available` is set to true in the TOML file as follows, the
 complete unsaturated storage is available for transpiration:
 
-```
+```toml
 [model]
 whole_ust_available = true
 ```
@@ -237,7 +245,6 @@ roots reach the water table (``RT > z_{i}``) ``CS`` is set to zero thus setting
 the capillary rise to zero.
 
 ## Leakage
-
 If the `maxleakage` parameter is set > 0, water is lost from the saturated zone
 and runs out of the model.
 
@@ -256,7 +263,7 @@ A reduction factor (`cf_soil`, default is 0.038) is applied to the maximum
 infiltration rate (`infiltcapsoil` and `infiltcappath`), when the following
 model settings are specified in the TOML file:
 
-```
+```toml
 [model]
 soilinfreduction = true
 snow = true
