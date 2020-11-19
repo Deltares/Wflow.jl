@@ -814,7 +814,7 @@ function update_until_recharge(sbm::SBM, config)
             # different soil layers that contain unsaturated storage assuming gravity
             # based flow only, estimate the gravity based flux rate to the saturated zone
             # (ast) and the updated unsaturated storage for each soil layer.
-            if transfermethod == 1 && sbm.maxlayers == 1
+            if transfermethod && sbm.maxlayers == 1
                 ustorelayerdepth = sbm.ustorelayerdepth[i][1] + infiltsoilpath
                 kv_z = sbm.kvfrac[i][1] * sbm.kv₀[i] * exp(-sbm.f[i] * sbm.zi[i])
                 ustorelayerdepth, ast = unsatzone_flow_sbm(
