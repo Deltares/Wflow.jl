@@ -122,13 +122,13 @@ function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits)
     )
 
     return reservoirs,
-    resindex,
-    (
-        indices_outlet = inds_res,
-        indices_coverage = inds_res_cov,
-        reverse_indices = rev_inds_reservoir,
-    ),
-    pits
+        resindex,
+        (
+            indices_outlet = inds_res,
+            indices_coverage = inds_res_cov,
+            reverse_indices = rev_inds_reservoir,
+        ),
+        pits
 end
 
 """
