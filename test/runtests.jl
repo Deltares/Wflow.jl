@@ -7,6 +7,7 @@ using Test
 using UnPack
 using Wflow
 using CSV
+using DataFrames
 using BenchmarkTools
 using Base.MathConstants: eulergamma
 import Polynomials
