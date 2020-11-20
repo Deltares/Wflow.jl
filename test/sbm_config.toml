@@ -187,3 +187,12 @@ header = "recharge"
 map = "subcatchment"
 parameter = "vertical.recharge"
 reducer = "mean"
+
+[API]
+components = [
+  "vertical",
+  "lateral.subsurface",
+  "lateral.land",
+  "lateral.river",
+  "lateral.river.reservoir"
+]
