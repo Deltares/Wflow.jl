@@ -41,6 +41,14 @@ function BMI.get_component_name(model::Model)
     return config.model.type
 end
 
+function BMI.get_input_item_count(model::Model)
+    length(BMI.get_input_var_names(model))
+end
+
+function BMI.get_output_item_count(model::Model)
+    length(BMI.get_output_var_names(model))
+end
+
 function BMI.get_input_var_names(model::Model)
     @unpack config = model
     if haskey(config,"API")
@@ -51,9 +59,40 @@ function BMI.get_input_var_names(model::Model)
         return var_names
     else
         @warn("TOML file does not contain section [API] to extract model var names")
+        return []
     end
 end
 
 function BMI.get_output_var_names(model::Model)
     BMI.get_input_var_names(model)
+end
+
+function BMI.get_var_grid(model::Model, name::String)
+    if name in BMI.get_input_var_names(model)
+        return 1
+    end
+    return -1
+end
+
+function BMI.get_var_type(model::Model, name::String)
+    string(typeof(param(model,name)))
+end
+
+function BMI.get_var_units(model::Model, name::String)
+    #TODO implement properly
+    "mm"
+end
+
+function BMI.get_var_itemsize(model::Model, name::String)
+    sizeof(Wflow.param(model, name)[1])
+end
+
+function BMI.get_var_nbytes(model::Model, name::String)
+    sizeof(Wflow.param(model, name))
+end
+
+function BMI.get_var_location(model::Model, name::String)
+    if name in BMI.get_input_var_names(model)
+        return "node"
+    end
 end
