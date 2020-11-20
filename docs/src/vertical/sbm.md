@@ -196,7 +196,7 @@ unsaturated storage is available for transpiration:
 whole_ust_available = true
 ```
 
-Next, the Feddes root water uptake reduction model (Feddes et al. (1978)) is used to
+Next, the Feddes root water uptake reduction model (Feddes et al., 1978) is used to
 calculate a reduction coefficient as a function of soil water pressure. Soil water pressure
 is calculated following Brooks and Corey (1964):
 
@@ -261,3 +261,14 @@ A S-curve is used to make a smooth transition (a c-factor (``c``) of 8.0 is used
     a = 0.0\\
     c = 8.0
 ```
+## References
++ Brooks, R. H., and Corey, A. T., 1964, Hydraulic properties of porous media, Hydrology
+  Papers 3, Colorado State University, Fort Collins, 27 p.
++ Feddes, R.A., Kowalik, P.J. and Zaradny, H., 1978, Simulation of field water use and crop
+  yield, Pudoc, Wageningen, Simulation Monographs.
++ Vertessy, R., and Elsenbeer, H., 1999, Distributed modeling of storm ﬂow generation in an
+  amazonian rain forest catchment: effects of model parameterization, Water Resour. Res.,
+  35, 2173–2187. doi: 10.1029/1999WR9000511257.
++ Wigmosta, M. S., Lane, L. J., Tagestad, J. D., and Coleman A. M., 2009, Hydrologic and
+  erosion models to assess land use and management practices affecting soil erosion, J.
+  Hydrol. Eng., 14, 27-41.
