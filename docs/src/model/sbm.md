@@ -36,3 +36,8 @@ For river and overland flow the kinematic wave approach over a D8 network is use
 wflow\_sbm model. For the subsurface domain, an unconfined aquifer with groundwater flow in
 four directions (adjacent cells) is used. This is described in more detail [Groundwater
 flow](@ref).
+
+## References
++ Köhler, L., Mulligan, M., Schellekens, J., Schmid, S., Tobón, C., 2006, Hydrological
+  impacts of converting tropical montane cloud forest to pasture, with initial reference to
+  northern Costa Rica. Final Technical Report DFID‐FRP Project No. R799.

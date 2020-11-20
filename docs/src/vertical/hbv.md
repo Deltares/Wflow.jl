@@ -80,7 +80,7 @@ where ``E_a`` is the actual evaporation, ``E_p`` is the potential evaporation an
 potential evaporation. ``T_m`` is defined as ``LP * fc`` in which ``LP`` is a soil dependent
 evaporation factor (``LP\leq 1``).
 
-In the original model (Berglov, 2009), a correction to ``E_a`` is applied in case of
+In the original model (Bergström, 1992), a correction to ``E_a`` is applied in case of
 interception. If ``E_a`` from the soil moisture storage plus ``E_i`` exceeds ``ET_p−E_i``
 (``E_i`` = interception evaporation) then the exceeding part is multiplied by a factor
 (``1-e_{red}``), where the parameter ``e_{red}`` varies between 0 and 1. This correction is
@@ -185,3 +185,7 @@ the reservoir constants have to meet the following requirement:
 ```math
     K_{LZ}<K_i<K_q
 ```
+
+## References
+ + Bergström, S., 1992, The HBV model–its structure and applications, SMHI Reports RH 4,
+   Norrköping.
