@@ -278,9 +278,9 @@ parameter that represent the downstream lake location ID, at the grid cell of th
 lake location.
 
 !!! note 
-    In every file, level units are meters [m] and not meters above sea level [m asl].
-    Especially with storage/rating curves coming from data, please be careful and convert
-    units if needed.
+    In every file, level units are meters [m] above lake bottom and not meters above sea
+    level [m asl]. Especially with storage/rating curves coming from data, please be careful
+    and convert units if needed.
 
 ## References
 + Bos M.G., 1989. Discharge measurement structures. Third revised edition, International
