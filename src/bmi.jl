@@ -102,10 +102,6 @@ function BMI.get_current_time(model::Model)
 end
 
 function BMI.get_start_time(model::Model)
-    datetime2unix(model.clock.time)
-end
-
-function BMI.get_start_time(model::Model)
     datetime2unix(model.config.starttime)
 end
 
