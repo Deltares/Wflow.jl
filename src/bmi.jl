@@ -96,3 +96,27 @@ function BMI.get_var_location(model::Model, name::String)
         return "node"
     end
 end
+
+function BMI.get_current_time(model::Model)
+    datetime2unix(model.clock.time)
+end
+
+function BMI.get_start_time(model::Model)
+    datetime2unix(model.clock.time)
+end
+
+function BMI.get_start_time(model::Model)
+    datetime2unix(model.config.starttime)
+end
+
+function BMI.get_end_time(model::Model)
+    datetime2unix(model.config.endtime)
+end
+
+function BMI.get_time_units()
+    string("seconds since ", unix2datetime(0))
+end
+
+function BMI.get_time_step(model::Model)
+    Float64(model.config.timestepsecs)
+end
