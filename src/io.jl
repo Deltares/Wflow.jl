@@ -595,14 +595,6 @@ function prepare_writer(
     maxlayers = nothing,
 )
     sizeinmetres = get(config.model, "sizeinmetres", false)
-
-    if sizeinmetres
-        ncy = ncread(reader.dataset, "y"; type = Float64)
-        ncx = ncread(reader.dataset, "x"; type = Float64)
-    else
-        ncy = ncread(reader.dataset, "lat"; type = Float64)
-        ncx = ncread(reader.dataset, "lon"; type = Float64)
-    end
         
     # create a flat mapping from internal parameter locations to NetCDF variable names
     output_ncnames = Dict{Tuple{Symbol,Vararg{Symbol}},String}()
@@ -617,14 +609,14 @@ function prepare_writer(
 
     calendar = get(config, "calendar", "proleptic_gregorian")
     time_units = get(config, "time_units", CFTime.DEFAULT_TIME_UNITS)
-    ds = setup_netcdf(nc_path, ncx, ncy, output_map, calendar, time_units, maxlayers, sizeinmetres)
+    ds = setup_netcdf(nc_path, x_nc, y_nc, output_map, calendar, time_units, maxlayers, sizeinmetres)
 
     # create a separate state output NetCDF that will hold the last timestep of all states
     state_map = out_map(state_ncnames, modelmap)
     tomldir = dirname(config)
     nc_state_path = joinpath(tomldir, config.state.path_output)
     static_path = joinpath(tomldir, config.input.path_static)
-    ds_outstate = setup_netcdf(nc_state_path, ncx, ncy, state_map, calendar, time_units, maxlayers, sizeinmetres; float_type=Float64)
+    ds_outstate = setup_netcdf(nc_state_path, x_nc, y_nc, state_map, calendar, time_units, maxlayers, sizeinmetres; float_type=Float64)
 
     if haskey(config, "csv") && haskey(config.csv, "column")
         # open CSV file and write header
