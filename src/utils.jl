@@ -60,6 +60,8 @@ function active_indices(network, key::Tuple)
         return network.lake.indices_outlet
     elseif :river in key
         return network.river.indices
+    elseif :drain in key
+        return network.drain.indices
     else
         return network.land.indices
     end

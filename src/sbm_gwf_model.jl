@@ -260,12 +260,9 @@ function initialize_sbm_gwf_model(config::Config)
 
     # drain boundary of unconfined aquifer (optional)
     if do_drains
-        drain = ncread(
-            nc,
-            param(config, "input.lateral.subsurface.drain", nothing);
-            sel = inds,
-            type = Bool,
-        )
+        drain_2d = ncread(nc, param(config, "input.lateral.subsurface.drain"); type = Bool, fill=false)
+        inds_drain, rev_inds_drain = active_indices(drain_2d, 0)
+        drain = drain_2d[inds]
         drain_elevation = ncread(
             nc,
             param(config, "input.lateral.subsurface.drain_elevation", nothing);
@@ -282,14 +279,16 @@ function initialize_sbm_gwf_model(config::Config)
         )
         index_drain = filter(i -> !isequal(drain[i], 0), 1:n)
         drain_flux = fill(mv,length(index_drain))
-        drain = Drainage(
+        drains = Drainage(
             drain_elevation[index_drain],
             drain_conductance[index_drain],
             drain_flux,
             index_drain,
         )
+        drain = (indices = inds_drain, reverse_indices = rev_inds_drain)
     else
-        drain = Drainage[]
+        drains = Drainage[]
+        drain = ()
     end
 
     # recharge boundary of unconfined aquifer
@@ -300,7 +299,7 @@ function initialize_sbm_gwf_model(config::Config)
         aquifer,
         connectivity,
         constant_head,
-        AquiferBoundaryCondition[recharge, river, drain],
+        AquiferBoundaryCondition[recharge, river, drains],
     )
 
     state_ncnames = ncnames(config.state)
@@ -316,6 +315,7 @@ function initialize_sbm_gwf_model(config::Config)
         river = rev_inds_riv,
         reservoir = isempty(reservoir) ? nothing : reservoir.reverse_indices,
         lake = isempty(lake) ? nothing : lake.reverse_indices,
+        drain = isempty(drain) ? nothing : rev_inds_drain,
     )
     writer = prepare_writer(
         config,
@@ -350,7 +350,7 @@ function initialize_sbm_gwf_model(config::Config)
 
     model = Model(
         config,
-        (; land, river, reservoir, lake, index_river, frac_toriver),
+        (; land, river, reservoir, lake, drain, index_river, frac_toriver),
         (subsurface = (flow = gwf, recharge = gwf.boundaries[1], river = gwf.boundaries[2], drain = gwf.boundaries[3]), 
         land = olf, 
         river = rf),
