@@ -662,6 +662,16 @@ function prepare_writer(
                     config,
                     nc_static,
                 )
+            elseif occursin("drain", col["parameter"])
+                reducer_func = reducer(
+                    col,
+                    rev_inds.drain,
+                    x_nc,
+                    y_nc,
+                    dims_xy,
+                    config,
+                    nc_static,
+                )
             else
                 reducer_func = reducer(
                     col,
