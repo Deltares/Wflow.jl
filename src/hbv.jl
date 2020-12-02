@@ -1,62 +1,63 @@
-Base.@kwdef struct HBV{T}
-    n::Int                      # Number of cells
-    yl::Vector{T}               # Length of cells in y direction [m]
-    xl::Vector{T}               # Length of cells in x direction [m]
-    altitude::Vector{T}         # Vertical elevation [m]
-    fc::Vector{T}               # Field capacity [mm]
-    betaseepage::Vector{T}      # Exponent in soil runoff generation equation [-]
-    lp::Vector{T}               # Fraction of field capacity below which actual evaporation=potential evaporation
-    threshold::Vector{T}        # Threshold soilwater storage above which AE=PE
-    k4::Vector{T}               # Recession constant baseflow
-    kquickflow::Vector{T}       
-    suz::Vector{T}              # Level over which k0 is used
-    k0::Vector{T}               
-    khq::Vector{T}              # Recession rate at flow hq
-    hq::Vector{T}               # High flow rate hq for which recession rate of upper reservoir is known
-    alphanl::Vector{T}          # Measure of non-linearity of upper reservoir
-    perc::Vector{T}             # Percolation from upper to lower zone [mm/day]
-    cfr::Vector{T}              # Refreezing efficiency constant in refreezing of freewater in snow
-    pcorr::Vector{T}            # Correction factor for precipitation
-    rfcf::Vector{T}             # Correction factor for rainfall
-    sfcf::Vector{T}             # Vorrection factor for snowfall
-    cflux::Vector{T}            # Maximum capillary rise from runoff response routine to soil moisture routine
-    icf::Vector{T}              # Maximum interception storage (in forested and non-forested areas)
-    cevpf::Vector{T}            # Correction factor for potential evaporation
-    epf::Vector{T}              # Exponent of correction factor for evaporation on days with precipitation
-    ecorr::Vector{T}            # Evap correction
-    tti::Vector{T}              # Critical temperature for snowmelt and refreezing [ᵒC]
-    tt::Vector{T}               # Defines interval in which precipitation falls as rainfall and snowfall [ᵒC]
-    ttm::Vector{T}              # Threshold temperature for snowmelt [ᵒC]
-    cfmax::Vector{T}            # Meltconstant in temperature-index [-]
-    whc::Vector{T}              # Fraction of snow volume that can store water [-]
-    g_tt::Vector{T}             # Threshold temperature for snowfall above glacier [ᵒC]
-    g_cfmax::Vector{T}          # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹] for glacier
-    g_sifrac::Vector{T}         # Fraction of the snowpack on top of the glacier converted into ice [-]
-    glacierstore::Vector{T}     # Water within the glacier [mm]
-    glacierfrac::Vector{T}      # Fraction covered by a glacier [-]
-    precipitation::Vector{T} = fill(mv, n)          # Precipitation [mm]
-    temperature::Vector{T} = fill(mv, n)           # Temperature [ᵒC]
-    potential_evaporation::Vector{T} = fill(mv, n)                # Potential evapotranspiration [mm]
-    potsoilevap::Vector{T} = fill(mv, n)            # Potential soil evaporation [mm]
-    soilevap::Vector{T} = fill(mv, n)               # Soil evaporation [mm] 
-    intevap::Vector{T} = fill(mv, n)                # Evaporation from interception storage [mm]
-    actevap::Vector{T} = fill(mv, n)                # Total actual evapotranspiration (intevap + soilevap) [mm] 
-    interceptionstorage::Vector{T} = fill(mv, n)    # Actual interception storage [mm]
-    snowwater::Vector{T} = fill(mv, n)              # Available free water in snow [mm]
-    snow::Vector{T} = fill(mv, n)                   # Snow pack [mm]
-    rainfallplusmelt::Vector{T} = fill(mv, n)       # Snow melt + precipitation as rainfall [mm]
-    soilmoisture::Vector{T} = fill(mv, n)           # Actual soil moisture [mm]
-    directrunoff::Vector{T} = fill(mv, n)           # Direct runoff to upper zone [mm]
-    hbv_seepage::Vector{T} = fill(mv, n)            # Recharge to upper zone [mm]
-    in_upperzone::Vector{T} = fill(mv, n)           # Water inflow into upper zone [mm]
-    upperzonestorage::Vector{T} = fill(mv, n)       # Water content of the upper zone [mm]
-    quickflow::Vector{T} = fill(mv, n)              # Specific runoff (quickflow part) [mm]
-    real_quickflow::Vector{T} = fill(mv, n)         # specific runoff (quickflow), if K upper zone is precalculated [mm]
-    percolation::Vector{T} = fill(mv, n)            # Actual percolation to the lower zone [mm]
-    capflux::Vector{T} = fill(mv, n)                # Capillary rise [mm]
-    lowerzonestorage::Vector{T} = fill(mv, n)       # Water content of the lower zone [mm]
-    baseflow::Vector{T} = fill(mv, n)               # Specific runoff (baseflow part) per cell [mm]
-    runoff::Vector{T} = fill(mv, n)                 # Total specific runoff per cell [mm]
+@get_units @with_kw struct HBV{T}
+    Δt::T | "s"                     # Model time step [s]
+    n::Int | "-"                    # Number of cells
+    yl::Vector{T} | "m"             # Length of cells in y direction [m]
+    xl::Vector{T} | "m"             # Length of cells in x direction [m]
+    altitude::Vector{T} | "m"       # Vertical elevation [m]
+    fc::Vector{T}                   # Field capacity [mm]
+    betaseepage::Vector{T} | "-"    # Exponent in soil runoff generation equation [-]
+    lp::Vector{T} | "-"             # Fraction of field capacity below which actual evaporation=potential evaporation [-]
+    threshold::Vector{T}            # Threshold soilwater storage above which AE=PE [mm]
+    k4::Vector{T} | "Δt-1"          # Recession constant baseflow [Δt⁻¹] 
+    kquickflow::Vector{T} | "Δt-1"  # Recession constant upper reservoir [Δt⁻¹]
+    suz::Vector{T}                  # Level over which k0 is used [mm]
+    k0::Vector{T} | "Δt-1"          # Recession constant upper reservoir [Δt⁻¹]
+    khq::Vector{T} | "Δt-1"         # Recession rate at flow hq [Δt⁻¹]
+    hq::Vector{T} | "mm Δt-1"       # High flow rate hq for which recession rate of upper reservoir is known [mm Δt⁻¹]
+    alphanl::Vector{T}              # Measure of non-linearity of upper reservoir
+    perc::Vector{T} | "mm Δt-1"     # Percolation from upper to lower zone [mm/Δt]
+    cfr::Vector{T} | "-"            # Refreezing efficiency constant in refreezing of freewater in snow [-]
+    pcorr::Vector{T} | "-"          # Correction factor for precipitation [-]
+    rfcf::Vector{T} | "-"           # Correction factor for rainfall [-]
+    sfcf::Vector{T} | "-"           # Correction factor for snowfall [-]
+    cflux::Vector{T} | "mm Δt-1"    # Maximum capillary rise from runoff response routine to soil moisture routine [mm Δt⁻¹]
+    icf::Vector{T}                  # Maximum interception storage (in forested and non-forested areas) [mm]
+    cevpf::Vector{T} | "-"          # Correction factor for potential evaporation [-]
+    epf::Vector{T} | "mm-1"         # Exponent of correction factor for evaporation on days with precipitation
+    ecorr::Vector{T} | "-"          # Evap correction [-]
+    tti::Vector{T} | "ᵒC"           # Critical temperature for snowmelt and refreezing [ᵒC]
+    tt::Vector{T} | "ᵒC"            # Defines interval in which precipitation falls as rainfall and snowfall [ᵒC]
+    ttm::Vector{T} | "ᵒC"           # Threshold temperature for snowmelt [ᵒC]
+    cfmax::Vector{T} | "mm ᵒC-1 Δt-1"   # Meltconstant in temperature-index [-]
+    whc::Vector{T} | "-"                # Fraction of snow volume that can store water [-]
+    g_tt::Vector{T} | "ᵒC"              # Threshold temperature for snowfall above glacier [ᵒC]
+    g_cfmax::Vector{T}| "mm ᵒC-1 Δt-1"  # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹] for glacier
+    g_sifrac::Vector{T} | "-"           # Fraction of the snowpack on top of the glacier converted into ice [-]
+    glacierstore::Vector{T}             # Water within the glacier [mm]
+    glacierfrac::Vector{T} | "-"        # Fraction covered by a glacier [-]
+    precipitation::Vector{T}            # Precipitation [mm]
+    temperature::Vector{T} | "ᵒC"       # Temperature [ᵒC]
+    potential_evaporation::Vector{T}    # Potential evapotranspiration [mm]
+    potsoilevap::Vector{T}              # Potential soil evaporation [mm]
+    soilevap::Vector{T}                 # Soil evaporation [mm] 
+    intevap::Vector{T}                  # Evaporation from interception storage [mm]
+    actevap::Vector{T}                  # Total actual evapotranspiration (intevap + soilevap) [mm] 
+    interceptionstorage::Vector{T}      # Actual interception storage [mm]
+    snowwater::Vector{T}                # Available free water in snow [mm]
+    snow::Vector{T}                     # Snow pack [mm]
+    rainfallplusmelt::Vector{T}         # Snow melt + precipitation as rainfall [mm]
+    soilmoisture::Vector{T}             # Actual soil moisture [mm]
+    directrunoff::Vector{T}             # Direct runoff to upper zone [mm]
+    hbv_seepage::Vector{T}              # Recharge to upper zone [mm]
+    in_upperzone::Vector{T}             # Water inflow into upper zone [mm]
+    upperzonestorage::Vector{T}         # Water content of the upper zone [mm]
+    quickflow::Vector{T}                # Specific runoff (quickflow part) [mm]
+    real_quickflow::Vector{T}           # specific runoff (quickflow), if K upper zone is precalculated [mm]
+    percolation::Vector{T}              # Actual percolation to the lower zone [mm]
+    capflux::Vector{T}                  # Capillary rise [mm]
+    lowerzonestorage::Vector{T}         # Water content of the lower zone [mm]
+    baseflow::Vector{T}                 # Specific runoff (baseflow part) per cell [mm]
+    runoff::Vector{T}                   # Total specific runoff per cell [mm]
 end
 
 statevars(::HBV) = (:soilmoisture, :snow, :snowwater, :upperzonestorage, :lowerzonestorage, :interceptionstorage,)

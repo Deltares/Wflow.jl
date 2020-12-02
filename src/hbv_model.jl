@@ -278,6 +278,7 @@ function initialize_hbv_model(config::Config)
     ncread(nc, param(config, "input.vertical.altitude"); sel = inds, type = Float64)
 
     hbv = HBV{Float64}(
+        Δt =tosecond(Δt),
         n = n,
         yl = yl,
         xl = xl,
@@ -321,6 +322,24 @@ function initialize_hbv_model(config::Config)
         soilmoisture = copy(fc),
         upperzonestorage = 0.2 .* fc,
         lowerzonestorage = 1.0 ./ (3.0 .* k4),
+        # variables:
+        precipitation = fill(mv, n),
+        temperature = fill(mv, n),
+        potential_evaporation = fill(mv, n),
+        potsoilevap = fill(mv, n),            
+        soilevap = fill(mv, n),               
+        intevap = fill(mv, n),                
+        actevap = fill(mv, n),                
+        rainfallplusmelt = fill(mv, n),       
+        directrunoff = fill(mv, n),           
+        hbv_seepage = fill(mv, n),            
+        in_upperzone = fill(mv, n),           
+        quickflow = fill(mv, n),              
+        real_quickflow = fill(mv, n),         
+        percolation = fill(mv, n),            
+        capflux = fill(mv, n),                
+        baseflow = fill(mv, n),               
+        runoff = fill(mv, n),    
     )
 
     modelsize_2d = size(subcatch_2d)
