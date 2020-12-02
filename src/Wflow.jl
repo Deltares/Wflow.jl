@@ -11,6 +11,10 @@ using CSV
 using Random
 using DataFrames
 using BasicModelInterface
+using FieldMetadata
+using Parameters
+
+@metadata get_units "mm"
 
 const BMI = BasicModelInterface
 
