@@ -185,8 +185,7 @@ end
 Returns the units of a model variable `name`.
 """
 function BMI.get_var_units(model::Model, name::String)
-    #TODO implement properly
-    "mm"
+    get_units(model, name)
 end
 
 """

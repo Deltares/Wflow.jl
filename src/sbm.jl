@@ -1,34 +1,34 @@
-Base.@kwdef struct SBM{T,N,M}
+@get_units @with_kw struct SBM{T,N,M}
     # Model time step [s]
-    Δt::T
+    Δt::T | "s"
     # Maximum number of soil layers
-    maxlayers::Int
+    maxlayers::Int | "-"
     # number of cells
-    n::Int
+    n::Int | "-"
     # Number of soil layers
-    nlayers::Vector{Int}
+    nlayers::Vector{Int} | "-"
     # Number of unsaturated soil layers
-    n_unsatlayers::Vector{Int}
+    n_unsatlayers::Vector{Int} | "-"
     # length of cells in y direction [m]
-    yl::Vector{T}
+    yl::Vector{T} | "m"
     # length of cells in x direction [m]
-    xl::Vector{T}
+    xl::Vector{T} | "m"
     # Fraction of river [-]
-    riverfrac::Vector{T}
+    riverfrac::Vector{T} | "-"
     # Saturated water content (porosity) [mm mm⁻¹]
-    θₛ::Vector{T}
+    θₛ::Vector{T} | "mm mm-1"
     # Residual water content [mm mm⁻¹]
-    θᵣ::Vector{T}
+    θᵣ::Vector{T} | "mm mm-1"
     # Effictive porosity [mm mm⁻¹]
-    θₑ::Vector{T}
+    θₑ::Vector{T} | "mm mm-1"
     # Vertical hydraulic conductivity [mm Δt⁻¹] at soil surface
-    kv₀::Vector{T}
+    kv₀::Vector{T} | "mm Δt-1"
     # Muliplication factor [-] applied to kv_z (vertical flow)
-    kvfrac::Vector{SVector{N,T}}
+    kvfrac::Vector{SVector{N,T}} | "-"
     # Parameter [mm] controlling f
     m::Vector{T}
     # Air entry pressure [cm] of soil (Brooks-Corey)
-    hb::Vector{T}
+    hb::Vector{T} | "cm"
     # Soil thickness [mm]
     soilthickness::Vector{T}
     # Thickness of soil layers [mm]
@@ -36,33 +36,33 @@ Base.@kwdef struct SBM{T,N,M}
     # Cumulative sum of soil layers [mm], starting at soil surface (0)
     sumlayers::Vector{SVector{M,T}}
     # Infiltration capacity of the compacted areas [mm Δt⁻¹]
-    infiltcappath::Vector{T}
+    infiltcappath::Vector{T} | "mm Δt-1" 
     # Soil infiltration capacity [mm/Δt]
-    infiltcapsoil::Vector{T}
+    infiltcapsoil::Vector{T} | "mm Δt-1"
     # Maximum leakage [mm/Δt] from saturated zone
-    maxleakage::Vector{T}
+    maxleakage::Vector{T} | "mm Δt-1"
     # Fraction of open water (excluding rivers) [-]
-    waterfrac::Vector{T}
+    waterfrac::Vector{T} | "-"
     # Fraction of compacted area  [-]
-    pathfrac::Vector{T}
+    pathfrac::Vector{T} | "-"
     # Vertical elevation [m]
-    altitude::Vector{T}
+    altitude::Vector{T} | "m"
     # Rooting depth [mm]
     rootingdepth::Vector{T}
     # Controls how roots are linked to water table [-]
-    rootdistpar::Vector{T}
+    rootdistpar::Vector{T} | "-"
     # Parameter [mm] controlling capillary rise
     capscale::Vector{T}
     # Multiplication factor [-] to correct
-    et_reftopot::Vector{T}
+    et_reftopot::Vector{T} | "-"
     # Brooks-Corey power coefﬁcient [-] for each soil layer
-    c::Vector{SVector{N,T}}
+    c::Vector{SVector{N,T}} | "-"
     # Stemflow [mm]
     stemflow::Vector{T}
     # Throughfall [mm]
     throughfall::Vector{T}
     # A scaling parameter [mm⁻¹] (controls exponential decline of kv₀)
-    f::Vector{T}
+    f::Vector{T} | "mm-1"
     # Amount of water in the unsaturated store, per layer [mm]
     ustorelayerdepth::Vector{SVector{N,T}}
     # Saturated store [mm]
@@ -76,14 +76,14 @@ Base.@kwdef struct SBM{T,N,M}
     # Maximum canopy storage [mm]
     cmax::Vector{T}
     # Canopy gap fraction [-]
-    canopygapfraction::Vector{T}
+    canopygapfraction::Vector{T} | "-"
     # Gash interception model parameter, ratio of the average evaporation from the
     # wet canopy [mm Δt⁻¹] and the average precipitation intensity [mm Δt⁻¹] on a saturated canopy
-    e_r::Vector{T}
+    e_r::Vector{T} | "-"
     # Precipitation [mm]
     precipitation::Vector{T}
     # Temperature [ᵒC]
-    temperature::Vector{T}
+    temperature::Vector{T} | "°C"
     # Potential evapotranspiration [mm]
     potential_evaporation::Vector{T}
     # Potential transpiration, open water, river and soil evaporation (after subtracting interception from potential_evaporation)
@@ -124,8 +124,9 @@ Base.@kwdef struct SBM{T,N,M}
     actinfiltsoil::Vector{T}
     # Actual infiltration compacted fraction [mm]
     actinfiltpath::Vector{T}
+    # Infiltration capacity of the non-compacted areas [mm Δt⁻¹]
+    infiltsoilpath::Vector{T} | "mm Δt-1"
     # Infiltration excess water [mm]
-    infiltsoilpath::Vector{T}
     infiltexcess::Vector{T}
     # Water that cannot infiltrate due to saturated soil (saturation excess) [mm]
     excesswater::Vector{T}
@@ -140,15 +141,15 @@ Base.@kwdef struct SBM{T,N,M}
     # Total surface runoff from infiltration and saturation excess [mm]
     runoff::Vector{T}
     # Volumetric water content [mm mm⁻¹] per soil layer (including θᵣ and saturated zone)
-    vwc::Vector{SVector{N,T}}
+    vwc::Vector{SVector{N,T}} | "mm mm-1"
     # Volumetric water content [%] per soil layer (including θᵣ and saturated zone)
-    vwc_perc::Vector{SVector{N,T}}
+    vwc_perc::Vector{SVector{N,T}} | "%"
     # Root water storage [mm] in unsaturated and saturated zone (excluding θᵣ)
     rootstore::Vector{T}
     # Volumetric water content [mm mm⁻¹] in root zone (including θᵣ and saturated zone)
-    vwc_root::Vector{T}
+    vwc_root::Vector{T} | "mm mm-1"
     # Volumetric water content [%] in root zone (including θᵣ and saturated zone)
-    vwc_percroot::Vector{T}
+    vwc_percroot::Vector{T} | "%"
     # Amount of available water in the unsaturated zone [mm]
     ustoredepth::Vector{T}
     # Downward flux from unsaturated to saturated zone [mm]
@@ -159,19 +160,19 @@ Base.@kwdef struct SBM{T,N,M}
     actleakage::Vector{T}
     ### Snow parameters ###
     # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹]
-    cfmax::Vector{T}
+    cfmax::Vector{T} | "mm ᵒC-1 Δt-1"
     # Threshold temperature for snowfall [ᵒC]
-    tt::Vector{T}
+    tt::Vector{T} | "ᵒC"
     # Threshold temperature interval length [ᵒC]
-    tti::Vector{T}
+    tti::Vector{T} | "ᵒC"
     # Threshold temperature for snowmelt [ᵒC]
-    ttm::Vector{T}
+    ttm::Vector{T} | "ᵒC"
     # Water holding capacity as fraction of current snow pack [-]
-    whc::Vector{T}
+    whc::Vector{T} | "-"
     # Soil temperature smooth factor [-]
-    w_soil::Vector{T}
+    w_soil::Vector{T} | "-"
     # Controls soil infiltration reduction factor when soil is frozen [-]
-    cf_soil::Vector{T}
+    cf_soil::Vector{T} | "-"
     # Snow storage [mm]
     snow::Vector{T}
     # Liquid water content in the snow pack [mm]
@@ -179,27 +180,27 @@ Base.@kwdef struct SBM{T,N,M}
     # Snow melt + precipitation as rainfall [mm]
     rainfallplusmelt::Vector{T}
     # Threshold temperature for snowfall above glacier [ᵒC]
-    g_tt::Vector{T}
+    g_tt::Vector{T} | "ᵒC"
     # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹] for glacier
-    g_cfmax::Vector{T}
+    g_cfmax::Vector{T} | "mm ᵒC-1 Δt-1"
     # Fraction of the snowpack on top of the glacier converted into ice [-]
-    g_sifrac::Vector{T}
+    g_sifrac::Vector{T} | "-"
     # Water within the glacier [mm]
     glacierstore::Vector{T}
     # Fraction covered by a glacier [-]
-    glacierfrac::Vector{T}
+    glacierfrac::Vector{T} | "-"
     # Top soil temperature [ᵒC]
-    tsoil::Vector{T}
+    tsoil::Vector{T} | "ᵒC"
     ## Interception related to leaf_area_index climatology ###
     # Specific leaf storage [mm]
     sl::Vector{T}
     # Storage woody part of vegetation [mm]
     swood::Vector{T}
     # Extinction coefficient [-] (to calculate canopy gap fraction)
-    kext::Vector{T}
+    kext::Vector{T} | "-"
     # Leaf area index [m² m⁻²]
-    leaf_area_index::Vector{T}
-    # Water level land [mm]
+    leaf_area_index::Vector{T} | "m2 m-2"
+    # Water level land [mm] 
     waterlevel_land::Vector{T}
     # Water level river [mm]
     waterlevel_river::Vector{T}
@@ -369,21 +370,21 @@ function initialize_sbm(nc, config, riverfrac, xl, yl, inds)
         sel = inds,
         defaults = 10.0,
         type = Float64,
-    )
+    ).* (Δt / basetimestep)
     infiltcapsoil = ncread(
         nc,
         param(config, "input.vertical.infiltcapsoil", nothing);
         sel = inds,
         defaults = 100.0,
         type = Float64,
-    )
+    ).* (Δt / basetimestep)
     maxleakage = ncread(
         nc,
         param(config, "input.vertical.maxleakage", nothing);
         sel = inds,
         defaults = 0.0,
         type = Float64,
-    )
+    ).* (Δt / basetimestep)
 
     c = ncread(
         nc,
