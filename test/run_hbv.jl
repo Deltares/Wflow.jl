@@ -3,6 +3,7 @@ tomlpath = joinpath(@__DIR__, "hbv_config.toml")
 config = Wflow.Config(tomlpath)
 
 model = Wflow.initialize_hbv_model(config)
+@unpack network = model
 
 model = Wflow.update(model)
 
@@ -52,7 +53,7 @@ end
     @test sum(q) ≈ 3278.9423039643552
     @test q[500] ≈ 0.2348646912841589
     @test q[1566] ≈ 0.030463805623037462
-    @test q[network.land.order[end]] ≈ 0.08683128190194403
+    @test q[network.land.order[end]] ≈ 0.296794455575309
 end
 
 @testset "river flow" begin
@@ -60,7 +61,7 @@ end
     @test sum(q) ≈ 51941.417623244706
     @test q[500] ≈ 5.6934140250393055
     @test q[88] ≈ 8.839325386868788
-    @test q[network.river.order[end]] ≈ 2.913948136664789
+    @test q[network.river.order[end]] ≈ 363.528899708456
 end
 
 benchmark = @benchmark Wflow.update(model)

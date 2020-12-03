@@ -9,6 +9,10 @@
         targetminfrac = [0.2425554726620697],
         precipitation = [4.2],
         evaporation = [1.5],
+        inflow = [NaN],
+        outflow = [NaN],
+        percfull = [NaN],
+        demandrelease = [NaN],
     )
 
     Wflow.update(res, 1, 100.0, 86400.0)
@@ -32,9 +36,12 @@ end
         e = [2.0],
         sh = [DataFrame()],
         hq = [DataFrame()],
+        storage = Wflow.initialize_storage([1], [180510409.0], [18.5], [DataFrame()]),
         waterlevel = [18.5],
         precipitation = [20.0],
         evaporation = [3.2],
+        inflow = [NaN],
+        outflow = [NaN],
     )
 
     Wflow.update(lake, 1, 2500.0, 181, 86400.0)
@@ -46,7 +53,10 @@ end
 end
 
 datadir = joinpath(@__DIR__, "data")
-
+sh = [
+    CSV.read(joinpath(datadir, "lake_sh_1.csv"), DataFrame, type = Float64),
+    CSV.read(joinpath(datadir, "lake_sh_2.csv"), DataFrame, type = Float64),
+]
 @testset "linked lakes (HBV)" begin
     lake = Wflow.NaturalLake{Float64}(
         loc_id = [1, 2],
@@ -57,10 +67,7 @@ datadir = joinpath(@__DIR__, "data")
         outflowfunc = [2, 1],
         b = [140.0, 0.0],
         e = [1.5, 1.5],
-        sh = [
-            CSV.read(joinpath(datadir, "lake_sh_1.csv"), DataFrame, type = Float64),
-            CSV.read(joinpath(datadir, "lake_sh_2.csv"), DataFrame, type = Float64),
-        ],
+        sh = sh,
         hq = [
             DataFrame(),
             CSV.read(joinpath(datadir, "lake_hq_2.csv"), DataFrame, type = Float64),
@@ -68,6 +75,9 @@ datadir = joinpath(@__DIR__, "data")
         waterlevel = [395.03027, 394.87833],
         precipitation = [10.0, 10.0],
         evaporation = [2.0, 2.0],
+        inflow = [NaN, NaN],
+        outflow = [NaN, NaN],
+        storage = Wflow.initialize_storage([2, 2], [472461536.0, 60851088.0], [395.03027, 394.87833], sh),
     )
 
     Wflow.update(lake, 1, 500.0, 15, 86400.0)

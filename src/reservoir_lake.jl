@@ -1,17 +1,17 @@
-Base.@kwdef struct SimpleReservoir{T}
-    maxvolume::Vector{T}                                # maximum storage (above which water is spilled) [m³]
-    area::Vector{T}                                     # reservoir area [m²]
-    maxrelease::Vector{T}                               # maximum amount that can be released if below spillway [m³ s⁻¹]
-    demand::Vector{T}                                   # minimum (environmental) flow requirement downstream of the reservoir [m³ s⁻¹]
-    targetminfrac::Vector{T}                            # target minimum full fraction (of max storage) [-]
-    targetfullfrac::Vector{T}                           # target fraction full (of max storage) [-]
-    volume::Vector{T} = targetfullfrac .* maxvolume     # reservoir volume [m³]
-    inflow::Vector{T} = fill(mv, length(area))          # inflow into reservoir [m³]
-    outflow::Vector{T} = fill(mv, length(area))         # outflow from reservoir [m³ s⁻¹]
-    percfull::Vector{T} = fill(mv, length(area))        # fraction full (of max storage) [-]
-    demandrelease::Vector{T} = fill(mv, length(area))   # minimum (environmental) flow released from reservoir [m³ s⁻¹]
-    precipitation::Vector{T} = fill(mv, length(area))   # average precipitation for reservoir area [mm]
-    evaporation::Vector{T} = fill(mv, length(area))     # average evaporation for reservoir area [mm]
+@get_units @with_kw struct SimpleReservoir{T}
+    maxvolume::Vector{T} | "m3"                         # maximum storage (above which water is spilled) [m³]
+    area::Vector{T} | "m2"                              # reservoir area [m²]
+    maxrelease::Vector{T} | "m3 s-1"                    # maximum amount that can be released if below spillway [m³ s⁻¹]
+    demand::Vector{T} | "m3 s-1"                        # minimum (environmental) flow requirement downstream of the reservoir [m³ s⁻¹]
+    targetminfrac::Vector{T} | "-"                      # target minimum full fraction (of max storage) [-]
+    targetfullfrac::Vector{T} | "-"                     # target fraction full (of max storage) [-]
+    volume::Vector{T} | "m3"                            # reservoir volume [m³]
+    inflow::Vector{T} | "m3 s-1"                        # inflow into reservoir [m³ s⁻¹]
+    outflow::Vector{T} | "m3 s-1"                       # outflow from reservoir [m³ s⁻¹]
+    percfull::Vector{T} | "-"                           # fraction full (of max storage) [-]
+    demandrelease::Vector{T} | "m3 s-1"                 # minimum (environmental) flow released from reservoir [m³ s⁻¹]
+    precipitation::Vector{T}                            # average precipitation for reservoir area [mm]
+    evaporation::Vector{T}                              # average evaporation for reservoir area [mm]
 
     function SimpleReservoir{T}(args...) where {T}
         equal_size_vectors(args)
@@ -112,6 +112,7 @@ function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits)
     # all upstream flow goes to the river and flows into the reservoir
     pits[inds_res] .= true
 
+    n = length(resarea)
     reservoirs = SimpleReservoir{Float64}(
         demand = resdemand,
         maxrelease = resmaxrelease,
@@ -119,6 +120,13 @@ function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits)
         area = resarea,
         targetfullfrac = res_targetfullfrac,
         targetminfrac = res_targetminfrac,
+        volume = res_targetfullfrac .* resmaxvolume, 
+        inflow = fill(mv, n),
+        outflow = fill(mv, n),
+        percfull = fill(mv, n),
+        demandrelease = fill(mv, n),
+        precipitation = fill(mv, n),
+        evaporation = fill(mv, n),
     )
 
     return reservoirs,
@@ -172,23 +180,23 @@ function update(res::SimpleReservoir, i, inflow, timestepsecs)
     return res
 end
 
-Base.@kwdef struct NaturalLake{T}
-    loc_id::Vector{Int}                     # location id of lake outlet
-    lowerlake_ind::Vector{Int}              # Index of lower lake (linked lakes)
-    area::Vector{T}                         # lake area [m²]
-    threshold::Vector{T}                    # water level threshold H₀ [m] below that level outflow is zero
-    storfunc::Vector{Int}                   # type of lake storage curve, 1: S = AH, 2: S = f(H) from lake data and interpolation
-    outflowfunc::Vector{Int}                # type of lake rating curve, 1: Q = f(H) from lake data and interpolation, 2: General Q = b(H - H₀)ᵉ, 3: Case of Puls Approach Q = b(H - H₀)²
-    b::Vector{T}                            # rating curve coefficient
-    e::Vector{T}                            # rating curve exponent
+@get_units @with_kw struct NaturalLake{T}
+    loc_id::Vector{Int} | "-"               # location id of lake outlet
+    lowerlake_ind::Vector{Int} | "-"        # Index of lower lake (linked lakes)
+    area::Vector{T} | "m2"                  # lake area [m²]
+    threshold::Vector{T} | "m"              # water level threshold H₀ [m] below that level outflow is zero
+    storfunc::Vector{Int} | "-"             # type of lake storage curve, 1: S = AH, 2: S = f(H) from lake data and interpolation
+    outflowfunc::Vector{Int} | "-"          # type of lake rating curve, 1: Q = f(H) from lake data and interpolation, 2: General Q = b(H - H₀)ᵉ, 3: Case of Puls Approach Q = b(H - H₀)²
+    b::Vector{T} | "m3/2 s-1 (if e=3/2)"    # rating curve coefficient
+    e::Vector{T} | "-"                      # rating curve exponent
     sh::Vector{DataFrame}                   # data for storage curve
     hq::Vector{DataFrame}                   # data for rating curve
-    waterlevel::Vector{T}                   # waterlevel H [m] of lake
-    inflow::Vector{T} = fill(mv, length(area))   # inflow to the lake [m³ s⁻¹]
-    storage::Vector{T} = initialize_storage(storfunc, area, waterlevel, sh) # storage lake [m³]
-    outflow::Vector{T} = fill(mv, length(area))        # outflow lake [m³ s⁻¹]
-    precipitation::Vector{T} = fill(mv, length(area))  # average precipitation for lake area [mm]
-    evaporation::Vector{T} = fill(mv, length(area))    # average evaporation for lake area [mm]
+    waterlevel::Vector{T} | "m"             # waterlevel H [m] of lake
+    inflow::Vector{T} | "m3 s-1"            # inflow to the lake [m³ s⁻¹]
+    storage::Vector{T} | "m3"               # storage lake [m³]
+    outflow::Vector{T} | "m3 s-1"           # outflow lake [m³ s⁻¹]
+    precipitation::Vector{T}    	        # average precipitation for lake area [mm]
+    evaporation::Vector{T}                  # average evaporation for lake area [mm]
 
     function NaturalLake{T}(args...) where {T}
         equal_size_vectors(args)
@@ -329,7 +337,7 @@ function initialize_natural_lake(config, static_path, nc, inds_riv, nriv, pits)
             @warn("For the modified pulse approach (LakeOutflowFunc = 3) the LakeStorFunc should be 1")
         end
     end
-
+    n = length(lakearea)
     lakes = NaturalLake{Float64}(
         loc_id = lakelocs,
         lowerlake_ind = linked_lakelocs,
@@ -343,6 +351,11 @@ function initialize_natural_lake(config, static_path, nc, inds_riv, nriv, pits)
         sh = sh,
         hq = hq,
         is_lake = is_lake,
+        inflow = fill(mv, n),
+        storage = initialize_storage(lake_storfunc, lakearea, lake_waterlevel, sh),
+        outflow = fill(mv, n),
+        precipitation = fill(mv, n),
+        evaporation = fill(mv, n),
     )
 
     return lakes,

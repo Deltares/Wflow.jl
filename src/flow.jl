@@ -1,28 +1,28 @@
-Base.@kwdef struct SurfaceFlow{T,R,L}
-    β::T = 0.6                              # constant in Manning's equation
-    sl::Vector{T}                           # Slope [m m⁻¹]
-    n::Vector{T}                            # Manning's roughness [sl m⁻⅓]
-    dl::Vector{T}                           # Drain length [m]
-    q::Vector{T} = fill(0.0, length(sl))    # Discharge [m³ s⁻¹]
-    q_av::Vector{T} = fill(0.0, length(sl)) # Average discharge [m³ s⁻¹]
-    qlat::Vector{T} = fill(0.0, length(sl)) # Lateral discharge [m³ s⁻¹]
-    h::Vector{T} = fill(0.0, length(sl))    # Water level [m]
-    h_av::Vector{T} = fill(0.0, length(sl)) # Average water level [m]
-    Δt::T                                   # Model time step [s]
-    its::Int                                # Number of fixed iterations
-    width::Vector{T}                        # Flow width [m]
-    alpha_term::Vector{T} = pow.(n ./ sqrt.(sl), β)  # Constant part of α
-    alpha_pow::T = (2.0 / 3.0) * β          # Used in the power part of α
-    α::Vector{T} = alpha_term .* pow.(width .+ 2.0 .* h, alpha_pow) # Constant in momentum equation A = αQᵝ, based on Manning's equation
-    eps::T = 1e-03                          # Maximum allowed change in α, if exceeded cross sectional area and h is recalculated
-    cel::Vector{T} = fill(0.0, length(sl))  # Celerity of the kinematic wave
-    to_river::Vector{T} = fill(0.0, length(sl)) # Part of overland flow [m³ s⁻¹] that flows to the river
-    rivercells::Vector{Bool} = fill(false, length(sl)) # Location of river cells (0 or 1)
-    wb_pit::Vector{Bool} = fill(false, length(sl)) # Boolean location (0 or 1) of a waterbody (wb, reservoir or lake).
-    reservoir_index::Vector{Int} = fill(0, length(sl)) # map cell to 0 (no reservoir) or i (pick reservoir i in reservoir field)
-    lake_index::Vector{Int} = fill(0, length(sl))      # map cell to 0 (no lake) or i (pick lake i in lake field)
-    reservoir::R = nothing                  # Reservoir model struct of arrays
-    lake::L = nothing                       # Lake model struct of arrays
+@get_units @with_kw struct SurfaceFlow{T,R,L}
+    β::T | "-"                              # constant in Manning's equation
+    sl::Vector{T} | "m m-1"                 # Slope [m m⁻¹]
+    n::Vector{T} | "s m-1/3"                # Manning's roughness [s m⁻⅓]
+    dl::Vector{T} | "m"                     # Drain length [m]
+    q::Vector{T} | "m3 s-1"                 # Discharge [m³ s⁻¹]
+    q_av::Vector{T} | "m3 s-1"              # Average discharge [m³ s⁻¹]
+    qlat::Vector{T} | "m3 s-1"              # Lateral discharge [m³ s⁻¹]
+    h::Vector{T} | "m"                      # Water level [m]
+    h_av::Vector{T} | "m"                   # Average water level [m]
+    Δt::T | "s"                             # Model time step [s]
+    its::Int | "-"                          # Number of fixed iterations
+    width::Vector{T} | "m"                  # Flow width [m]
+    alpha_term::Vector{T} | "s3/5 m-1/5"    # Constant part of α
+    alpha_pow::T | "-"                      # Used in the power part of α
+    α::Vector{T} | "s3/5 m1/5"              # Constant in momentum equation A = αQᵝ, based on Manning's equation
+    eps::T | "s3/5 m1/5"                    # Maximum allowed change in α, if exceeded cross sectional area and h is recalculated
+    cel::Vector{T} | "m s-1"                # Celerity of the kinematic wave
+    to_river::Vector{T} | "m3 s-1"          # Part of overland flow [m³ s⁻¹] that flows to the river
+    rivercells::Vector{Bool} | "-"          # Location of river cells (0 or 1)
+    wb_pit::Vector{Bool} | "-"              # Boolean location (0 or 1) of a waterbody (wb, reservoir or lake).
+    reservoir_index::Vector{Int} | "-"      # map cell to 0 (no reservoir) or i (pick reservoir i in reservoir field)
+    lake_index::Vector{Int} | "-"           # map cell to 0 (no lake) or i (pick lake i in lake field)
+    reservoir::R                            # Reservoir model struct of arrays
+    lake::L                                 # Lake model struct of arrays
 
     # TODO unclear why this causes a MethodError
     # function SurfaceFlow{T,R,L}(args...) where {T,R,L}
@@ -146,23 +146,24 @@ function update(
 
 end
 
-Base.@kwdef struct LateralSSF{T}
-    kh₀::Vector{T}                          # Horizontal hydraulic conductivity at soil surface [mm Δt⁻¹]
-    f::Vector{T}                            # A scaling parameter [mm⁻¹] (controls exponential decline of kh₀)
-    soilthickness::Vector{T}                # Soil thickness [mm]
-    θₑ::Vector{T}                           # Effective porosity [-]
-    Δt::T = 1.0                               # model time step
-    βₗ::Vector{T}                           # Slope [m m⁻¹]
+@get_units @with_kw struct LateralSSF{T}
+    kh₀::Vector{T} | "mm Δt-1"              # Horizontal hydraulic conductivity at soil surface [mm Δt⁻¹]
+    f::Vector{T} | "mm-1"                   # A scaling parameter [mm⁻¹] (controls exponential decline of kh₀)
+    soilthickness::Vector{T} | "mm"         # Soil thickness [mm]
+    θₑ::Vector{T} | "mm mm-1"               # Effective porosity [-]
+    t::T | "Δt s"                           # time step [Δt s]
+    Δt::T | "s"                             # model time step [s]
+    βₗ::Vector{T} | "m m-1"                  # Slope [m m⁻¹]
     dl::Vector{T}                           # Drain length [mm]
     dw::Vector{T}                           # Flow width [mm]
-    zi::Vector{T} = fill(mv, length(f))     # Pseudo-water table depth [mm] (top of the saturated zone)
-    exfiltwater::Vector{T} = fill(mv, length(f))  # Exfiltration [mm]  (groundwater above surface level, saturated excess conditions)
-    recharge::Vector{T} = fill(mv, length(f))     # Net recharge to saturated store [mm]
-    ssf::Vector{T} # Subsurface flow [mm³ Δt⁻¹]
-    ssfin::Vector{T} = fill(mv, length(f))
-    ssfmax::Vector{T} = ((kh₀ .* βₗ) ./ f) .* (1.0 .- exp.(-f .* soilthickness))     # Maximum subsurface flow [mm² Δt⁻¹]
-    to_river::Vector{T} = zeros(length(f))  # Part of subsurface flow [mm³ Δt⁻¹] that flows to the river
-    wb_pit::Vector{Bool} = zeros(Bool, length(f)) # Boolean location (0 or 1) of a waterbody (wb, reservoir or lake).
+    zi::Vector{T}                           # Pseudo-water table depth [mm] (top of the saturated zone)
+    exfiltwater::Vector{T}                  # Exfiltration [mm]  (groundwater above surface level, saturated excess conditions)
+    recharge::Vector{T}                     # Net recharge to saturated store [mm]
+    ssf::Vector{T} | "mm3 Δt-1"             # Subsurface flow [mm³ Δt⁻¹]
+    ssfin::Vector{T} | "mm3 Δt-1" 
+    ssfmax::Vector{T} | "mm2 Δt-1"          # Maximum subsurface flow [mm² Δt⁻¹]
+    to_river::Vector{T} | "mm3 Δt-1"        # Part of subsurface flow [mm³ Δt⁻¹] that flows to the river
+    wb_pit::Vector{Bool} | "-"              # Boolean location (0 or 1) of a waterbody (wb, reservoir or lake).
 
     function LateralSSF{T}(args...) where {T}
         equal_size_vectors(args)
@@ -211,7 +212,7 @@ function update(ssf::LateralSSF, network, frac_toriver, river)
             ssf.θₑ[v],
             ssf.f[v],
             ssf.soilthickness[v],
-            ssf.Δt,
+            ssf.t,
             ssf.dl[v],
             ssf.dw[v],
             ssf.ssfmax[v],
