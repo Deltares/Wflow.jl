@@ -56,10 +56,16 @@ include("utils.jl")
     run_simulation(tomlpath::String)
     run_simulation(config::Config)
     run_simulation(model::Model)
+    run_simulation()
 
 Run an entire simulation starting either from a path to a TOML settings file,
 a prepared `Config` object, or an initialized `Model` object. This allows more flexibility
 if you want to for example modify a `Config` before initializing the `Model`.
+
+The 0 argument version expects ARGS to contain a single entry, pointing to the TOML path.
+This makes it easier to start a run from the command line without having to escape quotes:
+
+    `julia -e 'using Wflow; Wflow.run_simulation()' 'path/to/config.toml'`
 """
 function run_simulation(tomlpath)
     config = Config(tomlpath)
@@ -107,6 +113,19 @@ function run_simulation(model::Model; close_files = true)
         Wflow.close_files(model, delete_output = false)
     end
     return model
+end
+
+function run_simulation()
+    usage = "Usage: julia -e 'using Wflow; Wflow.run_simulation()` 'path/to/config.toml'"
+    n = length(ARGS)
+    if n != 1
+        throw(ArgumentError(usage))
+    end
+    toml_path = only(ARGS)
+    if !isfile(toml_path)
+        throw(ArgumentError("File not found: $(toml_path)\n" * usage))
+    end
+    Wflow.run_simulation(toml_path)
 end
 
 end # module
