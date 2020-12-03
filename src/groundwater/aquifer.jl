@@ -88,13 +88,13 @@ transmissivity).
 """
 @get_units struct ConfinedAquifer{T} <: Aquifer
     head::Vector{T} | "m"  # hydraulic head [m]
-    k::Vector{T} | "m m-1"  # horizontal conductivity [m m⁻¹]
+    k::Vector{T} | "m d-1"  # horizontal conductivity [m d⁻¹]
     top::Vector{T} | "m" # top of groundwater layer [m]
     bottom::Vector{T} | "m" # bottom of groundwater layer
     area::Vector{T} | "m2" # area of cell
     specific_storage::Vector{T} | "m m-1 m-1" # [m m⁻¹ m⁻¹]
     storativity::Vector{T} | "m m-1" # [m m⁻¹]
-    conductance::Vector{T} | "m d-1" # Confined aquifer conductance is constant
+    conductance::Vector{T} | "m2 d-1" # Confined aquifer conductance is constant
 end
 
 
