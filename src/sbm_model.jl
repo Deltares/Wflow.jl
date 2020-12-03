@@ -125,11 +125,17 @@ function initialize_sbm_model(config::Config)
         zi = sbm.zi,
         soilthickness = sbm.soilthickness,
         θₑ = sbm.θₛ .- sbm.θᵣ,
-        Δt = 1.0,
+        Δt = tosecond(Δt),
+        t = 1.0,
         βₗ = βₗ,
         dl = dl .* 1000.0,
         dw = dw .* 1000.0,
+        exfiltwater = fill(mv,n),
+        recharge = fill(mv,n),
         ssf = ((kh₀ .* βₗ) ./ sbm.f) .* (exp.(-sbm.f .* sbm.zi) - exp.(-sbm.f .* sbm.soilthickness)) .* dw .*1000.0,
+        ssfin = fill(mv,n),
+        ssfmax = ((kh₀ .* βₗ) ./ sbm.f) .* (1.0 .- exp.(-sbm.f .* sbm.soilthickness)),
+        to_river = zeros(n),   
         wb_pit = pits[inds],
     )
 
@@ -141,14 +147,35 @@ function initialize_sbm_model(config::Config)
         type = Float64,
     )
 
+    alpha_pow = (2.0 / 3.0) * 0.6
+    β = 0.6
+    h = fill(0.0, n)
+    alpha_term = pow.(n_land ./ sqrt.(βₗ), β)
     olf = SurfaceFlow(
+        β = β,
         sl = βₗ,
         n = n_land,
         dl = dl,
+        q = fill(0.0, n),   
+        q_av = fill(0.0, n),
+        qlat = fill(0.0, n),
+        h = h,
+        h_av = fill(0.0, n),
         Δt = tosecond(Δt),
         its = kw_land_tstep > 0 ? Int(cld(tosecond(Δt), kw_land_tstep)) : kw_land_tstep,
         width = sw,
         wb_pit = pits[inds],
+        alpha_term = alpha_term,
+        alpha_pow = alpha_pow,
+        α = alpha_term .* pow.(sw .+ 2.0 .* h, alpha_pow),
+        eps = 1e-03,
+        cel = fill(0.0, n),
+        to_river = fill(0.0, n),
+        rivercells = fill(false, n),
+        reservoir_index = fill(0, n), 
+        lake_index = fill(0, n),      
+        reservoir = nothing,
+        lake = nothing,
     )
 
     pcr_dir = dims_xy ? permute_indices(pcrdir) : pcrdir
@@ -180,14 +207,29 @@ function initialize_sbm_model(config::Config)
     # the indices of the river cells in the land(+river) cell vector
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
     frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, βₗ, n)
-
+    
+    h_river = fill(0.0, nriv)
+    alpha_term = pow.(n_river ./ sqrt.(riverslope), β)
     rf = SurfaceFlow(
+        β = β,
         sl = riverslope,
         n = n_river,
         dl = riverlength,
+        q = fill(0.0, nriv),   
+        q_av = fill(0.0, nriv),
+        qlat = fill(0.0, nriv),
+        h = h_river,
+        h_av = fill(0.0, nriv),
         Δt = tosecond(Δt),
         its = kw_river_tstep > 0 ? ceil(Int(tosecond(Δt) / kw_river_tstep)) : kw_river_tstep,
         width = riverwidth,
+        wb_pit = fill(false, nriv),
+        alpha_term = alpha_term,
+        alpha_pow = alpha_pow,
+        α = alpha_term .* pow.(riverwidth .+ 2.0 .* h_river, alpha_pow),
+        eps = 1e-03,
+        cel = fill(0.0, nriv),
+        to_river = fill(0.0, nriv),
         reservoir_index = do_reservoirs ? resindex : fill(0, nriv),
         lake_index = do_lakes ? lakeindex : fill(0, nriv),
         reservoir = do_reservoirs ? reservoirs : nothing,
