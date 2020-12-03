@@ -13,13 +13,13 @@ end
 check_flux(flux, aquifer::ConfinedAquifer, index::Int) = flux 
 
 
-struct River{T} <: AquiferBoundaryCondition
-    stage::Vector{T}
-    infiltration_conductance::Vector{T}
-    exfiltration_conductance::Vector{T}
-    bottom::Vector{T}
-    flux::Vector{T}
-    index::Vector{Int}
+@get_units struct River{T} <: AquiferBoundaryCondition
+    stage::Vector{T} | "m"
+    infiltration_conductance::Vector{T} | "m2 d-1"
+    exfiltration_conductance::Vector{T} | "m2 d-1"
+    bottom::Vector{T} | "m"
+    flux::Vector{T} | "m3 d-1"
+    index::Vector{Int} | "-"
 end
 
 
@@ -41,7 +41,7 @@ function flux!(Q, river::River, aquifer)
 end
             
         
-struct Drainage{T} <: AquiferBoundaryCondition
+@get_units struct Drainage{T} <: AquiferBoundaryCondition
     elevation::Vector{T}
     conductance::Vector{T}
     flux::Vector{T}
@@ -60,11 +60,11 @@ function flux!(Q, drainage::Drainage, aquifer)
 end
 
 
-struct HeadBoundary{T} <: AquiferBoundaryCondition
-    head::Vector{T}
-    conductance::Vector{T}
-    flux::Vector{T}
-    index::Vector{Int}
+@get_units struct HeadBoundary{T} <: AquiferBoundaryCondition
+    head::Vector{T} | "m"
+    conductance::Vector{T} | "m2 d-1"
+    flux::Vector{T} | "m3 d-1"
+    index::Vector{Int} | "-"
 end
 
 
@@ -79,10 +79,10 @@ function flux!(Q, headboundary::HeadBoundary, aquifer)
 end
 
 
-struct Recharge{T} <: AquiferBoundaryCondition
-    rate::Vector{T}
-    flux::Vector{T}
-    index::Vector{Int}
+@get_units struct Recharge{T} <: AquiferBoundaryCondition
+    rate::Vector{T} | "m d-1"
+    flux::Vector{T} | "m3 d-1"
+    index::Vector{Int} | "-"
 end
 
 
@@ -95,10 +95,10 @@ function flux!(Q, recharge::Recharge, aquifer)
 end
 
 
-struct Well{T} <: AquiferBoundaryCondition
-    volumetric_rate::Vector{T}
-    flux::Vector{T}
-    index::Vector{Int}
+@get_units struct Well{T} <: AquiferBoundaryCondition
+    volumetric_rate::Vector{T} | "m3 d-1"
+    flux::Vector{T} | "m3 d-1"
+    index::Vector{Int} | "-"
 end
 
 
