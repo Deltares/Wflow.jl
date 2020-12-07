@@ -3,6 +3,7 @@ using Dates
 using LightGraphs
 using NCDatasets
 using StaticArrays
+using Statistics
 using Test
 using UnPack
 using Wflow
@@ -52,4 +53,5 @@ include("testing_utils.jl")
     include("run.jl")
     include("groundwater.jl")
     include("utils.jl")
+    include("bmi.jl")
 end
