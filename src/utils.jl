@@ -287,6 +287,15 @@ function sum_at(A, inds)
     return v
 end
 
+"Return the sum of the function `f` at indices `inds`"
+function sum_at(f::Function, inds, T)
+    v = zero(T)
+    for i in inds
+        v += f(i)
+    end
+    return v
+end
+
 # https://juliaarrays.github.io/StaticArrays.jl/latest/pages/api/#Arrays-of-static-arrays-1
 function svectorscopy(x::Matrix{T}, ::Val{N}) where {T,N}
     size(x, 1) == N || error("sizes mismatch")
