@@ -171,16 +171,21 @@ function update(ssf::LateralSSF, network, frac_toriver, river)
     @unpack graph, order = network
     for v in order
         upstream_nodes = inneighbors(graph, v)
+        upstream_excl_pits = filter(i -> !ssf.wb_pit[i], upstream_nodes)
         # for a river cell without a reservoir or lake (wb_pit is false) part of the upstream subsurface flow
         # goes to the river (frac_toriver) and part goes to the subsurface flow reservoir (1.0 - frac_toriver)
         # upstream nodes with a reservoir or lake are excluded
         if river[v] && !ssf.wb_pit[v]
-            ssf.ssfin[v] = sum(
-                ssf.ssf[i] * (1.0 - frac_toriver[i])
-                for i in upstream_nodes if !ssf.wb_pit[i]
+            ssf.ssfin[v] = sum_at(
+                i -> ssf.ssf[i] * (1.0 - frac_toriver[i]),
+                upstream_excl_pits,
+                eltype(ssf.ssfin),
             )
-            ssf.to_river[v] =
-                sum(ssf.ssf[i] * frac_toriver[i] for i in upstream_nodes if !ssf.wb_pit[i])
+            ssf.to_river[v] = sum_at(
+                i -> ssf.ssf[i] * frac_toriver[i],
+                upstream_excl_pits,
+                eltype(ssf.to_river),
+            )
             # for a river cell with a reservoir or lake (wb_pit is true) all upstream subsurface flow goes
             # to the river.
         elseif river[v] && ssf.wb_pit[v]
