@@ -18,6 +18,7 @@ pages = [
         "Kinematic wave" => "lateral/kinwave.md",
         "Groundwater flow" => "lateral/gwf.md",
     ],
+    "Basic Model Interface" => "bmi.md",
     "Developer documentation" => "devdocs.md",
 ]
 
