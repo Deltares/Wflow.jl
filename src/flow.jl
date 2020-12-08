@@ -69,18 +69,18 @@ function update(
 
     q_sum = zeros(n)
     h_sum = zeros(n)
-    sf.to_river .= 0.0
+    sf.to_river .= 0.0 
 
     for _ = 1:its
         for v in order
             upstream_nodes = inneighbors(graph, v)
-            upstream_excl_pits = filter(i -> !sf.wb_pit[i], upstream_nodes)
             # for overland flow frac_toriver and river cells need to be defined
             if (frac_toriver !== nothing) && (river !== nothing)
                 # for a river cell without a reservoir or lake (wb_pit is false) part of the upstream surface flow
                 # goes to the river (frac_toriver) and part goes to the surface flow reservoir (1.0 - frac_toriver)
                 # upstream nodes with a reservoir or lake are excluded
                 if river[v] && !sf.wb_pit[v] && sf.width[v] > 0.0
+                    upstream_excl_pits = filter(i -> !sf.wb_pit[i], upstream_nodes)
                     qin = sum_at(
                         i -> sf.q[i] * (1.0 - frac_toriver[i]),
                         upstream_excl_pits,
