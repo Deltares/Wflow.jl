@@ -139,14 +139,14 @@ element rather than all at once.
 """
 function update(res::SimpleReservoir, i, inflow, timestepsecs)
 
-    vol = (
+    vol = max(0.0, (
         res.volume[i] +
         (inflow * timestepsecs) +
         (res.precipitation[i] * (timestepsecs / tosecond(basetimestep)) / 1000.0) *
         res.area[i] -
         (res.evaporation[i] * (timestepsecs / tosecond(basetimestep)) / 1000.0) *
         res.area[i]
-    )
+    ))
 
     percfull = vol / res.maxvolume[i]
     # first determine minimum (environmental) flow using a simple sigmoid curve to scale for target level
