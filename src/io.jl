@@ -640,17 +640,7 @@ function prepare_writer(
         csv_cols = []
         for col in config.csv.column
             parameter = col["parameter"]
-            if occursin("river", col["parameter"])
-                reducer_func = reducer(
-                    col,
-                    rev_inds.river,
-                    x_nc,
-                    y_nc,
-                    dims_xy,
-                    config,
-                    nc_static,
-                )
-            elseif occursin("reservoir", col["parameter"])
+            if occursin("reservoir", col["parameter"])
                 reducer_func = reducer(
                     col,
                     rev_inds.reservoir,
@@ -664,6 +654,16 @@ function prepare_writer(
                 reducer_func = reducer(
                     col,
                     rev_inds.lake,
+                    x_nc,
+                    y_nc,
+                    dims_xy,
+                    config,
+                    nc_static,
+                )
+            elseif occursin("river", col["parameter"])
+                reducer_func = reducer(
+                    col,
+                    rev_inds.river,
                     x_nc,
                     y_nc,
                     dims_xy,
