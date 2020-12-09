@@ -103,11 +103,11 @@ TCsed = "TCsed"
 precipitation = "prec"
 pathfrac = "pathfrac"
 
-#[output.lateral.land]
-#olsed = "olsed"
-#olclay = "olclay"
-#inlandsed = "inlandsed"
-#inlandclay = "inlandclay"
+[output.lateral.land]
+olsed = "olsed"
+olclay = "olclay"
+inlandsed = "inlandsed"
+inlandclay = "inlandclay"
 
 [output.lateral.river]
 Sedconc = "Sedconc"
@@ -128,67 +128,67 @@ path = "data/output-moselle-sed.csv"
 # parameter = "vertical.SL"
 
 [[csv.column]]
-coordinate.x = 6.255
-coordinate.y = 50.012
+coordinate.x = 6.931
+coordinate.y = 48.085
 header = "SL"
 parameter = "vertical.soilloss"
 
 [[csv.column]]
-coordinate.x = 6.255
-coordinate.y = 50.012
+coordinate.x = 6.931
+coordinate.y = 48.085
 header = "SSPL"
 parameter = "vertical.sedspl"
 
 [[csv.column]]
-coordinate.x = 6.255
-coordinate.y = 50.012
+coordinate.x = 6.931
+coordinate.y = 48.085
 header = "SOV"
 parameter = "vertical.sedov"
 
 [[csv.column]]
-coordinate.x = 6.255
-coordinate.y = 50.012
+coordinate.x = 6.931
+coordinate.y = 48.085
 header = "P"
 parameter = "vertical.precipitation"
 
 [[csv.column]]
-coordinate.x = 6.255
-coordinate.y = 50.012
+coordinate.x = 6.931
+coordinate.y = 48.085
 header = "ql"
 parameter = "vertical.q_land"
 
 [[csv.column]]
-coordinate.x = 6.255
-coordinate.y = 50.012
+coordinate.x = 6.931
+coordinate.y = 48.085
 header = "xl"
 parameter = "vertical.xl"
 
 [[csv.column]]
-coordinate.x = 6.255
-coordinate.y = 50.012
+coordinate.x = 6.931
+coordinate.y = 48.085
 header = "yl"
 parameter = "vertical.yl"
 
 [[csv.column]]
-coordinate.x = 6.255
-coordinate.y = 50.012
+coordinate.x = 6.931
+coordinate.y = 48.085
 header = "TCsed"
 parameter = "vertical.TCsed"
 
 [[csv.column]]
-coordinate.x = 6.255
-coordinate.y = 50.012
+coordinate.x = 6.931
+coordinate.y = 48.085
 header = "TCclay"
 parameter = "vertical.TCclay"
 
 [[csv.column]]
-coordinate.x = 6.255
-coordinate.y = 50.012
+coordinate.x = 6.931
+coordinate.y = 48.085
 header = "olsed"
 parameter = "lateral.land.olsed"
 
 [[csv.column]]
-coordinate.x = 6.255
-coordinate.y = 50.012
+coordinate.x = 6.931
+coordinate.y = 48.085
 header = "inlandsed"
 parameter = "lateral.land.inlandsed"

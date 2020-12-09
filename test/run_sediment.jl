@@ -1,3 +1,4 @@
+using Revise
 using Wflow
 tomlpath = joinpath(@__DIR__, "test", "sediment_config.toml")
 config = Wflow.Config(tomlpath)
