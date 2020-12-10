@@ -426,7 +426,8 @@ function update_sbm_gwf(model)
 
     Q = zeros(vertical.n)
     # exchange of recharge between vertical sbm concept and groundwater flow domain
-    lateral.subsurface.recharge.rate .= vertical.recharge ./ 1000.0
+    # recharge rate groundwater [m d⁻¹]
+    lateral.subsurface.recharge.rate .= vertical.recharge ./ 1000.0 .* (1.0/Δt_sbm)
     # update groundwater domain
     update(lateral.subsurface.flow, Q, Δt_sbm)
     
