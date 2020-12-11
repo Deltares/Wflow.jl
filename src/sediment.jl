@@ -1023,21 +1023,26 @@ function update(rs::RiverSed, network, config)
     for v in order
         ### Sediment input in the cell (left from previous timestep + from land + from upstream outflux) ###
         upstream_nodes = inneighbors(graph, v)
+
+        inrivclay = 0.0
+        inrivsilt = 0.0
+        inrivsand = 0.0
+        inrivsagg = 0.0
+        inrivlagg = 0.0
+        inrivgrav = 0.0
         if !isempty(upstream_nodes)
-            inrivclay = sum(rs.outclay[i] for i in upstream_nodes)
-            inrivsilt = sum(rs.outsilt[i] for i in upstream_nodes)
-            inrivsand = sum(rs.outsand[i] for i in upstream_nodes)
-            inrivsagg = sum(rs.outsagg[i] for i in upstream_nodes)
-            inrivlagg = sum(rs.outlagg[i] for i in upstream_nodes)
-            inrivgrav = sum(rs.outgrav[i] for i in upstream_nodes)
-        else
-            inrivclay = 0.0
-            inrivsilt = 0.0
-            inrivsand = 0.0
-            inrivsagg = 0.0
-            inrivlagg = 0.0
-            inrivgrav = 0.0
+            for i in upstream_nodes
+                if rs.outclay[i] >= 0.0 # avoid NaN from upstream non-river cells
+                    inrivclay += rs.outclay[i]
+                    inrivsilt += rs.outsilt[i]
+                    inrivsand += rs.outsand[i]
+                    inrivsagg += rs.outsagg[i]
+                    inrivlagg += rs.outlagg[i]
+                    inrivgrav += rs.outgrav[i]
+                end
+            end
         end
+
         inclay = rs.clayload[v] + rs.inlandclay[v] + inrivclay
         insilt = rs.siltload[v] + rs.inlandsilt[v] + inrivsilt
         insand = rs.sandload[v] + rs.inlandsand[v] + inrivsand
@@ -1353,8 +1358,8 @@ function update(rs::RiverSed, network, config)
         SS = SSclay + SSsilt + SSsagg + SSsand + SSlagg + SSgrav
         Bed = rs.outsed[v] - SS
 
-        rs.SSconc[v] = insed#SS * toconc
-        rs.Bedconc[v] = maxsed#Bed * toconc
+        rs.SSconc[v] = SS * toconc
+        rs.Bedconc[v] = Bed * toconc
 
     end
 

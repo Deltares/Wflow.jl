@@ -14,10 +14,30 @@ timestepsecs = 86400
 
 [state]
 path_input = "data/instates-moselle-sed.nc" 
-path_output = "data/outstates-moselle-sed.nc" # TODO implement
+path_output = "data/outstates-moselle-sed.nc"
 
 # if listed, the variable must be present in the NetCDF or error
 # if not listed, the variable can get a default value if it has one
+
+[state.lateral.river]
+clayload = "clayload"
+siltload = "siltload"
+sandload = "sandload"
+saggload = "saggload"
+laggload = "laggload"
+gravload = "gravload"
+claystore = "claystore"
+siltstore = "siltstore"
+sandstore = "sandstore"
+saggstore = "saggstore"
+laggstore = "laggstore"
+gravstore = "gravstore"
+outclay = "outclay"
+outsilt = "outsilt"
+outsand = "outsand"
+outsagg = "outsagg"
+outlagg = "outlagg"
+outgrav = "outgrav"
 
 [input]
 path_forcing = "data/forcing-moselle-sed.nc"
@@ -113,6 +133,11 @@ inlandclay = "inlandclay"
 Sedconc = "Sedconc"
 SSconc = "SSconc"
 Bedconc = "Bedconc"
+clayload = "clayload"
+inlandclay = "inlandclayriv"
+outclay = "outclay"
+h_riv = "h_riv"
+width = "widthriv"
 
 [csv]
 path = "data/output-moselle-sed.csv"

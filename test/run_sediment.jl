@@ -8,7 +8,7 @@ model = Wflow.initialize_sediment_model(config)
 
 model = Wflow.update(model)
 
-flush(model.writer.csv_io)
+#flush(model.writer.csv_io)
 
 Wflow.close_files(model)
 
