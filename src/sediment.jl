@@ -10,13 +10,13 @@ Base.@kwdef struct LandSed{T}
     # Fraction of river [-]
     riverfrac::Vector{T}
     # Depth of overland flow [m]
-    h_land::Vector{T} = fill(mv, n)
+    h_land::Vector{T}
     # Canopy interception [mm]
-    interception::Vector{T} = fill(mv, n)
+    interception::Vector{T}
     # Precipitation [mm]
-    precipitation::Vector{T} = fill(mv, n)
+    precipitation::Vector{T}
     # Overland flow [m3/s]
-    q_land::Vector{T} = fill(mv, n)
+    q_land::Vector{T}
     # Canopy height [m]
     canopyheight::Vector{T}
     # Canopy gap fraction [mm]
@@ -36,26 +36,26 @@ Base.@kwdef struct LandSed{T}
     # USLE soil erodibility factor [-]
     usleK::Vector{T}
     # Sediment eroded by rainfall [ton]
-    sedspl::Vector{T} = fill(mv, n)
+    sedspl::Vector{T}
     # Sediment eroded by overland flow [ton]
-    sedov::Vector{T} = fill(mv, n)
+    sedov::Vector{T}
     # Total eroded soil [ton]
-    soilloss::Vector{T} = fill(mv, n)
+    soilloss::Vector{T}
     # Eroded soil per particle class [ton]
-    erosclay::Vector{T} = fill(mv, n)
-    erossilt::Vector{T} = fill(mv, n)
-    erossand::Vector{T} = fill(mv, n)
-    erossagg::Vector{T} = fill(mv, n)
-    eroslagg::Vector{T} = fill(mv, n)
+    erosclay::Vector{T}
+    erossilt::Vector{T}
+    erossand::Vector{T}
+    erossagg::Vector{T}
+    eroslagg::Vector{T}
     ## Interception related to leaf_area_index climatology ###
     # Specific leaf storage [mm]
-    sl::Vector{T} = fill(mv, n)
+    sl::Vector{T}
     # Storage woody part of vegetation [mm]
-    swood::Vector{T} = fill(mv, n)
+    swood::Vector{T}
     # Extinction coefficient [-] (to calculate canopy gap fraction)
-    kext::Vector{T} = fill(mv, n)
+    kext::Vector{T}
     # Leaf area index [m² m⁻²]
-    leaf_area_index::Vector{T} = fill(mv, n)
+    leaf_area_index::Vector{T}
     ### Transport capacity part ###                          
     # Drain length [m]
     dl::Vector{T}
@@ -83,13 +83,13 @@ Base.@kwdef struct LandSed{T}
     # Filter with river cells
     rivcell::Vector{T}  
     # Total transport capacity of overland flow [ton]          
-    TCsed::Vector{T} = fill(mv, n)
+    TCsed::Vector{T}
     # Transport capacity of overland flow per particle class [ton]          
-    TCclay::Vector{T} = fill(mv, n)
-    TCsilt::Vector{T} = fill(mv, n)
-    TCsand::Vector{T} = fill(mv, n)
-    TCsagg::Vector{T} = fill(mv, n)
-    TClagg::Vector{T} = fill(mv, n)
+    TCclay::Vector{T}
+    TCsilt::Vector{T}
+    TCsand::Vector{T}
+    TCsagg::Vector{T}
+    TClagg::Vector{T}
 
     function LandSed{T}(args...) where {T}
         equal_size_vectors(args)
@@ -632,38 +632,38 @@ Base.@kwdef struct OLFSed{T}
     # Filter with river cells
     rivcell::Vector{T}
     # Forcing for the river
-    h_riv::Vector{T} = fill(mv, n)
-    q_riv::Vector{T} = fill(mv, n)
+    h_riv::Vector{T}
+    q_riv::Vector{T}
     # Total eroded soil [ton]
-    soilloss::Vector{T} = fill(mv, n)
+    soilloss::Vector{T}
     # Eroded soil per particle class [ton]
-    erosclay::Vector{T} = fill(mv, n)
-    erossilt::Vector{T} = fill(mv, n)
-    erossand::Vector{T} = fill(mv, n)
-    erossagg::Vector{T} = fill(mv, n)
-    eroslagg::Vector{T} = fill(mv, n)
+    erosclay::Vector{T}
+    erossilt::Vector{T}
+    erossand::Vector{T}
+    erossagg::Vector{T}
+    eroslagg::Vector{T}
     # Total transport capacity of overland flow [ton]          
-    TCsed::Vector{T} = fill(mv, n)
+    TCsed::Vector{T}
     # Transport capacity of overland flow per particle class [ton]          
-    TCclay::Vector{T} = fill(mv, n)
-    TCsilt::Vector{T} = fill(mv, n)
-    TCsand::Vector{T} = fill(mv, n)
-    TCsagg::Vector{T} = fill(mv, n)
-    TClagg::Vector{T} = fill(mv, n)
+    TCclay::Vector{T}
+    TCsilt::Vector{T}
+    TCsand::Vector{T}
+    TCsagg::Vector{T}
+    TClagg::Vector{T}
     # Sediment flux in overland flow [ton]
-    olsed::Vector{T} = fill(mv, n)
-    olclay::Vector{T} = fill(mv, n)
-    olsilt::Vector{T} = fill(mv, n)
-    olsand::Vector{T} = fill(mv, n)
-    olsagg::Vector{T} = fill(mv, n)
-    ollagg::Vector{T} = fill(mv, n)
+    olsed::Vector{T}
+    olclay::Vector{T}
+    olsilt::Vector{T}
+    olsand::Vector{T}
+    olsagg::Vector{T}
+    ollagg::Vector{T}
     # Sediment reaching the river with overland flow [ton]
-    inlandsed::Vector{T} = fill(mv, n)
-    inlandclay::Vector{T} = fill(mv, n)
-    inlandsilt::Vector{T} = fill(mv, n)
-    inlandsand::Vector{T} = fill(mv, n)
-    inlandsagg::Vector{T} = fill(mv, n)
-    inlandlagg::Vector{T} = fill(mv, n)
+    inlandsed::Vector{T}
+    inlandclay::Vector{T}
+    inlandsilt::Vector{T}
+    inlandsand::Vector{T}
+    inlandsagg::Vector{T}
+    inlandlagg::Vector{T}
 
 
     function OLFSed{T}(args...) where {T}
@@ -748,43 +748,43 @@ Base.@kwdef struct RiverSed{T}
     # Sediment density [kg/m3]
     rhos::Vector{T}
     # River water level [m]
-    h_riv::Vector{T} = fill(mv, n)
+    h_riv::Vector{T}
     # River discharge [m3/s]
-    q_riv::Vector{T} = fill(mv, n)
+    q_riv::Vector{T}
     # Sediment input from land erosion [ton]
-    inlandclay::Vector{T} = fill(0.0, n)
-    inlandsilt::Vector{T} = fill(0.0, n)
-    inlandsand::Vector{T} = fill(0.0, n)
-    inlandsagg::Vector{T} = fill(0.0, n)
-    inlandlagg::Vector{T} = fill(0.0, n)
+    inlandclay::Vector{T}
+    inlandsilt::Vector{T}
+    inlandsand::Vector{T}
+    inlandsagg::Vector{T}
+    inlandlagg::Vector{T}
     # Sediment / particle left in the cell [ton]
-    sedload::Vector{T} = fill(0.0, n)
-    clayload::Vector{T} = fill(0.0, n)
-    siltload::Vector{T} = fill(0.0, n)
-    sandload::Vector{T} = fill(0.0, n)
-    saggload::Vector{T} = fill(0.0, n)
-    laggload::Vector{T} = fill(0.0, n)
-    gravload::Vector{T} = fill(0.0, n)
+    sedload::Vector{T}
+    clayload::Vector{T}
+    siltload::Vector{T}
+    sandload::Vector{T}
+    saggload::Vector{T}
+    laggload::Vector{T}
+    gravload::Vector{T}
     # Sediment / particle stored on the river bed after deposition [ton]
-    sedstore::Vector{T} = fill(0.0, n)
-    claystore::Vector{T} = fill(0.0, n)
-    siltstore::Vector{T} = fill(0.0, n)
-    sandstore::Vector{T} = fill(0.0, n)
-    saggstore::Vector{T} = fill(0.0, n)
-    laggstore::Vector{T} = fill(0.0, n)
-    gravstore::Vector{T} = fill(0.0, n)
+    sedstore::Vector{T}
+    claystore::Vector{T}
+    siltstore::Vector{T}
+    sandstore::Vector{T}
+    saggstore::Vector{T}
+    laggstore::Vector{T}
+    gravstore::Vector{T}
     # Sediment / particle flux [ton]
-    outsed::Vector{T} = fill(0.0, n)
-    outclay::Vector{T} = fill(0.0, n)
-    outsilt::Vector{T} = fill(0.0, n)
-    outsand::Vector{T} = fill(0.0, n)
-    outsagg::Vector{T} = fill(0.0, n)
-    outlagg::Vector{T} = fill(0.0, n)
-    outgrav::Vector{T} = fill(0.0, n)
+    outsed::Vector{T}
+    outclay::Vector{T}
+    outsilt::Vector{T}
+    outsand::Vector{T}
+    outsagg::Vector{T}
+    outlagg::Vector{T}
+    outgrav::Vector{T}
     # Sediment concentrations [mg/L]
-    Sedconc::Vector{T} = fill(0.0, n)
-    SSconc::Vector{T} = fill(0.0, n)
-    Bedconc::Vector{T} = fill(0.0, n)
+    Sedconc::Vector{T}
+    SSconc::Vector{T}
+    Bedconc::Vector{T}
     
 
     function RiverSed{T}(args...) where {T}
@@ -1000,8 +1000,39 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
         TCrbed = TCrbed,
         rhos = rhos,
         # Forcing
-        #h_riv = fill(mv, nriv),
-        #q_riv = fill(mv, nriv),
+        h_riv = fill(mv, nriv),
+        q_riv = fill(mv, nriv),
+        # Input from land
+        inlandclay = fill(0.0, nriv),
+        inlandsilt = fill(0.0, nriv),
+        inlandsand = fill(0.0, nriv),
+        inlandsagg = fill(0.0, nriv),
+        inlandlagg = fill(0.0, nriv),
+        # Outputs and states
+        sedload = fill(0.0, nriv),
+        clayload = fill(0.0, nriv),
+        siltload = fill(0.0, nriv),
+        sandload = fill(0.0, nriv),
+        saggload = fill(0.0, nriv),
+        laggload = fill(0.0, nriv),
+        gravload = fill(0.0, nriv),
+        sedstore = fill(0.0, nriv),
+        claystore = fill(0.0, nriv),
+        siltstore = fill(0.0, nriv),
+        sandstore = fill(0.0, nriv),
+        saggstore = fill(0.0, nriv),
+        laggstore = fill(0.0, nriv),
+        gravstore = fill(0.0, nriv),
+        outsed = fill(0.0, nriv),
+        outclay = fill(0.0, nriv),
+        outsilt = fill(0.0, nriv),
+        outsand = fill(0.0, nriv),
+        outsagg = fill(0.0, nriv),
+        outlagg = fill(0.0, nriv),
+        outgrav = fill(0.0, nriv),
+        Sedconc = fill(0.0, nriv),
+        SSconc = fill(0.0, nriv),
+        Bedconc = fill(0.0, nriv),
         #reservoir_index = do_reservoirs ? resindex : fill(0, nriv),
         #lake_index = do_lakes ? lakeindex : fill(0, nriv),
         #reservoir = do_reservoirs ? reservoirs : nothing,
