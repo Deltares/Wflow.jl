@@ -107,19 +107,20 @@ function initialize_sediment_model(config::Config)
     graph = flowgraph(ldd, inds, pcr_dir)
 
     # River processes
-    
-    ldd_riv = ldd_2d[inds_riv]
-    graph_riv = flowgraph(ldd_riv, inds_riv, pcr_dir)
 
     # the indices of the river cells in the land(+river) cell vector
     βₗ = ncread(nc, param(config, "input.lateral.land.slope"); sel = inds, type = Float64)
     clamp!(βₗ, 0.00001, Inf)
     riverlength = riverlength_2d[inds_riv]
     riverwidth = riverwidth_2d[inds_riv]
-
+    ldd_riv = ldd_2d[inds_riv]
+    # if do_pits
+    #     ldd_riv = set_pit_ldd(pits_2d, ldd_riv, inds_riv)
+    # end
+    graph_riv = flowgraph(ldd_riv, inds_riv, pcr_dir)
 
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
-    frac_toriver = Wflow.fraction_runoff_toriver(graph, ldd, index_river, βₗ, n)
+    frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, βₗ, n)
 
     rs = initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
 
@@ -223,14 +224,15 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:LandSed,R,W}
     if do_river
         # Forcing come from lateral.land instead of netcdf directly
         # Fix update_forcing in io to allow forcing for river (problem wih sel)
-        lateral.river.h_riv .= lateral.land.h_riv[network.index_river]
-        lateral.river.q_riv .= lateral.land.q_riv[network.index_river]
+        inds_riv = network.index_river
+        lateral.river.h_riv .= lateral.land.h_riv[inds_riv]
+        lateral.river.q_riv .= lateral.land.q_riv[inds_riv]
         
-        lateral.river.inlandclay .= lateral.land.inlandclay[network.index_river]
-        lateral.river.inlandsilt .= lateral.land.inlandsilt[network.index_river]
-        lateral.river.inlandsand .= lateral.land.inlandsand[network.index_river]
-        lateral.river.inlandsagg .= lateral.land.inlandsagg[network.index_river]
-        lateral.river.inlandlagg .= lateral.land.inlandlagg[network.index_river]
+        lateral.river.inlandclay .= lateral.land.inlandclay[inds_riv]
+        lateral.river.inlandsilt .= lateral.land.inlandsilt[inds_riv]
+        lateral.river.inlandsand .= lateral.land.inlandsand[inds_riv]
+        lateral.river.inlandsagg .= lateral.land.inlandsagg[inds_riv]
+        lateral.river.inlandlagg .= lateral.land.inlandlagg[inds_riv]
 
         update(lateral.river, network.river, config)
     end
