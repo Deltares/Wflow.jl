@@ -25,3 +25,15 @@ different components: a snow routine, a soil routine and a runoff response routi
 component is discussed separately in more detail in [HBV vertical concept](@ref).
 
 The routing for river and overland flow is described in [Kinematic wave](@ref).
+
+Below the mapping for wflow\_hbv (type `hbv`) to the vertical HBV concept (instance of `struct
+HBV`) and the different lateral concepts.
+
+```julia
+vertical => struct HBV{T}
+lateral.subsurface => struct LateralSSF{T}
+lateral.land => struct SurfaceFlow{T,R,L}
+lateral.river => struct SurfaceFlow{T,R,L}
+lateral.river.lake => struct NaturalLake{T} # optional
+lateral.river.reservoir => struct SimpleReservoir{T} # optional
+```
