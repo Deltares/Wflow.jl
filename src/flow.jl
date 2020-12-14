@@ -69,7 +69,12 @@ function update(
 
     q_sum = zeros(n)
     h_sum = zeros(n)
-    sf.to_river .= 0.0 
+    sf.to_river .= 0.0
+    # because of possible iterations set reservoir inflow at start to zero, the total sum of
+    # inflow at each sub time step is calculated
+    if !isnothing(sf.reservoir)
+        sf.reservoir.inflow .= 0.0
+    end 
 
     for _ = 1:its
         for v in order
@@ -86,7 +91,6 @@ function update(
                         upstream_excl_pits,
                         eltype(sf.q),
                     )
-                    # TODO: if in a loop should also take average!!!
                     sf.to_river[v] += sum_at(
                         i -> sf.q[i] * frac_toriver[i],
                         upstream_excl_pits,

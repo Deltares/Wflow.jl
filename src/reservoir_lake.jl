@@ -164,7 +164,7 @@ function update(res::SimpleReservoir, i, inflow, timestepsecs)
 
     # update values in place
     res.outflow[i] = outflow / timestepsecs
-    res.inflow[i] = inflow
+    res.inflow[i] += inflow * timestepsecs
     res.demandrelease[i] = demandrelease / timestepsecs
     res.percfull[i] = percfull
     res.volume[i] = vol
