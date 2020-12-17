@@ -11,7 +11,10 @@ using CSV
 using DataFrames
 using BenchmarkTools
 using Base.MathConstants: eulergamma
+using BasicModelInterface
 import Polynomials
+
+const BMI = BasicModelInterface
 
 # ensure test data is present
 testdir = @__DIR__
