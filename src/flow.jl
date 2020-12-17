@@ -80,7 +80,7 @@ function update(
         sf.lake.inflow .= 0.0
         sf.lake.totaloutflow .= 0.0
     end
-    
+
     for _ = 1:its
         for v in order
             upstream_nodes = inneighbors(graph, v)
@@ -120,7 +120,7 @@ function update(
             elseif !isnothing(sf.lake) && sf.lake_index[v] != 0
                 # run lake model and copy lake outflow to river cell
                 i = sf.lake_index[v]
-                update(sf.lake, i, qin, doy)
+                update(sf.lake, i, qin, doy, adt)
                 sf.q[v] = sf.lake.outflow[i]
             else
                 sf.q[v] =

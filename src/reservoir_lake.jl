@@ -184,7 +184,6 @@ function update(res::SimpleReservoir, i, inflow, timestepsecs)
 end
 
 @get_units @with_kw struct NaturalLake{T}
-    loc_id::Vector{Int} | "-"               # location id of lake outlet
     lowerlake_ind::Vector{Int} | "-"        # Index of lower lake (linked lakes)
     area::Vector{T} | "m2"                  # lake area [m²]
     threshold::Vector{T} | "m"              # water level threshold H₀ [m] below that level outflow is zero
@@ -195,7 +194,7 @@ end
     sh::Vector{DataFrame}                   # data for storage curve
     hq::Vector{DataFrame}                   # data for rating curve
     waterlevel::Vector{T} | "m"             # waterlevel H [m] of lake
-    inflow::Vector{T} | "m3"            # inflow to the lake [m³]
+    inflow::Vector{T} | "m3"                # inflow to the lake [m³]
     storage::Vector{T} | "m3"               # storage lake [m³]
     outflow::Vector{T} | "m3 s-1"           # outflow lake [m³ s⁻¹]
     totaloutflow::Vector{T} | "m3"          # total outflow lake [m³] 
@@ -252,56 +251,56 @@ function initialize_natural_lake(config, static_path, nc, inds_riv, nriv, pits)
     lakearea = ncread(
         nc,
         param(config, "input.lateral.river.lake.area");
-        sel = inds_riv,
+        sel = inds_lake,
         type = Float64,
         fill = 0,
     )
     lake_b = ncread(
         nc,
         param(config, "input.lateral.river.lake.b");
-        sel = inds_riv,
+        sel = inds_lake,
         type = Float64,
         fill = 0,
     )
     lake_e = ncread(
         nc,
         param(config, "input.lateral.river.lake.e");
-        sel = inds_riv,
+        sel = inds_lake,
         type = Float64,
         fill = 0,
     )
     lake_threshold = ncread(
         nc,
         param(config, "input.lateral.river.lake.threshold");
-        sel = inds_riv,
+        sel = inds_lake,
         type = Float64,
         fill = 0,
     )
     linked_lakelocs = ncread(
         nc,
         param(config, "input.lateral.river.lake.linkedlakelocs");
-        sel = inds_riv,
+        sel = inds_lake,
         type = Int,
         fill = 0,
     )
     lake_storfunc = ncread(
         nc,
         param(config, "input.lateral.river.lake.storfunc");
-        sel = inds_riv,
+        sel = inds_lake,
         type = Int,
         fill = 0,
     )
     lake_outflowfunc = ncread(
         nc,
         param(config, "input.lateral.river.lake.outflowfunc");
-        sel = inds_riv,
+        sel = inds_lake,
         type = Int,
         fill = 0,
     )
     lake_waterlevel = ncread(
         nc,
         param(config, "input.lateral.river.lake.waterlevel");
-        sel = inds_riv,
+        sel = inds_lake,
         type = Float64,
         fill = 0,
     )
@@ -312,7 +311,7 @@ function initialize_natural_lake(config, static_path, nc, inds_riv, nriv, pits)
 
     # This is currently the same length as all river cells, but will be the
     # length of all lake cells. To do that we need to introduce a mapping.
-    n_lakes = length(lakelocs)
+    n_lakes = length(inds_lake)
 
     sh = Vector{DataFrame}(undef, n_lakes)
     hq = Vector{DataFrame}(undef, n_lakes)
@@ -343,7 +342,6 @@ function initialize_natural_lake(config, static_path, nc, inds_riv, nriv, pits)
     end
     n = length(lakearea)
     lakes = NaturalLake{Float64}(
-        loc_id = lakelocs,
         lowerlake_ind = linked_lakelocs,
         area = lakearea,
         threshold = lake_threshold,
@@ -354,7 +352,6 @@ function initialize_natural_lake(config, static_path, nc, inds_riv, nriv, pits)
         waterlevel = lake_waterlevel,
         sh = sh,
         hq = hq,
-        is_lake = is_lake,
         inflow = fill(mv, n),
         storage = initialize_storage(lake_storfunc, lakearea, lake_waterlevel, sh),
         outflow = fill(mv, n),
