@@ -63,32 +63,32 @@ model = Wflow.update(model)
     @test sbm.altitude[1] == 643.5469970703125
     @test sbm.θₛ[1] == 0.48343977332115173
     @test sbm.runoff[1] == 0.0
-    @test sbm.soilevap[1] == 0.0021875758041212754
-    @test sbm.snow[1] == 0.003959971215481306
+    @test sbm.soilevap[1] == 0.005865653627803281
+    @test sbm.snow[1] == 0.009696763863612956
 end
 
 @testset "subsurface flow" begin
     ssf = model.lateral.subsurface.ssf
-    @test sum(ssf) ≈ 6.366946301229305e16
+    @test sum(ssf) ≈ 6.368136336079665e16
     @test ssf[network.land.order[1]] ≈ 3.0449782003445332e13
-    @test ssf[network.land.order[end-100]] ≈ 7.855917592164835e11 
+    @test ssf[network.land.order[end-100]] ≈ 7.855716706804882e11 
     @test ssf[network.land.order[end]] ≈ 2.1612469198596365e11
 end
 
 @testset "overland flow" begin
     q = model.lateral.land.q_av
-    @test sum(q) ≈ 319.5431417107033
+    @test sum(q) ≈ 319.69538082148307
     @test q[26625] ≈ 0.0
     @test q[39308] ≈ 0.0
-    @test q[network.land.order[end]] ≈ 1.0982978827424664e-5
+    @test q[network.land.order[end]] ≈ 1.0978547520221912e-5
 end
 
 @testset "river flow" begin
     q = model.lateral.river.q_av
-    @test sum(q) ≈ 2810.2194127632292
-    @test q[4061] ≈ 0.0016281281135651462
-    @test q[5617] ≈  7.333526376670132
-    @test q[network.river.order[end]] ≈  0.006105261373360455
+    @test sum(q) ≈ 2811.093099307159
+    @test q[4061] ≈ 0.0016288040314320486
+    @test q[5617] ≈  7.338204361667292
+    @test q[network.river.order[end]] ≈  0.00610520650626283
 end
 
 @testset "reservoir simple" begin
@@ -121,8 +121,8 @@ model = Wflow.run_simulation(config)
 # downstream from pit is at river index 1739, CartesianIndex(142, 85)
 @testset "river flow at and downstream of pit" begin
     q = model.lateral.river.q_av
-    @test q[1765] ≈  3.8522659191681075
-    @test q[1739] ≈  0.0071410737598333026
+    @test q[1765] ≈  3.8628067453276365
+    @test q[1739] ≈  0.007148082967365473
 end
 
 Wflow.close_files(model, delete_output = false)
