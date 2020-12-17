@@ -38,13 +38,14 @@ function initialize_hbv_model(config::Config)
     inds, rev_inds = active_indices(subcatch_2d, missing)
     n = length(inds)
 
-    cfmax = ncread(
-        nc,
-        param(config, "input.vertical.cfmax", nothing);
-        sel = inds,
-        defaults = 3.75653,
-        type = Float64,
-    ) .* (Δt / basetimestep)
+    cfmax =
+        ncread(
+            nc,
+            param(config, "input.vertical.cfmax", nothing);
+            sel = inds,
+            defaults = 3.75653,
+            type = Float64,
+        ) .* (Δt / basetimestep)
     tt = ncread(
         nc,
         param(config, "input.vertical.tt", nothing);
@@ -82,14 +83,15 @@ function initialize_hbv_model(config::Config)
         type = Float64,
         fill = 0.0,
     )
-    g_cfmax = ncread(
-        nc,
-        param(config, "input.vertical.g_cfmax", nothing);
-        sel = inds,
-        defaults = 3.0,
-        type = Float64,
-        fill = 0.0,
-    ).* (Δt / basetimestep)
+    g_cfmax =
+        ncread(
+            nc,
+            param(config, "input.vertical.g_cfmax", nothing);
+            sel = inds,
+            defaults = 3.0,
+            type = Float64,
+            fill = 0.0,
+        ) .* (Δt / basetimestep)
     g_sifrac = ncread(
         nc,
         param(config, "input.vertical.g_sifrac", nothing);
@@ -113,7 +115,7 @@ function initialize_hbv_model(config::Config)
         defaults = 5500.0,
         type = Float64,
         fill = 0.0,
-    )   
+    )
     fc = ncread(
         nc,
         param(config, "input.vertical.fc", nothing);
@@ -135,20 +137,22 @@ function initialize_hbv_model(config::Config)
         defaults = 0.53,
         type = Float64,
     )
-    k4 = ncread(
-        nc,
-        param(config, "input.vertical.k4", nothing);
-        sel = inds,
-        defaults = 0.02307,
-        type = Float64,
-    ) .* (Δt / basetimestep)
-    kquickflow = ncread(
-        nc,
-        param(config, "input.vertical.kquickflow", nothing);
-        sel = inds,
-        defaults = 0.09880,
-        type = Float64,
-    ) .* (Δt / basetimestep)
+    k4 =
+        ncread(
+            nc,
+            param(config, "input.vertical.k4", nothing);
+            sel = inds,
+            defaults = 0.02307,
+            type = Float64,
+        ) .* (Δt / basetimestep)
+    kquickflow =
+        ncread(
+            nc,
+            param(config, "input.vertical.kquickflow", nothing);
+            sel = inds,
+            defaults = 0.09880,
+            type = Float64,
+        ) .* (Δt / basetimestep)
     suz = ncread(
         nc,
         param(config, "input.vertical.suz", nothing);
@@ -156,27 +160,30 @@ function initialize_hbv_model(config::Config)
         defaults = 100.0,
         type = Float64,
     )
-    k0 = ncread(
-        nc,
-        param(config, "input.vertical.k0", nothing);
-        sel = inds,
-        defaults = 0.30,
-        type = Float64,
-    ) .* (Δt / basetimestep)
-    khq = ncread(
-        nc,
-        param(config, "input.vertical.khq", nothing);
-        sel = inds,
-        defaults = 0.09880,
-        type = Float64,
-    ) .* (Δt / basetimestep)
-    hq = ncread(
-        nc,
-        param(config, "input.vertical.hq", nothing);
-        sel = inds,
-        defaults = 3.27,
-        type = Float64,
-    ) .* (Δt / basetimestep)
+    k0 =
+        ncread(
+            nc,
+            param(config, "input.vertical.k0", nothing);
+            sel = inds,
+            defaults = 0.30,
+            type = Float64,
+        ) .* (Δt / basetimestep)
+    khq =
+        ncread(
+            nc,
+            param(config, "input.vertical.khq", nothing);
+            sel = inds,
+            defaults = 0.09880,
+            type = Float64,
+        ) .* (Δt / basetimestep)
+    hq =
+        ncread(
+            nc,
+            param(config, "input.vertical.hq", nothing);
+            sel = inds,
+            defaults = 3.27,
+            type = Float64,
+        ) .* (Δt / basetimestep)
     alphanl = ncread(
         nc,
         param(config, "input.vertical.alphanl", nothing);
@@ -184,13 +191,14 @@ function initialize_hbv_model(config::Config)
         defaults = 1.1,
         type = Float64,
     )
-    perc = ncread(
-        nc,
-        param(config, "input.vertical.perc", nothing);
-        sel = inds,
-        defaults = 0.4,
-        type = Float64,
-    ) .* (Δt / basetimestep)
+    perc =
+        ncread(
+            nc,
+            param(config, "input.vertical.perc", nothing);
+            sel = inds,
+            defaults = 0.4,
+            type = Float64,
+        ) .* (Δt / basetimestep)
     cfr = ncread(
         nc,
         param(config, "input.vertical.cfr", nothing);
@@ -219,13 +227,14 @@ function initialize_hbv_model(config::Config)
         defaults = 1.0,
         type = Float64,
     )
-    cflux = ncread(
-        nc,
-        param(config, "input.vertical.cflux", nothing);
-        sel = inds,
-        defaults = 2.0,
-        type = Float64,
-    ) .* (Δt / basetimestep)
+    cflux =
+        ncread(
+            nc,
+            param(config, "input.vertical.cflux", nothing);
+            sel = inds,
+            defaults = 2.0,
+            type = Float64,
+        ) .* (Δt / basetimestep)
     icf = ncread(
         nc,
         param(config, "input.vertical.icf", nothing);
@@ -267,7 +276,7 @@ function initialize_hbv_model(config::Config)
 
     xl = fill(mv, n)
     yl = fill(mv, n)
-    for i=1:n
+    for i = 1:n
         xl[i] = sizeinmetres ? cellength : lattometres(y[i])[1] * cellength
         yl[i] = sizeinmetres ? cellength : lattometres(y[i])[2] * cellength
     end
@@ -275,10 +284,10 @@ function initialize_hbv_model(config::Config)
     threshold = fc .* lp
 
     altitude =
-    ncread(nc, param(config, "input.vertical.altitude"); sel = inds, type = Float64)
+        ncread(nc, param(config, "input.vertical.altitude"); sel = inds, type = Float64)
 
     hbv = HBV{Float64}(
-        Δt =tosecond(Δt),
+        Δt = tosecond(Δt),
         n = n,
         yl = yl,
         xl = xl,
@@ -288,9 +297,10 @@ function initialize_hbv_model(config::Config)
         lp = lp,
         threshold = threshold,
         k4 = k4,
-        kquickflow = set_kquickflow ? kquickflow : pow.(khq, 1.0 .+ alphanl) .* pow.(hq, -alphanl),
+        kquickflow = set_kquickflow ? kquickflow :
+                     pow.(khq, 1.0 .+ alphanl) .* pow.(hq, -alphanl),
         suz = suz,
-        k0 = k0,              
+        k0 = k0,
         khq = khq,
         hq = hq,
         alphanl = alphanl,
@@ -326,20 +336,20 @@ function initialize_hbv_model(config::Config)
         precipitation = fill(mv, n),
         temperature = fill(mv, n),
         potential_evaporation = fill(mv, n),
-        potsoilevap = fill(mv, n),            
-        soilevap = fill(mv, n),               
-        intevap = fill(mv, n),                
-        actevap = fill(mv, n),                
-        rainfallplusmelt = fill(mv, n),       
-        directrunoff = fill(mv, n),           
-        hbv_seepage = fill(mv, n),            
-        in_upperzone = fill(mv, n),           
-        quickflow = fill(mv, n),              
-        real_quickflow = fill(mv, n),         
-        percolation = fill(mv, n),            
-        capflux = fill(mv, n),                
-        baseflow = fill(mv, n),               
-        runoff = fill(mv, n),    
+        potsoilevap = fill(mv, n),
+        soilevap = fill(mv, n),
+        intevap = fill(mv, n),
+        actevap = fill(mv, n),
+        rainfallplusmelt = fill(mv, n),
+        directrunoff = fill(mv, n),
+        hbv_seepage = fill(mv, n),
+        in_upperzone = fill(mv, n),
+        quickflow = fill(mv, n),
+        real_quickflow = fill(mv, n),
+        percolation = fill(mv, n),
+        capflux = fill(mv, n),
+        baseflow = fill(mv, n),
+        runoff = fill(mv, n),
     )
 
     modelsize_2d = size(subcatch_2d)
@@ -355,24 +365,26 @@ function initialize_hbv_model(config::Config)
     inds_riv, rev_inds_riv = active_indices(river_2d, 0)
     nriv = length(inds_riv)
 
-     # reservoirs
-     pits = zeros(Bool, modelsize_2d)
-     if do_reservoirs
-         reservoirs, resindex, reservoir, pits = initialize_simple_reservoir(config, nc, inds_riv, nriv, pits)
-     else
-         reservoir = ()
-     end
- 
-     # lakes
-     if do_lakes
-         lakes, lakeindex, lake, pits = initialize_natural_lake(config, static_path, nc, inds_riv, nriv, pits)
-     else
-         lake = ()
-     end
+    # reservoirs
+    pits = zeros(Bool, modelsize_2d)
+    if do_reservoirs
+        reservoirs, resindex, reservoir, pits =
+            initialize_simple_reservoir(config, nc, inds_riv, nriv, pits)
+    else
+        reservoir = ()
+    end
 
-     ldd_2d = ncread(nc, param(config, "input.ldd"); allow_missing = true)
-     ldd = ldd_2d[inds]
-     if do_pits
+    # lakes
+    if do_lakes
+        lakes, lakeindex, lake, pits =
+            initialize_natural_lake(config, static_path, nc, inds_riv, nriv, pits)
+    else
+        lake = ()
+    end
+
+    ldd_2d = ncread(nc, param(config, "input.ldd"); allow_missing = true)
+    ldd = ldd_2d[inds]
+    if do_pits
         pits_2d = ncread(nc, param(config, "input.pits"); type = Bool, fill = false)
         ldd = set_pit_ldd(pits_2d, ldd, inds)
     end
@@ -400,11 +412,11 @@ function initialize_hbv_model(config::Config)
     h = fill(0.0, n)
     alpha_term = pow.(n_land ./ sqrt.(βₗ), β)
     olf = SurfaceFlow(
-        β = β, 
+        β = β,
         sl = βₗ,
         n = n_land,
         dl = dl,
-        q = fill(0.0, n),   
+        q = fill(0.0, n),
         q_av = fill(0.0, n),
         qlat = fill(0.0, n),
         h = h,
@@ -420,8 +432,8 @@ function initialize_hbv_model(config::Config)
         cel = fill(0.0, n),
         to_river = fill(0.0, n),
         rivercells = fill(false, n),
-        reservoir_index = fill(0, n), 
-        lake_index = fill(0, n),      
+        reservoir_index = fill(0, n),
+        lake_index = fill(0, n),
         reservoir = nothing,
         lake = nothing,
     )
@@ -458,17 +470,18 @@ function initialize_hbv_model(config::Config)
     h_river = fill(0.0, nriv)
     alpha_term = pow.(n_river ./ sqrt.(riverslope), β)
     rf = SurfaceFlow(
-        β = β, 
+        β = β,
         sl = riverslope,
         n = n_river,
         dl = riverlength,
-        q = fill(0.0, nriv),   
+        q = fill(0.0, nriv),
         q_av = fill(0.0, nriv),
         qlat = fill(0.0, nriv),
         h = h_river,
         h_av = fill(0.0, nriv),
         Δt = tosecond(Δt),
-        its = kw_river_tstep > 0 ? ceil(Int(tosecond(Δt) / kw_river_tstep)) : kw_river_tstep,
+        its = kw_river_tstep > 0 ? ceil(Int(tosecond(Δt) / kw_river_tstep)) :
+              kw_river_tstep,
         width = riverwidth,
         wb_pit = fill(false, nriv),
         alpha_term = alpha_term,
@@ -516,8 +529,12 @@ function initialize_hbv_model(config::Config)
         indices = inds,
         reverse_indices = rev_inds,
     )
-    river =
-        (graph = graph_riv, order = topological_sort_by_dfs(graph_riv), indices = inds_riv, reverse_indices = rev_inds_riv)
+    river = (
+        graph = graph_riv,
+        order = topological_sort_by_dfs(graph_riv),
+        indices = inds_riv,
+        reverse_indices = rev_inds_riv,
+    )
 
     model = Model(
         config,
@@ -528,15 +545,10 @@ function initialize_hbv_model(config::Config)
         reader,
         writer,
     )
-    
+
     # read and set states in model object if reinit=true
     if reinit == false
-        set_states(
-            instate_path,
-            model,
-            state_ncnames;
-            type = Float64,
-        )
+        set_states(instate_path, model, state_ncnames; type = Float64)
     end
 
     # make sure the forcing is already loaded
@@ -565,7 +577,11 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:HBV,R,W}
             min.(0.5, lateral.land.sl ./ 5.67) .* min.(1.0, vertical.snow ./ 10000.0)
         maxflux = snowflux_frac .* vertical.snow
         vertical.snow .= accucapacityflux(network.land, vertical.snow, maxflux)
-        vertical.snowwater .= accucapacityflux(network.land, vertical.snowwater, vertical.snowwater .* snowflux_frac)
+        vertical.snowwater .= accucapacityflux(
+            network.land,
+            vertical.snowwater,
+            vertical.snowwater .* snowflux_frac,
+        )
     end
 
     update_after_snow(vertical, config)
@@ -582,8 +598,7 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:HBV,R,W}
         do_iter = kinwave_it,
     )
 
-    lateral.river.qlat .=
-        (lateral.land.to_river[network.index_river]) ./ lateral.river.dl
+    lateral.river.qlat .= (lateral.land.to_river[network.index_river]) ./ lateral.river.dl
 
     update(lateral.river, network.river, do_iter = kinwave_it, doy = dayofyear(clock.time))
 

@@ -5,7 +5,7 @@ Initial part of the SBM model concept. Reads the input settings and data as defi
 Config object. Will return a Model that is ready to run.
 """
 function initialize_sbm_model(config::Config)
-    
+
     # unpack the paths to the NetCDF files
     tomldir = dirname(config)
     static_path = joinpath(tomldir, config.input.path_static)
@@ -24,7 +24,7 @@ function initialize_sbm_model(config::Config)
 
     kw_river_tstep = get(config.model, "kw_river_tstep", 0)
     kw_land_tstep = get(config.model, "kw_land_tstep", 0)
-    
+
     nc = NCDataset(static_path)
     dims = dimnames(nc[param(config, "input.subcatchment")])
 
@@ -39,7 +39,7 @@ function initialize_sbm_model(config::Config)
     inds, rev_inds = active_indices(subcatch_2d, missing)
     n = length(inds)
     modelsize_2d = size(subcatch_2d)
-    
+
     river_2d = ncread(nc, param(config, "input.river_location"); type = Bool, fill = false)
     river = river_2d[inds]
     riverwidth_2d =
@@ -73,29 +73,31 @@ function initialize_sbm_model(config::Config)
     sbm = initialize_sbm(nc, config, riverfrac, xl, yl, inds)
 
     inds_riv, rev_inds_riv = active_indices(river_2d, 0)
-    nriv = length(inds_riv)  
+    nriv = length(inds_riv)
 
     # reservoirs
     pits = zeros(Bool, modelsize_2d)
     if do_reservoirs
-        reservoirs, resindex, reservoir, pits = initialize_simple_reservoir(config, nc, inds_riv, nriv, pits)
+        reservoirs, resindex, reservoir, pits =
+            initialize_simple_reservoir(config, nc, inds_riv, nriv, pits)
     else
         reservoir = ()
     end
 
     # lakes
     if do_lakes
-        lakes, lakeindex, lake, pits = initialize_natural_lake(config, static_path, nc, inds_riv, nriv, pits)
+        lakes, lakeindex, lake, pits =
+            initialize_natural_lake(config, static_path, nc, inds_riv, nriv, pits)
     else
         lake = ()
     end
- 
+
     ldd_2d = ncread(nc, param(config, "input.ldd"); allow_missing = true)
     ldd = ldd_2d[inds]
     if do_pits
         pits_2d = ncread(nc, param(config, "input.pits"); type = Bool, fill = false)
         ldd = set_pit_ldd(pits_2d, ldd, inds)
-    end 
+    end
 
 
     # lateral part sbm
@@ -115,7 +117,7 @@ function initialize_sbm_model(config::Config)
 
     for i = 1:n
         dl[i] = detdrainlength(ldd[i], xl[i], yl[i])
-        dw[i] = (xl[i] * yl[i])/dl[i]
+        dw[i] = (xl[i] * yl[i]) / dl[i]
         sw[i] = river[i] ? max(dw[i] - riverwidth[i], 0.0) : dw[i]
     end
 
@@ -130,12 +132,14 @@ function initialize_sbm_model(config::Config)
         βₗ = βₗ,
         dl = dl .* 1000.0,
         dw = dw .* 1000.0,
-        exfiltwater = fill(mv,n),
-        recharge = fill(mv,n),
-        ssf = ((kh₀ .* βₗ) ./ sbm.f) .* (exp.(-sbm.f .* sbm.zi) - exp.(-sbm.f .* sbm.soilthickness)) .* dw .*1000.0,
-        ssfin = fill(mv,n),
+        exfiltwater = fill(mv, n),
+        recharge = fill(mv, n),
+        ssf = ((kh₀ .* βₗ) ./ sbm.f) .*
+              (exp.(-sbm.f .* sbm.zi) - exp.(-sbm.f .* sbm.soilthickness)) .* dw .*
+              1000.0,
+        ssfin = fill(mv, n),
         ssfmax = ((kh₀ .* βₗ) ./ sbm.f) .* (1.0 .- exp.(-sbm.f .* sbm.soilthickness)),
-        to_river = zeros(n),   
+        to_river = zeros(n),
         wb_pit = pits[inds],
     )
 
@@ -156,7 +160,7 @@ function initialize_sbm_model(config::Config)
         sl = βₗ,
         n = n_land,
         dl = dl,
-        q = fill(0.0, n),   
+        q = fill(0.0, n),
         q_av = fill(0.0, n),
         qlat = fill(0.0, n),
         h = h,
@@ -172,8 +176,8 @@ function initialize_sbm_model(config::Config)
         cel = fill(0.0, n),
         to_river = fill(0.0, n),
         rivercells = fill(false, n),
-        reservoir_index = fill(0, n), 
-        lake_index = fill(0, n),      
+        reservoir_index = fill(0, n),
+        lake_index = fill(0, n),
         reservoir = nothing,
         lake = nothing,
     )
@@ -207,7 +211,7 @@ function initialize_sbm_model(config::Config)
     # the indices of the river cells in the land(+river) cell vector
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
     frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, βₗ, n)
-    
+
     h_river = fill(0.0, nriv)
     alpha_term = pow.(n_river ./ sqrt.(riverslope), β)
     rf = SurfaceFlow(
@@ -215,13 +219,14 @@ function initialize_sbm_model(config::Config)
         sl = riverslope,
         n = n_river,
         dl = riverlength,
-        q = fill(0.0, nriv),   
+        q = fill(0.0, nriv),
         q_av = fill(0.0, nriv),
         qlat = fill(0.0, nriv),
         h = h_river,
         h_av = fill(0.0, nriv),
         Δt = tosecond(Δt),
-        its = kw_river_tstep > 0 ? ceil(Int(tosecond(Δt) / kw_river_tstep)) : kw_river_tstep,
+        its = kw_river_tstep > 0 ? ceil(Int(tosecond(Δt) / kw_river_tstep)) :
+              kw_river_tstep,
         width = riverwidth,
         wb_pit = fill(false, nriv),
         alpha_term = alpha_term,
@@ -291,18 +296,17 @@ function initialize_sbm_model(config::Config)
 
     # read and set states in model object if reinit=false
     if reinit == false
-        set_states(
-            instate_path,
-            model,
-            state_ncnames;
-            type = Float64
-        )
+        set_states(instate_path, model, state_ncnames; type = Float64)
         @unpack lateral, vertical = model
         # update zi for vertical sbm and α for river and overland flow
         zi = max.(0.0, vertical.soilthickness .- vertical.satwaterdepth ./ vertical.θₑ)
         vertical.zi .= zi
-        lateral.river.α .= lateral.river.alpha_term .* pow.(lateral.river.width .+ 2.0 .* lateral.river.h, lateral.river.alpha_pow)
-        lateral.land.α .= lateral.land.alpha_term .* pow.(lateral.land.width .+ 2.0 .* lateral.land.h, lateral.land.alpha_pow)
+        lateral.river.α .=
+            lateral.river.alpha_term .*
+            pow.(lateral.river.width .+ 2.0 .* lateral.river.h, lateral.river.alpha_pow)
+        lateral.land.α .=
+            lateral.land.alpha_term .*
+            pow.(lateral.land.width .+ 2.0 .* lateral.land.h, lateral.land.alpha_pow)
     end
 
     # make sure the forcing is already loaded
@@ -341,7 +345,11 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
             min.(0.5, lateral.land.sl ./ 5.67) .* min.(1.0, vertical.snow ./ 10000.0)
         maxflux = snowflux_frac .* vertical.snow
         vertical.snow .= accucapacityflux(network.land, vertical.snow, maxflux)
-        vertical.snowwater .= accucapacityflux(network.land, vertical.snowwater, vertical.snowwater .* snowflux_frac)
+        vertical.snowwater .= accucapacityflux(
+            network.land,
+            vertical.snowwater,
+            vertical.snowwater .* snowflux_frac,
+        )
     end
 
     # update vertical sbm concept until recharge [mm] to the saturated store
@@ -376,10 +384,12 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
 
     # update river domain with net runoff from vertical sbm concept, overland flow
     # and lateral subsurface flow to the river cells
-    net_runoff_river = 
-        (vertical.net_runoff_river[inds_riv] .* vertical.xl[inds_riv] .* 
-        vertical.yl[inds_riv] .* 0.001) ./ vertical.Δt
-    lateral.river.qlat .= 
+    net_runoff_river =
+        (
+            vertical.net_runoff_river[inds_riv] .* vertical.xl[inds_riv] .*
+            vertical.yl[inds_riv] .* 0.001
+        ) ./ vertical.Δt
+    lateral.river.qlat .=
         (
             lateral.subsurface.to_river[inds_riv] ./ 1.0e9 ./ lateral.river.Δt .+
             lateral.land.to_river[inds_riv] .+ net_runoff_river

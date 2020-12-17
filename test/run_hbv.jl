@@ -22,14 +22,14 @@ flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
     @test row.perc_34 ≈ 1.8980000019073486
     @test row.perc_35 ≈ 2.7100000381469727
     @test row.perc_36 ≈ 3.818000078201294
-    @test row.perc_37 ≈ 2.1440000534057617    
+    @test row.perc_37 ≈ 2.1440000534057617
 end
 
 @testset "first timestep" begin
     hbv = model.vertical
     @test hbv.tt[1] ≈ 0.0
     @test model.clock.iteration == 2
-    @test hbv.altitude[1] == 484.2149963378906 
+    @test hbv.altitude[1] == 484.2149963378906
     @test hbv.soilmoisture[1] == 134.35299682617188
     @test hbv.runoff[1] == 7.406898120121746
     @test hbv.soilevap[1] == 0.0

@@ -29,14 +29,14 @@ end
 #     https://github.com/stevengj/18S096-iap17/blob/master/pset3/pset3-solutions.ipynb
 
 # n coefficients of the Taylor series of E₁(z) + log(z), in type T:
-function E₁_taylor_coefficients(::Type{T}, n::Integer) where T <: Number
+function E₁_taylor_coefficients(::Type{T}, n::Integer) where {T<:Number}
     n < 0 && throw(ArgumentError("$n ≥ 0 is required"))
     n == 0 && return T[]
     n == 1 && return T[-eulergamma]
     # iteratively compute the terms in the series, starting with k=1
     term::T = 1
     terms = T[-eulergamma, term]
-    for k in 2:n
+    for k = 2:n
         term = -term * (k - 1) / (k * k)
         push!(terms, term)
     end
@@ -58,10 +58,10 @@ end
 # for numeric-literal coefficients: simplify to a ratio of two polynomials:
 # return (p,q): the polynomials p(x) / q(x) corresponding to E₁_cf(x, a...),
 # but without the exp(-x) term
-function E₁_cfpoly(n::Integer, ::Type{T}=BigInt) where T <: Real
+function E₁_cfpoly(n::Integer, ::Type{T} = BigInt) where {T<:Real}
     q = Polynomials.Polynomial(T[1])
-    p = x = Polynomials.Polynomial(T[0,1])
-    for i in n:-1:1
+    p = x = Polynomials.Polynomial(T[0, 1])
+    for i = n:-1:1
         p, q = x * p + (1 + i) * q, p # from cf = x + (1+i)/cf = x + (1+i)*q/p
         p, q = p + i * q, p     # from cf = 1 + i/cf = 1 + i*q/p
     end
@@ -71,7 +71,7 @@ end
 
 macro E₁_cf64(z, n::Integer)
     p, q = E₁_cfpoly(n, BigInt)
-    num_expr =  :(@evalpoly zz)
+    num_expr = :(@evalpoly zz)
     append!(num_expr.args, Float64.(Polynomials.coeffs(p)))
     den_expr = :(@evalpoly zz)
     append!(den_expr.args, Float64.(Polynomials.coeffs(q)))
@@ -99,13 +99,16 @@ function expint(z::Union{Float64,Complex{Float64}})
         return @E₁_cf64 z 30
     else # use Taylor expansion, ≤ 37 terms
         r² = x² + y²
-        return r² ≤ 0.36 ? (r² ≤ 2.8e-3 ? (r² ≤ 2e-7 ? @E₁_taylor64(z,4) :
-                                                        @E₁_taylor64(z,8)) :
-                                                        @E₁_taylor64(z,15)) :
-                                                        @E₁_taylor64(z,37)
+        return r² ≤ 0.36 ?
+               (
+            r² ≤ 2.8e-3 ? (r² ≤ 2e-7 ? @E₁_taylor64(z, 4) : @E₁_taylor64(z, 8)) :
+            @E₁_taylor64(z, 15)
+        ) :
+               @E₁_taylor64(z, 37)
     end
 end
-expint(z::Union{T,Complex{T},Rational{T},Complex{Rational{T}}}) where {T <: Integer} = expint(float(z))
+expint(z::Union{T,Complex{T},Rational{T},Complex{Rational{T}}}) where {T<:Integer} =
+    expint(float(z))
 
 ######################################################################
 # exponential integral Eₙ(z)
@@ -118,7 +121,7 @@ function expint(n::Integer, z)
         zinv = inv(z)
         e⁻ᶻ = exp(-z)
         Eᵢ = zinv * e⁻ᶻ
-        for i in 1:-n
+        for i = 1:-n
             Eᵢ = zinv * (e⁻ᶻ + i * Eᵢ)
         end
         return Eᵢ
@@ -127,7 +130,7 @@ function expint(n::Integer, z)
         e⁻ᶻ = exp(-z)
         Eᵢ = expint(z)
         Eᵢ *= !isinf(Eᵢ)
-        for i in 2:n
+        for i = 2:n
             Eᵢ = (e⁻ᶻ - z * Eᵢ) / (i - 1)
         end
         return Eᵢ

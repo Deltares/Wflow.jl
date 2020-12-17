@@ -92,7 +92,7 @@ function run_simulation(config::Config)
     else
         error("unknown model type")
     end
-    
+
     run_simulation(model)
 end
 

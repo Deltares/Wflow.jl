@@ -36,7 +36,7 @@
     # Cumulative sum of soil layers [mm], starting at soil surface (0)
     sumlayers::Vector{SVector{M,T}}
     # Infiltration capacity of the compacted areas [mm Δt⁻¹]
-    infiltcappath::Vector{T} | "mm Δt-1" 
+    infiltcappath::Vector{T} | "mm Δt-1"
     # Soil infiltration capacity [mm/Δt]
     infiltcapsoil::Vector{T} | "mm Δt-1"
     # Maximum leakage [mm/Δt] from saturated zone
@@ -211,7 +211,9 @@
     end
 end
 
-statevars(::SBM; snow=false) = snow ? (:satwaterdepth, :snow, :tsoil, :ustorelayerdepth, :snowwater, :canopystorage,) : (:satwaterdepth, :ustorelayerdepth, :canopystorage,)
+statevars(::SBM; snow = false) =
+    snow ? (:satwaterdepth, :snow, :tsoil, :ustorelayerdepth, :snowwater, :canopystorage) :
+    (:satwaterdepth, :ustorelayerdepth, :canopystorage)
 
 
 function initialize_sbm(nc, config, riverfrac, xl, yl, inds)
@@ -229,15 +231,16 @@ function initialize_sbm(nc, config, riverfrac, xl, yl, inds)
     n = length(inds)
 
     altitude =
-    ncread(nc, param(config, "input.vertical.altitude"); sel = inds, type = Float64)
+        ncread(nc, param(config, "input.vertical.altitude"); sel = inds, type = Float64)
 
-    cfmax = ncread(
-        nc,
-        param(config, "cfmax", nothing);
-        sel = inds,
-        defaults = 3.75653,
-        type = Float64,
-    ) .* (Δt / basetimestep)
+    cfmax =
+        ncread(
+            nc,
+            param(config, "cfmax", nothing);
+            sel = inds,
+            defaults = 3.75653,
+            type = Float64,
+        ) .* (Δt / basetimestep)
     tt = ncread(
         nc,
         param(config, "input.vertical.tt", nothing);
@@ -266,13 +269,14 @@ function initialize_sbm(nc, config, riverfrac, xl, yl, inds)
         defaults = 0.1,
         type = Float64,
     )
-    w_soil = ncread(
-        nc,
-        param(config, "input.vertical.w_soil", nothing);
-        sel = inds,
-        defaults = 0.1125,
-        type = Float64,
-    ) .* (Δt / basetimestep)
+    w_soil =
+        ncread(
+            nc,
+            param(config, "input.vertical.w_soil", nothing);
+            sel = inds,
+            defaults = 0.1125,
+            type = Float64,
+        ) .* (Δt / basetimestep)
     cf_soil = ncread(
         nc,
         param(config, "input.vertical.cf_soil", nothing);
@@ -289,14 +293,15 @@ function initialize_sbm(nc, config, riverfrac, xl, yl, inds)
         type = Float64,
         fill = 0.0,
     )
-    g_cfmax = ncread(
-        nc,
-        param(config, "input.vertical.g_cfmax", nothing);
-        sel = inds,
-        defaults = 3.0,
-        type = Float64,
-        fill = 0.0,
-    ).* (Δt / basetimestep)
+    g_cfmax =
+        ncread(
+            nc,
+            param(config, "input.vertical.g_cfmax", nothing);
+            sel = inds,
+            defaults = 3.0,
+            type = Float64,
+            fill = 0.0,
+        ) .* (Δt / basetimestep)
     g_sifrac = ncread(
         nc,
         param(config, "input.vertical.g_sifrac", nothing);
@@ -336,13 +341,14 @@ function initialize_sbm(nc, config, riverfrac, xl, yl, inds)
         defaults = 0.01,
         type = Float64,
     )
-    kv₀ = ncread(
-        nc,
-        param(config, "input.vertical.kv₀");
-        sel = inds,
-        defaults = 3000.0,
-        type = Float64,
-    ) .* (Δt / basetimestep)
+    kv₀ =
+        ncread(
+            nc,
+            param(config, "input.vertical.kv₀");
+            sel = inds,
+            defaults = 3000.0,
+            type = Float64,
+        ) .* (Δt / basetimestep)
     m = ncread(
         nc,
         param(config, "input.vertical.m", nothing);
@@ -364,27 +370,30 @@ function initialize_sbm(nc, config, riverfrac, xl, yl, inds)
         defaults = 2000.0,
         type = Float64,
     )
-    infiltcappath = ncread(
-        nc,
-        param(config, "input.vertical.infiltcappath", nothing);
-        sel = inds,
-        defaults = 10.0,
-        type = Float64,
-    ).* (Δt / basetimestep)
-    infiltcapsoil = ncread(
-        nc,
-        param(config, "input.vertical.infiltcapsoil", nothing);
-        sel = inds,
-        defaults = 100.0,
-        type = Float64,
-    ).* (Δt / basetimestep)
-    maxleakage = ncread(
-        nc,
-        param(config, "input.vertical.maxleakage", nothing);
-        sel = inds,
-        defaults = 0.0,
-        type = Float64,
-    ).* (Δt / basetimestep)
+    infiltcappath =
+        ncread(
+            nc,
+            param(config, "input.vertical.infiltcappath", nothing);
+            sel = inds,
+            defaults = 10.0,
+            type = Float64,
+        ) .* (Δt / basetimestep)
+    infiltcapsoil =
+        ncread(
+            nc,
+            param(config, "input.vertical.infiltcapsoil", nothing);
+            sel = inds,
+            defaults = 100.0,
+            type = Float64,
+        ) .* (Δt / basetimestep)
+    maxleakage =
+        ncread(
+            nc,
+            param(config, "input.vertical.maxleakage", nothing);
+            sel = inds,
+            defaults = 0.0,
+            type = Float64,
+        ) .* (Δt / basetimestep)
 
     c = ncread(
         nc,
@@ -451,8 +460,8 @@ function initialize_sbm(nc, config, riverfrac, xl, yl, inds)
 
     # if leaf area index climatology provided use sl, swood and kext to calculate cmax, e_r and canopygapfraction
     if haskey(config.input.vertical, "leaf_area_index")
-    # TODO confirm if leaf area index climatology is present in the NetCDF
-    sl = ncread(
+        # TODO confirm if leaf area index climatology is present in the NetCDF
+        sl = ncread(
             nc,
             param(config, "input.vertical.specific_leaf");
             sel = inds,
@@ -581,7 +590,7 @@ function initialize_sbm(nc, config, riverfrac, xl, yl, inds)
         interception = fill(mv, n),
         soilevap = fill(mv, n),
         soilevapsat = fill(mv, n),
-        actcapflux =  fill(mv, n),
+        actcapflux = fill(mv, n),
         actevapsat = fill(mv, n),
         actevap = fill(mv, n),
         runoff_river = fill(mv, n),
@@ -592,7 +601,7 @@ function initialize_sbm(nc, config, riverfrac, xl, yl, inds)
         actinfilt = fill(mv, n),
         actinfiltsoil = fill(mv, n),
         actinfiltpath = fill(mv, n),
-        infiltsoilpath= fill(mv, n),
+        infiltsoilpath = fill(mv, n),
         infiltexcess = fill(mv, n),
         excesswater = fill(mv, n),
         exfiltsatwater = fill(mv, n),
@@ -946,10 +955,8 @@ function update_until_recharge(sbm::SBM, config)
         if n_usl > 0
             ksat = sbm.kvfrac[i][n_usl] * sbm.kv₀[i] * exp(-sbm.f[i] * sbm.zi[i])
             ustorecapacity =
-                sbm.soilwatercapacity[i] - satwaterdepth -
-                sum(@view usld[1:sbm.nlayers[i]])
-            maxcapflux =
-                max(0.0, min(ksat, actevapustore, ustorecapacity, satwaterdepth))
+                sbm.soilwatercapacity[i] - satwaterdepth - sum(@view usld[1:sbm.nlayers[i]])
+            maxcapflux = max(0.0, min(ksat, actevapustore, ustorecapacity, satwaterdepth))
 
             if sbm.zi[i] > rootingdepth
                 capfluxscale =
@@ -978,7 +985,7 @@ function update_until_recharge(sbm::SBM, config)
         transpiration = actevapsat + actevapustore
         actevap = soilevap + transpiration + ae_openw_r + ae_openw_l
 
-        
+
 
         # update the outputs and states
         sbm.n_unsatlayers[i] = n_usl

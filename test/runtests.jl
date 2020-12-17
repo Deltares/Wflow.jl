@@ -36,8 +36,10 @@ staticmaps_lahn_path = testdata(v"0.2.1", "staticmaps-lahn.nc", "staticmaps-lahn
 forcing_moselle_path = testdata(v"0.2", "forcing-2000.nc", "forcing-moselle.nc")
 forcing_lahn_path = testdata(v"0.2", "forcing-lahn.nc", "forcing-lahn.nc")
 instates_moselle_path = testdata(v"0.2.1", "instates-moselle.nc", "instates-moselle.nc")
-forcing_sbm_gw_path = testdata(v"0.2.1", "forcing-sbm-groundwater.nc", "forcing-sbm-groundwater.nc")
-staticmaps_sbm_gw_path = testdata(v"0.2.1", "staticmaps-sbm-groundwater.nc", "staticmaps-sbm-groundwater.nc")
+forcing_sbm_gw_path =
+    testdata(v"0.2.1", "forcing-sbm-groundwater.nc", "forcing-sbm-groundwater.nc")
+staticmaps_sbm_gw_path =
+    testdata(v"0.2.1", "staticmaps-sbm-groundwater.nc", "staticmaps-sbm-groundwater.nc")
 lake_sh_1_path = testdata(v"0.2.1", "lake_sh_1.csv", "lake_sh_1.csv")
 lake_sh_2_path = testdata(v"0.2.1", "lake_sh_2.csv", "lake_sh_2.csv")
 lake_hq_2_path = testdata(v"0.2.1", "lake_hq_2.csv", "lake_hq_2.csv")

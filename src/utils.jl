@@ -93,12 +93,7 @@ and set states in `model` object. Active cells are selected with the correspondi
 # Arguments
 - `type = nothing`: type to convert data to after reading. By default no conversion is done.
 """
-function set_states(
-    instate_path,
-    model,
-    state_ncnames;
-    type = nothing,
-)
+function set_states(instate_path, model, state_ncnames; type = nothing)
     @unpack network = model
     # states in NetCDF include dim time (one value) at index 3 or 4, 3 or 4 dims are allowed
     NCDataset(instate_path) do ds
@@ -132,7 +127,10 @@ function set_states(
                 # set state in model object
                 param(model, state) .= A
             else
-                error("Number of state dims should be 3 or 4, number of dims = ", string(dims))
+                error(
+                    "Number of state dims should be 3 or 4, number of dims = ",
+                    string(dims),
+                )
             end
         end
     end
@@ -316,9 +314,9 @@ function fraction_runoff_toriver(graph, ldd, index_river, slope, n)
     for i in index_river
         nbs = inneighbors(graph, i)
         for j in nbs
-             if ldd[j] != ldd[i]
-                 frac[j] = slope[j] / (slope[i] + slope[j])
-             end
+            if ldd[j] != ldd[i]
+                frac[j] = slope[j] / (slope[i] + slope[j])
+            end
         end
     end
     return frac

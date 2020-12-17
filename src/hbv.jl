@@ -31,7 +31,7 @@
     cfmax::Vector{T} | "mm ᵒC-1 Δt-1"   # Meltconstant in temperature-index [-]
     whc::Vector{T} | "-"                # Fraction of snow volume that can store water [-]
     g_tt::Vector{T} | "ᵒC"              # Threshold temperature for snowfall above glacier [ᵒC]
-    g_cfmax::Vector{T}| "mm ᵒC-1 Δt-1"  # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹] for glacier
+    g_cfmax::Vector{T} | "mm ᵒC-1 Δt-1"  # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹] for glacier
     g_sifrac::Vector{T} | "-"           # Fraction of the snowpack on top of the glacier converted into ice [-]
     glacierstore::Vector{T}             # Water within the glacier [mm]
     glacierfrac::Vector{T} | "-"        # Fraction covered by a glacier [-]
@@ -60,7 +60,14 @@
     runoff::Vector{T}                   # Total specific runoff per cell [mm]
 end
 
-statevars(::HBV) = (:soilmoisture, :snow, :snowwater, :upperzonestorage, :lowerzonestorage, :interceptionstorage,)
+statevars(::HBV) = (
+    :soilmoisture,
+    :snow,
+    :snowwater,
+    :upperzonestorage,
+    :lowerzonestorage,
+    :interceptionstorage,
+)
 
 function update_until_snow(hbv::HBV, config)
 
@@ -78,7 +85,8 @@ function update_until_snow(hbv::HBV, config)
         # fraction of precipitation which falls as snow
         snowfrac = 1.0 - rainfrac
         # different correction for rainfall and snowfall
-        precipitation = hbv.sfcf[i] * snowfrac * precipitation + hbv.rfcf[i] * rainfrac * precipitation
+        precipitation =
+            hbv.sfcf[i] * snowfrac * precipitation + hbv.rfcf[i] * rainfrac * precipitation
 
         # interception
         interception = min(precipitation, hbv.icf[i] - hbv.interceptionstorage[i])
@@ -87,9 +95,10 @@ function update_until_snow(hbv::HBV, config)
         precipitation = precipitation - interception
 
         # correction for potential evaporation on wet days
-        potevap = exp(-hbv.epf[i] * precipitation) * hbv.ecorr[i] * hbv.potential_evaporation[i]
+        potevap =
+            exp(-hbv.epf[i] * precipitation) * hbv.ecorr[i] * hbv.potential_evaporation[i]
         # correct per landuse
-        potevap = hbv.cevpf[i] * potevap  
+        potevap = hbv.cevpf[i] * potevap
 
         # evaporation from interception storage
         intevap = min(interceptionstorage, potevap)
@@ -114,7 +123,7 @@ function update_until_snow(hbv::HBV, config)
         hbv.snow[i] = snow
         hbv.interceptionstorage[i] = interceptionstorage
         hbv.potsoilevap[i] = restevap
-        hbv.intevap[i] = intevap    
+        hbv.intevap[i] = intevap
     end
 end
 
@@ -144,7 +153,7 @@ function update_after_snow(hbv::HBV, config)
             glaciermelt = glaciermelt * hbv.glacierfrac[i]
             rainfallplusmelt = hbv.rainfallplusmelt[i] + glaciermelt
         else
-            rainfallplusmelt = hbv.rainfallplusmelt[i]        
+            rainfallplusmelt = hbv.rainfallplusmelt[i]
         end
 
         soilmoisture = hbv.soilmoisture[i] + rainfallplusmelt
@@ -153,15 +162,18 @@ function update_after_snow(hbv::HBV, config)
         soilmoisture = soilmoisture - directrunoff
         # net water which infiltrates into soil
         netinsoil = rainfallplusmelt - directrunoff
-        
+
         # soil evapotranspiration
-        soilevap = soilmoisture > hbv.threshold[i] ? min(soilmoisture, hbv.potsoilevap[i]) : min(hbv.potsoilevap[i] * (soilmoisture/hbv.threshold[i]))
+        soilevap =
+            soilmoisture > hbv.threshold[i] ? min(soilmoisture, hbv.potsoilevap[i]) :
+            min(hbv.potsoilevap[i] * (soilmoisture / hbv.threshold[i]))
         # evaporation from soil moisture storage
         soilmoisture = soilmoisture - soilevap
         # sum of evaporation components (IntEvap+SoilEvap)
         actevap = hbv.intevap[i] + soilevap
         # runoff water from soil
-        hbv_seepage = pow(min(soilmoisture/hbv.fc[i],1.0), hbv.betaseepage[i]) * netinsoil
+        hbv_seepage =
+            pow(min(soilmoisture / hbv.fc[i], 1.0), hbv.betaseepage[i]) * netinsoil
         soilmoisture = soilmoisture - hbv_seepage
         # correction for extremely wet periods: soil is filled to capacity
         back_tosoil = min(hbv.fc[i] - soilmoisture, directrunoff)
@@ -174,7 +186,7 @@ function update_after_snow(hbv::HBV, config)
         percolation = min(hbv.perc[i], upperzonestorage - in_upperzone / 2.0)
         upperzonestorage = upperzonestorage - percolation
         # capillary flux flowing back to soil  
-        capflux = hbv.cflux[i] * (( hbv.fc[i] - soilmoisture) / hbv.fc[i])
+        capflux = hbv.cflux[i] * ((hbv.fc[i] - soilmoisture) / hbv.fc[i])
         capflux = min(hbv.fc[i] - soilmoisture, capflux)
         upperzonestorage = upperzonestorage - capflux
         soilmoisture = soilmoisture + capflux
@@ -185,9 +197,17 @@ function update_after_snow(hbv::HBV, config)
             if percolation < hbv.perc[i]
                 quickflow = 0.0
             else
-                quickflow = min(hbv.kquickflow[i] * pow((upperzonestorage - min(in_upperzone / 2.0, upperzonestorage)), 1.0 + hbv.alphanl[i]), upperzonestorage)
-            
-            upperzonestorage = percolation < hbv.perc[i] ? upperzonestorage : max(upperzonestorage - quickflow, 0.0)
+                quickflow = min(
+                    hbv.kquickflow[i] * pow(
+                        (upperzonestorage - min(in_upperzone / 2.0, upperzonestorage)),
+                        1.0 + hbv.alphanl[i],
+                    ),
+                    upperzonestorage,
+                )
+
+                upperzonestorage =
+                    percolation < hbv.perc[i] ? upperzonestorage :
+                    max(upperzonestorage - quickflow, 0.0)
             end
         else
             quickflow = hbv.kquickflow[i] * upperzonestorage
@@ -209,7 +229,7 @@ function update_after_snow(hbv::HBV, config)
         end
 
         runoff = max(0.0, directrunoffstorage)
-        
+
         # update the outputs and states
         hbv.runoff[i] = runoff
         hbv.rainfallplusmelt[i] = rainfallplusmelt

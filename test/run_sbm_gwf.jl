@@ -50,8 +50,8 @@ end
     q = model.lateral.river.q_av
     @test sum(q) ≈ 0.03515256649675796
     @test q[6] ≈ 0.00795266793733648
-    @test q[13] ≈  0.0005980549864213564
-    @test q[network.river.order[end]] ≈  0.008482646477950898
+    @test q[13] ≈ 0.0005980549864213564
+    @test q[network.river.order[end]] ≈ 0.008482646477950898
 end
 
 @testset "groundwater" begin
@@ -59,8 +59,8 @@ end
     @test gw.river.stage[1] ≈ 1.21057153442702
     @test gw.flow.aquifer.head[19] ≈ 1.7999999523162842
     @test gw.river.flux[1] ≈ -50.751898489778426
-    @test gw.drain.flux[1] ≈  0.0
-    @test gw.recharge.rate[19] ≈  -0.0014241196552847502
+    @test gw.drain.flux[1] ≈ 0.0
+    @test gw.recharge.rate[19] ≈ -0.0014241196552847502
 end
 
 Wflow.close_files(model, delete_output = false)

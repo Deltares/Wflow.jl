@@ -35,7 +35,7 @@ end
 
 Returns connections for a single cell, identified by ``id``.
 """
-connections(C::Connectivity, id::Int) = C.colptr[id]:(C.colptr[id + 1] - 1)
+connections(C::Connectivity, id::Int) = C.colptr[id]:(C.colptr[id+1]-1)
 
 
 """
@@ -69,7 +69,7 @@ const neighbors = [
 ]
 
 # Constructor for the Connectivity structure for structured input
-function Connectivity(indices, reverse_indices, Δx::Vector{T}, Δy::Vector{T}) where T
+function Connectivity(indices, reverse_indices, Δx::Vector{T}, Δy::Vector{T}) where {T}
     # indices: These map from the 1D internal domain to the 2D external domain.
     # reverse_indices: from the 2D external domain to the 1D internal domain,
     # providing an Int which can be used as a linear index
@@ -92,9 +92,7 @@ function Connectivity(indices, reverse_indices, Δx::Vector{T}, Δy::Vector{T}) 
             J = I + neighbor
             if (1 <= J[1] <= nrow) && (1 <= J[2] <= ncol && reverse_indices[J] != 0) # Check if it's inbounds and neighbor is active
                 rowval[i] = reverse_indices[J]
-                length1[i], length2[i], width[i] = connection_geometry(
-                    I, J, Δx, Δy
-                )
+                length1[i], length2[i], width[i] = connection_geometry(I, J, Δx, Δy)
                 i += 1
             end
         end

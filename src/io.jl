@@ -186,7 +186,7 @@ function update_cyclic!(model)
 
     # pick up the data that is valid for the past 24 hours
     month_day = monthday(clock.time - Day(1))
-    
+
     is_first_timestep = clock.time == config.starttime
     if is_first_timestep || (month_day in cyclic_times)
         # time for an update of the cyclic forcing
@@ -213,7 +213,7 @@ https://github.com/Alexander-Barth/NCDatasets.jl/issues/106
 Note that using this will prevent automatic garbage collection and thus closure of the
 NCDataset.
 """
-const nc_handles = Dict{String, NCDataset{Nothing}}()
+const nc_handles = Dict{String,NCDataset{Nothing}}()
 
 "Safely create a NetCDF file, even if it has already been opened for creation"
 function create_tracked_netcdf(path)
@@ -240,7 +240,7 @@ function setup_netcdf(
     time_units,
     maxlayers,
     sizeinmetres;
-    float_type=Float32
+    float_type = Float32,
 )
 
     ds = create_tracked_netcdf(output_path)
@@ -268,7 +268,7 @@ function setup_netcdf(
                 "units" => "m",
             ],
         )
-    
+
     else
         defVar(
             ds,
@@ -374,7 +374,7 @@ end
 
 struct NCReader{T}
     dataset::NCDataset
-    cyclic_dataset::Union{NCDataset, Nothing}
+    cyclic_dataset::Union{NCDataset,Nothing}
     cyclic_times::Vector{Tuple{Int,Int}}
     forcing_parameters::Dict{Tuple{Symbol,Vararg{Symbol}},String}
     cyclic_parameters::Dict{Tuple{Symbol,Vararg{Symbol}},String}
@@ -389,7 +389,7 @@ struct Writer
     csv_cols::Vector
     csv_io::IO
     state_dataset::NCDataset
-    state_parameters::Dict{String, Any}
+    state_parameters::Dict{String,Any}
     state_nc_path::String
 end
 
@@ -573,7 +573,7 @@ function out_map(ncnames_dict, modelmap)
     output_map = Dict{String,Any}()
     for (par, ncname) in ncnames_dict
         A = param(modelmap, par)
-        output_map[ncname] = (par=par, vector=A)
+        output_map[ncname] = (par = par, vector = A)
     end
     return output_map
 end
@@ -592,7 +592,7 @@ function prepare_writer(
     maxlayers = nothing,
 )
     sizeinmetres = get(config.model, "sizeinmetres", false)
-        
+
     # create a flat mapping from internal parameter locations to NetCDF variable names
     output_ncnames = Dict{Tuple{Symbol,Vararg{Symbol}},String}()
     for (k, v) in pairs(config.output)
@@ -606,14 +606,33 @@ function prepare_writer(
 
     calendar = get(config, "calendar", "proleptic_gregorian")
     time_units = get(config, "time_units", CFTime.DEFAULT_TIME_UNITS)
-    ds = setup_netcdf(nc_path, x_nc, y_nc, output_map, calendar, time_units, maxlayers, sizeinmetres)
+    ds = setup_netcdf(
+        nc_path,
+        x_nc,
+        y_nc,
+        output_map,
+        calendar,
+        time_units,
+        maxlayers,
+        sizeinmetres,
+    )
 
     # create a separate state output NetCDF that will hold the last timestep of all states
     state_map = out_map(state_ncnames, modelmap)
     tomldir = dirname(config)
     nc_state_path = joinpath(tomldir, config.state.path_output)
     static_path = joinpath(tomldir, config.input.path_static)
-    ds_outstate = setup_netcdf(nc_state_path, x_nc, y_nc, state_map, calendar, time_units, maxlayers, sizeinmetres; float_type=Float64)
+    ds_outstate = setup_netcdf(
+        nc_state_path,
+        x_nc,
+        y_nc,
+        state_map,
+        calendar,
+        time_units,
+        maxlayers,
+        sizeinmetres;
+        float_type = Float64,
+    )
 
     if haskey(config, "csv") && haskey(config.csv, "column")
         # open CSV file and write header
@@ -630,57 +649,22 @@ function prepare_writer(
         for col in config.csv.column
             parameter = col["parameter"]
             if occursin("reservoir", col["parameter"])
-                reducer_func = reducer(
-                    col,
-                    rev_inds.reservoir,
-                    x_nc,
-                    y_nc,
-                    dims_xy,
-                    config,
-                    nc_static,
-                )
+                reducer_func =
+                    reducer(col, rev_inds.reservoir, x_nc, y_nc, dims_xy, config, nc_static)
             elseif occursin("lake", col["parameter"])
-                reducer_func = reducer(
-                    col,
-                    rev_inds.lake,
-                    x_nc,
-                    y_nc,
-                    dims_xy,
-                    config,
-                    nc_static,
-                )
+                reducer_func =
+                    reducer(col, rev_inds.lake, x_nc, y_nc, dims_xy, config, nc_static)
             elseif occursin("river", col["parameter"])
-                reducer_func = reducer(
-                    col,
-                    rev_inds.river,
-                    x_nc,
-                    y_nc,
-                    dims_xy,
-                    config,
-                    nc_static,
-                )
+                reducer_func =
+                    reducer(col, rev_inds.river, x_nc, y_nc, dims_xy, config, nc_static)
             elseif occursin("drain", col["parameter"])
-                reducer_func = reducer(
-                    col,
-                    rev_inds.drain,
-                    x_nc,
-                    y_nc,
-                    dims_xy,
-                    config,
-                    nc_static,
-                )
+                reducer_func =
+                    reducer(col, rev_inds.drain, x_nc, y_nc, dims_xy, config, nc_static)
             else
-                reducer_func = reducer(
-                    col,
-                    rev_inds.land,
-                    x_nc,
-                    y_nc,
-                    dims_xy,
-                    config,
-                    nc_static,
-                )
+                reducer_func =
+                    reducer(col, rev_inds.land, x_nc, y_nc, dims_xy, config, nc_static)
             end
-            push!(csv_cols, (parameter=parameter, reducer=reducer_func))
+            push!(csv_cols, (parameter = parameter, reducer = reducer_func))
         end
     else
         # no CSV file is checked by isnothing(csv_path)
@@ -690,7 +674,17 @@ function prepare_writer(
     end
 
 
-    return Writer(ds, output_map, nc_path, csv_path, csv_cols, csv_io, ds_outstate, state_map, nc_state_path)
+    return Writer(
+        ds,
+        output_map,
+        nc_path,
+        csv_path,
+        csv_cols,
+        csv_io,
+        ds_outstate,
+        state_map,
+        nc_state_path,
+    )
 end
 
 "Write a new timestep to the NetCDF file"
@@ -915,4 +909,3 @@ function rewind!(clock)
     clock.time -= clock.Δt
     return clock
 end
-

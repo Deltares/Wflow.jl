@@ -121,7 +121,7 @@ function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits)
         area = resarea,
         targetfullfrac = res_targetfullfrac,
         targetminfrac = res_targetminfrac,
-        volume = res_targetfullfrac .* resmaxvolume, 
+        volume = res_targetfullfrac .* resmaxvolume,
         inflow = fill(mv, n),
         outflow = fill(mv, n),
         totaloutflow = fill(mv, n),
@@ -132,13 +132,13 @@ function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits)
     )
 
     return reservoirs,
-        resindex,
-        (
-            indices_outlet = inds_res,
-            indices_coverage = inds_res_cov,
-            reverse_indices = rev_inds_reservoir,
-        ),
-        pits
+    resindex,
+    (
+        indices_outlet = inds_res,
+        indices_coverage = inds_res_cov,
+        reverse_indices = rev_inds_reservoir,
+    ),
+    pits
 end
 
 """
@@ -149,14 +149,17 @@ element rather than all at once.
 """
 function update(res::SimpleReservoir, i, inflow, timestepsecs)
 
-    vol = max(0.0, (
-        res.volume[i] +
-        (inflow * timestepsecs) +
-        (res.precipitation[i] * (timestepsecs / tosecond(basetimestep)) / 1000.0) *
-        res.area[i] -
-        (res.evaporation[i] * (timestepsecs / tosecond(basetimestep)) / 1000.0) *
-        res.area[i]
-    ))
+    vol = max(
+        0.0,
+        (
+            res.volume[i] +
+            (inflow * timestepsecs) +
+            (res.precipitation[i] * (timestepsecs / tosecond(basetimestep)) / 1000.0) *
+            res.area[i] -
+            (res.evaporation[i] * (timestepsecs / tosecond(basetimestep)) / 1000.0) *
+            res.area[i]
+        ),
+    )
 
     percfull = vol / res.maxvolume[i]
     # first determine minimum (environmental) flow using a simple sigmoid curve to scale for target level
@@ -198,7 +201,7 @@ end
     storage::Vector{T} | "m3"               # storage lake [m³]
     outflow::Vector{T} | "m3 s-1"           # outflow lake [m³ s⁻¹]
     totaloutflow::Vector{T} | "m3"          # total outflow lake [m³] 
-    precipitation::Vector{T}    	        # average precipitation for lake area [mm]
+    precipitation::Vector{T}                # average precipitation for lake area [mm]
     evaporation::Vector{T}                  # average evaporation for lake area [mm]
 
     function NaturalLake{T}(args...) where {T}
@@ -323,15 +326,21 @@ function initialize_natural_lake(config, static_path, nc, inds_riv, nriv, pits)
         end
 
         if lake_storfunc[i] == 2
-            sh[i] =
-                CSV.read(joinpath(static_path, "lake_sh_$(lakelocs[i])"), DataFrame, type = Float64)
+            sh[i] = CSV.read(
+                joinpath(static_path, "lake_sh_$(lakelocs[i])"),
+                DataFrame,
+                type = Float64,
+            )
         else
             sh[i] = DataFrame()
         end
 
         if lake_outflowfunc[i] == 1
-            hq[i] =
-                CSV.read(joinpath(static_path, "lake_hq_$(lakelocs[i])"), DataFrame, type = Float64)
+            hq[i] = CSV.read(
+                joinpath(static_path, "lake_hq_$(lakelocs[i])"),
+                DataFrame,
+                type = Float64,
+            )
         else
             hq[i] = DataFrame()
         end

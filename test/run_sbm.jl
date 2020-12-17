@@ -48,11 +48,11 @@ end
 
     @test model.clock.iteration == 2
 
-    @test sbm.altitude[1] == 643.5469970703125
-    @test sbm.θₛ[1] == 0.48343977332115173
+    @test sbm.altitude[1] ≈ 643.5469970703125
+    @test sbm.θₛ[1] ≈ 0.48343977332115173
     @test sbm.runoff[1] == 0.0
     @test sbm.soilevap[1] == 0.0
-    @test sbm.snow[1] == 0.6029994894902302
+    @test sbm.snow[1] ≈ 0.6029994894902302
 end
 
 # run the second timestep
@@ -60,18 +60,18 @@ model = Wflow.update(model)
 
 @testset "second timestep" begin
     sbm = model.vertical
-    @test sbm.altitude[1] == 643.5469970703125
-    @test sbm.θₛ[1] == 0.48343977332115173
+    @test sbm.altitude[1] ≈ 643.5469970703125
+    @test sbm.θₛ[1] ≈ 0.48343977332115173
     @test sbm.runoff[1] == 0.0
-    @test sbm.soilevap[1] == 0.005865653627803281
-    @test sbm.snow[1] == 0.009696763863612956
+    @test sbm.soilevap[1] ≈ 0.005865653627803281
+    @test sbm.snow[1] ≈ 0.009696763863612956
 end
 
 @testset "subsurface flow" begin
     ssf = model.lateral.subsurface.ssf
     @test sum(ssf) ≈ 6.368136336079665e16
     @test ssf[network.land.order[1]] ≈ 3.0449782003445332e13
-    @test ssf[network.land.order[end-100]] ≈ 7.855716706804882e11 
+    @test ssf[network.land.order[end-100]] ≈ 7.855716706804882e11
     @test ssf[network.land.order[end]] ≈ 2.1612469198596365e11
 end
 
@@ -87,15 +87,15 @@ end
     q = model.lateral.river.q_av
     @test sum(q) ≈ 2811.093099307159
     @test q[4061] ≈ 0.0016288040314320486
-    @test q[5617] ≈  7.338204361667292
-    @test q[network.river.order[end]] ≈  0.00610520650626283
+    @test q[5617] ≈ 7.338204361667292
+    @test q[network.river.order[end]] ≈ 0.00610520650626283
 end
 
 @testset "reservoir simple" begin
     res = model.lateral.river.reservoir
     @test res.outflow[2] ≈ 0.2174998592483153
     @test res.inflow[2] ≈ 13.458065150960186
-    @test res.volume[2] ≈  2.776155238441744e7
+    @test res.volume[2] ≈ 2.776155238441744e7
     @test res.precipitation[2] ≈ 0.1765228509902954
     @test res.evaporation[2] ≈ 0.5372688174247742
 end
@@ -121,8 +121,8 @@ model = Wflow.run_simulation(config)
 # downstream from pit is at river index 1739, CartesianIndex(142, 85)
 @testset "river flow at and downstream of pit" begin
     q = model.lateral.river.q_av
-    @test q[1765] ≈  3.8628067453276365
-    @test q[1739] ≈  0.007148082967365473
+    @test q[1765] ≈ 3.8628067453276365
+    @test q[1739] ≈ 0.007148082967365473
 end
 
 Wflow.close_files(model, delete_output = false)
