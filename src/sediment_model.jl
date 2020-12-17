@@ -18,8 +18,6 @@ function initialize_sediment_model(config::Config)
     sizeinmetres = get(config.model, "sizeinmetres", false)
     reinit = get(config.model, "reinit", true)
     
-    do_reservoirs = get(config.model, "reservoirs", false)
-    do_lakes = get(config.model, "lakes", false)
     do_river = get(config.model, "runrivermodel", false)
 
     nc = NCDataset(static_path)
@@ -46,6 +44,13 @@ function initialize_sediment_model(config::Config)
         ncread(nc, param(config, "input.lateral.river.length"); type = Float64, fill = 0)
     riverlength = riverlength_2d[inds]
 
+    inds_riv, rev_inds_riv = active_indices(river_2d, 0)
+    nriv = length(inds_riv)
+
+    # Needed to update the forcing
+    reservoir = ()
+    lake = ()
+
     # read x, y coordinates and calculate cell length [m]
     y_nc = "y" in keys(nc.dim) ? ncread(nc, "y") : ncread(nc, "lat")
     x_nc = "x" in keys(nc.dim) ? ncread(nc, "x") : ncread(nc, "lon")
@@ -69,30 +74,8 @@ function initialize_sediment_model(config::Config)
 
     eros = initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
 
-    inds_riv, rev_inds_riv = active_indices(river_2d, 0)
-    nriv = length(inds_riv)
-
-    # reservoirs
-    pits = zeros(Bool, modelsize_2d)
-    if do_reservoirs
-        reservoirs, resindex, reservoir, pits = initialize_simple_reservoir(config, nc, inds_riv, nriv, pits)
-    else
-        reservoir = ()
-    end
-
-    # lakes
-    if do_lakes
-        lakes, lakeindex, lake, pits = initialize_natural_lake(config, static_path, nc, inds_riv, nriv, pits)
-    else
-        lake = ()
-    end
-
     ldd_2d = ncread(nc, param(config, "input.ldd"); allow_missing = true)
     ldd = ldd_2d[inds]
-    # if do_pits
-    #     pits_2d = ncread(nc, param(config, "input.pits"); type = Bool, fill = false)
-    #     ldd = set_pit_ldd(pits_2d, ldd, inds)
-    # end 
 
     # # lateral part sediment in overland flow
     rivcell = float(river)
@@ -138,9 +121,6 @@ function initialize_sediment_model(config::Config)
     riverlength = riverlength_2d[inds_riv]
     riverwidth = riverwidth_2d[inds_riv]
     ldd_riv = ldd_2d[inds_riv]
-    # if do_pits
-    #     ldd_riv = set_pit_ldd(pits_2d, ldd_riv, inds_riv)
-    # end
     graph_riv = flowgraph(ldd_riv, inds_riv, pcr_dir)
 
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
@@ -224,8 +204,8 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:LandSed,R,W}
         update_cyclic!(model)
     end
 
-    update_until_ols(vertical, config)
-    update_until_oltransport(vertical, config)
+    update_until_ols(vertical, config, network)
+    update_until_oltransport(vertical, config, network)
 
     lateral.land.soilloss .= vertical.soilloss
     lateral.land.erosclay .= vertical.erosclay

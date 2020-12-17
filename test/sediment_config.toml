@@ -83,6 +83,10 @@ usleK = "USLE_K"
 pclay = "PercentClay"
 psilt = "PercentSilt"
 rivcell = "wflow_river"
+# Reservoir
+resareas = "wflow_reservoirareas"
+# Lake
+lakeareas = "wflow_lakeareas"
 
 [input.lateral.land]
 slope = "Slope"
@@ -101,11 +105,20 @@ fgravriv = "GravelF_River"
 length = "wflow_riverlength"
 slope = "RiverSlope"
 width = "wflow_riverwidth"
+# Reservoir
+resarea = "ResSimpleArea"
+resareas = "wflow_reservoirareas"
+reslocs = "wflow_reservoirlocs"
+# Lake
+lakearea = "LakeArea"
+lakeareas = "wflow_lakeareas"
+lakelocs = "wflow_lakelocs"
 
 [model]
 reinit = true
 runrivermodel = true
-reservoirs = false
+reservoir = true
+lake = false
 rainerosmethod = "answers" # Rainfall erosion equation: ["answers", "eurosem"]
 landtransportmethod = "yalinpart" # Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]
 rivtransportmethod = "bagnold" # River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]

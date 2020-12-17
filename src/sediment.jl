@@ -9,6 +9,8 @@ Base.@kwdef struct LandSed{T}
     xl::Vector{T}
     # Fraction of river [-]
     riverfrac::Vector{T}
+    # Waterbodies areas [-]
+    wbcover::Vector{T}
     # Depth of overland flow [m]
     h_land::Vector{T}
     # Canopy interception [mm]
@@ -103,6 +105,9 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
     # Initialize parameters for the soil loss part
     n = length(inds)
     do_river = get(config.model, "runrivermodel", false)
+    # Reservoir / lake
+    do_reservoirs = Bool(get(config.model, "reservoir", false))
+    do_lakes = Bool(get(config.model, "lake", false))
     # Rainfall erosion equation: ["answers", "eurosem"]
     rainerosmethod = get(config.model, "rainerosmethod", "answers") 
     # Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]
@@ -332,11 +337,35 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
         flagg = fill(mv, n)
     end
 
+    # Reservoir and lakes
+    wbcover = fill(0.0, n)
+    if do_reservoirs
+        rescoverage_2d = ncread(
+            nc,
+            param(config, "input.vertical.resareas");
+            sel = inds,
+            type = Float64,
+            fill = 0.0,
+        )
+        wbcover = wbcover .+ rescoverage_2d
+    end
+    if do_lakes
+        lakecoverage_2d = ncread(
+            nc, 
+            param(config, "input.vertical.lakeareas");
+            sel = inds, 
+            type = Float64,
+            fill = 0.0,
+        )
+        wbcover = wbcover .+ lakecoverage_2d
+    end
+
     eros = LandSed{Float64}(
         n = n,   
         yl = yl,
         xl = xl,
         riverfrac = riverfrac,
+        wbcover = wbcover,
         ### Soil erosion part ###
         # Forcing
         interception = fill(mv, n),
@@ -399,17 +428,12 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
 end
 
 # Soil erosion
-function update_until_ols(eros::LandSed, config)
- 
-    # # start dummy variables (should be generated from model reader and from Config.jl TOML)
+function update_until_ols(eros::LandSed, config, network)
+    # Options from config
     do_lai = haskey(config.input.vertical, "leaf_area_index")
     rainerosmethod = get(config.model, "rainerosmethod", "answers")
-    #precipitation = 3.0
-    #q_land = 0.01
     Δt = Second(config.timestepsecs)
     ts = Float64(Δt.value)
-    #basetimestep = Second(Day(1))
-    # end dummpy variables
 
     for i = 1:eros.n
                 
@@ -468,40 +492,38 @@ function update_until_ols(eros::LandSed, config)
         # Remove the impervious area
         sedov = sedov * (1.0 - eros.pathfrac[i])
 
+        # Assume no erosion in reservoir/lake areas
+        if eros.wbcover[i] > 0
+            sedspl = 0.0
+            sedov = 0.0
+        end
+
         # Total soil loss [ton/cell/timestep]
         soilloss = sedspl + sedov
-
-        # Eroded amount per particle class
-        erosclay = soilloss * eros.fclay[i]
-        erossilt = soilloss * eros.fsilt[i]
-        erossand = soilloss * eros.fsand[i]
-        erossagg = soilloss * eros.fsagg[i]
-        eroslagg = soilloss * eros.flagg[i]
-        
 
         # update the outputs and states
         eros.sedspl[i] = sedspl
         eros.sedov[i] = sedov
         eros.soilloss[i] = soilloss
-        eros.erosclay[i] = erosclay
-        eros.erossilt[i] = erossilt
-        eros.erossand[i] = erossand
-        eros.erossagg[i] = erossagg
-        eros.eroslagg[i] = eroslagg
+        # Eroded amount per particle class
+        eros.erosclay[i] = soilloss * eros.fclay[i]
+        eros.erossilt[i] = soilloss * eros.fsilt[i]
+        eros.erossand[i] = soilloss * eros.fsand[i]
+        eros.erossagg[i] = soilloss * eros.fsagg[i]
+        eros.eroslagg[i] = soilloss * eros.flagg[i]
     end
+
 end
 
 ### Sediment transport capacity in overland flow ###
-function update_until_oltransport(ols::LandSed, config)
+function update_until_oltransport(ols::LandSed, config, network)
 
-    # # start dummy variables (should be generated from model reader and from Config.jl TOML)
     do_river = get(config.model, "runrivermodel", false)
     tcmethod = get(config.model, "landtransportmethod", "yalinpart")
     Δt = Second(config.timestepsecs)
     ts = Float64(Δt.value)
 
     for i = 1:ols.n
-
         sinslope = sin(atan(ols.slope[i]))
 
         if do_river != true
@@ -600,6 +622,16 @@ function update_until_oltransport(ols::LandSed, config)
                 TClagg = 0.0
             end
 
+            # Assume that ols all reach the river in reservoir/lake areas (very high TC)
+            if ols.wbcover[i] > 0
+                TC = 10^9
+                TCclay = 10^9
+                TCsilt = 10^9
+                TCsand = 10^9
+                TCsagg = 10^9
+                TClagg = 10^9
+            end
+
             # Filter TC land for river cells (0 in order for sediment from land to stop when entering the river)
             if ols.rivcell[i] == 1.0
                 TCclay = 0.0
@@ -623,6 +655,7 @@ function update_until_oltransport(ols::LandSed, config)
         ols.TClagg[i] = TClagg
     
     end
+
 end
 
 ### Sediment transport in overland flow ###
@@ -785,12 +818,15 @@ Base.@kwdef struct RiverSed{T}
     Sedconc::Vector{T}
     SSconc::Vector{T}
     Bedconc::Vector{T}
-    
+    # Reservoir and lakes
+    wbcover::Vector{T}
+    wblocs::Vector{T}
+    wbarea::Vector{T}    
 
-    function RiverSed{T}(args...) where {T}
-        equal_size_vectors(args)
-        return new(args...)
-    end
+    # function RiverSed{T}(args...) where {T}
+    #     equal_size_vectors(args)
+    #     return new(args...)
+    # end
 end
 
 statevars(::RiverSed) = (
@@ -820,6 +856,68 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     # River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]
     tcmethodriv = get(config.model, "rivtransportmethod", "bagnold")
     Δt = Second(config.timestepsecs)
+    # Reservoir / lakes
+    do_reservoirs = Bool(get(config.model, "reservoir", false))
+    do_lakes = Bool(get(config.model, "lake", false))
+    wbcover = fill(0.0, nriv)
+    wblocs = fill(0.0, nriv)
+    wbarea = fill(0.0, nriv)
+
+    if do_reservoirs
+        reslocs = ncread(
+            nc,
+            param(config, "input.lateral.river.reslocs");
+            sel = inds_riv,
+            type = Float64,
+            fill = 0,
+        )
+        rescoverage_2d = ncread(
+            nc,
+            param(config, "input.lateral.river.resareas");
+            sel = inds_riv,
+            type = Float64,
+            fill = 0,
+        )
+        resarea = ncread(
+            nc,
+            param(config, "input.lateral.river.resarea");
+            sel = inds_riv,
+            type = Float64,
+            fill = 0,
+        )
+
+        wbcover = wbcover .+ rescoverage_2d
+        wblocs = wblocs .+ reslocs
+        wbarea = wbarea .+ resarea        
+    end
+
+    if do_lakes
+        lakelocs = ncread(
+            nc,
+            param(config, "input.lateral.river.lakelocs");
+            sel = inds_riv,
+            type = Float64,
+            fill = 0,
+        )
+        lakecoverage_2d = ncread(
+            nc,
+            param(config, "input.lateral.river.lakeareas");
+            sel = inds_riv,
+            type = Float64,
+            fill = 0,
+        )
+        lakearea = ncread(
+            nc,
+            param(config, "input.lateral.river.lakearea");
+            sel = inds_riv,
+            type = Float64,
+            fill = 0,
+        )
+
+        wbcover = wbcover .+ lakecoverage_2d
+        wblocs = wblocs .+ lakelocs
+        wbarea = wbarea .+ lakearea        
+    end
 
     riverslope = ncread(
         nc,
@@ -969,7 +1067,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     kdbank = 0.2 .* TCrbank.^(-0.5) .* 10^(-6)
     kdbed = 0.2 .* TCrbed.^(-0.5) .* 10^(-6)
 
-    rs = RiverSed{Float64}(
+    rs = RiverSed(
         n = nriv,
         Δt = Float64(Δt.value),
         # Parameters
@@ -1033,10 +1131,10 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
         Sedconc = fill(0.0, nriv),
         SSconc = fill(0.0, nriv),
         Bedconc = fill(0.0, nriv),
-        #reservoir_index = do_reservoirs ? resindex : fill(0, nriv),
-        #lake_index = do_lakes ? lakeindex : fill(0, nriv),
-        #reservoir = do_reservoirs ? reservoirs : nothing,
-        #lake = do_lakes ? lakes : nothing,
+        # Reservoir / lake
+        wbcover = wbcover,
+        wblocs = wblocs,
+        wbarea = wbarea,
     )
 
     return rs
@@ -1167,6 +1265,10 @@ function update(rs::RiverSed, network, config)
         ### River erosion ###
         # Erosion only if the load is below the transport capacity of the flow.
         sedex = max(maxsed - insed, 0.0)
+        # No erosion in lake and reservoir cells
+        if rs.wbcover[v] > 0.0
+            sedex = 0.0
+        end
         # Bed and bank are eroded only if the previously deposited material is not enough
         rs.sedstore[v] = rs.claystore[v] + rs.siltstore[v] + rs.sandstore[v] + rs.saggstore[v] + rs.laggstore[v] + rs.gravstore[v]
         if sedex > 0.0 && sedex > rs.sedstore[v]
@@ -1311,6 +1413,28 @@ function update(rs::RiverSed, network, config)
             depgrav = settgrav
         end
 
+        # No deposition in regular lake and reservoir cells, only at the outlet
+        # Deposition in lake/reservoir from Camp 1945
+        if rs.wbcover[v] > 0.0 && rs.wblocs[v] > 0.0
+            # Compute deposition
+            vcres = rs.q_riv[v] / rs.wbarea[v]
+            DCres = 411 / 3600 / vcres
+            depclay = (inclay + erodclay) * min(1.0, (DCres * (rs.dmclay[v]/1000)^2))
+            depsilt = (insilt + erodsilt) * min(1.0, (DCres * (rs.dmsilt[v]/1000)^2))
+            depsand = (insand + erodsand) * min(1.0, (DCres * (rs.dmsand[v]/1000)^2))
+            depsagg = (insagg + erodsagg) * min(1.0, (DCres * (rs.dmsagg[v]/1000)^2))
+            deplagg = (inlagg + erodlagg) * min(1.0, (DCres * (rs.dmlagg[v]/1000)^2))
+            depgrav = (ingrav + erodgrav) * min(1.0, (DCres * (rs.dmgrav[v]/1000)^2))
+        elseif rs.wbcover[v] > 0.0
+            depsed = 0.0
+            depclay = 0.0
+            depsilt = 0.0
+            depsand = 0.0
+            depsagg = 0.0
+            deplagg = 0.0
+            depgrav = 0.0
+        end
+
         depsed = depclay + depsilt + depsand + depsagg + deplagg + depgrav
 
         # Update the river deposited sediment storage
@@ -1393,6 +1517,5 @@ function update(rs::RiverSed, network, config)
         rs.Bedconc[v] = Bed * toconc
 
     end
-
 
 end
