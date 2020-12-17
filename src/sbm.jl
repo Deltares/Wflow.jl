@@ -708,6 +708,7 @@ function update_until_snow(sbm::SBM, config)
         end
 
         # update the outputs and states
+        sbm.e_r[i] = e_r
         sbm.cmax[i] = cmax
         sbm.canopygapfraction[i] = canopygapfraction
         sbm.canopystorage[i] = canopystorage

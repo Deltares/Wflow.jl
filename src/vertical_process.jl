@@ -30,18 +30,20 @@ function rainfall_interception_gash(
     canopystorage;
     maxevap = 9999.0,
 )
-    # TODO:  add other rainfall interception method (lui)
-    # TODO: Include subdaily Gash model
-    # TODO: add leaf_area_index variation in year
-    # Hack for stemflow
+    # TODO: add other rainfall interception method (lui)
+    # TODO: include subdaily Gash model
+    # Hack for stemflow (pt)
     pt = 0.1 * canopygapfraction
-    p_sat = max(0.0, (-cmax / e_r) * log(max(0.0, 1.0 - (e_r / (1.0 - canopygapfraction - pt)))))
+    pfrac = max((1.0 - canopygapfraction - pt), 0.0)
+    p_sat = (-cmax / e_r) * log(1.0 - min((e_r / pfrac), 1.0))
+    p_sat = isinf(p_sat) ? 0.0 : p_sat
+
     # large storms P > P_sat
     largestorms = precipitation > p_sat
 
     iwet =
-        largestorms ? ((1.0 - canopygapfraction - pt) * p_sat) - cmax :
-        precipitation * (1.0 - canopygapfraction - pt)
+        largestorms ? (pfrac * p_sat) - cmax :
+        precipitation * pfrac
     isat = largestorms ? (e_r) * (precipitation - p_sat) : 0.0
     idry = largestorms ? cmax : 0.0
     itrunc = 0.0
