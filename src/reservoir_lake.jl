@@ -6,8 +6,9 @@
     targetminfrac::Vector{T} | "-"                      # target minimum full fraction (of max storage) [-]
     targetfullfrac::Vector{T} | "-"                     # target fraction full (of max storage) [-]
     volume::Vector{T} | "m3"                            # reservoir volume [m³]
-    inflow::Vector{T} | "m3 s-1"                        # inflow into reservoir [m³ s⁻¹]
+    inflow::Vector{T} | "m3"                        # inflow into reservoir [m³]
     outflow::Vector{T} | "m3 s-1"                       # outflow from reservoir [m³ s⁻¹]
+    totaloutflow::Vector{T} | "m3"                      # total outflow from reservoir [m³]
     percfull::Vector{T} | "-"                           # fraction full (of max storage) [-]
     demandrelease::Vector{T} | "m3 s-1"                 # minimum (environmental) flow released from reservoir [m³ s⁻¹]
     precipitation::Vector{T}                            # average precipitation for reservoir area [mm]
@@ -123,6 +124,7 @@ function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits)
         volume = res_targetfullfrac .* resmaxvolume, 
         inflow = fill(mv, n),
         outflow = fill(mv, n),
+        totaloutflow = fill(mv, n),
         percfull = fill(mv, n),
         demandrelease = fill(mv, n),
         precipitation = fill(mv, n),
@@ -173,6 +175,7 @@ function update(res::SimpleReservoir, i, inflow, timestepsecs)
     # update values in place
     res.outflow[i] = outflow / timestepsecs
     res.inflow[i] += inflow * timestepsecs
+    res.totaloutflow[i] += outflow
     res.demandrelease[i] = demandrelease / timestepsecs
     res.percfull[i] = percfull
     res.volume[i] = vol
@@ -192,9 +195,10 @@ end
     sh::Vector{DataFrame}                   # data for storage curve
     hq::Vector{DataFrame}                   # data for rating curve
     waterlevel::Vector{T} | "m"             # waterlevel H [m] of lake
-    inflow::Vector{T} | "m3 s-1"            # inflow to the lake [m³ s⁻¹]
+    inflow::Vector{T} | "m3"            # inflow to the lake [m³]
     storage::Vector{T} | "m3"               # storage lake [m³]
     outflow::Vector{T} | "m3 s-1"           # outflow lake [m³ s⁻¹]
+    totaloutflow::Vector{T} | "m3"          # total outflow lake [m³] 
     precipitation::Vector{T}    	        # average precipitation for lake area [mm]
     evaporation::Vector{T}                  # average evaporation for lake area [mm]
 
@@ -354,6 +358,7 @@ function initialize_natural_lake(config, static_path, nc, inds_riv, nriv, pits)
         inflow = fill(mv, n),
         storage = initialize_storage(lake_storfunc, lakearea, lake_waterlevel, sh),
         outflow = fill(mv, n),
+        totaloutflow = fill(mv, n),
         precipitation = fill(mv, n),
         evaporation = fill(mv, n),
     )
@@ -510,7 +515,8 @@ function update(lake::NaturalLake, i, inflow, doy, timestepsecs)
     # update values in place
     lake.outflow[i] = max(outflow, 0.0) # for a linked lake flow can be negative
     lake.waterlevel[i] = waterlevel
-    lake.inflow[i] = inflow
+    lake.inflow[i] += inflow * timestepsecs
+    lake.totaloutflow[i] += outflow * timestepsecs
     lake.storage[i] = storage
 
     return lake

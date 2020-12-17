@@ -70,12 +70,17 @@ function update(
     q_sum = zeros(n)
     h_sum = zeros(n)
     sf.to_river .= 0.0
-    # because of possible iterations set reservoir inflow at start to zero, the total sum of
-    # inflow at each sub time step is calculated
+    # because of possible iterations set reservoir and lake inflow and total outflow at
+    # start to zero, the total sum of inflow and outflow at each sub time step is calculated
     if !isnothing(sf.reservoir)
         sf.reservoir.inflow .= 0.0
-    end 
-
+        sf.reservoir.totaloutflow .= 0.0
+    end
+    if !isnothing(sf.lake)
+        sf.lake.inflow .= 0.0
+        sf.lake.totaloutflow .= 0.0
+    end
+    
     for _ = 1:its
         for v in order
             upstream_nodes = inneighbors(graph, v)
