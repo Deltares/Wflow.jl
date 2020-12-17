@@ -28,7 +28,6 @@ end
 
 @testset "natural lake" begin
     lake = Wflow.NaturalLake{Float64}(
-        loc_id = [1],
         lowerlake_ind = [0],
         area = [180510409.0],
         threshold = [0.0],
@@ -63,7 +62,6 @@ sh = [
 ]
 @testset "linked lakes (HBV)" begin
     lake = Wflow.NaturalLake{Float64}(
-        loc_id = [1, 2],
         lowerlake_ind = [2, 0],
         area = [472461536.0, 60851088.0],
         threshold = [393.7, 0.0],
