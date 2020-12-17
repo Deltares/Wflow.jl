@@ -38,5 +38,6 @@ components = [
 
 See also:
 ```@docs
+Wflow.BMI.initialize
 Wflow.BMI.get_input_var_names
 ```
