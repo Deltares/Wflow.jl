@@ -96,6 +96,7 @@ head [L] of the head boundary and  ``\phi`` the head of the aquifer cell.
 A volumetric well rate [L``^3`` T``^{-1}``] can be specified as a boundary condition.
 
 
-!!! note For an unconfined aquifer the boundary fluxes are checked, in case of a dry aquifer
-    cell a negative flux is not allowed.
+!!! note 
+    For an unconfined aquifer the boundary fluxes are checked, in case of a dry aquifer cell
+    a negative flux is not allowed.
 
