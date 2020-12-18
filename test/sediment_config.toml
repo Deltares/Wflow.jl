@@ -117,8 +117,8 @@ lakelocs = "wflow_lakelocs"
 [model]
 reinit = true
 runrivermodel = true
-reservoir = true
-lake = false
+doreservoir = true
+dolake = false
 rainerosmethod = "answers" # Rainfall erosion equation: ["answers", "eurosem"]
 landtransportmethod = "yalinpart" # Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]
 rivtransportmethod = "bagnold" # River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]
@@ -155,16 +155,6 @@ width = "widthriv"
 [csv]
 path = "data/output-moselle-sed.csv"
 
-# [[csv.column]]
-# header = "SL"
-# parameter = "vertical.soilloss"
-# reducer = "maximum"
-
-# [[csv.column]]
-# header = "SL"
-# map = "gauges"
-# parameter = "vertical.SL"
-
 [[csv.column]]
 coordinate.x = 6.931
 coordinate.y = 48.085
@@ -198,18 +188,6 @@ parameter = "vertical.q_land"
 [[csv.column]]
 coordinate.x = 6.931
 coordinate.y = 48.085
-header = "xl"
-parameter = "vertical.xl"
-
-[[csv.column]]
-coordinate.x = 6.931
-coordinate.y = 48.085
-header = "yl"
-parameter = "vertical.yl"
-
-[[csv.column]]
-coordinate.x = 6.931
-coordinate.y = 48.085
 header = "TCsed"
 parameter = "vertical.TCsed"
 
@@ -218,12 +196,6 @@ coordinate.x = 6.931
 coordinate.y = 48.085
 header = "TCclay"
 parameter = "vertical.TCclay"
-
-[[csv.column]]
-coordinate.x = 6.931
-coordinate.y = 48.085
-header = "olsed"
-parameter = "lateral.land.olsed"
 
 [[csv.column]]
 coordinate.x = 6.931

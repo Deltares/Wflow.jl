@@ -5,15 +5,21 @@ pages = [
     "Home" => "index.md",
     "Quick start" => "quick-start.md",
     "Model structure" => "structure.md",
-    "Models" => ["wflow_sbm" => "model/sbm.md", "wflow_hbv" => "model/hbv.md"],
+    "Models" => [
+        "wflow_sbm" => "model/sbm.md",
+        "wflow_hbv" => "model/hbv.md",
+        "wflow_sediment" => "model/sediment.md",
+    ],
     "Vertical components" => [
         "SBM" => "vertical/sbm.md",
         "HBV" => "vertical/hbv.md",
         "Vertical processes" => "vertical/process.md",
+        "Soil Loss" => "vertical/sediment.md",
     ],
     "Lateral components" => [
         "Kinematic wave" => "lateral/kinwave.md",
         "Groundwater flow" => "lateral/gwf.md",
+        "Sediment Flux" => "lateral/sediment.md",
     ],
     "Basic Model Interface" => "bmi.md",
     "Developer documentation" => "devdocs.md",
