@@ -1,97 +1,97 @@
 ### Soil erosion ###
-Base.@kwdef struct LandSed{T}
+@get_units @with_kw struct LandSed{T}
     # number of cells
-    n::Int
+    n::Int | "-"
     ### Soil erosion part ###
     # length of cells in y direction [m]
-    yl::Vector{T}
+    yl::Vector{T} | "m" 
     # length of cells in x direction [m]
-    xl::Vector{T}
+    xl::Vector{T} | "m" 
     # Fraction of river [-]
-    riverfrac::Vector{T}
+    riverfrac::Vector{T} | "-"
     # Waterbodies areas [-]
-    wbcover::Vector{T}
+    wbcover::Vector{T} | "-"
     # Depth of overland flow [m]
-    h_land::Vector{T}
+    h_land::Vector{T} | "m" 
     # Canopy interception [mm]
-    interception::Vector{T}
+    interception::Vector{T} | "mm"
     # Precipitation [mm]
-    precipitation::Vector{T}
+    precipitation::Vector{T} | "mm"
     # Overland flow [m3/s]
-    q_land::Vector{T}
+    q_land::Vector{T} | "m3 s-1" 
     # Canopy height [m]
-    canopyheight::Vector{T}
+    canopyheight::Vector{T} | "m" 
     # Canopy gap fraction [mm]
-    canopygapfraction::Vector{T}
+    canopygapfraction::Vector{T} | "mm"
     # Coefficient for EUROSEM rainfall erosion [-]
-    erosk::Vector{T}
+    erosk::Vector{T} | "-"
     # Exponent for EUROSEM rainfall erosion [-]
-    erosspl::Vector{T}
+    erosspl::Vector{T} | "-"
     # Coefficient for ANSWERS overland flow erosion [-]
-    erosov::Vector{T}
+    erosov::Vector{T} | "-"
     # Fraction of impervious area per grid cell [-]
-    pathfrac::Vector{T}
+    pathfrac::Vector{T} | "-"
     # Land slope [-]
-    slope::Vector{T}
+    slope::Vector{T} | "-"
     # USLE crop management factor [-]
-    usleC::Vector{T}
+    usleC::Vector{T} | "-"
     # USLE soil erodibility factor [-]
-    usleK::Vector{T}
+    usleK::Vector{T} | "-"
     # Sediment eroded by rainfall [ton]
-    sedspl::Vector{T}
+    sedspl::Vector{T} | "t" 
     # Sediment eroded by overland flow [ton]
-    sedov::Vector{T}
+    sedov::Vector{T} | "t" 
     # Total eroded soil [ton]
-    soilloss::Vector{T}
+    soilloss::Vector{T} | "t"
     # Eroded soil per particle class [ton]
-    erosclay::Vector{T}
-    erossilt::Vector{T}
-    erossand::Vector{T}
-    erossagg::Vector{T}
-    eroslagg::Vector{T}
+    erosclay::Vector{T} | "t"
+    erossilt::Vector{T} | "t"
+    erossand::Vector{T} | "t"
+    erossagg::Vector{T} | "t"
+    eroslagg::Vector{T} | "t"
     ## Interception related to leaf_area_index climatology ###
     # Specific leaf storage [mm]
-    sl::Vector{T}
+    sl::Vector{T} | "mm"
     # Storage woody part of vegetation [mm]
-    swood::Vector{T}
+    swood::Vector{T} | "mm"
     # Extinction coefficient [-] (to calculate canopy gap fraction)
-    kext::Vector{T}
+    kext::Vector{T} | "-"
     # Leaf area index [m² m⁻²]
-    leaf_area_index::Vector{T}
+    leaf_area_index::Vector{T} | "m2 m-2"
     ### Transport capacity part ###                          
     # Drain length [m]
-    dl::Vector{T}
+    dl::Vector{T} | "m" 
     # Flow width [m]                          
-    width::Vector{T}
+    width::Vector{T} | "m" 
     # Govers transport capacity coefficients [-]
-    cGovers::Vector{T}
-    nGovers::Vector{T}
+    cGovers::Vector{T} | "-"
+    nGovers::Vector{T} | "-"
     # Median particle diameter of the topsoil [mm]
-    D50::Vector{T}
+    D50::Vector{T} | "mm"
     # Median diameter per particle class [um]
-    dmclay::Vector{T}
-    dmsilt::Vector{T}
-    dmsand::Vector{T}
-    dmsagg::Vector{T}
-    dmlagg::Vector{T}
+    dmclay::Vector{T} | "µm"
+    dmsilt::Vector{T} | "µm"
+    dmsand::Vector{T} | "µm"
+    dmsagg::Vector{T} | "µm"
+    dmlagg::Vector{T} | "µm"
     # Fraction of the different particle class [-]
-    fclay::Vector{T}
-    fsilt::Vector{T}
-    fsand::Vector{T}
-    fsagg::Vector{T}
-    flagg::Vector{T}  
+    fclay::Vector{T} | "-"
+    fsilt::Vector{T} | "-"
+    fsand::Vector{T} | "-"
+    fsagg::Vector{T} | "-"
+    flagg::Vector{T} | "-"  
     # Density of sediment [kg/m3]
-    rhos::Vector{T}  
+    rhos::Vector{T} | "kg m-3"  
     # Filter with river cells
-    rivcell::Vector{T}  
+    rivcell::Vector{T} | "-"  
     # Total transport capacity of overland flow [ton]          
-    TCsed::Vector{T}
+    TCsed::Vector{T} | "t"
     # Transport capacity of overland flow per particle class [ton]          
-    TCclay::Vector{T}
-    TCsilt::Vector{T}
-    TCsand::Vector{T}
-    TCsagg::Vector{T}
-    TClagg::Vector{T}
+    TCclay::Vector{T} | "t"
+    TCsilt::Vector{T} | "t"
+    TCsand::Vector{T} | "t"
+    TCsagg::Vector{T} | "t"
+    TClagg::Vector{T} | "t"
 
     function LandSed{T}(args...) where {T}
         equal_size_vectors(args)
@@ -106,8 +106,8 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
     n = length(inds)
     do_river = get(config.model, "runrivermodel", false)
     # Reservoir / lake
-    do_reservoirs = Bool(get(config.model, "reservoir", false))
-    do_lakes = Bool(get(config.model, "lake", false))
+    do_reservoirs = Bool(get(config.model, "doreservoir", false))
+    do_lakes = Bool(get(config.model, "dolake", false))
     # Rainfall erosion equation: ["answers", "eurosem"]
     rainerosmethod = get(config.model, "rainerosmethod", "answers") 
     # Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]
@@ -659,44 +659,44 @@ function update_until_oltransport(ols::LandSed, config, network)
 end
 
 ### Sediment transport in overland flow ###
-Base.@kwdef struct OLFSed{T}
+@get_units @with_kw struct OLFSed{T}
     # number of cells
-    n::Int
+    n::Int | "-"
     # Filter with river cells
-    rivcell::Vector{T}
+    rivcell::Vector{T} | "-"
     # Forcing for the river
-    h_riv::Vector{T}
-    q_riv::Vector{T}
+    h_riv::Vector{T} | "m"
+    q_riv::Vector{T} | "m3 s-1"
     # Total eroded soil [ton]
-    soilloss::Vector{T}
+    soilloss::Vector{T} | "t"
     # Eroded soil per particle class [ton]
-    erosclay::Vector{T}
-    erossilt::Vector{T}
-    erossand::Vector{T}
-    erossagg::Vector{T}
-    eroslagg::Vector{T}
+    erosclay::Vector{T} | "t"
+    erossilt::Vector{T} | "t"
+    erossand::Vector{T} | "t"
+    erossagg::Vector{T} | "t"
+    eroslagg::Vector{T} | "t"
     # Total transport capacity of overland flow [ton]          
-    TCsed::Vector{T}
+    TCsed::Vector{T} | "t"
     # Transport capacity of overland flow per particle class [ton]          
-    TCclay::Vector{T}
-    TCsilt::Vector{T}
-    TCsand::Vector{T}
-    TCsagg::Vector{T}
-    TClagg::Vector{T}
+    TCclay::Vector{T} | "t"
+    TCsilt::Vector{T} | "t"
+    TCsand::Vector{T} | "t"
+    TCsagg::Vector{T} | "t"
+    TClagg::Vector{T} | "t"
     # Sediment flux in overland flow [ton]
-    olsed::Vector{T}
-    olclay::Vector{T}
-    olsilt::Vector{T}
-    olsand::Vector{T}
-    olsagg::Vector{T}
-    ollagg::Vector{T}
+    olsed::Vector{T} | "t"
+    olclay::Vector{T} | "t"
+    olsilt::Vector{T} | "t"
+    olsand::Vector{T} | "t"
+    olsagg::Vector{T} | "t"
+    ollagg::Vector{T} | "t"
     # Sediment reaching the river with overland flow [ton]
-    inlandsed::Vector{T}
-    inlandclay::Vector{T}
-    inlandsilt::Vector{T}
-    inlandsand::Vector{T}
-    inlandsagg::Vector{T}
-    inlandlagg::Vector{T}
+    inlandsed::Vector{T} | "t"
+    inlandclay::Vector{T} | "t"
+    inlandsilt::Vector{T} | "t"
+    inlandsand::Vector{T} | "t"
+    inlandsagg::Vector{T} | "t"
+    inlandlagg::Vector{T} | "t"
 
 
     function OLFSed{T}(args...) where {T}
@@ -739,15 +739,15 @@ function update(ols::OLFSed, network, config)
 end
 
 ### River transport and processes ###
-Base.@kwdef struct RiverSed{T}
+@get_units @with_kw struct RiverSed{T}
     # number of cells
-    n::Int
+    n::Int | "-"
     # Timestep [s]
-    Δt::T
+    Δt::T | "s"
     # River geometry (slope [-], length [m], width [m])
-    sl::Vector{T}
-    dl::Vector{T}
-    width::Vector{T}
+    sl::Vector{T} | "m"
+    dl::Vector{T} | "m"
+    width::Vector{T} | "m"
     # Sediment mean diameter in the river bed [mm]
     d50::Vector{T}
     # Particle mean diameter [mm]
@@ -758,70 +758,70 @@ Base.@kwdef struct RiverSed{T}
     dmlagg::Vector{T}
     dmgrav::Vector{T}
     # River bed and bank particle fraction composition [-]
-    fclayriv::Vector{T}
-    fsiltriv::Vector{T}
-    fsandriv::Vector{T}
-    fgravriv::Vector{T}
+    fclayriv::Vector{T} | "-"
+    fsiltriv::Vector{T} | "-"
+    fsandriv::Vector{T} | "-"
+    fgravriv::Vector{T} | "-"
     # Sediment mean diameter for Engelund and Hansen transport equation [mm]
     d50engelund::Vector{T}
     # Parameters for Bagnold transport equation
-    cbagnold::Vector{T}
-    ebagnold::Vector{T}
+    cbagnold::Vector{T} | "-"
+    ebagnold::Vector{T} | "-"
     # Parameters for Kodatie transport equation
-    ak::Vector{T}
-    bk::Vector{T}
-    ck::Vector{T}
-    dk::Vector{T}
+    ak::Vector{T} | "-"
+    bk::Vector{T} | "-"
+    ck::Vector{T} | "-"
+    dk::Vector{T} | "-"
     # Critical bed and bank shear stress [N/m2]
-    TCrbank::Vector{T}
-    TCrbed::Vector{T}
+    TCrbank::Vector{T} | "N m-2"
+    TCrbed::Vector{T} | "N m-2"
     # Bed and bank erodibilities [m3/N.s]
-    kdbank::Vector{T}
-    kdbed::Vector{T}
+    kdbank::Vector{T} | "m3 N-1 s-1"
+    kdbed::Vector{T} | "m3 N-1 s-1"
     # Sediment density [kg/m3]
-    rhos::Vector{T}
+    rhos::Vector{T} | "kg m-3"
     # River water level [m]
-    h_riv::Vector{T}
+    h_riv::Vector{T} | "m"
     # River discharge [m3/s]
-    q_riv::Vector{T}
+    q_riv::Vector{T} | "m3 s-1"
     # Sediment input from land erosion [ton]
-    inlandclay::Vector{T}
-    inlandsilt::Vector{T}
-    inlandsand::Vector{T}
-    inlandsagg::Vector{T}
-    inlandlagg::Vector{T}
+    inlandclay::Vector{T} | "t"
+    inlandsilt::Vector{T} | "t"
+    inlandsand::Vector{T} | "t"
+    inlandsagg::Vector{T} | "t"
+    inlandlagg::Vector{T} | "t"
     # Sediment / particle left in the cell [ton]
-    sedload::Vector{T}
-    clayload::Vector{T}
-    siltload::Vector{T}
-    sandload::Vector{T}
-    saggload::Vector{T}
-    laggload::Vector{T}
-    gravload::Vector{T}
+    sedload::Vector{T} | "t"
+    clayload::Vector{T} | "t"
+    siltload::Vector{T} | "t"
+    sandload::Vector{T} | "t"
+    saggload::Vector{T} | "t"
+    laggload::Vector{T} | "t"
+    gravload::Vector{T} | "t"
     # Sediment / particle stored on the river bed after deposition [ton]
-    sedstore::Vector{T}
-    claystore::Vector{T}
-    siltstore::Vector{T}
-    sandstore::Vector{T}
-    saggstore::Vector{T}
-    laggstore::Vector{T}
-    gravstore::Vector{T}
+    sedstore::Vector{T} | "t"
+    claystore::Vector{T} | "t"
+    siltstore::Vector{T} | "t"
+    sandstore::Vector{T} | "t"
+    saggstore::Vector{T} | "t"
+    laggstore::Vector{T} | "t"
+    gravstore::Vector{T} | "t"
     # Sediment / particle flux [ton]
-    outsed::Vector{T}
-    outclay::Vector{T}
-    outsilt::Vector{T}
-    outsand::Vector{T}
-    outsagg::Vector{T}
-    outlagg::Vector{T}
-    outgrav::Vector{T}
-    # Sediment concentrations [mg/L]
-    Sedconc::Vector{T}
-    SSconc::Vector{T}
-    Bedconc::Vector{T}
+    outsed::Vector{T} | "t"
+    outclay::Vector{T} | "t"
+    outsilt::Vector{T} | "t"
+    outsand::Vector{T} | "t"
+    outsagg::Vector{T} | "t"
+    outlagg::Vector{T} | "t"
+    outgrav::Vector{T} | "t"
+    # Sediment concentrations [kg/m3]
+    Sedconc::Vector{T} | "kg m-3"
+    SSconc::Vector{T} | "kg m-3"
+    Bedconc::Vector{T} | "kg m-3"
     # Reservoir and lakes
-    wbcover::Vector{T}
-    wblocs::Vector{T}
-    wbarea::Vector{T}    
+    wbcover::Vector{T} | "-"
+    wblocs::Vector{T} | "-"
+    wbarea::Vector{T} | "m2"    
 
     # function RiverSed{T}(args...) where {T}
     #     equal_size_vectors(args)
@@ -857,8 +857,8 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     tcmethodriv = get(config.model, "rivtransportmethod", "bagnold")
     Δt = Second(config.timestepsecs)
     # Reservoir / lakes
-    do_reservoirs = Bool(get(config.model, "reservoir", false))
-    do_lakes = Bool(get(config.model, "lake", false))
+    do_reservoirs = Bool(get(config.model, "doreservoir", false))
+    do_lakes = Bool(get(config.model, "dolake", false))
     wbcover = fill(0.0, nriv)
     wblocs = fill(0.0, nriv)
     wbarea = fill(0.0, nriv)
