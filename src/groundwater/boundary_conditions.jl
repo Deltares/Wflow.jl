@@ -10,7 +10,7 @@ end
 
 
 # Do nothing for a confined aquifer: aquifer can always provide flux
-check_flux(flux, aquifer::ConfinedAquifer, index::Int) = flux 
+check_flux(flux, aquifer::ConfinedAquifer, index::Int) = flux
 
 
 @get_units struct River{T} <: AquiferBoundaryCondition
@@ -39,8 +39,8 @@ function flux!(Q, river::River, aquifer)
     end
     return Q
 end
-            
-        
+
+
 @get_units struct Drainage{T} <: AquiferBoundaryCondition
     elevation::Vector{T}
     conductance::Vector{T}
@@ -88,7 +88,8 @@ end
 
 function flux!(Q, recharge::Recharge, aquifer)
     for (i, index) in enumerate(recharge.index)
-        recharge.flux[i] = check_flux(recharge.rate[i] * aquifer.area[index], aquifer, index)
+        recharge.flux[i] =
+            check_flux(recharge.rate[i] * aquifer.area[index], aquifer, index)
         Q[index] += recharge.flux[i]
     end
     return Q

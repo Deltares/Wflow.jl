@@ -2,23 +2,18 @@
 # https://github.com/Deltares/BasicModelInterface.jl
 
 # BMI grid type based on grid identifier
-const gridtype = Dict{Int, String}(
+const gridtype = Dict{Int,String}(
     0 => "unstructured",
     1 => "unstructured",
     2 => "unstructured",
     3 => "unstructured",
-    4 => "unstructured"
+    4 => "unstructured",
 )
 
 # Mapping of grid identifier to a key, to get the active indices of the model domain.
 # See also function active_indices(network, key::Tuple).
-const grids = Dict{Int, String}(
-    0 => "reservoir",
-    1 => "lake",
-    2 => "river",
-    3 => "drain",
-    4 => "land"
-)
+const grids =
+    Dict{Int,String}(0 => "reservoir", 1 => "lake", 2 => "river", 3 => "drain", 4 => "land")
 
 """
     BMI.initialize(::Type{<:Wflow.Model}, config_file)
@@ -55,7 +50,7 @@ function BMI.update_until(model::Model, time::Float64)
     n_iter = Int(max(0, (time - curtime) / model.clock.Δt.value))
     end_time = curtime + n_iter * config.timestepsecs
     @info("update model until $end_time")
-    for i in 1:n_iter
+    for i = 1:n_iter
         update_func(model)
     end
     return model
@@ -92,10 +87,13 @@ exchanged.
 """
 function BMI.get_input_var_names(model::Model)
     @unpack config = model
-    if haskey(config,"API")
+    if haskey(config, "API")
         var_names = Vector{String}()
         for c in config.API.components
-            append!(var_names, collect(string.(c,".", fieldnames(typeof(param(model, c))))))
+            append!(
+                var_names,
+                collect(string.(c, ".", fieldnames(typeof(param(model, c))))),
+            )
         end
         return var_names
     else
@@ -129,12 +127,12 @@ function BMI.get_var_grid(model::Model, name::String)
 end
 
 function BMI.get_var_type(model::Model, name::String)
-    string(typeof(param(model,name)))
+    string(typeof(param(model, name)))
 end
 
 function BMI.get_var_units(model::Model, name::String)
     s = split(name, ".")
-    get_units(param(model,join(s[1:end-1], ".")), Symbol(s[end]))
+    get_units(param(model, join(s[1:end-1], ".")), Symbol(s[end]))
 end
 
 function BMI.get_var_itemsize(model::Model, name::String)
@@ -200,7 +198,7 @@ end
 Set a model variable `name` to the values in vector `src`, overwriting the current contents.
 The type and size of `src` must match the model’s internal array.
 """
-function BMI.set_value(model::Model, name::String, src::Vector{T}) where T<:AbstractFloat
+function BMI.set_value(model::Model, name::String, src::Vector{T}) where {T<:AbstractFloat}
     BMI.get_value_ptr(model, name) .= src
 end
 
@@ -210,7 +208,12 @@ end
 
     Set a model variable `name` to the values in vector `src`, at indices `inds`.
 """
-function BMI.set_value_at_indices(model::Model, name::String, inds::Vector{Int}, src::Vector{T}) where T<:AbstractFloat
+function BMI.set_value_at_indices(
+    model::Model,
+    name::String,
+    inds::Vector{Int},
+    src::Vector{T},
+) where {T<:AbstractFloat}
     BMI.get_value_ptr(model, name)[inds] .= src
 end
 

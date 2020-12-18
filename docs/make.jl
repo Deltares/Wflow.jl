@@ -5,10 +5,7 @@ pages = [
     "Home" => "index.md",
     "Quick start" => "quick-start.md",
     "Model structure" => "structure.md",
-    "Models" => [
-        "wflow_sbm" => "model/sbm.md",
-        "wflow_hbv" => "model/hbv.md",
-    ],
+    "Models" => ["wflow_sbm" => "model/sbm.md", "wflow_hbv" => "model/hbv.md"],
     "Vertical components" => [
         "SBM" => "vertical/sbm.md",
         "HBV" => "vertical/hbv.md",
@@ -32,7 +29,7 @@ makedocs(;
         canonical = "https://deltares.github.io/Wflow.jl",
         assets = String[],
     ),
-    pages = pages
+    pages = pages,
 )
 
 deploydocs(; repo = "github.com/Deltares/Wflow.jl")

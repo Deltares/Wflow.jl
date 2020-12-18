@@ -34,7 +34,7 @@ function initialize_sbm_gwf_model(config::Config)
 
     kw_river_tstep = get(config.model, "kw_river_tstep", 0)
     kw_land_tstep = get(config.model, "kw_land_tstep", 0)
-    
+
     nc = NCDataset(static_path)
     dims = dimnames(nc[param(config, "input.subcatchment")])
 
@@ -49,7 +49,7 @@ function initialize_sbm_gwf_model(config::Config)
     inds, rev_inds = active_indices(subcatch_2d, missing)
     n = length(inds)
     modelsize_2d = size(subcatch_2d)
-    
+
     river_2d = ncread(nc, param(config, "input.river_location"); type = Bool, fill = false)
     river = river_2d[inds]
     riverwidth_2d =
@@ -89,14 +89,16 @@ function initialize_sbm_gwf_model(config::Config)
     # reservoirs
     pits = zeros(Bool, modelsize_2d)
     if do_reservoirs
-        reservoirs, resindex, reservoir, pits = initialize_simple_reservoir(config, nc, inds_riv, nriv, pits)
+        reservoirs, resindex, reservoir, pits =
+            initialize_simple_reservoir(config, nc, inds_riv, nriv, pits)
     else
         reservoir = ()
     end
 
     # lakes
     if do_lakes
-        lakes, lakeindex, lake, pits = initialize_natural_lake(config, nc, inds_riv, nriv, pits)
+        lakes, lakeindex, lake, pits =
+            initialize_natural_lake(config, nc, inds_riv, nriv, pits)
     else
         lake = ()
     end
@@ -112,7 +114,7 @@ function initialize_sbm_gwf_model(config::Config)
 
     for i = 1:n
         dl[i] = detdrainlength(ldd[i], xl[i], yl[i])
-        dw[i] = (xl[i] * yl[i])/dl[i]
+        dw[i] = (xl[i] * yl[i]) / dl[i]
         sw[i] = river[i] ? max(dw[i] - riverwidth[i], 0.0) : dw[i]
     end
 
@@ -133,7 +135,7 @@ function initialize_sbm_gwf_model(config::Config)
         sl = βₗ,
         n = n_land,
         dl = dl,
-        q = fill(0.0, n),   
+        q = fill(0.0, n),
         q_av = fill(0.0, n),
         qlat = fill(0.0, n),
         h = h,
@@ -149,8 +151,8 @@ function initialize_sbm_gwf_model(config::Config)
         cel = fill(0.0, n),
         to_river = fill(0.0, n),
         rivercells = fill(false, n),
-        reservoir_index = fill(0, n), 
-        lake_index = fill(0, n),      
+        reservoir_index = fill(0, n),
+        lake_index = fill(0, n),
         reservoir = nothing,
         lake = nothing,
     )
@@ -181,7 +183,7 @@ function initialize_sbm_gwf_model(config::Config)
     # the indices of the river cells in the land(+river) cell vector
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
     frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, βₗ, n)
-    
+
     h_river = fill(0.0, nriv)
     alpha_term = pow.(n_river ./ sqrt.(riverslope), β)
     rf = SurfaceFlow(
@@ -189,13 +191,14 @@ function initialize_sbm_gwf_model(config::Config)
         sl = riverslope,
         n = n_river,
         dl = riverlength,
-        q = fill(0.0, nriv),   
+        q = fill(0.0, nriv),
         q_av = fill(0.0, nriv),
         qlat = fill(0.0, nriv),
         h = h_river,
         h_av = fill(0.0, nriv),
         Δt = tosecond(Δt),
-        its = kw_river_tstep > 0 ? ceil(Int(tosecond(Δt) / kw_river_tstep)) : kw_river_tstep,
+        its = kw_river_tstep > 0 ? ceil(Int(tosecond(Δt) / kw_river_tstep)) :
+              kw_river_tstep,
         width = riverwidth,
         wb_pit = fill(false, nriv),
         alpha_term = alpha_term,
@@ -221,8 +224,7 @@ function initialize_sbm_gwf_model(config::Config)
             fill = mv,
         )
         index_constanthead = filter(i -> !isequal(constanthead[i], mv), 1:n)
-        constant_head = ConstantHead(constanthead[index_constanthead], 
-                                    index_constanthead,)
+        constant_head = ConstantHead(constanthead[index_constanthead], index_constanthead)
 
     else
         constant_head = ConstantHead[]
@@ -283,20 +285,25 @@ function initialize_sbm_gwf_model(config::Config)
         type = Float64,
     )
 
-    river_flux = fill(mv,nriv)
-    river_stage = fill(mv,nriv)
+    river_flux = fill(mv, nriv)
+    river_stage = fill(mv, nriv)
     river = River(
         river_stage,
         infiltration_conductance,
         exfiltration_conductance,
         river_bottom,
-        river_flux,    
+        river_flux,
         index_river,
     )
 
     # drain boundary of unconfined aquifer (optional)
     if do_drains
-        drain_2d = ncread(nc, param(config, "input.lateral.subsurface.drain"); type = Bool, fill=false)
+        drain_2d = ncread(
+            nc,
+            param(config, "input.lateral.subsurface.drain");
+            type = Bool,
+            fill = false,
+        )
         inds_drain, rev_inds_drain = active_indices(drain_2d, 0)
         drain = drain_2d[inds]
         drain_elevation = ncread(
@@ -314,7 +321,7 @@ function initialize_sbm_gwf_model(config::Config)
             fill = mv,
         )
         index_drain = filter(i -> !isequal(drain[i], 0), 1:n)
-        drain_flux = fill(mv,length(index_drain))
+        drain_flux = fill(mv, length(index_drain))
         drains = Drainage(
             drain_elevation[index_drain],
             drain_conductance[index_drain],
@@ -328,7 +335,7 @@ function initialize_sbm_gwf_model(config::Config)
     end
 
     # recharge boundary of unconfined aquifer
-    r = fill(mv,n)
+    r = fill(mv, n)
     recharge = Recharge(r, fill(0.0, n), collect(1:n))
 
     gwf = GroundwaterFlow(
@@ -342,10 +349,19 @@ function initialize_sbm_gwf_model(config::Config)
 
     reader = prepare_reader(dynamic_path, cyclic_path, config)
 
-    modelmap = (vertical = sbm,
-                lateral = (subsurface = (flow = gwf, recharge = gwf.boundaries[1], river = gwf.boundaries[2], drain = gwf.boundaries[3]),
-                land = olf,
-                river = rf))
+    modelmap = (
+        vertical = sbm,
+        lateral = (
+            subsurface = (
+                flow = gwf,
+                recharge = gwf.boundaries[1],
+                river = gwf.boundaries[2],
+                drain = gwf.boundaries[3],
+            ),
+            land = olf,
+            river = rf,
+        ),
+    )
     indices_reverse = (
         land = rev_inds,
         river = rev_inds_riv,
@@ -387,9 +403,16 @@ function initialize_sbm_gwf_model(config::Config)
     model = Model(
         config,
         (; land, river, reservoir, lake, drain, index_river, frac_toriver),
-        (subsurface = (flow = gwf, recharge = gwf.boundaries[1], river = gwf.boundaries[2], drain = gwf.boundaries[3]), 
-        land = olf, 
-        river = rf),
+        (
+            subsurface = (
+                flow = gwf,
+                recharge = gwf.boundaries[1],
+                river = gwf.boundaries[2],
+                drain = gwf.boundaries[3],
+            ),
+            land = olf,
+            river = rf,
+        ),
         sbm,
         Clock(config.starttime, 1, Δt),
         reader,
@@ -397,13 +420,8 @@ function initialize_sbm_gwf_model(config::Config)
     )
 
     # read and set states in model object if reinit=false
-    if reinit  == false
-        set_states(
-            instate_path,
-            model,
-            state_ncnames,
-            type = Float64
-        )
+    if reinit == false
+        set_states(instate_path, model, state_ncnames, type = Float64)
     end
 
     # make sure the forcing is already loaded
@@ -413,7 +431,7 @@ function initialize_sbm_gwf_model(config::Config)
         update_cyclic!(model)
     end
 
-    return model  
+    return model
 end
 
 
@@ -444,7 +462,11 @@ function update_sbm_gwf(model)
             min.(0.5, lateral.land.sl ./ 5.67) .* min.(1.0, vertical.snow ./ 10000.0)
         maxflux = snowflux_frac .* vertical.snow
         vertical.snow .= accucapacityflux(network.land, vertical.snow, maxflux)
-        vertical.snowwater .= accucapacityflux(network.land, vertical.snowwater, vertical.snowwater .* snowflux_frac)
+        vertical.snowwater .= accucapacityflux(
+            network.land,
+            vertical.snowwater,
+            vertical.snowwater .* snowflux_frac,
+        )
     end
 
     # update vertical sbm concept until recharge [mm]
@@ -463,13 +485,16 @@ function update_sbm_gwf(model)
     Q = zeros(vertical.n)
     # exchange of recharge between vertical sbm concept and groundwater flow domain
     # recharge rate groundwater [m d⁻¹]
-    lateral.subsurface.recharge.rate .= vertical.recharge ./ 1000.0 .* (1.0/Δt_sbm)
+    lateral.subsurface.recharge.rate .= vertical.recharge ./ 1000.0 .* (1.0 / Δt_sbm)
     # update groundwater domain
     update(lateral.subsurface.flow, Q, Δt_sbm)
-    
+
     # determine excess head [m] (exfiltwater) in groundwater domain (head > surface) and reset head
-    exfiltwater = lateral.subsurface.flow.aquifer.head .- min.(lateral.subsurface.flow.aquifer.head, lateral.subsurface.flow.aquifer.top)
-    lateral.subsurface.flow.aquifer.head .= min.(lateral.subsurface.flow.aquifer.head, lateral.subsurface.flow.aquifer.top)
+    exfiltwater =
+        lateral.subsurface.flow.aquifer.head .-
+        min.(lateral.subsurface.flow.aquifer.head, lateral.subsurface.flow.aquifer.top)
+    lateral.subsurface.flow.aquifer.head .=
+        min.(lateral.subsurface.flow.aquifer.head, lateral.subsurface.flow.aquifer.top)
 
     # update vertical sbm concept (runoff, ustorelayerdepth and satwaterdepth)
     update_after_lateralflow(
@@ -492,19 +517,22 @@ function update_sbm_gwf(model)
 
     # update river domain with net runoff from vertical sbm concept, overland flow
     # and groundwater flow to the river cells
-    net_runoff_river = 
-        (vertical.net_runoff_river[inds_riv] .* vertical.xl[inds_riv] .* 
-        vertical.yl[inds_riv] .* 0.001) ./ vertical.Δt
-    
+    net_runoff_river =
+        (
+            vertical.net_runoff_river[inds_riv] .* vertical.xl[inds_riv] .*
+            vertical.yl[inds_riv] .* 0.001
+        ) ./ vertical.Δt
+
     # flux from groundwater domain to river (Q to river from drains and groundwater)
     flux_gw = zeros(vertical.n)
     flux_gw[lateral.subsurface.river.index] = -lateral.subsurface.river.flux
-    flux_gw[lateral.subsurface.drain.index] = flux_gw[lateral.subsurface.drain.index] - lateral.subsurface.drain.flux
-    
-    lateral.river.qlat .= 
+    flux_gw[lateral.subsurface.drain.index] =
+        flux_gw[lateral.subsurface.drain.index] - lateral.subsurface.drain.flux
+
+    lateral.river.qlat .=
         (
-            flux_gw[inds_riv] ./ lateral.river.Δt .+
-            lateral.land.to_river[inds_riv] .+ net_runoff_river
+            flux_gw[inds_riv] ./ lateral.river.Δt .+ lateral.land.to_river[inds_riv] .+
+            net_runoff_river
         ) ./ lateral.river.dl
     update(lateral.river, network.river, do_iter = kinwave_it, doy = dayofyear(clock.time))
 

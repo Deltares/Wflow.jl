@@ -41,9 +41,7 @@ function rainfall_interception_gash(
     # large storms P > P_sat
     largestorms = precipitation > p_sat
 
-    iwet =
-        largestorms ? (pfrac * p_sat) - cmax :
-        precipitation * pfrac
+    iwet = largestorms ? (pfrac * p_sat) - cmax : precipitation * pfrac
     isat = largestorms ? (e_r) * (precipitation - p_sat) : 0.0
     idry = largestorms ? cmax : 0.0
     itrunc = 0.0
@@ -354,7 +352,20 @@ The refreezing efficiency factor is set to 0.05.
 - `rainfall` (precipitation that occurs as rainfall)
 - `snowfall` (precipitation that occurs as snowfall)
 """
-function snowpack_hbv(snow, snowwater, precipitation, temperature, tti, tt, ttm, cfmax, whc; rfcf=1.0, sfcf=1.0,cfr=0.05)
+function snowpack_hbv(
+    snow,
+    snowwater,
+    precipitation,
+    temperature,
+    tti,
+    tt,
+    ttm,
+    cfmax,
+    whc;
+    rfcf = 1.0,
+    sfcf = 1.0,
+    cfr = 0.05,
+)
 
     # fraction of precipitation which falls as rain
     rainfrac = if iszero(tti)

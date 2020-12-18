@@ -31,7 +31,7 @@
     # end
 end
 
-statevars(::SurfaceFlow) = (:q,:h,:h_av,)
+statevars(::SurfaceFlow) = (:q, :h, :h_av)
 
 function update(
     sf::SurfaceFlow,
@@ -57,7 +57,7 @@ function update(
                     courant[v] = (sf.Δt / sf.dl[v]) * sf.cel[v]
                 end
             end
-            filter!(x->x≠0.0,courant)
+            filter!(x -> x ≠ 0.0, courant)
             its = isempty(courant) ? 1 : ceil(Int, (1.25 * quantile!(courant, 0.95)))
         end
     else
@@ -102,7 +102,7 @@ function update(
                         eltype(sf.to_river),
                     )
                 elseif river[v] && sf.wb_pit[v] && sf.width[v] == 0.0
-                    sf.to_river[v]  += sum_at(sf.q, upstream_nodes)
+                    sf.to_river[v] += sum_at(sf.q, upstream_nodes)
                     qin = 0.0
                 else
                     qin = sum_at(sf.q, upstream_nodes)
@@ -165,7 +165,7 @@ end
     exfiltwater::Vector{T}                  # Exfiltration [mm]  (groundwater above surface level, saturated excess conditions)
     recharge::Vector{T}                     # Net recharge to saturated store [mm]
     ssf::Vector{T} | "mm3 Δt-1"             # Subsurface flow [mm³ Δt⁻¹]
-    ssfin::Vector{T} | "mm3 Δt-1" 
+    ssfin::Vector{T} | "mm3 Δt-1"
     ssfmax::Vector{T} | "mm2 Δt-1"          # Maximum subsurface flow [mm² Δt⁻¹]
     to_river::Vector{T} | "mm3 Δt-1"        # Part of subsurface flow [mm³ Δt⁻¹] that flows to the river
     wb_pit::Vector{Bool} | "-"              # Boolean location (0 or 1) of a waterbody (wb, reservoir or lake).

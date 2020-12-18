@@ -80,7 +80,12 @@ sh = [
         precipitation = [10.0, 10.0],
         evaporation = [2.0, 2.0],
         outflow = [NaN, NaN],
-        storage = Wflow.initialize_storage([2, 2], [472461536.0, 60851088.0], [395.03027, 394.87833], sh),
+        storage = Wflow.initialize_storage(
+            [2, 2],
+            [472461536.0, 60851088.0],
+            [395.03027, 394.87833],
+            sh,
+        ),
     )
 
     Wflow.update(lake, 1, 500.0, 15, 86400.0)

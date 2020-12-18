@@ -41,14 +41,14 @@ end
     @test Wflow.timecycles(collect(1:12)) == collect(zip(1:12, fill(1, 12)))
     @test Wflow.timecycles(collect(1:366)) ==
           monthday.(Date(2000, 1, 1):Day(1):Date(2000, 12, 31))
-    
-    @test Wflow.monthday_passed((1,1), (1,1))  # same day
-    @test Wflow.monthday_passed((1,2), (1,1))  # day later
-    @test Wflow.monthday_passed((2,1), (1,1))  # month later
-    @test Wflow.monthday_passed((2,2), (1,1))  # month and day later
-    @test !Wflow.monthday_passed((2,1), (2,2))  # day before
-    @test !Wflow.monthday_passed((1,2), (2,2))  # month before
-    @test !Wflow.monthday_passed((1,1), (2,2))  # day and month before       
+
+    @test Wflow.monthday_passed((1, 1), (1, 1))  # same day
+    @test Wflow.monthday_passed((1, 2), (1, 1))  # day later
+    @test Wflow.monthday_passed((2, 1), (1, 1))  # month later
+    @test Wflow.monthday_passed((2, 2), (1, 1))  # month and day later
+    @test !Wflow.monthday_passed((2, 1), (2, 2))  # day before
+    @test !Wflow.monthday_passed((1, 2), (2, 2))  # month before
+    @test !Wflow.monthday_passed((1, 1), (2, 2))  # day and month before       
 end
 
 # test reading and setting of warm states (reinit=false)

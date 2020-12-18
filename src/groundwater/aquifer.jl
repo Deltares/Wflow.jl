@@ -173,7 +173,7 @@ function horizontal_conductance(
     nzi::Int,
     aquifer::A,
     connectivity::Connectivity,
-) where A <: Aquifer
+) where {A<:Aquifer}
     k1 = aquifer.k[i]
     k2 = aquifer.k[j]
     H1 = aquifer.top[i] - aquifer.bottom[i]
@@ -191,12 +191,13 @@ Conductance for a confined aquifer is constant, and only has to be set once.
 For an unconfined aquifer, conductance is computed per timestep by multiplying by
 degree of saturation [0.0 - 1.0].
 """
-function initialize_conductance!(aquifer::A, connectivity::Connectivity) where A <: Aquifer
-    for i in 1:connectivity.ncell
+function initialize_conductance!(aquifer::A, connectivity::Connectivity) where {A<:Aquifer}
+    for i = 1:connectivity.ncell
         # Loop over connections for cell j
         for nzi in connections(connectivity, i)
             j = connectivity.rowval[nzi]
-            aquifer.conductance[nzi] = horizontal_conductance(i, j, nzi, aquifer, connectivity)
+            aquifer.conductance[nzi] =
+                horizontal_conductance(i, j, nzi, aquifer, connectivity)
         end
     end
 end
@@ -246,7 +247,7 @@ end
 
 
 function flux!(Q, aquifer, connectivity)
-    for i in 1:connectivity.ncell
+    for i = 1:connectivity.ncell
         # Loop over connections for cell j
         for nzi in connections(connectivity, i)
             # connection from i -> j
@@ -277,7 +278,9 @@ The following criterion can be found in Chu & Willis (1984)
 function stable_timestep(aquifer)
     Δtₘᵢₙ = Inf
     for i in eachindex(aquifer.head)
-        Δt = aquifer.area[i] * storativity(aquifer)[i] / (aquifer.k[i] * saturated_thickness(aquifer, i))
+        Δt =
+            aquifer.area[i] * storativity(aquifer)[i] /
+            (aquifer.k[i] * saturated_thickness(aquifer, i))
         Δtₘᵢₙ = Δt < Δtₘᵢₙ ? Δt : Δtₘᵢₙ
     end
     return 0.25 * Δtₘᵢₙ
@@ -303,17 +306,18 @@ function update(gwf, Q, Δt)
 end
 
 
-Base.@kwdef struct GroundwaterFlow{A, B}
+Base.@kwdef struct GroundwaterFlow{A,B}
     aquifer::A
     connectivity::Connectivity
     constanthead::ConstantHead
     boundaries::Vector{B}
     function GroundwaterFlow(
-            aquifer::A,
-            connectivity,
-            constanthead,
-            boundaries::Vector{B}) where {A <: Aquifer, B <: AquiferBoundaryCondition}
+        aquifer::A,
+        connectivity,
+        constanthead,
+        boundaries::Vector{B},
+    ) where {A<:Aquifer,B<:AquiferBoundaryCondition}
         initialize_conductance!(aquifer, connectivity)
-        new{A, B}(aquifer, connectivity, constanthead, boundaries)
-    end 
+        new{A,B}(aquifer, connectivity, constanthead, boundaries)
+    end
 end
