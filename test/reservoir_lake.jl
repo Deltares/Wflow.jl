@@ -37,9 +37,9 @@ end
         inflow = [0.0],
         b = [0.22],
         e = [2.0],
-        sh = [DataFrame()],
-        hq = [DataFrame()],
-        storage = Wflow.initialize_storage([1], [180510409.0], [18.5], [DataFrame()]),
+        sh = [missing],
+        hq = [missing],
+        storage = Wflow.initialize_storage([1], [180510409.0], [18.5], [missing]),
         waterlevel = [18.5],
         precipitation = [20.0],
         evaporation = [3.2],
@@ -57,10 +57,13 @@ end
 
 datadir = joinpath(@__DIR__, "data")
 sh = [
-    CSV.read(joinpath(datadir, "lake_sh_1.csv"), DataFrame, type = Float64),
-    CSV.read(joinpath(datadir, "lake_sh_2.csv"), DataFrame, type = Float64),
+    Wflow.read_sh_csv(joinpath(datadir, "lake_sh_1.csv")),
+    Wflow.read_sh_csv(joinpath(datadir, "lake_sh_2.csv")),
 ]
 @testset "linked lakes (HBV)" begin
+    @test keys(sh[1]) == (:H, :S)
+    @test typeof(values(sh[1])) == Tuple{Vector{Float64}, Vector{Float64}}
+
     lake = Wflow.NaturalLake{Float64}(
         lowerlake_ind = [2, 0],
         area = [472461536.0, 60851088.0],
@@ -73,8 +76,8 @@ sh = [
         e = [1.5, 1.5],
         sh = sh,
         hq = [
-            DataFrame(),
-            CSV.read(joinpath(datadir, "lake_hq_2.csv"), DataFrame, type = Float64),
+            missing,
+            Wflow.read_hq_csv(joinpath(datadir, "lake_hq_2.csv")),
         ],
         waterlevel = [395.03027, 394.87833],
         precipitation = [10.0, 10.0],

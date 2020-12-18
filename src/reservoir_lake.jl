@@ -194,8 +194,8 @@ end
     outflowfunc::Vector{Int} | "-"          # type of lake rating curve, 1: Q = f(H) from lake data and interpolation, 2: General Q = b(H - H₀)ᵉ, 3: Case of Puls Approach Q = b(H - H₀)²
     b::Vector{T} | "m3/2 s-1 (if e=3/2)"    # rating curve coefficient
     e::Vector{T} | "-"                      # rating curve exponent
-    sh::Vector{DataFrame}                   # data for storage curve
-    hq::Vector{DataFrame}                   # data for rating curve
+    sh::Vector{Union{SH, Missing}}          # data for storage curve
+    hq::Vector{Union{HQ, Missing}}          # data for rating curve
     waterlevel::Vector{T} | "m"             # waterlevel H [m] of lake
     inflow::Vector{T} | "m3"                # inflow to the lake [m³]
     storage::Vector{T} | "m3"               # storage lake [m³]
@@ -316,9 +316,11 @@ function initialize_natural_lake(config, static_path, nc, inds_riv, nriv, pits)
     # length of all lake cells. To do that we need to introduce a mapping.
     n_lakes = length(inds_lake)
 
-    sh = Vector{DataFrame}(undef, n_lakes)
-    hq = Vector{DataFrame}(undef, n_lakes)
+    sh = Vector{Union{SH, Missing}}(missing, n_lakes)
+    hq = Vector{Union{HQ, Missing}}(missing, n_lakes)
     for i = 1:n_lakes
+        lakeloc = lakelocs[i]
+
         if linked_lakelocs[i] > 0
             linked_lakelocs[i] = i
         else
@@ -326,23 +328,13 @@ function initialize_natural_lake(config, static_path, nc, inds_riv, nriv, pits)
         end
 
         if lake_storfunc[i] == 2
-            sh[i] = CSV.read(
-                joinpath(static_path, "lake_sh_$(lakelocs[i])"),
-                DataFrame,
-                type = Float64,
-            )
-        else
-            sh[i] = DataFrame()
+            csv_path = joinpath(static_path, "lake_sh_$lakeloc.csv")
+            sh[i] = read_sh_csv(csv_path)
         end
 
         if lake_outflowfunc[i] == 1
-            hq[i] = CSV.read(
-                joinpath(static_path, "lake_hq_$(lakelocs[i])"),
-                DataFrame,
-                type = Float64,
-            )
-        else
-            hq[i] = DataFrame()
+            csv_path = joinpath(static_path, "lake_hq_$lakeloc.csv")
+            hq[i] = read_hq_csv(csv_path)
         end
 
         if lake_outflowfunc[i] == 3 && lake_storfunc[i] != 1
@@ -431,7 +423,7 @@ function update(lake::NaturalLake, i, inflow, doy, timestepsecs)
     lo = lake.lowerlake_ind[i]
     has_lowerlake = lo != 0
 
-    col = max(doy + 1, 366)
+    col = max(doy, 365)
     ### Modified Puls Approach (Burek et al., 2013, LISFLOOD) ###
     # outflowfunc = 3
     # Calculate lake factor and SI parameter
@@ -467,7 +459,7 @@ function update(lake::NaturalLake, i, inflow, doy, timestepsecs)
 
         if lake.outflowfunc[i] == 1
             outflow =
-                interpolate_linear(lake.waterlevel[i], lake.hq[i][!, 1], lake.hq[i][!, col])
+                interpolate_linear(lake.waterlevel[i], lake.hq[i].H, lake.hq[i].Q[:, col])
         else
             if diff_wl >= 0.0
                 outflow = max(
