@@ -364,7 +364,7 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
     lateral.subsurface.recharge .*= lateral.subsurface.dw
     lateral.subsurface.zi .= vertical.zi
 
-    # update lateral subsurface flow domain
+    # update lateral subsurface flow domain (kinematic wave)
     update(lateral.subsurface, network.land, network.frac_toriver)
 
     # update vertical sbm concept (runoff, ustorelayerdepth and satwaterdepth)
@@ -374,11 +374,12 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
         lateral.subsurface.exfiltwater,
     )
 
-    # update overland flow based on vertical runoff [mm] from vertical sbm concept
+    # determine lateral inflow for overland flow based on vertical runoff [mm] from vertical
+    # sbm concept
     lateral.land.qlat .=
         (vertical.runoff .* vertical.xl .* vertical.yl .* 0.001) ./ lateral.land.Δt ./
         lateral.land.dl
-    
+    # run kinematic wave for overland flow
     update(
         lateral.land,
         network.land,
@@ -386,8 +387,8 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
         do_iter = kinwave_it,
     )
 
-    # update river domain with net runoff from vertical sbm concept, overland flow
-    # and lateral subsurface flow to the river cells
+    # determine net runoff from vertical sbm concept in river cells, and lateral inflow from
+    # overland flow lateral subsurface flow and net runoff to the river cells
     net_runoff_river =
         (
             vertical.net_runoff_river[inds_riv] .* vertical.xl[inds_riv] .*
@@ -399,6 +400,9 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
             lateral.land.to_river[inds_riv] .+ net_runoff_river
         ) ./ lateral.river.dl
 
+    # run kinematic wave for river flow
+    # check if reservoirs or lakes are defined, the inflow from lateral subsurface and
+    # overland flow is required
     if !isnothing(lateral.river.reservoir) || !isnothing(lateral.river.lake)
         inflow_wb =
             lateral.subsurface.ssf[inds_riv] ./ 1.0e9 ./ lateral.river.Δt .+
