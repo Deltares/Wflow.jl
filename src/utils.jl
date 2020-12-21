@@ -28,6 +28,16 @@ function set_pit_ldd(pits_2d, ldd, indices; pit = 5)
     return ldd
 end
 
+"Filter upstream neighbors of graph based on logical vector"
+function filter_upsteam_nodes(graph, vec_logical::Vector{Bool})
+    upstream_nodes = Vector{Int}[]
+    for v in topological_sort_by_dfs(graph)
+        ups_nodes = inneighbors(graph, v)
+        push!(upstream_nodes, filter(i -> !vec_logical[i], ups_nodes))
+    end
+    return upstream_nodes
+end
+
 """
     active_indices(subcatch_2d, nodata)
 

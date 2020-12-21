@@ -136,6 +136,7 @@ function initialize_sbm_gwf_model(config::Config)
         n = n_land,
         dl = dl,
         q = fill(0.0, n),
+        qin = fill(0.0, n),
         q_av = fill(0.0, n),
         qlat = fill(0.0, n),
         h = h,
@@ -193,6 +194,7 @@ function initialize_sbm_gwf_model(config::Config)
         dl = riverlength,
         q = fill(0.0, nriv),
         q_av = fill(0.0, nriv),
+        qin = fill(0.0, nriv),
         qlat = fill(0.0, nriv),
         h = h_river,
         h_av = fill(0.0, nriv),
@@ -200,7 +202,7 @@ function initialize_sbm_gwf_model(config::Config)
         its = kw_river_tstep > 0 ? ceil(Int(tosecond(Δt) / kw_river_tstep)) :
               kw_river_tstep,
         width = riverwidth,
-        wb_pit = fill(false, nriv),
+        wb_pit = pits[inds_riv],
         alpha_term = alpha_term,
         alpha_pow = alpha_pow,
         α = alpha_term .* pow.(riverwidth .+ 2.0 .* h_river, alpha_pow),
@@ -389,12 +391,14 @@ function initialize_sbm_gwf_model(config::Config)
     # from the initialization functions
     land = (
         graph = graph,
+        upstream_nodes = filter_upsteam_nodes(graph, olf.wb_pit),
         order = topological_sort_by_dfs(graph),
         indices = inds,
         reverse_indices = rev_inds,
     )
     river = (
         graph = graph_riv,
+        upstream_nodes = filter_upsteam_nodes(graph_riv, rf.wb_pit),
         order = topological_sort_by_dfs(graph_riv),
         indices = inds_riv,
         reverse_indices = rev_inds_riv,
@@ -511,7 +515,6 @@ function update_sbm_gwf(model)
         lateral.land,
         network.land,
         frac_toriver = network.frac_toriver,
-        river = lateral.river.rivercells,
         do_iter = kinwave_it,
     )
 
@@ -534,7 +537,26 @@ function update_sbm_gwf(model)
             flux_gw[inds_riv] ./ lateral.river.Δt .+ lateral.land.to_river[inds_riv] .+
             net_runoff_river
         ) ./ lateral.river.dl
-    update(lateral.river, network.river, do_iter = kinwave_it, doy = dayofyear(clock.time))
+
+    if !isnothing(lateral.river.reservoir) || !isnothing(lateral.river.lake)
+        inflow_wb =
+            lateral.subsurface.ssf[inds_riv] ./ 1.0e9 ./ lateral.river.Δt .+
+            lateral.land.q_av[inds_riv]
+        update(
+            lateral.river,
+            network.river,
+            inflow_wb = inflow_wb,
+            do_iter = kinwave_it,
+            doy = dayofyear(clock.time),
+        )
+    else
+        update(
+            lateral.river,
+            network.river,
+            do_iter = kinwave_it,
+            doy = dayofyear(clock.time),
+        )
+    end
 
     write_output(model)
 
