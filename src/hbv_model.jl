@@ -610,7 +610,7 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:HBV,R,W}
     )
 
     # determine lateral inflow (from overland flow) for river flow
-    lateral.river.qlat .= (lateral.land.to_river[network.index_river]) ./ lateral.river.dl
+    lateral.river.qlat .= (lateral.land.to_river[inds_riv]) ./ lateral.river.dl
 
     # run kinematic wave for river flow
     # check if reservoirs or lakes are defined, the inflow from overland flow is required
