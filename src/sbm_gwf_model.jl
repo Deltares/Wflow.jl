@@ -98,7 +98,7 @@ function initialize_sbm_gwf_model(config::Config)
     # lakes
     if do_lakes
         lakes, lakeindex, lake, pits =
-            initialize_natural_lake(config, nc, inds_riv, nriv, pits)
+            initialize_natural_lake(config, static_path, nc, inds_riv, nriv, pits)
     else
         lake = ()
     end
@@ -507,10 +507,12 @@ function update_sbm_gwf(model)
         exfiltwater .* 1000.0,
     )
 
-    # update overland flow based on vertical runoff [mm] from vertical sbm concept
+    # determine lateral inflow for overland flow based on vertical runoff [mm] from vertical
+    # sbm concept
     lateral.land.qlat .=
         (vertical.runoff .* vertical.xl .* vertical.yl .* 0.001) ./ lateral.land.Δt ./
         lateral.land.dl
+    # run kinematic wave for overland flow
     update(
         lateral.land,
         network.land,
@@ -518,8 +520,7 @@ function update_sbm_gwf(model)
         do_iter = kinwave_it,
     )
 
-    # update river domain with net runoff from vertical sbm concept, overland flow
-    # and groundwater flow to the river cells
+    # determine net runoff from vertical sbm concept in river cells
     net_runoff_river =
         (
             vertical.net_runoff_river[inds_riv] .* vertical.xl[inds_riv] .*
@@ -531,21 +532,21 @@ function update_sbm_gwf(model)
     flux_gw[lateral.subsurface.river.index] = -lateral.subsurface.river.flux
     flux_gw[lateral.subsurface.drain.index] =
         flux_gw[lateral.subsurface.drain.index] - lateral.subsurface.drain.flux
-
+    # determine lateral inflow to river from groundwater, drains and overland flow
     lateral.river.qlat .=
         (
             flux_gw[inds_riv] ./ lateral.river.Δt .+ lateral.land.to_river[inds_riv] .+
             net_runoff_river
         ) ./ lateral.river.dl
 
+    # run kinematic wave for river flow 
+    # check if reservoirs or lakes are defined, then the inflow from overland flow is
+    # required
     if !isnothing(lateral.river.reservoir) || !isnothing(lateral.river.lake)
-        inflow_wb =
-            lateral.subsurface.ssf[inds_riv] ./ 1.0e9 ./ lateral.river.Δt .+
-            lateral.land.q_av[inds_riv]
         update(
             lateral.river,
             network.river,
-            inflow_wb = inflow_wb,
+            inflow_wb = lateral.land.q_av[inds_riv],
             do_iter = kinwave_it,
             doy = dayofyear(clock.time),
         )

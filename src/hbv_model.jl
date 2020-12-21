@@ -574,8 +574,11 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:HBV,R,W}
         update_cyclic!(model)
     end
 
+    # vertical hbv concept is updated until snow state, after that (optional)
+    # snow transport is possible
     update_until_snow(vertical, config)
 
+    # lateral snow transport
     if get(config.model, "masswasting", false)
         snowflux_frac =
             min.(0.5, lateral.land.sl ./ 5.67) .* min.(1.0, vertical.snow ./ 10000.0)
@@ -587,13 +590,17 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:HBV,R,W}
             vertical.snowwater .* snowflux_frac,
         )
     end
-
+    
+    # update vertical hbv concept
     update_after_snow(vertical, config)
 
+    # determine lateral inflow for overland flow based on vertical runoff [mm] from vertical
+    # hbv concept
     lateral.land.qlat .=
         (vertical.runoff .* vertical.xl .* vertical.yl .* 0.001) ./ lateral.land.Δt ./
         lateral.land.dl
-
+    
+    # run kinematic wave for overland flow
     update(
         lateral.land,
         network.land,
@@ -601,16 +608,16 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:HBV,R,W}
         do_iter = kinwave_it,
     )
 
+    # determine lateral inflow (from overland flow) for river flow
     lateral.river.qlat .= (lateral.land.to_river[network.index_river]) ./ lateral.river.dl
 
+    # run kinematic wave for river flow
+    # check if reservoirs or lakes are defined, the inflow from overland flow is required
     if !isnothing(lateral.river.reservoir) || !isnothing(lateral.river.lake)
-        inflow_wb =
-            lateral.subsurface.ssf[inds_riv] ./ 1.0e9 ./ lateral.river.Δt .+
-            lateral.land.q_av[inds_riv]
         update(
             lateral.river,
             network.river,
-            inflow_wb = inflow_wb,
+            inflow_wb = lateral.land.q_av[inds_riv],
             do_iter = kinwave_it,
             doy = dayofyear(clock.time),
         )
