@@ -15,7 +15,7 @@ flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
 
     @test row.time == DateTime("2000-01-01T00:00:00")
     @test row.Q ≈ 7.815587720999557
-    @test row.volume ≈ 4.364358112965045e7
+    @test row.volume ≈ 4.364251626782245e7
     @test row.temp_bycoord ≈ 2.3279826641082764
     @test row.temp_byindex ≈ 2.3279826641082764
     @test row.Q_6336050 ≈ 0.023884907014593577
@@ -68,7 +68,7 @@ end
 
 @testset "subsurface flow" begin
     ssf = model.lateral.subsurface.ssf
-    @test sum(ssf) ≈ 6.368136336079665e16
+    @test sum(ssf) ≈ 6.368140761295825e16
     @test ssf[network.land.order[1]] ≈ 3.0449782003445332e13
     @test ssf[network.land.order[end-100]] ≈ 7.855716706804882e11
     @test ssf[network.land.order[end]] ≈ 2.1612469198596365e11
@@ -84,7 +84,7 @@ end
 
 @testset "river flow" begin
     q = model.lateral.river.q_av
-    @test sum(q) ≈ 2811.093099307159
+    @test sum(q) ≈ 2807.935527751757
     @test q[4061] ≈ 0.0016288040314320486
     @test q[5617] ≈ 7.338204361667292
     @test q[network.river.order[end]] ≈ 0.00610520650626283
@@ -93,8 +93,8 @@ end
 @testset "reservoir simple" begin
     res = model.lateral.river.reservoir
     @test res.outflow[2] ≈ 0.2174998592483153
-    @test res.inflow[2] ≈ 13.458065150960186
-    @test res.volume[2] ≈ 2.776155238441744e7
+    @test res.inflow[2] ≈ 50.170880948187055
+    @test res.volume[2] ≈ 2.776162917050312e7
     @test res.precipitation[2] ≈ 0.1765228509902954
     @test res.evaporation[2] ≈ 0.5372688174247742
 end

@@ -15,13 +15,13 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 
     @testset "model information functions" begin
         @test BMI.get_component_name(model) == "sbm"
-        @test BMI.get_input_item_count(model) == 180
-        @test BMI.get_output_item_count(model) == 180
+        @test BMI.get_input_item_count(model) == 182
+        @test BMI.get_output_item_count(model) == 182
         @test BMI.get_input_var_names(model)[[1, 5, 120, 179]] == [
             "vertical.Δt",
             "vertical.n_unsatlayers",
             "lateral.land.sl",
-            "lateral.river.reservoir.precipitation",
+            "lateral.river.reservoir.percfull",
         ]
     end
 
@@ -46,7 +46,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 
     @testset "update and get and set functions" begin
         @test BMI.get_current_time(model) == 9.467712e8
-        @test mean(BMI.get_value(model, "vertical.zi")) ≈ 276.2527755988906
+        @test mean(BMI.get_value(model, "vertical.zi")) ≈ 276.252648379751
         @test BMI.get_value_at_indices(model, "lateral.river.q", [1, 100, 5617]) ≈
               [0.0019494398840044726, 0.0552464309192915, 2.662842827356121]
         BMI.set_value(model, "vertical.zi", fill(300.0, 50070))
