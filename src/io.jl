@@ -909,3 +909,28 @@ function rewind!(clock)
     clock.time -= clock.Δt
     return clock
 end
+
+"Read a rating curve from CSV into a NamedTuple of vectors"
+function read_sh_csv(path)
+    data, header = readdlm(path, ',', Float64, header = true)
+    names = vec(uppercase.(header))
+    idx_h = findfirst(==("H"), names)
+    idx_s = findfirst(==("S"), names)
+
+    if isnothing(idx_h) || isnothing(idx_s)
+        error("$path needs to provide H and S columns, got $names")
+    end
+
+    return (H = data[:, idx_h], S = data[:, idx_s])
+end
+
+"Read a specific storage curve from CSV into a NamedTuple of vectors"
+function read_hq_csv(path)
+    data = readdlm(path, ',', Float64, skipstart=1)
+    # Q is a matrix with 365 columns, one for each day in the year
+    return (H=data[:, 1], Q=data[:, 2:end])
+end
+
+# these represent the type of the rating curve and specific storage data
+const SH = NamedTuple{(:H, :S), Tuple{Vector{Float64}, Vector{Float64}}}
+const HQ = NamedTuple{(:H, :Q), Tuple{Vector{Float64}, Matrix{Float64}}}

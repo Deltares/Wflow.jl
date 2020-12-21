@@ -5,11 +5,9 @@ version = "0.1.0"
 
 [deps]
 BasicModelInterface = "59605e27-edc0-445a-b93d-c09a3a50b330"
-BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 CFTime = "179af706-886a-5703-950a-314cd64e0468"
-CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
-DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 FieldMetadata = "bf96fef3-21d2-5d20-8afa-0e7d4c32a885"
 LightGraphs = "093fc24a-ae57-5d10-9952-331d41423f4d"
 NCDatasets = "85f8d34a-cbdd-5861-8df4-14fed0d494ab"
@@ -22,10 +20,7 @@ UnPack = "3a884ed6-31ef-47d7-9d2a-63182c4928ed"
 
 [compat]
 BasicModelInterface = "0.1"
-BenchmarkTools = "0.5"
 CFTime = "0.1"
-CSV = "0.6, 0.7, 0.8"
-DataFrames = "0.21, 0.22"
 FieldMetadata = "0.3"
 LightGraphs = "1.3"
 NCDatasets = "0.10.4, 0.11"
@@ -36,9 +31,10 @@ UnPack = "1"
 julia = "1.5"
 
 [extras]
+BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 Polynomials = "f27b6e38-b328-58d1-80ce-0feddd5e7a45"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Polynomials", "Random", "Test"]
+test = ["BenchmarkTools", "Polynomials", "Random", "Test"]

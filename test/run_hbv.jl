@@ -10,8 +10,7 @@ model = Wflow.update(model)
 # test if the first timestep was written to the CSV file
 flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
 @testset "CSV output" begin
-    csv = CSV.File(model.writer.csv_path)
-    row = csv[1]
+    row = csv_first_row(model.writer.csv_path)
 
     @test row.time == DateTime("2000-01-01T00:00:00")
     @test row.Q ≈ 517.9761666607884

@@ -136,3 +136,23 @@ function expint(n::Integer, z)
         return Eᵢ
     end
 end
+
+"Return the first row of a Wflow output CSV file as a NamedTuple"
+function csv_first_row(path)
+    # silly function to avoid needing CSV.jl as a test dependency
+    header, dataline = open(path) do io
+        header = readline(io)
+        dataline = readline(io)
+        (header, dataline)
+    end
+
+    names = Tuple(Symbol.(split(header, ',')))
+    ncol = length(names)
+    # this assumes the first column is a time, the rest a float
+    types = Tuple{DateTime, fill(Float64, ncol-1)...}
+
+    parts = split(dataline, ',')
+    values = parse.(Float64, parts[2:end])
+    row = NamedTuple{names, types}((DateTime(parts[1]), values...))
+    return row
+end
