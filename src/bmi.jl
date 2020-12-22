@@ -31,6 +31,8 @@ function BMI.initialize(::Type{<:Model}, config_file)
         initialize_sbm_gwf_model(config)
     elseif modeltype == "hbv"
         initialize_hbv_model(config)
+    elseif modeltype == "sediment"
+        initialize_sediment_model(config)
     else
         error("unknown model type")
     end
