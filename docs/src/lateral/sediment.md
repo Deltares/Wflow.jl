@@ -129,14 +129,14 @@ parameters (Neitsch et al, 2011):
 C_{max} = c_{sp}  \left( \dfrac{prf Q}{h  W} \right) ^{sp_{exp}}
 ```
 where ``C_{max}`` is the sediment concentration (ton m``^{-3}`` or kg/L), ``Q`` is the
-surface runoff in the river cell (m``^{3}``/s), ``h`` is the river water level (m), ``W`` is
-the river width (m) and ``c_{sp}``, ``prf`` and ``sp_{exp}`` are calibration parameters. The
-``prf`` coefficient is usually used to deduce the peak velocity of the flow, but for
-simplification in wflow\_sediment, the equation was simplified to only get two parameters to
-calibrate: ``sp_{exp}`` and ``c_{Bagnold} = c_{sp} * prf^{sp_{exp}}``. The coefficient
-``sp_{exp}`` usually varies between 1 and 2 while ``prf`` and ``c_{sp}`` have a wider range
-of variation. The table below summarizes ranges and values of the three Bagnold coefficients
-used by other studies:
+surface runoff in the river cell (m``^{3}``s``^{-1}``), ``h`` is the river water level (m),
+``W`` is the river width (m) and ``c_{sp}``, ``prf`` and ``sp_{exp}`` are calibration
+parameters. The ``prf`` coefficient is usually used to deduce the peak velocity of the flow,
+but for simplification in wflow\_sediment, the equation was simplified to only get two
+parameters to calibrate: ``sp_{exp}`` and ``c_{Bagnold} = c_{sp} \, prf^{sp_{exp}}``. The
+coefficient ``sp_{exp}`` usually varies between 1 and 2 while ``prf`` and ``c_{sp}`` have a
+wider range of variation. The table below summarizes ranges and values of the three Bagnold
+coefficients used by other studies:
 
 Table: Range of the simplified Bagnold coefficients (and calibrated value)
 
@@ -155,7 +155,7 @@ models such as Delft3D-WAQ, Engelund and Hansen calculates the total sediment lo
 ```
 where ``C_{w}`` is the sediment concentration by weight, ``\rho`` and ``\rho_{s}`` are the
 fluid and sediment density (here equal to 1000 and 2650 g m``^{-3}``), ``u`` is the water
-mean velocity (m/s), ``S`` is the river slope, ``g`` is the acceleration due to gravity,
+mean velocity (m s``^{-1}``), ``S`` is the river slope, ``g`` is the acceleration due to gravity,
 ``D_{50}`` is the river mean diameter (m) and ``\theta`` is the Shields parameter.
 
 **Kodatie** Kodatie (1999) developped the power relationships from Posada (1995) using field
@@ -191,10 +191,10 @@ And the gravel equation (``2 \leq D_{50} < 10 mm``) is:
 ```
 where ``C_{ppm}`` is sediment concentration in parts per million by weight,
 ``\omega_{s,50}`` is the settling velocity of a particle with the median riverbed diameter
-estimated with Stokes (m/s), ``\nu`` is the kinematic viscosity of the fluid (m``^{2}``/s),
-``u_{*}`` is the shear velocity (``\sqrt{gR_{H}S}`` in m/s with ``R_{H}`` the hydraulic
-radius of the river) and ``u_{cr}`` is the critical velocity (m/s, equation can be found in
-Hessel, 2007).
+estimated with Stokes (m s``^{-1}``), ``\nu`` is the kinematic viscosity of the fluid
+(m``^{2}``s``^{-1}``), ``u_{*}`` is the shear velocity (``\sqrt{gR_{H}S}`` in m s``^{-1}``
+with ``R_{H}`` the hydraulic radius of the river) and ``u_{cr}`` is the critical velocity
+(m/s, equation can be found in Hessel, 2007).
 
 **Molinas and Wu** The Molinas and Wu (2001) transport equation was developed for large
 sand-bed rivers based on the universal stream power ``\psi``. The corresponding equation is
@@ -234,10 +234,10 @@ they are calculated from the equations (Neitsch et al, 2011):
 ```
 where ``E_{R}`` is the potential bed/bank erosion rates (tons), ``k_{d}`` is the erodibility
 of the bed/bank material (cm``^{3}`` N``^{-1}`` s``^{-1}``), ``\tau_{e}`` is the effective
-shear stress from the flow on the bed/bank (N/m``^{2}``), ``\tau_{cr}`` is the critical
-shear stress for erosion to happen (N/m``^{2}``), ``L``, ``W`` and ``h`` are the channel
+shear stress from the flow on the bed/bank (N m``^{-2}``), ``\tau_{cr}`` is the critical
+shear stress for erosion to happen (N m``^{-2}``), ``L``, ``W`` and ``h`` are the channel
 length, width and water height (m), ``\rho_{b}`` is the bulk density of the bed/bank of the
-river (g/cm``^{3}``) and ``\Delta t`` is the model timestep (s).
+river (g cm``^{-3}``) and ``\Delta t`` is the model timestep (s).
 
 In wflow_sediment, the erodibility of the bed/bank are approximated using the formula from
 Hanson and Simon (2001):
@@ -264,7 +264,7 @@ order, the smaller the diameter is. As the median diameter is only used in wflow
 for the estimation of the river bed/bank sediment composition, this supposition should be
 enough. Actual refined data or calibration may however be needed if the median diameter is
 also required for the transport formula. In a similar way, the bulk densities of river bed
-and bank are also just assumed to be of respectively 1.5 and 1.4 g/cm``^{3}``.
+and bank are also just assumed to be of respectively 1.5 and 1.4 g cm``^{-3}``.
 
 Table: Classical values of the channel cover vegetation coefficent (Julian and Torres, 2006)
 
@@ -292,7 +292,7 @@ rectangular channel:
    \tau_{e,bed} = \rho g R_{H} S  \left(1 - \dfrac{SF_{bank}}{100}\right) \left(1+\dfrac{2h}{W}\right) \\~\\
    \tau_{e,bank} = \rho g R_{H} S  \left( SF_{bank}\right)  \left(1+\dfrac{W}{2h}\right)
 ```
-where ``\rho g`` is the fluid specific weight (9800 N/m``^{3}`` for water), ``R_{H}`` is the
+where ``\rho g`` is the fluid specific weight (9800 N m``^{-3}`` for water), ``R_{H}`` is the
 hydraulic radius of the channel (m), ``h`` and ``W`` are the water level and river width
 (m). ``SF_{bank}`` is the proportion of shear stress acting on the bank (%) and is estimated
 from (Knight, 1984):
@@ -310,7 +310,6 @@ sed_{exeff}`` and the erosion potential ``E_{R}``. Total eroded amount of sedime
 deposited sediment and the river bed/bank erosion.
 
 ### River deposition
-
 As sediments have a higher density than water, moving sediments in water can be deposited in
 the river bed. The deposition process depends on the mass of the sediment, but also on flow
 characteristics such as velocity. In wflow_sediment, as in SWAT, deposition is modelled with
@@ -324,14 +323,13 @@ a parameter calculated with:
    x = \dfrac{1.055 L  \omega_{s}}{u h}
 ```
 where ``L`` and ``h`` are channel length and water height (m), ``\omega_{s}`` is the
-particle settling velocity calculated with Stokes formula (m/s) and ``u`` is the mean flow
-velocity (m/s). The calculated percentage is then subtracted from the amount of sediment
-input and eroded river sediment for each particle size class (``sed_{dep} = P_{dep}/100 
-(sed_{in} + sed_{erod})``). Resulting deposited sediment are then stored in the river bed
-and can be re-mobilized in future time steps by erosion.
+particle settling velocity calculated with Stokes formula (m s``^{-1}``) and ``u`` is the
+mean flow velocity (m s``^{-1}``). The calculated percentage is then subtracted from the
+amount of sediment input and eroded river sediment for each particle size class (``sed_{dep}
+= P_{dep}/100 (sed_{in} + sed_{erod})``). Resulting deposited sediment are then stored in
+the river bed and can be re-mobilized in future time steps by erosion.
 
 ### Mass balance and sediment concentration
-
 Finally after estimating inputs, deposition and erosion with the transport capacity of the
 flow, the amount of sediment actually leaving the river cell to go downstream is estimated
 using:
@@ -366,10 +364,10 @@ in the lake/reservoir according to Camp’s model (1945) (Verstraeten et al, 200
    TE = \dfrac{\omega_{s}}{u_{cr,res}} = \dfrac{A_{res}}{Q_{out,res}} \omega_{s}
 ```
 where ``TE`` is the trapping efficiency of the lake/reservoir (or the fraction of particles
-trapped), ``\omega_{s}`` is the particle velocity from Stokes (m/s), ``u_{cr,res}`` is the
-reservoir’s critical settling velocity (m/s) which is equal to the reservoir’s outflow
-``Q_{out,res}`` (m``^{3}``/s) divided by the reservoir’s surface area ``A_{res}``
-(m``^{2}``).
+trapped), ``\omega_{s}`` is the particle velocity from Stokes (m s``^{-1}``), ``u_{cr,res}``
+is the reservoir’s critical settling velocity (m/s) which is equal to the reservoir’s
+outflow ``Q_{out,res}`` (m``^{3}`` s``^{-1}``) divided by the reservoir’s surface area
+``A_{res}`` (m``^{2}``).
 
 Lake and reservoir modelling is enabled in the model section of the TOML and require the
 extra following input arguments:
