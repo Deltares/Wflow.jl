@@ -1,0 +1,30 @@
+{
+    "title": "Wflow.jl",
+    "description": "Hydrological modeling framework in Julia.",
+    "upload_type": "software",
+    "creators": [
+        {
+            "affiliation": "Deltares",
+            "name": "Visser, Martijn"
+        },
+        {
+            "affiliation": "Deltares",
+            "name": "van Verseveld, Willem",
+            "orcid": "0000-0003-3311-738X"
+        },
+        {
+            "affiliation": "Deltares",
+            "name": "Bootsma, Huite"
+        },
+        {
+            "affiliation": "Deltares",
+            "name": "Boisgontier, Hélène"
+        },
+        {
+            "affiliation": "Deltares",
+            "name": "Bouaziz, Laurène"
+        }      
+    ],
+    "access_right": "open",
+    "license": "MIT"
+ }
