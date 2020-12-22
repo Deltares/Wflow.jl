@@ -62,4 +62,9 @@ end
     @test gw.recharge.rate[19] ≈ -0.0014241196552847502
 end
 
-Wflow.close_files(model, delete_output = false)
+Wflow.close_files(model)
+
+benchmark = @benchmark Wflow.run_simulation(tomlpath)
+trialmin = BenchmarkTools.minimum(benchmark)
+println("SBM GWF Model update (run_simulation)")
+print_benchmark(trialmin)

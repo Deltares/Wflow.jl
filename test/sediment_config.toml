@@ -115,6 +115,7 @@ lakeareas = "wflow_lakeareas"
 lakelocs = "wflow_lakelocs"
 
 [model]
+type = "sediment"
 reinit = true
 runrivermodel = true
 doreservoir = true
