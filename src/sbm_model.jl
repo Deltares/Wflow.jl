@@ -230,7 +230,7 @@ function initialize_sbm_model(config::Config)
         its = kw_river_tstep > 0 ? ceil(Int(tosecond(Δt) / kw_river_tstep)) :
               kw_river_tstep,
         width = riverwidth,
-        wb_pit = pits[inds_riv], #fill(false, nriv),
+        wb_pit = pits[inds_riv],
         alpha_term = alpha_term,
         alpha_pow = alpha_pow,
         α = alpha_term .* pow.(riverwidth .+ 2.0 .* h_river, alpha_pow),
