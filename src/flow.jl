@@ -114,7 +114,7 @@ function update(
                     # downstream river cell
                     i = sf.reservoir_index[v]
                     update(sf.reservoir, i, sf.q[v] + inflow_wb[v], adt)
-                    j = outneighbors(graph, v)[1]
+                    j = only(outneighbors(graph, v))
                     sf.qin[j] = sf.reservoir.outflow[i]
 
                 elseif !isnothing(sf.lake) && sf.lake_index[v] != 0
@@ -122,7 +122,7 @@ function update(
                     # cell
                     i = sf.lake_index[v]
                     update(sf.lake, i, sf.q[v] + inflow_wb[v], doy, adt)
-                    j = outneighbors(graph, v)[1]
+                    j = only(outneighbors(graph, v))
                     sf.qin[j] = sf.lake.outflow[i]
                 end
             end
