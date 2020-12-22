@@ -8,7 +8,7 @@ assert and model water quality in inland systems, a better comprehension and mod
 sediment sources and fate in the river is needed at a spatial and time scale relevant to
 such issues. 
 
-The wflow_sediment model was developed to answer such issues. It is a distributed
+The wflow\_sediment model was developed to answer such issues. It is a distributed
 physics-based model, based on the distributed hydrologic wflow_sbm model. It is able to
 simulate both land and in-stream processes, and relies on available global datasets,
 parameter estimation and small calibration effort.

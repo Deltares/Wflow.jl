@@ -1,5 +1,4 @@
 # Inland sediment model
-
 Over the land, soil erosion, also called soil loss, is closely linked to the water cycle.
 The main processes governing sediment generation are splash erosion from rain droplets, and
 sheet and rill erosion from the shear stress caused by overland flow. The intensity of soil
@@ -29,7 +28,6 @@ rainerosmethod = "answers" # Rainfall erosion equation: ["answers", "eurosem"]
 ```
 
 ### Rainfall erosion
-
 In wflow\_sediment, rainfall erosion can both be modelled using EUROSEM or ANSWERS equation.
 The main difference between the models is that EUROSEM uses a more physics-based approach
 using the kinetic energy of the rain drops impacting the soil (Morgan et al, 1998), while
@@ -70,7 +68,7 @@ value of 2.0 for ``\varphi`` is representative enough for a wide range of soil c
 The detachability of the soil ``k`` depends on the soil texture (proportion of clay, silt
 and sand content) and correponding values are defined in EUROSEM user guide (Morgan et al,
 1998). As a simplification, in wflow\_sediment, the mean value of the detachability shown in
-the table below are used. Soil texture can for example derived from the topsoil clay and
+the table below are used. Soil texture can for example be derived from the topsoil clay and
 silt content from SoilGrids (Hengl et al, 2017).
 
 Table: Mean detachability of soil depending on its texture (Morgan et al, 1998).
@@ -101,10 +99,11 @@ available to estimate the ``C`` and ``K`` factors from the USLE. They can come f
 input maps, for example maps resulting from Panagos & al.’s recent studies for Europe
 (Panagos et al, 2015) (Ballabio et al, 2016). To get an estimate of the ``C`` factor
 globally, the other method is to estimate ``C`` values for the different land use type in
-GlobCover. These values, summed up in the table below, come from a literature study
-including Panagos & al.’s review (2015), Gericke & al. (2015), Mansoor & al. (2013), Chadli
-& al. (2016), de Vente & al. (2009), Borrelli & al. (2014), Yang & al. (2003) and Bosco &
-al. (2015).
+from global land cover maps (e.g. GlobCover). An example is given for the global land cover
+map GlobCover, summed up in the table below, the values come from a literature study
+including Panagos et al.’s review (2015), Gericke & al. (2015), Mansoor & al. (2013), Chadli
+et al. (2016), de Vente et al. (2009), Borrelli et al. (2014), Yang et al. (2003) and Bosco
+et al. (2015).
 
 The other methods to estimate the USLE ``K`` factor are to use either topsoil composition or
 topsoil geometric mean diameter. ``K`` estimation from topsoil composition is estimated with
