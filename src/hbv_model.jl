@@ -591,7 +591,7 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:HBV,R,W}
             vertical.snowwater .* snowflux_frac,
         )
     end
-    
+
     # update vertical hbv concept
     update_after_snow(vertical, config)
 
@@ -600,7 +600,7 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:HBV,R,W}
     lateral.land.qlat .=
         (vertical.runoff .* vertical.xl .* vertical.yl .* 0.001) ./ lateral.land.Δt ./
         lateral.land.dl
-    
+
     # run kinematic wave for overland flow
     update(
         lateral.land,

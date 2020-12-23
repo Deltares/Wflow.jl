@@ -107,7 +107,7 @@ function update(
             else # run kinematic wave for river domain (including reservoirs and lakes)
                 # sf.qin by outflow from upstream reservoir or lake location is added
                 sf.qin[v] += sum_at(sf.q, upstream_nodes[n])
-            
+
 
                 if !isnothing(sf.reservoir) && sf.reservoir_index[v] != 0
                     # run reservoir model and copy reservoir outflow to inflow (qin) of

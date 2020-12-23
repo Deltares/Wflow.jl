@@ -17,7 +17,7 @@ function initialize_sediment_model(config::Config)
     Δt = Second(config.timestepsecs)
     sizeinmetres = get(config.model, "sizeinmetres", false)
     reinit = get(config.model, "reinit", true)
-    
+
     do_river = get(config.model, "runrivermodel", false)
 
     nc = NCDataset(static_path)
@@ -178,13 +178,8 @@ function initialize_sediment_model(config::Config)
     )
 
     # read and set states in model object if reinit=false
-    if reinit  == false
-        set_states(
-            instate_path,
-            model,
-            state_ncnames;
-            type = Float64
-        )
+    if reinit == false
+        set_states(instate_path, model, state_ncnames; type = Float64)
     end
 
     # make sure the forcing is already loaded
@@ -214,7 +209,7 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:LandSed,R,W}
     lateral.land.erossagg .= vertical.erossagg
     lateral.land.eroslagg .= vertical.eroslagg
 
-    lateral.land.TCsed .= vertical.TCsed         
+    lateral.land.TCsed .= vertical.TCsed
     lateral.land.TCclay .= vertical.TCclay
     lateral.land.TCsilt .= vertical.TCsilt
     lateral.land.TCsand .= vertical.TCsand
@@ -231,7 +226,7 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:LandSed,R,W}
         inds_riv = network.index_river
         lateral.river.h_riv .= lateral.land.h_riv[inds_riv]
         lateral.river.q_riv .= lateral.land.q_riv[inds_riv]
-        
+
         lateral.river.inlandclay .= lateral.land.inlandclay[inds_riv]
         lateral.river.inlandsilt .= lateral.land.inlandsilt[inds_riv]
         lateral.river.inlandsand .= lateral.land.inlandsand[inds_riv]

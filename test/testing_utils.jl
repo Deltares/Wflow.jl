@@ -149,10 +149,10 @@ function csv_first_row(path)
     names = Tuple(Symbol.(split(header, ',')))
     ncol = length(names)
     # this assumes the first column is a time, the rest a float
-    types = Tuple{DateTime, fill(Float64, ncol-1)...}
+    types = Tuple{DateTime,fill(Float64, ncol - 1)...}
 
     parts = split(dataline, ',')
     values = parse.(Float64, parts[2:end])
-    row = NamedTuple{names, types}((DateTime(parts[1]), values...))
+    row = NamedTuple{names,types}((DateTime(parts[1]), values...))
     return row
 end
