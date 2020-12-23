@@ -572,7 +572,7 @@ function initialize_sbm(nc, config, riverfrac, xl, yl, inds)
         stemflow = fill(mv, n),
         throughfall = fill(mv, n),
         f = θₑ ./ m,
-        ustorelayerdepth = act_thickl .* 0.0,
+        ustorelayerdepth = zero(act_thickl),
         satwaterdepth = satwaterdepth,
         zi = zi,
         soilwatercapacity = soilwatercapacity,

@@ -51,7 +51,7 @@ end
     @test sbm.θₛ[1] ≈ 0.48343977332115173
     @test sbm.runoff[1] == 0.0
     @test sbm.soilevap[1] == 0.0
-    @test sbm.snow[1] ≈ 0.6029994894902302
+    @test sbm.snow[1] ≈ 0.6029989752244306
 end
 
 # run the second timestep
@@ -62,7 +62,7 @@ model = Wflow.update(model)
     @test sbm.altitude[1] ≈ 643.5469970703125
     @test sbm.θₛ[1] ≈ 0.48343977332115173
     @test sbm.runoff[1] == 0.0
-    @test sbm.soilevap[1] ≈ 0.005865653627803281
+    @test sbm.soilevap[1] ≈ 0.005865651540305367
     @test sbm.snow[1] ≈ 0.009696763863612956
 end
 
