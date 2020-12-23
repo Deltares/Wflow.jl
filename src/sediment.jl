@@ -44,11 +44,11 @@
     # Total eroded soil [ton]
     soilloss::Vector{T} | "t"
     # Eroded soil per particle class [ton]
-    erosclay::Vector{T} | "t"
-    erossilt::Vector{T} | "t"
-    erossand::Vector{T} | "t"
-    erossagg::Vector{T} | "t"
-    eroslagg::Vector{T} | "t"
+    erosclay::Vector{T} | "t"  # clay
+    erossilt::Vector{T} | "t"  # silt
+    erossand::Vector{T} | "t"  # sand
+    erossagg::Vector{T} | "t"  # small aggregates
+    eroslagg::Vector{T} | "t"  # large aggregates
     ## Interception related to leaf_area_index climatology ###
     # Specific leaf storage [mm]
     sl::Vector{T} | "mm"
@@ -761,31 +761,32 @@ function update(ols::OLFSed, network, config)
     tcmethod = get(config.model, "landtransportmethod", "yalinpart")
     zeroarr = fill(0.0, ols.n)
 
+    # transport sediment down the network
     if do_river || tcmethod == "yalinpart"
-        ols.olclay .= accucapacityflux(network, ols.erosclay, ols.TCclay)
-        depclay = accucapacitystate(network, ols.erosclay, ols.TCclay)
-        ols.inlandclay .= ifelse.(ols.rivcell .== 1, depclay, zeroarr)
-        ols.olsilt .= accucapacityflux(network, ols.erossilt, ols.TCsilt)
-        depsilt = accucapacitystate(network, ols.erossilt, ols.TCsilt)
-        ols.inlandsilt .= ifelse.(ols.rivcell .== 1, depsilt, zeroarr)
-        ols.olsand .= accucapacityflux(network, ols.erossand, ols.TCsand)
-        depsand = accucapacitystate(network, ols.erossand, ols.TCsand)
-        ols.inlandsand .= ifelse.(ols.rivcell .== 1, depsand, zeroarr)
-        ols.olsagg .= accucapacityflux(network, ols.erossagg, ols.TCsagg)
-        depsagg = accucapacitystate(network, ols.erossagg, ols.TCsagg)
-        ols.inlandsagg .= ifelse.(ols.rivcell .== 1, depsagg, zeroarr)
-        ols.ollagg .= accucapacityflux(network, ols.eroslagg, ols.TClagg)
-        deplagg = accucapacitystate(network, ols.eroslagg, ols.TClagg)
-        ols.inlandlagg .= ifelse.(ols.rivcell .== 1, deplagg, zeroarr)
+        # clay
+        accucapacityflux!(ols.olclay, ols.erosclay, network, ols.TCclay)
+        ols.inlandclay .= ifelse.(ols.rivcell .== 1, ols.erosclay, zeroarr)
+        # silt
+        accucapacityflux!(ols.olsilt, ols.erossilt, network, ols.TCsilt)
+        ols.inlandsilt .= ifelse.(ols.rivcell .== 1, ols.erossilt, zeroarr)
+        # sand
+        accucapacityflux!(ols.olsand, ols.erossand, network, ols.TCsand)
+        ols.inlandsand .= ifelse.(ols.rivcell .== 1, ols.erossand, zeroarr)
+        # small aggregates
+        accucapacityflux!(ols.olsagg, ols.erossagg, network, ols.TCsagg)
+        ols.inlandsagg .= ifelse.(ols.rivcell .== 1, ols.erossagg, zeroarr)
+        # large aggregates
+        accucapacityflux!(ols.ollagg, ols.eroslagg, network, ols.TClagg)
+        ols.inlandlagg .= ifelse.(ols.rivcell .== 1, ols.eroslagg, zeroarr)
 
+        # total sediment, all particle classes
         ols.olsed .= ols.olclay .+ ols.olsilt .+ ols.olsand .+ ols.olsagg .+ ols.ollagg
         ols.inlandsed .=
             ols.inlandclay .+ ols.inlandsilt .+ ols.inlandsand .+ ols.inlandsagg .+
             ols.inlandlagg
     else
-        ols.olsed .= accucapacityflux(network, ols.soilloss, ols.TCsed)
-        depsed = accucapacitystate(network, ols.soilloss, ols.TCsed)
-        ols.inlandsed .= ifelse.(ols.rivcell .== 1, depsed, zeroarr)
+        accucapacityflux!(ols.olsed, ols.soilloss, network, ols.TCsed)
+        ols.inlandsed .= ifelse.(ols.rivcell .== 1, ols.soilloss, zeroarr)
     end
 end
 

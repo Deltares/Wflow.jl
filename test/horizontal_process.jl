@@ -63,3 +63,46 @@ end
         (7.410313985168225e10, 1540.1496836278836, -0.0),
     ))
 end
+
+@testset "accucapacity" begin
+    # test based on a subset of the examples at
+    # https://pcraster.geo.uu.nl/pcraster/4.3.0/documentation/pcraster_manual/sphinx/op_accucapacity.html#examples
+    # of the node at (row 3, column 2) and upstream nodes
+    g = DiGraph(6)
+    add_edge!(g, 1, 4)
+    add_edge!(g, 2, 5)
+    add_edge!(g, 3, 5)
+    add_edge!(g, 4, 6)
+    add_edge!(g, 5, 6)
+    network = (graph = g, order = [1, 2, 3, 4, 5, 6])
+
+    # example 1, accucapacityflux
+    material = Float64[0.5, 2, 2, 0.5, 2, 0.5]
+    capacity = fill(1.5, 6)
+    flux, new_material = Wflow.accucapacityflux(material, network, capacity)
+    @test new_material != material
+    @test new_material == [0.0, 0.5, 0.5, 0.0, 3.5, 1.5]
+    @test flux == Float64[0.5, 1.5, 1.5, 1, 1.5, 1.5]
+
+    # example 2, accucapacityflux
+    material = fill(10.0, 6)
+    capacity = Float64[2, 30, 30, 2, 30, 2]
+    flux, new_material = Wflow.accucapacityflux(material, network, capacity)
+    @test new_material != material
+    @test new_material == [8.0, 0.0, 0.0, 10.0, 0.0, 40.0]
+    @test flux == Float64[2, 10, 10, 2, 30, 2]
+
+    # example 1, accucapacitystate
+    material = Float64[0.5, 2, 2, 0.5, 2, 0.5]
+    capacity = fill(1.5, 6)
+    new_material = Wflow.accucapacitystate(material, network, capacity)
+    @test new_material != material
+    @test new_material == [0.0, 0.5, 0.5, 0.0, 3.5, 1.5]
+
+    # example 2, accucapacitystate
+    material = fill(10.0, 6)
+    capacity = Float64[2, 30, 30, 2, 30, 2]
+    new_material = Wflow.accucapacitystate(material, network, capacity)
+    @test new_material != material
+    @test new_material == [8.0, 0.0, 0.0, 10.0, 0.0, 40.0]
+end

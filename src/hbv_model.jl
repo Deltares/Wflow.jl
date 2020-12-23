@@ -581,14 +581,11 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:HBV,R,W}
 
     # lateral snow transport
     if get(config.model, "masswasting", false)
-        snowflux_frac =
-            min.(0.5, lateral.land.sl ./ 5.67) .* min.(1.0, vertical.snow ./ 10000.0)
-        maxflux = snowflux_frac .* vertical.snow
-        vertical.snow .= accucapacityflux(network.land, vertical.snow, maxflux)
-        vertical.snowwater .= accucapacityflux(
-            network.land,
+        lateral_snow_transport!(
+            vertical.snow,
             vertical.snowwater,
-            vertical.snowwater .* snowflux_frac,
+            lateral.land.sl,
+            network.land,
         )
     end
 

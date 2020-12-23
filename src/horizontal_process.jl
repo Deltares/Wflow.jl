@@ -138,30 +138,93 @@ function kinematic_wave_ssf(ssfin, ssfₜ₋₁, ziₜ₋₁, r, kh₀, β, θ�
     end
 end
 
-"Transport of material downstream with a limited transport capacity over a directed graph"
-function accucapacityflux(network, material, capacity)
+"""
+    accucapacitystate!(material, network, capacity) -> material
+
+Transport of material downstream with a limited transport capacity over a directed graph.
+Mutates the material input. The network is expected to hold a graph and order field, where
+the graph meets the LightGraphs interface, and the order is a valid topological ordering
+such as that returned by `LightGraphs.topological_sort_by_dfs`.
+
+Returns the material state after transport.
+"""
+function accucapacitystate!(material, network, capacity)
     @unpack graph, order = network
     for v in order
-        upstream_nodes = inneighbors(graph, v)
-        if !isempty(upstream_nodes)
-            flux = sum(min(material[i], capacity[i]) for i in upstream_nodes)
-            material[v] += flux
+        downstream_nodes = outneighbors(graph, v)
+        n = length(downstream_nodes)
+        flux_val = min(material[v], capacity[v])
+        material[v] -= flux_val
+        if n == 0
+            # pit: material is transported out of the map if a capacity is set,
+            # cannot add the material anywhere
+        elseif n == 1
+            material[only(downstream_nodes)] += flux_val
+        else
+            error("bifurcations not supported")
         end
     end
     return material
 end
 
-function accucapacitystate(network, material, capacity)
+"""
+    accucapacitystate!(material, network, capacity) -> material
+
+Non mutating version of `accucapacitystate!`.
+"""
+function accucapacitystate(material, network, capacity)
+    accucapacitystate!(copy(material), network, capacity)
+end
+
+"""
+    accucapacityflux!(flux, material, network, capacity) -> flux, material
+
+Transport of material downstream with a limited transport capacity over a directed graph.
+Updates the material input, and overwrites the flux input, not using existing values. The
+network is expected to hold a graph and order field, where the graph meets the LightGraphs
+interface, and the order is a valid topological ordering such as that returned by
+`LightGraphs.topological_sort_by_dfs`.
+
+Returns the flux (material leaving each cell), and material (left after transport).
+"""
+function accucapacityflux!(flux, material, network, capacity)
     @unpack graph, order = network
-    state = material .* 0.0
     for v in order
-        upstream_nodes = inneighbors(graph, v)
-        if !isempty(upstream_nodes)
-            flux = sum(min(material[i], capacity[i]) for i in upstream_nodes)
-            #state = sum(max(material[i] - capacity[i], 0.0) for i in upstream_nodes)
-            material[v] += flux
-            state[v] = max(material[v] - capacity[v], 0.0)
+        downstream_nodes = outneighbors(graph, v)
+        n = length(downstream_nodes)
+        flux_val = min(material[v], capacity[v])
+        material[v] -= flux_val
+        flux[v] = flux_val
+        if n == 0
+            # pit: material is transported out of the map if a capacity is set,
+            # cannot add the material anywhere
+        elseif n == 1
+            material[only(downstream_nodes)] += flux_val
+        else
+            error("bifurcations not supported")
         end
     end
-    return state
+    return flux, material
+end
+
+"""
+    accucapacityflux!(material, network, capacity) -> flux, material
+
+Non mutating version of `accucapacityflux!`.
+"""
+function accucapacityflux(material, network, capacity)
+    accucapacityflux!(zero(material), copy(material), network, capacity)
+end
+
+"""
+    lateral_snow_transport!(snow, snowwater, slope, network)
+
+Lateral snow transport. Transports snow downhill. Mutates `snow` and `snowwater`.
+"""
+function lateral_snow_transport!(snow, snowwater, slope, network)
+    snowflux_frac = min.(0.5, slope ./ 5.67) .* min.(1.0, snow ./ 10000.0)
+    maxflux = snowflux_frac .* snow
+    snow = accucapacitystate!(snow, network, maxflux)
+    snowwater = accucapacitystate!(snowwater, network, snowwater .* snowflux_frac)
+    return snow, snowwater
 end

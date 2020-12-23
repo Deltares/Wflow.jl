@@ -40,13 +40,13 @@ end
 @testset "second timestep sediment model (lateral)" begin
     lat = model.lateral
 
-    @test mean(lat.land.inlandsed) ≈ 0.05657368965178405
-    @test mean(lat.land.inlandclay) ≈ 0.007940420091307831
-    @test mean(lat.land.inlandsand) ≈ 0.007036742086207204
-    @test mean(lat.land.olclay) ≈ 0.008377573328817303
+    @test mean(lat.land.inlandsed) ≈ 0.03153328802686853
+    @test mean(lat.land.inlandclay) ≈ 0.002172851901362266
+    @test mean(lat.land.inlandsand) ≈ 0.006851203685469141
+    @test mean(lat.land.olclay) ≈ 0.006179260370986793
 
-    @test mean(lat.river.SSconc) ≈ 48.39773028640988
-    @test mean(lat.river.inlandclay) ≈ 0.0703147867240012
+    @test mean(lat.river.SSconc) ≈ 14.100035236928997
+    @test mean(lat.river.inlandclay) ≈ 0.019241251252484298
     @test lat.river.h_riv[network.river.order[end]] ≈ 0.006103649735450745
     @test lat.river.outclay[1] ≈ 1.1654682799750028e-6
 end
