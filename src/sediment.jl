@@ -4,23 +4,23 @@
     n::Int | "-"
     ### Soil erosion part ###
     # length of cells in y direction [m]
-    yl::Vector{T} | "m" 
+    yl::Vector{T} | "m"
     # length of cells in x direction [m]
-    xl::Vector{T} | "m" 
+    xl::Vector{T} | "m"
     # Fraction of river [-]
     riverfrac::Vector{T} | "-"
     # Waterbodies areas [-]
     wbcover::Vector{T} | "-"
     # Depth of overland flow [m]
-    h_land::Vector{T} | "m" 
+    h_land::Vector{T} | "m"
     # Canopy interception [mm]
     interception::Vector{T} | "mm"
     # Precipitation [mm]
     precipitation::Vector{T} | "mm"
     # Overland flow [m3/s]
-    q_land::Vector{T} | "m3 s-1" 
+    q_land::Vector{T} | "m3 s-1"
     # Canopy height [m]
-    canopyheight::Vector{T} | "m" 
+    canopyheight::Vector{T} | "m"
     # Canopy gap fraction [mm]
     canopygapfraction::Vector{T} | "mm"
     # Coefficient for EUROSEM rainfall erosion [-]
@@ -38,9 +38,9 @@
     # USLE soil erodibility factor [-]
     usleK::Vector{T} | "-"
     # Sediment eroded by rainfall [ton]
-    sedspl::Vector{T} | "t" 
+    sedspl::Vector{T} | "t"
     # Sediment eroded by overland flow [ton]
-    sedov::Vector{T} | "t" 
+    sedov::Vector{T} | "t"
     # Total eroded soil [ton]
     soilloss::Vector{T} | "t"
     # Eroded soil per particle class [ton]
@@ -60,9 +60,9 @@
     leaf_area_index::Vector{T} | "m2 m-2"
     ### Transport capacity part ###                          
     # Drain length [m]
-    dl::Vector{T} | "m" 
+    dl::Vector{T} | "m"
     # Flow width [m]                          
-    width::Vector{T} | "m" 
+    width::Vector{T} | "m"
     # Govers transport capacity coefficients [-]
     cGovers::Vector{T} | "-"
     nGovers::Vector{T} | "-"
@@ -79,11 +79,11 @@
     fsilt::Vector{T} | "-"
     fsand::Vector{T} | "-"
     fsagg::Vector{T} | "-"
-    flagg::Vector{T} | "-"  
+    flagg::Vector{T} | "-"
     # Density of sediment [kg/m3]
-    rhos::Vector{T} | "kg m-3"  
+    rhos::Vector{T} | "kg m-3"
     # Filter with river cells
-    rivcell::Vector{T} | "-"  
+    rivcell::Vector{T} | "-"
     # Total transport capacity of overland flow [ton]          
     TCsed::Vector{T} | "t"
     # Transport capacity of overland flow per particle class [ton]          
@@ -109,7 +109,7 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
     do_reservoirs = Bool(get(config.model, "doreservoir", false))
     do_lakes = Bool(get(config.model, "dolake", false))
     # Rainfall erosion equation: ["answers", "eurosem"]
-    rainerosmethod = get(config.model, "rainerosmethod", "answers") 
+    rainerosmethod = get(config.model, "rainerosmethod", "answers")
     # Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]
     landtransportmethod = get(config.model, "landtransportmethod", "yalinpart")
 
@@ -298,11 +298,15 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
         # Calculation of D50 and fraction of fine and very fine sand (fvfs) from Fooladmand et al, 2006
         psand999 = psand .* ((999 - 25) / (1000 - 25))
         vd50 = log.((1 ./ (0.01 .* (pclay .+ psilt)) .- 1) ./ (1 ./ (0.01 .* pclay) .- 1))
-        wd50 = log.((1 ./ (0.01 .* (pclay .+ psilt .+ psand999)) .- 1) ./ (1 ./ (0.01 .* pclay) .- 1))
-        ad50 = 1 / log((25-1)/(999-1))
-        bd50 = ad50 ./ log((25-1)/1)
+        wd50 =
+            log.(
+                (1 ./ (0.01 .* (pclay .+ psilt .+ psand999)) .- 1) ./
+                (1 ./ (0.01 .* pclay) .- 1),
+            )
+        ad50 = 1 / log((25 - 1) / (999 - 1))
+        bd50 = ad50 ./ log((25 - 1) / 1)
         cd50 = ad50 .* log.(vd50 ./ wd50)
-        ud50 = (.- vd50) .^ (1 .- bd50) ./ (( .- wd50) .^ (.- bd50))
+        ud50 = (.-vd50) .^ (1 .- bd50) ./ ((.-wd50) .^ (.-bd50))
         D50 = 1 .+ (-1 ./ ud50 .* log.(1 ./ (1 ./ (0.01 .* pclay) .- 1))) .^ (1 ./ cd50) #[um]
         D50 = D50 ./ 1000 # [mm]
     else
@@ -321,7 +325,7 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
         fsilt = 0.13 .* psilt ./ 100
         fsand = 0.01 .* psand .* (1 .- 0.01 .* pclay) .^ (2.4)
         fsagg = 0.28 .* (0.01 .* pclay .- 0.25) .+ 0.5
-        for i = 1:n 
+        for i = 1:n
             if pclay[i] > 50.0
                 fsagg[i] = 0.57
             elseif pclay[i] < 25
@@ -351,9 +355,9 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
     end
     if do_lakes
         lakecoverage_2d = ncread(
-            nc, 
+            nc,
             param(config, "input.vertical.lakeareas");
-            sel = inds, 
+            sel = inds,
             type = Float64,
             fill = 0.0,
         )
@@ -361,7 +365,7 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
     end
 
     eros = LandSed{Float64}(
-        n = n,   
+        n = n,
         yl = yl,
         xl = xl,
         riverfrac = riverfrac,
@@ -436,16 +440,17 @@ function update_until_ols(eros::LandSed, config, network)
     ts = Float64(Δt.value)
 
     for i = 1:eros.n
-                
+
         ### Splash / Rainfall erosion ###
         # ANSWERS method
         if rainerosmethod == "answers"
             # calculate rainfall intensity [mm/min]
-            rintnsty = eros.precipitation[i] / (ts/60)
+            rintnsty = eros.precipitation[i] / (ts / 60)
             # splash erosion [kg/min]
-            sedspl = 0.108 * eros.usleC[i] * eros.usleK[i] * eros.xl[i] * eros.yl[i] * rintnsty^2
+            sedspl =
+                0.108 * eros.usleC[i] * eros.usleK[i] * eros.xl[i] * eros.yl[i] * rintnsty^2
             # [ton/timestep]
-            sedspl = sedspl * (ts/60) * 10^(-3)
+            sedspl = sedspl * (ts / 60) * 10^(-3)
         end
         # TODO check eurosem method output values (too high!)
         if rainerosmethod == "eurosem"
@@ -454,7 +459,7 @@ function update_until_ols(eros::LandSed, config, network)
                 canopygapfraction = exp(-eros.kext[i] * eros.leaf_area_index[i])
             end
             # calculate rainfall intensity [mm/h]
-            rintnsty = eros.precipitation[i] / (ts/3600)
+            rintnsty = eros.precipitation[i] / (ts / 3600)
             # Kinetic energy of direct throughfall [J/m2/mm]
             # kedir = max(11.87 + 8.73 * log10(max(0.0001, rintnsty)),0.0) #basis used in USLE
             kedir = max(8.95 + 8.44 * log10(max(0.0001, rintnsty)), 0.0) #variant used in most distributed mdoels
@@ -480,15 +485,22 @@ function update_until_ols(eros::LandSed, config, network)
         ### Overland flow erosion ###
         # ANWERS method
         # Overland flow rate [m2/min]
-        qr_land = eros.q_land[i] * 60 / (( eros.xl[i] + eros.yl[i] ) / 2)
+        qr_land = eros.q_land[i] * 60 / ((eros.xl[i] + eros.yl[i]) / 2)
         # Sine of the slope
         sinslope = sin(atan(eros.slope[i]))
 
         # Overland flow erosion [kg/min]
         # For a wide range of slope, it is better to use the sine of slope rather than tangeant
-        sedov = eros.erosov[i] * eros.usleC[i] * eros.usleK[i] * eros.xl[i] * eros.yl[i] * sinslope * qr_land
+        sedov =
+            eros.erosov[i] *
+            eros.usleC[i] *
+            eros.usleK[i] *
+            eros.xl[i] *
+            eros.yl[i] *
+            sinslope *
+            qr_land
         # [ton/timestep]
-        sedov = sedov * (ts/60) * 10^(-3)
+        sedov = sedov * (ts / 60) * 10^(-3)
         # Remove the impervious area
         sedov = sedov * (1.0 - eros.pathfrac[i])
 
@@ -547,12 +559,25 @@ function update_until_oltransport(ols::LandSed, config, network)
 
             if tcmethod == "yalin"
                 # Transport capacity from Yalin without particle differentiation
-                delta = max((ols.h_land[i] * sinslope / (ols.D50[i] * 0.001 * (ols.rhos[i]/1000 -1))/0.06 - 1), 0.0)
-                alphay = delta*2.45/(0.001*ols.rhos[i])^0.4 * 0.06^(0.5)
+                delta = max(
+                    (
+                        ols.h_land[i] * sinslope /
+                        (ols.D50[i] * 0.001 * (ols.rhos[i] / 1000 - 1)) / 0.06 - 1
+                    ),
+                    0.0,
+                )
+                alphay = delta * 2.45 / (0.001 * ols.rhos[i])^0.4 * 0.06^(0.5)
                 if ols.q_land[i] > 0.0 && alphay != 0.0
-                    TC = (ols.dl[i] / ols.q_land[i] * (ols.rhos[i] - 1000) * ols.D50[i] * 0.001 
-                    * (9.81 * ols.h_land[i] * sinslope) * 0.635 * delta
-                    * (1 - log(1+alphay)/(alphay))) # [kg/m3]
+                    TC = (
+                        ols.dl[i] / ols.q_land[i] *
+                        (ols.rhos[i] - 1000) *
+                        ols.D50[i] *
+                        0.001 *
+                        (9.81 * ols.h_land[i] * sinslope) *
+                        0.635 *
+                        delta *
+                        (1 - log(1 + alphay) / (alphay))
+                    ) # [kg/m3]
                     TC = TC * ols.q_land[i] * ts * 10^(-3) #[ton]
                 else
                     TC = 0.0
@@ -563,19 +588,19 @@ function update_until_oltransport(ols::LandSed, config, network)
             if ols.rivcell[i] == 1.0
                 TC = 0.0
             end
-            
+
             # Set particle TC to 0
             TCclay = 0.0
             TCsilt = 0.0
             TCsand = 0.0
             TCsagg = 0.0
-            TClagg = 0.0 
+            TClagg = 0.0
         end
 
         if do_river || tcmethod == "yalinpart"
             # Transport capacity from Yalin with particle differentiation
             # Delta parameter of Yalin for each particle class
-            delta = ols.h_land[i] * sinslope / (10^(-6) * (ols.rhos[i]/1000 - 1) / 0.06)
+            delta = ols.h_land[i] * sinslope / (10^(-6) * (ols.rhos[i] / 1000 - 1) / 0.06)
             dclay = max(1 / ols.dmclay[i] * delta - 1, 0.0)
             dsilt = max(1 / ols.dmsilt[i] * delta - 1, 0.0)
             dsand = max(1 / ols.dmsand[i] * delta - 1, 0.0)
@@ -586,38 +611,62 @@ function update_until_oltransport(ols::LandSed, config, network)
 
             # Yalin transport capacity of overland flow for each particle class
             if ols.q_land[i] > 0.0
-                TCa = ols.dl[i] / ols.q_land[i] * (ols.rhos[i] - 1000) * 10^(-6) * (9.81 * ols.h_land[i] * sinslope)
+                TCa =
+                    ols.dl[i] / ols.q_land[i] *
+                    (ols.rhos[i] - 1000) *
+                    10^(-6) *
+                    (9.81 * ols.h_land[i] * sinslope)
             else
                 TCa = 0.0
             end
             TCb = 2.45 / (ols.rhos[i] / 1000)^0.4 * 0.06^0.5
             if dtot != 0.0 && dclay != 0.0
-                TCclay = TCa * ols.dmclay[i] * dclay / dtot * 0.635 * dclay * (1 - log(1 + dclay * TCb) / dclay * TCb) # [kg/m3]
-                TCclay = TCclay * ols.q_land[i] *  ts * 10^(-3) # [ton]
+                TCclay =
+                    TCa * ols.dmclay[i] * dclay / dtot *
+                    0.635 *
+                    dclay *
+                    (1 - log(1 + dclay * TCb) / dclay * TCb) # [kg/m3]
+                TCclay = TCclay * ols.q_land[i] * ts * 10^(-3) # [ton]
             else
                 TCclay = 0.0
             end
             if dtot != 0.0 && dsilt != 0.0
-                TCsilt = TCa * ols.dmsilt[i] * dsilt / dtot * 0.635 * dsilt * (1 - log(1 + dsilt * TCb) / dsilt * TCb) # [kg/m3]
-                TCsilt = TCsilt * ols.q_land[i] *  ts * 10^(-3) # [ton]
+                TCsilt =
+                    TCa * ols.dmsilt[i] * dsilt / dtot *
+                    0.635 *
+                    dsilt *
+                    (1 - log(1 + dsilt * TCb) / dsilt * TCb) # [kg/m3]
+                TCsilt = TCsilt * ols.q_land[i] * ts * 10^(-3) # [ton]
             else
                 TCsilt = 0.0
             end
             if dtot != 0.0 && dsand != 0.0
-                TCsand = TCa * ols.dmsand[i] * dsand / dtot * 0.635 * dsand* (1 - log(1 + dsand * TCb) / dsand * TCb) # [kg/m3]
-                TCsand = TCsand * ols.q_land[i] *  ts * 10^(-3) # [ton]
+                TCsand =
+                    TCa * ols.dmsand[i] * dsand / dtot *
+                    0.635 *
+                    dsand *
+                    (1 - log(1 + dsand * TCb) / dsand * TCb) # [kg/m3]
+                TCsand = TCsand * ols.q_land[i] * ts * 10^(-3) # [ton]
             else
                 TCsand = 0.0
             end
             if dtot != 0.0 && dsagg != 0.0
-                TCsagg = TCa * ols.dmsagg[i] * dsagg / dtot * 0.635 * dsagg * (1 - log(1 + dsagg * TCb) / dsagg * TCb) # [kg/m3]
-                TCsagg = TCsagg * ols.q_land[i] *  ts * 10^(-3) # [ton]
+                TCsagg =
+                    TCa * ols.dmsagg[i] * dsagg / dtot *
+                    0.635 *
+                    dsagg *
+                    (1 - log(1 + dsagg * TCb) / dsagg * TCb) # [kg/m3]
+                TCsagg = TCsagg * ols.q_land[i] * ts * 10^(-3) # [ton]
             else
                 TCsagg = 0.0
             end
             if dtot != 0.0 && dlagg != 0.0
-                TClagg = TCa * ols.dmlagg[i] * dlagg / dtot * 0.635 * dlagg * (1 - log(1 + dlagg * TCb) / dlagg * TCb) # [kg/m3]
-                TClagg = TClagg * ols.q_land[i] *  ts * 10^(-3) # [ton]
+                TClagg =
+                    TCa * ols.dmlagg[i] * dlagg / dtot *
+                    0.635 *
+                    dlagg *
+                    (1 - log(1 + dlagg * TCb) / dlagg * TCb) # [kg/m3]
+                TClagg = TClagg * ols.q_land[i] * ts * 10^(-3) # [ton]
             else
                 TClagg = 0.0
             end
@@ -643,7 +692,7 @@ function update_until_oltransport(ols::LandSed, config, network)
 
             # Set total TC to 0
             TC = 0.0
-        
+
         end
 
         # update the outputs and states
@@ -653,7 +702,7 @@ function update_until_oltransport(ols::LandSed, config, network)
         ols.TCsand[i] = TCsand
         ols.TCsagg[i] = TCsagg
         ols.TClagg[i] = TClagg
-    
+
     end
 
 end
@@ -730,7 +779,9 @@ function update(ols::OLFSed, network, config)
         ols.inlandlagg .= ifelse.(ols.rivcell .== 1, deplagg, zeroarr)
 
         ols.olsed .= ols.olclay .+ ols.olsilt .+ ols.olsand .+ ols.olsagg .+ ols.ollagg
-        ols.inlandsed .= ols.inlandclay .+ ols.inlandsilt .+ ols.inlandsand .+ ols.inlandsagg .+ ols.inlandlagg
+        ols.inlandsed .=
+            ols.inlandclay .+ ols.inlandsilt .+ ols.inlandsand .+ ols.inlandsagg .+
+            ols.inlandlagg
     else
         ols.olsed .= accucapacityflux(network, ols.soilloss, ols.TCsed)
         depsed = accucapacitystate(network, ols.soilloss, ols.TCsed)
@@ -821,7 +872,7 @@ end
     # Reservoir and lakes
     wbcover::Vector{T} | "-"
     wblocs::Vector{T} | "-"
-    wbarea::Vector{T} | "m2"    
+    wbarea::Vector{T} | "m2"
 
     # function RiverSed{T}(args...) where {T}
     #     equal_size_vectors(args)
@@ -848,7 +899,7 @@ statevars(::RiverSed) = (
     :outsagg,
     :outlagg,
     :outgrav,
-    )
+)
 
 function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     # Initialize river parameters
@@ -888,7 +939,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
 
         wbcover = wbcover .+ rescoverage_2d
         wblocs = wblocs .+ reslocs
-        wbarea = wbarea .+ resarea        
+        wbarea = wbarea .+ resarea
     end
 
     if do_lakes
@@ -916,7 +967,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
 
         wbcover = wbcover .+ lakecoverage_2d
         wblocs = wblocs .+ lakelocs
-        wbarea = wbarea .+ lakearea        
+        wbarea = wbarea .+ lakearea
     end
 
     riverslope = ncread(
@@ -999,12 +1050,8 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
         sel = inds_riv,
         type = Float64,
     )
-    d50riv = ncread(
-        nc,
-        param(config, "input.lateral.river.d50");
-        sel = inds_riv,
-        type = Float64,
-    )
+    d50riv =
+        ncread(nc, param(config, "input.lateral.river.d50"); sel = inds_riv, type = Float64)
     d50engelund = ncread(
         nc,
         param(config, "input.lateral.river.d50engelund");
@@ -1057,15 +1104,17 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     # Initialisation of parameters for river erosion
     # Bed and Bank from Shields diagram, Da Silva & Yalin (2017)
     E_ = (2.65 - 1) * 9.81
-    E = (E_ .* (d50riv .* 10^(-3)).^3 ./ 10^(-12)).^0.33
-    TCrbed = (E_ .* d50riv .* (
-    0.13 .* E.^(-0.392) .* exp.(-0.015 .* E.^2)
-    .+ 0.045 .* (1 .- exp.(-0.068 .* E))
-    ))
+    E = (E_ .* (d50riv .* 10^(-3)) .^ 3 ./ 10^(-12)) .^ 0.33
+    TCrbed = (
+        E_ .* d50riv .* (
+            0.13 .* E .^ (-0.392) .* exp.(-0.015 .* E .^ 2) .+
+            0.045 .* (1 .- exp.(-0.068 .* E))
+        )
+    )
     TCrbank = TCrbed
     # kd from Hanson & Simon 2001
-    kdbank = 0.2 .* TCrbank.^(-0.5) .* 10^(-6)
-    kdbed = 0.2 .* TCrbed.^(-0.5) .* 10^(-6)
+    kdbank = 0.2 .* TCrbank .^ (-0.5) .* 10^(-6)
+    kdbed = 0.2 .* TCrbed .^ (-0.5) .* 10^(-6)
 
     rs = RiverSed(
         n = nriv,
@@ -1187,48 +1236,61 @@ function update(rs::RiverSed, network, config)
 
         # Engelund and Hansen transport formula
         if tcmethod == "engelund"
-            vmean = ifelse(rs.h_riv[v] > 0.0, rs.q_riv[v] / (rs.width[v] * rs.h_riv[v]), 0.0)
+            vmean =
+                ifelse(rs.h_riv[v] > 0.0, rs.q_riv[v] / (rs.width[v] * rs.h_riv[v]), 0.0)
             vshear = (9.81 * hydrad * rs.sl[v])^0.5
             # Concentration by weight
-            cw  = ifelse(
+            cw = ifelse(
                 hydrad > 0.0,
-                (rs.rhos[v]/1000 * 0.5 * vmean * vshear^3 /
-                ((rs.rhos[v]/1000 - 1)^2 * 9.81^2 * rs.d50engelund[v] * hydrad)),
-                0.0
+                (
+                    rs.rhos[v] / 1000 * 0.5 * vmean * vshear^3 /
+                    ((rs.rhos[v] / 1000 - 1)^2 * 9.81^2 * rs.d50engelund[v] * hydrad)
+                ),
+                0.0,
             )
             cw = min(1.0, cw)
             # Transport capacity [tons/m3]
-            maxsed = max(cw / (cw + (1 - cw) * rs.rhos[v]/1000) * rs.rhos[v]/1000, 0.0)
+            maxsed = max(cw / (cw + (1 - cw) * rs.rhos[v] / 1000) * rs.rhos[v] / 1000, 0.0)
         elseif tcmethod == "bagnold"
-            maxsed = rs.cbagnold[v] * (rs.q_riv[v] / (rs.h_riv[v] * rs.width[v]))^rs.ebagnold[v]
+            maxsed =
+                rs.cbagnold[v] * (rs.q_riv[v] / (rs.h_riv[v] * rs.width[v]))^rs.ebagnold[v]
         elseif tcmethod == "kodatie"
-            vmean = ifelse(rs.h_riv[v] > 0.0, rs.q_riv[v] / (rs.width[v] * rs.h_riv[v]), 0.0)
+            vmean =
+                ifelse(rs.h_riv[v] > 0.0, rs.q_riv[v] / (rs.width[v] * rs.h_riv[v]), 0.0)
             maxsed = rs.ak[v] * vmean^rs.bk[v] * rs.h_riv[v]^rs.ck[v] * rs.sl[v]^rs.dk[v]
             # Transport capacity [tons/m3]
-            maxsed = ifelse(
-                rs.q_riv[v] > 0.0, 
-                maxsed * rs.width[v] / (rs.q_riv[v] * rs.Δt),
-                0.0
-            )
+            maxsed =
+                ifelse(rs.q_riv[v] > 0.0, maxsed * rs.width[v] / (rs.q_riv[v] * rs.Δt), 0.0)
         elseif tcmethod == "yang"
             ws = 411 * rs.d50[v]^2 / 3600
             vshear = (9.81 * hydrad * rs.sl[v])^0.5
             var1 = vshear * rs.d50[v] / 1000 / (1.16 * 10^(-6))
             var2 = ws * rs.d50[v] / 1000 / (1.16 * 10^(-6))
-            vcr = min(0.0, ifelse(var1 >= 70.0, 2.05 * ws, ws*(2.5 / (log10(var1) - 0.06) + 0.66)))
+            vcr = min(
+                0.0,
+                ifelse(var1 >= 70.0, 2.05 * ws, ws * (2.5 / (log10(var1) - 0.06) + 0.66)),
+            )
             # Sand equation
             if (rs.width[v] * rs.h_riv[v]) >= vcr && rs.d50[v] < 2.0
                 logcppm = (
-                    5.435 - 0.286 * log10(var2) - 0.457 * log10(vshear / ws)
-                    + 1.799 - 0.409 * log10(var2) - 0.314 * log10(vshear / ws)
-                    * log10((rs.q_riv[v] / (rs.width[v] * rs.h_riv[v]) - vcr) * rs.sl[v] / ws)
+                    5.435 - 0.286 * log10(var2) - 0.457 * log10(vshear / ws) + 1.799 -
+                    0.409 * log10(var2) -
+                    0.314 *
+                    log10(vshear / ws) *
+                    log10(
+                        (rs.q_riv[v] / (rs.width[v] * rs.h_riv[v]) - vcr) * rs.sl[v] / ws,
+                    )
                 )
-            # Gravel equation
+                # Gravel equation
             elseif (rs.width[v] * rs.h_riv[v]) >= vcr && rs.d50[v] < 2.0
                 logcppm = (
-                    6.681 - 0.633 * log10(var2) - 4.816 * log10(vshear / ws)
-                    + 2.784 - 0.305 * log10(var2) - 0.282 * log10(vshear / ws)
-                    * log10((rs.q_riv[v] / (rs.width[v] * rs.h_riv[v]) - vcr) * rs.sl[v] / ws)
+                    6.681 - 0.633 * log10(var2) - 4.816 * log10(vshear / ws) + 2.784 -
+                    0.305 * log10(var2) -
+                    0.282 *
+                    log10(vshear / ws) *
+                    log10(
+                        (rs.q_riv[v] / (rs.width[v] * rs.h_riv[v]) - vcr) * rs.sl[v] / ws,
+                    )
                 )
             else
                 logcppm = 0.0
@@ -1236,16 +1298,19 @@ function update(rs::RiverSed, network, config)
             # Sediment concentration by weight
             cw = 10^(logcppm) * 10^(-6)
             # Transport capacity [ton/m3]
-            maxsed = max(cw / (cw + (1 - cw) * rs.rhos[v]/1000) * rs.rhos[v]/1000, 0.0)
+            maxsed = max(cw / (cw + (1 - cw) * rs.rhos[v] / 1000) * rs.rhos[v] / 1000, 0.0)
         elseif tcmethod == "molinas"
             ws = 411 * rs.d50[v]^2 / 3600
-            vmean = ifelse(rs.h_riv[v] > 0.0, rs.q_riv[v] / (rs.width[v] * rs.h_riv[v]), 0.0)
+            vmean =
+                ifelse(rs.h_riv[v] > 0.0, rs.q_riv[v] / (rs.width[v] * rs.h_riv[v]), 0.0)
             if rs.h_riv[v] > 0.0
                 psi = (
                     vmean^3 / (
-                        (rs.rhos[v] / 1000 - 1)
-                        * 9.81 * rs.h_riv[v] * ws
-                        * log10(1000 * rs.h_riv[v] / rs.d50[v])^2
+                        (rs.rhos[v] / 1000 - 1) *
+                        9.81 *
+                        rs.h_riv[v] *
+                        ws *
+                        log10(1000 * rs.h_riv[v] / rs.d50[v])^2
                     )
                 )
             else
@@ -1254,9 +1319,9 @@ function update(rs::RiverSed, network, config)
             # Concentration by weight
             cw = 1430 * (0.86 + psi^0.5) * psi^1.5 / (0.016 + psi) * 10^(-6)
             # Transport capacity [ton/m3]
-            maxsed = max(cw / (cw + (1 - cw) * rs.rhos[v]/1000) * rs.rhos[v]/1000, 0.0)
+            maxsed = max(cw / (cw + (1 - cw) * rs.rhos[v] / 1000) * rs.rhos[v] / 1000, 0.0)
         end
-        
+
         # 1285 g/L: boundary between streamflow and debris flow (Costa, 1988)
         maxsed = min(maxsed, 1.285)
         # Transport capacity [ton]
@@ -1270,7 +1335,13 @@ function update(rs::RiverSed, network, config)
             sedex = 0.0
         end
         # Bed and bank are eroded only if the previously deposited material is not enough
-        rs.sedstore[v] = rs.claystore[v] + rs.siltstore[v] + rs.sandstore[v] + rs.saggstore[v] + rs.laggstore[v] + rs.gravstore[v]
+        rs.sedstore[v] =
+            rs.claystore[v] +
+            rs.siltstore[v] +
+            rs.sandstore[v] +
+            rs.saggstore[v] +
+            rs.laggstore[v] +
+            rs.gravstore[v]
         if sedex > 0.0 && sedex > rs.sedstore[v]
             # Effective sediment needed fom river bed and bank erosion [ton]
             effsedex = sedex - rs.sedstore[v]
@@ -1279,22 +1350,37 @@ function update(rs::RiverSed, network, config)
             SFbank = ifelse(
                 rs.h_riv[v] > 0.0,
                 exp(-3.23 * log10(rs.width[v] / rs.h_riv[v] + 3) + 6.146),
-                0.0 
+                0.0,
             )
             # Effective shear stress on river bed and banks [N/m2]
             TEffbank = ifelse(
                 rs.h_riv[v] > 0.0,
-                1000 * 9.81 * hydrad * rs.sl[v] * SFbank / 100 * (1 + rs.width[v] / (2 * rs.h_riv[v])),
-                0.0
+                1000 * 9.81 * hydrad * rs.sl[v] * SFbank / 100 *
+                (1 + rs.width[v] / (2 * rs.h_riv[v])),
+                0.0,
             )
-            TEffbed = 1000 * 9.81 * hydrad * rs.sl[v] * (1 - SFbank / 100) * (1 + 2 * rs.h_riv[v] / rs.width[v])
+            TEffbed =
+                1000 *
+                9.81 *
+                hydrad *
+                rs.sl[v] *
+                (1 - SFbank / 100) *
+                (1 + 2 * rs.h_riv[v] / rs.width[v])
             # Potential erosion rates of the bed and bank [t/cell/timestep] 
             #(assuming only one bank is eroding)
             Tex = max(TEffbank - rs.TCrbank[v], 0.0)
             # 1.4 is bank default bulk density
             ERbank = max(0.0, rs.kdbank[v] * Tex * rs.dl[v] * rs.h_riv[v] * 1.4 * rs.Δt)
             # 1.5 is bed default bulk density
-            ERbed = max(0.0, rs.kdbed[v] * (TEffbed - rs.TCrbed[v]) * rs.dl[v] * rs.width[v] * 1.5 * rs.Δt)
+            ERbed = max(
+                0.0,
+                rs.kdbed[v] *
+                (TEffbed - rs.TCrbed[v]) *
+                rs.dl[v] *
+                rs.width[v] *
+                1.5 *
+                rs.Δt,
+            )
             # Relative potential erosion rates of the bed and the bank [-]
             RTEbank = ifelse(ERbank + ERbed > 0.0, ERbank / (ERbank + ERbed), 0.0)
             RTEbed = 1.0 - RTEbank
@@ -1347,7 +1433,13 @@ function update(rs::RiverSed, network, config)
             degstoregrav = ifelse(rs.gravstore[v] >= sedex, sedex, rs.gravstore[v])
             rs.gravstore[v] = rs.gravstore[v] - degstoregrav
             sedex = max(0.0, sedex - degstoregrav)
-            degstoresed = degstoreclay + degstoresilt + degstoresagg + degstoresand + degstorelagg + degstoregrav
+            degstoresed =
+                degstoreclay +
+                degstoresilt +
+                degstoresagg +
+                degstoresand +
+                degstorelagg +
+                degstoregrav
         else
             degstoreclay = 0.0
             degstoresilt = 0.0
@@ -1365,7 +1457,7 @@ function update(rs::RiverSed, network, config)
         erodsand = sandbank + sandbed + degstoresand
         erodsagg = degstoresagg
         erodlagg = degstorelagg
-        erodgrav = gravbank + gravbed + degstoregrav    
+        erodgrav = gravbank + gravbed + degstoregrav
 
 
         ### Deposition / settling ###
@@ -1419,12 +1511,12 @@ function update(rs::RiverSed, network, config)
             # Compute deposition
             vcres = rs.q_riv[v] / rs.wbarea[v]
             DCres = 411 / 3600 / vcres
-            depclay = (inclay + erodclay) * min(1.0, (DCres * (rs.dmclay[v]/1000)^2))
-            depsilt = (insilt + erodsilt) * min(1.0, (DCres * (rs.dmsilt[v]/1000)^2))
-            depsand = (insand + erodsand) * min(1.0, (DCres * (rs.dmsand[v]/1000)^2))
-            depsagg = (insagg + erodsagg) * min(1.0, (DCres * (rs.dmsagg[v]/1000)^2))
-            deplagg = (inlagg + erodlagg) * min(1.0, (DCres * (rs.dmlagg[v]/1000)^2))
-            depgrav = (ingrav + erodgrav) * min(1.0, (DCres * (rs.dmgrav[v]/1000)^2))
+            depclay = (inclay + erodclay) * min(1.0, (DCres * (rs.dmclay[v] / 1000)^2))
+            depsilt = (insilt + erodsilt) * min(1.0, (DCres * (rs.dmsilt[v] / 1000)^2))
+            depsand = (insand + erodsand) * min(1.0, (DCres * (rs.dmsand[v] / 1000)^2))
+            depsagg = (insagg + erodsagg) * min(1.0, (DCres * (rs.dmsagg[v] / 1000)^2))
+            deplagg = (inlagg + erodlagg) * min(1.0, (DCres * (rs.dmlagg[v] / 1000)^2))
+            depgrav = (ingrav + erodgrav) * min(1.0, (DCres * (rs.dmgrav[v] / 1000)^2))
         elseif rs.wbcover[v] > 0.0
             depsed = 0.0
             depclay = 0.0
@@ -1482,32 +1574,32 @@ function update(rs::RiverSed, network, config)
         SSclay = ifelse(
             rs.dmclay[v] <= dsuspf,
             rs.outclay[v],
-            ifelse(rs.dmclay[v] <= dbedf, rs.outclay[v] / 2, 0.0)
+            ifelse(rs.dmclay[v] <= dbedf, rs.outclay[v] / 2, 0.0),
         )
         SSsilt = ifelse(
             rs.dmsilt[v] <= dsuspf,
             rs.outsilt[v],
-            ifelse(rs.dmsilt[v] <= dbedf, rs.outsilt[v] / 2, 0.0)
+            ifelse(rs.dmsilt[v] <= dbedf, rs.outsilt[v] / 2, 0.0),
         )
         SSsagg = ifelse(
             rs.dmsagg[v] <= dsuspf,
             rs.outsagg[v],
-            ifelse(rs.dmsagg[v] <= dbedf, rs.outsagg[v] / 2, 0.0)
+            ifelse(rs.dmsagg[v] <= dbedf, rs.outsagg[v] / 2, 0.0),
         )
         SSsand = ifelse(
             rs.dmsand[v] <= dsuspf,
             rs.outsand[v],
-            ifelse(rs.dmsand[v] <= dbedf, rs.outsand[v] / 2, 0.0)
+            ifelse(rs.dmsand[v] <= dbedf, rs.outsand[v] / 2, 0.0),
         )
         SSlagg = ifelse(
             rs.dmlagg[v] <= dsuspf,
             rs.outlagg[v],
-            ifelse(rs.dmlagg[v] <= dbedf, rs.outlagg[v] / 2, 0.0)
+            ifelse(rs.dmlagg[v] <= dbedf, rs.outlagg[v] / 2, 0.0),
         )
         SSgrav = ifelse(
             rs.dmgrav[v] <= dsuspf,
             rs.outgrav[v],
-            ifelse(rs.dmgrav[v] <= dbedf, rs.outgrav[v] / 2, 0.0)
+            ifelse(rs.dmgrav[v] <= dbedf, rs.outgrav[v] / 2, 0.0),
         )
 
         SS = SSclay + SSsilt + SSsagg + SSsand + SSlagg + SSgrav

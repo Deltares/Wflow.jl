@@ -62,7 +62,7 @@ sh = [
 ]
 @testset "linked lakes (HBV)" begin
     @test keys(sh[1]) == (:H, :S)
-    @test typeof(values(sh[1])) == Tuple{Vector{Float64}, Vector{Float64}}
+    @test typeof(values(sh[1])) == Tuple{Vector{Float64},Vector{Float64}}
 
     lake = Wflow.NaturalLake{Float64}(
         lowerlake_ind = [2, 0],
@@ -75,10 +75,7 @@ sh = [
         b = [140.0, 0.0],
         e = [1.5, 1.5],
         sh = sh,
-        hq = [
-            missing,
-            Wflow.read_hq_csv(joinpath(datadir, "lake_hq_2.csv")),
-        ],
+        hq = [missing, Wflow.read_hq_csv(joinpath(datadir, "lake_hq_2.csv"))],
         waterlevel = [395.03027, 394.87833],
         precipitation = [10.0, 10.0],
         evaporation = [2.0, 2.0],

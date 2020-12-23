@@ -194,8 +194,8 @@ end
     outflowfunc::Vector{Int} | "-"          # type of lake rating curve, 1: Q = f(H) from lake data and interpolation, 2: General Q = b(H - H₀)ᵉ, 3: Case of Puls Approach Q = b(H - H₀)²
     b::Vector{T} | "m3/2 s-1 (if e=3/2)"    # rating curve coefficient
     e::Vector{T} | "-"                      # rating curve exponent
-    sh::Vector{Union{SH, Missing}}          # data for storage curve
-    hq::Vector{Union{HQ, Missing}}          # data for rating curve
+    sh::Vector{Union{SH,Missing}}           # data for storage curve
+    hq::Vector{Union{HQ,Missing}}           # data for rating curve
     waterlevel::Vector{T} | "m"             # waterlevel H [m] of lake
     inflow::Vector{T} | "m3"                # inflow to the lake [m³]
     storage::Vector{T} | "m3"               # storage lake [m³]
@@ -316,8 +316,8 @@ function initialize_natural_lake(config, static_path, nc, inds_riv, nriv, pits)
     # length of all lake cells. To do that we need to introduce a mapping.
     n_lakes = length(inds_lake)
 
-    sh = Vector{Union{SH, Missing}}(missing, n_lakes)
-    hq = Vector{Union{HQ, Missing}}(missing, n_lakes)
+    sh = Vector{Union{SH,Missing}}(missing, n_lakes)
+    hq = Vector{Union{HQ,Missing}}(missing, n_lakes)
     for i = 1:n_lakes
         lakeloc = lakelocs[i]
 
