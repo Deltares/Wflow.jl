@@ -104,14 +104,14 @@ statevars(::LandSediment) = ()
 function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
     # Initialize parameters for the soil loss part
     n = length(inds)
-    do_river = get(config.model, "runrivermodel", false)
+    do_river = get(config.model, "runrivermodel", false)::Bool
     # Reservoir / lake
-    do_reservoirs = Bool(get(config.model, "doreservoir", false))
-    do_lakes = Bool(get(config.model, "dolake", false))
+    do_reservoirs = get(config.model, "doreservoir", false)::Bool
+    do_lakes = get(config.model, "dolake", false)::Bool
     # Rainfall erosion equation: ["answers", "eurosem"]
-    rainerosmethod = get(config.model, "rainerosmethod", "answers")
+    rainerosmethod = get(config.model, "rainerosmethod", "answers")::String
     # Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]
-    landtransportmethod = get(config.model, "landtransportmethod", "yalinpart")
+    landtransportmethod = get(config.model, "landtransportmethod", "yalinpart")::String
 
     altitude =
         ncread(nc, param(config, "input.vertical.altitude"); sel = inds, type = Float64)
@@ -389,7 +389,7 @@ end
 function update_until_ols(eros::LandSediment, config, network)
     # Options from config
     do_lai = haskey(config.input.vertical, "leaf_area_index")
-    rainerosmethod = get(config.model, "rainerosmethod", "answers")
+    rainerosmethod = get(config.model, "rainerosmethod", "answers")::String
     Δt = Second(config.timestepsecs)
     ts = Float64(Δt.value)
 
@@ -484,8 +484,8 @@ end
 ### Sediment transport capacity in overland flow ###
 function update_until_oltransport(ols::LandSediment, config, network)
 
-    do_river = get(config.model, "runrivermodel", false)
-    tcmethod = get(config.model, "landtransportmethod", "yalinpart")
+    do_river = get(config.model, "runrivermodel", false)::Bool
+    tcmethod = get(config.model, "landtransportmethod", "yalinpart")::String
     Δt = Second(config.timestepsecs)
     ts = Float64(Δt.value)
 
@@ -711,8 +711,8 @@ end
 statevars(::OverlandFlowSediment) = ()
 
 function update(ols::OverlandFlowSediment, network, config)
-    do_river = get(config.model, "runrivermodel", false)
-    tcmethod = get(config.model, "landtransportmethod", "yalinpart")
+    do_river = get(config.model, "runrivermodel", false)::Bool
+    tcmethod = get(config.model, "landtransportmethod", "yalinpart")::String
     zeroarr = fill(0.0, ols.n)
 
     # transport sediment down the network
@@ -860,11 +860,11 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     # Initialize river parameters
     nriv = length(inds_riv)
     # River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]
-    tcmethodriv = get(config.model, "rivtransportmethod", "bagnold")
+    tcmethodriv = get(config.model, "rivtransportmethod", "bagnold")::String
     Δt = Second(config.timestepsecs)
     # Reservoir / lakes
-    do_reservoirs = Bool(get(config.model, "doreservoir", false))
-    do_lakes = Bool(get(config.model, "dolake", false))
+    do_reservoirs = get(config.model, "doreservoir", false)::Bool
+    do_lakes = get(config.model, "dolake", false)::Bool
     wbcover = fill(0.0, nriv)
     wblocs = fill(0.0, nriv)
     wbarea = fill(0.0, nriv)
@@ -1146,7 +1146,7 @@ end
 
 function update(rs::RiverSediment, network, config)
     @unpack graph, order = network
-    tcmethod = get(config.model, "rivtransportmethod", "bagnold")
+    tcmethod = get(config.model, "rivtransportmethod", "bagnold")::String
 
     # River sediment loads are separated into different particle class.
     # Clay, silt and sand can both come from land, resuspension or river channel erosion.

@@ -108,8 +108,8 @@ function update_forcing!(model)
     sel = network.land.indices
     nctimes = ncread(dataset, "time")
 
-    do_reservoirs = Bool(get(config.model, "reservoirs", false))
-    do_lakes = Bool(get(config.model, "lakes", false))
+    do_reservoirs = get(config.model, "reservoirs", false)::Bool
+    do_lakes = get(config.model, "lakes", false)::Bool
 
     mover_params =
         (symbols"vertical.precipitation", symbols"vertical.potential_evaporation")
@@ -591,7 +591,7 @@ function prepare_writer(
     nc_static;
     maxlayers = nothing,
 )
-    sizeinmetres = get(config.model, "sizeinmetres", false)
+    sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
 
     # create a flat mapping from internal parameter locations to NetCDF variable names
     output_ncnames = Dict{Tuple{Symbol,Vararg{Symbol}},String}()

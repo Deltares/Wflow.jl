@@ -15,10 +15,10 @@ function initialize_sediment_model(config::Config)
     output_path = joinpath(tomldir, config.output.path)
 
     Δt = Second(config.timestepsecs)
-    sizeinmetres = get(config.model, "sizeinmetres", false)
-    reinit = get(config.model, "reinit", true)
+    sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
+    reinit = get(config.model, "reinit", true)::Bool
 
-    do_river = get(config.model, "runrivermodel", false)
+    do_river = get(config.model, "runrivermodel", false)::Bool
 
     nc = NCDataset(static_path)
     dims = dimnames(nc[param(config, "input.subcatchment")])
@@ -218,7 +218,7 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:LandSediment,R,W}
 
     update(lateral.land, network.land, config)
 
-    do_river = get(config.model, "runrivermodel", false)
+    do_river = get(config.model, "runrivermodel", false)::Bool
 
     if do_river
         # Forcing come from lateral.land instead of netcdf directly
