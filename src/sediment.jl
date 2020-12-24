@@ -1,5 +1,5 @@
 ### Soil erosion ###
-@get_units @with_kw struct LandSed{T}
+@get_units @with_kw struct LandSediment{T}
     # number of cells
     n::Int | "-"
     ### Soil erosion part ###
@@ -93,13 +93,13 @@
     TCsagg::Vector{T} | "t"
     TClagg::Vector{T} | "t"
 
-    function LandSed{T}(args...) where {T}
+    function LandSediment{T}(args...) where {T}
         equal_size_vectors(args)
         return new(args...)
     end
 end
 
-statevars(::LandSed) = ()
+statevars(::LandSediment) = ()
 
 function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
     # Initialize parameters for the soil loss part
@@ -364,7 +364,7 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
         wbcover = wbcover .+ lakecoverage_2d
     end
 
-    eros = LandSed{Float64}(
+    eros = LandSediment{Float64}(
         n = n,
         yl = yl,
         xl = xl,
@@ -432,7 +432,7 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
 end
 
 # Soil erosion
-function update_until_ols(eros::LandSed, config, network)
+function update_until_ols(eros::LandSediment, config, network)
     # Options from config
     do_lai = haskey(config.input.vertical, "leaf_area_index")
     rainerosmethod = get(config.model, "rainerosmethod", "answers")
@@ -528,7 +528,7 @@ function update_until_ols(eros::LandSed, config, network)
 end
 
 ### Sediment transport capacity in overland flow ###
-function update_until_oltransport(ols::LandSed, config, network)
+function update_until_oltransport(ols::LandSediment, config, network)
 
     do_river = get(config.model, "runrivermodel", false)
     tcmethod = get(config.model, "landtransportmethod", "yalinpart")
@@ -708,7 +708,7 @@ function update_until_oltransport(ols::LandSed, config, network)
 end
 
 ### Sediment transport in overland flow ###
-@get_units @with_kw struct OLFSed{T}
+@get_units @with_kw struct OverlandFlowSediment{T}
     # number of cells
     n::Int | "-"
     # Filter with river cells
@@ -748,15 +748,15 @@ end
     inlandlagg::Vector{T} | "t"
 
 
-    function OLFSed{T}(args...) where {T}
+    function OverlandFlowSediment{T}(args...) where {T}
         equal_size_vectors(args)
         return new(args...)
     end
 end
 
-statevars(::OLFSed) = ()
+statevars(::OverlandFlowSediment) = ()
 
-function update(ols::OLFSed, network, config)
+function update(ols::OverlandFlowSediment, network, config)
     do_river = get(config.model, "runrivermodel", false)
     tcmethod = get(config.model, "landtransportmethod", "yalinpart")
     zeroarr = fill(0.0, ols.n)
@@ -791,7 +791,7 @@ function update(ols::OLFSed, network, config)
 end
 
 ### River transport and processes ###
-@get_units @with_kw struct RiverSed{T}
+@get_units @with_kw struct RiverSediment{T}
     # number of cells
     n::Int | "-"
     # Timestep [s]
@@ -875,13 +875,13 @@ end
     wblocs::Vector{T} | "-"
     wbarea::Vector{T} | "m2"
 
-    # function RiverSed{T}(args...) where {T}
+    # function RiverSediment{T}(args...) where {T}
     #     equal_size_vectors(args)
     #     return new(args...)
     # end
 end
 
-statevars(::RiverSed) = (
+statevars(::RiverSediment) = (
     :clayload,
     :siltload,
     :sandload,
@@ -1117,7 +1117,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     kdbank = 0.2 .* TCrbank .^ (-0.5) .* 10^(-6)
     kdbed = 0.2 .* TCrbed .^ (-0.5) .* 10^(-6)
 
-    rs = RiverSed(
+    rs = RiverSediment(
         n = nriv,
         Δt = Float64(Δt.value),
         # Parameters
@@ -1190,7 +1190,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     return rs
 end
 
-function update(rs::RiverSed, network, config)
+function update(rs::RiverSediment, network, config)
     @unpack graph, order = network
     tcmethod = get(config.model, "rivtransportmethod", "bagnold")
 
