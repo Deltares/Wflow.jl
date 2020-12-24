@@ -658,8 +658,8 @@ end
 function update_until_snow(sbm::SBM, config)
 
     do_lai = haskey(config.input.vertical, "leaf_area_index")
-    modelglacier = get(config.model, "glacier", false)
-    modelsnow = get(config.model, "snow", false)
+    modelglacier = get(config.model, "glacier", false)::Bool
+    modelsnow = get(config.model, "snow", false)::Bool
     Δt = Second(config.timestepsecs)
 
     for i = 1:sbm.n
@@ -741,11 +741,11 @@ end
 function update_until_recharge(sbm::SBM, config)
 
     # start dummy variables (should be generated from model reader and from Config.jl TOML)
-    soilinfreduction = get(config.model, "soilinfreduction", false)
-    modelglacier = get(config.model, "glacier", false)
-    modelsnow = get(config.model, "snow", false)
-    transfermethod = get(config.model, "transfermethod", false)
-    ust = get(config.model, "whole_ust_available", false) # should be removed from optional setting and code?
+    soilinfreduction = get(config.model, "soilinfreduction", false)::Bool
+    modelglacier = get(config.model, "glacier", false)::Bool
+    modelsnow = get(config.model, "snow", false)::Bool
+    transfermethod = get(config.model, "transfermethod", false)::Bool
+    ust = get(config.model, "whole_ust_available", false)::Bool # should be removed from optional setting and code?
     Δt = Second(config.timestepsecs)
 
     for i = 1:sbm.n

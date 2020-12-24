@@ -129,9 +129,9 @@ end
 
 function update_after_snow(hbv::HBV, config)
 
-    modelglacier = get(config.model, "glacier", false)
-    set_kquickflow = get(config.model, "set_kquickflow", false)
-    external_qbase = get(config.model, "external_qbase", false)
+    modelglacier = get(config.model, "glacier", false)::Bool
+    set_kquickflow = get(config.model, "set_kquickflow", false)::Bool
+    external_qbase = get(config.model, "external_qbase", false)::Bool
 
     for i = 1:hbv.n
         if modelglacier

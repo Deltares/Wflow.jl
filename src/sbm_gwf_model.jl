@@ -24,13 +24,13 @@ function initialize_sbm_gwf_model(config::Config)
     output_path = joinpath(tomldir, config.output.path)
 
     Δt = Second(config.timestepsecs)
-    sizeinmetres = get(config.model, "sizeinmetres", false)
-    reinit = get(config.model, "reinit", true)
-    do_snow = get(config.model, "snow", false)
-    do_reservoirs = get(config.model, "reservoirs", false)
-    do_lakes = get(config.model, "lakes", false)
-    do_drains = get(config.model, "drains", false)
-    do_constanthead = get(config.model, "constanthead", false)
+    sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
+    reinit = get(config.model, "reinit", true)::Bool
+    do_snow = get(config.model, "snow", false)::Bool
+    do_reservoirs = get(config.model, "reservoirs", false)::Bool
+    do_lakes = get(config.model, "lakes", false)::Bool
+    do_drains = get(config.model, "drains", false)::Bool
+    do_constanthead = get(config.model, "constanthead", false)::Bool
 
     kw_river_tstep = get(config.model, "kw_river_tstep", 0)
     kw_land_tstep = get(config.model, "kw_land_tstep", 0)
@@ -444,7 +444,7 @@ function update_sbm_gwf(model)
     @unpack lateral, vertical, network, clock, config = model
 
     inds_riv = network.index_river
-    kinwave_it = get(config.model, "kin_wave_iteration", false)
+    kinwave_it = get(config.model, "kin_wave_iteration", false)::Bool
 
     update_forcing!(model)
     if haskey(config.input, "cyclic")
@@ -461,7 +461,7 @@ function update_sbm_gwf(model)
     update_until_snow(vertical, config)
 
     # lateral snow transport 
-    if get(config.model, "masswasting", false)
+    if get(config.model, "masswasting", false)::Bool
         lateral_snow_transport!(
             vertical.snow,
             vertical.snowwater,
