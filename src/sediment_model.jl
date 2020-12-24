@@ -79,7 +79,7 @@ function initialize_sediment_model(config::Config)
 
     # # lateral part sediment in overland flow
     rivcell = float(river)
-    ols = OLFSed{Float64}(
+    ols = OverlandFlowSediment{Float64}(
         n = n,
         rivcell = rivcell,
         h_riv = fill(mv, n),
@@ -191,7 +191,7 @@ function initialize_sediment_model(config::Config)
     return model
 end
 
-function update(model::Model{N,L,V,R,W}) where {N,L,V<:LandSed,R,W}
+function update(model::Model{N,L,V,R,W}) where {N,L,V<:LandSediment,R,W}
     @unpack lateral, vertical, network, clock, config = model
 
     update_forcing!(model)
