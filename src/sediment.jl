@@ -172,53 +172,7 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
         type = Float64,
     )
 
-    # if leaf area index climatology provided use sl, swood and kext to calculate cmax, e_r and canopygapfraction
-    # TODO replace by something else
-    if isnothing(true)
-        # cmax, e_r, canopygapfraction only required when leaf area index climatology not provided
-        cmax = ncread(
-            nc,
-            param(config, "input.vertical.cmax", nothing);
-            sel = inds,
-            defaults = 1.0,
-            type = Float64,
-        )
-        e_r = ncread(
-            nc,
-            param(config, "input.vertical.eoverr", nothing);
-            sel = inds,
-            defaults = 0.1,
-            type = Float64,
-        )
-        canopygapfraction = ncread(
-            nc,
-            param(config, "input.vertical.canopygapfraction", nothing);
-            sel = inds,
-            defaults = 0.1,
-            type = Float64,
-        )
-        sl = fill(mv, n)
-        swood = fill(mv, n)
-        kext = fill(mv, n)
-    else
-        # TODO confirm if leaf area index climatology is present in the NetCDF
-        sl = ncread(
-            nc,
-            param(config, "input.vertical.specific_leaf");
-            sel = inds,
-            type = Float64,
-        )
-        swood = ncread(
-            nc,
-            param(config, "input.vertical.storage_wood");
-            sel = inds,
-            type = Float64,
-        )
-        kext = ncread(nc, param(config, "input.vertical.kext"); sel = inds, type = Float64)
-        cmax = fill(mv, n)
-        e_r = fill(mv, n)
-        canopygapfraction = fill(mv, n)
-    end
+    cmax, _, canopygapfraction, sl, swood, kext = initialize_canopy(nc, config, inds)
 
     # Initialise parameters for the transport capacity part
     βₗ = slope
