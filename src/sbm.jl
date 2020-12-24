@@ -215,6 +215,56 @@ statevars(::SBM; snow = false) =
     snow ? (:satwaterdepth, :snow, :tsoil, :ustorelayerdepth, :snowwater, :canopystorage) :
     (:satwaterdepth, :ustorelayerdepth, :canopystorage)
 
+function initialize_canopy(nc, config, inds)
+    n = length(inds)
+    # if leaf area index climatology provided use sl, swood and kext to calculate cmax, e_r and canopygapfraction
+    if haskey(config.input.vertical, "leaf_area_index")
+        # TODO confirm if leaf area index climatology is present in the NetCDF
+        sl = ncread(
+            nc,
+            param(config, "input.vertical.specific_leaf");
+            sel = inds,
+            type = Float64,
+        )
+        swood = ncread(
+            nc,
+            param(config, "input.vertical.storage_wood");
+            sel = inds,
+            type = Float64,
+        )
+        kext = ncread(nc, param(config, "input.vertical.kext"); sel = inds, type = Float64)
+        cmax = fill(mv, n)
+        e_r = fill(mv, n)
+        canopygapfraction = fill(mv, n)
+    else
+        sl = fill(mv, n)
+        swood = fill(mv, n)
+        kext = fill(mv, n)
+        # cmax, e_r, canopygapfraction only required when leaf area index climatology not provided
+        cmax = ncread(
+            nc,
+            param(config, "input.vertical.cmax", nothing);
+            sel = inds,
+            defaults = 1.0,
+            type = Float64,
+        )
+        e_r = ncread(
+            nc,
+            param(config, "input.vertical.eoverr", nothing);
+            sel = inds,
+            defaults = 0.1,
+            type = Float64,
+        )
+        canopygapfraction = ncread(
+            nc,
+            param(config, "input.vertical.canopygapfraction", nothing);
+            sel = inds,
+            defaults = 0.1,
+            type = Float64,
+        )
+    end
+    return cmax, e_r, canopygapfraction, sl, swood, kext
+end
 
 function initialize_sbm(nc, config, riverfrac, xl, yl, inds)
 
@@ -458,53 +508,7 @@ function initialize_sbm(nc, config, riverfrac, xl, yl, inds)
         type = Float64,
     )
 
-    # if leaf area index climatology provided use sl, swood and kext to calculate cmax, e_r and canopygapfraction
-    if haskey(config.input.vertical, "leaf_area_index")
-        # TODO confirm if leaf area index climatology is present in the NetCDF
-        sl = ncread(
-            nc,
-            param(config, "input.vertical.specific_leaf");
-            sel = inds,
-            type = Float64,
-        )
-        swood = ncread(
-            nc,
-            param(config, "input.vertical.storage_wood");
-            sel = inds,
-            type = Float64,
-        )
-        kext = ncread(nc, param(config, "input.vertical.kext"); sel = inds, type = Float64)
-        cmax = fill(mv, n)
-        e_r = fill(mv, n)
-        canopygapfraction = fill(mv, n)
-    else
-        # cmax, e_r, canopygapfraction only required when leaf area index climatology not provided
-        cmax = ncread(
-            nc,
-            param(config, "input.vertical.cmax", nothing);
-            sel = inds,
-            defaults = 1.0,
-            type = Float64,
-        )
-        e_r = ncread(
-            nc,
-            param(config, "input.vertical.eoverr", nothing);
-            sel = inds,
-            defaults = 0.1,
-            type = Float64,
-        )
-        canopygapfraction = ncread(
-            nc,
-            param(config, "input.vertical.canopygapfraction", nothing);
-            sel = inds,
-            defaults = 0.1,
-            type = Float64,
-        )
-        sl = fill(mv, n)
-        swood = fill(mv, n)
-        kext = fill(mv, n)
-    end
-
+    cmax, e_r, canopygapfraction, sl, swood, kext = initialize_canopy(nc, config, inds)
 
     # these are filled in the loop below
     # TODO see if we can replace this approach
