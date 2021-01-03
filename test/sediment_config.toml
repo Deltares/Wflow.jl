@@ -154,7 +154,7 @@ h_riv = "h_riv"
 width = "widthriv"
 
 [csv]
-path = "data/output-moselle-sed.csv"
+path = "data/output-moselle-sediment.csv"
 
 [[csv.column]]
 coordinate.x = 6.931
