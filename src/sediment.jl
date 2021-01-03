@@ -710,6 +710,14 @@ end
 
 statevars(::OverlandFlowSediment) = ()
 
+function partial_update!(inland, rivcell, eroded)
+    no_erosion = zero(eltype(eroded))
+    for i in eachindex(inland)
+        inland[i] = rivcell[i] == 1 ? eroded[i] : no_erosion
+    end
+    return inland
+end
+
 function update(ols::OverlandFlowSediment, network, config)
     do_river = get(config.model, "runrivermodel", false)::Bool
     tcmethod = get(config.model, "landtransportmethod", "yalinpart")::String
@@ -719,19 +727,19 @@ function update(ols::OverlandFlowSediment, network, config)
     if do_river || tcmethod == "yalinpart"
         # clay
         accucapacityflux!(ols.olclay, ols.erosclay, network, ols.TCclay)
-        ols.inlandclay .= ifelse.(ols.rivcell .== 1, ols.erosclay, zeroarr)
+        partial_update!(ols.inlandclay, ols.rivcell, ols.erosclay)
         # silt
         accucapacityflux!(ols.olsilt, ols.erossilt, network, ols.TCsilt)
-        ols.inlandsilt .= ifelse.(ols.rivcell .== 1, ols.erossilt, zeroarr)
+        partial_update!(ols.inlandsilt, ols.rivcell, ols.erossilt)
         # sand
         accucapacityflux!(ols.olsand, ols.erossand, network, ols.TCsand)
-        ols.inlandsand .= ifelse.(ols.rivcell .== 1, ols.erossand, zeroarr)
+        partial_update!(ols.inlandsand, ols.rivcell, ols.erossand)
         # small aggregates
         accucapacityflux!(ols.olsagg, ols.erossagg, network, ols.TCsagg)
-        ols.inlandsagg .= ifelse.(ols.rivcell .== 1, ols.erossagg, zeroarr)
+        partial_update!(ols.inlandsagg, ols.rivcell, ols.erossagg)
         # large aggregates
         accucapacityflux!(ols.ollagg, ols.eroslagg, network, ols.TClagg)
-        ols.inlandlagg .= ifelse.(ols.rivcell .== 1, ols.eroslagg, zeroarr)
+        partial_update!(ols.inlandlagg, ols.rivcell, ols.eroslagg)
 
         # total sediment, all particle classes
         ols.olsed .= ols.olclay .+ ols.olsilt .+ ols.olsand .+ ols.olsagg .+ ols.ollagg
