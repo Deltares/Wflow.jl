@@ -89,7 +89,7 @@ Overview of the different processes for a river cell in wflow\_sediment.
 ![sediment_instream](../images/river-scheme.png)
 
 Running the river model is an option of the wflow\_sediment model and is enabled using the
-TOML file:
+TOML file. By default it is `false`:
 ```toml
 [model]
 runrivermodel = true
