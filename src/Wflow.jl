@@ -104,7 +104,8 @@ function run_simulation(model::Model; close_files = true)
     @unpack network, config, writer, clock = model
 
     # in the case of sbm_gwf it's currently a bit hard to use dispatch
-    update_func = config.model.type == "sbm_gwf" ? update_sbm_gwf : update
+    model_type = config.model.type::String
+    update_func = model_type == "sbm_gwf" ? update_sbm_gwf : update
 
     # determine timesteps to run
     starttime = config.starttime::DateTime
@@ -112,7 +113,7 @@ function run_simulation(model::Model; close_files = true)
     Δt = clock.Δt
     times = range(starttime, endtime, step=clock.Δt)
 
-    @info "Run information" starttime Δt endtime
+    @info "Run information" model_type starttime Δt endtime
     @progress for time in times
         model = update_func(model)
     end
