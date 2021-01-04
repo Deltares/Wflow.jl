@@ -13,13 +13,14 @@ using FieldMetadata
 using Parameters
 using DelimitedFiles
 using ProgressLogging
+using CFTime
 
 @metadata get_units "mm"
 
 const BMI = BasicModelInterface
 
-mutable struct Clock
-    time::DateTime
+mutable struct Clock{T}
+    time::T
     iteration::Int
     Δt::Second
 end

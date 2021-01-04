@@ -890,7 +890,7 @@ function write_csv_row(model)
     println(io)
 end
 
-function reset_clock!(clock::Clock, config::Config)
+function reset_clock!(clock::Clock, config)
     clock.time = config.starttime
     clock.iteration = 1
     clock.Δt = Second(config.timestepsecs)

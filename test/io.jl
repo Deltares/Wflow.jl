@@ -34,6 +34,52 @@ end
     @test Wflow.checkdims(("time", "lat", "lon")) == ("time", "lat", "lon")
 end
 
+@testset "Clock{DateTime}" begin
+    # 29 days in this February due to leap year
+    starttime = DateTime(2000, 2, 28)
+    Δt = Day(1)
+    clock = Wflow.Clock(starttime, 1, Second(Δt))
+
+    Wflow.advance!(clock)
+    Wflow.advance!(clock)
+    @test clock.time == DateTime(2000, 3, 1)
+    @test clock.iteration == 3
+    @test clock.Δt == Δt
+
+    Wflow.rewind!(clock)
+    @test clock.time == DateTime(2000, 2, 29)
+    @test clock.iteration == 2
+    @test clock.Δt == Δt
+
+    Wflow.reset_clock!(clock, (starttime=starttime, timestepsecs=Dates.value(Second(Δt))))
+    @test clock.time == starttime
+    @test clock.iteration == 1
+    @test clock.Δt == Δt
+end
+
+@testset "Clock{DateTime360Day}" begin
+    # 30 days in each month
+    starttime = DateTime360Day(2000, 2, 29)
+    Δt = Day(1)
+    clock = Wflow.Clock(starttime, 1, Second(Δt))
+
+    Wflow.advance!(clock)
+    Wflow.advance!(clock)
+    @test clock.time == DateTime360Day(2000, 3, 1)
+    @test clock.iteration == 3
+    @test clock.Δt == Δt
+
+    Wflow.rewind!(clock)
+    @test clock.time == DateTime360Day(2000, 2, 30)
+    @test clock.iteration == 2
+    @test clock.Δt == Δt
+
+    Wflow.reset_clock!(clock, (starttime=starttime, timestepsecs=Dates.value(Second(Δt))))
+    @test clock.time == starttime
+    @test clock.iteration == 1
+    @test clock.Δt == Δt
+end
+
 @testset "timecycles" begin
     @test Wflow.timecycles([Date(2020, 4, 21), Date(2020, 10, 21)]) == [(4, 21), (10, 21)]
     @test_throws ErrorException Wflow.timecycles([Date(2020, 4, 21), Date(2021, 10, 21)])
