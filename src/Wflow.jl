@@ -12,6 +12,7 @@ using BasicModelInterface
 using FieldMetadata
 using Parameters
 using DelimitedFiles
+using ProgressLogging
 
 @metadata get_units "mm"
 
@@ -103,11 +104,19 @@ function run_simulation(model::Model; close_files = true)
     @unpack network, config, writer, clock = model
 
     # in the case of sbm_gwf it's currently a bit hard to use dispatch
-    update_func = config.model.type == "sbm_gwf" ? update_sbm_gwf : update
+    model_type = config.model.type::String
+    update_func = model_type == "sbm_gwf" ? update_sbm_gwf : update
 
-    while true
+    # determine timesteps to run
+    starttime = config.starttime::DateTime
+    endtime = config.endtime::DateTime
+    Δt = clock.Δt
+    times = range(starttime, endtime, step=clock.Δt)
+
+    @info "Run information" model_type starttime Δt endtime
+    @progress for (i, time) in enumerate(times)
+        @debug "Starting timestep" time timestep=i
         model = update_func(model)
-        is_finished(clock, config) && break
     end
 
     # write output state NetCDF
@@ -127,7 +136,7 @@ function run_simulation(model::Model; close_files = true)
 end
 
 function run_simulation()
-    usage = "Usage: julia -e 'using Wflow; Wflow.run_simulation()` 'path/to/config.toml'"
+    usage = "Usage: julia -e 'using Wflow; Wflow.run_simulation()' 'path/to/config.toml'"
     n = length(ARGS)
     if n != 1
         throw(ArgumentError(usage))

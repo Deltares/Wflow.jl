@@ -896,8 +896,6 @@ function reset_clock!(clock::Clock, config::Config)
     clock.Δt = Second(config.timestepsecs)
 end
 
-is_finished(clock::Clock, config::Config) = clock.time >= config.endtime
-
 function advance!(clock)
     clock.iteration += 1
     clock.time += clock.Δt

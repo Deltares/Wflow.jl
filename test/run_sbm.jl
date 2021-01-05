@@ -116,12 +116,18 @@ config.endtime = DateTime(2000, 1, 9)
 
 model = Wflow.run_simulation(config)
 
+@testset "timing" begin
+    # clock has been reset
+    @test model.clock.time == config.starttime
+    @test model.clock.iteration == 1
+end
+
 # pit is at river index 1765, CartesianIndex(141, 86)
 # downstream from pit is at river index 1739, CartesianIndex(142, 85)
 @testset "river flow at and downstream of pit" begin
     q = model.lateral.river.q_av
-    @test q[1765] ≈ 3.8628067453276365
-    @test q[1739] ≈ 0.007148082967365473
+    @test q[1765] ≈ 8.133435755782642
+    @test q[1739] ≈ 0.008996045895155833
 end
 
 Wflow.close_files(model, delete_output = false)

@@ -12,6 +12,7 @@ using Base.MathConstants: eulergamma
 using BasicModelInterface
 import Polynomials
 using DelimitedFiles
+using Logging
 
 const BMI = BasicModelInterface
 
@@ -51,18 +52,21 @@ lake_hq_2_path = testdata(v"0.2.1", "lake_hq_2.csv", "lake_hq_2.csv")
 
 include("testing_utils.jl")
 
-## run all tests
-@testset "Wflow.jl" begin
-    include("horizontal_process.jl")
-    include("io.jl")
-    include("vertical_process.jl")
-    include("reservoir_lake.jl")
-    include("run_sbm.jl")
-    include("run_hbv.jl")
-    include("run_sbm_gwf.jl")
-    include("run.jl")
-    include("groundwater.jl")
-    include("utils.jl")
-    include("bmi.jl")
-    include("run_sediment.jl")
+# disable logging output during testing
+with_logger(NullLogger()) do
+    ## run all tests
+    @testset "Wflow.jl" begin
+        include("horizontal_process.jl")
+        include("io.jl")
+        include("vertical_process.jl")
+        include("reservoir_lake.jl")
+        include("run_sbm.jl")
+        include("run_hbv.jl")
+        include("run_sbm_gwf.jl")
+        include("run.jl")
+        include("groundwater.jl")
+        include("utils.jl")
+        include("bmi.jl")
+        include("run_sediment.jl")
+    end
 end
