@@ -25,6 +25,15 @@ mutable struct Clock{T}
     Δt::Second
 end
 
+function Clock(config)
+    # this constructor is used by reset_clock!, since if the Clock has already
+    # been constructed before, the config is complete
+    calendar = get(config, "calendar", "standard")::String
+    starttime = cftime(config.starttime, calendar)
+    Δt = Second(config.timestepsecs)
+    Clock(starttime, 1, Δt)
+end
+
 function Clock(config, reader)
     nctimes = ncread(reader.dataset, "time")
     # if the config file does not have a start or endtime, folow the NetCDF times
