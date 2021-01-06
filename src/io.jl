@@ -78,6 +78,7 @@ function get_at!(
 )
     # this behaves like a forward fill interpolation
     i = findfirst(>=(t), times)
+    t < first(times) && throw(DomainError("time $t before dataset begin $(first(times))"))
     i === nothing && throw(DomainError("time $t after dataset end $(last(times))"))
     return get_at!(buffer, var, i)
 end
