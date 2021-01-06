@@ -7,7 +7,7 @@
 casename = "testcase"
 
 calendar = "proleptic_gregorian" 
-endtime = 2000-02-01T00:00:00 # TODO add option for same timing as forcing
+endtime = 2000-02-01T00:00:00
 starttime = 2000-01-01T00:00:00
 time_units = "days since 1900-01-01 00:00:00" 
 timestepsecs = 86400 
