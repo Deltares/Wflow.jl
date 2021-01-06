@@ -293,7 +293,7 @@ function initialize_sbm_model(config::Config)
         (; land, river, reservoir, lake, index_river, frac_toriver),
         (subsurface = ssf, land = olf, river = rf),
         sbm,
-        Clock(config.starttime, 1, Δt),
+        Clock(config),
         reader,
         writer,
     )

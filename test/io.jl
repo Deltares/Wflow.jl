@@ -34,24 +34,34 @@ end
     @test Wflow.checkdims(("time", "lat", "lon")) == ("time", "lat", "lon")
 end
 
-@testset "Clock{DateTime}" begin
+@testset "Clock{DateTimeStandard}" begin
     # 29 days in this February due to leap year
-    starttime = DateTime(2000, 2, 28)
+    starttime = DateTimeStandard(2000, 2, 28)
     Δt = Day(1)
     clock = Wflow.Clock(starttime, 1, Second(Δt))
 
+    # check Clock constructor
+    config = Wflow.Config(Dict("starttime" => "2000-02-28", "timestepsecs" => 86400))
+    clock2 = Wflow.Clock(config)
+    @test clock.time == clock2.time
+    @test clock.iteration == clock2.iteration
+    @test clock.Δt == clock2.Δt
+
     Wflow.advance!(clock)
     Wflow.advance!(clock)
-    @test clock.time == DateTime(2000, 3, 1)
+    @test clock.time == DateTimeStandard(2000, 3, 1)
     @test clock.iteration == 3
     @test clock.Δt == Δt
 
     Wflow.rewind!(clock)
-    @test clock.time == DateTime(2000, 2, 29)
+    @test clock.time == DateTimeStandard(2000, 2, 29)
     @test clock.iteration == 2
     @test clock.Δt == Δt
 
-    Wflow.reset_clock!(clock, (starttime=starttime, timestepsecs=Dates.value(Second(Δt))))
+    config = Wflow.Config(
+        Dict("starttime" => starttime, "timestepsecs" => Dates.value(Second(Δt))),
+    )
+    Wflow.reset_clock!(clock, config)
     @test clock.time == starttime
     @test clock.iteration == 1
     @test clock.Δt == Δt
@@ -74,10 +84,30 @@ end
     @test clock.iteration == 2
     @test clock.Δt == Δt
 
-    Wflow.reset_clock!(clock, (starttime=starttime, timestepsecs=Dates.value(Second(Δt))))
-    @test clock.time == starttime
+    config = Wflow.Config(
+        Dict(
+            "starttime" => "2020-02-29",
+            "calendar" => "360_day",
+            "timestepsecs" => Dates.value(Second(Δt)),
+        ),
+    )
+    Wflow.reset_clock!(clock, config)
+    @test clock.time isa DateTime360Day
+    @test string(clock.time) == "2020-02-29T00:00:00"
     @test clock.iteration == 1
     @test clock.Δt == Δt
+end
+
+@testset "CFTime" begin
+    @test Wflow.cftime("2006-01-02T15:04:05", "standard") ==
+          DateTimeStandard(2006, 1, 2, 15, 4, 5)
+    @test Wflow.cftime("2006-01-02", "proleptic_gregorian") ==
+          DateTimeProlepticGregorian(2006, 1, 2)
+    @test Wflow.cftime("2006-01-02T15:04:05", "360_day") ==
+          DateTime360Day(2006, 1, 2, 15, 4, 5)
+    @test Wflow.cftime(DateTime("2006-01-02T15:04:05"), "360_day") ==
+          DateTime360Day(2006, 1, 2, 15, 4, 5)
+    @test Wflow.cftime(Date("2006-01-02"), "360_day") == DateTime360Day(2006, 1, 2)
 end
 
 @testset "timecycles" begin

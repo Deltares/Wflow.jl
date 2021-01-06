@@ -418,7 +418,7 @@ function initialize_sbm_gwf_model(config::Config)
             river = rf,
         ),
         sbm,
-        Clock(config.starttime, 1, Δt),
+        Clock(config),
         reader,
         writer,
     )

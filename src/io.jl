@@ -134,7 +134,8 @@ function update_forcing!(model)
 
     # load from NetCDF into the model according to the mapping
     for (par, ncvarname) in forcing_parameters
-        buffer = get_at!(buffer, dataset[ncvarname], nctimes, clock.time)
+        time = convert(eltype(nctimes), clock.time)
+        buffer = get_at!(buffer, dataset[ncvarname], nctimes, time)
 
         # calculate the mean precipitation and evaporation over the lakes and reservoirs
         # and put these into the lakes and reservoirs structs
@@ -187,7 +188,7 @@ function update_cyclic!(model)
     # pick up the data that is valid for the past 24 hours
     month_day = monthday(clock.time - Day(1))
 
-    is_first_timestep = clock.time == config.starttime
+    is_first_timestep = clock.iteration == 1
     if is_first_timestep || (month_day in cyclic_times)
         # time for an update of the cyclic forcing
         i = findlast(t -> monthday_passed(month_day, t), cyclic_times)
@@ -604,7 +605,7 @@ function prepare_writer(
     # fill the output_map by mapping parameter NetCDF names to arrays
     output_map = out_map(output_ncnames, modelmap)
 
-    calendar = get(config, "calendar", "proleptic_gregorian")
+    calendar = get(config, "calendar", "standard")::String
     time_units = get(config, "time_units", CFTime.DEFAULT_TIME_UNITS)
     ds = setup_netcdf(
         nc_path,
@@ -877,7 +878,7 @@ function write_csv_row(model)
     @unpack writer, clock = model
     isnothing(writer.csv_path) && return nothing
     io = writer.csv_io
-    print(io, clock.time)
+    print(io, string(clock.time))
     for nt in writer.csv_cols
         A = param(model, nt.parameter)
         # could be a value, or a vector in case of map
@@ -890,10 +891,24 @@ function write_csv_row(model)
     println(io)
 end
 
+"From a time and a calendar, create the right CFTime DateTimeX type"
+function cftime(time, calendar)
+    timetype = CFTime.timetype(calendar)
+    # invalid Gregorian dates like 2020-02-30 cannot be made into a DateTime
+    # even though they may exist in the target calendar
+    # though this constructor does offer support for string formatted dates
+    dt = DateTime(time)
+    cal_time = reinterpret(timetype, dt)
+    return cal_time
+end
+
 function reset_clock!(clock::Clock, config)
-    clock.time = config.starttime
-    clock.iteration = 1
-    clock.Δt = Second(config.timestepsecs)
+    new_clock = Clock(config)
+    # we want this method to be mutating
+    clock.time = new_clock.time
+    clock.iteration = new_clock.iteration
+    clock.Δt = new_clock.Δt
+    return clock
 end
 
 function advance!(clock)

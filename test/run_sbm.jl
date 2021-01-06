@@ -118,7 +118,8 @@ model = Wflow.run_simulation(config)
 
 @testset "timing" begin
     # clock has been reset
-    @test model.clock.time == config.starttime
+    calendar = get(config, "calendar", "standard")::String
+    @test model.clock.time == Wflow.cftime(config.starttime, calendar)
     @test model.clock.iteration == 1
 end
 

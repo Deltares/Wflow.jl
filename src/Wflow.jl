@@ -25,6 +25,13 @@ mutable struct Clock{T}
     Δt::Second
 end
 
+function Clock(config)
+    calendar = get(config, "calendar", "standard")::String
+    starttime = cftime(config.starttime, calendar)
+    Δt = Second(config.timestepsecs)
+    Clock(starttime, 1, Δt)
+end
+
 include("io.jl")
 
 """
@@ -109,14 +116,15 @@ function run_simulation(model::Model; close_files = true)
     update_func = model_type == "sbm_gwf" ? update_sbm_gwf : update
 
     # determine timesteps to run
-    starttime = config.starttime::DateTime
-    endtime = config.endtime::DateTime
+    calendar = get(config, "calendar", "standard")::String
+    starttime = clock.time
     Δt = clock.Δt
-    times = range(starttime, endtime, step=clock.Δt)
+    endtime = cftime(config.endtime, calendar)
+    times = range(starttime, endtime, step = Δt)
 
     @info "Run information" model_type starttime Δt endtime
     @progress for (i, time) in enumerate(times)
-        @debug "Starting timestep" time timestep=i
+        @debug "Starting timestep" time timestep = i
         model = update_func(model)
     end
 
