@@ -1,6 +1,6 @@
 # Model structure
 
- Below the composite type that represents all different aspects of a Wflow Model, such as
+ Below the composite type that represents all different aspects of a `Wflow.Model`, such as
  the network, parameters, clock, configuration and input and output.
 
 ```julia
@@ -17,7 +17,7 @@ end
 
 The `lateral` field of the `struct Model` can contain different lateral concepts. For each
 Wflow model these different lateral concepts are mapped through the use of a `NamedTuple`.
-The `vertical` field of the `struct Model`always contains one vertical concept, for example
+The `vertical` field of the `struct Model` always contains one vertical concept, for example
 the SBM or HBV vertical concept.
 
 Below an example how lateral concepts are mapped for the SBM model through a `NamedTuple`:
