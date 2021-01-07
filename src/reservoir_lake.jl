@@ -281,10 +281,10 @@ function initialize_natural_lake(config, static_path, nc, inds_riv, nriv, pits)
     )
     linked_lakelocs = ncread(
         nc,
-        param(config, "input.lateral.river.lake.linkedlakelocs");
+        param(config, "input.lateral.river.lake.linkedlakelocs", nothing);
         sel = inds_lake,
+        defaults = 0,
         type = Int,
-        fill = 0,
     )
     lake_storfunc = ncread(
         nc,
