@@ -22,7 +22,6 @@ pages = [
         "Sediment Flux" => "lateral/sediment.md",
     ],
     "Basic Model Interface" => "bmi.md",
-    "Developer documentation" => "devdocs.md",
 ]
 
 makedocs(;
