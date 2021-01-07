@@ -22,12 +22,13 @@ lumped, into a distributed model.
 The figure above shows a schematic view of hydrological response simulation with the
 HBV-modelling concept. The land-phase of the hydrological cycle is represented by three
 different components: a snow routine, a soil routine and a runoff response routine. Each
-component is discussed separately in more detail in [HBV vertical concept](@ref).
+component is discussed separately in more detail in the section [HBV vertical
+concept](@ref).
 
-The routing for river and overland flow is described in [Kinematic wave](@ref).
+The routing for river and overland flow is described in the section [Kinematic wave](@ref).
 
-Below the mapping for wflow\_hbv (type `hbv`) to the vertical HBV concept (instance of `struct
-HBV`) and the different lateral concepts.
+Below the mapping for wflow\_hbv (type `hbv`) to the vertical HBV concept (instance of
+`struct HBV`) and the different lateral concepts.
 
 ```julia
 vertical => struct HBV{T}

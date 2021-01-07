@@ -12,7 +12,8 @@ wflow\_sbm:
 - The addition of evapotranspiration losses
 - The addition of a capillary rise
 
-The vertical SBM concept is explained in more detail in [SBM vertical concept](@ref).
+The vertical SBM concept is explained in more detail in the following section [SBM vertical
+concept](@ref).
 
 Topog\_SBM uses an element network based on contour lines and trajectories for water
 routing. Wflow\_sbm models differ in how the lateral components:
@@ -25,7 +26,7 @@ are solved.
 ## SBM + Kinematic wave
 For the lateral components of this wflow\_sbm model water is routed over a D8 network, and
 the kinematic wave approach is used for river, overland and lateral subsurface flow. This is
-described in more detail [Kinematic wave](@ref).
+described in more detail in the section [Kinematic wave](@ref).
 
 Overview of the different processes and fluxes in the wflow_sbm model:
 
@@ -46,8 +47,8 @@ lateral.river.reservoir => struct SimpleReservoir{T} # optional
 ## SBM + Groundwater flow
 For river and overland flow the kinematic wave approach over a D8 network is used for this
 wflow\_sbm model. For the subsurface domain, an unconfined aquifer with groundwater flow in
-four directions (adjacent cells) is used. This is described in more detail [Groundwater
-flow](@ref).
+four directions (adjacent cells) is used. This is described in more detail in the section
+[Groundwater flow](@ref).
 
 Below the mapping for this wflow\_sbm model (type `sbm_gwf`) to the vertical SBM concept
 (instance of `struct SBM`) and the different lateral concepts.

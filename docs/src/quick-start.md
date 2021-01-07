@@ -2,12 +2,10 @@
 
 ## Installation
 
-This is a [Julia](https://julialang.org/) package, that can be installed using Julia's
-built-in package manager, Pkg. Wflow is currently still unregistered, so the full URL is
-needed when adding the package, `add Wflow` does not yet work, but `add
-https://github.com/Deltares/Wflow.jl` does. In the rest of this section will provide more
-detailed instructions, such that new Julia users can also install Wflow. If you already know
-you can go ahead to the next section.
+Wflow is a [Julia](https://julialang.org/) package, that can be installed using Julia's
+built-in package manager, Pkg. The rest of this section provides more detailed instructions,
+such that new Julia users can also install Wflow. If you already know this, you can go ahead
+to the next section.
 
 First download and install the [current stable release of
 Julia](https://julialang.org/downloads/#current_stable_release). Please see [platform
@@ -50,24 +48,31 @@ help?> cos
 Now go back to the Pkg REPL and install Wflow using:
 
 ```julia-repl
-pkg> add https://github.com/Deltares/Wflow.jl
+pkg> add Wflow
 ```
 
 This can take a while, especially the first time, since compatible dependencies are also
-automatically looked up and installed from the Pkg General registry. This command will track
-the `master` branch, and will update to the latest commit on that branch when you run
-`update`, or simply `up`, in the Pkg REPL. This will install Wflow in you home directory
-under `.julia/packages/Wflow`. Note that packages installed under `packages` by `add` are
-supposed to never be altered in that location, for Pkg and it's automatic dependency
-handling to work well. If you want to make any changes to any of the files in the Wflow
-directory, you need to do a development install. This can be done using:
+automatically looked up and installed from the Pkg General registry. It is also possible to
+install Wflow from the `master` branch as follows:
+
+```julia-repl
+pkg> add https://github.com/Deltares/Wflow.jl
+```
+
+This command will track the `master` branch, and will update to the latest commit on that
+branch when you run `update`, or simply `up`, in the Pkg REPL. The use of `add` will install
+Wflow in you home directory under `.julia/packages/Wflow`. Note that packages installed
+under `packages` by `add` are supposed to never be altered in that location, for Pkg and
+it's automatic dependency handling to work well. If you want to make any changes to any of
+the files in the Wflow directory, you need to do a development install. This can be done
+using:
 
 ```julia-repl
 pkg> dev https://github.com/Deltares/Wflow.jl
 ```
 
 This will clone the git repository, put it under your home directory in `.julia/dev/Wflow`,
-and add the `Wflow` package to your project environment. Note that to receive updates, you
+and add the Wflow package to your project environment. Note that to receive updates, you
 have to pull in the latest changes yourself using `git pull`.
 
 Finally, go back the Julia REPL and try to load Wflow:

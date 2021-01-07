@@ -112,7 +112,7 @@ if you want to for example modify a `Config` before initializing the `Model`.
 The 0 argument version expects ARGS to contain a single entry, pointing to the TOML path.
 This makes it easier to start a run from the command line without having to escape quotes:
 
-    `julia -e 'using Wflow; Wflow.run_simulation()' 'path/to/config.toml'`
+    julia -e "using Wflow; Wflow.run_simulation()" "path/to/config.toml"
 """
 function run_simulation(tomlpath)
     config = Config(tomlpath)

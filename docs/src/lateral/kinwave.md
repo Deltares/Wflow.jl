@@ -14,7 +14,7 @@ These equations can then be combined as a function of streamflow only:
 ```
 where ``Q`` is the surface runoff in the kinematic wave [m``^3``/s], ``x`` is the length of
 the runoff pathway [m], ``A`` is the cross-section area of the runoff pathway [m``^{2}``],
-``t`` is the integration timestep [s] and ``alpha`` and ``\beta`` are coefficients.
+``t`` is the integration timestep [s] and ``\alpha`` and ``\beta`` are coefficients.
 
 These equations are solved with a nonlinear scheme using Newton’s method and can also be
 iterated depending on the  model space and time resolution. By default, the iterations are
@@ -27,7 +27,11 @@ model:
 ```toml
 [model]
 # Enable iterations of the kinematic wave
-kin_wave_iteration = true 
+kin_wave_iteration = true
+# Fixed sub-timestep for iterations of channel flow (river cells)
+kw_river_tstep = 900
+# Fixed sub-timestep for iterations of overland flow (land cells)
+kw_land_tstep = 3600
 ```
 ## Subsurface flow routing
 In the SBM model the kinematic wave approach is used to route subsurface flow laterally. The
