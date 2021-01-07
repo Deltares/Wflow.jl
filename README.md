@@ -3,14 +3,30 @@
 [![Build Status](https://github.com/Deltares/Wflow.jl/workflows/CI/badge.svg)](https://github.com/Deltares/Wflow.jl/actions)
 [![Coverage](https://codecov.io/gh/Deltares/Wflow.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/Deltares/Wflow.jl)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://deltares.github.io/Wflow.jl/dev)
-<!-- [![DOI](https://zenodo.org/badge/246787232.svg)](https://zenodo.org/badge/latestdoi/246787232) -->
-<!-- [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://deltares.github.io/Wflow.jl/stable) -->
+[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://deltares.github.io/Wflow.jl/stable)
+[![DOI](https://zenodo.org/badge/246787232.svg)](https://zenodo.org/badge/latestdoi/246787232)
 
 Wflow is a [Julia](https://julialang.org/) package that provides a hydrological modeling
 framework, as well as several different vertical and lateral concepts that can be used to
-run hydrological simulations.
+run hydrological simulations. It is a continuation of the work available
+[here](https://github.com/openstreams/wflow).
 
-See https://deltares.github.io/Wflow.jl/dev for the documentation.
+## Documentation
+See [stable](https://deltares.github.io/Wflow.jl/stable) or
+[dev](https://deltares.github.io/Wflow.jl/dev) for the documentation.
 
-This is an in development version of wflow, a continuation of the work available
-[here](https://github.com/openstreams/wflow). We will make a first release later this year.
+## Installation
+For the installation enter the Pkg REPL by pressing `]` from the Julia REPL, and then
+```julia-repl
+pkg> add Wflow
+```
+A more detailed description, including a development install, is available
+[here](https://deltares.github.io/Wflow.jl/dev/quick-start).
+
+## Contributions and reporting issues
+We welcome reporting of issues [here](https://github.com/Deltares/Wflow.jl/issues). Please
+provide a minumum working example so we are able to reproduce the issue. Furtermore, we
+welcome contributions through PRs.  
+
+## Citing
+For citing our work see the zenodo badge above, that points to the latest release.
