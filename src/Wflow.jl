@@ -13,15 +13,52 @@ using FieldMetadata
 using Parameters
 using DelimitedFiles
 using ProgressLogging
+using CFTime
 
 @metadata get_units "mm"
 
 const BMI = BasicModelInterface
 
-mutable struct Clock
-    time::DateTime
+mutable struct Clock{T}
+    time::T
     iteration::Int
     Δt::Second
+end
+
+function Clock(config)
+    # this constructor is used by reset_clock!, since if the Clock has already
+    # been constructed before, the config is complete
+    calendar = get(config, "calendar", "standard")::String
+    starttime = cftime(config.starttime, calendar)
+    Δt = Second(config.timestepsecs)
+    Clock(starttime, 1, Δt)
+end
+
+function Clock(config, reader)
+    nctimes = ncread(reader.dataset, "time")
+    # if the config file does not have a start or endtime, folow the NetCDF times
+    # and add them to the config
+    # if the timestep is not given, use the difference between NetCDF time 1 and 2
+    starttime = get(config, "starttime", nothing)
+    if starttime === nothing
+        starttime = first(nctimes)
+        Dict(config)["starttime"] = starttime
+    end
+    endtime = get(config, "endtime", nothing)
+    if endtime === nothing
+        endtime = last(nctimes)
+        Dict(config)["endtime"] = endtime
+    end
+    timestepsecs = get(config, "timestepsecs", nothing)
+    if timestepsecs === nothing
+        timestepsecs = Dates.value(Second(nctimes[2] - nctimes[1]))
+        Dict(config)["timestepsecs"] = timestepsecs
+    end
+
+    calendar = get(config, "calendar", "standard")::String
+    starttime = cftime(config.starttime, calendar)
+    Δt = Second(timestepsecs)
+    Clock(starttime, 1, Δt)
 end
 
 include("io.jl")
@@ -108,14 +145,15 @@ function run_simulation(model::Model; close_files = true)
     update_func = model_type == "sbm_gwf" ? update_sbm_gwf : update
 
     # determine timesteps to run
-    starttime = config.starttime::DateTime
-    endtime = config.endtime::DateTime
+    calendar = get(config, "calendar", "standard")::String
+    starttime = clock.time
     Δt = clock.Δt
-    times = range(starttime, endtime, step=clock.Δt)
+    endtime = cftime(config.endtime, calendar)
+    times = range(starttime, endtime, step = Δt)
 
     @info "Run information" model_type starttime Δt endtime
     @progress for (i, time) in enumerate(times)
-        @debug "Starting timestep" time timestep=i
+        @debug "Starting timestep" time timestep = i
         model = update_func(model)
     end
 

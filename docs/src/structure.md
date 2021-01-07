@@ -41,19 +41,24 @@ available in wflow. File paths included in the configuration TOML file are relat
 TOML file location. 
 
 ### General time info
-First information about time is provided in the TOML file, with an example below. A
-`starttime`, `endtime` and the model time step `timestepsecs` is required. The `calendar`
-and `time_units` optional information is used by the `writer` of the model, for model output
-in netCDF format.
+Time information is optional. When left out, each time step in the forcing NetCDF will be
+calculated. If you wish to calculate a subset of this time range, or a different timestep,
+you can specify a `starttime`, `endtime` and `timestepsecs` yourself. The `time_units`
+optional information is used by the `writer` of the model, for model output in netCDF
+format. The `calendar` option allows you to calculate in one of the different [CF
+conventions calendars](http://cfconventions.org/cf-conventions/cf-conventions.html#calendar)
+provided by the [CFTime.jl package](https://juliageo.org/CFTime.jl/latest/), such as
+`"360_day"`. This is useful if you want to calculate climate scenarios which are sometimes
+provided in these alternative calendars.
 
 ```toml
 casename = "testcase"                           # optional
 
-calendar = "proleptic_gregorian"                # optional, this is default value
-endtime = 2000-02-01T00:00:00                   # required 
-starttime = 2000-01-01T00:00:00                 # required
+calendar = "standard"                           # optional, this is default value
+endtime = 2000-02-01T00:00:00                   # optional, default from forcing NetCDF
+starttime = 2000-01-01T00:00:00                 # optional, default from forcing NetCDF
 time_units = "days since 1900-01-01 00:00:00"   # optional, this is default value
-timestepsecs = 86400                            # required
+timestepsecs = 86400                            # optional, default from forcing NetCDF
 ```
 
 ### Model section

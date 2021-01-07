@@ -103,8 +103,7 @@ function expint(z::Union{Float64,Complex{Float64}})
                (
             r² ≤ 2.8e-3 ? (r² ≤ 2e-7 ? @E₁_taylor64(z, 4) : @E₁_taylor64(z, 8)) :
             @E₁_taylor64(z, 15)
-        ) :
-               @E₁_taylor64(z, 37)
+        ) : @E₁_taylor64(z, 37)
     end
 end
 expint(z::Union{T,Complex{T},Rational{T},Complex{Rational{T}}}) where {T<:Integer} =

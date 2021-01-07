@@ -34,6 +34,112 @@ end
     @test Wflow.checkdims(("time", "lat", "lon")) == ("time", "lat", "lon")
 end
 
+@testset "Clock constructor" begin
+    config = Wflow.Config(tomlpath)
+
+    # mock a NCReader object
+    ncpath = joinpath(dirname(pathof(config)), config.input.path_forcing)
+    ds = NCDataset(ncpath)
+    reader = (; dataset = ds)
+
+    # if these keys are missing, they are derived from the NetCDF
+    pop!(Dict(config), "starttime")
+    pop!(Dict(config), "endtime")
+    pop!(Dict(config), "timestepsecs")
+    clock = Wflow.Clock(config, reader)
+
+    @test clock.time == DateTimeProlepticGregorian(2000, 1, 1)
+    @test clock.iteration == 1
+    @test clock.Δt == Second(Day(1))
+    # test that the missing keys have been added to the config
+    @test config.starttime == DateTime(2000, 1, 1)
+    @test config.endtime == DateTime(2000, 12, 31)
+    @test config.timestepsecs == 86400
+
+    # replace the keys with different values
+    Dict(config)["starttime"] = "2003-04-05"
+    Dict(config)["endtime"] = "2003-04-06"
+    Dict(config)["timestepsecs"] = 3600
+    Dict(config)["calendar"] = "standard"
+
+    clock = Wflow.Clock(config, reader)
+    @test clock.time == DateTimeStandard(2003, 4, 5)
+    @test clock.iteration == 1
+    @test clock.Δt == Second(Hour(1))
+
+    close(ds)
+    config = Wflow.Config(tomlpath)  # restore the config
+end
+
+@testset "Clock{DateTimeStandard}" begin
+    # 29 days in this February due to leap year
+    starttime = DateTimeStandard(2000, 2, 28)
+    Δt = Day(1)
+    clock = Wflow.Clock(starttime, 1, Second(Δt))
+
+    Wflow.advance!(clock)
+    Wflow.advance!(clock)
+    @test clock.time == DateTimeStandard(2000, 3, 1)
+    @test clock.iteration == 3
+    @test clock.Δt == Δt
+
+    Wflow.rewind!(clock)
+    @test clock.time == DateTimeStandard(2000, 2, 29)
+    @test clock.iteration == 2
+    @test clock.Δt == Δt
+
+    config = Wflow.Config(
+        Dict("starttime" => starttime, "timestepsecs" => Dates.value(Second(Δt))),
+    )
+    Wflow.reset_clock!(clock, config)
+    @test clock.time == starttime
+    @test clock.iteration == 1
+    @test clock.Δt == Δt
+end
+
+@testset "Clock{DateTime360Day}" begin
+    # 30 days in each month
+    starttime = DateTime360Day(2000, 2, 29)
+    Δt = Day(1)
+    clock = Wflow.Clock(starttime, 1, Second(Δt))
+
+    Wflow.advance!(clock)
+    Wflow.advance!(clock)
+    @test clock.time == DateTime360Day(2000, 3, 1)
+    @test clock.iteration == 3
+    @test clock.Δt == Δt
+
+    Wflow.rewind!(clock)
+    @test clock.time == DateTime360Day(2000, 2, 30)
+    @test clock.iteration == 2
+    @test clock.Δt == Δt
+
+    config = Wflow.Config(
+        Dict(
+            "starttime" => "2020-02-29",
+            "calendar" => "360_day",
+            "timestepsecs" => Dates.value(Second(Δt)),
+        ),
+    )
+    Wflow.reset_clock!(clock, config)
+    @test clock.time isa DateTime360Day
+    @test string(clock.time) == "2020-02-29T00:00:00"
+    @test clock.iteration == 1
+    @test clock.Δt == Δt
+end
+
+@testset "CFTime" begin
+    @test Wflow.cftime("2006-01-02T15:04:05", "standard") ==
+          DateTimeStandard(2006, 1, 2, 15, 4, 5)
+    @test Wflow.cftime("2006-01-02", "proleptic_gregorian") ==
+          DateTimeProlepticGregorian(2006, 1, 2)
+    @test Wflow.cftime("2006-01-02T15:04:05", "360_day") ==
+          DateTime360Day(2006, 1, 2, 15, 4, 5)
+    @test Wflow.cftime(DateTime("2006-01-02T15:04:05"), "360_day") ==
+          DateTime360Day(2006, 1, 2, 15, 4, 5)
+    @test Wflow.cftime(Date("2006-01-02"), "360_day") == DateTime360Day(2006, 1, 2)
+end
+
 @testset "timecycles" begin
     @test Wflow.timecycles([Date(2020, 4, 21), Date(2020, 10, 21)]) == [(4, 21), (10, 21)]
     @test_throws ErrorException Wflow.timecycles([Date(2020, 4, 21), Date(2021, 10, 21)])

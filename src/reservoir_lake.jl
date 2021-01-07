@@ -338,7 +338,9 @@ function initialize_natural_lake(config, static_path, nc, inds_riv, nriv, pits)
         end
 
         if lake_outflowfunc[i] == 3 && lake_storfunc[i] != 1
-            @warn("For the modified pulse approach (LakeOutflowFunc = 3) the LakeStorFunc should be 1")
+            @warn(
+                "For the modified pulse approach (LakeOutflowFunc = 3) the LakeStorFunc should be 1"
+            )
         end
     end
     n = length(lakearea)

@@ -172,7 +172,7 @@ function initialize_sediment_model(config::Config)
         (; land, river, reservoir, lake, index_river, frac_toriver),
         (land = ols, river = rs),
         eros,
-        Clock(config.starttime, 1, Δt),
+        Clock(config, reader),
         reader,
         writer,
     )
