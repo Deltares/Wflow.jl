@@ -3,7 +3,7 @@
 ## Surface routing
 The main flow routing scheme available in Wflow.jl is the kinematic wave approach for
 channel and overland flow, assuming that the topography controls water flow mostly. The
-kinemative wave equations are (Chow, 1988):
+kinematic wave equations are (Chow, 1988):
 ```math
   \dfrac{dQ}{dx} + \dfrac{dA}{dt} = q \\~\\
    A = \alpha Q^{\beta}

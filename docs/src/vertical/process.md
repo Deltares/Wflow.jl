@@ -28,7 +28,7 @@ where ``Q_m`` is the rate of snow melt, ``Q_r`` is the rate of snow refreezing, 
 
 The fraction of liquid water in the snow pack is at most equal to a user defined fraction,
 `whc`, of the water equivalent of the dry snow content. If the liquid water concentration
-exceeds `whc`, either through snow melt or incoming rainfall, the surpluss water
+exceeds `whc`, either through snow melt or incoming rainfall, the surplus water
 (`rainfall`) becomes available for infiltration into the soil:
 
 ```julia
@@ -126,7 +126,7 @@ above-canopy climatic observations. Values derived in this way generally tend to
 higher than those calculated with the penman-monteith equation.
 
 ### The modified rutter model
-For subdaily timesteps the interception is caclulated using a simplification of the Rutter
+For sub daily timesteps the interception is calculated using a simplification of the Rutter
 model. The simplified model is solved explicitly and does not take drainage from the canopy
 into account.
 
@@ -146,7 +146,7 @@ path_static = "data/staticmaps-moselle.nc"
 
 cyclic = ["vertical.leaf_area_index"]
 ```
-Furtermore these additional parameters are required:
+Furthermore these additional parameters are required:
 + Specific leaf storage  (`sl` \[mm\])
 + Storage woody part of vegetation (`swood` \[mm\])
 + Extinction coefficient (`kext` \[-\])

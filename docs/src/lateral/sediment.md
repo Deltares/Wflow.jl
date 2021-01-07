@@ -2,7 +2,7 @@
 
 Both the inland and river sediment model take into account sediment flux or transport of
 sediment in water, either in overland flow or in the stream flow. These two transport are
-distinguished in two different strucutures.
+distinguished in two different structures.
 
 ## Inland Sediment Model
 
@@ -113,7 +113,7 @@ capacity formulas available in wflow_sediment, some requiring calibration and so
 Choosing a transport capacity equation depends on the river characteristics (some equation
 are more suited for narrow or wider rivers), and on the reliability of the required river
 parameters (such as slope, width or mean particle diameter of the river channel). Several
-river transport caapcity are available and the choice is set up in the model section of the
+river transport capacity are available and the choice is set up in the model section of the
 TOML:
 ```toml
 [model]
@@ -158,7 +158,7 @@ fluid and sediment density (here equal to 1000 and 2650 g m``^{-3}``), ``u`` is 
 mean velocity (m s``^{-1}``), ``S`` is the river slope, ``g`` is the acceleration due to gravity,
 ``D_{50}`` is the river mean diameter (m) and ``\theta`` is the Shields parameter.
 
-**Kodatie** Kodatie (1999) developped the power relationships from Posada (1995) using field
+**Kodatie** Kodatie (1999) developed the power relationships from Posada (1995) using field
 data and linear optimization so that they would be applicable for a wider range of riverbed
 sediment size. The resulting equation, for a rectangular channel, is (Neitsch et al, 2011):
 ```math 
@@ -266,7 +266,7 @@ enough. Actual refined data or calibration may however be needed if the median d
 also required for the transport formula. In a similar way, the bulk densities of river bed
 and bank are also just assumed to be of respectively 1.5 and 1.4 g cm``^{-3}``.
 
-Table: Classical values of the channel cover vegetation coefficent (Julian and Torres, 2006)
+Table: Classical values of the channel cover vegetation coefficient (Julian and Torres, 2006)
 
 | Bank vegetation | ``C_{ch}`` |
 |:--------------- | ---------- |

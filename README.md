@@ -25,8 +25,8 @@ A more detailed description, including a development install, is available
 
 ## Contributions and reporting issues
 We welcome reporting of issues [here](https://github.com/Deltares/Wflow.jl/issues). Please
-provide a minumum working example so we are able to reproduce the issue. Furtermore, we
+provide a minimum working example so we are able to reproduce the issue. Furthermore, we
 welcome contributions through PRs.  
 
 ## Citing
-For citing our work see the zenodo badge above, that points to the latest release.
+For citing our work see the Zenodo badge above, that points to the latest release.

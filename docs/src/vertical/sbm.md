@@ -134,7 +134,7 @@ with ``\theta_{s}`` and ``\theta_{r}`` as defined previously and ``M`` [mm] repr
 model parameter.
 
 ## Transpiration and soil evaporation
-The potential eveporation left over after interception and open water evaporation (rivers
+The potential evaporation left over after interception and open water evaporation (rivers
 and water bodies) is split in potential soil evaporation and potential transpiration based
 on the canopy gap fraction (assumed to be identical to the amount of bare soil).
 

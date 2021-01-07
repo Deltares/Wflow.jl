@@ -84,12 +84,12 @@ julia> using Wflow
 The first time this will take longer as any package that is new or changed needs to be
 precompiled first, to allow faster loading on subsequent uses.
 
-You have now succesfully installed Julia and Wflow. Before ending this section, we still
+You have now successfully installed Julia and Wflow. Before ending this section, we still
 want to recommend a few tools that can make using and developing Julia code easier.
 
 The first is `Revise.jl`. This package allows you to modify code and use the changes without
 restarting Julia. Install it with `add Revise` from the Pkg REPL. Then create a file called
-`.julia/config/startup.jl`, and put `using Revise` there. This will load Revise everytime
+`.julia/config/startup.jl`, and put `using Revise` there. This will load Revise every time
 you start a Julia session.
 
 There is a section on editors and IDEs for Julia on https://julialang.org/, scroll down to

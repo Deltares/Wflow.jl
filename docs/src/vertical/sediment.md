@@ -66,7 +66,7 @@ and ``\varphi`` is an exponent varying between 0.9 and 3.1 used to reduce rainfa
 the soil is already covered by water. As a simplification, Torri (1987) has shown that a
 value of 2.0 for ``\varphi`` is representative enough for a wide range of soil conditions.
 The detachability of the soil ``k`` depends on the soil texture (proportion of clay, silt
-and sand content) and correponding values are defined in EUROSEM user guide (Morgan et al,
+and sand content) and corresponding values are defined in EUROSEM user guide (Morgan et al,
 1998). As a simplification, in wflow\_sediment, the mean value of the detachability shown in
 the table below are used. Soil texture can for example be derived from the topsoil clay and
 silt content from SoilGrids (Hengl et al, 2017).

@@ -112,7 +112,7 @@ Capillary flow from the upper zone to the soil moisture reservoir is modeled acc
 Q_{cf}=cflux \; (fc−SM)/fc
 ```
 
-where ``cflux`` is the maximum capilary flux [mm day``^{-1}``].
+where ``cflux`` is the maximum capillary flux [mm day``^{-1}``].
 
 The upper zone generates quick runoff (Q_q) using:
 ```math
@@ -176,7 +176,7 @@ The total runoff rate, ``Q``, is equal to the sum of the three different runoff 
     Q = Q_{LZ}+Q_i+Q_q
 ```
 
-The runoff behaviour in the runoff response routine is controlled by two threshold values
+The runoff behavior in the runoff response routine is controlled by two threshold values
 ``P_m`` and ``UZ1`` in combination with three reservoir parameters, ``K_{LZ}``, ``K_i`` and
 ``K_q``.
 
