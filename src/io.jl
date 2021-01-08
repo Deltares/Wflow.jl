@@ -390,9 +390,9 @@ struct Writer
     csv_path::Union{String,Nothing}
     csv_cols::Vector
     csv_io::IO
-    state_dataset::NCDataset
+    state_dataset::Union{NCDataset,Nothing}
     state_parameters::Dict{String,Any}
-    state_nc_path::String
+    state_nc_path::Union{String,Nothing}
 end
 
 function prepare_reader(path, cyclic_path, config)
@@ -593,6 +593,7 @@ function prepare_writer(
     nc_static;
     maxlayers = nothing,
 )
+    tomldir = dirname(config)
     sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
 
     # create a flat mapping from internal parameter locations to NetCDF variable names
@@ -620,21 +621,26 @@ function prepare_writer(
     )
 
     # create a separate state output NetCDF that will hold the last timestep of all states
-    state_map = out_map(state_ncnames, modelmap)
-    tomldir = dirname(config)
-    nc_state_path = joinpath(tomldir, config.state.path_output)
-    static_path = joinpath(tomldir, config.input.path_static)
-    ds_outstate = setup_netcdf(
-        nc_state_path,
-        x_nc,
-        y_nc,
-        state_map,
-        calendar,
-        time_units,
-        maxlayers,
-        sizeinmetres;
-        float_type = Float64,
-    )
+    # but only if config.state.path_output has been set
+    if haskey(config, "state") && haskey(config.state, "path_output")
+        state_map = out_map(state_ncnames, modelmap)
+        nc_state_path = joinpath(tomldir, config.state.path_output)
+        ds_outstate = setup_netcdf(
+            nc_state_path,
+            x_nc,
+            y_nc,
+            state_map,
+            calendar,
+            time_units,
+            maxlayers,
+            sizeinmetres;
+            float_type = Float64,
+        )
+    else
+        ds_outstate = nothing
+        state_map = Dict{String,Any}()
+        nc_state_path = nothing
+    end
 
     if haskey(config, "csv") && haskey(config.csv, "column")
         # open CSV file and write header
@@ -780,12 +786,14 @@ function close_files(model; delete_output::Bool = false)
     end
     close(writer.dataset)
     close(writer.csv_io)
-    close(writer.state_dataset)
+    writer.state_dataset === nothing || close(writer.state_dataset)
 
     if delete_output
         isfile(writer.nc_path) && rm(writer.nc_path)
         isfile(writer.csv_path) && rm(writer.csv_path)
-        isfile(writer.state_nc_path) && rm(writer.state_nc_path)
+        if writer.state_nc_path !== nothing
+            isfile(writer.state_nc_path) && rm(writer.state_nc_path)
+        end
     end
     return nothing
 end

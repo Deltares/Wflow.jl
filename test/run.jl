@@ -1,20 +1,6 @@
 using Wflow
-using Dates
-using TOML
 
-# edit existing TOML to get a short run in a temporary directory
-tomlpath = joinpath(@__DIR__, "sbm_config.toml")
-confdict = TOML.parsefile(tomlpath)
-confdict["endtime"] = DateTime("2000-01-03T00:00:00")
-# convert relative paths to absolute paths, to avoid having to copy input files
-confdict["input"]["path_forcing"] = joinpath(@__DIR__, confdict["input"]["path_forcing"])
-confdict["input"]["path_static"] = joinpath(@__DIR__, confdict["input"]["path_static"])
-tmp_dir = mktempdir()
-tomlpath = joinpath(tmp_dir, "config.toml")
-open(tomlpath, "w") do io
-    TOML.print(io, confdict)
-end
-
+tomlpath = joinpath(@__DIR__, "sbm_simple.toml")
 Wflow.run(tomlpath)
 
 #=

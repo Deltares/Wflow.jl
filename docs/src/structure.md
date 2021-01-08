@@ -82,7 +82,9 @@ model component, the `vertical` model and `lateral` model components. In the exa
 the `vertical` component represents the SBM concept, and for the `lateral` components there
 is a `river` (including `reservoir`), `land` and `subsurface` domain. The internal model
 states are listed on the left side, and the external state names are listed on the right
-side.
+side. Note that `path_input` is only required when `reinit` is set to false. `path_output`
+is optional, an output state file is only written when it is defined. If neither is set,
+the entire `state` section can be left out.
 
 ```toml
 [state]
