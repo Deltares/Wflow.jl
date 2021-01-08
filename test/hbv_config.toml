@@ -3,34 +3,34 @@
 # Wflow documentation https://deltares.github.io/Wflow.jl/dev/
 # TOML documentation: https://github.com/toml-lang/toml
 
-calendar = "proleptic_gregorian" 
+calendar = "proleptic_gregorian"
 endtime = 2000-02-01T00:00:00
-starttime = 2000-01-01T00:00:00 
-time_units = "days since 1900-01-01 00:00:00" 
-timestepsecs = 86400 
+starttime = 2000-01-01T00:00:00
+time_units = "days since 1900-01-01 00:00:00"
+timestepsecs = 86400
 
 [state]
-path_input = "data/instates-lahn.nc" 
+path_input = "data/instates-lahn.nc"
 path_output = "data/outstates-lahn.nc"
 
 # if listed, the variable must be present in the NetCDF or error
 # if not listed, the variable can get a default value if it has one
 
 [state.vertical]
+interceptionstorage = "interceptionstorage"
+lowerzonestorage = "lowerzonestorage"
 snow = "snow"
 snowwater = "snowwater"
 soilmoisture = "soilmoisture"
 upperzonestorage = "upperzonestorage"
-lowerzonestorage = "lowerzonestorage"
-interceptionstorage = "interceptionstorage"
 
 [state.lateral.river]
-q = "q_river"
 h = "h_river"
+q = "q_river"
 
 [state.lateral.land]
-q = "q_land"
 h = "h_land"
+q = "q_land"
 
 [input]
 path_forcing = "data/forcing-lahn.nc"
@@ -51,8 +51,8 @@ forcing = [
 ]
 
 [input.vertical]
-altitude = "wflow_dem"
 alphanl = "AlphaNL"
+altitude = "wflow_dem"
 betaseepage = "BetaSeepage"
 cevpf = "CEVPF"
 cflux = "Cflux"
@@ -68,9 +68,9 @@ lp = "LP"
 perc = "PERC"
 potential_evaporation = "PET"
 precipitation = "P"
-temperature = "TEMP"
 sfcf = "SFCF"
-tt = "TT" 
+temperature = "TEMP"
+tt = "TT"
 tti = "TTI"
 ttm = "TTM"
 whc = "WHC"
@@ -83,24 +83,24 @@ width = "wflow_riverwidth"
 
 [input.lateral.land]
 n = "N"
-slope = "Slope" 
+slope = "Slope"
 
 [model]
-type = "hbv"
-masswasting = true
-snow = true
-reinit = true
 kin_wave_iteration = true
+masswasting = true
+reinit = true
+snow = true
+type = "hbv"
 
 [output]
 path = "data/output_lahn.nc"
 
 [output.vertical]
-soilmoisture = "soilmoisture"
-upperzonestorage = "upperzonestorage"
 lowerzonestorage = "lowerzonestorage"
 snow = "snow"
 snowwater = "snowwater"
+soilmoisture = "soilmoisture"
+upperzonestorage = "upperzonestorage"
 
 [output.lateral.river]
 q = "q"

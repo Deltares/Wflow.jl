@@ -3,14 +3,14 @@
 # Wflow documentation https://deltares.github.io/Wflow.jl/dev/
 # TOML documentation: https://github.com/toml-lang/toml
 
-calendar = "proleptic_gregorian" 
-endtime = 2000-01-03T00:00:00 
-starttime = 2000-01-01T00:00:00 
-time_units = "days since 1900-01-01 00:00:00" 
-timestepsecs = 86400 
+calendar = "proleptic_gregorian"
+endtime = 2000-01-03T00:00:00
+starttime = 2000-01-01T00:00:00
+time_units = "days since 1900-01-01 00:00:00"
+timestepsecs = 86400
 
 [state]
-path_input = "data/instates-moselle-sed.nc" 
+path_input = "data/instates-moselle-sed.nc"
 path_output = "data/outstates-moselle-sed.nc"
 
 # if listed, the variable must be present in the NetCDF or error
@@ -18,23 +18,23 @@ path_output = "data/outstates-moselle-sed.nc"
 
 [state.lateral.river]
 clayload = "clayload"
-siltload = "siltload"
-sandload = "sandload"
-saggload = "saggload"
-laggload = "laggload"
-gravload = "gravload"
 claystore = "claystore"
-siltstore = "siltstore"
-sandstore = "sandstore"
-saggstore = "saggstore"
-laggstore = "laggstore"
+gravload = "gravload"
 gravstore = "gravstore"
+laggload = "laggload"
+laggstore = "laggstore"
 outclay = "outclay"
-outsilt = "outsilt"
-outsand = "outsand"
-outsagg = "outsagg"
-outlagg = "outlagg"
 outgrav = "outgrav"
+outlagg = "outlagg"
+outsagg = "outsagg"
+outsand = "outsand"
+outsilt = "outsilt"
+saggload = "saggload"
+saggstore = "saggstore"
+sandload = "sandload"
+sandstore = "sandstore"
+siltload = "siltload"
+siltstore = "siltstore"
 
 [input]
 path_forcing = "data/forcing-moselle-sed.nc"
@@ -61,34 +61,34 @@ cyclic = ["vertical.leaf_area_index"]
 
 [input.vertical]
 altitude = "wflow_dem" 
-canopyheight = "CanopyHeight"
-erosk = "ErosK"
-erosspl = "eros_spl_EUROSEM"
-erosov = "eros_ov"
-h_land = "levKinL"
-interception = "int"
-kext = "Kext"
+canopyheight = "CanopyHeight" 
+erosk = "ErosK" 
+erosov = "eros_ov" 
+erosspl = "eros_spl_EUROSEM" 
+h_land = "levKinL" 
+interception = "int" 
+kext = "Kext" 
 leaf_area_index = "LAI" # cyclic 
 pathfrac = "PathFrac" 
-precipitation = "P"
-q_land = "runL"
-slope = "Slope"
+pclay = "PercentClay" 
+precipitation = "P" 
+psilt = "PercentSilt" 
+q_land = "runL" 
+rivcell = "wflow_river" 
+slope = "Slope" 
 specific_leaf = "Sl" 
 storage_wood = "Swood" 
-usleC = "USLE_C"
-usleK = "USLE_K"
-pclay = "PercentClay"
-psilt = "PercentSilt"
-rivcell = "wflow_river"
+usleC = "USLE_C" 
+usleK = "USLE_K" 
 # Reservoir
 resareas = "wflow_reservoirareas"
 # Lake
 lakeareas = "wflow_lakeareas"
 
 [input.lateral.land]
-slope = "Slope"
 h_riv = "h"
 q_riv = "q"
+slope = "Slope"
 
 [input.lateral.river]
 cbagnold = "c_Bagnold"
@@ -96,9 +96,9 @@ d50 = "D50_River"
 d50engelund = "D50_River"
 ebagnold = "exp_Bagnold"
 fclayriv = "ClayF_River"
-fsiltriv = "SiltF_River"
-fsandriv = "SandF_River"
 fgravriv = "GravelF_River"
+fsandriv = "SandF_River"
+fsiltriv = "SiltF_River"
 length = "wflow_riverlength"
 slope = "RiverSlope"
 width = "wflow_riverwidth"
@@ -112,42 +112,42 @@ lakeareas = "wflow_lakeareas"
 lakelocs = "wflow_lakelocs"
 
 [model]
-type = "sediment"
-reinit = true
-runrivermodel = true
-doreservoir = true
-dolake = false
-rainerosmethod = "answers" # Rainfall erosion equation: ["answers", "eurosem"]
+dolake = false 
+doreservoir = true 
 landtransportmethod = "yalinpart" # Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]
+rainerosmethod = "answers" # Rainfall erosion equation: ["answers", "eurosem"]
+reinit = true 
 rivtransportmethod = "bagnold" # River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]
+runrivermodel = true 
+type = "sediment" 
 
 [output]
 path = "data/output-moselle-sed.nc"
 
 [output.vertical]
-sedspl = "sedspl"
-sedov = "sedov"
-soilloss = "soilloss"
-erosclay = "erosclay"
 TCclay = "TCclay"
 TCsed = "TCsed"
-precipitation = "prec"
+erosclay = "erosclay"
 pathfrac = "pathfrac"
+precipitation = "prec"
+sedov = "sedov"
+sedspl = "sedspl"
+soilloss = "soilloss"
 
 [output.lateral.land]
-olsed = "olsed"
-olclay = "olclay"
-inlandsed = "inlandsed"
 inlandclay = "inlandclay"
+inlandsed = "inlandsed"
+olclay = "olclay"
+olsed = "olsed"
 
 [output.lateral.river]
-Sedconc = "Sedconc"
-SSconc = "SSconc"
 Bedconc = "Bedconc"
+SSconc = "SSconc"
+Sedconc = "Sedconc"
 clayload = "clayload"
+h_riv = "h_riv"
 inlandclay = "inlandclayriv"
 outclay = "outclay"
-h_riv = "h_riv"
 width = "widthriv"
 
 [csv]

@@ -3,31 +3,31 @@
 # Wflow documentation https://deltares.github.io/Wflow.jl/dev/
 # TOML documentation: https://github.com/toml-lang/toml
 
-calendar = "proleptic_gregorian" 
+calendar = "proleptic_gregorian"
 endtime = 2000-06-30T00:00:00
-starttime = 2000-06-01T00:00:00 
-time_units = "days since 1900-01-01 00:00:00" 
-timestepsecs = 86400 
+starttime = 2000-06-01T00:00:00
+time_units = "days since 1900-01-01 00:00:00"
+timestepsecs = 86400
 
 [state]
-path_input = "data/instates-example-sbm-gwf.nc" 
+path_input = "data/instates-example-sbm-gwf.nc"
 path_output = "data/outstates-example-sbm-gwf.nc"
 
 # if listed, the variable must be present in the NetCDF or error
 # if not listed, the variable can get a default value if it has one
 
 [state.vertical]
+canopystorage = "canopystorage"
 satwaterdepth = "satwaterdepth"
 ustorelayerdepth = "ustorelayerdepth"
-canopystorage = "canopystorage"
 
 [state.lateral.river]
-q = "q_river"
 h = "h_river"
+q = "q_river"
 
 [state.lateral.land]
-q = "q_land"
 h = "h_land"
+q = "q_land"
 
 [state.lateral.subsurface.flow.aquifer]
 head = "head"
@@ -49,19 +49,19 @@ forcing = [
 ]
 
 [input.vertical]
-altitude = "wflow_dem" 
-e_r = "EoverR"
-cmax = "cmax"
+altitude = "wflow_dem"
 canopygapfraction = "canopygapfraction"
-infiltcapsoil = "InfiltCapSoil" 
-"kv₀" = "kv" 
-m = "M" 
-pathfrac = "PathFrac" 
+cmax = "cmax"
+e_r = "EoverR"
+infiltcapsoil = "InfiltCapSoil"
+"kv₀" = "kv"
+m = "M"
+pathfrac = "PathFrac"
 potential_evaporation = "PET"
 precipitation = "P"
-rootingdepth = "rootingdepth" 
-soilthickness = "soilthickness" 
-"θᵣ" = "thetaR" 
+rootingdepth = "rootingdepth"
+soilthickness = "soilthickness"
+"θᵣ" = "thetaR"
 "θₛ" = "thetaS"
 
 [input.lateral.river]
@@ -75,25 +75,25 @@ n = "N"
 slope = "Slope"
 
 [input.lateral.subsurface]
-constant_head = "constant_head"
 conductivity = "k"
-specific_yield = "specific_yield"
+constant_head = "constant_head"
 drain = "drain"
-drain_elevation = "elev_drain"
 drain_conductance = "cond_drain"
-infiltration_conductance = "infiltration_conductance"
+drain_elevation = "elev_drain"
 exfiltration_conductance = "exfiltration_conductance"
+infiltration_conductance = "infiltration_conductance"
 river_bottom = "river_bottom"
+specific_yield = "specific_yield"
 
 [model]
-type = "sbm_gwf"
+constanthead = true
+drains = true
+kin_wave_iteration = true
+reinit = true
 sizeinmetres = true
 snow = false
-reinit = true
-kin_wave_iteration = true
 thicknesslayers = [100, 300, 800]
-drains = true
-constanthead = true
+type = "sbm_gwf"
 
 [output]
 path = "data/output_example-sbm-gwf.nc"
@@ -131,4 +131,3 @@ parameter = "lateral.river.q_av"
 header = "head"
 index = 5
 parameter = "lateral.subsurface.flow.aquifer.head"
-

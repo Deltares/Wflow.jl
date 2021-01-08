@@ -3,31 +3,31 @@
 # Wflow documentation https://deltares.github.io/Wflow.jl/dev/
 # TOML documentation: https://github.com/toml-lang/toml
 
-calendar = "proleptic_gregorian" 
+calendar = "proleptic_gregorian"
 endtime = 2000-02-01T00:00:00
 starttime = 2000-01-01T00:00:00
-time_units = "days since 1900-01-01 00:00:00" 
-timestepsecs = 86400 
+time_units = "days since 1900-01-01 00:00:00"
+timestepsecs = 86400
 
 [state]
-path_input = "data/instates-moselle.nc" 
+path_input = "data/instates-moselle.nc"
 path_output = "data/outstates-moselle.nc"
 
 # if listed, the variable must be present in the NetCDF or error
 # if not listed, the variable can get a default value if it has one
 
 [state.vertical]
+canopystorage = "canopystorage"
 satwaterdepth = "satwaterdepth"
 snow = "snow"
+snowwater = "snowwater"
 tsoil = "tsoil"
 ustorelayerdepth = "ustorelayerdepth"
-snowwater = "snowwater"
-canopystorage = "canopystorage"
 
 [state.lateral.river]
-q = "q_river"
 h = "h_river"
 h_av = "h_av_river"
+q = "q_river"
 
 [state.lateral.river.reservoir]
 volume = "volume_reservoir"
@@ -36,9 +36,9 @@ volume = "volume_reservoir"
 ssf = "ssf"
 
 [state.lateral.land]
-q = "q_land"
 h = "h_land"
 h_av = "h_av_land"
+q = "q_land"
 
 [input]
 path_forcing = "data/forcing-moselle.nc"
@@ -61,35 +61,35 @@ forcing = [
 cyclic = ["vertical.leaf_area_index"]
 
 [input.vertical]
-altitude = "wflow_dem" 
-c = "c" 
-cf_soil = "cf_soil" 
-cfmax = "Cfmax" 
-e_r = "EoverR" 
-infiltcappath = "InfiltCapPath" 
-infiltcapsoil = "InfiltCapSoil" 
-kext = "Kext" 
-"kv₀" = "KsatVer" 
+altitude = "wflow_dem"
+c = "c"
+cf_soil = "cf_soil"
+cfmax = "Cfmax"
+e_r = "EoverR"
+infiltcappath = "InfiltCapPath"
+infiltcapsoil = "InfiltCapSoil"
+kext = "Kext"
+"kv₀" = "KsatVer"
 leaf_area_index = "LAI"
-m = "M" 
-maxleakage = "MaxLeakage" 
-pathfrac = "PathFrac" 
+m = "M"
+maxleakage = "MaxLeakage"
+pathfrac = "PathFrac"
 potential_evaporation = "PET"
 precipitation = "P"
-rootdistpar = "rootdistpar" 
-rootingdepth = "RootingDepth" 
-soilminthickness = "SoilMinThickness" 
-soilthickness = "SoilThickness" 
-specific_leaf = "Sl" 
-storage_wood = "Swood" 
+rootdistpar = "rootdistpar"
+rootingdepth = "RootingDepth"
+soilminthickness = "SoilMinThickness"
+soilthickness = "SoilThickness"
+specific_leaf = "Sl"
+storage_wood = "Swood"
 temperature = "TEMP"
-tt = "TT" 
-tti = "TTI" 
-ttm = "TTM" 
-w_soil = "wflow_soil" 
-water_holding_capacity = "WHC" 
-waterfrac = "WaterFrac" 
-"θᵣ" = "thetaR" 
+tt = "TT"
+tti = "TTI"
+ttm = "TTM"
+w_soil = "wflow_soil"
+water_holding_capacity = "WHC"
+waterfrac = "WaterFrac"
+"θᵣ" = "thetaR"
 "θₛ" = "thetaS"
 
 [input.lateral.river]
@@ -113,31 +113,31 @@ ksathorfrac = "KsatHorFrac"
 
 [input.lateral.land]
 n = "N"
-slope = "Slope" 
+slope = "Slope"
 
 [model]
-type = "sbm"
+kin_wave_iteration = true
 masswasting = true
-snow = true
 reinit = true
 reservoirs = true
-kin_wave_iteration = true
+snow = true
 thicknesslayers = [100, 300, 800]
+type = "sbm"
 
 [output]
 path = "data/output_moselle.nc"
 
 [output.vertical]
+canopystorage = "canopystorage"
 satwaterdepth = "satwaterdepth"
 snow = "snow"
+snowwater = "snowwater"
 tsoil = "tsoil"
 ustorelayerdepth = "ustorelayerdepth"
-snowwater = "snowwater"
-canopystorage = "canopystorage"
 
 [output.lateral.river]
-q = "q_river"
 h = "h_river"
+q = "q_river"
 
 [output.lateral.river.reservoir]
 volume = "volume_reservoir"
@@ -146,8 +146,8 @@ volume = "volume_reservoir"
 ssf = "ssf"
 
 [output.lateral.land]
-q = "q_land"
 h = "h_land"
+q = "q_land"
 
 [csv]
 path = "data/output_moselle.csv"
@@ -191,5 +191,5 @@ components = [
   "lateral.subsurface",
   "lateral.land",
   "lateral.river",
-  "lateral.river.reservoir"
+  "lateral.river.reservoir",
 ]
