@@ -8,7 +8,6 @@ function initialize_hbv_model(config::Config)
     # unpack the paths to the NetCDF files
     tomldir = dirname(config)
     static_path = joinpath(tomldir, config.input.path_static)
-    cyclic_path = joinpath(tomldir, config.input.path_static)
     dynamic_path = joinpath(tomldir, config.input.path_forcing)
     instate_path = joinpath(tomldir, config.state.path_input)
     output_path = joinpath(tomldir, config.output.path)
@@ -501,7 +500,7 @@ function initialize_hbv_model(config::Config)
 
     state_ncnames = ncnames(config.state)
 
-    reader = prepare_reader(dynamic_path, cyclic_path, config)
+    reader = prepare_reader(dynamic_path, static_path, config)
 
     modelmap = (vertical = hbv, lateral = (land = olf, river = rf))
     indices_reverse = (
