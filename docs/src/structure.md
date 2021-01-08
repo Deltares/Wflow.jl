@@ -52,8 +52,6 @@ provided by the [CFTime.jl package](https://juliageo.org/CFTime.jl/latest/), suc
 provided in these alternative calendars.
 
 ```toml
-casename = "testcase"                           # optional
-
 calendar = "standard"                           # optional, this is default value
 endtime = 2000-02-01T00:00:00                   # optional, default from forcing NetCDF
 starttime = 2000-01-01T00:00:00                 # optional, default from forcing NetCDF

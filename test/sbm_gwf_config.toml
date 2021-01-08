@@ -1,10 +1,7 @@
-# This is an example TOML configuration file. It is used to test the wflow configuration
-# features, and can also be used to work towards an example of what we want the
-# configuration file to look like.
+# This is a TOML configuration file for Wflow.
 # Relative file paths are interpreted as being relative to this TOML file.
+# Wflow documentation https://deltares.github.io/Wflow.jl/dev/
 # TOML documentation: https://github.com/toml-lang/toml
-
-casename = "testcase"
 
 calendar = "proleptic_gregorian" 
 endtime = 2000-06-30T00:00:00

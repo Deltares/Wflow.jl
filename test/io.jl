@@ -17,7 +17,6 @@ config = Wflow.Config(tomlpath)
     @test dirname(config) == dirname(tomlpath)
 
     # test if the values are parsed as expected
-    @test config.casename == "testcase"
     @test config.starttime === DateTime(2000)
     @test config.endtime === DateTime(2000, 2)
     @test config.output.path == "data/output_moselle.nc"
