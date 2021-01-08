@@ -62,7 +62,7 @@
     # Drain length [m]
     dl::Vector{T} | "m"
     # Flow width [m]                          
-    width::Vector{T} | "m"
+    dw::Vector{T} | "m"
     # Govers transport capacity coefficients [-]
     cGovers::Vector{T} | "-"
     nGovers::Vector{T} | "-"
@@ -357,7 +357,7 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
         ### Transport capacity part ###
         # Parameters
         dl = dl,
-        width = dw,
+        dw = dw,
         cGovers = cGovers,
         D50 = D50,
         dmclay = dmclay,
@@ -430,7 +430,7 @@ function update_until_ols(eros::LandSediment, config, network)
             ketot = (rddir * kedir + rdleaf * keleaf) * 0.001
             # Rainfall / splash erosion [g/m2]
             sedspl = eros.erosk[i] * ketot * exp(-eros.erosspl[i] * eros.h_land[i])
-            sedspl = sedspl * eros.xl[i] * eros.yl[i] * 10^(6) # ton/cell
+            sedspl = sedspl * eros.xl[i] * eros.yl[i] * 10^(-6) # ton/cell
         end
 
         # Remove the impervious area
@@ -498,7 +498,7 @@ function update_until_oltransport(ols::LandSediment, config, network)
                 # Transport capacity from govers 1990
                 # Unit stream power
                 if ols.h_land[i] > 0.0
-                    velocity = ols.q_land[i] / (ols.dl[i] * ols.h_land[i])
+                    velocity = ols.q_land[i] / (ols.dw[i] * ols.h_land[i])
                 else
                     velocity = 0.0
                 end
@@ -523,7 +523,7 @@ function update_until_oltransport(ols::LandSediment, config, network)
                 alphay = delta * 2.45 / (0.001 * ols.rhos[i])^0.4 * 0.06^(0.5)
                 if ols.q_land[i] > 0.0 && alphay != 0.0
                     TC = (
-                        ols.dl[i] / ols.q_land[i] *
+                        ols.dw[i] / ols.q_land[i] *
                         (ols.rhos[i] - 1000) *
                         ols.D50[i] *
                         0.001 *
@@ -554,7 +554,7 @@ function update_until_oltransport(ols::LandSediment, config, network)
         if do_river || tcmethod == "yalinpart"
             # Transport capacity from Yalin with particle differentiation
             # Delta parameter of Yalin for each particle class
-            delta = ols.h_land[i] * sinslope / (10^(-6) * (ols.rhos[i] / 1000 - 1) / 0.06)
+            delta = ols.h_land[i] * sinslope / (10^(-6) * (ols.rhos[i] / 1000 - 1)) / 0.06
             dclay = max(1 / ols.dmclay[i] * delta - 1, 0.0)
             dsilt = max(1 / ols.dmsilt[i] * delta - 1, 0.0)
             dsand = max(1 / ols.dmsand[i] * delta - 1, 0.0)
@@ -566,7 +566,7 @@ function update_until_oltransport(ols::LandSediment, config, network)
             # Yalin transport capacity of overland flow for each particle class
             if ols.q_land[i] > 0.0
                 TCa =
-                    ols.dl[i] / ols.q_land[i] *
+                    ols.dw[i] / ols.q_land[i] *
                     (ols.rhos[i] - 1000) *
                     10^(-6) *
                     (9.81 * ols.h_land[i] * sinslope)
@@ -832,6 +832,12 @@ end
     Sedconc::Vector{T} | "kg m-3"
     SSconc::Vector{T} | "kg m-3"
     Bedconc::Vector{T} | "kg m-3"
+    # River transport capacity
+    maxsed::Vector{T} | "t"
+    # Eroded sediment
+    erodsed::Vector{T} | "t"
+    # Deposited sediment
+    depsed::Vector{T} | "t"
     # Reservoir and lakes
     wbcover::Vector{T} | "-"
     wblocs::Vector{T} | "-"
@@ -1118,7 +1124,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
         inlandsand = fill(0.0, nriv),
         inlandsagg = fill(0.0, nriv),
         inlandlagg = fill(0.0, nriv),
-        # Outputs and states
+        # States
         sedload = fill(0.0, nriv),
         clayload = fill(0.0, nriv),
         siltload = fill(0.0, nriv),
@@ -1140,9 +1146,13 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
         outsagg = fill(0.0, nriv),
         outlagg = fill(0.0, nriv),
         outgrav = fill(0.0, nriv),
+        # Outputs
         Sedconc = fill(0.0, nriv),
         SSconc = fill(0.0, nriv),
         Bedconc = fill(0.0, nriv),
+        maxsed = fill(0.0, nriv),
+        erodsed = fill(0.0, nriv),
+        depsed = fill(0.0, nriv),
         # Reservoir / lake
         wbcover = wbcover,
         wblocs = wblocs,
@@ -1206,7 +1216,7 @@ function update(rs::RiverSediment, network, config)
             cw = ifelse(
                 hydrad > 0.0,
                 (
-                    rs.rhos[v] / 1000 * 0.5 * vmean * vshear^3 /
+                    rs.rhos[v] / 1000 * 0.05 * vmean * vshear^3 /
                     ((rs.rhos[v] / 1000 - 1)^2 * 9.81^2 * rs.d50engelund[v] * hydrad)
                 ),
                 0.0,
@@ -1289,6 +1299,7 @@ function update(rs::RiverSediment, network, config)
         maxsed = min(maxsed, 1.285)
         # Transport capacity [ton]
         maxsed = maxsed * (rs.h_riv[v] * rs.width[v] * rs.dl[v] + rs.q_riv[v] * rs.Δt)
+        rs.maxsed[v] = maxsed
 
         ### River erosion ###
         # Erosion only if the load is below the transport capacity of the flow.
@@ -1422,6 +1433,7 @@ function update(rs::RiverSediment, network, config)
         erodlagg = degstorelagg
         erodgrav = gravbank + gravbed + degstoregrav
 
+        rs.erodsed[v] = erodsed
 
         ### Deposition / settling ###
         # Fractions of deposited particles in river cells from the Einstein formula [-]
@@ -1491,6 +1503,7 @@ function update(rs::RiverSediment, network, config)
         end
 
         depsed = depclay + depsilt + depsand + depsagg + deplagg + depgrav
+        rs.depsed[v] = depsed
 
         # Update the river deposited sediment storage
         rs.sedstore[v] = rs.sedstore[v] + depsed
