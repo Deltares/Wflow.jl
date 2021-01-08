@@ -522,6 +522,7 @@ function initialize_hbv_model(config::Config)
         dims_xy,
         nc,
     )
+    close(nc)
 
     # for each domain save the directed acyclic graph, the traversion order,
     # and the indices that map it back to the two dimensional grid
