@@ -4,6 +4,7 @@ using Documenter
 pages = [
     "Home" => "index.md",
     "Quick start" => "quick-start.md",
+    "Command line interface" => "cli.md",
     "Model structure" => "structure.md",
     "Models" => [
         "wflow_sbm" => "model/sbm.md",

@@ -108,14 +108,15 @@ names in the NetCDF file. See the section [Config and TOML](@ref) for more detai
 
 As an example, we will run the Moselle example SBM model, of which the configuration file
 can be seen here:
-[sbm_config.toml](https://github.com/Deltares/Wflow.jl/blob/use/test/sbm_config.toml). First
-we share some code that will download the required files to your current working directory:
+[sbm_config.toml](https://github.com/Deltares/Wflow.jl/blob/master/test/sbm_config.toml).
+First we share some code that will download the required files to your current working
+directory:
 
 ```julia
 # urls to TOML and NetCDF of the Moselle example model
 staticmaps = "https://github.com/visr/wflow-artifacts/releases/download/v0.2.0/staticmaps.nc"
 forcing = "https://github.com/visr/wflow-artifacts/releases/download/v0.2.0/forcing-2000.nc"
-toml_url = "https://raw.githubusercontent.com/Deltares/Wflow.jl/use/test/sbm_config.toml"
+toml_url = "https://raw.githubusercontent.com/Deltares/Wflow.jl/master/test/sbm_config.toml"
 
 # create a "data" directory in the current directory
 datadir = joinpath(@__DIR__, "data")
