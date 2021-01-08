@@ -58,6 +58,12 @@ function Clock(config, reader)
     calendar = get(config, "calendar", "standard")::String
     starttime = cftime(config.starttime, calendar)
     Δt = Second(timestepsecs)
+
+    fews_run = get(config, "fews_run", false)::Bool
+    if fews_run
+        starttime = starttime + Δt
+    end
+    
     Clock(starttime, 1, Δt)
 end
 
