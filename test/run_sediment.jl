@@ -31,22 +31,22 @@ model = Wflow.update(model)
     @test mean(eros.erossand) ≈ 0.02515898751801652
     @test mean(eros.eroslagg) ≈ 0.021613617766119256
     @test mean(eros.TCsed) == 0.0
-    @test mean(eros.TCsilt) ≈ 1.098703884469576e6
-    @test mean(eros.TCsand) ≈ 1.0987035311124932e6
-    @test mean(eros.TCclay) ≈ 1.098705544154089e6
-    @test mean(eros.TCsilt) ≈ 1.098703884469576e6
+    @test mean(eros.TCsilt) ≈ 1.0988158364353527e6
+    @test mean(eros.TCsand) ≈ 1.0987090622888755e6
+    @test mean(eros.TCclay) ≈ 1.0992655197016734e6
+    @test mean(eros.TCsilt) ≈ 1.0988158364353527e6
 end
 
 @testset "second timestep sediment model (lateral)" begin
     lat = model.lateral
 
-    @test mean(lat.land.inlandsed) ≈ 0.03153328802686853
-    @test mean(lat.land.inlandclay) ≈ 0.002172851901362266
-    @test mean(lat.land.inlandsand) ≈ 0.006851203685469141
-    @test mean(lat.land.olclay) ≈ 0.006179260370986793
+    @test mean(lat.land.inlandsed) ≈ 0.0727443455767198
+    @test mean(lat.land.inlandclay) ≈ 0.002190037611542877
+    @test mean(lat.land.inlandsand) ≈ 0.024512058443074893
+    @test mean(lat.land.olclay) ≈ 0.006212441628146587
 
-    @test mean(lat.river.SSconc) ≈ 14.100035236928997
-    @test mean(lat.river.inlandclay) ≈ 0.019241251252484298
+    @test mean(lat.river.SSconc) ≈ 15.38792327918787
+    @test mean(lat.river.inlandclay) ≈ 0.019393435838709512
     @test lat.river.h_riv[network.river.order[end]] ≈ 0.006103649735450745
     @test lat.river.outclay[1] ≈ 1.1654682799750028e-6
 end
