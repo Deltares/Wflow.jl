@@ -65,13 +65,13 @@ canopyheight = "CanopyHeight"
 erosk = "ErosK"
 erosspl = "eros_spl_EUROSEM"
 erosov = "eros_ov"
-h_land = "levKinL" # forcing
-interception = "int" # forcing
+h_land = "levKinL"
+interception = "int"
 kext = "Kext"
 leaf_area_index = "LAI" # cyclic 
 pathfrac = "PathFrac" 
-precipitation = "P" # forcing
-q_land = "runL" # forcing
+precipitation = "P"
+q_land = "runL"
 slope = "Slope"
 specific_leaf = "Sl" 
 storage_wood = "Swood" 
@@ -87,8 +87,8 @@ lakeareas = "wflow_lakeareas"
 
 [input.lateral.land]
 slope = "Slope"
-h_riv = "h" # forcing
-q_riv = "q" # forcing
+h_riv = "h"
+q_riv = "q"
 
 [input.lateral.river]
 cbagnold = "c_Bagnold"
