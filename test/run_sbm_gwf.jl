@@ -64,7 +64,7 @@ end
 
 Wflow.close_files(model)
 
-benchmark = @benchmark Wflow.run_simulation(tomlpath)
+benchmark = @benchmark Wflow.run(tomlpath)
 trialmin = BenchmarkTools.minimum(benchmark)
-println("SBM GWF Model update (run_simulation)")
+println("SBM GWF Model update (run)")
 print_benchmark(trialmin)

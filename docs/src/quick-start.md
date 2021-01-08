@@ -132,7 +132,7 @@ Now that we have our files in place, running a simulation is as simple as callin
 function:
 
 ```@docs
-Wflow.run_simulation
+Wflow.run
 ```
 
 As you can see, there are three different methods for this function. We will first make use
@@ -140,7 +140,7 @@ of the first one, where a path to a TOML file is passed as a `String`.
 
 ```julia
 using Wflow
-Wflow.run_simulation(toml_path)
+Wflow.run(toml_path)
 ```
 
 This will parse the TOML file to create a `Wflow.Config`, use that to initialize a
@@ -159,9 +159,9 @@ simulation:
 using Dates
 config = Wflow.Config(toml_path)
 config.endtime = DateTime("2000-01-03T00:00:00")
-Wflow.run_simulation(config)
+Wflow.run(config)
 ```
 
 For even more control, you can initialize the model object yourself, and modify it directly,
-or run a custom simulation loop. See the [`Wflow.run_simulation`](@ref) source for some
+or run a custom simulation loop. See the [`Wflow.run`](@ref) source for some
 inspiration.

@@ -106,10 +106,10 @@ include("utils.jl")
 include("bmi.jl")
 
 """
-    run_simulation(tomlpath::String)
-    run_simulation(config::Config)
-    run_simulation(model::Model)
-    run_simulation()
+    run(tomlpath::String)
+    run(config::Config)
+    run(model::Model)
+    run()
 
 Run an entire simulation starting either from a path to a TOML settings file,
 a prepared `Config` object, or an initialized `Model` object. This allows more flexibility
@@ -118,14 +118,14 @@ if you want to for example modify a `Config` before initializing the `Model`.
 The 0 argument version expects ARGS to contain a single entry, pointing to the TOML path.
 This makes it easier to start a run from the command line without having to escape quotes:
 
-    julia -e "using Wflow; Wflow.run_simulation()" "path/to/config.toml"
+    julia -e "using Wflow; Wflow.run()" "path/to/config.toml"
 """
-function run_simulation(tomlpath)
+function run(tomlpath)
     config = Config(tomlpath)
-    run_simulation(config)
+    run(config)
 end
 
-function run_simulation(config::Config)
+function run(config::Config)
     modeltype = config.model.type
 
     model = if modeltype == "sbm"
@@ -140,10 +140,10 @@ function run_simulation(config::Config)
         error("unknown model type")
     end
 
-    run_simulation(model)
+    run(model)
 end
 
-function run_simulation(model::Model; close_files = true)
+function run(model::Model; close_files = true)
     @unpack network, config, writer, clock = model
 
     # in the case of sbm_gwf it's currently a bit hard to use dispatch
@@ -179,8 +179,8 @@ function run_simulation(model::Model; close_files = true)
     return model
 end
 
-function run_simulation()
-    usage = "Usage: julia -e 'using Wflow; Wflow.run_simulation()' 'path/to/config.toml'"
+function run()
+    usage = "Usage: julia -e 'using Wflow; Wflow.run()' 'path/to/config.toml'"
     n = length(ARGS)
     if n != 1
         throw(ArgumentError(usage))
@@ -189,7 +189,7 @@ function run_simulation()
     if !isfile(toml_path)
         throw(ArgumentError("File not found: $(toml_path)\n" * usage))
     end
-    Wflow.run_simulation(toml_path)
+    Wflow.run(toml_path)
 end
 
 end # module
