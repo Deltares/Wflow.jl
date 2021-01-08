@@ -268,6 +268,7 @@ function initialize_sbm_model(config::Config)
         nc,
         maxlayers = sbm.maxlayers,
     )
+    close(nc)
 
     # for each domain save the directed acyclic graph, the traversion order,
     # and the indices that map it back to the two dimensional grid
