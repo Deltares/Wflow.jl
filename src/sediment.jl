@@ -404,7 +404,7 @@ function update_until_ols(eros::LandSediment, config, network)
             sedspl =
                 0.108 * eros.usleC[i] * eros.usleK[i] * eros.xl[i] * eros.yl[i] * rintnsty^2
             # [ton/timestep]
-            sedspl = sedspl * (ts / 60) * 10^(-3)
+            sedspl = sedspl * (ts / 60) * 1e-3
         end
         # TODO check eurosem method output values (too high!)
         if rainerosmethod == "eurosem"
@@ -430,7 +430,7 @@ function update_until_ols(eros::LandSediment, config, network)
             ketot = (rddir * kedir + rdleaf * keleaf) * 0.001
             # Rainfall / splash erosion [g/m2]
             sedspl = eros.erosk[i] * ketot * exp(-eros.erosspl[i] * eros.h_land[i])
-            sedspl = sedspl * eros.xl[i] * eros.yl[i] * 10^(-6) # ton/cell
+            sedspl = sedspl * eros.xl[i] * eros.yl[i] * 1e-6 # ton/cell
         end
 
         # Remove the impervious area
@@ -454,7 +454,7 @@ function update_until_ols(eros::LandSediment, config, network)
             sinslope *
             qr_land
         # [ton/timestep]
-        sedov = sedov * (ts / 60) * 10^(-3)
+        sedov = sedov * (ts / 60) * 1e-3
         # Remove the impervious area
         sedov = sedov * (1.0 - eros.pathfrac[i])
 
@@ -508,7 +508,7 @@ function update_until_oltransport(ols::LandSediment, config, network)
                 else
                     TCf = 0.0
                 end
-                TC = TCf * ols.q_land[i] * ts * 10^(-3) #[ton/cell]
+                TC = TCf * ols.q_land[i] * ts * 1e-3 #[ton/cell]
             end
 
             if tcmethod == "yalin"
@@ -532,7 +532,7 @@ function update_until_oltransport(ols::LandSediment, config, network)
                         delta *
                         (1 - log(1 + alphay) / (alphay))
                     ) # [kg/m3]
-                    TC = TC * ols.q_land[i] * ts * 10^(-3) #[ton]
+                    TC = TC * ols.q_land[i] * ts * 1e-3 #[ton]
                 else
                     TC = 0.0
                 end
@@ -554,7 +554,7 @@ function update_until_oltransport(ols::LandSediment, config, network)
         if do_river || tcmethod == "yalinpart"
             # Transport capacity from Yalin with particle differentiation
             # Delta parameter of Yalin for each particle class
-            delta = ols.h_land[i] * sinslope / (10^(-6) * (ols.rhos[i] / 1000 - 1)) / 0.06
+            delta = ols.h_land[i] * sinslope / (1e-6 * (ols.rhos[i] / 1000 - 1)) / 0.06
             dclay = max(1 / ols.dmclay[i] * delta - 1, 0.0)
             dsilt = max(1 / ols.dmsilt[i] * delta - 1, 0.0)
             dsand = max(1 / ols.dmsand[i] * delta - 1, 0.0)
@@ -568,7 +568,7 @@ function update_until_oltransport(ols::LandSediment, config, network)
                 TCa =
                     ols.dw[i] / ols.q_land[i] *
                     (ols.rhos[i] - 1000) *
-                    10^(-6) *
+                    1e-6 *
                     (9.81 * ols.h_land[i] * sinslope)
             else
                 TCa = 0.0
@@ -580,7 +580,7 @@ function update_until_oltransport(ols::LandSediment, config, network)
                     0.635 *
                     dclay *
                     (1 - log(1 + dclay * TCb) / dclay * TCb) # [kg/m3]
-                TCclay = TCclay * ols.q_land[i] * ts * 10^(-3) # [ton]
+                TCclay = TCclay * ols.q_land[i] * ts * 1e-3 # [ton]
             else
                 TCclay = 0.0
             end
@@ -590,7 +590,7 @@ function update_until_oltransport(ols::LandSediment, config, network)
                     0.635 *
                     dsilt *
                     (1 - log(1 + dsilt * TCb) / dsilt * TCb) # [kg/m3]
-                TCsilt = TCsilt * ols.q_land[i] * ts * 10^(-3) # [ton]
+                TCsilt = TCsilt * ols.q_land[i] * ts * 1e-3 # [ton]
             else
                 TCsilt = 0.0
             end
@@ -600,7 +600,7 @@ function update_until_oltransport(ols::LandSediment, config, network)
                     0.635 *
                     dsand *
                     (1 - log(1 + dsand * TCb) / dsand * TCb) # [kg/m3]
-                TCsand = TCsand * ols.q_land[i] * ts * 10^(-3) # [ton]
+                TCsand = TCsand * ols.q_land[i] * ts * 1e-3 # [ton]
             else
                 TCsand = 0.0
             end
@@ -610,7 +610,7 @@ function update_until_oltransport(ols::LandSediment, config, network)
                     0.635 *
                     dsagg *
                     (1 - log(1 + dsagg * TCb) / dsagg * TCb) # [kg/m3]
-                TCsagg = TCsagg * ols.q_land[i] * ts * 10^(-3) # [ton]
+                TCsagg = TCsagg * ols.q_land[i] * ts * 1e-3 # [ton]
             else
                 TCsagg = 0.0
             end
@@ -620,19 +620,19 @@ function update_until_oltransport(ols::LandSediment, config, network)
                     0.635 *
                     dlagg *
                     (1 - log(1 + dlagg * TCb) / dlagg * TCb) # [kg/m3]
-                TClagg = TClagg * ols.q_land[i] * ts * 10^(-3) # [ton]
+                TClagg = TClagg * ols.q_land[i] * ts * 1e-3 # [ton]
             else
                 TClagg = 0.0
             end
 
             # Assume that ols all reach the river in reservoir/lake areas (very high TC)
             if ols.wbcover[i] > 0
-                TC = 10^9
-                TCclay = 10^9
-                TCsilt = 10^9
-                TCsand = 10^9
-                TCsagg = 10^9
-                TClagg = 10^9
+                TC = 1e9
+                TCclay = 1e9
+                TCsilt = 1e9
+                TCsand = 1e9
+                TCsagg = 1e9
+                TClagg = 1e9
             end
 
             # Filter TC land for river cells (0 in order for sediment from land to stop when entering the river)
@@ -1073,7 +1073,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     # Initialisation of parameters for river erosion
     # Bed and Bank from Shields diagram, Da Silva & Yalin (2017)
     E_ = (2.65 - 1) * 9.81
-    E = (E_ .* (d50riv .* 10^(-3)) .^ 3 ./ 10^(-12)) .^ 0.33
+    E = (E_ .* (d50riv .* 1e-3) .^ 3 ./ 1e-12) .^ 0.33
     TCrbed = (
         E_ .* d50riv .* (
             0.13 .* E .^ (-0.392) .* exp.(-0.015 .* E .^ 2) .+
@@ -1082,8 +1082,8 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     )
     TCrbank = TCrbed
     # kd from Hanson & Simon 2001
-    kdbank = 0.2 .* TCrbank .^ (-0.5) .* 10^(-6)
-    kdbed = 0.2 .* TCrbed .^ (-0.5) .* 10^(-6)
+    kdbank = 0.2 .* TCrbank .^ (-0.5) .* 1e-6
+    kdbed = 0.2 .* TCrbed .^ (-0.5) .* 1e-6
 
     rs = RiverSediment(
         n = nriv,
@@ -1237,8 +1237,8 @@ function update(rs::RiverSediment, network, config)
         elseif tcmethod == "yang"
             ws = 411 * rs.d50[v]^2 / 3600
             vshear = (9.81 * hydrad * rs.sl[v])^0.5
-            var1 = vshear * rs.d50[v] / 1000 / (1.16 * 10^(-6))
-            var2 = ws * rs.d50[v] / 1000 / (1.16 * 10^(-6))
+            var1 = vshear * rs.d50[v] / 1000 / (1.16 * 1e-6)
+            var2 = ws * rs.d50[v] / 1000 / (1.16 * 1e-6)
             vcr = min(
                 0.0,
                 ifelse(var1 >= 70.0, 2.05 * ws, ws * (2.5 / (log10(var1) - 0.06) + 0.66)),
@@ -1269,7 +1269,7 @@ function update(rs::RiverSediment, network, config)
                 logcppm = 0.0
             end
             # Sediment concentration by weight
-            cw = 10^(logcppm) * 10^(-6)
+            cw = 10^logcppm * 1e-6
             # Transport capacity [ton/m3]
             maxsed = max(cw / (cw + (1 - cw) * rs.rhos[v] / 1000) * rs.rhos[v] / 1000, 0.0)
         elseif tcmethod == "molinas"
@@ -1290,7 +1290,7 @@ function update(rs::RiverSediment, network, config)
                 psi = 0.0
             end
             # Concentration by weight
-            cw = 1430 * (0.86 + psi^0.5) * psi^1.5 / (0.016 + psi) * 10^(-6)
+            cw = 1430 * (0.86 + psi^0.5) * psi^1.5 / (0.016 + psi) * 1e-6
             # Transport capacity [ton/m3]
             maxsed = max(cw / (cw + (1 - cw) * rs.rhos[v] / 1000) * rs.rhos[v] / 1000, 0.0)
         end
@@ -1538,14 +1538,14 @@ function update(rs::RiverSediment, network, config)
 
         ### Concentrations and suspended sediments ###
         # Conversion from load [ton] to concentration for rivers [mg/L]
-        toconc = ifelse(rs.q_riv[v] > 0.0, 10^6 / (rs.q_riv[v] * rs.Δt), 0.0)
+        toconc = ifelse(rs.q_riv[v] > 0.0, 1e6 / (rs.q_riv[v] * rs.Δt), 0.0)
         rs.Sedconc[v] = rs.outsed[v] * toconc
 
         # Differentiation of bed and suspended load using Rouse number for suspension
         # threshold diameter between bed load and mixed load using Rouse number
-        dbedf = 10^3 * (2.5 * 3600 * 0.41 / 411 * (9.81 * rs.h_riv[v] * rs.sl[v])^0.5)^0.5
+        dbedf = 1e3 * (2.5 * 3600 * 0.41 / 411 * (9.81 * rs.h_riv[v] * rs.sl[v])^0.5)^0.5
         # threshold diameter between suspended load and mixed load using Rouse number
-        dsuspf = 10^3 * (1.2 * 3600 * 0.41 / 411 * (9.81 * rs.h_riv[v] * rs.sl[v])^0.5)^0.5
+        dsuspf = 1e3 * (1.2 * 3600 * 0.41 / 411 * (9.81 * rs.h_riv[v] * rs.sl[v])^0.5)^0.5
         # Rouse with diameter
         SSclay = ifelse(
             rs.dmclay[v] <= dsuspf,
