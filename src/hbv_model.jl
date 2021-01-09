@@ -11,7 +11,9 @@ function initialize_hbv_model(config::Config)
     dynamic_path = joinpath(tomldir, config.input.path_forcing)
     output_path = joinpath(tomldir, config.output.path)
 
-    Δt = Second(config.timestepsecs)
+    reader = prepare_reader(dynamic_path, static_path, config)
+    clock = Clock(config, reader)
+    Δt = clock.Δt
 
     sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
     reinit = get(config.model, "reinit", true)::Bool
@@ -499,8 +501,6 @@ function initialize_hbv_model(config::Config)
 
     state_ncnames = ncnames(get(config, "state", Dict()))
 
-    reader = prepare_reader(dynamic_path, static_path, config)
-
     modelmap = (vertical = hbv, lateral = (land = olf, river = rf))
     indices_reverse = (
         land = rev_inds,
@@ -544,7 +544,7 @@ function initialize_hbv_model(config::Config)
         (; land, river, reservoir, lake, index_river, frac_toriver),
         (land = olf, river = rf),
         hbv,
-        Clock(config, reader),
+        clock,
         reader,
         writer,
     )

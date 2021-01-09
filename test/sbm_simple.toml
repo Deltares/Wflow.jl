@@ -3,7 +3,6 @@
 # Wflow documentation https://deltares.github.io/Wflow.jl/dev/
 # TOML documentation: https://github.com/toml-lang/toml
 
-timestepsecs = 86400
 endtime = 2000-01-10T00:00:00
 
 [input]
