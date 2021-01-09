@@ -63,7 +63,7 @@ function Clock(config, reader)
     if fews_run
         starttime = starttime + Δt
     end
-    
+
     Clock(starttime, 1, Δt)
 end
 

@@ -599,7 +599,7 @@ function prepare_writer(
 
     # create an output NetCDF that will hold all timesteps of selected parameters
     # but only if config.output.path has been set
-    if haskey(config, "output") && haskey(config.output, "path")    
+    if haskey(config, "output") && haskey(config.output, "path")
         nc_path = joinpath(tomldir, config.output.path)
         # create a flat mapping from internal parameter locations to NetCDF variable names
         output_ncnames = ncnames(config.output)
