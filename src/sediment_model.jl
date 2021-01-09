@@ -9,12 +9,12 @@ function initialize_sediment_model(config::Config)
     # unpack the paths to the NetCDF files
     tomldir = dirname(config)
     static_path = joinpath(tomldir, config.input.path_static)
-    cyclic_path = joinpath(tomldir, config.input.path_static)
     dynamic_path = joinpath(tomldir, config.input.path_forcing)
-    instate_path = joinpath(tomldir, config.state.path_input)
-    output_path = joinpath(tomldir, config.output.path)
 
-    Δt = Second(config.timestepsecs)
+    reader = prepare_reader(dynamic_path, static_path, config)
+    clock = Clock(config, reader)
+    Δt = clock.Δt
+
     sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
     reinit = get(config.model, "reinit", true)::Bool
 
@@ -128,10 +128,6 @@ function initialize_sediment_model(config::Config)
 
     rs = initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
 
-    state_ncnames = ncnames(config.state)
-
-    reader = prepare_reader(dynamic_path, cyclic_path, config)
-
     modelmap = (vertical = eros, lateral = (land = ols, river = rs))
     indices_reverse = (
         land = rev_inds,
@@ -139,18 +135,8 @@ function initialize_sediment_model(config::Config)
         reservoir = isempty(reservoir) ? nothing : reservoir.reverse_indices,
         lake = isempty(lake) ? nothing : lake.reverse_indices,
     )
-    writer = prepare_writer(
-        config,
-        reader,
-        output_path,
-        modelmap,
-        state_ncnames,
-        indices_reverse,
-        x_nc,
-        y_nc,
-        dims_xy,
-        nc,
-    )
+    writer =
+        prepare_writer(config, reader, modelmap, indices_reverse, x_nc, y_nc, dims_xy, nc)
     close(nc)
 
     # for each domain save the directed acyclic graph, the traversion order,
@@ -173,13 +159,15 @@ function initialize_sediment_model(config::Config)
         (; land, river, reservoir, lake, index_river, frac_toriver),
         (land = ols, river = rs),
         eros,
-        Clock(config, reader),
+        clock,
         reader,
         writer,
     )
 
     # read and set states in model object if reinit=false
     if reinit == false
+        instate_path = joinpath(tomldir, config.state.path_input)
+        state_ncnames = ncnames(config.state)
         set_states(instate_path, model, state_ncnames; type = Float64)
     end
 

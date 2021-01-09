@@ -4,6 +4,7 @@ using Documenter
 pages = [
     "Home" => "index.md",
     "Quick start" => "quick-start.md",
+    "Command line interface" => "cli.md",
     "Model structure" => "structure.md",
     "Models" => [
         "wflow_sbm" => "model/sbm.md",
@@ -22,6 +23,7 @@ pages = [
         "Sediment Flux" => "lateral/sediment.md",
     ],
     "Basic Model Interface" => "bmi.md",
+    "Run from Delft-FEWS" => "fews.md",
 ]
 
 makedocs(;

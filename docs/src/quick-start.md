@@ -108,19 +108,20 @@ names in the NetCDF file. See the section [Config and TOML](@ref) for more detai
 
 As an example, we will run the Moselle example SBM model, of which the configuration file
 can be seen here:
-[sbm_config.toml](https://github.com/Deltares/Wflow.jl/blob/use/test/sbm_config.toml). First
-we share some code that will download the required files to your current working directory:
+[sbm_simple.toml](https://github.com/Deltares/Wflow.jl/blob/master/test/sbm_simple.toml).
+First we share some code that will download the required files to your current working
+directory:
 
 ```julia
 # urls to TOML and NetCDF of the Moselle example model
-staticmaps = "https://github.com/visr/wflow-artifacts/releases/download/v0.2.0/staticmaps.nc"
+staticmaps = "https://github.com/visr/wflow-artifacts/releases/download/v0.2.1/staticmaps.nc"
 forcing = "https://github.com/visr/wflow-artifacts/releases/download/v0.2.0/forcing-2000.nc"
-toml_url = "https://raw.githubusercontent.com/Deltares/Wflow.jl/use/test/sbm_config.toml"
+toml_url = "https://raw.githubusercontent.com/Deltares/Wflow.jl/master/test/sbm_simple.toml"
 
 # create a "data" directory in the current directory
 datadir = joinpath(@__DIR__, "data")
 mkpath(datadir)
-toml_path = joinpath(@__DIR__, "sbm_config.toml")
+toml_path = joinpath(@__DIR__, "sbm_simple.toml")
 
 # download resources to current and data dirs
 download(staticmaps, joinpath(datadir, "staticmaps-moselle.nc"))
@@ -132,7 +133,7 @@ Now that we have our files in place, running a simulation is as simple as callin
 function:
 
 ```@docs
-Wflow.run_simulation
+Wflow.run
 ```
 
 As you can see, there are three different methods for this function. We will first make use
@@ -140,7 +141,7 @@ of the first one, where a path to a TOML file is passed as a `String`.
 
 ```julia
 using Wflow
-Wflow.run_simulation(toml_path)
+Wflow.run(toml_path)
 ```
 
 This will parse the TOML file to create a `Wflow.Config`, use that to initialize a
@@ -159,9 +160,9 @@ simulation:
 using Dates
 config = Wflow.Config(toml_path)
 config.endtime = DateTime("2000-01-03T00:00:00")
-Wflow.run_simulation(config)
+Wflow.run(config)
 ```
 
 For even more control, you can initialize the model object yourself, and modify it directly,
-or run a custom simulation loop. See the [`Wflow.run_simulation`](@ref) source for some
+or run a custom simulation loop. See the [`Wflow.run`](@ref) source for some
 inspiration.

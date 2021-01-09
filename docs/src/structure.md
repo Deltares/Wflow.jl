@@ -52,8 +52,6 @@ provided by the [CFTime.jl package](https://juliageo.org/CFTime.jl/latest/), suc
 provided in these alternative calendars.
 
 ```toml
-casename = "testcase"                           # optional
-
 calendar = "standard"                           # optional, this is default value
 endtime = 2000-02-01T00:00:00                   # optional, default from forcing NetCDF
 starttime = 2000-01-01T00:00:00                 # optional, default from forcing NetCDF
@@ -84,7 +82,9 @@ model component, the `vertical` model and `lateral` model components. In the exa
 the `vertical` component represents the SBM concept, and for the `lateral` components there
 is a `river` (including `reservoir`), `land` and `subsurface` domain. The internal model
 states are listed on the left side, and the external state names are listed on the right
-side.
+side. Note that `path_input` is only required when `reinit` is set to false. `path_output`
+is optional, an output state file is only written when it is defined. If neither is set,
+the entire `state` section can be left out.
 
 ```toml
 [state]
@@ -207,9 +207,9 @@ slope = "Slope"
 
 ### Output netCDF section
 
-This section of the TOML file contains the output netCDF file for writing gridded model
-output, including a mapping between internal model parameter components and external netCDF
-variables.  
+This optional section of the TOML file contains the output netCDF file for writing gridded
+model output, including a mapping between internal model parameter components and external
+netCDF variables.
 
 ```toml
 [output]
@@ -255,9 +255,12 @@ with the following available reducers:
 with `only` as the default. To extract data for a specific location (grid cell), the `index`
 of the vector, the coordinates `coordinate.x` and `coordinate.y`, or the x and y indices of
 the 2D array (`index.x` and `index.y`) can be provided. Finally a `map` can be provided to
-extract data for certain locations (e.g. `gauges`) or areas (e.g. `subcatchment`).
+extract data for certain locations (e.g. `gauges`) or areas (e.g. `subcatchment`). In this
+case a single entry can lead to multiple columns in the CSV file, which will be of the
+form `header_id`, e.g. `Q_20`, for a gauge with integer ID 20.
 
-
+The double brackets in `[[csv.column]]` is TOML syntax to indicate that it is part of a
+list. You may specify as many entries as you wish.
 
 ```toml
 [csv]

@@ -9,12 +9,12 @@ function initialize_sbm_model(config::Config)
     # unpack the paths to the NetCDF files
     tomldir = dirname(config)
     static_path = joinpath(tomldir, config.input.path_static)
-    cyclic_path = joinpath(tomldir, config.input.path_static)
     dynamic_path = joinpath(tomldir, config.input.path_forcing)
-    instate_path = joinpath(tomldir, config.state.path_input)
-    output_path = joinpath(tomldir, config.output.path)
 
-    Δt = Second(config.timestepsecs)
+    reader = prepare_reader(dynamic_path, static_path, config)
+    clock = Clock(config, reader)
+    Δt = clock.Δt
+
     sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
     reinit = get(config.model, "reinit", true)::Bool
     do_snow = get(config.model, "snow", false)::Bool
@@ -244,10 +244,6 @@ function initialize_sbm_model(config::Config)
         rivercells = river,
     )
 
-    state_ncnames = ncnames(config.state)
-
-    reader = prepare_reader(dynamic_path, cyclic_path, config)
-
     modelmap = (vertical = sbm, lateral = (subsurface = ssf, land = olf, river = rf))
     indices_reverse = (
         land = rev_inds,
@@ -258,9 +254,7 @@ function initialize_sbm_model(config::Config)
     writer = prepare_writer(
         config,
         reader,
-        output_path,
         modelmap,
-        state_ncnames,
         indices_reverse,
         x_nc,
         y_nc,
@@ -294,13 +288,15 @@ function initialize_sbm_model(config::Config)
         (; land, river, reservoir, lake, index_river, frac_toriver),
         (subsurface = ssf, land = olf, river = rf),
         sbm,
-        Clock(config, reader),
+        clock,
         reader,
         writer,
     )
 
     # read and set states in model object if reinit=false
     if reinit == false
+        instate_path = joinpath(tomldir, config.state.path_input)
+        state_ncnames = ncnames(config.state)
         set_states(instate_path, model, state_ncnames; type = Float64)
         @unpack lateral, vertical = model
         # update zi for vertical sbm and α for river and overland flow

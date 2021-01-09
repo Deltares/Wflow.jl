@@ -114,7 +114,7 @@ config["model"]["pits"] = true
 config["input"]["pits"] = "wflow_pits"
 config.endtime = DateTime(2000, 1, 9)
 
-model = Wflow.run_simulation(config)
+model = Wflow.run(config)
 
 @testset "timing" begin
     # clock has been reset
