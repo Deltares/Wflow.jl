@@ -255,9 +255,12 @@ with the following available reducers:
 with `only` as the default. To extract data for a specific location (grid cell), the `index`
 of the vector, the coordinates `coordinate.x` and `coordinate.y`, or the x and y indices of
 the 2D array (`index.x` and `index.y`) can be provided. Finally a `map` can be provided to
-extract data for certain locations (e.g. `gauges`) or areas (e.g. `subcatchment`).
+extract data for certain locations (e.g. `gauges`) or areas (e.g. `subcatchment`). In this
+case a single entry can lead to multiple columns in the CSV file, which will be of the
+form `header_id`, e.g. `Q_20`, for a gauge with integer ID 20.
 
-
+The double brackets in `[[csv.column]]` is TOML syntax to indicate that it is part of a
+list. You may specify as many entries as you wish.
 
 ```toml
 [csv]
