@@ -269,7 +269,7 @@ end
 function initialize_sbm(nc, config, riverfrac, xl, yl, inds)
 
     Δt = Second(config.timestepsecs)
-    config_thicknesslayers = get(config.model, "thicknesslayers", 0.0)
+    config_thicknesslayers = get(config.model, "thicknesslayers", Float64[])
     if length(config_thicknesslayers) > 0
         thicknesslayers = SVector(Tuple(push!(Float64.(config_thicknesslayers), mv)))
         sumlayers = pushfirst(cumsum(thicknesslayers), 0.0)
@@ -453,6 +453,11 @@ function initialize_sbm(nc, config, riverfrac, xl, yl, inds)
         type = Float64,
         dimname = "layer",
     )
+    if size(c, 1) != maxlayers
+        parname = param(config, "input.vertical.c")
+        size1 = size(c, 1)
+        error("$parname needs a layer dimension of size $maxlayers, but is $size1")
+    end
     kvfrac = ncread(
         nc,
         param(config, "input.vertical.khfrac", nothing);
@@ -461,6 +466,11 @@ function initialize_sbm(nc, config, riverfrac, xl, yl, inds)
         type = Float64,
         dimname = "layer",
     )
+    if size(kvfrac, 1) != maxlayers
+        parname = param(config, "input.vertical.khfrac")
+        size1 = size(kvfrac, 1)
+        error("$parname needs a layer dimension of size $maxlayers, but is $size1")
+    end
 
     # fraction open water and compacted area (land cover)
     waterfrac = ncread(
