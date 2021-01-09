@@ -23,6 +23,7 @@ pages = [
         "Sediment Flux" => "lateral/sediment.md",
     ],
     "Basic Model Interface" => "bmi.md",
+    "Run from Delft-FEWS" => "fews.md",
 ]
 
 makedocs(;
