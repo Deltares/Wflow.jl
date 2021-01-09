@@ -18,4 +18,8 @@ You can use Wflow in the following three ways.
 3. Through the [Basic Model Interface](@ref), which is a standardized interface to run the
    model that also makes it easy to couple other BMI enabled models to it.
 
+Wflow can also be linked to the Flood forecasting system
+[Delft-FEWS](https://oss.deltares.nl/web/delft-fews/). This is described in [Run from
+Delft-FEWS](@ref)
+
 See the side bar on the left to navigate to other sections of the documentation.
