@@ -36,3 +36,8 @@ bar, that gives an estimate of how much time is needed to finish the simulaion:
 
 Progress: 100%|██████████████████████████████████████████████████| Time: 0:00:27
 ```
+
+To try out a simple test model, you can download
+[sbm_moselle_config_data.zip](https://github.com/visr/wflow-artifacts/releases/download/v0.2.1/sbm_moselle_config_data.zip),
+which includes both a TOML configuration file as well as the NetCDF input data, for a one
+year simulation of the Moselle catchment.
