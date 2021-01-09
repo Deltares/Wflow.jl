@@ -384,9 +384,9 @@ struct NCReader{T}
 end
 
 struct Writer
-    dataset::NCDataset
+    dataset::Union{NCDataset,Nothing}
     parameters::Dict{String,Any}
-    nc_path::String
+    nc_path::Union{String,Nothing}
     csv_path::Union{String,Nothing}
     csv_cols::Vector
     csv_io::IO
@@ -583,9 +583,7 @@ end
 function prepare_writer(
     config,
     reader,
-    nc_path,
     modelmap,
-    state_ncnames,
     rev_inds,
     x_nc,
     y_nc,
@@ -596,33 +594,37 @@ function prepare_writer(
     tomldir = dirname(config)
     sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
 
-    # create a flat mapping from internal parameter locations to NetCDF variable names
-    output_ncnames = Dict{Tuple{Symbol,Vararg{Symbol}},String}()
-    for (k, v) in pairs(config.output)
-        if v isa Dict  # ignore top level values (e.g. output.path)
-            flat!(output_ncnames, k, v)
-        end
-    end
-
-    # fill the output_map by mapping parameter NetCDF names to arrays
-    output_map = out_map(output_ncnames, modelmap)
-
     calendar = get(config, "calendar", "standard")::String
     time_units = get(config, "time_units", CFTime.DEFAULT_TIME_UNITS)
-    ds = setup_netcdf(
-        nc_path,
-        x_nc,
-        y_nc,
-        output_map,
-        calendar,
-        time_units,
-        maxlayers,
-        sizeinmetres,
-    )
+
+    # create an output NetCDF that will hold all timesteps of selected parameters
+    # but only if config.output.path has been set
+    if haskey(config, "output") && haskey(config.output, "path")    
+        nc_path = joinpath(tomldir, config.output.path)
+        # create a flat mapping from internal parameter locations to NetCDF variable names
+        output_ncnames = ncnames(config.output)
+        # fill the output_map by mapping parameter NetCDF names to arrays
+        output_map = out_map(output_ncnames, modelmap)
+        ds = setup_netcdf(
+            nc_path,
+            x_nc,
+            y_nc,
+            output_map,
+            calendar,
+            time_units,
+            maxlayers,
+            sizeinmetres,
+        )
+    else
+        nc_path = nothing
+        output_map = Dict{String,Any}()
+        ds = nothing
+    end
 
     # create a separate state output NetCDF that will hold the last timestep of all states
     # but only if config.state.path_output has been set
     if haskey(config, "state") && haskey(config.state, "path_output")
+        state_ncnames = ncnames(config.state)
         state_map = out_map(state_ncnames, modelmap)
         nc_state_path = joinpath(tomldir, config.state.path_output)
         ds_outstate = setup_netcdf(
@@ -728,6 +730,9 @@ function write_netcdf_timestep(model, dataset, parameters)
     return model
 end
 
+# don't do anything for no dataset, used if no output NetCDF is needed
+write_netcdf_timestep(model, dataset::Nothing, parameters) = model
+
 "Write model output"
 function write_output(model)
     @unpack vertical, clock, reader, network, writer = model
@@ -784,13 +789,17 @@ function close_files(model; delete_output::Bool = false)
     if haskey(config.input, "cyclic")
         close(reader.cyclic_dataset)
     end
-    close(writer.dataset)
-    close(writer.csv_io)
+    writer.dataset === nothing || close(writer.dataset)
+    close(writer.csv_io)  # can be an IOBuffer
     writer.state_dataset === nothing || close(writer.state_dataset)
 
     if delete_output
-        isfile(writer.nc_path) && rm(writer.nc_path)
-        isfile(writer.csv_path) && rm(writer.csv_path)
+        if writer.nc_path !== nothing
+            isfile(writer.nc_path) && rm(writer.nc_path)
+        end
+        if writer.csv_path !== nothing
+            isfile(writer.csv_path) && rm(writer.csv_path)
+        end
         if writer.state_nc_path !== nothing
             isfile(writer.state_nc_path) && rm(writer.state_nc_path)
         end

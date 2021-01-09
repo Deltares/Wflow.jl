@@ -83,12 +83,6 @@ slope = "Slope"
 thicknesslayers = [100, 300, 800]
 type = "sbm"
 
-[output]
-path = "data/output_moselle_simple.nc"
-
-[output.lateral.river]
-q = "q_river"
-
 [csv]
 path = "data/output_moselle_simple.csv"
 

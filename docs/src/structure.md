@@ -207,9 +207,9 @@ slope = "Slope"
 
 ### Output netCDF section
 
-This section of the TOML file contains the output netCDF file for writing gridded model
-output, including a mapping between internal model parameter components and external netCDF
-variables.  
+This optional section of the TOML file contains the output netCDF file for writing gridded
+model output, including a mapping between internal model parameter components and external
+netCDF variables.
 
 ```toml
 [output]

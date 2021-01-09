@@ -19,7 +19,6 @@ function initialize_sbm_gwf_model(config::Config)
     tomldir = dirname(config)
     static_path = joinpath(tomldir, config.input.path_static)
     dynamic_path = joinpath(tomldir, config.input.path_forcing)
-    output_path = joinpath(tomldir, config.output.path)
 
     reader = prepare_reader(dynamic_path, static_path, config)
     clock = Clock(config, reader)
@@ -348,8 +347,6 @@ function initialize_sbm_gwf_model(config::Config)
         AquiferBoundaryCondition[recharge, river, drains],
     )
 
-    state_ncnames = ncnames(get(config, "state", Dict()))
-
     modelmap = (
         vertical = sbm,
         lateral = (
@@ -373,9 +370,7 @@ function initialize_sbm_gwf_model(config::Config)
     writer = prepare_writer(
         config,
         reader,
-        output_path,
         modelmap,
-        state_ncnames,
         indices_reverse,
         x_nc,
         y_nc,
@@ -426,6 +421,7 @@ function initialize_sbm_gwf_model(config::Config)
     # read and set states in model object if reinit=false
     if reinit == false
         instate_path = joinpath(tomldir, config.state.path_input)
+        state_ncnames = ncnames(config.state)
         set_states(instate_path, model, state_ncnames, type = Float64)
     end
 

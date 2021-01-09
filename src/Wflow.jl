@@ -166,10 +166,8 @@ function run(model::Model; close_files = true)
     # write output state NetCDF
     # undo the clock advance at the end of the last iteration, since there won't
     # be a next step, and then the output state falls on the correct time
-    if writer.state_dataset !== nothing
-        rewind!(clock)
-        write_netcdf_timestep(model, writer.state_dataset, writer.state_parameters)
-    end
+    rewind!(clock)
+    write_netcdf_timestep(model, writer.state_dataset, writer.state_parameters)
 
     reset_clock!(model.clock, config)
 
