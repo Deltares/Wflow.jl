@@ -227,9 +227,6 @@ function initialize_sbm_gwf_model(config::Config)
         )
         index_constanthead = filter(i -> !isequal(constanthead[i], mv), 1:n)
         constant_head = ConstantHead(constanthead[index_constanthead], index_constanthead)
-
-    else
-        constant_head = ConstantHead[]
     end
 
     conductivity = ncread(
@@ -298,6 +295,10 @@ function initialize_sbm_gwf_model(config::Config)
         index_river,
     )
 
+    # recharge boundary of unconfined aquifer
+    r = fill(mv, n)
+    recharge = Recharge(r, fill(0.0, n), collect(1:n))
+
     # drain boundary of unconfined aquifer (optional)
     if do_drains
         drain_2d = ncread(
@@ -331,35 +332,29 @@ function initialize_sbm_gwf_model(config::Config)
             index_drain,
         )
         drain = (indices = inds_drain, reverse_indices = rev_inds_drain)
+        aquifer_boundaries = AquiferBoundaryCondition[recharge, river, drains]
     else
-        drains = Drainage[]
+        aquifer_boundaries = AquiferBoundaryCondition[recharge, river]
         drain = ()
     end
 
-    # recharge boundary of unconfined aquifer
-    r = fill(mv, n)
-    recharge = Recharge(r, fill(0.0, n), collect(1:n))
+    gwf = GroundwaterFlow(aquifer, connectivity, constant_head, aquifer_boundaries)
 
-    gwf = GroundwaterFlow(
-        aquifer,
-        connectivity,
-        constant_head,
-        AquiferBoundaryCondition[recharge, river, drains],
-    )
+    # map GroundwaterFlow and its boundaries
+    if do_drains
+        subsurface_map = (
+            flow = gwf,
+            recharge = gwf.boundaries[1],
+            river = gwf.boundaries[2],
+            drain = gwf.boundaries[3],
+        )
+    else
+        subsurface_map =
+            (flow = gwf, recharge = gwf.boundaries[1], river = gwf.boundaries[2])
+    end
 
-    modelmap = (
-        vertical = sbm,
-        lateral = (
-            subsurface = (
-                flow = gwf,
-                recharge = gwf.boundaries[1],
-                river = gwf.boundaries[2],
-                drain = gwf.boundaries[3],
-            ),
-            land = olf,
-            river = rf,
-        ),
-    )
+    modelmap =
+        (vertical = sbm, lateral = (subsurface = subsurface_map, land = olf, river = rf))
     indices_reverse = (
         land = rev_inds,
         river = rev_inds_riv,
@@ -402,16 +397,7 @@ function initialize_sbm_gwf_model(config::Config)
     model = Model(
         config,
         (; land, river, reservoir, lake, drain, index_river, frac_toriver),
-        (
-            subsurface = (
-                flow = gwf,
-                recharge = gwf.boundaries[1],
-                river = gwf.boundaries[2],
-                drain = gwf.boundaries[3],
-            ),
-            land = olf,
-            river = rf,
-        ),
+        (subsurface = subsurface_map, land = olf, river = rf),
         sbm,
         clock,
         reader,
