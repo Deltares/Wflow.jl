@@ -227,9 +227,6 @@ function initialize_sbm_gwf_model(config::Config)
         )
         index_constanthead = filter(i -> !isequal(constanthead[i], mv), 1:n)
         constant_head = ConstantHead(constanthead[index_constanthead], index_constanthead)
-
-    else
-        constant_head = ConstantHead[]
     end
 
     conductivity = ncread(
