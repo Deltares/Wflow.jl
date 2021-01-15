@@ -71,6 +71,7 @@ print_benchmark(trialmin)
 
 @testset "no drains" begin
     config.model.drains = false
+    delete!(Dict(config.output.lateral.subsurface), "drain")
     model = Wflow.initialize_sbm_gwf_model(config)
     @test collect(keys(model.lateral.subsurface)) == [:flow, :recharge, :river]
     Wflow.close_files(model)
