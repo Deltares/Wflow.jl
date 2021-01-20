@@ -428,6 +428,7 @@ function update_sbm_gwf(model)
 
     inds_riv = network.index_river
     kinwave_it = get(config.model, "kin_wave_iteration", false)::Bool
+    do_drains = get(config.model, "drains", false)::Bool
 
     update_forcing!(model)
     if haskey(config.input, "cyclic")
@@ -507,11 +508,14 @@ function update_sbm_gwf(model)
             vertical.yl[inds_riv] .* 0.001
         ) ./ vertical.Δt
 
-    # flux from groundwater domain to river (Q to river from drains and groundwater)
+    # flux from groundwater domain to river (Q to river from drains (optional) and groundwater)
     flux_gw = zeros(vertical.n)
     flux_gw[lateral.subsurface.river.index] = -lateral.subsurface.river.flux
-    flux_gw[lateral.subsurface.drain.index] =
-        flux_gw[lateral.subsurface.drain.index] - lateral.subsurface.drain.flux
+    if do_drains
+        flux_gw[lateral.subsurface.drain.index] =
+            flux_gw[lateral.subsurface.drain.index] - lateral.subsurface.drain.flux
+    end
+
     # determine lateral inflow to river from groundwater, drains and overland flow
     lateral.river.qlat .=
         (
