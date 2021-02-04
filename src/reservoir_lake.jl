@@ -422,7 +422,7 @@ function update(lake::NaturalLake, i, inflow, doy, timestepsecs)
     lo = lake.lowerlake_ind[i]
     has_lowerlake = lo != 0
 
-    col = max(doy, 365)
+    col = min(doy, 365)
     ### Modified Puls Approach (Burek et al., 2013, LISFLOOD) ###
     # outflowfunc = 3
     # Calculate lake factor and SI parameter
