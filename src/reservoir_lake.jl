@@ -210,17 +210,13 @@ end
     end
 end
 
-function initialize_natural_lake(config, static_path, nc, inds_riv, nriv, pits)
+function initialize_natural_lake(config, path, nc, inds_riv, nriv, pits)
     # read only lake data if lakes true
     # allow lakes only in river cells
     # note that these locations are only the lake outlet pixels
-    lakelocs = ncread(
-        nc,
-        param(config, "input.lateral.river.lake.locs");
-        sel = inds_riv,
-        type = Int,
-        fill = 0,
-    )
+    lakelocs_2d = 
+        ncread(nc, param(config, "input.lateral.river.lake.locs"); type = Int, fill = 0)
+    lakelocs = lakelocs_2d[inds_riv]
 
     # this holds the same ids as lakelocs, but covers the entire lake
     lakecoverage_2d =
@@ -285,6 +281,7 @@ function initialize_natural_lake(config, static_path, nc, inds_riv, nriv, pits)
         sel = inds_lake,
         defaults = 0,
         type = Int,
+        fill = 0,
     )
     lake_storfunc = ncread(
         nc,
@@ -315,12 +312,12 @@ function initialize_natural_lake(config, static_path, nc, inds_riv, nriv, pits)
     # This is currently the same length as all river cells, but will be the
     # length of all lake cells. To do that we need to introduce a mapping.
     n_lakes = length(inds_lake)
+    lakelocs = lakelocs_2d[inds_lake]
 
     sh = Vector{Union{SH,Missing}}(missing, n_lakes)
     hq = Vector{Union{HQ,Missing}}(missing, n_lakes)
     for i = 1:n_lakes
         lakeloc = lakelocs[i]
-
         if linked_lakelocs[i] > 0
             linked_lakelocs[i] = i
         else
@@ -328,12 +325,12 @@ function initialize_natural_lake(config, static_path, nc, inds_riv, nriv, pits)
         end
 
         if lake_storfunc[i] == 2
-            csv_path = joinpath(static_path, "lake_sh_$lakeloc.csv")
+            csv_path = joinpath(path, "lake_sh_$lakeloc.csv")
             sh[i] = read_sh_csv(csv_path)
         end
 
         if lake_outflowfunc[i] == 1
-            csv_path = joinpath(static_path, "lake_hq_$lakeloc.csv")
+            csv_path = joinpath(path, "lake_hq_$lakeloc.csv")
             hq[i] = read_hq_csv(csv_path)
         end
 
