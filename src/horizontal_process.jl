@@ -14,8 +14,12 @@ function flowgraph(ldd::AbstractVector, inds::AbstractVector, pcrdir::AbstractVe
         to_node = searchsortedfirst(inds, to_index)
         add_edge!(graph, from_node, to_node)
     end
-    @assert is_directed(graph)
-    @assert !is_cyclic(graph)
+    if is_cyclic(graph)
+        error("""One or more cycles detected in flow graph.
+            The provided local drainage direction map may be unsound.
+            Verify that each active flow cell flows towards a pit.
+            """)
+    end
     return graph
 end
 

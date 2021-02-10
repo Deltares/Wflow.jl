@@ -214,7 +214,7 @@ function initialize_natural_lake(config, path, nc, inds_riv, nriv, pits)
     # read only lake data if lakes true
     # allow lakes only in river cells
     # note that these locations are only the lake outlet pixels
-    lakelocs_2d = 
+    lakelocs_2d =
         ncread(nc, param(config, "input.lateral.river.lake.locs"); type = Int, fill = 0)
     lakelocs = lakelocs_2d[inds_riv]
 
