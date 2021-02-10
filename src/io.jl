@@ -87,15 +87,10 @@ function get_at!(buffer, var::NCDatasets.CFVariable, i)
     # assumes the dataset has 12 time steps, from January to December
     dim = findfirst(==("time"), NCDatasets.dimnames(var))
     # load in place, using a lower level NCDatasets function
-    # currently all indices must be of the same type, so create three ranges
-    # https://github.com/Alexander-Barth/NCDatasets.jl/blob/fa742ee1b36c9e4029a40581751a21c140f01f84/src/variable.jl#L372
-    spatialdim1 = 1:size(buffer, 1)
-    spatialdim2 = 1:size(buffer, 2)
-
     if dim == 1
-        NCDatasets.load!(var.var, buffer, i:i, spatialdim1, spatialdim2)
+        NCDatasets.load!(var.var, buffer, i, :, :)
     elseif dim == 3
-        NCDatasets.load!(var.var, buffer, spatialdim1, spatialdim2, i:i)
+        NCDatasets.load!(var.var, buffer, :, :, i)
     else
         error("Time dimension expected at position 1 or 3")
     end
