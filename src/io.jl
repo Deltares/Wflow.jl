@@ -405,9 +405,15 @@ function prepare_reader(path, cyclic_path, config)
     add_offset = get(var.attrib, "add_offset", nothing)
     # TODO support scale_factor and add_offset with in place loading
     # TODO check other forcing parameters as well
-    @assert isnothing(fillvalue) || isnan(fillvalue)
-    @assert isnothing(scale_factor) || isone(scale_factor)
-    @assert isnothing(add_offset) || iszero(add_offset)
+    if !(isnothing(fillvalue) || isnan(fillvalue))
+        error("_FillValue in NetCDF forcing not supported, found $fillvalue in $ncvar1")
+    end
+    if !(isnothing(scale_factor) || isone(scale_factor))
+        error("scale_factor in NetCDF forcing not supported, found $scale_factor in $ncvar1")
+    end
+    if !(isnothing(add_offset) || iszero(add_offset))
+        error("add_offset in NetCDF forcing not supported, found $add_offset in $ncvar1")
+    end
 
     T = eltype(var)
     dims = dimnames(var)
