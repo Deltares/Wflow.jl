@@ -395,14 +395,10 @@ function prepare_reader(path, cyclic_path, config)
     ncvar1 = param(config, "input." * first(config.input.forcing))
     var = dataset[ncvar1].var
 
-    fillvalue = get(var.attrib, "_FillValue", nothing)
     scale_factor = get(var.attrib, "scale_factor", nothing)
     add_offset = get(var.attrib, "add_offset", nothing)
     # TODO support scale_factor and add_offset with in place loading
     # TODO check other forcing parameters as well
-    if !(isnothing(fillvalue) || isnan(fillvalue))
-        error("_FillValue in NetCDF forcing not supported, found $fillvalue in $ncvar1")
-    end
     if !(isnothing(scale_factor) || isone(scale_factor))
         error("scale_factor in NetCDF forcing not supported, found $scale_factor in $ncvar1")
     end
