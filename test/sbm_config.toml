@@ -149,6 +149,28 @@ ssf = "ssf"
 h = "h_land"
 q = "q_land"
 
+[nc]
+path = "data/output_scalar_moselle.nc"
+
+[[nc.variable]]
+name = "Q"
+map = "gauges"
+parameter = "lateral.river.q"
+
+[[nc.variable]]
+coordinate.x = 6.255
+coordinate.y = 50.012
+name = "temp_coord"
+location = "temp_bycoord"
+parameter = "vertical.temperature"
+
+[[nc.variable]]
+location = "temp_byindex"
+name = "temp_index"
+index.x = 100
+index.y = 50
+parameter = "vertical.temperature"
+
 [csv]
 path = "data/output_moselle.csv"
 

@@ -227,7 +227,39 @@ function create_tracked_netcdf(path)
     return ds
 end
 
-"prepare an output dataset"
+"prepare an output dataset for scalar data"
+function setup_netcdf(output_path, ncvars, calendar, time_units, float_type = Float32)
+    ds = create_tracked_netcdf(output_path)
+    defDim(ds, "time", Inf)  # unlimited
+    defVar(
+        ds,
+        "time",
+        Float64,
+        ("time",),
+        attrib = ["units" => time_units, "calendar" => calendar],
+    )
+    for nc in ncvars
+        # Delft-FEWS requires the attribute :cf_role = "timeseries_id" when a NetCDF file 
+        # contains more than one location list 
+        defVar(
+            ds,
+            nc.location_dim,
+            nc.locations,
+            (nc.location_dim,),
+            attrib = ["cf_role" => "timeseries_id"],
+        )
+        defVar(
+            ds,
+            nc.var,
+            float_type,
+            (nc.location_dim, "time"),
+            attrib = ["_FillValue" => float_type(NaN)],
+        )
+    end
+    return ds
+end
+
+"prepare an output dataset for grid data"
 function setup_netcdf(
     output_path,
     ncx,
@@ -388,6 +420,10 @@ struct Writer
     state_dataset::Union{NCDataset,Nothing}
     state_parameters::Dict{String,Any}
     state_nc_path::Union{String,Nothing}
+    dataset_scalar::Union{NCDataset,Nothing}
+    nc_scalar::Vector
+    ncvars_dims::Vector
+    nc_scalar_path::Union{String,Nothing}
 end
 
 function prepare_reader(path, cyclic_path, config)
@@ -400,7 +436,9 @@ function prepare_reader(path, cyclic_path, config)
     # TODO support scale_factor and add_offset with in place loading
     # TODO check other forcing parameters as well
     if !(isnothing(scale_factor) || isone(scale_factor))
-        error("scale_factor in NetCDF forcing not supported, found $scale_factor in $ncvar1")
+        error(
+            "scale_factor in NetCDF forcing not supported, found $scale_factor in $ncvar1",
+        )
     end
     if !(isnothing(add_offset) || iszero(add_offset))
         error("add_offset in NetCDF forcing not supported, found $add_offset in $ncvar1")
@@ -468,6 +506,42 @@ function prepare_reader(path, cyclic_path, config)
     )
 end
 
+"Get a Vector of all unique location ids from a 2D map"
+function locations_map(ds, mapname, config)
+    map_2d = ncread(
+        ds,
+        param(config.input, mapname);
+        type = Union{Int,Missing},
+        allow_missing = true,
+    )
+    ids = unique(skipmissing(map_2d))
+    return ids
+end
+
+"Get a Vector{Tuple} with NetCDF variable, dimension and location names for scalar data"
+function nc_variables_dims(nc_variables, dataset, config)
+    ncvars_dims = []
+    for nc_var in nc_variables
+        var = nc_var["name"]::String
+        if haskey(nc_var, "map")
+            mapname = nc_var["map"]
+            ids = string.(locations_map(dataset, mapname, config))
+            location_dim = string(var, '_', nc_var["map"])
+            push!(ncvars_dims, (var = var, location_dim = location_dim, locations = ids))
+        else
+            push!(
+                ncvars_dims,
+                (
+                    var = var,
+                    location_dim = nc_var["location"],
+                    locations = [nc_var["location"]],
+                ),
+            )
+        end
+    end
+    return ncvars_dims
+end
+
 "Get a Vector{String} of all columns names for the CSV header, exept the first, time"
 function csv_header(cols, dataset, config)
     header = [col["header"] for col in cols]
@@ -476,16 +550,7 @@ function csv_header(cols, dataset, config)
         h = col["header"]::String
         if haskey(col, "map")
             mapname = col["map"]
-
-            map_2d = ncread(
-                dataset,
-                param(config.input, mapname);
-                type = Union{Int,Missing},
-                allow_missing = true,
-            )
-
-            # results in the same order as used for the values
-            ids = unique(skipmissing(map_2d))
+            ids = locations_map(dataset, mapname, config)
             hvec = [string(h, '_', id) for id in ids]
             append!(header, hvec)
         else
@@ -577,6 +642,22 @@ function out_map(ncnames_dict, modelmap)
     return output_map
 end
 
+
+function get_reducer_func(col, rev_inds, x_nc, y_nc, dims_xy, config, nc_static)
+    if occursin("reservoir", col["parameter"])
+        reducer_func =
+            reducer(col, rev_inds.reservoir, x_nc, y_nc, dims_xy, config, nc_static)
+    elseif occursin("lake", col["parameter"])
+        reducer_func = reducer(col, rev_inds.lake, x_nc, y_nc, dims_xy, config, nc_static)
+    elseif occursin("river", col["parameter"])
+        reducer_func = reducer(col, rev_inds.river, x_nc, y_nc, dims_xy, config, nc_static)
+    elseif occursin("drain", col["parameter"])
+        reducer_func = reducer(col, rev_inds.drain, x_nc, y_nc, dims_xy, config, nc_static)
+    else
+        reducer_func = reducer(col, rev_inds.land, x_nc, y_nc, dims_xy, config, nc_static)
+    end
+end
+
 function prepare_writer(
     config,
     reader,
@@ -594,8 +675,8 @@ function prepare_writer(
     calendar = get(config, "calendar", "standard")::String
     time_units = get(config, "time_units", CFTime.DEFAULT_TIME_UNITS)
 
-    # create an output NetCDF that will hold all timesteps of selected parameters
-    # but only if config.output.path has been set
+    # create an output NetCDF that will hold all timesteps of selected parameters for grid
+    # data but only if config.output.path has been set
     if haskey(config, "output") && haskey(config.output, "path")
         nc_path = joinpath(tomldir, config.output.path)
         # create a flat mapping from internal parameter locations to NetCDF variable names
@@ -641,6 +722,30 @@ function prepare_writer(
         nc_state_path = nothing
     end
 
+    # create an output NetCDF that will hold all timesteps of selected parameters for scalar
+    # data, but only if config.nc.variable has been set. 
+    if haskey(config, "nc") && haskey(config.nc, "variable")
+        nc_scalar_path = joinpath(tomldir, config.nc.path)
+        # get NetCDF info for scalar data (variable name, locationset (dim) and 
+        # location ids)
+        ncvars_dims = nc_variables_dims(config.nc.variable, nc_static, config)
+        ds_scalar = setup_netcdf(nc_scalar_path, ncvars_dims, calendar, time_units)
+        # create a vector of (parameter, reducer) named tuples which will be used to
+        # retrieve and reduce data during a model run
+        nc_scalar = []
+        for var in config.nc.variable
+            parameter = var["parameter"]
+            reducer_func =
+                get_reducer_func(var, rev_inds, x_nc, y_nc, dims_xy, config, nc_static)
+            push!(nc_scalar, (parameter = parameter, reducer = reducer_func))
+        end
+    else
+        ds_scalar = nothing
+        nc_scalar = []
+        ncvars_dims = []
+        nc_scalar_path = nothing
+    end
+
     if haskey(config, "csv") && haskey(config.csv, "column")
         # open CSV file and write header
         csv_path = joinpath(tomldir, config.csv.path)
@@ -650,27 +755,13 @@ function prepare_writer(
         println(csv_io, join(header, ','))
         flush(csv_io)
 
-        # cleate a vector of (parameter, reducer) named tuples which will be used to
+        # create a vector of (parameter, reducer) named tuples which will be used to
         # retrieve and reduce the CSV data during a model run
         csv_cols = []
         for col in config.csv.column
             parameter = col["parameter"]
-            if occursin("reservoir", col["parameter"])
-                reducer_func =
-                    reducer(col, rev_inds.reservoir, x_nc, y_nc, dims_xy, config, nc_static)
-            elseif occursin("lake", col["parameter"])
-                reducer_func =
-                    reducer(col, rev_inds.lake, x_nc, y_nc, dims_xy, config, nc_static)
-            elseif occursin("river", col["parameter"])
-                reducer_func =
-                    reducer(col, rev_inds.river, x_nc, y_nc, dims_xy, config, nc_static)
-            elseif occursin("drain", col["parameter"])
-                reducer_func =
-                    reducer(col, rev_inds.drain, x_nc, y_nc, dims_xy, config, nc_static)
-            else
-                reducer_func =
-                    reducer(col, rev_inds.land, x_nc, y_nc, dims_xy, config, nc_static)
-            end
+            reducer_func =
+                get_reducer_func(col, rev_inds, x_nc, y_nc, dims_xy, config, nc_static)
             push!(csv_cols, (parameter = parameter, reducer = reducer_func))
         end
     else
@@ -691,10 +782,28 @@ function prepare_writer(
         ds_outstate,
         state_map,
         nc_state_path,
+        ds_scalar,
+        nc_scalar,
+        ncvars_dims,
+        nc_scalar_path,
     )
 end
 
-"Write a new timestep to the NetCDF file"
+"Write a new timestep with scalar data to a NetCDF file"
+function write_netcdf_timestep(model, dataset)
+    @unpack writer, clock = model
+
+    time_index = add_time(dataset, clock.time)
+    for (nt, nc) in zip(writer.nc_scalar, writer.ncvars_dims)
+        A = param(model, nt.parameter)
+        # could be a value, or a vector in case of map
+        v = nt.reducer(A)
+        dataset[nc.var][:, time_index] .= v
+    end
+    return model
+end
+
+"Write a new timestep with grid data to a NetCDF file"
 function write_netcdf_timestep(model, dataset, parameters)
     @unpack vertical, clock, reader, network = model
     @unpack buffer = reader
@@ -729,14 +838,16 @@ end
 
 # don't do anything for no dataset, used if no output NetCDF is needed
 write_netcdf_timestep(model, dataset::Nothing, parameters) = model
+write_netcdf_timestep(model, dataset::Nothing) = model
 
 "Write model output"
 function write_output(model)
     @unpack vertical, clock, reader, network, writer = model
-    @unpack dataset, parameters = writer
+    @unpack dataset, dataset_scalar, parameters = writer
 
     write_csv_row(model)
     write_netcdf_timestep(model, dataset, parameters)
+    write_netcdf_timestep(model, dataset_scalar)
 
     return model
 end
@@ -787,6 +898,7 @@ function close_files(model; delete_output::Bool = false)
         close(reader.cyclic_dataset)
     end
     writer.dataset === nothing || close(writer.dataset)
+    writer.dataset_scalar === nothing || close(writer.dataset_scalar)
     close(writer.csv_io)  # can be an IOBuffer
     writer.state_dataset === nothing || close(writer.state_dataset)
 
@@ -799,6 +911,9 @@ function close_files(model; delete_output::Bool = false)
         end
         if writer.state_nc_path !== nothing
             isfile(writer.state_nc_path) && rm(writer.state_nc_path)
+        end
+        if writer.nc_scalar_path !== nothing
+            isfile(writer.nc_scalar_path) && rm(writer.nc_scalar_path)
         end
     end
     return nothing
@@ -820,7 +935,7 @@ function reducerfunction(reducer::AbstractString)
     return f
 end
 
-"Get a reducer function based on CSV output settings defined in a dictionary"
+"Get a reducer function based on output settings for scalar data defined in a dictionary"
 function reducer(col, rev_inds, x_nc, y_nc, dims_xy, config, dataset)
     if haskey(col, "map")
         # assumes the parameter in "map" has a 2D input map, with
