@@ -228,7 +228,7 @@ function create_tracked_netcdf(path)
 end
 
 "prepare an output dataset for scalar data"
-function setup_netcdf(output_path, ncvars, calendar, time_units, float_type = Float32)
+function setup_scalar_netcdf(output_path, ncvars, calendar, time_units, float_type = Float32)
     ds = create_tracked_netcdf(output_path)
     defDim(ds, "time", Inf)  # unlimited
     defVar(
@@ -260,7 +260,7 @@ function setup_netcdf(output_path, ncvars, calendar, time_units, float_type = Fl
 end
 
 "prepare an output dataset for grid data"
-function setup_netcdf(
+function setup_grid_netcdf(
     output_path,
     ncx,
     ncy,
@@ -684,7 +684,7 @@ function prepare_writer(
         output_ncnames = ncnames(config.output)
         # fill the output_map by mapping parameter NetCDF names to arrays
         output_map = out_map(output_ncnames, modelmap)
-        ds = setup_netcdf(
+        ds = setup_grid_netcdf(
             nc_path,
             x_nc,
             y_nc,
@@ -706,7 +706,7 @@ function prepare_writer(
         state_ncnames = ncnames(config.state)
         state_map = out_map(state_ncnames, modelmap)
         nc_state_path = joinpath(tomldir, config.state.path_output)
-        ds_outstate = setup_netcdf(
+        ds_outstate = setup_grid_netcdf(
             nc_state_path,
             x_nc,
             y_nc,
@@ -724,17 +724,17 @@ function prepare_writer(
     end
 
     # create an output NetCDF that will hold all timesteps of selected parameters for scalar
-    # data, but only if config.nc.variable has been set. 
-    if haskey(config, "nc") && haskey(config.nc, "variable")
-        nc_scalar_path = joinpath(tomldir, config.nc.path)
+    # data, but only if config.netcdf.variable has been set. 
+    if haskey(config, "netcdf") && haskey(config.netcdf, "variable")
+        nc_scalar_path = joinpath(tomldir, config.netcdf.path)
         # get NetCDF info for scalar data (variable name, locationset (dim) and 
         # location ids)
-        ncvars_dims = nc_variables_dims(config.nc.variable, nc_static, config)
-        ds_scalar = setup_netcdf(nc_scalar_path, ncvars_dims, calendar, time_units)
+        ncvars_dims = nc_variables_dims(config.netcdf.variable, nc_static, config)
+        ds_scalar = setup_scalar_netcdf(nc_scalar_path, ncvars_dims, calendar, time_units)
         # create a vector of (parameter, reducer) named tuples which will be used to
         # retrieve and reduce data during a model run
         nc_scalar = []
-        for var in config.nc.variable
+        for var in config.netcdf.variable
             parameter = var["parameter"]
             reducer_func =
                 get_reducer_func(var, rev_inds, x_nc, y_nc, dims_xy, config, nc_static)
