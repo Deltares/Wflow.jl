@@ -643,18 +643,19 @@ function out_map(ncnames_dict, modelmap)
 end
 
 
-function get_reducer_func(col, rev_inds, x_nc, y_nc, dims_xy, config, nc_static)
-    if occursin("reservoir", col["parameter"])
+function get_reducer_func(col, rev_inds, args...)
+    parameter = col["parameter"]
+    if occursin("reservoir", parameter)
         reducer_func =
-            reducer(col, rev_inds.reservoir, x_nc, y_nc, dims_xy, config, nc_static)
-    elseif occursin("lake", col["parameter"])
-        reducer_func = reducer(col, rev_inds.lake, x_nc, y_nc, dims_xy, config, nc_static)
-    elseif occursin("river", col["parameter"])
-        reducer_func = reducer(col, rev_inds.river, x_nc, y_nc, dims_xy, config, nc_static)
-    elseif occursin("drain", col["parameter"])
-        reducer_func = reducer(col, rev_inds.drain, x_nc, y_nc, dims_xy, config, nc_static)
+            reducer(col, rev_inds.reservoir, args...)
+    elseif occursin("lake", parameter)
+        reducer_func = reducer(col, rev_inds.lake, args...)
+    elseif occursin("river", parameter)
+        reducer_func = reducer(col, rev_inds.river, args...)
+    elseif occursin("drain", parameter)
+        reducer_func = reducer(col, rev_inds.drain, args...)
     else
-        reducer_func = reducer(col, rev_inds.land, x_nc, y_nc, dims_xy, config, nc_static)
+        reducer_func = reducer(col, rev_inds.land, args...)
     end
 end
 
