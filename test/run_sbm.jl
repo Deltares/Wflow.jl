@@ -40,6 +40,36 @@ flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
     @test row.recharge_1 ≈ -0.027398093386017383
 end
 
+@testset "NetCDF scalar output" begin
+    ds = model.writer.dataset_scalar
+    @test ds["time"][1] == DateTime("2000-01-01T00:00:00")
+    @test ds["Q"][:] ≈ [
+        0.023884907,
+        0.012411069,
+        0.004848609,
+        0.011474802,
+        0.0005262529,
+        0.013467698,
+        0.003408281,
+        0.09773275,
+        0.0021476103,
+        0.0026493936,
+        0.0008708129,
+        0.0007291489,
+        0.0021553952,
+        0.002229833,
+        0.003104503,
+        3.3423893,
+        1.35827,
+        5.9423304,
+        1.6809973,
+    ]
+    @test ds["Q_gauges"].attrib["cf_role"] == "timeseries_id"
+    @test ds["temp_index"][:] ≈ [2.3279827]
+    @test ds["temp_coord"][:] ≈ [2.3279827]
+    @test keys(ds.dim) == ["time", "Q_gauges", "temp_bycoord", "temp_byindex"]
+end
+
 @testset "first timestep" begin
     sbm = model.vertical
 
