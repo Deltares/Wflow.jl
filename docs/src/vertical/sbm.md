@@ -96,7 +96,7 @@ adds or removes (partly) layer(s) based on the `soilthickness`.
 
 Assuming a unit head gradient, the transfer of water (``st``) from a ``U`` store layer is
 controlled by the saturated hydraulic conductivity ``K_{sat}`` at depth ``z`` (bottom layer)
-or :math:`z_{i}`, the effective saturation degree of the layer, and a Brooks-Corey power
+or ``z_{i}``, the effective saturation degree of the layer, and a Brooks-Corey power
 coefficient (parameter ``c``) based on the pore size distribution index ``\lambda`` (Brooks
 and Corey (1964)):
 

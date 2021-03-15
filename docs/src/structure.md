@@ -205,8 +205,7 @@ n = "N"
 slope = "Slope"
 ```
 
-### Output netCDF section
-
+### Output netCDF section (grid data)
 This optional section of the TOML file contains the output netCDF file for writing gridded
 model output, including a mapping between internal model parameter components and external
 netCDF variables.
@@ -236,6 +235,43 @@ ssf = "ssf"
 [output.lateral.land]
 q = "q_land"
 h = "h_land"
+```
+
+### Output netCDF section (scalar data)
+Besides gridded data, it is also possible to write scalar data to a NetCDF file. Below is an
+example that writes scalar data to the file "output\_scalar\_moselle.nc". For each NetCDF
+variable a `name` (external variable name) and `parameter` (internal model parameter) is
+required. A `reducer` can be specified to apply to the model output, see for more
+information the following section [Output CSV section](@ref). When a `map` is provided to
+extract data for certain locations (e.g. `gauges`) or areas (e.g. `subcatchment`), the
+NetCDF location names are extracted from these maps. For a specific location (grid cell) a
+`location` is required. In the section [Output CSV section](@ref), similar functionality is
+available for CSV. For integration with Delft-FEWS, see also [Run from Delft-FEWS](@ref),
+it is recommended to write scalar data to NetCDF format since the General Adapter of
+Delft-FEWS can ingest this data format directly.
+
+```toml
+[netcdf]
+path = "data/output_scalar_moselle.nc"
+
+[[netcdf.variable]]
+name = "Q"
+map = "gauges"
+parameter = "lateral.river.q"
+
+[[netcdf.variable]]
+coordinate.x = 6.255
+coordinate.y = 50.012
+name = "temp_coord"
+location = "temp_bycoord"
+parameter = "vertical.temperature"
+
+[[netcdf.variable]]
+location = "temp_byindex"
+name = "temp_index"
+index.x = 100
+index.y = 50
+parameter = "vertical.temperature"
 ```
 
 ### Output CSV section
