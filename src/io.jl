@@ -228,7 +228,13 @@ function create_tracked_netcdf(path)
 end
 
 "prepare an output dataset for scalar data"
-function setup_scalar_netcdf(output_path, ncvars, calendar, time_units, float_type = Float32)
+function setup_scalar_netcdf(
+    output_path,
+    ncvars,
+    calendar,
+    time_units,
+    float_type = Float32,
+)
     ds = create_tracked_netcdf(output_path)
     defDim(ds, "time", Inf)  # unlimited
     defVar(
@@ -411,19 +417,19 @@ struct NCReader{T}
 end
 
 struct Writer
-    dataset::Union{NCDataset,Nothing}
-    parameters::Dict{String,Any}
-    nc_path::Union{String,Nothing}
-    csv_path::Union{String,Nothing}
-    csv_cols::Vector
-    csv_io::IO
-    state_dataset::Union{NCDataset,Nothing}
-    state_parameters::Dict{String,Any}
-    state_nc_path::Union{String,Nothing}
-    dataset_scalar::Union{NCDataset,Nothing}
-    nc_scalar::Vector
-    ncvars_dims::Vector
-    nc_scalar_path::Union{String,Nothing}
+    dataset::Union{NCDataset,Nothing}           # dataset (NetCDF) for grid data
+    parameters::Dict{String,Any}                # mapping of NetCDF variable names to model parameters (arrays)
+    nc_path::Union{String,Nothing}              # path NetCDF file (grid data)
+    csv_path::Union{String,Nothing}             # path of CSV file
+    csv_cols::Vector                            # model parameter (arrays) and associated reducer function for CSV output
+    csv_io::IO                                  # file handle to CSV file
+    state_dataset::Union{NCDataset,Nothing}     # dataset with model states (NetCDF)
+    state_parameters::Dict{String,Any}          # mapping of NetCDF variable names to model states (arrays)
+    state_nc_path::Union{String,Nothing}        # path NetCDF file with states
+    dataset_scalar::Union{NCDataset,Nothing}    # dataset(NetCDF) for scalar data
+    nc_scalar::Vector                           # model parameter (arrays) and associated reducer function for NetCDF scalar output
+    ncvars_dims::Vector                         # NetCDF variable, location dimension and location name for scalar data
+    nc_scalar_path::Union{String,Nothing}       # path NetCDF file (scalar data)
 end
 
 function prepare_reader(path, cyclic_path, config)
@@ -646,8 +652,7 @@ end
 function get_reducer_func(col, rev_inds, args...)
     parameter = col["parameter"]
     if occursin("reservoir", parameter)
-        reducer_func =
-            reducer(col, rev_inds.reservoir, args...)
+        reducer_func = reducer(col, rev_inds.reservoir, args...)
     elseif occursin("lake", parameter)
         reducer_func = reducer(col, rev_inds.lake, args...)
     elseif occursin("river", parameter)
