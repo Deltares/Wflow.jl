@@ -85,14 +85,25 @@ end
 
 function get_at!(buffer, var::NCDatasets.CFVariable, i)
     # assumes the dataset has 12 time steps, from January to December
+    dims = length(NCDatasets.dimnames(var))
     dim = findfirst(==("time"), NCDatasets.dimnames(var))
     # load in place, using a lower level NCDatasets function
-    if dim == 1
-        NCDatasets.load!(var.var, buffer, i, :, :)
-    elseif dim == 3
-        NCDatasets.load!(var.var, buffer, :, :, i)
-    else
-        error("Time dimension expected at position 1 or 3")
+    if dims == 3
+        if dim == 1
+            NCDatasets.load!(var.var, buffer, i, :, :)
+        elseif dim == 3
+            NCDatasets.load!(var.var, buffer, :, :, i)
+        else
+            error("Time dimension expected at position 1 or 3 (number of dimensions is 3)")
+        end
+    elseif dims == 4
+        if dim == 1
+            NCDatasets.load!(var.var, buffer, i, 1, :, :)
+        elseif dim == 4
+            NCDatasets.load!(var.var, buffer, :, :, 1, i)
+        else
+            error("Time dimension expected at position 1 or 4 (number of dimensions is 4)")
+        end
     end
     return buffer
 end
@@ -399,7 +410,8 @@ end
 
 function checkdims(dims)
     # TODO check if the x y ordering is equal to the staticmaps NetCDF
-    @assert length(dims) == 3
+    # with ensembles (e.g. Delft-FEWS) dims == 4
+    @assert length(dims) == 3 || length(dims) == 4
     @assert "time" in dims
     @assert ("x" in dims) || ("lon" in dims)
     @assert ("y" in dims) || ("lat" in dims)
