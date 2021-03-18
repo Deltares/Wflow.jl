@@ -28,7 +28,6 @@ end
     hbv = model.vertical
     @test hbv.tt[1] ≈ 0.0
     @test model.clock.iteration == 2
-    @test hbv.altitude[1] == 484.2149963378906
     @test hbv.soilmoisture[1] == 134.35299682617188
     @test hbv.runoff[1] == 7.406898120121746
     @test hbv.soilevap[1] == 0.0
@@ -40,7 +39,6 @@ model = Wflow.update(model)
 
 @testset "second timestep" begin
     hbv = model.vertical
-    @test hbv.altitude[1] == 484.2149963378906
     @test hbv.soilmoisture[1] == 134.35299682617188
     @test hbv.runoff[1] == 4.353345933656929
     @test hbv.soilevap[1] == 0.0

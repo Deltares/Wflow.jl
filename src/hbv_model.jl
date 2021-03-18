@@ -288,9 +288,6 @@ function initialize_hbv_model(config::Config)
     hbv = HBV{Float64}(
         Δt = tosecond(Δt),
         n = n,
-        yl = yl,
-        xl = xl,
-        altitude = altitude,
         fc = fc,
         betaseepage = betaseepage,
         lp = lp,
@@ -511,6 +508,8 @@ function initialize_hbv_model(config::Config)
         order = topological_sort_by_dfs(graph),
         indices = inds,
         reverse_indices = rev_inds,
+        xl = xl,
+        yl = yl,
     )
     river = (
         graph = graph_riv,
@@ -577,7 +576,7 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:HBV,R,W}
     # determine lateral inflow for overland flow based on vertical runoff [mm] from vertical
     # hbv concept
     lateral.land.qlat .=
-        (vertical.runoff .* vertical.xl .* vertical.yl .* 0.001) ./ lateral.land.Δt ./
+        (vertical.runoff .* network.land.xl .* network.land.yl .* 0.001) ./ lateral.land.Δt ./
         lateral.land.dl
 
     # run kinematic wave for overland flow

@@ -10,9 +10,7 @@
     # Number of unsaturated soil layers
     n_unsatlayers::Vector{Int} | "-"
     # length of cells in y direction [m]
-    yl::Vector{T} | "m"
-    # length of cells in x direction [m]
-    xl::Vector{T} | "m"
+
     # Fraction of river [-]
     riverfrac::Vector{T} | "-"
     # Saturated water content (porosity) [mm mm⁻¹]
@@ -41,8 +39,6 @@
     waterfrac::Vector{T} | "-"
     # Fraction of compacted area  [-]
     pathfrac::Vector{T} | "-"
-    # Vertical elevation [m]
-    altitude::Vector{T} | "m"
     # Rooting depth [mm]
     rootingdepth::Vector{T}
     # Controls how roots are linked to water table [-]
@@ -262,7 +258,7 @@ function initialize_canopy(nc, config, inds)
     return cmax, e_r, canopygapfraction, sl, swood, kext
 end
 
-function initialize_sbm(nc, config, riverfrac, xl, yl, inds)
+function initialize_sbm(nc, config, riverfrac, inds)
 
     Δt = Second(config.timestepsecs)
     config_thicknesslayers = get(config.model, "thicknesslayers", Float64[])
@@ -275,9 +271,6 @@ function initialize_sbm(nc, config, riverfrac, xl, yl, inds)
     end
 
     n = length(inds)
-
-    altitude =
-        ncread(nc, param(config, "input.vertical.altitude"); sel = inds, type = Float64)
 
     cfmax =
         ncread(
@@ -555,8 +548,6 @@ function initialize_sbm(nc, config, riverfrac, xl, yl, inds)
         n = n,
         nlayers = nlayers,
         n_unsatlayers = fill(0, n),
-        yl = yl,
-        xl = xl,
         riverfrac = riverfrac,
         θₛ = θₛ,
         θᵣ = θᵣ,
@@ -571,7 +562,6 @@ function initialize_sbm(nc, config, riverfrac, xl, yl, inds)
         maxleakage = maxleakage,
         waterfrac = max.(waterfrac .- riverfrac, 0.0),
         pathfrac = pathfrac,
-        altitude = altitude,
         rootingdepth = rootingdepth,
         rootdistpar = rootdistpar,
         capscale = capscale,
@@ -664,7 +654,6 @@ function update_until_snow(sbm::SBM, config)
     do_lai = haskey(config.input.vertical, "leaf_area_index")
     modelglacier = get(config.model, "glacier", false)::Bool
     modelsnow = get(config.model, "snow", false)::Bool
-    Δt = Second(config.timestepsecs)
 
     for i = 1:sbm.n
         if do_lai
@@ -686,7 +675,7 @@ function update_until_snow(sbm::SBM, config)
         # should we include tempcor in SBM?
         # potential_evaporation = PotenEvap #??
 
-        if Δt >= Hour(23)
+        if Second(sbm.Δt) >= Hour(23)
             throughfall, interception, stemflow, canopystorage = rainfall_interception_gash(
                 cmax,
                 e_r,
@@ -750,7 +739,6 @@ function update_until_recharge(sbm::SBM, config)
     modelsnow = get(config.model, "snow", false)::Bool
     transfermethod = get(config.model, "transfermethod", false)::Bool
     ust = get(config.model, "whole_ust_available", false)::Bool # should be removed from optional setting and code?
-    Δt = Second(config.timestepsecs)
 
     for i = 1:sbm.n
         if modelsnow
@@ -768,7 +756,7 @@ function update_until_recharge(sbm::SBM, config)
                     sbm.g_tt[i],
                     sbm.g_cfmax[i],
                     sbm.g_sifrac[i],
-                    Δt,
+                    Second(sbm.Δt),
                 )
                 # Convert to mm per grid cell and add to snowmelt
                 glaciermelt = glaciermelt * sbm.glacierfrac[i]
@@ -969,7 +957,7 @@ function update_until_recharge(sbm::SBM, config)
             if sbm.zi[i] > rootingdepth
                 capfluxscale =
                     sbm.capscale[i] / (sbm.capscale[i] + sbm.zi[i] - rootingdepth) *
-                    tosecond(Δt) / tosecond(basetimestep)
+                    (sbm.Δt / tosecond(basetimestep))
             else
                 capfluxscale = 0.0
             end
@@ -1011,6 +999,7 @@ function update_until_recharge(sbm::SBM, config)
         sbm.runoff_river[i] = runoff_river
         sbm.actevapsat[i] = actevapsat
         sbm.actevap[i] = actevap
+        sbm.ae_ustore[i] = actevapustore
         sbm.ustorelayerdepth[i] = usld
         sbm.transfer[i] = transfer
         sbm.actcapflux[i] = actcapflux

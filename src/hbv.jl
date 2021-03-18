@@ -1,9 +1,6 @@
 @get_units @with_kw struct HBV{T}
     Δt::T | "s"                     # Model time step [s]
     n::Int | "-"                    # Number of cells
-    yl::Vector{T} | "m"             # Length of cells in y direction [m]
-    xl::Vector{T} | "m"             # Length of cells in x direction [m]
-    altitude::Vector{T} | "m"       # Vertical elevation [m]
     fc::Vector{T}                   # Field capacity [mm]
     betaseepage::Vector{T} | "-"    # Exponent in soil runoff generation equation [-]
     lp::Vector{T} | "-"             # Fraction of field capacity below which actual evaporation=potential evaporation [-]

@@ -21,7 +21,6 @@ end
     sbm = model.vertical
 
     @test model.clock.iteration == 2
-    @test sbm.altitude[1] == 1.937000036239624
     @test sbm.θₛ[1] == 0.44999998807907104
     @test sbm.runoff[1] == 0.0
     @test sbm.soilevap[1] == 0.0
@@ -33,7 +32,6 @@ model = Wflow.update_sbm_gwf(model)
 
 @testset "second timestep" begin
     sbm = model.vertical
-    @test sbm.altitude[1] == 1.937000036239624
     @test sbm.θₛ[1] == 0.44999998807907104
     @test sbm.runoff[1] == 0.0
     @test sbm.soilevap[1] == 0.0
