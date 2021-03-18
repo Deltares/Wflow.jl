@@ -82,8 +82,6 @@
     transpiration::Vector{T}
     # Actual evaporation from unsaturated store [mm]
     ae_ustore::Vector{T}
-    # Actual evaporation from saturated store [mm]
-    ae_sat::Vector{T}
     # Interception [mm]
     interception::Vector{T}
     # Soil evaporation from unsaturated store [mm]
@@ -92,7 +90,7 @@
     soilevapsat::Vector{T}
     # Actual capillary rise [mm]
     actcapflux::Vector{T}
-    # Actual evaporation from saturated store (transpiration and soil evaporation) [mm]
+    # Actual transpiration from saturated store [mm]
     actevapsat::Vector{T}
     # Total actual evapotranspiration [mm]
     actevap::Vector{T}
@@ -582,7 +580,6 @@ function initialize_sbm(nc, config, riverfrac, inds)
         pottrans_soil = fill(mv, n),
         transpiration = fill(mv, n),
         ae_ustore = fill(mv, n),
-        ae_sat = fill(mv, n),
         interception = fill(mv, n),
         soilevap = fill(mv, n),
         soilevapsat = fill(mv, n),
