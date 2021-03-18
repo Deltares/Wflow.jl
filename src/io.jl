@@ -85,10 +85,9 @@ end
 
 function get_at!(buffer, var::NCDatasets.CFVariable, i)
     # assumes the dataset has 12 time steps, from January to December
-    dims = length(NCDatasets.dimnames(var))
     dim = findfirst(==("time"), NCDatasets.dimnames(var))
     # load in place, using a lower level NCDatasets function
-    if dims == 3
+    if ndims(var) == 3
         if dim == 1
             NCDatasets.load!(var.var, buffer, i, :, :)
         elseif dim == 3
@@ -96,14 +95,28 @@ function get_at!(buffer, var::NCDatasets.CFVariable, i)
         else
             error("Time dimension expected at position 1 or 3 (number of dimensions is 3)")
         end
-    elseif dims == 4
+    elseif ndims(var) == 4
         if dim == 1
-            NCDatasets.load!(var.var, buffer, i, 1, :, :)
+            len = size(var, 2)
+            if len == 1
+                NCDatasets.load!(var.var, buffer, i, 1, :, :)
+            else
+                dimname = NCDatasets.dimnames(var)[2]
+                error("Unsupported dimension $dimname of size $len")
+            end
         elseif dim == 4
-            NCDatasets.load!(var.var, buffer, :, :, 1, i)
+            len = size(var, 3)
+            if len == 1
+                NCDatasets.load!(var.var, buffer, :, :, 1, i)
+            else
+                dimname = NCDatasets.dimnames(var)[3]
+                error("Unsupported dimension $dimname of size $len")
+            end
         else
             error("Time dimension expected at position 1 or 4 (number of dimensions is 4)")
         end
+    else
+        error("Expected a 3 or 4 dimensional variable in the NetCDF")
     end
     return buffer
 end
