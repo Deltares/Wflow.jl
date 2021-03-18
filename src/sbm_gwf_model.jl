@@ -60,7 +60,7 @@ function initialize_sbm_gwf_model(config::Config)
     riverlength = riverlength_2d[inds]
 
     altitude =
-        ncread(nc, param(config, "input.vertical.altitude"); sel = inds, type = Float64)
+        ncread(nc, param(config, "input.altitude"); sel = inds, type = Float64)
     # read x, y coordinates and calculate cell length [m]
     y_nc = "y" in keys(nc.dim) ? ncread(nc, "y") : ncread(nc, "lat")
     x_nc = "x" in keys(nc.dim) ? ncread(nc, "x") : ncread(nc, "lon")

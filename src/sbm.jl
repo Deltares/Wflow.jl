@@ -9,8 +9,6 @@
     nlayers::Vector{Int} | "-"
     # Number of unsaturated soil layers
     n_unsatlayers::Vector{Int} | "-"
-    # length of cells in y direction [m]
-
     # Fraction of river [-]
     riverfrac::Vector{T} | "-"
     # Saturated water content (porosity) [mm mm⁻¹]
