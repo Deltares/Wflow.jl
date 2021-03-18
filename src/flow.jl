@@ -12,7 +12,6 @@
     Δt::T | "s"                             # Model time step [s]
     its::Int | "-"                          # Number of fixed iterations
     width::Vector{T} | "m"                  # Flow width [m]
-    alpha_term::Vector{T} | "s3/5 m-1/5"    # Constant part of α
     alpha_pow::T | "-"                      # Used in the power part of α
     α::Vector{T} | "s3/5 m1/5"              # Constant in momentum equation A = αQᵝ, based on Manning's equation
     eps::T | "s3/5 m1/5"                    # Maximum allowed change in α, if exceeded cross sectional area and h is recalculated
@@ -68,6 +67,9 @@ function update(
 
     # sub time step
     adt = sf.Δt / its
+
+    alpha_term = pow.(sf.n ./ sqrt.(sf.sl),sf.β)
+    sf.α .= alpha_term .* pow.(sf.width .+ 2.0 .* sf.h, sf.alpha_pow)
 
     q_sum = zeros(n)
     h_sum = zeros(n)
@@ -135,7 +137,7 @@ function update(
             sf.h[v] = crossarea / sf.width[v]
             wetper = sf.width[v] + (2.0 * sf.h[v]) # wetted perimeter
             α = sf.α[v]
-            sf.α[v] = sf.alpha_term[v] * pow(wetper, sf.alpha_pow)
+            sf.α[v] = alpha_term[v] * pow(wetper, sf.alpha_pow)
 
             if abs(α - sf.α[v]) > sf.eps
                 crossarea = sf.α[v] * pow(sf.q[v], sf.β)
@@ -156,7 +158,8 @@ end
     kh₀::Vector{T} | "mm Δt-1"              # Horizontal hydraulic conductivity at soil surface [mm Δt⁻¹]
     f::Vector{T} | "mm-1"                   # A scaling parameter [mm⁻¹] (controls exponential decline of kh₀)
     soilthickness::Vector{T} | "mm"         # Soil thickness [mm]
-    θₑ::Vector{T} | "mm mm-1"               # Effective porosity [-]
+    θₛ::Vector{T} | "mm mm-1"               # Saturated water content (porosity) [-]
+    θᵣ::Vector{T} | "mm mm-1"               # Residual water content [-]
     t::T | "Δt s"                           # time step [Δt s]
     Δt::T | "s"                             # model time step [s]
     βₗ::Vector{T} | "m m-1"                  # Slope [m m⁻¹]
@@ -205,7 +208,7 @@ function update(ssf::LateralSSF, network, frac_toriver)
             ssf.recharge[v],
             ssf.kh₀[v],
             ssf.βₗ[v],
-            ssf.θₑ[v],
+            ssf.θₛ[v] - ssf.θᵣ[v],
             ssf.f[v],
             ssf.soilthickness[v],
             ssf.t,

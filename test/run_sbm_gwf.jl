@@ -47,10 +47,10 @@ end
 
 @testset "river flow" begin
     q = model.lateral.river.q_av
-    @test sum(q) ≈ 0.03515256649675796
-    @test q[6] ≈ 0.00795266793733648
-    @test q[13] ≈ 0.0005980549864213564
-    @test q[network.river.order[end]] ≈ 0.008482646477950898
+    @test sum(q) ≈ 0.03515257228971982
+    @test q[6] ≈ 0.007952670041402076
+    @test q[13] ≈ 0.0005980549969548235
+    @test q[network.river.order[end]] ≈ 0.008482648782941154
 end
 
 @testset "groundwater" begin

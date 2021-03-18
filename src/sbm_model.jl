@@ -126,7 +126,8 @@ function initialize_sbm_model(config::Config)
         f = sbm.f,
         zi = sbm.zi,
         soilthickness = sbm.soilthickness,
-        θₑ = sbm.θₛ .- sbm.θᵣ,
+        θₛ = sbm.θₛ,
+        θᵣ = sbm.θᵣ,
         Δt = tosecond(Δt),
         t = 1.0,
         βₗ = βₗ,
@@ -153,8 +154,6 @@ function initialize_sbm_model(config::Config)
 
     alpha_pow = (2.0 / 3.0) * 0.6
     β = 0.6
-    h = fill(0.0, n)
-    alpha_term = pow.(n_land ./ sqrt.(βₗ), β)
     olf = SurfaceFlow(
         β = β,
         sl = βₗ,
@@ -164,15 +163,14 @@ function initialize_sbm_model(config::Config)
         qin = fill(0.0, n),
         q_av = fill(0.0, n),
         qlat = fill(0.0, n),
-        h = h,
+        h = fill(0.0, n),
         h_av = fill(0.0, n),
         Δt = tosecond(Δt),
         its = kw_land_tstep > 0 ? Int(cld(tosecond(Δt), kw_land_tstep)) : kw_land_tstep,
         width = sw,
         wb_pit = pits[inds],
-        alpha_term = alpha_term,
         alpha_pow = alpha_pow,
-        α = alpha_term .* pow.(sw .+ 2.0 .* h, alpha_pow),
+        α = fill(mv, n),
         eps = 1e-03,
         cel = fill(0.0, n),
         to_river = fill(0.0, n),
@@ -213,8 +211,6 @@ function initialize_sbm_model(config::Config)
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
     frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, βₗ, n)
 
-    h_river = fill(0.0, nriv)
-    alpha_term = pow.(n_river ./ sqrt.(riverslope), β)
     rf = SurfaceFlow(
         β = β,
         sl = riverslope,
@@ -224,16 +220,15 @@ function initialize_sbm_model(config::Config)
         qin = fill(0.0, nriv),
         q_av = fill(0.0, nriv),
         qlat = fill(0.0, nriv),
-        h = h_river,
+        h = fill(0.0, nriv),
         h_av = fill(0.0, nriv),
         Δt = tosecond(Δt),
         its = kw_river_tstep > 0 ? ceil(Int(tosecond(Δt) / kw_river_tstep)) :
               kw_river_tstep,
         width = riverwidth,
         wb_pit = pits[inds_riv],
-        alpha_term = alpha_term,
         alpha_pow = alpha_pow,
-        α = alpha_term .* pow.(riverwidth .+ 2.0 .* h_river, alpha_pow),
+        α = fill(mv, nriv),
         eps = 1e-03,
         cel = fill(0.0, nriv),
         to_river = fill(0.0, nriv),
@@ -300,14 +295,8 @@ function initialize_sbm_model(config::Config)
         set_states(instate_path, model, state_ncnames; type = Float64)
         @unpack lateral, vertical = model
         # update zi for vertical sbm and α for river and overland flow
-        zi = max.(0.0, vertical.soilthickness .- vertical.satwaterdepth ./ vertical.θₑ)
+        zi = max.(0.0, vertical.soilthickness .- vertical.satwaterdepth ./ (vertical.θₛ .- vertical.θᵣ))
         vertical.zi .= zi
-        lateral.river.α .=
-            lateral.river.alpha_term .*
-            pow.(lateral.river.width .+ 2.0 .* lateral.river.h, lateral.river.alpha_pow)
-        lateral.land.α .=
-            lateral.land.alpha_term .*
-            pow.(lateral.land.width .+ 2.0 .* lateral.land.h, lateral.land.alpha_pow)
     end
 
     # make sure the forcing is already loaded
