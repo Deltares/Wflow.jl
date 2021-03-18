@@ -19,8 +19,6 @@
     θₛ::Vector{T} | "mm mm-1"
     # Residual water content [mm mm⁻¹]
     θᵣ::Vector{T} | "mm mm-1"
-    # Effictive porosity [mm mm⁻¹]
-    θₑ::Vector{T} | "mm mm-1"
     # Vertical hydraulic conductivity [mm Δt⁻¹] at soil surface
     kv₀::Vector{T} | "mm Δt-1"
     # Muliplication factor [-] applied to kv_z (vertical flow)
@@ -562,7 +560,6 @@ function initialize_sbm(nc, config, riverfrac, xl, yl, inds)
         riverfrac = riverfrac,
         θₛ = θₛ,
         θᵣ = θᵣ,
-        θₑ = θₑ,
         kv₀ = kv₀,
         kvfrac = svectorscopy(kvfrac, Val{maxlayers}()),
         hb = hb,

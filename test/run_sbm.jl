@@ -114,9 +114,9 @@ end
 
 @testset "river flow" begin
     q = model.lateral.river.q_av
-    @test sum(q) ≈ 2807.935527751757
+    @test sum(q) ≈ 2807.884971209105
     @test q[4061] ≈ 0.0016288040314320486
-    @test q[5617] ≈ 7.338204361667292
+    @test q[5617] ≈ 7.338169165884175
     @test q[network.river.order[end]] ≈ 0.00610520650626283
 end
 
@@ -157,7 +157,7 @@ end
 # downstream from pit is at river index 1739, CartesianIndex(142, 85)
 @testset "river flow at and downstream of pit" begin
     q = model.lateral.river.q_av
-    @test q[1765] ≈ 8.133435755782642
+    @test q[1765] ≈ 8.133435566601927
     @test q[1739] ≈ 0.008996045895155833
 end
 

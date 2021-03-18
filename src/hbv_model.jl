@@ -408,8 +408,6 @@ function initialize_hbv_model(config::Config)
 
     alpha_pow = (2.0 / 3.0) * 0.6
     β = 0.6
-    h = fill(0.0, n)
-    alpha_term = pow.(n_land ./ sqrt.(βₗ), β)
     olf = SurfaceFlow(
         β = β,
         sl = βₗ,
@@ -419,15 +417,14 @@ function initialize_hbv_model(config::Config)
         qin = fill(0.0, n),
         q_av = fill(0.0, n),
         qlat = fill(0.0, n),
-        h = h,
+        h = fill(0.0, n),
         h_av = fill(0.0, n),
         Δt = tosecond(Δt),
         its = kw_land_tstep > 0 ? Int(cld(tosecond(Δt), kw_land_tstep)) : kw_land_tstep,
         width = dw,
         wb_pit = pits[inds],
-        alpha_term = alpha_term,
         alpha_pow = alpha_pow,
-        α = alpha_term .* pow.(dw .+ 2.0 .* h, alpha_pow),
+        α = fill(mv, n),
         eps = 1e-03,
         cel = fill(0.0, n),
         to_river = fill(0.0, n),
@@ -467,8 +464,6 @@ function initialize_hbv_model(config::Config)
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
     frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, βₗ, n)
 
-    h_river = fill(0.0, nriv)
-    alpha_term = pow.(n_river ./ sqrt.(riverslope), β)
     rf = SurfaceFlow(
         β = β,
         sl = riverslope,
@@ -478,16 +473,15 @@ function initialize_hbv_model(config::Config)
         qin = fill(0.0, nriv),
         q_av = fill(0.0, nriv),
         qlat = fill(0.0, nriv),
-        h = h_river,
+        h = fill(0.0, nriv),
         h_av = fill(0.0, nriv),
         Δt = tosecond(Δt),
         its = kw_river_tstep > 0 ? ceil(Int(tosecond(Δt) / kw_river_tstep)) :
               kw_river_tstep,
         width = riverwidth,
         wb_pit = pits[inds_riv],
-        alpha_term = alpha_term,
         alpha_pow = alpha_pow,
-        α = alpha_term .* pow.(riverwidth .+ 2.0 .* h_river, alpha_pow),
+        α = fill(mv, nriv),
         eps = 1e-03,
         cel = fill(0.0, nriv),
         to_river = fill(0.0, nriv),
