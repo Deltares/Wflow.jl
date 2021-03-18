@@ -43,13 +43,8 @@ unit width of slope ``w`` [mm] according to:
 where ``\beta`` is element slope angle [deg.], ``q`` is subsurface flow [mm``^{2}``/t],
 ``K_{0}`` is the saturated hydraulic conductivity at the soil surface [mm/t], ``z_{i}`` is
 the water table depth [mm],``z_{t}`` is total soil depth [mm], and ``f`` is a scaling
-parameter [mm``^{-1}``]:
-```math
-    f=\frac{\theta_{s}-\theta_{r}}{M},\,
-```
-where ``\theta_{s}`` is saturated water content [mm/mm] and ``\theta_{r}`` is residual water
-content [mm/mm] and ``M`` represents a model parameter [mm], that determines the decrease of
-vertical saturated conductivity with depth.
+parameter [mm``^{-1}``], that controls the decrease of vertical saturated conductivity with 
+depth.
 
 Combining with the following continuity equation:
 ```math

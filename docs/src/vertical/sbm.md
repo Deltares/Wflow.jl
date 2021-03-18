@@ -125,13 +125,7 @@ to:
     K_{sat}=K_{0}e^{(-fz)}
 ```
 where ``K_{0}`` is the saturated conductivity at the soil surface and ``f`` is a scaling
-parameter [mm``^{-1}``]. The scaling parameter :math:`f` is defined by:
-
-```math
-f=\frac{\theta_{s}-\theta_{r}}{M} 
-```
-with ``\theta_{s}`` and ``\theta_{r}`` as defined previously and ``M`` [mm] representing a
-model parameter.
+parameter [mm``^{-1}``].
 
 ## Transpiration and soil evaporation
 The potential evaporation left over after interception and open water evaporation (rivers

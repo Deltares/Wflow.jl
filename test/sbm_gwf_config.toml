@@ -40,6 +40,7 @@ path_static = "data/staticmaps-sbm-groundwater.nc"
 ldd = "wflow_ldd"
 river_location = "wflow_river"
 subcatchment = "wflow_subcatch"
+altitude = "wflow_dem"
 
 # specify the internal IDs of the parameters which vary over time
 # the external name mapping needs to be below together with the other mappings
@@ -49,7 +50,6 @@ forcing = [
 ]
 
 [input.vertical]
-altitude = "wflow_dem"
 canopygapfraction = "canopygapfraction"
 cmax = "cmax"
 e_r = "EoverR"
