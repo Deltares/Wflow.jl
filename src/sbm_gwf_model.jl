@@ -59,6 +59,8 @@ function initialize_sbm_gwf_model(config::Config)
         ncread(nc, param(config, "input.lateral.river.length"); type = Float64, fill = 0)
     riverlength = riverlength_2d[inds]
 
+    altitude =
+        ncread(nc, param(config, "input.vertical.altitude"); sel = inds, type = Float64)
     # read x, y coordinates and calculate cell length [m]
     y_nc = "y" in keys(nc.dim) ? ncread(nc, "y") : ncread(nc, "lat")
     x_nc = "x" in keys(nc.dim) ? ncread(nc, "x") : ncread(nc, "lon")
@@ -81,7 +83,7 @@ function initialize_sbm_gwf_model(config::Config)
     end
 
     # initialize vertical SBM concept
-    sbm = initialize_sbm(nc, config, riverfrac, xl, yl, inds)
+    sbm = initialize_sbm(nc, config, riverfrac, inds)
 
     inds_riv, rev_inds_riv = active_indices(river_2d, 0)
     nriv = length(inds_riv)
@@ -236,9 +238,9 @@ function initialize_sbm_gwf_model(config::Config)
         type = Float64,
     )
 
-    connectivity = Connectivity(inds, rev_inds, sbm.xl, sbm.yl)
-    initial_head = sbm.altitude .- 0.10 # cold state for groundwater head
-    initial_head[index_river] = sbm.altitude[index_river]
+    connectivity = Connectivity(inds, rev_inds, xl, yl)
+    initial_head = altitude .- 0.10 # cold state for groundwater head
+    initial_head[index_river] = altitude[index_river]
 
     if do_constanthead
         initial_head[constant_head.index] = constant_head.head
@@ -247,15 +249,15 @@ function initialize_sbm_gwf_model(config::Config)
     aquifer = UnconfinedAquifer(
         initial_head,
         conductivity,
-        sbm.altitude,
-        sbm.altitude .- sbm.soilthickness ./ 1000.0,
+        altitude,
+        altitude .- sbm.soilthickness ./ 1000.0,
         xl .* yl,
         specific_yield,
         fill(0.0, connectivity.nconnection),  # conductance
     )
 
     # reset zi and satwaterdepth with groundwater head from unconfined aquifer 
-    sbm.zi .= (sbm.altitude .- initial_head) .* 1000.0
+    sbm.zi .= (altitude .- initial_head) .* 1000.0
     sbm.satwaterdepth .= (sbm.soilthickness .- sbm.zi) .* (sbm.θₛ .- sbm.θᵣ)
 
     # river boundary of unconfined aquifer
@@ -379,6 +381,9 @@ function initialize_sbm_gwf_model(config::Config)
         order = topological_sort_by_dfs(graph),
         indices = inds,
         reverse_indices = rev_inds,
+        xl = xl,
+        yl = yl,
+        altitude = altitude, 
     )
     river = (
         graph = graph_riv,
@@ -478,14 +483,14 @@ function update_sbm_gwf(model)
     # update vertical sbm concept (runoff, ustorelayerdepth and satwaterdepth)
     update_after_lateralflow(
         vertical,
-        (vertical.altitude .- lateral.subsurface.flow.aquifer.head) .* 1000.0, # zi [mm] in vertical concept SBM
+        (network.land.altitude .- lateral.subsurface.flow.aquifer.head) .* 1000.0, # zi [mm] in vertical concept SBM
         exfiltwater .* 1000.0,
     )
 
     # determine lateral inflow for overland flow based on vertical runoff [mm] from vertical
     # sbm concept
     lateral.land.qlat .=
-        (vertical.runoff .* vertical.xl .* vertical.yl .* 0.001) ./ lateral.land.Δt ./
+        (vertical.runoff .* network.land.xl .* network.land.yl .* 0.001) ./ lateral.land.Δt ./
         lateral.land.dl
     # run kinematic wave for overland flow
     update(
@@ -498,8 +503,8 @@ function update_sbm_gwf(model)
     # determine net runoff from vertical sbm concept in river cells
     net_runoff_river =
         (
-            vertical.net_runoff_river[inds_riv] .* vertical.xl[inds_riv] .*
-            vertical.yl[inds_riv] .* 0.001
+            vertical.net_runoff_river[inds_riv] .* network.land.xl[inds_riv] .*
+            network.land.yl[inds_riv] .* 0.001
         ) ./ vertical.Δt
 
     # flux from groundwater domain to river (Q to river from drains (optional) and groundwater)

@@ -47,7 +47,6 @@ end
 
     @test model.clock.iteration == 2
 
-    @test sbm.altitude[1] ≈ 643.5469970703125
     @test sbm.θₛ[1] ≈ 0.48343977332115173
     @test sbm.runoff[1] == 0.0
     @test sbm.soilevap[1] == 0.0
@@ -59,7 +58,6 @@ model = Wflow.update(model)
 
 @testset "second timestep" begin
     sbm = model.vertical
-    @test sbm.altitude[1] ≈ 643.5469970703125
     @test sbm.θₛ[1] ≈ 0.48343977332115173
     @test sbm.runoff[1] == 0.0
     @test sbm.soilevap[1] ≈ 0.005865651540305367

@@ -15,12 +15,12 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 
     @testset "model information functions" begin
         @test BMI.get_component_name(model) == "sbm"
-        @test BMI.get_input_item_count(model) == 179
-        @test BMI.get_output_item_count(model) == 179
-        @test BMI.get_input_var_names(model)[[1, 5, 120, 179]] == [
+        @test BMI.get_input_item_count(model) == 176
+        @test BMI.get_output_item_count(model) == 176
+        @test BMI.get_input_var_names(model)[[1, 5, 120, 176]] == [
             "vertical.Δt",
             "vertical.n_unsatlayers",
-            "lateral.land.n",
+            "lateral.land.qin",
             "lateral.river.reservoir.evaporation",
         ]
     end
@@ -37,7 +37,6 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
         @test BMI.get_var_units(model, "vertical.θₛ") == "mm mm-1"
         @test BMI.get_var_itemsize(model, "lateral.subsurface.ssf") == 8
         @test BMI.get_var_nbytes(model, "vertical.n") == 8
-        @test BMI.get_var_nbytes(model, "vertical.xl") == 400560
         @test BMI.get_var_nbytes(model, "lateral.river.q") == 45240
         @test BMI.get_var_location(model, "lateral.river.q") == "node"
     end

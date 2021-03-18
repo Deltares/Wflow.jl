@@ -70,7 +70,7 @@ function initialize_sbm_model(config::Config)
             river[i] ? min((riverlength[i] * riverwidth[i]) / (xl[i] * yl[i]), 1.0) : 0.0
     end
 
-    sbm = initialize_sbm(nc, config, riverfrac, xl, yl, inds)
+    sbm = initialize_sbm(nc, config, riverfrac, inds)
 
     inds_riv, rev_inds_riv = active_indices(river_2d, 0)
     nriv = length(inds_riv)
@@ -269,6 +269,8 @@ function initialize_sbm_model(config::Config)
         order = topological_sort_by_dfs(graph),
         indices = inds,
         reverse_indices = rev_inds,
+        xl = xl,
+        yl = yl,
     )
     river = (
         graph = graph_riv,
@@ -360,7 +362,7 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
     # determine lateral inflow for overland flow based on vertical runoff [mm] from vertical
     # sbm concept
     lateral.land.qlat .=
-        (vertical.runoff .* vertical.xl .* vertical.yl .* 0.001) ./ lateral.land.Δt ./
+        (vertical.runoff .* network.land.xl .* network.land.yl .* 0.001) ./ lateral.land.Δt ./
         lateral.land.dl
     # run kinematic wave for overland flow
     update(
@@ -374,8 +376,8 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
     # overland flow lateral subsurface flow and net runoff to the river cells
     net_runoff_river =
         (
-            vertical.net_runoff_river[inds_riv] .* vertical.xl[inds_riv] .*
-            vertical.yl[inds_riv] .* 0.001
+            vertical.net_runoff_river[inds_riv] .* network.land.xl[inds_riv] .*
+            network.land.yl[inds_riv] .* 0.001
         ) ./ vertical.Δt
     lateral.river.qlat .=
         (
