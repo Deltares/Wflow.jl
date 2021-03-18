@@ -25,8 +25,6 @@
     kv₀::Vector{T} | "mm Δt-1"
     # Muliplication factor [-] applied to kv_z (vertical flow)
     kvfrac::Vector{SVector{N,T}} | "-"
-    # Parameter [mm] controlling f
-    m::Vector{T}
     # Air entry pressure [cm] of soil (Brooks-Corey)
     hb::Vector{T} | "cm"
     # Soil thickness [mm]
@@ -399,11 +397,11 @@ function initialize_sbm(nc, config, riverfrac, xl, yl, inds)
             defaults = 3000.0,
             type = Float64,
         ) .* (Δt / basetimestep)
-    m = ncread(
+    f = ncread(
         nc,
-        param(config, "input.vertical.m", nothing);
+        param(config, "input.vertical.f", nothing);
         sel = inds,
-        defaults = 300.0,
+        defaults = 0.001,
         type = Float64,
     )
     hb = ncread(
@@ -567,7 +565,6 @@ function initialize_sbm(nc, config, riverfrac, xl, yl, inds)
         θₑ = θₑ,
         kv₀ = kv₀,
         kvfrac = svectorscopy(kvfrac, Val{maxlayers}()),
-        m = m,
         hb = hb,
         soilthickness = soilthickness,
         act_thickl = act_thickl,
@@ -585,7 +582,7 @@ function initialize_sbm(nc, config, riverfrac, xl, yl, inds)
         c = svectorscopy(c, Val{maxlayers}()),
         stemflow = fill(mv, n),
         throughfall = fill(mv, n),
-        f = θₑ ./ m,
+        f = f,
         ustorelayerdepth = zero(act_thickl),
         satwaterdepth = satwaterdepth,
         zi = zi,
