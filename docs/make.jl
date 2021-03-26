@@ -24,7 +24,7 @@ pages = [
     ],
     "Basic Model Interface" => "bmi.md",
     "Run from Delft-FEWS" => "fews.md",
-    "Change log" => "changelog.md",
+    "Changelog" => "changelog.md",
 ]
 
 makedocs(;
