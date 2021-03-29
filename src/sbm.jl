@@ -271,7 +271,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
     cfmax =
         ncread(
             nc,
-            param(config, "cfmax", nothing);
+            param(config, "input.vertical.cfmax", nothing);
             sel = inds,
             defaults = 3.75653,
             type = Float64,
