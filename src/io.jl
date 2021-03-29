@@ -69,6 +69,31 @@ Base.dirname(config::Config) = dirname(pathof(config))
 Base.iterate(config::Config) = iterate(Dict(config))
 Base.iterate(config::Config, state) = iterate(Dict(config), state)
 
+"Extract NetCDF variable name `ncname` from `var` (type `String` or `Config`). If `var` has 
+type `Config`, either `scale` and `offset` are expected (with `ncname`) or a `value` (uniform
+value), these are stored as part of `NamedTuple` `modifier`"
+function ncvar_name_modifier(var)
+    ncname = nothing
+    modifier = (scale = 1.0, offset = 0.0, value = nothing)
+    if isa(var, Config)
+        if haskey(var, "netcdf") &&
+           haskey(var.netcdf, "variable") &&
+           haskey(var.netcdf.variable, "name")
+            ncname = var.netcdf.variable.name
+            modifier = (
+                scale = param(var, "scale", 1.0),
+                offset = param(var, "offset", 0.0),
+                value = nothing,
+            )
+        elseif haskey(var, "value")
+            modifier = (scale = 1.0, offset = 0.0, value = param(var, "value"))
+        end
+    else
+        ncname = var
+    end
+    return ncname, modifier
+end
+
 "Extract a NetCDF variable at a given time"
 function get_at!(
     buffer,
@@ -153,9 +178,13 @@ function update_forcing!(model)
 
 
     # load from NetCDF into the model according to the mapping
-    for (par, ncvarname) in forcing_parameters
+    for (par, ncvar) in forcing_parameters
         time = convert(eltype(nctimes), clock.time)
-        buffer = get_at!(buffer, dataset[ncvarname], nctimes, time)
+        buffer = get_at!(buffer, dataset[ncvar.name], nctimes, time)
+
+        if ncvar.scale != 1.0 || ncvar.offset != 0.0
+            buffer .= buffer .* ncvar.scale .+ ncvar.offset
+        end
 
         # calculate the mean precipitation and evaporation over the lakes and reservoirs
         # and put these into the lakes and reservoirs structs
@@ -215,10 +244,13 @@ function update_cyclic!(model)
         isnothing(i) && error("Could not find applicable cyclic timestep for $month_day")
 
         # load from NetCDF into the model according to the mapping
-        for (par, ncvarname) in cyclic_parameters
-            buffer = get_at!(buffer, cyclic_dataset[ncvarname], i)
+        for (par, ncvar) in cyclic_parameters
+            buffer = get_at!(buffer, cyclic_dataset[ncvar.name], i)
             param_vector = param(model, par)
             param_vector .= buffer[sel]
+            if ncvar.scale != 1.0 || ncvar.offset != 0.0
+                param_vector .= param_vector .* ncvar.scale .+ ncvar.offset
+            end
         end
     end
 end
@@ -436,8 +468,8 @@ struct NCReader{T}
     dataset::NCDataset
     cyclic_dataset::Union{NCDataset,Nothing}
     cyclic_times::Vector{Tuple{Int,Int}}
-    forcing_parameters::Dict{Tuple{Symbol,Vararg{Symbol}},String}
-    cyclic_parameters::Dict{Tuple{Symbol,Vararg{Symbol}},String}
+    forcing_parameters::Dict{Tuple{Symbol,Vararg{Symbol}},NamedTuple}
+    cyclic_parameters::Dict{Tuple{Symbol,Vararg{Symbol}},NamedTuple}
     buffer::Matrix{T}
 end
 
@@ -459,7 +491,7 @@ end
 
 function prepare_reader(path, cyclic_path, config)
     dataset = NCDataset(path)
-    ncvar1 = param(config, "input." * first(config.input.forcing))
+    ncvar1, _ = ncvar_name_modifier(param(config, "input." * first(config.input.forcing)))
     var = dataset[ncvar1].var
 
     scale_factor = get(var.attrib, "scale_factor", nothing)
@@ -497,23 +529,24 @@ function prepare_reader(path, cyclic_path, config)
     end
 
     # create map from internal location to NetCDF variable name for forcing parameters
-    forcing_parameters = Dict{Tuple{Symbol,Vararg{Symbol}},String}()
+    forcing_parameters = Dict{Tuple{Symbol,Vararg{Symbol}},NamedTuple}()
     for par in config.input.forcing
         fields = symbols(par)
-        ncname = param(config.input, fields)
-        forcing_parameters[fields] = ncname
+        ncname, mod = ncvar_name_modifier(param(config.input, fields))
+        forcing_parameters[fields] = (name = ncname, scale = mod.scale, offset = mod.offset)
     end
 
     # create map from internal location to NetCDF variable name for cyclic parameters
     if do_cyclic == true
-        cyclic_parameters = Dict{Tuple{Symbol,Vararg{Symbol}},String}()
+        cyclic_parameters = Dict{Tuple{Symbol,Vararg{Symbol}},NamedTuple}()
         for par in config.input.cyclic
             fields = symbols(par)
-            ncname = param(config.input, fields)
-            cyclic_parameters[fields] = ncname
+            ncname, mod = ncvar_name_modifier(param(config.input, fields))
+            cyclic_parameters[fields] =
+                (name = ncname, scale = mod.scale, offset = mod.offset)
         end
     else
-        cyclic_parameters = Dict{Tuple{Symbol,Vararg{Symbol}},String}()
+        cyclic_parameters = Dict{Tuple{Symbol,Vararg{Symbol}},NamedTuple}()
     end
 
     # check if there is overlap

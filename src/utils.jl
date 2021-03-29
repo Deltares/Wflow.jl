@@ -149,16 +149,14 @@ end
 """
     ncread(nc, var; <keyword arguments>)
 
-Read parameter `var` from NetCDF file `nc`. Supports various keyword arguments to get
-selections of data in desired types, with or without missing values.
+Read `var` from NetCDF file `nc`, type `String` or type `Config` are allowed.  Supports various 
+keyword arguments to get selections of data in desired types, with or without missing values.
 
 # Arguments
-- `key=identity`: `key` is a function which maps `var` to the name of the parameter in the
-        NetCDF file. The default `identity` keeps `var` as is.
 - `sel=nothing`: a selection of indices, such as a `Vector{CartesianIndex}` of active cells,
         to return from the NetCDF. By default all cells are returned.
-- `defaults=nothing`: a dictionary in which default values are looked up if `var` is not
-        in `nc`. By default it gives an error in this case.
+- `defaults=nothing`: a default value if `var` is not in `nc`. By default it gives an error 
+    in this case.
 - `type=nothing`: type to convert data to after reading. By default no conversion is done.
 - `allow_missing=false`: Missing values within `sel` is not allowed by default. Set to
         `true` to allow missing values.
@@ -185,9 +183,23 @@ function ncread(
         end
     end
 
-    # Read the entire variable into memory, applying scale, offset and
-    # set fill_values to missing.
-    A = nc[var][:]
+    # If var has type Config, input parameters can be changed (through scale, offset and 
+    # input NetCDF var) or set to a uniform value (providing a value). Otherwise, input 
+    # NetCDF var is read directly.
+    var, mod = ncvar_name_modifier(var)
+    if mod.scale != 1.0 || mod.offset != 0.0
+        A = nc[var][:] .* mod.scale .+ mod.offset
+    elseif !isnothing(mod.value)
+        if isnothing(dimname)
+            return Base.fill(mod.value, length(sel))
+        else
+            return Base.fill(mod.value, (nc.dim[dimname], length(sel)))
+        end
+    else
+        # Read the entire variable into memory, applying scale, offset and
+        # set fill_values to missing.
+        A = nc[var][:]
+    end
 
     # Take out only the active cells
     if !isnothing(sel)
