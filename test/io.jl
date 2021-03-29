@@ -161,6 +161,7 @@ end
 @test config.model.reinit
 config["model"]["reinit"] = false
 @test !config.model.reinit
+
 model = Wflow.initialize_sbm_model(config)
 
 @unpack vertical, clock, reader, writer = model
@@ -208,6 +209,31 @@ end
     cartesian_index = indices[linear_index]
     @test cartesian_index === CartesianIndex(115, 6)
     @test reverse_indices[cartesian_index] === linear_index
+end
+
+@testset "initial parameter values" begin
+    @unpack vertical = model
+    vertical.cfmax[1] ≈ 3.7565300464630127
+    vertical.soilthickness[1] ≈ 2000.0
+    vertical.precipitation[100] ≈ 2.197660446166992
+end
+
+Dict(config)["input"]["vertical"]["cfmax"] = Dict("value" => 2.0)
+Dict(config)["input"]["vertical"]["soilthickness"] = Dict(
+    "scale" => 3.0,
+    "offset" => 100.0,
+    "netcdf" => Dict("variable" => Dict("name" => "SoilThickness")),
+)
+Dict(config)["input"]["vertical"]["precipitation"] =
+    Dict("scale" => 1.5, "netcdf" => Dict("variable" => Dict("name" => "P")))
+
+model = Wflow.initialize_sbm_model(config)
+
+@testset "changed parameter values" begin
+    @unpack vertical = model
+    vertical.cfmax[1] == 2.0
+    vertical.soilthickness[1] ≈ 2000.0 * 3.0 + 100.0
+    vertical.precipitation[100] ≈ 1.5 * 2.197660446166992
 end
 
 Wflow.close_files(model, delete_output = false)
