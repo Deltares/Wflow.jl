@@ -379,7 +379,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
     kv₀ =
         ncread(
             nc,
-            param(config, "input.vertical.kv₀");
+            param(config, "input.vertical.kv₀", nothing);
             sel = inds,
             defaults = 3000.0,
             type = Float64,

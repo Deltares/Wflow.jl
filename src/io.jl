@@ -80,11 +80,14 @@ function ncvar_name_modifier(var)
            haskey(var.netcdf, "variable") &&
            haskey(var.netcdf.variable, "name")
             ncname = var.netcdf.variable.name
+            scale = param(var, "scale", 1.0)
+            offset = param(var, "offset", 0.0)
             modifier = (
-                scale = param(var, "scale", 1.0),
-                offset = param(var, "offset", 0.0),
+                scale = scale,
+                offset = offset,
                 value = nothing,
             )
+            @info "NetCDF parameter $ncname is modified with scale $scale and offset $offset"
         elseif haskey(var, "value")
             modifier = (scale = 1.0, offset = 0.0, value = param(var, "value"))
         end
