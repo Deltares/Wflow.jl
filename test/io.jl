@@ -56,10 +56,10 @@ end
     @test config.timestepsecs == 86400
 
     # replace the keys with different values
-    Dict(config)["starttime"] = "2003-04-05"
-    Dict(config)["endtime"] = "2003-04-06"
-    Dict(config)["timestepsecs"] = 3600
-    Dict(config)["calendar"] = "standard"
+    config.starttime = "2003-04-05"
+    config.endtime = "2003-04-06"
+    config.timestepsecs = 3600
+    config.calendar = "standard"
 
     clock = Wflow.Clock(config, reader)
     @test clock.time == DateTimeStandard(2003, 4, 5)
@@ -219,12 +219,12 @@ end
 end
 
 config.input.vertical.cfmax = Dict("value" => 2.0)
-Dict(config)["input"]["vertical"]["soilthickness"] = Dict(
+config.input.vertical.soilthickness = Dict(
     "scale" => 3.0,
     "offset" => 100.0,
     "netcdf" => Dict("variable" => Dict("name" => "SoilThickness")),
 )
-Dict(config)["input"]["vertical"]["precipitation"] =
+config.input.vertical.precipitation =
     Dict("scale" => 1.5, "netcdf" => Dict("variable" => Dict("name" => "P")))
 
 model = Wflow.initialize_sbm_model(config)
