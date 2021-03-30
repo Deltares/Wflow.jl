@@ -169,14 +169,14 @@ end
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 
-Dict(config)["input"]["vertical"]["precipitation"] =
+config.input.vertical.precipitation =
     Dict("scale" => 2.0, "netcdf" => Dict("variable" => Dict("name" => "P")))
-Dict(config)["input"]["vertical"]["potential_evaporation"] = Dict(
+config.input.vertical.potential_evaporation = Dict(
     "scale" => 3.0,
     "offset" => 1.50,
     "netcdf" => Dict("variable" => Dict("name" => "PET")),
 )
-Dict(config)["input"]["vertical"]["leaf_area_index"] =
+config.input.vertical.leaf_area_index =
     Dict("scale" => 1.6, "netcdf" => Dict("variable" => Dict("name" => "LAI")))
 
 model = Wflow.initialize_sbm_model(config)

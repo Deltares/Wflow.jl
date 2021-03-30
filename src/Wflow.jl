@@ -42,17 +42,17 @@ function Clock(config, reader)
     starttime = get(config, "starttime", nothing)
     if starttime === nothing
         starttime = first(nctimes)
-        Dict(config)["starttime"] = starttime
+        config.starttime = starttime
     end
     endtime = get(config, "endtime", nothing)
     if endtime === nothing
         endtime = last(nctimes)
-        Dict(config)["endtime"] = endtime
+        config.endtime = endtime
     end
     timestepsecs = get(config, "timestepsecs", nothing)
     if timestepsecs === nothing
         timestepsecs = Dates.value(Second(nctimes[2] - nctimes[1]))
-        Dict(config)["timestepsecs"] = timestepsecs
+        config.timestepsecs = timestepsecs
     end
 
     calendar = get(config, "calendar", "standard")::String
