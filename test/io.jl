@@ -218,7 +218,7 @@ end
     @test vertical.precipitation[100] ≈ 2.197660446166992
 end
 
-Dict(config)["input"]["vertical"]["cfmax"] = Dict("value" => 2.0)
+config.input.vertical.cfmax = Dict("value" => 2.0)
 Dict(config)["input"]["vertical"]["soilthickness"] = Dict(
     "scale" => 3.0,
     "offset" => 100.0,
