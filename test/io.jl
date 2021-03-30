@@ -213,9 +213,9 @@ end
 
 @testset "initial parameter values" begin
     @unpack vertical = model
-    vertical.cfmax[1] ≈ 3.7565300464630127
-    vertical.soilthickness[1] ≈ 2000.0
-    vertical.precipitation[100] ≈ 2.197660446166992
+    @test vertical.cfmax[1] ≈ 3.7565300464630127
+    @test vertical.soilthickness[1] ≈ 2000.0
+    @test vertical.precipitation[100] ≈ 2.197660446166992
 end
 
 Dict(config)["input"]["vertical"]["cfmax"] = Dict("value" => 2.0)
@@ -231,9 +231,9 @@ model = Wflow.initialize_sbm_model(config)
 
 @testset "changed parameter values" begin
     @unpack vertical = model
-    vertical.cfmax[1] == 2.0
-    vertical.soilthickness[1] ≈ 2000.0 * 3.0 + 100.0
-    vertical.precipitation[100] ≈ 1.5 * 2.197660446166992
+    @test vertical.cfmax[1] == 2.0
+    @test vertical.soilthickness[1] ≈ 2000.0 * 3.0 + 100.0
+    @test vertical.precipitation[100] ≈ 1.5 * 2.197660446166992
 end
 
 Wflow.close_files(model, delete_output = false)
