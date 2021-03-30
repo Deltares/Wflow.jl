@@ -127,6 +127,12 @@ end
     @test res.evaporation[2] ≈ 0.5372688174247742
 end
 
+# set these variables for comparison in "changed dynamic parameters"
+precip = copy(model.vertical.precipitation)
+evap = copy(model.vertical.potential_evaporation)
+lai = copy(model.vertical.leaf_area_index)
+res_evap = copy(model.lateral.river.reservoir.evaporation)
+
 benchmark = @benchmark Wflow.update(model)
 trialmin = BenchmarkTools.minimum(benchmark)
 
@@ -159,4 +165,30 @@ end
     @test q[1739] ≈ 0.008996045895155833
 end
 
+# test changing forcing and cyclic LAI parameter
+tomlpath = joinpath(@__DIR__, "sbm_config.toml")
+config = Wflow.Config(tomlpath)
+
+Dict(config)["input"]["vertical"]["precipitation"] =
+    Dict("scale" => 2.0, "netcdf" => Dict("variable" => Dict("name" => "P")))
+Dict(config)["input"]["vertical"]["potential_evaporation"] = Dict(
+    "scale" => 3.0,
+    "offset" => 1.50,
+    "netcdf" => Dict("variable" => Dict("name" => "PET")),
+)
+Dict(config)["input"]["vertical"]["leaf_area_index"] =
+    Dict("scale" => 1.6, "netcdf" => Dict("variable" => Dict("name" => "LAI")))
+
+model = Wflow.initialize_sbm_model(config)
+model = Wflow.update(model)
+model = Wflow.update(model)
+
+@testset "changed dynamic parameters" begin
+    res = model.lateral.river.reservoir
+    vertical = model.vertical
+    @test vertical.precipitation[2] / precip[2] ≈ 2.0
+    @test (vertical.potential_evaporation[100] - 1.50) / evap[100] ≈ 3.0
+    @test vertical.leaf_area_index[100] / lai[100] ≈ 1.6
+    @test (res.evaporation[2] - 1.50) / res_evap[2] ≈ 3.0000012203408635
+end
 Wflow.close_files(model, delete_output = false)
