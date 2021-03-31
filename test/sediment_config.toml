@@ -104,6 +104,7 @@ slope = "RiverSlope"
 width = "wflow_riverwidth"
 # Reservoir
 resarea = "ResSimpleArea"
+restrapeff = "ResTrapEff"
 resareas = "wflow_reservoirareas"
 reslocs = "wflow_reservoirlocs"
 # Lake

@@ -804,6 +804,7 @@ end
     inlandsand::Vector{T} | "t"
     inlandsagg::Vector{T} | "t"
     inlandlagg::Vector{T} | "t"
+    inlandsed::Vector{T} | "t"
     # Sediment / particle left in the cell [ton]
     sedload::Vector{T} | "t"
     clayload::Vector{T} | "t"
@@ -834,14 +835,19 @@ end
     Bedconc::Vector{T} | "kg m-3"
     # River transport capacity
     maxsed::Vector{T} | "t"
-    # Eroded sediment
+    # Eroded sediment (total, bank and bed)
     erodsed::Vector{T} | "t"
+    erodsedbank::Vector{T} | "t"
+    erodsedbed::Vector{T} | "t"
     # Deposited sediment
     depsed::Vector{T} | "t"
+    # Sediment in
+    insed::Vector{T} | "t"
     # Reservoir and lakes
     wbcover::Vector{T} | "-"
     wblocs::Vector{T} | "-"
     wbarea::Vector{T} | "m2"
+    wbtrap::Vector{T} | "-"
 
     # function RiverSediment{T}(args...) where {T}
     #     equal_size_vectors(args)
@@ -882,6 +888,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     wbcover = fill(0.0, nriv)
     wblocs = fill(0.0, nriv)
     wbarea = fill(0.0, nriv)
+    wbtrap = fill(0.0, nriv)
 
     if do_reservoirs
         reslocs = ncread(
@@ -903,12 +910,20 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
             param(config, "input.lateral.river.resarea");
             sel = inds_riv,
             type = Float64,
-            fill = 0,
+            fill = 0.0,
+        )
+        restrapefficiency = ncread(
+            nc,
+            param(config, "input.lateral.river.restrapeff");
+            sel = inds_riv,
+            type = Float64,
+            fill = 0.0,
         )
 
         wbcover = wbcover .+ rescoverage_2d
         wblocs = wblocs .+ reslocs
         wbarea = wbarea .+ resarea
+        wbtrap = wbtrap .+ restrapefficiency
     end
 
     if do_lakes
@@ -931,7 +946,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
             param(config, "input.lateral.river.lakearea");
             sel = inds_riv,
             type = Float64,
-            fill = 0,
+            fill = 0.0,
         )
 
         wbcover = wbcover .+ lakecoverage_2d
@@ -1124,6 +1139,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
         inlandsand = fill(0.0, nriv),
         inlandsagg = fill(0.0, nriv),
         inlandlagg = fill(0.0, nriv),
+        inlandsed = fill(0.0, nriv),
         # States
         sedload = fill(0.0, nriv),
         clayload = fill(0.0, nriv),
@@ -1152,11 +1168,15 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
         Bedconc = fill(0.0, nriv),
         maxsed = fill(0.0, nriv),
         erodsed = fill(0.0, nriv),
+        erodsedbank = fill(0.0, nriv),
+        erodsedbed = fill(0.0, nriv),
         depsed = fill(0.0, nriv),
+        insed = fill(0.0, nriv),
         # Reservoir / lake
         wbcover = wbcover,
         wblocs = wblocs,
         wbarea = wbarea,
+        wbtrap = wbtrap,
     )
 
     return rs
@@ -1202,6 +1222,8 @@ function update(rs::RiverSediment, network, config)
         ingrav = rs.gravload[v] + inrivgrav
 
         insed = inclay + insilt + insand + insagg + inlagg + ingrav
+        rs.insed[v] = insed
+        rs.inlandsed[v] = rs.inlandclay[v] + rs.inlandsilt[v] + rs.inlandsand[v] + rs.inlandsagg[v] + rs.inlandlagg[v]
 
         ### Transport capacity of the flow ###
         # Hydraulic radius of the river [m] (rectangular channel)
@@ -1434,6 +1456,8 @@ function update(rs::RiverSediment, network, config)
         erodgrav = gravbank + gravbed + degstoregrav
 
         rs.erodsed[v] = erodsed
+        rs.erodsedbank[v] = sedbank
+        rs.erodsedbed[v] = sedbed
 
         ### Deposition / settling ###
         # Fractions of deposited particles in river cells from the Einstein formula [-]
@@ -1457,7 +1481,7 @@ function update(rs::RiverSediment, network, config)
 
         # Sediment deposited in the channel (from gravel to clay) [ton]
         # From transport capacity exceedance (insed > maxsed)
-        insedex = min(insed - maxsed, 0.0)
+        insedex = max(insed - maxsed, 0.0)
         if insedex > 0.0
             depgrav = ifelse(ingrav >= insedex, insedex, ingrav)
             insedex = max(insedex - depgrav, 0.0)
@@ -1482,6 +1506,7 @@ function update(rs::RiverSediment, network, config)
 
         # No deposition in regular lake and reservoir cells, only at the outlet
         # Deposition in lake/reservoir from Camp 1945
+        # Extra trapping of large particles for dams
         if rs.wbcover[v] > 0.0 && rs.wblocs[v] > 0.0
             # Compute deposition
             vcres = rs.q_riv[v] / rs.wbarea[v]
@@ -1492,6 +1517,18 @@ function update(rs::RiverSediment, network, config)
             depsagg = (insagg + erodsagg) * min(1.0, (DCres * (rs.dmsagg[v] / 1000)^2))
             deplagg = (inlagg + erodlagg) * min(1.0, (DCres * (rs.dmlagg[v] / 1000)^2))
             depgrav = (ingrav + erodgrav) * min(1.0, (DCres * (rs.dmgrav[v] / 1000)^2))
+            # Trapping of large particles
+            # Use the rouse number for sagg (suspension or bedload)
+            depsand = max(depsand, rs.wbtrap[v]*(insand + erodsand))
+            deplagg = max(deplagg, rs.wbtrap[v]*(inlagg + erodlagg))
+            depgrav = max(depgrav, rs.wbtrap[v]*(ingrav + erodgrav))
+            # threshold diameter between suspended load and mixed load using Rouse number
+            dsuspf = 1e3 * (1.2 * 3600 * 0.41 / 411 * (9.81 * rs.h_riv[v] * rs.sl[v])^0.5)^0.5
+            depsagg = ifelse(
+                rs.dmsagg[v] > dsuspf,
+                depsagg,
+                max(depsagg, rs.wbtrap[v]*(insagg + erodsagg)),
+            )
         elseif rs.wbcover[v] > 0.0
             depsed = 0.0
             depclay = 0.0
