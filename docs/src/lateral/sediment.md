@@ -355,7 +355,7 @@ Apart from land and river, the hydrologic wflow\_sbm model also handles lakes an
 modelling. In wflow\_sbm, lakes and large reservoirs are modelled using a 1D bucket model at
 the cell corresponding to the outlet. For the other cells belonging to the lake/reservoir
 which are not the outlet, processes such as precipitation and evaporation are filtered out
-and shifted to the outlet cell. wflow\_sediment then handles the lakes in the same way. If a
+and shifted to the outlet cell. wflow\_sediment handles the lakes and reservoirs in the same way. If a
 cell belongs to a lake/reservoir and is not the outlet then the model assumes that no
 erosion/deposition of sediments is happening and the sediments are only all transported to
 the lake/reservoir outlet. Once the sediments reach the outlet, then sediments are deposited
@@ -368,6 +368,11 @@ trapped), ``\omega_{s}`` is the particle velocity from Stokes (m s``^{-1}``), ``
 is the reservoir’s critical settling velocity (m/s) which is equal to the reservoir’s
 outflow ``Q_{out,res}`` (m``^{3}`` s``^{-1}``) divided by the reservoir’s surface area
 ``A_{res}`` (m``^{2}``).
+
+For reservoirs, coarse sediment particles from the bed load are also assumed to be trapped by the 
+dam structure. This adding trapping is taken into account with a reservoir trapping efficiency coefficient 
+for large particles (between 0 and 1). Depending on the type of the dam, all bed load particles are trapped 
+(restrapefficiency =1.0, for example for a gravity dam) or only partly (for example for run-of-the-river dams).
 
 Lake and reservoir modelling is enabled in the model section of the TOML and require the
 extra following input arguments:
@@ -385,6 +390,7 @@ lakeareas = "wflow_lakeareas"
 [input.lateral.river]
 # Reservoir
 resarea = "ResSimpleArea"
+restrapefficiency = "ResTrapEff"
 resareas = "wflow_reservoirareas"
 reslocs = "wflow_reservoirlocs"
 # Lake

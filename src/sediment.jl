@@ -917,6 +917,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
             param(config, "input.lateral.river.restrapeff");
             sel = inds_riv,
             type = Float64,
+            defaults = 1.0,
             fill = 0.0,
         )
 
