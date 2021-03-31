@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Changed
+- New deposition process for coarse sediment in the reservoirs with a new parameter 
+  ``restrapefficiency`` in the sediment model.
+- New variables added to the LandSediment struct and RiverSediment struct in order to save 
+  outputs from the sediment model.
+
+### Added
+
+### Fixed
+- Corrected a bug in sediment deposition in the river (case when incoming sediment load is
+  more than the river transport capacity).
 
 ## v0.2.0 - 2021-03-26
 
