@@ -481,7 +481,7 @@ function update_sbm_gwf(model)
         min.(lateral.subsurface.flow.aquifer.head, lateral.subsurface.flow.aquifer.top)
 
     # update vertical sbm concept (runoff, ustorelayerdepth and satwaterdepth)
-    update_after_lateralflow(
+    update_after_subsurfaceflow(
         vertical,
         (network.land.altitude .- lateral.subsurface.flow.aquifer.head) .* 1000.0, # zi [mm] in vertical concept SBM
         exfiltwater .* 1000.0,

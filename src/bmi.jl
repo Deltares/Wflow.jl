@@ -39,9 +39,22 @@ function BMI.initialize(::Type{<:Model}, config_file)
     return model
 end
 
-function BMI.update(model::Model)
+"""
+    BMI.update(model::Model; run = nothing)
+
+Update the model for a single timestep. 
+# Arguments
+- `run = nothing`: to update a model partially.
+"""
+function BMI.update(model::Model; run = nothing)
     @unpack network, config = model
-    update_func = config.model.type == "sbm_gwf" ? update_sbm_gwf : update
+    if isnothing(run)
+        update_func = config.model.type == "sbm_gwf" ? update_sbm_gwf : update
+    elseif run == "sbm_until_recharge"
+        update_func = update_until_recharge
+    elseif run == "sbm_after_subsurfaceflow"
+        update_func = update_after_subsurfaceflow
+    end
     return update_func(model)
 end
 

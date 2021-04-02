@@ -99,18 +99,8 @@ function initialize_sbm_model(config::Config)
         ldd = set_pit_ldd(pits_2d, ldd, inds)
     end
 
-
-    # lateral part sbm
-    khfrac = ncread(
-        nc,
-        param(config, "input.lateral.subsurface.ksathorfrac", nothing);
-        sel = inds,
-        defaults = 1.0,
-        type = Float,
-    )
     βₗ = ncread(nc, param(config, "input.lateral.land.slope"); sel = inds, type = Float)
     clamp!(βₗ, 0.00001, Inf)
-    kh₀ = khfrac .* sbm.kv₀
     dl = fill(mv, n)
     dw = fill(mv, n)
     sw = fill(mv, n)
@@ -121,28 +111,52 @@ function initialize_sbm_model(config::Config)
         sw[i] = river[i] ? max(dw[i] - riverwidth[i], 0.0) : dw[i]
     end
 
-    ssf = LateralSSF{Float}(
-        kh₀ = kh₀,
-        f = sbm.f,
-        zi = sbm.zi,
-        soilthickness = sbm.soilthickness,
-        θₛ = sbm.θₛ,
-        θᵣ = sbm.θᵣ,
-        Δt = tosecond(Δt),
-        t = 1.0,
-        βₗ = βₗ,
-        dl = dl .* 1000.0,
-        dw = dw .* 1000.0,
-        exfiltwater = fill(mv, n),
-        recharge = fill(mv, n),
-        ssf = ((kh₀ .* βₗ) ./ sbm.f) .*
-              (exp.(-sbm.f .* sbm.zi) - exp.(-sbm.f .* sbm.soilthickness)) .* dw .*
-              1000.0,
-        ssfin = fill(mv, n),
-        ssfmax = ((kh₀ .* βₗ) ./ sbm.f) .* (1.0 .- exp.(-sbm.f .* sbm.soilthickness)),
-        to_river = zeros(n),
-        wb_pit = pits[inds],
-    )
+    # check if lateral subsurface flow component is defined for the SBM model, when coupled 
+    # to another groundwater model, this component is not defined in the TOML file.
+    if haskey(config.input.lateral, "subsurface")
+        khfrac = ncread(
+            nc,
+            param(config, "input.lateral.subsurface.ksathorfrac", nothing);
+            sel = inds,
+            defaults = 1.0,
+            type = Float,
+        )
+
+        kh₀ = khfrac .* sbm.kv₀
+
+        ssf = LateralSSF{Float}(
+            kh₀ = kh₀,
+            f = sbm.f,
+            zi = sbm.zi,
+            soilthickness = sbm.soilthickness,
+            θₛ = sbm.θₛ,
+            θᵣ = sbm.θᵣ,
+            Δt = tosecond(Δt),
+            t = 1.0,
+            βₗ = βₗ,
+            dl = dl .* 1000.0,
+            dw = dw .* 1000.0,
+            exfiltwater = fill(mv, n),
+            recharge = fill(mv, n),
+            ssf = ((kh₀ .* βₗ) ./ sbm.f) .*
+                (exp.(-sbm.f .* sbm.zi) - exp.(-sbm.f .* sbm.soilthickness)) .* dw .*
+                1000.0,
+            ssfin = fill(mv, n),
+            ssfmax = ((kh₀ .* βₗ) ./ sbm.f) .* (1.0 .- exp.(-sbm.f .* sbm.soilthickness)),
+            to_river = zeros(n),
+            wb_pit = pits[inds],
+        )
+    else
+        # when the SBM model is coupled (BMI) to a groundwater model, the following
+        # variables are expected to be exchanged from the groundwater model.
+        ssf = GroundwaterExchange{Float}(
+            Δt = tosecond(Δt),
+            exfiltwater = fill(mv, n),
+            zi = fill(mv,n),
+            to_river = fill(mv, n),
+            ssf = zeros(n),
+        )
+    end
 
     n_land = ncread(
         nc,
@@ -313,9 +327,27 @@ end
 "update SBM model for a single timestep"
 function update(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
     @unpack lateral, vertical, network, clock, config = model
+    model = update_until_recharge(model)
+    # exchange of recharge between vertical sbm concept and subsurface flow domain
+    lateral.subsurface.recharge .= vertical.recharge
+    lateral.subsurface.recharge .*= lateral.subsurface.dw
+    lateral.subsurface.zi .= vertical.zi
+    # update lateral subsurface flow domain (kinematic wave)
+    update(lateral.subsurface, network.land, network.frac_toriver)
+    model = update_after_subsurfaceflow(model)
+    return model 
+end
+
+"""
+    update_until_recharge(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
+
+Update SBM model until recharge for a single timestep. This function is also accessible
+through BMI, to couple the SBM model to an external groundwater model.
+"""
+function update_until_recharge(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
+    @unpack lateral, vertical, network, clock, config = model
 
     inds_riv = network.index_river
-    kinwave_it = get(config.model, "kin_wave_iteration", false)::Bool
 
     update_forcing!(model)
     if haskey(config.input, "cyclic")
@@ -344,16 +376,23 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
     # update vertical sbm concept until recharge [mm] to the saturated store
     update_until_recharge(vertical, config)
 
-    # exchange of recharge between vertical sbm concept and subsurface flow domain
-    lateral.subsurface.recharge .= vertical.recharge
-    lateral.subsurface.recharge .*= lateral.subsurface.dw
-    lateral.subsurface.zi .= vertical.zi
+    return model
+end
 
-    # update lateral subsurface flow domain (kinematic wave)
-    update(lateral.subsurface, network.land, network.frac_toriver)
+"""
+    update_after_subsurfaceflow(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
+
+Update SBM model after subsurface flow for a single timestep. This function is also 
+accessible through BMI, to couple the SBM model to an external groundwater model.
+"""
+function update_after_subsurfaceflow(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
+    @unpack lateral, vertical, network, clock, config = model
+
+    inds_riv = network.index_river
+    kinwave_it = get(config.model, "kin_wave_iteration", false)::Bool
 
     # update vertical sbm concept (runoff, ustorelayerdepth and satwaterdepth)
-    update_after_lateralflow(
+    update_after_subsurfaceflow(
         vertical,
         lateral.subsurface.zi,
         lateral.subsurface.exfiltwater,
