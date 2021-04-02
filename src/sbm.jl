@@ -1009,7 +1009,7 @@ function update_until_recharge(sbm::SBM, config)
     end
 end
 
-function update_after_lateralflow(sbm::SBM, zi, exfiltsatwater)
+function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
 
     for i = 1:sbm.n
         usl, n_usl = set_layerthickness(zi[i], sbm.sumlayers[i], sbm.act_thickl[i])
