@@ -816,6 +816,8 @@ function prepare_writer(
     if haskey(config, "csv") && haskey(config.csv, "column")
         # open CSV file and write header
         csv_path = joinpath(tomldir, config.csv.path)
+        # create directory if needed
+        mkpath(dirname(csv_path))
         csv_io = open(csv_path, "w")
         print(csv_io, "time,")
         header = csv_header(config.csv.column, nc_static, config)
