@@ -70,42 +70,42 @@ function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits)
         nc,
         param(config, "input.lateral.river.reservoir.demand");
         sel = inds_res,
-        type = Float64,
+        type = Float,
         fill = 0,
     )
     resmaxrelease = ncread(
         nc,
         param(config, "input.lateral.river.reservoir.maxrelease");
         sel = inds_res,
-        type = Float64,
+        type = Float,
         fill = 0,
     )
     resmaxvolume = ncread(
         nc,
         param(config, "input.lateral.river.reservoir.maxvolume");
         sel = inds_res,
-        type = Float64,
+        type = Float,
         fill = 0,
     )
     resarea = ncread(
         nc,
         param(config, "input.lateral.river.reservoir.area");
         sel = inds_res,
-        type = Float64,
+        type = Float,
         fill = 0,
     )
     res_targetfullfrac = ncread(
         nc,
         param(config, "input.lateral.river.reservoir.targetfullfrac");
         sel = inds_res,
-        type = Float64,
+        type = Float,
         fill = 0,
     )
     res_targetminfrac = ncread(
         nc,
         param(config, "input.lateral.river.reservoir.targetminfrac");
         sel = inds_res,
-        type = Float64,
+        type = Float,
         fill = 0,
     )
 
@@ -114,7 +114,7 @@ function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits)
     pits[inds_res] .= true
 
     n = length(resarea)
-    reservoirs = SimpleReservoir{Float64}(
+    reservoirs = SimpleReservoir{Float}(
         demand = resdemand,
         maxrelease = resmaxrelease,
         maxvolume = resmaxvolume,
@@ -251,28 +251,28 @@ function initialize_natural_lake(config, path, nc, inds_riv, nriv, pits)
         nc,
         param(config, "input.lateral.river.lake.area");
         sel = inds_lake,
-        type = Float64,
+        type = Float,
         fill = 0,
     )
     lake_b = ncread(
         nc,
         param(config, "input.lateral.river.lake.b");
         sel = inds_lake,
-        type = Float64,
+        type = Float,
         fill = 0,
     )
     lake_e = ncread(
         nc,
         param(config, "input.lateral.river.lake.e");
         sel = inds_lake,
-        type = Float64,
+        type = Float,
         fill = 0,
     )
     lake_threshold = ncread(
         nc,
         param(config, "input.lateral.river.lake.threshold");
         sel = inds_lake,
-        type = Float64,
+        type = Float,
         fill = 0,
     )
     linked_lakelocs = ncread(
@@ -301,7 +301,7 @@ function initialize_natural_lake(config, path, nc, inds_riv, nriv, pits)
         nc,
         param(config, "input.lateral.river.lake.waterlevel");
         sel = inds_lake,
-        type = Float64,
+        type = Float,
         fill = 0,
     )
 
@@ -341,7 +341,7 @@ function initialize_natural_lake(config, path, nc, inds_riv, nriv, pits)
         end
     end
     n = length(lakearea)
-    lakes = NaturalLake{Float64}(
+    lakes = NaturalLake{Float}(
         lowerlake_ind = linked_lakelocs,
         area = lakearea,
         threshold = lake_threshold,

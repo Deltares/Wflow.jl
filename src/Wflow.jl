@@ -18,6 +18,7 @@ using CFTime
 @metadata get_units "mm"
 
 const BMI = BasicModelInterface
+const Float = Float32
 
 mutable struct Clock{T}
     time::T

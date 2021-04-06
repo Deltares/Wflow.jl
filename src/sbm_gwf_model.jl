@@ -53,14 +53,14 @@ function initialize_sbm_gwf_model(config::Config)
     river_2d = ncread(nc, param(config, "input.river_location"); type = Bool, fill = false)
     river = river_2d[inds]
     riverwidth_2d =
-        ncread(nc, param(config, "input.lateral.river.width"); type = Float64, fill = 0)
+        ncread(nc, param(config, "input.lateral.river.width"); type = Float, fill = 0)
     riverwidth = riverwidth_2d[inds]
     riverlength_2d =
-        ncread(nc, param(config, "input.lateral.river.length"); type = Float64, fill = 0)
+        ncread(nc, param(config, "input.lateral.river.length"); type = Float, fill = 0)
     riverlength = riverlength_2d[inds]
 
     altitude =
-        ncread(nc, param(config, "input.altitude"); sel = inds, type = Float64)
+        ncread(nc, param(config, "input.altitude"); sel = inds, type = Float)
     # read x, y coordinates and calculate cell length [m]
     y_nc = "y" in keys(nc.dim) ? ncread(nc, "y") : ncread(nc, "lat")
     x_nc = "x" in keys(nc.dim) ? ncread(nc, "x") : ncread(nc, "lon")
@@ -106,7 +106,7 @@ function initialize_sbm_gwf_model(config::Config)
     end
 
     # overland flow (kinematic wave)
-    βₗ = ncread(nc, param(config, "input.lateral.land.slope"); sel = inds, type = Float64)
+    βₗ = ncread(nc, param(config, "input.lateral.land.slope"); sel = inds, type = Float)
     clamp!(βₗ, 0.00001, Inf)
     ldd_2d = ncread(nc, param(config, "input.ldd"); allow_missing = true)
     ldd = ldd_2d[inds]
@@ -125,7 +125,7 @@ function initialize_sbm_gwf_model(config::Config)
         param(config, "input.lateral.land.n", nothing);
         sel = inds,
         defaults = 0.072,
-        type = Float64,
+        type = Float,
     )
 
     alpha_pow = (2.0 / 3.0) * 0.6
@@ -135,12 +135,12 @@ function initialize_sbm_gwf_model(config::Config)
         sl = βₗ,
         n = n_land,
         dl = dl,
-        q = fill(0.0, n),
-        qin = fill(0.0, n),
-        q_av = fill(0.0, n),
-        qlat = fill(0.0, n),
-        h = fill(0.0, n),
-        h_av = fill(0.0, n),
+        q = zeros(Float, n),
+        qin = zeros(Float, n),
+        q_av = zeros(Float, n),
+        qlat = zeros(Float, n),
+        h = zeros(Float, n),
+        h_av = zeros(Float, n),
         Δt = tosecond(Δt),
         its = kw_land_tstep > 0 ? Int(cld(tosecond(Δt), kw_land_tstep)) : kw_land_tstep,
         width = sw,
@@ -148,8 +148,8 @@ function initialize_sbm_gwf_model(config::Config)
         alpha_pow = alpha_pow,
         α = fill(mv, n),
         eps = 1e-03,
-        cel = fill(0.0, n),
-        to_river = fill(0.0, n),
+        cel = zeros(Float, n),
+        to_river = zeros(Float, n),
         rivercells = fill(false, n),
         reservoir_index = fill(0, n),
         lake_index = fill(0, n),
@@ -165,7 +165,7 @@ function initialize_sbm_gwf_model(config::Config)
         nc,
         param(config, "input.lateral.river.slope");
         sel = inds_riv,
-        type = Float64,
+        type = Float,
     )
     clamp!(riverslope, 0.00001, Inf)
     riverlength = riverlength_2d[inds_riv]
@@ -175,7 +175,7 @@ function initialize_sbm_gwf_model(config::Config)
         param(config, "input.lateral.river.n", nothing);
         sel = inds_riv,
         defaults = 0.036,
-        type = Float64,
+        type = Float,
     )
     ldd_riv = ldd_2d[inds_riv]
     graph_riv = flowgraph(ldd_riv, inds_riv, pcr_dir)
@@ -189,12 +189,12 @@ function initialize_sbm_gwf_model(config::Config)
         sl = riverslope,
         n = n_river,
         dl = riverlength,
-        q = fill(0.0, nriv),
-        q_av = fill(0.0, nriv),
-        qin = fill(0.0, nriv),
-        qlat = fill(0.0, nriv),
-        h = fill(0.0, nriv),
-        h_av = fill(0.0, nriv),
+        q = zeros(Float, nriv),
+        q_av = zeros(Float, nriv),
+        qin = zeros(Float, nriv),
+        qlat = zeros(Float, nriv),
+        h = zeros(Float, nriv),
+        h_av = zeros(Float, nriv),
         Δt = tosecond(Δt),
         its = kw_river_tstep > 0 ? ceil(Int(tosecond(Δt) / kw_river_tstep)) :
               kw_river_tstep,
@@ -203,8 +203,8 @@ function initialize_sbm_gwf_model(config::Config)
         alpha_pow = alpha_pow,
         α = fill(mv, nriv),
         eps = 1e-03,
-        cel = fill(0.0, nriv),
-        to_river = fill(0.0, nriv),
+        cel = zeros(Float, nriv),
+        to_river = zeros(Float, nriv),
         reservoir_index = do_reservoirs ? resindex : fill(0, nriv),
         lake_index = do_lakes ? lakeindex : fill(0, nriv),
         reservoir = do_reservoirs ? reservoirs : nothing,
@@ -218,7 +218,7 @@ function initialize_sbm_gwf_model(config::Config)
             nc,
             param(config, "input.lateral.subsurface.constant_head", nothing);
             sel = inds,
-            type = Float64,
+            type = Float,
             fill = mv,
         )
         index_constanthead = filter(i -> !isequal(constanthead[i], mv), 1:n)
@@ -229,13 +229,13 @@ function initialize_sbm_gwf_model(config::Config)
         nc,
         param(config, "input.lateral.subsurface.conductivity", nothing);
         sel = inds,
-        type = Float64,
+        type = Float,
     )
     specific_yield = ncread(
         nc,
         param(config, "input.lateral.subsurface.specific_yield", nothing);
         sel = inds,
-        type = Float64,
+        type = Float,
     )
 
     connectivity = Connectivity(inds, rev_inds, xl, yl)
@@ -265,19 +265,19 @@ function initialize_sbm_gwf_model(config::Config)
         nc,
         param(config, "input.lateral.subsurface.infiltration_conductance", nothing);
         sel = inds_riv,
-        type = Float64,
+        type = Float,
     )
     exfiltration_conductance = ncread(
         nc,
         param(config, "input.lateral.subsurface.exfiltration_conductance", nothing);
         sel = inds_riv,
-        type = Float64,
+        type = Float,
     )
     river_bottom = ncread(
         nc,
         param(config, "input.lateral.subsurface.river_bottom", nothing);
         sel = inds_riv,
-        type = Float64,
+        type = Float,
     )
 
     river_flux = fill(mv, nriv)
@@ -293,7 +293,7 @@ function initialize_sbm_gwf_model(config::Config)
 
     # recharge boundary of unconfined aquifer
     r = fill(mv, n)
-    recharge = Recharge(r, fill(0.0, n), collect(1:n))
+    recharge = Recharge(r, zeros(Float, n), collect(1:n))
 
     # drain boundary of unconfined aquifer (optional)
     if do_drains
@@ -309,14 +309,14 @@ function initialize_sbm_gwf_model(config::Config)
             nc,
             param(config, "input.lateral.subsurface.drain_elevation", nothing);
             sel = inds,
-            type = Float64,
+            type = Float,
             fill = mv,
         )
         drain_conductance = ncread(
             nc,
             param(config, "input.lateral.subsurface.drain_conductance", nothing);
             sel = inds,
-            type = Float64,
+            type = Float,
             fill = mv,
         )
         index_drain = filter(i -> !isequal(drain[i], 0), 1:n)
@@ -407,7 +407,7 @@ function initialize_sbm_gwf_model(config::Config)
     if reinit == false
         instate_path = joinpath(tomldir, config.state.path_input)
         state_ncnames = ncnames(config.state)
-        set_states(instate_path, model, state_ncnames, type = Float64)
+        set_states(instate_path, model, state_ncnames, type = Float)
     end
 
     # make sure the forcing is already loaded

@@ -212,15 +212,15 @@ function initialize_canopy(nc, config, inds)
             nc,
             param(config, "input.vertical.specific_leaf");
             sel = inds,
-            type = Float64,
+            type = Float,
         )
         swood = ncread(
             nc,
             param(config, "input.vertical.storage_wood");
             sel = inds,
-            type = Float64,
+            type = Float,
         )
-        kext = ncread(nc, param(config, "input.vertical.kext"); sel = inds, type = Float64)
+        kext = ncread(nc, param(config, "input.vertical.kext"); sel = inds, type = Float)
         cmax = fill(mv, n)
         e_r = fill(mv, n)
         canopygapfraction = fill(mv, n)
@@ -234,21 +234,21 @@ function initialize_canopy(nc, config, inds)
             param(config, "input.vertical.cmax", nothing);
             sel = inds,
             defaults = 1.0,
-            type = Float64,
+            type = Float,
         )
         e_r = ncread(
             nc,
             param(config, "input.vertical.eoverr", nothing);
             sel = inds,
             defaults = 0.1,
-            type = Float64,
+            type = Float,
         )
         canopygapfraction = ncread(
             nc,
             param(config, "input.vertical.canopygapfraction", nothing);
             sel = inds,
             defaults = 0.1,
-            type = Float64,
+            type = Float,
         )
     end
     return cmax, e_r, canopygapfraction, sl, swood, kext
@@ -257,9 +257,9 @@ end
 function initialize_sbm(nc, config, riverfrac, inds)
 
     Δt = Second(config.timestepsecs)
-    config_thicknesslayers = get(config.model, "thicknesslayers", Float64[])
+    config_thicknesslayers = get(config.model, "thicknesslayers", Float[])
     if length(config_thicknesslayers) > 0
-        thicknesslayers = SVector(Tuple(push!(Float64.(config_thicknesslayers), mv)))
+        thicknesslayers = SVector(Tuple(push!(Float.(config_thicknesslayers), mv)))
         sumlayers = pushfirst(cumsum(thicknesslayers), 0.0)
         maxlayers = length(thicknesslayers) # max number of soil layers
     else
@@ -274,35 +274,35 @@ function initialize_sbm(nc, config, riverfrac, inds)
             param(config, "input.vertical.cfmax", nothing);
             sel = inds,
             defaults = 3.75653,
-            type = Float64,
+            type = Float,
         ) .* (Δt / basetimestep)
     tt = ncread(
         nc,
         param(config, "input.vertical.tt", nothing);
         sel = inds,
         defaults = 0.0,
-        type = Float64,
+        type = Float,
     )
     tti = ncread(
         nc,
         param(config, "input.vertical.tti", nothing);
         sel = inds,
         defaults = 1.0,
-        type = Float64,
+        type = Float,
     )
     ttm = ncread(
         nc,
         param(config, "input.vertical.ttm", nothing);
         sel = inds,
         defaults = 0.0,
-        type = Float64,
+        type = Float,
     )
     whc = ncread(
         nc,
         param(config, "input.vertical.whc", nothing);
         sel = inds,
         defaults = 0.1,
-        type = Float64,
+        type = Float,
     )
     w_soil =
         ncread(
@@ -310,14 +310,14 @@ function initialize_sbm(nc, config, riverfrac, inds)
             param(config, "input.vertical.w_soil", nothing);
             sel = inds,
             defaults = 0.1125,
-            type = Float64,
+            type = Float,
         ) .* (Δt / basetimestep)
     cf_soil = ncread(
         nc,
         param(config, "input.vertical.cf_soil", nothing);
         sel = inds,
         defaults = 0.038,
-        type = Float64,
+        type = Float,
     )
     # glacier parameters
     g_tt = ncread(
@@ -325,7 +325,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         param(config, "input.vertical.g_tt", nothing);
         sel = inds,
         defaults = 0.0,
-        type = Float64,
+        type = Float,
         fill = 0.0,
     )
     g_cfmax =
@@ -334,7 +334,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
             param(config, "input.vertical.g_cfmax", nothing);
             sel = inds,
             defaults = 3.0,
-            type = Float64,
+            type = Float,
             fill = 0.0,
         ) .* (Δt / basetimestep)
     g_sifrac = ncread(
@@ -342,7 +342,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         param(config, "input.vertical.g_sifrac", nothing);
         sel = inds,
         defaults = 0.001,
-        type = Float64,
+        type = Float,
         fill = 0.0,
     )
     glacierfrac = ncread(
@@ -350,7 +350,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         param(config, "input.vertical.glacierfrac", nothing);
         sel = inds,
         defaults = 0.0,
-        type = Float64,
+        type = Float,
         fill = 0.0,
     )
     glacierstore = ncread(
@@ -358,7 +358,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         param(config, "input.vertical.glacierstore", nothing);
         sel = inds,
         defaults = 5500.0,
-        type = Float64,
+        type = Float,
         fill = 0.0,
     )
     # soil parameters
@@ -367,14 +367,14 @@ function initialize_sbm(nc, config, riverfrac, inds)
         param(config, "input.vertical.θₛ", nothing);
         sel = inds,
         defaults = 0.6,
-        type = Float64,
+        type = Float,
     )
     θᵣ = ncread(
         nc,
         param(config, "input.vertical.θᵣ", nothing);
         sel = inds,
         defaults = 0.01,
-        type = Float64,
+        type = Float,
     )
     kv₀ =
         ncread(
@@ -382,28 +382,28 @@ function initialize_sbm(nc, config, riverfrac, inds)
             param(config, "input.vertical.kv₀", nothing);
             sel = inds,
             defaults = 3000.0,
-            type = Float64,
+            type = Float,
         ) .* (Δt / basetimestep)
     f = ncread(
         nc,
         param(config, "input.vertical.f", nothing);
         sel = inds,
         defaults = 0.001,
-        type = Float64,
+        type = Float,
     )
     hb = ncread(
         nc,
         param(config, "input.vertical.hb", nothing);
         sel = inds,
         defaults = 10.0,
-        type = Float64,
+        type = Float,
     )
     soilthickness = ncread(
         nc,
         param(config, "input.vertical.soilthickness", nothing);
         sel = inds,
         defaults = 2000.0,
-        type = Float64,
+        type = Float,
     )
     infiltcappath =
         ncread(
@@ -411,7 +411,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
             param(config, "input.vertical.infiltcappath", nothing);
             sel = inds,
             defaults = 10.0,
-            type = Float64,
+            type = Float,
         ) .* (Δt / basetimestep)
     infiltcapsoil =
         ncread(
@@ -419,7 +419,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
             param(config, "input.vertical.infiltcapsoil", nothing);
             sel = inds,
             defaults = 100.0,
-            type = Float64,
+            type = Float,
         ) .* (Δt / basetimestep)
     maxleakage =
         ncread(
@@ -427,7 +427,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
             param(config, "input.vertical.maxleakage", nothing);
             sel = inds,
             defaults = 0.0,
-            type = Float64,
+            type = Float,
         ) .* (Δt / basetimestep)
 
     c = ncread(
@@ -435,7 +435,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         param(config, "input.vertical.c", nothing);
         sel = inds,
         defaults = 10.0,
-        type = Float64,
+        type = Float,
         dimname = "layer",
     )
     if size(c, 1) != maxlayers
@@ -448,7 +448,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         param(config, "input.vertical.khfrac", nothing);
         sel = inds,
         defaults = 1.0,
-        type = Float64,
+        type = Float,
         dimname = "layer",
     )
     if size(kvfrac, 1) != maxlayers
@@ -463,14 +463,14 @@ function initialize_sbm(nc, config, riverfrac, inds)
         param(config, "input.vertical.waterfrac", nothing);
         sel = inds,
         defaults = 0.0,
-        type = Float64,
+        type = Float,
     )
     pathfrac = ncread(
         nc,
         param(config, "input.vertical.pathfrac", nothing);
         sel = inds,
         defaults = 0.01,
-        type = Float64,
+        type = Float,
     )
 
     # vegetation parameters
@@ -479,28 +479,28 @@ function initialize_sbm(nc, config, riverfrac, inds)
         param(config, "input.vertical.rootingdepth", nothing);
         sel = inds,
         defaults = 750.0,
-        type = Float64,
+        type = Float,
     )
     rootdistpar = ncread(
         nc,
         param(config, "input.vertical.rootdistpar", nothing);
         sel = inds,
         defaults = -500.0,
-        type = Float64,
+        type = Float,
     )
     capscale = ncread(
         nc,
         param(config, "input.vertical.capscale", nothing);
         sel = inds,
         defaults = 100.0,
-        type = Float64,
+        type = Float,
     )
     et_reftopot = ncread(
         nc,
         param(config, "input.vertical.et_reftopot", nothing);
         sel = inds,
         defaults = 1.0,
-        type = Float64,
+        type = Float,
     )
 
     cmax, e_r, canopygapfraction, sl, swood, kext = initialize_canopy(nc, config, inds)
@@ -508,8 +508,8 @@ function initialize_sbm(nc, config, riverfrac, inds)
     # these are filled in the loop below
     # TODO see if we can replace this approach
     nlayers = zeros(Int, n)
-    act_thickl = zeros(Float64, maxlayers, n)
-    s_layers = zeros(Float64, maxlayers + 1, n)
+    act_thickl = zeros(Float, maxlayers, n)
+    s_layers = zeros(Float, maxlayers + 1, n)
 
     for i = 1:n
         if length(config_thicknesslayers) > 0
@@ -538,7 +538,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
     vwc = fill(mv, maxlayers, n)
     vwc_perc = fill(mv, maxlayers, n)
 
-    sbm = SBM{Float64,maxlayers,maxlayers + 1}(
+    sbm = SBM{Float,maxlayers,maxlayers + 1}(
         Δt = tosecond(Δt),
         maxlayers = maxlayers,
         n = n,
@@ -556,7 +556,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         infiltcappath = infiltcappath,
         infiltcapsoil = infiltcapsoil,
         maxleakage = maxleakage,
-        waterfrac = max.(waterfrac .- riverfrac, 0.0),
+        waterfrac = max.(waterfrac .- riverfrac, Float(0.0)),
         pathfrac = pathfrac,
         rootingdepth = rootingdepth,
         rootdistpar = rootdistpar,
@@ -570,7 +570,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         satwaterdepth = satwaterdepth,
         zi = zi,
         soilwatercapacity = soilwatercapacity,
-        canopystorage = fill(0.0, n),
+        canopystorage = zeros(Float, n),
         cmax = cmax,
         canopygapfraction = canopygapfraction,
         e_r = e_r,
@@ -620,10 +620,10 @@ function initialize_sbm(nc, config, riverfrac, inds)
         whc = whc,
         w_soil = w_soil,
         cf_soil = cf_soil,
-        snow = fill(0.0, n),
-        snowwater = fill(0.0, n),
+        snow = zeros(Float, n),
+        snowwater = zeros(Float, n),
         rainfallplusmelt = fill(mv, n),
-        tsoil = fill(10.0, n),
+        tsoil = fill(Float(10.0), n),
         # glacier parameters
         g_tt = g_tt,
         g_sifrac = g_sifrac,
@@ -636,7 +636,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         kext = kext,
         leaf_area_index = fill(mv, n),
         waterlevel_land = fill(mv, n),
-        waterlevel_river = fill(0.0, n), #set to zero to account for cells outside river domain
+        waterlevel_river = zeros(Float, n), #set to zero to account for cells outside river domain
     )
 
     return sbm

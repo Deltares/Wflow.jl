@@ -43,10 +43,10 @@ function initialize_sbm_model(config::Config)
     river_2d = ncread(nc, param(config, "input.river_location"); type = Bool, fill = false)
     river = river_2d[inds]
     riverwidth_2d =
-        ncread(nc, param(config, "input.lateral.river.width"); type = Float64, fill = 0)
+        ncread(nc, param(config, "input.lateral.river.width"); type = Float, fill = 0)
     riverwidth = riverwidth_2d[inds]
     riverlength_2d =
-        ncread(nc, param(config, "input.lateral.river.length"); type = Float64, fill = 0)
+        ncread(nc, param(config, "input.lateral.river.length"); type = Float, fill = 0)
     riverlength = riverlength_2d[inds]
 
     # read x, y coordinates and calculate cell length [m]
@@ -106,9 +106,9 @@ function initialize_sbm_model(config::Config)
         param(config, "input.lateral.subsurface.ksathorfrac", nothing);
         sel = inds,
         defaults = 1.0,
-        type = Float64,
+        type = Float,
     )
-    βₗ = ncread(nc, param(config, "input.lateral.land.slope"); sel = inds, type = Float64)
+    βₗ = ncread(nc, param(config, "input.lateral.land.slope"); sel = inds, type = Float)
     clamp!(βₗ, 0.00001, Inf)
     kh₀ = khfrac .* sbm.kv₀
     dl = fill(mv, n)
@@ -121,7 +121,7 @@ function initialize_sbm_model(config::Config)
         sw[i] = river[i] ? max(dw[i] - riverwidth[i], 0.0) : dw[i]
     end
 
-    ssf = LateralSSF{Float64}(
+    ssf = LateralSSF{Float}(
         kh₀ = kh₀,
         f = sbm.f,
         zi = sbm.zi,
@@ -149,31 +149,31 @@ function initialize_sbm_model(config::Config)
         param(config, "input.lateral.land.n", nothing);
         sel = inds,
         defaults = 0.072,
-        type = Float64,
+        type = Float,
     )
 
-    alpha_pow = (2.0 / 3.0) * 0.6
-    β = 0.6
+    alpha_pow = Float((2.0 / 3.0) * 0.6)
+    β = Float(0.6)
     olf = SurfaceFlow(
         β = β,
         sl = βₗ,
         n = n_land,
         dl = dl,
-        q = fill(0.0, n),
-        qin = fill(0.0, n),
-        q_av = fill(0.0, n),
-        qlat = fill(0.0, n),
-        h = fill(0.0, n),
-        h_av = fill(0.0, n),
-        Δt = tosecond(Δt),
+        q = zeros(Float, n),
+        qin = zeros(Float, n),
+        q_av = zeros(Float, n),
+        qlat = zeros(Float, n),
+        h = zeros(Float, n),
+        h_av = zeros(Float, n),
+        Δt = Float(tosecond(Δt)),
         its = kw_land_tstep > 0 ? Int(cld(tosecond(Δt), kw_land_tstep)) : kw_land_tstep,
         width = sw,
         wb_pit = pits[inds],
         alpha_pow = alpha_pow,
         α = fill(mv, n),
-        eps = 1e-03,
-        cel = fill(0.0, n),
-        to_river = fill(0.0, n),
+        eps = Float(1e-3),
+        cel = zeros(Float, n),
+        to_river = zeros(Float, n),
         rivercells = fill(false, n),
         reservoir_index = fill(0, n),
         lake_index = fill(0, n),
@@ -189,7 +189,7 @@ function initialize_sbm_model(config::Config)
         nc,
         param(config, "input.lateral.river.slope");
         sel = inds_riv,
-        type = Float64,
+        type = Float,
     )
     clamp!(riverslope, 0.00001, Inf)
     riverlength = riverlength_2d[inds_riv]
@@ -199,7 +199,7 @@ function initialize_sbm_model(config::Config)
         param(config, "input.lateral.river.n", nothing);
         sel = inds_riv,
         defaults = 0.036,
-        type = Float64,
+        type = Float,
     )
     ldd_riv = ldd_2d[inds_riv]
     if do_pits
@@ -216,22 +216,22 @@ function initialize_sbm_model(config::Config)
         sl = riverslope,
         n = n_river,
         dl = riverlength,
-        q = fill(0.0, nriv),
-        qin = fill(0.0, nriv),
-        q_av = fill(0.0, nriv),
-        qlat = fill(0.0, nriv),
-        h = fill(0.0, nriv),
-        h_av = fill(0.0, nriv),
-        Δt = tosecond(Δt),
+        q = zeros(Float, nriv),
+        qin = zeros(Float, nriv),
+        q_av = zeros(Float, nriv),
+        qlat = zeros(Float, nriv),
+        h = zeros(Float, nriv),
+        h_av = zeros(Float, nriv),
+        Δt = Float(tosecond(Δt)),
         its = kw_river_tstep > 0 ? ceil(Int(tosecond(Δt) / kw_river_tstep)) :
               kw_river_tstep,
         width = riverwidth,
         wb_pit = pits[inds_riv],
         alpha_pow = alpha_pow,
         α = fill(mv, nriv),
-        eps = 1e-03,
-        cel = fill(0.0, nriv),
-        to_river = fill(0.0, nriv),
+        eps = Float(1e-3),
+        cel = zeros(Float, nriv),
+        to_river = zeros(Float, nriv),
         reservoir_index = do_reservoirs ? resindex : fill(0, nriv),
         lake_index = do_lakes ? lakeindex : fill(0, nriv),
         reservoir = do_reservoirs ? reservoirs : nothing,
@@ -294,7 +294,7 @@ function initialize_sbm_model(config::Config)
     if reinit == false
         instate_path = joinpath(tomldir, config.state.path_input)
         state_ncnames = ncnames(config.state)
-        set_states(instate_path, model, state_ncnames; type = Float64)
+        set_states(instate_path, model, state_ncnames; type = Float)
         @unpack lateral, vertical = model
         # update zi for vertical sbm and α for river and overland flow
         zi = max.(0.0, vertical.soilthickness .- vertical.satwaterdepth ./ (vertical.θₛ .- vertical.θᵣ))

@@ -369,7 +369,7 @@ function snowpack_hbv(
 
     # fraction of precipitation which falls as rain
     rainfrac = if iszero(tti)
-        Float64(temperature > tt)
+        Float(temperature > tt)
     else
         frac = (temperature - (tt - tti / 2.0)) / tti
         min(frac, 1.0)
