@@ -14,73 +14,73 @@ flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
     row = csv_first_row(model.writer.csv_path)
 
     @test row.time == DateTime("2000-01-01T00:00:00")
-    @test row.Q ≈ 7.815587720999557
-    @test row.volume ≈ 4.364251626782245e7
-    @test row.temp_bycoord ≈ 2.3279826641082764
-    @test row.temp_byindex ≈ 2.3279826641082764
-    @test row.Q_6336050 ≈ 0.02388490515704142
-    @test row.Q_6336510 ≈ 0.012411069754330572
-    @test row.Q_6836100 ≈ 0.004848609260578462
-    @test row.Q_6336500 ≈ 0.011474801875419624
-    @test row.Q_6836190 ≈ 0.0005262529349807199
-    @test row.Q_6336800 ≈ 0.013467698526109831
-    @test row.Q_6336900 ≈ 0.003408280699908697
-    @test row.Q_6336930 ≈ 0.09773275295006544
-    @test row.Q_6336910 ≈ 0.002147610203630289
-    @test row.Q_6336920 ≈ 0.002649393436607859
-    @test row.Q_6136100 ≈ 0.0008708128761381345
-    @test row.Q_6136500 ≈ 0.000729148906480041
-    @test row.Q_6136520 ≈ 0.002155395279410574
-    @test row.Q_6136150 ≈ 0.0022298329229975987
-    @test row.Q_6136151 ≈ 0.0031045027476524524
-    @test row.Q_6136160 ≈ 3.3423894540713786
-    @test row.Q_6136200 ≈ 1.358270076420503
-    @test row.Q_6136201 ≈ 5.942330218662147
-    @test row.Q_6136202 ≈ 1.680997341533662
-    @test row.recharge_1 ≈ -0.027398093386017383
+    @test row.Q ≈ 7.815587720999557f0
+    @test row.volume ≈ 4.364251626782245f7
+    @test row.temp_bycoord ≈ 2.3279826641082764f0
+    @test row.temp_byindex ≈ 2.3279826641082764f0
+    @test row.Q_6336050 ≈ 0.02388490515704142f0
+    @test row.Q_6336510 ≈ 0.012411069754330572f0
+    @test row.Q_6836100 ≈ 0.004848609260578462f0
+    @test row.Q_6336500 ≈ 0.011474801875419624f0
+    @test row.Q_6836190 ≈ 0.0005262529349807199f0
+    @test row.Q_6336800 ≈ 0.013467698526109831f0
+    @test row.Q_6336900 ≈ 0.003408280699908697f0
+    @test row.Q_6336930 ≈ 0.09773275295006544f0
+    @test row.Q_6336910 ≈ 0.002147610203630289f0
+    @test row.Q_6336920 ≈ 0.002649393436607859f0
+    @test row.Q_6136100 ≈ 0.0008708128761381345f0
+    @test row.Q_6136500 ≈ 0.000729148906480041f0
+    @test row.Q_6136520 ≈ 0.002155395279410574f0
+    @test row.Q_6136150 ≈ 0.0022298329229975987f0
+    @test row.Q_6136151 ≈ 0.0031045027476524524f0
+    @test row.Q_6136160 ≈ 3.3423894540713786f0
+    @test row.Q_6136200 ≈ 1.358270076420503f0
+    @test row.Q_6136201 ≈ 5.942330218662147f0
+    @test row.Q_6136202 ≈ 1.680997341533662f0
+    @test row.recharge_1 ≈ -0.027398093386017383f0
 end
 
 @testset "NetCDF scalar output" begin
     ds = model.writer.dataset_scalar
     @test ds["time"][1] == DateTime("2000-01-01T00:00:00")
     @test ds["Q"][:] ≈ [
-        0.023884907,
-        0.012411069,
-        0.004848609,
-        0.011474802,
-        0.0005262529,
-        0.013467698,
-        0.003408281,
-        0.09773275,
-        0.0021476103,
-        0.0026493936,
-        0.0008708129,
-        0.0007291489,
-        0.0021553952,
-        0.002229833,
-        0.003104503,
-        3.3423893,
-        1.35827,
-        5.9423304,
-        1.6809973,
+        0.023884907f0,
+        0.012411069f0,
+        0.004848609f0,
+        0.011474802f0,
+        0.0005262529f0,
+        0.013467698f0,
+        0.003408281f0,
+        0.09773275f0,
+        0.0021476103f0,
+        0.0026493936f0,
+        0.0008708129f0,
+        0.0007291489f0,
+        0.0021553952f0,
+        0.002229833f0,
+        0.003104503f0,
+        3.3423893f0,
+        1.35827f0,
+        5.9423304f0,
+        1.6809973f0,
     ]
     @test ds["Q_gauges"].attrib["cf_role"] == "timeseries_id"
-    @test ds["temp_index"][:] ≈ [2.3279827]
-    @test ds["temp_coord"][:] ≈ [2.3279827]
+    @test ds["temp_index"][:] ≈ [2.3279827f0]
+    @test ds["temp_coord"][:] ≈ [2.3279827f0]
     @test keys(ds.dim) == ["time", "Q_gauges", "temp_bycoord", "temp_byindex"]
 end
 
 @testset "first timestep" begin
     sbm = model.vertical
 
-    @test sbm.tt[1] ≈ 1.2999999523162842
+    @test sbm.tt[1] ≈ 1.2999999523162842f0
 
     @test model.clock.iteration == 2
 
-    @test sbm.θₛ[1] ≈ 0.48343977332115173
+    @test sbm.θₛ[1] ≈ 0.48343977332115173f0
     @test sbm.runoff[1] == 0.0
     @test sbm.soilevap[1] == 0.0
-    @test sbm.snow[1] ≈ 0.6029989752244306
+    @test sbm.snow[1] ≈ 0.6029989752244306f0
 end
 
 # run the second timestep
@@ -88,43 +88,43 @@ model = Wflow.update(model)
 
 @testset "second timestep" begin
     sbm = model.vertical
-    @test sbm.θₛ[1] ≈ 0.48343977332115173
+    @test sbm.θₛ[1] ≈ 0.48343977332115173f0
     @test sbm.runoff[1] == 0.0
-    @test sbm.soilevap[1] ≈ 0.005865651540305367
-    @test sbm.snow[1] ≈ 0.009696763863612956
+    @test sbm.soilevap[1] ≈ 0.005865651540305367f0
+    @test sbm.snow[1] ≈ 0.009696763863612956f0
 end
 
 @testset "subsurface flow" begin
     ssf = model.lateral.subsurface.ssf
-    @test sum(ssf) ≈ 6.368140761295825e16
-    @test ssf[network.land.order[1]] ≈ 3.0449782003445332e13
-    @test ssf[network.land.order[end-100]] ≈ 7.855716879739626e11
-    @test ssf[network.land.order[end]] ≈ 2.161246841709492e11
+    @test sum(ssf) ≈ 6.368140761295825f16
+    @test ssf[network.land.order[1]] ≈ 3.0449782003445332f13
+    @test ssf[network.land.order[end-100]] ≈ 7.855716879739626f11
+    @test ssf[network.land.order[end]] ≈ 2.161246841709492f11
 end
 
 @testset "overland flow" begin
     q = model.lateral.land.q_av
-    @test sum(q) ≈ 319.69538082148307
+    @test sum(q) ≈ 319.69538082148307f0
     @test q[26625] ≈ 0.0
     @test q[39308] ≈ 0.0
-    @test q[network.land.order[end]] ≈ 1.0978547520221912e-5
+    @test q[network.land.order[end]] ≈ 1.0978547520221912f-5
 end
 
 @testset "river flow" begin
     q = model.lateral.river.q_av
-    @test sum(q) ≈ 2807.884971209105
-    @test q[4061] ≈ 0.0016288040314320486
-    @test q[5617] ≈ 7.338169165884175
-    @test q[network.river.order[end]] ≈ 0.00610520650626283
+    @test sum(q) ≈ 2807.884971209105f0
+    @test q[4061] ≈ 0.0016288040314320486f0
+    @test q[5617] ≈ 7.338169165884175f0
+    @test q[network.river.order[end]] ≈ 0.00610520650626283f0
 end
 
 @testset "reservoir simple" begin
     res = model.lateral.river.reservoir
-    @test res.outflow[2] ≈ 0.2174998592483153
-    @test res.inflow[2] ≈ 50.170880189190626
-    @test res.volume[2] ≈ 2.776162917050312e7
-    @test res.precipitation[2] ≈ 0.1765228509902954
-    @test res.evaporation[2] ≈ 0.5372688174247742
+    @test res.outflow[2] ≈ 0.2174998592483153f0
+    @test res.inflow[2] ≈ 50.170880189190626f0
+    @test res.volume[2] ≈ 2.776162917050312f7
+    @test res.precipitation[2] ≈ 0.1765228509902954f0
+    @test res.evaporation[2] ≈ 0.5372688174247742f0
 end
 
 # set these variables for comparison in "changed dynamic parameters"
@@ -161,8 +161,8 @@ end
 # downstream from pit is at river index 1739, CartesianIndex(142, 85)
 @testset "river flow at and downstream of pit" begin
     q = model.lateral.river.q_av
-    @test q[1765] ≈ 8.133435566601927
-    @test q[1739] ≈ 0.008996045895155833
+    @test q[1765] ≈ 8.133435566601927f0
+    @test q[1739] ≈ 0.008996045895155833f0
 end
 
 # test changing forcing and cyclic LAI parameter
@@ -186,9 +186,9 @@ model = Wflow.update(model)
 @testset "changed dynamic parameters" begin
     res = model.lateral.river.reservoir
     vertical = model.vertical
-    @test vertical.precipitation[2] / precip[2] ≈ 2.0
-    @test (vertical.potential_evaporation[100] - 1.50) / evap[100] ≈ 3.0
-    @test vertical.leaf_area_index[100] / lai[100] ≈ 1.6
-    @test (res.evaporation[2] - 1.50) / res_evap[2] ≈ 3.0000012203408635
+    @test vertical.precipitation[2] / precip[2] ≈ 2.0f0
+    @test (vertical.potential_evaporation[100] - 1.50) / evap[100] ≈ 3.0f0
+    @test vertical.leaf_area_index[100] / lai[100] ≈ 1.6f0
+    @test (res.evaporation[2] - 1.50) / res_evap[2] ≈ 3.0000012203408635f0
 end
 Wflow.close_files(model, delete_output = false)

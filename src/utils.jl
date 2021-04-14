@@ -176,6 +176,9 @@ function ncread(
 
     if isnothing(var)
         @assert !isnothing(defaults)
+        if !isnothing(type)
+            defaults = convert(type, defaults)
+        end
         if isnothing(dimname)
             return Base.fill(defaults, length(sel))
         else

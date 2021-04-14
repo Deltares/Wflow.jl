@@ -128,8 +128,8 @@ function initialize_sbm_gwf_model(config::Config)
         type = Float,
     )
 
-    alpha_pow = (2.0 / 3.0) * 0.6
-    β = 0.6
+    alpha_pow = Float((2.0 / 3.0) * 0.6)
+    β = Float(0.6)
     olf = SurfaceFlow(
         β = β,
         sl = βₗ,
@@ -141,13 +141,13 @@ function initialize_sbm_gwf_model(config::Config)
         qlat = zeros(Float, n),
         h = zeros(Float, n),
         h_av = zeros(Float, n),
-        Δt = tosecond(Δt),
+        Δt = Float(tosecond(Δt)),
         its = kw_land_tstep > 0 ? Int(cld(tosecond(Δt), kw_land_tstep)) : kw_land_tstep,
         width = sw,
         wb_pit = pits[inds],
         alpha_pow = alpha_pow,
         α = fill(mv, n),
-        eps = 1e-03,
+        eps = Float(1e-03),
         cel = zeros(Float, n),
         to_river = zeros(Float, n),
         rivercells = fill(false, n),
@@ -195,14 +195,14 @@ function initialize_sbm_gwf_model(config::Config)
         qlat = zeros(Float, nriv),
         h = zeros(Float, nriv),
         h_av = zeros(Float, nriv),
-        Δt = tosecond(Δt),
+        Δt = Float(tosecond(Δt)),
         its = kw_river_tstep > 0 ? ceil(Int(tosecond(Δt) / kw_river_tstep)) :
               kw_river_tstep,
         width = riverwidth,
         wb_pit = pits[inds_riv],
         alpha_pow = alpha_pow,
         α = fill(mv, nriv),
-        eps = 1e-03,
+        eps = Float(1e-03),
         cel = zeros(Float, nriv),
         to_river = zeros(Float, nriv),
         reservoir_index = do_reservoirs ? resindex : fill(0, nriv),
@@ -239,7 +239,7 @@ function initialize_sbm_gwf_model(config::Config)
     )
 
     connectivity = Connectivity(inds, rev_inds, xl, yl)
-    initial_head = altitude .- 0.10 # cold state for groundwater head
+    initial_head = altitude .- Float(0.10) # cold state for groundwater head
     initial_head[index_river] = altitude[index_river]
 
     if do_constanthead
@@ -250,10 +250,10 @@ function initialize_sbm_gwf_model(config::Config)
         initial_head,
         conductivity,
         altitude,
-        altitude .- sbm.soilthickness ./ 1000.0,
+        altitude .- sbm.soilthickness ./ Float(1000.0),
         xl .* yl,
         specific_yield,
-        fill(0.0, connectivity.nconnection),  # conductance
+        zeros(Float, connectivity.nconnection),  # conductance
     )
 
     # reset zi and satwaterdepth with groundwater head from unconfined aquifer 

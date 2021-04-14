@@ -13,23 +13,23 @@ flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
     row = csv_first_row(model.writer.csv_path)
 
     @test row.time == DateTime("2000-01-01T00:00:00")
-    @test row.Q ≈ 517.9761666607884
-    @test row.temp_bycoord ≈ 2.965437173843384
-    @test row.temp_byindex ≈ 1.1716821193695068
-    @test row.Q_1 ≈ 501.6252231440609
-    @test row.perc_33 ≈ 2.308000087738037
-    @test row.perc_34 ≈ 1.8980000019073486
-    @test row.perc_35 ≈ 2.7100000381469727
-    @test row.perc_36 ≈ 3.818000078201294
-    @test row.perc_37 ≈ 2.1440000534057617
+    @test row.Q ≈ 517.9761666607884f0
+    @test row.temp_bycoord ≈ 2.965437173843384f0
+    @test row.temp_byindex ≈ 1.1716821193695068f0
+    @test row.Q_1 ≈ 501.6252231440609f0
+    @test row.perc_33 ≈ 2.308000087738037f0
+    @test row.perc_34 ≈ 1.8980000019073486f0
+    @test row.perc_35 ≈ 2.7100000381469727f0
+    @test row.perc_36 ≈ 3.818000078201294f0
+    @test row.perc_37 ≈ 2.1440000534057617f0
 end
 
 @testset "first timestep" begin
     hbv = model.vertical
     @test hbv.tt[1] ≈ 0.0
     @test model.clock.iteration == 2
-    @test hbv.soilmoisture[1] == 134.35299682617188
-    @test hbv.runoff[1] == 7.406898120121746
+    @test hbv.soilmoisture[1] ≈ 134.35299682617188f0
+    @test hbv.runoff[1] ≈ 7.406898120121746f0
     @test hbv.soilevap[1] == 0.0
     @test hbv.snow[1] == 0.0
 end
@@ -39,26 +39,26 @@ model = Wflow.update(model)
 
 @testset "second timestep" begin
     hbv = model.vertical
-    @test hbv.soilmoisture[1] == 134.35299682617188
-    @test hbv.runoff[1] == 4.353345933656929
+    @test hbv.soilmoisture[1] ≈ 134.35299682617188f0
+    @test hbv.runoff[1] ≈ 4.3533463f0
     @test hbv.soilevap[1] == 0.0
     @test hbv.snow[1] == 0.0
 end
 
 @testset "overland flow" begin
     q = model.lateral.land.q_av
-    @test sum(q) ≈ 3278.9423039643552
-    @test q[500] ≈ 0.2348646912841589
-    @test q[1566] ≈ 0.030463805623037462
-    @test q[network.land.order[end]] ≈ 0.296794455575309
+    @test sum(q) ≈ 3278.9423039643552f0
+    @test q[500] ≈ 0.2348646912841589f0
+    @test q[1566] ≈ 0.030463805623037462f0
+    @test q[network.land.order[end]] ≈ 0.296794455575309f0
 end
 
 @testset "river flow" begin
     q = model.lateral.river.q_av
-    @test sum(q) ≈ 51943.24072462076
-    @test q[500] ≈ 5.693405508134953
-    @test q[88] ≈ 8.839306661545436
-    @test q[network.river.order[end]] ≈ 363.5647479049738
+    @test sum(q) ≈ 51943.24072462076f0
+    @test q[500] ≈ 5.693405508134953f0
+    @test q[88] ≈ 8.839306661545436f0
+    @test q[network.river.order[end]] ≈ 363.5647479049738f0
 end
 
 benchmark = @benchmark Wflow.update(model)

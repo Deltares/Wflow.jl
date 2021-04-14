@@ -1090,16 +1090,16 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     # Bed and Bank from Shields diagram, Da Silva & Yalin (2017)
     E_ = (2.65 - 1) * 9.81
     E = (E_ .* (d50riv .* 1e-3) .^ 3 ./ 1e-12) .^ 0.33
-    TCrbed = (
-        E_ .* d50riv .* (
-            0.13 .* E .^ (-0.392) .* exp.(-0.015 .* E .^ 2) .+
-            0.045 .* (1 .- exp.(-0.068 .* E))
+    TCrbed = @. Float(
+        E_ * d50riv * (
+            0.13 * E ^ (-0.392) * exp(-0.015 * E ^ 2) +
+            0.045 * (1 - exp(-0.068 * E))
         )
     )
     TCrbank = TCrbed
     # kd from Hanson & Simon 2001
-    kdbank = 0.2 .* TCrbank .^ (-0.5) .* 1e-6
-    kdbed = 0.2 .* TCrbed .^ (-0.5) .* 1e-6
+    kdbank = @. Float(0.2 * TCrbank ^ (-0.5) * 1e-6)
+    kdbed = @. Float(0.2 * TCrbed ^ (-0.5) * 1e-6)
 
     rs = RiverSediment(
         n = nriv,
