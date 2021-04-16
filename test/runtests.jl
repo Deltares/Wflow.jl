@@ -15,6 +15,7 @@ using DelimitedFiles
 using Logging
 
 const BMI = BasicModelInterface
+const Float = Wflow.Float
 
 # ensure test data is present
 testdir = @__DIR__

@@ -13,18 +13,18 @@ flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
     row = csv_first_row(model.writer.csv_path)
 
     @test row.time == DateTime("2000-06-01T00:00:00")
-    @test row.Q_av ≈ 0.016260519762890745
-    @test row.head ≈ 1.8416896245327632
+    @test row.Q_av ≈ 0.016260519762890745f0
+    @test row.head ≈ 1.8416896245327632f0
 end
 
 @testset "first timestep" begin
     sbm = model.vertical
 
     @test model.clock.iteration == 2
-    @test sbm.θₛ[1] == 0.44999998807907104
+    @test sbm.θₛ[1] ≈ 0.44999998807907104f0
     @test sbm.runoff[1] == 0.0
     @test sbm.soilevap[1] == 0.0
-    @test sbm.transpiration[1] == 0.6117526566330049
+    @test sbm.transpiration[1] ≈ 0.6117526566330049f0
 end
 
 # run the second timestep
@@ -32,10 +32,10 @@ model = Wflow.update_sbm_gwf(model)
 
 @testset "second timestep" begin
     sbm = model.vertical
-    @test sbm.θₛ[1] == 0.44999998807907104
+    @test sbm.θₛ[1] ≈ 0.44999998807907104f0
     @test sbm.runoff[1] == 0.0
     @test sbm.soilevap[1] == 0.0
-    @test sbm.transpiration[1] == 1.0122634204681036
+    @test sbm.transpiration[1] ≈ 1.0122634204681036f0
 end
 
 @testset "overland flow" begin
@@ -45,19 +45,19 @@ end
 
 @testset "river flow" begin
     q = model.lateral.river.q_av
-    @test sum(q) ≈ 0.03515257228971982
-    @test q[6] ≈ 0.007952670041402076
-    @test q[13] ≈ 0.0005980549969548235
-    @test q[network.river.order[end]] ≈ 0.008482648782941154
+    @test sum(q) ≈ 0.03515257228971982f0
+    @test q[6] ≈ 0.007952670041402076f0
+    @test q[13] ≈ 0.0005980549969548235f0
+    @test q[network.river.order[end]] ≈ 0.008482648782941154f0
 end
 
 @testset "groundwater" begin
     gw = model.lateral.subsurface
-    @test gw.river.stage[1] ≈ 1.21057153442702
-    @test gw.flow.aquifer.head[19] ≈ 1.7999999523162842
-    @test gw.river.flux[1] ≈ -50.751898489778426
+    @test gw.river.stage[1] ≈ 1.21057153442702f0
+    @test gw.flow.aquifer.head[19] ≈ 1.7999999523162842f0
+    @test gw.river.flux[1] ≈ -50.751898489778426f0
     @test gw.drain.flux[1] ≈ 0.0
-    @test gw.recharge.rate[19] ≈ -0.0014241196552847502
+    @test gw.recharge.rate[19] ≈ -0.0014241196552847502f0
 end
 
 Wflow.close_files(model)

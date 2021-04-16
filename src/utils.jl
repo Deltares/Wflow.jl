@@ -12,7 +12,7 @@ const pcrdir = [
     CartesianIndex(-1, 1),  # 9
 ]
 
-const mv = NaN
+const mv = Float(NaN)
 
 # timestep that the parameter units are defined in
 const basetimestep = Second(Day(1))
@@ -77,7 +77,7 @@ function active_indices(network, key::Tuple)
     end
 end
 
-function lattometres(lat::Float64)
+function lattometres(lat::Real)
     m1 = 111132.92     # latitude calculation term 1
     m2 = -559.82       # latitude calculation term 2
     m3 = 1.175         # latitude calculation term 3
@@ -176,6 +176,9 @@ function ncread(
 
     if isnothing(var)
         @assert !isnothing(defaults)
+        if !isnothing(type)
+            defaults = convert(type, defaults)
+        end
         if isnothing(dimname)
             return Base.fill(defaults, length(sel))
         else
@@ -236,13 +239,13 @@ function ncread(
 end
 
 """
-    set_layerthickness(d::Float64, sl::SVector)
+    set_layerthickness(d::Real, sl::SVector)
 
 Calculate actual soil thickness of layers based on a reference depth (e.g. soil depth or water table depth) `d`,
 a SVector `sl` with cumulative soil depth starting at soil surface (0), and a SVector `tl` with actual thickness
 per soil layer.
 """
-function set_layerthickness(d::Float64, sl::SVector, tl::SVector)
+function set_layerthickness(d::Real, sl::SVector, tl::SVector)
 
     act_d = tl .* mv
     for i = 1:length(act_d)

@@ -38,10 +38,10 @@ function initialize_sediment_model(config::Config)
     river_2d = ncread(nc, param(config, "input.river_location"); type = Bool, fill = false)
     river = river_2d[inds]
     riverwidth_2d =
-        ncread(nc, param(config, "input.lateral.river.width"); type = Float64, fill = 0)
+        ncread(nc, param(config, "input.lateral.river.width"); type = Float, fill = 0)
     riverwidth = riverwidth_2d[inds]
     riverlength_2d =
-        ncread(nc, param(config, "input.lateral.river.length"); type = Float64, fill = 0)
+        ncread(nc, param(config, "input.lateral.river.length"); type = Float, fill = 0)
     riverlength = riverlength_2d[inds]
 
     inds_riv, rev_inds_riv = active_indices(river_2d, 0)
@@ -79,7 +79,7 @@ function initialize_sediment_model(config::Config)
 
     # # lateral part sediment in overland flow
     rivcell = float(river)
-    ols = OverlandFlowSediment{Float64}(
+    ols = OverlandFlowSediment{Float}(
         n = n,
         rivcell = rivcell,
         h_riv = fill(mv, n),
@@ -116,7 +116,7 @@ function initialize_sediment_model(config::Config)
     # River processes
 
     # the indices of the river cells in the land(+river) cell vector
-    βₗ = ncread(nc, param(config, "input.lateral.land.slope"); sel = inds, type = Float64)
+    βₗ = ncread(nc, param(config, "input.lateral.land.slope"); sel = inds, type = Float)
     clamp!(βₗ, 0.00001, Inf)
     riverlength = riverlength_2d[inds_riv]
     riverwidth = riverwidth_2d[inds_riv]
@@ -168,7 +168,7 @@ function initialize_sediment_model(config::Config)
     if reinit == false
         instate_path = joinpath(tomldir, config.state.path_input)
         state_ncnames = ncnames(config.state)
-        set_states(instate_path, model, state_ncnames; type = Float64)
+        set_states(instate_path, model, state_ncnames; type = Float)
     end
 
     # make sure the forcing is already loaded
