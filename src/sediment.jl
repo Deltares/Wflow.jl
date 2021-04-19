@@ -1224,7 +1224,12 @@ function update(rs::RiverSediment, network, config)
 
         insed = inclay + insilt + insand + insagg + inlagg + ingrav
         rs.insed[v] = insed
-        rs.inlandsed[v] = rs.inlandclay[v] + rs.inlandsilt[v] + rs.inlandsand[v] + rs.inlandsagg[v] + rs.inlandlagg[v]
+        rs.inlandsed[v] =
+            rs.inlandclay[v] +
+            rs.inlandsilt[v] +
+            rs.inlandsand[v] +
+            rs.inlandsagg[v] +
+            rs.inlandlagg[v]
 
         ### Transport capacity of the flow ###
         # Hydraulic radius of the river [m] (rectangular channel)
@@ -1520,15 +1525,16 @@ function update(rs::RiverSediment, network, config)
             depgrav = (ingrav + erodgrav) * min(1.0, (DCres * (rs.dmgrav[v] / 1000)^2))
             # Trapping of large particles
             # Use the rouse number for sagg (suspension or bedload)
-            depsand = max(depsand, rs.wbtrap[v]*(insand + erodsand))
-            deplagg = max(deplagg, rs.wbtrap[v]*(inlagg + erodlagg))
-            depgrav = max(depgrav, rs.wbtrap[v]*(ingrav + erodgrav))
+            depsand = max(depsand, rs.wbtrap[v] * (insand + erodsand))
+            deplagg = max(deplagg, rs.wbtrap[v] * (inlagg + erodlagg))
+            depgrav = max(depgrav, rs.wbtrap[v] * (ingrav + erodgrav))
             # threshold diameter between suspended load and mixed load using Rouse number
-            dsuspf = 1e3 * (1.2 * 3600 * 0.41 / 411 * (9.81 * rs.h_riv[v] * rs.sl[v])^0.5)^0.5
+            dsuspf =
+                1e3 * (1.2 * 3600 * 0.41 / 411 * (9.81 * rs.h_riv[v] * rs.sl[v])^0.5)^0.5
             depsagg = ifelse(
                 rs.dmsagg[v] > dsuspf,
                 depsagg,
-                max(depsagg, rs.wbtrap[v]*(insagg + erodsagg)),
+                max(depsagg, rs.wbtrap[v] * (insagg + erodsagg)),
             )
         elseif rs.wbcover[v] > 0.0
             depsed = 0.0

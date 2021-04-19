@@ -5,10 +5,8 @@ pages = [
     "Home" => "index.md",
     "Quick start" => "quick-start.md",
     "Command line interface" => "cli.md",
-    "Model structure and config" => [
-        "Model structure" => "structure.md",
-        "Config" => "config.md",
-    ],
+    "Model structure and config" =>
+        ["Model structure" => "structure.md", "Config" => "config.md"],
     "Models" => [
         "wflow_sbm" => "model/sbm.md",
         "wflow_hbv" => "model/hbv.md",

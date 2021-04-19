@@ -68,7 +68,7 @@ function update(
     # sub time step
     adt = sf.Δt / its
 
-    alpha_term = pow.(sf.n ./ sqrt.(sf.sl),sf.β)
+    alpha_term = pow.(sf.n ./ sqrt.(sf.sl), sf.β)
     sf.α .= alpha_term .* pow.(sf.width .+ 2.0 .* sf.h, sf.alpha_pow)
 
     q_sum = zeros(n)
