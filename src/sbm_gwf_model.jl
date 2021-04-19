@@ -383,7 +383,7 @@ function initialize_sbm_gwf_model(config::Config)
         reverse_indices = rev_inds,
         xl = xl,
         yl = yl,
-        altitude = altitude, 
+        altitude = altitude,
     )
     river = (
         graph = graph_riv,
@@ -490,8 +490,8 @@ function update_sbm_gwf(model)
     # determine lateral inflow for overland flow based on vertical runoff [mm] from vertical
     # sbm concept
     lateral.land.qlat .=
-        (vertical.runoff .* network.land.xl .* network.land.yl .* 0.001) ./ lateral.land.Δt ./
-        lateral.land.dl
+        (vertical.runoff .* network.land.xl .* network.land.yl .* 0.001) ./
+        lateral.land.Δt ./ lateral.land.dl
     # run kinematic wave for overland flow
     update(
         lateral.land,

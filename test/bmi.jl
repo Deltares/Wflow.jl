@@ -4,7 +4,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 
 @testset "BMI" begin
 
-    @testset "BMI functions" begin 
+    @testset "BMI functions" begin
 
         model = BMI.initialize(Wflow.Model, tomlpath)
 
@@ -35,7 +35,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test_throws ErrorException BMI.get_var_grid(model, "lateral.river.lake.volume")
             # Vector{Float64} printing on Julia 1.6+
             @test BMI.get_var_type(model, "lateral.river.reservoir.inflow") in
-              ["Array{$Float,1}", "Vector{$Float}"]
+                ["Array{$Float,1}", "Vector{$Float}"]
             @test BMI.get_var_type(model, "vertical.n") == "Int64"
             @test BMI.get_var_units(model, "vertical.θₛ") == "mm mm-1"
             @test BMI.get_var_itemsize(model, "lateral.subsurface.ssf") == sizeof(Float)
@@ -50,7 +50,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test BMI.get_current_time(model) == 9.467712e8
             @test mean(BMI.get_value(model, "vertical.zi")) ≈ 276.252648379751
             @test BMI.get_value_at_indices(model, "lateral.river.q", [1, 100, 5617]) ≈
-                [0.0019494398840044726, 0.0552464309192915, 2.662842827356121]
+                  [0.0019494398840044726, 0.0552464309192915, 2.662842827356121]
             BMI.set_value(model, "vertical.zi", fill(300.0, 50070))
             @test mean(BMI.get_value(model, "vertical.zi")) == 300.0
             BMI.set_value_at_indices(model, "vertical.zi", [1], [250.0])
@@ -79,13 +79,13 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
         end
 
     end
-    
+
     @testset "BMI run SBM in parts" begin
         tomlpath = joinpath(@__DIR__, "sbm_gw.toml")
         model = BMI.initialize(Wflow.Model, tomlpath)
 
         # update the recharge part of the SBM model
-    	model = BMI.update(model, run="sbm_until_recharge")
+        model = BMI.update(model, run = "sbm_until_recharge")
 
         @testset "recharge part of SBM" begin
             sbm = model.vertical
@@ -100,7 +100,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
         BMI.set_value(model, "lateral.subsurface.zi", fill(250.0, 50070))
         BMI.set_value(model, "lateral.subsurface.exfiltwater", fill(0.01, 50070))
         # update SBM after subsurface flow
-        model = BMI.update(model, run="sbm_after_subsurfaceflow")
+        model = BMI.update(model, run = "sbm_after_subsurfaceflow")
 
         @testset "SBM after subsurface flow" begin
             sbm = model.vertical
@@ -114,7 +114,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test sub.exfiltwater[1] ≈ 0.01f0
             @test sub.ssf[1] ≈ 0.0f0
         end
-        
+
         BMI.finalize(model)
     end
 end

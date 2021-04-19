@@ -576,8 +576,8 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:HBV,R,W}
     # determine lateral inflow for overland flow based on vertical runoff [mm] from vertical
     # hbv concept
     lateral.land.qlat .=
-        (vertical.runoff .* network.land.xl .* network.land.yl .* 0.001) ./ lateral.land.Δt ./
-        lateral.land.dl
+        (vertical.runoff .* network.land.xl .* network.land.yl .* 0.001) ./
+        lateral.land.Δt ./ lateral.land.dl
 
     # run kinematic wave for overland flow
     update(

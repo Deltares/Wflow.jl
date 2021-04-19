@@ -139,8 +139,8 @@ function initialize_sbm_model(config::Config)
             exfiltwater = fill(mv, n),
             recharge = fill(mv, n),
             ssf = ((kh₀ .* βₗ) ./ sbm.f) .*
-                (exp.(-sbm.f .* sbm.zi) - exp.(-sbm.f .* sbm.soilthickness)) .* dw .*
-                1000.0,
+                  (exp.(-sbm.f .* sbm.zi) - exp.(-sbm.f .* sbm.soilthickness)) .* dw .*
+                  1000.0,
             ssfin = fill(mv, n),
             ssfmax = ((kh₀ .* βₗ) ./ sbm.f) .* (1.0 .- exp.(-sbm.f .* sbm.soilthickness)),
             to_river = zeros(n),
@@ -152,7 +152,7 @@ function initialize_sbm_model(config::Config)
         ssf = GroundwaterExchange{Float}(
             Δt = tosecond(Δt),
             exfiltwater = fill(mv, n),
-            zi = fill(mv,n),
+            zi = fill(mv, n),
             to_river = fill(mv, n),
             ssf = zeros(n),
         )
@@ -311,7 +311,12 @@ function initialize_sbm_model(config::Config)
         set_states(instate_path, model, state_ncnames; type = Float)
         @unpack lateral, vertical = model
         # update zi for vertical sbm and α for river and overland flow
-        zi = max.(0.0, vertical.soilthickness .- vertical.satwaterdepth ./ (vertical.θₛ .- vertical.θᵣ))
+        zi =
+            max.(
+                0.0,
+                vertical.soilthickness .-
+                vertical.satwaterdepth ./ (vertical.θₛ .- vertical.θᵣ),
+            )
         vertical.zi .= zi
     end
 
@@ -335,7 +340,7 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
     # update lateral subsurface flow domain (kinematic wave)
     update(lateral.subsurface, network.land, network.frac_toriver)
     model = update_after_subsurfaceflow(model)
-    return model 
+    return model
 end
 
 """
@@ -401,8 +406,8 @@ function update_after_subsurfaceflow(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,
     # determine lateral inflow for overland flow based on vertical runoff [mm] from vertical
     # sbm concept
     lateral.land.qlat .=
-        (vertical.runoff .* network.land.xl .* network.land.yl .* 0.001) ./ lateral.land.Δt ./
-        lateral.land.dl
+        (vertical.runoff .* network.land.xl .* network.land.yl .* 0.001) ./
+        lateral.land.Δt ./ lateral.land.dl
     # run kinematic wave for overland flow
     update(
         lateral.land,
