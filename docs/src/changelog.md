@@ -9,12 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - New deposition process for coarse sediment in the reservoirs with a new parameter 
-  ``restrapefficiency`` in the sediment model.
-- New variables added to the LandSediment struct and RiverSediment struct in order to save 
-  outputs from the sediment model.
+  `restrapefficiency` in the sediment model.
+- New variables added to the `LandSediment` and `RiverSediment` structs in order to save 
+  more output from the sediment model.
 
 ### Added
-- Modify model parameters and forcing through the TOML file.
+- Modify model parameters and forcing through the TOML file (see [Modify parameters](@ref)).
 - Run wflow\_sbm (SBM + kinematic wave) in two parts (until recharge and after subsurface
   flow) from BMI, including the option to switch off the lateral subsurface component of
   wflow\_sbm.
