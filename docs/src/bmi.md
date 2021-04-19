@@ -41,3 +41,31 @@ See also:
 Wflow.BMI.initialize
 Wflow.BMI.get_input_var_names
 ```
+
+## Couple to a groundwater model
+For the coupling of wflow\_sbm (SBM + kinematic wave) with a groundwater model (e.g.
+MODFLOW) it is possible to run:
+- wflow\_sbm in parts from the BMI, and 
+- to switch off the lateral subsurface flow component of wflow\_sbm. 
+
+The lateral subsurface component of wflow\_sbm is not initialized by Wflow when the
+`[input.lateral.subsurface]` part of the TOML file is not included. Then from the BMI it is
+possible to run first the recharge part of SBM:
+
+```julia
+model = BMI.update(model, run="sbm_until_recharge")
+```
+and to exchange recharge and for example river waterlevels to the groundwater model. After
+the groundwater model update, and the exchange of groundwater head and for example drain and
+river flux to wflow\_sbm, the SBM part that mainly determines exfiltration of water from the
+unsaturated store, and the kinematic wave for river - and overland flow can be run as
+follows: 
+
+```julia
+model = BMI.update(model, run="sbm_after_subsurfaceflow")
+```
+
+See also:
+```@docs
+Wflow.BMI.update
+```

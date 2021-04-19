@@ -223,6 +223,6 @@ end
     Δt::T | "s"                         # model time step [s]
     exfiltwater::Vector{T}              # Exfiltration [mm]  (groundwater above surface level, saturated excess conditions)
     zi::Vector{T}                       # Pseudo-water table depth [mm] (top of the saturated zone)
-    to_river::Vector{T} | "m3 s-1"      # Part of subsurface flow [mm³ Δt⁻¹] that flows to the river
+    to_river::Vector{T} | "mm3 Δt-1"    # Part of subsurface flow [mm³ Δt⁻¹] that flows to the river
     ssf::Vector{T} | "mm3 Δt-1"         # Subsurface flow [mm³ Δt⁻¹]
 end
