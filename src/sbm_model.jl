@@ -324,9 +324,9 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
     @unpack lateral, vertical, network, clock, config = model
     model = update_until_recharge(model)
     # exchange of recharge between vertical sbm concept and subsurface flow domain
-    lateral.subsurface.recharge .= vertical.recharge
-    lateral.subsurface.recharge .*= lateral.subsurface.dw
-    lateral.subsurface.zi .= vertical.zi
+    @avxt lateral.subsurface.recharge .= vertical.recharge
+    @avxt lateral.subsurface.recharge .*= lateral.subsurface.dw
+    @avxt lateral.subsurface.zi .= vertical.zi
     # update lateral subsurface flow domain (kinematic wave)
     update(lateral.subsurface, network.land, network.frac_toriver)
     model = update_after_subsurfaceflow(model)
@@ -351,8 +351,8 @@ function update_until_recharge(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
 
     # extract water levels h_av [m] from the land and river domains
     # this is used to limit open water evaporation
-    vertical.waterlevel_land .= lateral.land.h_av .* 1000.0
-    vertical.waterlevel_river[inds_riv] .= lateral.river.h_av .* 1000.0
+    @avxt vertical.waterlevel_land .= lateral.land.h_av .* 1000.0
+    @avxt vertical.waterlevel_river[inds_riv] .= lateral.river.h_av .* 1000.0
 
     # vertical sbm concept is updated until snow state, after that (optional)
     # snow transport is possible
@@ -395,9 +395,9 @@ function update_after_subsurfaceflow(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,
 
     # determine lateral inflow for overland flow based on vertical runoff [mm] from vertical
     # sbm concept
-    lateral.land.inwater .=
+    @avxt lateral.land.inwater .=
         (vertical.runoff .* network.land.xl .* network.land.yl .* 0.001) ./ lateral.land.Δt
-    lateral.land.qlat .= lateral.land.inwater ./ lateral.land.dl
+    @avxt lateral.land.qlat .= lateral.land.inwater ./ lateral.land.dl
 
     # run kinematic wave for overland flow
     update(
@@ -409,16 +409,16 @@ function update_after_subsurfaceflow(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,
 
     # determine net runoff from vertical sbm concept in river cells, and lateral inflow from
     # overland flow lateral subsurface flow and net runoff to the river cells
-    net_runoff_river =
+    @avxt net_runoff_river =
         (
             vertical.net_runoff_river[inds_riv] .* network.land.xl[inds_riv] .*
             network.land.yl[inds_riv] .* 0.001
         ) ./ vertical.Δt
-    lateral.river.inwater .= (
-        lateral.subsurface.to_river[inds_riv] ./ 1.0e9 ./ lateral.river.Δt .+
-        lateral.land.to_river[inds_riv] .+ net_runoff_river
+    @avxt lateral.river.inwater .= (
+            lateral.subsurface.to_river[inds_riv] ./ 1.0e9 ./ lateral.river.Δt .+
+            lateral.land.to_river[inds_riv] .+ net_runoff_river
     )
-    lateral.river.qlat .= lateral.river.inwater ./ lateral.river.dl
+    @avxt lateral.river.qlat .= lateral.river.inwater ./ lateral.river.dl
 
     # run kinematic wave for river flow
     # check if reservoirs or lakes are defined, the inflow from lateral subsurface and
