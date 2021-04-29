@@ -113,9 +113,9 @@ function get_at!(buffer, var::NCDatasets.CFVariable, i)
     # load in place, using a lower level NCDatasets function
     if ndims(var) == 3
         if dim == 1
-            NCDatasets.load!(var.var, buffer, i, :, :)
+            buffer .= var[i, :, :]
         elseif dim == 3
-            NCDatasets.load!(var.var, buffer, :, :, i)
+            buffer .= var[:, :, i]
         else
             error("Time dimension expected at position 1 or 3 (number of dimensions is 3)")
         end
@@ -123,7 +123,7 @@ function get_at!(buffer, var::NCDatasets.CFVariable, i)
         if dim == 1
             len = size(var, 2)
             if len == 1
-                NCDatasets.load!(var.var, buffer, i, 1, :, :)
+                buffer .= var[i, 1, :, :]
             else
                 dimname = NCDatasets.dimnames(var)[2]
                 error("Unsupported dimension $dimname of size $len")
@@ -131,7 +131,7 @@ function get_at!(buffer, var::NCDatasets.CFVariable, i)
         elseif dim == 4
             len = size(var, 3)
             if len == 1
-                NCDatasets.load!(var.var, buffer, :, :, 1, i)
+                buffer .= var[:, :, 1, i]
             else
                 dimname = NCDatasets.dimnames(var)[3]
                 error("Unsupported dimension $dimname of size $len")
@@ -206,7 +206,18 @@ function update_forcing!(model)
         end
 
         param_vector = param(model, par)
-        param_vector .= buffer[sel]
+        buffer_sel = buffer[sel]
+        if par == (:lateral, :land, :h_riv) || par == (:lateral, :land, :q_riv)
+            # these do contain missings, fill with NaN
+            # harmless since it is not used in OverlandFlowSediment
+            param_vector .= nomissing(buffer_sel, NaN)
+        else
+            if any(ismissing, buffer_sel)
+                msg = "Forcing data has missing values on active model cells for $(ncvar.name)"
+                throw(ArgumentError(msg))
+            end
+            param_vector .= buffer_sel
+        end
     end
 
     return model
@@ -469,7 +480,7 @@ struct NCReader{T}
     cyclic_times::Vector{Tuple{Int,Int}}
     forcing_parameters::Dict{Tuple{Symbol,Vararg{Symbol}},NamedTuple}
     cyclic_parameters::Dict{Tuple{Symbol,Vararg{Symbol}},NamedTuple}
-    buffer::Matrix{T}
+    buffer::Matrix{Union{T, Missing}}
 end
 
 struct Writer
@@ -511,7 +522,7 @@ function prepare_reader(path, cyclic_path, config)
     checkdims(dims)
     timelast = last(dims) == "time"
     lateral_size = timelast ? size(var)[1:2] : size(var)[2:3]
-    buffer = zeros(T, lateral_size)
+    buffer = zeros(Union{T, Missing}, lateral_size)
 
     # check for cyclic parameters
     do_cyclic = haskey(config.input, "cyclic")
@@ -882,14 +893,14 @@ function write_netcdf_timestep(model, dataset, parameters)
         elemtype = eltype(vector)
         if elemtype <: AbstractFloat
             # ensure no other information is written
-            fill!(buffer, NaN)
+            fill!(buffer, missing)
             buffer[sel] .= vector
             dataset[key][:, :, time_index] = buffer
         elseif elemtype <: SVector
             nlayer = length(first(vector))
             for i = 1:nlayer
                 # ensure no other information is written
-                fill!(buffer, NaN)
+                fill!(buffer, missing)
                 buffer[sel] .= getindex.(vector, i)
                 dataset[key][:, :, i, time_index] = buffer
             end
