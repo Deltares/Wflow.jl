@@ -108,6 +108,7 @@ include("groundwater/boundary_conditions.jl")
 include("sbm_gwf_model.jl")
 include("utils.jl")
 include("bmi.jl")
+include("subdomains.jl")
 
 """
     run(tomlpath::String)
