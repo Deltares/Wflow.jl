@@ -479,6 +479,17 @@ function initialize_hbv_model(config::Config)
         rivercells = river,
     )
 
+    # setup subdomains for the land and river kinematic wave domain, if nthreads = 1
+    # subdomain is equal to the complete domain
+    toposort = topological_sort_by_dfs(graph)
+    toposort_riv = topological_sort_by_dfs(graph_riv)
+    index_pit_land = findall(x -> x == 5, ldd)
+    index_pit_river = findall(x -> x == 5, ldd_riv)
+    subbas_order, indices_subbas, topo_subbas =
+        kinwave_set_subdomains(config, graph, toposort, index_pit_land)
+    subriv_order, indices_subriv, topo_subriv =
+        kinwave_set_subdomains(config, graph_riv, toposort_riv, index_pit_river)
+
     modelmap = (vertical = hbv, lateral = (land = olf, river = rf))
     indices_reverse = (
         land = rev_inds,
@@ -489,13 +500,27 @@ function initialize_hbv_model(config::Config)
     writer =
         prepare_writer(config, reader, modelmap, indices_reverse, x_nc, y_nc, nc)
     close(nc)
-
-    # for each domain save the directed acyclic graph, the traversion order,
-    # and the indices that map it back to the two dimensional grid
+    
+    # for each domain save:
+    # - the directed acyclic graph (graph),
+    # - the traversion order (order),
+    # - upstream_nodes,
+    # - subdomains for the kinematic wave domains for parallel execution (execution order of
+    #   subbasins (subdomain_order), traversion order per subbasin (topo_subdomain) and
+    #   Vector indices per subbasin matching the traversion order of the complete domain
+    #   (indices_subdomain)) 
+    # - the indices that map it back to the two dimensional grid (indices)
+    
+    # for the land domain the x and y length [m] of the grid cells are stored
+    # for reservoirs and lakes indices information is available from the initialization
+    # functions
     land = (
         graph = graph,
         upstream_nodes = filter_upsteam_nodes(graph, olf.wb_pit),
-        order = topological_sort_by_dfs(graph),
+        subdomain_order = subbas_order,
+        topo_subdomain = topo_subbas,
+        indices_subdomain = indices_subbas,
+        order = toposort,
         indices = inds,
         reverse_indices = rev_inds,
         xl = xl,
@@ -504,7 +529,10 @@ function initialize_hbv_model(config::Config)
     river = (
         graph = graph_riv,
         upstream_nodes = filter_upsteam_nodes(graph_riv, rf.wb_pit),
-        order = topological_sort_by_dfs(graph_riv),
+        subdomain_order = subriv_order,
+        topo_subdomain = topo_subriv,
+        indices_subdomain = indices_subriv,
+        order = toposort_riv,
         indices = inds_riv,
         reverse_indices = rev_inds_riv,
     )

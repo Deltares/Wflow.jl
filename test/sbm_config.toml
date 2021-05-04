@@ -120,6 +120,7 @@ reservoirs = true
 snow = true
 thicknesslayers = [100, 300, 800]
 type = "sbm"
+min_streamorder = 3
 
 [output]
 path = "data/output_moselle.nc"

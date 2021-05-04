@@ -43,7 +43,12 @@ function update(
     do_iter = false,
     doy = 0,
 )
-    @unpack graph, order, upstream_nodes = network
+    @unpack graph,
+    order,
+    subdomain_order,
+    topo_subdomain,
+    indices_subdomain,
+    upstream_nodes = network
 
 
     n = length(order)
@@ -87,69 +92,82 @@ function update(
         sf.lake.totaloutflow .= 0.0
     end
 
+    ns = length(subdomain_order)
     for _ = 1:its
         sf.qin .= 0.0
-        for (n, v) in enumerate(order)
-            # for overland flow frac_toriver needs to be defined
-            if frac_toriver !== nothing # run kinematic wave for land domain
-                # for a river cell without a reservoir or lake (wb_pit is false) part of the
-                # upstream surface flow goes to the river (frac_toriver) and part goes to
-                # the surface flow reservoir (1.0 - frac_toriver), upstream nodes with a
-                # reservoir or lake are excluded
-                sf.to_river[v] += sum_at(
-                    i -> sf.q[i] * frac_toriver[i],
-                    upstream_nodes[n],
-                    eltype(sf.to_river),
-                )
-                if sf.width[v] > 0.0
-                    sf.qin[v] = sum_at(
-                        i -> sf.q[i] * (1.0 - frac_toriver[i]),
-                        upstream_nodes[n],
-                        eltype(sf.q),
+        for k = 1:ns
+            @floop ThreadedEx() for m in subdomain_order[k]
+                for (n, v) in zip(indices_subdomain[m], topo_subdomain[m])
+
+                    # for overland flow frac_toriver needs to be defined
+                    if frac_toriver !== nothing # run kinematic wave for land domain
+                        # for a river cell without a reservoir or lake (wb_pit is false) part of the
+                        # upstream surface flow goes to the river (frac_toriver) and part goes to
+                        # the surface flow reservoir (1.0 - frac_toriver), upstream nodes with a
+                        # reservoir or lake are excluded
+                        sf.to_river[v] += sum_at(
+                            i -> sf.q[i] * frac_toriver[i],
+                            upstream_nodes[n],
+                            eltype(sf.to_river),
+                        )
+                        if sf.width[v] > 0.0
+                            sf.qin[v] = sum_at(
+                                i -> sf.q[i] * (1.0 - frac_toriver[i]),
+                                upstream_nodes[n],
+                                eltype(sf.q),
+                            )
+                        end
+                    else # run kinematic wave for river domain (including reservoirs and lakes)
+                        # sf.qin by outflow from upstream reservoir or lake location is added
+                        sf.qin[v] += sum_at(sf.q, upstream_nodes[n])
+
+
+                        if !isnothing(sf.reservoir) && sf.reservoir_index[v] != 0
+                            # run reservoir model and copy reservoir outflow to inflow (qin) of
+                            # downstream river cell
+                            i = sf.reservoir_index[v]
+                            update(sf.reservoir, i, sf.q[v] + inflow_wb[v], adt)
+                            j = only(outneighbors(graph, v))
+                            sf.qin[j] = sf.reservoir.outflow[i]
+
+                        elseif !isnothing(sf.lake) && sf.lake_index[v] != 0
+                            # run lake model and copy lake outflow to inflow (qin) of downstream river
+                            # cell
+                            i = sf.lake_index[v]
+                            update(sf.lake, i, sf.q[v] + inflow_wb[v], doy, adt)
+                            j = only(outneighbors(graph, v))
+                            sf.qin[j] = sf.lake.outflow[i]
+                        end
+                    end
+
+                    sf.q[v] = kinematic_wave(
+                        sf.qin[v],
+                        sf.q[v],
+                        sf.qlat[v],
+                        sf.α[v],
+                        sf.β,
+                        adt,
+                        sf.dl[v],
                     )
+
+                    # update alpha
+                    crossarea = sf.α[v] * pow(sf.q[v], sf.β)
+                    sf.h[v] = crossarea / sf.width[v]
+                    wetper = sf.width[v] + (2.0 * sf.h[v]) # wetted perimeter
+                    α = sf.α[v]
+                    sf.α[v] = alpha_term[v] * pow(wetper, sf.alpha_pow)
+
+                    if abs(α - sf.α[v]) > sf.eps
+                        crossarea = sf.α[v] * pow(sf.q[v], sf.β)
+                        sf.h[v] = crossarea / sf.width[v]
+                    end
+
+                    q_sum[v] += sf.q[v]
+                    h_sum[v] += sf.h[v]
                 end
-            else # run kinematic wave for river domain (including reservoirs and lakes)
-                # sf.qin by outflow from upstream reservoir or lake location is added
-                sf.qin[v] += sum_at(sf.q, upstream_nodes[n])
 
-
-                if !isnothing(sf.reservoir) && sf.reservoir_index[v] != 0
-                    # run reservoir model and copy reservoir outflow to inflow (qin) of
-                    # downstream river cell
-                    i = sf.reservoir_index[v]
-                    update(sf.reservoir, i, sf.q[v] + inflow_wb[v], adt)
-                    j = only(outneighbors(graph, v))
-                    sf.qin[j] = sf.reservoir.outflow[i]
-
-                elseif !isnothing(sf.lake) && sf.lake_index[v] != 0
-                    # run lake model and copy lake outflow to inflow (qin) of downstream river
-                    # cell
-                    i = sf.lake_index[v]
-                    update(sf.lake, i, sf.q[v] + inflow_wb[v], doy, adt)
-                    j = only(outneighbors(graph, v))
-                    sf.qin[j] = sf.lake.outflow[i]
-                end
             end
-
-            sf.q[v] =
-                kinematic_wave(sf.qin[v], sf.q[v], sf.qlat[v], sf.α[v], sf.β, adt, sf.dl[v])
-
-            # update alpha
-            crossarea = sf.α[v] * pow(sf.q[v], sf.β)
-            sf.h[v] = crossarea / sf.width[v]
-            wetper = sf.width[v] + (2.0 * sf.h[v]) # wetted perimeter
-            α = sf.α[v]
-            sf.α[v] = alpha_term[v] * pow(wetper, sf.alpha_pow)
-
-            if abs(α - sf.α[v]) > sf.eps
-                crossarea = sf.α[v] * pow(sf.q[v], sf.β)
-                sf.h[v] = crossarea / sf.width[v]
-            end
-
-            q_sum[v] += sf.q[v]
-            h_sum[v] += sf.h[v]
         end
-
     end
     sf.q_av .= q_sum ./ its
     sf.h_av .= h_sum ./ its
@@ -186,39 +204,45 @@ end
 statevars(::LateralSSF) = (:ssf,)
 
 function update(ssf::LateralSSF, network, frac_toriver)
-    @unpack order, upstream_nodes = network
-    for (n, v) in enumerate(order)
+    @unpack order, subdomain_order, topo_subdomain, indices_subdomain, upstream_nodes =
+        network
 
-        # for a river cell without a reservoir or lake (wb_pit is false) part of the
-        # upstream subsurface flow goes to the river (frac_toriver) and part goes to the
-        # subsurface flow reservoir (1.0 - frac_toriver) upstream nodes with a reservoir or
-        # lake are excluded
-        ssf.ssfin[v] = sum_at(
-            i -> ssf.ssf[i] * (1.0 - frac_toriver[i]),
-            upstream_nodes[n],
-            eltype(ssf.ssfin),
-        )
-        ssf.to_river[v] = sum_at(
-            i -> ssf.ssf[i] * frac_toriver[i],
-            upstream_nodes[n],
-            eltype(ssf.to_river),
-        )
+    ns = length(subdomain_order)
+    for k = 1:ns
+        @floop ThreadedEx() for m in subdomain_order[k]
+            for (n, v) in zip(indices_subdomain[m], topo_subdomain[m])
+                # for a river cell without a reservoir or lake (wb_pit is false) part of the
+                # upstream subsurface flow goes to the river (frac_toriver) and part goes to the
+                # subsurface flow reservoir (1.0 - frac_toriver) upstream nodes with a reservoir or
+                # lake are excluded
+                ssf.ssfin[v] = sum_at(
+                    i -> ssf.ssf[i] * (1.0 - frac_toriver[i]),
+                    upstream_nodes[n],
+                    eltype(ssf.ssfin),
+                )
+                ssf.to_river[v] = sum_at(
+                    i -> ssf.ssf[i] * frac_toriver[i],
+                    upstream_nodes[n],
+                    eltype(ssf.to_river),
+                )
 
-        ssf.ssf[v], ssf.zi[v], ssf.exfiltwater[v] = kinematic_wave_ssf(
-            ssf.ssfin[v],
-            ssf.ssf[v],
-            ssf.zi[v],
-            ssf.recharge[v],
-            ssf.kh₀[v],
-            ssf.βₗ[v],
-            ssf.θₛ[v] - ssf.θᵣ[v],
-            ssf.f[v],
-            ssf.soilthickness[v],
-            ssf.t,
-            ssf.dl[v],
-            ssf.dw[v],
-            ssf.ssfmax[v],
-        )
+                ssf.ssf[v], ssf.zi[v], ssf.exfiltwater[v] = kinematic_wave_ssf(
+                    ssf.ssfin[v],
+                    ssf.ssf[v],
+                    ssf.zi[v],
+                    ssf.recharge[v],
+                    ssf.kh₀[v],
+                    ssf.βₗ[v],
+                    ssf.θₛ[v] - ssf.θᵣ[v],
+                    ssf.f[v],
+                    ssf.soilthickness[v],
+                    ssf.t,
+                    ssf.dl[v],
+                    ssf.dw[v],
+                    ssf.ssfmax[v],
+                )
+            end
+        end
     end
 end
 
