@@ -236,7 +236,7 @@ parameter = "vertical.temperature"
 location = "temp_byindex"
 name = "temp_index"
 index.x = 100
-index.y = 50
+index.y = 264
 parameter = "vertical.temperature"
 ```
 
@@ -287,7 +287,7 @@ parameter = "vertical.temperature"
 [[csv.column]]
 header = "temp_byindex"
 index.x = 100
-index.y = 50
+index.y = 264
 parameter = "vertical.temperature"
 
 [[csv.column]]

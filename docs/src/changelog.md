@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Run wflow\_sbm (SBM + kinematic wave) in two parts (until recharge and after subsurface
   flow) from BMI, including the option to switch off the lateral subsurface component of
   wflow\_sbm.
+- Support more netCDF dimension and axis order variants.
 
 ### Fixed
 - Corrected a bug in sediment deposition in the river (case when incoming sediment load is

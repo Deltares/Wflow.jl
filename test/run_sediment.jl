@@ -48,7 +48,7 @@ end
     @test mean(lat.river.SSconc) ≈ 0.8454728220852514f0
     @test mean(lat.river.inlandclay) ≈ 0.019393435838709512f0
     @test lat.river.h_riv[network.river.order[end]] ≈ 0.006103649735450745f0
-    @test lat.river.outclay[1] ≈ 3.3447705344961993f-6
+    @test lat.river.outclay[5649] ≈ 3.3447705344961993f-6
 end
 
 Wflow.close_files(model)

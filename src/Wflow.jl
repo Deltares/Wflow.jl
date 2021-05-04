@@ -36,7 +36,7 @@ function Clock(config)
 end
 
 function Clock(config, reader)
-    nctimes = ncread(reader.dataset, "time")
+    nctimes = reader.dataset["time"][:]
     # if the config file does not have a start or endtime, folow the NetCDF times
     # and add them to the config
     # if the timestep is not given, use the difference between NetCDF time 1 and 2

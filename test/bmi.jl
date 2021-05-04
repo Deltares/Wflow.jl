@@ -50,7 +50,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test BMI.get_current_time(model) == 9.467712e8
             @test mean(BMI.get_value(model, "vertical.zi")) ≈ 276.252648379751
             @test BMI.get_value_at_indices(model, "lateral.river.q", [1, 100, 5617]) ≈
-                  [0.0019494398840044726, 0.0552464309192915, 2.662842827356121]
+                  [0.9784867989663215, 1.6359646870951168, 0.027160430280557993]
             BMI.set_value(model, "vertical.zi", fill(300.0, 50070))
             @test mean(BMI.get_value(model, "vertical.zi")) == 300.0
             BMI.set_value_at_indices(model, "vertical.zi", [1], [250.0])
@@ -64,10 +64,10 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test BMI.get_grid_size(model, 2) == 5655
             @test BMI.get_grid_size(model, 4) == 50070
             @test BMI.get_grid_shape(model, 4) == 50070
-            @test minimum(BMI.get_grid_x(model, 4)) ≈ 5.4291666666666725
-            @test maximum(BMI.get_grid_x(model, 4)) ≈ 7.845833333333333
-            @test BMI.get_grid_x(model, 0) ≈ [5.920833333333338, 5.7625000000000055]
-            @test BMI.get_grid_y(model, 0) ≈ [49.9125, 48.920834]
+            @test minimum(BMI.get_grid_x(model, 4)) ≈ 5.4291666666666725f0
+            @test maximum(BMI.get_grid_x(model, 4)) ≈ 7.845833333333333f0
+            @test BMI.get_grid_x(model, 0) ≈ [5.7625f0, 5.920834f0]
+            @test BMI.get_grid_y(model, 0) ≈ [48.920834f0, 49.9125f0]
             @test BMI.get_grid_node_count(model, 0) == 2
         end
 
@@ -89,10 +89,10 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 
         @testset "recharge part of SBM" begin
             sbm = model.vertical
-            @test sbm.interception[1] ≈ 0.6469898223876953f0
-            @test sbm.ustorelayerdepth[1][1] ≈ 0.8873711853394088f0
-            @test sbm.snow[1] ≈ 0.6029989752244306f0
-            @test sbm.recharge[5] ≈ -0.011238714493537794f0
+            @test sbm.interception[1] ≈ 0.6329902410507202f0
+            @test sbm.ustorelayerdepth[1][1] ≈ 0.0f0
+            @test sbm.snow[1] ≈ 3.4530311597151853f0
+            @test sbm.recharge[5] ≈ 0.0f0
             @test sbm.zi[5] ≈ 300.0f0
         end
 
@@ -105,10 +105,10 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
         @testset "SBM after subsurface flow" begin
             sbm = model.vertical
             sub = model.lateral.subsurface
-            @test sbm.interception[1] ≈ 0.6469898223876953f0
-            @test sbm.ustorelayerdepth[1][1] ≈ 0.8873711853394088f0
-            @test sbm.snow[1] ≈ 0.6029989752244306f0
-            @test sbm.recharge[5] ≈ -0.011238714493537794f0
+            @test sbm.interception[1] ≈ 0.6329902410507202f0
+            @test sbm.ustorelayerdepth[1][1] ≈ 0.0f0
+            @test sbm.snow[1] ≈ 3.4530311597151853f0
+            @test sbm.recharge[5] ≈ 0.0f0
             @test sbm.zi[5] ≈ 250.0f0
             @test sub.zi[5] ≈ 250.0f0
             @test sub.exfiltwater[1] ≈ 0.01f0

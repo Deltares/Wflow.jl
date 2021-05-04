@@ -257,7 +257,7 @@ function BMI.get_grid_x(model::Model, grid::Int)
     @unpack dataset = reader
     sel = active_indices(model.network, symbols(grids[grid]))
     inds = [sel[i][1] for i in eachindex(sel)]
-    x_nc = "x" in keys(dataset.dim) ? ncread(dataset, "x") : ncread(dataset, "lon")
+    x_nc = read_x_axis(dataset)
     return x_nc[inds]
 end
 
@@ -266,7 +266,7 @@ function BMI.get_grid_y(model::Model, grid::Int)
     @unpack dataset = reader
     sel = active_indices(model.network, symbols(grids[grid]))
     inds = [sel[i][2] for i in eachindex(sel)]
-    y_nc = "y" in keys(dataset.dim) ? ncread(dataset, "y") : ncread(dataset, "lat")
+    y_nc = read_y_axis(dataset)
     return y_nc[inds]
 end
 
