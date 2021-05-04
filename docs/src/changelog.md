@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   more output from the sediment model.
 - Added variables `volume` and `inwater` to `SurfaceFlow` struct, this is convenient for the
   coupling with the water quality model Delwaq. 
+- Require Julia 1.6 or later.
 
 ### Added
 - Modify model parameters and forcing through the TOML file (see [Modify parameters](@ref)).
