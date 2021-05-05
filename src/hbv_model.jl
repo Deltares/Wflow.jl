@@ -414,6 +414,8 @@ function initialize_hbv_model(config::Config)
         qin = zeros(Float, n),
         q_av = zeros(Float, n),
         qlat = zeros(Float, n),
+        inwater = zeros(Float, n),
+        volume = zeros(Float, n),
         h = zeros(Float, n),
         h_av = zeros(Float, n),
         Δt = Float(tosecond(Δt)),
@@ -435,12 +437,8 @@ function initialize_hbv_model(config::Config)
     pcr_dir = dims_xy ? permute_indices(pcrdir) : pcrdir
     graph = flowgraph(ldd, inds, pcr_dir)
 
-    riverslope = ncread(
-        nc,
-        param(config, "input.lateral.river.slope");
-        sel = inds_riv,
-        type = Float,
-    )
+    riverslope =
+        ncread(nc, param(config, "input.lateral.river.slope"); sel = inds_riv, type = Float)
     clamp!(riverslope, 0.00001, Inf)
     riverlength = riverlength_2d[inds_riv]
     riverwidth = riverwidth_2d[inds_riv]
@@ -470,6 +468,8 @@ function initialize_hbv_model(config::Config)
         qin = zeros(Float, nriv),
         q_av = zeros(Float, nriv),
         qlat = zeros(Float, nriv),
+        inwater = zeros(Float, nriv),
+        volume = zeros(Float, nriv),
         h = zeros(Float, nriv),
         h_av = zeros(Float, nriv),
         Δt = Float(tosecond(Δt)),
@@ -534,6 +534,10 @@ function initialize_hbv_model(config::Config)
         instate_path = joinpath(tomldir, config.state.path_input)
         state_ncnames = ncnames(config.state)
         set_states(instate_path, model, state_ncnames; type = Float)
+        # update kinematic wave volume for river and land domain
+        @unpack lateral = model
+        lateral.land.volume .= lateral.land.h .* lateral.land.width .* lateral.land.dl
+        lateral.river.volume .= lateral.river.h .* lateral.river.width .* lateral.river.dl
     end
 
     # make sure the forcing is already loaded
@@ -575,9 +579,9 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:HBV,R,W}
 
     # determine lateral inflow for overland flow based on vertical runoff [mm] from vertical
     # hbv concept
-    lateral.land.qlat .=
-        (vertical.runoff .* network.land.xl .* network.land.yl .* 0.001) ./
-        lateral.land.Δt ./ lateral.land.dl
+    lateral.land.inwater .=
+        (vertical.runoff .* network.land.xl .* network.land.yl .* 0.001) ./ lateral.land.Δt
+    lateral.land.qlat .= lateral.land.inwater ./ lateral.land.dl
 
     # run kinematic wave for overland flow
     update(
@@ -588,7 +592,8 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:HBV,R,W}
     )
 
     # determine lateral inflow (from overland flow) for river flow
-    lateral.river.qlat .= (lateral.land.to_river[inds_riv]) ./ lateral.river.dl
+    lateral.river.inwater .= copy(lateral.land.to_river[inds_riv])
+    lateral.river.qlat .= lateral.river.inwater ./ lateral.river.dl
 
     # run kinematic wave for river flow
     # check if reservoirs or lakes are defined, the inflow from overland flow is required

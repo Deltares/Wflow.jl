@@ -6,7 +6,7 @@
     targetminfrac::Vector{T} | "-"                      # target minimum full fraction (of max storage) [-]
     targetfullfrac::Vector{T} | "-"                     # target fraction full (of max storage) [-]
     volume::Vector{T} | "m3"                            # reservoir volume [m³]
-    inflow::Vector{T} | "m3"                        # inflow into reservoir [m³]
+    inflow::Vector{T} | "m3"                            # inflow into reservoir [m³]
     outflow::Vector{T} | "m3 s-1"                       # outflow from reservoir [m³ s⁻¹]
     totaloutflow::Vector{T} | "m3"                      # total outflow from reservoir [m³]
     percfull::Vector{T} | "-"                           # fraction full (of max storage) [-]

@@ -6,7 +6,9 @@
     q::Vector{T} | "m3 s-1"                 # Discharge [m³ s⁻¹]
     qin::Vector{T} | "m3 s-1"               # Inflow from upstream cells [m³ s⁻¹]
     q_av::Vector{T} | "m3 s-1"              # Average discharge [m³ s⁻¹]
-    qlat::Vector{T} | "m3 s-1"              # Lateral discharge [m³ s⁻¹]
+    qlat::Vector{T} | "m2 s-1"              # Lateral inflow per unit length [m² s⁻¹]
+    inwater::Vector{T} | "m3 s-1"           # Lateral inflow [m³ s⁻¹]
+    volume::Vector{T} | "m3"                # Kinematic wave volume [m³] (based on water level h)
     h::Vector{T} | "m"                      # Water level [m]
     h_av::Vector{T} | "m"                   # Average water level [m]
     Δt::T | "s"                             # Model time step [s]
@@ -152,6 +154,7 @@ function update(
     sf.q_av .= q_sum ./ its
     sf.h_av .= h_sum ./ its
     sf.to_river .= sf.to_river ./ its
+    sf.volume .= sf.dl .* sf.width .* sf.h
 end
 
 @get_units @with_kw struct LateralSSF{T}
