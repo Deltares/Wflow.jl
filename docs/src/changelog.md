@@ -24,8 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Corrected a bug in sediment deposition in the river (case when incoming sediment load is
   more than the river transport capacity).
-- Fixed update of snow and glacierstore fields of HBV and SBM concepts by glacier_hbv
-  module. 
+- Fixed update of `snow` and `glacierstore` fields of HBV and SBM concepts by the
+  `glacier_hbv` module. 
 
 ## v0.2.0 - 2021-03-26
 
