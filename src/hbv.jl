@@ -136,10 +136,10 @@ function update_after_snow(hbv::HBV, config)
             # Estimate the fraction of snow turned into ice (HBV-light).
             # Estimate glacier melt.
 
-            drysnow, snow2glacier, glacierstore, glaciermelt = glacier_hbv(
+            hbv.snow[i], snow2glacier, hbv.glacierstore[i], glaciermelt = glacier_hbv(
                 hbv.glacierfrac[i],
                 hbv.glacierstore[i],
-                hbv.drysnow[i],
+                hbv.snow[i],
                 hbv.temperature[i],
                 hbv.g_tt[i],
                 hbv.g_cfmax[i],
