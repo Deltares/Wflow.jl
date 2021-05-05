@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `restrapefficiency` in the sediment model.
 - New variables added to the `LandSediment` and `RiverSediment` structs in order to save 
   more output from the sediment model.
+- Added variables `volume` and `inwater` to `SurfaceFlow` struct, this is convenient for the
+  coupling with the water quality model Delwaq. 
 
 ### Added
 - Modify model parameters and forcing through the TOML file (see [Modify parameters](@ref)).
@@ -22,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Corrected a bug in sediment deposition in the river (case when incoming sediment load is
   more than the river transport capacity).
+- Fixed update of snow and glacierstore fields of HBV and SBM concepts by glacier_hbv
+  module. 
 
 ## v0.2.0 - 2021-03-26
 
