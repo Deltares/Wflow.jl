@@ -184,11 +184,14 @@ end
     @test Wflow.param(model, "vertical.ustorelayerdepth")[1][1] ≈ 16.73013687133789
     @test Wflow.param(model, "vertical.snowwater")[41120] ≈ 0.42188167572021484
     @test Wflow.param(model, "vertical.canopystorage")[1] ≈ 0.0
+    @test Wflow.param(model, "vertical.zi")[1] ≈ 380.67793082060416
     @test Wflow.param(model, "lateral.subsurface.ssf")[39308] ≈ 1.1614302208e11
     @test Wflow.param(model, "lateral.river.q")[5501] ≈ 111.46229553222656
     @test Wflow.param(model, "lateral.river.h")[5501] ≈ 8.555977821350098
+    @test Wflow.param(model, "lateral.river.volume")[5501] ≈ 249163.33754433296
     @test Wflow.param(model, "lateral.land.q")[39626] ≈ 1.0575231313705444
     @test Wflow.param(model, "lateral.land.h")[39626] ≈ 0.03456519544124603
+    @test Wflow.param(model, "lateral.land.volume")[39626] ≈ 19379.23274404319
 end
 
 @testset "reducer" begin

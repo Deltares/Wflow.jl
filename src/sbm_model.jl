@@ -177,6 +177,8 @@ function initialize_sbm_model(config::Config)
         qin = zeros(Float, n),
         q_av = zeros(Float, n),
         qlat = zeros(Float, n),
+        inwater = zeros(Float, n),
+        volume = zeros(Float, n),
         h = zeros(Float, n),
         h_av = zeros(Float, n),
         Δt = Float(tosecond(Δt)),
@@ -199,12 +201,8 @@ function initialize_sbm_model(config::Config)
     graph = flowgraph(ldd, inds, pcr_dir)
 
 
-    riverslope = ncread(
-        nc,
-        param(config, "input.lateral.river.slope");
-        sel = inds_riv,
-        type = Float,
-    )
+    riverslope =
+        ncread(nc, param(config, "input.lateral.river.slope"); sel = inds_riv, type = Float)
     clamp!(riverslope, 0.00001, Inf)
     riverlength = riverlength_2d[inds_riv]
     riverwidth = riverwidth_2d[inds_riv]
@@ -234,6 +232,8 @@ function initialize_sbm_model(config::Config)
         qin = zeros(Float, nriv),
         q_av = zeros(Float, nriv),
         qlat = zeros(Float, nriv),
+        inwater = zeros(Float, nriv),
+        volume = zeros(Float, nriv),
         h = zeros(Float, nriv),
         h_av = zeros(Float, nriv),
         Δt = Float(tosecond(Δt)),
@@ -310,7 +310,7 @@ function initialize_sbm_model(config::Config)
         state_ncnames = ncnames(config.state)
         set_states(instate_path, model, state_ncnames; type = Float)
         @unpack lateral, vertical = model
-        # update zi for vertical sbm and α for river and overland flow
+        # update zi for vertical sbm and kinematic wave volume for river and land domain
         zi =
             max.(
                 0.0,
@@ -318,6 +318,8 @@ function initialize_sbm_model(config::Config)
                 vertical.satwaterdepth ./ (vertical.θₛ .- vertical.θᵣ),
             )
         vertical.zi .= zi
+        lateral.land.volume .= lateral.land.h .* lateral.land.width .* lateral.land.dl
+        lateral.river.volume .= lateral.river.h .* lateral.river.width .* lateral.river.dl
     end
 
     # make sure the forcing is already loaded
@@ -405,9 +407,10 @@ function update_after_subsurfaceflow(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,
 
     # determine lateral inflow for overland flow based on vertical runoff [mm] from vertical
     # sbm concept
-    lateral.land.qlat .=
-        (vertical.runoff .* network.land.xl .* network.land.yl .* 0.001) ./
-        lateral.land.Δt ./ lateral.land.dl
+    lateral.land.inwater .=
+        (vertical.runoff .* network.land.xl .* network.land.yl .* 0.001) ./ lateral.land.Δt
+    lateral.land.qlat .= lateral.land.inwater ./ lateral.land.dl
+
     # run kinematic wave for overland flow
     update(
         lateral.land,
@@ -423,11 +426,11 @@ function update_after_subsurfaceflow(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,
             vertical.net_runoff_river[inds_riv] .* network.land.xl[inds_riv] .*
             network.land.yl[inds_riv] .* 0.001
         ) ./ vertical.Δt
-    lateral.river.qlat .=
-        (
-            lateral.subsurface.to_river[inds_riv] ./ 1.0e9 ./ lateral.river.Δt .+
-            lateral.land.to_river[inds_riv] .+ net_runoff_river
-        ) ./ lateral.river.dl
+    lateral.river.inwater .= (
+        lateral.subsurface.to_river[inds_riv] ./ 1.0e9 ./ lateral.river.Δt .+
+        lateral.land.to_river[inds_riv] .+ net_runoff_river
+    )
+    lateral.river.qlat .= lateral.river.inwater ./ lateral.river.dl
 
     # run kinematic wave for river flow
     # check if reservoirs or lakes are defined, the inflow from lateral subsurface and

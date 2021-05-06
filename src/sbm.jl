@@ -743,7 +743,7 @@ function update_until_recharge(sbm::SBM, config)
                 # Estimate the fraction of snow turned into ice (HBV-light).
                 # Estimate glacier melt.
 
-                snow, snow2glacier, glacierstore, glaciermelt = glacier_hbv(
+                sbm.snow[i], snow2glacier, sbm.glacierstore[i], glaciermelt = glacier_hbv(
                     sbm.glacierfrac[i],
                     sbm.glacierstore[i],
                     sbm.snow[i],

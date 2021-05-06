@@ -59,8 +59,7 @@ function initialize_sbm_gwf_model(config::Config)
         ncread(nc, param(config, "input.lateral.river.length"); type = Float, fill = 0)
     riverlength = riverlength_2d[inds]
 
-    altitude =
-        ncread(nc, param(config, "input.altitude"); sel = inds, type = Float)
+    altitude = ncread(nc, param(config, "input.altitude"); sel = inds, type = Float)
     # read x, y coordinates and calculate cell length [m]
     y_nc = "y" in keys(nc.dim) ? ncread(nc, "y") : ncread(nc, "lat")
     x_nc = "x" in keys(nc.dim) ? ncread(nc, "x") : ncread(nc, "lon")
@@ -139,6 +138,8 @@ function initialize_sbm_gwf_model(config::Config)
         qin = zeros(Float, n),
         q_av = zeros(Float, n),
         qlat = zeros(Float, n),
+        inwater = zeros(Float, n),
+        volume = zeros(Float, n),
         h = zeros(Float, n),
         h_av = zeros(Float, n),
         Δt = Float(tosecond(Δt)),
@@ -161,12 +162,8 @@ function initialize_sbm_gwf_model(config::Config)
     graph = flowgraph(ldd, inds, pcr_dir)
 
     # river flow (kinematic wave)
-    riverslope = ncread(
-        nc,
-        param(config, "input.lateral.river.slope");
-        sel = inds_riv,
-        type = Float,
-    )
+    riverslope =
+        ncread(nc, param(config, "input.lateral.river.slope"); sel = inds_riv, type = Float)
     clamp!(riverslope, 0.00001, Inf)
     riverlength = riverlength_2d[inds_riv]
     riverwidth = riverwidth_2d[inds_riv]
@@ -193,6 +190,8 @@ function initialize_sbm_gwf_model(config::Config)
         q_av = zeros(Float, nriv),
         qin = zeros(Float, nriv),
         qlat = zeros(Float, nriv),
+        inwater = zeros(Float, nriv),
+        volume = zeros(Float, nriv),
         h = zeros(Float, nriv),
         h_av = zeros(Float, nriv),
         Δt = Float(tosecond(Δt)),
@@ -408,6 +407,10 @@ function initialize_sbm_gwf_model(config::Config)
         instate_path = joinpath(tomldir, config.state.path_input)
         state_ncnames = ncnames(config.state)
         set_states(instate_path, model, state_ncnames, type = Float)
+        # update kinematic wave volume for river and land domain
+        @unpack lateral = model
+        lateral.land.volume .= lateral.land.h .* lateral.land.width .* lateral.land.dl
+        lateral.river.volume .= lateral.river.h .* lateral.river.width .* lateral.river.dl
     end
 
     # make sure the forcing is already loaded
@@ -489,9 +492,9 @@ function update_sbm_gwf(model)
 
     # determine lateral inflow for overland flow based on vertical runoff [mm] from vertical
     # sbm concept
-    lateral.land.qlat .=
-        (vertical.runoff .* network.land.xl .* network.land.yl .* 0.001) ./
-        lateral.land.Δt ./ lateral.land.dl
+    lateral.land.inwater .=
+        (vertical.runoff .* network.land.xl .* network.land.yl .* 0.001) ./ lateral.land.Δt
+    lateral.land.qlat .= lateral.land.inwater ./ lateral.land.dl
     # run kinematic wave for overland flow
     update(
         lateral.land,
@@ -516,11 +519,10 @@ function update_sbm_gwf(model)
     end
 
     # determine lateral inflow to river from groundwater, drains and overland flow
-    lateral.river.qlat .=
-        (
-            flux_gw[inds_riv] ./ lateral.river.Δt .+ lateral.land.to_river[inds_riv] .+
-            net_runoff_river
-        ) ./ lateral.river.dl
+    lateral.river.inwater .=
+        flux_gw[inds_riv] ./ lateral.river.Δt .+ lateral.land.to_river[inds_riv] .+
+        net_runoff_river
+    lateral.river.qlat .= lateral.river.inwater ./ lateral.river.dl
 
     # run kinematic wave for river flow 
     # check if reservoirs or lakes are defined, then the inflow from overland flow is

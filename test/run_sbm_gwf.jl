@@ -43,10 +43,13 @@ end
     @test sum(q) ≈ 0.0
 end
 
-@testset "river flow" begin
+@testset "river domain" begin
     q = model.lateral.river.q_av
+    river = model.lateral.river
     @test sum(q) ≈ 0.03515257228971982f0
     @test q[6] ≈ 0.007952670041402076f0
+    @test river.volume[6] ≈ 3.8923529548071025f0
+    @test river.inwater[6] ≈ 0.0003950369148075657f0
     @test q[13] ≈ 0.0005980549969548235f0
     @test q[network.river.order[end]] ≈ 0.008482648782941154f0
 end

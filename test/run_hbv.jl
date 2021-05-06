@@ -45,10 +45,13 @@ model = Wflow.update(model)
     @test hbv.snow[1] == 0.0
 end
 
-@testset "overland flow" begin
+@testset "overland domain" begin
     q = model.lateral.land.q_av
+    land = model.lateral.land
     @test sum(q) ≈ 3278.9423039643552f0
     @test q[500] ≈ 0.2348646912841589f0
+    @test land.volume[500] ≈ 2057.7314802432425f0
+    @test land.inwater[500] ≈ 0.027351853491789667f0
     @test q[1566] ≈ 0.030463805623037462f0
     @test q[network.land.order[end]] ≈ 0.296794455575309f0
 end
