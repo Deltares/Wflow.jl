@@ -53,8 +53,8 @@ forcing = [
   "vertical.interception",
   "vertical.precipitation",
   "vertical.q_land",
-  "lateral.land.h_riv",
-  "lateral.land.q_riv",
+  "lateral.river.h_riv",
+  "lateral.river.q_riv",
 ]
 
 cyclic = ["vertical.leaf_area_index"]
@@ -86,11 +86,11 @@ resareas = "wflow_reservoirareas"
 lakeareas = "wflow_lakeareas"
 
 [input.lateral.land]
-h_riv = "h"
-q_riv = "q"
 slope = "Slope"
 
 [input.lateral.river]
+h_riv = "h"
+q_riv = "q"
 cbagnold = "c_Bagnold"
 d50 = "D50_River"
 d50engelund = "D50_River"

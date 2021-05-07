@@ -117,7 +117,6 @@ end
 function update_forcing!(model)
     @unpack vertical, clock, reader, network, config = model
     @unpack dataset, forcing_parameters = reader
-    sel = network.land.indices
     nctimes = dataset["time"][:]
 
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
@@ -174,18 +173,14 @@ function update_forcing!(model)
         end
 
         param_vector = param(model, par)
+        sel = active_indices(network, par)
         data_sel = data[sel]
-        if par == (:lateral, :land, :h_riv) || par == (:lateral, :land, :q_riv)
-            # these do contain missings, fill with NaN
-            # harmless since it is not used in OverlandFlowSediment
-            param_vector .= nomissing(data_sel, NaN)
-        else
-            if any(ismissing, data_sel)
-                msg = "Forcing data has missing values on active model cells for $(ncvar.name)"
-                throw(ArgumentError(msg))
-            end
-            param_vector .= data_sel
+        if any(ismissing, data_sel)
+            print(par)
+            msg = "Forcing data has missing values on active model cells for $(ncvar.name)"
+            throw(ArgumentError(msg))
         end
+        param_vector .= data_sel
     end
 
     return model

@@ -72,8 +72,6 @@ function initialize_sediment_model(config::Config)
     ols = OverlandFlowSediment{Float}(
         n = n,
         rivcell = rivcell,
-        h_riv = fill(mv, n),
-        q_riv = fill(mv, n),
         soilloss = fill(mv, n),
         erosclay = fill(mv, n),
         erossilt = fill(mv, n),
@@ -162,7 +160,7 @@ function initialize_sediment_model(config::Config)
 
     # make sure the forcing is already loaded
     # it's fine to run twice, and may help catching errors earlier
-    update_forcing!(model)
+    #update_forcing!(model)
     if haskey(config.input, "cyclic")
         update_cyclic!(model)
     end
@@ -199,12 +197,7 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:LandSediment,R,W}
     do_river = get(config.model, "runrivermodel", false)::Bool
 
     if do_river
-        # Forcing come from lateral.land instead of netcdf directly
-        # Fix update_forcing in io to allow forcing for river (problem wih sel)
         inds_riv = network.index_river
-        lateral.river.h_riv .= lateral.land.h_riv[inds_riv]
-        lateral.river.q_riv .= lateral.land.q_riv[inds_riv]
-
         lateral.river.inlandclay .= lateral.land.inlandclay[inds_riv]
         lateral.river.inlandsilt .= lateral.land.inlandsilt[inds_riv]
         lateral.river.inlandsand .= lateral.land.inlandsand[inds_riv]
