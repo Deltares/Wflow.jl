@@ -7,13 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## v0.3.0 - 2021-05-10
+
 ### Changed
 - New deposition process for coarse sediment in the reservoirs with a new parameter 
   `restrapefficiency` in the sediment model.
 - New variables added to the `LandSediment` and `RiverSediment` structs in order to save 
   more output from the sediment model.
 - Added variables `volume` and `inwater` to `SurfaceFlow` struct, this is convenient for the
-  coupling with the water quality model Delwaq. 
+  coupling with the water quality model Delwaq.
+- River water level (`h`) and discharge (`q`) forced directly into the `RiverSediment`
+  struct (instead of using the `OverlandFlowSediment` struct first). 
 - Require Julia 1.6 or later.
 
 ### Added

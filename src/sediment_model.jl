@@ -160,7 +160,7 @@ function initialize_sediment_model(config::Config)
 
     # make sure the forcing is already loaded
     # it's fine to run twice, and may help catching errors earlier
-    #update_forcing!(model)
+    update_forcing!(model)
     if haskey(config.input, "cyclic")
         update_cyclic!(model)
     end
