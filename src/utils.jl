@@ -1,24 +1,21 @@
 
 "Map from PCRaster LDD value to a CartesianIndex"
-const pcrdir = [
-    CartesianIndex(1, -1),  # 1
-    CartesianIndex(1, 0),  # 2
-    CartesianIndex(1, 1),  # 3
-    CartesianIndex(0, -1),  # 4
+const pcr_dir = [
+    CartesianIndex(-1, -1),  # 1
+    CartesianIndex(0, -1),  # 2
+    CartesianIndex(1, -1),  # 3
+    CartesianIndex(-1, 0),  # 4
     CartesianIndex(0, 0),  # 5
-    CartesianIndex(0, 1),  # 6
-    CartesianIndex(-1, -1),  # 7
-    CartesianIndex(-1, 0),  # 8
-    CartesianIndex(-1, 1),  # 9
+    CartesianIndex(1, 0),  # 6
+    CartesianIndex(-1, 1),  # 7
+    CartesianIndex(0, 1),  # 8
+    CartesianIndex(1, 1),  # 9
 ]
 
 const mv = Float(NaN)
 
 # timestep that the parameter units are defined in
 const basetimestep = Second(Day(1))
-
-# in case the input data is permuted the other way
-permute_indices(inds) = [CartesianIndex(i[2], i[1]) for i in inds]
 
 "Set at indices pit values (default = 5) in a gridded local drainage direction vector"
 function set_pit_ldd(pits_2d, ldd, indices; pit = 5)
@@ -112,7 +109,8 @@ function set_states(instate_path, model, state_ncnames; type = nothing)
             dims = length(dimnames(ds[ncname]))
             # 4 dims, for example (x,y,layer,time) where dim layer is an SVector for soil layers
             if dims == 4
-                A = permutedims(ds[ncname][sel, :, 1])
+                A = read_standardized(ds, ncname, (x = :, y = :, layer = :, time=1))
+                A = permutedims(A[sel, :])
                 # note that this array is allowed to have missings, since not every vertical
                 # column is `maxlayers` layers deep
                 A = replace!(A, missing => NaN)
@@ -126,7 +124,8 @@ function set_states(instate_path, model, state_ncnames; type = nothing)
                 param(model, state) .= svectorscopy(A, Val{size(A)[1]}())
                 # 3 dims (x,y,time)
             elseif dims == 3
-                A = ds[ncname][sel, 1]
+                A = read_standardized(ds, ncname, (x = :, y = :, time=1))
+                A = A[sel]
                 A = nomissing(A)
                 # Convert to desired type if needed
                 if !isnothing(type)
@@ -174,6 +173,13 @@ function ncread(
     dimname = nothing,
 )
 
+    if isnothing(dimname)
+        dim_sel = (x = :, y = :)
+    else
+        @assert dimname == :layer
+        dim_sel = (x = :, y = :, layer = :)
+    end
+
     if isnothing(var)
         @assert !isnothing(defaults)
         if !isnothing(type)
@@ -182,7 +188,7 @@ function ncread(
         if isnothing(dimname)
             return Base.fill(defaults, length(sel))
         else
-            return Base.fill(defaults, (nc.dim[dimname], length(sel)))
+            return Base.fill(defaults, (nc.dim[String(dimname)], length(sel)))
         end
     end
 
@@ -191,17 +197,17 @@ function ncread(
     # NetCDF var is read directly.
     var, mod = ncvar_name_modifier(var)
     if mod.scale != 1.0 || mod.offset != 0.0
-        A = nc[var][:] .* mod.scale .+ mod.offset
+        A = read_standardized(nc, var, dim_sel) .* mod.scale .+ mod.offset
     elseif !isnothing(mod.value)
         if isnothing(dimname)
             return Base.fill(mod.value, length(sel))
         else
-            return Base.fill(mod.value, (nc.dim[dimname], length(sel)))
+            return Base.fill(mod.value, (nc.dim[String(dimname)], length(sel)))
         end
     else
         # Read the entire variable into memory, applying scale, offset and
         # set fill_values to missing.
-        A = nc[var][:]
+        A = read_standardized(nc, var, dim_sel)
     end
 
     # Take out only the active cells
@@ -209,12 +215,7 @@ function ncread(
         if isnothing(dimname)
             A = A[sel]
         else
-            dim = findfirst(==(dimname), dimnames(nc[var]))
-            if dim == 3
-                A = permutedims(A[sel, :])
-            elseif dim == 1
-                A = A[:, sel]
-            end
+            A = permutedims(A[sel, :])
         end
     end
 

@@ -72,7 +72,7 @@ Base.iterate(config::Config, state) = iterate(Dict(config), state)
 "Extract NetCDF variable name `ncname` from `var` (type `String` or `Config`). If `var` has 
 type `Config`, either `scale` and `offset` are expected (with `ncname`) or a `value` (uniform
 value), these are stored as part of `NamedTuple` `modifier`"
-function ncvar_name_modifier(var)
+function ncvar_name_modifier(var; verbose=true)
     ncname = nothing
     modifier = (scale = 1.0, offset = 0.0, value = nothing)
     if isa(var, Config)
@@ -83,7 +83,9 @@ function ncvar_name_modifier(var)
             scale = param(var, "scale", 1.0)
             offset = param(var, "offset", 0.0)
             modifier = (scale = scale, offset = offset, value = nothing)
-            @info "NetCDF parameter $ncname is modified with scale $scale and offset $offset"
+            if verbose
+                @info "NetCDF parameter $ncname is modified with scale $scale and offset $offset"
+            end
         elseif haskey(var, "value")
             modifier = (scale = 1.0, offset = 0.0, value = param(var, "value"))
         end
@@ -94,9 +96,9 @@ function ncvar_name_modifier(var)
 end
 
 "Extract a NetCDF variable at a given time"
-function get_at!(
-    buffer,
-    var::NCDatasets.CFVariable,
+function get_at(
+    ds::NCDataset,
+    varname::AbstractString,
     times::AbstractVector{<:TimeType},
     t::TimeType,
 )
@@ -104,53 +106,18 @@ function get_at!(
     i = findfirst(>=(t), times)
     t < first(times) && throw(DomainError("time $t before dataset begin $(first(times))"))
     i === nothing && throw(DomainError("time $t after dataset end $(last(times))"))
-    return get_at!(buffer, var, i)
+    return get_at(ds, varname, i)
 end
 
-function get_at!(buffer, var::NCDatasets.CFVariable, i)
-    # assumes the dataset has 12 time steps, from January to December
-    dim = findfirst(==("time"), NCDatasets.dimnames(var))
-    # load in place, using a lower level NCDatasets function
-    if ndims(var) == 3
-        if dim == 1
-            NCDatasets.load!(var.var, buffer, i, :, :)
-        elseif dim == 3
-            NCDatasets.load!(var.var, buffer, :, :, i)
-        else
-            error("Time dimension expected at position 1 or 3 (number of dimensions is 3)")
-        end
-    elseif ndims(var) == 4
-        if dim == 1
-            len = size(var, 2)
-            if len == 1
-                NCDatasets.load!(var.var, buffer, i, 1, :, :)
-            else
-                dimname = NCDatasets.dimnames(var)[2]
-                error("Unsupported dimension $dimname of size $len")
-            end
-        elseif dim == 4
-            len = size(var, 3)
-            if len == 1
-                NCDatasets.load!(var.var, buffer, :, :, 1, i)
-            else
-                dimname = NCDatasets.dimnames(var)[3]
-                error("Unsupported dimension $dimname of size $len")
-            end
-        else
-            error("Time dimension expected at position 1 or 4 (number of dimensions is 4)")
-        end
-    else
-        error("Expected a 3 or 4 dimensional variable in the NetCDF")
-    end
-    return buffer
+function get_at(ds::NCDataset, varname::AbstractString, i)
+    return read_standardized(ds, varname, (x = :, y = :, time=i))
 end
 
 "Get dynamic NetCDF input for the given time"
 function update_forcing!(model)
     @unpack vertical, clock, reader, network, config = model
-    @unpack dataset, forcing_parameters, buffer = reader
-    sel = network.land.indices
-    nctimes = ncread(dataset, "time")
+    @unpack dataset, forcing_parameters = reader
+    nctimes = dataset["time"][:]
 
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
     do_lakes = get(config.model, "lakes", false)::Bool
@@ -179,10 +146,10 @@ function update_forcing!(model)
     # load from NetCDF into the model according to the mapping
     for (par, ncvar) in forcing_parameters
         time = convert(eltype(nctimes), clock.time)
-        buffer = get_at!(buffer, dataset[ncvar.name], nctimes, time)
+        data = get_at(dataset, ncvar.name, nctimes, time)
 
         if ncvar.scale != 1.0 || ncvar.offset != 0.0
-            buffer .= buffer .* ncvar.scale .+ ncvar.offset
+            data .= data .* ncvar.scale .+ ncvar.offset
         end
 
         # calculate the mean precipitation and evaporation over the lakes and reservoirs
@@ -191,22 +158,29 @@ function update_forcing!(model)
         if par in mover_params
             if do_reservoirs
                 for (i, sel_reservoir) in enumerate(sel_reservoirs)
-                    avg = mean(buffer[sel_reservoir])
-                    buffer[sel_reservoir] .= 0
+                    avg = mean(data[sel_reservoir])
+                    data[sel_reservoir] .= 0
                     param_res[par][i] = avg
                 end
             end
             if do_lakes
                 for (i, sel_lake) in enumerate(sel_lakes)
-                    avg = mean(buffer[sel_lake])
-                    buffer[sel_lake] .= 0
+                    avg = mean(data[sel_lake])
+                    data[sel_lake] .= 0
                     param_lake[par][i] = avg
                 end
             end
         end
 
         param_vector = param(model, par)
-        param_vector .= buffer[sel]
+        sel = active_indices(network, par)
+        data_sel = data[sel]
+        if any(ismissing, data_sel)
+            print(par)
+            msg = "Forcing data has missing values on active model cells for $(ncvar.name)"
+            throw(ArgumentError(msg))
+        end
+        param_vector .= data_sel
     end
 
     return model
@@ -230,7 +204,7 @@ monthday_passed(curr, avail) = (curr[1] >= avail[1]) && (curr[2] >= avail[2])
 "Get cyclic NetCDF input for the given time"
 function update_cyclic!(model)
     @unpack vertical, clock, reader, network, config = model
-    @unpack cyclic_dataset, cyclic_times, cyclic_parameters, buffer = reader
+    @unpack cyclic_dataset, cyclic_times, cyclic_parameters = reader
     sel = network.land.indices
 
     # pick up the data that is valid for the past 24 hours
@@ -244,9 +218,9 @@ function update_cyclic!(model)
 
         # load from NetCDF into the model according to the mapping
         for (par, ncvar) in cyclic_parameters
-            buffer = get_at!(buffer, cyclic_dataset[ncvar.name], i)
+            data = get_at(cyclic_dataset, ncvar.name, i)
             param_vector = param(model, par)
-            param_vector .= buffer[sel]
+            param_vector .= data[sel]
             if ncvar.scale != 1.0 || ncvar.offset != 0.0
                 param_vector .= param_vector .* ncvar.scale .+ ncvar.offset
             end
@@ -452,24 +426,12 @@ function add_time(ds, time)
     return i
 end
 
-function checkdims(dims)
-    # TODO check if the x y ordering is equal to the staticmaps NetCDF
-    # with ensembles (e.g. Delft-FEWS) dims == 4
-    @assert length(dims) == 3 || length(dims) == 4
-    @assert "time" in dims
-    @assert ("x" in dims) || ("lon" in dims)
-    @assert ("y" in dims) || ("lat" in dims)
-    @assert dims[2] != "time"
-    return dims
-end
-
-struct NCReader{T}
+struct NCReader
     dataset::NCDataset
     cyclic_dataset::Union{NCDataset,Nothing}
     cyclic_times::Vector{Tuple{Int,Int}}
     forcing_parameters::Dict{Tuple{Symbol,Vararg{Symbol}},NamedTuple}
     cyclic_parameters::Dict{Tuple{Symbol,Vararg{Symbol}},NamedTuple}
-    buffer::Matrix{T}
 end
 
 struct Writer
@@ -490,28 +452,9 @@ end
 
 function prepare_reader(path, cyclic_path, config)
     dataset = NCDataset(path)
-    ncvar1, _ = ncvar_name_modifier(param(config, "input." * first(config.input.forcing)))
+    # set verbose to false to avoid logging modifications twice
+    ncvar1, _ = ncvar_name_modifier(param(config, "input." * first(config.input.forcing)); verbose=false)
     var = dataset[ncvar1].var
-
-    scale_factor = get(var.attrib, "scale_factor", nothing)
-    add_offset = get(var.attrib, "add_offset", nothing)
-    # TODO support scale_factor and add_offset with in place loading
-    # TODO check other forcing parameters as well
-    if !(isnothing(scale_factor) || isone(scale_factor))
-        error(
-            "scale_factor in NetCDF forcing not supported, found $scale_factor in $ncvar1",
-        )
-    end
-    if !(isnothing(add_offset) || iszero(add_offset))
-        error("add_offset in NetCDF forcing not supported, found $add_offset in $ncvar1")
-    end
-
-    T = eltype(var)
-    dims = dimnames(var)
-    checkdims(dims)
-    timelast = last(dims) == "time"
-    lateral_size = timelast ? size(var)[1:2] : size(var)[2:3]
-    buffer = zeros(T, lateral_size)
 
     # check for cyclic parameters
     do_cyclic = haskey(config.input, "cyclic")
@@ -565,7 +508,6 @@ function prepare_reader(path, cyclic_path, config)
         cyclic_times,
         forcing_parameters,
         cyclic_parameters,
-        buffer,
     )
 end
 
@@ -728,7 +670,6 @@ function prepare_writer(
     rev_inds,
     x_nc,
     y_nc,
-    dims_xy,
     nc_static;
     maxlayers = nothing,
 )
@@ -799,7 +740,7 @@ function prepare_writer(
         for var in config.netcdf.variable
             parameter = var["parameter"]
             reducer_func =
-                get_reducer_func(var, rev_inds, x_nc, y_nc, dims_xy, config, nc_static)
+                get_reducer_func(var, rev_inds, x_nc, y_nc, config, nc_static)
             push!(nc_scalar, (parameter = parameter, reducer = reducer_func))
         end
     else
@@ -826,7 +767,7 @@ function prepare_writer(
         for col in config.csv.column
             parameter = col["parameter"]
             reducer_func =
-                get_reducer_func(col, rev_inds, x_nc, y_nc, dims_xy, config, nc_static)
+                get_reducer_func(col, rev_inds, x_nc, y_nc, config, nc_static)
             push!(csv_cols, (parameter = parameter, reducer = reducer_func))
         end
     else
@@ -871,10 +812,10 @@ end
 "Write a new timestep with grid data to a NetCDF file"
 function write_netcdf_timestep(model, dataset, parameters)
     @unpack vertical, clock, reader, network = model
-    @unpack buffer = reader
 
     time_index = add_time(dataset, clock.time)
 
+    buffer = zeros(Union{Float, Missing}, size(model.network.land.reverse_indices))
     for (key, val) in parameters
         @unpack par, vector = val
         sel = active_indices(network, par)
@@ -882,14 +823,14 @@ function write_netcdf_timestep(model, dataset, parameters)
         elemtype = eltype(vector)
         if elemtype <: AbstractFloat
             # ensure no other information is written
-            fill!(buffer, NaN)
+            fill!(buffer, missing)
             buffer[sel] .= vector
             dataset[key][:, :, time_index] = buffer
         elseif elemtype <: SVector
             nlayer = length(first(vector))
             for i = 1:nlayer
                 # ensure no other information is written
-                fill!(buffer, NaN)
+                fill!(buffer, missing)
                 buffer[sel] .= getindex.(vector, i)
                 dataset[key][:, :, i, time_index] = buffer
             end
@@ -1001,7 +942,7 @@ function reducerfunction(reducer::AbstractString)
 end
 
 "Get a reducer function based on output settings for scalar data defined in a dictionary"
-function reducer(col, rev_inds, x_nc, y_nc, dims_xy, config, dataset)
+function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
     if haskey(col, "map")
         # assumes the parameter in "map" has a 2D input map, with
         # integers indicating the points or zones that are to be aggregated
@@ -1041,13 +982,10 @@ function reducer(col, rev_inds, x_nc, y_nc, dims_xy, config, dataset)
             return x -> getindex(x, index)
         elseif index isa Dict
             # index into the 2D input/output arrays
-            # the first always corresponds to the y dimension, then the x dimension
+            # the first always corresponds to the x dimension, then the y dimension
             # this is 1-based
-            i = index["y"]::Int
-            j = index["x"]::Int
-            if dims_xy
-                i, j = j, i
-            end
+            i = index["x"]::Int
+            j = index["y"]::Int
             ind = rev_inds[i, j]
             iszero(ind) && error("inactive loc specified for output")
             return A -> getindex(A, ind)
@@ -1060,7 +998,7 @@ function reducer(col, rev_inds, x_nc, y_nc, dims_xy, config, dataset)
         # find the closest cell center index
         _, iy = findmin(abs.(y_nc .- y))
         _, ix = findmin(abs.(x_nc .- x))
-        I = dims_xy ? CartesianIndex(ix, iy) : CartesianIndex(iy, ix)
+        I = CartesianIndex(ix, iy)
         i = rev_inds[I]
         iszero(i) && error("inactive coordinate specified for output")
         return A -> getindex(A, i)
@@ -1142,3 +1080,218 @@ end
 # these represent the type of the rating curve and specific storage data
 const SH = NamedTuple{(:H, :S),Tuple{Vector{Float},Vector{Float}}}
 const HQ = NamedTuple{(:H, :Q),Tuple{Vector{Float},Matrix{Float}}}
+
+is_increasing(v) = last(v) > first(v)
+
+"""
+    nc_dim_name(dims::Vector{Symbol}, name::Symbol)
+    nc_dim_name(ds::NCDataset, name::Symbol)
+
+Given a NetCDF dataset or list of dimensions, and an internal dimension name, return the
+corresponding NetCDF dimension name. Certain common alternatives are supported, e.g. :lon or
+:longitude instead of :x.
+"""
+function nc_dim_name(dims::Vector{Symbol}, name::Symbol)
+    # direct naming
+    name in dims && return name
+    # list of common alternative names
+    if name == :x
+        for candidate in (:lon, :longitude)
+            candidate in dims && return candidate
+        end
+        error("No x dimension candidate found")
+    elseif name == :y
+        for candidate in (:lat, :latitude)
+            candidate in dims && return candidate
+        end
+        error("No y dimension candidate found")
+    else
+        error("Unknown dimension $name")
+    end
+end
+
+nc_dim_name(ds::NCDataset, name::Symbol) = nc_dim_name(Symbol.(keys(ds.dim)), name)
+
+"""
+    nc_dim(ds::NCDataset, name::Symbol)
+
+Return the dimension coordinate, based on the internal name (:x, :y, :layer, :time),
+which will map to the correct NetCDF name using `nc_dim_name`.
+"""
+nc_dim(ds::NCDataset, name) = ds[nc_dim_name(ds, name)]
+
+
+"""
+    internal_dim_name(name::Symbol)
+
+Given a NetCDF dimension name string, return the corresponding internal dimension name.
+"""
+function internal_dim_name(name::Symbol)
+    if name in (:x, :lon, :longitude)
+        return :x
+    elseif name in (:y, :lat, :latitude)
+        return :y
+    elseif name in (:time, :layer)
+        return name
+    else
+        error("Unknown dimension $name")
+    end
+end
+
+"""
+    read_dims(A::NCDatasets.CFVariable, dim_sel)
+
+Return the data of a NetCDF data variable as an Array. Only dimensions in `dim_sel`, a
+NamedTuple like (x=:, y=:, time=1). Other dimensions that may be present need to be size 1,
+otherwise an error is thrown.
+
+`dim_sel` keys should be the internal dimension names; :x, :y, :time, :layer.
+"""
+function read_dims(A::NCDatasets.CFVariable, dim_sel::NamedTuple)
+    dimsizes = dimsize(A)
+    indexer = []
+    data_dim_order = Symbol[]
+    # need to iterate in this order, to get the indices in order
+    for (dim_name, dim_size) in pairs(dimsizes)
+        dim = internal_dim_name(dim_name)
+        # each dim should either be in dim_sel or be size 1
+        if dim in keys(dim_sel)
+            idx = dim_sel[dim]
+            push!(indexer, idx)
+            # Would be nice to generalize this to anything that drops the dimension
+            # when used to index. Not sure how we could support `begin` or `end` here.
+            if !(idx isa Int)
+                push!(data_dim_order, dim)
+            end
+        elseif dim_size == 1
+            push!(indexer, 1)
+        else
+            throw(ArgumentError("""NetCDF dimension $dim_name has length $dim_size.
+                Only extra dimensions of length 1 are supported."""))
+        end
+    end
+    data = A[indexer...]
+    order = Tuple(data_dim_order)
+    @assert ndims(data) == length(order) "dimensions not properly recorded"
+    return data, order
+end
+
+"""
+    dim_directions(ds, dim_names)
+
+Given a NCDataset and a list of internal dimension names, return a NamedTuple, which maps
+the dimension name to `true` if it is increasing, or `false` otherwise.
+
+For the layer dimension, we allow coordinate arrays to be missing, in which case we
+consider it increasing, going from the top layer (1) to deeper layers. This is to keep
+accepting data that we have accepted before.
+"""
+function dim_directions(ds::NCDataset, dim_names)
+    pairs = Pair{Symbol,Bool}[]
+    for d in dim_names
+        if d == :layer && !(haskey(ds, "layer"))
+            inc = true
+        else
+            inc = is_increasing(nc_dim(ds, d))
+        end
+        push!(pairs, d => inc)
+    end
+    return NamedTuple(pairs)
+end
+
+"""
+    permute_data(data, dim_names)
+
+Given an Array of data, and a list of its dimension names, return a permuted version
+of the data such that the dimension order will follow (:x, :y, :layer). No permutation
+is done if this is not needed.
+"""
+function permute_data(data, dim_names)
+    @assert ndims(data) == length(dim_names)
+    desired_order = (:x, :y, :layer)
+    @assert dim_names ⊆ desired_order
+    if length(dim_names) == 2
+        if first(dim_names) == :x
+            return data, dim_names
+        else
+            return permutedims(data), reverse(dim_names)
+        end
+    elseif length(dim_names) == 3
+        permutation = [findfirst(==(d), dim_names) for d in desired_order]
+        if permutation == (1, 2, 3)
+            return data, dim_names
+        else
+            return permutedims(data, permutation), dim_names[permutation]
+        end
+    else
+        error("Unsupported number of dimensions")
+    end
+end
+
+"""
+    reverse_data!(data, dims_increasing)
+
+Reverse the data as needed, such that it is increasing along all dimensions.
+"""
+function reverse_data!(data, dims_increasing)
+    # for the reverse call it is important that the dims_increasing tuple is ordered in the
+    # desired internal ordering, just like the data is after permutation
+    if length(dims_increasing) == 2
+        dims_increasing_ordered = (x = dims_increasing.x, y = dims_increasing.y)
+    elseif length(dims_increasing) == 3
+        dims_increasing_ordered =
+            (x = dims_increasing.x, y = dims_increasing.y, layer = dims_increasing.layer)
+    else
+        error("Unsupported number of dimensions")
+    end
+    # the non increasing dimensions should be reversed, to make them all increasing
+    dims = Tuple(findall(.!values(dims_increasing_ordered)))
+    return reverse!(data; dims)
+end
+
+"""
+    read_standardized(ds::NCDataset, varname::AbstractString, dim_names)
+
+Read the dimensions listed in dim_names from a variable with name `varname` from a NetCDF
+dataset `ds`. `dim_sel` should be a NamedTuple like (x=:, y=:, time=1), which will return
+a 2 dimensional array with x and y axes, representing the first index in the time dimension.
+"""
+function read_standardized(ds::NCDataset, varname::AbstractString, dim_sel::NamedTuple)
+    data, data_dim_order = read_dims(ds[varname], dim_sel)
+    data, new_dim_order = permute_data(data, data_dim_order)
+    dims_increasing = dim_directions(ds, new_dim_order)
+    data = reverse_data!(data, dims_increasing)
+    return data
+end
+
+"""
+    read_x_axis(ds::NCDataset)
+
+Return the x coordinate Vector{Float64}, whether it is called x, lon or longitude.
+Also sorts the vector to be increasing, to match `read_standardized`.
+"""
+function read_x_axis(ds::NCDataset)
+    candidates = ("x", "lon", "longitude")
+    for candidate in candidates
+        if haskey(ds, candidate)
+            return sort!(Float64.(ds[candidate][:]))
+        end
+    end
+    error("no x axis found in $(path(ds))")
+end
+
+"""
+    read_y_axis(ds::NCDataset)
+
+Return the y coordinate Vector{Float64}, whether it is called y, lat or latitude.
+Also sorts the vector to be increasing, to match `read_standardized`.
+"""
+function read_y_axis(ds::NCDataset)
+    candidates = ("y", "lat", "latitude")
+    for candidate in candidates
+        if haskey(ds, candidate)
+            return sort!(Float64.(ds[candidate][:]))
+        end
+    end
+    error("no y axis found in $(path(ds))")
+end

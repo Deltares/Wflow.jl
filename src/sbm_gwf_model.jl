@@ -36,13 +36,6 @@ function initialize_sbm_gwf_model(config::Config)
     kw_land_tstep = get(config.model, "kw_land_tstep", 0)
 
     nc = NCDataset(static_path)
-    dims = dimnames(nc[param(config, "input.subcatchment")])
-
-    # There is no need to permute the dimensions of the data, since the active indices are
-    # correctly calculated in both ways.
-    # The dimension order only needs to be known for interpreting the LDD directions
-    # and creating the coordinate maps.
-    dims_xy = dims[2] in ("y", "lat")
 
     subcatch_2d = ncread(nc, param(config, "input.subcatchment"); allow_missing = true)
     # indices based on catchment
@@ -61,13 +54,9 @@ function initialize_sbm_gwf_model(config::Config)
 
     altitude = ncread(nc, param(config, "input.altitude"); sel = inds, type = Float)
     # read x, y coordinates and calculate cell length [m]
-    y_nc = "y" in keys(nc.dim) ? ncread(nc, "y") : ncread(nc, "lat")
-    x_nc = "x" in keys(nc.dim) ? ncread(nc, "x") : ncread(nc, "lon")
-    if dims_xy
-        y = permutedims(repeat(y_nc, outer = (1, length(x_nc))))[inds]
-    else
-        y = repeat(y_nc, outer = (1, length(x_nc)))[inds]
-    end
+    y_nc = read_y_axis(nc)
+    x_nc = read_x_axis(nc)
+    y = permutedims(repeat(y_nc, outer = (1, length(x_nc))))[inds]
     cellength = abs(mean(diff(x_nc)))
 
     xl = fill(mv, n)
@@ -108,6 +97,7 @@ function initialize_sbm_gwf_model(config::Config)
     βₗ = ncread(nc, param(config, "input.lateral.land.slope"); sel = inds, type = Float)
     clamp!(βₗ, 0.00001, Inf)
     ldd_2d = ncread(nc, param(config, "input.ldd"); allow_missing = true)
+
     ldd = ldd_2d[inds]
     dl = fill(mv, n)
     dw = fill(mv, n)
@@ -158,7 +148,6 @@ function initialize_sbm_gwf_model(config::Config)
         lake = nothing,
     )
 
-    pcr_dir = dims_xy ? permute_indices(pcrdir) : pcrdir
     graph = flowgraph(ldd, inds, pcr_dir)
 
     # river flow (kinematic wave)
@@ -364,7 +353,6 @@ function initialize_sbm_gwf_model(config::Config)
         indices_reverse,
         x_nc,
         y_nc,
-        dims_xy,
         nc,
         maxlayers = sbm.maxlayers,
     )

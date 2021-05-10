@@ -27,11 +27,6 @@ function initialize_hbv_model(config::Config)
     nc = NCDataset(static_path)
     dims = dimnames(nc[param(config, "input.subcatchment")])
 
-    # There is no need to permute the dimensions of the data, since the active indices are
-    # correctly calculated in both ways.
-    # The dimension order only needs to be known for interpreting the LDD directions
-    # and creating the coordinate maps.
-    dims_xy = dims[2] in ("y", "lat")
     subcatch_2d = ncread(nc, param(config, "input.subcatchment"); allow_missing = true)
     # indices based on catchment
     inds, rev_inds = active_indices(subcatch_2d, missing)
@@ -264,13 +259,9 @@ function initialize_hbv_model(config::Config)
     )
 
     # read x, y coordinates and calculate cell length [m]
-    y_nc = "y" in keys(nc.dim) ? ncread(nc, "y") : ncread(nc, "lat")
-    x_nc = "x" in keys(nc.dim) ? ncread(nc, "x") : ncread(nc, "lon")
-    if dims_xy
-        y = permutedims(repeat(y_nc, outer = (1, length(x_nc))))[inds]
-    else
-        y = repeat(y_nc, outer = (1, length(x_nc)))[inds]
-    end
+    y_nc = read_y_axis(nc)
+    x_nc = read_x_axis(nc)
+    y = permutedims(repeat(y_nc, outer = (1, length(x_nc))))[inds]
     cellength = abs(mean(diff(x_nc)))
 
     xl = fill(mv, n)
@@ -434,7 +425,6 @@ function initialize_hbv_model(config::Config)
         lake = nothing,
     )
 
-    pcr_dir = dims_xy ? permute_indices(pcrdir) : pcrdir
     graph = flowgraph(ldd, inds, pcr_dir)
 
     riverslope =
@@ -497,7 +487,7 @@ function initialize_hbv_model(config::Config)
         lake = isempty(lake) ? nothing : lake.reverse_indices,
     )
     writer =
-        prepare_writer(config, reader, modelmap, indices_reverse, x_nc, y_nc, dims_xy, nc)
+        prepare_writer(config, reader, modelmap, indices_reverse, x_nc, y_nc, nc)
     close(nc)
 
     # for each domain save the directed acyclic graph, the traversion order,

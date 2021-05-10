@@ -1,7 +1,7 @@
 name = "Wflow"
 uuid = "d48b7d99-76e7-47ae-b1d5-ff0c1cf9a818"
 authors = ["Deltares and contributors"]
-version = "0.2.0"
+version = "0.3.0"
 
 [deps]
 BasicModelInterface = "59605e27-edc0-445a-b93d-c09a3a50b330"
@@ -30,14 +30,15 @@ ProgressLogging = "0.1"
 StaticArrays = "0.12, 1.0"
 TOML = "1.0"
 UnPack = "1"
-julia = "1.5"
+julia = "1.6"
 
 [extras]
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
+Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 Logging = "56ddb016-857b-54e1-b83d-db4d58db5568"
 Polynomials = "f27b6e38-b328-58d1-80ce-0feddd5e7a45"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["BenchmarkTools", "Logging", "Polynomials", "Random", "Test"]
+test = ["BenchmarkTools", "Downloads", "Logging", "Polynomials", "Random", "Test"]

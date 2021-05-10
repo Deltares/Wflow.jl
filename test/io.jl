@@ -24,15 +24,6 @@ config = Wflow.Config(tomlpath)
     @test collect(keys(config.output)) == ["lateral", "vertical", "path"]
 end
 
-@testset "checkdims" begin
-    @test_throws AssertionError Wflow.checkdims(("z", "lat", "time"))
-    @test_throws AssertionError Wflow.checkdims(("z", "lat"))
-    @test Wflow.checkdims(("lon", "lat", "time")) == ("lon", "lat", "time")
-    @test Wflow.checkdims(("time", "lon", "lat")) == ("time", "lon", "lat")
-    @test Wflow.checkdims(("lat", "lon", "time")) == ("lat", "lon", "time")
-    @test Wflow.checkdims(("time", "lat", "lon")) == ("time", "lat", "lon")
-end
-
 @testset "Clock constructor" begin
     config = Wflow.Config(tomlpath)
 
@@ -153,7 +144,7 @@ end
     @test Wflow.monthday_passed((2, 2), (1, 1))  # month and day later
     @test !Wflow.monthday_passed((2, 1), (2, 2))  # day before
     @test !Wflow.monthday_passed((1, 2), (2, 2))  # month before
-    @test !Wflow.monthday_passed((1, 1), (2, 2))  # day and month before       
+    @test !Wflow.monthday_passed((1, 1), (2, 2))  # day and month before
 end
 
 # test reading and setting of warm states (reinit=false)
@@ -177,21 +168,21 @@ model = Wflow.initialize_sbm_model(config)
 end
 
 @testset "warm states" begin
-    @test Wflow.param(model, "lateral.river.reservoir.volume")[2] ≈ 2.7393418e7
-    @test Wflow.param(model, "vertical.satwaterdepth")[41120] ≈ 201.51429748535156
-    @test Wflow.param(model, "vertical.snow")[41120] ≈ 4.21874475479126
-    @test Wflow.param(model, "vertical.tsoil")[41120] ≈ -1.9285825490951538
-    @test Wflow.param(model, "vertical.ustorelayerdepth")[1][1] ≈ 16.73013687133789
-    @test Wflow.param(model, "vertical.snowwater")[41120] ≈ 0.42188167572021484
-    @test Wflow.param(model, "vertical.canopystorage")[1] ≈ 0.0
-    @test Wflow.param(model, "vertical.zi")[1] ≈ 380.67793082060416
-    @test Wflow.param(model, "lateral.subsurface.ssf")[39308] ≈ 1.1614302208e11
-    @test Wflow.param(model, "lateral.river.q")[5501] ≈ 111.46229553222656
-    @test Wflow.param(model, "lateral.river.h")[5501] ≈ 8.555977821350098
-    @test Wflow.param(model, "lateral.river.volume")[5501] ≈ 249163.33754433296
-    @test Wflow.param(model, "lateral.land.q")[39626] ≈ 1.0575231313705444
-    @test Wflow.param(model, "lateral.land.h")[39626] ≈ 0.03456519544124603
-    @test Wflow.param(model, "lateral.land.volume")[39626] ≈ 19379.23274404319
+    @test Wflow.param(model, "lateral.river.reservoir.volume")[1] ≈ 2.7393418e7
+    @test Wflow.param(model, "vertical.satwaterdepth")[9115] ≈ 201.51429748535156
+    @test Wflow.param(model, "vertical.snow")[9115] ≈ 4.21874475479126
+    @test Wflow.param(model, "vertical.tsoil")[9115] ≈ -1.9285825490951538
+    @test Wflow.param(model, "vertical.ustorelayerdepth")[50069][1] ≈ 16.73013687133789
+    @test Wflow.param(model, "vertical.snowwater")[9115] ≈ 0.42188167572021484
+    @test Wflow.param(model, "vertical.canopystorage")[50069] ≈ 0.0
+    @test Wflow.param(model, "vertical.zi")[50069] ≈ 380.67793082060416
+    @test Wflow.param(model, "lateral.subsurface.ssf")[10606] ≈ 1.1614302208e11
+    @test Wflow.param(model, "lateral.river.q")[149] ≈ 111.46229553222656
+    @test Wflow.param(model, "lateral.river.h")[149] ≈ 8.555977821350098
+    @test Wflow.param(model, "lateral.river.volume")[149] ≈ 249163.33754433296
+    @test Wflow.param(model, "lateral.land.q")[10584] ≈ 1.0575231313705444
+    @test Wflow.param(model, "lateral.land.h")[10584] ≈ 0.03456519544124603
+    @test Wflow.param(model, "lateral.land.volume")[10584] ≈ 19379.23274404319
 end
 
 @testset "reducer" begin
@@ -210,7 +201,7 @@ end
     # test if the reverse index reverses the index
     linear_index = 100
     cartesian_index = indices[linear_index]
-    @test cartesian_index === CartesianIndex(115, 6)
+    @test cartesian_index === CartesianIndex(178, 7)
     @test reverse_indices[cartesian_index] === linear_index
 end
 
@@ -218,7 +209,7 @@ end
     @unpack vertical = model
     @test vertical.cfmax[1] ≈ 3.7565300464630127
     @test vertical.soilthickness[1] ≈ 2000.0
-    @test vertical.precipitation[100] ≈ 2.197660446166992
+    @test vertical.precipitation[49951] ≈ 2.197660446166992
 end
 
 config.input.vertical.cfmax = Dict("value" => 2.0)
@@ -236,7 +227,7 @@ model = Wflow.initialize_sbm_model(config)
     @unpack vertical = model
     @test vertical.cfmax[1] == 2.0
     @test vertical.soilthickness[1] ≈ 2000.0 * 3.0 + 100.0
-    @test vertical.precipitation[100] ≈ 1.5 * 2.197660446166992
+    @test vertical.precipitation[49951] ≈ 1.5 * 2.197660446166992
 end
 
 Wflow.close_files(model, delete_output = false)
@@ -247,4 +238,59 @@ Wflow.close_files(model, delete_output = false)
     # safe to open the same path twice
     ds = Wflow.create_tracked_netcdf(path)
     close(ds)  # path is removed on process exit
+end
+
+@testset "NetCDF read variants" begin
+    NCDataset(staticmaps_moselle_path) do ds
+
+        @test Wflow.is_increasing(ds[:x])
+        @test !Wflow.is_increasing(ds[:y])
+
+        @test Wflow.nc_dim_name(ds, :time) == :time
+        @test Wflow.nc_dim_name([:longitude], :x) == :longitude
+        @test Wflow.nc_dim_name([:lat], :y) == :lat
+        @test_throws ErrorException Wflow.nc_dim_name(ds, :not_present)
+
+        x = collect(Wflow.nc_dim(ds, :x))
+        @test length(x) == 291
+        @test x isa Vector{Union{Float64,Missing}}
+
+        @test Wflow.internal_dim_name(:lon) == :x
+        @test Wflow.internal_dim_name(:latitude) == :y
+        @test Wflow.internal_dim_name(:time) == :time
+
+        @test_throws ArgumentError Wflow.read_dims(ds["c"], (x = :, y = :))
+        @test_throws ArgumentError Wflow.read_dims(ds["LAI"], (x = :, y = :))
+        data, data_dim_order = Wflow.read_dims(ds["wflow_dem"], (x = :, y = :))
+        @test data isa Matrix{Union{Float32,Missing}}
+        @test data[end, end] === missing
+        @test data[125, 1] ≈ 643.547f0
+        @test data_dim_order == (:x, :y)
+
+        @test Wflow.dim_directions(ds, (:x, :y)) === (x = true, y = false)
+        @test Wflow.dim_directions(ds, (:y, :x, :layer)) === (y = false, x = true, layer = true)
+
+        data, dims = Wflow.permute_data(zeros(1, 2, 3), (:layer, :y, :x))
+        @test size(data) == (3, 2, 1)
+        @test dims == (:x, :y, :layer)
+        data, dims = Wflow.permute_data(zeros(1, 2), (:x, :y))
+        @test size(data) == (1, 2)
+        @test dims == (:x, :y)
+        @test_throws AssertionError size(Wflow.permute_data(zeros(1, 2, 3), (:x, :y)))
+
+        data = collect(reshape(1:6, (2, 3)))
+        # flip y, which is the second dimension
+        @test Wflow.reverse_data!(data, (y = false, x = true))[1, :] == [5, 3, 1]
+        # and mutate it back, the NamedTuple order should not matter
+        @test Wflow.reverse_data!(data, (x = true, y = false))[1, :] == [1, 3, 5]
+        # flip both dimensions at the same time
+        data = Wflow.reverse_data!(data, (x = false, y = false))
+        @test data[1, :] == [6, 4, 2]
+        @test data[:, 1] == [6, 5]
+
+        data = Wflow.read_standardized(ds, "wflow_dem", (x = :, y = :))
+        # since in this case only the second dimension needs reversing, we can easily do it manually
+        manual_fix = reverse(ds["wflow_dem"]; dims = 2)
+        @test all(data .=== manual_fix)
+    end
 end

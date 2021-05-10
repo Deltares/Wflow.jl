@@ -436,7 +436,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         sel = inds,
         defaults = 10.0,
         type = Float,
-        dimname = "layer",
+        dimname = :layer,
     )
     if size(c, 1) != maxlayers
         parname = param(config, "input.vertical.c")
@@ -449,7 +449,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         sel = inds,
         defaults = 1.0,
         type = Float,
-        dimname = "layer",
+        dimname = :layer,
     )
     if size(kvfrac, 1) != maxlayers
         parname = param(config, "input.vertical.khfrac")

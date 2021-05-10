@@ -667,9 +667,6 @@ end
     n::Int | "-"
     # Filter with river cells
     rivcell::Vector{T} | "-"
-    # Forcing for the river
-    h_riv::Vector{T} | "m"
-    q_riv::Vector{T} | "m3 s-1"
     # Total eroded soil [ton]
     soilloss::Vector{T} | "t"
     # Eroded soil per particle class [ton]

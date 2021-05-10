@@ -3,23 +3,25 @@ const ldd_mv = 255
 
 # read the staticmaps into memory
 nc = NCDataset(staticmaps_rhine_path)
-ldd_2d = Wflow.ncread(nc, "ldd")
+# helper function to get the axis order and directionality right
+read_right(nc, var) = reverse(permutedims(nc[var][:]); dims=2)
+ldd_2d = read_right(nc, "ldd")
 
 inds, _ = Wflow.active_indices(ldd_2d, ldd_mv)
 n = length(inds)
 
 # take out only the active cells
 ldd = ldd_2d[inds]
-slope = Wflow.ncread(nc, "slope"; sel = inds)
-N = Wflow.ncread(nc, "N"; sel = inds)
-Qold = Wflow.ncread(nc, "Qold"; sel = inds)
-Bw = Wflow.ncread(nc, "Bw"; sel = inds)
-waterlevel = Wflow.ncread(nc, "waterlevel"; sel = inds)
-DCL = Wflow.ncread(nc, "DCL"; sel = inds)
+slope = read_right(nc, "slope")[inds]
+N = read_right(nc, "N")[inds]
+Qold = read_right(nc, "Qold")[inds]
+Bw = read_right(nc, "Bw")[inds]
+waterlevel = read_right(nc, "waterlevel")[inds]
+DCL = read_right(nc, "DCL")[inds]
 close(nc)
 
 # create the directed acyclic graph from the drainage direction array
-graph = Wflow.flowgraph(ldd, inds, Wflow.pcrdir)
+graph = Wflow.flowgraph(ldd, inds, Wflow.pcr_dir)
 # a topological sort is used for visiting nodes in order from upstream to downstream
 toposort = topological_sort_by_dfs(graph)
 sink = toposort[end]
@@ -38,8 +40,8 @@ Q = Wflow.kin_wave!(Q, graph, toposort, Qold, q, α, β, DCL, Δt_sec)
 
 @testset "flow rate" begin
     @test sum(Q) ≈ 2.957806043289641e6
-    @test Q[toposort[1]] ≈ 0.00021453683608501235
-    @test Q[toposort[n-100]] ≈ 4054.9507466731234
+    @test Q[toposort[1]] ≈ 0.007260052312634069f0
+    @test Q[toposort[n-100]] ≈ 3945.762718338739f0
     @test Q[sink] ≈ 4131.101474418251
 end
 

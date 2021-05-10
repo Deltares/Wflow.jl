@@ -26,12 +26,12 @@ end
 
 @testset "first timestep" begin
     hbv = model.vertical
-    @test hbv.tt[1] ≈ 0.0
+    @test hbv.tt[4377] ≈ 0.0
     @test model.clock.iteration == 2
-    @test hbv.soilmoisture[1] ≈ 134.35299682617188f0
-    @test hbv.runoff[1] ≈ 7.406898120121746f0
-    @test hbv.soilevap[1] == 0.0
-    @test hbv.snow[1] == 0.0
+    @test hbv.soilmoisture[4377] ≈ 134.35299682617188f0
+    @test hbv.runoff[4377] ≈ 7.406898120121746f0
+    @test hbv.soilevap[4377] == 0.0
+    @test hbv.snow[4377] == 0.0
 end
 
 # run the second timestep
@@ -39,28 +39,27 @@ model = Wflow.update(model)
 
 @testset "second timestep" begin
     hbv = model.vertical
-    @test hbv.soilmoisture[1] ≈ 134.35299682617188f0
-    @test hbv.runoff[1] ≈ 4.3533463f0
-    @test hbv.soilevap[1] == 0.0
-    @test hbv.snow[1] == 0.0
+    @test hbv.soilmoisture[4377] ≈ 134.35299682617188f0
+    @test hbv.runoff[4377] ≈ 4.3533463f0
+    @test hbv.soilevap[4377] == 0.0
+    @test hbv.snow[4377] == 0.0
 end
 
 @testset "overland domain" begin
     q = model.lateral.land.q_av
     land = model.lateral.land
     @test sum(q) ≈ 3278.9423039643552f0
-    @test q[500] ≈ 0.2348646912841589f0
-    @test land.volume[500] ≈ 2057.7314802432425f0
-    @test land.inwater[500] ≈ 0.027351853491789667f0
-    @test q[1566] ≈ 0.030463805623037462f0
+    @test q[10354] ≈ 0.2348646912841589f0
+    @test land.volume[10354] ≈ 2057.7314802432425f0
+    @test land.inwater[10354] ≈ 0.027351853491789667f0
     @test q[network.land.order[end]] ≈ 0.296794455575309f0
 end
 
 @testset "river flow" begin
     q = model.lateral.river.q_av
     @test sum(q) ≈ 51943.24072462076f0
-    @test q[500] ≈ 5.693405508134953f0
-    @test q[88] ≈ 8.839306661545436f0
+    @test q[651] ≈ 5.693405508134953f0
+    @test q[1056] ≈ 8.839306661545436f0
     @test q[network.river.order[end]] ≈ 363.5647479049738f0
 end
 
