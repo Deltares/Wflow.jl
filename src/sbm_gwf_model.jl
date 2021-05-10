@@ -98,17 +98,6 @@ function initialize_sbm_gwf_model(config::Config)
     clamp!(βₗ, 0.00001, Inf)
     ldd_2d = ncread(nc, param(config, "input.ldd"); allow_missing = true)
 
-    # the ldd provided has the Y direction flipped, fix this first
-    ldd_fix_map = Dict{Int8, Int8}(
-        1 => 7,
-        2 => 8,
-        3 => 9,
-        7 => 1,
-        8 => 2,
-        9 => 3,
-    )
-    replace!(ldd_2d, ldd_fix_map...)
-
     ldd = ldd_2d[inds]
     dl = fill(mv, n)
     dw = fill(mv, n)
