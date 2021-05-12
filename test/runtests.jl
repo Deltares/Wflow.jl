@@ -10,6 +10,7 @@ using UnPack
 using Wflow
 using BenchmarkTools
 using Base.MathConstants: eulergamma
+using Base.Threads
 using BasicModelInterface
 import Polynomials
 using DelimitedFiles
@@ -70,5 +71,6 @@ with_logger(NullLogger()) do
         include("utils.jl")
         include("bmi.jl")
         include("run_sediment.jl")
+        include("subdomains.jl")
     end
 end

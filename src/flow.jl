@@ -50,8 +50,8 @@ function update(
     indices_subdomain,
     upstream_nodes = network
 
-
     n = length(order)
+    ns = length(subdomain_order)
     # two options for iteration, fixed or based on courant number.
     if do_iter
         if sf.its > 0
@@ -59,10 +59,14 @@ function update(
         else
             # calculate celerity
             courant = zeros(n)
-            for v in order
-                if sf.q[v] > 0.0
-                    sf.cel[v] = 1.0 / (sf.α[v] * sf.β * pow(sf.q[v], (sf.β - 1.0)))
-                    courant[v] = (sf.Δt / sf.dl[v]) * sf.cel[v]
+            for k = 1:ns
+                @floop ThreadedEx() for m in subdomain_order[k]
+                    for v in topo_subdomain[m]
+                        if sf.q[v] > 0.0
+                            sf.cel[v] = 1.0 / (sf.α[v] * sf.β * pow(sf.q[v], (sf.β - 1.0)))
+                            courant[v] = (sf.Δt / sf.dl[v]) * sf.cel[v]
+                        end
+                    end
                 end
             end
             filter!(x -> x ≠ 0.0, courant)
@@ -75,8 +79,8 @@ function update(
     # sub time step
     adt = sf.Δt / its
 
-    alpha_term = pow.(sf.n ./ sqrt.(sf.sl), sf.β)
-    sf.α .= alpha_term .* pow.(sf.width .+ 2.0 .* sf.h, sf.alpha_pow)
+    @avxt alpha_term = pow.(sf.n ./ sqrt.(sf.sl), sf.β)
+    @avxt sf.α .= alpha_term .* pow.(sf.width .+ 2.0 .* sf.h, sf.alpha_pow)
 
     q_sum = zeros(n)
     h_sum = zeros(n)
@@ -92,7 +96,6 @@ function update(
         sf.lake.totaloutflow .= 0.0
     end
 
-    ns = length(subdomain_order)
     for _ = 1:its
         sf.qin .= 0.0
         for k = 1:ns
@@ -169,10 +172,10 @@ function update(
             end
         end
     end
-    sf.q_av .= q_sum ./ its
-    sf.h_av .= h_sum ./ its
-    sf.to_river .= sf.to_river ./ its
-    sf.volume .= sf.dl .* sf.width .* sf.h
+    @avxt sf.q_av .= q_sum ./ its
+    @avxt sf.h_av .= h_sum ./ its
+    @avxt sf.to_river .= sf.to_river ./ its
+    @avxt sf.volume .= sf.dl .* sf.width .* sf.h
 end
 
 @get_units @with_kw struct LateralSSF{T}
@@ -204,7 +207,7 @@ end
 statevars(::LateralSSF) = (:ssf,)
 
 function update(ssf::LateralSSF, network, frac_toriver)
-    @unpack order, subdomain_order, topo_subdomain, indices_subdomain, upstream_nodes =
+    @unpack subdomain_order, topo_subdomain, indices_subdomain, upstream_nodes =
         network
 
     ns = length(subdomain_order)
