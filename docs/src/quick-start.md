@@ -98,7 +98,7 @@ Code](https://code.visualstudio.com/). When combined with the [Julia
 extension](https://www.julia-vscode.org/) it provides a powerful and interactive development
 experience.
 
-# Usage
+## Usage
 
 To run a simulation, first the required static and dynamic input data should be prepared in
 NetCDF files. Next, we use a [TOML](https://github.com/toml-lang/toml) configuration file,
@@ -166,3 +166,16 @@ Wflow.run(config)
 For even more control, you can initialize the model object yourself, and modify it directly,
 or run a custom simulation loop. See the [`Wflow.run`](@ref) source for some
 inspiration.
+
+## Multi-Threading
+
+Wflow supports multi-threading execution of the wflow\_sbm model [SBM + Kinematic
+wave](@ref) that uses the kinematic wave approach for river, overland and lateral subsurface
+flow. Both the [SBM vertical concept](@ref) and the kinematic wave components of this model
+can run on multiple threads. This functionality may also be useful for models that make
+(partly) use of the kinematic wave as the [HBV model](@ref) and the wflow\_sbm model [SBM +
+Groundwater flow](@ref).
+
+For information on how to start Julia with multiple threads we refer to [How to start Julia
+with multiple
+threads](https://docs.julialang.org/en/v1/manual/multi-threading/#Starting-Julia-with-multiple-threads).
