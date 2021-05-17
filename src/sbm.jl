@@ -1014,7 +1014,7 @@ function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
         for k = 1:n_usl
             rootstore_unsat =
                 rootstore_unsat +
-                (max(0.0, sbm.rootingdepth[i] - sbm.sumlayers[i][k]) / usl[k]) * usld[k]
+                min(1.0, (max(0.0, sbm.rootingdepth[i] - sbm.sumlayers[i][k]) / usl[k])) * usld[k]
         end
 
         rootstore_sat = max(0.0, sbm.rootingdepth[i] - zi[i]) * (sbm.θₛ[i] - sbm.θᵣ[i])

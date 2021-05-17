@@ -35,6 +35,7 @@ reinit = true                       # cold (reinit = true) or warm state (reinit
 reservoirs = true                   # include reservoir modelling, default is false
 kin_wave_iteration = true           # enable kinematic wave iterations in the model, default is false
 thicknesslayers = [100, 300, 800]   # specific SBM setting: for each soil layer a thickness [mm] is specified
+min_streamorder = 3                 # minimum stream order to delineate subbasins, default is 4
 ```
 
 ## State section

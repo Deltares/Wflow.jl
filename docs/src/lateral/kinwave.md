@@ -67,8 +67,21 @@ method.
     For certain model timestep and model grid size combinations this may result in loss of
     accuracy.
 
+## Multi-Threading
+The kinematic wave calculations for surface - and subsurface flow routing can be executed in
+parallel using multiple threads. In the model section of the TOML file, a minimum stream
+order can be provided (default is 4) to define subbasins. Subbasins are created at all
+confluences where each branch has a minimal stream order. Based on the subbasins a directed
+acyclic graph is created that controls the order of execution and which subbasins can run in
+parallel. 
+
+```toml
+[model]
+min_streamorder = 3   # minimum stream order to delineate subbasins, default is 4
+```
+
 ## Subcatchment flow
-Normally the the kinematic wave is continuous throughout the model. By using the the `pits`
+Normally the the kinematic wave is continuous throughout the model. By using the `pits`
 entry in the model and input sections of the TOML file all flow is at the subcatchment only
 (upstream of the pit locations, defined by the netCDF variable `wflow_pits` in the example
 below) and no flow is transferred from one subcatchment to another. This can be convenient
