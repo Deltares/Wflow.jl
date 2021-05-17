@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+- Multi-threading of vertical SBM concept and lateral kinematic wave components (overland,
+  river and subsurface flow) of wflow\_sbm model [SBM + Kinematic wave](@ref).
+
+### Fixed
+- Calculation of volumetric water content of vertical SBM (soil layers and root zone).
+- Update of `satwaterdepth` in SBM (evaporation was only substracted from a local
+  variable, and not from `sbm.satwaterdepth`).
+
 ## v0.3.1 - 2021-05-19
 
 ### Fixed
