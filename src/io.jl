@@ -1153,21 +1153,23 @@ function read_dims(A::NCDatasets.CFVariable, dim_sel::NamedTuple)
     data_dim_order = Symbol[]
     # need to iterate in this order, to get the indices in order
     for (dim_name, dim_size) in pairs(dimsizes)
-        dim = internal_dim_name(dim_name)
-        # each dim should either be in dim_sel or be size 1
-        if dim in keys(dim_sel)
-            idx = dim_sel[dim]
-            push!(indexer, idx)
-            # Would be nice to generalize this to anything that drops the dimension
-            # when used to index. Not sure how we could support `begin` or `end` here.
-            if !(idx isa Int)
-                push!(data_dim_order, dim)
-            end
-        elseif dim_size == 1
+        if dim_size == 1
             push!(indexer, 1)
         else
-            throw(ArgumentError("""NetCDF dimension $dim_name has length $dim_size.
-                Only extra dimensions of length 1 are supported."""))
+            dim = internal_dim_name(dim_name)
+            # each dim should either be in dim_sel or be size 1
+            if dim in keys(dim_sel)
+                idx = dim_sel[dim]
+                push!(indexer, idx)
+                # Would be nice to generalize this to anything that drops the dimension
+                # when used to index. Not sure how we could support `begin` or `end` here.
+                if !(idx isa Int)
+                    push!(data_dim_order, dim)
+                end
+            else
+                throw(ArgumentError("""NetCDF dimension $dim_name has length $dim_size.
+                    Only extra dimensions of length 1 are supported."""))
+            end
         end
     end
     data = A[indexer...]
