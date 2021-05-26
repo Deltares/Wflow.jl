@@ -742,7 +742,7 @@ function update_until_recharge(sbm::SBM, config)
 
         end
 
-        avail_forinfilt = copy(sbm.rainfallplusmelt[i])
+        avail_forinfilt = sbm.rainfallplusmelt[i]
         sbm.ustoredepth[i] = sum(@view sbm.ustorelayerdepth[i][1:sbm.nlayers[i]])
         uStorecapacity = sbm.soilwatercapacity[i] - sbm.satwaterdepth[i] - sbm.ustoredepth[i]
 
@@ -787,7 +787,7 @@ function update_until_recharge(sbm::SBM, config)
 
         usl, sbm.n_unsatlayers[i] = set_layerthickness(sbm.zi[i], sbm.sumlayers[i], sbm.act_thickl[i])
         z = cumsum(usl)
-        usld = copy(sbm.ustorelayerdepth[i])
+        usld = sbm.ustorelayerdepth[i]
 
         ast = 0.0
         soilevapunsat = 0.0
@@ -971,7 +971,7 @@ function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
     @floop ThreadedEx(basesize = sbm.basesize) for i = 1:sbm.n
         usl, n_usl = set_layerthickness(zi[i], sbm.sumlayers[i], sbm.act_thickl[i])
         # exfiltration from ustore
-        usld = copy(sbm.ustorelayerdepth[i])
+        usld = sbm.ustorelayerdepth[i]
         exfiltustore = 0.0
         for k = sbm.n_unsatlayers[i]:-1:1
             if k <= n_usl
