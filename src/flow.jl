@@ -60,7 +60,7 @@ function update(
             # calculate celerity
             courant = zeros(n)
             for k = 1:ns
-                @floop ThreadedEx() for m in subdomain_order[k]
+                @threads for m in subdomain_order[k]
                     for v in topo_subdomain[m]
                         if sf.q[v] > 0.0
                             sf.cel[v] = 1.0 / (sf.α[v] * sf.β * pow(sf.q[v], (sf.β - 1.0)))
@@ -79,8 +79,8 @@ function update(
     # sub time step
     adt = sf.Δt / its
 
-    @avxt alpha_term = pow.(sf.n ./ sqrt.(sf.sl), sf.β)
-    @avxt sf.α .= alpha_term .* pow.(sf.width .+ 2.0 .* sf.h, sf.alpha_pow)
+    alpha_term = pow.(sf.n ./ sqrt.(sf.sl), sf.β)
+    sf.α .= alpha_term .* pow.(sf.width .+ 2.0 .* sf.h, sf.alpha_pow)
 
     q_sum = zeros(n)
     h_sum = zeros(n)
@@ -99,7 +99,7 @@ function update(
     for _ = 1:its
         sf.qin .= 0.0
         for k = 1:ns
-            @floop ThreadedEx() for m in subdomain_order[k]
+            @threads for m in subdomain_order[k]
                 for (n, v) in zip(indices_subdomain[m], topo_subdomain[m])
 
                     # for overland flow frac_toriver needs to be defined
@@ -172,10 +172,10 @@ function update(
             end
         end
     end
-    @avxt sf.q_av .= q_sum ./ its
-    @avxt sf.h_av .= h_sum ./ its
-    @avxt sf.to_river .= sf.to_river ./ its
-    @avxt sf.volume .= sf.dl .* sf.width .* sf.h
+    sf.q_av .= q_sum ./ its
+    sf.h_av .= h_sum ./ its
+    sf.to_river .= sf.to_river ./ its
+    sf.volume .= sf.dl .* sf.width .* sf.h
 end
 
 @get_units @with_kw struct LateralSSF{T}
@@ -207,12 +207,11 @@ end
 statevars(::LateralSSF) = (:ssf,)
 
 function update(ssf::LateralSSF, network, frac_toriver)
-    @unpack subdomain_order, topo_subdomain, indices_subdomain, upstream_nodes =
-        network
+    @unpack subdomain_order, topo_subdomain, indices_subdomain, upstream_nodes = network
 
     ns = length(subdomain_order)
     for k = 1:ns
-        @floop ThreadedEx() for m in subdomain_order[k]
+        @threads for m in subdomain_order[k]
             for (n, v) in zip(indices_subdomain[m], topo_subdomain[m])
                 # for a river cell without a reservoir or lake (wb_pit is false) part of the
                 # upstream subsurface flow goes to the river (frac_toriver) and part goes to the
