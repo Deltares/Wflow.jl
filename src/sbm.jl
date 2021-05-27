@@ -5,8 +5,6 @@
     maxlayers::Int | "-"
     # number of cells
     n::Int | "-"
-    # chunck size processed per parallel task 
-    basesize::Int | "-"
     # Number of soil layers
     nlayers::Vector{Int} | "-"
     # Number of unsaturated soil layers
@@ -269,7 +267,6 @@ function initialize_sbm(nc, config, riverfrac, inds)
     end
 
     n = length(inds)
-    basesize = n ÷ nthreads()
 
     cfmax =
         ncread(
@@ -545,7 +542,6 @@ function initialize_sbm(nc, config, riverfrac, inds)
         Δt = tosecond(Δt),
         maxlayers = maxlayers,
         n = n,
-        basesize = basesize,
         nlayers = nlayers,
         n_unsatlayers = fill(0, n),
         riverfrac = riverfrac,
@@ -654,7 +650,7 @@ function update_until_snow(sbm::SBM, config)
     modelglacier = get(config.model, "glacier", false)::Bool
     modelsnow = get(config.model, "snow", false)::Bool
 
-    @floop ThreadedEx(basesize = sbm.basesize) for i = 1:sbm.n
+    @threads for i = 1:sbm.n
         if do_lai
             cmax = sbm.sl[i] * sbm.leaf_area_index[i] + sbm.swood[i]
             canopygapfraction = exp(-sbm.kext[i] * sbm.leaf_area_index[i])
@@ -738,7 +734,7 @@ function update_until_recharge(sbm::SBM, config)
     transfermethod = get(config.model, "transfermethod", false)::Bool
     ust = get(config.model, "whole_ust_available", false)::Bool # should be removed from optional setting and code?
 
-    @floop ThreadedEx(basesize = sbm.basesize) for i = 1:sbm.n
+    @threads for i = 1:sbm.n
         if modelsnow
             rainfallplusmelt = sbm.rainfallplusmelt[i]
             if modelglacier
@@ -1018,7 +1014,7 @@ end
 
 function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
 
-    @floop ThreadedEx(basesize = sbm.basesize) for i = 1:sbm.n
+    @threads for i = 1:sbm.n
         usl, n_usl = set_layerthickness(zi[i], sbm.sumlayers[i], sbm.act_thickl[i])
         # exfiltration from ustore
         usld = sbm.ustorelayerdepth[i]
