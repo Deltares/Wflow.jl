@@ -72,7 +72,7 @@ Base.iterate(config::Config, state) = iterate(Dict(config), state)
 "Extract NetCDF variable name `ncname` from `var` (type `String` or `Config`). If `var` has 
 type `Config`, either `scale` and `offset` are expected (with `ncname`) or a `value` (uniform
 value), these are stored as part of `NamedTuple` `modifier`"
-function ncvar_name_modifier(var; verbose=true)
+function ncvar_name_modifier(var; verbose = true)
     ncname = nothing
     modifier = (scale = 1.0, offset = 0.0, value = nothing)
     if isa(var, Config)
@@ -110,7 +110,7 @@ function get_at(
 end
 
 function get_at(ds::NCDataset, varname::AbstractString, i)
-    return read_standardized(ds, varname, (x = :, y = :, time=i))
+    return read_standardized(ds, varname, (x = :, y = :, time = i))
 end
 
 "Get dynamic NetCDF input for the given time"
@@ -453,7 +453,10 @@ end
 function prepare_reader(path, cyclic_path, config)
     dataset = NCDataset(path)
     # set verbose to false to avoid logging modifications twice
-    ncvar1, _ = ncvar_name_modifier(param(config, "input." * first(config.input.forcing)); verbose=false)
+    ncvar1, _ = ncvar_name_modifier(
+        param(config, "input." * first(config.input.forcing));
+        verbose = false,
+    )
     var = dataset[ncvar1].var
 
     # check for cyclic parameters
@@ -739,8 +742,7 @@ function prepare_writer(
         nc_scalar = []
         for var in config.netcdf.variable
             parameter = var["parameter"]
-            reducer_func =
-                get_reducer_func(var, rev_inds, x_nc, y_nc, config, nc_static)
+            reducer_func = get_reducer_func(var, rev_inds, x_nc, y_nc, config, nc_static)
             push!(nc_scalar, (parameter = parameter, reducer = reducer_func))
         end
     else
@@ -766,8 +768,7 @@ function prepare_writer(
         csv_cols = []
         for col in config.csv.column
             parameter = col["parameter"]
-            reducer_func =
-                get_reducer_func(col, rev_inds, x_nc, y_nc, config, nc_static)
+            reducer_func = get_reducer_func(col, rev_inds, x_nc, y_nc, config, nc_static)
             push!(csv_cols, (parameter = parameter, reducer = reducer_func))
         end
     else
@@ -815,7 +816,7 @@ function write_netcdf_timestep(model, dataset, parameters)
 
     time_index = add_time(dataset, clock.time)
 
-    buffer = zeros(Union{Float, Missing}, size(model.network.land.reverse_indices))
+    buffer = zeros(Union{Float,Missing}, size(model.network.land.reverse_indices))
     for (key, val) in parameters
         @unpack par, vector = val
         sel = active_indices(network, par)

@@ -497,10 +497,9 @@ function initialize_hbv_model(config::Config)
         reservoir = isempty(reservoir) ? nothing : reservoir.reverse_indices,
         lake = isempty(lake) ? nothing : lake.reverse_indices,
     )
-    writer =
-        prepare_writer(config, reader, modelmap, indices_reverse, x_nc, y_nc, nc)
+    writer = prepare_writer(config, reader, modelmap, indices_reverse, x_nc, y_nc, nc)
     close(nc)
-    
+
     # for each domain save:
     # - the directed acyclic graph (graph),
     # - the traversion order (order),
@@ -510,7 +509,7 @@ function initialize_hbv_model(config::Config)
     #   Vector indices per subbasin matching the traversion order of the complete domain
     #   (indices_subdomain)) 
     # - the indices that map it back to the two dimensional grid (indices)
-    
+
     # for the land domain the x and y length [m] of the grid cells are stored
     # for reservoirs and lakes indices information is available from the initialization
     # functions

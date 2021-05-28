@@ -268,7 +268,8 @@ end
         @test data_dim_order == (:x, :y)
 
         @test Wflow.dim_directions(ds, (:x, :y)) === (x = true, y = false)
-        @test Wflow.dim_directions(ds, (:y, :x, :layer)) === (y = false, x = true, layer = true)
+        @test Wflow.dim_directions(ds, (:y, :x, :layer)) ===
+              (y = false, x = true, layer = true)
 
         data, dims = Wflow.permute_data(zeros(1, 2, 3), (:layer, :y, :x))
         @test size(data) == (3, 2, 1)

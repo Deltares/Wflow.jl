@@ -109,7 +109,7 @@ function set_states(instate_path, model, state_ncnames; type = nothing)
             dims = length(dimnames(ds[ncname]))
             # 4 dims, for example (x,y,layer,time) where dim layer is an SVector for soil layers
             if dims == 4
-                A = read_standardized(ds, ncname, (x = :, y = :, layer = :, time=1))
+                A = read_standardized(ds, ncname, (x = :, y = :, layer = :, time = 1))
                 A = permutedims(A[sel, :])
                 # note that this array is allowed to have missings, since not every vertical
                 # column is `maxlayers` layers deep
@@ -124,7 +124,7 @@ function set_states(instate_path, model, state_ncnames; type = nothing)
                 param(model, state) .= svectorscopy(A, Val{size(A)[1]}())
                 # 3 dims (x,y,time)
             elseif dims == 3
-                A = read_standardized(ds, ncname, (x = :, y = :, time=1))
+                A = read_standardized(ds, ncname, (x = :, y = :, time = 1))
                 A = A[sel]
                 A = nomissing(A)
                 # Convert to desired type if needed

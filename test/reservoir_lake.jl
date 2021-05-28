@@ -90,17 +90,17 @@ sh = [
 
     Wflow.update(lake, 1, 500.0, 15, 86400.0)
     Wflow.update(lake, 2, 500.0, 15, 86400.0)
-    @test lake.outflow ≈ [214.80170846121263, 236.83281600000214] atol=1e-2
-    @test lake.totaloutflow ≈ [1.855886761104877e7, 2.0462355302400187e7] atol=1e3
-    @test lake.storage ≈ [1.2737435094769483e9, 2.6019755340159863e8] atol=1e4
-    @test lake.waterlevel ≈ [395.0912274997361, 395.2101079057371] atol=1e-2
+    @test lake.outflow ≈ [214.80170846121263, 236.83281600000214] atol = 1e-2
+    @test lake.totaloutflow ≈ [1.855886761104877e7, 2.0462355302400187e7] atol = 1e3
+    @test lake.storage ≈ [1.2737435094769483e9, 2.6019755340159863e8] atol = 1e4
+    @test lake.waterlevel ≈ [395.0912274997361, 395.2101079057371] atol = 1e-2
     lake.totaloutflow .= 0.0
     lake.inflow .= 0.0
     Wflow.update(lake, 1, 500.0, 15, 86400.0)
     Wflow.update(lake, 2, 500.0, 15, 86400.0)
-    @test lake.outflow ≈ [0.0, 239.66710359986183] atol=1e-2
-    @test lake.totaloutflow ≈ [-2.2446764487487033e7, 2.070723775102806e7] atol=1e3
-    @test lake.storage ≈ [1.3431699662524352e9, 2.6073035986708355e8] atol=1e4
-    @test lake.waterlevel ≈ [395.239782021054, 395.21771942667266] atol=1e-2
+    @test lake.outflow ≈ [0.0, 239.66710359986183] atol = 1e-2
+    @test lake.totaloutflow ≈ [-2.2446764487487033e7, 2.070723775102806e7] atol = 1e3
+    @test lake.storage ≈ [1.3431699662524352e9, 2.6073035986708355e8] atol = 1e4
+    @test lake.waterlevel ≈ [395.239782021054, 395.21771942667266] atol = 1e-2
 
 end
