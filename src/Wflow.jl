@@ -160,7 +160,7 @@ function run(model::Model; close_files = true)
     endtime = cftime(config.endtime, calendar)
     times = range(starttime, endtime, step = Δt)
 
-    @info "Run information" model_type starttime Δt endtime
+    @info "Run information" model_type starttime Δt endtime nthreads()
     @progress for (i, time) in enumerate(times)
         @debug "Starting timestep" time timestep = i
         model = update_func(model)
