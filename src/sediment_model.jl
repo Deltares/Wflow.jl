@@ -122,8 +122,7 @@ function initialize_sediment_model(config::Config)
         reservoir = isempty(reservoir) ? nothing : reservoir.reverse_indices,
         lake = isempty(lake) ? nothing : lake.reverse_indices,
     )
-    writer =
-        prepare_writer(config, reader, modelmap, indices_reverse, x_nc, y_nc, nc)
+    writer = prepare_writer(config, reader, modelmap, indices_reverse, x_nc, y_nc, nc)
     close(nc)
 
     # for each domain save the directed acyclic graph, the traversion order,

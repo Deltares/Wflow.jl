@@ -54,7 +54,7 @@ end
     add_edge!(g, 14, 15)
     add_edge!(g, 15, 16)
     add_edge!(g, 16, 5)
-    
+
     # generate streamorder and subbasins (ids, graph and order)
     toposort = topological_sort_by_dfs(g)
     strord = Wflow.stream_order(g, toposort)
