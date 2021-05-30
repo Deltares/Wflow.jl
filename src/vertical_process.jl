@@ -16,7 +16,7 @@ function scurve(x, a, b, c)
 end
 
 """
-    rainfall_interception_gash(cmax, e_r, canopygapfraction, precipitation, canopystorage;maxevap = 9999.0)
+    rainfall_interception_gash(cmax, e_r, canopygapfraction, precipitation, canopystorage, maxevap)
 
 Interception according to the Gash model (for daily timesteps). `cmax` is the maximum canopy storage and
 `e_r` is the ratio of the average evaporation from the wet canopy and the average precipitation intensity on
@@ -27,8 +27,8 @@ function rainfall_interception_gash(
     e_r,
     canopygapfraction,
     precipitation,
-    canopystorage;
-    maxevap = 9999.0,
+    canopystorage,
+    maxevap,
 )
     # TODO: add other rainfall interception method (lui)
     # TODO: include subdaily Gash model

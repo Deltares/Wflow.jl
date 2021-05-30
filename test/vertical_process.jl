@@ -1,7 +1,7 @@
 @testset "vertical processes" begin
     @test all(
         isapprox.(
-            Wflow.rainfall_interception_gash(3.0, 0.11, 0.24, 18.0, 1.5, maxevap = 4.0),
+            Wflow.rainfall_interception_gash(3.0, 0.11, 0.24, 18.0, 1.5, 4.0),
             (13.568000000000001, 4.0, 0.432, 1.5),
         ),
     )

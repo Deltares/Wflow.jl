@@ -677,7 +677,7 @@ function update_until_snow(sbm::SBM, config)
                 canopygapfraction,
                 sbm.precipitation[i],
                 sbm.canopystorage[i],
-                maxevap = potential_evaporation,
+                potential_evaporation,
             )
             pottrans_soil = max(0.0, potential_evaporation - interception) # now in mm
         else
