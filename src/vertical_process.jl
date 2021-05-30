@@ -1,17 +1,17 @@
 """
-    scurve(x; a = 0.0, b = 1.0, c = 1.0)
+    scurve(x, a, b, c)
 
 Sigmoid "S"-shaped curve.
 
 # Arguments
 - `x::Real`: input
-- `a::Real`: determines the centre level (default = 0.0)
+- `a::Real`: determines the centre level
 - `b::Real`: determines the amplitude of the curve
 - `c::Real`: determines the steepness or "stepwiseness" of the curve.
              The higher c the sharper the function. A negative c reverses the function.
 """
-function scurve(x; a = 0.0, b = 1.0, c = 1.0)
-    s = 1.0 / (b + exp(-c * (x - a)))
+function scurve(x, a, b, c)
+    s = one(x) / (b + exp(-c * (x - a)))
     return s
 end
 
@@ -236,7 +236,7 @@ function infiltration(
     pathinf = avail_forinfilt * pathfrac
     if modelsnow && soilinfreduction
         bb = 1.0 / (1.0 - cf_soil)
-        soilinfredu = scurve(tsoil, a = 0.0, b = bb, c = 8.0) + cf_soil
+        soilinfredu = scurve(tsoil, Float(0.0), bb, Float(8.0)) + cf_soil
     else
         soilinfredu = 1.0
     end

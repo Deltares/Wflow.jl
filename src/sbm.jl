@@ -891,7 +891,7 @@ function update_until_recharge(sbm::SBM, config)
         satwaterdepth = sbm.satwaterdepth[i] - soilevapsat
 
         # transpiration from saturated store
-        wetroots = scurve(sbm.zi[i], a = rootingdepth, c = sbm.rootdistpar[i])
+        wetroots = scurve(sbm.zi[i], rootingdepth, Float(1.0), sbm.rootdistpar[i])
         actevapsat = min(pottrans * wetroots, satwaterdepth)
         satwaterdepth = satwaterdepth - actevapsat
         restpottrans = pottrans - actevapsat

@@ -171,7 +171,7 @@ fraction is multiplied by the potential evaporation (and limited by the availabl
 saturated zone) to get the transpiration from the saturated part of the soil:
 
         # transpiration from saturated store
-        wetroots = scurve(sbm.zi[i], a = rootingdepth, c = sbm.rootdistpar[i])
+        wetroots = scurve(sbm.zi[i], rootingdepth, 1.0, sbm.rootdistpar[i])
         actevapsat = min(pottrans * wetroots, satwaterdepth)
         satwaterdepth = satwaterdepth - actevapsat
         restpottrans = pottrans - actevapsat
