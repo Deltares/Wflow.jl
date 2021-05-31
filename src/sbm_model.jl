@@ -413,8 +413,8 @@ function update_after_subsurfaceflow(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,
 
     # determine lateral inflow for overland flow based on vertical runoff [mm] from vertical
     # sbm concept
-    lateral.land.inwater .=
-        (vertical.runoff .* network.land.xl .* network.land.yl .* 0.001) ./ lateral.land.Δt
+    @. lateral.land.inwater =
+        (vertical.runoff * network.land.xl * network.land.yl * 0.001) / lateral.land.Δt
     lateral.land.qlat .= lateral.land.inwater ./ lateral.land.dl
 
     # run kinematic wave for overland flow
@@ -427,14 +427,18 @@ function update_after_subsurfaceflow(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,
 
     # determine net runoff from vertical sbm concept in river cells, and lateral inflow from
     # overland flow lateral subsurface flow and net runoff to the river cells
-    net_runoff_river =
+    @. lateral.river.inwater = (
+        lateral.subsurface.to_river[inds_riv] / 1.0e9 / lateral.river.Δt +
+        lateral.land.to_river[inds_riv] +
+        # net_runoff_river
         (
-            vertical.net_runoff_river[inds_riv] .* network.land.xl[inds_riv] .*
-            network.land.yl[inds_riv] .* 0.001
-        ) ./ vertical.Δt
-    lateral.river.inwater .= (
-        lateral.subsurface.to_river[inds_riv] ./ 1.0e9 ./ lateral.river.Δt .+
-        lateral.land.to_river[inds_riv] .+ net_runoff_river
+            (
+                vertical.net_runoff_river[inds_riv] *
+                network.land.xl[inds_riv] *
+                network.land.yl[inds_riv] *
+                0.001
+            ) / vertical.Δt
+        )
     )
     lateral.river.qlat .= lateral.river.inwater ./ lateral.river.dl
 
