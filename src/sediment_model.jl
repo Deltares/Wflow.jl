@@ -15,7 +15,6 @@ function initialize_sediment_model(config::Config)
     clock = Clock(config, reader)
     Δt = clock.Δt
 
-    sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
     reinit = get(config.model, "reinit", true)::Bool
 
     do_river = get(config.model, "runrivermodel", false)::Bool
@@ -51,16 +50,9 @@ function initialize_sediment_model(config::Config)
     y = permutedims(repeat(y_nc, outer = (1, length(x_nc))))[inds]
     cellength = abs(mean(diff(x_nc)))
 
-    xl = fill(mv, n)
-    yl = fill(mv, n)
-    riverfrac = fill(mv, n)
-
-    for i = 1:n
-        xl[i] = sizeinmetres ? cellength : lattometres(y[i])[1] * cellength
-        yl[i] = sizeinmetres ? cellength : lattometres(y[i])[2] * cellength
-        riverfrac[i] =
-            river[i] ? min((riverlength[i] * riverwidth[i]) / (xl[i] * yl[i]), 1.0) : 0.0
-    end
+    sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
+    xl, yl = cell_lengths(y, cellength, sizeinmetres)
+    riverfrac = river_fraction(river, riverlength, riverwidth, xl, yl)
 
     eros = initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
 

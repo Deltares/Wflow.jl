@@ -90,6 +90,42 @@ function lattometres(lat::Real)
     return longlen, latlen
 end
 
+function cell_lengths(y::AbstractVector, cellength::Real, sizeinmetres::Bool)
+    n = length(y)
+    xl = fill(mv, n)
+    yl = fill(mv, n)
+    if sizeinmetres
+        xl .= cellength
+        yl .= cellength
+    else
+        for i = 1:n
+            longlen, latlen = lattometres(y[i])
+            xl[i] = longlen * cellength
+            yl[i] = latlen * cellength
+        end
+    end
+    return xl, yl
+end
+
+function river_fraction(
+    river::AbstractVector,
+    riverlength::AbstractVector,
+    riverwidth::AbstractVector,
+    xl::AbstractVector,
+    yl::AbstractVector,
+)
+    n = length(river)
+    riverfrac = fill(mv, n)
+    for i = 1:n
+        riverfrac[i] = if river[i]
+            min((riverlength[i] * riverwidth[i]) / (xl[i] * yl[i]), 1.0)
+        else
+            0.0
+        end
+    end
+    return riverfrac
+end
+
 """
     set_states(instate_path, model, state_ncnames; <keyword arguments>)
 
