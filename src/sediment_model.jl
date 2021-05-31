@@ -166,8 +166,8 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:LandSediment,R,W}
         update_cyclic!(model)
     end
 
-    update_until_ols(vertical, config, network)
-    update_until_oltransport(vertical, config, network)
+    update_until_ols(vertical, config)
+    update_until_oltransport(vertical, config)
 
     lateral.land.soilloss .= vertical.soilloss
     lateral.land.erosclay .= vertical.erosclay

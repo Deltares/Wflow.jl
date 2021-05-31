@@ -386,7 +386,7 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
 end
 
 # Soil erosion
-function update_until_ols(eros::LandSediment, config, network)
+function update_until_ols(eros::LandSediment, config)
     # Options from config
     do_lai = haskey(config.input.vertical, "leaf_area_index")
     rainerosmethod = get(config.model, "rainerosmethod", "answers")::String
@@ -482,7 +482,7 @@ function update_until_ols(eros::LandSediment, config, network)
 end
 
 ### Sediment transport capacity in overland flow ###
-function update_until_oltransport(ols::LandSediment, config, network)
+function update_until_oltransport(ols::LandSediment, config::Config)
 
     do_river = get(config.model, "runrivermodel", false)::Bool
     tcmethod = get(config.model, "landtransportmethod", "yalinpart")::String
@@ -492,50 +492,14 @@ function update_until_oltransport(ols::LandSediment, config, network)
     for i = 1:ols.n
         sinslope = sin(atan(ols.slope[i]))
 
-        if do_river != true
+        if !do_river
             # Total transport capacity without particle differentiation
             if tcmethod == "govers"
-                # Transport capacity from govers 1990
-                # Unit stream power
-                if ols.h_land[i] > 0.0
-                    velocity = ols.q_land[i] / (ols.dw[i] * ols.h_land[i])
-                else
-                    velocity = 0.0
-                end
-                omega = 10 * sinslope * 100 * velocity #cm/s
-                if omega > 0.4
-                    TCf = ols.cGovers[i] * (omega - 0.4)^(ols.nGovers[i]) * 2650 #kg/m3
-                else
-                    TCf = 0.0
-                end
-                TC = TCf * ols.q_land[i] * ts * 1e-3 #[ton/cell]
+                TC = tc_govers(ols, i, sinslope, ts)
             end
 
             if tcmethod == "yalin"
-                # Transport capacity from Yalin without particle differentiation
-                delta = max(
-                    (
-                        ols.h_land[i] * sinslope /
-                        (ols.D50[i] * 0.001 * (ols.rhos[i] / 1000 - 1)) / 0.06 - 1
-                    ),
-                    0.0,
-                )
-                alphay = delta * 2.45 / (0.001 * ols.rhos[i])^0.4 * 0.06^(0.5)
-                if ols.q_land[i] > 0.0 && alphay != 0.0
-                    TC = (
-                        ols.dw[i] / ols.q_land[i] *
-                        (ols.rhos[i] - 1000) *
-                        ols.D50[i] *
-                        0.001 *
-                        (9.81 * ols.h_land[i] * sinslope) *
-                        0.635 *
-                        delta *
-                        (1 - log(1 + alphay) / (alphay))
-                    ) # [kg/m3]
-                    TC = TC * ols.q_land[i] * ts * 1e-3 #[ton]
-                else
-                    TC = 0.0
-                end
+                TC = tc_yalin(ols, i, sinslope, ts)
             end
 
             # Filter TC land for river cells (0 in order for sediment from land to stop when entering the river)
@@ -552,101 +516,7 @@ function update_until_oltransport(ols::LandSediment, config, network)
         end
 
         if do_river || tcmethod == "yalinpart"
-            # Transport capacity from Yalin with particle differentiation
-            # Delta parameter of Yalin for each particle class
-            delta = ols.h_land[i] * sinslope / (1e-6 * (ols.rhos[i] / 1000 - 1)) / 0.06
-            dclay = max(1 / ols.dmclay[i] * delta - 1, 0.0)
-            dsilt = max(1 / ols.dmsilt[i] * delta - 1, 0.0)
-            dsand = max(1 / ols.dmsand[i] * delta - 1, 0.0)
-            dsagg = max(1 / ols.dmsagg[i] * delta - 1, 0.0)
-            dlagg = max(1 / ols.dmlagg[i] * delta - 1, 0.0)
-            # Total transportability
-            dtot = dclay + dsilt + dsand + dsagg + dlagg
-
-            # Yalin transport capacity of overland flow for each particle class
-            if ols.q_land[i] > 0.0
-                TCa =
-                    ols.dw[i] / ols.q_land[i] *
-                    (ols.rhos[i] - 1000) *
-                    1e-6 *
-                    (9.81 * ols.h_land[i] * sinslope)
-            else
-                TCa = 0.0
-            end
-            TCb = 2.45 / (ols.rhos[i] / 1000)^0.4 * 0.06^0.5
-            if dtot != 0.0 && dclay != 0.0
-                TCclay =
-                    TCa * ols.dmclay[i] * dclay / dtot *
-                    0.635 *
-                    dclay *
-                    (1 - log(1 + dclay * TCb) / dclay * TCb) # [kg/m3]
-                TCclay = TCclay * ols.q_land[i] * ts * 1e-3 # [ton]
-            else
-                TCclay = 0.0
-            end
-            if dtot != 0.0 && dsilt != 0.0
-                TCsilt =
-                    TCa * ols.dmsilt[i] * dsilt / dtot *
-                    0.635 *
-                    dsilt *
-                    (1 - log(1 + dsilt * TCb) / dsilt * TCb) # [kg/m3]
-                TCsilt = TCsilt * ols.q_land[i] * ts * 1e-3 # [ton]
-            else
-                TCsilt = 0.0
-            end
-            if dtot != 0.0 && dsand != 0.0
-                TCsand =
-                    TCa * ols.dmsand[i] * dsand / dtot *
-                    0.635 *
-                    dsand *
-                    (1 - log(1 + dsand * TCb) / dsand * TCb) # [kg/m3]
-                TCsand = TCsand * ols.q_land[i] * ts * 1e-3 # [ton]
-            else
-                TCsand = 0.0
-            end
-            if dtot != 0.0 && dsagg != 0.0
-                TCsagg =
-                    TCa * ols.dmsagg[i] * dsagg / dtot *
-                    0.635 *
-                    dsagg *
-                    (1 - log(1 + dsagg * TCb) / dsagg * TCb) # [kg/m3]
-                TCsagg = TCsagg * ols.q_land[i] * ts * 1e-3 # [ton]
-            else
-                TCsagg = 0.0
-            end
-            if dtot != 0.0 && dlagg != 0.0
-                TClagg =
-                    TCa * ols.dmlagg[i] * dlagg / dtot *
-                    0.635 *
-                    dlagg *
-                    (1 - log(1 + dlagg * TCb) / dlagg * TCb) # [kg/m3]
-                TClagg = TClagg * ols.q_land[i] * ts * 1e-3 # [ton]
-            else
-                TClagg = 0.0
-            end
-
-            # Assume that ols all reach the river in reservoir/lake areas (very high TC)
-            if ols.wbcover[i] > 0
-                TC = 1e9
-                TCclay = 1e9
-                TCsilt = 1e9
-                TCsand = 1e9
-                TCsagg = 1e9
-                TClagg = 1e9
-            end
-
-            # Filter TC land for river cells (0 in order for sediment from land to stop when entering the river)
-            if ols.rivcell[i] == 1.0
-                TCclay = 0.0
-                TCsilt = 0.0
-                TCsand = 0.0
-                TCsagg = 0.0
-                TClagg = 0.0
-            end
-
-            # Set total TC to 0
-            TC = 0.0
-
+            TC, TCclay, TCsilt, TCsand, TCsagg, TClagg = tc_yalinpart(ols, i, sinslope, ts)
         end
 
         # update the outputs and states
@@ -656,9 +526,154 @@ function update_until_oltransport(ols::LandSediment, config, network)
         ols.TCsand[i] = TCsand
         ols.TCsagg[i] = TCsagg
         ols.TClagg[i] = TClagg
-
     end
 
+end
+
+function tc_govers(ols::LandSediment, i::Int, sinslope::Float, ts::Float)::Float
+    # Transport capacity from govers 1990
+    # Unit stream power
+    if ols.h_land[i] > 0.0
+        velocity = ols.q_land[i] / (ols.dw[i] * ols.h_land[i])
+    else
+        velocity = 0.0
+    end
+    omega = 10 * sinslope * 100 * velocity #cm/s
+    if omega > 0.4
+        TCf = ols.cGovers[i] * (omega - 0.4)^(ols.nGovers[i]) * 2650 #kg/m3
+    else
+        TCf = 0.0
+    end
+    TC = TCf * ols.q_land[i] * ts * 1e-3 #[ton/cell]
+
+    return TC
+end
+
+function tc_yalin(ols::LandSediment, i::Int, sinslope::Float, ts::Float)::Float
+    # Transport capacity from Yalin without particle differentiation
+    delta = max(
+        (
+            ols.h_land[i] * sinslope / (ols.D50[i] * 0.001 * (ols.rhos[i] / 1000 - 1)) /
+            0.06 - 1
+        ),
+        0.0,
+    )
+    alphay = delta * 2.45 / (0.001 * ols.rhos[i])^0.4 * 0.06^(0.5)
+    if ols.q_land[i] > 0.0 && alphay != 0.0
+        TC = (
+            ols.dw[i] / ols.q_land[i] *
+            (ols.rhos[i] - 1000) *
+            ols.D50[i] *
+            0.001 *
+            (9.81 * ols.h_land[i] * sinslope) *
+            0.635 *
+            delta *
+            (1 - log(1 + alphay) / (alphay))
+        ) # [kg/m3]
+        TC = TC * ols.q_land[i] * ts * 1e-3 #[ton]
+    else
+        TC = 0.0
+    end
+    return TC
+end
+
+function tc_yalinpart(ols::LandSediment, i::Int, sinslope::Float, ts::Float)
+    # Transport capacity from Yalin with particle differentiation
+    # Delta parameter of Yalin for each particle class
+    delta = ols.h_land[i] * sinslope / (1e-6 * (ols.rhos[i] / 1000 - 1)) / 0.06
+    dclay = max(1 / ols.dmclay[i] * delta - 1, 0.0)
+    dsilt = max(1 / ols.dmsilt[i] * delta - 1, 0.0)
+    dsand = max(1 / ols.dmsand[i] * delta - 1, 0.0)
+    dsagg = max(1 / ols.dmsagg[i] * delta - 1, 0.0)
+    dlagg = max(1 / ols.dmlagg[i] * delta - 1, 0.0)
+    # Total transportability
+    dtot = dclay + dsilt + dsand + dsagg + dlagg
+
+    # Yalin transport capacity of overland flow for each particle class
+    if ols.q_land[i] > 0.0
+        TCa =
+            ols.dw[i] / ols.q_land[i] *
+            (ols.rhos[i] - 1000) *
+            1e-6 *
+            (9.81 * ols.h_land[i] * sinslope)
+    else
+        TCa = 0.0
+    end
+    TCb = 2.45 / (ols.rhos[i] / 1000)^0.4 * 0.06^0.5
+    if dtot != 0.0 && dclay != 0.0
+        TCclay =
+            TCa * ols.dmclay[i] * dclay / dtot *
+            0.635 *
+            dclay *
+            (1 - log(1 + dclay * TCb) / dclay * TCb) # [kg/m3]
+        TCclay = TCclay * ols.q_land[i] * ts * 1e-3 # [ton]
+    else
+        TCclay = 0.0
+    end
+    if dtot != 0.0 && dsilt != 0.0
+        TCsilt =
+            TCa * ols.dmsilt[i] * dsilt / dtot *
+            0.635 *
+            dsilt *
+            (1 - log(1 + dsilt * TCb) / dsilt * TCb) # [kg/m3]
+        TCsilt = TCsilt * ols.q_land[i] * ts * 1e-3 # [ton]
+    else
+        TCsilt = 0.0
+    end
+    if dtot != 0.0 && dsand != 0.0
+        TCsand =
+            TCa * ols.dmsand[i] * dsand / dtot *
+            0.635 *
+            dsand *
+            (1 - log(1 + dsand * TCb) / dsand * TCb) # [kg/m3]
+        TCsand = TCsand * ols.q_land[i] * ts * 1e-3 # [ton]
+    else
+        TCsand = 0.0
+    end
+    if dtot != 0.0 && dsagg != 0.0
+        TCsagg =
+            TCa * ols.dmsagg[i] * dsagg / dtot *
+            0.635 *
+            dsagg *
+            (1 - log(1 + dsagg * TCb) / dsagg * TCb) # [kg/m3]
+        TCsagg = TCsagg * ols.q_land[i] * ts * 1e-3 # [ton]
+    else
+        TCsagg = 0.0
+    end
+    if dtot != 0.0 && dlagg != 0.0
+        TClagg =
+            TCa * ols.dmlagg[i] * dlagg / dtot *
+            0.635 *
+            dlagg *
+            (1 - log(1 + dlagg * TCb) / dlagg * TCb) # [kg/m3]
+        TClagg = TClagg * ols.q_land[i] * ts * 1e-3 # [ton]
+    else
+        TClagg = 0.0
+    end
+
+    # Assume that ols all reach the river in reservoir/lake areas (very high TC)
+    if ols.wbcover[i] > 0
+        TC = 1e9
+        TCclay = 1e9
+        TCsilt = 1e9
+        TCsand = 1e9
+        TCsagg = 1e9
+        TClagg = 1e9
+    end
+
+    # Filter TC land for river cells (0 in order for sediment from land to stop when entering the river)
+    if ols.rivcell[i] == 1.0
+        TCclay = 0.0
+        TCsilt = 0.0
+        TCsand = 0.0
+        TCsagg = 0.0
+        TClagg = 0.0
+    end
+
+    # Set total TC to 0
+    TC = 0.0
+
+    return TC, TCclay, TCsilt, TCsand, TCsagg, TClagg
 end
 
 ### Sediment transport in overland flow ###
