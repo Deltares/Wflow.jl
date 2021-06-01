@@ -15,6 +15,7 @@
     its::Int | "-"                          # Number of fixed iterations
     width::Vector{T} | "m"                  # Flow width [m]
     alpha_pow::T | "-"                      # Used in the power part of α
+    alpha_term::Vector{T} | "-"             # Term used in computation of α
     α::Vector{T} | "s3/5 m1/5"              # Constant in momentum equation A = αQᵝ, based on Manning's equation
     eps::T | "s3/5 m1/5"                    # Maximum allowed change in α, if exceeded cross sectional area and h is recalculated
     cel::Vector{T} | "m s-1"                # Celerity of the kinematic wave
@@ -79,11 +80,11 @@ function update(
     # sub time step
     adt = sf.Δt / its
 
-    alpha_term = pow.(sf.n ./ sqrt.(sf.sl), sf.β)
-    sf.α .= alpha_term .* pow.(sf.width .+ 2.0 .* sf.h, sf.alpha_pow)
+    @. sf.alpha_term = pow(sf.n / sqrt(sf.sl), sf.β)
+    @. sf.α = sf.alpha_term * pow(sf.width + 2.0 * sf.h, sf.alpha_pow)
 
-    q_sum = zeros(n)
-    h_sum = zeros(n)
+    sf.q_av .= 0.0
+    sf.h_av .= 0.0
     sf.to_river .= 0.0
     # because of possible iterations set reservoir and lake inflow and total outflow at
     # start to zero, the total sum of inflow and outflow at each sub time step is calculated
@@ -158,23 +159,23 @@ function update(
                     sf.h[v] = crossarea / sf.width[v]
                     wetper = sf.width[v] + (2.0 * sf.h[v]) # wetted perimeter
                     α = sf.α[v]
-                    sf.α[v] = alpha_term[v] * pow(wetper, sf.alpha_pow)
+                    sf.α[v] = sf.alpha_term[v] * pow(wetper, sf.alpha_pow)
 
                     if abs(α - sf.α[v]) > sf.eps
                         crossarea = sf.α[v] * pow(sf.q[v], sf.β)
                         sf.h[v] = crossarea / sf.width[v]
                     end
 
-                    q_sum[v] += sf.q[v]
-                    h_sum[v] += sf.h[v]
+                    sf.q_av[v] += sf.q[v]
+                    sf.h_av[v] += sf.h[v]
                 end
 
             end
         end
     end
-    sf.q_av .= q_sum ./ its
-    sf.h_av .= h_sum ./ its
-    sf.to_river .= sf.to_river ./ its
+    sf.q_av ./= its
+    sf.h_av ./= its
+    sf.to_river ./= its
     sf.volume .= sf.dl .* sf.width .* sf.h
 end
 
