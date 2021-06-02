@@ -1,7 +1,7 @@
 @testset "vertical processes" begin
     @test all(
         isapprox.(
-            Wflow.rainfall_interception_gash(3.0, 0.11, 0.24, 18.0, 1.5, maxevap = 4.0),
+            Wflow.rainfall_interception_gash(3.0, 0.11, 0.24, 18.0, 1.5, 4.0),
             (13.568000000000001, 4.0, 0.432, 1.5),
         ),
     )
@@ -53,7 +53,7 @@
             (207.073, 20.707300000000004, 1.35, 18.819699999999997, 6.923),
         ),
     )
-    @test Wflow.scurve(2.0, a = 0.0, b = 3.0, c = 2.5) ≈ 0.3325863502664285
+    @test Wflow.scurve(2.0, 0.0, 3.0, 2.5) ≈ 0.3325863502664285
     @test all(
         isapprox.(
             Wflow.glacier_hbv(0.35, 500.0, 9.5, 5.0, 0.0, 3.4, 0.2, Second(Day(1))),

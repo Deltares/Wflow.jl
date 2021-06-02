@@ -677,7 +677,7 @@ function update_until_snow(sbm::SBM, config)
                 canopygapfraction,
                 sbm.precipitation[i],
                 sbm.canopystorage[i],
-                maxevap = potential_evaporation,
+                potential_evaporation,
             )
             pottrans_soil = max(0.0, potential_evaporation - interception) # now in mm
         else
@@ -891,7 +891,7 @@ function update_until_recharge(sbm::SBM, config)
         satwaterdepth = sbm.satwaterdepth[i] - soilevapsat
 
         # transpiration from saturated store
-        wetroots = scurve(sbm.zi[i], a = rootingdepth, c = sbm.rootdistpar[i])
+        wetroots = scurve(sbm.zi[i], rootingdepth, Float(1.0), sbm.rootdistpar[i])
         actevapsat = min(pottrans * wetroots, satwaterdepth)
         satwaterdepth = satwaterdepth - actevapsat
         restpottrans = pottrans - actevapsat

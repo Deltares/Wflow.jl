@@ -15,7 +15,6 @@ function initialize_sbm_model(config::Config)
     clock = Clock(config, reader)
     Δt = clock.Δt
 
-    sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
     reinit = get(config.model, "reinit", true)::Bool
     do_snow = get(config.model, "snow", false)::Bool
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
@@ -49,16 +48,9 @@ function initialize_sbm_model(config::Config)
     y = permutedims(repeat(y_nc, outer = (1, length(x_nc))))[inds]
     cellength = abs(mean(diff(x_nc)))
 
-    xl = fill(mv, n)
-    yl = fill(mv, n)
-    riverfrac = fill(mv, n)
-
-    for i = 1:n
-        xl[i] = sizeinmetres ? cellength : lattometres(y[i])[1] * cellength
-        yl[i] = sizeinmetres ? cellength : lattometres(y[i])[2] * cellength
-        riverfrac[i] =
-            river[i] ? min((riverlength[i] * riverwidth[i]) / (xl[i] * yl[i]), 1.0) : 0.0
-    end
+    sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
+    xl, yl = cell_lengths(y, cellength, sizeinmetres)
+    riverfrac = river_fraction(river, riverlength, riverwidth, xl, yl)
 
     sbm = initialize_sbm(nc, config, riverfrac, inds)
 
@@ -176,6 +168,7 @@ function initialize_sbm_model(config::Config)
         width = sw,
         wb_pit = pits[inds],
         alpha_pow = alpha_pow,
+        alpha_term = fill(mv, n),
         α = fill(mv, n),
         eps = Float(1e-3),
         cel = zeros(Float, n),
@@ -231,6 +224,7 @@ function initialize_sbm_model(config::Config)
         width = riverwidth,
         wb_pit = pits[inds_riv],
         alpha_pow = alpha_pow,
+        alpha_term = fill(mv, nriv),
         α = fill(mv, nriv),
         eps = Float(1e-3),
         cel = zeros(Float, nriv),
@@ -421,8 +415,8 @@ function update_after_subsurfaceflow(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,
 
     # determine lateral inflow for overland flow based on vertical runoff [mm] from vertical
     # sbm concept
-    lateral.land.inwater .=
-        (vertical.runoff .* network.land.xl .* network.land.yl .* 0.001) ./ lateral.land.Δt
+    @. lateral.land.inwater =
+        (vertical.runoff * network.land.xl * network.land.yl * 0.001) / lateral.land.Δt
     lateral.land.qlat .= lateral.land.inwater ./ lateral.land.dl
 
     # run kinematic wave for overland flow
@@ -435,14 +429,18 @@ function update_after_subsurfaceflow(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,
 
     # determine net runoff from vertical sbm concept in river cells, and lateral inflow from
     # overland flow lateral subsurface flow and net runoff to the river cells
-    net_runoff_river =
+    @. lateral.river.inwater = (
+        lateral.subsurface.to_river[inds_riv] / 1.0e9 / lateral.river.Δt +
+        lateral.land.to_river[inds_riv] +
+        # net_runoff_river
         (
-            vertical.net_runoff_river[inds_riv] .* network.land.xl[inds_riv] .*
-            network.land.yl[inds_riv] .* 0.001
-        ) ./ vertical.Δt
-    lateral.river.inwater .= (
-        lateral.subsurface.to_river[inds_riv] ./ 1.0e9 ./ lateral.river.Δt .+
-        lateral.land.to_river[inds_riv] .+ net_runoff_river
+            (
+                vertical.net_runoff_river[inds_riv] *
+                network.land.xl[inds_riv] *
+                network.land.yl[inds_riv] *
+                0.001
+            ) / vertical.Δt
+        )
     )
     lateral.river.qlat .= lateral.river.inwater ./ lateral.river.dl
 

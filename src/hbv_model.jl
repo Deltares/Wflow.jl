@@ -14,7 +14,6 @@ function initialize_hbv_model(config::Config)
     clock = Clock(config, reader)
     Δt = clock.Δt
 
-    sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
     reinit = get(config.model, "reinit", true)::Bool
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
     do_lakes = get(config.model, "lakes", false)::Bool
@@ -264,12 +263,9 @@ function initialize_hbv_model(config::Config)
     y = permutedims(repeat(y_nc, outer = (1, length(x_nc))))[inds]
     cellength = abs(mean(diff(x_nc)))
 
-    xl = fill(mv, n)
-    yl = fill(mv, n)
-    for i = 1:n
-        xl[i] = sizeinmetres ? cellength : lattometres(y[i])[1] * cellength
-        yl[i] = sizeinmetres ? cellength : lattometres(y[i])[2] * cellength
-    end
+
+    sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
+    xl, yl = cell_lengths(y, cellength, sizeinmetres)
 
     threshold = fc .* lp
 
@@ -414,6 +410,7 @@ function initialize_hbv_model(config::Config)
         width = dw,
         wb_pit = pits[inds],
         alpha_pow = alpha_pow,
+        alpha_term = fill(mv, n),
         α = fill(mv, n),
         eps = Float(1e-3),
         cel = zeros(Float, n),
@@ -468,6 +465,7 @@ function initialize_hbv_model(config::Config)
         width = riverwidth,
         wb_pit = pits[inds_riv],
         alpha_pow = alpha_pow,
+        alpha_term = fill(mv, nriv),
         α = fill(mv, nriv),
         eps = Float(1e-3),
         cel = zeros(Float, nriv),

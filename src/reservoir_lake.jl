@@ -163,7 +163,7 @@ function update(res::SimpleReservoir, i, inflow, timestepsecs)
 
     percfull = vol / res.maxvolume[i]
     # first determine minimum (environmental) flow using a simple sigmoid curve to scale for target level
-    fac = scurve(percfull, a = res.targetminfrac[i], c = 30.0)
+    fac = scurve(percfull, res.targetminfrac[i], Float(1.0), Float(30.0))
     demandrelease = min(fac * res.demand[i] * timestepsecs, vol)
     vol = vol - demandrelease
 
