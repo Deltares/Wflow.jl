@@ -61,16 +61,23 @@ function update(
             # calculate celerity
             courant = zeros(n)
             for k = 1:ns
-                @threads for m in subdomain_order[k]
+                for m in subdomain_order[k]
                     for v in topo_subdomain[m]
                         if sf.q[v] > 0.0
                             sf.cel[v] = 1.0 / (sf.α[v] * sf.β * pow(sf.q[v], (sf.β - 1.0)))
                             courant[v] = (sf.Δt / sf.dl[v]) * sf.cel[v]
+                            if isnan(courant[v])
+                                @info "courant input" courant[v] sf.Δt sf.dl[v] sf.cel[v] sf.α[v] sf.β sf.q[v]
+                                error()
+                            end
                         end
                     end
                 end
             end
             filter!(x -> x ≠ 0.0, courant)
+            if any(isnan, courant)
+                @info "nan found" courant n ns
+            end
             its = isempty(courant) ? 1 : ceil(Int, (1.25 * quantile!(courant, 0.95)))
         end
     else

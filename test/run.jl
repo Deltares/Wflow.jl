@@ -1,9 +1,9 @@
 using Wflow
+using Dates
 
 tomlpath = joinpath(@__DIR__, "sbm_simple.toml")
 Wflow.run(tomlpath)
 
-#=
 # test whether restarted runs get the same results as continuus ones, i.e. state is captured
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
@@ -36,4 +36,3 @@ config.state.path_output = joinpath(dirname(tomlpath), "data/state-test/outstate
 config.output.path = joinpath(dirname(tomlpath), "data/state-test/output-moselle-january-2of2.nc")
 model = Wflow.initialize_sbm_model(config)
 Wflow.run(model)
-=#
