@@ -56,6 +56,8 @@ lake_hq_2_path = testdata(v"0.2.1", "lake_hq_2.csv", "lake_hq_2.csv")
 
 include("testing_utils.jl")
 
+@info "testing Wflow with" nthreads() VERSION Float
+
 # disable logging output during testing
 with_logger(NullLogger()) do
     ## run all tests
