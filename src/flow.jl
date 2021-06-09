@@ -53,6 +53,10 @@ function update(
 
     n = length(order)
     ns = length(subdomain_order)
+
+    @. sf.alpha_term = pow(sf.n / sqrt(sf.sl), sf.β)
+    @. sf.α = sf.alpha_term * pow(sf.width + 2.0 * sf.h, sf.alpha_pow)
+
     # two options for iteration, fixed or based on courant number.
     if do_iter
         if sf.its > 0
@@ -66,18 +70,11 @@ function update(
                         if sf.q[v] > 0.0
                             sf.cel[v] = 1.0 / (sf.α[v] * sf.β * pow(sf.q[v], (sf.β - 1.0)))
                             courant[v] = (sf.Δt / sf.dl[v]) * sf.cel[v]
-                            if isnan(courant[v])
-                                @info "courant input" courant[v] sf.Δt sf.dl[v] sf.cel[v] sf.α[v] sf.β sf.q[v]
-                                error()
-                            end
                         end
                     end
                 end
             end
             filter!(x -> x ≠ 0.0, courant)
-            if any(isnan, courant)
-                @info "nan found" courant n ns
-            end
             its = isempty(courant) ? 1 : ceil(Int, (1.25 * quantile!(courant, 0.95)))
         end
     else
@@ -86,9 +83,6 @@ function update(
 
     # sub time step
     adt = sf.Δt / its
-
-    @. sf.alpha_term = pow(sf.n / sqrt(sf.sl), sf.β)
-    @. sf.α = sf.alpha_term * pow(sf.width + 2.0 * sf.h, sf.alpha_pow)
 
     sf.q_av .= 0.0
     sf.h_av .= 0.0
