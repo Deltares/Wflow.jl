@@ -967,7 +967,11 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
             v::Int
             vector = inds[v]
             ind = rev_inds[i]
-            iszero(ind) && error("area $v has inactive cells")
+            if iszero(ind)
+                param = col["parameter"]
+                error("""inactive cell found in requested CSV output
+                    map \"$mapname\" value $v for parameter $param""")
+            end
             push!(vector, ind)
         end
         return A -> (f(A[inds[id]]) for id in ids)
