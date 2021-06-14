@@ -133,12 +133,6 @@ evap = copy(model.vertical.potential_evaporation)
 lai = copy(model.vertical.leaf_area_index)
 res_evap = copy(model.lateral.river.reservoir.evaporation)
 
-benchmark = @benchmark Wflow.update(model)
-trialmin = BenchmarkTools.minimum(benchmark)
-
-println("SBM Model update")
-print_benchmark(trialmin)
-# @profview Wflow.update(model)
 Wflow.close_files(model, delete_output = false)
 
 # test for setting a pit

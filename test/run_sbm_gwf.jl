@@ -65,11 +65,6 @@ end
 
 Wflow.close_files(model)
 
-benchmark = @benchmark Wflow.run(tomlpath)
-trialmin = BenchmarkTools.minimum(benchmark)
-println("SBM GWF Model update (run)")
-print_benchmark(trialmin)
-
 @testset "no drains" begin
     config.model.drains = false
     delete!(Dict(config.output.lateral.subsurface), "drain")
