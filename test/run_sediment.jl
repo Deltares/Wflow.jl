@@ -52,8 +52,3 @@ end
 end
 
 Wflow.close_files(model)
-
-benchmark = @benchmark Wflow.run(tomlpath)
-trialmin = BenchmarkTools.minimum(benchmark)
-println("Sediment Model update (run)")
-print_benchmark(trialmin)

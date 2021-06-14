@@ -1,21 +1,3 @@
-
-"Prints a benchmark results just like btime"
-function print_benchmark(trialmin)
-    trialtime = BenchmarkTools.time(trialmin)
-    trialallocs = BenchmarkTools.allocs(trialmin)
-    println(
-        "  ",
-        BenchmarkTools.prettytime(trialtime),
-        " (",
-        trialallocs,
-        " allocation",
-        trialallocs == 1 ? "" : "s",
-        ": ",
-        BenchmarkTools.prettymemory(BenchmarkTools.memory(trialmin)),
-        ")",
-    )
-end
-
 # Not all special functions have been implemented yet:
 # https://github.com/JuliaMath/SpecialFunctions.jl/issues/19
 # (MIT licensed)

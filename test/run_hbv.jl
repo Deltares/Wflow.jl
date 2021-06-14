@@ -63,10 +63,4 @@ end
     @test q[network.river.order[end]] ≈ 363.5647479049738f0
 end
 
-benchmark = @benchmark Wflow.update(model)
-trialmin = BenchmarkTools.minimum(benchmark)
-
-println("HBV Model update")
-print_benchmark(trialmin)
-
 Wflow.close_files(model, delete_output = false)

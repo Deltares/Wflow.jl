@@ -8,7 +8,6 @@ using Statistics
 using Test
 using UnPack
 using Wflow
-using BenchmarkTools
 using Base.MathConstants: eulergamma
 using Base.Threads
 using BasicModelInterface
