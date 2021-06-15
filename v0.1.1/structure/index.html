@@ -1,5 +1,46 @@
-<!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Model structure · Wflow.jl</title><link rel="canonical" href="https://deltares.github.io/Wflow.jl/structure/"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.png" alt="Wflow.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit">Wflow.jl</span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../quick-start/">Quick start</a></li><li><a class="tocitem" href="../cli/">Command line interface</a></li><li class="is-active"><a class="tocitem" href>Model structure</a><ul class="internal"><li><a class="tocitem" href="#Config-and-TOML"><span>Config and TOML</span></a></li></ul></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../model/sbm/">wflow_sbm</a></li><li><a class="tocitem" href="../model/hbv/">wflow_hbv</a></li><li><a class="tocitem" href="../model/sediment/">wflow_sediment</a></li></ul></li><li><span class="tocitem">Vertical components</span><ul><li><a class="tocitem" href="../vertical/sbm/">SBM</a></li><li><a class="tocitem" href="../vertical/hbv/">HBV</a></li><li><a class="tocitem" href="../vertical/process/">Vertical processes</a></li><li><a class="tocitem" href="../vertical/sediment/">Soil Loss</a></li></ul></li><li><span class="tocitem">Lateral components</span><ul><li><a class="tocitem" href="../lateral/kinwave/">Kinematic wave</a></li><li><a class="tocitem" href="../lateral/gwf/">Groundwater flow</a></li><li><a class="tocitem" href="../lateral/sediment/">Sediment Flux</a></li></ul></li><li><a class="tocitem" href="../bmi/">Basic Model Interface</a></li><li><a class="tocitem" href="../fews/">Run from Delft-FEWS</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Model structure</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Model structure</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/Deltares/Wflow.jl/blob/master/docs/src/structure.md#L" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Model-structure"><a class="docs-heading-anchor" href="#Model-structure">Model structure</a><a id="Model-structure-1"></a><a class="docs-heading-anchor-permalink" href="#Model-structure" title="Permalink"></a></h1><p>Below the composite type that represents all different aspects of a <code>Wflow.Model</code>, such as  the network, parameters, clock, configuration and input and output.</p><pre><code class="language-julia">struct Model{N,L,V,R,W}
+<!DOCTYPE html><HTML lang="en"><head><meta charset="UTF-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Model structure · Wflow.jl</title><link href="https://deltares.github.io/Wflow.jl/structure/" rel="canonical"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script data-main="../assets/documenter.js" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" data-theme-name="documenter-dark" data-theme-primary-dark="" href="../assets/themes/documenter-dark.css" rel="stylesheet" type="text/css"/><link class="docs-theme-link" data-theme-name="documenter-light" data-theme-primary="" href="../assets/themes/documenter-light.css" rel="stylesheet" type="text/css"/><script src="../assets/themeswap.js"></script><script data-outdated-warner="">function maybeAddWarning () {
+    const head = document.getElementsByTagName('head')[0];
+
+    // Add a noindex meta tag (unless one exists) so that search engines don't index this version of the docs.
+    if (document.body.querySelector('meta[name="robots"]') === null) {
+        const meta = document.createElement('meta');
+        meta.name = 'robots';
+        meta.content = 'noindex';
+
+        head.appendChild(meta);
+    };
+
+    // Add a stylesheet to avoid inline styling
+    const style = document.createElement('style');
+    style.type = 'text/css';
+    style.appendChild(document.createTextNode('.outdated-warning-overlay {  position: fixed;  top: 0;  left: 0;  right: 0;  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);  z-index: 999;  background-color: #ffaba7;  color: rgba(0, 0, 0, 0.7);  border-bottom: 3px solid #da0b00;  padding: 10px 35px;  text-align: center;  font-size: 15px; }  .outdated-warning-overlay .outdated-warning-closer {    position: absolute;    top: calc(50% - 10px);    right: 18px;    cursor: pointer;    width: 12px; }  .outdated-warning-overlay a {    color: #2e63b8; }    .outdated-warning-overlay a:hover {      color: #363636; }'));
+    head.appendChild(style);
+
+    const div = document.createElement('div');
+    div.classList.add('outdated-warning-overlay');
+    const closer = document.createElement('div');
+    closer.classList.add('outdated-warning-closer');
+
+    // Icon by font-awesome (license: https://fontawesome.com/license, link: https://fontawesome.com/icons/times?style=solid)
+    closer.innerHTML = '<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="times" class="svg-inline--fa fa-times fa-w-11" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"><path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"></path></svg>';
+    closer.addEventListener('click', function () {
+        document.body.removeChild(div);
+    });
+    let href = '/stable';
+    if (window.documenterBaseURL) {
+        href = window.documenterBaseURL + '/../stable';
+    }
+    div.innerHTML = 'This is an old version of the documentation. <br> <a href="' + href + '">Go to the newest version</a>.';
+    div.appendChild(closer);
+    document.body.appendChild(div);
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', maybeAddWarning);
+} else {
+    maybeAddWarning();
+};
+</script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img alt="Wflow.jl logo" src="../assets/logo.png"/></a><div class="docs-package-name"><span class="docs-autofit">Wflow.jl</span></div><form action="../search/" class="docs-search"><input class="docs-search-query" id="documenter-search-query" name="q" placeholder="Search docs" type="text"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../quick-start/">Quick start</a></li><li><a class="tocitem" href="../cli/">Command line interface</a></li><li class="is-active"><a class="tocitem" href="">Model structure</a><ul class="internal"><li><a class="tocitem" href="#Config-and-TOML"><span>Config and TOML</span></a></li></ul></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../model/sbm/">wflow_sbm</a></li><li><a class="tocitem" href="../model/hbv/">wflow_hbv</a></li><li><a class="tocitem" href="../model/sediment/">wflow_sediment</a></li></ul></li><li><span class="tocitem">Vertical components</span><ul><li><a class="tocitem" href="../vertical/sbm/">SBM</a></li><li><a class="tocitem" href="../vertical/hbv/">HBV</a></li><li><a class="tocitem" href="../vertical/process/">Vertical processes</a></li><li><a class="tocitem" href="../vertical/sediment/">Soil Loss</a></li></ul></li><li><span class="tocitem">Lateral components</span><ul><li><a class="tocitem" href="../lateral/kinwave/">Kinematic wave</a></li><li><a class="tocitem" href="../lateral/gwf/">Groundwater flow</a></li><li><a class="tocitem" href="../lateral/sediment/">Sediment Flux</a></li></ul></li><li><a class="tocitem" href="../bmi/">Basic Model Interface</a></li><li><a class="tocitem" href="../fews/">Run from Delft-FEWS</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href="">Model structure</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href="">Model structure</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/Deltares/Wflow.jl/blob/master/docs/src/structure.md#L" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" href="#" id="documenter-settings-button" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" href="#" id="documenter-sidebar-button"></a></div></header><article class="content" id="documenter-page"><h1 id="Model-structure"><a class="docs-heading-anchor" href="#Model-structure">Model structure</a><a id="Model-structure-1"></a><a class="docs-heading-anchor-permalink" href="#Model-structure" title="Permalink"></a></h1><p>Below the composite type that represents all different aspects of a <code>Wflow.Model</code>, such as  the network, parameters, clock, configuration and input and output.</p><pre><code class="language-julia">struct Model{N,L,V,R,W}
     config::Config  # all configuration options
     network::N      # connectivity information, directed graph
     lateral::L      # lateral model that holds lateral state, moves along network
@@ -7,171 +48,171 @@
     clock::Clock    # to keep track of simulation time
     reader::R       # provides the model with dynamic input
     writer::W       # writes model output
-end</code></pre><p>The <code>lateral</code> field of the <code>struct Model</code> can contain different lateral concepts. For each Wflow model these different lateral concepts are mapped through the use of a <code>NamedTuple</code>. The <code>vertical</code> field of the <code>struct Model</code> always contains one vertical concept, for example the SBM or HBV vertical concept.</p><p>Below an example how lateral concepts are mapped for the SBM model through a <code>NamedTuple</code>:</p><pre><code class="language-julia">(subsurface = ssf, land = olf, river = rf)</code></pre><p>The <code>subsurface</code> part is mapped to the lateral subsurface flow kinematic wave concept, the <code>land</code> part is mapped the overland flow kinematic wave concept and the <code>river</code> part is mapped to the river flow kinematic wave concept. Knowledge of this specific mapping is required to understand and correctly set input, output and state variables in the TOML configuration file, see also <a href="#Config-and-TOML">Config and TOML</a>. This mapping is described in more detail for each model in the section Models. Also the <code>struct</code> of each mapped concept is provided, so one can check the internal variables in the code.</p><h2 id="Config-and-TOML"><a class="docs-heading-anchor" href="#Config-and-TOML">Config and TOML</a><a id="Config-and-TOML-1"></a><a class="docs-heading-anchor-permalink" href="#Config-and-TOML" title="Permalink"></a></h2><p><a href="https://github.com/toml-lang/toml">TOML</a> is used as the configuration format for models available in wflow. File paths included in the configuration TOML file are relative to the TOML file location. </p><h3 id="General-time-info"><a class="docs-heading-anchor" href="#General-time-info">General time info</a><a id="General-time-info-1"></a><a class="docs-heading-anchor-permalink" href="#General-time-info" title="Permalink"></a></h3><p>Time information is optional. When left out, each time step in the forcing NetCDF will be calculated. If you wish to calculate a subset of this time range, or a different timestep, you can specify a <code>starttime</code>, <code>endtime</code> and <code>timestepsecs</code> yourself. The <code>time_units</code> optional information is used by the <code>writer</code> of the model, for model output in netCDF format. The <code>calendar</code> option allows you to calculate in one of the different <a href="http://cfconventions.org/cf-conventions/cf-conventions.html#calendar">CF conventions calendars</a> provided by the <a href="https://juliageo.org/CFTime.jl/latest/">CFTime.jl package</a>, such as <code>&quot;360_day&quot;</code>. This is useful if you want to calculate climate scenarios which are sometimes provided in these alternative calendars.</p><pre><code class="language-toml">calendar = &quot;standard&quot;                           # optional, this is default value
+end</code></pre><p>The <code>lateral</code> field of the <code>struct Model</code> can contain different lateral concepts. For each Wflow model these different lateral concepts are mapped through the use of a <code>NamedTuple</code>. The <code>vertical</code> field of the <code>struct Model</code> always contains one vertical concept, for example the SBM or HBV vertical concept.</p><p>Below an example how lateral concepts are mapped for the SBM model through a <code>NamedTuple</code>:</p><pre><code class="language-julia">(subsurface = ssf, land = olf, river = rf)</code></pre><p>The <code>subsurface</code> part is mapped to the lateral subsurface flow kinematic wave concept, the <code>land</code> part is mapped the overland flow kinematic wave concept and the <code>river</code> part is mapped to the river flow kinematic wave concept. Knowledge of this specific mapping is required to understand and correctly set input, output and state variables in the TOML configuration file, see also <a href="#Config-and-TOML">Config and TOML</a>. This mapping is described in more detail for each model in the section Models. Also the <code>struct</code> of each mapped concept is provided, so one can check the internal variables in the code.</p><h2 id="Config-and-TOML"><a class="docs-heading-anchor" href="#Config-and-TOML">Config and TOML</a><a id="Config-and-TOML-1"></a><a class="docs-heading-anchor-permalink" href="#Config-and-TOML" title="Permalink"></a></h2><p><a href="https://github.com/toml-lang/toml">TOML</a> is used as the configuration format for models available in wflow. File paths included in the configuration TOML file are relative to the TOML file location. </p><h3 id="General-time-info"><a class="docs-heading-anchor" href="#General-time-info">General time info</a><a id="General-time-info-1"></a><a class="docs-heading-anchor-permalink" href="#General-time-info" title="Permalink"></a></h3><p>Time information is optional. When left out, each time step in the forcing NetCDF will be calculated. If you wish to calculate a subset of this time range, or a different timestep, you can specify a <code>starttime</code>, <code>endtime</code> and <code>timestepsecs</code> yourself. The <code>time_units</code> optional information is used by the <code>writer</code> of the model, for model output in netCDF format. The <code>calendar</code> option allows you to calculate in one of the different <a href="http://cfconventions.org/cf-conventions/cf-conventions.html#calendar">CF conventions calendars</a> provided by the <a href="https://juliageo.org/CFTime.jl/latest/">CFTime.jl package</a>, such as <code>"360_day"</code>. This is useful if you want to calculate climate scenarios which are sometimes provided in these alternative calendars.</p><pre><code class="language-toml">calendar = "standard"                           # optional, this is default value
 endtime = 2000-02-01T00:00:00                   # optional, default from forcing NetCDF
 starttime = 2000-01-01T00:00:00                 # optional, default from forcing NetCDF
-time_units = &quot;days since 1900-01-01 00:00:00&quot;   # optional, this is default value
+time_units = "days since 1900-01-01 00:00:00"   # optional, this is default value
 timestepsecs = 86400                            # optional, default from forcing NetCDF</code></pre><h3 id="Model-section"><a class="docs-heading-anchor" href="#Model-section">Model section</a><a id="Model-section-1"></a><a class="docs-heading-anchor-permalink" href="#Model-section" title="Permalink"></a></h3><p>Model specific settings can be included in the model section of the TOML file.</p><pre><code class="language-toml">[model]
-type = &quot;sbm&quot;                        # one of (&quot;sbm&quot;, &quot;sbm_gwf, &quot;hbv&quot;)
+type = "sbm"                        # one of ("sbm", "sbm_gwf, "hbv")
 masswasting = true                  # include lateral snow transport in the model, default is false
 snow = true                         # include snow modelling, default is false
 reinit = true                       # cold (reinit = true) or warm state (reinit = false), default is true
 reservoirs = true                   # include reservoir modelling, default is false
 kin_wave_iteration = true           # enable kinematic wave iterations in the model, default is false
 thicknesslayers = [100, 300, 800]   # specific SBM setting: for each soil layer a thickness [mm] is specified</code></pre><h3 id="State-section"><a class="docs-heading-anchor" href="#State-section">State section</a><a id="State-section-1"></a><a class="docs-heading-anchor-permalink" href="#State-section" title="Permalink"></a></h3><p>The <code>state</code> section in the TOML file provides information about the location of the state file if the model is initialized with a warm state (<code>path_input</code>) and to what file the states are written at the end of the model run (<code>path_output</code>). A mapping between external state names and internal model states is required. This information is specified for each model component, the <code>vertical</code> model and <code>lateral</code> model components. In the example below the <code>vertical</code> component represents the SBM concept, and for the <code>lateral</code> components there is a <code>river</code> (including <code>reservoir</code>), <code>land</code> and <code>subsurface</code> domain. The internal model states are listed on the left side, and the external state names are listed on the right side. Note that <code>path_input</code> is only required when <code>reinit</code> is set to false. <code>path_output</code> is optional, an output state file is only written when it is defined. If neither is set, the entire <code>state</code> section can be left out.</p><pre><code class="language-toml">[state]
-path_input = &quot;data/instates-moselle.nc&quot; 
-path_output = &quot;data/outstates-moselle.nc&quot;
+path_input = "data/instates-moselle.nc" 
+path_output = "data/outstates-moselle.nc"
 
 [state.vertical]
-satwaterdepth = &quot;satwaterdepth&quot;
-snow = &quot;snow&quot;
-tsoil = &quot;tsoil&quot;
-ustorelayerdepth = &quot;ustorelayerdepth&quot;
-snowwater = &quot;snowwater&quot;
-canopystorage = &quot;canopystorage&quot;
+satwaterdepth = "satwaterdepth"
+snow = "snow"
+tsoil = "tsoil"
+ustorelayerdepth = "ustorelayerdepth"
+snowwater = "snowwater"
+canopystorage = "canopystorage"
 
 [state.lateral.river]
-q = &quot;q_river&quot;
-h = &quot;h_river&quot;
-h_av = &quot;h_av_river&quot;
+q = "q_river"
+h = "h_river"
+h_av = "h_av_river"
 
 [state.lateral.river.reservoir]
-volume = &quot;volume_reservoir&quot;
+volume = "volume_reservoir"
 
 [state.lateral.subsurface]
-ssf = &quot;ssf&quot;
+ssf = "ssf"
 
 [state.lateral.land]
-q = &quot;q_land&quot;
-h = &quot;h_land&quot;
-h_av = &quot;h_av_land&quot;</code></pre><h3 id="Input-section"><a class="docs-heading-anchor" href="#Input-section">Input section</a><a id="Input-section-1"></a><a class="docs-heading-anchor-permalink" href="#Input-section" title="Permalink"></a></h3><p>The <code>input</code> section of the TOML file contains information about the input forcing and model parameters files (netCDF format). Forcing is applied to the vertical component of the model, and needs to be mapped to the external netCDF variable name. <code>forcing</code> lists the internal model forcing parameters, and these are mapped to the external netCDF variables listed under the section <code>[input.vertical]</code>. It is possible to provide cyclic parameters to the model. In the example below this is done for the internal <code>vertical.leaf_area_index</code> model parameter, that is linked to the external netCDF variable &quot;LAI&quot; variable. </p><p>As for the states, mapping of external model parameters (provided in the example below by the file staticmaps-moselle.nc) is done per model component. If a model parameter is not mapped a default value will be used if available.</p><pre><code class="language-toml">[input]
-path_forcing = &quot;data/forcing-moselle.nc&quot;
-path_static = &quot;data/staticmaps-moselle.nc&quot;
+q = "q_land"
+h = "h_land"
+h_av = "h_av_land"</code></pre><h3 id="Input-section"><a class="docs-heading-anchor" href="#Input-section">Input section</a><a id="Input-section-1"></a><a class="docs-heading-anchor-permalink" href="#Input-section" title="Permalink"></a></h3><p>The <code>input</code> section of the TOML file contains information about the input forcing and model parameters files (netCDF format). Forcing is applied to the vertical component of the model, and needs to be mapped to the external netCDF variable name. <code>forcing</code> lists the internal model forcing parameters, and these are mapped to the external netCDF variables listed under the section <code>[input.vertical]</code>. It is possible to provide cyclic parameters to the model. In the example below this is done for the internal <code>vertical.leaf_area_index</code> model parameter, that is linked to the external netCDF variable "LAI" variable. </p><p>As for the states, mapping of external model parameters (provided in the example below by the file staticmaps-moselle.nc) is done per model component. If a model parameter is not mapped a default value will be used if available.</p><pre><code class="language-toml">[input]
+path_forcing = "data/forcing-moselle.nc"
+path_static = "data/staticmaps-moselle.nc"
 
 # these are not directly part of the model
-gauges = &quot;wflow_gauges&quot;
-ldd = &quot;wflow_ldd&quot;
-river_location = &quot;wflow_river&quot;
-subcatchment = &quot;wflow_subcatch&quot;
+gauges = "wflow_gauges"
+ldd = "wflow_ldd"
+river_location = "wflow_river"
+subcatchment = "wflow_subcatch"
 
 # specify the internal IDs of the parameters which vary over time
 # the external name mapping needs to be below together with the other mappings
 forcing = [
-&quot;vertical.precipitation&quot;,
-&quot;vertical.temperature&quot;,
-&quot;vertical.potential_evaporation&quot;,
+"vertical.precipitation",
+"vertical.temperature",
+"vertical.potential_evaporation",
 ]
 
-cyclic = [&quot;vertical.leaf_area_index&quot;]
+cyclic = ["vertical.leaf_area_index"]
 
 [input.vertical]
-altitude = &quot;wflow_dem&quot; 
-c = &quot;c&quot; 
-cf_soil = &quot;cf_soil&quot; 
-cfmax = &quot;Cfmax&quot; 
-e_r = &quot;EoverR&quot; 
-infiltcappath = &quot;InfiltCapPath&quot; 
-infiltcapsoil = &quot;InfiltCapSoil&quot; 
-kext = &quot;Kext&quot; 
-&quot;kv₀&quot; = &quot;KsatVer&quot; 
-leaf_area_index = &quot;LAI&quot;
-m = &quot;M&quot; 
-maxleakage = &quot;MaxLeakage&quot; 
-pathfrac = &quot;PathFrac&quot; 
-potential_evaporation = &quot;PET&quot; # forcing
-precipitation = &quot;P&quot; # forcing
-rootdistpar = &quot;rootdistpar&quot; 
-rootingdepth = &quot;RootingDepth&quot; 
-soilminthickness = &quot;SoilMinThickness&quot; 
-soilthickness = &quot;SoilThickness&quot; 
-specific_leaf = &quot;Sl&quot; 
-storage_wood = &quot;Swood&quot; 
-temperature = &quot;TEMP&quot; # forcing
-tt = &quot;TT&quot; 
-tti = &quot;TTI&quot; 
-ttm = &quot;TTM&quot; 
-w_soil = &quot;wflow_soil&quot; 
-water_holding_capacity = &quot;WHC&quot; 
-waterfrac = &quot;WaterFrac&quot; 
-&quot;θᵣ&quot; = &quot;thetaR&quot; 
-&quot;θₛ&quot; = &quot;thetaS&quot;
+altitude = "wflow_dem" 
+c = "c" 
+cf_soil = "cf_soil" 
+cfmax = "Cfmax" 
+e_r = "EoverR" 
+infiltcappath = "InfiltCapPath" 
+infiltcapsoil = "InfiltCapSoil" 
+kext = "Kext" 
+"kv₀" = "KsatVer" 
+leaf_area_index = "LAI"
+m = "M" 
+maxleakage = "MaxLeakage" 
+pathfrac = "PathFrac" 
+potential_evaporation = "PET" # forcing
+precipitation = "P" # forcing
+rootdistpar = "rootdistpar" 
+rootingdepth = "RootingDepth" 
+soilminthickness = "SoilMinThickness" 
+soilthickness = "SoilThickness" 
+specific_leaf = "Sl" 
+storage_wood = "Swood" 
+temperature = "TEMP" # forcing
+tt = "TT" 
+tti = "TTI" 
+ttm = "TTM" 
+w_soil = "wflow_soil" 
+water_holding_capacity = "WHC" 
+waterfrac = "WaterFrac" 
+"θᵣ" = "thetaR" 
+"θₛ" = "thetaS"
 
 [input.lateral.river]
-length = &quot;wflow_riverlength&quot;
-n = &quot;N_River&quot;
-slope = &quot;RiverSlope&quot;
-width = &quot;wflow_riverwidth&quot;
+length = "wflow_riverlength"
+n = "N_River"
+slope = "RiverSlope"
+width = "wflow_riverwidth"
 
 [input.lateral.river.reservoir]
-area = &quot;ResSimpleArea&quot;
-areas = &quot;wflow_reservoirareas&quot;
-demand = &quot;ResDemand&quot;
-locs = &quot;wflow_reservoirlocs&quot;
-maxrelease = &quot;ResMaxRelease&quot;
-maxvolume = &quot;ResMaxVolume&quot;
-targetfullfrac = &quot;ResTargetFullFrac&quot;
-targetminfrac = &quot;ResTargetMinFrac&quot;
+area = "ResSimpleArea"
+areas = "wflow_reservoirareas"
+demand = "ResDemand"
+locs = "wflow_reservoirlocs"
+maxrelease = "ResMaxRelease"
+maxvolume = "ResMaxVolume"
+targetfullfrac = "ResTargetFullFrac"
+targetminfrac = "ResTargetMinFrac"
 
 [input.lateral.subsurface]
-ksathorfrac = &quot;KsatHorFrac&quot;
+ksathorfrac = "KsatHorFrac"
 
 [input.lateral.land]
-n = &quot;N&quot;
-slope = &quot;Slope&quot;</code></pre><h3 id="Output-netCDF-section"><a class="docs-heading-anchor" href="#Output-netCDF-section">Output netCDF section</a><a id="Output-netCDF-section-1"></a><a class="docs-heading-anchor-permalink" href="#Output-netCDF-section" title="Permalink"></a></h3><p>This optional section of the TOML file contains the output netCDF file for writing gridded model output, including a mapping between internal model parameter components and external netCDF variables.</p><pre><code class="language-toml">[output]
-path = &quot;data/output_moselle.nc&quot;
+n = "N"
+slope = "Slope"</code></pre><h3 id="Output-netCDF-section"><a class="docs-heading-anchor" href="#Output-netCDF-section">Output netCDF section</a><a id="Output-netCDF-section-1"></a><a class="docs-heading-anchor-permalink" href="#Output-netCDF-section" title="Permalink"></a></h3><p>This optional section of the TOML file contains the output netCDF file for writing gridded model output, including a mapping between internal model parameter components and external netCDF variables.</p><pre><code class="language-toml">[output]
+path = "data/output_moselle.nc"
 
 [output.vertical]
-satwaterdepth = &quot;satwaterdepth&quot;
-snow = &quot;snow&quot;
-tsoil = &quot;tsoil&quot;
-ustorelayerdepth = &quot;ustorelayerdepth&quot;
-snowwater = &quot;snowwater&quot;
-canopystorage = &quot;canopystorage&quot;
+satwaterdepth = "satwaterdepth"
+snow = "snow"
+tsoil = "tsoil"
+ustorelayerdepth = "ustorelayerdepth"
+snowwater = "snowwater"
+canopystorage = "canopystorage"
 
 [output.lateral.river]
-q = &quot;q_river&quot;
-h = &quot;h_river&quot;
+q = "q_river"
+h = "h_river"
 
 [output.lateral.river.reservoir]
-volume = &quot;volume_reservoir&quot;
+volume = "volume_reservoir"
 
 [output.lateral.subsurface]
-ssf = &quot;ssf&quot;
+ssf = "ssf"
 
 [output.lateral.land]
-q = &quot;q_land&quot;
-h = &quot;h_land&quot;</code></pre><h3 id="Output-CSV-section"><a class="docs-heading-anchor" href="#Output-CSV-section">Output CSV section</a><a id="Output-CSV-section-1"></a><a class="docs-heading-anchor-permalink" href="#Output-CSV-section" title="Permalink"></a></h3><p>Model output can also be written to CSV output. Below is an example that writes model output to the file &quot;output_moselle.csv&quot;. For each CSV column a <code>header</code> and <code>parameter</code> (internal model parameter) is required. A <code>reducer</code> can be specified to apply to the model output, with the following available reducers:</p><ul><li>maximum</li><li>minimum</li><li>mean</li><li>median</li><li>first</li><li>last</li><li>only</li></ul><p>with <code>only</code> as the default. To extract data for a specific location (grid cell), the <code>index</code> of the vector, the coordinates <code>coordinate.x</code> and <code>coordinate.y</code>, or the x and y indices of the 2D array (<code>index.x</code> and <code>index.y</code>) can be provided. Finally a <code>map</code> can be provided to extract data for certain locations (e.g. <code>gauges</code>) or areas (e.g. <code>subcatchment</code>). In this case a single entry can lead to multiple columns in the CSV file, which will be of the form <code>header_id</code>, e.g. <code>Q_20</code>, for a gauge with integer ID 20.</p><p>The double brackets in <code>[[csv.column]]</code> is TOML syntax to indicate that it is part of a list. You may specify as many entries as you wish.</p><pre><code class="language-toml">[csv]
-path = &quot;data/output_moselle.csv&quot;
+q = "q_land"
+h = "h_land"</code></pre><h3 id="Output-CSV-section"><a class="docs-heading-anchor" href="#Output-CSV-section">Output CSV section</a><a id="Output-CSV-section-1"></a><a class="docs-heading-anchor-permalink" href="#Output-CSV-section" title="Permalink"></a></h3><p>Model output can also be written to CSV output. Below is an example that writes model output to the file "output_moselle.csv". For each CSV column a <code>header</code> and <code>parameter</code> (internal model parameter) is required. A <code>reducer</code> can be specified to apply to the model output, with the following available reducers:</p><ul><li>maximum</li><li>minimum</li><li>mean</li><li>median</li><li>first</li><li>last</li><li>only</li></ul><p>with <code>only</code> as the default. To extract data for a specific location (grid cell), the <code>index</code> of the vector, the coordinates <code>coordinate.x</code> and <code>coordinate.y</code>, or the x and y indices of the 2D array (<code>index.x</code> and <code>index.y</code>) can be provided. Finally a <code>map</code> can be provided to extract data for certain locations (e.g. <code>gauges</code>) or areas (e.g. <code>subcatchment</code>). In this case a single entry can lead to multiple columns in the CSV file, which will be of the form <code>header_id</code>, e.g. <code>Q_20</code>, for a gauge with integer ID 20.</p><p>The double brackets in <code>[[csv.column]]</code> is TOML syntax to indicate that it is part of a list. You may specify as many entries as you wish.</p><pre><code class="language-toml">[csv]
+path = "data/output_moselle.csv"
 
 [[csv.column]]
-header = &quot;Q&quot;
-parameter = &quot;lateral.river.q&quot;
-reducer = &quot;maximum&quot;
+header = "Q"
+parameter = "lateral.river.q"
+reducer = "maximum"
 
 [[csv.column]]
-header = &quot;volume&quot;
+header = "volume"
 index = 1
-parameter = &quot;lateral.river.reservoir.volume&quot;
+parameter = "lateral.river.reservoir.volume"
 
 [[csv.column]]
 coordinate.x = 6.255
 coordinate.y = 50.012
-header = &quot;temp_bycoord&quot;
-parameter = &quot;vertical.temperature&quot;
+header = "temp_bycoord"
+parameter = "vertical.temperature"
 
 [[csv.column]]
-header = &quot;temp_byindex&quot;
+header = "temp_byindex"
 index.x = 100
 index.y = 50
-parameter = &quot;vertical.temperature&quot;
+parameter = "vertical.temperature"
 
 [[csv.column]]
-header = &quot;Q&quot;
-map = &quot;gauges&quot;
-parameter = &quot;lateral.river.q&quot;
+header = "Q"
+map = "gauges"
+parameter = "lateral.river.q"
 
 [[csv.column]]
-header = &quot;recharge&quot;
-map = &quot;subcatchment&quot;
-parameter = &quot;vertical.recharge&quot;
-reducer = &quot;mean&quot;</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../cli/">« Command line interface</a><a class="docs-footer-nextpage" href="../model/sbm/">wflow_sbm »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Wednesday 20 January 2021 21:45">Wednesday 20 January 2021</span>. Using Julia version 1.5.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+header = "recharge"
+map = "subcatchment"
+parameter = "vertical.recharge"
+reducer = "mean"</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../cli/">« Command line interface</a><a class="docs-footer-nextpage" href="../model/sbm/">wflow_sbm »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label></p><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div><p></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Wednesday 20 January 2021 21:45">Wednesday 20 January 2021</span>. Using Julia version 1.5.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></HTML>
