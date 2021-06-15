@@ -23,3 +23,7 @@ Wflow can also be linked to the Flood forecasting system
 Delft-FEWS](@ref)
 
 See the side bar on the left to navigate to other sections of the documentation.
+
+The source code for Wflow is available under the [MIT
+license](https://github.com/Deltares/Wflow.jl/blob/master/LICENSE) at
+[github.com/Deltares/Wflow.jl](https://github.com/Deltares/Wflow.jl).

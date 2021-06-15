@@ -5,6 +5,7 @@
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://deltares.github.io/Wflow.jl/dev)
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://deltares.github.io/Wflow.jl/stable)
 [![DOI](https://zenodo.org/badge/246787232.svg)](https://zenodo.org/badge/latestdoi/246787232)
+[![ColPrac: Contributor's Guide on Collaborative Practices for Community Packages](https://img.shields.io/badge/ColPrac-Contributor's%20Guide-blueviolet)](https://github.com/SciML/ColPrac)
 
 Wflow is a [Julia](https://julialang.org/) package that provides a hydrological modeling
 framework, as well as several different vertical and lateral concepts that can be used to
@@ -26,7 +27,9 @@ A more detailed description, including a development install, is available
 ## Contributions and reporting issues
 We welcome reporting of issues [here](https://github.com/Deltares/Wflow.jl/issues). Please
 provide a minimum working example so we are able to reproduce the issue. Furthermore, we
-welcome contributions through PRs.  
+welcome contributions. We follow the [ColPrac guide for collaborative
+practices](https://github.com/SciML/ColPrac). New contributors should make sure to read that
+guide.
 
 ## Citing
 For citing our work see the Zenodo badge above, that points to the latest release.
