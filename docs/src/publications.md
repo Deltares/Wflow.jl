@@ -1,4 +1,4 @@
-# Papers and theses using Wflow
+# Papers, theses and reports using Wflow
 
 ## Papers
 
@@ -145,3 +145,9 @@ MSc thesis, Wageningen University.
 
 Verbrugge, M., 2019. Reservoir Operation Optimization, a case study in the Chao Phraya
 Basin, BSc thesis, Hydrology and Quantitative Water Management Group, Wageningen University.
+
+## Reports
+
+World Bank. 2021. Plastic Waste Discharges from Rivers and Coastlines in Indonesia. Marine
+Plastics Series;. World Bank, Washington, DC. © World Bank.
+<https://openknowledge.worldbank.org/handle/10986/35607> License: CC BY 3.0 IGO
