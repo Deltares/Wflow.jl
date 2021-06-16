@@ -8,6 +8,18 @@ Looking beyond general metrics for model comparison – lessons from an internat
 intercomparison study. Hydrol. Earth Syst. Sci. 21, 423–440.
 <https://doi:10.5194/hess-21-423-2017>.
 
+Bouaziz, L.J.E., Fenicia, F., Thirel, G., de Boer-Euser, T., Buitink, J., Brauer, C.C., De
+Niel, J., Dewals, B.J., Drogue, G., Grelier, B., Melsen, L. A., Moustakas, S., Nossent, J.,
+Pereira, F., Sprokkereef, E., Stam, J., Weerts, A.H., Willems, P., Savenije, H.H.G.,
+Hrachowitz, M., 2021. Behind the scenes of streamflow model performance. Hydrol. Earth Syst.
+Sci., 25, 1069–1095. <https://doi.org/10.5194/hess-25-1069-2021>.
+
+Bouaziz, L.J.E., Aalbers, E.E., Weerts, A.H., Hegnauer, M., Buiteveld, H., Lammersen,
+R., Stam, J., Sprokkereef, E., Savenije, H.H.G., Hrachowitz, M., 2021. The importance of
+ecosystem adaptation on hydrological model predictions in response to climate change,
+Hydrol. Earth Syst. Sci. Discuss. [preprint], <https://doi.org/10.5194/hess-2021-204>, in
+review.
+
 Casson, D. R., Werner, M., Weerts, A., and Solomatine, D., 2018. Global re-analysis datasets
 to improve hydrological assessment and snow water equivalent estimation in a sub-Arctic
 watershed. Hydrol. Earth Syst. Sci., 22, 4685–4697.
@@ -81,6 +93,11 @@ Tangdamrongsub, N., Steele-Dunne, S.C., Gunter, B.C., Ditmar, P.G., Weerts, A.H.
 assimilation of GRACE terrestrial water storage estimates into a regional hydrological model
 of the Rhine River basin. Hydrol. Earth Syst. Sci. 19, 2079–2100.
 <https://doi:10.5194/hess-19-2079-2015>.
+
+van der Vat, M., Boderie, P., Bons, K.A., Hegnauer, M., Hendriksen, G., van Oorschot, M.,
+Ottow, B., Roelofsen, F., Sankhua, R.N., Sinha, S.K., Warren, A., Young, W., 2019.
+Participatory Modelling of Surface and Groundwater to Support Strategic Planning in the
+Ganga Basin in India. Water, 11, 2443. <https://doi.org/10.3390/w11122443>. 
 
 Wannasin, C., Brauer, C. C., Uijlenhoet, R., van Verseveld, W. J., Weerts, A. H., 2021.
 Daily flow simulation in Thailand Part I: Testing a distributed hydrological model with
