@@ -3,6 +3,7 @@ using Documenter
 
 pages = [
     "Home" => "index.md",
+    "Publications" => "publications.md",
     "Quick start" => "quick-start.md",
     "Command line interface" => "cli.md",
     "Model structure and config" =>
