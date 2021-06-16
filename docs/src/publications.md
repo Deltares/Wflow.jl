@@ -8,6 +8,10 @@ Looking beyond general metrics for model comparison – lessons from an internat
 intercomparison study. Hydrol. Earth Syst. Sci. 21, 423–440.
 <https://doi:10.5194/hess-21-423-2017>.
 
+Bouaziz, L. J. E., Fenicia, F., Thirel, G., de Boer-Euser, T., Buitink, J., Brauer, C. C., De Niel, J., Dewals, B. J., Drogue, G., Grelier, B., Melsen, L. A., Moustakas, S., Nossent, J., Pereira, F., Sprokkereef, E., Stam, J., Weerts, A. H., Willems, P., Savenije, H. H. G., and Hrachowitz, M.: Behind the scenes of streamflow model performance, Hydrol. Earth Syst. Sci., 25, 1069–1095, https://doi.org/10.5194/hess-25-1069-2021, 2021.
+
+Bouaziz, L. J. E., Aalbers, E. E., Weerts, A. H., Hegnauer, M., Buiteveld, H., Lammersen, R., Stam, J., Sprokkereef, E., Savenije, H. H. G., and Hrachowitz, M.: The importance of ecosystem adaptation on hydrological model predictions in response to climate change, Hydrol. Earth Syst. Sci. Discuss. [preprint], https://doi.org/10.5194/hess-2021-204, in review, 2021.
+
 Casson, D. R., Werner, M., Weerts, A., and Solomatine, D., 2018. Global re-analysis datasets
 to improve hydrological assessment and snow water equivalent estimation in a sub-Arctic
 watershed. Hydrol. Earth Syst. Sci., 22, 4685–4697.
