@@ -97,8 +97,8 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
         end
 
         # set zi and exfiltwater from external source (e.g. a groundwater model)
-        BMI.set_value(model, "lateral.subsurface.zi", fill(250.0, 50070))
-        BMI.set_value(model, "lateral.subsurface.exfiltwater", fill(0.01, 50070))
+        BMI.set_value(model, "lateral.subsurface.zi", fill(0.25, 50070))
+        BMI.set_value(model, "lateral.subsurface.exfiltwater", fill(1.0e-5, 50070))
         # update SBM after subsurface flow
         model = BMI.update(model, run = "sbm_after_subsurfaceflow")
 
@@ -110,8 +110,8 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test sbm.snow[1] ≈ 3.4530311597151853f0
             @test sbm.recharge[5] ≈ 0.0f0
             @test sbm.zi[5] ≈ 250.0f0
-            @test sub.zi[5] ≈ 250.0f0
-            @test sub.exfiltwater[1] ≈ 0.01f0
+            @test sub.zi[5] ≈ 0.25f0
+            @test sub.exfiltwater[1] ≈ 1.0f-5
             @test sub.ssf[1] ≈ 0.0f0
         end
 
