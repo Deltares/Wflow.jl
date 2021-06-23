@@ -68,3 +68,18 @@ varnames = setdiff(keys(endstate_restart), keys(endstate_restart.dim))
         @test maxdiff < 1e-9
     end
 end
+
+# the fews_run restart should match the other restart exactly
+endstate_fewsrun_path = joinpath(dirname(tomlpath), "data/state-test/outstates-moselle-january-2of2-fews_run.nc")
+endstate_restart_path = joinpath(dirname(tomlpath), "data/state-test/outstates-moselle-january-2of2.nc")
+endstate_fewsrun = NCDataset(endstate_fewsrun_path)
+endstate_restart = NCDataset(endstate_restart_path)
+
+varnames = setdiff(keys(endstate_restart), keys(endstate_restart.dim))
+@testset "fews_run" begin
+    for varname in varnames
+        a = endstate_fewsrun[varname][:]
+        b = endstate_restart[varname][:]
+        @test all(skipmissing(a) .== skipmissing(b))
+    end
+end
