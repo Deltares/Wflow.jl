@@ -124,8 +124,7 @@ function initialize_sbm_model(config::Config)
             dw = dw,
             exfiltwater = fill(mv, n),
             recharge = fill(mv, n),
-            ssf = ((kh₀ .* βₗ) ./ f) .*
-                  (exp.(-f .* zi) - exp.(-f .* soilthickness)) .* dw,
+            ssf = ((kh₀ .* βₗ) ./ f) .* (exp.(-f .* zi) - exp.(-f .* soilthickness)) .* dw,
             ssfin = fill(mv, n),
             ssfmax = ((kh₀ .* βₗ) ./ f) .* (1.0 .- exp.(-f .* soilthickness)),
             to_river = zeros(n),
