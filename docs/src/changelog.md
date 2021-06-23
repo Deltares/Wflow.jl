@@ -8,15 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 
 ### Changed
-- Changed units for lateral subsurface flow component from [mm] to [m].
+- Changed length units for lateral subsurface flow component from millimeter to meter. This
+  means that state netCDF files from previous versions can only be reused if `ssf` is
+  divided by 10^9.
 - Add snow and glacier processes to wflow\_sbm figure of the documentation.
-- Small refactoring of Sediment Model code.
-- Improve error message for CSV Reducer.
 
 ### Added
 - Multi-threading of vertical SBM concept and lateral kinematic wave components (overland,
   river and subsurface flow) of wflow\_sbm model [SBM + Kinematic wave](@ref).
-- ColPrac link to documentation.
+- Improved error message for CSV Reducer.
 
 ### Fixed
 - Calculation of volumetric water content of vertical SBM (soil layers and root zone).
