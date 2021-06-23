@@ -36,7 +36,7 @@ Wflow.run(model)
 # second half of January, warm start
 config.starttime = DateTime("2000-01-16T00:00:00")
 config.endtime = DateTime("2000-02-01T00:00:00")
-config.model.reinit = false  # cold start
+config.model.reinit = false  # warm start
 config.fews_run = false
 config.state.path_input =
     joinpath(dirname(tomlpath), "data/state-test/outstates-moselle-january-1of2.nc")
@@ -51,7 +51,7 @@ Wflow.run(model)
 # to match endtime of part 1
 config.starttime = DateTime("2000-01-15T00:00:00")
 config.endtime = DateTime("2000-02-01T00:00:00")
-config.model.reinit = false  # cold start
+config.model.reinit = false  # warm start
 config.fews_run = true
 config.state.path_input =
     joinpath(dirname(tomlpath), "data/state-test/outstates-moselle-january-1of2.nc")
