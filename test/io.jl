@@ -176,7 +176,7 @@ end
     @test Wflow.param(model, "vertical.snowwater")[9115] ≈ 0.42188167572021484
     @test Wflow.param(model, "vertical.canopystorage")[50069] ≈ 0.0
     @test Wflow.param(model, "vertical.zi")[50069] ≈ 380.67793082060416
-    @test Wflow.param(model, "lateral.subsurface.ssf")[10606] ≈ 1.1614302208e11
+    @test Wflow.param(model, "lateral.subsurface.ssf")[10606] ≈ 1.1614302208e02
     @test Wflow.param(model, "lateral.river.q")[149] ≈ 111.46229553222656
     @test Wflow.param(model, "lateral.river.h")[149] ≈ 8.555977821350098
     @test Wflow.param(model, "lateral.river.volume")[149] ≈ 249163.33754433296

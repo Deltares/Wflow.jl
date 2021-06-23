@@ -104,27 +104,29 @@ function initialize_sbm_model(config::Config)
             type = Float,
         )
 
-        kh₀ = khfrac .* sbm.kv₀
+        # unit for lateral subsurface flow component is [m]
+        kh₀ = khfrac .* sbm.kv₀ .* 0.001
+        f = sbm.f .* 1000.0
+        zi = sbm.zi .* 0.001
+        soilthickness = sbm.soilthickness .* 0.001
 
         ssf = LateralSSF{Float}(
             kh₀ = kh₀,
-            f = sbm.f,
-            zi = sbm.zi,
-            soilthickness = sbm.soilthickness,
+            f = f,
+            zi = zi,
+            soilthickness = soilthickness,
             θₛ = sbm.θₛ,
             θᵣ = sbm.θᵣ,
             Δt = tosecond(Δt),
             t = 1.0,
             βₗ = βₗ,
-            dl = dl .* 1000.0,
-            dw = dw .* 1000.0,
+            dl = dl,
+            dw = dw,
             exfiltwater = fill(mv, n),
             recharge = fill(mv, n),
-            ssf = ((kh₀ .* βₗ) ./ sbm.f) .*
-                  (exp.(-sbm.f .* sbm.zi) - exp.(-sbm.f .* sbm.soilthickness)) .* dw .*
-                  1000.0,
+            ssf = ((kh₀ .* βₗ) ./ f) .* (exp.(-f .* zi) - exp.(-f .* soilthickness)) .* dw,
             ssfin = fill(mv, n),
-            ssfmax = ((kh₀ .* βₗ) ./ sbm.f) .* (1.0 .- exp.(-sbm.f .* sbm.soilthickness)),
+            ssfmax = ((kh₀ .* βₗ) ./ f) .* (1.0 .- exp.(-f .* soilthickness)),
             to_river = zeros(n),
             wb_pit = pits[inds],
         )
@@ -344,9 +346,9 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
     @unpack lateral, vertical, network, clock, config = model
     model = update_until_recharge(model)
     # exchange of recharge between vertical sbm concept and subsurface flow domain
-    lateral.subsurface.recharge .= vertical.recharge
+    lateral.subsurface.recharge .= vertical.recharge ./ 1000.0
     lateral.subsurface.recharge .*= lateral.subsurface.dw
-    lateral.subsurface.zi .= vertical.zi
+    lateral.subsurface.zi .= vertical.zi ./ 1000.0
     # update lateral subsurface flow domain (kinematic wave)
     update(lateral.subsurface, network.land, network.frac_toriver)
     model = update_after_subsurfaceflow(model)
@@ -409,8 +411,8 @@ function update_after_subsurfaceflow(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,
     # update vertical sbm concept (runoff, ustorelayerdepth and satwaterdepth)
     update_after_subsurfaceflow(
         vertical,
-        lateral.subsurface.zi,
-        lateral.subsurface.exfiltwater,
+        lateral.subsurface.zi .* 1000.0,
+        lateral.subsurface.exfiltwater .* 1000.0,
     )
 
     # determine lateral inflow for overland flow based on vertical runoff [mm] from vertical
@@ -430,7 +432,7 @@ function update_after_subsurfaceflow(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,
     # determine net runoff from vertical sbm concept in river cells, and lateral inflow from
     # overland flow lateral subsurface flow and net runoff to the river cells
     @. lateral.river.inwater = (
-        lateral.subsurface.to_river[inds_riv] / 1.0e9 / lateral.river.Δt +
+        lateral.subsurface.to_river[inds_riv] / lateral.river.Δt +
         lateral.land.to_river[inds_riv] +
         # net_runoff_river
         (
@@ -449,7 +451,7 @@ function update_after_subsurfaceflow(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,
     # overland flow is required
     if !isnothing(lateral.river.reservoir) || !isnothing(lateral.river.lake)
         inflow_wb =
-            lateral.subsurface.ssf[inds_riv] ./ 1.0e9 ./ lateral.river.Δt .+
+            lateral.subsurface.ssf[inds_riv] ./ lateral.river.Δt .+
             lateral.land.q_av[inds_riv]
         update(
             lateral.river,

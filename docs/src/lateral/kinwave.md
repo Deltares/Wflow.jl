@@ -36,22 +36,22 @@ kw_land_tstep = 3600
 ## Subsurface flow routing
 In the SBM model the kinematic wave approach is used to route subsurface flow laterally. The
 saturated store ``S`` can be drained laterally by saturated downslope subsurface flow per
-unit width of slope ``w`` [mm] according to:
+unit width of slope ``w`` [m] according to:
 ```math
     q=\frac{K_{0}\mathit{tan(\beta)}}{f}(e^{(-fz_{i})}-e^{(-fz_{t})})
 ```
-where ``\beta`` is element slope angle [deg.], ``q`` is subsurface flow [mm``^{2}``/t],
-``K_{0}`` is the saturated hydraulic conductivity at the soil surface [mm/t], ``z_{i}`` is
-the water table depth [mm],``z_{t}`` is total soil depth [mm], and ``f`` is a scaling
-parameter [mm``^{-1}``], that controls the decrease of vertical saturated conductivity with 
+where ``\beta`` is element slope angle [deg.], ``q`` is subsurface flow [m``^{2}``/t],
+``K_{0}`` is the saturated hydraulic conductivity at the soil surface [m/t], ``z_{i}`` is
+the water table depth [m], ``z_{t}`` is total soil depth [m], and ``f`` is a scaling
+parameter [m``^{-1}``], that controls the decrease of vertical saturated conductivity with 
 depth.
 
 Combining with the following continuity equation:
 ```math
     (\theta_s-\theta_r)\frac{\partial h}{\partial t} = -w\frac{\partial q}{\partial x} + wr
 ```
-where ``h`` is the water table height [mm], ``x`` is the distance downslope [mm], and ``r``
-is the netto input rate [mm/t] to the saturated store. Substituting for ``h (\frac{\partial
+where ``h`` is the water table height [m], ``x`` is the distance downslope [m], and ``r``
+is the netto input rate [m/t] to the saturated store. Substituting for ``h (\frac{\partial
 q}{\partial h})``, gives:
 ```math 
   w \frac{\partial q}{\partial t} = -cw\frac{\partial q}{\partial x} + cwr

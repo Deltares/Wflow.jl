@@ -96,10 +96,10 @@ end
 
 @testset "subsurface flow" begin
     ssf = model.lateral.subsurface.ssf
-    @test sum(ssf) ≈ 6.368140761295825f16
-    @test ssf[network.land.order[1]] ≈ 5.324295565183691f11
-    @test ssf[network.land.order[end-100]] ≈ 7.855716879739626f11
-    @test ssf[network.land.order[end]] ≈ 2.161246841709492f11
+    @test sum(ssf) ≈ 6.368140761295825f7
+    @test ssf[network.land.order[1]] ≈ 5.324295565183691f2
+    @test ssf[network.land.order[end-100]] ≈ 7.855716879739626f2
+    @test ssf[network.land.order[end]] ≈ 2.161246841709492f2
 end
 
 @testset "overland flow" begin

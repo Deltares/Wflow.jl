@@ -71,7 +71,7 @@ end
 "Kinematic wave for lateral subsurface flow for a single cell and timestep"
 function kinematic_wave_ssf(ssfin, ssfₜ₋₁, ziₜ₋₁, r, kh₀, β, θₑ, f, d, Δt, Δx, dw, ssfmax)
 
-    ϵ = 1.0e-3
+    ϵ = 1.0e-12
     max_iters = 3000
 
     if ssfin + ssfₜ₋₁ ≈ 0.0 && r <= 0.0
