@@ -14,8 +14,8 @@ Pereira, F., Sprokkereef, E., Stam, J., Weerts, A.H., Willems, P., Savenije, H.H
 Hrachowitz, M., 2021. Behind the scenes of streamflow model performance. Hydrol. Earth Syst.
 Sci., 25, 1069–1095. <https://doi.org/10.5194/hess-25-1069-2021>.
 
-Bouaziz, L.J.E., Aalbers, E.E., Weerts, A.H., Hegnauer, M., Buiteveld, H., Lammersen,
-R., Stam, J., Sprokkereef, E., Savenije, H.H.G., Hrachowitz, M., 2021. The importance of
+Bouaziz, L.J.E., Aalbers, E.E., Weerts, A.H., Hegnauer, M., Buiteveld, H., Lammersen, R.,
+Stam, J., Sprokkereef, E., Savenije, H.H.G., Hrachowitz, M., 2021. The importance of
 ecosystem adaptation on hydrological model predictions in response to climate change,
 Hydrol. Earth Syst. Sci. Discuss. [preprint], <https://doi.org/10.5194/hess-2021-204>, in
 review.
@@ -28,7 +28,7 @@ watershed. Hydrol. Earth Syst. Sci., 22, 4685–4697.
 Emerton, R.E., Stephens, E.M., Pappenberger, F., Pagano, T.C., Weerts, A.H., Wood, A.W.,
 Salamon, P., Brown, J.D., Hjerdt, N., Donnelly, C., Baugh, C.A., Cloke, H.L., 2016.
 Continental and global scale flood forecasting systems. WIREs Water 3, 391–418.
-doi:10.1002/wat2.1137.
+<https://doi.org/10.1002/wat2.1137>.
 
 Gebremicael, T.G., Mohamed, Y.A., Van der Zaag, P., 2019. Attributing the hydrological
 impact of different land use types and their long-term dynamics through combining
@@ -60,12 +60,13 @@ Resources Research,56,e2019WR026807. <https://doi.org/10.1029/2019WR026807>.
 
 Imhoff, R.O., van Verseveld, W., van Osnabrugge, B., Weerts, A.H., 2020. Ruimtelijk
 schaalbare hydrologische modelparameters uit open-source omgevingsdata: een voorbeeld voor
-de Rijn. Stromingen: vakblad voor hydrologen, 26(3), 19-36.
+de Rijn. Stromingen: vakblad voor hydrologen, 26(3), 19-36 <https://edepot.wur.nl/540682>.
 
 Jeuken, A., Bouaziz, L., Corzo, G., Alfonso, L., 2016. Analyzing Needs for Climate Change
 Adaptation in the Magdalena River Basin in Colombia, in: Filho, W.L., Musa, H., Cavan, G.,
 O’Hare, P., Seixas, J. (Eds.), Climate Change Adaptation, Resilience and Hazards, Climate
-Change Management. Springer International Publishing, pp. 329–344.
+Change Management. Springer International Publishing, pp. 329–344
+<https://doi.org/10.1007/978-3-319-39880-8>.
 
 López López, P., Wanders, N., Schellekens, J., Renzullo, L.J., Sutanudjaja, E.H., Bierkens,
 M.F.P., 2016. Improved large-scale hydrological modelling through the assimilation of
@@ -117,7 +118,7 @@ Ecological Indicators 66, 428–439. <https://doi:10.1016/j.ecolind.2016.02.016>
 ## Theses
 
 Arnal, L., 2014. An intercomparison of flood forecasting models for the Meuse River basin,
-MSc. Thesis, Vrije Universiteit, Amsterdam.
+MSc. Thesis, Vrije Universiteit, Amsterdam. <https://hal.inrae.fr/hal-02600749>.
 
 Alkemade, G., 2019. Routing and calibration of distributed hydrological models, MSc. Thesis,
 Vrije Universiteit Amsterdam, Faculty of Science, Hydrology.
@@ -127,10 +128,11 @@ Vrije Universiteit, Amsterdam.
 
 López López, P., 2018. Application of Global Hydrological Datasets for River Basin Modelling
 Utrecht University, Utrecht, the Netherlands, pp. 1-214, Doctoral dissertation.
+<http://dspace.library.uu.nl/handle/1874/364148>.
 
 Maat, W.H., 2015. Simulating discharges and forecasting floods using a conceptual
 rainfall-runoff model for the Bolivian Mamoré basin, MSc. Thesis, University of Twente,
-Enschede.
+Enschede. <https://essay.utwente.nl/67046/>.
 
 van Osnabrugge, B., 2020. Interpolate, simulate, assimilate: operational aspects of
 improving hydrological forecasts in the Rhine basin. Wageningen University.
