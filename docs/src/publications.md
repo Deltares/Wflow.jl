@@ -1,4 +1,4 @@
-# Papers, theses and reports using Wflow
+# Publications using Wflow
 
 ## Papers
 
