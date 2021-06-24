@@ -1,4 +1,4 @@
-# Publications using Wflow
+# Publications using Wflow [![DOI](https://zenodo.org/badge/246787232.svg)](https://zenodo.org/badge/latestdoi/246787232)
 
 ## Papers
 
