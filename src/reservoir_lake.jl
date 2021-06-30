@@ -399,9 +399,9 @@ function statevars end
 
 function interpolate_linear(x, xp, fp)
     if x <= minimum(xp)
-        return minimum(xp)
+        return minimum(fp)
     elseif x >= maximum(xp)
-        return maximum(xp)
+        return maximum(fp)
     else
         idx = findall(i -> i <= x, xp)
         i1 = last(idx)
