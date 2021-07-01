@@ -20,10 +20,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Calculation of volumetric water content of vertical SBM (soil layers and root zone).
-- Update of `satwaterdepth` in SBM (evaporation was only substracted from a local
-  variable, and not from `sbm.satwaterdepth`).
-- Linkedlocs index is fixed.
-- Interpolation function for csv tables lakes is fixed.
+- Update of `satwaterdepth` in SBM (evaporation was only substracted from a local variable,
+  and not from `sbm.satwaterdepth`).
+- Fixed the index `lowerlake_ind` of `NaturalLake`. Linked lakes were not simulated
+  correctly (flows between upstream and downsteam lake).
+- Interpolation function `interpolate_linear(x, xp, fp)` for CSV tables lakes. When `x` was
+  larger or smaller than `xp`, maximum(`xp`) or minimum(`xp`) was returned instead of
+  maximum(`fp`) or minimum(`fp`).
 
 ## v0.3.1 - 2021-05-19
 
