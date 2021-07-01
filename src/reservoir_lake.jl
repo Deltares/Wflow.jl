@@ -316,12 +316,11 @@ function initialize_natural_lake(config, path, nc, inds_riv, nriv, pits)
 
     sh = Vector{Union{SH,Missing}}(missing, n_lakes)
     hq = Vector{Union{HQ,Missing}}(missing, n_lakes)
+    lowerlake_ind = fill(0, n_lakes)
     for i = 1:n_lakes
         lakeloc = lakelocs[i]
         if linked_lakelocs[i] > 0
-            linked_lakelocs[i] = i
-        else
-            linked_lakelocs[i] = 0
+            lowerlake_ind[i] = only(findall(x -> x == linked_lakelocs[i], lakelocs))
         end
 
         if lake_storfunc[i] == 2
@@ -342,7 +341,7 @@ function initialize_natural_lake(config, path, nc, inds_riv, nriv, pits)
     end
     n = length(lakearea)
     lakes = NaturalLake{Float}(
-        lowerlake_ind = linked_lakelocs,
+        lowerlake_ind = lowerlake_ind,
         area = lakearea,
         threshold = lake_threshold,
         storfunc = lake_storfunc,
@@ -399,9 +398,9 @@ function statevars end
 
 function interpolate_linear(x, xp, fp)
     if x <= minimum(xp)
-        return minimum(xp)
+        return minimum(fp)
     elseif x >= maximum(xp)
-        return maximum(xp)
+        return maximum(fp)
     else
         idx = findall(i -> i <= x, xp)
         i1 = last(idx)
