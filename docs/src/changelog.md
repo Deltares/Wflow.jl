@@ -22,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Calculation of volumetric water content of vertical SBM (soil layers and root zone).
 - Update of `satwaterdepth` in SBM (evaporation was only substracted from a local
   variable, and not from `sbm.satwaterdepth`).
+- Linkedlocs index is fixes.
+- Interpolation function for csv tables lakes is fixed.
 
 ## v0.3.1 - 2021-05-19
 
