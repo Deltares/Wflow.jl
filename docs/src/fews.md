@@ -15,7 +15,7 @@ To indicate that a Wflow model runs from Delft-FEWS, the following setting needs
 specified in the main section of the TOML configuration file:
 
 ```toml
-fews_run = true                         # optional, default value is false
+fews_run = true  # optional, default value is false
 ```
 
 This ensures that Wflow offsets the time handling, to meet the expectations of Delft-FEWS.

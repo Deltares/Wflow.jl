@@ -167,7 +167,7 @@ For even more control, you can initialize the model object yourself, and modify 
 or run a custom simulation loop. See the [`Wflow.run`](@ref) source for some
 inspiration.
 
-## Multi-Threading
+## [Multi-Threading](@id quickstart_multi_threading)
 
 Wflow supports multi-threading execution of the wflow\_sbm model [SBM + Kinematic
 wave](@ref) that uses the kinematic wave approach for river, overland and lateral subsurface
