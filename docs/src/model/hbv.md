@@ -28,7 +28,9 @@ concept](@ref).
 The routing for river and overland flow is described in the section [Kinematic wave](@ref).
 
 Below the mapping for wflow\_hbv (type `hbv`) to the vertical HBV concept (instance of
-`struct HBV`) and the different lateral concepts.
+`struct HBV`) and the different lateral concepts. For an explanation about the type
+parameters between curly braces after the `struct` name see [Vertical and lateral
+models](@ref).
 
 ```julia
 vertical => struct HBV{T}

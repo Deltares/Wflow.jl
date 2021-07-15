@@ -33,7 +33,9 @@ Overview of the different processes and fluxes in the wflow_sbm model:
 ![wflow_sbm model](../images/wflow_sbm_soil.png)
 
 Below the mapping for this wflow\_sbm model (type `sbm`) to the vertical SBM concept
-(instance of `struct SBM`) and the different lateral concepts.
+(instance of `struct SBM`) and the different lateral concepts is presented. For an
+explanation about the type parameters between curly braces after the `struct` name see
+[Vertical and lateral models](@ref).
 
 ```julia
 vertical => struct SBM{T,N,M}
@@ -51,7 +53,9 @@ four directions (adjacent cells) is used. This is described in more detail in th
 [Groundwater flow](@ref).
 
 Below the mapping for this wflow\_sbm model (type `sbm_gwf`) to the vertical SBM concept
-(instance of `struct SBM`) and the different lateral concepts.
+(instance of `struct SBM`) and the different lateral concepts. For an explanation about the
+type parameters between curly braces after the `struct` name see [Vertical and lateral
+models](@ref).
 
 ```julia
 vertical => struct SBM{T,N,M}
