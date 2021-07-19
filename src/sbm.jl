@@ -112,8 +112,8 @@
     actinfiltsoil::Vector{T}
     # Actual infiltration compacted fraction [mm]
     actinfiltpath::Vector{T}
-    # Infiltration capacity of the non-compacted areas [mm Δt⁻¹]
-    infiltsoilpath::Vector{T} | "mm Δt-1"
+    # Actual infiltration (compacted and the non-compacted areas) [mm]
+    infiltsoilpath::Vector{T}
     # Infiltration excess water [mm]
     infiltexcess::Vector{T}
     # Water that cannot infiltrate due to saturated soil (saturation excess) [mm]
