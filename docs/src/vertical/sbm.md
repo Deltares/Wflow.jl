@@ -31,10 +31,9 @@ glacier = true
 ## Soil
 ### Infiltration
 If the surface is (partly) saturated the throughfall and stemflow that falls onto the
-saturated area is added to the river runoff component (based on fraction rivers,
-`riverfrac`) and to the overland runoff component (based on open water fraction
-(`waterfrac`) minus `riverfrac`). Infiltration of the remaining water is determined as
-follows:
+saturated area is added to the river runoff component (based on fraction rivers, `riverfrac`
+[-]) and to the overland runoff component (based on open water fraction (`waterfrac` [-]
+minus `riverfrac` [-]). Infiltration of the remaining water is determined as follows:
 
 The soil infiltration capacity can be adjusted in case the soil is frozen, this is optional
 and can be set in the TOML file as follows:
@@ -46,37 +45,38 @@ soilinfreduction = true
 The remaining storage capacity of the unsaturated store is determined.  The infiltrating
 water is split in two parts, the part that falls on compacted areas and the part that falls
 on non-compacted areas. The maximum amount of water that can infiltrate in these areas is
-calculated by taking the minimum of the maximum infiltration rate (`infiltcapsoil` for
-non-compacted areas and `infiltcappath` for compacted areas) and the water on these areas.
-The water that can actual infiltrate is calculated by taking the minimum of the total
+calculated by taking the minimum of the maximum infiltration rate (`infiltcapsoil` [mm
+t``^{-1}``] for non-compacted areas and `infiltcappath` [mm t``^{-1}``] for compacted areas)
+and the amount of water available for infiltration `avail_forinfilt` [mm]. The water that
+can actual infiltrate `infiltsoilpath` [mm] is calculated by taking the minimum of the total
 maximum infiltration rate (compacted and non-compacted areas) and the remaining storage
 capacity.
 
 Infiltration excess occurs when the infiltration capacity is smaller then the throughfall
-and stemflow rate. This amount of water (`infiltexcess`) becomes overland flow (infiltration
-excess overland flow). Saturation excess occurs when the (upper) soil becomes saturated and
-water cannot infiltrate anymore. This amount of water (`excesswater` and `exfiltwater`)
+and stemflow rate. This amount of water (`infiltexcess` [mm]) becomes overland flow
+(infiltration excess overland flow). Saturation excess occurs when the (upper) soil becomes
+saturated and water cannot infiltrate anymore. This amount of water `excesswater` [mm]
 becomes overland flow (saturation excess overland flow).
 
 ### The SBM soil water accounting scheme
 A detailed description of the Topog\_SBM model has been given by Vertessy (1999). Briefly:
-the soil is considered as a bucket with a certain depth (``z_{t}``), divided into a
-saturated store (``S``) and an unsaturated store (``U``), the magnitudes of which are
-expressed in units of depth. The top of the ``S`` store forms a pseudo-water table at depth
-``z_{i}`` such that the value of ``S`` at any time is given by:
+the soil is considered as a bucket with a certain depth (``z_{t}`` [mm]), divided into a
+saturated store (``S`` [mm]) and an unsaturated store (``U`` [mm]). The top of the ``S``
+store forms a pseudo-water table at depth ``z_{i}`` [mm] such that the value of ``S`` at any
+time is given by:
 ```math 
     S=(z_{t}-z_{i})(\theta_{s}-\theta_{r})
 ```
-where ``\theta_{s}`` and ``\theta_{r}`` are the saturated and residual soil water contents,
-respectively. 
+where ``\theta_{s}`` [mm mm``^{-1}``] and ``\theta_{r}`` [mm mm``^{-1}``] are the saturated
+and residual soil water contents, respectively. 
 
-The unsaturated store (``U``) is subdivided into storage (``U_{s}``) and deficit (``U_{d}``)
-which are again expressed in units of depth:
+The unsaturated store ``U`` is subdivided into storage (``U_{s}`` [mm]) and deficit
+(``U_{d}`` [mm]):
 ```math
     U_{d}=(\theta_{s}-\theta_{r})z_{i}-U\\
     U_{s}=U-U_{d}
 ```
-The saturation deficit (``S_{d}``) for the soil profile as a whole is defined as: 
+The saturation deficit (``S_{d}`` [mm]) for the soil profile as a whole is defined as: 
 
 ```math
     S_{d}=(\theta_{s}-\theta_{r})z_{t}-S
@@ -85,20 +85,20 @@ The saturation deficit (``S_{d}``) for the soil profile as a whole is defined as
 All infiltrating water that enters the ``U`` store first. The unsaturated layer can be
 split-up in different layers, by providing the thickness [mm] of the layers in the TOML
 file. The following example specifies three layers (from top to bottom) of 100, 300 and 800
-mm: 
+mm:
 
 ```toml
 [model]
 thicknesslayers = [100, 300, 800]
 ```
-The code checks for each grid cell the specified layers against the `soilthickness`, and
-adds or removes (partly) layer(s) based on the `soilthickness`.
+The code checks for each grid cell the specified layers against the `soilthickness` [mm],
+and adds or removes (partly) layer(s) based on the `soilthickness`.
 
-Assuming a unit head gradient, the transfer of water (``st``) from a ``U`` store layer is
-controlled by the saturated hydraulic conductivity ``K_{sat}`` at depth ``z`` (bottom layer)
-or ``z_{i}``, the effective saturation degree of the layer, and a Brooks-Corey power
-coefficient (parameter ``c``) based on the pore size distribution index ``\lambda`` (Brooks
-and Corey (1964)):
+Assuming a unit head gradient, the transfer of water (``st`` [mm t``^{-1}``]) from a ``U``
+[mm] store layer is controlled by the saturated hydraulic conductivity ``K_{sat}`` [mm
+t``^{-1}``] at depth ``z`` \[mm\] (bottom layer) or ``z_{i}`` [mm], the effective saturation
+degree of the layer, and a Brooks-Corey power coefficient (parameter ``c``) based on the
+pore size distribution index ``\lambda`` (Brooks and Corey (1964)):
 
 ```math
     st=K_{\mathit{sat}}\left(\frac{\theta-\theta_{r}}{\theta_{s}-\theta_{r}}\right)^{c}\\~\\
@@ -111,31 +111,58 @@ original Topog\_SBM vertical transfer formulation, by specifying in the TOML fil
 [model]
 transfermethod = true
 ```
-The transfer of water from the ``U`` store to the ``S`` store (``st``) is in that case
-controlled by the saturated hydraulic conductivity ``K_{sat}`` at depth ``z_{i}`` and the
-ratio between ``U`` and ``S_{d}``: 
+The transfer of water from the ``U`` [mm] store to the ``S`` [mm] store (``st`` [mm
+t``^{-1}``]) is in that case controlled by the saturated hydraulic conductivity ``K_{sat}``
+[mm t``^{-1}``] at depth ``z_{i}`` [mm] and the ratio between ``U`` [mm] and ``S_{d}``
+[mm]: 
 
 ```math
     st=K_{\mathit{sat}}\frac{U_{s}}{S_{d}}
 ```
-Saturated conductivity (``K_{sat}``) declines with soil depth (``z``) in the model according
-to: 
+Saturated conductivity (``K_{sat}`` [mm t``^{-1}``]) declines with soil depth (``z`` [mm])
+in the model according to: 
 
 ```math
     K_{sat}=K_{0}e^{(-fz)}
 ```
-where ``K_{0}`` is the saturated conductivity at the soil surface and ``f`` is a scaling
-parameter [mm``^{-1}``].
+where ``K_{0}`` [mm t``^{-1}``] is the saturated conductivity at the soil surface and ``f``
+is a scaling parameter [mm``^{-1}``].
+
+```@setup plot-ksat
+    using Plots
+    using Printf
+    using LaTeXStrings
+
+    z = [0.:5.0:1000.;]
+    ksat = 100.0
+    f = 0.6./[50.0:150.0:800.0;]
+    plot(ksat .* exp.(-f[1] .* z), -z, 
+    xlabel = L"K_{sat} \ \textrm{[mm/day]}", 
+    ylabel = "-z [mm]", label = string("f = ",@sprintf("%.3E",f[1])), 
+    foreground_color_legend = nothing, legend=:bottomright, lw = 2)
+    for i = 2:5
+        plot!(ksat .* exp.(-f[i] .* z), -z, label = string("f = ",@sprintf("%.3E",f[i])), 
+        foreground_color_legend = nothing, legend=:bottomright, lw = 2)
+    end
+    savefig("ksat-zi.svg")
+```
+
+The plot below shows the relation between soil depth ``z`` and saturated hydraulic
+conductivity ``K_{sat}`` for different values of ``f``.
+
+![](ksat-zi.svg)
 
 ## Transpiration and soil evaporation
 The potential evaporation left over after interception and open water evaporation (rivers
 and water bodies) is split in potential soil evaporation and potential transpiration based
 on the canopy gap fraction (assumed to be identical to the amount of bare soil).
 
-For the case of one single soil layer, soil evaporation is scaled according to:
+For the case of one single soil layer (the SBM soil column is not split-up into different
+layers), soil evaporation [mm] is scaled according to:
 
+```julia
     soilevapunsat = potsoilevap * min(1.0, saturationdeficit / sbm.soilwatercapacity[i])
- 
+```
 
 As such, evaporation will be potential if the soil is fully wetted and it decreases linear
 with increasing soil moisture deficit.
@@ -152,43 +179,86 @@ layer. Also for multiple soil layers, the evaporation (both unsaturated and satu
 decreases linearly with decreasing water availability.
 
 The original Topog\_SBM model does not include transpiration or a notion of capillary rise.
-In SBM transpiration is first taken from the ``S`` store if the roots reach the water table
-``z_{i}``. If the ``S`` store cannot satisfy the demand the ``U`` store is used next. First
-the number of wet roots is determined (going from 1 to 0) using a sigmoid function as
-follows:
+In SBM transpiration is first taken from the ``S`` [mm] store if the roots reach the water
+table ``z_{i}`` [mm]. If the ``S`` [mm] store cannot satisfy the demand the ``U`` [mm] store
+is used next. First the fraction of wet roots (`wetroots` [-]) is determined (going from 1
+to 0) using a sigmoid function as follows:
 
 ```math
-    wetroots = 1.0/(1.0 + e^{-rootdistpar (zi - rootindepth)})
+    wetroots = 1.0/(1.0 + e^{-rootdistpar (zi - rootingdepth)})
 ```
 
-Here the sharpness parameter `rootdistpar` (by default a large negative value, -500.0)
-determines if there is a stepwise output or a more gradual output (default is stepwise).
-`zi` [mm] is the level of the water table in the grid cell below the surface, `rootindepth`
-[mm] is the maximum depth of the roots below the surface. For all values of `zi` smaller
-that `rootindepth` a value of 1 is returned if they are equal a value of 0.5 is returned if
-`zi` is larger than the `rootindepth` a value of 0 is returned. The returned `wetroots`
-fraction is multiplied by the potential evaporation (and limited by the available water in
-saturated zone) to get the transpiration from the saturated part of the soil:
+```@setup plot-wetroots
+    using Plots
+    c = [-500,-1,-0.5,-0.3]
+    z = [250.:300.;]
+    a = 275.0
+    plot(z, 1.0 ./ (1.0 .+ exp.(-c[1] .* (z .-a))), 
+    title = "Wet roots fraction for a rooting depth of 275 mm", xlabel="zi [mm]", 
+    ylabel="fraction of wet roots [-]", label = string("rootdistpar = ", c[1]), 
+    foreground_color_legend = nothing, lw = 2)
+    for i = 2:4
+        plot!(z, 1.0 ./ (1.0 .+ exp.(-c[i] .* (z .-a))), 
+        label = string("rootdistpar = ", c[i]), 
+        foreground_color_legend = nothing, lw = 2)
+    end
+    savefig("s-curve-wetroots.svg")
+```
 
-        # transpiration from saturated store
-        wetroots = scurve(sbm.zi[i], rootingdepth, 1.0, sbm.rootdistpar[i])
-        actevapsat = min(pottrans * wetroots, satwaterdepth)
-        satwaterdepth = satwaterdepth - actevapsat
-        restpottrans = pottrans - actevapsat
+Below a plot showing the fraction of wet roots for different values of `rootdistpar` [-] for
+a rooting depth of 275 mm.
+
+![](s-curve-wetroots.svg)
+
+Here the sharpness parameter `rootdistpar` \[-\] (by default a large negative value, -500.0)
+determines if there is a stepwise output or a more gradual output (default is stepwise).
+`zi` [mm] is the level of the water table in the grid cell below the surface, `rootingdepth`
+[mm] is the maximum depth of the roots below the surface. For all values of `zi` smaller
+that `rootingdepth` [mm] a value of 1 is returned if they are equal a value of 0.5 is
+returned if `zi` is larger than the `rootingdepth` a value of 0 is returned. The returned
+`wetroots` [-] fraction is multiplied by the potential evaporation (and limited by the
+available water in saturated zone) to get the transpiration from the saturated part of the
+soil:
+
+```julia
+    # transpiration from saturated store
+    wetroots = scurve(sbm.zi[i], rootingdepth, 1.0, sbm.rootdistpar[i])
+    actevapsat = min(pottrans * wetroots, satwaterdepth)
+    satwaterdepth = satwaterdepth - actevapsat
+    restpottrans = pottrans - actevapsat
+```
 
 Next the remaining potential evaporation is used to extract water from the unsaturated
-store. The fraction of roots (`availcap`) that cover the unsaturated zone for each soil
-layer is used to calculate the potential root water extraction rate (`maxextr`):
-
-    maxextr = availcap * ustorelayerdepth
-
-When `whole_ust_available` is set to true in the TOML file as follows, the complete
-unsaturated storage is available for transpiration:
+store. The fraction of roots (`availcap` [-]) that cover the unsaturated zone for each soil
+layer is used to calculate the potential root water extraction rate (`maxextr` [mm]). When
+`whole_ust_available` is set to true in the TOML file as follows, almost the complete
+unsaturated storage (99%) is available for transpiration, independent of the `rootingdepth`:
 
 ```toml
 [model]
 whole_ust_available = true
 ```
+
+Below the code snippet from the `Wflow.acttransp_unsat_sbm` function that calculates the
+potential root water extraction rate `maxextr` [mm]:
+
+```julia
+    if ust # whole_ust_available = true
+        availcap = ustorelayerdepth * 0.99
+    else
+        if usl > 0.0
+            availcap = min(1.0, max(0.0, (rootingdepth - sumlayer) / usl))
+        else
+            availcap = 0.0
+        end
+    end
+    maxextr = availcap * ustorelayerdepth 
+```
+
+where `ustorelayerdepth` [mm] is the amount of water in the unsaturated layer, `sumlayer`
+[mm] is the upper boundary (depth) of the unsaturated zone layer, and `usl` [mm] is the
+thickness of the unsaturated zone layer and `availcap` and `maxextr` as previously defined.
+
 
 Next, the Feddes root water uptake reduction model (Feddes et al., 1978) is used to
 calculate a reduction coefficient as a function of soil water pressure. Soil water pressure
@@ -197,11 +267,38 @@ is calculated following Brooks and Corey (1964):
 ```math
     \frac{(\theta-\theta_r)}{(\theta_s-\theta_r)} =  \Bigg\lbrace{\left(\frac{h_b}{h}\right)^{\lambda}, h > h_b \atop 1 , h \leq h_b}
 ```
-where ``h`` is the pressure head (cm), ``h_b`` is the air entry pressure head, and
+where ``h`` is the pressure head [cm], ``h_b`` is the air entry pressure head [cm], and
 ``\theta``, ``\theta_s``, ``\theta_r`` and ``\lambda`` as previously defined.
 
 Feddes (1978) described a transpiration reduction-curve for the reduction coefficient
-``\alpha``, as a function of ``h``.
+``\alpha``, as a function of ``h``. The plot below shows the reduction curve as implemented
+for the SBM concept, with fixed values for `h2`, `h3` and `h4`, while `h1` has a default
+value of -10 cm and can be provided as part of the static input. Root water uptake is zero
+when the soil water pressure head is below the wilting point `h4`, and reduced in the dry
+range between `h4` and the critical head value `h3`. Optimal conditions for root water
+uptake exist when the soil water pressure head is above the critical head value `h3`. Note
+that in the original transpiration reduction-curve of Feddes (1978) root water uptake above
+`h1` is set to zero (oxygen deficit) and between `h1` and `h2` root water uptake is limited.
+The assumption that very wet conditions do not affect root water uptake too much is probably
+generally applicable to natural vegetation, however for crops this assumption is not valid.
+This could be improved in the Wflow code by applying the reduction to crops only.
+
+```@setup plot-feddes
+    using Plots
+    using LaTeXStrings
+    h = [10.0, 100.0, 400.0, 15849.0]
+    hlabel = ["h1\n-10 cm", "h2\n-100 cm", "h3\n-400 cm", "h4\n-15849 cm"]
+    alpha = [1.0, 1.0, 1.0, 0.0]
+    
+    plot(-log10.(h), alpha, xticks = (-log10.(h),hlabel), ylabel = L"\alpha \ \textrm{[-]}",
+    xlabel = "soil water pressure head [-pF]" , 
+    ylims=(0,1.02), lw = 2, color = :black, legend = false)
+
+    savefig("feddes-reduction.svg")
+```
+
+![](feddes-reduction.svg)
+
 
 Below, the function used in SBM, that calculates actual transpiration from the unsaturated
 zone layer(s).
@@ -210,22 +307,68 @@ zone layer(s).
 Wflow.acttransp_unsat_sbm(rootingdepth, ustorelayerdepth, sumlayer, restpotevap, sum_actevapustore, c, usl, θₛ, θᵣ, hb, ust::Bool = false)
 ```
 
-Capillary rise is determined using the following approach: first ``K_{sat}`` is determined
-at the water table ``z_{i}``; next a potential capillary rise is determined from the minimum
-of the ``K_{sat}``, the actual transpiration taken from the ``U`` store, the available water
-in the ``S`` store and the deficit of the ``U`` store. Finally the potential rise is scaled
-using the distance between the roots and the water table using:
+The actual capillary rise `actcapflux` [mm] is determined using the following approach:
+first the saturated hydraulic conductivty `ksat` [mm t``^{-1}``] is determined at the water
+table ``z_{i}``; next a potential capillary rise `maxcapflux` [mm] is determined from the
+minimum of `ksat`, actual transpiration `actevapustore` [mm] taken from the ``U`` store,
+available water in the ``S`` store (`satwaterdepth` [mm]) and the deficit of the ``U`` store
+(`ustorecapacity` [mm]):
 
-```math
-CSF=CS/(CS+z_{i}-RT)
+```julia
+    maxcapflux = max(0.0, min(ksat, actevapustore, ustorecapacity, satwaterdepth))
 ```
-in which ``CSF`` is the scaling factor to multiply the potential rise with, ``CS`` is a
-model parameter (default = 100) and ``RT`` the rooting depth. If the roots reach the water
-table (``RT > z_{i}``) ``CS`` is set to zero thus setting the capillary rise to zero.
+
+Then the potential rise `maxcapflux` is scaled using the distance between the roots and the
+water table as follows:
+
+```julia
+    if sbm.zi[i] > rootingdepth
+        capfluxscale =
+            sbm.capscale[i] / (sbm.capscale[i] + sbm.zi[i] - rootingdepth) *
+            (sbm.Δt / tosecond(basetimestep))
+    else
+        capfluxscale = 0.0
+    end
+    capflux = maxcapflux * capfluxscale
+```
+
+where `capfluxscale` [-] is the scaling factor to multiply the potential rise `maxcapflux`
+with, `sbm.capscale` [mm] is a model parameter (default = 100) and `rootingdepth` [mm] the
+rooting depth. If the roots reach the water table (`rootingdepth` ``\ge`` `sbm.zi`),
+`capfluxscale` is set to zero and thus setting the capillary rise `capflux` to zero.
+
+Finally, the capillary rise `capflux` is limited by the unsaturated store deficit (one or
+multiple layers), calculated as follows:
+
+```julia
+    usl[k] * (sbm.θₛ[i] - sbm.θᵣ[i]) - usld[k]
+```
+
+where `usl` [mm] is the unsaturated layer thickness, `usld` is the `ustorelayerdepth` \[mm\]
+(amount of water in the unsaturated layer), and ``\theta_{s}`` and ``\theta_{r}`` as
+previously defined.
+
+The calculation of the actual capillary rise `actcapflux` is as follows:
+
+```julia
+    actcapflux = 0.0
+    netcapflux = capflux
+    for k = n_usl:-1:1
+        toadd =
+            min(netcapflux, max(usl[k] * (sbm.θₛ[i] - sbm.θᵣ[i]) - usld[k], 0.0))
+        usld = setindex(usld, usld[k] + toadd, k)
+        netcapflux = netcapflux - toadd
+        actcapflux = actcapflux + toadd
+    end
+```
+
+In case of multiple unsaturated layers (`n_usl` ``>`` 1), the calculation of the actual
+capillary rise starts at the lowest unsaturated layer while keeping track of the remaining
+capillary rise `netcapflux` [mm].
 
 ## Leakage
-If the `maxleakage` parameter is set > 0, water is lost from the saturated zone and runs out
-of the model.
+If the `maxleakage` [mm/day] parameter is set > 0, water is lost from the saturated zone and
+runs out of the model.
 
 ## Soil temperature
 The near surface soil temperature is modelled using a simple equation (Wigmosta et al.,
@@ -234,20 +377,21 @@ The near surface soil temperature is modelled using a simple equation (Wigmosta 
 ```math
 T_s^{t} = T_s^{t-1} + w  (T_a - T_s^{t-1})  
 ```
-where ``T_s^{t}`` is the near-surface soil temperature at time ``t``, ``T_a`` is air
-temperature and ``w`` is a weighting coefficient determined through calibration (default is
-0.1125 for daily timesteps).
+where ``T_s^{t}`` [``\degree``C] is the near-surface soil temperature at time ``t``, ``T_a``
+[``\degree``C] is air temperature and ``w`` [-] is a weighting coefficient determined
+through calibration (default is 0.1125 for daily timesteps).
 
-A reduction factor (`cf_soil`, default is 0.038) is applied to the maximum infiltration rate
-(`infiltcapsoil` and `infiltcappath`), when the following model settings are specified in
-the TOML file:
+A reduction factor (`cf_soil` [-], default is 0.038) is applied to the maximum infiltration
+rate (`infiltcapsoil` and `infiltcappath`), when the following model settings are specified
+in the TOML file:
 
 ```toml
 [model]
 soilinfreduction = true
 snow = true
 ```
-A S-curve is used to make a smooth transition (a c-factor (``c``) of 8.0 is used):
+A S-curve (see plot below) is used to make a smooth transition (a c-factor (``c``) of 8.0 is
+used):
 
 ```math 
     b = \frac{1.0}{(1.0 - cf\_soil)}\\~\\
@@ -255,6 +399,27 @@ A S-curve is used to make a smooth transition (a c-factor (``c``) of 8.0 is used
     a = 0.0\\
     c = 8.0
 ```
+
+```@setup plot-freezing-soil
+    using Plots
+    c = [8.0,4.0,2.0,1.0]
+    temp = [-3.0:0.1:3.0;]
+    b = 1.0/(1.0-0.038)
+    a = 0.0
+    plot(temp, 1.0 ./ (b .+ exp.(-c[1] .* (temp .-a))), 
+    title = "Infiltration reduction for frozen soil", xlabel = "Temperature [\u00B0C]", 
+    ylabel = "Reduction factor (cf_soil)", label = string("c = ", c[1]), 
+    foreground_color_legend = nothing, legend=:bottomright, lw = 2, ylims = (0,1))
+    for i = 2:4
+        plot!(temp, 1.0 ./ (b .+ exp.(-c[i] .* (temp .-a))), 
+        label = string("c = ", c[i]), 
+        foreground_color_legend = nothing, legend=:bottomright, lw = 2, ylims = (0,1))
+    end
+    savefig("s-curve-freezing-soil.svg")
+```
+
+![](s-curve-freezing-soil.svg)
+
 ## References
 + Brooks, R. H., and Corey, A. T., 1964, Hydraulic properties of porous media, Hydrology
   Papers 3, Colorado State University, Fort Collins, 27 p.
