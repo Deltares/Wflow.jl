@@ -46,8 +46,8 @@ example the vertical `SBM` concept is defined as follows: `struct SBM{T,N,M}`. `
 information about type parameters you can check out [Type
 parameters](https://docs.julialang.org/en/v1/manual/types/#man-parametric-composite-types).
 Since these parameters can be of any type, it is possible to declare an unlimited number of
-composite types. The type parameters are used to set the type of `struct` fields, below as
-an example with a part of the `SBM` struct: 
+composite types. The type parameters are used to set the type of `struct` fields, below an
+example with a part of the `SBM` struct:
 
 ```julia
 @get_units @with_kw struct SBM{T,N,M}
@@ -76,8 +76,8 @@ an example with a part of the `SBM` struct:
 The type parameter `T` is used in Wflow as a subtype of `AbstractFloat`, allowing to store
 fields with a certain floating point precision (e.g. `Float64` or `Float32`) in a flexible
 way. `N` refers to the maximum number of soil layers of the `SBM` soil column, and `M`
-refers to the number maximum number of soil layers + 1. See also part of the following
-instance of `SBM`:
+refers to the maximum number of soil layers + 1. See also part of the following instance of
+`SBM`:
 
 ```julia
 sbm = SBM{Float,maxlayers,maxlayers + 1}(
