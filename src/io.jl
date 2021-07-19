@@ -317,7 +317,9 @@ function setup_grid_netcdf(
             ("x",),
             attrib = [
                 "_FillValue" => NaN,
-                "long_name" => "x-coordinate in Cartesian system",
+                "long_name" => "x coordinate of projection",
+                "standard_name" => "projection_x_coordinate",
+                "axis" => "X",
                 "units" => "m",
             ],
         )
@@ -328,7 +330,9 @@ function setup_grid_netcdf(
             ("y",),
             attrib = [
                 "_FillValue" => NaN,
-                "long_name" => "y-coordinate in Cartesian system",
+                "long_name" => "y coordinate of projection",
+                "standard_name" => "projection_y_coordinate",
+                "axis" => "Y",
                 "units" => "m",
             ],
         )
@@ -342,6 +346,8 @@ function setup_grid_netcdf(
             attrib = [
                 "_FillValue" => NaN,
                 "long_name" => "longitude",
+                "standard_name" => "longitude",
+                "axis" => "X",
                 "units" => "degrees_east",
             ],
         )
@@ -353,6 +359,8 @@ function setup_grid_netcdf(
             attrib = [
                 "_FillValue" => NaN,
                 "long_name" => "latitude",
+                "standard_name" => "latitude",
+                "axis" => "Y",
                 "units" => "degrees_north",
             ],
         )
