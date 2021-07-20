@@ -98,12 +98,12 @@ function initialize_sbm_gwf_model(config::Config)
     ldd_2d = ncread(nc, param(config, "input.ldd"); allow_missing = true)
 
     ldd = ldd_2d[inds]
-    dl = fill(Wflow.mv, n)
-    dw = fill(Wflow.mv, n)
-    sw = fill(Wflow.mv, n)
+    dl = fill(mv, n)
+    dw = fill(mv, n)
+    sw = fill(mv, n)
 
     for i = 1:n
-        dl[i] = Wflow.detdrainlength(ldd[i], xl[i], yl[i])
+        dl[i] = detdrainlength(ldd[i], xl[i], yl[i])
         dw[i] = (xl[i] * yl[i]) / dl[i]
         sw[i] = river[i] ? max(dw[i] - riverwidth[i], 0.0) : dw[i]
     end
@@ -297,9 +297,12 @@ function initialize_sbm_gwf_model(config::Config)
         # check if drain occurs where overland flow is not possible (sw = 0.0)
         # and correct if this is the case
         false_drain = filter(i -> !isequal(drain[i], 0) && sw[i] == Float(0), 1:n)
-        if length(false_drain) > 0
+        n_false_drain = length(false_drain)
+        if n_false_drain > 0
             drain_2d[inds[false_drain]] .= 0
             drain[false_drain] .= 0
+            @info "$n_false_drain drain locations are removed that occur where overland flow
+             is not possible (overland flow width is zero)"
         end
         inds_drain, rev_inds_drain = active_indices(drain_2d, 0)
 
