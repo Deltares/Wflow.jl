@@ -80,7 +80,7 @@ function initialize_sbm_gwf_model(config::Config)
     # lakes
     if do_lakes
         lakes, lakeindex, lake, pits =
-            initialize_natural_lake(config, static_path, nc, inds_riv, nriv, pits)
+            initialize_natural_lake(config, dirname(static_path), nc, inds_riv, nriv, pits)
     else
         lake = ()
     end
