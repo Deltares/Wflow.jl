@@ -364,14 +364,14 @@ function initialize_sbm(nc, config, riverfrac, inds)
     # soil parameters
     θₛ = ncread(
         nc,
-        param(config, "input.vertical.θₛ", nothing);
+        get_alias(config.input.vertical, "theta_s", "θₛ", nothing);
         sel = inds,
         defaults = 0.6,
         type = Float,
     )
     θᵣ = ncread(
         nc,
-        param(config, "input.vertical.θᵣ", nothing);
+        get_alias(config.input.vertical, "theta_r", "θᵣ", nothing);
         sel = inds,
         defaults = 0.01,
         type = Float,
@@ -379,7 +379,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
     kv₀ =
         ncread(
             nc,
-            param(config, "input.vertical.kv₀", nothing);
+            get_alias(config.input.vertical, "kv_0", "kv₀", nothing);
             sel = inds,
             defaults = 3000.0,
             type = Float,

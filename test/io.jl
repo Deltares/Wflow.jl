@@ -22,6 +22,12 @@ config = Wflow.Config(tomlpath)
     @test config.output.path == "data/output_moselle.nc"
     @test config.output isa Wflow.Config
     @test collect(keys(config.output)) == ["lateral", "vertical", "path"]
+
+    # theta_s can also be provided under the alias θₛ
+    Wflow.get_alias(config.input.vertical, "theta_s", "θₛ", nothing) == "thetaR"
+    val = pop!(config.input.vertical, "theta_s")
+    config.input.vertical["θₛ"] = val
+    Wflow.get_alias(config.input.vertical, "theta_s", "θₛ", nothing) == "thetaR"
 end
 
 @testset "Clock constructor" begin
