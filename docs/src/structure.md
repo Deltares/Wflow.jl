@@ -40,10 +40,11 @@ name. See also the next paragraph [Vertical and lateral models](@ref) for a more
 detailed description.
 
 ## Vertical and lateral models
-The different model concepts used in Wflow are defined as parametric composite types. For
-example the vertical `SBM` concept is defined as follows: `struct SBM{T,N,M}`. `T`, `N` and
-`M` between curly braces after the `struct` name refer to type parameters, for more
-information about type parameters you can check out [Type
+The different model concepts used in Wflow are defined as parametric [composite
+types](https://docs.julialang.org/en/v1/manual/types/#Composite-Types). For example the
+vertical `SBM` concept is defined as follows: `struct SBM{T,N,M}`. `T`, `N` and `M` between
+curly braces after the `struct` name refer to type parameters, for more information about
+type parameters you can check out [Type
 parameters](https://docs.julialang.org/en/v1/manual/types/#man-parametric-composite-types).
 Since these parameters can be of any type, it is possible to declare an unlimited number of
 composite types. The type parameters are used to set the type of `struct` fields, below an
