@@ -8,6 +8,7 @@ pages = [
     "Command line interface" => "cli.md",
     "Model structure and config" =>
         ["Model structure" => "structure.md", "Config" => "config.md"],
+    "Building a model" => "model-setup.md",
     "Models" => [
         "wflow_sbm" => "model/sbm.md",
         "wflow_hbv" => "model/hbv.md",
