@@ -55,6 +55,10 @@ function Base.setproperty!(config::Config, f::Symbol, x)
     return dict[String(f)] = x
 end
 
+function get_alias(config::Config, key, alias, default)
+    get(Dict(config), key, get(Dict(config), alias, default))
+end
+
 # also used in autocomplete
 Base.propertynames(config::Config) = collect(keys(Dict(config)))
 Base.haskey(config::Config, key) = haskey(Dict(config), key)
@@ -62,7 +66,10 @@ Base.keys(config::Config) = keys(Dict(config))
 Base.values(config::Config) = values(Dict(config))
 Base.pairs(config::Config) = pairs(Dict(config))
 Base.get(config::Config, key, default) = get(Dict(config), key, default)
-Base.getindex(config::Config, i) = getindex(Dict(config), i)
+Base.getindex(config::Config, key) = getindex(Dict(config), key)
+Base.setindex!(config::Config, val, key) = setindex!(Dict(config), val, key)
+Base.pop!(config::Config, key) = pop!(Dict(config), key)
+Base.pop!(config::Config, key, default) = pop!(Dict(config), key, default)
 Base.Dict(config::Config) = getfield(config, :dict)
 Base.pathof(config::Config) = getfield(config, :path)
 Base.dirname(config::Config) = dirname(pathof(config))
