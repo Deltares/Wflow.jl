@@ -128,29 +128,31 @@ in the model according to:
 where ``K_{0}`` [mm t``^{-1}``] is the saturated conductivity at the soil surface and ``f``
 is a scaling parameter [mm``^{-1}``].
 
-```@setup plot-ksat
-    using Plots
-    using Printf
-    using LaTeXStrings
-
-    z = [0.:5.0:1000.;]
-    ksat = 100.0
-    f = 0.6./[50.0:150.0:800.0;]
-    plot(ksat .* exp.(-f[1] .* z), -z, 
-    xlabel = L"K_{sat} \ \textrm{[mm/day]}", 
-    ylabel = "-z [mm]", label = string("f = ",@sprintf("%.3E",f[1])), 
-    foreground_color_legend = nothing, legend=:bottomright, lw = 2)
-    for i = 2:5
-        plot!(ksat .* exp.(-f[i] .* z), -z, label = string("f = ",@sprintf("%.3E",f[i])), 
-        foreground_color_legend = nothing, legend=:bottomright, lw = 2)
-    end
-    savefig("ksat-zi.svg")
-```
-
 The plot below shows the relation between soil depth ``z`` and saturated hydraulic
 conductivity ``K_{sat}`` for different values of ``f``.
 
-![](ksat-zi.svg)
+```@setup plot
+    using Printf
+    using CairoMakie
+```
+
+```@example plot
+    let                                                                                     # hide
+        fig = Figure(resolution = (800, 400))                                               # hide
+        ax = Axis(fig[1, 1], xlabel = "Kₛₐₜ [mm/day]", ylabel = "-z [mm]")                  # hide
+
+        z = 0:5.0:1000                                                                      # hide
+        ksat = 100.0                                                                        # hide
+        f = 0.6 ./ collect(50:150.0:800)                                                    # hide
+
+        for fi in f                                                                         # hide
+            lines!(ax, ksat .* exp.(-fi .* z), -z, label = @sprintf("f = %.2e", fi))        # hide
+        end                                                                                 # hide
+
+        Legend(fig[1, 2], ax, "f")                                                          # hide
+        fig                                                                                 # hide
+    end                                                                                     # hide
+```
 
 ## Transpiration and soil evaporation
 The potential evaporation left over after interception and open water evaporation (rivers
@@ -188,27 +190,29 @@ to 0) using a sigmoid function as follows:
     wetroots = 1.0/(1.0 + e^{-rootdistpar (zi - rootingdepth)})
 ```
 
-```@setup plot-wetroots
-    using Plots
-    c = [-500,-1,-0.5,-0.3]
-    z = [250.:300.;]
-    a = 275.0
-    plot(z, 1.0 ./ (1.0 .+ exp.(-c[1] .* (z .-a))), 
-    title = "Wet roots fraction for a rooting depth of 275 mm", xlabel="zi [mm]", 
-    ylabel="fraction of wet roots [-]", label = string("rootdistpar = ", c[1]), 
-    foreground_color_legend = nothing, lw = 2)
-    for i = 2:4
-        plot!(z, 1.0 ./ (1.0 .+ exp.(-c[i] .* (z .-a))), 
-        label = string("rootdistpar = ", c[i]), 
-        foreground_color_legend = nothing, lw = 2)
-    end
-    savefig("s-curve-wetroots.svg")
-```
-
 Below a plot showing the fraction of wet roots for different values of `rootdistpar` [-] for
 a rooting depth of 275 mm.
 
-![](s-curve-wetroots.svg)
+```@example plot
+    let                                                                                     # hide
+        fig = Figure(resolution = (800, 400))                                               # hide
+        ax = Axis(fig[2, 1], xlabel = "zi [mm]", ylabel = "fraction of wet roots [-]")      # hide
+
+        fig[1, 1:2] =                                                                       # hide
+            Label(fig, "Wet roots fraction for a rooting depth of 275 mm", textsize = 20)   # hide
+
+        c = [-500, -1, -0.5, -0.3]                                                          # hide
+        z = collect(250.0:300.0)                                                            # hide
+        a = 275.0                                                                           # hide
+
+        for i = 1:4                                                                         # hide
+            lines!(ax, z, 1.0 ./ (1.0 .+ exp.(-c[i] .* (z .- a))), label = string(c[i]))    # hide
+        end                                                                                 # hide
+
+        Legend(fig[2, 2], ax, "rootdistpar")                                                # hide
+        fig                                                                                 # hide
+    end                                                                                     # hide
+```
 
 Here the sharpness parameter `rootdistpar` \[-\] (by default a large negative value, -500.0)
 determines if there is a stepwise output or a more gradual output (default is stepwise).
@@ -283,22 +287,21 @@ The assumption that very wet conditions do not affect root water uptake too much
 generally applicable to natural vegetation, however for crops this assumption is not valid.
 This could be improved in the Wflow code by applying the reduction to crops only.
 
-```@setup plot-feddes
-    using Plots
-    using LaTeXStrings
-    h = [10.0, 100.0, 400.0, 15849.0]
-    hlabel = ["h1\n-10 cm", "h2\n-100 cm", "h3\n-400 cm", "h4\n-15849 cm"]
-    alpha = [1.0, 1.0, 1.0, 0.0]
-    
-    plot(-log10.(h), alpha, xticks = (-log10.(h),hlabel), ylabel = L"\alpha \ \textrm{[-]}",
-    xlabel = "soil water pressure head [-pF]" , 
-    ylims=(0,1.02), lw = 2, color = :black, legend = false)
+```@example plot
+    let                                                                                     # hide
+        fig = Figure(resolution = (800, 400))                                               # hide
+        ax = Axis(fig[1, 1], xlabel = "α [-]", ylabel = "soil water pressure head [-pF]")   # hide
+        # dummy x axis values that show the desired spacing                                 # hide
+        # on the ticks we show the right labels                                             # hide
+        h = [0, 2, 3, 4]                                                                    # hide
+        hlabel = ["h4\n-15849 cm", "h3\n-400 cm", "h2\n-100 cm", "h1\n-10 cm"]              # hide
+        alpha = [0.0, 1.0, 1.0, 1.0]                                                        # hide
+        ax.xticks = (h, hlabel)                                                             # hide
 
-    savefig("feddes-reduction.svg")
+        lines!(ax, h, alpha)                                                                # hide
+        fig                                                                                 # hide
+    end                                                                                     # hide
 ```
-
-![](feddes-reduction.svg)
-
 
 Below, the function used in SBM, that calculates actual transpiration from the unsaturated
 zone layer(s).
@@ -400,25 +403,26 @@ used):
     c = 8.0
 ```
 
-```@setup plot-freezing-soil
-    using Plots
-    c = [8.0,4.0,2.0,1.0]
-    temp = [-3.0:0.1:3.0;]
-    b = 1.0/(1.0-0.038)
-    a = 0.0
-    plot(temp, 1.0 ./ (b .+ exp.(-c[1] .* (temp .-a))), 
-    title = "Infiltration reduction for frozen soil", xlabel = "Temperature [\u00B0C]", 
-    ylabel = "Reduction factor (cf_soil)", label = string("c = ", c[1]), 
-    foreground_color_legend = nothing, legend=:bottomright, lw = 2, ylims = (0,1))
-    for i = 2:4
-        plot!(temp, 1.0 ./ (b .+ exp.(-c[i] .* (temp .-a))), 
-        label = string("c = ", c[i]), 
-        foreground_color_legend = nothing, legend=:bottomright, lw = 2, ylims = (0,1))
-    end
-    savefig("s-curve-freezing-soil.svg")
-```
+```@example plot
+    let                                                                                     # hide
+        fig = Figure(resolution = (800, 400))                                               # hide
+        ax = Axis(fig[2, 1], xlabel = "Temperature [°C]", ylabel = "Reduction factor (cf_soil)")  # hide
 
-![](s-curve-freezing-soil.svg)
+        fig[1, 1:2] = Label(fig, "Infiltration reduction for frozen soil", textsize = 20)   # hide
+
+        c = [8, 4, 2, 1]                                                                    # hide
+        temp = [-3.0:0.1:3.0;]                                                              # hide
+        b = 1.0 / (1.0 - 0.038)                                                             # hide
+        a = 0.0                                                                             # hide
+
+        for i = 1:4                                                                         # hide
+            lines!(ax, temp, 1.0 ./ (b .+ exp.(-c[i] .* (temp .- a))), label = string(c[i]))  # hide
+        end                                                                                 # hide
+
+        Legend(fig[2, 2], ax, "c")                                                          # hide
+        fig                                                                                 # hide
+    end                                                                                     # hide
+```
 
 ## References
 + Brooks, R. H., and Corey, A. T., 1964, Hydraulic properties of porous media, Hydrology

@@ -1,7 +1,5 @@
 using Wflow
 using Documenter
-using Plots
-using LaTeXStrings
 
 pages = [
     "Home" => "index.md",
