@@ -34,6 +34,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   relation to precipitation and evapotranspiration fluxes. This was set to the fixed Wflow
   `basetimestep` of 86400 s, and should be set to the actual model time step from the TOML
   configuration file.
+- Add `flux` from `Drainage` (`GroundwaterFlow`) in the `sbm_gwf_model` to the overland flow
+  component instead of the river component of the kinematic wave.
 
 ## v0.3.1 - 2021-05-19
 
