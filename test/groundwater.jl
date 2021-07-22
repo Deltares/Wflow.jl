@@ -222,6 +222,7 @@ end
         @testset "minimum_head-confined" begin
             original_head = copy(conf_aqf.head)
             conf_aqf.head[1] = -10.0
+            @test Wflow.check_flux(-1.0, conf_aqf, 1) == -1.0
             @test Wflow.minimum_head(conf_aqf)[1] == -10.0
             conf_aqf.head .= original_head
         end
@@ -229,6 +230,7 @@ end
         @testset "minimum_head-unconfined" begin
             original_head = copy(unconf_aqf.head)
             unconf_aqf.head[1] = -10.0
+            @test Wflow.check_flux(-1.0, unconf_aqf, 1) == 0.0
             @test Wflow.minimum_head(conf_aqf)[1] == 0.0
             unconf_aqf.head .= original_head
         end

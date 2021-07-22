@@ -40,7 +40,7 @@ end
 
 @testset "overland flow" begin
     q = model.lateral.land.q_av
-    @test sum(q) ≈ 0.0
+    @test sum(q) ≈ 2.2298616f-7
 end
 
 @testset "river domain" begin

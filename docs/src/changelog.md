@@ -30,6 +30,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Interpolation function `interpolate_linear(x, xp, fp)` for CSV tables lakes. When `x` was
   larger or smaller than `xp`, maximum(`xp`) or minimum(`xp`) was returned instead of
   maximum(`fp`) or minimum(`fp`).
+- Add `flux` from `Drainage` (`GroundwaterFlow`) in the `sbm_gwf_model` to the overland flow
+  component instead of the river component of the kinematic wave.
+- Fixed option `constanthead = false` (TOML file), `constant_head` field of
+  `GroundwaterFlow` was not defined in this case. Fixed this by initialising empty fields
+  (Vector) for struct `ConstantHead`.
 
 ## v0.3.1 - 2021-05-19
 

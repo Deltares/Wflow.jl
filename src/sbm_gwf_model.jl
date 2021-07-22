@@ -80,7 +80,7 @@ function initialize_sbm_gwf_model(config::Config)
     # lakes
     if do_lakes
         lakes, lakeindex, lake, pits =
-            initialize_natural_lake(config, static_path, nc, inds_riv, nriv, pits)
+            initialize_natural_lake(config, dirname(static_path), nc, inds_riv, nriv, pits)
     else
         lake = ()
     end
@@ -205,6 +205,8 @@ function initialize_sbm_gwf_model(config::Config)
         )
         index_constanthead = filter(i -> !isequal(constanthead[i], mv), 1:n)
         constant_head = ConstantHead(constanthead[index_constanthead], index_constanthead)
+    else
+        constant_head = ConstantHead{Float}(Float[],Int64[])
     end
 
     conductivity = ncread(
@@ -285,8 +287,20 @@ function initialize_sbm_gwf_model(config::Config)
             type = Bool,
             fill = false,
         )
-        inds_drain, rev_inds_drain = active_indices(drain_2d, 0)
+
         drain = drain_2d[inds]
+        # check if drain occurs where overland flow is not possible (sw = 0.0)
+        # and correct if this is the case
+        false_drain = filter(i -> !isequal(drain[i], 0) && sw[i] == Float(0), 1:n)
+        n_false_drain = length(false_drain)
+        if n_false_drain > 0
+            drain_2d[inds[false_drain]] .= 0
+            drain[false_drain] .= 0
+            @info "$n_false_drain drain locations are removed that occur where overland flow
+             is not possible (overland flow width is zero)"
+        end
+        inds_drain, rev_inds_drain = active_indices(drain_2d, 0)
+
         drain_elevation = ncread(
             nc,
             param(config, "input.lateral.subsurface.drain_elevation", nothing);
@@ -479,7 +493,7 @@ function update_sbm_gwf(model)
 
     Q = zeros(vertical.n)
     # exchange of recharge between vertical sbm concept and groundwater flow domain
-    # recharge rate groundwater [m d⁻¹]
+    # recharge rate groundwater is required in units [m d⁻¹]
     lateral.subsurface.recharge.rate .= vertical.recharge ./ 1000.0 .* (1.0 / Δt_sbm)
     # update groundwater domain
     update(lateral.subsurface.flow, Q, Δt_sbm)
@@ -499,9 +513,15 @@ function update_sbm_gwf(model)
     )
 
     # determine lateral inflow for overland flow based on vertical runoff [mm] from vertical
-    # sbm concept
+    # sbm concept and drain flux (optional) from groundwater domain
+    drainflux = zeros(vertical.n)
+    if do_drains
+        drainflux[lateral.subsurface.drain.index] = -lateral.subsurface.drain.flux
+    end
+
     lateral.land.inwater .=
-        (vertical.runoff .* network.land.xl .* network.land.yl .* 0.001) ./ lateral.land.Δt
+        (vertical.runoff .* network.land.xl .* network.land.yl .* 0.001 .+ drainflux) ./
+        lateral.land.Δt
     lateral.land.qlat .= lateral.land.inwater ./ lateral.land.dl
     # run kinematic wave for overland flow
     update(
@@ -518,18 +538,11 @@ function update_sbm_gwf(model)
             network.land.yl[inds_riv] .* 0.001
         ) ./ vertical.Δt
 
-    # flux from groundwater domain to river (Q to river from drains (optional) and groundwater)
-    flux_gw = zeros(vertical.n)
-    flux_gw[lateral.subsurface.river.index] = -lateral.subsurface.river.flux
-    if do_drains
-        flux_gw[lateral.subsurface.drain.index] =
-            flux_gw[lateral.subsurface.drain.index] - lateral.subsurface.drain.flux
-    end
-
-    # determine lateral inflow to river from groundwater, drains and overland flow
+    # determine lateral inflow to river from groundwater domain (river), overland flow
+    # and net runoff from vertical sbm concept
     lateral.river.inwater .=
-        flux_gw[inds_riv] ./ lateral.river.Δt .+ lateral.land.to_river[inds_riv] .+
-        net_runoff_river
+        -lateral.subsurface.river.flux ./ lateral.river.Δt .+
+        lateral.land.to_river[inds_riv] .+ net_runoff_river
     lateral.river.qlat .= lateral.river.inwater ./ lateral.river.dl
 
     # run kinematic wave for river flow 
