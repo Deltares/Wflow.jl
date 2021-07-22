@@ -293,7 +293,7 @@ This could be improved in the Wflow code by applying the reduction to crops only
 ```@example plot
     let                                                                                     # hide
         fig = Figure(resolution = (800, 400))                                               # hide
-        ax = Axis(fig[1, 1], xlabel = "α [-]", ylabel = "soil water pressure head [-pF]")   # hide
+        ax = Axis(fig[1, 1], xlabel = "soil water pressure head [-pF]", ylabel = "α [-]")   # hide
         # dummy x axis values that show the desired spacing                                 # hide
         # on the ticks we show the right labels                                             # hide
         h = [0, 2, 3, 4]                                                                    # hide
