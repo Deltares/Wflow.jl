@@ -80,7 +80,7 @@ function initialize_sbm_gwf_model(config::Config)
     # lakes
     if do_lakes
         lakes, lakeindex, lake, pits =
-            initialize_natural_lake(config, static_path, nc, inds_riv, nriv, pits)
+            initialize_natural_lake(config, dirname(static_path), nc, inds_riv, nriv, pits)
     else
         lake = ()
     end
@@ -205,6 +205,8 @@ function initialize_sbm_gwf_model(config::Config)
         )
         index_constanthead = filter(i -> !isequal(constanthead[i], mv), 1:n)
         constant_head = ConstantHead(constanthead[index_constanthead], index_constanthead)
+    else
+        constant_head = ConstantHead{Float}(Float[],Int64[])
     end
 
     conductivity = ncread(
