@@ -47,16 +47,16 @@ water is split in two parts, the part that falls on compacted areas and the part
 on non-compacted areas. The maximum amount of water that can infiltrate in these areas is
 calculated by taking the minimum of the maximum infiltration rate (`infiltcapsoil` [mm
 t``^{-1}``] for non-compacted areas and `infiltcappath` [mm t``^{-1}``] for compacted areas)
-and the amount of water available for infiltration `avail_forinfilt` [mm]. The water that
-can actual infiltrate `infiltsoilpath` [mm] is calculated by taking the minimum of the total
-maximum infiltration rate (compacted and non-compacted areas) and the remaining storage
-capacity.
+and the amount of water available for infiltration `avail_forinfilt` [mm t``^{-1}``]. The
+water that can actual infiltrate `infiltsoilpath` [mm t``^{-1}``] is calculated by taking
+the minimum of the total maximum infiltration rate (compacted and non-compacted areas) and
+the remaining storage capacity.
 
 Infiltration excess occurs when the infiltration capacity is smaller then the throughfall
-and stemflow rate. This amount of water (`infiltexcess` [mm]) becomes overland flow
-(infiltration excess overland flow). Saturation excess occurs when the (upper) soil becomes
-saturated and water cannot infiltrate anymore. This amount of water `excesswater` [mm]
-becomes overland flow (saturation excess overland flow).
+and stemflow rate. This amount of water (`infiltexcess` [mm t``^{-1}``]) becomes overland
+flow (infiltration excess overland flow). Saturation excess occurs when the (upper) soil
+becomes saturated and water cannot infiltrate anymore. This amount of water `excesswater`
+[mm t``^{-1}``] becomes overland flow (saturation excess overland flow).
 
 ### The SBM soil water accounting scheme
 A detailed description of the Topog\_SBM model has been given by Vertessy (1999). Briefly:
@@ -67,8 +67,8 @@ time is given by:
 ```math 
     S=(z_{t}-z_{i})(\theta_{s}-\theta_{r})
 ```
-where ``\theta_{s}`` [mm mm``^{-1}``] and ``\theta_{r}`` [mm mm``^{-1}``] are the saturated
-and residual soil water contents, respectively. 
+where ``\theta_{s}`` [-] and ``\theta_{r}`` [-] are the saturated and residual soil water
+contents, respectively. 
 
 The unsaturated store ``U`` is subdivided into storage (``U_{s}`` [mm]) and deficit
 (``U_{d}`` [mm]):
@@ -98,7 +98,7 @@ Assuming a unit head gradient, the transfer of water (``st`` [mm t``^{-1}``]) fr
 [mm] store layer is controlled by the saturated hydraulic conductivity ``K_{sat}`` [mm
 t``^{-1}``] at depth ``z`` \[mm\] (bottom layer) or ``z_{i}`` [mm], the effective saturation
 degree of the layer, and a Brooks-Corey power coefficient (parameter ``c``) based on the
-pore size distribution index ``\lambda`` (Brooks and Corey (1964)):
+pore size distribution index ``\lambda`` (Brooks and Corey, 1964):
 
 ```math
     st=K_{\mathit{sat}}\left(\frac{\theta-\theta_{r}}{\theta_{s}-\theta_{r}}\right)^{c}\\~\\
@@ -160,7 +160,8 @@ and water bodies) is split in potential soil evaporation and potential transpira
 on the canopy gap fraction (assumed to be identical to the amount of bare soil).
 
 For the case of one single soil layer (the SBM soil column is not split-up into different
-layers), soil evaporation [mm] is scaled according to:
+layers), soil evaporation [mm] is scaled according to, as shown by the following code block
+(`i` refers to the Vector position):
 
 ```julia
     soilevapunsat = potsoilevap * min(1.0, saturationdeficit / sbm.soilwatercapacity[i])
@@ -218,11 +219,11 @@ Here the sharpness parameter `rootdistpar` \[-\] (by default a large negative va
 determines if there is a stepwise output or a more gradual output (default is stepwise).
 `zi` [mm] is the level of the water table in the grid cell below the surface, `rootingdepth`
 [mm] is the maximum depth of the roots below the surface. For all values of `zi` smaller
-that `rootingdepth` [mm] a value of 1 is returned if they are equal a value of 0.5 is
+that `rootingdepth` a value of 1 is returned if they are equal a value of 0.5 is
 returned if `zi` is larger than the `rootingdepth` a value of 0 is returned. The returned
 `wetroots` [-] fraction is multiplied by the potential evaporation (and limited by the
 available water in saturated zone) to get the transpiration from the saturated part of the
-soil:
+soil, as shown by the following code block (`i` refers to the Vector position):
 
 ```julia
     # transpiration from saturated store
@@ -234,9 +235,10 @@ soil:
 
 Next the remaining potential evaporation is used to extract water from the unsaturated
 store. The fraction of roots (`availcap` [-]) that cover the unsaturated zone for each soil
-layer is used to calculate the potential root water extraction rate (`maxextr` [mm]). When
-`whole_ust_available` is set to true in the TOML file as follows, almost the complete
-unsaturated storage (99%) is available for transpiration, independent of the `rootingdepth`:
+layer is used to calculate the potential root water extraction rate (`maxextr` [mm
+t``^{-1}``]). When `whole_ust_available` is set to true in the TOML file as follows, almost
+the complete unsaturated storage (99%) is available for transpiration, independent of the
+`rootingdepth`:
 
 ```toml
 [model]
@@ -244,7 +246,8 @@ whole_ust_available = true
 ```
 
 Below the code snippet from the `Wflow.acttransp_unsat_sbm` function that calculates the
-potential root water extraction rate `maxextr` [mm]:
+potential root water extraction rate `maxextr` [mm t``^{-1}``], as shown by the following
+code block:
 
 ```julia
     if ust # whole_ust_available = true
@@ -310,19 +313,20 @@ zone layer(s).
 Wflow.acttransp_unsat_sbm(rootingdepth, ustorelayerdepth, sumlayer, restpotevap, sum_actevapustore, c, usl, θₛ, θᵣ, hb, ust::Bool = false)
 ```
 
-The actual capillary rise `actcapflux` [mm] is determined using the following approach:
-first the saturated hydraulic conductivty `ksat` [mm t``^{-1}``] is determined at the water
-table ``z_{i}``; next a potential capillary rise `maxcapflux` [mm] is determined from the
-minimum of `ksat`, actual transpiration `actevapustore` [mm] taken from the ``U`` store,
-available water in the ``S`` store (`satwaterdepth` [mm]) and the deficit of the ``U`` store
-(`ustorecapacity` [mm]):
+The actual capillary rise `actcapflux` [mm t``^{-1}``] is determined using the following
+approach: first the saturated hydraulic conductivty `ksat` [mm t``^{-1}``] is determined at
+the water table ``z_{i}``; next a potential capillary rise `maxcapflux` [mm t``^{-1}``] is
+determined from the minimum of `ksat`, actual transpiration `actevapustore` [mm t``^{-1}``]
+taken from the ``U`` store, available water in the ``S`` store (`satwaterdepth` [mm]) and
+the deficit of the ``U`` store (`ustorecapacity` [mm]), as shown by the following code
+block:
 
 ```julia
     maxcapflux = max(0.0, min(ksat, actevapustore, ustorecapacity, satwaterdepth))
 ```
 
 Then the potential rise `maxcapflux` is scaled using the distance between the roots and the
-water table as follows:
+water table as follows in the code block below (`i` refers to the Vector position):
 
 ```julia
     if sbm.zi[i] > rootingdepth
@@ -341,7 +345,8 @@ rooting depth. If the roots reach the water table (`rootingdepth` ``\ge`` `sbm.z
 `capfluxscale` is set to zero and thus setting the capillary rise `capflux` to zero.
 
 Finally, the capillary rise `capflux` is limited by the unsaturated store deficit (one or
-multiple layers), calculated as follows:
+multiple layers), calculated as follows in the code block below (`i` refers to the Vector
+position, and `k` refers to the layer position):
 
 ```julia
     usl[k] * (sbm.θₛ[i] - sbm.θᵣ[i]) - usld[k]
@@ -351,7 +356,8 @@ where `usl` [mm] is the unsaturated layer thickness, `usld` is the `ustorelayerd
 (amount of water in the unsaturated layer), and ``\theta_{s}`` and ``\theta_{r}`` as
 previously defined.
 
-The calculation of the actual capillary rise `actcapflux` is as follows:
+The calculation of the actual capillary rise `actcapflux` is as follows in the code block
+below (`i` refers to the Vector position, and `k` refers to the layer position):
 
 ```julia
     actcapflux = 0.0
@@ -367,11 +373,11 @@ The calculation of the actual capillary rise `actcapflux` is as follows:
 
 In case of multiple unsaturated layers (`n_usl` ``>`` 1), the calculation of the actual
 capillary rise starts at the lowest unsaturated layer while keeping track of the remaining
-capillary rise `netcapflux` [mm].
+capillary rise `netcapflux` [mm t``^{-1}``].
 
 ## Leakage
-If the `maxleakage` [mm/day] parameter is set > 0, water is lost from the saturated zone and
-runs out of the model.
+If the `maxleakage` [mm/day] input model parameter is set > 0, water is lost from the
+saturated zone and runs out of the model.
 
 ## Soil temperature
 The near surface soil temperature is modelled using a simple equation (Wigmosta et al.,

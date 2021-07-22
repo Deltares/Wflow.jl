@@ -18,9 +18,9 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 
         @testset "model information functions" begin
             @test BMI.get_component_name(model) == "sbm"
-            @test BMI.get_input_item_count(model) == 181
-            @test BMI.get_output_item_count(model) == 181
-            @test BMI.get_input_var_names(model)[[1, 5, 120, 181]] == [
+            @test BMI.get_input_item_count(model) == 182
+            @test BMI.get_output_item_count(model) == 182
+            @test BMI.get_input_var_names(model)[[1, 5, 120, 182]] == [
                 "vertical.Δt",
                 "vertical.n_unsatlayers",
                 "lateral.land.q_av",
@@ -37,7 +37,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test BMI.get_var_type(model, "lateral.river.reservoir.inflow") in
                   ["Array{$Float,1}", "Vector{$Float}"]
             @test BMI.get_var_type(model, "vertical.n") == "Int64"
-            @test BMI.get_var_units(model, "vertical.θₛ") == "mm mm-1"
+            @test BMI.get_var_units(model, "vertical.θₛ") == "-"
             @test BMI.get_var_itemsize(model, "lateral.subsurface.ssf") == sizeof(Float)
             @test BMI.get_var_nbytes(model, "vertical.n") == 8
             @test BMI.get_var_nbytes(model, "lateral.river.q") == 5655 * sizeof(Float)
