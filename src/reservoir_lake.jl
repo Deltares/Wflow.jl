@@ -1,4 +1,5 @@
 @get_units @with_kw struct SimpleReservoir{T}
+    Δt::T | "s"                                         # Model time step [s]
     maxvolume::Vector{T} | "m3"                         # maximum storage (above which water is spilled) [m³]
     area::Vector{T} | "m2"                              # reservoir area [m²]
     maxrelease::Vector{T} | "m3 s-1"                    # maximum amount that can be released if below spillway [m³ s⁻¹]
@@ -6,13 +7,13 @@
     targetminfrac::Vector{T} | "-"                      # target minimum full fraction (of max storage) [-]
     targetfullfrac::Vector{T} | "-"                     # target fraction full (of max storage) [-]
     volume::Vector{T} | "m3"                            # reservoir volume [m³]
-    inflow::Vector{T} | "m3"                            # inflow into reservoir [m³]
+    inflow::Vector{T} | "m3"                            # total inflow into reservoir [m³]
     outflow::Vector{T} | "m3 s-1"                       # outflow from reservoir [m³ s⁻¹]
     totaloutflow::Vector{T} | "m3"                      # total outflow from reservoir [m³]
     percfull::Vector{T} | "-"                           # fraction full (of max storage) [-]
     demandrelease::Vector{T} | "m3 s-1"                 # minimum (environmental) flow released from reservoir [m³ s⁻¹]
-    precipitation::Vector{T}                            # average precipitation for reservoir area [mm]
-    evaporation::Vector{T}                              # average evaporation for reservoir area [mm]
+    precipitation::Vector{T}                            # average precipitation for reservoir area [mm Δt⁻¹]
+    evaporation::Vector{T}                              # average evaporation for reservoir area [mm Δt⁻¹]
 
     function SimpleReservoir{T}(args...) where {T}
         equal_size_vectors(args)
@@ -22,7 +23,7 @@ end
 
 statevars(::SimpleReservoir) = (:volume,)
 
-function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits)
+function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, Δt)
     # read only reservoir data if reservoirs true
     # allow reservoirs only in river cells
     # note that these locations are only the reservoir outlet pixels
@@ -115,6 +116,7 @@ function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits)
 
     n = length(resarea)
     reservoirs = SimpleReservoir{Float}(
+        Δt = Δt,
         demand = resdemand,
         maxrelease = resmaxrelease,
         maxvolume = resmaxvolume,
@@ -154,9 +156,9 @@ function update(res::SimpleReservoir, i, inflow, timestepsecs)
         (
             res.volume[i] +
             (inflow * timestepsecs) +
-            (res.precipitation[i] * (timestepsecs / tosecond(basetimestep)) / 1000.0) *
+            (res.precipitation[i] * (timestepsecs / res.Δt) / 1000.0) *
             res.area[i] -
-            (res.evaporation[i] * (timestepsecs / tosecond(basetimestep)) / 1000.0) *
+            (res.evaporation[i] * (timestepsecs / res.Δt) / 1000.0) *
             res.area[i]
         ),
     )
@@ -187,6 +189,7 @@ function update(res::SimpleReservoir, i, inflow, timestepsecs)
 end
 
 @get_units @with_kw struct NaturalLake{T}
+    Δt::T | "s"                             # Model time step [s]
     lowerlake_ind::Vector{Int} | "-"        # Index of lower lake (linked lakes)
     area::Vector{T} | "m2"                  # lake area [m²]
     threshold::Vector{T} | "m"              # water level threshold H₀ [m] below that level outflow is zero
@@ -201,8 +204,8 @@ end
     storage::Vector{T} | "m3"               # storage lake [m³]
     outflow::Vector{T} | "m3 s-1"           # outflow lake [m³ s⁻¹]
     totaloutflow::Vector{T} | "m3"          # total outflow lake [m³] 
-    precipitation::Vector{T}                # average precipitation for lake area [mm]
-    evaporation::Vector{T}                  # average evaporation for lake area [mm]
+    precipitation::Vector{T}                # average precipitation for lake area [mm Δt⁻¹]
+    evaporation::Vector{T}                  # average evaporation for lake area [mm Δt⁻¹]
 
     function NaturalLake{T}(args...) where {T}
         equal_size_vectors(args)
@@ -210,7 +213,7 @@ end
     end
 end
 
-function initialize_natural_lake(config, path, nc, inds_riv, nriv, pits)
+function initialize_natural_lake(config, path, nc, inds_riv, nriv, pits, Δt)
     # read only lake data if lakes true
     # allow lakes only in river cells
     # note that these locations are only the lake outlet pixels
@@ -341,6 +344,7 @@ function initialize_natural_lake(config, path, nc, inds_riv, nriv, pits)
     end
     n = length(lakearea)
     lakes = NaturalLake{Float}(
+        Δt = Δt,
         lowerlake_ind = lowerlake_ind,
         area = lakearea,
         threshold = lake_threshold,
@@ -431,7 +435,7 @@ function update(lake::NaturalLake, i, inflow, doy, timestepsecs)
             (
                 lake.storage[i] +
                 (lake.precipitation[i] - lake.evaporation[i]) *
-                (timestepsecs / tosecond(basetimestep)) *
+                (timestepsecs / lake.Δt) *
                 lake.area[i] / 1000.0
             ) / timestepsecs + inflow
         #Adjust SIFactor for ResThreshold != 0
@@ -478,10 +482,10 @@ function update(lake::NaturalLake, i, inflow, doy, timestepsecs)
             lake.storage[i] +
             inflow * timestepsecs +
             (lake.precipitation[i] / 1000.0) *
-            (timestepsecs / tosecond(basetimestep)) *
+            (timestepsecs / lake.Δt) *
             lake.area[i] -
             (lake.evaporation[i] / 1000.0) *
-            (timestepsecs / tosecond(basetimestep)) *
+            (timestepsecs / lake.Δt) *
             lake.area[i] - outflow * timestepsecs
 
         waterlevel = if lake.storfunc[i] == 1

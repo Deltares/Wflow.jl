@@ -184,16 +184,16 @@ end
     kh₀::Vector{T} | "m Δt-1"              # Horizontal hydraulic conductivity at soil surface [m Δt⁻¹]
     f::Vector{T} | "m-1"                   # A scaling parameter [m⁻¹] (controls exponential decline of kh₀)
     soilthickness::Vector{T} | "m"         # Soil thickness [m]
-    θₛ::Vector{T} | "mm mm-1"              # Saturated water content (porosity) [-]
-    θᵣ::Vector{T} | "mm mm-1"              # Residual water content [-]
+    θₛ::Vector{T} | "-"                     # Saturated water content (porosity) [-]
+    θᵣ::Vector{T} | "-"                    # Residual water content [-]
     t::T | "Δt s"                          # time step [Δt s]
     Δt::T | "s"                            # model time step [s]
     βₗ::Vector{T} | "m m-1"                 # Slope [m m⁻¹]
-    dl::Vector{T}                          # Drain length [m]
-    dw::Vector{T}                          # Flow width [m]
-    zi::Vector{T}                          # Pseudo-water table depth [m] (top of the saturated zone)
-    exfiltwater::Vector{T}                 # Exfiltration [m]  (groundwater above surface level, saturated excess conditions)
-    recharge::Vector{T}                    # Net recharge to saturated store [m]
+    dl::Vector{T} | "m"                    # Drain length [m]
+    dw::Vector{T} | "m"                    # Flow width [m]
+    zi::Vector{T} | "m"                    # Pseudo-water table depth [m] (top of the saturated zone)
+    exfiltwater::Vector{T} | "m Δt-1"      # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
+    recharge::Vector{T} | "m Δt-1"         # Net recharge to saturated store [m Δt⁻¹]
     ssf::Vector{T} | "m3 Δt-1"             # Subsurface flow [m³ Δt⁻¹]
     ssfin::Vector{T} | "m3 Δt-1"           # Inflow from upstream cells [m³ Δt⁻¹]
     ssfmax::Vector{T} | "m2 Δt-1"          # Maximum subsurface flow [m² Δt⁻¹]
@@ -252,8 +252,8 @@ end
 
 @get_units @with_kw struct GroundwaterExchange{T}
     Δt::T | "s"                         # model time step [s]
-    exfiltwater::Vector{T}              # Exfiltration [mm]  (groundwater above surface level, saturated excess conditions)
-    zi::Vector{T}                       # Pseudo-water table depth [mm] (top of the saturated zone)
-    to_river::Vector{T} | "mm3 Δt-1"    # Part of subsurface flow [mm³ Δt⁻¹] that flows to the river
-    ssf::Vector{T} | "mm3 Δt-1"         # Subsurface flow [mm³ Δt⁻¹]
+    exfiltwater::Vector{T} | "m Δt-1"   # Exfiltration [m Δt⁻¹]  (groundwater above surface level, saturated excess conditions)
+    zi::Vector{T} | "m"                 # Pseudo-water table depth [m] (top of the saturated zone)
+    to_river::Vector{T} | "m3 Δt-1"     # Part of subsurface flow [m³ Δt⁻¹] that flows to the river
+    ssf::Vector{T} | "m3 Δt-1"          # Subsurface flow [m³ Δt⁻¹]
 end
