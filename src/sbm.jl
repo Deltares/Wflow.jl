@@ -11,140 +11,140 @@
     n_unsatlayers::Vector{Int} | "-"
     # Fraction of river [-]
     riverfrac::Vector{T} | "-"
-    # Saturated water content (porosity) [mm mm⁻¹]
-    θₛ::Vector{T} | "mm mm-1"
-    # Residual water content [mm mm⁻¹]
-    θᵣ::Vector{T} | "mm mm-1"
+    # Saturated water content (porosity) [-]
+    θₛ::Vector{T} | "-"
+    # Residual water content [-]
+    θᵣ::Vector{T} | "-"
     # Vertical hydraulic conductivity [mm Δt⁻¹] at soil surface
-    kv₀::Vector{T} | "mm Δt-1"
+    kv₀::Vector{T}
     # Muliplication factor [-] applied to kv_z (vertical flow)
     kvfrac::Vector{SVector{N,T}} | "-"
     # Air entry pressure [cm] of soil (Brooks-Corey)
     hb::Vector{T} | "cm"
     # Soil thickness [mm]
-    soilthickness::Vector{T}
+    soilthickness::Vector{T} | "mm"
     # Thickness of soil layers [mm]
-    act_thickl::Vector{SVector{N,T}}
+    act_thickl::Vector{SVector{N,T}} | "mm"
     # Cumulative sum of soil layers [mm], starting at soil surface (0)
-    sumlayers::Vector{SVector{M,T}}
+    sumlayers::Vector{SVector{M,T}} | "mm"
     # Infiltration capacity of the compacted areas [mm Δt⁻¹]
-    infiltcappath::Vector{T} | "mm Δt-1"
-    # Soil infiltration capacity [mm/Δt]
-    infiltcapsoil::Vector{T} | "mm Δt-1"
-    # Maximum leakage [mm/Δt] from saturated zone
-    maxleakage::Vector{T} | "mm Δt-1"
+    infiltcappath::Vector{T}
+    # Soil infiltration capacity [mm Δt⁻¹]
+    infiltcapsoil::Vector{T}
+    # Maximum leakage [mm Δt⁻¹] from saturated zone
+    maxleakage::Vector{T}
     # Fraction of open water (excluding rivers) [-]
     waterfrac::Vector{T} | "-"
     # Fraction of compacted area  [-]
     pathfrac::Vector{T} | "-"
     # Rooting depth [mm]
-    rootingdepth::Vector{T}
+    rootingdepth::Vector{T} | "mm"
     # Controls how roots are linked to water table [-]
     rootdistpar::Vector{T} | "-"
     # Parameter [mm] controlling capillary rise
-    capscale::Vector{T}
+    capscale::Vector{T} | "mm"
     # Multiplication factor [-] to correct
     et_reftopot::Vector{T} | "-"
     # Brooks-Corey power coefﬁcient [-] for each soil layer
     c::Vector{SVector{N,T}} | "-"
-    # Stemflow [mm]
+    # Stemflow [mm Δt⁻¹]
     stemflow::Vector{T}
-    # Throughfall [mm]
+    # Throughfall [mm Δt⁻¹]
     throughfall::Vector{T}
     # A scaling parameter [mm⁻¹] (controls exponential decline of kv₀)
     f::Vector{T} | "mm-1"
     # Amount of water in the unsaturated store, per layer [mm]
-    ustorelayerdepth::Vector{SVector{N,T}}
+    ustorelayerdepth::Vector{SVector{N,T}} | "mm"
     # Saturated store [mm]
-    satwaterdepth::Vector{T}
+    satwaterdepth::Vector{T} | "mm"
     # Pseudo-water table depth [mm] (top of the saturated zone)
-    zi::Vector{T}
+    zi::Vector{T}  | "mm"
     # Soilwater capacity [mm]
-    soilwatercapacity::Vector{T}
+    soilwatercapacity::Vector{T}  | "mm"
     # Canopy storage [mm]
-    canopystorage::Vector{T}
+    canopystorage::Vector{T}  | "mm"
     # Maximum canopy storage [mm]
-    cmax::Vector{T}
+    cmax::Vector{T}  | "mm"
     # Canopy gap fraction [-]
     canopygapfraction::Vector{T} | "-"
     # Gash interception model parameter, ratio of the average evaporation from the
     # wet canopy [mm Δt⁻¹] and the average precipitation intensity [mm Δt⁻¹] on a saturated canopy
     e_r::Vector{T} | "-"
-    # Precipitation [mm]
+    # Precipitation [mm Δt⁻¹]
     precipitation::Vector{T}
     # Temperature [ᵒC]
     temperature::Vector{T} | "°C"
-    # Potential evapotranspiration [mm]
+    # Potential evapotranspiration [mm Δt⁻¹]
     potential_evaporation::Vector{T}
     # Potential transpiration, open water, river and soil evaporation (after subtracting interception from potential_evaporation)
     pottrans_soil::Vector{T}
-    # Transpiration [mm]
+    # Transpiration [mm Δt⁻¹]
     transpiration::Vector{T}
-    # Actual evaporation from unsaturated store [mm]
+    # Actual evaporation from unsaturated store [mm Δt⁻¹]
     ae_ustore::Vector{T}
-    # Interception [mm]
+    # Interception [mm Δt⁻¹]
     interception::Vector{T}
-    # Soil evaporation from unsaturated store [mm]
+    # Soil evaporation from unsaturated store [mm Δt⁻¹]
     soilevap::Vector{T}
-    # Soil evaporation from saturated store [mm]
+    # Soil evaporation from saturated store [mm Δt⁻¹]
     soilevapsat::Vector{T}
-    # Actual capillary rise [mm]
+    # Actual capillary rise [mm Δt⁻¹]
     actcapflux::Vector{T}
-    # Actual transpiration from saturated store [mm]
+    # Actual transpiration from saturated store [mm Δt⁻¹]
     actevapsat::Vector{T}
-    # Total actual evapotranspiration [mm]
+    # Total actual evapotranspiration [mm Δt⁻¹]
     actevap::Vector{T}
-    # Runoff from river based on riverfrac [mm]
+    # Runoff from river based on riverfrac [mm Δt⁻¹]
     runoff_river::Vector{T}
-    # Runoff from land based on waterfrac [mm]
+    # Runoff from land based on waterfrac [mm Δt⁻¹]
     runoff_land::Vector{T}
-    # Actual evaporation from open water (land) [mm]
+    # Actual evaporation from open water (land) [mm Δt⁻¹]
     ae_openw_l::Vector{T}
-    # Actual evaporation from river [mm]
+    # Actual evaporation from river [mm Δt⁻¹]
     ae_openw_r::Vector{T}
-    # Net runoff from river [mm]
+    # Net runoff from river [mm Δt⁻¹]
     net_runoff_river::Vector{T}
-    # Water available for infiltration [mm]
+    # Water available for infiltration [mm Δt⁻¹]
     avail_forinfilt::Vector{T}
-    # Actual infiltration into the unsaturated zone [mm]
+    # Actual infiltration into the unsaturated zone [mm Δt⁻¹]
     actinfilt::Vector{T}
-    # Actual infiltration non-compacted fraction [mm]
+    # Actual infiltration non-compacted fraction [mm Δt⁻¹]
     actinfiltsoil::Vector{T}
-    # Actual infiltration compacted fraction [mm]
+    # Actual infiltration compacted fraction [mm Δt⁻¹]
     actinfiltpath::Vector{T}
-    # Actual infiltration (compacted and the non-compacted areas) [mm]
+    # Actual infiltration (compacted and the non-compacted areas) [mm Δt⁻¹]
     infiltsoilpath::Vector{T}
-    # Infiltration excess water [mm]
+    # Infiltration excess water [mm Δt⁻¹]
     infiltexcess::Vector{T}
-    # Water that cannot infiltrate due to saturated soil (saturation excess) [mm]
+    # Water that cannot infiltrate due to saturated soil (saturation excess) [mm Δt⁻¹]
     excesswater::Vector{T}
-    # Water exfiltrating during saturation excess conditions [mm]
+    # Water exfiltrating during saturation excess conditions [mm Δt⁻¹]
     exfiltsatwater::Vector{T}
-    # Water exfiltrating from unsaturated store because of change in water table [mm]
+    # Water exfiltrating from unsaturated store because of change in water table [mm Δt⁻¹]
     exfiltustore::Vector{T}
-    # Excess water for non-compacted fraction [mm]
+    # Excess water for non-compacted fraction [mm Δt⁻¹]
     excesswatersoil::Vector{T}
-    # Excess water for compacted fraction [mm]
+    # Excess water for compacted fraction [mm Δt⁻¹]
     excesswaterpath::Vector{T}
-    # Total surface runoff from infiltration and saturation excess [mm]
+    # Total surface runoff from infiltration and saturation excess [mm Δt⁻¹]
     runoff::Vector{T}
-    # Volumetric water content [mm mm⁻¹] per soil layer (including θᵣ and saturated zone)
-    vwc::Vector{SVector{N,T}} | "mm mm-1"
+    # Volumetric water content [-] per soil layer (including θᵣ and saturated zone)
+    vwc::Vector{SVector{N,T}} | "-"
     # Volumetric water content [%] per soil layer (including θᵣ and saturated zone)
     vwc_perc::Vector{SVector{N,T}} | "%"
     # Root water storage [mm] in unsaturated and saturated zone (excluding θᵣ)
-    rootstore::Vector{T}
-    # Volumetric water content [mm mm⁻¹] in root zone (including θᵣ and saturated zone)
-    vwc_root::Vector{T} | "mm mm-1"
+    rootstore::Vector{T} | "mm"
+    # Volumetric water content [-] in root zone (including θᵣ and saturated zone)
+    vwc_root::Vector{T} | "-"
     # Volumetric water content [%] in root zone (including θᵣ and saturated zone)
     vwc_percroot::Vector{T} | "%"
     # Amount of available water in the unsaturated zone [mm]
-    ustoredepth::Vector{T}
-    # Downward flux from unsaturated to saturated zone [mm]
+    ustoredepth::Vector{T} | "mm"
+    # Downward flux from unsaturated to saturated zone [mm Δt⁻¹]
     transfer::Vector{T}
-    # Net recharge to saturated store [mm]
+    # Net recharge to saturated store [mm Δt⁻¹]
     recharge::Vector{T}
-    # Actual leakage from saturated store [mm]
+    # Actual leakage from saturated store [mm Δt⁻¹]
     actleakage::Vector{T}
     ### Snow parameters ###
     # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹]
@@ -162,11 +162,11 @@
     # Controls soil infiltration reduction factor when soil is frozen [-]
     cf_soil::Vector{T} | "-"
     # Snow storage [mm]
-    snow::Vector{T}
+    snow::Vector{T} | "mm"
     # Liquid water content in the snow pack [mm]
-    snowwater::Vector{T}
+    snowwater::Vector{T} | "mm"
     # Snow melt + precipitation as rainfall [mm]
-    rainfallplusmelt::Vector{T}
+    rainfallplusmelt::Vector{T} | "mm"
     # Threshold temperature for snowfall above glacier [ᵒC]
     g_tt::Vector{T} | "ᵒC"
     # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹] for glacier
@@ -174,24 +174,24 @@
     # Fraction of the snowpack on top of the glacier converted into ice [-]
     g_sifrac::Vector{T} | "-"
     # Water within the glacier [mm]
-    glacierstore::Vector{T}
+    glacierstore::Vector{T} | "mm"
     # Fraction covered by a glacier [-]
     glacierfrac::Vector{T} | "-"
     # Top soil temperature [ᵒC]
     tsoil::Vector{T} | "ᵒC"
     ## Interception related to leaf_area_index climatology ###
     # Specific leaf storage [mm]
-    sl::Vector{T}
+    sl::Vector{T}  | "mm"
     # Storage woody part of vegetation [mm]
-    swood::Vector{T}
+    swood::Vector{T} | "mm"
     # Extinction coefficient [-] (to calculate canopy gap fraction)
     kext::Vector{T} | "-"
     # Leaf area index [m² m⁻²]
     leaf_area_index::Vector{T} | "m2 m-2"
     # Water level land [mm] 
-    waterlevel_land::Vector{T}
+    waterlevel_land::Vector{T} | "mm"
     # Water level river [mm]
-    waterlevel_river::Vector{T}
+    waterlevel_river::Vector{T} | "mm"
 
     function SBM{T,N,M}(args...) where {T,N,M}
         equal_size_vectors(args)

@@ -1,5 +1,6 @@
 @testset "reservoir simple" begin
     res = Wflow.SimpleReservoir{Float64}(
+        Δt = 86400.0,
         demand = [52.523],
         maxrelease = [420.184],
         maxvolume = [25_000_000.0],
@@ -28,6 +29,7 @@ end
 
 @testset "natural lake" begin
     lake = Wflow.NaturalLake{Float64}(
+        Δt = 86400.0,
         lowerlake_ind = [0],
         area = [180510409.0],
         threshold = [0.0],
@@ -65,6 +67,7 @@ sh = [
     @test typeof(values(sh[1])) == Tuple{Vector{Float},Vector{Float}}
 
     lake = Wflow.NaturalLake{Float}(
+        Δt = 86400.0,
         lowerlake_ind = [2, 0],
         area = [472461536.0, 60851088.0],
         threshold = [393.7, 0.0],

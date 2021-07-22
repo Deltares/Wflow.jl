@@ -72,7 +72,7 @@ function initialize_sbm_gwf_model(config::Config)
     pits = zeros(Bool, modelsize_2d)
     if do_reservoirs
         reservoirs, resindex, reservoir, pits =
-            initialize_simple_reservoir(config, nc, inds_riv, nriv, pits)
+            initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, tosecond(Δt))
     else
         reservoir = ()
     end
@@ -80,7 +80,7 @@ function initialize_sbm_gwf_model(config::Config)
     # lakes
     if do_lakes
         lakes, lakeindex, lake, pits =
-            initialize_natural_lake(config, static_path, nc, inds_riv, nriv, pits)
+            initialize_natural_lake(config, static_path, nc, inds_riv, nriv, pits, tosecond(Δt))
     else
         lake = ()
     end
