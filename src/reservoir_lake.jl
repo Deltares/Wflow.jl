@@ -460,17 +460,17 @@ function update(lake::NaturalLake, i, inflow, doy, timestepsecs)
                 interpolate_linear(lake.waterlevel[i], lake.hq[i].H, lake.hq[i].Q[:, col])
         else
             if diff_wl >= 0.0
-                outflow = max(
-                    lake.b[i] * pow((lake.waterlevel[i] - lake.threshold[i]), lake.e[i]),
-                    0.0,
-                )
+                if lake.waterlevel[i] > lake.threshold[i]
+                    outflow = lake.b[i] * pow((lake.waterlevel[i] - lake.threshold[i]), lake.e[i])
+                else
+                    outflow = 0
+                end
             else
-                outflow = min(
-                    -1.0 *
-                    lake.b[i] *
-                    pow((lake.waterlevel[lo] - lake.threshold[i]), lake.e[i]),
-                    0.0,
-                )
+                if lake.waterlevel[lo] > lake.threshold[i]
+                    outflow = -1.0 * lake.b[i] * pow((lake.waterlevel[lo] - lake.threshold[i]), lake.e[i])
+                else
+                    outflow = 0
+                end
             end
         end
 
