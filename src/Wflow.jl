@@ -16,7 +16,7 @@ using ProgressLogging
 using CFTime
 using Base.Threads
 
-@metadata get_units "mm"
+@metadata get_units "mm Δt-1"
 
 const BMI = BasicModelInterface
 const Float = Float64

@@ -114,9 +114,9 @@ Q_{cf}=cflux \; (fc−SM)/fc
 
 where ``cflux`` is the maximum capillary flux [mm day``^{-1}``].
 
-The upper zone generates quick runoff (Q_q) using:
+The upper zone generates quick runoff (``Q_q``) using:
 ```math
-Qq=K \, UZ^{(1+\alpha)}
+Q_q=K \, UZ^{(1+\alpha)}
 ```
 where ``K`` is the upper zone recession coefficient, and ``\alpha`` determines the amount of
 non-linearity. Within HBV-96, the value of ``K`` is determined from three other parameters:
@@ -126,7 +126,7 @@ rate of the upper zone for which the recession rate is equal to ``KHQ``. If we d
 following equation:
 
 ```math
-    HQ=K \, UZ^{(1+\alpha)} \; HQ = KHQ \; UZ_{HQ}
+    HQ=K \cdot UZ^{(1+\alpha)} = KHQ \cdot UZ_{HQ}
 ```
 
 If we eliminate ``UZ_{HQ}`` we obtain:
