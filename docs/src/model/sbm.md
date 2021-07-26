@@ -50,7 +50,7 @@ lateral.river.reservoir => struct SimpleReservoir{T} # optional
 For river and overland flow the kinematic wave approach over a D8 network is used for this
 wflow\_sbm model. For the subsurface domain, an unconfined aquifer with groundwater flow in
 four directions (adjacent cells) is used. This is described in more detail in the section
-[Groundwater flow](@ref).
+[Groundwater flow](@ref lateral_gwf).
 
 Below the mapping for this wflow\_sbm model (type `sbm_gwf`) to the vertical SBM concept
 (instance of `struct SBM`) and the different lateral concepts. For an explanation about the

@@ -3,7 +3,7 @@
 ## Confined aquifer
 The Table below shows the parameters (fields) of struct `ConfinedAquifer`, including a
 description of these parameters, the unit, and default value if applicable. Struct
-`ConfinedAquifer` is not (yet) part of a Model in Wflow.
+`ConfinedAquifer` is not (yet) part of a Wflow Model.
 
 |  parameter  | description  	      | unit  | default | 
 |:--------------- | ------------------| ----- | -------|
@@ -24,13 +24,21 @@ can be listed in the TOML configuration file under `[lateral.subsurface]`, to ma
 internal model parameter to the external netCDF variable. For some input parameters the
 parameter listed under `[lateral.subsurface]` is not equal to the internal model parameter,
 these are listed in the Table below between parentheses after the internal model parameter.
+The `top` parameter is provided by the exteral parameter `altitude` as part of the static
+input data and set as follows through the TOML file:
+
+```toml
+[input]
+# these are not directly part of the model
+altitude = "wflow_dem"
+```
 
 |  parameter  | description  	        | unit  | default | 
 |:--------------- | ------------------| ----- | -------|
 | **`k`** (`conductivity`) | horizontal conductivity  | m d``^{-1}``s | - |
 | **`specific_yield`**    | specific yield  | m m``^{-1}`` | - |
-| `top`     | top groundwater layers  | m | - |
-| `bottom`     | bottom groundwater layers  | m | - |
+| **`top`** (`altitude`)  | top groundwater layer  | m | - |
+| `bottom`     | bottom groundwater layer  | m | - |
 | `area`          | cell area    | m``^2`` | - |
 | `head`          | groundwater head     | m | - |
 | `conductance`          | conductance    | m``^2`` d``^{-1}`` | - |
@@ -51,7 +59,7 @@ these are listed in the Table below between parentheses after the internal model
 
 ## Boundary conditions
 
-### River
+### [River](@id gwf_river_params)
 The Table below shows the parameters (fields) of struct `River`, including a
 description of these parameters, the unit, and default value if applicable. The parameters
 in bold represent model parameters that can be set through static input data (netCDF), and
@@ -69,7 +77,7 @@ these are listed in the Table below between parentheses after the internal model
 | `index`         |  river cell index | - | - |
 | `flux`          | exchange flux (river to aquifer)  | m``^3`` d``^{-1}`` | - |
 
-### Drainage
+### [Drainage](@id gwf_drainage_params)
 The Table below shows the parameters (fields) of struct `Drainage`, including a
 description of these parameters, the unit, and default value if applicable. The parameters
 in bold represent model parameters that can be set through static input data (netCDF), and
@@ -82,20 +90,20 @@ these are listed in the Table below between parentheses after the internal model
 |:--------------- | ------------------| ----- | -------|
 | **`elevation`** (`drain_elevation`)   | drain elevation  | m | - |
 | **`conductance`** (`drain_conductance`)  | drain conductance  | m``^2`` day``^{-1}`` | - |
-| `index` (`drain`) |  drain cell index | - | - | 
+| **`index`** (`drain`) |  drain cell index | - | - | 
 | `flux`          | exchange flux (drains to aquifer)  | m``^3`` day``^{-1}`` | - |
 
-### Recharge
+### [Recharge](@id gwf_recharge_params)
 The Table below shows the parameters (fields) of struct `Recharge`, including a
 description of these parameters, the unit, and default value if applicable.
 
 |  parameter  | description  	        | unit  | default |
-|:--------------- | ------------------| ----- |
-| `rate`          | recharge rate  | m``^3`` day``^{-1}`` | - | - |
-| `index`         |  recharge cell index | - | - | - |
-| `flux`          | recharge flux  | m``^3`` day``^{-1}`` | 
+|:--------------- | ------------------| ----- | ---- |
+| `rate`          | recharge rate  | m``^3`` day``^{-1}`` | - |
+| `index`         |  recharge cell index | - | - |
+| `flux`          | recharge flux  | m``^3`` day``^{-1}`` | - |
 
-### Head boundary
+### [Head boundary](@id gwf_headboundary_params)
 The Table below shows the parameters (fields) of struct `HeadBoundary`, including a
 description of these parameters, the unit, and default value if applicable.
 
@@ -107,9 +115,9 @@ description of these parameters, the unit, and default value if applicable.
 | `flux`          |  conductance of the head boundary  | m``^3`` day``^{-1}`` | - |
 
 
-### Well boundary
-The Table below shows the parameters (fields) of struct `Well`, including a
-description of these parameters, the unit, and default value if applicable.
+### [Well boundary](@id well_boundary_params)
+The Table below shows the parameters (fields) of struct `Well`, including a description of
+these parameters, the unit, and default value if applicable.
 
 |  input parameter  | description  	        | unit  | default |
 |:--------------- | ------------------| ----- | ---- |

@@ -6,7 +6,7 @@ be set through static input data (netCDF), and can be listed in the TOML configu
 under `[input.lateral.river]` and `[input.lateral.land]`, for river and overland flow
 respectively, to map the internal model parameter to the external netCDF variable. For river
 flow two additionally parameters can be set, `dl` (river length) and `width` (river width)
-as follows:
+as follows, through the TOML file:
 
 ```toml
 [input.lateral.river]
@@ -49,7 +49,8 @@ can be listed in the TOML configuration file under `[input.lateral.river.reservo
 the internal model parameter to the external netCDF variable.
 
 Two parameters reservoir coverage `areas` and the outlet of reservoirs (unique id) `locs`
-that are not part of the `SimpleReservoir` struct are also required: 
+that are not part of the `SimpleReservoir` struct are also required, and can be set as
+follows through the TOML file: 
 
 ```toml
 [input.lateral.river.reservoir]
@@ -82,7 +83,8 @@ can be listed in the TOML configuration file under `[input.lateral.river.lake]`,
 internal model parameter to the external netCDF variable.
 
 Two parameters lake coverage `areas` and the outlet of lakes (unique id) `locs` that are not
-part of the `NaturalLake` struct are also required:
+part of the `NaturalLake` struct are also required, and can be set as follows through the
+TOML file:
 
 ```toml
 [input.lateral.river.lake]
