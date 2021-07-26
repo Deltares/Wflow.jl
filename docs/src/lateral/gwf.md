@@ -1,4 +1,4 @@
-# Groundwater flow
+# [Groundwater flow](@id lateral_gwf)
 
 Single layer groundwater flow is defined in the `struct GroundwaterFlow`, which contains the
 following fields:
@@ -33,33 +33,10 @@ surface). Specific yield (or drainable porosity) represents the volumetric fract
 aquifer will yield when all water drains and the pore volume is filled by air instead.
 Specific yield will vary roughly between 0.05 (clay) and 0.45 (peat) (Johnson, 1967).
 
-The Table below presents the parameters, field names of the structs `ConfinedAquifer` and
-`UnconfinedAquifer` and units:
-
-| Parameters | Field name | Unit | Aquifer type | 
-|:--------------------- |--------------------- |-------------------- |-------------------- |
-| Head ``\phi`` | head | m | confined and unconfined | 
-| Horizontal conductivity ``k`` | k | m d``^{-1}`` | confined and unconfined |
-| Top groundwater layer | top | m |  confined and unconfined |
-| Bottom groundwater layer| bottom | m |  confined and unconfined |
-| Area (cell) | area | m``^2`` | confined and unconfined |
-| Specific yield ``S`` | specific_yield | m m``^{-1}`` |  unconfined |
-| Specific storage | specific_storage | m``^{-1}`` | confined |
-| Storativity ``S`` | storativity | m m``^{-1}`` | confined |
-| Conductance ``C`` | conductance | m``^2`` d``^{-1}`` | confined and unconfined | 
-
-Required static input parameters (netCDF) are:
-+ Horizontal conductivity ``k``.
-+ Specific yield ``S`` (unconfined).
-+ Storativity ``S`` (confined).
-+ Top groundwater layer.
-+ Bottom groundwater layer; for the `SBM + Groundwater flow` model the bottom is derived.
-  from the `soilthickness` [mm] parameter of `SBM` and the provided surface elevation
-  `altitude` [m] as part of the static input.
-+ Area; for the `SBM + Groundwater flow` model the area is derived from the model grid. 
-
-The parameter Conductance ``C`` is calculated, see also the documentation further below. The
-groundwater head ``\phi`` is an output variable.
+The parameters of structs `ConfinedAquifer` and `UnconfinedAquifer` are presented in Tables
+of the [Confined aquifer](@ref) and [Unconfined aquifer](@ref) sections of Model parameters.
+Parameters that can be set directly from the static input data (netCDF) are marked in these
+Tables.
 
 Groundwater flow is solved forward in time and central in space. The vertically averaged
 governing equation for an inhomogeneous and isotropic aquifer in one dimension can be
@@ -190,27 +167,14 @@ where ``Q_{riv}`` is the exchange flux from river to aquifer [L``^3`` T``^{-1}``
 is the river bed exfiltration conductance, ``B_{riv}`` the bottom of the river bed [L],
 ``h_{riv}`` is the river stage [L] and ``\phi`` is the hydraulic head in the river cell [L].
 
-The Table below presents the parameters, field names of the struct `River` and units:
+The Table in the Groundwater flow [river boundary condition](@ref gwf_river_params) section
+of the Model parameters provides the parameters of the struct `River`. Parameters that can
+be set directly from the static input data (netCDF) are marked in this Table.
 
-| Parameters | Field name | Unit | 
-|:--------------------- |--------------------- |-------------------- |
-| River stage ``h_{riv}`` | stage | m |
-| River bed infiltration conductance ``C_i`` | infiltration_conductance | m``^2`` d``^{-1}`` |
-| River bed exfiltration conductance ``C_e``  | exfiltration_conductance | m``^2`` d``^{-1}`` | 
-| River bottom elevation ``B_{riv}`` | bottom | m |
-| Exchange flux (river to aquifer) ``Q_{riv}`` | flux | m``^3`` d``^{-1}`` | 
-| River cell index | index | - |
-
-Required static input parameters are:
-+ River bed infiltration conductance ``C_i``.
-+ River bed exfiltration conductance ``C_e``.
-+ River bottom ``B_{riv}``.
-+ River cell index.
-
-The exchange flux (river to aquifer) ``Q_{riv}`` is an output variable, and is used to
-update the total flux in a river cell. For the model `SBM + Groundwater flow`, the water
-level `h` [m] of the river kinematic wave in combination with the river `bottom` is used to
-update the `stage` field of the `River` struct each time step.       
+The exchange flux (river to aquifer) ``Q_{riv}`` is an output variable (field `flux` of the
+`River` struct), and is used to update the total flux in a river cell. For the model `SBM +
+Groundwater flow`, the water level `h` [m] of the river kinematic wave in combination with
+the river `bottom` is used to update the `stage` field of the `River` struct each time step.
 
 ### Drainage
 The flux from drains to the aquifer is calculated as follows:
@@ -223,24 +187,14 @@ where ``Q_{drain}`` is the exchange flux from drains to aquifer [L``^3`` T``^{-1
 ``C_{drain}`` [L``^2`` T``^{-1}``] is the drain conductance, ``h_{drain}`` is the drain
 elevation [L] and ``\phi`` is the hydraulic head in the cell with drainage [L].
 
-The Table below presents the parameters, field names of the struct `Drainage` and units:
+The Table in the Groundwater flow [drainage boundary condition](@ref gwf_drainage_params)
+section of the Model parameters provides the parameters of the struct `Drainage`. Parameters
+that can be set directly from the static input data (netCDF) are marked in this Table.
 
-| Parameters | Field name | Unit | 
-|:--------------------- |--------------------- |-------------------- |
-| Drain elevation ``h_{drain}`` | elevation | m |
-| Drain conductance ``C_{drain}`` | conductance | m``^2`` d``^{-1}`` |
-| Drain flux (drains to aquifer) ``Q_{drain}`` | flux | m``^3`` d``^{-1}`` | 
-| Drain cell index | index | - |
-
-Required static input parameters are:
-+ Drain elevation ``h_{drain}``.
-+ Drain conductance ``C_{drain}``.
-+ Drain cell index.
-
-The exchange flux (drains to aquifer) ``Q_{drain}`` is an output variable, and is used to
-update the total flux in a cell with drains. For the model `SBM + Groundwater flow` this
-boundary condition is optional, and if used should be specified in the TOML file as follows
-(see also
+The exchange flux (drains to aquifer) ``Q_{drain}`` is an output variable (field `flux` of
+struct `Drainage`), and is used to update the total flux in a cell with drains. For the
+model `SBM + Groundwater flow` this boundary condition is optional, and if used should be
+specified in the TOML file as follows (see also
 [sbm\_gwf\_config.toml](https://github.com/Deltares/Wflow.jl/blob/master/test/sbm_gwf_config.toml)):
 
 ```toml
@@ -257,22 +211,16 @@ Q_{r} = R \, A
 with ``R`` the recharge rate [L T``^{-1}``] and ``A`` the area [L``^2`` ] of the aquifer
 cell.
 
-The Table below presents the parameters, field names of the struct `Recharge` and units:
+The Table in the Groundwater flow [recharge boundary condition](@ref gwf_recharge_params)
+section of the Model parameters section provides the parameters of the struct `Recharge`.
+Parameters that can be set directly from the static input data (netCDF) are marked in this
+Table.
 
-| Parameters | Field name | Unit | 
-|:--------------------- |--------------------- |-------------------- |
-| Recharge rate ``R`` | rate | m d``^{-1}`` |
-| Recharge flux ``Q_r`` | flux | m``^3`` d``^{-1}`` |
-| Recharge index | index | - | 
-
-Required static input parameters are:
-+ Recharge cell index.
-
-The recharge flux ``Q_r`` is an output variable, and is used to update the total flux in a
-cell where recharge occurs. For the model `SBM + Groundwater flow`, the recharge rate from
-the vertical SBM concept `recharge` [mm] is used to update the `rate` field of the
-`Recharge` struct each time step. The `rate` field is multiplied by the `area` field of the
-aquifer.     
+The recharge flux ``Q_r`` is an output variable (field `flux` of struct `Recharge`), and is
+used to update the total flux in a cell where recharge occurs. For the model `SBM +
+Groundwater flow`, the recharge rate from the vertical SBM concept `recharge` [mm] is used
+to update the `rate` field of the `Recharge` struct each time step. The `rate` field is
+multiplied by the `area` field of the aquifer.   
 
 ### Head boundary
 This boundary is a fixed head with time (not affected by the model stresses over time))
@@ -286,22 +234,13 @@ Q_{hb} = C_{hb} (\phi_{hb} - \phi)
 with ``C_{hb}`` the conductance of the head boundary [L``^2`` T``^{-1}``], ``\phi_{hb}`` the
 head [L] of the head boundary and  ``\phi`` the head of the aquifer cell.
 
-The Table below presents the parameters, field names of the struct `HeadBoundary` and units:
+The Table in the Groundwater flow [head boundary condition](@ref gwf_headboundary_params)
+section of the Model parameters provides the parameters of the struct `HeadBoundary`.
 
-| Parameters | Field name | Unit | 
-|:--------------------- |--------------------- |-------------------- |
-| Head ``\phi_{hb}`` | head | m |
-| Conductance of the head boundary ``C_{hb}`` | conductance | m``^2`` d``^{-1}`` |
-| Head boundary flux ``Q_{hb}`` | flux | m``^3`` d``^{-1}`` | 
-| Head boundary index | index | - |
-
-Required static input parameters are:
-+ Conductance of the head boundary ``C_{hb}``.
-+ Head boundary index.
-
-The head boundary flux ``Q_{hb}`` is an output variable, and is used to update the total
-flux in a cell where this type of boundary occurs. The parameter Head ``\phi_{hb}`` can be
-specified as a fixed or time dependent value.
+The head boundary flux ``Q_{hb}`` is an output variable (field `flux` of struct
+`HeadBoundary`), and is used to update the total flux in a cell where this type of boundary
+occurs. The parameter Head ``\phi_{hb}`` can be specified as a fixed or time dependent
+value.
 
 !!! note 
     This boundary is not (yet) part of the model `SBM + Groundwater flow`.
@@ -309,13 +248,8 @@ specified as a fixed or time dependent value.
 ### Well boundary
 A volumetric well rate [L``^3`` T``^{-1}``] can be specified as a boundary condition.
 
-The Table below presents the parameters, field names of the struct `Well` and units:
-
-| Parameters | Field name | Unit | 
-|:--------------------- |--------------------- |-------------------- |
-| Volumetric well rate ``Q_{well}`` | volumetric_rate | m``^3`` d``^{-1}`` |
-| Actual well flux | flux | m``^3`` d``^{-1}`` | 
-| Well index | index | - |
+The Table in the [well boundary condition](@ref well_boundary_params) section of the Model
+parameters provides the parameters of the struct `Well`.
 
 The volumetric well rate ``Q_{well}`` can be can be specified as a fixed or time dependent
 value. If a cell is dry, the actual well flux `flux` is set to zero (see also the last note
