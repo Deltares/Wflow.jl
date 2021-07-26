@@ -463,13 +463,13 @@ function update(lake::NaturalLake, i, inflow, doy, timestepsecs)
                 if lake.waterlevel[i] > lake.threshold[i]
                     outflow = lake.b[i] * pow((lake.waterlevel[i] - lake.threshold[i]), lake.e[i])
                 else
-                    outflow = 0
+                    outflow = Float(0)
                 end
             else
                 if lake.waterlevel[lo] > lake.threshold[i]
                     outflow = -1.0 * lake.b[i] * pow((lake.waterlevel[lo] - lake.threshold[i]), lake.e[i])
                 else
-                    outflow = 0
+                    outflow = Float(0)
                 end
             end
         end
