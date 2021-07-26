@@ -445,14 +445,14 @@ function initialize_sbm(nc, config, riverfrac, inds)
     end
     kvfrac = ncread(
         nc,
-        param(config, "input.vertical.khfrac", nothing);
+        param(config, "input.vertical.kvfrac", nothing);
         sel = inds,
         defaults = 1.0,
         type = Float,
         dimname = :layer,
     )
     if size(kvfrac, 1) != maxlayers
-        parname = param(config, "input.vertical.khfrac")
+        parname = param(config, "input.vertical.kvfrac")
         size1 = size(kvfrac, 1)
         error("$parname needs a layer dimension of size $maxlayers, but is $size1")
     end

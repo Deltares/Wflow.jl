@@ -8,6 +8,13 @@ pages = [
     "Command line interface" => "cli.md",
     "Structures and config" =>
         ["Structures" => "structure.md", "Config" => "config.md"],
+    "Building a model" => "model-setup.md",
+    "Model parameters" => [
+        "Vertical concepts" => "vertical/parameters.md",
+        "Kinematic wave" => "lateral/kinwave_params.md",
+        "Groundwater flow" => "lateral/gwf_params.md",
+        "Sediment flux" => "lateral/sediment_params.md",
+    ],
     "Models" => [
         "wflow_sbm" => "model/sbm.md",
         "wflow_hbv" => "model/hbv.md",
