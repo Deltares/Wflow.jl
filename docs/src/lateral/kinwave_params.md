@@ -13,11 +13,12 @@ as follows, through the TOML file:
 length = "wflow_riverlength"
 width = "wflow_riverwidth"
 ```
+[^1]: default value for Manning's roughness `n`, river = 0.036; land = 0.072
 
 |  parameter  | description  	  | unit  | default |
 |:--------------- | ------------------| ----- | -------- |
 | `dl`            |  length      | m     |  -      |
-| **`n`**             | Manning's roughness | s m``^{\frac{1}{3}}``| - |
+| **`n`**             | Manning's roughness | s m``^{\frac{1}{3}}``| [^1] |
 | **`slope`**         |  slope       | m m``^{-1}``| - |
 | `width`         |  width       | m          | - |
 | `q`             | discharge     | m``^3`` s``^{-1}``| - |
