@@ -160,8 +160,9 @@ and water bodies) is split in potential soil evaporation and potential transpira
 on the canopy gap fraction (assumed to be identical to the amount of bare soil).
 
 For the case of one single soil layer (the SBM soil column is not split-up into different
-layers), soil evaporation [mm] is scaled according to, as shown by the following code block
-(`i` refers to the Vector position of each cell within the spatial domain):
+layers), soil evaporation [mm t``^{-1}``] is scaled according to (as shown by the following
+code block (`i` refers to the index of the vector that contains all active cells within the
+spatial model domain)):
 
 ```julia
     soilevapunsat = potsoilevap * min(1.0, saturationdeficit / sbm.soilwatercapacity[i])
@@ -219,11 +220,12 @@ Here the sharpness parameter `rootdistpar` \[-\] (by default a large negative va
 determines if there is a stepwise output or a more gradual output (default is stepwise).
 `zi` [mm] is the level of the water table in the grid cell below the surface, `rootingdepth`
 [mm] is the maximum depth of the roots below the surface. For all values of `zi` smaller
-that `rootingdepth` a value of 1 is returned if they are equal a value of 0.5 is
-returned if `zi` is larger than the `rootingdepth` a value of 0 is returned. The returned
-`wetroots` [-] fraction is multiplied by the potential evaporation (and limited by the
-available water in saturated zone) to get the transpiration from the saturated part of the
-soil, as shown by the following code block (`i` refers to the Vector position of each cell within the spatial domain):
+that `rootingdepth` a value of 1 is returned if they are equal a value of 0.5 is returned if
+`zi` is larger than the `rootingdepth` a value of 0 is returned. The returned `wetroots` [-]
+fraction is multiplied by the potential evaporation (and limited by the available water in
+saturated zone) to get the transpiration from the saturated part of the soil, as shown by
+the following code block (`i` refers to the index of the vector that contains all active
+cells within the spatial model domain):
 
 ```julia
     # transpiration from saturated store
@@ -326,8 +328,8 @@ block:
 ```
 
 Then the potential rise `maxcapflux` is scaled using the distance between the roots and the
-water table as follows in the code block below (`i` refers to the Vector position of each cell 
-within the spatial domain):
+water table as follows in the code block below (`i` refers to the index of the vector that
+contains all active cells within the spatial model domain):
 
 ```julia
     if sbm.zi[i] > rootingdepth
@@ -346,8 +348,9 @@ rooting depth. If the roots reach the water table (`rootingdepth` ``\ge`` `sbm.z
 `capfluxscale` is set to zero and thus setting the capillary rise `capflux` to zero.
 
 Finally, the capillary rise `capflux` is limited by the unsaturated store deficit (one or
-multiple layers), calculated as follows in the code block below (`i` refers to the Vector
-position of each cell within the spatial domain, and `k` refers to the layer position):
+multiple layers), calculated as follows in the code block below (`i` refers to the index of
+the vector that contains all active cells within the spatial model domain, and `k` refers to
+the layer position):
 
 ```julia
     usl[k] * (sbm.θₛ[i] - sbm.θᵣ[i]) - usld[k]
@@ -358,8 +361,8 @@ where `usl` [mm] is the unsaturated layer thickness, `usld` is the `ustorelayerd
 previously defined.
 
 The calculation of the actual capillary rise `actcapflux` is as follows in the code block
-below (`i` refers to the Vector position of each cell within the spatial domain, 
-and `k` refers to the layer position):
+below (`i` refers to the index of the vector that contains all active cells within the
+spatial model domain, and `k` refers to the layer position):
 
 ```julia
     actcapflux = 0.0
