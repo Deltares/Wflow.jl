@@ -156,10 +156,8 @@ function update(res::SimpleReservoir, i, inflow, timestepsecs)
         (
             res.volume[i] +
             (inflow * timestepsecs) +
-            (res.precipitation[i] * (timestepsecs / res.Δt) / 1000.0) *
-            res.area[i] -
-            (res.evaporation[i] * (timestepsecs / res.Δt) / 1000.0) *
-            res.area[i]
+            (res.precipitation[i] * (timestepsecs / res.Δt) / 1000.0) * res.area[i] -
+            (res.evaporation[i] * (timestepsecs / res.Δt) / 1000.0) * res.area[i]
         ),
     )
 
@@ -481,12 +479,9 @@ function update(lake::NaturalLake, i, inflow, doy, timestepsecs)
         storage =
             lake.storage[i] +
             inflow * timestepsecs +
-            (lake.precipitation[i] / 1000.0) *
-            (timestepsecs / lake.Δt) *
-            lake.area[i] -
-            (lake.evaporation[i] / 1000.0) *
-            (timestepsecs / lake.Δt) *
-            lake.area[i] - outflow * timestepsecs
+            (lake.precipitation[i] / 1000.0) * (timestepsecs / lake.Δt) * lake.area[i] -
+            (lake.evaporation[i] / 1000.0) * (timestepsecs / lake.Δt) * lake.area[i] -
+            outflow * timestepsecs
 
         waterlevel = if lake.storfunc[i] == 1
             lake.waterlevel[i] + (storage - lake.storage[i]) / lake.area[i]
