@@ -58,13 +58,13 @@
     # Saturated store [mm]
     satwaterdepth::Vector{T} | "mm"
     # Pseudo-water table depth [mm] (top of the saturated zone)
-    zi::Vector{T}  | "mm"
+    zi::Vector{T} | "mm"
     # Soilwater capacity [mm]
-    soilwatercapacity::Vector{T}  | "mm"
+    soilwatercapacity::Vector{T} | "mm"
     # Canopy storage [mm]
-    canopystorage::Vector{T}  | "mm"
+    canopystorage::Vector{T} | "mm"
     # Maximum canopy storage [mm]
-    cmax::Vector{T}  | "mm"
+    cmax::Vector{T} | "mm"
     # Canopy gap fraction [-]
     canopygapfraction::Vector{T} | "-"
     # Gash interception model parameter, ratio of the average evaporation from the
@@ -181,7 +181,7 @@
     tsoil::Vector{T} | "ᵒC"
     ## Interception related to leaf_area_index climatology ###
     # Specific leaf storage [mm]
-    sl::Vector{T}  | "mm"
+    sl::Vector{T} | "mm"
     # Storage woody part of vegetation [mm]
     swood::Vector{T} | "mm"
     # Extinction coefficient [-] (to calculate canopy gap fraction)
