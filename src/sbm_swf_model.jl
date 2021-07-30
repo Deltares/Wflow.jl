@@ -4,11 +4,14 @@
 Initial part of the SBM + Shallow water flow model concept. Reads the input settings and data as defined in the
 Config object. Will return a Model that is ready to run.
 """
+
+# TODO (general): add docs/comments to functions and structs related to this new concept
+
 @with_kw struct Indices
-    xu :: Vector{Int}
-    xd :: Vector{Int}
-    yu :: Vector{Int}
-    yd :: Vector{Int}
+    xu::Vector{Int}
+    xd::Vector{Int}
+    yu::Vector{Int}
+    yd::Vector{Int}
 end
 
 const dirs = ["yd", "xd", "xu", "yu"]
@@ -25,6 +28,8 @@ function initialize_sbm_swf_model(config::Config)
     Δt = clock.Δt
 
     reinit = get(config.model, "reinit", true)::Bool
+    do_reservoirs = get(config.model, "reservoirs", false)::Bool
+    do_lakes = get(config.model, "lakes", false)::Bool
 
     nc = NCDataset(static_path)
 
@@ -44,7 +49,7 @@ function initialize_sbm_swf_model(config::Config)
     riverlength = riverlength_2d[inds]
     altitude_2d = ncread(nc, param(config, "input.altitude"); type = Float, fill = 0)
     elevation = altitude_2d[inds]
-    
+
 
     # read x, y coordinates and calculate cell length [m]
     y_nc = read_y_axis(nc)
@@ -144,75 +149,73 @@ function initialize_sbm_swf_model(config::Config)
         defaults = 0.036,
         type = Float,
     )
-    
+
     ldd_riv = ldd_2d[inds_riv]
     graph_riv = flowgraph(ldd_riv, inds_riv, pcr_dir)
 
-    # the indices of the river cells in the land(+river) cell vector
-    index_river = filter(i -> !isequal(river[i], 0), 1:n)
-    frac_toriver = fill(Float(1), n)
+    # the indices of the river cells in the vector with active cells (sub-catchment)
+    index_river_f = filter(i -> !isequal(river[i], 0), 1:n) # filtered (without zeros)
+    index_river = rev_inds_riv[inds] # not filtered (with zeros)
+    frac_toriver = fraction_runoff_toriver(graph, ldd, index_river_f, βₗ, n)
+
+    # TODO: add more comments/ explanation for local inertial model
 
     # the Almeida et al. (2012) algorithm makes use of a staggered grid (nodes and links).
-    # the following is required:
+    # the following is required for the river network:
     # for each node: - the source node (src_node) and destination node (dst_node)
     #                - the source link (src_link_node) and destination link (dst_link_node)
     # for each link: - the source link (src_link) and destination link (dst_link)
     links = collect(edges(graph_riv))
     src_node = src.(links)
     dst_node = dst.(links)
-    
+
     src_link = Vector{Int}[]
     dst_link = copy(src_link)
-    
+
     n_nodes = nv(graph_riv)
     n_links = ne(graph_riv)
-    
+
     for i = 1:n_links
         push!(src_link, findall(isequal(src_node[i]), dst_node))
         push!(dst_link, findall(isequal(dst_node[i]), src_node))
     end
-    
+
     nodes = vertices(graph_riv)
     src_link_node = Vector{Int}[]
     dst_link_node = copy(src_link_node)
-    
+
     for i = 1:n_nodes
         push!(src_link_node, findall(isequal(nodes[i]), dst_node))
         push!(dst_link_node, findall(isequal(nodes[i]), src_node))
     end
 
     river_elevation = altitude_2d[inds_riv]
-    # initialize subgrid river bed elevation at links
+    # initialize subgrid river bed elevation at links of river
     zr_max = fill(Float(0), n_links)
-    for i in 1:n_links
+    for i = 1:n_links
         zr_max[i] = max(river_elevation[src_node[i]], river_elevation[dst_node[i]])
     end
 
     # land part
-    indices = Indices(
-        xu = fill(0, n),
-        xd = fill(0, n),
-        yu = fill(0, n),
-        yd = fill(0, n),
-    )
+    indices = Indices(xu = fill(0, n), xd = fill(0, n), yu = fill(0, n), yd = fill(0, n))
 
-    nrow, ncol  = modelsize_2d
-    for (v,i) in enumerate(inds)
+    nrow, ncol = modelsize_2d
+    for (v, i) in enumerate(inds)
         for (m, neighbor) in enumerate(neighbors)
             j = i + neighbor
             if (1 <= j[1] <= nrow) && (1 <= j[2] <= ncol && rev_inds[j] != 0)
                 param(indices, dirs[m])[v] = rev_inds[j]
             else
                 param(indices, dirs[m])[v] = n + 1
-            end       
+            end
         end
     end
 
     zx_max = fill(Float(0), n)
     zy_max = fill(Float(0), n)
     for i = 1:n
-        yu = min(indices.yu[i],n)
-        xu = min(indices.xu[i],n)
+        yu = min(indices.yu[i], n)
+        xu = min(indices.xu[i], n)
         zx_max[i] = max(elevation[i], elevation[xu])
         zy_max[i] = max(elevation[i], elevation[yu])
     end
@@ -230,31 +233,31 @@ function initialize_sbm_swf_model(config::Config)
         w = min(riverwidth[v], riverwidth[only(dst)])
         dir = Wflow.pcr_dir[ldd_riv[v]]
         idx = rev_inds[inds_riv[v]]
-        if dir == CartesianIndex(1,1)
+        if dir == CartesianIndex(1, 1)
             we_x[idx] = we_x[idx] - 0.5 * w
             we_y[idx] = we_y[idx] - 0.5 * w
-        elseif dir == CartesianIndex(-1,-1)
+        elseif dir == CartesianIndex(-1, -1)
             we_x[indices.xd[idx]] = we_x[indices.xd[idx]] - 0.5 * w
             we_y[indices.yd[idx]] = we_y[indices.yd[idx]] - 0.5 * w
-        elseif dir == CartesianIndex(1,0)
+        elseif dir == CartesianIndex(1, 0)
             we_x[idx] = we_x[idx] - w
-        elseif dir == CartesianIndex(0,1)
+        elseif dir == CartesianIndex(0, 1)
             we_y[idx] = we_y[idx] - w
-        elseif dir ==  CartesianIndex(-1,0)
+        elseif dir == CartesianIndex(-1, 0)
             we_x[indices.xd[idx]] = we_x[indices.xd[idx]] - w
-        elseif dir ==  CartesianIndex(0,-1)
+        elseif dir == CartesianIndex(0, -1)
             we_y[indices.yd[idx]] = we_x[indices.yd[idx]] - w
-        elseif dir ==  CartesianIndex(1,-1)
+        elseif dir == CartesianIndex(1, -1)
             we_x[idx] = we_x[idx] - 0.5 * w
             we_y[indices.yd[idx]] = we_x[indices.yd[idx]] - 0.5 * w
-        elseif dir ==  CartesianIndex(-1,1)
+        elseif dir == CartesianIndex(-1, 1)
             we_x[indices.xd[idx]] = we_x[indices.xd[idx]] - 0.5 * w
             we_y[idx] = we_y[idx] - 0.5 * w
         end
     end
 
     bankheight = fill(Float(2), nriv)    # dummy value for bankheight
-    bankvolume =  bankheight .* riverwidth .* riverlength
+    bankvolume = bankheight .* riverwidth .* riverlength
     volume = fill(Float(0), n)
 
     h_init = river .* 0.01  # cold state
@@ -271,26 +274,28 @@ function initialize_sbm_swf_model(config::Config)
             volume[i] = h_init[i] * xl[i] * yl[i]
         end
     end
-    
+
+    # TODO: review field of struct
     sw_land = ShallowWaterLand{Float}(
         n = n,
-        dx = xl,
-        dy = yl,
+        xl = xl, # also part of landnetwork...
+        yl = yl, # also part of landnetwork...
         xwidth = we_x,
         ywidth = we_y,
         g = 9.80665,
         θ = 0.8,
         α = 0.2,
-        qx0 = zeros(n+1),
-        qy0 = zeros(n+1),
-        qx = zeros(n+1),
-        qy = zeros(n+1),
+        qx0 = zeros(n + 1),
+        qy0 = zeros(n + 1),
+        qx = zeros(n + 1),
+        qy = zeros(n + 1),
         zx_max = zx_max,
         zy_max = zy_max,
         mannings_n = n_land,
         volume = volume,
         runoff = zeros(n),
         h = h_init,
+        h_av = zeros(n),
         slp_x = zeros(n),
         slp_y = zeros(n),
         z = elevation,
@@ -298,24 +303,87 @@ function initialize_sbm_swf_model(config::Config)
         rivercells = river,
     )
 
-    sw_river = ShallowWaterRiver{Float}(
+    riverlength_bc = 1e05
+    alpha = 0.7
+    h_thresh = 1.0e-3
+    froude_limit = true
+
+    # set ghost points for boundary condition (downstream river outlet): river width and
+    # manning n is copied from the upstream cell, river elevation and h are set at 0.0
+    # (sea level). river length at boundary point is by default 1.0e5 m
+    # (riverlength_bc).
+    index_pit_river = findall(x -> x == 5, ldd_riv)
+    n_ghost_points = length(index_pit_river)
+    for (i, v) in enumerate(index_pit_river)
+        add_vertex!(graph_riv)
+        add_edge!(graph_riv, v, nriv + i)
+        append!(river_elevation, 0.0)
+        append!(riverwidth, riverwidth[v])
+        append!(riverlength, riverlength_bc)
+        append!(n_river, n_river[v])
+    end
+
+    # for each link the src and dst node is required
+    nodes_at_link = adjacent_nodes_at_link(graph_riv)
+    # for each node the src and dst link is required
+    links_at_node = adjacent_links_at_node(graph_riv, nodes_at_link)
+
+    _ne = ne(graph_riv)
+
+    zmax = fill(Float(0), _ne)
+    width_at_link = fill(Float(0), _ne)
+    length_at_link = fill(Float(0), _ne)
+    mannings_n = fill(Float(0), _ne)
+    for i = 1:_ne
+        zmax[i] = max(
+            river_elevation[nodes_at_link.src[i]],
+            river_elevation[nodes_at_link.dst[i]],
+        )
+        width_at_link[i] =
+            min(riverwidth[nodes_at_link.dst[i]], riverwidth[nodes_at_link.src[i]])
+        length_at_link[i] =
+            0.5 *
+            (riverlength[nodes_at_link.dst[i]] + riverlength[nodes_at_link.src[i]])
+        mannings_n[i] =
+            (
+                n_river[nodes_at_link.dst[i]] * riverlength[nodes_at_link.dst[i]] +
+                n_river[nodes_at_link.src[i]] * riverlength[nodes_at_link.src[i]]
+            ) / (riverlength[nodes_at_link.dst[i]] + riverlength[nodes_at_link.src[i]])
+    end
+
+    sw_river = ShallowWaterRiver(
         n = nriv,
+        ne = _ne,
         g = 9.80665,
-        θ = 0.8,
-        α = 0.2,
-        qr0 = zeros(n_links),
-        qr = zeros(n_links),
-        zr_max = zr_max,
-        mannings_n = n_river,
-        h = h_init[index_river],
-        riverwidth = riverwidth,
-        riverlength = riverlength,
-        bankvolume = bankvolume,
-        bankheight = bankheight,
-        slp = zeros(n_links),
-        z_r = river_elevation,
-        z_b = river_elevation .+ bankheight,
-        froude = true,
+        α = alpha,
+        h_thresh = h_thresh,
+        Δt = tosecond(Δt),
+        q = zeros(_ne),
+        q_av = zeros(_ne),
+        zmax = zmax,
+        mannings_n = mannings_n,
+        h = fill(0.0, nriv + n_ghost_points),
+        η_max = zeros(_ne),
+        hf = zeros(_ne),
+        h_av = zeros(nriv),
+        width = riverwidth,
+        width_at_link = width_at_link,
+        a = zeros(_ne),
+        r = zeros(_ne),
+        volume = fill(0.0, nriv),
+        error = zeros(Float, nriv),
+        inwater = zeros(nriv),
+        inwater0 = fill(mv, nriv),
+        dl = riverlength,
+        dl_at_link = length_at_link,
+        bankvolume = fill(mv, nriv),
+        bankheight = fill(mv, nriv),
+        z = river_elevation,
+        froude_limit = froude_limit,
+        reservoir_index = do_reservoirs ? resindex : fill(0, nriv),
+        lake_index = do_lakes ? lakeindex : fill(0, nriv),
+        reservoir = do_reservoirs ? reservoirs : nothing,
+        lake = do_lakes ? lakes : nothing,
     )
 
     # setup subdomains for the land kinematic wave domain, if nthreads = 1
@@ -325,12 +393,10 @@ function initialize_sbm_swf_model(config::Config)
     subbas_order, indices_subbas, topo_subbas =
         kinwave_set_subdomains(config, graph, toposort, index_pit_land)
 
-    modelmap = (vertical = sbm, lateral = (subsurface = ssf, land = sw_land, river = sw_river))
-    
-    indices_reverse = (
-        land = rev_inds,
-        river = rev_inds_riv,
-    )
+    modelmap =
+        (vertical = sbm, lateral = (subsurface = ssf, land = sw_land, river = sw_river))
+
+    indices_reverse = (land = rev_inds, river = rev_inds_riv)
 
     writer = prepare_writer(
         config,
@@ -357,8 +423,10 @@ function initialize_sbm_swf_model(config::Config)
     # for the land domain the x and y length [m] of the grid cells are stored
     # for reservoirs and lakes indices information is available from the initialization
     # functions
+    # TODO: review field of land and river network for local inertial model (1D and 2D) 
     land = (
         graph = graph,
+        index_pit_land = index_pit_land,
         upstream_nodes = filter_upsteam_nodes(graph, ssf.wb_pit),
         subdomain_order = subbas_order,
         topo_subdomain = topo_subbas,
@@ -372,19 +440,17 @@ function initialize_sbm_swf_model(config::Config)
     )
 
     river = (
-        links = links,
-        src_node = src_node,
-        dst_node = dst_node,
-        src_link = src_link,
-        dst_link = dst_link,
-        src_link_node = src_link_node,
-        dst_link_node = dst_link_node,
+        graph = graph_riv,
+        nodes_at_link = nodes_at_link,
+        links_at_node = links_at_node,
+        indices = inds_riv,
+        reverse_indices = rev_inds_riv,
     )
 
     model = Model(
         config,
-        (; land, river, index_river, frac_toriver),
-        (subsurface = ssf, land = sw_land, river=sw_river),
+        (; land, river, index_river, index_river_f, frac_toriver),
+        (subsurface = ssf, land = sw_land, river = sw_river),
         sbm,
         clock,
         reader,
@@ -392,6 +458,7 @@ function initialize_sbm_swf_model(config::Config)
     )
 
     # read and set states in model object if reinit=false
+    # TODO: add/check states for local inertial model 
     if reinit == false
         instate_path = joinpath(tomldir, config.state.path_input)
         state_ncnames = ncnames(config.state)
@@ -414,4 +481,84 @@ function initialize_sbm_swf_model(config::Config)
         update_cyclic!(model)
     end
     return model
+end
+
+"update the sbm_swf model for a single timestep"
+function update_sbm_swf(model)
+
+    @unpack lateral, vertical, network, clock, config = model
+    inds_riv = network.index_river_f
+
+    outlet = network.land.index_pit_land
+
+    update_forcing!(model)
+    if haskey(config.input, "cyclic")
+        update_cyclic!(model)
+    end
+
+    vertical.waterlevel_land .= lateral.land.h_av .* 1000.0
+    #vertical.waterlevel_river[inds_riv] .= lateral.river.h_av .* 1000.0
+
+    # vertical sbm concept is updated until snow state, after that (optional)
+    # snow transport is possible
+    update_until_snow(vertical, config)
+
+    # lateral snow transport 
+    if get(config.model, "masswasting", false)::Bool
+        lateral_snow_transport!(
+            vertical.snow,
+            vertical.snowwater,
+            lateral.subsurface.βₗ,
+            network.land,
+        )
+    end
+
+    # update vertical sbm concept until recharge [mm] to the saturated store
+    update_until_recharge(vertical, config)
+
+    # exchange of recharge between vertical sbm concept and subsurface flow domain
+    lateral.subsurface.recharge .= vertical.recharge ./ 1000.0
+    lateral.subsurface.recharge .*= lateral.subsurface.dw
+    lateral.subsurface.zi .= vertical.zi ./ 1000.0
+
+    # update lateral subsurface flow domain (kinematic wave)
+    update(lateral.subsurface, network.land, network.frac_toriver)
+
+    # update vertical sbm concept (runoff, ustorelayerdepth and satwaterdepth)
+    update_after_subsurfaceflow(
+        vertical,
+        lateral.subsurface.zi .* 1000.0,
+        lateral.subsurface.exfiltwater .* 1000.0,
+    )
+
+    # TO DO: include other inputs here (for river, and from lateral ssf)
+    lateral.land.runoff .=
+        (vertical.runoff ./ 1000.0) .* (network.land.xl .* network.land.yl) ./ vertical.Δt
+
+    t = 0.0
+    while t < vertical.Δt
+        Δt = 60.0 # now fixed time step, TODO: needs to be improved, including further checking on possible mass balance errors
+        shallowwater_river_update(
+            lateral.river,
+            network.river,
+            Δt,
+            nothing,
+            dayofyear(clock.time),
+            false,
+        )
+        update(lateral.land, lateral.river, network, Δt)
+        if t + Δt > vertical.Δt
+            Δt = vertical.Δt - t
+        end
+        t = t + Δt
+
+        # boundary condition, fixed h at outlet for now, TODO: dealing with BCs needs to be improved
+        lateral.land.h[outlet] .= 0.1
+        lateral.river.h[1:5809] .= lateral.land.h[inds_riv]
+    end
+    # update the clock
+    advance!(clock)
+
+    return model
+
 end

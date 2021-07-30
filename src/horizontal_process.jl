@@ -271,3 +271,36 @@ function local_inertial_riverflow(
 
     return q
 end
+
+function local_inertial_flow(
+    θ,
+    q0,
+    qd,
+    qu,
+    η0,
+    η1,
+    hf,
+    width,
+    length,
+    mannings_n,
+    g,
+    froude,
+    Δt,
+)
+
+    slope = (η1 - η0) / length
+    q = (
+        ((θ * q0 + 0.5 * (1.0 - θ) * (qu + qd)) - g * hf * width * Δt * slope) /
+        (1.0 + g * Δt * (mannings_n^2.0) * abs(q0) / (hf^(7.0 / 3.0) * width))
+    )
+    if froude
+        fr = (q / width / hf) / sqrt(g * hf)
+        if abs(fr) > 1.0 && q > 0.0
+            q = hf * (sqrt(g * hf)) * width
+        elseif abs(fr) > 1.0 && q < 0.0
+            q = -hf * (sqrt(g * hf)) * width
+        end
+    end
+
+    return q
+end
