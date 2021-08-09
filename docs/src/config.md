@@ -2,7 +2,7 @@
 
 [TOML](https://github.com/toml-lang/toml) is used as the configuration format for models
 available in wflow. File paths included in the configuration TOML file are relative to the
-TOML file location. 
+TOML file location.
 
 ## General time info
 Time information is optional. When left out, each time step in the forcing NetCDF will be
@@ -95,6 +95,7 @@ mapped a default value will be used if available.
 
 ```toml
 [input]
+# use "data/forcing-year-*.nc" if forcing files are split in time
 path_forcing = "data/forcing-moselle.nc"
 path_static = "data/staticmaps-moselle.nc"
 

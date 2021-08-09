@@ -113,7 +113,7 @@ end
 
 "Extract a NetCDF variable at a given time"
 function get_at(
-    ds::NCDataset,
+    ds::CFDataset,
     varname::AbstractString,
     times::AbstractVector{<:TimeType},
     t::TimeType,
@@ -125,7 +125,7 @@ function get_at(
     return get_at(ds, varname, i)
 end
 
-function get_at(ds::NCDataset, varname::AbstractString, i)
+function get_at(ds::CFDataset, varname::AbstractString, i)
     return read_standardized(ds, varname, (x = :, y = :, time = i))
 end
 
@@ -451,7 +451,7 @@ function add_time(ds, time)
 end
 
 struct NCReader
-    dataset::NCDataset
+    dataset::CFDataset
     cyclic_dataset::Union{NCDataset,Nothing}
     cyclic_times::Vector{Tuple{Int,Int}}
     forcing_parameters::Dict{Tuple{Symbol,Vararg{Symbol}},NamedTuple}
@@ -474,14 +474,24 @@ struct Writer
     nc_scalar_path::Union{String,Nothing}       # path NetCDF file (scalar data)
 end
 
-function prepare_reader(path, cyclic_path, config)
-    dataset = NCDataset(path)
-    # set verbose to false to avoid logging modifications twice
-    ncvar1, _ = ncvar_name_modifier(
-        param(config, "input." * first(config.input.forcing));
-        verbose = false,
-    )
-    var = dataset[ncvar1].var
+function prepare_reader(config)
+    tomldir = dirname(config)
+    path_forcing = config.input.path_forcing
+    cyclic_path = joinpath(tomldir, config.input.path_static)
+
+    # absolute paths are not supported, see Glob.jl#2
+    if isabspath(path_forcing)
+        parts = splitpath(path_forcing)
+        # use the root/drive as the dir, to support * in directory names as well
+        glob_dir = parts[1]
+        glob_path = joinpath(parts[2:end])
+    else
+        glob_dir = tomldir
+        glob_path = path_forcing
+    end
+
+    dynamic_paths = glob(glob_path, glob_dir)  # expand "data/forcing-year-*.nc"
+    dataset = NCDataset(dynamic_paths, aggdim="time", deferopen=false)
 
     # check for cyclic parameters
     do_cyclic = haskey(config.input, "cyclic")
@@ -1114,7 +1124,7 @@ is_increasing(v) = last(v) > first(v)
 
 """
     nc_dim_name(dims::Vector{Symbol}, name::Symbol)
-    nc_dim_name(ds::NCDataset, name::Symbol)
+    nc_dim_name(ds::CFDataset, name::Symbol)
 
 Given a NetCDF dataset or list of dimensions, and an internal dimension name, return the
 corresponding NetCDF dimension name. Certain common alternatives are supported, e.g. :lon or
@@ -1139,15 +1149,15 @@ function nc_dim_name(dims::Vector{Symbol}, name::Symbol)
     end
 end
 
-nc_dim_name(ds::NCDataset, name::Symbol) = nc_dim_name(Symbol.(keys(ds.dim)), name)
+nc_dim_name(ds::CFDataset, name::Symbol) = nc_dim_name(Symbol.(keys(ds.dim)), name)
 
 """
-    nc_dim(ds::NCDataset, name::Symbol)
+    nc_dim(ds::CFDataset, name::Symbol)
 
 Return the dimension coordinate, based on the internal name (:x, :y, :layer, :time),
 which will map to the correct NetCDF name using `nc_dim_name`.
 """
-nc_dim(ds::NCDataset, name) = ds[nc_dim_name(ds, name)]
+nc_dim(ds::CFDataset, name) = ds[nc_dim_name(ds, name)]
 
 
 """
@@ -1217,7 +1227,7 @@ For the layer dimension, we allow coordinate arrays to be missing, in which case
 consider it increasing, going from the top layer (1) to deeper layers. This is to keep
 accepting data that we have accepted before.
 """
-function dim_directions(ds::NCDataset, dim_names)
+function dim_directions(ds::CFDataset, dim_names)
     pairs = Pair{Symbol,Bool}[]
     for d in dim_names
         if d == :layer && !(haskey(ds, "layer"))
@@ -1281,13 +1291,13 @@ function reverse_data!(data, dims_increasing)
 end
 
 """
-    read_standardized(ds::NCDataset, varname::AbstractString, dim_names)
+    read_standardized(ds::CFDataset, varname::AbstractString, dim_names)
 
 Read the dimensions listed in dim_names from a variable with name `varname` from a NetCDF
 dataset `ds`. `dim_sel` should be a NamedTuple like (x=:, y=:, time=1), which will return
 a 2 dimensional array with x and y axes, representing the first index in the time dimension.
 """
-function read_standardized(ds::NCDataset, varname::AbstractString, dim_sel::NamedTuple)
+function read_standardized(ds::CFDataset, varname::AbstractString, dim_sel::NamedTuple)
     data, data_dim_order = read_dims(ds[varname], dim_sel)
     data, new_dim_order = permute_data(data, data_dim_order)
     dims_increasing = dim_directions(ds, new_dim_order)
@@ -1296,12 +1306,12 @@ function read_standardized(ds::NCDataset, varname::AbstractString, dim_sel::Name
 end
 
 """
-    read_x_axis(ds::NCDataset)
+    read_x_axis(ds::CFDataset)
 
 Return the x coordinate Vector{Float64}, whether it is called x, lon or longitude.
 Also sorts the vector to be increasing, to match `read_standardized`.
 """
-function read_x_axis(ds::NCDataset)
+function read_x_axis(ds::CFDataset)
     candidates = ("x", "lon", "longitude")
     for candidate in candidates
         if haskey(ds, candidate)
@@ -1312,12 +1322,12 @@ function read_x_axis(ds::NCDataset)
 end
 
 """
-    read_y_axis(ds::NCDataset)
+    read_y_axis(ds::CFDataset)
 
 Return the y coordinate Vector{Float64}, whether it is called y, lat or latitude.
 Also sorts the vector to be increasing, to match `read_standardized`.
 """
-function read_y_axis(ds::NCDataset)
+function read_y_axis(ds::CFDataset)
     candidates = ("y", "lat", "latitude")
     for candidate in candidates
         if haskey(ds, candidate)

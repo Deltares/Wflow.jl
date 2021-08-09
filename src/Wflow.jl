@@ -15,11 +15,14 @@ using DelimitedFiles
 using ProgressLogging
 using CFTime
 using Base.Threads
+using Glob
+using NCDatasets: MFDataset
 
 @metadata get_units "mm Δt-1"
 
 const BMI = BasicModelInterface
 const Float = Float64
+const CFDataset = Union{NCDataset, MFDataset}
 
 mutable struct Clock{T}
     time::T

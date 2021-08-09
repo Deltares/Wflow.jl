@@ -33,7 +33,7 @@ q = "q_land"
 head = "head"
 
 [input]
-path_forcing = "data/forcing-sbm-groundwater.nc"
+path_forcing = "data/forcing-sbm-groundwater-part*.nc"
 path_static = "data/staticmaps-sbm-groundwater.nc"
 
 # these are not directly part of the model
