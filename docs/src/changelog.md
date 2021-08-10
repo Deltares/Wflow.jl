@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   river and subsurface flow) of wflow\_sbm model [SBM + Kinematic wave](@ref).
 - Improved error message for CSV Reducer.
 - The TOML keys `kv₀`, `θᵣ` and `θₛ` have been replaced with the ASCII versions `kv_0`,
-  `θ_r` and `θ_s`, to avoid encoding issues with certain text editors. The old keys still
+  `theta_r` and `theta_s`, to avoid encoding issues with certain text editors. The old keys still
   work as well.
 
 ### Fixed
