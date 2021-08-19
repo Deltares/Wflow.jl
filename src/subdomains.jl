@@ -198,7 +198,7 @@ function kinwave_set_subdomains(config, graph, toposort, index_pit)
             for n = 1:length(v_subbas)
                 v_subbas[n] .= v_subbas[n] .+ total_subbas
             end
-            total_subbas = n_subbas
+            total_subbas += n_subbas
             append!(order_subbas, v_subbas)
             append!(index, 1:length(v_subbas))
             # in case of multiple subbasins calculate topological order per subbasin
