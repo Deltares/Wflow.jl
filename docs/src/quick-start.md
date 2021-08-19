@@ -38,6 +38,12 @@ pkg> ?
 pkg> ?add
 ```
 
+If you have not used Julia in a while, it can be a good idea to run `up` to update your
+packages.
+```julia-repl
+pkg> up
+```
+
 If you go back to the Julia REPL, note that the same works, and is a convenient way to
 consult documentation for specific functions or types, or other objects.
 
