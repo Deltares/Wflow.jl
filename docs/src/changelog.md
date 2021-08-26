@@ -44,6 +44,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed path to initialize lake to: dirname(static_path) 
 - Fixed outflow = 0, when lake level is below lake threshold. Before a negative value
   could enter the log function and model would fail. 
+- Fixed the lake storage initialization. For continuation runs (`reinit = false`), this
+  caused the lake to be reset to the initial conditions instead of the saved state.
 
 ## v0.3.1 - 2021-05-19
 

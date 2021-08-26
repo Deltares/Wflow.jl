@@ -560,6 +560,13 @@ function initialize_hbv_model(config::Config)
         @unpack lateral = model
         lateral.land.volume .= lateral.land.h .* lateral.land.width .* lateral.land.dl
         lateral.river.volume .= lateral.river.h .* lateral.river.width .* lateral.river.dl
+
+        if do_lakes
+            # storage must be re-initialized after loading the state with the current
+            # waterlevel otherwise the storage will be based on the initial water level
+            lakes.storage .=
+                initialize_storage(lakes.storfunc, lakes.area, lakes.waterlevel, lakes.sh)
+        end
     end
 
     # make sure the forcing is already loaded
