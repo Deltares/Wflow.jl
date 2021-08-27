@@ -34,7 +34,7 @@ end
 
 staticmaps_rhine_path = testdata(v"0.1", "staticmaps.nc", "staticmaps-rhine.nc")
 staticmaps_moselle_path =
-    testdata(v"0.2.4", "staticmaps-moselle.nc", "staticmaps-moselle.nc")
+    testdata(v"0.2.5", "staticmaps-moselle.nc", "staticmaps-moselle.nc")
 staticmaps_lahn_path = testdata(v"0.2.1", "staticmaps-lahn.nc", "staticmaps-lahn.nc")
 forcing_moselle_path = testdata(v"0.2", "forcing-2000.nc", "forcing-moselle.nc")
 forcing_lahn_path = testdata(v"0.2", "forcing-lahn.nc", "forcing-lahn.nc")

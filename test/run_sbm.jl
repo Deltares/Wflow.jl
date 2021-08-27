@@ -135,7 +135,8 @@ res_evap = copy(model.lateral.river.reservoir.evaporation)
 
 Wflow.close_files(model, delete_output = false)
 
-# test for setting a pit
+# test for setting a pit and multithreading multiple basins (by setting 2 extra pits
+# resulting in 3 basins)
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 config["model"]["pits"] = true
@@ -151,12 +152,12 @@ model = Wflow.run(config)
     @test model.clock.iteration == 1
 end
 
-# pit is at river index 1765, CartesianIndex(141, 86)
-# downstream from pit is at river index 1739, CartesianIndex(142, 85)
-@testset "river flow at and downstream of pit" begin
+@testset "river flow at basin outlets and downstream of one pit" begin
     q = model.lateral.river.q_av
-    @test q[3908] ≈ 8.133435566601927f0
-    @test q[3920] ≈ 0.008996045895155833f0
+    @test q[3908] ≈ 8.133439919732997f0 # pit/ outlet
+    @test q[3920] ≈ 0.008996073270597723f0 # downstream of pit 3908
+    @test q[2474] ≈ 156.84174051203257f0 # pit/ outlet
+    @test q[5650] ≈ 0.10882099888755865f0 # pit/ outlet
 end
 
 # test changing forcing and cyclic LAI parameter
