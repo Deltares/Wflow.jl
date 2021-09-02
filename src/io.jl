@@ -56,7 +56,12 @@ function Base.setproperty!(config::Config, f::Symbol, x)
 end
 
 function get_alias(config::Config, key, alias, default)
-    get(Dict(config), key, get(Dict(config), alias, default))
+    dict = Dict(config)
+    path = pathof(config)
+    alias_or_default = get(dict, alias, default)
+    a = get(dict, key, alias_or_default)
+    # if it is a Dict, wrap the result in Config
+    return a isa AbstractDict ? Config(a, path) : a
 end
 
 # also used in autocomplete
@@ -95,9 +100,13 @@ function ncvar_name_modifier(var; verbose = true)
             end
         elseif haskey(var, "value")
             modifier = (scale = 1.0, offset = 0.0, value = param(var, "value"))
+        else
+            error("Unrecognized modifier $(Dict(var))")
         end
-    else
+    elseif isa(var, String)
         ncname = var
+    else
+        error("Unknown type")
     end
     return ncname, modifier
 end

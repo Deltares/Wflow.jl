@@ -69,7 +69,6 @@ f = "f"
 infiltcappath = "InfiltCapPath"
 infiltcapsoil = "InfiltCapSoil"
 kext = "Kext"
-kv_0 = "KsatVer"
 leaf_area_index = "LAI"
 maxleakage = "MaxLeakage"
 pathfrac = "PathFrac"
@@ -88,6 +87,11 @@ water_holding_capacity = "WHC"
 waterfrac = "WaterFrac"
 theta_r = "thetaR"
 theta_s = "thetaS"
+
+[input.vertical.kv_0]
+netcdf.variable.name = "KsatVer"
+scale = 1.0
+offset = 0.0
 
 [input.lateral.river]
 length = "wflow_riverlength"

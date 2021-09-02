@@ -24,10 +24,19 @@ config = Wflow.Config(tomlpath)
     @test collect(keys(config.output)) == ["lateral", "vertical", "path"]
 
     # theta_s can also be provided under the alias θₛ
-    Wflow.get_alias(config.input.vertical, "theta_s", "θₛ", nothing) == "thetaR"
+    @test Wflow.get_alias(config.input.vertical, "theta_s", "θₛ", nothing) == "thetaS"
     val = pop!(config.input.vertical, "theta_s")
     config.input.vertical["θₛ"] = val
-    Wflow.get_alias(config.input.vertical, "theta_s", "θₛ", nothing) == "thetaR"
+    @test Wflow.get_alias(config.input.vertical, "theta_s", "θₛ", nothing) == "thetaS"
+
+    # modifiers can also be applied
+    kvconf = Wflow.get_alias(config.input.vertical, "kv_0", "kv₀", nothing)
+    @test kvconf isa Wflow.Config
+    ncname, modifier = Wflow.ncvar_name_modifier(kvconf)
+    @test ncname === "KsatVer"
+    @test modifier.scale == 1.0
+    @test modifier.offset == 0.0
+    @test modifier.value === nothing
 end
 
 @testset "Clock constructor" begin
