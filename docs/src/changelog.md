@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## v0.4.0 - 2021-09-02
+
 ### Changed
 - Changed length units for lateral subsurface flow component from millimeter to meter. This
   means that state netCDF files from previous versions can only be reused if `ssf` is
