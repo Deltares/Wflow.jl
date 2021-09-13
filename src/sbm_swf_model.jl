@@ -49,7 +49,8 @@ function initialize_sbm_swf_model(config::Config)
     riverlength = riverlength_2d[inds]
     altitude_2d = ncread(nc, param(config, "input.altitude"); type = Float, fill = 0)
     elevation = altitude_2d[inds]
-
+    river_elevation_2d =
+        ncread(nc, param(config, "input.lateral.river.elevation"); type = Wflow.Float, fill = 0)
 
     # read x, y coordinates and calculate cell length [m]
     y_nc = read_y_axis(nc)
@@ -189,7 +190,7 @@ function initialize_sbm_swf_model(config::Config)
         push!(dst_link_node, findall(isequal(nodes[i]), src_node))
     end
 
-    river_elevation = altitude_2d[inds_riv]
+    river_elevation = river_elevation_2d[inds_riv]
     # initialize subgrid river bed elevation at links of river
     zr_max = fill(Float(0), n_links)
     for i = 1:n_links
