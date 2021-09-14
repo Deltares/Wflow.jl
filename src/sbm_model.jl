@@ -156,6 +156,13 @@ function initialize_sbm_model(config::Config)
         defaults = 0.072,
         type = Float,
     )
+    h_bankfull_land = ncread(
+        nc,
+        param(config, "input.lateral.land.h_bankfull", nothing);
+        sel = inds,
+        defaults = 0.0,
+        type = Float,
+    )
 
     alpha_pow = Float((2.0 / 3.0) * 0.6)
     β = Float(0.6)
@@ -172,6 +179,7 @@ function initialize_sbm_model(config::Config)
         volume = zeros(Float, n),
         h = zeros(Float, n),
         h_av = zeros(Float, n),
+        h_bankfull = h_bankfull_land,
         Δt = Float(tosecond(Δt)),
         its = kw_land_tstep > 0 ? Int(cld(tosecond(Δt), kw_land_tstep)) : kw_land_tstep,
         width = sw,
@@ -204,6 +212,13 @@ function initialize_sbm_model(config::Config)
         defaults = 0.036,
         type = Float,
     )
+    h_bankfull_river = ncread(
+        nc,
+        param(config, "input.lateral.river.h_bankfull", nothing);
+        sel = inds_riv,
+        defaults = 1.0,
+        type = Float,
+    )
     ldd_riv = ldd_2d[inds_riv]
     if do_pits
         ldd_riv = set_pit_ldd(pits_2d, ldd_riv, inds_riv)
@@ -227,6 +242,7 @@ function initialize_sbm_model(config::Config)
         volume = zeros(Float, nriv),
         h = zeros(Float, nriv),
         h_av = zeros(Float, nriv),
+        h_bankfull = h_bankfull_river,
         Δt = Float(tosecond(Δt)),
         its = kw_river_tstep > 0 ? ceil(Int(tosecond(Δt) / kw_river_tstep)) :
               kw_river_tstep,
@@ -421,6 +437,7 @@ function update_after_subsurfaceflow(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,
 
     inds_riv = network.index_river
     kinwave_it = get(config.model, "kin_wave_iteration", false)::Bool
+    update_alpha = get(config.model, "update_alpha", true)::Bool
 
     # update vertical sbm concept (runoff, ustorelayerdepth and satwaterdepth)
     update_after_subsurfaceflow(
@@ -441,6 +458,7 @@ function update_after_subsurfaceflow(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,
         network.land,
         frac_toriver = network.frac_toriver,
         do_iter = kinwave_it,
+        update_alpha = update_alpha,
     )
 
     # determine net runoff from vertical sbm concept in river cells, and lateral inflow from
@@ -472,6 +490,7 @@ function update_after_subsurfaceflow(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,
             network.river,
             inflow_wb = inflow_wb,
             do_iter = kinwave_it,
+            update_alpha = update_alpha,
             doy = dayofyear(clock.time),
         )
     else
@@ -479,6 +498,7 @@ function update_after_subsurfaceflow(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,
             lateral.river,
             network.river,
             do_iter = kinwave_it,
+            update_alpha = update_alpha,
             doy = dayofyear(clock.time),
         )
     end

@@ -11,6 +11,7 @@
     volume::Vector{T} | "m3"                # Kinematic wave volume [m³] (based on water level h)
     h::Vector{T} | "m"                      # Water level [m]
     h_av::Vector{T} | "m"                   # Average water level [m]
+    h_bankfull::Vector{T} | "m"             # Bankfull water level [m]
     Δt::T | "s"                             # Model time step [s]
     its::Int | "-"                          # Number of fixed iterations
     width::Vector{T} | "m"                  # Flow width [m]
@@ -42,6 +43,7 @@ function update(
     frac_toriver = nothing,
     inflow_wb = nothing,
     do_iter = false,
+    update_alpha = true,
     doy = 0,
 )
     @unpack graph,
@@ -55,7 +57,11 @@ function update(
     ns = length(subdomain_order)
 
     @. sf.alpha_term = pow(sf.n / sqrt(sf.sl), sf.β)
-    @. sf.α = sf.alpha_term * pow(sf.width + 2.0 * sf.h, sf.alpha_pow)
+    if update_alpha
+        @. sf.α = sf.alpha_term * pow(sf.width + 2.0 * sf.h, sf.alpha_pow)
+    else
+        @. sf.α = sf.alpha_term * pow(sf.width + 2.0 * 0.5 * sf.h_bankfull, sf.alpha_pow)
+    end
 
     # two options for iteration, fixed or based on courant number.
     if do_iter
@@ -158,15 +164,16 @@ function update(
                     # update alpha
                     crossarea = sf.α[v] * pow(sf.q[v], sf.β)
                     sf.h[v] = crossarea / sf.width[v]
-                    wetper = sf.width[v] + (2.0 * sf.h[v]) # wetted perimeter
-                    α = sf.α[v]
-                    sf.α[v] = sf.alpha_term[v] * pow(wetper, sf.alpha_pow)
-
-                    if abs(α - sf.α[v]) > sf.eps
-                        crossarea = sf.α[v] * pow(sf.q[v], sf.β)
-                        sf.h[v] = crossarea / sf.width[v]
+                    if update_alpha
+                        wetper = sf.width[v] + (2.0 * sf.h[v]) # wetted perimeter
+                        α = sf.α[v]
+                        sf.α[v] = sf.alpha_term[v] * pow(wetper, sf.alpha_pow)
+                        if abs(α - sf.α[v]) > sf.eps
+                            crossarea = sf.α[v] * pow(sf.q[v], sf.β)
+                            sf.h[v] = crossarea / sf.width[v]
+                        end                  
                     end
-
+                    
                     sf.q_av[v] += sf.q[v]
                     sf.h_av[v] += sf.h[v]
                 end
