@@ -33,6 +33,27 @@ kw_river_tstep = 900
 # Fixed sub-timestep for iterations of overland flow (land cells)
 kw_land_tstep = 3600
 ```
+
+By default the ``\alpha`` parameter of the kinematic wave is updated because of changes in
+water height (wetted perimeter). This can result in large water balance errors. To reduce
+these errors, there is an option to run with a fixed ``\alpha`` value, by setting the option
+`update_alpha` to false in the TOML file:
+
+```toml
+[model]
+update_alpha = false
+```
+
+For the river part a bankfull height map (default value is 1.0 m) can be provided as
+follows, to calculate the fixed ``\alpha`` value based on half bankfull height:
+
+```toml
+[input.lateral.river]
+h_bankfull = "river_bankfullheight"
+```
+For the land part the wetted perimeter is based on the flow width for the fixed ``\alpha``
+value.
+
 ## Subsurface flow routing
 In the SBM model the kinematic wave approach is used to route subsurface flow laterally. The
 saturated store ``S`` can be drained laterally by saturated downslope subsurface flow per

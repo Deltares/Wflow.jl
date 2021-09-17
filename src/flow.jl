@@ -60,7 +60,8 @@ function update(
     if sf.update_alpha
         @. sf.α = sf.alpha_term * pow(sf.width + 2.0 * sf.h, sf.alpha_pow)
     else
-        @. sf.α = sf.alpha_term * pow(sf.width + 2.0 * 0.5 * sf.h_bankfull, sf.alpha_pow)
+        # use fixed alpha value based on 0.5 * h_bankfull
+        @. sf.α = sf.alpha_term * pow(sf.width + sf.h_bankfull, sf.alpha_pow)
     end
 
     # two options for iteration, fixed or based on courant number.

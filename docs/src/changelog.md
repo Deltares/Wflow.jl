@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+- Option `update_alpha`. When true (default) the ``\alpha`` parameter of the kinematic wave
+  is updated because of changes in water height (this can result in large water balance
+  errors). When false a fixed ``\alpha`` is used. See also [Surface routing](@ref).
+
 ## v0.4.0 - 2021-09-02
 
 ### Changed
