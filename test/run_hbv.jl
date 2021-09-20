@@ -13,10 +13,10 @@ flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
     row = csv_first_row(model.writer.csv_path)
 
     @test row.time == DateTime("2000-01-01T00:00:00")
-    @test row.Q ≈ 517.9761666607884f0
+    @test row.Q ≈ 514.5673131622699f0
     @test row.temp_bycoord ≈ 2.965437173843384f0
     @test row.temp_byindex ≈ 1.1716821193695068f0
-    @test row.Q_1 ≈ 501.6252231440609f0
+    @test row.Q_1 ≈ 498.0969773774267f0
     @test row.perc_33 ≈ 2.308000087738037f0
     @test row.perc_34 ≈ 1.8980000019073486f0
     @test row.perc_35 ≈ 2.7100000381469727f0
@@ -57,10 +57,10 @@ end
 
 @testset "river flow" begin
     q = model.lateral.river.q_av
-    @test sum(q) ≈ 51943.24072462076f0
+    @test sum(q) ≈ 52077.14258235775f0
     @test q[651] ≈ 5.693405508134953f0
     @test q[1056] ≈ 8.839306661545436f0
-    @test q[network.river.order[end]] ≈ 363.5647479049738f0
+    @test q[network.river.order[end]] ≈ 359.0484738820008f0
 end
 
 Wflow.close_files(model, delete_output = false)

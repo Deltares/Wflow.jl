@@ -25,7 +25,6 @@ function initialize_sbm_gwf_model(config::Config)
     Δt = clock.Δt
 
     reinit = get(config.model, "reinit", true)::Bool
-    do_snow = get(config.model, "snow", false)::Bool
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
     do_lakes = get(config.model, "lakes", false)::Bool
     do_drains = get(config.model, "drains", false)::Bool
@@ -33,6 +32,7 @@ function initialize_sbm_gwf_model(config::Config)
 
     kw_river_tstep = get(config.model, "kw_river_tstep", 0)
     kw_land_tstep = get(config.model, "kw_land_tstep", 0)
+    kinwave_it = get(config.model, "kin_wave_iteration", false)::Bool
 
     nc = NCDataset(static_path)
 
@@ -131,6 +131,7 @@ function initialize_sbm_gwf_model(config::Config)
         volume = zeros(Float, n),
         h = zeros(Float, n),
         h_av = zeros(Float, n),
+        h_bankfull = zeros(Float, n),
         Δt = Float(tosecond(Δt)),
         its = kw_land_tstep > 0 ? Int(cld(tosecond(Δt), kw_land_tstep)) : kw_land_tstep,
         width = sw,
@@ -146,6 +147,7 @@ function initialize_sbm_gwf_model(config::Config)
         lake_index = fill(0, n),
         reservoir = nothing,
         lake = nothing,
+        kinwave_it = kinwave_it,
     )
 
     graph = flowgraph(ldd, inds, pcr_dir)
@@ -161,6 +163,13 @@ function initialize_sbm_gwf_model(config::Config)
         param(config, "input.lateral.river.n", nothing);
         sel = inds_riv,
         defaults = 0.036,
+        type = Float,
+    )
+    h_bankfull = ncread(
+        nc,
+        param(config, "input.lateral.river.h_bankfull", nothing);
+        sel = inds_riv,
+        defaults = 1.0,
         type = Float,
     )
     ldd_riv = ldd_2d[inds_riv]
@@ -183,6 +192,7 @@ function initialize_sbm_gwf_model(config::Config)
         volume = zeros(Float, nriv),
         h = zeros(Float, nriv),
         h_av = zeros(Float, nriv),
+        h_bankfull = h_bankfull,
         Δt = Float(tosecond(Δt)),
         its = kw_river_tstep > 0 ? ceil(Int(tosecond(Δt) / kw_river_tstep)) :
               kw_river_tstep,
@@ -199,6 +209,7 @@ function initialize_sbm_gwf_model(config::Config)
         reservoir = do_reservoirs ? reservoirs : nothing,
         lake = do_lakes ? lakes : nothing,
         rivercells = river,
+        kinwave_it = kinwave_it,
     )
 
     # unconfined aquifer
@@ -440,7 +451,7 @@ function initialize_sbm_gwf_model(config::Config)
         @unpack lateral = model
         lateral.land.volume .= lateral.land.h .* lateral.land.width .* lateral.land.dl
         lateral.river.volume .= lateral.river.h .* lateral.river.width .* lateral.river.dl
-        
+
         if do_lakes
             # storage must be re-initialized after loading the state with the current
             # waterlevel otherwise the storage will be based on the initial water level
@@ -465,7 +476,6 @@ function update_sbm_gwf(model)
     @unpack lateral, vertical, network, clock, config = model
 
     inds_riv = network.index_river
-    kinwave_it = get(config.model, "kin_wave_iteration", false)::Bool
     do_drains = get(config.model, "drains", false)::Bool
 
     update_forcing!(model)
@@ -538,12 +548,7 @@ function update_sbm_gwf(model)
         lateral.land.Δt
     lateral.land.qlat .= lateral.land.inwater ./ lateral.land.dl
     # run kinematic wave for overland flow
-    update(
-        lateral.land,
-        network.land,
-        frac_toriver = network.frac_toriver,
-        do_iter = kinwave_it,
-    )
+    update(lateral.land, network.land, frac_toriver = network.frac_toriver)
 
     # determine net runoff from vertical sbm concept in river cells
     net_runoff_river =
@@ -567,16 +572,10 @@ function update_sbm_gwf(model)
             lateral.river,
             network.river,
             inflow_wb = lateral.land.q_av[inds_riv],
-            do_iter = kinwave_it,
             doy = dayofyear(clock.time),
         )
     else
-        update(
-            lateral.river,
-            network.river,
-            do_iter = kinwave_it,
-            doy = dayofyear(clock.time),
-        )
+        update(lateral.river, network.river, doy = dayofyear(clock.time))
     end
 
     write_output(model)

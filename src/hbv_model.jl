@@ -22,9 +22,9 @@ function initialize_hbv_model(config::Config)
 
     kw_river_tstep = get(config.model, "kw_river_tstep", 0)
     kw_land_tstep = get(config.model, "kw_land_tstep", 0)
+    kinwave_it = get(config.model, "kin_wave_iteration", false)::Bool
 
     nc = NCDataset(static_path)
-    dims = dimnames(nc[param(config, "input.subcatchment")])
 
     subcatch_2d = ncread(nc, param(config, "input.subcatchment"); allow_missing = true)
     # indices based on catchment
@@ -269,9 +269,6 @@ function initialize_hbv_model(config::Config)
 
     threshold = fc .* lp
 
-    altitude =
-        ncread(nc, param(config, "input.vertical.altitude"); sel = inds, type = Float)
-
     hbv = HBV{Float}(
         Δt = Float(tosecond(Δt)),
         n = n,
@@ -412,6 +409,7 @@ function initialize_hbv_model(config::Config)
         volume = zeros(Float, n),
         h = zeros(Float, n),
         h_av = zeros(Float, n),
+        h_bankfull = zeros(Float, n),
         Δt = Float(tosecond(Δt)),
         its = kw_land_tstep > 0 ? Int(cld(tosecond(Δt), kw_land_tstep)) : kw_land_tstep,
         width = dw,
@@ -427,6 +425,7 @@ function initialize_hbv_model(config::Config)
         lake_index = fill(0, n),
         reservoir = nothing,
         lake = nothing,
+        kinwave_it = kinwave_it,
     )
 
     graph = flowgraph(ldd, inds, pcr_dir)
@@ -441,6 +440,13 @@ function initialize_hbv_model(config::Config)
         param(config, "input.lateral.river.n", nothing);
         sel = inds_riv,
         defaults = 0.036,
+        type = Float,
+    )
+    h_bankfull = ncread(
+        nc,
+        param(config, "input.lateral.river.h_bankfull", nothing);
+        sel = inds_riv,
+        defaults = 1.0,
         type = Float,
     )
     ldd_riv = ldd_2d[inds_riv]
@@ -466,6 +472,7 @@ function initialize_hbv_model(config::Config)
         volume = zeros(Float, nriv),
         h = zeros(Float, nriv),
         h_av = zeros(Float, nriv),
+        h_bankfull = h_bankfull,
         Δt = Float(tosecond(Δt)),
         its = kw_river_tstep > 0 ? ceil(Int(tosecond(Δt) / kw_river_tstep)) :
               kw_river_tstep,
@@ -482,6 +489,7 @@ function initialize_hbv_model(config::Config)
         reservoir = do_reservoirs ? reservoirs : nothing,
         lake = do_lakes ? lakes : nothing,
         rivercells = river,
+        kinwave_it = kinwave_it,
     )
 
     # setup subdomains for the land and river kinematic wave domain, if nthreads = 1
@@ -613,12 +621,7 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:HBV,R,W}
     lateral.land.qlat .= lateral.land.inwater ./ lateral.land.dl
 
     # run kinematic wave for overland flow
-    update(
-        lateral.land,
-        network.land,
-        frac_toriver = network.frac_toriver,
-        do_iter = kinwave_it,
-    )
+    update(lateral.land, network.land, frac_toriver = network.frac_toriver)
 
     # determine lateral inflow (from overland flow) for river flow
     lateral.river.inwater .= copy(lateral.land.to_river[inds_riv])
@@ -631,16 +634,10 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:HBV,R,W}
             lateral.river,
             network.river,
             inflow_wb = lateral.land.q_av[inds_riv],
-            do_iter = kinwave_it,
             doy = dayofyear(clock.time),
         )
     else
-        update(
-            lateral.river,
-            network.river,
-            do_iter = kinwave_it,
-            doy = dayofyear(clock.time),
-        )
+        update(lateral.river, network.river, doy = dayofyear(clock.time))
     end
 
     write_output(model)

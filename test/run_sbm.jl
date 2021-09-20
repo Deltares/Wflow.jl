@@ -14,29 +14,29 @@ flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
     row = csv_first_row(model.writer.csv_path)
 
     @test row.time == DateTime("2000-01-01T00:00:00")
-    @test row.Q ≈ 7.815587720999557f0
+    @test row.Q ≈ 7.680739298259266f0
     @test row.volume ≈ 2.7783643457819197f7
     @test row.temp_bycoord ≈ 2.3279826641082764f0
     @test row.temp_byindex ≈ 2.3279826641082764f0
-    @test row.Q_6336050 ≈ 0.02388490515704142f0
-    @test row.Q_6336510 ≈ 0.012411069754330572f0
-    @test row.Q_6836100 ≈ 0.004848609260578462f0
-    @test row.Q_6336500 ≈ 0.011474801875419624f0
-    @test row.Q_6836190 ≈ 0.0005262529349807199f0
-    @test row.Q_6336800 ≈ 0.013467698526109831f0
-    @test row.Q_6336900 ≈ 0.003408280699908697f0
-    @test row.Q_6336930 ≈ 0.09773275295006544f0
-    @test row.Q_6336910 ≈ 0.002147610203630289f0
-    @test row.Q_6336920 ≈ 0.002649393436607859f0
-    @test row.Q_6136100 ≈ 0.0008708128761381345f0
-    @test row.Q_6136500 ≈ 0.000729148906480041f0
-    @test row.Q_6136520 ≈ 0.002155395279410574f0
-    @test row.Q_6136150 ≈ 0.0022298329229975987f0
-    @test row.Q_6136151 ≈ 0.0031045027476524524f0
-    @test row.Q_6136160 ≈ 3.3423894540713786f0
-    @test row.Q_6136200 ≈ 1.358270076420503f0
-    @test row.Q_6136201 ≈ 5.942330218662147f0
-    @test row.Q_6136202 ≈ 1.680997341533662f0
+    @test row.Q_6336050 ≈ 0.02314152846188506f0
+    @test row.Q_6336510 ≈ 0.011829340015725808f0
+    @test row.Q_6836100 ≈ 0.004285433507347682f0
+    @test row.Q_6336500 ≈ 0.011434655691502343f0
+    @test row.Q_6836190 ≈ 0.0004903061800226998f0
+    @test row.Q_6336800 ≈ 0.013376156569068251f0
+    @test row.Q_6336900 ≈ 0.0033244344482295423f0
+    @test row.Q_6336930 ≈ 0.08966505345584352f0
+    @test row.Q_6336910 ≈ 0.0020127260170180474f0
+    @test row.Q_6336920 ≈ 0.002580440335740291f0
+    @test row.Q_6136100 ≈ 0.0008485772628065181f0
+    @test row.Q_6136500 ≈ 0.0006749692699499864f0
+    @test row.Q_6136520 ≈ 0.0019351916317406491f0
+    @test row.Q_6136150 ≈ 0.002126215608742851f0
+    @test row.Q_6136151 ≈ 0.0028804236661004205f0
+    @test row.Q_6136160 ≈ 3.279985818360295f0
+    @test row.Q_6136200 ≈ 1.259358422161174f0
+    @test row.Q_6136201 ≈ 5.803861903796768f0
+    @test row.Q_6136202 ≈ 1.6624100470042156f0
     @test row.recharge_1 ≈ -0.027398093386017383f0
 end
 
@@ -44,25 +44,25 @@ end
     ds = model.writer.dataset_scalar
     @test ds["time"][1] == DateTime("2000-01-01T00:00:00")
     @test ds["Q"][:] ≈ [
-        1.6809974f0,
-        5.9423304f0,
-        1.35827f0,
-        3.3423896f0,
-        0.0031045028f0,
-        0.0022298328f0,
-        0.0021553952f0,
-        0.0007291489f0,
-        0.00087081286f0,
-        0.0026493934f0,
-        0.0021476103f0,
-        0.09773275f0,
-        0.0034082807f0,
-        0.013467698f0,
-        0.00052625296f0,
-        0.011474802f0,
-        0.004848609f0,
-        0.01241107f0,
-        0.023884906f0,
+        1.66241f0,
+        5.803862f0,
+        1.2593584f0,
+        3.279986f0,
+        0.0028804236f0,
+        0.0021262157f0,
+        0.0019351917f0,
+        0.0006749693f0,
+        0.00084857724f0,
+        0.0025804404f0,
+        0.002012726f0,
+        0.089665055f0,
+        0.0033244344f0,
+        0.013376157f0,
+        0.0004903062f0,
+        0.011434656f0,
+        0.0042854333f0,
+        0.01182934f0,
+        0.023141528f0,
     ]
     @test ds["Q_gauges"].attrib["cf_role"] == "timeseries_id"
     @test ds["temp_index"][:] ≈ [2.3279827f0]
@@ -112,16 +112,16 @@ end
 
 @testset "river flow" begin
     q = model.lateral.river.q_av
-    @test sum(q) ≈ 2807.884971209105f0
-    @test q[1622] ≈ 0.0016288040314320486f0
-    @test q[43] ≈ 7.338169165884175f0
-    @test q[network.river.order[end]] ≈ 0.00610520650626283f0
+    @test sum(q) ≈ 2805.266510229795f0
+    @test q[1622] ≈ 0.0015498389046670307f0
+    @test q[43] ≈ 7.335279907301223f0
+    @test q[network.river.order[end]] ≈ 0.006068754125930134f0
 end
 
 @testset "reservoir simple" begin
     res = model.lateral.river.reservoir
     @test res.outflow[1] ≈ 0.2174998592483153f0
-    @test res.inflow[1] ≈ 50.170880189190626f0
+    @test res.inflow[1] ≈ 49.4653315798391f0
     @test res.volume[1] ≈ 2.776162917050312f7
     @test res.precipitation[1] ≈ 0.1765228509902954f0
     @test res.evaporation[1] ≈ 0.5372688174247742f0
@@ -154,10 +154,10 @@ end
 
 @testset "river flow at basin outlets and downstream of one pit" begin
     q = model.lateral.river.q_av
-    @test q[3908] ≈ 8.133439919732997f0 # pit/ outlet
-    @test q[3920] ≈ 0.008996073270597723f0 # downstream of pit 3908
-    @test q[2474] ≈ 156.84174051203257f0 # pit/ outlet
-    @test q[5650] ≈ 0.10882099888755865f0 # pit/ outlet
+    @test q[3908] ≈ 8.107901948181988f0 # pit/ outlet
+    @test q[3920] ≈ 0.008992215117496462f0 # downstream of pit 3908
+    @test q[2474] ≈ 156.71758046363857f0 # pit/ outlet
+    @test q[5650] ≈ 0.10849551740603759f0 # pit/ outlet
 end
 
 # test changing forcing and cyclic LAI parameter

@@ -11,6 +11,7 @@
     volume::Vector{T} | "m3"                # Kinematic wave volume [m³] (based on water level h)
     h::Vector{T} | "m"                      # Water level [m]
     h_av::Vector{T} | "m"                   # Average water level [m]
+    h_bankfull::Vector{T} | "m"             # Bankfull water level [m]
     Δt::T | "s"                             # Model time step [s]
     its::Int | "-"                          # Number of fixed iterations
     width::Vector{T} | "m"                  # Flow width [m]
@@ -26,7 +27,8 @@
     lake_index::Vector{Int} | "-"           # map cell to 0 (no lake) or i (pick lake i in lake field)
     reservoir::R                            # Reservoir model struct of arrays
     lake::L                                 # Lake model struct of arrays
-
+    kinwave_it::Bool                        # Boolean for iterations kinematic wave
+    
     # TODO unclear why this causes a MethodError
     # function SurfaceFlow{T,R,L}(args...) where {T,R,L}
     #     equal_size_vectors(args)
@@ -41,7 +43,6 @@ function update(
     network;
     frac_toriver = nothing,
     inflow_wb = nothing,
-    do_iter = false,
     doy = 0,
 )
     @unpack graph,
@@ -55,10 +56,11 @@ function update(
     ns = length(subdomain_order)
 
     @. sf.alpha_term = pow(sf.n / sqrt(sf.sl), sf.β)
-    @. sf.α = sf.alpha_term * pow(sf.width + 2.0 * sf.h, sf.alpha_pow)
+    # use fixed alpha value based on 0.5 * h_bankfull
+    @. sf.α = sf.alpha_term * pow(sf.width + sf.h_bankfull, sf.alpha_pow)
 
     # two options for iteration, fixed or based on courant number.
-    if do_iter
+    if sf.kinwave_it
         if sf.its > 0
             its = sf.its
         else
@@ -158,14 +160,6 @@ function update(
                     # update alpha
                     crossarea = sf.α[v] * pow(sf.q[v], sf.β)
                     sf.h[v] = crossarea / sf.width[v]
-                    wetper = sf.width[v] + (2.0 * sf.h[v]) # wetted perimeter
-                    α = sf.α[v]
-                    sf.α[v] = sf.alpha_term[v] * pow(wetper, sf.alpha_pow)
-
-                    if abs(α - sf.α[v]) > sf.eps
-                        crossarea = sf.α[v] * pow(sf.q[v], sf.β)
-                        sf.h[v] = crossarea / sf.width[v]
-                    end
 
                     sf.q_av[v] += sf.q[v]
                     sf.h_av[v] += sf.h[v]

@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Changed
+- The ``\alpha`` parameter of the kinematic wave has a fixed value now and is not updated
+  because of changes in water height (this could result in large water balance errors). See
+  also [Surface routing](@ref).
+
 ## v0.4.0 - 2021-09-02
 
 ### Changed
