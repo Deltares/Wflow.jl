@@ -23,7 +23,7 @@ function initialize_hbv_model(config::Config)
     kw_river_tstep = get(config.model, "kw_river_tstep", 0)
     kw_land_tstep = get(config.model, "kw_land_tstep", 0)
     kinwave_it = get(config.model, "kin_wave_iteration", false)::Bool
-    update_alpha = get(config.model, "update_alpha", true)::Bool
+    update_alpha = get(config.model, "update_alpha", false)::Bool
 
     nc = NCDataset(static_path)
 
@@ -410,7 +410,7 @@ function initialize_hbv_model(config::Config)
         volume = zeros(Float, n),
         h = zeros(Float, n),
         h_av = zeros(Float, n),
-        h_bankfull = zeros(Float,n),
+        h_bankfull = zeros(Float, n),
         Δt = Float(tosecond(Δt)),
         its = kw_land_tstep > 0 ? Int(cld(tosecond(Δt), kw_land_tstep)) : kw_land_tstep,
         width = dw,
@@ -624,11 +624,7 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:HBV,R,W}
     lateral.land.qlat .= lateral.land.inwater ./ lateral.land.dl
 
     # run kinematic wave for overland flow
-    update(
-        lateral.land,
-        network.land,
-        frac_toriver = network.frac_toriver,
-    )
+    update(lateral.land, network.land, frac_toriver = network.frac_toriver)
 
     # determine lateral inflow (from overland flow) for river flow
     lateral.river.inwater .= copy(lateral.land.to_river[inds_riv])
@@ -644,11 +640,7 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:HBV,R,W}
             doy = dayofyear(clock.time),
         )
     else
-        update(
-            lateral.river,
-            network.river,
-            doy = dayofyear(clock.time),
-        )
+        update(lateral.river, network.river, doy = dayofyear(clock.time))
     end
 
     write_output(model)

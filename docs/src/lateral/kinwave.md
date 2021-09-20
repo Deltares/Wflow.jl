@@ -34,14 +34,14 @@ kw_river_tstep = 900
 kw_land_tstep = 3600
 ```
 
-By default the ``\alpha`` parameter of the kinematic wave is updated because of changes in
-water height (wetted perimeter). This can result in large water balance errors. To reduce
-these errors, there is an option to run with a fixed ``\alpha`` value, by setting the option
-`update_alpha` to false in the TOML file:
+By default the ``\alpha`` parameter of the kinematic wave is fixed and not updated because
+of changes in water height (wetted perimeter). There is an option to update the ``\alpha``
+value, by setting the option `update_alpha` to true in the TOML file (note that this can
+result in large water balance errors):
 
 ```toml
 [model]
-update_alpha = false
+update_alpha = true
 ```
 
 For the river part a bankfull height map (default value is 1.0 m) can be provided as

@@ -33,7 +33,7 @@ function initialize_sbm_gwf_model(config::Config)
     kw_river_tstep = get(config.model, "kw_river_tstep", 0)
     kw_land_tstep = get(config.model, "kw_land_tstep", 0)
     kinwave_it = get(config.model, "kin_wave_iteration", false)::Bool
-    update_alpha = get(config.model, "update_alpha", true)::Bool
+    update_alpha = get(config.model, "update_alpha", false)::Bool
 
     nc = NCDataset(static_path)
 
@@ -132,7 +132,7 @@ function initialize_sbm_gwf_model(config::Config)
         volume = zeros(Float, n),
         h = zeros(Float, n),
         h_av = zeros(Float, n),
-        h_bankfull = zeros(Float,n),
+        h_bankfull = zeros(Float, n),
         Δt = Float(tosecond(Δt)),
         its = kw_land_tstep > 0 ? Int(cld(tosecond(Δt), kw_land_tstep)) : kw_land_tstep,
         width = sw,
@@ -454,7 +454,7 @@ function initialize_sbm_gwf_model(config::Config)
         @unpack lateral = model
         lateral.land.volume .= lateral.land.h .* lateral.land.width .* lateral.land.dl
         lateral.river.volume .= lateral.river.h .* lateral.river.width .* lateral.river.dl
-        
+
         if do_lakes
             # storage must be re-initialized after loading the state with the current
             # waterlevel otherwise the storage will be based on the initial water level
@@ -551,11 +551,7 @@ function update_sbm_gwf(model)
         lateral.land.Δt
     lateral.land.qlat .= lateral.land.inwater ./ lateral.land.dl
     # run kinematic wave for overland flow
-    update(
-        lateral.land,
-        network.land,
-        frac_toriver = network.frac_toriver,
-    )
+    update(lateral.land, network.land, frac_toriver = network.frac_toriver)
 
     # determine net runoff from vertical sbm concept in river cells
     net_runoff_river =
@@ -582,11 +578,7 @@ function update_sbm_gwf(model)
             doy = dayofyear(clock.time),
         )
     else
-        update(
-            lateral.river,
-            network.river,
-            doy = dayofyear(clock.time),
-        )
+        update(lateral.river, network.river, doy = dayofyear(clock.time))
     end
 
     write_output(model)

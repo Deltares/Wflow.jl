@@ -172,9 +172,9 @@ function update(
                         if abs(α - sf.α[v]) > sf.eps
                             crossarea = sf.α[v] * pow(sf.q[v], sf.β)
                             sf.h[v] = crossarea / sf.width[v]
-                        end                  
+                        end
                     end
-                    
+
                     sf.q_av[v] += sf.q[v]
                     sf.h_av[v] += sf.h[v]
                 end
