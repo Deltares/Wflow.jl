@@ -23,7 +23,6 @@ function initialize_hbv_model(config::Config)
     kw_river_tstep = get(config.model, "kw_river_tstep", 0)
     kw_land_tstep = get(config.model, "kw_land_tstep", 0)
     kinwave_it = get(config.model, "kin_wave_iteration", false)::Bool
-    update_alpha = get(config.model, "update_alpha", false)::Bool
 
     nc = NCDataset(static_path)
 
@@ -427,7 +426,6 @@ function initialize_hbv_model(config::Config)
         reservoir = nothing,
         lake = nothing,
         kinwave_it = kinwave_it,
-        update_alpha = update_alpha,
     )
 
     graph = flowgraph(ldd, inds, pcr_dir)
@@ -492,7 +490,6 @@ function initialize_hbv_model(config::Config)
         lake = do_lakes ? lakes : nothing,
         rivercells = river,
         kinwave_it = kinwave_it,
-        update_alpha = update_alpha,
     )
 
     # setup subdomains for the land and river kinematic wave domain, if nthreads = 1

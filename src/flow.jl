@@ -28,8 +28,7 @@
     reservoir::R                            # Reservoir model struct of arrays
     lake::L                                 # Lake model struct of arrays
     kinwave_it::Bool                        # Boolean for iterations kinematic wave
-    update_alpha::Bool                      # Boolean to update α when h is changing
-
+    
     # TODO unclear why this causes a MethodError
     # function SurfaceFlow{T,R,L}(args...) where {T,R,L}
     #     equal_size_vectors(args)
@@ -57,12 +56,8 @@ function update(
     ns = length(subdomain_order)
 
     @. sf.alpha_term = pow(sf.n / sqrt(sf.sl), sf.β)
-    if sf.update_alpha
-        @. sf.α = sf.alpha_term * pow(sf.width + 2.0 * sf.h, sf.alpha_pow)
-    else
-        # use fixed alpha value based on 0.5 * h_bankfull
-        @. sf.α = sf.alpha_term * pow(sf.width + sf.h_bankfull, sf.alpha_pow)
-    end
+    # use fixed alpha value based on 0.5 * h_bankfull
+    @. sf.α = sf.alpha_term * pow(sf.width + sf.h_bankfull, sf.alpha_pow)
 
     # two options for iteration, fixed or based on courant number.
     if sf.kinwave_it
@@ -165,15 +160,6 @@ function update(
                     # update alpha
                     crossarea = sf.α[v] * pow(sf.q[v], sf.β)
                     sf.h[v] = crossarea / sf.width[v]
-                    if sf.update_alpha
-                        wetper = sf.width[v] + (2.0 * sf.h[v]) # wetted perimeter
-                        α = sf.α[v]
-                        sf.α[v] = sf.alpha_term[v] * pow(wetper, sf.alpha_pow)
-                        if abs(α - sf.α[v]) > sf.eps
-                            crossarea = sf.α[v] * pow(sf.q[v], sf.β)
-                            sf.h[v] = crossarea / sf.width[v]
-                        end
-                    end
 
                     sf.q_av[v] += sf.q[v]
                     sf.h_av[v] += sf.h[v]

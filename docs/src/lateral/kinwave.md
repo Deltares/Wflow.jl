@@ -34,25 +34,17 @@ kw_river_tstep = 900
 kw_land_tstep = 3600
 ```
 
-By default the ``\alpha`` parameter of the kinematic wave is fixed and not updated because
-of changes in water height (wetted perimeter). There is an option to update the ``\alpha``
-value, by setting the option `update_alpha` to true in the TOML file (note that this can
-result in large water balance errors):
-
-```toml
-[model]
-update_alpha = true
-```
-
-For the river part a bankfull height map (default value is 1.0 m) can be provided as
-follows, to calculate the fixed ``\alpha`` value based on half bankfull height:
+The ``\alpha`` parameter of the kinematic wave is fixed. To estimate the wetted perimeter
+for the calculation of the ``\alpha`` parameter a bankfull height map (default value is 1.0
+m) for the river can be provided as follows: 
 
 ```toml
 [input.lateral.river]
 h_bankfull = "river_bankfullheight"
 ```
-For the land part the wetted perimeter is based on the flow width for the fixed ``\alpha``
-value.
+
+The wetted perimeter of the river is based on half bankfull height. For the land part the
+wetted perimeter is based on the flow width.
 
 ## Subsurface flow routing
 In the SBM model the kinematic wave approach is used to route subsurface flow laterally. The
