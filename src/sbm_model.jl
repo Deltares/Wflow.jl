@@ -391,7 +391,8 @@ function initialize_sbm_model(config::Config)
             graph = graph_riv,
             nodes_at_link = nodes_at_link,
             links_at_node = links_at_node,
-            rev_inds_riv = rev_inds_riv[inds],
+            indices = inds_riv,
+            reverse_indices = rev_inds_riv,
         )
     end
 
