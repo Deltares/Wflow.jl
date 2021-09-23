@@ -423,3 +423,19 @@ tosecond(x::Hour) = Float64(Dates.value(Second(x)))
 tosecond(x::Minute) = Float64(Dates.value(Second(x)))
 tosecond(x::T) where {T<:DatePeriod} = Float64(Dates.value(Second(x)))
 tosecond(x::T) where {T<:TimePeriod} = x / convert(T, Second(1))
+
+function adjacent_nodes_at_link(graph)
+    links = collect(edges(graph))
+    return (src = src.(links), dst = dst.(links))
+end
+
+function adjacent_links_at_node(graph, nodes_at_link)
+    nodes = vertices(graph)
+    src_link = Vector{Int}[]
+    dst_link = copy(src_link)
+    for i = 1:nv(graph)
+        push!(src_link, findall(isequal(nodes[i]), nodes_at_link.dst))
+        push!(dst_link, findall(isequal(nodes[i]), nodes_at_link.src))
+    end
+    return (src = src_link, dst = dst_link)
+end

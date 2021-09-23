@@ -283,3 +283,87 @@ end
     to_river::Vector{T} | "m3 Δt-1"     # Part of subsurface flow [m³ Δt⁻¹] that flows to the river
     ssf::Vector{T} | "m3 Δt-1"          # Subsurface flow [m³ Δt⁻¹]
 end
+
+@get_units @with_kw struct ShallowWaterRiver{T}
+    n::Int | "-"                        # number of cells
+    ne::Int | "-"                       # number of edges/links
+    g::T | "m2 s-1"                     # acceleration due to gravity
+    α::T | "-"                          # stability coefficient (de Almeida et al., 2012.)
+    q0::Vector{T} | "m3 s-1"            # river discharge (subgrid channel) at previous time step
+    q::Vector{T} | "m3 s-1"             # river discharge (subgrid channel)
+    zmax::Vector{T} | "m"               # maximum channel bed elevation
+    mannings_n::Vector{T} | "s m-1/3"   # Manning's roughness
+    h::Vector{T} | "m"                  # water depth
+    h_av::Vector{T} | "m"               # average water depth
+    length::Vector{T} | "m"             # river length
+    width::Vector{T} | "m"              # river width
+    volume::Vector{T} | "m3"            # river volume
+    error::Vector{T} | "m3"             # error volume
+    inwater::Vector{T} | "m3 s-1"       # Lateral inflow [m³ s⁻¹]
+    bankvolume::Vector{T} | "m3"        # bank volume
+    bankheight::Vector{T} | "m"         # bank height
+    slp::Vector{T} | "-"                # river slope between river cells
+    z::Vector{T} | "m"                  # river bed elevation
+    froude::Bool | "-"                  # if true a check is performed if froude number > 1.0 (algorithm is modified)
+end
+
+function update(sw::ShallowWaterRiver, network, Δt, compute_h = true)
+
+    @unpack nodes_at_link, links_at_node = network
+
+    sw.q0 .= sw.q
+
+    @threads for i = 1:sw.ne
+
+        ηsrc = sw.z[nodes_at_link.src[i]] + sw.h[nodes_at_link.src[i]]
+        ηdst = sw.z[nodes_at_link.dst[i]] + sw.h[nodes_at_link.dst[i]]
+
+        η_max = max(ηsrc, ηdst)
+        hf = (η_max - sw.zmax[i])
+        w = min(sw.width[nodes_at_link.dst[i]], sw.width[nodes_at_link.src[i]])
+
+
+        if hf > 1e-03
+            length =
+                0.5 * (sw.length[nodes_at_link.dst[i]] + sw.length[nodes_at_link.src[i]]) # could be precalculated
+            A = w * hf # cross area (rectangular channel)
+            R = A / (w + 2.0 * hf) # wetted perimeter (rectangular channel)
+            sw.q[i] = local_inertial_riverflow(
+                sw.q0[i],
+                ηsrc,
+                ηdst,
+                hf,
+                A,
+                R,
+                length,
+                sw.mannings_n[i],
+                sw.g,
+                sw.froude,
+                Δt,
+            )
+        else
+            sw.q[i] = 0.0
+        end
+    end
+    if compute_h
+        @threads for i = 1:sw.n
+            sw.volume[i] =
+                sw.volume[i] +
+                (
+                    sum_at(sw.q, links_at_node.src[i]) -
+                    sum_at(sw.q, links_at_node.dst[i]) + sw.inwater[i]
+                ) * Δt
+            if sw.volume[i] < 0.0
+                sw.error[i] = sw.error[i] + abs(sw.volume[i])
+            end
+            sw.volume[i] = max(sw.volume[i], 0.0) # set volume to zero if negative
+            sw.h[i] = sw.volume[i] / (sw.length[i] * sw.width[i])
+        end
+    end
+end
+
+function stable_timestep(sw::ShallowWaterRiver)
+    Δt = minimum(sw.α .* sw.length[1:sw.n] ./ sqrt.(sw.g .* sw.h[1:sw.n]))
+    Δt = isinf(Δt) ? 10 : Δt
+    return Δt
+end
