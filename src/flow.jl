@@ -127,24 +127,6 @@ function update(
                     else # run kinematic wave for river domain (including reservoirs and lakes)
                         # sf.qin by outflow from upstream reservoir or lake location is added
                         sf.qin[v] += sum_at(sf.q, upstream_nodes[n])
-
-
-                        if !isnothing(sf.reservoir) && sf.reservoir_index[v] != 0
-                            # run reservoir model and copy reservoir outflow to inflow (qin) of
-                            # downstream river cell
-                            i = sf.reservoir_index[v]
-                            update(sf.reservoir, i, sf.q[v] + inflow_wb[v], adt)
-                            j = only(outneighbors(graph, v))
-                            sf.qin[j] = sf.reservoir.outflow[i]
-
-                        elseif !isnothing(sf.lake) && sf.lake_index[v] != 0
-                            # run lake model and copy lake outflow to inflow (qin) of downstream river
-                            # cell
-                            i = sf.lake_index[v]
-                            update(sf.lake, i, sf.q[v] + inflow_wb[v], doy, adt)
-                            j = only(outneighbors(graph, v))
-                            sf.qin[j] = sf.lake.outflow[i]
-                        end
                     end
 
                     sf.q[v] = kinematic_wave(
@@ -157,7 +139,24 @@ function update(
                         sf.dl[v],
                     )
 
-                    # update alpha
+                    if !isnothing(sf.reservoir) && sf.reservoir_index[v] != 0
+                        # run reservoir model and copy reservoir outflow to inflow (qin) of
+                        # downstream river cell
+                        i = sf.reservoir_index[v]
+                        update(sf.reservoir, i, sf.q[v] + inflow_wb[v], adt)
+                        j = only(outneighbors(graph, v))
+                        sf.qin[j] = sf.reservoir.outflow[i]
+
+                    elseif !isnothing(sf.lake) && sf.lake_index[v] != 0
+                        # run lake model and copy lake outflow to inflow (qin) of downstream river
+                        # cell
+                        i = sf.lake_index[v]
+                        update(sf.lake, i, sf.q[v] + inflow_wb[v], doy, adt)
+                        j = only(outneighbors(graph, v))
+                        sf.qin[j] = sf.lake.outflow[i]
+                    end
+
+                    # update h
                     crossarea = sf.α[v] * pow(sf.q[v], sf.β)
                     sf.h[v] = crossarea / sf.width[v]
 
