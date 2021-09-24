@@ -18,7 +18,6 @@
     alpha_pow::T | "-"                      # Used in the power part of α
     alpha_term::Vector{T} | "-"             # Term used in computation of α
     α::Vector{T} | "s3/5 m1/5"              # Constant in momentum equation A = αQᵝ, based on Manning's equation
-    eps::T | "s3/5 m1/5"                    # Maximum allowed change in α, if exceeded cross sectional area and h is recalculated
     cel::Vector{T} | "m s-1"                # Celerity of the kinematic wave
     to_river::Vector{T} | "m3 s-1"          # Part of overland flow [m³ s⁻¹] that flows to the river
     rivercells::Vector{Bool} | "-"          # Location of river cells (0 or 1)
