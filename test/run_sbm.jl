@@ -121,7 +121,7 @@ end
 @testset "reservoir simple" begin
     res = model.lateral.river.reservoir
     @test res.outflow[1] ≈ 0.2174998592483153f0
-    @test res.inflow[1] ≈ 49.4653315798391f0
+    @test res.inflow[1] ≈ 49.52026446039592f0
     @test res.volume[1] ≈ 2.776162917050312f7
     @test res.precipitation[1] ≈ 0.1765228509902954f0
     @test res.evaporation[1] ≈ 0.5372688174247742f0
