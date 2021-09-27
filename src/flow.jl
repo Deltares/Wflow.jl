@@ -284,12 +284,11 @@ end
     ssf::Vector{T} | "m3 Δt-1"          # Subsurface flow [m³ Δt⁻¹]
 end
 
-@get_units @with_kw struct ShallowWaterRiver{T}
+@get_units @with_kw struct ShallowWaterRiver{T,R,L}
     n::Int | "-"                        # number of cells
     ne::Int | "-"                       # number of edges/links
     g::T | "m2 s-1"                     # acceleration due to gravity
     α::T | "-"                          # stability coefficient (de Almeida et al., 2012.)
-    q0::Vector{T} | "m3 s-1"            # river discharge (subgrid channel) at previous time step
     q::Vector{T} | "m3 s-1"             # river discharge (subgrid channel)
     zmax::Vector{T} | "m"               # maximum channel bed elevation
     mannings_n::Vector{T} | "s m-1/3"   # Manning's roughness
@@ -305,13 +304,22 @@ end
     slp::Vector{T} | "-"                # river slope between river cells
     z::Vector{T} | "m"                  # river bed elevation
     froude::Bool | "-"                  # if true a check is performed if froude number > 1.0 (algorithm is modified)
+    reservoir_index::Vector{Int} | "-"  # map cell to 0 (no reservoir) or i (pick reservoir i in reservoir field)
+    lake_index::Vector{Int} | "-"       # map cell to 0 (no lake) or i (pick lake i in lake field)
+    reservoir::R                        # Reservoir model struct of arrays
+    lake::L                             # Lake model struct of arrays
 end
 
-function update(sw::ShallowWaterRiver, network, Δt, compute_h = true)
+function update(
+    sw::ShallowWaterRiver,
+    network,
+    Δt;
+    inflow_wb = nothing,
+    doy = 0,
+    update_h = true,
+)
 
     @unpack nodes_at_link, links_at_node = network
-
-    sw.q0 .= sw.q
 
     @threads for i = 1:sw.ne
 
@@ -322,14 +330,13 @@ function update(sw::ShallowWaterRiver, network, Δt, compute_h = true)
         hf = (η_max - sw.zmax[i])
         w = min(sw.width[nodes_at_link.dst[i]], sw.width[nodes_at_link.src[i]])
 
-
         if hf > 1e-03
             length =
                 0.5 * (sw.length[nodes_at_link.dst[i]] + sw.length[nodes_at_link.src[i]]) # could be precalculated
             A = w * hf # cross area (rectangular channel)
             R = A / (w + 2.0 * hf) # wetted perimeter (rectangular channel)
             sw.q[i] = local_inertial_riverflow(
-                sw.q0[i],
+                sw.q[i],
                 ηsrc,
                 ηdst,
                 hf,
@@ -344,8 +351,20 @@ function update(sw::ShallowWaterRiver, network, Δt, compute_h = true)
         else
             sw.q[i] = 0.0
         end
+
+        if !isnothing(sw.reservoir) && sw.reservoir_index[i] != 0
+            sw.q[i] = max(sw.q[i], 0.0)
+            v = sw.reservoir_index[i]
+            update(sw.reservoir, v, sw.q[i] + inflow_wb[i], Δt)
+            sw.inwater[nodes_at_link.dst[i]] = sw.reservoir.outflow[v]
+        elseif !isnothing(sw.lake) && sw.lake_index[i] != 0
+            sw.q[i] = max(sw.q[i], 0.0)
+            v = sw.lake_index[i]
+            update(sw.lake, v, sw.q[i] + inflow_wb[i], doy, Δt)
+            sw.inwater[nodes_at_link.dst[i]] = sw.lake.outflow[v]
+        end
     end
-    if compute_h
+    if update_h
         @threads for i = 1:sw.n
             sw.volume[i] =
                 sw.volume[i] +

@@ -940,7 +940,7 @@ function write_netcdf_timestep(model, dataset, parameters)
             # ensure no other information is written
             fill!(buffer, missing)
             # cut off possible boundary conditions/ ghost points with [1:length(sel)]
-            buffer[sel] .= vector[1:length(sel)] 
+            buffer[sel] .= vector[1:length(sel)]
             dataset[key][:, :, time_index] = buffer
         elseif elemtype <: SVector
             nlayer = length(first(vector))

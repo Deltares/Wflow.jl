@@ -238,7 +238,7 @@ function local_inertial_riverflow(q0, η0, η1, hf, A, R, length, mannings_n, g,
     slope = (η1 - η0) / length
     q = (
         (q0 - g * A * Δt * slope) /
-        (1.0 + g * Δt * pow(mannings_n,2.0) * abs(q0) / (pow(R, 4.0 / 3.0) * A))
+        (1.0 + g * Δt * pow(mannings_n, 2.0) * abs(q0) / (pow(R, 4.0 / 3.0) * A))
     )
 
     if froude
@@ -246,7 +246,7 @@ function local_inertial_riverflow(q0, η0, η1, hf, A, R, length, mannings_n, g,
         if abs(fr) > 1.0 && q > 0.0
             q = pow(g * hf, 0.5) * A
         elseif abs(fr) > 1.0 && q < 0.0
-            q = - pow(g * hf, 0.5) * A
+            q = -pow(g * hf, 0.5) * A
         end
     end
 

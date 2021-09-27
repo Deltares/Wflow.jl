@@ -257,9 +257,9 @@ function initialize_sbm_model(config::Config)
             kinwave_it = kinwave_it,
         )
     elseif river_routing == "local-inertial"
-        # river length at boundary point
+        # river length at boundary point (ghost point)
         riverlength_bc = get(config.model, "riverlength_bc", 1.0e5)
-        
+
         river_elevation_2d = ncread(
             nc,
             param(config, "input.lateral.river.elevation");
@@ -275,7 +275,7 @@ function initialize_sbm_model(config::Config)
         n_ghost_points = length(index_pit_river)
         for (i, v) in enumerate(index_pit_river)
             add_vertex!(graph_riv)
-            add_edge!(graph_riv, v, nriv+i)
+            add_edge!(graph_riv, v, nriv + i)
             append!(river_elevation, 0.0)
             append!(riverwidth, riverwidth[v])
             append!(riverlength, riverlength_bc)
@@ -294,12 +294,11 @@ function initialize_sbm_model(config::Config)
             )
         end
 
-        rf = ShallowWaterRiver{Float}(
+        rf = ShallowWaterRiver(
             n = nriv,
             ne = _ne,
             g = 9.80665,
             α = 0.7,
-            q0 = zeros(_ne),
             q = zeros(_ne),
             zmax = zmax,
             mannings_n = n_river,
@@ -315,6 +314,10 @@ function initialize_sbm_model(config::Config)
             slp = zeros(_ne),
             z = river_elevation,
             froude = true,
+            reservoir_index = do_reservoirs ? resindex : fill(0, nriv),
+            lake_index = do_lakes ? lakeindex : fill(0, nriv),
+            reservoir = do_reservoirs ? reservoirs : nothing,
+            lake = do_lakes ? lakes : nothing,
         )
     end
 
@@ -527,32 +530,49 @@ function update_after_subsurfaceflow(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,
         )
     )
 
+    # check if reservoirs or lakes are defined, the inflow from lateral subsurface and
+    # overland flow is required
+    if !isnothing(lateral.river.reservoir) || !isnothing(lateral.river.lake)
+        inflow_wb =
+            lateral.subsurface.ssf[inds_riv] ./ lateral.subsurface.Δt .+
+            lateral.land.q_av[inds_riv]
+    else
+        inflow_wb = nothing
+    end
+
     # kinematic wave for river flow
     if typeof(lateral.river) <: SurfaceFlow
 
         lateral.river.qlat .= lateral.river.inwater ./ lateral.river.dl
 
-        # check if reservoirs or lakes are defined, the inflow from lateral subsurface and
-        # overland flow is required
-        if !isnothing(lateral.river.reservoir) || !isnothing(lateral.river.lake)
-            inflow_wb =
-                lateral.subsurface.ssf[inds_riv] ./ lateral.river.Δt .+
-                lateral.land.q_av[inds_riv]
-            update(
-                lateral.river,
-                network.river,
-                inflow_wb = inflow_wb,
-                doy = dayofyear(clock.time),
-            )
-        else
-            update(lateral.river, network.river, doy = dayofyear(clock.time))
-        end
+        update(
+            lateral.river,
+            network.river,
+            inflow_wb = inflow_wb,
+            doy = dayofyear(clock.time),
+        )
         # local inertial approach for river flow
     elseif typeof(lateral.river) <: ShallowWaterRiver
+
+        if !isnothing(lateral.river.reservoir)
+            lateral.river.reservoir.inflow .= 0.0
+            lateral.river.reservoir.totaloutflow .= 0.0
+        end
+        if !isnothing(lateral.river.lake)
+            lateral.river.lake.inflow .= 0.0
+            lateral.river.lake.totaloutflow .= 0.0
+        end
+
         t = 0.0
         while t < vertical.Δt
             Δt = stable_timestep(lateral.river)
-            update(lateral.river, network.river, Δt)
+            update(
+                lateral.river,
+                network.river,
+                Δt,
+                inflow_wb = inflow_wb,
+                doy = dayofyear(clock.time),
+            )
             if t + Δt > vertical.Δt
                 Δt = vertical.Δt - t
             end
