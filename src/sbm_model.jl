@@ -260,6 +260,7 @@ function initialize_sbm_model(config::Config)
         # river length at boundary point (ghost point)
         riverlength_bc = get(config.model, "riverlength_bc", 1.0e5)
         alpha = get(config.model, "inertial_flow_alpha", 0.8)
+        h_thresh = get(config.model, "h_thresh", 1.0e-03)
 
         river_elevation_2d = ncread(
             nc,
@@ -280,6 +281,7 @@ function initialize_sbm_model(config::Config)
             append!(river_elevation, 0.0)
             append!(riverwidth, riverwidth[v])
             append!(riverlength, riverlength_bc)
+            append!(n_river, n_river[v])
         end
 
         nodes_at_link = adjacent_nodes_at_link(graph_riv)
@@ -290,6 +292,7 @@ function initialize_sbm_model(config::Config)
         zmax = fill(Float(0), _ne)
         width_at_link = fill(Float(0), _ne)
         length_at_link = fill(Float(0), _ne)
+        mannings_n = fill(Float(0), _ne)
         for i = 1:_ne
             zmax[i] = max(
                 river_elevation[nodes_at_link.src[i]],
@@ -300,6 +303,11 @@ function initialize_sbm_model(config::Config)
             length_at_link[i] =
                 0.5 *
                 (riverlength[nodes_at_link.dst[i]] + riverlength[nodes_at_link.src[i]])
+            mannings_n[i] =
+                (
+                    n_river[nodes_at_link.dst[i]] * riverlength[nodes_at_link.dst[i]] +
+                    n_river[nodes_at_link.src[i]] * riverlength[nodes_at_link.src[i]]
+                ) / (riverlength[nodes_at_link.dst[i]] + riverlength[nodes_at_link.src[i]])
         end
 
         rf = ShallowWaterRiver(
@@ -307,11 +315,12 @@ function initialize_sbm_model(config::Config)
             ne = _ne,
             g = 9.80665,
             α = alpha,
+            h_thresh = h_thresh,
             Δt = tosecond(Δt),
             q = zeros(_ne),
             q_av = zeros(_ne),
             zmax = zmax,
-            mannings_n = n_river,
+            mannings_n = mannings_n,
             h = fill(0.0, nriv + n_ghost_points),
             η_max = zeros(_ne),
             hf = zeros(_ne),

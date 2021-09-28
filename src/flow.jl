@@ -289,11 +289,12 @@ end
     ne::Int | "-"                       # number of edges/links
     g::T | "m2 s-1"                     # acceleration due to gravity
     α::T | "-"                          # stability coefficient (de Almeida et al., 2012.)
+    h_thresh::T | "m"                   # stability coefficient (de Almeida et al., 2012.)
     Δt::T | "s"                         # model time step [s]
     q::Vector{T} | "m3 s-1"             # river discharge (subgrid channel)
     q_av::Vector{T} | "m3 s-1"          # average discharge [m³ s⁻¹]
     zmax::Vector{T} | "m"               # maximum channel bed elevation
-    mannings_n::Vector{T} | "s m-1/3"   # Manning's roughness
+    mannings_n::Vector{T} | "s m-1/3"   # Manning's roughness at edge/link
     h::Vector{T} | "m"                  # water depth
     η_max::Vector{T} | "m"              # maximum water elevation
     hf::Vector{T} | "m"                 # water depth at edge/link
@@ -336,7 +337,7 @@ function shallowwater_river_update(
         sw.η_max[i] = max(ηsrc, ηdst)
         sw.hf[i] = (sw.η_max[i] - sw.zmax[i])
 
-        if sw.hf[i] > 1e-03
+        if sw.hf[i] > sw.h_thresh
             sw.a[i] = sw.width_at_link[i] * sw.hf[i] # cross area (rectangular channel)
             sw.r[i] = sw.a[i] / (sw.width_at_link[i] + 2.0 * sw.hf[i]) # wetted perimeter (rectangular channel)
             sw.q[i] = local_inertial_riverflow(
