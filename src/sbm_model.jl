@@ -259,6 +259,7 @@ function initialize_sbm_model(config::Config)
     elseif river_routing == "local-inertial"
         # river length at boundary point (ghost point)
         riverlength_bc = get(config.model, "riverlength_bc", 1.0e5)
+        alpha = get(config.model, "inertial_flow_alpha", 0.8)
 
         river_elevation_2d = ncread(
             nc,
@@ -287,28 +288,43 @@ function initialize_sbm_model(config::Config)
         _ne = ne(graph_riv)
 
         zmax = fill(Float(0), _ne)
+        width_at_link = fill(Float(0), _ne)
+        length_at_link = fill(Float(0), _ne)
         for i = 1:_ne
             zmax[i] = max(
                 river_elevation[nodes_at_link.src[i]],
                 river_elevation[nodes_at_link.dst[i]],
             )
+            width_at_link[i] =
+                min(riverwidth[nodes_at_link.dst[i]], riverwidth[nodes_at_link.src[i]])
+            length_at_link[i] =
+                0.5 *
+                (riverlength[nodes_at_link.dst[i]] + riverlength[nodes_at_link.src[i]])
         end
 
         rf = ShallowWaterRiver(
             n = nriv,
             ne = _ne,
             g = 9.80665,
-            α = 0.7,
+            α = alpha,
+            Δt = tosecond(Δt),
             q = zeros(_ne),
+            q_av = zeros(_ne),
             zmax = zmax,
             mannings_n = n_river,
             h = fill(0.0, nriv + n_ghost_points),
+            η_max = zeros(_ne),
+            hf = zeros(_ne),
             h_av = zeros(nriv),
             width = riverwidth,
+            width_at_link = width_at_link,
+            a = zeros(_ne),
+            r = zeros(_ne),
             volume = fill(0.0, nriv),
             error = zeros(Float, nriv),
             inwater = zeros(nriv),
             length = riverlength,
+            length_at_link = length_at_link,
             bankvolume = fill(mv, nriv),
             bankheight = fill(mv, nriv),
             slp = zeros(_ne),
@@ -553,31 +569,12 @@ function update_after_subsurfaceflow(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,
         )
         # local inertial approach for river flow
     elseif typeof(lateral.river) <: ShallowWaterRiver
-
-        if !isnothing(lateral.river.reservoir)
-            lateral.river.reservoir.inflow .= 0.0
-            lateral.river.reservoir.totaloutflow .= 0.0
-        end
-        if !isnothing(lateral.river.lake)
-            lateral.river.lake.inflow .= 0.0
-            lateral.river.lake.totaloutflow .= 0.0
-        end
-
-        t = 0.0
-        while t < vertical.Δt
-            Δt = stable_timestep(lateral.river)
-            update(
-                lateral.river,
-                network.river,
-                Δt,
-                inflow_wb = inflow_wb,
-                doy = dayofyear(clock.time),
-            )
-            if t + Δt > vertical.Δt
-                Δt = vertical.Δt - t
-            end
-            t = t + Δt
-        end
+        update(
+            lateral.river,
+            network.river,
+            inflow_wb = inflow_wb,
+            doy = dayofyear(clock.time),
+        )
     end
 
     write_output(model)
