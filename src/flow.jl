@@ -289,10 +289,10 @@ end
     ne::Int | "-"                       # number of edges/links
     g::T | "m2 s-1"                     # acceleration due to gravity
     α::T | "-"                          # stability coefficient (de Almeida et al., 2012.)
-    h_thresh::T | "m"                   # stability coefficient (de Almeida et al., 2012.)
+    h_thresh::T | "m"                   # depth threshold for calculating flow
     Δt::T | "s"                         # model time step [s]
     q::Vector{T} | "m3 s-1"             # river discharge (subgrid channel)
-    q_av::Vector{T} | "m3 s-1"          # average discharge [m³ s⁻¹]
+    q_av::Vector{T} | "m3 s-1"          # average river discharge [m³ s⁻¹]
     zmax::Vector{T} | "m"               # maximum channel bed elevation
     mannings_n::Vector{T} | "s m-1/3"   # Manning's roughness at edge/link
     h::Vector{T} | "m"                  # water depth
@@ -307,12 +307,12 @@ end
     r::Vector{T} | "m"                  # wetted perimeter at edge/link
     volume::Vector{T} | "m3"            # river volume
     error::Vector{T} | "m3"             # error volume
-    inwater::Vector{T} | "m3 s-1"       # Lateral inflow [m³ s⁻¹]
+    inwater::Vector{T} | "m3 s-1"       # lateral inflow [m³ s⁻¹]
+    inwater0::Vector{T} | "m3 s-1"      # lateral inflow at previous time step [m³ s⁻¹]
     bankvolume::Vector{T} | "m3"        # bank volume
     bankheight::Vector{T} | "m"         # bank height
-    slp::Vector{T} | "-"                # river slope between river cells
     z::Vector{T} | "m"                  # river bed elevation
-    froude::Bool | "-"                  # if true a check is performed if froude number > 1.0 (algorithm is modified)
+    froude_limit::Bool | "-"            # if true a check is performed if froude number > 1.0 (algorithm is modified)
     reservoir_index::Vector{Int} | "-"  # map cell to 0 (no reservoir) or i (pick reservoir i in reservoir field)
     lake_index::Vector{Int} | "-"       # map cell to 0 (no lake) or i (pick lake i in lake field)
     reservoir::R                        # Reservoir model struct of arrays
@@ -350,7 +350,7 @@ function shallowwater_river_update(
                 sw.length_at_link[i],
                 sw.mannings_n[i],
                 sw.g,
-                sw.froude,
+                sw.froude_limit,
                 Δt,
             )
         else
@@ -361,12 +361,14 @@ function shallowwater_river_update(
             sw.q[i] = max(sw.q[i], 0.0)
             v = sw.reservoir_index[i]
             update(sw.reservoir, v, sw.q[i] + inflow_wb[i], Δt)
-            sw.inwater[nodes_at_link.dst[i]] = sw.reservoir.outflow[v]
+            # add lake outflow to inwater of destination node
+            sw.inwater[nodes_at_link.dst[i]] = sw.inwater0[nodes_at_link.dst[i]] + sw.reservoir.outflow[v]
         elseif !isnothing(sw.lake) && sw.lake_index[i] != 0
             sw.q[i] = max(sw.q[i], 0.0)
             v = sw.lake_index[i]
             update(sw.lake, v, sw.q[i] + inflow_wb[i], doy, Δt)
-            sw.inwater[nodes_at_link.dst[i]] = sw.lake.outflow[v]
+            # add reservoir outflow to inwater of destination node
+            sw.inwater[nodes_at_link.dst[i]] = sw.inwater0[nodes_at_link.dst[i]] + sw.lake.outflow[v]
         end
         sw.q_av[i] += sw.q[i] * Δt
     end
@@ -405,6 +407,9 @@ function update(
         sw.lake.inflow .= 0.0
         sw.lake.totaloutflow .= 0.0
     end
+    if !isnothing(sw.reservoir) || !isnothing(sw.lake)
+        sw.inwater0 .= sw.inwater
+    end
     sw.q_av .= 0.0
     sw.h_av .= 0.0
 
@@ -420,6 +425,16 @@ function update(
     sw.q_av ./= sw.Δt
     sw.h_av ./= sw.Δt
 end
+
+
+"""
+    stable_timestep(sw::ShallowWaterRiver)
+
+Compute a stable timestep size for the local inertial approach for river flow, based on
+Bates et al. (2010).
+
+Δt = α * (Δx / sqrt(g max(h))
+"""
 
 function stable_timestep(sw::ShallowWaterRiver)
     Δtₘᵢₙ = Inf

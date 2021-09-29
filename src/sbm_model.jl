@@ -257,10 +257,20 @@ function initialize_sbm_model(config::Config)
             kinwave_it = kinwave_it,
         )
     elseif river_routing == "local-inertial"
-        # river length at boundary point (ghost point)
-        riverlength_bc = get(config.model, "riverlength_bc", 1.0e5)
-        alpha = get(config.model, "inertial_flow_alpha", 0.8)
-        h_thresh = get(config.model, "h_thresh", 1.0e-03)
+        # The local inertial approach makes use of a staggered grid (Bates et al. (2010)),
+        # with nodes and links. This information is extracted from the directed graph of the
+        # river. Discharge q is calculated at links between nodes and mapped to the source
+        # nodes for gridded output (index of link is equal to source node index, e.g.:
+            # Edge 1 => 5
+            # Edge 2 => 1
+            # Edge 3 => 2
+            # Edge 4 => 9
+            # ⋮ )
+
+        riverlength_bc = get(config.model, "riverlength_bc", 1.0e5) # river length at boundary point (ghost point)
+        alpha = get(config.model, "inertial_flow_alpha", 0.7) # stability coefficient for model time step (0.2-0.7)
+        h_thresh = get(config.model, "h_thresh", 1.0e-03) # depth threshold for flow at link
+        froude_limit = get(config.model, "froude_limit", true) # limit flow to subcritical according to Froude number
 
         river_elevation_2d = ncread(
             nc,
@@ -270,9 +280,10 @@ function initialize_sbm_model(config::Config)
         )
         river_elevation = river_elevation_2d[inds_riv]
 
-        # set ghost points for boundary condition (downstream river outlet): river width is
-        # copied from the upstream cell, river elevation and h are set at 0.0 (sea level).
-        # river length at boundary point is by default 1.0e5 m (riverlength_bc).
+        # set ghost points for boundary condition (downstream river outlet): river width and
+        # manning n is copied from the upstream cell, river elevation and h are set at 0.0
+        # (sea level). river length at boundary point is by default 1.0e5 m
+        # (riverlength_bc).
         index_pit_river = findall(x -> x == 5, ldd_riv)
         n_ghost_points = length(index_pit_river)
         for (i, v) in enumerate(index_pit_river)
@@ -284,7 +295,9 @@ function initialize_sbm_model(config::Config)
             append!(n_river, n_river[v])
         end
 
+        # for each link the src and dst node is required
         nodes_at_link = adjacent_nodes_at_link(graph_riv)
+        # for each node the src and dst link is required
         links_at_node = adjacent_links_at_node(graph_riv, nodes_at_link)
 
         _ne = ne(graph_riv)
@@ -332,13 +345,13 @@ function initialize_sbm_model(config::Config)
             volume = fill(0.0, nriv),
             error = zeros(Float, nriv),
             inwater = zeros(nriv),
+            inwater0 = fill(mv, nriv),
             length = riverlength,
             length_at_link = length_at_link,
             bankvolume = fill(mv, nriv),
             bankheight = fill(mv, nriv),
-            slp = zeros(_ne),
             z = river_elevation,
-            froude = true,
+            froude_limit = froude_limit,
             reservoir_index = do_reservoirs ? resindex : fill(0, nriv),
             lake_index = do_lakes ? lakeindex : fill(0, nriv),
             reservoir = do_reservoirs ? reservoirs : nothing,
