@@ -362,13 +362,15 @@ function shallowwater_river_update(
             v = sw.reservoir_index[i]
             update(sw.reservoir, v, sw.q[i] + inflow_wb[i], Δt)
             # add lake outflow to inwater of destination node
-            sw.inwater[nodes_at_link.dst[i]] = sw.inwater0[nodes_at_link.dst[i]] + sw.reservoir.outflow[v]
+            sw.inwater[nodes_at_link.dst[i]] =
+                sw.inwater0[nodes_at_link.dst[i]] + sw.reservoir.outflow[v]
         elseif !isnothing(sw.lake) && sw.lake_index[i] != 0
             sw.q[i] = max(sw.q[i], 0.0)
             v = sw.lake_index[i]
             update(sw.lake, v, sw.q[i] + inflow_wb[i], doy, Δt)
             # add reservoir outflow to inwater of destination node
-            sw.inwater[nodes_at_link.dst[i]] = sw.inwater0[nodes_at_link.dst[i]] + sw.lake.outflow[v]
+            sw.inwater[nodes_at_link.dst[i]] =
+                sw.inwater0[nodes_at_link.dst[i]] + sw.lake.outflow[v]
         end
         sw.q_av[i] += sw.q[i] * Δt
     end

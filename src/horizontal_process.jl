@@ -239,7 +239,19 @@ end
 Local inertial approach for river flow. Returns the flow `q` between two adjacent river
 cells (nodes) for a single timestep. 
 """
-function local_inertial_riverflow(q0, η0, η1, hf, A, R, length, mannings_n, g, froude_limit, Δt)
+function local_inertial_riverflow(
+    q0,
+    η0,
+    η1,
+    hf,
+    A,
+    R,
+    length,
+    mannings_n,
+    g,
+    froude_limit,
+    Δt,
+)
 
     slope = (η1 - η0) / length
     q = (

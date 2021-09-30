@@ -261,11 +261,11 @@ function initialize_sbm_model(config::Config)
         # with nodes and links. This information is extracted from the directed graph of the
         # river. Discharge q is calculated at links between nodes and mapped to the source
         # nodes for gridded output (index of link is equal to source node index, e.g.:
-            # Edge 1 => 5
-            # Edge 2 => 1
-            # Edge 3 => 2
-            # Edge 4 => 9
-            # ⋮ )
+        # Edge 1 => 5
+        # Edge 2 => 1
+        # Edge 3 => 2
+        # Edge 4 => 9
+        # ⋮ )
 
         riverlength_bc = get(config.model, "riverlength_bc", 1.0e5) # river length at boundary point (ghost point)
         alpha = get(config.model, "inertial_flow_alpha", 0.7) # stability coefficient for model time step (0.2-0.7)
