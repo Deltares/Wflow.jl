@@ -255,3 +255,12 @@ model = Wflow.update(model)
     @test h[501] ≈ 0.4873615922116117f0
 end
 Wflow.close_files(model, delete_output = false)
+
+# test local-inertial option for river flow river_routing
+#tomlpath = joinpath(@__DIR__, "sbm_config.toml")
+#config = Wflow.Config(tomlpath)
+#config.model.river_routing = "local-inertial"
+
+#model = Wflow.initialize_sbm_model(config)
+#model = Wflow.update(model)
+#model = Wflow.update(model)
