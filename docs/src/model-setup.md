@@ -21,12 +21,18 @@ following data is required for all Model types, but not directly part of a Model
 For the flow direction (D8) data, the PCRaster `ldd` convention is used, see also [PCRaster
 ldd](https://pcraster.geo.uu.nl/pcraster/4.3.1/documentation/pcraster_manual/sphinx/secdatbase.html#ldd-data-type).
 An approach to generate `ldd` data is to make use of the Python package
-[pyflwdir](https://deltares.gitlab.io/wflow/pyflwdir/) to [upscale existing flow direction
-data](https://deltares.gitlab.io/wflow/pyflwdir/flwdir.html#Flow-direction-upscaling) as the
-3 arcsec MERIT Hydro data (Yamazaki et al., 2019), see also Eilander et al. (2020) for more
-information. Pyflwdir is also used by the [hydroMT](@ref) Python package described in the
-next paragraph. Another approach to generate `ldd` data is to make use of PCRaster
-functionality, see for example
+[pyflwdir](https://github.com/Deltares/pyflwdir): 
+
++ to [upscale existing flow direction
+  data](https://deltares.github.io/pyflwdir/latest/upscaling.html) as the 3 arcsec MERIT
+  Hydro data (Yamazaki et al., 2019)
++ or to [derive flow directions from elevation
+  data](https://deltares.github.io/pyflwdir/latest/from_dem.html),
+
+see also Eilander et al. (2021) for more information. 
+Pyflwdir is also used by the [hydroMT](@ref) Python package described in the next paragraph.
+Another approach to generate `ldd` data is to make use of PCRaster functionality, see for
+example
 [lddcreate](https://pcraster.geo.uu.nl/pcraster/4.3.1/documentation/pcraster_manual/sphinx/op_lddcreate.html).
 
 Optionally, but also not directly part of a model component are `gauge` locations, that are
@@ -194,6 +200,6 @@ map stack.
   MERIT Hydro: A high‐resolution global hydrography map based on latest topography datasets,
   Water Resour. Res., 2019WR024873, doi:10.1029/2019WR024873, 2019.
 + Eilander, D., van Verseveld, W., Yamazaki, D., Weerts, A., Winsemius, H. C., and Ward, P.
-  J.: A hydrography upscaling method for scale invariant parametrization of distributed
-  hydrological models, Hydrol. Earth Syst. Sci. Discuss. [preprint],
-  <https://doi.org/10.5194/hess-2020-582>, in review, 2020. 
+  J.: A hydrography upscaling method for scale-invariant parametrization of distributed
+  hydrological models, Hydrol. Earth Syst. Sci., 25, 5287–5313,
+  <https://doi.org/10.5194/hess-25-5287-2021>, 2021.

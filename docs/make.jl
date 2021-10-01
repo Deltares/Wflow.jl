@@ -28,6 +28,7 @@ pages = [
     ],
     "Lateral components" => [
         "Kinematic wave" => "lateral/kinwave.md",
+        "Local inertial" => "lateral/local-inertial.md",
         "Groundwater flow" => "lateral/gwf.md",
         "Sediment Flux" => "lateral/sediment.md",
     ],
