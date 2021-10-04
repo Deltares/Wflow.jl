@@ -287,8 +287,8 @@ end
 @get_units @with_kw struct ShallowWaterRiver{T,R,L}
     n::Int | "-"                        # number of cells
     ne::Int | "-"                       # number of edges/links
-    g::T | "m2 s-1"                     # acceleration due to gravity
-    α::T | "-"                          # stability coefficient (de Almeida et al., 2012.)
+    g::T | "m s-2"                      # acceleration due to gravity
+    α::T | "-"                          # stability coefficient (Bates et al., 2010)
     h_thresh::T | "m"                   # depth threshold for calculating flow
     Δt::T | "s"                         # model time step [s]
     q::Vector{T} | "m3 s-1"             # river discharge (subgrid channel)

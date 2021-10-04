@@ -57,6 +57,10 @@ parameters. Input parameters for this component of the SBM + Kinematic wave mode
 derived from the SBM vertical concept and the land slope. One external parameter `khfrac` is
 used to calculate the horizontal hydraulic conductivity at the soil surface `kh₀`.
 
+There is also the option to use the local inertial model for river flow as part of the [SBM + Kinematic wave](@ref)
+model. Input parameters for this approach are described in [River flow (local inertial)](@ref
+local-inertial_river_params) of the Model parameters section.
+
 The HBV model consists besides the river and overland flow components of the [HBV vertical
 concept](@ref). Input parameters for this component are described in the [HBV](@ref) section
 of Model parameters.
@@ -190,7 +194,7 @@ documentation](https://deltares.github.io/hydromt_wflow/latest/index.html).
 To inspect or modify (for example in QGIS) the netCDF static data of these Wflow models it
 is convenient to export the maps to a raster format. This can be done as part of the
 hydroMT-wflow plugin, see also the following [example]
-(https://deltares.github.io/hydromt_wflow/latest/examples/examples/convert_staticmaps_to_gtiff.html).
+(https://deltares.github.io/hydromt_wflow/latest/examples/examples/convert_staticmaps_to_mapstack.html).
 It is also possible to create again the netCDF static data file based on the modified raster
 map stack.
 

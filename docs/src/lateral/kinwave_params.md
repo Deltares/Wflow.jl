@@ -21,7 +21,7 @@ h_bankfull = "river_bankfullheight"
 |:--------------- | ------------------| ----- | -------- |
 | `β`             |  constant in Manning's equation | - | - |
 | `dl`            |  length      | m     |  -      |
-| **`n`**             | Manning's roughness | s m``^{\frac{1}{3}}``| [^1] |
+| **`n`**             | Manning's roughness | s m``^{-\frac{1}{3}}``| [^1] |
 | **`sl`**         |  slope       | m m``^{-1}``| - |
 | `width`         |  width       | m          | - |
 | `q`             | discharge     | m``^3`` s``^{-1}``| - |
