@@ -346,8 +346,8 @@ function initialize_sbm_model(config::Config)
             error = zeros(Float, nriv),
             inwater = zeros(nriv),
             inwater0 = fill(mv, nriv),
-            length = riverlength,
-            length_at_link = length_at_link,
+            dl = riverlength,
+            dl_at_link = length_at_link,
             bankvolume = fill(mv, nriv),
             bankheight = fill(mv, nriv),
             z = river_elevation,
@@ -462,7 +462,10 @@ function initialize_sbm_model(config::Config)
             )
         vertical.zi .= zi
         lateral.land.volume .= lateral.land.h .* lateral.land.width .* lateral.land.dl
-        lateral.river.volume .= lateral.river.h .* lateral.river.width .* lateral.river.dl
+        # only set active cells for river (ignore boundary conditions/ghost points)
+        lateral.river.volume[1:nriv] .=
+            lateral.river.h[1:nriv] .* lateral.river.width[1:nriv] .*
+            lateral.river.dl[1:nriv]
 
         if do_lakes
             # storage must be re-initialized after loading the state with the current

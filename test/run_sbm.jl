@@ -247,5 +247,5 @@ model = Wflow.update(model)
     h = model.lateral.river.h_av
     @test h[1622] ≈ 0.004917530961362419f0
     @test h[43] ≈ 1.058749442326754f0
-    @test h[501] ≈ 0.4873615922116117f0    
+    @test h[501] ≈ 0.4873615922116117f0
 end

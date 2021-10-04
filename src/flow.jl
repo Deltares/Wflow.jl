@@ -299,8 +299,8 @@ end
     η_max::Vector{T} | "m"              # maximum water elevation
     hf::Vector{T} | "m"                 # water depth at edge/link
     h_av::Vector{T} | "m"               # average water depth
-    length::Vector{T} | "m"             # river length
-    length_at_link::Vector{T} | "m"     # river length at edge/link
+    dl::Vector{T} | "m"                 # river length
+    dl_at_link::Vector{T} | "m"         # river length at edge/link
     width::Vector{T} | "m"              # river width
     width_at_link::Vector{T} | "m"      # river width at edge/link
     a::Vector{T} | "m2"                 # flow area at edge/link
@@ -347,7 +347,7 @@ function shallowwater_river_update(
                 sw.hf[i],
                 sw.a[i],
                 sw.r[i],
-                sw.length_at_link[i],
+                sw.dl_at_link[i],
                 sw.mannings_n[i],
                 sw.g,
                 sw.froude_limit,
@@ -386,7 +386,7 @@ function shallowwater_river_update(
                 sw.error[i] = sw.error[i] + abs(sw.volume[i])
             end
             sw.volume[i] = max(sw.volume[i], 0.0) # set volume to zero if negative
-            sw.h[i] = sw.volume[i] / (sw.length[i] * sw.width[i])
+            sw.h[i] = sw.volume[i] / (sw.dl[i] * sw.width[i])
             sw.h_av[i] += sw.h[i] * Δt
         end
     end
@@ -441,7 +441,7 @@ Bates et al. (2010).
 function stable_timestep(sw::ShallowWaterRiver)
     Δtₘᵢₙ = Inf
     for i = 1:sw.n
-        Δt = sw.α * sw.length[i] / sqrt.(sw.g .* sw.h[i])
+        Δt = sw.α * sw.dl[i] / sqrt.(sw.g .* sw.h[i])
         Δtₘᵢₙ = Δt < Δtₘᵢₙ ? Δt : Δtₘᵢₙ
     end
     Δtₘᵢₙ = isinf(Δtₘᵢₙ) ? 10.0 : Δtₘᵢₙ

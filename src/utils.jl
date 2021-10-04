@@ -142,6 +142,7 @@ function set_states(instate_path, model, state_ncnames; type = nothing)
     NCDataset(instate_path) do ds
         for (state, ncname) in state_ncnames
             sel = active_indices(network, state)
+            n = length(sel)
             dims = length(dimnames(ds[ncname]))
             # 4 dims, for example (x,y,layer,time) where dim layer is an SVector for soil layers
             if dims == 4
@@ -169,8 +170,8 @@ function set_states(instate_path, model, state_ncnames; type = nothing)
                         A = map(type, A)
                     end
                 end
-                # set state in model object
-                param(model, state) .= A
+                # set state in model object, only set active cells ([1:n]) (ignore boundary conditions/ghost points)
+                param(model, state)[1:n] .= A
             else
                 error(
                     "Number of state dims should be 3 or 4, number of dims = ",
