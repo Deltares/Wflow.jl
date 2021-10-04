@@ -90,6 +90,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   wave equation.
 - Fixed values for forcing parameters are supported, see also [Fixed forcing values](@ref).
 
+### Added
+- Option to use the local inertial model for river flow as part of the [SBM + Kinematic
+  wave](@ref). See also [SBM + Local inertial river](@ref).
+
 ### Fixed
 - River inflow for reservoirs and lakes in the kinematic wave. This inflow was based on
   `sf.q[v]` at the previous time step, and this has been fixed to the current time step.
