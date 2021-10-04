@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - River inflow for reservoirs and lakes in the kinematic wave. This inflow was based on
   ``sf.q[v]`` at the previous time step, and this has been fixed to the current time step.
+- Reservoirs and lakes without downstream nodes now don't give an error.
 
 ## v0.4.0 - 2021-09-02
 

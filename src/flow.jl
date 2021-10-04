@@ -143,16 +143,34 @@ function update(
                         # downstream river cell
                         i = sf.reservoir_index[v]
                         update(sf.reservoir, i, sf.q[v] + inflow_wb[v], adt)
-                        j = only(outneighbors(graph, v))
-                        sf.qin[j] = sf.reservoir.outflow[i]
+
+                        downstream_nodes = outneighbors(graph, v)
+                        n_downstream = length(downstream_nodes)
+                        if n_downstream == 0
+                            # outflow goes nowhere
+                        elseif n_downstream == 1
+                            j = only(downstream_nodes)
+                            sf.qin[j] = sf.reservoir.outflow[i]
+                        else
+                            error("bifurcations not supported")
+                        end
 
                     elseif !isnothing(sf.lake) && sf.lake_index[v] != 0
                         # run lake model and copy lake outflow to inflow (qin) of downstream river
                         # cell
                         i = sf.lake_index[v]
                         update(sf.lake, i, sf.q[v] + inflow_wb[v], doy, adt)
-                        j = only(outneighbors(graph, v))
-                        sf.qin[j] = sf.lake.outflow[i]
+
+                        downstream_nodes = outneighbors(graph, v)
+                        n_downstream = length(downstream_nodes)
+                        if n_downstream == 0
+                            # outflow goes nowhere
+                        elseif n_downstream == 1
+                            j = only(downstream_nodes)
+                            sf.qin[j] = sf.lake.outflow[i]
+                        else
+                            error("bifurcations not supported")
+                        end
                     end
 
                     # update h
