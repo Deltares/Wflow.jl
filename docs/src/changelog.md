@@ -12,10 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   because of changes in water height (this could result in large water balance errors). See
   also [Surface routing](@ref).
 
+### Added
+- Check if reservoirs and lakes have downstream nodes. Without downstream nodes is not
+  supported and in that case an error message is thrown that is easier to understand than
+  the previous one: "ArgumentError: Collection is empty, must contain exactly 1 element."
+
 ### Fixed
 - River inflow for reservoirs and lakes in the kinematic wave. This inflow was based on
   ``sf.q[v]`` at the previous time step, and this has been fixed to the current time step.
-- Reservoirs and lakes without downstream nodes now don't give an error.
 
 ## v0.4.0 - 2021-09-02
 

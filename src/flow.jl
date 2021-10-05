@@ -27,7 +27,7 @@
     reservoir::R                            # Reservoir model struct of arrays
     lake::L                                 # Lake model struct of arrays
     kinwave_it::Bool                        # Boolean for iterations kinematic wave
-    
+
     # TODO unclear why this causes a MethodError
     # function SurfaceFlow{T,R,L}(args...) where {T,R,L}
     #     equal_size_vectors(args)
@@ -146,11 +146,14 @@ function update(
 
                         downstream_nodes = outneighbors(graph, v)
                         n_downstream = length(downstream_nodes)
-                        if n_downstream == 0
-                            # outflow goes nowhere
-                        elseif n_downstream == 1
+                        if n_downstream == 1
                             j = only(downstream_nodes)
                             sf.qin[j] = sf.reservoir.outflow[i]
+                        elseif n_downstream == 0
+                            error(
+                                """A reservoir without a downstream river node is not supported. 
+                                Add a downstream river node or move the reservoir to an upstream node (model schematization).
+                                """)
                         else
                             error("bifurcations not supported")
                         end
@@ -163,11 +166,14 @@ function update(
 
                         downstream_nodes = outneighbors(graph, v)
                         n_downstream = length(downstream_nodes)
-                        if n_downstream == 0
-                            # outflow goes nowhere
-                        elseif n_downstream == 1
+                        if n_downstream == 1
                             j = only(downstream_nodes)
                             sf.qin[j] = sf.lake.outflow[i]
+                        elseif n_downstream == 0
+                            error(
+                                """A lake without a downstream river node is not supported. 
+                                Add a downstream river node or move the lake to an upstream node (model schematization).
+                                """)
                         else
                             error("bifurcations not supported")
                         end
