@@ -27,7 +27,7 @@
     reservoir::R                            # Reservoir model struct of arrays
     lake::L                                 # Lake model struct of arrays
     kinwave_it::Bool                        # Boolean for iterations kinematic wave
-    
+
     # TODO unclear why this causes a MethodError
     # function SurfaceFlow{T,R,L}(args...) where {T,R,L}
     #     equal_size_vectors(args)
@@ -143,16 +143,40 @@ function update(
                         # downstream river cell
                         i = sf.reservoir_index[v]
                         update(sf.reservoir, i, sf.q[v] + inflow_wb[v], adt)
-                        j = only(outneighbors(graph, v))
-                        sf.qin[j] = sf.reservoir.outflow[i]
+
+                        downstream_nodes = outneighbors(graph, v)
+                        n_downstream = length(downstream_nodes)
+                        if n_downstream == 1
+                            j = only(downstream_nodes)
+                            sf.qin[j] = sf.reservoir.outflow[i]
+                        elseif n_downstream == 0
+                            error(
+                                """A reservoir without a downstream river node is not supported. 
+                                Add a downstream river node or move the reservoir to an upstream node (model schematization).
+                                """)
+                        else
+                            error("bifurcations not supported")
+                        end
 
                     elseif !isnothing(sf.lake) && sf.lake_index[v] != 0
                         # run lake model and copy lake outflow to inflow (qin) of downstream river
                         # cell
                         i = sf.lake_index[v]
                         update(sf.lake, i, sf.q[v] + inflow_wb[v], doy, adt)
-                        j = only(outneighbors(graph, v))
-                        sf.qin[j] = sf.lake.outflow[i]
+
+                        downstream_nodes = outneighbors(graph, v)
+                        n_downstream = length(downstream_nodes)
+                        if n_downstream == 1
+                            j = only(downstream_nodes)
+                            sf.qin[j] = sf.lake.outflow[i]
+                        elseif n_downstream == 0
+                            error(
+                                """A lake without a downstream river node is not supported. 
+                                Add a downstream river node or move the lake to an upstream node (model schematization).
+                                """)
+                        else
+                            error("bifurcations not supported")
+                        end
                     end
 
                     # update h
