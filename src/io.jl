@@ -129,6 +129,18 @@ function get_at(ds::CFDataset, varname::AbstractString, i)
     return read_standardized(ds, varname, (x = :, y = :, time = i))
 end
 
+function load_fixed_forcing(model)
+    @unpack reader = model
+    @unpack forcing_parameters = reader
+    for (par, ncvar) in forcing_parameters
+        if ncvar.name === nothing
+            val = ncvar.value * ncvar.scale + ncvar.offset
+            param_vector = param(model, par)
+            param_vector .= val
+        end
+    end
+end
+
 "Get dynamic NetCDF input for the given time"
 function update_forcing!(model)
     @unpack vertical, clock, reader, network, config = model
@@ -161,6 +173,9 @@ function update_forcing!(model)
 
     # load from NetCDF into the model according to the mapping
     for (par, ncvar) in forcing_parameters
+        # no need to update fixed values
+        ncvar.name === nothing && continue
+
         time = convert(eltype(nctimes), clock.time)
         data = get_at(dataset, ncvar.name, nctimes, time)
 
@@ -223,6 +238,7 @@ function load_dynamic_input!(model)
     if haskey(model.config.input, "cyclic")
         update_cyclic!(model)
     end
+    load_fixed_forcing(model)
 end
 
 "Get cyclic NetCDF input for the given time"
@@ -521,7 +537,8 @@ function prepare_reader(config)
     for par in config.input.forcing
         fields = symbols(par)
         ncname, mod = ncvar_name_modifier(param(config.input, fields))
-        forcing_parameters[fields] = (name = ncname, scale = mod.scale, offset = mod.offset)
+        forcing_parameters[fields] =
+            (name = ncname, scale = mod.scale, offset = mod.offset, value = mod.value)
     end
 
     # create map from internal location to NetCDF variable name for cyclic parameters
