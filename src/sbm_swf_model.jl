@@ -49,8 +49,12 @@ function initialize_sbm_swf_model(config::Config)
     riverlength = riverlength_2d[inds]
     altitude_2d = ncread(nc, param(config, "input.altitude"); type = Float, fill = 0)
     elevation = altitude_2d[inds]
-    river_elevation_2d =
-        ncread(nc, param(config, "input.lateral.river.elevation"); type = Wflow.Float, fill = 0)
+    river_elevation_2d = ncread(
+        nc,
+        param(config, "input.lateral.river.elevation");
+        type = Wflow.Float,
+        fill = 0,
+    )
 
     # read x, y coordinates and calculate cell length [m]
     y_nc = read_y_axis(nc)
@@ -261,7 +265,7 @@ function initialize_sbm_swf_model(config::Config)
     bankvolume = bankheight .* riverwidth .* riverlength
     volume = fill(Float(0), n)
 
-    h_init = river .* 0.01  # cold state
+    h_init = river .* 0.0  # cold state
 
     for i = 1:n
         if river[i]
@@ -285,7 +289,7 @@ function initialize_sbm_swf_model(config::Config)
         ywidth = we_y,
         g = 9.80665,
         θ = 0.8,
-        α = 0.2,
+        α = 0.7,
         qx0 = zeros(n + 1),
         qy0 = zeros(n + 1),
         qx = zeros(n + 1),
@@ -343,8 +347,7 @@ function initialize_sbm_swf_model(config::Config)
         width_at_link[i] =
             min(riverwidth[nodes_at_link.dst[i]], riverwidth[nodes_at_link.src[i]])
         length_at_link[i] =
-            0.5 *
-            (riverlength[nodes_at_link.dst[i]] + riverlength[nodes_at_link.src[i]])
+            0.5 * (riverlength[nodes_at_link.dst[i]] + riverlength[nodes_at_link.src[i]])
         mannings_n[i] =
             (
                 n_river[nodes_at_link.dst[i]] * riverlength[nodes_at_link.dst[i]] +
@@ -377,8 +380,8 @@ function initialize_sbm_swf_model(config::Config)
         inwater0 = fill(mv, nriv),
         dl = riverlength,
         dl_at_link = length_at_link,
-        bankvolume = fill(mv, nriv),
-        bankheight = fill(mv, nriv),
+        bankvolume = bankvolume,
+        bankheight = bankheight,
         z = river_elevation,
         froude_limit = froude_limit,
         reservoir_index = do_reservoirs ? resindex : fill(0, nriv),
@@ -532,31 +535,18 @@ function update_sbm_swf(model)
         lateral.subsurface.exfiltwater .* 1000.0,
     )
 
-    # TO DO: include other inputs here (for river, and from lateral ssf)
-    lateral.land.runoff .=
-        (vertical.runoff ./ 1000.0) .* (network.land.xl .* network.land.yl) ./ vertical.Δt
-
-    t = 0.0
-    while t < vertical.Δt
-        Δt = 60.0 # now fixed time step, TODO: needs to be improved, including further checking on possible mass balance errors
-        shallowwater_river_update(
-            lateral.river,
-            network.river,
-            Δt,
-            nothing,
-            dayofyear(clock.time),
-            false,
+    @. lateral.land.runoff = (
+        (vertical.runoff / 1000.0) * (network.land.xl * network.land.yl) / vertical.Δt +
+        lateral.subsurface.to_river / lateral.subsurface.Δt +
+        # net_runoff_river
+        (
+            (vertical.net_runoff_river * network.land.xl * network.land.yl * 0.001) /
+            vertical.Δt
         )
-        update(lateral.land, lateral.river, network, Δt)
-        if t + Δt > vertical.Δt
-            Δt = vertical.Δt - t
-        end
-        t = t + Δt
+    )
 
-        # boundary condition, fixed h at outlet for now, TODO: dealing with BCs needs to be improved
-        lateral.land.h[outlet] .= 0.1
-        lateral.river.h[1:5809] .= lateral.land.h[inds_riv]
-    end
+    update(lateral.land, lateral.river, network)
+
     # update the clock
     advance!(clock)
 

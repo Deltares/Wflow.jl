@@ -294,11 +294,11 @@ function local_inertial_flow(
         (1.0 + g * Δt * (mannings_n^2.0) * abs(q0) / (hf^(7.0 / 3.0) * width))
     )
     if froude
-        fr = (q / width / hf) / sqrt(g * hf)
+        fr = (q / width / hf) / pow(g * hf, 0.5)
         if abs(fr) > 1.0 && q > 0.0
-            q = hf * (sqrt(g * hf)) * width
+            q = hf * (pow(g * hf, 0.5)) * width
         elseif abs(fr) > 1.0 && q < 0.0
-            q = -hf * (sqrt(g * hf)) * width
+            q = -hf * (pow(g * hf, 0.5)) * width
         end
     end
 
