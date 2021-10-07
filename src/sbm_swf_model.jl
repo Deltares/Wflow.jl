@@ -157,6 +157,7 @@ function initialize_sbm_swf_model(config::Config)
 
     ldd_riv = ldd_2d[inds_riv]
     graph_riv = flowgraph(ldd_riv, inds_riv, pcr_dir)
+    river_elevation = river_elevation_2d[inds_riv]
 
     # the indices of the river cells in the vector with active cells (sub-catchment)
     index_river_f = filter(i -> !isequal(river[i], 0), 1:n) # filtered (without zeros)
@@ -164,42 +165,6 @@ function initialize_sbm_swf_model(config::Config)
     frac_toriver = fraction_runoff_toriver(graph, ldd, index_river_f, βₗ, n)
 
     # TODO: add more comments/ explanation for local inertial model
-
-    # the Almeida et al. (2012) algorithm makes use of a staggered grid (nodes and links).
-    # the following is required for the river network:
-    # for each node: - the source node (src_node) and destination node (dst_node)
-    #                - the source link (src_link_node) and destination link (dst_link_node)
-    # for each link: - the source link (src_link) and destination link (dst_link)
-    links = collect(edges(graph_riv))
-    src_node = src.(links)
-    dst_node = dst.(links)
-
-    src_link = Vector{Int}[]
-    dst_link = copy(src_link)
-
-    n_nodes = nv(graph_riv)
-    n_links = ne(graph_riv)
-
-    for i = 1:n_links
-        push!(src_link, findall(isequal(src_node[i]), dst_node))
-        push!(dst_link, findall(isequal(dst_node[i]), src_node))
-    end
-
-    nodes = vertices(graph_riv)
-    src_link_node = Vector{Int}[]
-    dst_link_node = copy(src_link_node)
-
-    for i = 1:n_nodes
-        push!(src_link_node, findall(isequal(nodes[i]), dst_node))
-        push!(dst_link_node, findall(isequal(nodes[i]), src_node))
-    end
-
-    river_elevation = river_elevation_2d[inds_riv]
-    # initialize subgrid river bed elevation at links of river
-    zr_max = fill(Float(0), n_links)
-    for i = 1:n_links
-        zr_max[i] = max(river_elevation[src_node[i]], river_elevation[dst_node[i]])
-    end
 
     # land part
     indices = Indices(xu = fill(0, n), xd = fill(0, n), yu = fill(0, n), yd = fill(0, n))
@@ -219,10 +184,14 @@ function initialize_sbm_swf_model(config::Config)
     zx_max = fill(Float(0), n)
     zy_max = fill(Float(0), n)
     for i = 1:n
-        yu = min(indices.yu[i], n)
-        xu = min(indices.xu[i], n)
-        zx_max[i] = max(elevation[i], elevation[xu])
-        zy_max[i] = max(elevation[i], elevation[yu])
+        xu = indices.xu[i]
+        if xu <= n
+            zx_max[i] = max(elevation[i], elevation[xu])
+        end
+        yu = indices.yu[i]
+        if yu <= n
+            zy_max[i] = max(elevation[i], elevation[yu])
+        end
     end
 
     # loop over cells containing subgrid river to set effective flow width for surface water
@@ -265,21 +234,6 @@ function initialize_sbm_swf_model(config::Config)
     bankvolume = bankheight .* riverwidth .* riverlength
     volume = fill(Float(0), n)
 
-    h_init = river .* 0.0  # cold state
-
-    for i = 1:n
-        if river[i]
-            j = rev_inds_riv[inds][i]
-            if h_init[i] <= bankheight[j]
-                volume[i] = h_init[i] * riverwidth[j] * riverlength[j]
-            else
-                volume[i] = bankvolume[j] + (h_init[i] - bankheight[j]) * xl[i] * yl[i]
-            end
-        else
-            volume[i] = h_init[i] * xl[i] * yl[i]
-        end
-    end
-
     # TODO: review field of struct
     sw_land = ShallowWaterLand{Float}(
         n = n,
@@ -299,7 +253,7 @@ function initialize_sbm_swf_model(config::Config)
         mannings_n = n_land,
         volume = volume,
         runoff = zeros(n),
-        h = h_init,
+        h = zeros(n),
         h_av = zeros(n),
         slp_x = zeros(n),
         slp_y = zeros(n),
@@ -307,7 +261,7 @@ function initialize_sbm_swf_model(config::Config)
         froude = true,
         rivercells = river,
     )
-
+    
     riverlength_bc = 1e05
     alpha = 0.7
     h_thresh = 1.0e-3
@@ -493,15 +447,13 @@ function update_sbm_swf(model)
     @unpack lateral, vertical, network, clock, config = model
     inds_riv = network.index_river_f
 
-    outlet = network.land.index_pit_land
-
     update_forcing!(model)
     if haskey(config.input, "cyclic")
         update_cyclic!(model)
     end
 
     vertical.waterlevel_land .= lateral.land.h_av .* 1000.0
-    #vertical.waterlevel_river[inds_riv] .= lateral.river.h_av .* 1000.0
+    vertical.waterlevel_river[inds_riv] .= lateral.river.h_av .* 1000.0
 
     # vertical sbm concept is updated until snow state, after that (optional)
     # snow transport is possible
