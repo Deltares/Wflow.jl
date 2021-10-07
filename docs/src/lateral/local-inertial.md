@@ -41,7 +41,7 @@ provided for the `sbm` model type:
 
 ```toml
 [model]
-river_routing = local-inertial # default is kinematic-wave
+river_routing = "local-inertial" # default is kinematic-wave
 inertial_flow_alpha = 0.5      # alpha coefficient for model stability (default = 0.7)
 froude_limit = true            # default is true, limit flow to subcritical-critical according to Froude number
 h_thresh = 0.1                 # water depth [m] threshold for calculating flow between cells (default = 1e-03)
