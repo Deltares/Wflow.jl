@@ -307,6 +307,13 @@ lake location.
     level [m asl]. Especially with storage/rating curves coming from data, please be careful
     and convert units if needed.
 
+## External inflows
+External inflows, for example water supply or abstractions, can be added to the kinematic wave via
+the `inflow` variable. For this, the user can supply a 2D map of the inflow which can be static or
+dynamic (changing every timestep or cyclic is possible). These inflow are added or abstracted from
+the upstream inflow `qin` before running the kinematic wave to solve the impact on resulting `q`.
+In case of a negative inflow (abstractions), a minimum of zero is applied to the upstream flow `qin`.
+
 ## References
 + Bos M.G., 1989. Discharge measurement structures. Third revised edition, International
   Institute for Land Reclamation and Improvement ILRI, Wageningen, The Netherlands.

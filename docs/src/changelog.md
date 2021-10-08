@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+- External water inflow (supply/abstractions) added to the kinematic wave `inflow` in m3/s.
+  It is added/removed to `sf.qin[v]` before computing the new `q[v]` with the kinematic wave
+  equation.
+
 ### Changed
 - The ``\alpha`` parameter of the kinematic wave has a fixed value now and is not updated
   because of changes in water height (this could result in large water balance errors). See

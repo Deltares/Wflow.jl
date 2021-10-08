@@ -26,9 +26,11 @@ width = "wflow_riverwidth"
 | `q_av`          | average discharge | m``^3`` s``^{-1}``| - |
 | `qlat`          | lateral inflow per unit length  | m``^2`` s``^{-1}``| - |
 | `inwater`       | lateral inflow | m``^3`` s``^{-1}``| - |
+| `inflow`        | external inflow (abstraction/supply/demand) | m``^3`` s``^{-1}``| 0.0 |
 | `volume`        | kinematic wave volume |m``^3``| - |
 | `h`             | water level | m | - |
 | `h_av`             | average water level | m | - |
+| `h_bankfull`     | bankfull water level | m | - |
 | `Δt`             | model time step | s | - |
 | `its`             | number of fixed iterations | - | - |
 | `alpha_pow`             | used in the power part of ``\alpha`` | - | - |
