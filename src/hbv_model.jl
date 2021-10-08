@@ -406,7 +406,7 @@ function initialize_hbv_model(config::Config)
         q_av = zeros(Float, n),
         qlat = zeros(Float, n),
         inwater = zeros(Float, n),
-        inflow = zeros(Float, nriv),
+        inflow = zeros(Float, n),
         volume = zeros(Float, n),
         h = zeros(Float, n),
         h_av = zeros(Float, n),

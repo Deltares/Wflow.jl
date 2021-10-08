@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The ``\alpha`` parameter of the kinematic wave has a fixed value now and is not updated
   because of changes in water height (this could result in large water balance errors). See
   also [Surface routing](@ref).
+- Cyclic input for other structs than vertical are also now supported (for example cyclic 
+  inflow to the river).
 
 ### Fixed
 - River inflow for reservoirs and lakes in the kinematic wave. This inflow was based on
