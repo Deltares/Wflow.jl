@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Check if reservoirs and lakes have downstream nodes. Without downstream nodes is not
   supported and in that case an error message is thrown that is easier to understand than
   the previous one: "ArgumentError: Collection is empty, must contain exactly 1 element."
+- For the `input.path_forcing` TOML setting we use
+  [Glob.jl](https://github.com/vtjnash/Glob.jl/) to expand strings like
+  `"data/forcing-year-*.nc"` to a set of netCDF files that are split in time.
 
 ### Fixed
 - River inflow for reservoirs and lakes in the kinematic wave. This inflow was based on

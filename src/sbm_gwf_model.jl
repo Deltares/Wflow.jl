@@ -18,9 +18,8 @@ function initialize_sbm_gwf_model(config::Config)
     # unpack the paths to the NetCDF files
     tomldir = dirname(config)
     static_path = joinpath(tomldir, config.input.path_static)
-    dynamic_path = joinpath(tomldir, config.input.path_forcing)
 
-    reader = prepare_reader(dynamic_path, static_path, config)
+    reader = prepare_reader(config)
     clock = Clock(config, reader)
     Δt = clock.Δt
 
