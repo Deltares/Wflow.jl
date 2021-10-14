@@ -28,7 +28,7 @@
     reservoir::R                            # Reservoir model struct of arrays
     lake::L                                 # Lake model struct of arrays
     kinwave_it::Bool                        # Boolean for iterations kinematic wave
-    
+
     # TODO unclear why this causes a MethodError
     # function SurfaceFlow{T,R,L}(args...) where {T,R,L}
     #     equal_size_vectors(args)
@@ -129,8 +129,18 @@ function update(
                         sf.qin[v] += sum_at(sf.q, upstream_nodes[n])
                     end
 
-                    # Correct q with inflow supply/abstraction
-                    # If inflow < 0 (abstraction), leave a minimum
+                    # Correct qlat with inflow supply/abstraction
+                    # If inflow < 0, abstraction is limited
+                    if sf.inflow[v] != 0.0
+                        if sf.inflow[v] < 0.0
+                            max_abstract =
+                                max(sf.qin[v] + sf.qlat[v] * sf.dl[v], -1 * sf.inflow[v])
+                            sf.qlat[v] -= max_abstract / sf.dl[v]
+                        else
+                            sf.qlat[v] += sf.inflow[v]
+                        end
+                    end
+
                     sf.qin[v] = max(sf.qin[v] + sf.inflow[v], 0.0)
 
                     sf.q[v] = kinematic_wave(
