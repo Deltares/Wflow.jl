@@ -186,4 +186,21 @@ model = Wflow.update(model)
     @test vertical.leaf_area_index[100] / lai[100] ≈ 1.6f0
     @test (res.evaporation[2] - 1.50) / res_evap[2] ≈ 3.0000012203408635f0
 end
+
+# test cyclic river inflow 
+tomlpath = joinpath(@__DIR__, "sbm_config.toml")
+config = Wflow.Config(tomlpath)
+
+config.input.cyclic = ["vertical.leaf_area_index", "lateral.river.inflow"]
+config.input.lateral.river.inflow = "inflow"
+
+model = Wflow.initialize_sbm_model(config)
+model = Wflow.update(model)
+model = Wflow.update(model)
+
+@testset "river inflow (cyclic)" begin
+    @test model.lateral.river.inflow[43] ≈ 0.75
+    @test model.lateral.river.q_av[43] ≈ 8.08521095942811
+end
+
 Wflow.close_files(model, delete_output = false)

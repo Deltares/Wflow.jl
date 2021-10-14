@@ -129,24 +129,19 @@ function update(
                         sf.qin[v] += sum_at(sf.q, upstream_nodes[n])
                     end
 
-                    # Correct qlat with inflow supply/abstraction
+                    # Inflow supply/abstraction is added to qlat (divide by flow length)
                     # If inflow < 0, abstraction is limited
-                    if sf.inflow[v] != 0.0
-                        if sf.inflow[v] < 0.0
-                            max_abstract =
-                                max(sf.qin[v] + sf.qlat[v] * sf.dl[v], -1 * sf.inflow[v])
-                            sf.qlat[v] -= max_abstract / sf.dl[v]
-                        else
-                            sf.qlat[v] += sf.inflow[v] / sf.dl[v]
-                        end
+                    if sf.inflow[v] < 0.0
+                        max_abstract = min(sf.qin[v] + sf.qlat[v] * sf.dl[v], -sf.inflow[v])
+                        inflow = -max_abstract / sf.dl[v]
+                    else
+                        inflow = sf.inflow[v] / sf.dl[v]
                     end
-
-                    sf.qin[v] = max(sf.qin[v] + sf.inflow[v], 0.0)
 
                     sf.q[v] = kinematic_wave(
                         sf.qin[v],
                         sf.q[v],
-                        sf.qlat[v],
+                        sf.qlat[v] + inflow,
                         sf.α[v],
                         sf.β,
                         adt,
