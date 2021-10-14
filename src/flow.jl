@@ -137,7 +137,7 @@ function update(
                                 max(sf.qin[v] + sf.qlat[v] * sf.dl[v], -1 * sf.inflow[v])
                             sf.qlat[v] -= max_abstract / sf.dl[v]
                         else
-                            sf.qlat[v] += sf.inflow[v]
+                            sf.qlat[v] += sf.inflow[v] / sf.dl[v]
                         end
                     end
 
