@@ -46,6 +46,11 @@ h_bankfull = "river_bankfullheight"
 The wetted perimeter of the river is based on half bankfull height. For the land part the
 wetted perimeter is based on the flow width.
 
+## Inflow
+External water (supply/abstraction) `inflow` [m``^3`` s``^{-1}``]  can be added to the
+kinematic wave for surface water routing, as a cyclic parameter or as part of forcing (see
+also [Input section](@ref)).
+
 ## Subsurface flow routing
 In the SBM model the kinematic wave approach is used to route subsurface flow laterally. The
 saturated store ``S`` can be drained laterally by saturated downslope subsurface flow per
