@@ -46,6 +46,11 @@ h_bankfull = "river_bankfullheight"
 The wetted perimeter of the river is based on half bankfull height. For the land part the
 wetted perimeter is based on the flow width.
 
+## Inflow
+External water (supply/abstraction) `inflow` [m``^3`` s``^{-1}``]  can be added to the
+kinematic wave for surface water routing, as a cyclic parameter or as part of forcing (see
+also [Input section](@ref)).
+
 ## Subsurface flow routing
 In the SBM model the kinematic wave approach is used to route subsurface flow laterally. The
 saturated store ``S`` can be drained laterally by saturated downslope subsurface flow per
@@ -306,6 +311,13 @@ lake location.
     In every file, level units are meters [m] above lake bottom and not meters above sea
     level [m asl]. Especially with storage/rating curves coming from data, please be careful
     and convert units if needed.
+
+## External inflows
+External inflows, for example water supply or abstractions, can be added to the kinematic wave via
+the `inflow` variable. For this, the user can supply a 2D map of the inflow which can be static or
+dynamic (changing every timestep or cyclic is possible). These inflow are added or abstracted from
+the upstream inflow `qin` before running the kinematic wave to solve the impact on resulting `q`.
+In case of a negative inflow (abstractions), a minimum of zero is applied to the upstream flow `qin`.
 
 ## References
 + Bos M.G., 1989. Discharge measurement structures. Third revised edition, International

@@ -221,7 +221,7 @@ monthday_passed(curr, avail) = (curr[1] >= avail[1]) && (curr[2] >= avail[2])
 function update_cyclic!(model)
     @unpack vertical, clock, reader, network, config = model
     @unpack cyclic_dataset, cyclic_times, cyclic_parameters = reader
-    sel = network.land.indices
+    #sel = network.land.indices
 
     # pick up the data that is valid for the past 24 hours
     month_day = monthday(clock.time - Day(1))
@@ -236,6 +236,7 @@ function update_cyclic!(model)
         for (par, ncvar) in cyclic_parameters
             data = get_at(cyclic_dataset, ncvar.name, i)
             param_vector = param(model, par)
+            sel = active_indices(network, par)
             param_vector .= data[sel]
             if ncvar.scale != 1.0 || ncvar.offset != 0.0
                 param_vector .= param_vector .* ncvar.scale .+ ncvar.offset

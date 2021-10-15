@@ -8,6 +8,7 @@
     q_av::Vector{T} | "m3 s-1"              # Average discharge [m³ s⁻¹]
     qlat::Vector{T} | "m2 s-1"              # Lateral inflow per unit length [m² s⁻¹]
     inwater::Vector{T} | "m3 s-1"           # Lateral inflow [m³ s⁻¹]
+    inflow::Vector{T} | "m3 s-1"            # External inflow (abstraction/supply/demand) [m³ s⁻¹]
     volume::Vector{T} | "m3"                # Kinematic wave volume [m³] (based on water level h)
     h::Vector{T} | "m"                      # Water level [m]
     h_av::Vector{T} | "m"                   # Average water level [m]
@@ -128,10 +129,19 @@ function update(
                         sf.qin[v] += sum_at(sf.q, upstream_nodes[n])
                     end
 
+                    # Inflow supply/abstraction is added to qlat (divide by flow length)
+                    # If inflow < 0, abstraction is limited
+                    if sf.inflow[v] < 0.0
+                        max_abstract = min(sf.qin[v] + sf.qlat[v] * sf.dl[v], -sf.inflow[v])
+                        inflow = -max_abstract / sf.dl[v]
+                    else
+                        inflow = sf.inflow[v] / sf.dl[v]
+                    end
+
                     sf.q[v] = kinematic_wave(
                         sf.qin[v],
                         sf.q[v],
-                        sf.qlat[v],
+                        sf.qlat[v] + inflow,
                         sf.α[v],
                         sf.β,
                         adt,
