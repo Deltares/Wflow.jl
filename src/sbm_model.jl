@@ -344,6 +344,7 @@ function initialize_sbm_model(config::Config)
             r = zeros(_ne),
             volume = fill(0.0, nriv),
             error = zeros(Float, nriv),
+            inflow = zeros(nriv),
             inwater = zeros(nriv),
             inwater0 = fill(mv, nriv),
             dl = riverlength,

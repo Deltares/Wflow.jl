@@ -61,6 +61,11 @@ is used. The river length [m] of the boundary cell can be set through the TOML f
 Simplified reservoirs and lakes models can be included as part of the local inertial model, 
 see also [Reservoirs and Lakes](@ref).
 
+## Inflow
+External water (supply/abstraction) `inflow` [m``^3`` s``^{-1}``]  can be added to the local
+inertial model for river flow, as a cyclic parameter or as part of forcing (see also [Input
+section](@ref)).
+
 ## Multi-Threading
 The local inertial model for river flow can be executed in parallel using multiple threads.
 

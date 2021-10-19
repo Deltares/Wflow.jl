@@ -32,6 +32,7 @@ internal model parameter to the external netCDF variable.
 | `error`    | error volume | m``^3`` | - |
 | `inwater`    | lateral inflow | m``^3`` s``^{-1}`` | - |
 | `inwater0`    | lateral inflow at previous time step | m``^3`` s``^{-1}`` | - |
+| `inflow`        | external inflow (abstraction/supply/demand) | m``^3`` s``^{-1}``| 0.0 |
 | `bankvolume`    | bank volume | m``^3`` | - |
 | `bankheight`    | bank height | m | - |
 | `froude_limit`    | if true a check is performed if froude number > 1.0 (algorithm is modified) | - | - |

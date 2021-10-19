@@ -309,6 +309,7 @@ end
     error::Vector{T} | "m3"             # error volume
     inwater::Vector{T} | "m3 s-1"       # lateral inflow [m³ s⁻¹]
     inwater0::Vector{T} | "m3 s-1"      # lateral inflow at previous time step [m³ s⁻¹]
+    inflow::Vector{T} | "m3 s-1"        # External inflow (abstraction/supply/demand) [m³ s⁻¹]
     bankvolume::Vector{T} | "m3"        # bank volume
     bankheight::Vector{T} | "m"         # bank height
     z::Vector{T} | "m"                  # river bed elevation
@@ -384,8 +385,9 @@ function shallowwater_river_update(
                 ) * Δt
             if sw.volume[i] < 0.0
                 sw.error[i] = sw.error[i] + abs(sw.volume[i])
+                sw.volume[i] = 0.0 # set volume to zero
             end
-            sw.volume[i] = max(sw.volume[i], 0.0) # set volume to zero if negative
+            sw.volume[i] = max(sw.volume[i] + sw.inflow[i] * Δt, 0.0) # add external inflow
             sw.h[i] = sw.volume[i] / (sw.dl[i] * sw.width[i])
             sw.h_av[i] += sw.h[i] * Δt
         end
