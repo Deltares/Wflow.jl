@@ -55,6 +55,10 @@ function BMI.update(model::Model; run = nothing)
     elseif run == "sbm_after_subsurfaceflow"
         update_func = update_after_subsurfaceflow
     end
+    update_forcing!(model)
+    if haskey(config.input, "cyclic")
+        update_cyclic!(model)
+    end
     return update_func(model)
 end
 
@@ -66,6 +70,10 @@ function BMI.update_until(model::Model, time::Float64)
     end_time = curtime + n_iter * config.timestepsecs
     @info("update model until $end_time")
     for i = 1:n_iter
+        update_forcing!(model)
+        if haskey(config.input, "cyclic")
+            update_cyclic!(model)
+        end
         update_func(model)
     end
     return model

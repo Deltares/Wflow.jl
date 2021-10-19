@@ -22,7 +22,7 @@ using NCDatasets: MFDataset
 
 const BMI = BasicModelInterface
 const Float = Float64
-const CFDataset = Union{NCDataset, MFDataset}
+const CFDataset = Union{NCDataset,MFDataset}
 
 mutable struct Clock{T}
     time::T
@@ -166,6 +166,10 @@ function run(model::Model; close_files = true)
     @info "Run information" model_type starttime Δt endtime nthreads()
     @progress for (i, time) in enumerate(times)
         @debug "Starting timestep" time timestep = i
+        update_forcing!(model)
+        if haskey(config.input, "cyclic")
+            update_cyclic!(model)
+        end
         model = update_func(model)
     end
 

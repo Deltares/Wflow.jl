@@ -355,12 +355,6 @@ function initialize_sbm_model(config::Config)
         end
     end
 
-    # make sure the forcing is already loaded
-    # it's fine to run twice, and may help catching errors earlier
-    update_forcing!(model)
-    if haskey(config.input, "cyclic")
-        update_cyclic!(model)
-    end
     return model
 end
 
@@ -388,11 +382,6 @@ function update_until_recharge(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
     @unpack lateral, vertical, network, clock, config = model
 
     inds_riv = network.index_river
-
-    update_forcing!(model)
-    if haskey(config.input, "cyclic")
-        update_cyclic!(model)
-    end
 
     # extract water levels h_av [m] from the land and river domains
     # this is used to limit open water evaporation

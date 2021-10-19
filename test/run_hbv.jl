@@ -5,6 +5,7 @@ config = Wflow.Config(tomlpath)
 model = Wflow.initialize_hbv_model(config)
 @unpack network = model
 
+get_input!(model)
 model = Wflow.update(model)
 
 # test if the first timestep was written to the CSV file
@@ -35,6 +36,7 @@ end
 end
 
 # run the second timestep
+get_input!(model)
 model = Wflow.update(model)
 
 @testset "second timestep" begin
