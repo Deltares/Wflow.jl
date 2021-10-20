@@ -23,7 +23,7 @@ function initialize_sbm_swf_model(config::Config)
     static_path = joinpath(tomldir, config.input.path_static)
     dynamic_path = joinpath(tomldir, config.input.path_forcing)
 
-    reader = prepare_reader(dynamic_path, static_path, config)
+    reader = prepare_reader(config)
     clock = Clock(config, reader)
     Δt = clock.Δt
 
@@ -432,12 +432,6 @@ function initialize_sbm_swf_model(config::Config)
         vertical.zi .= zi
     end
 
-    # make sure the forcing is already loaded
-    # it's fine to run twice, and may help catching errors earlier
-    update_forcing!(model)
-    if haskey(config.input, "cyclic")
-        update_cyclic!(model)
-    end
     return model
 end
 
@@ -446,11 +440,6 @@ function update_sbm_swf(model)
 
     @unpack lateral, vertical, network, clock, config = model
     inds_riv = network.index_river_f
-
-    update_forcing!(model)
-    if haskey(config.input, "cyclic")
-        update_cyclic!(model)
-    end
 
     vertical.waterlevel_land .= lateral.land.h_av .* 1000.0
     vertical.waterlevel_river[inds_riv] .= lateral.river.h_av .* 1000.0
