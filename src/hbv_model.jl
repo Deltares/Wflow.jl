@@ -576,12 +576,6 @@ function initialize_hbv_model(config::Config)
         end
     end
 
-    # make sure the forcing is already loaded
-    # it's fine to run twice, and may help catching errors earlier
-    update_forcing!(model)
-    if haskey(config.input, "cyclic")
-        update_cyclic!(model)
-    end
     return model
 end
 
@@ -589,12 +583,6 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:HBV,R,W}
     @unpack lateral, vertical, network, clock, config = model
 
     inds_riv = network.index_river
-    kinwave_it = get(config.model, "kin_wave_iteration", false)::Bool
-
-    update_forcing!(model)
-    if haskey(config.input, "cyclic")
-        update_cyclic!(model)
-    end
 
     # vertical hbv concept is updated until snow state, after that (optional)
     # snow transport is possible

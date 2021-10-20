@@ -148,22 +148,11 @@ function initialize_sediment_model(config::Config)
         set_states(instate_path, model, state_ncnames; type = Float)
     end
 
-    # make sure the forcing is already loaded
-    # it's fine to run twice, and may help catching errors earlier
-    update_forcing!(model)
-    if haskey(config.input, "cyclic")
-        update_cyclic!(model)
-    end
     return model
 end
 
 function update(model::Model{N,L,V,R,W}) where {N,L,V<:LandSediment,R,W}
     @unpack lateral, vertical, network, clock, config = model
-
-    update_forcing!(model)
-    if haskey(config.input, "cyclic")
-        update_cyclic!(model)
-    end
 
     update_until_ols(vertical, config)
     update_until_oltransport(vertical, config)

@@ -6,6 +6,7 @@ config = Wflow.Config(tomlpath)
 model = Wflow.initialize_sediment_model(config)
 @unpack network = model
 
+Wflow.load_dynamic_input!(model)
 model = Wflow.update(model)
 
 @testset "first timestep sediment model (vertical)" begin
@@ -21,6 +22,7 @@ model = Wflow.update(model)
 end
 
 # run the second timestep
+Wflow.load_dynamic_input!(model)
 model = Wflow.update(model)
 
 @testset "second timestep sediment model (vertical)" begin

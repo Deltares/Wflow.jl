@@ -7,17 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
-### Added
-- External water inflow (supply/abstractions) added to the kinematic wave `inflow` in m3/s.
-  It is added/removed to `sf.qlat[v]` before computing the new `q[v]` with the kinematic
-  wave equation.
-
 ### Changed
 - The ``\alpha`` parameter of the kinematic wave has a fixed value now and is not updated
   because of changes in water height (this could result in large water balance errors). See
   also [Surface routing](@ref).
 - Cyclic input for other structs than vertical are also now supported (for example cyclic 
   inflow to the river).
+- Moved `update_forcing!` and `update_cyclic!` functions to the `run` function. It is now
+  easier to implement a custom `run` function with custom loading of input data (forcing and
+  cyclic parameters).
 
 ### Added
 - Check if reservoirs and lakes have downstream nodes. Without downstream nodes is not
@@ -26,6 +24,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - For the `input.path_forcing` TOML setting we use
   [Glob.jl](https://github.com/vtjnash/Glob.jl/) to expand strings like
   `"data/forcing-year-*.nc"` to a set of netCDF files that are split in time.
+- External water inflow (supply/abstractions) added to the kinematic wave `inflow` in m3/s.
+  It is added/removed to `sf.qlat[v]` before computing the new `q[v]` with the kinematic
+  wave equation.
 
 ### Fixed
 - River inflow for reservoirs and lakes in the kinematic wave. This inflow was based on

@@ -6,6 +6,7 @@ config = Wflow.Config(tomlpath)
 model = Wflow.initialize_sbm_model(config)
 @unpack network = model
 
+Wflow.load_dynamic_input!(model)
 model = Wflow.update(model)
 
 # test if the first timestep was written to the CSV file
@@ -84,6 +85,7 @@ end
 end
 
 # run the second timestep
+Wflow.load_dynamic_input!(model)
 model = Wflow.update(model)
 
 @testset "second timestep" begin
@@ -175,7 +177,9 @@ config.input.vertical.leaf_area_index =
     Dict("scale" => 1.6, "netcdf" => Dict("variable" => Dict("name" => "LAI")))
 
 model = Wflow.initialize_sbm_model(config)
+Wflow.load_dynamic_input!(model)
 model = Wflow.update(model)
+Wflow.load_dynamic_input!(model)
 model = Wflow.update(model)
 
 @testset "changed dynamic parameters" begin
@@ -195,7 +199,9 @@ config.input.cyclic = ["vertical.leaf_area_index", "lateral.river.inflow"]
 config.input.lateral.river.inflow = "inflow"
 
 model = Wflow.initialize_sbm_model(config)
+Wflow.load_dynamic_input!(model)
 model = Wflow.update(model)
+Wflow.load_dynamic_input!(model)
 model = Wflow.update(model)
 
 @testset "river inflow (cyclic)" begin

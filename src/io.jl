@@ -217,6 +217,14 @@ true
 """
 monthday_passed(curr, avail) = (curr[1] >= avail[1]) && (curr[2] >= avail[2])
 
+"Get dynamic and cyclic NetCDF input"
+function load_dynamic_input!(model)
+    update_forcing!(model)
+    if haskey(model.config.input, "cyclic")
+        update_cyclic!(model)
+    end
+end
+
 "Get cyclic NetCDF input for the given time"
 function update_cyclic!(model)
     @unpack vertical, clock, reader, network, config = model

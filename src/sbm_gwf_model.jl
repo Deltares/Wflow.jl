@@ -459,13 +459,6 @@ function initialize_sbm_gwf_model(config::Config)
         end
     end
 
-    # make sure the forcing is already loaded
-    # it's fine to run twice, and may help catching errors earlier
-    update_forcing!(model)
-    if haskey(config.input, "cyclic")
-        update_cyclic!(model)
-    end
-
     return model
 end
 
@@ -476,11 +469,6 @@ function update_sbm_gwf(model)
 
     inds_riv = network.index_river
     do_drains = get(config.model, "drains", false)::Bool
-
-    update_forcing!(model)
-    if haskey(config.input, "cyclic")
-        update_cyclic!(model)
-    end
 
     # extract water levels h_av [m] from the land and river domains
     # this is used to limit open water evaporation

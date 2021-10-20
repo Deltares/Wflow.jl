@@ -22,7 +22,7 @@ using NCDatasets: MFDataset
 
 const BMI = BasicModelInterface
 const Float = Float64
-const CFDataset = Union{NCDataset, MFDataset}
+const CFDataset = Union{NCDataset,MFDataset}
 
 mutable struct Clock{T}
     time::T
@@ -110,7 +110,7 @@ include("sbm_gwf_model.jl")
 include("utils.jl")
 include("bmi.jl")
 include("subdomains.jl")
-
+    
 """
     run(tomlpath::String)
     run(config::Config)
@@ -166,6 +166,7 @@ function run(model::Model; close_files = true)
     @info "Run information" model_type starttime Δt endtime nthreads()
     @progress for (i, time) in enumerate(times)
         @debug "Starting timestep" time timestep = i
+        load_dynamic_input!(model)
         model = update_func(model)
     end
 
