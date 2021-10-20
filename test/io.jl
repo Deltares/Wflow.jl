@@ -169,7 +169,7 @@ config["model"]["reinit"] = false
 @test !config.model.reinit
 
 model = Wflow.initialize_sbm_model(config)
-get_input!(model)
+Wflow.load_dynamic_input!(model)
 
 @unpack vertical, clock, reader, writer = model
 
@@ -238,7 +238,7 @@ config.input.vertical.precipitation =
     Dict("scale" => 1.5, "netcdf" => Dict("variable" => Dict("name" => "P")))
 
 model = Wflow.initialize_sbm_model(config)
-get_input!(model)
+Wflow.load_dynamic_input!(model)
 
 @testset "changed parameter values" begin
     @unpack vertical = model

@@ -137,11 +137,3 @@ function csv_first_row(path)
     row = NamedTuple{names,types}((DateTime(parts[1]), values...))
     return row
 end
-
-"Get dynamic and cyclic NetCDF input"
-function get_input!(model)
-    Wflow.update_forcing!(model)
-    if haskey(model.config.input, "cyclic")
-        Wflow.update_cyclic!(model)
-    end
-end
