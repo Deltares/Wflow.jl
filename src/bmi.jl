@@ -36,6 +36,7 @@ function BMI.initialize(::Type{<:Model}, config_file)
     else
         error("unknown model type")
     end
+    load_fixed_forcing(model)
     return model
 end
 

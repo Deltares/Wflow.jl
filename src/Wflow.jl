@@ -145,7 +145,7 @@ function run(config::Config)
     else
         error("unknown model type")
     end
-
+    load_fixed_forcing(model)
     run(model)
 end
 
@@ -162,7 +162,7 @@ function run(model::Model; close_files = true)
     Δt = clock.Δt
     endtime = cftime(config.endtime, calendar)
     times = range(starttime, endtime, step = Δt)
-
+    
     @info "Run information" model_type starttime Δt endtime nthreads()
     @progress for (i, time) in enumerate(times)
         @debug "Starting timestep" time timestep = i

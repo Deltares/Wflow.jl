@@ -130,28 +130,15 @@ function get_at(ds::CFDataset, varname::AbstractString, i)
 end
 
 function load_fixed_forcing(model)
-    @unpack reader = model
+    @unpack reader, network, config = model
     @unpack forcing_parameters = reader
-    for (par, ncvar) in forcing_parameters
-        if ncvar.name === nothing
-            val = ncvar.value * ncvar.scale + ncvar.offset
-            param_vector = param(model, par)
-            param_vector .= val
-        end
-    end
-end
-
-"Get dynamic NetCDF input for the given time"
-function update_forcing!(model)
-    @unpack vertical, clock, reader, network, config = model
-    @unpack dataset, forcing_parameters = reader
-    nctimes = dataset["time"][:]
 
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
     do_lakes = get(config.model, "lakes", false)::Bool
 
     mover_params =
         (symbols"vertical.precipitation", symbols"vertical.potential_evaporation")
+    reverse_indices = network.land.reverse_indices
     if do_reservoirs
         sel_reservoirs = network.reservoir.indices_coverage
         param_res = Dict(
@@ -170,6 +157,61 @@ function update_forcing!(model)
         )
     end
 
+    for (par, ncvar) in forcing_parameters
+        if ncvar.name === nothing
+            val = ncvar.value * ncvar.scale + ncvar.offset
+            param_vector = param(model, par)
+            param_vector .= val
+            # set fixed precipitation and evaporation over the lakes and reservoirs and put
+            # these into the lakes and reservoirs structs and set the precipitation and
+            # evaporation to 0 in the vertical model
+            if par in mover_params
+                if do_reservoirs
+                    for (i, sel_reservoir) in enumerate(sel_reservoirs)
+                        param_vector[reverse_indices[sel_reservoir]] .= 0
+                        param_res[par][i] = val
+                    end
+                end
+                if do_lakes
+                    for (i, sel_lake) in enumerate(sel_lakes)
+                        param_vector[reverse_indices[sel_lake]] .= 0
+                        param_lake[par][i] = val
+                    end
+                end
+            end
+        end
+    end
+end
+
+"Get dynamic NetCDF input for the given time"
+function update_forcing!(model)
+    @unpack vertical, clock, reader, network, config = model
+    @unpack dataset, forcing_parameters = reader
+    nctimes = dataset["time"][:]
+
+    do_reservoirs = get(config.model, "reservoirs", false)::Bool
+    do_lakes = get(config.model, "lakes", false)::Bool
+
+    mover_params =
+        (symbols"vertical.precipitation", symbols"vertical.potential_evaporation")
+
+    if do_reservoirs
+        sel_reservoirs = network.reservoir.indices_coverage
+        param_res = Dict(
+            symbols"vertical.precipitation" =>
+                model.lateral.river.reservoir.precipitation,
+            symbols"vertical.potential_evaporation" =>
+                model.lateral.river.reservoir.evaporation,
+        )
+    end
+    if do_lakes
+        sel_lakes = network.lake.indices_coverage
+        param_lake = Dict(
+            symbols"vertical.precipitation" => model.lateral.river.lake.precipitation,
+            symbols"vertical.potential_evaporation" =>
+                model.lateral.river.lake.evaporation,
+        )
+    end
 
     # load from NetCDF into the model according to the mapping
     for (par, ncvar) in forcing_parameters
@@ -238,7 +280,6 @@ function load_dynamic_input!(model)
     if haskey(model.config.input, "cyclic")
         update_cyclic!(model)
     end
-    load_fixed_forcing(model)
 end
 
 "Get cyclic NetCDF input for the given time"
@@ -516,7 +557,7 @@ function prepare_reader(config)
     end
 
     dynamic_paths = glob(glob_path, glob_dir)  # expand "data/forcing-year-*.nc"
-    dataset = NCDataset(dynamic_paths, aggdim="time", deferopen=false)
+    dataset = NCDataset(dynamic_paths, aggdim = "time", deferopen = false)
 
     # check for cyclic parameters
     do_cyclic = haskey(config.input, "cyclic")
