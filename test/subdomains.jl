@@ -62,7 +62,7 @@ end
     subbas_fill = Wflow.fillnodata_upstream(g, toposort, subbas, 0)
     graph_subbas = Wflow.graph_from_nodes(g, subbas, subbas_fill)
     toposort_subbas = topological_sort_by_dfs(graph_subbas)
-    dist = LightGraphs.Experimental.Traversals.distances(
+    dist = Graphs.Experimental.Traversals.distances(
         Graph(graph_subbas),
         toposort_subbas[end],
     )

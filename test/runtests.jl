@@ -1,7 +1,7 @@
 ## load test dependencies and set paths to testing data
 using Dates
 using Downloads
-using LightGraphs
+using Graphs
 using NCDatasets
 using StaticArrays
 using Statistics

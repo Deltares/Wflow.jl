@@ -184,7 +184,7 @@ function kinwave_set_subdomains(config, graph, toposort, index_pit)
             if n_subbas > 1
                 graph_subbas = graph_from_nodes(g, subbas, subbas_fill)
                 toposort_subbas = topological_sort_by_dfs(graph_subbas)
-                dist = LightGraphs.Experimental.Traversals.distances(
+                dist = Graphs.Experimental.Traversals.distances(
                     Graph(graph_subbas),
                     toposort_subbas[end],
                 )

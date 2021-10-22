@@ -2,7 +2,7 @@ module Wflow
 
 using Dates
 using TOML
-using LightGraphs
+using Graphs
 using NCDatasets
 using StaticArrays
 using Statistics

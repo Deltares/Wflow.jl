@@ -147,8 +147,8 @@ end
 
 Transport of material downstream with a limited transport capacity over a directed graph.
 Mutates the material input. The network is expected to hold a graph and order field, where
-the graph meets the LightGraphs interface, and the order is a valid topological ordering
-such as that returned by `LightGraphs.topological_sort_by_dfs`.
+the graph implements the Graphs interface, and the order is a valid topological ordering
+such as that returned by `Graphs.topological_sort_by_dfs`.
 
 Returns the material state after transport.
 """
@@ -185,9 +185,9 @@ end
 
 Transport of material downstream with a limited transport capacity over a directed graph.
 Updates the material input, and overwrites the flux input, not using existing values. The
-network is expected to hold a graph and order field, where the graph meets the LightGraphs
+network is expected to hold a graph and order field, where the graph implements the Graphs
 interface, and the order is a valid topological ordering such as that returned by
-`LightGraphs.topological_sort_by_dfs`.
+`Graphs.topological_sort_by_dfs`.
 
 Returns the flux (material leaving each cell), and material (left after transport).
 """
