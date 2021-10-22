@@ -129,6 +129,23 @@ function get_at(ds::CFDataset, varname::AbstractString, i)
     return read_standardized(ds, varname, (x = :, y = :, time = i))
 end
 
+function get_param_res(model)
+    Dict(
+        symbols"vertical.precipitation" => model.lateral.river.reservoir.precipitation,
+        symbols"vertical.potential_evaporation" =>
+            model.lateral.river.reservoir.evaporation,
+    )
+end
+
+function get_param_lake(model)
+    Dict(
+        symbols"vertical.precipitation" => model.lateral.river.lake.precipitation,
+        symbols"vertical.potential_evaporation" => model.lateral.river.lake.evaporation,
+    )
+end
+
+mover_params = (symbols"vertical.precipitation", symbols"vertical.potential_evaporation")
+
 function load_fixed_forcing(model)
     @unpack reader, network, config = model
     @unpack forcing_parameters = reader
@@ -141,20 +158,11 @@ function load_fixed_forcing(model)
     reverse_indices = network.land.reverse_indices
     if do_reservoirs
         sel_reservoirs = network.reservoir.indices_coverage
-        param_res = Dict(
-            symbols"vertical.precipitation" =>
-                model.lateral.river.reservoir.precipitation,
-            symbols"vertical.potential_evaporation" =>
-                model.lateral.river.reservoir.evaporation,
-        )
+        param_res = get_param_res(model)
     end
     if do_lakes
         sel_lakes = network.lake.indices_coverage
-        param_lake = Dict(
-            symbols"vertical.precipitation" => model.lateral.river.lake.precipitation,
-            symbols"vertical.potential_evaporation" =>
-                model.lateral.river.lake.evaporation,
-        )
+        param_lake = get_param_lake(model)
     end
 
     for (par, ncvar) in forcing_parameters
@@ -192,25 +200,13 @@ function update_forcing!(model)
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
     do_lakes = get(config.model, "lakes", false)::Bool
 
-    mover_params =
-        (symbols"vertical.precipitation", symbols"vertical.potential_evaporation")
-
     if do_reservoirs
         sel_reservoirs = network.reservoir.indices_coverage
-        param_res = Dict(
-            symbols"vertical.precipitation" =>
-                model.lateral.river.reservoir.precipitation,
-            symbols"vertical.potential_evaporation" =>
-                model.lateral.river.reservoir.evaporation,
-        )
+        param_res = get_param_res(model)
     end
     if do_lakes
         sel_lakes = network.lake.indices_coverage
-        param_lake = Dict(
-            symbols"vertical.precipitation" => model.lateral.river.lake.precipitation,
-            symbols"vertical.potential_evaporation" =>
-                model.lateral.river.lake.evaporation,
-        )
+        param_lake = get_param_lake(model)
     end
 
     # load from NetCDF into the model according to the mapping
