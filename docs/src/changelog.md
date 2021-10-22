@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - External water inflow (supply/abstractions) added to the kinematic wave `inflow` in m3/s.
   It is added/removed to `sf.qlat[v]` before computing the new `q[v]` with the kinematic
   wave equation.
+- Fixed values for forcing parameters are supported, see also [Fixed forcing values](@ref).
 
 ### Fixed
 - River inflow for reservoirs and lakes in the kinematic wave. This inflow was based on

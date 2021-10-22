@@ -330,3 +330,29 @@ netcdf.variable.name = "P"
 scale = 1.5
 offset = 0.5
 ```
+
+## Fixed forcing values
+It is possible to set fixed values for forcing parameters through the TOML file. To set for
+example `temperature` to a fixed value of 10 ``\degree``C, the complete `forcing` list is
+required:
+
+```toml
+forcing = [
+  "vertical.precipitation",
+  "vertical.temperature",
+  "vertical.potential_evaporation",
+]
+
+[input.vertical.temperature]
+value = 10
+```
+
+Note that the mapping to the external netCDF variable listed under the section
+`[input.vertical]` needs to be removed or commented out:
+
+```toml
+[input.vertical]
+potential_evaporation = "PET" # forcing
+# temperature = "TEMP" # forcing
+precipitation = "P" # forcing
+```

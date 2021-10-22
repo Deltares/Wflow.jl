@@ -129,6 +129,68 @@ function get_at(ds::CFDataset, varname::AbstractString, i)
     return read_standardized(ds, varname, (x = :, y = :, time = i))
 end
 
+function get_param_res(model)
+    Dict(
+        symbols"vertical.precipitation" => model.lateral.river.reservoir.precipitation,
+        symbols"vertical.potential_evaporation" =>
+            model.lateral.river.reservoir.evaporation,
+    )
+end
+
+function get_param_lake(model)
+    Dict(
+        symbols"vertical.precipitation" => model.lateral.river.lake.precipitation,
+        symbols"vertical.potential_evaporation" => model.lateral.river.lake.evaporation,
+    )
+end
+
+mover_params = (symbols"vertical.precipitation", symbols"vertical.potential_evaporation")
+
+function load_fixed_forcing(model)
+    @unpack reader, network, config = model
+    @unpack forcing_parameters = reader
+
+    do_reservoirs = get(config.model, "reservoirs", false)::Bool
+    do_lakes = get(config.model, "lakes", false)::Bool
+
+    mover_params =
+        (symbols"vertical.precipitation", symbols"vertical.potential_evaporation")
+    reverse_indices = network.land.reverse_indices
+    if do_reservoirs
+        sel_reservoirs = network.reservoir.indices_coverage
+        param_res = get_param_res(model)
+    end
+    if do_lakes
+        sel_lakes = network.lake.indices_coverage
+        param_lake = get_param_lake(model)
+    end
+
+    for (par, ncvar) in forcing_parameters
+        if ncvar.name === nothing
+            val = ncvar.value * ncvar.scale + ncvar.offset
+            param_vector = param(model, par)
+            param_vector .= val
+            # set fixed precipitation and evaporation over the lakes and reservoirs and put
+            # these into the lakes and reservoirs structs and set the precipitation and
+            # evaporation to 0 in the vertical model
+            if par in mover_params
+                if do_reservoirs
+                    for (i, sel_reservoir) in enumerate(sel_reservoirs)
+                        param_vector[reverse_indices[sel_reservoir]] .= 0
+                        param_res[par][i] = val
+                    end
+                end
+                if do_lakes
+                    for (i, sel_lake) in enumerate(sel_lakes)
+                        param_vector[reverse_indices[sel_lake]] .= 0
+                        param_lake[par][i] = val
+                    end
+                end
+            end
+        end
+    end
+end
+
 "Get dynamic NetCDF input for the given time"
 function update_forcing!(model)
     @unpack vertical, clock, reader, network, config = model
@@ -138,29 +200,20 @@ function update_forcing!(model)
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
     do_lakes = get(config.model, "lakes", false)::Bool
 
-    mover_params =
-        (symbols"vertical.precipitation", symbols"vertical.potential_evaporation")
     if do_reservoirs
         sel_reservoirs = network.reservoir.indices_coverage
-        param_res = Dict(
-            symbols"vertical.precipitation" =>
-                model.lateral.river.reservoir.precipitation,
-            symbols"vertical.potential_evaporation" =>
-                model.lateral.river.reservoir.evaporation,
-        )
+        param_res = get_param_res(model)
     end
     if do_lakes
         sel_lakes = network.lake.indices_coverage
-        param_lake = Dict(
-            symbols"vertical.precipitation" => model.lateral.river.lake.precipitation,
-            symbols"vertical.potential_evaporation" =>
-                model.lateral.river.lake.evaporation,
-        )
+        param_lake = get_param_lake(model)
     end
-
 
     # load from NetCDF into the model according to the mapping
     for (par, ncvar) in forcing_parameters
+        # no need to update fixed values
+        ncvar.name === nothing && continue
+
         time = convert(eltype(nctimes), clock.time)
         data = get_at(dataset, ncvar.name, nctimes, time)
 
@@ -500,7 +553,7 @@ function prepare_reader(config)
     end
 
     dynamic_paths = glob(glob_path, glob_dir)  # expand "data/forcing-year-*.nc"
-    dataset = NCDataset(dynamic_paths, aggdim="time", deferopen=false)
+    dataset = NCDataset(dynamic_paths, aggdim = "time", deferopen = false)
 
     # check for cyclic parameters
     do_cyclic = haskey(config.input, "cyclic")
@@ -521,7 +574,8 @@ function prepare_reader(config)
     for par in config.input.forcing
         fields = symbols(par)
         ncname, mod = ncvar_name_modifier(param(config.input, fields))
-        forcing_parameters[fields] = (name = ncname, scale = mod.scale, offset = mod.offset)
+        forcing_parameters[fields] =
+            (name = ncname, scale = mod.scale, offset = mod.offset, value = mod.value)
     end
 
     # create map from internal location to NetCDF variable name for cyclic parameters

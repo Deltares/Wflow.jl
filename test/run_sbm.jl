@@ -209,4 +209,25 @@ model = Wflow.update(model)
     @test model.lateral.river.q_av[43] ≈ 8.08521095942811
 end
 
+# test fixed forcing (precipitation = 2.5)
+config = Wflow.Config(tomlpath)
+config.input.vertical.precipitation = Dict("value" => 2.5)
+model = Wflow.initialize_sbm_model(config)
+Wflow.load_fixed_forcing(model)
+
+@testset "fixed precipitation forcing (initialize)" begin
+    @test maximum(model.vertical.precipitation) ≈ 2.5
+    @test minimum(model.vertical.precipitation) ≈ 0.0
+    @test all(isapprox.(model.lateral.river.reservoir.precipitation, 2.5))
+end
+
+Wflow.load_dynamic_input!(model)
+model = Wflow.update(model)
+
+@testset "fixed precipitation forcing (first timestep)" begin
+    @test maximum(model.vertical.precipitation) ≈ 2.5
+    @test minimum(model.vertical.precipitation) ≈ 0.0
+    @test all(isapprox.(model.lateral.river.reservoir.precipitation, 2.5))
+end
+
 Wflow.close_files(model, delete_output = false)
