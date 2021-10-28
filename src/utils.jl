@@ -462,3 +462,12 @@ function adjacent_links_at_node(graph, nodes_at_link)
     end
     return (src = src_link, dst = dst_link)
 end
+
+"Add `vertex` and `edge` to `pits` of a directed `graph`"
+function add_vertex_edge_graph!(graph, pits)
+    n = nv(graph)
+    for (i, v) in enumerate(pits)
+        add_vertex!(graph)
+        add_edge!(graph, v, n + i)
+    end
+end

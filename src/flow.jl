@@ -494,25 +494,21 @@ function initialize_shallowwater_river(
     n = length(inds)
 
     # set ghost points for boundary condition (downstream river outlet): river width and
-    # manning n is copied from the upstream cell, river elevation and h are set at 0.0
-    # (sea level). river length at boundary point is by default 1.0e5 m
-    # (riverlength_bc).
-    index_pit_river = findall(x -> x == 5, ldd)
-    n_ghost_points = length(index_pit_river)
-    for (i, v) in enumerate(index_pit_river)
-        add_vertex!(graph)
-        add_edge!(graph, v, n + i)
-        append!(river_elevation, 0.0)
-        append!(width, width[v])
-        append!(dl, riverlength_bc)
-        append!(n_river, n_river[v])
-    end
+    # manning n is copied from the upstream cell, river elevation and h are set at 0.0 (sea
+    # level). river length at boundary point is by default 1.0e5 m (riverlength_bc).
+    index_pit = findall(x -> x == 5, ldd)
+    npits = length(index_pit)
+    add_vertex_edge_graph!(graph, index_pit)
+    append!(river_elevation, fill(Float(0), npits))
+    append!(dl, fill(riverlength_bc, npits))
+    append!(width, width[index_pit])
+    append!(n_river, n_river[index_pit])
 
     # for each link the src and dst node is required
     nodes_at_link = adjacent_nodes_at_link(graph)
-
     _ne = ne(graph)
 
+    # determine z, width, length and manning's n at links
     zmax = fill(Float(0), _ne)
     width_at_link = fill(Float(0), _ne)
     length_at_link = fill(Float(0), _ne)
@@ -542,7 +538,7 @@ function initialize_shallowwater_river(
         q_av = zeros(_ne),
         zmax = zmax,
         mannings_n = mannings_n,
-        h = fill(0.0, n + n_ghost_points),
+        h = fill(0.0, n + length(index_pit)),
         η_max = zeros(_ne),
         hf = zeros(_ne),
         h_av = zeros(n),
