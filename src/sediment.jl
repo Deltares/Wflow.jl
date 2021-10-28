@@ -179,13 +179,7 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
     clamp!(βₗ, 0.00001, Inf)
     ldd_2d = ncread(nc, param(config, "input.ldd"); allow_missing = true)
     ldd = ldd_2d[inds]
-    dl = fill(mv, n)
-    dw = fill(mv, n)
 
-    for i = 1:n
-        dl[i] = detdrainlength(ldd[i], xl[i], yl[i])
-        dw[i] = detdrainwidth(ldd[i], xl[i], yl[i])
-    end
     dmclay = ncread(
         nc,
         param(config, "input.vertical.dmclay", nothing);
@@ -356,8 +350,8 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
         eroslagg = fill(mv, n),
         ### Transport capacity part ###
         # Parameters
-        dl = dl,
-        dw = dw,
+        dl = map(detdrainlength, ldd, xl, yl),
+        dw = map(detdrainwidth, ldd, xl, yl),
         cGovers = cGovers,
         D50 = D50,
         dmclay = dmclay,

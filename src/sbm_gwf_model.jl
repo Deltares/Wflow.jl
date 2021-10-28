@@ -73,6 +73,8 @@ function initialize_sbm_gwf_model(config::Config)
             initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, tosecond(Δt))
     else
         reservoir = ()
+        reservoirs = nothing
+        resindex = fill(0, nriv)      
     end
 
     # lakes
@@ -87,6 +89,8 @@ function initialize_sbm_gwf_model(config::Config)
         )
     else
         lake = ()
+        lakes = nothing
+        lakeindex = fill(0, nriv)    
     end
 
     # overland flow (kinematic wave)
@@ -95,80 +99,30 @@ function initialize_sbm_gwf_model(config::Config)
     ldd_2d = ncread(nc, param(config, "input.ldd"); allow_missing = true)
 
     ldd = ldd_2d[inds]
-    dl = fill(mv, n)
-    dw = fill(mv, n)
-    sw = fill(mv, n)
 
-    for i = 1:n
-        dl[i] = detdrainlength(ldd[i], xl[i], yl[i])
-        dw[i] = (xl[i] * yl[i]) / dl[i]
-        sw[i] = river[i] ? max(dw[i] - riverwidth[i], 0.0) : dw[i]
-    end
-
-    n_land = ncread(
+    dl = map(detdrainlength, ldd, xl, yl)
+    dw = (xl .* yl) ./ dl
+    sw = map(det_surfacewidth, dw, riverwidth, river)
+    
+    olf = initialize_surfaceflow_land(
         nc,
-        param(config, "input.lateral.land.n", nothing);
-        sel = inds,
-        defaults = 0.072,
-        type = Float,
-    )
-
-    alpha_pow = Float((2.0 / 3.0) * 0.6)
-    β = Float(0.6)
-    olf = SurfaceFlow(
-        β = β,
+        config,
+        inds;
         sl = βₗ,
-        n = n_land,
         dl = dl,
-        q = zeros(Float, n),
-        qin = zeros(Float, n),
-        q_av = zeros(Float, n),
-        qlat = zeros(Float, n),
-        inwater = zeros(Float, n),
-        inflow = zeros(Float, n),
-        volume = zeros(Float, n),
-        h = zeros(Float, n),
-        h_av = zeros(Float, n),
-        h_bankfull = zeros(Float, n),
-        Δt = Float(tosecond(Δt)),
-        its = kw_land_tstep > 0 ? Int(cld(tosecond(Δt), kw_land_tstep)) : kw_land_tstep,
         width = sw,
         wb_pit = pits[inds],
-        alpha_pow = alpha_pow,
-        alpha_term = fill(mv, n),
-        α = fill(mv, n),
-        cel = zeros(Float, n),
-        to_river = zeros(Float, n),
-        rivercells = fill(false, n),
-        reservoir_index = fill(0, n),
-        lake_index = fill(0, n),
-        reservoir = nothing,
-        lake = nothing,
-        kinwave_it = kinwave_it,
+        iterate = kinwave_it,
+        tstep = kw_land_tstep,
+        Δt = Δt,
     )
 
     graph = flowgraph(ldd, inds, pcr_dir)
 
     # river flow (kinematic wave)
-    riverslope =
-        ncread(nc, param(config, "input.lateral.river.slope"); sel = inds_riv, type = Float)
-    clamp!(riverslope, 0.00001, Inf)
     riverlength = riverlength_2d[inds_riv]
     riverwidth = riverwidth_2d[inds_riv]
-    n_river = ncread(
-        nc,
-        param(config, "input.lateral.river.n", nothing);
-        sel = inds_riv,
-        defaults = 0.036,
-        type = Float,
-    )
-    h_bankfull = ncread(
-        nc,
-        param(config, "input.lateral.river.h_bankfull", nothing);
-        sel = inds_riv,
-        defaults = 1.0,
-        type = Float,
-    )
+
     ldd_riv = ldd_2d[inds_riv]
     graph_riv = flowgraph(ldd_riv, inds_riv, pcr_dir)
 
@@ -176,37 +130,21 @@ function initialize_sbm_gwf_model(config::Config)
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
     frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, βₗ, n)
 
-    rf = SurfaceFlow(
-        β = β,
-        sl = riverslope,
-        n = n_river,
+    rf = initialize_surfaceflow_river(
+        nc,
+        config,
+        inds_riv;
         dl = riverlength,
-        q = zeros(Float, nriv),
-        q_av = zeros(Float, nriv),
-        qin = zeros(Float, nriv),
-        qlat = zeros(Float, nriv),
-        inwater = zeros(Float, nriv),
-        inflow = zeros(Float, nriv),
-        volume = zeros(Float, nriv),
-        h = zeros(Float, nriv),
-        h_av = zeros(Float, nriv),
-        h_bankfull = h_bankfull,
-        Δt = Float(tosecond(Δt)),
-        its = kw_river_tstep > 0 ? ceil(Int(tosecond(Δt) / kw_river_tstep)) :
-              kw_river_tstep,
         width = riverwidth,
         wb_pit = pits[inds_riv],
-        alpha_pow = alpha_pow,
-        alpha_term = fill(mv, nriv),
-        α = fill(mv, nriv),
-        cel = zeros(Float, nriv),
-        to_river = zeros(Float, nriv),
-        reservoir_index = do_reservoirs ? resindex : fill(0, nriv),
-        lake_index = do_lakes ? lakeindex : fill(0, nriv),
-        reservoir = do_reservoirs ? reservoirs : nothing,
-        lake = do_lakes ? lakes : nothing,
-        rivercells = river,
-        kinwave_it = kinwave_it,
+        reservoir_index = resindex,
+        reservoir = reservoirs,
+        lake_index = lakeindex,
+        lake = lakes,
+        river = river,
+        iterate = kinwave_it,
+        tstep = kw_river_tstep,
+        Δt = Δt,
     )
 
     # unconfined aquifer
@@ -437,6 +375,7 @@ function initialize_sbm_gwf_model(config::Config)
         clock,
         reader,
         writer,
+        SbmGwfModel(),
     )
 
     # read and set states in model object if reinit=false
@@ -462,11 +401,10 @@ end
 
 
 "update the sbm_gwf model for a single timestep"
-function update_sbm_gwf(model)
+function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
     @unpack lateral, vertical, network, clock, config = model
 
     inds_riv = network.index_river
-    do_drains = get(config.model, "drains", false)::Bool
 
     # extract water levels h_av [m] from the land and river domains
     # this is used to limit open water evaporation
@@ -526,48 +464,8 @@ function update_sbm_gwf(model)
         exfiltwater .* 1000.0,
     )
 
-    # determine lateral inflow for overland flow based on vertical runoff [mm] from vertical
-    # sbm concept and drain flux [m³ d⁻¹] (optional) from groundwater domain
-    drainflux = zeros(vertical.n)
-    if do_drains
-        drainflux[lateral.subsurface.drain.index] =
-            -lateral.subsurface.drain.flux ./ tosecond(basetimestep)
-    end
-
-    lateral.land.inwater .=
-        (vertical.runoff .* network.land.xl .* network.land.yl .* 0.001) ./
-        lateral.land.Δt .+ drainflux
-    lateral.land.qlat .= lateral.land.inwater ./ lateral.land.dl
-    # run kinematic wave for overland flow
-    update(lateral.land, network.land, frac_toriver = network.frac_toriver)
-
-    # determine net runoff from vertical sbm concept in river cells
-    net_runoff_river =
-        (
-            vertical.net_runoff_river[inds_riv] .* network.land.xl[inds_riv] .*
-            network.land.yl[inds_riv] .* 0.001
-        ) ./ vertical.Δt
-
-    # determine lateral inflow to river from groundwater domain (river) [m³ d⁻¹], overland
-    # flow and net runoff from vertical sbm concept
-    lateral.river.inwater .=
-        -lateral.subsurface.river.flux ./ tosecond(basetimestep) .+
-        lateral.land.to_river[inds_riv] .+ net_runoff_river
-    lateral.river.qlat .= lateral.river.inwater ./ lateral.river.dl
-
-    # run kinematic wave for river flow 
-    # check if reservoirs or lakes are defined, then the inflow from overland flow is
-    # required
-    if !isnothing(lateral.river.reservoir) || !isnothing(lateral.river.lake)
-        update(
-            lateral.river,
-            network.river,
-            inflow_wb = lateral.land.q_av[inds_riv],
-            doy = dayofyear(clock.time),
-        )
-    else
-        update(lateral.river, network.river, doy = dayofyear(clock.time))
-    end
+    ssf_toriver = -lateral.subsurface.river.flux ./ lateral.river.Δt
+    surface_routing(model, ssf_toriver = ssf_toriver)
 
     write_output(model)
 

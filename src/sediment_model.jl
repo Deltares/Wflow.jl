@@ -138,6 +138,7 @@ function initialize_sediment_model(config::Config)
         clock,
         reader,
         writer,
+        SedimentModel(),
     )
 
     # read and set states in model object if reinit=false
@@ -150,7 +151,7 @@ function initialize_sediment_model(config::Config)
     return model
 end
 
-function update(model::Model{N,L,V,R,W}) where {N,L,V<:LandSediment,R,W}
+function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SedimentModel}
     @unpack lateral, vertical, network, clock, config = model
 
     update_until_ols(vertical, config)

@@ -350,6 +350,8 @@ function initialize_hbv_model(config::Config)
             initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, tosecond(Δt))
     else
         reservoir = ()
+        reservoirs = nothing
+        resindex = fill(0, nriv)    
     end
 
     # lakes
@@ -364,6 +366,8 @@ function initialize_hbv_model(config::Config)
         )
     else
         lake = ()
+        lakes = nothing
+        lakeindex = fill(0, nriv)
     end
 
     ldd_2d = ncread(nc, param(config, "input.ldd"); allow_missing = true)
@@ -375,77 +379,27 @@ function initialize_hbv_model(config::Config)
 
     βₗ = ncread(nc, param(config, "input.lateral.land.slope"); sel = inds, type = Float)
     clamp!(βₗ, 0.00001, Inf)
-    dl = fill(mv, n)
-    dw = fill(mv, n)
 
-    for i = 1:n
-        dl[i] = detdrainlength(ldd[i], xl[i], yl[i])
-        dw[i] = detdrainwidth(ldd[i], xl[i], yl[i])
-    end
-
-    n_land = ncread(
+    dl = map(detdrainlength, ldd, xl, yl)
+    dw = (xl .* yl) ./ dl
+    olf = initialize_surfaceflow_land(
         nc,
-        param(config, "input.lateral.land.n", nothing);
-        sel = inds,
-        defaults = 0.072,
-        type = Float,
-    )
-
-    alpha_pow = Float((2.0 / 3.0) * 0.6)
-    β = Float(0.6)
-    olf = SurfaceFlow(
-        β = β,
+        config,
+        inds;
         sl = βₗ,
-        n = n_land,
         dl = dl,
-        q = zeros(Float, n),
-        qin = zeros(Float, n),
-        q_av = zeros(Float, n),
-        qlat = zeros(Float, n),
-        inwater = zeros(Float, n),
-        inflow = zeros(Float, n),
-        volume = zeros(Float, n),
-        h = zeros(Float, n),
-        h_av = zeros(Float, n),
-        h_bankfull = zeros(Float, n),
-        Δt = Float(tosecond(Δt)),
-        its = kw_land_tstep > 0 ? Int(cld(tosecond(Δt), kw_land_tstep)) : kw_land_tstep,
-        width = dw,
+        width = map(det_surfacewidth, dw, riverwidth, river),
         wb_pit = pits[inds],
-        alpha_pow = alpha_pow,
-        alpha_term = fill(mv, n),
-        α = fill(mv, n),
-        cel = zeros(Float, n),
-        to_river = zeros(Float, n),
-        rivercells = fill(false, n),
-        reservoir_index = fill(0, n),
-        lake_index = fill(0, n),
-        reservoir = nothing,
-        lake = nothing,
-        kinwave_it = kinwave_it,
+        iterate = kinwave_it,
+        tstep = kw_land_tstep,
+        Δt = Δt,
     )
 
     graph = flowgraph(ldd, inds, pcr_dir)
 
-    riverslope =
-        ncread(nc, param(config, "input.lateral.river.slope"); sel = inds_riv, type = Float)
-    clamp!(riverslope, 0.00001, Inf)
     riverlength = riverlength_2d[inds_riv]
     riverwidth = riverwidth_2d[inds_riv]
-    n_river = ncread(
-        nc,
-        param(config, "input.lateral.river.n", nothing);
-        sel = inds_riv,
-        defaults = 0.036,
-        type = Float,
-    )
-    h_bankfull = ncread(
-        nc,
-        param(config, "input.lateral.river.h_bankfull", nothing);
-        sel = inds_riv,
-        defaults = 1.0,
-        type = Float,
-    )
+
     ldd_riv = ldd_2d[inds_riv]
     if do_pits
         ldd_riv = set_pit_ldd(pits_2d, ldd_riv, inds_riv)
@@ -456,37 +410,21 @@ function initialize_hbv_model(config::Config)
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
     frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, βₗ, n)
 
-    rf = SurfaceFlow(
-        β = β,
-        sl = riverslope,
-        n = n_river,
+    rf = initialize_surfaceflow_river(
+        nc,
+        config,
+        inds_riv;
         dl = riverlength,
-        q = zeros(Float, nriv),
-        qin = zeros(Float, nriv),
-        q_av = zeros(Float, nriv),
-        qlat = zeros(Float, nriv),
-        inwater = zeros(Float, nriv),
-        inflow = zeros(Float, nriv),
-        volume = zeros(Float, nriv),
-        h = zeros(Float, nriv),
-        h_av = zeros(Float, nriv),
-        h_bankfull = h_bankfull,
-        Δt = Float(tosecond(Δt)),
-        its = kw_river_tstep > 0 ? ceil(Int(tosecond(Δt) / kw_river_tstep)) :
-              kw_river_tstep,
         width = riverwidth,
         wb_pit = pits[inds_riv],
-        alpha_pow = alpha_pow,
-        alpha_term = fill(mv, nriv),
-        α = fill(mv, nriv),
-        cel = zeros(Float, nriv),
-        to_river = zeros(Float, nriv),
-        reservoir_index = do_reservoirs ? resindex : fill(0, nriv),
-        lake_index = do_lakes ? lakeindex : fill(0, nriv),
-        reservoir = do_reservoirs ? reservoirs : nothing,
-        lake = do_lakes ? lakes : nothing,
-        rivercells = river,
-        kinwave_it = kinwave_it,
+        reservoir_index = resindex,
+        reservoir = reservoirs,
+        lake_index = lakeindex,
+        lake = lakes,
+        river = river,
+        iterate = kinwave_it,
+        tstep = kw_river_tstep,
+        Δt = Δt,
     )
 
     # setup subdomains for the land and river kinematic wave domain, if nthreads = 1
@@ -549,11 +487,12 @@ function initialize_hbv_model(config::Config)
     model = Model(
         config,
         (; land, river, reservoir, lake, index_river, frac_toriver),
-        (land = olf, river = rf),
+        (subsurface = nothing, land = olf, river = rf),
         hbv,
         clock,
         reader,
         writer,
+        HbvModel(),
     )
 
     # read and set states in model object if reinit=true
@@ -577,7 +516,7 @@ function initialize_hbv_model(config::Config)
     return model
 end
 
-function update(model::Model{N,L,V,R,W}) where {N,L,V<:HBV,R,W}
+function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:HbvModel}
     @unpack lateral, vertical, network, clock, config = model
 
     inds_riv = network.index_river
@@ -599,31 +538,7 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:HBV,R,W}
     # update vertical hbv concept
     update_after_snow(vertical, config)
 
-    # determine lateral inflow for overland flow based on vertical runoff [mm] from vertical
-    # hbv concept
-    lateral.land.inwater .=
-        (vertical.runoff .* network.land.xl .* network.land.yl .* 0.001) ./ lateral.land.Δt
-    lateral.land.qlat .= lateral.land.inwater ./ lateral.land.dl
-
-    # run kinematic wave for overland flow
-    update(lateral.land, network.land, frac_toriver = network.frac_toriver)
-
-    # determine lateral inflow (from overland flow) for river flow
-    lateral.river.inwater .= copy(lateral.land.to_river[inds_riv])
-    lateral.river.qlat .= lateral.river.inwater ./ lateral.river.dl
-
-    # run kinematic wave for river flow
-    # check if reservoirs or lakes are defined, the inflow from overland flow is required
-    if !isnothing(lateral.river.reservoir) || !isnothing(lateral.river.lake)
-        update(
-            lateral.river,
-            network.river,
-            inflow_wb = lateral.land.q_av[inds_riv],
-            doy = dayofyear(clock.time),
-        )
-    else
-        update(lateral.river, network.river, doy = dayofyear(clock.time))
-    end
+    surface_routing(model)
 
     write_output(model)
 

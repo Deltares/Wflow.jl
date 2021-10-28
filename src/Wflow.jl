@@ -80,15 +80,22 @@ include("io.jl")
 Composite type that represents all different aspects of a Wflow Model, such as the
 network, parameters, clock, configuration and input and output.
 """
-struct Model{N,L,V,R,W}
+struct Model{N,L,V,R,W,T}
     config::Config  # all configuration options
     network::N  # connectivity information, directed graph
     lateral::L  # lateral model that holds lateral state, moves along network
     vertical::V  # vertical model that holds vertical state, independent of each other
     clock::Clock  # to keep track of simulation time
     reader::R  # provides the model with dynamic input
-    writer::W  # writes model output
+    writer::W  # writes model outputend
+    type::T # model type
 end
+
+# different model types (used for dispatch)
+struct SbmModel end         # "sbm" type / sbm_model.jl
+struct SbmGwfModel end      # "sbm_gwf" type / sbm_gf_model.jl
+struct HbvModel end         # "hbv" type / hbv_model.jl
+struct SedimentModel end    # "sediment" type / sediment_model.jl
 
 # prevent a large printout of model components and arrays
 Base.show(io::IO, m::Model) = print(io, "model of type ", typeof(m))
@@ -154,7 +161,7 @@ function run(model::Model; close_files = true)
 
     # in the case of sbm_gwf it's currently a bit hard to use dispatch
     model_type = config.model.type::String
-    update_func = model_type == "sbm_gwf" ? update_sbm_gwf : update
+    #update_func = model_type == "sbm_gwf" ? update_sbm_gwf : update
 
     # determine timesteps to run
     calendar = get(config, "calendar", "standard")::String

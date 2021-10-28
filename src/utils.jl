@@ -320,8 +320,9 @@ end
 """
     detdrainwidth(ldd, xl, yl)
 
-Determines the drainaige width for a non square grid. Input `ldd` (drainage network), `xl` (length of cells in x direction),
-`yl` (length of cells in y direction). Output is drainage width.
+Determines the drainaige width for a non square grid. Input `ldd` (drainage network), `xl`
+(length of cells in x direction), `yl` (length of cells in y direction). Output is drainage
+width.
 """
 function detdrainwidth(ldd, xl, yl)
     # take into account non-square cells
@@ -335,6 +336,17 @@ function detdrainwidth(ldd, xl, yl)
     else
         slantwidth
     end
+end
+
+"""
+    det_surfacewidth(ldd, xl, yl)
+
+Determines the surface flow width. Input `dw` (drainage width), `riverwidth` and `river`
+(boolean). Output is surface flow width `sw`.
+"""
+function det_surfacewidth(dw, riverwidth, river)
+    sw = river ? max(dw - riverwidth, 0.0) : dw
+    return sw
 end
 
 # 2.5x faster power method

@@ -50,7 +50,7 @@ Update the model for a single timestep.
 function BMI.update(model::Model; run = nothing)
     @unpack network, config = model
     if isnothing(run)
-        update_func = config.model.type == "sbm_gwf" ? update_sbm_gwf : update
+        update_func = update
     elseif run == "sbm_until_recharge"
         update_func = update_until_recharge
     elseif run == "sbm_after_subsurfaceflow"
