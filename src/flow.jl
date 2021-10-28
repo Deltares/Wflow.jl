@@ -665,10 +665,10 @@ function update(
     t = 0.0
     while t < sw.Δt
         Δt = stable_timestep(sw)
-        shallowwater_river_update(sw, network, Δt, inflow_wb, doy, update_h)
         if t + Δt > sw.Δt
             Δt = sw.Δt - t
         end
+        shallowwater_river_update(sw, network, Δt, inflow_wb, doy, update_h)
         t = t + Δt
     end
     sw.q_av ./= sw.Δt
