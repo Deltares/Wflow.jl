@@ -174,7 +174,7 @@ function run(model::Model; close_files = true)
     @progress for (i, time) in enumerate(times)
         @debug "Starting timestep" time timestep = i
         load_dynamic_input!(model)
-        model = update_func(model)
+        model = update(model)
     end
 
     # write output state NetCDF

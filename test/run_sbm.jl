@@ -235,7 +235,9 @@ config = Wflow.Config(tomlpath)
 config.model.river_routing = "local-inertial"
 
 model = Wflow.initialize_sbm_model(config)
+Wflow.load_dynamic_input!(model)
 model = Wflow.update(model)
+Wflow.load_dynamic_input!(model)
 model = Wflow.update(model)
 
 @testset "river flow and depth (local inertial)" begin
