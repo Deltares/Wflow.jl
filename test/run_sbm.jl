@@ -240,7 +240,7 @@ model = Wflow.update(model)
 
 @testset "river flow and depth (local inertial)" begin
     q = model.lateral.river.q_av
-    @test sum(q) ≈ 5937.144131945566f0
+    @test sum(q) ≈ 5927.909443381952f0
     @test q[1622] ≈ 0.00016000872474865736f0
     @test q[43] ≈ 12.462758649570997f0
     @test q[501] ≈ 21.403560319872152f0
@@ -249,3 +249,4 @@ model = Wflow.update(model)
     @test h[43] ≈ 1.058749442326754f0
     @test h[501] ≈ 0.4873615922116117f0
 end
+Wflow.close_files(model, delete_output = false)
