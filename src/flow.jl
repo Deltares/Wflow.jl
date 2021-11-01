@@ -424,6 +424,7 @@ end
     h_thresh::T | "m"                   # depth threshold for calculating flow
     Δt::T | "s"                         # model time step [s]
     q::Vector{T} | "m3 s-1"             # river discharge (subgrid channel)
+    q0::Vector{T} | "m3 s-1"            # river discharge (subgrid channel) at previous time step
     q_av::Vector{T} | "m3 s-1"          # average river discharge [m³ s⁻¹]
     zmax::Vector{T} | "m"               # maximum channel bed elevation
     mannings_n::Vector{T} | "s m-1/3"   # Manning's roughness at edge/link
@@ -535,6 +536,7 @@ function initialize_shallowwater_river(
         h_thresh = h_thresh,
         Δt = tosecond(Δt),
         q = zeros(_ne),
+        q0 = zeros(_ne),
         q_av = zeros(_ne),
         zmax = zmax,
         mannings_n = mannings_n,
@@ -576,65 +578,65 @@ function shallowwater_river_update(
 
     @unpack nodes_at_link, links_at_node = network
 
+    sw.q0 .= sw.q
     @threads for i = 1:sw.ne
-        ηsrc = sw.z[nodes_at_link.src[i]] + sw.h[nodes_at_link.src[i]]
-        ηdst = sw.z[nodes_at_link.dst[i]] + sw.h[nodes_at_link.dst[i]]
-
-        sw.η_max[i] = max(ηsrc, ηdst)
-        sw.hf[i] = (sw.η_max[i] - sw.zmax[i])
-
-        if sw.hf[i] > sw.h_thresh
-            sw.a[i] = sw.width_at_link[i] * sw.hf[i] # cross area (rectangular channel)
-            sw.r[i] = sw.a[i] / (sw.width_at_link[i] + 2.0 * sw.hf[i]) # wetted perimeter (rectangular channel)
-            sw.q[i] = local_inertial_riverflow(
-                sw.q[i],
-                ηsrc,
-                ηdst,
-                sw.hf[i],
-                sw.a[i],
-                sw.r[i],
-                sw.dl_at_link[i],
-                sw.mannings_n[i],
-                sw.g,
-                sw.froude_limit,
-                Δt,
-            )
-        else
-            sw.q[i] = 0.0
-        end
-
+        # For reservoir and lake locations the local inertial solution is replaced by the
+        # reservoir or lake model. These locations are handled as boundary conditions in the
+        # local inertial model (fixed h).
         if !isnothing(sw.reservoir) && sw.reservoir_index[i] != 0
-            sw.q[i] = max(sw.q[i], 0.0)
             v = sw.reservoir_index[i]
-            update(sw.reservoir, v, sw.q[i] + inflow_wb[i], Δt)
-            # add lake outflow to inwater of destination node
-            sw.inwater[nodes_at_link.dst[i]] =
-                sw.inwater0[nodes_at_link.dst[i]] + sw.reservoir.outflow[v]
+            update(sw.reservoir, v, sum_at(sw.q0, links_at_node.src[i]) + inflow_wb[i], Δt)
+            sw.q[i] = sw.reservoir.outflow[v]
         elseif !isnothing(sw.lake) && sw.lake_index[i] != 0
-            sw.q[i] = max(sw.q[i], 0.0)
             v = sw.lake_index[i]
-            update(sw.lake, v, sw.q[i] + inflow_wb[i], doy, Δt)
-            # add reservoir outflow to inwater of destination node
-            sw.inwater[nodes_at_link.dst[i]] =
-                sw.inwater0[nodes_at_link.dst[i]] + sw.lake.outflow[v]
+            update(sw.lake, v, sum_at(sw.q0, links_at_node.src[i]) + inflow_wb[i], doy, Δt)
+            sw.q[i] = sw.lake.outflow[v]
+        else
+            ηsrc = sw.z[nodes_at_link.src[i]] + sw.h[nodes_at_link.src[i]]
+            ηdst = sw.z[nodes_at_link.dst[i]] + sw.h[nodes_at_link.dst[i]]
+
+            sw.η_max[i] = max(ηsrc, ηdst)
+            sw.hf[i] = (sw.η_max[i] - sw.zmax[i])
+
+            if sw.hf[i] > sw.h_thresh
+                sw.a[i] = sw.width_at_link[i] * sw.hf[i] # cross area (rectangular channel)
+                sw.r[i] = sw.a[i] / (sw.width_at_link[i] + 2.0 * sw.hf[i]) # wetted perimeter (rectangular channel)
+                sw.q[i] = local_inertial_riverflow(
+                    sw.q0[i],
+                    ηsrc,
+                    ηdst,
+                    sw.hf[i],
+                    sw.a[i],
+                    sw.r[i],
+                    sw.dl_at_link[i],
+                    sw.mannings_n[i],
+                    sw.g,
+                    sw.froude_limit,
+                    Δt,
+                )
+            else
+                sw.q[i] = 0.0
+            end
+            sw.q_av[i] += sw.q[i] * Δt
         end
-        sw.q_av[i] += sw.q[i] * Δt
     end
     if update_h
         @threads for i = 1:sw.n
-            sw.volume[i] =
-                sw.volume[i] +
-                (
-                    sum_at(sw.q, links_at_node.src[i]) -
-                    sum_at(sw.q, links_at_node.dst[i]) + sw.inwater[i]
-                ) * Δt
-            if sw.volume[i] < 0.0
-                sw.error[i] = sw.error[i] + abs(sw.volume[i])
-                sw.volume[i] = 0.0 # set volume to zero
+            if sw.reservoir_index[i] == 0 || sw.reservoir_index[i] == 0
+                sw.volume[i] =
+                    sw.volume[i] +
+                    (
+                        sum_at(sw.q, links_at_node.src[i]) -
+                        sum_at(sw.q, links_at_node.dst[i]) + sw.inwater[i]
+                    ) * Δt
+                if sw.volume[i] < 0.0
+                    sw.error[i] = sw.error[i] + abs(sw.volume[i])
+                    sw.volume[i] = 0.0 # set volume to zero
+                end
+                sw.volume[i] = max(sw.volume[i] + sw.inflow[i] * Δt, 0.0) # add external inflow
+                sw.h[i] = sw.volume[i] / (sw.dl[i] * sw.width[i])
+                sw.h_av[i] += sw.h[i] * Δt
             end
-            sw.volume[i] = max(sw.volume[i] + sw.inflow[i] * Δt, 0.0) # add external inflow
-            sw.h[i] = sw.volume[i] / (sw.dl[i] * sw.width[i])
-            sw.h_av[i] += sw.h[i] * Δt
         end
     end
 end
