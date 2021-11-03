@@ -110,3 +110,125 @@ end
     @test new_material != material
     @test new_material == [8.0, 0.0, 0.0, 10.0, 0.0, 40.0]
 end
+
+@testset "local inertial long channel MacDonald (1997)" begin
+
+    g = 9.80665
+    L = 1000.0
+    dx = 5.0
+    n = Int(L / dx)
+
+    # analytical solution MacDonald (1997) for channel with length L of 1000.0 m, Manning's
+    # n of 0.03, constant inflow of 20.0 m3/s at upper boundary and channel width of 10.0 m
+    # water depth profile h(x)
+    h(x) = (4 / g)^(1.0 / 3.0) * (1.0 + 0.5 * exp(-16.0 * (x / L - 0.5)^2.0))
+    # spatial derivative of h(x)
+    h_acc(x) =
+        -(4 / g)^(1.0 / 3.0) * 16.0 / L * (x / L - 0.5) * exp(-16 * (x / L - 0.5)^2.0)
+    # solution for channel slope s(x)
+    s(x) =
+        (1.0 - 4.0 / (g * h(x)^(3.0))) * h_acc(x) +
+        0.36 * (2 * h(x) + 10.0)^(4.0 / 3.0) / ((10.0 * h(x))^(10.0 / 3.0))
+
+    h_a = h.([dx:dx:L;]) # water depth profile (analytical solution)
+    # integrate slope to get elevation (bed level) z
+    x = [dx:dx:L;]
+    z = first.([quadgk(s, xi, L, rtol = 1e-12) for xi in x])
+
+    # initialize ShallowWaterRiver
+    graph = DiGraph(n)
+    for i = 1:n
+        add_edge!(graph, i, i + 1)
+    end
+
+    dl = fill(dx, n)
+    width = fill(10.0, n)
+    n_river = fill(0.03, n)
+
+    # for each link the src and dst node is required
+    nodes_at_link = Wflow.adjacent_nodes_at_link(graph)
+    _ne = ne(graph)
+
+    # determine z, width, length and manning's n at links
+    zmax = fill(0.0, _ne)
+    width_at_link = fill(0.0, _ne)
+    length_at_link = fill(0.0, _ne)
+    mannings_n = fill(0.0, _ne)
+    for i = 1:_ne
+        zmax[i] = max(z[nodes_at_link.src[i]], z[nodes_at_link.dst[i]])
+        width_at_link[i] = min(width[nodes_at_link.dst[i]], width[nodes_at_link.src[i]])
+        length_at_link[i] = 0.5 * (dl[nodes_at_link.dst[i]] + dl[nodes_at_link.src[i]])
+        mannings_n[i] =
+            (
+                n_river[nodes_at_link.dst[i]] * dl[nodes_at_link.dst[i]] +
+                n_river[nodes_at_link.src[i]] * dl[nodes_at_link.src[i]]
+            ) / (dl[nodes_at_link.dst[i]] + dl[nodes_at_link.src[i]])
+    end
+
+
+    network = (
+        nodes_at_link = nodes_at_link,
+        links_at_node = Wflow.adjacent_links_at_node(graph, nodes_at_link),
+    )
+
+    alpha = 0.7
+    Δt = 1.0
+    h_thresh = 1.0e-03
+    froude_limit = true
+    h_init = zeros(n - 1)
+    push!(h_init, h_a[n])
+
+    sw_river = Wflow.ShallowWaterRiver(
+        n = n - 1,
+        ne = _ne,
+        g = 9.80665,
+        α = alpha,
+        h_thresh = h_thresh,
+        Δt = Δt,
+        q0 = zeros(_ne),
+        q = zeros(_ne),
+        q_av = zeros(_ne),
+        zmax = zmax,
+        mannings_n = mannings_n,
+        h = h_init,
+        η_max = zeros(_ne),
+        hf = zeros(_ne),
+        h_av = zeros(n),
+        width = width,
+        width_at_link = width_at_link,
+        a = zeros(_ne),
+        r = zeros(_ne),
+        volume = fill(0.0, n),
+        error = zeros(n),
+        inflow = zeros(n),
+        inwater = zeros(n),
+        inwater0 = fill(Wflow.mv, n),
+        dl = dl,
+        dl_at_link = length_at_link,
+        bankvolume = fill(Wflow.mv, n),
+        bankheight = fill(Wflow.mv, n),
+        z = z,
+        froude_limit = froude_limit,
+        reservoir_index = zeros(n),
+        lake_index = zeros(n),
+        reservoir = nothing,
+        lake = nothing,
+    )
+
+    # run until steady state is reached
+    ϵ = 1.0e-12
+    while true
+        sw_river.inwater[1] = 20.0
+        h0 = mean(sw_river.h)
+        Δt = Wflow.stable_timestep(sw_river)
+        Wflow.shallowwater_river_update(sw_river, network, Δt, nothing, 0.0, true)
+        d = abs(h0 - mean(sw_river.h))
+        if d <= ϵ
+            break
+        end
+    end
+
+    # test for mean absolute error [cm]
+    @test mean(abs.(sw_river.h .- h_a)) * 100.0 ≈ 1.873574206931199
+
+end

@@ -14,6 +14,7 @@ using BasicModelInterface
 import Polynomials
 using DelimitedFiles
 using Logging
+using QuadGK
 
 const BMI = BasicModelInterface
 const Float = Wflow.Float
