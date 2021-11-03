@@ -622,7 +622,7 @@ function shallowwater_river_update(
     end
     if update_h
         @threads for i = 1:sw.n
-            if sw.reservoir_index[i] == 0 || sw.reservoir_index[i] == 0
+            if sw.reservoir_index[i] == 0 || sw.lake_index[i] == 0
                 sw.volume[i] =
                     sw.volume[i] +
                     (
@@ -690,7 +690,7 @@ Bates et al. (2010).
 function stable_timestep(sw::ShallowWaterRiver)
     Δtₘᵢₙ = Inf
     for i = 1:sw.n
-        Δt = sw.α * sw.dl[i] / sqrt.(sw.g .* sw.h[i])
+        Δt = sw.α * sw.dl[i] / sqrt(sw.g * sw.h[i])
         Δtₘᵢₙ = Δt < Δtₘᵢₙ ? Δt : Δtₘᵢₙ
     end
     Δtₘᵢₙ = isinf(Δtₘᵢₙ) ? 10.0 : Δtₘᵢₙ
