@@ -100,7 +100,8 @@ length = "wflow_riverlength"
 n = "N_River"
 slope = "RiverSlope"
 width = "wflow_riverwidth"
-elevation = "RiverZ"
+bankfull_elevation = "RiverZ"
+bankfull_depth = "RiverDepth"
 
 [input.lateral.river.reservoir]
 area = "ResSimpleArea"

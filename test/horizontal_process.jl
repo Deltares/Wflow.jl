@@ -133,7 +133,7 @@ end
     h_a = h.([dx:dx:L;]) # water depth profile (analytical solution)
     # integrate slope to get elevation (bed level) z
     x = [dx:dx:L;]
-    z = first.([quadgk(s, xi, L, rtol = 1e-12) for xi in x])
+    zb = first.([quadgk(s, xi, L, rtol = 1e-12) for xi in x])
 
     # initialize ShallowWaterRiver
     graph = DiGraph(n)
@@ -150,12 +150,12 @@ end
     _ne = ne(graph)
 
     # determine z, width, length and manning's n at links
-    zmax = fill(0.0, _ne)
+    zb_max = fill(0.0, _ne)
     width_at_link = fill(0.0, _ne)
     length_at_link = fill(0.0, _ne)
     mannings_n = fill(0.0, _ne)
     for i = 1:_ne
-        zmax[i] = max(z[nodes_at_link.src[i]], z[nodes_at_link.dst[i]])
+        zb_max[i] = max(zb[nodes_at_link.src[i]], zb[nodes_at_link.dst[i]])
         width_at_link[i] = min(width[nodes_at_link.dst[i]], width[nodes_at_link.src[i]])
         length_at_link[i] = 0.5 * (dl[nodes_at_link.dst[i]] + dl[nodes_at_link.src[i]])
         mannings_n[i] =
@@ -188,7 +188,7 @@ end
         q0 = zeros(_ne),
         q = zeros(_ne),
         q_av = zeros(_ne),
-        zmax = zmax,
+        zb_max = zb_max,
         mannings_n = mannings_n,
         h = h_init,
         η_max = zeros(_ne),
@@ -202,12 +202,11 @@ end
         error = zeros(n),
         inflow = zeros(n),
         inwater = zeros(n),
-        inwater0 = fill(Wflow.mv, n),
         dl = dl,
         dl_at_link = length_at_link,
-        bankvolume = fill(Wflow.mv, n),
-        bankheight = fill(Wflow.mv, n),
-        z = z,
+        bankfull_volume = fill(Wflow.mv, n),
+        bankfull_depth = fill(Wflow.mv, n),
+        zb = zb,
         froude_limit = froude_limit,
         reservoir_index = zeros(n),
         lake_index = zeros(n),

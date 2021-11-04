@@ -426,7 +426,7 @@ end
     q::Vector{T} | "m3 s-1"             # river discharge (subgrid channel)
     q0::Vector{T} | "m3 s-1"            # river discharge (subgrid channel) at previous time step
     q_av::Vector{T} | "m3 s-1"          # average river discharge [m³ s⁻¹]
-    zmax::Vector{T} | "m"               # maximum channel bed elevation
+    zb_max::Vector{T} | "m"             # maximum channel bed elevation
     mannings_n::Vector{T} | "s m-1/3"   # Manning's roughness at edge/link
     h::Vector{T} | "m"                  # water depth
     η_max::Vector{T} | "m"              # maximum water elevation
@@ -441,11 +441,10 @@ end
     volume::Vector{T} | "m3"            # river volume
     error::Vector{T} | "m3"             # error volume
     inwater::Vector{T} | "m3 s-1"       # lateral inflow [m³ s⁻¹]
-    inwater0::Vector{T} | "m3 s-1"      # lateral inflow at previous time step [m³ s⁻¹]
     inflow::Vector{T} | "m3 s-1"        # External inflow (abstraction/supply/demand) [m³ s⁻¹]
-    bankvolume::Vector{T} | "m3"        # bank volume
-    bankheight::Vector{T} | "m"         # bank height
-    z::Vector{T} | "m"                  # river bed elevation
+    bankfull_volume::Vector{T} | "m3"   # bankfull volume
+    bankfull_depth::Vector{T} | "m"     # bankfull depth
+    zb::Vector{T} | "m"                 # river bed elevation
     froude_limit::Bool | "-"            # if true a check is performed if froude number > 1.0 (algorithm is modified)
     reservoir_index::Vector{Int} | "-"  # map cell to 0 (no reservoir) or i (pick reservoir i in reservoir field)
     lake_index::Vector{Int} | "-"       # map cell to 0 (no lake) or i (pick lake i in lake field)
@@ -481,9 +480,23 @@ function initialize_shallowwater_river(
     h_thresh = get(config.model, "h_thresh", 1.0e-03) # depth threshold for flow at link
     froude_limit = get(config.model, "froude_limit", true) # limit flow to subcritical according to Froude number
 
-    river_elevation_2d =
-        ncread(nc, param(config, "input.lateral.river.elevation"); type = Float, fill = 0)
-    river_elevation = river_elevation_2d[inds]
+    bankfull_elevation_2d = ncread(
+        nc,
+        param(config, "input.lateral.river.bankfull_elevation");
+        type = Float,
+        fill = 0,
+    )
+    bankfull_depth_2d = ncread(
+        nc,
+        param(config, "input.lateral.river.bankfull_depth");
+        type = Float,
+        fill = 0,
+    )
+    bankfull_depth = bankfull_depth_2d[inds]
+    zb = bankfull_elevation_2d[inds] - bankfull_depth # river bed elevation
+
+    bankfull_volume = bankfull_depth .* width .* dl
+
     n_river = ncread(
         nc,
         param(config, "input.lateral.river.n", nothing);
@@ -493,14 +506,13 @@ function initialize_shallowwater_river(
     )
 
     n = length(inds)
-
     # set ghost points for boundary condition (downstream river outlet): river width and
     # manning n is copied from the upstream cell, river elevation and h are set at 0.0 (sea
     # level). river length at boundary point is by default 1.0e5 m (riverlength_bc).
     index_pit = findall(x -> x == 5, ldd)
     npits = length(index_pit)
     add_vertex_edge_graph!(graph, index_pit)
-    append!(river_elevation, fill(Float(0), npits))
+    append!(zb, fill(Float(0), npits))
     append!(dl, fill(riverlength_bc, npits))
     append!(width, width[index_pit])
     append!(n_river, n_river[index_pit])
@@ -510,15 +522,12 @@ function initialize_shallowwater_river(
     _ne = ne(graph)
 
     # determine z, width, length and manning's n at links
-    zmax = fill(Float(0), _ne)
+    zb_max = fill(Float(0), _ne)
     width_at_link = fill(Float(0), _ne)
     length_at_link = fill(Float(0), _ne)
     mannings_n = fill(Float(0), _ne)
     for i = 1:_ne
-        zmax[i] = max(
-            river_elevation[nodes_at_link.src[i]],
-            river_elevation[nodes_at_link.dst[i]],
-        )
+        zb_max[i] = max(zb[nodes_at_link.src[i]], zb[nodes_at_link.dst[i]])
         width_at_link[i] = min(width[nodes_at_link.dst[i]], width[nodes_at_link.src[i]])
         length_at_link[i] = 0.5 * (dl[nodes_at_link.dst[i]] + dl[nodes_at_link.src[i]])
         mannings_n[i] =
@@ -526,6 +535,17 @@ function initialize_shallowwater_river(
                 n_river[nodes_at_link.dst[i]] * dl[nodes_at_link.dst[i]] +
                 n_river[nodes_at_link.src[i]] * dl[nodes_at_link.src[i]]
             ) / (dl[nodes_at_link.dst[i]] + dl[nodes_at_link.src[i]])
+    end
+
+    # set depth h of reservoir and lake location to bankfull depth
+    h = fill(0.0, n + length(index_pit))
+    if !isnothing(reservoir)
+        inds_reservoir = findall(x -> x > 0, reservoir_index)
+        h[inds_reservoir] = bankfull_depth[inds_reservoir]
+    end
+    if !isnothing(lake)
+        inds_lake = findall(x -> x > 0, lake_index)
+        h[inds_lake] = bankfull_depth[inds_lake]
     end
 
     sw_river = ShallowWaterRiver(
@@ -538,7 +558,7 @@ function initialize_shallowwater_river(
         q = zeros(_ne),
         q0 = zeros(_ne),
         q_av = zeros(_ne),
-        zmax = zmax,
+        zb_max = zb_max,
         mannings_n = mannings_n,
         h = fill(0.0, n + length(index_pit)),
         η_max = zeros(_ne),
@@ -552,12 +572,11 @@ function initialize_shallowwater_river(
         error = zeros(Float, n),
         inflow = zeros(n),
         inwater = zeros(n),
-        inwater0 = fill(mv, n),
         dl = dl,
         dl_at_link = length_at_link,
-        bankvolume = fill(mv, n),
-        bankheight = fill(mv, n),
-        z = river_elevation,
+        bankfull_volume = bankfull_volume,
+        bankfull_depth = bankfull_depth,
+        zb = zb,
         froude_limit = froude_limit,
         reservoir_index = reservoir_index,
         lake_index = lake_index,
@@ -592,11 +611,11 @@ function shallowwater_river_update(
             update(sw.lake, v, sum_at(sw.q0, links_at_node.src[i]) + inflow_wb[i], doy, Δt)
             sw.q[i] = sw.lake.outflow[v]
         else
-            ηsrc = sw.z[nodes_at_link.src[i]] + sw.h[nodes_at_link.src[i]]
-            ηdst = sw.z[nodes_at_link.dst[i]] + sw.h[nodes_at_link.dst[i]]
+            ηsrc = sw.zb[nodes_at_link.src[i]] + sw.h[nodes_at_link.src[i]]
+            ηdst = sw.zb[nodes_at_link.dst[i]] + sw.h[nodes_at_link.dst[i]]
 
             sw.η_max[i] = max(ηsrc, ηdst)
-            sw.hf[i] = (sw.η_max[i] - sw.zmax[i])
+            sw.hf[i] = (sw.η_max[i] - sw.zb_max[i])
 
             if sw.hf[i] > sw.h_thresh
                 sw.a[i] = sw.width_at_link[i] * sw.hf[i] # cross area (rectangular channel)
@@ -657,9 +676,6 @@ function update(
     if !isnothing(sw.lake)
         sw.lake.inflow .= 0.0
         sw.lake.totaloutflow .= 0.0
-    end
-    if !isnothing(sw.reservoir) || !isnothing(sw.lake)
-        sw.inwater0 .= sw.inwater
     end
     sw.q_av .= 0.0
     sw.h_av .= 0.0
