@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## v0.4.1 - 2021-11-04
 
 ### Changed
 - The ``\alpha`` parameter of the kinematic wave has a fixed value now and is not updated
@@ -31,7 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - River inflow for reservoirs and lakes in the kinematic wave. This inflow was based on
-  ``sf.q[v]`` at the previous time step, and this has been fixed to the current time step.
+  `sf.q[v]` at the previous time step, and this has been fixed to the current time step.
 
 ## v0.4.0 - 2021-09-02
 
