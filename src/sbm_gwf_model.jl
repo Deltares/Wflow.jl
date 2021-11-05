@@ -497,9 +497,11 @@ function update_sbm_gwf(model)
 
     # determine stable time step for groundwater flow
     Δt_gw = stable_timestep(lateral.subsurface.flow.aquifer) # time step in day (Float64)
-    Δt_sbm = (vertical.Δt / 86400.0) # vertical.Δt is in seconds (Float64)
+    Δt_sbm = (vertical.Δt / tosecond(basetimestep)) # vertical.Δt is in seconds (Float64)
     if Δt_gw < Δt_sbm
-        @warn("stable time step Δt $Δt for groundwater flow is smaller than sbm Δt $Δt_sbm")
+        @warn(
+            "stable time step Δt $Δt_gw for groundwater flow is smaller than sbm Δt $Δt_sbm"
+        )
     end
 
     Q = zeros(vertical.n)
@@ -524,15 +526,16 @@ function update_sbm_gwf(model)
     )
 
     # determine lateral inflow for overland flow based on vertical runoff [mm] from vertical
-    # sbm concept and drain flux (optional) from groundwater domain
+    # sbm concept and drain flux [m³ d⁻¹] (optional) from groundwater domain
     drainflux = zeros(vertical.n)
     if do_drains
-        drainflux[lateral.subsurface.drain.index] = -lateral.subsurface.drain.flux
+        drainflux[lateral.subsurface.drain.index] =
+            -lateral.subsurface.drain.flux ./ tosecond(basetimestep)
     end
 
     lateral.land.inwater .=
-        (vertical.runoff .* network.land.xl .* network.land.yl .* 0.001 .+ drainflux) ./
-        lateral.land.Δt
+        (vertical.runoff .* network.land.xl .* network.land.yl .* 0.001) ./
+        lateral.land.Δt .+ drainflux
     lateral.land.qlat .= lateral.land.inwater ./ lateral.land.dl
     # run kinematic wave for overland flow
     update(lateral.land, network.land, frac_toriver = network.frac_toriver)
@@ -544,10 +547,10 @@ function update_sbm_gwf(model)
             network.land.yl[inds_riv] .* 0.001
         ) ./ vertical.Δt
 
-    # determine lateral inflow to river from groundwater domain (river), overland flow
-    # and net runoff from vertical sbm concept
+    # determine lateral inflow to river from groundwater domain (river) [m³ d⁻¹], overland
+    # flow and net runoff from vertical sbm concept
     lateral.river.inwater .=
-        -lateral.subsurface.river.flux ./ lateral.river.Δt .+
+        -lateral.subsurface.river.flux ./ tosecond(basetimestep) .+
         lateral.land.to_river[inds_riv] .+ net_runoff_river
     lateral.river.qlat .= lateral.river.inwater ./ lateral.river.dl
 
