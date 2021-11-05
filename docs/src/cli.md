@@ -9,13 +9,14 @@ Binaries of `wflow_cli` can be downloaded from our website
 [download.deltares.nl](https://download.deltares.nl/en/download/wflow/), and are currently
 available for Windows and Linux.
 
-After installing you can see two folders in the installation directory. It is only the
-`bin/wflow_cli` that is used. The artifacts folder contains binary dependencies such as
-NetCDF.
+After installing you can see three folders in the installation directory. It is only the
+`bin/wflow_cli` that is directly used. All three folders need to stay together however.
+The share folder contains TOML files with more information about the build.
 
 ```
-artifacts\
 bin\wflow_cli
+lib
+share
 ```
 
 Simply running `wflow_cli` with no arguments will give the following message:
