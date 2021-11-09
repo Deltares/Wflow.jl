@@ -43,7 +43,7 @@ specific_leaf = "Sl"
 | **`pathfrac`** | fraction of compacted area | - | 0.01  |
 | **`rootingdepth`** | rooting depth  | mm | 750.0  |
 | **`rootdistpar`** | controls how roots are linked to water table | - | -500.0  |
-| **`capscale`** | controlling capillary rise | mm | 100.0  |
+| **`cap_hmax`** | controlling capillary rise | mm | 2000.0  |
 | **`et_reftopot`** | multiplication factor to correct reference evaporation | - | 1.0  |
 | **`sl`** (`specific_leaf`) | specific leaf storage  | mm | - |
 | **`swood`** (`storage_wood`) | storage woody part of vegetation | mm | - |

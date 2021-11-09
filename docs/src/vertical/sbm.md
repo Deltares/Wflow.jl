@@ -327,25 +327,23 @@ block:
     maxcapflux = max(0.0, min(ksat, actevapustore, ustorecapacity, satwaterdepth))
 ```
 
-Then the potential rise `maxcapflux` is scaled using the distance between the roots and the
-water table as follows in the code block below (`i` refers to the index of the vector that
-contains all active cells within the spatial model domain):
+Then the potential rise `maxcapflux` is scaled using the water table depth `zi` and a
+maximum water depth `cap_hmax` [mm] beyond which capillary rise ceases as follows in the
+code block below (`i` refers to the index of the vector that contains all active cells
+within the spatial model domain):
 
 ```julia
     if sbm.zi[i] > rootingdepth
-        capfluxscale =
-            sbm.capscale[i] / (sbm.capscale[i] + sbm.zi[i] - rootingdepth) *
-            (sbm.Δt / tosecond(basetimestep))
+        capflux =
+            maxcapflux *
+            pow(1.0 - min(sbm.zi[i], sbm.cap_hmax[i]) / (sbm.cap_hmax[i]), 2.0)
     else
-        capfluxscale = 0.0
+        capflux = 0.0
     end
-    capflux = maxcapflux * capfluxscale
 ```
 
-where `capfluxscale` [-] is the scaling factor to multiply the potential rise `maxcapflux`
-with, `sbm.capscale` [mm] is a model parameter (default = 100) and `rootingdepth` [mm] the
-rooting depth. If the roots reach the water table (`rootingdepth` ``\ge`` `sbm.zi`),
-`capfluxscale` is set to zero and thus setting the capillary rise `capflux` to zero.
+If the roots reach the water table (`rootingdepth` ``\ge`` `sbm.zi`), `capflux` is set to
+zero and thus setting the capillary rise `capflux` to zero.
 
 Finally, the capillary rise `capflux` is limited by the unsaturated store deficit (one or
 multiple layers), calculated as follows in the code block below (`i` refers to the index of
