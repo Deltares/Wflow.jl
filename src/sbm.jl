@@ -411,14 +411,14 @@ function initialize_sbm(nc, config, riverfrac, inds)
         sel = inds,
         defaults = 10.0,
         type = Float,
-    ) #.* (Δt / basetimestep)
+    ) .* (Δt / basetimestep)
     infiltcapsoil = ncread(
         nc,
         param(config, "input.vertical.infiltcapsoil", nothing);
         sel = inds,
         defaults = 100.0,
         type = Float,
-    ) #.* (Δt / basetimestep)
+    ) .* (Δt / basetimestep)
     maxleakage =
         ncread(
             nc,
