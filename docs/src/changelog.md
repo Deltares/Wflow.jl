@@ -9,13 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Scaling of potential capillary rise is replaced by a common approach found in literature,
-  based on the water table depth `zi` and a maximum water depth `cap_hmax` beyond which
-  capillary rise ceases. See also [Transpiration and soil evaporation](@ref). Multiplying
-  the scaling factor with the ratio of model time step and `basetimestep` in the original
-  approach resulted in (much) smaller capillary fluxes at sub-daily model time steps
-  compared to daily model time steps, and is not used in the new approach. The parameter
-  `capscale` has been replaced by `cap_hmax`, references to `capscale` in a TOML file of
-  previous versions should replaced by `cap_hmax`.
+  based on the water table depth `zi`, a maximum water depth `cap_hmax` beyond which
+  capillary rise ceases, and a coefficient `cap_n`. See also [Transpiration and soil
+  evaporation](@ref). Multiplying the scaling factor with the ratio of model time step and
+  `basetimestep` in the original approach resulted in (much) smaller capillary fluxes at
+  sub-daily model time steps compared to daily model time steps, and is not used in the new
+  approach. Parameters `cap_hmax` and `cap_n` can be set through the TOML file, parameter
+  `capscale` of the previous approach is not used anymore.
 
 ### Fixed
 - Conversion of `GroundwaterFlow` boundaries [``m^3 d^{-1}``] as part of model concept

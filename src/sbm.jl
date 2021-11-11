@@ -43,6 +43,8 @@
     rootdistpar::Vector{T} | "-"
     # Parameter [mm] controlling capillary rise
     cap_hmax::Vector{T} | "mm"
+    # Coefficient [-] controlling capillary rise
+    cap_n::Vector{T} | "-"
     # Multiplication factor [-] to correct
     et_reftopot::Vector{T} | "-"
     # Brooks-Corey power coefﬁcient [-] for each soil layer
@@ -405,20 +407,22 @@ function initialize_sbm(nc, config, riverfrac, inds)
         defaults = 2000.0,
         type = Float,
     )
-    infiltcappath = ncread(
-        nc,
-        param(config, "input.vertical.infiltcappath", nothing);
-        sel = inds,
-        defaults = 10.0,
-        type = Float,
-    ) .* (Δt / basetimestep)
-    infiltcapsoil = ncread(
-        nc,
-        param(config, "input.vertical.infiltcapsoil", nothing);
-        sel = inds,
-        defaults = 100.0,
-        type = Float,
-    ) .* (Δt / basetimestep)
+    infiltcappath =
+        ncread(
+            nc,
+            param(config, "input.vertical.infiltcappath", nothing);
+            sel = inds,
+            defaults = 10.0,
+            type = Float,
+        ) .* (Δt / basetimestep)
+    infiltcapsoil =
+        ncread(
+            nc,
+            param(config, "input.vertical.infiltcapsoil", nothing);
+            sel = inds,
+            defaults = 100.0,
+            type = Float,
+        ) .* (Δt / basetimestep)
     maxleakage =
         ncread(
             nc,
@@ -493,6 +497,13 @@ function initialize_sbm(nc, config, riverfrac, inds)
         defaults = 2000.0,
         type = Float,
     )
+    cap_n = ncread(
+        nc,
+        param(config, "input.vertical.cap_n", nothing);
+        sel = inds,
+        defaults = 2.0,
+        type = Float,
+    )
     et_reftopot = ncread(
         nc,
         param(config, "input.vertical.et_reftopot", nothing);
@@ -559,6 +570,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         rootingdepth = rootingdepth,
         rootdistpar = rootdistpar,
         cap_hmax = cap_hmax,
+        cap_n = cap_n,
         et_reftopot = et_reftopot,
         c = svectorscopy(c, Val{maxlayers}()),
         stemflow = fill(mv, n),
@@ -947,8 +959,10 @@ function update_until_recharge(sbm::SBM, config)
 
             if sbm.zi[i] > rootingdepth
                 capflux =
-                    maxcapflux *
-                    pow(1.0 - min(sbm.zi[i], sbm.cap_hmax[i]) / (sbm.cap_hmax[i]), 2.0)
+                    maxcapflux * pow(
+                        1.0 - min(sbm.zi[i], sbm.cap_hmax[i]) / (sbm.cap_hmax[i]),
+                        sbm.cap_n[i],
+                    )
             else
                 capflux = 0.0
             end
