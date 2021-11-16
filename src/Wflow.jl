@@ -170,11 +170,14 @@ function run(model::Model; close_files = true)
     times = range(starttime, endtime, step = Δt)
     
     @info "Run information" model_type starttime Δt endtime nthreads()
+    # TODO add reinit, snow, iterations, routing, tomlpath, default values used
     @progress for (i, time) in enumerate(times)
         @debug "Starting timestep" time timestep = i
         load_dynamic_input!(model)
         model = update(model)
     end
+    # TODO give path to output after finish
+    # TODO copy TOML to output
 
     # write output state NetCDF
     # undo the clock advance at the end of the last iteration, since there won't
