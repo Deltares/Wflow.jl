@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Fixed
+- Fixed calculation of `exfiltwater` as part of the `sbm_gwf` model type. This was based
+  directly on groundwater head above the surface level, without multiplying by the
+  `specific_yield`, resulting in an overestimation of `exfiltwater`.
+
 ## v0.5.0 - 2021-11-12
 
 ### Changed
