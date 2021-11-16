@@ -231,13 +231,14 @@ function initialize_canopy(nc, config, inds)
         swood = fill(mv, n)
         kext = fill(mv, n)
         # cmax, e_r, canopygapfraction only required when leaf area index climatology not provided
-        cmax = ncread(
+#=          cmax = ncread(
             nc,
             param(config, "input.vertical.cmax", nothing);
             sel = inds,
             defaults = 1.0,
             type = Float,
-        )
+        ) =#
+        cmax = fill(mv, n)
         e_r = ncread(
             nc,
             param(config, "input.vertical.eoverr", nothing);
@@ -245,13 +246,14 @@ function initialize_canopy(nc, config, inds)
             defaults = 0.1,
             type = Float,
         )
-        canopygapfraction = ncread(
+#=         canopygapfraction = ncread(
             nc,
             param(config, "input.vertical.canopygapfraction", nothing);
             sel = inds,
             defaults = 0.1,
             type = Float,
-        )
+        ) =#
+        canopygapfraction = fill(mv, n)
     end
     return cmax, e_r, canopygapfraction, sl, swood, kext
 end

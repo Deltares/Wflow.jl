@@ -67,8 +67,22 @@ function active_indices(network, key::Tuple)
         return network.lake.indices_outlet
     elseif :river in key
         return network.river.indices
+    elseif :river_h in key
+        return network.river_h.indices
+    elseif :river_p in key
+        return network.river_p.indices
+    elseif :river_s in key
+        return network.river_s.indices
+    elseif :river_t in key
+        return network.river_t.indices
     elseif :drain in key
         return network.drain.indices
+    elseif :drain_d in key
+        return network.drain_d.indices
+    elseif :drain_p in key
+        return network.drain_p.indices
+    elseif :drain_s in key
+        return network.drain_s.indices
     else
         return network.land.indices
     end

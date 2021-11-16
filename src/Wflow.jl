@@ -107,6 +107,7 @@ include("groundwater/connectivity.jl")
 include("groundwater/aquifer.jl")
 include("groundwater/boundary_conditions.jl")
 include("sbm_gwf_model.jl")
+include("sbm_gwf_meta_model.jl")
 include("utils.jl")
 include("bmi.jl")
 include("subdomains.jl")
@@ -138,6 +139,8 @@ function run(config::Config)
         initialize_sbm_model(config)
     elseif modeltype == "sbm_gwf"
         initialize_sbm_gwf_model(config)
+    elseif modeltype == "sbm_gwf_meta"
+        initialize_sbm_gwf_meta_model(config)
     elseif modeltype == "hbv"
         initialize_hbv_model(config)
     elseif modeltype == "sediment"
@@ -155,6 +158,7 @@ function run(model::Model; close_files = true)
     # in the case of sbm_gwf it's currently a bit hard to use dispatch
     model_type = config.model.type::String
     update_func = model_type == "sbm_gwf" ? update_sbm_gwf : update
+    update_func = model_type == "sbm_gwf_meta" ? update_sbm_gwf_meta : update
 
     # determine timesteps to run
     calendar = get(config, "calendar", "standard")::String
