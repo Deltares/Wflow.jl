@@ -21,11 +21,12 @@ const Float = Wflow.Float
 # ensure test data is present
 testdir = @__DIR__
 datadir = joinpath(testdir, "data")
-isdir(datadir) || mkdir(datadir)
+inputdir = joinpath(datadir, "input")
+isdir(inputdir) || mkpath(inputdir)
 
 "Download a test data file if it does not already exist"
 function testdata(version, source_filename, target_filename)
-    target_path = joinpath(datadir, target_filename)
+    target_path = joinpath(inputdir, target_filename)
     base_url = "https://github.com/visr/wflow-artifacts/releases/download"
     url = string(base_url, '/', string('v', version), '/', source_filename)
     isfile(target_path) || Downloads.download(url, target_path)

@@ -2,7 +2,7 @@
 
 [TOML](https://github.com/toml-lang/toml) is used as the configuration format for models
 available in wflow. File paths included in the configuration TOML file are relative to the
-TOML file location.
+TOML file location, or to `dir_input` and `dir_output` if they are given.
 
 ## General time info
 Time information is optional. When left out, each time step in the forcing NetCDF will be
@@ -21,6 +21,8 @@ endtime = 2000-02-01T00:00:00                   # optional, default from forcing
 starttime = 2000-01-01T00:00:00                 # optional, default from forcing NetCDF
 time_units = "days since 1900-01-01 00:00:00"   # optional, this is default value
 timestepsecs = 86400                            # optional, default from forcing NetCDF
+dir_input = "data/input"                        # optional, default is the path of the TOML
+dir_output = "data/output"                      # optional, default is the path of the TOML
 ```
 
 ## Model section
@@ -53,8 +55,8 @@ the entire `state` section can be left out.
 
 ```toml
 [state]
-path_input = "data/instates-moselle.nc" 
-path_output = "data/outstates-moselle.nc"
+path_input = "instates-moselle.nc" 
+path_output = "outstates-moselle.nc"
 
 [state.vertical]
 satwaterdepth = "satwaterdepth"
@@ -95,9 +97,9 @@ mapped a default value will be used if available.
 
 ```toml
 [input]
-# use "data/forcing-year-*.nc" if forcing files are split in time
-path_forcing = "data/forcing-moselle.nc"
-path_static = "data/staticmaps-moselle.nc"
+# use "forcing-year-*.nc" if forcing files are split in time
+path_forcing = "forcing-moselle.nc"
+path_static = "staticmaps-moselle.nc"
 
 # these are not directly part of the model
 gauges = "wflow_gauges"
@@ -180,7 +182,7 @@ netCDF variables.
 
 ```toml
 [output]
-path = "data/output_moselle.nc"
+path = "output_moselle.nc"
 
 [output.vertical]
 satwaterdepth = "satwaterdepth"
@@ -220,7 +222,7 @@ Delft-FEWS can ingest this data format directly.
 
 ```toml
 [netcdf]
-path = "data/output_scalar_moselle.nc"
+path = "output_scalar_moselle.nc"
 
 [[netcdf.variable]]
 name = "Q"
@@ -268,7 +270,7 @@ list. You may specify as many entries as you wish.
 
 ```toml
 [csv]
-path = "data/output_moselle.csv"
+path = "output_moselle.csv"
 
 [[csv.column]]
 header = "Q"

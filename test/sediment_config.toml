@@ -8,10 +8,12 @@ endtime = 2000-01-03T00:00:00
 starttime = 2000-01-01T00:00:00
 time_units = "days since 1900-01-01 00:00:00"
 timestepsecs = 86400
+dir_input = "data/input"
+dir_output = "data/output"
 
 [state]
-path_input = "data/instates-moselle-sed.nc"
-path_output = "data/outstates-moselle-sed.nc"
+path_input = "instates-moselle-sed.nc"
+path_output = "outstates-moselle-sed.nc"
 
 # if listed, the variable must be present in the NetCDF or error
 # if not listed, the variable can get a default value if it has one
@@ -37,8 +39,8 @@ siltload = "siltload"
 siltstore = "siltstore"
 
 [input]
-path_forcing = "data/forcing-moselle-sed.nc"
-path_static = "data/staticmaps-moselle-sed.nc"
+path_forcing = "forcing-moselle-sed.nc"
+path_static = "staticmaps-moselle-sed.nc"
 
 # these are not directly part of the model
 gauges = "wflow_gauges"
@@ -123,7 +125,7 @@ runrivermodel = true
 type = "sediment" 
 
 [output]
-path = "data/output-moselle-sed.nc"
+path = "output-moselle-sed.nc"
 
 [output.vertical]
 TCclay = "TCclay"
@@ -152,7 +154,7 @@ outclay = "outclay"
 width = "widthriv"
 
 [csv]
-path = "data/output-moselle-sediment.csv"
+path = "output-moselle-sediment.csv"
 
 [[csv.column]]
 coordinate.x = 6.931

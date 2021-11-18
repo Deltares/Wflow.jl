@@ -59,8 +59,8 @@ end
 
 datadir = joinpath(@__DIR__, "data")
 sh = [
-    Wflow.read_sh_csv(joinpath(datadir, "lake_sh_1.csv")),
-    Wflow.read_sh_csv(joinpath(datadir, "lake_sh_2.csv")),
+    Wflow.read_sh_csv(joinpath(datadir, "input", "lake_sh_1.csv")),
+    Wflow.read_sh_csv(joinpath(datadir, "input", "lake_sh_2.csv")),
 ]
 @testset "linked lakes (HBV)" begin
     @test keys(sh[1]) == (:H, :S)
@@ -78,7 +78,7 @@ sh = [
         b = [140.0, 0.0],
         e = [1.5, 1.5],
         sh = sh,
-        hq = [missing, Wflow.read_hq_csv(joinpath(datadir, "lake_hq_2.csv"))],
+        hq = [missing, Wflow.read_hq_csv(joinpath(datadir, "input", "lake_hq_2.csv"))],
         waterlevel = [395.03027, 394.87833],
         precipitation = [10.0, 10.0],
         evaporation = [2.0, 2.0],
