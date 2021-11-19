@@ -3,10 +3,10 @@
 ## Model
 
  Below the composite type that represents all different aspects of a `Wflow.Model`, such as
- the network, parameters, clock, configuration and input and output.
+ the network, parameters, clock, model type, configuration and input and output.
 
 ```julia
-struct Model{N,L,V,R,W}
+struct Model{N,L,V,R,W,T}
     config::Config  # all configuration options
     network::N      # connectivity information, directed graph
     lateral::L      # lateral model that holds lateral state, moves along network
@@ -14,6 +14,7 @@ struct Model{N,L,V,R,W}
     clock::Clock    # to keep track of simulation time
     reader::R       # provides the model with dynamic input
     writer::W       # writes model output
+    type::T         # model type
 end
 ```
 
