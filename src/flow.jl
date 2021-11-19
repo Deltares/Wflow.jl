@@ -508,7 +508,7 @@ function initialize_shallowwater_river(
     n = length(inds)
     # set ghost points for boundary condition (downstream river outlet): river width, bed
     # elevation, manning n is copied from the upstream cell, river depth h is set at 0.0
-    # (fixed). river length at boundary point is by default 1.0e3 m (riverlength_bc).
+    # (fixed). river length at boundary point is by default 1.0e4 m (riverlength_bc).
     index_pit = findall(x -> x == 5, ldd)
     npits = length(index_pit)
     add_vertex_edge_graph!(graph, index_pit)
