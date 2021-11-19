@@ -187,7 +187,7 @@ function update(
     # use fixed alpha value based on 0.5 * h_bankfull
     @. sf.α = sf.alpha_term * pow(sf.width + sf.h_bankfull, sf.alpha_pow)
 
-    @. sf.qlat .= sf.inwater ./ sf.dl
+    @. sf.qlat = sf.inwater / sf.dl
 
     # two options for iteration, fixed or based on courant number.
     if sf.kinwave_it
@@ -475,7 +475,10 @@ function initialize_shallowwater_river(
     # Edge 3 => 2
     # Edge 4 => 9
     # ⋮ )
-    riverlength_bc = get(config.model, "riverlength_bc", 1.0e5) # river length at boundary point (ghost point)
+    riverlength_bc = get(config.model, "riverlength_bc", nothing) # river length at boundary point (ghost point)
+    if isnothing(riverlength_bc)
+        error("""The boundary condition "riverlength_bc" is not provided as part of the TOML file""")
+    end
     alpha = get(config.model, "inertial_flow_alpha", 0.7) # stability coefficient for model time step (0.2-0.7)
     h_thresh = get(config.model, "h_thresh", 1.0e-03) # depth threshold for flow at link
     froude_limit = get(config.model, "froude_limit", true) # limit flow to subcritical according to Froude number
@@ -527,24 +530,26 @@ function initialize_shallowwater_river(
     length_at_link = fill(Float(0), _ne)
     mannings_n = fill(Float(0), _ne)
     for i = 1:_ne
-        zb_max[i] = max(zb[nodes_at_link.src[i]], zb[nodes_at_link.dst[i]])
-        width_at_link[i] = min(width[nodes_at_link.dst[i]], width[nodes_at_link.src[i]])
-        length_at_link[i] = 0.5 * (dl[nodes_at_link.dst[i]] + dl[nodes_at_link.src[i]])
+        src_node = nodes_at_link.src[i]
+        dst_node = nodes_at_link.dst[i]
+        zb_max[i] = max(zb[src_node], zb[dst_node])
+        width_at_link[i] = min(width[src_node], width[dst_node])
+        length_at_link[i] = 0.5 * (dl[dst_node] + dl[src_node])
         mannings_n[i] =
             (
-                n_river[nodes_at_link.dst[i]] * dl[nodes_at_link.dst[i]] +
-                n_river[nodes_at_link.src[i]] * dl[nodes_at_link.src[i]]
-            ) / (dl[nodes_at_link.dst[i]] + dl[nodes_at_link.src[i]])
+                n_river[dst_node] * dl[dst_node] +
+                n_river[src_node] * dl[src_node]
+            ) / (dl[dst_node] + dl[src_node])
     end
 
     # set depth h of reservoir and lake location to bankfull depth
     h = fill(0.0, n + length(index_pit))
     if !isnothing(reservoir)
-        inds_reservoir = findall(x -> x > 0, reservoir_index)
+        inds_reservoir = findall(>(0), reservoir_index)
         h[inds_reservoir] = bankfull_depth[inds_reservoir]
     end
     if !isnothing(lake)
-        inds_lake = findall(x -> x > 0, lake_index)
+        inds_lake = findall(>(0), lake_index)
         h[inds_lake] = bankfull_depth[inds_lake]
     end
 
@@ -691,8 +696,9 @@ function update(
     end
     sw.q_av ./= sw.Δt
     sw.h_av ./= sw.Δt
-end
 
+    return nothing
+end
 
 """
     stable_timestep(sw::ShallowWaterRiver)
@@ -702,7 +708,6 @@ Bates et al. (2010).
 
 Δt = α * (Δx / sqrt(g max(h))
 """
-
 function stable_timestep(sw::ShallowWaterRiver)
     Δtₘᵢₙ = Inf
     for i = 1:sw.n

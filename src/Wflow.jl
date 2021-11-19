@@ -87,7 +87,7 @@ struct Model{N,L,V,R,W,T}
     vertical::V  # vertical model that holds vertical state, independent of each other
     clock::Clock  # to keep track of simulation time
     reader::R  # provides the model with dynamic input
-    writer::W  # writes model outputend
+    writer::W  # writes model output
     type::T # model type
 end
 
@@ -161,8 +161,7 @@ function run(model::Model; close_files = true)
 
     # in the case of sbm_gwf it's currently a bit hard to use dispatch
     model_type = config.model.type::String
-    #update_func = model_type == "sbm_gwf" ? update_sbm_gwf : update
-
+    
     # determine timesteps to run
     calendar = get(config, "calendar", "standard")::String
     starttime = clock.time

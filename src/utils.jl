@@ -438,7 +438,7 @@ tosecond(x::T) where {T<:DatePeriod} = Float64(Dates.value(Second(x)))
 tosecond(x::T) where {T<:TimePeriod} = x / convert(T, Second(1))
 
 """
-adjacent_nodes_at_link(graph)
+    adjacent_nodes_at_link(graph)
 
 Return the source node `src` and destination node `dst` of each link of a directed `graph`.
 """
@@ -448,7 +448,7 @@ function adjacent_nodes_at_link(graph)
 end
 
 """
-adjacent_links_at_node(graph, nodes_at_link)
+    adjacent_links_at_node(graph, nodes_at_link)
 
 Return the source link `src` and destination link `dst` of each node of a directed `graph`.
 """

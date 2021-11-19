@@ -1,5 +1,3 @@
-abstract type sbm end
-
 """
     initialize_sbm_model(config::Config)
 
@@ -93,7 +91,7 @@ function initialize_sbm_model(config::Config)
 
     βₗ = ncread(nc, param(config, "input.lateral.land.slope"); sel = inds, type = Float)
     clamp!(βₗ, 0.00001, Inf)
-    
+
     dl = map(detdrainlength, ldd, xl, yl)
     dw = (xl .* yl) ./ dl
 
@@ -205,6 +203,12 @@ function initialize_sbm_model(config::Config)
             lake_index = lakeindex,
             lake = lakes,
             Δt = Δt,
+        )
+    else
+        error(
+            """An unknown "river_routing" method is specified in the TOML file ($river_routing). 
+            This should be "kinematic_wave" or "local-inertial".
+            """,
         )
     end
 

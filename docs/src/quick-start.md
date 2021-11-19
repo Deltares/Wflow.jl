@@ -186,7 +186,7 @@ The threading functionality for the kinematic wave may also be useful for models
 experimental, see also the following
 [issue](https://github.com/Deltares/Wflow.jl/issues/139), where an error was not thrown
 running code multi-threaded. Because of this we advise to start with running a Wflow model
-single-treaded (for example during the testing phase of setting up an new Wflow model).
+single-threaded (for example during the testing phase of setting up an new Wflow model).
 
 For information on how to start Julia with multiple threads we refer to [How to start Julia
 with multiple
