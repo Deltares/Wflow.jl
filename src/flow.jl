@@ -475,10 +475,7 @@ function initialize_shallowwater_river(
     # Edge 3 => 2
     # Edge 4 => 9
     # ⋮ )
-    riverlength_bc = get(config.model, "riverlength_bc", nothing) # river length at boundary point (ghost point)
-    if isnothing(riverlength_bc)
-        error("""The boundary condition "riverlength_bc" is not provided as part of the TOML file""")
-    end
+    riverlength_bc = get(config.model, "riverlength_bc", 1.0e04) # river length at boundary point (ghost point)
     alpha = get(config.model, "inertial_flow_alpha", 0.7) # stability coefficient for model time step (0.2-0.7)
     h_thresh = get(config.model, "h_thresh", 1.0e-03) # depth threshold for flow at link
     froude_limit = get(config.model, "froude_limit", true) # limit flow to subcritical according to Froude number
@@ -509,13 +506,13 @@ function initialize_shallowwater_river(
     )
 
     n = length(inds)
-    # set ghost points for boundary condition (downstream river outlet): river width and
-    # manning n is copied from the upstream cell, river elevation and h are set at 0.0 (sea
-    # level). river length at boundary point is by default 1.0e5 m (riverlength_bc).
+    # set ghost points for boundary condition (downstream river outlet): river width, bed
+    # elevation, manning n is copied from the upstream cell, river depth h is set at 0.0
+    # (fixed). river length at boundary point is by default 1.0e3 m (riverlength_bc).
     index_pit = findall(x -> x == 5, ldd)
     npits = length(index_pit)
     add_vertex_edge_graph!(graph, index_pit)
-    append!(zb, fill(Float(0), npits))
+    append!(zb, zb[index_pit])
     append!(dl, fill(riverlength_bc, npits))
     append!(width, width[index_pit])
     append!(n_river, n_river[index_pit])

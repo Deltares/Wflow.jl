@@ -45,7 +45,7 @@ river_routing = "local-inertial" # default is kinematic-wave
 inertial_flow_alpha = 0.5      # alpha coefficient for model stability (default = 0.7)
 froude_limit = true            # default is true, limit flow to subcritical-critical according to Froude number
 h_thresh = 0.1                 # water depth [m] threshold for calculating flow between cells (default = 1e-03)
-riverlength_bc = 100000.0      # river length [m] for boundary points
+riverlength_bc = 1000.0        # river length [m] for boundary points (default = 1e04)
 ```
 
 The momentum equation is most stable for low slope enviroments, and to keep the simulation
@@ -64,9 +64,12 @@ link. If the water velocity from the local inertial model is causing the Froude 
 greater than 1.0, the water velocity (and flow) is reduced in order to maintain a Froude
 number of 1.0.
 
-For the downstream boundary condition (ghost point) a fixed water surface elevation of 0 m
-is used. The river length [m] of the boundary cell should be set through the TOML file with
-`riverlength_bc`.
+The downstream boundary condition basically simulates a zero water depth boundary condition
+at a set distance, as follows. For the downstream boundary condition (ghost point) the river
+width, river bed elevation and Manning's roughness coefficient are copied from the upstream
+river cell. The river length [m] of the boundary cell can be set through the TOML file with
+`riverlength_bc`, and has a default value of 10 km. The water depth at the boundary cell is
+fixed at 0.0 m.
 
 Simplified reservoirs and lakes models can be included as part of the local inertial model, 
 see also [Reservoirs and Lakes](@ref).

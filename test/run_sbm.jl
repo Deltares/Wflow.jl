@@ -233,7 +233,6 @@ Wflow.close_files(model, delete_output = false)
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 config.model.river_routing = "local-inertial"
-config.model.riverlength_bc = 1e05 # river length of boundary condition
 
 model = Wflow.initialize_sbm_model(config)
 Wflow.load_dynamic_input!(model)
