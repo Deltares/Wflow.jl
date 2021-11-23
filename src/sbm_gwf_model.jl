@@ -517,7 +517,7 @@ function update_sbm_gwf(model)
         (
             lateral.subsurface.flow.aquifer.head .-
             min.(lateral.subsurface.flow.aquifer.head, lateral.subsurface.flow.aquifer.top)
-        ) .* lateral.subsurface.flow.aquifer.specific_yield
+        ) .* storativity(lateral.subsurface.flow.aquifer)
     lateral.subsurface.flow.aquifer.head .=
         min.(lateral.subsurface.flow.aquifer.head, lateral.subsurface.flow.aquifer.top)
 
