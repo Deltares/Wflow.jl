@@ -5,7 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## Unreleased
+
+### Fixed
+- Fixed calculation of `exfiltwater` as part of the `sbm_gwf` model type. This was based
+  directly on groundwater head above the surface level, without multiplying by the
+  `specific_yield`, resulting in an overestimation of `exfiltwater`. This is required since
+  the groundwater model estimates the head by dividing the volume by the specific yield or
+  storativity of the aquifer. So, should the groundwater table rise above surface level, the
+  head above surface level does not represent a water column one to one. (This also means
+  the groundwater model (slightly) overestimates heads when the head rises above the surface
+  level. However, this water is immediately removed, and the head will be set to surface
+  level.)
 
 ### Added
 - Optional `dir_input` and `dir_output` keys in the TOML, which can be used to quickly

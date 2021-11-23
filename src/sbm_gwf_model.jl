@@ -509,10 +509,13 @@ function update_sbm_gwf(model)
     # update groundwater domain
     update(lateral.subsurface.flow, Q, Δt_sbm)
 
-    # determine excess head [m] (exfiltwater) in groundwater domain (head > surface) and reset head
+    # determine excess water depth [m] (exfiltwater) in groundwater domain (head > surface)
+    # and reset head
     exfiltwater =
-        lateral.subsurface.flow.aquifer.head .-
-        min.(lateral.subsurface.flow.aquifer.head, lateral.subsurface.flow.aquifer.top)
+        (
+            lateral.subsurface.flow.aquifer.head .-
+            min.(lateral.subsurface.flow.aquifer.head, lateral.subsurface.flow.aquifer.top)
+        ) .* storativity(lateral.subsurface.flow.aquifer)
     lateral.subsurface.flow.aquifer.head .=
         min.(lateral.subsurface.flow.aquifer.head, lateral.subsurface.flow.aquifer.top)
 
