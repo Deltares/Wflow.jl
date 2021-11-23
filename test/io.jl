@@ -19,7 +19,7 @@ config = Wflow.Config(tomlpath)
     # test if the values are parsed as expected
     @test config.starttime === DateTime(2000)
     @test config.endtime === DateTime(2000, 2)
-    @test config.output.path == "data/output_moselle.nc"
+    @test config.output.path == "output_moselle.nc"
     @test config.output isa Wflow.Config
     @test collect(keys(config.output)) == ["lateral", "vertical", "path"]
 
@@ -37,13 +37,25 @@ config = Wflow.Config(tomlpath)
     @test modifier.scale == 1.0
     @test modifier.offset == 0.0
     @test modifier.value === nothing
+
+    # test the optional "dir_input" and "dir_output" keys
+    @test haskey(config, "dir_input")
+    @test haskey(config, "dir_output")
+    @test Wflow.input_path(config, config.state.path_input) == joinpath(@__DIR__, "data", "input", "instates-moselle.nc")
+    @test Wflow.output_path(config, config.state.path_output) == joinpath(@__DIR__, "data", "output", "outstates-moselle.nc")
+    # hbv_config doesn't use dir_input and dir_output
+    hbv_config = Wflow.Config(joinpath(@__DIR__, "hbv_config.toml"))
+    @test !haskey(hbv_config, "dir_input")
+    @test !haskey(hbv_config, "dir_output")
+    @test Wflow.input_path(hbv_config, hbv_config.state.path_input) == joinpath(@__DIR__, "data", "input", "instates-lahn.nc")
+    @test Wflow.output_path(hbv_config, hbv_config.state.path_output) == joinpath(@__DIR__, "data", "output", "outstates-lahn.nc")
 end
 
 @testset "Clock constructor" begin
     config = Wflow.Config(tomlpath)
 
     # mock a NCReader object
-    ncpath = joinpath(dirname(pathof(config)), config.input.path_forcing)
+    ncpath = Wflow.input_path(config, config.input.path_forcing)
     ds = NCDataset(ncpath)
     reader = (; dataset = ds)
 

@@ -211,7 +211,7 @@ end
     end
 end
 
-function initialize_natural_lake(config, path, nc, inds_riv, nriv, pits, Δt)
+function initialize_natural_lake(config, nc, inds_riv, nriv, pits, Δt)
     # read only lake data if lakes true
     # allow lakes only in river cells
     # note that these locations are only the lake outlet pixels
@@ -318,6 +318,9 @@ function initialize_natural_lake(config, path, nc, inds_riv, nriv, pits, Δt)
     sh = Vector{Union{SH,Missing}}(missing, n_lakes)
     hq = Vector{Union{HQ,Missing}}(missing, n_lakes)
     lowerlake_ind = fill(0, n_lakes)
+    # lake CSV parameter files are expected in the same directory as path_static
+    path = dirname(input_path(config, config.input.path_static))
+
     for i = 1:n_lakes
         lakeloc = lakelocs[i]
         if linked_lakelocs[i] > 0

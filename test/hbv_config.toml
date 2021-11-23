@@ -10,8 +10,8 @@ time_units = "days since 1900-01-01 00:00:00"
 timestepsecs = 86400
 
 [state]
-path_input = "data/instates-lahn.nc"
-path_output = "data/outstates-lahn.nc"
+path_input = "data/input/instates-lahn.nc"
+path_output = "data/output/outstates-lahn.nc"
 
 # if listed, the variable must be present in the NetCDF or error
 # if not listed, the variable can get a default value if it has one
@@ -33,8 +33,8 @@ h = "h_land"
 q = "q_land"
 
 [input]
-path_forcing = "data/forcing-lahn.nc"
-path_static = "data/staticmaps-lahn.nc"
+path_forcing = "data/input/forcing-lahn.nc"
+path_static = "data/input/staticmaps-lahn.nc"
 
 # these are not directly part of the model
 gauges = "wflow_gauges"
@@ -93,7 +93,7 @@ snow = true
 type = "hbv"
 
 [output]
-path = "data/output_lahn.nc"
+path = "data/output/output_lahn.nc"
 
 [output.vertical]
 lowerzonestorage = "lowerzonestorage"
@@ -106,7 +106,7 @@ upperzonestorage = "upperzonestorage"
 q = "q"
 
 [csv]
-path = "data/output_lahn.csv"
+path = "data/output/output_lahn.csv"
 
 [[csv.column]]
 header = "Q"

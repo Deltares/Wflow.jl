@@ -6,8 +6,7 @@ Config object. Will return a Model that is ready to run.
 """
 function initialize_hbv_model(config::Config)
     # unpack the paths to the NetCDF files
-    tomldir = dirname(config)
-    static_path = joinpath(tomldir, config.input.path_static)
+    static_path = input_path(config, config.input.path_static)
 
     reader = prepare_reader(config)
     clock = Clock(config, reader)
@@ -357,7 +356,6 @@ function initialize_hbv_model(config::Config)
     if do_lakes
         lakes, lakeindex, lake, pits = initialize_natural_lake(
             config,
-            static_path,
             nc,
             inds_riv,
             nriv,
@@ -560,7 +558,7 @@ function initialize_hbv_model(config::Config)
 
     # read and set states in model object if reinit=true
     if reinit == false
-        instate_path = joinpath(tomldir, config.state.path_input)
+        instate_path = input_path(config, config.state.path_input)
         state_ncnames = ncnames(config.state)
         set_states(instate_path, model, state_ncnames; type = Float)
         # update kinematic wave volume for river and land domain
