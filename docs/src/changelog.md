@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   level. However, this water is immediately removed, and the head will be set to surface
   level.)
 
+### Added
+- Optional `dir_input` and `dir_output` keys in the TOML, which can be used to quickly
+  change the path for all input or output files that are given as a relative path.
+
 ## v0.5.0 - 2021-11-12
 
 ### Changed

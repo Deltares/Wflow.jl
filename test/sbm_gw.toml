@@ -8,10 +8,12 @@ endtime = 2000-02-01T00:00:00
 starttime = 2000-01-01T00:00:00
 time_units = "days since 1900-01-01 00:00:00"
 timestepsecs = 86400
+dir_input = "data/input"
+dir_output = "data/output"
 
 [state]
-path_input = "data/instates-moselle.nc"
-path_output = "data/outstates-moselle.nc"
+path_input = "instates-moselle.nc"
+path_output = "outstates-moselle.nc"
 
 # if listed, the variable must be present in the NetCDF or error
 # if not listed, the variable can get a default value if it has one
@@ -38,8 +40,8 @@ h_av = "h_av_land"
 q = "q_land"
 
 [input]
-path_forcing = "data/forcing-moselle.nc"
-path_static = "data/staticmaps-moselle.nc"
+path_forcing = "forcing-moselle.nc"
+path_static = "staticmaps-moselle.nc"
 
 # these are not directly part of the model
 gauges = "wflow_gauges"
@@ -116,7 +118,7 @@ thicknesslayers = [100, 300, 800]
 type = "sbm"
 
 [output]
-path = "data/output_moselle.nc"
+path = "output_moselle.nc"
 
 [output.vertical]
 canopystorage = "canopystorage"
@@ -138,7 +140,7 @@ h = "h_land"
 q = "q_land"
 
 [netcdf]
-path = "data/output_scalar_moselle.nc"
+path = "output_scalar_moselle.nc"
 
 [[netcdf.variable]]
 name = "Q"
@@ -160,7 +162,7 @@ index.y = 264
 parameter = "vertical.temperature"
 
 [csv]
-path = "data/output_moselle.csv"
+path = "output_moselle.csv"
 
 [[csv.column]]
 header = "Q"

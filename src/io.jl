@@ -81,6 +81,23 @@ Base.dirname(config::Config) = dirname(pathof(config))
 Base.iterate(config::Config) = iterate(Dict(config))
 Base.iterate(config::Config, state) = iterate(Dict(config), state)
 
+function combined_path(config::Config, dir::AbstractString, path::AbstractString)
+    tomldir = dirname(config)
+    return normpath(tomldir, dir, path)
+end
+
+"Construct a path relative to both the TOML directory and the optional `dir_input`"
+function input_path(config::Config, path::AbstractString)
+    dir = get(config, "dir_input", ".")
+    return combined_path(config, dir, path)
+end
+
+"Construct a path relative to both the TOML directory and the optional `dir_output`"
+function output_path(config::Config, path::AbstractString)
+    dir = get(config, "dir_output", ".")
+    return combined_path(config, dir, path)
+end
+
 "Extract NetCDF variable name `ncname` from `var` (type `String` or `Config`). If `var` has 
 type `Config`, either `scale` and `offset` are expected (with `ncname`) or a `value` (uniform
 value), these are stored as part of `NamedTuple` `modifier`"
@@ -336,13 +353,13 @@ end
 
 "prepare an output dataset for scalar data"
 function setup_scalar_netcdf(
-    output_path,
+    path,
     ncvars,
     calendar,
     time_units,
     float_type = Float32,
 )
-    ds = create_tracked_netcdf(output_path)
+    ds = create_tracked_netcdf(path)
     defDim(ds, "time", Inf)  # unlimited
     defVar(
         ds,
@@ -374,7 +391,7 @@ end
 
 "prepare an output dataset for grid data"
 function setup_grid_netcdf(
-    output_path,
+    path,
     ncx,
     ncy,
     parameters,
@@ -385,7 +402,7 @@ function setup_grid_netcdf(
     float_type = Float32,
 )
 
-    ds = create_tracked_netcdf(output_path)
+    ds = create_tracked_netcdf(path)
     defDim(ds, "time", Inf)  # unlimited
     if sizeinmetres
         defVar(
@@ -537,18 +554,19 @@ struct Writer
 end
 
 function prepare_reader(config)
-    tomldir = dirname(config)
     path_forcing = config.input.path_forcing
-    cyclic_path = joinpath(tomldir, config.input.path_static)
+    cyclic_path = input_path(config, config.input.path_static)
 
     # absolute paths are not supported, see Glob.jl#2
     if isabspath(path_forcing)
         parts = splitpath(path_forcing)
         # use the root/drive as the dir, to support * in directory names as well
         glob_dir = parts[1]
-        glob_path = joinpath(parts[2:end])
+        glob_path = normpath(parts[2:end])
     else
-        glob_dir = tomldir
+        tomldir = dirname(config)
+        dir_input = get(config, "dir_input", ".")
+        glob_dir = normpath(tomldir, dir_input)
         glob_path = path_forcing
     end
 
@@ -773,7 +791,6 @@ function prepare_writer(
     nc_static;
     maxlayers = nothing,
 )
-    tomldir = dirname(config)
     sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
 
     calendar = get(config, "calendar", "standard")::String
@@ -782,7 +799,7 @@ function prepare_writer(
     # create an output NetCDF that will hold all timesteps of selected parameters for grid
     # data but only if config.output.path has been set
     if haskey(config, "output") && haskey(config.output, "path")
-        nc_path = joinpath(tomldir, config.output.path)
+        nc_path = output_path(config, config.output.path)
         # create a flat mapping from internal parameter locations to NetCDF variable names
         output_ncnames = ncnames(config.output)
         # fill the output_map by mapping parameter NetCDF names to arrays
@@ -808,7 +825,7 @@ function prepare_writer(
     if haskey(config, "state") && haskey(config.state, "path_output")
         state_ncnames = ncnames(config.state)
         state_map = out_map(state_ncnames, modelmap)
-        nc_state_path = joinpath(tomldir, config.state.path_output)
+        nc_state_path = output_path(config, config.state.path_output)
         ds_outstate = setup_grid_netcdf(
             nc_state_path,
             x_nc,
@@ -829,7 +846,7 @@ function prepare_writer(
     # create an output NetCDF that will hold all timesteps of selected parameters for scalar
     # data, but only if config.netcdf.variable has been set. 
     if haskey(config, "netcdf") && haskey(config.netcdf, "variable")
-        nc_scalar_path = joinpath(tomldir, config.netcdf.path)
+        nc_scalar_path = output_path(config, config.netcdf.path)
         # get NetCDF info for scalar data (variable name, locationset (dim) and 
         # location ids)
         ncvars_dims = nc_variables_dims(config.netcdf.variable, nc_static, config)
@@ -851,7 +868,7 @@ function prepare_writer(
 
     if haskey(config, "csv") && haskey(config.csv, "column")
         # open CSV file and write header
-        csv_path = joinpath(tomldir, config.csv.path)
+        csv_path = output_path(config, config.csv.path)
         # create directory if needed
         mkpath(dirname(csv_path))
         csv_io = open(csv_path, "w")
