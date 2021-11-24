@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Changed
+- Model types `sbm_gwf` and `hbv` use the same approach for the calculation of the drain
+  width `dw` as model type `sbm`.
+
+### Added
+- Option to use the local inertial model for river flow as part of the [SBM + Kinematic
+  wave](@ref). See also [SBM + Local inertial river](@ref).
+
+### Fixed
+- Model type `hbv`: the surface width for overland flow was not corrected with the river
+  width.
+
 ## v0.5.1 - 2021-11-24
 
 ### Fixed

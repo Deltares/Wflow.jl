@@ -14,10 +14,10 @@ flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
     row = csv_first_row(model.writer.csv_path)
 
     @test row.time == DateTime("2000-01-01T00:00:00")
-    @test row.Q ≈ 514.5673131622699f0
+    @test row.Q ≈ 521.8433822888003f0
     @test row.temp_bycoord ≈ 2.965437173843384f0
     @test row.temp_byindex ≈ 1.1716821193695068f0
-    @test row.Q_1 ≈ 498.0969773774267f0
+    @test row.Q_1 ≈ 505.1935875677504f0
     @test row.perc_33 ≈ 2.308000087738037f0
     @test row.perc_34 ≈ 1.8980000019073486f0
     @test row.perc_35 ≈ 2.7100000381469727f0
@@ -50,19 +50,19 @@ end
 @testset "overland domain" begin
     q = model.lateral.land.q_av
     land = model.lateral.land
-    @test sum(q) ≈ 3278.9423039643552f0
-    @test q[10354] ≈ 0.2348646912841589f0
+    @test sum(q) ≈ 3264.157286198723f0
+    @test q[10354] ≈ 0.2350958683414288f0
     @test land.volume[10354] ≈ 2057.7314802432425f0
     @test land.inwater[10354] ≈ 0.027351853491789667f0
-    @test q[network.land.order[end]] ≈ 0.296794455575309f0
+    @test q[network.land.order[end]] ≈ 0.27158713754634217f0
 end
 
 @testset "river flow" begin
     q = model.lateral.river.q_av
-    @test sum(q) ≈ 52077.14258235775f0
-    @test q[651] ≈ 5.693405508134953f0
-    @test q[1056] ≈ 8.839306661545436f0
-    @test q[network.river.order[end]] ≈ 359.0484738820008f0
+    @test sum(q) ≈ 52686.97949266187f0
+    @test q[651] ≈ 5.7624898709967125f0
+    @test q[1056] ≈ 8.892291220438524f0
+    @test q[network.river.order[end]] ≈ 360.40425076323913f0
 end
 
 Wflow.close_files(model, delete_output = false)

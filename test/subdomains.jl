@@ -6,7 +6,7 @@ model = Wflow.initialize_sbm_model(config)
 @unpack network = model
 
 min_sto = get(config.model, "min_streamorder", 4)
-index_pit = [49908]
+index_pit = [network.land.order[end]]
 @test min_sto == 3
 
 subbas_order, indices_subbas, topo_subbas =
@@ -23,16 +23,16 @@ if nthreads() == 1
 else
     @testset "Parallel subdomains kinematic wave (nthreads > 1)" begin
         @test length(subbas_order) == 6
-        @test length.(subbas_order) == [553, 175, 150, 93, 26, 1]
-        @test maximum(subbas_order) == [998]
-        @test subbas_order[1][1:4] == [125, 131, 85, 89]
-        @test subbas_order[3][1:4] == [69, 56, 103, 51]
-        @test length(topo_subbas) == 998
-        @test topo_subbas[1][1:4] == [50069, 50064, 50063, 50062]
-        @test topo_subbas[end][1:4] == [49946, 49907, 49906, 49904]
-        @test length(indices_subbas) == 998
-        @test indices_subbas[1][1:4] == [2, 7, 8, 9]
-        @test indices_subbas[end][1:4] == [125, 150, 151, 152]
+        @test length.(subbas_order) == [507, 172, 142, 86, 24, 1]
+        @test maximum(subbas_order) == [932]
+        @test subbas_order[1][1:4] == [107, 115, 83, 84]
+        @test subbas_order[3][1:4] == [97, 109, 56, 68]
+        @test length(topo_subbas) == 932
+        @test topo_subbas[1][1:4] == [50062, 50063, 50056, 50055]
+        @test topo_subbas[end][1:4] == [49884, 49842, 49791, 49779]
+        @test length(indices_subbas) == 932
+        @test indices_subbas[1][1:4] == [1, 2, 8, 9]
+        @test indices_subbas[end][1:4] == [166, 201, 236, 247]
     end
 end
 

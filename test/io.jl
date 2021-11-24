@@ -17,7 +17,7 @@ config = Wflow.Config(tomlpath)
     @test dirname(config) == dirname(tomlpath)
 
     # test if the values are parsed as expected
-    @test config.starttime === DateTime(2000)
+    @test config.starttime === DateTime(2000, 1, 2)
     @test config.endtime === DateTime(2000, 2)
     @test config.output.path == "output_moselle.nc"
     @test config.output isa Wflow.Config
@@ -65,12 +65,12 @@ end
     pop!(Dict(config), "timestepsecs")
     clock = Wflow.Clock(config, reader)
 
-    @test clock.time == DateTimeProlepticGregorian(2000, 1, 1)
+    @test clock.time == DateTimeProlepticGregorian(2000, 1, 2)
     @test clock.iteration == 1
     @test clock.Δt == Second(Day(1))
     # test that the missing keys have been added to the config
-    @test config.starttime == DateTime(2000, 1, 1)
-    @test config.endtime == DateTime(2000, 12, 31)
+    @test config.starttime == DateTime(2000, 1, 2)
+    @test config.endtime == DateTime(2001, 1, 1)
     @test config.timestepsecs == 86400
 
     # replace the keys with different values
@@ -196,21 +196,21 @@ Wflow.load_dynamic_input!(model)
 end
 
 @testset "warm states" begin
-    @test Wflow.param(model, "lateral.river.reservoir.volume")[1] ≈ 2.7393418e7
-    @test Wflow.param(model, "vertical.satwaterdepth")[9115] ≈ 201.51429748535156
-    @test Wflow.param(model, "vertical.snow")[9115] ≈ 4.21874475479126
-    @test Wflow.param(model, "vertical.tsoil")[9115] ≈ -1.9285825490951538
-    @test Wflow.param(model, "vertical.ustorelayerdepth")[50069][1] ≈ 16.73013687133789
-    @test Wflow.param(model, "vertical.snowwater")[9115] ≈ 0.42188167572021484
-    @test Wflow.param(model, "vertical.canopystorage")[50069] ≈ 0.0
-    @test Wflow.param(model, "vertical.zi")[50069] ≈ 380.67793082060416
-    @test Wflow.param(model, "lateral.subsurface.ssf")[10606] ≈ 1.1614302208e02
-    @test Wflow.param(model, "lateral.river.q")[149] ≈ 111.46229553222656
-    @test Wflow.param(model, "lateral.river.h")[149] ≈ 8.555977821350098
-    @test Wflow.param(model, "lateral.river.volume")[149] ≈ 249163.33754433296
-    @test Wflow.param(model, "lateral.land.q")[10584] ≈ 1.0575231313705444
-    @test Wflow.param(model, "lateral.land.h")[10584] ≈ 0.03456519544124603
-    @test Wflow.param(model, "lateral.land.volume")[10584] ≈ 19379.23274404319
+    @test Wflow.param(model, "lateral.river.reservoir.volume")[1] ≈ 3.2807224993363418e7
+    @test Wflow.param(model, "vertical.satwaterdepth")[9115] ≈ 477.13548089422125
+    @test Wflow.param(model, "vertical.snow")[5] ≈ 11.019233179897599
+    @test Wflow.param(model, "vertical.tsoil")[5] ≈ 0.21814478119608938
+    @test Wflow.param(model, "vertical.ustorelayerdepth")[50063][1] ≈ 9.969116007201725
+    @test Wflow.param(model, "vertical.snowwater")[5] ≈ 0.0
+    @test Wflow.param(model, "vertical.canopystorage")[50063] ≈ 0.0
+    @test Wflow.param(model, "vertical.zi")[50063] ≈ 296.8028609104624
+    @test Wflow.param(model, "lateral.subsurface.ssf")[10606] ≈ 39.972334552895816
+    @test Wflow.param(model, "lateral.river.q")[149] ≈ 53.48673634956338
+    @test Wflow.param(model, "lateral.river.h")[149] ≈ 1.167635369628945
+    @test Wflow.param(model, "lateral.river.volume")[149] ≈ 27745.06872132241
+    @test Wflow.param(model, "lateral.land.q")[2075] ≈ 3.285909284322251
+    @test Wflow.param(model, "lateral.land.h")[2075] ≈ 0.052076262033771775
+    @test Wflow.param(model, "lateral.land.volume")[2075] ≈ 29920.754983235012
 end
 
 @testset "reducer" begin
@@ -229,7 +229,7 @@ end
     # test if the reverse index reverses the index
     linear_index = 100
     cartesian_index = indices[linear_index]
-    @test cartesian_index === CartesianIndex(178, 7)
+    @test cartesian_index === CartesianIndex(168, 8)
     @test reverse_indices[cartesian_index] === linear_index
 end
 
@@ -237,7 +237,7 @@ end
     @unpack vertical = model
     @test vertical.cfmax[1] ≈ 3.7565300464630127
     @test vertical.soilthickness[1] ≈ 2000.0
-    @test vertical.precipitation[49951] ≈ 2.197660446166992
+    @test vertical.precipitation[49951] ≈ 2.2100000381469727
 end
 
 config.input.vertical.cfmax = Dict("value" => 2.0)
@@ -247,7 +247,7 @@ config.input.vertical.soilthickness = Dict(
     "netcdf" => Dict("variable" => Dict("name" => "SoilThickness")),
 )
 config.input.vertical.precipitation =
-    Dict("scale" => 1.5, "netcdf" => Dict("variable" => Dict("name" => "P")))
+    Dict("scale" => 1.5, "netcdf" => Dict("variable" => Dict("name" => "precip")))
 
 model = Wflow.initialize_sbm_model(config)
 Wflow.load_dynamic_input!(model)
@@ -256,7 +256,7 @@ Wflow.load_dynamic_input!(model)
     @unpack vertical = model
     @test vertical.cfmax[1] == 2.0
     @test vertical.soilthickness[1] ≈ 2000.0 * 3.0 + 100.0
-    @test vertical.precipitation[49951] ≈ 1.5 * 2.197660446166992
+    @test vertical.precipitation[49951] ≈ 1.5 * 2.2100000381469727
 end
 
 Wflow.close_files(model, delete_output = false)
@@ -293,7 +293,7 @@ end
         data, data_dim_order = Wflow.read_dims(ds["wflow_dem"], (x = :, y = :))
         @test data isa Matrix{Union{Float32,Missing}}
         @test data[end, end] === missing
-        @test data[125, 1] ≈ 643.547f0
+        @test data[125, 1] ≈ 647.187f0
         @test data_dim_order == (:x, :y)
 
         @test Wflow.dim_directions(ds, (:x, :y)) === (x = true, y = false)

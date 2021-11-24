@@ -21,6 +21,7 @@ function initialize_sbm_model(config::Config)
     kw_river_tstep = get(config.model, "kw_river_tstep", 0)
     kw_land_tstep = get(config.model, "kw_land_tstep", 0)
     kinwave_it = get(config.model, "kin_wave_iteration", false)::Bool
+    river_routing = get(config.model, "river_routing", "kinematic-wave")
 
     nc = NCDataset(static_path)
 
@@ -61,6 +62,8 @@ function initialize_sbm_model(config::Config)
             initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, tosecond(Δt))
     else
         reservoir = ()
+        reservoirs = nothing
+        resindex = fill(0, nriv)
     end
 
     # lakes
@@ -75,6 +78,8 @@ function initialize_sbm_model(config::Config)
         )
     else
         lake = ()
+        lakes = nothing
+        lakeindex = fill(0, nriv)
     end
 
     ldd_2d = ncread(nc, param(config, "input.ldd"); allow_missing = true)
@@ -86,15 +91,9 @@ function initialize_sbm_model(config::Config)
 
     βₗ = ncread(nc, param(config, "input.lateral.land.slope"); sel = inds, type = Float)
     clamp!(βₗ, 0.00001, Inf)
-    dl = fill(mv, n)
-    dw = fill(mv, n)
-    sw = fill(mv, n)
 
-    for i = 1:n
-        dl[i] = detdrainlength(ldd[i], xl[i], yl[i])
-        dw[i] = (xl[i] * yl[i]) / dl[i]
-        sw[i] = river[i] ? max(dw[i] - riverwidth[i], 0.0) : dw[i]
-    end
+    dl = map(detdrainlength, ldd, xl, yl)
+    dw = (xl .* yl) ./ dl
 
     # check if lateral subsurface flow component is defined for the SBM model, when coupled 
     # to another groundwater model, this component is not defined in the TOML file.
@@ -145,70 +144,24 @@ function initialize_sbm_model(config::Config)
         )
     end
 
-    n_land = ncread(
+    olf = initialize_surfaceflow_land(
         nc,
-        param(config, "input.lateral.land.n", nothing);
-        sel = inds,
-        defaults = 0.072,
-        type = Float,
-    )
-
-    alpha_pow = Float((2.0 / 3.0) * 0.6)
-    β = Float(0.6)
-    olf = SurfaceFlow(
-        β = β,
+        config,
+        inds;
         sl = βₗ,
-        n = n_land,
         dl = dl,
-        q = zeros(Float, n),
-        qin = zeros(Float, n),
-        q_av = zeros(Float, n),
-        qlat = zeros(Float, n),
-        inwater = zeros(Float, n),
-        inflow = zeros(Float, n),
-        volume = zeros(Float, n),
-        h = zeros(Float, n),
-        h_av = zeros(Float, n),
-        h_bankfull = zeros(Float, n),
-        Δt = Float(tosecond(Δt)),
-        its = kw_land_tstep > 0 ? Int(cld(tosecond(Δt), kw_land_tstep)) : kw_land_tstep,
-        width = sw,
+        width = map(det_surfacewidth, dw, riverwidth, river),
         wb_pit = pits[inds],
-        alpha_pow = alpha_pow,
-        alpha_term = fill(mv, n),
-        α = fill(mv, n),
-        cel = zeros(Float, n),
-        to_river = zeros(Float, n),
-        rivercells = fill(false, n),
-        reservoir_index = fill(0, n),
-        lake_index = fill(0, n),
-        reservoir = nothing,
-        lake = nothing,
-        kinwave_it = kinwave_it,
+        iterate = kinwave_it,
+        tstep = kw_land_tstep,
+        Δt = Δt,
     )
 
     graph = flowgraph(ldd, inds, pcr_dir)
 
-
-    riverslope =
-        ncread(nc, param(config, "input.lateral.river.slope"); sel = inds_riv, type = Float)
-    clamp!(riverslope, 0.00001, Inf)
     riverlength = riverlength_2d[inds_riv]
     riverwidth = riverwidth_2d[inds_riv]
-    n_river = ncread(
-        nc,
-        param(config, "input.lateral.river.n", nothing);
-        sel = inds_riv,
-        defaults = 0.036,
-        type = Float,
-    )
-    h_bankfull = ncread(
-        nc,
-        param(config, "input.lateral.river.h_bankfull", nothing);
-        sel = inds_riv,
-        defaults = 1.0,
-        type = Float,
-    )
+
     ldd_riv = ldd_2d[inds_riv]
     if do_pits
         ldd_riv = set_pit_ldd(pits_2d, ldd_riv, inds_riv)
@@ -219,49 +172,58 @@ function initialize_sbm_model(config::Config)
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
     frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, βₗ, n)
 
-    rf = SurfaceFlow(
-        β = β,
-        sl = riverslope,
-        n = n_river,
-        dl = riverlength,
-        q = zeros(Float, nriv),
-        qin = zeros(Float, nriv),
-        q_av = zeros(Float, nriv),
-        qlat = zeros(Float, nriv),
-        inwater = zeros(Float, nriv),
-        inflow = zeros(Float, nriv),
-        volume = zeros(Float, nriv),
-        h = zeros(Float, nriv),
-        h_av = zeros(Float, nriv),
-        h_bankfull = h_bankfull,
-        Δt = Float(tosecond(Δt)),
-        its = kw_river_tstep > 0 ? ceil(Int(tosecond(Δt) / kw_river_tstep)) :
-              kw_river_tstep,
-        width = riverwidth,
-        wb_pit = pits[inds_riv],
-        alpha_pow = alpha_pow,
-        alpha_term = fill(mv, nriv),
-        α = fill(mv, nriv),
-        cel = zeros(Float, nriv),
-        to_river = zeros(Float, nriv),
-        reservoir_index = do_reservoirs ? resindex : fill(0, nriv),
-        lake_index = do_lakes ? lakeindex : fill(0, nriv),
-        reservoir = do_reservoirs ? reservoirs : nothing,
-        lake = do_lakes ? lakes : nothing,
-        rivercells = river,
-        kinwave_it = kinwave_it,
-    )
+    if river_routing == "kinematic-wave"
+        rf = initialize_surfaceflow_river(
+            nc,
+            config,
+            inds_riv;
+            dl = riverlength,
+            width = riverwidth,
+            wb_pit = pits[inds_riv],
+            reservoir_index = resindex,
+            reservoir = reservoirs,
+            lake_index = lakeindex,
+            lake = lakes,
+            river = river,
+            iterate = kinwave_it,
+            tstep = kw_river_tstep,
+            Δt = Δt,
+        )
+    elseif river_routing == "local-inertial"
+        rf, nodes_at_link = initialize_shallowwater_river(
+            nc,
+            config,
+            inds_riv;
+            graph = graph_riv,
+            ldd = ldd_riv,
+            dl = riverlength,
+            width = riverwidth,
+            reservoir_index = resindex,
+            reservoir = reservoirs,
+            lake_index = lakeindex,
+            lake = lakes,
+            Δt = Δt,
+        )
+    else
+        error(
+            """An unknown "river_routing" method is specified in the TOML file ($river_routing). 
+            This should be "kinematic_wave" or "local-inertial".
+            """,
+        )
+    end
 
     # setup subdomains for the land and river kinematic wave domain, if nthreads = 1
     # subdomain is equal to the complete domain
     toposort = topological_sort_by_dfs(graph)
-    toposort_riv = topological_sort_by_dfs(graph_riv)
     index_pit_land = findall(x -> x == 5, ldd)
-    index_pit_river = findall(x -> x == 5, ldd_riv)
     subbas_order, indices_subbas, topo_subbas =
         kinwave_set_subdomains(config, graph, toposort, index_pit_land)
-    subriv_order, indices_subriv, topo_subriv =
-        kinwave_set_subdomains(config, graph_riv, toposort_riv, index_pit_river)
+    if river_routing == "kinematic-wave"
+        toposort_riv = topological_sort_by_dfs(graph_riv)
+        index_pit_river = findall(x -> x == 5, ldd_riv)
+        subriv_order, indices_subriv, topo_subriv =
+            kinwave_set_subdomains(config, graph_riv, toposort_riv, index_pit_river)
+    end
 
     modelmap = (vertical = sbm, lateral = (subsurface = ssf, land = olf, river = rf))
     indices_reverse = (
@@ -307,16 +269,26 @@ function initialize_sbm_model(config::Config)
         xl = xl,
         yl = yl,
     )
-    river = (
-        graph = graph_riv,
-        upstream_nodes = filter_upsteam_nodes(graph_riv, rf.wb_pit),
-        subdomain_order = subriv_order,
-        topo_subdomain = topo_subriv,
-        indices_subdomain = indices_subriv,
-        order = toposort_riv,
-        indices = inds_riv,
-        reverse_indices = rev_inds_riv,
-    )
+    if river_routing == "kinematic-wave"
+        river = (
+            graph = graph_riv,
+            upstream_nodes = filter_upsteam_nodes(graph_riv, rf.wb_pit),
+            subdomain_order = subriv_order,
+            topo_subdomain = topo_subriv,
+            indices_subdomain = indices_subriv,
+            order = toposort_riv,
+            indices = inds_riv,
+            reverse_indices = rev_inds_riv,
+        )
+    elseif river_routing == "local-inertial"
+        river = (
+            graph = graph_riv,
+            nodes_at_link = nodes_at_link,
+            links_at_node = adjacent_links_at_node(graph, nodes_at_link),
+            indices = inds_riv,
+            reverse_indices = rev_inds_riv,
+        )
+    end
 
     model = Model(
         config,
@@ -326,6 +298,7 @@ function initialize_sbm_model(config::Config)
         clock,
         reader,
         writer,
+        SbmModel(),
     )
 
     # read and set states in model object if reinit=false
@@ -343,7 +316,10 @@ function initialize_sbm_model(config::Config)
             )
         vertical.zi .= zi
         lateral.land.volume .= lateral.land.h .* lateral.land.width .* lateral.land.dl
-        lateral.river.volume .= lateral.river.h .* lateral.river.width .* lateral.river.dl
+        # only set active cells for river (ignore boundary conditions/ghost points)
+        lateral.river.volume[1:nriv] .=
+            lateral.river.h[1:nriv] .* lateral.river.width[1:nriv] .*
+            lateral.river.dl[1:nriv]
 
         if do_lakes
             # storage must be re-initialized after loading the state with the current
@@ -357,7 +333,8 @@ function initialize_sbm_model(config::Config)
 end
 
 "update SBM model for a single timestep"
-function update(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
+function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
+
     @unpack lateral, vertical, network, clock, config = model
     model = update_until_recharge(model)
     # exchange of recharge between vertical sbm concept and subsurface flow domain
@@ -367,16 +344,15 @@ function update(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
     # update lateral subsurface flow domain (kinematic wave)
     update(lateral.subsurface, network.land, network.frac_toriver)
     model = update_after_subsurfaceflow(model)
-    return model
 end
 
 """
-    update_until_recharge(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
+    update_until_recharge(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
 
 Update SBM model until recharge for a single timestep. This function is also accessible
 through BMI, to couple the SBM model to an external groundwater model.
 """
-function update_until_recharge(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
+function update_until_recharge(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
     @unpack lateral, vertical, network, clock, config = model
 
     inds_riv = network.index_river
@@ -407,12 +383,14 @@ function update_until_recharge(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
 end
 
 """
-    update_after_subsurfaceflow(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
+    update_after_subsurfaceflow(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
 
 Update SBM model after subsurface flow for a single timestep. This function is also 
 accessible through BMI, to couple the SBM model to an external groundwater model.
 """
-function update_after_subsurfaceflow(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,R,W}
+function update_after_subsurfaceflow(
+    model::Model{N,L,V,R,W,T},
+) where {N,L,V,R,W,T<:SbmModel}
     @unpack lateral, vertical, network, clock, config = model
 
     inds_riv = network.index_river
@@ -420,52 +398,13 @@ function update_after_subsurfaceflow(model::Model{N,L,V,R,W}) where {N,L,V<:SBM,
     # update vertical sbm concept (runoff, ustorelayerdepth and satwaterdepth)
     update_after_subsurfaceflow(
         vertical,
-        lateral.subsurface.zi .* 1000.0,
-        lateral.subsurface.exfiltwater .* 1000.0,
+        lateral.subsurface.zi * 1000.0,
+        lateral.subsurface.exfiltwater * 1000.0,
     )
 
-    # determine lateral inflow for overland flow based on vertical runoff [mm] from vertical
-    # sbm concept
-    @. lateral.land.inwater =
-        (vertical.runoff * network.land.xl * network.land.yl * 0.001) / lateral.land.Δt
-    lateral.land.qlat .= lateral.land.inwater ./ lateral.land.dl
+    ssf_toriver = lateral.subsurface.to_river[inds_riv] ./ lateral.subsurface.Δt
+    surface_routing(model, ssf_toriver = ssf_toriver)
 
-    # run kinematic wave for overland flow
-    update(lateral.land, network.land, frac_toriver = network.frac_toriver)
-
-    # determine net runoff from vertical sbm concept in river cells, and lateral inflow from
-    # overland flow lateral subsurface flow and net runoff to the river cells
-    @. lateral.river.inwater = (
-        lateral.subsurface.to_river[inds_riv] / lateral.river.Δt +
-        lateral.land.to_river[inds_riv] +
-        # net_runoff_river
-        (
-            (
-                vertical.net_runoff_river[inds_riv] *
-                network.land.xl[inds_riv] *
-                network.land.yl[inds_riv] *
-                0.001
-            ) / vertical.Δt
-        )
-    )
-    lateral.river.qlat .= lateral.river.inwater ./ lateral.river.dl
-
-    # run kinematic wave for river flow
-    # check if reservoirs or lakes are defined, the inflow from lateral subsurface and
-    # overland flow is required
-    if !isnothing(lateral.river.reservoir) || !isnothing(lateral.river.lake)
-        inflow_wb =
-            lateral.subsurface.ssf[inds_riv] ./ lateral.river.Δt .+
-            lateral.land.q_av[inds_riv]
-        update(
-            lateral.river,
-            network.river,
-            inflow_wb = inflow_wb,
-            doy = dayofyear(clock.time),
-        )
-    else
-        update(lateral.river, network.river, doy = dayofyear(clock.time))
-    end
     write_output(model)
 
     # update the clock

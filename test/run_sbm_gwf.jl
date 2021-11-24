@@ -6,7 +6,7 @@ model = Wflow.initialize_sbm_gwf_model(config)
 @unpack network = model
 
 Wflow.load_dynamic_input!(model)
-model = Wflow.update_sbm_gwf(model)
+model = Wflow.update(model)
 
 # test if the first timestep was written to the CSV file
 flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
@@ -30,7 +30,7 @@ end
 
 # run the second timestep
 Wflow.load_dynamic_input!(model)
-model = Wflow.update_sbm_gwf(model)
+model = Wflow.update(model)
 
 @testset "second timestep" begin
     sbm = model.vertical

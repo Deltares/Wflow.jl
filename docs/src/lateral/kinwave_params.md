@@ -5,21 +5,24 @@ used for river and overland flow. The parameters in bold represent model paramet
 be set through static input data (netCDF), and can be listed in the TOML configuration file
 under `[input.lateral.river]` and `[input.lateral.land]`, for river and overland flow
 respectively, to map the internal model parameter to the external netCDF variable. For river
-flow two additionally parameters can be set, `dl` (river length) and `width` (river width)
-as follows, through the TOML file:
+flow three additionally parameters can be set, `dl` (river length), `width` (river width)
+and bankfull water height `h_bankfull` as follows, through the TOML file:
 
 ```toml
 [input.lateral.river]
 length = "wflow_riverlength"
 width = "wflow_riverwidth"
+h_bankfull = "river_bankfullheight"
 ```
 [^1]: default value for Manning's roughness `n`, river = 0.036; land = 0.072
+[^2]: only applicable for river domain
 
 |  parameter  | description  	  | unit  | default |
 |:--------------- | ------------------| ----- | -------- |
+| `β`             |  constant in Manning's equation | - | - |
 | `dl`            |  length      | m     |  -      |
-| **`n`**             | Manning's roughness | s m``^{\frac{1}{3}}``| [^1] |
-| **`slope`**         |  slope       | m m``^{-1}``| - |
+| **`n`**             | Manning's roughness | s m``^{-\frac{1}{3}}``| [^1] |
+| **`sl`**         |  slope       | m m``^{-1}``| - |
 | `width`         |  width       | m          | - |
 | `q`             | discharge     | m``^3`` s``^{-1}``| - |
 | `qin`           | inflow from upstream cells | m``^3`` s``^{-1}``| - |
@@ -30,19 +33,21 @@ width = "wflow_riverwidth"
 | `volume`        | kinematic wave volume |m``^3``| - |
 | `h`             | water level | m | - |
 | `h_av`             | average water level | m | - |
-| `h_bankfull`     | bankfull water level | m | - |
+| `h_bankfull`     | bankfull water level  | m | 1.0 | 
 | `Δt`             | model time step | s | - |
 | `its`             | number of fixed iterations | - | - |
 | `alpha_pow`             | used in the power part of ``\alpha`` | - | - |
 | `alpha_term`             | term used in computation of ``\alpha`` | - | - |
 | `α`            | constant in momentum equation ``A = \alpha Q^{\beta}`` | s``^{\frac{3}{5}}`` m``^{\frac{1}{5}}`` | - |
-| `eps`            | maximum allowed change in ``\alpha`` | s``^{\frac{3}{5}}`` m``^{\frac{1}{5}}`` | - |
 | `cel`            | celerity of kinematic wave | m s``^{-1}`` | - |
 | `to_river`            | part of overland flow that flows to the river | m s``^3`` | - |
 | `rivercells`            | location of river cells (0 or 1) | - | - |
 | `wb_pit`            |  location (0 or 1) of a waterbody (wb, reservoir or lake) | - | - |
 | `reservoir_index`   |  map cell to 0 (no reservoir) or i (pick reservoir i in reservoir field) | - | - |
 | `lake_index`   |  map cell to 0 (no lake) or i (pick lake i in lake field) | - | - |
+| `reservoir` [^2]    | an array of reservoir models `SimpleReservoir` | - | - |
+| `lake` [^2]    | an array of lake models `NaturalLake` | - | - |
+| `kinwave_it`   | boolean for kinematic wave iterations | - | false |
 
 ## [Reservoirs](@id reservoir_params)
 The Table below shows the parameters (fields) of struct `SimpleReservoir`, including a

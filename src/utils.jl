@@ -142,6 +142,7 @@ function set_states(instate_path, model, state_ncnames; type = nothing)
     NCDataset(instate_path) do ds
         for (state, ncname) in state_ncnames
             sel = active_indices(network, state)
+            n = length(sel)
             dims = length(dimnames(ds[ncname]))
             # 4 dims, for example (x,y,layer,time) where dim layer is an SVector for soil layers
             if dims == 4
@@ -169,8 +170,8 @@ function set_states(instate_path, model, state_ncnames; type = nothing)
                         A = map(type, A)
                     end
                 end
-                # set state in model object
-                param(model, state) .= A
+                # set state in model object, only set active cells ([1:n]) (ignore boundary conditions/ghost points)
+                param(model, state)[1:n] .= A
             else
                 error(
                     "Number of state dims should be 3 or 4, number of dims = ",
@@ -319,8 +320,9 @@ end
 """
     detdrainwidth(ldd, xl, yl)
 
-Determines the drainaige width for a non square grid. Input `ldd` (drainage network), `xl` (length of cells in x direction),
-`yl` (length of cells in y direction). Output is drainage width.
+Determines the drainaige width for a non square grid. Input `ldd` (drainage network), `xl`
+(length of cells in x direction), `yl` (length of cells in y direction). Output is drainage
+width.
 """
 function detdrainwidth(ldd, xl, yl)
     # take into account non-square cells
@@ -334,6 +336,17 @@ function detdrainwidth(ldd, xl, yl)
     else
         slantwidth
     end
+end
+
+"""
+    det_surfacewidth(ldd, xl, yl)
+
+Determines the surface flow width. Input `dw` (drainage width), `riverwidth` and `river`
+(boolean). Output is surface flow width `sw`.
+"""
+function det_surfacewidth(dw, riverwidth, river)
+    sw = river ? max(dw - riverwidth, 0.0) : dw
+    return sw
 end
 
 # 2.5x faster power method
@@ -423,3 +436,38 @@ tosecond(x::Hour) = Float64(Dates.value(Second(x)))
 tosecond(x::Minute) = Float64(Dates.value(Second(x)))
 tosecond(x::T) where {T<:DatePeriod} = Float64(Dates.value(Second(x)))
 tosecond(x::T) where {T<:TimePeriod} = x / convert(T, Second(1))
+
+"""
+    adjacent_nodes_at_link(graph)
+
+Return the source node `src` and destination node `dst` of each link of a directed `graph`.
+"""
+function adjacent_nodes_at_link(graph)
+    links = collect(edges(graph))
+    return (src = src.(links), dst = dst.(links))
+end
+
+"""
+    adjacent_links_at_node(graph, nodes_at_link)
+
+Return the source link `src` and destination link `dst` of each node of a directed `graph`.
+"""
+function adjacent_links_at_node(graph, nodes_at_link)
+    nodes = vertices(graph)
+    src_link = Vector{Int}[]
+    dst_link = copy(src_link)
+    for i = 1:nv(graph)
+        push!(src_link, findall(isequal(nodes[i]), nodes_at_link.dst))
+        push!(dst_link, findall(isequal(nodes[i]), nodes_at_link.src))
+    end
+    return (src = src_link, dst = dst_link)
+end
+
+"Add `vertex` and `edge` to `pits` of a directed `graph`"
+function add_vertex_edge_graph!(graph, pits)
+    n = nv(graph)
+    for (i, v) in enumerate(pits)
+        add_vertex!(graph)
+        add_edge!(graph, v, n + i)
+    end
+end

@@ -232,3 +232,42 @@ function lateral_snow_transport!(snow, snowwater, slope, network)
     snowwater = accucapacitystate!(snowwater, network, snowwater .* snowflux_frac)
     return snow, snowwater
 end
+
+"""
+    local_inertial_riverflow(q0, η0, η1, hf, A, R, length, mannings_n, g, froude_limit, Δt)
+
+Local inertial approach for river flow. Returns the flow `q` between two adjacent river
+cells (nodes) for a single timestep. 
+"""
+function local_inertial_riverflow(
+    q0,
+    η0,
+    η1,
+    hf,
+    A,
+    R,
+    length,
+    mannings_n,
+    g,
+    froude_limit,
+    Δt,
+)
+
+    slope = (η1 - η0) / length
+    q = (
+        (q0 - g * A * Δt * slope) /
+        (1.0 + g * Δt * pow(mannings_n, 2.0) * abs(q0) / (pow(R, 4.0 / 3.0) * A))
+    )
+
+    # if froude number > 1.0, limit flow
+    if froude_limit
+        fr = (q / A) / pow(g * hf, 0.5)
+        if abs(fr) > 1.0 && q > 0.0
+            q = pow(g * hf, 0.5) * A
+        elseif abs(fr) > 1.0 && q < 0.0
+            q = -pow(g * hf, 0.5) * A
+        end
+    end
+
+    return q
+end

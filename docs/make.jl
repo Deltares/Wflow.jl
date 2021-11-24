@@ -12,6 +12,7 @@ pages = [
     "Model parameters" => [
         "Vertical concepts" => "vertical/parameters.md",
         "Kinematic wave" => "lateral/kinwave_params.md",
+        "Local inertial" => "lateral/local-inertial_params.md",
         "Groundwater flow" => "lateral/gwf_params.md",
         "Sediment flux" => "lateral/sediment_params.md",
     ],
@@ -28,6 +29,7 @@ pages = [
     ],
     "Lateral components" => [
         "Kinematic wave" => "lateral/kinwave.md",
+        "Local inertial" => "lateral/local-inertial.md",
         "Groundwater flow" => "lateral/gwf.md",
         "Sediment Flux" => "lateral/sediment.md",
     ],

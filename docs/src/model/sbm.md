@@ -46,6 +46,26 @@ lateral.river.lake => struct NaturalLake{T} # optional
 lateral.river.reservoir => struct SimpleReservoir{T} # optional
 ```
 
+## SBM + Local inertial river
+By default the [SBM + Kinematic wave](@ref) model (type `sbm`) uses the kinematic wave
+approach for river flow. There is also the option to use the local inertial model for
+river flow, by providing the following in the TOML file:  
+
+```toml
+[model]
+river_routing = "local-inertial"
+```
+
+Only the mapping for the river component changes, as shown below. For an explanation about
+the type parameters between curly braces after the `struct` name see [Vertical and lateral
+models](@ref). 
+
+```julia
+lateral.river => struct ShallowWaterRiver{T,R,L}
+```
+The local inertial approach is described in more detail in the section [Local inertial
+model](@ref).
+
 ## SBM + Groundwater flow
 For river and overland flow the kinematic wave approach over a D8 network is used for this
 wflow\_sbm model. For the subsurface domain, an unconfined aquifer with groundwater flow in
