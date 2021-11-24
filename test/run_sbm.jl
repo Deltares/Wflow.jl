@@ -203,7 +203,7 @@ model = Wflow.update(model)
 
 @testset "river inflow (cyclic)" begin
     @test model.lateral.river.inflow[44] ≈ 0.75
-    @test model.lateral.river.q_av[44] ≈ 10.837450989501393
+    @test model.lateral.river.q_av[44] ≈ 10.837461992381341
 end
 
 # test fixed forcing (precipitation = 2.5)
