@@ -502,7 +502,8 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
         exfiltwater .* 1000.0,
     )
 
-    ssf_toriver = -lateral.subsurface.river.flux ./ lateral.river.Δt
+    ssf_toriver = zeros(vertical.n)
+    ssf_toriver[inds_riv] = -lateral.subsurface.river.flux ./ lateral.river.Δt
     surface_routing(model, ssf_toriver = ssf_toriver)
 
     write_output(model)

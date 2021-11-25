@@ -25,6 +25,7 @@ function initialize_sbm_model(config::Config)
     kw_land_tstep = get(config.model, "kw_land_tstep", 0)
     kinwave_it = get(config.model, "kin_wave_iteration", false)::Bool
     river_routing = get(config.model, "river_routing", "kinematic-wave")
+    land_routing = get(config.model, "land_routing", "kinematic-wave")
 
     snow = get(config.model, "snow", false)::Bool
     reservoirs = do_reservoirs
@@ -177,26 +178,7 @@ function initialize_sbm_model(config::Config)
         )
     end
 
-    olf = initialize_surfaceflow_land(
-        nc,
-        config,
-        inds;
-        sl = βₗ,
-        dl = dl,
-        width = map(det_surfacewidth, dw, riverwidth, river),
-        wb_pit = pits[inds],
-        iterate = kinwave_it,
-        tstep = kw_land_tstep,
-        Δt = Δt,
-    )
-
     graph = flowgraph(ldd, inds, pcr_dir)
-
-    riverlength = riverlength_2d[inds_riv]
-    riverwidth = riverwidth_2d[inds_riv]
-    minimum(riverlength) > 0 || error("river length must be positive on river cells")
-    minimum(riverwidth) > 0 || error("river width must be positive on river cells")
-
     ldd_riv = ldd_2d[inds_riv]
     if do_pits
         ldd_riv = set_pit_ldd(pits_2d, ldd_riv, inds_riv)
@@ -207,6 +189,47 @@ function initialize_sbm_model(config::Config)
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
     frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, βₗ, n)
 
+    if land_routing == "kinematic-wave"
+        olf = initialize_surfaceflow_land(
+            nc,
+            config,
+            inds;
+            sl = βₗ,
+            dl = dl,
+            width = map(det_surfacewidth, dw, riverwidth, river),
+            wb_pit = pits[inds],
+            iterate = kinwave_it,
+            tstep = kw_land_tstep,
+            Δt = Δt,
+        )
+    elseif land_routing == "local-inertial"
+        index_river_nf = rev_inds_riv[inds] # not filtered (with zeros)
+        olf, indices = initialize_shallowwater_land(
+            nc,
+            config, 
+            inds;
+            modelsize_2d = modelsize_2d,
+            indices_reverse = rev_inds,
+            xlength = xl,
+            ylength = yl,
+            riverwidth = riverwidth,
+            graph_riv = graph_riv,
+            ldd_riv = ldd_riv,
+            inds_riv = inds_riv,
+            river = river,
+        )
+    else
+        error(
+            """An unknown "land_routing" method is specified in the TOML file ($land_routing). 
+            This should be "kinematic_wave" or "local-inertial".
+            """,
+        )
+    end
+
+    riverlength = riverlength_2d[inds_riv]
+    riverwidth = riverwidth_2d[inds_riv]
+    minimum(riverlength) > 0 || error("river length must be positive on river cells")
+    minimum(riverwidth) > 0 || error("river width must be positive on river cells")
     if river_routing == "kinematic-wave"
         rf = initialize_surfaceflow_river(
             nc,
@@ -297,18 +320,37 @@ function initialize_sbm_model(config::Config)
     # for the land domain the x and y length [m] of the grid cells are stored
     # for reservoirs and lakes indices information is available from the initialization
     # functions
-    land = (
-        graph = graph,
-        upstream_nodes = filter_upsteam_nodes(graph, olf.wb_pit),
-        subdomain_order = subbas_order,
-        topo_subdomain = topo_subbas,
-        indices_subdomain = indices_subbas,
-        order = toposort,
-        indices = inds,
-        reverse_indices = rev_inds,
-        xl = xl,
-        yl = yl,
-    )
+    if land_routing == "kinematic-wave"
+        land = (
+            graph = graph,
+            upstream_nodes = filter_upsteam_nodes(graph, pits[inds]),
+            subdomain_order = subbas_order,
+            topo_subdomain = topo_subbas,
+            indices_subdomain = indices_subbas,
+            order = toposort,
+            indices = inds,
+            reverse_indices = rev_inds,
+            xl = xl,
+            yl = yl,
+            slope = βₗ,
+        )
+    elseif land_routing == "local-inertial"
+        land = (
+            graph = graph,
+            upstream_nodes = filter_upsteam_nodes(graph, pits[inds]),
+            subdomain_order = subbas_order,
+            topo_subdomain = topo_subbas,
+            indices_subdomain = indices_subbas,
+            order = toposort,
+            indices = inds,
+            index_river = index_river_nf,
+            reverse_indices = rev_inds,
+            staggered_indices = indices,
+            xl = xl,
+            yl = yl,
+            slope = βₗ,
+        )
+    end
     if river_routing == "kinematic-wave"
         river = (
             graph = graph_riv,
@@ -423,7 +465,7 @@ function update_until_recharge(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:Sb
         lateral_snow_transport!(
             vertical.snow,
             vertical.snowwater,
-            lateral.land.sl,
+            network.land.slope,
             network.land,
         )
     end
@@ -454,7 +496,7 @@ function update_after_subsurfaceflow(
         lateral.subsurface.exfiltwater * 1000.0,
     )
 
-    ssf_toriver = lateral.subsurface.to_river[inds_riv] ./ lateral.subsurface.Δt
+    ssf_toriver = lateral.subsurface.to_river ./ lateral.subsurface.Δt
     surface_routing(model, ssf_toriver = ssf_toriver)
 
     write_output(model)

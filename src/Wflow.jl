@@ -97,7 +97,7 @@ end
 
 # different model types (used for dispatch)
 struct SbmModel end         # "sbm" type / sbm_model.jl
-struct SbmGwfModel end      # "sbm_gwf" type / sbm_gf_model.jl
+struct SbmGwfModel end      # "sbm_gwf" type / sbm_gwf_model.jl
 struct HbvModel end         # "hbv" type / hbv_model.jl
 struct SedimentModel end    # "sediment" type / sediment_model.jl
 
@@ -118,7 +118,6 @@ include("groundwater/connectivity.jl")
 include("groundwater/aquifer.jl")
 include("groundwater/boundary_conditions.jl")
 include("sbm_gwf_model.jl")
-include("sbm_swf_model.jl")
 include("utils.jl")
 include("bmi.jl")
 include("subdomains.jl")

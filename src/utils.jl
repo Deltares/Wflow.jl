@@ -503,3 +503,45 @@ function add_vertex_edge_graph!(graph, pits)
         add_edge!(graph, v, n + i)
     end
 end
+
+function set_effective_flowwidth!(
+    we_x,
+    we_y,
+    indices,
+    graph_river,
+    riverwidth,
+    ldd_riv,
+    index_river2d,
+)
+
+    toposort = topological_sort_by_dfs(graph_river)
+    for v in toposort
+        dst = outneighbors(graph_river, v)
+        isempty(dst) && continue
+        w = min(riverwidth[v], riverwidth[only(dst)])
+        dir = pcr_dir[ldd_riv[v]]
+        idx = index_river2d[v]
+        if dir == CartesianIndex(1, 1)
+            we_x[idx] = we_x[idx] - 0.5 * w
+            we_y[idx] = we_y[idx] - 0.5 * w
+        elseif dir == CartesianIndex(-1, -1)
+            we_x[indices.xd[idx]] = we_x[indices.xd[idx]] - 0.5 * w
+            we_y[indices.yd[idx]] = we_y[indices.yd[idx]] - 0.5 * w
+        elseif dir == CartesianIndex(1, 0)
+            we_x[idx] = we_x[idx] - w
+        elseif dir == CartesianIndex(0, 1)
+            we_y[idx] = we_y[idx] - w
+        elseif dir == CartesianIndex(-1, 0)
+            we_x[indices.xd[idx]] = we_x[indices.xd[idx]] - w
+        elseif dir == CartesianIndex(0, -1)
+            we_y[indices.yd[idx]] = we_x[indices.yd[idx]] - w
+        elseif dir == CartesianIndex(1, -1)
+            we_x[idx] = we_x[idx] - 0.5 * w
+            we_y[indices.yd[idx]] = we_x[indices.yd[idx]] - 0.5 * w
+        elseif dir == CartesianIndex(-1, 1)
+            we_x[indices.xd[idx]] = we_x[indices.xd[idx]] - 0.5 * w
+            we_y[idx] = we_y[idx] - 0.5 * w
+        end
+    end
+
+end
