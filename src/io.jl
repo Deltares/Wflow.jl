@@ -562,7 +562,7 @@ function prepare_reader(config)
         parts = splitpath(path_forcing)
         # use the root/drive as the dir, to support * in directory names as well
         glob_dir = parts[1]
-        glob_path = normpath(joinpath(parts[2:end]))
+        glob_path = normpath(parts[2:end]...)
     else
         tomldir = dirname(config)
         dir_input = get(config, "dir_input", ".")
