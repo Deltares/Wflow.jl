@@ -558,19 +558,23 @@ function prepare_reader(config)
     cyclic_path = input_path(config, config.input.path_static)
 
     # absolute paths are not supported, see Glob.jl#2
+    # the path separator in a glob pattern is always /
     if isabspath(path_forcing)
         parts = splitpath(path_forcing)
         # use the root/drive as the dir, to support * in directory names as well
         glob_dir = parts[1]
-        glob_path = normpath(parts[2:end])
+        glob_path = join(parts[2:end], '/')
     else
         tomldir = dirname(config)
         dir_input = get(config, "dir_input", ".")
         glob_dir = normpath(tomldir, dir_input)
-        glob_path = path_forcing
+        glob_path = replace(path_forcing, '\\'=>'/')
     end
 
     dynamic_paths = glob(glob_path, glob_dir)  # expand "data/forcing-year-*.nc"
+    if isempty(dynamic_paths)
+        error("No files found with name '$glob_path' in '$glob_dir'")
+    end
     dataset = NCDataset(dynamic_paths, aggdim = "time", deferopen = false)
 
     # check for cyclic parameters
