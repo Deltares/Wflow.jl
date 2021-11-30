@@ -177,8 +177,14 @@ end
 # test reading and setting of warm states (reinit=false)
 # modify existing config and initialize model with warm states
 @test config.model.reinit
-config["model"]["reinit"] = false
+config.model["reinit"] = false
 @test !config.model.reinit
+
+# test using an absolute path for the forcing
+@test !isabspath(config.input.path_forcing)
+abs_path_forcing = Wflow.input_path(config, config.input.path_forcing)
+config.input["path_forcing"] = abs_path_forcing
+@test isabspath(config.input.path_forcing)
 
 model = Wflow.initialize_sbm_model(config)
 Wflow.load_dynamic_input!(model)

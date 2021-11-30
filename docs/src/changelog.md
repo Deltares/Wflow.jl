@@ -18,8 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Model type `hbv`: the surface width for overland flow was not corrected with the river
   width.
-- Fixed use of absolute path for `path_forcing` in TOML file. This resulted in an error (no
-  method matching normpath(::Vector{String})).
+- Fixed use of absolute path for `path_forcing` in TOML file, which gave an error in Wflow
+  v0.5.1.
 
 ## v0.5.1 - 2021-11-24
 
