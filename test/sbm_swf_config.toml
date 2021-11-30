@@ -1,0 +1,159 @@
+# This is a TOML configuration file for Wflow.
+# Relative file paths are interpreted as being relative to this TOML file.
+# Wflow documentation https://deltares.github.io/Wflow.jl/dev/
+# TOML documentation: https://github.com/toml-lang/toml
+
+calendar = "proleptic_gregorian"
+endtime = 2000-02-01T00:00:00
+starttime = 2000-01-02T00:00:00
+time_units = "days since 1900-01-01 00:00:00"
+timestepsecs = 86400
+dir_input = "data/input"
+dir_output = "data/output"
+
+# if listed, the variable must be present in the NetCDF or error
+# if not listed, the variable can get a default value if it has one
+
+[state.vertical]
+canopystorage = "canopystorage"
+satwaterdepth = "satwaterdepth"
+snow = "snow"
+snowwater = "snowwater"
+tsoil = "tsoil"
+ustorelayerdepth = "ustorelayerdepth"
+
+[state.lateral.river]
+h = "h_river"
+h_av = "h_av_river"
+q = "q_river"
+
+[state.lateral.river.reservoir]
+volume = "volume_reservoir"
+
+[state.lateral.subsurface]
+ssf = "ssf"
+
+[state.lateral.land]
+h = "h_land"
+h_av = "h_av_land"
+qx = "qx_land"
+qy = "qy_land"
+
+[input]
+path_forcing = "forcing-moselle.nc"
+path_static = "staticmaps-moselle.nc"
+
+# these are not directly part of the model
+gauges = "wflow_gauges_grdc"
+ldd = "wflow_ldd"
+river_location = "wflow_river"
+subcatchment = "wflow_subcatch"
+
+# specify the internal IDs of the parameters which vary over time
+# the external name mapping needs to be below together with the other mappings
+forcing = [
+  "vertical.precipitation",
+  "vertical.temperature",
+  "vertical.potential_evaporation",
+]
+
+cyclic = ["vertical.leaf_area_index"]
+
+[input.vertical]
+c = "c"
+cf_soil = "cf_soil"
+cfmax = "Cfmax"
+e_r = "EoverR"
+f = "f"
+infiltcappath = "InfiltCapPath"
+infiltcapsoil = "InfiltCapSoil"
+kext = "Kext"
+kv_0 = "KsatVer"
+leaf_area_index = "LAI"
+maxleakage = "MaxLeakage"
+pathfrac = "PathFrac"
+potential_evaporation = "pet"
+precipitation = "precip"
+rootdistpar = "rootdistpar"
+rootingdepth = "RootingDepth"
+soilthickness = "SoilThickness"
+specific_leaf = "Sl"
+storage_wood = "Swood"
+temperature = "temp"
+tt = "TT"
+tti = "TTI"
+ttm = "TTM"
+water_holding_capacity = "WHC"
+waterfrac = "WaterFrac"
+theta_r = "thetaR"
+theta_s = "thetaS"
+
+[input.lateral.river]
+length = "wflow_riverlength"
+n = "N_River"
+slope = "RiverSlope"
+width = "wflow_riverwidth"
+bankfull_elevation = "RiverZ"
+bankfull_depth = "RiverDepth"
+
+[input.lateral.river.reservoir]
+area = "ResSimpleArea"
+areas = "wflow_reservoirareas"
+demand = "ResDemand"
+locs = "wflow_reservoirlocs"
+maxrelease = "ResMaxRelease"
+maxvolume = "ResMaxVolume"
+targetfullfrac = "ResTargetFullFrac"
+targetminfrac = "ResTargetMinFrac"
+[input.lateral.subsurface]
+ksathorfrac = "KsatHorFrac"
+
+[input.lateral.land]
+n = "N"
+slope = "Slope"
+elevation = "FloodplainZ"
+
+[model]
+kin_wave_iteration = true
+masswasting = true
+reinit = true
+snow = true
+thicknesslayers = [100, 300, 800]
+min_streamorder = 3
+river_routing = "local-inertial"
+land_routing = "local-inertial"
+type = "sbm"
+
+[output]
+path = "output_moselle_swf.nc"
+
+[output.vertical]
+canopystorage = "canopystorage"
+satwaterdepth = "satwaterdepth"
+snow = "snow"
+snowwater = "snowwater"
+tsoil = "tsoil"
+ustorelayerdepth = "ustorelayerdepth"
+
+[output.lateral.river]
+h = "h_river"
+h_av = "hav_river"
+q = "q_river"
+q_av = "qav_river"
+
+[output.lateral.subsurface]
+ssf = "ssf"
+
+[output.lateral.land]
+h = "h_land"
+qx = "qx_land"
+qy = "qy_land"
+
+[csv]
+path = "output_moselle_swf.csv"
+
+[[csv.column]]
+header = "Q"
+map = "gauges"
+parameter = "lateral.river.q_av"
+

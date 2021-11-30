@@ -413,8 +413,8 @@ end
 """
     fraction_runoff_toriver(graph, ldd, index_river, slope, n)
 
-Determine ratio `frac` between `slope` river cell `index_river` and `slope` of each upstream neighbor (based on directed acyclic graph
-`graph`).
+Determine ratio `frac` between `slope` river cell `index_river` and `slope` of each upstream
+neighbor (based on directed acyclic graph `graph`).
 """
 function fraction_runoff_toriver(graph, ldd, index_river, slope, n)
     frac = zeros(n)
@@ -504,44 +504,54 @@ function add_vertex_edge_graph!(graph, pits)
     end
 end
 
+"""
+    set_effective_flowwidth!(we_x, we_y, indices, graph_riv, riverwidth, ldd_riv, inds_rev_riv)
+
+For river cells (D8 flow direction) in a staggered grid the effective flow width at cell
+edges (floodplain) 'we_x' in the x-direction and `we_y` in the y-direction is corrected by
+subtracting the river width `riverwidth` from the cell edges. For diagonal directions, the
+`riverwidth`` is split between the two adjacent cell edges. A cell edge at linear index
+`idx` is defined as the edge between node `idx` and the adjacent node (+ CartesianIndex(1,
+0)) for x and (+ CartesianIndex(0, 1)) for y.
+"""
 function set_effective_flowwidth!(
     we_x,
     we_y,
     indices,
-    graph_river,
+    graph_riv,
     riverwidth,
     ldd_riv,
-    index_river2d,
+    inds_rev_riv,
 )
 
-    toposort = topological_sort_by_dfs(graph_river)
+    toposort = topological_sort_by_dfs(graph_riv)
     for v in toposort
-        dst = outneighbors(graph_river, v)
+        dst = outneighbors(graph_riv, v)
         isempty(dst) && continue
         w = min(riverwidth[v], riverwidth[only(dst)])
         dir = pcr_dir[ldd_riv[v]]
-        idx = index_river2d[v]
+        idx = inds_rev_riv[v]
+        # loop over river D8 directions
         if dir == CartesianIndex(1, 1)
-            we_x[idx] = we_x[idx] - 0.5 * w
-            we_y[idx] = we_y[idx] - 0.5 * w
+            we_x[idx] = max(we_x[idx] - 0.5 * w, 0.0)
+            we_y[idx] = max(we_y[idx] - 0.5 * w, 0.0)
         elseif dir == CartesianIndex(-1, -1)
-            we_x[indices.xd[idx]] = we_x[indices.xd[idx]] - 0.5 * w
-            we_y[indices.yd[idx]] = we_y[indices.yd[idx]] - 0.5 * w
+            we_y[indices.xd[idx]] = max(we_y[indices.xd[idx]] - 0.5 * w, 0.0)
+            we_x[indices.yd[idx]] = max(we_x[indices.yd[idx]] - 0.5 * w, 0.0)
         elseif dir == CartesianIndex(1, 0)
-            we_x[idx] = we_x[idx] - w
+            we_y[idx] = max(we_y[idx] - w, 0.0)
         elseif dir == CartesianIndex(0, 1)
-            we_y[idx] = we_y[idx] - w
+            we_x[idx] = max(we_x[idx] - w, 0.0)
         elseif dir == CartesianIndex(-1, 0)
-            we_x[indices.xd[idx]] = we_x[indices.xd[idx]] - w
+            we_y[indices.xd[idx]] = max(we_y[indices.xd[idx]] - w, 0.0)
         elseif dir == CartesianIndex(0, -1)
-            we_y[indices.yd[idx]] = we_x[indices.yd[idx]] - w
+            we_x[indices.yd[idx]] = max(we_x[indices.yd[idx]] - w, 0.0)
         elseif dir == CartesianIndex(1, -1)
-            we_x[idx] = we_x[idx] - 0.5 * w
-            we_y[indices.yd[idx]] = we_x[indices.yd[idx]] - 0.5 * w
+            we_y[idx] = max(we_y[idx] - 0.5 * w, 0.0)
+            we_x[indices.yd[idx]] = max(we_x[indices.yd[idx]] - 0.5 * w, 0.0)
         elseif dir == CartesianIndex(-1, 1)
-            we_x[indices.xd[idx]] = we_x[indices.xd[idx]] - 0.5 * w
-            we_y[idx] = we_y[idx] - 0.5 * w
+            we_y[indices.xd[idx]] = max(we_y[indices.xd[idx]] - 0.5 * w, 0.0)
+            we_x[idx] = max(we_x[idx] - 0.5 * w, 0.0)
         end
     end
-
 end

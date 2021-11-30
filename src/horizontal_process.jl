@@ -272,6 +272,12 @@ function local_inertial_riverflow(
     return q
 end
 
+"""
+    local_inertial_flow(θ, q0, qd, qu, η0, η1, hf, width, length, mannings_n, g, froude_limit, Δt)
+
+Local inertial approach for overland flow. Returns the flow `q` between two adjacent cells
+(nodes) for a single timestep. Algorithm is based on de Almeida et al. (2012).
+"""
 function local_inertial_flow(
     θ,
     q0,
@@ -284,7 +290,7 @@ function local_inertial_flow(
     length,
     mannings_n,
     g,
-    froude,
+    froude_limit,
     Δt,
 )
 
@@ -293,7 +299,8 @@ function local_inertial_flow(
         ((θ * q0 + 0.5 * (1.0 - θ) * (qu + qd)) - g * hf * width * Δt * slope) /
         (1.0 + g * Δt * (mannings_n^2.0) * abs(q0) / (hf^(7.0 / 3.0) * width))
     )
-    if froude
+    # if froude number > 1.0, limit flow
+    if froude_limit
         fr = (q / width / hf) / pow(g * hf, 0.5)
         if abs(fr) > 1.0 && q > 0.0
             q = hf * (pow(g * hf, 0.5)) * width

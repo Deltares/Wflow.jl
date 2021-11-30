@@ -206,7 +206,7 @@ function initialize_sbm_model(config::Config)
         index_river_nf = rev_inds_riv[inds] # not filtered (with zeros)
         olf, indices = initialize_shallowwater_land(
             nc,
-            config, 
+            config,
             inds;
             modelsize_2d = modelsize_2d,
             indices_reverse = rev_inds,
@@ -217,6 +217,7 @@ function initialize_sbm_model(config::Config)
             ldd_riv = ldd_riv,
             inds_riv = inds_riv,
             river = river,
+            Δt = Δt,
         )
     else
         error(
@@ -389,7 +390,7 @@ function initialize_sbm_model(config::Config)
         @info "Set initial conditions from state file `$instate_path`."
         state_ncnames = ncnames(config.state)
         set_states(instate_path, model, state_ncnames; type = Float)
-        @unpack lateral, vertical = model
+        @unpack lateral, vertical, network = model
         # update zi for vertical sbm and kinematic wave volume for river and land domain
         zi =
             max.(
@@ -406,6 +407,27 @@ function initialize_sbm_model(config::Config)
             end
         end
         lateral.land.volume .= lateral.land.h .* lateral.land.width .* lateral.land.dl
+        if land_routing == "kinematic-wave"
+            lateral.land.volume .= lateral.land.h .* lateral.land.width .* lateral.land.dl
+        elseif land_routing == "local-inertial"
+            for i = 1:n
+                if lateral.land.rivercells[i]
+                    j = network.land.index_river[i]
+                    h = max(lateral.land.h[i] - lateral.river.bankfull_depth[j], 0.0)
+                    if h > 0.0
+                        lateral.land.volume[i] =
+                            h * lateral.land.xl[i] * lateral.land.yl[i] +
+                            lateral.river.bankfull_volume[j]
+                    else
+                        lateral.land.volume[i] =
+                            lateral.land.h[i] * lateral.river.width[j] * lateral.river.dl[j]
+                    end
+                else
+                    lateral.land.volume[i] =
+                        lateral.land.h[i] * lateral.land.xl[i] * lateral.land.yl[i]
+                end
+            end
+        end
         # only set active cells for river (ignore boundary conditions/ghost points)
         lateral.river.volume[1:nriv] .=
             lateral.river.h[1:nriv] .* lateral.river.width[1:nriv] .*
@@ -486,8 +508,6 @@ function update_after_subsurfaceflow(
     model::Model{N,L,V,R,W,T},
 ) where {N,L,V,R,W,T<:SbmModel}
     @unpack lateral, vertical, network, clock, config = model
-
-    inds_riv = network.index_river
 
     # update vertical sbm concept (runoff, ustorelayerdepth and satwaterdepth)
     update_after_subsurfaceflow(
