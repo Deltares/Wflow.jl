@@ -1381,7 +1381,7 @@ function internal_dim_name(name::Symbol)
         return :x
     elseif name in (:y, :lat, :latitude)
         return :y
-    elseif name in (:time, :layer)
+    elseif name in (:time, :layer) #, :classes
         return name
     else
         error("Unknown dimension $name")
