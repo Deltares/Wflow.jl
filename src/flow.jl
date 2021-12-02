@@ -773,8 +773,6 @@ const dirs = ["yd", "xd", "xu", "yu"]
     error::Vector{T} | "m3"             # error volume
     runoff::Vector{T} | "m3 s-1"        # runoff from hydrological model 
     h::Vector{T} | "m"                  # water depth of cell
-    slp_x::Vector{T} | "-"              # water surface slope between cells in x direction
-    slp_y::Vector{T} | "-"              # water surface slope between cells in y direction
     z::Vector{T} | "m"                  # elevation of cell
     froude_limit::Bool | "-"            # if true a check is performed if froude number > 1.0 (algorithm is modified)
     rivercells::Vector{Bool} | "-"      # river cells
@@ -884,8 +882,6 @@ function initialize_shallowwater_land(
         runoff = zeros(n),
         h = zeros(n),
         h_av = zeros(n),
-        slp_x = zeros(n),
-        slp_y = zeros(n),
         z = elevation,
         froude_limit = froude_limit,
         rivercells = river,
