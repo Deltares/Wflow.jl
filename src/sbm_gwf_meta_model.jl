@@ -240,7 +240,7 @@ function initialize_sbm_gwf_meta_model(config::Config)
 
         n_uwd = length(inds_uwd)
         index_uwd = findall(x-> x==true, uwd_2d[inds])
-        uwd = River(
+        uwds = River(
             fill(mv, n_uwd),
             cond_uwd,
             cond_uwd,
@@ -248,6 +248,9 @@ function initialize_sbm_gwf_meta_model(config::Config)
             fill(mv, n_uwd),
             index_uwd,
         )
+
+        uwd = (indices = inds_uwd, reverse_indices = rev_inds_uwd)
+
     end
 
     # drain boundaries of unconfined aquifer (optional)
@@ -341,9 +344,10 @@ function initialize_sbm_gwf_meta_model(config::Config)
         drain_s = (indices = inds_drain_s, reverse_indices = rev_inds_drain_s)
 
         if do_underwaterdrains
-            aquifer_boundaries = AquiferBoundaryCondition[recharge, river_h, river_p, river_s, river_t, drains_d, drains_p, drains_s, uwd]
+            aquifer_boundaries = AquiferBoundaryCondition[recharge, river_h, river_p, river_s, river_t, drains_d, drains_p, drains_s, uwds]
         else
             aquifer_boundaries = AquiferBoundaryCondition[recharge, river_h, river_p, river_s, river_t, drains_d, drains_p, drains_s]
+            uwd = ()
         end
     else
         aquifer_boundaries = AquiferBoundaryCondition[recharge, river_h, river_p, river_s, river_t]
