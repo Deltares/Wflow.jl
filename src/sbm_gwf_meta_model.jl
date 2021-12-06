@@ -23,6 +23,7 @@ function initialize_sbm_gwf_meta_model(config::Config)
     reinit = get(config.model, "reinit", true)::Bool
     do_drains = get(config.model, "drains", false)::Bool
     do_constanthead = get(config.model, "constanthead", false)::Bool
+    do_underwaterdrains = get(config.model, "underwaterdrains", false)::Bool
 
     nc = NCDataset(static_path)
 
@@ -215,6 +216,39 @@ function initialize_sbm_gwf_meta_model(config::Config)
     index_river = unique(index_river)
     initial_head[index_river] = altitude[index_river]
 
+    # under water drains (uwd)
+    if do_underwaterdrains
+        uwd_2d = ncread(
+            nc,
+            param(config, "input.lateral.subsurface.uwd_location");
+            type = Bool,
+            fill = false,
+        )
+        inds_uwd, rev_inds_uwd = active_indices(uwd_2d, false)
+        cond_uwd = ncread(
+            nc,
+            param(config, "input.lateral.subsurface.uwd_conductance", nothing);
+            sel = inds_uwd,
+            type = Float,
+        )
+        elevation_uwd = ncread(
+            nc,     
+            param(config, "input.lateral.subsurface.uwd_elevation", nothing);
+            sel = inds_uwd,
+            type = Float,
+        )
+
+        n_uwd = length(inds_uwd)
+        index_uwd = findall(x-> x==true, uwd_2d[inds])
+        uwd = River(
+            fill(mv, n_uwd),
+            cond_uwd,
+            cond_uwd,
+            elevation_uwd,
+            fill(mv, n_uwd),
+            index_uwd,
+        )
+
     # drain boundaries of unconfined aquifer (optional)
     if do_drains
         # ditch drains (d)
@@ -304,18 +338,37 @@ function initialize_sbm_gwf_meta_model(config::Config)
         drain_d = (indices = inds_drain_d, reverse_indices = rev_inds_drain_d)
         drain_p = (indices = inds_drain_p, reverse_indices = rev_inds_drain_p)
         drain_s = (indices = inds_drain_s, reverse_indices = rev_inds_drain_s)
-        aquifer_boundaries = AquiferBoundaryCondition[recharge, river_h, river_p, river_s, river_t, drains_d, drains_p, drains_s]
+
+        if do_underwaterdrains
+            aquifer_boundaries = AquiferBoundaryCondition[recharge, river_h, river_p, river_s, river_t, drains_d, drains_p, drains_s, uwd]
+        else
+            aquifer_boundaries = AquiferBoundaryCondition[recharge, river_h, river_p, river_s, river_t, drains_d, drains_p, drains_s]
+        end
     else
         aquifer_boundaries = AquiferBoundaryCondition[recharge, river_h, river_p, river_s, river_t]
         drain_d = ()
         drain_p = ()
         drain_s = ()
+        uwd = ()
     end
 
     gwf = GroundwaterFlow(aquifer, connectivity, constant_head, aquifer_boundaries)
 
     # map GroundwaterFlow and its boundaries
-    if do_drains
+    if do_drains && do_underwaterdrains
+        subsurface_map = (
+            flow = gwf,
+            recharge = gwf.boundaries[1],
+            river_h = gwf.boundaries[2],
+            river_p = gwf.boundaries[3],
+            river_s = gwf.boundaries[4],
+            river_t = gwf.boundaries[5],
+            drain_d = gwf.boundaries[6],
+            drain_p = gwf.boundaries[7],
+            drain_s = gwf.boundaries[8],
+            uwd = gwf.boundaries[9]
+        )
+    elseif do_drains
         subsurface_map = (
             flow = gwf,
             recharge = gwf.boundaries[1],
@@ -349,6 +402,7 @@ function initialize_sbm_gwf_meta_model(config::Config)
         drain_d = isempty(drain_d) ? nothing : rev_inds_drain_d,
         drain_p = isempty(drain_p) ? nothing : rev_inds_drain_p,
         drain_s = isempty(drain_s) ? nothing : rev_inds_drain_s,
+        uwd = isempty(uwd) ? nothing : rev_inds_uwd,
 
     )
     writer = prepare_writer(
@@ -389,7 +443,7 @@ function initialize_sbm_gwf_meta_model(config::Config)
 
     model = Model(
         config,
-        (; land, river_h, river_p, river_s, river_t, drain_d, drain_p, drain_s),
+        (; land, river_h, river_p, river_s, river_t, drain_d, drain_p, drain_s, uwd),
         (; subsurface = subsurface_map),
         sbm,
         clock,

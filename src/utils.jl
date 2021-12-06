@@ -83,6 +83,8 @@ function active_indices(network, key::Tuple)
         return network.drain_p.indices
     elseif :drain_s in key
         return network.drain_s.indices
+    elseif :uwd in key
+        return network.uwd.indices
     else
         return network.land.indices
     end
