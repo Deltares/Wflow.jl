@@ -216,40 +216,40 @@ function initialize_sbm_gwf_meta_model(config::Config)
     index_river = unique(index_river)
     initial_head[index_river] = altitude[index_river]
 
-    # under water drains (uwd)
+    # under water drains
     if do_underwaterdrains
-        uwd_2d = ncread(
+        underwaterdrain_2d = ncread(
             nc,
-            param(config, "input.lateral.subsurface.uwd_location");
+            param(config, "input.lateral.subsurface.underwaterdrain_location");
             type = Bool,
             fill = false,
         )
-        inds_uwd, rev_inds_uwd = active_indices(uwd_2d, false)
-        cond_uwd = ncread(
+        inds_underwaterdrain, rev_inds_underwaterdrain = active_indices(underwaterdrain_2d, false)
+        cond_underwaterdrain = ncread(
             nc,
-            param(config, "input.lateral.subsurface.uwd_conductance", nothing);
-            sel = inds_uwd,
+            param(config, "input.lateral.subsurface.underwaterdrain_conductance", nothing);
+            sel = inds_underwaterdrain,
             type = Float,
         )
-        elevation_uwd = ncread(
+        elevation_underwaterdrain = ncread(
             nc,     
-            param(config, "input.lateral.subsurface.uwd_elevation", nothing);
-            sel = inds_uwd,
+            param(config, "input.lateral.subsurface.underwaterdrain_elevation", nothing);
+            sel = inds_underwaterdrain,
             type = Float,
         )
 
-        n_uwd = length(inds_uwd)
-        index_uwd = findall(x-> x==true, uwd_2d[inds])
-        uwds = River(
-            fill(mv, n_uwd),
-            cond_uwd,
-            cond_uwd,
-            elevation_uwd,
-            fill(mv, n_uwd),
-            index_uwd,
+        n_underwaterdrain = length(inds_underwaterdrain)
+        index_underwaterdrain = findall(x-> x==true, underwaterdrain_2d[inds])
+        underwaterdrains = River(
+            fill(mv, n_underwaterdrain),
+            cond_underwaterdrain,
+            cond_underwaterdrain,
+            elevation_underwaterdrain,
+            fill(mv, n_underwaterdrain),
+            index_underwaterdrain,
         )
 
-        uwd = (indices = inds_uwd, reverse_indices = rev_inds_uwd)
+        underwaterdrain = (indices = inds_underwaterdrain, reverse_indices = rev_inds_underwaterdrain)
 
     end
 
@@ -344,17 +344,17 @@ function initialize_sbm_gwf_meta_model(config::Config)
         drain_s = (indices = inds_drain_s, reverse_indices = rev_inds_drain_s)
 
         if do_underwaterdrains
-            aquifer_boundaries = AquiferBoundaryCondition[recharge, river_h, river_p, river_s, river_t, drains_d, drains_p, drains_s, uwds]
+            aquifer_boundaries = AquiferBoundaryCondition[recharge, river_h, river_p, river_s, river_t, drains_d, drains_p, drains_s, underwaterdrains]
         else
             aquifer_boundaries = AquiferBoundaryCondition[recharge, river_h, river_p, river_s, river_t, drains_d, drains_p, drains_s]
-            uwd = ()
+            underwaterdrain = ()
         end
     else
         aquifer_boundaries = AquiferBoundaryCondition[recharge, river_h, river_p, river_s, river_t]
         drain_d = ()
         drain_p = ()
         drain_s = ()
-        uwd = ()
+        underwaterdrain = ()
     end
 
     gwf = GroundwaterFlow(aquifer, connectivity, constant_head, aquifer_boundaries)
@@ -371,7 +371,7 @@ function initialize_sbm_gwf_meta_model(config::Config)
             drain_d = gwf.boundaries[6],
             drain_p = gwf.boundaries[7],
             drain_s = gwf.boundaries[8],
-            uwd = gwf.boundaries[9]
+            underwaterdrain = gwf.boundaries[9]
         )
     elseif do_drains
         subsurface_map = (
@@ -407,7 +407,7 @@ function initialize_sbm_gwf_meta_model(config::Config)
         drain_d = isempty(drain_d) ? nothing : rev_inds_drain_d,
         drain_p = isempty(drain_p) ? nothing : rev_inds_drain_p,
         drain_s = isempty(drain_s) ? nothing : rev_inds_drain_s,
-        uwd = isempty(uwd) ? nothing : rev_inds_uwd,
+        underwaterdrain = isempty(underwaterdrain) ? nothing : rev_inds_underwaterdrain,
 
     )
     writer = prepare_writer(
@@ -448,7 +448,7 @@ function initialize_sbm_gwf_meta_model(config::Config)
 
     model = Model(
         config,
-        (; land, river_h, river_p, river_s, river_t, drain_d, drain_p, drain_s, uwd),
+        (; land, river_h, river_p, river_s, river_t, drain_d, drain_p, drain_s, underwaterdrain),
         (; subsurface = subsurface_map),
         sbm,
         clock,
