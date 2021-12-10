@@ -101,7 +101,7 @@ end
 "Extract NetCDF variable name `ncname` from `var` (type `String` or `Config`). If `var` has 
 type `Config`, either `scale` and `offset` are expected (with `ncname`) or a `value` (uniform
 value), these are stored as part of `NamedTuple` `modifier`"
-function ncvar_name_modifier(var; verbose = true)
+function ncvar_name_modifier(var)
     ncname = nothing
     modifier = (scale = 1.0, offset = 0.0, value = nothing)
     if isa(var, Config)
@@ -112,9 +112,7 @@ function ncvar_name_modifier(var; verbose = true)
             scale = param(var, "scale", 1.0)
             offset = param(var, "offset", 0.0)
             modifier = (scale = scale, offset = offset, value = nothing)
-            if verbose
-                @info "NetCDF parameter $ncname is modified with scale $scale and offset $offset"
-            end
+            @info "NetCDF parameter \"$ncname\" is modified with scale $scale and offset $offset"
         elseif haskey(var, "value")
             modifier = (scale = 1.0, offset = 0.0, value = param(var, "value"))
         else
@@ -352,13 +350,7 @@ function create_tracked_netcdf(path)
 end
 
 "prepare an output dataset for scalar data"
-function setup_scalar_netcdf(
-    path,
-    ncvars,
-    calendar,
-    time_units,
-    float_type = Float32,
-)
+function setup_scalar_netcdf(path, ncvars, calendar, time_units, float_type = Float32)
     ds = create_tracked_netcdf(path)
     defDim(ds, "time", Inf)  # unlimited
     defVar(
@@ -557,6 +549,8 @@ function prepare_reader(config)
     path_forcing = config.input.path_forcing
     cyclic_path = input_path(config, config.input.path_static)
 
+    @info "Cyclic parameters are provided by file $cyclic_path"
+
     # absolute paths are not supported, see Glob.jl#2
     # the path separator in a glob pattern is always /
     if isabspath(path_forcing)
@@ -568,8 +562,9 @@ function prepare_reader(config)
         tomldir = dirname(config)
         dir_input = get(config, "dir_input", ".")
         glob_dir = normpath(tomldir, dir_input)
-        glob_path = replace(path_forcing, '\\'=>'/')
+        glob_path = replace(path_forcing, '\\' => '/')
     end
+    @info "Forcing parameters are provided by file $path_forcing in folder $glob_dir"
 
     dynamic_paths = glob(glob_path, glob_dir)  # expand "data/forcing-year-*.nc"
     if isempty(dynamic_paths)
@@ -598,6 +593,8 @@ function prepare_reader(config)
         ncname, mod = ncvar_name_modifier(param(config.input, fields))
         forcing_parameters[fields] =
             (name = ncname, scale = mod.scale, offset = mod.offset, value = mod.value)
+
+        @info "NetCDF variable \"$ncname\" is mapped as forcing parameter to \"$par\""
     end
 
     # create map from internal location to NetCDF variable name for cyclic parameters
@@ -608,6 +605,8 @@ function prepare_reader(config)
             ncname, mod = ncvar_name_modifier(param(config.input, fields))
             cyclic_parameters[fields] =
                 (name = ncname, scale = mod.scale, offset = mod.offset)
+
+            @info "NetCDF variable \"$ncname\" file is mapped as cyclic parameter to \"$par\""
         end
     else
         cyclic_parameters = Dict{Tuple{Symbol,Vararg{Symbol}},NamedTuple}()
@@ -637,7 +636,9 @@ end
 function locations_map(ds, mapname, config)
     map_2d = ncread(
         ds,
-        param(config.input, mapname);
+        config.input,
+        mapname;
+        optional = false,
         type = Union{Int,Missing},
         allow_missing = true,
     )
@@ -1073,7 +1074,9 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
         f = reducerfunction(reducer_name)
         map_2d = ncread(
             dataset,
-            param(config.input, mapname);
+            config.input,
+            mapname;
+            optional = false,
             type = Union{Int,Missing},
             allow_missing = true,
         )

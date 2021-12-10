@@ -29,7 +29,9 @@ function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, Δt)
     # note that these locations are only the reservoir outlet pixels
     reslocs = ncread(
         nc,
-        param(config, "input.lateral.river.reservoir.locs");
+        config.input,
+        "lateral.river.reservoir.locs";
+        optional = false,
         sel = inds_riv,
         type = Int,
         fill = 0,
@@ -38,7 +40,9 @@ function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, Δt)
     # this holds the same ids as reslocs, but covers the entire reservoir
     rescoverage_2d = ncread(
         nc,
-        param(config, "input.lateral.river.reservoir.areas");
+        config.input,
+        "lateral.river.reservoir.areas";
+        optional = false,
         allow_missing = true,
     )
     # for each reservoir, a list of 2D indices, needed for getting the mean precipitation
@@ -69,42 +73,54 @@ function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, Δt)
 
     resdemand = ncread(
         nc,
-        param(config, "input.lateral.river.reservoir.demand");
+        config.input,
+        "lateral.river.reservoir.demand";
+        optional = false,
         sel = inds_res,
         type = Float,
         fill = 0,
     )
     resmaxrelease = ncread(
         nc,
-        param(config, "input.lateral.river.reservoir.maxrelease");
+        config.input,
+        "lateral.river.reservoir.maxrelease";
+        optional = false,
         sel = inds_res,
         type = Float,
         fill = 0,
     )
     resmaxvolume = ncread(
         nc,
-        param(config, "input.lateral.river.reservoir.maxvolume");
+        config.input,
+        "lateral.river.reservoir.maxvolume";
+        optional = false,
         sel = inds_res,
         type = Float,
         fill = 0,
     )
     resarea = ncread(
         nc,
-        param(config, "input.lateral.river.reservoir.area");
+        config.input,
+        "lateral.river.reservoir.area";
+        optional = false,
         sel = inds_res,
         type = Float,
         fill = 0,
     )
     res_targetfullfrac = ncread(
         nc,
-        param(config, "input.lateral.river.reservoir.targetfullfrac");
+        config.input,
+        "lateral.river.reservoir.targetfullfrac";
+        optional = false,
         sel = inds_res,
         type = Float,
         fill = 0,
     )
     res_targetminfrac = ncread(
         nc,
-        param(config, "input.lateral.river.reservoir.targetminfrac");
+        config.input,
+        "lateral.river.reservoir.targetminfrac";
+        optional = false,
         sel = inds_res,
         type = Float,
         fill = 0,
@@ -115,6 +131,7 @@ function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, Δt)
     pits[inds_res] .= true
 
     n = length(resarea)
+    @info "Reading a total of $n reservoir locations"
     reservoirs = SimpleReservoir{Float}(
         Δt = Δt,
         demand = resdemand,
@@ -215,13 +232,24 @@ function initialize_natural_lake(config, nc, inds_riv, nriv, pits, Δt)
     # read only lake data if lakes true
     # allow lakes only in river cells
     # note that these locations are only the lake outlet pixels
-    lakelocs_2d =
-        ncread(nc, param(config, "input.lateral.river.lake.locs"); type = Int, fill = 0)
+    lakelocs_2d = ncread(
+        nc,
+        config.input,
+        "lateral.river.lake.locs";
+        optional = false,
+        type = Int,
+        fill = 0,
+    )
     lakelocs = lakelocs_2d[inds_riv]
 
     # this holds the same ids as lakelocs, but covers the entire lake
-    lakecoverage_2d =
-        ncread(nc, param(config, "input.lateral.river.lake.areas"); allow_missing = true)
+    lakecoverage_2d = ncread(
+        nc,
+        config.input,
+        "lateral.river.lake.areas";
+        optional = false,
+        allow_missing = true,
+    )
     # for each lake, a list of 2D indices, needed for getting the mean precipitation
     inds_lake_cov = Vector{CartesianIndex{2}}[]
 
@@ -250,35 +278,44 @@ function initialize_natural_lake(config, nc, inds_riv, nriv, pits, Δt)
 
     lakearea = ncread(
         nc,
-        param(config, "input.lateral.river.lake.area");
+        config.input,
+        "lateral.river.lake.area";
+        optional = false,
         sel = inds_lake,
         type = Float,
         fill = 0,
     )
     lake_b = ncread(
         nc,
-        param(config, "input.lateral.river.lake.b");
+        config.input,
+        "lateral.river.lake.b";
+        optional = false,
         sel = inds_lake,
         type = Float,
         fill = 0,
     )
     lake_e = ncread(
         nc,
-        param(config, "input.lateral.river.lake.e");
+        config.input,
+        "lateral.river.lake.e";
+        optional = false,
         sel = inds_lake,
         type = Float,
         fill = 0,
     )
     lake_threshold = ncread(
         nc,
-        param(config, "input.lateral.river.lake.threshold");
+        config.input,
+        "lateral.river.lake.threshold";
+        optional = false,
         sel = inds_lake,
         type = Float,
         fill = 0,
     )
     linked_lakelocs = ncread(
         nc,
-        param(config, "input.lateral.river.lake.linkedlakelocs", nothing);
+        config.input,
+        "lateral.river.lake.linkedlakelocs";
         sel = inds_lake,
         defaults = 0,
         type = Int,
@@ -286,21 +323,27 @@ function initialize_natural_lake(config, nc, inds_riv, nriv, pits, Δt)
     )
     lake_storfunc = ncread(
         nc,
-        param(config, "input.lateral.river.lake.storfunc");
+        config.input,
+        "lateral.river.lake.storfunc";
+        optional = false,
         sel = inds_lake,
         type = Int,
         fill = 0,
     )
     lake_outflowfunc = ncread(
         nc,
-        param(config, "input.lateral.river.lake.outflowfunc");
+        config.input,
+        "lateral.river.lake.outflowfunc";
+        optional = false,
         sel = inds_lake,
         type = Int,
         fill = 0,
     )
     lake_waterlevel = ncread(
         nc,
-        param(config, "input.lateral.river.lake.waterlevel");
+        config.input,
+        "lateral.river.lake.waterlevel";
+        optional = false,
         sel = inds_lake,
         type = Float,
         fill = 0,
@@ -314,6 +357,8 @@ function initialize_natural_lake(config, nc, inds_riv, nriv, pits, Δt)
     # length of all lake cells. To do that we need to introduce a mapping.
     n_lakes = length(inds_lake)
     lakelocs = lakelocs_2d[inds_lake]
+
+    @info "Reading a total of $n_lakes lake locations"
 
     sh = Vector{Union{SH,Missing}}(missing, n_lakes)
     hq = Vector{Union{HQ,Missing}}(missing, n_lakes)

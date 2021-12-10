@@ -183,25 +183,34 @@ function set_states(instate_path, model, state_ncnames; type = nothing)
 end
 
 """
-    ncread(nc, var; <keyword arguments>)
+    ncread(nc, config::Config, parameter::AbstractString; <keyword arguments>)
 
-Read `var` from NetCDF file `nc`, type `String` or type `Config` are allowed.  Supports various 
-keyword arguments to get selections of data in desired types, with or without missing values.
+Read a NetCDF variable `var` from file `nc`, based on `config` (parsed TOML file) and the
+model `parameter` specified in the TOML configuration file. Supports various keyword
+arguments to get selections of data in desired types, with or without missing values.
 
 # Arguments
-- `sel=nothing`: a selection of indices, such as a `Vector{CartesianIndex}` of active cells,
+- `alias`=nothing` : An `alias` for the TOML key, by default an `alias` is not expected. 
+- `optional=true` : By default specifying a model `parameter` in the TOML file is optional.
+        Set to false if the model `parameter` is required.
+- `sel=nothing`: A selection of indices, such as a `Vector{CartesianIndex}` of active cells,
         to return from the NetCDF. By default all cells are returned.
-- `defaults=nothing`: a default value if `var` is not in `nc`. By default it gives an error 
+- `defaults=nothing`: A default value if `var` is not in `nc`. By default it gives an error
     in this case.
-- `type=nothing`: type to convert data to after reading. By default no conversion is done.
+- `type=nothing`: Type to convert data to after reading. By default no conversion is done.
 - `allow_missing=false`: Missing values within `sel` is not allowed by default. Set to
         `true` to allow missing values.
-- `fill=nothing`: Missing values are replaced by this fill value if `allow_missing` is `false`.
-- `dimname` : name of third dimension of parameter `var`. By default no third dimension is expected.
+- `fill=nothing`: Missing values are replaced by this fill value if `allow_missing` is
+  `false`.
+- `dimname` : Name of third dimension of parameter `var`. By default no third dimension is
+  expected.
 """
 function ncread(
     nc,
-    var;
+    config::Config,
+    parameter::AbstractString;
+    alias = nothing,
+    optional = true,
     sel = nothing,
     defaults = nothing,
     type = nothing,
@@ -209,6 +218,15 @@ function ncread(
     fill = nothing,
     dimname = nothing,
 )
+    if isnothing(alias)
+        if optional
+            var = param(config, parameter, nothing)
+        else
+            var = param(config, parameter)
+        end
+    else
+        var = get_alias(config, parameter, alias, nothing)
+    end
 
     if isnothing(dimname)
         dim_sel = (x = :, y = :)
@@ -219,6 +237,7 @@ function ncread(
 
     if isnothing(var)
         @assert !isnothing(defaults)
+        @info "Returning default value $defaults for model parameter \"$parameter\""
         if !isnothing(type)
             defaults = convert(type, defaults)
         end
@@ -236,6 +255,7 @@ function ncread(
     if mod.scale != 1.0 || mod.offset != 0.0
         A = read_standardized(nc, var, dim_sel) .* mod.scale .+ mod.offset
     elseif !isnothing(mod.value)
+        @info "Returning default value $defaults for model parameter \"$parameter\""
         if isnothing(dimname)
             return Base.fill(mod.value, length(sel))
         else
@@ -244,6 +264,7 @@ function ncread(
     else
         # Read the entire variable into memory, applying scale, offset and
         # set fill_values to missing.
+        @info "Read NetCDF variable \"$var\" and map to internal parameter \"$parameter\""
         A = read_standardized(nc, var, dim_sel)
     end
 

@@ -34,22 +34,43 @@ function initialize_sbm_gwf_model(config::Config)
 
     nc = NCDataset(static_path)
 
-    subcatch_2d = ncread(nc, param(config, "input.subcatchment"); allow_missing = true)
+    subcatch_2d =
+        ncread(nc, config.input, "subcatchment"; optional = false, allow_missing = true)
     # indices based on catchment
     inds, rev_inds = active_indices(subcatch_2d, missing)
     n = length(inds)
     modelsize_2d = size(subcatch_2d)
 
-    river_2d = ncread(nc, param(config, "input.river_location"); type = Bool, fill = false)
+    river_2d = ncread(
+        nc,
+        config.input,
+        "river_location";
+        optional = false,
+        type = Bool,
+        fill = false,
+    )
     river = river_2d[inds]
-    riverwidth_2d =
-        ncread(nc, param(config, "input.lateral.river.width"); type = Float, fill = 0)
+    riverwidth_2d = ncread(
+        nc,
+        config.input,
+        "lateral.river.width";
+        optional = false,
+        type = Float,
+        fill = 0,
+    )
     riverwidth = riverwidth_2d[inds]
-    riverlength_2d =
-        ncread(nc, param(config, "input.lateral.river.length"); type = Float, fill = 0)
+    riverlength_2d = ncread(
+        nc,
+        config.input,
+        "lateral.river.length";
+        optional = false,
+        type = Float,
+        fill = 0,
+    )
     riverlength = riverlength_2d[inds]
 
-    altitude = ncread(nc, param(config, "input.altitude"); sel = inds, type = Float)
+    altitude =
+        ncread(nc, config.input, "altitude"; optional = false, sel = inds, type = Float)
     # read x, y coordinates and calculate cell length [m]
     y_nc = read_y_axis(nc)
     x_nc = read_x_axis(nc)
@@ -74,36 +95,37 @@ function initialize_sbm_gwf_model(config::Config)
     else
         reservoir = ()
         reservoirs = nothing
-        resindex = fill(0, nriv)      
+        resindex = fill(0, nriv)
     end
 
     # lakes
     if do_lakes
-        lakes, lakeindex, lake, pits = initialize_natural_lake(
-            config,
-            nc,
-            inds_riv,
-            nriv,
-            pits,
-            tosecond(Δt),
-        )
+        lakes, lakeindex, lake, pits =
+            initialize_natural_lake(config, nc, inds_riv, nriv, pits, tosecond(Δt))
     else
         lake = ()
         lakes = nothing
-        lakeindex = fill(0, nriv)    
+        lakeindex = fill(0, nriv)
     end
 
     # overland flow (kinematic wave)
-    βₗ = ncread(nc, param(config, "input.lateral.land.slope"); sel = inds, type = Float)
+    βₗ = ncread(
+        nc,
+        config.input,
+        "lateral.land.slope";
+        optional = false,
+        sel = inds,
+        type = Float,
+    )
     clamp!(βₗ, 0.00001, Inf)
-    ldd_2d = ncread(nc, param(config, "input.ldd"); allow_missing = true)
+    ldd_2d = ncread(nc, config.input, "ldd"; optional = false, allow_missing = true)
 
     ldd = ldd_2d[inds]
 
     dl = map(detdrainlength, ldd, xl, yl)
     dw = (xl .* yl) ./ dl
     sw = map(det_surfacewidth, dw, riverwidth, river)
-    
+
     olf = initialize_surfaceflow_land(
         nc,
         config,
@@ -151,7 +173,8 @@ function initialize_sbm_gwf_model(config::Config)
     if do_constanthead
         constanthead = ncread(
             nc,
-            param(config, "input.lateral.subsurface.constant_head", nothing);
+            config.input,
+            "lateral.subsurface.constant_head";
             sel = inds,
             type = Float,
             fill = mv,
@@ -164,13 +187,15 @@ function initialize_sbm_gwf_model(config::Config)
 
     conductivity = ncread(
         nc,
-        param(config, "input.lateral.subsurface.conductivity", nothing);
+        config.input,
+        "lateral.subsurface.conductivity";
         sel = inds,
         type = Float,
     )
     specific_yield = ncread(
         nc,
-        param(config, "input.lateral.subsurface.specific_yield", nothing);
+        config.input,
+        "lateral.subsurface.specific_yield";
         sel = inds,
         type = Float,
     )
@@ -200,19 +225,22 @@ function initialize_sbm_gwf_model(config::Config)
     # river boundary of unconfined aquifer
     infiltration_conductance = ncread(
         nc,
-        param(config, "input.lateral.subsurface.infiltration_conductance", nothing);
+        config.input,
+        "lateral.subsurface.infiltration_conductance";
         sel = inds_riv,
         type = Float,
     )
     exfiltration_conductance = ncread(
         nc,
-        param(config, "input.lateral.subsurface.exfiltration_conductance", nothing);
+        config.input,
+        "lateral.subsurface.exfiltration_conductance";
         sel = inds_riv,
         type = Float,
     )
     river_bottom = ncread(
         nc,
-        param(config, "input.lateral.subsurface.river_bottom", nothing);
+        config.input,
+        "lateral.subsurface.river_bottom";
         sel = inds_riv,
         type = Float,
     )
@@ -234,12 +262,8 @@ function initialize_sbm_gwf_model(config::Config)
 
     # drain boundary of unconfined aquifer (optional)
     if do_drains
-        drain_2d = ncread(
-            nc,
-            param(config, "input.lateral.subsurface.drain");
-            type = Bool,
-            fill = false,
-        )
+        drain_2d =
+            ncread(nc, config.input, "lateral.subsurface.drain"; type = Bool, fill = false)
 
         drain = drain_2d[inds]
         # check if drain occurs where overland flow is not possible (sw = 0.0)
@@ -256,14 +280,16 @@ function initialize_sbm_gwf_model(config::Config)
 
         drain_elevation = ncread(
             nc,
-            param(config, "input.lateral.subsurface.drain_elevation", nothing);
+            config.input,
+            "lateral.subsurface.drain_elevation";
             sel = inds,
             type = Float,
             fill = mv,
         )
         drain_conductance = ncread(
             nc,
-            param(config, "input.lateral.subsurface.drain_conductance", nothing);
+            config.input,
+            "lateral.subsurface.drain_conductance";
             sel = inds,
             type = Float,
             fill = mv,

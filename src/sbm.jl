@@ -212,17 +212,28 @@ function initialize_canopy(nc, config, inds)
         # TODO confirm if leaf area index climatology is present in the NetCDF
         sl = ncread(
             nc,
-            param(config, "input.vertical.specific_leaf");
+            config.input,
+            "vertical.specific_leaf";
+            optional = false,
             sel = inds,
             type = Float,
         )
         swood = ncread(
             nc,
-            param(config, "input.vertical.storage_wood");
+            config.input,
+            "vertical.storage_wood";
+            optional = false,
             sel = inds,
             type = Float,
         )
-        kext = ncread(nc, param(config, "input.vertical.kext"); sel = inds, type = Float)
+        kext = ncread(
+            nc,
+            config.input,
+            "vertical.kext";
+            optional = false,
+            sel = inds,
+            type = Float,
+        )
         cmax = fill(mv, n)
         e_r = fill(mv, n)
         canopygapfraction = fill(mv, n)
@@ -233,21 +244,24 @@ function initialize_canopy(nc, config, inds)
         # cmax, e_r, canopygapfraction only required when leaf area index climatology not provided
         cmax = ncread(
             nc,
-            param(config, "input.vertical.cmax", nothing);
+            config.input,
+            "vertical.cmax";
             sel = inds,
             defaults = 1.0,
             type = Float,
         )
         e_r = ncread(
             nc,
-            param(config, "input.vertical.eoverr", nothing);
+            config.input,
+            "vertical.eoverr";
             sel = inds,
             defaults = 0.1,
             type = Float,
         )
         canopygapfraction = ncread(
             nc,
-            param(config, "input.vertical.canopygapfraction", nothing);
+            config.input,
+            "vertical.canopygapfraction";
             sel = inds,
             defaults = 0.1,
             type = Float,
@@ -273,50 +287,29 @@ function initialize_sbm(nc, config, riverfrac, inds)
     cfmax =
         ncread(
             nc,
-            param(config, "input.vertical.cfmax", nothing);
+            config.input,
+            "vertical.cfmax";
             sel = inds,
             defaults = 3.75653,
             type = Float,
         ) .* (Δt / basetimestep)
-    tt = ncread(
-        nc,
-        param(config, "input.vertical.tt", nothing);
-        sel = inds,
-        defaults = 0.0,
-        type = Float,
-    )
-    tti = ncread(
-        nc,
-        param(config, "input.vertical.tti", nothing);
-        sel = inds,
-        defaults = 1.0,
-        type = Float,
-    )
-    ttm = ncread(
-        nc,
-        param(config, "input.vertical.ttm", nothing);
-        sel = inds,
-        defaults = 0.0,
-        type = Float,
-    )
-    whc = ncread(
-        nc,
-        param(config, "input.vertical.whc", nothing);
-        sel = inds,
-        defaults = 0.1,
-        type = Float,
-    )
+    tt = ncread(nc, config.input, "vertical.tt"; sel = inds, defaults = 0.0, type = Float)
+    tti = ncread(nc, config.input, "vertical.tti"; sel = inds, defaults = 1.0, type = Float)
+    ttm = ncread(nc, config.input, "vertical.ttm"; sel = inds, defaults = 0.0, type = Float)
+    whc = ncread(nc, config.input, "vertical.whc"; sel = inds, defaults = 0.1, type = Float)
     w_soil =
         ncread(
             nc,
-            param(config, "input.vertical.w_soil", nothing);
+            config.input,
+            "vertical.w_soil";
             sel = inds,
             defaults = 0.1125,
             type = Float,
         ) .* (Δt / basetimestep)
     cf_soil = ncread(
         nc,
-        param(config, "input.vertical.cf_soil", nothing);
+        config.input,
+        "vertical.cf_soil";
         sel = inds,
         defaults = 0.038,
         type = Float,
@@ -324,7 +317,8 @@ function initialize_sbm(nc, config, riverfrac, inds)
     # glacier parameters
     g_tt = ncread(
         nc,
-        param(config, "input.vertical.g_tt", nothing);
+        config.input,
+        "vertical.g_tt";
         sel = inds,
         defaults = 0.0,
         type = Float,
@@ -333,7 +327,8 @@ function initialize_sbm(nc, config, riverfrac, inds)
     g_cfmax =
         ncread(
             nc,
-            param(config, "input.vertical.g_cfmax", nothing);
+            config.input,
+            "vertical.g_cfmax";
             sel = inds,
             defaults = 3.0,
             type = Float,
@@ -341,7 +336,8 @@ function initialize_sbm(nc, config, riverfrac, inds)
         ) .* (Δt / basetimestep)
     g_sifrac = ncread(
         nc,
-        param(config, "input.vertical.g_sifrac", nothing);
+        config.input,
+        "vertical.g_sifrac";
         sel = inds,
         defaults = 0.001,
         type = Float,
@@ -349,7 +345,8 @@ function initialize_sbm(nc, config, riverfrac, inds)
     )
     glacierfrac = ncread(
         nc,
-        param(config, "input.vertical.glacierfrac", nothing);
+        config.input,
+        "vertical.glacierfrac";
         sel = inds,
         defaults = 0.0,
         type = Float,
@@ -357,7 +354,8 @@ function initialize_sbm(nc, config, riverfrac, inds)
     )
     glacierstore = ncread(
         nc,
-        param(config, "input.vertical.glacierstore", nothing);
+        config.input,
+        "vertical.glacierstore";
         sel = inds,
         defaults = 5500.0,
         type = Float,
@@ -366,14 +364,18 @@ function initialize_sbm(nc, config, riverfrac, inds)
     # soil parameters
     θₛ = ncread(
         nc,
-        get_alias(config.input.vertical, "theta_s", "θₛ", nothing);
+        config.input.vertical,
+        "theta_s";
+        alias = "θₛ",
         sel = inds,
         defaults = 0.6,
         type = Float,
     )
     θᵣ = ncread(
         nc,
-        get_alias(config.input.vertical, "theta_r", "θᵣ", nothing);
+        config.input.vertical,
+        "theta_r";
+        alias = "θₛ",
         sel = inds,
         defaults = 0.01,
         type = Float,
@@ -381,28 +383,19 @@ function initialize_sbm(nc, config, riverfrac, inds)
     kv₀ =
         ncread(
             nc,
-            get_alias(config.input.vertical, "kv_0", "kv₀", nothing);
+            config.input.vertical,
+            "kv_0";
+            alias = "kv₀",
             sel = inds,
             defaults = 3000.0,
             type = Float,
         ) .* (Δt / basetimestep)
-    f = ncread(
-        nc,
-        param(config, "input.vertical.f", nothing);
-        sel = inds,
-        defaults = 0.001,
-        type = Float,
-    )
-    hb = ncread(
-        nc,
-        param(config, "input.vertical.hb", nothing);
-        sel = inds,
-        defaults = 10.0,
-        type = Float,
-    )
+    f = ncread(nc, config.input, "vertical.f"; sel = inds, defaults = 0.001, type = Float)
+    hb = ncread(nc, config.input, "vertical.hb"; sel = inds, defaults = 10.0, type = Float)
     soilthickness = ncread(
         nc,
-        param(config, "input.vertical.soilthickness", nothing);
+        config.input,
+        "vertical.soilthickness";
         sel = inds,
         defaults = 2000.0,
         type = Float,
@@ -410,7 +403,8 @@ function initialize_sbm(nc, config, riverfrac, inds)
     infiltcappath =
         ncread(
             nc,
-            param(config, "input.vertical.infiltcappath", nothing);
+            config.input,
+            "vertical.infiltcappath";
             sel = inds,
             defaults = 10.0,
             type = Float,
@@ -418,7 +412,8 @@ function initialize_sbm(nc, config, riverfrac, inds)
     infiltcapsoil =
         ncread(
             nc,
-            param(config, "input.vertical.infiltcapsoil", nothing);
+            config.input,
+            "vertical.infiltcapsoil";
             sel = inds,
             defaults = 100.0,
             type = Float,
@@ -426,7 +421,8 @@ function initialize_sbm(nc, config, riverfrac, inds)
     maxleakage =
         ncread(
             nc,
-            param(config, "input.vertical.maxleakage", nothing);
+            config.input,
+            "vertical.maxleakage";
             sel = inds,
             defaults = 0.0,
             type = Float,
@@ -434,27 +430,29 @@ function initialize_sbm(nc, config, riverfrac, inds)
 
     c = ncread(
         nc,
-        param(config, "input.vertical.c", nothing);
+        config.input,
+        "vertical.c";
         sel = inds,
         defaults = 10.0,
         type = Float,
         dimname = :layer,
     )
     if size(c, 1) != maxlayers
-        parname = param(config, "input.vertical.c")
+        parname = param(config.input.vertical, "c")
         size1 = size(c, 1)
         error("$parname needs a layer dimension of size $maxlayers, but is $size1")
     end
     kvfrac = ncread(
         nc,
-        param(config, "input.vertical.kvfrac", nothing);
+        config.input,
+        "vertical.kvfrac";
         sel = inds,
         defaults = 1.0,
         type = Float,
         dimname = :layer,
     )
     if size(kvfrac, 1) != maxlayers
-        parname = param(config, "input.vertical.kvfrac")
+        parname = param(config.input, "vertical.kvfrac")
         size1 = size(kvfrac, 1)
         error("$parname needs a layer dimension of size $maxlayers, but is $size1")
     end
@@ -462,14 +460,16 @@ function initialize_sbm(nc, config, riverfrac, inds)
     # fraction open water and compacted area (land cover)
     waterfrac = ncread(
         nc,
-        param(config, "input.vertical.waterfrac", nothing);
+        config.input,
+        "vertical.waterfrac";
         sel = inds,
         defaults = 0.0,
         type = Float,
     )
     pathfrac = ncread(
         nc,
-        param(config, "input.vertical.pathfrac", nothing);
+        config.input,
+        "vertical.pathfrac";
         sel = inds,
         defaults = 0.01,
         type = Float,
@@ -478,35 +478,34 @@ function initialize_sbm(nc, config, riverfrac, inds)
     # vegetation parameters
     rootingdepth = ncread(
         nc,
-        param(config, "input.vertical.rootingdepth", nothing);
+        config.input,
+        "vertical.rootingdepth";
         sel = inds,
         defaults = 750.0,
         type = Float,
     )
     rootdistpar = ncread(
         nc,
-        param(config, "input.vertical.rootdistpar", nothing);
+        config.input,
+        "vertical.rootdistpar";
         sel = inds,
         defaults = -500.0,
         type = Float,
     )
     cap_hmax = ncread(
         nc,
-        param(config, "input.vertical.cap_hmax", nothing);
+        config.input,
+        "vertical.cap_hmax";
         sel = inds,
         defaults = 2000.0,
         type = Float,
     )
-    cap_n = ncread(
-        nc,
-        param(config, "input.vertical.cap_n", nothing);
-        sel = inds,
-        defaults = 2.0,
-        type = Float,
-    )
+    cap_n =
+        ncread(nc, config.input, "vertical.cap_n"; sel = inds, defaults = 2.0, type = Float)
     et_reftopot = ncread(
         nc,
-        param(config, "input.vertical.et_reftopot", nothing);
+        config.input,
+        "vertical.et_reftopot";
         sel = inds,
         defaults = 1.0,
         type = Float,

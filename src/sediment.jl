@@ -113,125 +113,123 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
     # Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]
     landtransportmethod = get(config.model, "landtransportmethod", "yalinpart")::String
 
-    altitude =
-        ncread(nc, param(config, "input.vertical.altitude"); sel = inds, type = Float)
+    altitude = ncread(
+        nc,
+        config.input,
+        "vertical.altitude";
+        optional = false,
+        sel = inds,
+        type = Float,
+    )
     canopyheight = ncread(
         nc,
-        param(config, "input.vertical.canopyheight", nothing);
+        config.input,
+        "vertical.canopyheight";
         sel = inds,
         defaults = 3.0,
         type = Float,
     )
-    erosk = ncread(
-        nc,
-        param(config, "input.vertical.erosk", nothing);
-        sel = inds,
-        defaults = 0.6,
-        type = Float,
-    )
+    erosk =
+        ncread(nc, config.input, "vertical.erosk"; sel = inds, defaults = 0.6, type = Float)
     erosspl = ncread(
         nc,
-        param(config, "input.vertical.erosspl", nothing);
+        config.input,
+        "vertical.erosspl";
         sel = inds,
         defaults = 2.0,
         type = Float,
     )
     erosov = ncread(
         nc,
-        param(config, "input.vertical.erosov", nothing);
+        config.input,
+        "vertical.erosov";
         sel = inds,
         defaults = 0.9,
         type = Float,
     )
     pathfrac = ncread(
         nc,
-        param(config, "input.vertical.pathfrac", nothing);
+        config.input,
+        "vertical.pathfrac";
         sel = inds,
         defaults = 0.01,
         type = Float,
     )
     slope = ncread(
         nc,
-        param(config, "input.vertical.slope", nothing);
+        config.input,
+        "vertical.slope";
         sel = inds,
         defaults = 0.01,
         type = Float,
     )
     usleC = ncread(
         nc,
-        param(config, "input.vertical.usleC", nothing);
+        config.input,
+        "vertical.usleC";
         sel = inds,
         defaults = 0.01,
         type = Float,
     )
-    usleK = ncread(
-        nc,
-        param(config, "input.vertical.usleK", nothing);
-        sel = inds,
-        defaults = 0.1,
-        type = Float,
-    )
+    usleK =
+        ncread(nc, config.input, "vertical.usleK"; sel = inds, defaults = 0.1, type = Float)
 
     cmax, _, canopygapfraction, sl, swood, kext = initialize_canopy(nc, config, inds)
 
     # Initialise parameters for the transport capacity part
     βₗ = slope
     clamp!(βₗ, 0.00001, Inf)
-    ldd_2d = ncread(nc, param(config, "input.ldd"); allow_missing = true)
+    ldd_2d = ncread(nc, config.input, "ldd"; optional = false, allow_missing = true)
     ldd = ldd_2d[inds]
 
     dmclay = ncread(
         nc,
-        param(config, "input.vertical.dmclay", nothing);
+        config.input,
+        "vertical.dmclay";
         sel = inds,
         defaults = 2.0,
         type = Float,
     )
     dmsilt = ncread(
         nc,
-        param(config, "input.vertical.dmsilt", nothing);
+        config.input,
+        "vertical.dmsilt";
         sel = inds,
         defaults = 10.0,
         type = Float,
     )
     dmsand = ncread(
         nc,
-        param(config, "input.vertical.dmsand", nothing);
+        config.input,
+        "vertical.dmsand";
         sel = inds,
         defaults = 200.0,
         type = Float,
     )
     dmsagg = ncread(
         nc,
-        param(config, "input.vertical.dmsagg", nothing);
+        config.input,
+        "vertical.dmsagg";
         sel = inds,
         defaults = 30.0,
         type = Float,
     )
     dmlagg = ncread(
         nc,
-        param(config, "input.vertical.dmlagg", nothing);
+        config.input,
+        "vertical.dmlagg";
         sel = inds,
         defaults = 500.0,
         type = Float,
     )
-    pclay = ncread(
-        nc,
-        param(config, "input.vertical.pclay", nothing);
-        sel = inds,
-        defaults = 0.1,
-        type = Float,
-    )
-    psilt = ncread(
-        nc,
-        param(config, "input.vertical.psilt", nothing);
-        sel = inds,
-        defaults = 0.1,
-        type = Float,
-    )
+    pclay =
+        ncread(nc, config.input, "vertical.pclay"; sel = inds, defaults = 0.1, type = Float)
+    psilt =
+        ncread(nc, config.input, "vertical.psilt"; sel = inds, defaults = 0.1, type = Float)
     rhos = ncread(
         nc,
-        param(config, "input.vertical.rhosed", nothing);
+        config.input,
+        "vertical.rhosed";
         sel = inds,
         defaults = 2650.0,
         type = Float,
@@ -294,7 +292,9 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
     if do_reservoirs
         rescoverage_2d = ncread(
             nc,
-            param(config, "input.vertical.resareas");
+            config.input,
+            "vertical.resareas";
+            optional = false,
             sel = inds,
             type = Float,
             fill = 0.0,
@@ -304,7 +304,9 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
     if do_lakes
         lakecoverage_2d = ncread(
             nc,
-            param(config, "input.vertical.lakeareas");
+            config.input,
+            "vertical.lakeareas";
+            optional = false,
             sel = inds,
             type = Float,
             fill = 0.0,
@@ -899,28 +901,36 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     if do_reservoirs
         reslocs = ncread(
             nc,
-            param(config, "input.lateral.river.reslocs");
+            config.input,
+            "lateral.river.reslocs";
+            optional = false,
             sel = inds_riv,
             type = Float,
             fill = 0,
         )
         rescoverage_2d = ncread(
             nc,
-            param(config, "input.lateral.river.resareas");
+            config.input,
+            "lateral.river.resareas";
+            optional = false,
             sel = inds_riv,
             type = Float,
             fill = 0,
         )
         resarea = ncread(
             nc,
-            param(config, "input.lateral.river.resarea");
+            config.input,
+            "lateral.river.resarea";
+            optional = false,
             sel = inds_riv,
             type = Float,
             fill = 0.0,
         )
         restrapefficiency = ncread(
             nc,
-            param(config, "input.lateral.river.restrapeff");
+            config.input,
+            "lateral.river.restrapeff";
+            optional = false,
             sel = inds_riv,
             type = Float,
             defaults = 1.0,
@@ -936,21 +946,27 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     if do_lakes
         lakelocs = ncread(
             nc,
-            param(config, "input.lateral.river.lakelocs");
+            config.input,
+            "lateral.river.lakelocs";
+            optional = false,
             sel = inds_riv,
             type = Float,
             fill = 0,
         )
         lakecoverage_2d = ncread(
             nc,
-            param(config, "input.lateral.river.lakeareas");
+            config.input,
+            "lateral.river.lakeareas";
+            optional = false,
             sel = inds_riv,
             type = Float,
             fill = 0,
         )
         lakearea = ncread(
             nc,
-            param(config, "input.lateral.river.lakearea");
+            config.input,
+            "lateral.river.lakearea";
+            optional = false,
             sel = inds_riv,
             type = Float,
             fill = 0.0,
@@ -961,99 +977,132 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
         wbarea = wbarea .+ lakearea
     end
 
-    riverslope =
-        ncread(nc, param(config, "input.lateral.river.slope"); sel = inds_riv, type = Float)
+    riverslope = ncread(
+        nc,
+        config.input,
+        "lateral.river.slope";
+        optional = false,
+        sel = inds_riv,
+        type = Float,
+    )
     clamp!(riverslope, 0.00001, Inf)
     rhos = ncread(
         nc,
-        param(config, "input.lateral.river.rhosed", nothing);
+        config.input,
+        "lateral.river.rhosed";
         sel = inds_riv,
         defaults = 2650.0,
         type = Float,
     )
     dmclay = ncread(
         nc,
-        param(config, "input.lateral.river.dmclay", nothing);
+        config.input,
+        "lateral.river.dmclay";
         sel = inds_riv,
         defaults = 2.0,
         type = Float,
     )
     dmsilt = ncread(
         nc,
-        param(config, "input.lateral.river.dmsilt", nothing);
+        config.input,
+        "lateral.river.dmsilt";
         sel = inds_riv,
         defaults = 10.0,
         type = Float,
     )
     dmsand = ncread(
         nc,
-        param(config, "input.lateral.river.dmsand", nothing);
+        config.input,
+        "lateral.river.dmsand";
         sel = inds_riv,
         defaults = 200.0,
         type = Float,
     )
     dmsagg = ncread(
         nc,
-        param(config, "input.lateral.river.dmsagg", nothing);
+        config.input,
+        "lateral.river.dmsagg";
         sel = inds_riv,
         defaults = 30.0,
         type = Float,
     )
     dmlagg = ncread(
         nc,
-        param(config, "input.lateral.river.dmlagg", nothing);
+        config.input,
+        "lateral.river.dmlagg";
         sel = inds_riv,
         defaults = 500.0,
         type = Float,
     )
     dmgrav = ncread(
         nc,
-        param(config, "input.lateral.river.dmgrav", nothing);
+        config.input,
+        "lateral.river.dmgrav";
         sel = inds_riv,
         defaults = 2000.0,
         type = Float,
     )
     fclayriv = ncread(
         nc,
-        param(config, "input.lateral.river.fclayriv");
+        config.input,
+        "lateral.river.fclayriv";
+        optional = false,
         sel = inds_riv,
         type = Float,
     )
     fsiltriv = ncread(
         nc,
-        param(config, "input.lateral.river.fsiltriv");
+        config.input,
+        "lateral.river.fsiltriv";
+        optional = false,
         sel = inds_riv,
         type = Float,
     )
     fsandriv = ncread(
         nc,
-        param(config, "input.lateral.river.fsandriv");
+        config.input,
+        "lateral.river.fsandriv";
+        optional = false,
         sel = inds_riv,
         type = Float,
     )
     fgravriv = ncread(
         nc,
-        param(config, "input.lateral.river.fgravriv");
+        config.input,
+        "lateral.river.fgravriv";
+        optional = false,
         sel = inds_riv,
         type = Float,
     )
-    d50riv =
-        ncread(nc, param(config, "input.lateral.river.d50"); sel = inds_riv, type = Float)
+    d50riv = ncread(
+        nc,
+        config.input,
+        "lateral.river.d50";
+        optional = false,
+        sel = inds_riv,
+        type = Float,
+    )
     d50engelund = ncread(
         nc,
-        param(config, "input.lateral.river.d50engelund");
+        config.input,
+        "lateral.river.d50engelund";
+        optional = false,
         sel = inds_riv,
         type = Float,
     )
     cbagnold = ncread(
         nc,
-        param(config, "input.lateral.river.cbagnold");
+        config.input,
+        "lateral.river.cbagnold";
+        optional = false,
         sel = inds_riv,
         type = Float,
     )
     ebagnold = ncread(
         nc,
-        param(config, "input.lateral.river.ebagnold");
+        config.input,
+        "lateral.river.ebagnold";
+        optional = false,
         sel = inds_riv,
         type = Float,
     )

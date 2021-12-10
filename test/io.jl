@@ -348,7 +348,7 @@ end
     f = open(normpath(output, "log.txt"))
     lines = readlines(f)
 
-    @test lines[1:5] ==  
+    @test lines[183:187] ==
     ["┌ Info: Run information", 
     "│   model_type = sbm", 
     "│   starttime = DateTimeStandard(2000-01-02T00:00:00)", 

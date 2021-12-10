@@ -173,7 +173,7 @@ function run(model::Model; close_files = true)
     @unpack network, config, writer, clock = model
 
     model_type = config.model.type::String
-    
+
     # determine timesteps to run
     calendar = get(config, "calendar", "standard")::String
     starttime = clock.time
@@ -193,6 +193,7 @@ function run(model::Model; close_files = true)
     # undo the clock advance at the end of the last iteration, since there won't
     # be a next step, and then the output state falls on the correct time
     rewind!(clock)
+    @info "Write output state to NetCDF..."
     write_netcdf_timestep(model, writer.state_dataset, writer.state_parameters)
 
     reset_clock!(model.clock, config)
