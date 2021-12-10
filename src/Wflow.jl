@@ -13,6 +13,8 @@ using FieldMetadata
 using Parameters
 using DelimitedFiles
 using ProgressLogging
+using LoggingExtras
+using TerminalLoggers
 using CFTime
 using Base.Threads
 using Glob
@@ -117,7 +119,8 @@ include("sbm_gwf_model.jl")
 include("utils.jl")
 include("bmi.jl")
 include("subdomains.jl")
-    
+include("logging.jl")
+
 """
     run(tomlpath::String)
     run(config::Config)
@@ -126,7 +129,8 @@ include("subdomains.jl")
 
 Run an entire simulation starting either from a path to a TOML settings file,
 a prepared `Config` object, or an initialized `Model` object. This allows more flexibility
-if you want to for example modify a `Config` before initializing the `Model`.
+if you want to for example modify a `Config` before initializing the `Model`. Logging to a 
+file is only part of the `run(tomlpath::String)` function.
 
 The 0 argument version expects ARGS to contain a single entry, pointing to the TOML path.
 This makes it easier to start a run from the command line without having to escape quotes:
@@ -134,8 +138,17 @@ This makes it easier to start a run from the command line without having to esca
     julia -e "using Wflow; Wflow.run()" "path/to/config.toml"
 """
 function run(tomlpath)
-    config = Config(tomlpath)
-    run(config)
+    # to catch stacktraces in the log file a try-catch is required
+    try
+        config = Config(tomlpath)
+        tslogger, logfile = init_logger(config)
+        with_logger(tslogger) do
+            run(config)
+            close(logfile)
+        end
+    catch e
+        @error "Wflow simulation failed" exception = (e, catch_backtrace())
+    end
 end
 
 function run(config::Config)
@@ -159,7 +172,6 @@ end
 function run(model::Model; close_files = true)
     @unpack network, config, writer, clock = model
 
-    # in the case of sbm_gwf it's currently a bit hard to use dispatch
     model_type = config.model.type::String
     
     # determine timesteps to run
@@ -168,7 +180,7 @@ function run(model::Model; close_files = true)
     Δt = clock.Δt
     endtime = cftime(config.endtime, calendar)
     times = range(starttime, endtime, step = Δt)
-    
+
     @info "Run information" model_type starttime Δt endtime nthreads()
     # TODO add reinit, snow, iterations, routing, tomlpath, default values used
     @progress for (i, time) in enumerate(times)
@@ -176,8 +188,6 @@ function run(model::Model; close_files = true)
         load_dynamic_input!(model)
         model = update(model)
     end
-    # TODO give path to output after finish
-    # TODO copy TOML to output
 
     # write output state NetCDF
     # undo the clock advance at the end of the last iteration, since there won't
@@ -191,6 +201,12 @@ function run(model::Model; close_files = true)
     # and thus opening the NetCDF files
     if close_files
         Wflow.close_files(model, delete_output = false)
+    end
+
+    # copy TOML to output (only if dir_output is provided in TOML)
+    if Wflow.get(config, "dir_output", ".") != "."
+        dst = normpath(Wflow.output_path(config, "."), basename(Wflow.pathof(config)))
+        cp(Wflow.pathof(config), dst, force = true)
     end
     return model
 end

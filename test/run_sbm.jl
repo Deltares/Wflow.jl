@@ -141,6 +141,7 @@ config = Wflow.Config(tomlpath)
 config["model"]["pits"] = true
 config["input"]["pits"] = "wflow_pits"
 config.endtime = DateTime(2000, 1, 9)
+config.loglevel = "info"
 
 model = Wflow.run(config)
 

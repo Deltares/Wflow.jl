@@ -10,6 +10,7 @@ time_units = "days since 1900-01-01 00:00:00"
 timestepsecs = 86400
 dir_input = "data/input"
 dir_output = "data/output"
+loglevel = "info"
 
 [state]
 path_input = "instates-moselle.nc"

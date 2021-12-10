@@ -68,14 +68,8 @@ function initialize_sbm_model(config::Config)
 
     # lakes
     if do_lakes
-        lakes, lakeindex, lake, pits = initialize_natural_lake(
-            config,
-            nc,
-            inds_riv,
-            nriv,
-            pits,
-            tosecond(Δt),
-        )
+        lakes, lakeindex, lake, pits =
+            initialize_natural_lake(config, nc, inds_riv, nriv, pits, tosecond(Δt))
     else
         lake = ()
         lakes = nothing

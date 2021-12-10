@@ -4,6 +4,7 @@ using TOML
 using CFTime
 using Random
 using UnPack
+using Logging
 
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 parsed_toml = TOML.parsefile(tomlpath)
@@ -329,4 +330,29 @@ end
         manual_fix = reverse(ds["wflow_dem"]; dims = 2)
         @test all(data .=== manual_fix)
     end
+end
+
+# test logging and copy of TOML file to output
+@testset "Logging and copy TOML file" begin
+    @test Wflow.parse_loglevel("InfO") == Logging.Info
+    @test Wflow.parse_loglevel(0) == Logging.Info
+
+    tomlpath = joinpath(@__DIR__, "sbm_simple.toml")
+    Wflow.run(tomlpath)
+
+    config = Wflow.Config(tomlpath)
+    output = normpath(abspath(Wflow.get(config, "dir_output", ".")))
+    @test isfile(output, "sbm_simple.toml")
+    @test isfile(output, "log.txt")
+
+    f = open(normpath(output, "log.txt"))
+    lines = readlines(f)
+
+    @test lines[1:5] ==  
+    ["┌ Info: Run information", 
+    "│   model_type = sbm", 
+    "│   starttime = DateTimeStandard(2000-01-02T00:00:00)", 
+    "│   Δt = 86400 seconds", 
+    "│   endtime = DateTimeStandard(2000-01-10T00:00:00)"]
+    close(f)
 end
