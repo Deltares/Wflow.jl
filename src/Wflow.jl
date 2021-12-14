@@ -25,6 +25,8 @@ using NCDatasets: MFDataset
 const BMI = BasicModelInterface
 const Float = Float64
 const CFDataset = Union{NCDataset,MFDataset}
+const version =
+    VersionNumber(TOML.parsefile(joinpath(@__DIR__, "..", "Project.toml"))["version"])
 
 mutable struct Clock{T}
     time::T
@@ -143,6 +145,7 @@ function run(tomlpath)
         config = Config(tomlpath)
         tslogger, logfile = init_logger(config)
         with_logger(tslogger) do
+            @info "Wflow version v$version"
             run(config)
             close(logfile)
         end
@@ -182,7 +185,6 @@ function run(model::Model; close_files = true)
     times = range(starttime, endtime, step = Δt)
 
     @info "Run information" model_type starttime Δt endtime nthreads()
-    # TODO add reinit, snow, iterations, routing, tomlpath, default values used
     @progress for (i, time) in enumerate(times)
         @debug "Starting timestep" time timestep = i
         load_dynamic_input!(model)
@@ -193,7 +195,9 @@ function run(model::Model; close_files = true)
     # undo the clock advance at the end of the last iteration, since there won't
     # be a next step, and then the output state falls on the correct time
     rewind!(clock)
-    @info "Write output state to NetCDF..."
+    if haskey(config, "state") && haskey(config.state, "path_output")
+        @info "Write output states to NetCDF file $(model.writer.state_nc_path)"
+    end
     write_netcdf_timestep(model, writer.state_dataset, writer.state_parameters)
 
     reset_clock!(model.clock, config)

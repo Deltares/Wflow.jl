@@ -25,6 +25,18 @@ dir_input = "data/input"                        # optional, default is the path 
 dir_output = "data/output"                      # optional, default is the path of the TOML
 ```
 
+## Logging
+The logging level is by default `info`, and can be changed through the TOML file in the
+following way: 
+
+```toml
+loglevel = "debug"
+```
+
+Logging messages are logged to the terminal and to a log file `log.txt` located in the
+output file location `output_dir` or if the `output_dir` is not defined the TOML file
+location.
+
 ## Model section
 Model specific settings can be included in the model section of the TOML file.
 

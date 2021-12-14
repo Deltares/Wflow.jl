@@ -6,7 +6,8 @@ Config object. Will return a Model that is ready to run.
 """
 function initialize_sbm_model(config::Config)
 
-    @info "Initializing of model variables.."
+    model_type = config.model.type::String
+    @info "Initializing of model variables for model type $model_type"
 
     # unpack the paths to the NetCDF files
     static_path = input_path(config, config.input.path_static)
@@ -25,13 +26,12 @@ function initialize_sbm_model(config::Config)
     kinwave_it = get(config.model, "kin_wave_iteration", false)::Bool
     river_routing = get(config.model, "river_routing", "kinematic-wave")
 
-    @info """"General model settings"
-        "reservoirs" = $do_reservoirs
-        "lakes" = $do_lakes
-        "snow" = $(get(config.model, "snow", false)::Bool)
-        "glacier" = $(get(config.model, "glacier", false)::Bool)
-        "masswasting" = $(get(config.model, "masswasting", false)::Bool)
-    """
+    snow = get(config.model, "snow", false)::Bool
+    reservoirs = do_reservoirs
+    lakes = do_lakes
+    glacier = get(config.model, "glacier", false)::Bool
+    masswasting = get(config.model, "masswasting", false)::Bool
+    @info "General model settings" reservoirs lakes snow masswasting glacier
 
     nc = NCDataset(static_path)
 
@@ -342,7 +342,7 @@ function initialize_sbm_model(config::Config)
     # read and set states in model object if reinit=false
     if reinit == false
         instate_path = input_path(config, config.state.path_input)
-        @info "Setting initial conditions from state file $instate_path"
+        @info "Read and set initial conditions from state file $instate_path"
         state_ncnames = ncnames(config.state)
         set_states(instate_path, model, state_ncnames; type = Float)
         @unpack lateral, vertical = model

@@ -141,6 +141,7 @@ function set_states(instate_path, model, state_ncnames; type = nothing)
     # states in NetCDF include dim time (one value) at index 3 or 4, 3 or 4 dims are allowed
     NCDataset(instate_path) do ds
         for (state, ncname) in state_ncnames
+            @debug "Read $ncname from $instate_path and map to state $state"
             sel = active_indices(network, state)
             n = length(sel)
             dims = length(dimnames(ds[ncname]))
@@ -218,6 +219,8 @@ function ncread(
     fill = nothing,
     dimname = nothing,
 )
+    # get var (NetCDF variable or type Config) from TOML file.
+    # if var has type Config, input parameters can be changed.
     if isnothing(alias)
         if optional
             var = param(config, parameter, nothing)
@@ -237,7 +240,7 @@ function ncread(
 
     if isnothing(var)
         @assert !isnothing(defaults)
-        @info "Returning default value $defaults for model parameter \"$parameter\""
+        @info "Returning default value $defaults for parameter $parameter"
         if !isnothing(type)
             defaults = convert(type, defaults)
         end
@@ -255,7 +258,7 @@ function ncread(
     if mod.scale != 1.0 || mod.offset != 0.0
         A = read_standardized(nc, var, dim_sel) .* mod.scale .+ mod.offset
     elseif !isnothing(mod.value)
-        @info "Returning default value $defaults for model parameter \"$parameter\""
+        @info "Returning default value $defaults for parameter $parameter"
         if isnothing(dimname)
             return Base.fill(mod.value, length(sel))
         else
@@ -264,7 +267,7 @@ function ncread(
     else
         # Read the entire variable into memory, applying scale, offset and
         # set fill_values to missing.
-        @info "Read NetCDF variable \"$var\" and map to internal parameter \"$parameter\""
+        @info "Read NetCDF variable \"$var\" and map to parameter $parameter"
         A = read_standardized(nc, var, dim_sel)
     end
 

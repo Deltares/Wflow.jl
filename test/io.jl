@@ -348,11 +348,12 @@ end
     f = open(normpath(output, "log.txt"))
     lines = readlines(f)
 
-    @test lines[183:187] ==
-    ["┌ Info: Run information", 
-    "│   model_type = sbm", 
-    "│   starttime = DateTimeStandard(2000-01-02T00:00:00)", 
-    "│   Δt = 86400 seconds", 
-    "│   endtime = DateTimeStandard(2000-01-10T00:00:00)"]
+    @test lines[[4,13,16,19,22]] ==
+    ["┌ Info: Initializing of model variables for model type sbm",
+    "┌ Info: NetCDF variable \"precip\" is mapped as forcing parameter to vertical.precipitation",
+    "┌ Info: NetCDF variable \"temp\" is mapped as forcing parameter to vertical.temperature",
+    "┌ Info: NetCDF variable \"pet\" is mapped as forcing parameter to vertical.potential_evaporation",
+    "┌ Info: NetCDF variable \"LAI\" file is mapped as cyclic parameter to vertical.leaf_area_index",
+    ]
     close(f)
 end

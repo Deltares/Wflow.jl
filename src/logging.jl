@@ -45,6 +45,12 @@ end
 function init_logger_fews(log_handle, loglevel)
     # create single line logging for FEWS
     function format_message(io, args)
+        s = ""
+        if length(args.kwargs) > 0
+            for p in args.kwargs
+                s = s * string(" |", p[1], " = ", p[2], "|")
+            end
+        end
         println(
             io,
             "timestamp = $(now()) | ",
@@ -54,6 +60,7 @@ function init_logger_fews(log_handle, loglevel)
             args.level,
             "] ",
             args.message,
+            s,
         )
     end
 
