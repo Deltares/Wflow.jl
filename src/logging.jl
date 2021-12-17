@@ -1,5 +1,14 @@
-"Parse log level"
-function parse_loglevel(input_level::AbstractString)
+"""
+    parse_loglevel(input_level::AbstractString)::LogLevel
+    parse_loglevel(input_level::Integer)::LogLevel
+
+Parse a log level from either an integer or string.
+
+# Examples
+    parse_loglevel("info") -> Logging.Info
+    parse_loglevel(0) -> LogLevel(0) (== Logging.Info)
+"""
+function parse_loglevel(input_level::AbstractString)::LogLevel
     level = lowercase(input_level)
     if level == "debug"
         return Logging.Debug
@@ -16,79 +25,62 @@ end
 
 parse_loglevel(input_level::Integer) = LogLevel(input_level)
 
-# always add add timestamp to FileLogger
-# (level, message, _module, group, id, file, line, kwargs)
-timestamp_logger(logger) =
-    TransformerLogger(logger) do orig_log
-        new_kwargs = (orig_log.kwargs..., timestamp = now())
-        new_log = merge(orig_log, (kwargs = new_kwargs,))
-        return new_log
+"Print a log message to a single line, for Delft-FEWS"
+function format_message(io::IO, args)::Nothing
+    kwargs = IOBuffer()
+    for p in args.kwargs
+        print(kwargs, string(" |", p[1], " = ", p[2], "|"))
     end
-
-"Initialize logger for Julia/wflow_cli"
-function init_logger(log_handle, loglevel)
-    logger = TeeLogger(
-        # avoid progresslogger and NCDatasets debug messages in the file
-        EarlyFilteredLogger(
-            log -> log.group !== :ProgressLogging && log._module != NCDatasets,
-            MinLevelLogger(FileLogger(log_handle, always_flush = true), loglevel),
-        ),
-        # avoid debug information overflowing the terminal, -1 is the level of ProgressLogging
-        MinLevelLogger(TerminalLogger(), LogLevel(-1)),
+    println(
+        io,
+        "timestamp = ",
+        now(),
+        " | ",
+        args._module,
+        " | [",
+        args.level,
+        "] ",
+        args.message,
+        String(take!(kwargs)),
     )
-
-    tslogger = timestamp_logger(logger)
-    return tslogger
+    return nothing
 end
 
-"Initialize logger for Delft-FEWS run"
-function init_logger_fews(log_handle, loglevel)
-    # create single line logging for FEWS
-    function format_message(io, args)
-        s = ""
-        if length(args.kwargs) > 0
-            for p in args.kwargs
-                s = s * string(" |", p[1], " = ", p[2], "|")
-            end
-        end
-        println(
-            io,
-            "timestamp = $(now()) | ",
-            args._module,
-            " | ",
-            "[",
-            args.level,
-            "] ",
-            args.message,
-            s,
-        )
-    end
-
-    logger = TeeLogger(
-        # avoid progresslogger and NCDatasets debug messages in the file
-        EarlyFilteredLogger(
-            log -> log.group !== :ProgressLogging && log._module != NCDatasets,
-            MinLevelLogger(
-                FormatLogger(format_message, log_handle, always_flush = true),
-                loglevel,
-            ),
-        ),
-        # avoid debug information overflowing the terminal, -1 is the level of ProgressLogging
-        MinLevelLogger(TerminalLogger(), LogLevel(-1)),
-    )
-
-    return logger
-end
-
-"Initialize logger either running from Delft-FEWS or Julia/wflow_cli"
-function init_logger(config::Config)
+"Initialize a logger, which is different if `fews_run` is set in the Config."
+function init_logger(config::Config)::Tuple{TeeLogger,IOStream}
     loglevel = parse_loglevel(get(config, "loglevel", "info"))
-    log_handle = open(output_path(config, "log.txt"), "w")
+    path_log = output_path(config, get(config, "path_log", "log.txt"))
+    log_handle = open(path_log, "w")
     fews_run = get(config, "fews_run", false)::Bool
 
-    if fews_run
-        return init_logger_fews(log_handle, loglevel), log_handle
+    file_logger = if fews_run
+        # Format the log message to be printed on a single line.
+        FormatLogger(format_message, log_handle)
     else
-        return init_logger(log_handle, loglevel), log_handle
+        f_logger = FileLogger(log_handle)
+        # Add a timestamp as a keyword argument to a log message.
+        # Added as an internal option for debugging performance issues, which is
+        # normally off since it creates a lot of noise in the log file and makes it
+        # non reproducable.
+        add_timestamps = false
+        if add_timestamps
+            f_logger = TransformerLogger(f_logger) do orig_log
+                new_kwargs = (orig_log.kwargs..., timestamp = now())
+                merge(orig_log, (kwargs = new_kwargs,))
+            end
+        end
+        f_logger
     end
+
+    logger = TeeLogger(
+        # avoid progresslogger and NCDatasets debug messages in the file
+        EarlyFilteredLogger(
+            log -> log.group !== :ProgressLogging && log._module != NCDatasets,
+            MinLevelLogger(file_logger, loglevel),
+        ),
+        # avoid debug information overflowing the terminal, -1 is the level of ProgressLogging
+        MinLevelLogger(TerminalLogger(), LogLevel(-1)),
+    )
+    # Delft-FEWS already gets a timestamp from format_message, otherwise add it as a kwarg.
+    return logger, log_handle
 end
