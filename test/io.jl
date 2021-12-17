@@ -346,18 +346,17 @@ end
 
     config = Wflow.Config(tomlpath)
     output = normpath(abspath(Wflow.get(config, "dir_output", ".")))
-    @test isfile(output, "sbm_simple.toml")
-    @test isfile(output, "log.txt")
+    toml_archive = Wflow.output_path(config, "sbm_simple.toml")
+    path_log = Wflow.output_path(config, "log.txt")
+    @test isfile(toml_archive)
+    @test isfile(path_log)
 
-    f = open(normpath(output, "log.txt"))
-    lines = readlines(f)
-
-    @test lines[[4, 13, 16, 19, 22]] == [
-        "┌ Info: Initializing of model variables for model type sbm",
-        "┌ Info: NetCDF variable \"precip\" is mapped as forcing parameter to vertical.precipitation",
-        "┌ Info: NetCDF variable \"temp\" is mapped as forcing parameter to vertical.temperature",
-        "┌ Info: NetCDF variable \"pet\" is mapped as forcing parameter to vertical.potential_evaporation",
-        "┌ Info: NetCDF variable \"LAI\" file is mapped as cyclic parameter to vertical.leaf_area_index",
+    lines = readlines(path_log)
+    @test lines[[3, 9, 11, 13, 15]] == [
+        "┌ Info: Initialize model variables for model type `sbm`.",
+        "┌ Info: Get `vertical.precipitation` from NetCDF variable `precip` as forcing parameter.",
+        "┌ Info: Get `vertical.temperature` from NetCDF variable `temp` as forcing parameter.",
+        "┌ Info: Get `vertical.potential_evaporation` from NetCDF variable `pet` as forcing parameter.",
+        "┌ Info: Get `vertical.leaf_area_index` from NetCDF variable `LAI` as cyclic parameter.",
     ]
-    close(f)
 end

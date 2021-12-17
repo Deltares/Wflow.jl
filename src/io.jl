@@ -112,7 +112,7 @@ function ncvar_name_modifier(var)
             scale = param(var, "scale", 1.0)
             offset = param(var, "offset", 0.0)
             modifier = (scale = scale, offset = offset, value = nothing)
-            @info "NetCDF parameter $ncname is modified with scale $scale and offset $offset"
+            @info "NetCDF parameter `$ncname` is modified with scale `$scale` and offset `$offset`."
         elseif haskey(var, "value")
             modifier = (scale = 1.0, offset = 0.0, value = param(var, "value"))
         else
@@ -549,7 +549,7 @@ function prepare_reader(config)
     path_forcing = config.input.path_forcing
     cyclic_path = input_path(config, config.input.path_static)
 
-    @info "Cyclic parameters are provided by file $cyclic_path"
+    @info "Cyclic parameters are provided by `$cyclic_path`."
 
     # absolute paths are not supported, see Glob.jl#2
     # the path separator in a glob pattern is always /
@@ -564,7 +564,7 @@ function prepare_reader(config)
         glob_dir = normpath(tomldir, dir_input)
         glob_path = replace(path_forcing, '\\' => '/')
     end
-    @info "Forcing parameters are provided by file $path_forcing in folder $glob_dir"
+    @info "Forcing parameters are provided by `$path_forcing`."
 
     dynamic_paths = glob(glob_path, glob_dir)  # expand "data/forcing-year-*.nc"
     if isempty(dynamic_paths)
@@ -594,7 +594,7 @@ function prepare_reader(config)
         forcing_parameters[fields] =
             (name = ncname, scale = mod.scale, offset = mod.offset, value = mod.value)
 
-        @info "NetCDF variable \"$ncname\" is mapped as forcing parameter to $par"
+        @info "Get `$par` from NetCDF variable `$ncname` as forcing parameter."
     end
 
     # create map from internal location to NetCDF variable name for cyclic parameters
@@ -606,7 +606,7 @@ function prepare_reader(config)
             cyclic_parameters[fields] =
                 (name = ncname, scale = mod.scale, offset = mod.offset)
 
-            @info "NetCDF variable \"$ncname\" file is mapped as cyclic parameter to $par"
+            @info "Get `$par` from NetCDF variable `$ncname` as cyclic parameter."
         end
     else
         cyclic_parameters = Dict{Tuple{Symbol,Vararg{Symbol}},NamedTuple}()
@@ -805,7 +805,7 @@ function prepare_writer(
     # data but only if config.output.path has been set
     if haskey(config, "output") && haskey(config.output, "path")
         nc_path = output_path(config, config.output.path)
-        @info "Create an output NetCDF file $nc_path for grid data"
+        @info "Create an output NetCDF file `$nc_path` for grid data."
         # create a flat mapping from internal parameter locations to NetCDF variable names
         output_ncnames = ncnames(config.output)
         # fill the output_map by mapping parameter NetCDF names to arrays
@@ -832,7 +832,7 @@ function prepare_writer(
         state_ncnames = ncnames(config.state)
         state_map = out_map(state_ncnames, modelmap)
         nc_state_path = output_path(config, config.state.path_output)
-        @info "Create a state output NetCDF file $nc_state_path"
+        @info "Create a state output NetCDF file `$nc_state_path`."
         ds_outstate = setup_grid_netcdf(
             nc_state_path,
             x_nc,
@@ -854,8 +854,8 @@ function prepare_writer(
     # data, but only if config.netcdf.variable has been set. 
     if haskey(config, "netcdf") && haskey(config.netcdf, "variable")
         nc_scalar_path = output_path(config, config.netcdf.path)
-        @info "Create an output NetCDF file $nc_state_path for scalar data"
-        # get NetCDF info for scalar data (variable name, locationset (dim) and 
+        @info "Create an output NetCDF file `$nc_state_path` for scalar data."
+        # get NetCDF info for scalar data (variable name, locationset (dim) and
         # location ids)
         ncvars_dims = nc_variables_dims(config.netcdf.variable, nc_static, config)
         ds_scalar = setup_scalar_netcdf(nc_scalar_path, ncvars_dims, calendar, time_units)
@@ -878,7 +878,7 @@ function prepare_writer(
     if haskey(config, "csv") && haskey(config.csv, "column")
         # open CSV file and write header
         csv_path = output_path(config, config.csv.path)
-        @info "Create an output CSV file $csv_path for scalar data"
+        @info "Create an output CSV file `$csv_path` for scalar data."
         # create directory if needed
         mkpath(dirname(csv_path))
         csv_io = open(csv_path, "w")
@@ -1087,7 +1087,7 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset, fileformat)
             type = Union{Int,Missing},
             allow_missing = true,
         )
-        @info "Request scalar output ($fileformat) at \"$mapname\" with reducer function \"$reducer_name\" for parameter $param"
+        @info "Adding scalar output for a map with a reducer function." fileformat param mapname reducer_name
         ids = unique(skipmissing(map_2d))
         # from id to list of internal indices
         inds = Dict{Int,Vector{Int}}(id => Vector{Int}() for id in ids)
@@ -1099,7 +1099,7 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset, fileformat)
             ind = rev_inds[i]
             if iszero(ind)
                 error("""inactive cell found in requested scalar output
-                    map \"$mapname\" value $v for parameter $param""")
+                    map `$mapname` value $v for parameter $param""")
             end
             push!(vector, ind)
         end
@@ -1108,15 +1108,15 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset, fileformat)
         # reduce over all active cells
         # needs to be behind the map if statement, because it also can use a reducer
         reducer_name = col["reducer"]
-        @info "Request scalar output ($fileformat) for all active cells with reducer function \"$reducer_name\" for parameter $param"
+        @info "Adding scalar output of all active cells with reducer function." fileformat param reducer_name
         return reducerfunction(reducer_name)
     elseif haskey(col, "index")
         index = col["index"]
         if index isa Int
             # linear index into the internal vector of active cells
             # this one mostly makes sense for debugging, or for vectors of only a few elements
+            @info "Adding scalar output for linear index." fileformat param index
             return x -> getindex(x, index)
-            @debug "Request scalar output ($fileformat) for parameter $param at linear index $x"
         elseif index isa Dict
             # index into the 2D input/output arrays
             # the first always corresponds to the x dimension, then the y dimension
@@ -1124,8 +1124,8 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset, fileformat)
             i = index["x"]::Int
             j = index["y"]::Int
             ind = rev_inds[i, j]
+            @info "Adding scalar output for 2D index." fileformat param index
             iszero(ind) && error("inactive loc specified for output")
-            @debug "Request scalar output ($fileformat) for parameter $param at indices $ind"
             return A -> getindex(A, ind)
         else
             error("unknown index used")
@@ -1138,7 +1138,7 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset, fileformat)
         _, ix = findmin(abs.(x_nc .- x))
         I = CartesianIndex(ix, iy)
         i = rev_inds[I]
-        @info "Request scalar output ($fileformat) for parameter $param at x-coordinate $x and y-coordinate $y"
+        @info "Adding scalar output for coordinate." fileformat param x y
         iszero(i) && error("inactive coordinate specified for output")
         return A -> getindex(A, i)
     else

@@ -7,7 +7,7 @@ Config object. Will return a Model that is ready to run.
 function initialize_sediment_model(config::Config)
 
     model_type = config.model.type::String
-    @info "Initializing of model variables for model type $model_type"
+    @info "Initialize model variables for model type `$model_type`."
 
     # unpack the paths to the NetCDF files
     static_path = input_path(config, config.input.path_static)
@@ -174,14 +174,14 @@ function initialize_sediment_model(config::Config)
     # read and set states in model object if reinit=false
     if reinit == false
         instate_path = input_path(config, config.state.path_input)
-        @info "Read and set initial conditions from state file $instate_path"
+        @info "Set initial conditions from state file `$instate_path`."
         state_ncnames = ncnames(config.state)
         set_states(instate_path, model, state_ncnames; type = Float)
     else
-        @info "Setting initial conditions to default"
+        @info "Set initial conditions from default values."
     end
 
-    @info "End of model initialization"
+    @info "Initialized model"
     return model
 end
 

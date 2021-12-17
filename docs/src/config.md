@@ -30,12 +30,12 @@ The logging level is by default `info`, and can be changed through the TOML file
 following way: 
 
 ```toml
-loglevel = "debug"
+loglevel = "debug"      # optional, default is "info"
+path_log = "log.txt"    # optional, default is "log.txt"
 ```
 
-Logging messages are logged to the terminal and to a log file `log.txt` located in the
-output file location `output_dir` or if the `output_dir` is not defined the TOML file
-location.
+Logging messages are logged to the terminal and to a log file given by `path_log` in the
+TOML file.
 
 ## Model section
 Model specific settings can be included in the model section of the TOML file.

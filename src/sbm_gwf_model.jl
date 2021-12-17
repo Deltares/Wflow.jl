@@ -407,7 +407,7 @@ function initialize_sbm_gwf_model(config::Config)
     # read and set states in model object if reinit=false
     if reinit == false
         instate_path = input_path(config, config.state.path_input)
-        @info "Read and set initial conditions from state file $instate_path"
+        @info "Set initial conditions from state file `$instate_path`."
         state_ncnames = ncnames(config.state)
         set_states(instate_path, model, state_ncnames, type = Float)
         # update kinematic wave volume for river and land domain
@@ -429,7 +429,7 @@ function initialize_sbm_gwf_model(config::Config)
                 initialize_storage(lakes.storfunc, lakes.area, lakes.waterlevel, lakes.sh)
         end
     else
-        @info "Setting initial conditions to default"
+        @info "Set initial conditions from default values."
     end
 
     return model

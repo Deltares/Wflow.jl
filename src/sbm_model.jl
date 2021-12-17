@@ -7,7 +7,7 @@ Config object. Will return a Model that is ready to run.
 function initialize_sbm_model(config::Config)
 
     model_type = config.model.type::String
-    @info "Initializing of model variables for model type $model_type"
+    @info "Initialize model variables for model type `$model_type`."
 
     # unpack the paths to the NetCDF files
     static_path = input_path(config, config.input.path_static)
@@ -260,7 +260,8 @@ function initialize_sbm_model(config::Config)
     end
 
     if nthreads() > 1
-        @info "Parallel execution of kinematic wave, minimum stream order = $(get(config.model, "min_streamorder", 4))"
+        min_streamorder = get(config.model, "min_streamorder", 4)
+        @info "Parallel execution of kinematic wave, minimum stream order = `$min_streamorder`."
     end
 
     modelmap = (vertical = sbm, lateral = (subsurface = ssf, land = olf, river = rf))
@@ -342,7 +343,7 @@ function initialize_sbm_model(config::Config)
     # read and set states in model object if reinit=false
     if reinit == false
         instate_path = input_path(config, config.state.path_input)
-        @info "Read and set initial conditions from state file $instate_path"
+        @info "Set initial conditions from state file `$instate_path`."
         state_ncnames = ncnames(config.state)
         set_states(instate_path, model, state_ncnames; type = Float)
         @unpack lateral, vertical = model
@@ -374,10 +375,10 @@ function initialize_sbm_model(config::Config)
                 initialize_storage(lakes.storfunc, lakes.area, lakes.waterlevel, lakes.sh)
         end
     else
-        @info "Setting initial conditions to default"
+        @info "Set initial conditions from default values."
     end
 
-    @info "End of model initialization"
+    @info "Initialized model"
 
     return model
 end

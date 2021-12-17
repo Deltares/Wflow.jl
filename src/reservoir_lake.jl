@@ -131,7 +131,7 @@ function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, Δt)
     pits[inds_res] .= true
 
     n = length(resarea)
-    @info "Reading a total of $n reservoir locations"
+    @info "Read `$n` reservoir locations."
     reservoirs = SimpleReservoir{Float}(
         Δt = Δt,
         demand = resdemand,
@@ -358,7 +358,7 @@ function initialize_natural_lake(config, nc, inds_riv, nriv, pits, Δt)
     n_lakes = length(inds_lake)
     lakelocs = lakelocs_2d[inds_lake]
 
-    @info "Reading a total of $n_lakes lake locations"
+    @info "Read `$n_lakes` lake locations."
 
     sh = Vector{Union{SH,Missing}}(missing, n_lakes)
     hq = Vector{Union{HQ,Missing}}(missing, n_lakes)

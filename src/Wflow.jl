@@ -143,12 +143,12 @@ function run(tomlpath)
     # to catch stacktraces in the log file a try-catch is required
     try
         config = Config(tomlpath)
-        tslogger, logfile = init_logger(config)
-        with_logger(tslogger) do
-            @info "Wflow version v$version"
+        logger, logfile = init_logger(config)
+        with_logger(logger) do
+            @info "Wflow version `v$version`"
             run(config)
-            close(logfile)
         end
+        close(logfile)
     catch e
         @error "Wflow simulation failed" exception = (e, catch_backtrace())
     end
@@ -186,7 +186,7 @@ function run(model::Model; close_files = true)
 
     @info "Run information" model_type starttime Δt endtime nthreads()
     @progress for (i, time) in enumerate(times)
-        @debug "Starting timestep" time timestep = i
+        @debug "Starting timestep." time i
         load_dynamic_input!(model)
         model = update(model)
     end
@@ -196,7 +196,7 @@ function run(model::Model; close_files = true)
     # be a next step, and then the output state falls on the correct time
     rewind!(clock)
     if haskey(config, "state") && haskey(config.state, "path_output")
-        @info "Write output states to NetCDF file $(model.writer.state_nc_path)"
+        @info "Write output states to NetCDF file `$(model.writer.state_nc_path)`."
     end
     write_netcdf_timestep(model, writer.state_dataset, writer.state_parameters)
 
@@ -208,10 +208,14 @@ function run(model::Model; close_files = true)
         Wflow.close_files(model, delete_output = false)
     end
 
-    # copy TOML to output (only if dir_output is provided in TOML)
-    if Wflow.get(config, "dir_output", ".") != "."
-        dst = normpath(Wflow.output_path(config, "."), basename(Wflow.pathof(config)))
-        cp(Wflow.pathof(config), dst, force = true)
+    # copy TOML to dir_output, to archive what settings were used
+    if haskey(config, "dir_output")
+        src = normpath(pathof(config))
+        dst = output_path(config, basename(src))
+        if src != dst
+            @debug "Copying TOML file." src dst
+            cp(src, dst, force = true)
+        end
     end
     return model
 end
@@ -226,7 +230,7 @@ function run()
     if !isfile(toml_path)
         throw(ArgumentError("File not found: $(toml_path)\n" * usage))
     end
-    Wflow.run(toml_path)
+    run(toml_path)
 end
 
 end # module

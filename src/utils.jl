@@ -141,7 +141,8 @@ function set_states(instate_path, model, state_ncnames; type = nothing)
     # states in NetCDF include dim time (one value) at index 3 or 4, 3 or 4 dims are allowed
     NCDataset(instate_path) do ds
         for (state, ncname) in state_ncnames
-            @debug "Read $ncname from $instate_path and map to state $state"
+            @info "Setting initial state from NetCDF." ncpath = instate_path ncvarname =
+                ncname state
             sel = active_indices(network, state)
             n = length(sel)
             dims = length(dimnames(ds[ncname]))
@@ -239,8 +240,8 @@ function ncread(
     end
 
     if isnothing(var)
+        @info "Get `$parameter` from default value `$defaults`."
         @assert !isnothing(defaults)
-        @info "Returning default value $defaults for parameter $parameter"
         if !isnothing(type)
             defaults = convert(type, defaults)
         end
@@ -258,7 +259,7 @@ function ncread(
     if mod.scale != 1.0 || mod.offset != 0.0
         A = read_standardized(nc, var, dim_sel) .* mod.scale .+ mod.offset
     elseif !isnothing(mod.value)
-        @info "Returning default value $defaults for parameter $parameter"
+        @info "Get `$parameter` from default value `$defaults`."
         if isnothing(dimname)
             return Base.fill(mod.value, length(sel))
         else
@@ -267,7 +268,7 @@ function ncread(
     else
         # Read the entire variable into memory, applying scale, offset and
         # set fill_values to missing.
-        @info "Read NetCDF variable \"$var\" and map to parameter $parameter"
+        @info "Get `$parameter` from NetCDF variable `$var`."
         A = read_standardized(nc, var, dim_sel)
     end
 

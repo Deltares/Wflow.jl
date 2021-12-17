@@ -48,10 +48,9 @@ function initialize_surfaceflow_land(
     tstep,
     Δt,
 )
-    @info "Kinematic wave approach is used for overland flow"
-    @info "Enable kinematic wave iterations for overland flow = $iterate"
+    @info "Kinematic wave approach is used for overland flow." iterate
     if tstep > 0
-        @info "Using a fixed sub-timestep (seconds) $tstep for kinematic wave overland flow"
+        @info "Using a fixed sub-timestep (seconds) $tstep for kinematic wave overland flow."
     end
 
     n_land = ncread(
@@ -115,10 +114,9 @@ function initialize_surfaceflow_river(
     tstep,
     Δt,
 )
-    @info "Kinematic wave approach is used for river flow"
-    @info "Enable kinematic wave iterations for river flow = $iterate"
+    @info "Kinematic wave approach is used for river flow." iterate
     if tstep > 0
-        @info "Using a fixed sub-timestep (seconds) $tstep for kinematic wave river flow"
+        @info "Using a fixed sub-timestep (seconds) $tstep for kinematic wave river flow."
     end
 
     n_river = ncread(
