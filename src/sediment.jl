@@ -1328,9 +1328,7 @@ function update(rs::RiverSediment, network, config)
                     0.409 * log10(var2) -
                     0.314 *
                     log10(vshear / ws) *
-                    log10(
-                        (rs.q_riv[v] / (rs.width[v] * rs.h_riv[v]) - vcr) * rs.sl[v] / ws,
-                    )
+                    log10((rs.q_riv[v] / (rs.width[v] * rs.h_riv[v]) - vcr) * rs.sl[v] / ws)
                 )
                 # Gravel equation
             elseif (rs.width[v] * rs.h_riv[v]) >= vcr && rs.d50[v] < 2.0
@@ -1339,9 +1337,7 @@ function update(rs::RiverSediment, network, config)
                     0.305 * log10(var2) -
                     0.282 *
                     log10(vshear / ws) *
-                    log10(
-                        (rs.q_riv[v] / (rs.width[v] * rs.h_riv[v]) - vcr) * rs.sl[v] / ws,
-                    )
+                    log10((rs.q_riv[v] / (rs.width[v] * rs.h_riv[v]) - vcr) * rs.sl[v] / ws)
                 )
             else
                 logcppm = 0.0

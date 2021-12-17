@@ -864,7 +864,8 @@ function prepare_writer(
         nc_scalar = []
         for var in config.netcdf.variable
             parameter = var["parameter"]
-            reducer_func = get_reducer_func(var, rev_inds, x_nc, y_nc, config, nc_static, "NetCDF")
+            reducer_func =
+                get_reducer_func(var, rev_inds, x_nc, y_nc, config, nc_static, "NetCDF")
             push!(nc_scalar, (parameter = parameter, reducer = reducer_func))
         end
     else
@@ -891,7 +892,8 @@ function prepare_writer(
         csv_cols = []
         for col in config.csv.column
             parameter = col["parameter"]
-            reducer_func = get_reducer_func(col, rev_inds, x_nc, y_nc, config, nc_static, "CSV")
+            reducer_func =
+                get_reducer_func(col, rev_inds, x_nc, y_nc, config, nc_static, "CSV")
             push!(csv_cols, (parameter = parameter, reducer = reducer_func))
         end
     else

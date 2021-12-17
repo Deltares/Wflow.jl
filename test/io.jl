@@ -42,14 +42,18 @@ config = Wflow.Config(tomlpath)
     # test the optional "dir_input" and "dir_output" keys
     @test haskey(config, "dir_input")
     @test haskey(config, "dir_output")
-    @test Wflow.input_path(config, config.state.path_input) == joinpath(@__DIR__, "data", "input", "instates-moselle.nc")
-    @test Wflow.output_path(config, config.state.path_output) == joinpath(@__DIR__, "data", "output", "outstates-moselle.nc")
+    @test Wflow.input_path(config, config.state.path_input) ==
+          joinpath(@__DIR__, "data", "input", "instates-moselle.nc")
+    @test Wflow.output_path(config, config.state.path_output) ==
+          joinpath(@__DIR__, "data", "output", "outstates-moselle.nc")
     # hbv_config doesn't use dir_input and dir_output
     hbv_config = Wflow.Config(joinpath(@__DIR__, "hbv_config.toml"))
     @test !haskey(hbv_config, "dir_input")
     @test !haskey(hbv_config, "dir_output")
-    @test Wflow.input_path(hbv_config, hbv_config.state.path_input) == joinpath(@__DIR__, "data", "input", "instates-lahn.nc")
-    @test Wflow.output_path(hbv_config, hbv_config.state.path_output) == joinpath(@__DIR__, "data", "output", "outstates-lahn.nc")
+    @test Wflow.input_path(hbv_config, hbv_config.state.path_input) ==
+          joinpath(@__DIR__, "data", "input", "instates-lahn.nc")
+    @test Wflow.output_path(hbv_config, hbv_config.state.path_output) ==
+          joinpath(@__DIR__, "data", "output", "outstates-lahn.nc")
 end
 
 @testset "Clock constructor" begin
@@ -348,12 +352,12 @@ end
     f = open(normpath(output, "log.txt"))
     lines = readlines(f)
 
-    @test lines[[4,13,16,19,22]] ==
-    ["┌ Info: Initializing of model variables for model type sbm",
-    "┌ Info: NetCDF variable \"precip\" is mapped as forcing parameter to vertical.precipitation",
-    "┌ Info: NetCDF variable \"temp\" is mapped as forcing parameter to vertical.temperature",
-    "┌ Info: NetCDF variable \"pet\" is mapped as forcing parameter to vertical.potential_evaporation",
-    "┌ Info: NetCDF variable \"LAI\" file is mapped as cyclic parameter to vertical.leaf_area_index",
+    @test lines[[4, 13, 16, 19, 22]] == [
+        "┌ Info: Initializing of model variables for model type sbm",
+        "┌ Info: NetCDF variable \"precip\" is mapped as forcing parameter to vertical.precipitation",
+        "┌ Info: NetCDF variable \"temp\" is mapped as forcing parameter to vertical.temperature",
+        "┌ Info: NetCDF variable \"pet\" is mapped as forcing parameter to vertical.potential_evaporation",
+        "┌ Info: NetCDF variable \"LAI\" file is mapped as cyclic parameter to vertical.leaf_area_index",
     ]
     close(f)
 end
