@@ -141,16 +141,18 @@ This makes it easier to start a run from the command line without having to esca
 """
 function run(tomlpath)
     # to catch stacktraces in the log file a try-catch is required
-    try
-        config = Config(tomlpath)
-        logger, logfile = init_logger(config)
-        with_logger(logger) do
-            @info "Wflow version `v$version`"
+    config = Config(tomlpath)
+    logger, logfile = init_logger(config)
+    with_logger(logger) do
+        @info "Wflow version `v$version`"
+        try
             run(config)
+        catch e
+            @error "Wflow simulation failed" exception = (e, catch_backtrace()) _id = :wflow_run
+            rethrow()
+        finally
+            close(logfile)
         end
-        close(logfile)
-    catch e
-        @error "Wflow simulation failed" exception = (e, catch_backtrace())
     end
 end
 

@@ -27,7 +27,7 @@ dir_output = "data/output"                      # optional, default is the path 
 
 ## Logging
 The logging level is by default `info`, and can be changed through the TOML file in the
-following way: 
+following way:
 
 ```toml
 loglevel = "debug"      # optional, default is "info"

@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Option to use the local inertial model for river flow as part of the [SBM + Kinematic
   wave](@ref). See also [SBM + Local inertial river](@ref).
-- Additional log messages and log file `log.txt` as output, see also [Logging](@ref). 
+- Additional log messages and log file as output, see also [Logging](@ref).
 
 ### Fixed
 - Model type `hbv`: the surface width for overland flow was not corrected with the river

@@ -350,13 +350,17 @@ end
     path_log = Wflow.output_path(config, "log.txt")
     @test isfile(toml_archive)
     @test isfile(path_log)
-
     lines = readlines(path_log)
-    @test lines[[3, 9, 11, 13, 15]] == [
-        "┌ Info: Initialize model variables for model type `sbm`.",
-        "┌ Info: Get `vertical.precipitation` from NetCDF variable `precip` as forcing parameter.",
-        "┌ Info: Get `vertical.temperature` from NetCDF variable `temp` as forcing parameter.",
-        "┌ Info: Get `vertical.potential_evaporation` from NetCDF variable `pet` as forcing parameter.",
-        "┌ Info: Get `vertical.leaf_area_index` from NetCDF variable `LAI` as cyclic parameter.",
-    ]
+    @test count(startswith(line, "┌ Info: ") for line in lines) > 60
+    @test count(startswith(line, "┌ Debug: ") for line in lines) == 0
+
+    # another run with debug log level and a non-default path_log
+    config.loglevel = "debug"
+    config.path_log = "log-debug.txt"
+    Wflow.run(tomlpath)
+    path_log = Wflow.output_path(config, "log-debug.txt")
+    @test isfile(path_log)
+    lines = readlines(path_log)
+    @test count(startswith(line, "┌ Info: ") for line in lines) > 60
+    @test count(startswith(line, "┌ Debug: ") for line in lines) > 8
 end

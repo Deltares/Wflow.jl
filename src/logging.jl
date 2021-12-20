@@ -55,31 +55,29 @@ function init_logger(config::Config)::Tuple{TeeLogger,IOStream}
 
     file_logger = if fews_run
         # Format the log message to be printed on a single line.
-        FormatLogger(format_message, log_handle)
+        MinLevelLogger(FormatLogger(format_message, log_handle), loglevel)
     else
-        f_logger = FileLogger(log_handle)
-        # Add a timestamp as a keyword argument to a log message.
-        # Added as an internal option for debugging performance issues, which is
-        # normally off since it creates a lot of noise in the log file and makes it
-        # non reproducable.
-        add_timestamps = false
-        if add_timestamps
-            f_logger = TransformerLogger(f_logger) do orig_log
-                new_kwargs = (orig_log.kwargs..., timestamp = now())
-                merge(orig_log, (kwargs = new_kwargs,))
-            end
-        end
-        f_logger
+        # use ConsoleLogger instead of FileLogger to be able to print full stacktraces there
+        # https://github.com/JuliaLogging/LoggingExtras.jl/issues/46#issuecomment-803716480
+        ConsoleLogger(
+            IOContext(log_handle, :compact => false, :limit => false, :color => false),
+            loglevel,
+            show_limited = false,
+        )
     end
 
     logger = TeeLogger(
         # avoid progresslogger and NCDatasets debug messages in the file
         EarlyFilteredLogger(
             log -> log.group !== :ProgressLogging && log._module != NCDatasets,
-            MinLevelLogger(file_logger, loglevel),
+            file_logger,
         ),
         # avoid debug information overflowing the terminal, -1 is the level of ProgressLogging
-        MinLevelLogger(TerminalLogger(), LogLevel(-1)),
+        # avoid double stacktraces by filtering the @error catch in Wflow.run
+        EarlyFilteredLogger(
+            log -> log.id !== :wflow_run,
+            MinLevelLogger(TerminalLogger(), LogLevel(-1)),
+        ),
     )
     # Delft-FEWS already gets a timestamp from format_message, otherwise add it as a kwarg.
     return logger, log_handle
