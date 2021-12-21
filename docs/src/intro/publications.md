@@ -91,10 +91,18 @@ Rakovec, O., Weerts, A.H., Sumihar, J., Uijlenhoet, R., 2015. Operational aspect
 asynchronous filtering for flood forecasting. Hydrol. Earth Syst. Sci., 19, 2911–2924,
 <https://doi.org/10.5194/hess-19-2911-2015>.
 
+Rusli,S., A.H. Weerts, A. Taufiq, V. Bense, 2021. Estimating water balance components and 
+their uncertainty bounds in highly groundwater-dependent and data-scarce area: 
+An example for the Upper Citarum basin, J. Hydrol. Regional Studies, doi: 10.1016/j.ejrh.2021.100911.
+
 Schaller, N., Sillmann, J., Müller, M., Haarsma, R., Hazeleger, W., Hegdahl, T.J., Kelder,
 T., van den Oord, G., Weerts, A., Whan, K., 2020. The role of spatial and temporal model
 resolution in a flood event storyline approach in western Norway. Weather and Climate
 Extremes, doi: <https://doi.org/10.1016/j.wace.2020.100259>.
+
+Sperna Weiland, F.C.,  R.D. Visser, P. Greve, B. Bisselink, L. Brunner and A.H. Weerts, 2021. Estimating 
+Regionalized Hydrological Impacts of Climate Change Over Europe by Performance-Based Weighting of 
+CORDEX Projections, Frontiers of Water, 10.3389/frwa.2021.713537.
 
 Tangdamrongsub, N., Steele-Dunne, S.C., Gunter, B.C., Ditmar, P.G., Weerts, A.H., 2015. Data
 assimilation of GRACE terrestrial water storage estimates into a regional hydrological model
@@ -121,7 +129,7 @@ indicators with combination of process-based models and data assimilation techni
 Ecological Indicators 66, 428–439. <https://doi:10.1016/j.ecolind.2016.02.016>.
 
 
-## Theses
+## Theses & Internship reports
 
 Arnal, L., 2014. An intercomparison of flood forecasting models for the Meuse River basin,
 MSc. Thesis, Vrije Universiteit, Amsterdam. <https://hal.inrae.fr/hal-02600749>.
@@ -131,6 +139,11 @@ Vrije Universiteit Amsterdam, Faculty of Science, Hydrology.
 
 Azadeh Karami Fard, 2015. Modeling runoff of an Ethiopian catchment with WFLOW, MSc. Thesis,
 Vrije Universiteit, Amsterdam.
+
+Beusen, B. The effect of rooting depth on discharge and evapotranspiration in (semi-)arid areas, 
+MSC Thesis, HWM, Wageningen University, 2021.
+
+Beusen, B. Plastic transport and the effect of climate change in the Rhine, Internship Deltares, 2021
 
 López López, P., 2018. Application of Global Hydrological Datasets for River Basin Modelling
 Utrecht University, Utrecht, the Netherlands, pp. 1-214, Doctoral dissertation.
@@ -153,6 +166,11 @@ MSc thesis, Wageningen University.
 
 Verbrugge, M., 2019. Reservoir Operation Optimization, a case study in the Chao Phraya
 Basin, BSc thesis, Hydrology and Quantitative Water Management Group, Wageningen University.
+
+Viguures, P. 2020. Modelling of flash floods in current and future climate with high resolution convection
+permitting regional climate models in the European Alps, MSc Thesis, Wageningen University, 2020
+
+Visser, B. 2020. Impact of climate change on local water resources of European catchments, Intersnhip report, Deltares, 2020
 
 ## Reports
 
