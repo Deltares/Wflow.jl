@@ -47,7 +47,7 @@ function format_message(io::IO, args)::Nothing
 end
 
 "Initialize a logger, which is different if `fews_run` is set in the Config."
-function init_logger(config::Config)::Tuple{TeeLogger,IOStream}
+function init_logger(config::Config; silent=false)::Tuple{TeeLogger,IOStream}
     loglevel = parse_loglevel(get(config, "loglevel", "info"))
     path_log = output_path(config, get(config, "path_log", "log.txt"))
     log_handle = open(path_log, "w")
@@ -66,19 +66,27 @@ function init_logger(config::Config)::Tuple{TeeLogger,IOStream}
         )
     end
 
+    terminal_logger = if silent
+        NullLogger()
+    else
+        # avoid debug information overflowing the terminal, -1 is the level of ProgressLogging
+        # avoid double stacktraces by filtering the @error catch in Wflow.run
+        EarlyFilteredLogger(
+            log -> log.id !== :wflow_run,
+            MinLevelLogger(TerminalLogger(), LogLevel(-1)),
+        )
+    end
+
     logger = TeeLogger(
         # avoid progresslogger and NCDatasets debug messages in the file
         EarlyFilteredLogger(
             log -> log.group !== :ProgressLogging && log._module != NCDatasets,
             file_logger,
         ),
-        # avoid debug information overflowing the terminal, -1 is the level of ProgressLogging
-        # avoid double stacktraces by filtering the @error catch in Wflow.run
-        EarlyFilteredLogger(
-            log -> log.id !== :wflow_run,
-            MinLevelLogger(TerminalLogger(), LogLevel(-1)),
-        ),
+        terminal_logger,
     )
-    # Delft-FEWS already gets a timestamp from format_message, otherwise add it as a kwarg.
+    with_logger(logger) do
+        @debug "Logger initialized." loglevel silent fews_run path_log
+    end
     return logger, log_handle
 end

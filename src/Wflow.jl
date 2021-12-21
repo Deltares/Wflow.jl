@@ -124,7 +124,7 @@ include("subdomains.jl")
 include("logging.jl")
 
 """
-    run(tomlpath::String)
+    run(tomlpath::AbstractString; silent=false)
     run(config::Config)
     run(model::Model)
     run()
@@ -132,23 +132,35 @@ include("logging.jl")
 Run an entire simulation starting either from a path to a TOML settings file,
 a prepared `Config` object, or an initialized `Model` object. This allows more flexibility
 if you want to for example modify a `Config` before initializing the `Model`. Logging to a 
-file is only part of the `run(tomlpath::String)` function.
+file is only part of the `run(tomlpath::AbstractString)` method. To avoid logging to the
+terminal, set the `silent` keyword argument to `true`, or put that in the TOML.
 
 The 0 argument version expects ARGS to contain a single entry, pointing to the TOML path.
 This makes it easier to start a run from the command line without having to escape quotes:
 
     julia -e "using Wflow; Wflow.run()" "path/to/config.toml"
 """
-function run(tomlpath)
-    # to catch stacktraces in the log file a try-catch is required
+function run(tomlpath::AbstractString; silent=nothing)
     config = Config(tomlpath)
-    logger, logfile = init_logger(config)
+    # if the silent kwarg is not set, check if it is set in the TOML
+    if silent === nothing
+        silent = get(config, "silent", false)::Bool
+    end
+    fews_run = get(config, "fews_run", false)::Bool
+    logger, logfile = init_logger(config; silent)
     with_logger(logger) do
         @info "Wflow version `v$version`"
+        # to catch stacktraces in the log file a try-catch is required
         try
             run(config)
         catch e
-            @error "Wflow simulation failed" exception = (e, catch_backtrace()) _id = :wflow_run
+            # avoid logging backtrace for the single line FEWS log format
+            # that logger also uses SimpleLogger which doesn't result in a good backtrace
+            if fews_run
+                @error "Wflow simulation failed" exception = e _id = :wflow_run
+            else
+                @error "Wflow simulation failed" exception = (e, catch_backtrace()) _id = :wflow_run
+            end
             rethrow()
         finally
             close(logfile)

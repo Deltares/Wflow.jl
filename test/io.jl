@@ -342,7 +342,7 @@ end
     @test Wflow.parse_loglevel(0) == Logging.Info
 
     tomlpath = joinpath(@__DIR__, "sbm_simple.toml")
-    Wflow.run(tomlpath)
+    Wflow.run(tomlpath; silent=true)
 
     config = Wflow.Config(tomlpath)
     output = normpath(abspath(Wflow.get(config, "dir_output", ".")))
@@ -351,16 +351,30 @@ end
     @test isfile(toml_archive)
     @test isfile(path_log)
     lines = readlines(path_log)
-    @test count(startswith(line, "┌ Info: ") for line in lines) > 60
+    @test count(startswith(line, "[ Info: ") for line in lines) > 50
     @test count(startswith(line, "┌ Debug: ") for line in lines) == 0
 
-    # another run with debug log level and a non-default path_log
+    # Another run with debug log level and a non-default path_log.
+    # Must write the modified config to disk first, since the logging
+    # applies only to the `Wflow.run(tomlpath)` method.
+    # This also add an error to the config.
+    tomlpath_debug = joinpath(@__DIR__, "sbm_simple-debug.toml")
     config.loglevel = "debug"
     config.path_log = "log-debug.txt"
-    Wflow.run(tomlpath)
+    config.fews_run = true
+    config.silent = true
+    config.input.path_forcing = "doesnt-exist.nc"
+    open(tomlpath_debug, "w") do io
+        TOML.print(io, Dict(config))
+    end
+    @test_throws ErrorException Wflow.run(tomlpath_debug)
+    rm(tomlpath_debug)
     path_log = Wflow.output_path(config, "log-debug.txt")
     @test isfile(path_log)
     lines = readlines(path_log)
-    @test count(startswith(line, "┌ Info: ") for line in lines) > 60
-    @test count(startswith(line, "┌ Debug: ") for line in lines) > 8
+    @test count(startswith(line, "timestamp = ") for line in lines) > 4
+    @test count(contains(line, " | Wflow | [Info] ") for line in lines) > 3
+    @test count(contains(line, " | Wflow | [Debug] ") for line in lines) > 0
+    msg = " | Wflow | [Error] Wflow simulation failed |exception = ErrorException(\"No files found with name 'doesnt-exist.nc' in '"
+    @test contains(lines[end], msg)
 end
