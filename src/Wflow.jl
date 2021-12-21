@@ -140,7 +140,7 @@ This makes it easier to start a run from the command line without having to esca
 
     julia -e "using Wflow; Wflow.run()" "path/to/config.toml"
 """
-function run(tomlpath::AbstractString; silent=nothing)
+function run(tomlpath::AbstractString; silent = nothing)
     config = Config(tomlpath)
     # if the silent kwarg is not set, check if it is set in the TOML
     if silent === nothing
@@ -159,7 +159,8 @@ function run(tomlpath::AbstractString; silent=nothing)
             if fews_run
                 @error "Wflow simulation failed" exception = e _id = :wflow_run
             else
-                @error "Wflow simulation failed" exception = (e, catch_backtrace()) _id = :wflow_run
+                @error "Wflow simulation failed" exception = (e, catch_backtrace()) _id =
+                    :wflow_run
             end
             rethrow()
         finally

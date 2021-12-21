@@ -342,7 +342,7 @@ end
     @test Wflow.parse_loglevel(0) == Logging.Info
 
     tomlpath = joinpath(@__DIR__, "sbm_simple.toml")
-    Wflow.run(tomlpath; silent=true)
+    Wflow.run(tomlpath; silent = true)
 
     config = Wflow.Config(tomlpath)
     output = normpath(abspath(Wflow.get(config, "dir_output", ".")))

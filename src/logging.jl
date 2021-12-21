@@ -47,7 +47,7 @@ function format_message(io::IO, args)::Nothing
 end
 
 "Initialize a logger, which is different if `fews_run` is set in the Config."
-function init_logger(config::Config; silent=false)::Tuple{TeeLogger,IOStream}
+function init_logger(config::Config; silent = false)::Tuple{TeeLogger,IOStream}
     loglevel = parse_loglevel(get(config, "loglevel", "info"))
     path_log = output_path(config, get(config, "path_log", "log.txt"))
     log_handle = open(path_log, "w")

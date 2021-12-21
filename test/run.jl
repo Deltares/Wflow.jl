@@ -4,7 +4,7 @@ using Dates
 using NCDatasets
 
 tomlpath = joinpath(@__DIR__, "sbm_simple.toml")
-Wflow.run(tomlpath; silent=true)
+Wflow.run(tomlpath; silent = true)
 
 # test whether restarted runs get the same results as continuous ones, i.e. state is captured
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
