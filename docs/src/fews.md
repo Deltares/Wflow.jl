@@ -19,3 +19,18 @@ fews_run = true  # optional, default value is false
 ```
 
 This ensures that Wflow offsets the time handling, to meet the expectations of Delft-FEWS.
+
+It also uses a different format for the log file such that each log message takes up only
+one line. That meets the [General Adapter
+logFile](https://publicwiki.deltares.nl/display/FEWSDOC/05+General+Adapter+Module#id-05GeneralAdapterModule-logFile)
+expectations, which then can get parsed with these Delft-FEWS log parsing settings:
+
+```
+<logFile>
+    <file>log.txt</file>
+    <errorLinePattern >* [Error] *</errorLinePattern >
+    <warningLinePattern>* [Warn] *</warningLinePattern>
+    <infoLinePattern>* [Info] *</infoLinePattern>
+    <debugLinePattern >* [Debug] *</debugLinePattern >
+</logFile>
+```

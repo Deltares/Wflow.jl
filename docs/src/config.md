@@ -26,16 +26,24 @@ dir_output = "data/output"                      # optional, default is the path 
 ```
 
 ## Logging
-The logging level is by default `info`, and can be changed through the TOML file in the
-following way:
+Wflow emits logging messages at various levels such as debug, info, and error. These get
+sent to both the terminal as well as a log file. If you want to debug an issue it can be
+helpful to set `loglevel = "debug"` in the TOML. To avoid flooding the screen, debug
+messages are only sent to the log file. The following settings will affect the logging:
 
 ```toml
+silent = false          # optional, default is "false"
 loglevel = "debug"      # optional, default is "info"
 path_log = "log.txt"    # optional, default is "log.txt"
+fews_run = false        # optional, default value is false
 ```
 
-Logging messages are logged to the terminal and to a log file given by `path_log` in the
-TOML file.
+`silent` avoids logging to the terminal, and only writes the log file. `loglevel` controls
+which levels are filtered out, so the default setting `"info"` does not show any debug level
+messages. Note that for finer control, you can also pass an integer log level, see Julia's
+[Logging](https://docs.julialang.org/en/v1/stdlib/Logging/#Log-event-structure)
+documentation. `path_log` sets the desired output path for the log file. For information
+regarding `fews_run`, see [Run from Delft-FEWS](@ref).
 
 ## Model section
 Model specific settings can be included in the model section of the TOML file.
