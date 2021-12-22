@@ -240,7 +240,7 @@ function ncread(
     end
 
     if isnothing(var)
-        @info "Get `$parameter` from default value `$defaults`."
+        @info "Set `$parameter` using default value `$defaults`."
         @assert !isnothing(defaults)
         if !isnothing(type)
             defaults = convert(type, defaults)
@@ -259,7 +259,7 @@ function ncread(
     if mod.scale != 1.0 || mod.offset != 0.0
         A = read_standardized(nc, var, dim_sel) .* mod.scale .+ mod.offset
     elseif !isnothing(mod.value)
-        @info "Get `$parameter` from default value `$defaults`."
+        @info "Set `$parameter` using default value `$defaults`."
         if isnothing(dimname)
             return Base.fill(mod.value, length(sel))
         else
@@ -268,7 +268,7 @@ function ncread(
     else
         # Read the entire variable into memory, applying scale, offset and
         # set fill_values to missing.
-        @info "Get `$parameter` from NetCDF variable `$var`."
+        @info "Set `$parameter` using NetCDF variable `$var`."
         A = read_standardized(nc, var, dim_sel)
     end
 

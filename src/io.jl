@@ -547,6 +547,7 @@ end
 
 function prepare_reader(config)
     path_forcing = config.input.path_forcing
+    abspath_forcing = input_path(config, path_forcing)
     cyclic_path = input_path(config, config.input.path_static)
 
     @info "Cyclic parameters are provided by `$cyclic_path`."
@@ -564,7 +565,7 @@ function prepare_reader(config)
         glob_dir = normpath(tomldir, dir_input)
         glob_path = replace(path_forcing, '\\' => '/')
     end
-    @info "Forcing parameters are provided by `$path_forcing`."
+    @info "Forcing parameters are provided by `$abspath_forcing`."
 
     dynamic_paths = glob(glob_path, glob_dir)  # expand "data/forcing-year-*.nc"
     if isempty(dynamic_paths)
@@ -594,7 +595,7 @@ function prepare_reader(config)
         forcing_parameters[fields] =
             (name = ncname, scale = mod.scale, offset = mod.offset, value = mod.value)
 
-        @info "Get `$par` from NetCDF variable `$ncname` as forcing parameter."
+        @info "Set `$par` using NetCDF variable `$ncname` as forcing parameter."
     end
 
     # create map from internal location to NetCDF variable name for cyclic parameters
@@ -606,7 +607,7 @@ function prepare_reader(config)
             cyclic_parameters[fields] =
                 (name = ncname, scale = mod.scale, offset = mod.offset)
 
-            @info "Get `$par` from NetCDF variable `$ncname` as cyclic parameter."
+            @info "Set `$par` using NetCDF variable `$ncname` as cyclic parameter."
         end
     else
         cyclic_parameters = Dict{Tuple{Symbol,Vararg{Symbol}},NamedTuple}()
