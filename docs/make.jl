@@ -59,4 +59,4 @@ makedocs(;
     pages = pages,
 )
 
-#deploydocs(; repo = "github.com/Deltares/Wflow.jl", push_preview = true)
+deploydocs(; repo = "github.com/Deltares/Wflow.jl", push_preview = true)
