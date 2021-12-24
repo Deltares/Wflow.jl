@@ -260,9 +260,14 @@ function ncread(
         if isnothing(fill)
             # errors if missings are found
             A = nomissing(A)
+            if any(isnan, A)
+                error("NaN not allowed in $var")
+            end
         else
             # replaces missings with a fill value
             A = nomissing(A, fill)
+            # replace also NaN values with the fill value
+            replace!(x -> isnan(x) ? fill : x, A)
         end
     end
 
