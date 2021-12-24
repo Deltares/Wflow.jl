@@ -334,50 +334,6 @@ function initialize_flextopo_model(config::Config)
 
     end
 
-
-
-
-    # imax = zeros(Float, nclass, n)
-    # for (k, class) in enumerate(classes)
-    #     imax_k = ncread(
-    #         nc,
-    #         param(config, "input.vertical.imax"*class, nothing);
-    #         sel = inds,
-    #         defaults = 3.0,
-    #         type = Float,
-    #         # dimname = :classes,
-    #     )
-    #     imax[k,:] = imax_k
-    # end
-
-    # hrufrac = zeros(Float, nclass, n)
-    # for (k, class) in enumerate(classes)
-    #     hrufrac_k = ncread(
-    #         nc,
-    #         param(config, "input.vertical.hrufrac"*class, nothing);
-    #         sel = inds,
-    #         defaults = 1.0/length(classes),
-    #         type = Float,
-    #         # dimname = :classes,
-    #     )
-    #     hrufrac[k,:] = hrufrac_k
-    # end
-    # @show typeof(imax_test)
-    # if size(icf, 1) != nclass
-    #     parname = param(config, "input.vertical.icf")
-    #     size1 = size(icf, 1)
-    #     error("$parname needs a class dimension of size $nclass, but is $size1")
-    # end
-    # imax = ncread(
-    #         nc,
-    #         param(config, "input.vertical.imax", nothing);
-    #         sel = inds,
-    #         defaults = 2.0,
-    #         type = Float,
-    #         # dimname = :classes,
-    #     )
-
-
     # read x, y coordinates and calculate cell length [m]
     y_nc = read_y_axis(nc)
     x_nc = read_x_axis(nc)
@@ -434,9 +390,9 @@ function initialize_flextopo_model(config::Config)
     
 
 
-    # flextopo = FLEXTOPO{Float, nclass}(
+    # store = FLEXTOPO{Float, nclass}(
     # store = InterceptionStorage{Float}(
-    store = FLEXTOPO{Float, nclass}(
+    flextopo = FLEXTOPO{Float, nclass}(
         Δt = Float(tosecond(Δt)),
         nclass = nclass,
         n = n,
@@ -681,8 +637,8 @@ function initialize_flextopo_model(config::Config)
     subriv_order, indices_subriv, topo_subriv =
         kinwave_set_subdomains(config, graph_riv, toposort_riv, index_pit_river)
 
-    # modelmap = (vertical = flextopo, lateral = (land = olf, river = rf))
-    modelmap = (vertical = store, lateral = (land = olf, river = rf))
+    modelmap = (vertical = flextopo, lateral = (land = olf, river = rf))
+    # modelmap = (vertical = store, lateral = (land = olf, river = rf))
     indices_reverse = (
         land = rev_inds,
         river = rev_inds_riv,
@@ -742,8 +698,8 @@ function initialize_flextopo_model(config::Config)
         config,
         (; land, river, reservoir, lake, index_river, frac_toriver),
         (subsurface = nothing, land = olf, river = rf),
-        store,
-        # flextopo,
+        # store,
+        flextopo,
         clock,
         reader,
         writer,
@@ -806,15 +762,6 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:FlextopoModel}
 
     # WAT BAL TODO
     watbal(vertical, config)
-    
-
-    # snow_hbv(vertical, config)
-    # hortonponding_no_storage(vertical, config)
-    # hortonrunoff_no_storage(vertical, config)
-    # rootzone_storage(vertical, config)
-    # fast_storage(vertical, config)
-    # common_slow_storage(vertical, config)
-    # # watbal(vertical, config)
 
     
     # # lateral snow transport
