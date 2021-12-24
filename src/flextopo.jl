@@ -216,61 +216,6 @@ statevars(::FLEXTOPO) = (
     :Ss
 )
 
-# @get_units @with_kw struct SnowStorage{T} 
-#     # Model time step [s]
-#     Δt::T | "s"                     
-#     # Number of classes
-#     # nclass::Int | "-"             
-#     # Number of cells  
-#     n::Int | "-"                    
-#     # dic_function::Dict 
-#     # selectSi::Vector{String} | "-"
-#     # Correction factor for precipitation [-]
-#     pcorr::Vector{T} | "-"          
-#     # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹]
-#     cfmax::Vector{T} | "mm ᵒC-1 Δt-1"
-#     # Threshold temperature for snowfall [ᵒC]
-#     tt::Vector{T} | "ᵒC"
-#     # Threshold temperature interval length [ᵒC]
-#     tti::Vector{T} | "ᵒC"
-#     # Threshold temperature for snowmelt [ᵒC]
-#     ttm::Vector{T} | "ᵒC"
-#     # Water holding capacity as fraction of current snow pack [-]
-#     whc::Vector{T} | "-"
-#     # Refreezing efficiency constant in refreezing of freewater in snow [-]
-#     cfr::Vector{T} | "-"
-#     # Correction factor for precipitation [-]
-#     rfcf::Vector{T} | "-"           
-#     # Correction factor for snowfall [-]
-#     sfcf::Vector{T} | "-"           
-#     # Snow water equivalent [mm]
-#     Sw::Vector{T} | "mm"
-#     # Liquid water content in the snow pack [mm]
-#     Sww::Vector{T} | "mm"
-#     # Snow melt + precipitation as rainfall [mm]
-#     rainfallplusmelt::Vector{T} | "mm Δt-1"
-#     # Snowfall [mm]
-#     snowfall::Vector{T} | "mm Δt-1"
-#     # Snowmelt [mm]
-#     snowmelt::Vector{T} | "mm Δt-1"
-#     # Precipitation [mm Δt⁻¹]
-#     precipitation::Vector{T} | "mm Δt-1"
-#     # Temperature [ᵒC]
-#     temperature::Vector{T} | "ᵒC"       
-#     #water balance snow store
-#     wbSw::Vector{T}
-
-#     function SnowStorage{T}(args...) where {T}
-#         equal_size_vectors(args)
-#         return new(args...)
-#     end
-# end
-
-# statevars(::SnowStorage) = (
-#     :Sw,
-#     :Sww,
-# )
-
 function snow_hbv(flextopo::FLEXTOPO, config)
     k = flextopo.kclass[1]
     for i = 1:flextopo.n
@@ -335,49 +280,6 @@ function snow_no_storage(flextopo::FLEXTOPO, config)
 end
         
 
-# @get_units @with_kw struct InterceptionStorage{T} 
-#     Δt::T | "s"                     # Model time step [s]
-#     # nclass::Int | "-"               # Number of classes
-#     n::Int | "-"                    # Number of cells
-#     # dic_function::Dict 
-#     # selectSi::Vector{String} | "-"
-
-#     # Maximum interception storage (in forested and non-forested areas) [mm]
-#     imax::Vector{T} | "mm"           
-#     # Evap correction [-]
-#     ecorr::Vector{T} | "-"          
-#     # rainfallplusmelt [mm Δt⁻¹]
-#     rainfallplusmelt::Vector{T} | "mm Δt-1"            
-#     # Temperature [ᵒC]
-#     temperature::Vector{T} | "ᵒC"       
-#     # Potential evapotranspiration [mm Δt⁻¹]
-#     potential_evaporation::Vector{T} | "mm Δt-1"    
-#     # Potential soil evaporation [mm Δt⁻¹]
-#     potsoilevap::Vector{T} | "mm Δt-1"              
-#     # Evaporation from interception storage [mm Δt⁻¹]
-#     Ei::Vector{T} | "mm Δt-1"                  
-#     # Interception storage [mm]
-#     Si::Vector{T} | "mm"  
-#     #effective precipitation [mm Δt⁻¹]
-#     Pe::Vector{T} | "mm Δt-1"                   
-#     #water balance interception storage [mm]
-#     wbSi::Vector{T} | "mm"  
-
-#     function InterceptionStorage{T}(args...) where {T}
-#         equal_size_vectors(args)
-#         return new(args...)
-#     end
-# end
-
-# statevars(::InterceptionStorage) = (
-#     # :soilmoisture,
-#     # :snow,
-#     # :snowwater,
-#     # :upperzonestorage,
-#     # :lowerzonestorage,
-#     :Si,
-# )
-
 function interception_no_storage(flextopo::FLEXTOPO, config)
     k = flextopo.kclass[1]
     for i = 1:flextopo.n
@@ -406,35 +308,6 @@ function interception_no_storage(flextopo::FLEXTOPO, config)
 
     end
 end
-
-# function interception_overflow_1c(flextopo::FLEXTOPO, config)
-#     for i = 1:flextopo.n
-#         # rainfall added to interception store Si
-#         interception = min(flextopo.rainfallplusmelt[i], flextopo.imax[i] - flextopo.Si[i])
-#         # current interception storage
-#         Si = flextopo.Si[i] + interception
-#         Pe = flextopo.rainfallplusmelt[i] - interception
-
-#         # correction for potential evaporation 
-#         Ep_corr = flextopo.ecorr[i] * flextopo.potential_evaporation[i]
-
-#         # evaporation from interception storage
-#         Ei = min(Si, Ep_corr)
-#         Si = Si - Ei
-#         restevap = max(0.0, Ep_corr - Ei)
-
-#         #wb interceptionstore 
-#         wbSi = flextopo.rainfallplusmelt[i] - Ei - Pe - Si + flextopo.Si[i]
-
-#         flextopo.states_[i] = flextopo.states_[i]  + flextopo.Si[i]
-#         flextopo.Pe[i] = Pe
-#         flextopo.Si[i] = Si
-#         flextopo.potsoilevap[i] = restevap
-#         flextopo.Ei[i] = Ei
-#         flextopo.wbSi[i] = wbSi
-#         # end
-#     end
-# end
 
 function interception_overflow(flextopo::FLEXTOPO, config)
     k = flextopo.kclass[1]
@@ -471,41 +344,6 @@ function interception_overflow(flextopo::FLEXTOPO, config)
     end
 end
 
-# @get_units @with_kw struct HortonPondingStorage{T} 
-#     Δt::T | "s"                     # Model time step [s]
-#     # nclass::Int | "-"               # Number of classes
-#     n::Int | "-"                    # Number of cells
-#     # dic_function::Dict 
-#     # selectSi::Vector{String} | "-"
-
-#     # Temperature [ᵒC]
-#     temperature::Vector{T} | "ᵒC"       
-#     # Potential soil evaporation (after interception) [mm Δt⁻¹]
-#     potsoilevap::Vector{T} | "mm Δt-1"              
-#     # Maximum storage capacity in the hortonian ponding storage [mm]
-#     samax::Vector{T} | "mm"           
-#     # Evaporation from the hortonion ponding storage [-]
-#     Eh::Vector{T} | "mm Δt-1"           
-#     # effective precipitation [mm Δt⁻¹]
-#     Pe::Vector{T} | "mm Δt-1"            
-#     # Flux from the hortonian ponding storage to the hortonian runoff storage [mm Δt⁻¹]
-#     Qh::Vector{T} | "mm Δt-1"                  
-#     # Flux from the hortonian ponding storage to the root zone storage [mm Δt⁻¹]
-#     Qhr::Vector{T} | "mm Δt-1"                  
-#     # Storage in the hortonian ponding reservoir [mm]
-#     Sh::Vector{T} | "mm"  
-#     #water balance hortonian ponding storage [mm]
-#     wbSh::Vector{T} | "mm"  
-
-#     function HortonPondingStorage{T}(args...) where {T}
-#         equal_size_vectors(args)
-#         return new(args...)
-#     end
-# end
-
-# statevars(::HortonPondingStorage) = (
-#     :Sh,
-# )
 
 function hortonponding_no_storage(flextopo::FLEXTOPO, config)
     k = flextopo.kclass[1]
@@ -532,36 +370,6 @@ function hortonponding_no_storage(flextopo::FLEXTOPO, config)
 end
 
 
-# @get_units @with_kw struct HortonRunoffStorage{T} 
-#     Δt::T | "s"                     # Model time step [s]
-#     # nclass::Int | "-"               # Number of classes
-#     n::Int | "-"                    # Number of cells
-#     # dic_function::Dict 
-#     # selectSi::Vector{String} | "-"
-
-#     #recession coefficient of the hortonian runoff storage [Δt]
-#     khf::Vector{T} | "Δt-1"                  
-#     #lag time of the hortonian runoff storage [Δt-1]
-#     Thf::Vector{T} | "Δt"                  
-#     # Flux from the hortonian ponding storage to the hortonian runoff storage [mm Δt⁻¹]
-#     Qh::Vector{T} | "mm Δt-1"                  
-#     # Flux from the hortonian runoff storage [mm Δt⁻¹]
-#     Qhf::Vector{T} | "mm Δt-1"                  
-#     # Storage in the hortonian runoff generation [mm]
-#     Shf::Vector{T} | "mm"  
-#     #water balance hortonian runoff storage [mm]
-#     wbShf::Vector{T} | "mm"  
-
-#     function HortonRunoffStorage{T}(args...) where {T}
-#         equal_size_vectors(args)
-#         return new(args...)
-#     end
-# end
-
-# statevars(::HortonRunoffStorage) = (
-#     :Shf,
-# )
-
 function hortonrunoff_no_storage(flextopo::FLEXTOPO, config)
     k = flextopo.kclass[1]
     for i = 1:flextopo.n
@@ -581,50 +389,6 @@ function hortonrunoff_no_storage(flextopo::FLEXTOPO, config)
     end
 end
 
-
-# @get_units @with_kw struct RootzoneStorage{T} 
-#     Δt::T | "s"                     # Model time step [s]
-#     # nclass::Int | "-"               # Number of classes
-#     n::Int | "-"                    # Number of cells
-#     # dic_function::Dict 
-#     # selectSi::Vector{String} | "-"
-
-#     # maximum root-zone storage capacity [mm]
-#     srmax::Vector{T} | "mm"                  
-#     # Fraction of root zone storage below which actual evaporation is potential evaporation [-]
-#     lp::Vector{T} | "-"
-#     # Exponent in soil runoff generation equation [-]
-#     beta::Vector{T} | "-"
-#     # maximum percolation rate [mm Δt⁻¹]
-#     perc::Vector{T} | "mm Δt-1"
-#     # maximum capillary rise rate [mm Δt⁻¹]
-#     cap::Vector{T} | "mm Δt-1"
-                      
-#     # Evaporation from the root-zone storage [mm Δt⁻¹]
-#     Er::Vector{T} | "mm Δt-1"                  
-#     # Flux from the root-zone storage [mm Δt⁻¹]
-#     Qr::Vector{T} | "mm Δt-1"                  
-#     # Capillary flux from the slow to the root-zone storage [mm Δt⁻¹]
-#     Qcap::Vector{T} | "mm Δt-1"                  
-#     # Percolation flux from the root-zone to the slow storage [mm Δt⁻¹]
-#     Qperc::Vector{T} | "mm Δt-1"                 
-#     # Storage in the root-zone [mm]
-#     Sr::Vector{T} | "mm" 
-#     # Storage in the slow reservoir (for Qcap calc) [mm]
-#     Ss::Vector{T} | "mm"  
-#     #water balance root-zone storage [mm]
-#     wbSr::Vector{T} | "mm"  
-
-#     function RootzoneStorage{T}(args...) where {T}
-#         equal_size_vectors(args)
-#         return new(args...)
-#     end
-# end
-
-# statevars(::RootzoneStorage) = (
-#     :Sr,
-#     :Ss, #TODO check if should be added here. 
-# )
 
 function rootzone_no_storage(flextopo::FLEXTOPO, config)
     k = flextopo.kclass[1]
@@ -716,40 +480,6 @@ function rootzone_storage(flextopo::FLEXTOPO, config)
     end
 end
 
-# @get_units @with_kw struct FastStorage{T} 
-#     Δt::T | "s"                     # Model time step [s]
-#     # nclass::Int | "-"               # Number of classes
-#     n::Int | "-"                    # Number of cells
-#     # dic_function::Dict 
-#     # selectSi::Vector{String} | "-"
-               
-#     # Exponent for non linear recession [-]
-#     alfa::Vector{T} | "-"
-#     #recession coefficient of fast storage [Δt-1]
-#     kf::Vector{T} | "Δt-1"                  
-#     # fraction of Qr to Ss (1-ds to Sf)
-#     ds::Vector{T} | "-"
-                 
-#     # Flux from the root-zone storage [mm Δt⁻¹]
-#     Qr::Vector{T} | "mm Δt-1"  
-#     # recharge to fast reservoir [mm Δt⁻¹]
-#     Qrf::Vector{T} | "mm Δt-1"                                  
-#     # runoff from fast reservoir [mm Δt⁻¹]
-#     Qf::Vector{T} | "mm Δt-1"                  
-#     # Storage in the fast store [mm]
-#     Sf::Vector{T} | "mm" 
-#     #water balance fast storage [mm]
-#     wbSf::Vector{T} | "mm"  
-
-#     function FastStorage{T}(args...) where {T}
-#         equal_size_vectors(args)
-#         return new(args...)
-#     end
-# end
-
-# statevars(::FastStorage) = (
-#     :Sf,
-# )
 
 function fast_no_storage(flextopo::FLEXTOPO, config)
     k = flextopo.kclass[1]
@@ -806,43 +536,6 @@ function fast_storage(flextopo::FLEXTOPO, config)
         flextopo.Sf_m[i] = sum(flextopo.Sf[i] .* flextopo.hrufrac[i])
     end
 end
-
-# @get_units @with_kw struct SlowStorage{T} 
-#     Δt::T | "s"                     # Model time step [s]
-#     # nclass::Int | "-"               # Number of classes
-#     n::Int | "-"                    # Number of cells
-#     # dic_function::Dict 
-#     # selectSi::Vector{String} | "-"
-               
-#     #recession coefficient of slow storage [Δt-1]
-#     ks::Vector{T} | "Δt-1"                  
-#     # fraction of Qr to Ss (1-ds to Sf)
-#     ds::Vector{T} | "-"
-                 
-#     # Flux from the root-zone storage [mm Δt⁻¹]
-#     Qr::Vector{T} | "mm Δt-1"                  
-#     # Percolation from the root-zone storage [mm Δt⁻¹]
-#     Qperc::Vector{T} | "mm Δt-1"                  
-#     # Capillary flux from the root-zone storage [mm Δt⁻¹]
-#     Qcap::Vector{T} | "mm Δt-1"                  
-#     # recharge to slow reservoir [mm Δt⁻¹]
-#     Qrs::Vector{T} | "mm Δt-1"                  
-#     # runoff from slow reservoir [mm Δt⁻¹]
-#     Qs::Vector{T} | "mm Δt-1"                  
-#     # Storage in the slow store [mm]
-#     Ss::Vector{T} | "mm" 
-#     #water balance slow storage [mm]
-#     wbSs::Vector{T} | "mm"  
-
-#     function SlowStorage{T}(args...) where {T}
-#         equal_size_vectors(args)
-#         return new(args...)
-#     end
-# end
-
-# statevars(::SlowStorage) = (
-#     :Ss,
-# )
 
 function slow_no_storage(flextopo::FLEXTOPO, config)
     for i = 1:flextopo.n
@@ -916,19 +609,3 @@ function watbal(flextopo::FLEXTOPO, config)
         flextopo.wbtot[i] = wbtot
     end
 end
-
-
-# struct TopoFlexStorages{T}
-# 	w::SnowStorage{T}
-#     i::InterceptionStorage{T}
-#     h::HortonPondingStorage{T}
-#     hf::HortonRunoffStorage{T}
-# 	r::RootzoneStorage{T}
-#     f::FastStorage{T}
-#     s::SlowStorage{T}
-# end
-
-# struct TopoFlex
-# 	classes::Vector{Pair{TopoFlexStorages, Function}}
-# end
-
