@@ -385,6 +385,10 @@ function initialize_sbm_gwf_model(config::Config)
         set_states(instate_path, model, state_ncnames, type = Float)
         # update kinematic wave volume for river and land domain
         @unpack lateral = model
+        # makes sure land cells with zero flow width are set to zero q and h
+        i = findall(==(0.0), lateral.land.width)
+        lateral.land.q[i] .= 0.0
+        lateral.land.h[i] .= 0.0
         lateral.land.volume .= lateral.land.h .* lateral.land.width .* lateral.land.dl
         lateral.river.volume .= lateral.river.h .* lateral.river.width .* lateral.river.dl
 

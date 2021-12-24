@@ -321,9 +321,11 @@ function update(
                         end
                     end
 
-                    # update h
-                    crossarea = sf.α[v] * pow(sf.q[v], sf.β)
-                    sf.h[v] = crossarea / sf.width[v]
+                    # update h, only if surface width (overland flow) > 0.0
+                    if sf.width[v] > 0.0
+                        crossarea = sf.α[v] * pow(sf.q[v], sf.β)
+                        sf.h[v] = crossarea / sf.width[v]
+                    end
 
                     sf.q_av[v] += sf.q[v]
                     sf.h_av[v] += sf.h[v]
