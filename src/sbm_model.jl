@@ -134,7 +134,6 @@ function initialize_sbm_model(config::Config)
             nc,
             config.input,
             "lateral.subsurface.ksathorfrac";
-            optional = false,
             sel = inds,
             defaults = 1.0,
             type = Float,

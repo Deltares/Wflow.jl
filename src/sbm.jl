@@ -375,7 +375,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         nc,
         config.input.vertical,
         "theta_r";
-        alias = "θₛ",
+        alias = "θᵣ",
         sel = inds,
         defaults = 0.01,
         type = Float,
