@@ -377,4 +377,17 @@ end
     @test count(contains(line, " | Wflow | [Debug] ") for line in lines) > 0
     msg = " | Wflow | [Error] Wflow simulation failed |exception = ErrorException(\"No files found with name 'doesnt-exist.nc' in '"
     @test contains(lines[end], msg)
+
+    # Final run to test error handling during simulation
+    tomlpath_error = joinpath(@__DIR__, "sbm_simple-error.toml")
+    config.input.lateral.river.width = Dict(
+        "scale" => 0.0,
+        "offset" => 0.0,
+        "netcdf" => Dict("variable" => Dict("name" => "wflow_riverwidth")),
+    )
+    open(tomlpath_error, "w") do io
+        TOML.print(io, Dict(config))
+    end  
+    @test_throws ErrorException Wflow.run(tomlpath_error)
+    rm(tomlpath_error)
 end
