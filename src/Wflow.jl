@@ -13,6 +13,8 @@ using FieldMetadata
 using Parameters
 using DelimitedFiles
 using ProgressLogging
+using LoggingExtras
+using TerminalLoggers
 using CFTime
 using Base.Threads
 using Glob
@@ -23,6 +25,8 @@ using NCDatasets: MFDataset
 const BMI = BasicModelInterface
 const Float = Float64
 const CFDataset = Union{NCDataset,MFDataset}
+const version =
+    VersionNumber(TOML.parsefile(joinpath(@__DIR__, "..", "Project.toml"))["version"])
 
 mutable struct Clock{T}
     time::T
@@ -117,25 +121,52 @@ include("sbm_gwf_model.jl")
 include("utils.jl")
 include("bmi.jl")
 include("subdomains.jl")
-    
+include("logging.jl")
+
 """
-    run(tomlpath::String)
+    run(tomlpath::AbstractString; silent=false)
     run(config::Config)
     run(model::Model)
     run()
 
 Run an entire simulation starting either from a path to a TOML settings file,
 a prepared `Config` object, or an initialized `Model` object. This allows more flexibility
-if you want to for example modify a `Config` before initializing the `Model`.
+if you want to for example modify a `Config` before initializing the `Model`. Logging to a 
+file is only part of the `run(tomlpath::AbstractString)` method. To avoid logging to the
+terminal, set the `silent` keyword argument to `true`, or put that in the TOML.
 
 The 0 argument version expects ARGS to contain a single entry, pointing to the TOML path.
 This makes it easier to start a run from the command line without having to escape quotes:
 
     julia -e "using Wflow; Wflow.run()" "path/to/config.toml"
 """
-function run(tomlpath)
+function run(tomlpath::AbstractString; silent = nothing)
     config = Config(tomlpath)
-    run(config)
+    # if the silent kwarg is not set, check if it is set in the TOML
+    if silent === nothing
+        silent = get(config, "silent", false)::Bool
+    end
+    fews_run = get(config, "fews_run", false)::Bool
+    logger, logfile = init_logger(config; silent)
+    with_logger(logger) do
+        @info "Wflow version `v$version`"
+        # to catch stacktraces in the log file a try-catch is required
+        try
+            run(config)
+        catch e
+            # avoid logging backtrace for the single line FEWS log format
+            # that logger also uses SimpleLogger which doesn't result in a good backtrace
+            if fews_run
+                @error "Wflow simulation failed" exception = e _id = :wflow_run
+            else
+                @error "Wflow simulation failed" exception = (e, catch_backtrace()) _id =
+                    :wflow_run
+            end
+            rethrow()
+        finally
+            close(logfile)
+        end
+    end
 end
 
 function run(config::Config)
@@ -159,19 +190,18 @@ end
 function run(model::Model; close_files = true)
     @unpack network, config, writer, clock = model
 
-    # in the case of sbm_gwf it's currently a bit hard to use dispatch
     model_type = config.model.type::String
-    
+
     # determine timesteps to run
     calendar = get(config, "calendar", "standard")::String
     starttime = clock.time
     Δt = clock.Δt
     endtime = cftime(config.endtime, calendar)
     times = range(starttime, endtime, step = Δt)
-    
+
     @info "Run information" model_type starttime Δt endtime nthreads()
     @progress for (i, time) in enumerate(times)
-        @debug "Starting timestep" time timestep = i
+        @debug "Starting timestep." time i
         load_dynamic_input!(model)
         model = update(model)
     end
@@ -180,6 +210,9 @@ function run(model::Model; close_files = true)
     # undo the clock advance at the end of the last iteration, since there won't
     # be a next step, and then the output state falls on the correct time
     rewind!(clock)
+    if haskey(config, "state") && haskey(config.state, "path_output")
+        @info "Write output states to NetCDF file `$(model.writer.state_nc_path)`."
+    end
     write_netcdf_timestep(model, writer.state_dataset, writer.state_parameters)
 
     reset_clock!(model.clock, config)
@@ -188,6 +221,16 @@ function run(model::Model; close_files = true)
     # and thus opening the NetCDF files
     if close_files
         Wflow.close_files(model, delete_output = false)
+    end
+
+    # copy TOML to dir_output, to archive what settings were used
+    if haskey(config, "dir_output")
+        src = normpath(pathof(config))
+        dst = output_path(config, basename(src))
+        if src != dst
+            @debug "Copying TOML file." src dst
+            cp(src, dst, force = true)
+        end
     end
     return model
 end
@@ -202,7 +245,7 @@ function run()
     if !isfile(toml_path)
         throw(ArgumentError("File not found: $(toml_path)\n" * usage))
     end
-    Wflow.run(toml_path)
+    run(toml_path)
 end
 
 end # module

@@ -6,6 +6,9 @@ Config object. Will return a Model that is ready to run.
 """
 function initialize_sbm_model(config::Config)
 
+    model_type = config.model.type::String
+    @info "Initialize model variables for model type `$model_type`."
+
     # unpack the paths to the NetCDF files
     static_path = input_path(config, config.input.path_static)
 
@@ -23,21 +26,48 @@ function initialize_sbm_model(config::Config)
     kinwave_it = get(config.model, "kin_wave_iteration", false)::Bool
     river_routing = get(config.model, "river_routing", "kinematic-wave")
 
+    snow = get(config.model, "snow", false)::Bool
+    reservoirs = do_reservoirs
+    lakes = do_lakes
+    glacier = get(config.model, "glacier", false)::Bool
+    masswasting = get(config.model, "masswasting", false)::Bool
+    @info "General model settings" reservoirs lakes snow masswasting glacier
+
     nc = NCDataset(static_path)
 
-    subcatch_2d = ncread(nc, param(config, "input.subcatchment"); allow_missing = true)
+    subcatch_2d =
+        ncread(nc, config.input, "subcatchment"; optional = false, allow_missing = true)
     # indices based on catchment
     inds, rev_inds = active_indices(subcatch_2d, missing)
     n = length(inds)
     modelsize_2d = size(subcatch_2d)
 
-    river_2d = ncread(nc, param(config, "input.river_location"); type = Bool, fill = false)
+    river_2d = ncread(
+        nc,
+        config.input,
+        "river_location";
+        optional = false,
+        type = Bool,
+        fill = false,
+    )
     river = river_2d[inds]
-    riverwidth_2d =
-        ncread(nc, param(config, "input.lateral.river.width"); type = Float, fill = 0)
+    riverwidth_2d = ncread(
+        nc,
+        config.input,
+        "lateral.river.width";
+        optional = false,
+        type = Float,
+        fill = 0,
+    )
     riverwidth = riverwidth_2d[inds]
-    riverlength_2d =
-        ncread(nc, param(config, "input.lateral.river.length"); type = Float, fill = 0)
+    riverlength_2d = ncread(
+        nc,
+        config.input,
+        "lateral.river.length";
+        optional = false,
+        type = Float,
+        fill = 0,
+    )
     riverlength = riverlength_2d[inds]
 
     # read x, y coordinates and calculate cell length [m]
@@ -68,28 +98,30 @@ function initialize_sbm_model(config::Config)
 
     # lakes
     if do_lakes
-        lakes, lakeindex, lake, pits = initialize_natural_lake(
-            config,
-            nc,
-            inds_riv,
-            nriv,
-            pits,
-            tosecond(Δt),
-        )
+        lakes, lakeindex, lake, pits =
+            initialize_natural_lake(config, nc, inds_riv, nriv, pits, tosecond(Δt))
     else
         lake = ()
         lakes = nothing
         lakeindex = fill(0, nriv)
     end
 
-    ldd_2d = ncread(nc, param(config, "input.ldd"); allow_missing = true)
+    ldd_2d = ncread(nc, config.input, "ldd"; optional = false, allow_missing = true)
     ldd = ldd_2d[inds]
     if do_pits
-        pits_2d = ncread(nc, param(config, "input.pits"); type = Bool, fill = false)
+        pits_2d =
+            ncread(nc, config.input, "pits"; optional = false, type = Bool, fill = false)
         ldd = set_pit_ldd(pits_2d, ldd, inds)
     end
 
-    βₗ = ncread(nc, param(config, "input.lateral.land.slope"); sel = inds, type = Float)
+    βₗ = ncread(
+        nc,
+        config.input,
+        "lateral.land.slope";
+        optional = false,
+        sel = inds,
+        type = Float,
+    )
     clamp!(βₗ, 0.00001, Inf)
 
     dl = map(detdrainlength, ldd, xl, yl)
@@ -100,7 +132,8 @@ function initialize_sbm_model(config::Config)
     if haskey(config.input.lateral, "subsurface")
         khfrac = ncread(
             nc,
-            param(config, "input.lateral.subsurface.ksathorfrac", nothing);
+            config.input,
+            "lateral.subsurface.ksathorfrac";
             sel = inds,
             defaults = 1.0,
             type = Float,
@@ -225,6 +258,11 @@ function initialize_sbm_model(config::Config)
             kinwave_set_subdomains(config, graph_riv, toposort_riv, index_pit_river)
     end
 
+    if nthreads() > 1
+        min_streamorder = get(config.model, "min_streamorder", 4)
+        @info "Parallel execution of kinematic wave, minimum stream order = `$min_streamorder`."
+    end
+
     modelmap = (vertical = sbm, lateral = (subsurface = ssf, land = olf, river = rf))
     indices_reverse = (
         land = rev_inds,
@@ -304,6 +342,7 @@ function initialize_sbm_model(config::Config)
     # read and set states in model object if reinit=false
     if reinit == false
         instate_path = input_path(config, config.state.path_input)
+        @info "Set initial conditions from state file `$instate_path`."
         state_ncnames = ncnames(config.state)
         set_states(instate_path, model, state_ncnames; type = Float)
         @unpack lateral, vertical = model
@@ -334,7 +373,11 @@ function initialize_sbm_model(config::Config)
             lakes.storage .=
                 initialize_storage(lakes.storfunc, lakes.area, lakes.waterlevel, lakes.sh)
         end
+    else
+        @info "Set initial conditions from default values."
     end
+
+    @info "Initialized model"
 
     return model
 end

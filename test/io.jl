@@ -4,6 +4,7 @@ using TOML
 using CFTime
 using Random
 using UnPack
+using Logging
 
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 parsed_toml = TOML.parsefile(tomlpath)
@@ -41,14 +42,18 @@ config = Wflow.Config(tomlpath)
     # test the optional "dir_input" and "dir_output" keys
     @test haskey(config, "dir_input")
     @test haskey(config, "dir_output")
-    @test Wflow.input_path(config, config.state.path_input) == joinpath(@__DIR__, "data", "input", "instates-moselle.nc")
-    @test Wflow.output_path(config, config.state.path_output) == joinpath(@__DIR__, "data", "output", "outstates-moselle.nc")
+    @test Wflow.input_path(config, config.state.path_input) ==
+          joinpath(@__DIR__, "data", "input", "instates-moselle.nc")
+    @test Wflow.output_path(config, config.state.path_output) ==
+          joinpath(@__DIR__, "data", "output", "outstates-moselle.nc")
     # hbv_config doesn't use dir_input and dir_output
     hbv_config = Wflow.Config(joinpath(@__DIR__, "hbv_config.toml"))
     @test !haskey(hbv_config, "dir_input")
     @test !haskey(hbv_config, "dir_output")
-    @test Wflow.input_path(hbv_config, hbv_config.state.path_input) == joinpath(@__DIR__, "data", "input", "instates-lahn.nc")
-    @test Wflow.output_path(hbv_config, hbv_config.state.path_output) == joinpath(@__DIR__, "data", "output", "outstates-lahn.nc")
+    @test Wflow.input_path(hbv_config, hbv_config.state.path_input) ==
+          joinpath(@__DIR__, "data", "input", "instates-lahn.nc")
+    @test Wflow.output_path(hbv_config, hbv_config.state.path_output) ==
+          joinpath(@__DIR__, "data", "output", "outstates-lahn.nc")
 end
 
 @testset "Clock constructor" begin
@@ -329,4 +334,59 @@ end
         manual_fix = reverse(ds["wflow_dem"]; dims = 2)
         @test all(data .=== manual_fix)
     end
+end
+
+# test logging and copy of TOML file to output
+@testset "Logging and copy TOML file" begin
+    @test Wflow.parse_loglevel("InfO") == Logging.Info
+    @test Wflow.parse_loglevel(0) == Logging.Info
+
+    tomlpath = joinpath(@__DIR__, "sbm_simple.toml")
+    Wflow.run(tomlpath; silent = true)
+
+    config = Wflow.Config(tomlpath)
+    output = normpath(abspath(Wflow.get(config, "dir_output", ".")))
+    toml_archive = Wflow.output_path(config, "sbm_simple.toml")
+    path_log = Wflow.output_path(config, "log.txt")
+    @test isfile(toml_archive)
+    @test isfile(path_log)
+    lines = readlines(path_log)
+    @test count(startswith(line, "[ Info: ") for line in lines) > 50
+    @test count(startswith(line, "┌ Debug: ") for line in lines) == 0
+
+    # Another run with debug log level and a non-default path_log.
+    # Must write the modified config to disk first, since the logging
+    # applies only to the `Wflow.run(tomlpath)` method.
+    # This also add an error to the config.
+    tomlpath_debug = joinpath(@__DIR__, "sbm_simple-debug.toml")
+    config.loglevel = "debug"
+    config.path_log = "log-debug.txt"
+    config.fews_run = true
+    config.silent = true
+    config.input.path_forcing = "doesnt-exist.nc"
+    open(tomlpath_debug, "w") do io
+        TOML.print(io, Dict(config))
+    end
+    @test_throws ErrorException Wflow.run(tomlpath_debug)
+    rm(tomlpath_debug)
+    path_log = Wflow.output_path(config, "log-debug.txt")
+    @test isfile(path_log)
+    lines = readlines(path_log)
+    @test count(contains(line, " | Wflow | [Info] ") for line in lines) > 3
+    @test count(contains(line, " | Wflow | [Debug] ") for line in lines) > 0
+    msg = " | Wflow | [Error] Wflow simulation failed |exception = ErrorException(\"No files found with name 'doesnt-exist.nc' in '"
+    @test contains(lines[end], msg)
+
+    # Final run to test error handling during simulation
+    tomlpath_error = joinpath(@__DIR__, "sbm_simple-error.toml")
+    config.input.lateral.river.width = Dict(
+        "scale" => 0.0,
+        "offset" => 0.0,
+        "netcdf" => Dict("variable" => Dict("name" => "wflow_riverwidth")),
+    )
+    open(tomlpath_error, "w") do io
+        TOML.print(io, Dict(config))
+    end  
+    @test_throws ErrorException Wflow.run(tomlpath_error)
+    rm(tomlpath_error)
 end

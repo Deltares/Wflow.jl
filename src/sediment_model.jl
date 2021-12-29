@@ -6,6 +6,9 @@ Config object. Will return a Model that is ready to run.
 """
 function initialize_sediment_model(config::Config)
 
+    model_type = config.model.type::String
+    @info "Initialize model variables for model type `$model_type`."
+
     # unpack the paths to the NetCDF files
     static_path = input_path(config, config.input.path_static)
 
@@ -20,19 +23,39 @@ function initialize_sediment_model(config::Config)
     nc = NCDataset(static_path)
     dims = dimnames(nc[param(config, "input.subcatchment")])
 
-    subcatch_2d = ncread(nc, param(config, "input.subcatchment"); allow_missing = true)
+    subcatch_2d =
+        ncread(nc, config.input, "subcatchment"; optional = false, allow_missing = true)
     # indices based on catchment
     inds, rev_inds = active_indices(subcatch_2d, missing)
     n = length(inds)
     modelsize_2d = size(subcatch_2d)
 
-    river_2d = ncread(nc, param(config, "input.river_location"); type = Bool, fill = false)
+    river_2d = ncread(
+        nc,
+        config.input,
+        "river_location";
+        optional = false,
+        type = Bool,
+        fill = false,
+    )
     river = river_2d[inds]
-    riverwidth_2d =
-        ncread(nc, param(config, "input.lateral.river.width"); type = Float, fill = 0)
+    riverwidth_2d = ncread(
+        nc,
+        config.input,
+        "lateral.river.width";
+        optional = false,
+        type = Float,
+        fill = 0,
+    )
     riverwidth = riverwidth_2d[inds]
-    riverlength_2d =
-        ncread(nc, param(config, "input.lateral.river.length"); type = Float, fill = 0)
+    riverlength_2d = ncread(
+        nc,
+        config.input,
+        "lateral.river.length";
+        optional = false,
+        type = Float,
+        fill = 0,
+    )
     riverlength = riverlength_2d[inds]
 
     inds_riv, rev_inds_riv = active_indices(river_2d, 0)
@@ -54,7 +77,7 @@ function initialize_sediment_model(config::Config)
 
     eros = initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
 
-    ldd_2d = ncread(nc, param(config, "input.ldd"); allow_missing = true)
+    ldd_2d = ncread(nc, config.input, "ldd"; optional = false, allow_missing = true)
     ldd = ldd_2d[inds]
 
     # # lateral part sediment in overland flow
@@ -93,7 +116,14 @@ function initialize_sediment_model(config::Config)
     # River processes
 
     # the indices of the river cells in the land(+river) cell vector
-    βₗ = ncread(nc, param(config, "input.lateral.land.slope"); sel = inds, type = Float)
+    βₗ = ncread(
+        nc,
+        config.input,
+        "lateral.land.slope";
+        optional = false,
+        sel = inds,
+        type = Float,
+    )
     clamp!(βₗ, 0.00001, Inf)
     riverlength = riverlength_2d[inds_riv]
     riverwidth = riverwidth_2d[inds_riv]
@@ -144,10 +174,14 @@ function initialize_sediment_model(config::Config)
     # read and set states in model object if reinit=false
     if reinit == false
         instate_path = input_path(config, config.state.path_input)
+        @info "Set initial conditions from state file `$instate_path`."
         state_ncnames = ncnames(config.state)
         set_states(instate_path, model, state_ncnames; type = Float)
+    else
+        @info "Set initial conditions from default values."
     end
 
+    @info "Initialized model"
     return model
 end
 

@@ -101,7 +101,7 @@ end
 "Extract NetCDF variable name `ncname` from `var` (type `String` or `Config`). If `var` has 
 type `Config`, either `scale` and `offset` are expected (with `ncname`) or a `value` (uniform
 value), these are stored as part of `NamedTuple` `modifier`"
-function ncvar_name_modifier(var; verbose = true)
+function ncvar_name_modifier(var)
     ncname = nothing
     modifier = (scale = 1.0, offset = 0.0, value = nothing)
     if isa(var, Config)
@@ -112,9 +112,7 @@ function ncvar_name_modifier(var; verbose = true)
             scale = param(var, "scale", 1.0)
             offset = param(var, "offset", 0.0)
             modifier = (scale = scale, offset = offset, value = nothing)
-            if verbose
-                @info "NetCDF parameter $ncname is modified with scale $scale and offset $offset"
-            end
+            @info "NetCDF parameter `$ncname` is modified with scale `$scale` and offset `$offset`."
         elseif haskey(var, "value")
             modifier = (scale = 1.0, offset = 0.0, value = param(var, "value"))
         else
@@ -352,13 +350,7 @@ function create_tracked_netcdf(path)
 end
 
 "prepare an output dataset for scalar data"
-function setup_scalar_netcdf(
-    path,
-    ncvars,
-    calendar,
-    time_units,
-    float_type = Float32,
-)
+function setup_scalar_netcdf(path, ncvars, calendar, time_units, float_type = Float32)
     ds = create_tracked_netcdf(path)
     defDim(ds, "time", Inf)  # unlimited
     defVar(
@@ -555,7 +547,10 @@ end
 
 function prepare_reader(config)
     path_forcing = config.input.path_forcing
+    abspath_forcing = input_path(config, path_forcing)
     cyclic_path = input_path(config, config.input.path_static)
+
+    @info "Cyclic parameters are provided by `$cyclic_path`."
 
     # absolute paths are not supported, see Glob.jl#2
     # the path separator in a glob pattern is always /
@@ -568,8 +563,9 @@ function prepare_reader(config)
         tomldir = dirname(config)
         dir_input = get(config, "dir_input", ".")
         glob_dir = normpath(tomldir, dir_input)
-        glob_path = replace(path_forcing, '\\'=>'/')
+        glob_path = replace(path_forcing, '\\' => '/')
     end
+    @info "Forcing parameters are provided by `$abspath_forcing`."
 
     dynamic_paths = glob(glob_path, glob_dir)  # expand "data/forcing-year-*.nc"
     if isempty(dynamic_paths)
@@ -598,6 +594,8 @@ function prepare_reader(config)
         ncname, mod = ncvar_name_modifier(param(config.input, fields))
         forcing_parameters[fields] =
             (name = ncname, scale = mod.scale, offset = mod.offset, value = mod.value)
+
+        @info "Set `$par` using NetCDF variable `$ncname` as forcing parameter."
     end
 
     # create map from internal location to NetCDF variable name for cyclic parameters
@@ -608,6 +606,8 @@ function prepare_reader(config)
             ncname, mod = ncvar_name_modifier(param(config.input, fields))
             cyclic_parameters[fields] =
                 (name = ncname, scale = mod.scale, offset = mod.offset)
+
+            @info "Set `$par` using NetCDF variable `$ncname` as cyclic parameter."
         end
     else
         cyclic_parameters = Dict{Tuple{Symbol,Vararg{Symbol}},NamedTuple}()
@@ -637,7 +637,9 @@ end
 function locations_map(ds, mapname, config)
     map_2d = ncread(
         ds,
-        param(config.input, mapname);
+        config.input,
+        mapname;
+        optional = false,
         type = Union{Int,Missing},
         allow_missing = true,
     )
@@ -804,6 +806,7 @@ function prepare_writer(
     # data but only if config.output.path has been set
     if haskey(config, "output") && haskey(config.output, "path")
         nc_path = output_path(config, config.output.path)
+        @info "Create an output NetCDF file `$nc_path` for grid data."
         # create a flat mapping from internal parameter locations to NetCDF variable names
         output_ncnames = ncnames(config.output)
         # fill the output_map by mapping parameter NetCDF names to arrays
@@ -830,6 +833,7 @@ function prepare_writer(
         state_ncnames = ncnames(config.state)
         state_map = out_map(state_ncnames, modelmap)
         nc_state_path = output_path(config, config.state.path_output)
+        @info "Create a state output NetCDF file `$nc_state_path`."
         ds_outstate = setup_grid_netcdf(
             nc_state_path,
             x_nc,
@@ -851,7 +855,8 @@ function prepare_writer(
     # data, but only if config.netcdf.variable has been set. 
     if haskey(config, "netcdf") && haskey(config.netcdf, "variable")
         nc_scalar_path = output_path(config, config.netcdf.path)
-        # get NetCDF info for scalar data (variable name, locationset (dim) and 
+        @info "Create an output NetCDF file `$nc_state_path` for scalar data."
+        # get NetCDF info for scalar data (variable name, locationset (dim) and
         # location ids)
         ncvars_dims = nc_variables_dims(config.netcdf.variable, nc_static, config)
         ds_scalar = setup_scalar_netcdf(nc_scalar_path, ncvars_dims, calendar, time_units)
@@ -860,7 +865,8 @@ function prepare_writer(
         nc_scalar = []
         for var in config.netcdf.variable
             parameter = var["parameter"]
-            reducer_func = get_reducer_func(var, rev_inds, x_nc, y_nc, config, nc_static)
+            reducer_func =
+                get_reducer_func(var, rev_inds, x_nc, y_nc, config, nc_static, "NetCDF")
             push!(nc_scalar, (parameter = parameter, reducer = reducer_func))
         end
     else
@@ -873,6 +879,7 @@ function prepare_writer(
     if haskey(config, "csv") && haskey(config.csv, "column")
         # open CSV file and write header
         csv_path = output_path(config, config.csv.path)
+        @info "Create an output CSV file `$csv_path` for scalar data."
         # create directory if needed
         mkpath(dirname(csv_path))
         csv_io = open(csv_path, "w")
@@ -886,7 +893,8 @@ function prepare_writer(
         csv_cols = []
         for col in config.csv.column
             parameter = col["parameter"]
-            reducer_func = get_reducer_func(col, rev_inds, x_nc, y_nc, config, nc_static)
+            reducer_func =
+                get_reducer_func(col, rev_inds, x_nc, y_nc, config, nc_static, "CSV")
             push!(csv_cols, (parameter = parameter, reducer = reducer_func))
         end
     else
@@ -1062,7 +1070,8 @@ function reducerfunction(reducer::AbstractString)
 end
 
 "Get a reducer function based on output settings for scalar data defined in a dictionary"
-function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
+function reducer(col, rev_inds, x_nc, y_nc, config, dataset, fileformat)
+    param = col["parameter"]
     if haskey(col, "map")
         # assumes the parameter in "map" has a 2D input map, with
         # integers indicating the points or zones that are to be aggregated
@@ -1073,10 +1082,13 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
         f = reducerfunction(reducer_name)
         map_2d = ncread(
             dataset,
-            param(config.input, mapname);
+            config.input,
+            mapname;
+            optional = false,
             type = Union{Int,Missing},
             allow_missing = true,
         )
+        @info "Adding scalar output for a map with a reducer function." fileformat param mapname reducer_name
         ids = unique(skipmissing(map_2d))
         # from id to list of internal indices
         inds = Dict{Int,Vector{Int}}(id => Vector{Int}() for id in ids)
@@ -1087,9 +1099,8 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
             vector = inds[v]
             ind = rev_inds[i]
             if iszero(ind)
-                param = col["parameter"]
-                error("""inactive cell found in requested CSV output
-                    map \"$mapname\" value $v for parameter $param""")
+                error("""inactive cell found in requested scalar output
+                    map `$mapname` value $v for parameter $param""")
             end
             push!(vector, ind)
         end
@@ -1097,12 +1108,15 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
     elseif haskey(col, "reducer")
         # reduce over all active cells
         # needs to be behind the map if statement, because it also can use a reducer
-        return reducerfunction(col["reducer"])
+        reducer_name = col["reducer"]
+        @info "Adding scalar output of all active cells with reducer function." fileformat param reducer_name
+        return reducerfunction(reducer_name)
     elseif haskey(col, "index")
         index = col["index"]
         if index isa Int
             # linear index into the internal vector of active cells
             # this one mostly makes sense for debugging, or for vectors of only a few elements
+            @info "Adding scalar output for linear index." fileformat param index
             return x -> getindex(x, index)
         elseif index isa Dict
             # index into the 2D input/output arrays
@@ -1111,6 +1125,7 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
             i = index["x"]::Int
             j = index["y"]::Int
             ind = rev_inds[i, j]
+            @info "Adding scalar output for 2D index." fileformat param index
             iszero(ind) && error("inactive loc specified for output")
             return A -> getindex(A, ind)
         else
@@ -1124,6 +1139,7 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
         _, ix = findmin(abs.(x_nc .- x))
         I = CartesianIndex(ix, iy)
         i = rev_inds[I]
+        @info "Adding scalar output for coordinate." fileformat param x y
         iszero(i) && error("inactive coordinate specified for output")
         return A -> getindex(A, i)
     else

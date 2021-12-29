@@ -48,10 +48,15 @@ function initialize_surfaceflow_land(
     tstep,
     Δt,
 )
+    @info "Kinematic wave approach is used for overland flow." iterate
+    if tstep > 0
+        @info "Using a fixed sub-timestep (seconds) $tstep for kinematic wave overland flow."
+    end
 
     n_land = ncread(
         nc,
-        param(config, "input.lateral.land.n", nothing);
+        config.input,
+        "lateral.land.n";
         sel = inds,
         defaults = 0.072,
         type = Float,
@@ -109,22 +114,35 @@ function initialize_surfaceflow_river(
     tstep,
     Δt,
 )
+    @info "Kinematic wave approach is used for river flow." iterate
+    if tstep > 0
+        @info "Using a fixed sub-timestep (seconds) $tstep for kinematic wave river flow."
+    end
 
     n_river = ncread(
         nc,
-        param(config, "input.lateral.river.n", nothing);
+        config.input,
+        "lateral.river.n";
         sel = inds,
         defaults = 0.036,
         type = Float,
     )
     h_bankfull = ncread(
         nc,
-        param(config, "input.lateral.river.h_bankfull", nothing);
+        config.input,
+        "lateral.river.h_bankfull";
         sel = inds,
         defaults = 1.0,
         type = Float,
     )
-    sl = ncread(nc, param(config, "input.lateral.river.slope"); sel = inds, type = Float)
+    sl = ncread(
+        nc,
+        config.input,
+        "lateral.river.slope";
+        optional = false,
+        sel = inds,
+        type = Float,
+    )
     clamp!(sl, 0.00001, Inf)
 
     n = length(inds)
@@ -484,13 +502,17 @@ function initialize_shallowwater_river(
 
     bankfull_elevation_2d = ncread(
         nc,
-        param(config, "input.lateral.river.bankfull_elevation");
+        config.input,
+        "lateral.river.bankfull_elevation";
+        optional = false,
         type = Float,
         fill = 0,
     )
     bankfull_depth_2d = ncread(
         nc,
-        param(config, "input.lateral.river.bankfull_depth");
+        config.input,
+        "lateral.river.bankfull_depth";
+        optional = false,
         type = Float,
         fill = 0,
     )
@@ -501,7 +523,8 @@ function initialize_shallowwater_river(
 
     n_river = ncread(
         nc,
-        param(config, "input.lateral.river.n", nothing);
+        config.input,
+        "lateral.river.n";
         sel = inds,
         defaults = 0.036,
         type = Float,
@@ -535,10 +558,8 @@ function initialize_shallowwater_river(
         width_at_link[i] = min(width[src_node], width[dst_node])
         length_at_link[i] = 0.5 * (dl[dst_node] + dl[src_node])
         mannings_n[i] =
-            (
-                n_river[dst_node] * dl[dst_node] +
-                n_river[src_node] * dl[src_node]
-            ) / (dl[dst_node] + dl[src_node])
+            (n_river[dst_node] * dl[dst_node] + n_river[src_node] * dl[src_node]) /
+            (dl[dst_node] + dl[src_node])
     end
 
     # set depth h of reservoir and lake location to bankfull depth

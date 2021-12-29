@@ -62,10 +62,8 @@ end
     subbas_fill = Wflow.fillnodata_upstream(g, toposort, subbas, 0)
     graph_subbas = Wflow.graph_from_nodes(g, subbas, subbas_fill)
     toposort_subbas = topological_sort_by_dfs(graph_subbas)
-    dist = Graphs.Experimental.Traversals.distances(
-        Graph(graph_subbas),
-        toposort_subbas[end],
-    )
+    dist =
+        Graphs.Experimental.Traversals.distances(Graph(graph_subbas), toposort_subbas[end])
     max_dist = maximum([dist; 1])
     subbas_order = Wflow.subbasins_order(graph_subbas, toposort_subbas[end], max_dist)
 

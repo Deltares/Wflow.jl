@@ -76,6 +76,7 @@ end
     @test model.clock.iteration == 2
 
     @test sbm.θₛ[50063] ≈ 0.48755401372909546f0
+    @test sbm.θᵣ[50063] ≈ 0.15943120419979095f0
     @test sbm.runoff[50063] == 0.0
     @test sbm.soilevap[50063] == 0.0
     @test sbm.snow[5] ≈ 3.592840840467347f0
@@ -88,6 +89,7 @@ model = Wflow.update(model)
 @testset "second timestep" begin
     sbm = model.vertical
     @test sbm.θₛ[50063] ≈ 0.48755401372909546f0
+    @test sbm.θᵣ[50063] ≈ 0.15943120419979095f0
     @test sbm.runoff[50063] == 0.0
     @test sbm.soilevap[50063] ≈ 0.006358004660566856f0
     @test sbm.snow[5] ≈ 3.667748983774868f0
@@ -141,6 +143,7 @@ config = Wflow.Config(tomlpath)
 config["model"]["pits"] = true
 config["input"]["pits"] = "wflow_pits"
 config.endtime = DateTime(2000, 1, 9)
+config.loglevel = "info"
 
 model = Wflow.run(config)
 

@@ -66,7 +66,7 @@ function BMI.update_until(model::Model, time::Float64)
     curtime = BMI.get_current_time(model)
     n_iter = Int(max(0, (time - curtime) / model.clock.Δt.value))
     end_time = curtime + n_iter * config.timestepsecs
-    @info("update model until $end_time")
+    @info "Updating model until $end_time."
     for i = 1:n_iter
         load_dynamic_input!(model)
         update_func(model)

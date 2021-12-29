@@ -141,6 +141,8 @@ function set_states(instate_path, model, state_ncnames; type = nothing)
     # states in NetCDF include dim time (one value) at index 3 or 4, 3 or 4 dims are allowed
     NCDataset(instate_path) do ds
         for (state, ncname) in state_ncnames
+            @info "Setting initial state from NetCDF." ncpath = instate_path ncvarname =
+                ncname state
             sel = active_indices(network, state)
             n = length(sel)
             dims = length(dimnames(ds[ncname]))
@@ -183,25 +185,34 @@ function set_states(instate_path, model, state_ncnames; type = nothing)
 end
 
 """
-    ncread(nc, var; <keyword arguments>)
+    ncread(nc, config::Config, parameter::AbstractString; <keyword arguments>)
 
-Read `var` from NetCDF file `nc`, type `String` or type `Config` are allowed.  Supports various 
-keyword arguments to get selections of data in desired types, with or without missing values.
+Read a NetCDF variable `var` from file `nc`, based on `config` (parsed TOML file) and the
+model `parameter` specified in the TOML configuration file. Supports various keyword
+arguments to get selections of data in desired types, with or without missing values.
 
 # Arguments
-- `sel=nothing`: a selection of indices, such as a `Vector{CartesianIndex}` of active cells,
+- `alias`=nothing` : An `alias` for the TOML key, by default an `alias` is not expected. 
+- `optional=true` : By default specifying a model `parameter` in the TOML file is optional.
+        Set to false if the model `parameter` is required.
+- `sel=nothing`: A selection of indices, such as a `Vector{CartesianIndex}` of active cells,
         to return from the NetCDF. By default all cells are returned.
-- `defaults=nothing`: a default value if `var` is not in `nc`. By default it gives an error 
+- `defaults=nothing`: A default value if `var` is not in `nc`. By default it gives an error
     in this case.
-- `type=nothing`: type to convert data to after reading. By default no conversion is done.
+- `type=nothing`: Type to convert data to after reading. By default no conversion is done.
 - `allow_missing=false`: Missing values within `sel` is not allowed by default. Set to
         `true` to allow missing values.
-- `fill=nothing`: Missing values are replaced by this fill value if `allow_missing` is `false`.
-- `dimname` : name of third dimension of parameter `var`. By default no third dimension is expected.
+- `fill=nothing`: Missing values are replaced by this fill value if `allow_missing` is
+  `false`.
+- `dimname` : Name of third dimension of parameter `var`. By default no third dimension is
+  expected.
 """
 function ncread(
     nc,
-    var;
+    config::Config,
+    parameter::AbstractString;
+    alias = nothing,
+    optional = true,
     sel = nothing,
     defaults = nothing,
     type = nothing,
@@ -209,6 +220,17 @@ function ncread(
     fill = nothing,
     dimname = nothing,
 )
+    # get var (NetCDF variable or type Config) from TOML file.
+    # if var has type Config, input parameters can be changed.
+    if isnothing(alias)
+        if optional
+            var = param(config, parameter, nothing)
+        else
+            var = param(config, parameter)
+        end
+    else
+        var = get_alias(config, parameter, alias, nothing)
+    end
 
     if isnothing(dimname)
         dim_sel = (x = :, y = :)
@@ -218,6 +240,7 @@ function ncread(
     end
 
     if isnothing(var)
+        @info "Set `$parameter` using default value `$defaults`."
         @assert !isnothing(defaults)
         if !isnothing(type)
             defaults = convert(type, defaults)
@@ -236,6 +259,7 @@ function ncread(
     if mod.scale != 1.0 || mod.offset != 0.0
         A = read_standardized(nc, var, dim_sel) .* mod.scale .+ mod.offset
     elseif !isnothing(mod.value)
+        @info "Set `$parameter` using default value `$defaults`."
         if isnothing(dimname)
             return Base.fill(mod.value, length(sel))
         else
@@ -244,6 +268,7 @@ function ncread(
     else
         # Read the entire variable into memory, applying scale, offset and
         # set fill_values to missing.
+        @info "Set `$parameter` using NetCDF variable `$var`."
         A = read_standardized(nc, var, dim_sel)
     end
 
