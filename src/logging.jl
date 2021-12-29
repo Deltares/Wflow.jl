@@ -33,7 +33,6 @@ function format_message(io::IO, args)::Nothing
     end
     println(
         io,
-        "timestamp = ",
         now(),
         " | ",
         args._module,

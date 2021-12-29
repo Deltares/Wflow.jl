@@ -372,7 +372,6 @@ end
     path_log = Wflow.output_path(config, "log-debug.txt")
     @test isfile(path_log)
     lines = readlines(path_log)
-    @test count(startswith(line, "timestamp = ") for line in lines) > 4
     @test count(contains(line, " | Wflow | [Info] ") for line in lines) > 3
     @test count(contains(line, " | Wflow | [Debug] ") for line in lines) > 0
     msg = " | Wflow | [Error] Wflow simulation failed |exception = ErrorException(\"No files found with name 'doesnt-exist.nc' in '"
