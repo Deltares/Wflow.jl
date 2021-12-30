@@ -500,6 +500,8 @@ function initialize_shallowwater_river(
     h_thresh = get(config.model, "h_thresh", 1.0e-03) # depth threshold for flow at link
     froude_limit = get(config.model, "froude_limit", true) # limit flow to subcritical according to Froude number
 
+    @info "Local inertial approach is used for river flow." alpha h_thresh froude_limit riverlength_bc
+
     bankfull_elevation_2d = ncread(
         nc,
         config.input,
@@ -798,6 +800,8 @@ function initialize_shallowwater_land(
     alpha = get(config.model, "inertial_flow_alpha", 0.7) # stability coefficient for model time step (0.2-0.7)
     theta = get(config.model, "inertial_flow_theta", 0.8) # weighting factor
     h_thresh = get(config.model, "h_thresh", 1.0e-03) # depth threshold for flow at link
+
+    @info "Local inertial approach is used for overlandflow." alpha theta h_thresh froude_limit
 
     n_land = ncread(
         nc,
