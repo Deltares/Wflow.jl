@@ -33,7 +33,9 @@ function initialize_flextopo_model(config::Config)
         "snow_no_storage" => snow_no_storage,
         "interception_overflow" => interception_overflow,
         "interception_no_storage" => interception_no_storage,
+        "hortonponding" => hortonponding,
         "hortonponding_no_storage" => hortonponding_no_storage,
+        "hortonrunoff" => hortonrunoff,
         "hortonrunoff_no_storage" => hortonrunoff_no_storage,
         "rootzone_storage" => rootzone_storage,
         "rootzone_no_storage" => rootzone_no_storage,
@@ -150,8 +152,14 @@ function initialize_flextopo_model(config::Config)
 
     imax = zeros(Float, nclass, n)
 
-    samax = zeros(Float, nclass, n)
+    shmax = zeros(Float, nclass, n)
     khf = zeros(Float, nclass, n)
+    facc0 = zeros(Float, nclass, n)
+    facc1 = zeros(Float, nclass, n)
+    fdec = zeros(Float, nclass, n)
+    fmax = zeros(Float, nclass, n)
+    shmin = zeros(Float, nclass, n)
+    kmf = zeros(Float, nclass, n)
 
     srmax = zeros(Float, nclass, n)
     beta = zeros(Float, nclass, n)
@@ -242,14 +250,14 @@ function initialize_flextopo_model(config::Config)
         )
         imax[k,:] = imax_k
 
-        samax_k = ncread(
+        shmax_k = ncread(
             nc,
-            param(config, "input.vertical.samax"*class, nothing);
+            param(config, "input.vertical.shmax"*class, nothing);
             sel = inds,
             defaults = 30.0,
             type = Float,
         )
-        samax[k,:] = samax_k
+        shmax[k,:] = shmax_k
 
         khf_k = ncread(
             nc,
@@ -259,6 +267,60 @@ function initialize_flextopo_model(config::Config)
             type = Float,
         ) .* (Δt / basetimestep)
         khf[k,:] = khf_k
+
+        facc0_k = ncread(
+            nc,
+            param(config, "input.vertical.facc0"*class, nothing);
+            sel = inds,
+            defaults = -3.0,
+            type = Float,
+        )
+        facc0[k,:] = facc0_k
+
+        facc1_k = ncread(
+            nc,
+            param(config, "input.vertical.facc1"*class, nothing);
+            sel = inds,
+            defaults = 0.0,
+            type = Float,
+        )
+        facc1[k,:] = facc1_k
+
+        fdec_k = ncread(
+            nc,
+            param(config, "input.vertical.fdec"*class, nothing);
+            sel = inds,
+            defaults = 0.2,
+            type = Float,
+        )
+        fdec[k,:] = fdec_k
+
+        fmax_k = ncread(
+            nc,
+            param(config, "input.vertical.fmax"*class, nothing);
+            sel = inds,
+            defaults = 2.0,
+            type = Float,
+        ) .* (Δt / basetimestep)
+        fmax[k,:] = fmax_k
+
+        shmin_k = ncread(
+            nc,
+            param(config, "input.vertical.shmin"*class, nothing);
+            sel = inds,
+            defaults = 0.2,
+            type = Float,
+        )
+        shmin[k,:] = shmin_k
+
+        kmf_k = ncread(
+            nc,
+            param(config, "input.vertical.kmf"*class, nothing);
+            sel = inds,
+            defaults = 1.0,
+            type = Float,
+        )
+        kmf[k,:] = kmf_k
 
         srmax_k = ncread(
             nc,
@@ -370,6 +432,7 @@ function initialize_flextopo_model(config::Config)
     Er = fill(mv, nclass, n)
     Qh = fill(mv, nclass, n)
     Qhr = fill(mv, nclass, n)
+    facc = zeros(Float, nclass, n)
     Qhf = fill(mv, nclass, n)
     Qr = fill(mv, nclass, n)
     Qrf = fill(mv, nclass, n)
@@ -377,7 +440,6 @@ function initialize_flextopo_model(config::Config)
     Qf = fill(mv, nclass, n)
     Ea = fill(mv, nclass, n)
     # directrunoff = fill(mv, nclass, n)
-    # hbv_seepage = fill(mv, nclass, n)
     Qperc = fill(mv, nclass, n)
     Qcap = fill(mv, nclass, n)
 
@@ -423,8 +485,14 @@ function initialize_flextopo_model(config::Config)
         # imax = imax,
         imax = svectorscopy(imax, Val{nclass}()),
         #horton
-        samax = svectorscopy(samax, Val{nclass}()),
+        shmax = svectorscopy(shmax, Val{nclass}()),
         khf = svectorscopy(khf, Val{nclass}()),
+        facc0 = svectorscopy(facc0, Val{nclass}()),
+        facc1 = svectorscopy(facc1, Val{nclass}()),
+        fdec = svectorscopy(fdec, Val{nclass}()),
+        fmax = svectorscopy(fmax, Val{nclass}()),
+        shmin = svectorscopy(shmin, Val{nclass}()),
+        kmf = svectorscopy(kmf, Val{nclass}()),
         #root zone
         srmax = svectorscopy(srmax, Val{nclass}()),
         lp = svectorscopy(lp, Val{nclass}()),
@@ -496,6 +564,7 @@ function initialize_flextopo_model(config::Config)
         Er = svectorscopy(Er, Val{nclass}()), 
         Qh = svectorscopy(Qh, Val{nclass}()), 
         Qhr = svectorscopy(Qhr, Val{nclass}()), 
+        facc = svectorscopy(facc, Val{nclass}()), 
         Qhf = svectorscopy(Qhf, Val{nclass}()), 
         Qr = svectorscopy(Qr, Val{nclass}()), 
         Qrf = svectorscopy(Qrf, Val{nclass}()), 
