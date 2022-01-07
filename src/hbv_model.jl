@@ -399,6 +399,8 @@ function initialize_hbv_model(config::Config)
 
     riverlength = riverlength_2d[inds_riv]
     riverwidth = riverwidth_2d[inds_riv]
+    minimum(riverlength) > 0 || error("river length must be positive on river cells")
+    minimum(riverwidth) > 0 || error("river width must be positive on river cells")
 
     ldd_riv = ldd_2d[inds_riv]
     if do_pits

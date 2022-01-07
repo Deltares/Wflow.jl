@@ -95,8 +95,12 @@ function initialize_sediment_model(config::Config)
     # the indices of the river cells in the land(+river) cell vector
     βₗ = ncread(nc, param(config, "input.lateral.land.slope"); sel = inds, type = Float)
     clamp!(βₗ, 0.00001, Inf)
+
     riverlength = riverlength_2d[inds_riv]
     riverwidth = riverwidth_2d[inds_riv]
+    minimum(riverlength) > 0 || error("river length must be positive on river cells")
+    minimum(riverwidth) > 0 || error("river width must be positive on river cells")
+
     ldd_riv = ldd_2d[inds_riv]
     graph_riv = flowgraph(ldd_riv, inds_riv, pcr_dir)
 
