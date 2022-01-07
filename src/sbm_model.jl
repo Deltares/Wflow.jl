@@ -399,15 +399,14 @@ function initialize_sbm_model(config::Config)
                 vertical.satwaterdepth ./ (vertical.θₛ .- vertical.θᵣ),
             )
         vertical.zi .= zi
-        # makes sure land cells with zero flow width are set to zero q and h
-        for i in eachindex(lateral.land.width)
-            if lateral.land.width[i] <= 0.0
-                lateral.land.q[i] = 0.0
-                lateral.land.h[i] = 0.0
-            end
-        end
-        lateral.land.volume .= lateral.land.h .* lateral.land.width .* lateral.land.dl
         if land_routing == "kinematic-wave"
+            # make sure land cells with zero flow width are set to zero q and h
+            for i in eachindex(lateral.land.width)
+                if lateral.land.width[i] <= 0.0
+                    lateral.land.q[i] = 0.0
+                    lateral.land.h[i] = 0.0
+                end
+            end
             lateral.land.volume .= lateral.land.h .* lateral.land.width .* lateral.land.dl
         elseif land_routing == "local-inertial"
             for i = 1:n
