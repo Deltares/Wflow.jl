@@ -163,7 +163,7 @@ function initialize_surfaceflow_river(
         h_av = zeros(Float, n),
         h_bankfull = h_bankfull,
         Δt = Float(tosecond(Δt)),
-        its = tstep > 0 ? ceil(Int(tosecond(Δt) / tstep)) : tstep,
+        its = tstep > 0 ? Int(cld(tosecond(Δt), tstep)) : tstep,
         width = width,
         wb_pit = wb_pit,
         alpha_pow = Float((2.0 / 3.0) * 0.6),
