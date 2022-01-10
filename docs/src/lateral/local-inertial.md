@@ -82,18 +82,23 @@ notation of Almeida et al. (2012)):
 
 ```math
 Q_{i-1/2}^{n+1} = \frac{\left[ \theta Q_{i-1/2}^{n} +\frac{(1-\theta)}{2}(Q_{(i-3/2)}^{n} + \\
-  Q_{(i+1/2)}^{n})\right]- g h_f \frac{\Delta t}{\Delta x} (y^n_i - y^n_{i-1}) \Delta y}{1+g\Delta t \\
+  Q_{(i+1/2)}^{n})\right]- g h_f \frac{\Delta t}{\Delta x} (\eta^n_i - \eta^n_{i-1}) \Delta y}{1+g\Delta t \\
    n^2 |Q_{i-1/2}^{n}|/(h_f^{7/3} \Delta y)}
 ```
 
 where subscripts ``i`` and ``n`` refer to space and time indices, respectively. Subscript
 ``i-1/2`` is to the link between node ``i`` and ``i-1``, subscript ``i+1/2`` is the link
-between node ``i`` and node ``i+1``, and subscript ``i-3/2`` is the link between node ``i``
-and node ``i-1``. ``Q`` is the water discharge [m``^3`` s``^{-1}``], `y` is the water
+between node ``i`` and node ``i+1``, and subscript ``i-3/2`` is the link between node ``i-1``
+and node ``i-2``. ``Q`` is the water discharge [m``^3`` s``^{-1}``], ``\eta`` is the water
 surface elevation [m], ``h_f`` [m] is the water depth between cells, ``n`` is the Manning's
 roughness coefficient [m``^{-1/3}`` s], ``g`` is acceleration due to gravity [m/s``^2``],
 ``\Delta t`` [s] is the adaptive model time step, ``\Delta x`` [m] is the distance between
-two cells and ``\Delta y`` [m] is the flow width.
+two cells and ``\Delta y`` [m] is the flow width. Below the staggered grid and variables of
+the numerical solution in the x-direction, based on Almeida et al. (2012):
+
+```@raw html
+<img src="../images/numerical_scheme_almeida.png" width="75%"/>
+```
 
 The overland flow local inertial approach is used in combination with the local inertial
 river routing. This is a similar to the modelling approach of Neal et al. (2012), where the
