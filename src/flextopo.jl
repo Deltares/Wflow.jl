@@ -25,21 +25,32 @@
     # Correction factor for precipitation [-]
     pcorr::Vector{T} | "-"          
     # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹]
-    cfmax::Vector{SVector{N,T}} | "mm ᵒC-1 Δt-1"
+    cfmax::Vector{T} | "mm ᵒC-1 Δt-1"
     # Threshold temperature for snowfall [ᵒC]
-    tt::Vector{SVector{N,T}} | "ᵒC"
+    tt::Vector{T} | "ᵒC"
     # Threshold temperature interval length [ᵒC]
-    tti::Vector{SVector{N,T}} | "ᵒC"
+    tti::Vector{T} | "ᵒC"
     # Threshold temperature for snowmelt [ᵒC]
-    ttm::Vector{SVector{N,T}} | "ᵒC"
+    ttm::Vector{T} | "ᵒC"
     # Water holding capacity as fraction of current snow pack [-]
-    whc::Vector{SVector{N,T}} | "-"
+    whc::Vector{T} | "-"
     # Refreezing efficiency constant in refreezing of freewater in snow [-]
-    cfr::Vector{SVector{N,T}} | "-"
+    cfr::Vector{T} | "-"
     # Correction factor for precipitation [-]
     rfcf::Vector{T} | "-"           
     # Correction factor for snowfall [-]
-    sfcf::Vector{T} | "-"           
+    sfcf::Vector{T} | "-"      
+    ## GLACIER
+    # Threshold temperature for snowfall above glacier [ᵒC]
+    g_tt::Vector{T} | "ᵒC"              
+    # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹] for glacier
+    g_cfmax::Vector{T} | "mm ᵒC-1 Δt-1" 
+    # Fraction of the snowpack on top of the glacier converted into ice [-]
+    g_sifrac::Vector{T} | "-"           
+    # Water within the glacier [mm]
+    glacierstore::Vector{T} | "mm"      
+    # Fraction covered by a glacier [-]
+    glacierfrac::Vector{T} | "-"        
     ##INTERCEPTION
     # Maximum interception storage (in forested and non-forested areas) [mm]
     # imax::Vector{T} | "mm"           
@@ -90,10 +101,9 @@
     ## STATES
     ##SNOW
     # Snow water equivalent [mm]
-    # Sw::Vector{SVector{N,T}} | "mm"
-    Sw::Vector{SVector{N,T}} | "mm"
+    Sw::Vector{T} | "mm"
     # Liquid water content in the snow pack [mm]
-    Sww::Vector{SVector{N,T}} | "mm"
+    Sww::Vector{T} | "mm"
     # Interception storage [mm]
     Si::Vector{SVector{N,T}} | "mm"  
     # Storage in the hortonian ponding reservoir [mm]
@@ -113,8 +123,8 @@
     #states previous time step to calc water balance combined based on perc class. [mm]
     states_m::Vector{T} | "mm"  
     #states averaged over classes
-    Sw_m::Vector{T} | "mm"  
-    Sww_m::Vector{T} | "mm"  
+    # Sw_m::Vector{T} | "mm"  
+    # Sww_m::Vector{T} | "mm"  
     Si_m::Vector{T} | "mm"  
     Sh_m::Vector{T} | "mm"  
     Shf_m::Vector{T} | "mm"  
@@ -131,11 +141,11 @@
     # Potential evapotranspiration [mm Δt⁻¹]
     potential_evaporation::Vector{T} | "mm Δt-1"    
     # Snow melt + precipitation as rainfall [mm]
-    rainfallplusmelt::Vector{SVector{N,T}} | "mm Δt-1"
+    rainfallplusmelt::Vector{T} | "mm Δt-1"
     # Snowfall [mm]
-    snowfall::Vector{SVector{N,T}} | "mm Δt-1"
+    snowfall::Vector{T} | "mm Δt-1"
     # Snowmelt [mm]
-    snowmelt::Vector{SVector{N,T}} | "mm Δt-1"
+    snowmelt::Vector{T} | "mm Δt-1"
     #INTERCEPTION
     # Potential soil evaporation [mm Δt⁻¹]
     potsoilevap::Vector{SVector{N,T}} | "mm Δt-1"              
@@ -196,7 +206,7 @@
 
     ## WATERBALANCES
     #water balance snow store
-    wbSw::Vector{SVector{N,T}} | "mm Δt-1" 
+    wbSw::Vector{T} | "mm Δt-1" 
     #water balance interception storage [mm Δt⁻¹]
     wbSi::Vector{SVector{N,T}} | "mm Δt-1" 
     #water balance hortonian ponding storage [mm Δt⁻¹]
@@ -230,42 +240,37 @@ statevars(::FLEXTOPO) = (
     :Ss
 )
 
-function snow_hbv(flextopo::FLEXTOPO, config)
-    k = flextopo.kclass[1]
+function common_snow_hbv(flextopo::FLEXTOPO, config)
     for i = 1:flextopo.n
         # precip correction 
         precipitation = flextopo.precipitation[i] * flextopo.pcorr[i]
 
         #hbv snow 
         Sw, Sww, snowmelt, rainfallplusmelt, snowfall = snowpack_hbv(
-            flextopo.Sw[i][k],
-            flextopo.Sww[i][k],
+            flextopo.Sw[i],
+            flextopo.Sww[i],
             precipitation,
             flextopo.temperature[i],
-            flextopo.tti[i][k],
-            flextopo.tt[i][k],
-            flextopo.ttm[i][k],
-            flextopo.cfmax[i][k],
-            flextopo.whc[i][k],
+            flextopo.tti[i],
+            flextopo.tt[i],
+            flextopo.ttm[i],
+            flextopo.cfmax[i],
+            flextopo.whc[i],
             )
-
-        #update stores with setindex
-        # states_ is sum of states of previous time steps to compute WB at the end
-        flextopo.states_[i] = setindex(flextopo.states_[i], flextopo.Sw[i][k] + flextopo.Sww[i][k], k)  
-        flextopo.snowfall[i] =  setindex(flextopo.snowfall[i], snowfall, k)
-        flextopo.snowmelt[i] = setindex(flextopo.snowmelt[i], snowmelt, k)
-        flextopo.Sw[i] = setindex(flextopo.Sw[i], Sw, k)
-        flextopo.Sww[i] = setindex(flextopo.Sww[i], Sww, k)
-        flextopo.rainfallplusmelt[i] = setindex(flextopo.rainfallplusmelt[i], rainfallplusmelt, k) 
+        
+        #update stores
+        # states_ is sum of states of previous time steps to compute WB at the end (per class); states_m is for combined stores
+        flextopo.states_m[i] = flextopo.Sw[i] + flextopo.Sww[i]
+        flextopo.snowfall[i] =  snowfall
+        flextopo.snowmelt[i] = snowmelt
+        flextopo.Sw[i] = Sw
+        flextopo.Sww[i] = Sww
+        flextopo.rainfallplusmelt[i] = rainfallplusmelt
         #TODO add wbSw wbSww
-        #average storage over classes
-        flextopo.Sw_m[i] = sum(flextopo.Sw[i] .* flextopo.hrufrac[i])
-        flextopo.Sww_m[i] = sum(flextopo.Sww[i] .* flextopo.hrufrac[i])
     end
 end
 
-function snow_no_storage(flextopo::FLEXTOPO, config)
-    k = flextopo.kclass[1]
+function common_snow_no_storage(flextopo::FLEXTOPO, config)
     for i = 1:flextopo.n
         Sw = 0.0
         Sww = 0.0
@@ -275,30 +280,54 @@ function snow_no_storage(flextopo::FLEXTOPO, config)
         precipitation = flextopo.precipitation[i] * flextopo.pcorr[i] 
         rainfallplusmelt = precipitation
 
-        wbSw = precipitation - rainfallplusmelt - Sw + flextopo.Sw[i][k]
+        wbSw = precipitation - rainfallplusmelt - Sw + flextopo.Sw[i]
 
-        #update stores with setindex
-        # states_ is sum of states of previous time steps to compute WB at the end
-        flextopo.states_[i] = setindex(flextopo.states_[i], flextopo.Sw[i][k] + flextopo.Sww[i][k], k)  
-        flextopo.snowfall[i] =  setindex(flextopo.snowfall[i], snowfall, k)
-        flextopo.snowmelt[i] = setindex(flextopo.snowmelt[i], snowmelt, k)
-        flextopo.Sw[i] = setindex(flextopo.Sw[i], Sw, k)
-        flextopo.Sww[i] = setindex(flextopo.Sww[i], Sww, k)
-        flextopo.rainfallplusmelt[i] = setindex(flextopo.rainfallplusmelt[i], rainfallplusmelt, k) 
-        flextopo.wbSw[i] = setindex(flextopo.wbSw[i], wbSw, k)
+        #update stores 
+        # states_ is sum of states of previous time steps to compute WB at the end (per class); states_m is for combined stores
+        flextopo.states_m[i] = flextopo.Sw[i] + flextopo.Sww[i]
+        flextopo.snowfall[i] =  snowfall
+        flextopo.snowmelt[i] = snowmelt
+        flextopo.Sw[i] = Sw
+        flextopo.Sww[i] = Sww
+        flextopo.rainfallplusmelt[i] = rainfallplusmelt
+        flextopo.wbSw[i] = wbSw
         #TODO add wbSww
-        #average storage over classes
-        flextopo.Sw_m[i] = sum(flextopo.Sw[i] .* flextopo.hrufrac[i])
-        flextopo.Sww_m[i] = sum(flextopo.Sww[i] .* flextopo.hrufrac[i])
     end
 end
+
+function common_glaciers(flextopo::FLEXTOPO, config)
+    modelglacier = get(config.model, "glacier", false)::Bool
+    for i = 1:flextopo.n
+        if modelglacier
+            # Run Glacier module and add the snowpack on-top of it.
+            # Estimate the fraction of snow turned into ice (HBV-light).
+            # Estimate glacier melt.
+
+            flextopo.Sw[i], snow2glacier, flextopo.glacierstore[i], glaciermelt = glacier_hbv(
+                flextopo.glacierfrac[i],
+                flextopo.glacierstore[i],
+                flextopo.Sw[i],
+                flextopo.temperature[i],
+                flextopo.g_tt[i],
+                flextopo.g_cfmax[i],
+                flextopo.g_sifrac[i],
+                Second(flextopo.Δt),
+            )
+            # Convert to mm per grid cell and add to snowmelt
+            glaciermelt = glaciermelt * flextopo.glacierfrac[i]
+            rainfallplusmelt = flextopo.rainfallplusmelt[i] + glaciermelt
+        else
+            rainfallplusmelt = flextopo.rainfallplusmelt[i]
+        end
+    end
+end 
         
 
 function interception_no_storage(flextopo::FLEXTOPO, config)
     k = flextopo.kclass[1]
     for i = 1:flextopo.n
         Ei = 0.0
-        Pe = max(flextopo.rainfallplusmelt[i][k], 0)
+        Pe = max(flextopo.rainfallplusmelt[i], 0)
         Si = 0.0
 
         # correction for potential evaporation 
@@ -306,10 +335,10 @@ function interception_no_storage(flextopo::FLEXTOPO, config)
         restevap = max(0.0, Ep_corr - Ei)
 
         #wb interceptionstore 
-        wbSi = flextopo.rainfallplusmelt[i][k] - Ei - Pe - Si + flextopo.Si[i][k]
+        wbSi = flextopo.rainfallplusmelt[i] - Ei - Pe - Si + flextopo.Si[i][k]
 
         #update stores
-        flextopo.states_[i] = setindex(flextopo.states_[i], flextopo.states_[i][k]  + flextopo.Si[i][k], k)
+        flextopo.states_[i] = setindex(flextopo.states_[i], flextopo.Si[i][k], k)
         flextopo.Si[i] = setindex(flextopo.Si[i], Si, k)
         flextopo.Ei[i] = setindex(flextopo.Ei[i], Ei, k)
         flextopo.Pe[i] = setindex(flextopo.Pe[i], Pe, k)
@@ -327,10 +356,10 @@ function interception_overflow(flextopo::FLEXTOPO, config)
     k = flextopo.kclass[1]
     for i = 1:flextopo.n
         # rainfall added to interception store Si
-        interception = min(flextopo.rainfallplusmelt[i][k], flextopo.imax[i][k] - flextopo.Si[i][k])
+        interception = min(flextopo.rainfallplusmelt[i], flextopo.imax[i][k] - flextopo.Si[i][k])
         # current interception storage
         Si = flextopo.Si[i][k] + interception
-        Pe = flextopo.rainfallplusmelt[i][k] - interception
+        Pe = flextopo.rainfallplusmelt[i] - interception
 
         # correction for potential evaporation 
         Ep_corr = flextopo.ecorr[i] * flextopo.potential_evaporation[i]
@@ -341,10 +370,10 @@ function interception_overflow(flextopo::FLEXTOPO, config)
         restevap = max(0.0, Ep_corr - Ei)
 
         #wb interceptionstore 
-        wbSi = flextopo.rainfallplusmelt[i][k] - Ei - Pe - Si + flextopo.Si[i][k]
+        wbSi = flextopo.rainfallplusmelt[i] - Ei - Pe - Si + flextopo.Si[i][k]
 
         #update stores
-        flextopo.states_[i] = setindex(flextopo.states_[i], flextopo.states_[i][k]  + flextopo.Si[i][k], k)
+        flextopo.states_[i] = setindex(flextopo.states_[i], flextopo.Si[i][k], k)
         flextopo.Si[i] = setindex(flextopo.Si[i], Si, k)
         flextopo.Ei[i] = setindex(flextopo.Ei[i], Ei, k)
         flextopo.Pe[i] = setindex(flextopo.Pe[i], Pe, k)
@@ -648,7 +677,7 @@ function slow_no_storage(flextopo::FLEXTOPO, config)
 
         #update
         flextopo.Qftotal[i] = Qftotal
-        flextopo.states_m[i] = sum(flextopo.states_[i] .* flextopo.hrufrac[i])  + flextopo.Ss[i]
+        flextopo.states_m[i] = flextopo.states_m[i] + sum(flextopo.states_[i] .* flextopo.hrufrac[i])  + flextopo.Ss[i]
         flextopo.runoff[i] = runoff
         flextopo.Qrs_m[i] = pref_recharge_sum_classes
         flextopo.Qperc_m[i] = Qperc_sum_classes
@@ -681,7 +710,7 @@ function common_slow_storage(flextopo::FLEXTOPO, config)
 
         #update
         flextopo.Qftotal[i] = Qftotal
-        flextopo.states_m[i] = sum(flextopo.states_[i] .* flextopo.hrufrac[i])  + flextopo.Ss[i]
+        flextopo.states_m[i] = flextopo.states_m[i] + sum(flextopo.states_[i] .* flextopo.hrufrac[i])  + flextopo.Ss[i]
         flextopo.runoff[i] = runoff
         flextopo.Qrs_m[i] = pref_recharge_sum_classes
         flextopo.Qperc_m[i] = Qperc_sum_classes
@@ -694,7 +723,7 @@ end
 
 function watbal(flextopo::FLEXTOPO, config)
     for i = 1:flextopo.n
-        states = sum(flextopo.Sw[i] .* flextopo.hrufrac[i]) + sum(flextopo.Sww[i] .* flextopo.hrufrac[i]) + sum(flextopo.Si[i] .* flextopo.hrufrac[i]) + sum(flextopo.Sh[i] .* flextopo.hrufrac[i]) + sum(flextopo.Shf[i] .* flextopo.hrufrac[i]) + sum(flextopo.Sr[i] .* flextopo.hrufrac[i]) + sum(flextopo.Sf[i] .* flextopo.hrufrac[i]) + sum(flextopo.Ss[i] .* flextopo.hrufrac[i])
+        states = flextopo.Sw[i] + flextopo.Sww[i] + sum(flextopo.Si[i] .* flextopo.hrufrac[i]) + sum(flextopo.Sh[i] .* flextopo.hrufrac[i]) + sum(flextopo.Shf[i] .* flextopo.hrufrac[i]) + sum(flextopo.Sr[i] .* flextopo.hrufrac[i]) + sum(flextopo.Sf[i] .* flextopo.hrufrac[i]) + sum(flextopo.Ss[i] .* flextopo.hrufrac[i])
         wbtot = flextopo.precipitation[i] - (sum(flextopo.Ei[i] .* flextopo.hrufrac[i]) + sum(flextopo.Eh[i] .* flextopo.hrufrac[i]) + sum(flextopo.Er[i] .* flextopo.hrufrac[i])) - flextopo.runoff[i] - states + flextopo.states_m[i]
         #update wb
         flextopo.wbtot[i] = wbtot

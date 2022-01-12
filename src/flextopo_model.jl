@@ -29,8 +29,9 @@ function initialize_flextopo_model(config::Config)
 
     # dictionary of available functions for each store
     dic_function =  Dict{String, Function}(
-        "snow_hbv" => snow_hbv,
-        "snow_no_storage" => snow_no_storage,
+        "common_snow_hbv" => common_snow_hbv,
+        "common_snow_no_storage" => common_snow_no_storage,
+        "common_glaciers" => common_glaciers,
         "interception_overflow" => interception_overflow,
         "interception_no_storage" => interception_no_storage,
         "hortonponding" => hortonponding,
@@ -45,7 +46,7 @@ function initialize_flextopo_model(config::Config)
         "common_slow_storage" => common_slow_storage,
     )
 
-    selectSw = get(config.model, "selectSw", ["snow_hbv"])
+    selectSw = get(config.model, "selectSw", ["common_snow_hbv"])
     selectSi = get(config.model, "selectSi", ["interception_overflow"])
     selectSh = get(config.model, "selectSh", ["hortonponding_no_storage"])
     selectShf = get(config.model, "selectShf", ["hortonrunoff_no_storage"])
@@ -61,48 +62,99 @@ function initialize_flextopo_model(config::Config)
     n = length(inds)
 
     
-    # # glacier parameters
-    # g_tt = ncread(
-    #     nc,
-    #     param(config, "input.vertical.g_tt", nothing);
-    #     sel = inds,
-    #     defaults = 0.0,
-    #     type = Float,
-    #     fill = 0.0,
-    # )
-    # g_cfmax =
-    #     ncread(
-    #         nc,
-    #         param(config, "input.vertical.g_cfmax", nothing);
-    #         sel = inds,
-    #         defaults = 3.0,
-    #         type = Float,
-    #         fill = 0.0,
-    #     ) .* (Δt / basetimestep)
-    # g_sifrac = ncread(
-    #     nc,
-    #     param(config, "input.vertical.g_sifrac", nothing);
-    #     sel = inds,
-    #     defaults = 0.001,
-    #     type = Float,
-    #     fill = 0.0,
-    # )
-    # glacierfrac = ncread(
-    #     nc,
-    #     param(config, "input.vertical.glacierfrac", nothing);
-    #     sel = inds,
-    #     defaults = 0.0,
-    #     type = Float,
-    #     fill = 0.0,
-    # )
-    # glacierstore = ncread(
-    #     nc,
-    #     param(config, "input.vertical.glacierstore", nothing);
-    #     sel = inds,
-    #     defaults = 5500.0,
-    #     type = Float,
-    #     fill = 0.0,
-    # )
+    # glacier parameters
+    g_tt = ncread(
+        nc,
+        param(config, "input.vertical.g_tt", nothing);
+        sel = inds,
+        defaults = 0.0,
+        type = Float,
+        fill = 0.0,
+    )
+    g_cfmax =
+        ncread(
+            nc,
+            param(config, "input.vertical.g_cfmax", nothing);
+            sel = inds,
+            defaults = 3.0,
+            type = Float,
+            fill = 0.0,
+        ) .* (Δt / basetimestep)
+
+    g_sifrac = ncread(
+        nc,
+        param(config, "input.vertical.g_sifrac", nothing);
+        sel = inds,
+        defaults = 0.001,
+        type = Float,
+        fill = 0.0,
+    )
+    glacierfrac = ncread(
+        nc,
+        param(config, "input.vertical.glacierfrac", nothing);
+        sel = inds,
+        defaults = 0.0,
+        type = Float,
+        fill = 0.0,
+    )
+    glacierstore = ncread(
+        nc,
+        param(config, "input.vertical.glacierstore", nothing);
+        sel = inds,
+        defaults = 5500.0,
+        type = Float,
+        fill = 0.0,
+    )
+
+    #snow param (single class)
+    cfmax =
+        ncread(
+            nc,
+            param(config, "input.vertical.cfmax", nothing);
+            sel = inds,
+            defaults = 3.75653,
+            type = Float,
+        ) .* (Δt / basetimestep)
+
+    tt = ncread(
+        nc,
+        param(config, "input.vertical.tt", nothing);
+        sel = inds,
+        defaults = -1.41934,
+        type = Float,
+    )
+
+    tti = ncread(
+        nc,
+        param(config, "input.vertical.tti", nothing);
+        sel = inds,
+        defaults = 1.0,
+        type = Float,
+    )
+
+    ttm = ncread(
+        nc,
+        param(config, "input.vertical.ttm", nothing);
+        sel = inds,
+        defaults = -1.41934,
+        type = Float,
+    )
+    
+    whc = ncread(
+        nc,
+        param(config, "input.vertical.whc", nothing);
+        sel = inds,
+        defaults = 0.1,
+        type = Float,
+    )
+
+    cfr = ncread(
+        nc,
+        param(config, "input.vertical.cfr", nothing);
+        sel = inds,
+        defaults = 0.05,
+        type = Float,
+    )
 
     #parameters which are not class specific
     pcorr = ncread(
@@ -143,12 +195,13 @@ function initialize_flextopo_model(config::Config)
 
     # #initialize parameters that differ per class
     hrufrac = zeros(Float, nclass, n)
-    cfmax = zeros(Float, nclass, n)
-    tt = zeros(Float, nclass, n)
-    tti = zeros(Float, nclass, n)
-    ttm = zeros(Float, nclass, n)
-    whc = zeros(Float, nclass, n)
-    cfr = zeros(Float, nclass, n)
+    
+    # cfmax = zeros(Float, nclass, n)
+    # tt = zeros(Float, nclass, n)
+    # tti = zeros(Float, nclass, n)
+    # ttm = zeros(Float, nclass, n)
+    # whc = zeros(Float, nclass, n)
+    # cfr = zeros(Float, nclass, n)
 
     imax = zeros(Float, nclass, n)
 
@@ -184,61 +237,6 @@ function initialize_flextopo_model(config::Config)
             # dimname = :classes,
         )
         hrufrac[k,:] = hrufrac_k
-
-        cfmax_k =
-            ncread(
-                nc,
-                param(config, "input.vertical.cfmax"*class, nothing);
-                sel = inds,
-                defaults = 3.75653,
-                type = Float,
-            ) .* (Δt / basetimestep)
-        cfmax[k,:] = cfmax_k
-
-        tt_k = ncread(
-            nc,
-            param(config, "input.vertical.tt"*class, nothing);
-            sel = inds,
-            defaults = -1.41934,
-            type = Float,
-        )
-        tt[k,:] = tt_k
-
-        tti_k = ncread(
-            nc,
-            param(config, "input.vertical.tti"*class, nothing);
-            sel = inds,
-            defaults = 1.0,
-            type = Float,
-        )
-        tti[k,:] = tti_k
-
-        ttm_k = ncread(
-            nc,
-            param(config, "input.vertical.ttm"*class, nothing);
-            sel = inds,
-            defaults = -1.41934,
-            type = Float,
-        )
-        ttm[k,:] = ttm_k
-        
-        whc_k = ncread(
-            nc,
-            param(config, "input.vertical.whc"*class, nothing);
-            sel = inds,
-            defaults = 0.1,
-            type = Float,
-        )
-        whc[k,:] = whc_k
-
-        cfr_k = ncread(
-            nc,
-            param(config, "input.vertical.cfr"*class, nothing);
-            sel = inds,
-            defaults = 0.05,
-            type = Float,
-        )
-        cfr[k,:] = cfr_k
 
         imax_k = ncread(
             nc,
@@ -422,9 +420,6 @@ function initialize_flextopo_model(config::Config)
 
     states_  = fill(mv, nclass, n)
 
-    rainfallplusmelt = fill(mv, nclass, n)
-    snowfall = fill(mv, nclass, n)
-    snowmelt = fill(mv, nclass, n)
     potsoilevap = fill(mv, nclass, n)
     Ei = fill(mv, nclass, n)
     Pe = fill(mv, nclass, n)
@@ -443,7 +438,6 @@ function initialize_flextopo_model(config::Config)
     Qperc = fill(mv, nclass, n)
     Qcap = fill(mv, nclass, n)
 
-    wbSw = fill(mv, nclass, n)
     wbSi = fill(mv, nclass, n)
     wbSh = fill(mv, nclass, n)
     wbShf = fill(mv, nclass, n)
@@ -472,13 +466,19 @@ function initialize_flextopo_model(config::Config)
         hrufrac = svectorscopy(hrufrac, Val{nclass}()),
         pcorr = pcorr,
         ecorr = ecorr,
+        #glaciers
+        g_tt = g_tt,
+        g_cfmax = g_cfmax,
+        g_sifrac = g_sifrac,
+        glacierfrac = glacierfrac,
+        glacierstore = glacierstore,
         # snow
-        tti = svectorscopy(tti, Val{nclass}()),
-        tt = svectorscopy(tt, Val{nclass}()),
-        ttm = svectorscopy(ttm, Val{nclass}()),
-        cfmax = svectorscopy(cfmax, Val{nclass}()),
-        whc = svectorscopy(whc, Val{nclass}()),
-        cfr = svectorscopy(cfr, Val{nclass}()),
+        tti = tti,
+        tt = tt, 
+        ttm = ttm, 
+        cfmax = cfmax, 
+        whc = whc, 
+        cfr = cfr, 
         rfcf = rfcf,
         sfcf = sfcf,
         #interception 
@@ -509,18 +509,12 @@ function initialize_flextopo_model(config::Config)
         # kquickflow = set_kquickflow ? kquickflow :
         #              pow.(khq, 1.0 .+ alphanl) .* pow.(hq, -alphanl),
         
-        # # glacier parameters
-        # g_tt = g_tt,
-        # g_sifrac = g_sifrac,
-        # g_cfmax = g_cfmax,
-        # glacierstore = glacierstore,
-        # glacierfrac = glacierfrac,
-        
         # # default (cold) states:
-        # Sw = zeros(Float, n), 
+        Sw = zeros(Float, n), 
+        Sww = zeros(Float, n), 
         # Sw = zero(dummy),
-        Sw = svectorscopy(Sw, Val{nclass}()), 
-        Sww = svectorscopy(Sww, Val{nclass}()), 
+        # Sw = svectorscopy(Sw, Val{nclass}()), 
+        # Sww = svectorscopy(Sww, Val{nclass}()), 
         # Si = zero(dummy),
         Si = svectorscopy(Si, Val{nclass}()), 
         Sh = svectorscopy(Sh, Val{nclass}()), 
@@ -537,8 +531,8 @@ function initialize_flextopo_model(config::Config)
         states_m = fill(mv, n),
         states_ = svectorscopy(states_, Val{nclass}()), 
         #states averaged over all classes
-        Sw_m = zeros(Float, n),
-        Sww_m = zeros(Float, n),
+        # Sw_m = zeros(Float, n),
+        # Sww_m = zeros(Float, n),
         Si_m = zeros(Float, n),
         Sh_m = zeros(Float, n),
         Shf_m = zeros(Float, n),
@@ -550,9 +544,9 @@ function initialize_flextopo_model(config::Config)
         precipitation = fill(mv, n),
         temperature = fill(mv, n),
         potential_evaporation = fill(mv, n),
-        rainfallplusmelt = svectorscopy(rainfallplusmelt, Val{nclass}()), 
-        snowfall = svectorscopy(snowfall, Val{nclass}()), 
-        snowmelt = svectorscopy(snowmelt, Val{nclass}()), 
+        rainfallplusmelt = fill(mv, n), 
+        snowfall = fill(mv, n), 
+        snowmelt = fill(mv, n), 
         potsoilevap = svectorscopy(potsoilevap, Val{nclass}()), 
         # Pe = fill(mv, n),
         Pe = svectorscopy(Pe, Val{nclass}()), 
@@ -588,7 +582,7 @@ function initialize_flextopo_model(config::Config)
         runoff = fill(mv, n),
 
 
-        wbSw = svectorscopy(wbSw, Val{nclass}()), 
+        wbSw = fill(mv, n), 
         wbSi = svectorscopy(wbSi, Val{nclass}()), 
         wbSh = svectorscopy(wbSh, Val{nclass}()), 
         wbShf = svectorscopy(wbShf, Val{nclass}()), 
@@ -801,14 +795,26 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:FlextopoModel}
 
     inds_riv = network.index_river
 
+    #COMMON SNOW
+    vertical.dic_function[vertical.selectSw[1]](vertical, config)
+
+    #lateral snow transport
+    if get(config.model, "masswasting", false)::Bool
+        lateral_snow_transport!(
+            vertical.Sw,
+            vertical.Sww,
+            lateral.land.sl,
+            network.land,
+        )
+    end
+    #TODO : check if snow and snowwater names to Sw and Sww require to redefine the function?? 
+
+    if get(config.model, "glacier", false)::Bool
+        common_glaciers(vertical, config)
+    end
+
     for (k, class) in enumerate(vertical.classes)
         vertical.kclass[1] = k
-        
-        #SNOW
-        # snow_no_storage_k(vertical, config)
-        vertical.dic_function[vertical.selectSw[k]](vertical, config)
-
-        # TODO add mass wasting and glaciers?
 
         #INTERCEPTION
         vertical.dic_function[vertical.selectSi[k]](vertical, config)
@@ -831,18 +837,6 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:FlextopoModel}
 
     # WAT BAL TODO
     watbal(vertical, config)
-
-    
-    # # lateral snow transport
-    # if get(config.model, "masswasting", false)::Bool
-    #     lateral_snow_transport!(
-    #         vertical.snow,
-    #         vertical.snowwater,
-    #         lateral.land.sl,
-    #         network.land,
-    #     )
-    # end
-
 
     surface_routing(model)
 
