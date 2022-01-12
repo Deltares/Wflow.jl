@@ -22,10 +22,9 @@ function initialize_flextopo_model(config::Config)
     kinwave_it = get(config.model, "kin_wave_iteration", false)::Bool
 
     classes = get(config.model, "classes", "")
-    # println(classes)
     nclass = length(classes)
     @show classes nclass
-    kclass = [1]
+    kclass = [1]    #needed to initialize
 
     # dictionary of available functions for each store
     dic_function =  Dict{String, Function}(
@@ -195,13 +194,6 @@ function initialize_flextopo_model(config::Config)
 
     # #initialize parameters that differ per class
     hrufrac = zeros(Float, nclass, n)
-    
-    # cfmax = zeros(Float, nclass, n)
-    # tt = zeros(Float, nclass, n)
-    # tti = zeros(Float, nclass, n)
-    # ttm = zeros(Float, nclass, n)
-    # whc = zeros(Float, nclass, n)
-    # cfr = zeros(Float, nclass, n)
 
     imax = zeros(Float, nclass, n)
 
@@ -408,8 +400,8 @@ function initialize_flextopo_model(config::Config)
     # dummy_ = zeros(Float, nclass, n)
     # dummy = svectorscopy(dummy_, Val{nclass}())
 
-    Sw = zeros(Float, nclass, n)
-    Sww = zeros(Float, nclass, n)
+    # Sw = zeros(Float, nclass, n)
+    # Sww = zeros(Float, nclass, n)
     Si = zeros(Float, nclass, n)
     Sh = zeros(Float, nclass, n)
     Shf = zeros(Float, nclass, n)
@@ -567,7 +559,6 @@ function initialize_flextopo_model(config::Config)
         Qf = svectorscopy(Qf, Val{nclass}()), 
         Ea = svectorscopy(Ea, Val{nclass}()), 
         # directrunoff = svectorscopy(potsoilevap, Val{nclass}()), 
-        # hbv_seepage = svectorscopy(potsoilevap, Val{nclass}()), 
         Qperc = svectorscopy(Qperc, Val{nclass}()), 
         Qcap = svectorscopy(Qcap, Val{nclass}()), 
         Qperc_m = fill(mv, n),
@@ -800,6 +791,7 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:FlextopoModel}
 
     #lateral snow transport
     if get(config.model, "masswasting", false)::Bool
+        # vertical.Sw, vertical.Sww = #does not work LoadError: setfield!: immutable struct of type FLEXTOPO cannot be changed
         lateral_snow_transport!(
             vertical.Sw,
             vertical.Sww,
@@ -807,7 +799,6 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:FlextopoModel}
             network.land,
         )
     end
-    #TODO : check if snow and snowwater names to Sw and Sww require to redefine the function?? 
 
     if get(config.model, "glacier", false)::Bool
         common_glaciers(vertical, config)
@@ -835,7 +826,7 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:FlextopoModel}
     #COMMON SLOW
     vertical.dic_function[vertical.selectSs[1]](vertical, config)
 
-    # WAT BAL TODO
+    # WAT BAL 
     watbal(vertical, config)
 
     surface_routing(model)
