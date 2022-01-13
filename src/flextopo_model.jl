@@ -791,7 +791,6 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:FlextopoModel}
 
     #lateral snow transport
     if get(config.model, "masswasting", false)::Bool
-        # vertical.Sw, vertical.Sww = #does not work LoadError: setfield!: immutable struct of type FLEXTOPO cannot be changed
         lateral_snow_transport!(
             vertical.Sw,
             vertical.Sww,
@@ -809,7 +808,6 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:FlextopoModel}
 
         #INTERCEPTION
         vertical.dic_function[vertical.selectSi[k]](vertical, config)
-        # interception_overflow(vertical, config)
 
         #HORTON
         vertical.dic_function[vertical.selectSh[k]](vertical, config)
