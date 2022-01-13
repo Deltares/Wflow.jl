@@ -232,11 +232,13 @@ function ncread(
         var = get_alias(config, parameter, alias, nothing)
     end
 
+    # dim `time` is also included in `dim_sel`: this allows for cyclic parameters (read
+    # first timestep), that is later updated with the `update_cyclic!` function.
     if isnothing(dimname)
-        dim_sel = (x = :, y = :)
+        dim_sel = (x = :, y = :, time=1)
     else
         @assert dimname == :layer
-        dim_sel = (x = :, y = :, layer = :)
+        dim_sel = (x = :, y = :, layer = :, time=1)
     end
 
     if isnothing(var)
