@@ -232,11 +232,13 @@ function ncread(
         var = get_alias(config, parameter, alias, nothing)
     end
 
+    # dim `time` is also included in `dim_sel`: this allows for cyclic parameters (read
+    # first timestep), that is later updated with the `update_cyclic!` function.
     if isnothing(dimname)
-        dim_sel = (x = :, y = :)
+        dim_sel = (x = :, y = :, time=1)
     else
         @assert dimname == :layer
-        dim_sel = (x = :, y = :, layer = :)
+        dim_sel = (x = :, y = :, layer = :, time=1)
     end
 
     if isnothing(var)
@@ -257,13 +259,7 @@ function ncread(
     # NetCDF var is read directly.
     var, mod = ncvar_name_modifier(var)
     if mod.scale != 1.0 || mod.offset != 0.0
-        if "time" ∉ dimnames(nc[var])
-            A = read_standardized(nc, var, dim_sel) .* mod.scale .+ mod.offset
-        else
-            # cyclic parameters (with a NetCDF `time` dimension) are handled by
-            # `update_cyclic!`
-            return nothing
-        end
+        A = read_standardized(nc, var, dim_sel) .* mod.scale .+ mod.offset
     elseif !isnothing(mod.value)
         @info "Set `$parameter` using default value `$defaults`."
         if isnothing(dimname)
@@ -272,16 +268,10 @@ function ncread(
             return Base.fill(mod.value, (nc.dim[String(dimname)], length(sel)))
         end
     else
-        if "time" ∉ dimnames(nc[var])
-            # Read the entire variable into memory, applying scale, offset and
-            # set fill_values to missing.
-            @info "Set `$parameter` using NetCDF variable `$var`."
-            A = read_standardized(nc, var, dim_sel)
-        else
-            # cyclic parameters (with a NetCDF `time` dimension) are handled by
-            # `update_cyclic!`
-            return nothing
-        end
+        # Read the entire variable into memory, applying scale, offset and
+        # set fill_values to missing.
+        @info "Set `$parameter` using NetCDF variable `$var`."
+        A = read_standardized(nc, var, dim_sel)
     end
 
     # Take out only the active cells
