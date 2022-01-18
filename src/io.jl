@@ -1257,11 +1257,10 @@ function write_csv_row(model)
     print(io, string(clock.time))
     for (nt, col) in zip(writer.csv_cols, config.csv.column)
         A = param(model, nt.parameter)
-        # v could be a value, or a vector in case of map
-        if eltype(A) <: SVector
-            # indexing is required in case of a SVector and CSV output
-            i = get_index_dimension(col, model)
-            v = nt.reducer(getindex.(A, i))
+        # could be a value, or a vector in case of map
+        if haskey(col, "index_dim")
+            i = col["index_dim"]
+            v = nt.reducer(getindex.(A,i))
         else
             v = nt.reducer(A)
         end
