@@ -272,8 +272,13 @@ function ncread(
         @info "Set `$parameter` using default value `$defaults`."
         if isnothing(dimname)
             return Base.fill(mod.value, length(sel))
-        else
+        # set to one uniform value
+        elseif length(mod.value) == 1 
             return Base.fill(mod.value, (nc.dim[String(dimname)], length(sel)))
+        # set to vector of values (equal to size dimname)
+        elseif length(mod.value) > 1 
+            @assert length(mod.value) == nc.dim[String(dimname)]
+            return repeat(mod.value, 1, length(sel))
         end
     else
         # Read the entire variable into memory, applying scale, offset and
