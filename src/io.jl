@@ -1381,7 +1381,7 @@ function internal_dim_name(name::Symbol)
         return :x
     elseif name in (:y, :lat, :latitude)
         return :y
-    elseif name in (:time, :layer) #, :classes
+    elseif name in (:time, :layer, :classes)
         return name
     else
         error("Unknown dimension $name")
@@ -1462,6 +1462,8 @@ function permute_data(data, dim_names)
     @assert ndims(data) == length(dim_names)
     if :layer in dim_names
         desired_order = (:x, :y, :layer)
+    elseif :classes in dim_names
+        desired_order = (:x, :y, :classes)
     else
         desired_order = (:x, :y)
     end
@@ -1494,9 +1496,15 @@ function reverse_data!(data, dims_increasing)
     # desired internal ordering, just like the data is after permutation
     if length(dims_increasing) == 2
         dims_increasing_ordered = (x = dims_increasing.x, y = dims_increasing.y)
-    elseif length(dims_increasing) == 3
+    elseif length(dims_increasing) == 3 && haskey(dims_increasing, :layer)
         dims_increasing_ordered =
             (x = dims_increasing.x, y = dims_increasing.y, layer = dims_increasing.layer)
+    elseif length(dims_increasing) == 3 && haskey(dims_increasing, :classes)
+        dims_increasing_ordered = (
+            x = dims_increasing.x,
+            y = dims_increasing.y,
+            classes = dims_increasing.classes,
+        )
     else
         error("Unsupported number of dimensions")
     end

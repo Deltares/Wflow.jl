@@ -27,7 +27,7 @@ function initialize_flextopo_model(config::Config)
     kclass = [1]    #needed to initialize
 
     # dictionary of available functions for each store
-    dic_function =  Dict{String, Function}(
+    dic_function = Dict{String,Function}(
         "common_snow_hbv" => common_snow_hbv,
         "common_snow_no_storage" => common_snow_no_storage,
         "common_glaciers" => common_glaciers,
@@ -55,16 +55,18 @@ function initialize_flextopo_model(config::Config)
 
     nc = NCDataset(static_path)
 
-    subcatch_2d = ncread(nc, param(config, "input.subcatchment"); allow_missing = true)
+    subcatch_2d =
+        ncread(nc, config.input, "subcatchment"; optional = false, allow_missing = true)
     # indices based on catchment
     inds, rev_inds = active_indices(subcatch_2d, missing)
     n = length(inds)
 
-    
+
     # glacier parameters
     g_tt = ncread(
         nc,
-        param(config, "input.vertical.g_tt", nothing);
+        config.input,
+        "vertical.g_tt";
         sel = inds,
         defaults = 0.0,
         type = Float,
@@ -73,7 +75,8 @@ function initialize_flextopo_model(config::Config)
     g_cfmax =
         ncread(
             nc,
-            param(config, "input.vertical.g_cfmax", nothing);
+            config.input,
+            "vertical.g_cfmax";
             sel = inds,
             defaults = 3.0,
             type = Float,
@@ -82,7 +85,8 @@ function initialize_flextopo_model(config::Config)
 
     g_sifrac = ncread(
         nc,
-        param(config, "input.vertical.g_sifrac", nothing);
+        config.input,
+        "vertical.g_sifrac";
         sel = inds,
         defaults = 0.001,
         type = Float,
@@ -90,7 +94,8 @@ function initialize_flextopo_model(config::Config)
     )
     glacierfrac = ncread(
         nc,
-        param(config, "input.vertical.glacierfrac", nothing);
+        config.input,
+        "vertical.glacierfrac";
         sel = inds,
         defaults = 0.0,
         type = Float,
@@ -98,7 +103,8 @@ function initialize_flextopo_model(config::Config)
     )
     glacierstore = ncread(
         nc,
-        param(config, "input.vertical.glacierstore", nothing);
+        config.input,
+        "vertical.glacierstore";
         sel = inds,
         defaults = 5500.0,
         type = Float,
@@ -109,7 +115,8 @@ function initialize_flextopo_model(config::Config)
     cfmax =
         ncread(
             nc,
-            param(config, "input.vertical.cfmax", nothing);
+            config.input,
+            "vertical.cfmax";
             sel = inds,
             defaults = 3.75653,
             type = Float,
@@ -117,274 +124,216 @@ function initialize_flextopo_model(config::Config)
 
     tt = ncread(
         nc,
-        param(config, "input.vertical.tt", nothing);
+        config.input,
+        "vertical.tt";
         sel = inds,
         defaults = -1.41934,
         type = Float,
     )
 
-    tti = ncread(
-        nc,
-        param(config, "input.vertical.tti", nothing);
-        sel = inds,
-        defaults = 1.0,
-        type = Float,
-    )
+    tti = ncread(nc, config.input, "vertical.tti"; sel = inds, defaults = 1.0, type = Float)
 
     ttm = ncread(
         nc,
-        param(config, "input.vertical.ttm", nothing);
+        config.input,
+        "vertical.ttm";
         sel = inds,
         defaults = -1.41934,
         type = Float,
     )
-    
-    whc = ncread(
-        nc,
-        param(config, "input.vertical.whc", nothing);
-        sel = inds,
-        defaults = 0.1,
-        type = Float,
-    )
 
-    cfr = ncread(
-        nc,
-        param(config, "input.vertical.cfr", nothing);
-        sel = inds,
-        defaults = 0.05,
-        type = Float,
-    )
+    whc = ncread(nc, config.input, "vertical.whc"; sel = inds, defaults = 0.1, type = Float)
+
+    cfr =
+        ncread(nc, config.input, "vertical.cfr"; sel = inds, defaults = 0.05, type = Float)
 
     #parameters which are not class specific
-    pcorr = ncread(
-        nc,
-        param(config, "input.vertical.pcorr", nothing);
-        sel = inds,
-        defaults = 1.0,
-        type = Float,
-    )
-    ecorr = ncread(
-        nc,
-        param(config, "input.vertical.ecorr", nothing);
-        sel = inds,
-        defaults = 1.0,
-        type = Float,
-    )
-    rfcf = ncread(
-        nc,
-        param(config, "input.vertical.rfcf", nothing);
-        sel = inds,
-        defaults = 1.0,
-        type = Float,
-    )
-    sfcf = ncread(
-        nc,
-        param(config, "input.vertical.sfcf", nothing);
-        sel = inds,
-        defaults = 1.0,
-        type = Float,
-    )
-    ks = ncread(
-        nc,
-        param(config, "input.vertical.ks", nothing);
-        sel = inds,
-        defaults = 0.006,
-        type = Float,
-    ) .* (Δt / basetimestep)
-
-    # #initialize parameters that differ per class
-    hrufrac = zeros(Float, nclass, n)
-
-    imax = zeros(Float, nclass, n)
-
-    shmax = zeros(Float, nclass, n)
-    khf = zeros(Float, nclass, n)
-    facc0 = zeros(Float, nclass, n)
-    facc1 = zeros(Float, nclass, n)
-    fdec = zeros(Float, nclass, n)
-    fmax = zeros(Float, nclass, n)
-    shmin = zeros(Float, nclass, n)
-    kmf = zeros(Float, nclass, n)
-
-    srmax = zeros(Float, nclass, n)
-    beta = zeros(Float, nclass, n)
-    lp = zeros(Float, nclass, n)
-    perc = zeros(Float, nclass, n)
-    cap = zeros(Float, nclass, n)
-
-    kf = zeros(Float, nclass, n)
-    alfa = zeros(Float, nclass, n)
-
-    ds = zeros(Float, nclass, n)
-
-
-    #fill matrix parameter
-    for (k, class) in enumerate(classes)
-        hrufrac_k = ncread(
+    pcorr =
+        ncread(nc, config.input, "vertical.pcorr"; sel = inds, defaults = 1.0, type = Float)
+    ecorr =
+        ncread(nc, config.input, "vertical.ecorr"; sel = inds, defaults = 1.0, type = Float)
+    rfcf =
+        ncread(nc, config.input, "vertical.rfcf"; sel = inds, defaults = 1.0, type = Float)
+    sfcf =
+        ncread(nc, config.input, "vertical.sfcf"; sel = inds, defaults = 1.0, type = Float)
+    ks =
+        ncread(
             nc,
-            param(config, "input.vertical.hrufrac"*class, nothing);
+            config.input,
+            "vertical.ks";
             sel = inds,
-            defaults = 1.0/length(classes),
+            defaults = 0.006,
             type = Float,
-            # dimname = :classes,
-        )
-        hrufrac[k,:] = hrufrac_k
+        ) .* (Δt / basetimestep)
 
-        imax_k = ncread(
+    #initialize parameters that differ per class
+    hrufrac = ncread(
+        nc,
+        config.input,
+        "vertical.hrufrac";
+        sel = inds,
+        defaults = 1.0 / length(classes),
+        type = Float,
+        dimname = :classes,
+    )
+    imax = ncread(
+        nc,
+        config.input,
+        "vertical.imax";
+        sel = inds,
+        defaults = 3.0,
+        type = Float,
+        dimname = :classes,
+    )
+    shmax = ncread(
+        nc,
+        config.input,
+        "vertical.shmax";
+        sel = inds,
+        defaults = 30.0,
+        type = Float,
+        dimname = :classes,
+    )
+    khf =
+        ncread(
             nc,
-            param(config, "input.vertical.imax"*class, nothing);
-            sel = inds,
-            defaults = 3.0,
-            type = Float,
-            # dimname = :classes,
-        )
-        imax[k,:] = imax_k
-
-        shmax_k = ncread(
-            nc,
-            param(config, "input.vertical.shmax"*class, nothing);
-            sel = inds,
-            defaults = 30.0,
-            type = Float,
-        )
-        shmax[k,:] = shmax_k
-
-        khf_k = ncread(
-            nc,
-            param(config, "input.vertical.khf"*class, nothing);
+            config.input,
+            "vertical.khf";
             sel = inds,
             defaults = 0.5,
             type = Float,
+            dimname = :classes,
         ) .* (Δt / basetimestep)
-        khf[k,:] = khf_k
-
-        facc0_k = ncread(
+    facc0 = ncread(
+        nc,
+        config.input,
+        "vertical.facc0";
+        sel = inds,
+        defaults = -3.0,
+        type = Float,
+        dimname = :classes,
+    )
+    facc1 = ncread(
+        nc,
+        config.input,
+        "vertical.facc1";
+        sel = inds,
+        defaults = 0.0,
+        type = Float,
+        dimname = :classes,
+    )
+    fdec = ncread(
+        nc,
+        config.input,
+        "vertical.fdec";
+        sel = inds,
+        defaults = 0.2,
+        type = Float,
+        dimname = :classes,
+    )
+    fmax =
+        ncread(
             nc,
-            param(config, "input.vertical.facc0"*class, nothing);
-            sel = inds,
-            defaults = -3.0,
-            type = Float,
-        )
-        facc0[k,:] = facc0_k
-
-        facc1_k = ncread(
-            nc,
-            param(config, "input.vertical.facc1"*class, nothing);
-            sel = inds,
-            defaults = 0.0,
-            type = Float,
-        )
-        facc1[k,:] = facc1_k
-
-        fdec_k = ncread(
-            nc,
-            param(config, "input.vertical.fdec"*class, nothing);
-            sel = inds,
-            defaults = 0.2,
-            type = Float,
-        )
-        fdec[k,:] = fdec_k
-
-        fmax_k = ncread(
-            nc,
-            param(config, "input.vertical.fmax"*class, nothing);
+            config.input,
+            "vertical.fmax";
             sel = inds,
             defaults = 2.0,
             type = Float,
+            dimname = :classes,
         ) .* (Δt / basetimestep)
-        fmax[k,:] = fmax_k
-
-        shmin_k = ncread(
+    shmin = ncread(
+        nc,
+        config.input,
+        "vertical.shmin";
+        sel = inds,
+        defaults = 0.2,
+        type = Float,
+        dimname = :classes,
+    )
+    kmf = ncread(
+        nc,
+        config.input,
+        "vertical.kmf";
+        sel = inds,
+        defaults = 1.0,
+        type = Float,
+        dimname = :classes,
+    )
+    srmax = ncread(
+        nc,
+        config.input,
+        "vertical.srmax";
+        sel = inds,
+        defaults = 260.0,
+        type = Float,
+        dimname = :classes,
+    )
+    beta = ncread(
+        nc,
+        config.input,
+        "vertical.beta";
+        sel = inds,
+        defaults = 0.3,
+        type = Float,
+        dimname = :classes,
+    )
+    lp = ncread(
+        nc,
+        config.input,
+        "vertical.lp";
+        sel = inds,
+        defaults = 0.3,
+        type = Float,
+        dimname = :classes,
+    )
+    perc =
+        ncread(
             nc,
-            param(config, "input.vertical.shmin"*class, nothing);
-            sel = inds,
-            defaults = 0.2,
-            type = Float,
-        )
-        shmin[k,:] = shmin_k
-
-        kmf_k = ncread(
-            nc,
-            param(config, "input.vertical.kmf"*class, nothing);
-            sel = inds,
-            defaults = 1.0,
-            type = Float,
-        )
-        kmf[k,:] = kmf_k
-
-        srmax_k = ncread(
-            nc,
-            param(config, "input.vertical.srmax"*class, nothing);
-            sel = inds,
-            defaults = 260.0,
-            type = Float,
-        )
-        srmax[k,:] = srmax_k
-
-        beta_k = ncread(
-            nc,
-            param(config, "input.vertical.beta"*class, nothing);
-            sel = inds,
-            defaults = 0.3,
-            type = Float,
-        )
-        beta[k,:] = beta_k
-
-        lp_k = ncread(
-            nc,
-            param(config, "input.vertical.lp"*class, nothing);
-            sel = inds,
-            defaults = 0.3,
-            type = Float,
-        )
-        lp[k,:] = lp_k
-
-        perc_k = ncread(
-            nc,
-            param(config, "input.vertical.perc"*class, nothing);
+            config.input,
+            "vertical.perc";
             sel = inds,
             defaults = 0.30,
             type = Float,
+            dimname = :classes,
         ) .* (Δt / basetimestep)
-        perc[k,:] = perc_k
-        
-        cap_k = ncread(
+    cap =
+        ncread(
             nc,
-            param(config, "input.vertical.cap"*class, nothing);
+            config.input,
+            "vertical.cap";
             sel = inds,
             defaults = 0.20,
             type = Float,
+            dimname = :classes,
         ) .* (Δt / basetimestep)
-        cap[k,:] = cap_k
-
-        kf_k = ncread(
+    kf =
+        ncread(
             nc,
-            param(config, "input.vertical.kf"*class, nothing);
+            config.input,
+            "vertical.kf";
             sel = inds,
             defaults = 0.1,
             type = Float,
+            dimname = :classes,
         ) .* (Δt / basetimestep)
-        kf[k,:] = kf_k
-
-        alfa_k = ncread(
-            nc, 
-            param(config, "input.vertical.alfa"*class, nothing);
-            sel = inds,
-            defaults = 1.3,
-            type = Float,
-        )
-        alfa[k,:] = alfa_k
-
-        ds_k = ncread(
-            nc,
-            param(config, "input.vertical.ds"*class, nothing);
-            sel = inds,
-            defaults = 0.2,
-            type = Float,
-        )
-        ds[k,:] = ds_k
-
-    end
+    alfa = ncread(
+        nc,
+        config.input,
+        "vertical.alfa";
+        sel = inds,
+        defaults = 1.3,
+        type = Float,
+        dimname = :classes,
+    )
+    ds = ncread(
+        nc,
+        config.input,
+        "vertical.ds";
+        sel = inds,
+        defaults = 0.2,
+        type = Float,
+        dimname = :classes,
+    )
 
     # read x, y coordinates and calculate cell length [m]
     y_nc = read_y_axis(nc)
@@ -408,9 +357,9 @@ function initialize_flextopo_model(config::Config)
     Sr = zeros(Float, nclass, n)
     Sf = zeros(Float, nclass, n)
     Ss = zeros(Float, nclass, n)
-    Sr_over_srmax = zeros(Float, nclass, n)   
+    Sr_over_srmax = zeros(Float, nclass, n)
 
-    states_  = fill(mv, nclass, n)
+    states_ = fill(mv, nclass, n)
 
     potsoilevap = fill(mv, nclass, n)
     Ei = fill(mv, nclass, n)
@@ -434,13 +383,13 @@ function initialize_flextopo_model(config::Config)
     wbSh = fill(mv, nclass, n)
     wbShf = fill(mv, nclass, n)
     wbSr = fill(mv, nclass, n)
-    wbSf = fill(mv, nclass, n)    
-    
+    wbSf = fill(mv, nclass, n)
+
 
 
     # store = FLEXTOPO{Float, nclass}(
     # store = InterceptionStorage{Float}(
-    flextopo = FLEXTOPO{Float, nclass}(
+    flextopo = FLEXTOPO{Float,nclass}(
         Δt = Float(tosecond(Δt)),
         nclass = nclass,
         n = n,
@@ -454,7 +403,6 @@ function initialize_flextopo_model(config::Config)
         selectSr = selectSr,
         selectSf = selectSf,
         selectSs = selectSs,
-
         hrufrac = svectorscopy(hrufrac, Val{nclass}()),
         pcorr = pcorr,
         ecorr = ecorr,
@@ -466,11 +414,11 @@ function initialize_flextopo_model(config::Config)
         glacierstore = glacierstore,
         # snow
         tti = tti,
-        tt = tt, 
-        ttm = ttm, 
-        cfmax = cfmax, 
-        whc = whc, 
-        cfr = cfr, 
+        tt = tt,
+        ttm = ttm,
+        cfmax = cfmax,
+        whc = whc,
+        cfr = cfr,
         rfcf = rfcf,
         sfcf = sfcf,
         #interception 
@@ -500,28 +448,28 @@ function initialize_flextopo_model(config::Config)
 
         # kquickflow = set_kquickflow ? kquickflow :
         #              pow.(khq, 1.0 .+ alphanl) .* pow.(hq, -alphanl),
-        
+
         # # default (cold) states:
-        Sw = zeros(Float, n), 
-        Sww = zeros(Float, n), 
+        Sw = zeros(Float, n),
+        Sww = zeros(Float, n),
         # Sw = zero(dummy),
         # Sw = svectorscopy(Sw, Val{nclass}()), 
         # Sww = svectorscopy(Sww, Val{nclass}()), 
         # Si = zero(dummy),
-        Si = svectorscopy(Si, Val{nclass}()), 
-        Sh = svectorscopy(Sh, Val{nclass}()), 
-        Shf = svectorscopy(Shf, Val{nclass}()), 
+        Si = svectorscopy(Si, Val{nclass}()),
+        Sh = svectorscopy(Sh, Val{nclass}()),
+        Shf = svectorscopy(Shf, Val{nclass}()),
         # Sr = copy(srmax),
         # Sf = 0.2 .* srmax,
-        Sr = svectorscopy(srmax, Val{nclass}()), 
-        Sf = 0.2 .* svectorscopy(srmax, Val{nclass}()), 
+        Sr = svectorscopy(srmax, Val{nclass}()),
+        Sf = 0.2 .* svectorscopy(srmax, Val{nclass}()),
         # Sr = svectorscopy(Sr, Val{nclass}()), 
         # Sf = svectorscopy(Sf, Val{nclass}()), 
-        Sr_over_srmax = svectorscopy(Sr_over_srmax, Val{nclass}()), 
+        Sr_over_srmax = svectorscopy(Sr_over_srmax, Val{nclass}()),
         Ss = 1.0 ./ (3.0 .* ks),
         #states previous time step
         states_m = fill(mv, n),
-        states_ = svectorscopy(states_, Val{nclass}()), 
+        states_ = svectorscopy(states_, Val{nclass}()),
         #states averaged over all classes
         # Sw_m = zeros(Float, n),
         # Sww_m = zeros(Float, n),
@@ -536,31 +484,31 @@ function initialize_flextopo_model(config::Config)
         precipitation = fill(mv, n),
         temperature = fill(mv, n),
         potential_evaporation = fill(mv, n),
-        rainfallplusmelt = fill(mv, n), 
-        snowfall = fill(mv, n), 
-        snowmelt = fill(mv, n), 
-        potsoilevap = svectorscopy(potsoilevap, Val{nclass}()), 
+        rainfallplusmelt = fill(mv, n),
+        snowfall = fill(mv, n),
+        snowmelt = fill(mv, n),
+        potsoilevap = svectorscopy(potsoilevap, Val{nclass}()),
         # Pe = fill(mv, n),
-        Pe = svectorscopy(Pe, Val{nclass}()), 
+        Pe = svectorscopy(Pe, Val{nclass}()),
         # Pe = zero(dummy),
         # Ei = fill(mv, n),
-        Ei = svectorscopy(Ei, Val{nclass}()), 
+        Ei = svectorscopy(Ei, Val{nclass}()),
         # Ei = zero(dummy),
-        Eh = svectorscopy(Eh, Val{nclass}()), 
-        Er = svectorscopy(Er, Val{nclass}()), 
-        Qh = svectorscopy(Qh, Val{nclass}()), 
-        Qhr = svectorscopy(Qhr, Val{nclass}()), 
-        facc = svectorscopy(facc, Val{nclass}()), 
-        Qhf = svectorscopy(Qhf, Val{nclass}()), 
-        Qr = svectorscopy(Qr, Val{nclass}()), 
-        Qrf = svectorscopy(Qrf, Val{nclass}()), 
+        Eh = svectorscopy(Eh, Val{nclass}()),
+        Er = svectorscopy(Er, Val{nclass}()),
+        Qh = svectorscopy(Qh, Val{nclass}()),
+        Qhr = svectorscopy(Qhr, Val{nclass}()),
+        facc = svectorscopy(facc, Val{nclass}()),
+        Qhf = svectorscopy(Qhf, Val{nclass}()),
+        Qr = svectorscopy(Qr, Val{nclass}()),
+        Qrf = svectorscopy(Qrf, Val{nclass}()),
         # Qrs = svectorscopy(Qrs, Val{nclass}()), 
         Qrs_m = fill(mv, n),
-        Qf = svectorscopy(Qf, Val{nclass}()), 
-        Ea = svectorscopy(Ea, Val{nclass}()), 
+        Qf = svectorscopy(Qf, Val{nclass}()),
+        Ea = svectorscopy(Ea, Val{nclass}()),
         # directrunoff = svectorscopy(potsoilevap, Val{nclass}()), 
-        Qperc = svectorscopy(Qperc, Val{nclass}()), 
-        Qcap = svectorscopy(Qcap, Val{nclass}()), 
+        Qperc = svectorscopy(Qperc, Val{nclass}()),
+        Qcap = svectorscopy(Qcap, Val{nclass}()),
         Qperc_m = fill(mv, n),
         Qcap_m = fill(mv, n),
         # combined for the classes
@@ -571,26 +519,43 @@ function initialize_flextopo_model(config::Config)
         Qs = fill(mv, n),
         Qftotal = fill(mv, n),
         runoff = fill(mv, n),
-
-
-        wbSw = fill(mv, n), 
-        wbSi = svectorscopy(wbSi, Val{nclass}()), 
-        wbSh = svectorscopy(wbSh, Val{nclass}()), 
-        wbShf = svectorscopy(wbShf, Val{nclass}()), 
-        wbSr = svectorscopy(wbSr, Val{nclass}()), 
-        wbSf = svectorscopy(wbSf, Val{nclass}()), 
-        wbSs = fill(mv, n), 
-        wbtot = fill(mv, n),  
+        wbSw = fill(mv, n),
+        wbSi = svectorscopy(wbSi, Val{nclass}()),
+        wbSh = svectorscopy(wbSh, Val{nclass}()),
+        wbShf = svectorscopy(wbShf, Val{nclass}()),
+        wbSr = svectorscopy(wbSr, Val{nclass}()),
+        wbSf = svectorscopy(wbSf, Val{nclass}()),
+        wbSs = fill(mv, n),
+        wbtot = fill(mv, n),
     )
 
     modelsize_2d = size(subcatch_2d)
-    river_2d = ncread(nc, param(config, "input.river_location"); type = Bool, fill = false)
+    river_2d = ncread(
+        nc,
+        config.input,
+        "river_location";
+        optional = false,
+        type = Bool,
+        fill = false,
+    )
     river = river_2d[inds]
-    riverwidth_2d =
-        ncread(nc, param(config, "input.lateral.river.width"); type = Float, fill = 0)
+    riverwidth_2d = ncread(
+        nc,
+        config.input,
+        "lateral.river.width";
+        optional = false,
+        type = Float,
+        fill = 0,
+    )
     riverwidth = riverwidth_2d[inds]
-    riverlength_2d =
-        ncread(nc, param(config, "input.lateral.river.length"); type = Float, fill = 0)
+    riverlength_2d = ncread(
+        nc,
+        config.input,
+        "lateral.river.length";
+        optional = false,
+        type = Float,
+        fill = 0,
+    )
     riverlength = riverlength_2d[inds]
 
     inds_riv, rev_inds_riv = active_indices(river_2d, 0)
@@ -604,33 +569,35 @@ function initialize_flextopo_model(config::Config)
     else
         reservoir = ()
         reservoirs = nothing
-        resindex = fill(0, nriv)    
+        resindex = fill(0, nriv)
     end
 
     # lakes
     if do_lakes
-        lakes, lakeindex, lake, pits = initialize_natural_lake(
-            config,
-            nc,
-            inds_riv,
-            nriv,
-            pits,
-            tosecond(Δt),
-        )
+        lakes, lakeindex, lake, pits =
+            initialize_natural_lake(config, nc, inds_riv, nriv, pits, tosecond(Δt))
     else
         lake = ()
         lakes = nothing
         lakeindex = fill(0, nriv)
     end
 
-    ldd_2d = ncread(nc, param(config, "input.ldd"); allow_missing = true)
+    ldd_2d = ncread(nc, config.input, "ldd"; optional = false, allow_missing = true)
     ldd = ldd_2d[inds]
     if do_pits
-        pits_2d = ncread(nc, param(config, "input.pits"); type = Bool, fill = false)
+        pits_2d =
+            ncread(nc, config.input, "pits"; optional = false, type = Bool, fill = false)
         ldd = set_pit_ldd(pits_2d, ldd, inds)
     end
 
-    βₗ = ncread(nc, param(config, "input.lateral.land.slope"); sel = inds, type = Float)
+    βₗ = ncread(
+        nc,
+        config.input,
+        "lateral.land.slope";
+        optional = false,
+        sel = inds,
+        type = Float,
+    )
     clamp!(βₗ, 0.00001, Inf)
 
     dl = map(detdrainlength, ldd, xl, yl)
@@ -700,16 +667,15 @@ function initialize_flextopo_model(config::Config)
         lake = isempty(lake) ? nothing : lake.reverse_indices,
     )
     writer = prepare_writer(
-        config, 
-        reader, 
-        modelmap, 
-        indices_reverse, 
-        x_nc, 
-        y_nc, 
+        config,
+        reader,
+        modelmap,
+        indices_reverse,
+        x_nc,
+        y_nc,
         nc,
-        #TODO: add:
-        # nclass = flextopo.nclass,
-        )
+        extra_dim = (name = "classes", value = flextopo.classes),
+    )
     close(nc)
 
     # for each domain save:
@@ -764,7 +730,7 @@ function initialize_flextopo_model(config::Config)
     if reinit == false
         instate_path = input_path(config, config.state.path_input)
         state_ncnames = ncnames(config.state)
-        set_states(instate_path, model, state_ncnames; type = Float)
+        set_states(instate_path, model, state_ncnames; type = Float, dimname = :classes)
         # update kinematic wave volume for river and land domain
         @unpack lateral = model
         lateral.land.volume .= lateral.land.h .* lateral.land.width .* lateral.land.dl
@@ -791,12 +757,7 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:FlextopoModel}
 
     #lateral snow transport
     if get(config.model, "masswasting", false)::Bool
-        lateral_snow_transport!(
-            vertical.Sw,
-            vertical.Sww,
-            lateral.land.sl,
-            network.land,
-        )
+        lateral_snow_transport!(vertical.Sw, vertical.Sww, lateral.land.sl, network.land)
     end
 
     if get(config.model, "glacier", false)::Bool

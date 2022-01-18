@@ -136,7 +136,7 @@ and set states in `model` object. Active cells are selected with the correspondi
 # Arguments
 - `type = nothing`: type to convert data to after reading. By default no conversion is done.
 """
-function set_states(instate_path, model, state_ncnames; type = nothing)
+function set_states(instate_path, model, state_ncnames; type = nothing, dimname = nothing)
     @unpack network = model
     # states in NetCDF include dim time (one value) at index 3 or 4, 3 or 4 dims are allowed
     NCDataset(instate_path) do ds
@@ -148,11 +148,18 @@ function set_states(instate_path, model, state_ncnames; type = nothing)
             dims = length(dimnames(ds[ncname]))
             # 4 dims, for example (x,y,layer,time) where dim layer is an SVector for soil layers
             if dims == 4
-                A = read_standardized(ds, ncname, (x = :, y = :, layer = :, time = 1))
+                if dimname == :layer
+                    dimensions = (x = :, y = :, layer = :, time = 1)
+                elseif dimname == :classes
+                    dimensions = (x = :, y = :, classes = :, time = 1)
+                end
+                A = read_standardized(ds, ncname, dimensions)
                 A = permutedims(A[sel, :])
                 # note that this array is allowed to have missings, since not every vertical
                 # column is `maxlayers` layers deep
-                A = replace!(A, missing => NaN)
+                if dimname == :layer
+                    A = replace!(A, missing => NaN)
+                end
                 # Convert to desired type if needed
                 if !isnothing(type)
                     if eltype(A) != type
@@ -235,11 +242,11 @@ function ncread(
     # dim `time` is also included in `dim_sel`: this allows for cyclic parameters (read
     # first timestep), that is later updated with the `update_cyclic!` function.
     if isnothing(dimname)
-        dim_sel = (x = :, y = :, time=1)
+        dim_sel = (x = :, y = :, time = 1)
     elseif dimname == :classes
-        dim_sel = (x = :, y = :, classes = :, time=1)
+        dim_sel = (x = :, y = :, classes = :, time = 1)
     elseif dimname == :layer
-        dim_sel = (x = :, y = :, layer = :, time=1)
+        dim_sel = (x = :, y = :, layer = :, time = 1)
     end
 
     if isnothing(var)
