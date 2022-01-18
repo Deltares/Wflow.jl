@@ -686,7 +686,7 @@ function nc_variables_dims(nc_variables, dataset, config)
     return ncvars_dims
 end
 
-"Get a Vector{String} of all columns names for the CSV header, exept the first, time"
+"Get a Vector{String} of all columns names for the CSV header, except the first, time"
 function csv_header(cols, dataset, config)
     header = [col["header"] for col in cols]
     header = String[]
@@ -1132,7 +1132,7 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset, fileformat)
             # linear index into the internal vector of active cells
             # this one mostly makes sense for debugging, or for vectors of only a few elements
             @info "Adding scalar output for linear index." fileformat param index
-            return x -> [getindex(x, index)]
+            return x -> getindex(x, index)
         elseif index isa Dict
             # index into the 2D input/output arrays
             # the first always corresponds to the x dimension, then the y dimension
@@ -1142,7 +1142,7 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset, fileformat)
             ind = rev_inds[i, j]
             @info "Adding scalar output for 2D index." fileformat param index
             iszero(ind) && error("inactive loc specified for output")
-            return A -> [getindex(A, ind)]
+            return A -> getindex(A, ind)
         else
             error("unknown index used")
         end
@@ -1156,7 +1156,7 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset, fileformat)
         i = rev_inds[I]
         @info "Adding scalar output for coordinate." fileformat param x y
         iszero(i) && error("inactive coordinate specified for output")
-        return A -> [getindex(A, i)]
+        return A -> getindex(A, i)
     else
         error("unknown reducer")
     end
@@ -1169,9 +1169,9 @@ function write_csv_row(model)
     print(io, string(clock.time))
     for nt in writer.csv_cols
         A = param(model, nt.parameter)
-        # always a vector (also at index/coordinate) so this works for both numbers and
-        # SVector (dimension `layer`)
+        # could be a value, or a vector in case of map or a layered parameter
         v = nt.reducer(A)
+        # numbers are also iterable
         for el in v
             print(io, ',', el)
         end
