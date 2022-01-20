@@ -39,8 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed providing a cyclic parameter when the NetCDF variable is read during model
   initialization with `ncread`, this gave an error about the size of the NetCDF `time`
   dimension.
-- Fixed CSV output of variables with dimension `layer` (`SVector`) when data is extracted
-  for a specific location (coordinates or index). 
+- Fixed CSV and NetCDF scalar output of variables with dimension `layer` (`SVector`).
 
 ## v0.5.1 - 2021-11-24
 
