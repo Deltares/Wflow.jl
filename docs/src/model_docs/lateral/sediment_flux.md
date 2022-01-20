@@ -140,8 +140,8 @@ coefficients used by other studies:
 
 Table: Range of the simplified Bagnold coefficients (and calibrated value)
 
-| Study River | ``prf`` range | ``c_{sp}`` range | ``sp_{exp}`` range |
-|:----------- | ------------- | ---------------- | ------------------ |
+| Study | River | ``prf`` range | ``c_{sp}`` range | ``sp_{exp}`` range |
+|:----- | ----- | ------------- | ---------------- | ------------------ |
 | Vigiak 2015 | Danube | 0.5-2 (/) | 0.0001-0.01 (0.003-0.006) | 1-2 (1.4) |
 | Vigiak 2017 | Danube | / | 0.0001-0.01 (0.0015) | 1-2 (1.4) |
 | Abbaspour 2007 | Thur (CH) | 0.2-0.25 (/) | 0.001-0.002 (/) | 0.35-1.47 (/) |
