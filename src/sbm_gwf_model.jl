@@ -354,7 +354,7 @@ function initialize_sbm_gwf_model(config::Config)
         x_nc,
         y_nc,
         nc,
-        maxlayers = sbm.maxlayers,
+        extra_dim = (name = "layer", value = collect(1:sbm.maxlayers)),
     )
     close(nc)
 
