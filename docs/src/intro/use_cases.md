@@ -1,4 +1,4 @@
-# Case studies using wflow
+# Case studies 
 
 # Header 1
 

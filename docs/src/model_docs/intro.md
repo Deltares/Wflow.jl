@@ -1,6 +1,6 @@
 # About the model documentation
 
-This section explains the different model concepts present within the modelling framework of wflow. If possible, the text refers to scientific papers which explain the concepts in more detail. If possible (and relevant), model parameters which influence the processes are also shown, using inline `code blocks`. These parameters can be found in the section with an overview of all model parameters, which also includes their units: see [parameters vertical concepts](@ref params_vert) and [parameters lateral concepts](@ref params_lat).
+As opposed to the user guide, which describes the steps needed to build and apply a model in the software, This section explains the different model concepts that are available within the modelling framework of wflow. Descriptions are given regarding the model concepts with links to the original scientific papers which explain the concepts in more detail. The model parameters which influence the processes are also shown, using inline code blocks. An overview of all model parameters is also provided for easy reference, including their short names, long descriptions and their units (see parameters vertical concepts and parameters lateral concepts).
 
 ## Division between vertical and lateral
-
+In the documentation we talk of 'vertical' and 'lateral' concepts. These are components in the model concepts which describe the vertical movement of water in each model grid cell and the lateral movement of water across grid cells.

@@ -1,4 +1,4 @@
-# Shared model concepts
+# Shared model components
 
 ## [Snow and glaciers](@id snow_and_glac)
 

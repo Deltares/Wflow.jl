@@ -1,12 +1,12 @@
-# Publications about wflow
+# Publications 
 
 draft paper
 
 Wflow as a Julia package has been published in Zenedo with the following DOI: [![DOI](https://zenodo.org/badge/246787232.svg)](https://zenodo.org/badge/latestdoi/246787232)
 
-# Publications using wflow 
+## Publications using wflow 
 
-## Papers
+### Papers
 
 de Boer-Euser, T., Bouaziz, L., De Niel, J., Brauer, C., Dewals, B., Drogue, G., Fenicia,
 F., Grelier, B., Nossent, J., Pereira, F., Savenije, H., Thirel, G., Willems, P., 2017.
@@ -129,7 +129,7 @@ indicators with combination of process-based models and data assimilation techni
 Ecological Indicators 66, 428–439. <https://doi:10.1016/j.ecolind.2016.02.016>.
 
 
-## Theses & Internship reports
+### Theses & Internship reports
 
 Arnal, L., 2014. An intercomparison of flood forecasting models for the Meuse River basin,
 MSc. Thesis, Vrije Universiteit, Amsterdam. <https://hal.inrae.fr/hal-02600749>.
@@ -172,7 +172,7 @@ permitting regional climate models in the European Alps, MSc Thesis, Wageningen 
 
 Visser, B. 2020. Impact of climate change on local water resources of European catchments, Intersnhip report, Deltares, 2020
 
-## Reports
+### Reports
 
 World Bank. 2021. Plastic Waste Discharges from Rivers and Coastlines in Indonesia. Marine
 Plastics Series;. World Bank, Washington, DC. © World Bank.

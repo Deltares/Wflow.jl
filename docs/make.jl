@@ -4,7 +4,7 @@ using Documenter
 pages = [
     "Introduction" => [
         "index.md",
-        "intro/use_cases.md",
+        # "intro/use_cases.md",
         "intro/publications.md",
     ],
     "User guide" => [
@@ -25,7 +25,7 @@ pages = [
     "Model documentation" => [
         "model_docs/intro.md",
         "Vertical concepts" => [
-            "model_docs/vertical/sbm.md",
+            # "model_docs/vertical/sbm.md",
             "model_docs/vertical/sbm_new.md",
             "model_docs/vertical/hbv.md",
             "model_docs/vertical/sediment.md",
