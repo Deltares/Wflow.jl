@@ -525,6 +525,7 @@ function set_effective_flowwidth!(
 )
 
     toposort = topological_sort_by_dfs(graph_riv)
+    n = length(we_x)
     for v in toposort
         dst = outneighbors(graph_riv, v)
         isempty(dst) && continue
@@ -536,21 +537,33 @@ function set_effective_flowwidth!(
             we_x[idx] = max(we_x[idx] - 0.5 * w, 0.0)
             we_y[idx] = max(we_y[idx] - 0.5 * w, 0.0)
         elseif dir == CartesianIndex(-1, -1)
-            we_y[indices.xd[idx]] = max(we_y[indices.xd[idx]] - 0.5 * w, 0.0)
-            we_x[indices.yd[idx]] = max(we_x[indices.yd[idx]] - 0.5 * w, 0.0)
+            if indices.xd[idx] <= n
+                we_y[indices.xd[idx]] = max(we_y[indices.xd[idx]] - 0.5 * w, 0.0)
+            end
+            if indices.yd[idx] <= n
+                we_x[indices.yd[idx]] = max(we_x[indices.yd[idx]] - 0.5 * w, 0.0)
+            end
         elseif dir == CartesianIndex(1, 0)
             we_y[idx] = max(we_y[idx] - w, 0.0)
         elseif dir == CartesianIndex(0, 1)
             we_x[idx] = max(we_x[idx] - w, 0.0)
         elseif dir == CartesianIndex(-1, 0)
-            we_y[indices.xd[idx]] = max(we_y[indices.xd[idx]] - w, 0.0)
+            if indices.xd[idx] <= n
+                we_y[indices.xd[idx]] = max(we_y[indices.xd[idx]] - w, 0.0)
+            end
         elseif dir == CartesianIndex(0, -1)
-            we_x[indices.yd[idx]] = max(we_x[indices.yd[idx]] - w, 0.0)
+            if indices.yd[idx] <= n
+                we_x[indices.yd[idx]] = max(we_x[indices.yd[idx]] - w, 0.0)
+            end
         elseif dir == CartesianIndex(1, -1)
             we_y[idx] = max(we_y[idx] - 0.5 * w, 0.0)
-            we_x[indices.yd[idx]] = max(we_x[indices.yd[idx]] - 0.5 * w, 0.0)
+            if indices.yd[idx] <= n
+                we_x[indices.yd[idx]] = max(we_x[indices.yd[idx]] - 0.5 * w, 0.0)
+            end
         elseif dir == CartesianIndex(-1, 1)
-            we_y[indices.xd[idx]] = max(we_y[indices.xd[idx]] - 0.5 * w, 0.0)
+            if indices.xd[idx] <= n
+                we_y[indices.xd[idx]] = max(we_y[indices.xd[idx]] - 0.5 * w, 0.0)
+            end
             we_x[idx] = max(we_x[idx] - 0.5 * w, 0.0)
         end
     end
