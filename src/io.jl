@@ -55,6 +55,7 @@ function Base.setproperty!(config::Config, f::Symbol, x)
     return dict[String(f)] = x
 end
 
+"Get a value from the Config with either the key or an alias of the key."
 function get_alias(config::Config, key, alias, default)
     dict = Dict(config)
     path = pathof(config)
@@ -62,6 +63,16 @@ function get_alias(config::Config, key, alias, default)
     a = get(dict, key, alias_or_default)
     # if it is a Dict, wrap the result in Config
     return a isa AbstractDict ? Config(a, path) : a
+end
+
+"Get a value from the Config with a key, throwing an error if it is not one of the options."
+function get_options(config::Config, key, options, default)
+    dict = Dict(config)
+    a = get(dict, key, default)
+    if !(a in options)
+        error("TOML key `$key` is set to $(repr(a)). Valid options are: $options.")
+    end
+    return a
 end
 
 # also used in autocomplete

@@ -24,8 +24,9 @@ function initialize_sbm_model(config::Config)
     kw_river_tstep = get(config.model, "kw_river_tstep", 0)
     kw_land_tstep = get(config.model, "kw_land_tstep", 0)
     kinwave_it = get(config.model, "kin_wave_iteration", false)::Bool
-    river_routing = get(config.model, "river_routing", "kinematic-wave")
-    land_routing = get(config.model, "land_routing", "kinematic-wave")
+    routing_options = ("kinematic-wave", "local-inertial")
+    river_routing = get_options(config.model, "river_routing", routing_options, "kinematic-wave")::String
+    land_routing = get_options(config.model, "land_routing", routing_options, "kinematic-wave")::String
 
     snow = get(config.model, "snow", false)::Bool
     reservoirs = do_reservoirs
@@ -195,12 +196,12 @@ function initialize_sbm_model(config::Config)
             config,
             inds;
             sl = βₗ,
-            dl = dl,
+            dl,
             width = map(det_surfacewidth, dw, riverwidth, river),
             wb_pit = pits[inds],
             iterate = kinwave_it,
             tstep = kw_land_tstep,
-            Δt = Δt,
+            Δt,
         )
     elseif land_routing == "local-inertial"
         index_river_nf = rev_inds_riv[inds] # not filtered (with zeros)
@@ -208,22 +209,16 @@ function initialize_sbm_model(config::Config)
             nc,
             config,
             inds;
-            modelsize_2d = modelsize_2d,
+            modelsize_2d,
             indices_reverse = rev_inds,
             xlength = xl,
             ylength = yl,
-            riverwidth = riverwidth,
-            graph_riv = graph_riv,
-            ldd_riv = ldd_riv,
-            inds_riv = inds_riv,
-            river = river,
-            Δt = Δt,
-        )
-    else
-        error(
-            """An unknown "land_routing" method is specified in the TOML file ($land_routing). 
-            This should be "kinematic_wave" or "local-inertial".
-            """,
+            riverwidth,
+            graph_riv,
+            ldd_riv,
+            inds_riv,
+            river,
+            Δt,
         )
     end
 
@@ -321,55 +316,45 @@ function initialize_sbm_model(config::Config)
     # for the land domain the x and y length [m] of the grid cells are stored
     # for reservoirs and lakes indices information is available from the initialization
     # functions
-    if land_routing == "kinematic-wave"
-        land = (
-            graph = graph,
-            upstream_nodes = filter_upsteam_nodes(graph, pits[inds]),
-            subdomain_order = subbas_order,
-            topo_subdomain = topo_subbas,
-            indices_subdomain = indices_subbas,
-            order = toposort,
-            indices = inds,
-            reverse_indices = rev_inds,
-            xl = xl,
-            yl = yl,
-            slope = βₗ,
-        )
-    elseif land_routing == "local-inertial"
-        land = (
-            graph = graph,
-            upstream_nodes = filter_upsteam_nodes(graph, pits[inds]),
-            subdomain_order = subbas_order,
-            topo_subdomain = topo_subbas,
-            indices_subdomain = indices_subbas,
-            order = toposort,
-            indices = inds,
+    land = (
+        graph = graph,
+        upstream_nodes = filter_upsteam_nodes(graph, pits[inds]),
+        subdomain_order = subbas_order,
+        topo_subdomain = topo_subbas,
+        indices_subdomain = indices_subbas,
+        order = toposort,
+        indices = inds,
+        reverse_indices = rev_inds,
+        xl,
+        yl,
+        slope = βₗ,
+    )
+    if land_routing == "local-inertial"
+        land = merge(land, (
             index_river = index_river_nf,
-            reverse_indices = rev_inds,
             staggered_indices = indices,
-            xl = xl,
-            yl = yl,
-            slope = βₗ,
-        )
+        ))
     end
     if river_routing == "kinematic-wave"
         river = (
             graph = graph_riv,
+            indices = inds_riv,
+            reverse_indices = rev_inds_riv,
+            # specific for kinematic_wave
             upstream_nodes = filter_upsteam_nodes(graph_riv, rf.wb_pit),
             subdomain_order = subriv_order,
             topo_subdomain = topo_subriv,
             indices_subdomain = indices_subriv,
             order = toposort_riv,
-            indices = inds_riv,
-            reverse_indices = rev_inds_riv,
         )
     elseif river_routing == "local-inertial"
         river = (
             graph = graph_riv,
-            nodes_at_link = nodes_at_link,
-            links_at_node = adjacent_links_at_node(graph, nodes_at_link),
             indices = inds_riv,
             reverse_indices = rev_inds_riv,
+            # specific for local-inertial
+            nodes_at_link = nodes_at_link,
+            links_at_node = adjacent_links_at_node(graph, nodes_at_link),
         )
     end
 
