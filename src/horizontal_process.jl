@@ -295,17 +295,19 @@ function local_inertial_flow(
 )
 
     slope = (η1 - η0) / length
+    unit = one(θ)
+    half = oftype(θ, 0.5)
     q = (
-        ((θ * q0 + 0.5 * (1.0 - θ) * (qu + qd)) - g * hf * width * Δt * slope) /
-        (1.0 + g * Δt * (mannings_n^2.0) * abs(q0) / (hf^(7.0 / 3.0) * width))
+        ((θ * q0 + half * (unit - θ) * (qu + qd)) - g * hf * width * Δt * slope) /
+        (unit + g * Δt * (mannings_n^2) * abs(q0) / (pow(hf, Float(7/3)) * width))
     )
     # if froude number > 1.0, limit flow
     if froude_limit
-        fr = (q / width / hf) / pow(g * hf, 0.5)
+        fr = (q / width / hf) / sqrt(g * hf)
         if abs(fr) > 1.0 && q > 0.0
-            q = hf * (pow(g * hf, 0.5)) * width
+            q = hf * sqrt(g * hf) * width
         elseif abs(fr) > 1.0 && q < 0.0
-            q = -hf * (pow(g * hf, 0.5)) * width
+            q = -hf * sqrt(g * hf) * width
         end
     end
 
