@@ -495,10 +495,10 @@ function initialize_shallowwater_river(
     # Edge 3 => 2
     # Edge 4 => 9
     # ⋮ )
-    riverlength_bc = get(config.model, "riverlength_bc", 1.0e04) # river length at boundary point (ghost point)
-    alpha = get(config.model, "inertial_flow_alpha", 0.7) # stability coefficient for model time step (0.2-0.7)
-    h_thresh = get(config.model, "h_thresh", 1.0e-03) # depth threshold for flow at link
-    froude_limit = get(config.model, "froude_limit", true) # limit flow to subcritical according to Froude number
+    riverlength_bc = get(config.model, "riverlength_bc", 1.0e04)::Float64 # river length at boundary point (ghost point)
+    alpha = get(config.model, "inertial_flow_alpha", 0.7)::Float64 # stability coefficient for model time step (0.2-0.7)
+    h_thresh = get(config.model, "h_thresh", 1.0e-03)::Float64 # depth threshold for flow at link
+    froude_limit = get(config.model, "froude_limit", true)::Bool # limit flow to subcritical according to Froude number
 
     @info "Local inertial approach is used for river flow." alpha h_thresh froude_limit riverlength_bc
 
@@ -688,12 +688,12 @@ function shallowwater_river_update(
 end
 
 function update(
-    sw::ShallowWaterRiver,
+    sw::ShallowWaterRiver{T},
     network;
     inflow_wb = nothing,
     doy = 0,
     update_h = true,
-)
+) where {T}
     @unpack nodes_at_link, links_at_node = network
 
     if !isnothing(sw.reservoir)
@@ -707,7 +707,7 @@ function update(
     sw.q_av .= 0.0
     sw.h_av .= 0.0
 
-    t = 0.0
+    t = T(0.0)
     while t < sw.Δt
         Δt = stable_timestep(sw)
         if t + Δt > sw.Δt
@@ -722,36 +722,18 @@ function update(
     return nothing
 end
 
-"""
-    stable_timestep(sw::ShallowWaterRiver)
-
-Compute a stable timestep size for the local inertial approach for river flow, based on
-Bates et al. (2010).
-
-Δt = α * (Δx / sqrt(g max(h))
-"""
-function stable_timestep(sw::ShallowWaterRiver)
-    Δtₘᵢₙ = Inf
-    for i = 1:sw.n
-        Δt = sw.α * sw.dl[i] / sqrt(sw.g * sw.h[i])
-        Δtₘᵢₙ = Δt < Δtₘᵢₙ ? Δt : Δtₘᵢₙ
-    end
-    Δtₘᵢₙ = isinf(Δtₘᵢₙ) ? 10.0 : Δtₘᵢₙ
-    return Δtₘᵢₙ
-end
-
 # Stores links in x and y direction between cells of a Vector with CartesianIndex(x, y), for
 # staggered grid calculations.
 @with_kw struct Indices
-    xu::Vector{Int}     # index of neighbor cell in the (1, 0) direction
+    xu::Vector{Int}     # index of neighbor cell in the (+1, 0) direction
     xd::Vector{Int}     # index of neighbor cell in the (-1, 0) direction
-    yu::Vector{Int}     # index of neighbor cell in the (0, 1) direction
+    yu::Vector{Int}     # index of neighbor cell in the (0, +1) direction
     yd::Vector{Int}     # index of neighbor cell in the (0, -1) direction
 end
 
 # maps the fields of struct Indices to the defined Wflow cartesian indices of const
 # neigbors.
-const dirs = ["yd", "xd", "xu", "yu"]
+const dirs = (:yd, :xd, :xu, :yu)
 
 @get_units @with_kw struct ShallowWaterLand{T}
     n::Int | "-"                        # number of cells
@@ -796,10 +778,10 @@ function initialize_shallowwater_land(
     river,
     Δt,
 )
-    froude_limit = get(config.model, "froude_limit", true) # limit flow to subcritical according to Froude number
-    alpha = get(config.model, "inertial_flow_alpha", 0.7) # stability coefficient for model time step (0.2-0.7)
-    theta = get(config.model, "inertial_flow_theta", 0.8) # weighting factor
-    h_thresh = get(config.model, "h_thresh", 1.0e-03) # depth threshold for flow at link
+    froude_limit = get(config.model, "froude_limit", true)::Bool # limit flow to subcritical according to Froude number
+    alpha = get(config.model, "inertial_flow_alpha", 0.7)::Float64 # stability coefficient for model time step (0.2-0.7)
+    theta = get(config.model, "inertial_flow_theta", 0.8)::Float64 # weighting factor
+    h_thresh = get(config.model, "h_thresh", 1.0e-03)::Float64 # depth threshold for flow at link
 
     @info "Local inertial approach is used for overlandflow." alpha theta h_thresh froude_limit
 
@@ -823,7 +805,7 @@ function initialize_shallowwater_land(
     n = length(inds)
 
     # initialize links between cells in x and y direction.
-    indices = Indices(xu = fill(0, n), xd = fill(0, n), yu = fill(0, n), yd = fill(0, n))
+    indices = Indices(xu = zeros(n), xd = zeros(n), yu = zeros(n), yd = zeros(n))
 
     # links without neigbors are handled by an extra index (at n + 1, with n links), which
     # is set to a value of 0.0 m³ s⁻¹ for qx and qy fields at initialization.
@@ -835,10 +817,11 @@ function initialize_shallowwater_land(
     for (v, i) in enumerate(inds)
         for (m, neighbor) in enumerate(neighbors)
             j = i + neighbor
-            if (1 <= j[1] <= nrow) && (1 <= j[2] <= ncol && indices_reverse[j] != 0)
-                param(indices, dirs[m])[v] = indices_reverse[j]
+            dir = dirs[m]
+            if (1 <= j[1] <= nrow) && (1 <= j[2] <= ncol) && (indices_reverse[j] != 0)
+                getfield(indices, dir)[v] = indices_reverse[j]
             else
-                param(indices, dirs[m])[v] = n + 1
+                getfield(indices, dir)[v] = n + 1
             end
         end
     end
@@ -902,33 +885,43 @@ function initialize_shallowwater_land(
 end
 
 """
+    stable_timestep(sw::ShallowWaterRiver)
     stable_timestep(sw::ShallowWaterLand)
 
-Compute a stable timestep size for the local inertial approach for overlandflow, based on
-Bates et al. (2010).
+Compute a stable timestep size for the local inertial approach, based on Bates et al. (2010).
 
 Δt = α * (Δx / sqrt(g max(h))
 """
-function stable_timestep(sw::ShallowWaterLand)
-    Δtₘᵢₙ = Inf
+function stable_timestep(sw::ShallowWaterRiver{T})::T where {T}
+    Δtₘᵢₙ = T(Inf)
+    for i = 1:sw.n
+        Δt = sw.α * sw.dl[i] / sqrt(sw.g * sw.h[i])
+        Δtₘᵢₙ = Δt < Δtₘᵢₙ ? Δt : Δtₘᵢₙ
+    end
+    Δtₘᵢₙ = isinf(Δtₘᵢₙ) ? T(10.0) : Δtₘᵢₙ
+    return Δtₘᵢₙ
+end
+
+function stable_timestep(sw::ShallowWaterLand{T})::T where {T}
+    Δtₘᵢₙ = T(Inf)
     for i = 1:sw.n
         if !sw.rivercells[i]
             Δt = sw.α * min(sw.xl[i], sw.yl[i]) / sqrt(sw.g * sw.h[i])
             Δtₘᵢₙ = Δt < Δtₘᵢₙ ? Δt : Δtₘᵢₙ
         end
     end
-    Δtₘᵢₙ = isinf(Δtₘᵢₙ) ? 10.0 : Δtₘᵢₙ
+    Δtₘᵢₙ = isinf(Δtₘᵢₙ) ? T(10.0) : Δtₘᵢₙ
     return Δtₘᵢₙ
 end
 
 function update(
-    sw::ShallowWaterLand,
-    swr::ShallowWaterRiver,
+    sw::ShallowWaterLand{T},
+    swr::ShallowWaterRiver{T},
     network;
     inflow_wb = nothing,
     doy = 0,
     update_h = false,
-)
+) where {T}
 
     @unpack nodes_at_link, links_at_node = network.river
 
@@ -945,7 +938,7 @@ function update(
     swr.q_av .= 0.0
     swr.h_av .= 0.0
 
-    t = 0.0
+    t = T(0.0)
     while t < swr.Δt
         Δt_river = stable_timestep(swr)
         Δt_land = stable_timestep(sw)
@@ -1069,9 +1062,7 @@ function update(sw::ShallowWaterLand, swr::ShallowWaterRiver, network, Δt)
     # continuity equation
 
     # first add runoff
-    @threads for i = 1:sw.n
-        sw.volume[i] = sw.volume[i] + sw.runoff[i] * Δt
-    end
+    sw.volume .+= sw.runoff * Δt
 
     # change in volume and water levels based on horizontal fluxes for river and land cells
     @threads for i = 1:sw.n
