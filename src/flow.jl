@@ -961,7 +961,7 @@ function update(
     swr.h_av ./= swr.Δt
 end
 
-function update(sw::ShallowWaterLand, swr::ShallowWaterRiver, network, Δt)
+function update(sw::ShallowWaterLand{T}, swr::ShallowWaterRiver{T}, network, Δt) where {T}
 
     indices = network.land.staggered_indices
     inds_riv = network.land.index_river
@@ -1037,7 +1037,7 @@ function update(sw::ShallowWaterLand, swr::ShallowWaterRiver, network, Δt)
             hf = (η_max - sw.zy_max[i])
 
             if hf > sw.h_thresh
-                length = 0.5 * (sw.yl[i] + sw.yl[yu]) # can be precalculated
+                length = T(0.5) * (sw.yl[i] + sw.yl[yu]) # can be precalculated
                 sw.qy[i] = local_inertial_flow(
                     sw.θ,
                     sw.qy0[i],
