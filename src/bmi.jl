@@ -62,14 +62,13 @@ end
 
 function BMI.update_until(model::Model, time::Float64)
     @unpack network, config = model
-    update_func = config.model.type == "sbm_gwf" ? update_sbm_gwf : update
     curtime = BMI.get_current_time(model)
     n_iter = Int(max(0, (time - curtime) / model.clock.Δt.value))
     end_time = curtime + n_iter * config.timestepsecs
     @info "Updating model until $end_time."
-    for i = 1:n_iter
+    for _ = 1:n_iter
         load_dynamic_input!(model)
-        update_func(model)
+        update(model)
     end
     return model
 end

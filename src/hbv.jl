@@ -136,7 +136,7 @@ function update_after_snow(hbv::HBV, config)
             # Estimate the fraction of snow turned into ice (HBV-light).
             # Estimate glacier melt.
 
-            hbv.snow[i], snow2glacier, hbv.glacierstore[i], glaciermelt = glacier_hbv(
+            hbv.snow[i], _, hbv.glacierstore[i], glaciermelt = glacier_hbv(
                 hbv.glacierfrac[i],
                 hbv.glacierstore[i],
                 hbv.snow[i],
@@ -144,7 +144,7 @@ function update_after_snow(hbv::HBV, config)
                 hbv.g_tt[i],
                 hbv.g_cfmax[i],
                 hbv.g_sifrac[i],
-                Δt,
+                hbv.Δt,
             )
             # Convert to mm per grid cell and add to snowmelt
             glaciermelt = glaciermelt * hbv.glacierfrac[i]
@@ -220,7 +220,7 @@ function update_after_snow(hbv::HBV, config)
         lowerzonestorage = lowerzonestorage - baseflow
 
         if external_qbase
-            directrunoffstorage = quickflow + seepage + real_quickflow
+            directrunoffstorage = quickflow + hbv_seepage + real_quickflow
         else
             directrunoffstorage = quickflow + baseflow + real_quickflow
         end

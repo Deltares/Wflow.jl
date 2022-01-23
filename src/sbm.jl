@@ -751,7 +751,7 @@ function update_until_recharge(sbm::SBM, config)
                 # Estimate the fraction of snow turned into ice (HBV-light).
                 # Estimate glacier melt.
 
-                snow, snow2glacier, glacierstore, glaciermelt = glacier_hbv(
+                snow, _, glacierstore, glaciermelt = glacier_hbv(
                     sbm.glacierfrac[i],
                     sbm.glacierstore[i],
                     sbm.snow[i],
@@ -759,7 +759,7 @@ function update_until_recharge(sbm::SBM, config)
                     sbm.g_tt[i],
                     sbm.g_cfmax[i],
                     sbm.g_sifrac[i],
-                    Second(sbm.Δt),
+                    sbm.Δt,
                 )
                 # Convert to mm per grid cell and add to snowmelt
                 glaciermelt = glaciermelt * sbm.glacierfrac[i]
@@ -835,7 +835,7 @@ function update_until_recharge(sbm::SBM, config)
                     sbm.θₛ[i],
                     sbm.θᵣ[i],
                 )
-                usld = setindex(usld, ustorelayerdepth, m)
+                usld = setindex(usld, ustorelayerdepth, 1)
             else
                 for m = 1:n_usl
                     l_sat = usl[m] * (sbm.θₛ[i] - sbm.θᵣ[i])

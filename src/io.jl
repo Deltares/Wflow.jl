@@ -77,9 +77,13 @@ Base.pop!(config::Config, key) = pop!(Dict(config), key)
 Base.pop!(config::Config, key, default) = pop!(Dict(config), key, default)
 Base.Dict(config::Config) = getfield(config, :dict)
 Base.pathof(config::Config) = getfield(config, :path)
-Base.dirname(config::Config) = dirname(pathof(config))
 Base.iterate(config::Config) = iterate(Dict(config))
 Base.iterate(config::Config, state) = iterate(Dict(config), state)
+
+function Base.dirname(config::Config)
+    path = pathof(config)
+    return path === nothing ? nothing : dirname(path)
+end
 
 function combined_path(config::Config, dir::AbstractString, path::AbstractString)
     tomldir = dirname(config)
