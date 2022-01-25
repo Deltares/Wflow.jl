@@ -759,7 +759,7 @@ function update_until_recharge(sbm::SBM, config)
                     sbm.g_tt[i],
                     sbm.g_cfmax[i],
                     sbm.g_sifrac[i],
-                    sbm.Δt,
+                    Second(sbm.Δt),
                 )
                 # Convert to mm per grid cell and add to snowmelt
                 glaciermelt = glaciermelt * sbm.glacierfrac[i]
