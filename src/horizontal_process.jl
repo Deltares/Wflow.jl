@@ -263,9 +263,9 @@ function local_inertial_riverflow(
     if froude_limit
         fr = (q / A) / pow(g * hf, 0.5)
         if abs(fr) > 1.0 && q > 0.0
-            q = pow(g * hf, 0.5) * A
+            q = sqrt(g * hf) * A
         elseif abs(fr) > 1.0 && q < 0.0
-            q = -pow(g * hf, 0.5) * A
+            q = -sqrt(g * hf) * A
         end
     end
 
