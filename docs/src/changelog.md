@@ -21,7 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   width.
 - Fixed use of absolute path for `path_forcing` in TOML file, which gave an error in Wflow
   v0.5.1.
-- Fixed a crash when using glaciers.
+- Fixed a crash when glacier processes are simulated as part of the `hbv` concept (Δt was
+  not defined).
 - When the surface flow width for overland flow is zero, the water level `h` of the
   kinematic wave should not be calculated, otherwise this results in `NaN` values. When the
   model is initialized from state files, `q` and `h` are set to zero for indices with a zero

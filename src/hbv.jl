@@ -144,7 +144,7 @@ function update_after_snow(hbv::HBV, config)
                 hbv.g_tt[i],
                 hbv.g_cfmax[i],
                 hbv.g_sifrac[i],
-                hbv.Δt,
+                Second(hbv.Δt),
             )
             # Convert to mm per grid cell and add to snowmelt
             glaciermelt = glaciermelt * hbv.glacierfrac[i]
