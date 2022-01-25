@@ -24,7 +24,9 @@ function initialize_sbm_model(config::Config)
     kw_river_tstep = get(config.model, "kw_river_tstep", 0)
     kw_land_tstep = get(config.model, "kw_land_tstep", 0)
     kinwave_it = get(config.model, "kin_wave_iteration", false)::Bool
-    river_routing = get(config.model, "river_routing", "kinematic-wave")
+    routing_options = ("kinematic-wave", "local-inertial")
+    river_routing = get_options(config.model, "river_routing", routing_options, "kinematic-wave")::String
+    land_routing = get_options(config.model, "land_routing", routing_options, "kinematic-wave")::String
 
     snow = get(config.model, "snow", false)::Bool
     reservoirs = do_reservoirs
@@ -177,26 +179,7 @@ function initialize_sbm_model(config::Config)
         )
     end
 
-    olf = initialize_surfaceflow_land(
-        nc,
-        config,
-        inds;
-        sl = βₗ,
-        dl = dl,
-        width = map(det_surfacewidth, dw, riverwidth, river),
-        wb_pit = pits[inds],
-        iterate = kinwave_it,
-        tstep = kw_land_tstep,
-        Δt = Δt,
-    )
-
     graph = flowgraph(ldd, inds, pcr_dir)
-
-    riverlength = riverlength_2d[inds_riv]
-    riverwidth = riverwidth_2d[inds_riv]
-    minimum(riverlength) > 0 || error("river length must be positive on river cells")
-    minimum(riverwidth) > 0 || error("river width must be positive on river cells")
-
     ldd_riv = ldd_2d[inds_riv]
     if do_pits
         ldd_riv = set_pit_ldd(pits_2d, ldd_riv, inds_riv)
@@ -207,6 +190,42 @@ function initialize_sbm_model(config::Config)
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
     frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, βₗ, n)
 
+    if land_routing == "kinematic-wave"
+        olf = initialize_surfaceflow_land(
+            nc,
+            config,
+            inds;
+            sl = βₗ,
+            dl,
+            width = map(det_surfacewidth, dw, riverwidth, river),
+            wb_pit = pits[inds],
+            iterate = kinwave_it,
+            tstep = kw_land_tstep,
+            Δt,
+        )
+    elseif land_routing == "local-inertial"
+        index_river_nf = rev_inds_riv[inds] # not filtered (with zeros)
+        olf, indices = initialize_shallowwater_land(
+            nc,
+            config,
+            inds;
+            modelsize_2d,
+            indices_reverse = rev_inds,
+            xlength = xl,
+            ylength = yl,
+            riverwidth,
+            graph_riv,
+            ldd_riv,
+            inds_riv,
+            river,
+            Δt,
+        )
+    end
+
+    riverlength = riverlength_2d[inds_riv]
+    riverwidth = riverwidth_2d[inds_riv]
+    minimum(riverlength) > 0 || error("river length must be positive on river cells")
+    minimum(riverwidth) > 0 || error("river width must be positive on river cells")
     if river_routing == "kinematic-wave"
         rf = initialize_surfaceflow_river(
             nc,
@@ -299,34 +318,43 @@ function initialize_sbm_model(config::Config)
     # functions
     land = (
         graph = graph,
-        upstream_nodes = filter_upsteam_nodes(graph, olf.wb_pit),
+        upstream_nodes = filter_upsteam_nodes(graph, pits[inds]),
         subdomain_order = subbas_order,
         topo_subdomain = topo_subbas,
         indices_subdomain = indices_subbas,
         order = toposort,
         indices = inds,
         reverse_indices = rev_inds,
-        xl = xl,
-        yl = yl,
+        xl,
+        yl,
+        slope = βₗ,
     )
+    if land_routing == "local-inertial"
+        land = merge(land, (
+            index_river = index_river_nf,
+            staggered_indices = indices,
+        ))
+    end
     if river_routing == "kinematic-wave"
         river = (
             graph = graph_riv,
+            indices = inds_riv,
+            reverse_indices = rev_inds_riv,
+            # specific for kinematic_wave
             upstream_nodes = filter_upsteam_nodes(graph_riv, rf.wb_pit),
             subdomain_order = subriv_order,
             topo_subdomain = topo_subriv,
             indices_subdomain = indices_subriv,
             order = toposort_riv,
-            indices = inds_riv,
-            reverse_indices = rev_inds_riv,
         )
     elseif river_routing == "local-inertial"
         river = (
             graph = graph_riv,
-            nodes_at_link = nodes_at_link,
-            links_at_node = adjacent_links_at_node(graph, nodes_at_link),
             indices = inds_riv,
             reverse_indices = rev_inds_riv,
+            # specific for local-inertial
+            nodes_at_link = nodes_at_link,
+            links_at_node = adjacent_links_at_node(graph, nodes_at_link),
         )
     end
 
@@ -347,7 +375,7 @@ function initialize_sbm_model(config::Config)
         @info "Set initial conditions from state file `$instate_path`."
         state_ncnames = ncnames(config.state)
         set_states(instate_path, model, state_ncnames; type = Float)
-        @unpack lateral, vertical = model
+        @unpack lateral, vertical, network = model
         # update zi for vertical sbm and kinematic wave volume for river and land domain
         zi =
             max.(
@@ -356,14 +384,34 @@ function initialize_sbm_model(config::Config)
                 vertical.satwaterdepth ./ (vertical.θₛ .- vertical.θᵣ),
             )
         vertical.zi .= zi
-        # makes sure land cells with zero flow width are set to zero q and h
-        for i in eachindex(lateral.land.width)
-            if lateral.land.width[i] <= 0.0
-                lateral.land.q[i] = 0.0
-                lateral.land.h[i] = 0.0
+        if land_routing == "kinematic-wave"
+            # make sure land cells with zero flow width are set to zero q and h
+            for i in eachindex(lateral.land.width)
+                if lateral.land.width[i] <= 0.0
+                    lateral.land.q[i] = 0.0
+                    lateral.land.h[i] = 0.0
+                end
+            end
+            lateral.land.volume .= lateral.land.h .* lateral.land.width .* lateral.land.dl
+        elseif land_routing == "local-inertial"
+            for i = 1:n
+                if lateral.land.rivercells[i]
+                    j = network.land.index_river[i]
+                    h = max(lateral.land.h[i] - lateral.river.bankfull_depth[j], 0.0)
+                    if h > 0.0
+                        lateral.land.volume[i] =
+                            h * lateral.land.xl[i] * lateral.land.yl[i] +
+                            lateral.river.bankfull_volume[j]
+                    else
+                        lateral.land.volume[i] =
+                            lateral.land.h[i] * lateral.river.width[j] * lateral.river.dl[j]
+                    end
+                else
+                    lateral.land.volume[i] =
+                        lateral.land.h[i] * lateral.land.xl[i] * lateral.land.yl[i]
+                end
             end
         end
-        lateral.land.volume .= lateral.land.h .* lateral.land.width .* lateral.land.dl
         # only set active cells for river (ignore boundary conditions/ghost points)
         lateral.river.volume[1:nriv] .=
             lateral.river.h[1:nriv] .* lateral.river.width[1:nriv] .*
@@ -423,7 +471,7 @@ function update_until_recharge(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:Sb
         lateral_snow_transport!(
             vertical.snow,
             vertical.snowwater,
-            lateral.land.sl,
+            network.land.slope,
             network.land,
         )
     end
@@ -445,8 +493,6 @@ function update_after_subsurfaceflow(
 ) where {N,L,V,R,W,T<:SbmModel}
     @unpack lateral, vertical, network, clock, config = model
 
-    inds_riv = network.index_river
-
     # update vertical sbm concept (runoff, ustorelayerdepth and satwaterdepth)
     update_after_subsurfaceflow(
         vertical,
@@ -454,7 +500,7 @@ function update_after_subsurfaceflow(
         lateral.subsurface.exfiltwater * 1000.0,
     )
 
-    ssf_toriver = lateral.subsurface.to_river[inds_riv] ./ lateral.subsurface.Δt
+    ssf_toriver = lateral.subsurface.to_river ./ lateral.subsurface.Δt
     surface_routing(model, ssf_toriver = ssf_toriver)
 
     write_output(model)

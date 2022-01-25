@@ -495,10 +495,12 @@ function initialize_shallowwater_river(
     # Edge 3 => 2
     # Edge 4 => 9
     # ⋮ )
-    riverlength_bc = get(config.model, "riverlength_bc", 1.0e04) # river length at boundary point (ghost point)
-    alpha = get(config.model, "inertial_flow_alpha", 0.7) # stability coefficient for model time step (0.2-0.7)
-    h_thresh = get(config.model, "h_thresh", 1.0e-03) # depth threshold for flow at link
-    froude_limit = get(config.model, "froude_limit", true) # limit flow to subcritical according to Froude number
+    riverlength_bc = get(config.model, "riverlength_bc", 1.0e04)::Float64 # river length at boundary point (ghost point)
+    alpha = get(config.model, "inertial_flow_alpha", 0.7)::Float64 # stability coefficient for model time step (0.2-0.7)
+    h_thresh = get(config.model, "h_thresh", 1.0e-03)::Float64 # depth threshold for flow at link
+    froude_limit = get(config.model, "froude_limit", true)::Bool # limit flow to subcritical according to Froude number
+
+    @info "Local inertial approach is used for river flow." alpha h_thresh froude_limit riverlength_bc
 
     bankfull_elevation_2d = ncread(
         nc,
@@ -594,7 +596,7 @@ function initialize_shallowwater_river(
         a = zeros(_ne),
         r = zeros(_ne),
         volume = fill(0.0, n),
-        error = zeros(Float, n),
+        error = zeros(n),
         inflow = zeros(n),
         inwater = zeros(n),
         dl = dl,
@@ -686,12 +688,12 @@ function shallowwater_river_update(
 end
 
 function update(
-    sw::ShallowWaterRiver,
+    sw::ShallowWaterRiver{T},
     network;
     inflow_wb = nothing,
     doy = 0,
     update_h = true,
-)
+) where {T}
     @unpack nodes_at_link, links_at_node = network
 
     if !isnothing(sw.reservoir)
@@ -705,7 +707,7 @@ function update(
     sw.q_av .= 0.0
     sw.h_av .= 0.0
 
-    t = 0.0
+    t = T(0.0)
     while t < sw.Δt
         Δt = stable_timestep(sw)
         if t + Δt > sw.Δt
@@ -720,22 +722,383 @@ function update(
     return nothing
 end
 
+# Stores links in x and y direction between cells of a Vector with CartesianIndex(x, y), for
+# staggered grid calculations.
+@with_kw struct Indices
+    xu::Vector{Int}     # index of neighbor cell in the (+1, 0) direction
+    xd::Vector{Int}     # index of neighbor cell in the (-1, 0) direction
+    yu::Vector{Int}     # index of neighbor cell in the (0, +1) direction
+    yd::Vector{Int}     # index of neighbor cell in the (0, -1) direction
+end
+
+# maps the fields of struct Indices to the defined Wflow cartesian indices of const
+# neigbors.
+const dirs = (:yd, :xd, :xu, :yu)
+
+@get_units @with_kw struct ShallowWaterLand{T}
+    n::Int | "-"                        # number of cells
+    xl::Vector{T} | "m"                 # cell length x direction
+    yl::Vector{T} | "m"                 # cell length y direction
+    xwidth::Vector{T} | "m"             # effective flow width x direction (floodplain)
+    ywidth::Vector{T} | "m"             # effective flow width y direction (floodplain)
+    g::T | "m2 s-1"                     # acceleration due to gravity
+    θ::T | "-"                          # weighting factor (de Almeida et al., 2012)
+    α::T | "-"                          # stability coefficient (de Almeida et al., 2012)
+    h_thresh::T | "m"                   # depth threshold for calculating flow
+    Δt::T | "s"                         # model time step [s]
+    qy0::Vector{T} | "m3 s-1"           # flow in y direction at previous time step
+    qx0::Vector{T} | "m3 s-1"           # flow in x direction at previous time step
+    qx::Vector{T} | "m3 s-1"            # flow in x direction
+    qy::Vector{T} | "m3 s-1"            # flow in y direction
+    zx_max::Vector{T} | "m"             # maximum cell elevation (x direction)
+    zy_max::Vector{T} | "m"             # maximum cell elevation (y direction)
+    mannings_n::Vector{T} | "s m-1/3"   # Manning's roughness
+    volume::Vector{T} | "m3"            # total volume of cell
+    error::Vector{T} | "m3"             # error volume
+    runoff::Vector{T} | "m3 s-1"        # runoff from hydrological model 
+    h::Vector{T} | "m"                  # water depth of cell
+    z::Vector{T} | "m"                  # elevation of cell
+    froude_limit::Bool | "-"            # if true a check is performed if froude number > 1.0 (algorithm is modified)
+    rivercells::Vector{Bool} | "-"      # river cells
+    h_av::Vector{T} | "m"               # average water depth
+end
+
+function initialize_shallowwater_land(
+    nc,
+    config,
+    inds;
+    modelsize_2d,
+    indices_reverse, # maps from the 2D external domain to the 1D internal domain (Int for linear indexing).
+    xlength,
+    ylength,
+    riverwidth,
+    graph_riv,
+    ldd_riv,
+    inds_riv,
+    river,
+    Δt,
+)
+    froude_limit = get(config.model, "froude_limit", true)::Bool # limit flow to subcritical according to Froude number
+    alpha = get(config.model, "inertial_flow_alpha", 0.7)::Float64 # stability coefficient for model time step (0.2-0.7)
+    theta = get(config.model, "inertial_flow_theta", 0.8)::Float64 # weighting factor
+    h_thresh = get(config.model, "h_thresh", 1.0e-03)::Float64 # depth threshold for flow at link
+
+    @info "Local inertial approach is used for overlandflow." alpha theta h_thresh froude_limit
+
+    n_land = ncread(
+        nc,
+        config.input,
+        "lateral.land.n";
+        sel = inds,
+        defaults = 0.072,
+        type = Float,
+    )
+    elevation_2d = ncread(
+        nc, 
+        config.input,
+        "lateral.land.elevation";
+        optional = false, 
+        type = Float, 
+        fill = 0,
+    )
+    elevation = elevation_2d[inds]
+    n = length(inds)
+
+    # initialize links between cells in x and y direction.
+    indices = Indices(xu = zeros(n), xd = zeros(n), yu = zeros(n), yd = zeros(n))
+
+    # links without neigbors are handled by an extra index (at n + 1, with n links), which
+    # is set to a value of 0.0 m³ s⁻¹ for qx and qy fields at initialization.
+    # links are defined as follows for the x and y direction, respectively:
+    # node i => node xu (node i + CartesianIndex(1, 0))
+    # node i => node yu (node i + CartesianIndex(0, 1))
+    # where i is the index of inds
+    nrow, ncol = modelsize_2d
+    for (v, i) in enumerate(inds)
+        for (m, neighbor) in enumerate(neighbors)
+            j = i + neighbor
+            dir = dirs[m]
+            if (1 <= j[1] <= nrow) && (1 <= j[2] <= ncol) && (indices_reverse[j] != 0)
+                getfield(indices, dir)[v] = indices_reverse[j]
+            else
+                getfield(indices, dir)[v] = n + 1
+            end
+        end
+    end
+
+    # determine z at links in x and y direction
+    zx_max = fill(Float(0), n)
+    zy_max = fill(Float(0), n)
+    for i = 1:n
+        xu = indices.xu[i]
+        if xu <= n
+            zx_max[i] = max(elevation[i], elevation[xu])
+        end
+        yu = indices.yu[i]
+        if yu <= n
+            zy_max[i] = max(elevation[i], elevation[yu])
+        end
+    end
+
+    # set the effective flow width for river cells in the x and y direction at cell edges.
+    we_x = copy(xlength)
+    we_y = copy(ylength)
+    set_effective_flowwidth!(
+        we_x,
+        we_y,
+        indices,
+        graph_riv,
+        riverwidth,
+        ldd_riv,
+        indices_reverse[inds_riv],
+    )
+
+    sw_land = ShallowWaterLand{Float}(
+        n = n,
+        xl = xlength,
+        yl = ylength,
+        xwidth = we_x,
+        ywidth = we_y,
+        g = 9.80665,
+        θ = theta,
+        α = alpha,
+        h_thresh = h_thresh,
+        Δt = tosecond(Δt),
+        qx0 = zeros(n + 1),
+        qy0 = zeros(n + 1),
+        qx = zeros(n + 1),
+        qy = zeros(n + 1),
+        zx_max = zx_max,
+        zy_max = zy_max,
+        mannings_n = n_land,
+        volume = zeros(n),
+        error = zeros(n),
+        runoff = zeros(n),
+        h = zeros(n),
+        h_av = zeros(n),
+        z = elevation,
+        froude_limit = froude_limit,
+        rivercells = river,
+    )
+
+    return sw_land, indices
+end
+
 """
     stable_timestep(sw::ShallowWaterRiver)
+    stable_timestep(sw::ShallowWaterLand)
 
-Compute a stable timestep size for the local inertial approach for river flow, based on
-Bates et al. (2010).
+Compute a stable timestep size for the local inertial approach, based on Bates et al. (2010).
 
 Δt = α * (Δx / sqrt(g max(h))
 """
-function stable_timestep(sw::ShallowWaterRiver)
-    Δtₘᵢₙ = Inf
+function stable_timestep(sw::ShallowWaterRiver{T})::T where {T}
+    Δtₘᵢₙ = T(Inf)
     for i = 1:sw.n
         Δt = sw.α * sw.dl[i] / sqrt(sw.g * sw.h[i])
         Δtₘᵢₙ = Δt < Δtₘᵢₙ ? Δt : Δtₘᵢₙ
     end
-    Δtₘᵢₙ = isinf(Δtₘᵢₙ) ? 10.0 : Δtₘᵢₙ
+    Δtₘᵢₙ = isinf(Δtₘᵢₙ) ? T(10.0) : Δtₘᵢₙ
     return Δtₘᵢₙ
+end
+
+function stable_timestep(sw::ShallowWaterLand{T})::T where {T}
+    Δtₘᵢₙ = T(Inf)
+    for i = 1:sw.n
+        if !sw.rivercells[i]
+            Δt = sw.α * min(sw.xl[i], sw.yl[i]) / sqrt(sw.g * sw.h[i])
+            Δtₘᵢₙ = Δt < Δtₘᵢₙ ? Δt : Δtₘᵢₙ
+        end
+    end
+    Δtₘᵢₙ = isinf(Δtₘᵢₙ) ? T(10.0) : Δtₘᵢₙ
+    return Δtₘᵢₙ
+end
+
+function update(
+    sw::ShallowWaterLand{T},
+    swr::ShallowWaterRiver{T},
+    network;
+    inflow_wb = nothing,
+    doy = 0,
+    update_h = false,
+) where {T}
+
+    @unpack nodes_at_link, links_at_node = network.river
+
+    inds_riv = network.index_river
+
+    if !isnothing(swr.reservoir)
+        swr.reservoir.inflow .= 0.0
+        swr.reservoir.totaloutflow .= 0.0
+    end
+    if !isnothing(swr.lake)
+        swr.lake.inflow .= 0.0
+        swr.lake.totaloutflow .= 0.0
+    end
+    swr.q_av .= 0.0
+    swr.h_av .= 0.0
+
+    t = T(0.0)
+    while t < swr.Δt
+        Δt_river = stable_timestep(swr)
+        Δt_land = stable_timestep(sw)
+        Δt = min(Δt_river, Δt_land)
+        shallowwater_river_update(swr, network.river, Δt, inflow_wb, doy, update_h)
+        update(sw, swr, network, Δt)
+
+        if t + Δt > swr.Δt
+            Δt = swr.Δt - t
+        end
+        t = t + Δt
+
+        # update of h takes place in land part of shallow water, copy to river domain
+        for i = 1:swr.n
+            swr.h[i] = sw.h[inds_riv[i]]
+            swr.h_av[i] += swr.h[i] * Δt
+        end
+    end
+    swr.q_av ./= swr.Δt
+    swr.h_av ./= swr.Δt
+end
+
+function update(sw::ShallowWaterLand{T}, swr::ShallowWaterRiver{T}, network, Δt) where {T}
+
+    indices = network.land.staggered_indices
+    inds_riv = network.land.index_river
+
+    @unpack nodes_at_link, links_at_node = network.river
+
+    sw.qx0 .= sw.qx
+    sw.qy0 .= sw.qy
+
+    # update qx
+    @threads for i = 1:sw.n
+        yu = indices.yu[i]
+        yd = indices.yd[i]
+        xu = indices.xu[i]
+        xd = indices.xd[i]
+
+        # the effective flow width is zero when the river width exceeds the cell width (dy
+        # for flow in x dir) and floodplain flow is not calculated.
+        if xu <= sw.n && sw.ywidth[i] != 0.0
+            h0 = sw.h[i]
+            h1 = sw.h[xu]
+            if sw.rivercells[i]
+                h0 = max(h0 - swr.bankfull_depth[inds_riv[i]], 0.0)
+            end
+            if sw.rivercells[xu]
+                h1 = max(h1 - swr.bankfull_depth[inds_riv[xu]], 0.0)
+            end
+
+            η_x = sw.z[i] + h0
+            η_xu = sw.z[xu] + h1
+            η_max = max(η_x, η_xu)
+            hf = (η_max - sw.zx_max[i])
+
+            if hf > sw.h_thresh
+                length = 0.5 * (sw.xl[i] + sw.xl[xu]) # can be precalculated
+                sw.qx[i] = local_inertial_flow(
+                    sw.θ,
+                    sw.qx0[i],
+                    sw.qx0[xd],
+                    sw.qx0[xu],
+                    η_x,
+                    η_xu,
+                    hf,
+                    sw.xwidth[i],
+                    length,
+                    sw.mannings_n[i],
+                    sw.g,
+                    sw.froude_limit,
+                    Δt,
+                )
+            else
+                sw.qx[i] = 0.0
+            end
+        end
+
+        # update qy
+
+        # the effective flow width is zero when the river width exceeds the cell width (dx
+        # for flow in y dir) and floodplain flow is not calculated.
+        if yu <= sw.n && sw.xwidth[i] != 0.0
+            h0 = sw.h[i]
+            h1 = sw.h[yu]
+            if sw.rivercells[i]
+                h0 = max(h0 - swr.bankfull_depth[inds_riv[i]], 0.0)
+            end
+            if sw.rivercells[yu]
+                h1 = max(h1 - swr.bankfull_depth[inds_riv[yu]], 0.0)
+            end
+
+            η_y = sw.z[i] + h0
+            η_yu = sw.z[yu] + h1
+            η_max = max(η_y, η_yu)
+            hf = (η_max - sw.zy_max[i])
+
+            if hf > sw.h_thresh
+                length = T(0.5) * (sw.yl[i] + sw.yl[yu]) # can be precalculated
+                sw.qy[i] = local_inertial_flow(
+                    sw.θ,
+                    sw.qy0[i],
+                    sw.qy0[yd],
+                    sw.qy0[yu],
+                    η_y,
+                    η_yu,
+                    hf,
+                    sw.ywidth[i],
+                    length,
+                    sw.mannings_n[i],
+                    sw.g,
+                    sw.froude_limit,
+                    Δt,
+                )
+            else
+                sw.qy[i] = 0.0
+            end
+        end
+    end
+
+    # continuity equation
+
+    # first add runoff
+    sw.volume .+= sw.runoff * Δt
+
+    # change in volume and water levels based on horizontal fluxes for river and land cells
+    @threads for i = 1:sw.n
+        yd = indices.yd[i]
+        xd = indices.xd[i]
+
+        if sw.rivercells[i]
+            sw.volume[i] +=
+                (
+                    sum_at(swr.q, links_at_node.src[inds_riv[i]]) -
+                    sum_at(swr.q, links_at_node.dst[inds_riv[i]]) + sw.qx[xd] - sw.qx[i] +
+                    sw.qy[yd] - sw.qy[i]
+                ) * Δt
+            if sw.volume[i] < 0.0
+                sw.error[i] = sw.error[i] + abs(sw.volume[i])
+                sw.volume[i] = 0.0 # set volume to zero
+            end
+            if sw.volume[i] >= swr.bankfull_volume[inds_riv[i]]
+                sw.h[i] =
+                    swr.bankfull_depth[inds_riv[i]] +
+                    (sw.volume[i] - swr.bankfull_volume[inds_riv[i]]) /
+                    (sw.xl[i] * sw.yl[i])
+            else
+                sw.h[i] = sw.volume[i] / (swr.dl[inds_riv[i]] * swr.width[inds_riv[i]])
+            end
+        else
+            sw.volume[i] += (sw.qx[xd] - sw.qx[i] + sw.qy[yd] - sw.qy[i]) * Δt
+            if sw.volume[i] < 0.0
+                sw.error[i] = sw.error[i] + abs(sw.volume[i])
+                sw.volume[i] = 0.0 # set volume to zero
+            end
+            sw.h[i] = sw.volume[i] / (sw.xl[i] * sw.yl[i])
+            sw.h_av[i] += sw.h[i] * Δt
+        end
+    end
+    sw.h_av ./= sw.Δt
 end
 
 """
@@ -749,7 +1112,8 @@ function set_river_inwater(model::Model{N,L,V,R,W,T}, ssf_toriver) where {N,L,V<
     inds = network.index_river
 
     @. lateral.river.inwater = (
-        ssf_toriver .+ lateral.land.to_river[inds] +
+        ssf_toriver[inds] +
+        lateral.land.to_river[inds] +
         # net_runoff_river
         (
             (
@@ -821,18 +1185,44 @@ function get_inflow_waterbody(model)
 end
 
 """
-    get_inflow_waterbody(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
+    get_inflow_waterbody(
+        model::Model{N,L,V,R,W,T},
+    ) where {N,L<:NamedTuple{<:Any,<:Tuple{LateralSSF,SurfaceFlow,Any}},V,R,W,T}
 
-Get inflow to a water body (reservoir or lake) `inflow_wb` based on overland and lateral
-subsurface flow for the `SbmModel` model type.
+Get inflow to a water body (reservoir or lake) `inflow_wb` from a model type that contains
+the lateral components `LateralSSF` and `SurfaceFlow`.
 """
-function get_inflow_waterbody(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
+function get_inflow_waterbody(
+    model::Model{N,L,V,R,W,T},
+) where {N,L<:NamedTuple{<:Any,<:Tuple{LateralSSF,SurfaceFlow,Any}},V,R,W,T}
     @unpack lateral, network = model
 
     inds = network.index_river
     if !isnothing(lateral.river.reservoir) || !isnothing(lateral.river.lake)
         inflow_wb =
             lateral.subsurface.ssf[inds] ./ lateral.subsurface.Δt .+ lateral.land.q_av[inds]
+    else
+        inflow_wb = nothing
+    end
+    return inflow_wb
+end
+
+"""
+    get_inflow_waterbody(
+        model::Model{N,L,V,R,W,T},
+    ) where {N,L<:NamedTuple{<:Any,<:Tuple{LateralSSF,ShallowWaterLand,Any}},V,R,W,T}
+
+Get inflow to a water body (reservoir or lake) `inflow_wb` from a model type that contains
+the lateral components `LateralSSF` and `ShallowWaterLand`.
+"""
+function get_inflow_waterbody(
+    model::Model{N,L,V,R,W,T},
+) where {N,L<:NamedTuple{<:Any,<:Tuple{LateralSSF,ShallowWaterLand,Any}},V,R,W,T}
+    @unpack lateral, network = model
+
+    inds = network.index_river
+    if !isnothing(lateral.river.reservoir) || !isnothing(lateral.river.lake)
+        inflow_wb = lateral.subsurface.ssf[inds] ./ lateral.subsurface.Δt
     else
         inflow_wb = nothing
     end
@@ -857,6 +1247,41 @@ function surface_routing(model; ssf_toriver = 0.0)
     update(
         lateral.river,
         network.river,
+        inflow_wb = get_inflow_waterbody(model),
+        doy = dayofyear(clock.time),
+    )
+end
+
+"""
+    surface_routing(
+        model::Model{N,L,V,R,W,T};
+        ssf_toriver = 0.0,
+    ) where {N,L<:NamedTuple{<:Any,<:Tuple{Any,ShallowWaterLand,ShallowWaterRiver}},V,R,W,T}
+
+Run surface routing (land and river) for a model type that contains the lateral components
+`ShallowWaterLand` and `ShallowWaterRiver`.
+"""
+function surface_routing(
+    model::Model{N,L,V,R,W,T};
+    ssf_toriver = 0.0,
+) where {N,L<:NamedTuple{<:Any,<:Tuple{Any,ShallowWaterLand,ShallowWaterRiver}},V,R,W,T}
+
+    @unpack lateral, vertical, network, clock = model
+
+    @. lateral.land.runoff = (
+        (vertical.runoff / 1000.0) * (network.land.xl * network.land.yl) / vertical.Δt +
+        ssf_toriver +
+        # net_runoff_river
+        (
+            (vertical.net_runoff_river * network.land.xl * network.land.yl * 0.001) /
+            vertical.Δt
+        )
+    )
+
+    update(
+        lateral.land,
+        lateral.river,
+        network,
         inflow_wb = get_inflow_waterbody(model),
         doy = dayofyear(clock.time),
     )

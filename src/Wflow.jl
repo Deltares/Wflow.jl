@@ -97,7 +97,7 @@ end
 
 # different model types (used for dispatch)
 struct SbmModel end         # "sbm" type / sbm_model.jl
-struct SbmGwfModel end      # "sbm_gwf" type / sbm_gf_model.jl
+struct SbmGwfModel end      # "sbm_gwf" type / sbm_gwf_model.jl
 struct HbvModel end         # "hbv" type / hbv_model.jl
 struct SedimentModel end    # "sediment" type / sediment_model.jl
 

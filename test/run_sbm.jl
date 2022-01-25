@@ -15,25 +15,25 @@ flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
     row = csv_first_row(model.writer.csv_path)
 
     @test row.time == DateTime("2000-01-02T00:00:00")
-    @test row.Q ≈ 9.88374809067884f0
-    @test row.volume ≈ 3.298264381636329f7
+    @test row.Q ≈ 8.1396354649197f0
+    @test row.volume ≈ 2.7535003939625636f7
     @test row.temp_bycoord ≈ 2.390000104904175f0
     @test row.temp_byindex ≈ 2.390000104904175f0
-    @test row.Q_6336050 ≈ 0.0066621442402248245f0
-    @test row.Q_6336510 ≈ 0.04727879981652821f0
-    @test row.Q_6836100 ≈ 0.9339829956644901f0
-    @test row.Q_6336500 ≈ 0.006084683242965108f0
-    @test row.Q_6836190 ≈ 0.003038597498366973f0
-    @test row.Q_6336800 ≈ 0.009077059837780043f0
-    @test row.Q_6336900 ≈ 0.004167896211543442f0
-    @test row.Q_6336930 ≈ 0.2352989751274897f0
-    @test row.Q_6336910 ≈ 0.0076100268263675965f0
-    @test row.Q_6136500 ≈ 0.0020577743577728067f0
-    @test row.Q_6136520 ≈ 0.006701871174165091f0
-    @test row.Q_6136150 ≈ 0.0077104586193382715f0
-    @test row.Q_6136151 ≈ 0.011294064937339442f0
-    @test row.Q_6136160 ≈ 4.793470200175769f0
-    @test row.Q_6136202 ≈ 1.5231027963956818f0
+    @test row.Q_6336050 ≈ 0.00617203548227466f0
+    @test row.Q_6336510 ≈ 0.029177309556712334f0
+    @test row.Q_6836100 ≈ 0.19621282450614713f0
+    @test row.Q_6336500 ≈ 0.006104510105954231f0
+    @test row.Q_6836190 ≈ 0.0031262850749354237f0
+    @test row.Q_6336800 ≈ 0.007782650672703859f0
+    @test row.Q_6336900 ≈ 0.006413552125666774f0
+    @test row.Q_6336930 ≈ 0.08888787154163148f0
+    @test row.Q_6336910 ≈ 0.007071851236520184f0
+    @test row.Q_6136500 ≈ 0.0016367337487926633f0
+    @test row.Q_6136520 ≈ 0.002084670434294102f0
+    @test row.Q_6136150 ≈ 0.006095549758915344f0
+    @test row.Q_6136151 ≈ 0.007643634432992056f0
+    @test row.Q_6136160 ≈ 3.9199531493174726f0
+    @test row.Q_6136202 ≈ 1.4125847550988493f0
     @test row.recharge_1 ≈ -0.05653226176238641f0
 end
 
@@ -41,26 +41,26 @@ end
     ds = model.writer.dataset_scalar
     @test ds["time"][1] == DateTime("2000-01-02T00:00:00")
     @test ds["Q"][:][1:20] ≈ [
-        0.7561489f0,
-        1.5231028f0,
-        1.5432047f0,
-        1.4594529f0,
-        7.992092f0,
-        3.2193222f0,
-        4.8701606f0,
-        4.2510085f0,
-        0.011138658f0,
-        4.7934704f0,
-        4.9047155f0,
-        0.0074881334f0,
-        0.011294065f0,
-        0.011618339f0,
-        0.003813113f0,
-        0.9464258f0,
-        0.0025089371f0,
-        1.4951783f0,
-        5.3202457f0,
-        2.2412596f0,
+        0.73993874f0,
+        1.4125848f0,
+        1.4389194f0,
+        1.4036233f0,
+        5.7276225f0,
+        2.7586424f0,
+        2.1080604f0,
+        4.1026044f0,
+        0.008365918f0,
+        3.919953f0,
+        4.0615087f0,
+        0.006050462f0,
+        0.0076436345f0,
+        0.00780229f0,
+        0.00346879f0,
+        0.7066179f0,
+        0.0022446192f0,
+        1.3323202f0,
+        3.8271446f0,
+        1.6729931f0,
     ]
     @test ds["Q_gauges"].attrib["cf_role"] == "timeseries_id"
     @test ds["temp_index"][:] ≈ [2.39f0]
@@ -99,13 +99,13 @@ end
     ssf = model.lateral.subsurface.ssf
     @test sum(ssf) ≈ 6.370399148012509f7
     @test ssf[network.land.order[1]] ≈ 7.169036749244327f2
-    @test ssf[network.land.order[end-100]] ≈ 2334.2186871917656f0
+    @test ssf[network.land.order[end-100]] ≈ 2335.2465707069578f0
     @test ssf[network.land.order[end]] ≈ 288.19428729403944f0
 end
 
 @testset "overland flow" begin
     q = model.lateral.land.q_av
-    @test sum(q) ≈ 290.2334461480497f0
+    @test sum(q) ≈ 290.5520014030802f0
     @test q[26625] ≈ 0.0
     @test q[39308] ≈ 0.0
     @test q[network.land.order[end]] ≈ 1.0f-30
@@ -113,17 +113,17 @@ end
 
 @testset "river flow" begin
     q = model.lateral.river.q_av
-    @test sum(q) ≈ 5072.751072834332f0
-    @test q[1622] ≈ 0.0005484213345345085f0
-    @test q[43] ≈ 12.544889508137787f0
-    @test q[network.river.order[end]] ≈ 0.04295401190822074f0
+    @test sum(q) ≈ 3615.2084127447865f0
+    @test q[1622] ≈ 0.0005986272622329333f0
+    @test q[43] ≈ 12.036342425160155f0
+    @test q[network.river.order[end]] ≈ 0.038439025755223954f0
 end
 
 @testset "reservoir simple" begin
     res = model.lateral.river.reservoir
     @test res.outflow[1] ≈ 0.21750000119148086f0
-    @test res.inflow[1] ≈ 45.53267637607559f0
-    @test res.volume[1] ≈ 3.29605565479739f7
+    @test res.inflow[1] ≈ 43.18479982574888f0
+    @test res.volume[1] ≈ 2.751299001489657f7
     @test res.precipitation[1] ≈ 0.17999997735023499f0
     @test res.evaporation[1] ≈ 0.5400000810623169f0
 end
@@ -156,10 +156,10 @@ end
 
 @testset "river flow at basin outlets and downstream of one pit" begin
     q = model.lateral.river.q_av
-    @test q[4009] ≈ 8.550171257466186f0 # pit/ outlet, CartesianIndex(141, 228)
-    @test q[4020] ≈ 0.006513001839317472f0 # downstream of pit 4009, CartesianIndex(141, 229)
-    @test q[2508] ≈ 155.82827037176472f0 # pit/ outlet
-    @test q[5808] ≈ 0.18596231352540007f0 # pit/ outlet
+    @test q[4009] ≈ 8.60480399680283f0 # pit/ outlet, CartesianIndex(141, 228)
+    @test q[4020] ≈ 0.006779014715290862f0 # downstream of pit 4009, CartesianIndex(141, 229)
+    @test q[2508] ≈ 150.25451437462465f0 # pit/ outlet
+    @test q[5808] ≈ 0.1264630353304674f0 # pit/ outlet
 end
 
 # test changing forcing and cyclic LAI parameter
@@ -206,7 +206,7 @@ model = Wflow.update(model)
 
 @testset "river inflow (cyclic)" begin
     @test model.lateral.river.inflow[44] ≈ 0.75
-    @test model.lateral.river.q_av[44] ≈ 10.837461992381341
+    @test model.lateral.river.q_av[44] ≈ 10.698591283662008
 end
 
 # test fixed forcing (precipitation = 2.5)
@@ -245,13 +245,45 @@ model = Wflow.update(model)
 
 @testset "river flow and depth (local inertial)" begin
     q = model.lateral.river.q_av
-    @test sum(q) ≈ 5927.909443381952f0
-    @test q[1622] ≈ 0.00016000872474865736f0
-    @test q[43] ≈ 12.462758649570997f0
-    @test q[501] ≈ 21.403560319872152f0
+    @test sum(q) ≈ 3906.99107445248f0
+    @test q[1622] ≈ 6.0094181857060604f-5
+    @test q[43] ≈ 11.900372477232786f0
+    @test q[501] ≈ 3.536628093804679f0
     h = model.lateral.river.h_av
-    @test h[1622] ≈ 0.004917530961362419f0
-    @test h[43] ≈ 1.058749442326754f0
-    @test h[501] ≈ 0.4873615922116117f0
+    @test h[1622] ≈ 0.0018099650639472893f0
+    @test h[43] ≈ 0.4362704420866992f0
+    @test h[501] ≈ 0.05669956233680629f0
+end
+Wflow.close_files(model, delete_output = false)
+
+# test local-inertial option for river flow river_routing
+tomlpath = joinpath(@__DIR__, "sbm_swf_config.toml")
+config = Wflow.Config(tomlpath)
+
+model = Wflow.initialize_sbm_model(config)
+Wflow.load_dynamic_input!(model)
+model = Wflow.update(model)
+Wflow.load_dynamic_input!(model)
+model = Wflow.update(model)
+
+@testset "river and overland flow and depth (local inertial)" begin
+    q = model.lateral.river.q_av
+    @test sum(q) ≈ 2369.4745120995767f0
+    @test q[1622] ≈ 6.027872269041313f-5
+    @test q[43] ≈ 5.3952531643382144f0
+    @test q[501] ≈ 1.6023076297110879f0
+    h = model.lateral.river.h_av
+    @test h[1622] ≈ 0.001812085885794477f0
+    @test h[43] ≈ 0.30122213937420667f0
+    @test h[501] ≈ 0.03172037092237322f0
+    qx = model.lateral.land.qx
+    qy = model.lateral.land.qy
+    @test qx[[26, 35, 631]] ≈
+          [0.13689085916734353f0, 0.02571727530678835f0, 0.06163019045555399f0]
+    @test qy[[26, 35, 631]] ≈
+          [0.189187686873958f0, 0.017683557812671172f0, 0.09182928055862745f0]
+    h = model.lateral.land.h
+    @test h[[26, 35, 631]] ≈
+          [0.07359964438114004f0, 0.0070632177001078555f0, 0.0009883334841610835f0]
 end
 Wflow.close_files(model, delete_output = false)

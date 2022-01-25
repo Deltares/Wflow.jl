@@ -12,9 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   width `dw` as model type `sbm`.
 
 ### Added
-- Option to use the local inertial model for river flow as part of the [SBM + Kinematic
-  wave](@ref). See also [SBM + Local inertial river](@ref).
 - Additional log messages and log file as output, see also [Logging](@ref).
+- Option to use the local inertial model for river flow as part of the `sbm` model type. See
+  also [SBM + Local inertial river](@ref).
+- Option to use the local inertial model for 1D river flow combined with 2D overland flow as
+  part of the `sbm` model type. See also [SBM + Local inertial river (1D) and land
+  (2D)](@ref).
 
 ### Fixed
 - Model type `hbv`: the surface width for overland flow was not corrected with the river
@@ -91,6 +94,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   It is added/removed to `sf.qlat[v]` before computing the new `q[v]` with the kinematic
   wave equation.
 - Fixed values for forcing parameters are supported, see also [Fixed forcing values](@ref).
+
+### Added
+- Option to use the local inertial model for river flow as part of the [SBM + Kinematic
+  wave](@ref). See also [SBM + Local inertial river](@ref).
 
 ### Fixed
 - River inflow for reservoirs and lakes in the kinematic wave. This inflow was based on

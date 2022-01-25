@@ -218,7 +218,7 @@ end
     @test Wflow.param(model, "lateral.subsurface.ssf")[10606] ≈ 39.972334552895816
     @test Wflow.param(model, "lateral.river.q")[149] ≈ 53.48673634956338
     @test Wflow.param(model, "lateral.river.h")[149] ≈ 1.167635369628945
-    @test Wflow.param(model, "lateral.river.volume")[149] ≈ 27745.06872132241
+    @test Wflow.param(model, "lateral.river.volume")[149] ≈ 63854.60119358985
     @test Wflow.param(model, "lateral.land.q")[2075] ≈ 3.285909284322251
     @test Wflow.param(model, "lateral.land.h")[2075] ≈ 0.052076262033771775
     @test Wflow.param(model, "lateral.land.volume")[2075] ≈ 29920.754983235012

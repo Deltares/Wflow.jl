@@ -57,9 +57,14 @@ parameters. Input parameters for this component of the SBM + Kinematic wave mode
 derived from the SBM vertical concept and the land slope. One external parameter `khfrac` is
 used to calculate the horizontal hydraulic conductivity at the soil surface `kh₀`.
 
-There is also the option to use the local inertial model for river flow as part of the [SBM + Kinematic wave](@ref)
-model. Input parameters for this approach are described in [River flow (local inertial)](@ref
-local-inertial_river_params) of the Model parameters section.
+There is also the option to use the local inertial model as part of the `sbm` model type:
++ for river flow, see also  [SBM + Local inertial river](@ref) model. 
++ for 1D river flow and 2D overland flow combined, see also [SBM + Local inertial river (1D)
+  and land (2D)](@ref) model.
+
+Input parameters for this approach are described in [River flow (local inertial)](@ref
+local-inertial_river_params) and [Overland flow (local
+inertial)](@ref local-inertial_land_params) of the Model parameters section.
 
 The HBV model consists besides the river and overland flow components of the [HBV vertical
 concept](@ref). Input parameters for this component are described in the [HBV](@ref) section
