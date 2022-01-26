@@ -261,7 +261,7 @@ function initialize_sbm_model(config::Config)
     else
         error(
             """An unknown "river_routing" method is specified in the TOML file ($river_routing). 
-            This should be "kinematic_wave" or "local-inertial".
+            This should be "kinematic-wave" or "local-inertial".
             """,
         )
     end
