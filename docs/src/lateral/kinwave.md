@@ -35,15 +35,15 @@ kw_land_tstep = 3600
 ```
 
 The ``\alpha`` parameter of the kinematic wave is fixed. To estimate the wetted perimeter
-for the calculation of the ``\alpha`` parameter a bankfull height map (default value is 1.0
-m) for the river can be provided as follows: 
+for the calculation of the ``\alpha`` parameter a bankfull river depth map (default value 
+is 1.0 m) for the river can be provided as follows: 
 
 ```toml
 [input.lateral.river]
-h_bankfull = "river_bankfullheight"
+bankfull_depth = "wflow_riverdepth"
 ```
 
-The wetted perimeter of the river is based on half bankfull height. For the land part the
+The wetted perimeter of the river is based on half bankfull river depth. For the land part the
 wetted perimeter is based on the flow width.
 
 ## Inflow
@@ -119,7 +119,7 @@ The kinematic wave approach for channel, overland and lateral subsurface flow, a
 the topography controls water flow mostly. This assumption holds for steep terrain, but in
 less steep terrain the hydraulic gradient is likely not equal to the surface slope
 (subsurface flow), or pressure differences and inertial momentum cannot be neglected
-(channel and overland flow). In addition, while the kinemative wave equations are solved
+(channel and overland flow). In addition, while the kinematic wave equations are solved
 with a nonlinear scheme using Newton's method (Chow, 1988), other model equations are solved
 through a simple explicit scheme. In summary the following limitations apply:
 
@@ -197,7 +197,7 @@ Approach from Maniak (Burek et al., 2013). Storage curves in wflow can either:
 + Come from the interpolation of field data linking volume and lake height,
 + Be computed from the simple relationship ``S = A H``.
 
-Rating curves in wlow can either:
+Rating curves in wflow can either:
 
 + Come from the interpolation of field data linking lake outflow and water height,
 + Be computed from a rating curve of the form ``Q_{out} = \alpha {(H-H_{0})}^{\beta}``,

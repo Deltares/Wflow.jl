@@ -6,13 +6,13 @@ be set through static input data (netCDF), and can be listed in the TOML configu
 under `[input.lateral.river]` and `[input.lateral.land]`, for river and overland flow
 respectively, to map the internal model parameter to the external netCDF variable. For river
 flow three additionally parameters can be set, `dl` (river length), `width` (river width)
-and bankfull water height `h_bankfull` as follows, through the TOML file:
+and bankfull river depth `bankfull_depth` as follows, through the TOML file:
 
 ```toml
 [input.lateral.river]
 length = "wflow_riverlength"
 width = "wflow_riverwidth"
-h_bankfull = "river_bankfullheight"
+bankfull_depth = "wflow_riverdepth"
 ```
 [^1]: default value for Manning's roughness `n`, river = 0.036; land = 0.072
 [^2]: only applicable for river domain
@@ -33,7 +33,7 @@ h_bankfull = "river_bankfullheight"
 | `volume`        | kinematic wave volume |m``^3``| - |
 | `h`             | water level | m | - |
 | `h_av`             | average water level | m | - |
-| `h_bankfull`     | bankfull water level  | m | 1.0 | 
+| `bankfull_depth`   | bankfull river depth  | m | 1.0 | 
 | `Δt`             | model time step | s | - |
 | `its`             | number of fixed iterations | - | - |
 | `alpha_pow`             | used in the power part of ``\alpha`` | - | - |
