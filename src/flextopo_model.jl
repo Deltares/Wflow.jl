@@ -45,13 +45,13 @@ function initialize_flextopo_model(config::Config)
         "common_slow_storage" => common_slow_storage,
     )
 
-    selectSw = get(config.model, "selectSw", ["common_snow_hbv"])
-    selectSi = get(config.model, "selectSi", ["interception_overflow"])
-    selectSh = get(config.model, "selectSh", ["hortonponding_no_storage"])
-    selectShf = get(config.model, "selectShf", ["hortonrunoff_no_storage"])
-    selectSr = get(config.model, "selectSr", ["rootzone_storage"])
-    selectSf = get(config.model, "selectSf", ["fast_storage"])
-    selectSs = get(config.model, "selectSs", ["common_slow_storage"])
+    select_snow = get(config.model, "select_snow", ["common_snow_hbv"])
+    select_interception = get(config.model, "select_interception", ["interception_overflow"])
+    select_hortonponding = get(config.model, "select_hortonponding", ["hortonponding_no_storage"])
+    select_hortonrunoff = get(config.model, "select_hortonrunoff", ["hortonrunoff_no_storage"])
+    select_rootzone = get(config.model, "select_rootzone", ["rootzone_storage"])
+    select_fast = get(config.model, "select_fast", ["fast_storage"])
+    select_slow = get(config.model, "select_slow", ["common_slow_storage"])
 
     nc = NCDataset(static_path)
 
@@ -346,48 +346,42 @@ function initialize_flextopo_model(config::Config)
     xl, yl = cell_lengths(y, cellength, sizeinmetres)
 
 
-    # dummy_ = zeros(Float, nclass, n)
-    # dummy = svectorscopy(dummy_, Val{nclass}())
-
-    # Sw = zeros(Float, nclass, n)
-    # Sww = zeros(Float, nclass, n)
-    Si = zeros(Float, nclass, n)
-    Sh = zeros(Float, nclass, n)
-    Shf = zeros(Float, nclass, n)
-    Sr = zeros(Float, nclass, n)
-    Sf = zeros(Float, nclass, n)
-    Ss = zeros(Float, nclass, n)
-    Sr_over_srmax = zeros(Float, nclass, n)
+    # snow = zeros(Float, nclass, n)
+    # snowwater = zeros(Float, nclass, n)
+    interceptionstorage = zeros(Float, nclass, n)
+    hortonpondingstorage = zeros(Float, nclass, n)
+    hortonrunoffstorage = zeros(Float, nclass, n)
+    rootzonestorage = zeros(Float, nclass, n)
+    faststorage = zeros(Float, nclass, n)
+    slowstorage = zeros(Float, nclass, n)
+    srootzone_over_srmax = zeros(Float, nclass, n)
 
     states_ = fill(mv, nclass, n)
 
     potsoilevap = fill(mv, nclass, n)
-    Ei = fill(mv, nclass, n)
-    Pe = fill(mv, nclass, n)
-    Eh = fill(mv, nclass, n)
-    Er = fill(mv, nclass, n)
-    Qh = fill(mv, nclass, n)
-    Qhr = fill(mv, nclass, n)
+    intevap = fill(mv, nclass, n)
+    precipeffective = fill(mv, nclass, n)
+    hortonevap = fill(mv, nclass, n)
+    rootevap = fill(mv, nclass, n)
+    qhortonpond = fill(mv, nclass, n)
+    qhortonrootzone = fill(mv, nclass, n)
     facc = zeros(Float, nclass, n)
-    Qhf = fill(mv, nclass, n)
-    Qr = fill(mv, nclass, n)
-    Qrf = fill(mv, nclass, n)
-    # Qrs = fill(mv, nclass, n)
-    Qf = fill(mv, nclass, n)
-    Ea = fill(mv, nclass, n)
-    # directrunoff = fill(mv, nclass, n)
-    Qperc = fill(mv, nclass, n)
-    Qcap = fill(mv, nclass, n)
+    qhortonrun = fill(mv, nclass, n)
+    qrootzone = fill(mv, nclass, n)
+    qrootzonefast = fill(mv, nclass, n)
+    # qrootzoneslow = fill(mv, nclass, n)
+    qfast = fill(mv, nclass, n)
+    actevap = fill(mv, nclass, n)
+    qpercolation = fill(mv, nclass, n)
+    qcapillary = fill(mv, nclass, n)
 
-    wbSi = fill(mv, nclass, n)
-    wbSh = fill(mv, nclass, n)
-    wbShf = fill(mv, nclass, n)
-    wbSr = fill(mv, nclass, n)
-    wbSf = fill(mv, nclass, n)
-
+    wb_interception = fill(mv, nclass, n)
+    wb_hortonponding = fill(mv, nclass, n)
+    wb_hortonrunoff = fill(mv, nclass, n)
+    wb_rootzone = fill(mv, nclass, n)
+    wb_fast = fill(mv, nclass, n)
 
 
-    # store = FLEXTOPO{Float, nclass}(
     # store = InterceptionStorage{Float}(
     flextopo = FLEXTOPO{Float,nclass}(
         Δt = Float(tosecond(Δt)),
@@ -396,13 +390,13 @@ function initialize_flextopo_model(config::Config)
         dic_function = dic_function,
         kclass = kclass,
         classes = classes,
-        selectSw = selectSw,
-        selectSi = selectSi,
-        selectSh = selectSh,
-        selectShf = selectShf,
-        selectSr = selectSr,
-        selectSf = selectSf,
-        selectSs = selectSs,
+        select_snow = select_snow,
+        select_interception = select_interception,
+        select_hortonponding = select_hortonponding,
+        select_hortonrunoff = select_hortonrunoff,
+        select_rootzone = select_rootzone,
+        select_fast = select_fast,
+        select_slow = select_slow,
         hrufrac = svectorscopy(hrufrac, Val{nclass}()),
         pcorr = pcorr,
         ecorr = ecorr,
@@ -422,7 +416,6 @@ function initialize_flextopo_model(config::Config)
         rfcf = rfcf,
         sfcf = sfcf,
         #interception 
-        # imax = imax,
         imax = svectorscopy(imax, Val{nclass}()),
         #horton
         shmax = svectorscopy(shmax, Val{nclass}()),
@@ -446,87 +439,79 @@ function initialize_flextopo_model(config::Config)
         #slow
         ks = ks,
 
-        # kquickflow = set_kquickflow ? kquickflow :
-        #              pow.(khq, 1.0 .+ alphanl) .* pow.(hq, -alphanl),
-
         # # default (cold) states:
-        Sw = zeros(Float, n),
-        Sww = zeros(Float, n),
-        # Sw = zero(dummy),
-        # Sw = svectorscopy(Sw, Val{nclass}()), 
-        # Sww = svectorscopy(Sww, Val{nclass}()), 
-        # Si = zero(dummy),
-        Si = svectorscopy(Si, Val{nclass}()),
-        Sh = svectorscopy(Sh, Val{nclass}()),
-        Shf = svectorscopy(Shf, Val{nclass}()),
-        # Sr = copy(srmax),
-        # Sf = 0.2 .* srmax,
-        Sr = svectorscopy(srmax, Val{nclass}()),
-        Sf = 0.2 .* svectorscopy(srmax, Val{nclass}()),
-        # Sr = svectorscopy(Sr, Val{nclass}()), 
-        # Sf = svectorscopy(Sf, Val{nclass}()), 
-        Sr_over_srmax = svectorscopy(Sr_over_srmax, Val{nclass}()),
-        Ss = 1.0 ./ (3.0 .* ks),
+        snow = zeros(Float, n),
+        snowwater = zeros(Float, n),
+        # snow = svectorscopy(snow, Val{nclass}()), 
+        # snowwater = svectorscopy(snowwater, Val{nclass}()), 
+        interceptionstorage = svectorscopy(interceptionstorage, Val{nclass}()),
+        hortonpondingstorage = svectorscopy(hortonpondingstorage, Val{nclass}()),
+        hortonrunoffstorage = svectorscopy(hortonrunoffstorage, Val{nclass}()),
+        # rootzonestorage = copy(srmax),
+        # faststorage = 0.2 .* srmax,
+        rootzonestorage = svectorscopy(srmax, Val{nclass}()),
+        faststorage = 0.2 .* svectorscopy(srmax, Val{nclass}()),
+        # rootzonestorage = svectorscopy(rootzonestorage, Val{nclass}()), 
+        # faststorage = svectorscopy(faststorage, Val{nclass}()), 
+        srootzone_over_srmax = svectorscopy(srootzone_over_srmax, Val{nclass}()),
+        slowstorage = 1.0 ./ (3.0 .* ks),
         #states previous time step
         states_m = fill(mv, n),
         states_ = svectorscopy(states_, Val{nclass}()),
         #states averaged over all classes
         # Sw_m = zeros(Float, n),
         # Sww_m = zeros(Float, n),
-        Si_m = zeros(Float, n),
-        Sh_m = zeros(Float, n),
-        Shf_m = zeros(Float, n),
-        Sr_m = zeros(Float, n),
-        Sf_m = zeros(Float, n),
-        Sr_over_srmax_m = zeros(Float, n),
+        interceptionstorage_m = zeros(Float, n),
+        hortonpondingstorage_m = zeros(Float, n),
+        hortonrunoffstorage_m = zeros(Float, n),
+        srootzone_m = zeros(Float, n),
+        faststorage_m = zeros(Float, n),
+        srootzone_over_srmax_m = zeros(Float, n),
 
         # variables:
         precipitation = fill(mv, n),
         temperature = fill(mv, n),
         potential_evaporation = fill(mv, n),
+        epotcorr = fill(mv, n),
+        precipcorr = fill(mv, n),
         rainfallplusmelt = fill(mv, n),
         snowfall = fill(mv, n),
         snowmelt = fill(mv, n),
         potsoilevap = svectorscopy(potsoilevap, Val{nclass}()),
-        # Pe = fill(mv, n),
-        Pe = svectorscopy(Pe, Val{nclass}()),
-        # Pe = zero(dummy),
-        # Ei = fill(mv, n),
-        Ei = svectorscopy(Ei, Val{nclass}()),
-        # Ei = zero(dummy),
-        Eh = svectorscopy(Eh, Val{nclass}()),
-        Er = svectorscopy(Er, Val{nclass}()),
-        Qh = svectorscopy(Qh, Val{nclass}()),
-        Qhr = svectorscopy(Qhr, Val{nclass}()),
+        precipeffective = svectorscopy(precipeffective, Val{nclass}()),
+        intevap = svectorscopy(intevap, Val{nclass}()),
+        hortonevap = svectorscopy(hortonevap, Val{nclass}()),
+        rootevap = svectorscopy(rootevap, Val{nclass}()),
+        qhortonpond = svectorscopy(qhortonpond, Val{nclass}()),
+        qhortonrootzone = svectorscopy(qhortonrootzone, Val{nclass}()),
         facc = svectorscopy(facc, Val{nclass}()),
-        Qhf = svectorscopy(Qhf, Val{nclass}()),
-        Qr = svectorscopy(Qr, Val{nclass}()),
-        Qrf = svectorscopy(Qrf, Val{nclass}()),
-        # Qrs = svectorscopy(Qrs, Val{nclass}()), 
-        Qrs_m = fill(mv, n),
-        Qf = svectorscopy(Qf, Val{nclass}()),
-        Ea = svectorscopy(Ea, Val{nclass}()),
-        # directrunoff = svectorscopy(potsoilevap, Val{nclass}()), 
-        Qperc = svectorscopy(Qperc, Val{nclass}()),
-        Qcap = svectorscopy(Qcap, Val{nclass}()),
-        Qperc_m = fill(mv, n),
-        Qcap_m = fill(mv, n),
+        qhortonrun = svectorscopy(qhortonrun, Val{nclass}()),
+        qrootzone = svectorscopy(qrootzone, Val{nclass}()),
+        qrootzonefast = svectorscopy(qrootzonefast, Val{nclass}()),
+        # qrootzoneslow = svectorscopy(qrootzoneslow, Val{nclass}()), 
+        qrootzoneslow_m = fill(mv, n),
+        qfast = svectorscopy(qfast, Val{nclass}()),
+        actevap = svectorscopy(actevap, Val{nclass}()),
+        qpercolation = svectorscopy(qpercolation, Val{nclass}()),
+        qcapillary = svectorscopy(qcapillary, Val{nclass}()),
+        qpercolation_m = fill(mv, n),
+        qcapillary_m = fill(mv, n),
         # combined for the classes
-        Ea_m = fill(mv, n),
-        Ei_m = fill(mv, n),
-        Eh_m = fill(mv, n),
-        Er_m = fill(mv, n),
-        Qs = fill(mv, n),
-        Qftotal = fill(mv, n),
+        actevap_m = fill(mv, n),
+        intevap_m = fill(mv, n),
+        hortonevap_m = fill(mv, n),
+        rootevap_m = fill(mv, n),
+        qslow = fill(mv, n),
+        qfast_tot = fill(mv, n),
         runoff = fill(mv, n),
-        wbSw = fill(mv, n),
-        wbSi = svectorscopy(wbSi, Val{nclass}()),
-        wbSh = svectorscopy(wbSh, Val{nclass}()),
-        wbShf = svectorscopy(wbShf, Val{nclass}()),
-        wbSr = svectorscopy(wbSr, Val{nclass}()),
-        wbSf = svectorscopy(wbSf, Val{nclass}()),
-        wbSs = fill(mv, n),
-        wbtot = fill(mv, n),
+        wb_snow = fill(mv, n),
+        wb_interception = svectorscopy(wb_interception, Val{nclass}()),
+        wb_hortonponding = svectorscopy(wb_hortonponding, Val{nclass}()),
+        wb_hortonrunoff = svectorscopy(wb_hortonrunoff, Val{nclass}()),
+        wb_rootzone = svectorscopy(wb_rootzone, Val{nclass}()),
+        wb_fast = svectorscopy(wb_fast, Val{nclass}()),
+        wb_slow = fill(mv, n),
+        wb_tot = fill(mv, n),
     )
 
     modelsize_2d = size(subcatch_2d)
@@ -753,11 +738,11 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:FlextopoModel}
     inds_riv = network.index_river
 
     #COMMON SNOW
-    vertical.dic_function[vertical.selectSw[1]](vertical, config)
+    vertical.dic_function[vertical.select_snow[1]](vertical, config)
 
     #lateral snow transport
     if get(config.model, "masswasting", false)::Bool
-        lateral_snow_transport!(vertical.Sw, vertical.Sww, lateral.land.sl, network.land)
+        lateral_snow_transport!(vertical.snow, vertical.snowwater, lateral.land.sl, network.land)
     end
 
     if get(config.model, "glacier", false)::Bool
@@ -768,22 +753,22 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:FlextopoModel}
         vertical.kclass[1] = k
 
         #INTERCEPTION
-        vertical.dic_function[vertical.selectSi[k]](vertical, config)
+        vertical.dic_function[vertical.select_interception[k]](vertical, config)
 
         #HORTON
-        vertical.dic_function[vertical.selectSh[k]](vertical, config)
-        vertical.dic_function[vertical.selectShf[k]](vertical, config)
+        vertical.dic_function[vertical.select_hortonponding[k]](vertical, config)
+        vertical.dic_function[vertical.select_hortonrunoff[k]](vertical, config)
 
         #ROOT-ZONE
-        vertical.dic_function[vertical.selectSr[k]](vertical, config)
+        vertical.dic_function[vertical.select_rootzone[k]](vertical, config)
 
         #FAST
-        vertical.dic_function[vertical.selectSf[k]](vertical, config)
+        vertical.dic_function[vertical.select_fast[k]](vertical, config)
 
     end
 
     #COMMON SLOW
-    vertical.dic_function[vertical.selectSs[1]](vertical, config)
+    vertical.dic_function[vertical.select_slow[1]](vertical, config)
 
     # WAT BAL 
     watbal(vertical, config)

@@ -10,13 +10,13 @@
     #current class 
     kclass::Vector{Int64}
     classes::Vector{String}
-    selectSw::Vector{String}
-    selectSi::Vector{String}
-    selectSh::Vector{String}
-    selectShf::Vector{String}
-    selectSr::Vector{String}
-    selectSf::Vector{String}
-    selectSs::Vector{String}
+    select_snow::Vector{String}
+    select_interception::Vector{String}
+    select_hortonponding::Vector{String}
+    select_hortonrunoff::Vector{String}
+    select_rootzone::Vector{String}
+    select_fast::Vector{String}
+    select_slow::Vector{String}
 
     #fraction of each class
     hrufrac::Vector{SVector{N,T}} | "-"
@@ -92,7 +92,7 @@
     alfa::Vector{SVector{N,T}} | "-"
     #recession coefficient of fast storage [Δt-1]
     kf::Vector{SVector{N,T}} | "Δt-1"
-    # fraction of Qr to Ss (1-ds to Sf)
+    # fraction of qrootzone to slowstorage (1-ds to faststorage)
     ds::Vector{SVector{N,T}} | "-"
     # SLOW
     #recession coefficient of slow storage [Δt-1]
@@ -101,23 +101,23 @@
     ## STATES
     ##SNOW
     # Snow water equivalent [mm]
-    Sw::Vector{T} | "mm"
+    snow::Vector{T} | "mm"
     # Liquid water content in the snow pack [mm]
-    Sww::Vector{T} | "mm"
+    snowwater::Vector{T} | "mm"
     # Interception storage [mm]
-    Si::Vector{SVector{N,T}} | "mm"
+    interceptionstorage::Vector{SVector{N,T}} | "mm"
     # Storage in the hortonian ponding reservoir [mm]
-    Sh::Vector{SVector{N,T}} | "mm"
+    hortonpondingstorage::Vector{SVector{N,T}} | "mm"
     # Storage in the hortonian runoff generation [mm]
-    Shf::Vector{SVector{N,T}} | "mm"
+    hortonrunoffstorage::Vector{SVector{N,T}} | "mm"
     # Storage in the root-zone [mm]
-    Sr::Vector{SVector{N,T}} | "mm"
+    rootzonestorage::Vector{SVector{N,T}} | "mm"
     # Storage in the root-zone relative to maximum root-zone storage capacity [mm]
-    Sr_over_srmax::Vector{SVector{N,T}} | "mm"
+    srootzone_over_srmax::Vector{SVector{N,T}} | "mm"
     # Storage in the fast store [mm]
-    Sf::Vector{SVector{N,T}} | "mm"
-    # Storage in the slow reservoir (for Qcap calc) [mm]
-    Ss::Vector{T} | "mm"
+    faststorage::Vector{SVector{N,T}} | "mm"
+    # Storage in the slow reservoir (for qcapillary calc) [mm]
+    slowstorage::Vector{T} | "mm"
     #states previous time step to calc water balance [mm]
     states_::Vector{SVector{N,T}} | "mm"
     #states previous time step to calc water balance combined based on perc class. [mm]
@@ -125,12 +125,12 @@
     #states averaged over classes
     # Sw_m::Vector{T} | "mm"  
     # Sww_m::Vector{T} | "mm"  
-    Si_m::Vector{T} | "mm"
-    Sh_m::Vector{T} | "mm"
-    Shf_m::Vector{T} | "mm"
-    Sr_m::Vector{T} | "mm"
-    Sf_m::Vector{T} | "mm"
-    Sr_over_srmax_m::Vector{T} | "mm"
+    interceptionstorage_m::Vector{T} | "mm"
+    hortonpondingstorage_m::Vector{T} | "mm"
+    hortonrunoffstorage_m::Vector{T} | "mm"
+    srootzone_m::Vector{T} | "mm"
+    faststorage_m::Vector{T} | "mm"
+    srootzone_over_srmax_m::Vector{T} | "mm"
 
     ## FLUXES
     #SNOW
@@ -140,6 +140,10 @@
     temperature::Vector{T} | "ᵒC"
     # Potential evapotranspiration [mm Δt⁻¹]
     potential_evaporation::Vector{T} | "mm Δt-1"
+    # Potential evapotranspiration corrected [mm Δt⁻¹]
+    epotcorr::Vector{T} | "mm Δt-1"
+    # Precipitation corrected [mm Δt⁻¹]
+    precipcorr::Vector{T} | "mm Δt-1"
     # Snow melt + precipitation as rainfall [mm]
     rainfallplusmelt::Vector{T} | "mm Δt-1"
     # Snowfall [mm]
@@ -150,77 +154,77 @@
     # Potential soil evaporation [mm Δt⁻¹]
     potsoilevap::Vector{SVector{N,T}} | "mm Δt-1"
     # Evaporation from interception storage [mm Δt⁻¹]
-    Ei::Vector{SVector{N,T}} | "mm Δt-1"
+    intevap::Vector{SVector{N,T}} | "mm Δt-1"
     #effective precipitation [mm Δt⁻¹]
-    Pe::Vector{SVector{N,T}} | "mm Δt-1"
+    precipeffective::Vector{SVector{N,T}} | "mm Δt-1"
     # Evaporation from interception sum classes [mm Δt⁻¹]
-    Ei_m::Vector{T} | "mm Δt-1"
+    intevap_m::Vector{T} | "mm Δt-1"
     #HORTONPONDING
     # Evaporation from the hortonion ponding storage [-]
-    Eh::Vector{SVector{N,T}} | "mm Δt-1"
+    hortonevap::Vector{SVector{N,T}} | "mm Δt-1"
     # Flux from the hortonian ponding storage to the hortonian runoff storage [mm Δt⁻¹]
-    Qh::Vector{SVector{N,T}} | "mm Δt-1"
+    qhortonpond::Vector{SVector{N,T}} | "mm Δt-1"
     # Flux from the hortonian ponding storage to the root zone storage [mm Δt⁻¹]
-    Qhr::Vector{SVector{N,T}} | "mm Δt-1"
+    qhortonrootzone::Vector{SVector{N,T}} | "mm Δt-1"
     # modeled accumulated frost [ᵒC Δt]
     facc::Vector{SVector{N,T}} | "ᵒC Δt"
     # Evaporation from the hortonian sum classes [mm Δt⁻¹]
-    Eh_m::Vector{T} | "mm Δt-1"
+    hortonevap_m::Vector{T} | "mm Δt-1"
     #HORTONRUNOFF
     # Flux from the hortonian runoff storage [mm Δt⁻¹]
-    Qhf::Vector{SVector{N,T}} | "mm Δt-1"
+    qhortonrun::Vector{SVector{N,T}} | "mm Δt-1"
     #ROOTZONE
     # Evaporation from the root-zone storage [mm Δt⁻¹]
-    Er::Vector{SVector{N,T}} | "mm Δt-1"
+    rootevap::Vector{SVector{N,T}} | "mm Δt-1"
     # Flux from the root-zone storage [mm Δt⁻¹]
-    Qr::Vector{SVector{N,T}} | "mm Δt-1"
+    qrootzone::Vector{SVector{N,T}} | "mm Δt-1"
     # Pref. recharge to fast storage [mm Δt⁻¹]
-    Qrf::Vector{SVector{N,T}} | "mm Δt-1"
+    qrootzonefast::Vector{SVector{N,T}} | "mm Δt-1"
     # Pref. recharge to slow storage sum classes [mm Δt⁻¹]
-    Qrs_m::Vector{T} | "mm Δt-1"
+    qrootzoneslow_m::Vector{T} | "mm Δt-1"
     # Capillary flux from the slow to the root-zone storage [mm Δt⁻¹]
-    Qcap::Vector{SVector{N,T}} | "mm Δt-1"
+    qcapillary::Vector{SVector{N,T}} | "mm Δt-1"
     # Capillary flux from the slow to the root-zone storage sum classes [mm Δt⁻¹]
-    Qcap_m::Vector{T} | "mm Δt-1"
+    qcapillary_m::Vector{T} | "mm Δt-1"
     # Percolation flux from the root-zone to the slow storage [mm Δt⁻¹]
-    Qperc::Vector{SVector{N,T}} | "mm Δt-1"
+    qpercolation::Vector{SVector{N,T}} | "mm Δt-1"
     # Percolation flux from the root-zone to the slow storage sum classes [mm Δt⁻¹]
-    Qperc_m::Vector{T} | "mm Δt-1"
+    qpercolation_m::Vector{T} | "mm Δt-1"
     # Evaporation from the root-zone storage, interception and hortonian [mm Δt⁻¹]
-    Ea::Vector{SVector{N,T}} | "mm Δt-1"
+    actevap::Vector{SVector{N,T}} | "mm Δt-1"
     # Evaporation from the root-zone storage, interception and hortonian sum classes [mm Δt⁻¹]
-    Ea_m::Vector{T} | "mm Δt-1"
+    actevap_m::Vector{T} | "mm Δt-1"
     # Evaporation from the root-zone storage sum classes [mm Δt⁻¹]
-    Er_m::Vector{T} | "mm Δt-1"
+    rootevap_m::Vector{T} | "mm Δt-1"
     #FAST 
     # runoff from fast reservoir [mm Δt⁻¹]
-    Qf::Vector{SVector{N,T}} | "mm Δt-1"
+    qfast::Vector{SVector{N,T}} | "mm Δt-1"
     #SLOW
     # runoff from slow reservoir [mm Δt⁻¹]
-    Qs::Vector{T} | "mm Δt-1"
+    qslow::Vector{T} | "mm Δt-1"
     #Total [mm Δt⁻¹]
     runoff::Vector{T} | "mm Δt-1"
     # fast runoff sum classes [mm Δt⁻¹]
-    Qftotal = Vector{T} | "mm Δt-1"
+    qfast_tot = Vector{T} | "mm Δt-1"
 
 
     ## WATERBALANCES
     #water balance snow store
-    wbSw::Vector{T} | "mm Δt-1"
+    wb_snow::Vector{T} | "mm Δt-1"
     #water balance interception storage [mm Δt⁻¹]
-    wbSi::Vector{SVector{N,T}} | "mm Δt-1"
+    wb_interception::Vector{SVector{N,T}} | "mm Δt-1"
     #water balance hortonian ponding storage [mm Δt⁻¹]
-    wbSh::Vector{SVector{N,T}} | "mm Δt-1"
+    wb_hortonponding::Vector{SVector{N,T}} | "mm Δt-1"
     #water balance hortonian runoff storage [mm Δt⁻¹]
-    wbShf::Vector{SVector{N,T}} | "mm Δt-1"
+    wb_hortonrunoff::Vector{SVector{N,T}} | "mm Δt-1"
     #water balance root-zone storage [mm Δt⁻¹]
-    wbSr::Vector{SVector{N,T}} | "mm Δt-1"
+    wb_rootzone::Vector{SVector{N,T}} | "mm Δt-1"
     #water balance fast storage [mm Δt⁻¹]
-    wbSf::Vector{SVector{N,T}} | "mm Δt-1"
+    wb_fast::Vector{SVector{N,T}} | "mm Δt-1"
     #water balance slow storage [mm Δt⁻¹]
-    wbSs::Vector{T} | "mm Δt-1"
+    wb_slow::Vector{T} | "mm Δt-1"
     #total water balance [mm Δt⁻¹]
-    wbtot::Vector{T} | "mm Δt-1"
+    wb_tot::Vector{T} | "mm Δt-1"
 
 
     # function FLEXTOPO{T,N}(args...) where {T,N}
@@ -229,18 +233,18 @@
     # end
 end
 
-statevars(::FLEXTOPO) = (:Sw, :Sww, :Si, :Sh, :Shf, :Sr, :Sf, :Ss)
+statevars(::FLEXTOPO) = (:snow, :snowwater, :interceptionstorage, :hortonpondingstorage, :hortonrunoffstorage, :rootzonestorage, :faststorage, :slowstorage)
 
 function common_snow_hbv(flextopo::FLEXTOPO, config)
     for i = 1:flextopo.n
         # precip correction 
-        precipitation = flextopo.precipitation[i] * flextopo.pcorr[i]
+        precipcorr = flextopo.precipitation[i] * flextopo.pcorr[i]
 
         #hbv snow 
-        Sw, Sww, snowmelt, rainfallplusmelt, snowfall = snowpack_hbv(
-            flextopo.Sw[i],
-            flextopo.Sww[i],
-            precipitation,
+        snow, snowwater, snowmelt, rainfallplusmelt, snowfall = snowpack_hbv(
+            flextopo.snow[i],
+            flextopo.snowwater[i],
+            precipcorr,
             flextopo.temperature[i],
             flextopo.tti[i],
             flextopo.tt[i],
@@ -251,37 +255,39 @@ function common_snow_hbv(flextopo::FLEXTOPO, config)
 
         #update stores
         # states_ is sum of states of previous time steps to compute WB at the end (per class); states_m is for combined stores
-        flextopo.states_m[i] = flextopo.Sw[i] + flextopo.Sww[i]
+        flextopo.states_m[i] = flextopo.snow[i] + flextopo.snowwater[i]
         flextopo.snowfall[i] = snowfall
         flextopo.snowmelt[i] = snowmelt
-        flextopo.Sw[i] = Sw
-        flextopo.Sww[i] = Sww
+        flextopo.snow[i] = snow
+        flextopo.snowwater[i] = snowwater
         flextopo.rainfallplusmelt[i] = rainfallplusmelt
-        #TODO add wbSw wbSww
+        flextopo.precipcorr[i] = precipcorr
+        #TODO add wb_snow wbSww
     end
 end
 
 function common_snow_no_storage(flextopo::FLEXTOPO, config)
     for i = 1:flextopo.n
-        Sw = 0.0
-        Sww = 0.0
+        snow = 0.0
+        snowwater = 0.0
         snowfall = 0.0
         snowmelt = 0.0
         # precip correction 
-        precipitation = flextopo.precipitation[i] * flextopo.pcorr[i]
-        rainfallplusmelt = precipitation
+        precipcorr = flextopo.precipitation[i] * flextopo.pcorr[i]
+        rainfallplusmelt = precipcorr
 
-        wbSw = precipitation - rainfallplusmelt - Sw + flextopo.Sw[i]
+        wb_snow = precipcorr - rainfallplusmelt - snow + flextopo.snow[i]
 
         #update stores 
         # states_ is sum of states of previous time steps to compute WB at the end (per class); states_m is for combined stores
-        flextopo.states_m[i] = flextopo.Sw[i] + flextopo.Sww[i]
+        flextopo.states_m[i] = flextopo.snow[i] + flextopo.snowwater[i]
         flextopo.snowfall[i] = snowfall
         flextopo.snowmelt[i] = snowmelt
-        flextopo.Sw[i] = Sw
-        flextopo.Sww[i] = Sww
+        flextopo.snow[i] = snow
+        flextopo.snowwater[i] = snowwater
         flextopo.rainfallplusmelt[i] = rainfallplusmelt
-        flextopo.wbSw[i] = wbSw
+        flextopo.wb_snow[i] = wb_snow
+        flextopo.precipcorr[i] = precipcorr
         #TODO add wbSww
     end
 end
@@ -294,11 +300,11 @@ function common_glaciers(flextopo::FLEXTOPO, config)
             # Estimate the fraction of snow turned into ice (HBV-light).
             # Estimate glacier melt.
 
-            flextopo.Sw[i], snow2glacier, flextopo.glacierstore[i], glaciermelt =
+            flextopo.snow[i], snow2glacier, flextopo.glacierstore[i], glaciermelt =
                 glacier_hbv(
                     flextopo.glacierfrac[i],
                     flextopo.glacierstore[i],
-                    flextopo.Sw[i],
+                    flextopo.snow[i],
                     flextopo.temperature[i],
                     flextopo.g_tt[i],
                     flextopo.g_cfmax[i],
@@ -318,28 +324,29 @@ end
 function interception_no_storage(flextopo::FLEXTOPO, config)
     k = flextopo.kclass[1]
     for i = 1:flextopo.n
-        Ei = 0.0
-        Pe = max(flextopo.rainfallplusmelt[i], 0)
-        Si = 0.0
+        intevap = 0.0
+        precipeffective = max(flextopo.rainfallplusmelt[i], 0)
+        interceptionstorage = 0.0
 
         # correction for potential evaporation 
-        Ep_corr = flextopo.ecorr[i] * flextopo.potential_evaporation[i]
-        restevap = max(0.0, Ep_corr - Ei)
+        epotcorr = flextopo.ecorr[i] * flextopo.potential_evaporation[i]
+        restevap = max(0.0, epotcorr - intevap)
 
         #wb interceptionstore 
-        wbSi = flextopo.rainfallplusmelt[i] - Ei - Pe - Si + flextopo.Si[i][k]
+        wb_interception = flextopo.rainfallplusmelt[i] - intevap - precipeffective - interceptionstorage + flextopo.interceptionstorage[i][k]
 
         #update stores
-        flextopo.states_[i] = setindex(flextopo.states_[i], flextopo.Si[i][k], k)
-        flextopo.Si[i] = setindex(flextopo.Si[i], Si, k)
-        flextopo.Ei[i] = setindex(flextopo.Ei[i], Ei, k)
-        flextopo.Pe[i] = setindex(flextopo.Pe[i], Pe, k)
+        flextopo.states_[i] = setindex(flextopo.states_[i], flextopo.interceptionstorage[i][k], k)
+        flextopo.interceptionstorage[i] = setindex(flextopo.interceptionstorage[i], interceptionstorage, k)
+        flextopo.intevap[i] = setindex(flextopo.intevap[i], intevap, k)
+        flextopo.precipeffective[i] = setindex(flextopo.precipeffective[i], precipeffective, k)
         flextopo.potsoilevap[i] = setindex(flextopo.potsoilevap[i], restevap, k)
-        flextopo.wbSi[i] = setindex(flextopo.wbSi[i], wbSi, k)
+        flextopo.epotcorr[i] = epotcorr
+        flextopo.wb_interception[i] = setindex(flextopo.wb_interception[i], wb_interception, k)
 
         #average storage over classes
-        flextopo.Si_m[i] = sum(flextopo.Si[i] .* flextopo.hrufrac[i])
-        flextopo.Ei_m[i] = sum(flextopo.Ei[i] .* flextopo.hrufrac[i])
+        flextopo.interceptionstorage_m[i] = sum(flextopo.interceptionstorage[i] .* flextopo.hrufrac[i])
+        flextopo.intevap_m[i] = sum(flextopo.intevap[i] .* flextopo.hrufrac[i])
 
     end
 end
@@ -347,35 +354,36 @@ end
 function interception_overflow(flextopo::FLEXTOPO, config)
     k = flextopo.kclass[1]
     for i = 1:flextopo.n
-        # rainfall added to interception store Si
+        # rainfall added to interception store interceptionstorage
         interception =
-            min(flextopo.rainfallplusmelt[i], flextopo.imax[i][k] - flextopo.Si[i][k])
+            min(flextopo.rainfallplusmelt[i], flextopo.imax[i][k] - flextopo.interceptionstorage[i][k])
         # current interception storage
-        Si = flextopo.Si[i][k] + interception
-        Pe = flextopo.rainfallplusmelt[i] - interception
+        interceptionstorage = flextopo.interceptionstorage[i][k] + interception
+        precipeffective = flextopo.rainfallplusmelt[i] - interception
 
         # correction for potential evaporation 
-        Ep_corr = flextopo.ecorr[i] * flextopo.potential_evaporation[i]
+        epotcorr = flextopo.ecorr[i] * flextopo.potential_evaporation[i]
 
         # evaporation from interception storage
-        Ei = min(Si, Ep_corr)
-        Si = Si - Ei
-        restevap = max(0.0, Ep_corr - Ei)
+        intevap = min(interceptionstorage, epotcorr)
+        interceptionstorage = interceptionstorage - intevap
+        restevap = max(0.0, epotcorr - intevap)
 
         #wb interceptionstore 
-        wbSi = flextopo.rainfallplusmelt[i] - Ei - Pe - Si + flextopo.Si[i][k]
+        wb_interception = flextopo.rainfallplusmelt[i] - intevap - precipeffective - interceptionstorage + flextopo.interceptionstorage[i][k]
 
         #update stores
-        flextopo.states_[i] = setindex(flextopo.states_[i], flextopo.Si[i][k], k)
-        flextopo.Si[i] = setindex(flextopo.Si[i], Si, k)
-        flextopo.Ei[i] = setindex(flextopo.Ei[i], Ei, k)
-        flextopo.Pe[i] = setindex(flextopo.Pe[i], Pe, k)
+        flextopo.states_[i] = setindex(flextopo.states_[i], flextopo.interceptionstorage[i][k], k)
+        flextopo.interceptionstorage[i] = setindex(flextopo.interceptionstorage[i], interceptionstorage, k)
+        flextopo.intevap[i] = setindex(flextopo.intevap[i], intevap, k)
+        flextopo.precipeffective[i] = setindex(flextopo.precipeffective[i], precipeffective, k)
         flextopo.potsoilevap[i] = setindex(flextopo.potsoilevap[i], restevap, k)
-        flextopo.wbSi[i] = setindex(flextopo.wbSi[i], wbSi, k)
+        flextopo.epotcorr[i] = epotcorr
+        flextopo.wb_interception[i] = setindex(flextopo.wb_interception[i], wb_interception, k)
 
         #average storage over classes
-        flextopo.Si_m[i] = sum(flextopo.Si[i] .* flextopo.hrufrac[i])
-        flextopo.Ei_m[i] = sum(flextopo.Ei[i] .* flextopo.hrufrac[i])
+        flextopo.interceptionstorage_m[i] = sum(flextopo.interceptionstorage[i] .* flextopo.hrufrac[i])
+        flextopo.intevap_m[i] = sum(flextopo.intevap[i] .* flextopo.hrufrac[i])
 
     end
 end
@@ -384,25 +392,25 @@ end
 function hortonponding_no_storage(flextopo::FLEXTOPO, config)
     k = flextopo.kclass[1]
     for i = 1:flextopo.n
-        Eh = 0.0
-        Qh = 0.0
-        Qhr = max(flextopo.Pe[i][k], 0)
-        Sh = 0.0
+        hortonevap = 0.0
+        qhortonpond = 0.0
+        qhortonrootzone = max(flextopo.precipeffective[i][k], 0)
+        hortonpondingstorage = 0.0
 
-        wbSh = flextopo.Pe[i][k] - Eh - Qh - Qhr - Sh + flextopo.Sh[i][k]
+        wb_hortonponding = flextopo.precipeffective[i][k] - hortonevap - qhortonpond - qhortonrootzone - hortonpondingstorage + flextopo.hortonpondingstorage[i][k]
 
         #update with setindex
         flextopo.states_[i] =
-            setindex(flextopo.states_[i], flextopo.states_[i][k] + flextopo.Sh[i][k], k)
-        flextopo.Qh[i] = setindex(flextopo.Qh[i], Qh, k)
-        flextopo.Qhr[i] = setindex(flextopo.Qhr[i], Qhr, k)
-        flextopo.Sh[i] = setindex(flextopo.Sh[i], Sh, k)
-        flextopo.Eh[i] = setindex(flextopo.Eh[i], Eh, k)
-        flextopo.wbSh[i] = setindex(flextopo.wbSh[i], wbSh, k)
+            setindex(flextopo.states_[i], flextopo.states_[i][k] + flextopo.hortonpondingstorage[i][k], k)
+        flextopo.qhortonpond[i] = setindex(flextopo.qhortonpond[i], qhortonpond, k)
+        flextopo.qhortonrootzone[i] = setindex(flextopo.qhortonrootzone[i], qhortonrootzone, k)
+        flextopo.hortonpondingstorage[i] = setindex(flextopo.hortonpondingstorage[i], hortonpondingstorage, k)
+        flextopo.hortonevap[i] = setindex(flextopo.hortonevap[i], hortonevap, k)
+        flextopo.wb_hortonponding[i] = setindex(flextopo.wb_hortonponding[i], wb_hortonponding, k)
 
         #average storage over classes
-        flextopo.Sh_m[i] = sum(flextopo.Sh[i] .* flextopo.hrufrac[i])
-        flextopo.Eh_m[i] = sum(flextopo.Eh[i] .* flextopo.hrufrac[i])
+        flextopo.hortonpondingstorage_m[i] = sum(flextopo.hortonpondingstorage[i] .* flextopo.hrufrac[i])
+        flextopo.hortonevap_m[i] = sum(flextopo.hortonevap[i] .* flextopo.hrufrac[i])
     end
 end
 
@@ -423,78 +431,78 @@ function hortonponding(flextopo::FLEXTOPO, config)
         shmax_frost = ft * flextopo.shmax[i][k]
 
         #add effective precipitation from interception to the horton ponding storage.  
-        Sh = flextopo.Sh[i][k] + flextopo.Pe[i][k]
+        hortonpondingstorage = flextopo.hortonpondingstorage[i][k] + flextopo.precipeffective[i][k]
         # if soil is filled until max capacity, additional water runs of directly
-        directrunoff_h = max(Sh - shmax_frost, 0.0)
-        #update Sh
-        Sh = Sh - directrunoff_h
+        directrunoff_h = max(hortonpondingstorage - shmax_frost, 0.0)
+        #update hortonpondingstorage
+        hortonpondingstorage = hortonpondingstorage - directrunoff_h
         #net water which infiltrates in horton (careful, shmax_frost can decrease from one timestep to another)
-        netinSh = max(flextopo.Pe[i][k] - directrunoff_h, 0)
+        netin_hortonpond = max(flextopo.precipeffective[i][k] - directrunoff_h, 0)
 
         #evaporation from the horton ponding storage
-        Eh =
-            Sh > shmax_frost * flextopo.lp[i][k] ? min(Sh, flextopo.potsoilevap[i][k]) :
-            min(flextopo.potsoilevap[i][k] * (Sh / (shmax_frost * flextopo.lp[i][k])))
+        hortonevap =
+            hortonpondingstorage > shmax_frost * flextopo.lp[i][k] ? min(hortonpondingstorage, flextopo.potsoilevap[i][k]) :
+            min(flextopo.potsoilevap[i][k] * (hortonpondingstorage / (shmax_frost * flextopo.lp[i][k])))
         #update storage
-        Sh = Sh - Eh
+        hortonpondingstorage = hortonpondingstorage - hortonevap
         #update restevap 
-        restevap = max(0.0, flextopo.potsoilevap[i][k] - Eh)
+        restevap = max(0.0, flextopo.potsoilevap[i][k] - hortonevap)
 
-        #excess water from beta function of netinSh (due to rouding Sh could be slightly larger than shmax_frost, make sure it is always less than 1)
-        Qh1 = netinSh * (1 - pow((1 - min(Sh / shmax_frost, 1)), flextopo.beta[i][k]))
+        #excess water from beta function of netin_hortonpond (due to rouding hortonpondingstorage could be slightly larger than shmax_frost, make sure it is always less than 1)
+        qhorton_in = netin_hortonpond * (1 - pow((1 - min(hortonpondingstorage / shmax_frost, 1)), flextopo.beta[i][k]))
         #update storage
-        Sh = Sh - Qh1
+        hortonpondingstorage = hortonpondingstorage - qhorton_in
 
         #total water out of horton ponding consists of directrunoff and excess water from beta function
-        Qh = directrunoff_h + Qh1
+        qhortonpond = directrunoff_h + qhorton_in
 
         #infiltration to root-zone 
-        # Qhr = max(0.0, flextopo.fmax[i][k] * exp(-flextopo.fdec[i][k] * (1 - Sh/shmax_frost)))
-        Qhr =
-            min(Sh / shmax_frost, 1) > 0 ?
+        # qhortonrootzone = max(0.0, flextopo.fmax[i][k] * exp(-flextopo.fdec[i][k] * (1 - hortonpondingstorage/shmax_frost)))
+        qhortonrootzone =
+            min(hortonpondingstorage / shmax_frost, 1) > 0 ?
             min(
                 flextopo.fmax[i][k] *
-                exp(-flextopo.fdec[i][k] * (1 - min(Sh / shmax_frost, 1))),
-                Sh,
+                exp(-flextopo.fdec[i][k] * (1 - min(hortonpondingstorage / shmax_frost, 1))),
+                hortonpondingstorage,
             ) : 0
-        Sh = Sh - Qhr
+        hortonpondingstorage = hortonpondingstorage - qhortonrootzone
 
         #water balance
-        wbSh = flextopo.Pe[i][k] - Eh - Qh - Qhr - Sh + flextopo.Sh[i][k]
+        wb_hortonponding = flextopo.precipeffective[i][k] - hortonevap - qhortonpond - qhortonrootzone - hortonpondingstorage + flextopo.hortonpondingstorage[i][k]
 
         #update states
         flextopo.states_[i] =
-            setindex(flextopo.states_[i], flextopo.states_[i][k] + flextopo.Sh[i][k], k)
+            setindex(flextopo.states_[i], flextopo.states_[i][k] + flextopo.hortonpondingstorage[i][k], k)
         flextopo.potsoilevap[i] = setindex(flextopo.potsoilevap[i], restevap, k)
-        flextopo.Qh[i] = setindex(flextopo.Qh[i], Qh, k)
-        flextopo.Qhr[i] = setindex(flextopo.Qhr[i], Qhr, k)
-        flextopo.Sh[i] = setindex(flextopo.Sh[i], Sh, k)
-        flextopo.Eh[i] = setindex(flextopo.Eh[i], Eh, k)
-        flextopo.wbSh[i] = setindex(flextopo.wbSh[i], wbSh, k)
+        flextopo.qhortonpond[i] = setindex(flextopo.qhortonpond[i], qhortonpond, k)
+        flextopo.qhortonrootzone[i] = setindex(flextopo.qhortonrootzone[i], qhortonrootzone, k)
+        flextopo.hortonpondingstorage[i] = setindex(flextopo.hortonpondingstorage[i], hortonpondingstorage, k)
+        flextopo.hortonevap[i] = setindex(flextopo.hortonevap[i], hortonevap, k)
+        flextopo.wb_hortonponding[i] = setindex(flextopo.wb_hortonponding[i], wb_hortonponding, k)
 
         #average storage over classes
-        flextopo.Sh_m[i] = sum(flextopo.Sh[i] .* flextopo.hrufrac[i])
-        flextopo.Eh_m[i] = sum(flextopo.Eh[i] .* flextopo.hrufrac[i])
+        flextopo.hortonpondingstorage_m[i] = sum(flextopo.hortonpondingstorage[i] .* flextopo.hrufrac[i])
+        flextopo.hortonevap_m[i] = sum(flextopo.hortonevap[i] .* flextopo.hrufrac[i])
     end
 end
 
 function hortonrunoff_no_storage(flextopo::FLEXTOPO, config)
     k = flextopo.kclass[1]
     for i = 1:flextopo.n
-        Qhf = 0
-        Shf = 0
+        qhortonrun = 0
+        hortonrunoffstorage = 0
 
-        wbShf = flextopo.Qh[i][k] - Qhf - Shf + flextopo.Shf[i][k]
+        wb_hortonrunoff = flextopo.qhortonpond[i][k] - qhortonrun - hortonrunoffstorage + flextopo.hortonrunoffstorage[i][k]
 
         #update with setindex
         flextopo.states_[i] =
-            setindex(flextopo.states_[i], flextopo.states_[i][k] + flextopo.Shf[i][k], k)
-        flextopo.Qhf[i] = setindex(flextopo.Qhf[i], Qhf, k)
-        flextopo.Shf[i] = setindex(flextopo.Shf[i], Shf, k)
-        flextopo.wbShf[i] = setindex(flextopo.wbShf[i], wbShf, k)
+            setindex(flextopo.states_[i], flextopo.states_[i][k] + flextopo.hortonrunoffstorage[i][k], k)
+        flextopo.qhortonrun[i] = setindex(flextopo.qhortonrun[i], qhortonrun, k)
+        flextopo.hortonrunoffstorage[i] = setindex(flextopo.hortonrunoffstorage[i], hortonrunoffstorage, k)
+        flextopo.wb_hortonrunoff[i] = setindex(flextopo.wb_hortonrunoff[i], wb_hortonrunoff, k)
 
         #average storage over classes
-        flextopo.Shf_m[i] = sum(flextopo.Shf[i] .* flextopo.hrufrac[i])
+        flextopo.hortonrunoffstorage_m[i] = sum(flextopo.hortonrunoffstorage[i] .* flextopo.hrufrac[i])
     end
 end
 
@@ -502,20 +510,20 @@ function hortonrunoff(flextopo::FLEXTOPO, config)
     k = flextopo.kclass[1]
     for i = 1:flextopo.n
 
-        Qhf = min(flextopo.Shf[i][k], flextopo.Shf[i][k] * flextopo.khf[i][k])
-        Shf = flextopo.Shf[i][k] + flextopo.Qh[i][k] - Qhf
+        qhortonrun = min(flextopo.hortonrunoffstorage[i][k], flextopo.hortonrunoffstorage[i][k] * flextopo.khf[i][k])
+        hortonrunoffstorage = flextopo.hortonrunoffstorage[i][k] + flextopo.qhortonpond[i][k] - qhortonrun
 
-        wbShf = flextopo.Qh[i][k] - Qhf - Shf + flextopo.Shf[i][k]
+        wb_hortonrunoff = flextopo.qhortonpond[i][k] - qhortonrun - hortonrunoffstorage + flextopo.hortonrunoffstorage[i][k]
 
         #update with setindex
         flextopo.states_[i] =
-            setindex(flextopo.states_[i], flextopo.states_[i][k] + flextopo.Shf[i][k], k)
-        flextopo.Qhf[i] = setindex(flextopo.Qhf[i], Qhf, k)
-        flextopo.Shf[i] = setindex(flextopo.Shf[i], Shf, k)
-        flextopo.wbShf[i] = setindex(flextopo.wbShf[i], wbShf, k)
+            setindex(flextopo.states_[i], flextopo.states_[i][k] + flextopo.hortonrunoffstorage[i][k], k)
+        flextopo.qhortonrun[i] = setindex(flextopo.qhortonrun[i], qhortonrun, k)
+        flextopo.hortonrunoffstorage[i] = setindex(flextopo.hortonrunoffstorage[i], hortonrunoffstorage, k)
+        flextopo.wb_hortonrunoff[i] = setindex(flextopo.wb_hortonrunoff[i], wb_hortonrunoff, k)
 
         #average storage over classes
-        flextopo.Shf_m[i] = sum(flextopo.Shf[i] .* flextopo.hrufrac[i])
+        flextopo.hortonrunoffstorage_m[i] = sum(flextopo.hortonrunoffstorage[i] .* flextopo.hrufrac[i])
 
     end
 end
@@ -523,108 +531,108 @@ end
 function rootzone_no_storage(flextopo::FLEXTOPO, config)
     k = flextopo.kclass[1]
     for i = 1:flextopo.n
-        Er = 0
-        Qperc = 0
-        Qcap = 0
-        Qr = max(flextopo.Qhr[i][k] + flextopo.Sr[i][k], 0) #if store not empty initial conditions
-        Sr = 0
+        rootevap = 0
+        qpercolation = 0
+        qcapillary = 0
+        qrootzone = max(flextopo.qhortonrootzone[i][k] + flextopo.rootzonestorage[i][k], 0) #if store not empty initial conditions
+        rootzonestorage = 0
 
-        #compute water balance Sr storage
-        wbSr = flextopo.Qhr[i][k] - Er - Qr - Qperc + Qcap - Sr + flextopo.Sr[i][k]
+        #compute water balance rootzonestorage storage
+        wb_rootzone = flextopo.qhortonrootzone[i][k] - rootevap - qrootzone - qpercolation + qcapillary - rootzonestorage + flextopo.rootzonestorage[i][k]
 
         #update states and fluxes with setindex
         flextopo.states_[i] =
-            setindex(flextopo.states_[i], flextopo.states_[i][k] + flextopo.Sr[i][k], k)
-        flextopo.Qr[i] = setindex(flextopo.Qr[i], Qr, k)
-        flextopo.Sr[i] = setindex(flextopo.Sr[i], Sr, k)
-        flextopo.Sr_over_srmax[i] =
-            setindex(flextopo.Sr_over_srmax[i], flextopo.Sr[i][k] / flextopo.srmax[i][k], k)
-        flextopo.Qcap[i] = setindex(flextopo.Qcap[i], Qcap, k)
-        flextopo.Qperc[i] = setindex(flextopo.Qperc[i], Qperc, k)
-        flextopo.Er[i] = setindex(flextopo.Er[i], Er, k)
-        flextopo.Ea[i] = setindex(
-            flextopo.Ea[i],
-            flextopo.Er[i][k] + flextopo.Ei[i][k] + flextopo.Eh[i][k],
+            setindex(flextopo.states_[i], flextopo.states_[i][k] + flextopo.rootzonestorage[i][k], k)
+        flextopo.qrootzone[i] = setindex(flextopo.qrootzone[i], qrootzone, k)
+        flextopo.rootzonestorage[i] = setindex(flextopo.rootzonestorage[i], rootzonestorage, k)
+        flextopo.srootzone_over_srmax[i] =
+            setindex(flextopo.srootzone_over_srmax[i], flextopo.rootzonestorage[i][k] / flextopo.srmax[i][k], k)
+        flextopo.qcapillary[i] = setindex(flextopo.qcapillary[i], qcapillary, k)
+        flextopo.qpercolation[i] = setindex(flextopo.qpercolation[i], qpercolation, k)
+        flextopo.rootevap[i] = setindex(flextopo.rootevap[i], rootevap, k)
+        flextopo.actevap[i] = setindex(
+            flextopo.actevap[i],
+            flextopo.rootevap[i][k] + flextopo.intevap[i][k] + flextopo.hortonevap[i][k],
             k,
         )
-        flextopo.wbSr[i] = setindex(flextopo.wbSr[i], wbSr, k)
+        flextopo.wb_rootzone[i] = setindex(flextopo.wb_rootzone[i], wb_rootzone, k)
 
         #average storage over classes
-        flextopo.Sr_m[i] = sum(flextopo.Sr[i] .* flextopo.hrufrac[i])
-        flextopo.Sr_over_srmax_m[i] = sum(flextopo.Sr_over_srmax[i] .* flextopo.hrufrac[i])
-        flextopo.Er_m[i] = sum(flextopo.Er[i] .* flextopo.hrufrac[i])
-        flextopo.Ea_m[i] = sum(flextopo.Ea[i] .* flextopo.hrufrac[i])
+        flextopo.srootzone_m[i] = sum(flextopo.rootzonestorage[i] .* flextopo.hrufrac[i])
+        flextopo.srootzone_over_srmax_m[i] = sum(flextopo.srootzone_over_srmax[i] .* flextopo.hrufrac[i])
+        flextopo.rootevap_m[i] = sum(flextopo.rootevap[i] .* flextopo.hrufrac[i])
+        flextopo.actevap_m[i] = sum(flextopo.actevap[i] .* flextopo.hrufrac[i])
     end
 end
 
 function rootzone_storage(flextopo::FLEXTOPO, config)
     k = flextopo.kclass[1]
     for i = 1:flextopo.n
-        # Sr = flextopo.Sr[i] + Qhr > flextopo.srmax[i] ? flextopo.srmax[i] : flextopo.Sr[i] + Qhr
+        # rootzonestorage = flextopo.rootzonestorage[i] + qhortonrootzone > flextopo.srmax[i] ? flextopo.srmax[i] : flextopo.rootzonestorage[i] + qhortonrootzone
 
-        #added water to the root-zone. NB: if no horton storages: Qhr is in fact Pe!! (effective precip). 
-        Sr = flextopo.Sr[i][k] + flextopo.Qhr[i][k]
+        #added water to the root-zone. NB: if no horton storages: qhortonrootzone is in fact Pe!! (effective precip). 
+        rootzonestorage = flextopo.rootzonestorage[i][k] + flextopo.qhortonrootzone[i][k]
         # if soil is filled until max capacity, additional water runs of directly
-        directrunoff = max(Sr - flextopo.srmax[i][k], 0)
-        #update Sr
-        Sr = Sr - directrunoff
+        directrunoff = max(rootzonestorage - flextopo.srmax[i][k], 0)
+        #update rootzonestorage
+        rootzonestorage = rootzonestorage - directrunoff
         #net water which infiltrates in root-zone
-        netinSr = flextopo.Qhr[i][k] - directrunoff
+        netin_rootzone = flextopo.qhortonrootzone[i][k] - directrunoff
 
         #evaporation from the rootzone
-        Er =
-            Sr > flextopo.srmax[i][k] * flextopo.lp[i][k] ?
-            min(Sr, flextopo.potsoilevap[i][k]) :
+        rootevap =
+            rootzonestorage > flextopo.srmax[i][k] * flextopo.lp[i][k] ?
+            min(rootzonestorage, flextopo.potsoilevap[i][k]) :
             min(
                 flextopo.potsoilevap[i][k] *
-                (Sr / (flextopo.srmax[i][k] * flextopo.lp[i][k])),
+                (rootzonestorage / (flextopo.srmax[i][k] * flextopo.lp[i][k])),
             )
         #update storage
-        Sr = Sr - Er
+        rootzonestorage = rootzonestorage - rootevap
 
-        #excess water from beta function of netinSr
-        Qr1 = netinSr * (1 - pow(1 - Sr / flextopo.srmax[i][k], flextopo.beta[i][k]))
+        #excess water from beta function of netin_rootzone
+        qrootzone_in = netin_rootzone * (1 - pow(1 - rootzonestorage / flextopo.srmax[i][k], flextopo.beta[i][k]))
         #update storage
-        Sr = Sr - Qr1
+        rootzonestorage = rootzonestorage - qrootzone_in
 
         #total water out of root-zone consists of directrunoff and excess water from beta function
-        Qr = directrunoff + Qr1
+        qrootzone = directrunoff + qrootzone_in
 
         #percolation 
-        Qperc = flextopo.perc[i][k] * Sr / flextopo.srmax[i][k]
-        Sr = Sr - Qperc
+        qpercolation = flextopo.perc[i][k] * rootzonestorage / flextopo.srmax[i][k]
+        rootzonestorage = rootzonestorage - qpercolation
 
-        #TODO? eventueel niet een volgorde voor de verschillende processen opleggen - eerst Er, dan Qr, dan Perc, maar alles naar rato laten gebeuren zoals in code python. 
+        #TODO? eventueel niet een volgorde voor de verschillende processen opleggen - eerst rootevap, dan qrootzone, dan Perc, maar alles naar rato laten gebeuren zoals in code python. 
 
         #capillary rise 
-        Qcap = min(flextopo.cap[i][k] * (1 - Sr / flextopo.srmax[i][k]), flextopo.Ss[i])
-        Sr = Sr + Qcap
+        qcapillary = min(flextopo.cap[i][k] * (1 - rootzonestorage / flextopo.srmax[i][k]), flextopo.slowstorage[i])
+        rootzonestorage = rootzonestorage + qcapillary
 
-        #compute water balance Sr storage
-        wbSr = flextopo.Qhr[i][k] - Er - Qr - Qperc + Qcap - Sr + flextopo.Sr[i][k]
+        #compute water balance rootzonestorage storage
+        wb_rootzone = flextopo.qhortonrootzone[i][k] - rootevap - qrootzone - qpercolation + qcapillary - rootzonestorage + flextopo.rootzonestorage[i][k]
 
         #update states and fluxes with setindex
         flextopo.states_[i] =
-            setindex(flextopo.states_[i], flextopo.states_[i][k] + flextopo.Sr[i][k], k)
-        flextopo.Qr[i] = setindex(flextopo.Qr[i], Qr, k)
-        flextopo.Sr[i] = setindex(flextopo.Sr[i], Sr, k)
-        flextopo.Sr_over_srmax[i] =
-            setindex(flextopo.Sr_over_srmax[i], flextopo.Sr[i][k] / flextopo.srmax[i][k], k)
-        flextopo.Qcap[i] = setindex(flextopo.Qcap[i], Qcap, k)
-        flextopo.Qperc[i] = setindex(flextopo.Qperc[i], Qperc, k)
-        flextopo.Er[i] = setindex(flextopo.Er[i], Er, k)
-        flextopo.Ea[i] = setindex(
-            flextopo.Ea[i],
-            flextopo.Er[i][k] + flextopo.Ei[i][k] + flextopo.Eh[i][k],
+            setindex(flextopo.states_[i], flextopo.states_[i][k] + flextopo.rootzonestorage[i][k], k)
+        flextopo.qrootzone[i] = setindex(flextopo.qrootzone[i], qrootzone, k)
+        flextopo.rootzonestorage[i] = setindex(flextopo.rootzonestorage[i], rootzonestorage, k)
+        flextopo.srootzone_over_srmax[i] =
+            setindex(flextopo.srootzone_over_srmax[i], flextopo.rootzonestorage[i][k] / flextopo.srmax[i][k], k)
+        flextopo.qcapillary[i] = setindex(flextopo.qcapillary[i], qcapillary, k)
+        flextopo.qpercolation[i] = setindex(flextopo.qpercolation[i], qpercolation, k)
+        flextopo.rootevap[i] = setindex(flextopo.rootevap[i], rootevap, k)
+        flextopo.actevap[i] = setindex(
+            flextopo.actevap[i],
+            flextopo.rootevap[i][k] + flextopo.intevap[i][k] + flextopo.hortonevap[i][k],
             k,
         )
-        flextopo.wbSr[i] = setindex(flextopo.wbSr[i], wbSr, k)
+        flextopo.wb_rootzone[i] = setindex(flextopo.wb_rootzone[i], wb_rootzone, k)
 
         #average storage over classes
-        flextopo.Sr_m[i] = sum(flextopo.Sr[i] .* flextopo.hrufrac[i])
-        flextopo.Sr_over_srmax_m[i] = sum(flextopo.Sr_over_srmax[i] .* flextopo.hrufrac[i])
-        flextopo.Er_m[i] = sum(flextopo.Er[i] .* flextopo.hrufrac[i])
-        flextopo.Ea_m[i] = sum(flextopo.Ea[i] .* flextopo.hrufrac[i])
+        flextopo.srootzone_m[i] = sum(flextopo.rootzonestorage[i] .* flextopo.hrufrac[i])
+        flextopo.srootzone_over_srmax_m[i] = sum(flextopo.srootzone_over_srmax[i] .* flextopo.hrufrac[i])
+        flextopo.rootevap_m[i] = sum(flextopo.rootevap[i] .* flextopo.hrufrac[i])
+        flextopo.actevap_m[i] = sum(flextopo.actevap[i] .* flextopo.hrufrac[i])
     end
 end
 
@@ -634,24 +642,24 @@ function fast_no_storage(flextopo::FLEXTOPO, config)
     for i = 1:flextopo.n
         #make sure ds does not exceed 1 
         ds = flextopo.ds[i][k] > 1 ? 1 : flextopo.ds[i][k]
-        #calc inflow to Sf
-        Qrf = flextopo.Qr[i][k] * (1 - ds)
-        Qf = Qrf + flextopo.Sf[i][k] #if store not empty initial conditions, make sure to empty
-        Sf = 0.0
+        #calc inflow to faststorage
+        qrootzonefast = flextopo.qrootzone[i][k] * (1 - ds)
+        qfast = qrootzonefast + flextopo.faststorage[i][k] #if store not empty initial conditions, make sure to empty
+        faststorage = 0.0
 
-        #compute wb Sf
-        wbSf = Qrf - Qf - Sf + flextopo.Sf[i][k]
+        #compute wb faststorage
+        wb_fast = qrootzonefast - qfast - faststorage + flextopo.faststorage[i][k]
 
         #update with setindex
         flextopo.states_[i] =
-            setindex(flextopo.states_[i], flextopo.states_[i][k] + flextopo.Sf[i][k], k)
-        flextopo.Qrf[i] = setindex(flextopo.Qrf[i], Qrf, k)
-        flextopo.Qf[i] = setindex(flextopo.Qf[i], Qf, k)
-        flextopo.Sf[i] = setindex(flextopo.Sf[i], Sf, k)
-        flextopo.wbSf[i] = setindex(flextopo.wbSf[i], wbSf, k)
+            setindex(flextopo.states_[i], flextopo.states_[i][k] + flextopo.faststorage[i][k], k)
+        flextopo.qrootzonefast[i] = setindex(flextopo.qrootzonefast[i], qrootzonefast, k)
+        flextopo.qfast[i] = setindex(flextopo.qfast[i], qfast, k)
+        flextopo.faststorage[i] = setindex(flextopo.faststorage[i], faststorage, k)
+        flextopo.wb_fast[i] = setindex(flextopo.wb_fast[i], wb_fast, k)
 
         #average storage over classes
-        flextopo.Sf_m[i] = sum(flextopo.Sf[i] .* flextopo.hrufrac[i])
+        flextopo.faststorage_m[i] = sum(flextopo.faststorage[i] .* flextopo.hrufrac[i])
     end
 end
 
@@ -664,124 +672,124 @@ function fast_storage(flextopo::FLEXTOPO, config)
         ds = flextopo.ds[i][k] > 1 ? 1 : flextopo.ds[i][k]
 
         #split part of the outflow from the root-zone to the fast runoff (and part as preferential recharge to the slow reservoir) 
-        Qrf = flextopo.Qr[i][k] * (1 - ds)
+        qrootzonefast = flextopo.qrootzone[i][k] * (1 - ds)
 
         #fast runoff 
-        Qf = min(
-            flextopo.Sf[i][k],
-            pow(flextopo.Sf[i][k], flextopo.alfa[i][k]) * flextopo.kf[i][k],
+        qfast = min(
+            flextopo.faststorage[i][k],
+            pow(flextopo.faststorage[i][k], flextopo.alfa[i][k]) * flextopo.kf[i][k],
         )
         #update store
-        Sf = flextopo.Sf[i][k] + Qrf - Qf
+        faststorage = flextopo.faststorage[i][k] + qrootzonefast - qfast
 
-        #compute wb Sf
-        wbSf = Qrf - Qf - Sf + flextopo.Sf[i][k]
+        #compute wb faststorage
+        wb_fast = qrootzonefast - qfast - faststorage + flextopo.faststorage[i][k]
 
         #update with setindex
         flextopo.states_[i] =
-            setindex(flextopo.states_[i], flextopo.states_[i][k] + flextopo.Sf[i][k], k)
-        flextopo.Qrf[i] = setindex(flextopo.Qrf[i], Qrf, k)
-        flextopo.Qf[i] = setindex(flextopo.Qf[i], Qf, k)
-        flextopo.Sf[i] = setindex(flextopo.Sf[i], Sf, k)
-        flextopo.wbSf[i] = setindex(flextopo.wbSf[i], wbSf, k)
+            setindex(flextopo.states_[i], flextopo.states_[i][k] + flextopo.faststorage[i][k], k)
+        flextopo.qrootzonefast[i] = setindex(flextopo.qrootzonefast[i], qrootzonefast, k)
+        flextopo.qfast[i] = setindex(flextopo.qfast[i], qfast, k)
+        flextopo.faststorage[i] = setindex(flextopo.faststorage[i], faststorage, k)
+        flextopo.wb_fast[i] = setindex(flextopo.wb_fast[i], wb_fast, k)
 
         #average storage over classes
-        flextopo.Sf_m[i] = sum(flextopo.Sf[i] .* flextopo.hrufrac[i])
+        flextopo.faststorage_m[i] = sum(flextopo.faststorage[i] .* flextopo.hrufrac[i])
     end
 end
 
 function slow_no_storage(flextopo::FLEXTOPO, config)
     for i = 1:flextopo.n
         #make sure ds does not exceed 1 
-        pref_recharge = flextopo.Qr[i] .* min.(flextopo.ds[i], 1)
+        pref_recharge = flextopo.qrootzone[i] .* min.(flextopo.ds[i], 1)
         pref_recharge_sum_classes = sum(pref_recharge .* flextopo.hrufrac[i])
 
-        Qcap_sum_classes = sum(flextopo.Qcap[i] .* flextopo.hrufrac[i])
-        Qperc_sum_classes = sum(flextopo.Qperc[i] .* flextopo.hrufrac[i])
+        Qcap_sum_classes = sum(flextopo.qcapillary[i] .* flextopo.hrufrac[i])
+        Qperc_sum_classes = sum(flextopo.qpercolation[i] .* flextopo.hrufrac[i])
 
         Qsin = pref_recharge_sum_classes + Qperc_sum_classes - Qcap_sum_classes
-        Qs = Qsin + flextopo.Ss[i] # if at start store is not empty 
-        Ss = 0.0
+        qslow = Qsin + flextopo.slowstorage[i] # if at start store is not empty 
+        slowstorage = 0.0
 
-        Qftotal =
-            sum(flextopo.Qf[i] .* flextopo.hrufrac[i]) +
-            sum(flextopo.Qhf[i] .* flextopo.hrufrac[i])
-        runoff = max(0, Qs + Qftotal)
+        qfast_tot =
+            sum(flextopo.qfast[i] .* flextopo.hrufrac[i]) +
+            sum(flextopo.qhortonrun[i] .* flextopo.hrufrac[i])
+        runoff = max(0, qslow + qfast_tot)
 
-        wbSs = Qsin - Qs - Ss + flextopo.Ss[i]
+        wb_slow = Qsin - qslow - slowstorage + flextopo.slowstorage[i]
 
         #update
-        flextopo.Qftotal[i] = Qftotal
+        flextopo.qfast_tot[i] = qfast_tot
         flextopo.states_m[i] =
             flextopo.states_m[i] +
             sum(flextopo.states_[i] .* flextopo.hrufrac[i]) +
-            flextopo.Ss[i]
+            flextopo.slowstorage[i]
         flextopo.runoff[i] = runoff
-        flextopo.Qrs_m[i] = pref_recharge_sum_classes
-        flextopo.Qperc_m[i] = Qperc_sum_classes
-        flextopo.Qcap_m[i] = Qcap_sum_classes
-        flextopo.Qs[i] = Qs
-        flextopo.Ss[i] = Ss
-        flextopo.wbSs[i] = wbSs
+        flextopo.qrootzoneslow_m[i] = pref_recharge_sum_classes
+        flextopo.qpercolation_m[i] = Qperc_sum_classes
+        flextopo.qcapillary_m[i] = Qcap_sum_classes
+        flextopo.qslow[i] = qslow
+        flextopo.slowstorage[i] = slowstorage
+        flextopo.wb_slow[i] = wb_slow
     end
 end
 
 function common_slow_storage(flextopo::FLEXTOPO, config)
     for i = 1:flextopo.n
         #make sure ds does not exceed 1 
-        pref_recharge = flextopo.Qr[i] .* min.(flextopo.ds[i], 1)
+        pref_recharge = flextopo.qrootzone[i] .* min.(flextopo.ds[i], 1)
         pref_recharge_sum_classes = sum(pref_recharge .* flextopo.hrufrac[i])
 
-        Qcap_sum_classes = sum(flextopo.Qcap[i] .* flextopo.hrufrac[i])
-        Qperc_sum_classes = sum(flextopo.Qperc[i] .* flextopo.hrufrac[i])
+        Qcap_sum_classes = sum(flextopo.qcapillary[i] .* flextopo.hrufrac[i])
+        Qperc_sum_classes = sum(flextopo.qpercolation[i] .* flextopo.hrufrac[i])
 
         Qsin = pref_recharge_sum_classes + Qperc_sum_classes - Qcap_sum_classes
-        Ss = flextopo.Ss[i] + Qsin
+        slowstorage = flextopo.slowstorage[i] + Qsin
 
-        Qs = min(flextopo.Ss[i], flextopo.Ss[i] * flextopo.ks[i])
-        Ss = Ss - Qs
+        qslow = min(flextopo.slowstorage[i], flextopo.slowstorage[i] * flextopo.ks[i])
+        slowstorage = slowstorage - qslow
 
-        Qftotal =
-            sum(flextopo.Qf[i] .* flextopo.hrufrac[i]) +
-            sum(flextopo.Qhf[i] .* flextopo.hrufrac[i])
-        runoff = max(0, Qs + Qftotal)
+        qfast_tot =
+            sum(flextopo.qfast[i] .* flextopo.hrufrac[i]) +
+            sum(flextopo.qhortonrun[i] .* flextopo.hrufrac[i])
+        runoff = max(0, qslow + qfast_tot)
 
-        wbSs = Qsin - Qs - Ss + flextopo.Ss[i]
+        wb_slow = Qsin - qslow - slowstorage + flextopo.slowstorage[i]
 
         #update
-        flextopo.Qftotal[i] = Qftotal
+        flextopo.qfast_tot[i] = qfast_tot
         flextopo.states_m[i] =
             flextopo.states_m[i] +
             sum(flextopo.states_[i] .* flextopo.hrufrac[i]) +
-            flextopo.Ss[i]
+            flextopo.slowstorage[i]
         flextopo.runoff[i] = runoff
-        flextopo.Qrs_m[i] = pref_recharge_sum_classes
-        flextopo.Qperc_m[i] = Qperc_sum_classes
-        flextopo.Qcap_m[i] = Qcap_sum_classes
-        flextopo.Qs[i] = Qs
-        flextopo.Ss[i] = Ss
-        flextopo.wbSs[i] = wbSs
+        flextopo.qrootzoneslow_m[i] = pref_recharge_sum_classes
+        flextopo.qpercolation_m[i] = Qperc_sum_classes
+        flextopo.qcapillary_m[i] = Qcap_sum_classes
+        flextopo.qslow[i] = qslow
+        flextopo.slowstorage[i] = slowstorage
+        flextopo.wb_slow[i] = wb_slow
     end
 end
 
 function watbal(flextopo::FLEXTOPO, config)
     for i = 1:flextopo.n
         states =
-            flextopo.Sw[i] +
-            flextopo.Sww[i] +
-            sum(flextopo.Si[i] .* flextopo.hrufrac[i]) +
-            sum(flextopo.Sh[i] .* flextopo.hrufrac[i]) +
-            sum(flextopo.Shf[i] .* flextopo.hrufrac[i]) +
-            sum(flextopo.Sr[i] .* flextopo.hrufrac[i]) +
-            sum(flextopo.Sf[i] .* flextopo.hrufrac[i]) +
-            sum(flextopo.Ss[i] .* flextopo.hrufrac[i])
-        wbtot =
+            flextopo.snow[i] +
+            flextopo.snowwater[i] +
+            sum(flextopo.interceptionstorage[i] .* flextopo.hrufrac[i]) +
+            sum(flextopo.hortonpondingstorage[i] .* flextopo.hrufrac[i]) +
+            sum(flextopo.hortonrunoffstorage[i] .* flextopo.hrufrac[i]) +
+            sum(flextopo.rootzonestorage[i] .* flextopo.hrufrac[i]) +
+            sum(flextopo.faststorage[i] .* flextopo.hrufrac[i]) +
+            sum(flextopo.slowstorage[i] .* flextopo.hrufrac[i])
+        wb_tot =
             flextopo.precipitation[i] - (
-                sum(flextopo.Ei[i] .* flextopo.hrufrac[i]) +
-                sum(flextopo.Eh[i] .* flextopo.hrufrac[i]) +
-                sum(flextopo.Er[i] .* flextopo.hrufrac[i])
+                sum(flextopo.intevap[i] .* flextopo.hrufrac[i]) +
+                sum(flextopo.hortonevap[i] .* flextopo.hrufrac[i]) +
+                sum(flextopo.rootevap[i] .* flextopo.hrufrac[i])
             ) - flextopo.runoff[i] - states + flextopo.states_m[i]
         #update wb
-        flextopo.wbtot[i] = wbtot
+        flextopo.wb_tot[i] = wb_tot
     end
 end
