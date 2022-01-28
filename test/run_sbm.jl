@@ -19,13 +19,13 @@ flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
     @test row.volume ≈ 2.7535003939625636f7
     @test row.temp_bycoord ≈ 2.390000104904175f0
     @test row.temp_byindex ≈ 2.390000104904175f0
-    @test row.Q_6336050 ≈ 0.00617203548227466f0
+    @test row.Q_6336050 ≈ 0.006160282939850074f0
     @test row.Q_6336510 ≈ 0.029177309556712334f0
     @test row.Q_6836100 ≈ 0.19621282450614713f0
-    @test row.Q_6336500 ≈ 0.006104510105954231f0
+    @test row.Q_6336500 ≈ 0.006089112638001381f0
     @test row.Q_6836190 ≈ 0.0031262850749354237f0
-    @test row.Q_6336800 ≈ 0.007782650672703859f0
-    @test row.Q_6336900 ≈ 0.006413552125666774f0
+    @test row.Q_6336800 ≈ 0.007770868657277307f0
+    @test row.Q_6336900 ≈ 0.006403194169947582f0
     @test row.Q_6336930 ≈ 0.08888787154163148f0
     @test row.Q_6336910 ≈ 0.007071851236520184f0
     @test row.Q_6136500 ≈ 0.0016367337487926633f0
@@ -116,7 +116,7 @@ end
     @test sum(q) ≈ 3615.2084127447865f0
     @test q[1622] ≈ 0.0005986272622329333f0
     @test q[43] ≈ 12.036342425160155f0
-    @test q[network.river.order[end]] ≈ 0.038439025755223954f0
+    @test q[network.river.order[end]] ≈ 0.03835913312643948f0
 end
 
 @testset "reservoir simple" begin
@@ -158,8 +158,8 @@ end
     q = model.lateral.river.q_av
     @test q[4009] ≈ 8.60480399680283f0 # pit/ outlet, CartesianIndex(141, 228)
     @test q[4020] ≈ 0.006779014715290862f0 # downstream of pit 4009, CartesianIndex(141, 229)
-    @test q[2508] ≈ 150.25451437462465f0 # pit/ outlet
-    @test q[5808] ≈ 0.1264630353304674f0 # pit/ outlet
+    @test q[2508] ≈ 150.15321264134985f0 # pit/ outlet
+    @test q[5808] ≈ 0.12625654862968252f0 # pit/ outlet
 end
 
 # test changing forcing and cyclic LAI parameter

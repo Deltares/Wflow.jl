@@ -12,7 +12,7 @@
     volume::Vector{T} | "m3"                # Kinematic wave volume [m³] (based on water level h)
     h::Vector{T} | "m"                      # Water level [m]
     h_av::Vector{T} | "m"                   # Average water level [m]
-    h_bankfull::Vector{T} | "m"             # Bankfull water level [m]
+    bankfull_depth::Vector{T} | "m"         # Bankfull water level [m]
     Δt::T | "s"                             # Model time step [s]
     its::Int | "-"                          # Number of fixed iterations
     width::Vector{T} | "m"                  # Flow width [m]
@@ -77,7 +77,7 @@ function initialize_surfaceflow_land(
         volume = zeros(Float, n),
         h = zeros(Float, n),
         h_av = zeros(Float, n),
-        h_bankfull = zeros(Float, n),
+        bankfull_depth = zeros(Float, n),
         Δt = Float(tosecond(Δt)),
         its = tstep > 0 ? Int(cld(tosecond(Δt), tstep)) : tstep,
         width = width,
@@ -127,10 +127,10 @@ function initialize_surfaceflow_river(
         defaults = 0.036,
         type = Float,
     )
-    h_bankfull = ncread(
+    bankfull_depth = ncread(
         nc,
         config.input,
-        "lateral.river.h_bankfull";
+        "lateral.river.bankfull_depth";
         sel = inds,
         defaults = 1.0,
         type = Float,
@@ -161,7 +161,7 @@ function initialize_surfaceflow_river(
         volume = zeros(Float, n),
         h = zeros(Float, n),
         h_av = zeros(Float, n),
-        h_bankfull = h_bankfull,
+        bankfull_depth = bankfull_depth,
         Δt = Float(tosecond(Δt)),
         its = tstep > 0 ? Int(cld(tosecond(Δt), tstep)) : tstep,
         width = width,
@@ -202,8 +202,8 @@ function update(
     ns = length(subdomain_order)
 
     @. sf.alpha_term = pow(sf.n / sqrt(sf.sl), sf.β)
-    # use fixed alpha value based on 0.5 * h_bankfull
-    @. sf.α = sf.alpha_term * pow(sf.width + sf.h_bankfull, sf.alpha_pow)
+    # use fixed alpha value based on 0.5 * bankfull_depth
+    @. sf.α = sf.alpha_term * pow(sf.width + sf.bankfull_depth, sf.alpha_pow)
 
     @. sf.qlat = sf.inwater / sf.dl
 
