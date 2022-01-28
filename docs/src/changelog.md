@@ -11,7 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Model types `sbm_gwf` and `hbv` use the same approach for the calculation of the drain
   width `dw` as model type `sbm`.
 - Renamed `h_bankfull` parameter to `bankfull_depth` for consistency between 
-  kinematic-wave and local-inertial river routing.
+  kinematic-wave and local-inertial river routing. Note that this may require 
+  updating the `[input.lateral.river]` section of the TOML file!
 
 ### Added
 - Additional log messages and log file as output, see also [Logging](@ref).
