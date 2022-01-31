@@ -97,7 +97,7 @@ two cells and ``\Delta y`` [m] is the flow width. Below the staggered grid and v
 the numerical solution in the x-direction, based on Almeida et al. (2012):
 
 ```@raw html
-<img src="../images/numerical_scheme_almeida.png" width="75%"/>
+<img src="../../images/numerical_scheme_almeida.png" width="75%"/>
 ```
 
 The overland flow local inertial approach is used in combination with the local inertial
