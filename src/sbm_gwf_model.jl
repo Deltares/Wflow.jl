@@ -348,7 +348,6 @@ function initialize_sbm_gwf_model(config::Config)
     )
     writer = prepare_writer(
         config,
-        reader,
         modelmap,
         indices_reverse,
         x_nc,

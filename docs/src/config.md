@@ -235,13 +235,16 @@ required. A `reducer` can be specified to apply to the model output, see for mor
 information the following section [Output CSV section](@ref). When a `map` is provided to
 extract data for certain locations (e.g. `gauges`) or areas (e.g. `subcatchment`), the
 NetCDF location names are extracted from these maps. For a specific location (grid cell) a
-`location` is required. Model parameters with the extra dimension `layer` for layered model
-parameters of the vertical `sbm` concept require the specification of the layer (see also
-example below). If multiple layers are desired, this can be specified in separate
-`[[netcdf.variable]]` entries. In the section [Output CSV section](@ref), similar
-functionality is available for CSV. For integration with Delft-FEWS, see also [Run from
-Delft-FEWS](@ref), it is recommended to write scalar data to NetCDF format since the General
-Adapter of Delft-FEWS can ingest this data format directly.
+`location` is required. For layered model parameters and variables that have an extra
+dimension `layer` and are part of the vertical `sbm` concept it is possible to specify an
+internal layer index (see also example below). If multiple layers are desired, this can be
+specified in separate `[[netcdf.variable]]` entries. Note that the specification of the
+layer is not optional when Wflow is integrated with Delft-FEWS, for NetCDF scalar data an
+extra dimension is not allowed by the `importNetcdfActivity` of the Delft-FEWS General
+Adapter. In the section [Output CSV section](@ref), similar functionality is available for
+CSV. For integration with Delft-FEWS, see also [Run from Delft-FEWS](@ref), it is
+recommended to write scalar data to NetCDF format since the General Adapter of Delft-FEWS
+can ingest this data format directly.
 
 ```toml
 [netcdf]
@@ -287,10 +290,10 @@ of the vector, the coordinates `coordinate.x` and `coordinate.y`, or the x and y
 the 2D array (`index.x` and `index.y`) can be provided. Finally a `map` can be provided to
 extract data for certain locations (e.g. `gauges`) or areas (e.g. `subcatchment`). In this
 case a single entry can lead to multiple columns in the CSV file, which will be of the form
-`header_id`, e.g. `Q_20`, for a gauge with integer ID 20. Model parameters with the extra
-dimension `layer` for layered model parameters of the vertical `sbm` concept require the
-specification of the layer (see also example below). If multiple layers are desired, this
-can be specified in separate `[[csv.column]]` entries.
+`header_id`, e.g. `Q_20`, for a gauge with integer ID 20. For layered model parameters and
+variables that have an extra dimension `layer` and are part of the vertical `sbm` concept an
+internal layer index (see also example below) should be specified. If multiple layers are
+desired, this can be specified in separate `[[csv.column]]` entries.
 
 The double brackets in `[[csv.column]]` is TOML syntax to indicate that it is part of a
 list. You may specify as many entries as you wish.

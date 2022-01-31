@@ -293,13 +293,12 @@ function initialize_sbm_model(config::Config)
     )
     writer = prepare_writer(
         config,
-        reader,
         modelmap,
         indices_reverse,
         x_nc,
         y_nc,
         nc,
-        extra_dim = (name = "layer", value = collect(1:sbm.maxlayers)),
+        extra_dim = (name = "layer", value = Float.(collect(1:sbm.maxlayers))),
     )
     close(nc)
 
