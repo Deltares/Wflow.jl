@@ -375,9 +375,7 @@ function setup_scalar_netcdf(path, ncvars, modelmap, calendar, time_units, extra
         ("time",),
         attrib = ["units" => time_units, "calendar" => calendar],
     )
-    if isnothing(extra_dim) == false
-        set_extradim_netcdf(ds, extra_dim)
-    end
+    set_extradim_netcdf(ds, extra_dim)
     for (nc, netcdfvars) in zip(ncvars, config.netcdf.variable)
         # Delft-FEWS requires the attribute :cf_role = "timeseries_id" when a NetCDF file 
         # contains more than one location list 
@@ -424,9 +422,9 @@ function setup_scalar_netcdf(path, ncvars, modelmap, calendar, time_units, extra
 end
 
 "set extra dimension in output NetCDF file"
-function set_extradim_netcdf(ds, extra_dim)
+function set_extradim_netcdf(ds, extra_dim::NamedTuple{(:name, :value), Tuple{String, Vector{Float64}}})
     # the axis attribute `Z` is required to import this type of 3D data by Delft-FEWS
-    # the values of this dimension `extra_dim.value` should be of type float
+    # the values of this dimension `extra_dim.value` should be of type Float64
     if extra_dim.name == "layer"
         attributes = [
             "long_name" => "layer_index",
@@ -438,6 +436,8 @@ function set_extradim_netcdf(ds, extra_dim)
     attrib = attributes)
     return nothing
 end
+
+set_extradim_netcdf(ds, extra_dim::Nothing) = nothing
 
 "prepare an output dataset for grid data"
 function setup_grid_netcdf(
@@ -510,9 +510,7 @@ function setup_grid_netcdf(
             ],
         )
     end
-    if isnothing(extra_dim) == false
-        set_extradim_netcdf(ds, extra_dim)
-    end
+    set_extradim_netcdf(ds, extra_dim)
     defVar(
         ds,
         "time",
@@ -1501,7 +1499,7 @@ end
 Return the x coordinate Vector{Float64}, whether it is called x, lon or longitude.
 Also sorts the vector to be increasing, to match `read_standardized`.
 """
-function read_x_axis(ds::CFDataset)
+function read_x_axis(ds::CFDataset)::Vector{Float64}
     candidates = ("x", "lon", "longitude")
     for candidate in candidates
         if haskey(ds, candidate)
@@ -1517,7 +1515,7 @@ end
 Return the y coordinate Vector{Float64}, whether it is called y, lat or latitude.
 Also sorts the vector to be increasing, to match `read_standardized`.
 """
-function read_y_axis(ds::CFDataset)
+function read_y_axis(ds::CFDataset)::Vector{Float64}
     candidates = ("y", "lat", "latitude")
     for candidate in candidates
         if haskey(ds, candidate)
@@ -1528,7 +1526,7 @@ function read_y_axis(ds::CFDataset)
 end
 
 "Get `index` for dimension name `layer`" 
-function get_index_dimension(var, model)
+function get_index_dimension(var, model)::Int
     @unpack vertical = model 
     if haskey(var, "layer")
         inds = collect(1:vertical.maxlayers)

@@ -298,7 +298,7 @@ function initialize_sbm_model(config::Config)
         x_nc,
         y_nc,
         nc,
-        extra_dim = (name = "layer", value = Float.(collect(1:sbm.maxlayers))),
+        extra_dim = (name = "layer", value = Float64.(1:sbm.maxlayers)),
     )
     close(nc)
 
