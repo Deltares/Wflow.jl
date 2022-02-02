@@ -206,6 +206,9 @@ Wflow.load_dynamic_input!(model)
     @test length(writer.state_parameters) == 14
 end
 
+# get a default value if the parameter does not exist
+@test Wflow.param(model, "lateral.doesnt_exist", -1) == -1
+
 @testset "warm states" begin
     @test Wflow.param(model, "lateral.river.reservoir.volume")[1] ≈ 3.2807224993363418e7
     @test Wflow.param(model, "vertical.satwaterdepth")[9115] ≈ 477.13548089422125

@@ -121,17 +121,17 @@ function initialize_surfaceflow_river(
 
     n_river = ncread(
         nc,
-        config.input.lateral.river,
-        "n";
+        config.input,
+        "lateral.river.n";
         sel = inds,
         defaults = 0.036,
         type = Float,
     )
     bankfull_depth = ncread(
         nc,
-        config.input.lateral.river,
-        "bankfull_depth";
-        alias = "h_bankfull",
+        config.input,
+        "lateral.river.bankfull_depth";
+        alias = "lateral.river.h_bankfull",
         sel = inds,
         defaults = 1.0,
         type = Float,
@@ -144,8 +144,8 @@ function initialize_surfaceflow_river(
     end
     sl = ncread(
         nc,
-        config.input.lateral.river,
-        "slope";
+        config.input,
+        "lateral.river.slope";
         optional = false,
         sel = inds,
         type = Float,

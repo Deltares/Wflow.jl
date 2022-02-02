@@ -57,12 +57,8 @@ end
 
 "Get a value from the Config with either the key or an alias of the key."
 function get_alias(config::Config, key, alias, default)
-    dict = Dict(config)
-    path = pathof(config)
-    alias_or_default = get(dict, alias, default)
-    a = get(dict, key, alias_or_default)
-    # if it is a Dict, wrap the result in Config
-    return a isa AbstractDict ? Config(a, path) : a
+    alias_or_default = param(config, alias, default)
+    return param(config, key, alias_or_default)
 end
 
 "Get a value from the Config with a key, throwing an error if it is not one of the options."
