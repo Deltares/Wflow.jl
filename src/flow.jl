@@ -121,24 +121,31 @@ function initialize_surfaceflow_river(
 
     n_river = ncread(
         nc,
-        config.input,
-        "lateral.river.n";
+        config.input.lateral.river,
+        "n";
         sel = inds,
         defaults = 0.036,
         type = Float,
     )
     bankfull_depth = ncread(
         nc,
-        config.input,
-        "lateral.river.bankfull_depth";
+        config.input.lateral.river,
+        "bankfull_depth";
+        alias = "h_bankfull",
         sel = inds,
         defaults = 1.0,
         type = Float,
     )
+    if haskey(config.input.lateral.river, "h_bankfull")
+        @warn string(
+            "The `h_bankfull` key in `[input.lateral.river]` is now called ",
+            "`bankfull_depth`. Please update your TOML file.",
+        )
+    end
     sl = ncread(
         nc,
-        config.input,
-        "lateral.river.slope";
+        config.input.lateral.river,
+        "slope";
         optional = false,
         sel = inds,
         type = Float,
