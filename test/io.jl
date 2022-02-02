@@ -386,7 +386,7 @@ end
     )
     open(tomlpath_error, "w") do io
         TOML.print(io, Dict(config))
-    end  
+    end
     @test_throws ErrorException Wflow.run(tomlpath_error)
     rm(tomlpath_error)
 end

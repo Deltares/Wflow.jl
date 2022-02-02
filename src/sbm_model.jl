@@ -25,8 +25,14 @@ function initialize_sbm_model(config::Config)
     kw_land_tstep = get(config.model, "kw_land_tstep", 0)
     kinwave_it = get(config.model, "kin_wave_iteration", false)::Bool
     routing_options = ("kinematic-wave", "local-inertial")
-    river_routing = get_options(config.model, "river_routing", routing_options, "kinematic-wave")::String
-    land_routing = get_options(config.model, "land_routing", routing_options, "kinematic-wave")::String
+    river_routing = get_options(
+        config.model,
+        "river_routing",
+        routing_options,
+        "kinematic-wave",
+    )::String
+    land_routing =
+        get_options(config.model, "land_routing", routing_options, "kinematic-wave")::String
 
     snow = get(config.model, "snow", false)::Bool
     reservoirs = do_reservoirs
@@ -293,13 +299,12 @@ function initialize_sbm_model(config::Config)
     )
     writer = prepare_writer(
         config,
-        reader,
         modelmap,
         indices_reverse,
         x_nc,
         y_nc,
         nc,
-        maxlayers = sbm.maxlayers,
+        extra_dim = (name = "layer", value = Float64.(1:sbm.maxlayers)),
     )
     close(nc)
 
@@ -330,10 +335,7 @@ function initialize_sbm_model(config::Config)
         slope = βₗ,
     )
     if land_routing == "local-inertial"
-        land = merge(land, (
-            index_river = index_river_nf,
-            staggered_indices = indices,
-        ))
+        land = merge(land, (index_river = index_river_nf, staggered_indices = indices))
     end
     if river_routing == "kinematic-wave"
         river = (

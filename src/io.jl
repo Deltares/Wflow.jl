@@ -365,7 +365,16 @@ function create_tracked_netcdf(path)
 end
 
 "prepare an output dataset for scalar data"
-function setup_scalar_netcdf(path, ncvars, calendar, time_units, float_type = Float32)
+function setup_scalar_netcdf(
+    path,
+    ncvars,
+    modelmap,
+    calendar,
+    time_units,
+    extra_dim,
+    config,
+    float_type = Float32,
+)
     ds = create_tracked_netcdf(path)
     defDim(ds, "time", Inf)  # unlimited
     defVar(
@@ -375,7 +384,8 @@ function setup_scalar_netcdf(path, ncvars, calendar, time_units, float_type = Fl
         ("time",),
         attrib = ["units" => time_units, "calendar" => calendar],
     )
-    for nc in ncvars
+    set_extradim_netcdf(ds, extra_dim)
+    for (nc, netcdfvars) in zip(ncvars, config.netcdf.variable)
         # Delft-FEWS requires the attribute :cf_role = "timeseries_id" when a NetCDF file 
         # contains more than one location list 
         defVar(
@@ -385,16 +395,57 @@ function setup_scalar_netcdf(path, ncvars, calendar, time_units, float_type = Fl
             (nc.location_dim,),
             attrib = ["cf_role" => "timeseries_id"],
         )
-        defVar(
-            ds,
-            nc.var,
-            float_type,
-            (nc.location_dim, "time"),
-            attrib = ["_FillValue" => float_type(NaN)],
-        )
+        v = param(modelmap, nc.par)
+        if eltype(v) <: AbstractFloat
+            defVar(
+                ds,
+                nc.var,
+                float_type,
+                (nc.location_dim, "time"),
+                attrib = ["_FillValue" => float_type(NaN)],
+            )
+        elseif eltype(v) <: SVector
+            if haskey(netcdfvars, extra_dim.name)
+                # `extra_dim.name` as specified in the TOML file is used to index
+                defVar(
+                    ds,
+                    nc.var,
+                    float_type,
+                    (nc.location_dim, "time"),
+                    attrib = ["_FillValue" => float_type(NaN)],
+                )
+            else
+                defVar(
+                    ds,
+                    nc.var,
+                    float_type,
+                    (nc.location_dim, extra_dim.name, "time"),
+                    attrib = ["_FillValue" => float_type(NaN)],
+                )
+            end
+        else
+            error("Unsupported output type: ", typeof(v))
+        end
     end
     return ds
 end
+
+"set extra dimension in output NetCDF file"
+function set_extradim_netcdf(
+    ds,
+    extra_dim::NamedTuple{(:name, :value),Tuple{String,Vector{Float64}}},
+)
+    # the axis attribute `Z` is required to import this type of 3D data by Delft-FEWS
+    # the values of this dimension `extra_dim.value` should be of type Float64
+    if extra_dim.name == "layer"
+        attributes =
+            ["long_name" => "layer_index", "standard_name" => "layer_index", "axis" => "Z"]
+    end
+    defVar(ds, extra_dim.name, extra_dim.value, (extra_dim.name,), attrib = attributes)
+    return nothing
+end
+
+set_extradim_netcdf(ds, extra_dim::Nothing) = nothing
 
 "prepare an output dataset for grid data"
 function setup_grid_netcdf(
@@ -404,7 +455,7 @@ function setup_grid_netcdf(
     parameters,
     calendar,
     time_units,
-    maxlayers,
+    extra_dim,
     sizeinmetres;
     float_type = Float32,
 )
@@ -467,9 +518,7 @@ function setup_grid_netcdf(
             ],
         )
     end
-    if isnothing(maxlayers) == false
-        defVar(ds, "layer", collect(1:maxlayers), ("layer",))
-    end
+    set_extradim_netcdf(ds, extra_dim)
     defVar(
         ds,
         "time",
@@ -489,12 +538,12 @@ function setup_grid_netcdf(
                     attrib = ["_FillValue" => float_type(NaN)],
                 )
             elseif eltype(val.vector) <: SVector
-                # SVectors are used to store layers
+                # for SVectors an additional dimension (`extra_dim`) is required
                 defVar(
                     ds,
                     key,
                     float_type,
-                    ("x", "y", "layer", "time"),
+                    ("x", "y", extra_dim.name, "time"),
                     attrib = ["_FillValue" => float_type(NaN)],
                 )
             else
@@ -513,12 +562,12 @@ function setup_grid_netcdf(
                     attrib = ["_FillValue" => float_type(NaN)],
                 )
             elseif eltype(val.vector) <: SVector
-                # SVectors are used to store layers
+                # for SVectors an additional dimension (`extra_dim`) is required
                 defVar(
                     ds,
                     key,
                     float_type,
-                    ("lon", "lat", "layer", "time"),
+                    ("lon", "lat", extra_dim.name, "time"),
                     attrib = ["_FillValue" => float_type(NaN)],
                 )
             else
@@ -556,8 +605,9 @@ struct Writer
     state_nc_path::Union{String,Nothing}        # path NetCDF file with states
     dataset_scalar::Union{NCDataset,Nothing}    # dataset(NetCDF) for scalar data
     nc_scalar::Vector                           # model parameter (arrays) and associated reducer function for NetCDF scalar output
-    ncvars_dims::Vector                         # NetCDF variable, location dimension and location name for scalar data
+    ncvars_dims::Vector                         # model parameter (String) and associated NetCDF variable, location dimension and location name for scalar data
     nc_scalar_path::Union{String,Nothing}       # path NetCDF file (scalar data)
+    extra_dim::Union{NamedTuple,Nothing}        # name and values for extra dimension (to store SVectors) 
 end
 
 function prepare_reader(config)
@@ -662,20 +712,25 @@ function locations_map(ds, mapname, config)
     return ids
 end
 
-"Get a Vector{Tuple} with NetCDF variable, dimension and location names for scalar data"
+"Get a Vector{Tuple} with model parameter and associated NetCDF variable name, dimension and location names for scalar data"
 function nc_variables_dims(nc_variables, dataset, config)
     ncvars_dims = []
     for nc_var in nc_variables
         var = nc_var["name"]::String
+        par = nc_var["parameter"]::String
         if haskey(nc_var, "map")
             mapname = nc_var["map"]
             ids = string.(locations_map(dataset, mapname, config))
             location_dim = string(var, '_', nc_var["map"])
-            push!(ncvars_dims, (var = var, location_dim = location_dim, locations = ids))
+            push!(
+                ncvars_dims,
+                (par = par, var = var, location_dim = location_dim, locations = ids),
+            )
         else
             push!(
                 ncvars_dims,
                 (
+                    par = par,
                     var = var,
                     location_dim = nc_var["location"],
                     locations = [nc_var["location"]],
@@ -686,7 +741,7 @@ function nc_variables_dims(nc_variables, dataset, config)
     return ncvars_dims
 end
 
-"Get a Vector{String} of all columns names for the CSV header, exept the first, time"
+"Get a Vector{String} of all columns names for the CSV header, except the first, time"
 function csv_header(cols, dataset, config)
     header = [col["header"] for col in cols]
     header = String[]
@@ -804,13 +859,12 @@ end
 
 function prepare_writer(
     config,
-    reader,
     modelmap,
     rev_inds,
     x_nc,
     y_nc,
     nc_static;
-    maxlayers = nothing,
+    extra_dim = nothing,
 )
     sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
 
@@ -833,7 +887,7 @@ function prepare_writer(
             output_map,
             calendar,
             time_units,
-            maxlayers,
+            extra_dim,
             sizeinmetres,
         )
     else
@@ -856,7 +910,7 @@ function prepare_writer(
             state_map,
             calendar,
             time_units,
-            maxlayers,
+            extra_dim,
             sizeinmetres;
             float_type = Float,
         )
@@ -874,7 +928,15 @@ function prepare_writer(
         # get NetCDF info for scalar data (variable name, locationset (dim) and
         # location ids)
         ncvars_dims = nc_variables_dims(config.netcdf.variable, nc_static, config)
-        ds_scalar = setup_scalar_netcdf(nc_scalar_path, ncvars_dims, calendar, time_units)
+        ds_scalar = setup_scalar_netcdf(
+            nc_scalar_path,
+            ncvars_dims,
+            modelmap,
+            calendar,
+            time_units,
+            extra_dim,
+            config,
+        )
         # create a vector of (parameter, reducer) named tuples which will be used to
         # retrieve and reduce data during a model run
         nc_scalar = []
@@ -934,19 +996,38 @@ function prepare_writer(
         nc_scalar,
         ncvars_dims,
         nc_scalar_path,
+        extra_dim,
     )
 end
 
 "Write a new timestep with scalar data to a NetCDF file"
 function write_netcdf_timestep(model, dataset)
-    @unpack writer, clock = model
+    @unpack writer, clock, config = model
 
     time_index = add_time(dataset, clock.time)
-    for (nt, nc) in zip(writer.nc_scalar, writer.ncvars_dims)
+    for (nt, nc) in zip(writer.nc_scalar, config.netcdf.variable)
         A = param(model, nt.parameter)
+        elemtype = eltype(A)
         # could be a value, or a vector in case of map
-        v = nt.reducer(A)
-        dataset[nc.var][:, time_index] .= v
+        if elemtype <: AbstractFloat
+            v = nt.reducer(A)
+            dataset[nc["name"]][:, time_index] .= v
+        elseif elemtype <: SVector
+            # check if an extra dimension and index is specified in the TOML file 
+            if haskey(nc, writer.extra_dim.name)
+                i = get_index_dimension(nc, model)
+                v = nt.reducer(getindex.(A, i))
+                dataset[nc["name"]][:, time_index] .= v
+            else
+                nlayer = length(first(A))
+                for i = 1:nlayer
+                    v = nt.reducer(getindex.(A, i))
+                    dataset[nc["name"]][:, i, time_index] .= v
+                end
+            end
+        else
+            error("Unsupported output type: ", elemtype)
+        end
     end
     return model
 end
@@ -1163,14 +1244,20 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset, fileformat)
 end
 
 function write_csv_row(model)
-    @unpack writer, clock = model
+    @unpack writer, clock, config = model
     isnothing(writer.csv_path) && return nothing
     io = writer.csv_io
     print(io, string(clock.time))
-    for nt in writer.csv_cols
+    for (nt, col) in zip(writer.csv_cols, config.csv.column)
         A = param(model, nt.parameter)
-        # could be a value, or a vector in case of map
-        v = nt.reducer(A)
+        # v could be a value, or a vector in case of map
+        if eltype(A) <: SVector
+            # indexing is required in case of a SVector and CSV output
+            i = get_index_dimension(col, model)
+            v = nt.reducer(getindex.(A, i))
+        else
+            v = nt.reducer(A)
+        end
         # numbers are also iterable
         for el in v
             print(io, ',', el)
@@ -1270,8 +1357,9 @@ nc_dim_name(ds::CFDataset, name::Symbol) = nc_dim_name(Symbol.(keys(ds.dim)), na
 """
     nc_dim(ds::CFDataset, name::Symbol)
 
-Return the dimension coordinate, based on the internal name (:x, :y, :layer, :time),
-which will map to the correct NetCDF name using `nc_dim_name`.
+Return the dimension coordinate, based on the internal name (:x, :y, :`extra_dim.name`,
+:time), `extra_dim` depends on the model type, which will map to the correct NetCDF name
+using `nc_dim_name`.
 """
 nc_dim(ds::CFDataset, name) = ds[nc_dim_name(ds, name)]
 
@@ -1300,7 +1388,7 @@ Return the data of a NetCDF data variable as an Array. Only dimensions in `dim_s
 NamedTuple like (x=:, y=:, time=1). Other dimensions that may be present need to be size 1,
 otherwise an error is thrown.
 
-`dim_sel` keys should be the internal dimension names; :x, :y, :time, :layer.
+`dim_sel` keys should be the internal dimension names; :x, :y, :time, :`extra_dim.name`.
 """
 function read_dims(A::NCDatasets.CFVariable, dim_sel::NamedTuple)
     dimsizes = dimsize(A)
@@ -1359,13 +1447,17 @@ end
 """
     permute_data(data, dim_names)
 
-Given an Array of data, and a list of its dimension names, return a permuted version
-of the data such that the dimension order will follow (:x, :y, :layer). No permutation
-is done if this is not needed.
+Given an Array of data, and a list of its dimension names, return a permuted version of the
+data such that the dimension order will follow (:x, :y, `extra_dim.name`). No permutation is
+done if this is not needed.
 """
 function permute_data(data, dim_names)
     @assert ndims(data) == length(dim_names)
-    desired_order = (:x, :y, :layer)
+    if :layer in dim_names
+        desired_order = (:x, :y, :layer)
+    else
+        desired_order = (:x, :y)
+    end
     @assert dim_names ⊆ desired_order
     if length(dim_names) == 2
         if first(dim_names) == :x
@@ -1427,7 +1519,7 @@ end
 Return the x coordinate Vector{Float64}, whether it is called x, lon or longitude.
 Also sorts the vector to be increasing, to match `read_standardized`.
 """
-function read_x_axis(ds::CFDataset)
+function read_x_axis(ds::CFDataset)::Vector{Float64}
     candidates = ("x", "lon", "longitude")
     for candidate in candidates
         if haskey(ds, candidate)
@@ -1443,7 +1535,7 @@ end
 Return the y coordinate Vector{Float64}, whether it is called y, lat or latitude.
 Also sorts the vector to be increasing, to match `read_standardized`.
 """
-function read_y_axis(ds::CFDataset)
+function read_y_axis(ds::CFDataset)::Vector{Float64}
     candidates = ("y", "lat", "latitude")
     for candidate in candidates
         if haskey(ds, candidate)
@@ -1451,4 +1543,16 @@ function read_y_axis(ds::CFDataset)
         end
     end
     error("no y axis found in $(path(ds))")
+end
+
+"Get `index` for dimension name `layer`"
+function get_index_dimension(var, model)::Int
+    @unpack vertical = model
+    if haskey(var, "layer")
+        inds = collect(1:vertical.maxlayers)
+        index = inds[var["layer"]]
+    else
+        error("Unrecognized or missing dimension name to index $(var)")
+    end
+    return index
 end

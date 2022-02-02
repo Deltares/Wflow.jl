@@ -198,6 +198,13 @@ header = "temp_bycoord"
 parameter = "vertical.temperature"
 
 [[csv.column]]
+coordinate.x = 6.255
+coordinate.y = 50.012
+header = "vwc_layer2_bycoord"
+parameter = "vertical.vwc"
+layer = 2
+
+[[csv.column]]
 header = "temp_byindex"
 index.x = 100
 index.y = 264
