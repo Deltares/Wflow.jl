@@ -365,7 +365,16 @@ function create_tracked_netcdf(path)
 end
 
 "prepare an output dataset for scalar data"
-function setup_scalar_netcdf(path, ncvars, modelmap, calendar, time_units, extra_dim, config, float_type = Float32)
+function setup_scalar_netcdf(
+    path,
+    ncvars,
+    modelmap,
+    calendar,
+    time_units,
+    extra_dim,
+    config,
+    float_type = Float32,
+)
     ds = create_tracked_netcdf(path)
     defDim(ds, "time", Inf)  # unlimited
     defVar(
@@ -404,7 +413,7 @@ function setup_scalar_netcdf(path, ncvars, modelmap, calendar, time_units, extra
                     float_type,
                     (nc.location_dim, "time"),
                     attrib = ["_FillValue" => float_type(NaN)],
-                )               
+                )
             else
                 defVar(
                     ds,
@@ -422,18 +431,17 @@ function setup_scalar_netcdf(path, ncvars, modelmap, calendar, time_units, extra
 end
 
 "set extra dimension in output NetCDF file"
-function set_extradim_netcdf(ds, extra_dim::NamedTuple{(:name, :value), Tuple{String, Vector{Float64}}})
+function set_extradim_netcdf(
+    ds,
+    extra_dim::NamedTuple{(:name, :value),Tuple{String,Vector{Float64}}},
+)
     # the axis attribute `Z` is required to import this type of 3D data by Delft-FEWS
     # the values of this dimension `extra_dim.value` should be of type Float64
     if extra_dim.name == "layer"
-        attributes = [
-            "long_name" => "layer_index",
-            "standard_name" => "layer_index",
-            "axis" => "Z",
-        ]
+        attributes =
+            ["long_name" => "layer_index", "standard_name" => "layer_index", "axis" => "Z"]
     end
-    defVar(ds, extra_dim.name, extra_dim.value, (extra_dim.name,), 
-    attrib = attributes)
+    defVar(ds, extra_dim.name, extra_dim.value, (extra_dim.name,), attrib = attributes)
     return nothing
 end
 
@@ -714,11 +722,15 @@ function nc_variables_dims(nc_variables, dataset, config)
             mapname = nc_var["map"]
             ids = string.(locations_map(dataset, mapname, config))
             location_dim = string(var, '_', nc_var["map"])
-            push!(ncvars_dims, (par = par, var = var, location_dim = location_dim, locations = ids))
+            push!(
+                ncvars_dims,
+                (par = par, var = var, location_dim = location_dim, locations = ids),
+            )
         else
             push!(
                 ncvars_dims,
-                (   par = par,
+                (
+                    par = par,
                     var = var,
                     location_dim = nc_var["location"],
                     locations = [nc_var["location"]],
@@ -916,7 +928,15 @@ function prepare_writer(
         # get NetCDF info for scalar data (variable name, locationset (dim) and
         # location ids)
         ncvars_dims = nc_variables_dims(config.netcdf.variable, nc_static, config)
-        ds_scalar = setup_scalar_netcdf(nc_scalar_path, ncvars_dims, modelmap, calendar, time_units, extra_dim, config)
+        ds_scalar = setup_scalar_netcdf(
+            nc_scalar_path,
+            ncvars_dims,
+            modelmap,
+            calendar,
+            time_units,
+            extra_dim,
+            config,
+        )
         # create a vector of (parameter, reducer) named tuples which will be used to
         # retrieve and reduce data during a model run
         nc_scalar = []
@@ -996,12 +1016,12 @@ function write_netcdf_timestep(model, dataset)
             # check if an extra dimension and index is specified in the TOML file 
             if haskey(nc, writer.extra_dim.name)
                 i = get_index_dimension(nc, model)
-                v = nt.reducer(getindex.(A,i))
+                v = nt.reducer(getindex.(A, i))
                 dataset[nc["name"]][:, time_index] .= v
             else
                 nlayer = length(first(A))
                 for i = 1:nlayer
-                    v = nt.reducer(getindex.(A,i))
+                    v = nt.reducer(getindex.(A, i))
                     dataset[nc["name"]][:, i, time_index] .= v
                 end
             end
@@ -1234,10 +1254,10 @@ function write_csv_row(model)
         if eltype(A) <: SVector
             # indexing is required in case of a SVector and CSV output
             i = get_index_dimension(col, model)
-            v = nt.reducer(getindex.(A,i))
+            v = nt.reducer(getindex.(A, i))
         else
             v = nt.reducer(A)
-        end        
+        end
         # numbers are also iterable
         for el in v
             print(io, ',', el)
@@ -1525,9 +1545,9 @@ function read_y_axis(ds::CFDataset)::Vector{Float64}
     error("no y axis found in $(path(ds))")
 end
 
-"Get `index` for dimension name `layer`" 
+"Get `index` for dimension name `layer`"
 function get_index_dimension(var, model)::Int
-    @unpack vertical = model 
+    @unpack vertical = model
     if haskey(var, "layer")
         inds = collect(1:vertical.maxlayers)
         index = inds[var["layer"]]

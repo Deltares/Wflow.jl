@@ -794,11 +794,11 @@ function initialize_shallowwater_land(
         type = Float,
     )
     elevation_2d = ncread(
-        nc, 
+        nc,
         config.input,
         "lateral.land.elevation";
-        optional = false, 
-        type = Float, 
+        optional = false,
+        type = Float,
         fill = 0,
     )
     elevation = elevation_2d[inds]
