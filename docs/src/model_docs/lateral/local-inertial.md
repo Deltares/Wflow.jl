@@ -1,4 +1,4 @@
-# Local inertial
+# [Local inertial] (@id local_inertial)
 
 ## River routing
 The local inertial approximation of shallow water flow neglects only the convective

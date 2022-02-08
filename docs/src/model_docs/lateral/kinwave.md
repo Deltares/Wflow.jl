@@ -1,4 +1,4 @@
-# Kinematic wave
+# [Kinematic wave] (@id kin_wave)
 
 ## Surface routing
 The main flow routing scheme available in Wflow.jl is the kinematic wave approach for

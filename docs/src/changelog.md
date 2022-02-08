@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   update the name.
 
 ### Added
-- Additional log messages and log file as output, see also [Logging](@ref).
+- Additional log messages and log file as output, see also [Logging](@ref logging_toml).
 - Option to use the local inertial model for river flow as part of the `sbm` model type. See
   also [SBM + Local inertial river](@ref).
 - Option to use the local inertial model for 1D river flow combined with 2D overland flow as

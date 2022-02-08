@@ -1,4 +1,4 @@
-# wflow\_sbm (@id wflow_sbm_desc)
+# [wflow\_sbm] (@id wflow_sbm_desc)
 
 ## Introduction
 

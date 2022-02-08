@@ -20,7 +20,7 @@ time_units = "days since 1900-01-01 00:00:00"   # optional, this is default valu
 timestepsecs = 86400                            # optional, default from forcing NetCDF
 ```
 
-## Logging
+## [Logging](@id logging_toml)
 Wflow emits logging messages at various levels such as debug, info, and error. These get
 sent to both the terminal as well as a log file. If you want to debug an issue it can be
 helpful to set `loglevel = "debug"` in the TOML. To avoid flooding the screen, debug
@@ -38,7 +38,7 @@ which levels are filtered out, so the default setting `"info"` does not show any
 messages. Note that for finer control, you can also pass an integer log level, see Julia's
 [Logging](https://docs.julialang.org/en/v1/stdlib/Logging/#Log-event-structure)
 documentation. `path_log` sets the desired output path for the log file. For information
-regarding `fews_run`, see [Run from Delft-FEWS](@ref).
+regarding `fews_run`, see [Run from Delft-FEWS](@ref run_fews).
 
 ## Model section
 Model specific settings can be included in the model section of the TOML file.
@@ -189,7 +189,7 @@ specified in separate `[[netcdf.variable]]` entries. Note that the specification
 layer is not optional when Wflow is integrated with Delft-FEWS, for NetCDF scalar data an
 extra dimension is not allowed by the `importNetcdfActivity` of the Delft-FEWS General
 Adapter. In the section [Output CSV section](@ref), similar functionality is available for
-CSV. For integration with Delft-FEWS, see also [Run from Delft-FEWS](@ref), it is
+CSV. For integration with Delft-FEWS, see also [Run from Delft-FEWS](@ref run_fews), it is
 recommended to write scalar data to NetCDF format since the General Adapter of Delft-FEWS
 can ingest this data format directly.
 
@@ -317,3 +317,28 @@ scale = 1.5
 offset = 0.5
 ```
 
+## Fixed forcing values
+It is possible to set fixed values for forcing parameters through the TOML file. To set for
+example `temperature` to a fixed value of 10 ``\degree``C, the complete `forcing` list is
+required:
+
+```toml
+forcing = [
+  "vertical.precipitation",
+  "vertical.temperature",
+  "vertical.potential_evaporation",
+]
+
+[input.vertical.temperature]
+value = 10
+```
+
+Note that the mapping to the external netCDF variable listed under the section
+`[input.vertical]` needs to be removed or commented out:
+
+```toml
+[input.vertical]
+potential_evaporation = "PET" # forcing
+# temperature = "TEMP" # forcing
+precipitation = "P" # forcing
+```
