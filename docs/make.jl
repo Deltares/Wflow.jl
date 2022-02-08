@@ -6,6 +6,7 @@ pages = [
         "index.md",
         # "intro/use_cases.md",
         "intro/publications.md",
+        "changelog.md"
     ],
     "User guide" => [
         "user_guide/intro.md",
@@ -24,6 +25,7 @@ pages = [
     ],
     "Model documentation" => [
         "model_docs/intro.md",
+        "model_docs/model_configurations.md",
         "Vertical concepts" => [
             # "model_docs/vertical/sbm.md",
             "model_docs/vertical/sbm_new.md",
