@@ -17,7 +17,7 @@ daily runoff is computed through application of the HBV-96 of the HBV model. The
 grid cells offers the possibility to turn the HBV modelling concept, which is originally
 lumped, into a distributed model.
 
-![wflow_hbv model](../images/hbv96.png)
+![wflow_hbv model](../../images/hbv96.png)
 
 The figure above shows a schematic view of hydrological response simulation with the
 HBV-modelling concept. The land-phase of the hydrological cycle is represented by three

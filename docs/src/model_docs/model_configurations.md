@@ -90,7 +90,7 @@ lateral.river.lake => struct NaturalLake{T} # optional
 lateral.river.reservoir => struct SimpleReservoir{T} # optional
 ```
 
-## wflow\_hbv
+## [wflow\_hbv] (@id hbv_model_config)
 
 The routing for river and overland flow is described in the section [Kinematic wave](@ref kin_wave).
 

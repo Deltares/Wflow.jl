@@ -49,7 +49,8 @@ parameters are described in [Reservoirs](@ref reservoir_params) and [Lakes](@ref
 lake_params).
 
 Besides the river and overland flow components the  wflow\_sbm + kinematic wave model consists of
-the [wflow\_sbm vertical concept](@ref wflow_sbm_desc) and input parameters for this component are described in the wflow_sbm section of [Model parameters](@ref params_lat). Finally, the SBM + Kinematic wave model
+the [wflow\_sbm vertical concept](@ref wflow_sbm_desc) and input parameters for this component are 
+described in the wflow\_sbm section of [Model parameters](@ref params_lat). Finally, the SBM + Kinematic wave model
 includes the lateral component [Subsurface flow routing](@ref) and parameters that are part
 of this component are described in the [Lateral subsurface flow](@ref) section of Model
 parameters. Input parameters for this component of the SBM + Kinematic wave model are

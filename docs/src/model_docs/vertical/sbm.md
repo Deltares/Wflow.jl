@@ -1,4 +1,4 @@
-# [wflow\_sbm](@id wflow_sbm_desc)
+# [wflow\_sbm](@id wflow_sbm_desc_orig)
 
 The SBM vertical concept has its roots in the Topog\_SBM model but has had considerable
 changes over time. The main differences are:
