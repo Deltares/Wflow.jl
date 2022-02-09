@@ -1,5 +1,5 @@
 # [Step 2: Preparing the settings file](@id config_toml)
-A settings file is essential for wflow, as it contains information on the model configuration, simulation period, input files, and parameters. The settings are provided in a TOML file. The settings file is structured in several sections, which are explained below. The filepaths that are provided in this file are relative to the location of the TOML file. 
+A settings file is essential for wflow, as it contains information on the model configuration, simulation period, input files, and parameters. The settings are provided in a TOML file. The settings file is structured in several sections, which are explained below. The filepaths that are provided in this file are relative to the location of the TOML file , or to `dir_input` and `dir_output` if they are given.
 
 ## General time info
 Time information is optional. When left out, each time step in the forcing NetCDF will be
@@ -18,6 +18,8 @@ starttime = 2000-01-01T00:00:00                 # optional, default from forcing
 endtime = 2000-02-01T00:00:00                   # optional, default from forcing NetCDF
 time_units = "days since 1900-01-01 00:00:00"   # optional, this is default value
 timestepsecs = 86400                            # optional, default from forcing NetCDF
+dir_input = "data/input"                        # optional, default is the path of the TOML
+dir_output = "data/output"                      # optional, default is the path of the TOML
 ```
 
 ## [Logging](@id logging_toml)
@@ -52,7 +54,7 @@ reinit = true                       # cold (reinit = true) or warm state (reinit
 reservoirs = false                  # include reservoir modelling, default is false
 kin_wave_iteration = false          # enable kinematic wave iterations in the model, default is false
 thicknesslayers = [100, 300, 800]   # specific SBM setting: for each soil layer a thickness [mm] is specified
-min_streamorder = 4                 # minimum stream order to delineate subbasins, default is 4 (for multi-threading computing purposes)
+min_streamorder = 3                 # minimum stream order to delineate subbasins, default is 4 (for multi-threading computing purposes)
 ```
 
 ## State options
@@ -60,7 +62,32 @@ The `state` section in the TOML file provides information about the location of 
 
 ```toml
 [state]
-path_output = "data/outstates-moselle.nc"   # Output location of the states after the model run
+path_input = "instates-moselle.nc" 
+path_output = "outstates-moselle.nc"
+
+[state.vertical]
+satwaterdepth = "satwaterdepth"
+snow = "snow"
+tsoil = "tsoil"
+ustorelayerdepth = "ustorelayerdepth"
+snowwater = "snowwater"
+canopystorage = "canopystorage"
+
+[state.lateral.river]
+q = "q_river"
+h = "h_river"
+h_av = "h_av_river"
+
+[state.lateral.river.reservoir]
+volume = "volume_reservoir"
+
+[state.lateral.subsurface]
+ssf = "ssf"
+
+[state.lateral.land]
+q = "q_land"
+h = "h_land"
+h_av = "h_av_land"
 ```
 
 ## Input section
@@ -75,8 +102,9 @@ If a model parameter is not mapped, a default value will be used if available.
 
 ```toml
 [input]
-path_forcing = "data/forcing-moselle.nc"    # Location of the forcing data
-path_static = "data/staticmaps-moselle.nc"  # Location of the static data
+# use "forcing-year-*.nc" if forcing files are split in time
+path_forcing = "forcing-moselle.nc"    # Location of the forcing data
+path_static = "staticmaps-moselle.nc"  # Location of the static data
 
 # these are not directly part of the model
 gauges = "wflow_gauges"
@@ -149,7 +177,7 @@ netCDF variables.
 
 ```toml
 [output]    
-path = "data/output_moselle.nc"         # Location of the output file
+path = "output_moselle.nc"         # Location of the output file
 
 [output.vertical]   # Mapping of names between internal model components and external netCDF variables
 satwaterdepth = "satwaterdepth"
@@ -195,7 +223,7 @@ can ingest this data format directly.
 
 ```toml
 [netcdf]
-path = "data/output_scalar_moselle.nc"  # Location of the results
+path = "output_scalar_moselle.nc"  # Location of the results
 
 [[netcdf.variable]] # Extract the values of lateral.river.q using the gauges map, and assigning it with the name 'Q' as variable to the netCDF
 name = "Q"
@@ -247,7 +275,7 @@ list. You may specify as many entries as you wish.
 
 ```toml
 [csv]
-path = "data/output_moselle.csv"
+path = "output_moselle.csv"
 
 [[csv.column]]
 header = "Q"

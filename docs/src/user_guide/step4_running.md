@@ -20,38 +20,41 @@ Wflow.run(config)
 
 ## [Using the command line interface](@id cli)
 
-Simply running `wflow_cli` in the command line with no arguments will give the following 
-message:
+If you don't need the extra features of using Wflow as a library, but just want to run
+simulations, the command line interface makes it easier to do so. It consists of a single
+executable, `wflow_cli` that accepts a single argument, the path to a TOML configuration
+file.
+
+Binaries of `wflow_cli` can be downloaded from our website
+[download.deltares.nl](https://download.deltares.nl/en/download/wflow/), and are currently
+available for Windows and Linux.
+
+After installing you can see three folders in the installation directory. It is only the
+`bin/wflow_cli` that is directly used. All three folders need to stay together however.
+The share folder contains TOML files with more information about the build.
+
+```
+bin\wflow_cli
+lib
+share
+```
+
+Simply running `wflow_cli` with no arguments will give the following message:
 
 ```
 Usage: wflow_cli 'path/to/config.toml'
 ```
 
-To try out a simple test model, you can download the following example data:
-[`sbm_moselle_config_data.zip`](https://github.com/visr/wflow-artifacts/releases/download/v0.2.1/sbm_moselle_config_data.zip).
-This contains the following files, with the input data in the `data` folder, and the model
-settings in the `.toml` file:
+When starting a run, you will see basic run information on the screen, as well as a progress
+bar, that gives an estimate of how much time is needed to finish the simulaion:
 
 ```
-data\
-    forcing-moselle.nc
-    staticmaps-moselle.nc
-sbm_config.toml
-```
-
-The TOML configuration file is prepared with the settings required to perform a one
-year simulation of the Moselle catchment. To run the model, execute the following command. 
-This will give the following message with information on the run, while the model is 
-simulating the catchment
-
-```
-wflow_cli "path/to/sbm_moselle/sbm_config.tml"
-
 ┌ Info: Run information
 │   model_type = "sbm"
 │   starttime = CFTime.DateTimeStandard(2000-01-01T00:00:00)
 │   Δt = 86400 seconds
-└   endtime = CFTime.DateTimeStandard(2000-12-31T00:00:00)
+│   endtime = CFTime.DateTimeStandard(2000-12-31T00:00:00)
+└   nthreads() = 4
 
-Progress: 100%|██████████████████████████████████████████████████| Time: 0:01:07
+Progress: 100%|██████████████████████████████████████████████████| Time: 0:00:27
 ```

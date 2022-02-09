@@ -83,7 +83,14 @@ targetminfrac = "ResTargetMinFrac"
 
 ### Using wflow in Julia
 
-Wflow supports multi-threading execution of the wflow\_sbm model that uses the kinematic wave approach for river, overland and lateral subsurface flow. Both the wflow\_sbm and the kinematic wave components of this model can run on multiple threads. This functionality may also be useful for models that make (partly) use of the kinematic wave, such as the wflow\_sbm + groundwater flow and the wflow\_hbv models.
+Wflow supports multi-threading execution of the wflow\_sbm model that uses the kinematic wave approach for river, overland and lateral subsurface flow. Both the wflow\_sbm and the kinematic wave components of this model can run on multiple threads. The optional local inertial model for river flow as part of the
+wflow\_sbm model [SBM + Local inertial river](@ref) model can also run on multiple threads.
+The threading functionality for the kinematic wave may also be useful for models that make
+(partly) use of this routing approach as the [HBV model](@ref) and the wflow\_sbm model 
+[SBM + Groundwater flow](@ref). The multi-threading functionality in Wflow is considered experimental, see also the following
+[issue](https://github.com/Deltares/Wflow.jl/issues/139), where an error was not thrown
+running code multi-threaded. Because of this we advise to start with running a Wflow model
+single-threaded (for example during the testing phase of setting up an new Wflow model). 
 
 For information on how to start Julia with multiple threads we refer to [How to start Julia with multiple threads](https://docs.julialang.org/en/v1/manual/multi-threading/#Starting-Julia-with-multiple-threads).
 

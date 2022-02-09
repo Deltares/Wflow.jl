@@ -45,7 +45,8 @@ specific_leaf = "Sl"
 | **`pathfrac`** | fraction of compacted area | - | 0.01  |
 | **`rootingdepth`** | rooting depth  | mm | 750.0  |
 | **`rootdistpar`** | controls how roots are linked to water table | - | -500.0  |
-| **`cap_hmax`** | controlling capillary rise | mm | 2000.0  |
+| **`cap_hmax`** | water depth beyond which capillary flux ceases | mm | 2000.0  |
+| **`cap_n`** | coefficient controlling capillary rise | - | 2.0  |
 | **`et_reftopot`** | multiplication factor to correct reference evaporation | - | 1.0  |
 | **`sl`** (`specific_leaf`) | specific leaf storage  | mm | - |
 | **`swood`** (`storage_wood`) | storage woody part of vegetation | mm | - |
@@ -127,7 +128,7 @@ internal model parameter to the external netCDF variable.
 |  parameter | description    | unit | default |
 |:---------------| --------------- | ---------------------- | ----- |
 | **`cfmax`**  | degree-day factor | mm ᵒC``^{-1}`` Δt``^{-1}`` | 3.75653 mm ᵒC``^{-1}`` day``^{-1}``  |
-| **``tt`**  | threshold temperature for snowfall| ᵒC | -1.41934  |
+| **`tt`**  | threshold temperature for snowfall| ᵒC | -1.41934  |
 | **`tti`**  | threshold temperature interval length | ᵒC | 1.0  |
 | **`ttm`**  | threshold temperature for snowmelt  | ᵒC | -1.41934  |
 | **`whc`**  | water holding capacity as fraction of current snow pack  | - | 0.1  |
