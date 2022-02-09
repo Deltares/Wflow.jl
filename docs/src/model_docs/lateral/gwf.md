@@ -8,7 +8,7 @@ Single layer groundwater flow requires the four following components, and each i
 + boundaries
 
 ## Aquifer types
-Groundwater flow can occur either in a confied or unconfined aquifer. Confined aquifers are
+Groundwater flow can occur either in a confined or unconfined aquifer. Confined aquifers are
 overlain by a poorly permeable confining layer (e.g. clay). No air can get in to fill the
 pore space so that the aquifer always remains fully saturated. For a confined aquifer, water
 will always flow along the complete height ``H`` [m] over the aquifer and transmissivity

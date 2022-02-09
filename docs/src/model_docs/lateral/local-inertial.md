@@ -25,7 +25,7 @@ water depth [m] at the previous time step, ``A`` is the river area [m``^2``] and
 and ``Q_{dst}`` represent river flow [m``^3``/s] at the upstream and downstream link of the
 river cell, respectively.
 
-The model time step ``\Delta t`` for the local inertal model is estimated based on the
+The model time step ``\Delta t`` for the local inertial model is estimated based on the
 Courant-Friedrichs-Lewy condition (Bates et al., 2010):
 
 ```math
@@ -48,7 +48,7 @@ h_thresh = 0.1                 # water depth [m] threshold for calculating flow 
 riverlength_bc = 1000.0        # river length [m] for boundary points (default = 1e04)
 ```
 
-The momentum equation is most stable for low slope enviroments, and to keep the simulation
+The momentum equation is most stable for low slope environments, and to keep the simulation
 stable for (partly) steep environments the `froude_limit` option is set to true by default.
 This setting limits flow conditions to subcritical-critical conditions based on the Froude
 number ($\le 1$), similar to Coulthard et al. (2013) in the CAESAR-LISFLOOD model and Adams

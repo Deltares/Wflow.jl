@@ -64,14 +64,14 @@ flow and can therefore not be used in combination with the river part of the sed
 ## River Sediment Model
 
 Sediment dynamics in the river can be described by the three same processes than on the
-land: erosion, deposition and transport. The diﬀerence is that channel ﬂow is much higher,
+land: erosion, deposition and transport. The difference is that channel ﬂow is much higher,
 deeper and permanent compared to overland ﬂow. In channels, erosion is the direct removal of
 sediments from the river bed or bank (lateral erosion). Sediments are transported in the
 river either by rolling, sliding and silting (bed load transport) or via turbulent flow in
 the higher water column (suspended load transport). The type of transport is determined by
 the river bed shear stress. As sediment particles have a higher density than water, they can
 also be deposited on the river bed according to their settling velocity compared to ﬂow
-velocity. In addition to regular deposition in the river, lakes, reservoirs and ﬂoodplains
+velocity. In addition to regular deposition in the river, lakes, reservoirs and floodplains
 represents additional major sediment settling pools.
 
 Complete models of sediment dynamics based on hydrology and not hydraulic or hydrodynamic
@@ -79,7 +79,7 @@ are much rarer than for soil loss and inland dynamics. The simpler models such a
 default sediment river model uses again the transport capacity of the ﬂow to determine if
 there is erosion or deposition (Neitsch et al., 2011).  A more physics-based approach
 (Partheniades, 1965) to determine river erosion is used by Liu et al. (2018) and in the new
-SWAT’s approach developed by Narasimhan et al. (2017). For wﬂow_sediment, the new
+SWAT’s approach developed by Narasimhan et al. (2017). For wﬂow\_sediment, the new
 physics-based model of SWAT was chosen for transport and erosion as it enables the use of
 parameter estimation for erosion of bed and bank of the channel and separates the suspended
 from the bed loads. 
@@ -406,7 +406,7 @@ transport in overland flow.
   R.Srinivasan. Modelling hydrology and water quality in the pre-alpine/alpine Thur
   watershed using SWAT. Journal of Hydrology, 333(2-4):413-430, 2007.
   10.1016/j.jhydrol.2006.09.014
-+ P. Borrelli, M. Marker, P. Panagos, and B. Schutt. Modeling soil erosion and river
++ P. Borrelli, M. Märker, P. Panagos, and B. Schütt. Modeling soil erosion and river
   sediment yield for an intermountain drainage basin of the Central Apennines, Italy.
   Catena, 114:45-58, 2014. 10.1016/j.catena.2013.10.007
 + F. Engelund and E. Hansen. A monograph on sediment transport in alluvial streams.

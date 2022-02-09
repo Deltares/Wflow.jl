@@ -40,7 +40,7 @@ specific_leaf = "Sl"
 | **`infiltcapsoil`** | soil infiltration capacity | mm Δt``^{-1}`` | 100.0 mm day``^{-1}``|
 | **`maxleakage`** | maximum leakage from saturated zone | mm Δt``^{-1}`` | 0.0  mm day``^{-1}``|
 | **`c`** | Brooks-Corey power coefficient for each soil layer  | - | 10.0  |
-| **`kvfrac`** | muliplication factor applied to kv_z (vertical flow)  | - | 1.0  |
+| **`kvfrac`** | multiplication factor applied to kv_z (vertical flow)  | - | 1.0  |
 | **`waterfrac`** | fraction of open water (excluding rivers) | - | 0.0  |
 | **`pathfrac`** | fraction of compacted area | - | 0.01  |
 | **`rootingdepth`** | rooting depth  | mm | 750.0  |
@@ -97,14 +97,14 @@ specific_leaf = "Sl"
 | `exfiltsatwater` | water exfiltrating during saturation excess conditions | mm Δt``^{-1}`` | - |
 | `exfiltustore` | water exfiltrating from unsaturated store because of change in water table | mm Δt``^{-1}`` | - |
 | `excesswatersoil` | excess water for non-compacted fraction | mm Δt``^{-1}`` | - |
-| `excesswaterpath` | excess water for ompacted fraction | mm Δt``^{-1}`` | - |
+| `excesswaterpath` | excess water for compacted fraction | mm Δt``^{-1}`` | - |
 | `runoff` | total surface runoff from infiltration and saturation excess  | mm Δt``^{-1}`` | - |
 | `vwc` | volumetric water content per soil layer (including θᵣ and saturated zone)  | - | - |
 | `vwc_perc` | volumetric water content per soil layer (including θᵣ and saturated zone)  | % | - |
 | `rootstore` | root water storage in unsaturated and saturated zone (excluding θᵣ)  | mm| - |
 | `vwc_root` | volumetric water content in root zone (including θᵣ and saturated zone) | -| - |
 | `vwc_percroot` | volumetric water content in root zone (including θᵣ and saturated zone) | % | - |
-| `ustoredepth` | total amount of available water in the usaturated zone | mm | - |
+| `ustoredepth` | total amount of available water in the unsaturated zone | mm | - |
 | `transfer` | downward flux from unsaturated to saturated zone | mm Δt``^{-1}`` | - |
 | `recharge` | net recharge to saturated zone | mm Δt``^{-1}`` | - |
 | `actleakage` | actual leakage from saturated store  | mm Δt``^{-1}`` | - |

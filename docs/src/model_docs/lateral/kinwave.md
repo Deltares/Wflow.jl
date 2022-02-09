@@ -69,7 +69,7 @@ Combining with the following continuity equation:
     (\theta_s-\theta_r)\frac{\partial h}{\partial t} = -w\frac{\partial q}{\partial x} + wr
 ```
 where ``h`` is the water table height [m], ``x`` is the distance downslope [m], and ``r``
-is the netto input rate [m/t] to the saturated store. Substituting for ``h (\frac{\partial
+is the net input rate [m/t] to the saturated store. Substituting for ``h (\frac{\partial
 q}{\partial h})``, gives:
 ```math 
   w \frac{\partial q}{\partial t} = -cw\frac{\partial q}{\partial x} + cwr
@@ -185,7 +185,7 @@ the sum of inflows (river, overland and lateral subsurface flow) [m``^3`` s``^{-
 
 ![lake_schematisation](../../images/lake.png)
 
-*Lake schematisation.*
+*Lake schematization.*
 
 Most of the variables in this equation are already known or coming from previous timestep,
 apart from ``S(t+ \Delta t)`` and ``Q_{out}`` which can both be linked to the water level

@@ -37,7 +37,7 @@ glacier = true
 ```
 ## Potential Evaporation
 The `cevpf` model parameter is used to adjust the potential evaporation based on land use.
-In the original HBV version cevpfo is used, a factor for forest land use only.
+In the original HBV version `cevpfo` is used, a factor for forest land use only.
 
 ## Interception
 For interception storage a single `icf` parameter is used according to the land use. In this

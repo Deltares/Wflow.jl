@@ -16,7 +16,7 @@ q_av = "q_river"
 q = "q_land"
 h = "h_land"
 
-# Scalar output (mapped to the specified map), it a
+# Scalar output (mapped to the specified map)
 [netcdf]
 path = "data/output_scalar.nc"
 
@@ -33,5 +33,3 @@ reducer = "mean"
 ```
 
 Using your own preferred programming language, the model output files can be easily read and visualized.
-
-Calibrating wflow (?)

@@ -46,7 +46,7 @@ Usage: wflow_cli 'path/to/config.toml'
 ```
 
 When starting a run, you will see basic run information on the screen, as well as a progress
-bar, that gives an estimate of how much time is needed to finish the simulaion:
+bar, that gives an estimate of how much time is needed to finish the simulation:
 
 ```
 ┌ Info: Run information

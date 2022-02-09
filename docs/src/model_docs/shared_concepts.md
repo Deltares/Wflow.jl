@@ -33,7 +33,7 @@ exceeds `whc`, either through snow melt or incoming rainfall, the surplus water
     snowwater = snowwater - refreezing  # free water content in snow
     maxsnowwater = snow * whc  # max water in the snow
     snowwater = snowwater + snowmelt + rainfall  # add all water and potentially supersaturate the snowpack
-    rainfall = max(snowwater - maxsnowwater, 0.0)  # rain + surpluss snowwater
+    rainfall = max(snowwater - maxsnowwater, 0.0)  # rain + surplus snowwater
 ```
 \
 

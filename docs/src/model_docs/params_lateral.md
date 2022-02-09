@@ -261,7 +261,7 @@ can be listed in the TOML configuration file under `[lateral.subsurface]`, to ma
 internal model parameter to the external netCDF variable. For some input parameters the
 parameter listed under `[lateral.subsurface]` is not equal to the internal model parameter,
 these are listed in the Table below between parentheses after the internal model parameter.
-The `top` parameter is provided by the exteral parameter `altitude` as part of the static
+The `top` parameter is provided by the external parameter `altitude` as part of the static
 input data and set as follows through the TOML file:
 
 ```toml

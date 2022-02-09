@@ -35,7 +35,7 @@ Description | NC variable name | unit
 Altitude | `wflow_dem` | m
 Number of upstream pixels (accuflux) | `wflow_acc` | -
 Location of gauges | `wflow_gauges` | -
-Map with landuse classes | `wflow_landuse` | -
+Map with land-use classes | `wflow_landuse` | -
 Flow direction (1-9) | `wflow_ldd` | -
 Location of cells that are pits | `wflow_pits` | -
 Map indicating the river cells (0-1) | `wflow_river` | -

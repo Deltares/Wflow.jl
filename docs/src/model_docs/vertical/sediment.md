@@ -9,7 +9,7 @@ sediment sources and fate in the river is needed at a spatial and time scale rel
 such issues. 
 
 The wflow\_sediment model was developed to answer such issues. It is a distributed
-physics-based model, based on the distributed hydrologic wflow_sbm model. It is able to
+physics-based model, based on the distributed hydrologic wflow\_sbm model. It is able to
 simulate both land and in-stream processes, and relies on available global datasets,
 parameter estimation and small calibration effort.
 
@@ -251,7 +251,7 @@ This process is described in [Sediment Flux in overland flow](@ref).
 
 ## References
 + D.B Beasley and L.F Huggins. ANSWERS - Users Manual. Technical report, EPA, 1991.
-+ P. Borrelli, M. Marker, P. Panagos, and B. Schutt. Modeling soil erosion and river
++ P. Borrelli, M. Märker, P. Panagos, and B. Schütt. Modeling soil erosion and river
   sediment yield for an intermountain drainage basin of the Central Apennines, Italy.
   Catena, 114:45-58, 2014. 10.1016/j.catena.2013.10.007
 + C. Bosco, D. De Rigo, O. Dewitte, J. Poesen, and P. Panagos. Modelling soil erosion at

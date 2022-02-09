@@ -67,7 +67,7 @@ julia> using Wflow
 ```
 
 The first time this will take longer as any package that is new or changed needs to be
-precompiled first, to allow faster loading on subsequent uses. No error messages should 
+pre-compiled first, to allow faster loading on subsequent uses. No error messages should 
 appear, indicating that you have now successfully installed wflow. 
 
 Before ending this section, we still want to recommend a few tools that can make using and
