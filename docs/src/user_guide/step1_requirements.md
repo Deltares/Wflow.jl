@@ -6,9 +6,11 @@ In order to run wflow, several files are required. These consist of a settings f
  - The `staticmaps.nc` file contains spatial information on the elevation, locations of the gauges, land-use, drainage direction, etc. This can also contain maps with parameter values.
  - The `forcing.nc` file contains the precipitation, temperature and potential evaporation time series (as a 3D array). 
 
-There are several model configurations supported by wflow. These model configurations required slightly different input requirements, yet the general structure is similar for each model. In the following pages, some examples will be given on how to prepare a basic `wflow\_sbm` model. Example data for other model configurations is provided in the section with [sample data](@ref sample_data). The following model configurations are supported in wflow:
+There are several model configurations supported by wflow. These model configurations required slightly different input requirements, yet the general structure is similar for each model. In the following pages, some examples will be given on how to prepare a basic wflow\_sbm model. Example data for other model configurations is provided in the section with [sample data](@ref sample_data). The following model configurations are supported in wflow:
 
  - wflow\_sbm + kinematic wave
+ - wflow\_sbm + local inertial river
+ - wflow\_sbm + local inertial river (1D) and land (2D)
  - wflow\_sbm + groundwater flow
  - wflow\_hbv + kinematic wave
  - wflow\_sediment as post processing of wflow_sbm or wflow_hbv output
