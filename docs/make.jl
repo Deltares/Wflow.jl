@@ -55,7 +55,7 @@ makedocs(;
         prettyurls = get(ENV, "CI", "false") == "true",
         canonical = "https://deltares.github.io/Wflow.jl",
         assets = String[],
-		collapselevel = 2,
+        collapselevel = 2,
     ),
     pages = pages,
 )

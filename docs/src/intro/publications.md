@@ -2,7 +2,7 @@
 
 Wflow draft paper in progress
 
-Wflow as a Julia package has been published in Zenedo with the following DOI: [![DOI](https://zenodo.org/badge/246787232.svg)](https://zenodo.org/badge/latestdoi/246787232)
+Wflow as a Julia package has been published in Zenodo with the following DOI: [![DOI](https://zenodo.org/badge/246787232.svg)](https://zenodo.org/badge/latestdoi/246787232)
 
 ## Publications using wflow 
 

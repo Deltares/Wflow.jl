@@ -2,8 +2,8 @@
 
 ## Introduction
 
-The soil part of wflow\_sbm model concept is largely based on the Topog\_sbm mode, but 
-has had considerable changes over time. The main changes in wflow\_sbm are:
+The soil part of wflow\_sbm model concept is largely based on the Topog\_sbm mode, but has
+had considerable changes over time. The main changes in wflow\_sbm are:
 
 - The unsaturated zone can be split up in different layers
 - The addition of evapotranspiration losses
@@ -19,14 +19,14 @@ An overview of the different processes and fluxes in the wflow_sbm model:
 ![wflow_sbm model](../../images/wflow_sbm_soil.png)
 
 ## Precipitation 
-The division between solid and liquid precipitation (snowfall and rainfall, respectively) is 
-performed based on the air temperature. If the temperature is below a threshold temperature 
-(`tt`), precipitation will fall as snow. A interval parameter (`tti`) defines the range 
-over which precipitation is partly falling as snow, and partly as rain. Snowfall is added
-to the snowpack, where it is subject to melting and refreezing (see the section on 
-[snow and glaciers](@ref snow)). The amount of rainfall is subject to 
-[interception](@ref interception), and ultimately becomes available for [evaporation](@ref evap) 
-and/or [soil processes](@ref soil).
+The division between solid and liquid precipitation (snowfall and rainfall, respectively) is
+performed based on the air temperature. If the temperature is below a threshold temperature
+(`tt`), precipitation will fall as snow. A interval parameter (`tti`) defines the range over
+which precipitation is partly falling as snow, and partly as rain. Snowfall is added to the
+snowpack, where it is subject to melting and refreezing (see the section on [snow and
+glaciers](@ref snow)). The amount of rainfall is subject to [interception](@ref
+interception), and ultimately becomes available for [evaporation](@ref evap) and/or [soil
+processes](@ref soil).
 
 ![snowfall](../../images/snowfall.png) 
 
@@ -38,12 +38,13 @@ Rutter model. The simulation timestep defines which interception model is used, 
 Rutter model.
 
 ### The analytical Gash model (Gash, 1979)
+
 The Gash model generally assumes that there is one rainfall event per day. It calculates the
-amount of water required to fully saturate the canopy. The amount of stemflow is taken as 
-a fraction (`0.1 * canopygapfraction`) of the precipitation. Throughfall is the precipitation 
-that is not intercepted by the leaves and stems. If the interception is larger than the 
-potential evaporation, the amount above potential evaporation is added to the throughfall, 
-as the concept is based on a daily timestep (assuming that the canopy storage is emptied at 
+amount of water required to fully saturate the canopy. The amount of stemflow is taken as a
+fraction (`0.1 * canopygapfraction`) of the precipitation. Throughfall is the precipitation
+that is not intercepted by the leaves and stems. If the interception is larger than the
+potential evaporation, the amount above potential evaporation is added to the throughfall,
+as the concept is based on a daily timestep (assuming that the canopy storage is emptied at
 the end of the timestep). 
 
 ### The modified Rutter model (Rutter et al., 1971)
@@ -58,21 +59,45 @@ returned as output.
 
 ## [Evaporation](@id evap)
 
-The wflow\_sbm model assumes the input to be potential evaporation. A multiplication factor (`et_reftopot`, set to 1 by default) is present to correct the input evaporation if required. 
+The wflow\_sbm model assumes the input to be potential evaporation. A multiplication factor
+(`et_reftopot`, set to 1 by default) is present to correct the input evaporation if
+required. 
 
-The potential evaporation left over after interception and open water evaporation (rivers and water bodies) is split in potential soil evaporation and potential transpiration based on the canopy gap fraction (assumed to be identical to the amount of bare soil). 
+The potential evaporation left over after interception and open water evaporation (rivers
+and water bodies) is split in potential soil evaporation and potential transpiration based
+on the canopy gap fraction (assumed to be identical to the amount of bare soil). 
 
 ### Bare soil evaporation
 
-If there is only one soil layer present in the wflow\_sbm model, the bare soil evaporation is scaled according to the wetness of the soil layer. The fraction of bare soil is assumed to be equal to the fraction not covered by the canopy (`conapygapfraction`). When the soil is fully saturated, evaporation is set to equal the potential evaporation. When the soil is not fully saturated, actual evaporation decrease linearly with decreasing soil moisture values, as indicated by the figure below.
+If there is only one soil layer present in the wflow\_sbm model, the bare soil evaporation
+is scaled according to the wetness of the soil layer. The fraction of bare soil is assumed
+to be equal to the fraction not covered by the canopy (`conapygapfraction`). When the soil
+is fully saturated, evaporation is set to equal the potential evaporation. When the soil is
+not fully saturated, actual evaporation decrease linearly with decreasing soil moisture
+values, as indicated by the figure below.
 
 ![soil_evap](../../images/soil_evap.png) 
 
-When more soil layers are present, soil evaporation is only provided from the upper soil layer, and soil evaporation is split in evaporation from the unsaturated store and evaporation from the saturated store. Water is first evaporated from the unsaturated store. The remaining potential soil evaporation can be used for evaporation from the saturated store, but only when the water table is present in the upper soil layer. Both the evaporation from the unsaturated store and the evaporation from the saturated store are limited by the minimum of the remaining potential soil evaporation and the available water in the unsaturated/saturated zone of the upper soil layer. Also for multiple soil layers, the evaporation (both unsaturated and saturated) decreases linearly with decreasing water availability.
+When more soil layers are present, soil evaporation is only provided from the upper soil
+layer, and soil evaporation is split in evaporation from the unsaturated store and
+evaporation from the saturated store. Water is first evaporated from the unsaturated store.
+The remaining potential soil evaporation can be used for evaporation from the saturated
+store, but only when the water table is present in the upper soil layer. Both the
+evaporation from the unsaturated store and the evaporation from the saturated store are
+limited by the minimum of the remaining potential soil evaporation and the available water
+in the unsaturated/saturated zone of the upper soil layer. Also for multiple soil layers,
+the evaporation (both unsaturated and saturated) decreases linearly with decreasing water
+availability.
 
 ### Transpiration
 
-The fraction of wet roots is determined using a sigmoid fuction (see figure below). The parameter `rootdistpar` defines the sharpness of the transition between fully wet and fully dry roots. The returned wetroots fraction is multiplied by the potential evaporation (and limited by the available water in saturated zone) to get the transpiration from the saturated part of the soil. This is implemented using the following code (`i` refers to the index of the vector that contains all active cells within the spatial model domain):
+The fraction of wet roots is determined using a sigmoid fuction (see figure below). The
+parameter `rootdistpar` defines the sharpness of the transition between fully wet and fully
+dry roots. The returned wetroots fraction is multiplied by the potential evaporation (and
+limited by the available water in saturated zone) to get the transpiration from the
+saturated part of the soil. This is implemented using the following code (`i` refers to the
+index of the vector that contains all active cells within the spatial model domain):
+
 ```julia
     # transpiration from saturated store
     wetroots = scurve(sbm.zi[i], rootingdepth, 1.0, sbm.rootdistpar[i])
@@ -83,7 +108,11 @@ The fraction of wet roots is determined using a sigmoid fuction (see figure belo
 
 ![soil_wetroots](../../images/soil_wetroots.png) 
 
-The remaining potential evaporation is used to extract water from the unsaturated store. The maximum allowed extraction of the unsaturated zone is determined based on the fraction of the unsaturated zone that is above the rooting depth, see conceptual figure below. This is implemented using the following code:
+The remaining potential evaporation is used to extract water from the unsaturated store. The
+maximum allowed extraction of the unsaturated zone is determined based on the fraction of
+the unsaturated zone that is above the rooting depth, see conceptual figure below. This is
+implemented using the following code:
+
 ```julia
     if ust # whole_ust_available = true
         availcap = ustorelayerdepth * 0.99
@@ -100,27 +129,39 @@ The remaining potential evaporation is used to extract water from the unsaturate
 ![soil_unsatevap](../../images/soil_unsatevap.png) 
 
 !!! note
-    When `whole_ust_available` is set to true in the TOML file, almost the complete unsaturated storage (99%) is available for transpiration, independent of the `rootingdepth`.
+    When `whole_ust_available` is set to true in the TOML file, almost the complete
+    unsaturated storage (99%) is available for transpiration, independent of the
+    `rootingdepth`.
 
     ```toml
     [model]
     whole_ust_available = true
     ```
 
-Next, a root water uptake reduction model is used to calculate a reduction coefficient as a function of soil water pressure. This concept is based on the concept presented by Feddes et al. (1978). This concept defines a reduction coefficient `a` as a function of soil water pressure (`h`). Four different levels of `h` are defined: `h2`, `h3`, and `h4` are defined as fixed values, and `h1` can be defined as input to the model (defaults to -10 cm). `h1` represents the air entry pressure, `h2` represents field capacity, `h3` represents the point of critical soil moisture content, and `h4` represents the wilting point. The current soil water pressure is determined following the concept defined by Brooks and Corey (1964): 
+Next, a root water uptake reduction model is used to calculate a reduction coefficient as a
+function of soil water pressure. This concept is based on the concept presented by Feddes et
+al. (1978). This concept defines a reduction coefficient `a` as a function of soil water
+pressure (`h`). Four different levels of `h` are defined: `h2`, `h3`, and `h4` are defined
+as fixed values, and `h1` can be defined as input to the model (defaults to -10 cm). `h1`
+represents the air entry pressure, `h2` represents field capacity, `h3` represents the point
+of critical soil moisture content, and `h4` represents the wilting point. The current soil
+water pressure is determined following the concept defined by Brooks and Corey (1964):
 
 ```math
     \frac{(\theta-\theta_r)}{(\theta_s-\theta_r)} =  \Bigg\lbrace{\left(\frac{h_b}{h}\right)^{\lambda}, h > h_b \atop 1 , h \leq h_b}
 ```
+
 where ``h`` is the pressure head [cm], ``h_b`` is the air entry pressure head [cm], and
 ``\theta``, ``\theta_s``, ``\theta_r`` and ``\lambda`` as previously defined.
 
-Whenever the current soil water pressure drops below `h4`, the root water uptake is set to zero. The root water uptake is at ideal conditions whenever the soil water pressure is above `h3`, with a linear transition between `h3` and `h4`. 
-Note that in the original transpiration reduction-curve of Feddes (1978) root water uptake above
-`h1` is set to zero (oxygen deficit) and between `h1` and `h2` root water uptake is limited.
-The assumption that very wet conditions do not affect root water uptake too much is probably
-generally applicable to natural vegetation, however for crops this assumption is not valid.
-This could be improved in the wflow code by applying the reduction to crops only.
+Whenever the current soil water pressure drops below `h4`, the root water uptake is set to
+zero. The root water uptake is at ideal conditions whenever the soil water pressure is above
+`h3`, with a linear transition between `h3` and `h4`. Note that in the original
+transpiration reduction-curve of Feddes (1978) root water uptake above `h1` is set to zero
+(oxygen deficit) and between `h1` and `h2` root water uptake is limited. The assumption that
+very wet conditions do not affect root water uptake too much is probably generally
+applicable to natural vegetation, however for crops this assumption is not valid. This could
+be improved in the wflow code by applying the reduction to crops only.
 
 ![soil_rootwateruptake](../../images/soil_rootwateruptake.png) 
 
@@ -138,23 +179,28 @@ glacier = true
 ## [Soil processes](@id soil)
 
 ### The SBM soil water accounting scheme
+
 A detailed description of the Topog\_SBM model has been given by Vertessy (1999). Briefly:
 the soil is considered as a bucket with a certain depth (``z_{t}`` [mm]), divided into a
 saturated store (``S`` [mm]) and an unsaturated store (``U`` [mm]). The top of the ``S``
 store forms a pseudo-water table at depth ``z_{i}`` [mm] such that the value of ``S`` at any
 time is given by:
-```math 
+
+```math
     S=(z_{t}-z_{i})(\theta_{s}-\theta_{r})
 ```
+
 where ``\theta_{s}`` [-] and ``\theta_{r}`` [-] are the saturated and residual soil water
 contents, respectively. 
 
 The unsaturated store ``U`` is subdivided into storage (``U_{s}`` [mm]) and deficit
 (``U_{d}`` [mm]):
+
 ```math
     U_{d}=(\theta_{s}-\theta_{r})z_{i}-U\\
     U_{s}=U-U_{d}
 ```
+
 The saturation deficit (``S_{d}`` [mm]) for the soil profile as a whole is defined as: 
 
 ```math
@@ -170,6 +216,7 @@ mm:
 [model]
 thicknesslayers = [100, 300, 800]
 ```
+
 The code checks for each grid cell the specified layers against the `soilthickness` [mm],
 and adds or removes (partly) layer(s) based on the `soilthickness`.
 
@@ -183,6 +230,7 @@ pore size distribution index ``\lambda`` (Brooks and Corey, 1964):
     st=K_{\mathit{sat}}\left(\frac{\theta-\theta_{r}}{\theta_{s}-\theta_{r}}\right)^{c}\\~\\
     c=\frac{2+3\lambda}{\lambda}
 ```
+
 When the unsaturated layer is not split-up into different layers, it is possible to use the
 original Topog\_SBM vertical transfer formulation, by specifying in the TOML file:
 
@@ -190,10 +238,11 @@ original Topog\_SBM vertical transfer formulation, by specifying in the TOML fil
 [model]
 transfermethod = true
 ```
+
 The transfer of water from the ``U`` [mm] store to the ``S`` [mm] store (``st`` [mm
 t``^{-1}``]) is in that case controlled by the saturated hydraulic conductivity ``K_{sat}``
 [mm t``^{-1}``] at depth ``z_{i}`` [mm] and the ratio between ``U`` [mm] and ``S_{d}``
-[mm]: 
+[mm]:
 
 ```math
     st=K_{\mathit{sat}}\frac{U_{s}}{S_{d}}
@@ -235,7 +284,11 @@ conductivity ``K_{sat}`` for different values of ``f``.
 
 ### Infiltration
 
-The water available for infiltration is taken as the rainfall including meltwater. Infiltration is determined separately for the compacted and non compacted areas, as these have different infiltration capacities. Naturally, only the water that can be stored in the soil can infiltrate. If not all water can infiltrate, this is added as excess water to the runoff routing scheme. 
+The water available for infiltration is taken as the rainfall including meltwater.
+Infiltration is determined separately for the compacted and non compacted areas, as these
+have different infiltration capacities. Naturally, only the water that can be stored in the
+soil can infiltrate. If not all water can infiltrate, this is added as excess water to the
+runoff routing scheme. 
 
 The infiltrating
 water is split in two parts, the part that falls on compacted areas and the part that falls
@@ -255,7 +308,12 @@ becomes saturated and water cannot infiltrate anymore. This amount of water `exc
 
 #### Infiltration in frozen soils
 
-If snow processes are modelled, the infiltration capacity is reduced when the soil is frozen (or near freezing point). A infiltration correction factor is defined as a S-curve with the shape as defined below. A parameter (`cf_soil`) defines the base factor of infiltration when the soil is frozen. The soil temperature is calculated based on the soil temperature on the previous timestep, and the temperature difference between air and soil temperature weighted with a factor (`w_soil`, which defaults to 0.1125).
+If snow processes are modelled, the infiltration capacity is reduced when the soil is frozen
+(or near freezing point). A infiltration correction factor is defined as a S-curve with the
+shape as defined below. A parameter (`cf_soil`) defines the base factor of infiltration when
+the soil is frozen. The soil temperature is calculated based on the soil temperature on the
+previous timestep, and the temperature difference between air and soil temperature weighted
+with a factor (`w_soil`, which defaults to 0.1125).
 
 The near surface soil temperature is modelled using a simple equation (Wigmosta et al.,
 2009):
@@ -276,7 +334,9 @@ in the TOML file:
 soilinfreduction = true
 snow = true
 ```
-If `soilinfreduction` is set to `false`, water is allowed to infiltrate the soil, even if the soil is frozen.
+
+If `soilinfreduction` is set to `false`, water is allowed to infiltrate the soil, even if
+the soil is frozen.
 
 A S-curve (see plot below) is used to make a smooth transition (a c-factor (``c``) of 8.0 is
 used):
@@ -359,11 +419,14 @@ capillary rise `netcapflux` [mm t``^{-1}``].
 
 ### Leakage
 
-If the `maxleakage` (mm/day) input model parameter is set > 0, water is lost from the saturated zone and runs out of the model.
+If the `maxleakage` (mm/day) input model parameter is set > 0, water is lost from the
+saturated zone and runs out of the model.
 
 ## Open water
 
-Part of the water available for infiltration is diverted to the open water, based on the fractions of river and lakes of each grid cell. The amount of evaporation from open water is taken assumed to be equal to potential evaporation (if sufficient water is available).
+Part of the water available for infiltration is diverted to the open water, based on the
+fractions of river and lakes of each grid cell. The amount of evaporation from open water is
+taken assumed to be equal to potential evaporation (if sufficient water is available).
 
 ## References
 + Brooks, R. H., and Corey, A. T., 1964, Hydraulic properties of porous media, Hydrology

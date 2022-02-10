@@ -19,9 +19,8 @@ the need for a distributed hydrological model to allow the simulation of flows a
 catchment scale. With the intention being to encourage greater scientific collaboration. 
 For this reason:
 
-   * wflow code is open source.
-   * wflow is freeware.
-   * wflow is easily coupled with other models and software applications.
+   * Wflow is free and open source software.
+   * Wflow is easily coupled with other models and software applications.
    * Contribution to the wflow code development is encouraged.
 
 From 2021 the [wflow code](https://github.com/Deltares/Wflow.jl) is distributed under the 
