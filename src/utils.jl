@@ -60,7 +60,7 @@ function active_indices(subcatch_2d::AbstractMatrix, nodata)
     return indices, reverse_indices
 end
 
-function active_indices(network, key::Tuple)
+function active_indices(network::NamedTuple, key::Tuple)
     if :reservoir in key
         return network.reservoir.indices_outlet
     elseif :lake in key
