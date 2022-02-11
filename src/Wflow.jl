@@ -99,7 +99,7 @@ end
 struct SbmModel end         # "sbm" type / sbm_model.jl
 struct SbmGwfModel end      # "sbm_gwf" type / sbm_gwf_model.jl
 struct HbvModel end         # "hbv" type / hbv_model.jl
-struct FlextopoModel end         # "flextopo" type / flextopo_model.jl
+struct FlextopoModel end    # "flextopo" type / flextopo_model.jl
 struct SedimentModel end    # "sediment" type / sediment_model.jl
 
 # prevent a large printout of model components and arrays

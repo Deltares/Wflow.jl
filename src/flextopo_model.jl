@@ -56,7 +56,7 @@ function initialize_flextopo_model(config::Config)
     nc = NCDataset(static_path)
 
     subcatch_2d =
-        ncread(nc, config.input, "subcatchment"; optional = false, allow_missing = true)
+        ncread(nc, config, "subcatchment"; optional = false, allow_missing = true)
     # indices based on catchment
     inds, rev_inds = active_indices(subcatch_2d, missing)
     n = length(inds)
@@ -65,7 +65,7 @@ function initialize_flextopo_model(config::Config)
     # glacier parameters
     g_tt = ncread(
         nc,
-        config.input,
+        config,
         "vertical.g_tt";
         sel = inds,
         defaults = 0.0,
@@ -75,7 +75,7 @@ function initialize_flextopo_model(config::Config)
     g_cfmax =
         ncread(
             nc,
-            config.input,
+            config,
             "vertical.g_cfmax";
             sel = inds,
             defaults = 3.0,
@@ -85,7 +85,7 @@ function initialize_flextopo_model(config::Config)
 
     g_sifrac = ncread(
         nc,
-        config.input,
+        config,
         "vertical.g_sifrac";
         sel = inds,
         defaults = 0.001,
@@ -94,7 +94,7 @@ function initialize_flextopo_model(config::Config)
     )
     glacierfrac = ncread(
         nc,
-        config.input,
+        config,
         "vertical.glacierfrac";
         sel = inds,
         defaults = 0.0,
@@ -103,7 +103,7 @@ function initialize_flextopo_model(config::Config)
     )
     glacierstore = ncread(
         nc,
-        config.input,
+        config,
         "vertical.glacierstore";
         sel = inds,
         defaults = 5500.0,
@@ -115,7 +115,7 @@ function initialize_flextopo_model(config::Config)
     cfmax =
         ncread(
             nc,
-            config.input,
+            config,
             "vertical.cfmax";
             sel = inds,
             defaults = 3.75653,
@@ -124,42 +124,42 @@ function initialize_flextopo_model(config::Config)
 
     tt = ncread(
         nc,
-        config.input,
+        config,
         "vertical.tt";
         sel = inds,
         defaults = -1.41934,
         type = Float,
     )
 
-    tti = ncread(nc, config.input, "vertical.tti"; sel = inds, defaults = 1.0, type = Float)
+    tti = ncread(nc, config, "vertical.tti"; sel = inds, defaults = 1.0, type = Float)
 
     ttm = ncread(
         nc,
-        config.input,
+        config,
         "vertical.ttm";
         sel = inds,
         defaults = -1.41934,
         type = Float,
     )
 
-    whc = ncread(nc, config.input, "vertical.whc"; sel = inds, defaults = 0.1, type = Float)
+    whc = ncread(nc, config, "vertical.whc"; sel = inds, defaults = 0.1, type = Float)
 
     cfr =
-        ncread(nc, config.input, "vertical.cfr"; sel = inds, defaults = 0.05, type = Float)
+        ncread(nc, config, "vertical.cfr"; sel = inds, defaults = 0.05, type = Float)
 
     #parameters which are not class specific
     pcorr =
-        ncread(nc, config.input, "vertical.pcorr"; sel = inds, defaults = 1.0, type = Float)
+        ncread(nc, config, "vertical.pcorr"; sel = inds, defaults = 1.0, type = Float)
     ecorr =
-        ncread(nc, config.input, "vertical.ecorr"; sel = inds, defaults = 1.0, type = Float)
+        ncread(nc, config, "vertical.ecorr"; sel = inds, defaults = 1.0, type = Float)
     rfcf =
-        ncread(nc, config.input, "vertical.rfcf"; sel = inds, defaults = 1.0, type = Float)
+        ncread(nc, config, "vertical.rfcf"; sel = inds, defaults = 1.0, type = Float)
     sfcf =
-        ncread(nc, config.input, "vertical.sfcf"; sel = inds, defaults = 1.0, type = Float)
+        ncread(nc, config, "vertical.sfcf"; sel = inds, defaults = 1.0, type = Float)
     ks =
         ncread(
             nc,
-            config.input,
+            config,
             "vertical.ks";
             sel = inds,
             defaults = 0.006,
@@ -169,7 +169,7 @@ function initialize_flextopo_model(config::Config)
     #initialize parameters that differ per class
     hrufrac = ncread(
         nc,
-        config.input,
+        config,
         "vertical.hrufrac";
         sel = inds,
         defaults = 1.0 / length(classes),
@@ -178,7 +178,7 @@ function initialize_flextopo_model(config::Config)
     )
     imax = ncread(
         nc,
-        config.input,
+        config,
         "vertical.imax";
         sel = inds,
         defaults = 3.0,
@@ -187,7 +187,7 @@ function initialize_flextopo_model(config::Config)
     )
     shmax = ncread(
         nc,
-        config.input,
+        config,
         "vertical.shmax";
         sel = inds,
         defaults = 30.0,
@@ -197,7 +197,7 @@ function initialize_flextopo_model(config::Config)
     khf =
         ncread(
             nc,
-            config.input,
+            config,
             "vertical.khf";
             sel = inds,
             defaults = 0.5,
@@ -206,7 +206,7 @@ function initialize_flextopo_model(config::Config)
         ) .* (Δt / basetimestep)
     facc0 = ncread(
         nc,
-        config.input,
+        config,
         "vertical.facc0";
         sel = inds,
         defaults = -3.0,
@@ -215,7 +215,7 @@ function initialize_flextopo_model(config::Config)
     )
     facc1 = ncread(
         nc,
-        config.input,
+        config,
         "vertical.facc1";
         sel = inds,
         defaults = 0.0,
@@ -224,7 +224,7 @@ function initialize_flextopo_model(config::Config)
     )
     fdec = ncread(
         nc,
-        config.input,
+        config,
         "vertical.fdec";
         sel = inds,
         defaults = 0.2,
@@ -234,7 +234,7 @@ function initialize_flextopo_model(config::Config)
     fmax =
         ncread(
             nc,
-            config.input,
+            config,
             "vertical.fmax";
             sel = inds,
             defaults = 2.0,
@@ -243,7 +243,7 @@ function initialize_flextopo_model(config::Config)
         ) .* (Δt / basetimestep)
     shmin = ncread(
         nc,
-        config.input,
+        config,
         "vertical.shmin";
         sel = inds,
         defaults = 0.2,
@@ -252,7 +252,7 @@ function initialize_flextopo_model(config::Config)
     )
     kmf = ncread(
         nc,
-        config.input,
+        config,
         "vertical.kmf";
         sel = inds,
         defaults = 1.0,
@@ -261,7 +261,7 @@ function initialize_flextopo_model(config::Config)
     )
     srmax = ncread(
         nc,
-        config.input,
+        config,
         "vertical.srmax";
         sel = inds,
         defaults = 260.0,
@@ -270,7 +270,7 @@ function initialize_flextopo_model(config::Config)
     )
     beta = ncread(
         nc,
-        config.input,
+        config,
         "vertical.beta";
         sel = inds,
         defaults = 0.3,
@@ -279,7 +279,7 @@ function initialize_flextopo_model(config::Config)
     )
     lp = ncread(
         nc,
-        config.input,
+        config,
         "vertical.lp";
         sel = inds,
         defaults = 0.3,
@@ -289,7 +289,7 @@ function initialize_flextopo_model(config::Config)
     perc =
         ncread(
             nc,
-            config.input,
+            config,
             "vertical.perc";
             sel = inds,
             defaults = 0.30,
@@ -299,7 +299,7 @@ function initialize_flextopo_model(config::Config)
     cap =
         ncread(
             nc,
-            config.input,
+            config,
             "vertical.cap";
             sel = inds,
             defaults = 0.20,
@@ -309,7 +309,7 @@ function initialize_flextopo_model(config::Config)
     kf =
         ncread(
             nc,
-            config.input,
+            config,
             "vertical.kf";
             sel = inds,
             defaults = 0.1,
@@ -318,7 +318,7 @@ function initialize_flextopo_model(config::Config)
         ) .* (Δt / basetimestep)
     alfa = ncread(
         nc,
-        config.input,
+        config,
         "vertical.alfa";
         sel = inds,
         defaults = 1.3,
@@ -327,7 +327,7 @@ function initialize_flextopo_model(config::Config)
     )
     ds = ncread(
         nc,
-        config.input,
+        config,
         "vertical.ds";
         sel = inds,
         defaults = 0.2,
@@ -517,7 +517,7 @@ function initialize_flextopo_model(config::Config)
     modelsize_2d = size(subcatch_2d)
     river_2d = ncread(
         nc,
-        config.input,
+        config,
         "river_location";
         optional = false,
         type = Bool,
@@ -526,7 +526,7 @@ function initialize_flextopo_model(config::Config)
     river = river_2d[inds]
     riverwidth_2d = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.width";
         optional = false,
         type = Float,
@@ -535,7 +535,7 @@ function initialize_flextopo_model(config::Config)
     riverwidth = riverwidth_2d[inds]
     riverlength_2d = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.length";
         optional = false,
         type = Float,
@@ -567,17 +567,17 @@ function initialize_flextopo_model(config::Config)
         lakeindex = fill(0, nriv)
     end
 
-    ldd_2d = ncread(nc, config.input, "ldd"; optional = false, allow_missing = true)
+    ldd_2d = ncread(nc, config, "ldd"; optional = false, allow_missing = true)
     ldd = ldd_2d[inds]
     if do_pits
         pits_2d =
-            ncread(nc, config.input, "pits"; optional = false, type = Bool, fill = false)
+            ncread(nc, config, "pits"; optional = false, type = Bool, fill = false)
         ldd = set_pit_ldd(pits_2d, ldd, inds)
     end
 
     βₗ = ncread(
         nc,
-        config.input,
+        config,
         "lateral.land.slope";
         optional = false,
         sel = inds,
@@ -651,6 +651,12 @@ function initialize_flextopo_model(config::Config)
         reservoir = isempty(reservoir) ? nothing : reservoir.reverse_indices,
         lake = isempty(lake) ? nothing : lake.reverse_indices,
     )
+
+    # if fews_run = true, then classes are specified as Float64 index so FEWS can import
+    # NetCDF output (3D data/SVector).
+    fews_run = get(config, "fews_run", false)::Bool
+    classes = fews_run ? Float64.(collect(length(flextopo.classes))) : flextopo.classes
+    
     writer = prepare_writer(
         config,
         modelmap,
@@ -658,7 +664,7 @@ function initialize_flextopo_model(config::Config)
         x_nc,
         y_nc,
         nc,
-        extra_dim = (name = "classes", value = flextopo.classes),
+        extra_dim = (name = "classes", value = classes),
     )
     close(nc)
 

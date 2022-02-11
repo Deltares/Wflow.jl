@@ -29,7 +29,7 @@ function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, Δt)
     # note that these locations are only the reservoir outlet pixels
     reslocs = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.reservoir.locs";
         optional = false,
         sel = inds_riv,
@@ -40,7 +40,7 @@ function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, Δt)
     # this holds the same ids as reslocs, but covers the entire reservoir
     rescoverage_2d = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.reservoir.areas";
         optional = false,
         allow_missing = true,
@@ -73,7 +73,7 @@ function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, Δt)
 
     resdemand = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.reservoir.demand";
         optional = false,
         sel = inds_res,
@@ -82,7 +82,7 @@ function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, Δt)
     )
     resmaxrelease = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.reservoir.maxrelease";
         optional = false,
         sel = inds_res,
@@ -91,7 +91,7 @@ function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, Δt)
     )
     resmaxvolume = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.reservoir.maxvolume";
         optional = false,
         sel = inds_res,
@@ -100,7 +100,7 @@ function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, Δt)
     )
     resarea = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.reservoir.area";
         optional = false,
         sel = inds_res,
@@ -109,7 +109,7 @@ function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, Δt)
     )
     res_targetfullfrac = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.reservoir.targetfullfrac";
         optional = false,
         sel = inds_res,
@@ -118,7 +118,7 @@ function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, Δt)
     )
     res_targetminfrac = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.reservoir.targetminfrac";
         optional = false,
         sel = inds_res,
@@ -234,7 +234,7 @@ function initialize_natural_lake(config, nc, inds_riv, nriv, pits, Δt)
     # note that these locations are only the lake outlet pixels
     lakelocs_2d = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.lake.locs";
         optional = false,
         type = Int,
@@ -245,7 +245,7 @@ function initialize_natural_lake(config, nc, inds_riv, nriv, pits, Δt)
     # this holds the same ids as lakelocs, but covers the entire lake
     lakecoverage_2d = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.lake.areas";
         optional = false,
         allow_missing = true,
@@ -278,7 +278,7 @@ function initialize_natural_lake(config, nc, inds_riv, nriv, pits, Δt)
 
     lakearea = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.lake.area";
         optional = false,
         sel = inds_lake,
@@ -287,7 +287,7 @@ function initialize_natural_lake(config, nc, inds_riv, nriv, pits, Δt)
     )
     lake_b = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.lake.b";
         optional = false,
         sel = inds_lake,
@@ -296,7 +296,7 @@ function initialize_natural_lake(config, nc, inds_riv, nriv, pits, Δt)
     )
     lake_e = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.lake.e";
         optional = false,
         sel = inds_lake,
@@ -305,7 +305,7 @@ function initialize_natural_lake(config, nc, inds_riv, nriv, pits, Δt)
     )
     lake_threshold = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.lake.threshold";
         optional = false,
         sel = inds_lake,
@@ -314,7 +314,7 @@ function initialize_natural_lake(config, nc, inds_riv, nriv, pits, Δt)
     )
     linked_lakelocs = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.lake.linkedlakelocs";
         sel = inds_lake,
         defaults = 0,
@@ -323,7 +323,7 @@ function initialize_natural_lake(config, nc, inds_riv, nriv, pits, Δt)
     )
     lake_storfunc = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.lake.storfunc";
         optional = false,
         sel = inds_lake,
@@ -332,7 +332,7 @@ function initialize_natural_lake(config, nc, inds_riv, nriv, pits, Δt)
     )
     lake_outflowfunc = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.lake.outflowfunc";
         optional = false,
         sel = inds_lake,
@@ -341,7 +341,7 @@ function initialize_natural_lake(config, nc, inds_riv, nriv, pits, Δt)
     )
     lake_waterlevel = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.lake.waterlevel";
         optional = false,
         sel = inds_lake,

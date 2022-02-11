@@ -25,7 +25,7 @@ function initialize_hbv_model(config::Config)
     nc = NCDataset(static_path)
 
     subcatch_2d =
-        ncread(nc, config.input, "subcatchment"; optional = false, allow_missing = true)
+        ncread(nc, config, "subcatchment"; optional = false, allow_missing = true)
     # indices based on catchment
     inds, rev_inds = active_indices(subcatch_2d, missing)
     n = length(inds)
@@ -33,7 +33,7 @@ function initialize_hbv_model(config::Config)
     cfmax =
         ncread(
             nc,
-            config.input,
+            config,
             "vertical.cfmax";
             sel = inds,
             defaults = 3.75653,
@@ -41,16 +41,16 @@ function initialize_hbv_model(config::Config)
         ) .* (Δt / basetimestep)
     tt = ncread(
         nc,
-        config.input,
+        config,
         "vertical.tt";
         sel = inds,
         defaults = -1.41934,
         type = Float,
     )
-    tti = ncread(nc, config.input, "vertical.tti"; sel = inds, defaults = 1.0, type = Float)
+    tti = ncread(nc, config, "vertical.tti"; sel = inds, defaults = 1.0, type = Float)
     ttm = ncread(
         nc,
-        config.input,
+        config,
         "vertical.ttm";
         sel = inds,
         defaults = -1.41934,
@@ -60,7 +60,7 @@ function initialize_hbv_model(config::Config)
     # glacier parameters
     g_tt = ncread(
         nc,
-        config.input,
+        config,
         "vertical.g_tt";
         sel = inds,
         defaults = 0.0,
@@ -70,7 +70,7 @@ function initialize_hbv_model(config::Config)
     g_cfmax =
         ncread(
             nc,
-            config.input,
+            config,
             "vertical.g_cfmax";
             sel = inds,
             defaults = 3.0,
@@ -79,7 +79,7 @@ function initialize_hbv_model(config::Config)
         ) .* (Δt / basetimestep)
     g_sifrac = ncread(
         nc,
-        config.input,
+        config,
         "vertical.g_sifrac";
         sel = inds,
         defaults = 0.001,
@@ -88,7 +88,7 @@ function initialize_hbv_model(config::Config)
     )
     glacierfrac = ncread(
         nc,
-        config.input,
+        config,
         "vertical.glacierfrac";
         sel = inds,
         defaults = 0.0,
@@ -97,27 +97,27 @@ function initialize_hbv_model(config::Config)
     )
     glacierstore = ncread(
         nc,
-        config.input,
+        config,
         "vertical.glacierstore";
         sel = inds,
         defaults = 5500.0,
         type = Float,
         fill = 0.0,
     )
-    fc = ncread(nc, config.input, "vertical.fc"; sel = inds, defaults = 260.0, type = Float)
+    fc = ncread(nc, config, "vertical.fc"; sel = inds, defaults = 260.0, type = Float)
     betaseepage = ncread(
         nc,
-        config.input,
+        config,
         "vertical.betaseepage";
         sel = inds,
         defaults = 1.8,
         type = Float,
     )
-    lp = ncread(nc, config.input, "vertical.lp"; sel = inds, defaults = 0.53, type = Float)
+    lp = ncread(nc, config, "vertical.lp"; sel = inds, defaults = 0.53, type = Float)
     k4 =
         ncread(
             nc,
-            config.input,
+            config,
             "vertical.k4";
             sel = inds,
             defaults = 0.02307,
@@ -126,18 +126,18 @@ function initialize_hbv_model(config::Config)
     kquickflow =
         ncread(
             nc,
-            config.input,
+            config,
             "vertical.kquickflow";
             sel = inds,
             defaults = 0.09880,
             type = Float,
         ) .* (Δt / basetimestep)
     suz =
-        ncread(nc, config.input, "vertical.suz"; sel = inds, defaults = 100.0, type = Float)
+        ncread(nc, config, "vertical.suz"; sel = inds, defaults = 100.0, type = Float)
     k0 =
         ncread(
             nc,
-            config.input,
+            config,
             "vertical.k0";
             sel = inds,
             defaults = 0.30,
@@ -146,7 +146,7 @@ function initialize_hbv_model(config::Config)
     khq =
         ncread(
             nc,
-            config.input,
+            config,
             "vertical.khq";
             sel = inds,
             defaults = 0.09880,
@@ -155,7 +155,7 @@ function initialize_hbv_model(config::Config)
     hq =
         ncread(
             nc,
-            config.input,
+            config,
             "vertical.hq";
             sel = inds,
             defaults = 3.27,
@@ -163,7 +163,7 @@ function initialize_hbv_model(config::Config)
         ) .* (Δt / basetimestep)
     alphanl = ncread(
         nc,
-        config.input,
+        config,
         "vertical.alphanl";
         sel = inds,
         defaults = 1.1,
@@ -172,35 +172,35 @@ function initialize_hbv_model(config::Config)
     perc =
         ncread(
             nc,
-            config.input,
+            config,
             "vertical.perc";
             sel = inds,
             defaults = 0.4,
             type = Float,
         ) .* (Δt / basetimestep)
     cfr =
-        ncread(nc, config.input, "vertical.cfr"; sel = inds, defaults = 0.05, type = Float)
+        ncread(nc, config, "vertical.cfr"; sel = inds, defaults = 0.05, type = Float)
     pcorr =
-        ncread(nc, config.input, "vertical.pcorr"; sel = inds, defaults = 1.0, type = Float)
+        ncread(nc, config, "vertical.pcorr"; sel = inds, defaults = 1.0, type = Float)
     rfcf =
-        ncread(nc, config.input, "vertical.rfcf"; sel = inds, defaults = 1.0, type = Float)
+        ncread(nc, config, "vertical.rfcf"; sel = inds, defaults = 1.0, type = Float)
     sfcf =
-        ncread(nc, config.input, "vertical.sfcf"; sel = inds, defaults = 1.0, type = Float)
+        ncread(nc, config, "vertical.sfcf"; sel = inds, defaults = 1.0, type = Float)
     cflux =
         ncread(
             nc,
-            config.input,
+            config,
             "vertical.cflux";
             sel = inds,
             defaults = 2.0,
             type = Float,
         ) .* (Δt / basetimestep)
-    icf = ncread(nc, config.input, "vertical.icf"; sel = inds, defaults = 2.0, type = Float)
+    icf = ncread(nc, config, "vertical.icf"; sel = inds, defaults = 2.0, type = Float)
     cevpf =
-        ncread(nc, config.input, "vertical.cevpf"; sel = inds, defaults = 1.0, type = Float)
-    epf = ncread(nc, config.input, "vertical.epf"; sel = inds, defaults = 1.0, type = Float)
+        ncread(nc, config, "vertical.cevpf"; sel = inds, defaults = 1.0, type = Float)
+    epf = ncread(nc, config, "vertical.epf"; sel = inds, defaults = 1.0, type = Float)
     ecorr =
-        ncread(nc, config.input, "vertical.ecorr"; sel = inds, defaults = 1.0, type = Float)
+        ncread(nc, config, "vertical.ecorr"; sel = inds, defaults = 1.0, type = Float)
 
     # read x, y coordinates and calculate cell length [m]
     y_nc = read_y_axis(nc)
@@ -280,7 +280,7 @@ function initialize_hbv_model(config::Config)
     modelsize_2d = size(subcatch_2d)
     river_2d = ncread(
         nc,
-        config.input,
+        config,
         "river_location";
         optional = false,
         type = Bool,
@@ -289,7 +289,7 @@ function initialize_hbv_model(config::Config)
     river = river_2d[inds]
     riverwidth_2d = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.width";
         optional = false,
         type = Float,
@@ -298,7 +298,7 @@ function initialize_hbv_model(config::Config)
     riverwidth = riverwidth_2d[inds]
     riverlength_2d = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.length";
         optional = false,
         type = Float,
@@ -330,17 +330,17 @@ function initialize_hbv_model(config::Config)
         lakeindex = fill(0, nriv)
     end
 
-    ldd_2d = ncread(nc, config.input, "ldd"; optional = false, allow_missing = true)
+    ldd_2d = ncread(nc, config, "ldd"; optional = false, allow_missing = true)
     ldd = ldd_2d[inds]
     if do_pits
         pits_2d =
-            ncread(nc, config.input, "pits"; optional = false, type = Bool, fill = false)
+            ncread(nc, config, "pits"; optional = false, type = Bool, fill = false)
         ldd = set_pit_ldd(pits_2d, ldd, inds)
     end
 
     βₗ = ncread(
         nc,
-        config.input,
+        config,
         "lateral.land.slope";
         optional = false,
         sel = inds,

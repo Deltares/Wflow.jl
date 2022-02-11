@@ -55,7 +55,7 @@ function initialize_surfaceflow_land(
 
     n_land = ncread(
         nc,
-        config.input,
+        config,
         "lateral.land.n";
         sel = inds,
         defaults = 0.072,
@@ -121,7 +121,7 @@ function initialize_surfaceflow_river(
 
     n_river = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.n";
         sel = inds,
         defaults = 0.036,
@@ -129,7 +129,7 @@ function initialize_surfaceflow_river(
     )
     bankfull_depth = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.bankfull_depth";
         alias = "lateral.river.h_bankfull",
         sel = inds,
@@ -144,7 +144,7 @@ function initialize_surfaceflow_river(
     end
     sl = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.slope";
         optional = false,
         sel = inds,
@@ -510,7 +510,7 @@ function initialize_shallowwater_river(
 
     bankfull_elevation_2d = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.bankfull_elevation";
         optional = false,
         type = Float,
@@ -518,7 +518,7 @@ function initialize_shallowwater_river(
     )
     bankfull_depth_2d = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.bankfull_depth";
         optional = false,
         type = Float,
@@ -531,7 +531,7 @@ function initialize_shallowwater_river(
 
     n_river = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.n";
         sel = inds,
         defaults = 0.036,
@@ -793,7 +793,7 @@ function initialize_shallowwater_land(
 
     n_land = ncread(
         nc,
-        config.input,
+        config,
         "lateral.land.n";
         sel = inds,
         defaults = 0.072,
@@ -801,7 +801,7 @@ function initialize_shallowwater_land(
     )
     elevation_2d = ncread(
         nc,
-        config.input,
+        config,
         "lateral.land.elevation";
         optional = false,
         type = Float,

@@ -231,12 +231,12 @@ function ncread(
     # if var has type Config, input parameters can be changed.
     if isnothing(alias)
         if optional
-            var = param(config, parameter, nothing)
+            var = param(config.input, parameter, nothing)
         else
-            var = param(config, parameter)
+            var = param(config.input, parameter)
         end
     else
-        var = get_alias(config, parameter, alias, nothing)
+        var = get_alias(config.input, parameter, alias, nothing)
     end
 
     # dim `time` is also included in `dim_sel`: this allows for cyclic parameters (read
@@ -265,9 +265,14 @@ function ncread(
     # If var has type Config, input parameters can be changed (through scale, offset and 
     # input NetCDF var) or set to a uniform value (providing a value). Otherwise, input 
     # NetCDF var is read directly.
-    var, mod = ncvar_name_modifier(var)
+    var, mod = ncvar_name_modifier(var; config = config)
     if mod.scale != 1.0 || mod.offset != 0.0
-        A = read_standardized(nc, var, dim_sel) .* mod.scale .+ mod.offset
+        if isnothing(mod.index)
+            A = read_standardized(nc, var, dim_sel) .* mod.scale .+ mod.offset
+        else
+            A = read_standardized(nc, var, dim_sel)
+            A[:,:,mod.index] =  A[:,:,mod.index] .* mod.scale .+ mod.offset
+        end
     elseif !isnothing(mod.value)
         @info "Set `$parameter` using default value `$defaults`."
         if isnothing(dimname)
@@ -275,7 +280,7 @@ function ncread(
         # set to one uniform value
         elseif length(mod.value) == 1 
             return Base.fill(mod.value, (nc.dim[String(dimname)], length(sel)))
-        # set to vector of values (equal to size dimname)
+        # set to vector of values (should be equal to size dimname)
         elseif length(mod.value) > 1 
             @assert length(mod.value) == nc.dim[String(dimname)]
             return repeat(mod.value, 1, length(sel))

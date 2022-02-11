@@ -110,11 +110,11 @@ function output_path(config::Config, path::AbstractString)
 end
 
 "Extract NetCDF variable name `ncname` from `var` (type `String` or `Config`). If `var` has 
-type `Config`, either `scale` and `offset` are expected (with `ncname`) or a `value` (uniform
-value), these are stored as part of `NamedTuple` `modifier`"
-function ncvar_name_modifier(var)
+type `Config`, either `scale`, `offset` and an optional `index` are expected (with `ncname`) 
+or a `value` (uniform value), these are stored as part of `NamedTuple` `modifier`."
+function ncvar_name_modifier(var; config = nothing)
     ncname = nothing
-    modifier = (scale = 1.0, offset = 0.0, value = nothing)
+    modifier = (scale = 1.0, offset = 0.0, value = nothing, index = nothing)
     if isa(var, Config)
         if haskey(var, "netcdf") &&
            haskey(var.netcdf, "variable") &&
@@ -122,10 +122,16 @@ function ncvar_name_modifier(var)
             ncname = var.netcdf.variable.name
             scale = param(var, "scale", 1.0)
             offset = param(var, "offset", 0.0)
-            modifier = (scale = scale, offset = offset, value = nothing)
-            @info "NetCDF parameter `$ncname` is modified with scale `$scale` and offset `$offset`."
+            if haskey(var, "layer") || haskey(var, "class")
+                index = get_index_dimension(var, config)
+                modifier = (scale = scale, offset = offset, value = nothing, index = index)
+                @info "NetCDF parameter `$ncname` is modified with scale `$scale` and offset `$offset` at index `$index`."
+            else 
+                modifier = (scale = scale, offset = offset, value = nothing, index = nothing)
+                @info "NetCDF parameter `$ncname` is modified with scale `$scale` and offset `$offset`."
+            end
         elseif haskey(var, "value")
-            modifier = (scale = 1.0, offset = 0.0, value = param(var, "value"))
+            modifier = (scale = 1.0, offset = 0.0, value = param(var, "value"), index = nothing)
         else
             error("Unrecognized modifier $(Dict(var))")
         end
@@ -431,11 +437,14 @@ function set_extradim_netcdf(
     ds,
     extra_dim::NamedTuple{(:name, :value),Tuple{String,Vector{Float64}}},
 )
-    # the axis attribute `Z` is required to import this type of 3D data by Delft-FEWS
-    # the values of this dimension `extra_dim.value` should be of type Float64
+    # the axis attribute `Z` is required to import this type of 3D data by Delft-FEWS the
+    # values of this dimension `extra_dim.value` should be of type Float64
     if extra_dim.name == "layer"
         attributes =
             ["long_name" => "layer_index", "standard_name" => "layer_index", "axis" => "Z"]
+    elseif extra_dim.name == "classes"
+        attributes =
+            ["long_name" => extra_dim.name, "standard_name" => extra_dim.name, "axis" => "Z"]
     end
     defVar(ds, extra_dim.name, extra_dim.value, (extra_dim.name,), attrib = attributes)
     return nothing
@@ -707,7 +716,7 @@ end
 function locations_map(ds, mapname, config)
     map_2d = ncread(
         ds,
-        config.input,
+        config,
         mapname;
         optional = false,
         type = Union{Int,Missing},
@@ -1185,7 +1194,7 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset, fileformat)
         f = reducerfunction(reducer_name)
         map_2d = ncread(
             dataset,
-            config.input,
+            config,
             mapname;
             optional = false,
             type = Union{Int,Missing},
@@ -1560,12 +1569,29 @@ function read_y_axis(ds::CFDataset)::Vector{Float64}
     error("no y axis found in $(path(ds))")
 end
 
-"Get `index` for dimension name `layer`"
+"Get `index` for dimension name `layer` or `classes` based on `model`"
 function get_index_dimension(var, model)::Int
     @unpack vertical = model
     if haskey(var, "layer")
         inds = collect(1:vertical.maxlayers)
         index = inds[var["layer"]]
+    elseif haskey(var,"class")
+        index = findfirst(x->x==var["class"], vertical.classes)
+    else
+        error("Unrecognized or missing dimension name to index $(var)")
+    end
+    return index
+end
+
+"Get `index` for dimension name `layer` or `classes` based on `config` (TOML file)"
+function get_index_dimension(var, config::Config)::Int
+    if haskey(var, "layer")
+        v = get(config.model, "thicknesslayers", Float[])
+        inds = collect(1:length(v)+1)
+        index = inds[var["layer"]]
+    elseif haskey(var,"class")
+        classes = get(config.model, "classes", "")
+        index = findfirst(x->x==var["class"], classes)
     else
         error("Unrecognized or missing dimension name to index $(var)")
     end

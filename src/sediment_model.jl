@@ -24,7 +24,7 @@ function initialize_sediment_model(config::Config)
     dims = dimnames(nc[param(config, "input.subcatchment")])
 
     subcatch_2d =
-        ncread(nc, config.input, "subcatchment"; optional = false, allow_missing = true)
+        ncread(nc, config, "subcatchment"; optional = false, allow_missing = true)
     # indices based on catchment
     inds, rev_inds = active_indices(subcatch_2d, missing)
     n = length(inds)
@@ -32,7 +32,7 @@ function initialize_sediment_model(config::Config)
 
     river_2d = ncread(
         nc,
-        config.input,
+        config,
         "river_location";
         optional = false,
         type = Bool,
@@ -41,7 +41,7 @@ function initialize_sediment_model(config::Config)
     river = river_2d[inds]
     riverwidth_2d = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.width";
         optional = false,
         type = Float,
@@ -50,7 +50,7 @@ function initialize_sediment_model(config::Config)
     riverwidth = riverwidth_2d[inds]
     riverlength_2d = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.length";
         optional = false,
         type = Float,
@@ -77,7 +77,7 @@ function initialize_sediment_model(config::Config)
 
     eros = initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
 
-    ldd_2d = ncread(nc, config.input, "ldd"; optional = false, allow_missing = true)
+    ldd_2d = ncread(nc, config, "ldd"; optional = false, allow_missing = true)
     ldd = ldd_2d[inds]
 
     # # lateral part sediment in overland flow
@@ -118,7 +118,7 @@ function initialize_sediment_model(config::Config)
     # the indices of the river cells in the land(+river) cell vector
     βₗ = ncread(
         nc,
-        config.input,
+        config,
         "lateral.land.slope";
         optional = false,
         sel = inds,

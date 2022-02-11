@@ -33,11 +33,12 @@ config = Wflow.Config(tomlpath)
     # modifiers can also be applied
     kvconf = Wflow.get_alias(config.input.vertical, "kv_0", "kv₀", nothing)
     @test kvconf isa Wflow.Config
-    ncname, modifier = Wflow.ncvar_name_modifier(kvconf)
+    ncname, modifier = Wflow.ncvar_name_modifier(kvconf, config = config)
     @test ncname === "KsatVer"
     @test modifier.scale == 1.0
     @test modifier.offset == 0.0
     @test modifier.value === nothing
+    @test modifier.index === nothing
 
     # test the optional "dir_input" and "dir_output" keys
     @test haskey(config, "dir_input")

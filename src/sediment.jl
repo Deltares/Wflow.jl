@@ -115,7 +115,7 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
 
     altitude = ncread(
         nc,
-        config.input,
+        config,
         "vertical.altitude";
         optional = false,
         sel = inds,
@@ -123,17 +123,17 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
     )
     canopyheight = ncread(
         nc,
-        config.input,
+        config,
         "vertical.canopyheight";
         sel = inds,
         defaults = 3.0,
         type = Float,
     )
     erosk =
-        ncread(nc, config.input, "vertical.erosk"; sel = inds, defaults = 0.6, type = Float)
+        ncread(nc, config, "vertical.erosk"; sel = inds, defaults = 0.6, type = Float)
     erosspl = ncread(
         nc,
-        config.input,
+        config,
         "vertical.erosspl";
         sel = inds,
         defaults = 2.0,
@@ -141,7 +141,7 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
     )
     erosov = ncread(
         nc,
-        config.input,
+        config,
         "vertical.erosov";
         sel = inds,
         defaults = 0.9,
@@ -149,7 +149,7 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
     )
     pathfrac = ncread(
         nc,
-        config.input,
+        config,
         "vertical.pathfrac";
         sel = inds,
         defaults = 0.01,
@@ -157,7 +157,7 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
     )
     slope = ncread(
         nc,
-        config.input,
+        config,
         "vertical.slope";
         sel = inds,
         defaults = 0.01,
@@ -165,26 +165,26 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
     )
     usleC = ncread(
         nc,
-        config.input,
+        config,
         "vertical.usleC";
         sel = inds,
         defaults = 0.01,
         type = Float,
     )
     usleK =
-        ncread(nc, config.input, "vertical.usleK"; sel = inds, defaults = 0.1, type = Float)
+        ncread(nc, config, "vertical.usleK"; sel = inds, defaults = 0.1, type = Float)
 
     cmax, _, canopygapfraction, sl, swood, kext = initialize_canopy(nc, config, inds)
 
     # Initialise parameters for the transport capacity part
     βₗ = slope
     clamp!(βₗ, 0.00001, Inf)
-    ldd_2d = ncread(nc, config.input, "ldd"; optional = false, allow_missing = true)
+    ldd_2d = ncread(nc, config, "ldd"; optional = false, allow_missing = true)
     ldd = ldd_2d[inds]
 
     dmclay = ncread(
         nc,
-        config.input,
+        config,
         "vertical.dmclay";
         sel = inds,
         defaults = 2.0,
@@ -192,7 +192,7 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
     )
     dmsilt = ncread(
         nc,
-        config.input,
+        config,
         "vertical.dmsilt";
         sel = inds,
         defaults = 10.0,
@@ -200,7 +200,7 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
     )
     dmsand = ncread(
         nc,
-        config.input,
+        config,
         "vertical.dmsand";
         sel = inds,
         defaults = 200.0,
@@ -208,7 +208,7 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
     )
     dmsagg = ncread(
         nc,
-        config.input,
+        config,
         "vertical.dmsagg";
         sel = inds,
         defaults = 30.0,
@@ -216,19 +216,19 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
     )
     dmlagg = ncread(
         nc,
-        config.input,
+        config,
         "vertical.dmlagg";
         sel = inds,
         defaults = 500.0,
         type = Float,
     )
     pclay =
-        ncread(nc, config.input, "vertical.pclay"; sel = inds, defaults = 0.1, type = Float)
+        ncread(nc, config, "vertical.pclay"; sel = inds, defaults = 0.1, type = Float)
     psilt =
-        ncread(nc, config.input, "vertical.psilt"; sel = inds, defaults = 0.1, type = Float)
+        ncread(nc, config, "vertical.psilt"; sel = inds, defaults = 0.1, type = Float)
     rhos = ncread(
         nc,
-        config.input,
+        config,
         "vertical.rhosed";
         sel = inds,
         defaults = 2650.0,
@@ -292,7 +292,7 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
     if do_reservoirs
         rescoverage_2d = ncread(
             nc,
-            config.input,
+            config,
             "vertical.resareas";
             optional = false,
             sel = inds,
@@ -304,7 +304,7 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
     if do_lakes
         lakecoverage_2d = ncread(
             nc,
-            config.input,
+            config,
             "vertical.lakeareas";
             optional = false,
             sel = inds,
@@ -901,7 +901,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     if do_reservoirs
         reslocs = ncread(
             nc,
-            config.input,
+            config,
             "lateral.river.reslocs";
             optional = false,
             sel = inds_riv,
@@ -910,7 +910,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
         )
         rescoverage_2d = ncread(
             nc,
-            config.input,
+            config,
             "lateral.river.resareas";
             optional = false,
             sel = inds_riv,
@@ -919,7 +919,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
         )
         resarea = ncread(
             nc,
-            config.input,
+            config,
             "lateral.river.resarea";
             optional = false,
             sel = inds_riv,
@@ -928,7 +928,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
         )
         restrapefficiency = ncread(
             nc,
-            config.input,
+            config,
             "lateral.river.restrapeff";
             optional = false,
             sel = inds_riv,
@@ -946,7 +946,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     if do_lakes
         lakelocs = ncread(
             nc,
-            config.input,
+            config,
             "lateral.river.lakelocs";
             optional = false,
             sel = inds_riv,
@@ -955,7 +955,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
         )
         lakecoverage_2d = ncread(
             nc,
-            config.input,
+            config,
             "lateral.river.lakeareas";
             optional = false,
             sel = inds_riv,
@@ -964,7 +964,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
         )
         lakearea = ncread(
             nc,
-            config.input,
+            config,
             "lateral.river.lakearea";
             optional = false,
             sel = inds_riv,
@@ -979,7 +979,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
 
     riverslope = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.slope";
         optional = false,
         sel = inds_riv,
@@ -988,7 +988,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     clamp!(riverslope, 0.00001, Inf)
     rhos = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.rhosed";
         sel = inds_riv,
         defaults = 2650.0,
@@ -996,7 +996,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     )
     dmclay = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.dmclay";
         sel = inds_riv,
         defaults = 2.0,
@@ -1004,7 +1004,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     )
     dmsilt = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.dmsilt";
         sel = inds_riv,
         defaults = 10.0,
@@ -1012,7 +1012,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     )
     dmsand = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.dmsand";
         sel = inds_riv,
         defaults = 200.0,
@@ -1020,7 +1020,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     )
     dmsagg = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.dmsagg";
         sel = inds_riv,
         defaults = 30.0,
@@ -1028,7 +1028,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     )
     dmlagg = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.dmlagg";
         sel = inds_riv,
         defaults = 500.0,
@@ -1036,7 +1036,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     )
     dmgrav = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.dmgrav";
         sel = inds_riv,
         defaults = 2000.0,
@@ -1044,7 +1044,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     )
     fclayriv = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.fclayriv";
         optional = false,
         sel = inds_riv,
@@ -1052,7 +1052,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     )
     fsiltriv = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.fsiltriv";
         optional = false,
         sel = inds_riv,
@@ -1060,7 +1060,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     )
     fsandriv = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.fsandriv";
         optional = false,
         sel = inds_riv,
@@ -1068,7 +1068,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     )
     fgravriv = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.fgravriv";
         optional = false,
         sel = inds_riv,
@@ -1076,7 +1076,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     )
     d50riv = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.d50";
         optional = false,
         sel = inds_riv,
@@ -1084,7 +1084,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     )
     d50engelund = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.d50engelund";
         optional = false,
         sel = inds_riv,
@@ -1092,7 +1092,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     )
     cbagnold = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.cbagnold";
         optional = false,
         sel = inds_riv,
@@ -1100,7 +1100,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     )
     ebagnold = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.ebagnold";
         optional = false,
         sel = inds_riv,
