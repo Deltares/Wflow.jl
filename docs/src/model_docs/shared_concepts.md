@@ -39,6 +39,13 @@ exceeds `whc`, either through snow melt or incoming rainfall, the surplus water
 
 ![snowmelt](../images/snowmelt.png) 
 
+*Snowmelt and refreezing rates as a function of temperature (for set melting and refreezing factors)*
+
+```@setup
+# Figure created using python: # hide
+# https://gist.github.com/JoostBuitink/21dd32e71fd1360117fcd1c532c4fd9d#file-snowmelt_fig-py # hide
+```
+
 ### Glacier modelling
 
 Glacier processes can be modelled if the snow model is enabled. For the vertical HBV concept

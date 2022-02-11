@@ -30,6 +30,13 @@ processes](@ref soil).
 
 ![snowfall](../../images/snowfall.png) 
 
+*Division between snow and precipitation based on the threshold temperature*
+
+```@setup
+# Figure created using python: # hide
+# https://gist.github.com/JoostBuitink/21dd32e71fd1360117fcd1c532c4fd9d#file-snowfall_fig-py # hide
+```
+
 ## [Rainfall interception](@id interception)
 
 Two different interception models are available: the analytical Gash model, and the modified
@@ -78,6 +85,13 @@ values, as indicated by the figure below.
 
 ![soil_evap](../../images/soil_evap.png) 
 
+*Evaporation reduction as function of available soil moisture*
+
+```@setup
+# Figure created using python: # hide
+# https://gist.github.com/JoostBuitink/21dd32e71fd1360117fcd1c532c4fd9d#file-sbm_soil_figs-py # hide
+```
+
 When more soil layers are present, soil evaporation is only provided from the upper soil
 layer, and soil evaporation is split in evaporation from the unsaturated store and
 evaporation from the saturated store. Water is first evaporated from the unsaturated store.
@@ -108,6 +122,13 @@ index of the vector that contains all active cells within the spatial model doma
 
 ![soil_wetroots](../../images/soil_wetroots.png) 
 
+*Amount of wet roots and the effect of the rootdistpar parameter*
+
+```@setup
+# Figure created using python: # hide
+# https://gist.github.com/JoostBuitink/21dd32e71fd1360117fcd1c532c4fd9d#file-sbm_soil_figs-py # hide
+```
+
 The remaining potential evaporation is used to extract water from the unsaturated store. The
 maximum allowed extraction of the unsaturated zone is determined based on the fraction of
 the unsaturated zone that is above the rooting depth, see conceptual figure below. This is
@@ -126,7 +147,14 @@ implemented using the following code:
     maxextr = availcap * ustorelayerdepth 
 ```
 
-![soil_unsatevap](../../images/soil_unsatevap.png) 
+![soil_unsatevap](../../images/soil_unsatevap.png)
+
+*Conceptual overview of how maxextr depends on rooting depth and water table depth*
+
+```@setup
+# Figure created using python: # hide
+# https://gist.github.com/JoostBuitink/21dd32e71fd1360117fcd1c532c4fd9d#file-sbm_soil_figs-py # hide
+```
 
 !!! note
     When `whole_ust_available` is set to true in the TOML file, almost the complete
@@ -164,6 +192,13 @@ applicable to natural vegetation, however for crops this assumption is not valid
 be improved in the wflow code by applying the reduction to crops only.
 
 ![soil_rootwateruptake](../../images/soil_rootwateruptake.png) 
+
+*Root water uptake reduction coefficient as a function of soil water pressure*
+
+```@setup
+# Figure created using python: # hide
+# https://gist.github.com/JoostBuitink/21dd32e71fd1360117fcd1c532c4fd9d#file-sbm_soil_figs-py # hide
+```
 
 ## [Snow and glaciers](@id snow)
 
@@ -349,6 +384,14 @@ used):
 ```
 
 ![soil_frozeninfilt](../../images/soil_frozeninfilt.png) 
+
+*Infiltration correction factor as a function of soil temperature*
+
+```@setup
+# Figure created using python: # hide
+# https://gist.github.com/JoostBuitink/21dd32e71fd1360117fcd1c532c4fd9d#file-sbm_soil_figs-py # hide
+```
+
 
 ### Capillary rise
 
