@@ -2,7 +2,8 @@
 
 In order to run wflow, several files are required. These consist of a settings file and
 input data. The input data is typically separated into static maps and forcing data, both
-are supplied in a NetCDF file. A brief overview of the different files:
+are supplied in a NetCDF file, except for lake storage and rating curves that are supplied
+via CSV files. A brief overview of the different files:
 
  - The `settings.toml` file contains information on the simulation period, links to the
    input files (and their names in the NetCDF files), and links the correct names of the
@@ -16,10 +17,10 @@ are supplied in a NetCDF file. A brief overview of the different files:
 There are several model configurations supported by wflow. These model configurations
 require slightly different input requirements, yet the general structure is similar for each
 model. A wflow model configuration consists of a `vertical` concept like the [SBM](@ref
-vert_sbm) or [HBV](@ref vert_hbv) in combination with `lateral` concepts that control how
-water is routed for example over the land or river domain. For the wflow\_sbm model
-different model configurations are possible. The following model configurations are
-supported in wflow:
+vert_sbm) or [HBV](@ref vert_hbv) vertical concept in combination with `lateral` concepts
+that control how water is routed for example over the land or river domain. For the
+wflow\_sbm model different model configurations are possible. The following model
+configurations are supported in wflow:
 
  - wflow\_sbm:
     - SBM + kinematic wave for subsurface and surface flow
