@@ -1,5 +1,9 @@
 # [Step 2: Preparing the settings file](@id config_toml)
-A settings file is essential for wflow, as it contains information on the model configuration, simulation period, input files, and parameters. The settings are provided in a TOML file. The settings file is structured in several sections, which are explained below. The filepaths that are provided in this file are relative to the location of the TOML file , or to `dir_input` and `dir_output` if they are given.
+A settings file is essential for wflow, as it contains information on the model
+configuration, simulation period, input files, and parameters. The settings are provided in
+a TOML file. The settings file is structured in several sections, which are explained below.
+The filepaths that are provided in this file are relative to the location of the TOML file,
+or to `dir_input` and `dir_output` if they are given.
 
 ## General time info
 Time information is optional. When left out, each time step in the forcing NetCDF will be
@@ -58,7 +62,14 @@ min_streamorder = 3                 # minimum stream order to delineate subbasin
 ```
 
 ## State options
-The `state` section in the TOML file provides information about the location of input and output states of the model. This section is mostly relevant if the model needs to be started with a "warm" state (i.e. based on the results of a previous simulation). The example below shows how to save the output states of the current simulation, so it can be used to initialize another model in the future. Details on the settings required to start a model with a warm state can be found in the [additional model options](@ref reinit). If it is not required to store the outstates of the current simulation, the entire `state` section can be removed.
+The `state` section in the TOML file provides information about the location of input and
+output states of the model. This section is mostly relevant if the model needs to be started
+with a "warm" state (i.e. based on the results of a previous simulation). The example below
+shows how to save the output states of the current simulation, so it can be used to
+initialize another model in the future. Details on the settings required to start a model
+with a warm state can be found in the [additional model options](@ref reinit). If it is not
+required to store the outstates of the current simulation, the entire `state` section can be
+removed.
 
 ```toml
 [state]
@@ -97,8 +108,8 @@ and needs to be mapped to the external netCDF variable name. `forcing` lists the
 model forcing parameters, and these are mapped to the external netCDF variables listed under
 the section `[input.vertical]`. It is possible to provide cyclic parameters to the model. In
 the example below this is done for the internal `vertical.leaf_area_index` model parameter,
-that is linked to the external netCDF variable "LAI" variable. 
-If a model parameter is not mapped, a default value will be used if available.
+that is linked to the external netCDF variable "LAI" variable. If a model parameter is not
+mapped, a default value will be used if available.
 
 ```toml
 [input]

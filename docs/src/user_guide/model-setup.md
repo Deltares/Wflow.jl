@@ -48,14 +48,15 @@ flow](@ref). Reservoirs or lakes can be part of the kinematic wave (optional) an
 parameters are described in [Reservoirs](@ref reservoir_params) and [Lakes](@ref
 lake_params).
 
-Besides the river and overland flow components the  wflow\_sbm + kinematic wave model consists of
-the [wflow\_sbm vertical concept](@ref wflow_sbm_desc) and input parameters for this component are 
-described in the wflow\_sbm section of [Model parameters](@ref params_lat). Finally, the SBM + Kinematic wave model
-includes the lateral component [Subsurface flow routing](@ref) and parameters that are part
-of this component are described in the [Lateral subsurface flow](@ref) section of Model
-parameters. Input parameters for this component of the SBM + Kinematic wave model are
-derived from the SBM vertical concept and the land slope. One external parameter `khfrac` is
-used to calculate the horizontal hydraulic conductivity at the soil surface `kh₀`.
+Besides the river and overland flow components the  wflow\_sbm + kinematic wave model
+consists of the vertical concept [SBM](@ref vert_sbm) and input parameters for this
+component are described in the wflow\_sbm section of [Model parameters](@ref params_lat).
+Finally, the SBM + Kinematic wave model includes the lateral component [Subsurface flow
+routing](@ref) and parameters that are part of this component are described in the [Lateral
+subsurface flow](@ref) section of Model parameters. Input parameters for this component of
+the SBM + Kinematic wave model are derived from the SBM vertical concept and the land slope.
+One external parameter `khfrac` is used to calculate the horizontal hydraulic conductivity
+at the soil surface `kh₀`.
 
 There is also the option to use the local inertial model as part of the `sbm` model type:
 + for river flow, see also  [SBM + Local inertial river](@ref) model. 
@@ -66,8 +67,9 @@ Input parameters for this approach are described in [River flow (local inertial)
 local-inertial_river_params) and [Overland flow (local
 inertial)](@ref local-inertial_land_params) of the Model parameters section.
 
-The HBV model consists besides the river and overland flow components of the [HBV vertical
-concept](@ref wflow_hbv_desc). Input parameters for this component are described in the [HBV](@ref params_vert) section of Model parameters.
+The HBV model consists besides the river and overland flow components of the [HBV](@ref
+vert_hbv) vertical concept. Input parameters for this component are described in the
+[HBV](@ref params_vert) section of Model parameters.
 
 The SBM + Groundwater flow includes besides the river and overland flow components and the
 vertical SBM concept, the lateral [Groundwater flow component](@ref lateral_gwf). For the
@@ -79,13 +81,13 @@ the model grid. Parameters that are part of the boundary conditions of the uncon
 aquifer are listed under [Constant Head](@ref) and [Boundary conditions](@ref) of the Model
 parameters section.
 
-The wflow_sediment model consists of the vertical [Soil Erosion](@ref) concept and the input
-parameters for this concept are described in the [Sediment](@ref) section of the Model
-parameters. The parameters of the lateral [Sediment Flux in overland flow](@ref) concept are
-described in the [Overland flow](@ref) section of the Model parameters. Parameters of this
-component are not directly set by data from static input. The input parameters of the
-lateral concept [River Sediment Model](@ref) are listed in [River flow](@ref) of the Model
-parameters section.
+The wflow\_sediment model consists of the vertical [Soil Erosion](@ref) concept and the
+input parameters for this concept are described in the [Sediment](@ref params_vert) section
+of the Model parameters. The parameters of the lateral [Sediment Flux in overland
+flow](@ref) concept are described in the [Overland flow](@ref) section of the Model
+parameters. Parameters of this component are not directly set by data from static input. The
+input parameters of the lateral concept [River Sediment Model](@ref) are listed in [River
+flow](@ref) of the Model parameters section.
 
 The Model parameters section lists all the parameters per Model component and these Tables
 can also be used to check which parameters can be part of the output, see also [Output

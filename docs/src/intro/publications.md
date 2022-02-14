@@ -1,17 +1,17 @@
 # Publications 
 
-## Citing wflow
+## Citing wflow 
+[![DOI](https://zenodo.org/badge/246787232.svg)](https://zenodo.org/badge/latestdoi/246787232)
 
 When using Wflow.jl as part of for example research or project work or teaching please cite
-our work. Wflow has been published in Zenodo with the following latest DOI:
-[![DOI](https://zenodo.org/badge/246787232.svg)](https://zenodo.org/badge/latestdoi/246787232),
-the DOI of previous versions are also available at Zenodo.
+our work. Wflow has been published in Zenodo, see the Zenodo badge above, that points to the
+latest release. The DOIs of previous versions are also available at Zenodo.
 
 If you use a snapshot of the development (without a DOI) please cite as follows:
 
 van Verseveld, Willem, Visser, Martijn, Bootsma, Huite, Boisgontier, Hélène, Bouaziz,
 Laurène, Eilander, Dirk & Hegnauer, Mark (YEAR). Deltares/Wflow.jl: unstable-master.
-<https://github.com/Deltares/Wflow.jl>, obtained: DATE_OF_DOWNLOAD.
+<https://github.com/Deltares/Wflow.jl>, obtained: DATE\_OF\_DOWNLOAD.
 
 ## Publications using wflow 
 

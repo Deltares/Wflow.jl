@@ -1,8 +1,10 @@
 # Step 5: Analyzing the model output
 
-After running the model example from the previous slide, the model results can be found in `data/output_moselle_simple.csv`.  
+After running the model example from the previous slide, the model results can be found in
+`data/output_moselle_simple.csv`.  
 
-If required, it is also possible to output NetCDF files as output, by modifying the TOML file. An example is shown below:
+If required, it is also possible to output NetCDF files as output, by modifying the TOML
+file. An example is shown below:
 
 ```toml
 # Spatial output
@@ -32,4 +34,5 @@ parameter = "vertical.precipitation"
 reducer = "mean"
 ```
 
-Using your own preferred programming language, the model output files can be easily read and visualized.
+Using your own preferred programming language, the model output files can be easily read and
+visualized.

@@ -9,8 +9,6 @@
 | HBV model | [hbv_config.toml](https://raw.githubusercontent.com/Deltares/Wflow.jl/master/test/hbv_config.toml) | 
 | wflow_sediment | [sediment_config.toml](https://raw.githubusercontent.com/Deltares/Wflow.jl/master/test/sediment_config.toml) |
 
-
-
 ## [wflow\_sbm](@id wflow_sbm_data)
 
 ```julia

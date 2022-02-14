@@ -2,14 +2,16 @@
 
 ## Using Julia
 
-Below shows a brief example on how to run wflow using Julia. Example data to explore how this works can be found [here](@ref sample_data).
+Below shows a brief example on how to run wflow using Julia. Example data to explore how
+this works can be found [here](@ref sample_data).
 
 ```julia
 using Wflow
 Wflow.run(toml_path)
 ```
 
-Julia can also be used to modify settings after reading the settings file. In the example below, we show how to adjust the end date of the simulation.
+Julia can also be used to modify settings after reading the settings file. In the example
+below, we show how to adjust the end date of the simulation.
 
 ```julia 
 using Dates
@@ -27,7 +29,7 @@ file.
 
 Binaries of `wflow_cli` can be downloaded from our website
 [download.deltares.nl](https://download.deltares.nl/en/download/wflow/), and are currently
-available for Windows and Linux.
+available for Windows.
 
 After installing you can see three folders in the installation directory. It is only the
 `bin/wflow_cli` that is directly used. All three folders need to stay together however.

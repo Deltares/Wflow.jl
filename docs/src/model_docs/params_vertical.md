@@ -1,6 +1,6 @@
 # [Parameters vertical concepts](@id params_vert)
 
-## wflow\_sbm
+## SBM
 The Table below shows the parameters (fields) of struct `SBM`, including a description of
 these parameters, the unit, and default value if applicable. The parameters in bold
 represent model parameters that can be set through static and forcing input data (netCDF),
@@ -118,7 +118,7 @@ specific_leaf = "Sl"
 | `waterlevel_river` | water level river | mm | - |
 
 
-## wflow\_hbv
+## HBV
 The Table below shows the parameters (fields) of struct `HBV`, including a description of
 these parameters, the unit, and default value if applicable. The parameters in bold
 represent model parameters that can be set through static and forcing input data (netCDF),
@@ -182,7 +182,7 @@ internal model parameter to the external netCDF variable.
 | `runoff`         | total specific runoff per cell  | mm Δt``^-1``  | - |
 
 
-## wflow\_sediment
+## Sediment
 
 The Table below shows external parameters that can be set through static input data
 (netCDF), and can be listed in the TOML configuration file under `[input.vertical]`. These

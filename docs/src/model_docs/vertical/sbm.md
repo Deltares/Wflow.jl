@@ -1,22 +1,14 @@
-# [wflow\_sbm] (@id wflow_sbm_desc)
+# [SBM](@id vert_sbm)
 
 ## Introduction
+The SBM vertical concept has its roots in the Topog\_SBM model but has had considerable
+changes over time. The main differences are:
 
-The soil part of wflow\_sbm model concept is largely based on the Topog\_sbm mode, but has
-had considerable changes over time. The main changes in wflow\_sbm are:
-
-- The unsaturated zone can be split up in different layers
+- The unsaturated zone can be split-up in different layers
 - The addition of evapotranspiration losses
-- The addition of capillary rise
-- Wflow\_sbm routes water over a D8 network instead of an element network based on contour lines and trajectories
+- The addition of a capillary rise
 
-For the lateral components of this wflow\_sbm model water is routed over a D8 network, and
-the kinematic wave approach is used for river, overland and lateral subsurface flow. This is
-described in more detail in the section [Kinematic wave].
-
-An overview of the different processes and fluxes in the wflow_sbm model:
-
-![wflow_sbm model](../../images/wflow_sbm_soil.png)
+The sections below describe the working of the SBM vertical concept in more detail.
 
 ## Precipitation 
 The division between solid and liquid precipitation (snowfall and rainfall, respectively) is

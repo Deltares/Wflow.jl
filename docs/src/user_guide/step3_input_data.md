@@ -2,13 +2,20 @@
 
 As mentioned before, the input data can be classified into two types:
 
- - Meteorological forcing: maps with timeseries for each model pixel, with values for precipitation, temperature, and potential evaporation. This data should be provided as a three-dimensional dataset, with the `x`, `y` and `time` dimensions. 
- - Static maps
+ - Meteorological forcing: maps with timeseries for each model pixel, with values for
+   precipitation, temperature, and potential evaporation. This data should be provided as a
+   three-dimensional dataset, with the `x`, `y` and `time` dimensions. 
+ - Static maps.
 
 
 ## Meterological data
 
-Meteorological data is provided as a single NetCDF file, with several variables containing the forcing data for precipitation, temperature and potential evaporation. The code snippet below shows the contents of the example file (downloaded [here](@ref wflow_sbm_data)), and opened with `xarray` in Python. As can be seen, each variable consists of a three-dimensional dataset (`lon`, `lat`, and `time`), and each timestep consists of a two-dimensional map with values at each gridcell. Only values within the basin are required.
+Meteorological data is provided as a single NetCDF file, with several variables containing
+the forcing data for precipitation, temperature and potential evaporation. The code snippet
+below shows the contents of the example file (downloaded [here](@ref wflow_sbm_data)), and
+opened with `xarray` in Python. As can be seen, each variable consists of a
+three-dimensional dataset (`lon`, `lat`, and `time`), and each timestep consists of a
+two-dimensional map with values at each gridcell. Only values within the basin are required.
 
 ```
 <xarray.Dataset>
@@ -28,22 +35,22 @@ Data variables:
 
 ### List of essential static data
 
-The list below contains a brief overview of several essential static maps required to run wflow. These NC variables names refer to the example data of the wflow\_sbm model (see [here](@ref wflow_sbm_data)).
+The list below contains a brief overview of several essential static maps required to run
+wflow. These NC variables names refer to the example data of the wflow\_sbm model (see
+[here](@ref wflow_sbm_data)).
 
 Description | NC variable name | unit
 --- | --- | ---
 Altitude | `wflow_dem` | m
-Number of upstream pixels (accuflux) | `wflow_acc` | -
-Location of gauges | `wflow_gauges` | -
-Map with land-use classes | `wflow_landuse` | -
 Flow direction (1-9) | `wflow_ldd` | -
 Location of cells that are pits | `wflow_pits` | -
 Map indicating the river cells (0-1) | `wflow_river` | -
-Drainage length, distance to nearest drain? | `wflow_riverlength` | m?
+The length of the river | `wflow_riverlength` | m
 The width of the river | `wflow_riverwidth` | m
-Location of soil pixels | `wflow_soil` | -
-Streamorder (Strahler) of each pixel | `wflow_streamorder` | -
-Mask of the basin (not related to gauges?) | `wflow_subcatch` | -
-Area upstream of each pixel | `wflow_uparea` | m2?
+Mask of the basin | `wflow_subcatch` | -
+Land slope | `Slope` | m m$^-1$
+River slope | `RiverSlope` | m m$^-1$
 
-As mentioned before, the model parameters can also be defined a spatial maps. They can be included in the same NetCDF file, as long as their variable names are correctly mapped in the TOML settings file.
+As mentioned before, the model parameters can also be defined as spatial maps. They can be
+included in the same NetCDF file, as long as their variable names are correctly mapped in
+the TOML settings file.

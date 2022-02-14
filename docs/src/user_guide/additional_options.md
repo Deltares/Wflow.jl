@@ -4,8 +4,8 @@
 
 The `state` section in the TOML file provides information on the input file if the model is
 initialized with a warm state (`path_input`) and to what file the states are written at the
-end of the model run (`path_output`). Please note that the model setting `reinit` need to be
-set to `false` in order to initialize the model with states from the file located at
+end of the model run (`path_output`). Please note that the model setting `reinit` needs to
+be set to `false` in order to initialize the model with states from the file located at
 `path_input`. A mapping between external state names and internal model states is required.
 This information is specified for each model component, the `vertical` model and `lateral`
 model components. In the example below the `vertical` component represents the SBM concept,
@@ -13,8 +13,7 @@ and for the `lateral` components there is a `river` (including `reservoir`), `la
 `subsurface` domain. The internal model states are listed on the left side, and the external
 state names are listed on the right side. Note that `path_input` is only required when
 `reinit` is set to false. `path_output` is optional, an output state file is only written
-when it is defined. If neither is set, the entire `state` section can be left out. If a
-model parameter is not mapped, a default value will be used if available.
+when it is defined. If neither is set, the entire `state` section can be left out.
 
 ```toml
 [model]
@@ -90,22 +89,41 @@ targetfullfrac = "ResTargetFullFrac"
 targetminfrac = "ResTargetMinFrac"
 ```
 
+## Enabling lakes
+
+```toml
+[model]
+lakes = true
+
+[input.lateral.river.lake]
+area = "lake_area"
+areas = "wflow_lakeareas"
+b = "lake_b"
+e = "lake_e"
+locs = "wflow_lakelocs"
+outflowfunc = "lake_outflowfunc"
+storfunc  = "lake_storfunc"
+threshold  = "lake_threshold"
+waterlevel = "lake_waterlevel"
+```
+
 ## [Using multithreading] (@id multi_threading)
 
 ### Using wflow in Julia
 
 Wflow supports multi-threading execution of the wflow\_sbm model that uses the kinematic
-wave approach for river, overland and lateral subsurface flow. Both the wflow\_sbm and the
-kinematic wave components of this model can run on multiple threads. The optional local
-inertial model for river flow as part of the wflow\_sbm model [SBM + Local inertial
-river](@ref) model can also run on multiple threads. The threading functionality for the
-kinematic wave may also be useful for models that make (partly) use of this routing approach
-as the [HBV model](@ref hbv_model_config) and the wflow\_sbm model [SBM + Groundwater
-flow](@ref). The multi-threading functionality in Wflow is considered experimental, see also
-the following [issue](https://github.com/Deltares/Wflow.jl/issues/139), where an error was
-not thrown running code multi-threaded. Because of this we advise to start with running a
-Wflow model single-threaded (for example during the testing phase of setting up an new Wflow
-model).
+wave approach for river, overland and lateral subsurface flow. Both the vertical SBM concept
+and the kinematic wave components of this model can run on multiple threads. The optional
+local inertial model for river flow [SBM + Local inertial river](@ref) model and the
+optional local inertial model for river (1D) and land (2D) [SBM + Local inertial river (1D)
+and land (2D)](@ref), both part of wflow\_sbm, can also run on multiple threads. The
+threading functionality for the kinematic wave may also be useful for models that make
+(partly) use of this routing approach as the [wflow_hbv](@ref config_hbv) model and
+the wflow\_sbm model [SBM + Groundwater flow](@ref). The multi-threading functionality in
+Wflow is considered experimental, see also the following
+[issue](https://github.com/Deltares/Wflow.jl/issues/139), where an error was not thrown
+running code multi-threaded. Because of this we advise to start with running a Wflow model
+single-threaded (for example during the testing phase of setting up an new Wflow model).
 
 For information on how to start Julia with multiple threads we refer to [How to start Julia
 with multiple
