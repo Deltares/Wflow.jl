@@ -2,14 +2,18 @@
 
 Wflow can be used in two different ways, depending on the required use of the code:
 
-- If you want to stay up-to-date with the latest version, explore and modify the model code, and write your own Julia scripts around the wflow package, we recommend installing wflow as a Julia package
-- If you don't need to extra features, but just want to run simulations, a complied executable version is available. This consists of a single executable, `wflow_cli`, allowing you to run the model via the command line. 
+- If you want to stay up-to-date with the latest version, explore and modify the model code,
+  and write your own Julia scripts around the wflow package, we recommend installing wflow
+  as a [Julia](https://julialang.org/) package.
+- If you don't need extra features, but just want to run simulations, a complied executable
+  version is available. This consists of a single executable, `wflow_cli`, allowing you to
+  run the model via the command line.
 
 Below, we describe how to install both versions of wflow. 
 
 ## Installing as Julia package
 
-Wflow is a [Julia](https://julialang.org/) package, that can be install through several 
+Wflow is a [Julia](https://julialang.org/) package, that can be installed through several 
 different ways. Below we show how to install wflow from Julia's package repository, and
 how to install the latest version from GitHub. 
 
@@ -74,11 +78,11 @@ Before ending this section, we still want to recommend a few tools that can make
 developing Julia code easier.
 
 !!! tip
-    There is a section on editors and IDEs for Julia on https://julialang.org/, scroll down to
-    see it. We use and recommend Microsoft's free and open source [Visual Studio
+    There is a section on editors and IDEs for Julia on <https://julialang.org/>, scroll
+    down to see it. We use and recommend Microsoft's free and open source [Visual Studio
     Code](https://code.visualstudio.com/). When combined with the [Julia
-    extension](https://www.julia-vscode.org/) it provides a powerful and interactive development
-    experience.
+    extension](https://www.julia-vscode.org/) it provides a powerful and interactive
+    development experience.
 
 !!! tip
     When planning to make changes to the code of wflow, we recommend installing the `Revise.jl`
@@ -91,10 +95,9 @@ developing Julia code easier.
 
 Binaries of `wflow_cli` can be downloaded from our website
 [download.deltares.nl](https://download.deltares.nl/en/download/wflow/), and are currently
-available for Windows and Linux. Download and install the `.msi` file. 
-After installing you can see two folders in the installation directory. It is only the
-`bin/wflow_cli` that is used. The artifacts folder contains binary dependencies such as
-NetCDF.
+available for Windows. Download and install the `.msi` file. After installing you can see
+two folders in the installation directory. It is only the `bin/wflow_cli` that is used. The
+artifacts folder contains binary dependencies such as NetCDF.
 
 ```
 artifacts\
