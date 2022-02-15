@@ -87,6 +87,9 @@ maxrelease = "ResMaxRelease"
 maxvolume = "ResMaxVolume"
 targetfullfrac = "ResTargetFullFrac"
 targetminfrac = "ResTargetMinFrac"
+
+[state.lateral.river.reservoir]
+volume = "volume_reservoir"
 ```
 
 ## Enabling lakes
@@ -105,6 +108,9 @@ outflowfunc = "lake_outflowfunc"
 storfunc  = "lake_storfunc"
 threshold  = "lake_threshold"
 waterlevel = "lake_waterlevel"
+
+[state.lateral.river.lake]
+waterlevel = "waterlevel_lake"
 ```
 
 ## [Using multithreading] (@id multi_threading)
@@ -128,6 +134,14 @@ single-threaded (for example during the testing phase of setting up an new Wflow
 For information on how to start Julia with multiple threads we refer to [How to start Julia
 with multiple
 threads](https://docs.julialang.org/en/v1/manual/multi-threading/#Starting-Julia-with-multiple-threads).
+
+Additionally, when running Julia + wflow via the command line (note that this is different
+from the `wflow_cli`), it is possible to define the number of threads via the `-t` flag. 
+An example where we start Julia with three threads:
+
+```
+julia -t 3 -e 'using Wflow; Wflow.run()' path/to/config.toml
+``` 
 
 ### [Using the command line interface](@id cli_multi_threading)
 

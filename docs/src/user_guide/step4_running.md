@@ -2,8 +2,15 @@
 
 ## Using Julia
 
-Below shows a brief example on how to run wflow using Julia. Example data to explore how
-this works can be found [here](@ref sample_data).
+Once you installed Julia and Wflow.jl, a simulation can be started from the command line
+as follows:
+
+```
+julia -e 'using Wflow; Wflow.run()' path/to/config.toml
+``` 
+
+Furthermore, it is possible to write a Julia script to run a simulation. Example data to 
+explore how this works can be found [here](@ref sample_data).
 
 ```julia
 using Wflow

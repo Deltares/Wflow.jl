@@ -1,5 +1,8 @@
 # How to install
 
+As Julia is still a relatively new programming language, a basic "getting started with
+Julia" guide can be found [here](https://docs.julialang.org/en/v1/manual/getting-started/).
+
 Wflow can be used in two different ways, depending on the required use of the code:
 
 - If you want to stay up-to-date with the latest version, explore and modify the model code,

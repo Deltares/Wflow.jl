@@ -59,7 +59,8 @@ lon               _FillValue        NaN
 
 The list below contains a brief overview of several essential static maps required to run
 wflow. These NC variables names refer to the example data of the wflow\_sbm model (see
-[here](@ref wflow_sbm_data)).
+[here](@ref wflow_sbm_data)). Example data for the other model configurations can be 
+found [here](@ref sample_data).
 
 Description | NC variable name | unit
 --- | --- | ---

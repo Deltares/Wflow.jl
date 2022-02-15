@@ -36,25 +36,101 @@ Rutter model. The simulation timestep defines which interception model is used, 
 (or larger) timesteps use the Gash model, and timesteps smaller than daily use the modified 
 Rutter model.
 
-### The analytical Gash model (Gash, 1979)
+### The analytical (Gash) model (Gash, 1979)
+The analytical model of rainfall interception is based on Rutter’s numerical model. The
+simplifications that introduced allow the model to be applied on a daily basis, although a
+storm-based approach will yield better results in situations with more than one storm per
+day. The amount of water needed to completely saturate the canopy is defined as:
 
-The Gash model generally assumes that there is one rainfall event per day. It calculates the
-amount of water required to fully saturate the canopy. The amount of stemflow is taken as a
-fraction (`0.1 * canopygapfraction`) of the precipitation. Throughfall is the precipitation
-that is not intercepted by the leaves and stems. If the interception is larger than the
-potential evaporation, the amount above potential evaporation is added to the throughfall,
-as the concept is based on a daily timestep (assuming that the canopy storage is emptied at
-the end of the timestep). 
+```math
+P'=\frac{-\overline{R}S}{\overline{E}_{w}}ln\left[1-\frac{\overline{E}_{w}}{\overline{R}}(1-p-p_{t})^{-1}\right]
+```
 
-### The modified Rutter model (Rutter et al., 1971)
+where ``\overline{R}`` is the average precipitation intensity on a saturated canopy and
+``\overline{E}_{w}`` the average evaporation from the wet canopy and with the vegetation
+parameters ``S``, ``p`` and ``p_t`` as defined previously. The model uses a series of
+expressions to calculate the interception loss during different phases of a storm. An
+analytical integration of the total evaporation and rainfall under saturated canopy
+conditions is then done for each storm to determine average values of ``\overline{E}_{w}``
+and ``\overline{R}``. The total evaporation from the canopy (the total interception loss) is
+calculated as the sum of the components listed in the table below. Interception losses from
+the stems are calculated for days with ``P\geq S_{t}/p_{t}``. ``p_t`` and ``S_t`` are small
+and neglected.
 
-The amount of stemflow is taken as a fraction (`0.1 * canopygapfraction`) of the 
-precipitation. Throughfall equals to the amount of water that cannot be stored by the 
-canopy, plus the rainfall that is not captured by the canopy. There is no flow from water
-on the leaves to the ground, when the canopy storage is below the maximum canopy storage 
-(`cmax`). Water can evaporate from the canopy storage, taken as the minimum between potential 
-evaporation and the current storage. The "left-over" potential evaporation (if any) is 
-returned as output.
+Table: Formulation of the components of interception loss according to Gash:
+
+| Components  | Interception loss |
+|:----------- | ----------------- |
+| For ``m`` small storms (``P_{g}<{P'}_{g}``)    | ``(1-p-p_{t})\sum_{j=1}^{m}P_{g,j}`` | 
+| Wetting up the canopy in ``n`` large storms (``P_{g}\geq{P'}_{g}``)     | ``n(1-p-p_{t}){P'}_{g}-nS`` | 
+| Evaporation from saturated canopy during rainfall | ``\overline{E}/\overline{R}\sum_{j=1}^{n}(P_{g,j}-{P'}_{g})``|
+| Evaporation after rainfall ceases for ``n`` large storms | ``nS`` |
+| Evaporation from trunks in ``q`` storms that fill the trunk storage | ``qS_{t}`` |
+| Evaporation from  trunks in ``m+n-q`` storms that do not fill the trunk storage | ``p_{t}\sum_{j=1}^{m+n-q}P_{g,j}`` | 
+
+In applying the analytical model, saturated conditions are assumed to occur when the hourly
+rainfall exceeds a certain threshold. Often a threshold of 0.5 mm/hr is used.
+``\overline{R}`` is calculated for all hours when the rainfall exceeds the threshold to give
+an estimate of the mean rainfall rate onto a saturated canopy.
+
+Gash (1979) has shown that in a regression of interception loss on rainfall (on a storm
+basis) the regression coefficient should equal to ``\overline{E}_w/\overline{R}``. Assuming
+that neither ``\overline{E}_w`` nor ``\overline{R}`` vary considerably in time,
+``\overline{E}_w`` can be estimated in this way from ``\overline{R}`` in the absence of
+above-canopy climatic observations. Values derived in this way generally tend to be (much)
+higher than those calculated with the penman-monteith equation.
+
+### The modified rutter model
+For sub daily timesteps the interception is calculated using a simplification of the Rutter
+model. The simplified model is solved explicitly and does not take drainage from the canopy
+into account. The amount of stemflow is taken as a fraction (`0.1 * canopygapfraction`) of 
+the precipitation. Throughfall equals to the amount of water that cannot be stored by the 
+canopy, plus the rainfall that is not captured by the canopy. Water can evaporate from the 
+canopy storage, taken as the minimum between potential evaporation and the current storage.
+The "left-over" potential evaporation (if any) is returned as output.
+
+```@docs
+Wflow.rainfall_interception_modrut
+```
+
+### Interception parameters from LAI
+The SBM concept can determine the interception parameters from leaf area index (LAI)
+climatology. In order to switch this on you must define this cyclic parameter in the TOML
+file, the parameter is read from `path_static`, as follows:
+
+```toml
+[input] 
+path_forcing = "data/forcing-moselle.nc" 
+path_static = "data/staticmaps-moselle.nc"
+
+cyclic = ["vertical.leaf_area_index"]
+```
+Furthermore these additional parameters are required:
++ Specific leaf storage  (`sl` \[mm\])
++ Storage woody part of vegetation (`swood` \[mm\])
++ Extinction coefficient (`kext` \[-\])
+
+Here it is assumed that `cmax` \[mm\] (leaves) (canopy storage capacity for the leaves only)
+relates linearly with LAI (c.f. Van Dijk and Bruijnzeel 2001). This done via the `sl`. `sl`
+can be determined through a lookup table with land cover based on literature (Pitman 1989,
+Lui 1998). Next the `cmax` (leaves) is determined using:
+
+```math
+
+    cmax(leaves)  = sl \, LAI
+```
+To get to total storage (`cmax`) the woody part of the vegetation also needs to be added. As
+for `sl`, the storage of the woody part `swood` can also be related to land cover (lookup
+table).
+
+The canopy gap fraction is determined using the extinction coefficient `kext` (van Dijk and
+Bruijnzeel 2001):
+
+```math
+    canopygapfraction = exp(-kext \, LAI)
+```
+
+The extinction coefficient `kext` can be related to land cover.
 
 ## [Evaporation](@id evap)
 
@@ -468,6 +544,17 @@ taken assumed to be equal to potential evaporation (if sufficient water is avail
   Papers 3, Colorado State University, Fort Collins, 27 p.
 + Feddes, R.A., Kowalik, P.J. and Zaradny, H., 1978, Simulation of field water use and crop
   yield, Pudoc, Wageningen, Simulation Monographs.
++ Gash, J. H. C., 1979, An analytical model of rainfall interception by forests, Q. J. Roy.
+  Meteor. Soc., 105, 43–55, doi:1026 10.1002/qj.497105443041027.
++ Liu, S., 1998, Estimation of rainfall storage capacity in the canopies of cypress wetlands
+  and slash pine uplands in North-Central Florida, J. Hydr., 207, 32–41, doi:
+  10.1016/S0022-1694(98)00115-2.
++ Pitman, J., 1989, Rainfall interception by bracken in open habitats—relations between leaf
+  area, canopy storage and drainage rate, J. Hydr. 105, 317–334, doi:
+  10.1016/0022-1694(89)90111-X.
++ Van Dijk, A. I. J. M., and Bruijnzeel, L. A., 2001, Modelling rainfall interception by
+  vegetation of variable density using an adapted analytical model, Part 2, Model validation
+  for a tropical upland mixed cropping system, J. Hydr., 247, 239–262.  
 + Vertessy, R., and Elsenbeer, H., 1999, Distributed modeling of storm ﬂow generation in an
   amazonian rain forest catchment: effects of model parameterization, Water Resour. Res.,
   35, 2173–2187. doi: 10.1029/1999WR9000511257.

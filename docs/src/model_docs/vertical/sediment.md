@@ -1,7 +1,5 @@
 # [Sediment](@id vert_sediment)
 
-## Description
-
 Over the land, soil erosion, also called soil loss, is closely linked to the water cycle.
 The main processes governing sediment generation are splash erosion from rain droplets, and
 sheet and rill erosion from the shear stress caused by overland flow. The intensity of soil
@@ -18,7 +16,7 @@ Overview of the different processes for a land cell in wflow\_sediment.
 
 ![sediment_inland](../../images/soilloss-scheme.png)
 
-### Soil Erosion
+## Soil Erosion
 The first process to consider in sediment dynamics is the generation of sediments by land
 erosion. The main processes behind soil loss are rainfall erosion and overland flow erosion.
 In order to model such processes at a fine time and space scale, physics-based models such
@@ -30,7 +28,7 @@ The choice of rainfall erosion method is set up in the model section of the TOML
 rainerosmethod = "answers" # Rainfall erosion equation: ["answers", "eurosem"]
 ```
 
-#### Rainfall erosion
+### Rainfall erosion
 In wflow\_sediment, rainfall erosion can both be modelled using EUROSEM or ANSWERS equation.
 The main difference between the models is that EUROSEM uses a more physics-based approach
 using the kinetic energy of the rain drops impacting the soil (Morgan et al, 1998), while
@@ -155,7 +153,7 @@ Table: Estimation of USLE C factor per Globcover land use type
 | 220 | Permanent snow and ice | 0.0 |
 | 230 | No data (burnt areas, clouds,…) | 0.0 |
 
-#### Overland flow erosion
+### Overland flow erosion
 
 Overland flow (or surface runoff) erosion is induced by the strength of the shear stress of
 the surface water on the soil. As in rainfall erosion, the effect of the flow shear stress
@@ -171,7 +169,7 @@ min``^{-1}``). The USLE ``C`` and ``K`` factors can be estimated with the same m
 for rainfall erosion and here the slope gradient is obtained from the sinus rather than the
 tangent of the slope angle.
 
-### Delivery to the river system
+## Delivery to the river system
 Once soil is detached, it can be transported by overland flow and reach the river system.
 This process is described in [Sediment Flux in overland flow](@ref).
 

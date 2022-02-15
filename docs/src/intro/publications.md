@@ -154,6 +154,10 @@ MSC Thesis, HWM, Wageningen University, 2021.
 
 Beusen, B. Plastic transport and the effect of climate change in the Rhine, Internship Deltares, 2021
 
+Bouaziz, L. J. E., 2021. Internal processes in hydrological models: A glance at the Meuse basin from 
+space. Delft University of Technology, Delft, the Netherlands, Doctoral dissertation.
+<https://doi.org/10.4233/uuid:09d84cc1-27e2-4327-a8c7-207a75952061>
+
 López López, P., 2018. Application of Global Hydrological Datasets for River Basin Modelling
 Utrecht University, Utrecht, the Netherlands, pp. 1-214, Doctoral dissertation.
 <http://dspace.library.uu.nl/handle/1874/364148>.

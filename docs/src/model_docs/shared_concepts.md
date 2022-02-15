@@ -180,17 +180,6 @@ Bruijnzeel 2001):
 The extinction coefficient `kext` can be related to land cover.
 
 ## References
-+ Gash, J. H. C., 1979, An analytical model of rainfall interception by forests, Q. J. Roy.
-  Meteor. Soc., 105, 43–55, doi:1026 10.1002/qj.497105443041027.
-+ Liu, S., 1998, Estimation of rainfall storage capacity in the canopies of cypress wetlands
-  and slash pine uplands in North-Central Florida, J. Hydr., 207, 32–41, doi:
-  10.1016/S0022-1694(98)00115-2.
-+ Pitman, J., 1989, Rainfall interception by bracken in open habitats—relations between leaf
-  area, canopy storage and drainage rate, J. Hydr. 105, 317–334, doi:
-  10.1016/0022-1694(89)90111-X.
 + Seibert, J., Vis, M. J. P., Kohn, I., Weiler, M., and Stahl, K., 2018, Technical note:
   Representing glacier geometry changes in a semi-distributed hydrological model, Hydrol.
   Earth Syst. Sci., 22, 2211–2224, https://doi.org/10.5194/hess-22-2211-2018.
-+ Van Dijk, A. I. J. M., and Bruijnzeel, L. A., 2001, Modelling rainfall interception by
-  vegetation of variable density using an adapted analytical model, Part 2, Model validation
-  for a tropical upland mixed cropping system, J. Hydr., 247, 239–262.
