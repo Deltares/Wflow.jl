@@ -1,7 +1,15 @@
 # How to install
 
-As Julia is still a relatively new programming language, a basic "getting started with
-Julia" guide can be found [here](https://docs.julialang.org/en/v1/manual/getting-started/).
+First download and install the [current stable release of
+Julia](https://julialang.org/downloads/#current_stable_release). Please see [platform
+specific instructions](https://julialang.org/downloads/platform/) for further installation
+instructions and if you have trouble installing Julia. 
+
+If you are new to Julia, it may be a good idea to check out the [Getting Started section of
+the Julia Manual](https://docs.julialang.org/en/v1/manual/getting-started/). Links to other
+learning resources can be found at
+[julialang.org/learning](https://julialang.org/learning/).
+
 
 Wflow can be used in two different ways, depending on the required use of the code:
 

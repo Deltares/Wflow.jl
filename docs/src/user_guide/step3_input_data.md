@@ -58,13 +58,12 @@ lon               _FillValue        NaN
 ### List of essential static data
 
 The list below contains a brief overview of several essential static maps required to run
-wflow. These NC variables names refer to the example data of the wflow\_sbm model (see
-[here](@ref wflow_sbm_data)). Example data for the other model configurations can be 
-found [here](@ref sample_data).
+wflow. These NC variables names refer to the example data of the wflow\_sbm + kinematic wave
+model (see [here](@ref wflow_sbm_data)). Example data for the other model configurations can
+be found [here](@ref sample_data).
 
 Description | NC variable name | unit
 --- | --- | ---
-Altitude | `wflow_dem` | m
 Flow direction (1-9) | `wflow_ldd` | -
 Location of cells that are pits | `wflow_pits` | -
 Map indicating the river cells (0-1) | `wflow_river` | -
@@ -76,4 +75,5 @@ River slope | `RiverSlope` | m m$^-1$
 
 As mentioned before, the model parameters can also be defined as spatial maps. They can be
 included in the same NetCDF file, as long as their variable names are correctly mapped in
-the TOML settings file.
+the TOML settings file. See the section on [example models](ref sample_data) on how to 
+use this functionality.
