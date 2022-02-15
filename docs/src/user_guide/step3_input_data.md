@@ -18,16 +18,38 @@ three-dimensional dataset (`lon`, `lat`, and `time`), and each timestep consists
 two-dimensional map with values at each gridcell. Only values within the basin are required.
 
 ```
-<xarray.Dataset>
-Dimensions:  (lon: 291, lat: 313, time: 366)
-Coordinates:
-  * lon      (lon) float64 5.429 5.438 5.446 5.454 ... 7.821 7.829 7.837 7.846
-  * lat      (lat) float32 50.42 50.41 50.4 50.4 ... 47.85 47.84 47.83 47.82
-  * time     (time) datetime64[ns] 2000-01-01 2000-01-02 ... 2000-12-31
-Data variables:
-    P        (time, lat, lon) float32 ...
-    TEMP     (time, lat, lon) float32 ...
-    PET      (time, lat, lon) float32 ...
+##### Dimensions #####
+
+Name                                            Length
+-------------------------------------------------------------------------
+lat                                             313
+time                                            366
+lon                                             291
+
+##### Variables #####
+
+Name                        Type          Dimensions
+-------------------------------------------------------------------------
+lat                         FLOAT         lat
+PET                         FLOAT         lon lat time
+time                        INT64         time
+P                           FLOAT         lon lat time
+TEMP                        FLOAT         lon lat time
+lon                         DOUBLE        lon
+
+##### Attributes #####
+
+Variable          Name              Value
+-------------------------------------------------------------------------
+lat               units             degrees_north
+lat               long_name         latitude
+lat               _FillValue        NaN
+PET               _FillValue        NaN
+time              units             days since 2000-01-01 00:00:00       
+time              calendar          proleptic_gregorian
+P                 _FillValue        NaN
+TEMP              _FillValue        NaN
+lon               _FillValue        NaN
 ```
 
 ## Static data

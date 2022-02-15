@@ -1,4 +1,4 @@
-# Shared model components
+# Shared processes
 
 ## [Snow and glaciers](@id snow_and_glac)
 
