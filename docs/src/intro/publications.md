@@ -9,9 +9,9 @@ latest release. The DOIs of previous versions are also available at Zenodo.
 
 If you use a snapshot of the development (without a DOI) please cite as follows:
 
-van Verseveld, Willem, Visser, Martijn, Bootsma, Huite, Boisgontier, Hélène, Bouaziz,
-Laurène, Eilander, Dirk & Hegnauer, Mark (YEAR). Deltares/Wflow.jl: unstable-master.
-<https://github.com/Deltares/Wflow.jl>, obtained: DATE\_OF\_DOWNLOAD.
+van Verseveld, Willem, Visser, Martijn, Boisgontier, Hélène, Bootsma, Huite, Bouaziz,
+Laurène, Buitink, Joost, Eilander, Dirk & Hegnauer, Mark (YEAR). Deltares/Wflow.jl:
+unstable-master. <https://github.com/Deltares/Wflow.jl>, obtained: DATE\_OF\_DOWNLOAD.
 
 ## Publications using wflow 
 
