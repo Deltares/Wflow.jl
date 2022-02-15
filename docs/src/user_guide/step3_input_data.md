@@ -112,8 +112,8 @@ Map indicating the river cells (0-1) | `wflow_river` | -
 The length of the river | `wflow_riverlength` | m
 The width of the river | `wflow_riverwidth` | m
 Mask of the basin | `wflow_subcatch` | -
-Land slope | `Slope` | m m$^-1$
-River slope | `RiverSlope` | m m$^-1$
+Land slope | `Slope` | m m$^{-1}$
+River slope | `RiverSlope` | m m$^{-1}$
 
 As mentioned before, the model parameters can also be defined as spatial maps. They can be
 included in the same NetCDF file, as long as their variable names are correctly mapped in
