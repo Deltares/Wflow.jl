@@ -11,6 +11,6 @@ params_vert) and [parameters lateral concepts](@ref params_lat)).
 
 ## Division between vertical and lateral
 
-In the documentation we talk of 'vertical' and 'lateral' concepts. These are components in
+In the documentation we talk of `vertical` and `lateral` concepts. These are components in
 the model that describe the vertical movement of water in each model grid cell and the
 lateral movement of water across grid cells.

@@ -13,43 +13,86 @@ As mentioned before, the input data can be classified into two types:
 Meteorological data is provided as a single NetCDF file, with several variables containing
 the forcing data for precipitation, temperature and potential evaporation. The code snippet
 below shows the contents of the example file (downloaded [here](@ref wflow_sbm_data)), and
-opened with `xarray` in Python. As can be seen, each variable consists of a
-three-dimensional dataset (`lon`, `lat`, and `time`), and each timestep consists of a
-two-dimensional map with values at each gridcell. Only values within the basin are required.
+displaying the content with `NCDatasets` in Julia. As can be seen, each forcing variable
+(`precip`, `pet` and `temp`) consists of a three-dimensional dataset (`x`, `y`, and `time`),
+and each timestep consists of a two-dimensional map with values at each gridcell. Only
+values within the basin are required.
 
 ```
-##### Dimensions #####
+Group: /
 
-Name                                            Length
--------------------------------------------------------------------------
-lat                                             313
-time                                            366
-lon                                             291
+Dimensions
+   time = 366
+   y = 313
+   x = 291
 
-##### Variables #####
+Variables
+  time   (366)
+    Datatype:    Int64
+    Dimensions:  time
+    Attributes:
+     units                = days since 2000-01-02 00:00:00
+     calendar             = proleptic_gregorian
 
-Name                        Type          Dimensions
--------------------------------------------------------------------------
-lat                         FLOAT         lat
-PET                         FLOAT         lon lat time
-time                        INT64         time
-P                           FLOAT         lon lat time
-TEMP                        FLOAT         lon lat time
-lon                         DOUBLE        lon
+  y   (313)
+    Datatype:    Float64
+    Dimensions:  y
+    Attributes:
+     _FillValue           = NaN
 
-##### Attributes #####
+  x   (291)
+    Datatype:    Float64
+    Dimensions:  x
+    Attributes:
+     _FillValue           = NaN
 
-Variable          Name              Value
--------------------------------------------------------------------------
-lat               units             degrees_north
-lat               long_name         latitude
-lat               _FillValue        NaN
-PET               _FillValue        NaN
-time              units             days since 2000-01-01 00:00:00       
-time              calendar          proleptic_gregorian
-P                 _FillValue        NaN
-TEMP              _FillValue        NaN
-lon               _FillValue        NaN
+  spatial_ref  
+    Attributes:
+     crs_wkt              = GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AXIS["Latitude",NORTH],AXIS["Longitude",EAST],AUTHORITY["EPSG","4326"]]
+     x_dim                = x
+     y_dim                = y
+     dim0                 = time
+
+  precip   (291 × 313 × 366)
+    Datatype:    Float32
+    Dimensions:  x × y × time
+    Attributes:
+     _FillValue           = NaN
+     unit                 = mm
+     precip_fn            = era5
+     coordinates          = idx_out spatial_ref mask
+
+  idx_out   (291 × 313)
+    Datatype:    Int32
+    Dimensions:  x × y
+
+  mask   (291 × 313)
+    Datatype:    UInt8
+    Dimensions:  x × y
+
+  pet   (291 × 313 × 366)
+    Datatype:    Float32
+    Dimensions:  x × y × time
+    Attributes:
+     _FillValue           = NaN
+     unit                 = mm
+     pet_fn               = era5
+     pet_method           = debruin
+     coordinates          = idx_out spatial_ref mask
+
+  temp   (291 × 313 × 366)
+    Datatype:    Float32
+    Dimensions:  x × y × time
+    Attributes:
+     _FillValue           = NaN
+     unit                 = degree C.
+     temp_fn              = era5
+     temp_correction      = True
+     coordinates          = idx_out spatial_ref mask
+
+Global attributes
+  unit                 = mm
+  precip_fn            = era5
 ```
 
 ## Static data
@@ -65,7 +108,6 @@ be found [here](@ref sample_data).
 Description | NC variable name | unit
 --- | --- | ---
 Flow direction (1-9) | `wflow_ldd` | -
-Location of cells that are pits | `wflow_pits` | -
 Map indicating the river cells (0-1) | `wflow_river` | -
 The length of the river | `wflow_riverlength` | m
 The width of the river | `wflow_riverwidth` | m
@@ -75,5 +117,5 @@ River slope | `RiverSlope` | m m$^-1$
 
 As mentioned before, the model parameters can also be defined as spatial maps. They can be
 included in the same NetCDF file, as long as their variable names are correctly mapped in
-the TOML settings file. See the section on [example models](ref sample_data) on how to 
+the TOML settings file. See the section on [example models](@ref sample_data) on how to 
 use this functionality.

@@ -48,10 +48,10 @@ flow](@ref). Reservoirs or lakes can be part of the kinematic wave (optional) an
 parameters are described in [Reservoirs](@ref reservoir_params) and [Lakes](@ref
 lake_params).
 
-Besides the river and overland flow components the  wflow\_sbm + kinematic wave model
+Besides the river and overland flow components the wflow\_sbm + kinematic wave model
 consists of the vertical concept [SBM](@ref vert_sbm) and input parameters for this
-component are described in the wflow\_sbm section of [Model parameters](@ref params_lat).
-Finally, the SBM + Kinematic wave model includes the lateral component [Subsurface flow
+component are described in the [SBM](@ref params_sbm) section of Model parameters. Finally,
+the SBM + Kinematic wave model includes the lateral component [Subsurface flow
 routing](@ref) and parameters that are part of this component are described in the [Lateral
 subsurface flow](@ref) section of Model parameters. Input parameters for this component of
 the SBM + Kinematic wave model are derived from the SBM vertical concept and the land slope.
@@ -69,7 +69,7 @@ inertial)](@ref local-inertial_land_params) of the Model parameters section.
 
 The HBV model consists besides the river and overland flow components of the [HBV](@ref
 vert_hbv) vertical concept. Input parameters for this component are described in the
-[HBV](@ref params_vert) section of Model parameters.
+[HBV](@ref params_hbv) section of Model parameters.
 
 The SBM + Groundwater flow includes besides the river and overland flow components and the
 vertical SBM concept, the lateral [Groundwater flow component](@ref lateral_gwf). For the
@@ -82,8 +82,8 @@ aquifer are listed under [Constant Head](@ref) and [Boundary conditions](@ref) o
 parameters section.
 
 The wflow\_sediment model consists of the vertical [Soil Erosion](@ref) concept and the
-input parameters for this concept are described in the [Sediment](@ref params_vert) section
-of the Model parameters. The parameters of the lateral [Sediment Flux in overland
+input parameters for this concept are described in the [Sediment](@ref params_sediment)
+section of the Model parameters. The parameters of the lateral [Sediment Flux in overland
 flow](@ref) concept are described in the [Overland flow](@ref) section of the Model
 parameters. Parameters of this component are not directly set by data from static input. The
 input parameters of the lateral concept [River Sediment Model](@ref) are listed in [River
