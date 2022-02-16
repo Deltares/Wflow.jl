@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Changed
+- Re-organized the documentation: moved explanation of different model concepts to a model
+  documentation section, added a user guide to explain setting up the model, added new 
+  figures to the description of wflow\_sbm.
+
 ## v0.5.2 - 2022-02-03 
 
 ### Changed
@@ -16,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   update the name.
 
 ### Added
-- Additional log messages and log file as output, see also [Logging](@ref).
+- Additional log messages and log file as output, see also [Logging](@ref logging_toml).
 - Option to use the local inertial model for river flow as part of the `sbm` model type. See
   also [SBM + Local inertial river](@ref).
 - Option to use the local inertial model for 1D river flow combined with 2D overland flow as
@@ -64,8 +71,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Scaling of potential capillary rise is replaced by a common approach found in literature,
   based on the water table depth `zi`, a maximum water depth `cap_hmax` beyond which
-  capillary rise ceases, and a coefficient `cap_n`. See also [Transpiration and soil
-  evaporation](@ref). Multiplying the scaling factor with the ratio of model time step and
+  capillary rise ceases, and a coefficient `cap_n`. See also [Capillary rise](@ref). 
+  Multiplying the scaling factor with the ratio of model time step and
   `basetimestep` in the original approach resulted in (much) smaller capillary fluxes at
   sub-daily model time steps compared to daily model time steps, and is not used in the new
   approach. Parameters `cap_hmax` and `cap_n` can be set through the TOML file, parameter
@@ -126,10 +133,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Calculation of volumetric water content of vertical SBM (soil layers and root zone).
-- Update of `satwaterdepth` in SBM (evaporation was only substracted from a local variable,
+- Update of `satwaterdepth` in SBM (evaporation was only subtracted from a local variable,
   and not from `sbm.satwaterdepth`).
 - Fixed the index `lowerlake_ind` of `NaturalLake`. Linked lakes were not simulated
-  correctly (flows between upstream and downsteam lake).
+  correctly (flows between upstream and downstream lake).
 - Interpolation function `interpolate_linear(x, xp, fp)` for CSV tables lakes. When `x` was
   larger or smaller than `xp`, maximum(`xp`) or minimum(`xp`) was returned instead of
   maximum(`fp`) or minimum(`fp`).
@@ -140,7 +147,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `flux` from `Drainage` (`GroundwaterFlow`) in the `sbm_gwf_model` to the overland flow
   component instead of the river component of the kinematic wave.
 - Fixed option `constanthead = false` (TOML file), `constant_head` field of
-  `GroundwaterFlow` was not defined in this case. Fixed this by initialising empty fields
+  `GroundwaterFlow` was not defined in this case. Fixed this by initializing empty fields
   (Vector) for struct `ConstantHead`.
 - Fixed return max(0, boundary.flux[index]) to return max(0, flux) the flux should be returned
   when cell is dry, no negative value allowed.

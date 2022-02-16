@@ -2,40 +2,48 @@ using Wflow
 using Documenter
 
 pages = [
-    "Home" => "index.md",
-    "Publications" => "publications.md",
-    "Quick start" => "quick-start.md",
-    "Command line interface" => "cli.md",
-    "Structures and config" =>
-        ["Structures" => "structure.md", "Config" => "config.md"],
-    "Building a model" => "model-setup.md",
-    "Model parameters" => [
-        "Vertical concepts" => "vertical/parameters.md",
-        "Kinematic wave" => "lateral/kinwave_params.md",
-        "Local inertial" => "lateral/local-inertial_params.md",
-        "Groundwater flow" => "lateral/gwf_params.md",
-        "Sediment flux" => "lateral/sediment_params.md",
+    "Introduction" => [
+        "index.md",
+        # "intro/use_cases.md",
+        "intro/publications.md",
+        "changelog.md"
     ],
-    "Models" => [
-        "wflow_sbm" => "model/sbm.md",
-        "wflow_hbv" => "model/hbv.md",
-        "wflow_sediment" => "model/sediment.md",
+    "User guide" => [
+        "user_guide/intro.md",
+        "user_guide/install.md",
+        "How to use wflow" => [
+            "user_guide/step1_requirements.md",
+            "user_guide/step2_settings_file.md",
+            "user_guide/step3_input_data.md",
+            "user_guide/step4_running.md",
+            "user_guide/step5_output.md",
+            "user_guide/additional_options.md",
+            "user_guide/sample_data.md",
+            ],
+        "user_guide/model-setup.md",
+
     ],
-    "Vertical components" => [
-        "SBM" => "vertical/sbm.md",
-        "HBV" => "vertical/hbv.md",
-        "Vertical processes" => "vertical/process.md",
-        "Soil Loss" => "vertical/sediment.md",
-    ],
-    "Lateral components" => [
-        "Kinematic wave" => "lateral/kinwave.md",
-        "Local inertial" => "lateral/local-inertial.md",
-        "Groundwater flow" => "lateral/gwf.md",
-        "Sediment Flux" => "lateral/sediment.md",
-    ],
-    "Basic Model Interface" => "bmi.md",
-    "Run from Delft-FEWS" => "fews.md",
-    "Changelog" => "changelog.md",
+    "Model documentation" => [
+        "model_docs/intro.md",
+        "model_docs/model_configurations.md",
+        "Vertical concepts" => [
+            "model_docs/vertical/sbm.md",
+            "model_docs/vertical/hbv.md",
+            "model_docs/vertical/sediment.md",
+            "model_docs/shared_concepts.md",
+        ],
+        "Lateral concepts" => [
+            "model_docs/lateral/gwf.md",
+            "model_docs/lateral/kinwave.md",
+            "model_docs/lateral/local-inertial.md",
+            "model_docs/lateral/sediment_flux.md",
+        ],
+        "Model parameters" => [
+            "model_docs/params_vertical.md",
+            "model_docs/params_lateral.md",
+            "model_docs/structures.md",
+        ]
+    ],       
 ]
 
 makedocs(;
@@ -47,6 +55,7 @@ makedocs(;
         prettyurls = get(ENV, "CI", "false") == "true",
         canonical = "https://deltares.github.io/Wflow.jl",
         assets = String[],
+        collapselevel = 2,
     ),
     pages = pages,
 )
