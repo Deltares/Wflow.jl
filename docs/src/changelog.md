@@ -9,8 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Re-organized the documentation: moved explanation of different model concepts to a model
- documentation section, added a user guide to explain setting up the model, added new 
- figures to the description of wflow\_sbm.
+  documentation section, added a user guide to explain setting up the model, added new 
+  figures to the description of wflow\_sbm.
 
 ## v0.5.2 - 2022-02-03 
 
