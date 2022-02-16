@@ -53,7 +53,7 @@ automatically looked up and installed from the Pkg General registry.
 It is also possible to install wflow from the `master` branch as follows:
 
 ```julia-repl
-pkg> add https://github.com/Deltares/Wflow.jl
+pkg> add Wflow#master
 ```
 
 This command will track the `master` branch, and will update to the latest commit on that
@@ -62,11 +62,11 @@ wflow in you home directory under `.julia/packages/Wflow`. Note that packages in
 under `packages` by `add` are supposed to never be altered in that location, for Pkg and
 it's automatic dependency handling to work well. 
 
-If you want to make any changes to any of the files in the wflow directory, you need to do 
+If you want to make any changes to any of the files in the repository, you need to do 
 a development install. This can be done using:
 
 ```julia-repl
-pkg> dev https://github.com/Deltares/Wflow.jl
+pkg> dev Wflow
 ```
 
 This will clone the git repository, put it under your home directory in `.julia/dev/Wflow`,
