@@ -4,7 +4,7 @@ using Documenter
 pages = [
     "Introduction" => [
         "index.md",
-        # "intro/use_cases.md",
+        "intro/use_cases.md",
         "intro/publications.md",
         "changelog.md"
     ],
