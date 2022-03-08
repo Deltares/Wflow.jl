@@ -1,4 +1,4 @@
-@get_units @exchange @grid_type @grid_location @with_kw struct SBM{T,N,M}
+@get_units @exchange @grid_type @grid_location @with_kw struct SBM{T,N,M,W}
     # Model time step [s]
     Δt::T | "s" | 0 | "none" | "none"
     # Maximum number of soil layers
@@ -194,8 +194,10 @@
     waterlevel_land::Vector{T} | "mm"
     # Water level river [mm]
     waterlevel_river::Vector{T} | "mm"
+    # Water demand struct of arrays
+    water_demand::W | "-" | 0
 
-    function SBM{T,N,M}(args...) where {T,N,M}
+    function SBM{T,N,M,W}(args...) where {T,N,M,W}
         equal_size_vectors(args)
         return new(args...)
     end
@@ -497,7 +499,14 @@ function initialize_sbm(nc, config, riverfrac, inds)
     vwc = fill(mv, maxlayers, n)
     vwc_perc = fill(mv, maxlayers, n)
 
-    sbm = SBM{Float,maxlayers,maxlayers + 1}(
+    do_water_demand = get(config.model, "water-demand", true)
+    if do_water_demand
+        water_demand = initialize_water_demand(nc, config, inds, Δt)
+    else
+        water_demand = nothing
+    end
+
+    sbm = SBM(
         Δt = tosecond(Δt),
         maxlayers = maxlayers,
         n = n,
@@ -597,6 +606,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         leaf_area_index = fill(mv, n),
         waterlevel_land = fill(mv, n),
         waterlevel_river = zeros(Float, n), #set to zero to account for cells outside river domain
+        water_demand = water_demand,
     )
 
     return sbm
