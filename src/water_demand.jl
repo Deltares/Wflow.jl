@@ -1,10 +1,10 @@
 @get_units @with_kw struct WaterDemand{T}
     domestic_gross::Vector{T}   # gross domestic water demand [mm Δt⁻¹]
-    domestic_netto::Vector{T}   # net domestic water demand [mm Δt⁻¹]
+    domestic_net::Vector{T}     # net domestic water demand [mm Δt⁻¹]
     industry_gross::Vector{T}   # gross industry water demand [mm Δt⁻¹]
-    industry_netto::Vector{T}   # net industry water demand [mm Δt⁻¹]
+    industry_net::Vector{T}     # net industry water demand [mm Δt⁻¹]
     livestock_gross::Vector{T}  # gross livestock water demand [mm Δt⁻¹]
-    livestock_netto::Vector{T}  # net livestock water demand [mm Δt⁻¹]
+    livestock_net::Vector{T}    # net livestock water demand [mm Δt⁻¹]
 end
 
 function initialize_water_demand(nc, config, inds, Δt)
@@ -17,10 +17,10 @@ function initialize_water_demand(nc, config, inds, Δt)
         defaults = 0.0,
         type = Float,
     ).* (Δt / basetimestep)
-    domestic_netto = ncread(
+    domestic_net = ncread(
         nc,
         config.input,
-        "vertical.water_demand.domestic_netto";
+        "vertical.water_demand.domestic_net";
         sel = inds,
         defaults = 0.0,
         type = Float,
@@ -33,10 +33,10 @@ function initialize_water_demand(nc, config, inds, Δt)
         defaults = 0.0,
         type = Float,
     ).* (Δt / basetimestep)
-    industry_netto = ncread(
+    industry_net = ncread(
         nc,
         config.input,
-        "vertical.water_demand.industry_netto";
+        "vertical.water_demand.industry_net";
         sel = inds,
         defaults = 0.0,
         type = Float,
@@ -49,10 +49,10 @@ function initialize_water_demand(nc, config, inds, Δt)
         defaults = 0.0,
         type = Float,
     ).* (Δt / basetimestep)
-    livestock_netto = ncread(
+    livestock_net = ncread(
         nc,
         config.input,
-        "vertical.water_demand.livestock_netto";
+        "vertical.water_demand.livestock_net";
         sel = inds,
         defaults = 0.0,
         type = Float,
@@ -60,11 +60,11 @@ function initialize_water_demand(nc, config, inds, Δt)
 
     water_demand = WaterDemand{Float}(
         domestic_gross = domestic_gross,
-        domestic_netto = domestic_netto,
+        domestic_net = domestic_net,
         industry_gross = industry_gross,
-        industry_netto = industry_netto,
+        industry_net = industry_net,
         livestock_gross = livestock_gross,
-        livestock_netto = livestock_netto,
+        livestock_net = livestock_net,
     )
 
     return water_demand
