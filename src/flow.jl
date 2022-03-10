@@ -366,23 +366,22 @@ function update(
 end
 
 @get_units @with_kw struct LateralSSF{T}
-    kh₀::Vector{T} | "m Δt-1"              # Horizontal hydraulic conductivity at soil surface [m Δt⁻¹]
+    kh₀::Vector{T} | "m d-1"               # Horizontal hydraulic conductivity at soil surface [m d⁻¹]
     f::Vector{T} | "m-1"                   # A scaling parameter [m⁻¹] (controls exponential decline of kh₀)
     soilthickness::Vector{T} | "m"         # Soil thickness [m]
     θₛ::Vector{T} | "-"                     # Saturated water content (porosity) [-]
     θᵣ::Vector{T} | "-"                    # Residual water content [-]
-    t::T | "Δt s"                          # time step [Δt s]
-    Δt::T | "s"                            # model time step [s]
+    Δt::T | "d"                            # model time step [d]
     βₗ::Vector{T} | "m m-1"                 # Slope [m m⁻¹]
     dl::Vector{T} | "m"                    # Drain length [m]
     dw::Vector{T} | "m"                    # Flow width [m]
     zi::Vector{T} | "m"                    # Pseudo-water table depth [m] (top of the saturated zone)
     exfiltwater::Vector{T} | "m Δt-1"      # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
     recharge::Vector{T} | "m Δt-1"         # Net recharge to saturated store [m Δt⁻¹]
-    ssf::Vector{T} | "m3 Δt-1"             # Subsurface flow [m³ Δt⁻¹]
-    ssfin::Vector{T} | "m3 Δt-1"           # Inflow from upstream cells [m³ Δt⁻¹]
-    ssfmax::Vector{T} | "m2 Δt-1"          # Maximum subsurface flow [m² Δt⁻¹]
-    to_river::Vector{T} | "m3 Δt-1"        # Part of subsurface flow [m³ Δt⁻¹] that flows to the river
+    ssf::Vector{T} | "m3 d-1"              # Subsurface flow [m³ d⁻¹]
+    ssfin::Vector{T} | "m3 d-1"            # Inflow from upstream cells [m³ d⁻¹]
+    ssfmax::Vector{T} | "m2 d-1"           # Maximum subsurface flow [m² d⁻¹]
+    to_river::Vector{T} | "m3 d-1"         # Part of subsurface flow [m³ d⁻¹] that flows to the river
     wb_pit::Vector{Bool} | "-"             # Boolean location (0 or 1) of a waterbody (wb, reservoir or lake).
 
     function LateralSSF{T}(args...) where {T}
@@ -425,7 +424,7 @@ function update(ssf::LateralSSF, network, frac_toriver)
                     ssf.θₛ[v] - ssf.θᵣ[v],
                     ssf.f[v],
                     ssf.soilthickness[v],
-                    ssf.t,
+                    ssf.Δt,
                     ssf.dl[v],
                     ssf.dw[v],
                     ssf.ssfmax[v],
@@ -436,11 +435,11 @@ function update(ssf::LateralSSF, network, frac_toriver)
 end
 
 @get_units @with_kw struct GroundwaterExchange{T}
-    Δt::T | "s"                         # model time step [s]
+    Δt::T | "d"                         # model time step [d]
     exfiltwater::Vector{T} | "m Δt-1"   # Exfiltration [m Δt⁻¹]  (groundwater above surface level, saturated excess conditions)
     zi::Vector{T} | "m"                 # Pseudo-water table depth [m] (top of the saturated zone)
-    to_river::Vector{T} | "m3 Δt-1"     # Part of subsurface flow [m³ Δt⁻¹] that flows to the river
-    ssf::Vector{T} | "m3 Δt-1"          # Subsurface flow [m³ Δt⁻¹]
+    to_river::Vector{T} | "m3 d-1"      # Part of subsurface flow [m³ d⁻¹] that flows to the river
+    ssf::Vector{T} | "m3 d-1"           # Subsurface flow [m³ d⁻¹]
 end
 
 @get_units @with_kw struct ShallowWaterRiver{T,R,L}
@@ -1207,7 +1206,7 @@ function get_inflow_waterbody(
     inds = network.index_river
     if !isnothing(lateral.river.reservoir) || !isnothing(lateral.river.lake)
         inflow_wb =
-            lateral.subsurface.ssf[inds] ./ lateral.subsurface.Δt .+ lateral.land.q_av[inds]
+            lateral.subsurface.ssf[inds] ./ tosecond(basetimestep) .+ lateral.land.q_av[inds]
     else
         inflow_wb = nothing
     end
@@ -1229,7 +1228,7 @@ function get_inflow_waterbody(
 
     inds = network.index_river
     if !isnothing(lateral.river.reservoir) || !isnothing(lateral.river.lake)
-        inflow_wb = lateral.subsurface.ssf[inds] ./ lateral.subsurface.Δt
+        inflow_wb = lateral.subsurface.ssf[inds] ./ tosecond(basetimestep)
     else
         inflow_wb = nothing
     end

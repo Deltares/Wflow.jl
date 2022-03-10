@@ -88,7 +88,7 @@ function kinematic_wave_ssf(ssfin, ssfₜ₋₁, ziₜ₋₁, r, kh₀, β, θ�
         # Term of the continuity equation for Newton-Raphson iteration for iteration 1
         # because celerity Cn is depending on zi, the increase or decrease of zi is moved to the recharge term of the continuity equation
         # then (1./Cn)*ssfₜ₋₁ can be replaced with (1./Cn)*ssf, and thus celerity and lateral flow rate ssf are then in line
-        c = (Δt / Δx) * ssfin + (1.0 / Cn) * ssf + Δt * (r - (ziₜ₋₁ - zi) * θₑ * dw)
+        c = (Δt / Δx) * ssfin + (1.0 / Cn) * ssf + (r - (ziₜ₋₁ - zi) * θₑ * dw)
 
         # Continuity equation of which solution should be zero
         fQ = (Δt / Δx) * ssf + (1.0 / Cn) * ssf - c
@@ -111,7 +111,7 @@ function kinematic_wave_ssf(ssfin, ssfₜ₋₁, ziₜ₋₁, r, kh₀, β, θ�
             # Term of the continuity equation for given Newton-Raphson iteration m
             # because celerity Cn is depending on zi, the increase or decrease of zi is moved to the recharge term of the continuity equation
             # then (1./Cn)*ssfₜ₋₁ can be replaced with (1./Cn)*ssf, and thus celerity and lateral flow rate ssf are then in line
-            c = (Δt / Δx) * ssfin + (1.0 / Cn) * ssf + Δt * (r - (ziₜ₋₁ - zi) * θₑ * dw)
+            c = (Δt / Δx) * ssfin + (1.0 / Cn) * ssf + (r - (ziₜ₋₁ - zi) * θₑ * dw)
 
             # Continuity equation of which solution should be zero
             fQ = (Δt / Δx) * ssf + (1.0 / Cn) * ssf - c
@@ -132,7 +132,7 @@ function kinematic_wave_ssf(ssfin, ssfₜ₋₁, ziₜ₋₁, r, kh₀, β, θ�
         # Constrain the lateral flow rate ssf
         ssf = min(ssf, (ssfmax * dw))
         # On the basis of the lateral flow rate, estimate the amount of groundwater level above surface (saturation excess conditions), then rest = negative
-        rest = ziₜ₋₁ - (ssfin + r * Δx - ssf) / (dw * Δx) / θₑ
+        rest = ziₜ₋₁ - (ssfin * Δt + r * Δx - ssf * Δt) / (dw * Δx) / θₑ
         # In case the groundwater level lies above surface (saturation excess conditions, rest = negative), calculate the exfiltration rate and set groundwater back to zero.
         exfilt = min(rest, 0.0) * -θₑ
         zi = clamp(zi, 0.0, d)

@@ -147,8 +147,8 @@ function initialize_sbm_model(config::Config)
             type = Float,
         )
 
-        # unit for lateral subsurface flow component is [m]
-        kh₀ = khfrac .* sbm.kv₀ .* 0.001
+        # unit for lateral subsurface flow component is [m³ d⁻¹], sbm.kv₀ [mm Δt⁻¹]
+        kh₀ = khfrac .* sbm.kv₀ .* 0.001 .* (basetimestep / Δt)
         f = sbm.f .* 1000.0
         zi = sbm.zi .* 0.001
         soilthickness = sbm.soilthickness .* 0.001
@@ -160,8 +160,7 @@ function initialize_sbm_model(config::Config)
             soilthickness = soilthickness,
             θₛ = sbm.θₛ,
             θᵣ = sbm.θᵣ,
-            Δt = tosecond(Δt),
-            t = 1.0,
+            Δt = Δt / basetimestep,
             βₗ = βₗ,
             dl = dl,
             dw = dw,
@@ -177,7 +176,7 @@ function initialize_sbm_model(config::Config)
         # when the SBM model is coupled (BMI) to a groundwater model, the following
         # variables are expected to be exchanged from the groundwater model.
         ssf = GroundwaterExchange{Float}(
-            Δt = tosecond(Δt),
+            Δt = Δt / basetimestep,
             exfiltwater = fill(mv, n),
             zi = fill(mv, n),
             to_river = fill(mv, n),
@@ -502,7 +501,7 @@ function update_after_subsurfaceflow(
         lateral.subsurface.exfiltwater * 1000.0,
     )
 
-    ssf_toriver = lateral.subsurface.to_river ./ lateral.subsurface.Δt
+    ssf_toriver = lateral.subsurface.to_river ./ tosecond(basetimestep)
     surface_routing(model, ssf_toriver = ssf_toriver)
 
     write_output(model)
