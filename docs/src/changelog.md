@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Re-organized the documentation: moved explanation of different model concepts to a model
   documentation section, added a user guide to explain setting up the model, added new 
   figures to the description of wflow\_sbm.
+- The unit of lateral subsurface flow `ssf` of `LateralSSF` is now ``m^3 d^{-1}``. The unit
+  was ``m^3 t^{-1}``, where ``t`` is the model timestep. Other flow variables are already
+  stored independently from ``t``, this allows for easier interpretation and to use states
+  independently of ``t``.
 
 ## v0.5.2 - 2022-02-03 
 
