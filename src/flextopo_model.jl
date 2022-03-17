@@ -321,7 +321,7 @@ function initialize_flextopo_model(config::Config)
         config,
         "vertical.alfa";
         sel = inds,
-        defaults = 1.3,
+        defaults = 1.0,
         type = Float,
         dimname = :classes,
     )
@@ -354,7 +354,7 @@ function initialize_flextopo_model(config::Config)
     rootzonestorage = zeros(Float, nclass, n)
     faststorage = zeros(Float, nclass, n)
     slowstorage = zeros(Float, nclass, n)
-    srootzone_over_srmax = zeros(Float, nclass, n)
+    srootzone_over_srmax = zeros(Float, nclass, n) .+ 1.0
 
     states_ = fill(mv, nclass, n)
 
@@ -450,11 +450,13 @@ function initialize_flextopo_model(config::Config)
         # rootzonestorage = copy(srmax),
         # faststorage = 0.2 .* srmax,
         rootzonestorage = svectorscopy(srmax, Val{nclass}()),
-        faststorage = 0.2 .* svectorscopy(srmax, Val{nclass}()),
+        # faststorage = 0.2 .* svectorscopy(srmax, Val{nclass}()),
+        faststorage = 0.0 .* svectorscopy(srmax, Val{nclass}()),
         # rootzonestorage = svectorscopy(rootzonestorage, Val{nclass}()), 
         # faststorage = svectorscopy(faststorage, Val{nclass}()), 
         srootzone_over_srmax = svectorscopy(srootzone_over_srmax, Val{nclass}()),
-        slowstorage = 1.0 ./ (3.0 .* ks),
+        # slowstorage = 1.0 ./ (3.0 .* ks),
+        slowstorage = zeros(Float, n) .+ 30.0, 
         #states previous time step
         states_m = fill(mv, n),
         states_ = svectorscopy(states_, Val{nclass}()),
