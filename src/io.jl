@@ -447,7 +447,7 @@ end
 "set extra dimension in output NetCDF file"
 function set_extradim_netcdf(
     ds,
-    extra_dim::NamedTuple{(:name, :value),Tuple{String,Vector{Float64}}},
+    extra_dim::NamedTuple{(:name, :value),Tuple{String,Vector{T}}} where T <: Union{String, Float64},
 )
     # the axis attribute `Z` is required to import this type of 3D data by Delft-FEWS the
     # values of this dimension `extra_dim.value` should be of type Float64

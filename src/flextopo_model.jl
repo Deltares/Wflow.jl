@@ -657,8 +657,8 @@ function initialize_flextopo_model(config::Config)
     # if fews_run = true, then classes are specified as Float64 index so FEWS can import
     # NetCDF output (3D data/SVector).
     fews_run = get(config, "fews_run", false)::Bool
-    classes = fews_run ? Float64.(collect(length(flextopo.classes))) : flextopo.classes
-    
+    classes = fews_run ? Float64.(collect(1:length(flextopo.classes))) : flextopo.classes
+
     writer = prepare_writer(
         config,
         modelmap,
