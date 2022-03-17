@@ -123,9 +123,21 @@ function ncvar_name_modifier(var; config = nothing)
             scale = param(var, "scale", 1.0)
             offset = param(var, "offset", 0.0)
             if haskey(var, "layer") || haskey(var, "class")
-                index = get_index_dimension(var, config)
-                modifier = (scale = scale, offset = offset, value = nothing, index = index)
-                @info "NetCDF parameter `$ncname` is modified with scale `$scale` and offset `$offset` at index `$index`."
+                if length(var["class"])>1
+                    #if modifier is provided in a list for each class item
+                    modifier = []
+                    for i = 1:length(var["class"])
+                        index = get_index_dimension(var, config, i)
+                        modifier_c = (scale = scale[i], offset = offset[i], value = nothing, index = index)
+                        push!(modifier, modifier_c)
+                        @info "NetCDF parameter `$ncname` is modified with scale `$(scale[i])` and offset `$(offset[i])` at index `$index`."
+                    end
+                else 
+                    i = nothing
+                    index = get_index_dimension(var, config, i)
+                    modifier = (scale = scale, offset = offset, value = nothing, index = index)
+                    @info "NetCDF parameter `$ncname` is modified with scale `$scale` and offset `$offset` at index `$index`."
+                end
             else 
                 modifier = (scale = scale, offset = offset, value = nothing, index = nothing)
                 @info "NetCDF parameter `$ncname` is modified with scale `$scale` and offset `$offset`."
@@ -1584,14 +1596,18 @@ function get_index_dimension(var, model)::Int
 end
 
 "Get `index` for dimension name `layer` or `classes` based on `config` (TOML file)"
-function get_index_dimension(var, config::Config)::Int
+function get_index_dimension(var, config::Config, i = nothing)::Int
     if haskey(var, "layer")
         v = get(config.model, "thicknesslayers", Float[])
         inds = collect(1:length(v)+1)
         index = inds[var["layer"]]
     elseif haskey(var,"class")
         classes = get(config.model, "classes", "")
-        index = findfirst(x->x==var["class"], classes)
+        if i === nothing
+            index = findfirst(x->x==var["class"], classes)
+        else
+            index = findfirst(x->x==var["class"][i], classes)
+        end         
     else
         error("Unrecognized or missing dimension name to index $(var)")
     end
