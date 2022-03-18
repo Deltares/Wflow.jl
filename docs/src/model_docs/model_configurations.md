@@ -149,6 +149,86 @@ lateral.river.lake => struct NaturalLake{T} # optional
 lateral.river.reservoir => struct SimpleReservoir{T} # optional
 ```
 
+## [wflow\_flextopo](@id config_flextopo)
+The FLEXTopo model is a process-based model, which consists of different parallel classes
+connected through their groundwater storage. These classes are usually delineated from
+topographical data to represent the variability in hydrological processes across
+user-defined Hydrological Response Units (HRU). The main assumption underlying the concept,
+which was first introduced by Savenije (2010), is that different parts of the landscape
+fulfill different tasks in runoff generation and, hence, can be represented by different
+model structures. The strength of the concept is that the definition of classes and
+associated model structures is modular and flexible and not fixed to a predefined model
+structure. The flexible approach allows to develop process-based models for different
+topographic, climatic, geologic and land use conditions, making use of the available data
+and expert knowledge.
+
+The kinematic wave function is used to route the water downstream. In a similar way as for
+HBV, all runoff that is generated in a cell in one of the FLEXTopo storages is added to the
+kinematic wave reservoir at the end of a timestep. There is no connection between the
+different vertical FLEXTopo cells within the model. The FLEXTopo model is implemented in a
+fully distributed way in the Wflow Julia framework.
+
+In wflow\_flextopo, the user is free to determine the number of classes and which model
+components to include or exclude for each class, this is done in the TOML file. Currently,
+for each storage, it is possible to bypass the storage and pass on the fluxes to the next
+model component. Interested users can contribute to the code by adding other
+conceptualizations for each storage components.
+
+```julia
+[model]
+type = "flextopo"
+classes = ["h", "p", "w"]     #user can set the number and name of each class.
+
+# for each component which is class specific, the user can select which conceptualization
+# to apply for each class as defined above in classes = ["h", "p", "w"]
+select_snow = ["common_snow_hbv"]
+# available options are ["common_snow_hbv", "common_snow_no_storage"]
+select_interception = ["interception_overflow", "interception_overflow", "interception_overflow"]
+# available options are ["interception_overflow", "interception_no_storage"]
+select_hortonponding = ["hortonponding_no_storage", "hortonponding_no_storage", "hortonponding_no_storage"]
+# available options are ["hortonponding", "hortonponding_no_storage"]
+select_hortonrunoff = ["hortonrunoff_no_storage", "hortonrunoff_no_storage", "hortonrunoff_no_storage"]
+# available options are ["hortonrunoff", "hortonrunoff_no_storage"]
+select_rootzone = ["rootzone_storage", "rootzone_storage", "rootzone_storage"]
+# available options are ["rootzone_storage", "rootzone_no_storage"]
+select_fast = ["fast_storage", "fast_storage", "fast_storage"]
+# available options are ["fast_storage", "fast_no_storage"]
+select_slow = ["common_slow_storage"]
+# available options are ["common_slow_storage", "slow_no_storage"]
+```
+
+A schematic representation of the most complete model structure including all storage
+components, as currently implemented in the code, is shown in the Figure below. When setting
+up the model with multiple classes, model structures can be adapted by bypassing storages or
+turning parameter values on or off (e.g.: percolation or capillary rise, non-linear versus
+linear outflow of the fast runoff etc.), an example of a three class model is shown in
+[FLEXTopo vertical concept](@ref vert_flextopo).
+
+![flextopo_julia_1class.png](../images/flextopo_julia_1class.png)
+*Schematic representation of the FLEXTopo model for a single class model including all
+storages and fluxes. Main parameters are denoted in red.*
+
+In the staticmaps, the user needs to provide maps of the fraction of each class within each
+cell, as shown below with `hrufrac`. For each model parameter which is class specific, an
+extra dimension `classes` is required in the staticmaps netcdf. For an example model, see
+[FLEXTopo example model](@ref wflow_flextopo_data).
+
+```julia
+[input.vertical]
+hrufrac = "hrufrac_lu"
+```
+
+Parameter multiplication of model parameters which are defined for several classes is
+possible through the TOML file:
+
+```julia
+[input.vertical.kf]
+netcdf.variable.name = "kf"
+scale = [1.0, 3.0, 4.0]
+offset = [0.0, 0.0, 0.0]
+class = ["h", "p", "w"]
+```
+
 ## wflow\_sediment
 The processes and fate of many particles and pollutants impacting water quality at the
 catchment level are intricately linked to the processes governing sediment dynamics. Both
@@ -228,3 +308,6 @@ Bedconc = "Bedconc"
 + Köhler, L., Mulligan, M., Schellekens, J., Schmid, S., Tobón, C., 2006, Hydrological
   impacts of converting tropical montane cloud forest to pasture, with initial reference to
   northern Costa Rica. Final Technical Report DFID‐FRP Project No. R799.
+
++ Savenije, H. H. G. (2010). HESS opinions “topography driven conceptual modelling (FLEX-Topo).” 
+  Hydrology and Earth System Sciences, 14(12), 2681–2692. https://doi.org/10.5194/hess-14-2681-2010

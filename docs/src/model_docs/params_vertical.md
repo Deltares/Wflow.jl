@@ -123,7 +123,7 @@ The Table below shows the parameters (fields) of struct `HBV`, including a descr
 these parameters, the unit, and default value if applicable. The parameters in bold
 represent model parameters that can be set through static and forcing input data (netCDF),
 and can be listed in the TOML configuration file under `[input.vertical]`, to map the
-internal model parameter to the external netCDF variable. 
+internal model parameter to the external netCDF variable.
 
 |  parameter | description    | unit | default |
 |:---------------| --------------- | ---------------------- | ----- |
@@ -180,6 +180,99 @@ internal model parameter to the external netCDF variable.
 | `lowerzonestorage`         | water content of the lower zone | mm  | - |
 | `baseflow`         | specific runoff (baseflow part) per cell  | mm Δt``^-1``  | - |
 | `runoff`         | total specific runoff per cell  | mm Δt``^-1``  | - |
+
+
+## [FLEXtopo](@id params_flextopo)
+The Table below shows the parameters (fields) of struct `FLEXTOPO`, including a description
+of these parameters, the unit, and default value if applicable. The parameters in bold
+represent model parameters that can be set through static and forcing input data (netCDF),
+and can be listed in the TOML configuration file under `[input.vertical]`, to map the
+internal model parameter to the external netCDF variable.
+
+|  parameter | description    | unit | default |
+|:---------------| --------------- | ---------------------- | ----- |
+| **`cfmax`**  | degree-day factor | mm ᵒC``^{-1}`` Δt``^{-1}`` | 3.75653 mm ᵒC``^{-1}`` day``^{-1}``  |
+| **`tt`**  | threshold temperature for snowfall| ᵒC | -1.41934  |
+| **`tti`**  | threshold temperature interval length | ᵒC | 1.0  |
+| **`ttm`**  | threshold temperature for snowmelt  | ᵒC | -1.41934  |
+| **`whc`**  | water holding capacity as fraction of current snow pack  | - | 0.1  |
+| **`cfr`**  | refreezing efficiency constant in refreezing of freewater in snow | - | 0.05  |
+| **`g_tt`**  | threshold temperature for snowfall above glacier  | ᵒC| 0.0  |
+| **`g_cfmax`**  | Degree-day factor for glacier  | mm ᵒC``^{-1}`` Δt``^{-1}``| 3.0 mm ᵒC``^{-1}`` day``^{-1}`` |
+| **`g_sifrac`**  | fraction of the snowpack on top of the glacier converted into ice  | - | 0.001  |
+| **`glacierfrac`**  | fraction covered by a glacier | - | 0.0  |
+| **`glacierstore`**  | water within the glacier  | mm | 5500.0  |
+| **`ecorr`**  | evaporation correction | - | 1.0  |
+| **`pcorr`**  | correction factor for precipitation  | - | 1.0  |
+| **`rfcf`**  | correction factor for rainfall   | - | 1.0  |
+| **`sfcf`**  | correction factor for snowfall | - | 1.0  |
+| **`imax`**  | maximum interception storage (``I_\mathrm{max}``) | mm | 3.0  |
+| **`shmax`**  | maximum horton ponding storage capacity (``S_\mathrm{Hmax}``)  | mm | 30.0  |
+| **`srmax`**  | maximum root zone storage capacity (``S_\mathrm{Rmax}``)  | mm | 260.0  |
+| **`beta`**  | exponent in soil runoff generation equation  | - | 0.3  |
+| **`lp`**  | fraction of root zone capacity below which actual evaporation=potential evaporation (``L_\mathrm{P}``) | - | 0.3 |
+| **`ks`**  | recession constant slow groundwater storage (``K_\mathrm{S}``) | Δt``^-1`` | 0.006 day``^{-1}`` |
+| **`kf`**  | recession constant fast storage (``K_\mathrm{F}``) | Δt``^-1`` |  0.1 day``^{-1}`` |
+| **`khf`**  | recession constant horton runoff storage (``K_\mathrm{Hf}``) | Δt``^-1`` |  0.5 day``^{-1}`` |
+| **`alfa`**  | measure of non-linearity of upper reservoir (``\alpha``) | - | 1.0 |
+| **`perc`**  | maximum percolation flux from root zone to slow storage (``Q_\mathrm{perc,max}``) |  mm Δt``^-1``| 0.30 mm day``^{-1}`` |
+| **`cap`**  | maximum capillary rise from slow storage to root zone (``Q_\mathrm{cap,max}``)| mm Δt``^-1`` | 0.20 mm day``^{-1}``  |
+| **`ds`**  | splitter parameter determining fraction of root zone outflow to slow storage (``d_\mathrm{s}``) | - | 0.2 |
+| **`shmin`**  | minimum storage capacity in horton ponding (relative to ``S_\mathrm{Hmax}``) (``S_\mathrm{Hmin}``) | [-] |  0.2 |
+| **`facc0`**  | maximum modelled accumulated frost resulting in `shmin` (``F_\mathrm{acc,fr0}``) | [ᵒC Δt] |  -3.0 |
+| **`facc1`**  | minimum modelled accumulated frost resulting in `shmin` (``F_\mathrm{acc,fr1}``) | [ᵒC Δt] |  0.0 |
+| **`fdec`**  | exponent for the decline of infiltration capacity (``F_\mathrm{dec}``) | [-] |  0.2 |
+| **`fmax`**  | maximum infiltration capacity from horton ponding (``F_\mathrm{max}``) | [mm Δt``^-1``] |  2.0 |
+| **`kmf`**  | melt coefficient of frozen topsoil (``K_\mathrm{mf}``) | [-] |  1.0 |
+| **`hrufrac`**  | fraction of class within cell (``F_\mathrm{hrufrac}``)| - | 1/length(classes) |
+| **`precipitation`**           | precipitation     | mm Δt``^-1`` | - |
+| **`temperature`**             | temperature    | ᵒC | - |
+| **`potential_evaporation`**            | potential evapotranspiration     | mm Δt``^-1`` | - |
+| `precipcorr`           | corrected precipitation     | mm Δt``^-1`` | - |
+| `epotcorr`           | corrected potential evaporation     | mm Δt``^-1`` | - |
+| `snow`             | snow water (``S_\mathrm{W}``)   | mm | - |
+| `snowwater`             | available free water in snow    | mm | - |
+| `interceptionstorage`             | interception storage (``S_\mathrm{I}``)    | mm | - |
+| `interceptionstorage_m`             | average interception storage over classes (``S_\mathrm{I}``)    | mm | - |
+| `hortonpondingstorage`             | horton ponding storage (``S_\mathrm{Hp}``)    | mm | - |
+| `hortonpondingstorage_m`             | average horton ponding storage over classes (``S_\mathrm{Hp}``)    | mm | - |
+| `hortonrunoffstorage`             | horton runoff storage (``S_\mathrm{Hf}``)    | mm | - |
+| `hortonrunoffstorage_m`             | average horton runoff storage over classes (``S_\mathrm{Hf}``)    | mm | - |
+| `rootzonestorage`             | root zone storage (``S_\mathrm{R}``)  | mm | - |
+| `rootzonestorage_m`             | average root zone storage over classes (``S_\mathrm{R}``)  | mm | - |
+| `faststorage`             | fast storage (``S_\mathrm{F}``)  | mm | - |
+| `faststorage_m`             | average fast storage over classes (``S_\mathrm{F}``)  | mm | - |
+| `slowstorage`             | slow storage (``S_\mathrm{S}``)  | mm | - |
+| `potsoilevap`             | potential soil evaporation (``E_\mathrm{P}``)     | mm Δt``^-1`` | - |
+| `soilevap`             | soil evaporation | mm Δt``^-1`` | - |
+| `intevap`             | evaporation from interception storage (``E_\mathrm{I}``)    | mm Δt``^-1`` | - |
+| `intevap_m`             | average evaporation from interception storage over classes  (``E_\mathrm{I}``)   | mm Δt``^-1`` | - |
+| `hortonevap`             | evaporation from horton ponding storage (``E_\mathrm{H}``)    | mm Δt``^-1`` | - |
+| `hortonevap_m`             | average evaporation from horton ponding storage over classes  (``E_\mathrm{H}``)   | mm Δt``^-1`` | - |
+| `rootevap`             | evaporation from root zone storage (``E_\mathrm{R}``)    | mm Δt``^-1`` | - |
+| `rootevap_m`             | average evaporation from root zone storage over classes  (``E_\mathrm{R}``)   | mm Δt``^-1`` | - |
+| `actevap`             | actual evapotranspiration (intevap + hortonevap + rootevap) (``E_\mathrm{A}``) | mm Δt``^-1`` | - |
+| `actevap_m`             | average actual evapotranspiration (intevap + hortonevap + rootevap) over classes (``E_\mathrm{A}``) | mm Δt``^-1`` | - |
+| `precipeffective`    | Effective precipitation (``P_\mathrm{E}``)   | mm Δt``^-1`` | - |
+| `rainfallplusmelt`    | snow melt + precipitation as rainfall (``P_\mathrm{M} + P_\mathrm{R}``)   | mm Δt``^-1`` | - |
+| `snowmelt`    | snowfall   | mm Δt``^-1`` | - |
+| `snowfall`    | snowfall   | mm Δt``^-1`` | - |
+| `facc`    | modeled accumulated frost   | ᵒC Δt | - |
+| `qhortonpond`        | Flux from the hortonian ponding storage to the hortonian runoff storage (``Q_\mathrm{H}``)   | mm Δt``^-1`` | - |
+| `qhortonrootzone`        | Flux from the hortonian ponding storage to the root zone storage (``Q_\mathrm{HR}``)   | mm Δt``^-1`` | - |
+| `qhortonrun`        | Flux from the hortonian runoff storage (``Q_\mathrm{Hf}``)   | mm Δt``^-1`` | - |
+| `qrootzone`        | Flux from the root zone storage (``Q_\mathrm{R}``)  | mm Δt``^-1`` | - |
+| `qrootzonefast`        | Pref. recharge to fast storage (``Q_\mathrm{RF}``)  | mm Δt``^-1`` | - |
+| `qrootzoneslow_m`        | Pref. recharge to slow storage sum classes (``Q_\mathrm{RS}``)   | mm Δt``^-1`` | - |
+| `qcapillary`        | Capillary flux from the slow to the root-zone storage (``Q_\mathrm{cap}``)  | mm Δt``^-1`` | - |
+| `qcapillary_m`        | Capillary flux from the slow to the root-zone storage sum classes (``Q_\mathrm{cap}``)   | mm Δt``^-1`` | - |
+| `qpercolation`        | Percolation flux from the root-zone to the slow storage (``Q_\mathrm{perc}``)  | mm Δt``^-1`` | - |
+| `qpercolation_m`        | Percolation flux from the root-zone to the slow storage sum classes (``Q_\mathrm{perc}``)   | mm Δt``^-1`` | - |
+| `qfast`        | runoff from fast storage (``Q_\mathrm{F}``)  | mm Δt``^-1`` | - |
+| `qfast_tot`        | sum of fast runoff (from fast and horton runoff storages) over classes  | mm Δt``^-1`` | - |
+| `qslow`        | runoff from slow storage (``Q_\mathrm{S}``)  | mm Δt``^-1`` | - |
+| `runoff`         | total specific runoff per cell (qslow + qfast_tot) (``Q``) | mm Δt``^-1``  | - |
+| `wb_tot`             | total water balance | mm Δt``^-1`` | - |
 
 
 ## [Sediment](@id params_sediment)
