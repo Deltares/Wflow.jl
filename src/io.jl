@@ -123,10 +123,11 @@ function ncvar_name_modifier(var; config = nothing)
             scale = param(var, "scale", 1.0)
             offset = param(var, "offset", 0.0)
             if haskey(var, "layer") || haskey(var, "class")
-                if length(var["class"])>1
+                haskey(var, "layer") ? dim_name = "layer" : dim_name = "class"
+                if length(var[dim_name])>1
                     #if modifier is provided in a list for each class item
                     modifier = []
-                    for i = 1:length(var["class"])
+                    for i = 1:length(var[dim_name])
                         index = get_index_dimension(var, config, i)
                         modifier_c = (scale = scale[i], offset = offset[i], value = nothing, index = index)
                         push!(modifier, modifier_c)
@@ -1600,14 +1601,10 @@ function get_index_dimension(var, config::Config, i = nothing)::Int
     if haskey(var, "layer")
         v = get(config.model, "thicknesslayers", Float[])
         inds = collect(1:length(v)+1)
-        index = inds[var["layer"]]
+        i === nothing ? index = inds[var["layer"]] : index = inds[var["layer"][i]]
     elseif haskey(var,"class")
         classes = get(config.model, "classes", "")
-        if i === nothing
-            index = findfirst(x->x==var["class"], classes)
-        else
-            index = findfirst(x->x==var["class"][i], classes)
-        end         
+        i === nothing ? index = findfirst(x->x==var["class"], classes) : index = findfirst(x->x==var["class"][i], classes)    
     else
         error("Unrecognized or missing dimension name to index $(var)")
     end
