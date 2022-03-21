@@ -130,23 +130,22 @@ description of these parameters, the unit, and default value if applicable.
 
 | parameter | description  	        | unit | default |
 |:---------------| --------------- | ---------------------- | ----- |    
-| `kh₀`          | horizontal hydraulic conductivity at soil surface  | m Δt``^{-1}`` |  - |
+| `kh₀`          | horizontal hydraulic conductivity at soil surface  | m d``^{-1}`` |  - |
 | `f` | a scaling parameter (controls exponential decline of kh₀) | m``^{-1}``  | - |
 | `soilthickness` | soil thickness | m  | - |
 | `θₛ` | saturated water content (porosity) | -  | - |
 | `θᵣ` | residual water content  | -  | - |
-| `t` | time step | Δt s  | - |
-| `Δt` | model time step | s  | - |
+| `Δt` | model time step | d  | - |
 | `βₗ` | slope | -  | - |
 | `dl` | drain length | m | - |
 | `dw` | drain width | m | - |
 | `zi` | pseudo-water table depth (top of the saturated zone) | m | - |
-| `exfiltwater` | exfiltration (groundwater above surface level, saturated excess conditions) | m | - |
-| `recharge` | net recharge to saturated store  | m | - |
-| `ssf` | subsurface flow  | m``^3`` Δt``{-1}``  | - |
-| `ssfin` | inflow from upstream cells | m``^3`` Δt``{-1}``  | - |
-| `ssfmax` | maximum subsurface flow | m``^2`` Δt``{-1}``  | - |
-| `to_river` | part of subsurface flow that flows to the river | m``^3`` Δt``{-1}``  | - |
+| `exfiltwater` | exfiltration (groundwater above surface level, saturated excess conditions) | m Δt⁻¹ | - |
+| `recharge` | net recharge to saturated store  | m Δt⁻¹ | - |
+| `ssf` | subsurface flow  | m``^3`` d``{-1}``  | - |
+| `ssfin` | inflow from upstream cells | m``^3`` d``{-1}``  | - |
+| `ssfmax` | maximum subsurface flow | m``^2`` d``{-1}``  | - |
+| `to_river` | part of subsurface flow that flows to the river | m``^3`` d``{-1}``  | - |
 | `wb_pit` | boolean location (0 or 1) of a waterbody (wb, reservoir or lake) | -  | - |
 
 ## Local inertial
