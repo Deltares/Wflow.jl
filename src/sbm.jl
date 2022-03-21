@@ -1,4 +1,4 @@
-@get_units @exchange @grid_type @grid_location @with_kw struct SBM{T,N,M,W}
+@get_units @exchange @grid_type @grid_location @with_kw struct SBM{T,N,M,I,D,L}
     # Model time step [s]
     Δt::T | "s" | 0 | "none" | "none"
     # Maximum number of soil layers
@@ -195,9 +195,11 @@
     # Water level river [mm]
     waterlevel_river::Vector{T} | "mm"
     # Water demand struct of arrays
-    water_demand::W | "-" | 0
+    industry::I | "-" | 0
+    domestic::D | "-" | 0
+    livestock::L | "-" | 0
 
-    function SBM{T,N,M,W}(args...) where {T,N,M,W}
+    function SBM{T,N,M,I,D,L}(args...) where {T,N,M,I,D,L}
         equal_size_vectors(args)
         return new(args...)
     end
@@ -501,9 +503,13 @@ function initialize_sbm(nc, config, riverfrac, inds)
 
     do_water_demand = get(config.model, "water-demand", true)
     if do_water_demand
-        water_demand = initialize_water_demand(nc, config, inds, Δt)
+        industry = initialize_industry_demand(nc, config, inds, Δt)
+        domestic = initialize_domestic_demand(nc, config, inds, Δt)
+        livestock = initialize_livestock_demand(nc, config, inds, Δt)
     else
-        water_demand = nothing
+        industry = nothing
+        domestic = nothing
+        livestock = nothing
     end
 
     sbm = SBM(
@@ -606,7 +612,9 @@ function initialize_sbm(nc, config, riverfrac, inds)
         leaf_area_index = fill(mv, n),
         waterlevel_land = fill(mv, n),
         waterlevel_river = zeros(Float, n), #set to zero to account for cells outside river domain
-        water_demand = water_demand,
+        industry = industry,
+        livestock = livestock,
+        domestic = domestic,
     )
 
     return sbm
