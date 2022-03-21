@@ -125,17 +125,16 @@ function ncvar_name_modifier(var; config = nothing)
             if haskey(var, "layer") || haskey(var, "class")
                 haskey(var, "layer") ? dim_name = "layer" : dim_name = "class"
                 if length(var[dim_name])>1
-                    #if modifier is provided in a list for each class item
-                    modifier = []
+                    # if modifier is provided as a list for each dim item
+                    indices = []
                     for i = 1:length(var[dim_name])
-                        index = get_index_dimension(var, config, i)
-                        modifier_c = (scale = scale[i], offset = offset[i], value = nothing, index = index)
-                        push!(modifier, modifier_c)
+                        index = get_index_dimension(var, config, var[dim_name][i])
                         @info "NetCDF parameter `$ncname` is modified with scale `$(scale[i])` and offset `$(offset[i])` at index `$index`."
+                        push!(indices, index)
                     end
+                    modifier = (scale = scale, offset = offset, value = nothing, index = indices)
                 else 
-                    i = nothing
-                    index = get_index_dimension(var, config, i)
+                    index = get_index_dimension(var, config, var[dim_name])
                     modifier = (scale = scale, offset = offset, value = nothing, index = index)
                     @info "NetCDF parameter `$ncname` is modified with scale `$scale` and offset `$offset` at index `$index`."
                 end
@@ -1597,14 +1596,14 @@ function get_index_dimension(var, model)::Int
 end
 
 "Get `index` for dimension name `layer` or `classes` based on `config` (TOML file)"
-function get_index_dimension(var, config::Config, i = nothing)::Int
+function get_index_dimension(var, config::Config, dim_value)::Int
     if haskey(var, "layer")
         v = get(config.model, "thicknesslayers", Float[])
         inds = collect(1:length(v)+1)
-        i === nothing ? index = inds[var["layer"]] : index = inds[var["layer"][i]]
+        index = inds[dim_value]
     elseif haskey(var,"class")
         classes = get(config.model, "classes", "")
-        i === nothing ? index = findfirst(x->x==var["class"], classes) : index = findfirst(x->x==var["class"][i], classes)    
+        index = findfirst(x->x==dim_value, classes)
     else
         error("Unrecognized or missing dimension name to index $(var)")
     end

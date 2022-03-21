@@ -266,38 +266,35 @@ function ncread(
     # input NetCDF var) or set to a uniform value (providing a value). Otherwise, input 
     # NetCDF var is read directly.
     var, mod = ncvar_name_modifier(var; config = config)
-    #if multiplier is provided in the toml as a list for each of the indices.
-    if typeof(mod) == Vector{Any}
-        A = read_standardized(nc, var, dim_sel)
-        for i = 1:length(mod)
-            mod_c = mod[i]
-            A[:,:,mod_c.index] =  A[:,:,mod_c.index] .* mod_c.scale .+ mod_c.offset
+
+    if !isnothing(mod.value)
+        @info "Set `$parameter` using default value `$defaults`."
+        if isnothing(dimname)
+            return Base.fill(mod.value, length(sel))
+        # set to one uniform value
+        elseif length(mod.value) == 1 
+            return Base.fill(mod.value, (nc.dim[String(dimname)], length(sel)))
+        # set to vector of values (should be equal to size dimname)
+        elseif length(mod.value) > 1 
+            @assert length(mod.value) == nc.dim[String(dimname)]
+            return repeat(mod.value, 1, length(sel))
         end
-    else 
-        if mod.scale != 1.0 || mod.offset != 0.0
-            if isnothing(mod.index)
-                A = read_standardized(nc, var, dim_sel) .* mod.scale .+ mod.offset
+    else
+        @info "Set `$parameter` using NetCDF variable `$var`."
+        A = read_standardized(nc, var, dim_sel)
+        if !isnothing(mod.index)
+            # the modifier index is only set in combination with scale and offset for SVectors,
+            # provided through the TOML file.
+            if length(mod.index) > 1
+                # if index, scale and offset is provided in the TOML as a list.          
+                for i = 1:length(mod.index)
+                    A[:,:,mod.index[i]] =  A[:,:,mod.index[i]] .* mod.scale[i] .+ mod.offset[i]
+                end
             else
-                A = read_standardized(nc, var, dim_sel)
                 A[:,:,mod.index] =  A[:,:,mod.index] .* mod.scale .+ mod.offset
             end
-        elseif !isnothing(mod.value)
-            @info "Set `$parameter` using default value `$defaults`."
-            if isnothing(dimname)
-                return Base.fill(mod.value, length(sel))
-            # set to one uniform value
-            elseif length(mod.value) == 1 
-                return Base.fill(mod.value, (nc.dim[String(dimname)], length(sel)))
-            # set to vector of values (should be equal to size dimname)
-            elseif length(mod.value) > 1 
-                @assert length(mod.value) == nc.dim[String(dimname)]
-                return repeat(mod.value, 1, length(sel))
-            end
-        else
-            # Read the entire variable into memory, applying scale, offset and
-            # set fill_values to missing.
-            @info "Set `$parameter` using NetCDF variable `$var`."
-            A = read_standardized(nc, var, dim_sel)
+        elseif mod.scale != 1.0 || mod.offset != 0.0
+            A = A .* mod.scale .+ mod.offset
         end
     end
 
