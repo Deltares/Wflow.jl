@@ -96,9 +96,7 @@ roughness coefficient [m``^{-1/3}`` s], ``g`` is acceleration due to gravity [m/
 two cells and ``\Delta y`` [m] is the flow width. Below the staggered grid and variables of
 the numerical solution in the x-direction, based on Almeida et al. (2012):
 
-```@raw html
-<img src="../../images/numerical_scheme_almeida.png" width="75%"/>
-```
+![numerical_scheme_almeida](../../images/numerical_scheme_almeida.png)
 
 The overland flow local inertial approach is used in combination with the local inertial
 river routing. This is a similar to the modelling approach of Neal et al. (2012), where the
