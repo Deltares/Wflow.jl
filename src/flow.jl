@@ -762,11 +762,11 @@ const dirs = (:yd, :xd, :xu, :yu)
     volume::Vector{T} | "m3"            # total volume of cell
     error::Vector{T} | "m3"             # error volume
     runoff::Vector{T} | "m3 s-1"        # runoff from hydrological model 
-    h::Vector{T} | "m"                  # water depth of cell
+    h::Vector{T} | "m"                  # water depth of cell (for river cells the reference is the river bed elevation `zb`)
     z::Vector{T} | "m"                  # elevation of cell
     froude_limit::Bool | "-"            # if true a check is performed if froude number > 1.0 (algorithm is modified)
     rivercells::Vector{Bool} | "-"      # river cells
-    h_av::Vector{T} | "m"               # average water depth
+    h_av::Vector{T} | "m"               # average water depth (for river cells the reference is the river bed elevation `zb`)
 end
 
 function initialize_shallowwater_land(

@@ -16,6 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   stored independently from ``t``, this allows for easier interpretation and to use states
   independently of ``t``.
 
+### Fixed
+- Fixed calculation of average water depth `h_av` of 2D overland flow (`ShallowWaterLand`)
+  with the local inertial approach. The summation of `h` was not correct, resulting in too
+  low values for `h_av`. For river cells of 2D overland flow `h_av` was only updated as part
+  of the river domain (`ShallowWaterRiver`), this value is now also updated as part of the
+  land domain (`ShallowWaterLand`).
+
 ## v0.5.2 - 2022-02-03 
 
 ### Changed
