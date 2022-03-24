@@ -251,9 +251,9 @@ model = Wflow.update(model)
     @test q[43] ≈ 11.900372477232786f0
     @test q[501] ≈ 3.536628093804679f0
     h = model.lateral.river.h_av
-    @test h[1622] ≈ 0.0018099650639472893f0
-    @test h[43] ≈ 0.4362704420866992f0
-    @test h[501] ≈ 0.05669956233680629f0
+    @test h[1622] ≈ 0.001809965063947279f0
+    @test h[43] ≈ 0.43627044208669874f0
+    @test h[501] ≈ 0.05669956233680719f0
 end
 Wflow.close_files(model, delete_output = false)
 
@@ -274,9 +274,9 @@ model = Wflow.update(model)
     @test q[43] ≈ 5.3952531643382144f0
     @test q[501] ≈ 1.6023076297110879f0
     h = model.lateral.river.h_av
-    @test h[1622] ≈ 0.001812085885794477f0
-    @test h[43] ≈ 0.30122213937420667f0
-    @test h[501] ≈ 0.03172037092237322f0
+    @test h[1622] ≈ 0.0018127783325222592f0
+    @test h[43] ≈ 0.3013432991079085f0
+    @test h[501] ≈ 0.0318420117021328f0
     qx = model.lateral.land.qx
     qy = model.lateral.land.qy
     @test qx[[26, 35, 631]] ≈

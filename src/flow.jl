@@ -943,6 +943,7 @@ function update(
     end
     swr.q_av .= 0.0
     swr.h_av .= 0.0
+    sw.h_av .= 0.0
 
     t = T(0.0)
     while t < swr.Δt
@@ -960,11 +961,15 @@ function update(
         # update of h takes place in land part of shallow water, copy to river domain
         for i = 1:swr.n
             swr.h[i] = sw.h[inds_riv[i]]
-            swr.h_av[i] += swr.h[i] * Δt
+            #swr.h_av[i] += swr.h[i] * Δt
         end
     end
     swr.q_av ./= swr.Δt
     swr.h_av ./= swr.Δt
+    sw.h_av ./= sw.Δt
+    for i = 1:swr.n
+        swr.h_av[i] = sw.h_av[inds_riv[i]]
+    end
 end
 
 function update(sw::ShallowWaterLand{T}, swr::ShallowWaterRiver{T}, network, Δt) where {T}
@@ -1101,10 +1106,9 @@ function update(sw::ShallowWaterLand{T}, swr::ShallowWaterRiver{T}, network, Δt
                 sw.volume[i] = 0.0 # set volume to zero
             end
             sw.h[i] = sw.volume[i] / (sw.xl[i] * sw.yl[i])
-            sw.h_av[i] += sw.h[i] * Δt
         end
+        sw.h_av[i] += sw.h[i] * Δt
     end
-    sw.h_av ./= sw.Δt
 end
 
 """
