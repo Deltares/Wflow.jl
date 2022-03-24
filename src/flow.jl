@@ -961,7 +961,6 @@ function update(
         # update of h takes place in land part of shallow water, copy to river domain
         for i = 1:swr.n
             swr.h[i] = sw.h[inds_riv[i]]
-            #swr.h_av[i] += swr.h[i] * Δt
         end
     end
     swr.q_av ./= swr.Δt
