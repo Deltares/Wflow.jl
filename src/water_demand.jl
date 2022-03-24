@@ -18,6 +18,16 @@ end
     returnflow_fraction::Vector{T} # return flow fraction [-]
 end
 
+@get_units @with_kw struct NonPaddyIrrigation{T}
+    demand_gross::Vector{T}
+    efficiency::Vector{T}
+end
+
+@get_units @with_kw struct PaddyIrrigation{T}
+    demand_gross::Vector{T}
+    efficiency::Vector{T}
+end
+
 function update(non_irrigation::N) where {N<:NonIrrigationWaterDemand}
     for i = 1:length(non_irrigation.demand_gross)
         fraction = non_irrigation.demand_net[i] / non_irrigation.demand_gross[i]
