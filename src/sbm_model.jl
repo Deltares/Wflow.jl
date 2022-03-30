@@ -404,11 +404,13 @@ function initialize_sbm_model(config::Config)
                     j = network.land.index_river[i]
                     if lateral.land.h[i] > 0.0
                         lateral.land.volume[i] =
-                            h * lateral.land.xl[i] * lateral.land.yl[i] +
+                            lateral.land.h[i] * lateral.land.xl[i] * lateral.land.yl[i] +
                             lateral.river.bankfull_volume[j]
                     else
                         lateral.land.volume[i] =
-                            lateral.land.h[i] * lateral.river.width[j] * lateral.river.dl[j]
+                            lateral.river.h[j] *
+                            lateral.river.width[j] *
+                            lateral.river.dl[j]
                     end
                 else
                     lateral.land.volume[i] =
