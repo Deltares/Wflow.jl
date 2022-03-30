@@ -206,8 +206,6 @@ in bold represent model parameters that can be set through static input data (ne
 can be listed in the TOML configuration file under `[input.lateral.land]`, to map the
 internal model parameter to the external netCDF variable.
 
-[^3]: for river cells the reference level is the river bed elevation `zb`
-
 |  parameter  | description  	  | unit  | default |
 |:--------------- | ------------------| ----- | -------- |
 | `n`    |  number of cells | - | - |
@@ -227,14 +225,14 @@ internal model parameter to the external netCDF variable.
 | `zx_max`  |  maximum cell elevation (x direction) | m | - |
 | `zy_max`  |  maximum cell elevation (y direction) | m | - |
 | **`mannings_n`**  |  Manning's roughness | s m``^{-\frac{1}{3}}`` | 0.072 |
-| `volume`  |  total volume of cell | m``^3`` | - |
+| `volume`  |  total volume of cell (including river volume for river cells) | m``^3`` | - |
 | `error`  |  error volume | m``^3`` | - |
 | `runoff`  |  runoff from hydrological model | m``^3`` s``^{-1}`` | - |
-| `h` [^3] |  water depth of cell | m | - |
+| `h` |  water depth of cell | m | - |
 | **`z`**  |  elevation of cell | m | - |
 | `froude_limit`  |  if true a check is performed if froude number > 1.0 (algorithm is modified)| - | - |
 | `rivercells`  |  river cells| - | - |
-| `h_av` [^3]  | average water depth| m | - |
+| `h_av` | average water depth| m | - |
 
 ## Groundwater flow
 

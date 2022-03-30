@@ -376,8 +376,8 @@ function initialize_sbm_model(config::Config)
         @info "Set initial conditions from state file `$instate_path`."
         state_ncnames = ncnames(config.state)
         @warn string(
-            "The unit of `ssf` (lateral subsurface flow) is now m3 d-1. Please update your", 
-            " input state file if it was produced with a Wflow version up to v0.5.2."
+            "The unit of `ssf` (lateral subsurface flow) is now m3 d-1. Please update your",
+            " input state file if it was produced with a Wflow version up to v0.5.2.",
         )
         set_states(instate_path, model, state_ncnames; type = Float)
         @unpack lateral, vertical, network = model
@@ -402,8 +402,7 @@ function initialize_sbm_model(config::Config)
             for i = 1:n
                 if lateral.land.rivercells[i]
                     j = network.land.index_river[i]
-                    h = max(lateral.land.h[i] - lateral.river.bankfull_depth[j], 0.0)
-                    if h > 0.0
+                    if lateral.land.h[i] > 0.0
                         lateral.land.volume[i] =
                             h * lateral.land.xl[i] * lateral.land.yl[i] +
                             lateral.river.bankfull_volume[j]

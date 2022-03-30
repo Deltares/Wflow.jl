@@ -759,7 +759,7 @@ const dirs = (:yd, :xd, :xu, :yu)
     zx_max::Vector{T} | "m"             # maximum cell elevation (x direction)
     zy_max::Vector{T} | "m"             # maximum cell elevation (y direction)
     mannings_n::Vector{T} | "s m-1/3"   # Manning's roughness
-    volume::Vector{T} | "m3"            # total volume of cell
+    volume::Vector{T} | "m3"            # total volume of cell (including river volume for river cells)
     error::Vector{T} | "m3"             # error volume
     runoff::Vector{T} | "m3 s-1"        # runoff from hydrological model 
     h::Vector{T} | "m"                  # water depth of cell (for river cells the reference is the river bed elevation `zb`)
@@ -931,8 +931,6 @@ function update(
 
     @unpack nodes_at_link, links_at_node = network.river
 
-    inds_riv = network.index_river
-
     if !isnothing(swr.reservoir)
         swr.reservoir.inflow .= 0.0
         swr.reservoir.totaloutflow .= 0.0
@@ -957,18 +955,10 @@ function update(
             Δt = swr.Δt - t
         end
         t = t + Δt
-
-        # update of h takes place in land part of shallow water, copy to river domain
-        for i = 1:swr.n
-            swr.h[i] = sw.h[inds_riv[i]]
-        end
     end
     swr.q_av ./= swr.Δt
     swr.h_av ./= swr.Δt
     sw.h_av ./= sw.Δt
-    for i = 1:swr.n
-        swr.h_av[i] = sw.h_av[inds_riv[i]]
-    end
 end
 
 function update(sw::ShallowWaterLand{T}, swr::ShallowWaterRiver{T}, network, Δt) where {T}
@@ -991,17 +981,9 @@ function update(sw::ShallowWaterLand{T}, swr::ShallowWaterRiver{T}, network, Δt
         # the effective flow width is zero when the river width exceeds the cell width (dy
         # for flow in x dir) and floodplain flow is not calculated.
         if xu <= sw.n && sw.ywidth[i] != 0.0
-            h0 = sw.h[i]
-            h1 = sw.h[xu]
-            if sw.rivercells[i]
-                h0 = max(h0 - swr.bankfull_depth[inds_riv[i]], 0.0)
-            end
-            if sw.rivercells[xu]
-                h1 = max(h1 - swr.bankfull_depth[inds_riv[xu]], 0.0)
-            end
 
-            η_x = sw.z[i] + h0
-            η_xu = sw.z[xu] + h1
+            η_x = sw.z[i] + sw.h[i]
+            η_xu = sw.z[xu] + sw.h[xu]
             η_max = max(η_x, η_xu)
             hf = (η_max - sw.zx_max[i])
 
@@ -1032,17 +1014,9 @@ function update(sw::ShallowWaterLand{T}, swr::ShallowWaterRiver{T}, network, Δt
         # the effective flow width is zero when the river width exceeds the cell width (dx
         # for flow in y dir) and floodplain flow is not calculated.
         if yu <= sw.n && sw.xwidth[i] != 0.0
-            h0 = sw.h[i]
-            h1 = sw.h[yu]
-            if sw.rivercells[i]
-                h0 = max(h0 - swr.bankfull_depth[inds_riv[i]], 0.0)
-            end
-            if sw.rivercells[yu]
-                h1 = max(h1 - swr.bankfull_depth[inds_riv[yu]], 0.0)
-            end
 
-            η_y = sw.z[i] + h0
-            η_yu = sw.z[yu] + h1
+            η_y = sw.z[i] + sw.h[i]
+            η_yu = sw.z[yu] + sw.h[yu]
             η_max = max(η_y, η_yu)
             hf = (η_max - sw.zy_max[i])
 
@@ -1069,15 +1043,13 @@ function update(sw::ShallowWaterLand{T}, swr::ShallowWaterRiver{T}, network, Δt
         end
     end
 
-    # continuity equation
-
-    # first add runoff
-    sw.volume .+= sw.runoff * Δt
-
     # change in volume and water levels based on horizontal fluxes for river and land cells
     @threads for i = 1:sw.n
         yd = indices.yd[i]
         xd = indices.xd[i]
+
+        # first add runoff (continuity equation) 
+        sw.volume[i] += sw.runoff[i] * Δt
 
         if sw.rivercells[i]
             sw.volume[i] +=
@@ -1091,13 +1063,20 @@ function update(sw::ShallowWaterLand{T}, swr::ShallowWaterRiver{T}, network, Δt
                 sw.volume[i] = 0.0 # set volume to zero
             end
             if sw.volume[i] >= swr.bankfull_volume[inds_riv[i]]
-                sw.h[i] =
+                swr.h[inds_riv[i]] =
                     swr.bankfull_depth[inds_riv[i]] +
                     (sw.volume[i] - swr.bankfull_volume[inds_riv[i]]) /
                     (sw.xl[i] * sw.yl[i])
+                sw.h[i] = swr.h[inds_riv[i]] - swr.bankfull_depth[inds_riv[i]]
+                swr.volume[inds_riv[i]] =
+                    swr.h[inds_riv[i]] * swr.dl[inds_riv[i]] * swr.width[inds_riv[i]]
             else
-                sw.h[i] = sw.volume[i] / (swr.dl[inds_riv[i]] * swr.width[inds_riv[i]])
+                swr.h[inds_riv[i]] =
+                    sw.volume[i] / (swr.dl[inds_riv[i]] * swr.width[inds_riv[i]])
+                sw.h[i] = 0.0
+                swr.volume[inds_riv[i]] = sw.volume[i]
             end
+            swr.h_av[inds_riv[i]] += swr.h[inds_riv[i]] * Δt
         else
             sw.volume[i] += (sw.qx[xd] - sw.qx[i] + sw.qy[yd] - sw.qy[i]) * Δt
             if sw.volume[i] < 0.0
@@ -1209,7 +1188,8 @@ function get_inflow_waterbody(
     inds = network.index_river
     if !isnothing(lateral.river.reservoir) || !isnothing(lateral.river.lake)
         inflow_wb =
-            lateral.subsurface.ssf[inds] ./ tosecond(basetimestep) .+ lateral.land.q_av[inds]
+            lateral.subsurface.ssf[inds] ./ tosecond(basetimestep) .+
+            lateral.land.q_av[inds]
     else
         inflow_wb = nothing
     end
