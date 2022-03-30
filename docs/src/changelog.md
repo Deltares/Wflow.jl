@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   was ``m^3 t^{-1}``, where ``t`` is the model timestep. Other flow variables are already
   stored independently from ``t``, this allows for easier interpretation and to use states
   independently of ``t``.
+- Changed the reference level of water depth `h` and `h_av` of 2D overland flow
+  (`ShallowWaterLand`) for cells containing a river from river bed elevation `zb` to cell
+  elevation `z`.
 
 ### Fixed
 - Fixed calculation of average water depth `h_av` of 2D overland flow (`ShallowWaterLand`)

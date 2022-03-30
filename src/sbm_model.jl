@@ -399,6 +399,12 @@ function initialize_sbm_model(config::Config)
             end
             lateral.land.volume .= lateral.land.h .* lateral.land.width .* lateral.land.dl
         elseif land_routing == "local-inertial"
+            @warn string(
+                "The reference level for the water depth `h` and `h_av` of overland flow ",
+                "(local inertial model) for cells containing a river has changed from river",
+                " bed elevation `zb` to cell elevation `z`. Please update the input state",
+                " file if it was produced with Wflow version v0.5.2.",
+            )
             for i = 1:n
                 if lateral.land.rivercells[i]
                     j = network.land.index_river[i]
