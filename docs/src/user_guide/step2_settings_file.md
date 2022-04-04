@@ -184,11 +184,21 @@ slope = "Slope"
 ### Grid data
 This optional section of the TOML file contains the output netCDF file for writing gridded
 model output, including a mapping between internal model parameter components and external
-netCDF variables.
+netCDF variables. 
+
+To limit the size of the resulting NetCDF file, file compression can be enabled. This does
+come with an increase in computational speed, but can significantly reduce the file size of
+the NetCDF file. This can be enabled by setting the `compressionlevel` variable to any value
+between `0` and `9`. A setting of `0` indicates that compression is not enabled, and values
+between 1 and 9 indicate different levels of compression (1: least compression, smallest
+impact on run time, 9: highest compression level, biggest impact on run times). If file size
+becomes an issue, we recommend using a value of `1`, as higher compression levels generally
+have only a limited effect on the file size.
 
 ```toml
 [output]    
 path = "output_moselle.nc"         # Location of the output file
+compressionlevel = 1               # Amount of compression (default 0)
 
 [output.vertical]   # Mapping of names between internal model components and external netCDF variables
 satwaterdepth = "satwaterdepth"
