@@ -218,7 +218,7 @@ function initialize_sbm_model(config::Config)
             indices_reverse = rev_inds,
             xlength = xl,
             ylength = yl,
-            riverwidth,
+            riverwidth = riverwidth_2d[inds_riv],
             graph_riv,
             ldd_riv,
             inds_riv,
