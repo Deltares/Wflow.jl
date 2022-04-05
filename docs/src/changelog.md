@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+- Added support for NetCDF compression for gridded model output, through the option
+  `compressionlevel` in the `[output]` section in the TOML file. The setting defaults to 0
+  (no compression), but all levels between 0 and 9 can be used.
+
 ### Changed
 - Re-organized the documentation: moved explanation of different model concepts to a model
   documentation section, added a user guide to explain setting up the model, added new 

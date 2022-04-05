@@ -454,6 +454,7 @@ function setup_grid_netcdf(
     extra_dim,
     sizeinmetres;
     float_type = Float32,
+    deflatelevel = 0,
 )
 
     ds = create_tracked_netcdf(path)
@@ -471,6 +472,7 @@ function setup_grid_netcdf(
                 "axis" => "X",
                 "units" => "m",
             ],
+            deflatelevel = deflatelevel,
         )
         defVar(
             ds,
@@ -484,6 +486,7 @@ function setup_grid_netcdf(
                 "axis" => "Y",
                 "units" => "m",
             ],
+            deflatelevel = deflatelevel,
         )
 
     else
@@ -512,6 +515,7 @@ function setup_grid_netcdf(
                 "axis" => "Y",
                 "units" => "degrees_north",
             ],
+            deflatelevel = deflatelevel,
         )
     end
     set_extradim_netcdf(ds, extra_dim)
@@ -521,6 +525,7 @@ function setup_grid_netcdf(
         Float64,
         ("time",),
         attrib = ["units" => time_units, "calendar" => calendar],
+        deflatelevel = deflatelevel,
     )
     if sizeinmetres
         for (key, val) in pairs(parameters)
@@ -532,6 +537,7 @@ function setup_grid_netcdf(
                     float_type,
                     ("x", "y", "time"),
                     attrib = ["_FillValue" => float_type(NaN)],
+                    deflatelevel = deflatelevel,
                 )
             elseif eltype(val.vector) <: SVector
                 # for SVectors an additional dimension (`extra_dim`) is required
@@ -541,6 +547,7 @@ function setup_grid_netcdf(
                     float_type,
                     ("x", "y", extra_dim.name, "time"),
                     attrib = ["_FillValue" => float_type(NaN)],
+                    deflatelevel = deflatelevel,
                 )
             else
                 error("Unsupported output type: ", typeof(val.vector))
@@ -556,6 +563,7 @@ function setup_grid_netcdf(
                     float_type,
                     ("lon", "lat", "time"),
                     attrib = ["_FillValue" => float_type(NaN)],
+                    deflatelevel = deflatelevel,
                 )
             elseif eltype(val.vector) <: SVector
                 # for SVectors an additional dimension (`extra_dim`) is required
@@ -565,6 +573,7 @@ function setup_grid_netcdf(
                     float_type,
                     ("lon", "lat", extra_dim.name, "time"),
                     attrib = ["_FillValue" => float_type(NaN)],
+                    deflatelevel = deflatelevel,
                 )
             else
                 error("Unsupported output type: ", typeof(val.vector))
@@ -871,7 +880,8 @@ function prepare_writer(
     # data but only if config.output.path has been set
     if haskey(config, "output") && haskey(config.output, "path")
         nc_path = output_path(config, config.output.path)
-        @info "Create an output NetCDF file `$nc_path` for grid data."
+        deflatelevel = get(config.output, "compressionlevel", 0)::Int
+        @info "Create an output NetCDF file `$nc_path` for grid data, using compression level `$deflatelevel`."
         # create a flat mapping from internal parameter locations to NetCDF variable names
         output_ncnames = ncnames(config.output)
         # fill the output_map by mapping parameter NetCDF names to arrays
@@ -885,6 +895,7 @@ function prepare_writer(
             time_units,
             extra_dim,
             sizeinmetres,
+            deflatelevel = deflatelevel
         )
     else
         nc_path = nothing
