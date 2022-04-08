@@ -20,6 +20,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   was ``m^3 t^{-1}``, where ``t`` is the model timestep. Other flow variables are already
   stored independently from ``t``, this allows for easier interpretation and to use states
   independently of ``t``.
+- Changed the reference level of water depth `h` and `h_av` of 2D overland flow
+  (`ShallowWaterLand`) for cells containing a river from river bed elevation `zb` to cell
+  elevation `z`.
+
+### Fixed
+- Fixed calculation of average water depth `h_av` of 2D overland flow (`ShallowWaterLand`)
+  with the local inertial approach. The summation of `h` was not correct, resulting in too
+  low values for `h_av`. For river cells of 2D overland flow `h_av` was only updated as part
+  of the river domain (`ShallowWaterRiver`), this value is now also updated as part of the
+  land domain (`ShallowWaterLand`).
+- Fixed the following two flow width issues for 2D overland flow of the local inertial
+  model: 1) The flow widths `xwidth` and `ywidth` were mapped incorrectly (reversed) to the
+  flow calculation in `x` and `y` direction, respectively. 2) For river cells the effective
+  flow width for overland flow was not determined correctly: the `riverwidth` vector
+  supplied to the function `set_effective_flowwidth!` covered the complete model domain and
+  should have covered the river domain, resulting in incorrect river widths and thus
+  incorrect effective flow widths for river cells.
 
 ## v0.5.2 - 2022-02-03 
 

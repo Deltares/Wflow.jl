@@ -218,7 +218,7 @@ function initialize_sbm_model(config::Config)
             indices_reverse = rev_inds,
             xlength = xl,
             ylength = yl,
-            riverwidth,
+            riverwidth = riverwidth_2d[inds_riv],
             graph_riv,
             ldd_riv,
             inds_riv,
@@ -376,8 +376,8 @@ function initialize_sbm_model(config::Config)
         @info "Set initial conditions from state file `$instate_path`."
         state_ncnames = ncnames(config.state)
         @warn string(
-            "The unit of `ssf` (lateral subsurface flow) is now m3 d-1. Please update your", 
-            " input state file if it was produced with a Wflow version up to v0.5.2."
+            "The unit of `ssf` (lateral subsurface flow) is now m3 d-1. Please update your",
+            " input state file if it was produced with a Wflow version up to v0.5.2.",
         )
         set_states(instate_path, model, state_ncnames; type = Float)
         @unpack lateral, vertical, network = model
@@ -399,17 +399,24 @@ function initialize_sbm_model(config::Config)
             end
             lateral.land.volume .= lateral.land.h .* lateral.land.width .* lateral.land.dl
         elseif land_routing == "local-inertial"
+            @warn string(
+                "The reference level for the water depth `h` and `h_av` of overland flow ",
+                "(local inertial model) for cells containing a river has changed from river",
+                " bed elevation `zb` to cell elevation `z`. Please update the input state",
+                " file if it was produced with Wflow version v0.5.2.",
+            )
             for i = 1:n
                 if lateral.land.rivercells[i]
                     j = network.land.index_river[i]
-                    h = max(lateral.land.h[i] - lateral.river.bankfull_depth[j], 0.0)
-                    if h > 0.0
+                    if lateral.land.h[i] > 0.0
                         lateral.land.volume[i] =
-                            h * lateral.land.xl[i] * lateral.land.yl[i] +
+                            lateral.land.h[i] * lateral.land.xl[i] * lateral.land.yl[i] +
                             lateral.river.bankfull_volume[j]
                     else
                         lateral.land.volume[i] =
-                            lateral.land.h[i] * lateral.river.width[j] * lateral.river.dl[j]
+                            lateral.river.h[j] *
+                            lateral.river.width[j] *
+                            lateral.river.dl[j]
                     end
                 else
                     lateral.land.volume[i] =
