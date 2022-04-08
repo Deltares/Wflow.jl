@@ -84,5 +84,6 @@ with_logger(NullLogger()) do
         include("bmi.jl")
         include("run_sediment.jl")
         include("subdomains.jl")
+        include("run_flextopo.jl")
     end
 end
