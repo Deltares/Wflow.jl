@@ -152,6 +152,8 @@ function set_states(instate_path, model, state_ncnames; type = nothing, dimname 
                     dimensions = (x = :, y = :, layer = :, time = 1)
                 elseif dimname == :classes
                     dimensions = (x = :, y = :, classes = :, time = 1)
+                else
+                    error("Unrecognized dimension name $dimname")
                 end
                 A = read_standardized(ds, ncname, dimensions)
                 A = permutedims(A[sel, :])
@@ -168,7 +170,7 @@ function set_states(instate_path, model, state_ncnames; type = nothing, dimname 
                 end
                 # set state in model object
                 param(model, state) .= svectorscopy(A, Val{size(A)[1]}())
-                # 3 dims (x,y,time)
+            # 3 dims (x,y,time)
             elseif dims == 3
                 A = read_standardized(ds, ncname, (x = :, y = :, time = 1))
                 A = A[sel]
@@ -247,6 +249,8 @@ function ncread(
         dim_sel = (x = :, y = :, classes = :, time = 1)
     elseif dimname == :layer
         dim_sel = (x = :, y = :, layer = :, time = 1)
+    else
+        error("Unrecognized dimension name $dimname")
     end
 
     if isnothing(var)
