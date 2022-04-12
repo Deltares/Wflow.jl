@@ -233,10 +233,12 @@ extract data for certain locations (e.g. `gauges`) or areas (e.g. `subcatchment`
 NetCDF location names are extracted from these maps. For a specific location (grid cell) a
 `location` is required. For layered model parameters and variables that have an extra
 dimension `layer` and are part of the vertical `sbm` concept it is possible to specify an
-internal layer index (see also example below). If multiple layers are desired, this can be
-specified in separate `[[netcdf.variable]]` entries. Note that the specification of the
-layer is not optional when Wflow is integrated with Delft-FEWS, for NetCDF scalar data an
-extra dimension is not allowed by the `importNetcdfActivity` of the Delft-FEWS General
+internal layer index (see also example below). For model parameters and variables that have
+an extra dimension `classes` and are part of the vertical `FLEXTopo` concept it is possible
+to specify the class name. If multiple layers or classes are desired, this can be specified
+in separate `[[netcdf.variable]]` entries. Note that the specification of the extra
+dimension is not optional when Wflow is integrated with Delft-FEWS, for NetCDF scalar data
+an extra dimension is not allowed by the `importNetcdfActivity` of the Delft-FEWS General
 Adapter. In the section [Output CSV section](@ref), similar functionality is available for
 CSV. For integration with Delft-FEWS, see also [Run from Delft-FEWS](@ref run_fews), it is
 recommended to write scalar data to NetCDF format since the General Adapter of Delft-FEWS
@@ -288,8 +290,10 @@ extract data for certain locations (e.g. `gauges`) or areas (e.g. `subcatchment`
 case a single entry can lead to multiple columns in the CSV file, which will be of the form
 `header_id`, e.g. `Q_20`, for a gauge with integer ID 20. For layered model parameters and
 variables that have an extra dimension `layer` and are part of the vertical `sbm` concept an
-internal layer index (see also example below) should be specified. If multiple layers are
-desired, this can be specified in separate `[[csv.column]]` entries.
+internal layer index (see also example below) should be specified. For model parameters and
+variables that have an extra dimension `classes` and are part of the vertical `FLEXTopo`
+concept it is possible to specify the class name. If multiple layers or classes are desired,
+this can be specified in separate `[[csv.column]]` entries.
 
 The double brackets in `[[csv.column]]` is TOML syntax to indicate that it is part of a
 list. You may specify as many entries as you wish.
@@ -356,6 +360,18 @@ waterfrac = "WaterFrac"
 cfmax.value = 2.5
 ```
 
+For input parameters with an extra dimension (e.g. `layer` or `classes`) one uniform value
+can be provided or a list of values that should be equal to the length of the extra
+dimension. For example, for input parameter `c`, a list of values can be provided as
+follows:
+
+```toml
+[input.vertical]
+water_holding_capacity = "WHC"
+waterfrac = "WaterFrac"
+c.value = [10.5, 11.25, 9.5, 7.0]
+```
+
 To change for example the forcing variable `precipitation` with a `scale` factor of 1.5 and
 an `offset` of 0.5:
 
@@ -364,6 +380,19 @@ an `offset` of 0.5:
 netcdf.variable.name = "P"
 scale = 1.5
 offset = 0.5
+```
+
+For input parameters with an extra dimension it is also possible to modify multiple indices
+at once with different `scale` and `offset` values. In the example below the external
+NetCDF variable `c` is modified at `layer` index 1 and 2, with a `scale` factor of 2.0 and
+1.5 respectively, and an `offset` of 0.0 for both indices: 
+
+```toml
+[input.vertical.c]
+netcdf.variable.name = "c"
+scale = [2.0, 1.5]
+offset = [0.0. 0.0]
+layer = [1, 2]
 ```
 
 ## Fixed forcing values

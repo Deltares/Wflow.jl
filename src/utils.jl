@@ -272,7 +272,7 @@ function ncread(
     var, mod = ncvar_name_modifier(var; config = config)
 
     if !isnothing(mod.value)
-        @info "Set `$parameter` using default value `$defaults`."
+        @info "Set `$parameter` using default value `$(mod.value)`."
         if isnothing(dimname)
             return Base.fill(mod.value, length(sel))
         # set to one uniform value
