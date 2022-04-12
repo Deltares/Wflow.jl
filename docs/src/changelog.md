@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 
 ### Added
+- The [FLEXTopo](@ref config_flextopo) model.
 - Added support for NetCDF compression for gridded model output, through the option
   `compressionlevel` in the `[output]` section in the TOML file. The setting defaults to 0
   (no compression), but all levels between 0 and 9 can be used.
