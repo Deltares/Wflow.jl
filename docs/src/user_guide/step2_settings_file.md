@@ -391,7 +391,7 @@ NetCDF variable `c` is modified at `layer` index 1 and 2, with a `scale` factor 
 [input.vertical.c]
 netcdf.variable.name = "c"
 scale = [2.0, 1.5]
-offset = [0.0. 0.0]
+offset = [0.0, 0.0]
 layer = [1, 2]
 ```
 

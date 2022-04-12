@@ -253,6 +253,8 @@ end
     @test vertical.cfmax[1] ≈ 3.7565300464630127
     @test vertical.soilthickness[1] ≈ 2000.0
     @test vertical.precipitation[49951] ≈ 2.2100000381469727
+    @test vertical.c[1] ≈
+          [9.152995289601465, 8.919674421902961, 8.70537452585209, 8.690681062890977]
 end
 
 config.input.vertical.cfmax = Dict("value" => 2.0)
@@ -263,6 +265,12 @@ config.input.vertical.soilthickness = Dict(
 )
 config.input.vertical.precipitation =
     Dict("scale" => 1.5, "netcdf" => Dict("variable" => Dict("name" => "precip")))
+config.input.vertical.c = Dict(
+    "scale" => [2.0, 3.0],
+    "offset" => [0.0, 0.0],
+    "layer" => [1, 3],
+    "netcdf" => Dict("variable" => Dict("name" => "c")),
+)
 
 model = Wflow.initialize_sbm_model(config)
 Wflow.load_dynamic_input!(model)
@@ -272,6 +280,12 @@ Wflow.load_dynamic_input!(model)
     @test vertical.cfmax[1] == 2.0
     @test vertical.soilthickness[1] ≈ 2000.0 * 3.0 + 100.0
     @test vertical.precipitation[49951] ≈ 1.5 * 2.2100000381469727
+    @test vertical.c[1] ≈ [
+        2.0 * 9.152995289601465,
+        8.919674421902961,
+        3.0 * 8.70537452585209,
+        8.690681062890977,
+    ]
 end
 
 Wflow.close_files(model, delete_output = false)
