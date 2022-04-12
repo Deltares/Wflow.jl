@@ -346,14 +346,9 @@ function initialize_flextopo_model(config::Config)
     xl, yl = cell_lengths(y, cellength, sizeinmetres)
 
 
-    # snow = zeros(Float, nclass, n)
-    # snowwater = zeros(Float, nclass, n)
     interceptionstorage = zeros(Float, nclass, n)
     hortonpondingstorage = zeros(Float, nclass, n)
     hortonrunoffstorage = zeros(Float, nclass, n)
-    rootzonestorage = zeros(Float, nclass, n)
-    faststorage = zeros(Float, nclass, n)
-    slowstorage = zeros(Float, nclass, n)
     srootzone_over_srmax = zeros(Float, nclass, n) .+ 1.0
 
     states_ = fill(mv, nclass, n)
@@ -369,7 +364,6 @@ function initialize_flextopo_model(config::Config)
     qhortonrun = fill(mv, nclass, n)
     qrootzone = fill(mv, nclass, n)
     qrootzonefast = fill(mv, nclass, n)
-    # qrootzoneslow = fill(mv, nclass, n)
     qfast = fill(mv, nclass, n)
     actevap = fill(mv, nclass, n)
     qpercolation = fill(mv, nclass, n)
@@ -382,7 +376,6 @@ function initialize_flextopo_model(config::Config)
     wb_fast = fill(mv, nclass, n)
 
 
-    # store = InterceptionStorage{Float}(
     flextopo = FLEXTOPO{Float,nclass}(
         Δt = Float(tosecond(Δt)),
         nclass = nclass,
@@ -442,27 +435,17 @@ function initialize_flextopo_model(config::Config)
         # # default (cold) states:
         snow = zeros(Float, n),
         snowwater = zeros(Float, n),
-        # snow = svectorscopy(snow, Val{nclass}()), 
-        # snowwater = svectorscopy(snowwater, Val{nclass}()), 
         interceptionstorage = svectorscopy(interceptionstorage, Val{nclass}()),
         hortonpondingstorage = svectorscopy(hortonpondingstorage, Val{nclass}()),
         hortonrunoffstorage = svectorscopy(hortonrunoffstorage, Val{nclass}()),
-        # rootzonestorage = copy(srmax),
-        # faststorage = 0.2 .* srmax,
         rootzonestorage = svectorscopy(srmax, Val{nclass}()),
-        # faststorage = 0.2 .* svectorscopy(srmax, Val{nclass}()),
         faststorage = 0.0 .* svectorscopy(srmax, Val{nclass}()),
-        # rootzonestorage = svectorscopy(rootzonestorage, Val{nclass}()), 
-        # faststorage = svectorscopy(faststorage, Val{nclass}()), 
         srootzone_over_srmax = svectorscopy(srootzone_over_srmax, Val{nclass}()),
-        # slowstorage = 1.0 ./ (3.0 .* ks),
         slowstorage = zeros(Float, n) .+ 30.0, 
         #states previous time step
         states_m = fill(mv, n),
         states_ = svectorscopy(states_, Val{nclass}()),
         #states averaged over all classes
-        # Sw_m = zeros(Float, n),
-        # Sww_m = zeros(Float, n),
         interceptionstorage_m = zeros(Float, n),
         hortonpondingstorage_m = zeros(Float, n),
         hortonrunoffstorage_m = zeros(Float, n),
@@ -490,7 +473,6 @@ function initialize_flextopo_model(config::Config)
         qhortonrun = svectorscopy(qhortonrun, Val{nclass}()),
         qrootzone = svectorscopy(qrootzone, Val{nclass}()),
         qrootzonefast = svectorscopy(qrootzonefast, Val{nclass}()),
-        # qrootzoneslow = svectorscopy(qrootzoneslow, Val{nclass}()), 
         qrootzoneslow_m = fill(mv, n),
         qfast = svectorscopy(qfast, Val{nclass}()),
         actevap = svectorscopy(actevap, Val{nclass}()),
@@ -646,7 +628,6 @@ function initialize_flextopo_model(config::Config)
         kinwave_set_subdomains(config, graph_riv, toposort_riv, index_pit_river)
 
     modelmap = (vertical = flextopo, lateral = (land = olf, river = rf))
-    # modelmap = (vertical = store, lateral = (land = olf, river = rf))
     indices_reverse = (
         land = rev_inds,
         river = rev_inds_riv,
@@ -710,7 +691,6 @@ function initialize_flextopo_model(config::Config)
         config,
         (; land, river, reservoir, lake, index_river, frac_toriver),
         (subsurface = nothing, land = olf, river = rf),
-        # store,
         flextopo,
         clock,
         reader,
