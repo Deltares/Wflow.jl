@@ -725,7 +725,7 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:FlextopoModel}
     inds_riv = network.index_river
 
     #COMMON SNOW
-    vertical.dic_function[vertical.select_snow[1]](vertical, config)
+    vertical.dic_function[vertical.select_snow[1]](vertical)
 
     #lateral snow transport
     if get(config.model, "masswasting", false)::Bool
@@ -740,25 +740,25 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:FlextopoModel}
         vertical.kclass[1] = k
 
         #INTERCEPTION
-        vertical.dic_function[vertical.select_interception[k]](vertical, config)
+        vertical.dic_function[vertical.select_interception[k]](vertical)
 
         #HORTON
-        vertical.dic_function[vertical.select_hortonponding[k]](vertical, config)
-        vertical.dic_function[vertical.select_hortonrunoff[k]](vertical, config)
+        vertical.dic_function[vertical.select_hortonponding[k]](vertical)
+        vertical.dic_function[vertical.select_hortonrunoff[k]](vertical)
 
         #ROOT-ZONE
-        vertical.dic_function[vertical.select_rootzone[k]](vertical, config)
+        vertical.dic_function[vertical.select_rootzone[k]](vertical)
 
         #FAST
-        vertical.dic_function[vertical.select_fast[k]](vertical, config)
+        vertical.dic_function[vertical.select_fast[k]](vertical)
 
     end
 
     #COMMON SLOW
-    vertical.dic_function[vertical.select_slow[1]](vertical, config)
+    vertical.dic_function[vertical.select_slow[1]](vertical)
 
     # WAT BAL 
-    watbal(vertical, config)
+    watbal(vertical)
 
     surface_routing(model)
 

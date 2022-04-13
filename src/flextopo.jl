@@ -225,7 +225,7 @@ end
 
 statevars(::FLEXTOPO) = (:snow, :snowwater, :interceptionstorage, :hortonpondingstorage, :hortonrunoffstorage, :rootzonestorage, :faststorage, :slowstorage)
 
-function common_snow_hbv(flextopo::FLEXTOPO, config)
+function common_snow_hbv(flextopo::FLEXTOPO)
     for i = 1:flextopo.n
         # precip correction 
         precipcorr = flextopo.precipitation[i] * flextopo.pcorr[i]
@@ -259,7 +259,7 @@ function common_snow_hbv(flextopo::FLEXTOPO, config)
     end
 end
 
-function common_snow_no_storage(flextopo::FLEXTOPO, config)
+function common_snow_no_storage(flextopo::FLEXTOPO)
     for i = 1:flextopo.n
         snow = 0.0
         snowwater = 0.0
@@ -313,7 +313,7 @@ function common_glaciers(flextopo::FLEXTOPO, config)
 end
 
 
-function interception_no_storage(flextopo::FLEXTOPO, config)
+function interception_no_storage(flextopo::FLEXTOPO)
     k = flextopo.kclass[1]
     for i = 1:flextopo.n
         intevap = 0.0
@@ -343,7 +343,7 @@ function interception_no_storage(flextopo::FLEXTOPO, config)
     end
 end
 
-function interception_overflow(flextopo::FLEXTOPO, config)
+function interception_overflow(flextopo::FLEXTOPO)
     k = flextopo.kclass[1]
     for i = 1:flextopo.n
         # rainfall added to interception store interceptionstorage
@@ -381,7 +381,7 @@ function interception_overflow(flextopo::FLEXTOPO, config)
 end
 
 
-function hortonponding_no_storage(flextopo::FLEXTOPO, config)
+function hortonponding_no_storage(flextopo::FLEXTOPO)
     k = flextopo.kclass[1]
     for i = 1:flextopo.n
         hortonevap = 0.0
@@ -406,7 +406,7 @@ function hortonponding_no_storage(flextopo::FLEXTOPO, config)
     end
 end
 
-function hortonponding(flextopo::FLEXTOPO, config)
+function hortonponding(flextopo::FLEXTOPO)
     k = flextopo.kclass[1]
     for i = 1:flextopo.n
 
@@ -477,7 +477,7 @@ function hortonponding(flextopo::FLEXTOPO, config)
     end
 end
 
-function hortonrunoff_no_storage(flextopo::FLEXTOPO, config)
+function hortonrunoff_no_storage(flextopo::FLEXTOPO)
     k = flextopo.kclass[1]
     for i = 1:flextopo.n
         qhortonrun = 0.0
@@ -497,7 +497,7 @@ function hortonrunoff_no_storage(flextopo::FLEXTOPO, config)
     end
 end
 
-function hortonrunoff(flextopo::FLEXTOPO, config)
+function hortonrunoff(flextopo::FLEXTOPO)
     k = flextopo.kclass[1]
     for i = 1:flextopo.n
 
@@ -519,7 +519,7 @@ function hortonrunoff(flextopo::FLEXTOPO, config)
     end
 end
 
-function rootzone_no_storage(flextopo::FLEXTOPO, config)
+function rootzone_no_storage(flextopo::FLEXTOPO)
     k = flextopo.kclass[1]
     for i = 1:flextopo.n
         rootevap = 0.0
@@ -556,7 +556,7 @@ function rootzone_no_storage(flextopo::FLEXTOPO, config)
     end
 end
 
-function rootzone_storage(flextopo::FLEXTOPO, config)
+function rootzone_storage(flextopo::FLEXTOPO)
     k = flextopo.kclass[1]
     for i = 1:flextopo.n
 
@@ -625,7 +625,7 @@ function rootzone_storage(flextopo::FLEXTOPO, config)
 end
 
 
-function fast_no_storage(flextopo::FLEXTOPO, config)
+function fast_no_storage(flextopo::FLEXTOPO)
     k = flextopo.kclass[1]
     for i = 1:flextopo.n
         #make sure ds does not exceed 1 
@@ -651,7 +651,7 @@ function fast_no_storage(flextopo::FLEXTOPO, config)
     end
 end
 
-function fast_storage(flextopo::FLEXTOPO, config)
+function fast_storage(flextopo::FLEXTOPO)
     k = flextopo.kclass[1]
     for i = 1:flextopo.n
 
@@ -685,7 +685,7 @@ function fast_storage(flextopo::FLEXTOPO, config)
     end
 end
 
-function slow_no_storage(flextopo::FLEXTOPO, config)
+function slow_no_storage(flextopo::FLEXTOPO)
     for i = 1:flextopo.n
         #make sure ds does not exceed 1 
         pref_recharge = flextopo.qrootzone[i] .* min.(flextopo.ds[i], 1.0)
@@ -721,7 +721,7 @@ function slow_no_storage(flextopo::FLEXTOPO, config)
     end
 end
 
-function common_slow_storage(flextopo::FLEXTOPO, config)
+function common_slow_storage(flextopo::FLEXTOPO)
     for i = 1:flextopo.n
         #make sure ds does not exceed 1 
         pref_recharge = flextopo.qrootzone[i] .* min.(flextopo.ds[i], 1.0)
@@ -759,7 +759,7 @@ function common_slow_storage(flextopo::FLEXTOPO, config)
     end
 end
 
-function watbal(flextopo::FLEXTOPO, config)
+function watbal(flextopo::FLEXTOPO)
     for i = 1:flextopo.n
         states =
             flextopo.snow[i] +
