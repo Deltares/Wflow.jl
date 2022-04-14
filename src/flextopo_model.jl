@@ -23,7 +23,7 @@ function initialize_flextopo_model(config::Config)
 
     classes = get(config.model, "classes", "")
     nclass = length(classes)
-    @show classes nclass
+    @info "Classes are set to names `$(join(classes,", "))` and have size `$nclass`."
     kclass = [1]    #needed to initialize
 
     # dictionary of available functions for each store

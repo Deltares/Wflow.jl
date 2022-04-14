@@ -162,7 +162,7 @@ function get_at(
     times::AbstractVector{<:TimeType},
     t::TimeType,
 )
-    # this behaves like a forward fill interpolation
+    # this behaves like a backward fill interpolation
     i = findfirst(>=(t), times)
     t < first(times) && throw(DomainError("time $t before dataset begin $(first(times))"))
     i === nothing && throw(DomainError("time $t after dataset end $(last(times))"))
@@ -252,6 +252,10 @@ function update_forcing!(model)
         sel_lakes = network.lake.indices_coverage
         param_lake = get_param_lake(model)
     end
+
+    # Wflow expects `right` labeling of the forcing time interval, e.g. daily precipitation
+    # at 01-02-2000 00:00:00 is the accumulated total precipitation between 01-01-2000
+    # 00:00:00 and 01-02-2000 00:00:00.
 
     # load from NetCDF into the model according to the mapping
     for (par, ncvar) in forcing_parameters
