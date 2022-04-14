@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 
 ### Added
+- The [FLEXTopo](@ref config_flextopo) model.
+- Set a (different) uniform value for each index of input parameters with an extra
+  dimension. A list of values (instead of one uniform value) that should be equal to the
+  length of the extra dimension can be provided in the TOML file. See also [Modify
+  parameters](@ref).
+- Modify input parameters with an extra dimension at multiple indices with different `scale`
+  and `offset` values, through the TOML file. See also [Modify parameters](@ref).
 - Added support for NetCDF compression for gridded model output, through the option
   `compressionlevel` in the `[output]` section in the TOML file. The setting defaults to 0
   (no compression), but all levels between 0 and 9 can be used.

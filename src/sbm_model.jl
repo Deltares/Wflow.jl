@@ -44,7 +44,7 @@ function initialize_sbm_model(config::Config)
     nc = NCDataset(static_path)
 
     subcatch_2d =
-        ncread(nc, config.input, "subcatchment"; optional = false, allow_missing = true)
+        ncread(nc, config, "subcatchment"; optional = false, allow_missing = true)
     # indices based on catchment
     inds, rev_inds = active_indices(subcatch_2d, missing)
     n = length(inds)
@@ -52,7 +52,7 @@ function initialize_sbm_model(config::Config)
 
     river_2d = ncread(
         nc,
-        config.input,
+        config,
         "river_location";
         optional = false,
         type = Bool,
@@ -61,7 +61,7 @@ function initialize_sbm_model(config::Config)
     river = river_2d[inds]
     riverwidth_2d = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.width";
         optional = false,
         type = Float,
@@ -70,7 +70,7 @@ function initialize_sbm_model(config::Config)
     riverwidth = riverwidth_2d[inds]
     riverlength_2d = ncread(
         nc,
-        config.input,
+        config,
         "lateral.river.length";
         optional = false,
         type = Float,
@@ -114,17 +114,17 @@ function initialize_sbm_model(config::Config)
         lakeindex = fill(0, nriv)
     end
 
-    ldd_2d = ncread(nc, config.input, "ldd"; optional = false, allow_missing = true)
+    ldd_2d = ncread(nc, config, "ldd"; optional = false, allow_missing = true)
     ldd = ldd_2d[inds]
     if do_pits
         pits_2d =
-            ncread(nc, config.input, "pits"; optional = false, type = Bool, fill = false)
+            ncread(nc, config, "pits"; optional = false, type = Bool, fill = false)
         ldd = set_pit_ldd(pits_2d, ldd, inds)
     end
 
     βₗ = ncread(
         nc,
-        config.input,
+        config,
         "lateral.land.slope";
         optional = false,
         sel = inds,
@@ -140,7 +140,7 @@ function initialize_sbm_model(config::Config)
     if haskey(config.input.lateral, "subsurface")
         khfrac = ncread(
             nc,
-            config.input,
+            config,
             "lateral.subsurface.ksathorfrac";
             sel = inds,
             defaults = 1.0,
@@ -379,7 +379,7 @@ function initialize_sbm_model(config::Config)
             "The unit of `ssf` (lateral subsurface flow) is now m3 d-1. Please update your",
             " input state file if it was produced with a Wflow version up to v0.5.2.",
         )
-        set_states(instate_path, model, state_ncnames; type = Float)
+        set_states(instate_path, model, state_ncnames; type = Float, dimname = :layer)
         @unpack lateral, vertical, network = model
         # update zi for vertical sbm and kinematic wave volume for river and land domain
         zi =

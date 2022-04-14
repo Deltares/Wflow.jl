@@ -136,7 +136,7 @@ and set states in `model` object. Active cells are selected with the correspondi
 # Arguments
 - `type = nothing`: type to convert data to after reading. By default no conversion is done.
 """
-function set_states(instate_path, model, state_ncnames; type = nothing)
+function set_states(instate_path, model, state_ncnames; type = nothing, dimname = nothing)
     @unpack network = model
     # states in NetCDF include dim time (one value) at index 3 or 4, 3 or 4 dims are allowed
     NCDataset(instate_path) do ds
@@ -148,11 +148,20 @@ function set_states(instate_path, model, state_ncnames; type = nothing)
             dims = length(dimnames(ds[ncname]))
             # 4 dims, for example (x,y,layer,time) where dim layer is an SVector for soil layers
             if dims == 4
-                A = read_standardized(ds, ncname, (x = :, y = :, layer = :, time = 1))
+                if dimname == :layer
+                    dimensions = (x = :, y = :, layer = :, time = 1)
+                elseif dimname == :classes
+                    dimensions = (x = :, y = :, classes = :, time = 1)
+                else
+                    error("Unrecognized dimension name $dimname")
+                end
+                A = read_standardized(ds, ncname, dimensions)
                 A = permutedims(A[sel, :])
                 # note that this array is allowed to have missings, since not every vertical
                 # column is `maxlayers` layers deep
-                A = replace!(A, missing => NaN)
+                if dimname == :layer
+                    A = replace!(A, missing => NaN)
+                end
                 # Convert to desired type if needed
                 if !isnothing(type)
                     if eltype(A) != type
@@ -161,7 +170,7 @@ function set_states(instate_path, model, state_ncnames; type = nothing)
                 end
                 # set state in model object
                 param(model, state) .= svectorscopy(A, Val{size(A)[1]}())
-                # 3 dims (x,y,time)
+            # 3 dims (x,y,time)
             elseif dims == 3
                 A = read_standardized(ds, ncname, (x = :, y = :, time = 1))
                 A = A[sel]
@@ -224,21 +233,24 @@ function ncread(
     # if var has type Config, input parameters can be changed.
     if isnothing(alias)
         if optional
-            var = param(config, parameter, nothing)
+            var = param(config.input, parameter, nothing)
         else
-            var = param(config, parameter)
+            var = param(config.input, parameter)
         end
     else
-        var = get_alias(config, parameter, alias, nothing)
+        var = get_alias(config.input, parameter, alias, nothing)
     end
 
     # dim `time` is also included in `dim_sel`: this allows for cyclic parameters (read
     # first timestep), that is later updated with the `update_cyclic!` function.
     if isnothing(dimname)
         dim_sel = (x = :, y = :, time = 1)
-    else
-        @assert dimname == :layer
+    elseif dimname == :classes
+        dim_sel = (x = :, y = :, classes = :, time = 1)
+    elseif dimname == :layer
         dim_sel = (x = :, y = :, layer = :, time = 1)
+    else
+        error("Unrecognized dimension name $dimname")
     end
 
     if isnothing(var)
@@ -257,21 +269,37 @@ function ncread(
     # If var has type Config, input parameters can be changed (through scale, offset and 
     # input NetCDF var) or set to a uniform value (providing a value). Otherwise, input 
     # NetCDF var is read directly.
-    var, mod = ncvar_name_modifier(var)
-    if mod.scale != 1.0 || mod.offset != 0.0
-        A = read_standardized(nc, var, dim_sel) .* mod.scale .+ mod.offset
-    elseif !isnothing(mod.value)
-        @info "Set `$parameter` using default value `$defaults`."
+    var, mod = ncvar_name_modifier(var; config = config)
+
+    if !isnothing(mod.value)
+        @info "Set `$parameter` using default value `$(mod.value)`."
         if isnothing(dimname)
             return Base.fill(mod.value, length(sel))
-        else
+        # set to one uniform value
+        elseif length(mod.value) == 1 
             return Base.fill(mod.value, (nc.dim[String(dimname)], length(sel)))
+        # set to vector of values (should be equal to size dimname)
+        elseif length(mod.value) > 1 
+            @assert length(mod.value) == nc.dim[String(dimname)]
+            return repeat(mod.value, 1, length(sel))
         end
     else
-        # Read the entire variable into memory, applying scale, offset and
-        # set fill_values to missing.
         @info "Set `$parameter` using NetCDF variable `$var`."
         A = read_standardized(nc, var, dim_sel)
+        if !isnothing(mod.index)
+            # the modifier index is only set in combination with scale and offset for SVectors,
+            # provided through the TOML file.
+            if length(mod.index) > 1
+                # if index, scale and offset is provided in the TOML as a list.          
+                for i = 1:length(mod.index)
+                    A[:,:,mod.index[i]] =  A[:,:,mod.index[i]] .* mod.scale[i] .+ mod.offset[i]
+                end
+            else
+                A[:,:,mod.index] =  A[:,:,mod.index] .* mod.scale .+ mod.offset
+            end
+        elseif mod.scale != 1.0 || mod.offset != 0.0
+            A = A .* mod.scale .+ mod.offset
+        end
     end
 
     # Take out only the active cells
