@@ -8,7 +8,7 @@ As mentioned before, the input data can be classified into two types:
  - Static maps.
 
 
-## Meterological data
+## Meteorological data
 
 Meteorological data is provided as a single NetCDF file, with several variables containing
 the forcing data for precipitation, temperature and potential evaporation. The code snippet
@@ -94,6 +94,12 @@ Global attributes
   unit                 = mm
   precip_fn            = era5
 ```
+
+!!! note
+    Wflow expects right labeling of the forcing time interval, e.g. daily precipitation
+    at 01-02-2000 00:00:00 is the accumulated total precipitation between 01-01-2000
+    00:00:00 and 01-02-2000 00:00:00.
+
 
 ## Static data
 
