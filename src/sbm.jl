@@ -1,4 +1,4 @@
-@get_units @exchange @grid_type @grid_location @with_kw struct SBM{T,N,M,I,D,L}
+@get_units @exchange @grid_type @grid_location @with_kw struct SBM{T,N,M,P,NP,D,L,I}
     # Model time step [s]
     Δt::T | "s" | 0 | "none" | "none"
     # Maximum number of soil layers
@@ -194,12 +194,14 @@
     waterlevel_land::Vector{T} | "mm"
     # Water level river [mm]
     waterlevel_river::Vector{T} | "mm"
-    # Water demand struct of arrays
-    industry::I | "-" | 0
+    # Water demand structs (of arrays)
+    paddy::P | "-" | 0
+    nonpaddy::NP | "-" | 0
     domestic::D | "-" | 0
     livestock::L | "-" | 0
+    industry::I | "-" | 0
 
-    function SBM{T,N,M,I,D,L}(args...) where {T,N,M,I,D,L}
+    function SBM{T,N,M,P,NP,D,L,I}(args...) where {T,N,M,P,NP,D,L,I}
         equal_size_vectors(args)
         return new(args...)
     end
@@ -502,15 +504,6 @@ function initialize_sbm(nc, config, riverfrac, inds)
     vwc_perc = fill(mv, maxlayers, n)
 
     do_water_demand = get(config.model, "water-demand", true)
-    if do_water_demand
-        industry = initialize_industry_demand(nc, config, inds, Δt)
-        domestic = initialize_domestic_demand(nc, config, inds, Δt)
-        livestock = initialize_livestock_demand(nc, config, inds, Δt)
-    else
-        industry = nothing
-        domestic = nothing
-        livestock = nothing
-    end
 
     sbm = SBM(
         Δt = tosecond(Δt),
@@ -610,11 +603,15 @@ function initialize_sbm(nc, config, riverfrac, inds)
         swood = swood,
         kext = kext,
         leaf_area_index = fill(mv, n),
+        # water level land and river domain
         waterlevel_land = fill(mv, n),
         waterlevel_river = zeros(Float, n), #set to zero to account for cells outside river domain
-        industry = industry,
-        livestock = livestock,
-        domestic = domestic,
+        # water demand
+        paddy = do_water_demand ? initialize_paddy(nc, config, inds) : nothing,
+        nonpaddy = do_water_demand ? initialize_nonpaddy(nc, config, inds) : nothing,
+        domestic = do_water_demand ? initialize_domestic_demand(nc, config, inds, Δt) : nothing,
+        industry = do_water_demand ? initialize_domestic_demand(nc, config, inds, Δt) : nothing,
+        livestock = do_water_demand ? initialize_livestock_demand(nc, config, inds, Δt) : nothing,
     )
 
     return sbm
@@ -761,6 +758,14 @@ function update_until_recharge(sbm::SBM, config)
         # evap available for soil evaporation and transpiration
         potsoilevap = restevap * sbm.canopygapfraction[i]
         pottrans = restevap * (1.0 - sbm.canopygapfraction[i])
+
+        if !isnothing(sbm.paddy)
+            paddy_actevap = min(sbm.paddy.h[i], potsoilevap)
+            sbm.paddy.h[i] -= paddy_actevap
+            potsoilevap -= paddy_actevap
+        else
+            paddy_actevap = 0.0
+        end
 
         # Calculate the initial capacity of the unsaturated store
         ustorecapacity = sbm.soilwatercapacity[i] - sbm.satwaterdepth[i] - ustoredepth
@@ -950,7 +955,7 @@ function update_until_recharge(sbm::SBM, config)
         # recharge (mm) for saturated zone
         recharge = (transfer - actcapflux - actleakage - actevapsat - soilevapsat)
         transpiration = actevapsat + actevapustore
-        actevap = soilevap + transpiration + ae_openw_r + ae_openw_l + sbm.interception[i]
+        actevap = soilevap + transpiration + ae_openw_r + ae_openw_l + sbm.interception[i] + paddy_actevap
 
         # update the outputs and states
         sbm.n_unsatlayers[i] = n_usl
@@ -1011,12 +1016,22 @@ function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
 
         ustoredepth = sum(@view usld[1:n_usl])
 
+        if !isnothing(sbm.paddy)
+            paddy_h_add = min(
+                exfiltustore + exfiltsatwater[i] + sbm.excesswater[i] + sbm.infiltexcess[i],
+                sbm.paddy.h_p[i] - sbm.paddy.h[i],
+            )
+            sbm.paddy.h[i] += paddy_h_add
+        else
+            paddy_h_add = 0.0
+        end
+
         runoff = max(
             exfiltustore +
             exfiltsatwater[i] +
             sbm.excesswater[i] +
             sbm.runoff_land[i] +
-            sbm.infiltexcess[i] - sbm.ae_openw_l[i],
+            sbm.infiltexcess[i] - sbm.ae_openw_l[i] - paddy_h_add,
             0.0,
         )
 
