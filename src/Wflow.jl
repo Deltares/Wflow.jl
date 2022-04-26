@@ -18,13 +18,13 @@ using TerminalLoggers
 using CFTime
 using Base.Threads
 using Glob
-using NCDatasets: MFDataset
 
 @metadata get_units "mm Δt-1"
 
 const BMI = BasicModelInterface
 const Float = Float64
-const CFDataset = Union{NCDataset,MFDataset}
+const CFDataset = Union{NCDataset,NCDatasets.MFDataset}
+const CFVariable_MF = Union{NCDatasets.CFVariable,NCDatasets.MFCFVariable}
 const version =
     VersionNumber(TOML.parsefile(joinpath(@__DIR__, "..", "Project.toml"))["version"])
 

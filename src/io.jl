@@ -1414,7 +1414,7 @@ function internal_dim_name(name::Symbol)
 end
 
 """
-    read_dims(A::NCDatasets.CFVariable, dim_sel)
+    read_dims(A::CFVariable_MF, dim_sel)
 
 Return the data of a NetCDF data variable as an Array. Only dimensions in `dim_sel`, a
 NamedTuple like (x=:, y=:, time=1). Other dimensions that may be present need to be size 1,
@@ -1422,7 +1422,7 @@ otherwise an error is thrown.
 
 `dim_sel` keys should be the internal dimension names; :x, :y, :time, :`extra_dim.name`.
 """
-function read_dims(A::NCDatasets.CFVariable, dim_sel::NamedTuple)
+function read_dims(A::CFVariable_MF, dim_sel::NamedTuple)
     dimsizes = dimsize(A)
     indexer = []
     data_dim_order = Symbol[]
