@@ -7,11 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## v0.6.1 - 2022-04-24
+
 ### Fixed
 - Fixed an error with the log file, when writing to a folder that does not (yet) exists.
   Now, the folder is created prior to writing the log file.
+- Fixed a MethodError for `read_dims`, thrown when reading netCDF data with NCDatasets.jl
+  0.12.3 or higher.
 
-## v0.6.0 - 2022-04-14 
+## v0.6.0 - 2022-04-14
 
 ### Added
 - The [FLEXTopo](@ref config_flextopo) model.
@@ -27,7 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Re-organized the documentation: moved explanation of different model concepts to a model
-  documentation section, added a user guide to explain setting up the model, added new 
+  documentation section, added a user guide to explain setting up the model, added new
   figures to the description of wflow\_sbm.
 - The unit of lateral subsurface flow `ssf` of `LateralSSF` is now ``m^3 d^{-1}``. The unit
   was ``m^3 t^{-1}``, where ``t`` is the model timestep. Other flow variables are already
@@ -51,7 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   should have covered the river domain, resulting in incorrect river widths and thus
   incorrect effective flow widths for river cells.
 
-## v0.5.2 - 2022-02-03 
+## v0.5.2 - 2022-02-03
 
 ### Changed
 - Model types `sbm_gwf` and `hbv` use the same approach for the calculation of the drain
@@ -110,7 +114,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Scaling of potential capillary rise is replaced by a common approach found in literature,
   based on the water table depth `zi`, a maximum water depth `cap_hmax` beyond which
-  capillary rise ceases, and a coefficient `cap_n`. See also [Capillary rise](@ref). 
+  capillary rise ceases, and a coefficient `cap_n`. See also [Capillary rise](@ref).
   Multiplying the scaling factor with the ratio of model time step and
   `basetimestep` in the original approach resulted in (much) smaller capillary fluxes at
   sub-daily model time steps compared to daily model time steps, and is not used in the new
@@ -128,7 +132,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The ``\alpha`` parameter of the kinematic wave has a fixed value now and is not updated
   because of changes in water height (this could result in large water balance errors). See
   also [Surface routing](@ref).
-- Cyclic input for other structs than vertical are also now supported (for example cyclic 
+- Cyclic input for other structs than vertical are also now supported (for example cyclic
   inflow to the river).
 - Moved `update_forcing!` and `update_cyclic!` functions to the `run` function. It is now
   easier to implement a custom `run` function with custom loading of input data (forcing and
@@ -190,9 +194,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (Vector) for struct `ConstantHead`.
 - Fixed return max(0, boundary.flux[index]) to return max(0, flux) the flux should be returned
   when cell is dry, no negative value allowed.
-- Fixed path to initialize lake to: dirname(static_path) 
+- Fixed path to initialize lake to: dirname(static_path)
 - Fixed outflow = 0, when lake level is below lake threshold. Before a negative value
-  could enter the log function and model would fail. 
+  could enter the log function and model would fail.
 - Fixed the lake storage initialization. For continuation runs (`reinit = false`), this
   caused the lake to be reset to the initial conditions instead of the saved state.
 
@@ -204,14 +208,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## v0.3.0 - 2021-05-10
 
 ### Changed
-- New deposition process for coarse sediment in the reservoirs with a new parameter 
+- New deposition process for coarse sediment in the reservoirs with a new parameter
   `restrapefficiency` in the sediment model.
-- New variables added to the `LandSediment` and `RiverSediment` structs in order to save 
+- New variables added to the `LandSediment` and `RiverSediment` structs in order to save
   more output from the sediment model.
 - Added variables `volume` and `inwater` to `SurfaceFlow` struct, this is convenient for the
   coupling with the water quality model Delwaq.
 - River water level (`h`) and discharge (`q`) forced directly into the `RiverSediment`
-  struct (instead of using the `OverlandFlowSediment` struct first). 
+  struct (instead of using the `OverlandFlowSediment` struct first).
 - Require Julia 1.6 or later.
 
 ### Added
@@ -225,7 +229,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Corrected a bug in sediment deposition in the river (case when incoming sediment load is
   more than the river transport capacity).
 - Fixed update of `snow` and `glacierstore` fields of HBV and SBM concepts by the
-  `glacier_hbv` module. 
+  `glacier_hbv` module.
 
 ## v0.2.0 - 2021-03-26
 
