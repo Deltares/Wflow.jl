@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
-## v0.6.1 - 2022-04-24
+## v0.6.1 - 2022-04-26
 
 ### Fixed
 - Fixed an error with the log file, when writing to a folder that does not (yet) exists.
