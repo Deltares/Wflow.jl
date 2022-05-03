@@ -77,8 +77,8 @@ download(toml_url, toml_path)
 ```julia
 # urls to TOML and NetCDF of the Meuse example model
 toml_url = "https://raw.githubusercontent.com/Deltares/Wflow.jl/master/test/flextopo_config.toml"
-staticmaps = "https://github.com/visr/wflow-artifacts/releases/download/v0.2.8/staticmaps-flex-meuse.nc"
-forcing = "https://github.com/visr/wflow-artifacts/releases/download/v0.2.8/forcing-meuse.nc"
+staticmaps = "https://github.com/visr/wflow-artifacts/releases/download/v0.2.8/staticmaps_flex_meuse.nc"
+forcing = "https://github.com/visr/wflow-artifacts/releases/download/v0.2.8/forcing_meuse.nc"
 
 # create a "data" directory in the current directory
 datadir = joinpath(@__DIR__, "data")
@@ -86,8 +86,8 @@ mkpath(datadir)
 toml_path = joinpath(@__DIR__, "flextopo_config.toml")
 
 # download resources to current and data dirs
-download(staticmaps, joinpath(datadir, "staticmaps-flex-meuse.nc"))
-download(forcing, joinpath(datadir, "forcing-meuse.nc"))
+download(staticmaps, joinpath(datadir, "staticmaps_flex_meuse.nc"))
+download(forcing, joinpath(datadir, "forcing_meuse.nc"))
 download(toml_url, toml_path)
 ```
 
