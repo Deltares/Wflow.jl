@@ -42,8 +42,8 @@ download(staticmaps, joinpath(datadir, &quot;staticmaps-lahn.nc&quot;))
 download(forcing, joinpath(datadir, &quot;forcing-lahn.nc&quot;))
 download(toml_url, toml_path)</code></pre><h2 id="wflow_flextopo_data"><a class="docs-heading-anchor" href="#wflow_flextopo_data">wflow_flextopo</a><a id="wflow_flextopo_data-1"></a><a class="docs-heading-anchor-permalink" href="#wflow_flextopo_data" title="Permalink"></a></h2><pre><code class="language-julia hljs"># urls to TOML and NetCDF of the Meuse example model
 toml_url = &quot;https://raw.githubusercontent.com/Deltares/Wflow.jl/master/test/flextopo_config.toml&quot;
-staticmaps = &quot;https://github.com/visr/wflow-artifacts/releases/download/v0.2.8/staticmaps-flex-meuse.nc&quot;
-forcing = &quot;https://github.com/visr/wflow-artifacts/releases/download/v0.2.8/forcing-meuse.nc&quot;
+staticmaps = &quot;https://github.com/visr/wflow-artifacts/releases/download/v0.2.8/staticmaps_flex_meuse.nc&quot;
+forcing = &quot;https://github.com/visr/wflow-artifacts/releases/download/v0.2.8/forcing_meuse.nc&quot;
 
 # create a &quot;data&quot; directory in the current directory
 datadir = joinpath(@__DIR__, &quot;data&quot;)
@@ -51,8 +51,8 @@ mkpath(datadir)
 toml_path = joinpath(@__DIR__, &quot;flextopo_config.toml&quot;)
 
 # download resources to current and data dirs
-download(staticmaps, joinpath(datadir, &quot;staticmaps-flex-meuse.nc&quot;))
-download(forcing, joinpath(datadir, &quot;forcing-meuse.nc&quot;))
+download(staticmaps, joinpath(datadir, &quot;staticmaps_flex_meuse.nc&quot;))
+download(forcing, joinpath(datadir, &quot;forcing_meuse.nc&quot;))
 download(toml_url, toml_path)</code></pre><h2 id="wflow_sediment"><a class="docs-heading-anchor" href="#wflow_sediment">wflow_sediment</a><a id="wflow_sediment-1"></a><a class="docs-heading-anchor-permalink" href="#wflow_sediment" title="Permalink"></a></h2><pre><code class="language-julia hljs"># urls to TOML and NetCDF of the Moselle example model
 toml_url = &quot;https://raw.githubusercontent.com/Deltares/Wflow.jl/master/test/sediment_config.toml&quot;
 staticmaps = &quot;https://github.com/visr/wflow-artifacts/releases/download/v0.2.3/staticmaps-moselle-sed.nc&quot;
@@ -68,4 +68,4 @@ toml_path = joinpath(@__DIR__, &quot;sediment_config.toml&quot;)
 download(staticmaps, joinpath(datadir, &quot;staticmaps-moselle-sed.nc&quot;))
 download(forcing, joinpath(datadir, &quot;forcing-moselle-sed.nc&quot;))
 download(instates, joinpath(datadir, &quot;instates-moselle-sed.nc&quot;))
-download(toml_url, toml_path)</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../additional_options/">« Additional wflow options</a><a class="docs-footer-nextpage" href="../model-setup/">Building a model from scratch »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.16 on <span class="colophon-date" title="Tuesday 26 April 2022 12:52">Tuesday 26 April 2022</span>. Using Julia version 1.7.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+download(toml_url, toml_path)</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../additional_options/">« Additional wflow options</a><a class="docs-footer-nextpage" href="../model-setup/">Building a model from scratch »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.16 on <span class="colophon-date" title="Tuesday 3 May 2022 13:50">Tuesday 3 May 2022</span>. Using Julia version 1.7.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
