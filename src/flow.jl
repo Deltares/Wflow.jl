@@ -1056,7 +1056,7 @@ function update(sw::ShallowWaterLand{T}, swr::ShallowWaterRiver{T}, network, Δt
                 (
                     sum_at(swr.q, links_at_node.src[inds_riv[i]]) -
                     sum_at(swr.q, links_at_node.dst[inds_riv[i]]) + sw.qx[xd] - sw.qx[i] +
-                    sw.qy[yd] - sw.qy[i]
+                    sw.qy[yd] - sw.qy[i] + swr.inflow[inds_riv[i]]
                 ) * Δt
             if sw.volume[i] < 0.0
                 sw.error[i] = sw.error[i] + abs(sw.volume[i])
