@@ -669,8 +669,8 @@ function shallowwater_river_update(
             else
                 sw.q[i] = 0.0
             end
-            sw.q_av[i] += sw.q[i] * Δt
         end
+        sw.q_av[i] += sw.q[i] * Δt
     end
     if update_h
         @threads for i = 1:sw.n
@@ -1052,31 +1052,33 @@ function update(sw::ShallowWaterLand{T}, swr::ShallowWaterRiver{T}, network, Δt
         sw.volume[i] += sw.runoff[i] * Δt
 
         if sw.rivercells[i]
-            sw.volume[i] +=
-                (
-                    sum_at(swr.q, links_at_node.src[inds_riv[i]]) -
-                    sum_at(swr.q, links_at_node.dst[inds_riv[i]]) + sw.qx[xd] - sw.qx[i] +
-                    sw.qy[yd] - sw.qy[i] + swr.inflow[inds_riv[i]]
-                ) * Δt
-            if sw.volume[i] < 0.0
-                sw.error[i] = sw.error[i] + abs(sw.volume[i])
-                sw.volume[i] = 0.0 # set volume to zero
+            if swr.reservoir_index[inds_riv[i]] == 0 || swr.lake_index[inds_riv[i]] == 0
+                sw.volume[i] +=
+                    (
+                        sum_at(swr.q, links_at_node.src[inds_riv[i]]) -
+                        sum_at(swr.q, links_at_node.dst[inds_riv[i]]) + sw.qx[xd] - sw.qx[i] +
+                        sw.qy[yd] - sw.qy[i] + swr.inflow[inds_riv[i]]
+                    ) * Δt
+                if sw.volume[i] < 0.0
+                    sw.error[i] = sw.error[i] + abs(sw.volume[i])
+                    sw.volume[i] = 0.0 # set volume to zero
+                end
+                if sw.volume[i] >= swr.bankfull_volume[inds_riv[i]]
+                    swr.h[inds_riv[i]] =
+                        swr.bankfull_depth[inds_riv[i]] +
+                        (sw.volume[i] - swr.bankfull_volume[inds_riv[i]]) /
+                        (sw.xl[i] * sw.yl[i])
+                    sw.h[i] = swr.h[inds_riv[i]] - swr.bankfull_depth[inds_riv[i]]
+                    swr.volume[inds_riv[i]] =
+                        swr.h[inds_riv[i]] * swr.dl[inds_riv[i]] * swr.width[inds_riv[i]]
+                else
+                    swr.h[inds_riv[i]] =
+                        sw.volume[i] / (swr.dl[inds_riv[i]] * swr.width[inds_riv[i]])
+                    sw.h[i] = 0.0
+                    swr.volume[inds_riv[i]] = sw.volume[i]
+                end
+                swr.h_av[inds_riv[i]] += swr.h[inds_riv[i]] * Δt
             end
-            if sw.volume[i] >= swr.bankfull_volume[inds_riv[i]]
-                swr.h[inds_riv[i]] =
-                    swr.bankfull_depth[inds_riv[i]] +
-                    (sw.volume[i] - swr.bankfull_volume[inds_riv[i]]) /
-                    (sw.xl[i] * sw.yl[i])
-                sw.h[i] = swr.h[inds_riv[i]] - swr.bankfull_depth[inds_riv[i]]
-                swr.volume[inds_riv[i]] =
-                    swr.h[inds_riv[i]] * swr.dl[inds_riv[i]] * swr.width[inds_riv[i]]
-            else
-                swr.h[inds_riv[i]] =
-                    sw.volume[i] / (swr.dl[inds_riv[i]] * swr.width[inds_riv[i]])
-                sw.h[i] = 0.0
-                swr.volume[inds_riv[i]] = sw.volume[i]
-            end
-            swr.h_av[inds_riv[i]] += swr.h[inds_riv[i]] * Δt
         else
             sw.volume[i] += (sw.qx[xd] - sw.qx[i] + sw.qy[yd] - sw.qy[i]) * Δt
             if sw.volume[i] < 0.0
