@@ -201,6 +201,7 @@ end
         volume = fill(0.0, n),
         error = zeros(n),
         inflow = zeros(n),
+        inflow_wb = zeros(n),
         inwater = zeros(n),
         dl = dl,
         dl_at_link = length_at_link,

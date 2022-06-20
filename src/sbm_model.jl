@@ -43,39 +43,20 @@ function initialize_sbm_model(config::Config)
 
     nc = NCDataset(static_path)
 
-    subcatch_2d =
-        ncread(nc, config, "subcatchment"; optional = false, allow_missing = true)
+    subcatch_2d = ncread(nc, config, "subcatchment"; optional = false, allow_missing = true)
     # indices based on catchment
     inds, rev_inds = active_indices(subcatch_2d, missing)
     n = length(inds)
     modelsize_2d = size(subcatch_2d)
 
-    river_2d = ncread(
-        nc,
-        config,
-        "river_location";
-        optional = false,
-        type = Bool,
-        fill = false,
-    )
+    river_2d =
+        ncread(nc, config, "river_location"; optional = false, type = Bool, fill = false)
     river = river_2d[inds]
-    riverwidth_2d = ncread(
-        nc,
-        config,
-        "lateral.river.width";
-        optional = false,
-        type = Float,
-        fill = 0,
-    )
+    riverwidth_2d =
+        ncread(nc, config, "lateral.river.width"; optional = false, type = Float, fill = 0)
     riverwidth = riverwidth_2d[inds]
-    riverlength_2d = ncread(
-        nc,
-        config,
-        "lateral.river.length";
-        optional = false,
-        type = Float,
-        fill = 0,
-    )
+    riverlength_2d =
+        ncread(nc, config, "lateral.river.length"; optional = false, type = Float, fill = 0)
     riverlength = riverlength_2d[inds]
 
     # read x, y coordinates and calculate cell length [m]
@@ -117,19 +98,12 @@ function initialize_sbm_model(config::Config)
     ldd_2d = ncread(nc, config, "ldd"; optional = false, allow_missing = true)
     ldd = ldd_2d[inds]
     if do_pits
-        pits_2d =
-            ncread(nc, config, "pits"; optional = false, type = Bool, fill = false)
+        pits_2d = ncread(nc, config, "pits"; optional = false, type = Bool, fill = false)
         ldd = set_pit_ldd(pits_2d, ldd, inds)
     end
 
-    βₗ = ncread(
-        nc,
-        config,
-        "lateral.land.slope";
-        optional = false,
-        sel = inds,
-        type = Float,
-    )
+    βₗ =
+        ncread(nc, config, "lateral.land.slope"; optional = false, sel = inds, type = Float)
     clamp!(βₗ, 0.00001, Inf)
 
     dl = map(detdrainlength, ldd, xl, yl)
@@ -223,6 +197,7 @@ function initialize_sbm_model(config::Config)
             ldd_riv,
             inds_riv,
             river,
+            waterbody = Bool.(resindex + lakeindex),
             Δt,
         )
     end
