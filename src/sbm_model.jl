@@ -197,7 +197,7 @@ function initialize_sbm_model(config::Config)
             ldd_riv,
             inds_riv,
             river,
-            waterbody = Bool.(resindex + lakeindex),
+            waterbody = !=(0).(resindex + lakeindex),
             Δt,
         )
     end
