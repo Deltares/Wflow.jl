@@ -269,22 +269,22 @@ model = Wflow.update(model)
 
 @testset "river and overland flow and depth (local inertial)" begin
     q = model.lateral.river.q_av
-    @test sum(q) ≈ 2378.303314149408f0
+    @test sum(q) ≈ 2376.2654640981223f0
     @test q[1622] ≈ 6.022494358676967f-5
     @test q[43] ≈ 5.361075994323386f0
-    @test q[501] ≈ 1.6090513630639423f0
+    @test q[501] ≈ 1.599002904933758f0
     h = model.lateral.river.h_av
     @test h[1622] ≈ 0.0018120996598008478f0
     @test h[43] ≈ 0.30045839067266117f0
-    @test h[501] ≈ 0.03194563401613816f0
+    @test h[501] ≈ 0.03179537356380287f0
     qx = model.lateral.land.qx
     qy = model.lateral.land.qy
     @test qx[[26, 35, 631]] ≈
-          [0.19415976204577542f0, 0.023295880284496282f0, 0.0f0]
+          [0.1885951073757842f0, 0.00036238422284492675f0, 0.0f0]
     @test qy[[26, 35, 631]] ≈
-          [0.1286890746758935f0, 0.019454782778348948f0, 0.0f0]
+          [0.1282900204270636f0, 1.7210587252282261f0, 0.0f0]
     h = model.lateral.land.h
     @test h[[26, 35, 631]] ≈
-          [0.07343682587634684f0, 0.009192239998345179f0, 0.0007343436680217655f0]
+          [0.07342635424871834f0, 0.009121692250262691f0, 0.0006884447197031176f0]
 end
 Wflow.close_files(model, delete_output = false)

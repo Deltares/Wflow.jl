@@ -666,6 +666,13 @@ function shallowwater_river_update(
                     sw.froude_limit,
                     Δt,
                 )
+                # limit q in case water is not available
+                if sw.h[nodes_at_link.src[i]] <= 0.0
+                    sw.q[i] = min(sw.q[i], 0.0)
+                end
+                if sw.h[nodes_at_link.dst[i]] <= 0.0
+                    sw.q[i] = max(sw.q[i], 0.0)
+                end
             else
                 sw.q[i] = 0.0
             end
@@ -985,7 +992,7 @@ function update(sw::ShallowWaterLand{T}, swr::ShallowWaterRiver{T}, network, Δt
             η_x = sw.z[i] + sw.h[i]
             η_xu = sw.z[xu] + sw.h[xu]
             η_max = max(η_x, η_xu)
-            hf = (η_max - sw.zx_max[i])
+            hf = (η_max - sw.zx_max[i])                
 
             if hf > sw.h_thresh
                 length = 0.5 * (sw.xl[i] + sw.xl[xu]) # can be precalculated
@@ -1004,6 +1011,13 @@ function update(sw::ShallowWaterLand{T}, swr::ShallowWaterRiver{T}, network, Δt
                     sw.froude_limit,
                     Δt,
                 )
+                # limit qx in case water is not available
+                if sw.h[i] <= 0.0
+                    sw.qx[i] = min(sw.qx[i], 0.0)
+                end
+                if sw.h[xu] <= 0.0
+                    sw.qx[i] = max(sw.qx[i], 0.0)
+                end
             else
                 sw.qx[i] = 0.0
             end
@@ -1037,6 +1051,13 @@ function update(sw::ShallowWaterLand{T}, swr::ShallowWaterRiver{T}, network, Δt
                     sw.froude_limit,
                     Δt,
                 )
+                # limit qy in case water is not available
+                if sw.h[i] <= 0.0
+                    sw.qy[i] = min(sw.qy[i], 0.0)
+                end
+                if sw.h[yu] <= 0.0
+                    sw.qy[i] = max(sw.qy[i], 0.0)
+                end
             else
                 sw.qy[i] = 0.0
             end
