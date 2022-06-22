@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+- External inflow, reservoirs and lakes are supported in the [SBM + Local inertial river
+  (1D) and land (2D)](@ref) model configuration.
+
 ## v0.6.1 - 2022-04-26
 
 ### Fixed
