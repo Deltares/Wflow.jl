@@ -553,16 +553,8 @@ function initialize_shallowwater_river(
             (dl[dst_node] + dl[src_node])
     end
 
-    # set depth h of reservoir and lake location to bankfull depth
+    # set depth h to zero (including reservoir and lake locations)
     h = fill(0.0, n + length(index_pit))
-    if !isnothing(reservoir)
-        inds_reservoir = findall(>(0), reservoir_index)
-        h[inds_reservoir] = bankfull_depth[inds_reservoir]
-    end
-    if !isnothing(lake)
-        inds_lake = findall(>(0), lake_index)
-        h[inds_lake] = bankfull_depth[inds_lake]
-    end
 
     sw_river = ShallowWaterRiver(
         n = n,
