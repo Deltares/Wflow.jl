@@ -668,7 +668,7 @@ function shallowwater_river_update(
     end
     if update_h
         @threads for i = 1:sw.n
-            if sw.reservoir_index[i] == 0 || sw.lake_index[i] == 0
+            if sw.reservoir_index[i] == 0 && sw.lake_index[i] == 0
                 sw.volume[i] =
                     sw.volume[i] +
                     (
@@ -1055,7 +1055,12 @@ function update(sw::ShallowWaterLand{T}, swr::ShallowWaterRiver{T}, network, Δt
         xd = indices.xd[i]
 
         if sw.rivercells[i]
-            if swr.reservoir_index[inds_riv[i]] == 0 || swr.lake_index[inds_riv[i]] == 0
+            if swr.reservoir_index[inds_riv[i]] != 0 || swr.lake_index[inds_riv[i]] != 0
+                # for reservoir or lake set inflow from land part, these are boundary points
+                # and update of volume and h is not required
+                swr.inflow_wb[inds_riv[i]] =
+                sw.runoff[i] + (sw.qx[xd] - sw.qx[i] + sw.qy[yd] - sw.qy[i])
+            else
                 sw.volume[i] +=
                     (
                         sum_at(swr.q, links_at_node.src[inds_riv[i]]) -
@@ -1083,10 +1088,6 @@ function update(sw::ShallowWaterLand{T}, swr::ShallowWaterRiver{T}, network, Δt
                     swr.volume[inds_riv[i]] = sw.volume[i]
                 end
                 swr.h_av[inds_riv[i]] += swr.h[inds_riv[i]] * Δt
-            else
-                # for reservoir or lake set inflow from land part
-                swr.inflow_wb[inds_riv[i]] =
-                    sw.runoff[i] + (sw.qx[xd] - sw.qx[i] + sw.qy[yd] - sw.qy[i])
             end
         else
             sw.volume[i] +=
