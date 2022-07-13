@@ -71,8 +71,13 @@ river cell. The river length [m] of the boundary cell can be set through the TOM
 `riverlength_bc`, and has a default value of 10 km. The water depth at the boundary cell is
 fixed at 0.0 m.
 
-Simplified reservoirs and lakes models can be included as part of the local inertial model, 
-see also [Reservoirs and Lakes](@ref).
+Simplified [reservoir and lake](@ref reservoir_lake) models can be included as part of the
+local inertial model for river flow (1D) and river and overland flow combined (see next
+section). Reservoir and lake models are included as a boundary point with zero water depth
+for both river and overland flow. For river flow the reservoir or lake model replaces the
+local inertial model at the reservoir or lake location, and ``Q`` is set by the outflow from
+the reservoir or lake. Overland flow at a reservoir or lake location is not allowed to or
+from the downstream river grid cell.
 
 ## Overland flow (2D)
 For the simulation of 2D overland flow on a staggered grid the numerical scheme proposed by
@@ -121,11 +126,10 @@ routing as well as 2D overland flow. The properties `inertial_flow_alpha` and
 `froude_limit`, and the adaptive model time step ``\Delta t`` are explained in more detail
 in the [River routing](@ref) section of the local inertial model.
 
-
 ## Inflow
 External water (supply/abstraction) `inflow` [m``^3`` s``^{-1}``]  can be added to the local
-inertial model for river flow, as a cyclic parameter or as part of forcing (see also [Input
-section](@ref)).
+inertial model for river flow (1D) and river and overland flow combined (1D-2D), as a cyclic
+parameter or as part of forcing (see also [Input section](@ref)).
 
 ## Multi-Threading
 The local inertial model for river flow (1D) and river and overland flow combined (1D-2D)

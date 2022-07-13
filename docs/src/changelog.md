@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Fixed
+- Two issues related to reservoir and lake locations as part of local inertial model: 1)
+  added as boundary points to the update of overland flow, 2) fixed check reservoir and lake
+  location in update river flow.
+- Limit flow (`qx`, `qy` and `q`) in local inertial model when water is not available (set
+  to zero).
+
+### Changed
+- Changed depth `h` for reservoir and lake locations as part of the river local inertial
+  model from `bankfull_depth` to zero.
+
+### Added
+- External inflow to the [SBM + Local inertial river (1D) and land (2D)](@ref) model
+  configuration.
+
 ## v0.6.1 - 2022-04-26
 
 ### Fixed

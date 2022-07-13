@@ -53,14 +53,8 @@ function initialize_surfaceflow_land(
         @info "Using a fixed sub-timestep (seconds) $tstep for kinematic wave overland flow."
     end
 
-    n_land = ncread(
-        nc,
-        config,
-        "lateral.land.n";
-        sel = inds,
-        defaults = 0.072,
-        type = Float,
-    )
+    n_land =
+        ncread(nc, config, "lateral.land.n"; sel = inds, defaults = 0.072, type = Float)
     n = length(inds)
 
     sf_land = SurfaceFlow(
@@ -119,14 +113,8 @@ function initialize_surfaceflow_river(
         @info "Using a fixed sub-timestep (seconds) $tstep for kinematic wave river flow."
     end
 
-    n_river = ncread(
-        nc,
-        config,
-        "lateral.river.n";
-        sel = inds,
-        defaults = 0.036,
-        type = Float,
-    )
+    n_river =
+        ncread(nc, config, "lateral.river.n"; sel = inds, defaults = 0.036, type = Float)
     bankfull_depth = ncread(
         nc,
         config,
@@ -467,7 +455,8 @@ end
     volume::Vector{T} | "m3"            # river volume
     error::Vector{T} | "m3"             # error volume
     inwater::Vector{T} | "m3 s-1"       # lateral inflow [m³ s⁻¹]
-    inflow::Vector{T} | "m3 s-1"        # External inflow (abstraction/supply/demand) [m³ s⁻¹]
+    inflow::Vector{T} | "m3 s-1"        # external inflow (abstraction/supply/demand) [m³ s⁻¹]
+    inflow_wb::Vector{T} | "m3 s-1"     # inflow waterbody (lake or reservoir model) from land part [m³ s⁻¹]
     bankfull_volume::Vector{T} | "m3"   # bankfull volume
     bankfull_depth::Vector{T} | "m"     # bankfull depth
     zb::Vector{T} | "m"                 # river bed elevation
@@ -529,14 +518,8 @@ function initialize_shallowwater_river(
 
     bankfull_volume = bankfull_depth .* width .* dl
 
-    n_river = ncread(
-        nc,
-        config,
-        "lateral.river.n";
-        sel = inds,
-        defaults = 0.036,
-        type = Float,
-    )
+    n_river =
+        ncread(nc, config, "lateral.river.n"; sel = inds, defaults = 0.036, type = Float)
 
     n = length(inds)
     # set ghost points for boundary condition (downstream river outlet): river width, bed
@@ -570,16 +553,8 @@ function initialize_shallowwater_river(
             (dl[dst_node] + dl[src_node])
     end
 
-    # set depth h of reservoir and lake location to bankfull depth
+    # set depth h to zero (including reservoir and lake locations)
     h = fill(0.0, n + length(index_pit))
-    if !isnothing(reservoir)
-        inds_reservoir = findall(>(0), reservoir_index)
-        h[inds_reservoir] = bankfull_depth[inds_reservoir]
-    end
-    if !isnothing(lake)
-        inds_lake = findall(>(0), lake_index)
-        h[inds_lake] = bankfull_depth[inds_lake]
-    end
 
     sw_river = ShallowWaterRiver(
         n = n,
@@ -593,7 +568,7 @@ function initialize_shallowwater_river(
         q_av = zeros(_ne),
         zb_max = zb_max,
         mannings_n = mannings_n,
-        h = fill(0.0, n + length(index_pit)),
+        h = h,
         η_max = zeros(_ne),
         hf = zeros(_ne),
         h_av = zeros(n),
@@ -604,6 +579,7 @@ function initialize_shallowwater_river(
         volume = fill(0.0, n),
         error = zeros(n),
         inflow = zeros(n),
+        inflow_wb = zeros(n),
         inwater = zeros(n),
         dl = dl,
         dl_at_link = length_at_link,
@@ -637,11 +613,22 @@ function shallowwater_river_update(
         # local inertial model (fixed h).
         if !isnothing(sw.reservoir) && sw.reservoir_index[i] != 0
             v = sw.reservoir_index[i]
-            update(sw.reservoir, v, sum_at(sw.q0, links_at_node.src[i]) + inflow_wb[i], Δt)
+            update(
+                sw.reservoir,
+                v,
+                sum_at(sw.q0, links_at_node.src[i]) + inflow_wb[i] + sw.inflow_wb[i],
+                Δt,
+            )
             sw.q[i] = sw.reservoir.outflow[v]
         elseif !isnothing(sw.lake) && sw.lake_index[i] != 0
             v = sw.lake_index[i]
-            update(sw.lake, v, sum_at(sw.q0, links_at_node.src[i]) + inflow_wb[i], doy, Δt)
+            update(
+                sw.lake,
+                v,
+                sum_at(sw.q0, links_at_node.src[i]) + inflow_wb[i] + sw.inflow_wb[i],
+                doy,
+                Δt,
+            )
             sw.q[i] = sw.lake.outflow[v]
         else
             ηsrc = sw.zb[nodes_at_link.src[i]] + sw.h[nodes_at_link.src[i]]
@@ -666,15 +653,22 @@ function shallowwater_river_update(
                     sw.froude_limit,
                     Δt,
                 )
+                # limit q in case water is not available
+                if sw.h[nodes_at_link.src[i]] <= 0.0
+                    sw.q[i] = min(sw.q[i], 0.0)
+                end
+                if sw.h[nodes_at_link.dst[i]] <= 0.0
+                    sw.q[i] = max(sw.q[i], 0.0)
+                end
             else
                 sw.q[i] = 0.0
             end
-            sw.q_av[i] += sw.q[i] * Δt
         end
+        sw.q_av[i] += sw.q[i] * Δt
     end
     if update_h
         @threads for i = 1:sw.n
-            if sw.reservoir_index[i] == 0 || sw.lake_index[i] == 0
+            if sw.reservoir_index[i] == 0 && sw.lake_index[i] == 0
                 sw.volume[i] =
                     sw.volume[i] +
                     (
@@ -782,6 +776,7 @@ function initialize_shallowwater_land(
     ldd_riv,
     inds_riv,
     river,
+    waterbody,
     Δt,
 )
     froude_limit = get(config.model, "froude_limit", true)::Bool # limit flow to subcritical according to Froude number
@@ -791,14 +786,8 @@ function initialize_shallowwater_land(
 
     @info "Local inertial approach is used for overlandflow." alpha theta h_thresh froude_limit
 
-    n_land = ncread(
-        nc,
-        config,
-        "lateral.land.n";
-        sel = inds,
-        defaults = 0.072,
-        type = Float,
-    )
+    n_land =
+        ncread(nc, config, "lateral.land.n"; sel = inds, defaults = 0.072, type = Float)
     elevation_2d = ncread(
         nc,
         config,
@@ -847,6 +836,8 @@ function initialize_shallowwater_land(
     end
 
     # set the effective flow width for river cells in the x and y direction at cell edges.
+    # for waterbody cells (reservoir or lake), h is set to zero (fixed) and not updated, and
+    # overland flow from a downstream cell is not possible (effective flowwidth is zero).
     we_x = copy(xlength)
     we_y = copy(ylength)
     set_effective_flowwidth!(
@@ -856,6 +847,7 @@ function initialize_shallowwater_land(
         graph_riv,
         riverwidth,
         ldd_riv,
+        waterbody,
         indices_reverse[inds_riv],
     )
 
@@ -1004,6 +996,13 @@ function update(sw::ShallowWaterLand{T}, swr::ShallowWaterRiver{T}, network, Δt
                     sw.froude_limit,
                     Δt,
                 )
+                # limit qx in case water is not available
+                if sw.h[i] <= 0.0
+                    sw.qx[i] = min(sw.qx[i], 0.0)
+                end
+                if sw.h[xu] <= 0.0
+                    sw.qx[i] = max(sw.qx[i], 0.0)
+                end
             else
                 sw.qx[i] = 0.0
             end
@@ -1037,6 +1036,13 @@ function update(sw::ShallowWaterLand{T}, swr::ShallowWaterRiver{T}, network, Δt
                     sw.froude_limit,
                     Δt,
                 )
+                # limit qy in case water is not available
+                if sw.h[i] <= 0.0
+                    sw.qy[i] = min(sw.qy[i], 0.0)
+                end
+                if sw.h[yu] <= 0.0
+                    sw.qy[i] = max(sw.qy[i], 0.0)
+                end
             else
                 sw.qy[i] = 0.0
             end
@@ -1048,37 +1054,44 @@ function update(sw::ShallowWaterLand{T}, swr::ShallowWaterRiver{T}, network, Δt
         yd = indices.yd[i]
         xd = indices.xd[i]
 
-        # first add runoff (continuity equation) 
-        sw.volume[i] += sw.runoff[i] * Δt
-
         if sw.rivercells[i]
-            sw.volume[i] +=
-                (
-                    sum_at(swr.q, links_at_node.src[inds_riv[i]]) -
-                    sum_at(swr.q, links_at_node.dst[inds_riv[i]]) + sw.qx[xd] - sw.qx[i] +
-                    sw.qy[yd] - sw.qy[i]
-                ) * Δt
-            if sw.volume[i] < 0.0
-                sw.error[i] = sw.error[i] + abs(sw.volume[i])
-                sw.volume[i] = 0.0 # set volume to zero
-            end
-            if sw.volume[i] >= swr.bankfull_volume[inds_riv[i]]
-                swr.h[inds_riv[i]] =
-                    swr.bankfull_depth[inds_riv[i]] +
-                    (sw.volume[i] - swr.bankfull_volume[inds_riv[i]]) /
-                    (sw.xl[i] * sw.yl[i])
-                sw.h[i] = swr.h[inds_riv[i]] - swr.bankfull_depth[inds_riv[i]]
-                swr.volume[inds_riv[i]] =
-                    swr.h[inds_riv[i]] * swr.dl[inds_riv[i]] * swr.width[inds_riv[i]]
+            if swr.reservoir_index[inds_riv[i]] != 0 || swr.lake_index[inds_riv[i]] != 0
+                # for reservoir or lake set inflow from land part, these are boundary points
+                # and update of volume and h is not required
+                swr.inflow_wb[inds_riv[i]] =
+                sw.runoff[i] + (sw.qx[xd] - sw.qx[i] + sw.qy[yd] - sw.qy[i])
             else
-                swr.h[inds_riv[i]] =
-                    sw.volume[i] / (swr.dl[inds_riv[i]] * swr.width[inds_riv[i]])
-                sw.h[i] = 0.0
-                swr.volume[inds_riv[i]] = sw.volume[i]
+                sw.volume[i] +=
+                    (
+                        sum_at(swr.q, links_at_node.src[inds_riv[i]]) -
+                        sum_at(swr.q, links_at_node.dst[inds_riv[i]]) + sw.qx[xd] -
+                        sw.qx[i] + sw.qy[yd] - sw.qy[i] +
+                        swr.inflow[inds_riv[i]] +
+                        sw.runoff[i]
+                    ) * Δt
+                if sw.volume[i] < 0.0
+                    sw.error[i] = sw.error[i] + abs(sw.volume[i])
+                    sw.volume[i] = 0.0 # set volume to zero
+                end
+                if sw.volume[i] >= swr.bankfull_volume[inds_riv[i]]
+                    swr.h[inds_riv[i]] =
+                        swr.bankfull_depth[inds_riv[i]] +
+                        (sw.volume[i] - swr.bankfull_volume[inds_riv[i]]) /
+                        (sw.xl[i] * sw.yl[i])
+                    sw.h[i] = swr.h[inds_riv[i]] - swr.bankfull_depth[inds_riv[i]]
+                    swr.volume[inds_riv[i]] =
+                        swr.h[inds_riv[i]] * swr.dl[inds_riv[i]] * swr.width[inds_riv[i]]
+                else
+                    swr.h[inds_riv[i]] =
+                        sw.volume[i] / (swr.dl[inds_riv[i]] * swr.width[inds_riv[i]])
+                    sw.h[i] = 0.0
+                    swr.volume[inds_riv[i]] = sw.volume[i]
+                end
+                swr.h_av[inds_riv[i]] += swr.h[inds_riv[i]] * Δt
             end
-            swr.h_av[inds_riv[i]] += swr.h[inds_riv[i]] * Δt
         else
-            sw.volume[i] += (sw.qx[xd] - sw.qx[i] + sw.qy[yd] - sw.qy[i]) * Δt
+            sw.volume[i] +=
+                (sw.qx[xd] - sw.qx[i] + sw.qy[yd] - sw.qy[i] + sw.runoff[i]) * Δt
             if sw.volume[i] < 0.0
                 sw.error[i] = sw.error[i] + abs(sw.volume[i])
                 sw.volume[i] = 0.0 # set volume to zero

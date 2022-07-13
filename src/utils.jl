@@ -276,10 +276,10 @@ function ncread(
         if isnothing(dimname)
             return Base.fill(mod.value, length(sel))
         # set to one uniform value
-        elseif length(mod.value) == 1 
+        elseif length(mod.value) == 1
             return Base.fill(mod.value, (nc.dim[String(dimname)], length(sel)))
         # set to vector of values (should be equal to size dimname)
-        elseif length(mod.value) > 1 
+        elseif length(mod.value) > 1
             @assert length(mod.value) == nc.dim[String(dimname)]
             return repeat(mod.value, 1, length(sel))
         end
@@ -292,10 +292,11 @@ function ncread(
             if length(mod.index) > 1
                 # if index, scale and offset is provided in the TOML as a list.          
                 for i = 1:length(mod.index)
-                    A[:,:,mod.index[i]] =  A[:,:,mod.index[i]] .* mod.scale[i] .+ mod.offset[i]
+                    A[:, :, mod.index[i]] =
+                        A[:, :, mod.index[i]] .* mod.scale[i] .+ mod.offset[i]
                 end
             else
-                A[:,:,mod.index] =  A[:,:,mod.index] .* mod.scale .+ mod.offset
+                A[:, :, mod.index] = A[:, :, mod.index] .* mod.scale .+ mod.offset
             end
         elseif mod.scale != 1.0 || mod.offset != 0.0
             A = A .* mod.scale .+ mod.offset
@@ -536,11 +537,12 @@ end
     set_effective_flowwidth!(we_x, we_y, indices, graph_riv, riverwidth, ldd_riv, inds_rev_riv)
 
 For river cells (D8 flow direction) in a staggered grid the effective flow width at cell
-edges (floodplain) 'we_x' in the x-direction and `we_y` in the y-direction is corrected by
+edges (floodplain) `we_x` in the x-direction and `we_y` in the y-direction is corrected by
 subtracting the river width `riverwidth` from the cell edges. For diagonal directions, the
-`riverwidth`` is split between the two adjacent cell edges. A cell edge at linear index
-`idx` is defined as the edge between node `idx` and the adjacent node (+ CartesianIndex(1,
-0)) for x and (+ CartesianIndex(0, 1)) for y.
+`riverwidth` is split between the two adjacent cell edges. A cell edge at linear index `idx`
+is defined as the edge between node `idx` and the adjacent node (+ CartesianIndex(1, 0)) for
+x and (+ CartesianIndex(0, 1)) for y. For cells that contain a `waterbody` (reservoir or
+lake), the effective flow width is set to zero.
 """
 function set_effective_flowwidth!(
     we_x,
@@ -549,6 +551,7 @@ function set_effective_flowwidth!(
     graph_riv,
     riverwidth,
     ldd_riv,
+    waterbody,
     inds_rev_riv,
 )
 
@@ -562,37 +565,43 @@ function set_effective_flowwidth!(
         idx = inds_rev_riv[v]
         # loop over river D8 directions
         if dir == CartesianIndex(1, 1)
-            we_x[idx] = max(we_x[idx] - 0.5 * w, 0.0)
-            we_y[idx] = max(we_y[idx] - 0.5 * w, 0.0)
+            we_x[idx] = waterbody[v] ? 0.0 : max(we_x[idx] - 0.5 * w, 0.0)
+            we_y[idx] = waterbody[v] ? 0.0 : max(we_y[idx] - 0.5 * w, 0.0)
         elseif dir == CartesianIndex(-1, -1)
             if indices.xd[idx] <= n
-                we_y[indices.xd[idx]] = max(we_y[indices.xd[idx]] - 0.5 * w, 0.0)
+                we_y[indices.xd[idx]] =
+                    waterbody[v] ? 0.0 : max(we_y[indices.xd[idx]] - 0.5 * w, 0.0)
             end
             if indices.yd[idx] <= n
-                we_x[indices.yd[idx]] = max(we_x[indices.yd[idx]] - 0.5 * w, 0.0)
+                we_x[indices.yd[idx]] =
+                    waterbody[v] ? 0.0 : max(we_x[indices.yd[idx]] - 0.5 * w, 0.0)
             end
         elseif dir == CartesianIndex(1, 0)
-            we_y[idx] = max(we_y[idx] - w, 0.0)
+            we_y[idx] = waterbody[v] ? 0.0 : max(we_y[idx] - w, 0.0)
         elseif dir == CartesianIndex(0, 1)
-            we_x[idx] = max(we_x[idx] - w, 0.0)
+            we_x[idx] = waterbody[v] ? 0.0 : max(we_x[idx] - w, 0.0)
         elseif dir == CartesianIndex(-1, 0)
             if indices.xd[idx] <= n
-                we_y[indices.xd[idx]] = max(we_y[indices.xd[idx]] - w, 0.0)
+                we_y[indices.xd[idx]] =
+                    waterbody[v] ? 0.0 : max(we_y[indices.xd[idx]] - w, 0.0)
             end
         elseif dir == CartesianIndex(0, -1)
             if indices.yd[idx] <= n
-                we_x[indices.yd[idx]] = max(we_x[indices.yd[idx]] - w, 0.0)
+                we_x[indices.yd[idx]] =
+                    waterbody[v] ? 0.0 : max(we_x[indices.yd[idx]] - w, 0.0)
             end
         elseif dir == CartesianIndex(1, -1)
             we_y[idx] = max(we_y[idx] - 0.5 * w, 0.0)
             if indices.yd[idx] <= n
-                we_x[indices.yd[idx]] = max(we_x[indices.yd[idx]] - 0.5 * w, 0.0)
+                we_x[indices.yd[idx]] =
+                    waterbody[v] ? 0.0 : max(we_x[indices.yd[idx]] - 0.5 * w, 0.0)
             end
         elseif dir == CartesianIndex(-1, 1)
             if indices.xd[idx] <= n
-                we_y[indices.xd[idx]] = max(we_y[indices.xd[idx]] - 0.5 * w, 0.0)
+                we_y[indices.xd[idx]] =
+                    waterbody[v] ? 0.0 : max(we_y[indices.xd[idx]] - 0.5 * w, 0.0)
             end
-            we_x[idx] = max(we_x[idx] - 0.5 * w, 0.0)
+            we_x[idx] = waterbody[v] ? 0.0 : max(we_x[idx] - 0.5 * w, 0.0)
         end
     end
 end

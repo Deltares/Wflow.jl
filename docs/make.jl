@@ -37,6 +37,7 @@ pages = [
             "model_docs/lateral/gwf.md",
             "model_docs/lateral/kinwave.md",
             "model_docs/lateral/local-inertial.md",
+            "model_docs/lateral/waterbodies.md",
             "model_docs/lateral/sediment_flux.md",
         ],
         "Model parameters" => [
