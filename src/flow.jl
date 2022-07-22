@@ -941,12 +941,11 @@ function update(
         Δt_river = stable_timestep(swr)
         Δt_land = stable_timestep(sw)
         Δt = min(Δt_river, Δt_land)
-        shallowwater_river_update(swr, network.river, Δt, inflow_wb, doy, update_h)
-        update(sw, swr, network, Δt)
-
         if t + Δt > swr.Δt
             Δt = swr.Δt - t
         end
+        shallowwater_river_update(swr, network.river, Δt, inflow_wb, doy, update_h)
+        update(sw, swr, network, Δt)
         t = t + Δt
     end
     swr.q_av ./= swr.Δt
