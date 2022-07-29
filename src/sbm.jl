@@ -78,6 +78,12 @@
     temperature::Vector{T} | "°C"
     # Potential evapotranspiration [mm Δt⁻¹]
     potential_evaporation::Vector{T}
+    # Multiplication factor [-] for epot
+    epot_factor::Vector{T} | "-"
+    # Multiplication factor [-] for precip
+    precip_factor::Vector{T} | "-"
+    # Additive factor [-] for temp
+    temp_add::Vector{T} | "-"
     # Potential transpiration, open water, river and soil evaporation (after subtracting interception from potential_evaporation)
     pottrans_soil::Vector{T}
     # Transpiration [mm Δt⁻¹]
@@ -510,6 +516,30 @@ function initialize_sbm(nc, config, riverfrac, inds)
         defaults = 1.0,
         type = Float,
     )
+    epot_factor = ncread(
+        nc,
+        config,
+        "vertical.epot_factor";
+        sel = inds,
+        defaults = 1.0,
+        type = Float,
+    )
+    precip_factor = ncread(
+        nc,
+        config,
+        "vertical.precip_factor";
+        sel = inds,
+        defaults = 1.0,
+        type = Float,
+    )
+    temp_add = ncread(
+        nc,
+        config,
+        "vertical.temp_add";
+        sel = inds,
+        defaults = 0.0,
+        type = Float,
+    )
 
     cmax, e_r, canopygapfraction, sl, swood, kext = initialize_canopy(nc, config, inds)
 
@@ -571,6 +601,9 @@ function initialize_sbm(nc, config, riverfrac, inds)
         cap_hmax = cap_hmax,
         cap_n = cap_n,
         et_reftopot = et_reftopot,
+        epot_factor = epot_factor,
+        precip_factor = precip_factor,
+        temp_add = temp_add,
         c = svectorscopy(c, Val{maxlayers}()),
         stemflow = fill(mv, n),
         throughfall = fill(mv, n),
@@ -660,22 +693,27 @@ function update_until_snow(sbm::SBM, config)
     modelsnow = get(config.model, "snow", false)::Bool
 
     @threads for i = 1:sbm.n
+        precipitation = sbm.precipitation[i] * sbm.precip_factor[i]
+        potential_evaporation = sbm.potential_evaporation[i] * sbm.epot_factor[i]
+        temperature = sbm.temperature[i] + sbm.temp_add[i]
+
         if do_lai
             cmax = sbm.sl[i] * sbm.leaf_area_index[i] + sbm.swood[i]
             canopygapfraction = exp(-sbm.kext[i] * sbm.leaf_area_index[i])
             ewet =
                 (1.0 - exp(-sbm.kext[i] * sbm.leaf_area_index[i])) *
-                sbm.potential_evaporation[i]
+                potential_evaporation
             e_r =
-                sbm.precipitation[i] > 0.0 ?
-                min(0.25, ewet / max(0.0001, sbm.precipitation[i])) : 0.0
+                precipitation > 0.0 ?
+                min(0.25, ewet / max(0.0001, precipitation)) : 0.0
         else
             cmax = sbm.cmax[i]
             canopygapfraction = sbm.canopygapfraction[i]
             e_r = sbm.e_r[i]
         end
 
-        potential_evaporation = sbm.potential_evaporation[i] * sbm.et_reftopot[i]
+        potential_evaporation = potential_evaporation * sbm.et_reftopot[i]
+        
         # should we include tempcor in SBM?
         # potential_evaporation = PotenEvap #??
 
@@ -684,7 +722,7 @@ function update_until_snow(sbm::SBM, config)
                 cmax,
                 e_r,
                 canopygapfraction,
-                sbm.precipitation[i],
+                precipitation,
                 sbm.canopystorage[i],
                 potential_evaporation,
             )
@@ -692,7 +730,7 @@ function update_until_snow(sbm::SBM, config)
         else
             netinterception, throughfall, stemflow, leftover, interception, canopystorage =
                 rainfall_interception_modrut(
-                    sbm.precipitation[i],
+                    precipitation,
                     potential_evaporation,
                     sbm.canopystorage[i],
                     canopygapfraction,
@@ -703,12 +741,12 @@ function update_until_snow(sbm::SBM, config)
         end
 
         if modelsnow
-            tsoil = sbm.tsoil[i] + sbm.w_soil[i] * (sbm.temperature[i] - sbm.tsoil[i])
+            tsoil = sbm.tsoil[i] + sbm.w_soil[i] * (temperature - sbm.tsoil[i])
             snow, snowwater, snowmelt, rainfallplusmelt, snowfall = snowpack_hbv(
                 sbm.snow[i],
                 sbm.snowwater[i],
                 throughfall + stemflow,
-                sbm.temperature[i],
+                temperature,
                 sbm.tti[i],
                 sbm.tt[i],
                 sbm.ttm[i],
@@ -725,6 +763,7 @@ function update_until_snow(sbm::SBM, config)
         sbm.stemflow[i] = stemflow
         sbm.throughfall[i] = throughfall
         sbm.pottrans_soil[i] = pottrans_soil
+        sbm.temperature[i] = temperature
         if modelsnow
             sbm.snow[i] = snow
             sbm.snowwater[i] = snowwater
