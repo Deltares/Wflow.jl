@@ -78,12 +78,12 @@
     temperature::Vector{T} | "°C"
     # Potential evapotranspiration [mm Δt⁻¹]
     potential_evaporation::Vector{T}
-    # Multiplication factor [-] for epot
-    epot_factor::Vector{T} | "-"
-    # Multiplication factor [-] for precip
-    precip_factor::Vector{T} | "-"
-    # Additive factor [-] for temp
-    temp_add::Vector{T} | "-"
+    # Multiplication factor [-] for potential evaporation
+    potential_evaporation_scale::Vector{T} | "-"
+    # Multiplication factor [-] for precipitation
+    precipitation_scale::Vector{T} | "-"
+    # Offset [°C] for temperature
+    temperature_offset::Vector{T} | "°C"
     # Potential transpiration, open water, river and soil evaporation (after subtracting interception from potential_evaporation)
     pottrans_soil::Vector{T}
     # Transpiration [mm Δt⁻¹]
@@ -516,26 +516,26 @@ function initialize_sbm(nc, config, riverfrac, inds)
         defaults = 1.0,
         type = Float,
     )
-    epot_factor = ncread(
+    potential_evaporation_scale = ncread(
         nc,
         config,
-        "vertical.epot_factor";
+        "vertical.potential_evaporation_scale";
         sel = inds,
         defaults = 1.0,
         type = Float,
     )
-    precip_factor = ncread(
+    precipitation_scale = ncread(
         nc,
         config,
-        "vertical.precip_factor";
+        "vertical.precipitation_scale";
         sel = inds,
         defaults = 1.0,
         type = Float,
     )
-    temp_add = ncread(
+    temperature_offset = ncread(
         nc,
         config,
-        "vertical.temp_add";
+        "vertical.temperature_offset";
         sel = inds,
         defaults = 0.0,
         type = Float,
@@ -601,9 +601,9 @@ function initialize_sbm(nc, config, riverfrac, inds)
         cap_hmax = cap_hmax,
         cap_n = cap_n,
         et_reftopot = et_reftopot,
-        epot_factor = epot_factor,
-        precip_factor = precip_factor,
-        temp_add = temp_add,
+        potential_evaporation_scale = potential_evaporation_scale,
+        precipitation_scale = precipitation_scale,
+        temperature_offset = temperature_offset,
         c = svectorscopy(c, Val{maxlayers}()),
         stemflow = fill(mv, n),
         throughfall = fill(mv, n),
@@ -693,9 +693,9 @@ function update_until_snow(sbm::SBM, config)
     modelsnow = get(config.model, "snow", false)::Bool
 
     @threads for i = 1:sbm.n
-        precipitation = sbm.precipitation[i] * sbm.precip_factor[i]
-        potential_evaporation = sbm.potential_evaporation[i] * sbm.epot_factor[i]
-        temperature = sbm.temperature[i] + sbm.temp_add[i]
+        precipitation = sbm.precipitation[i] * sbm.precipitation_scale[i]
+        potential_evaporation = sbm.potential_evaporation[i] * sbm.potential_evaporation_scale[i]
+        temperature = sbm.temperature[i] + sbm.temperature_offset[i]
 
         if do_lai
             cmax = sbm.sl[i] * sbm.leaf_area_index[i] + sbm.swood[i]
