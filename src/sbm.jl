@@ -764,6 +764,8 @@ function update_until_snow(sbm::SBM, config)
         sbm.throughfall[i] = throughfall
         sbm.pottrans_soil[i] = pottrans_soil
         sbm.temperature[i] = temperature
+        sbm.precipitation[i] = precipitation
+        sbm.potential_evaporation[i] = potential_evaporation
         if modelsnow
             sbm.snow[i] = snow
             sbm.snowwater[i] = snowwater
