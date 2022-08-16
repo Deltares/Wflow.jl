@@ -113,14 +113,8 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
     # Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]
     landtransportmethod = get(config.model, "landtransportmethod", "yalinpart")::String
 
-    altitude = ncread(
-        nc,
-        config,
-        "vertical.altitude";
-        optional = false,
-        sel = inds,
-        type = Float,
-    )
+    altitude =
+        ncread(nc, config, "vertical.altitude"; optional = false, sel = inds, type = Float)
     canopyheight = ncread(
         nc,
         config,
@@ -129,50 +123,15 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
         defaults = 3.0,
         type = Float,
     )
-    erosk =
-        ncread(nc, config, "vertical.erosk"; sel = inds, defaults = 0.6, type = Float)
-    erosspl = ncread(
-        nc,
-        config,
-        "vertical.erosspl";
-        sel = inds,
-        defaults = 2.0,
-        type = Float,
-    )
-    erosov = ncread(
-        nc,
-        config,
-        "vertical.erosov";
-        sel = inds,
-        defaults = 0.9,
-        type = Float,
-    )
-    pathfrac = ncread(
-        nc,
-        config,
-        "vertical.pathfrac";
-        sel = inds,
-        defaults = 0.01,
-        type = Float,
-    )
-    slope = ncread(
-        nc,
-        config,
-        "vertical.slope";
-        sel = inds,
-        defaults = 0.01,
-        type = Float,
-    )
-    usleC = ncread(
-        nc,
-        config,
-        "vertical.usleC";
-        sel = inds,
-        defaults = 0.01,
-        type = Float,
-    )
-    usleK =
-        ncread(nc, config, "vertical.usleK"; sel = inds, defaults = 0.1, type = Float)
+    erosk = ncread(nc, config, "vertical.erosk"; sel = inds, defaults = 0.6, type = Float)
+    erosspl =
+        ncread(nc, config, "vertical.erosspl"; sel = inds, defaults = 2.0, type = Float)
+    erosov = ncread(nc, config, "vertical.erosov"; sel = inds, defaults = 0.9, type = Float)
+    pathfrac =
+        ncread(nc, config, "vertical.pathfrac"; sel = inds, defaults = 0.01, type = Float)
+    slope = ncread(nc, config, "vertical.slope"; sel = inds, defaults = 0.01, type = Float)
+    usleC = ncread(nc, config, "vertical.usleC"; sel = inds, defaults = 0.01, type = Float)
+    usleK = ncread(nc, config, "vertical.usleK"; sel = inds, defaults = 0.1, type = Float)
 
     cmax, _, canopygapfraction, sl, swood, kext = initialize_canopy(nc, config, inds)
 
@@ -182,58 +141,19 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
     ldd_2d = ncread(nc, config, "ldd"; optional = false, allow_missing = true)
     ldd = ldd_2d[inds]
 
-    dmclay = ncread(
-        nc,
-        config,
-        "vertical.dmclay";
-        sel = inds,
-        defaults = 2.0,
-        type = Float,
-    )
-    dmsilt = ncread(
-        nc,
-        config,
-        "vertical.dmsilt";
-        sel = inds,
-        defaults = 10.0,
-        type = Float,
-    )
-    dmsand = ncread(
-        nc,
-        config,
-        "vertical.dmsand";
-        sel = inds,
-        defaults = 200.0,
-        type = Float,
-    )
-    dmsagg = ncread(
-        nc,
-        config,
-        "vertical.dmsagg";
-        sel = inds,
-        defaults = 30.0,
-        type = Float,
-    )
-    dmlagg = ncread(
-        nc,
-        config,
-        "vertical.dmlagg";
-        sel = inds,
-        defaults = 500.0,
-        type = Float,
-    )
-    pclay =
-        ncread(nc, config, "vertical.pclay"; sel = inds, defaults = 0.1, type = Float)
-    psilt =
-        ncread(nc, config, "vertical.psilt"; sel = inds, defaults = 0.1, type = Float)
-    rhos = ncread(
-        nc,
-        config,
-        "vertical.rhosed";
-        sel = inds,
-        defaults = 2650.0,
-        type = Float,
-    )
+    dmclay = ncread(nc, config, "vertical.dmclay"; sel = inds, defaults = 2.0, type = Float)
+    dmsilt =
+        ncread(nc, config, "vertical.dmsilt"; sel = inds, defaults = 10.0, type = Float)
+    dmsand =
+        ncread(nc, config, "vertical.dmsand"; sel = inds, defaults = 200.0, type = Float)
+    dmsagg =
+        ncread(nc, config, "vertical.dmsagg"; sel = inds, defaults = 30.0, type = Float)
+    dmlagg =
+        ncread(nc, config, "vertical.dmlagg"; sel = inds, defaults = 500.0, type = Float)
+    pclay = ncread(nc, config, "vertical.pclay"; sel = inds, defaults = 0.1, type = Float)
+    psilt = ncread(nc, config, "vertical.psilt"; sel = inds, defaults = 0.1, type = Float)
+    rhos =
+        ncread(nc, config, "vertical.rhosed"; sel = inds, defaults = 2650.0, type = Float)
 
     ### Initialize transport capacity variables ###
     rivcell = float(river)

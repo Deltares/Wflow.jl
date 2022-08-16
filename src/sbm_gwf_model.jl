@@ -34,43 +34,23 @@ function initialize_sbm_gwf_model(config::Config)
 
     nc = NCDataset(static_path)
 
-    subcatch_2d =
-        ncread(nc, config, "subcatchment"; optional = false, allow_missing = true)
+    subcatch_2d = ncread(nc, config, "subcatchment"; optional = false, allow_missing = true)
     # indices based on catchment
     inds, rev_inds = active_indices(subcatch_2d, missing)
     n = length(inds)
     modelsize_2d = size(subcatch_2d)
 
-    river_2d = ncread(
-        nc,
-        config,
-        "river_location";
-        optional = false,
-        type = Bool,
-        fill = false,
-    )
+    river_2d =
+        ncread(nc, config, "river_location"; optional = false, type = Bool, fill = false)
     river = river_2d[inds]
-    riverwidth_2d = ncread(
-        nc,
-        config,
-        "lateral.river.width";
-        optional = false,
-        type = Float,
-        fill = 0,
-    )
+    riverwidth_2d =
+        ncread(nc, config, "lateral.river.width"; optional = false, type = Float, fill = 0)
     riverwidth = riverwidth_2d[inds]
-    riverlength_2d = ncread(
-        nc,
-        config,
-        "lateral.river.length";
-        optional = false,
-        type = Float,
-        fill = 0,
-    )
+    riverlength_2d =
+        ncread(nc, config, "lateral.river.length"; optional = false, type = Float, fill = 0)
     riverlength = riverlength_2d[inds]
 
-    altitude =
-        ncread(nc, config, "altitude"; optional = false, sel = inds, type = Float)
+    altitude = ncread(nc, config, "altitude"; optional = false, sel = inds, type = Float)
     # read x, y coordinates and calculate cell length [m]
     y_nc = read_y_axis(nc)
     x_nc = read_x_axis(nc)
@@ -109,14 +89,8 @@ function initialize_sbm_gwf_model(config::Config)
     end
 
     # overland flow (kinematic wave)
-    βₗ = ncread(
-        nc,
-        config,
-        "lateral.land.slope";
-        optional = false,
-        sel = inds,
-        type = Float,
-    )
+    βₗ =
+        ncread(nc, config, "lateral.land.slope"; optional = false, sel = inds, type = Float)
     clamp!(βₗ, 0.00001, Inf)
     ldd_2d = ncread(nc, config, "ldd"; optional = false, allow_missing = true)
 
@@ -187,20 +161,10 @@ function initialize_sbm_gwf_model(config::Config)
         constant_head = ConstantHead{Float}(Float[], Int64[])
     end
 
-    conductivity = ncread(
-        nc,
-        config,
-        "lateral.subsurface.conductivity";
-        sel = inds,
-        type = Float,
-    )
-    specific_yield = ncread(
-        nc,
-        config,
-        "lateral.subsurface.specific_yield";
-        sel = inds,
-        type = Float,
-    )
+    conductivity =
+        ncread(nc, config, "lateral.subsurface.conductivity"; sel = inds, type = Float)
+    specific_yield =
+        ncread(nc, config, "lateral.subsurface.specific_yield"; sel = inds, type = Float)
 
     connectivity = Connectivity(inds, rev_inds, xl, yl)
     initial_head = altitude .- Float(0.10) # cold state for groundwater head
@@ -239,13 +203,8 @@ function initialize_sbm_gwf_model(config::Config)
         sel = inds_riv,
         type = Float,
     )
-    river_bottom = ncread(
-        nc,
-        config,
-        "lateral.subsurface.river_bottom";
-        sel = inds_riv,
-        type = Float,
-    )
+    river_bottom =
+        ncread(nc, config, "lateral.subsurface.river_bottom"; sel = inds_riv, type = Float)
 
     river_flux = fill(mv, nriv)
     river_stage = fill(mv, nriv)
@@ -264,8 +223,7 @@ function initialize_sbm_gwf_model(config::Config)
 
     # drain boundary of unconfined aquifer (optional)
     if do_drains
-        drain_2d =
-            ncread(nc, config, "lateral.subsurface.drain"; type = Bool, fill = false)
+        drain_2d = ncread(nc, config, "lateral.subsurface.drain"; type = Bool, fill = false)
 
         drain = drain_2d[inds]
         # check if drain occurs where overland flow is not possible (sw = 0.0)

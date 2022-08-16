@@ -2,12 +2,8 @@ using Wflow
 using Documenter
 
 pages = [
-    "Introduction" => [
-        "index.md",
-        "intro/use_cases.md",
-        "intro/publications.md",
-        "changelog.md"
-    ],
+    "Introduction" =>
+        ["index.md", "intro/use_cases.md", "intro/publications.md", "changelog.md"],
     "User guide" => [
         "user_guide/intro.md",
         "user_guide/install.md",
@@ -19,9 +15,8 @@ pages = [
             "user_guide/step5_output.md",
             "user_guide/additional_options.md",
             "user_guide/sample_data.md",
-            ],
+        ],
         "user_guide/model-setup.md",
-
     ],
     "Model documentation" => [
         "model_docs/intro.md",
@@ -44,8 +39,8 @@ pages = [
             "model_docs/params_vertical.md",
             "model_docs/params_lateral.md",
             "model_docs/structures.md",
-        ]
-    ],       
+        ],
+    ],
 ]
 
 makedocs(;

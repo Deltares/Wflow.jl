@@ -46,17 +46,19 @@ function initialize_flextopo_model(config::Config)
     )
 
     select_snow = get(config.model, "select_snow", ["common_snow_hbv"])
-    select_interception = get(config.model, "select_interception", ["interception_overflow"])
-    select_hortonponding = get(config.model, "select_hortonponding", ["hortonponding_no_storage"])
-    select_hortonrunoff = get(config.model, "select_hortonrunoff", ["hortonrunoff_no_storage"])
+    select_interception =
+        get(config.model, "select_interception", ["interception_overflow"])
+    select_hortonponding =
+        get(config.model, "select_hortonponding", ["hortonponding_no_storage"])
+    select_hortonrunoff =
+        get(config.model, "select_hortonrunoff", ["hortonrunoff_no_storage"])
     select_rootzone = get(config.model, "select_rootzone", ["rootzone_storage"])
     select_fast = get(config.model, "select_fast", ["fast_storage"])
     select_slow = get(config.model, "select_slow", ["common_slow_storage"])
 
     nc = NCDataset(static_path)
 
-    subcatch_2d =
-        ncread(nc, config, "subcatchment"; optional = false, allow_missing = true)
+    subcatch_2d = ncread(nc, config, "subcatchment"; optional = false, allow_missing = true)
     # indices based on catchment
     inds, rev_inds = active_indices(subcatch_2d, missing)
     n = length(inds)
@@ -122,49 +124,24 @@ function initialize_flextopo_model(config::Config)
             type = Float,
         ) .* (Δt / basetimestep)
 
-    tt = ncread(
-        nc,
-        config,
-        "vertical.tt";
-        sel = inds,
-        defaults = -1.41934,
-        type = Float,
-    )
+    tt = ncread(nc, config, "vertical.tt"; sel = inds, defaults = -1.41934, type = Float)
 
     tti = ncread(nc, config, "vertical.tti"; sel = inds, defaults = 1.0, type = Float)
 
-    ttm = ncread(
-        nc,
-        config,
-        "vertical.ttm";
-        sel = inds,
-        defaults = -1.41934,
-        type = Float,
-    )
+    ttm = ncread(nc, config, "vertical.ttm"; sel = inds, defaults = -1.41934, type = Float)
 
     whc = ncread(nc, config, "vertical.whc"; sel = inds, defaults = 0.1, type = Float)
 
-    cfr =
-        ncread(nc, config, "vertical.cfr"; sel = inds, defaults = 0.05, type = Float)
+    cfr = ncread(nc, config, "vertical.cfr"; sel = inds, defaults = 0.05, type = Float)
 
     #parameters which are not class specific
-    pcorr =
-        ncread(nc, config, "vertical.pcorr"; sel = inds, defaults = 1.0, type = Float)
-    ecorr =
-        ncread(nc, config, "vertical.ecorr"; sel = inds, defaults = 1.0, type = Float)
-    rfcf =
-        ncread(nc, config, "vertical.rfcf"; sel = inds, defaults = 1.0, type = Float)
-    sfcf =
-        ncread(nc, config, "vertical.sfcf"; sel = inds, defaults = 1.0, type = Float)
+    pcorr = ncread(nc, config, "vertical.pcorr"; sel = inds, defaults = 1.0, type = Float)
+    ecorr = ncread(nc, config, "vertical.ecorr"; sel = inds, defaults = 1.0, type = Float)
+    rfcf = ncread(nc, config, "vertical.rfcf"; sel = inds, defaults = 1.0, type = Float)
+    sfcf = ncread(nc, config, "vertical.sfcf"; sel = inds, defaults = 1.0, type = Float)
     ks =
-        ncread(
-            nc,
-            config,
-            "vertical.ks";
-            sel = inds,
-            defaults = 0.006,
-            type = Float,
-        ) .* (Δt / basetimestep)
+        ncread(nc, config, "vertical.ks"; sel = inds, defaults = 0.006, type = Float) .*
+        (Δt / basetimestep)
 
     #initialize parameters that differ per class
     hrufrac = ncread(
@@ -441,7 +418,7 @@ function initialize_flextopo_model(config::Config)
         rootzonestorage = svectorscopy(srmax, Val{nclass}()),
         faststorage = 0.0 .* svectorscopy(srmax, Val{nclass}()),
         srootzone_over_srmax = svectorscopy(srootzone_over_srmax, Val{nclass}()),
-        slowstorage = zeros(Float, n) .+ 30.0, 
+        slowstorage = zeros(Float, n) .+ 30.0,
         #states previous time step
         states_m = fill(mv, n),
         states_ = svectorscopy(states_, Val{nclass}()),
@@ -499,32 +476,14 @@ function initialize_flextopo_model(config::Config)
     )
 
     modelsize_2d = size(subcatch_2d)
-    river_2d = ncread(
-        nc,
-        config,
-        "river_location";
-        optional = false,
-        type = Bool,
-        fill = false,
-    )
+    river_2d =
+        ncread(nc, config, "river_location"; optional = false, type = Bool, fill = false)
     river = river_2d[inds]
-    riverwidth_2d = ncread(
-        nc,
-        config,
-        "lateral.river.width";
-        optional = false,
-        type = Float,
-        fill = 0,
-    )
+    riverwidth_2d =
+        ncread(nc, config, "lateral.river.width"; optional = false, type = Float, fill = 0)
     riverwidth = riverwidth_2d[inds]
-    riverlength_2d = ncread(
-        nc,
-        config,
-        "lateral.river.length";
-        optional = false,
-        type = Float,
-        fill = 0,
-    )
+    riverlength_2d =
+        ncread(nc, config, "lateral.river.length"; optional = false, type = Float, fill = 0)
     riverlength = riverlength_2d[inds]
 
     inds_riv, rev_inds_riv = active_indices(river_2d, 0)
@@ -554,19 +513,12 @@ function initialize_flextopo_model(config::Config)
     ldd_2d = ncread(nc, config, "ldd"; optional = false, allow_missing = true)
     ldd = ldd_2d[inds]
     if do_pits
-        pits_2d =
-            ncread(nc, config, "pits"; optional = false, type = Bool, fill = false)
+        pits_2d = ncread(nc, config, "pits"; optional = false, type = Bool, fill = false)
         ldd = set_pit_ldd(pits_2d, ldd, inds)
     end
 
-    βₗ = ncread(
-        nc,
-        config,
-        "lateral.land.slope";
-        optional = false,
-        sel = inds,
-        type = Float,
-    )
+    βₗ =
+        ncread(nc, config, "lateral.land.slope"; optional = false, sel = inds, type = Float)
     clamp!(βₗ, 0.00001, Inf)
 
     dl = map(detdrainlength, ldd, xl, yl)
@@ -729,7 +681,12 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:FlextopoModel}
 
     #lateral snow transport
     if get(config.model, "masswasting", false)::Bool
-        lateral_snow_transport!(vertical.snow, vertical.snowwater, lateral.land.sl, network.land)
+        lateral_snow_transport!(
+            vertical.snow,
+            vertical.snowwater,
+            lateral.land.sl,
+            network.land,
+        )
     end
 
     if get(config.model, "glacier", false)::Bool

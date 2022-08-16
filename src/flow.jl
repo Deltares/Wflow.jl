@@ -1059,7 +1059,7 @@ function update(sw::ShallowWaterLand{T}, swr::ShallowWaterRiver{T}, network, Δt
                 # for reservoir or lake set inflow from land part, these are boundary points
                 # and update of volume and h is not required
                 swr.inflow_wb[inds_riv[i]] =
-                sw.runoff[i] + (sw.qx[xd] - sw.qx[i] + sw.qy[yd] - sw.qy[i])
+                    sw.runoff[i] + (sw.qx[xd] - sw.qx[i] + sw.qy[yd] - sw.qy[i])
             else
                 sw.volume[i] +=
                     (

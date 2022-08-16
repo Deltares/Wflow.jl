@@ -124,7 +124,7 @@ function ncvar_name_modifier(var; config = nothing)
             offset = param(var, "offset", 0.0)
             if haskey(var, "layer") || haskey(var, "class")
                 haskey(var, "layer") ? dim_name = "layer" : dim_name = "class"
-                if length(var[dim_name])>1
+                if length(var[dim_name]) > 1
                     # if modifier is provided as a list for each dim item
                     indices = []
                     for i = 1:length(var[dim_name])
@@ -132,18 +132,22 @@ function ncvar_name_modifier(var; config = nothing)
                         @info "NetCDF parameter `$ncname` is modified with scale `$(scale[i])` and offset `$(offset[i])` at index `$index`."
                         push!(indices, index)
                     end
-                    modifier = (scale = scale, offset = offset, value = nothing, index = indices)
-                else 
+                    modifier =
+                        (scale = scale, offset = offset, value = nothing, index = indices)
+                else
                     index = get_index_dimension(var, config, var[dim_name])
-                    modifier = (scale = scale, offset = offset, value = nothing, index = index)
+                    modifier =
+                        (scale = scale, offset = offset, value = nothing, index = index)
                     @info "NetCDF parameter `$ncname` is modified with scale `$scale` and offset `$offset` at index `$index`."
                 end
-            else 
-                modifier = (scale = scale, offset = offset, value = nothing, index = nothing)
+            else
+                modifier =
+                    (scale = scale, offset = offset, value = nothing, index = nothing)
                 @info "NetCDF parameter `$ncname` is modified with scale `$scale` and offset `$offset`."
             end
         elseif haskey(var, "value")
-            modifier = (scale = 1.0, offset = 0.0, value = param(var, "value"), index = nothing)
+            modifier =
+                (scale = 1.0, offset = 0.0, value = param(var, "value"), index = nothing)
         else
             error("Unrecognized modifier $(Dict(var))")
         end
@@ -451,7 +455,10 @@ end
 "set extra dimension in output NetCDF file"
 function set_extradim_netcdf(
     ds,
-    extra_dim::NamedTuple{(:name, :value),Tuple{String,Vector{T}}} where T <: Union{String, Float64},
+    extra_dim::NamedTuple{
+        (:name, :value),
+        Tuple{String,Vector{T}},
+    } where {T<:Union{String,Float64}},
 )
     # the axis attribute `Z` is required to import this type of 3D data by Delft-FEWS the
     # values of this dimension `extra_dim.value` should be of type Float64
@@ -459,8 +466,11 @@ function set_extradim_netcdf(
         attributes =
             ["long_name" => "layer_index", "standard_name" => "layer_index", "axis" => "Z"]
     elseif extra_dim.name == "classes"
-        attributes =
-            ["long_name" => extra_dim.name, "standard_name" => extra_dim.name, "axis" => "Z"]
+        attributes = [
+            "long_name" => extra_dim.name,
+            "standard_name" => extra_dim.name,
+            "axis" => "Z",
+        ]
     end
     defVar(ds, extra_dim.name, extra_dim.value, (extra_dim.name,), attrib = attributes)
     return nothing
@@ -920,7 +930,7 @@ function prepare_writer(
             time_units,
             extra_dim,
             sizeinmetres,
-            deflatelevel = deflatelevel
+            deflatelevel = deflatelevel,
         )
     else
         nc_path = nothing
@@ -1591,8 +1601,8 @@ function get_index_dimension(var, model)::Int
     if haskey(var, "layer")
         inds = collect(1:vertical.maxlayers)
         index = inds[var["layer"]]
-    elseif haskey(var,"class")
-        index = findfirst(x->x==var["class"], vertical.classes)
+    elseif haskey(var, "class")
+        index = findfirst(x -> x == var["class"], vertical.classes)
     else
         error("Unrecognized or missing dimension name to index $(var)")
     end
@@ -1605,9 +1615,9 @@ function get_index_dimension(var, config::Config, dim_value)::Int
         v = get(config.model, "thicknesslayers", Float[])
         inds = collect(1:length(v)+1)
         index = inds[dim_value]
-    elseif haskey(var,"class")
+    elseif haskey(var, "class")
         classes = get(config.model, "classes", "")
-        index = findfirst(x->x==dim_value, classes)
+        index = findfirst(x -> x == dim_value, classes)
     else
         error("Unrecognized or missing dimension name to index $(var)")
     end

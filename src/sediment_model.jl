@@ -23,39 +23,20 @@ function initialize_sediment_model(config::Config)
     nc = NCDataset(static_path)
     dims = dimnames(nc[param(config, "input.subcatchment")])
 
-    subcatch_2d =
-        ncread(nc, config, "subcatchment"; optional = false, allow_missing = true)
+    subcatch_2d = ncread(nc, config, "subcatchment"; optional = false, allow_missing = true)
     # indices based on catchment
     inds, rev_inds = active_indices(subcatch_2d, missing)
     n = length(inds)
     modelsize_2d = size(subcatch_2d)
 
-    river_2d = ncread(
-        nc,
-        config,
-        "river_location";
-        optional = false,
-        type = Bool,
-        fill = false,
-    )
+    river_2d =
+        ncread(nc, config, "river_location"; optional = false, type = Bool, fill = false)
     river = river_2d[inds]
-    riverwidth_2d = ncread(
-        nc,
-        config,
-        "lateral.river.width";
-        optional = false,
-        type = Float,
-        fill = 0,
-    )
+    riverwidth_2d =
+        ncread(nc, config, "lateral.river.width"; optional = false, type = Float, fill = 0)
     riverwidth = riverwidth_2d[inds]
-    riverlength_2d = ncread(
-        nc,
-        config,
-        "lateral.river.length";
-        optional = false,
-        type = Float,
-        fill = 0,
-    )
+    riverlength_2d =
+        ncread(nc, config, "lateral.river.length"; optional = false, type = Float, fill = 0)
     riverlength = riverlength_2d[inds]
 
     inds_riv, rev_inds_riv = active_indices(river_2d, 0)
@@ -116,14 +97,8 @@ function initialize_sediment_model(config::Config)
     # River processes
 
     # the indices of the river cells in the land(+river) cell vector
-    βₗ = ncread(
-        nc,
-        config,
-        "lateral.land.slope";
-        optional = false,
-        sel = inds,
-        type = Float,
-    )
+    βₗ =
+        ncread(nc, config, "lateral.land.slope"; optional = false, sel = inds, type = Float)
     clamp!(βₗ, 0.00001, Inf)
 
     riverlength = riverlength_2d[inds_riv]

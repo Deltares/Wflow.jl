@@ -374,7 +374,9 @@ function initialize_natural_lake(config, nc, inds_riv, nriv, pits, Δt)
 
         if lake_storfunc[i] == 2
             csv_path = joinpath(path, "lake_sh_$lakeloc.csv")
-            @info("read a storage curve from CSV file $csv_path, for lake location $lakeloc")
+            @info(
+                "read a storage curve from CSV file $csv_path, for lake location $lakeloc"
+            )
             sh[i] = read_sh_csv(csv_path)
         end
 

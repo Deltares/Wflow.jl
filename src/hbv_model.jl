@@ -24,8 +24,7 @@ function initialize_hbv_model(config::Config)
 
     nc = NCDataset(static_path)
 
-    subcatch_2d =
-        ncread(nc, config, "subcatchment"; optional = false, allow_missing = true)
+    subcatch_2d = ncread(nc, config, "subcatchment"; optional = false, allow_missing = true)
     # indices based on catchment
     inds, rev_inds = active_indices(subcatch_2d, missing)
     n = length(inds)
@@ -39,23 +38,9 @@ function initialize_hbv_model(config::Config)
             defaults = 3.75653,
             type = Float,
         ) .* (Δt / basetimestep)
-    tt = ncread(
-        nc,
-        config,
-        "vertical.tt";
-        sel = inds,
-        defaults = -1.41934,
-        type = Float,
-    )
+    tt = ncread(nc, config, "vertical.tt"; sel = inds, defaults = -1.41934, type = Float)
     tti = ncread(nc, config, "vertical.tti"; sel = inds, defaults = 1.0, type = Float)
-    ttm = ncread(
-        nc,
-        config,
-        "vertical.ttm";
-        sel = inds,
-        defaults = -1.41934,
-        type = Float,
-    )
+    ttm = ncread(nc, config, "vertical.ttm"; sel = inds, defaults = -1.41934, type = Float)
     whc = ncread(nc, config, "vertical.whc"; sel = inds, defaults = 0.1, type = Float)
     # glacier parameters
     g_tt = ncread(
@@ -105,24 +90,12 @@ function initialize_hbv_model(config::Config)
         fill = 0.0,
     )
     fc = ncread(nc, config, "vertical.fc"; sel = inds, defaults = 260.0, type = Float)
-    betaseepage = ncread(
-        nc,
-        config,
-        "vertical.betaseepage";
-        sel = inds,
-        defaults = 1.8,
-        type = Float,
-    )
+    betaseepage =
+        ncread(nc, config, "vertical.betaseepage"; sel = inds, defaults = 1.8, type = Float)
     lp = ncread(nc, config, "vertical.lp"; sel = inds, defaults = 0.53, type = Float)
     k4 =
-        ncread(
-            nc,
-            config,
-            "vertical.k4";
-            sel = inds,
-            defaults = 0.02307,
-            type = Float,
-        ) .* (Δt / basetimestep)
+        ncread(nc, config, "vertical.k4"; sel = inds, defaults = 0.02307, type = Float) .*
+        (Δt / basetimestep)
     kquickflow =
         ncread(
             nc,
@@ -132,75 +105,32 @@ function initialize_hbv_model(config::Config)
             defaults = 0.09880,
             type = Float,
         ) .* (Δt / basetimestep)
-    suz =
-        ncread(nc, config, "vertical.suz"; sel = inds, defaults = 100.0, type = Float)
+    suz = ncread(nc, config, "vertical.suz"; sel = inds, defaults = 100.0, type = Float)
     k0 =
-        ncread(
-            nc,
-            config,
-            "vertical.k0";
-            sel = inds,
-            defaults = 0.30,
-            type = Float,
-        ) .* (Δt / basetimestep)
+        ncread(nc, config, "vertical.k0"; sel = inds, defaults = 0.30, type = Float) .*
+        (Δt / basetimestep)
     khq =
-        ncread(
-            nc,
-            config,
-            "vertical.khq";
-            sel = inds,
-            defaults = 0.09880,
-            type = Float,
-        ) .* (Δt / basetimestep)
+        ncread(nc, config, "vertical.khq"; sel = inds, defaults = 0.09880, type = Float) .*
+        (Δt / basetimestep)
     hq =
-        ncread(
-            nc,
-            config,
-            "vertical.hq";
-            sel = inds,
-            defaults = 3.27,
-            type = Float,
-        ) .* (Δt / basetimestep)
-    alphanl = ncread(
-        nc,
-        config,
-        "vertical.alphanl";
-        sel = inds,
-        defaults = 1.1,
-        type = Float,
-    )
+        ncread(nc, config, "vertical.hq"; sel = inds, defaults = 3.27, type = Float) .*
+        (Δt / basetimestep)
+    alphanl =
+        ncread(nc, config, "vertical.alphanl"; sel = inds, defaults = 1.1, type = Float)
     perc =
-        ncread(
-            nc,
-            config,
-            "vertical.perc";
-            sel = inds,
-            defaults = 0.4,
-            type = Float,
-        ) .* (Δt / basetimestep)
-    cfr =
-        ncread(nc, config, "vertical.cfr"; sel = inds, defaults = 0.05, type = Float)
-    pcorr =
-        ncread(nc, config, "vertical.pcorr"; sel = inds, defaults = 1.0, type = Float)
-    rfcf =
-        ncread(nc, config, "vertical.rfcf"; sel = inds, defaults = 1.0, type = Float)
-    sfcf =
-        ncread(nc, config, "vertical.sfcf"; sel = inds, defaults = 1.0, type = Float)
+        ncread(nc, config, "vertical.perc"; sel = inds, defaults = 0.4, type = Float) .*
+        (Δt / basetimestep)
+    cfr = ncread(nc, config, "vertical.cfr"; sel = inds, defaults = 0.05, type = Float)
+    pcorr = ncread(nc, config, "vertical.pcorr"; sel = inds, defaults = 1.0, type = Float)
+    rfcf = ncread(nc, config, "vertical.rfcf"; sel = inds, defaults = 1.0, type = Float)
+    sfcf = ncread(nc, config, "vertical.sfcf"; sel = inds, defaults = 1.0, type = Float)
     cflux =
-        ncread(
-            nc,
-            config,
-            "vertical.cflux";
-            sel = inds,
-            defaults = 2.0,
-            type = Float,
-        ) .* (Δt / basetimestep)
+        ncread(nc, config, "vertical.cflux"; sel = inds, defaults = 2.0, type = Float) .*
+        (Δt / basetimestep)
     icf = ncread(nc, config, "vertical.icf"; sel = inds, defaults = 2.0, type = Float)
-    cevpf =
-        ncread(nc, config, "vertical.cevpf"; sel = inds, defaults = 1.0, type = Float)
+    cevpf = ncread(nc, config, "vertical.cevpf"; sel = inds, defaults = 1.0, type = Float)
     epf = ncread(nc, config, "vertical.epf"; sel = inds, defaults = 1.0, type = Float)
-    ecorr =
-        ncread(nc, config, "vertical.ecorr"; sel = inds, defaults = 1.0, type = Float)
+    ecorr = ncread(nc, config, "vertical.ecorr"; sel = inds, defaults = 1.0, type = Float)
 
     # read x, y coordinates and calculate cell length [m]
     y_nc = read_y_axis(nc)
@@ -278,32 +208,14 @@ function initialize_hbv_model(config::Config)
     )
 
     modelsize_2d = size(subcatch_2d)
-    river_2d = ncread(
-        nc,
-        config,
-        "river_location";
-        optional = false,
-        type = Bool,
-        fill = false,
-    )
+    river_2d =
+        ncread(nc, config, "river_location"; optional = false, type = Bool, fill = false)
     river = river_2d[inds]
-    riverwidth_2d = ncread(
-        nc,
-        config,
-        "lateral.river.width";
-        optional = false,
-        type = Float,
-        fill = 0,
-    )
+    riverwidth_2d =
+        ncread(nc, config, "lateral.river.width"; optional = false, type = Float, fill = 0)
     riverwidth = riverwidth_2d[inds]
-    riverlength_2d = ncread(
-        nc,
-        config,
-        "lateral.river.length";
-        optional = false,
-        type = Float,
-        fill = 0,
-    )
+    riverlength_2d =
+        ncread(nc, config, "lateral.river.length"; optional = false, type = Float, fill = 0)
     riverlength = riverlength_2d[inds]
 
     inds_riv, rev_inds_riv = active_indices(river_2d, 0)
@@ -333,19 +245,12 @@ function initialize_hbv_model(config::Config)
     ldd_2d = ncread(nc, config, "ldd"; optional = false, allow_missing = true)
     ldd = ldd_2d[inds]
     if do_pits
-        pits_2d =
-            ncread(nc, config, "pits"; optional = false, type = Bool, fill = false)
+        pits_2d = ncread(nc, config, "pits"; optional = false, type = Bool, fill = false)
         ldd = set_pit_ldd(pits_2d, ldd, inds)
     end
 
-    βₗ = ncread(
-        nc,
-        config,
-        "lateral.land.slope";
-        optional = false,
-        sel = inds,
-        type = Float,
-    )
+    βₗ =
+        ncread(nc, config, "lateral.land.slope"; optional = false, sel = inds, type = Float)
     clamp!(βₗ, 0.00001, Inf)
 
     dl = map(detdrainlength, ldd, xl, yl)

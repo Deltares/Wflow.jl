@@ -226,14 +226,8 @@ function initialize_canopy(nc, config, inds)
             sel = inds,
             type = Float,
         )
-        kext = ncread(
-            nc,
-            config,
-            "vertical.kext";
-            optional = false,
-            sel = inds,
-            type = Float,
-        )
+        kext =
+            ncread(nc, config, "vertical.kext"; optional = false, sel = inds, type = Float)
         cmax = fill(mv, n)
         e_r = fill(mv, n)
         canopygapfraction = fill(mv, n)
@@ -242,22 +236,9 @@ function initialize_canopy(nc, config, inds)
         swood = fill(mv, n)
         kext = fill(mv, n)
         # cmax, e_r, canopygapfraction only required when leaf area index climatology not provided
-        cmax = ncread(
-            nc,
-            config,
-            "vertical.cmax";
-            sel = inds,
-            defaults = 1.0,
-            type = Float,
-        )
-        e_r = ncread(
-            nc,
-            config,
-            "vertical.eoverr";
-            sel = inds,
-            defaults = 0.1,
-            type = Float,
-        )
+        cmax = ncread(nc, config, "vertical.cmax"; sel = inds, defaults = 1.0, type = Float)
+        e_r =
+            ncread(nc, config, "vertical.eoverr"; sel = inds, defaults = 0.1, type = Float)
         canopygapfraction = ncread(
             nc,
             config,
@@ -306,14 +287,8 @@ function initialize_sbm(nc, config, riverfrac, inds)
             defaults = 0.1125,
             type = Float,
         ) .* (Δt / basetimestep)
-    cf_soil = ncread(
-        nc,
-        config,
-        "vertical.cf_soil";
-        sel = inds,
-        defaults = 0.038,
-        type = Float,
-    )
+    cf_soil =
+        ncread(nc, config, "vertical.cf_soil"; sel = inds, defaults = 0.038, type = Float)
     # glacier parameters
     g_tt = ncread(
         nc,
@@ -458,22 +433,10 @@ function initialize_sbm(nc, config, riverfrac, inds)
     end
 
     # fraction open water and compacted area (land cover)
-    waterfrac = ncread(
-        nc,
-        config,
-        "vertical.waterfrac";
-        sel = inds,
-        defaults = 0.0,
-        type = Float,
-    )
-    pathfrac = ncread(
-        nc,
-        config,
-        "vertical.pathfrac";
-        sel = inds,
-        defaults = 0.01,
-        type = Float,
-    )
+    waterfrac =
+        ncread(nc, config, "vertical.waterfrac"; sel = inds, defaults = 0.0, type = Float)
+    pathfrac =
+        ncread(nc, config, "vertical.pathfrac"; sel = inds, defaults = 0.01, type = Float)
 
     # vegetation parameters
     rootingdepth = ncread(
@@ -492,24 +455,11 @@ function initialize_sbm(nc, config, riverfrac, inds)
         defaults = -500.0,
         type = Float,
     )
-    cap_hmax = ncread(
-        nc,
-        config,
-        "vertical.cap_hmax";
-        sel = inds,
-        defaults = 2000.0,
-        type = Float,
-    )
-    cap_n =
-        ncread(nc, config, "vertical.cap_n"; sel = inds, defaults = 2.0, type = Float)
-    et_reftopot = ncread(
-        nc,
-        config,
-        "vertical.et_reftopot";
-        sel = inds,
-        defaults = 1.0,
-        type = Float,
-    )
+    cap_hmax =
+        ncread(nc, config, "vertical.cap_hmax"; sel = inds, defaults = 2000.0, type = Float)
+    cap_n = ncread(nc, config, "vertical.cap_n"; sel = inds, defaults = 2.0, type = Float)
+    et_reftopot =
+        ncread(nc, config, "vertical.et_reftopot"; sel = inds, defaults = 1.0, type = Float)
 
     cmax, e_r, canopygapfraction, sl, swood, kext = initialize_canopy(nc, config, inds)
 

@@ -170,7 +170,7 @@ function set_states(instate_path, model, state_ncnames; type = nothing, dimname 
                 end
                 # set state in model object
                 param(model, state) .= svectorscopy(A, Val{size(A)[1]}())
-            # 3 dims (x,y,time)
+                # 3 dims (x,y,time)
             elseif dims == 3
                 A = read_standardized(ds, ncname, (x = :, y = :, time = 1))
                 A = A[sel]
@@ -275,10 +275,10 @@ function ncread(
         @info "Set `$parameter` using default value `$(mod.value)`."
         if isnothing(dimname)
             return Base.fill(mod.value, length(sel))
-        # set to one uniform value
+            # set to one uniform value
         elseif length(mod.value) == 1
             return Base.fill(mod.value, (nc.dim[String(dimname)], length(sel)))
-        # set to vector of values (should be equal to size dimname)
+            # set to vector of values (should be equal to size dimname)
         elseif length(mod.value) > 1
             @assert length(mod.value) == nc.dim[String(dimname)]
             return repeat(mod.value, 1, length(sel))

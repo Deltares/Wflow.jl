@@ -29,9 +29,11 @@ end
     flextopo = model.vertical
     @test flextopo.tt[3500] ≈ 1.3f0
     @test model.clock.iteration == 2
-    @test flextopo.rootzonestorage[3500] ≈ [147.11238663084805f0, 79.08369375691255f0, 79.23637697443984f0]
+    @test flextopo.rootzonestorage[3500] ≈
+          [147.11238663084805f0, 79.08369375691255f0, 79.23637697443984f0]
     @test flextopo.runoff[3500] ≈ 0.19008129369467497f0
-    @test flextopo.rootevap[3500] ≈ [0.009225917980074883f0, 0.009225917980074883f0, 0.009225917980074883f0]
+    @test flextopo.rootevap[3500] ≈
+          [0.009225917980074883f0, 0.009225917980074883f0, 0.009225917980074883f0]
     @test flextopo.snow[3500] == 0.0
 end
 
@@ -41,9 +43,11 @@ model = Wflow.update(model)
 
 @testset "second timestep" begin
     flextopo = model.vertical
-    @test flextopo.rootzonestorage[3500] ≈ [146.73222385533154f0, 78.55190222246516f0, 78.85739340140256f0]
+    @test flextopo.rootzonestorage[3500] ≈
+          [146.73222385533154f0, 78.55190222246516f0, 78.85739340140256f0]
     @test flextopo.runoff[3500] ≈ 0.18887692333975817f0
-    @test flextopo.rootevap[3500] ≈ [0.38016277551651f0, 0.38016277551651f0, 0.38016277551651f0]
+    @test flextopo.rootevap[3500] ≈
+          [0.38016277551651f0, 0.38016277551651f0, 0.38016277551651f0]
     @test flextopo.snow[3500] == 0.0f0
 end
 
@@ -68,10 +72,14 @@ end
 #change the config to use other functions for the storages for several classes:
 config = Wflow.Config(tomlpath)
 config["model"]["select_snow"] = ["common_snow_no_storage"]
-config["model"]["select_interception"] = ["interception_no_storage", "interception_overflow", "interception_overflow"]
-config["model"]["select_hortonponding"] = ["hortonponding_no_storage", "hortonponding", "hortonponding_no_storage"]
-config["model"]["select_hortonrunoff"] = ["hortonrunoff_no_storage", "hortonrunoff", "hortonrunoff_no_storage"]
-config["model"]["select_rootzone"] = ["rootzone_storage", "rootzone_storage", "rootzone_no_storage"]
+config["model"]["select_interception"] =
+    ["interception_no_storage", "interception_overflow", "interception_overflow"]
+config["model"]["select_hortonponding"] =
+    ["hortonponding_no_storage", "hortonponding", "hortonponding_no_storage"]
+config["model"]["select_hortonrunoff"] =
+    ["hortonrunoff_no_storage", "hortonrunoff", "hortonrunoff_no_storage"]
+config["model"]["select_rootzone"] =
+    ["rootzone_storage", "rootzone_storage", "rootzone_no_storage"]
 config["model"]["select_fast"] = ["fast_no_storage", "fast_storage", "fast_storage"]
 config["model"]["select_slow"] = ["common_slow_storage"]
 
@@ -83,7 +91,8 @@ model = Wflow.update(model)
 
 @testset "first timestep" begin
     flextopo = model.vertical
-    @test flextopo.rootzonestorage[3500] ≈ [147.11238663084805f0, 79.08369375691255f0, 0.0f0]
+    @test flextopo.rootzonestorage[3500] ≈
+          [147.11238663084805f0, 79.08369375691255f0, 0.0f0]
     @test flextopo.runoff[3500] ≈ 0.19008129369467497f0
     @test flextopo.rootevap[3500] ≈ [0.009225917980074883f0, 0.009225917980074883f0, 0.0f0]
     @test flextopo.snow[3500] == 0.0f0
