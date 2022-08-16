@@ -501,7 +501,6 @@ function setup_grid_netcdf(
             ncx,
             ("x",),
             attrib = [
-                "_FillValue" => NaN,
                 "long_name" => "x coordinate of projection",
                 "standard_name" => "projection_x_coordinate",
                 "axis" => "X",
@@ -515,7 +514,6 @@ function setup_grid_netcdf(
             ncy,
             ("y",),
             attrib = [
-                "_FillValue" => NaN,
                 "long_name" => "y coordinate of projection",
                 "standard_name" => "projection_y_coordinate",
                 "axis" => "Y",
@@ -531,7 +529,6 @@ function setup_grid_netcdf(
             ncx,
             ("lon",),
             attrib = [
-                "_FillValue" => NaN,
                 "long_name" => "longitude",
                 "standard_name" => "longitude",
                 "axis" => "X",
@@ -544,7 +541,6 @@ function setup_grid_netcdf(
             ncy,
             ("lat",),
             attrib = [
-                "_FillValue" => NaN,
                 "long_name" => "latitude",
                 "standard_name" => "latitude",
                 "axis" => "Y",
