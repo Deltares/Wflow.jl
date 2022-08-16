@@ -11,7 +11,7 @@ should be provided in CSV format, see also [Additional settings](@ref).
   - Potential evapotranspiration
   - Temperature (optional, only needed for snow and glacier modelling)
 
-The requirements for static data (including model parameters) depend on the Model type. The 
+The requirements for static data (including model parameters) depend on the Model type. The
 following data is required for all Model types, but not directly part of a Model component:
 
 + flow direction data (D8)
@@ -21,7 +21,7 @@ following data is required for all Model types, but not directly part of a Model
 For the flow direction (D8) data, the PCRaster `ldd` convention is used, see also [PCRaster
 ldd](https://pcraster.geo.uu.nl/pcraster/4.3.1/documentation/pcraster_manual/sphinx/secdatbase.html#ldd-data-type).
 An approach to generate `ldd` data is to make use of the Python package
-[pyflwdir](https://github.com/Deltares/pyflwdir): 
+[pyflwdir](https://github.com/Deltares/pyflwdir):
 
 + to [upscale existing flow direction
   data](https://deltares.github.io/pyflwdir/latest/upscaling.html) as the 3 arcsec MERIT
@@ -29,7 +29,7 @@ An approach to generate `ldd` data is to make use of the Python package
 + or to [derive flow directions from elevation
   data](https://deltares.github.io/pyflwdir/latest/from_dem.html),
 
-see also Eilander et al. (2021) for more information. 
+see also Eilander et al. (2021) for more information.
 Pyflwdir is also used by the [hydroMT](@ref) Python package described in the next paragraph.
 Another approach to generate `ldd` data is to make use of PCRaster functionality, see for
 example
@@ -60,7 +60,7 @@ One external parameter `khfrac` is used to calculate the horizontal hydraulic co
 at the soil surface `kh₀`.
 
 There is also the option to use the local inertial model as part of the `sbm` model type:
-+ for river flow, see also  [SBM + Local inertial river](@ref) model. 
++ for river flow, see also  [SBM + Local inertial river](@ref) model.
 + for 1D river flow and 2D overland flow combined, see also [SBM + Local inertial river (1D)
   and land (2D)](@ref) model.
 

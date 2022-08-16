@@ -7,9 +7,9 @@ as follows:
 
 ```
 julia -e 'using Wflow; Wflow.run()' path/to/config.toml
-``` 
+```
 
-Furthermore, it is possible to write a Julia script to run a simulation. Example data to 
+Furthermore, it is possible to write a Julia script to run a simulation. Example data to
 explore how this works can be found [here](@ref sample_data).
 
 ```julia
@@ -20,7 +20,7 @@ Wflow.run(toml_path)
 Julia can also be used to modify settings after reading the settings file. In the example
 below, we show how to adjust the end date of the simulation.
 
-```julia 
+```julia
 using Dates
 config = Wflow.Config(toml_path)
 config.endtime = DateTime("2000-01-03T00:00:00")

@@ -58,10 +58,10 @@
     kext::Vector{T} | "-"
     # Leaf area index [m² m⁻²]
     leaf_area_index::Vector{T} | "m2 m-2"
-    ### Transport capacity part ###                          
+    ### Transport capacity part ###
     # Drain length [m]
     dl::Vector{T} | "m"
-    # Flow width [m]                          
+    # Flow width [m]
     dw::Vector{T} | "m"
     # Govers transport capacity coefficients [-]
     cGovers::Vector{T} | "-"
@@ -84,9 +84,9 @@
     rhos::Vector{T} | "kg m-3"
     # Filter with river cells
     rivcell::Vector{T} | "-"
-    # Total transport capacity of overland flow [ton Δt⁻¹]          
+    # Total transport capacity of overland flow [ton Δt⁻¹]
     TCsed::Vector{T} | "t Δt⁻¹"
-    # Transport capacity of overland flow per particle class [ton Δt⁻¹]          
+    # Transport capacity of overland flow per particle class [ton Δt⁻¹]
     TCclay::Vector{T} | "t Δt⁻¹"
     TCsilt::Vector{T} | "t Δt⁻¹"
     TCsand::Vector{T} | "t Δt⁻¹"
@@ -606,9 +606,9 @@ end
     erossand::Vector{T} | "t Δt⁻¹"
     erossagg::Vector{T} | "t Δt⁻¹"
     eroslagg::Vector{T} | "t Δt⁻¹"
-    # Total transport capacity of overland flow [ton Δt⁻¹]          
+    # Total transport capacity of overland flow [ton Δt⁻¹]
     TCsed::Vector{T} | "t Δt⁻¹"
-    # Transport capacity of overland flow per particle class [ton Δt⁻¹]          
+    # Transport capacity of overland flow per particle class [ton Δt⁻¹]
     TCclay::Vector{T} | "t Δt⁻¹"
     TCsilt::Vector{T} | "t Δt⁻¹"
     TCsand::Vector{T} | "t Δt⁻¹"
@@ -1334,7 +1334,7 @@ function update(rs::RiverSediment, network, config)
                 rs.sl[v] *
                 (1 - SFbank / 100) *
                 (1 + 2 * rs.h_riv[v] / rs.width[v])
-            # Potential erosion rates of the bed and bank [t/cell/timestep] 
+            # Potential erosion rates of the bed and bank [t/cell/timestep]
             #(assuming only one bank is eroding)
             Tex = max(TEffbank - rs.TCrbank[v], 0.0)
             # 1.4 is bank default bulk density

@@ -2,7 +2,7 @@
 
 ## wflow\_sbm
 
-Wflow\_sbm represents hydrological models derived from the CQflow model (Köhler et al., 2006) 
+Wflow\_sbm represents hydrological models derived from the CQflow model (Köhler et al., 2006)
 that have the [SBM](@ref vert_sbm) vertical concept in common, but can have different
 lateral concepts that control how water is routed for example over the land or river domain.
 The soil part of SBM is largely based on the Topog\_SBM model but has had considerable
@@ -18,7 +18,7 @@ The vertical SBM concept is explained in more detail in the following section [S
 concept](@ref vert_sbm).
 
 Topog\_SBM uses an element network based on contour lines and trajectories for water
-routing. Wflow\_sbm models differ in how the lateral components river, land, and subsurface  
+routing. Wflow\_sbm models differ in how the lateral components river, land, and subsurface
 are solved. Below the different wflow\_sbm model configurations are described.
 
 ### SBM + Kinematic wave
@@ -48,7 +48,7 @@ lateral.river.reservoir => struct SimpleReservoir{T} # optional
 ### SBM + Local inertial river
 By default the model type `sbm` uses the kinematic wave approach for river flow. There is
 also the option to use the local inertial model for river flow, by providing the following
-in the TOML file:  
+in the TOML file:
 
 ```toml
 [model]
@@ -56,7 +56,7 @@ river_routing = "local-inertial"
 ```
 
 Only the mapping for the river component changes, as shown below. For an explanation about
-the type parameters between curly braces after the `struct` name see the section on the model 
+the type parameters between curly braces after the `struct` name see the section on the model
 parameters.
 
 ```julia
@@ -74,8 +74,8 @@ river_routing = "local-inertial"
 land_routing = "local-inertial"
 ```
 The mapping for the river and land component changes, as shown below. For an explanation
-about the type parameters between curly braces after the `struct` name see the section on 
-the model parameters. 
+about the type parameters between curly braces after the `struct` name see the section on
+the model parameters.
 
 ```julia
 lateral.river => struct ShallowWaterRiver{T,R,L}
@@ -236,7 +236,7 @@ nutrients such as phosphorus, carbon or other pollutants such as metals are infl
 sediment properties in processes such as mobilization, flocculation or deposition. To better
 assert and model water quality in inland systems, a better comprehension and modelling of
 sediment sources and fate in the river is needed at a spatial and time scale relevant to
-such issues. 
+such issues.
 
 The wflow\_sediment model was developed to answer such issues. It is a distributed
 physics-based model, based on the distributed hydrologic wflow\_sbm model. It is able to
@@ -309,5 +309,5 @@ Bedconc = "Bedconc"
   impacts of converting tropical montane cloud forest to pasture, with initial reference to
   northern Costa Rica. Final Technical Report DFID‐FRP Project No. R799.
 
-+ Savenije, H. H. G. (2010). HESS opinions “topography driven conceptual modelling (FLEX-Topo).” 
++ Savenije, H. H. G. (2010). HESS opinions “topography driven conceptual modelling (FLEX-Topo).”
   Hydrology and Earth System Sciences, 14(12), 2681–2692. https://doi.org/10.5194/hess-14-2681-2010

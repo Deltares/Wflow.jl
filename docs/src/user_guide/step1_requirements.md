@@ -12,7 +12,7 @@ via CSV files. A brief overview of the different files:
    gauges, land-use, drainage direction, etc. This file can also contain maps with parameter
    values.
  - The `forcing.nc` file contains the precipitation, temperature and potential evaporation
-   time series (as a 3D array). 
+   time series (as a 3D array).
 
 There are several model configurations supported by wflow. These model configurations
 require slightly different input requirements, yet the general structure is similar for each

@@ -109,8 +109,8 @@ function output_path(config::Config, path::AbstractString)
     return combined_path(config, dir, path)
 end
 
-"Extract NetCDF variable name `ncname` from `var` (type `String` or `Config`). If `var` has 
-type `Config`, either `scale`, `offset` and an optional `index` are expected (with `ncname`) 
+"Extract NetCDF variable name `ncname` from `var` (type `String` or `Config`). If `var` has
+type `Config`, either `scale`, `offset` and an optional `index` are expected (with `ncname`)
 or a `value` (uniform value), these are stored as part of `NamedTuple` `modifier`."
 function ncvar_name_modifier(var; config = nothing)
     ncname = nothing
@@ -408,8 +408,8 @@ function setup_scalar_netcdf(
     )
     set_extradim_netcdf(ds, extra_dim)
     for (nc, netcdfvars) in zip(ncvars, config.netcdf.variable)
-        # Delft-FEWS requires the attribute :cf_role = "timeseries_id" when a NetCDF file 
-        # contains more than one location list 
+        # Delft-FEWS requires the attribute :cf_role = "timeseries_id" when a NetCDF file
+        # contains more than one location list
         defVar(
             ds,
             nc.location_dim,
@@ -647,7 +647,7 @@ struct Writer
     nc_scalar::Vector                           # model parameter (arrays) and associated reducer function for NetCDF scalar output
     ncvars_dims::Vector                         # model parameter (String) and associated NetCDF variable, location dimension and location name for scalar data
     nc_scalar_path::Union{String,Nothing}       # path NetCDF file (scalar data)
-    extra_dim::Union{NamedTuple,Nothing}        # name and values for extra dimension (to store SVectors) 
+    extra_dim::Union{NamedTuple,Nothing}        # name and values for extra dimension (to store SVectors)
 end
 
 function prepare_reader(config)
@@ -963,7 +963,7 @@ function prepare_writer(
     end
 
     # create an output NetCDF that will hold all timesteps of selected parameters for scalar
-    # data, but only if config.netcdf.variable has been set. 
+    # data, but only if config.netcdf.variable has been set.
     if haskey(config, "netcdf") && haskey(config.netcdf, "variable")
         nc_scalar_path = output_path(config, config.netcdf.path)
         @info "Create an output NetCDF file `$nc_state_path` for scalar data."
@@ -1055,7 +1055,7 @@ function write_netcdf_timestep(model, dataset)
             v = nt.reducer(A)
             dataset[nc["name"]][:, time_index] .= v
         elseif elemtype <: SVector
-            # check if an extra dimension and index is specified in the TOML file 
+            # check if an extra dimension and index is specified in the TOML file
             if haskey(nc, writer.extra_dim.name)
                 i = get_index_dimension(nc, model)
                 v = nt.reducer(getindex.(A, i))

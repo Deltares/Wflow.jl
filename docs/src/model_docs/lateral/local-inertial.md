@@ -7,7 +7,7 @@ of the local inertial approximation on a staggered grid is as follows (Bates et 
 
 ```math
 Q_{t+\Delta t} = \frac{Q_t - g A_t \Delta t S_t}{(1+g\Delta t n^2 |Q_t| / (R_t^{4/3} A_t))}
-``` 
+```
 where ``Q_{t+\Delta t}`` is the river flow [m``^3``/s] at time step ``t+\Delta t``, ``g`` is
 acceleration due to gravity [m/s``^2``], ``A_t`` is the cross sectional flow area at the
 previous time step, ``R_t`` is the hydraulic radius at the previous time step, ``Q_t`` is
@@ -19,7 +19,7 @@ continuity equation over ``\Delta t`` is applied to each river cell:
 
 ```math
 h^{t+\Delta t} = h^t + \Delta t \frac{Q^{t+\Delta t}_{src} - Q^{t+\Delta t}_{dst}}{A}
-``` 
+```
 where ``h^{t+\Delta t}`` is the water depth [m] at time step ``t+\Delta t``, ``h^t`` is the
 water depth [m] at the previous time step, ``A`` is the river area [m``^2``] and ``Q_{src}``
 and ``Q_{dst}`` represent river flow [m``^3``/s] at the upstream and downstream link of the
@@ -139,7 +139,7 @@ can be executed in parallel using multiple threads.
 + Adams, J. M., Gasparini, N. M., Hobley, D. E. J., Tucker, G. E., Hutton, E. W. H.,
   Nudurupati, S. S., and Istanbulluoglu, E., 2017, The Landlab v1.0 OverlandFlow component:
   a Python tool for computing shallow-water flow across watersheds, Geosci. Model Dev., 10,
-  1645–1663, <https://doi.org/10.5194/gmd-10-1645-2017>. 
+  1645–1663, <https://doi.org/10.5194/gmd-10-1645-2017>.
 + de Almeida, G. A. M., P. Bates, J. E. Freer, and M. Souvignet, 2012, Improving the
   stability of a simple formulation of the shallow water equations for 2-D flood modeling,
   Water Resour. Res., 48, W05528, <https://doi.org/10.1029/2011WR011570>.

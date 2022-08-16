@@ -39,7 +39,7 @@ where ``CLA``, ``SIL`` and ``SAN`` are the primary clay, silt, sand fractions of
 and ``PCL``, ``PSI``, ``PSA``, ``SAG`` and ``LAG`` are the clay, silt, sand, small and large
 aggregates fractions of the detached sediment respectively. The transport capacity of the
 flow using Yalin’s equation with particle differentiation, developed by Foster (1982), is:
-```math 
+```math
    TC_{i} = (P_{e})_{i}  (S_{g})_{i} \, \rho_{w} \,  g \, d_{i}  V_{*}
 ```
 where ``TC_{i}`` is the transport capacity of the flow for the particle class i,
@@ -82,7 +82,7 @@ there is erosion or deposition (Neitsch et al., 2011).  A more physics-based app
 SWAT’s approach developed by Narasimhan et al. (2017). For wﬂow\_sediment, the new
 physics-based model of SWAT was chosen for transport and erosion as it enables the use of
 parameter estimation for erosion of bed and bank of the channel and separates the suspended
-from the bed loads. 
+from the bed loads.
 
 Overview of the different processes for a river cell in wflow\_sediment.
 
@@ -101,7 +101,7 @@ at the beginning of the timestep ``t``. Sources of detached sediment are sedimen
 from land erosion, estimated with the soil loss part of wflow_sediment model, the sediment
 coming from upstream river cells and the detached sediment that were left in the cell at the
 end of the previous timestep ``(t-1)``:
-```math 
+```math
    (sed_{in})_{t} = (sed_{land})_{t} + upstream\left[(sed_{out})_{t-1}\right] + (sed_{riv})_{t-1}
 ```
 
@@ -125,7 +125,7 @@ rivtransportmethod = "bagnold" # River flow transport capacity method: ["bagnold
 Originally more valid for intermediate to large rivers, this simplified version of the
 Bagnold equation relates sediment transport to flow velocity with two simple calibration
 parameters (Neitsch et al, 2011):
-```math 
+```math
 C_{max} = c_{sp}  \left( \dfrac{prf Q}{h  W} \right) ^{sp_{exp}}
 ```
 where ``C_{max}`` is the sediment concentration (ton m``^{-3}`` or kg/L), ``Q`` is the
@@ -150,7 +150,7 @@ Table: Range of the simplified Bagnold coefficients (and calibrated value)
 **Engelund and Hansen** This transport capacity is not present in SWAT but used in many
 models such as Delft3D-WAQ, Engelund and Hansen calculates the total sediment load as
 (Engelund and Hansen, 1967):
-```math 
+```math
    C_{w} = 0.05 \left( \dfrac{\rho_{s}}{\rho_{s} - \rho} \right) \left( \dfrac{u S}{\sqrt{\left( \dfrac{\rho_{s}}{\rho_{s} - \rho} \right) g  D_{50}}} \right) \theta^{1/2}
 ```
 where ``C_{w}`` is the sediment concentration by weight, ``\rho`` and ``\rho_{s}`` are the
@@ -161,10 +161,10 @@ mean velocity (m s``^{-1}``), ``S`` is the river slope, ``g`` is the acceleratio
 **Kodatie** Kodatie (1999) developed the power relationships from Posada (1995) using field
 data and linear optimization so that they would be applicable for a wider range of riverbed
 sediment size. The resulting equation, for a rectangular channel, is (Neitsch et al, 2011):
-```math 
+```math
    C_{max} = \left( \dfrac{a u^{b} h^{c} S^{d}}{V_{in}} \right)  W
 ```
-where ``V_{in}`` in the volume of water entering the river cell  
+where ``V_{in}`` in the volume of water entering the river cell
 during the timestep (m``^{3}``) and ``a``, ``b``, ``c`` and ``d`` are coefficients depending
 on the riverbed sediment size. Values of these coefficients are summarized in the table
 below.
@@ -180,12 +180,12 @@ Table: Range of the simplified Bagnold coefficients (and calibrated value)
 
 **Yang** Yang (1996) developed a set of two equations giving transport of sediments for
 sand-bed or gravel-bed rivers. The sand equation (``D_{50} < 2mm``) is:
-```math 
+```math
    log\left(C_{ppm}\right) = 5.435 - 0.286log\frac{\omega_{s,50}D_{50}}{\nu}-0.457log\frac{u_{*}}{\omega_{s,50}} \\
    +\left(1.799-0.409log\frac{\omega_{s,50}D_{50}}{\nu}-0.314log\frac{u_{*}}{\omega_{s,50}}\right)log\left(\frac{uS}{\omega_{s,50}}-\frac{u_{cr}S}{\omega_{s,50}}\right)
 ```
 And the gravel equation (``2 \leq D_{50} < 10 mm``) is:
-```math 
+```math
    log\left(C_{ppm}\right) = 6.681 - 0.633log\frac{\omega_{s,50}D_{50}}{\nu}-4.816log\frac{u_{*}}{\omega_{s,50}} \\
    +\left(2.784-0.305log\frac{\omega_{s,50}D_{50}}{\nu}-0.282log\frac{u_{*}}{\omega_{s,50}}\right)log\left(\frac{uS}{\omega_{s,50}}-\frac{u_{cr}S}{\omega_{s,50}}\right)
 ```
@@ -199,11 +199,11 @@ with ``R_{H}`` the hydraulic radius of the river) and ``u_{cr}`` is the critical
 **Molinas and Wu** The Molinas and Wu (2001) transport equation was developed for large
 sand-bed rivers based on the universal stream power ``\psi``. The corresponding equation is
 (Neitsch et al, 2011):
-```math 
+```math
    C_{w} = \dfrac{1430 (0.86+\sqrt{\psi}) \psi^{1.5}}{0.016+\psi} 10^{-6}
 ```
 where ``\psi`` is the universal stream power given by:
-```math 
+```math
    \psi = \dfrac{\psi^{3}}{\left(\dfrac{\rho_{s}}{\rho}-1\right) g h \omega_{s,50}  \left[ log_{10}\left(\dfrac{h}{D_{50}}\right)\right]^{2}}
 ```
 
@@ -228,7 +228,7 @@ The bed and bank of the river are supposed to only be able to erode a maximum am
 their material ``E_{R,bed}`` for the bed and ``E_{R,bank}`` for the river bank. For a
 rectangular channel, assuming it is meandering and thus only one bank is prone to erosion,
 they are calculated from the equations (Neitsch et al, 2011):
-```math 
+```math
    E_{R,bed} = k_{d,bed} \left( \tau_{e,bed} - \tau_{cr,bed} \right) 10^{-6}  L  W  \rho_{b, bed}  \Delta t \\~\\
    E_{R,bank} = k_{d,bank} \left( \tau_{e,bank} - \tau_{cr,bank} \right) 10^{-6} L h \rho_{b, bank}  \Delta t
 ```
@@ -241,7 +241,7 @@ river (g cm``^{-3}``) and ``\Delta t`` is the model timestep (s).
 
 In wflow_sediment, the erodibility of the bed/bank are approximated using the formula from
 Hanson and Simon (2001):
-```math 
+```math
    k_{d}=0.2 \tau_{cr}^{-0.5}
 ```
 Normally erodibilities are evaluated using jet test in the field and there are several
@@ -250,7 +250,7 @@ avoid too heavy calibration and for the scale considered, this equation is suppo
 efficient enough. The critical shear stress ``\tau_{cr}`` is evaluated differently for the
 bed and bank. For the bed, the most common formula from Shields initiation of movement is
 used. For the bank, a more recent approach from Julian and Torres (2006) is used :
-```math 
+```math
    \tau_{cr,bank} = (0.1+0.1779 SC+0.0028 SC^{2}-2.34 10^{-5}  SC^{3}) C_{ch}
 ```
 where ``SC`` is the percent clay and silt content of the river bank and ``C_{ch}`` is a
@@ -276,7 +276,7 @@ Table: Classical values of the channel cover vegetation coefficient (Julian and 
 | Dense trees | 19.20 |
 
 Table : Composition of the river bed/bank depending on the median diameter ``d_{50}``
-\[``\mu``m\] (Neitsch et al, 2011) 
+\[``\mu``m\] (Neitsch et al, 2011)
 
 |Sediment Fraction   | ``\leq`` 5 | 5 to 50 | 50 to 2000 | ``>``2000 |
 |:-------------------| ---------- | ------- | ---------- | --------- |
@@ -288,7 +288,7 @@ Table : Composition of the river bed/bank depending on the median diameter ``d_{
 Then, the repartition of the flow shear stress is refined into the effective shear stress
 and the bed and bank of the river using the equations developed by Knight (1984) for a
 rectangular channel:
-```math 
+```math
    \tau_{e,bed} = \rho g R_{H} S  \left(1 - \dfrac{SF_{bank}}{100}\right) \left(1+\dfrac{2h}{W}\right) \\~\\
    \tau_{e,bank} = \rho g R_{H} S  \left( SF_{bank}\right)  \left(1+\dfrac{W}{2h}\right)
 ```
@@ -296,11 +296,11 @@ where ``\rho g`` is the fluid specific weight (9800 N m``^{-3}`` for water), ``R
 hydraulic radius of the channel (m), ``h`` and ``W`` are the water level and river width
 (m). ``SF_{bank}`` is the proportion of shear stress acting on the bank (%) and is estimated
 from (Knight, 1984):
-```math 
+```math
    SF_{bank} = exp \left( -3.230 log_{10}\left(\dfrac{W}{h}+3\right)+6.146 \right)
 ```
 Finally the relative erosion potential of the bank and bed of the river is calculated by:
-```math 
+```math
    RTE_{bed} = \dfrac{E_{R,bed}}{E_{R,bed}+E_{R,bank}} \\~\\
    RTE_{bank} = 1 - RTE_{bed}
 ```
@@ -314,12 +314,12 @@ As sediments have a higher density than water, moving sediments in water can be 
 the river bed. The deposition process depends on the mass of the sediment, but also on flow
 characteristics such as velocity. In wflow_sediment, as in SWAT, deposition is modelled with
 Einstein’s equation (Neitsch et al, 2011):
-```math 
+```math
    P_{dep}=\left(1-\dfrac{1}{e^{x}}\right)100
 ```
 where ``P_{dep}`` is the percentage of sediments that is deposited on the river bed and x is
 a parameter calculated with:
-```math 
+```math
    x = \dfrac{1.055 L  \omega_{s}}{u h}
 ```
 where ``L`` and ``h`` are channel length and water height (m), ``\omega_{s}`` is the
@@ -333,7 +333,7 @@ the river bed and can be re-mobilized in future time steps by erosion.
 Finally after estimating inputs, deposition and erosion with the transport capacity of the
 flow, the amount of sediment actually leaving the river cell to go downstream is estimated
 using:
-```math 
+```math
    sed_{out} = (sed_{in} + sed_{erod} - sed_{dep}) \dfrac{V_{out}}{V}
 ```
 where ``sed_{out}`` is the amount of sediment leaving the river cell (tons), ``sed_{in}`` is
@@ -346,7 +346,7 @@ the river cell (``V_{out}`` plus storage ``h W L`` in m``^{3}``).
 
 A mass balance is then used to calculate the amount of sediment remaining in the cell at the
 end of the timestep ``(sed_{riv})_{t}``:
-```math 
+```math
    (sed_{riv})_{t} = (sed_{riv})_{t-1} + (sed_{land})_{t} + upstream\left[(sed_{out})_{t-1}\right] + (sed_{erod})_{t} - (sed_{dep})_{t} - (sed_{out})_{t}
 ```
 
@@ -360,7 +360,7 @@ cell belongs to a lake/reservoir and is not the outlet then the model assumes th
 erosion/deposition of sediments is happening and the sediments are only all transported to
 the lake/reservoir outlet. Once the sediments reach the outlet, then sediments are deposited
 in the lake/reservoir according to Camp’s model (1945) (Verstraeten et al, 2000):
-```math 
+```math
    TE = \dfrac{\omega_{s}}{u_{cr,res}} = \dfrac{A_{res}}{Q_{out,res}} \omega_{s}
 ```
 where ``TE`` is the trapping efficiency of the lake/reservoir (or the fraction of particles
@@ -369,9 +369,9 @@ is the reservoir’s critical settling velocity (m/s) which is equal to the rese
 outflow ``Q_{out,res}`` (m``^{3}`` s``^{-1}``) divided by the reservoir’s surface area
 ``A_{res}`` (m``^{2}``).
 
-For reservoirs, coarse sediment particles from the bed load are also assumed to be trapped by the 
-dam structure. This adding trapping is taken into account with a reservoir trapping efficiency coefficient 
-for large particles (between 0 and 1). Depending on the type of the dam, all bed load particles are trapped 
+For reservoirs, coarse sediment particles from the bed load are also assumed to be trapped by the
+dam structure. This adding trapping is taken into account with a reservoir trapping efficiency coefficient
+for large particles (between 0 and 1). Depending on the type of the dam, all bed load particles are trapped
 (restrapefficiency =1.0, for example for a gravity dam) or only partly (for example for run-of-the-river dams).
 
 Lake and reservoir modelling is enabled in the model section of the TOML and require the

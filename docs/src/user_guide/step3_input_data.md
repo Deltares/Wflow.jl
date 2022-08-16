@@ -4,7 +4,7 @@ As mentioned before, the input data can be classified into two types:
 
  - Meteorological forcing: maps with timeseries for each model pixel, with values for
    precipitation, temperature, and potential evaporation. This data should be provided as a
-   three-dimensional dataset, with the `x`, `y` and `time` dimensions. 
+   three-dimensional dataset, with the `x`, `y` and `time` dimensions.
  - Static maps.
 
 
@@ -46,7 +46,7 @@ Variables
     Attributes:
      _FillValue           = NaN
 
-  spatial_ref  
+  spatial_ref
     Attributes:
      crs_wkt              = GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AXIS["Latitude",NORTH],AXIS["Longitude",EAST],AUTHORITY["EPSG","4326"]]
      x_dim                = x
@@ -123,5 +123,5 @@ River slope | `RiverSlope` | m m$^{-1}$
 
 As mentioned before, the model parameters can also be defined as spatial maps. They can be
 included in the same NetCDF file, as long as their variable names are correctly mapped in
-the TOML settings file. See the section on [example models](@ref sample_data) on how to 
+the TOML settings file. See the section on [example models](@ref sample_data) on how to
 use this functionality.

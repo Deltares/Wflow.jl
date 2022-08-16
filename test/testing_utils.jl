@@ -1,7 +1,7 @@
 # Not all special functions have been implemented yet:
 # https://github.com/JuliaMath/SpecialFunctions.jl/issues/19
 # (MIT licensed)
-# 
+#
 # This expint implementation is copied from:
 # https://github.com/mschauer/Bridge.jl/blob/a719e8a57aaa77fa4ca289c25978a7e080908826/src/expint.jl#L1
 ########################################################################

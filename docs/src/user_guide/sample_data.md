@@ -6,10 +6,10 @@ are listed in the Table below:
 
 |  model  | TOML configuration file |
 |:--------------- | ------------------|
-| wflow\_sbm + kinematic wave | [sbm_config.toml](https://raw.githubusercontent.com/Deltares/Wflow.jl/master/test/sbm_config.toml) |      
-| wflow\_sbm + groundwater flow | [sbm\_gwf\_config.toml](https://raw.githubusercontent.com/Deltares/Wflow.jl/master/test/sbm_gwf_config.toml) | 
+| wflow\_sbm + kinematic wave | [sbm_config.toml](https://raw.githubusercontent.com/Deltares/Wflow.jl/master/test/sbm_config.toml) |
+| wflow\_sbm + groundwater flow | [sbm\_gwf\_config.toml](https://raw.githubusercontent.com/Deltares/Wflow.jl/master/test/sbm_gwf_config.toml) |
 | wflow\_hbv | [hbv_config.toml](https://raw.githubusercontent.com/Deltares/Wflow.jl/master/test/hbv_config.toml) |
-| wflow\_flextopo | [flextopo_config.toml](https://raw.githubusercontent.com/Deltares/Wflow.jl/master/test/flextopo_config.toml) | 
+| wflow\_flextopo | [flextopo_config.toml](https://raw.githubusercontent.com/Deltares/Wflow.jl/master/test/flextopo_config.toml) |
 | wflow_sediment | [sediment_config.toml](https://raw.githubusercontent.com/Deltares/Wflow.jl/master/test/sediment_config.toml) |
 
 The associated Model files (input static, forcing and state files) can easily be downloaded

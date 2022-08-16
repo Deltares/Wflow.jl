@@ -1,6 +1,6 @@
-# Publications 
+# Publications
 
-## Citing wflow 
+## Citing wflow
 [![DOI](https://zenodo.org/badge/246787232.svg)](https://zenodo.org/badge/latestdoi/246787232)
 
 When using Wflow.jl as part of for example research or project work or teaching please cite
@@ -13,7 +13,7 @@ van Verseveld, Willem, Visser, Martijn, Boisgontier, Hélène, Bootsma, Huite, B
 Laurène, Buitink, Joost, Eilander, Dirk & Hegnauer, Mark (YEAR). Deltares/Wflow.jl:
 unstable-master. <https://github.com/Deltares/Wflow.jl>, obtained: DATE\_OF\_DOWNLOAD.
 
-## Publications using wflow 
+## Publications using wflow
 
 ### Papers
 
@@ -86,7 +86,7 @@ Change Management. Springer International Publishing, pp. 329–344
 López López, P., Wanders, N., Schellekens, J., Renzullo, L.J., Sutanudjaja, E.H., Bierkens,
 M.F.P., 2016. Improved large-scale hydrological modelling through the assimilation of
 streamflow and downscaled satellite soil moisture observations. Hydrol. Earth Syst. Sci.,
-20, 3059–3076. <https://doi.org/10.5194/hess-20-3059-2016>. 
+20, 3059–3076. <https://doi.org/10.5194/hess-20-3059-2016>.
 
 van Osnabrugge, B., Weerts, A.H., Uijlenhoet, R., 2017. genRE: A method to extend gridded
 precipitation climatology data sets in near real-time for hydrological forecasting purposes.
@@ -100,8 +100,8 @@ Rakovec, O., Weerts, A.H., Sumihar, J., Uijlenhoet, R., 2015. Operational aspect
 asynchronous filtering for flood forecasting. Hydrol. Earth Syst. Sci., 19, 2911–2924,
 <https://doi.org/10.5194/hess-19-2911-2015>.
 
-Rusli,S., A.H. Weerts, A. Taufiq, V. Bense, 2021. Estimating water balance components and 
-their uncertainty bounds in highly groundwater-dependent and data-scarce area: 
+Rusli,S., A.H. Weerts, A. Taufiq, V. Bense, 2021. Estimating water balance components and
+their uncertainty bounds in highly groundwater-dependent and data-scarce area:
 An example for the Upper Citarum basin, J. Hydrol. Regional Studies, doi: 10.1016/j.ejrh.2021.100911.
 
 Schaller, N., Sillmann, J., Müller, M., Haarsma, R., Hazeleger, W., Hegdahl, T.J., Kelder,
@@ -109,8 +109,8 @@ T., van den Oord, G., Weerts, A., Whan, K., 2020. The role of spatial and tempor
 resolution in a flood event storyline approach in western Norway. Weather and Climate
 Extremes, doi: <https://doi.org/10.1016/j.wace.2020.100259>.
 
-Sperna Weiland, F.C.,  R.D. Visser, P. Greve, B. Bisselink, L. Brunner and A.H. Weerts, 2021. Estimating 
-Regionalized Hydrological Impacts of Climate Change Over Europe by Performance-Based Weighting of 
+Sperna Weiland, F.C.,  R.D. Visser, P. Greve, B. Bisselink, L. Brunner and A.H. Weerts, 2021. Estimating
+Regionalized Hydrological Impacts of Climate Change Over Europe by Performance-Based Weighting of
 CORDEX Projections, Frontiers of Water, 10.3389/frwa.2021.713537.
 
 Tangdamrongsub, N., Steele-Dunne, S.C., Gunter, B.C., Ditmar, P.G., Weerts, A.H., 2015. Data
@@ -121,7 +121,7 @@ of the Rhine River basin. Hydrol. Earth Syst. Sci. 19, 2079–2100.
 van der Vat, M., Boderie, P., Bons, K.A., Hegnauer, M., Hendriksen, G., van Oorschot, M.,
 Ottow, B., Roelofsen, F., Sankhua, R.N., Sinha, S.K., Warren, A., Young, W., 2019.
 Participatory Modelling of Surface and Groundwater to Support Strategic Planning in the
-Ganga Basin in India. Water, 11, 2443. <https://doi.org/10.3390/w11122443>. 
+Ganga Basin in India. Water, 11, 2443. <https://doi.org/10.3390/w11122443>.
 
 Wannasin, C., Brauer, C. C., Uijlenhoet, R., van Verseveld, W. J., Weerts, A. H., 2021.
 Daily flow simulation in Thailand Part I: Testing a distributed hydrological model with
@@ -149,12 +149,12 @@ Vrije Universiteit Amsterdam, Faculty of Science, Hydrology.
 Azadeh Karami Fard, 2015. Modeling runoff of an Ethiopian catchment with WFLOW, MSc. Thesis,
 Vrije Universiteit, Amsterdam.
 
-Beusen, B. The effect of rooting depth on discharge and evapotranspiration in (semi-)arid areas, 
+Beusen, B. The effect of rooting depth on discharge and evapotranspiration in (semi-)arid areas,
 MSC Thesis, HWM, Wageningen University, 2021.
 
 Beusen, B. Plastic transport and the effect of climate change in the Rhine, Internship Deltares, 2021
 
-Bouaziz, L. J. E., 2021. Internal processes in hydrological models: A glance at the Meuse basin from 
+Bouaziz, L. J. E., 2021. Internal processes in hydrological models: A glance at the Meuse basin from
 space. Delft University of Technology, Delft, the Netherlands, Doctoral dissertation.
 <https://doi.org/10.4233/uuid:09d84cc1-27e2-4327-a8c7-207a75952061>
 

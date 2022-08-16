@@ -385,7 +385,7 @@ function initialize_flextopo_model(config::Config)
         cfr = cfr,
         rfcf = rfcf,
         sfcf = sfcf,
-        #interception 
+        #interception
         imax = svectorscopy(imax, Val{nclass}()),
         #horton
         shmax = svectorscopy(shmax, Val{nclass}()),
@@ -610,7 +610,7 @@ function initialize_flextopo_model(config::Config)
     # - subdomains for the kinematic wave domains for parallel execution (execution order of
     #   subbasins (subdomain_order), traversion order per subbasin (topo_subdomain) and
     #   Vector indices per subbasin matching the traversion order of the complete domain
-    #   (indices_subdomain)) 
+    #   (indices_subdomain))
     # - the indices that map it back to the two dimensional grid (indices)
 
     # for the land domain the x and y length [m] of the grid cells are stored
@@ -714,7 +714,7 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:FlextopoModel}
     #COMMON SLOW
     vertical.dic_function[vertical.select_slow[1]](vertical)
 
-    # WAT BAL 
+    # WAT BAL
     watbal(vertical)
 
     surface_routing(model)

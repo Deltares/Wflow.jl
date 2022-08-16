@@ -10,7 +10,7 @@ changes over time. The main differences are:
 
 The sections below describe the working of the SBM vertical concept in more detail.
 
-## Precipitation 
+## Precipitation
 The division between solid and liquid precipitation (snowfall and rainfall, respectively) is
 performed based on the air temperature. If the temperature is below a threshold temperature
 (`tt`), precipitation will fall as snow. A interval parameter (`tti`) defines the range over
@@ -20,7 +20,7 @@ glaciers](@ref snow)). The amount of rainfall is subject to [interception](@ref
 interception), and ultimately becomes available for [evaporation](@ref evap) and/or [soil
 processes](@ref soil).
 
-![snowfall](../../images/snowfall.png) 
+![snowfall](../../images/snowfall.png)
 
 *Division between snow and precipitation based on the threshold temperature*
 
@@ -33,7 +33,7 @@ processes](@ref soil).
 
 Two different interception models are available: the analytical Gash model, and the modified
 Rutter model. The simulation timestep defines which interception model is used, where daily
-(or larger) timesteps use the Gash model, and timesteps smaller than daily use the modified 
+(or larger) timesteps use the Gash model, and timesteps smaller than daily use the modified
 Rutter model.
 
 ### The analytical (Gash) model (Gash, 1979)
@@ -61,12 +61,12 @@ Table: Formulation of the components of interception loss according to Gash:
 
 | Components  | Interception loss |
 |:----------- | ----------------- |
-| For ``m`` small storms (``P_{g}<{P'}_{g}``)    | ``(1-p-p_{t})\sum_{j=1}^{m}P_{g,j}`` | 
-| Wetting up the canopy in ``n`` large storms (``P_{g}\geq{P'}_{g}``)     | ``n(1-p-p_{t}){P'}_{g}-nS`` | 
+| For ``m`` small storms (``P_{g}<{P'}_{g}``)    | ``(1-p-p_{t})\sum_{j=1}^{m}P_{g,j}`` |
+| Wetting up the canopy in ``n`` large storms (``P_{g}\geq{P'}_{g}``)     | ``n(1-p-p_{t}){P'}_{g}-nS`` |
 | Evaporation from saturated canopy during rainfall | ``\overline{E}/\overline{R}\sum_{j=1}^{n}(P_{g,j}-{P'}_{g})``|
 | Evaporation after rainfall ceases for ``n`` large storms | ``nS`` |
 | Evaporation from trunks in ``q`` storms that fill the trunk storage | ``qS_{t}`` |
-| Evaporation from  trunks in ``m+n-q`` storms that do not fill the trunk storage | ``p_{t}\sum_{j=1}^{m+n-q}P_{g,j}`` | 
+| Evaporation from  trunks in ``m+n-q`` storms that do not fill the trunk storage | ``p_{t}\sum_{j=1}^{m+n-q}P_{g,j}`` |
 
 In applying the analytical model, saturated conditions are assumed to occur when the hourly
 rainfall exceeds a certain threshold. Often a threshold of 0.5 mm/hr is used.
@@ -83,9 +83,9 @@ higher than those calculated with the penman-monteith equation.
 ### The modified rutter model
 For sub daily timesteps the interception is calculated using a simplification of the Rutter
 model. The simplified model is solved explicitly and does not take drainage from the canopy
-into account. The amount of stemflow is taken as a fraction (`0.1 * canopygapfraction`) of 
-the precipitation. Throughfall equals to the amount of water that cannot be stored by the 
-canopy, plus the rainfall that is not captured by the canopy. Water can evaporate from the 
+into account. The amount of stemflow is taken as a fraction (`0.1 * canopygapfraction`) of
+the precipitation. Throughfall equals to the amount of water that cannot be stored by the
+canopy, plus the rainfall that is not captured by the canopy. Water can evaporate from the
 canopy storage, taken as the minimum between potential evaporation and the current storage.
 The "left-over" potential evaporation (if any) is returned as output.
 
@@ -99,8 +99,8 @@ climatology. In order to switch this on you must define this cyclic parameter in
 file, the parameter is read from `path_static`, as follows:
 
 ```toml
-[input] 
-path_forcing = "data/forcing-moselle.nc" 
+[input]
+path_forcing = "data/forcing-moselle.nc"
 path_static = "data/staticmaps-moselle.nc"
 
 cyclic = ["vertical.leaf_area_index"]
@@ -136,11 +136,11 @@ The extinction coefficient `kext` can be related to land cover.
 
 The wflow\_sbm model assumes the input to be potential evaporation. A multiplication factor
 (`et_reftopot`, set to 1 by default) is present to correct the input evaporation if
-required. 
+required.
 
 The potential evaporation left over after interception and open water evaporation (rivers
 and water bodies) is split in potential soil evaporation and potential transpiration based
-on the canopy gap fraction (assumed to be identical to the amount of bare soil). 
+on the canopy gap fraction (assumed to be identical to the amount of bare soil).
 
 ### Bare soil evaporation
 
@@ -151,7 +151,7 @@ is fully saturated, evaporation is set to equal the potential evaporation. When 
 not fully saturated, actual evaporation decrease linearly with decreasing soil moisture
 values, as indicated by the figure below.
 
-![soil_evap](../../images/soil_evap.png) 
+![soil_evap](../../images/soil_evap.png)
 
 *Evaporation reduction as function of available soil moisture*
 
@@ -188,7 +188,7 @@ index of the vector that contains all active cells within the spatial model doma
     restpottrans = pottrans - actevapsat
 ```
 
-![soil_wetroots](../../images/soil_wetroots.png) 
+![soil_wetroots](../../images/soil_wetroots.png)
 
 *Amount of wet roots and the effect of the rootdistpar parameter*
 
@@ -212,7 +212,7 @@ implemented using the following code:
             availcap = 0.0
         end
     end
-    maxextr = availcap * ustorelayerdepth 
+    maxextr = availcap * ustorelayerdepth
 ```
 
 ![soil_unsatevap](../../images/soil_unsatevap.png)
@@ -259,7 +259,7 @@ very wet conditions do not affect root water uptake too much is probably general
 applicable to natural vegetation, however for crops this assumption is not valid. This could
 be improved in the wflow code by applying the reduction to crops only.
 
-![soil_rootwateruptake](../../images/soil_rootwateruptake.png) 
+![soil_rootwateruptake](../../images/soil_rootwateruptake.png)
 
 *Root water uptake reduction coefficient as a function of soil water pressure*
 
@@ -294,7 +294,7 @@ time is given by:
 ```
 
 where ``\theta_{s}`` [-] and ``\theta_{r}`` [-] are the saturated and residual soil water
-contents, respectively. 
+contents, respectively.
 
 The unsaturated store ``U`` is subdivided into storage (``U_{s}`` [mm]) and deficit
 (``U_{d}`` [mm]):
@@ -304,7 +304,7 @@ The unsaturated store ``U`` is subdivided into storage (``U_{s}`` [mm]) and defi
     U_{s}=U-U_{d}
 ```
 
-The saturation deficit (``S_{d}`` [mm]) for the soil profile as a whole is defined as: 
+The saturation deficit (``S_{d}`` [mm]) for the soil profile as a whole is defined as:
 
 ```math
     S_{d}=(\theta_{s}-\theta_{r})z_{t}-S
@@ -351,7 +351,7 @@ t``^{-1}``]) is in that case controlled by the saturated hydraulic conductivity 
     st=K_{\mathit{sat}}\frac{U_{s}}{S_{d}}
 ```
 Saturated conductivity (``K_{sat}`` [mm t``^{-1}``]) declines with soil depth (``z`` [mm])
-in the model according to: 
+in the model according to:
 
 ```math
     K_{sat}=K_{0}e^{(-fz)}
@@ -391,7 +391,7 @@ The water available for infiltration is taken as the rainfall including meltwate
 Infiltration is determined separately for the compacted and non compacted areas, as these
 have different infiltration capacities. Naturally, only the water that can be stored in the
 soil can infiltrate. If not all water can infiltrate, this is added as excess water to the
-runoff routing scheme. 
+runoff routing scheme.
 
 The infiltrating
 water is split in two parts, the part that falls on compacted areas and the part that falls
@@ -422,7 +422,7 @@ The near surface soil temperature is modelled using a simple equation (Wigmosta 
 2009):
 
 ```math
-T_s^{t} = T_s^{t-1} + w  (T_a - T_s^{t-1})  
+T_s^{t} = T_s^{t-1} + w  (T_a - T_s^{t-1})
 ```
 where ``T_s^{t}`` [``\degree``C] is the near-surface soil temperature at time ``t``, ``T_a``
 [``\degree``C] is air temperature and ``w`` [-] is a weighting coefficient determined
@@ -444,14 +444,14 @@ the soil is frozen.
 A S-curve (see plot below) is used to make a smooth transition (a c-factor (``c``) of 8.0 is
 used):
 
-```math 
+```math
     b = \frac{1.0}{(1.0 - cf\_soil)}\\~\\
     soilinfredu = \frac{1.0}{b + exp(-c (T_s - a))} + cf\_soil\\~\\
     a = 0.0\\
     c = 8.0
 ```
 
-![soil_frozeninfilt](../../images/soil_frozeninfilt.png) 
+![soil_frozeninfilt](../../images/soil_frozeninfilt.png)
 
 *Infiltration correction factor as a function of soil temperature*
 
@@ -554,7 +554,7 @@ taken assumed to be equal to potential evaporation (if sufficient water is avail
   10.1016/0022-1694(89)90111-X.
 + Van Dijk, A. I. J. M., and Bruijnzeel, L. A., 2001, Modelling rainfall interception by
   vegetation of variable density using an adapted analytical model, Part 2, Model validation
-  for a tropical upland mixed cropping system, J. Hydr., 247, 239–262.  
+  for a tropical upland mixed cropping system, J. Hydr., 247, 239–262.
 + Vertessy, R., and Elsenbeer, H., 1999, Distributed modeling of storm ﬂow generation in an
   amazonian rain forest catchment: effects of model parameterization, Water Resour. Res.,
   35, 2173–2187. doi: 10.1029/1999WR9000511257.

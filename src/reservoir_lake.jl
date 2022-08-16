@@ -218,7 +218,7 @@ end
     inflow::Vector{T} | "m3"                # inflow to the lake [m³]
     storage::Vector{T} | "m3"               # storage lake [m³]
     outflow::Vector{T} | "m3 s-1"           # outflow lake [m³ s⁻¹]
-    totaloutflow::Vector{T} | "m3"          # total outflow lake [m³] 
+    totaloutflow::Vector{T} | "m3"          # total outflow lake [m³]
     precipitation::Vector{T}                # average precipitation for lake area [mm Δt⁻¹]
     evaporation::Vector{T}                  # average evaporation for lake area [mm Δt⁻¹]
 

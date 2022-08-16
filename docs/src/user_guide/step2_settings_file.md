@@ -73,7 +73,7 @@ removed.
 
 ```toml
 [state]
-path_input = "instates-moselle.nc" 
+path_input = "instates-moselle.nc"
 path_output = "outstates-moselle.nc"
 
 [state.vertical]
@@ -134,35 +134,35 @@ forcing = [
 cyclic = ["vertical.leaf_area_index"]
 
 [input.vertical]    # Map internal model variable/parameter names to names of the variables in the NetCDF files
-altitude = "wflow_dem" 
-c = "c" 
-cf_soil = "cf_soil" 
-cfmax = "Cfmax" 
-e_r = "EoverR" 
-infiltcappath = "InfiltCapPath" 
-infiltcapsoil = "InfiltCapSoil" 
-kext = "Kext" 
-"kv₀" = "KsatVer" 
+altitude = "wflow_dem"
+c = "c"
+cf_soil = "cf_soil"
+cfmax = "Cfmax"
+e_r = "EoverR"
+infiltcappath = "InfiltCapPath"
+infiltcapsoil = "InfiltCapSoil"
+kext = "Kext"
+"kv₀" = "KsatVer"
 leaf_area_index = "LAI"             # Cyclic variable
-m = "M" 
-maxleakage = "MaxLeakage" 
-pathfrac = "PathFrac" 
+m = "M"
+maxleakage = "MaxLeakage"
+pathfrac = "PathFrac"
 potential_evaporation = "PET"       # Forcing variable
 precipitation = "P"                 # Forcing variable
-rootdistpar = "rootdistpar" 
-rootingdepth = "RootingDepth" 
-soilminthickness = "SoilMinThickness" 
-soilthickness = "SoilThickness" 
-specific_leaf = "Sl" 
-storage_wood = "Swood" 
+rootdistpar = "rootdistpar"
+rootingdepth = "RootingDepth"
+soilminthickness = "SoilMinThickness"
+soilthickness = "SoilThickness"
+specific_leaf = "Sl"
+storage_wood = "Swood"
 temperature = "TEMP"                # Forcing variable
-tt = "TT" 
-tti = "TTI" 
-ttm = "TTM" 
-w_soil = "wflow_soil" 
-water_holding_capacity = "WHC" 
-waterfrac = "WaterFrac" 
-"θᵣ" = "thetaR" 
+tt = "TT"
+tti = "TTI"
+ttm = "TTM"
+w_soil = "wflow_soil"
+water_holding_capacity = "WHC"
+waterfrac = "WaterFrac"
+"θᵣ" = "thetaR"
 "θₛ" = "thetaS"
 
 [input.lateral.river]
@@ -184,7 +184,7 @@ slope = "Slope"
 ### Grid data
 This optional section of the TOML file contains the output netCDF file for writing gridded
 model output, including a mapping between internal model parameter components and external
-netCDF variables. 
+netCDF variables.
 
 To limit the size of the resulting NetCDF file, file compression can be enabled. This causes
 an increase in computational time, but can significantly reduce the file size of the NetCDF
@@ -196,7 +196,7 @@ an issue, we recommend using a value of `1`, as higher compression levels genera
 only a limited effect on the file size.
 
 ```toml
-[output]    
+[output]
 path = "output_moselle.nc"         # Location of the output file
 compressionlevel = 1               # Amount of compression (default 0)
 
@@ -385,7 +385,7 @@ offset = 0.5
 For input parameters with an extra dimension it is also possible to modify multiple indices
 at once with different `scale` and `offset` values. In the example below the external
 NetCDF variable `c` is modified at `layer` index 1 and 2, with a `scale` factor of 2.0 and
-1.5 respectively, and an `offset` of 0.0 for both indices: 
+1.5 respectively, and an `offset` of 0.0 for both indices:
 
 ```toml
 [input.vertical.c]

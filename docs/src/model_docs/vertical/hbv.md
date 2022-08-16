@@ -67,7 +67,7 @@ soil moisture reservoir that is transferred to the quick response reservoir. Val
 ``\beta`` vary generally between 1 and 3. Larger values of ``\beta`` reduce runoff and
 indicate a higher absorption capacity of the soil.
 
-![hbv-soilmoist.png](../../images/hbv-soilmoist.png) 
+![hbv-soilmoist.png](../../images/hbv-soilmoist.png)
 
 *Schematic view of the soil moisture routine*
 
@@ -110,7 +110,7 @@ is exceeded, in which case the redundant water ends up in the upper zone:
 where ``V_{UZ}`` is the content of the upper zone, ``V_{LZ}`` is the content of the lower
 zone.
 
-Capillary flow from the upper zone to the soil moisture reservoir is modeled according to: 
+Capillary flow from the upper zone to the soil moisture reservoir is modeled according to:
 
 ```math
 Q_{cf}=cflux \; (fc−SM)/fc
@@ -145,7 +145,7 @@ Rewriting for ``K`` results in:
 ```
 
 The lower zone is a linear reservoir, which means the rate of slow runoff, ``Q_{LZ}``, which
-leaves this zone during one time step equals: 
+leaves this zone during one time step equals:
 
 ```math
 Q_{LZ} = K_{LZ} \, V_{LZ}
@@ -157,7 +157,7 @@ The upper zone is also a linear reservoir, but it is slightly more complicated t
 lower zone because it is divided into two zones: a lower part in which interflow is
 generated and an upper part in which quick flow is generated.
 
-![hbv-upper](../../images/hbv-upper.png) 
+![hbv-upper](../../images/hbv-upper.png)
 
 *Schematic view of the upper zone*
 

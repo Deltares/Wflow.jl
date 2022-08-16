@@ -44,7 +44,7 @@ function homogenous_aquifer(nrow, ncol)
         fill(0.0, ncell),  # bottom
         fill(100.0, ncell),  # area
         fill(0.1, ncell), # specific storage
-        fill(1.0, ncell),  # storativity 
+        fill(1.0, ncell),  # storativity
         fill(0.0, connectivity.nconnection),  # conductance
     )
     unconf_aqf = Wflow.UnconfinedAquifer(

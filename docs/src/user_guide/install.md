@@ -3,7 +3,7 @@
 First download and install the [current stable release of
 Julia](https://julialang.org/downloads/#current_stable_release). Please see [platform
 specific instructions](https://julialang.org/downloads/platform/) for further installation
-instructions and if you have trouble installing Julia. 
+instructions and if you have trouble installing Julia.
 
 If you are new to Julia, it may be a good idea to check out the [Getting Started section of
 the Julia Manual](https://docs.julialang.org/en/v1/manual/getting-started/). Links to other
@@ -20,18 +20,18 @@ Wflow can be used in two different ways, depending on the required use of the co
   version is available. This consists of a single executable, `wflow_cli`, allowing you to
   run the model via the command line.
 
-Below, we describe how to install both versions of wflow. 
+Below, we describe how to install both versions of wflow.
 
 ## Installing as Julia package
 
-Wflow is a [Julia](https://julialang.org/) package, that can be installed through several 
+Wflow is a [Julia](https://julialang.org/) package, that can be installed through several
 different ways. Below we show how to install wflow from Julia's package repository, and
-how to install the latest version from GitHub. 
+how to install the latest version from GitHub.
 
-### Install from Julia's package repository 
+### Install from Julia's package repository
 
-To access Julia's package manager, press `]` in the Julia REPL.  To get back to the Julia 
-REPL, press backspace or ^C. 
+To access Julia's package manager, press `]` in the Julia REPL.  To get back to the Julia
+REPL, press backspace or ^C.
 
 !!! tip
     If you have not used Julia in a while, it can be a good idea to run `up` to update your
@@ -46,7 +46,7 @@ pkg> add Wflow
 ```
 
 This can take a while, especially the first time, since compatible dependencies are also
-automatically looked up and installed from the Pkg General registry. 
+automatically looked up and installed from the Pkg General registry.
 
 ### Install from GitHub
 
@@ -60,9 +60,9 @@ This command will track the `master` branch, and will update to the latest commi
 branch when you run `update`, or simply `up`, in the Pkg REPL. The use of `add` will install
 wflow in you home directory under `.julia/packages/Wflow`. Note that packages installed
 under `packages` by `add` are supposed to never be altered in that location, for Pkg and
-it's automatic dependency handling to work well. 
+it's automatic dependency handling to work well.
 
-If you want to make any changes to any of the files in the repository, you need to do 
+If you want to make any changes to any of the files in the repository, you need to do
 a development install. This can be done using:
 
 ```julia-repl
@@ -82,8 +82,8 @@ julia> using Wflow
 ```
 
 The first time this will take longer as any package that is new or changed needs to be
-pre-compiled first, to allow faster loading on subsequent uses. No error messages should 
-appear, indicating that you have now successfully installed wflow. 
+pre-compiled first, to allow faster loading on subsequent uses. No error messages should
+appear, indicating that you have now successfully installed wflow.
 
 Before ending this section, we still want to recommend a few tools that can make using and
 developing Julia code easier.
@@ -97,9 +97,9 @@ developing Julia code easier.
 
 !!! tip
     When planning to make changes to the code of wflow, we recommend installing the `Revise.jl`
-    package. This package allows you to modify code and use the changes without restarting 
+    package. This package allows you to modify code and use the changes without restarting
     Julia. Install it with `add Revise` from the Pkg REPL. Then create a file called
-    `.julia/config/startup.jl`, and put `using Revise` there. This will load Revise every 
+    `.julia/config/startup.jl`, and put `using Revise` there. This will load Revise every
     time you start a Julia session.
 
 ## Installing the compiled executable
@@ -115,7 +115,7 @@ artifacts\
 bin\wflow_cli
 ```
 
-Check whether the installation was performed successfully, run `wflow_cli` with no 
+Check whether the installation was performed successfully, run `wflow_cli` with no
 arguments in the command line will give the following message:
 
 ```
@@ -127,7 +127,7 @@ Usage: wflow_cli 'path/to/config.toml'
     The old version of wflow, based on Python and PCRaster libraries is also available to
     download from our website [download.deltares.nl](https://download.deltares.nl/en/download/wflow/).
     We recommend installing the Julia version, as this documentation is written to support
-    this version. 
+    this version.
 
 
 

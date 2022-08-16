@@ -92,7 +92,7 @@ The solution for Q is then:
 
 ```math
     Q = { \left( -LF + \sqrt{LF^{2} + 2  \left( SI - \dfrac{A*H_{0}}{\Delta t} \right)
-    } \right) }^{2} \text{for } SI > \dfrac{A H_{0}}{\Delta t}  \text{ and where}\\ 
+    } \right) }^{2} \text{for } SI > \dfrac{A H_{0}}{\Delta t}  \text{ and where}\\
     LF = \dfrac{A}{\Delta t \sqrt{\alpha}} \\~\\
     Q = 0 \text{ for } SI \leq \dfrac{A*H_{0}}{\Delta t}
 ```
@@ -176,7 +176,7 @@ downstream to the upstream lake. The linked lakes are defined in the `linkedlake
 parameter that represent the downstream lake location ID, at the grid cell of the upstream
 lake location.
 
-!!! note 
+!!! note
     In every file, level units are meters [m] above lake bottom and not meters above sea
     level [m asl]. Especially with storage/rating curves coming from data, please be careful
     and convert units if needed.

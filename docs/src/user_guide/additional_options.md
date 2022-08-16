@@ -136,12 +136,12 @@ with multiple
 threads](https://docs.julialang.org/en/v1/manual/multi-threading/#Starting-Julia-with-multiple-threads).
 
 Additionally, when running Julia + wflow via the command line (note that this is different
-from the `wflow_cli`), it is possible to define the number of threads via the `-t` flag. 
+from the `wflow_cli`), it is possible to define the number of threads via the `-t` flag.
 An example where we start Julia with three threads:
 
 ```
 julia -t 3 -e 'using Wflow; Wflow.run()' path/to/config.toml
-``` 
+```
 
 ### [Using the command line interface](@id cli_multi_threading)
 

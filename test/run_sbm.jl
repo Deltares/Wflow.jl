@@ -192,7 +192,7 @@ model = Wflow.update(model)
     @test (res.evaporation[2] - 1.50) / res_evap[2] ≈ 3.0000012203408635f0
 end
 
-# test cyclic river inflow 
+# test cyclic river inflow
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 

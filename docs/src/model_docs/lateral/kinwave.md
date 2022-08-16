@@ -35,8 +35,8 @@ kw_land_tstep = 3600
 ```
 
 The ``\alpha`` parameter of the kinematic wave is fixed. To estimate the wetted perimeter
-for the calculation of the ``\alpha`` parameter a bankfull river depth map (default value 
-is 1.0 m) for the river can be provided as follows: 
+for the calculation of the ``\alpha`` parameter a bankfull river depth map (default value
+is 1.0 m) for the river can be provided as follows:
 
 ```toml
 [input.lateral.river]
@@ -64,7 +64,7 @@ unit width of slope ``w`` [m] according to:
 where ``\beta`` is element slope angle [deg.], ``q`` is subsurface flow [m``^{2}``/t],
 ``K_{0}`` is the saturated hydraulic conductivity at the soil surface [m/t], ``z_{i}`` is
 the water table depth [m], ``z_{t}`` is total soil depth [m], and ``f`` is a scaling
-parameter [m``^{-1}``], that controls the decrease of vertical saturated conductivity with 
+parameter [m``^{-1}``], that controls the decrease of vertical saturated conductivity with
 depth.
 
 Combining with the following continuity equation:
@@ -74,7 +74,7 @@ Combining with the following continuity equation:
 where ``h`` is the water table height [m], ``x`` is the distance downslope [m], and ``r``
 is the net input rate [m/t] to the saturated store. Substituting for ``h (\frac{\partial
 q}{\partial h})``, gives:
-```math 
+```math
   w \frac{\partial q}{\partial t} = -cw\frac{\partial q}{\partial x} + cwr
 ```
 
@@ -83,7 +83,7 @@ where celerity ``c = \frac{K_{0}\mathit{tan(\beta)}}{(\theta_s-\theta_r)} e^{(-f
 The kinematic wave equation for lateral subsurface flow is solved iteratively using Newton's
 method.
 
-!!! note 
+!!! note
     For the lateral subsurface flow kinematic wave the model timestep is not adjusted.
     For certain model timestep and model grid size combinations this may result in loss of
     accuracy.
@@ -94,7 +94,7 @@ parallel using multiple threads. In the model section of the TOML file, a minimu
 order can be provided (default is 4) to define subbasins. Subbasins are created at all
 confluences where each branch has a minimal stream order. Based on the subbasins a directed
 acyclic graph is created that controls the order of execution and which subbasins can run in
-parallel. 
+parallel.
 
 ```toml
 [model]

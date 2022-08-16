@@ -304,7 +304,7 @@ function update(
                             sf.qin[j] = sf.reservoir.outflow[i]
                         elseif n_downstream == 0
                             error(
-                                """A reservoir without a downstream river node is not supported. 
+                                """A reservoir without a downstream river node is not supported.
                                 Add a downstream river node or move the reservoir to an upstream node (model schematization).
                                 """,
                             )
@@ -325,7 +325,7 @@ function update(
                             sf.qin[j] = sf.lake.outflow[i]
                         elseif n_downstream == 0
                             error(
-                                """A lake without a downstream river node is not supported. 
+                                """A lake without a downstream river node is not supported.
                                 Add a downstream river node or move the lake to an upstream node (model schematization).
                                 """,
                             )
@@ -755,7 +755,7 @@ const dirs = (:yd, :xd, :xu, :yu)
     mannings_n::Vector{T} | "s m-1/3"   # Manning's roughness
     volume::Vector{T} | "m3"            # total volume of cell (including river volume for river cells)
     error::Vector{T} | "m3"             # error volume
-    runoff::Vector{T} | "m3 s-1"        # runoff from hydrological model 
+    runoff::Vector{T} | "m3 s-1"        # runoff from hydrological model
     h::Vector{T} | "m"                  # water depth of cell (for river cells the reference is the river bed elevation `zb`)
     z::Vector{T} | "m"                  # elevation of cell
     froude_limit::Bool | "-"            # if true a check is performed if froude number > 1.0 (algorithm is modified)

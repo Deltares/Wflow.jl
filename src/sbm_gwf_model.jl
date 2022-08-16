@@ -8,9 +8,9 @@ Initial part of the sbm_gwf model concept. The model contains:
         - 1-D kinematic wave for overland flow
         - unconfined aquifer with groundwater flow in four directions (adjacent cells)
 
-The unconfined aquifer contains a recharge, river and a drain (optional) boundary. 
+The unconfined aquifer contains a recharge, river and a drain (optional) boundary.
 
-The initial part reads the input settings and data as defined in the Config object. 
+The initial part reads the input settings and data as defined in the Config object.
 Will return a Model that is ready to run.
 """
 function initialize_sbm_gwf_model(config::Config)
@@ -184,7 +184,7 @@ function initialize_sbm_gwf_model(config::Config)
         zeros(Float, connectivity.nconnection),  # conductance
     )
 
-    # reset zi and satwaterdepth with groundwater head from unconfined aquifer 
+    # reset zi and satwaterdepth with groundwater head from unconfined aquifer
     sbm.zi .= (altitude .- initial_head) .* 1000.0
     sbm.satwaterdepth .= (sbm.soilthickness .- sbm.zi) .* (sbm.θₛ .- sbm.θᵣ)
 
@@ -285,7 +285,7 @@ function initialize_sbm_gwf_model(config::Config)
     end
 
     # setup subdomains for the land and river kinematic wave domain, if nthreads = 1
-    # subdomain is equal to the complete domain    
+    # subdomain is equal to the complete domain
     toposort = topological_sort_by_dfs(graph)
     toposort_riv = topological_sort_by_dfs(graph_riv)
     index_pit_land = findall(x -> x == 5, ldd)
@@ -322,7 +322,7 @@ function initialize_sbm_gwf_model(config::Config)
     # - subdomains for the kinematic wave domains for parallel execution (execution order of
     #   subbasins (subdomain_order), traversion order per subbasin (topo_subdomain) and
     #   Vector indices per subbasin matching the traversion order of the complete domain
-    #   (indices_subdomain)) 
+    #   (indices_subdomain))
     # - the indices that map it back to the two dimensional grid (indices)
 
     # for the land domain the x and y length [m] of the grid cells are stored
@@ -410,7 +410,7 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
     # snow transport is possible
     update_until_snow(vertical, config)
 
-    # lateral snow transport 
+    # lateral snow transport
     if get(config.model, "masswasting", false)::Bool
         lateral_snow_transport!(
             vertical.snow,

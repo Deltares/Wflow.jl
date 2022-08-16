@@ -62,26 +62,26 @@ forcing = [
 cyclic = ["vertical.leaf_area_index"]
 
 [input.vertical]
-altitude = "wflow_dem" 
-canopyheight = "CanopyHeight" 
-erosk = "ErosK" 
-erosov = "eros_ov" 
-erosspl = "eros_spl_EUROSEM" 
-h_land = "levKinL" 
-interception = "int" 
-kext = "Kext" 
-leaf_area_index = "LAI" # cyclic 
-pathfrac = "PathFrac" 
-pclay = "PercentClay" 
-precipitation = "P" 
-psilt = "PercentSilt" 
-q_land = "runL" 
-rivcell = "wflow_river" 
-slope = "Slope" 
-specific_leaf = "Sl" 
-storage_wood = "Swood" 
-usleC = "USLE_C" 
-usleK = "USLE_K" 
+altitude = "wflow_dem"
+canopyheight = "CanopyHeight"
+erosk = "ErosK"
+erosov = "eros_ov"
+erosspl = "eros_spl_EUROSEM"
+h_land = "levKinL"
+interception = "int"
+kext = "Kext"
+leaf_area_index = "LAI" # cyclic
+pathfrac = "PathFrac"
+pclay = "PercentClay"
+precipitation = "P"
+psilt = "PercentSilt"
+q_land = "runL"
+rivcell = "wflow_river"
+slope = "Slope"
+specific_leaf = "Sl"
+storage_wood = "Swood"
+usleC = "USLE_C"
+usleK = "USLE_K"
 # Reservoir
 resareas = "wflow_reservoirareas"
 # Lake
@@ -115,14 +115,14 @@ lakeareas = "wflow_lakeareas"
 lakelocs = "wflow_lakelocs"
 
 [model]
-dolake = false 
-doreservoir = true 
+dolake = false
+doreservoir = true
 landtransportmethod = "yalinpart" # Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]
 rainerosmethod = "answers" # Rainfall erosion equation: ["answers", "eurosem"]
-reinit = true 
+reinit = true
 rivtransportmethod = "bagnold" # River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]
-runrivermodel = true 
-type = "sediment" 
+runrivermodel = true
+type = "sediment"
 
 [output]
 path = "output-moselle-sed.nc"

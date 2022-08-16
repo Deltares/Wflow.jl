@@ -1,7 +1,7 @@
 # Step 5: Analyzing the model output
 
 After running the model example from the previous step 4, the model results can be found in
-`data/output_moselle_simple.csv`.  
+`data/output_moselle_simple.csv`.
 
 If required, it is also possible to output NetCDF files as output, by modifying the TOML
 file. An example is shown below:

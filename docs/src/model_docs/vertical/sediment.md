@@ -39,14 +39,14 @@ energy while it reaches the soil according to equations developed by Brandt (199
 intensity of the rain kinetic energy depends on the length of the fall, rainfall intercepted
 by vegetation will then be reduced compared to direct throughfall. The kinetic energy of
 direct throughfall is estimated by (Morgan et al, 1998):
-```math 
+```math
    KE_{direct} = 8.95 + 8.44\,log_{10}\,R_{i}
 ```
 where ``KE_{direct}`` is kinetic energy of direct throughfall (J m``^{-2}`` mm``^{-1}``) and
 ``R_{i}`` is rainfall intensity (mm h``^{-1}``). If the rainfall is intercepted by
 vegetation and falls as leaf drainage, its kinetic energy is then reduced according to
 (Brandt, 1990):
-```math 
+```math
    KE_{leaf} = 15.8\,H_{p}^{0.5} - 5.87
 ```
 where ``KE_{leaf}`` is kinetic energy of leaf drainage (J m``^{-2}`` mm``^{-1}``) and
@@ -58,7 +58,7 @@ Kinetic energies from both direct throughfall and leaf drainage are then multipl
 respective depths of direct throughfall and leaf drainage (mm) and added to get the total
 rainfall kinetic energy ``KE``. The soil detached by rainfall ``D_{R}`` (g m``^{-2}``) is
 then:
-```math 
+```math
    D_{R} = k\,KE\,e^{-\varphi h}
 ```
 where ``k`` is an index of the detachability of the soil (g ``J^{-1}``), ``KE`` is the total
@@ -89,7 +89,7 @@ Table: Mean detachability of soil depending on its texture (Morgan et al, 1998).
 Rainfall erosion is handled differently in ANSWERS. There, the impacts of vegetation and
 soil properties are handled through the USLE coefficients in the equation (Beasley et al,
 1991):
-```math 
+```math
    D_{R} = 0.108 \, C_{USLE} \, K_{USLE} \, A_{i} \, R_{i}^{2}
 ```
 where ``D_{R}`` is the soil detachment by rainfall (here in kg min``^{-1}``), ``C_{USLE}``
@@ -109,7 +109,7 @@ et al. (2015).
 The other methods to estimate the USLE ``K`` factor are to use either topsoil composition or
 topsoil geometric mean diameter. ``K`` estimation from topsoil composition is estimated with
 the equation developed in the EPIC model (Williams et al, 1983):
-```math 
+```math
    K_{USLE} = \left\{ 0.2 + 0.3exp\left[-0.0256SAN\frac{(1-SIL)}{100}\right] \right\}
    \left(\frac{SIL}{CLA+SIL}\right)^{0.3} \\~\\
    \left(1-\frac{0.25OC}{OC+e^{(3.72-2.95OC)}}\right)\left(1-\frac{0.75SN}{SN+e^{(-5.51+22.9SN)}}\right)
@@ -119,7 +119,7 @@ topsoil (%), ``OC`` is the topsoil organic carbon content (%) and ``SN`` is ``1-
 These soil parameters can be derived for example from the SoilGrids dataset. The ``K``
 factor can also be estimated from the soil mean geometric diameter using the formulation
 from the RUSLE guide by Renard & al. (1997):
-```math 
+```math
    K_{USLE} = 0.0034 + 0.0405e^{\left(-\dfrac{1}{2}\left(\dfrac{log_{10}(D_{g})+1.659}{0.7101}\right)^{2}\right)}
 ```
 where ``D_{g}`` is the soil geometric mean diameter (mm) estimated from topsoil clay, silt,
@@ -159,7 +159,7 @@ Overland flow (or surface runoff) erosion is induced by the strength of the shea
 the surface water on the soil. As in rainfall erosion, the effect of the flow shear stress
 can be reduced by the soil vegetation or by the soil properties. In wflow_sediment, soil
 detachment by overland flow is modelled as in ANSWERS with (Beasley et al, 1991):
-```math 
+```math
    D_{F} = 0.90 \, C_{USLE} \, K_{USLE} \, A_{i} \, S \, q
 ```
 where ``D_{F}`` is soil detachment by flow (kg min``^{-1}``), ``C_{USLE}`` and ``K_{USLE}``

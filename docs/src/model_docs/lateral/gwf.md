@@ -16,7 +16,7 @@ will always flow along the complete height ``H`` [m] over the aquifer and transm
 conductivity). Specific storage is the amount of water an aquifer releases per unit change in
 hydraulic head, per unit volume of aquifer, as the aquifer and the groundwater itself is
 compressed. Its value is much smaller than specific yield, between 1e-5 (stiff) and 0.01
-(weak). 
+(weak).
 
 The upper boundary of an unconfined aquifer is the water table (the phreatic
 surface). Specific yield (or drainable porosity) represents the volumetric fraction the
@@ -51,7 +51,7 @@ part of the `Connectivity` struct, see also [Connectivity](@ref) for more inform
 
 Conductance ``C`` is defined as:
 
-```math 
+```math
     C = \frac{kH w}{l}
 ```
 
@@ -206,7 +206,7 @@ The recharge flux ``Q_r`` is an output variable (field `flux` of struct `Recharg
 used to update the total flux in a cell where recharge occurs. For the model `SBM +
 Groundwater flow`, the recharge rate from the vertical SBM concept `recharge` [mm] is used
 to update the `rate` field of the `Recharge` struct each time step. The `rate` field is
-multiplied by the `area` field of the aquifer.   
+multiplied by the `area` field of the aquifer.
 
 ### Head boundary
 This boundary is a fixed head with time (not affected by the model stresses over time))
@@ -228,7 +228,7 @@ The head boundary flux ``Q_{hb}`` is an output variable (field `flux` of struct
 occurs. The parameter Head ``\phi_{hb}`` can be specified as a fixed or time dependent
 value.
 
-!!! note 
+!!! note
     This boundary is not (yet) part of the model `SBM + Groundwater flow`.
 
 ### Well boundary
@@ -241,10 +241,10 @@ The volumetric well rate ``Q_{well}`` can be can be specified as a fixed or time
 value. If a cell is dry, the actual well flux `flux` is set to zero (see also the last note
 on this page).
 
-!!! note 
+!!! note
     This boundary is not (yet) part of the model `SBM + Groundwater flow`.
 
-!!! note 
+!!! note
     For an unconfined aquifer the boundary fluxes are checked, in case of a dry aquifer cell
     a negative flux is not allowed.
 
@@ -253,7 +253,7 @@ on this page).
   aquifers. Groundwater, 22(6), 728-734.
 + Goode, D. J., & Appel, C. A. (1992). Finite-Difference Interblock Transmissivity for
   Unconﬁned Aquifers and for Aquifers having Smoothly Varying Transmissivity Water-resources
-  investigations report, 92, 4124. 
+  investigations report, 92, 4124.
 + Johnson, A. I. (1967), Specific yield: compilation of specific yields for various
   materials, Water Supply Paper 1662-D, Washington, D.C.: U.S. Government Printing Office,
   p. 74, doi:10.3133/wsp1662D.

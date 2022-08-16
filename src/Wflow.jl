@@ -134,7 +134,7 @@ include("logging.jl")
 
 Run an entire simulation starting either from a path to a TOML settings file,
 a prepared `Config` object, or an initialized `Model` object. This allows more flexibility
-if you want to for example modify a `Config` before initializing the `Model`. Logging to a 
+if you want to for example modify a `Config` before initializing the `Model`. Logging to a
 file is only part of the `run(tomlpath::AbstractString)` method. To avoid logging to the
 terminal, set the `silent` keyword argument to `true`, or put that in the TOML.
 

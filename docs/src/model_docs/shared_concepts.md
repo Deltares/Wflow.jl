@@ -37,7 +37,7 @@ exceeds `whc`, either through snow melt or incoming rainfall, the surplus water
 ```
 \
 
-![snowmelt](../images/snowmelt.png) 
+![snowmelt](../images/snowmelt.png)
 
 *Snowmelt and refreezing rates as a function of temperature (for set melting and refreezing factors)*
 
@@ -112,12 +112,12 @@ Table: Formulation of the components of interception loss according to Gash:
 
 | Components  | Interception loss |
 |:----------- | ----------------- |
-| For ``m`` small storms (``P_{g}<{P'}_{g}``)    | ``(1-p-p_{t})\sum_{j=1}^{m}P_{g,j}`` | 
-| Wetting up the canopy in ``n`` large storms (``P_{g}\geq{P'}_{g}``)     | ``n(1-p-p_{t}){P'}_{g}-nS`` | 
+| For ``m`` small storms (``P_{g}<{P'}_{g}``)    | ``(1-p-p_{t})\sum_{j=1}^{m}P_{g,j}`` |
+| Wetting up the canopy in ``n`` large storms (``P_{g}\geq{P'}_{g}``)     | ``n(1-p-p_{t}){P'}_{g}-nS`` |
 | Evaporation from saturated canopy during rainfall | ``\overline{E}/\overline{R}\sum_{j=1}^{n}(P_{g,j}-{P'}_{g})``|
 | Evaporation after rainfall ceases for ``n`` large storms | ``nS`` |
 | Evaporation from trunks in ``q`` storms that fill the trunk storage | ``qS_{t}`` |
-| Evaporation from  trunks in ``m+n-q`` storms that do not fill the trunk storage | ``p_{t}\sum_{j=1}^{m+n-q}P_{g,j}`` | 
+| Evaporation from  trunks in ``m+n-q`` storms that do not fill the trunk storage | ``p_{t}\sum_{j=1}^{m+n-q}P_{g,j}`` |
 
 In applying the analytical model, saturated conditions are assumed to occur when the hourly
 rainfall exceeds a certain threshold. Often a threshold of 0.5 mm/hr is used.
@@ -146,8 +146,8 @@ climatology. In order to switch this on you must define this cyclic parameter in
 file, the parameter is read from `path_static`, as follows:
 
 ```toml
-[input] 
-path_forcing = "data/forcing-moselle.nc" 
+[input]
+path_forcing = "data/forcing-moselle.nc"
 path_static = "data/staticmaps-moselle.nc"
 
 cyclic = ["vertical.leaf_area_index"]

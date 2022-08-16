@@ -109,7 +109,7 @@ function initialize_sbm_model(config::Config)
     dl = map(detdrainlength, ldd, xl, yl)
     dw = (xl .* yl) ./ dl
 
-    # check if lateral subsurface flow component is defined for the SBM model, when coupled 
+    # check if lateral subsurface flow component is defined for the SBM model, when coupled
     # to another groundwater model, this component is not defined in the TOML file.
     if haskey(config.input.lateral, "subsurface")
         khfrac = ncread(
@@ -240,7 +240,7 @@ function initialize_sbm_model(config::Config)
         )
     else
         error(
-            """An unknown "river_routing" method is specified in the TOML file ($river_routing). 
+            """An unknown "river_routing" method is specified in the TOML file ($river_routing).
             This should be "kinematic-wave" or "local-inertial".
             """,
         )
@@ -289,7 +289,7 @@ function initialize_sbm_model(config::Config)
     # - subdomains for the kinematic wave domains for parallel execution (execution order of
     #   subbasins (subdomain_order), traversion order per subbasin (topo_subdomain) and
     #   Vector indices per subbasin matching the traversion order of the complete domain
-    #   (indices_subdomain)) 
+    #   (indices_subdomain))
     # - the indices that map it back to the two dimensional grid (indices)
 
     # for the land domain the x and y length [m] of the grid cells are stored
@@ -453,7 +453,7 @@ function update_until_recharge(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:Sb
     # snow transport is possible
     update_until_snow(vertical, config)
 
-    # lateral snow transport 
+    # lateral snow transport
     if get(config.model, "masswasting", false)::Bool
         lateral_snow_transport!(
             vertical.snow,
@@ -472,7 +472,7 @@ end
 """
     update_after_subsurfaceflow(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
 
-Update SBM model after subsurface flow for a single timestep. This function is also 
+Update SBM model after subsurface flow for a single timestep. This function is also
 accessible through BMI, to couple the SBM model to an external groundwater model.
 """
 function update_after_subsurfaceflow(

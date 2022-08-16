@@ -111,7 +111,7 @@ end
 Extract directed acyclic graph `g` representing the flow network at subbasin level from
 `subbas` containing nodes with a unique id representing subbasin outlets, `subbas_fill` with
 subbasin ids for the complete domain, and directed acyclic graph `graph` representing the
-flow network for each subbasin cell. 
+flow network for each subbasin cell.
 """
 function graph_from_nodes(graph, subbas, subbas_fill)
     n = maximum(subbas)
@@ -133,11 +133,11 @@ end
 Setup subdomains for parallel execution (threading) of the kinematic wave calculation.
 Subdomains are subbasins based on a minumum streamorder `min_sto` (see also `subbasins(g,
 streamorder, toposort, min_sto)`). Subbasins are extracted for each basin outlet in Vector
-`index_pit`. 
+`index_pit`.
 
 # Arguments
 - `config` Struct that contains parsed TOML configuration
-- `graph` directed acyclic graph of the kinematic wave domain 
+- `graph` directed acyclic graph of the kinematic wave domain
 - `toposort` topological order of `graph`
 - `index_pit` Vector with basin outlets (pits)
 
@@ -173,7 +173,7 @@ function kinwave_set_subdomains(config, graph, toposort, index_pit)
         for i = 1:n_pits
             # extract subbasins per basin, make a graph at the subbasin level, calculate the
             # maximum distance of this graph, and group and order the subbasin ids from
-            # upstream to downstream 
+            # upstream to downstream
             basin = findall(x -> x == i, basin_fill)
             g, _ = induced_subgraph(graph, basin)
             toposort_b = topological_sort_by_dfs(g)

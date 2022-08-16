@@ -190,7 +190,7 @@
     kext::Vector{T} | "-"
     # Leaf area index [m² m⁻²]
     leaf_area_index::Vector{T} | "m2 m-2"
-    # Water level land [mm] 
+    # Water level land [mm]
     waterlevel_land::Vector{T} | "mm"
     # Water level river [mm]
     waterlevel_river::Vector{T} | "mm"

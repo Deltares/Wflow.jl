@@ -43,7 +43,7 @@ end
 """
     BMI.update(model::Model; run = nothing)
 
-Update the model for a single timestep. 
+Update the model for a single timestep.
 # Arguments
 - `run = nothing`: to update a model partially.
 """

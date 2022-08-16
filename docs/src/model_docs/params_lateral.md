@@ -37,7 +37,7 @@ bankfull_depth = "wflow_riverdepth"
 | `volume`        | kinematic wave volume |m``^3``| - |
 | `h`             | water level | m | - |
 | `h_av`             | average water level | m | - |
-| `bankfull_depth`   | bankfull river depth  | m | 1.0 | 
+| `bankfull_depth`   | bankfull river depth  | m | 1.0 |
 | `Δt`             | model time step | s | - |
 | `its`             | number of fixed iterations | - | - |
 | `alpha_pow`             | used in the power part of ``\alpha`` | - | - |
@@ -62,7 +62,7 @@ the internal model parameter to the external netCDF variable.
 
 Two parameters reservoir coverage `areas` and the outlet of reservoirs (unique id) `locs`
 that are not part of the `SimpleReservoir` struct are also required, and can be set as
-follows through the TOML file: 
+follows through the TOML file:
 
 ```toml
 [input.lateral.river.reservoir]
@@ -71,7 +71,7 @@ locs = "wflow_reservoirlocs"
 ```
 
 |  parameter | description  	        | unit | default |
-|:---------------| --------------- | ---------------------- | ----- |    
+|:---------------| --------------- | ---------------------- | ----- |
 | **`area`**        | area | m``^2`` | - |
 | **`demandrelease`** ( `demand`) | minimum (environmental) flow released from reservoir  | m``^3`` s``^{-1}``| - |
 | **`maxrelease`** | maximum amount that can be released if below spillway | m``^3`` s``^{-1}`` | - |
@@ -105,7 +105,7 @@ locs = "wflow_lakelocs"
 ```
 
 |  parameter | description  	        | unit | default |
-|:---------------| --------------- | ---------------------- | ----- |    
+|:---------------| --------------- | ---------------------- | ----- |
 | **`area`**         | area| m``^2`` | - |
 | **`b`**       | Rating curve coefficient  | - | - |
 | **`e`**      | Rating curve exponent | -  | - |
@@ -126,10 +126,10 @@ locs = "wflow_lakelocs"
 
 ### Lateral subsurface flow
 The Table below shows the parameters (fields) of struct `LateralSSF`, including a
-description of these parameters, the unit, and default value if applicable. 
+description of these parameters, the unit, and default value if applicable.
 
 | parameter | description  	        | unit | default |
-|:---------------| --------------- | ---------------------- | ----- |    
+|:---------------| --------------- | ---------------------- | ----- |
 | `kh₀`          | horizontal hydraulic conductivity at soil surface  | m d``^{-1}`` |  - |
 | `f` | a scaling parameter (controls exponential decline of kh₀) | m``^{-1}``  | - |
 | `soilthickness` | soil thickness | m  | - |
@@ -209,9 +209,9 @@ internal model parameter to the external netCDF variable.
 |  parameter  | description  	  | unit  | default |
 |:--------------- | ------------------| ----- | -------- |
 | `n`    |  number of cells | - | - |
-| `xl`| cell length x direction | m | - | 
-| `yl`| cell length y direction | m | - | 
-| `xwidth`| effective flow width x direction (floodplain) | m | - | 
+| `xl`| cell length x direction | m | - |
+| `yl`| cell length y direction | m | - |
+| `xwidth`| effective flow width x direction (floodplain) | m | - |
 | `ywidth`| effective flow width y direction (floodplain) | m | - |
 | `g` | acceleration due to gravity | m s``^{-2}`` | - |
 | `θ` | weighting factor (de Almeida et al., 2012) | - | 0.8 |
@@ -241,7 +241,7 @@ The Table below shows the parameters (fields) of struct `ConfinedAquifer`, inclu
 description of these parameters, the unit, and default value if applicable. Struct
 `ConfinedAquifer` is not (yet) part of a Wflow Model.
 
-|  parameter  | description  	      | unit  | default | 
+|  parameter  | description  	      | unit  | default |
 |:--------------- | ------------------| ----- | -------|
 | `k` | horizontal conductivity  | m d``^{-1}``s | - |
 | `storativity`     | storativity  | m m``^{-1}`` | - |
@@ -269,7 +269,7 @@ input data and set as follows through the TOML file:
 altitude = "wflow_dem"
 ```
 
-|  parameter  | description  	        | unit  | default | 
+|  parameter  | description  	        | unit  | default |
 |:--------------- | ------------------| ----- | -------|
 | **`k`** (`conductivity`) | horizontal conductivity  | m d``^{-1}``s | - |
 | **`specific_yield`**    | specific yield  | m m``^{-1}`` | - |
@@ -304,7 +304,7 @@ internal model parameter to the external netCDF variable. For some input paramet
 parameter listed under `[lateral.subsurface]` is not equal to the internal model parameter,
 these are listed in the Table below between parentheses after the internal model parameter.
 
-|  parameter  | description  	        | unit  | default | 
+|  parameter  | description  	        | unit  | default |
 |:--------------- | ------------------| ----- | -------|
 | `stage`    | river stage  | m | - |
 | **`infiltration_conductance`**     | river bed infiltration conductance  | m``^2`` day``^{-1}`` m``^2`` day``^{-1}``| - |
@@ -322,11 +322,11 @@ internal model parameter to the external netCDF variable. For some input paramet
 parameter listed under `[lateral.subsurface]` is not equal to the internal model parameter,
 these are listed in the Table below between parentheses after the internal model parameter.
 
-|  parameter  | description  	        | unit  | default | 
+|  parameter  | description  	        | unit  | default |
 |:--------------- | ------------------| ----- | -------|
 | **`elevation`** (`drain_elevation`)   | drain elevation  | m | - |
 | **`conductance`** (`drain_conductance`)  | drain conductance  | m``^2`` day``^{-1}`` | - |
-| **`index`** (`drain`) |  drain cell index | - | - | 
+| **`index`** (`drain`) |  drain cell index | - | - |
 | `flux`          | exchange flux (drains to aquifer)  | m``^3`` day``^{-1}`` | - |
 
 #### [Recharge](@id gwf_recharge_params)
@@ -365,7 +365,7 @@ these parameters, the unit, and default value if applicable.
 
 ### Overland flow
 The Table below shows the parameters (fields) of struct `OverlandFlowSediment`, including a
-description of these parameters, the unit, and default value if applicable. 
+description of these parameters, the unit, and default value if applicable.
 
 |  parameter | description  	        | unit | default |
 |:---------------| --------------- | ---------------------- | ------- |

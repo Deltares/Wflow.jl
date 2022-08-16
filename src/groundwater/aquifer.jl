@@ -41,7 +41,7 @@ with:
 k and H may both vary in space; intercell conductance is therefore an average
 using the properties of two cells. See the documentation below.
 
-There is only one unknown, ϕᵢᵗ⁺¹. Reshuffling terms: 
+There is only one unknown, ϕᵢᵗ⁺¹. Reshuffling terms:
 
 ϕᵢᵗ⁺¹ = ϕᵢᵗ + (Cᵢ₋₁ * (ϕᵢ - ϕᵢ₋₁) + Cᵢ * (ϕᵢ₊₁ - ϕᵢ) + Qᵢ) * Δt / Sᵢ
 
@@ -50,7 +50,7 @@ connectivity.
 
 See this paper for more details:
      Chu, W. S., & Willis, R. (1984). An explicit finite difference model for
-     unconfined aquifers. Groundwater, 22(6), 728-734. 
+     unconfined aquifers. Groundwater, 22(6), 728-734.
 
 Boundary conditions can be classified into three categories:
 * specified head (Dirichlet)
@@ -116,7 +116,7 @@ instead. Specific yield will vary roughly between 0.05 (clay) and 0.45 (peat)
     bottom::Vector{T} | "m" # bottom of groundwater layer
     area::Vector{T} | "m2"
     specific_yield::Vector{T} | "m m-1" # [m m⁻¹]
-    conductance::Vector{T} | "m2 d-1" # 
+    conductance::Vector{T} | "m2 d-1" #
     # Unconfined aquifer conductance is computed with degree of saturation
 end
 
@@ -131,10 +131,10 @@ storativity(A::ConfinedAquifer) = A.storativity
 The harmonic mean is the exact interblock transmissivity for steady-state
 one-dimensional flow with no recharge if the transmissivity is assumed to be
 spatially uniform over each finite difference block, changing abruptly at the
-block interface. 
+block interface.
 
 Refer to:
-    
+
     Goode, D. J., & Appel, C. A. (1992). Finite-Difference Interblock Transmissivity
     for Unconﬁned Aquifers and for Aquifers having Smoothly Varying Transmissivity.
     Water-resources investigations report, 92, 4124.

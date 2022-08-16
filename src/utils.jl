@@ -131,7 +131,7 @@ end
 
 Read states contained in `Dict` `state_ncnames` from NetCDF file located in `instate_path`,
 and set states in `model` object. Active cells are selected with the corresponding network's
-(`Vector{CartesianIndex}`) from the NetCDF file. 
+(`Vector{CartesianIndex}`) from the NetCDF file.
 
 # Arguments
 - `type = nothing`: type to convert data to after reading. By default no conversion is done.
@@ -201,7 +201,7 @@ model `parameter` specified in the TOML configuration file. Supports various key
 arguments to get selections of data in desired types, with or without missing values.
 
 # Arguments
-- `alias`=nothing` : An `alias` for the TOML key, by default an `alias` is not expected. 
+- `alias`=nothing` : An `alias` for the TOML key, by default an `alias` is not expected.
 - `optional=true` : By default specifying a model `parameter` in the TOML file is optional.
         Set to false if the model `parameter` is required.
 - `sel=nothing`: A selection of indices, such as a `Vector{CartesianIndex}` of active cells,
@@ -266,8 +266,8 @@ function ncread(
         end
     end
 
-    # If var has type Config, input parameters can be changed (through scale, offset and 
-    # input NetCDF var) or set to a uniform value (providing a value). Otherwise, input 
+    # If var has type Config, input parameters can be changed (through scale, offset and
+    # input NetCDF var) or set to a uniform value (providing a value). Otherwise, input
     # NetCDF var is read directly.
     var, mod = ncvar_name_modifier(var; config = config)
 
@@ -290,7 +290,7 @@ function ncread(
             # the modifier index is only set in combination with scale and offset for SVectors,
             # provided through the TOML file.
             if length(mod.index) > 1
-                # if index, scale and offset is provided in the TOML as a list.          
+                # if index, scale and offset is provided in the TOML as a list.
                 for i = 1:length(mod.index)
                     A[:, :, mod.index[i]] =
                         A[:, :, mod.index[i]] .* mod.scale[i] .+ mod.offset[i]

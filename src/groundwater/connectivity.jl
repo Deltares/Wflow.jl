@@ -48,7 +48,7 @@ function connection_geometry(I, J, Δx, Δy)
         length1 = 0.5 * Δy[I[1]]
         length2 = 0.5 * Δy[J[1]]
         width = Δx[I[2]]
-    elseif I[2] != J[2]  # connection in x 
+    elseif I[2] != J[2]  # connection in x
         length1 = 0.5 * Δx[I[2]]
         length2 = 0.5 * Δx[J[2]]
         width = Δy[I[1]]

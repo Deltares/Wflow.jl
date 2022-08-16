@@ -5,7 +5,7 @@
     betaseepage::Vector{T} | "-"    # Exponent in soil runoff generation equation [-]
     lp::Vector{T} | "-"             # Fraction of field capacity below which actual evaporation=potential evaporation [-]
     threshold::Vector{T} | "mm"     # Threshold soilwater storage above which AE=PE [mm]
-    k4::Vector{T} | "Δt-1"          # Recession constant baseflow [Δt⁻¹] 
+    k4::Vector{T} | "Δt-1"          # Recession constant baseflow [Δt⁻¹]
     kquickflow::Vector{T} | "Δt-1"  # Recession constant upper reservoir [Δt⁻¹]
     suz::Vector{T} | "mm"           # Level over which k0 is used [mm]
     k0::Vector{T} | "Δt-1"          # Recession constant upper reservoir [Δt⁻¹]
@@ -182,7 +182,7 @@ function update_after_snow(hbv::HBV, config)
         upperzonestorage = hbv.upperzonestorage[i] + in_upperzone
         percolation = min(hbv.perc[i], upperzonestorage - in_upperzone / 2.0)
         upperzonestorage = upperzonestorage - percolation
-        # capillary flux flowing back to soil  
+        # capillary flux flowing back to soil
         capflux = hbv.cflux[i] * ((hbv.fc[i] - soilmoisture) / hbv.fc[i])
         capflux = min(hbv.fc[i] - soilmoisture, capflux)
         upperzonestorage = upperzonestorage - capflux
