@@ -17,7 +17,7 @@ reservoirs = false                  # include reservoir modelling, default is fa
 kin_wave_iteration = false          # enable kinematic wave iterations in the model, default is false
 thicknesslayers = [100, 300, 800]   # specific SBM setting: for each soil layer a thickness [mm] is specified
 min_streamorder = 3                 # minimum stream order to delineate subbasins, default is 4 (for multi-threading computing purposes)</code></pre><h2 id="State-options"><a class="docs-heading-anchor" href="#State-options">State options</a><a id="State-options-1"></a><a class="docs-heading-anchor-permalink" href="#State-options" title="Permalink"></a></h2><p>The <code>state</code> section in the TOML file provides information about the location of input and output states of the model. This section is mostly relevant if the model needs to be started with a &quot;warm&quot; state (i.e. based on the results of a previous simulation). The example below shows how to save the output states of the current simulation, so it can be used to initialize another model in the future. Details on the settings required to start a model with a warm state can be found in the <a href="../additional_options/#reinit">additional model options</a>. If it is not required to store the outstates of the current simulation, the entire <code>state</code> section can be removed.</p><pre><code class="language-toml hljs">[state]
-path_input = &quot;instates-moselle.nc&quot; 
+path_input = &quot;instates-moselle.nc&quot;
 path_output = &quot;outstates-moselle.nc&quot;
 
 [state.vertical]
@@ -64,35 +64,35 @@ forcing = [
 cyclic = [&quot;vertical.leaf_area_index&quot;]
 
 [input.vertical]    # Map internal model variable/parameter names to names of the variables in the NetCDF files
-altitude = &quot;wflow_dem&quot; 
-c = &quot;c&quot; 
-cf_soil = &quot;cf_soil&quot; 
-cfmax = &quot;Cfmax&quot; 
-e_r = &quot;EoverR&quot; 
-infiltcappath = &quot;InfiltCapPath&quot; 
-infiltcapsoil = &quot;InfiltCapSoil&quot; 
-kext = &quot;Kext&quot; 
-&quot;kv₀&quot; = &quot;KsatVer&quot; 
+altitude = &quot;wflow_dem&quot;
+c = &quot;c&quot;
+cf_soil = &quot;cf_soil&quot;
+cfmax = &quot;Cfmax&quot;
+e_r = &quot;EoverR&quot;
+infiltcappath = &quot;InfiltCapPath&quot;
+infiltcapsoil = &quot;InfiltCapSoil&quot;
+kext = &quot;Kext&quot;
+&quot;kv₀&quot; = &quot;KsatVer&quot;
 leaf_area_index = &quot;LAI&quot;             # Cyclic variable
-m = &quot;M&quot; 
-maxleakage = &quot;MaxLeakage&quot; 
-pathfrac = &quot;PathFrac&quot; 
+m = &quot;M&quot;
+maxleakage = &quot;MaxLeakage&quot;
+pathfrac = &quot;PathFrac&quot;
 potential_evaporation = &quot;PET&quot;       # Forcing variable
 precipitation = &quot;P&quot;                 # Forcing variable
-rootdistpar = &quot;rootdistpar&quot; 
-rootingdepth = &quot;RootingDepth&quot; 
-soilminthickness = &quot;SoilMinThickness&quot; 
-soilthickness = &quot;SoilThickness&quot; 
-specific_leaf = &quot;Sl&quot; 
-storage_wood = &quot;Swood&quot; 
+rootdistpar = &quot;rootdistpar&quot;
+rootingdepth = &quot;RootingDepth&quot;
+soilminthickness = &quot;SoilMinThickness&quot;
+soilthickness = &quot;SoilThickness&quot;
+specific_leaf = &quot;Sl&quot;
+storage_wood = &quot;Swood&quot;
 temperature = &quot;TEMP&quot;                # Forcing variable
-tt = &quot;TT&quot; 
-tti = &quot;TTI&quot; 
-ttm = &quot;TTM&quot; 
-w_soil = &quot;wflow_soil&quot; 
-water_holding_capacity = &quot;WHC&quot; 
-waterfrac = &quot;WaterFrac&quot; 
-&quot;θᵣ&quot; = &quot;thetaR&quot; 
+tt = &quot;TT&quot;
+tti = &quot;TTI&quot;
+ttm = &quot;TTM&quot;
+w_soil = &quot;wflow_soil&quot;
+water_holding_capacity = &quot;WHC&quot;
+waterfrac = &quot;WaterFrac&quot;
+&quot;θᵣ&quot; = &quot;thetaR&quot;
 &quot;θₛ&quot; = &quot;thetaS&quot;
 
 [input.lateral.river]
@@ -106,7 +106,7 @@ ksathorfrac = &quot;KsatHorFrac&quot;
 
 [input.lateral.land]
 n = &quot;N&quot;
-slope = &quot;Slope&quot;</code></pre><h2 id="Output-NetCDF-section"><a class="docs-heading-anchor" href="#Output-NetCDF-section">Output NetCDF section</a><a id="Output-NetCDF-section-1"></a><a class="docs-heading-anchor-permalink" href="#Output-NetCDF-section" title="Permalink"></a></h2><h3 id="Grid-data"><a class="docs-heading-anchor" href="#Grid-data">Grid data</a><a id="Grid-data-1"></a><a class="docs-heading-anchor-permalink" href="#Grid-data" title="Permalink"></a></h3><p>This optional section of the TOML file contains the output netCDF file for writing gridded model output, including a mapping between internal model parameter components and external netCDF variables. </p><p>To limit the size of the resulting NetCDF file, file compression can be enabled. This causes an increase in computational time, but can significantly reduce the file size of the NetCDF file. This can be enabled by setting the <code>compressionlevel</code> variable to any value between <code>0</code> and <code>9</code>. A setting of <code>0</code> indicates that compression is not enabled, and values between 1 and 9 indicate different levels of compression (1: least compression, smallest impact on run time, 9: highest compression level, biggest impact on run times). If file size becomes an issue, we recommend using a value of <code>1</code>, as higher compression levels generally have only a limited effect on the file size.</p><pre><code class="language-toml hljs">[output]    
+slope = &quot;Slope&quot;</code></pre><h2 id="Output-NetCDF-section"><a class="docs-heading-anchor" href="#Output-NetCDF-section">Output NetCDF section</a><a id="Output-NetCDF-section-1"></a><a class="docs-heading-anchor-permalink" href="#Output-NetCDF-section" title="Permalink"></a></h2><h3 id="Grid-data"><a class="docs-heading-anchor" href="#Grid-data">Grid data</a><a id="Grid-data-1"></a><a class="docs-heading-anchor-permalink" href="#Grid-data" title="Permalink"></a></h3><p>This optional section of the TOML file contains the output netCDF file for writing gridded model output, including a mapping between internal model parameter components and external netCDF variables.</p><p>To limit the size of the resulting NetCDF file, file compression can be enabled. This causes an increase in computational time, but can significantly reduce the file size of the NetCDF file. This can be enabled by setting the <code>compressionlevel</code> variable to any value between <code>0</code> and <code>9</code>. A setting of <code>0</code> indicates that compression is not enabled, and values between 1 and 9 indicate different levels of compression (1: least compression, smallest impact on run time, 9: highest compression level, biggest impact on run times). If file size becomes an issue, we recommend using a value of <code>1</code>, as higher compression levels generally have only a limited effect on the file size.</p><pre><code class="language-toml hljs">[output]
 path = &quot;output_moselle.nc&quot;         # Location of the output file
 compressionlevel = 1               # Amount of compression (default 0)
 
@@ -201,7 +201,7 @@ waterfrac = &quot;WaterFrac&quot;
 c.value = [10.5, 11.25, 9.5, 7.0]</code></pre><p>To change for example the forcing variable <code>precipitation</code> with a <code>scale</code> factor of 1.5 and an <code>offset</code> of 0.5:</p><pre><code class="language-toml hljs">[input.vertical.precipitation]
 netcdf.variable.name = &quot;P&quot;
 scale = 1.5
-offset = 0.5</code></pre><p>For input parameters with an extra dimension it is also possible to modify multiple indices at once with different <code>scale</code> and <code>offset</code> values. In the example below the external NetCDF variable <code>c</code> is modified at <code>layer</code> index 1 and 2, with a <code>scale</code> factor of 2.0 and 1.5 respectively, and an <code>offset</code> of 0.0 for both indices: </p><pre><code class="language-toml hljs">[input.vertical.c]
+offset = 0.5</code></pre><p>For input parameters with an extra dimension it is also possible to modify multiple indices at once with different <code>scale</code> and <code>offset</code> values. In the example below the external NetCDF variable <code>c</code> is modified at <code>layer</code> index 1 and 2, with a <code>scale</code> factor of 2.0 and 1.5 respectively, and an <code>offset</code> of 0.0 for both indices:</p><pre><code class="language-toml hljs">[input.vertical.c]
 netcdf.variable.name = &quot;c&quot;
 scale = [2.0, 1.5]
 offset = [0.0, 0.0]
@@ -215,4 +215,4 @@ layer = [1, 2]</code></pre><h2 id="Fixed-forcing-values"><a class="docs-heading-
 value = 10</code></pre><p>Note that the mapping to the external netCDF variable listed under the section <code>[input.vertical]</code> needs to be removed or commented out:</p><pre><code class="language-toml hljs">[input.vertical]
 potential_evaporation = &quot;PET&quot; # forcing
 # temperature = &quot;TEMP&quot; # forcing
-precipitation = &quot;P&quot; # forcing</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../step1_requirements/">« Step 1: Understanding the requirements</a><a class="docs-footer-nextpage" href="../step3_input_data/">Step 3: Preparing the input data »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.22 on <span class="colophon-date" title="Tuesday 16 August 2022 09:54">Tuesday 16 August 2022</span>. Using Julia version 1.7.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+precipitation = &quot;P&quot; # forcing</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../step1_requirements/">« Step 1: Understanding the requirements</a><a class="docs-footer-nextpage" href="../step3_input_data/">Step 3: Preparing the input data »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.22 on <span class="colophon-date" title="Tuesday 16 August 2022 10:25">Tuesday 16 August 2022</span>. Using Julia version 1.7.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
