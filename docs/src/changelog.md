@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   location in update river flow.
 - Limit flow (`qx`, `qy` and `q`) in local inertial model when water is not available (set
   to zero).
+- In the grid output netCDFs, don't set the `_FillValue` attribute, since the CF conventions
+  don't allow it.
 
 ### Changed
 - Changed depth `h` for reservoir and lake locations as part of the river local inertial
