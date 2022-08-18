@@ -311,7 +311,7 @@ end
 
         x = collect(Wflow.nc_dim(ds, :x))
         @test length(x) == 291
-        @test x isa Vector{Union{Float64,Missing}}
+        @test x isa Vector{Float64}
 
         @test Wflow.internal_dim_name(:lon) == :x
         @test Wflow.internal_dim_name(:latitude) == :y
