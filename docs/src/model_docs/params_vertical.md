@@ -27,7 +27,7 @@ specific_leaf = "Sl"
 | **`cf_soil`**  | controls soil infiltration reduction factor when soil is frozen  | - | 0.038  |
 | **`g_tt`**  | threshold temperature for snowfall above glacier  | ᵒC| 0.0  |
 | **`g_cfmax`**  | Degree-day factor for glacier  | mm ᵒC``^{-1}`` Δt``^{-1}``| 3.0 mm ᵒC``^{-1}`` day``^{-1}`` |
-| **`g_sifrac`**  | fraction of the snowpack on top of the glacier converted into ice  | - | 0.001  |
+| **`g_sifrac`**  | fraction of the snowpack on top of the glacier converted into ice  | Δt``^{-1}`` | 0.001 day``^{-1}`` |
 | **`glacierfrac`**  | fraction covered by a glacier | - | 0.0  |
 | **`glacierstore`**  | water within the glacier  | mm | 5500.0  |
 | **`θₛ`** (`theta_s`) | saturated water content (porosity) | - | 0.6  |
@@ -134,7 +134,7 @@ internal model parameter to the external netCDF variable.
 | **`whc`**  | water holding capacity as fraction of current snow pack  | - | 0.1  |
 | **`g_tt`**  | threshold temperature for snowfall above glacier  | ᵒC| 0.0  |
 | **`g_cfmax`**  | Degree-day factor for glacier  | mm ᵒC``^{-1}`` Δt``^{-1}``| 3.0 mm ᵒC``^{-1}`` day``^{-1}`` |
-| **`g_sifrac`**  | fraction of the snowpack on top of the glacier converted into ice  | - | 0.001  |
+| **`g_sifrac`**  | fraction of the snowpack on top of the glacier converted into ice  | Δt``^{-1}``| 0.001 day``^{-1}`` |
 | **`glacierfrac`**  | fraction covered by a glacier | - | 0.0  |
 | **`glacierstore`**  | water within the glacier  | mm | 5500.0  |
 | **`fc`**  | field capacity  | mm | 260.0  |
@@ -199,7 +199,7 @@ internal model parameter to the external netCDF variable.
 | **`cfr`**  | refreezing efficiency constant in refreezing of freewater in snow | - | 0.05  |
 | **`g_tt`**  | threshold temperature for snowfall above glacier  | ᵒC| 0.0  |
 | **`g_cfmax`**  | Degree-day factor for glacier  | mm ᵒC``^{-1}`` Δt``^{-1}``| 3.0 mm ᵒC``^{-1}`` day``^{-1}`` |
-| **`g_sifrac`**  | fraction of the snowpack on top of the glacier converted into ice  | - | 0.001  |
+| **`g_sifrac`**  | fraction of the snowpack on top of the glacier converted into ice  | Δt``^{-1}`` | 0.001 day``^{-1}`` |
 | **`glacierfrac`**  | fraction covered by a glacier | - | 0.0  |
 | **`glacierstore`**  | water within the glacier  | mm | 5500.0  |
 | **`ecorr`**  | evaporation correction | - | 1.0  |
