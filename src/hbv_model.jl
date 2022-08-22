@@ -70,7 +70,7 @@ function initialize_hbv_model(config::Config)
         defaults = 0.001,
         type = Float,
         fill = 0.0,
-    )
+    ) .* (Δt / basetimestep)
     glacierfrac = ncread(
         nc,
         config,

@@ -29,7 +29,7 @@
     whc::Vector{T} | "-"                # Fraction of snow volume that can store water [-]
     g_tt::Vector{T} | "ᵒC"              # Threshold temperature for snowfall above glacier [ᵒC]
     g_cfmax::Vector{T} | "mm ᵒC-1 Δt-1" # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹] for glacier
-    g_sifrac::Vector{T} | "-"           # Fraction of the snowpack on top of the glacier converted into ice [-]
+    g_sifrac::Vector{T} | "Δt-1"        # Fraction of the snowpack on top of the glacier converted into ice [Δt⁻¹]
     glacierstore::Vector{T} | "mm"      # Water within the glacier [mm]
     glacierfrac::Vector{T} | "-"        # Fraction covered by a glacier [-]
     precipitation::Vector{T}            # Precipitation [mm Δt⁻¹]

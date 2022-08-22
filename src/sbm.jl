@@ -173,8 +173,8 @@
     g_tt::Vector{T} | "ᵒC"
     # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹] for glacier
     g_cfmax::Vector{T} | "mm ᵒC-1 Δt-1"
-    # Fraction of the snowpack on top of the glacier converted into ice [-]
-    g_sifrac::Vector{T} | "-"
+    # Fraction of the snowpack on top of the glacier converted into ice [Δt⁻¹]
+    g_sifrac::Vector{T} | "Δt-1"
     # Water within the glacier [mm]
     glacierstore::Vector{T} | "mm"
     # Fraction covered by a glacier [-]
@@ -317,7 +317,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         defaults = 0.001,
         type = Float,
         fill = 0.0,
-    )
+    ) .* (Δt / basetimestep)
     glacierfrac = ncread(
         nc,
         config,
