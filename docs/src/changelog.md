@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - In the grid output netCDFs, don't set the `_FillValue` attribute, since the CF conventions
   don't allow it.
 - Glacier parameter `g_sifrac` needs to be converted during initialization (time dependent).
+- The check that the sum of adaptive timesteps (`Δt`) of the local inertial model (1D and
+  2D) does not exceed the model timestep.
 
 ### Changed
 - Changed depth `h` for reservoir and lake locations as part of the river local inertial

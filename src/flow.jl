@@ -431,40 +431,40 @@ end
 end
 
 @get_units @with_kw struct ShallowWaterRiver{T,R,L}
-    n::Int | "-"                        # number of cells
-    ne::Int | "-"                       # number of edges/links
-    g::T | "m s-2"                      # acceleration due to gravity
-    α::T | "-"                          # stability coefficient (Bates et al., 2010)
-    h_thresh::T | "m"                   # depth threshold for calculating flow
-    Δt::T | "s"                         # model time step [s]
-    q::Vector{T} | "m3 s-1"             # river discharge (subgrid channel)
-    q0::Vector{T} | "m3 s-1"            # river discharge (subgrid channel) at previous time step
-    q_av::Vector{T} | "m3 s-1"          # average river discharge [m³ s⁻¹]
-    zb_max::Vector{T} | "m"             # maximum channel bed elevation
-    mannings_n::Vector{T} | "s m-1/3"   # Manning's roughness at edge/link
-    h::Vector{T} | "m"                  # water depth
-    η_max::Vector{T} | "m"              # maximum water elevation
-    hf::Vector{T} | "m"                 # water depth at edge/link
-    h_av::Vector{T} | "m"               # average water depth
-    dl::Vector{T} | "m"                 # river length
-    dl_at_link::Vector{T} | "m"         # river length at edge/link
-    width::Vector{T} | "m"              # river width
-    width_at_link::Vector{T} | "m"      # river width at edge/link
-    a::Vector{T} | "m2"                 # flow area at edge/link
-    r::Vector{T} | "m"                  # wetted perimeter at edge/link
-    volume::Vector{T} | "m3"            # river volume
-    error::Vector{T} | "m3"             # error volume
-    inwater::Vector{T} | "m3 s-1"       # lateral inflow [m³ s⁻¹]
-    inflow::Vector{T} | "m3 s-1"        # external inflow (abstraction/supply/demand) [m³ s⁻¹]
-    inflow_wb::Vector{T} | "m3 s-1"     # inflow waterbody (lake or reservoir model) from land part [m³ s⁻¹]
-    bankfull_volume::Vector{T} | "m3"   # bankfull volume
-    bankfull_depth::Vector{T} | "m"     # bankfull depth
-    zb::Vector{T} | "m"                 # river bed elevation
-    froude_limit::Bool | "-"            # if true a check is performed if froude number > 1.0 (algorithm is modified)
-    reservoir_index::Vector{Int} | "-"  # map cell to 0 (no reservoir) or i (pick reservoir i in reservoir field)
-    lake_index::Vector{Int} | "-"       # map cell to 0 (no lake) or i (pick lake i in lake field)
-    reservoir::R                        # Reservoir model struct of arrays
-    lake::L                             # Lake model struct of arrays
+    n::Int | "-"                            # number of cells
+    ne::Int | "-"                           # number of edges/links
+    g::T | "m s-2"                          # acceleration due to gravity
+    α::T | "-"                              # stability coefficient (Bates et al., 2010)
+    h_thresh::T | "m"                       # depth threshold for calculating flow
+    Δt::T | "s"                             # model time step [s]
+    q::Vector{T} | "m3 s-1"                 # river discharge (subgrid channel)
+    q0::Vector{T} | "m3 s-1"                # river discharge (subgrid channel) at previous time step
+    q_av::Vector{T} | "m3 s-1"              # average river discharge [m³ s⁻¹]
+    zb_max::Vector{T} | "m"                 # maximum channel bed elevation
+    mannings_n_sq::Vector{T} | "(s m-1/3)2" # Manning's roughness squared at edge/link
+    h::Vector{T} | "m"                      # water depth
+    η_max::Vector{T} | "m"                  # maximum water elevation
+    hf::Vector{T} | "m"                     # water depth at edge/link
+    h_av::Vector{T} | "m"                   # average water depth
+    dl::Vector{T} | "m"                     # river length
+    dl_at_link::Vector{T} | "m"             # river length at edge/link
+    width::Vector{T} | "m"                  # river width
+    width_at_link::Vector{T} | "m"          # river width at edge/link
+    a::Vector{T} | "m2"                     # flow area at edge/link
+    r::Vector{T} | "m"                      # wetted perimeter at edge/link
+    volume::Vector{T} | "m3"                # river volume
+    error::Vector{T} | "m3"                 # error volume
+    inwater::Vector{T} | "m3 s-1"           # lateral inflow [m³ s⁻¹]
+    inflow::Vector{T} | "m3 s-1"            # external inflow (abstraction/supply/demand) [m³ s⁻¹]
+    inflow_wb::Vector{T} | "m3 s-1"         # inflow waterbody (lake or reservoir model) from land part [m³ s⁻¹]
+    bankfull_volume::Vector{T} | "m3"       # bankfull volume
+    bankfull_depth::Vector{T} | "m"         # bankfull depth
+    zb::Vector{T} | "m"                     # river bed elevation
+    froude_limit::Bool | "-"                # if true a check is performed if froude number > 1.0 (algorithm is modified)
+    reservoir_index::Vector{Int} | "-"      # map cell to 0 (no reservoir) or i (pick reservoir i in reservoir field)
+    lake_index::Vector{Int} | "-"           # map cell to 0 (no lake) or i (pick lake i in lake field)
+    reservoir::R                            # Reservoir model struct of arrays
+    lake::L                                 # Lake model struct of arrays
 end
 
 function initialize_shallowwater_river(
@@ -541,16 +541,17 @@ function initialize_shallowwater_river(
     zb_max = fill(Float(0), _ne)
     width_at_link = fill(Float(0), _ne)
     length_at_link = fill(Float(0), _ne)
-    mannings_n = fill(Float(0), _ne)
+    mannings_n_sq = fill(Float(0), _ne)
     for i = 1:_ne
         src_node = nodes_at_link.src[i]
         dst_node = nodes_at_link.dst[i]
         zb_max[i] = max(zb[src_node], zb[dst_node])
         width_at_link[i] = min(width[src_node], width[dst_node])
         length_at_link[i] = 0.5 * (dl[dst_node] + dl[src_node])
-        mannings_n[i] =
+        mannings_n =
             (n_river[dst_node] * dl[dst_node] + n_river[src_node] * dl[src_node]) /
             (dl[dst_node] + dl[src_node])
+        mannings_n_sq[i] = mannings_n * mannings_n
     end
 
     # set depth h to zero (including reservoir and lake locations)
@@ -567,7 +568,7 @@ function initialize_shallowwater_river(
         q0 = zeros(_ne),
         q_av = zeros(_ne),
         zb_max = zb_max,
-        mannings_n = mannings_n,
+        mannings_n_sq = mannings_n_sq,
         h = h,
         η_max = zeros(_ne),
         hf = zeros(_ne),
@@ -648,7 +649,7 @@ function shallowwater_river_update(
                     sw.a[i],
                     sw.r[i],
                     sw.dl_at_link[i],
-                    sw.mannings_n[i],
+                    sw.mannings_n_sq[i],
                     sw.g,
                     sw.froude_limit,
                     Δt,
@@ -736,31 +737,31 @@ end
 const dirs = (:yd, :xd, :xu, :yu)
 
 @get_units @with_kw struct ShallowWaterLand{T}
-    n::Int | "-"                        # number of cells
-    xl::Vector{T} | "m"                 # cell length x direction
-    yl::Vector{T} | "m"                 # cell length y direction
-    xwidth::Vector{T} | "m"             # effective flow width x direction (floodplain)
-    ywidth::Vector{T} | "m"             # effective flow width y direction (floodplain)
-    g::T | "m2 s-1"                     # acceleration due to gravity
-    θ::T | "-"                          # weighting factor (de Almeida et al., 2012)
-    α::T | "-"                          # stability coefficient (de Almeida et al., 2012)
-    h_thresh::T | "m"                   # depth threshold for calculating flow
-    Δt::T | "s"                         # model time step [s]
-    qy0::Vector{T} | "m3 s-1"           # flow in y direction at previous time step
-    qx0::Vector{T} | "m3 s-1"           # flow in x direction at previous time step
-    qx::Vector{T} | "m3 s-1"            # flow in x direction
-    qy::Vector{T} | "m3 s-1"            # flow in y direction
-    zx_max::Vector{T} | "m"             # maximum cell elevation (x direction)
-    zy_max::Vector{T} | "m"             # maximum cell elevation (y direction)
-    mannings_n::Vector{T} | "s m-1/3"   # Manning's roughness
-    volume::Vector{T} | "m3"            # total volume of cell (including river volume for river cells)
-    error::Vector{T} | "m3"             # error volume
-    runoff::Vector{T} | "m3 s-1"        # runoff from hydrological model
-    h::Vector{T} | "m"                  # water depth of cell (for river cells the reference is the river bed elevation `zb`)
-    z::Vector{T} | "m"                  # elevation of cell
-    froude_limit::Bool | "-"            # if true a check is performed if froude number > 1.0 (algorithm is modified)
-    rivercells::Vector{Bool} | "-"      # river cells
-    h_av::Vector{T} | "m"               # average water depth (for river cells the reference is the river bed elevation `zb`)
+    n::Int | "-"                            # number of cells
+    xl::Vector{T} | "m"                     # cell length x direction
+    yl::Vector{T} | "m"                     # cell length y direction
+    xwidth::Vector{T} | "m"                 # effective flow width x direction (floodplain)
+    ywidth::Vector{T} | "m"                 # effective flow width y direction (floodplain)
+    g::T | "m2 s-1"                         # acceleration due to gravity
+    θ::T | "-"                              # weighting factor (de Almeida et al., 2012)
+    α::T | "-"                              # stability coefficient (de Almeida et al., 2012)
+    h_thresh::T | "m"                       # depth threshold for calculating flow
+    Δt::T | "s"                             # model time step [s]
+    qy0::Vector{T} | "m3 s-1"               # flow in y direction at previous time step
+    qx0::Vector{T} | "m3 s-1"               # flow in x direction at previous time step
+    qx::Vector{T} | "m3 s-1"                # flow in x direction
+    qy::Vector{T} | "m3 s-1"                # flow in y direction
+    zx_max::Vector{T} | "m"                 # maximum cell elevation (x direction)
+    zy_max::Vector{T} | "m"                 # maximum cell elevation (y direction)
+    mannings_n_sq::Vector{T} | "(s m-1/3)2" # Manning's roughness squared
+    volume::Vector{T} | "m3"                # total volume of cell (including river volume for river cells)
+    error::Vector{T} | "m3"                 # error volume
+    runoff::Vector{T} | "m3 s-1"            # runoff from hydrological model
+    h::Vector{T} | "m"                      # water depth of cell (for river cells the reference is the river bed elevation `zb`)
+    z::Vector{T} | "m"                      # elevation of cell
+    froude_limit::Bool | "-"                # if true a check is performed if froude number > 1.0 (algorithm is modified)
+    rivercells::Vector{Bool} | "-"          # river cells
+    h_av::Vector{T} | "m"                   # average water depth (for river cells the reference is the river bed elevation `zb`)
 end
 
 function initialize_shallowwater_land(
@@ -868,7 +869,7 @@ function initialize_shallowwater_land(
         qy = zeros(n + 1),
         zx_max = zx_max,
         zy_max = zy_max,
-        mannings_n = n_land,
+        mannings_n_sq = n_land.* n_land,
         volume = zeros(n),
         error = zeros(n),
         runoff = zeros(n),
@@ -940,12 +941,11 @@ function update(
         Δt_river = stable_timestep(swr)
         Δt_land = stable_timestep(sw)
         Δt = min(Δt_river, Δt_land)
-        shallowwater_river_update(swr, network.river, Δt, inflow_wb, doy, update_h)
-        update(sw, swr, network, Δt)
-
         if t + Δt > swr.Δt
             Δt = swr.Δt - t
         end
+        shallowwater_river_update(swr, network.river, Δt, inflow_wb, doy, update_h)
+        update(sw, swr, network, Δt)
         t = t + Δt
     end
     swr.q_av ./= swr.Δt
@@ -972,7 +972,7 @@ function update(sw::ShallowWaterLand{T}, swr::ShallowWaterRiver{T}, network, Δt
 
         # the effective flow width is zero when the river width exceeds the cell width (dy
         # for flow in x dir) and floodplain flow is not calculated.
-        if xu <= sw.n && sw.ywidth[i] != 0.0
+        if xu <= sw.n && sw.ywidth[i] != T(0.0)
 
             η_x = sw.z[i] + sw.h[i]
             η_xu = sw.z[xu] + sw.h[xu]
@@ -980,7 +980,7 @@ function update(sw::ShallowWaterLand{T}, swr::ShallowWaterRiver{T}, network, Δt
             hf = (η_max - sw.zx_max[i])
 
             if hf > sw.h_thresh
-                length = 0.5 * (sw.xl[i] + sw.xl[xu]) # can be precalculated
+                length = T(0.5) * (sw.xl[i] + sw.xl[xu]) # can be precalculated
                 sw.qx[i] = local_inertial_flow(
                     sw.θ,
                     sw.qx0[i],
@@ -991,20 +991,20 @@ function update(sw::ShallowWaterLand{T}, swr::ShallowWaterRiver{T}, network, Δt
                     hf,
                     sw.ywidth[i],
                     length,
-                    sw.mannings_n[i],
+                    sw.mannings_n_sq[i],
                     sw.g,
                     sw.froude_limit,
                     Δt,
                 )
                 # limit qx in case water is not available
-                if sw.h[i] <= 0.0
-                    sw.qx[i] = min(sw.qx[i], 0.0)
+                if sw.h[i] <= T(0.0)
+                    sw.qx[i] = min(sw.qx[i], T(0.0))
                 end
-                if sw.h[xu] <= 0.0
-                    sw.qx[i] = max(sw.qx[i], 0.0)
+                if sw.h[xu] <= T(0.0)
+                    sw.qx[i] = max(sw.qx[i], T(0.0))
                 end
             else
-                sw.qx[i] = 0.0
+                sw.qx[i] = T(0.0)
             end
         end
 
@@ -1012,7 +1012,7 @@ function update(sw::ShallowWaterLand{T}, swr::ShallowWaterRiver{T}, network, Δt
 
         # the effective flow width is zero when the river width exceeds the cell width (dx
         # for flow in y dir) and floodplain flow is not calculated.
-        if yu <= sw.n && sw.xwidth[i] != 0.0
+        if yu <= sw.n && sw.xwidth[i] != T(0.0)
 
             η_y = sw.z[i] + sw.h[i]
             η_yu = sw.z[yu] + sw.h[yu]
@@ -1031,20 +1031,20 @@ function update(sw::ShallowWaterLand{T}, swr::ShallowWaterRiver{T}, network, Δt
                     hf,
                     sw.xwidth[i],
                     length,
-                    sw.mannings_n[i],
+                    sw.mannings_n_sq[i],
                     sw.g,
                     sw.froude_limit,
                     Δt,
                 )
                 # limit qy in case water is not available
-                if sw.h[i] <= 0.0
-                    sw.qy[i] = min(sw.qy[i], 0.0)
+                if sw.h[i] <= T(0.0)
+                    sw.qy[i] = min(sw.qy[i], T(0.0))
                 end
-                if sw.h[yu] <= 0.0
-                    sw.qy[i] = max(sw.qy[i], 0.0)
+                if sw.h[yu] <= T(0)
+                    sw.qy[i] = max(sw.qy[i], T(0.0))
                 end
             else
-                sw.qy[i] = 0.0
+                sw.qy[i] = T(0.0)
             end
         end
     end
@@ -1069,9 +1069,9 @@ function update(sw::ShallowWaterLand{T}, swr::ShallowWaterRiver{T}, network, Δt
                         swr.inflow[inds_riv[i]] +
                         sw.runoff[i]
                     ) * Δt
-                if sw.volume[i] < 0.0
+                if sw.volume[i] < T(0.0)
                     sw.error[i] = sw.error[i] + abs(sw.volume[i])
-                    sw.volume[i] = 0.0 # set volume to zero
+                    sw.volume[i] = T(0.0) # set volume to zero
                 end
                 if sw.volume[i] >= swr.bankfull_volume[inds_riv[i]]
                     swr.h[inds_riv[i]] =
@@ -1084,7 +1084,7 @@ function update(sw::ShallowWaterLand{T}, swr::ShallowWaterRiver{T}, network, Δt
                 else
                     swr.h[inds_riv[i]] =
                         sw.volume[i] / (swr.dl[inds_riv[i]] * swr.width[inds_riv[i]])
-                    sw.h[i] = 0.0
+                    sw.h[i] = T(0.0)
                     swr.volume[inds_riv[i]] = sw.volume[i]
                 end
                 swr.h_av[inds_riv[i]] += swr.h[inds_riv[i]] * Δt
@@ -1092,9 +1092,9 @@ function update(sw::ShallowWaterLand{T}, swr::ShallowWaterRiver{T}, network, Δt
         else
             sw.volume[i] +=
                 (sw.qx[xd] - sw.qx[i] + sw.qy[yd] - sw.qy[i] + sw.runoff[i]) * Δt
-            if sw.volume[i] < 0.0
+            if sw.volume[i] < T(0.0)
                 sw.error[i] = sw.error[i] + abs(sw.volume[i])
-                sw.volume[i] = 0.0 # set volume to zero
+                sw.volume[i] = T(0.0) # set volume to zero
             end
             sw.h[i] = sw.volume[i] / (sw.xl[i] * sw.yl[i])
         end

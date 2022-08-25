@@ -153,16 +153,17 @@ end
     zb_max = fill(0.0, _ne)
     width_at_link = fill(0.0, _ne)
     length_at_link = fill(0.0, _ne)
-    mannings_n = fill(0.0, _ne)
+    mannings_n_sq = fill(0.0, _ne)
     for i = 1:_ne
         zb_max[i] = max(zb[nodes_at_link.src[i]], zb[nodes_at_link.dst[i]])
         width_at_link[i] = min(width[nodes_at_link.dst[i]], width[nodes_at_link.src[i]])
         length_at_link[i] = 0.5 * (dl[nodes_at_link.dst[i]] + dl[nodes_at_link.src[i]])
-        mannings_n[i] =
+        mannings_n =
             (
                 n_river[nodes_at_link.dst[i]] * dl[nodes_at_link.dst[i]] +
                 n_river[nodes_at_link.src[i]] * dl[nodes_at_link.src[i]]
             ) / (dl[nodes_at_link.dst[i]] + dl[nodes_at_link.src[i]])
+        mannings_n_sq[i] = mannings_n * mannings_n
     end
 
 
@@ -189,7 +190,7 @@ end
         q = zeros(_ne),
         q_av = zeros(_ne),
         zb_max = zb_max,
-        mannings_n = mannings_n,
+        mannings_n_sq = mannings_n_sq,
         h = h_init,
         η_max = zeros(_ne),
         hf = zeros(_ne),

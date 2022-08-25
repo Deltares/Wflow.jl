@@ -247,21 +247,23 @@ function local_inertial_riverflow(
     A,
     R,
     length,
-    mannings_n,
+    mannings_n_sq,
     g,
     froude_limit,
     Δt,
 )
 
     slope = (η1 - η0) / length
+    pow_R = cbrt(R*R*R*R)
+    unit = one(hf)
     q = (
         (q0 - g * A * Δt * slope) /
-        (1.0 + g * Δt * pow(mannings_n, 2.0) * abs(q0) / (pow(R, 4.0 / 3.0) * A))
+        (unit + g * Δt * mannings_n_sq * abs(q0) / (pow_R * A))
     )
 
     # if froude number > 1.0, limit flow
     if froude_limit
-        fr = (q / A) / pow(g * hf, 0.5)
+        fr = (q / A) / sqrt(g * hf)
         if abs(fr) > 1.0 && q > 0.0
             q = sqrt(g * hf) * A
         elseif abs(fr) > 1.0 && q < 0.0
@@ -288,7 +290,7 @@ function local_inertial_flow(
     hf,
     width,
     length,
-    mannings_n,
+    mannings_n_sq,
     g,
     froude_limit,
     Δt,
@@ -297,9 +299,11 @@ function local_inertial_flow(
     slope = (η1 - η0) / length
     unit = one(θ)
     half = oftype(θ, 0.5)
+    pow_hf = cbrt(hf*hf*hf*hf*hf*hf*hf)
+
     q = (
         ((θ * q0 + half * (unit - θ) * (qu + qd)) - g * hf * width * Δt * slope) /
-        (unit + g * Δt * (mannings_n^2) * abs(q0) / (pow(hf, Float(7 / 3)) * width))
+        (unit + g * Δt * mannings_n_sq * abs(q0) / (pow_hf * width))
     )
     # if froude number > 1.0, limit flow
     if froude_limit
