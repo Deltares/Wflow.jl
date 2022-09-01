@@ -15,6 +15,7 @@ import Polynomials
 using DelimitedFiles
 using Logging
 using QuadGK
+import Aqua
 
 const BMI = BasicModelInterface
 const Float = Wflow.Float
@@ -90,3 +91,5 @@ with_logger(NullLogger()) do
         include("run_flextopo.jl")
     end
 end
+
+Aqua.test_all(Wflow; ambiguities=false)
