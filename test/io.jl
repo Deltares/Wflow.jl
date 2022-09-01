@@ -4,7 +4,7 @@ using TOML
 using CFTime
 using Random
 using UnPack
-using Logging
+using LoggingExtras
 
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 parsed_toml = TOML.parsefile(tomlpath)
