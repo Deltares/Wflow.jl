@@ -13,7 +13,7 @@ using Base.Threads
 using BasicModelInterface
 import Polynomials
 using DelimitedFiles
-using Logging
+using LoggingExtras
 using QuadGK
 import Aqua
 
@@ -89,7 +89,7 @@ with_logger(NullLogger()) do
         include("run_sediment.jl")
         include("subdomains.jl")
         include("run_flextopo.jl")
+
+        Aqua.test_all(Wflow; ambiguities=false)
     end
 end
-
-Aqua.test_all(Wflow; ambiguities=false)
