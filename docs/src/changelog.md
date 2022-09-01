@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 
 ### Fixed
+
+### Changed
+
+### Added
+
+## v0.6.2 - 2022-09-01
+
+### Fixed
 - Two issues related to reservoir and lake locations as part of local inertial model: 1)
   added as boundary points to the update of overland flow, 2) fixed check reservoir and lake
   location in update river flow.
