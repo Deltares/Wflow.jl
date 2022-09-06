@@ -767,7 +767,7 @@ function update_until_recharge(sbm::SBM, config)
     modelglacier = get(config.model, "glacier", false)::Bool
     modelsnow = get(config.model, "snow", false)::Bool
     transfermethod = get(config.model, "transfermethod", false)::Bool
-    ust = get(config.model, "whole_ust_available", false)::Bool # should be removed from optional setting and code?
+    ust = get(config.model, "whole_ust_available", false)::Bool
 
     threaded_foreach(1:sbm.n, basesize=250) do i
         if modelsnow
@@ -941,8 +941,13 @@ function update_until_recharge(sbm::SBM, config)
             vwc = max(usld[k] / usl[k], 0.0000001)
             head = head_brooks_corey(vwc, sbm.θₛ[i], sbm.θᵣ[i],sbm.c[i][k],sbm.hb[i])
             alpha = rwu_reduction_feddes(head, sbm.h1[i], sbm.h2[i], sbm.h3_high[i], sbm.h3_low[i], sbm.h4[i], sbm.alpha_h1[i], pottrans, Second(sbm.Δt))
-            # availcap is fraction of soil layer containing roots            
-            availcap = min(1.0, max(0.0, (sbm.rootingdepth[i] - sbm.sumlayers[i][k]) / usl[k])) 
+            # availcap is fraction of soil layer containing roots
+            # if `ust` is `true`, the whole unsaturated store is available for transpiration
+            if ust
+                availcap = usld[k] * 0.99
+            else            
+                availcap = min(1.0, max(0.0, (sbm.rootingdepth[i] - sbm.sumlayers[i][k]) / usl[k])) 
+            end
             # the rootfraction is valid for the root length in a soil layer, if zi decreases the root length
             # the rootfraction needs to be adapted
             if k == n_usl && sbm.zi[i] < sbm.rootingdepth[i]
