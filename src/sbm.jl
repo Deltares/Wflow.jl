@@ -39,6 +39,20 @@
     pathfrac::Vector{T} | "-"
     # Rooting depth [mm]
     rootingdepth::Vector{T} | "mm"
+    # Root fraction per soil layer (relative to the total rootingdepth) [-]
+    rootfraction::Vector{SVector{N,T}} | "-"
+    # Soil water pressure head h1 of the root water uptake reduction function (Feddes) [cm]
+    h1::Vector{T} | "cm"
+    # Soil water pressure head h2 of the root water uptake reduction function (Feddes) [cm]
+    h2::Vector{T} | "cm"
+    # Soil water pressure head h3_high of the root water uptake reduction function (Feddes) [cm]
+    h3_high::Vector{T} | "cm"
+    # Soil water pressure head h3_low of the root water uptake reduction function (Feddes) [cm]
+    h3_low::Vector{T} | "cm"
+    # Soil water pressure head h4 of the root water uptake reduction function (Feddes) [cm]
+    h4::Vector{T} | "cm"
+    # Root water uptake reduction at soil water pressure head h1 (0.0 or 1.0) [-]
+    alpha_h1::Vector{T} | "-"
     # Controls how roots are linked to water table [-]
     rootdistpar::Vector{T} | "-"
     # Parameter [mm] controlling capillary rise
@@ -373,7 +387,13 @@ function initialize_sbm(nc, config, riverfrac, inds)
             type = Float,
         ) .* (Δt / basetimestep)
     f = ncread(nc, config, "vertical.f"; sel = inds, defaults = 0.001, type = Float)
-    hb = ncread(nc, config, "vertical.hb"; sel = inds, defaults = 10.0, type = Float)
+    hb = ncread(nc, config, "vertical.hb"; sel = inds, defaults = -10.0, type = Float)
+    h1 = ncread(nc, config, "vertical.h1"; sel = inds, defaults = 0.0, type = Float)
+    h2 = ncread(nc, config, "vertical.h2"; sel = inds, defaults = -100.0, type = Float)
+    h3_high = ncread(nc, config, "vertical.h3_high"; sel = inds, defaults = -400.0, type = Float)
+    h3_low = ncread(nc, config, "vertical.h3_low"; sel = inds, defaults = -1000.0, type = Float)
+    h4 = ncread(nc, config, "vertical.h4"; sel = inds, defaults = -15849.0, type = Float)
+    alpha_h1 = ncread(nc, config, "vertical.alpha_h1"; sel = inds, defaults = 1.0, type = Float)
     soilthickness = ncread(
         nc,
         config,
@@ -492,6 +512,40 @@ function initialize_sbm(nc, config, riverfrac, inds)
         end
     end
 
+    if length(config_thicknesslayers) > 0
+        # root fraction read from nc file, in case of multiple soil layers and TOML file
+        # includes "vertical.rootfraction"
+        if haskey(config.input.vertical, "rootfraction")
+            rootfraction = ncread(
+                nc,
+                config,
+                "vertical.rootfraction";
+                sel = inds,
+                optional = false,
+                type = Float,
+                dimname = :layer,
+            )
+        else
+            # default root fraction in case of multiple soil layers
+            rootfraction = zeros(Float, maxlayers, n)
+            for i = 1:n
+                rtd = min(soilthickness[i] * 0.99, rootingdepth[i])
+                if rtd > 0.0
+                    for k = 1:maxlayers
+                        if (rtd - s_layers[k, i]) >= act_thickl[k, i]
+                            rootfraction[k, i] = act_thickl[k, i] / rtd
+                        else
+                            rootfraction[k, i] = max(rtd - s_layers[k, i], 0.0) / rtd
+                        end
+                    end
+                end
+            end
+        end
+    else
+        # for the case of 1 soil layer
+        rootfraction = ones(Float,maxlayers,n)
+    end
+
     # needed for derived parameters below
     act_thickl = svectorscopy(act_thickl, Val{maxlayers}())
     θₑ = θₛ .- θᵣ
@@ -517,6 +571,12 @@ function initialize_sbm(nc, config, riverfrac, inds)
         kv₀ = kv₀,
         kvfrac = svectorscopy(kvfrac, Val{maxlayers}()),
         hb = hb,
+        h1 = h1,
+        h2 = h2,
+        h3_high = h3_high,
+        h3_low = h3_low,
+        h4 = h4,
+        alpha_h1 = alpha_h1,
         soilthickness = soilthickness,
         act_thickl = act_thickl,
         sumlayers = svectorscopy(s_layers, Val{maxlayers + 1}()),
@@ -526,6 +586,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         waterfrac = max.(waterfrac .- riverfrac, Float(0.0)),
         pathfrac = pathfrac,
         rootingdepth = rootingdepth,
+        rootfraction = svectorscopy(rootfraction, Val{maxlayers}()),
         rootdistpar = rootdistpar,
         cap_hmax = cap_hmax,
         cap_n = cap_n,
@@ -872,30 +933,35 @@ function update_until_recharge(sbm::SBM, config)
         soilevap = soilevapunsat + soilevapsat
         satwaterdepth = sbm.satwaterdepth[i] - soilevapsat
 
-        # transpiration from saturated store
-        wetroots = scurve(sbm.zi[i], rootingdepth, Float(1.0), sbm.rootdistpar[i])
-        actevapsat = min(pottrans * wetroots, satwaterdepth)
-        satwaterdepth = satwaterdepth - actevapsat
-        restpottrans = pottrans - actevapsat
-
-        # actual transpiration from ustore
+        # actual transpiration, first from ustore, potential transpiration is partitioned over
+        # depth based on the rootfraction
         actevapustore = 0.0
+        rootfraction_unsat = 0.0
         for k = 1:n_usl
-            ustorelayerdepth, actevapustore, restpottrans = acttransp_unsat_sbm(
-                rootingdepth,
-                usld[k],
-                sbm.sumlayers[i][k],
-                restpottrans,
-                actevapustore,
-                sbm.c[i][k],
-                usl[k],
-                sbm.θₛ[i],
-                sbm.θᵣ[i],
-                sbm.hb[i],
-                ust,
-            )
+            vwc = max(usld[k] / usl[k], 0.0000001)
+            head = head_brooks_corey(vwc, sbm.θₛ[i], sbm.θᵣ[i],sbm.c[i][k],sbm.hb[i])
+            alpha = rwu_reduction_feddes(head, sbm.h1[i], sbm.h2[i], sbm.h3_high[i], sbm.h3_low[i], sbm.h4[i], sbm.alpha_h1[i], pottrans, Second(sbm.Δt))
+            # availcap is fraction of soil layer containing roots            
+            availcap = min(1.0, max(0.0, (sbm.rootingdepth[i] - sbm.sumlayers[i][k]) / usl[k])) 
+            # the rootfraction is valid for the root length in a soil layer, if zi decreases the root length
+            # the rootfraction needs to be adapted
+            if k == n_usl && sbm.zi[i] < sbm.rootingdepth[i]
+                rootfraction_act = sbm.rootfraction[i][k] * (usl[k] / (sbm.rootingdepth[i] - sbm.sumlayers[i][k]))
+            else
+                rootfraction_act = sbm.rootfraction[i][k]
+            end
+            actevapustore_layer = min(alpha * rootfraction_act * pottrans, usld[k] * availcap)
+            rootfraction_unsat = rootfraction_unsat + rootfraction_act
+            ustorelayerdepth = usld[k] - actevapustore_layer
+            actevapustore = actevapustore + actevapustore_layer
             usld = setindex(usld, ustorelayerdepth, k)
         end
+
+        # transpiration from saturated store
+        wetroots = scurve(sbm.zi[i], rootingdepth, Float(1.0), sbm.rootdistpar[i])
+        alpha = rwu_reduction_feddes(Float(0.0), sbm.h1[i], sbm.h2[i], sbm.h3_high[i], sbm.h3_low[i], sbm.h4[i], sbm.alpha_h1[i], pottrans, Second(sbm.Δt))
+        actevapsat = min(pottrans * wetroots * (1.0 - rootfraction_unsat) * alpha, satwaterdepth)
+        satwaterdepth = satwaterdepth - actevapsat
 
         # check soil moisture balance per layer
         du = 0.0

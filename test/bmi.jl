@@ -20,13 +20,13 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 
         @testset "model information functions" begin
             @test BMI.get_component_name(model) == "sbm"
-            @test BMI.get_input_item_count(model) == 183
-            @test BMI.get_output_item_count(model) == 183
+            @test BMI.get_input_item_count(model) == 193
+            @test BMI.get_output_item_count(model) == 193
             @test BMI.get_input_var_names(model)[[1, 5, 150, 174]] == [
                 "vertical.nlayers",
                 "vertical.θᵣ",
-                "lateral.river.sl",
-                "lateral.river.reservoir.targetminfrac",
+                "lateral.land.volume",
+                "lateral.river.alpha_pow",
             ]
         end
 
@@ -50,7 +50,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test_throws ErrorException BMI.get_value_ptr(model, "vertical.")
             dest = zeros(Float, size(model.vertical.zi))
             BMI.get_value(model, "vertical.zi", dest)
-            @test mean(dest) ≈ 276.3767651555451
+            @test mean(dest) ≈ 276.2262553621772
             @test BMI.get_value_at_indices(
                 model,
                 "vertical.vwc[1]",
@@ -68,7 +68,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
                 "lateral.river.q",
                 zeros(Float, 3),
                 [1, 100, 5617],
-            ) ≈ [0.6211503865184697, 5.219305686635002, 0.026163746306482282]
+            ) ≈ [0.6211786703976018, 5.2195603551292695, 0.026173790374497755]
             BMI.set_value(model, "vertical.zi", fill(300.0, length(model.vertical.zi)))
             @test mean(
                 BMI.get_value(model, "vertical.zi", zeros(Float, size(model.vertical.zi))),
@@ -142,7 +142,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test sbm.interception[1] ≈ 0.6299999952316284f0
             @test sbm.ustorelayerdepth[1][1] ≈ 0.0f0
             @test sbm.snow[1] ≈ 3.1912317735997524f0
-            @test sbm.recharge[5] ≈ -0.0727941579914808f0
+            @test sbm.recharge[5] ≈ -0.01896264297923177f0
             @test sbm.zi[5] ≈ 300.0f0
         end
 
@@ -166,7 +166,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test sbm.interception[1] ≈ 0.6299999952316284
             @test sbm.ustorelayerdepth[1][1] ≈ 0.0f0
             @test sbm.snow[1] ≈ 3.1912317735997524f0
-            @test sbm.recharge[5] ≈ -0.0727941579914808f0
+            @test sbm.recharge[5] ≈ -0.01896264297923177f0
             @test sbm.zi[5] ≈ 250.0f0
             @test sub.zi[5] ≈ 0.25f0
             @test sub.exfiltwater[1] ≈ 1.0f-5
