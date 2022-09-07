@@ -14,7 +14,17 @@ using Dates
     )
     head = Wflow.head_brooks_corey(0.25, 0.6, 0.15, 10.5, -10.0)
     @test head ≈ -90.6299820833844
-    alpha = Wflow.rwu_reduction_feddes(head, -10.0, -100.0, -300.0, -600.0, -15000.0, 0.0, 3.5, Second(86400))
+    alpha = Wflow.rwu_reduction_feddes(
+        head,
+        -10.0,
+        -100.0,
+        -300.0,
+        -600.0,
+        -15000.0,
+        0.0,
+        3.5,
+        Second(86400),
+    )
     @test alpha ≈ 0.8958886898153823
     @test all(
         isapprox.(

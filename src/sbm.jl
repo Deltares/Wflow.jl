@@ -390,10 +390,13 @@ function initialize_sbm(nc, config, riverfrac, inds)
     hb = ncread(nc, config, "vertical.hb"; sel = inds, defaults = -10.0, type = Float)
     h1 = ncread(nc, config, "vertical.h1"; sel = inds, defaults = 0.0, type = Float)
     h2 = ncread(nc, config, "vertical.h2"; sel = inds, defaults = -100.0, type = Float)
-    h3_high = ncread(nc, config, "vertical.h3_high"; sel = inds, defaults = -400.0, type = Float)
-    h3_low = ncread(nc, config, "vertical.h3_low"; sel = inds, defaults = -1000.0, type = Float)
+    h3_high =
+        ncread(nc, config, "vertical.h3_high"; sel = inds, defaults = -400.0, type = Float)
+    h3_low =
+        ncread(nc, config, "vertical.h3_low"; sel = inds, defaults = -1000.0, type = Float)
     h4 = ncread(nc, config, "vertical.h4"; sel = inds, defaults = -15849.0, type = Float)
-    alpha_h1 = ncread(nc, config, "vertical.alpha_h1"; sel = inds, defaults = 1.0, type = Float)
+    alpha_h1 =
+        ncread(nc, config, "vertical.alpha_h1"; sel = inds, defaults = 1.0, type = Float)
     soilthickness = ncread(
         nc,
         config,
@@ -485,7 +488,15 @@ function initialize_sbm(nc, config, riverfrac, inds)
     cap_hmax =
         ncread(nc, config, "vertical.cap_hmax"; sel = inds, defaults = 2000.0, type = Float)
     cap_n = ncread(nc, config, "vertical.cap_n"; sel = inds, defaults = 2.0, type = Float)
-    kc = ncread(nc, config, "vertical.kc"; alias = "vertical.et_reftopot", sel = inds, defaults = 1.0, type = Float)
+    kc = ncread(
+        nc,
+        config,
+        "vertical.kc";
+        alias = "vertical.et_reftopot",
+        sel = inds,
+        defaults = 1.0,
+        type = Float,
+    )
     if haskey(config.input.vertical, "et_reftopot")
         @warn string(
             "The `et_reftopot` key in `[input.vertical]` is now called ",
@@ -548,7 +559,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         end
     else
         # for the case of 1 soil layer
-        rootfraction = ones(Float,maxlayers,n)
+        rootfraction = ones(Float, maxlayers, n)
     end
 
     # needed for derived parameters below
@@ -675,9 +686,12 @@ function initialize_sbm(nc, config, riverfrac, inds)
         # water demand
         paddy = do_water_demand ? initialize_paddy(nc, config, inds) : nothing,
         nonpaddy = do_water_demand ? initialize_nonpaddy(nc, config, inds) : nothing,
-        domestic = do_water_demand ? initialize_domestic_demand(nc, config, inds, Δt) : nothing,
-        industry = do_water_demand ? initialize_domestic_demand(nc, config, inds, Δt) : nothing,
-        livestock = do_water_demand ? initialize_livestock_demand(nc, config, inds, Δt) : nothing,
+        domestic = do_water_demand ? initialize_domestic_demand(nc, config, inds, Δt) :
+                   nothing,
+        industry = do_water_demand ? initialize_domestic_demand(nc, config, inds, Δt) :
+                   nothing,
+        livestock = do_water_demand ?
+                    initialize_livestock_demand(nc, config, inds, Δt) : nothing,
     )
 
     return sbm
@@ -944,23 +958,37 @@ function update_until_recharge(sbm::SBM, config)
         rootfraction_unsat = 0.0
         for k = 1:n_usl
             vwc = max(usld[k] / usl[k], 0.0000001)
-            head = head_brooks_corey(vwc, sbm.θₛ[i], sbm.θᵣ[i],sbm.c[i][k],sbm.hb[i])
-            alpha = rwu_reduction_feddes(head, sbm.h1[i], sbm.h2[i], sbm.h3_high[i], sbm.h3_low[i], sbm.h4[i], sbm.alpha_h1[i], pottrans, Second(sbm.Δt))
+            head = head_brooks_corey(vwc, sbm.θₛ[i], sbm.θᵣ[i], sbm.c[i][k], sbm.hb[i])
+            alpha = rwu_reduction_feddes(
+                head,
+                sbm.h1[i],
+                sbm.h2[i],
+                sbm.h3_high[i],
+                sbm.h3_low[i],
+                sbm.h4[i],
+                sbm.alpha_h1[i],
+                pottrans,
+                Second(sbm.Δt),
+            )
             # availcap is fraction of soil layer containing roots
             # if `ust` is `true`, the whole unsaturated store is available for transpiration
             if ust
                 availcap = usld[k] * 0.99
-            else            
-                availcap = min(1.0, max(0.0, (sbm.rootingdepth[i] - sbm.sumlayers[i][k]) / usl[k])) 
+            else
+                availcap =
+                    min(1.0, max(0.0, (sbm.rootingdepth[i] - sbm.sumlayers[i][k]) / usl[k]))
             end
             # the rootfraction is valid for the root length in a soil layer, if zi decreases the root length
             # the rootfraction needs to be adapted
             if k == n_usl && sbm.zi[i] < sbm.rootingdepth[i]
-                rootfraction_act = sbm.rootfraction[i][k] * (usl[k] / (sbm.rootingdepth[i] - sbm.sumlayers[i][k]))
+                rootfraction_act =
+                    sbm.rootfraction[i][k] *
+                    (usl[k] / (sbm.rootingdepth[i] - sbm.sumlayers[i][k]))
             else
                 rootfraction_act = sbm.rootfraction[i][k]
             end
-            actevapustore_layer = min(alpha * rootfraction_act * pottrans, usld[k] * availcap)
+            actevapustore_layer =
+                min(alpha * rootfraction_act * pottrans, usld[k] * availcap)
             rootfraction_unsat = rootfraction_unsat + rootfraction_act
             ustorelayerdepth = usld[k] - actevapustore_layer
             actevapustore = actevapustore + actevapustore_layer
@@ -969,8 +997,19 @@ function update_until_recharge(sbm::SBM, config)
 
         # transpiration from saturated store
         wetroots = scurve(sbm.zi[i], rootingdepth, Float(1.0), sbm.rootdistpar[i])
-        alpha = rwu_reduction_feddes(Float(0.0), sbm.h1[i], sbm.h2[i], sbm.h3_high[i], sbm.h3_low[i], sbm.h4[i], sbm.alpha_h1[i], pottrans, Second(sbm.Δt))
-        actevapsat = min(pottrans * wetroots * (1.0 - rootfraction_unsat) * alpha, satwaterdepth)
+        alpha = rwu_reduction_feddes(
+            Float(0.0),
+            sbm.h1[i],
+            sbm.h2[i],
+            sbm.h3_high[i],
+            sbm.h3_low[i],
+            sbm.h4[i],
+            sbm.alpha_h1[i],
+            pottrans,
+            Second(sbm.Δt),
+        )
+        actevapsat =
+            min(pottrans * wetroots * (1.0 - rootfraction_unsat) * alpha, satwaterdepth)
         satwaterdepth = satwaterdepth - actevapsat
 
         # check soil moisture balance per layer

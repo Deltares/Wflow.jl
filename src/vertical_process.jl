@@ -166,9 +166,9 @@ function rwu_reduction_feddes(h, h1, h2, h3_high, h3_low, h4, alpha_h1, tpot, Δ
         elseif (h >= h4) && (h < h3)
             alpha = (h - h4) / (h3 - h4)
         end
-    end   
+    end
     return alpha
-end       
+end
 
 """
     infiltration(avail_forinfilt, pathfrac, cf_soil, tsoil, infiltcapsoil, infiltcappath, ustorecapacity, modelsnow::Bool, soilinfreduction::Bool)
