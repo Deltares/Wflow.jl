@@ -120,6 +120,21 @@ function rainfall_interception_modrut(
 end
 
 """
+    vwc_brooks_corey(h, hb, θₛ, θᵣ, c)
+
+Volumetric water content based on the Brooks-Corey soil hydraulic model.
+"""
+function vwc_brooks_corey(h, hb, θₛ, θᵣ, c)
+    if h < hb
+        par_lambda = 2.0 / (c - 3.0)
+        vwc = (θₛ - θᵣ) * pow(h / hb, par_lambda)
+    else
+        vwc = (θₛ - θᵣ)
+    end
+    return vwc
+end
+
+"""
     head_brooks_corey(vwc, θₛ, θᵣ, c, hb)
 
 Soil water pressure head based on the Brooks-Corey soil hydraulic model.
@@ -132,12 +147,11 @@ function head_brooks_corey(vwc, θₛ, θᵣ, c, hb)
 end
 
 """
-    rwu_reduction_feddes(h, h1, h2, h3_high, h3_low, h4, alpha_h1, tpot, Δt)
+    feddes_h3(h3_high, h3_low, tpot, Δt)
 
-Root water uptake reduction factor based on Feddes.
+Return soil water pressure head `h3` of Feddes root water uptake reduction function.
 """
-function rwu_reduction_feddes(h, h1, h2, h3_high, h3_low, h4, alpha_h1, tpot, Δt)
-
+function feddes_h3(h3_high, h3_low, tpot, Δt)
     # value of h3 is a function of potential transpiration [mm/d]
     tpot_daily = tpot * (basetimestep / Δt)
     if (tpot_daily >= 0.0) && (tpot_daily <= 1.0)
@@ -147,6 +161,15 @@ function rwu_reduction_feddes(h, h1, h2, h3_high, h3_low, h4, alpha_h1, tpot, Δ
     else
         h3 = h3_high
     end
+    return h3
+end
+
+"""
+    rwu_reduction_feddes(h, h1, h2, h3, h4, alpha_h1)
+
+Root water uptake reduction factor based on Feddes.
+"""
+function rwu_reduction_feddes(h, h1, h2, h3, h4, alpha_h1)
     # root water uptake reduction coefficient alpha (see also Feddes et al., 1978)
     if alpha_h1 == 0.0
         if (h <= h4) || (h > h1)

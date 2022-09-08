@@ -1,4 +1,4 @@
-@get_units @exchange @grid_type @grid_location @with_kw struct SBM{T,N,M,P,NP,D,L,I}
+@get_units @exchange @grid_type @grid_location @with_kw struct SBM{T,N,M,P,NP,D,L,I,W}
     # Model time step [s]
     Δt::T | "s" | 0 | "none" | "none"
     # Maximum number of soil layers
@@ -51,6 +51,8 @@
     h3_low::Vector{T} | "cm"
     # Soil water pressure head h4 of the root water uptake reduction function (Feddes) [cm]
     h4::Vector{T} | "cm"
+    # Calculated soil water pressure head h3 of the root water uptake reduction function (Feddes) [cm]
+    h3::Vector{T} | "cm"
     # Root water uptake reduction at soil water pressure head h1 (0.0 or 1.0) [-]
     alpha_h1::Vector{T} | "-"
     # Controls how roots are linked to water table [-]
@@ -214,8 +216,9 @@
     domestic::D | "-" | 0
     livestock::L | "-" | 0
     industry::I | "-" | 0
+    waterallocation::W | "-" | 0
 
-    function SBM{T,N,M,P,NP,D,L,I}(args...) where {T,N,M,P,NP,D,L,I}
+    function SBM{T,N,M,P,NP,D,L,I,W}(args...) where {T,N,M,P,NP,D,L,I,W}
         equal_size_vectors(args)
         return new(args...)
     end
@@ -573,7 +576,13 @@ function initialize_sbm(nc, config, riverfrac, inds)
     vwc = fill(mv, maxlayers, n)
     vwc_perc = fill(mv, maxlayers, n)
 
-    do_water_demand = get(config.model, "water-demand", true)
+    # water demand and irrigation options
+    do_water_demand = get(config.model, "waterdemand", true)
+    domestic = get(config.model, "domestic_waterdemand", true)
+    industry = get(config.model, "industry_waterdemand", true)
+    livestock = get(config.model, "livestock_waterdemand", true)
+    paddy = get(config.model, "paddy_irrigation", true)
+    nonpaddy = get(config.model, "nonpaddy_irrigation", true)
 
     sbm = SBM(
         Δt = tosecond(Δt),
@@ -592,6 +601,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         h3_high = h3_high,
         h3_low = h3_low,
         h4 = h4,
+        h3 = fill(mv, n),
         alpha_h1 = alpha_h1,
         soilthickness = soilthickness,
         act_thickl = act_thickl,
@@ -684,14 +694,12 @@ function initialize_sbm(nc, config, riverfrac, inds)
         waterlevel_land = fill(mv, n),
         waterlevel_river = zeros(Float, n), #set to zero to account for cells outside river domain
         # water demand
-        paddy = do_water_demand ? initialize_paddy(nc, config, inds) : nothing,
-        nonpaddy = do_water_demand ? initialize_nonpaddy(nc, config, inds) : nothing,
-        domestic = do_water_demand ? initialize_domestic_demand(nc, config, inds, Δt) :
-                   nothing,
-        industry = do_water_demand ? initialize_domestic_demand(nc, config, inds, Δt) :
-                   nothing,
-        livestock = do_water_demand ?
-                    initialize_livestock_demand(nc, config, inds, Δt) : nothing,
+        paddy = paddy ? initialize_paddy(nc, config, inds) : nothing,
+        nonpaddy = nonpaddy ? initialize_nonpaddy(nc, config, inds) : nothing,
+        domestic = domestic ? initialize_domestic_demand(nc, config, inds, Δt) : nothing,
+        industry = industry ? initialize_industry_demand(nc, config, inds, Δt) : nothing,
+        livestock = livestock ? initialize_livestock_demand(nc, config, inds, Δt) : nothing,
+        waterallocation = do_water_demand ? initialize_water_allocation(n) : nothing,
     )
 
     return sbm
@@ -956,19 +964,17 @@ function update_until_recharge(sbm::SBM, config)
         # depth based on the rootfraction
         actevapustore = 0.0
         rootfraction_unsat = 0.0
+        h3 = feddes_h3(sbm.h3_high[i], sbm.h3_low[i], pottrans, Second(sbm.Δt))
         for k = 1:n_usl
-            vwc = max(usld[k] / usl[k], 0.0000001)
+            vwc = max(usld[k] / usl[k], Float(0.0000001))
             head = head_brooks_corey(vwc, sbm.θₛ[i], sbm.θᵣ[i], sbm.c[i][k], sbm.hb[i])
             alpha = rwu_reduction_feddes(
                 head,
                 sbm.h1[i],
                 sbm.h2[i],
-                sbm.h3_high[i],
-                sbm.h3_low[i],
+                h3,
                 sbm.h4[i],
                 sbm.alpha_h1[i],
-                pottrans,
-                Second(sbm.Δt),
             )
             # availcap is fraction of soil layer containing roots
             # if `ust` is `true`, the whole unsaturated store is available for transpiration
@@ -1001,12 +1007,9 @@ function update_until_recharge(sbm::SBM, config)
             Float(0.0),
             sbm.h1[i],
             sbm.h2[i],
-            sbm.h3_high[i],
-            sbm.h3_low[i],
+            h3,
             sbm.h4[i],
             sbm.alpha_h1[i],
-            pottrans,
-            Second(sbm.Δt),
         )
         actevapsat =
             min(pottrans * wetroots * (1.0 - rootfraction_unsat) * alpha, satwaterdepth)
@@ -1101,6 +1104,7 @@ function update_until_recharge(sbm::SBM, config)
         sbm.rainfallplusmelt[i] = rainfallplusmelt
         sbm.infiltsoilpath[i] = infiltsoilpath
         sbm.satwaterdepth[i] = satwaterdepth
+        sbm.h3[i] = h3
         if modelsnow
             if modelglacier
                 sbm.snow[i] = snow
@@ -1131,7 +1135,7 @@ function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
 
         ustoredepth = sum(@view usld[1:n_usl])
 
-        if !isnothing(sbm.paddy)
+        if sbm.paddy !== nothing && sbm.paddy.h_p[i] > 0.0
             paddy_h_add = min(
                 exfiltustore + exfiltsatwater[i] + sbm.excesswater[i] + sbm.infiltexcess[i],
                 sbm.paddy.h_p[i] - sbm.paddy.h[i],
