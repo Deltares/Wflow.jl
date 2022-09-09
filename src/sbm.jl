@@ -31,6 +31,8 @@
     infiltcappath::Vector{T}
     # Soil infiltration capacity [mm Δt⁻¹]
     infiltcapsoil::Vector{T}
+    # Soil infiltration reduction factor (when soil is frozen) [-]
+    soilinfredu::Vector{T} | "-"
     # Maximum leakage [mm Δt⁻¹] from saturated zone
     maxleakage::Vector{T}
     # Fraction of open water (excluding rivers) [-]
@@ -608,6 +610,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         sumlayers = svectorscopy(s_layers, Val{maxlayers + 1}()),
         infiltcappath = infiltcappath,
         infiltcapsoil = infiltcapsoil,
+        soilinfredu = fill(Float(1), n),
         maxleakage = maxleakage,
         waterfrac = max.(waterfrac .- riverfrac, Float(0.0)),
         pathfrac = pathfrac,
@@ -859,18 +862,23 @@ function update_until_recharge(sbm::SBM, config)
         ustorecapacity = sbm.soilwatercapacity[i] - sbm.satwaterdepth[i] - ustoredepth
 
         # Calculate the infiltration flux into the soil column
-        infiltsoilpath, infiltsoil, infiltpath, soilinf, pathinf, infiltexcess =
-            infiltration(
-                avail_forinfilt,
-                sbm.pathfrac[i],
-                sbm.cf_soil[i],
-                sbm.tsoil[i],
-                sbm.infiltcapsoil[i],
-                sbm.infiltcappath[i],
-                ustorecapacity,
-                modelsnow,
-                soilinfreduction,
-            )
+        infiltsoilpath,
+        infiltsoil,
+        infiltpath,
+        soilinf,
+        pathinf,
+        infiltexcess,
+        soilinfredu = infiltration(
+            avail_forinfilt,
+            sbm.pathfrac[i],
+            sbm.cf_soil[i],
+            sbm.tsoil[i],
+            sbm.infiltcapsoil[i],
+            sbm.infiltcappath[i],
+            ustorecapacity,
+            modelsnow,
+            soilinfreduction,
+        )
 
 
         usl, n_usl = set_layerthickness(sbm.zi[i], sbm.sumlayers[i], sbm.act_thickl[i])
@@ -1105,6 +1113,7 @@ function update_until_recharge(sbm::SBM, config)
         sbm.infiltsoilpath[i] = infiltsoilpath
         sbm.satwaterdepth[i] = satwaterdepth
         sbm.h3[i] = h3
+        sbm.soilinfredu[i] = soilinfredu
         if modelsnow
             if modelglacier
                 sbm.snow[i] = snow

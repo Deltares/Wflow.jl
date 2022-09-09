@@ -248,12 +248,17 @@ function update_water_demand(sbm::SBM)
                 if depletion >= raw
                     irri_dem_gross += depletion
                 end
+                # limit irrigation demand to infiltration capacity    
+                infiltration_capacity =
+                    sbm.soilinfredu[i] * (sbm.infiltcappath[i] + sbm.infiltcapsoil[i])
+                irri_dem_gross = min(irri_dem_gross, infiltration_capacity)
+                irri_dem_gross /= sbm.nonpaddy.irrigation_efficiency[i]
             end
         elseif sbm.paddy !== nothing && sbm.paddy.irrigation_areas[i] !== 0
             irr_depth_paddy =
                 sbm.paddy.h[i] < sbm.paddy.h_min[i] ?
                 (sbm.paddy.h_max[i] - sbm.paddy.h[i]) : 0.0
-            irri_dem_gross += irr_depth_paddy
+            irri_dem_gross += irr_depth_paddy / sbm.paddy.irrigation_efficiency[i]
         end
         sbm.waterallocation.irri_demand_gross[i] = irri_dem_gross
         sbm.waterallocation.nonirri_dem_gross[i] = nonirri_dem_gross

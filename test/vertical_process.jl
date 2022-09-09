@@ -14,19 +14,14 @@ using Dates
     )
     head = Wflow.head_brooks_corey(0.25, 0.6, 0.15, 10.5, -10.0)
     @test head ≈ -90.6299820833844
-    alpha = Wflow.rwu_reduction_feddes(
-        head,
-        -10.0,
-        -100.0,
-        -400.0,
-        -15849.0,
-        0.0,
-    )
+    h3 = Wflow.feddes_h3(-300.0, -600.0, 3.5, Second(86400))
+    @test h3 ≈ -412.5
+    alpha = Wflow.rwu_reduction_feddes(head, -10.0, -100.0, h3, -15000.0, 0.0)
     @test alpha ≈ 0.8958886898153823
     @test all(
         isapprox.(
             Wflow.infiltration(27.5, 0.2, 0.038, 8.9, 50.0, 5.0, 23.5, false, false),
-            (23.5, 19.14814814814815, 4.351851851851852, 22.0, 5.5, 0.5),
+            (23.5, 19.14814814814815, 4.351851851851852, 22.0, 5.5, 0.5, 1.0),
         ),
     )
     @test all(
