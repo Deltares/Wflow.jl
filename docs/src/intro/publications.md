@@ -1,6 +1,15 @@
 # Publications
 
+The paper introducing Wflow.jl and describing the wflow\_sbm concept, together with some case
+studies, can be found here:
+
+van Verseveld, W. J., Weerts, A. H., Visser, M., Buitink, J., Imhoff, R. O., Boisgontier, H.,
+Bouaziz, L., Eilander, D., Hegnauer, M., ten Velden, C., and Russell, B., 2022. Wflow_sbm
+v0.6.1, a spatially distributed hydrologic model: from global data to local applications,
+Geosci. Model Dev. Discuss. <https://doi.org/10.5194/gmd-2022-182>, in review.
+
 ## Citing wflow
+
 [![DOI](https://zenodo.org/badge/246787232.svg)](https://zenodo.org/badge/latestdoi/246787232)
 
 When using Wflow.jl as part of for example research or project work or teaching please cite
@@ -29,11 +38,11 @@ Pereira, F., Sprokkereef, E., Stam, J., Weerts, A.H., Willems, P., Savenije, H.H
 Hrachowitz, M., 2021. Behind the scenes of streamflow model performance. Hydrol. Earth Syst.
 Sci., 25, 1069–1095. <https://doi.org/10.5194/hess-25-1069-2021>.
 
-Bouaziz, L.J.E., Aalbers, E.E., Weerts, A.H., Hegnauer, M., Buiteveld, H., Lammersen, R.,
-Stam, J., Sprokkereef, E., Savenije, H.H.G., Hrachowitz, M., 2021. The importance of
-ecosystem adaptation on hydrological model predictions in response to climate change,
-Hydrol. Earth Syst. Sci. Discuss. [preprint], <https://doi.org/10.5194/hess-2021-204>, in
-review.
+Bouaziz, L. J. E., Aalbers, E. E., Weerts, A. H., Hegnauer, M., Buiteveld, H., Lammersen, R.,
+Stam, J., Sprokkereef, E., Savenije, H. H. G., and Hrachowitz, M., 2022. Ecosystem adaptation
+to climate change: the sensitivity of hydrological predictions to time-dynamic model
+parameters, Hydrol. Earth Syst. Sci., 26, 1295–1318.
+<https://doi.org/10.5194/hess-26-1295-2022>.
 
 Casson, D. R., Werner, M., Weerts, A., and Solomatine, D., 2018. Global re-analysis datasets
 to improve hydrological assessment and snow water equivalent estimation in a sub-Arctic
@@ -63,10 +72,10 @@ Hydrometeorological multi-model ensemble simulations of the 4 November 2011 flas
 event in Genoa, Italy, in the framework of the DRIHM project. Nat. Hazards Earth Syst. Sci.
 15, 537–555. <https://doi:10.5194/nhess-15-537-2015>.
 
-Hassaballah, K., Mohamed, Y., Uhlenbrook, S., Biro, K., 2017. Analysis of streamflow
-response to land use land cover changes using satellite data and hydrological modelling:
-case study of Dinder and Rahad tributaries of the Blue Nile. Hydrol. Earth Syst. Sci.
-Discuss. 2017, 1–22. <https://doi:10.5194/hess-2017-128>.
+Hassaballah, K., Mohamed, Y., Uhlenbrook, S., and Biro, K., 2017. Analysis of streamflow
+response to land use and land cover changes using satellite data and hydrological modelling:
+case study of Dinder and Rahad tributaries of the Blue Nile (Ethiopia–Sudan), Hydrol. Earth
+Syst. Sci., 21, 5217–5242. <https://doi.org/10.5194/hess-21-5217-2017>.
 
 Imhoff, R.O, van Verseveld, W.J., van Osnabrugge, B., Weerts, A.H., 2020. Scaling
 Point-Scale (Pedo)transfer Functions to Seamless Large-Domain Parameter Estimates for
@@ -94,24 +103,25 @@ Water Resources Research, 53. <https://doi.org/10.1002/2017WR021201>.
 
 van Osnabrugge, B., Uijlenhoet, R., Weerts, A., 2019. Contribution of potential evaporation
 forecasts to 10-day streamflow forecast skill for the Rhine River, Hydrol. Earth Syst. Sci.,
-23, 1453–1467, https://doi.org/10.5194/hess-23-1453-2019.
+23, 1453–1467, <https://doi.org/10.5194/hess-23-1453-2019>.
 
 Rakovec, O., Weerts, A.H., Sumihar, J., Uijlenhoet, R., 2015. Operational aspects of
 asynchronous filtering for flood forecasting. Hydrol. Earth Syst. Sci., 19, 2911–2924,
 <https://doi.org/10.5194/hess-19-2911-2015>.
 
-Rusli,S., A.H. Weerts, A. Taufiq, V. Bense, 2021. Estimating water balance components and
-their uncertainty bounds in highly groundwater-dependent and data-scarce area:
-An example for the Upper Citarum basin, J. Hydrol. Regional Studies, doi: 10.1016/j.ejrh.2021.100911.
+Rusli,S., A.H. Weerts, A. Taufiq, V. Bense, 2021. Estimating water balance components and their
+uncertainty bounds in highly groundwater-dependent and data-scarce area: An example for the
+Upper Citarum basin, J. Hydrol. Regional Studies, <https://doi.org/10.1016/j.ejrh.2021.100911>.
 
 Schaller, N., Sillmann, J., Müller, M., Haarsma, R., Hazeleger, W., Hegdahl, T.J., Kelder,
 T., van den Oord, G., Weerts, A., Whan, K., 2020. The role of spatial and temporal model
 resolution in a flood event storyline approach in western Norway. Weather and Climate
 Extremes, doi: <https://doi.org/10.1016/j.wace.2020.100259>.
 
-Sperna Weiland, F.C.,  R.D. Visser, P. Greve, B. Bisselink, L. Brunner and A.H. Weerts, 2021. Estimating
-Regionalized Hydrological Impacts of Climate Change Over Europe by Performance-Based Weighting of
-CORDEX Projections, Frontiers of Water, 10.3389/frwa.2021.713537.
+Sperna Weiland, F.C.,  R.D. Visser, P. Greve, B. Bisselink, L. Brunner and A.H. Weerts, 2021.
+Estimating Regionalized Hydrological Impacts of Climate Change Over Europe by Performance-Based
+Weighting of CORDEX Projections, Frontiers of Water,
+<https://doi.org/10.3389/frwa.2021.713537>.
 
 Tangdamrongsub, N., Steele-Dunne, S.C., Gunter, B.C., Ditmar, P.G., Weerts, A.H., 2015. Data
 assimilation of GRACE terrestrial water storage estimates into a regional hydrological model
@@ -180,10 +190,12 @@ MSc thesis, Wageningen University.
 Verbrugge, M., 2019. Reservoir Operation Optimization, a case study in the Chao Phraya
 Basin, BSc thesis, Hydrology and Quantitative Water Management Group, Wageningen University.
 
-Viguures, P. 2020. Modelling of flash floods in current and future climate with high resolution convection
-permitting regional climate models in the European Alps, MSc Thesis, Wageningen University, 2020
+Viguures, P. 2020. Modelling of flash floods in current and future climate with high resolution
+convection permitting regional climate models in the European Alps, MSc Thesis, Wageningen
+University, 2020
 
-Visser, B. 2020. Impact of climate change on local water resources of European catchments, Intersnhip report, Deltares, 2020
+Visser, B. 2020. Impact of climate change on local water resources of European catchments,
+Intersnhip report, Deltares, 2020
 
 ### Reports
 
