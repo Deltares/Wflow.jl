@@ -1,12 +1,12 @@
 # Publications
 
-The paper introducing Wflow.jl and describing the wflow\_sbm concept, together with some case
-studies, can be found here:
+The paper introducing Wflow.jl and describing the wflow\_sbm concept, together with some
+case studies, can be found here:
 
-van Verseveld, W. J., Weerts, A. H., Visser, M., Buitink, J., Imhoff, R. O., Boisgontier, H.,
-Bouaziz, L., Eilander, D., Hegnauer, M., ten Velden, C., and Russell, B., 2022. Wflow_sbm
-v0.6.1, a spatially distributed hydrologic model: from global data to local applications,
-Geosci. Model Dev. Discuss. <https://doi.org/10.5194/gmd-2022-182>, in review.
+van Verseveld, W. J., Weerts, A. H., Visser, M., Buitink, J., Imhoff, R. O., Boisgontier,
+H., Bouaziz, L., Eilander, D., Hegnauer, M., ten Velden, C., and Russell, B., 2022.
+Wflow_sbm v0.6.1, a spatially distributed hydrologic model: from global data to local
+applications, Geosci. Model Dev. Discuss. <https://doi.org/10.5194/gmd-2022-182>, in review.
 
 ## Citing wflow
 
@@ -26,6 +26,11 @@ unstable-master. <https://github.com/Deltares/Wflow.jl>, obtained: DATE\_OF\_DOW
 
 ### Papers
 
+Aerts, J. P. M., Hut, R. W., van de Giesen, N. C., Drost, N., van Verseveld, W. J., Weerts,
+A. H., and Hazenberg, P., 2022. Large-sample assessment of varying spatial resolution on the
+streamflow estimates of the wflow_sbm hydrological model. Hydrol. Earth Syst. Sci., 26,
+4407–4430. <https://doi.org/10.5194/hess-26-4407-2022>.
+
 de Boer-Euser, T., Bouaziz, L., De Niel, J., Brauer, C., Dewals, B., Drogue, G., Fenicia,
 F., Grelier, B., Nossent, J., Pereira, F., Savenije, H., Thirel, G., Willems, P., 2017.
 Looking beyond general metrics for model comparison – lessons from an international model
@@ -38,10 +43,10 @@ Pereira, F., Sprokkereef, E., Stam, J., Weerts, A.H., Willems, P., Savenije, H.H
 Hrachowitz, M., 2021. Behind the scenes of streamflow model performance. Hydrol. Earth Syst.
 Sci., 25, 1069–1095. <https://doi.org/10.5194/hess-25-1069-2021>.
 
-Bouaziz, L. J. E., Aalbers, E. E., Weerts, A. H., Hegnauer, M., Buiteveld, H., Lammersen, R.,
-Stam, J., Sprokkereef, E., Savenije, H. H. G., and Hrachowitz, M., 2022. Ecosystem adaptation
-to climate change: the sensitivity of hydrological predictions to time-dynamic model
-parameters, Hydrol. Earth Syst. Sci., 26, 1295–1318.
+Bouaziz, L. J. E., Aalbers, E. E., Weerts, A. H., Hegnauer, M., Buiteveld, H., Lammersen,
+R., Stam, J., Sprokkereef, E., Savenije, H. H. G., and Hrachowitz, M., 2022. Ecosystem
+adaptation to climate change: the sensitivity of hydrological predictions to time-dynamic
+model parameters, Hydrol. Earth Syst. Sci., 26, 1295–1318.
 <https://doi.org/10.5194/hess-26-1295-2022>.
 
 Casson, D. R., Werner, M., Weerts, A., and Solomatine, D., 2018. Global re-analysis datasets
@@ -109,18 +114,19 @@ Rakovec, O., Weerts, A.H., Sumihar, J., Uijlenhoet, R., 2015. Operational aspect
 asynchronous filtering for flood forecasting. Hydrol. Earth Syst. Sci., 19, 2911–2924,
 <https://doi.org/10.5194/hess-19-2911-2015>.
 
-Rusli,S., A.H. Weerts, A. Taufiq, V. Bense, 2021. Estimating water balance components and their
-uncertainty bounds in highly groundwater-dependent and data-scarce area: An example for the
-Upper Citarum basin, J. Hydrol. Regional Studies, <https://doi.org/10.1016/j.ejrh.2021.100911>.
+Rusli,S., A.H. Weerts, A. Taufiq, V. Bense, 2021. Estimating water balance components and
+their uncertainty bounds in highly groundwater-dependent and data-scarce area: An example
+for the Upper Citarum basin, J. Hydrol. Regional Studies,
+<https://doi.org/10.1016/j.ejrh.2021.100911>.
 
 Schaller, N., Sillmann, J., Müller, M., Haarsma, R., Hazeleger, W., Hegdahl, T.J., Kelder,
 T., van den Oord, G., Weerts, A., Whan, K., 2020. The role of spatial and temporal model
 resolution in a flood event storyline approach in western Norway. Weather and Climate
 Extremes, doi: <https://doi.org/10.1016/j.wace.2020.100259>.
 
-Sperna Weiland, F.C.,  R.D. Visser, P. Greve, B. Bisselink, L. Brunner and A.H. Weerts, 2021.
-Estimating Regionalized Hydrological Impacts of Climate Change Over Europe by Performance-Based
-Weighting of CORDEX Projections, Frontiers of Water,
+Sperna Weiland, F.C.,  R.D. Visser, P. Greve, B. Bisselink, L. Brunner and A.H. Weerts,
+2021. Estimating Regionalized Hydrological Impacts of Climate Change Over Europe by
+Performance-Based Weighting of CORDEX Projections, Frontiers of Water,
 <https://doi.org/10.3389/frwa.2021.713537>.
 
 Tangdamrongsub, N., Steele-Dunne, S.C., Gunter, B.C., Ditmar, P.G., Weerts, A.H., 2015. Data
@@ -159,14 +165,15 @@ Vrije Universiteit Amsterdam, Faculty of Science, Hydrology.
 Azadeh Karami Fard, 2015. Modeling runoff of an Ethiopian catchment with WFLOW, MSc. Thesis,
 Vrije Universiteit, Amsterdam.
 
-Beusen, B. The effect of rooting depth on discharge and evapotranspiration in (semi-)arid areas,
-MSC Thesis, HWM, Wageningen University, 2021.
+Beusen, B. The effect of rooting depth on discharge and evapotranspiration in (semi-)arid
+areas, MSC Thesis, HWM, Wageningen University, 2021.
 
-Beusen, B. Plastic transport and the effect of climate change in the Rhine, Internship Deltares, 2021
+Beusen, B. Plastic transport and the effect of climate change in the Rhine, Internship
+Deltares, 2021
 
-Bouaziz, L. J. E., 2021. Internal processes in hydrological models: A glance at the Meuse basin from
-space. Delft University of Technology, Delft, the Netherlands, Doctoral dissertation.
-<https://doi.org/10.4233/uuid:09d84cc1-27e2-4327-a8c7-207a75952061>
+Bouaziz, L. J. E., 2021. Internal processes in hydrological models: A glance at the Meuse
+basin from space. Delft University of Technology, Delft, the Netherlands, Doctoral
+dissertation. <https://doi.org/10.4233/uuid:09d84cc1-27e2-4327-a8c7-207a75952061>
 
 López López, P., 2018. Application of Global Hydrological Datasets for River Basin Modelling
 Utrecht University, Utrecht, the Netherlands, pp. 1-214, Doctoral dissertation.
@@ -190,9 +197,9 @@ MSc thesis, Wageningen University.
 Verbrugge, M., 2019. Reservoir Operation Optimization, a case study in the Chao Phraya
 Basin, BSc thesis, Hydrology and Quantitative Water Management Group, Wageningen University.
 
-Viguures, P. 2020. Modelling of flash floods in current and future climate with high resolution
-convection permitting regional climate models in the European Alps, MSc Thesis, Wageningen
-University, 2020
+Viguures, P. 2020. Modelling of flash floods in current and future climate with high
+resolution convection permitting regional climate models in the European Alps, MSc Thesis,
+Wageningen University, 2020
 
 Visser, B. 2020. Impact of climate change on local water resources of European catchments,
 Intersnhip report, Deltares, 2020
