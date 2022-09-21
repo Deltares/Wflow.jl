@@ -195,10 +195,10 @@
     # Water level river [mm]
     waterlevel_river::Vector{T} | "mm"
 
-    function SBM{T,N,M}(args...) where {T,N,M}
-        equal_size_vectors(args)
-        return new(args...)
-    end
+    #function SBM{T,N,M}(args...) where {T,N,M}
+    #    equal_size_vectors(args)
+    #    return new(args...)
+    #end
 end
 
 statevars(::SBM; snow = false) =
@@ -309,15 +309,16 @@ function initialize_sbm(nc, config, riverfrac, inds)
             type = Float,
             fill = 0.0,
         ) .* (Δt / basetimestep)
-    g_sifrac = ncread(
-        nc,
-        config,
-        "vertical.g_sifrac";
-        sel = inds,
-        defaults = 0.001,
-        type = Float,
-        fill = 0.0,
-    ) .* (Δt / basetimestep)
+    g_sifrac =
+        ncread(
+            nc,
+            config,
+            "vertical.g_sifrac";
+            sel = inds,
+            defaults = 0.001,
+            type = Float,
+            fill = 0.0,
+        ) .* (Δt / basetimestep)
     glacierfrac = ncread(
         nc,
         config,
@@ -496,7 +497,10 @@ function initialize_sbm(nc, config, riverfrac, inds)
     vwc = fill(mv, maxlayers, n)
     vwc_perc = fill(mv, maxlayers, n)
 
-    sbm = SBM{Float,maxlayers,maxlayers + 1}(
+    # TODO: fill complete namedtuple with all fields of SBM struct
+    # broadcast types to ranks (typeof.(sbm))
+    # use values (values(sbm)) of namedtuple for initialization SBM instance
+    sbm = (
         Δt = tosecond(Δt),
         maxlayers = maxlayers,
         n = n,
@@ -600,6 +604,116 @@ function initialize_sbm(nc, config, riverfrac, inds)
 
     return sbm
 
+end
+
+function set_sbm(sbm, maxlayers, comm, rank, nprocs)
+
+    sizes = Wflow.split_count(50063, nprocs)
+    indices = Wflow.get_start_end_indices(sizes)
+
+    sbm = SBM{Float,maxlayers,maxlayers + 1}(
+        Δt = broadcast_to_ranks(sbm.Δt, comm),
+        maxlayers = maxlayers,
+        n = broadcast_to_ranks(sbm.n, comm),
+        nlayers = scatter_to_ranks(sbm.nlayers, sizes, indices, nprocs, comm, rank),
+        n_unsatlayers = scatter_to_ranks(sbm.n_unsatlayers, sizes, indices, nprocs, comm, rank),
+        riverfrac = scatter_to_ranks(sbm.riverfrac, sizes, indices, nprocs, comm, rank),
+        θₛ = scatter_to_ranks(sbm.θₛ, sizes, indices, nprocs, comm, rank),
+        θᵣ = scatter_to_ranks(sbm.θᵣ, sizes, indices, nprocs, comm, rank),
+        kv₀ = scatter_to_ranks(sbm.kv₀, sizes, indices, nprocs, comm, rank),
+        kvfrac = scatter_to_ranks(sbm.kvfrac, sizes, indices, nprocs, comm, rank),
+        hb = scatter_to_ranks(sbm.hb, sizes, indices, nprocs, comm, rank),
+        soilthickness = scatter_to_ranks(sbm.soilthickness, sizes, indices, nprocs, comm, rank),
+        act_thickl = scatter_to_ranks(sbm.act_thickl, sizes, indices, nprocs, comm, rank),
+        sumlayers = scatter_to_ranks(sbm.sumlayers, sizes, indices, nprocs, comm, rank),
+        infiltcappath = scatter_to_ranks(sbm.infiltcappath, sizes, indices, nprocs, comm, rank),
+        infiltcapsoil = scatter_to_ranks(sbm.infiltcapsoil, sizes, indices, nprocs, comm, rank),
+        maxleakage = scatter_to_ranks(sbm.maxleakage, sizes, indices, nprocs, comm, rank),
+        waterfrac = scatter_to_ranks(sbm.waterfrac, sizes, indices, nprocs, comm, rank),
+        pathfrac = scatter_to_ranks(sbm.pathfrac, sizes, indices, nprocs, comm, rank),
+        rootingdepth = scatter_to_ranks(sbm.rootingdepth, sizes, indices, nprocs, comm, rank),
+        rootdistpar = scatter_to_ranks(sbm.rootdistpar, sizes, indices, nprocs, comm, rank),
+        cap_hmax = scatter_to_ranks(sbm.cap_hmax, sizes, indices, nprocs, comm, rank),
+        cap_n = scatter_to_ranks(sbm.cap_n, sizes, indices, nprocs, comm, rank),
+        et_reftopot = scatter_to_ranks(sbm.et_reftopot, sizes, indices, nprocs, comm, rank),
+        c = scatter_to_ranks(sbm.c, sizes, indices, nprocs, comm, rank),
+        stemflow = scatter_to_ranks(sbm.stemflow, sizes, indices, nprocs, comm, rank),
+        throughfall = scatter_to_ranks(sbm.stemflow, sizes, indices, nprocs, comm, rank),
+        f = scatter_to_ranks(sbm.f, sizes, indices, nprocs, comm, rank),
+        ustorelayerdepth = scatter_to_ranks(sbm.ustorelayerdepth, sizes, indices, nprocs, comm, rank),
+        satwaterdepth = scatter_to_ranks(sbm.satwaterdepth, sizes, indices, nprocs, comm, rank),
+        zi = scatter_to_ranks(sbm.zi, sizes, indices, nprocs, comm, rank),
+        soilwatercapacity = scatter_to_ranks(sbm.soilwatercapacity, sizes, indices, nprocs, comm, rank),
+        canopystorage =  scatter_to_ranks(sbm.canopystorage, sizes, indices, nprocs, comm, rank),
+        cmax = scatter_to_ranks(sbm.cmax, sizes, indices, nprocs, comm, rank),
+        canopygapfraction = scatter_to_ranks(sbm.canopygapfraction, sizes, indices, nprocs, comm, rank),
+        e_r = scatter_to_ranks(sbm.e_r, sizes, indices, nprocs, comm, rank),
+        precipitation = scatter_to_ranks(sbm.precipitation, sizes, indices, nprocs, comm, rank),
+        temperature = scatter_to_ranks(sbm.temperature, sizes, indices, nprocs, comm, rank),
+        potential_evaporation = scatter_to_ranks(sbm.potential_evaporation, sizes, indices, nprocs, comm, rank),
+        pottrans_soil = scatter_to_ranks(sbm.pottrans_soil, sizes, indices, nprocs, comm, rank),
+        transpiration = scatter_to_ranks(sbm.transpiration, sizes, indices, nprocs, comm, rank),
+        ae_ustore = scatter_to_ranks(sbm.ae_ustore, sizes, indices, nprocs, comm, rank),
+        interception = scatter_to_ranks(sbm.interception, sizes, indices, nprocs, comm, rank),
+        soilevap = scatter_to_ranks(sbm.soilevap, sizes, indices, nprocs, comm, rank),
+        soilevapsat = scatter_to_ranks(sbm.soilevapsat, sizes, indices, nprocs, comm, rank),
+        actcapflux = scatter_to_ranks(sbm.actcapflux, sizes, indices, nprocs, comm, rank),
+        actevapsat = scatter_to_ranks(sbm.actevapsat, sizes, indices, nprocs, comm, rank),
+        actevap = scatter_to_ranks(sbm.actevap, sizes, indices, nprocs, comm, rank),
+        runoff_river = scatter_to_ranks(sbm.runoff_river, sizes, indices, nprocs, comm, rank),
+        runoff_land = scatter_to_ranks(sbm.runoff_land, sizes, indices, nprocs, comm, rank),
+        ae_openw_l = scatter_to_ranks(sbm.ae_openw_l, sizes, indices, nprocs, comm, rank),
+        ae_openw_r = scatter_to_ranks(sbm.ae_openw_r, sizes, indices, nprocs, comm, rank),
+        avail_forinfilt = scatter_to_ranks(sbm.avail_forinfilt, sizes, indices, nprocs, comm, rank),
+        actinfilt = scatter_to_ranks(sbm.actinfilt, sizes, indices, nprocs, comm, rank),
+        actinfiltsoil = scatter_to_ranks(sbm.actinfiltsoil, sizes, indices, nprocs, comm, rank),
+        actinfiltpath = scatter_to_ranks(sbm.actinfiltpath, sizes, indices, nprocs, comm, rank),
+        infiltsoilpath = scatter_to_ranks(sbm.infiltsoilpath, sizes, indices, nprocs, comm, rank),
+        infiltexcess = scatter_to_ranks(sbm.infiltexcess, sizes, indices, nprocs, comm, rank),
+        excesswater = scatter_to_ranks(sbm.excesswater, sizes, indices, nprocs, comm, rank),
+        exfiltsatwater = scatter_to_ranks(sbm.exfiltsatwater, sizes, indices, nprocs, comm, rank),
+        exfiltustore = scatter_to_ranks(sbm.exfiltustore, sizes, indices, nprocs, comm, rank),
+        excesswatersoil = scatter_to_ranks(sbm.excesswatersoil, sizes, indices, nprocs, comm, rank),
+        excesswaterpath = scatter_to_ranks(sbm.excesswaterpath, sizes, indices, nprocs, comm, rank),
+        runoff = scatter_to_ranks(sbm.runoff, sizes, indices, nprocs, comm, rank),
+        net_runoff_river = scatter_to_ranks(sbm.net_runoff_river, sizes, indices, nprocs, comm, rank),
+        vwc = scatter_to_ranks(sbm.vwc, sizes, indices, nprocs, comm, rank),
+        vwc_perc = scatter_to_ranks(sbm.vwc_perc, sizes, indices, nprocs, comm, rank),
+        rootstore = scatter_to_ranks(sbm.rootstore, sizes, indices, nprocs, comm, rank),
+        vwc_root = scatter_to_ranks(sbm.vwc_root, sizes, indices, nprocs, comm, rank),
+        vwc_percroot = scatter_to_ranks(sbm.vwc_percroot, sizes, indices, nprocs, comm, rank),
+        ustoredepth = scatter_to_ranks(sbm.ustoredepth, sizes, indices, nprocs, comm, rank),
+        transfer = scatter_to_ranks(sbm.transfer, sizes, indices, nprocs, comm, rank),
+        recharge = scatter_to_ranks(sbm.recharge, sizes, indices, nprocs, comm, rank),
+        actleakage = scatter_to_ranks(sbm.actleakage, sizes, indices, nprocs, comm, rank),
+        # snow parameters
+        cfmax = scatter_to_ranks(sbm.cfmax, sizes, indices, nprocs, comm, rank),
+        tt = scatter_to_ranks(sbm.tt, sizes, indices, nprocs, comm, rank),
+        tti = scatter_to_ranks(sbm.tti, sizes, indices, nprocs, comm, rank),
+        ttm = scatter_to_ranks(sbm.ttm, sizes, indices, nprocs, comm, rank),
+        whc = scatter_to_ranks(sbm.whc, sizes, indices, nprocs, comm, rank),
+        w_soil = scatter_to_ranks(sbm.w_soil, sizes, indices, nprocs, comm, rank),
+        cf_soil = scatter_to_ranks(sbm.cf_soil, sizes, indices, nprocs, comm, rank),
+        snow = scatter_to_ranks(sbm.snow, sizes, indices, nprocs, comm, rank),
+        snowwater = scatter_to_ranks(sbm.snowwater, sizes, indices, nprocs, comm, rank),
+        rainfallplusmelt = scatter_to_ranks(sbm.rainfallplusmelt, sizes, indices, nprocs, comm, rank),
+        tsoil = scatter_to_ranks(sbm.tsoil, sizes, indices, nprocs, comm, rank),
+        # glacier parameters
+        g_tt = scatter_to_ranks(sbm.g_tt, sizes, indices, nprocs, comm, rank),
+        g_sifrac = scatter_to_ranks(sbm.g_sifrac, sizes, indices, nprocs, comm, rank),
+        g_cfmax = scatter_to_ranks(sbm.g_cfmax, sizes, indices, nprocs, comm, rank),
+        glacierstore = scatter_to_ranks(sbm.glacierstore, sizes, indices, nprocs, comm, rank),
+        glacierfrac = scatter_to_ranks(sbm.glacierfrac, sizes, indices, nprocs, comm, rank),
+        # Interception related to climatology (leaf_area_index)
+        sl = scatter_to_ranks(sbm.sl, sizes, indices, nprocs, comm, rank),
+        swood = scatter_to_ranks(sbm.swood, sizes, indices, nprocs, comm, rank),
+        kext = scatter_to_ranks(sbm.kext, sizes, indices, nprocs, comm, rank),
+        leaf_area_index = scatter_to_ranks(sbm.leaf_area_index, sizes, indices, nprocs, comm, rank),
+        waterlevel_land = scatter_to_ranks(sbm.waterlevel_land, sizes, indices, nprocs, comm, rank),
+        waterlevel_river = scatter_to_ranks(sbm.waterlevel_river, sizes, indices, nprocs, comm, rank), #set to zero to account for cells outside river domain
+        )
+
+    return sbm
 end
 
 

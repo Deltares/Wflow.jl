@@ -6,72 +6,124 @@ Config object. Will return a Model that is ready to run.
 """
 function initialize_sbm_model(config::Config)
 
-    model_type = config.model.type::String
-    @info "Initialize model variables for model type `$model_type`."
+    runMPI = true
 
-    # unpack the paths to the NetCDF files
-    static_path = input_path(config, config.input.path_static)
+    if runMPI
+        MPI.Init()
+        comm = MPI.COMM_WORLD
+        rank = MPI.Comm_rank(comm)
+        nprocs = MPI.Comm_size(comm)
+    else
+        rank = 0
+        comm = nothing
+        nprocs = 1
+    end
 
-    reader = prepare_reader(config)
-    clock = Clock(config, reader)
-    Δt = clock.Δt
+    if rank === 0
+        model_type = config.model.type::String
+        @info "Initialize model variables for model type `$model_type`."
 
-    reinit = get(config.model, "reinit", true)::Bool
-    do_reservoirs = get(config.model, "reservoirs", false)::Bool
-    do_lakes = get(config.model, "lakes", false)::Bool
-    do_pits = get(config.model, "pits", false)::Bool
+        # unpack the paths to the NetCDF files
+        static_path = input_path(config, config.input.path_static)
 
-    kw_river_tstep = get(config.model, "kw_river_tstep", 0)
-    kw_land_tstep = get(config.model, "kw_land_tstep", 0)
-    kinwave_it = get(config.model, "kin_wave_iteration", false)::Bool
-    routing_options = ("kinematic-wave", "local-inertial")
-    river_routing = get_options(
-        config.model,
-        "river_routing",
-        routing_options,
-        "kinematic-wave",
-    )::String
-    land_routing =
-        get_options(config.model, "land_routing", routing_options, "kinematic-wave")::String
+        reader = prepare_reader(config)
+        clock = Clock(config, reader)
+        Δt = clock.Δt
 
-    snow = get(config.model, "snow", false)::Bool
-    reservoirs = do_reservoirs
-    lakes = do_lakes
-    glacier = get(config.model, "glacier", false)::Bool
-    masswasting = get(config.model, "masswasting", false)::Bool
-    @info "General model settings" reservoirs lakes snow masswasting glacier
+        reinit = get(config.model, "reinit", true)::Bool
+        do_reservoirs = get(config.model, "reservoirs", false)::Bool
+        do_lakes = get(config.model, "lakes", false)::Bool
+        do_pits = get(config.model, "pits", false)::Bool
 
-    nc = NCDataset(static_path)
+        kw_river_tstep = get(config.model, "kw_river_tstep", 0)
+        kw_land_tstep = get(config.model, "kw_land_tstep", 0)
+        kinwave_it = get(config.model, "kin_wave_iteration", false)::Bool
+        routing_options = ("kinematic-wave", "local-inertial")
+        river_routing = get_options(
+            config.model,
+            "river_routing",
+            routing_options,
+            "kinematic-wave",
+        )::String
+        land_routing = get_options(
+            config.model,
+            "land_routing",
+            routing_options,
+            "kinematic-wave",
+        )::String
 
-    subcatch_2d = ncread(nc, config, "subcatchment"; optional = false, allow_missing = true)
-    # indices based on catchment
-    inds, rev_inds = active_indices(subcatch_2d, missing)
-    n = length(inds)
-    modelsize_2d = size(subcatch_2d)
+        snow = get(config.model, "snow", false)::Bool
+        reservoirs = do_reservoirs
+        lakes = do_lakes
+        glacier = get(config.model, "glacier", false)::Bool
+        masswasting = get(config.model, "masswasting", false)::Bool
+        @info "General model settings" reservoirs lakes snow masswasting glacier
 
-    river_2d =
-        ncread(nc, config, "river_location"; optional = false, type = Bool, fill = false)
-    river = river_2d[inds]
-    riverwidth_2d =
-        ncread(nc, config, "lateral.river.width"; optional = false, type = Float, fill = 0)
-    riverwidth = riverwidth_2d[inds]
-    riverlength_2d =
-        ncread(nc, config, "lateral.river.length"; optional = false, type = Float, fill = 0)
-    riverlength = riverlength_2d[inds]
+        nc = NCDataset(static_path)
 
-    # read x, y coordinates and calculate cell length [m]
-    y_nc = read_y_axis(nc)
-    x_nc = read_x_axis(nc)
-    y = permutedims(repeat(y_nc, outer = (1, length(x_nc))))[inds]
-    cellength = abs(mean(diff(x_nc)))
+        subcatch_2d =
+            ncread(nc, config, "subcatchment"; optional = false, allow_missing = true)
+        # indices based on catchment
+        inds, rev_inds = active_indices(subcatch_2d, missing)
+        n = length(inds)
+        modelsize_2d = size(subcatch_2d)
 
-    sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
-    xl, yl = cell_lengths(y, cellength, sizeinmetres)
-    riverfrac = river_fraction(river, riverlength, riverwidth, xl, yl)
+        river_2d = ncread(
+            nc,
+            config,
+            "river_location";
+            optional = false,
+            type = Bool,
+            fill = false,
+        )
+        river = river_2d[inds]
+        riverwidth_2d = ncread(
+            nc,
+            config,
+            "lateral.river.width";
+            optional = false,
+            type = Float,
+            fill = 0,
+        )
+        riverwidth = riverwidth_2d[inds]
+        riverlength_2d = ncread(
+            nc,
+            config,
+            "lateral.river.length";
+            optional = false,
+            type = Float,
+            fill = 0,
+        )
+        riverlength = riverlength_2d[inds]
 
-    sbm = initialize_sbm(nc, config, riverfrac, inds)
+        # read x, y coordinates and calculate cell length [m]
+        y_nc = read_y_axis(nc)
+        x_nc = read_x_axis(nc)
+        y = permutedims(repeat(y_nc, outer = (1, length(x_nc))))[inds]
+        cellength = abs(mean(diff(x_nc)))
 
-    inds_riv, rev_inds_riv = active_indices(river_2d, 0)
+        sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
+        xl, yl = cell_lengths(y, cellength, sizeinmetres)
+        riverfrac = river_fraction(river, riverlength, riverwidth, xl, yl)
+
+        sbm = initialize_sbm(nc, config, riverfrac, inds)
+        maxlayers = sbm.maxlayers
+
+    else
+        maxlayers = Int
+    end
+
+    maxlayers = broadcast_to_ranks(maxlayers, comm)
+
+    if rank !== 0
+        sbm = NamedTuple{fieldnames(SBM{Float,maxlayers,maxlayers + 1})}(fieldtypes(SBM{Float,maxlayers,maxlayers + 1}))
+    end
+
+    sbm = set_sbm(sbm, maxlayers, comm, rank, nprocs)
+
+    return sbm
+
+    #= inds_riv, rev_inds_riv = active_indices(river_2d, 0)
     nriv = length(inds_riv)
 
     # reservoirs
@@ -416,7 +468,7 @@ function initialize_sbm_model(config::Config)
 
     @info "Initialized model"
 
-    return model
+    return model =#
 end
 
 "update SBM model for a single timestep"

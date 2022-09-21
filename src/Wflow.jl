@@ -18,6 +18,7 @@ using TerminalLoggers
 using CFTime
 using Base.Threads
 using Glob
+using MPI
 
 @metadata get_units "mm Δt-1"
 
@@ -27,6 +28,7 @@ const CFDataset = Union{NCDataset,NCDatasets.MFDataset}
 const CFVariable_MF = Union{NCDatasets.CFVariable,NCDatasets.MFCFVariable}
 const version =
     VersionNumber(TOML.parsefile(joinpath(@__DIR__, "..", "Project.toml"))["version"])
+const root = 0
 
 mutable struct Clock{T}
     time::T
@@ -106,6 +108,7 @@ struct SedimentModel end    # "sediment" type / sediment_model.jl
 Base.show(io::IO, m::Model) = print(io, "model of type ", typeof(m))
 
 include("horizontal_process.jl")
+include("distributed.jl")
 include("hbv.jl")
 include("sbm.jl")
 include("flextopo.jl")
