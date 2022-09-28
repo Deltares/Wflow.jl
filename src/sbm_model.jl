@@ -68,6 +68,17 @@ function initialize_sbm_model(config::Config)
         n = length(inds)
         modelsize_2d = size(subcatch_2d)
 
+        if nprocs > 1
+            subdomains = ncread(nc, config, "subdomains"; type = Int, sel = inds)
+            k = maximum(subdomains)
+            local_indices = Vector{Vector{Int}}(undef,k)
+            for i = 1:k
+                local_indices[i] = findall(x -> x == i, subdomains)
+            end
+        else
+            local_indices = [[1:length(inds)]]
+        end
+
         river_2d = ncread(
             nc,
             config,
@@ -108,18 +119,19 @@ function initialize_sbm_model(config::Config)
 
         sbm = initialize_sbm(nc, config, riverfrac, inds)
         maxlayers = sbm.maxlayers
-
     else
-        maxlayers = Int
+        maxlayers = nothing
+        local_indices = nothing
     end
 
     maxlayers = broadcast_to_ranks(maxlayers, comm)
+    local_indices = broadcast_to_ranks(local_indices, comm)
 
     if rank !== 0
         sbm = NamedTuple{fieldnames(SBM{Float,maxlayers,maxlayers + 1})}(fieldtypes(SBM{Float,maxlayers,maxlayers + 1}))
     end
 
-    sbm = set_sbm(sbm, maxlayers, comm, rank, nprocs)
+    sbm = set_sbm(sbm, maxlayers, local_indices, comm, rank, nprocs)
 
     return sbm
 
