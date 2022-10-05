@@ -57,7 +57,7 @@ function initialize_surfaceflow_land(
         ncread(nc, config, "lateral.land.n"; sel = inds, defaults = 0.072, type = Float)
     n = length(inds)
 
-    sf_land = SurfaceFlow(
+    sf_land = (
         β = Float(0.6),
         sl = sl,
         n = n_land,
@@ -89,6 +89,42 @@ function initialize_surfaceflow_land(
         kinwave_it = iterate,
     )
 
+    return sf_land
+end
+
+function set_sf_land(sf, indices, comm, rank, nprocs)
+
+    sf_land = SurfaceFlow(
+        β = broadcast_to_ranks(sf.β, comm),
+        sl = scatter_to_ranks(sf.sl, indices, nprocs, comm, rank),
+        n = broadcast_to_ranks(sf.n, comm),
+        dl = scatter_to_ranks(sf.dl, indices, nprocs, comm, rank),
+        q = scatter_to_ranks(sf.q, indices, nprocs, comm, rank),
+        qin = scatter_to_ranks(sf.qin, indices, nprocs, comm, rank),
+        q_av = scatter_to_ranks(sf.q_av, indices, nprocs, comm, rank),
+        qlat = scatter_to_ranks(sf.qlat, indices, nprocs, comm, rank),
+        inwater = scatter_to_ranks(sf.inwater, indices, nprocs, comm, rank),
+        inflow = scatter_to_ranks(sf.inflow, indices, nprocs, comm, rank),
+        volume = scatter_to_ranks(sf.volume, indices, nprocs, comm, rank),
+        h = scatter_to_ranks(sf.h, indices, nprocs, comm, rank),
+        h_av = scatter_to_ranks(sf.h_av, indices, nprocs, comm, rank),
+        bankfull_depth = scatter_to_ranks(sf.bankfull_depth, indices, nprocs, comm, rank),
+        Δt = broadcast_to_ranks(sf.Δt, comm),
+        its = broadcast_to_ranks(sf.its, comm),
+        width = scatter_to_ranks(sf.width, indices, nprocs, comm, rank),
+        wb_pit = scatter_to_ranks(sf.wb_pit, indices, nprocs, comm, rank),
+        alpha_pow = broadcast_to_ranks(sf.alpha_pow, comm),
+        alpha_term = scatter_to_ranks(sf.alpha_term, indices, nprocs, comm, rank),
+        α = scatter_to_ranks(sf.α, indices, nprocs, comm, rank),
+        cel = scatter_to_ranks(sf.cel, indices, nprocs, comm, rank),
+        to_river = scatter_to_ranks(sf.to_river, indices, nprocs, comm, rank),
+        rivercells = scatter_to_ranks(sf.rivercells, indices, nprocs, comm, rank),
+        reservoir_index = scatter_to_ranks(sf.reservoir_index, indices, nprocs, comm, rank),
+        lake_index = scatter_to_ranks(sf.lake_index, indices, nprocs, comm, rank),
+        reservoir = broadcast_to_ranks(sf.reservoir, comm),
+        lake = broadcast_to_ranks(sf.lake, comm),
+        kinwave_it = broadcast_to_ranks(sf.kinwave_it, comm),
+    )
     return sf_land
 end
 
@@ -142,7 +178,7 @@ function initialize_surfaceflow_river(
 
     n = length(inds)
 
-    sf_river = SurfaceFlow(
+    sf_river = (
         β = Float(0.6),
         sl = sl,
         n = n_river,
@@ -178,6 +214,48 @@ function initialize_surfaceflow_river(
 end
 
 statevars(::SurfaceFlow) = (:q, :h, :h_av)
+
+function set_sf_river(sf, config, indices, comm, rank, nprocs, inds_res, inds_lake)
+
+    do_reservoirs = get(config.model, "reservoirs", false)::Bool
+    do_lakes = get(config.model, "lakes", false)::Bool
+
+    sf_river = SurfaceFlow(
+        β = broadcast_to_ranks(sf.β, comm),
+        sl = scatter_to_ranks(sf.sl, indices, nprocs, comm, rank),
+        n = scatter_to_ranks(sf.n, indices, nprocs, comm, rank),
+        dl = scatter_to_ranks(sf.dl, indices, nprocs, comm, rank),
+        q = scatter_to_ranks(sf.q, indices, nprocs, comm, rank),
+        qin = scatter_to_ranks(sf.qin, indices, nprocs, comm, rank),
+        q_av = scatter_to_ranks(sf.q_av, indices, nprocs, comm, rank),
+        qlat = scatter_to_ranks(sf.qlat, indices, nprocs, comm, rank),
+        inwater = scatter_to_ranks(sf.inwater, indices, nprocs, comm, rank),
+        inflow = scatter_to_ranks(sf.inflow, indices, nprocs, comm, rank),
+        volume = scatter_to_ranks(sf.volume, indices, nprocs, comm, rank),
+        h = scatter_to_ranks(sf.h, indices, nprocs, comm, rank),
+        h_av = scatter_to_ranks(sf.h_av, indices, nprocs, comm, rank),
+        bankfull_depth = scatter_to_ranks(sf.bankfull_depth, indices, nprocs, comm, rank),
+        Δt = broadcast_to_ranks(sf.Δt, comm),
+        its = broadcast_to_ranks(sf.its, comm),
+        width = scatter_to_ranks(sf.width, indices, nprocs, comm, rank),
+        wb_pit = scatter_to_ranks(sf.wb_pit, indices, nprocs, comm, rank),
+        alpha_pow = broadcast_to_ranks(sf.alpha_pow, comm),
+        alpha_term = scatter_to_ranks(sf.alpha_term, indices, nprocs, comm, rank),
+        α = scatter_to_ranks(sf.α, indices, nprocs, comm, rank),
+        cel = scatter_to_ranks(sf.cel, indices, nprocs, comm, rank),
+        to_river = scatter_to_ranks(sf.to_river, indices, nprocs, comm, rank),
+        reservoir_index = scatter_to_ranks(sf.reservoir_index, indices, nprocs, comm, rank),
+        lake_index = scatter_to_ranks(sf.lake_index, indices, nprocs, comm, rank),
+        reservoir = do_reservoirs ?
+                    set_simple_reservoir(sf.reservoir, inds_res, nprocs, comm, rank) :
+                    nothing,
+        lake = do_lakes ? set_natural_lake(sf.lakes, inds_lake, nprocs, comm, rank) :
+               nothing,
+        rivercells = scatter_to_ranks(sf.rivercells, indices, nprocs, comm, rank),
+        kinwave_it = broadcast_to_ranks(sf.kinwave_it, comm),
+    )
+    return sf_river
+end
 
 function update(
     sf::SurfaceFlow,
@@ -379,6 +457,46 @@ end
 end
 
 statevars(::LateralSSF) = (:ssf,)
+
+function set_lateral_ssf(ssf, config, indices, comm, rank, nprocs)
+
+    if haskey(config.input.lateral, "subsurface")
+        ssf = LateralSSF{Float}(
+            kh₀ = scatter_to_ranks(ssf.kh₀, indices, nprocs, comm, rank),
+            f = scatter_to_ranks(ssf.f, indices, nprocs, comm, rank),
+            zi = scatter_to_ranks(ssf.zi, indices, nprocs, comm, rank),
+            soilthickness = scatter_to_ranks(
+                ssf.soilthickness,
+                indices,
+                nprocs,
+                comm,
+                rank,
+            ),
+            θₛ = scatter_to_ranks(ssf.θₛ, indices, nprocs, comm, rank),
+            θᵣ = scatter_to_ranks(ssf.θᵣ, indices, nprocs, comm, rank),
+            Δt = broadcast_to_ranks(ssf.Δt, comm),
+            βₗ = scatter_to_ranks(ssf.βₗ, indices, nprocs, comm, rank),
+            dl = scatter_to_ranks(ssf.dl, indices, nprocs, comm, rank),
+            dw = scatter_to_ranks(ssf.dw, indices, nprocs, comm, rank),
+            exfiltwater = scatter_to_ranks(ssf.exfiltwater, indices, nprocs, comm, rank),
+            recharge = scatter_to_ranks(ssf.recharge, indices, nprocs, comm, rank),
+            ssf = scatter_to_ranks(ssf.ssf, indices, nprocs, comm, rank),
+            ssfin = scatter_to_ranks(ssf.ssfin, indices, nprocs, comm, rank),
+            ssfmax = scatter_to_ranks(ssf.ssfmax, indices, nprocs, comm, rank),
+            to_river = scatter_to_ranks(ssf.to_river, indices, nprocs, comm, rank),
+            wb_pit = scatter_to_ranks(ssf.wb_pit, indices, nprocs, comm, rank),
+        )
+    else
+        ssf = GroundwaterExchange{Float}(
+            Δt = broadcast_to_ranks(ssf.Δt, comm),
+            exfiltwater = scatter_to_ranks(ssf.exfiltwater, indices, nprocs, comm, rank),
+            zi = scatter_to_ranks(ssf.zi, indices, nprocs, comm, rank),
+            to_river = scatter_to_ranks(ssf.to_river, indices, nprocs, comm, rank),
+            ssf = scatter_to_ranks(ssf.ssf, indices, nprocs, comm, rank),
+        )
+    end
+    return ssf
+end
 
 function update(ssf::LateralSSF, network, frac_toriver)
     @unpack subdomain_order, topo_subdomain, indices_subdomain, upstream_nodes = network
@@ -869,7 +987,7 @@ function initialize_shallowwater_land(
         qy = zeros(n + 1),
         zx_max = zx_max,
         zy_max = zy_max,
-        mannings_n_sq = n_land.* n_land,
+        mannings_n_sq = n_land .* n_land,
         volume = zeros(n),
         error = zeros(n),
         runoff = zeros(n),

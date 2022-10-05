@@ -15,10 +15,10 @@
     precipitation::Vector{T}                            # average precipitation for reservoir area [mm Δt⁻¹]
     evaporation::Vector{T}                              # average evaporation for reservoir area [mm Δt⁻¹]
 
-    function SimpleReservoir{T}(args...) where {T}
-        equal_size_vectors(args)
-        return new(args...)
-    end
+    #function SimpleReservoir{T}(args...) where {T}
+    #    equal_size_vectors(args)
+    #    return new(args...)
+    #end
 end
 
 statevars(::SimpleReservoir) = (:volume,)
@@ -132,7 +132,7 @@ function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, Δt)
 
     n = length(resarea)
     @info "Read `$n` reservoir locations."
-    reservoirs = SimpleReservoir{Float}(
+    reservoirs = (
         Δt = Δt,
         demand = resdemand,
         maxrelease = resmaxrelease,
@@ -158,6 +158,29 @@ function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, Δt)
         reverse_indices = rev_inds_reservoir,
     ),
     pits
+end
+
+function set_simple_reservoir(res, indices, nprocs, comm, rank)
+
+    reservoirs = SimpleReservoir{Float}(
+        Δt = broadcast_to_ranks(res.Δt, comm),
+        demand = scatter_to_ranks(res.demand, indices, nprocs, comm, rank),
+        maxrelease = scatter_to_ranks(res.maxrelease, indices, nprocs, comm, rank),
+        maxvolume = scatter_to_ranks(res.maxvolume, indices, nprocs, comm, rank),
+        area = scatter_to_ranks(res.area, indices, nprocs, comm, rank),
+        targetfullfrac = scatter_to_ranks(res.targetfullfrac, indices, nprocs, comm, rank),
+        targetminfrac = scatter_to_ranks(res.targetminfrac, indices, nprocs, comm, rank),
+        volume = scatter_to_ranks(res.volume, indices, nprocs, comm, rank),
+        inflow = scatter_to_ranks(res.inflow, indices, nprocs, comm, rank),
+        outflow = scatter_to_ranks(res.outflow, indices, nprocs, comm, rank),
+        totaloutflow = scatter_to_ranks(res.totaloutflow, indices, nprocs, comm, rank),
+        percfull = scatter_to_ranks(res.percfull, indices, nprocs, comm, rank),
+        demandrelease = scatter_to_ranks(res.demandrelease, indices, nprocs, comm, rank),
+        precipitation = scatter_to_ranks(res.precipitation, indices, nprocs, comm, rank),
+        evaporation = scatter_to_ranks(res.evaporation, indices, nprocs, comm, rank),
+    )
+    return reservoirs
+
 end
 
 """
@@ -393,7 +416,7 @@ function initialize_natural_lake(config, nc, inds_riv, nriv, pits, Δt)
         end
     end
     n = length(lakearea)
-    lakes = NaturalLake{Float}(
+    lakes = ( #NaturalLake{Float}
         Δt = Δt,
         lowerlake_ind = lowerlake_ind,
         area = lakearea,
@@ -421,6 +444,30 @@ function initialize_natural_lake(config, nc, inds_riv, nriv, pits, Δt)
         reverse_indices = rev_inds_lake,
     ),
     pits
+end
+
+function set_natural_lake(lake, indices, nprocs, comm, rank)
+
+    lakes = NaturalLake{Float}(
+        Δt = broadcast_to_ranks(lake.Δt, comm),
+        lowerlake_ind = scatter_to_ranks(lake.lowerlake_ind, indices, nprocs, comm, rank),
+        area = scatter_to_ranks(lake.area, indices, nprocs, comm, rank),
+        threshold = scatter_to_ranks(lake.threshold, indices, nprocs, comm, rank),
+        storfunc = scatter_to_ranks(lake.storfunc, indices, nprocs, comm, rank),
+        outflowfunc = scatter_to_ranks(lake.outflowfunc, indices, nprocs, comm, rank),
+        b = scatter_to_ranks(lake.b, indices, nprocs, comm, rank),
+        e = scatter_to_ranks(lake.a, indices, nprocs, comm, rank),
+        waterlevel = scatter_to_ranks(lake.area, indices, nprocs, comm, rank),
+        sh = scatter_to_ranks(lake.sh, indices, nprocs, comm, rank),
+        hq = scatter_to_ranks(lake.hq, indices, nprocs, comm, rank),
+        inflow = scatter_to_ranks(lake.inflow, indices, nprocs, comm, rank),
+        storage = scatter_to_ranks(lake.storage, indices, nprocs, comm, rank),
+        outflow = scatter_to_ranks(lake.outflow, indices, nprocs, comm, rank),
+        totaloutflow = scatter_to_ranks(lake.totaloutflow, indices, nprocs, comm, rank),
+        precipitation = scatter_to_ranks(lake.precipitation, indices, nprocs, comm, rank),
+        evaporation = scatter_to_ranks(lake.evaporation, indices, nprocs, comm, rank),
+    )
+    return lakes
 end
 
 

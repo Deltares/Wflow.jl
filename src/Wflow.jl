@@ -19,6 +19,7 @@ using CFTime
 using Base.Threads
 using Glob
 using MPI
+using Accessors
 
 @metadata get_units "mm Δt-1"
 
