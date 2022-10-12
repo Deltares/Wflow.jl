@@ -20,6 +20,7 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
 TerminalLoggers = "5d786b92-1e48-4d6f-9151-6b4477ca9bed"
+Thrift = "8d9c9c80-f77e-5080-9541-c6f69d204e22"
 UnPack = "3a884ed6-31ef-47d7-9d2a-63182c4928ed"
 
 [compat]
@@ -35,6 +36,7 @@ ProgressLogging = "0.1"
 StaticArrays = "0.12, 1.0"
 TOML = "1.0"
 TerminalLoggers = "0.1.5"
+Thrift = "0.7.1"
 UnPack = "1"
 julia = "1.6"
 
