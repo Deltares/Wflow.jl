@@ -36,7 +36,6 @@ ProgressLogging = "0.1"
 StaticArrays = "0.12, 1.0"
 TOML = "1.0"
 TerminalLoggers = "0.1.5"
-Thrift = "0.7.1"
 UnPack = "1"
 julia = "1.6"
 

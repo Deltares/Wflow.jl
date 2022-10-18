@@ -1,23 +1,15 @@
 using Wflow
 
 mutable struct ModelHandler
-    model::Union{Nothing, Wflow.Model}
+    model::Wflow.Model
+    ModelHandler() = new()
 end
 
-function initialize(config_file::AbstractString)
+handler = ModelHandler()
+
+ function initialize(config_file::AbstractString)
     try
         handler.model = Wflow.BMI.initialize(Wflow.Model, config_file)
-    catch error
-        println(error)
-        ex = ModelException()
-        ex.message = "testing"
-        throw(ex)
-    end
-end
-
-function update()
-    try
-        handler.model = Wflow.BMI.update()
     catch error
         ex = ModelException()
         ex.message = string(error)
@@ -25,4 +17,13 @@ function update()
     end
 end
 
-handler = ModelHandler(nothing)
+function update()
+    try
+        handler.model = Wflow.BMI.update(handler.model)
+        println(handler.model)
+    catch error
+        ex = ModelException()
+        ex.message = string(error)
+        throw(ex)
+    end
+end
