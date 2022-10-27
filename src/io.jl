@@ -104,8 +104,11 @@ function input_path(config::Config, path::AbstractString)
 end
 
 "Construct a path relative to both the TOML directory and the optional `dir_output`"
-function output_path(config::Config, path::AbstractString)
+function output_path(config::Config, path::AbstractString; comm = nothing, rank = 0)
     dir = get(config, "dir_output", ".")
+    if !isnothing(comm)
+        path = string(splitext(path)[1], string("_rank_$(rank)"), splitext(path)[2])
+    end
     return combined_path(config, dir, path)
 end
 
@@ -901,6 +904,8 @@ function prepare_writer(
     y_nc,
     nc_static;
     extra_dim = nothing,
+    comm = nothing,
+    rank = 0,
 )
     sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
 
@@ -910,7 +915,7 @@ function prepare_writer(
     # create an output NetCDF that will hold all timesteps of selected parameters for grid
     # data but only if config.output.path has been set
     if haskey(config, "output") && haskey(config.output, "path")
-        nc_path = output_path(config, config.output.path)
+        nc_path = output_path(config, config.output.path, comm = comm, rank = rank)
         deflatelevel = get(config.output, "compressionlevel", 0)::Int
         @info "Create an output NetCDF file `$nc_path` for grid data, using compression level `$deflatelevel`."
         # create a flat mapping from internal parameter locations to NetCDF variable names
@@ -939,7 +944,8 @@ function prepare_writer(
     if haskey(config, "state") && haskey(config.state, "path_output")
         state_ncnames = ncnames(config.state)
         state_map = out_map(state_ncnames, modelmap)
-        nc_state_path = output_path(config, config.state.path_output)
+        nc_state_path =
+            output_path(config, config.state.path_output, comm = comm, rank = rank)
         @info "Create a state output NetCDF file `$nc_state_path`."
         ds_outstate = setup_grid_netcdf(
             nc_state_path,
@@ -1086,7 +1092,9 @@ function write_netcdf_timestep(model, dataset, parameters)
             # ensure no other information is written
             fill!(buffer, missing)
             # cut off possible boundary conditions/ ghost points with [1:length(sel)]
-            buffer[sel] .= vector[1:length(sel)]
+            if !isnothing(sel)
+                buffer[sel] .= vector[1:length(sel)]
+            end
             dataset[key][:, :, time_index] = buffer
         elseif elemtype <: SVector
             nlayer = length(first(vector))

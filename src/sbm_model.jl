@@ -331,6 +331,25 @@ function initialize_sbm_model(config::Config)
         inactive_ranks_res = nothing
         local_indices_lake = nothing
         inactive_ranks_lake = nothing
+        nc = nothing
+        x_nc = nothing
+        y_nc = nothing
+        rev_inds = Vector{Int}
+        rev_inds_riv = Vector{Int}
+        if do_reservoirs
+            reservoir = (
+                indices_outlet = Vector{CartesianIndex{2}},
+                indices_coverage = Vector{CartesianIndex{2}},
+                reverse_indices = Array{Int,2},
+            )
+        end
+        if do_lakes
+            lake = (
+                indices_outlet = Vector{CartesianIndex{2}},
+                indices_coverage = Vector{CartesianIndex{2}},
+                reverse_indices = Array{Int,2},
+            )
+        end
     end
 
     maxlayers = broadcast_to_ranks(maxlayers, comm)
@@ -340,6 +359,9 @@ function initialize_sbm_model(config::Config)
     local_indices_res = broadcast_to_ranks(local_indices_res, comm)
     inactive_ranks_lake = broadcast_to_ranks(inactive_ranks_lake, comm)
     local_indices_lake = broadcast_to_ranks(local_indices_lake, comm)
+    nc = broadcast_to_ranks(nc, comm)
+    x_nc = broadcast_to_ranks(x_nc, comm)
+    y_nc = broadcast_to_ranks(y_nc, comm)
 
     if rank !== 0
         sbm = NamedTuple{fieldnames(SBM{Float,maxlayers,maxlayers + 1})}(
@@ -373,15 +395,30 @@ function initialize_sbm_model(config::Config)
         local_indices_lake,
     )
     ssf = set_lateral_ssf(ssf, config, local_indices, comm, rank, nprocs)
-    if do_reservoirs && rank in inactive_ranks_res
-        rf = @set rf.reservoir = nothing
-    end
-    if do_lakes && rank in inactive_ranks_lake
-        rf = @set rf.lake = nothing
+
+    #if do_reservoirs && rank in inactive_ranks_res
+    #rf = @set rf.reservoir = nothing
+    #end
+    #if do_lakes && rank in inactive_ranks_lake
+    # rf = @set rf.lake = nothing
+    #end
+
+    if rank === 0 && !isnothing(comm)
+        toposort = topological_sort_by_dfs(graph)
+        index_pit = findall(x -> x == 5, ldd)
+        subgraphs, sub_toposort, ghost_node, neighbor_rank, subbas_order = set_subdomains(
+            graph,
+            subdomains_2d[inds],
+            local_indices,
+            toposort,
+            nprocs,
+            index_pit,
+        )
+        #return neighbor_rank
     end
 
 
-    return rf
+
 
     #=     # setup subdomains for the land and river kinematic wave domain, if nthreads = 1
         # subdomain is equal to the complete domain
@@ -400,160 +437,179 @@ function initialize_sbm_model(config::Config)
             min_streamorder = get(config.model, "min_streamorder", 4)
             @info "Parallel execution of kinematic wave, minimum stream order = `$min_streamorder`."
         end
+        =#
 
-        modelmap = (vertical = sbm, lateral = (subsurface = ssf, land = olf, river = rf))
-        indices_reverse = (
-            land = rev_inds,
-            river = rev_inds_riv,
-            reservoir = isempty(reservoir) ? nothing : reservoir.reverse_indices,
-            lake = isempty(lake) ? nothing : lake.reverse_indices,
-        )
-        writer = prepare_writer(
-            config,
-            modelmap,
-            indices_reverse,
-            x_nc,
-            y_nc,
-            nc,
-            extra_dim = (name = "layer", value = Float64.(1:sbm.maxlayers)),
-        )
-        close(nc)
+    modelmap = (vertical = sbm, lateral = (subsurface = ssf, land = olf, river = rf))
+    reservoir =
+        do_reservoirs ?
+        scatter_to_ranks(reservoir.reverse_indices, local_indices_riv, nprocs, comm, rank) :
+        nothing
+    lake =
+        do_lakes ?
+        scatter_to_ranks(lake.reverse_indices, local_indices_riv, nprocs, comm, rank) :
+        nothing
+    indices_reverse = (
+        land = scatter_to_ranks(rev_inds, local_indices, nprocs, comm, rank),
+        river = scatter_to_ranks(rev_inds_riv, local_indices_riv, nprocs, comm, rank),
+        reservoir = reservoir,
+        lake = lake,
+    )
+    if do_lakes && rank in inactive_ranks_lake
+        indices_reverse = @set indices_reverse.lake = nothing
+    end
+    if do_reservoirs && rank in inactive_ranks_res
+        indices_reverse = @set indices_reverse.reservoir = nothing
+    end
 
-        # for each domain save:
-        # - the directed acyclic graph (graph),
-        # - the traversion order (order),
-        # - upstream_nodes,
-        # - subdomains for the kinematic wave domains for parallel execution (execution order of
-        #   subbasins (subdomain_order), traversion order per subbasin (topo_subdomain) and
-        #   Vector indices per subbasin matching the traversion order of the complete domain
-        #   (indices_subdomain))
-        # - the indices that map it back to the two dimensional grid (indices)
+    writer = prepare_writer(
+        config,
+        modelmap,
+        indices_reverse,
+        x_nc,
+        y_nc,
+        nc,
+        extra_dim = (name = "layer", value = Float64.(1:sbm.maxlayers)),
+        rank = rank,
+        comm = comm,
+    )
+    close(nc)
+    # return rf
 
-        # for the land domain the x and y length [m] of the grid cells are stored
-        # for reservoirs and lakes indices information is available from the initialization
-        # functions
-        land = (
-            graph = graph,
-            upstream_nodes = filter_upsteam_nodes(graph, pits[inds]),
-            subdomain_order = subbas_order,
-            topo_subdomain = topo_subbas,
-            indices_subdomain = indices_subbas,
-            order = toposort,
-            indices = inds,
-            reverse_indices = rev_inds,
-            xl,
-            yl,
-            slope = βₗ,
-        )
-        if land_routing == "local-inertial"
-            land = merge(land, (index_river = index_river_nf, staggered_indices = indices))
-        end
-        if river_routing == "kinematic-wave"
-            river = (
-                graph = graph_riv,
-                indices = inds_riv,
-                reverse_indices = rev_inds_riv,
-                # specific for kinematic_wave
-                upstream_nodes = filter_upsteam_nodes(graph_riv, rf.wb_pit),
-                subdomain_order = subriv_order,
-                topo_subdomain = topo_subriv,
-                indices_subdomain = indices_subriv,
-                order = toposort_riv,
+    # for each domain save:
+    # - the directed acyclic graph (graph),
+    # - the traversion order (order),
+    # - upstream_nodes,
+    # - subdomains for the kinematic wave domains for parallel execution (execution order of
+    #   subbasins (subdomain_order), traversion order per subbasin (topo_subdomain) and
+    #   Vector indices per subbasin matching the traversion order of the complete domain
+    #   (indices_subdomain))
+    # - the indices that map it back to the two dimensional grid (indices)
+
+    # for the land domain the x and y length [m] of the grid cells are stored
+    # for reservoirs and lakes indices information is available from the initialization
+    # functions
+    #=         land = (
+                graph = graph,
+                upstream_nodes = filter_upsteam_nodes(graph, pits[inds]),
+                subdomain_order = subbas_order,
+                topo_subdomain = topo_subbas,
+                indices_subdomain = indices_subbas,
+                order = toposort,
+                indices = inds,
+                reverse_indices = rev_inds,
+                xl,
+                yl,
+                slope = βₗ,
             )
-        elseif river_routing == "local-inertial"
-            river = (
-                graph = graph_riv,
-                indices = inds_riv,
-                reverse_indices = rev_inds_riv,
-                # specific for local-inertial
-                nodes_at_link = nodes_at_link,
-                links_at_node = adjacent_links_at_node(graph, nodes_at_link),
-            )
-        end
-
-        model = Model(
-            config,
-            (; land, river, reservoir, lake, index_river, frac_toriver),
-            (subsurface = ssf, land = olf, river = rf),
-            sbm,
-            clock,
-            reader,
-            writer,
-            SbmModel(),
-        )
-
-        # read and set states in model object if reinit=false
-        if reinit == false
-            instate_path = input_path(config, config.state.path_input)
-            @info "Set initial conditions from state file `$instate_path`."
-            state_ncnames = ncnames(config.state)
-            @warn string(
-                "The unit of `ssf` (lateral subsurface flow) is now m3 d-1. Please update your",
-                " input state file if it was produced with a Wflow version up to v0.5.2.",
-            )
-            set_states(instate_path, model, state_ncnames; type = Float, dimname = :layer)
-            @unpack lateral, vertical, network = model
-            # update zi for vertical sbm and kinematic wave volume for river and land domain
-            zi =
-                max.(
-                    0.0,
-                    vertical.soilthickness .-
-                    vertical.satwaterdepth ./ (vertical.θₛ .- vertical.θᵣ),
+            if land_routing == "local-inertial"
+                land = merge(land, (index_river = index_river_nf, staggered_indices = indices))
+            end
+            if river_routing == "kinematic-wave"
+                river = (
+                    graph = graph_riv,
+                    indices = inds_riv,
+                    reverse_indices = rev_inds_riv,
+                    # specific for kinematic_wave
+                    upstream_nodes = filter_upsteam_nodes(graph_riv, rf.wb_pit),
+                    subdomain_order = subriv_order,
+                    topo_subdomain = topo_subriv,
+                    indices_subdomain = indices_subriv,
+                    order = toposort_riv,
                 )
-            vertical.zi .= zi
-            if land_routing == "kinematic-wave"
-                # make sure land cells with zero flow width are set to zero q and h
-                for i in eachindex(lateral.land.width)
-                    if lateral.land.width[i] <= 0.0
-                        lateral.land.q[i] = 0.0
-                        lateral.land.h[i] = 0.0
-                    end
-                end
-                lateral.land.volume .= lateral.land.h .* lateral.land.width .* lateral.land.dl
-            elseif land_routing == "local-inertial"
+            elseif river_routing == "local-inertial"
+                river = (
+                    graph = graph_riv,
+                    indices = inds_riv,
+                    reverse_indices = rev_inds_riv,
+                    # specific for local-inertial
+                    nodes_at_link = nodes_at_link,
+                    links_at_node = adjacent_links_at_node(graph, nodes_at_link),
+                )
+            end
+
+            model = Model(
+                config,
+                (; land, river, reservoir, lake, index_river, frac_toriver),
+                (subsurface = ssf, land = olf, river = rf),
+                sbm,
+                clock,
+                reader,
+                writer,
+                SbmModel(),
+            )
+
+            # read and set states in model object if reinit=false
+            if reinit == false
+                instate_path = input_path(config, config.state.path_input)
+                @info "Set initial conditions from state file `$instate_path`."
+                state_ncnames = ncnames(config.state)
                 @warn string(
-                    "The reference level for the water depth `h` and `h_av` of overland flow ",
-                    "(local inertial model) for cells containing a river has changed from river",
-                    " bed elevation `zb` to cell elevation `z`. Please update the input state",
-                    " file if it was produced with Wflow version v0.5.2.",
+                    "The unit of `ssf` (lateral subsurface flow) is now m3 d-1. Please update your",
+                    " input state file if it was produced with a Wflow version up to v0.5.2.",
                 )
-                for i = 1:n
-                    if lateral.land.rivercells[i]
-                        j = network.land.index_river[i]
-                        if lateral.land.h[i] > 0.0
-                            lateral.land.volume[i] =
-                                lateral.land.h[i] * lateral.land.xl[i] * lateral.land.yl[i] +
-                                lateral.river.bankfull_volume[j]
+                set_states(instate_path, model, state_ncnames; type = Float, dimname = :layer)
+                @unpack lateral, vertical, network = model
+                # update zi for vertical sbm and kinematic wave volume for river and land domain
+                zi =
+                    max.(
+                        0.0,
+                        vertical.soilthickness .-
+                        vertical.satwaterdepth ./ (vertical.θₛ .- vertical.θᵣ),
+                    )
+                vertical.zi .= zi
+                if land_routing == "kinematic-wave"
+                    # make sure land cells with zero flow width are set to zero q and h
+                    for i in eachindex(lateral.land.width)
+                        if lateral.land.width[i] <= 0.0
+                            lateral.land.q[i] = 0.0
+                            lateral.land.h[i] = 0.0
+                        end
+                    end
+                    lateral.land.volume .= lateral.land.h .* lateral.land.width .* lateral.land.dl
+                elseif land_routing == "local-inertial"
+                    @warn string(
+                        "The reference level for the water depth `h` and `h_av` of overland flow ",
+                        "(local inertial model) for cells containing a river has changed from river",
+                        " bed elevation `zb` to cell elevation `z`. Please update the input state",
+                        " file if it was produced with Wflow version v0.5.2.",
+                    )
+                    for i = 1:n
+                        if lateral.land.rivercells[i]
+                            j = network.land.index_river[i]
+                            if lateral.land.h[i] > 0.0
+                                lateral.land.volume[i] =
+                                    lateral.land.h[i] * lateral.land.xl[i] * lateral.land.yl[i] +
+                                    lateral.river.bankfull_volume[j]
+                            else
+                                lateral.land.volume[i] =
+                                    lateral.river.h[j] *
+                                    lateral.river.width[j] *
+                                    lateral.river.dl[j]
+                            end
                         else
                             lateral.land.volume[i] =
-                                lateral.river.h[j] *
-                                lateral.river.width[j] *
-                                lateral.river.dl[j]
+                                lateral.land.h[i] * lateral.land.xl[i] * lateral.land.yl[i]
                         end
-                    else
-                        lateral.land.volume[i] =
-                            lateral.land.h[i] * lateral.land.xl[i] * lateral.land.yl[i]
                     end
                 end
+                # only set active cells for river (ignore boundary conditions/ghost points)
+                lateral.river.volume[1:nriv] .=
+                    lateral.river.h[1:nriv] .* lateral.river.width[1:nriv] .*
+                    lateral.river.dl[1:nriv]
+
+                if do_lakes
+                    # storage must be re-initialized after loading the state with the current
+                    # waterlevel otherwise the storage will be based on the initial water level
+                    lakes.storage .=
+                        initialize_storage(lakes.storfunc, lakes.area, lakes.waterlevel, lakes.sh)
+                end
+            else
+                @info "Set initial conditions from default values."
             end
-            # only set active cells for river (ignore boundary conditions/ghost points)
-            lateral.river.volume[1:nriv] .=
-                lateral.river.h[1:nriv] .* lateral.river.width[1:nriv] .*
-                lateral.river.dl[1:nriv]
 
-            if do_lakes
-                # storage must be re-initialized after loading the state with the current
-                # waterlevel otherwise the storage will be based on the initial water level
-                lakes.storage .=
-                    initialize_storage(lakes.storfunc, lakes.area, lakes.waterlevel, lakes.sh)
-            end
-        else
-            @info "Set initial conditions from default values."
-        end
+            @info "Initialized model"
 
-        @info "Initialized model"
-
-        return model =#
+            return model  =#
 end
 
 "update SBM model for a single timestep"

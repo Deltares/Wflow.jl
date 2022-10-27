@@ -113,13 +113,13 @@ Extract directed acyclic graph `g` representing the flow network at subbasin lev
 subbasin ids for the complete domain, and directed acyclic graph `graph` representing the
 flow network for each subbasin cell.
 """
-function graph_from_nodes(graph, subbas, subbas_fill)
+function graph_from_nodes(graph, subbas, subbas_fill; offset = 0)
     n = maximum(subbas)
     g = DiGraph(n)
     for i = 1:n
-        idx = findall(x -> x == i, subbas)
+        idx = findall(x -> x == i + offset, subbas)
         ds_idx = outneighbors(graph, only(idx))
-        to_node = subbas_fill[ds_idx]
+        to_node = subbas_fill[ds_idx] .- offset
         if !isempty(to_node)
             add_edge!(g, i, only(to_node))
         end
