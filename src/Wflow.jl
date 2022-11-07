@@ -20,6 +20,7 @@ using Base.Threads
 using Glob
 using MPI
 using Accessors
+using Metis
 
 @metadata get_units "mm Δt-1"
 

@@ -131,3 +131,37 @@ function set_subdomains(graph, subdomains, local_indices, toposort, nprocs, inde
     end
     return subgraphs, sub_toposort, ghost_node, neighbor_rank, subbas_order
 end
+
+function partition_graph(g::SimpleGraph, nparts::Integer)
+
+    G = Metis.graph(g)
+    G.xadj .= G.xadj .- Cint(1)
+    G.adjncy .= G.adjncy .- Cint(1)
+
+    part = Vector{Cint}(undef, G.nvtxs)
+    vwgt = isdefined(G, :vwgt) ? G.vwgt : C_NULL
+    edgecut = fill(Cint(0), 1)
+
+    options = fill(Cint(-1), Metis.METIS_NOPTIONS)
+    options[Metis.METIS_OPTION_CONTIG] = Cint(1)
+    options[Metis.METIS_OPTION_OBJTYPE] = Metis.METIS_OBJTYPE_CUT
+
+    Metis.METIS_PartGraphKway(
+        G.nvtxs,
+        Cint(1),
+        G.xadj,
+        G.adjncy,
+        vwgt,
+        C_NULL,
+        C_NULL,
+        Cint(nparts),
+        C_NULL,
+        C_NULL,
+        options,
+        edgecut,
+        part,
+    )
+
+    return part
+
+end
