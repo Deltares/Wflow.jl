@@ -25,6 +25,7 @@ function initialize_sbm_model(config::Config)
     kw_land_tstep = get(config.model, "kw_land_tstep", 0)
     kinwave_it = get(config.model, "kin_wave_iteration", false)::Bool
     routing_options = ("kinematic-wave", "local-inertial")
+    floodplain_1d = get(config.model, "floodplain_1d", false)::Bool
     river_routing = get_options(
         config.model,
         "river_routing",
@@ -237,6 +238,7 @@ function initialize_sbm_model(config::Config)
             lake_index = lakeindex,
             lake = lakes,
             Δt = Δt,
+            floodplain = floodplain_1d,
         )
     else
         error(

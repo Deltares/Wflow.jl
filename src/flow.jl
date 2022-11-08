@@ -430,7 +430,7 @@ end
     ssf::Vector{T} | "m3 d-1"           # Subsurface flow [m³ d⁻¹]
 end
 
-@get_units @with_kw struct ShallowWaterRiver{T,R,L}
+@get_units @with_kw struct ShallowWaterRiver{T,R,L,F}
     n::Int | "-"                            # number of cells
     ne::Int | "-"                           # number of edges/links
     g::T | "m s-2"                          # acceleration due to gravity
@@ -465,6 +465,7 @@ end
     lake_index::Vector{Int} | "-"           # map cell to 0 (no lake) or i (pick lake i in lake field)
     reservoir::R                            # Reservoir model struct of arrays
     lake::L                                 # Lake model struct of arrays
+    floodplain::F                           # Floodplain (1D) schematization
 end
 
 function initialize_shallowwater_river(
@@ -480,6 +481,7 @@ function initialize_shallowwater_river(
     lake_index,
     lake,
     Δt,
+    floodplain,
 )
     # The local inertial approach makes use of a staggered grid (Bates et al. (2010)),
     # with nodes and links. This information is extracted from the directed graph of the
@@ -520,6 +522,12 @@ function initialize_shallowwater_river(
 
     n_river =
         ncread(nc, config, "lateral.river.n"; sel = inds, defaults = 0.036, type = Float)
+
+    if floodplain
+        floodplain = initialize_floodplain_1d(nc, config, inds)
+    else
+        floodplain = nothing
+    end
 
     n = length(inds)
     # set ghost points for boundary condition (downstream river outlet): river width, bed
@@ -592,6 +600,7 @@ function initialize_shallowwater_river(
         lake_index = lake_index,
         reservoir = reservoir,
         lake = lake,
+        floodplain = floodplain,
     )
     return sw_river, nodes_at_link
 end
@@ -869,7 +878,7 @@ function initialize_shallowwater_land(
         qy = zeros(n + 1),
         zx_max = zx_max,
         zy_max = zy_max,
-        mannings_n_sq = n_land.* n_land,
+        mannings_n_sq = n_land .* n_land,
         volume = zeros(n),
         error = zeros(n),
         runoff = zeros(n),
@@ -881,6 +890,41 @@ function initialize_shallowwater_land(
     )
 
     return sw_land, indices
+end
+
+@get_units @with_kw struct FloodPlain{T,N}
+    mannings_n::Vector{T} | "s m-1/3"    # Manning's roughness of floodplain
+    depth::Vector{T} | "m"    # Flood depth
+    volume::Vector{SVector{N,T}} | "m3"  # Flood volume
+end
+
+function initialize_floodplain_1d(nc, config, inds)
+
+    n = ncread(
+        nc,
+        config,
+        "lateral.river.floodplain.n";
+        sel = inds,
+        defaults = 0.072,
+        type = Float,
+    )
+    volume = ncread(
+        nc,
+        config,
+        "lateral.river.floodplain.volume";
+        sel = inds,
+        type = Float,
+        dimname = :flood_depth,
+    )
+
+    N = nc.dim["flood_depth"]
+
+    floodplain = FloodPlain{Float,N}(
+        mannings_n = n,
+        volume = svectorscopy(volume, Val{N}()),
+        depth = Float.(nc["flood_depth"][:]),
+    )
+    return floodplain
 end
 
 """

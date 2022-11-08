@@ -214,6 +214,7 @@ end
         lake_index = zeros(n),
         reservoir = nothing,
         lake = nothing,
+        floodplain = nothing,
     )
 
     # run until steady state is reached

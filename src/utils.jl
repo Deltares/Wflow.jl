@@ -249,6 +249,8 @@ function ncread(
         dim_sel = (x = :, y = :, classes = :, time = 1)
     elseif dimname == :layer
         dim_sel = (x = :, y = :, layer = :, time = 1)
+    elseif dimname == :flood_depth
+        dim_sel = (x = :, y = :, flood_depth = :, time = 1)
     else
         error("Unrecognized dimension name $dimname")
     end
