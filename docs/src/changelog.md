@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 
 ### Fixed
+- Removed error when `_FillValue` is present in the time dimension of the forcing NetCDF file.
+  The simulation is allowed to continue with the attribute present, given that there are no
+  missing values in the time dimension. This is checked by the code, and an error is thrown if
+  this is the case.
 
 ### Changed
 
