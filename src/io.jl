@@ -245,6 +245,18 @@ function update_forcing!(model)
     @unpack dataset, forcing_parameters = reader
     nctimes = dataset["time"][:]
 
+    # Check if the time dimension contains a _FillValue attribute
+    if haskey(dataset["time"].attrib, "_FillValue")
+        # Remove missings, and check if lenght has changed (missings in time dimension are not
+        # allowed), and throw an error is the lenghts are different
+        times_dropped = collect(skipmissing(nctimes))
+        if length(times_dropped) == length(nctimes)
+            nctimes = times_dropped
+        else
+            error("Time dimension contains missing values")
+        end
+    end
+
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
     do_lakes = get(config.model, "lakes", false)::Bool
 
