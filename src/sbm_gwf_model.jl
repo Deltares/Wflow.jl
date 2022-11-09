@@ -165,6 +165,9 @@ function initialize_sbm_gwf_model(config::Config)
         ncread(nc, config, "lateral.subsurface.conductivity"; sel = inds, type = Float)
     specific_yield =
         ncread(nc, config, "lateral.subsurface.specific_yield"; sel = inds, type = Float)
+    gwf_f =
+        ncread(nc, config, "lateral.subsurface.gwf_f"; sel = inds, type = Float, defaults=3.0)
+    exp_conductivity = get(config.input.lateral.subsurface, "exp_conductivity", false)::Bool
 
     connectivity = Connectivity(inds, rev_inds, xl, yl)
     initial_head = altitude .- Float(0.10) # cold state for groundwater head
@@ -182,6 +185,9 @@ function initialize_sbm_gwf_model(config::Config)
         xl .* yl,
         specific_yield,
         zeros(Float, connectivity.nconnection),  # conductance
+        exp_conductivity,
+        gwf_f,
+        zeros(Float, length(conductivity)),
     )
 
     # reset zi and satwaterdepth with groundwater head from unconfined aquifer

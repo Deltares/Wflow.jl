@@ -111,12 +111,15 @@ instead. Specific yield will vary roughly between 0.05 (clay) and 0.45 (peat)
 """
 @get_units struct UnconfinedAquifer{T} <: Aquifer
     head::Vector{T} | "m"  # hydraulic head [m]
-    k::Vector{T} | "m d-1"  # horizontal conductivity [m d⁻¹]
+    kh₀::Vector{T} | "m d-1"  # reference horizontal conductivity [m d⁻¹]
     top::Vector{T} | "m" # top of groundwater layer [m]
     bottom::Vector{T} | "m" # bottom of groundwater layer
     area::Vector{T} | "m2"
     specific_yield::Vector{T} | "m m-1" # [m m⁻¹]
     conductance::Vector{T} | "m2 d-1" #
+    exp_conducitivity::Bool | "-" # True or False wether to use exponential decay of conductivity
+    f::Vector{T} | "-" # factor controlling the reduction of reference horizontal conductivity
+    k::Vector{T} | "m d-1" # actual horizontal conductivity [m d⁻¹]
     # Unconfined aquifer conductance is computed with degree of saturation
 end
 
@@ -149,6 +152,14 @@ function harmonicmean_conductance(k1, k2, H1, H2, l1, l2, width)
     end
 end
 
+function harmonicmean_conductance(k1, k2, l1, l2, width)
+    if (k1 * k2) > 0.0
+        return width * k1 * k2 / (k1 * l2 + k2 * l1)
+    else
+        return 0.0
+    end
+end
+
 function saturated_thickness(aquifer::UnconfinedAquifer, index::Int)
     min(aquifer.top[index], aquifer.head[index]) - aquifer.bottom[index]
 end
@@ -174,8 +185,8 @@ function horizontal_conductance(
     aquifer::A,
     connectivity::Connectivity,
 ) where {A<:Aquifer}
-    k1 = aquifer.k[i]
-    k2 = aquifer.k[j]
+    k1 = aquifer.kh₀[i]
+    k2 = aquifer.kh₀[j]
     H1 = aquifer.top[i] - aquifer.bottom[i]
     H2 = aquifer.top[j] - aquifer.bottom[j]
     length1 = connectivity.length1[nzi]
@@ -245,15 +256,25 @@ function conductance(aquifer::UnconfinedAquifer, i, j, nzi)
     return saturation * aquifer.conductance[nzi]
 end
 
+function conductance(aquifer::UnconfinedAquifer, i, j, nzi, connectivity::Connectivity)
+    k1 = aquifer.kh₀[i] * exp(-aquifer.f[i] * (aquifer.top[i] - aquifer.head[i]))
+    k2 = aquifer.kh₀[j] * exp(-aquifer.f[j] * (aquifer.top[j] - aquifer.head[j]))
+    aquifer.k[i] = k1
+    return harmonicmean_conductance(k1, k2, connectivity.length1[nzi], connectivity.length2[nzi], connectivity.width[nzi])
+end
 
-function flux!(Q, aquifer, connectivity)
+function flux!(Q, aquifer, connectivity, k_exp_decay)
     for i = 1:connectivity.ncell
         # Loop over connections for cell j
         for nzi in connections(connectivity, i)
             # connection from i -> j
             j = connectivity.rowval[nzi]
             Δϕ = aquifer.head[i] - aquifer.head[j]
-            cond = conductance(aquifer, i, j, nzi)
+            if k_exp_decay
+                cond = conductance(aquifer, i, j, nzi, connectivity)
+            else
+                cond = conductance(aquifer, i, j, nzi)
+            end
             Q[i] -= cond * Δϕ
         end
     end
@@ -280,7 +301,7 @@ function stable_timestep(aquifer)
     for i in eachindex(aquifer.head)
         Δt =
             aquifer.area[i] * storativity(aquifer)[i] /
-            (aquifer.k[i] * saturated_thickness(aquifer, i))
+            (aquifer.kh₀[i] * saturated_thickness(aquifer, i))
         Δtₘᵢₙ = Δt < Δtₘᵢₙ ? Δt : Δtₘᵢₙ
     end
     return 0.25 * Δtₘᵢₙ
@@ -293,7 +314,7 @@ minimum_head(aquifer::UnconfinedAquifer) = max.(aquifer.head, aquifer.bottom)
 
 function update(gwf, Q, Δt)
     Q .= 0.0  # TODO: Probably remove this when linking with other components
-    flux!(Q, gwf.aquifer, gwf.connectivity)
+    flux!(Q, gwf.aquifer, gwf.connectivity, gwf.aquifer.exp_conductivity)
     for boundary in gwf.boundaries
         flux!(Q, boundary, gwf.aquifer)
     end
