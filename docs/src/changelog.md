@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 ### Added
+- Support for exponential decline in horizontal conductivity in the sbm_gwf concept. This can
+  be enabled using the `exp_conductivity` flag, which exponentially reduces the `kh0` (or
+  `conductivity`) based on the value of `gwf_f` to the actual horizontal conductivity (`k`)
 
 ## v0.6.2 - 2022-09-01
 
