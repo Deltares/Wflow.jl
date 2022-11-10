@@ -524,7 +524,7 @@ function initialize_shallowwater_river(
         ncread(nc, config, "lateral.river.n"; sel = inds, defaults = 0.036, type = Float)
 
     if floodplain
-        floodplain = initialize_floodplain_1d(nc, config, inds)
+        floodplain = initialize_floodplain_1d(nc, config, inds, dl, width)
     else
         floodplain = nothing
     end
@@ -641,15 +641,49 @@ function shallowwater_river_update(
             )
             sw.q[i] = sw.lake.outflow[v]
         else
-            ηsrc = sw.zb[nodes_at_link.src[i]] + sw.h[nodes_at_link.src[i]]
-            ηdst = sw.zb[nodes_at_link.dst[i]] + sw.h[nodes_at_link.dst[i]]
-
-            sw.η_max[i] = max(ηsrc, ηdst)
-            sw.hf[i] = (sw.η_max[i] - sw.zb_max[i])
+            if isnothing(sw.floodplain) # without floodplain (1D)
+                ηsrc = sw.zb[nodes_at_link.src[i]] + sw.h[nodes_at_link.src[i]]
+                ηdst = sw.zb[nodes_at_link.dst[i]] + sw.h[nodes_at_link.dst[i]]
+                sw.η_max[i] = max(ηsrc, ηdst)
+                sw.hf[i] = (sw.η_max[i] - sw.zb_max[i])
+            else
+                src_i = nodes_at_link.src[i]
+                if sw.h[src_i] <= sw.bankfull_depth[src_i]
+                    a_src = sw.width[src_i] * sw.h[src_i]
+                    r_src = sw.width[src_i] + 2.0 * sw.h[src_i]
+                else
+                    h = sw.h[src_i] - sw.bankfull_depth[src_i]
+                    a_src =
+                        (sw.width[src_i] * sw.bankfull_depth[src_i]) +
+                        get_flow_area(sw.floodplain, src_i, h)
+                    r_src =
+                        (sw.width[src_i] * sw.bankfull_depth[src_i]) +
+                        get_hydraulic_radius(sw.floodplain, src_i, h)
+                end
+                dst_i = nodes_at_link.dst[i]
+                if sw.h[dst_i] <= sw.bankfull_depth[dst_i]
+                    a_dst = sw.width[dst_i] * sw.h[dst_i]
+                    r_dst = sw.width[dst_i] + 2.0 * sw.h[dst_i]
+                else
+                    h = sw.h[dst_i] - sw.bankfull_depth[dst_i]
+                    a_src =
+                        (sw.width[dst_i] * sw.bankfull_depth[dst_i]) +
+                        get_flow_area(sw.floodplain, dst_i, h)
+                    r_src =
+                        (sw.width[dst_i] * sw.bankfull_depth[dst_i]) +
+                        get_hydraulic_radius(sw.floodplain, dst_i, h)
+                end
+            end
 
             if sw.hf[i] > sw.h_thresh
-                sw.a[i] = sw.width_at_link[i] * sw.hf[i] # cross area (rectangular channel)
-                sw.r[i] = sw.a[i] / (sw.width_at_link[i] + 2.0 * sw.hf[i]) # wetted perimeter (rectangular channel)
+                if isnothing(sw.floodplain)
+                    sw.a[i] = sw.width_at_link[i] * sw.hf[i] # cross area (rectangular channel)
+                    sw.r[i] = sw.a[i] / (sw.width_at_link[i] + 2.0 * sw.hf[i]) # wetted perimeter (rectangular channel)
+                else
+                    sw.a[i] = min(a_src, a_dst)
+                    sw.r[i] = min(r_src, r_dst)
+                end
+
                 sw.q[i] = local_inertial_riverflow(
                     sw.q0[i],
                     ηsrc,
@@ -690,7 +724,16 @@ function shallowwater_river_update(
                     sw.volume[i] = 0.0 # set volume to zero
                 end
                 sw.volume[i] = max(sw.volume[i] + sw.inflow[i] * Δt, 0.0) # add external inflow
-                sw.h[i] = sw.volume[i] / (sw.dl[i] * sw.width[i])
+                if isnothing(sw.floodplain)
+                    sw.h[i] = sw.volume[i] / (sw.dl[i] * sw.width[i])
+                else
+                    if sw.volume[i] >= sw.bankfull_volume[i]
+                        h = get_flood_depth(sw.floodplain, i, sw.volume[i], sw.dl[i])
+                        sw.h[i] = sw.bankfull_depth + h
+                    else
+                        sw.h[i] = sw.volume[i] / (sw.dl[i] * sw.width[i])
+                    end
+                end
                 sw.h_av[i] += sw.h[i] * Δt
             end
         end
@@ -892,21 +935,97 @@ function initialize_shallowwater_land(
     return sw_land, indices
 end
 
+""" 
+    FloodPlain
+
+Floodplain `volume` and mannings roughness `n` are a function of `depth` (flood depth
+intervals). Based on the floodplain `volume` a floodplain geometry as a function of
+`flood_depth` is derived with floodplain area `a` (cumulative), hydraulic radius `r`
+(cumulative), side `slope` (rectangular or trapezoidal) and rescaled hydraulic radius
+`r_unit` by `depth`.
+"""
 @get_units @with_kw struct FloodPlain{T,N}
-    mannings_n::Vector{T} | "s m-1/3"    # Manning's roughness of floodplain
-    depth::Vector{T} | "m"    # Flood depth
-    volume::Vector{SVector{N,T}} | "m3"  # Flood volume
+    mannings_n::Vector{SVector{N,T}} | "s m-1/3"    # Manning's roughness of floodplain
+    depth::Vector{T} | "m"                          # Flood depth
+    volume::Vector{SVector{N,T}} | "m3"             # Flood volume (cumulative)
+    width::Vector{SVector{N,T}} | "m"               # Flood width
+    a::Vector{SVector{N,T}} | "m2"                  # Flow area (cumulative)
+    r::Vector{SVector{N,T}} | "m"                   # Wetted perimeter (cumulative)
+    r_unit::Vector{SVector{N,T}} | "-"              # Wetted perimeter per unit flood depth
+    slope::Vector{SVector{N,T}} | "-"               # Slope of floodplain
 end
 
-function initialize_floodplain_1d(nc, config, inds)
+"Get floodplain flow area by interpolating water depth `h` using flood depth intervals."
+function get_flow_area(floodplain::FloodPlain, index, h)
 
-    n = ncread(
+    idx = findall(i -> i <= h, floodplain.depth[index])
+    i1 = last(idx)
+    i2 = i1 + 1
+
+    Δh = h - floodplain.depth[index][i1]
+
+    slope = floodplain.slope[index][i2]
+    if slope == Inf # rectangular segment
+        a = floodplain.a[index][i1] + floodplain.width[index][i2] * Δh
+    else
+        top_width = floodplain.width[index][i1] + 2.0 * (Δh / floodplain.slope[index][i2])
+        a = floodplain.a[index][i1] + 0.5 * (top_width + floodplain.width[index][i1]) * Δh
+    end
+    return a
+end
+
+"Get floodplain hydraulic radius by interpolating water depth `h` using flood depth intervals."
+function get_hydraulic_radius(floodplain::FloodPlain, index, h)
+
+    idx = findall(i -> i <= h, floodplain.depth[index])
+    i1 = last(idx)
+    i2 = i1 + 1
+
+    Δh = h - floodplain.depth[index][i1]
+
+    slope = floodplain.slope[index][i2]
+    if slope == Inf # rectangular segment
+        r = floodplain.r[index][i1] + 2.0 * Δh
+    else
+        h_bin = floodplain.depth[index][i2] - floodplain.depth[index][i1]
+        r_bin = floodplain.r[index][i2] - floodplain.r[index][i1]
+        r = floodplain.r[index][i1] + (r_bin - floodplain.r_unit[index][i2](h_bin - Δh))
+    end
+    return r
+end
+
+"Get flood depth by interpolating `volume` using flood depth intervals."
+function get_flood_depth(floodplain::FloodPlain, index, volume, riverlength)
+
+    idx = findall(i -> i <= v, floodplain.volume[index])
+    i1 = last(idx)
+    i2 = i1 + 1
+
+    ΔA = (volume - floodplain.volume[index][i1]) / riverlength
+
+    if floodplain.slope[index][i2] == Inf
+        Δh = ΔA / floodplain.width[index][i2]
+    else
+        # Area trapezoidal channel:
+        # A = (b+zy)y (A = flow area, y = water depth, b = bottom width, z = side slope)
+        h_bin = floodplain.depth[index][i2] - floodplain.depth[index][i1]
+        z = (0.5 * (floodplain.width[index][i2] - floodplain.width[index][i1])) / h_bin
+        Δh = solve_quadratic(z, floodplain.width[index][i1], -ΔA)
+    end
+    return floodplain.depth[index][i1] + Δh
+end
+
+"Initialize floodplain geometry and parameters of `FloodPlain`"
+function initialize_floodplain_1d(nc, config, inds, riverlength, riverwidth)
+
+    mannings_n = ncread(
         nc,
         config,
         "lateral.river.floodplain.n";
         sel = inds,
         defaults = 0.072,
         type = Float,
+        dimname = :flood_depth,
     )
     volume = ncread(
         nc,
@@ -917,12 +1036,58 @@ function initialize_floodplain_1d(nc, config, inds)
         dimname = :flood_depth,
     )
 
-    N = nc.dim["flood_depth"]
+    flood_depths = Float.(nc["flood_depth"][:])
+    n_depths = length(flood_depths)
+    n = length(riverlength)
 
-    floodplain = FloodPlain{Float,N}(
-        mannings_n = n,
-        volume = svectorscopy(volume, Val{N}()),
-        depth = Float.(nc["flood_depth"][:]),
+    r_unit = zeros(Float, n_depths, n)
+    r = zeros(Float, n_depths, n)
+    a = zeros(Float, n_depths, n)
+    slope = zeros(Float, n_depths, n)
+    width = zeros(Float, n_depths, n)
+
+    for i = 1:n
+        diff_volume = diff(volume[:, i])
+        pushfirst!(diff_volume, volume[1, i])
+        h = diff(flood_depths)
+        pushfirst!(h, flood_depths[1])
+
+        flood_width_d = 0.0
+        for j = 1:n_depths
+            if j == 1
+                flood_width_d = riverwidth[i]
+            end
+            if flood_width_d * h[j] > diff_volume[j] # check if height segment has trapezoidal form
+                flood_width_u =
+                    (diff_volume[j] * 2.0) / h[j] / riverlength[i] - flood_width_d
+                r_unit[j, i] = sqrt(1.0 + (0.5 * (flood_width_u - flood_width_d)) / h[j])
+                a[j, i] = 0.5 * (flood_width_u + flood_width_d) * h[j]
+                slope[j, i] = h[j] / (0.5 * (flood_width_u - flood_width_d))
+            else # shape of segment is rectangular
+                flood_width_u = flood_width_d
+                r_unit[j, i] = 1.0
+                a[j, i] = flood_width_d * h[j]
+                slope[j, i] = Inf
+            end
+            width[j, i] = flood_width_u
+            flood_width_d = flood_width_u
+        end
+
+        r[:, i] = r_unit[:, i] .* flood_depths
+        a[:, i] = cumsum(a[:, i])
+        r[:, i] = cumsum(r[:, i])
+
+    end
+
+    floodplain = FloodPlain{Float,n_depths}(
+        mannings_n = svectorscopy(mannings_n, Val{n_depths}()),
+        volume = svectorscopy(volume, Val{n_depths}()),
+        width = svectorscopy(width, Val{n_depths}()),
+        depth = flood_depths,
+        a = svectorscopy(a, Val{n_depths}()),
+        r = svectorscopy(r, Val{n_depths}()),
+        r_unit = svectorscopy(r_unit, Val{n_depths}()),
+        slope = svectorscopy(slope, Val{n_depths}()),
     )
     return floodplain
 end
