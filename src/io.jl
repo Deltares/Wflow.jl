@@ -247,14 +247,8 @@ function update_forcing!(model)
 
     # Check if the time dimension contains a _FillValue attribute
     if haskey(dataset["time"].attrib, "_FillValue")
-        # Remove missings, and check if lenght has changed (missings in time dimension are not
-        # allowed), and throw an error is the lenghts are different
-        times_dropped = collect(skipmissing(nctimes))
-        if length(times_dropped) == length(nctimes)
-            nctimes = times_dropped
-        else
-            error("Time dimension contains missing values")
-        end
+        # Remove missings in nctimes
+        nctimes = collect(skipmissing(nctimes))
     end
 
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
@@ -685,6 +679,17 @@ function prepare_reader(config)
         error("No files found with name '$glob_path' in '$glob_dir'")
     end
     dataset = NCDataset(dynamic_paths, aggdim = "time", deferopen = false)
+
+    if haskey(dataset["time"].attrib, "_FillValue")
+        @warn "Time dimension contains `_FillValue` attribute, this is not in line with CF conventions."
+        nctimes = dataset["time"][:]
+        times_dropped = collect(skipmissing(nctimes))
+        # check if lenght has changed (missings in time dimension are not allowed), and throw
+        # an error is the lenghts are different
+        if length(times_dropped) != length(nctimes)
+            error("Time dimension contains missing values")
+        end
+    end
 
     # check for cyclic parameters
     do_cyclic = haskey(config.input, "cyclic")
