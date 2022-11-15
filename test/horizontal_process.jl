@@ -191,6 +191,7 @@ end
         q_av = zeros(_ne),
         zb_max = zb_max,
         mannings_n_sq = mannings_n_sq,
+        mannings_n = n_river,
         h = h_init,
         η_max = zeros(_ne),
         hf = zeros(_ne),
