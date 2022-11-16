@@ -542,8 +542,7 @@ function initialize_shallowwater_river(
     _ne = ne(graph)
 
     if floodplain
-        floodplain =
-            initialize_floodplain_1d(nc, config, inds, width, dl, index_pit)
+        floodplain = initialize_floodplain_1d(nc, config, inds, width, dl, index_pit)
     else
         floodplain = nothing
     end
@@ -1318,14 +1317,7 @@ function flood_depth(sw::ShallowWaterRiver{T}, i::Int)::T where {T}
 end
 
 "Initialize floodplain geometry and `FloodPlain` parameters"
-function initialize_floodplain_1d(
-    nc,
-    config,
-    inds,
-    riverwidth,
-    riverlength,
-    index_pit,
-)
+function initialize_floodplain_1d(nc, config, inds, riverwidth, riverlength, index_pit)
 
     mannings_n = ncread(
         nc,
@@ -1366,31 +1358,48 @@ function initialize_floodplain_1d(
     # determine flow area (a), width, wetted perimeter (p), wetted perimeter per unit flood
     # depth (p_unit) and slope.
     h = diff(flood_depths)
+    incorrect_vol = 0
     for i = 1:n
         diff_volume = diff(volume[:, i])
 
         for j = 1:(n_depths-1)
             # check if flood depth segment has trapezoidal form
-            if (width[j, i] * h[j] * riverlength[i]) < diff_volume[j] 
+            if (width[j, i] * h[j] * riverlength[i]) < diff_volume[j]
                 width[j+1, i] =
                     width[j, i] +
-                    2.0 * ((diff_volume[j] - (width[j, i] * h[j])) / riverlength[i] / h[j])
+                    2.0 * (
+                        (diff_volume[j] - (width[j, i] * h[j] * riverlength[i])) /
+                        riverlength[i] / h[j]
+                    )
                 p_unit[j+1, i] =
                     sqrt(1.0 + ((0.5 * (width[j+1, i] - width[j, i])) / h[j])^2.0)
                 a[j+1, i] = 0.5 * (width[j, i] + width[j+1, i]) * h[j]
                 slope[j+1, i] = h[j] / (0.5 * (width[j+1, i] - width[j, i]))
-            # shape of flood depth segment is rectangular
-            else 
+                # shape of flood depth segment is rectangular
+            else
                 width[j+1, i] = width[j, i]
                 a[j+1, i] = width[j, i] * h[j]
                 p_unit[j+1, i] = 1.0
                 slope[j+1, i] = Inf
+                # check provided volume of rectangular segment 
+                if (a[j+1, i] * riverlength[i]) > diff_volume[j]
+                    Δv = (a[j+1, i] * riverlength[i]) - diff_volume[j]
+                    volume[j+1, i] += Δv
+                    incorrect_vol += 1
+                end
             end
         end
 
         p[2:end, i] = 2.0 * p_unit[2:end, i] .* flood_depths[2:end]
         p[2:end, i] = cumsum(p[2:end, i])
         a[:, i] = cumsum(a[:, i])
+    end
+
+    if incorrect_vol > 0
+        @warn string(
+            "The provided volume of $incorrect_vol rectangular floodplain schematization",
+            " segments is not correct and has been adapted.",
+        )
     end
 
     # set floodplain parameters for ghost points

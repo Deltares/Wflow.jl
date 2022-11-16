@@ -257,7 +257,7 @@ model = Wflow.update(model)
 end
 Wflow.close_files(model, delete_output = false)
 
-# test local-inertial option for river flow river_routing
+# test local-inertial option for river and overland flow
 tomlpath = joinpath(@__DIR__, "sbm_swf_config.toml")
 config = Wflow.Config(tomlpath)
 
@@ -279,12 +279,78 @@ model = Wflow.update(model)
     @test h[501] ≈ 0.03162351626631113f0
     qx = model.lateral.land.qx
     qy = model.lateral.land.qy
-    @test qx[[26, 35, 631]] ≈
-          [0.18613687016733824f0, 0.0004519163131931592f0, 0.0f0]
-    @test qy[[26, 35, 631]] ≈
-          [0.12681702046955443f0, 1.7210193779889194f0, 0.0f0]
+    @test qx[[26, 35, 631]] ≈ [0.18613687016733824f0, 0.0004519163131931592f0, 0.0f0]
+    @test qy[[26, 35, 631]] ≈ [0.12681702046955443f0, 1.7210193779889194f0, 0.0f0]
     h = model.lateral.land.h
     @test h[[26, 35, 631]] ≈
           [0.07341443653334193f0, 0.009152294150993293f0, 0.0006875940563996746f0]
+end
+Wflow.close_files(model, delete_output = false)
+
+# test local-inertial option for river flow including 1D floodplain schematization 
+tomlpath = joinpath(@__DIR__, "sbm_config.toml")
+config = Wflow.Config(tomlpath)
+
+config.model.floodplain_1d = true
+config.model.river_routing = "local-inertial"
+config.model.land_routing = "kinematic-wave"
+Dict(config.input.lateral.river)["floodplain"] = Dict("volume" => "floodplain_volume")
+
+model = Wflow.initialize_sbm_model(config)
+
+fp = model.lateral.river.floodplain
+river = model.lateral.river
+Δh = diff(fp.depth)
+Δv = diff(fp.volume[3])
+Δa = diff(fp.a[3])
+
+@testset "river flow (local inertial) floodplain schematization" begin
+    # floodplain geometry checks (index 3)
+    # trapezoidal (1st) segment
+    @test fp.slope[3][2] ≈ 0.007216446761538541f0
+    @test fp.p_unit[3][2] ≈
+          sqrt(1.0 + ((0.5 * (fp.width[3][2] - fp.width[3][1])) / Δh[1])^2.0)
+    @test Δa[1] ≈ 0.5 * Δh[1] * (fp.width[3][1] + fp.width[3][2])
+    @test Δv[1] ≈ fp.a[3][2] * river.dl[3]
+    # rectangular (2nd) segment
+    @test fp.slope[3][3] == Inf
+    @test fp.p_unit[3][3] == 1.0
+    @test Δa[2] ≈ fp.width[3][2] * Δh[2]
+    @test Δv[2] ≈ fp.width[3][2] * Δh[2] * river.dl[3]
+    # flood depth from flood volume (8000.0) within trapezoidal segment
+    flood_vol = 8000.0f0
+    model.lateral.river.volume[3] = flood_vol + river.bankfull_volume[3]
+    i1, i2 = Wflow.interpolation_indices(flood_vol, fp.volume[3])
+    @test (i1, i2) == (1, 2)
+    flood_depth = Wflow.flood_depth(model.lateral.river, 3)
+    @test flood_depth ≈ 0.47774721423351585f0
+    z = (0.5 * (fp.width[3][i2] - fp.width[3][i1])) / 0.5
+    @test (fp.width[3][i1] * flood_depth + z * (flood_depth)^2) * river.dl[3] ≈ flood_vol
+    # flood depth from flood volume (12000.0) within rectangular segment
+    flood_vol = 12000.0f0
+    model.lateral.river.volume[3] = flood_vol + river.bankfull_volume[3]
+    i1, i2 = Wflow.interpolation_indices(flood_vol, fp.volume[3])
+    flood_depth = Wflow.flood_depth(model.lateral.river, 3)
+    @test flood_depth ≈ 0.614477053042341f0
+    @test (flood_depth - fp.depth[i1]) * fp.width[3][i1] * river.dl[3] + fp.volume[3][i1] ≈
+          flood_vol
+    model.lateral.river.volume[3] = 0.0
+end
+
+Wflow.load_dynamic_input!(model)
+model = Wflow.update(model)
+Wflow.load_dynamic_input!(model)
+model = Wflow.update(model)
+
+@testset "river flow (local inertial) with floodplain schematization simulation" begin
+    q = model.lateral.river.q_av
+    @test sum(q) ≈ 3898.5229829494438f0
+    @test q[1622] ≈ 6.00950408901315f-5
+    @test q[43] ≈ 11.900372477232802f0
+    @test q[501] ≈ 3.479360024077158f0
+    h = model.lateral.river.h_av
+    @test h[1622] ≈ 0.0018099742344001384f0
+    @test h[43] ≈ 0.4362704420869332f0
+    @test h[501] ≈ 0.056188991156104685f0
 end
 Wflow.close_files(model, delete_output = false)
