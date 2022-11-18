@@ -1,6 +1,6 @@
 # [Local inertial] (@id local_inertial)
 
-## River routing
+## River and floodplain routing
 The local inertial approximation of shallow water flow neglects only the convective
 acceleration term in the Saint-Venant momentum conservation equation. The numerical solution
 of the local inertial approximation on a staggered grid is as follows (Bates et al., 2010):
@@ -41,12 +41,18 @@ provided for the `sbm` model type:
 
 ```toml
 [model]
-river_routing = "local-inertial" # default is kinematic-wave
-inertial_flow_alpha = 0.5      # alpha coefficient for model stability (default = 0.7)
-froude_limit = true            # default is true, limit flow to subcritical-critical according to Froude number
-h_thresh = 0.1                 # water depth [m] threshold for calculating flow between cells (default = 1e-03)
-riverlength_bc = 1000.0        # river length [m] for boundary points (default = 1e04)
+river_routing = "local-inertial"  # default is "kinematic-wave"
+inertial_flow_alpha = 0.5         # alpha coefficient for model stability (default = 0.7)
+froude_limit = true               # default is true, limit flow to subcritical-critical according to Froude number
+h_thresh = 0.1                    # water depth [m] threshold for calculating flow between cells (default = 1e-03)
+riverlength_bc = 1000.0           # river length [m] for boundary points (default = 1e04)
+floodplain_1d = true              # include 1D floodplain schematization (default = false)
 ```
+
+ The optional 1D floodplain schematization is based on provided flood volumes as a function
+ of flood depth (per flood depth interval) for each river cell. Wflow calculates from these
+ flood volumes a trapezoidal or rectangular floodplain profile for each flood depth
+ interval.
 
 The momentum equation is most stable for low slope environments, and to keep the simulation
 stable for (partly) steep environments the `froude_limit` option is set to true by default.

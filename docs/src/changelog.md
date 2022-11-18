@@ -12,6 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 ### Added
+- An optional 1D floodplain schematization for the river flow inertial model, based on
+  provided flood volumes as a function of flood depth per river cell. See also the following
+  sections: [SBM + Local inertial river and floodplain](@ref) and [River and floodplain
+  routing](@ref) for a short description, and the following section for associated [model
+  parameters](@ref local-inertial_floodplain_params).
 
 ## v0.6.2 - 2022-09-01
 
