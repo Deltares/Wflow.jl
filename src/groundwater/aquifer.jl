@@ -117,7 +117,7 @@ instead. Specific yield will vary roughly between 0.05 (clay) and 0.45 (peat)
     area::Vector{T} | "m2"
     specific_yield::Vector{T} | "m m-1" # [m m⁻¹]
     conductance::Vector{T} | "m2 d-1" #
-    exp_conducitivity::Bool | "-" # True or False wether to use exponential decay of conductivity
+    exp_conductivity::Bool | "-" # True or False wether to use exponential decay of conductivity
     f::Vector{T} | "-" # factor controlling the reduction of reference horizontal conductivity
     k::Vector{T} | "m d-1" # actual horizontal conductivity [m d⁻¹]
     # Unconfined aquifer conductance is computed with degree of saturation
