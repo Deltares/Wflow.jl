@@ -1,5 +1,5 @@
 using ZMQ
-using JSON
+using JSON3
 
 @info("start ZMQ server for Wflow (@async)")
 @async begin
@@ -15,8 +15,8 @@ socket = Socket(context, REQ)
 ZMQ.connect(socket, "tcp://localhost:5555")
 
 @info("Request Wflow initialization...")
-message = Dict{String, Any}("fn" => "initialize", "path" => "../../test/sbm_config.toml")
-ZMQ.send(socket, JSON.json(message))
+message = Dict{String, Any}("fn" => "initialize", "config_file" => "../../test/sbm_config.toml")
+ZMQ.send(socket, JSON3.write(message))
 message = String(ZMQ.recv(socket))
 println("Received reply [ $message ]")
 
