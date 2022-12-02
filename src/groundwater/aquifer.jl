@@ -111,7 +111,7 @@ instead. Specific yield will vary roughly between 0.05 (clay) and 0.45 (peat)
 """
 @get_units struct UnconfinedAquifer{T} <: Aquifer
     head::Vector{T} | "m"  # hydraulic head [m]
-    kh₀::Vector{T} | "m d-1"  # reference horizontal conductivity [m d⁻¹]
+    k::Vector{T} | "m d-1"  # reference horizontal conductivity [m d⁻¹]
     top::Vector{T} | "m" # top of groundwater layer [m]
     bottom::Vector{T} | "m" # bottom of groundwater layer
     area::Vector{T} | "m2"
@@ -119,8 +119,8 @@ instead. Specific yield will vary roughly between 0.05 (clay) and 0.45 (peat)
     conductance::Vector{T} | "m2 d-1" #
     exp_conductivity::Bool | "-" # True or False wether to use exponential decay of conductivity
     f::Vector{T} | "-" # factor controlling the reduction of reference horizontal conductivity
-    k::Vector{T} | "m d-1" # actual horizontal conductivity [m d⁻¹]
-    # Unconfined aquifer conductance is computed with degree of saturation
+    # Unconfined aquifer conductance is computed with degree of saturation (only when
+    # exp_conductivity is set to false)
 end
 
 
@@ -185,8 +185,8 @@ function horizontal_conductance(
     aquifer::A,
     connectivity::Connectivity,
 ) where {A<:Aquifer}
-    k1 = aquifer.kh₀[i]
-    k2 = aquifer.kh₀[j]
+    k1 = aquifer.k[i]
+    k2 = aquifer.k[j]
     H1 = aquifer.top[i] - aquifer.bottom[i]
     H2 = aquifer.top[j] - aquifer.bottom[j]
     length1 = connectivity.length1[nzi]
@@ -245,22 +245,25 @@ converting no-flow cells to variable-head cells for the U.S. Geological Survey
 modular finite-difference groundwater flow model: U.S. Geological Survey
 Open-File Report 91-536, 99 p
 """
-function conductance(aquifer::UnconfinedAquifer, i, j, nzi)
-    ϕᵢ = aquifer.head[i]
-    ϕⱼ = aquifer.head[j]
-    if ϕᵢ >= ϕⱼ
-        saturation = saturated_thickness(aquifer, i) / (aquifer.top[i] - aquifer.bottom[i])
+function conductance(aquifer::UnconfinedAquifer, i, j, nzi, k_exp_decay::Bool, connectivity::Connectivity)
+    zi1 = aquifer.top[i] - aquifer.head[i]
+    zi2 = aquifer.top[j] - aquifer.head[j]
+    thickness1 = aquifer.top[i] - aquifer.bottom[i]
+    thickness2 = aquifer.top[j] - aquifer.bottom[j]
+    if k_exp_decay
+        k1 = aquifer.k[i] * (exp(-aquifer.f[i] * zi1) - exp(-aquifer.f[i] * thickness1))
+        k2 = aquifer.k[j] * (exp(-aquifer.f[j] * zi2) - exp(-aquifer.f[j] * thickness2))
+        return harmonicmean_conductance(k1, k2, connectivity.length1[nzi], connectivity.length2[nzi], connectivity.width[nzi])
     else
-        saturation = saturated_thickness(aquifer, j) / (aquifer.top[j] - aquifer.bottom[j])
+        ϕᵢ = aquifer.head[i]
+        ϕⱼ = aquifer.head[j]
+        if ϕᵢ >= ϕⱼ
+            saturation = saturated_thickness(aquifer, i) / (aquifer.top[i] - aquifer.bottom[i])
+        else
+            saturation = saturated_thickness(aquifer, j) / (aquifer.top[j] - aquifer.bottom[j])
+        end
+        return saturation * aquifer.conductance[nzi]
     end
-    return saturation * aquifer.conductance[nzi]
-end
-
-function conductance(aquifer::UnconfinedAquifer, i, j, nzi, connectivity::Connectivity)
-    k1 = aquifer.kh₀[i] * exp(-aquifer.f[i] * (aquifer.top[i] - aquifer.head[i]))
-    k2 = aquifer.kh₀[j] * exp(-aquifer.f[j] * (aquifer.top[j] - aquifer.head[j]))
-    aquifer.k[i] = k1
-    return harmonicmean_conductance(k1, k2, connectivity.length1[nzi], connectivity.length2[nzi], connectivity.width[nzi])
 end
 
 function flux!(Q, aquifer, connectivity, k_exp_decay)
@@ -270,11 +273,7 @@ function flux!(Q, aquifer, connectivity, k_exp_decay)
             # connection from i -> j
             j = connectivity.rowval[nzi]
             Δϕ = aquifer.head[i] - aquifer.head[j]
-            if k_exp_decay
-                cond = conductance(aquifer, i, j, nzi, connectivity)
-            else
-                cond = conductance(aquifer, i, j, nzi)
-            end
+            cond = conductance(aquifer, i, j, nzi, k_exp_decay, connectivity)
             Q[i] -= cond * Δϕ
         end
     end
@@ -296,12 +295,20 @@ The following criterion can be found in Chu & Willis (1984)
 
 Δt * k * H / (Δx * Δy * S) <= 1/4
 """
-function stable_timestep(aquifer)
+function stable_timestep(aquifer, exp_k_decay)
     Δtₘᵢₙ = Inf
     for i in eachindex(aquifer.head)
+        if exp_k_decay
+            zi = aquifer.top[i] - aquifer.head[i]
+            thickness = aquifer.top[i] - aquifer.bottom[i]
+            value = aquifer.k[i] * (exp(-aquifer.f[i] * zi) - exp(-aquifer.f[i] * thickness))
+        else
+            value = aquifer.k[i] * saturated_thickness(aquifer, i)
+        end
+
         Δt =
             aquifer.area[i] * storativity(aquifer)[i] /
-            (aquifer.kh₀[i] * saturated_thickness(aquifer, i))
+            value
         Δtₘᵢₙ = Δt < Δtₘᵢₙ ? Δt : Δtₘᵢₙ
     end
     return 0.25 * Δtₘᵢₙ

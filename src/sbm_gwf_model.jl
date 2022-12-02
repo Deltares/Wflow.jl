@@ -187,7 +187,6 @@ function initialize_sbm_gwf_model(config::Config)
         zeros(Float, connectivity.nconnection),  # conductance
         exp_conductivity,
         gwf_f,
-        zeros(Float, length(conductivity)),
     )
 
     # reset zi and satwaterdepth with groundwater head from unconfined aquifer
@@ -433,7 +432,8 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
     lateral.subsurface.river.stage .= lateral.river.h_av .+ lateral.subsurface.river.bottom
 
     # determine stable time step for groundwater flow
-    Δt_gw = stable_timestep(lateral.subsurface.flow.aquifer) # time step in day (Float64)
+    exp_conductivity = get(config.model, "exp_conductivity", false)
+    Δt_gw = stable_timestep(lateral.subsurface.flow.aquifer, exp_conductivity) # time step in day (Float64)
     Δt_sbm = (vertical.Δt / tosecond(basetimestep)) # vertical.Δt is in seconds (Float64)
     if Δt_gw < Δt_sbm
         @warn(
