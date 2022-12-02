@@ -46,6 +46,7 @@ function homogenous_aquifer(nrow, ncol)
         fill(0.1, ncell), # specific storage
         fill(1.0, ncell),  # storativity
         fill(0.0, connectivity.nconnection),  # conductance
+        false,
     )
     unconf_aqf = Wflow.UnconfinedAquifer(
         [0.0, 7.5, 20.0],  # head
@@ -216,9 +217,9 @@ end
         end
 
         @testset "conductance" begin
-            @test Wflow.conductance(conf_aqf, 2, 3, 3) == 100.0
-            @test Wflow.conductance(unconf_aqf, 2, 3, 3) == 100.0  # upstream sat. thickness
-            @test Wflow.conductance(unconf_aqf, 1, 2, 1) == 75.0  # upstream sat. thickness
+            @test Wflow.conductance(conf_aqf, 2, 3, 3, false, connectivity) == 100.0
+            @test Wflow.conductance(unconf_aqf, 2, 3, 3, false, connectivity) == 100.0  # upstream sat. thickness
+            @test Wflow.conductance(unconf_aqf, 1, 2, 1, false, connectivity) == 75.0  # upstream sat. thickness
         end
 
         @testset "minimum_head-confined" begin
@@ -238,7 +239,7 @@ end
         end
 
         @testset "stable_timestep" begin
-            @test Wflow.stable_timestep(conf_aqf) == 0.25
+            @test Wflow.stable_timestep(conf_aqf, false) == 0.25
         end
 
         # Parametrization in setup is as follows:
@@ -249,7 +250,7 @@ end
 
         @testset "flux-confined" begin
             Q = zeros(3)
-            Wflow.flux!(Q, conf_aqf, connectivity)
+            Wflow.flux!(Q, conf_aqf, connectivity, false)
             # kD = 10 * 10 = 100
             # dH = 7.5, 12.5
             @test Q == [750.0, 500.0, -1250.0]  # TODO
@@ -257,7 +258,7 @@ end
 
         @testset "flux-unconfined" begin
             Q = zeros(3)
-            Wflow.flux!(Q, unconf_aqf, connectivity)
+            Wflow.flux!(Q, unconf_aqf, connectivity, false)
             # KD is based on upstream saturated thickness, i.e. 7.5 m and 20.0 m (which is capped to 10.0)
             @test Q == [562.5, 687.5, -1250.0]
         end
@@ -426,6 +427,7 @@ end
             fill(specific_storage, ncell),
             fill(storativity, ncell),
             fill(0.0, connectivity.nconnection), # conductance, to be set
+            false,
         )
 
         cell_index = reshape(collect(range(1, ncell, step = 1)), shape)

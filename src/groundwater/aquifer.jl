@@ -94,7 +94,8 @@ transmissivity).
     area::Vector{T} | "m2" # area of cell
     specific_storage::Vector{T} | "m m-1 m-1" # [m m⁻¹ m⁻¹]
     storativity::Vector{T} | "m m-1" # [m m⁻¹]
-    conductance::Vector{T} | "m2 d-1" # Confined aquifer conductance is constant
+    conductance::Vector{T} | "m2 d-1" # Confined aquifer conductance is constant,
+    exp_conductivity::Bool | "-" # set to False
 end
 
 
@@ -214,7 +215,7 @@ function initialize_conductance!(aquifer::A, connectivity::Connectivity) where {
 end
 
 
-function conductance(aquifer::ConfinedAquifer, i, j, nzi)
+function conductance(aquifer::ConfinedAquifer, i, j, nzi, k_exp_decay::Bool, connectivity::Connectivity)
     return aquifer.conductance[nzi]
 end
 
@@ -295,7 +296,7 @@ The following criterion can be found in Chu & Willis (1984)
 
 Δt * k * H / (Δx * Δy * S) <= 1/4
 """
-function stable_timestep(aquifer, exp_k_decay)
+function stable_timestep(aquifer, exp_k_decay::Bool)
     Δtₘᵢₙ = Inf
     for i in eachindex(aquifer.head)
         if exp_k_decay
@@ -314,6 +315,16 @@ function stable_timestep(aquifer, exp_k_decay)
     return 0.25 * Δtₘᵢₙ
 end
 
+function stable_timestep(aquifer)
+    Δtₘᵢₙ = Inf
+    for i in eachindex(aquifer.head)
+        Δt =
+            aquifer.area[i] * storativity(aquifer)[i] /
+            aquifer.k[i] * saturated_thickness(aquifer, i)
+        Δtₘᵢₙ = Δt < Δtₘᵢₙ ? Δt : Δtₘᵢₙ
+    end
+    return 0.25 * Δtₘᵢₙ
+end
 
 minimum_head(aquifer::ConfinedAquifer) = aquifer.head
 minimum_head(aquifer::UnconfinedAquifer) = max.(aquifer.head, aquifer.bottom)
