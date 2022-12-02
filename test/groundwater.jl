@@ -55,6 +55,8 @@ function homogenous_aquifer(nrow, ncol)
         fill(100.0, ncell),  # area
         fill(0.15, ncell),  # specific yield
         fill(0.0, connectivity.nconnection),  # conductance
+        false, # toggle for reduction factor
+        fill(3.0, ncell) # conductance reduction factor
     )
     return (connectivity, conf_aqf, unconf_aqf)
 end
@@ -341,6 +343,8 @@ end
         cellsize = 500.0
         Β = 1.12
         aquifer_length = cellsize * ncol
+        gwf_f = 3.0
+        exp_conductivity = false
 
         # Domain, geometry
         domain = ones(Bool, shape)
@@ -358,6 +362,8 @@ end
             fill(cellsize * cellsize, ncell),
             fill(specific_yield, ncell),
             fill(0.0, connectivity.nconnection),
+            exp_conductivity,
+            fill(gwf_f, ncell),
         )
         # constant head on left boundary, 0 at 0
         constanthead = Wflow.ConstantHead([0.0], [1])
