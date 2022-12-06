@@ -1,12 +1,14 @@
-const map_structs = Dict("initialize" => Initialize)
+const map_structs = Dict(
+    "initialize" => Initialize,
+    "get_start_time" => GetStartTime,
+    )
 
 context = Context()
 socket = Socket(context, REP)
 ZMQ.bind(socket, "tcp://*:5555")
 
 mutable struct ModelHandler
-    model::Wflow.Model
-    ModelHandler() = new()
+    model::Union{Wflow.Model, Nothing}
 end
 
 
@@ -36,8 +38,13 @@ end
 
 function wflow_bmi(s::Socket, handler::ModelHandler, f)
     try
-        handler.model = wflow_bmi(f)
-        response(s)
+        ret = wflow_bmi(f, handler.model)
+        if typeof(ret) <: Wflow.Model
+            handler.model = ret
+            response(s)
+        else
+            ZMQ.send(s, JSON3.write(ret))
+        end
     catch e
         @error "Wflow BMI $(f.fn) failed" exception = (e, catch_backtrace())
         err = string(
@@ -49,7 +56,7 @@ function wflow_bmi(s::Socket, handler::ModelHandler, f)
 end
 
 
-handler = ModelHandler()
+handler = ModelHandler(nothing)
 try
     while true
         # Wait for next request from client
