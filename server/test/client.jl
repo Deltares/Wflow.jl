@@ -26,5 +26,11 @@ ZMQ.send(socket, JSON3.write(message))
 ret_value = String(ZMQ.recv(socket))
 println("Received reply [ $ret_value]")
 
+@info("Request end time...")
+message = Dict{String, Any}("fn" => "get_end_time")
+ZMQ.send(socket, JSON3.write(message))
+ret_value = String(ZMQ.recv(socket))
+println("Received reply [ $ret_value]")
+
 ZMQ.close(socket)
 ZMQ.close(context)

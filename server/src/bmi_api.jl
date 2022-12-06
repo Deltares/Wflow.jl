@@ -8,6 +8,10 @@ struct GetStartTime
     fn::String
 end
 
+struct GetEndTime
+    fn::String
+end
+
 StructTypes.StructType(::Type{Initialize}) = StructTypes.Struct()
 
 function wflow_bmi(m::Initialize, model::Union{Wflow.Model,Nothing})
@@ -17,4 +21,9 @@ end
 function wflow_bmi(m::GetStartTime, model::Wflow.Model)
     start_time = getfield(Wflow.BMI, Symbol(m.fn))(model)
     return(Dict("start_time" => start_time))
+end
+
+function wflow_bmi(m::GetEndTime, model::Wflow.Model)
+    end_time = getfield(Wflow.BMI, Symbol(m.fn))(model)
+    return(Dict("end_time" => end_time))
 end
