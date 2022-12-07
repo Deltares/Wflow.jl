@@ -2,6 +2,8 @@ const map_structs = Dict(
     "initialize" => Initialize,
     "get_start_time" => GetStartTime,
     "get_end_time" => GetEndTime,
+    "update_until" => UpdateUntil,
+    "finalize" => Finalize,
     )
 
 context = Context()

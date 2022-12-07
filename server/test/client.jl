@@ -32,5 +32,17 @@ ZMQ.send(socket, JSON3.write(message))
 ret_value = String(ZMQ.recv(socket))
 println("Received reply [ $ret_value]")
 
+@info("Update until...")
+message = Dict{String, Any}("fn" => "update_until", "time" => 9.468576e8)
+ZMQ.send(socket, JSON3.write(message))
+ret_value = String(ZMQ.recv(socket))
+println("Received reply [ $ret_value]")
+
+@info("Finalize...")
+message = Dict{String, Any}("fn" => "finalize")
+ZMQ.send(socket, JSON3.write(message))
+ret_value = String(ZMQ.recv(socket))
+println("Received reply [ $ret_value]")
+
 ZMQ.close(socket)
 ZMQ.close(context)
