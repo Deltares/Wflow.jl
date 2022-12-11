@@ -307,24 +307,22 @@ function stable_timestep(aquifer, exp_k_decay::Bool)
             value = aquifer.k[i] * saturated_thickness(aquifer, i)
         end
 
-        Δt =
-            aquifer.area[i] * storativity(aquifer)[i] /
-            value
+        Δt = aquifer.area[i] * storativity(aquifer)[i] / value
         Δtₘᵢₙ = Δt < Δtₘᵢₙ ? Δt : Δtₘᵢₙ
     end
     return 0.25 * Δtₘᵢₙ
 end
 
-function stable_timestep(aquifer)
-    Δtₘᵢₙ = Inf
-    for i in eachindex(aquifer.head)
-        Δt =
-            aquifer.area[i] * storativity(aquifer)[i] /
-            aquifer.k[i] * saturated_thickness(aquifer, i)
-        Δtₘᵢₙ = Δt < Δtₘᵢₙ ? Δt : Δtₘᵢₙ
-    end
-    return 0.25 * Δtₘᵢₙ
-end
+# function stable_timestep(aquifer)
+#     Δtₘᵢₙ = Inf
+#     for i in eachindex(aquifer.head)
+#         Δt =
+#             aquifer.area[i] * storativity(aquifer)[i] /
+#             (aquifer.k[i] * saturated_thickness(aquifer, i))
+#         Δtₘᵢₙ = Δt < Δtₘᵢₙ ? Δt : Δtₘᵢₙ
+#     end
+#     return 0.25 * Δtₘᵢₙ
+# end
 
 minimum_head(aquifer::ConfinedAquifer) = aquifer.head
 minimum_head(aquifer::UnconfinedAquifer) = max.(aquifer.head, aquifer.bottom)

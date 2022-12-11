@@ -375,7 +375,7 @@ end
             Wflow.AquiferBoundaryCondition[],
         )
 
-        Δt = Wflow.stable_timestep(gwf.aquifer)
+        Δt = Wflow.stable_timestep(gwf.aquifer, exp_conductivity)
         Q = zeros(ncell)
         time = 20.0
         nstep = Int(ceil(time / Δt))
@@ -410,6 +410,7 @@ end
         storativity = 0.15
         aquifer_length = cellsize * ncol
         discharge = -50.0
+        exp_conductivity = false
 
         # Domain, geometry
         domain = ones(Bool, shape)
@@ -427,7 +428,7 @@ end
             fill(specific_storage, ncell),
             fill(storativity, ncell),
             fill(0.0, connectivity.nconnection), # conductance, to be set
-            false,
+            exp_conductivity,
         )
 
         cell_index = reshape(collect(range(1, ncell, step = 1)), shape)
@@ -437,7 +438,7 @@ end
         well = Wflow.Well([discharge], [0.0], [reverse_indices[wellrow, wellrow]])
         gwf = Wflow.GroundwaterFlow(aquifer, connectivity, constanthead, [well])
 
-        Δt = Wflow.stable_timestep(gwf.aquifer)
+        Δt = Wflow.stable_timestep(gwf.aquifer, exp_conductivity)
         Q = zeros(ncell)
         time = 20.0
         nstep = Int(ceil(time / Δt))
