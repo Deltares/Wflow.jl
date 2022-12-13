@@ -18,6 +18,8 @@ using TerminalLoggers
 using CFTime
 using Base.Threads
 using Glob
+using MPI
+using Metis
 
 @metadata get_units "mm Δt-1"
 
@@ -27,6 +29,7 @@ const CFDataset = Union{NCDataset,NCDatasets.MFDataset}
 const CFVariable_MF = Union{NCDatasets.CFVariable,NCDatasets.MFCFVariable}
 const version =
     VersionNumber(TOML.parsefile(joinpath(@__DIR__, "..", "Project.toml"))["version"])
+const root = 0
 
 mutable struct Clock{T}
     time::T
@@ -125,6 +128,7 @@ include("utils.jl")
 include("bmi.jl")
 include("subdomains.jl")
 include("logging.jl")
+include("distributed/distributed.jl")
 
 """
     run(tomlpath::AbstractString; silent=false)

@@ -46,8 +46,18 @@ function initialize_sbm_model(config::Config)
     subcatch_2d = ncread(nc, config, "subcatchment"; optional = false, allow_missing = true)
     # indices based on catchment
     inds, rev_inds = active_indices(subcatch_2d, missing)
-    n = length(inds)
+
     modelsize_2d = size(subcatch_2d)
+    subdomain = param(config.input, "subdomain", 0)::Int
+    if subdomain !== 0
+        subdomain_2d =
+            ncread(nc, config, "subdomains"; optional = false, allow_missing = true)
+        subdomain_1d = subdomain_2d[inds]
+        i_sub = findall(x -> x == subdomain, subdomain_1d)
+        inds = inds[i_sub]
+        rev_inds = rev_inds[i_sub]
+    end
+    n = length(inds)
 
     river_2d =
         ncread(nc, config, "river_location"; optional = false, type = Bool, fill = false)
@@ -72,6 +82,12 @@ function initialize_sbm_model(config::Config)
     sbm = initialize_sbm(nc, config, riverfrac, inds)
 
     inds_riv, rev_inds_riv = active_indices(river_2d, 0)
+    if subdomain !== 0
+        subdomain_1d = subdomain_2d[inds_riv]
+        i_sub = findall(x -> x == subdomain, subdomain_1d)
+        inds_riv = inds_riv[i_sub]
+        rev_inds_riv = rev_inds_riv[i_sub]
+    end
     nriv = length(inds_riv)
 
     # reservoirs
@@ -95,7 +111,8 @@ function initialize_sbm_model(config::Config)
         lakeindex = fill(0, nriv)
     end
 
-    ldd_2d = ncread(nc, config, "ldd"; optional = false, allow_missing = true)
+    config_ldd = subdomain == 0 ? "ldd" : "ldd_subdomains"
+    ldd_2d = ncread(nc, config, config_ldd; optional = false, allow_missing = true)
     ldd = ldd_2d[inds]
     if do_pits
         pits_2d = ncread(nc, config, "pits"; optional = false, type = Bool, fill = false)
