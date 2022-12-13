@@ -244,12 +244,15 @@ converting no-flow cells to variable-head cells for the U.S. Geological Survey
 modular finite-difference groundwater flow model: U.S. Geological Survey
 Open-File Report 91-536, 99 p
 """
-function conductance(aquifer::UnconfinedAquifer, i, j, nzi, k_exp_decay::Bool, connectivity::Connectivity)
-    zi1 = aquifer.top[i] - aquifer.head[i]
-    zi2 = aquifer.top[j] - aquifer.head[j]
-    thickness1 = aquifer.top[i] - aquifer.bottom[i]
-    thickness2 = aquifer.top[j] - aquifer.bottom[j]
-    if k_exp_decay
+function conductance(aquifer::UnconfinedAquifer, i, j, nzi, exp_conductivity::Bool, connectivity::Connectivity)
+
+    if exp_conductivity
+        # Extract required variables
+        zi1 = aquifer.top[i] - aquifer.head[i]
+        zi2 = aquifer.top[j] - aquifer.head[j]
+        thickness1 = aquifer.top[i] - aquifer.bottom[i]
+        thickness2 = aquifer.top[j] - aquifer.bottom[j]
+        # calculate conductivity values corrected for depth of water table
         k1 = aquifer.k[i] * (exp(-aquifer.f[i] * zi1) - exp(-aquifer.f[i] * thickness1))
         k2 = aquifer.k[j] * (exp(-aquifer.f[j] * zi2) - exp(-aquifer.f[j] * thickness2))
         return harmonicmean_conductance(k1, k2, connectivity.length1[nzi], connectivity.length2[nzi], connectivity.width[nzi])
@@ -294,10 +297,10 @@ The following criterion can be found in Chu & Willis (1984)
 
 Δt * k * H / (Δx * Δy * S) <= 1/4
 """
-function stable_timestep(aquifer, exp_k_decay::Bool)
+function stable_timestep(aquifer, exp_conductivity::Bool)
     Δtₘᵢₙ = Inf
     for i in eachindex(aquifer.head)
-        if exp_k_decay
+        if exp_conductivity
             zi = aquifer.top[i] - aquifer.head[i]
             thickness = aquifer.top[i] - aquifer.bottom[i]
             value = aquifer.k[i] * (exp(-aquifer.f[i] * zi) - exp(-aquifer.f[i] * thickness))
