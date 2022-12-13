@@ -185,7 +185,6 @@ function initialize_sbm_gwf_model(config::Config)
         xl .* yl,
         specific_yield,
         zeros(Float, connectivity.nconnection),  # conductance
-        exp_conductivity,
         gwf_f,
     )
 
@@ -446,7 +445,7 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
     # recharge rate groundwater is required in units [m d⁻¹]
     lateral.subsurface.recharge.rate .= vertical.recharge ./ 1000.0 .* (1.0 / Δt_sbm)
     # update groundwater domain
-    update(lateral.subsurface.flow, Q, Δt_sbm)
+    update(lateral.subsurface.flow, Q, Δt_sbm, exp_conductivity)
 
     # determine excess water depth [m] (exfiltwater) in groundwater domain (head > surface)
     # and reset head

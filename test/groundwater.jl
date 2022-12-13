@@ -46,7 +46,6 @@ function homogenous_aquifer(nrow, ncol)
         fill(0.1, ncell), # specific storage
         fill(1.0, ncell),  # storativity
         fill(0.0, connectivity.nconnection),  # conductance
-        false,
     )
     unconf_aqf = Wflow.UnconfinedAquifer(
         [0.0, 7.5, 20.0],  # head
@@ -56,7 +55,6 @@ function homogenous_aquifer(nrow, ncol)
         fill(100.0, ncell),  # area
         fill(0.15, ncell),  # specific yield
         fill(0.0, connectivity.nconnection),  # conductance
-        false, # toggle for reduction factor
         fill(3.0, ncell) # conductance reduction factor
     )
     return (connectivity, conf_aqf, unconf_aqf)
@@ -315,6 +313,7 @@ end
     @testset "integration: steady 1D" begin
         connectivity, aquifer, _ = homogenous_aquifer(3, 1)
         constanthead = Wflow.ConstantHead([2.0, 4.0], [1, 3])
+        exp_conductivity = false
         gwf = Wflow.GroundwaterFlow(
             aquifer,
             connectivity,
@@ -327,7 +326,7 @@ end
         Q = zeros(3)
         Δt = 0.25 # days
         for _ = 1:50
-            Wflow.update(gwf, Q, Δt)
+            Wflow.update(gwf, Q, Δt, exp_conductivity)
         end
 
         @test gwf.aquifer.head ≈ [2.0, 3.0, 4.0]
@@ -363,7 +362,6 @@ end
             fill(cellsize * cellsize, ncell),
             fill(specific_yield, ncell),
             fill(0.0, connectivity.nconnection),
-            exp_conductivity,
             fill(gwf_f, ncell),
         )
         # constant head on left boundary, 0 at 0
@@ -382,7 +380,7 @@ end
         time = nstep * Δt
 
         for i = 1:nstep
-            Wflow.update(gwf, Q, Δt)
+            Wflow.update(gwf, Q, Δt, exp_conductivity)
             # Gradient dh/dx is positive, all flow to the left
             @test all(diff(gwf.aquifer.head) .> 0.0)
         end
@@ -428,7 +426,6 @@ end
             fill(specific_storage, ncell),
             fill(storativity, ncell),
             fill(0.0, connectivity.nconnection), # conductance, to be set
-            exp_conductivity,
         )
 
         cell_index = reshape(collect(range(1, ncell, step = 1)), shape)
@@ -445,7 +442,7 @@ end
         time = nstep * Δt
 
         for i = 1:nstep
-            Wflow.update(gwf, Q, Δt)
+            Wflow.update(gwf, Q, Δt, exp_conductivity)
         end
 
         # test for symmetry on x and y axes

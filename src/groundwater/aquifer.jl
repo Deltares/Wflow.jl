@@ -95,7 +95,6 @@ transmissivity).
     specific_storage::Vector{T} | "m m-1 m-1" # [m m⁻¹ m⁻¹]
     storativity::Vector{T} | "m m-1" # [m m⁻¹]
     conductance::Vector{T} | "m2 d-1" # Confined aquifer conductance is constant,
-    exp_conductivity::Bool | "-" # set to False
 end
 
 
@@ -118,7 +117,6 @@ instead. Specific yield will vary roughly between 0.05 (clay) and 0.45 (peat)
     area::Vector{T} | "m2"
     specific_yield::Vector{T} | "m m-1" # [m m⁻¹]
     conductance::Vector{T} | "m2 d-1" #
-    exp_conductivity::Bool | "-" # True or False wether to use exponential decay of conductivity
     f::Vector{T} | "-" # factor controlling the reduction of reference horizontal conductivity
     # Unconfined aquifer conductance is computed with degree of saturation (only when
     # exp_conductivity is set to false)
@@ -328,9 +326,9 @@ minimum_head(aquifer::ConfinedAquifer) = aquifer.head
 minimum_head(aquifer::UnconfinedAquifer) = max.(aquifer.head, aquifer.bottom)
 
 
-function update(gwf, Q, Δt)
+function update(gwf, Q, Δt, exp_conductivity)
     Q .= 0.0  # TODO: Probably remove this when linking with other components
-    flux!(Q, gwf.aquifer, gwf.connectivity, gwf.aquifer.exp_conductivity)
+    flux!(Q, gwf.aquifer, gwf.connectivity, exp_conductivity)
     for boundary in gwf.boundaries
         flux!(Q, boundary, gwf.aquifer)
     end
