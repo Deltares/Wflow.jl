@@ -95,6 +95,7 @@ transmissivity).
     specific_storage::Vector{T} | "m m-1 m-1" # [m m⁻¹ m⁻¹]
     storativity::Vector{T} | "m m-1" # [m m⁻¹]
     conductance::Vector{T} | "m2 d-1" # Confined aquifer conductance is constant,
+    f::Vector{T} | "-" # factor controlling the reduction of reference horizontal conductivity
 end
 
 

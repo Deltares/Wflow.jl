@@ -46,6 +46,7 @@ function homogenous_aquifer(nrow, ncol)
         fill(0.1, ncell), # specific storage
         fill(1.0, ncell),  # storativity
         fill(0.0, connectivity.nconnection),  # conductance
+        fill(3.0, ncell) # conductance reduction factor
     )
     unconf_aqf = Wflow.UnconfinedAquifer(
         [0.0, 7.5, 20.0],  # head
@@ -332,6 +333,28 @@ end
         @test gwf.aquifer.head ≈ [2.0, 3.0, 4.0]
     end
 
+    @testset "integration: steady 1D, exponential conductivity" begin
+        connectivity, aquifer, _ = homogenous_aquifer(3, 1)
+        constanthead = Wflow.ConstantHead([2.0, 4.0], [1, 3])
+        exp_conductivity = true
+        gwf = Wflow.GroundwaterFlow(
+            aquifer,
+            connectivity,
+            constanthead,
+            Wflow.AquiferBoundaryCondition[],
+        )
+        # Set constant head (dirichlet) boundaries
+        gwf.aquifer.head[gwf.constanthead.index] .= gwf.constanthead.head
+
+        Q = zeros(3)
+        Δt = 0.25 # days
+        for _ = 1:50
+            Wflow.update(gwf, Q, Δt, exp_conductivity)
+        end
+
+        @test gwf.aquifer.head ≈ [2.0, 3.0, 4.0]
+    end
+
     @testset "integration: unconfined transient 1D" begin
         nrow = 1
         ncol = 9
@@ -345,6 +368,66 @@ end
         aquifer_length = cellsize * ncol
         gwf_f = 3.0
         exp_conductivity = false
+
+        # Domain, geometry
+        domain = ones(Bool, shape)
+        Δx = fill(cellsize, ncol)
+        Δy = fill(cellsize, nrow)
+        indices, reverse_indices = Wflow.active_indices(domain, false)
+        connectivity = Wflow.Connectivity(indices, reverse_indices, Δx, Δy)
+        ncell = connectivity.ncell
+        xc = collect(range(0.0, stop = aquifer_length - cellsize, step = cellsize))
+        aquifer = Wflow.UnconfinedAquifer(
+            initial_head.(xc),
+            fill(conductivity, ncell),
+            fill(top, ncell),
+            fill(bottom, ncell),
+            fill(cellsize * cellsize, ncell),
+            fill(specific_yield, ncell),
+            fill(0.0, connectivity.nconnection),
+            fill(gwf_f, ncell),
+        )
+        # constant head on left boundary, 0 at 0
+        constanthead = Wflow.ConstantHead([0.0], [1])
+        gwf = Wflow.GroundwaterFlow(
+            aquifer,
+            connectivity,
+            constanthead,
+            Wflow.AquiferBoundaryCondition[],
+        )
+
+        Δt = Wflow.stable_timestep(gwf.aquifer, exp_conductivity)
+        Q = zeros(ncell)
+        time = 20.0
+        nstep = Int(ceil(time / Δt))
+        time = nstep * Δt
+
+        for i = 1:nstep
+            Wflow.update(gwf, Q, Δt, exp_conductivity)
+            # Gradient dh/dx is positive, all flow to the left
+            @test all(diff(gwf.aquifer.head) .> 0.0)
+        end
+
+        ϕ_analytical = [
+            transient_aquifer_1d(x, time, conductivity, specific_yield, aquifer_length, Β) for x in xc
+        ]
+        difference = gwf.aquifer.head .- ϕ_analytical
+        # @test all(difference .< ?)  #TODO
+    end
+
+    @testset "integration: unconfined transient 1D, exponential conductivity" begin
+        nrow = 1
+        ncol = 9
+        shape = (nrow, ncol)
+        conductivity = 200.0
+        top = 150.0
+        bottom = 0.0
+        specific_yield = 0.15
+        cellsize = 500.0
+        Β = 1.12
+        aquifer_length = cellsize * ncol
+        gwf_f = 3.0
+        exp_conductivity = true
 
         # Domain, geometry
         domain = ones(Bool, shape)
@@ -408,6 +491,7 @@ end
         storativity = 0.15
         aquifer_length = cellsize * ncol
         discharge = -50.0
+        gwf_f = 3.0
         exp_conductivity = false
 
         # Domain, geometry
@@ -426,6 +510,7 @@ end
             fill(specific_storage, ncell),
             fill(storativity, ncell),
             fill(0.0, connectivity.nconnection), # conductance, to be set
+            fill(gwf_f, ncell),
         )
 
         cell_index = reshape(collect(range(1, ncell, step = 1)), shape)
@@ -460,4 +545,5 @@ end
         difference = ϕ[1:halfnrow-1, halfnrow] - ϕ_analytical[1:halfnrow-1]
         @test all(difference .< 0.02)
     end
+
 end
