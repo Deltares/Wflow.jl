@@ -28,7 +28,8 @@ dir_output = "data/output"                      # optional, default is the path 
 
 ## [Logging](@id logging_toml)
 Wflow emits logging messages at various levels such as debug, info, and error. These get
-sent to both the terminal as well as a log file. If you want to debug an issue it can be
+sent to both the terminal as well as a log file. Note that logging to a file is only part of
+the `Wflow.run(tomlpath::AbstractString)` method. If you want to debug an issue it can be
 helpful to set `loglevel = "debug"` in the TOML. To avoid flooding the screen, debug
 messages are only sent to the log file. The following settings will affect the logging:
 
