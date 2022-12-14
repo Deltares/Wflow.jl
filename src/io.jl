@@ -242,14 +242,7 @@ end
 "Get dynamic NetCDF input for the given time"
 function update_forcing!(model)
     @unpack vertical, clock, reader, network, config = model
-    @unpack dataset, forcing_parameters = reader
-    nctimes = dataset["time"][:]
-
-    # Check if the time dimension contains a _FillValue attribute
-    if haskey(dataset["time"].attrib, "_FillValue")
-        # Remove missings in nctimes
-        nctimes = collect(skipmissing(nctimes))
-    end
+    @unpack dataset, dataset_times, forcing_parameters = reader
 
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
     do_lakes = get(config.model, "lakes", false)::Bool
@@ -272,8 +265,8 @@ function update_forcing!(model)
         # no need to update fixed values
         ncvar.name === nothing && continue
 
-        time = convert(eltype(nctimes), clock.time)
-        data = get_at(dataset, ncvar.name, nctimes, time)
+        time = convert(eltype(dataset_times), clock.time)
+        data = get_at(dataset, ncvar.name, dataset_times, time)
 
         if ncvar.scale != 1.0 || ncvar.offset != 0.0
             data .= data .* ncvar.scale .+ ncvar.offset
@@ -340,7 +333,6 @@ end
 function update_cyclic!(model)
     @unpack vertical, clock, reader, network, config = model
     @unpack cyclic_dataset, cyclic_times, cyclic_parameters = reader
-    #sel = network.land.indices
 
     # pick up the data that is valid for the past 24 hours
     month_day = monthday(clock.time - Day(1))
@@ -629,6 +621,7 @@ end
 
 struct NCReader
     dataset::CFDataset
+    dataset_times::Vector{DateTime}
     cyclic_dataset::Union{NCDataset,Nothing}
     cyclic_times::Vector{Tuple{Int,Int}}
     forcing_parameters::Dict{Tuple{Symbol,Vararg{Symbol}},NamedTuple}
@@ -685,10 +678,12 @@ function prepare_reader(config)
         nctimes = dataset["time"][:]
         times_dropped = collect(skipmissing(nctimes))
         # check if lenght has changed (missings in time dimension are not allowed), and throw
-        # an error is the lenghts are different
+        # an error if the lenghts are different
         if length(times_dropped) != length(nctimes)
-            error("Time dimension contains missing values")
+            error("Time dimension in `$abspath_forcing` contains missing values")
         end
+    else
+        nctimes = dataset["time"][:]
     end
 
     # check for cyclic parameters
@@ -744,6 +739,7 @@ function prepare_reader(config)
 
     return NCReader(
         dataset,
+        nctimes,
         cyclic_dataset,
         cyclic_times,
         forcing_parameters,
