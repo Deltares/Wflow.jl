@@ -8,12 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 
 ### Fixed
-- Removed error when `_FillValue` is present in the time dimension of the forcing NetCDF file.
-  The simulation is allowed to continue with the attribute present, given that there are no
-  missing values in the time dimension. This is checked by the code, and an error is thrown if
-  this is the case.
+- Removed error when `_FillValue` is present in the time dimension of the forcing NetCDF
+  file. The simulation is allowed to continue with the attribute present, given that there
+  are no missing values in the time dimension. This is checked by the code, and an error is
+  thrown if this is the case.
 
 ### Changed
+- `NCDatasets` version. Reading the `time` dimension of multifile NetCDF file became very
+  slow since `NCDatasets` v0.12.4, this issue has been solved in v0.12.11.
+- Store the `time` dimension of the forcing NetCDF file as part of the struct `NCreader`
+  instead of calling `dataset["time"][:]` each time step when loading forcing data.
 
 ### Added
 
