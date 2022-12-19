@@ -619,9 +619,9 @@ function add_time(ds, time)
     return i
 end
 
-struct NCReader
+struct NCReader{T}
     dataset::CFDataset
-    dataset_times::Vector{DateTime}
+    dataset_times::Vector{T}
     cyclic_dataset::Union{NCDataset,Nothing}
     cyclic_times::Vector{Tuple{Int,Int}}
     forcing_parameters::Dict{Tuple{Symbol,Vararg{Symbol}},NamedTuple}
@@ -681,9 +681,13 @@ function prepare_reader(config)
         # an error if the lenghts are different
         if length(times_dropped) != length(nctimes)
             error("Time dimension in `$abspath_forcing` contains missing values")
+        else
+            nctimes = times_dropped
+            nctimes_type = eltype(nctimes)
         end
     else
         nctimes = dataset["time"][:]
+        nctimes_type = eltype(nctimes)
     end
 
     # check for cyclic parameters
@@ -737,7 +741,7 @@ function prepare_reader(config)
         end
     end
 
-    return NCReader(
+    return NCReader{nctimes_type}(
         dataset,
         nctimes,
         cyclic_dataset,
