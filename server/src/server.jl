@@ -80,6 +80,7 @@ try
         elseif json.fn === "shutdown"
             response(socket)
             shutdown(socket, context)
+            break
         else
             err = "Received invalid function: $(json.fn)"
             @error err
