@@ -4,6 +4,6 @@ using JSON3
 using StructTypes
 using Wflow
 
-include("bmi_api.jl")
+include("bmi_service.jl")
 include("server.jl")
 end

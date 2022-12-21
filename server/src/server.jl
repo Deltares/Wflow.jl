@@ -1,19 +1,45 @@
 const map_structs = Dict(
     "initialize" => Initialize,
+    "get_component_name" => GetComponentName,
+    "get_input_item_count" => GetInputItemCount,
+    "get_output_item_count" => GetOutputItemCount,
     "get_start_time" => GetStartTime,
     "get_end_time" => GetEndTime,
+    "get_time_step" => GetTimeStep,
+    "get_time_units" => GetTimeUnits,
+    "get_current_time" => GetCurrentTime,
     "update_until" => UpdateUntil,
+    "update" => Update,
+    "get_input_var_names" => GetInputVarNames,
+    "get_output_var_names" => GetOutputVarNames,
+    "get_var_itemsize" => GetVarItemSize,
+    "get_var_type" => GetVarType,
+    "get_var_units" => GetVarUnits,
+    "get_var_location" => GetVarLocation,
+    "get_var_nbytes" => GetVarNbytes,
+    "get_value" => GetValue,
+    "get_value_ptr" => GetValuePtr,
+    "get_value_at_indices" => GetValueAtIndices,
+    "set_value" => SetValue,
+    "set_value_at_indices" => SetValueAtIndices,
+    "get_grid_type" => GetGridType,
+    "get_var_grid" => GetVarGrid,
+    "get_grid_shape" => GetGridShape,
+    "get_grid_rank" => GetGridRank,
+    "get_grid_size" => GetGridSize,
+    "get_grid_x" => GetGridX,
+    "get_grid_y" => GetGridY,
+    "get_grid_node_count" => GetGridNodeCount,
     "finalize" => Finalize,
-    )
+)
 
 context = Context()
 socket = Socket(context, REP)
 ZMQ.bind(socket, "tcp://*:5555")
 
 mutable struct ModelHandler
-    model::Union{Wflow.Model, Nothing}
+    model::Union{Wflow.Model,Nothing}
 end
-
 
 function shutdown(s::Socket, ctx::Context)
     ZMQ.close(s)
@@ -44,6 +70,8 @@ function wflow_bmi(s::Socket, handler::ModelHandler, f)
         ret = wflow_bmi(f, handler.model)
         if typeof(ret) <: Wflow.Model
             handler.model = ret
+            response(s)
+        elseif isnothing(ret)
             response(s)
         else
             ZMQ.send(s, JSON3.write(ret))
