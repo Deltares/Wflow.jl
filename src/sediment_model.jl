@@ -149,8 +149,8 @@ function initialize_sediment_model(config::Config)
     )
 
     model = set_states(model)
-
     @info "Initialized model"
+
     return model
 end
 
