@@ -151,6 +151,14 @@ struct Finalize
     fn::String
 end
 
+struct LoadState
+    fn::String
+end
+
+struct SaveState
+    fn::String
+end
+
 function wflow_bmi(m::Initialize, model::Union{Wflow.Model,Nothing})
     model = getfield(Wflow.BMI, Symbol(m.fn))(Wflow.Model, m.config_file)
     return model
@@ -308,5 +316,15 @@ end
 
 function wflow_bmi(m::Finalize, model::Wflow.Model)
     getfield(Wflow.BMI, Symbol(m.fn))(model)
+    return Dict("status" => "OK")
+end
+
+function wflow_bmi(m::LoadState, model::Wflow.Model)
+    model = getfield(Wflow, Symbol(m.fn))(model)
+    return model
+end
+
+function wflow_bmi(m::SaveState, model::Wflow.Model)
+    getfield(Wflow, Symbol(m.fn))(model)
     return Dict("status" => "OK")
 end

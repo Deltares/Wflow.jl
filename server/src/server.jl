@@ -31,6 +31,8 @@ const map_structs = Dict(
     "get_grid_y" => GetGridY,
     "get_grid_node_count" => GetGridNodeCount,
     "finalize" => Finalize,
+    "load_state" => LoadState,
+    "save_state" => SaveState,
 )
 
 context = Context()

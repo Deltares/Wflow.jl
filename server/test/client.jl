@@ -138,6 +138,12 @@ end
     msg = Dict("fn" => "get_grid_node_count", "grid" => 0)
     @test request(msg) == Dict("grid_node_count" => 2)
 
+    msg = Dict("fn" => "load_state")
+    @test request(msg) == Dict("status" => "OK")
+
+    msg = Dict("fn" => "save_state")
+    @test request(msg) == Dict("status" => "OK")
+
     msg = Dict("fn" => "finalize")
     @test request(msg) == Dict("status" => "OK")
 end
