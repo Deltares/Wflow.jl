@@ -254,8 +254,8 @@ function conductance(aquifer::UnconfinedAquifer, i, j, nzi, exp_conductivity::Bo
         thickness1 = aquifer.top[i] - aquifer.bottom[i]
         thickness2 = aquifer.top[j] - aquifer.bottom[j]
         # calculate conductivity values corrected for depth of water table
-        k1 = aquifer.k[i] * (exp(-aquifer.f[i] * zi1) - exp(-aquifer.f[i] * thickness1))
-        k2 = aquifer.k[j] * (exp(-aquifer.f[j] * zi2) - exp(-aquifer.f[j] * thickness2))
+        k1 = (aquifer.k[i] / aquifer.f[i]) * (exp(-aquifer.f[i] * zi1) - exp(-aquifer.f[i] * thickness1))
+        k2 = (aquifer.k[j] / aquifer.f[j]) * (exp(-aquifer.f[j] * zi2) - exp(-aquifer.f[j] * thickness2))
         return harmonicmean_conductance(k1, k2, connectivity.length1[nzi], connectivity.length2[nzi], connectivity.width[nzi])
     else
         ϕᵢ = aquifer.head[i]
