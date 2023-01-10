@@ -431,7 +431,7 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
     lateral.subsurface.river.stage .= lateral.river.h_av .+ lateral.subsurface.river.bottom
 
     # determine stable time step for groundwater flow
-    exp_conductivity = get(config.model, "exp_conductivity", false)
+    exp_conductivity = get(config.input.lateral.subsurface, "exp_conductivity", false)
     Δt_gw = stable_timestep(lateral.subsurface.flow.aquifer, exp_conductivity) # time step in day (Float64)
     Δt_sbm = (vertical.Δt / tosecond(basetimestep)) # vertical.Δt is in seconds (Float64)
     if Δt_gw < Δt_sbm
