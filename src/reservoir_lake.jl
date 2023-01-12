@@ -475,7 +475,6 @@ function update(lake::NaturalLake, i, inflow, doy, timestepsecs)
     lo = lake.lowerlake_ind[i]
     has_lowerlake = lo != 0
 
-    col = min(doy, 365)
     ### Modified Puls Approach (Burek et al., 2013, LISFLOOD) ###
     # outflowfunc = 3
     # Calculate lake factor and SI parameter
@@ -511,7 +510,7 @@ function update(lake::NaturalLake, i, inflow, doy, timestepsecs)
 
         if lake.outflowfunc[i] == 1
             outflow =
-                interpolate_linear(lake.waterlevel[i], lake.hq[i].H, lake.hq[i].Q[:, col])
+                interpolate_linear(lake.waterlevel[i], lake.hq[i].H, lake.hq[i].Q[:, doy])
         else
             if diff_wl >= 0.0
                 if lake.waterlevel[i] > lake.threshold[i]
