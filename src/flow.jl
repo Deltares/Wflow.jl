@@ -1250,7 +1250,7 @@ function surface_routing(model; ssf_toriver = 0.0)
         lateral.river,
         network.river,
         inflow_wb = get_inflow_waterbody(model),
-        doy = dayofyear(clock.time),
+        doy = julian_day(clock.time - clock.Δt),
     )
 end
 
@@ -1285,6 +1285,6 @@ function surface_routing(
         lateral.river,
         network,
         inflow_wb = get_inflow_waterbody(model),
-        doy = dayofyear(clock.time),
+        doy = julian_day(clock.time - clock.Δt),
     )
 end

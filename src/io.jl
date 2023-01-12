@@ -334,8 +334,8 @@ function update_cyclic!(model)
     @unpack vertical, clock, reader, network, config = model
     @unpack cyclic_dataset, cyclic_times, cyclic_parameters = reader
 
-    # pick up the data that is valid for the past 24 hours
-    month_day = monthday(clock.time - Day(1))
+    # pick up the data that is valid for the past model time step
+    month_day = monthday(clock.time - clock.Δt)
 
     is_first_timestep = clock.iteration == 1
     if is_first_timestep || (month_day in cyclic_times)
