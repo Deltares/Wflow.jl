@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   file. The simulation is allowed to continue with the attribute present, given that there
   are no missing values in the time dimension. This is checked by the code, and an error is
   thrown if this is the case.
+- Column index of daily lake rating curves. This was incorrectly based on `dayofyear` with a
+  maximum of 365. The column index should be based on julian day (leap days are not
+  counted).
 
 ### Changed
 - `NCDatasets` version. Reading the `time` dimension of multifile NetCDF file became very
