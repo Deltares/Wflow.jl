@@ -1250,7 +1250,8 @@ function flow_area(sw::ShallowWaterRiver{T}, i::Int, j::Int)::T where {T}
 
         Δh = flood_depth - sw.floodplain.depth[i1]
         slope = sw.floodplain.slope[j][i2]
-        if slope == T(Inf) # rectangular segment
+        # rectangular floodplain segment (also for extrapolation (i1==i2))
+        if slope == T(Inf) || i1==i2
             a = a_channel + sw.floodplain.a[j][i1] + sw.floodplain.width[j][i1] * Δh
         else
             top_width = sw.floodplain.width[j][i1] + 2.0 * (Δh / sw.floodplain.slope[j][i2])
@@ -1280,7 +1281,8 @@ function wetted_perimeter(sw::ShallowWaterRiver{T}, i::Int, j::Int)::T where {T}
 
         Δh = flood_depth - sw.floodplain.depth[i1]
         slope = sw.floodplain.slope[j][i2]
-        if slope == T(Inf) # rectangular segment
+        # rectangular floodplain segment (also for extrapolation (i1==i2))
+        if slope == T(Inf) || i1==i2
             p = p_channel + sw.floodplain.p[j][i1] + 2.0 * Δh
         else
             h_bin = sw.floodplain.depth[i2] - sw.floodplain.depth[i1]
@@ -1301,7 +1303,8 @@ function flood_depth(sw::ShallowWaterRiver{T}, i::Int)::T where {T}
     i1, i2 = interpolation_indices(flood_volume, sw.floodplain.volume[i])
 
     ΔA = (flood_volume - sw.floodplain.volume[i][i1]) / sw.dl[i]
-    if sw.floodplain.slope[i][i2] == T(Inf)
+    # rectangular floodplain segment (also for extrapolation (i1==i2))
+    if sw.floodplain.slope[i][i2] == T(Inf) || i1==i2
         Δh = ΔA / sw.floodplain.width[i][i1]
     else
         # Area trapezoidal channel:
