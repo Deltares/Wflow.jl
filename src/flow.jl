@@ -1201,10 +1201,10 @@ function interpolate_roughness_nodes(sw::ShallowWaterRiver, i::Int, i_src::Int, 
         i1, i2 = interpolation_indices(flood_depth, sw.floodplain.depth)
         j = max(nearest_neighbor_index(flood_depth, sw.floodplain.depth), 2)
 
-        Δh = flood_depth - sw.floodplain.depth[i1]
+        Δh = i1==i2 ? 0.0 : flood_depth - sw.floodplain.depth[i1]
         fw =
             (sw.floodplain.width[i][i1] - sw.width[i]) +
-            2.0 * (Δh / sw.floodplain.slope[i_src][j])
+            2.0 * (Δh / sw.floodplain.slope[i_src][i2])
         n_src =
             (
                 (sw.mannings_n[i_src] * sw.width[i_src]) +
@@ -1218,10 +1218,10 @@ function interpolate_roughness_nodes(sw::ShallowWaterRiver, i::Int, i_src::Int, 
         i1, i2 = interpolation_indices(flood_depth, sw.floodplain.depth)
         j = max(nearest_neighbor_index(flood_depth, sw.floodplain.depth), 2)
 
-        Δh = flood_depth - sw.floodplain.depth[i1]
+        Δh = i1==i2 ? 0.0 : flood_depth - sw.floodplain.depth[i1]
         fw =
             (sw.floodplain.width[i][i1] - sw.width[i]) +
-            2.0 * (Δh / sw.floodplain.slope[i_dst][j])
+            2.0 * (Δh / sw.floodplain.slope[i_dst][i2])
         n_dst =
             (
                 (sw.mannings_n[i_dst] * sw.width[i_dst]) +
