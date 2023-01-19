@@ -1258,7 +1258,7 @@ function flow_area(sw::ShallowWaterRiver{T}, i::Int, j::Int)::T where {T}
             a =
                 a_channel +
                 sw.floodplain.a[j][i1] +
-                0.5 * (top_width + sw.floodplain.width[j][i2]) * Δh
+                0.5 * (top_width + sw.floodplain.width[j][i1]) * Δh
         end
     end
     return a
@@ -1393,7 +1393,7 @@ function initialize_floodplain_1d(nc, config, inds, riverwidth, riverlength, ind
             end
         end
 
-        p[2:end, i] = 2.0 * p_unit[2:end, i] .* flood_depths[2:end]
+        p[2:end, i] = 2.0 * p_unit[2:end, i] .* h
         p[2:end, i] = cumsum(p[2:end, i])
         a[:, i] = cumsum(a[:, i])
     end
