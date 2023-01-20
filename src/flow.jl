@@ -1201,7 +1201,7 @@ function interpolate_roughness_nodes(sw::ShallowWaterRiver, i::Int, i_src::Int, 
         i1, i2 = interpolation_indices(flood_depth, sw.floodplain.depth)
         j = max(nearest_neighbor_index(flood_depth, sw.floodplain.depth), 2)
 
-        Δh = i1==i2 ? 0.0 : flood_depth - sw.floodplain.depth[i1]
+        Δh = i1 == i2 ? 0.0 : flood_depth - sw.floodplain.depth[i1]
         fw =
             (sw.floodplain.width[i][i1] - sw.width[i]) +
             2.0 * (Δh / sw.floodplain.slope[i_src][i2])
@@ -1218,7 +1218,7 @@ function interpolate_roughness_nodes(sw::ShallowWaterRiver, i::Int, i_src::Int, 
         i1, i2 = interpolation_indices(flood_depth, sw.floodplain.depth)
         j = max(nearest_neighbor_index(flood_depth, sw.floodplain.depth), 2)
 
-        Δh = i1==i2 ? 0.0 : flood_depth - sw.floodplain.depth[i1]
+        Δh = i1 == i2 ? 0.0 : flood_depth - sw.floodplain.depth[i1]
         fw =
             (sw.floodplain.width[i][i1] - sw.width[i]) +
             2.0 * (Δh / sw.floodplain.slope[i_dst][i2])
@@ -1251,10 +1251,10 @@ function flow_area(sw::ShallowWaterRiver{T}, i::Int, j::Int)::T where {T}
         Δh = flood_depth - sw.floodplain.depth[i1]
         slope = sw.floodplain.slope[j][i2]
         # rectangular floodplain segment (also for extrapolation (i1==i2))
-        if slope == T(Inf) || i1==i2
+        if slope == T(Inf) || i1 == i2
             a = a_channel + sw.floodplain.a[j][i1] + sw.floodplain.width[j][i1] * Δh
         else
-            top_width = sw.floodplain.width[j][i1] + 2.0 * (Δh / sw.floodplain.slope[j][i2])
+            top_width = sw.floodplain.width[j][i1] + 2.0 * (Δh / slope)
             a =
                 a_channel +
                 sw.floodplain.a[j][i1] +
@@ -1280,18 +1280,9 @@ function wetted_perimeter(sw::ShallowWaterRiver{T}, i::Int, j::Int)::T where {T}
         i1, i2 = interpolation_indices(flood_depth, sw.floodplain.depth)
 
         Δh = flood_depth - sw.floodplain.depth[i1]
-        slope = sw.floodplain.slope[j][i2]
-        # rectangular floodplain segment (also for extrapolation (i1==i2))
-        if slope == T(Inf) || i1==i2
-            p = p_channel + sw.floodplain.p[j][i1] + 2.0 * Δh
-        else
-            h_bin = sw.floodplain.depth[i2] - sw.floodplain.depth[i1]
-            p_bin = sw.floodplain.p[j][i2] - sw.floodplain.p[j][i1]
-            p =
-                p_channel +
-                sw.floodplain.p[j][i1] +
-                (p_bin - sw.floodplain.p_unit[j][i2] * (h_bin - Δh))
-        end
+        # for extrapolation (i1==i2) rectangular segment is assumed
+        p_unit = i1 == i2 ? 1.0 : sw.floodplain.p_unit[j][i2]
+        p = p_channel + sw.floodplain.p[j][i1] + 2.0 * Δh * p_unit
     end
     return p
 end
@@ -1304,7 +1295,7 @@ function flood_depth(sw::ShallowWaterRiver{T}, i::Int)::T where {T}
 
     ΔA = (flood_volume - sw.floodplain.volume[i][i1]) / sw.dl[i]
     # rectangular floodplain segment (also for extrapolation (i1==i2))
-    if sw.floodplain.slope[i][i2] == T(Inf) || i1==i2
+    if sw.floodplain.slope[i][i2] == T(Inf) || i1 == i2
         Δh = ΔA / sw.floodplain.width[i][i1]
     else
         # Area trapezoidal channel:
@@ -1369,17 +1360,13 @@ function initialize_floodplain_1d(nc, config, inds, riverwidth, riverlength, ind
             # check if flood depth segment has trapezoidal form
             if (width[j, i] * h[j] * riverlength[i]) < diff_volume[j]
                 width[j+1, i] =
-                    width[j, i] +
-                    2.0 * (
-                        (diff_volume[j] - (width[j, i] * h[j] * riverlength[i])) /
-                        riverlength[i] / h[j]
-                    )
+                    (2.0 * (diff_volume[j] / riverlength[i]) / h[j]) - width[j, i]
                 p_unit[j+1, i] =
                     sqrt(1.0 + ((0.5 * (width[j+1, i] - width[j, i])) / h[j])^2.0)
                 a[j+1, i] = 0.5 * (width[j, i] + width[j+1, i]) * h[j]
                 slope[j+1, i] = h[j] / (0.5 * (width[j+1, i] - width[j, i]))
-                # shape of flood depth segment is rectangular
             else
+                # shape of flood depth segment is rectangular
                 width[j+1, i] = width[j, i]
                 a[j+1, i] = width[j, i] * h[j]
                 p_unit[j+1, i] = 1.0
