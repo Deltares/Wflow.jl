@@ -129,7 +129,7 @@ storativity(A::ConfinedAquifer) = A.storativity
 
 
 """
-    harmonicmean_conductance(k1, k2, H1, H2, l1, l2, width)
+    harmonicmean_conductance(kH1, kH2, l1, l2, width)
 
 The harmonic mean is the exact interblock transmissivity for steady-state
 one-dimensional flow with no recharge if the transmissivity is assumed to be
@@ -142,19 +142,9 @@ Refer to:
     for Unconﬁned Aquifers and for Aquifers having Smoothly Varying Transmissivity.
     Water-resources investigations report, 92, 4124.
 """
-function harmonicmean_conductance(k1, k2, H1, H2, l1, l2, width)
-    kH1 = k1 * H1
-    kH2 = k2 * H2
+function harmonicmean_conductance(kH1, kH2, l1, l2, width)
     if (kH1 * kH2) > 0.0
         return width * kH1 * kH2 / (kH1 * l2 + kH2 * l1)
-    else
-        return 0.0
-    end
-end
-
-function harmonicmean_conductance(k1, k2, l1, l2, width)
-    if (k1 * k2) > 0.0
-        return width * k1 * k2 / (k1 * l2 + k2 * l1)
     else
         return 0.0
     end
@@ -192,7 +182,9 @@ function horizontal_conductance(
     length1 = connectivity.length1[nzi]
     length2 = connectivity.length2[nzi]
     width = connectivity.width[nzi]
-    return harmonicmean_conductance(k1, k2, H1, H2, length1, length2, width)
+    kH1 = k1 * H1
+    kH2 = k2 * H2
+    return harmonicmean_conductance(kH1, kH2, length1, length2, width)
 end
 
 """
