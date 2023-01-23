@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 ### Added
+- Show total duration of simulation in the log file (info), and show the current time at
+  execution of each timestep (debug).
 - Support for exponential decline in horizontal conductivity in the sbm_gwf concept. This can
   be enabled using the `exp_conductivity` flag, which exponentially reduces the `kh0` (or
   `conductivity`) based on the value of `gwf_f` to the actual horizontal conductivity (`k`)
