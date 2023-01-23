@@ -335,6 +335,22 @@ river = model.lateral.river
     @test (flood_depth - fp.depth[i1]) * fp.width[3][i1] * river.dl[3] + fp.volume[3][i1] ≈
           flood_vol
     model.lateral.river.volume[3] = 0.0
+    # flow area and wetted perimeter based on hf
+    river.hf[3] = 0.5
+    @test Wflow.flow_area(river, 3, 3) ≈ river.hf[3] * river.width[3]
+    @test Wflow.wetted_perimeter(river, 3, 3) ≈ 2.0 * river.hf[3] + river.width[3]
+    river.hf[3] = 1.5
+    @test Wflow.flow_area(river, 3, 3) ≈
+          river.bankfull_depth[3] * river.width[3] + fp.a[3][2]
+    @test Wflow.wetted_perimeter(river, 3, 3) ≈
+          2.0 * river.bankfull_depth[3] + river.width[3] + fp.p[3][2]
+    river.hf[3] = 1.7
+    @test Wflow.flow_area(river, 3, 3) ≈ 113.35755834829445f0
+    @test Wflow.wetted_perimeter(river, 3, 3) ≈ 170.97596006150428f0
+    river.hf[3] = 3.2
+    @test Wflow.flow_area(river, 3, 3) ≈ 425.90440215439867f0
+    @test Wflow.wetted_perimeter(river, 3, 3) ≈ 327.74447981517875f0
+    river.hf[3] = 0.0 # reset hf
 end
 
 Wflow.load_dynamic_input!(model)
