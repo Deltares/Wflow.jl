@@ -242,8 +242,7 @@ end
 "Get dynamic NetCDF input for the given time"
 function update_forcing!(model)
     @unpack vertical, clock, reader, network, config = model
-    @unpack dataset, forcing_parameters = reader
-    nctimes = dataset["time"][:]
+    @unpack dataset, dataset_times, forcing_parameters = reader
 
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
     do_lakes = get(config.model, "lakes", false)::Bool
@@ -266,8 +265,8 @@ function update_forcing!(model)
         # no need to update fixed values
         ncvar.name === nothing && continue
 
-        time = convert(eltype(nctimes), clock.time)
-        data = get_at(dataset, ncvar.name, nctimes, time)
+        time = convert(eltype(dataset_times), clock.time)
+        data = get_at(dataset, ncvar.name, dataset_times, time)
 
         if ncvar.scale != 1.0 || ncvar.offset != 0.0
             data .= data .* ncvar.scale .+ ncvar.offset
@@ -334,10 +333,9 @@ end
 function update_cyclic!(model)
     @unpack vertical, clock, reader, network, config = model
     @unpack cyclic_dataset, cyclic_times, cyclic_parameters = reader
-    #sel = network.land.indices
 
-    # pick up the data that is valid for the past 24 hours
-    month_day = monthday(clock.time - Day(1))
+    # pick up the data that is valid for the past model time step
+    month_day = monthday(clock.time - clock.Δt)
 
     is_first_timestep = clock.iteration == 1
     if is_first_timestep || (month_day in cyclic_times)
@@ -621,8 +619,9 @@ function add_time(ds, time)
     return i
 end
 
-struct NCReader
+struct NCReader{T}
     dataset::CFDataset
+    dataset_times::Vector{T}
     cyclic_dataset::Union{NCDataset,Nothing}
     cyclic_times::Vector{Tuple{Int,Int}}
     forcing_parameters::Dict{Tuple{Symbol,Vararg{Symbol}},NamedTuple}
@@ -673,6 +672,23 @@ function prepare_reader(config)
         error("No files found with name '$glob_path' in '$glob_dir'")
     end
     dataset = NCDataset(dynamic_paths, aggdim = "time", deferopen = false)
+
+    if haskey(dataset["time"].attrib, "_FillValue")
+        @warn "Time dimension contains `_FillValue` attribute, this is not in line with CF conventions."
+        nctimes = dataset["time"][:]
+        times_dropped = collect(skipmissing(nctimes))
+        # check if lenght has changed (missings in time dimension are not allowed), and throw
+        # an error if the lenghts are different
+        if length(times_dropped) != length(nctimes)
+            error("Time dimension in `$abspath_forcing` contains missing values")
+        else
+            nctimes = times_dropped
+            nctimes_type = eltype(nctimes)
+        end
+    else
+        nctimes = dataset["time"][:]
+        nctimes_type = eltype(nctimes)
+    end
 
     # check for cyclic parameters
     do_cyclic = haskey(config.input, "cyclic")
@@ -725,8 +741,9 @@ function prepare_reader(config)
         end
     end
 
-    return NCReader(
+    return NCReader{nctimes_type}(
         dataset,
+        nctimes,
         cyclic_dataset,
         cyclic_times,
         forcing_parameters,

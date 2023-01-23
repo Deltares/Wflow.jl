@@ -408,3 +408,32 @@ end
     @test_throws ErrorException Wflow.run(tomlpath_error)
     rm(tomlpath_error)
 end
+
+# test calendar setting `noleap` in forcing NetCDF file (including `_FillValue` in time
+# dimension) and in TOML file (Clock{DateTimeNoLeap}).
+@testset "Calendar noleap (DateTimeNoLeap) for time and clock" begin
+    config = Wflow.Config(tomlpath)
+    config.input.path_forcing = "forcing-calendar-noleap.nc"
+    config.calendar = "noleap"
+
+    # with `_FillValue` in time dimension Wflow throws a warning
+    reader = @test_logs (
+        :warn,
+        "Time dimension contains `_FillValue` attribute, this is not in line with CF conventions.",
+    ) match_mode = :any Wflow.prepare_reader(config)
+    @test eltype(reader.dataset_times) == DateTimeNoLeap
+    @test ismissing(reader.dataset_times) == false # missing in time dimension is not allowed
+    @test reader.dataset_times ==
+          collect(DateTimeNoLeap(2000, 1, 2):Day(1):DateTimeNoLeap(2000, 1, 6))
+
+    # test Clock{DateTimeNoLeap}
+    clock = Wflow.Clock(config, reader)
+    @test clock.time isa DateTimeNoLeap
+    @test clock.time == DateTimeNoLeap(2000, 1, 2)
+
+    starttime = DateTimeNoLeap(2000, 2, 28)
+    Δt = Day(1)
+    clock = Wflow.Clock(starttime, 1, Second(Δt))
+    Wflow.advance!(clock)
+    @test clock.time ==  DateTimeNoLeap(2000, 3, 1)
+end

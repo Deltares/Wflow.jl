@@ -608,6 +608,13 @@ function set_effective_flowwidth!(
     end
 end
 
+"Return julian day of year (leap days are not counted)"
+function julian_day(time)
+    # for all years February 28 is day 59 and March 1 is day 60.
+    day = dayofyear(time) - (isleapyear(time) && dayofyear(time) > 60) 
+    return day
+end
+
 "Solve quadratic equation, return positive `x`"
 function solve_quadratic(a, b, c)
     d = sqrt(b^2 - 4a * c)

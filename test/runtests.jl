@@ -66,6 +66,9 @@ staticmaps_sbm_gw_path =
 lake_sh_1_path = testdata(v"0.2.1", "lake_sh_1.csv", "lake_sh_1.csv")
 lake_sh_2_path = testdata(v"0.2.1", "lake_sh_2.csv", "lake_sh_2.csv")
 lake_hq_2_path = testdata(v"0.2.1", "lake_hq_2.csv", "lake_hq_2.csv")
+forcing_calendar_noleap_path =
+    testdata(v"0.2.8", "forcing-calendar-noleap.nc", "forcing-calendar-noleap.nc")
+
 
 include("testing_utils.jl")
 
