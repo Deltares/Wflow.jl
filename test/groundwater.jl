@@ -176,13 +176,13 @@ end
 
     @testset "unit: aquifer, boundary conditions" begin
         @testset "harmonicmean_conductance" begin
-            # harmonicmean_conductance(k1, k2, H1, H2, l1, l2, width)
-            @test Wflow.harmonicmean_conductance(10.0, 10.0, 5.0, 5.0, 0.5, 0.5, 1.0) ==
+            # harmonicmean_conductance(kH1, kH2, l1, l2, width)
+            @test Wflow.harmonicmean_conductance(10.0 * 5.0, 10.0 * 5.0, 0.5, 0.5, 1.0) ==
                   50.0
-            @test Wflow.harmonicmean_conductance(10.0, 10.0, 0.0, 5.0, 0.5, 0.5, 1.0) == 0.0
-            @test Wflow.harmonicmean_conductance(10.0, 10.0, 5.0, 0.0, 0.5, 0.5, 1.0) == 0.0
+            @test Wflow.harmonicmean_conductance(10.0 * 0.0, 10.0 * 5.0, 0.5, 0.5, 1.0) == 0.0
+            @test Wflow.harmonicmean_conductance(10.0 * 5.0, 10.0 * 0.0, 0.5, 0.5, 1.0) == 0.0
             # kD of 10 and 20 -> harmonicmean = 1/(1/10 + 1/20)
-            @test Wflow.harmonicmean_conductance(10.0, 10.0, 1.0, 2.0, 1.0, 1.0, 1.0) ≈
+            @test Wflow.harmonicmean_conductance(10.0 * 1.0, 10.0 * 2.0, 1.0, 1.0, 1.0) ≈
                   (6.0 + 2.0 / 3.0)
         end
 
@@ -211,7 +211,7 @@ end
         @testset "horizontal_conductance" begin
             @test (
                 Wflow.horizontal_conductance(1, 2, 1, conf_aqf, connectivity) ==
-                Wflow.harmonicmean_conductance(10.0, 10.0, 10.0, 10.0, 5.0, 5.0, 10.0)
+                Wflow.harmonicmean_conductance(10.0 * 10.0, 10.0 * 10.0, 5.0, 5.0, 10.0)
             )
         end
 
