@@ -1201,7 +1201,7 @@ function interpolate_roughness_nodes(sw::ShallowWaterRiver, i::Int, i_src::Int, 
         i1, i2 = interpolation_indices(flood_depth, sw.floodplain.depth)
         j = max(nearest_neighbor_index(flood_depth, sw.floodplain.depth), 2)
 
-        Δh = i1 == i2 ? 0.0 : flood_depth - sw.floodplain.depth[i1]
+        Δh = flood_depth - sw.floodplain.depth[i1]
         fw =
             (sw.floodplain.width[i][i1] - sw.width[i]) +
             2.0 * (Δh / sw.floodplain.slope[i_src][i2])
@@ -1218,7 +1218,7 @@ function interpolate_roughness_nodes(sw::ShallowWaterRiver, i::Int, i_src::Int, 
         i1, i2 = interpolation_indices(flood_depth, sw.floodplain.depth)
         j = max(nearest_neighbor_index(flood_depth, sw.floodplain.depth), 2)
 
-        Δh = i1 == i2 ? 0.0 : flood_depth - sw.floodplain.depth[i1]
+        Δh = flood_depth - sw.floodplain.depth[i1]
         fw =
             (sw.floodplain.width[i][i1] - sw.width[i]) +
             2.0 * (Δh / sw.floodplain.slope[i_dst][i2])
@@ -1250,8 +1250,8 @@ function flow_area(sw::ShallowWaterRiver{T}, i::Int, j::Int)::T where {T}
 
         Δh = flood_depth - sw.floodplain.depth[i1]
         slope = sw.floodplain.slope[j][i2]
-        # rectangular floodplain segment (also for extrapolation (i1==i2))
-        if slope == T(Inf) || i1 == i2
+        # rectangular floodplain segment
+        if slope == T(Inf)
             a = a_channel + sw.floodplain.a[j][i1] + sw.floodplain.width[j][i1] * Δh
         else
             top_width = sw.floodplain.width[j][i1] + 2.0 * (Δh / slope)
@@ -1280,9 +1280,7 @@ function wetted_perimeter(sw::ShallowWaterRiver{T}, i::Int, j::Int)::T where {T}
         i1, i2 = interpolation_indices(flood_depth, sw.floodplain.depth)
 
         Δh = flood_depth - sw.floodplain.depth[i1]
-        # for extrapolation (i1==i2) rectangular segment is assumed
-        p_unit = i1 == i2 ? 1.0 : sw.floodplain.p_unit[j][i2]
-        p = p_channel + sw.floodplain.p[j][i1] + 2.0 * Δh * p_unit
+        p = p_channel + sw.floodplain.p[j][i1] + 2.0 * Δh * sw.floodplain.p_unit[j][i2]
     end
     return p
 end
@@ -1294,14 +1292,15 @@ function flood_depth(sw::ShallowWaterRiver{T}, i::Int)::T where {T}
     i1, i2 = interpolation_indices(flood_volume, sw.floodplain.volume[i])
 
     ΔA = (flood_volume - sw.floodplain.volume[i][i1]) / sw.dl[i]
-    # rectangular floodplain segment (also for extrapolation (i1==i2))
-    if sw.floodplain.slope[i][i2] == T(Inf) || i1 == i2
+    # rectangular floodplain segment
+    if sw.floodplain.slope[i][i2] == T(Inf)
         Δh = ΔA / sw.floodplain.width[i][i1]
     else
         # Area trapezoidal channel:
         # A = (b+zh)h (A = flow area, h = water depth, b = bottom width, z = side slope)
-        h_bin = sw.floodplain.depth[i2] - sw.floodplain.depth[i1]
-        z = (0.5 * (sw.floodplain.width[i][i2] - sw.floodplain.width[i][i1])) / h_bin
+        i_1 = i2 - 1 # to deal with extrapolation (i1==i2)
+        h_bin = sw.floodplain.depth[i2] - sw.floodplain.depth[i_1]
+        z = (0.5 * (sw.floodplain.width[i][i2] - sw.floodplain.width[i][i_1])) / h_bin
         Δh = solve_quadratic(z, sw.floodplain.width[i][i1], -ΔA)
     end
 
