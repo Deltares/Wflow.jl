@@ -497,8 +497,9 @@ function initialize_shallowwater_river(
     alpha = get(config.model, "inertial_flow_alpha", 0.7)::Float64 # stability coefficient for model time step (0.2-0.7)
     h_thresh = get(config.model, "h_thresh", 1.0e-03)::Float64 # depth threshold for flow at link
     froude_limit = get(config.model, "froude_limit", true)::Bool # limit flow to subcritical according to Froude number
+    floodplain_1d = floodplain
 
-    @info "Local inertial approach is used for river flow." alpha h_thresh froude_limit riverlength_bc
+    @info "Local inertial approach is used for river flow." alpha h_thresh froude_limit riverlength_bc floodplain_1d
 
     bankfull_elevation_2d = ncread(
         nc,
@@ -1352,6 +1353,7 @@ function initialize_floodplain_1d(nc, config, inds, riverwidth, riverlength, ind
     # depth (p_unit) and slope.
     h = diff(flood_depths)
     incorrect_vol = 0
+    riv_cells = 0
     for i = 1:n
         diff_volume = diff(volume[:, i])
 
@@ -1382,12 +1384,16 @@ function initialize_floodplain_1d(nc, config, inds, riverwidth, riverlength, ind
         p[2:end, i] = 2.0 * p_unit[2:end, i] .* h
         p[2:end, i] = cumsum(p[2:end, i])
         a[:, i] = cumsum(a[:, i])
+
+        riv_cells += min(incorrect_vol, 1)
     end
 
     if incorrect_vol > 0
+        perc_riv_cells = 100.0 * (riv_cells / n)
         @warn string(
             "The provided volume of $incorrect_vol rectangular floodplain schematization",
-            " segments is not correct and has been adapted.",
+            " segments for $riv_cells river cells ($perc_riv_cells % of total river cells)",
+            " is not correct and has been adapted.",
         )
     end
 
