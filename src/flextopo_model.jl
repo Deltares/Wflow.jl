@@ -85,15 +85,16 @@ function initialize_flextopo_model(config::Config)
             fill = 0.0,
         ) .* (Δt / basetimestep)
 
-    g_sifrac = ncread(
-        nc,
-        config,
-        "vertical.g_sifrac";
-        sel = inds,
-        defaults = 0.001,
-        type = Float,
-        fill = 0.0,
-    ) .* (Δt / basetimestep)
+    g_sifrac =
+        ncread(
+            nc,
+            config,
+            "vertical.g_sifrac";
+            sel = inds,
+            defaults = 0.001,
+            type = Float,
+            fill = 0.0,
+        ) .* (Δt / basetimestep)
     glacierfrac = ncread(
         nc,
         config,

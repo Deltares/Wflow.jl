@@ -165,9 +165,16 @@ function initialize_sbm_gwf_model(config::Config)
         ncread(nc, config, "lateral.subsurface.conductivity"; sel = inds, type = Float)
     specific_yield =
         ncread(nc, config, "lateral.subsurface.specific_yield"; sel = inds, type = Float)
-    gwf_f =
-        ncread(nc, config, "lateral.subsurface.gwf_f"; sel = inds, type = Float, defaults=3.0)
-    conductivity_profile  = get(config.input.lateral.subsurface, "conductivity_profile", "uniform")::String
+    gwf_f = ncread(
+        nc,
+        config,
+        "lateral.subsurface.gwf_f";
+        sel = inds,
+        type = Float,
+        defaults = 3.0,
+    )
+    conductivity_profile =
+        get(config.input.lateral.subsurface, "conductivity_profile", "uniform")::String
 
     connectivity = Connectivity(inds, rev_inds, xl, yl)
     initial_head = altitude .- Float(0.10) # cold state for groundwater head
@@ -431,7 +438,8 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
     lateral.subsurface.river.stage .= lateral.river.h_av .+ lateral.subsurface.river.bottom
 
     # determine stable time step for groundwater flow
-    conductivity_profile = get(config.input.lateral.subsurface, "conductivity_profile", "uniform")
+    conductivity_profile =
+        get(config.input.lateral.subsurface, "conductivity_profile", "uniform")
     Δt_gw = stable_timestep(lateral.subsurface.flow.aquifer, conductivity_profile) # time step in day (Float64)
     Δt_sbm = (vertical.Δt / tosecond(basetimestep)) # vertical.Δt is in seconds (Float64)
     if Δt_gw < Δt_sbm

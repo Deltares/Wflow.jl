@@ -869,7 +869,7 @@ function initialize_shallowwater_land(
         qy = zeros(n + 1),
         zx_max = zx_max,
         zy_max = zy_max,
-        mannings_n_sq = n_land.* n_land,
+        mannings_n_sq = n_land .* n_land,
         volume = zeros(n),
         error = zeros(n),
         runoff = zeros(n),

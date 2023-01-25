@@ -254,11 +254,10 @@ function local_inertial_riverflow(
 )
 
     slope = (η1 - η0) / length
-    pow_R = cbrt(R*R*R*R)
+    pow_R = cbrt(R * R * R * R)
     unit = one(hf)
     q = (
-        (q0 - g * A * Δt * slope) /
-        (unit + g * Δt * mannings_n_sq * abs(q0) / (pow_R * A))
+        (q0 - g * A * Δt * slope) / (unit + g * Δt * mannings_n_sq * abs(q0) / (pow_R * A))
     )
 
     # if froude number > 1.0, limit flow
@@ -299,7 +298,7 @@ function local_inertial_flow(
     slope = (η1 - η0) / length
     unit = one(θ)
     half = oftype(θ, 0.5)
-    pow_hf = cbrt(hf*hf*hf*hf*hf*hf*hf)
+    pow_hf = cbrt(hf * hf * hf * hf * hf * hf * hf)
 
     q = (
         ((θ * q0 + half * (unit - θ) * (qu + qd)) - g * hf * width * Δt * slope) /

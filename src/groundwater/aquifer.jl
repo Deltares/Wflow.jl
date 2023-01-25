@@ -205,7 +205,14 @@ function initialize_conductance!(aquifer::A, connectivity::Connectivity) where {
 end
 
 
-function conductance(aquifer::ConfinedAquifer, i, j, nzi, conductivity_profile::String, connectivity::Connectivity)
+function conductance(
+    aquifer::ConfinedAquifer,
+    i,
+    j,
+    nzi,
+    conductivity_profile::String,
+    connectivity::Connectivity,
+)
     return aquifer.conductance[nzi]
 end
 
@@ -236,7 +243,14 @@ converting no-flow cells to variable-head cells for the U.S. Geological Survey
 modular finite-difference groundwater flow model: U.S. Geological Survey
 Open-File Report 91-536, 99 p
 """
-function conductance(aquifer::UnconfinedAquifer, i, j, nzi, conductivity_profile::String, connectivity::Connectivity)
+function conductance(
+    aquifer::UnconfinedAquifer,
+    i,
+    j,
+    nzi,
+    conductivity_profile::String,
+    connectivity::Connectivity,
+)
 
     if conductivity_profile == "exponential"
         # Extract required variables
@@ -245,16 +259,28 @@ function conductance(aquifer::UnconfinedAquifer, i, j, nzi, conductivity_profile
         thickness1 = aquifer.top[i] - aquifer.bottom[i]
         thickness2 = aquifer.top[j] - aquifer.bottom[j]
         # calculate conductivity values corrected for depth of water table
-        k1 = (aquifer.k[i] / aquifer.f[i]) * (exp(-aquifer.f[i] * zi1) - exp(-aquifer.f[i] * thickness1))
-        k2 = (aquifer.k[j] / aquifer.f[j]) * (exp(-aquifer.f[j] * zi2) - exp(-aquifer.f[j] * thickness2))
-        return harmonicmean_conductance(k1, k2, connectivity.length1[nzi], connectivity.length2[nzi], connectivity.width[nzi])
+        k1 =
+            (aquifer.k[i] / aquifer.f[i]) *
+            (exp(-aquifer.f[i] * zi1) - exp(-aquifer.f[i] * thickness1))
+        k2 =
+            (aquifer.k[j] / aquifer.f[j]) *
+            (exp(-aquifer.f[j] * zi2) - exp(-aquifer.f[j] * thickness2))
+        return harmonicmean_conductance(
+            k1,
+            k2,
+            connectivity.length1[nzi],
+            connectivity.length2[nzi],
+            connectivity.width[nzi],
+        )
     elseif conductivity_profile == "uniform"
         ϕᵢ = aquifer.head[i]
         ϕⱼ = aquifer.head[j]
         if ϕᵢ >= ϕⱼ
-            saturation = saturated_thickness(aquifer, i) / (aquifer.top[i] - aquifer.bottom[i])
+            saturation =
+                saturated_thickness(aquifer, i) / (aquifer.top[i] - aquifer.bottom[i])
         else
-            saturation = saturated_thickness(aquifer, j) / (aquifer.top[j] - aquifer.bottom[j])
+            saturation =
+                saturated_thickness(aquifer, j) / (aquifer.top[j] - aquifer.bottom[j])
         end
         return saturation * aquifer.conductance[nzi]
     else
@@ -301,7 +327,9 @@ function stable_timestep(aquifer, conductivity_profile::String)
         if conductivity_profile == "exponential"
             zi = aquifer.top[i] - aquifer.head[i]
             thickness = aquifer.top[i] - aquifer.bottom[i]
-            value = (aquifer.k[i] / aquifer.f[i]) * (exp(-aquifer.f[i] * zi) - exp(-aquifer.f[i] * thickness))
+            value =
+                (aquifer.k[i] / aquifer.f[i]) *
+                (exp(-aquifer.f[i] * zi) - exp(-aquifer.f[i] * thickness))
         elseif conductivity_profile == "uniform"
             value = aquifer.k[i] * saturated_thickness(aquifer, i)
         end

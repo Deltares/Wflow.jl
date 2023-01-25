@@ -55,7 +55,7 @@ function homogenous_aquifer(nrow, ncol)
         fill(100.0, ncell),  # area
         fill(0.15, ncell),  # specific yield
         fill(0.0, connectivity.nconnection),  # conductance
-        fill(3.0, ncell) # conductance reduction factor
+        fill(3.0, ncell), # conductance reduction factor
     )
     return (connectivity, conf_aqf, unconf_aqf)
 end
@@ -178,8 +178,10 @@ end
             # harmonicmean_conductance(kH1, kH2, l1, l2, width)
             @test Wflow.harmonicmean_conductance(10.0 * 5.0, 10.0 * 5.0, 0.5, 0.5, 1.0) ==
                   50.0
-            @test Wflow.harmonicmean_conductance(10.0 * 0.0, 10.0 * 5.0, 0.5, 0.5, 1.0) == 0.0
-            @test Wflow.harmonicmean_conductance(10.0 * 5.0, 10.0 * 0.0, 0.5, 0.5, 1.0) == 0.0
+            @test Wflow.harmonicmean_conductance(10.0 * 0.0, 10.0 * 5.0, 0.5, 0.5, 1.0) ==
+                  0.0
+            @test Wflow.harmonicmean_conductance(10.0 * 5.0, 10.0 * 0.0, 0.5, 0.5, 1.0) ==
+                  0.0
             # kD of 10 and 20 -> harmonicmean = 1/(1/10 + 1/20)
             @test Wflow.harmonicmean_conductance(10.0 * 1.0, 10.0 * 2.0, 1.0, 1.0, 1.0) ≈
                   (6.0 + 2.0 / 3.0)
@@ -216,9 +218,30 @@ end
 
         @testset "conductance" begin
             conductivity_profile = "uniform"
-            @test Wflow.conductance(conf_aqf, 2, 3, 3, conductivity_profile, connectivity) == 100.0
-            @test Wflow.conductance(unconf_aqf, 2, 3, 3, conductivity_profile, connectivity) == 100.0  # upstream sat. thickness
-            @test Wflow.conductance(unconf_aqf, 1, 2, 1, conductivity_profile, connectivity) == 75.0  # upstream sat. thickness
+            @test Wflow.conductance(
+                conf_aqf,
+                2,
+                3,
+                3,
+                conductivity_profile,
+                connectivity,
+            ) == 100.0
+            @test Wflow.conductance(
+                unconf_aqf,
+                2,
+                3,
+                3,
+                conductivity_profile,
+                connectivity,
+            ) == 100.0  # upstream sat. thickness
+            @test Wflow.conductance(
+                unconf_aqf,
+                1,
+                2,
+                1,
+                conductivity_profile,
+                connectivity,
+            ) == 75.0  # upstream sat. thickness
         end
 
         @testset "minimum_head-confined" begin
