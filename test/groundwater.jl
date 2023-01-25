@@ -46,7 +46,6 @@ function homogenous_aquifer(nrow, ncol)
         fill(0.1, ncell), # specific storage
         fill(1.0, ncell),  # storativity
         fill(0.0, connectivity.nconnection),  # conductance
-        fill(3.0, ncell) # conductance reduction factor
     )
     unconf_aqf = Wflow.UnconfinedAquifer(
         [0.0, 7.5, 20.0],  # head
@@ -216,9 +215,10 @@ end
         end
 
         @testset "conductance" begin
-            @test Wflow.conductance(conf_aqf, 2, 3, 3, false, connectivity) == 100.0
-            @test Wflow.conductance(unconf_aqf, 2, 3, 3, false, connectivity) == 100.0  # upstream sat. thickness
-            @test Wflow.conductance(unconf_aqf, 1, 2, 1, false, connectivity) == 75.0  # upstream sat. thickness
+            conductivity_profile = "uniform"
+            @test Wflow.conductance(conf_aqf, 2, 3, 3, conductivity_profile, connectivity) == 100.0
+            @test Wflow.conductance(unconf_aqf, 2, 3, 3, conductivity_profile, connectivity) == 100.0  # upstream sat. thickness
+            @test Wflow.conductance(unconf_aqf, 1, 2, 1, conductivity_profile, connectivity) == 75.0  # upstream sat. thickness
         end
 
         @testset "minimum_head-confined" begin
@@ -238,7 +238,8 @@ end
         end
 
         @testset "stable_timestep" begin
-            @test Wflow.stable_timestep(conf_aqf, false) == 0.25
+            conductivity_profile = "uniform"
+            @test Wflow.stable_timestep(conf_aqf, conductivity_profile) == 0.25
         end
 
         # Parametrization in setup is as follows:
@@ -249,7 +250,8 @@ end
 
         @testset "flux-confined" begin
             Q = zeros(3)
-            Wflow.flux!(Q, conf_aqf, connectivity, false)
+            conductivity_profile = "uniform"
+            Wflow.flux!(Q, conf_aqf, connectivity, conductivity_profile)
             # kD = 10 * 10 = 100
             # dH = 7.5, 12.5
             @test Q == [750.0, 500.0, -1250.0]  # TODO
@@ -257,7 +259,8 @@ end
 
         @testset "flux-unconfined" begin
             Q = zeros(3)
-            Wflow.flux!(Q, unconf_aqf, connectivity, false)
+            conductivity_profile = "uniform"
+            Wflow.flux!(Q, unconf_aqf, connectivity, conductivity_profile)
             # KD is based on upstream saturated thickness, i.e. 7.5 m and 20.0 m (which is capped to 10.0)
             @test Q == [562.5, 687.5, -1250.0]
         end
@@ -314,7 +317,7 @@ end
     @testset "integration: steady 1D" begin
         connectivity, aquifer, _ = homogenous_aquifer(3, 1)
         constanthead = Wflow.ConstantHead([2.0, 4.0], [1, 3])
-        exp_conductivity = false
+        conductivity_profile = "uniform"
         gwf = Wflow.GroundwaterFlow(
             aquifer,
             connectivity,
@@ -327,7 +330,7 @@ end
         Q = zeros(3)
         Δt = 0.25 # days
         for _ = 1:50
-            Wflow.update(gwf, Q, Δt, exp_conductivity)
+            Wflow.update(gwf, Q, Δt, conductivity_profile)
         end
 
         @test gwf.aquifer.head ≈ [2.0, 3.0, 4.0]
@@ -336,7 +339,7 @@ end
     @testset "integration: steady 1D, exponential conductivity" begin
         connectivity, aquifer, _ = homogenous_aquifer(3, 1)
         constanthead = Wflow.ConstantHead([2.0, 4.0], [1, 3])
-        exp_conductivity = true
+        conductivity_profile = "exponential"
         gwf = Wflow.GroundwaterFlow(
             aquifer,
             connectivity,
@@ -349,7 +352,7 @@ end
         Q = zeros(3)
         Δt = 0.25 # days
         for _ = 1:50
-            Wflow.update(gwf, Q, Δt, exp_conductivity)
+            Wflow.update(gwf, Q, Δt, conductivity_profile)
         end
 
         @test gwf.aquifer.head ≈ [2.0, 3.0, 4.0]
@@ -367,7 +370,7 @@ end
         Β = 1.12
         aquifer_length = cellsize * ncol
         gwf_f = 3.0
-        exp_conductivity = false
+        conductivity_profile = "uniform"
 
         # Domain, geometry
         domain = ones(Bool, shape)
@@ -396,14 +399,14 @@ end
             Wflow.AquiferBoundaryCondition[],
         )
 
-        Δt = Wflow.stable_timestep(gwf.aquifer, exp_conductivity)
+        Δt = Wflow.stable_timestep(gwf.aquifer, conductivity_profile)
         Q = zeros(ncell)
         time = 20.0
         nstep = Int(ceil(time / Δt))
         time = nstep * Δt
 
         for i = 1:nstep
-            Wflow.update(gwf, Q, Δt, exp_conductivity)
+            Wflow.update(gwf, Q, Δt, conductivity_profile)
             # Gradient dh/dx is positive, all flow to the left
             @test all(diff(gwf.aquifer.head) .> 0.0)
         end
@@ -427,7 +430,7 @@ end
         Β = 1.12
         aquifer_length = cellsize * ncol
         gwf_f = 3.0
-        exp_conductivity = true
+        conductivity_profile = "exponential"
 
         # Domain, geometry
         domain = ones(Bool, shape)
@@ -456,14 +459,14 @@ end
             Wflow.AquiferBoundaryCondition[],
         )
 
-        Δt = Wflow.stable_timestep(gwf.aquifer, exp_conductivity)
+        Δt = Wflow.stable_timestep(gwf.aquifer, conductivity_profile)
         Q = zeros(ncell)
         time = 20.0
         nstep = Int(ceil(time / Δt))
         time = nstep * Δt
 
         for i = 1:nstep
-            Wflow.update(gwf, Q, Δt, exp_conductivity)
+            Wflow.update(gwf, Q, Δt, conductivity_profile)
             # Gradient dh/dx is positive, all flow to the left
             @test all(diff(gwf.aquifer.head) .> 0.0)
         end
@@ -491,8 +494,7 @@ end
         storativity = 0.15
         aquifer_length = cellsize * ncol
         discharge = -50.0
-        gwf_f = 3.0
-        exp_conductivity = false
+        conductivity_profile = "uniform"
 
         # Domain, geometry
         domain = ones(Bool, shape)
@@ -510,7 +512,6 @@ end
             fill(specific_storage, ncell),
             fill(storativity, ncell),
             fill(0.0, connectivity.nconnection), # conductance, to be set
-            fill(gwf_f, ncell),
         )
 
         cell_index = reshape(collect(range(1, ncell, step = 1)), shape)
@@ -520,14 +521,14 @@ end
         well = Wflow.Well([discharge], [0.0], [reverse_indices[wellrow, wellrow]])
         gwf = Wflow.GroundwaterFlow(aquifer, connectivity, constanthead, [well])
 
-        Δt = Wflow.stable_timestep(gwf.aquifer, exp_conductivity)
+        Δt = Wflow.stable_timestep(gwf.aquifer, conductivity_profile)
         Q = zeros(ncell)
         time = 20.0
         nstep = Int(ceil(time / Δt))
         time = nstep * Δt
 
         for i = 1:nstep
-            Wflow.update(gwf, Q, Δt, exp_conductivity)
+            Wflow.update(gwf, Q, Δt, conductivity_profile)
         end
 
         # test for symmetry on x and y axes

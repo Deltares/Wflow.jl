@@ -167,7 +167,7 @@ function initialize_sbm_gwf_model(config::Config)
         ncread(nc, config, "lateral.subsurface.specific_yield"; sel = inds, type = Float)
     gwf_f =
         ncread(nc, config, "lateral.subsurface.gwf_f"; sel = inds, type = Float, defaults=3.0)
-    exp_conductivity = get(config.input.lateral.subsurface, "exp_conductivity", false)::Bool
+    conductivity_profile  = get(config.input.lateral.subsurface, "conductivity_profile", "uniform")::String
 
     connectivity = Connectivity(inds, rev_inds, xl, yl)
     initial_head = altitude .- Float(0.10) # cold state for groundwater head
@@ -431,8 +431,8 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
     lateral.subsurface.river.stage .= lateral.river.h_av .+ lateral.subsurface.river.bottom
 
     # determine stable time step for groundwater flow
-    exp_conductivity = get(config.input.lateral.subsurface, "exp_conductivity", false)
-    Δt_gw = stable_timestep(lateral.subsurface.flow.aquifer, exp_conductivity) # time step in day (Float64)
+    conductivity_profile = get(config.input.lateral.subsurface, "conductivity_profile", "uniform")
+    Δt_gw = stable_timestep(lateral.subsurface.flow.aquifer, conductivity_profile) # time step in day (Float64)
     Δt_sbm = (vertical.Δt / tosecond(basetimestep)) # vertical.Δt is in seconds (Float64)
     if Δt_gw < Δt_sbm
         @warn(
@@ -445,7 +445,7 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
     # recharge rate groundwater is required in units [m d⁻¹]
     lateral.subsurface.recharge.rate .= vertical.recharge ./ 1000.0 .* (1.0 / Δt_sbm)
     # update groundwater domain
-    update(lateral.subsurface.flow, Q, Δt_sbm, exp_conductivity)
+    update(lateral.subsurface.flow, Q, Δt_sbm, conductivity_profile)
 
     # determine excess water depth [m] (exfiltwater) in groundwater domain (head > surface)
     # and reset head
