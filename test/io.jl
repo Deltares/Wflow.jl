@@ -435,5 +435,5 @@ end
     Δt = Day(1)
     clock = Wflow.Clock(starttime, 1, Second(Δt))
     Wflow.advance!(clock)
-    @test clock.time ==  DateTimeNoLeap(2000, 3, 1)
+    @test clock.time == DateTimeNoLeap(2000, 3, 1)
 end

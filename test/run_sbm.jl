@@ -373,7 +373,7 @@ river = model.lateral.river
     @test Wflow.wetted_perimeter(river, 3, 3) ≈ 443.57829546750776f0
     river.hf[4] = 4.0
     @test Wflow.flow_area(river, 4, 4) ≈ 427.0120156203064f0
-    @test Wflow.wetted_perimeter(river, 4, 4) ≈ 148.6452115150804f0    
+    @test Wflow.wetted_perimeter(river, 4, 4) ≈ 148.6452115150804f0
     river.hf[3] = 0.0 # reset hf
     river.hf[4] = 0.0 # reset hf
 end
