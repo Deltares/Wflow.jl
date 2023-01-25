@@ -1208,7 +1208,6 @@ function interpolate_roughness_nodes(
         n_src = sw.mannings_n[i_src]
     else
         flood_depth = sw.hf[i] - sw.bankfull_depth[i_src]
-        i1, i2 = interpolation_indices(flood_depth, sw.floodplain.depth)
         j = max(nearest_neighbor_index(flood_depth, sw.floodplain.depth), 2)
 
         p_channel = 2.0 * sw.bankfull_depth[i_src] + sw.width[i_src]
@@ -1224,7 +1223,6 @@ function interpolate_roughness_nodes(
         n_dst = sw.mannings_n[i_dst]
     else
         flood_depth = sw.hf[i] - sw.bankfull_depth[i_dst]
-        i1, i2 = interpolation_indices(flood_depth, sw.floodplain.depth)
         j = max(nearest_neighbor_index(flood_depth, sw.floodplain.depth), 2)
 
         p_channel = 2.0 * sw.bankfull_depth[i_dst] + sw.width[i_dst]

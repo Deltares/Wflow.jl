@@ -319,22 +319,40 @@ river = model.lateral.river
     @test Δv[2] ≈ fp.width[3][2] * Δh[2] * river.dl[3]
     # flood depth from flood volume (8000.0) within trapezoidal segment
     flood_vol = 8000.0f0
-    model.lateral.river.volume[3] = flood_vol + river.bankfull_volume[3]
+    river.volume[3] = flood_vol + river.bankfull_volume[3]
     i1, i2 = Wflow.interpolation_indices(flood_vol, fp.volume[3])
     @test (i1, i2) == (1, 2)
-    flood_depth = Wflow.flood_depth(model.lateral.river, 3)
+    flood_depth = Wflow.flood_depth(river, 3)
     @test flood_depth ≈ 0.47774721423351585f0
     z = (0.5 * (fp.width[3][i2] - fp.width[3][i1])) / 0.5
     @test (fp.width[3][i1] * flood_depth + z * (flood_depth)^2) * river.dl[3] ≈ flood_vol
     # flood depth from flood volume (12000.0) within rectangular segment
     flood_vol = 12000.0f0
-    model.lateral.river.volume[3] = flood_vol + river.bankfull_volume[3]
+    river.volume[3] = flood_vol + river.bankfull_volume[3]
     i1, i2 = Wflow.interpolation_indices(flood_vol, fp.volume[3])
-    flood_depth = Wflow.flood_depth(model.lateral.river, 3)
+    flood_depth = Wflow.flood_depth(river, 3)
     @test flood_depth ≈ 0.614477053042341f0
     @test (flood_depth - fp.depth[i1]) * fp.width[3][i1] * river.dl[3] + fp.volume[3][i1] ≈
           flood_vol
-    model.lateral.river.volume[3] = 0.0
+    # test extrapolation of trapezoidal segment
+    flood_vol = 85000.0f0
+    river.volume[3] = flood_vol + river.bankfull_volume[3]
+    i1, i2 = Wflow.interpolation_indices(flood_vol, fp.volume[3])
+    flood_depth = Wflow.flood_depth(river, 3)
+    @test flood_depth ≈ 2.5671289493767424f0
+    top_width = fp.width[3][i1] + 2.0 * (flood_depth - fp.depth[i2]) / fp.slope[3][i2]
+    Δvol = river.dl[3] * (flood_depth - fp.depth[i2]) * 0.5 * (top_width + fp.width[3][i1])
+    @test (flood_vol - Δvol) ≈ fp.volume[3][i2]
+    river.volume[3] = 0.0 # reset volume
+    # test extrapolation of rectangular segment (index = 4)
+    flood_vol = 240000.0f0
+    river.volume[4] = flood_vol + river.bankfull_volume[4]
+    i1, i2 = Wflow.interpolation_indices(flood_vol, fp.volume[4])
+    flood_depth = Wflow.flood_depth(river, 4)
+    @test flood_depth ≈ 2.741106459507722f0
+    Δvol = river.dl[4] * (flood_depth - fp.depth[i2]) * fp.width[4][i1]
+    @test (flood_vol - Δvol) ≈ fp.volume[4][i2]
+    river.volume[4] = 0.0 # reset volume
     # flow area and wetted perimeter based on hf
     river.hf[3] = 0.5
     @test Wflow.flow_area(river, 3, 3) ≈ river.hf[3] * river.width[3]
@@ -350,7 +368,14 @@ river = model.lateral.river
     river.hf[3] = 3.2
     @test Wflow.flow_area(river, 3, 3) ≈ 425.90440215439867f0
     @test Wflow.wetted_perimeter(river, 3, 3) ≈ 327.74447981517875f0
+    river.hf[3] = 4.0
+    @test Wflow.flow_area(river, 3, 3) ≈ 731.2208258527828f0
+    @test Wflow.wetted_perimeter(river, 3, 3) ≈ 443.57829546750776f0
+    river.hf[4] = 4.0
+    @test Wflow.flow_area(river, 4, 4) ≈ 427.0120156203064f0
+    @test Wflow.wetted_perimeter(river, 4, 4) ≈ 148.6452115150804f0    
     river.hf[3] = 0.0 # reset hf
+    river.hf[4] = 0.0 # reset hf
 end
 
 Wflow.load_dynamic_input!(model)
