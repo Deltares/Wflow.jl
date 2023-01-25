@@ -662,15 +662,17 @@ function shallowwater_river_update(
                 else
                     a_src = flow_area(sw, i, i_src)
                     a_dst = flow_area(sw, i, i_dst)
+                    wp_src = wetted_perimeter(sw, i, i_src)
+                    wp_dst = wetted_perimeter(sw, i, i_dst)
                     if a_src < a_dst
                         sw.a[i] = a_src
-                        sw.r[i] = a_src / wetted_perimeter(sw, i, i_src)
-
+                        sw.r[i] = a_src / wp_src
                     else
                         sw.a[i] = a_dst
-                        sw.r[i] = a_dst / wetted_perimeter(sw, i, i_dst)
+                        sw.r[i] = a_dst / wp_dst
                     end
-                    mannings_n = interpolate_roughness_nodes(sw, i, i_src, i_dst)
+                    mannings_n =
+                        interpolate_roughness_nodes(sw, i, i_src, i_dst, wp_src, wp_dst)
                     mannings_n_sq = mannings_n * mannings_n
                 end
 
@@ -1192,8 +1194,15 @@ function nearest_neighbor_index(x, v::AbstractVector)
     return idx
 end
 
-"Compute river (and floodplain) mannings roughness value at edge `i` from adjacent nodes `i_src` and `i_dst`"
-function interpolate_roughness_nodes(sw::ShallowWaterRiver, i::Int, i_src::Int, i_dst::Int)
+"Compute river (and floodplain) mannings roughness value at edge `i` from adjacent nodes `i_src` and `i_dst` with wetted perimeter `p_src` and `p_dst` respectively"
+function interpolate_roughness_nodes(
+    sw::ShallowWaterRiver,
+    i::Int,
+    i_src::Int,
+    i_dst::Int,
+    p_src::Real,
+    p_dst::Real,
+)
 
     if sw.hf[i] <= sw.bankfull_depth[i_src]
         n_src = sw.mannings_n[i_src]
@@ -1202,15 +1211,14 @@ function interpolate_roughness_nodes(sw::ShallowWaterRiver, i::Int, i_src::Int, 
         i1, i2 = interpolation_indices(flood_depth, sw.floodplain.depth)
         j = max(nearest_neighbor_index(flood_depth, sw.floodplain.depth), 2)
 
-        Δh = flood_depth - sw.floodplain.depth[i1]
-        fw =
-            (sw.floodplain.width[i][i1] - sw.width[i]) +
-            2.0 * (Δh / sw.floodplain.slope[i_src][i2])
-        n_src =
-            (
-                (sw.mannings_n[i_src] * sw.width[i_src]) +
-                fw * sw.floodplain.mannings_n[i_src][j]
-            ) / (sw.width[i_src] + fw)
+        p_channel = 2.0 * sw.bankfull_depth[i_src] + sw.width[i_src]
+        p_floodplain = p_src - p_channel
+
+        n_src = pow(
+            (p_channel / p_src) * pow(sw.mannings_n[i_src], 1.5) +
+            (p_floodplain / p_src) * pow(sw.floodplain.mannings_n[i_src][j], 1.5),
+            2.0 / 3.0,
+        )
     end
     if sw.hf[i] <= sw.bankfull_depth[i_dst]
         n_dst = sw.mannings_n[i_dst]
@@ -1219,15 +1227,14 @@ function interpolate_roughness_nodes(sw::ShallowWaterRiver, i::Int, i_src::Int, 
         i1, i2 = interpolation_indices(flood_depth, sw.floodplain.depth)
         j = max(nearest_neighbor_index(flood_depth, sw.floodplain.depth), 2)
 
-        Δh = flood_depth - sw.floodplain.depth[i1]
-        fw =
-            (sw.floodplain.width[i][i1] - sw.width[i]) +
-            2.0 * (Δh / sw.floodplain.slope[i_dst][i2])
-        n_dst =
-            (
-                (sw.mannings_n[i_dst] * sw.width[i_dst]) +
-                fw * sw.floodplain.mannings_n[i_dst][j]
-            ) / (sw.width[i_dst] + fw)
+        p_channel = 2.0 * sw.bankfull_depth[i_dst] + sw.width[i_dst]
+        p_floodplain = p_dst - p_channel
+
+        n_dst = pow(
+            (p_channel / p_dst) * pow(sw.mannings_n[i_dst], 1.5) +
+            (p_floodplain / p_dst) * pow(sw.floodplain.mannings_n[i_dst][j], 1.5),
+            2.0 / 3.0,
+        )
     end
 
     n = (n_src * sw.dl[i_src] + n_dst * sw.dl[i_dst]) / (sw.dl[i_src] + sw.dl[i_dst])

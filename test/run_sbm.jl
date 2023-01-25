@@ -363,10 +363,10 @@ model = Wflow.update(model)
     @test sum(q) ≈ 3898.5229829494438f0
     @test q[1622] ≈ 6.00950408901315f-5
     @test q[43] ≈ 11.900372477232802f0
-    @test q[501] ≈ 3.479360024077158f0
+    @test q[501] ≈ 3.4756750037241315f0
     h = model.lateral.river.h_av
     @test h[1622] ≈ 0.0018099742344001384f0
     @test h[43] ≈ 0.4362704420869332f0
-    @test h[501] ≈ 0.056188991156104685f0
+    @test h[501] ≈ 0.05615542828711804f0
 end
 Wflow.close_files(model, delete_output = false)
