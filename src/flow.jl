@@ -1360,6 +1360,7 @@ function initialize_floodplain_1d(nc, config, inds, riverwidth, riverlength, ind
     incorrect_vol = 0
     riv_cells = 0
     for i = 1:n
+        riv_cell = 0
         diff_volume = diff(volume[:, i])
 
         for j = 1:(n_depths-1)
@@ -1382,6 +1383,7 @@ function initialize_floodplain_1d(nc, config, inds, riverwidth, riverlength, ind
                     Δv = (a[j+1, i] * riverlength[i]) - diff_volume[j]
                     volume[j+1, i] += Δv
                     incorrect_vol += 1
+                    riv_cell = 1
                 end
             end
         end
@@ -1390,11 +1392,11 @@ function initialize_floodplain_1d(nc, config, inds, riverwidth, riverlength, ind
         p[2:end, i] = cumsum(p[2:end, i])
         a[:, i] = cumsum(a[:, i])
 
-        riv_cells += min(incorrect_vol, 1)
+        riv_cells += riv_cell
     end
 
     if incorrect_vol > 0
-        perc_riv_cells = 100.0 * (riv_cells / n)
+        perc_riv_cells = round(100.0 * (riv_cells / n), digits = 2)
         @warn string(
             "The provided volume of $incorrect_vol rectangular floodplain schematization",
             " segments for $riv_cells river cells ($perc_riv_cells % of total river cells)",
