@@ -111,13 +111,15 @@ instead. Specific yield will vary roughly between 0.05 (clay) and 0.45 (peat)
 """
 @get_units struct UnconfinedAquifer{T} <: Aquifer
     head::Vector{T} | "m"  # hydraulic head [m]
-    k::Vector{T} | "m d-1"  # horizontal conductivity [m d⁻¹]
+    k::Vector{T} | "m d-1"  # reference horizontal conductivity [m d⁻¹]
     top::Vector{T} | "m" # top of groundwater layer [m]
     bottom::Vector{T} | "m" # bottom of groundwater layer
     area::Vector{T} | "m2"
     specific_yield::Vector{T} | "m m-1" # [m m⁻¹]
     conductance::Vector{T} | "m2 d-1" #
-    # Unconfined aquifer conductance is computed with degree of saturation
+    f::Vector{T} | "-" # factor controlling the reduction of reference horizontal conductivity
+    # Unconfined aquifer conductance is computed with degree of saturation (only when
+    # conductivity_profile is set to "exponential")
 end
 
 
@@ -126,7 +128,7 @@ storativity(A::ConfinedAquifer) = A.storativity
 
 
 """
-    harmonicmean_conductance(k1, k2, H1, H2, l1, l2, width)
+    harmonicmean_conductance(kH1, kH2, l1, l2, width)
 
 The harmonic mean is the exact interblock transmissivity for steady-state
 one-dimensional flow with no recharge if the transmissivity is assumed to be
@@ -139,9 +141,7 @@ Refer to:
     for Unconﬁned Aquifers and for Aquifers having Smoothly Varying Transmissivity.
     Water-resources investigations report, 92, 4124.
 """
-function harmonicmean_conductance(k1, k2, H1, H2, l1, l2, width)
-    kH1 = k1 * H1
-    kH2 = k2 * H2
+function harmonicmean_conductance(kH1, kH2, l1, l2, width)
     if (kH1 * kH2) > 0.0
         return width * kH1 * kH2 / (kH1 * l2 + kH2 * l1)
     else
@@ -181,7 +181,9 @@ function horizontal_conductance(
     length1 = connectivity.length1[nzi]
     length2 = connectivity.length2[nzi]
     width = connectivity.width[nzi]
-    return harmonicmean_conductance(k1, k2, H1, H2, length1, length2, width)
+    kH1 = k1 * H1
+    kH2 = k2 * H2
+    return harmonicmean_conductance(kH1, kH2, length1, length2, width)
 end
 
 """
@@ -203,7 +205,14 @@ function initialize_conductance!(aquifer::A, connectivity::Connectivity) where {
 end
 
 
-function conductance(aquifer::ConfinedAquifer, i, j, nzi)
+function conductance(
+    aquifer::ConfinedAquifer,
+    i,
+    j,
+    nzi,
+    conductivity_profile::String,
+    connectivity::Connectivity,
+)
     return aquifer.conductance[nzi]
 end
 
@@ -234,26 +243,63 @@ converting no-flow cells to variable-head cells for the U.S. Geological Survey
 modular finite-difference groundwater flow model: U.S. Geological Survey
 Open-File Report 91-536, 99 p
 """
-function conductance(aquifer::UnconfinedAquifer, i, j, nzi)
-    ϕᵢ = aquifer.head[i]
-    ϕⱼ = aquifer.head[j]
-    if ϕᵢ >= ϕⱼ
-        saturation = saturated_thickness(aquifer, i) / (aquifer.top[i] - aquifer.bottom[i])
+function conductance(
+    aquifer::UnconfinedAquifer,
+    i,
+    j,
+    nzi,
+    conductivity_profile::String,
+    connectivity::Connectivity,
+)
+
+    if conductivity_profile == "exponential"
+        # Extract required variables
+        zi1 = aquifer.top[i] - aquifer.head[i]
+        zi2 = aquifer.top[j] - aquifer.head[j]
+        thickness1 = aquifer.top[i] - aquifer.bottom[i]
+        thickness2 = aquifer.top[j] - aquifer.bottom[j]
+        # calculate conductivity values corrected for depth of water table
+        k1 =
+            (aquifer.k[i] / aquifer.f[i]) *
+            (exp(-aquifer.f[i] * zi1) - exp(-aquifer.f[i] * thickness1))
+        k2 =
+            (aquifer.k[j] / aquifer.f[j]) *
+            (exp(-aquifer.f[j] * zi2) - exp(-aquifer.f[j] * thickness2))
+        return harmonicmean_conductance(
+            k1,
+            k2,
+            connectivity.length1[nzi],
+            connectivity.length2[nzi],
+            connectivity.width[nzi],
+        )
+    elseif conductivity_profile == "uniform"
+        ϕᵢ = aquifer.head[i]
+        ϕⱼ = aquifer.head[j]
+        if ϕᵢ >= ϕⱼ
+            saturation =
+                saturated_thickness(aquifer, i) / (aquifer.top[i] - aquifer.bottom[i])
+        else
+            saturation =
+                saturated_thickness(aquifer, j) / (aquifer.top[j] - aquifer.bottom[j])
+        end
+        return saturation * aquifer.conductance[nzi]
     else
-        saturation = saturated_thickness(aquifer, j) / (aquifer.top[j] - aquifer.bottom[j])
+        error(
+            """An unknown "conductivity_profile" is specified in the TOML file ($conductivity_profile).
+            This should be "uniform" or "exponential".
+            """,
+        )
     end
-    return saturation * aquifer.conductance[nzi]
 end
 
-
-function flux!(Q, aquifer, connectivity)
+function flux!(Q, aquifer, connectivity, conductivity_profile)
     for i = 1:connectivity.ncell
         # Loop over connections for cell j
         for nzi in connections(connectivity, i)
             # connection from i -> j
             j = connectivity.rowval[nzi]
             Δϕ = aquifer.head[i] - aquifer.head[j]
-            cond = conductance(aquifer, i, j, nzi)
+            cond = conductance(aquifer, i, j, nzi, conductivity_profile, connectivity)
             Q[i] -= cond * Δϕ
         end
     end
@@ -275,25 +321,32 @@ The following criterion can be found in Chu & Willis (1984)
 
 Δt * k * H / (Δx * Δy * S) <= 1/4
 """
-function stable_timestep(aquifer)
+function stable_timestep(aquifer, conductivity_profile::String)
     Δtₘᵢₙ = Inf
     for i in eachindex(aquifer.head)
-        Δt =
-            aquifer.area[i] * storativity(aquifer)[i] /
-            (aquifer.k[i] * saturated_thickness(aquifer, i))
+        if conductivity_profile == "exponential"
+            zi = aquifer.top[i] - aquifer.head[i]
+            thickness = aquifer.top[i] - aquifer.bottom[i]
+            value =
+                (aquifer.k[i] / aquifer.f[i]) *
+                (exp(-aquifer.f[i] * zi) - exp(-aquifer.f[i] * thickness))
+        elseif conductivity_profile == "uniform"
+            value = aquifer.k[i] * saturated_thickness(aquifer, i)
+        end
+
+        Δt = aquifer.area[i] * storativity(aquifer)[i] / value
         Δtₘᵢₙ = Δt < Δtₘᵢₙ ? Δt : Δtₘᵢₙ
     end
     return 0.25 * Δtₘᵢₙ
 end
 
-
 minimum_head(aquifer::ConfinedAquifer) = aquifer.head
 minimum_head(aquifer::UnconfinedAquifer) = max.(aquifer.head, aquifer.bottom)
 
 
-function update(gwf, Q, Δt)
+function update(gwf, Q, Δt, conductivity_profile)
     Q .= 0.0  # TODO: Probably remove this when linking with other components
-    flux!(Q, gwf.aquifer, gwf.connectivity)
+    flux!(Q, gwf.aquifer, gwf.connectivity, conductivity_profile)
     for boundary in gwf.boundaries
         flux!(Q, boundary, gwf.aquifer)
     end

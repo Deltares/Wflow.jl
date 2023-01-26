@@ -205,11 +205,13 @@ function run(model::Model; close_files = true)
     times = range(starttime, endtime, step = Δt)
 
     @info "Run information" model_type starttime Δt endtime nthreads()
+    runstart_time = now()
     @progress for (i, time) in enumerate(times)
-        @debug "Starting timestep." time i
+        @debug "Starting timestep." time i now()
         load_dynamic_input!(model)
         model = update(model)
     end
+    @info "Simulation duration: $(canonicalize(now() - runstart_time))"
 
     # write output state NetCDF
     # undo the clock advance at the end of the last iteration, since there won't

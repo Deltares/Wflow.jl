@@ -301,13 +301,16 @@ altitude = "wflow_dem"
 
 |  parameter  | description  	        | unit  | default |
 |:--------------- | ------------------| ----- | -------|
-| **`k`** (`conductivity`) | horizontal conductivity  | m d``^{-1}``s | - |
+| **`kh₀`** (`conductivity`) | horizontal conductivity  | m d``^{-1}``s | - |
 | **`specific_yield`**    | specific yield  | m m``^{-1}`` | - |
 | **`top`** (`altitude`)  | top groundwater layer  | m | - |
 | `bottom`     | bottom groundwater layer  | m | - |
 | `area`          | cell area    | m``^2`` | - |
 | `head`          | groundwater head     | m | - |
 | `conductance`          | conductance    | m``^2`` d``^{-1}`` | - |
+| `exp_conductivity` | flag wether to use exponential decay of conductivity | - | false |
+| `f` | factor controlling the reduction of reference horizontal conductivity | - | 3.0 |
+| `k` | actual horizontal conductivity |  m d``^{-1}``s | - |
 
 ### Constant Head
 The Table below shows the parameters (fields) of struct `ConstantHead`, including a
@@ -321,7 +324,7 @@ these are listed in the Table below between parentheses after the internal model
 |  parameter  | description  	       | unit  | default |
 |:--------------- | ------------------| ----- | --------- |
 | **`head`** (`constant_head`)          | groundwater head     | m | - |
-| `index`          | constand head cell index | - | - |
+| `index`          | constant head cell index | - | - |
 
 ### Boundary conditions
 
