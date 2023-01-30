@@ -1374,9 +1374,17 @@ function read_hq_csv(path)
     return (H = data[:, 1], Q = data[:, 2:end])
 end
 
+"Read a storage-rating curve from CSV into a NamedTuple of vectors"
+function read_sq_csv(path)
+    data = readdlm(path, ',', Float, skipstart = 1)
+    # Q is a matrix with 365 columns, one for each day in the year
+    return (S = data[:, 1], Q = data[:, 2:end])
+end
+
 # these represent the type of the rating curve and specific storage data
 const SH = NamedTuple{(:H, :S),Tuple{Vector{Float},Vector{Float}}}
 const HQ = NamedTuple{(:H, :Q),Tuple{Vector{Float},Matrix{Float}}}
+const SQ = NamedTuple{(:S, :Q),Tuple{Vector{Float},Matrix{Float}}}
 
 is_increasing(v) = last(v) > first(v)
 
