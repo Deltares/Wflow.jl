@@ -422,7 +422,7 @@ function initialize_natural_lake(config, nc, inds_riv, nriv, pits, Δt)
         b = lake_b,
         e = lake_e,
         waterlevel = lake_waterlevel,
-        maxvolume = lake_maxvolume
+        maxvolume = lake_maxvolume,
         sh = sh,
         hq = hq,
         sq = sq,
