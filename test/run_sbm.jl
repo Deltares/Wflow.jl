@@ -385,13 +385,13 @@ model = Wflow.update(model)
 
 @testset "river flow (local inertial) with floodplain schematization simulation" begin
     q = model.lateral.river.q_av
-    @test sum(q) ≈ 3898.5229829494438f0
+    @test sum(q) ≈ 3903.530607775521f0
     @test q[1622] ≈ 6.00950408901315f-5
     @test q[43] ≈ 11.900372477232802f0
-    @test q[501] ≈ 3.4756750037241315f0
+    @test q[501] ≈ 3.508054964478748f0
     h = model.lateral.river.h_av
     @test h[1622] ≈ 0.0018099742344001384f0
     @test h[43] ≈ 0.4362704420869332f0
-    @test h[501] ≈ 0.05615542828711804f0
+    @test h[501] ≈ 0.056448757046812896f0
 end
 Wflow.close_files(model, delete_output = false)

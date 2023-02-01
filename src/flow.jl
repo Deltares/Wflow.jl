@@ -662,17 +662,15 @@ function shallowwater_river_update(
                 else
                     a_src = flow_area(sw, i, i_src)
                     a_dst = flow_area(sw, i, i_dst)
-                    wp_src = wetted_perimeter(sw, i, i_src)
-                    wp_dst = wetted_perimeter(sw, i, i_dst)
                     if a_src < a_dst
                         sw.a[i] = a_src
-                        sw.r[i] = a_src / wp_src
+                        sw.r[i] = a_src / wetted_perimeter(sw, i, i_src)
                     else
                         sw.a[i] = a_dst
-                        sw.r[i] = a_dst / wp_dst
+                        sw.r[i] = a_dst / wetted_perimeter(sw, i, i_dst)
                     end
                     mannings_n =
-                        interpolate_roughness_nodes(sw, i, i_src, i_dst, wp_src, wp_dst)
+                        interpolate_roughness_nodes(sw, i, i_src, i_dst, a_src, a_dst)
                     mannings_n_sq = mannings_n * mannings_n
                 end
 
@@ -1194,14 +1192,14 @@ function nearest_neighbor_index(x, v::AbstractVector)
     return idx
 end
 
-"Compute river (and floodplain) mannings roughness value at edge `i` from adjacent nodes `i_src` and `i_dst` with wetted perimeter `p_src` and `p_dst` respectively"
+"Compute river (and floodplain) mannings roughness value at edge `i` from adjacent nodes `i_src` and `i_dst` with flow area `a_src` and `a_dst` respectively"
 function interpolate_roughness_nodes(
     sw::ShallowWaterRiver,
     i::Int,
     i_src::Int,
     i_dst::Int,
-    p_src::Real,
-    p_dst::Real,
+    a_src::Real,
+    a_dst::Real,
 )
 
     if sw.hf[i] <= sw.bankfull_depth[i_src]
@@ -1210,14 +1208,15 @@ function interpolate_roughness_nodes(
         flood_depth = sw.hf[i] - sw.bankfull_depth[i_src]
         j = max(nearest_neighbor_index(flood_depth, sw.floodplain.depth), 2)
 
-        p_channel = 2.0 * sw.bankfull_depth[i_src] + sw.width[i_src]
-        p_floodplain = p_src - p_channel
+        a_channel = sw.hf[i] * sw.width[i_src]
+        a_floodplain = a_src - a_channel
 
-        n_src = pow(
-            (p_channel / p_src) * pow(sw.mannings_n[i_src], 1.5) +
-            (p_floodplain / p_src) * pow(sw.floodplain.mannings_n[i_src][j], 1.5),
-            2.0 / 3.0,
-        )
+        # composite manning's, Cox (1973) 
+        n_src =
+            (
+                a_channel * sw.mannings_n[i_src] +
+                a_floodplain * sw.floodplain.mannings_n[i_src][j]
+            ) / a_src
     end
     if sw.hf[i] <= sw.bankfull_depth[i_dst]
         n_dst = sw.mannings_n[i_dst]
@@ -1225,14 +1224,15 @@ function interpolate_roughness_nodes(
         flood_depth = sw.hf[i] - sw.bankfull_depth[i_dst]
         j = max(nearest_neighbor_index(flood_depth, sw.floodplain.depth), 2)
 
-        p_channel = 2.0 * sw.bankfull_depth[i_dst] + sw.width[i_dst]
-        p_floodplain = p_dst - p_channel
+        a_channel = sw.hf[i] * sw.width[i_src]
+        a_floodplain = a_dst - a_channel
 
-        n_dst = pow(
-            (p_channel / p_dst) * pow(sw.mannings_n[i_dst], 1.5) +
-            (p_floodplain / p_dst) * pow(sw.floodplain.mannings_n[i_dst][j], 1.5),
-            2.0 / 3.0,
-        )
+        # composite manning's n, Cox (1973) 
+        n_dst =
+            (
+                a_channel * sw.mannings_n[i_dst] +
+                a_floodplain * sw.floodplain.mannings_n[i_dst][j]
+            ) / a_dst
     end
 
     n = (n_src * sw.dl[i_src] + n_dst * sw.dl[i_dst]) / (sw.dl[i_src] + sw.dl[i_dst])
