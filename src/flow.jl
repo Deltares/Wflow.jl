@@ -1224,7 +1224,7 @@ function interpolate_roughness_nodes(
         flood_depth = sw.hf[i] - sw.bankfull_depth[i_dst]
         j = max(nearest_neighbor_index(flood_depth, sw.floodplain.depth), 2)
 
-        a_channel = sw.hf[i] * sw.width[i_src]
+        a_channel = sw.hf[i] * sw.width[i_dst]
         a_floodplain = a_dst - a_channel
 
         # composite manning's n, Cox (1973) 
