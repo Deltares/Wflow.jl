@@ -189,6 +189,7 @@ end
         q0 = zeros(_ne),
         q = zeros(_ne),
         q_av = zeros(_ne),
+        q_total_av = zeros(_ne),
         zb_max = zb_max,
         mannings_n_sq = mannings_n_sq,
         mannings_n = n_river,
