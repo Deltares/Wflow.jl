@@ -406,6 +406,10 @@ function initialize_sbm_model(config::Config)
             lateral.river.h[1:nriv] .* lateral.river.width[1:nriv] .*
             lateral.river.dl[1:nriv]
 
+        if floodplain_1d
+            initialize_volume!(lateral.river, nriv)
+        end
+
         if do_lakes
             # storage must be re-initialized after loading the state with the current
             # waterlevel otherwise the storage will be based on the initial water level

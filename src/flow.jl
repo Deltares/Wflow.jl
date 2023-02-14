@@ -814,6 +814,10 @@ function update(
         sw.lake.inflow .= 0.0
         sw.lake.totaloutflow .= 0.0
     end
+    if !isnothing(sw.floodplain)
+        sw.floodplain.q_av .= 0.0
+        sw.floodplain.h_av .= 0.0
+    end
     sw.q_av .= 0.0
     sw.h_av .= 0.0
 
@@ -1252,6 +1256,16 @@ end
     q_av::Vector{T} | "m"                    # average river discharge
 end
 
+"Determine the initial floodplain volume"
+function initialize_volume!(river, nriv::Int)
+    for i = 1:nriv
+        a = flow_area(river.floodplain.profile, river.floodplain.h[i], i)
+        a = max(a - (river.width[i] * river.floodplain.h[i]), 0.0)
+        river.floodplain.volume[i] = river.dl[i] * a
+    end
+    return nothing
+end
+
 "helper function to get interpolation indices"
 function interpolation_indices(x, v::AbstractVector)
     i1 = 1
@@ -1367,6 +1381,7 @@ function initialize_floodplain_1d(
     slope = fill(mv, n_depths, n)
     p = zeros(Float, n_depths, n)
     a = zeros(Float, n_depths, n)
+    segment_volume = zeros(Float, n_depths, n)
     width = zeros(Float, n_depths, n)
     width[1, :] = riverwidth[1:n]
 
@@ -1388,6 +1403,7 @@ function initialize_floodplain_1d(
                     sqrt(1.0 + ((0.5 * (width[j+1, i] - width[j, i])) / h[j])^2.0)
                 a[j+1, i] = 0.5 * (width[j, i] + width[j+1, i]) * h[j]
                 slope[j+1, i] = h[j] / (0.5 * (width[j+1, i] - width[j, i]))
+                segment_volume[j+1, i] = diff_volume[j]
             else
                 # shape of flood depth segment is rectangular
                 width[j+1, i] = width[j, i]
@@ -1396,16 +1412,17 @@ function initialize_floodplain_1d(
                 slope[j+1, i] = Inf
                 # check provided volume of rectangular segment 
                 if (a[j+1, i] * riverlength[i]) > diff_volume[j]
-                    volume[j+1, i] = volume[j, i] + (a[j+1, i] * riverlength[i])
                     incorrect_vol += 1
                     riv_cell = 1
                 end
+                segment_volume[j+1, i] = a[j+1, i] * riverlength[i]
             end
         end
 
         p[2:end, i] = 2.0 * p_unit[2:end, i] .* h
         p[2:end, i] = cumsum(p[2:end, i])
         a[:, i] = cumsum(a[:, i])
+        volume[:, i] = cumsum(segment_volume[:, i])
 
         riv_cells += riv_cell
     end

@@ -335,11 +335,11 @@ river = model.lateral.river
     @test (flood_depth - fp.depth[i1]) * fp.width[3][i1] * river.dl[3] + fp.volume[3][i1] ≈
           flood_vol
     # test extrapolation of trapezoidal segment
-    flood_vol = 85000.0f0
+    flood_vol = 95000.0f0
     river.volume[3] = flood_vol + river.bankfull_volume[3]
     i1, i2 = Wflow.interpolation_indices(flood_vol, fp.volume[3])
     flood_depth = Wflow.flood_depth(fp, flood_vol, river.dl[3], 3)
-    @test flood_depth ≈ 2.5671289493767424f0
+    @test flood_depth ≈ 2.62295971368003f0
     top_width = fp.width[3][i1] + 2.0 * (flood_depth - fp.depth[i2]) / fp.slope[3][i2]
     Δvol = river.dl[3] * (flood_depth - fp.depth[i2]) * 0.5 * (top_width + fp.width[3][i1])
     @test (flood_vol - Δvol) ≈ fp.volume[3][i2]
