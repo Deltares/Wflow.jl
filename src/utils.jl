@@ -614,10 +614,3 @@ function julian_day(time)
     day = dayofyear(time) - (isleapyear(time) && dayofyear(time) > 60)
     return day
 end
-
-"Solve quadratic equation, return positive `x`"
-function solve_quadratic(a, b, c)
-    d = sqrt(b^2 - 4a * c)
-    x = (-b + d) / 2a
-    return x
-end

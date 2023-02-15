@@ -1226,18 +1226,14 @@ end
 
 Floodplain `volume` is a function of `depth` (flood depth intervals). Based on the
 cumulative floodplain `volume` a floodplain profile as a function of `flood_depth` is
-derived with floodplain area `a` (cumulative), wetted perimeter radius `p` (cumulative),
-side `slope` (rectangular or trapezoidal) and rescaled wetted perimeter `p_unit`.
+derived with floodplain area `a` (cumulative) and wetted perimeter radius `p` (cumulative).
 """
-
 @get_units @with_kw struct FloodPlainProfile{T,N}
     depth::Vector{T} | "m"                              # Flood depth
     volume::Vector{SVector{N,T}} | "m3"                 # Flood volume (cumulative)
     width::Vector{SVector{N,T}} | "m"                   # Flood width
     a::Vector{SVector{N,T}} | "m2"                      # Flow area (cumulative)
     p::Vector{SVector{N,T}} | "m"                       # Wetted perimeter (cumulative)
-    p_unit::Vector{SVector{N,T}} | "-"                  # Wetted perimeter per unit flood depth
-    slope::Vector{SVector{N,T}} | "-"                   # Slope of floodplain 
 end
 
 @get_units @with_kw struct FloodPlain{T,P}
@@ -1289,16 +1285,8 @@ Compute floodplain flow area based on flow depth `h` and floodplain `profile` at
 """
 function flow_area(profile::FloodPlainProfile{T}, h, i::Int)::T where {T}
     i1, i2 = interpolation_indices(h, profile.depth)
-
     Δh = h - profile.depth[i1]
-    slope = profile.slope[i][i2]
-    # rectangular floodplain segment
-    if slope == T(Inf)
-        a = profile.a[i][i1] + profile.width[i][i1] * Δh
-    else
-        top_width = profile.width[i][i1] + 2.0 * (Δh / slope)
-        a = profile.a[i][i1] + 0.5 * (top_width + profile.width[i][i1]) * Δh
-    end
+    a = profile.a[i][i1] + profile.width[i][i2] * Δh
     return a
 end
 
@@ -1309,32 +1297,18 @@ Compute floodplain wetted perimeter based on flow depth `h` and floodplain `prof
 index 'i'.
 """
 function wetted_perimeter(profile::FloodPlainProfile{T}, h, i::Int)::T where {T}
-    i1, i2 = interpolation_indices(h, profile.depth)
+    i1, _ = interpolation_indices(h, profile.depth)
     Δh = h - profile.depth[i1]
-    p = profile.p[i][i1] + 2.0 * Δh * profile.p_unit[i][i2]
+    p = profile.p[i][i1] + 2.0 * Δh
     return p
 end
 
 "Compute flood depth by interpolating flood volume `flood_volume` using flood depth intervals."
 function flood_depth(profile::FloodPlainProfile{T}, flood_volume, dl, i::Int)::T where {T}
-
     i1, i2 = interpolation_indices(flood_volume, profile.volume[i])
-
     ΔA = (flood_volume - profile.volume[i][i1]) / dl
-    # rectangular floodplain segment
-    if profile.slope[i][i2] == T(Inf)
-        Δh = ΔA / profile.width[i][i1]
-    else
-        # Area trapezoidal channel:
-        # A = (b+zh)h (A = flow area, h = water depth, b = bottom width, z = side slope)
-        i_1 = i2 - 1 # to deal with extrapolation (i1==i2)
-        h_bin = profile.depth[i2] - profile.depth[i_1]
-        z = (0.5 * (profile.width[i][i2] - profile.width[i][i_1])) / h_bin
-        Δh = solve_quadratic(z, profile.width[i][i1], -ΔA)
-    end
-
+    Δh = ΔA / profile.width[i][i2]
     flood_depth = profile.depth[i1] + Δh
-
     return flood_depth
 end
 
@@ -1368,58 +1342,50 @@ function initialize_floodplain_1d(
     )
     n = length(inds)
 
-    # for convenience (interpolation) flood depth 0.0 m is added, with associated area,
-    # volume and width (river width). floodplain slope, p_unit (wetted perimeter per unit
-    # flood depth) and mannings roughness for the floodplain have NaN values at this flood
-    # depth level.
+    # for convenience (interpolation) flood depth 0.0 m is added, with associated area (a),
+    # volume, width (river width) and wetted perimeter (p).
     volume = vcat(fill(Float(0), n)', volume)
+    start_volume = volume
     flood_depths = Float.(nc["flood_depth"][:])
     pushfirst!(flood_depths, 0.0)
     n_depths = length(flood_depths)
 
-    p_unit = fill(mv, n_depths, n)
-    slope = fill(mv, n_depths, n)
     p = zeros(Float, n_depths, n)
     a = zeros(Float, n_depths, n)
     segment_volume = zeros(Float, n_depths, n)
     width = zeros(Float, n_depths, n)
     width[1, :] = riverwidth[1:n]
 
-    # determine flow area (a), width, wetted perimeter (p), wetted perimeter per unit flood
-    # depth (p_unit) and slope.
+    # determine flow area (a), width and wetted perimeter (p)
     h = diff(flood_depths)
     incorrect_vol = 0
     riv_cells = 0
+    error_vol = 0
     for i = 1:n
         riv_cell = 0
         diff_volume = diff(volume[:, i])
 
         for j = 1:(n_depths-1)
-            # check if flood depth segment has trapezoidal form
-            if (width[j, i] * h[j] * riverlength[i]) < diff_volume[j]
-                width[j+1, i] =
-                    (2.0 * (diff_volume[j] / riverlength[i]) / h[j]) - width[j, i]
-                p_unit[j+1, i] =
-                    sqrt(1.0 + ((0.5 * (width[j+1, i] - width[j, i])) / h[j])^2.0)
-                a[j+1, i] = 0.5 * (width[j, i] + width[j+1, i]) * h[j]
-                slope[j+1, i] = h[j] / (0.5 * (width[j+1, i] - width[j, i]))
-                segment_volume[j+1, i] = diff_volume[j]
-            else
-                # shape of flood depth segment is rectangular
+            # assume rectangular shape of flood depth segment
+            width[j+1, i] = diff_volume[j] / (h[j] * riverlength[i])
+            # check provided flood volume (floodplain width should be constant or increasing
+            # as a function of flood depth)
+            if width[j+1, i] < width[j, i]
+                incorrect_vol += 1
+                riv_cell = 1
+                error_vol =
+                    error_vol + ((width[j, i] - width[j+1, i]) * h[j] * riverlength[i])
                 width[j+1, i] = width[j, i]
-                a[j+1, i] = width[j, i] * h[j]
-                p_unit[j+1, i] = 1.0
-                slope[j+1, i] = Inf
-                # check provided volume of rectangular segment 
-                if (a[j+1, i] * riverlength[i]) > diff_volume[j]
-                    incorrect_vol += 1
-                    riv_cell = 1
-                end
-                segment_volume[j+1, i] = a[j+1, i] * riverlength[i]
+            end
+            a[j+1, i] = width[j+1, i] * h[j]
+            p[j+1, i] = (width[j+1, i] - width[j, i]) + 2.0 * h[j]
+            segment_volume[j+1, i] = a[j+1, i] * riverlength[i]
+            if j == 1
+                # for interpolation wetted perimeter at flood depth 0.0 is required
+                p[j, i] = p[j+1, i] - 2.0 * h[j]
             end
         end
 
-        p[2:end, i] = 2.0 * p_unit[2:end, i] .* h
         p[2:end, i] = cumsum(p[2:end, i])
         a[:, i] = cumsum(a[:, i])
         volume[:, i] = cumsum(segment_volume[:, i])
@@ -1429,10 +1395,11 @@ function initialize_floodplain_1d(
 
     if incorrect_vol > 0
         perc_riv_cells = round(100.0 * (riv_cells / n), digits = 2)
+        perc_error_vol = round(100.0 * (error_vol / sum(start_volume[end, :])), digits = 2)
         @warn string(
             "The provided volume of $incorrect_vol rectangular floodplain schematization",
             " segments for $riv_cells river cells ($perc_riv_cells % of total river cells)",
-            " is not correct and has been adapted.",
+            " is not correct and has been increased with $perc_error_vol % of provided volume.",
         )
     end
 
@@ -1441,8 +1408,6 @@ function initialize_floodplain_1d(
     width = hcat(width, width[:, index_pit])
     a = hcat(a, a[:, index_pit])
     p = hcat(p, p[:, index_pit])
-    p_unit = hcat(p_unit, p_unit[:, index_pit])
-    slope = hcat(slope, slope[:, index_pit])
 
     # initialize floodplain profile parameters
     profile = FloodPlainProfile{Float,n_depths}(
@@ -1451,8 +1416,6 @@ function initialize_floodplain_1d(
         depth = flood_depths,
         a = svectorscopy(a, Val{n_depths}()),
         p = svectorscopy(p, Val{n_depths}()),
-        p_unit = svectorscopy(p_unit, Val{n_depths}()),
-        slope = svectorscopy(slope, Val{n_depths}()),
     )
 
     # manning roughness at edges

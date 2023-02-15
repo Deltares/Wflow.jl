@@ -306,71 +306,79 @@ river = model.lateral.river
 
 @testset "river flow (local inertial) floodplain schematization" begin
     # floodplain geometry checks (index 3)
-    # trapezoidal (1st) segment
-    @test fp.slope[3][2] ≈ 0.007216446761538541f0
-    @test fp.p_unit[3][2] ≈
-          sqrt(1.0 + ((0.5 * (fp.width[3][2] - fp.width[3][1])) / Δh[1])^2.0)
-    @test Δa[1] ≈ 0.5 * Δh[1] * (fp.width[3][1] + fp.width[3][2])
-    @test Δv[1] ≈ fp.a[3][2] * river.dl[3]
-    # rectangular (2nd) segment
-    @test fp.slope[3][3] == Inf
-    @test fp.p_unit[3][3] == 1.0
-    @test Δa[2] ≈ fp.width[3][2] * Δh[2]
-    @test Δv[2] ≈ fp.width[3][2] * Δh[2] * river.dl[3]
-    # flood depth from flood volume (8000.0) within trapezoidal segment
+    @test fp.volume[3] ≈ [0.0f0, 8641.0f0, 19011.0f0, 31685.0f0, 51848.0f0, 80653.0f0]
+    @test fp.width[3] ≈ [
+        30.0f0,
+        99.28617594254938f0,
+        119.15260323159785f0,
+        145.6258527827648f0,
+        231.6754039497307f0,
+        330.9730700179533f0,
+    ]
+    @test fp.p[3] ≈ [
+        69.28617594254938f0,
+        70.28617594254938f0,
+        91.15260323159785f0,
+        118.62585278276481f0,
+        205.6754039497307f0,
+        305.9730700179533f0,
+    ]
+    @test fp.a[3] ≈ [
+        0.0f0,
+        49.64308797127469f0,
+        109.21938958707361f0,
+        182.032315978456f0,
+        297.8700179533214f0,
+        463.35655296229805f0,
+    ]
+    @test Δh .* fp.width[3][2:end] * river.dl[3] ≈ Δv
+    @test fp.a[3] * river.dl[3] ≈ fp.volume[3]
+    # flood depth from flood volume (8000.0)
     flood_vol = 8000.0f0
     river.volume[3] = flood_vol + river.bankfull_volume[3]
     i1, i2 = Wflow.interpolation_indices(flood_vol, fp.volume[3])
     @test (i1, i2) == (1, 2)
     flood_depth = Wflow.flood_depth(fp, flood_vol, river.dl[3], 3)
-    @test flood_depth ≈ 0.47774721423351585f0
-    z = (0.5 * (fp.width[3][i2] - fp.width[3][i1])) / 0.5
-    @test (fp.width[3][i1] * flood_depth + z * (flood_depth)^2) * river.dl[3] ≈ flood_vol
-    # flood depth from flood volume (12000.0) within rectangular segment
+    @test flood_depth ≈ 0.46290938548779076f0
+    @test (flood_depth - fp.depth[i1]) * fp.width[3][i2] * river.dl[3] + fp.volume[3][i1] ≈
+          flood_vol
+    # flood depth from flood volume (12000.0)
     flood_vol = 12000.0f0
     river.volume[3] = flood_vol + river.bankfull_volume[3]
     i1, i2 = Wflow.interpolation_indices(flood_vol, fp.volume[3])
+    @test (i1, i2) == (2, 3)
     flood_depth = Wflow.flood_depth(fp, flood_vol, river.dl[3], 3)
-    @test flood_depth ≈ 0.614477053042341f0
-    @test (flood_depth - fp.depth[i1]) * fp.width[3][i1] * river.dl[3] + fp.volume[3][i1] ≈
+    @test flood_depth ≈ 0.6619575699132112f0
+    @test (flood_depth - fp.depth[i1]) * fp.width[3][i2] * river.dl[3] + fp.volume[3][i1] ≈
           flood_vol
-    # test extrapolation of trapezoidal segment
+    # test extrapolation of segment
     flood_vol = 95000.0f0
     river.volume[3] = flood_vol + river.bankfull_volume[3]
     i1, i2 = Wflow.interpolation_indices(flood_vol, fp.volume[3])
+    @test (i1, i2) == (6, 6)
     flood_depth = Wflow.flood_depth(fp, flood_vol, river.dl[3], 3)
-    @test flood_depth ≈ 2.62295971368003f0
-    top_width = fp.width[3][i1] + 2.0 * (flood_depth - fp.depth[i2]) / fp.slope[3][i2]
-    Δvol = river.dl[3] * (flood_depth - fp.depth[i2]) * 0.5 * (top_width + fp.width[3][i1])
-    @test (flood_vol - Δvol) ≈ fp.volume[3][i2]
+    @test flood_depth ≈ 2.749036625585836f0
+    @test (flood_depth - fp.depth[i1]) * fp.width[3][i2] * river.dl[3] + fp.volume[3][i1] ≈
+          flood_vol
     river.volume[3] = 0.0 # reset volume
-    # test extrapolation of rectangular segment (index = 4)
-    flood_vol = 240000.0f0
-    river.volume[4] = flood_vol + river.bankfull_volume[4]
-    i1, i2 = Wflow.interpolation_indices(flood_vol, fp.volume[4])
-    flood_depth = Wflow.flood_depth(fp, flood_vol, river.dl[4], 4)
-    @test flood_depth ≈ 2.2330092763434157f0
-    Δvol = river.dl[4] * (flood_depth - fp.depth[i2]) * fp.width[4][i1]
-    @test (flood_vol - Δvol) ≈ fp.volume[4][i2]
-    river.volume[4] = 0.0 # reset volume
     # flow area and wetted perimeter based on hf
     h = 0.5
     @test Wflow.flow_area(fp, h, 3) ≈ 49.64308797127469f0
-    @test Wflow.wetted_perimeter(fp, h, 3) ≈ 138.57596006150428f0
+    @test Wflow.wetted_perimeter(fp, h, 3) ≈ 70.28617594254938f0
     h = 1.5
-    @test Wflow.flow_area(fp, h, 3) ≈ 218.21543985637345f0
-    @test Wflow.wetted_perimeter(fp, h, 3) ≈ 140.57596006150428f0
+    @test Wflow.flow_area(fp, h, 3) ≈ 182.032315978456f0
+    @test Wflow.wetted_perimeter(fp, h, 3) ≈ 118.62585278276481f0
     h = 1.7
-    @test Wflow.flow_area(fp, h, 3) ≈ 256.97815439856373f0
-    @test Wflow.wetted_perimeter(fp, h, 3) ≈ 191.059986397741f0
+    @test Wflow.flow_area(fp, h, 3) ≈ 228.36739676840216f0
+    @test Wflow.wetted_perimeter(fp, h, 3) ≈ 119.02585278276482f0
     h = 3.2
-    @test Wflow.flow_area(fp, h, 3) ≈ 792.0277773788152f0
-    @test Wflow.wetted_perimeter(fp, h, 3) ≈ 440.5367493805901f0
+    @test Wflow.flow_area(fp, h, 3) ≈ 695.0377019748654f0
+    @test Wflow.wetted_perimeter(fp, h, 3) ≈ 307.3730700179533f0
     h = 4.0
-    @test Wflow.flow_area(fp, h, 3) ≈ 1213.1669658886894f0
-    @test Wflow.wetted_perimeter(fp, h, 3) ≈ 556.3705650329192f0
-    @test Wflow.flow_area(fp, h, 4) ≈ 538.6527485731451f0
-    @test Wflow.wetted_perimeter(fp, h, 4) ≈ 118.64521151508042f0
+    @test Wflow.flow_area(fp, h, 3) ≈ 959.816157989228f0
+    @test Wflow.wetted_perimeter(fp, h, 3) ≈ 308.9730700179533f0
+    @test Wflow.flow_area(fp, h, 4) ≈ 407.6395313908081f0
+    @test Wflow.wetted_perimeter(fp, h, 4) ≈ 90.11775307900271f0
 end
 
 Wflow.load_dynamic_input!(model)
@@ -380,13 +388,13 @@ model = Wflow.update(model)
 
 @testset "river flow (local inertial) with floodplain schematization simulation" begin
     q = model.lateral.river.q_total_av
-    @test sum(q) ≈ 3904.394551596497f0
+    @test sum(q) ≈ 3898.719057830299f0
     @test q[1622] ≈ 6.0094627478450016f-5
     @test q[43] ≈ 11.900372477232796f0
-    @test q[501] ≈ 3.511188844720158f0
+    @test q[501] ≈ 3.470259878228359f0
     h = model.lateral.river.h_av
     @test h[1622] ≈ 0.0018099697988149294f0
     @test h[43] ≈ 0.4362704420867342f0
-    @test h[501] ≈ 0.05647616364020081f0
+    @test h[501] ≈ 0.05610231297517167f0
 end
 Wflow.close_files(model, delete_output = false)
