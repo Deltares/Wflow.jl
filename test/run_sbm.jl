@@ -363,22 +363,27 @@ river = model.lateral.river
     river.volume[3] = 0.0 # reset volume
     # flow area and wetted perimeter based on hf
     h = 0.5
-    @test Wflow.flow_area(fp, h, 3) ≈ 49.64308797127469f0
-    @test Wflow.wetted_perimeter(fp, h, 3) ≈ 70.28617594254938f0
+    i1, i2 = Wflow.interpolation_indices(h, fp.depth)
+    @test Wflow.flow_area(fp, h, 3, i1, i2) ≈ 49.64308797127469f0
+    @test Wflow.wetted_perimeter(fp, h, 3, i1) ≈ 70.28617594254938f0
     h = 1.5
-    @test Wflow.flow_area(fp, h, 3) ≈ 182.032315978456f0
-    @test Wflow.wetted_perimeter(fp, h, 3) ≈ 118.62585278276481f0
+    i1, i2 = Wflow.interpolation_indices(h, fp.depth)
+    @test Wflow.flow_area(fp, h, 3, i1, i2) ≈ 182.032315978456f0
+    @test Wflow.wetted_perimeter(fp, h, 3, i1) ≈ 118.62585278276481f0
     h = 1.7
-    @test Wflow.flow_area(fp, h, 3) ≈ 228.36739676840216f0
-    @test Wflow.wetted_perimeter(fp, h, 3) ≈ 119.02585278276482f0
+    i1, i2 = Wflow.interpolation_indices(h, fp.depth)
+    @test Wflow.flow_area(fp, h, 3, i1, i2) ≈ 228.36739676840216f0
+    @test Wflow.wetted_perimeter(fp, h, 3, i1) ≈ 119.02585278276482f0
     h = 3.2
-    @test Wflow.flow_area(fp, h, 3) ≈ 695.0377019748654f0
-    @test Wflow.wetted_perimeter(fp, h, 3) ≈ 307.3730700179533f0
+    i1, i2 = Wflow.interpolation_indices(h, fp.depth)
+    @test Wflow.flow_area(fp, h, 3, i1, i2) ≈ 695.0377019748654f0
+    @test Wflow.wetted_perimeter(fp, h, 3, i1) ≈ 307.3730700179533f0
     h = 4.0
-    @test Wflow.flow_area(fp, h, 3) ≈ 959.816157989228f0
-    @test Wflow.wetted_perimeter(fp, h, 3) ≈ 308.9730700179533f0
-    @test Wflow.flow_area(fp, h, 4) ≈ 407.6395313908081f0
-    @test Wflow.wetted_perimeter(fp, h, 4) ≈ 90.11775307900271f0
+    i1, i2 = Wflow.interpolation_indices(h, fp.depth)
+    @test Wflow.flow_area(fp, h, 3, i1, i2) ≈ 959.816157989228f0
+    @test Wflow.wetted_perimeter(fp, h, 3, i1) ≈ 308.9730700179533f0
+    @test Wflow.flow_area(fp, h, 4, i1, i2) ≈ 407.6395313908081f0
+    @test Wflow.wetted_perimeter(fp, h, 4, i1) ≈ 90.11775307900271f0
 end
 
 Wflow.load_dynamic_input!(model)

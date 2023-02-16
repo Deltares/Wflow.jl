@@ -698,20 +698,31 @@ function shallowwater_river_update(
                 z_dst = sw.zb[i_dst] + sw.bankfull_depth[i_dst]
                 sw.floodplain.hf[i] = max(sw.η_max[i] - max(z_src, z_dst), 0.0)
 
-                a_src = flow_area(sw.floodplain.profile, sw.floodplain.hf[i], i_src)
+                i1, i2 =
+                    interpolation_indices(sw.floodplain.hf[i], sw.floodplain.profile.depth)
+
+                a_src = flow_area(sw.floodplain.profile, sw.floodplain.hf[i], i_src, i1, i2)
                 a_src = max(a_src - (sw.floodplain.hf[i] * sw.width[i_src]), 0.0)
-                a_dst = flow_area(sw.floodplain.profile, sw.floodplain.hf[i], i_dst)
+                a_dst = flow_area(sw.floodplain.profile, sw.floodplain.hf[i], i_dst, i1, i2)
                 a_dst = max(a_dst - (sw.floodplain.hf[i] * sw.width[i_dst]), 0.0)
                 if a_src < a_dst
                     sw.floodplain.a[i] = a_src
                     sw.floodplain.r[i] =
-                        a_src /
-                        wetted_perimeter(sw.floodplain.profile, sw.floodplain.hf[i], i_src)
+                        a_src / wetted_perimeter(
+                            sw.floodplain.profile,
+                            sw.floodplain.hf[i],
+                            i_src,
+                            i1,
+                        )
                 else
                     sw.floodplain.a[i] = a_dst
                     sw.floodplain.r[i] =
-                        a_dst /
-                        wetted_perimeter(sw.floodplain.profile, sw.floodplain.hf[i], i_dst)
+                        a_dst / wetted_perimeter(
+                            sw.floodplain.profile,
+                            sw.floodplain.hf[i],
+                            i_dst,
+                            i1,
+                        )
                 end
 
                 if sw.floodplain.hf[i] > sw.h_thresh && sw.floodplain.a[i] > 1.0e-05
@@ -1255,7 +1266,9 @@ end
 "Determine the initial floodplain volume"
 function initialize_volume!(river, nriv::Int)
     for i = 1:nriv
-        a = flow_area(river.floodplain.profile, river.floodplain.h[i], i)
+        i1, i2 =
+            interpolation_indices(river.floodplain.h[i], river.floodplain.profile.depth)
+        a = flow_area(river.floodplain.profile, river.floodplain.h[i], i, i1, i2)
         a = max(a - (river.width[i] * river.floodplain.h[i]), 0.0)
         river.floodplain.volume[i] = river.dl[i] * a
     end
@@ -1279,25 +1292,24 @@ function interpolation_indices(x, v::AbstractVector)
 end
 
 """
-    flow_area(profile::FloodPlainProfile{T}, h, i::Int)
+    flow_area(profile::FloodPlainProfile{T}, h, i::Int, i1::Int, i2::Int)
 
-Compute floodplain flow area based on flow depth `h` and floodplain `profile` at index 'i'.
+Compute floodplain flow area based on flow depth `h`, floodplain `profile` at index 'i' and
+and floodplain depth `profile` index `i1` and `i2`.
 """
-function flow_area(profile::FloodPlainProfile{T}, h, i::Int)::T where {T}
-    i1, i2 = interpolation_indices(h, profile.depth)
+function flow_area(profile::FloodPlainProfile{T}, h, i::Int, i1::Int, i2::Int)::T where {T}
     Δh = h - profile.depth[i1]
     a = profile.a[i][i1] + profile.width[i][i2] * Δh
     return a
 end
 
 """
-    function wetted_perimeter(profile::FloodPlainProfile{T}, h, i::Int)
+    function wetted_perimeter(profile::FloodPlainProfile{T}, h, i::Int, i1::Int)
 
-Compute floodplain wetted perimeter based on flow depth `h` and floodplain `profile` at
-index 'i'.
+Compute floodplain wetted perimeter based on flow depth `h`, floodplain `profile` at
+index 'i' and floodplain depth `profile` index `i1`.
 """
-function wetted_perimeter(profile::FloodPlainProfile{T}, h, i::Int)::T where {T}
-    i1, _ = interpolation_indices(h, profile.depth)
+function wetted_perimeter(profile::FloodPlainProfile{T}, h, i::Int, i1::Int)::T where {T}
     Δh = h - profile.depth[i1]
     p = profile.p[i][i1] + 2.0 * Δh
     return p
