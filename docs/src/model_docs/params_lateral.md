@@ -200,7 +200,7 @@ bankfull_depth = "RiverDepth"
 | `lake_index`   |  map cell to 0 (no lake) or i (pick lake i in lake field) | - | - |
 | `reservoir`    | an array of reservoir models `SimpleReservoir` | - | - |
 | `lake` | an array of lake models `NaturalLake` | - | - |
-| `floodplain` | optional 1D floodplain schematization `FloodPlain` | - | - |
+| `floodplain` | optional 1D floodplain routing `FloodPlain` | - | - |
 
 ### [1D floodplain](@id local-inertial_floodplain_params)
 The Table below shows the parameters (fields) of struct `FloodPlain` (part of struct
@@ -212,14 +212,37 @@ netCDF variable.
 
 |  parameter  | description  	  | unit  | default |
 |:--------------- | ------------------| ----- | -------- |
-| **`mannings_n`** (`n`)    |  Manning's roughness for each flood depth interval | s m``^{-\frac{1}{3}}`` | 0.072 |
+| **`profile`** (`n`)    |  Floodplain profile `FloodPlainProfile` | | |
+| **`mannings_n`** (`n`)    |  Manning's roughness for the floodplain | s m``^{-\frac{1}{3}}`` | 0.072 |
+| `mannings_n_sq` | Manning's roughness squared at edge/link | (s m``^{-\frac{1}{3}}``)``^2`` | - |
+| `volume`    | flood volume | m``^3`` | - |
+| `h`    | flood depth | m | - |
+| `h_av`    | average flood depth | m | - |
+| `error` | | error volume | m``^3`` | - |
+| `a`    | flow area at edge/link | m``^2`` | - |
+| `r`    | hydraulic radius at edge/link | m | - |
+| `hf`    | flood depth at edge/link | m | - |
+| `q0`  |  discharge at previous time step| m``^3`` s``^{-1}`` | - |
+| `q`    |  discharge | m``^3`` s``^{-1}`` | - |
+| `q_av`    |  average discharge | m``^3`` s``^{-1}`` | - |
+
+The floodplain profile `FloodPlainProfile` contains the following parameters: 
+
+|  parameter  | description  	  | unit  | default |
+|:--------------- | ------------------| ----- | -------- |
 | **`depth`** (`flood_depth`) |  flood depths | m | - |
 | **`volume`**    |  cumulative flood volume (per flood depth) | m``^3`` | - |
 |  `width`   |  cumulative floodplain width (per flood depth) | m | - |
 |  `a`   |  cumulative floodplain flow area (per flood depth) | m``^2`` | - |
 |  `p`   |  cumulative floodplain wetted perimeter (per flood depth) | m | - |
-|  `p_unit`   |  floodplain wetted perimeter per unit flood depth (each flood depth interval) | - | - |
-|  `slope`   |  floodplain side slope (each flood depth interval) | - | - |
+
+The floodplain volumes (per flood depth interval) can be set as follows through the TOML
+file:
+
+```toml
+[input.lateral.river.floodplain]
+volume = "floodplain_volume"
+```
 
 ### [Overland flow](@id local-inertial_land_params)
 The Table below shows the parameters (fields) of struct `ShallowWaterLand`, including a
@@ -254,7 +277,7 @@ n = "n_land" # mannings roughness
 | `qy`  |  flow in y direction | m``^3`` s``^{-1}`` | - |
 | `zx_max`  |  maximum cell elevation (x direction) | m | - |
 | `zy_max`  |  maximum cell elevation (y direction) | m | - |
-| `mannings_n_sq` |  Manning's roughness squared | s m``^{-\frac{1}{3}}`` | (0.072)``^2`` |
+| `mannings_n_sq` |  Manning's roughness squared | s m``^{-\frac{1}{3}}`` | based on 0.072 |
 | `volume`  |  total volume of cell (including river volume for river cells) | m``^3`` | - |
 | `error`  |  error volume | m``^3`` | - |
 | `runoff`  |  runoff from hydrological model | m``^3`` s``^{-1}`` | - |

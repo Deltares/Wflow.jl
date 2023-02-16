@@ -48,7 +48,8 @@ lateral.river.reservoir => struct SimpleReservoir{T} # optional
 ### SBM + Local inertial river and floodplain
 By default the model type `sbm` uses the kinematic wave approach for river flow. There is
 also the option to use the local inertial model for river flow with an optional 1D
-floodplain schematization, by providing the following in the TOML file:
+floodplain schematization (routing is done separately for the river channel and floodplain),
+by providing the following in the TOML file:
 
 ```toml
 [model]
