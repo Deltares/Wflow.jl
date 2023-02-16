@@ -633,6 +633,9 @@ function shallowwater_river_update(
     @unpack nodes_at_link, links_at_node = network
 
     sw.q0 .= sw.q
+    if !isnothing(sw.floodplain)
+        sw.floodplain.q0 .= sw.floodplain.q
+    end
     @threads for i = 1:sw.ne
         # For reservoir and lake locations the local inertial solution is replaced by the
         # reservoir or lake model. These locations are handled as boundary conditions in the
