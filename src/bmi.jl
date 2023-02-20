@@ -126,6 +126,8 @@ function BMI.get_input_var_names(model::Model)
                 end
             end
         end
+        # delete entries where field is nothing (e.g. for model without lakes or reservoirs)
+        deleteat!(var_names, findall(x -> isnothing(Wflow.param(model, x)), var_names))
         return var_names
     else
         @warn("TOML file does not contain section [API] to extract model var names")
