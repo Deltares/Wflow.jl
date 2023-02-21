@@ -145,7 +145,6 @@ function initialize_sbm_model(config::Config)
             ssfin = fill(mv, n),
             ssfmax = ((kh₀ .* βₗ) ./ f) .* (1.0 .- exp.(-f .* soilthickness)),
             to_river = zeros(n),
-            wb_pit = pits[inds],
         )
     else
         # when the SBM model is coupled (BMI) to a groundwater model, the following
@@ -178,7 +177,6 @@ function initialize_sbm_model(config::Config)
             sl = βₗ,
             dl,
             width = map(det_surfacewidth, dw, riverwidth, river),
-            wb_pit = pits[inds],
             iterate = kinwave_it,
             tstep = kw_land_tstep,
             Δt,
@@ -214,12 +212,10 @@ function initialize_sbm_model(config::Config)
             inds_riv;
             dl = riverlength,
             width = riverwidth,
-            wb_pit = pits[inds_riv],
             reservoir_index = resindex,
             reservoir = reservoirs,
             lake_index = lakeindex,
             lake = lakes,
-            river = river,
             iterate = kinwave_it,
             tstep = kw_river_tstep,
             Δt = Δt,
@@ -335,7 +331,7 @@ function initialize_sbm_model(config::Config)
             indices = inds_riv,
             reverse_indices = rev_inds_riv,
             # specific for kinematic_wave
-            upstream_nodes = filter_upsteam_nodes(graph_riv, rf.wb_pit),
+            upstream_nodes = filter_upsteam_nodes(graph_riv, pits[inds_riv]),
             subdomain_order = subriv_order,
             topo_subdomain = topo_subriv,
             indices_subdomain = indices_subriv,

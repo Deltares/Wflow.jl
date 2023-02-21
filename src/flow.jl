@@ -1,4 +1,7 @@
-@get_units @with_kw struct SurfaceFlow{T,R,L}
+
+abstract type SurfaceFlow end
+
+@get_units @with_kw struct SurfaceFlowRiver{T,R,L} <: SurfaceFlow
     β::T | "-"                              # constant in Manning's equation
     sl::Vector{T} | "m m-1"                 # Slope [m m⁻¹]
     n::Vector{T} | "s m-1/3"                # Manning's roughness [s m⁻⅓]
@@ -21,8 +24,6 @@
     α::Vector{T} | "s3/5 m1/5"              # Constant in momentum equation A = αQᵝ, based on Manning's equation
     cel::Vector{T} | "m s-1"                # Celerity of the kinematic wave
     to_river::Vector{T} | "m3 s-1"          # Part of overland flow [m³ s⁻¹] that flows to the river
-    rivercells::Vector{Bool} | "-"          # Location of river cells (0 or 1)
-    wb_pit::Vector{Bool} | "-"              # Boolean location (0 or 1) of a waterbody (wb, reservoir or lake).
     reservoir_index::Vector{Int} | "-"      # map cell to 0 (no reservoir) or i (pick reservoir i in reservoir field)
     lake_index::Vector{Int} | "-"           # map cell to 0 (no lake) or i (pick lake i in lake field)
     reservoir::R                            # Reservoir model struct of arrays
@@ -36,6 +37,30 @@
     # end
 end
 
+@get_units @with_kw struct SurfaceFlowLand{T} <: SurfaceFlow
+    β::T | "-"                              # constant in Manning's equation
+    sl::Vector{T} | "m m-1"                 # Slope [m m⁻¹]
+    n::Vector{T} | "s m-1/3"                # Manning's roughness [s m⁻⅓]
+    dl::Vector{T} | "m"                     # Drain length [m]
+    q::Vector{T} | "m3 s-1"                 # Discharge [m³ s⁻¹]
+    qin::Vector{T} | "m3 s-1"               # Inflow from upstream cells [m³ s⁻¹]
+    q_av::Vector{T} | "m3 s-1"              # Average discharge [m³ s⁻¹]
+    qlat::Vector{T} | "m2 s-1"              # Lateral inflow per unit length [m² s⁻¹]
+    inwater::Vector{T} | "m3 s-1"           # Lateral inflow [m³ s⁻¹]
+    volume::Vector{T} | "m3"                # Kinematic wave volume [m³] (based on water level h)
+    h::Vector{T} | "m"                      # Water level [m]
+    h_av::Vector{T} | "m"                   # Average water level [m]
+    Δt::T | "s"                             # Model time step [s]
+    its::Int | "-"                          # Number of fixed iterations
+    width::Vector{T} | "m"                  # Flow width [m]
+    alpha_pow::T | "-"                      # Used in the power part of α
+    alpha_term::Vector{T} | "-"             # Term used in computation of α
+    α::Vector{T} | "s3/5 m1/5"              # Constant in momentum equation A = αQᵝ, based on Manning's equation
+    cel::Vector{T} | "m s-1"                # Celerity of the kinematic wave
+    to_river::Vector{T} | "m3 s-1"          # Part of overland flow [m³ s⁻¹] that flows to the river
+    kinwave_it::Bool                        # Boolean for iterations kinematic wave
+end
+
 function initialize_surfaceflow_land(
     nc,
     config,
@@ -43,7 +68,6 @@ function initialize_surfaceflow_land(
     sl,
     dl,
     width,
-    wb_pit,
     iterate,
     tstep,
     Δt,
@@ -57,7 +81,7 @@ function initialize_surfaceflow_land(
         ncread(nc, config, "lateral.land.n"; sel = inds, defaults = 0.072, type = Float)
     n = length(inds)
 
-    sf_land = SurfaceFlow(
+    sf_land = SurfaceFlowLand(
         β = Float(0.6),
         sl = sl,
         n = n_land,
@@ -67,25 +91,17 @@ function initialize_surfaceflow_land(
         q_av = zeros(Float, n),
         qlat = zeros(Float, n),
         inwater = zeros(Float, n),
-        inflow = zeros(Float, n),
         volume = zeros(Float, n),
         h = zeros(Float, n),
         h_av = zeros(Float, n),
-        bankfull_depth = zeros(Float, n),
         Δt = Float(tosecond(Δt)),
         its = tstep > 0 ? Int(cld(tosecond(Δt), tstep)) : tstep,
         width = width,
-        wb_pit = wb_pit,
         alpha_pow = Float((2.0 / 3.0) * 0.6),
         alpha_term = fill(mv, n),
         α = fill(mv, n),
         cel = zeros(Float, n),
         to_river = zeros(Float, n),
-        rivercells = fill(false, n),
-        reservoir_index = fill(0, n),
-        lake_index = fill(0, n),
-        reservoir = nothing,
-        lake = nothing,
         kinwave_it = iterate,
     )
 
@@ -98,12 +114,10 @@ function initialize_surfaceflow_river(
     inds;
     dl,
     width,
-    wb_pit,
     reservoir_index,
     reservoir,
     lake_index,
     lake,
-    river,
     iterate,
     tstep,
     Δt,
@@ -142,7 +156,7 @@ function initialize_surfaceflow_river(
 
     n = length(inds)
 
-    sf_river = SurfaceFlow(
+    sf_river = SurfaceFlowRiver(
         β = Float(0.6),
         sl = sl,
         n = n_river,
@@ -160,7 +174,6 @@ function initialize_surfaceflow_river(
         Δt = Float(tosecond(Δt)),
         its = tstep > 0 ? Int(cld(tosecond(Δt), tstep)) : tstep,
         width = width,
-        wb_pit = wb_pit,
         alpha_pow = Float((2.0 / 3.0) * 0.6),
         alpha_term = fill(mv, n),
         α = fill(mv, n),
@@ -170,30 +183,100 @@ function initialize_surfaceflow_river(
         lake_index = lake_index,
         reservoir = reservoir,
         lake = lake,
-        rivercells = river,
         kinwave_it = iterate,
     )
 
     return sf_river
 end
 
-statevars(::SurfaceFlow) = (:q, :h, :h_av)
+statevars(::SurfaceFlowRiver) = (:q, :h, :h_av)
+statevars(::SurfaceFlowLand) = (:q, :h, :h_av)
 
 function update(
-    sf::SurfaceFlow,
-    network;
-    frac_toriver = nothing,
-    inflow_wb = nothing,
-    doy = 0,
+    sf::SurfaceFlowLand,
+    network,
+    frac_toriver,
 )
     @unpack graph,
-    order,
     subdomain_order,
     topo_subdomain,
     indices_subdomain,
     upstream_nodes = network
 
-    n = length(order)
+    ns = length(subdomain_order)
+
+    @. sf.alpha_term = pow(sf.n / sqrt(sf.sl), sf.β)
+    # use fixed alpha value based flow width
+    @. sf.α = sf.alpha_term * pow(sf.width, sf.alpha_pow)
+    @. sf.qlat = sf.inwater / sf.dl
+
+    sf.q_av .= 0.0
+    sf.h_av .= 0.0
+    sf.to_river .= 0.0
+
+    Δt, its = stable_timestep(sf)
+    for _ = 1:its
+        sf.qin .= 0.0
+        for k = 1:ns
+            @threads for m in subdomain_order[k]
+                for (n, v) in zip(indices_subdomain[m], topo_subdomain[m])
+                    # for a river cell without a reservoir or lake part of the upstream
+                    # surface flow goes to the river (frac_toriver) and part goes to the
+                    # surface flow reservoir (1.0 - frac_toriver), upstream nodes with a
+                    # reservoir or lake are excluded
+                    sf.to_river[v] += sum_at(
+                        i -> sf.q[i] * frac_toriver[i],
+                        upstream_nodes[n],
+                        eltype(sf.to_river),
+                    )
+                    if sf.width[v] > 0.0
+                        sf.qin[v] = sum_at(
+                            i -> sf.q[i] * (1.0 - frac_toriver[i]),
+                            upstream_nodes[n],
+                            eltype(sf.q),
+                        )
+                    end
+
+                    sf.q[v] = kinematic_wave(
+                        sf.qin[v],
+                        sf.q[v],
+                        sf.qlat[v],
+                        sf.α[v],
+                        sf.β,
+                        Δt,
+                        sf.dl[v],
+                    )
+
+                    # update h, only if surface width > 0.0
+                    if sf.width[v] > 0.0
+                        crossarea = sf.α[v] * pow(sf.q[v], sf.β)
+                        sf.h[v] = crossarea / sf.width[v]
+                    end
+                    sf.q_av[v] += sf.q[v]
+                    sf.h_av[v] += sf.h[v]
+                end
+            end
+        end
+    end
+    sf.q_av ./= its
+    sf.h_av ./= its
+    sf.to_river ./= its
+    sf.volume .= sf.dl .* sf.width .* sf.h
+end
+
+function update(
+    sf::SurfaceFlowRiver,
+    network,
+    inflow_wb,
+    doy,
+)
+
+    @unpack graph,
+    subdomain_order,
+    topo_subdomain,
+    indices_subdomain,
+    upstream_nodes = network
+
     ns = length(subdomain_order)
 
     @. sf.alpha_term = pow(sf.n / sqrt(sf.sl), sf.β)
@@ -202,36 +285,8 @@ function update(
 
     @. sf.qlat = sf.inwater / sf.dl
 
-    # two options for iteration, fixed or based on courant number.
-    if sf.kinwave_it
-        if sf.its > 0
-            its = sf.its
-        else
-            # calculate celerity
-            courant = zeros(n)
-            for k = 1:ns
-                for m in subdomain_order[k]
-                    for v in topo_subdomain[m]
-                        if sf.q[v] > 0.0
-                            sf.cel[v] = 1.0 / (sf.α[v] * sf.β * pow(sf.q[v], (sf.β - 1.0)))
-                            courant[v] = (sf.Δt / sf.dl[v]) * sf.cel[v]
-                        end
-                    end
-                end
-            end
-            filter!(x -> x ≠ 0.0, courant)
-            its = isempty(courant) ? 1 : ceil(Int, (1.25 * quantile!(courant, 0.95)))
-        end
-    else
-        its = 1
-    end
-
-    # sub time step
-    adt = sf.Δt / its
-
     sf.q_av .= 0.0
     sf.h_av .= 0.0
-    sf.to_river .= 0.0
     # because of possible iterations set reservoir and lake inflow and total outflow at
     # start to zero, the total sum of inflow and outflow at each sub time step is calculated
     if !isnothing(sf.reservoir)
@@ -243,36 +298,16 @@ function update(
         sf.lake.totaloutflow .= 0.0
     end
 
+    Δt, its = stable_timestep(sf)
     for _ = 1:its
         sf.qin .= 0.0
         for k = 1:ns
             threaded_foreach(subdomain_order[k], basesize = 1) do i
                 m = subdomain_order[k][i]
                 for (n, v) in zip(indices_subdomain[m], topo_subdomain[m])
-
-                    # for overland flow frac_toriver needs to be defined
-                    if frac_toriver !== nothing # run kinematic wave for land domain
-                        # for a river cell without a reservoir or lake (wb_pit is false) part of the
-                        # upstream surface flow goes to the river (frac_toriver) and part goes to
-                        # the surface flow reservoir (1.0 - frac_toriver), upstream nodes with a
-                        # reservoir or lake are excluded
-                        sf.to_river[v] += sum_at(
-                            i -> sf.q[i] * frac_toriver[i],
-                            upstream_nodes[n],
-                            eltype(sf.to_river),
-                        )
-                        if sf.width[v] > 0.0
-                            sf.qin[v] = sum_at(
-                                i -> sf.q[i] * (1.0 - frac_toriver[i]),
-                                upstream_nodes[n],
-                                eltype(sf.q),
-                            )
-                        end
-                    else # run kinematic wave for river domain (including reservoirs and lakes)
-                        # sf.qin by outflow from upstream reservoir or lake location is added
-                        sf.qin[v] += sum_at(sf.q, upstream_nodes[n])
-                    end
-
+                    # sf.qin by outflow from upstream reservoir or lake location is added
+                    sf.qin[v] += sum_at(sf.q, upstream_nodes[n])
+                    
                     # Inflow supply/abstraction is added to qlat (divide by flow length)
                     # If inflow < 0, abstraction is limited
                     if sf.inflow[v] < 0.0
@@ -288,15 +323,15 @@ function update(
                         sf.qlat[v] + inflow,
                         sf.α[v],
                         sf.β,
-                        adt,
+                        Δt,
                         sf.dl[v],
-                    )
+                    )  
 
                     if !isnothing(sf.reservoir) && sf.reservoir_index[v] != 0
                         # run reservoir model and copy reservoir outflow to inflow (qin) of
                         # downstream river cell
                         i = sf.reservoir_index[v]
-                        update(sf.reservoir, i, sf.q[v] + inflow_wb[v], adt)
+                        update(sf.reservoir, i, sf.q[v] + inflow_wb[v], Δt)
 
                         downstream_nodes = outneighbors(graph, v)
                         n_downstream = length(downstream_nodes)
@@ -317,7 +352,7 @@ function update(
                         # run lake model and copy lake outflow to inflow (qin) of downstream river
                         # cell
                         i = sf.lake_index[v]
-                        update(sf.lake, i, sf.q[v] + inflow_wb[v], doy, adt)
+                        update(sf.lake, i, sf.q[v] + inflow_wb[v], doy, Δt)
 
                         downstream_nodes = outneighbors(graph, v)
                         n_downstream = length(downstream_nodes)
@@ -335,23 +370,46 @@ function update(
                         end
                     end
 
-                    # update h, only if surface width (overland flow) > 0.0
-                    if sf.width[v] > 0.0
-                        crossarea = sf.α[v] * pow(sf.q[v], sf.β)
-                        sf.h[v] = crossarea / sf.width[v]
-                    end
-
+                    # update h
+                    crossarea = sf.α[v] * pow(sf.q[v], sf.β)
+                    sf.h[v] = crossarea / sf.width[v]
+                    
                     sf.q_av[v] += sf.q[v]
                     sf.h_av[v] += sf.h[v]
                 end
-
             end
         end
     end
     sf.q_av ./= its
     sf.h_av ./= its
-    sf.to_river ./= its
     sf.volume .= sf.dl .* sf.width .* sf.h
+end
+
+function stable_timestep(sf::S) where {S<:SurfaceFlow}
+    n = length(sf.q)
+    # two options for iteration, fixed or based on courant number.
+    if sf.kinwave_it
+        if sf.its > 0
+            its = sf.its
+        else
+            # calculate celerity
+            courant = zeros(n)
+            for v = 1:n
+                if sf.q[v] > 0.0
+                    sf.cel[v] = 1.0 / (sf.α[v] * sf.β * pow(sf.q[v], (sf.β - 1.0)))
+                    courant[v] = (sf.Δt / sf.dl[v]) * sf.cel[v]
+                end
+            end
+            filter!(x -> x ≠ 0.0, courant)
+            its = isempty(courant) ? 1 : ceil(Int, (1.25 * quantile!(courant, 0.95)))
+        end
+    else
+        its = 1
+    end
+
+    # sub time step
+    Δt = sf.Δt / its
+    return Δt, its
 end
 
 @get_units @with_kw struct LateralSSF{T}
@@ -371,7 +429,6 @@ end
     ssfin::Vector{T} | "m3 d-1"            # Inflow from upstream cells [m³ d⁻¹]
     ssfmax::Vector{T} | "m2 d-1"           # Maximum subsurface flow [m² d⁻¹]
     to_river::Vector{T} | "m3 d-1"         # Part of subsurface flow [m³ d⁻¹] that flows to the river
-    wb_pit::Vector{Bool} | "-"             # Boolean location (0 or 1) of a waterbody (wb, reservoir or lake).
 
     function LateralSSF{T}(args...) where {T}
         equal_size_vectors(args)
@@ -389,10 +446,10 @@ function update(ssf::LateralSSF, network, frac_toriver)
         threaded_foreach(subdomain_order[k], basesize = 1) do i
             m = subdomain_order[k][i]
             for (n, v) in zip(indices_subdomain[m], topo_subdomain[m])
-                # for a river cell without a reservoir or lake (wb_pit is false) part of the
-                # upstream subsurface flow goes to the river (frac_toriver) and part goes to the
-                # subsurface flow reservoir (1.0 - frac_toriver) upstream nodes with a reservoir or
-                # lake are excluded
+                # for a river cell without a reservoir or lake part of the upstream
+                # subsurface flow goes to the river (frac_toriver) and part goes to the
+                # subsurface flow reservoir (1.0 - frac_toriver) upstream nodes with a
+                # reservoir or lake are excluded
                 ssf.ssfin[v] = sum_at(
                     i -> ssf.ssf[i] * (1.0 - frac_toriver[i]),
                     upstream_nodes[n],
@@ -815,9 +872,9 @@ end
 
 function update(
     sw::ShallowWaterRiver{T},
-    network;
-    inflow_wb = nothing,
-    doy = 0,
+    network,
+    inflow_wb,
+    doy;
     update_h = true,
 ) where {T}
     @unpack nodes_at_link, links_at_node = network
@@ -1052,9 +1109,9 @@ end
 function update(
     sw::ShallowWaterLand{T},
     swr::ShallowWaterRiver{T},
-    network;
-    inflow_wb = nothing,
-    doy = 0,
+    network,
+    inflow_wb,
+    doy ;
     update_h = false,
 ) where {T}
 
@@ -1611,15 +1668,15 @@ function surface_routing(model; ssf_toriver = 0.0)
 
     # run kinematic wave for overland flow
     set_land_inwater(model)
-    update(lateral.land, network.land, frac_toriver = network.frac_toriver)
+    update(lateral.land, network.land, network.frac_toriver)
 
     # run river flow
     set_river_inwater(model, ssf_toriver)
     update(
         lateral.river,
         network.river,
-        inflow_wb = get_inflow_waterbody(model),
-        doy = julian_day(clock.time - clock.Δt),
+        get_inflow_waterbody(model),
+        julian_day(clock.time - clock.Δt),
     )
 end
 
@@ -1653,7 +1710,7 @@ function surface_routing(
         lateral.land,
         lateral.river,
         network,
-        inflow_wb = get_inflow_waterbody(model),
-        doy = julian_day(clock.time - clock.Δt),
+        get_inflow_waterbody(model),
+        julian_day(clock.time - clock.Δt),
     )
 end
