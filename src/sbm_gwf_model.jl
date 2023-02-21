@@ -107,7 +107,6 @@ function initialize_sbm_gwf_model(config::Config)
         sl = βₗ,
         dl = dl,
         width = sw,
-        wb_pit = pits[inds],
         iterate = kinwave_it,
         tstep = kw_land_tstep,
         Δt = Δt,
@@ -134,12 +133,10 @@ function initialize_sbm_gwf_model(config::Config)
         inds_riv;
         dl = riverlength,
         width = riverwidth,
-        wb_pit = pits[inds_riv],
         reservoir_index = resindex,
         reservoir = reservoirs,
         lake_index = lakeindex,
         lake = lakes,
-        river = river,
         iterate = kinwave_it,
         tstep = kw_river_tstep,
         Δt = Δt,
@@ -354,7 +351,7 @@ function initialize_sbm_gwf_model(config::Config)
     # functions
     land = (
         graph = graph,
-        upstream_nodes = filter_upsteam_nodes(graph, olf.wb_pit),
+        upstream_nodes = filter_upsteam_nodes(graph, pits[inds]),
         subdomain_order = subbas_order,
         topo_subdomain = topo_subbas,
         indices_subdomain = indices_subbas,
@@ -367,7 +364,7 @@ function initialize_sbm_gwf_model(config::Config)
     )
     river = (
         graph = graph_riv,
-        upstream_nodes = filter_upsteam_nodes(graph_riv, rf.wb_pit),
+        upstream_nodes = filter_upsteam_nodes(graph_riv, pits[inds_riv]),
         subdomain_order = subriv_order,
         topo_subdomain = topo_subriv,
         indices_subdomain = indices_subriv,
