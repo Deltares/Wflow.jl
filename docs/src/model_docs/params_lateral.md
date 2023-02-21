@@ -212,7 +212,7 @@ netCDF variable.
 
 |  parameter  | description  	  | unit  | default |
 |:--------------- | ------------------| ----- | -------- |
-| **`profile`** (`n`)    |  Floodplain profile `FloodPlainProfile` | | |
+| **`profile`**   |  Floodplain profile `FloodPlainProfile` | | |
 | **`mannings_n`** (`n`)    |  Manning's roughness for the floodplain | s m``^{-\frac{1}{3}}`` | 0.072 |
 | `mannings_n_sq` | Manning's roughness squared at edge/link | (s m``^{-\frac{1}{3}}``)``^2`` | - |
 | `volume`    | flood volume | m``^3`` | - |
