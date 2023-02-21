@@ -43,10 +43,10 @@ end
     @test request(msg) == Dict("component_name" => "sbm")
 
     msg = Dict("fn" => "get_input_item_count")
-    @test request(msg) == Dict("input_item_count" => 183)
+    @test request(msg) == Dict("input_item_count" => 174)
 
     msg = Dict("fn" => "get_output_item_count")
-    @test request(msg) == Dict("output_item_count" => 183)
+    @test request(msg) == Dict("output_item_count" => 174)
 
     msg = Dict("fn" => "get_time_step")
     @test request(msg) == Dict("time_step" => 86400)
@@ -55,17 +55,17 @@ end
     @test request(msg) == Dict("time_units" => "seconds since 1970-01-01T00:00:00")
 
     msg = Dict("fn" => "get_input_var_names")
-    @test request(msg)["input_var_names"][[1, 5, 120, 183]] == [
+    @test request(msg)["input_var_names"][[1, 5, 120, 174]] == [
         "vertical.Δt",
         "vertical.n_unsatlayers",
-        "lateral.land.q_av",
+        "lateral.land.qlat",
         "lateral.river.reservoir.evaporation",
     ]
     msg = Dict("fn" => "get_output_var_names")
-    @test request(msg)["output_var_names"][[1, 5, 120, 183]] == [
+    @test request(msg)["output_var_names"][[1, 5, 120, 174]] == [
         "vertical.Δt",
         "vertical.n_unsatlayers",
-        "lateral.land.q_av",
+        "lateral.land.qlat",
         "lateral.river.reservoir.evaporation",
     ]
     msg = Dict("fn" => "get_var_itemsize", "name" => "lateral.subsurface.ssf")
