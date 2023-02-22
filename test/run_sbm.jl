@@ -254,6 +254,8 @@ model = Wflow.update(model)
     @test h[1622] ≈ 0.001809965063947279f0
     @test h[43] ≈ 0.43627044208669874f0
     @test h[501] ≈ 0.05669956233680719f0
+    q_channel = model.lateral.river.q_channel_av
+    @test q ≈ q_channel
 end
 Wflow.close_files(model, delete_output = false)
 
@@ -392,7 +394,7 @@ Wflow.load_dynamic_input!(model)
 model = Wflow.update(model)
 
 @testset "river flow (local inertial) with floodplain schematization simulation" begin
-    q = model.lateral.river.q_total_av
+    q = model.lateral.river.q_av
     @test sum(q) ≈ 3898.719057830299f0
     @test q[1622] ≈ 6.0094627478450016f-5
     @test q[43] ≈ 11.900372477232796f0

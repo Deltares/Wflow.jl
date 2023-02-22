@@ -49,10 +49,10 @@ riverlength_bc = 1000.0           # river length [m] for boundary points (defaul
 floodplain_1d = true              # include 1D floodplain schematization (default = false)
 ```
 
- The optional 1D floodplain schematization is based on provided flood volumes as a function
- of flood depth (per flood depth interval) for each river cell. Wflow calculates from these
- flood volumes a rectangular floodplain profile for each flood depth interval. Routing is
- done separately for the river channel and floodplain.
+The optional 1D floodplain schematization is based on provided flood volumes as a function
+of flood depth (per flood depth interval) for each river cell. Wflow calculates from these
+flood volumes a rectangular floodplain profile for each flood depth interval. Routing is
+done separately for the river channel and floodplain.
 
 The momentum equation is most stable for low slope environments, and to keep the simulation
 stable for (partly) steep environments the `froude_limit` option is set to true by default.

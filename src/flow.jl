@@ -439,8 +439,8 @@ end
     Δt::T | "s"                             # model time step [s]
     q::Vector{T} | "m3 s-1"                 # river discharge (subgrid channel)
     q0::Vector{T} | "m3 s-1"                # river discharge (subgrid channel) at previous time step
-    q_av::Vector{T} | "m3 s-1"              # average river discharge [m³ s⁻¹]
-    q_total_av::Vector{T} | "m3 s-1"        # average total (river and floodplain) discharge [m³ s⁻¹]
+    q_av::Vector{T} | "m3 s-1"              # average river channel (+ floodplain) discharge [m³ s⁻¹]
+    q_channel_av::Vector{T} | "m3 s-1"      # average river channel discharge [m³ s⁻¹]
     zb_max::Vector{T} | "m"                 # maximum channel bed elevation
     mannings_n_sq::Vector{T} | "(s m-1/3)2" # Manning's roughness squared at edge/link
     mannings_n::Vector{T} | "s m-1/3"       # Manning's roughness at node
@@ -589,7 +589,7 @@ function initialize_shallowwater_river(
         q = zeros(_ne),
         q0 = zeros(_ne),
         q_av = q_av,
-        q_total_av = isnothing(floodplain) ? q_av : zeros(_ne),
+        q_channel_av = isnothing(floodplain) ? q_av : zeros(_ne),
         zb_max = zb_max,
         mannings_n_sq = mannings_n_sq,
         mannings_n = n_river,
@@ -850,7 +850,8 @@ function update(
     if !isnothing(sw.floodplain)
         sw.floodplain.q_av ./= sw.Δt
         sw.floodplain.h_av ./= sw.Δt
-        sw.q_total_av .= sw.q_av .+ sw.floodplain.q_av
+        sw.q_channel_av .= sw.q_av
+        sw.q_av .= sw.q_channel_av .+ sw.floodplain.q_av
     end
 
     return nothing

@@ -9,11 +9,12 @@ be set to `false` in order to initialize the model with states from the file loc
 `path_input`. A mapping between external state names and internal model states is required.
 This information is specified for each model component, the `vertical` model and `lateral`
 model components. In the example below the `vertical` component represents the SBM concept,
-and for the `lateral` components there is a `river` (including `reservoir`), `land` and
-`subsurface` domain. The internal model states are listed on the left side, and the external
-state names are listed on the right side. Note that `path_input` is only required when
-`reinit` is set to false. `path_output` is optional, an output state file is only written
-when it is defined. If neither is set, the entire `state` section can be left out.
+and for the `lateral` components there is a `river` (including optional `reservoir`, `lake`
+and `floodplain` components), `land` and `subsurface` domain. The internal model states are
+listed on the left side, and the external state names are listed on the right side. Note
+that `path_input` is only required when `reinit` is set to false. `path_output` is optional,
+an output state file is only written when it is defined. If neither is set, the entire
+`state` section can be left out.
 
 ```toml
 [model]
@@ -36,6 +37,10 @@ glacierstore ="glacierstore"
 q = "q_river"
 h = "h_river"
 h_av = "h_av_river"
+
+[state.lateral.river.floodplain] 
+q = "q_floodplain"
+h = "h_floodplain"
 
 [state.lateral.river.reservoir]
 volume = "volume_reservoir"
@@ -111,6 +116,22 @@ waterlevel = "lake_waterlevel"
 
 [state.lateral.river.lake]
 waterlevel = "waterlevel_lake"
+```
+
+## Enabling Floodplain routing
+As part of the local inertial model for river flow.
+
+```toml
+[model]
+floodplain_1d = true
+
+[input.lateral.river.floodplain]
+volume = "floodplain_volume"
+n = "floodplain_n"
+
+[state.lateral.river.floodplain] 
+q = "q_floodplain"
+h = "h_floodplain"
 ```
 
 ## [Using multithreading] (@id multi_threading)

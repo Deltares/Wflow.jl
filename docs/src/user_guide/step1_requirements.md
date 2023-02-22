@@ -24,7 +24,8 @@ The following model configurations are supported in wflow:
 
  - wflow\_sbm:
     - SBM + kinematic wave for subsurface and surface flow
-    - SBM + kinematic wave for subsurface and overland flow + local inertial river
+    - SBM + kinematic wave for subsurface and overland flow + local inertial river (+
+      optional floodplain)
     - SBM + kinematic wave for subsurface flow + local inertial river (1D) and land (2D)
     - SBM + groundwater flow + kinematic wave for surface flow
  - wflow\_hbv: HBV + kinematic wave for surface routing

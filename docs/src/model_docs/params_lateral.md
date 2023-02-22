@@ -165,6 +165,12 @@ bankfull_elevation = "RiverZ"
 bankfull_depth = "RiverDepth"
 ```
 
+When floodplain routing (parameter `floodplain`) is included as part of local inertial river
+flow, parameter `q_av` represents the total average discharge of the river channel and
+floodplain routing, and parameter `q_channel_av` represents average river channel discharge.
+Otherwise parameters `q_av` and `q_channel_av` represent both average river channel
+discharge (are equal).
+
 |  parameter  | description  	  | unit  | default |
 |:--------------- | ------------------| ------- | ------ |
 | **`mannings_n`** (`n`) |  Manning's roughness | s m``^{-\frac{1}{3}}`` | 0.036 |
@@ -178,7 +184,8 @@ bankfull_depth = "RiverDepth"
 | `h_thresh`    |  depth threshold for calculating flow | m | 0.001 |
 | `Δt`    |  model time step | s | - |
 | `q`    |  river discharge (subgrid channel) | m``^3`` s``^{-1}`` | - |
-| `q_av`    |  average river discharge (subgrid channel) | m``^3`` s``^{-1}`` | - |
+| `q_av`    |  average river channel (+ floodplain) discharge | m``^3`` s``^{-1}`` | - |
+| `q_channel_av` | average river channel discharge | m``^3`` s``^{-1}`` | - |
 | `zb_max`    | maximum channel bed elevation | m | - |
 | `mannings_n_sq` | Manning's roughness squared at edge/link | (s m``^{-\frac{1}{3}}``)``^2`` | - |
 | `h`    | water depth | m | - |
