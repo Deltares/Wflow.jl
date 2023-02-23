@@ -1387,8 +1387,8 @@ function initialize_floodplain_1d(
             # check provided flood volume (floodplain width should be constant or increasing
             # as a function of flood depth)
             if width[j+1, i] < width[j, i]
-                # raise warning only if difference is larger than rounding error of 0.01 m
-                if (width[j, i] - width[j+1, i]) > 0.01
+                # raise warning only if difference is larger than rounding error of 0.01 m³
+                if ((width[j, i] - width[j+1, i]) * h[j] * riverlength[i]) > 0.01
                     incorrect_vol += 1
                     riv_cell = 1
                     error_vol =
