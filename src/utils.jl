@@ -249,6 +249,8 @@ function ncread(
         dim_sel = (x = :, y = :, classes = :, time = 1)
     elseif dimname == :layer
         dim_sel = (x = :, y = :, layer = :, time = 1)
+    elseif dimname == :flood_depth
+        dim_sel = (x = :, y = :, flood_depth = :, time = 1)
     else
         error("Unrecognized dimension name $dimname")
     end
@@ -609,6 +611,6 @@ end
 "Return julian day of year (leap days are not counted)"
 function julian_day(time)
     # for all years February 28 is day 59 and March 1 is day 60.
-    day = dayofyear(time) - (isleapyear(time) && dayofyear(time) > 60) 
+    day = dayofyear(time) - (isleapyear(time) && dayofyear(time) > 60)
     return day
 end

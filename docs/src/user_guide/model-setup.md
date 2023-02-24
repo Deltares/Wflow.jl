@@ -65,16 +65,17 @@ There is also the option to use the local inertial model as part of the `sbm` mo
   and land (2D)](@ref) model.
 
 Input parameters for this approach are described in [River flow (local inertial)](@ref
-local-inertial_river_params) and [Overland flow (local
-inertial)](@ref local-inertial_land_params) of the Model parameters section.
+local-inertial_river_params), including the optional 1D [floodplain schematization](@ref
+local-inertial_floodplain_params), and [Overland flow (local inertial)](@ref
+local-inertial_land_params) of the Model parameters section.
 
 The HBV model consists besides the river and overland flow components of the [HBV](@ref
 vert_hbv) vertical concept. Input parameters for this component are described in the
 [HBV](@ref params_hbv) section of Model parameters.
 
-The FLEXTopo model consists besides the river and overland flow components of the [FLEXTopo](@ref
-vert_flextopo) vertical concept. Input parameters for this component are described in the
-[FLEXTopo](@ref params_flextopo) section of Model parameters.
+The FLEXTopo model consists besides the river and overland flow components of the
+[FLEXTopo](@ref vert_flextopo) vertical concept. Input parameters for this component are
+described in the [FLEXTopo](@ref params_flextopo) section of Model parameters.
 
 The SBM + Groundwater flow includes besides the river and overland flow components and the
 vertical SBM concept, the lateral [Groundwater flow component](@ref lateral_gwf). For the

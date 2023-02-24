@@ -1429,7 +1429,7 @@ function internal_dim_name(name::Symbol)
         return :x
     elseif name in (:y, :lat, :latitude)
         return :y
-    elseif name in (:time, :layer, :classes)
+    elseif name in (:time, :layer, :flood_depth, :classes)
         return name
     else
         error("Unknown dimension $name")
@@ -1491,6 +1491,8 @@ function dim_directions(ds::CFDataset, dim_names)
     for d in dim_names
         if d == :layer && !(haskey(ds, "layer"))
             inc = true
+        elseif d == :flood_depth && !(haskey(ds, "flood_depth"))
+            inc = true
         else
             inc = is_increasing(nc_dim(ds, d))
         end
@@ -1512,6 +1514,8 @@ function permute_data(data, dim_names)
         desired_order = (:x, :y, :layer)
     elseif :classes in dim_names
         desired_order = (:x, :y, :classes)
+    elseif :flood_depth in dim_names
+        desired_order = (:x, :y, :flood_depth)
     else
         desired_order = (:x, :y)
     end
@@ -1547,6 +1551,12 @@ function reverse_data!(data, dims_increasing)
     elseif length(dims_increasing) == 3 && haskey(dims_increasing, :layer)
         dims_increasing_ordered =
             (x = dims_increasing.x, y = dims_increasing.y, layer = dims_increasing.layer)
+    elseif length(dims_increasing) == 3 && haskey(dims_increasing, :flood_depth)
+        dims_increasing_ordered = (
+            x = dims_increasing.x,
+            y = dims_increasing.y,
+            flood_depth = dims_increasing.flood_depth,
+        )
     elseif length(dims_increasing) == 3 && haskey(dims_increasing, :classes)
         dims_increasing_ordered = (
             x = dims_increasing.x,

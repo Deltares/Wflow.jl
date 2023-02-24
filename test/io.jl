@@ -301,17 +301,17 @@ end
 @testset "NetCDF read variants" begin
     NCDataset(staticmaps_moselle_path) do ds
 
-        @test Wflow.is_increasing(ds[:x])
-        @test !Wflow.is_increasing(ds[:y])
+        @test Wflow.is_increasing(ds[:lon])
+        @test !Wflow.is_increasing(ds[:lat])
 
         @test Wflow.nc_dim_name(ds, :time) == :time
         @test Wflow.nc_dim_name([:longitude], :x) == :longitude
         @test Wflow.nc_dim_name([:lat], :y) == :lat
         @test_throws ErrorException Wflow.nc_dim_name(ds, :not_present)
 
-        x = collect(Wflow.nc_dim(ds, :x))
+        x = collect(Wflow.nc_dim(ds, :lon))
         @test length(x) == 291
-        @test x isa Vector{Float64}
+        @test x isa Vector{Union{Missing,Float64}}
 
         @test Wflow.internal_dim_name(:lon) == :x
         @test Wflow.internal_dim_name(:latitude) == :y
@@ -435,5 +435,5 @@ end
     Δt = Day(1)
     clock = Wflow.Clock(starttime, 1, Second(Δt))
     Wflow.advance!(clock)
-    @test clock.time ==  DateTimeNoLeap(2000, 3, 1)
+    @test clock.time == DateTimeNoLeap(2000, 3, 1)
 end

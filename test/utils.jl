@@ -11,13 +11,13 @@
 end
 
 @testset "Julian day (leap days are not counted)" begin
-    @test Wflow.julian_day(DateTime(2000,1,1)) == 1
-    @test Wflow.julian_day(DateTime(2000,2,28)) == 59
-    @test Wflow.julian_day(DateTime(2000,2,29)) == 60
-    @test Wflow.julian_day(DateTime(2000,3,1)) == 60
-    @test Wflow.julian_day(DateTime(2000,12,31)) == 365
-    @test Wflow.julian_day(DateTime(2001,1,1)) == 1
-    @test Wflow.julian_day(DateTime(2001,2,28)) == 59
-    @test Wflow.julian_day(DateTime(2001,3,1)) == 60
-    @test Wflow.julian_day(DateTime(2001,12,31)) == 365
+    @test Wflow.julian_day(DateTime(2000, 1, 1)) == 1
+    @test Wflow.julian_day(DateTime(2000, 2, 28)) == 59
+    @test Wflow.julian_day(DateTime(2000, 2, 29)) == 60
+    @test Wflow.julian_day(DateTime(2000, 3, 1)) == 60
+    @test Wflow.julian_day(DateTime(2000, 12, 31)) == 365
+    @test Wflow.julian_day(DateTime(2001, 1, 1)) == 1
+    @test Wflow.julian_day(DateTime(2001, 2, 28)) == 59
+    @test Wflow.julian_day(DateTime(2001, 3, 1)) == 60
+    @test Wflow.julian_day(DateTime(2001, 12, 31)) == 365
 end

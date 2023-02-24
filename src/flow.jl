@@ -430,7 +430,7 @@ end
     ssf::Vector{T} | "m3 d-1"           # Subsurface flow [m³ d⁻¹]
 end
 
-@get_units @with_kw struct ShallowWaterRiver{T,R,L}
+@get_units @with_kw struct ShallowWaterRiver{T,R,L,F}
     n::Int | "-"                            # number of cells
     ne::Int | "-"                           # number of edges/links
     g::T | "m s-2"                          # acceleration due to gravity
@@ -439,9 +439,11 @@ end
     Δt::T | "s"                             # model time step [s]
     q::Vector{T} | "m3 s-1"                 # river discharge (subgrid channel)
     q0::Vector{T} | "m3 s-1"                # river discharge (subgrid channel) at previous time step
-    q_av::Vector{T} | "m3 s-1"              # average river discharge [m³ s⁻¹]
+    q_av::Vector{T} | "m3 s-1"              # average river channel (+ floodplain) discharge [m³ s⁻¹]
+    q_channel_av::Vector{T} | "m3 s-1"      # average river channel discharge [m³ s⁻¹]
     zb_max::Vector{T} | "m"                 # maximum channel bed elevation
     mannings_n_sq::Vector{T} | "(s m-1/3)2" # Manning's roughness squared at edge/link
+    mannings_n::Vector{T} | "s m-1/3"       # Manning's roughness at node
     h::Vector{T} | "m"                      # water depth
     η_max::Vector{T} | "m"                  # maximum water elevation
     hf::Vector{T} | "m"                     # water depth at edge/link
@@ -465,6 +467,7 @@ end
     lake_index::Vector{Int} | "-"           # map cell to 0 (no lake) or i (pick lake i in lake field)
     reservoir::R                            # Reservoir model struct of arrays
     lake::L                                 # Lake model struct of arrays
+    floodplain::F                           # Floodplain (1D) schematization
 end
 
 function initialize_shallowwater_river(
@@ -480,6 +483,7 @@ function initialize_shallowwater_river(
     lake_index,
     lake,
     Δt,
+    floodplain,
 )
     # The local inertial approach makes use of a staggered grid (Bates et al. (2010)),
     # with nodes and links. This information is extracted from the directed graph of the
@@ -494,8 +498,9 @@ function initialize_shallowwater_river(
     alpha = get(config.model, "inertial_flow_alpha", 0.7)::Float64 # stability coefficient for model time step (0.2-0.7)
     h_thresh = get(config.model, "h_thresh", 1.0e-03)::Float64 # depth threshold for flow at link
     froude_limit = get(config.model, "froude_limit", true)::Bool # limit flow to subcritical according to Froude number
+    floodplain_1d = floodplain
 
-    @info "Local inertial approach is used for river flow." alpha h_thresh froude_limit riverlength_bc
+    @info "Local inertial approach is used for river flow." alpha h_thresh froude_limit riverlength_bc floodplain_1d
 
     bankfull_elevation_2d = ncread(
         nc,
@@ -528,14 +533,30 @@ function initialize_shallowwater_river(
     index_pit = findall(x -> x == 5, ldd)
     npits = length(index_pit)
     add_vertex_edge_graph!(graph, index_pit)
-    append!(zb, zb[index_pit])
     append!(dl, fill(riverlength_bc, npits))
+    append!(zb, zb[index_pit])
     append!(width, width[index_pit])
     append!(n_river, n_river[index_pit])
+    append!(bankfull_depth, bankfull_depth[index_pit])
 
     # for each link the src and dst node is required
     nodes_at_link = adjacent_nodes_at_link(graph)
     _ne = ne(graph)
+
+    if floodplain
+        floodplain = initialize_floodplain_1d(
+            nc,
+            config,
+            inds,
+            width,
+            dl,
+            index_pit,
+            _ne,
+            nodes_at_link,
+        )
+    else
+        floodplain = nothing
+    end
 
     # determine z, width, length and manning's n at links
     zb_max = fill(Float(0), _ne)
@@ -556,6 +577,7 @@ function initialize_shallowwater_river(
 
     # set depth h to zero (including reservoir and lake locations)
     h = fill(0.0, n + length(index_pit))
+    q_av = zeros(_ne)
 
     sw_river = ShallowWaterRiver(
         n = n,
@@ -566,9 +588,11 @@ function initialize_shallowwater_river(
         Δt = tosecond(Δt),
         q = zeros(_ne),
         q0 = zeros(_ne),
-        q_av = zeros(_ne),
+        q_av = q_av,
+        q_channel_av = isnothing(floodplain) ? q_av : zeros(_ne),
         zb_max = zb_max,
         mannings_n_sq = mannings_n_sq,
+        mannings_n = n_river,
         h = h,
         η_max = zeros(_ne),
         hf = zeros(_ne),
@@ -592,6 +616,7 @@ function initialize_shallowwater_river(
         lake_index = lake_index,
         reservoir = reservoir,
         lake = lake,
+        floodplain = floodplain,
     )
     return sw_river, nodes_at_link
 end
@@ -608,6 +633,9 @@ function shallowwater_river_update(
     @unpack nodes_at_link, links_at_node = network
 
     sw.q0 .= sw.q
+    if !isnothing(sw.floodplain)
+        sw.floodplain.q0 .= sw.floodplain.q
+    end
     @threads for i = 1:sw.ne
         # For reservoir and lake locations the local inertial solution is replaced by the
         # reservoir or lake model. These locations are handled as boundary conditions in the
@@ -632,16 +660,19 @@ function shallowwater_river_update(
             )
             sw.q[i] = sw.lake.outflow[v]
         else
-            ηsrc = sw.zb[nodes_at_link.src[i]] + sw.h[nodes_at_link.src[i]]
-            ηdst = sw.zb[nodes_at_link.dst[i]] + sw.h[nodes_at_link.dst[i]]
+            i_src = nodes_at_link.src[i]
+            i_dst = nodes_at_link.dst[i]
+            ηsrc = sw.zb[i_src] + sw.h[i_src]
+            ηdst = sw.zb[i_dst] + sw.h[i_dst]
 
             sw.η_max[i] = max(ηsrc, ηdst)
             sw.hf[i] = (sw.η_max[i] - sw.zb_max[i])
 
             if sw.hf[i] > sw.h_thresh
-                sw.a[i] = sw.width_at_link[i] * sw.hf[i] # cross area (rectangular channel)
-                sw.r[i] = sw.a[i] / (sw.width_at_link[i] + 2.0 * sw.hf[i]) # wetted perimeter (rectangular channel)
-                sw.q[i] = local_inertial_riverflow(
+                sw.a[i] = sw.width_at_link[i] * sw.hf[i] # flow area (rectangular channel)
+                sw.r[i] = sw.a[i] / (sw.width_at_link[i] + 2.0 * sw.hf[i]) # hydraulic radius (rectangular channel)
+
+                sw.q[i] = local_inertial_flow(
                     sw.q0[i],
                     ηsrc,
                     ηdst,
@@ -654,34 +685,126 @@ function shallowwater_river_update(
                     sw.froude_limit,
                     Δt,
                 )
+
                 # limit q in case water is not available
-                if sw.h[nodes_at_link.src[i]] <= 0.0
+                if sw.h[i_src] <= 0.0
                     sw.q[i] = min(sw.q[i], 0.0)
                 end
-                if sw.h[nodes_at_link.dst[i]] <= 0.0
+                if sw.h[i_dst] <= 0.0
                     sw.q[i] = max(sw.q[i], 0.0)
                 end
             else
                 sw.q[i] = 0.0
             end
+            if !isnothing(sw.floodplain)
+                z_src = sw.zb[i_src] + sw.bankfull_depth[i_src]
+                z_dst = sw.zb[i_dst] + sw.bankfull_depth[i_dst]
+                sw.floodplain.hf[i] = max(sw.η_max[i] - max(z_src, z_dst), 0.0)
+
+                i1, i2 =
+                    interpolation_indices(sw.floodplain.hf[i], sw.floodplain.profile.depth)
+
+                a_src = flow_area(sw.floodplain.profile, sw.floodplain.hf[i], i_src, i1, i2)
+                a_src = max(a_src - (sw.floodplain.hf[i] * sw.width[i_src]), 0.0)
+                a_dst = flow_area(sw.floodplain.profile, sw.floodplain.hf[i], i_dst, i1, i2)
+                a_dst = max(a_dst - (sw.floodplain.hf[i] * sw.width[i_dst]), 0.0)
+                if a_src < a_dst
+                    sw.floodplain.a[i] = a_src
+                    sw.floodplain.r[i] =
+                        a_src / wetted_perimeter(
+                            sw.floodplain.profile,
+                            sw.floodplain.hf[i],
+                            i_src,
+                            i1,
+                        )
+                else
+                    sw.floodplain.a[i] = a_dst
+                    sw.floodplain.r[i] =
+                        a_dst / wetted_perimeter(
+                            sw.floodplain.profile,
+                            sw.floodplain.hf[i],
+                            i_dst,
+                            i1,
+                        )
+                end
+
+                if sw.floodplain.hf[i] > sw.h_thresh && sw.floodplain.a[i] > 1.0e-05
+                    sw.floodplain.q[i] = local_inertial_flow(
+                        sw.floodplain.q0[i],
+                        ηsrc,
+                        ηdst,
+                        sw.floodplain.hf[i],
+                        sw.floodplain.a[i],
+                        sw.floodplain.r[i],
+                        sw.dl_at_link[i],
+                        sw.floodplain.mannings_n_sq[i],
+                        sw.g,
+                        sw.froude_limit,
+                        Δt,
+                    )
+                    # limit floodplain q in case water is not available
+                    if sw.floodplain.h[i_src] <= 0.0
+                        sw.floodplain.q[i] = min(sw.floodplain.q[i], 0.0)
+                    end
+                    if sw.floodplain.h[i_dst] <= 0.0
+                        sw.floodplain.q[i] = max(sw.floodplain.q[i], 0.0)
+                    end
+                else
+                    sw.floodplain.q[i] = 0.0
+                end
+                if sw.floodplain.q[i] * sw.q[i] < 0.0
+                    sw.floodplain.q[i] = 0.0
+                end
+                sw.floodplain.q_av[i] += sw.floodplain.q[i] * Δt
+            end
         end
         sw.q_av[i] += sw.q[i] * Δt
+
     end
     if update_h
         @threads for i = 1:sw.n
+            i_src = links_at_node.src[i]
+            i_dst = links_at_node.dst[i]
             if sw.reservoir_index[i] == 0 && sw.lake_index[i] == 0
                 sw.volume[i] =
                     sw.volume[i] +
-                    (
-                        sum_at(sw.q, links_at_node.src[i]) -
-                        sum_at(sw.q, links_at_node.dst[i]) + sw.inwater[i]
-                    ) * Δt
+                    (sum_at(sw.q, i_src) - sum_at(sw.q, i_dst) + sw.inwater[i]) * Δt
                 if sw.volume[i] < 0.0
                     sw.error[i] = sw.error[i] + abs(sw.volume[i])
                     sw.volume[i] = 0.0 # set volume to zero
                 end
                 sw.volume[i] = max(sw.volume[i] + sw.inflow[i] * Δt, 0.0) # add external inflow
-                sw.h[i] = sw.volume[i] / (sw.dl[i] * sw.width[i])
+
+                if !isnothing(sw.floodplain)
+                    sw.floodplain.volume[i] =
+                        sw.floodplain.volume[i] +
+                        (sum_at(sw.floodplain.q, i_src) - sum_at(sw.floodplain.q, i_dst)) *
+                        Δt
+                    # TODO check following approach:
+                    # if floodplain volume negative, extract from river volume first
+                    if sw.floodplain.volume[i] < 0.0
+                        sw.floodplain.error[i] =
+                            sw.floodplain.error[i] + abs(sw.floodplain.volume[i])
+                        sw.floodplain.volume[i] = 0.0
+                    end
+                    volume_total = sw.volume[i] + sw.floodplain.volume[i]
+                    if volume_total > sw.bankfull_volume[i]
+                        flood_volume = volume_total - sw.bankfull_volume[i]
+                        h = flood_depth(sw.floodplain.profile, flood_volume, sw.dl[i], i)
+                        sw.h[i] = sw.bankfull_depth[i] + h
+                        sw.volume[i] = sw.h[i] * sw.width[i] * sw.dl[i]
+                        sw.floodplain.volume[i] = max(volume_total - sw.volume[i], 0.0)
+                        sw.floodplain.h[i] = sw.floodplain.volume[i] > 0.0 ? h : 0.0
+                    else
+                        sw.h[i] = volume_total / (sw.dl[i] * sw.width[i])
+                        sw.volume[i] = volume_total
+                        sw.floodplain.h[i] = 0.0
+                        sw.floodplain.volume[i] = 0.0
+                    end
+                    sw.floodplain.h_av[i] += sw.floodplain.h[i] * Δt
+                else
+                    sw.h[i] = sw.volume[i] / (sw.dl[i] * sw.width[i])
+                end
                 sw.h_av[i] += sw.h[i] * Δt
             end
         end
@@ -705,6 +828,10 @@ function update(
         sw.lake.inflow .= 0.0
         sw.lake.totaloutflow .= 0.0
     end
+    if !isnothing(sw.floodplain)
+        sw.floodplain.q_av .= 0.0
+        sw.floodplain.h_av .= 0.0
+    end
     sw.q_av .= 0.0
     sw.h_av .= 0.0
 
@@ -719,6 +846,13 @@ function update(
     end
     sw.q_av ./= sw.Δt
     sw.h_av ./= sw.Δt
+
+    if !isnothing(sw.floodplain)
+        sw.floodplain.q_av ./= sw.Δt
+        sw.floodplain.h_av ./= sw.Δt
+        sw.q_channel_av .= sw.q_av
+        sw.q_av .= sw.q_channel_av .+ sw.floodplain.q_av
+    end
 
     return nothing
 end
@@ -1100,6 +1234,239 @@ function update(sw::ShallowWaterLand{T}, swr::ShallowWaterRiver{T}, network, Δt
         end
         sw.h_av[i] += sw.h[i] * Δt
     end
+end
+
+""" 
+    FloodPlainProfile
+
+Floodplain `volume` is a function of `depth` (flood depth intervals). Based on the
+cumulative floodplain `volume` a floodplain profile as a function of `flood_depth` is
+derived with floodplain area `a` (cumulative) and wetted perimeter radius `p` (cumulative).
+"""
+@get_units @with_kw struct FloodPlainProfile{T,N}
+    depth::Vector{T} | "m"                              # Flood depth
+    volume::Vector{SVector{N,T}} | "m3"                 # Flood volume (cumulative)
+    width::Vector{SVector{N,T}} | "m"                   # Flood width
+    a::Vector{SVector{N,T}} | "m2"                      # Flow area (cumulative)
+    p::Vector{SVector{N,T}} | "m"                       # Wetted perimeter (cumulative)
+end
+
+@get_units @with_kw struct FloodPlain{T,P}
+    profile::P                               # floodplain profile
+    mannings_n::Vector{T} | "s m-1/3"        # manning's roughness
+    mannings_n_sq::Vector{T} | "(s m-1/3)2"  # manning's roughness squared
+    volume::Vector{T} | "m3"                 # volume
+    h::Vector{T} | "m"                       # water depth
+    h_av::Vector{T} | "m"                    # average water depth
+    error::Vector{T} | "m3"                  # error volume
+    a::Vector{T} | "m2"                      # flow area
+    r::Vector{T} | "m"                       # hydraulic radius
+    hf::Vector{T} | "m"                      # water depth at edge/link
+    q0::Vector{T} | "m3 s-1"                 # discharge at previous time step
+    q::Vector{T} | "m3 s-1"                  # discharge
+    q_av::Vector{T} | "m"                    # average river discharge
+end
+
+"Determine the initial floodplain volume"
+function initialize_volume!(river, nriv::Int)
+    for i = 1:nriv
+        i1, i2 =
+            interpolation_indices(river.floodplain.h[i], river.floodplain.profile.depth)
+        a = flow_area(river.floodplain.profile, river.floodplain.h[i], i, i1, i2)
+        a = max(a - (river.width[i] * river.floodplain.h[i]), 0.0)
+        river.floodplain.volume[i] = river.dl[i] * a
+    end
+    return nothing
+end
+
+"helper function to get interpolation indices"
+function interpolation_indices(x, v::AbstractVector)
+    i1 = 1
+    for i in eachindex(v)
+        if v[i] <= x
+            i1 = i
+        end
+    end
+    if i1 == length(v)
+        i2 = i1
+    else
+        i2 = i1 + 1
+    end
+    return i1, i2
+end
+
+"""
+    flow_area(profile::FloodPlainProfile{T}, h, i::Int, i1::Int, i2::Int)
+
+Compute floodplain flow area based on flow depth `h`, floodplain `profile` at index 'i' and
+and floodplain depth `profile` index `i1` and `i2`.
+"""
+function flow_area(profile::FloodPlainProfile{T}, h, i::Int, i1::Int, i2::Int)::T where {T}
+    Δh = h - profile.depth[i1]
+    a = profile.a[i][i1] + profile.width[i][i2] * Δh
+    return a
+end
+
+"""
+    function wetted_perimeter(profile::FloodPlainProfile{T}, h, i::Int, i1::Int)
+
+Compute floodplain wetted perimeter based on flow depth `h`, floodplain `profile` at
+index 'i' and floodplain depth `profile` index `i1`.
+"""
+function wetted_perimeter(profile::FloodPlainProfile{T}, h, i::Int, i1::Int)::T where {T}
+    Δh = h - profile.depth[i1]
+    p = profile.p[i][i1] + 2.0 * Δh
+    return p
+end
+
+"Compute flood depth by interpolating flood volume `flood_volume` using flood depth intervals."
+function flood_depth(profile::FloodPlainProfile{T}, flood_volume, dl, i::Int)::T where {T}
+    i1, i2 = interpolation_indices(flood_volume, profile.volume[i])
+    ΔA = (flood_volume - profile.volume[i][i1]) / dl
+    Δh = ΔA / profile.width[i][i2]
+    flood_depth = profile.depth[i1] + Δh
+    return flood_depth
+end
+
+"Initialize floodplain geometry and `FloodPlain` parameters"
+function initialize_floodplain_1d(
+    nc,
+    config,
+    inds,
+    riverwidth,
+    riverlength,
+    index_pit,
+    n_edges,
+    nodes_at_link,
+)
+
+    n_floodplain = ncread(
+        nc,
+        config,
+        "lateral.river.floodplain.n";
+        sel = inds,
+        defaults = 0.072,
+        type = Float,
+    )
+    volume = ncread(
+        nc,
+        config,
+        "lateral.river.floodplain.volume";
+        sel = inds,
+        type = Float,
+        dimname = :flood_depth,
+    )
+    n = length(inds)
+
+    # for convenience (interpolation) flood depth 0.0 m is added, with associated area (a),
+    # volume, width (river width) and wetted perimeter (p).
+    volume = vcat(fill(Float(0), n)', volume)
+    start_volume = volume
+    flood_depths = Float.(nc["flood_depth"][:])
+    pushfirst!(flood_depths, 0.0)
+    n_depths = length(flood_depths)
+
+    p = zeros(Float, n_depths, n)
+    a = zeros(Float, n_depths, n)
+    segment_volume = zeros(Float, n_depths, n)
+    width = zeros(Float, n_depths, n)
+    width[1, :] = riverwidth[1:n]
+
+    # determine flow area (a), width and wetted perimeter (p)
+    h = diff(flood_depths)
+    incorrect_vol = 0
+    riv_cells = 0
+    error_vol = 0
+    for i = 1:n
+        riv_cell = 0
+        diff_volume = diff(volume[:, i])
+
+        for j = 1:(n_depths-1)
+            # assume rectangular shape of flood depth segment
+            width[j+1, i] = diff_volume[j] / (h[j] * riverlength[i])
+            # check provided flood volume (floodplain width should be constant or increasing
+            # as a function of flood depth)
+            if width[j+1, i] < width[j, i]
+                # raise warning only if difference is larger than rounding error of 0.01 m³
+                if ((width[j, i] - width[j+1, i]) * h[j] * riverlength[i]) > 0.01
+                    incorrect_vol += 1
+                    riv_cell = 1
+                    error_vol =
+                        error_vol + ((width[j, i] - width[j+1, i]) * h[j] * riverlength[i])
+                end
+                width[j+1, i] = width[j, i]
+            end
+            a[j+1, i] = width[j+1, i] * h[j]
+            p[j+1, i] = (width[j+1, i] - width[j, i]) + 2.0 * h[j]
+            segment_volume[j+1, i] = a[j+1, i] * riverlength[i]
+            if j == 1
+                # for interpolation wetted perimeter at flood depth 0.0 is required
+                p[j, i] = p[j+1, i] - 2.0 * h[j]
+            end
+        end
+
+        p[2:end, i] = cumsum(p[2:end, i])
+        a[:, i] = cumsum(a[:, i])
+        volume[:, i] = cumsum(segment_volume[:, i])
+
+        riv_cells += riv_cell
+    end
+
+    if incorrect_vol > 0
+        perc_riv_cells = round(100.0 * (riv_cells / n), digits = 2)
+        perc_error_vol = round(100.0 * (error_vol / sum(start_volume[end, :])), digits = 2)
+        @warn string(
+            "The provided volume of $incorrect_vol rectangular floodplain schematization",
+            " segments for $riv_cells river cells ($perc_riv_cells % of total river cells)",
+            " is not correct and has been increased with $perc_error_vol % of provided volume.",
+        )
+    end
+
+    # set floodplain parameters for ghost points
+    volume = hcat(volume, volume[:, index_pit])
+    width = hcat(width, width[:, index_pit])
+    a = hcat(a, a[:, index_pit])
+    p = hcat(p, p[:, index_pit])
+
+    # initialize floodplain profile parameters
+    profile = FloodPlainProfile{Float,n_depths}(
+        volume = svectorscopy(volume, Val{n_depths}()),
+        width = svectorscopy(width, Val{n_depths}()),
+        depth = flood_depths,
+        a = svectorscopy(a, Val{n_depths}()),
+        p = svectorscopy(p, Val{n_depths}()),
+    )
+
+    # manning roughness at edges
+    append!(n_floodplain, n_floodplain[index_pit]) # copy to ghost nodes
+    mannings_n_sq = fill(Float(0), n_edges)
+    for i = 1:n_edges
+        src_node = nodes_at_link.src[i]
+        dst_node = nodes_at_link.dst[i]
+        mannings_n =
+            (
+                n_floodplain[dst_node] * riverlength[dst_node] +
+                n_floodplain[src_node] * riverlength[src_node]
+            ) / (riverlength[dst_node] + riverlength[src_node])
+        mannings_n_sq[i] = mannings_n * mannings_n
+    end
+
+    floodplain = FloodPlain(
+        profile = profile,
+        mannings_n = n_floodplain,
+        mannings_n_sq = mannings_n_sq,
+        volume = zeros(n),
+        error = zeros(n),
+        h = zeros(n + length(index_pit)),
+        h_av = zeros(n),
+        a = zeros(n_edges),
+        r = zeros(n_edges),
+        hf = zeros(n_edges),
+        q = zeros(n_edges),
+        q_av = zeros(n_edges),
+        q0 = zeros(n_edges),
+    )
+    return floodplain
 end
 
 """

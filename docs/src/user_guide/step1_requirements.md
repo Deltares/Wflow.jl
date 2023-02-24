@@ -17,14 +17,15 @@ via CSV files. A brief overview of the different files:
 There are several model configurations supported by wflow. These model configurations
 require slightly different input requirements, yet the general structure is similar for each
 model. A wflow model configuration consists of a `vertical` concept like the [SBM](@ref
-vert_sbm), [HBV](@ref vert_hbv) or [FLEXTOPO](@ref vert_flextopo) vertical concept in combination with `lateral` concepts
-that control how water is routed for example over the land or river domain. For the
-wflow\_sbm model different model configurations are possible. The following model
-configurations are supported in wflow:
+vert_sbm), [HBV](@ref vert_hbv) or [FLEXTOPO](@ref vert_flextopo) vertical concept in
+combination with `lateral` concepts that control how water is routed for example over the
+land or river domain. For the wflow\_sbm model different model configurations are possible.
+The following model configurations are supported in wflow:
 
  - wflow\_sbm:
     - SBM + kinematic wave for subsurface and surface flow
-    - SBM + kinematic wave for subsurface and overland flow + local inertial river
+    - SBM + kinematic wave for subsurface and overland flow + local inertial river (+
+      optional floodplain)
     - SBM + kinematic wave for subsurface flow + local inertial river (1D) and land (2D)
     - SBM + groundwater flow + kinematic wave for surface flow
  - wflow\_hbv: HBV + kinematic wave for surface routing

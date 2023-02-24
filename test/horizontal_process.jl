@@ -189,8 +189,10 @@ end
         q0 = zeros(_ne),
         q = zeros(_ne),
         q_av = zeros(_ne),
+        q_channel_av = zeros(_ne),
         zb_max = zb_max,
         mannings_n_sq = mannings_n_sq,
+        mannings_n = n_river,
         h = h_init,
         η_max = zeros(_ne),
         hf = zeros(_ne),
@@ -214,6 +216,7 @@ end
         lake_index = zeros(n),
         reservoir = nothing,
         lake = nothing,
+        floodplain = nothing,
     )
 
     # run until steady state is reached

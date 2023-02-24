@@ -234,12 +234,12 @@ function lateral_snow_transport!(snow, snowwater, slope, network)
 end
 
 """
-    local_inertial_riverflow(q0, η0, η1, hf, A, R, length, mannings_n, g, froude_limit, Δt)
+    local_inertial_flow(q0, η0, η1, hf, A, R, length, mannings_n, g, froude_limit, Δt)
 
-Local inertial approach for river flow. Returns the flow `q` between two adjacent river
-cells (nodes) for a single timestep.
+Local inertial approach for flow through area `A`. Returns the flow `q` between two adjacent
+river cells (nodes) for a single timestep.
 """
-function local_inertial_riverflow(
+function local_inertial_flow(
     q0,
     η0,
     η1,
@@ -276,8 +276,9 @@ end
 """
     local_inertial_flow(θ, q0, qd, qu, η0, η1, hf, width, length, mannings_n, g, froude_limit, Δt)
 
-Local inertial approach for overland flow. Returns the flow `q` between two adjacent cells
-(nodes) for a single timestep. Algorithm is based on de Almeida et al. (2012).
+Local inertial approach for flow through a rectangular area. Returns the flow `q` between
+two adjacent cells (nodes) for a single timestep. Algorithm is based on de Almeida et al.
+(2012).
 """
 function local_inertial_flow(
     θ,
