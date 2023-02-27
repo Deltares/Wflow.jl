@@ -214,8 +214,6 @@ end
     e::Vector{T} | "-"                      # rating curve exponent
     sh::Vector{Union{SH,Missing}}           # data for storage curve
     hq::Vector{Union{HQ,Missing}}           # data for rating curve
-    sq::Vector{Union{SQ,Missing}}           # data for storage-based rating curve
-    maxvolume::Vector{T} | "m3"             # maximum volume lake [m³]
     waterlevel::Vector{T} | "m"             # waterlevel H [m] of lake
     inflow::Vector{T} | "m3"                # inflow to the lake [m³]
     storage::Vector{T} | "m3"               # storage lake [m³]
@@ -351,16 +349,6 @@ function initialize_natural_lake(config, nc, inds_riv, nriv, pits, Δt)
         fill = 0,
     )
 
-    lake_maxvolume = ncread(
-        nc,
-        config,
-        "lateral.river.lake.maxvolume";
-        optional = false,
-        sel = inds_lake,
-        type = Float,
-        fill = 0,
-    )
-
     # for surface water routing lake locations are considered pits in the flow network
     # all upstream flow goes to the river and flows into the lake
     pits[inds_lake] .= true
@@ -374,7 +362,6 @@ function initialize_natural_lake(config, nc, inds_riv, nriv, pits, Δt)
 
     sh = Vector{Union{SH,Missing}}(missing, n_lakes)
     hq = Vector{Union{HQ,Missing}}(missing, n_lakes)
-    sq = Vector{Union{SQ,Missing}}(missing, n_lakes)
     lowerlake_ind = fill(0, n_lakes)
     # lake CSV parameter files are expected in the same directory as path_static
     path = dirname(input_path(config, config.input.path_static))
@@ -404,12 +391,6 @@ function initialize_natural_lake(config, nc, inds_riv, nriv, pits, Δt)
                 "For the modified pulse approach (LakeOutflowFunc = 3) the LakeStorFunc should be 1"
             )
         end
-
-        if lake_outflowfunc[i] == 4
-            csv_path = joinpath(path, "lake_sq_$lakeloc.csv")
-            @info("read a volume-based rating curve from CSV file $csv_path, for lake location $lakeloc")
-            sq[i] = read_sq_csv(csv_path)
-        end
     end
     n = length(lakearea)
     lakes = NaturalLake{Float}(
@@ -422,10 +403,12 @@ function initialize_natural_lake(config, nc, inds_riv, nriv, pits, Δt)
         b = lake_b,
         e = lake_e,
         waterlevel = lake_waterlevel,
+<<<<<<< HEAD
         maxvolume = lake_maxvolume,
+=======
+>>>>>>> parent of 333f0436 (Added SQ functionality)
         sh = sh,
         hq = hq,
-        sq = sq,
         inflow = fill(mv, n),
         storage = initialize_storage(lake_storfunc, lakearea, lake_waterlevel, sh),
         outflow = fill(mv, n),
@@ -525,17 +508,13 @@ function update(lake::NaturalLake, i, inflow, doy, timestepsecs)
     end
 
     ### Linearisation for specific storage/rating curves ###
-    if lake.outflowfunc[i] == 1 || lake.outflowfunc[i] == 2 || lake.outflowfunc[i] == 4
+    if lake.outflowfunc[i] == 1 || lake.outflowfunc[i] == 2
 
         diff_wl = has_lowerlake ? lake.waterlevel[i] - lake.waterlevel[lo] : 0.0
 
         if lake.outflowfunc[i] == 1
             outflow =
                 interpolate_linear(lake.waterlevel[i], lake.hq[i].H, lake.hq[i].Q[:, doy])
-        elseif lake.outflowfunc[i] == 4
-            outflow =
-                interpolate_linear(lake.storage[i], lake.sq[i].S, lake.sq[i].Q[:, doy])
-        
         else
             if diff_wl >= 0.0
                 if lake.waterlevel[i] > lake.threshold[i]
@@ -562,11 +541,6 @@ function update(lake::NaturalLake, i, inflow, doy, timestepsecs)
             (lake.precipitation[i] / 1000.0) * (timestepsecs / lake.Δt) * lake.area[i] -
             (lake.evaporation[i] / 1000.0) * (timestepsecs / lake.Δt) * lake.area[i] -
             outflow * timestepsecs
-
-        if lake.maxvolume[i] > 0 && storage > lake.maxvolume[i]
-            outflow = outflow + (storage - lake.maxvolume[i])/timestepsecs
-            storage = lake.maxvolume[i]
-        end
 
         waterlevel = if lake.storfunc[i] == 1
             lake.waterlevel[i] + (storage - lake.storage[i]) / lake.area[i]
