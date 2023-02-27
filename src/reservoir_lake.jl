@@ -404,9 +404,13 @@ function initialize_natural_lake(config, nc, inds_riv, nriv, pits, Δt)
         e = lake_e,
         waterlevel = lake_waterlevel,
 <<<<<<< HEAD
+<<<<<<< HEAD
         maxvolume = lake_maxvolume,
 =======
 >>>>>>> parent of 333f0436 (Added SQ functionality)
+=======
+        maxvolume = lake_maxvolume
+>>>>>>> parent of acd2ca27 (Update reservoir_lake.jl)
         sh = sh,
         hq = hq,
         inflow = fill(mv, n),
