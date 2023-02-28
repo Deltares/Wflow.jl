@@ -8,6 +8,7 @@
         totaloutflow = [0.0],
         inflow = [0.0],
         area = [1885665.353626924],
+        outflowfunc = [1],
         targetfullfrac = [0.8],
         targetminfrac = [0.2425554726620697],
         precipitation = [4.2],
@@ -15,9 +16,11 @@
         outflow = [NaN],
         percfull = [NaN],
         demandrelease = [NaN],
+        sq = [missing],
+        overflow = [NaN],
     )
 
-    Wflow.update(res, 1, 100.0, 86400.0)
+    Wflow.update(res, 1, 100.0, 1, 86400.0)
     @test res.outflow[1] ≈ 91.3783714867453
     @test res.totaloutflow[1] ≈ 7.895091296454794e6
     @test res.volume[1] ≈ 2.0e7
@@ -25,6 +28,71 @@
     @test res.demandrelease[1] ≈ 52.5229994727611
     @test res.precipitation[1] ≈ 4.2
     @test res.evaporation[1] ≈ 1.5
+end
+
+datadir = joinpath(@__DIR__, "data")
+@testset "reservoir SQ normal" begin
+    res = Wflow.SimpleReservoir{Float64}(
+        Δt = 86400,
+        demand = [NaN],
+        maxrelease = [NaN],
+        maxvolume = [2.5e7],
+        volume = [2.0e7],
+        totaloutflow = [0.0],
+        inflow = [0.0],
+        area = [2_000_000],
+        outflowfunc = [2],
+        targetfullfrac = [NaN],
+        targetminfrac = [NaN],
+        precipitation = [4.2],
+        evaporation = [1.5],
+        outflow = [NaN],
+        percfull = [NaN],
+        demandrelease = [NaN],
+        overflow = [NaN],
+        sq = [Wflow.read_sq_csv(joinpath(datadir, "input", "res_sq_1.csv"))],
+    )
+
+    Wflow.update(res, 1, 20.0, 1, 86400)
+    @test res.precipitation[1] ≈ 4.2
+    @test res.evaporation[1] ≈ 1.5
+    @test res.demandrelease[1] ≈ 40
+    @test res.outflow[1] ≈ 40
+    @test res.totaloutflow[1] ≈ 3.456e6
+    @test res.volume[1] ≈ 1.82774e7
+    @test res.overflow[1] ≈ 0
+end
+
+@testset "reservoir SQ overflow" begin
+        res = Wflow.SimpleReservoir{Float64}(
+            Δt = 86400,
+            demand = [NaN],
+            maxrelease = [NaN],
+            maxvolume = [2.5e7],
+            volume = [2.0e7],
+            totaloutflow = [0.0],
+            inflow = [0.0],
+            area = [2_000_000],
+            outflowfunc = [2],
+            targetfullfrac = [NaN],
+            targetminfrac = [NaN],
+            precipitation = [4.2],
+            evaporation = [1.5],
+            outflow = [NaN],
+            percfull = [NaN],
+            demandrelease = [NaN],
+            overflow = [NaN],
+            sq = [Wflow.read_sq_csv(joinpath(datadir, "input", "res_sq_1.csv"))],
+        )
+
+    Wflow.update(res, 1, 150.0, 2, 86400)
+    @test res.precipitation[1] ≈ 4.2
+    @test res.evaporation[1] ≈ 1.5
+    @test res.demandrelease[1] ≈ 50
+    @test res.outflow[1] ≈ 92.19213
+    @test res.totaloutflow[1] ≈ 7.9654e6
+    @test res.volume[1] ≈ 2.5e7
+    @test res.overflow[1] ≈ 3.6454e6
 end
 
 @testset "natural lake" begin
