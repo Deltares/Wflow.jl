@@ -1,3 +1,17 @@
+function interpolate_linear(x, xp, fp)
+    if x <= minimum(xp)
+        return minimum(fp)
+    elseif x >= maximum(xp)
+        return maximum(fp)
+    else
+        idx = findall(i -> i <= x, xp)
+        i1 = last(idx)
+        i2 = i1 + 1
+        return fp[i1] * (1.0 - (x - xp[i1]) / (xp[i2] - xp[i1])) +
+               fp[i2] * (x - xp[i1]) / (xp[i2] - xp[i1])
+    end
+end
+
 @get_units @with_kw struct SimpleReservoir{T}
     Δt::T | "s"                                         # Model time step [s]
     maxvolume::Vector{T} | "m3"                         # maximum storage (above which water is spilled) [m³]
@@ -14,6 +28,9 @@
     demandrelease::Vector{T} | "m3 s-1"                 # minimum (environmental) flow released from reservoir [m³ s⁻¹]
     precipitation::Vector{T}                            # average precipitation for reservoir area [mm Δt⁻¹]
     evaporation::Vector{T}                              # average evaporation for reservoir area [mm Δt⁻¹]
+    sq::Vector{Union{SQ,Missing}}                       # data for storage curve #TODO add to BMI?
+    outflowfunc::Vector{Int} | "-"                      # type of reservoir outflow, 1: Simple Reservoir, 2: Volume-based Outflow approach (SQ) #TODO add to BMI?
+    overflow::Vector{T} | "m3"                          # overflow at reservoir [m³]
 
     function SimpleReservoir{T}(args...) where {T}
         equal_size_vectors(args)
@@ -132,12 +149,37 @@ function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, Δt)
 
     n = length(resarea)
     @info "Read `$n` reservoir locations."
+    sq = Vector{Union{SQ,Missing}}(missing, n)
+    res_outflowfunc = Vector{Union{Int,Missing}}(missing,n)
+    # reservoir CSV parameter files are expected in the same directory as path_static
+    path = dirname(input_path(config, config.input.path_static))
+    for i = 1:n
+        resloc=reslocs[i]
+        csv_path = joinpath(path, "res_sq_$resloc.csv")
+        # Temporary fix to work with SQ-approach without provided ResOutflow-staticmap
+        if isfile(csv_path)
+            sq[i] = read_sq_csv(csv_path)
+            res_outflowfunc[i] = 2
+            @info(
+                "modelling reservoir at location $resloc using Volume Based Outlfow approach (SQ) with table $csv_path"
+            )
+        # No SQ-table found? -> Simple Reservoir approach
+        else
+            res_outflowfunc[i] = 1
+            @info(
+                "modelling reservoir at location $resloc using Simple Reservoir approach"
+            )
+        end
+    end
+
     reservoirs = SimpleReservoir{Float}(
         Δt = Δt,
         demand = resdemand,
         maxrelease = resmaxrelease,
         maxvolume = resmaxvolume,
         area = resarea,
+        outflowfunc = res_outflowfunc,
+        sq = sq,
         targetfullfrac = res_targetfullfrac,
         targetminfrac = res_targetminfrac,
         volume = res_targetfullfrac .* resmaxvolume,
@@ -148,6 +190,7 @@ function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, Δt)
         demandrelease = fill(mv, n),
         precipitation = fill(mv, n),
         evaporation = fill(mv, n),
+        overflow = fill(mv, n),
     )
 
     return reservoirs,
@@ -166,7 +209,7 @@ Update a single reservoir at position `i`.
 This is called from within the kinematic wave loop, therefore updating only for a single
 element rather than all at once.
 """
-function update(res::SimpleReservoir, i, inflow, timestepsecs)
+function update(res::SimpleReservoir, i, inflow, doy, timestepsecs)
 
     vol = max(
         0.0,
@@ -178,27 +221,41 @@ function update(res::SimpleReservoir, i, inflow, timestepsecs)
         ),
     )
 
-    percfull = vol / res.maxvolume[i]
-    # first determine minimum (environmental) flow using a simple sigmoid curve to scale for target level
-    fac = scurve(percfull, res.targetminfrac[i], Float(1.0), Float(30.0))
-    demandrelease = min(fac * res.demand[i] * timestepsecs, vol)
-    vol = vol - demandrelease
+    ### Simple Reservoir approach
+    if res.outflowfunc[i] == 1
+        percfull = vol / res.maxvolume[i]
+        # first determine minimum (environmental) flow using a simple sigmoid curve to scale for target level
+        fac = scurve(percfull, res.targetminfrac[i], Float(1.0), Float(30.0))
+        demandrelease = min(fac * res.demand[i] * timestepsecs, vol)
+        vol = vol - demandrelease
+        
+        wantrel = max(0.0, vol - (res.maxvolume[i] * res.targetfullfrac[i]))
+        # Assume extra maximum Q if spilling
+        overflow_q = max((vol - res.maxvolume[i]), 0.0)
+        torelease = min(wantrel, overflow_q + res.maxrelease[i] * timestepsecs - demandrelease)
+        vol = vol - torelease
+        outflow = torelease + demandrelease
+    end
+    
+    ### Linearisation for volume based discharge approach ###
+    if res.outflowfunc[i] == 2
+        demandrelease = interpolate_linear(vol, res.sq[i].S, res.sq[i].Q[:, doy]) * timestepsecs
+        vol = vol - demandrelease
 
-    wantrel = max(0.0, vol - (res.maxvolume[i] * res.targetfullfrac[i]))
-    # Assume extra maximum Q if spilling
-    overflow_q = max((vol - res.maxvolume[i]), 0.0)
-    torelease = min(wantrel, overflow_q + res.maxrelease[i] * timestepsecs - demandrelease)
-    vol = vol - torelease
-    outflow = torelease + demandrelease
-    percfull = vol / res.maxvolume[i]
+        # Assume extra maximum Q if spilling
+        overflow_q = max((vol - res.maxvolume[i]), 0.0) #TODO replace maxvolume with max value from SQ-table
+        vol = vol - overflow_q
+        outflow = overflow_q + demandrelease
+    end
 
     # update values in place
     res.outflow[i] = outflow / timestepsecs
     res.inflow[i] += inflow * timestepsecs
     res.totaloutflow[i] += outflow
     res.demandrelease[i] = demandrelease / timestepsecs
-    res.percfull[i] = percfull
+    res.percfull[i] = vol / res.maxvolume[i]
     res.volume[i] = vol
+    res.overflow[i] = overflow_q
 
     return res
 end
@@ -403,14 +460,6 @@ function initialize_natural_lake(config, nc, inds_riv, nriv, pits, Δt)
         b = lake_b,
         e = lake_e,
         waterlevel = lake_waterlevel,
-<<<<<<< HEAD
-<<<<<<< HEAD
-        maxvolume = lake_maxvolume,
-=======
->>>>>>> parent of 333f0436 (Added SQ functionality)
-=======
-        maxvolume = lake_maxvolume
->>>>>>> parent of acd2ca27 (Update reservoir_lake.jl)
         sh = sh,
         hq = hq,
         inflow = fill(mv, n),
@@ -457,20 +506,6 @@ statevars(::NaturalLake) = (:waterlevel,)
 Get a tuple of symbols representing the fields that are model states.
 """
 function statevars end
-
-function interpolate_linear(x, xp, fp)
-    if x <= minimum(xp)
-        return minimum(fp)
-    elseif x >= maximum(xp)
-        return maximum(fp)
-    else
-        idx = findall(i -> i <= x, xp)
-        i1 = last(idx)
-        i2 = i1 + 1
-        return fp[i1] * (1.0 - (x - xp[i1]) / (xp[i2] - xp[i1])) +
-               fp[i2] * (x - xp[i1]) / (xp[i2] - xp[i1])
-    end
-end
 
 """
 Update a single lake at position `i`.
