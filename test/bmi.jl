@@ -11,9 +11,9 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
         @testset "initialization and time functions" begin
             @test BMI.get_time_units(model) == "s"
             @test BMI.get_time_step(model) == 86400.0
-            @test BMI.get_start_time(model) == 9.467712e8
-            @test BMI.get_current_time(model) == 9.467712e8
-            @test BMI.get_end_time(model) == 9.493632e8
+            @test BMI.get_start_time(model) == 0.0
+            @test BMI.get_current_time(model) == 0.0
+            @test BMI.get_end_time(model) == 30 * 86400.0
         end
 
         @testset "model information functions" begin
@@ -48,7 +48,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
         model = BMI.update(model)
 
         @testset "update and get and set functions" begin
-            @test BMI.get_current_time(model) == 9.468576e8
+            @test BMI.get_current_time(model) == 86400.0
             @test mean(BMI.get_value(model, "vertical.zi")) ≈ 276.3767651555451
             @test BMI.get_value_at_indices(model, "lateral.river.q", [1, 100, 5617]) ≈
                   [0.6211503865184697, 5.219305686635002, 0.026163746306482282]

@@ -169,15 +169,15 @@ function BMI.get_var_location(model::Model, name::String)
 end
 
 function BMI.get_current_time(model::Model)
-    datetime2unix(reinterpret(DateTime, model.clock.time))
+    0.001 * Dates.value(model.clock.time - model.config.starttime)
 end
 
 function BMI.get_start_time(model::Model)
-    datetime2unix(DateTime(model.config.starttime))
+    0.0
 end
 
 function BMI.get_end_time(model::Model)
-    datetime2unix(DateTime(model.config.endtime))
+    0.001 * Dates.value(model.config.endtime - model.config.starttime)
 end
 
 function BMI.get_time_units(model::Model)
