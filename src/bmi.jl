@@ -180,7 +180,7 @@ function BMI.get_end_time(model::Model)
     datetime2unix(DateTime(model.config.endtime))
 end
 
-function BMI.get_time_units(::Type{<:Model})
+function BMI.get_time_units(model::Model)
     string("seconds since ", unix2datetime(0))
 end
 

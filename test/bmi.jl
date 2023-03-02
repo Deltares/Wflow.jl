@@ -9,7 +9,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
         model = BMI.initialize(Wflow.Model, tomlpath)
 
         @testset "initialization and time functions" begin
-            @test BMI.get_time_units(Wflow.Model) == "seconds since 1970-01-01T00:00:00"
+            @test BMI.get_time_units(model) == "seconds since 1970-01-01T00:00:00"
             @test BMI.get_time_step(model) == 86400.0
             @test BMI.get_start_time(model) == 9.467712e8
             @test BMI.get_current_time(model) == 9.467712e8
