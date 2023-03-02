@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - `BMI.get_time_units` now gets called on the model rather than the type, like all other BMI
-  functions, except `BMI.initialize`.
+  functions, except `BMI.initialize`. Also it returns "s" instead of "seconds since
+  1970-01-01T00:00:00", in line with the BMI specification.
 
 ### Changed
 

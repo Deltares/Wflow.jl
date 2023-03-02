@@ -181,7 +181,7 @@ function BMI.get_end_time(model::Model)
 end
 
 function BMI.get_time_units(model::Model)
-    string("seconds since ", unix2datetime(0))
+    "s"
 end
 
 function BMI.get_time_step(model::Model)
