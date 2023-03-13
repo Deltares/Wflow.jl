@@ -246,7 +246,8 @@ function update(
     for _ = 1:its
         sf.qin .= 0.0
         for k = 1:ns
-            @threads for m in subdomain_order[k]
+            threaded_foreach(eachindex(subdomain_order[k]), basesize=1) do i
+                m = subdomain_order[k][i]
                 for (n, v) in zip(indices_subdomain[m], topo_subdomain[m])
 
                     # for overland flow frac_toriver needs to be defined
@@ -385,7 +386,8 @@ function update(ssf::LateralSSF, network, frac_toriver)
 
     ns = length(subdomain_order)
     for k = 1:ns
-        @threads for m in subdomain_order[k]
+        threaded_foreach(eachindex(subdomain_order[k]), basesize=1) do i
+            m = subdomain_order[k][i] 
             for (n, v) in zip(indices_subdomain[m], topo_subdomain[m])
                 # for a river cell without a reservoir or lake (wb_pit is false) part of the
                 # upstream subsurface flow goes to the river (frac_toriver) and part goes to the
@@ -1174,7 +1176,7 @@ function update(sw::ShallowWaterLand{T}, swr::ShallowWaterRiver{T}, network, Δt
                 if sw.h[i] <= T(0.0)
                     sw.qy[i] = min(sw.qy[i], T(0.0))
                 end
-                if sw.h[yu] <= T(0)
+                if sw.h[yu] <= T(0.0)
                     sw.qy[i] = max(sw.qy[i], T(0.0))
                 end
             else
