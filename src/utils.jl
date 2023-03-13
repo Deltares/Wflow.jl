@@ -614,3 +614,34 @@ function julian_day(time)
     day = dayofyear(time) - (isleapyear(time) && dayofyear(time) > 60)
     return day
 end
+
+"Partition indices with at least size `basesize`"
+function _partition(xs::Integer, basesize::Integer)
+    n = Int(max(1, xs ÷ basesize))
+    return (Int(1 + ((i - 1) * xs) ÷ n):Int((i * xs) ÷ n) for i in 1:n)
+end
+
+"""
+    threaded_foreach(f, x::AbstractArray; basesize::Integer)
+
+Run function `f` in parallel by spawning tasks, each task iterates over a chunk of size
+`basesize`.
+"""
+function threaded_foreach(f, x::AbstractArray; basesize::Integer)
+    len = length(x)
+    partitions = _partition(len, basesize)
+    if Threads.nthreads() > 1 && length(partitions) > 1
+        @sync for p in partitions
+            Threads.@spawn begin
+                for i in eachindex(p)
+                    f(@inbounds p[i])
+                end
+            end
+        end
+    else
+        for i in eachindex(x)
+            f(@inbounds x[i])
+        end
+    end
+    return nothing
+end
