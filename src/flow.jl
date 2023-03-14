@@ -638,7 +638,7 @@ function shallowwater_river_update(
     if !isnothing(sw.floodplain)
         sw.floodplain.q0 .= sw.floodplain.q
     end
-    @threads for i = 1:sw.ne
+    threaded_foreach(1:sw.ne, basesize=1200) do i
         # For reservoir and lake locations the local inertial solution is replaced by the
         # reservoir or lake model. These locations are handled as boundary conditions in the
         # local inertial model (fixed h).
@@ -764,7 +764,7 @@ function shallowwater_river_update(
 
     end
     if update_h
-        @threads for i = 1:sw.n
+        threaded_foreach(1:sw.n, basesize=3000) do i
             i_src = links_at_node.src[i]
             i_dst = links_at_node.dst[i]
             if sw.reservoir_index[i] == 0 && sw.lake_index[i] == 0
@@ -1100,7 +1100,7 @@ function update(sw::ShallowWaterLand{T}, swr::ShallowWaterRiver{T}, network, Δt
     sw.qy0 .= sw.qy
 
     # update qx
-    @threads for i = 1:sw.n
+    threaded_foreach(1:sw.n, basesize=6000) do i
         yu = indices.yu[i]
         yd = indices.yd[i]
         xu = indices.xu[i]
@@ -1186,7 +1186,7 @@ function update(sw::ShallowWaterLand{T}, swr::ShallowWaterRiver{T}, network, Δt
     end
 
     # change in volume and water levels based on horizontal fluxes for river and land cells
-    @threads for i = 1:sw.n
+    threaded_foreach(1:sw.n, basesize=6000) do i
         yd = indices.yd[i]
         xd = indices.xd[i]
 
