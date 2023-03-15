@@ -444,7 +444,7 @@ function maximum_storage(storfunc, outflowfunc, area, sh, hq)
     maxstorage = Vector{Union{Float,Missing}}(missing, length(area))
     for i in eachindex(maxstorage)
         if outflowfunc[i] == 1
-            if storfunc[i] == 1
+            if storfunc[i] == 2
                 maxstorage[i] = interpolate_linear(maximum(hq[i].H), sh[i].H, sh[i].S)
             else
                 maxstorage[i] = area[i] * maximum(hq[i].H)
@@ -554,6 +554,15 @@ function update(lake::NaturalLake, i, inflow, doy, timestepsecs)
             (lake.precipitation[i] / 1000.0) * (timestepsecs / lake.Δt) * lake.area[i] -
             (lake.evaporation[i] / 1000.0) * (timestepsecs / lake.Δt) * lake.area[i] -
             outflow * timestepsecs
+
+        if ismissing(lake.maxstorage[i])
+            overflow = 0.0
+        else
+            overflow = max(0.0, (storage - lake.maxstorage[i]) / timestepsecs)
+            storage = min(storage, lake.maxstorage[i])
+        end
+
+        outflow = outflow + overflow
 
         waterlevel = if lake.storfunc[i] == 1
             lake.waterlevel[i] + (storage - lake.storage[i]) / lake.area[i]
