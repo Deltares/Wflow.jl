@@ -113,7 +113,7 @@ sh = [
     @test lake.totaloutflow ≈ [-2.2446764487487033e7, 2.070723775102806e7] atol = 1e3
     @test lake.storage ≈ [1.3431699662524352e9, 2.6073035986708355e8] atol = 1e4
     @test lake.waterlevel ≈ [395.239782021054, 395.21771942667266] atol = 1e-2
-
+end
 
 @testset "overflowing lake with sh and hq" begin
     lake = Wflow.NaturalLake{Float}(
@@ -143,9 +143,9 @@ sh = [
         storage = [410_760_000],
     )
 
-    Wflow.update(lake, 1, 500.0, 15, 86400.0)
-    @test lake.outflow ≈ [1106.23131019] atol = 1e-2
-    @test lake.totaloutflow ≈ [9.55783852e7] atol = 1e3
+    Wflow.update(lake, 1, 1500.0, 15, 86400.0)
+    @test lake.outflow ≈ [1303.67476852] atol = 1e-2
+    @test lake.totaloutflow ≈ [11.26375000e7] atol = 1e3
     @test lake.storage ≈ [4.293225e8] atol = 1e4
     @test lake.waterlevel ≈ [398.000000] atol = 1e-2
 end
