@@ -207,6 +207,7 @@ end
     Δt::T | "s"                             # Model time step [s]
     lowerlake_ind::Vector{Int} | "-"        # Index of lower lake (linked lakes)
     area::Vector{T} | "m2"                  # lake area [m²]
+    maxstorage::Vector{Union{Float,Missing}} | "m3"        # lake maximum storage from rating curve 1 [m³]
     threshold::Vector{T} | "m"              # water level threshold H₀ [m] below that level outflow is zero
     storfunc::Vector{Int} | "-"             # type of lake storage curve, 1: S = AH, 2: S = f(H) from lake data and interpolation
     outflowfunc::Vector{Int} | "-"          # type of lake rating curve, 1: Q = f(H) from lake data and interpolation, 2: General Q = b(H - H₀)ᵉ, 3: Case of Puls Approach Q = b(H - H₀)²
@@ -397,6 +398,7 @@ function initialize_natural_lake(config, nc, inds_riv, nriv, pits, Δt)
         Δt = Δt,
         lowerlake_ind = lowerlake_ind,
         area = lakearea,
+        maxstorage = maximum_storage(lake_storfunc, lake_outflowfunc, lakearea, sh, hq),
         threshold = lake_threshold,
         storfunc = lake_storfunc,
         outflowfunc = lake_outflowfunc,
@@ -435,6 +437,21 @@ function initialize_storage(storfunc, area, waterlevel, sh)
         end
     end
     return storage
+end
+
+"Determine the maximum storage derived from rating curve 1"
+function maximum_storage(storfunc, outflowfunc, area, sh, hq)
+    maxstorage = Vector{Union{Float,Missing}}(missing, length(area))
+    for i in eachindex(maxstorage)
+        if outflowfunc[i] == 1
+            if storfunc[i] == 1
+                maxstorage[i] = interpolate_linear(maximum(hq[i].H), sh[i].H, sh[i].S)
+            else
+                maxstorage[i] = area[i] * maximum(hq[i].H)
+            end
+        end
+    end
+    return maxstorage
 end
 
 statevars(::NaturalLake) = (:waterlevel,)
