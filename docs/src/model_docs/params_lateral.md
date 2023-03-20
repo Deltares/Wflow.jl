@@ -50,7 +50,7 @@ bankfull_depth = "wflow_riverdepth"
 | `reservoir_index`   |  map cell to 0 (no reservoir) or i (pick reservoir i in reservoir field) | - | - |
 | `lake_index`   |  map cell to 0 (no lake) or i (pick lake i in lake field) | - | - |
 | `reservoir` [^2]    | an array of reservoir models `SimpleReservoir` | - | - |
-| `lake` [^2]    | an array of lake models `NaturalLake` | - | - |
+| `lake` [^2]    | an array of lake models `Lake` | - | - |
 | `kinwave_it`   | boolean for kinematic wave iterations | - | false |
 
 ### [Reservoirs](@id reservoir_params)
@@ -89,14 +89,14 @@ locs = "wflow_reservoirlocs"
 | `evaporation`             | outflow into reservoir | mm Δt⁻¹ | - |
 
 ### [Lakes](@id lake_params)
-The Table below shows the parameters (fields) of struct `NaturalLake`, including a
-description of these parameters, the unit, and default value if applicable. The parameters
-in bold represent model parameters that can be set through static input data (netCDF), and
-can be listed in the TOML configuration file under `[input.lateral.river.lake]`, to map the
+The Table below shows the parameters (fields) of struct `Lake`, including a description of
+these parameters, the unit, and default value if applicable. The parameters in bold
+represent model parameters that can be set through static input data (netCDF), and can be
+listed in the TOML configuration file under `[input.lateral.river.lake]`, to map the
 internal model parameter to the external netCDF variable.
 
 Two parameters lake coverage `areas` and the outlet of lakes (unique id) `locs` that are not
-part of the `NaturalLake` struct are also required, and can be set as follows through the
+part of the `Lake` struct are also required, and can be set as follows through the
 TOML file:
 
 ```toml
@@ -120,6 +120,7 @@ locs = "wflow_lakelocs"
 | `Δt`             | model time step     | s |  - |
 | `inflow` | total inflow to the lake | m``^3``  | - |
 | `storage` | storage lake | m``^3``  | - |
+| `maxstorage`| maximum storage lake with rating curve type 1 | m``^3``  | - |
 | `outflow` | outflow lake | m``^3`` s``^{-1}``  | - |
 | `totaloutflow` | total outflow lake | m``^3``  | - |
 | `precipitation` | average precipitation for lake area | mm Δt⁻¹  | - |
@@ -206,7 +207,7 @@ discharge (are equal).
 | `reservoir_index`   |  map cell to 0 (no reservoir) or i (pick reservoir i in reservoir field) | - | - |
 | `lake_index`   |  map cell to 0 (no lake) or i (pick lake i in lake field) | - | - |
 | `reservoir`    | an array of reservoir models `SimpleReservoir` | - | - |
-| `lake` | an array of lake models `NaturalLake` | - | - |
+| `lake` | an array of lake models `Lake` | - | - |
 | `floodplain` | optional 1D floodplain routing `FloodPlain` | - | - |
 
 ### [1D floodplain](@id local-inertial_floodplain_params)

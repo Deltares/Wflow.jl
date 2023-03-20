@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   seconds since the model start time. This is more in line with standard BMI practices.
 
 ### Added
+- For (regulated) lakes with rating curve of type 1 (H-Q table), lake `storage` above the
+  `maximumstorage` (based on maximum water level from the H-Q table) is spilled
+  instantaneously (overflow) from the lake.
 
 ## v0.6.3 - 2023-03-01
 

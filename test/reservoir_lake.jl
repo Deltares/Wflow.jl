@@ -27,7 +27,7 @@
     @test res.evaporation[1] ≈ 1.5
 end
 
-@testset "natural lake" begin
+@testset "lake" begin
     lake = Wflow.Lake{Float64}(
         Δt = 86400.0,
         lowerlake_ind = [0],

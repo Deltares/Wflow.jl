@@ -439,7 +439,7 @@ function initialize_storage(storfunc, area, waterlevel, sh)
     return storage
 end
 
-"Determine the maximum storage for lakes with a rating curve of type 1 (Q=f(H))"
+"Determine the maximum storage for lakes with a rating curve of type 1"
 function maximum_storage(storfunc, outflowfunc, area, sh, hq)
     maxstorage = Vector{Union{Float,Missing}}(missing, length(area))
     # maximum storage is based on the maximum water level (H) value in the H-Q table
@@ -556,7 +556,7 @@ function update(lake::Lake, i, inflow, doy, timestepsecs)
             (lake.evaporation[i] / 1000.0) * (timestepsecs / lake.Δt) * lake.area[i] -
             outflow * timestepsecs
 
-        # update storage and outflow for lake with rating curve of type 1 (Q=f(H)).
+        # update storage and outflow for lake with rating curve of type 1.
         if lake.outflowfunc[i] == 1
             overflow = max(0.0, (storage - lake.maxstorage[i]) / timestepsecs)
             storage = min(storage, lake.maxstorage[i])
