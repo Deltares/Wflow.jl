@@ -195,7 +195,7 @@ function wflow_bmi(m::GetTimeStep, model::Wflow.Model)
 end
 
 function wflow_bmi(m::GetTimeUnits, model::Wflow.Model)
-    time_units = getfield(Wflow.BMI, Symbol(m.fn))(Wflow.Model)
+    time_units = getfield(Wflow.BMI, Symbol(m.fn))(model)
     return Dict("time_units" => time_units)
 end
 

@@ -25,16 +25,16 @@ end
     @test request(msg) == Dict("status" => "OK")
 
     msg = Dict("fn" => "get_end_time")
-    @test request(msg) == Dict("end_time" => 949363200)
+    @test request(msg) == Dict("end_time" => 2592000)
 
     msg = Dict("fn" => "get_start_time")
-    @test request(msg) == Dict("start_time" => 946771200)
+    @test request(msg) == Dict("start_time" => 0)
 
-    msg = Dict("fn" => "update_until", "time" => 9.468576e8)
+    msg = Dict("fn" => "update_until", "time" => 86400.0)
     @test request(msg) == Dict("status" => "OK")
 
     msg = Dict("fn" => "get_current_time")
-    @test request(msg) == Dict("current_time" => 946857600)
+    @test request(msg) == Dict("current_time" => 86400)
 
     msg = Dict("fn" => "update")
     @test request(msg) == Dict("status" => "OK")
@@ -52,7 +52,7 @@ end
     @test request(msg) == Dict("time_step" => 86400)
 
     msg = Dict("fn" => "get_time_units")
-    @test request(msg) == Dict("time_units" => "seconds since 1970-01-01T00:00:00")
+    @test request(msg) == Dict("time_units" => "s")
 
     msg = Dict("fn" => "get_input_var_names")
     @test request(msg)["input_var_names"][[1, 5, 120, 174]] == [
