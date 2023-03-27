@@ -5,12 +5,19 @@ model = Wflow.initialize_sbm_model(config)
 
 @unpack network = model
 
-min_sto = get(config.model, "min_streamorder", 4)
+min_sto_river = get(config.model, "min_streamorder_river", 6)
+min_sto_land = get(config.model, "min_streamorder_land", 5)
 index_pit = [network.land.order[end]]
-@test min_sto == 3
+@test min_sto_river == 6
 
-subbas_order, indices_subbas, topo_subbas =
-    Wflow.kinwave_set_subdomains(config, network.land.graph, network.land.order, index_pit)
+streamorder = Wflow.stream_order(network.land.graph, network.land.order)
+subbas_order, indices_subbas, topo_subbas = Wflow.kinwave_set_subdomains(
+    network.land.graph,
+    network.land.order,
+    index_pit,
+    streamorder,
+    min_sto_land,
+)
 
 Wflow.close_files(model, delete_output = false)
 
@@ -22,17 +29,17 @@ if nthreads() == 1
     end
 else
     @testset "Parallel subdomains kinematic wave (nthreads > 1)" begin
-        @test length(subbas_order) == 6
-        @test length.(subbas_order) == [507, 172, 142, 86, 24, 1]
-        @test maximum(subbas_order) == [932]
-        @test subbas_order[1][1:4] == [107, 115, 83, 84]
-        @test subbas_order[3][1:4] == [97, 109, 56, 68]
-        @test length(topo_subbas) == 932
-        @test topo_subbas[1][1:4] == [50062, 50063, 50056, 50055]
-        @test topo_subbas[end][1:4] == [49884, 49842, 49791, 49779]
-        @test length(indices_subbas) == 932
-        @test indices_subbas[1][1:4] == [1, 2, 8, 9]
-        @test indices_subbas[end][1:4] == [166, 201, 236, 247]
+        @test length(subbas_order) == 4
+        @test length.(subbas_order) == [34, 12, 6, 1]
+        @test maximum(subbas_order) == [53]
+        @test subbas_order[1][1:4] == [3, 7, 10, 14]
+        @test subbas_order[3][1:4] == [2, 9, 12, 16]
+        @test length(topo_subbas) == 53
+        @test topo_subbas[1][1:4] == [46345, 46344, 46343, 46149]
+        @test topo_subbas[end][1:4] == [49884, 49883, 49842, 49791]
+        @test length(indices_subbas) == 53
+        @test indices_subbas[1][1:4] == [3585, 3586, 3587, 3788]
+        @test indices_subbas[end][1:4] == [166, 167, 201, 236]
     end
 end
 

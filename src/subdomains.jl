@@ -147,11 +147,9 @@ streamorder, toposort, min_sto)`). Subbasins are extracted for each basin outlet
 - `indices_subbas` list of indices per subbasin id stored as `Vector{Vector{Int}}`
 - `topo_subbas` topological order per subbasin id stored as `Vector{Vector{Int}}`
 """
-function kinwave_set_subdomains(config, graph, toposort, index_pit)
+function kinwave_set_subdomains(graph, toposort, index_pit, streamorder, min_sto)
 
     if nthreads() > 1
-        min_sto = get(config.model, "min_streamorder", 4)
-
         # extract basins (per outlet/pit), assign unique basin id
         n_pits = length(index_pit)
         basin = fill(0, length(toposort))
@@ -175,10 +173,10 @@ function kinwave_set_subdomains(config, graph, toposort, index_pit)
             # maximum distance of this graph, and group and order the subbasin ids from
             # upstream to downstream
             basin = findall(x -> x == i, basin_fill)
-            g, _ = induced_subgraph(graph, basin)
+            g, vmap = induced_subgraph(graph, basin)
             toposort_b = topological_sort_by_dfs(g)
-            streamorder = stream_order(g, toposort_b)
-            subbas = subbasins(g, streamorder, toposort_b, min_sto)
+            streamorder_subbas = streamorder[vmap]
+            subbas = subbasins(g, streamorder_subbas, toposort_b, min_sto)
             subbas_fill = fillnodata_upstream(g, toposort_b, subbas, 0)
             n_subbas = max(length(subbas[subbas.>0]), 1)
             if n_subbas > 1

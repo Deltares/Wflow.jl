@@ -575,10 +575,23 @@ function initialize_flextopo_model(config::Config)
     toposort_riv = topological_sort_by_dfs(graph_riv)
     index_pit_land = findall(x -> x == 5, ldd)
     index_pit_river = findall(x -> x == 5, ldd_riv)
-    subbas_order, indices_subbas, topo_subbas =
-        kinwave_set_subdomains(config, graph, toposort, index_pit_land)
-    subriv_order, indices_subriv, topo_subriv =
-        kinwave_set_subdomains(config, graph_riv, toposort_riv, index_pit_river)
+    streamorder = stream_order(graph, toposort)
+    min_streamorder_land = get(config.model, "min_streamorder_land", 5)
+    subbas_order, indices_subbas, topo_subbas = kinwave_set_subdomains(
+        graph,
+        toposort,
+        index_pit_land,
+        streamorder,
+        min_streamorder_land,
+    )
+    min_streamorder_river = get(config.model, "min_streamorder_river", 6)
+    subriv_order, indices_subriv, topo_subriv = kinwave_set_subdomains(
+        graph_riv,
+        toposort_riv,
+        index_pit_river,
+        streamorder[index_river],
+        min_streamorder_river,
+    )
 
     modelmap = (vertical = flextopo, lateral = (land = olf, river = rf))
     indices_reverse = (
