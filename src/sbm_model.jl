@@ -110,6 +110,16 @@ function initialize_sbm_model(config::Config)
     dl = map(detdrainlength, ldd, xl, yl)
     dw = (xl .* yl) ./ dl
 
+    graph = flowgraph(ldd, inds, pcr_dir)
+    ldd_riv = ldd_2d[inds_riv]
+    if do_pits
+        ldd_riv = set_pit_ldd(pits_2d, ldd_riv, inds_riv)
+    end
+    graph_riv = flowgraph(ldd_riv, inds_riv, pcr_dir)
+
+    # the indices of the river cells in the land(+river) cell vector
+    index_river = filter(i -> !isequal(river[i], 0), 1:n)
+    frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, βₗ, n)
     # check if lateral subsurface flow component is defined for the SBM model, when coupled
     # to another groundwater model, this component is not defined in the TOML file.
     if haskey(config.input.lateral, "subsurface")
@@ -145,6 +155,7 @@ function initialize_sbm_model(config::Config)
             ssfin = fill(mv, n),
             ssfmax = ((kh₀ .* βₗ) ./ f) .* (1.0 .- exp.(-f .* soilthickness)),
             to_river = zeros(n),
+            frac_toriver = frac_toriver,
         )
     else
         # when the SBM model is coupled (BMI) to a groundwater model, the following
@@ -158,17 +169,6 @@ function initialize_sbm_model(config::Config)
         )
     end
 
-    graph = flowgraph(ldd, inds, pcr_dir)
-    ldd_riv = ldd_2d[inds_riv]
-    if do_pits
-        ldd_riv = set_pit_ldd(pits_2d, ldd_riv, inds_riv)
-    end
-    graph_riv = flowgraph(ldd_riv, inds_riv, pcr_dir)
-
-    # the indices of the river cells in the land(+river) cell vector
-    index_river = filter(i -> !isequal(river[i], 0), 1:n)
-    frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, βₗ, n)
-
     if land_routing == "kinematic-wave"
         olf = initialize_surfaceflow_land(
             nc,
@@ -177,6 +177,7 @@ function initialize_sbm_model(config::Config)
             sl = βₗ,
             dl,
             width = map(det_surfacewidth, dw, riverwidth, river),
+            frac_toriver,
             iterate = kinwave_it,
             tstep = kw_land_tstep,
             Δt,
@@ -350,7 +351,7 @@ function initialize_sbm_model(config::Config)
 
     model = Model(
         config,
-        (; land, river, reservoir, lake, index_river, frac_toriver),
+        (; land, river, reservoir, lake, index_river),
         (subsurface = ssf, land = olf, river = rf),
         sbm,
         clock,
@@ -447,7 +448,7 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
     lateral.subsurface.recharge .*= lateral.subsurface.dw
     lateral.subsurface.zi .= vertical.zi ./ 1000.0
     # update lateral subsurface flow domain (kinematic wave)
-    update(lateral.subsurface, network.land, network.frac_toriver)
+    update(lateral.subsurface, network.land)
     model = update_after_subsurfaceflow(model)
 end
 

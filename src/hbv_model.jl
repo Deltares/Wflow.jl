@@ -254,6 +254,11 @@ function initialize_hbv_model(config::Config)
         ncread(nc, config, "lateral.land.slope"; optional = false, sel = inds, type = Float)
     clamp!(βₗ, 0.00001, Inf)
 
+    graph = flowgraph(ldd, inds, pcr_dir)
+    # the indices of the river cells in the land(+river) cell vector
+    index_river = filter(i -> !isequal(river[i], 0), 1:n)
+    frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, βₗ, n)
+
     dl = map(detdrainlength, ldd, xl, yl)
     dw = (xl .* yl) ./ dl
     olf = initialize_surfaceflow_land(
@@ -263,12 +268,11 @@ function initialize_hbv_model(config::Config)
         sl = βₗ,
         dl = dl,
         width = map(det_surfacewidth, dw, riverwidth, river),
+        frac_toriver,
         iterate = kinwave_it,
         tstep = kw_land_tstep,
         Δt = Δt,
     )
-
-    graph = flowgraph(ldd, inds, pcr_dir)
 
     riverlength = riverlength_2d[inds_riv]
     riverwidth = riverwidth_2d[inds_riv]
@@ -280,10 +284,6 @@ function initialize_hbv_model(config::Config)
         ldd_riv = set_pit_ldd(pits_2d, ldd_riv, inds_riv)
     end
     graph_riv = flowgraph(ldd_riv, inds_riv, pcr_dir)
-
-    # the indices of the river cells in the land(+river) cell vector
-    index_river = filter(i -> !isequal(river[i], 0), 1:n)
-    frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, βₗ, n)
 
     rf = initialize_surfaceflow_river(
         nc,
