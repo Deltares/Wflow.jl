@@ -93,6 +93,20 @@ wflow\_sbm model. For the subsurface domain, an unconfined aquifer with groundwa
 four directions (adjacent cells) is used. This is described in more detail in the section
 [Groundwater flow](@ref lateral_gwf).
 
+```toml
+[model]
+type = "sbm_gwf"
+
+[input.lateral.subsurface]
+ksathorfrac = "KsatHorFrac"
+conductivity = "conductivity"
+specific_yield = "specific_yield"
+exfiltration_conductance = "exfilt_cond"
+infiltration_conductance = "infilt_cond"
+river_bottom = "river_bottom"
+conductivity_profile = "exponential"
+gwf_f.value = 3.0
+```
 Below the mapping for this wflow\_sbm model (type `sbm_gwf`) to the vertical SBM concept
 (instance of `struct SBM`) and the different lateral concepts. For an explanation about the
 type parameters between curly braces after the `struct` name see the section on model parameters.

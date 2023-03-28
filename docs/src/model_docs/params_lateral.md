@@ -85,8 +85,8 @@ locs = "wflow_reservoirlocs"
 | `outflow`             | outflow into reservoir | m``^3`` s``^{-1}`` | - |
 | `totaloutflow`        | total outflow into reservoir | m``^3`` | - |
 | `percfull`             | fraction full (of max storage) | - | - |
-| `precipitation`             | outflow into reservoir | mm Δt⁻¹ | - |
-| `evaporation`             | outflow into reservoir | mm Δt⁻¹ | - |
+| `precipitation`             | average precipitation for reservoir area | mm Δt⁻¹ | - |
+| `evaporation`             | average evaporation for reservoir area | mm Δt⁻¹ | - |
 
 ### [Lakes](@id lake_params)
 The Table below shows the parameters (fields) of struct `Lake`, including a description of
@@ -234,7 +234,7 @@ netCDF variable.
 | `q`    |  discharge | m``^3`` s``^{-1}`` | - |
 | `q_av`    |  average discharge | m``^3`` s``^{-1}`` | - |
 
-The floodplain profile `FloodPlainProfile` contains the following parameters: 
+The floodplain profile `FloodPlainProfile` contains the following parameters:
 
 |  parameter  | description  	  | unit  | default |
 |:--------------- | ------------------| ----- | -------- |
@@ -339,9 +339,7 @@ altitude = "wflow_dem"
 | `area`          | cell area    | m``^2`` | - |
 | `head`          | groundwater head     | m | - |
 | `conductance`          | conductance    | m``^2`` d``^{-1}`` | - |
-| `exp_conductivity` | flag wether to use exponential decay of conductivity | - | false |
 | `f` | factor controlling the reduction of reference horizontal conductivity | - | 3.0 |
-| `k` | actual horizontal conductivity |  m d``^{-1}``s | - |
 
 ### Constant Head
 The Table below shows the parameters (fields) of struct `ConstantHead`, including a
