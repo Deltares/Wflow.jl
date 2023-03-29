@@ -695,7 +695,7 @@ function shallowwater_river_update(
     if !isnothing(sw.floodplain)
         sw.floodplain.q0 .= sw.floodplain.q
     end
-    threaded_foreach(1:sw.ne, basesize = 1000) do i
+    threaded_foreach(1:sw.ne, basesize = 1200) do i
         # For reservoir and lake locations the local inertial solution is replaced by the
         # reservoir or lake model. These locations are handled as boundary conditions in the
         # local inertial model (fixed h).
@@ -821,7 +821,7 @@ function shallowwater_river_update(
 
     end
     if update_h
-        threaded_foreach(1:sw.n, basesize = 1000) do i
+        threaded_foreach(1:sw.n, basesize = 3000) do i
             i_src = links_at_node.src[i]
             i_dst = links_at_node.dst[i]
             if sw.reservoir_index[i] == 0 && sw.lake_index[i] == 0
