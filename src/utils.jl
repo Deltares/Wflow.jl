@@ -635,8 +635,14 @@ Run function `f` in parallel, each thread iterating over a chunk of size `basesi
 function threaded_foreach(f, x::AbstractArray; basesize::Integer)
     len = length(x)
     p = _partition(len, basesize)
-    @threads for tid in eachindex(p)
-        for i in p[tid]
+    if Threads.nthreads() > 1 && length(p) > 1
+        @threads for tid in eachindex(p)
+            for i in p[tid]
+                f(@inbounds i)
+            end
+        end
+    else
+        for i in p[1]
             f(@inbounds i)
         end
     end
