@@ -40,8 +40,8 @@ maxvolume = "ResMaxVolume"
 targetfullfrac = "ResTargetFullFrac"
 targetminfrac = "ResTargetMinFrac"
 ```
-### Lakes
-Natural (uncontrolled) lakes are modelled using a mass balance approach:
+### Lakes (unregulated and regulated)
+Lakes are modelled using a mass balance approach:
 
 ```math
     \dfrac{S(t + \Delta t)}{\Delta t} = \dfrac{S(t)}{\Delta t} + Q_{in} + \dfrac{(P-E) A}{\Delta t} - Q_{out}
@@ -68,7 +68,7 @@ Approach from Maniak (Burek et al., 2013). Storage curves in wflow can either:
 
 Rating curves in wflow can either:
 
-+ Come from the interpolation of field data linking lake outflow and water height,
++ Come from the interpolation of field data linking lake outflow and water height, also appropriate for regulated lakes/ dams,
 + Be computed from a rating curve of the form ``Q_{out} = \alpha {(H-H_{0})}^{\beta}``,
   where ``H_{0}`` is the minimum water level under which the outflow is zero. Usual values
   for ``\beta`` are 3/2 for a rectangular weir or 2 for a parabolic weir (Bos, 1989).
@@ -98,8 +98,8 @@ The solution for Q is then:
 ```
 
 ### Lake parameters
-Natural lakes can be included within the kinematic wave river routing in wflow, by supplying
-the following parameters:
+Lakes can be included within the kinematic wave river routing in wflow, by supplying the
+following parameters:
 
 + `area` - Surface area of the lakes [m``^2``]
 + `areas` - Coverage of the lakes
@@ -158,9 +158,11 @@ H,  S
 ```
 
 The rating curve uses level and discharge data depending on the Julian day of the year
-(JDOY). The first line contains `H` for the first column. The other lines contain the water
-level and the corresponding discharges for the different JDOY (1-365), see also the example
-below, that shows part of a CSV file (first 4 Julian days).
+(JDOY), and can be also used for regulated lakes/ dams. The first line contains `H` for the
+first column. The other lines contain the water level and the corresponding discharges for
+the different JDOY (1-365), see also the example below, that shows part of a CSV file (first
+4 Julian days). The volume above the maximum water level of the rating curve is assumed to
+flow instantaneously out of the lake (overflow).
 
 ```
 H

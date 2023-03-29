@@ -27,11 +27,12 @@
     @test res.evaporation[1] ≈ 1.5
 end
 
-@testset "natural lake" begin
-    lake = Wflow.NaturalLake{Float64}(
+@testset "lake" begin
+    lake = Wflow.Lake{Float64}(
         Δt = 86400.0,
         lowerlake_ind = [0],
         area = [180510409.0],
+        maxstorage = Wflow.maximum_storage([1], [3], [180510409.0], [missing], [missing]),
         threshold = [0.0],
         storfunc = [1],
         outflowfunc = [3],
@@ -66,10 +67,17 @@ sh = [
     @test keys(sh[1]) == (:H, :S)
     @test typeof(values(sh[1])) == Tuple{Vector{Float},Vector{Float}}
 
-    lake = Wflow.NaturalLake{Float}(
+    lake = Wflow.Lake{Float}(
         Δt = 86400.0,
         lowerlake_ind = [2, 0],
         area = [472461536.0, 60851088.0],
+        maxstorage = Wflow.maximum_storage(
+            [2, 2],
+            [2, 1],
+            [472461536.0, 60851088.0],
+            sh,
+            [missing, Wflow.read_hq_csv(joinpath(datadir, "input", "lake_hq_2.csv"))]
+        ),
         threshold = [393.7, 0.0],
         storfunc = [2, 2],
         inflow = [0.0, 0.0],
@@ -105,5 +113,39 @@ sh = [
     @test lake.totaloutflow ≈ [-2.2446764487487033e7, 2.070723775102806e7] atol = 1e3
     @test lake.storage ≈ [1.3431699662524352e9, 2.6073035986708355e8] atol = 1e4
     @test lake.waterlevel ≈ [395.239782021054, 395.21771942667266] atol = 1e-2
+end
 
+@testset "overflowing lake with sh and hq" begin
+    lake = Wflow.Lake{Float}(
+        Δt = 86400.0,
+        lowerlake_ind = [0],
+        area = [200_000_000],
+        maxstorage = Wflow.maximum_storage(
+            [2],
+            [1],
+            [200_000_000],
+            [Wflow.read_sh_csv(joinpath(datadir, "input", "lake_sh_2.csv"))],
+            [Wflow.read_hq_csv(joinpath(datadir, "input", "lake_hq_2.csv"))]
+        ),
+        threshold = [0.0],
+        storfunc = [2],
+        inflow = [0.00],
+        totaloutflow = [0.0],
+        outflowfunc = [1],
+        b = [0.0],
+        e = [0.0],
+        sh = [Wflow.read_sh_csv(joinpath(datadir, "input", "lake_sh_2.csv"))],
+        hq = [Wflow.read_hq_csv(joinpath(datadir, "input", "lake_hq_2.csv"))],
+        waterlevel = [397.75],
+        precipitation = [10.0],
+        evaporation = [2.0],
+        outflow = [NaN],
+        storage = [410_760_000],
+    )
+
+    Wflow.update(lake, 1, 1500.0, 15, 86400.0)
+    @test lake.outflow ≈ [1303.67476852] atol = 1e-2
+    @test lake.totaloutflow ≈ [11.26375000e7] atol = 1e3
+    @test lake.storage ≈ [4.293225e8] atol = 1e4
+    @test lake.waterlevel ≈ [398.000000] atol = 1e-2
 end

@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   seconds since the model start time. This is more in line with standard BMI practices.
 
 ### Added
+- For (regulated) lakes with rating curve of type 1 (H-Q table), lake `storage` above the
+  `maximumstorage` (based on maximum water level from the H-Q table) is spilled
+  instantaneously (overflow) from the lake.
 
 ## v0.6.3 - 2023-03-01
 
@@ -38,10 +41,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Show total duration of simulation in the log file (info), and show the current time at
   execution of each timestep (debug).
-- Support for exponential decline in horizontal conductivity in the sbm\_gwf concept. This
-  can be enabled using the `exp_conductivity` flag, which exponentially reduces the `kh0`
-  (or `conductivity`) based on the value of `gwf_f` to the actual horizontal conductivity
-  (`k`).
+- Support for exponential decline in horizontal conductivity in the sbm\_gwf concept. This can
+  be enabled using the `conductivity_profile` setting (either "uniform" or "exponential"). If
+  set to "exponential", it exponentially reduces the `kh0` (or `conductivity`) based on the
+  value of `gwf_f` to the actual horizontal conductivity (`k`).
 - An optional 1D floodplain schematization for the river flow inertial model, based on
   provided flood volumes as a function of flood depth per river cell. See also the following
   sections: [SBM + Local inertial river and floodplain](@ref) and [River and floodplain

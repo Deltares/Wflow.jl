@@ -203,32 +203,33 @@ function update(res::SimpleReservoir, i, inflow, timestepsecs)
     return res
 end
 
-@get_units @with_kw struct NaturalLake{T}
-    Δt::T | "s"                             # Model time step [s]
-    lowerlake_ind::Vector{Int} | "-"        # Index of lower lake (linked lakes)
-    area::Vector{T} | "m2"                  # lake area [m²]
-    threshold::Vector{T} | "m"              # water level threshold H₀ [m] below that level outflow is zero
-    storfunc::Vector{Int} | "-"             # type of lake storage curve, 1: S = AH, 2: S = f(H) from lake data and interpolation
-    outflowfunc::Vector{Int} | "-"          # type of lake rating curve, 1: Q = f(H) from lake data and interpolation, 2: General Q = b(H - H₀)ᵉ, 3: Case of Puls Approach Q = b(H - H₀)²
-    b::Vector{T} | "m3/2 s-1 (if e=3/2)"    # rating curve coefficient
-    e::Vector{T} | "-"                      # rating curve exponent
-    sh::Vector{Union{SH,Missing}}           # data for storage curve
-    hq::Vector{Union{HQ,Missing}}           # data for rating curve
-    waterlevel::Vector{T} | "m"             # waterlevel H [m] of lake
-    inflow::Vector{T} | "m3"                # inflow to the lake [m³]
-    storage::Vector{T} | "m3"               # storage lake [m³]
-    outflow::Vector{T} | "m3 s-1"           # outflow lake [m³ s⁻¹]
-    totaloutflow::Vector{T} | "m3"          # total outflow lake [m³]
-    precipitation::Vector{T}                # average precipitation for lake area [mm Δt⁻¹]
-    evaporation::Vector{T}                  # average evaporation for lake area [mm Δt⁻¹]
+@get_units @with_kw struct Lake{T}
+    Δt::T | "s"                                 # Model time step [s]
+    lowerlake_ind::Vector{Int} | "-"            # Index of lower lake (linked lakes)
+    area::Vector{T} | "m2"                      # lake area [m²]
+    maxstorage::Vector{Union{T,Missing}} | "m3" # lake maximum storage from rating curve 1 [m³]
+    threshold::Vector{T} | "m"                  # water level threshold H₀ [m] below that level outflow is zero
+    storfunc::Vector{Int} | "-"                 # type of lake storage curve, 1: S = AH, 2: S = f(H) from lake data and interpolation
+    outflowfunc::Vector{Int} | "-"              # type of lake rating curve, 1: Q = f(H) from lake data and interpolation, 2: General Q = b(H - H₀)ᵉ, 3: Case of Puls Approach Q = b(H - H₀)²
+    b::Vector{T} | "m3/2 s-1 (if e=3/2)"        # rating curve coefficient
+    e::Vector{T} | "-"                          # rating curve exponent
+    sh::Vector{Union{SH,Missing}}               # data for storage curve
+    hq::Vector{Union{HQ,Missing}}               # data for rating curve
+    waterlevel::Vector{T} | "m"                 # waterlevel H [m] of lake
+    inflow::Vector{T} | "m3"                    # inflow to the lake [m³]
+    storage::Vector{T} | "m3"                   # storage lake [m³]
+    outflow::Vector{T} | "m3 s-1"               # outflow lake [m³ s⁻¹]
+    totaloutflow::Vector{T} | "m3"              # total outflow lake [m³]
+    precipitation::Vector{T}                    # average precipitation for lake area [mm Δt⁻¹]
+    evaporation::Vector{T}                      # average evaporation for lake area [mm Δt⁻¹]
 
-    function NaturalLake{T}(args...) where {T}
+    function Lake{T}(args...) where {T}
         equal_size_vectors(args)
         return new(args...)
     end
 end
 
-function initialize_natural_lake(config, nc, inds_riv, nriv, pits, Δt)
+function initialize_lake(config, nc, inds_riv, nriv, pits, Δt)
     # read only lake data if lakes true
     # allow lakes only in river cells
     # note that these locations are only the lake outlet pixels
@@ -393,10 +394,11 @@ function initialize_natural_lake(config, nc, inds_riv, nriv, pits, Δt)
         end
     end
     n = length(lakearea)
-    lakes = NaturalLake{Float}(
+    lakes = Lake{Float}(
         Δt = Δt,
         lowerlake_ind = lowerlake_ind,
         area = lakearea,
+        maxstorage = maximum_storage(lake_storfunc, lake_outflowfunc, lakearea, sh, hq),
         threshold = lake_threshold,
         storfunc = lake_storfunc,
         outflowfunc = lake_outflowfunc,
@@ -437,7 +439,23 @@ function initialize_storage(storfunc, area, waterlevel, sh)
     return storage
 end
 
-statevars(::NaturalLake) = (:waterlevel,)
+"Determine the maximum storage for lakes with a rating curve of type 1"
+function maximum_storage(storfunc, outflowfunc, area, sh, hq)
+    maxstorage = Vector{Union{Float,Missing}}(missing, length(area))
+    # maximum storage is based on the maximum water level (H) value in the H-Q table
+    for i in eachindex(maxstorage)
+        if outflowfunc[i] == 1
+            if storfunc[i] == 2
+                maxstorage[i] = interpolate_linear(maximum(hq[i].H), sh[i].H, sh[i].S)
+            else
+                maxstorage[i] = area[i] * maximum(hq[i].H)
+            end
+        end
+    end
+    return maxstorage
+end
+
+statevars(::Lake) = (:waterlevel,)
 
 """
     statevars(::SBM; snow=false)
@@ -470,7 +488,7 @@ Update a single lake at position `i`.
 This is called from within the kinematic wave loop, therefore updating only for a single
 element rather than all at once.
 """
-function update(lake::NaturalLake, i, inflow, doy, timestepsecs)
+function update(lake::Lake, i, inflow, doy, timestepsecs)
 
     lo = lake.lowerlake_ind[i]
     has_lowerlake = lo != 0
@@ -537,6 +555,13 @@ function update(lake::NaturalLake, i, inflow, doy, timestepsecs)
             (lake.precipitation[i] / 1000.0) * (timestepsecs / lake.Δt) * lake.area[i] -
             (lake.evaporation[i] / 1000.0) * (timestepsecs / lake.Δt) * lake.area[i] -
             outflow * timestepsecs
+
+        # update storage and outflow for lake with rating curve of type 1.
+        if lake.outflowfunc[i] == 1
+            overflow = max(0.0, (storage - lake.maxstorage[i]) / timestepsecs)
+            storage = min(storage, lake.maxstorage[i])
+            outflow = outflow + overflow
+        end
 
         waterlevel = if lake.storfunc[i] == 1
             lake.waterlevel[i] + (storage - lake.storage[i]) / lake.area[i]
