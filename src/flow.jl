@@ -218,7 +218,8 @@ function update(
     for _ = 1:its
         sf.qin .= 0.0
         for k = 1:ns
-            @threads for m in subdomain_order[k]
+            threaded_foreach(subdomain_order[k], basesize = 1) do i
+                m = subdomain_order[k][i]
                 for (n, v) in zip(indices_subdomain[m], topo_subdomain[m])
                     # for a river cell without a reservoir or lake part of the upstream
                     # surface flow goes to the river (frac_toriver) and part goes to the
