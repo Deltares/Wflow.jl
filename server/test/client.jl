@@ -30,6 +30,9 @@ end
     msg = Dict("fn" => "get_start_time")
     @test request(msg) == Dict("start_time" => 0)
 
+    msg = Dict("fn" => "get_start_unix_time")
+    @test request(msg) == Dict("start_unix_time" => 946771200)
+
     msg = Dict("fn" => "update_until", "time" => 86400.0)
     @test request(msg) == Dict("status" => "OK")
 

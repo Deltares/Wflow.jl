@@ -20,6 +20,10 @@ struct GetStartTime
     fn::String
 end
 
+struct GetStartUnixTime
+    fn::String
+end
+
 struct GetEndTime
     fn::String
 end
@@ -182,6 +186,11 @@ end
 function wflow_bmi(m::GetStartTime, model::Wflow.Model)
     start_time = getfield(Wflow.BMI, Symbol(m.fn))(model)
     return Dict("start_time" => start_time)
+end
+
+function wflow_bmi(m::GetStartUnixTime, model::Wflow.Model)
+    start_unix_time = getfield(Wflow, Symbol(m.fn))(model)
+    return Dict("start_unix_time" => start_unix_time)
 end
 
 function wflow_bmi(m::GetEndTime, model::Wflow.Model)

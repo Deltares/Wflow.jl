@@ -4,6 +4,7 @@ const map_structs = Dict(
     "get_input_item_count" => GetInputItemCount,
     "get_output_item_count" => GetOutputItemCount,
     "get_start_time" => GetStartTime,
+    "get_start_unix_time" => GetStartUnixTime,
     "get_end_time" => GetEndTime,
     "get_time_step" => GetTimeStep,
     "get_time_units" => GetTimeUnits,

@@ -404,8 +404,8 @@ function get_start_unix_time(model::Model)
     datetime2unix(DateTime(model.config.starttime))
 end
 
-# extension of BMI functions (load_state and save_state), required for OpenDA coupling. May
-# also be useful for other external software packages.
+# extension of BMI functions (state handling and start time), required for OpenDA coupling.
+# May also be useful for other external software packages.
 function load_state(model::Model)
     model = set_states(model)
     return model
@@ -419,4 +419,8 @@ function save_state(model::Model)
         @info "Write output states to NetCDF file `$(model.writer.state_nc_path)`."
     end
     write_netcdf_timestep(model, writer.state_dataset, writer.state_parameters)
+end
+
+function get_start_unix_time(model::Model)
+    datetime2unix(DateTime(model.config.starttime))
 end
