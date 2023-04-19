@@ -19,6 +19,7 @@ using CFTime
 using Base.Threads
 using Glob
 using Polyester
+using LoopVectorization
 
 @metadata get_units "mm Δt-1"
 

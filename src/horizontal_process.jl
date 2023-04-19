@@ -261,14 +261,9 @@ function local_inertial_flow(
     )
 
     # if froude number > 1.0, limit flow
-    if froude_limit
-        fr = (q / A) / sqrt(g * hf)
-        if abs(fr) > 1.0 && q > 0.0
-            q = sqrt(g * hf) * A
-        elseif abs(fr) > 1.0 && q < 0.0
-            q = -sqrt(g * hf) * A
-        end
-    end
+    fr = ((q / A) / sqrt(g * hf)) * froude_limit
+    q = ifelse((abs(fr) > 1.0) * (q > 0.0), sqrt(g * hf) * A, q)
+    q = ifelse((abs(fr) > 1.0) * (q < 0.0), -sqrt(g * hf) * A, q)
 
     return q
 end

@@ -180,8 +180,10 @@ end
     push!(h_init, h_a[n])
 
     sw_river = Wflow.ShallowWaterRiver(
-        n = n - 1,
+        n = n,
         ne = _ne,
+        active_n = collect(1:n-1),
+        active_e = collect(1:_ne),
         g = 9.80665,
         α = alpha,
         h_thresh = h_thresh,
@@ -212,8 +214,9 @@ end
         bankfull_depth = fill(Wflow.mv, n),
         zb = zb,
         froude_limit = froude_limit,
-        reservoir_index = zeros(n),
-        lake_index = zeros(n),
+        reservoir_index = Int[],
+        lake_index = Int[],
+        waterbody = zeros(n),
         reservoir = nothing,
         lake = nothing,
         floodplain = nothing,

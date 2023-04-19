@@ -618,7 +618,7 @@ end
 "Partition indices with at least size `basesize`"
 function _partition(xs::Integer, basesize::Integer)
     n = Int(max(1, xs ÷ basesize))
-    return (Int(1 + ((i - 1) * xs) ÷ n):Int((i * xs) ÷ n) for i in 1:n)
+    return (Int(1 + ((i - 1) * xs) ÷ n):Int((i * xs) ÷ n) for i = 1:n)
 end
 
 """
@@ -648,7 +648,7 @@ function threaded_foreach(f, x::AbstractArray; basesize::Integer)
     else
         @batch per = thread minbatch = basesize for i in eachindex(x)
             f(@inbounds x[i])
-        end       
+        end
     end
     return nothing
 end

@@ -344,7 +344,7 @@ function initialize_sbm_model(config::Config)
             reverse_indices = rev_inds_riv,
             # specific for local-inertial
             nodes_at_link = nodes_at_link,
-            links_at_node = adjacent_links_at_node(graph, nodes_at_link),
+            links_at_node = adjacent_links_at_node(graph_riv, nodes_at_link),
         )
     end
 
