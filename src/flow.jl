@@ -483,6 +483,8 @@ end
     mannings_n::Vector{T} | "s m-1/3"       # Manning's roughness at node
     h::Vector{T} | "m"                      # water depth
     η_max::Vector{T} | "m"                  # maximum water elevation
+    ηsrc::Vector{T} | "m"                   # water elevation of source node of edge
+    ηdst::Vector{T} | "m"                   # water elevation of downstream node of edge
     hf::Vector{T} | "m"                     # water depth at edge/link
     h_av::Vector{T} | "m"                   # average water depth
     dl::Vector{T} | "m"                     # river length
@@ -582,12 +584,14 @@ function initialize_shallowwater_river(
     _ne = ne(graph)
 
     if floodplain
+        zb_floodplain = zb .+ bankfull_depth
         floodplain = initialize_floodplain_1d(
             nc,
             config,
             inds,
             width,
             dl,
+            zb_floodplain,
             index_pit,
             _ne,
             nodes_at_link,
@@ -638,6 +642,8 @@ function initialize_shallowwater_river(
         mannings_n = n_river,
         h = h,
         η_max = zeros(_ne),
+        ηsrc = zeros(_ne),
+        ηdst = zeros(_ne),
         hf = zeros(_ne),
         h_av = zeros(n),
         width = width,
@@ -710,10 +716,10 @@ function shallowwater_river_update(
         i = sw.active_e[j]
         i_src = nodes_at_link.src[i]
         i_dst = nodes_at_link.dst[i]
-        ηsrc = sw.zb[i_src] + sw.h[i_src]
-        ηdst = sw.zb[i_dst] + sw.h[i_dst]
+        sw.ηsrc[i] = sw.zb[i_src] + sw.h[i_src]
+        sw.ηdst[i] = sw.zb[i_dst] + sw.h[i_dst]
 
-        sw.η_max[i] = max(ηsrc, ηdst)
+        sw.η_max[i] = max(sw.ηsrc[i], sw.ηdst[i])
         sw.hf[i] = (sw.η_max[i] - sw.zb_max[i])
 
         sw.a[i] = sw.width_at_link[i] * sw.hf[i] # flow area (rectangular channel)
@@ -723,8 +729,8 @@ function shallowwater_river_update(
             sw.hf[i] > sw.h_thresh,
             local_inertial_flow(
                 sw.q0[i],
-                ηsrc,
-                ηdst,
+                sw.ηsrc[i],
+                sw.ηdst[i],
                 sw.hf[i],
                 sw.a[i],
                 sw.r[i],
@@ -744,36 +750,46 @@ function shallowwater_river_update(
         sw.q_av[i] += sw.q[i] * Δt
     end
     if !isnothing(sw.floodplain)
-        @tturbo for j in eachindex(sw.active_e)
-            i = sw.active_e[j]
+        @tturbo @. sw.floodplain.hf = max(sw.η_max - sw.floodplain.zb_max, 0.0)
 
+        inds_le = _findall(x -> x <= sw.h_thresh, @view sw.floodplain.hf[sw.active_e])
+        for k in inds_le
+            i = sw.active_e[k]
+            sw.floodplain.q[i] = 0.0
+        end
+
+        inds_gt = _findall(x -> x > sw.h_thresh, @view sw.floodplain.hf[sw.active_e])
+        sw.floodplain.index .= 0
+        n = 0
+        for (k, m) in enumerate(inds_gt)
+            sw.floodplain.index[k] = sw.active_e[m]
+            n += 1
+        end
+
+        @tturbo for j = 1:n
+            i = sw.floodplain.index[j]
             i_src = nodes_at_link.src[i]
             i_dst = nodes_at_link.dst[i]
-            ηsrc = sw.zb[i_src] + sw.h[i_src]
-            ηdst = sw.zb[i_dst] + sw.h[i_dst]
 
-            z_src = sw.zb[i_src] + sw.bankfull_depth[i_src]
-            z_dst = sw.zb[i_dst] + sw.bankfull_depth[i_dst]
-            sw.floodplain.hf[i] = max(sw.η_max[i] - max(z_src, z_dst), 0.0)
-
-            r = 0
+            i0 = 0
             for k in eachindex(sw.floodplain.profile.depth)
-                r += 1 * (sw.floodplain.profile.depth[k] <= sw.floodplain.hf[i])
+                i0 += 1 * (sw.floodplain.profile.depth[k] <= sw.floodplain.hf[i])
             end
-            m = max(r, 1)
-            n = ifelse(m == length(sw.floodplain.profile.depth), m, m + 1)
+            i1 = max(i0, 1)
+            i2 = ifelse(i1 == length(sw.floodplain.profile.depth), i1, i1 + 1)
 
             a_src = flow_area(
-                sw.floodplain.profile.width[n, i_src],
-                sw.floodplain.profile.a[m, i_src],
-                sw.floodplain.profile.depth[m],
+                sw.floodplain.profile.width[i2, i_src],
+                sw.floodplain.profile.a[i1, i_src],
+                sw.floodplain.profile.depth[i1],
                 sw.floodplain.hf[i],
             )
             a_src = max(a_src - (sw.floodplain.hf[i] * sw.width[i_src]), 0.0)
+
             a_dst = flow_area(
-                sw.floodplain.profile.width[n, i_dst],
-                sw.floodplain.profile.a[m, i_dst],
-                sw.floodplain.profile.depth[m],
+                sw.floodplain.profile.width[i2, i_dst],
+                sw.floodplain.profile.a[i1, i_dst],
+                sw.floodplain.profile.depth[i1],
                 sw.floodplain.hf[i],
             )
             a_dst = max(a_dst - (sw.floodplain.hf[i] * sw.width[i_dst]), 0.0)
@@ -783,23 +799,23 @@ function shallowwater_river_update(
             sw.floodplain.r[i] = ifelse(
                 a_src < a_dst,
                 a_src / wetted_perimeter(
-                    sw.floodplain.profile.p[m, i_src],
-                    sw.floodplain.profile.depth[m],
+                    sw.floodplain.profile.p[i1, i_src],
+                    sw.floodplain.profile.depth[i1],
                     sw.floodplain.hf[i],
                 ),
                 a_dst / wetted_perimeter(
-                    sw.floodplain.profile.p[m, i_dst],
-                    sw.floodplain.profile.depth[m],
+                    sw.floodplain.profile.p[i1, i_dst],
+                    sw.floodplain.profile.depth[i1],
                     sw.floodplain.hf[i],
                 ),
             )
 
             sw.floodplain.q[i] = ifelse(
-                (sw.floodplain.hf[i] > sw.h_thresh) * (sw.floodplain.a[i] > 1.0e-05),
+                sw.floodplain.a[i] > 1.0e-05,
                 local_inertial_flow(
                     sw.floodplain.q0[i],
-                    ηsrc,
-                    ηdst,
+                    sw.ηsrc[i],
+                    sw.ηdst[i],
                     sw.floodplain.hf[i],
                     sw.floodplain.a[i],
                     sw.floodplain.r[i],
@@ -1327,9 +1343,11 @@ end
     a::Vector{T} | "m2"                      # flow area
     r::Vector{T} | "m"                       # hydraulic radius
     hf::Vector{T} | "m"                      # water depth at edge/link
+    zb_max::Vector{T} | "m"                  # maximum bankfull elevation (edge/link)
     q0::Vector{T} | "m3 s-1"                 # discharge at previous time step
     q::Vector{T} | "m3 s-1"                  # discharge
     q_av::Vector{T} | "m"                    # average river discharge
+    index::Vector{Int} | "-"                 # index with `hf` above depth threshold
 end
 
 "Determine the initial floodplain volume"
@@ -1405,6 +1423,7 @@ function initialize_floodplain_1d(
     inds,
     riverwidth,
     riverlength,
+    zb,
     index_pit,
     n_edges,
     nodes_at_link,
@@ -1442,7 +1461,7 @@ function initialize_floodplain_1d(
     width = zeros(Float, n_depths, n)
     width[1, :] = riverwidth[1:n]
 
-    # determine flow area (a), width and wetted perimeter (p)
+    # determine flow area (a), width and wetted perimeter (p)FloodPlain
     h = diff(flood_depths)
     incorrect_vol = 0
     riv_cells = 0
@@ -1510,6 +1529,7 @@ function initialize_floodplain_1d(
     # manning roughness at edges
     append!(n_floodplain, n_floodplain[index_pit]) # copy to ghost nodes
     mannings_n_sq = fill(Float(0), n_edges)
+    zb_max = fill(Float(0), n_edges)
     for i = 1:n_edges
         src_node = nodes_at_link.src[i]
         dst_node = nodes_at_link.dst[i]
@@ -1519,6 +1539,7 @@ function initialize_floodplain_1d(
                 n_floodplain[src_node] * riverlength[src_node]
             ) / (riverlength[dst_node] + riverlength[src_node])
         mannings_n_sq[i] = mannings_n * mannings_n
+        zb_max[i] = max(zb[src_node], zb[dst_node])
     end
 
     floodplain = FloodPlain(
@@ -1532,9 +1553,11 @@ function initialize_floodplain_1d(
         a = zeros(n_edges),
         r = zeros(n_edges),
         hf = zeros(n_edges),
-        q = zeros(n_edges + 1),
+        zb_max = zb_max,
+        q = zeros(n_edges),
         q_av = zeros(n_edges),
-        q0 = zeros(n_edges + 1),
+        q0 = zeros(n_edges),
+        index = zeros(Int, n_edges),
     )
     return floodplain
 end

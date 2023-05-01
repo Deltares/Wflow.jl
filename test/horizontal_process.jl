@@ -197,6 +197,8 @@ end
         mannings_n = n_river,
         h = h_init,
         η_max = zeros(_ne),
+        ηsrc = zeros(_ne),
+        ηdst = zeros(_ne),
         hf = zeros(_ne),
         h_av = zeros(n),
         width = width,
