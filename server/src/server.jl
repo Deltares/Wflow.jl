@@ -36,10 +36,6 @@ const map_structs = Dict(
     "save_state" => SaveState,
 )
 
-context = Context()
-socket = Socket(context, REP)
-ZMQ.bind(socket, "tcp://*:5555")
-
 mutable struct ModelHandler
     model::Union{Wflow.Model,Nothing}
 end
@@ -91,6 +87,20 @@ end
 
 
 handler = ModelHandler(nothing)
+
+# set up a ZMQ context, with optional port number (default = 5555) argument
+context = Context()
+socket = Socket(context, REP)
+n = length(ARGS)
+if n == 0
+    port = 5555
+elseif n == 1
+    port = parse(Int, ARGS[1])
+else
+    throw(ArgumentError("More than one argument provided, while only one port number is allowed."))
+end
+ZMQ.bind(socket, "tcp://*:$port")
+
 try
     while true
         # Wait for next request from client
