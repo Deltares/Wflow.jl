@@ -652,6 +652,3 @@ function threaded_foreach(f, x::AbstractArray; basesize::Integer)
     end
     return nothing
 end
-
-"Return a generator of the true indices or keys of `A`"
-_findall(f::Function, A) = (first(p) for p in pairs(A) if f(last(p)))

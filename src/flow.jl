@@ -752,18 +752,14 @@ function shallowwater_river_update(
     if !isnothing(sw.floodplain)
         @tturbo @. sw.floodplain.hf = max(sw.η_max - sw.floodplain.zb_max, 0.0)
 
-        inds_le = _findall(x -> x <= sw.h_thresh, @view sw.floodplain.hf[sw.active_e])
-        for k in inds_le
-            i = sw.active_e[k]
-            sw.floodplain.q[i] = 0.0
-        end
-
-        inds_gt = _findall(x -> x > sw.h_thresh, @view sw.floodplain.hf[sw.active_e])
-        sw.floodplain.index .= 0
         n = 0
-        for (k, m) in enumerate(inds_gt)
-            sw.floodplain.index[k] = sw.active_e[m]
-            n += 1
+        @inbounds for i in sw.active_e
+            @inbounds if sw.floodplain.hf[i] > sw.h_thresh
+                n += 1
+                sw.floodplain.index[n] = i
+            else
+                sw.floodplain.q[i] = 0.0
+            end
         end
 
         @tturbo for j = 1:n
