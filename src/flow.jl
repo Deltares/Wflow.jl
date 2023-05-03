@@ -1114,11 +1114,13 @@ end
 
 function stable_timestep(sw::ShallowWaterLand{T})::T where {T}
     Δtₘᵢₙ = T(Inf)
-    for i = 1:sw.n
-        if !sw.rivercells[i]
-            Δt = sw.α * min(sw.xl[i], sw.yl[i]) / sqrt(sw.g * sw.h[i])
-            Δtₘᵢₙ = Δt < Δtₘᵢₙ ? Δt : Δtₘᵢₙ
-        end
+    @tturbo for i = 1:sw.n
+        Δt = ifelse(
+            sw.rivercells[i] == 0,
+            sw.α * min(sw.xl[i], sw.yl[i]) / sqrt(sw.g * sw.h[i]),
+            T(Inf),
+        )
+        Δtₘᵢₙ = Δt < Δtₘᵢₙ ? Δt : Δtₘᵢₙ
     end
     Δtₘᵢₙ = isinf(Δtₘᵢₙ) ? T(10.0) : Δtₘᵢₙ
     return Δtₘᵢₙ
@@ -1175,7 +1177,7 @@ function update(sw::ShallowWaterLand{T}, swr::ShallowWaterRiver{T}, network, Δt
     sw.qy0 .= sw.qy
 
     # update qx
-    threaded_foreach(1:sw.n, basesize = 6000) do i
+    @batch per = thread minbatch = 6000 for i = 1:sw.n
         yu = indices.yu[i]
         yd = indices.yd[i]
         xu = indices.xu[i]
@@ -1261,7 +1263,7 @@ function update(sw::ShallowWaterLand{T}, swr::ShallowWaterRiver{T}, network, Δt
     end
 
     # change in volume and water levels based on horizontal fluxes for river and land cells
-    threaded_foreach(1:sw.n, basesize = 6000) do i
+    @batch per = thread minbatch = 6000 for i = 1:sw.n
         yd = indices.yd[i]
         xd = indices.xd[i]
 
