@@ -180,6 +180,8 @@ discharge (are equal).
 | **`length`**    |  river length | m | - |
 | `n`   |  number of cells | - | - |
 | `ne`    |  number of edges/links | - | - |
+| `active_n`    |  active nodes | - | - |
+| `active_e`    |  active edges | - | - |
 | `g`    |  acceleration due to gravity | m s``^{-2}`` | - |
 | `α`    |  stability coefficient (Bates et al., 2010) | - | 0.7 |
 | `h_thresh`    |  depth threshold for calculating flow | m | 0.001 |
@@ -191,9 +193,13 @@ discharge (are equal).
 | `mannings_n_sq` | Manning's roughness squared at edge/link | (s m``^{-\frac{1}{3}}``)``^2`` | - |
 | `h`    | water depth | m | - |
 | `η_max`    | maximum water elevation | m | - |
+| `η_src`    | water elevation of source node of edge | m | - |
+| `η_dst`    | water elevation of downstream node of edge | m | - |
 | `hf`    | water depth at edge/link | m | - |
 | `h_av`    | average water depth | m | - |
-| `length_at_link`    | river length at edge/link | m | - |
+| `dl`    | river length | m | - |
+| `dl_at_link`    | river length at edge/link | m | - |
+| `width`    | river width | m | - |
 | `width_at_link`    | river width at edge/link | m | - |
 | `a`    | flow area at edge/link | m``^2`` | - |
 | `r`    | hydraulic radius at edge/link | m | - |
@@ -201,11 +207,13 @@ discharge (are equal).
 | `error`    | error volume | m``^3`` | - |
 | `inwater`    | lateral inflow | m``^3`` s``^{-1}`` | - |
 | `inflow`        | external inflow (abstraction/supply/demand) | m``^3`` s``^{-1}``| 0.0 |
+| `inflow_wb`        | inflow waterbody (lake or reservoir model) from land part | m``^3`` s``^{-1}``| 0.0 |
 | `bankfull_volume`    | bankfull volume | m``^3`` | - |
 | **`bankfull_depth`**    | bankfull depth | m | - |
 | `froude_limit`    | if true a check is performed if froude number > 1.0 (algorithm is modified) | - | - |
-| `reservoir_index`   |  map cell to 0 (no reservoir) or i (pick reservoir i in reservoir field) | - | - |
-| `lake_index`   |  map cell to 0 (no lake) or i (pick lake i in lake field) | - | - |
+| `reservoir_index`   |  river cell index with a reservoir | - | - |
+| `lake_index`   |  river cell index with a lake | - | - |
+| `waterbody`   |  water body cells (reservoir or lake) | - | - |
 | `reservoir`    | an array of reservoir models `SimpleReservoir` | - | - |
 | `lake` | an array of lake models `Lake` | - | - |
 | `floodplain` | optional 1D floodplain routing `FloodPlain` | - | - |
@@ -230,9 +238,11 @@ netCDF variable.
 | `a`    | flow area at edge/link | m``^2`` | - |
 | `r`    | hydraulic radius at edge/link | m | - |
 | `hf`    | flood depth at edge/link | m | - |
+| `zb_max` | maximum bankfull elevation at edge | m | - |
 | `q0`  |  discharge at previous time step| m``^3`` s``^{-1}`` | - |
 | `q`    |  discharge | m``^3`` s``^{-1}`` | - |
 | `q_av`    |  average discharge | m``^3`` s``^{-1}`` | - |
+| `hf_index` |  index with `hf` above depth threshold | - | - |
 
 The floodplain profile `FloodPlainProfile` contains the following parameters:
 

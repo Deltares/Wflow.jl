@@ -756,14 +756,14 @@ function shallowwater_river_update(
         @inbounds for i in sw.active_e
             @inbounds if sw.floodplain.hf[i] > sw.h_thresh
                 n += 1
-                sw.floodplain.index[n] = i
+                sw.floodplain.hf_index[n] = i
             else
                 sw.floodplain.q[i] = 0.0
             end
         end
 
         @tturbo for j = 1:n
-            i = sw.floodplain.index[j]
+            i = sw.floodplain.hf_index[j]
             i_src = nodes_at_link.src[i]
             i_dst = nodes_at_link.dst[i]
 
@@ -1345,7 +1345,7 @@ end
     q0::Vector{T} | "m3 s-1"                 # discharge at previous time step
     q::Vector{T} | "m3 s-1"                  # discharge
     q_av::Vector{T} | "m"                    # average river discharge
-    index::Vector{Int} | "-"                 # index with `hf` above depth threshold
+    hf_index::Vector{Int} | "-"              # index with `hf` above depth threshold
 end
 
 "Determine the initial floodplain volume"
@@ -1555,7 +1555,7 @@ function initialize_floodplain_1d(
         q = zeros(n_edges),
         q_av = zeros(n_edges),
         q0 = zeros(n_edges),
-        index = zeros(Int, n_edges),
+        hf_index = zeros(Int, n_edges),
     )
     return floodplain
 end
