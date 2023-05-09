@@ -504,7 +504,7 @@ function initialize_flextopo_model(config::Config)
     # lakes
     if do_lakes
         lakes, lakeindex, lake, pits =
-            initialize_natural_lake(config, nc, inds_riv, nriv, pits, tosecond(Δt))
+            initialize_lake(config, nc, inds_riv, nriv, pits, tosecond(Δt))
     else
         lake = ()
         lakes = nothing
