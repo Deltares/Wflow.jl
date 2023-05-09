@@ -483,8 +483,8 @@ end
     mannings_n::Vector{T} | "s m-1/3"       # Manning's roughness at node
     h::Vector{T} | "m"                      # water depth
     η_max::Vector{T} | "m"                  # maximum water elevation
-    ηsrc::Vector{T} | "m"                   # water elevation of source node of edge
-    ηdst::Vector{T} | "m"                   # water elevation of downstream node of edge
+    η_src::Vector{T} | "m"                  # water elevation of source node of edge
+    η_dst::Vector{T} | "m"                  # water elevation of downstream node of edge
     hf::Vector{T} | "m"                     # water depth at edge/link
     h_av::Vector{T} | "m"                   # average water depth
     dl::Vector{T} | "m"                     # river length
@@ -642,8 +642,8 @@ function initialize_shallowwater_river(
         mannings_n = n_river,
         h = h,
         η_max = zeros(_ne),
-        ηsrc = zeros(_ne),
-        ηdst = zeros(_ne),
+        η_src = zeros(_ne),
+        η_dst = zeros(_ne),
         hf = zeros(_ne),
         h_av = zeros(n),
         width = width,
@@ -716,10 +716,10 @@ function shallowwater_river_update(
         i = sw.active_e[j]
         i_src = nodes_at_link.src[i]
         i_dst = nodes_at_link.dst[i]
-        sw.ηsrc[i] = sw.zb[i_src] + sw.h[i_src]
-        sw.ηdst[i] = sw.zb[i_dst] + sw.h[i_dst]
+        sw.η_src[i] = sw.zb[i_src] + sw.h[i_src]
+        sw.η_dst[i] = sw.zb[i_dst] + sw.h[i_dst]
 
-        sw.η_max[i] = max(sw.ηsrc[i], sw.ηdst[i])
+        sw.η_max[i] = max(sw.η_src[i], sw.η_dst[i])
         sw.hf[i] = (sw.η_max[i] - sw.zb_max[i])
 
         sw.a[i] = sw.width_at_link[i] * sw.hf[i] # flow area (rectangular channel)
@@ -729,8 +729,8 @@ function shallowwater_river_update(
             sw.hf[i] > sw.h_thresh,
             local_inertial_flow(
                 sw.q0[i],
-                sw.ηsrc[i],
-                sw.ηdst[i],
+                sw.η_src[i],
+                sw.η_dst[i],
                 sw.hf[i],
                 sw.a[i],
                 sw.r[i],
@@ -810,8 +810,8 @@ function shallowwater_river_update(
                 sw.floodplain.a[i] > 1.0e-05,
                 local_inertial_flow(
                     sw.floodplain.q0[i],
-                    sw.ηsrc[i],
-                    sw.ηdst[i],
+                    sw.η_src[i],
+                    sw.η_dst[i],
                     sw.floodplain.hf[i],
                     sw.floodplain.a[i],
                     sw.floodplain.r[i],
