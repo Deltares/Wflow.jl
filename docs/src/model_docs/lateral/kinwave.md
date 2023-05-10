@@ -91,14 +91,15 @@ method.
 ## Multi-Threading
 The kinematic wave calculations for surface - and subsurface flow routing can be executed in
 parallel using multiple threads. In the model section of the TOML file, a minimum stream
-order can be provided (default is 4) to define subbasins. Subbasins are created at all
-confluences where each branch has a minimal stream order. Based on the subbasins a directed
-acyclic graph is created that controls the order of execution and which subbasins can run in
-parallel.
+order can be provided to define subbasins for the river (default is 6) and land domain
+(default is 5). Subbasins are created at all confluences where each branch has a minimal
+stream order. Based on the subbasins a directed acyclic graph is created that controls the
+order of execution and which subbasins can run in parallel.
 
 ```toml
 [model]
-min_streamorder = 3   # minimum stream order to delineate subbasins, default is 4
+min_streamorder_river = 5 # minimum stream order to delineate subbasins for river domain, default is 6
+min_streamorder_land = 4  # minimum stream order to delineate subbasins for land domain, default is 5
 ```
 
 ## Subcatchment flow
