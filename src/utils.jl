@@ -632,7 +632,7 @@ function threaded_foreach(f, x::AbstractArray; basesize::Integer)
     if Threads.nthreads() <= 8
         len = length(x)
         partitions = _partition(len, basesize)
-        if length(partitions) > 1
+        if length(partitions) > 1 && Threads.nthreads() > 1
             @sync for p in partitions
                 Threads.@spawn begin
                     for i in eachindex(p)
