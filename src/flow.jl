@@ -23,7 +23,6 @@ abstract type SurfaceFlow end
     alpha_term::Vector{T} | "-"             # Term used in computation of α
     α::Vector{T} | "s3/5 m1/5"              # Constant in momentum equation A = αQᵝ, based on Manning's equation
     cel::Vector{T} | "m s-1"                # Celerity of the kinematic wave
-    to_river::Vector{T} | "m3 s-1"          # Part of overland flow [m³ s⁻¹] that flows to the river
     reservoir_index::Vector{Int} | "-"      # map cell to 0 (no reservoir) or i (pick reservoir i in reservoir field)
     lake_index::Vector{Int} | "-"           # map cell to 0 (no lake) or i (pick lake i in lake field)
     reservoir::R                            # Reservoir model struct of arrays
@@ -168,7 +167,6 @@ function initialize_surfaceflow_river(
         alpha_term = fill(mv, n),
         α = fill(mv, n),
         cel = zeros(Float, n),
-        to_river = zeros(Float, n),
         reservoir_index = reservoir_index,
         lake_index = lake_index,
         reservoir = reservoir,
