@@ -5,6 +5,7 @@ config = Wflow.Config(tomlpath)
 model = Wflow.initialize_sbm_gwf_model(config)
 @unpack network = model
 
+Wflow.advance!(model.clock)
 Wflow.load_dynamic_input!(model)
 model = Wflow.update(model)
 
@@ -21,7 +22,7 @@ end
 @testset "first timestep" begin
     sbm = model.vertical
 
-    @test model.clock.iteration == 2
+    @test model.clock.iteration == 1
     @test sbm.θₛ[1] ≈ 0.44999998807907104f0
     @test sbm.runoff[1] == 0.0
     @test sbm.soilevap[1] == 0.0
@@ -29,6 +30,7 @@ end
 end
 
 # run the second timestep
+Wflow.advance!(model.clock)
 Wflow.load_dynamic_input!(model)
 model = Wflow.update(model)
 

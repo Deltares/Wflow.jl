@@ -722,8 +722,5 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:FlextopoModel}
 
     write_output(model)
 
-    # update the clock
-    advance!(clock)
-
     return model
 end

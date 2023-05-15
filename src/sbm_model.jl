@@ -498,8 +498,5 @@ function update_after_subsurfaceflow(
 
     write_output(model)
 
-    # update the clock
-    advance!(clock)
-
     return model
 end

@@ -40,7 +40,7 @@ function Clock(config)
     calendar = get(config, "calendar", "standard")::String
     starttime = cftime(config.starttime, calendar)
     Δt = Second(config.timestepsecs)
-    Clock(starttime, 1, Δt)
+    Clock(starttime, 0, Δt)
 end
 
 function Clock(config, reader)
@@ -48,9 +48,17 @@ function Clock(config, reader)
     # if the config file does not have a start or endtime, folow the NetCDF times
     # and add them to the config
     # if the timestep is not given, use the difference between NetCDF time 1 and 2
+    timestepsecs = get(config, "timestepsecs", nothing)
+    if timestepsecs === nothing
+        timestepsecs = Dates.value(Second(nctimes[2] - nctimes[1]))
+        config.timestepsecs = timestepsecs
+    end
+
+    Δt = Second(timestepsecs)
+
     starttime = get(config, "starttime", nothing)
     if starttime === nothing
-        starttime = first(nctimes)
+        starttime = first(nctimes) - Δt
         config.starttime = starttime
     end
     endtime = get(config, "endtime", nothing)
@@ -58,22 +66,11 @@ function Clock(config, reader)
         endtime = last(nctimes)
         config.endtime = endtime
     end
-    timestepsecs = get(config, "timestepsecs", nothing)
-    if timestepsecs === nothing
-        timestepsecs = Dates.value(Second(nctimes[2] - nctimes[1]))
-        config.timestepsecs = timestepsecs
-    end
 
     calendar = get(config, "calendar", "standard")::String
     starttime = cftime(config.starttime, calendar)
-    Δt = Second(timestepsecs)
-
-    fews_run = get(config, "fews_run", false)::Bool
-    if fews_run
-        starttime = starttime + Δt
-    end
-
-    Clock(starttime, 1, Δt)
+    
+    Clock(starttime, 0, Δt)
 end
 
 include("io.jl")
@@ -202,21 +199,19 @@ function run(model::Model; close_files = true)
     starttime = clock.time
     Δt = clock.Δt
     endtime = cftime(config.endtime, calendar)
-    times = range(starttime, endtime, step = Δt)
+    times = range(starttime + Δt, endtime, step = Δt)
 
     @info "Run information" model_type starttime Δt endtime nthreads()
     runstart_time = now()
     @progress for (i, time) in enumerate(times)
         @debug "Starting timestep." time i now()
+        advance!(clock)
         load_dynamic_input!(model)
         model = update(model)
     end
     @info "Simulation duration: $(canonicalize(now() - runstart_time))"
 
     # write output state NetCDF
-    # undo the clock advance at the end of the last iteration, since there won't
-    # be a next step, and then the output state falls on the correct time
-    rewind!(clock)
     if haskey(config, "state") && haskey(config.state, "path_output")
         @info "Write output states to NetCDF file `$(model.writer.state_nc_path)`."
     end

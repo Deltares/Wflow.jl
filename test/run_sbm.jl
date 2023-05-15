@@ -6,6 +6,7 @@ config = Wflow.Config(tomlpath)
 model = Wflow.initialize_sbm_model(config)
 @unpack network = model
 
+Wflow.advance!(model.clock)
 Wflow.load_dynamic_input!(model)
 model = Wflow.update(model)
 
@@ -74,7 +75,7 @@ end
 
     @test sbm.tt[50063] ≈ 0.0f0
 
-    @test model.clock.iteration == 2
+    @test model.clock.iteration == 1
 
     @test sbm.θₛ[50063] ≈ 0.48755401372909546f0
     @test sbm.θᵣ[50063] ≈ 0.15943120419979095f0
@@ -84,6 +85,7 @@ end
 end
 
 # run the second timestep
+Wflow.advance!(model.clock)
 Wflow.load_dynamic_input!(model)
 model = Wflow.update(model)
 
@@ -152,7 +154,7 @@ model = Wflow.run(config)
     # clock has been reset
     calendar = get(config, "calendar", "standard")::String
     @test model.clock.time == Wflow.cftime(config.starttime, calendar)
-    @test model.clock.iteration == 1
+    @test model.clock.iteration == 0
 end
 
 @testset "river flow at basin outlets and downstream of one pit" begin
@@ -178,8 +180,10 @@ config.input.vertical.leaf_area_index =
     Dict("scale" => 1.6, "netcdf" => Dict("variable" => Dict("name" => "LAI")))
 
 model = Wflow.initialize_sbm_model(config)
+Wflow.advance!(model.clock)
 Wflow.load_dynamic_input!(model)
 model = Wflow.update(model)
+Wflow.advance!(model.clock)
 Wflow.load_dynamic_input!(model)
 model = Wflow.update(model)
 
@@ -200,8 +204,10 @@ config.input.cyclic = ["vertical.leaf_area_index", "lateral.river.inflow"]
 config.input.lateral.river.inflow = "inflow"
 
 model = Wflow.initialize_sbm_model(config)
+Wflow.advance!(model.clock)
 Wflow.load_dynamic_input!(model)
 model = Wflow.update(model)
+Wflow.advance!(model.clock)
 Wflow.load_dynamic_input!(model)
 model = Wflow.update(model)
 
@@ -222,6 +228,7 @@ Wflow.load_fixed_forcing(model)
     @test all(isapprox.(model.lateral.river.reservoir.precipitation, 2.5))
 end
 
+Wflow.advance!(model.clock)
 Wflow.load_dynamic_input!(model)
 model = Wflow.update(model)
 
@@ -239,8 +246,10 @@ config = Wflow.Config(tomlpath)
 config.model.river_routing = "local-inertial"
 
 model = Wflow.initialize_sbm_model(config)
+Wflow.advance!(model.clock)
 Wflow.load_dynamic_input!(model)
 model = Wflow.update(model)
+Wflow.advance!(model.clock)
 Wflow.load_dynamic_input!(model)
 model = Wflow.update(model)
 
@@ -264,8 +273,10 @@ tomlpath = joinpath(@__DIR__, "sbm_swf_config.toml")
 config = Wflow.Config(tomlpath)
 
 model = Wflow.initialize_sbm_model(config)
+Wflow.advance!(model.clock)
 Wflow.load_dynamic_input!(model)
 model = Wflow.update(model)
+Wflow.advance!(model.clock)
 Wflow.load_dynamic_input!(model)
 model = Wflow.update(model)
 
@@ -388,8 +399,10 @@ river = model.lateral.river
     @test Wflow.wetted_perimeter(fp, h, 4, i1) ≈ 90.11775307900271f0
 end
 
+Wflow.advance!(model.clock)
 Wflow.load_dynamic_input!(model)
 model = Wflow.update(model)
+Wflow.advance!(model.clock)
 Wflow.load_dynamic_input!(model)
 model = Wflow.update(model)
 

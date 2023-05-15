@@ -5,6 +5,7 @@ config = Wflow.Config(tomlpath)
 model = Wflow.initialize_hbv_model(config)
 @unpack network = model
 
+Wflow.advance!(model.clock)
 Wflow.load_dynamic_input!(model)
 model = Wflow.update(model)
 
@@ -28,7 +29,7 @@ end
 @testset "first timestep" begin
     hbv = model.vertical
     @test hbv.tt[4377] ≈ 0.0
-    @test model.clock.iteration == 2
+    @test model.clock.iteration == 1
     @test hbv.soilmoisture[4377] ≈ 134.35299682617188f0
     @test hbv.runoff[4377] ≈ 7.406898120121746f0
     @test hbv.soilevap[4377] == 0.0
@@ -36,6 +37,7 @@ end
 end
 
 # run the second timestep
+Wflow.advance!(model.clock)
 Wflow.load_dynamic_input!(model)
 model = Wflow.update(model)
 

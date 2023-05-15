@@ -48,7 +48,7 @@ Update the model for a single timestep.
 - `run = nothing`: to update a model partially.
 """
 function BMI.update(model::Model; run = nothing)
-    @unpack network, config = model
+    @unpack clock, network, config = model
     if isnothing(run)
         update_func = update
     elseif run == "sbm_until_recharge"
@@ -56,17 +56,17 @@ function BMI.update(model::Model; run = nothing)
     elseif run == "sbm_after_subsurfaceflow"
         update_func = update_after_subsurfaceflow
     end
+    advance!(clock)
     load_dynamic_input!(model)
     return update_func(model)
 end
 
 function BMI.update_until(model::Model, time::Float64)
-    @unpack network, config = model
+    @unpack clock, network, config = model
     curtime = BMI.get_current_time(model)
-    n_iter = Int(max(0, (time - curtime) / model.clock.Δt.value))
-    end_time = curtime + n_iter * config.timestepsecs
-    @info "Updating model until $end_time."
-    for _ = 1:n_iter
+    n = Int(max(0, (time - curtime) / model.clock.Δt.value))
+    for _ = 1:n
+        advance!(clock)
         load_dynamic_input!(model)
         update(model)
     end
@@ -76,7 +76,6 @@ end
 "Write state output to netCDF and close files."
 function BMI.finalize(model::Model)
     @unpack config, writer, clock = model
-    rewind!(clock)
     write_netcdf_timestep(model, writer.state_dataset, writer.state_parameters)
     reset_clock!(model.clock, config)
     close_files(model, delete_output = false)
