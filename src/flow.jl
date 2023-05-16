@@ -723,7 +723,7 @@ function shallowwater_river_update(
         sw.a[i] = sw.width_at_link[i] * sw.hf[i] # flow area (rectangular channel)
         sw.r[i] = sw.a[i] / (sw.width_at_link[i] + 2.0 * sw.hf[i]) # hydraulic radius (rectangular channel)
 
-        sw.q[i] = ifelse(
+        sw.q[i] = IfElse.ifelse(
             sw.hf[i] > sw.h_thresh,
             local_inertial_flow(
                 sw.q0[i],
@@ -742,8 +742,8 @@ function shallowwater_river_update(
         )
 
         # limit q in case water is not available
-        sw.q[i] = ifelse(sw.h[i_src] <= 0.0, min(sw.q[i], 0.0), sw.q[i])
-        sw.q[i] = ifelse(sw.h[i_dst] <= 0.0, max(sw.q[i], 0.0), sw.q[i])
+        sw.q[i] = IfElse.ifelse(sw.h[i_src] <= 0.0, min(sw.q[i], 0.0), sw.q[i])
+        sw.q[i] = IfElse.ifelse(sw.h[i_dst] <= 0.0, max(sw.q[i], 0.0), sw.q[i])
 
         sw.q_av[i] += sw.q[i] * Δt
     end
@@ -770,7 +770,7 @@ function shallowwater_river_update(
                 i0 += 1 * (sw.floodplain.profile.depth[k] <= sw.floodplain.hf[i])
             end
             i1 = max(i0, 1)
-            i2 = ifelse(i1 == length(sw.floodplain.profile.depth), i1, i1 + 1)
+            i2 = IfElse.ifelse(i1 == length(sw.floodplain.profile.depth), i1, i1 + 1)
 
             a_src = flow_area(
                 sw.floodplain.profile.width[i2, i_src],
@@ -790,7 +790,7 @@ function shallowwater_river_update(
 
             sw.floodplain.a[i] = min(a_src, a_dst)
 
-            sw.floodplain.r[i] = ifelse(
+            sw.floodplain.r[i] = IfElse.ifelse(
                 a_src < a_dst,
                 a_src / wetted_perimeter(
                     sw.floodplain.profile.p[i1, i_src],
@@ -804,7 +804,7 @@ function shallowwater_river_update(
                 ),
             )
 
-            sw.floodplain.q[i] = ifelse(
+            sw.floodplain.q[i] = IfElse.ifelse(
                 sw.floodplain.a[i] > 1.0e-05,
                 local_inertial_flow(
                     sw.floodplain.q0[i],
@@ -823,19 +823,19 @@ function shallowwater_river_update(
             )
 
             # limit floodplain q in case water is not available
-            sw.floodplain.q[i] = ifelse(
+            sw.floodplain.q[i] = IfElse.ifelse(
                 sw.floodplain.h[i_src] <= 0.0,
                 min(sw.floodplain.q[i], 0.0),
                 sw.floodplain.q[i],
             )
-            sw.floodplain.q[i] = ifelse(
+            sw.floodplain.q[i] = IfElse.ifelse(
                 sw.floodplain.h[i_dst] <= 0.0,
                 max(sw.floodplain.q[i], 0.0),
                 sw.floodplain.q[i],
             )
 
             sw.floodplain.q[i] =
-                ifelse(sw.floodplain.q[i] * sw.q[i] < 0.0, 0.0, sw.floodplain.q[i])
+                IfElse.ifelse(sw.floodplain.q[i] * sw.q[i] < 0.0, 0.0, sw.floodplain.q[i])
             sw.floodplain.q_av[i] += sw.floodplain.q[i] * Δt
         end
     end
@@ -1113,7 +1113,7 @@ end
 function stable_timestep(sw::ShallowWaterLand{T})::T where {T}
     Δtₘᵢₙ = T(Inf)
     @tturbo for i = 1:sw.n
-        Δt = ifelse(
+        Δt = IfElse.ifelse(
             sw.rivercells[i] == 0,
             sw.α * min(sw.xl[i], sw.yl[i]) / sqrt(sw.g * sw.h[i]),
             T(Inf),
