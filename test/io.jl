@@ -71,11 +71,11 @@ end
     pop!(Dict(config), "timestepsecs")
     clock = Wflow.Clock(config, reader)
 
-    @test clock.time == DateTimeProlepticGregorian(2000, 1, 1)
+    @test clock.time == DateTimeProlepticGregorian(2000, 1, 2)
     @test clock.iteration == 0
     @test clock.Δt == Second(Day(1))
     # test that the missing keys have been added to the config
-    @test config.starttime == DateTime(2000, 1, 1)
+    @test config.starttime == DateTime(2000, 1, 2)
     @test config.endtime == DateTime(2001, 1, 1)
     @test config.timestepsecs == 86400
 

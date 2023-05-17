@@ -45,20 +45,20 @@ end
 
 function Clock(config, reader)
     nctimes = reader.dataset["time"][:]
-    # if the config file does not have a start or endtime, folow the NetCDF times
-    # and add them to the config
+    
     # if the timestep is not given, use the difference between NetCDF time 1 and 2
     timestepsecs = get(config, "timestepsecs", nothing)
     if timestepsecs === nothing
         timestepsecs = Dates.value(Second(nctimes[2] - nctimes[1]))
         config.timestepsecs = timestepsecs
     end
-
     Δt = Second(timestepsecs)
-
+    
+    # if the config file does not have a start or endtime, follow the NetCDF times
+    # and add them to the config
     starttime = get(config, "starttime", nothing)
     if starttime === nothing
-        starttime = first(nctimes) - Δt
+        starttime = first(nctimes)
         config.starttime = starttime
     end
     endtime = get(config, "endtime", nothing)
