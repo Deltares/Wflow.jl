@@ -50,15 +50,17 @@ Update the model for a single timestep.
 function BMI.update(model::Model; run = nothing)
     @unpack clock, network, config = model
     if isnothing(run)
-        update_func = update
+        model = run_timestep(model)
     elseif run == "sbm_until_recharge"
-        update_func = update_until_recharge
+        model = run_timestep(
+            model,
+            update_func = update_until_recharge,
+            write_model_output = false,
+        )
     elseif run == "sbm_after_subsurfaceflow"
-        update_func = update_after_subsurfaceflow
+        model = run_timestep(model, update_func = update_after_subsurfaceflow)
     end
-    advance!(clock)
-    load_dynamic_input!(model)
-    return update_func(model)
+    return model
 end
 
 function BMI.update_until(model::Model, time::Float64)
@@ -66,9 +68,7 @@ function BMI.update_until(model::Model, time::Float64)
     curtime = BMI.get_current_time(model)
     n = Int(max(0, (time - curtime) / model.clock.Δt.value))
     for _ = 1:n
-        advance!(clock)
-        load_dynamic_input!(model)
-        update(model)
+        model = run_timestep(model)
     end
     return model
 end

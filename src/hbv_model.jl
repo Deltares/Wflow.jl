@@ -426,7 +426,5 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:HbvModel}
 
     surface_routing(model)
 
-    write_output(model)
-
     return model
 end

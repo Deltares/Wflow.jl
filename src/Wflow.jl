@@ -189,6 +189,16 @@ function run(config::Config)
     run(model)
 end
 
+function run_timestep(model::Model; update_func = update, write_model_output = true)
+    advance!(model.clock)
+    load_dynamic_input!(model)
+    model = update_func(model)
+    if write_model_output
+        write_output(model)
+    end
+    return model
+end
+
 function run(model::Model; close_files = true)
     @unpack network, config, writer, clock = model
 
@@ -205,9 +215,7 @@ function run(model::Model; close_files = true)
     runstart_time = now()
     @progress for (i, time) in enumerate(times)
         @debug "Starting timestep." time i now()
-        advance!(clock)
-        load_dynamic_input!(model)
-        model = update(model)
+        model = run_timestep(model)
     end
     @info "Simulation duration: $(canonicalize(now() - runstart_time))"
 
