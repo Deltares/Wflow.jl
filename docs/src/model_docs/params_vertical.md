@@ -77,7 +77,7 @@ specific_leaf = "Sl"
 | `transpiration` | transpiration | mm Δt``^{-1}`` | - |
 | `ae_ustore` | actual evaporation from unsaturated store | mm Δt``^{-1}`` | - |
 | `interception` | interception | mm Δt``^{-1}`` | - |
-| `soilevap` | soil evaporation from unsaturated store | mm Δt``^{-1}`` | - |
+| `soilevap` | total soil evaporation from unsaturated and saturated store | mm Δt``^{-1}`` | - |
 | `soilevapsat` | soil evaporation from saturated store | mm Δt``^{-1}`` | - |
 | `actcapflux` | actual capillary rise | mm Δt``^{-1}`` | - |
 | `actevapsat` | actual transpiration from saturated store | mm Δt``^{-1}`` | - |
