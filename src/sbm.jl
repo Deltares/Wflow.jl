@@ -86,7 +86,7 @@
     ae_ustore::Vector{T}
     # Interception [mm Δt⁻¹]
     interception::Vector{T}
-    # Soil evaporation from unsaturated store [mm Δt⁻¹]
+    # Soil evaporation from unsaturated and saturated store [mm Δt⁻¹]
     soilevap::Vector{T}
     # Soil evaporation from saturated store [mm Δt⁻¹]
     soilevapsat::Vector{T}
