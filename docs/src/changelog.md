@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `BMI.get_time_units` now gets called on the model rather than the type, like all other BMI
   functions, except `BMI.initialize`. Also it returns "s" instead of "seconds since
   1970-01-01T00:00:00", in line with the BMI specification.
+- Added the `interception` component to total actual evapotranspiration `actevap` of `SBM`
+  (was defined as the sum of soil evaporation, transpiration and open water evaporation).  
 
 ### Changed
 - The time values returned in the BMI interface are no longer in seconds since 1970, but in
