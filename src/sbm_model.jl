@@ -387,6 +387,8 @@ through BMI, to couple the SBM model to an external groundwater model.
 function update_until_recharge(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
     @unpack lateral, vertical, network, clock, config = model
 
+    do_water_demand = haskey(config.model, "water_demand")
+
     inds_riv = network.index_river
 
     # extract water levels h_av [m] from the land and river domains
@@ -408,6 +410,11 @@ function update_until_recharge(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:Sb
         )
     end
 
+    # optional water demand and allocation
+    if do_water_demand
+        update_water_demand(vertical)
+    end
+
     # update vertical sbm concept until recharge [mm] to the saturated store
     update_until_recharge(vertical, config)
 
@@ -424,7 +431,6 @@ function update_after_subsurfaceflow(
     model::Model{N,L,V,R,W,T},
 ) where {N,L,V,R,W,T<:SbmModel}
     @unpack lateral, vertical, network, clock, config = model
-    do_water_demand = haskey(config.model, "water_demand")
 
     # update vertical sbm concept (runoff, ustorelayerdepth and satwaterdepth)
     update_after_subsurfaceflow(
@@ -432,10 +438,6 @@ function update_after_subsurfaceflow(
         lateral.subsurface.zi * 1000.0,
         lateral.subsurface.exfiltwater * 1000.0,
     )
-
-    if do_water_demand
-        update_water_demand(sbm)
-    end
 
     ssf_toriver = lateral.subsurface.to_river ./ tosecond(basetimestep)
     surface_routing(model, ssf_toriver = ssf_toriver)
