@@ -702,7 +702,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         domestic = domestic ? initialize_domestic_demand(nc, config, inds, Δt) : nothing,
         industry = industry ? initialize_industry_demand(nc, config, inds, Δt) : nothing,
         livestock = livestock ? initialize_livestock_demand(nc, config, inds, Δt) : nothing,
-        waterallocation = do_water_demand ? initialize_water_allocation(n) : nothing,
+        waterallocation = do_water_demand ? initialize_water_allocation(nc, config, inds) : nothing,
     )
 
     return sbm

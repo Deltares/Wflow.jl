@@ -35,6 +35,10 @@ end
 @get_units @with_kw struct WaterAllocation{T}
     irri_demand_gross::Vector{T}        # irrigation gross demand
     nonirri_demand_gross::Vector{T}     # non irrigation gross demand
+    total_gross_demand::Vector{T}       # total gross demand
+    f_gw_used_irri::Vector{T}           # fraction groundwater used for irrigation
+    f_gw_used_nonirri::Vector{T}        # fraction groundwater used for non irrigation
+    allocation_areas::Vector{Int}       # allocation areas
 end
 
 function set_returnflow_fraction(returnflow_fraction, demand_gross, demand_net)
@@ -213,10 +217,50 @@ function initialize_nonpaddy(nc, config, inds)
     return nonpaddy
 end
 
-function initialize_water_allocation(n)
+function initialize_water_allocation(nc, config, inds)
+
+    f_gw_used_irri = ncread(
+        nc,
+        config,
+        "vertical.waterallocation.f_gw_used_irri";
+        sel = inds,
+        defaults = 1,
+        #optional = false,
+        type = Float,
+        #fill = 0,
+    )
+
+    f_gw_used_nonirri = ncread(
+        nc,
+        config,
+        "vertical.waterallocation.f_gw_used_nonirri";
+        sel = inds,
+        defaults = 1,
+        #optional = false,
+        type = Float,
+        #fill = 0,
+    )
+
+    allocation_areas = ncread(
+        nc,
+        config,
+        "vertical.waterallocation.allocation_areas";
+        sel = inds,
+        defaults = 1,
+        #optional = false,
+        type = Int,
+        #fill = 0,
+    )
+
+    n = length(inds) 
+    
     waterallocation = WaterAllocation(
         irri_demand_gross = zeros(Float, n),
         nonirri_demand_gross = zeros(Float, n),
+        total_gross_demand = zeros(Float, n),
+        f_gw_used_irri = f_gw_used_irri,
+        f_gw_used_nonirri = f_gw_used_nonirri,
+        allocation_areas = allocation_areas,
     )
 
     return waterallocation
@@ -261,6 +305,7 @@ function update_water_demand(sbm::SBM)
             irri_dem_gross += irr_depth_paddy / sbm.paddy.irrigation_efficiency[i]
         end
         sbm.waterallocation.irri_demand_gross[i] = irri_dem_gross
-        sbm.waterallocation.nonirri_dem_gross[i] = nonirri_dem_gross
+        sbm.waterallocation.nonirri_demand_gross[i] = nonirri_dem_gross
+        sbm.waterallocation.total_gross_demand[i] = irri_dem_gross + nonirri_dem_gross
     end
 end
