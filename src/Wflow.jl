@@ -58,7 +58,7 @@ function Clock(config, reader)
     # and add them to the config
     starttime = get(config, "starttime", nothing)
     if starttime === nothing
-        starttime = first(nctimes)
+        starttime = first(nctimes) - Δt
         config.starttime = starttime
     end
     endtime = get(config, "endtime", nothing)
@@ -68,6 +68,10 @@ function Clock(config, reader)
     end
 
     calendar = get(config, "calendar", "standard")::String
+    fews_run = get(config, "fews_run", false)::Bool
+    if fews_run
+        config.starttime = starttime + Δt
+    end
     starttime = cftime(config.starttime, calendar)
     
     Clock(starttime, 0, Δt)
