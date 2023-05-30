@@ -6,14 +6,13 @@ config = Wflow.Config(tomlpath)
 model = Wflow.initialize_sediment_model(config)
 @unpack network = model
 
-Wflow.load_dynamic_input!(model)
-model = Wflow.update(model)
+model = Wflow.run_timestep(model)
 
 @testset "first timestep sediment model (vertical)" begin
     eros = model.vertical
 
     @test eros.erosov[1] ≈ 0.9f0
-    @test model.clock.iteration == 2
+    @test model.clock.iteration == 1
     @test mean(eros.leaf_area_index) ≈ 1.7120018886212223f0
     @test eros.dmsand[1] == 200.0f0
     @test eros.dmlagg[1] == 500.0f0
@@ -22,8 +21,7 @@ model = Wflow.update(model)
 end
 
 # run the second timestep
-Wflow.load_dynamic_input!(model)
-model = Wflow.update(model)
+model = Wflow.run_timestep(model)
 
 @testset "second timestep sediment model (vertical)" begin
     eros = model.vertical

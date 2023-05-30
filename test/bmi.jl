@@ -13,7 +13,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test BMI.get_time_step(model) == 86400.0
             @test BMI.get_start_time(model) == 0.0
             @test BMI.get_current_time(model) == 0.0
-            @test BMI.get_end_time(model) == 30 * 86400.0
+            @test BMI.get_end_time(model) == 31 * 86400.0
         end
 
         @testset "model information functions" begin

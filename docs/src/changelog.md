@@ -17,6 +17,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - The time values returned in the BMI interface are no longer in seconds since 1970, but in
   seconds since the model start time. This is more in line with standard BMI practices.
+- The `starttime` was defined one model timestep `Δt` ahead of the actual model time (the
+  initial conditions timestamp (state time)). As a consequence this was also the case for
+  the current model time. To allow for an easier interpretation of Wflow time handling,
+  either through BMI or directly, the `starttime` is now equal to the state time, resulting
+  in current model times without an offset.
 
 ### Added
 - For (regulated) lakes with rating curve of type 1 (H-Q table), lake `storage` above the
