@@ -25,13 +25,13 @@ end
     @test request(msg) == Dict("status" => "OK")
 
     msg = Dict("fn" => "get_end_time")
-    @test request(msg) == Dict("end_time" => 2592000)
+    @test request(msg) == Dict("end_time" => 2678400)
 
     msg = Dict("fn" => "get_start_time")
     @test request(msg) == Dict("start_time" => 0)
 
     msg = Dict("fn" => "get_start_unix_time")
-    @test request(msg) == Dict("start_unix_time" => 946771200)
+    @test request(msg) == Dict("start_unix_time" => 946684800)
 
     msg = Dict("fn" => "update_until", "time" => 86400.0)
     @test request(msg) == Dict("status" => "OK")
