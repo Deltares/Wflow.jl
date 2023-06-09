@@ -1214,6 +1214,7 @@ function reducerfunction(reducer::AbstractString)
         "first" => first,
         "last" => last,
         "only" => only,
+        "sum" => sum,
     )
     f = get(functionmap, reducer, nothing)
     isnothing(f) && error("unknown reducer")
