@@ -128,18 +128,19 @@ function graph_from_nodes(graph, subbas, subbas_fill)
 end
 
 """
-    function kinwave_set_subdomains(config, graph, toposort, index_pit)
+    function kinwave_set_subdomains(graph, toposort, index_pit, streamorder, min_sto)
 
 Setup subdomains for parallel execution (threading) of the kinematic wave calculation.
-Subdomains are subbasins based on a minumum streamorder `min_sto` (see also `subbasins(g,
+Subdomains are subbasins based on a minimum stream order `min_sto` (see also `subbasins(g,
 streamorder, toposort, min_sto)`). Subbasins are extracted for each basin outlet in Vector
 `index_pit`.
 
 # Arguments
-- `config` Struct that contains parsed TOML configuration
 - `graph` directed acyclic graph of the kinematic wave domain
 - `toposort` topological order of `graph`
 - `index_pit` Vector with basin outlets (pits)
+- `streamorder` stream order of the kinematic wave domain
+- `min_sto` minimum `streamorder` value
 
 # Output
 - `subbas_order` grouped subbasin ids (`Vector{Vector{Int}}`) ordered upstream (first index)
