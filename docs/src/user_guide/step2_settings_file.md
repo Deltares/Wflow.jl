@@ -286,6 +286,7 @@ with the following available reducers:
 + minimum
 + mean
 + median
++ sum
 + first
 + last
 + only

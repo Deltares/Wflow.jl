@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   functions, except `BMI.initialize`. Also it returns "s" instead of "seconds since
   1970-01-01T00:00:00", in line with the BMI specification.
 - Added the `interception` component to total actual evapotranspiration `actevap` of `SBM`
-  (was defined as the sum of soil evaporation, transpiration and open water evaporation).  
+  (was defined as the sum of soil evaporation, transpiration and open water evaporation).
 
 ### Changed
 - The time values returned in the BMI interface are no longer in seconds since 1970, but in
@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - For (regulated) lakes with rating curve of type 1 (H-Q table), lake `storage` above the
   `maximumstorage` (based on maximum water level from the H-Q table) is spilled
   instantaneously (overflow) from the lake.
+- Added support to use `sum` as a reducer function for csv and scalar output options.
 
 ## v0.6.3 - 2023-03-01
 
