@@ -6,8 +6,7 @@ config = Wflow.Config(tomlpath)
 model = Wflow.initialize_sbm_model(config)
 @unpack network = model
 
-Wflow.load_dynamic_input!(model)
-model = Wflow.update(model)
+model = Wflow.run_timestep(model)
 
 # test if the first timestep was written to the CSV file
 flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
@@ -74,7 +73,7 @@ end
 
     @test sbm.tt[50063] ≈ 0.0f0
 
-    @test model.clock.iteration == 2
+    @test model.clock.iteration == 1
 
     @test sbm.θₛ[50063] ≈ 0.48755401372909546f0
     @test sbm.θᵣ[50063] ≈ 0.15943120419979095f0
@@ -84,8 +83,7 @@ end
 end
 
 # run the second timestep
-Wflow.load_dynamic_input!(model)
-model = Wflow.update(model)
+model = Wflow.run_timestep(model)
 
 @testset "second timestep" begin
     sbm = model.vertical
@@ -152,7 +150,7 @@ model = Wflow.run(config)
     # clock has been reset
     calendar = get(config, "calendar", "standard")::String
     @test model.clock.time == Wflow.cftime(config.starttime, calendar)
-    @test model.clock.iteration == 1
+    @test model.clock.iteration == 0
 end
 
 @testset "river flow at basin outlets and downstream of one pit" begin
@@ -178,10 +176,8 @@ config.input.vertical.leaf_area_index =
     Dict("scale" => 1.6, "netcdf" => Dict("variable" => Dict("name" => "LAI")))
 
 model = Wflow.initialize_sbm_model(config)
-Wflow.load_dynamic_input!(model)
-model = Wflow.update(model)
-Wflow.load_dynamic_input!(model)
-model = Wflow.update(model)
+model = Wflow.run_timestep(model)
+model = Wflow.run_timestep(model)
 
 @testset "changed dynamic parameters" begin
     res = model.lateral.river.reservoir
@@ -200,10 +196,8 @@ config.input.cyclic = ["vertical.leaf_area_index", "lateral.river.inflow"]
 config.input.lateral.river.inflow = "inflow"
 
 model = Wflow.initialize_sbm_model(config)
-Wflow.load_dynamic_input!(model)
-model = Wflow.update(model)
-Wflow.load_dynamic_input!(model)
-model = Wflow.update(model)
+model = Wflow.run_timestep(model)
+model = Wflow.run_timestep(model)
 
 @testset "river inflow (cyclic)" begin
     @test model.lateral.river.inflow[44] ≈ 0.75
@@ -222,8 +216,7 @@ Wflow.load_fixed_forcing(model)
     @test all(isapprox.(model.lateral.river.reservoir.precipitation, 2.5))
 end
 
-Wflow.load_dynamic_input!(model)
-model = Wflow.update(model)
+model = Wflow.run_timestep(model)
 
 @testset "fixed precipitation forcing (first timestep)" begin
     @test maximum(model.vertical.precipitation) ≈ 2.5
@@ -239,10 +232,8 @@ config = Wflow.Config(tomlpath)
 config.model.river_routing = "local-inertial"
 
 model = Wflow.initialize_sbm_model(config)
-Wflow.load_dynamic_input!(model)
-model = Wflow.update(model)
-Wflow.load_dynamic_input!(model)
-model = Wflow.update(model)
+model = Wflow.run_timestep(model)
+model = Wflow.run_timestep(model)
 
 @testset "river flow and depth (local inertial)" begin
     q = model.lateral.river.q_av
@@ -264,10 +255,8 @@ tomlpath = joinpath(@__DIR__, "sbm_swf_config.toml")
 config = Wflow.Config(tomlpath)
 
 model = Wflow.initialize_sbm_model(config)
-Wflow.load_dynamic_input!(model)
-model = Wflow.update(model)
-Wflow.load_dynamic_input!(model)
-model = Wflow.update(model)
+model = Wflow.run_timestep(model)
+model = Wflow.run_timestep(model)
 
 @testset "river and overland flow and depth (local inertial)" begin
     q = model.lateral.river.q_av
@@ -394,10 +383,8 @@ river = model.lateral.river
     @test Wflow.wetted_perimeter(fp.p[i1, 4], fp.depth[i1], h) ≈ 90.11775307900271f0
 end
 
-Wflow.load_dynamic_input!(model)
-model = Wflow.update(model)
-Wflow.load_dynamic_input!(model)
-model = Wflow.update(model)
+model = Wflow.run_timestep(model)
+model = Wflow.run_timestep(model)
 
 @testset "river flow (local inertial) with floodplain schematization simulation" begin
     q = model.lateral.river.q_av

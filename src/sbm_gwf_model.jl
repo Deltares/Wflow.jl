@@ -486,10 +486,5 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
     ssf_toriver[inds_riv] = -lateral.subsurface.river.flux ./ lateral.river.Δt
     surface_routing(model, ssf_toriver = ssf_toriver)
 
-    write_output(model)
-
-    # update the clock
-    advance!(clock)
-
     return model
 end

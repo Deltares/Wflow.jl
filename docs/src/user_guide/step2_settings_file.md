@@ -6,15 +6,19 @@ The filepaths that are provided in this file are relative to the location of the
 or to `dir_input` and `dir_output` if they are given.
 
 ## General time info
-Time information is optional. When left out, each time step in the forcing NetCDF will be
-calculated. If you wish to calculate a subset of this time range, or a different timestep,
-you can specify a `starttime`, `endtime` and `timestepsecs` yourself. The `time_units`
-optional information is used by the `writer` of the model, for model output in netCDF
-format. The `calendar` option allows you to calculate in one of the different [CF
-conventions calendars](http://cfconventions.org/cf-conventions/cf-conventions.html#calendar)
-provided by the [CFTime.jl package](https://juliageo.org/CFTime.jl/latest/), such as
-`"360_day"`. This is useful if you want to calculate climate scenarios which are sometimes
-provided in these alternative calendars.
+Time information is optional. When left out, for each timestamp in the forcing NetCDF Wflow
+will do computations, except for the first forcing timestamp that is considered equal to the
+initial conditions of the Wflow model (state time). If you wish to calculate a subset of
+this time range, or a different timestep, you can specify a `starttime`, `endtime` and
+`timestepsecs` yourself. The `starttime` is defined as the model state time. In the TOML
+file settings below the `starttime` is 2000-01-01T00:00:00 (state time) and the first update
+(and output) of the Wflow model is at 2000-01-02T00:00:00. The `time_units` optional
+information is used by the `writer` of the model, for model output in netCDF format. The
+`calendar` option allows you to calculate in one of the different [CF conventions
+calendars](http://cfconventions.org/cf-conventions/cf-conventions.html#calendar) provided by
+the [CFTime.jl package](https://juliageo.org/CFTime.jl/latest/), such as `"360_day"`. This
+is useful if you want to calculate climate scenarios which are sometimes provided in these
+alternative calendars.
 
 ```toml
 calendar = "standard"                           # optional, this is default value

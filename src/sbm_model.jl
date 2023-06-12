@@ -508,10 +508,5 @@ function update_after_subsurfaceflow(
     ssf_toriver = lateral.subsurface.to_river ./ tosecond(basetimestep)
     surface_routing(model, ssf_toriver = ssf_toriver)
 
-    write_output(model)
-
-    # update the clock
-    advance!(clock)
-
     return model
 end

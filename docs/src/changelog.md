@@ -11,10 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `BMI.get_time_units` now gets called on the model rather than the type, like all other BMI
   functions, except `BMI.initialize`. Also it returns "s" instead of "seconds since
   1970-01-01T00:00:00", in line with the BMI specification.
+- Added the `interception` component to total actual evapotranspiration `actevap` of `SBM`
+  (was defined as the sum of soil evaporation, transpiration and open water evaporation).  
 
 ### Changed
 - The time values returned in the BMI interface are no longer in seconds since 1970, but in
   seconds since the model start time. This is more in line with standard BMI practices.
+- The `starttime` was defined one model timestep `Δt` ahead of the actual model time (the
+  initial conditions timestamp (state time)). As a consequence this was also the case for
+  the current model time. To allow for an easier interpretation of Wflow time handling,
+  either through BMI or directly, the `starttime` is now equal to the state time, resulting
+  in current model times without an offset.
 - Using more than 8 threads can result in too much overhead with `Threads.@threads`. After
   performance testing, this has been changed for kinematic wave routing and the vertical
   `SBM` concept to spawning tasks with `Threads@spawn` for number of threads <= 8, where
