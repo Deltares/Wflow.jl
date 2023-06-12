@@ -263,7 +263,6 @@ function initialize_hbv_model(config::Config)
         sl = βₗ,
         dl = dl,
         width = map(det_surfacewidth, dw, riverwidth, river),
-        wb_pit = pits[inds],
         iterate = kinwave_it,
         tstep = kw_land_tstep,
         Δt = Δt,
@@ -292,12 +291,10 @@ function initialize_hbv_model(config::Config)
         inds_riv;
         dl = riverlength,
         width = riverwidth,
-        wb_pit = pits[inds_riv],
         reservoir_index = resindex,
         reservoir = reservoirs,
         lake_index = lakeindex,
         lake = lakes,
-        river = river,
         iterate = kinwave_it,
         tstep = kw_river_tstep,
         Δt = Δt,
@@ -309,10 +306,23 @@ function initialize_hbv_model(config::Config)
     toposort_riv = topological_sort_by_dfs(graph_riv)
     index_pit_land = findall(x -> x == 5, ldd)
     index_pit_river = findall(x -> x == 5, ldd_riv)
-    subbas_order, indices_subbas, topo_subbas =
-        kinwave_set_subdomains(config, graph, toposort, index_pit_land)
-    subriv_order, indices_subriv, topo_subriv =
-        kinwave_set_subdomains(config, graph_riv, toposort_riv, index_pit_river)
+    streamorder = stream_order(graph, toposort)
+    min_streamorder_land = get(config.model, "min_streamorder_land", 5)
+    subbas_order, indices_subbas, topo_subbas = kinwave_set_subdomains(
+        graph,
+        toposort,
+        index_pit_land,
+        streamorder,
+        min_streamorder_land,
+    )
+    min_streamorder_river = get(config.model, "min_streamorder_river", 6)
+    subriv_order, indices_subriv, topo_subriv = kinwave_set_subdomains(
+        graph_riv,
+        toposort_riv,
+        index_pit_river,
+        streamorder[index_river],
+        min_streamorder_river,
+    )
 
     modelmap = (vertical = hbv, lateral = (land = olf, river = rf))
     indices_reverse = (
@@ -339,7 +349,7 @@ function initialize_hbv_model(config::Config)
     # functions
     land = (
         graph = graph,
-        upstream_nodes = filter_upsteam_nodes(graph, olf.wb_pit),
+        upstream_nodes = filter_upsteam_nodes(graph, pits[inds]),
         subdomain_order = subbas_order,
         topo_subdomain = topo_subbas,
         indices_subdomain = indices_subbas,
@@ -351,7 +361,7 @@ function initialize_hbv_model(config::Config)
     )
     river = (
         graph = graph_riv,
-        upstream_nodes = filter_upsteam_nodes(graph_riv, rf.wb_pit),
+        upstream_nodes = filter_upsteam_nodes(graph_riv, pits[inds_riv]),
         subdomain_order = subriv_order,
         topo_subdomain = topo_subriv,
         indices_subdomain = indices_subriv,

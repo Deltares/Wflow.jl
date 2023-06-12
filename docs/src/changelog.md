@@ -22,6 +22,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the current model time. To allow for an easier interpretation of Wflow time handling,
   either through BMI or directly, the `starttime` is now equal to the state time, resulting
   in current model times without an offset.
+- Using more than 8 threads can result in too much overhead with `Threads.@threads`. After
+  performance testing, this has been changed for kinematic wave routing and the vertical
+  `SBM` concept to spawning tasks with `Threads@spawn` for number of threads <= 8, where
+  each task iterates over a chunk of size `basesize`. For more than 8 threads the low
+  overhead threading `Polyester.@batch` (including the `minbatch` argument) is used. For
+  local inertial routing the use of `Threads.@threads` has been changed to threaded loop
+  vectorization (river and 1D floodplain local inertial momentum equation) and
+  `Polyester.@batch`.
 
 ### Added
 - For (regulated) lakes with rating curve of type 1 (H-Q table), lake `storage` above the

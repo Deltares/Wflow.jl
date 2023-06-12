@@ -292,13 +292,13 @@ model = Wflow.initialize_sbm_model(config)
 fp = model.lateral.river.floodplain.profile
 river = model.lateral.river
 Δh = diff(fp.depth)
-Δv = diff(fp.volume[3])
-Δa = diff(fp.a[3])
+Δv = diff(fp.volume[:, 3])
+Δa = diff(fp.a[:, 3])
 
 @testset "river flow (local inertial) floodplain schematization" begin
     # floodplain geometry checks (index 3)
-    @test fp.volume[3] ≈ [0.0f0, 8641.0f0, 19011.0f0, 31685.0f0, 51848.0f0, 80653.0f0]
-    @test fp.width[3] ≈ [
+    @test fp.volume[:, 3] ≈ [0.0f0, 8641.0f0, 19011.0f0, 31685.0f0, 51848.0f0, 80653.0f0]
+    @test fp.width[:, 3] ≈ [
         30.0f0,
         99.28617594254938f0,
         119.15260323159785f0,
@@ -306,7 +306,7 @@ river = model.lateral.river
         231.6754039497307f0,
         330.9730700179533f0,
     ]
-    @test fp.p[3] ≈ [
+    @test fp.p[:, 3] ≈ [
         69.28617594254938f0,
         70.28617594254938f0,
         91.15260323159785f0,
@@ -314,7 +314,7 @@ river = model.lateral.river
         205.6754039497307f0,
         305.9730700179533f0,
     ]
-    @test fp.a[3] ≈ [
+    @test fp.a[:, 3] ≈ [
         0.0f0,
         49.64308797127469f0,
         109.21938958707361f0,
@@ -322,59 +322,65 @@ river = model.lateral.river
         297.8700179533214f0,
         463.35655296229805f0,
     ]
-    @test Δh .* fp.width[3][2:end] * river.dl[3] ≈ Δv
-    @test fp.a[3] * river.dl[3] ≈ fp.volume[3]
+    @test Δh .* fp.width[2:end, 3] * river.dl[3] ≈ Δv
+    @test fp.a[:, 3] * river.dl[3] ≈ fp.volume[:, 3]
     # flood depth from flood volume (8000.0)
     flood_vol = 8000.0f0
     river.volume[3] = flood_vol + river.bankfull_volume[3]
-    i1, i2 = Wflow.interpolation_indices(flood_vol, fp.volume[3])
+    i1, i2 = Wflow.interpolation_indices(flood_vol, fp.volume[:, 3])
     @test (i1, i2) == (1, 2)
     flood_depth = Wflow.flood_depth(fp, flood_vol, river.dl[3], 3)
     @test flood_depth ≈ 0.46290938548779076f0
-    @test (flood_depth - fp.depth[i1]) * fp.width[3][i2] * river.dl[3] + fp.volume[3][i1] ≈
+    @test (flood_depth - fp.depth[i1]) * fp.width[i2, 3] * river.dl[3] + fp.volume[i1, 3] ≈
           flood_vol
     # flood depth from flood volume (12000.0)
     flood_vol = 12000.0f0
     river.volume[3] = flood_vol + river.bankfull_volume[3]
-    i1, i2 = Wflow.interpolation_indices(flood_vol, fp.volume[3])
+    i1, i2 = Wflow.interpolation_indices(flood_vol, fp.volume[:, 3])
     @test (i1, i2) == (2, 3)
     flood_depth = Wflow.flood_depth(fp, flood_vol, river.dl[3], 3)
     @test flood_depth ≈ 0.6619575699132112f0
-    @test (flood_depth - fp.depth[i1]) * fp.width[3][i2] * river.dl[3] + fp.volume[3][i1] ≈
+    @test (flood_depth - fp.depth[i1]) * fp.width[i2, 3] * river.dl[3] + fp.volume[i1, 3] ≈
           flood_vol
     # test extrapolation of segment
     flood_vol = 95000.0f0
     river.volume[3] = flood_vol + river.bankfull_volume[3]
-    i1, i2 = Wflow.interpolation_indices(flood_vol, fp.volume[3])
+    i1, i2 = Wflow.interpolation_indices(flood_vol, fp.volume[:, 3])
     @test (i1, i2) == (6, 6)
     flood_depth = Wflow.flood_depth(fp, flood_vol, river.dl[3], 3)
     @test flood_depth ≈ 2.749036625585836f0
-    @test (flood_depth - fp.depth[i1]) * fp.width[3][i2] * river.dl[3] + fp.volume[3][i1] ≈
+    @test (flood_depth - fp.depth[i1]) * fp.width[i2, 3] * river.dl[3] + fp.volume[i1, 3] ≈
           flood_vol
     river.volume[3] = 0.0 # reset volume
     # flow area and wetted perimeter based on hf
     h = 0.5
     i1, i2 = Wflow.interpolation_indices(h, fp.depth)
-    @test Wflow.flow_area(fp, h, 3, i1, i2) ≈ 49.64308797127469f0
-    @test Wflow.wetted_perimeter(fp, h, 3, i1) ≈ 70.28617594254938f0
+    @test Wflow.flow_area(fp.width[i2, 3], fp.a[i1, 3], fp.depth[i1], h) ≈
+          49.64308797127469f0
+    @test Wflow.wetted_perimeter(fp.p[i1, 3], fp.depth[i1], h) ≈ 70.28617594254938f0
     h = 1.5
     i1, i2 = Wflow.interpolation_indices(h, fp.depth)
-    @test Wflow.flow_area(fp, h, 3, i1, i2) ≈ 182.032315978456f0
-    @test Wflow.wetted_perimeter(fp, h, 3, i1) ≈ 118.62585278276481f0
+    @test Wflow.flow_area(fp.width[i2, 3], fp.a[i1, 3], fp.depth[i1], h) ≈
+          182.032315978456f0
+    @test Wflow.wetted_perimeter(fp.p[i1, 3], fp.depth[i1], h) ≈ 118.62585278276481f0
     h = 1.7
     i1, i2 = Wflow.interpolation_indices(h, fp.depth)
-    @test Wflow.flow_area(fp, h, 3, i1, i2) ≈ 228.36739676840216f0
-    @test Wflow.wetted_perimeter(fp, h, 3, i1) ≈ 119.02585278276482f0
+    @test Wflow.flow_area(fp.width[i2, 3], fp.a[i1, 3], fp.depth[i1], h) ≈
+          228.36739676840216f0
+    @test Wflow.wetted_perimeter(fp.p[i1, 3], fp.depth[i1], h) ≈ 119.02585278276482f0
     h = 3.2
     i1, i2 = Wflow.interpolation_indices(h, fp.depth)
-    @test Wflow.flow_area(fp, h, 3, i1, i2) ≈ 695.0377019748654f0
-    @test Wflow.wetted_perimeter(fp, h, 3, i1) ≈ 307.3730700179533f0
+    @test Wflow.flow_area(fp.width[i2, 3], fp.a[i1, 3], fp.depth[i1], h) ≈
+          695.0377019748654f0
+    @test Wflow.wetted_perimeter(fp.p[i1, 3], fp.depth[i1], h) ≈ 307.3730700179533f0
     h = 4.0
     i1, i2 = Wflow.interpolation_indices(h, fp.depth)
-    @test Wflow.flow_area(fp, h, 3, i1, i2) ≈ 959.816157989228f0
-    @test Wflow.wetted_perimeter(fp, h, 3, i1) ≈ 308.9730700179533f0
-    @test Wflow.flow_area(fp, h, 4, i1, i2) ≈ 407.6395313908081f0
-    @test Wflow.wetted_perimeter(fp, h, 4, i1) ≈ 90.11775307900271f0
+    @test Wflow.flow_area(fp.width[i2, 3], fp.a[i1, 3], fp.depth[i1], h) ≈
+          959.816157989228f0
+    @test Wflow.wetted_perimeter(fp.p[i1, 3], fp.depth[i1], h) ≈ 308.9730700179533f0
+    @test Wflow.flow_area(fp.width[i2, 4], fp.a[i1, 4], fp.depth[i1], h) ≈
+          407.6395313908081f0
+    @test Wflow.wetted_perimeter(fp.p[i1, 4], fp.depth[i1], h) ≈ 90.11775307900271f0
 end
 
 model = Wflow.run_timestep(model)

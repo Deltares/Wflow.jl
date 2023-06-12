@@ -145,7 +145,6 @@ function initialize_sbm_model(config::Config)
             ssfin = fill(mv, n),
             ssfmax = ((kh₀ .* βₗ) ./ f) .* (1.0 .- exp.(-f .* soilthickness)),
             to_river = zeros(n),
-            wb_pit = pits[inds],
         )
     else
         # when the SBM model is coupled (BMI) to a groundwater model, the following
@@ -178,7 +177,6 @@ function initialize_sbm_model(config::Config)
             sl = βₗ,
             dl,
             width = map(det_surfacewidth, dw, riverwidth, river),
-            wb_pit = pits[inds],
             iterate = kinwave_it,
             tstep = kw_land_tstep,
             Δt,
@@ -214,12 +212,10 @@ function initialize_sbm_model(config::Config)
             inds_riv;
             dl = riverlength,
             width = riverwidth,
-            wb_pit = pits[inds_riv],
             reservoir_index = resindex,
             reservoir = reservoirs,
             lake_index = lakeindex,
             lake = lakes,
-            river = river,
             iterate = kinwave_it,
             tstep = kw_river_tstep,
             Δt = Δt,
@@ -252,18 +248,34 @@ function initialize_sbm_model(config::Config)
     # subdomain is equal to the complete domain
     toposort = topological_sort_by_dfs(graph)
     index_pit_land = findall(x -> x == 5, ldd)
-    subbas_order, indices_subbas, topo_subbas =
-        kinwave_set_subdomains(config, graph, toposort, index_pit_land)
+    streamorder = stream_order(graph, toposort)
+    min_streamorder_land = get(config.model, "min_streamorder_land", 5)
+    subbas_order, indices_subbas, topo_subbas = kinwave_set_subdomains(
+        graph,
+        toposort,
+        index_pit_land,
+        streamorder,
+        min_streamorder_land,
+    )
     if river_routing == "kinematic-wave"
+        min_streamorder_river = get(config.model, "min_streamorder_river", 6)
         toposort_riv = topological_sort_by_dfs(graph_riv)
         index_pit_river = findall(x -> x == 5, ldd_riv)
-        subriv_order, indices_subriv, topo_subriv =
-            kinwave_set_subdomains(config, graph_riv, toposort_riv, index_pit_river)
+        subriv_order, indices_subriv, topo_subriv = kinwave_set_subdomains(
+            graph_riv,
+            toposort_riv,
+            index_pit_river,
+            streamorder[index_river],
+            min_streamorder_river,
+        )
     end
 
     if nthreads() > 1
-        min_streamorder = get(config.model, "min_streamorder", 4)
-        @info "Parallel execution of kinematic wave, minimum stream order = `$min_streamorder`."
+        if river_routing == "kinematic-wave"
+            @info "Parallel execution of kinematic wave" min_streamorder_land min_streamorder_river
+        else
+            @info "Parallel execution of kinematic wave" min_streamorder_land
+        end
     end
 
     modelmap = (vertical = sbm, lateral = (subsurface = ssf, land = olf, river = rf))
@@ -319,7 +331,7 @@ function initialize_sbm_model(config::Config)
             indices = inds_riv,
             reverse_indices = rev_inds_riv,
             # specific for kinematic_wave
-            upstream_nodes = filter_upsteam_nodes(graph_riv, rf.wb_pit),
+            upstream_nodes = filter_upsteam_nodes(graph_riv, pits[inds_riv]),
             subdomain_order = subriv_order,
             topo_subdomain = topo_subriv,
             indices_subdomain = indices_subriv,
@@ -332,7 +344,7 @@ function initialize_sbm_model(config::Config)
             reverse_indices = rev_inds_riv,
             # specific for local-inertial
             nodes_at_link = nodes_at_link,
-            links_at_node = adjacent_links_at_node(graph, nodes_at_link),
+            links_at_node = adjacent_links_at_node(graph_riv, nodes_at_link),
         )
     end
 
