@@ -60,11 +60,11 @@ function initialize_sbm_gwf_model(config::Config)
     xl, yl = cell_lengths(y, cellength, sizeinmetres)
     riverfrac = river_fraction(river, riverlength, riverwidth, xl, yl)
 
-    # initialize vertical SBM concept
-    sbm = initialize_sbm(nc, config, riverfrac, inds)
-
     inds_riv, rev_inds_riv = active_indices(river_2d, 0)
     nriv = length(inds_riv)
+
+    # initialize vertical SBM concept
+    sbm = initialize_sbm(nc, config, riverfrac, inds, nriv)
 
     # reservoirs
     pits = zeros(Bool, modelsize_2d)

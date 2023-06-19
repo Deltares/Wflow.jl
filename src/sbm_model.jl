@@ -33,6 +33,7 @@ function initialize_sbm_model(config::Config)
     )::String
     land_routing =
         get_options(config.model, "land_routing", routing_options, "kinematic-wave")::String
+    do_water_demand = haskey(config.model, "water_demand")
 
     snow = get(config.model, "snow", false)::Bool
     reservoirs = do_reservoirs
@@ -69,10 +70,10 @@ function initialize_sbm_model(config::Config)
     xl, yl = cell_lengths(y, cellength, sizeinmetres)
     riverfrac = river_fraction(river, riverlength, riverwidth, xl, yl)
 
-    sbm = initialize_sbm(nc, config, riverfrac, inds)
-
     inds_riv, rev_inds_riv = active_indices(river_2d, 0)
     nriv = length(inds_riv)
+
+    sbm = initialize_sbm(nc, config, riverfrac, inds, nriv)
 
     # reservoirs
     pits = zeros(Bool, modelsize_2d)
@@ -167,6 +168,18 @@ function initialize_sbm_model(config::Config)
     # the indices of the river cells in the land(+river) cell vector
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
     frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, βₗ, n)
+
+    inds_allocation_areas = Vector{Int}[]
+    inds_riv_allocation_areas = Vector{Int}[]
+    if do_water_demand
+        areas = unique(sbm.waterallocation.areas)
+        for a in areas
+            inds = findall(x -> x == a, sbm.waterallocation.areas)
+            push!(inds_allocation_areas, inds)
+            inds_riv = findall(x -> x == a, sbm.waterallocation.areas[index_river])
+            push!(inds_riv_allocation_areas, inds_riv)
+        end
+    end
 
     if land_routing == "kinematic-wave"
         olf = initialize_surfaceflow_land(
@@ -320,9 +333,13 @@ function initialize_sbm_model(config::Config)
         xl,
         yl,
         slope = βₗ,
+        indices_allocation_areas = inds_allocation_areas,
     )
     if land_routing == "local-inertial"
         land = merge(land, (index_river = index_river_nf, staggered_indices = indices))
+    end
+    if do_water_demand
+        land = merge(land, (index_river = rev_inds_riv[inds]))
     end
     if river_routing == "kinematic-wave"
         river = (
@@ -335,6 +352,8 @@ function initialize_sbm_model(config::Config)
             topo_subdomain = topo_subriv,
             indices_subdomain = indices_subriv,
             order = toposort_riv,
+            # water allocation areas
+            indices_allocation_areas = inds_riv_allocation_areas,
         )
     elseif river_routing == "local-inertial"
         river = (

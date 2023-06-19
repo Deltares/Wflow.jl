@@ -276,7 +276,7 @@ function initialize_canopy(nc, config, inds)
     return cmax, e_r, canopygapfraction, sl, swood, kext
 end
 
-function initialize_sbm(nc, config, riverfrac, inds)
+function initialize_sbm(nc, config, riverfrac, inds, nriv)
 
     Δt = Second(config.timestepsecs)
     config_thicknesslayers = get(config.model, "thicknesslayers", Float[])
@@ -702,7 +702,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         domestic = domestic ? initialize_domestic_demand(nc, config, inds, Δt) : nothing,
         industry = industry ? initialize_industry_demand(nc, config, inds, Δt) : nothing,
         livestock = livestock ? initialize_livestock_demand(nc, config, inds, Δt) : nothing,
-        waterallocation = do_water_demand ? initialize_water_allocation(nc, config, inds) : nothing,
+        waterallocation = do_water_demand ? initialize_water_allocation(nc, config, inds, nriv) : nothing,
     )
 
     return sbm
