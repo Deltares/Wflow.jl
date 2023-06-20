@@ -403,6 +403,7 @@ end
     ssfin::Vector{T} | "m3 d-1"            # Inflow from upstream cells [m³ d⁻¹]
     ssfmax::Vector{T} | "m2 d-1"           # Maximum subsurface flow [m² d⁻¹]
     to_river::Vector{T} | "m3 d-1"         # Part of subsurface flow [m³ d⁻¹] that flows to the river
+    volume::Vector{T} | "m3"               # Subsurface volume [m³]
 
     function LateralSSF{T}(args...) where {T}
         equal_size_vectors(args)
@@ -413,7 +414,8 @@ end
 statevars(::LateralSSF) = (:ssf,)
 
 function update(ssf::LateralSSF, network, frac_toriver)
-    @unpack subdomain_order, topo_subdomain, indices_subdomain, upstream_nodes = network
+    @unpack subdomain_order, topo_subdomain, indices_subdomain, upstream_nodes, xl, yl =
+        network
 
     ns = length(subdomain_order)
     for k = 1:ns
@@ -450,6 +452,11 @@ function update(ssf::LateralSSF, network, frac_toriver)
                     ssf.dw[v],
                     ssf.ssfmax[v],
                 )
+                ssf.volume[v] =
+                    (ssf.θₛ[v] - ssf.θᵣ[v]) *
+                    (ssf.soilthickness[v] - ssf.zi[v]) *
+                    xl[v] *
+                    yl[v]
             end
         end
     end

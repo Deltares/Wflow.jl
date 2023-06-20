@@ -43,6 +43,9 @@ end
     act_surfacewater_abst::Vector{T}    # actual surface water abstraction
     available_surfacewater::Vector{T}   # available surface water
     surfacewater_demand::Vector{T}      # demand from surface water
+    act_groundwater_abst::Vector{T}     # actual groundwater abstraction
+    available_groundwater::Vector{T}    # available groundwater
+    groundwater_demand::Vector{T}       # demand from groundwater
 end
 
 function set_returnflow_fraction(returnflow_fraction, demand_gross, demand_net)
@@ -269,6 +272,9 @@ function initialize_water_allocation(nc, config, inds, nriv)
         act_surfacewater_abst = zeros(Float, nriv),
         available_surfacewater = zeros(Float, nriv),
         surfacewater_demand = zeros(Float, n),
+        act_groundwater_abst = zeros(Float, nriv),
+        available_groundwater = zeros(Float, n),
+        groundwater_demand = zeros(Float, n),
     )
 
     return waterallocation
@@ -351,8 +357,8 @@ function update_water_allocation(model)
     end
 
     # surface water demand and availability for allocation areas
-    n = length(inds_river)
-    for i = 1:n
+    m = length(inds_river)
+    for i = 1:m
         # surface water demand (allocation area)
         sw_demand = 0.0
         for j in inds_land[i]
@@ -386,7 +392,40 @@ function update_water_allocation(model)
 
         for j in inds_land[i]
             waterallocation.surfacewater_alloc[j] =
-                frac_allocate_sw * waterallocation.total_gross_demand[j]
+                frac_allocate_sw * waterallocation.surfacewater_demand[j]
+        end
+    end
+
+    # local groundwater abstraction
+    for i = 1:n
+        waterallocation.groundwater_demand[i] =
+            (waterallocation.irri_dem_gross[i] + waterallocation.nonirri_demand_gross[i]) -
+            waterallocation.surfacewater_alloc[i]
+
+        available_volume = lateral.subsurface.volume[i] * 0.75
+        abstraction = min(waterallocation.groundwater_demand[i], available_volume)
+        waterallocation.available_groundwater[i] = available_volume - abstraction
+        waterallocation.groundwater_demand[i] -= abstraction
+    end
+    # groundwater demand and availability for allocation areas
+    for i = 1:m
+        gw_demand = 0.0
+        gw_available = 0.0
+        for j in inds_land[i]
+            gw_demand += waterallocation.groundwater_demand[j]
+            gw_available += waterallocation.available_groundwater[j]
+        end
+        gw_abstraction = min(gw_available, gw_demand)
+        
+        frac_abstract_gw =
+            gw_available > 0.0 ? min(gw_abstraction / gw_available, 1.0) : 0.0
+        frac_allocate_gw = gw_demand > 0.0 ? min(gw_abstraction / gw_demand, 1.0) : 0.0
+
+        for j in inds_land[i]
+            waterallocation.act_groundwater_abst[j] =
+                frac_abstract_gw * waterallocation.available_groundwater[j]
+            waterallocation.groundwater_alloc[j] =
+                frac_allocate_gw * waterallocation.groundwater_demand[j]
         end
     end
 end

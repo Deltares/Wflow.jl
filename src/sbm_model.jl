@@ -145,6 +145,7 @@ function initialize_sbm_model(config::Config)
             ssfin = fill(mv, n),
             ssfmax = ((kh₀ .* βₗ) ./ f) .* (1.0 .- exp.(-f .* soilthickness)),
             to_river = zeros(n),
+            volume = (sbm.θₛ .- sbm.θᵣ) .* (soilthickness .- zi) .* (xl .* yl),
         )
     else
         # when the SBM model is coupled (BMI) to a groundwater model, the following
@@ -432,6 +433,7 @@ function update_until_recharge(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:Sb
     # optional water demand and allocation
     if do_water_demand
         update_water_demand(vertical)
+        update_water_allocation(model)
     end
 
     # update vertical sbm concept until recharge [mm] to the saturated store
