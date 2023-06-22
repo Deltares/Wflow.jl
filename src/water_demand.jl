@@ -355,7 +355,8 @@ function update_water_allocation(model)
             # check for abstraction through inflow and adjust available volume
             if lateral.river.inflow[index_river[i]] < 0.0
                 inflow = lateral.river.inflow[index_river[i]] * vertical.Δt
-                available_volume = max(lateral.river.volume[index_river[i]] * 0.80 + inflow, 0.0)
+                available_volume =
+                    max(lateral.river.volume[index_river[i]] * 0.80 + inflow, 0.0)
             else
                 available_volume = lateral.river.volume[index_river[i]] * 0.80
             end
@@ -414,8 +415,10 @@ function update_water_allocation(model)
     # local groundwater abstraction
     for i = 1:n
         waterallocation.groundwater_demand[i] =
-            (waterallocation.irri_demand_gross[i] + waterallocation.nonirri_demand_gross[i]) -
-            waterallocation.surfacewater_alloc[i]
+            (
+                waterallocation.irri_demand_gross[i] +
+                waterallocation.nonirri_demand_gross[i]
+            ) - waterallocation.surfacewater_alloc[i]
 
         available_volume = lateral.subsurface.volume[i] * 0.75
         abstraction = min(waterallocation.groundwater_demand[i], available_volume)
@@ -433,7 +436,7 @@ function update_water_allocation(model)
             gw_available += waterallocation.available_groundwater[j]
         end
         gw_abstraction = min(gw_available, gw_demand)
-        
+
         frac_abstract_gw =
             gw_available > 0.0 ? min(gw_abstraction / gw_available, 1.0) : 0.0
         frac_allocate_gw = gw_demand > 0.0 ? min(gw_abstraction / gw_demand, 1.0) : 0.0

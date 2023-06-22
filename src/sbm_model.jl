@@ -388,9 +388,16 @@ end
 function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
 
     @unpack lateral, vertical, network, clock, config = model
+    do_water_demand = haskey(config.model, "water_demand")
+
     model = update_until_recharge(model)
     # exchange of recharge between vertical sbm concept and subsurface flow domain
     lateral.subsurface.recharge .= vertical.recharge ./ 1000.0
+    if do_water_demand
+        @. lateral.subsurface.recharge -=
+            vertical.waterallocation.act_groundwater_abst /
+            (network.land.xl * network.land.yl)
+    end
     lateral.subsurface.recharge .*= lateral.subsurface.dw
     lateral.subsurface.zi .= vertical.zi ./ 1000.0
     # update lateral subsurface flow domain (kinematic wave)
