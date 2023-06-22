@@ -43,9 +43,11 @@ end
     act_surfacewater_abst::Vector{T}    # actual surface water abstraction
     available_surfacewater::Vector{T}   # available surface water
     surfacewater_demand::Vector{T}      # demand from surface water
+    surfacewater_alloc::Vector{T}       # allocation from surface water
     act_groundwater_abst::Vector{T}     # actual groundwater abstraction
     available_groundwater::Vector{T}    # available groundwater
     groundwater_demand::Vector{T}       # demand from groundwater
+    groundwater_alloc::Vector{T}        # allocation from groundwater
 end
 
 function set_returnflow_fraction(returnflow_fraction, demand_gross, demand_net)
@@ -272,9 +274,11 @@ function initialize_water_allocation(nc, config, inds, nriv)
         act_surfacewater_abst = zeros(Float, nriv),
         available_surfacewater = zeros(Float, nriv),
         surfacewater_demand = zeros(Float, n),
-        act_groundwater_abst = zeros(Float, nriv),
+        surfacewater_alloc = zeros(Float, n),
+        act_groundwater_abst = zeros(Float, n),
         available_groundwater = zeros(Float, n),
         groundwater_demand = zeros(Float, n),
+        groundwater_alloc = zeros(Float, n),
     )
 
     return waterallocation
@@ -289,7 +293,7 @@ function update_water_demand(sbm::SBM)
         irri_dem_gross = 0.0
         if sbm.nonpaddy !== nothing && sbm.nonpaddy.irrigation_areas[i] !== 0
             usl, _ = set_layerthickness(sbm.zi[i], sbm.sumlayers[i], sbm.act_thickl[i])
-            for k = 1:sbm.n_unsatlayers
+            for k = 1:sbm.n_unsatlayers[i]
                 vwc_fc =
                     vwc_brooks_corey(-100.0, sbm.hb[i], sbm.θₛ[i], sbm.θᵣ[i], sbm.c[i][k])
                 vwc_h3 = vwc_brooks_corey(
@@ -320,7 +324,7 @@ function update_water_demand(sbm::SBM)
         sbm.waterallocation.nonirri_demand_gross[i] = industry_dem + domestic_dem
         sbm.waterallocation.livestock_demand_gross[i] = livestock_dem
         sbm.waterallocation.total_gross_demand[i] =
-            irri_dem_gross + nonirri_dem_gross + livestock_dem
+            irri_dem_gross + industry_dem + domestic_dem + livestock_dem
     end
 end
 
@@ -360,6 +364,7 @@ function update_water_allocation(model)
                 available_volume - abstraction
             waterallocation.surfacewater_demand[i] -= abstraction
             waterallocation.act_surfacewater_abst[index_river[i]] = abstraction
+            waterallocation.surfacewater_alloc[i] = abstraction
         end
     end
 
@@ -374,13 +379,15 @@ function update_water_allocation(model)
         # surface water availability (allocation area)
         sw_available = 0.0
         for j in inds_river[i]
-            if lateral.river.reservoir_index[j]
+            if lateral.river.reservoir_index[j] > 0
+                k = lateral.river.reservoir_index[j]
                 waterallocation.available_surfacewater[j] =
-                    lateral.river.reservoir.volume[j] * 0.98
+                    lateral.river.reservoir.volume[k] * 0.98
                 sw_available += waterallocation.available_surfacewater[j]
-            elseif lateral.river.lake_index[j]
+            elseif lateral.river.lake_index[j] > 0
+                k = lateral.river.lake_index[j]
                 waterallocation.available_surfacewater[j] =
-                    lateral.river.lake.storage[j] * 0.98
+                    lateral.river.lake.storage[k] * 0.98
                 sw_available += waterallocation.available_surfacewater[j]
             else
                 sw_available += waterallocation.available_surfacewater[j]
@@ -398,7 +405,7 @@ function update_water_allocation(model)
         end
 
         for j in inds_land[i]
-            waterallocation.surfacewater_alloc[j] =
+            waterallocation.surfacewater_alloc[j] +=
                 frac_allocate_sw * waterallocation.surfacewater_demand[j]
         end
     end
@@ -407,13 +414,15 @@ function update_water_allocation(model)
     # local groundwater abstraction
     for i = 1:n
         waterallocation.groundwater_demand[i] =
-            (waterallocation.irri_dem_gross[i] + waterallocation.nonirri_demand_gross[i]) -
+            (waterallocation.irri_demand_gross[i] + waterallocation.nonirri_demand_gross[i]) -
             waterallocation.surfacewater_alloc[i]
 
         available_volume = lateral.subsurface.volume[i] * 0.75
         abstraction = min(waterallocation.groundwater_demand[i], available_volume)
         waterallocation.available_groundwater[i] = available_volume - abstraction
         waterallocation.groundwater_demand[i] -= abstraction
+        waterallocation.act_groundwater_abst[i] = abstraction
+        waterallocation.groundwater_alloc[i] = abstraction
     end
     # groundwater demand and availability for allocation areas
     for i = 1:m
@@ -430,9 +439,9 @@ function update_water_allocation(model)
         frac_allocate_gw = gw_demand > 0.0 ? min(gw_abstraction / gw_demand, 1.0) : 0.0
 
         for j in inds_land[i]
-            waterallocation.act_groundwater_abst[j] =
+            waterallocation.act_groundwater_abst[j] +=
                 frac_abstract_gw * waterallocation.available_groundwater[j]
-            waterallocation.groundwater_alloc[j] =
+            waterallocation.groundwater_alloc[j] +=
                 frac_allocate_gw * waterallocation.groundwater_demand[j]
         end
     end

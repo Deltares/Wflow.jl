@@ -175,10 +175,10 @@ function initialize_sbm_model(config::Config)
     if do_water_demand
         areas = unique(sbm.waterallocation.areas)
         for a in areas
-            inds = findall(x -> x == a, sbm.waterallocation.areas)
-            push!(inds_allocation_areas, inds)
-            inds_riv = findall(x -> x == a, sbm.waterallocation.areas[index_river])
-            push!(inds_riv_allocation_areas, inds_riv)
+            area_index = findall(x -> x == a, sbm.waterallocation.areas)
+            push!(inds_allocation_areas, area_index)
+            area_riv_index = findall(x -> x == a, sbm.waterallocation.areas[index_river])
+            push!(inds_riv_allocation_areas, area_riv_index)
         end
     end
 
@@ -340,7 +340,7 @@ function initialize_sbm_model(config::Config)
         land = merge(land, (index_river = index_river_nf, staggered_indices = indices))
     end
     if do_water_demand
-        land = merge(land, (index_river = rev_inds_riv[inds]))
+        land = merge(land, (index_river = rev_inds_riv[inds],))
     end
     if river_routing == "kinematic-wave"
         river = (
