@@ -12,6 +12,7 @@ abstract type SurfaceFlow end
     qlat::Vector{T} | "m2 s-1"                   # Lateral inflow per unit length [m² s⁻¹]
     inwater::Vector{T} | "m3 s-1"                # Lateral inflow [m³ s⁻¹]
     inflow::Vector{T} | "m3 s-1"                 # External inflow (abstraction/supply/demand) [m³ s⁻¹]
+	abstraction::Vector{T} | "m3 s-1"       	 # Abstraction (computed) [m³ s⁻¹]
     volume::Vector{T} | "m3"                     # Kinematic wave volume [m³] (based on water level h)
     h::Vector{T} | "m"                           # Water level [m]
     h_av::Vector{T} | "m"                        # Average water level [m]
@@ -156,6 +157,7 @@ function initialize_surfaceflow_river(
         qlat = zeros(Float, n),
         inwater = zeros(Float, n),
         inflow = zeros(Float, n),
+        abstraction = zeros(Float, n),
         volume = zeros(Float, n),
         h = zeros(Float, n),
         h_av = zeros(Float, n),
@@ -285,11 +287,12 @@ function update(sf::SurfaceFlowRiver, network, inflow_wb, doy)
                     # Inflow supply/abstraction is added to qlat (divide by flow length)
                     # If inflow < 0, abstraction is limited
                     if sf.inflow[v] < 0.0
-                        max_abstract = min(sf.qin[v] + sf.qlat[v] * sf.dl[v], -sf.inflow[v])
+                        max_abstract = min((sf.q[v] + sf.volume[v]) * 0.80, -sf.inflow[v])
                         inflow = -max_abstract / sf.dl[v]
                     else
                         inflow = sf.inflow[v] / sf.dl[v]
                     end
+                    inflow -= sf.abstraction[v] / sf.dl[v]
 
                     sf.q[v] = kinematic_wave(
                         sf.qin[v],
@@ -344,9 +347,10 @@ function update(sf::SurfaceFlowRiver, network, inflow_wb, doy)
                         end
                     end
 
-                    # update h
+                    # update h and volume
                     crossarea = sf.α[v] * pow(sf.q[v], sf.β)
                     sf.h[v] = crossarea / sf.width[v]
+                    sf.volume[v] = sf.dl[v] * sf.width[v] * sf.h[v]
 
                     sf.q_av[v] += sf.q[v]
                     sf.h_av[v] += sf.h[v]
@@ -356,7 +360,6 @@ function update(sf::SurfaceFlowRiver, network, inflow_wb, doy)
     end
     sf.q_av ./= its
     sf.h_av ./= its
-    sf.volume .= sf.dl .* sf.width .* sf.h
 end
 
 function stable_timestep(sf::S) where {S<:SurfaceFlow}

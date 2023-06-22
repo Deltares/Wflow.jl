@@ -348,11 +348,18 @@ function update_water_allocation(model)
             network.land.xl[i] *
             network.land.yl[i]
         if index_river[i] > 0.0 # TODO: exclude reservoir/lake cells
-            available_volume = lateral.river.volume[i] * 0.80
+            # check for abstraction through inflow and adjust available volume
+            if lateral.river.inflow[index_river[i]] < 0.0
+                inflow = lateral.river.inflow[index_river[i]] * vertical.Δt
+                available_volume = max(lateral.river.volume[index_river[i]] * 0.80 + inflow, 0.0)
+            else
+                available_volume = lateral.river.volume[index_river[i]] * 0.80
+            end
             abstraction = min(waterallocation.surfacewater_demand[i], available_volume)
             waterallocation.available_surfacewater[index_river[i]] =
                 available_volume - abstraction
             waterallocation.surfacewater_demand[i] -= abstraction
+            waterallocation.act_surfacewater_abst[index_river[i]] = abstraction
         end
     end
 
