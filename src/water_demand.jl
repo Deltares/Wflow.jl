@@ -393,7 +393,7 @@ function update_water_allocation(model)
         frac_allocate_sw = sw_demand > 0.0 ? min(sw_abstraction / sw_demand, 1.0) : 0.0
 
         for j in inds_river[i]
-            waterallocation.act_surfacewater_abst[j] =
+            waterallocation.act_surfacewater_abst[j] +=
                 frac_abstract_sw * waterallocation.available_surfacewater[j]
         end
 
@@ -402,6 +402,7 @@ function update_water_allocation(model)
                 frac_allocate_sw * waterallocation.surfacewater_demand[j]
         end
     end
+    @. lateral.river.abstraction = waterallocation.act_surfacewater_abst / vertical.Δt
 
     # local groundwater abstraction
     for i = 1:n
