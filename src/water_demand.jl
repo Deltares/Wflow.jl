@@ -35,10 +35,8 @@ end
 @get_units @with_kw struct WaterAllocation{T}
     irri_demand_gross::Vector{T}        # irrigation gross demand
     nonirri_demand_gross::Vector{T}     # non irrigation (industry and domestic) gross demand
-    livestock_demand_gross::Vector{T}   # livestock gross demand
     total_gross_demand::Vector{T}       # total gross demand
-    f_sw_used_irri::Vector{T}           # fraction surface water used for irrigation
-    f_sw_used_nonirri::Vector{T}        # fraction surface water used for non irrigation
+    frac_sw_used::Vector{T}             # fraction surface water used
     areas::Vector{Int}                  # allocation areas
     act_surfacewater_abst::Vector{T}    # actual surface water abstraction
     available_surfacewater::Vector{T}   # available surface water
@@ -228,21 +226,10 @@ end
 
 function initialize_water_allocation(nc, config, inds, nriv)
 
-    f_sw_used_irri = ncread(
+    frac_sw_used = ncread(
         nc,
         config,
-        "vertical.waterallocation.f_sw_used_irri";
-        sel = inds,
-        defaults = 1,
-        #optional = false,
-        type = Float,
-        #fill = 0,
-    )
-
-    f_sw_used_nonirri = ncread(
-        nc,
-        config,
-        "vertical.waterallocation.f_sw_used_nonirri";
+        "vertical.waterallocation.frac_sw_used";
         sel = inds,
         defaults = 1,
         #optional = false,
@@ -266,10 +253,8 @@ function initialize_water_allocation(nc, config, inds, nriv)
     waterallocation = WaterAllocation(
         irri_demand_gross = zeros(Float, n),
         nonirri_demand_gross = zeros(Float, n),
-        livestock_demand_gross = zeros(Float, n),
         total_gross_demand = zeros(Float, n),
-        f_sw_used_irri = f_sw_used_irri,
-        f_sw_used_nonirri = f_sw_used_nonirri,
+        frac_sw_used = frac_sw_used,
         areas = areas,
         act_surfacewater_abst = zeros(Float, nriv),
         available_surfacewater = zeros(Float, nriv),
@@ -321,8 +306,8 @@ function update_water_demand(sbm::SBM)
             irri_dem_gross += irr_depth_paddy / sbm.paddy.irrigation_efficiency[i]
         end
         sbm.waterallocation.irri_demand_gross[i] = irri_dem_gross
-        sbm.waterallocation.nonirri_demand_gross[i] = industry_dem + domestic_dem
-        sbm.waterallocation.livestock_demand_gross[i] = livestock_dem
+        sbm.waterallocation.nonirri_demand_gross[i] =
+            industry_dem + domestic_dem + livestock_dem
         sbm.waterallocation.total_gross_demand[i] =
             irri_dem_gross + industry_dem + domestic_dem + livestock_dem
     end
@@ -344,10 +329,8 @@ function update_water_allocation(model)
         waterallocation.surfacewater_demand[i] =
             0.001 *
             (
-                waterallocation.f_sw_used_nonirri[i] *
-                waterallocation.nonirri_demand_gross[i] +
-                waterallocation.livestock_demand_gross[i] +
-                waterallocation.f_sw_used_irri[i] * waterallocation.irri_demand_gross[i]
+                waterallocation.frac_sw_used[i] * waterallocation.nonirri_demand_gross[i] +
+                waterallocation.frac_sw_used[i] * waterallocation.irri_demand_gross[i]
             ) *
             network.land.xl[i] *
             network.land.yl[i]
