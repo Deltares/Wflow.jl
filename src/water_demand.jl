@@ -326,6 +326,7 @@ function update_water_allocation(model)
     n = length(network.land.indices)
     # local surface water abstraction (river, excluding reservoirs and lakes)
     for i = 1:n
+        waterallocation.surfacewater_alloc[i] = 0.0
         waterallocation.surfacewater_demand[i] =
             0.001 *
             (
@@ -398,10 +399,13 @@ function update_water_allocation(model)
     # local groundwater abstraction
     for i = 1:n
         waterallocation.groundwater_demand[i] =
+            0.001 *
             (
                 waterallocation.irri_demand_gross[i] +
                 waterallocation.nonirri_demand_gross[i]
-            ) - waterallocation.surfacewater_alloc[i]
+            ) *
+            network.land.xl[i] *
+            network.land.yl[i] - waterallocation.surfacewater_alloc[i]
 
         available_volume = lateral.subsurface.volume[i] * 0.75
         abstraction = min(waterallocation.groundwater_demand[i], available_volume)
