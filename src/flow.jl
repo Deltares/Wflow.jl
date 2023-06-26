@@ -417,7 +417,7 @@ end
 statevars(::LateralSSF) = (:ssf,)
 
 function update(ssf::LateralSSF, network, frac_toriver)
-    @unpack subdomain_order, topo_subdomain, indices_subdomain, upstream_nodes, xl, yl =
+    @unpack subdomain_order, topo_subdomain, indices_subdomain, upstream_nodes, area =
         network
 
     ns = length(subdomain_order)
@@ -458,8 +458,7 @@ function update(ssf::LateralSSF, network, frac_toriver)
                 ssf.volume[v] =
                     (ssf.θₛ[v] - ssf.θᵣ[v]) *
                     (ssf.soilthickness[v] - ssf.zi[v]) *
-                    xl[v] *
-                    yl[v]
+                    area[v]
             end
         end
     end
@@ -1585,8 +1584,7 @@ function set_river_inwater(model::Model{N,L,V,R,W,T}, ssf_toriver) where {N,L,V<
         (
             (
                 vertical.net_runoff_river[inds] *
-                network.land.xl[inds] *
-                network.land.yl[inds] *
+                network.land.area[inds] *
                 0.001
             ) / vertical.Δt
         )
@@ -1620,7 +1618,7 @@ function set_land_inwater(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfM
     end
 
     lateral.land.inwater .=
-        (vertical.runoff .* network.land.xl .* network.land.yl .* 0.001) ./
+        (vertical.runoff .* network.land.area .* 0.001) ./
         lateral.land.Δt .+ drainflux
 end
 
@@ -1632,7 +1630,7 @@ Set `inwater` of the land component, based on `runoff` of the `vertical` concept
 function set_land_inwater(model)
     @unpack lateral, vertical, network = model
     lateral.land.inwater .=
-        (vertical.runoff .* network.land.xl .* network.land.yl .* 0.001) ./ lateral.land.Δt
+        (vertical.runoff .* network.land.area .* 0.001) ./ lateral.land.Δt
 end
 
 """
@@ -1737,11 +1735,11 @@ function surface_routing(
     @unpack lateral, vertical, network, clock = model
 
     @. lateral.land.runoff = (
-        (vertical.runoff / 1000.0) * (network.land.xl * network.land.yl) / vertical.Δt +
+        (vertical.runoff / 1000.0) * (network.land.area) / vertical.Δt +
         ssf_toriver +
         # net_runoff_river
         (
-            (vertical.net_runoff_river * network.land.xl * network.land.yl * 0.001) /
+            (vertical.net_runoff_river * network.land.area * 0.001) /
             vertical.Δt
         )
     )
