@@ -652,3 +652,8 @@ function threaded_foreach(f, x::AbstractArray; basesize::Integer)
     end
     return nothing
 end
+
+function divide(x, y; max = 1.0, default = 0.0)
+    z = y > 0.0 ? min(x / y, max) : default
+    return z
+end

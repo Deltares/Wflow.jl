@@ -831,6 +831,9 @@ function update_until_recharge(sbm::SBM, config)
 
         runoff_river = min(1.0, sbm.riverfrac[i]) * avail_forinfilt
         runoff_land = min(1.0, sbm.waterfrac[i]) * avail_forinfilt
+        if isnothing(sbm.paddy) || isnothing(sbm.nonpaddy)
+            avail_forinfilt = avail_forinfilt + sbm.waterallocation.irri_alloc[i]
+        end
         avail_forinfilt = max(avail_forinfilt - runoff_river - runoff_land, 0.0)
 
         rootingdepth = min(sbm.soilthickness[i] * 0.99, sbm.rootingdepth[i])
