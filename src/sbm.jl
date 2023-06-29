@@ -579,12 +579,12 @@ function initialize_sbm(nc, config, riverfrac, inds)
     vwc_perc = fill(mv, maxlayers, n)
 
     # water demand and irrigation options
-    do_water_demand = get(config.model, "waterdemand", true)
-    domestic = get(config.model, "domestic_waterdemand", true)
-    industry = get(config.model, "industry_waterdemand", true)
-    livestock = get(config.model, "livestock_waterdemand", true)
-    paddy = get(config.model, "paddy_irrigation", true)
-    nonpaddy = get(config.model, "nonpaddy_irrigation", true)
+    do_water_demand = haskey(config.model, "water_demand")
+    domestic = get(config.model, "water_demand.domestic", false)
+    industry = get(config.model, "water_demand.industry", false)
+    livestock = get(config.model, "water_demand.livestock", false)
+    paddy = get(config.model, "water_demand.paddy_irrigation", false)
+    nonpaddy = get(config.model, "water_demand.nonpaddy_irrigation", false)
 
     sbm = SBM(
         Δt = tosecond(Δt),
@@ -832,7 +832,7 @@ function update_until_recharge(sbm::SBM, config)
 
         runoff_river = min(1.0, sbm.riverfrac[i]) * avail_forinfilt
         runoff_land = min(1.0, sbm.waterfrac[i]) * avail_forinfilt
-        if isnothing(sbm.paddy) || isnothing(sbm.nonpaddy)
+        if !isnothing(sbm.paddy) || !isnothing(sbm.nonpaddy)
             avail_forinfilt = avail_forinfilt + sbm.waterallocation.irri_alloc[i]
         end
         avail_forinfilt = max(avail_forinfilt - runoff_river - runoff_land, 0.0)

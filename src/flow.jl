@@ -145,7 +145,7 @@ function initialize_surfaceflow_river(
     )
     clamp!(sl, 0.00001, Inf)
 
-    do_water_demand = get(config.model, "waterdemand", true)
+    do_water_demand = haskey(config.model, "water_demand")
 
     n = length(inds)
 
