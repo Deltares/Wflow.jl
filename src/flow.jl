@@ -1,7 +1,7 @@
 
 abstract type SurfaceFlow end
 
-@get_units @exchange @grid_type @grid_location @with_kw struct SurfaceFlowRiver{T,R,L} <: SurfaceFlow
+@get_units @exchange @grid_type @grid_location @with_kw struct SurfaceFlowRiver{T,R,L,W} <: SurfaceFlow
     β::T | "-" | _ | "scalar"                    # constant in Manning's equation
     sl::Vector{T} | "m m-1"                      # Slope [m m⁻¹]
     n::Vector{T} | "s m-1/3"                     # Manning's roughness [s m⁻⅓]
@@ -28,6 +28,7 @@ abstract type SurfaceFlow end
     lake_index::Vector{Int} | "-"                # map cell to 0 (no lake) or i (pick lake i in lake field)
     reservoir::R | "-" | 0                       # Reservoir model struct of arrays
     lake::L | "-" | 0                            # Lake model struct of arrays
+    waterallocation::W | "-" | 0                 # Water allocation
     kinwave_it::Bool | "-" | 0 | "none" | "none" # Boolean for iterations kinematic wave
 
     # TODO unclear why this causes a MethodError
@@ -144,6 +145,8 @@ function initialize_surfaceflow_river(
     )
     clamp!(sl, 0.00001, Inf)
 
+    do_water_demand = get(config.model, "waterdemand", true)
+
     n = length(inds)
 
     sf_river = SurfaceFlowRiver(
@@ -174,6 +177,7 @@ function initialize_surfaceflow_river(
         reservoir = reservoir,
         lake = lake,
         kinwave_it = iterate,
+        waterallocation = do_water_demand ? initialize_waterallocation_river(n) : nothing,
     )
 
     return sf_river
@@ -456,9 +460,7 @@ function update(ssf::LateralSSF, network, frac_toriver)
                     ssf.ssfmax[v],
                 )
                 ssf.volume[v] =
-                    (ssf.θₛ[v] - ssf.θᵣ[v]) *
-                    (ssf.soilthickness[v] - ssf.zi[v]) *
-                    area[v]
+                    (ssf.θₛ[v] - ssf.θᵣ[v]) * (ssf.soilthickness[v] - ssf.zi[v]) * area[v]
             end
         end
     end
@@ -1574,21 +1576,31 @@ Set `inwater` of the river component for a `Model` with vertical `SBM` concept.
 `ssf_toriver` is the subsurface flow to the river.
 """
 function set_river_inwater(model::Model{N,L,V,R,W,T}, ssf_toriver) where {N,L,V<:SBM,R,W,T}
-    @unpack lateral, vertical, network = model
+    @unpack lateral, vertical, network, config = model
     inds = network.index_river
-
-    @. lateral.river.inwater = (
-        ssf_toriver[inds] +
-        lateral.land.to_river[inds] +
-        # net_runoff_river
-        (
+    do_water_demand = haskey(config.model, "water_demand")
+    if do_water_demand
+        @. lateral.river.inwater = (
+            ssf_toriver[inds] +
+            lateral.land.to_river[inds] +
+            # net_runoff_river
+            (vertical.net_runoff_river[inds] * network.land.area[inds] * 0.001) /
+            vertical.Δt +
             (
-                vertical.net_runoff_river[inds] *
-                network.land.area[inds] *
-                0.001
+                lateral.river.waterallocation.nonirri_returnflow *
+                0.001 *
+                network.river.area
             ) / vertical.Δt
         )
-    )
+    else
+        @. lateral.river.inwater = (
+            ssf_toriver[inds] +
+            lateral.land.to_river[inds] +
+            # net_runoff_river
+            (vertical.net_runoff_river[inds] * network.land.area[inds] * 0.001) /
+            vertical.Δt
+        )
+    end
 end
 
 """
@@ -1618,8 +1630,7 @@ function set_land_inwater(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfM
     end
 
     lateral.land.inwater .=
-        (vertical.runoff .* network.land.area .* 0.001) ./
-        lateral.land.Δt .+ drainflux
+        (vertical.runoff .* network.land.area .* 0.001) ./ lateral.land.Δt .+ drainflux
 end
 
 """
@@ -1628,9 +1639,17 @@ end
 Set `inwater` of the land component, based on `runoff` of the `vertical` concept.
 """
 function set_land_inwater(model)
-    @unpack lateral, vertical, network = model
-    lateral.land.inwater .=
-        (vertical.runoff .* network.land.area .* 0.001) ./ lateral.land.Δt
+    @unpack lateral, vertical, network, config = model
+    do_water_demand = haskey(config.model, "water_demand")
+    if do_water_demand
+        @. lateral.land.inwater =
+            (vertical.runoff + vertical.waterallocation.nonirri_returnflow) *
+            network.land.area *
+            0.001 / lateral.land.Δt
+    else
+        @. lateral.land.inwater =
+            (vertical.runoff * network.land.area * 0.001) / lateral.land.Δt
+    end
 end
 
 """
@@ -1738,10 +1757,7 @@ function surface_routing(
         (vertical.runoff / 1000.0) * (network.land.area) / vertical.Δt +
         ssf_toriver +
         # net_runoff_river
-        (
-            (vertical.net_runoff_river * network.land.area * 0.001) /
-            vertical.Δt
-        )
+        ((vertical.net_runoff_river * network.land.area * 0.001) / vertical.Δt)
     )
 
     update(

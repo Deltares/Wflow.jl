@@ -276,7 +276,7 @@ function initialize_canopy(nc, config, inds)
     return cmax, e_r, canopygapfraction, sl, swood, kext
 end
 
-function initialize_sbm(nc, config, riverfrac, inds, nriv)
+function initialize_sbm(nc, config, riverfrac, inds)
 
     Δt = Second(config.timestepsecs)
     config_thicknesslayers = get(config.model, "thicknesslayers", Float[])
@@ -702,7 +702,8 @@ function initialize_sbm(nc, config, riverfrac, inds, nriv)
         domestic = domestic ? initialize_domestic_demand(nc, config, inds, Δt) : nothing,
         industry = industry ? initialize_industry_demand(nc, config, inds, Δt) : nothing,
         livestock = livestock ? initialize_livestock_demand(nc, config, inds, Δt) : nothing,
-        waterallocation = do_water_demand ? initialize_water_allocation(nc, config, inds, nriv) : nothing,
+        waterallocation = do_water_demand ?
+                          initialize_waterallocation_land(nc, config, inds) : nothing,
     )
 
     return sbm
@@ -716,7 +717,7 @@ function update_until_snow(sbm::SBM, config)
     modelglacier = get(config.model, "glacier", false)::Bool
     modelsnow = get(config.model, "snow", false)::Bool
 
-    threaded_foreach(1:sbm.n, basesize=1000) do i
+    threaded_foreach(1:sbm.n, basesize = 1000) do i
         if do_lai
             cmax = sbm.sl[i] * sbm.leaf_area_index[i] + sbm.swood[i]
             canopygapfraction = exp(-sbm.kext[i] * sbm.leaf_area_index[i])
@@ -799,7 +800,7 @@ function update_until_recharge(sbm::SBM, config)
     transfermethod = get(config.model, "transfermethod", false)::Bool
     ust = get(config.model, "whole_ust_available", false)::Bool
 
-    threaded_foreach(1:sbm.n, basesize=250) do i
+    threaded_foreach(1:sbm.n, basesize = 250) do i
         if modelsnow
             rainfallplusmelt = sbm.rainfallplusmelt[i]
             if modelglacier
@@ -1084,7 +1085,13 @@ function update_until_recharge(sbm::SBM, config)
         # recharge (mm) for saturated zone
         recharge = (transfer - actcapflux - actleakage - actevapsat - soilevapsat)
         transpiration = actevapsat + actevapustore
-        actevap = soilevap + transpiration + ae_openw_r + ae_openw_l + sbm.interception[i] + paddy_actevap
+        actevap =
+            soilevap +
+            transpiration +
+            ae_openw_r +
+            ae_openw_l +
+            sbm.interception[i] +
+            paddy_actevap
 
         # update the outputs and states
         sbm.n_unsatlayers[i] = n_usl
@@ -1128,7 +1135,7 @@ end
 
 function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
 
-    threaded_foreach(1:sbm.n, basesize=1000) do i
+    threaded_foreach(1:sbm.n, basesize = 1000) do i
         usl, n_usl = set_layerthickness(zi[i], sbm.sumlayers[i], sbm.act_thickl[i])
         # exfiltration from ustore
         usld = sbm.ustorelayerdepth[i]

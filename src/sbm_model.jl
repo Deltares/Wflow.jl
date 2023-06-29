@@ -73,7 +73,7 @@ function initialize_sbm_model(config::Config)
     inds_riv, rev_inds_riv = active_indices(river_2d, 0)
     nriv = length(inds_riv)
 
-    sbm = initialize_sbm(nc, config, riverfrac, inds, nriv)
+    sbm = initialize_sbm(nc, config, riverfrac, inds)
 
     # reservoirs
     pits = zeros(Bool, modelsize_2d)
