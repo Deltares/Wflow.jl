@@ -1353,7 +1353,7 @@ function initialize_volume!(river, nriv::Int)
             interpolation_indices(river.floodplain.h[i], river.floodplain.profile.depth)
         a = flow_area(
             river.floodplain.profile.width[i2, i],
-            river.floodplain.profile.area[i1, i],
+            river.floodplain.profile.a[i1, i],
             river.floodplain.profile.depth[i1],
             river.floodplain.h[i],
         )
