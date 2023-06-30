@@ -580,11 +580,11 @@ function initialize_sbm(nc, config, riverfrac, inds)
 
     # water demand and irrigation options
     do_water_demand = haskey(config.model, "water_demand")
-    domestic = get(config.model, "water_demand.domestic", false)
-    industry = get(config.model, "water_demand.industry", false)
-    livestock = get(config.model, "water_demand.livestock", false)
-    paddy = get(config.model, "water_demand.paddy_irrigation", false)
-    nonpaddy = get(config.model, "water_demand.nonpaddy_irrigation", false)
+    domestic = do_water_demand ? get(config.model.water_demand, "domestic", false) : false
+    industry = do_water_demand ? get(config.model.water_demand, "industry", false) : false
+    livestock = do_water_demand ? get(config.model.water_demand, "livestock", false) : false
+    paddy = do_water_demand ? get(config.model.water_demand, "paddy", false) : false
+    nonpaddy = do_water_demand ? get(config.model.water_demand, "nonpaddy", false) : false
 
     sbm = SBM(
         Δt = tosecond(Δt),
