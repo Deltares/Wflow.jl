@@ -78,7 +78,12 @@ q}{\partial h})``, gives:
   w \frac{\partial q}{\partial t} = -cw\frac{\partial q}{\partial x} + cwr
 ```
 
-where celerity ``c = \frac{K_{0}\mathit{tan(\beta)}}{(\theta_s-\theta_r)} e^{(-fz_{i})}``
+where celerity ``c`` is based on ``K_{s}`` the average hydraulic conductivity of the
+saturated store:
+```math 
+  K_{s} = \frac{K_{0}}{f(z_{t}-z_{i})}(e^{(-fz_{i})}-e^{(-fz_{t})}) \\~\\
+  c = \frac{K_{s}\mathit{tan(\beta)}}{(\theta_s-\theta_r)}
+```
 
 The kinematic wave equation for lateral subsurface flow is solved iteratively using Newton's
 method.
