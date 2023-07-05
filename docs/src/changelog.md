@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [unreleased]
+
+### Changed
+- Use a constant celerity (based on average hydraulic conductivity of the saturated store)
+  per time step, to solve the kinematic wave equation for lateral subsurface flow. This
+  allows for an easier extension to other saturated hydraulic conductivity profiles (with
+  depth), while changes in simulation results (for example discharge) are generally small.
+
 ## v0.7.1 - 2023-06-30
 
 ### Fixed
