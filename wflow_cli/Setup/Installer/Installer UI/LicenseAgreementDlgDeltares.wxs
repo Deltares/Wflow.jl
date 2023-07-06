@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Copyright (c) Microsoft Corporation.  All rights reserved.
+    
+    The use and distribution terms for this software are covered by the
+    Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.php)
+    which can be found in the file CPL.TXT at the root of this distribution.
+    By using this software in any fashion, you are agreeing to be bound by
+    the terms of this license.
+    
+    You must not remove this notice, or any other, from this software.
+-->
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+	<Fragment>
+    <UI>
+      <Dialog Id="LicenseAgreementDlgDeltares" Width="370" Height="270" Title="!(loc.Dlg_Title)">
+        <Control Id="BannerBitmap" Type="Bitmap"  X="!(loc.BannerImageX)" Y="!(loc.BannerImageY)" Width="!(loc.BannerImageWidth)" Height="!(loc.BannerImageHeight)" TabSkip="no" Text="!(loc.LicenseAgreementDlgBannerBitmap)" />
+        <Control Id="HeaderLine" Type="Line" X="0" Y="!(loc.HeaderHeight)" Width="!(loc.DialogWidth)" Height="0" />
+        <Control Id="BottomLine" Type="Line" X="0" Y="!(loc.BottomLineY)" Width="!(loc.DialogWidth)" Height="0" />
+        <Control Id="Description" Type="Text" X="!(loc.TextX)" Y="!(loc.DescriptionTextY)" Width="325" Height="15" Transparent="yes" NoPrefix="yes" Text="!(loc.LicenseAgreementDlgDescription)" />
+        <Control Id="Title" Type="Text" X="!(loc.TextX)" Y="!(loc.TitleTextY)" Width="325" Height="15" Transparent="yes" NoPrefix="yes" Text="!(loc.LicenseAgreementDlgTitle)" />
+        <Control Id="LicenseAcceptedCheckBox" Type="CheckBox" X="!(loc.TextX)" Y="214" Width="330" Height="18" CheckBoxValue="1" Property="LicenseAccepted" Text="!(loc.LicenseAgreementDlgLicenseAcceptedCheckBoxText)" />
+        <Control Id="Print" Type="PushButton" X="112" Y="!(loc.NavigateButtonY)" Width="56" Height="17" Text="!(loc.PrintButtonText)">
+          <Publish Event="DoAction" Value="WixUIPrintEula">1</Publish>
+        </Control>
+        <Control Id="Back" Type="PushButton" X="180" Y="!(loc.NavigateButtonY)" Width="56" Height="17" Text="!(loc.BackButtonText)" />
+        <Control Id="Next" Type="PushButton" X="236" Y="!(loc.NavigateButtonY)" Width="56" Height="17" Default="yes" Text="!(loc.NextButtonText)">
+          <Publish Event="SpawnWaitDialog" Value="WaitForCostingDlg">!(wix.WixUICostingPopupOptOut) OR CostingComplete = 1</Publish>
+          <Condition Action="disable"><![CDATA[LicenseAccepted <> "1"]]></Condition>
+          <Condition Action="enable">LicenseAccepted = "1"</Condition>
+        </Control>
+        <Control Id="Cancel" Type="PushButton" X="304" Y="!(loc.NavigateButtonY)" Width="56" Height="17" Cancel="yes" Text="!(loc.CancelButtonText)">
+          <Publish Event="SpawnDialog" Value="CancelDlgDeltares">1</Publish>
+        </Control>
+        <Control Id="LicenseText" Type="ScrollableText" X="!(loc.TextX)" Y="58" Width="330" Height="154" Sunken="yes" TabSkip="no">
+          <Text SourceFile="!(wix.WixUILicenseRtf)" />
+        </Control>
+      </Dialog>
+    </UI>
+	</Fragment>
+</Wix>
