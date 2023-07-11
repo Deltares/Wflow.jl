@@ -299,8 +299,9 @@ function update_water_demand(sbm::SBM)
         irri_dem_gross = 0.0
         if sbm.nonpaddy !== nothing && sbm.nonpaddy.irrigation_areas[i] !== 0
             usl, _ = set_layerthickness(sbm.zi[i], sbm.sumlayers[i], sbm.act_thickl[i])
-            # TODO: only include root zone
             for k = 1:sbm.n_unsatlayers[i]
+                rootfrac =
+                    min(1.0, (max(0.0, sbm.rootingdepth[i] - sbm.sumlayers[i][k]) / usl[k]))
                 vwc_fc =
                     vwc_brooks_corey(-100.0, sbm.hb[i], sbm.θₛ[i], sbm.θᵣ[i], sbm.c[i][k])
                 vwc_h3 = vwc_brooks_corey(
@@ -311,16 +312,18 @@ function update_water_demand(sbm::SBM)
                     sbm.c[i][k],
                 )
                 depletion = (vwc_fc * usl[k]) - sbm.ustorelayerdepth[i][k]
+                depletion *= rootfrac
                 raw = (vwc_fc - vwc_h3) * usl[k] # readily available water
+                raw *= rootfrac
                 if depletion >= raw
                     irri_dem_gross += depletion
                 end
-                # limit irrigation demand to infiltration capacity    
-                infiltration_capacity =
-                    sbm.soilinfredu[i] * (sbm.infiltcappath[i] + sbm.infiltcapsoil[i])
-                irri_dem_gross = min(irri_dem_gross, infiltration_capacity)
-                irri_dem_gross /= sbm.nonpaddy.irrigation_efficiency[i]
             end
+            # limit irrigation demand to infiltration capacity    
+            infiltration_capacity =
+                sbm.soilinfredu[i] * (sbm.infiltcappath[i] + sbm.infiltcapsoil[i])
+            irri_dem_gross = min(irri_dem_gross, infiltration_capacity)
+            irri_dem_gross /= sbm.nonpaddy.irrigation_efficiency[i]
         elseif sbm.paddy !== nothing && sbm.paddy.irrigation_areas[i] !== 0
             irr_depth_paddy =
                 sbm.paddy.h[i] < sbm.paddy.h_min[i] ?
