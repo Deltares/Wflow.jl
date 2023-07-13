@@ -201,8 +201,10 @@
     end
 end
 
-statevars(::SBM; snow = false) =
+statevars(::SBM; snow=false, glacier=false) =
+    snow && glacier ? (:satwaterdepth, :snow, :tsoil, :ustorelayerdepth, :snowwater, :canopystorage, :glacierstore) :
     snow ? (:satwaterdepth, :snow, :tsoil, :ustorelayerdepth, :snowwater, :canopystorage) :
+    glacier ? (:satwaterdepth, :ustorelayerdepth, :canopystorage, :glacierstore) :
     (:satwaterdepth, :ustorelayerdepth, :canopystorage)
 
 function initialize_canopy(nc, config, inds)
