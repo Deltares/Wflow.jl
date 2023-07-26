@@ -1,0 +1,49 @@
+name: Bugs
+description: Broken elements within Wflow
+# title: "BUG: "
+labels: [bug]
+
+body:
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Wflow version checks
+      options:
+        - label: >
+            I have checked that this issue has not already been reported.
+          required: true
+        - label: >
+            I have checked that this bug exists on the latest version of Wflow.
+          required: true           
+  - type: textarea
+    id: example
+    attributes:
+      label: Reproducible Example
+      description: >
+        Please provide a minimal, copy-pastable example to reproduce the behavior:
+    validations:
+      required: true
+  - type: textarea
+    id: current-behaviour
+    attributes:
+      description: >
+        Please provide a description of the incorrect behaviour shown in the reproducible example
+      label: Current behaviour
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behaviour
+    attributes:
+      description: >
+        Please provide a description of what you think the behaviour should be
+      label: Desired behaviour
+    validations:
+      required: true
+  - type: textarea
+    id: Additional
+    attributes:
+      label: Additional Context
+      description: >
+        Please add any other context about the bug here:
+    validations:
+      required: false

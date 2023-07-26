@@ -1,0 +1,49 @@
+name: Documentation
+description: Missing or bad documentation.
+# title: "Docs: "
+labels: [documentation]
+
+body:
+  - type: checkboxes
+    attributes:
+      label: Wflow version checks
+      options:
+        - label: >
+            I have checked that the issue still exists on the latest versions of the docs
+            on `master` [here](https://github.com/Deltares/Wflow.jl)
+          required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      description: What kind of documentation issue is this?
+      label: Kind of issue
+      options:
+        - Docs are wrong
+        - Docs are unclear
+        - Docs are missing
+    validations:
+      required: true
+  - type: textarea
+    id: location
+    attributes:
+      label: Location of the documentation
+      description: >
+        Please provide the URL of the documentation:
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Documentation problem
+      description: >
+        Please provide a description of the documentation problem:
+    validations:
+      required: true
+  - type: textarea
+    id: suggested-fix
+    attributes:
+      label: Suggested fix for documentation
+      description: >
+        Please explain your suggested fix and why it's better than the existing documentation:
+    validations:
+      required: false
