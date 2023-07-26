@@ -21,3 +21,6 @@
 /dev/
 /test/data/
 /tmp/
+
+# Build files
+/build/create_binaries/wflow_cli/
