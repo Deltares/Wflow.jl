@@ -41,6 +41,7 @@ function add_metadata(project_dir, license_file, output_dir, git_repo)
         end
         julia_version = manifest["julia_version"]
         wflow_entry = only(manifest["deps"]["Wflow"])
+        tree = wflow_entry["git-tree-sha1"]
         version = wflow_entry["version"]
         repo = GitRepo(git_repo)
         branch = LibGit2.head(repo)
@@ -52,10 +53,11 @@ function add_metadata(project_dir, license_file, output_dir, git_repo)
 
         ## Version
 
-        This build uses the Wflow version mentioned below.
+        This build uses the Wflow.jl version mentioned below.
 
         ```toml
         version = "$version"
+        git-tree-sha1 = "$tree"
         commit = "$url/$short_commit"
         branch = "$url/$short_name"
         julia_version = "$julia_version"
