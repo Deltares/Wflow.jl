@@ -1,14 +1,38 @@
 using PackageCompiler
 using TOML
 using LibGit2
+using Pkg
 
 # change directory to this script's location
 cd(@__DIR__)
 
 project_dir = "../wflow_cli"
 license_file = "../../LICENSE"
-output_dir = "wflow_cli"
+output_dir = "wflow_bundle"
 git_repo = "../.."
+
+# build the latest release by default, unless WFLOW_REV is set
+# WFLOW_REV is an optional git revision. rev can be a branch name or a git commit SHA1
+build_rev = haskey(ENV, "WFLOW_REV")
+
+Pkg.activate(".")
+if build_rev
+    rev = ENV["WFLOW_REV"]
+    Pkg.add(url="https://github.com/Deltares/Wflow.jl", rev=rev)
+end
+Pkg.update()
+
+# confirm Wflow passes tests and download the required data to run precompile.jl
+using Wflow
+Pkg.test("Wflow")
+
+# cd("create_app")
+
+Pkg.activate(".")
+Pkg.update()
+
+# remove previous build if it exists
+rm("output_dir", force=true, recursive=true)
 
 create_app(
     project_dir,
@@ -22,16 +46,3 @@ create_app(
 
 include("add_metadata.jl")
 add_metadata(project_dir, license_file, output_dir, git_repo)
-
-# On Windows, write ribasim.cmd in the output_dir, that starts ribasim.exe.
-# Since the bin dir contains a julia.exe and many DLLs that you may not want in your path,
-# with this script you can put output_dir in your path instead.
-# if Sys.iswindows()
-#     cmd = raw"""
-#     @echo off
-#     "%~dp0bin\ribasim.exe" %*
-#     """
-#     open(normpath(output_dir, "ribasim.cmd"); write=true) do io
-#         print(io, cmd)
-#     end
-# end

@@ -7,5 +7,4 @@ version = "0.7.1"
 Wflow = "d48b7d99-76e7-47ae-b1d5-ff0c1cf9a818"
 
 [compat]
-Wflow = "0.7.1"
 julia = "1.6"
