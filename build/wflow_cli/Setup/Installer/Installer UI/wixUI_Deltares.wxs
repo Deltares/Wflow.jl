@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Fragment>
+    <UI Id="WixUI_Deltares">
+      <TextStyle Id="WixUI_Font_Normal" FaceName="Tahoma" Size="8"/>
+      <TextStyle Id="WixUI_Font_Bigger" FaceName="Tahoma" Size="12" />
+      <TextStyle Id="WixUI_Font_Title" FaceName="Tahoma" Size="9" Bold="yes" Red="0" Green="0" Blue="0" />
+      
+      <TextStyle Id="WixUI_Font_Banner_Description" FaceName="Tahoma" Size="8" Red="0" Green="0" Blue="0" />
+
+      <Property Id="DefaultUIFont" Value="WixUI_Font_Normal" />
+
+      <DialogRef Id="BrowseDlgDeltares" />
+      <DialogRef Id="ErrorDlgDeltares" />
+      <DialogRef Id="FatalErrorDeltares" />
+      <DialogRef Id="FilesInUse" />
+      <DialogRef Id="FilesInUseDeltares" />
+      <DialogRef Id="MsiRMFilesInUseDeltares" />
+      <DialogRef Id="PrepareDlgDeltares" />
+      <DialogRef Id="ProgressDlgDeltares" />
+      <DialogRef Id="ResumeDlgDeltares" />
+      <DialogRef Id="UserExitDeltares" />
+
+      <Publish Dialog="ExitDialogDeltares" Control="Finish" Event="EndDialog" Value="Return" Order="999">1</Publish>
+
+      <Publish Dialog="BrowseDlgDeltares" Control="OK" Event="DoAction" Value="WixUIValidatePath" Order="1">1</Publish>
+      <Publish Dialog="BrowseDlgDeltares" Control="OK" Event="SpawnDialog" Value="InvalidDirDlgDeltares" Order="2"><![CDATA[WIXUI_INSTALLDIR_VALID<>"1"]]></Publish>
+
+      <Publish Dialog="WelcomeDlgDeltares" Control="Next" Event="NewDialog" Value="LicenseAgreementDlgDeltares">1</Publish>
+
+      <Publish Dialog="LicenseAgreementDlgDeltares" Control="Back" Event="NewDialog" Value="WelcomeDlgDeltares">1</Publish>
+      <Publish Dialog="LicenseAgreementDlgDeltares" Control="Next" Event="NewDialog" Value="InstallDirDlgDeltares" Order="2">LicenseAccepted = "1"</Publish>
+
+      <Publish Dialog="InstallDirDlgDeltares" Control="Back" Event="NewDialog" Value="LicenseAgreementDlgDeltares">1</Publish>
+      <Publish Dialog="InstallDirDlgDeltares" Control="Next" Event="SetTargetPath" Value="[WIXUI_INSTALLDIR]" Order="1">1</Publish>
+      <Publish Dialog="InstallDirDlgDeltares" Control="Next" Event="DoAction" Value="WixUIValidatePath" Order="2">NOT WIXUI_DONTVALIDATEPATH</Publish>
+      <Publish Dialog="InstallDirDlgDeltares" Control="Next" Event="SpawnDialog" Value="InvalidDirDlgDeltares" Order="3"><![CDATA[NOT WIXUI_DONTVALIDATEPATH AND WIXUI_INSTALLDIR_VALID<>"1"]]></Publish>
+      <Publish Dialog="InstallDirDlgDeltares" Control="Next" Event="NewDialog" Value="VerifyReadyDlgDeltares" Order="4">WIXUI_DONTVALIDATEPATH OR WIXUI_INSTALLDIR_VALID="1"</Publish>
+      <Publish Dialog="InstallDirDlgDeltares" Control="ChangeFolder" Property="_BrowseProperty" Value="[WIXUI_INSTALLDIR]" Order="1">1</Publish>
+      <Publish Dialog="InstallDirDlgDeltares" Control="ChangeFolder" Event="SpawnDialog" Value="BrowseDlgDeltares" Order="2">1</Publish>
+
+      <Publish Dialog="VerifyReadyDlgDeltares" Control="Back" Event="NewDialog" Value="InstallDirDlgDeltares">1</Publish>
+
+      <Publish Dialog="MaintenanceWelcomeDlgDeltares" Control="Next" Event="NewDialog" Value="MaintenanceTypeDlgDeltares">1</Publish>
+
+      <Publish Dialog="MaintenanceTypeDlgDeltares" Control="RepairButton" Event="NewDialog" Value="VerifyReadyDlgDeltares">1</Publish>
+      <Publish Dialog="MaintenanceTypeDlgDeltares" Control="RemoveButton" Event="NewDialog" Value="VerifyReadyDlgDeltares">1</Publish>
+      <Publish Dialog="MaintenanceTypeDlgDeltares" Control="Back" Event="NewDialog" Value="MaintenanceWelcomeDlgDeltares">1</Publish>
+    </UI>
+    
+    <UIRef Id="WixUI_Common" />
+  </Fragment>
+</Wix>

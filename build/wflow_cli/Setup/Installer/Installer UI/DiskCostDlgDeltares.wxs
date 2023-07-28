@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Copyright (c) Microsoft Corporation.  All rights reserved.
+    
+    The use and distribution terms for this software are covered by the
+    Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.php)
+    which can be found in the file CPL.TXT at the root of this distribution.
+    By using this software in any fashion, you are agreeing to be bound by
+    the terms of this license.
+    
+    You must not remove this notice, or any other, from this software.
+-->
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+    <Fragment>
+        <UI>
+            <Dialog Id="DiskCostDlgDeltares" Width="370" Height="270" Title="!(loc.Dlg_Title)">
+                <Control Id="OK" Type="PushButton" X="304" Y="!(loc.NavigateButtonY)" Width="56" Height="17" Default="yes" Cancel="yes" Text="!(loc.WixUIOK)">
+                    <Publish Event="EndDialog" Value="Return">1</Publish>
+                </Control>
+                <Control Id="BannerBitmap" Type="Bitmap"  X="!(loc.BannerImageX)" Y="!(loc.BannerImageY)" Width="!(loc.BannerImageWidth)" Height="!(loc.BannerImageHeight)" TabSkip="no" Text="!(loc.BrowseDlgBannerBitmap)" />
+                <Control Id="Text" Type="Text" X="!(loc.TextX)" Y="61" Width="330" Height="50" Text="!(loc.DiskCostDlgText)" />
+                <Control Id="HeaderLine" Type="Line" X="0" Y="!(loc.HeaderHeight)" Width="!(loc.DialogWidth)" Height="0" />
+                <Control Id="BottomLine" Type="Line" X="0" Y="!(loc.BottomLineY)" Width="!(loc.DialogWidth)" Height="0" />
+                <Control Id="Description" Type="Text" X="!(loc.TextX)" Y="!(loc.DescriptionTextY)" Width="325" Height="20" Transparent="yes" NoPrefix="yes" Text="!(loc.DiskCostDlgDescription)" />
+		            <Control Id="Title" Type="Text" X="!(loc.TextX)" Y="!(loc.TitleTextY)" Width="325" Height="15" Transparent="yes" NoPrefix="yes" Text="!(loc.DiskCostDlgTitle)" />
+                <Control Id="VolumeList" Type="VolumeCostList" X="!(loc.TextX)" Y="100" Width="330" Height="120" Sunken="yes" Fixed="yes" Remote="yes" Text="!(loc.DiskCostDlgVolumeList)" />
+            </Dialog>
+        </UI>
+    </Fragment>
+</Wix>

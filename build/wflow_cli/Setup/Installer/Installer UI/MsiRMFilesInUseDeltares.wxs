@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Copyright (c) Microsoft Corporation.  All rights reserved.
+    
+    The use and distribution terms for this software are covered by the
+    Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.php)
+    which can be found in the file CPL.TXT at the root of this distribution.
+    By using this software in any fashion, you are agreeing to be bound by
+    the terms of this license.
+    
+    You must not remove this notice, or any other, from this software.
+-->
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+    <Fragment>
+        <UI>
+            <Property Id="WixUIRMOptionDeltares" Value="UseRM" />
+            <Dialog Id="MsiRMFilesInUseDeltares" Width="370" Height="270" Title="!(loc.Dlg_Title)" KeepModeless="yes">
+                <Control Id="OK" Type="PushButton" X="240" Y="!(loc.NavigateButtonY)" Width="56" Height="17" Default="yes" Text="!(loc.WixUIOK)">
+                    <Publish Event="EndDialog" Value="Return">1</Publish>
+                    <Publish Event="RMShutdownAndRestart" Value="0">WixUIRMOptionDeltares~="UseRM"</Publish>
+                </Control>
+                <Control Id="Cancel" Type="PushButton" X="304" Y="!(loc.NavigateButtonY)" Width="56" Height="17" Cancel="yes" Text="!(loc.WixUICancel)">
+                    <Publish Event="EndDialog" Value="Exit">1</Publish>
+                </Control>
+
+                <Control Id="ShutdownOption" Type="RadioButtonGroup" X="26" Y="190" Width="305" Height="45" Property="WixUIRMOptionDeltares">
+                    <RadioButtonGroup Property="WixUIRMOptionDeltares">
+                        <RadioButton Value="UseRM" X="0" Y="0" Width="295" Height="16" Text="!(loc.MsiRMFilesInUseUseRM)" />
+                        <RadioButton Value="DontUseRM" X="0" Y="20" Width="295" Height="16" Text="!(loc.MsiRMFilesInUseDontUseRM)" />
+                    </RadioButtonGroup>
+                </Control>
+
+                <Control Id="List" Type="ListBox" X="!(loc.TextX)" Y="100" Width="330" Height="80" Property="FileInUseProcess" Sunken="yes" TabSkip="yes" />
+                <Control Id="BannerBitmap" Type="Bitmap"  X="!(loc.BannerImageX)" Y="!(loc.BannerImageY)" Width="!(loc.BannerImageWidth)" Height="!(loc.BannerImageHeight)" TabSkip="no" Text="!(loc.MsiRMFilesInUseBannerBitmap)" />
+                <Control Id="Text" Type="Text" X="!(loc.TextX)" Y="61" Width="330" Height="45" Text="!(loc.MsiRMFilesInUseText)" />
+                <Control Id="HeaderLine" Type="Line" X="0" Y="!(loc.HeaderHeight)" Width="!(loc.DialogWidth)" Height="0" />
+                <Control Id="BottomLine" Type="Line" X="0" Y="!(loc.BottomLineY)" Width="!(loc.DialogWidth)" Height="0" />
+                <Control Id="Description" Type="Text" X="!(loc.TextX)" Y="29" Width="325" Height="20" Transparent="yes" NoPrefix="yes" Text="!(loc.MsiRMFilesInUseDescription)" />
+                <Control Id="Title" Type="Text" X="!(loc.TextX)" Y="16" Width="325" Height="15" Transparent="yes" NoPrefix="yes" Text="!(loc.MsiRMFilesInUseTitle)" />
+            </Dialog>
+        </UI>
+    </Fragment>
+</Wix>

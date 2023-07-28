@@ -5,7 +5,7 @@
 .vscode
 
 # Manifest toml from project toml
-/Manifest.toml
+**/Manifest.toml
 
 # Packaging stuff
 *.jl.*.cov
@@ -21,3 +21,6 @@
 /dev/
 /test/data/
 /tmp/
+
+# Build files
+/build/create_binaries/wflow_bundle/

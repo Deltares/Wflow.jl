@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='utf-8'?>
+<WixLocalization Culture='en-US' xmlns='http://schemas.microsoft.com/wix/2006/localization'>
+
+  <String Id='Language'>1033</String>
+  <!--Set X to 40 when only Deltares logo is displayed, set to 24 when also Rijkswaterstaat logo is displayed-->
+  <!--set X to 25 when no logos are displayed-->
+  <String Id='DescriptionBeforeLogosX'>25</String>
+  <!--Set Width to 220 when only Deltares logo is displayed, set to 136 when also Rijkswaterstaat logo is displayed-->
+  <!--Set Width to 320 when no logos are displayed-->
+  <String Id='DescriptionBeforeLogosWidth'>320</String>
+  <String Id='DescriptionBeforeLogosY'>135</String>
+
+  <String Id='DialogWidth'>370</String>
+  <String Id='DialogHeight'>270</String>
+  <String Id='HeaderHeight'>44</String>
+  <String Id='BannerImageX'>0</String>
+  <String Id='BannerImageY'>0</String>
+  <String Id='BannerImageWidth'>370</String>
+  <String Id='BannerImageHeight'>44</String>
+  <String Id='DialogImageX'>0</String>
+  <String Id='DialogImageY'>0</String>
+  <String Id='DialogImageWidth'>370</String>
+  <String Id='DialogImageHeight'>234</String>
+  <String Id='BottomLineY'>234</String>
+  <String Id='TextX'>20</String>
+  <String Id='TitleTextY'>9</String>
+  <String Id='DescriptionTextY'>22</String>
+  <String Id='NavigateButtonY'>245</String>
+
+  <String Id='PrepareDlgTitle' />
+
+  <String Id='WelcomeUpdateDlgDescriptionUpdate' />
+  <String Id='WelcomeDlgTitle' />
+  <String Id='WelcomeDlgTitleX'>39</String>
+  <String Id='WelcomeDlgTitleY'>170</String>
+  <String Id='WixUICostingPopupOptOut' />
+
+  <String Id='VerifyReadyDlgUpdate' />
+  <String Id='VerifyReadyDlgUpdateTitle' />
+  <String Id='VerifyReadyDlgUpdateText' />
+  <String Id='ProgressDlgTextUpdating' />
+  <String Id='ProgressDlgTitleUpdating' />
+  
+  <!-- Change the color of the description texts in the banners to white -->
+  <String Id='BrowseDlgDescription'>{\WixUI_Font_Banner_Description}Configure the installation location.</String>
+  <String Id='DiskCostDlgDescription'>{\WixUI_Font_Banner_Description}The amount of disk space required for the configured installation.</String>
+  <String Id='LicenseAgreementDlgDescription'>{\WixUI_Font_Banner_Description}Read the license agreement thoroughly.</String>
+  <String Id='MaintenanceTypeDlgDescription'>{\WixUI_Font_Banner_Description}Select the operation you wish to perform</String>
+  <String Id='FilesInUseDescription'>{\WixUI_Font_Banner_Description}The files that need to be updated are in use.</String>
+  <String Id='OutOfDiskDlgDescription'>{\WixUI_Font_Banner_Description}The required disk space for the installation is larger than the available disk space.</String>
+  <String Id='OutOfRbDiskDlgDescription'>{\WixUI_Font_Banner_Description}The required disk space for the installation is larger than the available disk space.</String>
+
+</WixLocalization>
