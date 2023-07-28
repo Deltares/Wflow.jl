@@ -1,7 +1,7 @@
 name = "wflow_cli"
 uuid = "a79039df-c2cc-429a-a63c-52bf37dce6b3"
 authors = ["Deltares"]
-version = "0.7.1"
+version = "0.1"
 
 [deps]
 Wflow = "d48b7d99-76e7-47ae-b1d5-ff0c1cf9a818"

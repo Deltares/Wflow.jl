@@ -23,8 +23,6 @@ wflow_cli path/to/config.toml
 ```
 
 ## Directory tree
-
-- `contrib/build_steps.jl`: script that automates the build, used on a build server
 - `Setup/`: used to create MSI installers for Windows
 - `src/`: source code of the wflow_cli app, that wraps `Wflow.run` function
 - `Project.toml`: Project for the wflow_cli app that needs to be built
