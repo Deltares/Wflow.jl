@@ -45,9 +45,9 @@ function add_metadata(project_dir, license_file, output_dir, git_repo)
         version = wflow_entry["version"]
         repo = GitRepo(git_repo)
         branch = LibGit2.head(repo)
-        commit = LibGit2.peel(LibGit2.GitCommit, branch)
+        # commit = LibGit2.peel(LibGit2.GitCommit, branch)
         short_name = LibGit2.shortname(branch)
-        short_commit = string(LibGit2.GitShortHash(LibGit2.GitHash(commit), 10))
+        # short_commit = string(LibGit2.GitShortHash(LibGit2.GitHash(commit), 10))
         url = "https://github.com/Deltares/Wflow.jl/tree"
         version_info = """
 
@@ -58,7 +58,6 @@ function add_metadata(project_dir, license_file, output_dir, git_repo)
         ```toml
         version = "$version"
         git-tree-sha1 = "$tree"
-        commit = "$url/$short_commit"
         branch = "$url/$short_name"
         julia_version = "$julia_version"
         ```"""
