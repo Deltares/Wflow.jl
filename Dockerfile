@@ -2,7 +2,7 @@ FROM julia:1.9.2
 LABEL maintainer="Maarten Pronk <maarten.pronk@deltares.nl>"
 
 RUN apt-get update && apt-get install -y \
-    g++ gcc \
+    g++ git gcc \
     && rm -rf /var/lib/apt/lists/*
 ADD . /app
 WORKDIR /app/build/create_binaries/
