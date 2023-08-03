@@ -345,7 +345,7 @@ function update_water_allocation(model)
 
     inds_river = network.river.indices_allocation_areas
     inds_land = network.land.indices_allocation_areas
-    index_river = network.land.index_river
+    index_river_wb = network.land.index_river_wb
 
     river = lateral.river.waterallocation
 
@@ -357,23 +357,23 @@ function update_water_allocation(model)
             waterallocation.frac_sw_used[i] * waterallocation.nonirri_demand_gross[i] +
             waterallocation.frac_sw_used[i] * waterallocation.irri_demand_gross[i]
 
-        if index_river[i] > 0.0 # TODO: exclude reservoir/lake cells
+        if index_river_wb[i] > 0.0
             # check for abstraction through inflow and adjust available volume
-            if lateral.river.inflow[index_river[i]] < 0.0
-                inflow = lateral.river.inflow[index_river[i]] * vertical.Δt
+            if lateral.river.inflow[index_river_wb[i]] < 0.0
+                inflow = lateral.river.inflow[index_river_wb[i]] * vertical.Δt
                 available_volume =
-                    max(lateral.river.volume[index_river[i]] * 0.80 + inflow, 0.0)
+                    max(lateral.river.volume[index_river_wb[i]] * 0.80 + inflow, 0.0)
             else
-                available_volume = lateral.river.volume[index_river[i]] * 0.80
+                available_volume = lateral.river.volume[index_river_wb[i]] * 0.80
             end
             surfacewater_demand_vol =
                 waterallocation.surfacewater_demand[i] * 0.001 * network.land.area[i]
             abstraction_vol = min(surfacewater_demand_vol, available_volume)
-            river.available_surfacewater[index_river[i]] =
+            river.available_surfacewater[index_river_wb[i]] =
                 available_volume - abstraction_vol
             abstraction = (abstraction_vol / network.land.area[i]) * 1000.0
             waterallocation.surfacewater_demand[i] -= abstraction
-            river.act_surfacewater_abst[index_river[i]] = abstraction
+            river.act_surfacewater_abst[index_river_wb[i]] = abstraction
             waterallocation.surfacewater_alloc[i] = abstraction
         end
     end
@@ -502,8 +502,8 @@ function update_water_allocation(model)
             returnflow_industry = vertical.industry.returnflow_fraction[i] * industry_alloc
         end
 
-        if index_river[i] > 0.0
-            k = index_river[i]
+        if index_river_wb[i] > 0.0
+            k = index_river_wb[i]
             river.nonirri_returnflow[k] =
                 returnflow_livestock + returnflow_domestic + returnflow_industry
             waterallocation.nonirri_returnflow[i] = 0.0
