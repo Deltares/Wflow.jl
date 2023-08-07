@@ -1155,8 +1155,14 @@ function timecycles(times)
         if !all(==(year1), year.(times))
             error("unsupported cyclic timeseries")
         end
-        # returns a (month, day) tuple for each date
-        return monthday.(times)
+        # sub-daily time steps are not allowed
+        min_tstep = Second(minimum(diff(times)))
+        if min_tstep < Second(Day(1))
+            error("unsupported cyclic timeseries")
+        else
+            # returns a (month, day) tuple for each date
+            return monthday.(times)
+        end
     elseif eltype(times) <: Integer
         if length(times) == 12
             months = Date(2000, 1, 1):Month(1):Date(2000, 12, 31)
