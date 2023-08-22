@@ -716,7 +716,7 @@ function prepare_reader(config)
         for par in config.input.cyclic
             fields = symbols(par)
             ncname, mod = ncvar_name_modifier(param(config.input, fields))
-            i = findfirst(x -> occursin("time", x), dimnames(cyclic_dataset[ncname]))
+            i = findfirst(x -> startswith(x, "time"), dimnames(cyclic_dataset[ncname]))
             dimname = dimnames(cyclic_dataset[ncname])[i]
             cyclic_nc_times = collect(cyclic_dataset[dimname])
             cyclic_times[fields] = timecycles(cyclic_nc_times)
@@ -1439,6 +1439,8 @@ function internal_dim_name(name::Symbol)
         return :y
     elseif name in (:time, :layer, :flood_depth, :classes)
         return name
+    elseif startswith(string(name), "time")
+        return :time
     else
         error("Unknown dimension $name")
     end
