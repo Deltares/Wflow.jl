@@ -61,7 +61,7 @@ function rainfall_interception_gash(
     overestimate = interception > maxevap ? interception - maxevap : 0.0
     interception = min(interception, maxevap)
 
-    # Add surpluss to the thoughdfall
+    # Add surpluss to the throughfall
     throughfall = throughfall + overestimate
 
     return throughfall, interception, stemflow, canopystorage
@@ -82,7 +82,7 @@ function rainfall_interception_modrut(
     cmax,
 )
 
-    # TODO: improve computation of stemflow partitioning coefficient pt ((0.1 * canopygapfraction)
+    # TODO: improve computation of stemflow partitioning coefficient pt (0.1 * canopygapfraction)
     pt = min(0.1 * canopygapfraction, 1.0 - canopygapfraction)
 
     # Amount of p that falls on the canopy
