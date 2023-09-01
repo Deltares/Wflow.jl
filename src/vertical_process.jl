@@ -32,9 +32,9 @@ function rainfall_interception_gash(
 )
     # TODO: add other rainfall interception method (lui)
     # TODO: include subdaily Gash model
-    # Hack for stemflow (pt)
-    pt = 0.1 * canopygapfraction
-    pfrac = max((1.0 - canopygapfraction - pt), 0.0)
+    # TODO: improve computation of stemflow partitioning coefficient pt (0.1 * canopygapfraction)
+    pt = min(0.1 * canopygapfraction, 1.0 - canopygapfraction)
+    pfrac = 1.0 - canopygapfraction - pt
     p_sat = (-cmax / e_r) * log(1.0 - min((e_r / pfrac), 1.0))
     p_sat = isinf(p_sat) ? 0.0 : p_sat
 
@@ -82,13 +82,14 @@ function rainfall_interception_modrut(
     cmax,
 )
 
-    p = canopygapfraction
-    pt = 0.1 * p
+    # TODO: improve computation of stemflow partitioning coefficient pt ((0.1 * canopygapfraction)
+    pt = min(0.1 * canopygapfraction, 1.0 - canopygapfraction)
 
     # Amount of p that falls on the canopy
-    pfrac = max((1.0 - p - pt), 0.0) * precipitation
+    pfrac = (1.0 - canopygapfraction - pt) * precipitation
 
-    # S cannot be larger than Cmax, no gravity drainage below that
+    # Canopystorage cannot be larger than cmax, no gravity drainage below that. This check
+    # is required because cmax can change over time
     dd = canopystorage > cmax ? canopystorage - cmax : 0.0
     canopystorage = canopystorage - dd
 
@@ -99,19 +100,19 @@ function rainfall_interception_modrut(
     dc = -1.0 * min(canopystorage, potential_evaporation)
     canopystorage = canopystorage + dc
 
-    leftover = potential_evaporation + dc
     # Amount of evap not used
-
-    # Now drain the canopy storage again if needed...
+    leftover = potential_evaporation + dc
+    
+    # Now drain the canopystorage again if needed...
     d = canopystorage > cmax ? canopystorage - cmax : 0.0
     canopystorage = canopystorage - d
 
-    # Calculate throughfall
-    throughfall = dd + d + p * precipitation
+    # Calculate throughfall and stemflow
+    throughfall = dd + d + canopygapfraction * precipitation
     stemflow = precipitation * pt
 
     # Calculate interception, this is NET Interception
-    netinterception = precipitation - throughfall - stemflow
+    netinterception = precipitation + dd - throughfall - stemflow
     interception = -dc
 
     return netinterception, throughfall, stemflow, leftover, interception, canopystorage
