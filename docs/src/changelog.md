@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   amounts. And the first drainage amount `dd`, controlled by a change over time in canopy
   storage capacity `cmax`, should not be subtracted from precipitation to compute net
   interception.
+- The `netinterception` (net interception) computed by the modified Rutter interception
+  model was stored as `interception` in `SBM`, while this should be the `interception`
+  (interception loss by evaporation) output of the modified Rutter interception model. The
+  `interception` of `SBM` is used to compute the total actual evapotranspiration `actevap`.
 
 ## v0.7.1 - 2023-06-30
 
