@@ -84,7 +84,7 @@
     transpiration::Vector{T}
     # Actual evaporation from unsaturated store [mm Δt⁻¹]
     ae_ustore::Vector{T}
-    # Interception [mm Δt⁻¹]
+    # Interception loss by evaporation [mm Δt⁻¹]
     interception::Vector{T}
     # Soil evaporation from unsaturated and saturated store [mm Δt⁻¹]
     soilevap::Vector{T}
@@ -650,7 +650,6 @@ function update_until_snow(sbm::SBM, config)
                     cmax,
                 )
             pottrans_soil = max(0.0, leftover)  # now in mm
-            interception = netinterception
         end
 
         if modelsnow
