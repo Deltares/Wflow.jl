@@ -19,7 +19,6 @@ create_app(
     precompile_execution_file="precompile.jl",
     filter_stdlibs=false,
     force=true,
-    cpu_target="generic;sandybridge,-xsaveopt,clone_all;haswell,-rdrnd,base(1);cascadelake"
 )
 
 include("add_metadata.jl")
