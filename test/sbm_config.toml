@@ -11,6 +11,7 @@ timestepsecs = 86400
 dir_input = "data/input"
 dir_output = "data/output"
 loglevel = "info"
+silent = true
 
 [state]
 path_input = "instates-moselle.nc"
