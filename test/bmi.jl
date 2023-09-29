@@ -33,9 +33,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test BMI.get_var_grid(model, "lateral.river.h") == 2
             @test BMI.get_var_grid(model, "lateral.river.reservoir.inflow") == 0
             @test_throws ErrorException BMI.get_var_grid(model, "lateral.river.lake.volume")
-            # Vector{Float64} printing on Julia 1.6+
-            @test BMI.get_var_type(model, "lateral.river.reservoir.inflow") in
-                  ["Array{$Float,1}", "Vector{$Float}"]
+            @test BMI.get_var_type(model, "lateral.river.reservoir.inflow") == "$Float"
             @test BMI.get_var_type(model, "vertical.n") == "Int64"
             @test BMI.get_var_units(model, "vertical.θₛ") == "-"
             @test BMI.get_var_itemsize(model, "lateral.subsurface.ssf") == sizeof(Float)

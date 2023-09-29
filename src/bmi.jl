@@ -143,7 +143,7 @@ function BMI.get_var_grid(model::Model, name::String)
 end
 
 function BMI.get_var_type(model::Model, name::String)
-    string(typeof(param(model, name)))
+    repr(eltype(param(model, name)))
 end
 
 function BMI.get_var_units(model::Model, name::String)
