@@ -8,7 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [unreleased]
 
 ### Fixed
-- Leakage term was missing from the wflow\_sbm figure in the documentation.
+- Documentation: add leakage term to the wflow\_sbm figure and document external input
+  parameter `ksathorfrac`.
 
 ## v0.7.2 - 2023-09-27
 
