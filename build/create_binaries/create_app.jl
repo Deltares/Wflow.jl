@@ -18,7 +18,7 @@ create_app(
     executables=["wflow_cli" => "julia_main"],
     precompile_execution_file="precompile.jl",
     filter_stdlibs=false,
-    force=true
+    force=true,
 )
 
 include("add_metadata.jl")

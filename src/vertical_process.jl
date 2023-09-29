@@ -32,9 +32,9 @@ function rainfall_interception_gash(
 )
     # TODO: add other rainfall interception method (lui)
     # TODO: include subdaily Gash model
-    # Hack for stemflow (pt)
-    pt = 0.1 * canopygapfraction
-    pfrac = max((1.0 - canopygapfraction - pt), 0.0)
+    # TODO: improve computation of stemflow partitioning coefficient pt (0.1 * canopygapfraction)
+    pt = min(0.1 * canopygapfraction, 1.0 - canopygapfraction)
+    pfrac = 1.0 - canopygapfraction - pt
     p_sat = (-cmax / e_r) * log(1.0 - min((e_r / pfrac), 1.0))
     p_sat = isinf(p_sat) ? 0.0 : p_sat
 
@@ -58,11 +58,11 @@ function rainfall_interception_gash(
     stemflow = cmaxzero ? 0.0 : stemflow
 
     # Now corect for maximum potential evap
-    overestimate = interception > maxevap ? interception - maxevap : 0.0
+    canopy_drainage = interception > maxevap ? interception - maxevap : 0.0
     interception = min(interception, maxevap)
 
-    # Add surpluss to the thoughdfall
-    throughfall = throughfall + overestimate
+    # Add surpluss to the throughfall
+    throughfall = throughfall + canopy_drainage
 
     return throughfall, interception, stemflow, canopystorage
 
@@ -82,37 +82,38 @@ function rainfall_interception_modrut(
     cmax,
 )
 
-    p = canopygapfraction
-    pt = 0.1 * p
+    # TODO: improve computation of stemflow partitioning coefficient pt (0.1 * canopygapfraction)
+    pt = min(0.1 * canopygapfraction, 1.0 - canopygapfraction)
 
     # Amount of p that falls on the canopy
-    pfrac = max((1.0 - p - pt), 0.0) * precipitation
+    precip_canopy = (1.0 - canopygapfraction - pt) * precipitation
 
-    # S cannot be larger than Cmax, no gravity drainage below that
-    dd = canopystorage > cmax ? canopystorage - cmax : 0.0
-    canopystorage = canopystorage - dd
+    # Canopystorage cannot be larger than cmax, no gravity drainage below that. This check
+    # is required because cmax can change over time
+    canopy_drainage1 = canopystorage > cmax ? canopystorage - cmax : 0.0
+    canopystorage = canopystorage - canopy_drainage1
 
     # Add the precipitation that falls on the canopy to the store
-    canopystorage = canopystorage + pfrac
+    canopystorage = canopystorage + precip_canopy
 
     # Now do the Evap, make sure the store does not get negative
-    dc = -1.0 * min(canopystorage, potential_evaporation)
-    canopystorage = canopystorage + dc
+    canopy_evap = min(canopystorage, potential_evaporation)
+    canopystorage = canopystorage - canopy_evap
 
-    leftover = potential_evaporation + dc
     # Amount of evap not used
+    leftover = potential_evaporation - canopy_evap
 
-    # Now drain the canopy storage again if needed...
-    d = canopystorage > cmax ? canopystorage - cmax : 0.0
-    canopystorage = canopystorage - d
+    # Now drain the canopystorage again if needed...
+    canopy_drainage2 = canopystorage > cmax ? canopystorage - cmax : 0.0
+    canopystorage = canopystorage - canopy_drainage2
 
-    # Calculate throughfall
-    throughfall = dd + d + p * precipitation
+    # Calculate throughfall and stemflow
+    throughfall = canopy_drainage1 + canopy_drainage2 + canopygapfraction * precipitation
     stemflow = precipitation * pt
 
     # Calculate interception, this is NET Interception
-    netinterception = precipitation - throughfall - stemflow
-    interception = -dc
+    netinterception = precipitation + canopy_drainage1 - throughfall - stemflow
+    interception = canopy_evap
 
     return netinterception, throughfall, stemflow, leftover, interception, canopystorage
 
@@ -153,7 +154,7 @@ function acttransp_unsat_sbm(
     θₛ,
     θᵣ,
     hb,
-    ust::Bool = false,
+    ust::Bool=false,
 )
 
     # AvailCap is fraction of unsat zone containing roots
@@ -362,9 +363,9 @@ function snowpack_hbv(
     ttm,
     cfmax,
     whc;
-    rfcf = 1.0,
-    sfcf = 1.0,
-    cfr = 0.05,
+    rfcf=1.0,
+    sfcf=1.0,
+    cfr=0.05
 )
 
     # fraction of precipitation which falls as rain

@@ -5,11 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
 ## [unreleased]
 
 ### Changed
 - For cyclic parameters different cyclic time inputs are supported (only one common cyclic
   time (for example daily or monthly) was allowed).
+
+## v0.7.2 - 2023-09-27
+
+### Fixed
+- Water balance of modified Rutter interception model. The sum of the stemflow partitioning
+  coefficient `pt` and free throughfall coefficient `p` could get larger than 1, resulting
+  in an overestimation of stemflow and throughfall amounts and negative net interception
+  amounts. And the first drainage amount `dd`, controlled by a change over time in canopy
+  storage capacity `cmax`, should not be subtracted from precipitation to compute net
+  interception.
+- The `netinterception` (net interception) computed by the modified Rutter interception
+  model was stored as `interception` in `SBM`, while this should be the `interception`
+  (interception loss by evaporation) output of the modified Rutter interception model. The
+  `interception` of `SBM` is used to compute the total actual evapotranspiration `actevap`.
 
 ## v0.7.1 - 2023-06-30
 
