@@ -187,6 +187,11 @@ function BMI.get_time_step(model::Model)
     Float64(model.config.timestepsecs)
 end
 
+function BMI.get_value(model::Model, name::String, dest::Vector{T}) where {T<:AbstractFloat}
+    dest .= copy(BMI.get_value_ptr(model, name))
+    return dest
+end
+
 function BMI.get_value(model::Model, name::String)
     copy(BMI.get_value_ptr(model, name))
 end
@@ -206,6 +211,16 @@ Returns values of a model variable `name` at indices `inds`.
 """
 function BMI.get_value_at_indices(model::Model, name::String, inds::Vector{Int})
     BMI.get_value_ptr(model, name)[inds]
+end
+
+function BMI.get_value_at_indices(
+    model::Model,
+    name::String,
+    dest::Vector{T},
+    inds::Vector{Int},
+) where {T<:AbstractFloat}
+    dest .= BMI.get_value_ptr(model, name)[inds]
+    return dest
 end
 
 """
