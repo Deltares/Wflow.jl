@@ -8,11 +8,13 @@ flow, including a description of these parameters, the unit, and default value i
 applicable. The parameters in bold represent model parameters that can be set through static
 input data (netCDF), and can be listed in the TOML configuration file under
 `[input.lateral.river]` to map the internal model parameter to the external netCDF variable.
+The input parameter `slope` (listed under `[input.lateral.river]`) is not equal to the
+internal model parameter `sl`, and is listed in the Table below between parentheses.
 
 |  parameter  | description  	  | unit  | default |
 |:--------------- | ------------------| ----- | -------- |
 | `β`             |  constant in Manning's equation | - | - |
-| **`sl`**        |  slope       | m m``^{-1}``| - |
+| **`sl`** (`slope`) |  slope       | m m``^{-1}``| - |
 | **`n`**         | Manning's roughness | s m``^{-\frac{1}{3}}``| 0.036 |
 | **`dl`**        |  length      | m     |  -      |
 | `q`             | discharge     | m``^3`` s``^{-1}``| - |
@@ -42,12 +44,14 @@ The Table below shows the parameters (fields) of struct `SurfaceFlowLand` used f
 flow, including a description of these parameters, the unit, and default value if
 applicable. The parameters in bold represent model parameters that can be set through static
 input data (netCDF), and can be listed in the TOML configuration file under
-`[input.lateral.land]` to map the internal model parameter to the external netCDF variable. 
+`[input.lateral.land]` to map the internal model parameter to the external netCDF variable.
+The input parameter `slope` (listed under `[input.lateral.land]`) is not equal to the
+internal model parameter `sl`, and is listed in the Table below between parentheses.
 
 |  parameter  | description  	  | unit  | default |
 |:--------------- | ------------------| ----- | -------- |
 | `β`             |  constant in Manning's equation | - | - |
-| **`sl`**        |  slope       | m m``^{-1}``| - |
+| **`sl`** (`slope`) |  slope       | m m``^{-1}``| - |
 | **`n`**         | Manning's roughness | s m``^{-\frac{1}{3}}``| 0.072 |
 | `dl`            |  length      | m     |  -      |
 | `q`             | discharge     | m``^3`` s``^{-1}``| - |
@@ -120,6 +124,10 @@ areas = "wflow_lakeareas"
 locs = "wflow_lakelocs"
 ```
 
+The input parameter `linkedlakelocs` (listed under `[input.lateral.river.lake]`) is not
+equal to the internal model parameter `lowerlake_ind`, and is listed in the Table below
+between parentheses.
+
 |  parameter | description  	        | unit | default |
 |:---------------| --------------- | ---------------------- | ----- |
 | **`area`**         | area| m``^2`` | - |
@@ -141,19 +149,44 @@ locs = "wflow_lakelocs"
 | `precipitation` | average precipitation for lake area | mm Δt⁻¹  | - |
 | `evaporation` | average precipitation for lake area | mm Δt⁻¹  | - |
 
-### Lateral subsurface flow
+### [Lateral subsurface flow](@id params_ssf)
 The Table below shows the parameters (fields) of struct `LateralSSF`, including a
-description of these parameters, the unit, and default value if applicable.
+description of these parameters, the unit, and default value if applicable. The parameters
+in bold represent model parameters that can be set through static input data (netCDF). The
+soil related parameters `f`, `soilthickness`, `θₛ` and `θᵣ` are derived from the vertical
+`SBM` concept (including unit conversion for `f` and `soilthickness`), and can be listed in
+the TOML configuration file under `[input.vertical]`, to map the internal model parameter to
+the external netCDF variable. The internal slope model parameter `βₗ` is set through the
+TOML file as follows:
+
+```toml
+[input.lateral.land]
+slope = "Slope"
+```
+
+The parameter `kh₀` is computed by multiplying the vertical hydraulic conductivity at the
+soil surface `kv₀` (including unit conversion) of the vertical `SBM` concept with the
+external parameter `ksathorfrac` \[-\] (default value of 1.0). The external parameter
+`ksathorfrac` can be set as follows through the TOML file:
+
+```toml
+[input.lateral.subsurface]
+ksathorfrac = "KsatHorFrac"
+```
+
+The `ksathorfrac` parameter compensates for anisotropy, small scale `kv₀` measurements (soil
+core) that do not represent larger scale hydraulic conductivity, and smaller flow length
+scales (hillslope) in reality, not represented by the model resolution.
 
 | parameter | description  	        | unit | default |
 |:---------------| --------------- | ---------------------- | ----- |
-| `kh₀`          | horizontal hydraulic conductivity at soil surface  | m d``^{-1}`` |  - |
-| `f` | a scaling parameter (controls exponential decline of kh₀) | m``^{-1}``  | - |
-| `soilthickness` | soil thickness | m  | - |
-| `θₛ` | saturated water content (porosity) | -  | - |
-| `θᵣ` | residual water content  | -  | - |
+| `kh₀`          | horizontal hydraulic conductivity at soil surface  | m d``^{-1}`` |  3.0 |
+| **`f`** | a scaling parameter (controls exponential decline of kh₀) | m``^{-1}``  | 1.0 |
+| **`soilthickness`** | soil thickness | m  | 2.0 |
+| **`θₛ`** | saturated water content (porosity) | -  | 0.6 |
+| **`θᵣ`** | residual water content  | -  | 0.01 |
 | `Δt` | model time step | d  | - |
-| `βₗ` | slope | -  | - |
+| **`βₗ`** (`slope`) | slope | m m``^{-1}``  | - |
 | `dl` | drain length | m | - |
 | `dw` | drain width | m | - |
 | `zi` | pseudo-water table depth (top of the saturated zone) | m | - |
@@ -186,6 +219,9 @@ flow, parameter `q_av` represents the total average discharge of the river chann
 floodplain routing, and parameter `q_channel_av` represents average river channel discharge.
 Otherwise parameters `q_av` and `q_channel_av` represent both average river channel
 discharge (are equal).
+
+The input parameter `n` (listed under `[input.lateral.river]`) is not equal to the internal
+model parameter `mannings_n`, and is listed in the Table below between parentheses.
 
 |  parameter  | description  	  | unit  | default |
 |:--------------- | ------------------| ------- | ------ |
@@ -239,7 +275,9 @@ The Table below shows the parameters (fields) of struct `FloodPlain` (part of st
 value if applicable. The parameters in bold represent model parameters that can be set
 through static input data (netCDF), and can be listed in the TOML configuration file under
 `[input.lateral.river.floodplain]`, to map the internal model parameter to the external
-netCDF variable.
+netCDF variable. The input parameter `n` (listed under `[input.lateral.river.floodplain]`)
+is not equal to the internal model parameter `mannings_n`, and is listed in the Table below
+between parentheses.
 
 |  parameter  | description  	  | unit  | default |
 |:--------------- | ------------------| ----- | -------- |
@@ -269,13 +307,16 @@ The floodplain profile `FloodPlainProfile` contains the following parameters:
 |  `a`   |  cumulative floodplain flow area (per flood depth) | m``^2`` | - |
 |  `p`   |  cumulative floodplain wetted perimeter (per flood depth) | m | - |
 
-The floodplain volumes (per flood depth interval) can be set as follows through the TOML
+The floodplain volumes (per flood `depth` interval) can be set as follows through the TOML
 file:
 
 ```toml
 [input.lateral.river.floodplain]
 volume = "floodplain_volume"
 ```
+
+The input parameter `flood_depth` (dimension of floodplain `volume`) is not equal to the
+internal model parameter `depth`, and is listed in the Table below between parentheses.
 
 ### [Overland flow](@id local-inertial_land_params)
 The Table below shows the parameters (fields) of struct `ShallowWaterLand`, including a
@@ -291,6 +332,8 @@ follows in the TOML file:
 [input.lateral.land]
 n = "n_land" # mannings roughness
 ```
+The input parameter `elevation` (listed under `[input.lateral.land]`) is not equal to the
+internal model parameter `z`, and is listed in the Table below between parentheses.
 
 |  parameter  | description  	  | unit  | default |
 |:--------------- | ------------------| ----- | -------- |
@@ -331,7 +374,7 @@ description of these parameters, the unit, and default value if applicable. Stru
 |:--------------- | ------------------| ----- | -------|
 | `k` | horizontal conductivity  | m d``^{-1}``s | - |
 | `storativity`     | storativity  | m m``^{-1}`` | - |
-| `specific_storage` | specific storage | m``^{-1}`` | - }
+| `specific_storage` | specific storage | m``^{-1}`` | - |
 | `top`     | top groundwater layers  | m | - |
 | `bottom`     | bottom groundwater layers  | m | - |
 | `area`          | cell area    | m``^2`` | - |
@@ -342,18 +385,21 @@ description of these parameters, the unit, and default value if applicable. Stru
 The Table below shows the parameters (fields) of struct `UnconfinedAquifer`, including a
 description of these parameters, the unit, and default value if applicable. The parameters
 in bold represent model parameters that can be set through static input data (netCDF), and
-can be listed in the TOML configuration file under `[lateral.subsurface]`, to map the
+can be listed in the TOML configuration file under `[input.lateral.subsurface]`, to map the
 internal model parameter to the external netCDF variable. For some input parameters the
-parameter listed under `[lateral.subsurface]` is not equal to the internal model parameter,
-these are listed in the Table below between parentheses after the internal model parameter.
-The `top` parameter is provided by the external parameter `altitude` as part of the static
-input data and set as follows through the TOML file:
+parameter listed under `[input.lateral.subsurface]` is not equal to the internal model
+parameter, these are listed in the Table below between parentheses after the internal model
+parameter. The `top` parameter is provided by the external parameter `altitude` as part of
+the static input data and set as follows through the TOML file:
 
 ```toml
 [input]
 # these are not directly part of the model
 altitude = "wflow_dem"
 ```
+
+The input parameter `conductivity` (listed under `[input.lateral.subsurface]`) is not equal
+to the internal model parameter `kh₀`, and is listed in the Table below between parentheses.
 
 |  parameter  | description  	        | unit  | default |
 |:--------------- | ------------------| ----- | -------|
@@ -370,10 +416,10 @@ altitude = "wflow_dem"
 The Table below shows the parameters (fields) of struct `ConstantHead`, including a
 description of these parameters, the unit, and default value if applicable. The parameters
 in bold represent model parameters that can be set through static input data (netCDF), and
-can be listed in the TOML configuration file under `[lateral.subsurface]`, to map the
-internal model parameter to the external netCDF variable. For some input parameters the
-parameter listed under `[lateral.subsurface]` is not equal to the internal model parameter,
-these are listed in the Table below between parentheses after the internal model parameter.
+can be listed in the TOML configuration file under `[input.lateral.subsurface]`, to map the
+internal model parameter to the external netCDF variable. The input parameter
+`constant_head` (listed under `[input.lateral.subsurface]`) is not equal to the internal
+model parameter `head`, and is listed in the Table below between parentheses.
 
 |  parameter  | description  	       | unit  | default |
 |:--------------- | ------------------| ----- | --------- |
@@ -383,13 +429,13 @@ these are listed in the Table below between parentheses after the internal model
 ### Boundary conditions
 
 #### [River](@id gwf_river_params)
-The Table below shows the parameters (fields) of struct `River`, including a
-description of these parameters, the unit, and default value if applicable. The parameters
-in bold represent model parameters that can be set through static input data (netCDF), and
-can be listed in the TOML configuration file under `[lateral.subsurface]`, to map the
-internal model parameter to the external netCDF variable. For some input parameters the
-parameter listed under `[lateral.subsurface]` is not equal to the internal model parameter,
-these are listed in the Table below between parentheses after the internal model parameter.
+The Table below shows the parameters (fields) of struct `River`, including a description of
+these parameters, the unit, and default value if applicable. The parameters in bold
+represent model parameters that can be set through static input data (netCDF), and can be
+listed in the TOML configuration file under `[input.lateral.subsurface]`, to map the
+internal model parameter to the external netCDF variable. The input parameter `river_bottom`
+(listed under `[input.lateral.subsurface]`) is not equal to the internal model parameter
+`bottom`, and is listed in the Table below between parentheses.
 
 |  parameter  | description  	        | unit  | default |
 |:--------------- | ------------------| ----- | -------|
@@ -401,13 +447,14 @@ these are listed in the Table below between parentheses after the internal model
 | `flux`          | exchange flux (river to aquifer)  | m``^3`` d``^{-1}`` | - |
 
 #### [Drainage](@id gwf_drainage_params)
-The Table below shows the parameters (fields) of struct `Drainage`, including a
-description of these parameters, the unit, and default value if applicable. The parameters
-in bold represent model parameters that can be set through static input data (netCDF), and
-can be listed in the TOML configuration file under `[lateral.subsurface]`, to map the
+The Table below shows the parameters (fields) of struct `Drainage`, including a description
+of these parameters, the unit, and default value if applicable. The parameters in bold
+represent model parameters that can be set through static input data (netCDF), and can be
+listed in the TOML configuration file under `[input.lateral.subsurface]`, to map the
 internal model parameter to the external netCDF variable. For some input parameters the
-parameter listed under `[lateral.subsurface]` is not equal to the internal model parameter,
-these are listed in the Table below between parentheses after the internal model parameter.
+parameter listed under `[input.lateral.subsurface]` is not equal to the internal model
+parameter, these are listed in the Table below between parentheses after the internal model
+parameter.
 
 |  parameter  | description  	        | unit  | default |
 |:--------------- | ------------------| ----- | -------|
@@ -417,8 +464,8 @@ these are listed in the Table below between parentheses after the internal model
 | `flux`          | exchange flux (drains to aquifer)  | m``^3`` day``^{-1}`` | - |
 
 #### [Recharge](@id gwf_recharge_params)
-The Table below shows the parameters (fields) of struct `Recharge`, including a
-description of these parameters, the unit, and default value if applicable.
+The Table below shows the parameters (fields) of struct `Recharge`, including a description
+of these parameters, the unit, and default value if applicable.
 
 |  parameter  | description  	        | unit  | default |
 |:--------------- | ------------------| ----- | ---- |
