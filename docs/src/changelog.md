@@ -8,8 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [unreleased]
 
 ### Fixed
-- Documentation: add leakage term to the wflow\_sbm figure and document external input
-  parameter `ksathorfrac`.
+- Documentation: add leakage term to the wflow\_sbm figure, document external input
+  parameter `ksathorfrac` and fix description of adding external `inflow` to the kinematic
+  wave.
 
 ## v0.7.2 - 2023-09-27
 
