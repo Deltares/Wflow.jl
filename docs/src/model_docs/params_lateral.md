@@ -69,7 +69,7 @@ internal model parameter `sl`, and is listed in the Table below between parenthe
 | `alpha_term`    | term used in computation of ``\alpha`` | - | - |
 | `α`             | constant in momentum equation ``A = \alpha Q^{\beta}`` | s``^{\frac{3}{5}}`` m``^{\frac{1}{5}}`` | - |
 | `cel`           | celerity of kinematic wave | m s``^{-1}`` | - |
-| `to_river`      | part of overland flow that flows to the river | m s``^3`` | - |
+| `to_river`      | part of overland flow that flows to the river | m``^3`` s``^{-1}`` | - |
 | `kinwave_it`    | boolean for kinematic wave iterations | - | false |
 
 ### [Reservoirs](@id reservoir_params)
