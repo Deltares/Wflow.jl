@@ -223,13 +223,12 @@ end
 
 function BMI.get_value_ptr(model::Model, name::String)
     @unpack network = model
-    key = symbols(first(split(name, "-")))
+    s = split(name, "-")
+    key = symbols(first(s))
     if exchange(param(model, key[1:end-1]), key[end]) == 1
         n = length(active_indices(network, key))
-        s = split(name, ".")
         if tryparse(Int, s[end]) !== nothing
-            var = split(s[end], "-")
-            ind = tryparse(Int, var[end])
+            ind = tryparse(Int, s[end])
             if eltype(param(model, key)) <: SVector
                 value = @view getindex.(param(model, key), ind)[1:n]
                 return value

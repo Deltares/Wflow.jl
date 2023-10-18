@@ -47,13 +47,26 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test BMI.get_current_time(model) == 86400.0
             dest = zeros(Float, size(model.vertical.zi))
             BMI.get_value(model, "vertical.zi", dest)
-            @test mean(dest) ≈ 276.3767651555451            
-            @test BMI.get_value_at_indices(model, "lateral.river.q", zeros(Float, 3), [1, 100, 5617]) ≈
-                  [0.6211503865184697, 5.219305686635002, 0.026163746306482282]
+            @test mean(dest) ≈ 276.3767651555451
+            @test BMI.get_value_at_indices(
+                model,
+                "vertical.vwc-1",
+                zeros(Float, 3),
+                [1, 2, 3],
+            ) ≈ getindex.(model.vertical.vwc, 1)[[1, 2, 3]]
+            @test BMI.get_value_at_indices(
+                model,
+                "lateral.river.q",
+                zeros(Float, 3),
+                [1, 100, 5617],
+            ) ≈ [0.6211503865184697, 5.219305686635002, 0.026163746306482282]
             BMI.set_value(model, "vertical.zi", fill(300.0, length(model.vertical.zi)))
-            @test mean(BMI.get_value(model, "vertical.zi", zeros(Float, size(model.vertical.zi)))) == 300.0
+            @test mean(
+                BMI.get_value(model, "vertical.zi", zeros(Float, size(model.vertical.zi))),
+            ) == 300.0
             BMI.set_value_at_indices(model, "vertical.zi", [1], [250.0])
-            @test BMI.get_value_at_indices(model, "vertical.zi", zeros(Float, 2), [1, 2]) == [250.0, 300.0]
+            @test BMI.get_value_at_indices(model, "vertical.zi", zeros(Float, 2), [1, 2]) ==
+                  [250.0, 300.0]
         end
 
         @testset "model grid functions" begin
@@ -63,10 +76,14 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test BMI.get_grid_node_count(model, 4) == 5809
             @test BMI.get_grid_node_count(model, 5) == 50063
             @test BMI.get_grid_node_count(model, 6) == 50063
-            @test minimum(BMI.get_grid_x(model, 5, zeros(Float,50063))) ≈ 5.426666666666667f0
-            @test maximum(BMI.get_grid_x(model, 5, zeros(Float,50063))) ≈ 7.843333333333344f0
-            @test BMI.get_grid_x(model, 1, zeros(Float,2)) ≈ [5.760000000000002f0, 5.918333333333336f0]
-            @test BMI.get_grid_y(model, 1, zeros(Float,2)) ≈ [48.92583333333333f0, 49.909166666666664f0]
+            @test minimum(BMI.get_grid_x(model, 5, zeros(Float, 50063))) ≈
+                  5.426666666666667f0
+            @test maximum(BMI.get_grid_x(model, 5, zeros(Float, 50063))) ≈
+                  7.843333333333344f0
+            @test BMI.get_grid_x(model, 1, zeros(Float, 2)) ≈
+                  [5.760000000000002f0, 5.918333333333336f0]
+            @test BMI.get_grid_y(model, 1, zeros(Float, 2)) ≈
+                  [48.92583333333333f0, 49.909166666666664f0]
             @test BMI.get_grid_node_count(model, 1) == 2
         end
 
