@@ -1,19 +1,16 @@
 # Basic Model Interface (BMI) implementation based on
 # https://github.com/Deltares/BasicModelInterface.jl
 
-# BMI grid type based on grid identifier
-const gridtype = Dict{Int,String}(
-    0 => "unstructured",
-    1 => "unstructured",
-    2 => "unstructured",
-    3 => "unstructured",
-    4 => "unstructured",
-)
-
 # Mapping of grid identifier to a key, to get the active indices of the model domain.
 # See also function active_indices(network, key::Tuple).
-const grids =
-    Dict{Int,String}(0 => "reservoir", 1 => "lake", 2 => "river", 3 => "drain", 4 => "land")
+grids = Dict{Int,Tuple}(
+    1 => (:reservoir,),
+    2 => (:lake,),
+    3 => (:drain,),
+    4 => (:river,),
+    5 => (:land,),
+    6 => (:land,),
+)
 
 """
     BMI.initialize(::Type{<:Wflow.Model}, config_file)
@@ -33,6 +30,8 @@ function BMI.initialize(::Type{<:Model}, config_file)
         initialize_hbv_model(config)
     elseif modeltype == "sediment"
         initialize_sediment_model(config)
+    elseif modeltype == "flextopo"
+        initialize_flextopo_model(config)
     else
         error("unknown model type")
     end
@@ -106,10 +105,25 @@ function BMI.get_input_var_names(model::Model)
     if haskey(config, "API")
         var_names = Vector{String}()
         for c in config.API.components
-            append!(
-                var_names,
-                collect(string.(c, ".", fieldnames(typeof(param(model, c))))),
-            )
+            type = typeof(param(model, c))
+            inds = findall(x -> x != 0, exchange(type))
+            field_names = fieldnames(type)[inds]
+
+            for name in field_names
+                var = string(c, ".", name)
+                model_var = param(model, var)
+                if eltype(model_var) <: SVector
+                    for i = 1:length(first(model_var))
+                        push!(var_names, string(var, "-", i))
+                    end
+                elseif ndims(model_var) > 1
+                    for i = 1:length(first(model_var))
+                        push!(var_names, string(var, "-", i))
+                    end
+                else
+                    push!(var_names, var)
+                end
+            end
         end
         return var_names
     else
@@ -125,45 +139,60 @@ function BMI.get_output_var_names(model::Model)
 end
 
 function BMI.get_var_grid(model::Model, name::String)
-    if name in BMI.get_input_var_names(model)
-        if occursin("reservoir", name)
+    s = split(name, "-")
+    key = symbols(first(s))
+    if exchange(param(model, key[1:end-1]), key[end]) == 1
+        gridtype = grid_type(param(model, key))
+        type = typeof(param(model, key))
+        if gridtype == "scalar"
             0
-        elseif occursin("lake", name)
+        elseif :reservoir in key
             1
-        elseif occursin("river", name)
+        elseif :lake in key
             2
-        elseif occursin("drain", name)
+        elseif :drain in key
             3
-        else
+        elseif :river in key
             4
+        elseif type <: ShallowWaterLand && occursin("x", s[end])
+            5
+        else
+            6
         end
     else
-        error("Model variable $name not listed as input of output variable")
+        error("$name not listed as variable for BMI exchange")
     end
 end
 
 function BMI.get_var_type(model::Model, name::String)
-    repr(eltype(param(model, name)))
+    value = BMI.get_value_ptr(model, name)
+    repr(eltype(first(value)))
 end
 
 function BMI.get_var_units(model::Model, name::String)
-    s = split(name, ".")
-    get_units(param(model, join(s[1:end-1], ".")), Symbol(s[end]))
+    key = symbols(first(split(name, "-")))
+    if exchange(param(model, key[1:end-1]), key[end]) == 1
+        get_units(param(model, key[1:end-1]), key[end])
+    else
+        error("$name not listed as variable for BMI exchange")
+    end
 end
 
 function BMI.get_var_itemsize(model::Model, name::String)
-    sizeof(param(model, name)[1])
+    value = BMI.get_value_ptr(model, name)
+    sizeof(eltype(first(value)))
 end
 
 function BMI.get_var_nbytes(model::Model, name::String)
-    sizeof(param(model, name))
+    sizeof(BMI.get_value_ptr(model, name))
 end
 
 function BMI.get_var_location(model::Model, name::String)
-    if name in BMI.get_input_var_names(model)
-        return "node"
+    key = symbols(first(split(name, "-")))
+    if exchange(param(model, key[1:end-1]), key[end]) == 1
+        return grid_location(model, key)
     else
-        error("$name not in get_input_var_names")
+        error("$name not listed as variable for BMI exchange")
     end
 end
 
@@ -192,25 +221,28 @@ function BMI.get_value(model::Model, name::String, dest::Vector{T}) where {T<:Ab
     return dest
 end
 
-function BMI.get_value(model::Model, name::String)
-    copy(BMI.get_value_ptr(model, name))
-end
-
 function BMI.get_value_ptr(model::Model, name::String)
-    if name in BMI.get_input_var_names(model)
-        return param(model, name)
+    @unpack network = model
+    key = symbols(first(split(name, "-")))
+    if exchange(param(model, key[1:end-1]), key[end]) == 1
+        n = length(active_indices(network, key))
+        s = split(name, ".")
+        if tryparse(Int, s[end]) !== nothing
+            var = split(s[end], "-")
+            ind = tryparse(Int, var[end])
+            if eltype(param(model, key)) <: SVector
+                value = @view getindex.(param(model, key), ind)[1:n]
+                return value
+            else
+                value = @view param(model, key)[ind, 1:n]
+                return value
+            end
+        else
+            return @view(param(model, key)[1:n])
+        end
     else
-        error("$name not defined as an output BMI variable")
+        error("$name not listed as variable for BMI exchange")
     end
-end
-
-"""
-    BMI.get_value_at_indices(model::Model, name::String, inds::Vector{Int})
-
-Returns values of a model variable `name` at indices `inds`.
-"""
-function BMI.get_value_at_indices(model::Model, name::String, inds::Vector{Int})
-    BMI.get_value_ptr(model, name)[inds]
 end
 
 function BMI.get_value_at_indices(
@@ -249,43 +281,47 @@ function BMI.set_value_at_indices(
 end
 
 function BMI.get_grid_type(model::Model, grid::Int)
-    gridtype[grid]
-end
-
-function BMI.get_grid_rank(model::Model, grid::Int)
-    if grid in keys(gridtype)
-        return 2
+    if grid == 0
+        "scalar"
+    elseif grid in range(1, 3)
+        "points"
+    elseif grid in range(4, 6)
+        "unstructured"
     else
         error("unknown grid type $grid")
     end
 end
 
-function BMI.get_grid_shape(model::Model, grid::Int)
-    size(active_indices(model.network, symbols(grids[grid])), 1)
+function BMI.get_grid_rank(model::Model, grid::Int)
+    if grid == 0
+        0
+    elseif grid in range(1, 6)
+        2
+    else
+        error("unknown grid type $grid")
+    end
 end
 
-function BMI.get_grid_size(model::Model, grid::Int)
-    BMI.get_grid_shape(model, grid)
-end
-
-function BMI.get_grid_x(model::Model, grid::Int)
+function BMI.get_grid_x(model::Model, grid::Int, x::Vector{T}) where {T<:AbstractFloat}
     @unpack reader, config = model
     @unpack dataset = reader
-    sel = active_indices(model.network, symbols(grids[grid]))
+    sel = active_indices(model.network, grids[grid])
     inds = [sel[i][1] for i in eachindex(sel)]
     x_nc = read_x_axis(dataset)
-    return x_nc[inds]
+    x .= x_nc[inds]
+    return x
 end
 
-function BMI.get_grid_y(model::Model, grid::Int)
+function BMI.get_grid_y(model::Model, grid::Int, y::Vector{T}) where {T<:AbstractFloat}
     @unpack reader, config = model
     @unpack dataset = reader
-    sel = active_indices(model.network, symbols(grids[grid]))
+    sel = active_indices(model.network, grids[grid])
     inds = [sel[i][2] for i in eachindex(sel)]
     y_nc = read_y_axis(dataset)
-    return y_nc[inds]
+    y .= y_nc[inds]
+    return y
 end
 
 function BMI.get_grid_node_count(model::Model, grid::Int)
-    BMI.get_grid_size(model, grid)
+    return length(active_indices(model.network, grids[grid]))
 end
