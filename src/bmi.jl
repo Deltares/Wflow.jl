@@ -10,6 +10,7 @@ grids = Dict{Int,Tuple}(
     4 => (:river,),
     5 => (:land,),
     6 => (:land,),
+    7 => (:land,),
 )
 
 """
@@ -156,8 +157,10 @@ function BMI.get_var_grid(model::Model, name::String)
             4
         elseif type <: ShallowWaterLand && occursin("x", s[end])
             5
-        else
+        elseif type <: ShallowWaterLand && occursin("y", s[end])
             6
+        else
+            7
         end
     else
         error("$name not listed as variable for BMI exchange")
@@ -284,7 +287,7 @@ function BMI.get_grid_type(model::Model, grid::Int)
         "scalar"
     elseif grid in range(1, 3)
         "points"
-    elseif grid in range(4, 6)
+    elseif grid in range(4, 7)
         "unstructured"
     else
         error("unknown grid type $grid")
@@ -294,7 +297,7 @@ end
 function BMI.get_grid_rank(model::Model, grid::Int)
     if grid == 0
         0
-    elseif grid in range(1, 6)
+    elseif grid in range(1, 7)
         2
     else
         error("unknown grid type $grid")
@@ -323,4 +326,48 @@ end
 
 function BMI.get_grid_node_count(model::Model, grid::Int)
     return length(active_indices(model.network, grids[grid]))
+end
+
+function BMI.get_grid_edge_count(model::Model, grid::Int)
+    @unpack network = model
+    if grid == 4
+        return ne(network.river.graph)
+    elseif grid == 5
+        return length(network.land.staggered_indices.xu)
+    elseif grid == 6
+        return length(network.land.staggered_indices.yu)
+    elseif grid in range(0, 3) || grid == 7
+        warn("edges are not defined for grid type $grid")
+    else
+        error("unknown grid type $grid")
+    end
+end
+
+function BMI.get_grid_edge_nodes(model::Model, grid::Int, edge_nodes::Vector{Int})
+    @unpack network = model
+    n = length(edge_nodes)
+    if grid == 4
+        nodes_at_edge = adjacent_nodes_at_link(network.river.graph)
+        edge_nodes[range(1, n, step = 2)] = nodes_at_edge.src
+        edge_nodes[range(2, n, step = 2)] = nodes_at_edge.dst
+        return edge_nodes
+    elseif grid == 5
+        xu = network.staggered_indices.xu
+        m = length(xu)
+        edge_nodes[range(1, n, step = 2)] = range(1, m)
+        xu[xu.==m+1] .= -999
+        edge_nodes[range(2, n, step = 2)] = xu
+        return edge_nodes
+    elseif grid == 6
+        yu = network.staggered_indices.yu
+        m = length(yu)
+        edge_nodes[range(1, n, step = 2)] = range(1, m)
+        yu[yu.==m+1] .= -999
+        edge_nodes[range(2, n, step = 2)] = yu
+        return edge_nodes
+    elseif grid in range(0, 3) || grid == 7
+        warn("edges are not defined for grid type $grid")
+    else
+        error("unknown grid type $grid")
+    end
 end

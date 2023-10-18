@@ -29,7 +29,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
         end
 
         @testset "variable information functions" begin
-            @test BMI.get_var_grid(model, "vertical.θₛ") == 6
+            @test BMI.get_var_grid(model, "vertical.θₛ") == 7
             @test BMI.get_var_grid(model, "lateral.river.h") == 4
             @test BMI.get_var_grid(model, "lateral.river.reservoir.inflow") == 1
             @test_throws ErrorException BMI.get_var_grid(model, "lateral.river.lake.volume")
@@ -53,7 +53,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
                 "vertical.vwc-1",
                 zeros(Float, 3),
                 [1, 2, 3],
-            ) ≈ getindex.(model.vertical.vwc, 1)[[1, 2, 3]]
+            ) ≈ getindex.(model.vertical.vwc, 1)[1:3]
             @test BMI.get_value_at_indices(
                 model,
                 "lateral.river.q",
@@ -85,6 +85,9 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test BMI.get_grid_y(model, 1, zeros(Float, 2)) ≈
                   [48.92583333333333f0, 49.909166666666664f0]
             @test BMI.get_grid_node_count(model, 1) == 2
+            @test BMI.get_grid_edge_count(model, 4) == 5808
+            @test BMI.get_grid_edge_nodes(model, 4, fill(0, 2 * 5808))[1:6] ==
+                  [1, 5, 2, 1, 3, 2]
         end
 
         @testset "update until and finalize" begin
