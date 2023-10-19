@@ -115,11 +115,11 @@ function BMI.get_input_var_names(model::Model)
                 model_var = param(model, var)
                 if eltype(model_var) <: SVector
                     for i = 1:length(first(model_var))
-                        push!(var_names, string(var, "-", i))
+                        push!(var_names, string(var, "[", i, "]"))
                     end
                 elseif ndims(model_var) > 1
                     for i = 1:length(first(model_var))
-                        push!(var_names, string(var, "-", i))
+                        push!(var_names, string(var, "[", i, "]"))
                     end
                 else
                     push!(var_names, var)
@@ -140,7 +140,7 @@ function BMI.get_output_var_names(model::Model)
 end
 
 function BMI.get_var_grid(model::Model, name::String)
-    s = split(name, "-")
+    s = split(name, "[")
     key = symbols(first(s))
     if exchange(param(model, key[1:end-1]), key[end]) == 1
         gridtype = grid_type(param(model, key))
@@ -173,7 +173,7 @@ function BMI.get_var_type(model::Model, name::String)
 end
 
 function BMI.get_var_units(model::Model, name::String)
-    key = symbols(first(split(name, "-")))
+    key = symbols(first(split(name, "[")))
     if exchange(param(model, key[1:end-1]), key[end]) == 1
         get_units(param(model, key[1:end-1]), key[end])
     else
@@ -191,7 +191,7 @@ function BMI.get_var_nbytes(model::Model, name::String)
 end
 
 function BMI.get_var_location(model::Model, name::String)
-    key = symbols(first(split(name, "-")))
+    key = symbols(first(split(name, "[")))
     if exchange(param(model, key[1:end-1]), key[end]) == 1
         return grid_location(model, key)
     else
@@ -226,12 +226,12 @@ end
 
 function BMI.get_value_ptr(model::Model, name::String)
     @unpack network = model
-    s = split(name, "-")
+    s = split(name, "[")
     key = symbols(first(s))
     if exchange(param(model, key[1:end-1]), key[end]) == 1
         n = length(active_indices(network, key))
-        if tryparse(Int, s[end]) !== nothing
-            ind = tryparse(Int, s[end])
+        if occursin("[", name)
+            ind = tryparse(Int, split(s[end], "]")[1])
             if eltype(param(model, key)) <: SVector
                 value = @view getindex.(param(model, key), ind)[1:n]
                 return value

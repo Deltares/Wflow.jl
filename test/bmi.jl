@@ -50,7 +50,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test mean(dest) ≈ 276.3767651555451
             @test BMI.get_value_at_indices(
                 model,
-                "vertical.vwc-1",
+                "vertical.vwc[1]",
                 zeros(Float, 3),
                 [1, 2, 3],
             ) ≈ getindex.(model.vertical.vwc, 1)[1:3]
