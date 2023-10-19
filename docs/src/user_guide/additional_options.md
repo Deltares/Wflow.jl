@@ -191,10 +191,10 @@ in the [Julia programming language](https://julialang.org/), makes use of the fo
 version.
 
 For the BMI implementation of Wflow all grids are defined as [unstructured
-grids](https://bmi-spec.readthedocs.io/en/latest/model_grids.html#unstructured-grids). While
-the input (forcing and model parameters) is structured (uniform rectilinear), internally
-wflow works with one dimensional arrays based on the active grid cells of the 2D model
-domain.
+grids](https://bmi-spec.readthedocs.io/en/latest/model_grids.html#unstructured-grids),
+including the special cases `scalar` and `points`. While the input (forcing and model
+parameters) is structured (uniform rectilinear), internally wflow works with one dimensional
+arrays based on the active grid cells of the 2D model domain.
 
 ### Configuration
 The variables that Wflow can exchange through BMI are based on the different model
@@ -218,6 +218,12 @@ See also:
 Wflow.BMI.initialize
 Wflow.BMI.get_input_var_names
 ```
+
+Variables with a third dimension, for example `layer` as part of the vertical `SBM` concept,
+are exposed as two-dimensional grids through the Wflow BMI implementation. For these
+variables the index of this third dimension is required, by adding `[k]` to the variable
+name (`k` refers to the index of the third dimension). For example, the variable
+`vertical.vwc[1]` refers to the first soil layer of the vertical `SBM` concept.    
 
 ### Couple to a groundwater model
 For the coupling of wflow\_sbm (SBM + kinematic wave) with a groundwater model (e.g.
