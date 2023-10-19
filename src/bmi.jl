@@ -337,7 +337,7 @@ function BMI.get_grid_edge_count(model::Model, grid::Int)
     elseif grid == 6
         return length(network.land.staggered_indices.yu)
     elseif grid in range(0, 3) || grid == 7
-        warn("edges are not defined for grid type $grid")
+        warn("edges are not provided for grid type $grid (variables are located at nodes)")
     else
         error("unknown grid type $grid")
     end
@@ -346,27 +346,28 @@ end
 function BMI.get_grid_edge_nodes(model::Model, grid::Int, edge_nodes::Vector{Int})
     @unpack network = model
     n = length(edge_nodes)
+    m = div(n, 2)
+    # inactive nodes (boundary/ghost points) are set at -999
     if grid == 4
         nodes_at_edge = adjacent_nodes_at_link(network.river.graph)
+        nodes_at_edge.dst[nodes_at_edge.dst.==m+1] .= -999
         edge_nodes[range(1, n, step = 2)] = nodes_at_edge.src
         edge_nodes[range(2, n, step = 2)] = nodes_at_edge.dst
         return edge_nodes
     elseif grid == 5
         xu = network.staggered_indices.xu
-        m = length(xu)
         edge_nodes[range(1, n, step = 2)] = range(1, m)
         xu[xu.==m+1] .= -999
         edge_nodes[range(2, n, step = 2)] = xu
         return edge_nodes
     elseif grid == 6
         yu = network.staggered_indices.yu
-        m = length(yu)
         edge_nodes[range(1, n, step = 2)] = range(1, m)
         yu[yu.==m+1] .= -999
         edge_nodes[range(2, n, step = 2)] = yu
         return edge_nodes
     elseif grid in range(0, 3) || grid == 7
-        warn("edges are not defined for grid type $grid")
+        warn("edges are not provided for grid type $grid (variables are located at nodes)")
     else
         error("unknown grid type $grid")
     end
