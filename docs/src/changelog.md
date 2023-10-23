@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [unreleased]
+
+### Fixed
+- Fixed BMI functions (e.g. `BMI.get_value`) that deviated from BMI specifications
+  (BasicModelInterface.jl), including function arguments, return types and the BMI
+  specification that arrays are always flattened (this was not the case for variables stored
+  as 2-dimensional arrays or as vector of SVectors).
+
+### Changed
+- BMI: 1) added grid information (type and location) and whether a variable can be exchanged
+  to metadata Structs, 2) extend model grid functions for Wflow components that store
+  variables on `edges` (local inertial model) with `get_grid_edge_count` and
+  `get_grid_edge_nodes`.
+
 ## v0.7.2 - 2023-09-27
 
 ### Fixed
