@@ -54,6 +54,12 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
                 zeros(Float, 3),
                 [1, 2, 3],
             ) ≈ getindex.(model.vertical.vwc, 1)[1:3]
+            BMI.set_value_at_indices(
+                model,
+                "vertical.vwc[2]",
+                [1, 2, 3],
+                [0.10, 0.15, 0.20],
+            ) ≈ getindex.(model.vertical.vwc, 2)[1:3]
             @test BMI.get_value_at_indices(
                 model,
                 "lateral.river.q",

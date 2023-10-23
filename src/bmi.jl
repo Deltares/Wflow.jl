@@ -233,8 +233,11 @@ function BMI.get_value_ptr(model::Model, name::String)
         if occursin("[", name)
             ind = tryparse(Int, split(s[end], "]")[1])
             if eltype(param(model, key)) <: SVector
-                value = @view getindex.(param(model, key), ind)[1:n]
-                return value
+                model_vals = param(model, key)
+                el_type = eltype(first(model_vals))
+                dim = length(first(model_vals))
+                value = reshape(reinterpret(el_type, model_vals), dim, :)
+                return @view value[ind, 1:n]
             else
                 value = @view param(model, key)[ind, 1:n]
                 return value
