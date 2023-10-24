@@ -19,6 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   variables on `edges` (local inertial model) with `get_grid_edge_count` and
   `get_grid_edge_nodes`.
 
+### Added
+- Functions for loading and saving states and getting the `starttime` in Unix time format.
+  This is convenient for coupling with OpenDA (and other external) software. The set states
+  functionality from the initialization function has been moved to a separate `set_states`
+  function for each `Model` type, to support loading states independent of initialization.
+
 ## v0.7.2 - 2023-09-27
 
 ### Fixed
