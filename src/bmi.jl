@@ -375,3 +375,22 @@ function BMI.get_grid_edge_nodes(model::Model, grid::Int, edge_nodes::Vector{Int
         error("unknown grid type $grid")
     end
 end
+
+# Extension of BMI functions (state handling and start time), required for OpenDA coupling.
+# May also be useful for other external software packages.
+function load_state(model::Model)
+    model = set_states(model)
+    return model
+end
+
+function save_state(model::Model)
+    @unpack config, writer, clock = model
+    if haskey(config, "state") && haskey(config.state, "path_output")
+        @info "Write output states to NetCDF file `$(model.writer.state_nc_path)`."
+    end
+    write_netcdf_timestep(model, writer.state_dataset, writer.state_parameters)
+end
+
+function get_start_unix_time(model::Model)
+    datetime2unix(DateTime(model.config.starttime))
+end

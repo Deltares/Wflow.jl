@@ -16,7 +16,6 @@ function initialize_sbm_model(config::Config)
     clock = Clock(config, reader)
     Δt = clock.Δt
 
-    reinit = get(config.model, "reinit", true)::Bool
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
     do_lakes = get(config.model, "lakes", false)::Bool
     do_pits = get(config.model, "pits", false)::Bool
@@ -359,81 +358,9 @@ function initialize_sbm_model(config::Config)
         SbmModel(),
     )
 
-    # read and set states in model object if reinit=false
-    if reinit == false
-        instate_path = input_path(config, config.state.path_input)
-        @info "Set initial conditions from state file `$instate_path`."
-        state_ncnames = ncnames(config.state)
-        @warn string(
-            "The unit of `ssf` (lateral subsurface flow) is now m3 d-1. Please update your",
-            " input state file if it was produced with a Wflow version up to v0.5.2.",
-        )
-        set_states(instate_path, model, state_ncnames; type = Float, dimname = :layer)
-        @unpack lateral, vertical, network = model
-        # update zi for vertical sbm and kinematic wave volume for river and land domain
-        zi =
-            max.(
-                0.0,
-                vertical.soilthickness .-
-                vertical.satwaterdepth ./ (vertical.θₛ .- vertical.θᵣ),
-            )
-        vertical.zi .= zi
-        if land_routing == "kinematic-wave"
-            # make sure land cells with zero flow width are set to zero q and h
-            for i in eachindex(lateral.land.width)
-                if lateral.land.width[i] <= 0.0
-                    lateral.land.q[i] = 0.0
-                    lateral.land.h[i] = 0.0
-                end
-            end
-            lateral.land.volume .= lateral.land.h .* lateral.land.width .* lateral.land.dl
-        elseif land_routing == "local-inertial"
-            @warn string(
-                "The reference level for the water depth `h` and `h_av` of overland flow ",
-                "(local inertial model) for cells containing a river has changed from river",
-                " bed elevation `zb` to cell elevation `z`. Please update the input state",
-                " file if it was produced with Wflow version v0.5.2.",
-            )
-            for i = 1:n
-                if lateral.land.rivercells[i]
-                    j = network.land.index_river[i]
-                    if lateral.land.h[i] > 0.0
-                        lateral.land.volume[i] =
-                            lateral.land.h[i] * lateral.land.xl[i] * lateral.land.yl[i] +
-                            lateral.river.bankfull_volume[j]
-                    else
-                        lateral.land.volume[i] =
-                            lateral.river.h[j] *
-                            lateral.river.width[j] *
-                            lateral.river.dl[j]
-                    end
-                else
-                    lateral.land.volume[i] =
-                        lateral.land.h[i] * lateral.land.xl[i] * lateral.land.yl[i]
-                end
-            end
-        end
-        # only set active cells for river (ignore boundary conditions/ghost points)
-        lateral.river.volume[1:nriv] .=
-            lateral.river.h[1:nriv] .* lateral.river.width[1:nriv] .*
-            lateral.river.dl[1:nriv]
-
-        if floodplain_1d
-            initialize_volume!(lateral.river, nriv)
-        end
-
-        if do_lakes
-            # storage must be re-initialized after loading the state with the current
-            # waterlevel otherwise the storage will be based on the initial water level
-            lakes.storage .=
-                initialize_storage(lakes.storfunc, lakes.area, lakes.waterlevel, lakes.sh)
-        end
-    else
-        @info "Set initial conditions from default values."
-    end
+    model = set_states(model)
 
     @info "Initialized model"
-
     return model
 end
 
@@ -508,5 +435,92 @@ function update_after_subsurfaceflow(
     ssf_toriver = lateral.subsurface.to_river ./ tosecond(basetimestep)
     surface_routing(model, ssf_toriver = ssf_toriver)
 
+    return model
+end
+
+function set_states(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
+    @unpack lateral, vertical, network, config = model
+
+    reinit = get(config.model, "reinit", true)::Bool
+    routing_options = ("kinematic-wave", "local-inertial")
+    land_routing =
+        get_options(config.model, "land_routing", routing_options, "kinematic-wave")::String
+    do_lakes = get(config.model, "lakes", false)::Bool
+    floodplain_1d = get(config.model, "floodplain_1d", false)::Bool
+
+    # read and set states in model object if reinit=false
+    if reinit == false
+        nriv = length(network.river.indices)
+        instate_path = input_path(config, config.state.path_input)
+        @info "Set initial conditions from state file `$instate_path`."
+        state_ncnames = ncnames(config.state)
+        @warn string(
+            "The unit of `ssf` (lateral subsurface flow) is now m3 d-1. Please update your",
+            " input state file if it was produced with a Wflow version up to v0.5.2.",
+        )
+        set_states(instate_path, model, state_ncnames; type = Float, dimname = :layer)
+        @unpack lateral, vertical, network = model
+        # update zi for vertical sbm and kinematic wave volume for river and land domain
+        zi =
+            max.(
+                0.0,
+                vertical.soilthickness .-
+                vertical.satwaterdepth ./ (vertical.θₛ .- vertical.θᵣ),
+            )
+        vertical.zi .= zi
+        if land_routing == "kinematic-wave"
+            # make sure land cells with zero flow width are set to zero q and h
+            for i in eachindex(lateral.land.width)
+                if lateral.land.width[i] <= 0.0
+                    lateral.land.q[i] = 0.0
+                    lateral.land.h[i] = 0.0
+                end
+            end
+            lateral.land.volume .= lateral.land.h .* lateral.land.width .* lateral.land.dl
+        elseif land_routing == "local-inertial"
+            @warn string(
+                "The reference level for the water depth `h` and `h_av` of overland flow ",
+                "(local inertial model) for cells containing a river has changed from river",
+                " bed elevation `zb` to cell elevation `z`. Please update the input state",
+                " file if it was produced with Wflow version v0.5.2.",
+            )
+            for i = 1:n
+                if lateral.land.rivercells[i]
+                    j = network.land.index_river[i]
+                    if lateral.land.h[i] > 0.0
+                        lateral.land.volume[i] =
+                            lateral.land.h[i] * lateral.land.xl[i] * lateral.land.yl[i] +
+                            lateral.river.bankfull_volume[j]
+                    else
+                        lateral.land.volume[i] =
+                            lateral.river.h[j] *
+                            lateral.river.width[j] *
+                            lateral.river.dl[j]
+                    end
+                else
+                    lateral.land.volume[i] =
+                        lateral.land.h[i] * lateral.land.xl[i] * lateral.land.yl[i]
+                end
+            end
+        end
+        # only set active cells for river (ignore boundary conditions/ghost points)
+        lateral.river.volume[1:nriv] .=
+            lateral.river.h[1:nriv] .* lateral.river.width[1:nriv] .*
+            lateral.river.dl[1:nriv]
+
+        if floodplain_1d
+            initialize_volume!(lateral.river, nriv)
+        end
+    
+        if do_lakes
+            # storage must be re-initialized after loading the state with the current
+            # waterlevel otherwise the storage will be based on the initial water level
+            lakes = lateral.river.lake
+            lakes.storage .=
+                initialize_storage(lakes.storfunc, lakes.area, lakes.waterlevel, lakes.sh)
+        end
+    else
+        @info "Set initial conditions from default values."
+    end
     return model
 end
