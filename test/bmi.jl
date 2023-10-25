@@ -45,6 +45,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 
         @testset "update and get and set functions" begin
             @test BMI.get_current_time(model) == 86400.0
+            @test_throws ErrorException BMI.get_value_ptr(model, "vertical.")
             dest = zeros(Float, size(model.vertical.zi))
             BMI.get_value(model, "vertical.zi", dest)
             @test mean(dest) ≈ 276.3767651555451
@@ -77,7 +78,12 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 
         @testset "model grid functions" begin
             @test BMI.get_grid_type(model, 0) == "scalar"
+            @test BMI.get_grid_type(model, 2) == "points"
+            @test BMI.get_grid_type(model, 7) == "unstructured"
+            @test_throws ErrorException BMI.get_grid_rank(model, 8)
             @test BMI.get_grid_rank(model, 0) == 0
+            @test BMI.get_grid_rank(model, 7) == 2
+            @test_throws ErrorException BMI.get_grid_rank(model, 8)
             @test BMI.get_grid_node_count(model, 1) == 2
             @test BMI.get_grid_node_count(model, 4) == 5809
             @test BMI.get_grid_node_count(model, 5) == 50063
@@ -103,6 +109,23 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             BMI.finalize(model)
         end
 
+    end
+
+    @testset "BMI grid edges" begin
+        tomlpath = joinpath(@__DIR__, "sbm_swf_config.toml")
+        model = BMI.initialize(Wflow.Model, tomlpath)
+        @test BMI.get_var_grid(model, "lateral.land.qx") == 5
+        @test BMI.get_var_grid(model, "lateral.land.qy") == 6
+        @test BMI.get_grid_edge_count(model, 5) == 50063
+        @test BMI.get_grid_edge_count(model, 6) == 50063
+        @test BMI.get_grid_edge_nodes(model, 5, fill(0, 2 * 50063))[1:4] == [1, -999, 2, 3]
+        @test BMI.get_grid_edge_nodes(model, 6, fill(0, 2 * 50063))[1:4] == [1, 4, 2, 10]
+        @test_logs (
+            :warn,
+            "edges are not provided for grid type 3 (variables are located at nodes)",
+        ) BMI.get_grid_edge_nodes(model, 3, fill(0, 2 * 50063))
+        @test_throws ErrorException BMI.get_grid_edge_nodes(model, 8, fill(0, 2 * 50063))
+        BMI.finalize(model)
     end
 
     @testset "BMI run SBM in parts" begin
@@ -150,4 +173,19 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 
         BMI.finalize(model)
     end
+
+end
+
+@testset "BMI extension functions" begin
+
+    model = BMI.initialize(Wflow.Model, tomlpath)
+    @test Wflow.get_start_unix_time(model) == 9.466848e8
+    satwaterdepth = mean(model.vertical.satwaterdepth)
+    model.config.model.reinit = false
+    model = Wflow.load_state(model)
+    @test satwaterdepth ≠ mean(model.vertical.satwaterdepth)
+    @test_logs (
+        :info,
+        "Write output states to NetCDF file `$(model.writer.state_nc_path)`.",
+    ) Wflow.save_state(model)
 end

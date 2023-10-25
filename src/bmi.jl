@@ -144,7 +144,7 @@ function BMI.get_var_grid(model::Model, name::String)
     key = symbols(first(s))
     if exchange(param(model, key[1:end-1]), key[end]) == 1
         gridtype = grid_type(param(model, key))
-        type = typeof(param(model, key))
+        type = typeof(param(model, key[1:end-1]))
         if gridtype == "scalar"
             0
         elseif :reservoir in key
@@ -358,19 +358,19 @@ function BMI.get_grid_edge_nodes(model::Model, grid::Int, edge_nodes::Vector{Int
         edge_nodes[range(2, n, step = 2)] = nodes_at_edge.dst
         return edge_nodes
     elseif grid == 5
-        xu = network.staggered_indices.xu
+        xu = network.land.staggered_indices.xu
         edge_nodes[range(1, n, step = 2)] = range(1, m)
         xu[xu.==m+1] .= -999
         edge_nodes[range(2, n, step = 2)] = xu
         return edge_nodes
     elseif grid == 6
-        yu = network.staggered_indices.yu
+        yu = network.land.staggered_indices.yu
         edge_nodes[range(1, n, step = 2)] = range(1, m)
         yu[yu.==m+1] .= -999
         edge_nodes[range(2, n, step = 2)] = yu
         return edge_nodes
     elseif grid in range(0, 3) || grid == 7
-        warn("edges are not provided for grid type $grid (variables are located at nodes)")
+        @warn("edges are not provided for grid type $grid (variables are located at nodes)")
     else
         error("unknown grid type $grid")
     end
