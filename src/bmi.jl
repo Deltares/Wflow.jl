@@ -288,9 +288,9 @@ end
 function BMI.get_grid_type(model::Model, grid::Int)
     if grid == 0
         "scalar"
-    elseif grid in range(1, 3)
+    elseif grid in 1:3
         "points"
-    elseif grid in range(4, 7)
+    elseif grid in 4:7
         "unstructured"
     else
         error("unknown grid type $grid")
@@ -300,7 +300,7 @@ end
 function BMI.get_grid_rank(model::Model, grid::Int)
     if grid == 0
         0
-    elseif grid in range(1, 7)
+    elseif grid in 1:7
         2
     else
         error("unknown grid type $grid")
@@ -339,7 +339,7 @@ function BMI.get_grid_edge_count(model::Model, grid::Int)
         return length(network.land.staggered_indices.xu)
     elseif grid == 6
         return length(network.land.staggered_indices.yu)
-    elseif grid in range(0, 3) || grid == 7
+    elseif grid in 0:3 || grid == 7
         warn("edges are not provided for grid type $grid (variables are located at nodes)")
     else
         error("unknown grid type $grid")
@@ -359,17 +359,17 @@ function BMI.get_grid_edge_nodes(model::Model, grid::Int, edge_nodes::Vector{Int
         return edge_nodes
     elseif grid == 5
         xu = network.land.staggered_indices.xu
-        edge_nodes[range(1, n, step = 2)] = range(1, m)
+        edge_nodes[range(1, n, step = 2)] = 1:m
         xu[xu.==m+1] .= -999
         edge_nodes[range(2, n, step = 2)] = xu
         return edge_nodes
     elseif grid == 6
         yu = network.land.staggered_indices.yu
-        edge_nodes[range(1, n, step = 2)] = range(1, m)
+        edge_nodes[range(1, n, step = 2)] = 1:m
         yu[yu.==m+1] .= -999
         edge_nodes[range(2, n, step = 2)] = yu
         return edge_nodes
-    elseif grid in range(0, 3) || grid == 7
+    elseif grid in 0:3 || grid == 7
         @warn("edges are not provided for grid type $grid (variables are located at nodes)")
     else
         error("unknown grid type $grid")
