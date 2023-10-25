@@ -200,7 +200,10 @@ function BMI.get_var_location(model::Model, name::String)
 end
 
 function BMI.get_current_time(model::Model)
-    0.001 * Dates.value(model.clock.time - model.config.starttime)
+    @unpack config = model
+    calendar = get(config, "calendar", "standard")::String
+    starttime = cftime(config.starttime, calendar)
+    return 0.001 * Dates.value(model.clock.time - starttime)
 end
 
 function BMI.get_start_time(model::Model)
@@ -208,7 +211,11 @@ function BMI.get_start_time(model::Model)
 end
 
 function BMI.get_end_time(model::Model)
-    0.001 * Dates.value(model.config.endtime - model.config.starttime)
+    @unpack config = model
+    calendar = get(config, "calendar", "standard")::String
+    starttime = cftime(config.starttime, calendar)
+    endtime = cftime(config.endtime, calendar)
+    return 0.001 * Dates.value(endtime - starttime)
 end
 
 function BMI.get_time_units(model::Model)

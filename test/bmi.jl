@@ -14,6 +14,8 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test BMI.get_start_time(model) == 0.0
             @test BMI.get_current_time(model) == 0.0
             @test BMI.get_end_time(model) == 31 * 86400.0
+            model.config.endtime = "2000-02-01T00:00:00"
+            @test BMI.get_end_time(model) == 31 * 86400.0
         end
 
         @testset "model information functions" begin
