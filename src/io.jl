@@ -723,7 +723,7 @@ function prepare_reader(config)
             cyclic_parameters[fields] =
                 (name = ncname, scale = mod.scale, offset = mod.offset)
 
-            @info "Set `$par` using NetCDF variable `$ncname` as cyclic parameter."
+            @info "Set `$par` using NetCDF variable `$ncname` as cyclic parameter, with `$(length(cyclic_nc_times))` timesteps."
         end
     else
         cyclic_parameters = Dict{Tuple{Symbol,Vararg{Symbol}},NamedTuple}()
