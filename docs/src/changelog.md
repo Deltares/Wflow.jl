@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   parameter `ksathorfrac` and fix description of adding external `inflow` to the kinematic
   wave.
 
+### Changed
+- For cyclic parameters different cyclic time inputs are supported (only one common cyclic
+  time (for example daily or monthly) was allowed).
+
 ## v0.7.2 - 2023-09-27
 
 ### Fixed
