@@ -980,7 +980,7 @@ function prepare_writer(
     # data, but only if config.netcdf.variable has been set.
     if haskey(config, "netcdf") && haskey(config.netcdf, "variable")
         nc_scalar_path = output_path(config, config.netcdf.path)
-        @info "Create an output NetCDF file `$nc_state_path` for scalar data."
+        @info "Create an output NetCDF file `$nc_scalar_path` for scalar data."
         # get NetCDF info for scalar data (variable name, locationset (dim) and
         # location ids)
         ncvars_dims = nc_variables_dims(config.netcdf.variable, nc_static, config)
