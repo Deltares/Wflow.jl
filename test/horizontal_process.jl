@@ -4,7 +4,7 @@ const ldd_mv = 255
 # read the staticmaps into memory
 nc = NCDataset(staticmaps_rhine_path)
 # helper function to get the axis order and directionality right
-read_right(nc, var) = reverse(permutedims(nc[var][:]); dims = 2)
+read_right(nc, var) = reverse(permutedims(Array(nc[var])); dims = 2)
 ldd_2d = read_right(nc, "ldd")
 
 inds, _ = Wflow.active_indices(ldd_2d, ldd_mv)
