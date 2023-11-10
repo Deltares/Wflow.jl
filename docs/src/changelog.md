@@ -8,12 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [unreleased]
 
 ### Fixed
+- Documentation: add leakage term to the wflow\_sbm figure, document external input
+  parameter `ksathorfrac` and fix description of adding external `inflow` to the kinematic
+  wave.
 - Fixed BMI functions (e.g. `BMI.get_value`) that deviated from BMI specifications
   (BasicModelInterface.jl), including function arguments, return types and the BMI
   specification that arrays are always flattened (this was not the case for variables stored
   as 2-dimensional arrays or as vector of SVectors).
 
 ### Changed
+- For cyclic parameters different cyclic time inputs are supported (only one common cyclic
+  time (for example daily or monthly) was allowed).
 - BMI: 1) added grid information (type and location) and whether a variable can be exchanged
   to metadata Structs, 2) extend model grid functions for Wflow components that store
   variables on `edges` (local inertial model) with `get_grid_edge_count` and

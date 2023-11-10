@@ -113,10 +113,13 @@ The `input` section of the TOML file contains information about the input forcin
 parameters files (netCDF format). Forcing is applied to the vertical component of the model,
 and needs to be mapped to the external netCDF variable name. `forcing` lists the internal
 model forcing parameters, and these are mapped to the external netCDF variables listed under
-the section `[input.vertical]`. It is possible to provide cyclic parameters to the model. In
-the example below this is done for the internal `vertical.leaf_area_index` model parameter,
-that is linked to the external netCDF variable "LAI" variable. If a model parameter is not
-mapped, a default value will be used if available.
+the section `[input.vertical]`. It is possible to provide cyclic parameters to the model
+(minimum time step of 1 day). In the example below this is done for the internal
+`vertical.leaf_area_index` model parameter, that is linked to the external netCDF variable
+"LAI" variable. Cyclic time inputs of parameters can be different (for example daily and
+monthly). The `time` dimension name of these cylic input parameters in the model parameter
+netCDF file should start with "time". If a model parameter is not mapped, a default value
+will be used if available.
 
 ```toml
 [input]
