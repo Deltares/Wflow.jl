@@ -223,7 +223,7 @@ Variables with a third dimension, for example `layer` as part of the vertical `S
 are exposed as two-dimensional grids through the Wflow BMI implementation. For these
 variables the index of this third dimension is required, by adding `[k]` to the variable
 name (`k` refers to the index of the third dimension). For example, the variable
-`vertical.vwc[1]` refers to the first soil layer of the vertical `SBM` concept.    
+`vertical.vwc[1]` refers to the first soil layer of the vertical `SBM` concept.
 
 ### Couple to a groundwater model
 For the coupling of wflow\_sbm (SBM + kinematic wave) with a groundwater model (e.g.
