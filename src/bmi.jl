@@ -145,7 +145,7 @@ function BMI.get_var_grid(model::Model, name::String)
     if exchange(param(model, key[1:end-1]), key[end]) == 1
         gridtype = grid_type(param(model, key))
         type = typeof(param(model, key[1:end-1]))
-        if gridtype == "scalar"
+        return if gridtype == "scalar"
             0
         elseif :reservoir in key
             1
