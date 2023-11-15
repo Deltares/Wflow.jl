@@ -3,7 +3,7 @@
 
 # Mapping of grid identifier to a key, to get the active indices of the model domain.
 # See also function active_indices(network, key::Tuple).
-grids = Dict{Int,Tuple}(
+grids = Dict{Int,Tuple{Symbol}}(
     1 => (:reservoir,),
     2 => (:lake,),
     3 => (:drain,),
