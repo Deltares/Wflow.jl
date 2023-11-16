@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Documentation: add leakage term to the wflow\_sbm figure, document external input
   parameter `ksathorfrac` and fix description of adding external `inflow` to the kinematic
   wave.
+- Bump compat for NCDatasets to 0.13.
 
 ### Changed
 - For cyclic parameters different cyclic time inputs are supported (only one common cyclic
