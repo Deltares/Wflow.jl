@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (BasicModelInterface.jl), including function arguments, return types and the BMI
   specification that arrays are always flattened (this was not the case for variables stored
   as 2-dimensional arrays or as vector of SVectors).
+- Bump compat for NCDatasets to 0.13.
 
 ### Changed
 - For cyclic parameters different cyclic time inputs are supported (only one common cyclic
