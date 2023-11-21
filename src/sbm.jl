@@ -1,10 +1,10 @@
-@get_units @with_kw struct SBM{T,N,M}
+@get_units @exchange @grid_type @grid_location @with_kw struct SBM{T,N,M}
     # Model time step [s]
-    Δt::T | "s"
+    Δt::T | "s" | 0 | "none" | "none"
     # Maximum number of soil layers
-    maxlayers::Int | "-"
+    maxlayers::Int | "-" | 0 | "none" | "none"
     # number of cells
-    n::Int | "-"
+    n::Int | "-" | 0 | "none" | "none"
     # Number of soil layers
     nlayers::Vector{Int} | "-"
     # Number of unsaturated soil layers

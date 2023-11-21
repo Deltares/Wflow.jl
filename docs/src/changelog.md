@@ -11,11 +11,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Documentation: add leakage term to the wflow\_sbm figure, document external input
   parameter `ksathorfrac` and fix description of adding external `inflow` to the kinematic
   wave.
+- Fixed BMI functions (e.g. `BMI.get_value`) that deviated from BMI specifications
+  (BasicModelInterface.jl), including function arguments, return types and the BMI
+  specification that arrays are always flattened (this was not the case for variables stored
+  as 2-dimensional arrays or as vector of SVectors).
 - Bump compat for NCDatasets to 0.13.
 
 ### Changed
 - For cyclic parameters different cyclic time inputs are supported (only one common cyclic
   time (for example daily or monthly) was allowed).
+- BMI: 1) added grid information (type and location) and whether a variable can be exchanged
+  to metadata Structs, 2) extend model grid functions for Wflow components that store
+  variables on `edges` (local inertial model) with `get_grid_edge_count` and
+  `get_grid_edge_nodes`.
+
+### Added
+- Functions for loading and saving states and getting the `starttime` in Unix time format.
+  This is convenient for coupling with OpenDA (and other external) software. The set states
+  functionality from the initialization function has been moved to a separate `set_states`
+  function for each `Model` type, to support loading states independent of initialization.
 
 ## v0.7.2 - 2023-09-27
 

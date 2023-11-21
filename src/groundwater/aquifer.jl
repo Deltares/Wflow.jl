@@ -86,7 +86,7 @@ NOTA BENE: **specific** storage is per m of aquifer (conf. specific weight).
 **Storativity** or (**storage coefficient**) is for the entire aquifer (conf.
 transmissivity).
 """
-@get_units struct ConfinedAquifer{T} <: Aquifer
+@get_units @exchange @grid_type @grid_location struct ConfinedAquifer{T} <: Aquifer
     head::Vector{T} | "m"  # hydraulic head [m]
     k::Vector{T} | "m d-1"  # horizontal conductivity [m d⁻¹]
     top::Vector{T} | "m" # top of groundwater layer [m]
@@ -109,7 +109,7 @@ aquifer will yield when all water drains and the pore volume is filled by air
 instead. Specific yield will vary roughly between 0.05 (clay) and 0.45 (peat)
 (Johnson, 1967).
 """
-@get_units struct UnconfinedAquifer{T} <: Aquifer
+@get_units @exchange @grid_type @grid_location struct UnconfinedAquifer{T} <: Aquifer
     head::Vector{T} | "m"  # hydraulic head [m]
     k::Vector{T} | "m d-1"  # reference horizontal conductivity [m d⁻¹]
     top::Vector{T} | "m" # top of groundwater layer [m]
@@ -307,7 +307,7 @@ function flux!(Q, aquifer, connectivity, conductivity_profile)
 end
 
 
-@get_units struct ConstantHead{T}
+@get_units @exchange @grid_type @grid_location struct ConstantHead{T}
     head::Vector{T} | "m"
     index::Vector{Int} | "-"
 end
