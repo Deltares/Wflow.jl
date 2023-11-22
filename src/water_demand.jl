@@ -1,28 +1,28 @@
-@get_units @with_kw struct Industry{T}
+@get_units @exchange @grid_type @grid_location @with_kw struct Industry{T}
     demand_gross::Vector{T}                 # gross industry water demand [mm Δt⁻¹]
     demand_net::Vector{T}                   # net industry water demand [mm Δt⁻¹]
     returnflow_fraction::Vector{T} | "-"    # return flow fraction [-]
 end
 
-@get_units @with_kw struct Domestic{T}
+@get_units @exchange @grid_type @grid_location @with_kw struct Domestic{T}
     demand_gross::Vector{T}                 # gross domestic water demand [mm Δt⁻¹]
     demand_net::Vector{T}                   # net domestic water demand [mm Δt⁻¹]
     returnflow_fraction::Vector{T} | "-"    # return flow fraction [-]
 end
 
-@get_units @with_kw struct Livestock{T}
+@get_units @exchange @grid_type @grid_location @with_kw struct Livestock{T}
     demand_gross::Vector{T}                 # gross livestock water demand [mm Δt⁻¹]
     demand_net::Vector{T}                   # net livestock water demand [mm Δt⁻¹]
     returnflow_fraction::Vector{T} | "-"    # return flow fraction [-]
 end
 
-@get_units @with_kw struct NonPaddy{T}
+@get_units @exchange @grid_type @grid_location @with_kw struct NonPaddy{T}
     demand_gross::Vector{T}                 # irrigation gross demand [mm Δt⁻¹] 
     irrigation_efficiency::Vector{T} | "-"  # irrigation efficiency [-]
     irrigation_areas::Vector{Bool} | "-"    # irrigation areas [-]
 end
 
-@get_units @with_kw struct Paddy{T}
+@get_units @exchange @grid_type @grid_location @with_kw struct Paddy{T}
     demand_gross::Vector{T}                 # irrigation gross demand [mm Δt⁻¹] 
     irrigation_efficiency::Vector{T} | "-"  # irrigation efficiency [-]
     irrigation_areas::Vector{Bool} | "-"    # irrigation areas [-]
@@ -32,14 +32,14 @@ end
     h::Vector{T} | "mm"                     # actual water depth in rice field [mm]
 end
 
-@get_units @with_kw struct WaterAllocationRiver{T}
+@get_units @exchange @grid_type @grid_location @with_kw struct WaterAllocationRiver{T}
     act_surfacewater_abst::Vector{T}                    # actual surface water abstraction [mm Δt⁻¹]
     act_surfacewater_abst_vol::Vector{T} | "m3 Δt-1"    # actual surface water abstraction [m³ Δt⁻¹]
     available_surfacewater::Vector{T} | "m3"            # available surface water [m³]
     nonirri_returnflow::Vector{T}                       # return flow from non irrigation [mm Δt⁻¹] 
 end
 
-@get_units @with_kw struct WaterAllocationLand{T}
+@get_units @exchange @grid_type @grid_location @with_kw struct WaterAllocationLand{T}
     irri_demand_gross::Vector{T}                        # irrigation gross demand [mm Δt⁻¹]
     nonirri_demand_gross::Vector{T}                     # non irrigation (industry and domestic) gross demand [mm Δt⁻¹]
     total_gross_demand::Vector{T}                       # total gross demand [mm Δt⁻¹]
