@@ -1154,10 +1154,10 @@ function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
 
         ustoredepth = sum(@view usld[1:n_usl])
 
-        if sbm.paddy !== nothing && sbm.paddy.h_p[i] > 0.0
+        if sbm.paddy !== nothing && sbm.paddy.h_max[i] > 0.0
             paddy_h_add = min(
                 exfiltustore + exfiltsatwater[i] + sbm.excesswater[i] + sbm.infiltexcess[i],
-                sbm.paddy.h_p[i] - sbm.paddy.h[i],
+                sbm.paddy.h_max[i] - sbm.paddy.h[i],
             )
             sbm.paddy.h[i] += paddy_h_add
         else

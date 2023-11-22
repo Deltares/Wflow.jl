@@ -27,8 +27,8 @@ end
     irrigation_efficiency::Vector{T} | "-"  # irrigation efficiency [-]
     irrigation_areas::Vector{Bool} | "-"    # irrigation areas [-]
     h_min::Vector{T} | "mm"                 # minimum required water depth in the irrigated rice field [mm]
-    h_max::Vector{T} | "mm"                 # optimal water depth in the irrigated rice fields [mm]
-    h_p::Vector{T} | "mm"                   # water depth when rice field starts spilling water (overflow) [mm]
+    h_opt::Vector{T} | "mm"                 # optimal water depth in the irrigated rice fields [mm]
+    h_max::Vector{T} | "mm"                 # water depth when rice field starts spilling water (overflow) [mm]
     h::Vector{T} | "mm"                     # actual water depth in rice field [mm]
 end
 
@@ -167,9 +167,9 @@ function initialize_paddy(nc, config, inds)
 
     h_min =
         ncread(nc, config, "vertical.paddy.h_min"; sel = inds, defaults = 0.0, type = Float)
-    h_max =
-        ncread(nc, config, "vertical.paddy.h_max"; sel = inds, defaults = 0.0, type = Float)
-    h_p = ncread(nc, config, "vertical.paddy.h_p"; sel = inds, defaults = 0.0, type = Float)
+    h_opt =
+        ncread(nc, config, "vertical.paddy.h_opt"; sel = inds, defaults = 0.0, type = Float)
+    h_max = ncread(nc, config, "vertical.paddy.h_max"; sel = inds, defaults = 0.0, type = Float)
     efficiency = ncread(
         nc,
         config,
@@ -194,7 +194,7 @@ function initialize_paddy(nc, config, inds)
         irrigation_efficiency = efficiency,
         h_min = h_min,
         h_max = h_max,
-        h_p = h_p,
+        h_opt = h_opt,
         irrigation_areas = areas,
         h = fill(0.0, length(inds)),
     )
@@ -327,7 +327,7 @@ function update_water_demand(sbm::SBM)
         elseif sbm.paddy !== nothing && sbm.paddy.irrigation_areas[i] !== 0
             irr_depth_paddy =
                 sbm.paddy.h[i] < sbm.paddy.h_min[i] ?
-                (sbm.paddy.h_max[i] - sbm.paddy.h[i]) : 0.0
+                (sbm.paddy.h_opt[i] - sbm.paddy.h[i]) : 0.0
             irri_dem_gross += irr_depth_paddy / sbm.paddy.irrigation_efficiency[i]
         end
         sbm.waterallocation.irri_demand_gross[i] = irri_dem_gross
