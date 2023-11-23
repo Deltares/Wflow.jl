@@ -55,6 +55,8 @@
     throughfall::Vector{T}
     # A scaling parameter [mm⁻¹] (controls exponential decline of kv₀)
     f::Vector{T} | "mm-1"
+    # Depth [mm] from soil surface for which exponential decline of kv₀ is valid
+    z_exp::Vector{T} | "mm"
     # Amount of water in the unsaturated store, per layer [mm]
     ustorelayerdepth::Vector{SVector{N,T}} | "mm"
     # Saturated store [mm]
@@ -255,6 +257,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
 
     Δt = Second(config.timestepsecs)
     config_thicknesslayers = get(config.model, "thicknesslayers", Float[])
+    ksat_profile = get(config.input.vertical, "ksat_profile", "exponential")::String
     if length(config_thicknesslayers) > 0
         thicknesslayers = SVector(Tuple(push!(Float.(config_thicknesslayers), mv)))
         sumlayers = pushfirst(cumsum(thicknesslayers), 0.0)
@@ -376,6 +379,16 @@ function initialize_sbm(nc, config, riverfrac, inds)
         defaults = 2000.0,
         type = Float,
     )
+    if ksat_profile == "exponential"
+        z_exp = soilthickness
+    elseif ksat_profile == "exponential_constant"
+        z_exp =
+            ncread(nc, config, "vertical.z_exp"; optional = false, sel = inds, type = Float)
+    else
+        error("""An unknown "ksat_profile" is specified in the TOML file ($ksat_profile).
+              This should be "exponential" or "exponential_constant".
+              """)
+    end
     infiltcappath =
         ncread(
             nc,
@@ -526,6 +539,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         stemflow = fill(mv, n),
         throughfall = fill(mv, n),
         f = f,
+        z_exp = z_exp,
         ustorelayerdepth = zero(act_thickl),
         satwaterdepth = satwaterdepth,
         zi = zi,
@@ -610,7 +624,7 @@ function update_until_snow(sbm::SBM, config)
     modelglacier = get(config.model, "glacier", false)::Bool
     modelsnow = get(config.model, "snow", false)::Bool
 
-    threaded_foreach(1:sbm.n, basesize=1000) do i
+    threaded_foreach(1:sbm.n, basesize = 1000) do i
         if do_lai
             cmax = sbm.sl[i] * sbm.leaf_area_index[i] + sbm.swood[i]
             canopygapfraction = exp(-sbm.kext[i] * sbm.leaf_area_index[i])
@@ -693,7 +707,7 @@ function update_until_recharge(sbm::SBM, config)
     transfermethod = get(config.model, "transfermethod", false)::Bool
     ust = get(config.model, "whole_ust_available", false)::Bool # should be removed from optional setting and code?
 
-    threaded_foreach(1:sbm.n, basesize=250) do i
+    threaded_foreach(1:sbm.n, basesize = 250) do i
         if modelsnow
             rainfallplusmelt = sbm.rainfallplusmelt[i]
             if modelglacier
@@ -974,7 +988,7 @@ end
 
 function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
 
-    threaded_foreach(1:sbm.n, basesize=1000) do i
+    threaded_foreach(1:sbm.n, basesize = 1000) do i
         usl, n_usl = set_layerthickness(zi[i], sbm.sumlayers[i], sbm.act_thickl[i])
         # exfiltration from ustore
         usld = sbm.ustorelayerdepth[i]

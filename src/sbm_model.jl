@@ -127,6 +127,29 @@ function initialize_sbm_model(config::Config)
         zi = sbm.zi .* 0.001
         soilthickness = sbm.soilthickness .* 0.001
 
+        ksat_profile = get(config.input.vertical, "ksat_profile", "exponential")::String
+        if ksat_profile == "exponential"
+            ssfmax = @. ((kh₀ * βₗ) / f) * (1.0 - exp(-f * soilthickness))
+            ssf = @. ((kh₀ * βₗ) / f) * (exp(-f * zi) - exp(-f * soilthickness)) * dw
+        elseif ksat_profile == "exponential_constant"
+            z_exp = sbm.z_exp .* 0.001
+            ssf_constant = @. kh₀ * exp(-f * z_exp) * βₗ * (soilthickness - z_exp)
+            ssfmax = @. ((kh₀ * βₗ) / f) * (1.0 - exp(-f * z_exp)) + ssf_constant
+            ssf = zeros(n)
+            for i in eachindex(ssf)
+                if zi[i] < z_exp[i]
+                    ssf[i] =
+                        (
+                            ((kh₀[i] * βₗ[i]) / f[i]) *
+                            (exp(-f[i] * zi[i]) - exp(-f[i] * z_exp[i])) + ssf_constant[i]
+                        ) * dw[i]
+                else
+                    ssf[i] =
+                        kh₀[i] * exp(-f[i] * zi[i]) * βₗ[i] * (soilthickness[i] - zi[i])
+                end
+            end
+        end
+
         ssf = LateralSSF{Float}(
             kh₀ = kh₀,
             f = f,
@@ -140,9 +163,9 @@ function initialize_sbm_model(config::Config)
             dw = dw,
             exfiltwater = fill(mv, n),
             recharge = fill(mv, n),
-            ssf = ((kh₀ .* βₗ) ./ f) .* (exp.(-f .* zi) - exp.(-f .* soilthickness)) .* dw,
+            ssf = ssf,
             ssfin = fill(mv, n),
-            ssfmax = ((kh₀ .* βₗ) ./ f) .* (1.0 .- exp.(-f .* soilthickness)),
+            ssfmax = ssfmax,
             to_river = zeros(n),
         )
     else
@@ -511,7 +534,7 @@ function set_states(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
         if floodplain_1d
             initialize_volume!(lateral.river, nriv)
         end
-    
+
         if do_lakes
             # storage must be re-initialized after loading the state with the current
             # waterlevel otherwise the storage will be based on the initial water level
