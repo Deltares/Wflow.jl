@@ -128,11 +128,11 @@ function initialize_sbm_model(config::Config)
         soilthickness = sbm.soilthickness .* 0.001
 
         ksat_profile = get(config.input.vertical, "ksat_profile", "exponential")::String
+        z_exp = sbm.z_exp .* 0.001
         if ksat_profile == "exponential"
             ssfmax = @. ((kh₀ * βₗ) / f) * (1.0 - exp(-f * soilthickness))
             ssf = @. ((kh₀ * βₗ) / f) * (exp(-f * zi) - exp(-f * soilthickness)) * dw
         elseif ksat_profile == "exponential_constant"
-            z_exp = sbm.z_exp .* 0.001
             ssf_constant = @. kh₀ * exp(-f * z_exp) * βₗ * (soilthickness - z_exp)
             ssfmax = @. ((kh₀ * βₗ) / f) * (1.0 - exp(-f * z_exp)) + ssf_constant
             ssf = zeros(n)
@@ -154,6 +154,7 @@ function initialize_sbm_model(config::Config)
             kh₀ = kh₀,
             f = f,
             zi = zi,
+            z_exp = z_exp,
             soilthickness = soilthickness,
             θₛ = sbm.θₛ,
             θᵣ = sbm.θᵣ,
@@ -391,13 +392,15 @@ end
 function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
 
     @unpack lateral, vertical, network, clock, config = model
+    ksat_profile = get(config.input.vertical, "ksat_profile", "exponential")::String
+
     model = update_until_recharge(model)
     # exchange of recharge between vertical sbm concept and subsurface flow domain
     lateral.subsurface.recharge .= vertical.recharge ./ 1000.0
     lateral.subsurface.recharge .*= lateral.subsurface.dw
     lateral.subsurface.zi .= vertical.zi ./ 1000.0
     # update lateral subsurface flow domain (kinematic wave)
-    update(lateral.subsurface, network.land, network.frac_toriver)
+    update(lateral.subsurface, network.land, network.frac_toriver, ksat_profile)
     model = update_after_subsurfaceflow(model)
 end
 

@@ -790,15 +790,7 @@ function update_until_recharge(sbm::SBM, config)
             # (ast) and the updated unsaturated storage for each soil layer.
             if transfermethod && sbm.maxlayers == 1
                 ustorelayerdepth = sbm.ustorelayerdepth[i][1] + infiltsoilpath
-                if ksat_profile == "exponential"
-                    kv_z = sbm.kvfrac[i][1] * sbm.kv₀[i] * exp(-sbm.f[i] * sbm.zi[i])
-                elseif ksat_profile == "exponential_constant"
-                    if sbm.zi[i] < sbm.z_exp[i]
-                        kv_z = sbm.kvfrac[i][1] * sbm.kv₀[i] * exp(-sbm.f[i] * sbm.zi[i])
-                    else
-                        kv_z = sbm.kvfrac[i][1] * sbm.kv₀[i] * exp(-sbm.f[i] * sbm.z_exp[i])
-                    end
-                end
+                kv_z = hydraulic_conductivity_at_depth(sbm, sbm.zi[i], i, 1, ksat_profile)
                 ustorelayerdepth, ast = unsatzone_flow_sbm(
                     ustorelayerdepth,
                     sbm.soilwatercapacity[i],
@@ -812,18 +804,7 @@ function update_until_recharge(sbm::SBM, config)
             else
                 for m = 1:n_usl
                     l_sat = usl[m] * (sbm.θₛ[i] - sbm.θᵣ[i])
-                    if ksat_profile == "exponential"
-                        kv_z = sbm.kvfrac[i][m] * sbm.kv₀[i] * exp(-sbm.f[i] * z[m])
-                    elseif ksat_profile == "exponential_constant"
-                        if sbm.zi[i] < sbm.z_exp[i]
-                            kv_z = sbm.kvfrac[i][1] * sbm.kv₀[i] * exp(-sbm.f[i] * z[m])
-                        else
-                            kv_z =
-                                sbm.kvfrac[i][1] *
-                                sbm.kv₀[i] *
-                                exp(-sbm.f[i] * sbm.z_exp[i])
-                        end
-                    end
+                    kv_z = hydraulic_conductivity_at_depth(sbm, z[m], i, m, ksat_profile)
                     ustorelayerdepth =
                         m == 1 ? sbm.ustorelayerdepth[i][m] + infiltsoilpath :
                         sbm.ustorelayerdepth[i][m] + ast

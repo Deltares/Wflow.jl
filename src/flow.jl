@@ -1,7 +1,7 @@
 
 abstract type SurfaceFlow end
 
-@get_units @exchange @grid_type @grid_location @with_kw struct SurfaceFlowRiver{T,R,L} <: SurfaceFlow
+@get_units @exchange @grid_type @grid_location @with_kw struct SurfaceFlowRiver{T,R,L} <:SurfaceFlow
     β::T | "-" | _ | "scalar"                    # constant in Manning's equation
     sl::Vector{T} | "m m-1"                      # Slope [m m⁻¹]
     n::Vector{T} | "s m-1/3"                     # Manning's roughness [s m⁻⅓]
@@ -36,8 +36,8 @@ abstract type SurfaceFlow end
     # end
 end
 
-@get_units @exchange @grid_type @grid_location @with_kw struct SurfaceFlowLand{T} <: SurfaceFlow
-    β::T | "-"  | _ | "scalar"                      # constant in Manning's equation
+@get_units @exchange @grid_type @grid_location @with_kw struct SurfaceFlowLand{T} <:SurfaceFlow
+    β::T | "-" | _ | "scalar"                      # constant in Manning's equation
     sl::Vector{T} | "m m-1"                         # Slope [m m⁻¹]
     n::Vector{T} | "s m-1/3"                        # Manning's roughness [s m⁻⅓]
     dl::Vector{T} | "m"                             # Drain length [m]
@@ -57,7 +57,7 @@ end
     α::Vector{T} | "s3/5 m1/5"                      # Constant in momentum equation A = αQᵝ, based on Manning's equation
     cel::Vector{T} | "m s-1"                        # Celerity of the kinematic wave
     to_river::Vector{T} | "m3 s-1"                  # Part of overland flow [m³ s⁻¹] that flows to the river
-    kinwave_it::Bool | "-" | 0 |  "none" | "none"   # Boolean for iterations kinematic wave
+    kinwave_it::Bool | "-" | 0 | "none" | "none"   # Boolean for iterations kinematic wave
 end
 
 function initialize_surfaceflow_land(nc, config, inds; sl, dl, width, iterate, tstep, Δt)
@@ -386,7 +386,7 @@ function stable_timestep(sf::S) where {S<:SurfaceFlow}
     return Δt, its
 end
 
-@get_units @exchange @grid_type  @grid_location @with_kw struct LateralSSF{T}
+@get_units @exchange @grid_type @grid_location @with_kw struct LateralSSF{T}
     kh₀::Vector{T} | "m d-1"               # Horizontal hydraulic conductivity at soil surface [m d⁻¹]
     f::Vector{T} | "m-1"                   # A scaling parameter [m⁻¹] (controls exponential decline of kh₀)
     soilthickness::Vector{T} | "m"         # Soil thickness [m]
@@ -397,6 +397,7 @@ end
     dl::Vector{T} | "m"                    # Drain length [m]
     dw::Vector{T} | "m"                    # Flow width [m]
     zi::Vector{T} | "m"                    # Pseudo-water table depth [m] (top of the saturated zone)
+    z_exp::Vector{T} | "m"                 # Depth [m] from soil surface for which exponential decline of kv₀ is valid
     exfiltwater::Vector{T} | "m Δt-1"      # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
     recharge::Vector{T} | "m Δt-1"         # Net recharge to saturated store [m Δt⁻¹]
     ssf::Vector{T} | "m3 d-1"              # Subsurface flow [m³ d⁻¹]
@@ -412,7 +413,7 @@ end
 
 statevars(::LateralSSF) = (:ssf,)
 
-function update(ssf::LateralSSF, network, frac_toriver)
+function update(ssf::LateralSSF, network, frac_toriver, ksat_profile)
     @unpack subdomain_order, topo_subdomain, indices_subdomain, upstream_nodes = network
 
     ns = length(subdomain_order)
@@ -434,7 +435,6 @@ function update(ssf::LateralSSF, network, frac_toriver)
                     upstream_nodes[n],
                     eltype(ssf.to_river),
                 )
-
                 ssf.ssf[v], ssf.zi[v], ssf.exfiltwater[v] = kinematic_wave_ssf(
                     ssf.ssfin[v],
                     ssf.ssf[v],
@@ -449,6 +449,8 @@ function update(ssf::LateralSSF, network, frac_toriver)
                     ssf.dl[v],
                     ssf.dw[v],
                     ssf.ssfmax[v],
+                    ssf.z_exp[v],
+                    ksat_profile,
                 )
             end
         end
@@ -473,7 +475,7 @@ end
     h_thresh::T | "m" | _ | "scalar"                        # depth threshold for calculating flow
     Δt::T | "s" | 0 | "none" | "none"                       # model time step [s]
     q::Vector{T} | "m3 s-1" | _ | "edge"                    # river discharge (subgrid channel)
-    q0::Vector{T} | "m3 s-1"| _ | "edge"                    # river discharge (subgrid channel) at previous time step
+    q0::Vector{T} | "m3 s-1" | _ | "edge"                   # river discharge (subgrid channel) at previous time step
     q_av::Vector{T} | "m3 s-1" | _ | "edge"                 # average river channel (+ floodplain) discharge [m³ s⁻¹]
     q_channel_av::Vector{T} | "m3 s-1"                      # average river channel discharge [m³ s⁻¹]
     zb_max::Vector{T} | "m"                                 # maximum channel bed elevation
@@ -487,7 +489,7 @@ end
     h_av::Vector{T} | "m"                                   # average water depth
     dl::Vector{T} | "m"                                     # river length
     dl_at_link::Vector{T} | "m" | _ | "edge"                # river length at edge/link
-    width::Vector{T} | "m"                      	        # river width
+    width::Vector{T} | "m"                                  # river width
     width_at_link::Vector{T} | "m" | _ | "edge"             # river width at edge/link
     a::Vector{T} | "m2" | _ | "edge"                        # flow area at edge/link
     r::Vector{T} | "m" | _ | "edge"                         # wetted perimeter at edge/link
@@ -968,7 +970,7 @@ const dirs = (:yd, :xd, :xu, :yu)
     runoff::Vector{T} | "m3 s-1"                            # runoff from hydrological model
     h::Vector{T} | "m"                                      # water depth of cell (for river cells the reference is the river bed elevation `zb`)
     z::Vector{T} | "m"                                      # elevation of cell
-    froude_limit::Bool | "-" | 0  |"none" | "none"          # if true a check is performed if froude number > 1.0 (algorithm is modified)
+    froude_limit::Bool | "-" | 0 | "none" | "none"          # if true a check is performed if froude number > 1.0 (algorithm is modified)
     rivercells::Vector{Bool} | "-"                          # river cells
     h_av::Vector{T} | "m"                                   # average water depth (for river cells the reference is the river bed elevation `zb`)
 end

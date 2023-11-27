@@ -652,3 +652,22 @@ function threaded_foreach(f, x::AbstractArray; basesize::Integer)
     end
     return nothing
 end
+
+"""
+    hydraulic_conductivity_at_depth(sbm::SBM, z, i, ksat_profile)
+
+Return vertical hydraulic conductivity `kv_z` for soil layer `n` at depth `z` for vertical
+concept `SBM` (at index `i`) based on hydraulic conductivity profile `ksat_profile`.
+"""
+function hydraulic_conductivity_at_depth(sbm::SBM, z, i, n, ksat_profile)
+    if ksat_profile == "exponential"
+        kv_z = sbm.kvfrac[i][n] * sbm.kv₀[i] * exp(-sbm.f[i] * z)
+    elseif ksat_profile == "exponential_constant"
+        if sbm.zi[i] < sbm.z_exp[i]
+            kv_z = sbm.kvfrac[i][n] * sbm.kv₀[i] * exp(-sbm.f[i] * z)
+        else
+            kv_z = sbm.kvfrac[i][n] * sbm.kv₀[i] * exp(-sbm.f[i] * sbm.z_exp[i])
+        end
+    end
+    return kv_z
+end
