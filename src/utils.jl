@@ -668,6 +668,15 @@ function hydraulic_conductivity_at_depth(sbm::SBM, z, i, n, ksat_profile)
         else
             kv_z = sbm.kvfrac[i][n] * sbm.kv₀[i] * exp(-sbm.f[i] * sbm.z_exp[i])
         end
+    elseif ksat_profile == "layered"
+        kv_z = sbm.kvfrac[i][n] * sbm.kv[i][n]
+    elseif ksatprofile == "layered_exponential"
+        if sbm.zi[i] < sbm.z_exp[i]
+            kv_z = sbm.kvfrac[i][n] * sbm.kv[i][n]
+        else
+            n = sbm.nlayers_kv[i]
+            kv_z = sbm.kvfrac[i][n] * sbm.kv[i][n] * exp(-sbm.f[i] * (z - sbm.z_exp[i]))
+        end
     end
     return kv_z
 end

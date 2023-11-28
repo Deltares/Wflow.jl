@@ -9,6 +9,8 @@
     nlayers::Vector{Int} | "-"
     # Number of unsaturated soil layers
     n_unsatlayers::Vector{Int} | "-"
+    # Number of soil layers with vertical hydraulic conductivity value `kv`
+    nlayers_kv::Vector{Int} | "-"
     # Fraction of river [-]
     riverfrac::Vector{T} | "-"
     # Saturated water content (porosity) [-]
@@ -17,6 +19,8 @@
     θᵣ::Vector{T} | "-"
     # Vertical hydraulic conductivity [mm Δt⁻¹] at soil surface
     kv₀::Vector{T}
+    # Vertical hydraulic conductivity [mm Δt⁻¹] per soil layer
+    kv::Vector{SVector{N,T}} | "-"
     # Muliplication factor [-] applied to kv_z (vertical flow)
     kvfrac::Vector{SVector{N,T}} | "-"
     # Air entry pressure [cm] of soil (Brooks-Corey)
@@ -379,16 +383,6 @@ function initialize_sbm(nc, config, riverfrac, inds)
         defaults = 2000.0,
         type = Float,
     )
-    if ksat_profile == "exponential"
-        z_exp = soilthickness
-    elseif ksat_profile == "exponential_constant"
-        z_exp =
-            ncread(nc, config, "vertical.z_exp"; optional = false, sel = inds, type = Float)
-    else
-        error("""An unknown "ksat_profile" is specified in the TOML file ($ksat_profile).
-              This should be "exponential" or "exponential_constant".
-              """)
-    end
     infiltcappath =
         ncread(
             nc,
@@ -510,16 +504,68 @@ function initialize_sbm(nc, config, riverfrac, inds)
     vwc = fill(mv, maxlayers, n)
     vwc_perc = fill(mv, maxlayers, n)
 
+    # ksat profiles
+    if ksat_profile == "exponential"
+        z_exp = soilthickness
+        kv = fill(mv, (maxlayers, n))
+        nlayers_kv = fill(0, n)
+    elseif ksat_profile == "exponential_constant"
+        z_exp =
+            ncread(nc, config, "vertical.z_exp"; optional = false, sel = inds, type = Float)
+        kv = fill(mv, (maxlayers, n))
+        nlayers_kv = fill(0, n)
+    elseif ksat_profile == "layered" || "layered_exponential"
+        kv =
+            ncread(
+                nc,
+                config,
+                "vertical.kv";
+                sel = inds,
+                defaults = 1000.0,
+                type = Float,
+                dimname = :layer,
+            ) .* (Δt / basetimestep)
+        if size(kv, 1) != maxlayers
+            parname = param(config.input.vertical, "kv")
+            size1 = size(kv, 1)
+            error("$parname needs a layer dimension of size $maxlayers, but is $size1")
+        end
+        if ksat_profile == "layered"
+            z_exp = soilthickness
+            nlayers_kv = fill(maxlayers, n)
+        else
+            z_exp = ncread(
+                nc,
+                config,
+                "vertical.z_exp";
+                optional = false,
+                sel = inds,
+                type = Float,
+            )
+            nlayers_kv = fill(0, n)
+            for i in eachindex(z_exp)
+                _, nlayers_kv[i] = findmin(abs.(z_exp[i] .- @view sumlayers[i][2:end]))
+            end
+        end
+    else
+        error("""An unknown "ksat_profile" is specified in the TOML file ($ksat_profile).
+              This should be "exponential", "exponential_constant", "layered" or
+              "layered_exponential".
+              """)
+    end
+
     sbm = SBM{Float,maxlayers,maxlayers + 1}(
         Δt = tosecond(Δt),
         maxlayers = maxlayers,
         n = n,
         nlayers = nlayers,
         n_unsatlayers = fill(0, n),
+        nlayers_kv = nlayers_kv,
         riverfrac = riverfrac,
         θₛ = θₛ,
         θᵣ = θᵣ,
         kv₀ = kv₀,
+        kv = svectorscopy(kv, Val{maxlayers}()),
         kvfrac = svectorscopy(kvfrac, Val{maxlayers}()),
         hb = hb,
         soilthickness = soilthickness,
