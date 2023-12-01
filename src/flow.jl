@@ -389,6 +389,8 @@ end
 @get_units @exchange @grid_type @grid_location @with_kw struct LateralSSF{T}
     kh₀::Vector{T} | "m d-1"               # Horizontal hydraulic conductivity at soil surface [m d⁻¹]
     f::Vector{T} | "m-1"                   # A scaling parameter [m⁻¹] (controls exponential decline of kh₀)
+    kh::Vector{T} | "m d-1"                # Horizontal hydraulic conductivity [m d⁻¹]
+    khfrac::Vector{T} | "-"                # A muliplication factor applied to vertical hydraulic conductivity `kv` [-]
     soilthickness::Vector{T} | "m"         # Soil thickness [m]
     θₛ::Vector{T} | "-"                     # Saturated water content (porosity) [-]
     θᵣ::Vector{T} | "-"                    # Residual water content [-]

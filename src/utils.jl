@@ -680,3 +680,53 @@ function hydraulic_conductivity_at_depth(sbm::SBM, z, i, n, ksat_profile)
     end
     return kv_z
 end
+
+"""
+    kh_layered_profile(sbm::SBM, z, i)
+
+Return equivalent horizontal hydraulic conductivity `kh` [m d⁻¹] for a layered soil profile
+of vertical concept `SBM` (at index `i`) based on multiplication factor `khfrac` [-], water
+table depth `z` [mm] and hydraulic conductivity profile `ksat_profile`.
+"""
+function kh_layered_profile(sbm::SBM, khfrac::AbstractVector, z, i, ksat_profile)
+
+    if (sbm.soilthickness[i] - z) > 0.0
+        transmissivity = 0.0
+        sumlayers = @view sbm.sumlayers[i][2:end]
+        n = sbm.n_unsatlayers[i]
+        m = sbm.nlayers[i]
+
+        if ksat_profile == "layered"
+            transmissivity += (sumlayers[n] - z) * sbm.kv[i][n]
+        elseif ksat_profile == "layered_exponential" && z >= sbm.z_exp[i]
+            transmissivity +=
+                sbm.kv[i][n] / sbm.f[i] *
+                (exp(-sbm.f[i] * z) - exp(-sbm.f[i] * sbm.soilthickness[i]))
+        end
+
+        while n < m
+            if ksat_profile == "layered"
+                transmissivity += sbm.sumlayers[i][n] * sbm.kv[i][n]
+            elseif ksat_profile == "layered_exponential"
+                if z >= sbm.z_exp[i]
+                    transmissivity +=
+                        sbm.kv[i][n] / sbm.f[i] *
+                        (exp(-sbm.f[i] * z) - exp(-sbm.f[i] * sbm.soilthickness[i]))
+                else
+                    transmissivity += sbm.sumlayers[i][n] * sbm.kv[i][n]
+                end
+            end
+            n += 1
+        end
+        # convert units for kh [m d⁻¹] computation (transmissivity [mm² Δt⁻¹], soilthickness
+        # [mm] and z [mm])
+        kh =
+            0.001 *
+            (transmissivity / (sbm.soilthickness[i] - z)) *
+            (basetimestep / sbm.Δt) *
+            khfrac[i]
+    else
+        kh = 0.0
+    end
+    return kh
+end

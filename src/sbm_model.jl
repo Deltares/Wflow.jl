@@ -129,6 +129,7 @@ function initialize_sbm_model(config::Config)
 
         ksat_profile = get(config.input.vertical, "ksat_profile", "exponential")::String
         z_exp = sbm.z_exp .* 0.001
+        kh = fill(mv, n)
         if ksat_profile == "exponential"
             ssfmax = @. ((kh₀ * βₗ) / f) * (1.0 - exp(-f * soilthickness))
             ssf = @. ((kh₀ * βₗ) / f) * (exp(-f * zi) - exp(-f * soilthickness)) * dw
@@ -145,14 +146,30 @@ function initialize_sbm_model(config::Config)
                         ) * dw[i]
                 else
                     ssf[i] =
-                        kh₀[i] * exp(-f[i] * zi[i]) * βₗ[i] * (soilthickness[i] - zi[i])
+                        kh₀[i] *
+                        exp(-f[i] * zi[i]) *
+                        βₗ[i] *
+                        (soilthickness[i] - zi[i]) *
+                        dw[i]
                 end
+            end
+        elseif ksat_profile == "layered" || "layered_exponential"
+            ssf = zeros(n)
+            ssf_max = zeros(n)
+            for i in eachindex(ssf)
+                kh[i] =
+                    kh_layered_profile(sbm, khfrac, sbm.zi[i], i, ksat_profile) * khfrac[i]
+                ssf[i] = kh[i] * (soilthickess[i] - zi[i]) * βₗ[i] * dw[i]
+                kh_max = kh_layered_profile(sbm, khfrac, 0.0, i, ksat_profile) * khfrac[i]
+                ssf_max[i] = kh_max * soilthickness[i] * βₗ[i] * dw[i]
             end
         end
 
         ssf = LateralSSF{Float}(
             kh₀ = kh₀,
             f = f,
+            kh = kh,
+            khfrac = khfrac,
             zi = zi,
             z_exp = z_exp,
             soilthickness = soilthickness,
@@ -400,6 +417,17 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
     lateral.subsurface.recharge .*= lateral.subsurface.dw
     lateral.subsurface.zi .= vertical.zi ./ 1000.0
     # update lateral subsurface flow domain (kinematic wave)
+    if (ksat_profile == "layered") || (ksat_profile == "layered_exponential")
+        for i in eachindex(lateral.subsurface.kh)
+            lateral.subsurface.kh[i] = kh_layered_profile(
+                vertical,
+                lateral.subsurface.khfrac,
+                vertical.zi[i],
+                i,
+                ksat_profile,
+            )
+        end
+    end
     update(lateral.subsurface, network.land, network.frac_toriver, ksat_profile)
     model = update_after_subsurfaceflow(model)
 end
