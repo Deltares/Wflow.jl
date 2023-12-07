@@ -962,7 +962,7 @@ function update_until_recharge(sbm::SBM, config)
 
         actcapflux = 0.0
         if n_usl > 0
-            ksat = sbm.kvfrac[i][n_usl] * sbm.kv₀[i] * exp(-sbm.f[i] * sbm.zi[i])
+            ksat = hydraulic_conductivity_at_depth(sbm, sbm.zi[i], i, n_usl, ksat_profile)
             ustorecapacity =
                 sbm.soilwatercapacity[i] - satwaterdepth - sum(@view usld[1:sbm.nlayers[i]])
             maxcapflux = max(0.0, min(ksat, actevapustore, ustorecapacity, satwaterdepth))
@@ -986,7 +986,7 @@ function update_until_recharge(sbm::SBM, config)
                 actcapflux = actcapflux + toadd
             end
         end
-        deepksat = sbm.kv₀[i] * exp(-sbm.f[i] * sbm.soilthickness[i])
+        deepksat = hydraulic_conductivity_at_depth(sbm, sbm.soilthickness[i], i, sbm.nlayers[i], ksat_profile)
         deeptransfer = min(satwaterdepth, deepksat)
         actleakage = max(0.0, min(sbm.maxleakage[i], deeptransfer))
 
