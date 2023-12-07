@@ -98,7 +98,18 @@ function ssf_celerity(zi, kh₀, β, θₑ, f, z_exp, ksat_profile)
     return Cn
 end
 
-"Kinematic wave for lateral subsurface flow for a single cell and timestep"
+"""
+    kinematic_wave_ssf(ssfin, ssfₜ₋₁, ziₜ₋₁, r, kh₀, β, θₑ, f, d, Δt, Δx, dw, ssfmax, z_exp, ksat_profile)
+
+Kinematic wave for lateral subsurface flow for a single cell and timestep. An exponential
+decline of hydraulic conductivity at the soil surface `kh₀`, controllled by parameter `f`,
+is assumed. The hydraulic conductivity profile `ksat_profile` is either `exponential` or
+`exponential_constant`, with `z_exp` the depth from the soil surface for which the
+exponential decline of `kh₀` is valid.
+
+Returns lateral subsurface flow `ssf`, water table depth `zi` and exfiltration rate
+`exfilt`.
+"""
 function kinematic_wave_ssf(
     ssfin,
     ssfₜ₋₁,
@@ -184,6 +195,68 @@ function kinematic_wave_ssf(
 
         return ssf, zi, exfilt
 
+    end
+end
+
+"""
+    kinematic_wave_ssf(ssfin, ssfₜ₋₁, ziₜ₋₁, r, kh, β, θₑ, d, Δt, Δx, dw, ssfmax)
+
+Kinematic wave for lateral subsurface flow for a single cell and timestep, based on
+(average) hydraulic conductivity `kh`.
+
+Returns lateral subsurface flow `ssf`, water table depth `zi` and exfiltration rate
+`exfilt`.
+"""
+function kinematic_wave_ssf(ssfin, ssfₜ₋₁, ziₜ₋₁, r, kh, β, θₑ, d, Δt, Δx, dw, ssfmax)
+
+    ϵ = 1.0e-12
+    max_iters = 3000
+
+    if ssfin + ssfₜ₋₁ ≈ 0.0 && r <= 0.0
+        return 0.0, d, 0.0
+    else
+        # initial estimate
+        ssf = (ssfₜ₋₁ + ssfin) / 2.0
+        count = 1
+        # celerity (Cn) 
+        Cn = (β * kh) / θₑ
+        # constant term of the continuity equation for Newton-Raphson
+        c = (Δt / Δx) * ssfin + (1.0 / Cn) * ssfₜ₋₁ + r
+        # continuity equation of which solution should be zero
+        fQ = (Δt / Δx) * ssf + (1.0 / Cn) * ssf - c
+        # Derivative of the continuity equation
+        dfQ = (Δt / Δx) + 1.0 / Cn
+        # Update lateral subsurface flow estimate ssf
+        ssf = ssf - (fQ / dfQ)
+        if isnan(ssf)
+            ssf = 0.0
+        end
+        ssf = max(ssf, 1.0e-30)
+
+        # Start while loop of Newton-Raphson iteration
+        while true
+            fQ = (Δt / Δx) * ssf + (1.0 / Cn) * ssf - c
+            dfQ = (Δt / Δx) + 1.0 / Cn
+            ssf = ssf - (fQ / dfQ)
+            if isnan(ssf)
+                ssf = 0.0
+            end
+            ssf = max(ssf, 1.0e-30)
+            if (abs(fQ) <= ϵ) || (count >= max_iters)
+                break
+            end
+            count += 1
+        end
+
+        # Constrain the lateral subsurface flow rate ssf
+        ssf = min(ssf, (ssfmax * dw))
+        # On the basis of the lateral flow rate, estimate the amount of groundwater level above surface (saturation excess conditions), then rest = negative
+        rest = ziₜ₋₁ - (ssfin * Δt + r * Δx - ssf * Δt) / (dw * Δx) / θₑ
+        # Exfiltration rate and set zi to zero.
+        exfilt = min(rest, 0.0) * -θₑ
+        zi = clamp(zi, 0.0, d)
+
+        return ssf, zi, exfilt
     end
 end
 

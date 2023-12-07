@@ -36,7 +36,8 @@ abstract type SurfaceFlow end
     # end
 end
 
-@get_units @exchange @grid_type @grid_location @with_kw struct SurfaceFlowLand{T} <:SurfaceFlow
+@get_units @exchange @grid_type @grid_location @with_kw struct SurfaceFlowLand{T} <:
+                                                               SurfaceFlow
     β::T | "-" | _ | "scalar"                      # constant in Manning's equation
     sl::Vector{T} | "m m-1"                         # Slope [m m⁻¹]
     n::Vector{T} | "s m-1/3"                        # Manning's roughness [s m⁻⅓]
@@ -437,23 +438,42 @@ function update(ssf::LateralSSF, network, frac_toriver, ksat_profile)
                     upstream_nodes[n],
                     eltype(ssf.to_river),
                 )
-                ssf.ssf[v], ssf.zi[v], ssf.exfiltwater[v] = kinematic_wave_ssf(
-                    ssf.ssfin[v],
-                    ssf.ssf[v],
-                    ssf.zi[v],
-                    ssf.recharge[v],
-                    ssf.kh₀[v],
-                    ssf.βₗ[v],
-                    ssf.θₛ[v] - ssf.θᵣ[v],
-                    ssf.f[v],
-                    ssf.soilthickness[v],
-                    ssf.Δt,
-                    ssf.dl[v],
-                    ssf.dw[v],
-                    ssf.ssfmax[v],
-                    ssf.z_exp[v],
-                    ksat_profile,
-                )
+                if (ksat_profile == "exponential") ||
+                   (ksat_profile == "exponential_constant")
+                    ssf.ssf[v], ssf.zi[v], ssf.exfiltwater[v] = kinematic_wave_ssf(
+                        ssf.ssfin[v],
+                        ssf.ssf[v],
+                        ssf.zi[v],
+                        ssf.recharge[v],
+                        ssf.kh₀[v],
+                        ssf.βₗ[v],
+                        ssf.θₛ[v] - ssf.θᵣ[v],
+                        ssf.f[v],
+                        ssf.soilthickness[v],
+                        ssf.Δt,
+                        ssf.dl[v],
+                        ssf.dw[v],
+                        ssf.ssfmax[v],
+                        ssf.z_exp[v],
+                        ksat_profile,
+                    )
+                elseif (ksat_profile == "layered") ||
+                       (ksat_profile == "layered_exponential")
+                    ssf.ssf[v], ssf.zi[v], ssf.exfiltwater[v] = kinematic_wave_ssf(
+                        ssf.ssfin[v],
+                        ssf.ssf[v],
+                        ssf.zi[i],
+                        ssf.recharge[v],
+                        ssf.kh[v],
+                        ssf.βₗ[v],
+                        ssf.θₛ[v] - ssf.θᵣ[v],
+                        ssf.soilthickness[v],
+                        ssf.Δt,
+                        ssf.dl[v],
+                        ssf.dw[v],
+                        ssf.ssfmax[v],
+                    )
+                end
             end
         end
     end
