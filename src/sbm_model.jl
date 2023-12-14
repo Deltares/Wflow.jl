@@ -153,15 +153,15 @@ function initialize_sbm_model(config::Config)
                         dw[i]
                 end
             end
-        elseif ksat_profile == "layered" || "layered_exponential"
+        elseif ksat_profile == "layered" || ksat_profile == "layered_exponential"
             ssf = zeros(n)
-            ssf_max = zeros(n)
+            ssfmax = zeros(n)
             for i in eachindex(ssf)
                 kh[i] =
-                    kh_layered_profile(sbm, khfrac, sbm.zi[i], i, ksat_profile) * khfrac[i]
-                ssf[i] = kh[i] * (soilthickess[i] - zi[i]) * βₗ[i] * dw[i]
-                kh_max = kh_layered_profile(sbm, khfrac, 0.0, i, ksat_profile) * khfrac[i]
-                ssf_max[i] = kh_max * soilthickness[i] * βₗ[i] * dw[i]
+                    kh_layered_profile(sbm, khfrac[i], sbm.zi[i], i, ksat_profile)
+                ssf[i] = kh[i] * (soilthickness[i] - zi[i]) * βₗ[i] * dw[i]
+                kh_max = kh_layered_profile(sbm, khfrac[i], 0.0, i, ksat_profile)
+                ssfmax[i] = kh_max * soilthickness[i] * βₗ[i]
             end
         end
 
@@ -421,7 +421,7 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
         for i in eachindex(lateral.subsurface.kh)
             lateral.subsurface.kh[i] = kh_layered_profile(
                 vertical,
-                lateral.subsurface.khfrac,
+                lateral.subsurface.khfrac[i],
                 vertical.zi[i],
                 i,
                 ksat_profile,

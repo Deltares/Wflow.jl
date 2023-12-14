@@ -218,7 +218,7 @@ function kinematic_wave_ssf(ssfin, ssfₜ₋₁, ziₜ₋₁, r, kh, β, θₑ, 
         # initial estimate
         ssf = (ssfₜ₋₁ + ssfin) / 2.0
         count = 1
-        # celerity (Cn) 
+        # celerity (Cn)
         Cn = (β * kh) / θₑ
         # constant term of the continuity equation for Newton-Raphson
         c = (Δt / Δx) * ssfin + (1.0 / Cn) * ssfₜ₋₁ + r
@@ -251,9 +251,12 @@ function kinematic_wave_ssf(ssfin, ssfₜ₋₁, ziₜ₋₁, r, kh, β, θₑ, 
         # Constrain the lateral subsurface flow rate ssf
         ssf = min(ssf, (ssfmax * dw))
         # On the basis of the lateral flow rate, estimate the amount of groundwater level above surface (saturation excess conditions), then rest = negative
-        rest = ziₜ₋₁ - (ssfin * Δt + r * Δx - ssf * Δt) / (dw * Δx) / θₑ
+        zi = ziₜ₋₁ - (ssfin * Δt + r * Δx - ssf * Δt) / (dw * Δx) / θₑ
+        if zi > d
+            ssf = max(ssf - (dw * Δx) * θₑ * (zi - d), 1.0e-30)
+        end
         # Exfiltration rate and set zi to zero.
-        exfilt = min(rest, 0.0) * -θₑ
+        exfilt = min(zi, 0.0) * -θₑ
         zi = clamp(zi, 0.0, d)
 
         return ssf, zi, exfilt

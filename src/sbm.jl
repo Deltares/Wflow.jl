@@ -471,9 +471,15 @@ function initialize_sbm(nc, config, riverfrac, inds)
 
     cmax, e_r, canopygapfraction, sl, swood, kext = initialize_canopy(nc, config, inds)
 
+    θₑ = θₛ .- θᵣ
+    soilwatercapacity = soilthickness .* θₑ
+    satwaterdepth = 0.85 .* soilwatercapacity # cold state value for satwaterdepth
+    zi = max.(0.0, soilthickness .- satwaterdepth ./ θₑ) # cold state value for zi
+
     # these are filled in the loop below
     # TODO see if we can replace this approach
     nlayers = zeros(Int, n)
+    n_unsatlayers = zeros(Int, n)
     act_thickl = zeros(Float, maxlayers, n)
     s_layers = zeros(Float, maxlayers + 1, n)
 
@@ -486,23 +492,19 @@ function initialize_sbm(nc, config, riverfrac, inds)
             nlayers[i] = nlayers_
             act_thickl[:, i] = act_thickl_
             s_layers[:, i] = s_layers_
+            _, n_unsatlayers[i] = set_layerthickness(zi[i], sumlayers, thicknesslayers)
         else
             nlayers[i] = 1
             act_thickl[:, i] = SVector(soilthickness[i])
             s_layers[:, i] = pushfirst(cumsum(SVector(soilthickness[i])), 0.0)
         end
     end
-
-    # needed for derived parameters below
     act_thickl = svectorscopy(act_thickl, Val{maxlayers}())
-    θₑ = θₛ .- θᵣ
-    soilwatercapacity = soilthickness .* θₑ
-    satwaterdepth = 0.85 .* soilwatercapacity # cold state value for satwaterdepth
-    zi = max.(0.0, soilthickness .- satwaterdepth ./ θₑ) # cold state value for zi
 
     # copied to array of sarray below
     vwc = fill(mv, maxlayers, n)
     vwc_perc = fill(mv, maxlayers, n)
+    sumlayers = svectorscopy(s_layers, Val{maxlayers + 1}())
 
     # ksat profiles
     if ksat_profile == "exponential"
@@ -514,7 +516,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
             ncread(nc, config, "vertical.z_exp"; optional = false, sel = inds, type = Float)
         kv = fill(mv, (maxlayers, n))
         nlayers_kv = fill(0, n)
-    elseif ksat_profile == "layered" || "layered_exponential"
+    elseif ksat_profile == "layered" || ksat_profile == "layered_exponential"
         kv =
             ncread(
                 nc,
@@ -559,7 +561,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         maxlayers = maxlayers,
         n = n,
         nlayers = nlayers,
-        n_unsatlayers = fill(0, n),
+        n_unsatlayers = n_unsatlayers,
         nlayers_kv = nlayers_kv,
         riverfrac = riverfrac,
         θₛ = θₛ,
@@ -570,7 +572,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         hb = hb,
         soilthickness = soilthickness,
         act_thickl = act_thickl,
-        sumlayers = svectorscopy(s_layers, Val{maxlayers + 1}()),
+        sumlayers = sumlayers,
         infiltcappath = infiltcappath,
         infiltcapsoil = infiltcapsoil,
         maxleakage = maxleakage,
