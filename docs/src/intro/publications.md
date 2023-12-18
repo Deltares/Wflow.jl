@@ -119,10 +119,16 @@ their uncertainty bounds in highly groundwater-dependent and data-scarce area: A
 for the Upper Citarum basin, J. Hydrol. Regional Studies,
 <https://doi.org/10.1016/j.ejrh.2021.100911>.
 
-Rusli,S.R., V.F. Bense, A. Taufiq, A.H. Weerts,2023. Quantifying basin-scale changes in groundwater storage using GRACE and one-way coupled hydrological and groundwater flow model in the data-scarce Bandung groundwater Basin, Indonesia, Groundwater for Sustainable Development,22, 100953, <https://doi.org/10.1016/j.gsd.2023.100953>.
+Rusli,S.R., V.F. Bense, A. Taufiq, A.H. Weerts,2023. Quantifying basin-scale changes in
+groundwater storage using GRACE and one-way coupled hydrological and groundwater flow model
+in the data-scarce Bandung groundwater Basin, Indonesia, Groundwater for Sustainable
+Development,22, 100953, <https://doi.org/10.1016/j.gsd.2023.100953>.
 
 Rusli,S.R., A.H. Weerts, S.M.T. Mustafa, D.E. Irawan, A. Taufiq, V.F. Bense, 2023.
-Quantifying aquifer interaction using numerical groundwater flow model evaluated by environmental water tracer data: Application to the data-scarce area of the Bandung groundwater basin, West Java, Indonesia, Journal of Hydrology: Regional Studies, 50, <https://doi.org/10.1016/j.ejrh.2023.101585>.
+Quantifying aquifer interaction using numerical groundwater flow model evaluated by
+environmental water tracer data: Application to the data-scarce area of the Bandung
+groundwater basin, West Java, Indonesia, Journal of Hydrology: Regional Studies, 50,
+<https://doi.org/10.1016/j.ejrh.2023.101585>.
 
 Schaller, N., Sillmann, J., Müller, M., Haarsma, R., Hazeleger, W., Hegdahl, T.J., Kelder,
 T., van den Oord, G., Weerts, A., Whan, K., 2020. The role of spatial and temporal model
