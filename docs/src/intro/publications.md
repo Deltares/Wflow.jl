@@ -115,8 +115,9 @@ asynchronous filtering for flood forecasting. Hydrol. Earth Syst. Sci., 19, 2911
 <https://doi.org/10.5194/hess-19-2911-2015>.
 
 Ratri,D. N., A.H. Weerts, R. Muharsyah, K. Whan, A. Klein Tank, E. Aldrian, M. H. Hariadi,
-Calibration of ECMWF SEAS5 based streamflow forecast in Seasonal hydrological forecasting for Citarum river basin, West Java, Indonesia,
-Journal of Hydrology: Regional Studies,45,101305, <https://doi.org/10.1016/j.ejrh.2022.101305>.
+Calibration of ECMWF SEAS5 based streamflow forecast in Seasonal hydrological forecasting
+for Citarum river basin, West Java, Indonesia, Journal of Hydrology: Regional
+Studies,45,101305, <https://doi.org/10.1016/j.ejrh.2022.101305>.
 
 Rusli,S.R., A.H. Weerts, A. Taufiq, V. Bense, 2021. Estimating water balance components and
 their uncertainty bounds in highly groundwater-dependent and data-scarce area: An example
@@ -168,20 +169,11 @@ Wang, X., Zhang, J., Babovic, V., 2016. Improving real-time forecasting of water
 indicators with combination of process-based models and data assimilation technique.
 Ecological Indicators 66, 428–439. <https://doi:10.1016/j.ecolind.2016.02.016>.
 
-### Datasets
-
-A.H. Weerts; R.O.Imhoff, 2023. 4DHydro Benchmark Dataset wflow_sbm - Europe. Version 1. 4TU.ResearchData. dataset. https://doi.org/10.4121/bc8f15d5-5009-407d-9542-1d132c84c18c.v1.
-
-A.H. Weerts; R.O.Imhoff, 2023. 4DHydro Benchmark Dataset wflow_sbm - Po. Version 1. 4TU.ResearchData. dataset. https://doi.org/10.4121/571fb9c3-3674-414c-8d03-f5ebbd027a64.v1.
-
-A.H. Weerts; R.O.Imhoff, 2023. 4DHydro Benchmark Dataset wflow_sbm - Rhine. Version 1. 4TU.ResearchData. dataset. https://doi.org/10.4121/876507b7-4b4a-4e8d-a2d8-868b25ba0fda.v1.
-
-A.H. Weerts; R.O.Imhoff, 2023. 4DHydro Benchmark Dataset wflow_sbm - Tugela. Version 1. 4TU.ResearchData. dataset. https://doi.org/10.4121/b621e626-6f6f-4e16-9747-b1c1393e2d17.v1.
-
 ### PhD, MSc, BSc Theses & Internship reports
 
-A. Abdelnour, 2022. Bias Correction of Climate Simulations to Assess Climate Change Impacts on Low Flows in the Rhine
-River, MSc thesis, Delft Universitry of technology, <https://repository.tudelft.nl/islandora/object/uuid:50489399-cbd2-467f-9b82-98e5f3e371e9>.
+A. Abdelnour, 2022. Bias Correction of Climate Simulations to Assess Climate Change Impacts
+on Low Flows in the Rhine River, MSc thesis, Delft Universitry of technology,
+<https://repository.tudelft.nl/islandora/object/uuid:50489399-cbd2-467f-9b82-98e5f3e371e9>.
 
 Arnal, L., 2014. An intercomparison of flood forecasting models for the Meuse River basin,
 MSc. Thesis, Vrije Universiteit, Amsterdam. <https://hal.inrae.fr/hal-02600749>.
@@ -193,17 +185,19 @@ Azadeh Karami Fard, 2015. Modeling runoff of an Ethiopian catchment with WFLOW, 
 Vrije Universiteit, Amsterdam.
 
 Beusen, B. The effect of rooting depth on discharge and evapotranspiration in (semi-)arid
-areas, 2021, MSc Thesis, Hydrology and Quantitative Water Management Group, Wageningen University.
+areas, 2021, MSc Thesis, Hydrology and Quantitative Water Management Group, Wageningen
+University.
 
-Beusen, B., 2021. Plastic transport and the effect of climate change in the Rhine, Internship
-report, Deltares.
+Beusen, B., 2021. Plastic transport and the effect of climate change in the Rhine,
+Internship report, Deltares.
 
 Bouaziz, L. J. E., 2021. Internal processes in hydrological models: A glance at the Meuse
 basin from space. Delft University of Technology, Delft, the Netherlands, Doctoral
 dissertation. <https://doi.org/10.4233/uuid:09d84cc1-27e2-4327-a8c7-207a75952061>
 
-D.E. Villarreal Jaime, 2021. Ensemble hydrological forecasts to derive extreme return periods: Case Study of the Overijsselse Vecht River
-using the wflow_sbm model, MSc thesis, Unesco IHE, Delft.
+D.E. Villarreal Jaime, 2021. Ensemble hydrological forecasts to derive extreme return
+periods: Case Study of the Overijsselse Vecht River using the wflow_sbm model, MSc thesis,
+Unesco IHE, Delft.
 
 López López, P., 2018. Application of Global Hydrological Datasets for River Basin Modelling
 Utrecht University, Utrecht, the Netherlands, pp. 1-214, Doctoral dissertation.
@@ -214,8 +208,8 @@ rainfall-runoff model for the Bolivian Mamoré basin, MSc. Thesis, University of
 Enschede. <https://essay.utwente.nl/67046/>.
 
 van Osnabrugge, B., 2020. Interpolate, simulate, assimilate: operational aspects of
-improving hydrological forecasts in the Rhine basin. Wageningen University, Doctoral dissertation.
-<https://doi.org/10.18174/513157>.
+improving hydrological forecasts in the Rhine basin. Wageningen University, Doctoral
+dissertation. <https://doi.org/10.18174/513157>.
 
 Rohrmueller, I., 2019. BENCHMARKING THE NEW WFLOW DISTRIBUTED HYDROLOGICAL MODEL, MSc.
 Thesis, School of Engineering - Newcastle University.
@@ -227,8 +221,8 @@ MSc thesis, Wageningen University.
 Verbrugge, M., 2019. Reservoir Operation Optimization, a case study in the Chao Phraya
 Basin, BSc thesis, Hydrology and Quantitative Water Management Group, Wageningen University.
 
-Verbrugge, M., 2023. Bias-correcting meteorological forcing to improve seasonal discharge forecasting of the Rhine, 
-Internship report, Deltares.
+Verbrugge, M., 2023. Bias-correcting meteorological forcing to improve seasonal discharge
+forecasting of the Rhine, Internship report, Deltares.
 
 Viguures, P. 2020. Modelling of flash floods in current and future climate with high
 resolution convection permitting regional climate models in the European Alps, MSc Thesis,
@@ -237,7 +231,8 @@ Wageningen University, 2020
 Visser, B. 2020. Impact of climate change on local water resources of European catchments,
 Intersnhip report, Deltares, 2020
 
-Wannasin, C. 2023. Modelling and forecasting daily streamflow with reservoir operationin the upper Chao Phraya River basin, Thailand.  
+Wannasin, C. 2023. Modelling and forecasting daily streamflow with reservoir operationin the
+upper Chao Phraya River basin, Thailand.  
 Wageningen University, Doctoral dissertation, <https://doi.org/10.18174/584572>.
 
 ### Reports
@@ -246,4 +241,5 @@ World Bank. 2021. Plastic Waste Discharges from Rivers and Coastlines in Indones
 Plastics Series;. World Bank, Washington, DC. © World Bank.
 <https://openknowledge.worldbank.org/handle/10986/35607> License: CC BY 3.0 IGO
 
-World Meteorological Organization (WMO), 2023. State of Global Water Resources report 2022, WMO-No. 1333, <https://library.wmo.int/idurl/4/68473>.
+World Meteorological Organization (WMO), 2023. State of Global Water Resources report 2022,
+WMO-No. 1333, <https://library.wmo.int/idurl/4/68473>.
