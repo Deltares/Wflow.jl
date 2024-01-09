@@ -1605,7 +1605,7 @@ Also sorts the vector to be increasing, to match `read_standardized`.
 function read_x_axis(ds::CFDataset)::Vector{Float64}
     candidates = ("x", "lon", "longitude")
     for candidate in candidates
-        if haskey(ds, candidate)
+        if haskey(ds.dim, candidate)
             return sort!(Float64.(ds[candidate][:]))
         end
     end
@@ -1621,7 +1621,7 @@ Also sorts the vector to be increasing, to match `read_standardized`.
 function read_y_axis(ds::CFDataset)::Vector{Float64}
     candidates = ("y", "lat", "latitude")
     for candidate in candidates
-        if haskey(ds, candidate)
+        if haskey(ds.dim, candidate)
             return sort!(Float64.(ds[candidate][:]))
         end
     end
