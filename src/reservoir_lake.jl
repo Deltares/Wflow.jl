@@ -513,7 +513,8 @@ function update(lake::Lake, i, inflow, doy, timestepsecs)
 
         if si_factor_adj > 0.0
             outflow = pow(
-                -lakefactor + pow((pow(lakefactor, 2.0) + 2.0 * si_factor_adj), 0.5),
+                0.5 *
+                (-lakefactor + pow((pow(lakefactor, 2.0) + 4.0 * si_factor_adj), 0.5)),
                 2.0,
             )
         else

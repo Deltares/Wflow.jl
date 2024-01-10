@@ -50,10 +50,10 @@ end
     )
 
     Wflow.update(lake, 1, 2500.0, 181, 86400.0)
-    @test lake.outflow[1] ≈ 85.31903276150577
-    @test lake.totaloutflow[1] ≈ 7.371564430594098e6
-    @test lake.storage[1] ≈ 3.551103576940606e9
-    @test lake.waterlevel[1] ≈ 19.672569557695734
+    @test lake.outflow[1] ≈ 85.14292808113598
+    @test lake.totaloutflow[1] ≈ 7.356348986210149e6
+    @test lake.storage[1] ≈ 3.55111879238499e9
+    @test lake.waterlevel[1] ≈ 19.672653848925634
     @test lake.precipitation[1] ≈ 20.0
     @test lake.evaporation[1] ≈ 3.2
 end
