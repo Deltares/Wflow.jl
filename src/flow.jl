@@ -398,7 +398,7 @@ end
     dw::Vector{T} | "m"                    # Flow width [m]
     zi::Vector{T} | "m"                    # Pseudo-water table depth [m] (top of the saturated zone)
     exfiltwater::Vector{T} | "m Δt-1"      # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
-    recharge::Vector{T} | "m Δt-1"         # Net recharge to saturated store [m Δt⁻¹]
+    recharge::Vector{T} | "m2 Δt-1"        # Net recharge to saturated store [m² Δt⁻¹]
     ssf::Vector{T} | "m3 d-1"              # Subsurface flow [m³ d⁻¹]
     ssfin::Vector{T} | "m3 d-1"            # Inflow from upstream cells [m³ d⁻¹]
     ssfmax::Vector{T} | "m2 d-1"           # Maximum subsurface flow [m² d⁻¹]
