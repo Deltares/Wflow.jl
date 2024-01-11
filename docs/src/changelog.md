@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   specification that arrays are always flattened (this was not the case for variables stored
   as 2-dimensional arrays or as vector of SVectors).
 - Bump compat for NCDatasets to 0.13.
+- Use `kvfrac` for the computation of vertical saturated hydraulic conductivity at the
+  bottom of the soil layer, since `kvfrac` is also used for the computation of vertical
+  unsaturated flow. 
 
 ### Changed
 - For cyclic parameters different cyclic time inputs are supported (only one common cyclic
