@@ -191,7 +191,7 @@ scales (hillslope) in reality, not represented by the model resolution.
 | `dw` | drain width | m | - |
 | `zi` | pseudo-water table depth (top of the saturated zone) | m | - |
 | `exfiltwater` | exfiltration (groundwater above surface level, saturated excess conditions) | m Δt⁻¹ | - |
-| `recharge` | net recharge to saturated store  | m Δt⁻¹ | - |
+| `recharge` | net recharge to saturated store  | m``^2`` Δt⁻¹ | - |
 | `ssf` | subsurface flow  | m``^3`` d``{-1}``  | - |
 | `ssfin` | inflow from upstream cells | m``^3`` d``{-1}``  | - |
 | `ssfmax` | maximum subsurface flow | m``^2`` d``{-1}``  | - |
