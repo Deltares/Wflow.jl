@@ -20,6 +20,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   outflow variables are defined for period `Δt`, and not at `t1` and `t2` (instantaneous) as
   in the original mass balance equation of the Modified Puls Approach. Because of this, the
   terms of the quadratic equation (and solution) were fixed.
+- Use `kvfrac` for the computation of vertical saturated hydraulic conductivity at the
+  bottom of the soil layer, since `kvfrac` is also used for the computation of vertical
+  unsaturated flow. 
 
 ### Changed
 - For cyclic parameters different cyclic time inputs are supported (only one common cyclic
