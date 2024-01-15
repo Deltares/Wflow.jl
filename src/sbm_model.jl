@@ -160,7 +160,7 @@ function initialize_sbm_model(config::Config)
                 kh[i] = kh_layered_profile(sbm, khfrac[i], i, ksat_profile)
                 ssf[i] = kh[i] * (soilthickness[i] - zi[i]) * βₗ[i] * dw[i]
                 kh_max = 0.0
-                for j in eachindex(sbm.kv[i])
+                for j = 1:sbm.nlayers[i]
                     if j <= sbm.nlayers_kv[i]
                         kh_max += sbm.kv[i][j] * sbm.act_thickl[i][j]
                     else

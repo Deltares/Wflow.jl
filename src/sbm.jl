@@ -534,7 +534,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         end
         if ksat_profile == "layered"
             z_exp = soilthickness
-            nlayers_kv = fill(maxlayers, n)
+            nlayers_kv = nlayers
         else
             z_exp = ncread(
                 nc,
