@@ -546,7 +546,10 @@ function initialize_sbm(nc, config, riverfrac, inds)
             )
             nlayers_kv = fill(0, n)
             for i in eachindex(z_exp)
-                _, nlayers_kv[i] = findmin(abs.(z_exp[i] .- @view sumlayers[i][2:end]))
+                layers = @view sumlayers[i][2:nlayers[i]]
+                _, k = findmin(abs.(z_exp[i] .- layers))
+                nlayers_kv[i] = k
+                z_exp[i] = layers[k]
             end
         end
     else
@@ -988,7 +991,13 @@ function update_until_recharge(sbm::SBM, config)
                 actcapflux = actcapflux + toadd
             end
         end
-        deepksat = hydraulic_conductivity_at_depth(sbm, sbm.soilthickness[i], i, sbm.nlayers[i], ksat_profile)
+        deepksat = hydraulic_conductivity_at_depth(
+            sbm,
+            sbm.soilthickness[i],
+            i,
+            sbm.nlayers[i],
+            ksat_profile,
+        )
         deeptransfer = min(satwaterdepth, deepksat)
         actleakage = max(0.0, min(sbm.maxleakage[i], deeptransfer))
 

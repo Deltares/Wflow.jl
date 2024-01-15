@@ -157,11 +157,21 @@ function initialize_sbm_model(config::Config)
             ssf = zeros(n)
             ssfmax = zeros(n)
             for i in eachindex(ssf)
-                kh[i] =
-                    kh_layered_profile(sbm, khfrac[i], sbm.zi[i], i, ksat_profile)
+                kh[i] = kh_layered_profile(sbm, khfrac[i], i, ksat_profile)
                 ssf[i] = kh[i] * (soilthickness[i] - zi[i]) * βₗ[i] * dw[i]
-                kh_max = kh_layered_profile(sbm, khfrac[i], 0.0, i, ksat_profile)
-                ssfmax[i] = kh_max * soilthickness[i] * βₗ[i]
+                kh_max = 0.0
+                for j in eachindex(sbm.kv[i])
+                    if j <= sbm.nlayers_kv[i]
+                        kh_max += sbm.kv[i][j] * sbm.act_thickl[i][j]
+                    else
+                        zt = sbm.soilthickness[i] - sbm.z_exp[i]
+                        k = max(j - 1, 1)
+                        kh_max += sbm.kv[i][k] / sbm.f[i] * (1.0 - exp(-sbm.f[i] * zt))
+                        break
+                    end
+                end
+                kh_max = kh_max * khfrac[i] * 0.001 * 0.001
+                ssfmax[i] = kh_max * βₗ[i]
             end
         end
 
@@ -419,13 +429,8 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
     # update lateral subsurface flow domain (kinematic wave)
     if (ksat_profile == "layered") || (ksat_profile == "layered_exponential")
         for i in eachindex(lateral.subsurface.kh)
-            lateral.subsurface.kh[i] = kh_layered_profile(
-                vertical,
-                lateral.subsurface.khfrac[i],
-                vertical.zi[i],
-                i,
-                ksat_profile,
-            )
+            lateral.subsurface.kh[i] =
+                kh_layered_profile(vertical, lateral.subsurface.khfrac[i], i, ksat_profile)
         end
     end
     update(lateral.subsurface, network.land, network.frac_toriver, ksat_profile)
