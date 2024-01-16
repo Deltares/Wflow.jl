@@ -90,6 +90,10 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test BMI.get_grid_node_count(model, 4) == 5809
             @test BMI.get_grid_node_count(model, 5) == 50063
             @test BMI.get_grid_node_count(model, 6) == 50063
+            @test BMI.get_grid_size(model, 1) == 2
+            @test BMI.get_grid_size(model, 4) == 5809
+            @test BMI.get_grid_size(model, 5) == 50063
+            @test BMI.get_grid_size(model, 6) == 50063
             @test minimum(BMI.get_grid_x(model, 5, zeros(Float, 50063))) ≈
                   5.426666666666667f0
             @test maximum(BMI.get_grid_x(model, 5, zeros(Float, 50063))) ≈
