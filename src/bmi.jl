@@ -126,8 +126,6 @@ function BMI.get_input_var_names(model::Model)
                 end
             end
         end
-        # delete entries where field is nothing (e.g. for model without lakes or reservoirs)
-        deleteat!(var_names, findall(x -> isnothing(Wflow.param(model, x)), var_names))
         return var_names
     else
         @warn("TOML file does not contain section [API] to extract model var names")
@@ -394,27 +392,6 @@ end
 
 function save_state(model::Model)
     @unpack config, writer, clock = model
-    if haskey(config, "state") && haskey(config.state, "path_output")
-        @info "Write output states to NetCDF file `$(model.writer.state_nc_path)`."
-    end
-    write_netcdf_timestep(model, writer.state_dataset, writer.state_parameters)
-end
-
-function get_start_unix_time(model::Model)
-    datetime2unix(DateTime(model.config.starttime))
-end
-
-# extension of BMI functions (state handling and start time), required for OpenDA coupling.
-# May also be useful for other external software packages.
-function load_state(model::Model)
-    model = set_states(model)
-    return model
-end
-
-function save_state(model::Model)
-    @unpack config, writer, clock = model
-
-    rewind!(clock)
     if haskey(config, "state") && haskey(config.state, "path_output")
         @info "Write output states to NetCDF file `$(model.writer.state_nc_path)`."
     end
