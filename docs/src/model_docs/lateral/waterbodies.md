@@ -91,8 +91,8 @@ Inserting this equation in the mass balance gives:
 The solution for Q is then:
 
 ```math
-    Q = { \left( -LF + \sqrt{LF^{2} + 2  \left( SI - \dfrac{A*H_{0}}{\Delta t} \right)
-    } \right) }^{2} \text{for } SI > \dfrac{A H_{0}}{\Delta t}  \text{ and where}\\
+    Q = { \left( \dfrac{-LF + \sqrt{LF^{2} + 4  \left( SI - \dfrac{A*H_{0}}{\Delta t} \right)}}
+    {2} \right) }^{2} \text{for } SI > \dfrac{A H_{0}}{\Delta t}  \text{ and where}\\
     LF = \dfrac{A}{\Delta t \sqrt{\alpha}} \\~\\
     Q = 0 \text{ for } SI \leq \dfrac{A*H_{0}}{\Delta t}
 ```

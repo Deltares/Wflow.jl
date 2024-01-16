@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [unreleased]
+## v0.7.3 - 2024-01-12
 
 ### Fixed
 - Documentation: add leakage term to the wflow\_sbm figure, document external input
@@ -15,7 +15,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (BasicModelInterface.jl), including function arguments, return types and the BMI
   specification that arrays are always flattened (this was not the case for variables stored
   as 2-dimensional arrays or as vector of SVectors).
-- Bump compat for NCDatasets to 0.13.
+- Bump compat for NCDatasets to 0.13, 0.14.
+- The solution for lake outflow as part of the Modified Puls Approach. The inflow and
+  outflow variables are defined for period `Δt`, and not at `t1` and `t2` (instantaneous) as
+  in the original mass balance equation of the Modified Puls Approach. Because of this, the
+  terms of the quadratic equation (and solution) were fixed.
+- Use `kvfrac` for the computation of vertical saturated hydraulic conductivity at the
+  bottom of the soil layer, since `kvfrac` is also used for the computation of vertical
+  unsaturated flow. 
 
 ### Changed
 - For cyclic parameters different cyclic time inputs are supported (only one common cyclic

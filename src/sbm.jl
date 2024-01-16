@@ -928,7 +928,7 @@ function update_until_recharge(sbm::SBM, config)
                 actcapflux = actcapflux + toadd
             end
         end
-        deepksat = sbm.kv₀[i] * exp(-sbm.f[i] * sbm.soilthickness[i])
+        deepksat = sbm.kvfrac[i][end] * sbm.kv₀[i] * exp(-sbm.f[i] * sbm.soilthickness[i])
         deeptransfer = min(satwaterdepth, deepksat)
         actleakage = max(0.0, min(sbm.maxleakage[i], deeptransfer))
 
