@@ -194,6 +194,8 @@
     waterlevel_land::Vector{T} | "mm"
     # Water level river [mm]
     waterlevel_river::Vector{T} | "mm"
+    # Total water storage (excluding floodplain volume) [mm]
+    total_storage::Vector{T} | "mm"
 
     function SBM{T,N,M}(args...) where {T,N,M}
         equal_size_vectors(args)
@@ -597,6 +599,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         leaf_area_index = fill(mv, n),
         waterlevel_land = fill(mv, n),
         waterlevel_river = zeros(Float, n), #set to zero to account for cells outside river domain
+        total_storage = zeros(Float, n) # Set the total water storage from initialized values
     )
 
     return sbm
@@ -1047,5 +1050,37 @@ function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
         sbm.vwc_root[i] = vwc_root
         sbm.vwc_percroot[i] = vwc_percroot
         sbm.zi[i] = zi[i]
+    end
+end
+
+function update_total_water_storage(sbm::SBM, rnet, rrouting, lrouting)
+
+    # Set the total storage to zero
+    fill!(sbm.total_storage, 0)
+
+    # Burn the river routing values
+    sbm.total_storage[rnet] = (
+        rrouting.h_av .* sbm.riverfrac[rnet] * 0.001 # convert to mm
+    )
+
+    # Chunk the data for parallel computing
+    threaded_foreach(1:sbm.n, basesize=1000) do i
+
+        # Cumulate per vertical type
+        # Maybe re-categorize in the future
+        # Unique are those that are not always present
+        unique = sbm.glacierstore[i] * sbm.glacierfrac[i]
+        surface = (
+            sbm.snow[i] + sbm.snowwater[i] + sbm.canopystorage[i]
+        )
+        sub_surfuce = sbm.ustoredepth[i] + sbm.satwaterdepth[i]
+        lateral = (
+            lrouting.h_av[i] * (1 - sbm.riverfrac[i]) * 0.001 # convert to mm
+        )
+        
+        # Add everything to the total water storage
+        sbm.total_storage[i] += (
+            unique + surface + sub_surfuce + lateral
+        )
     end
 end
