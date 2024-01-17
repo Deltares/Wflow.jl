@@ -25,12 +25,13 @@ const map_structs = Dict(
     "set_value_at_indices" => SetValueAtIndices,
     "get_grid_type" => GetGridType,
     "get_var_grid" => GetVarGrid,
-    "get_grid_shape" => GetGridShape,
     "get_grid_rank" => GetGridRank,
     "get_grid_size" => GetGridSize,
     "get_grid_x" => GetGridX,
     "get_grid_y" => GetGridY,
     "get_grid_node_count" => GetGridNodeCount,
+    "get_grid_edge_count" => GetGridEdgeCount,
+    "get_grid_edge_nodes" => GetGridEdgeNodes,
     "finalize" => Finalize,
     "load_state" => LoadState,
     "save_state" => SaveState,
@@ -97,7 +98,11 @@ if n == 0
 elseif n == 1
     port = parse(Int, ARGS[1])
 else
-    throw(ArgumentError("More than one argument provided, while only one port number is allowed."))
+    throw(
+        ArgumentError(
+            "More than one argument provided, while only one port number is allowed.",
+        ),
+    )
 end
 ZMQ.bind(socket, "tcp://*:$port")
 

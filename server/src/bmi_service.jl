@@ -85,6 +85,7 @@ end
 struct GetValue
     fn::String
     name::String
+    dest::Vector{Wflow.Float}
 end
 
 struct GetValuePtr
@@ -95,6 +96,7 @@ end
 struct GetValueAtIndices
     fn::String
     inds::Vector{Int}
+    dest::Vector{Wflow.Float}
     name::String
 end
 
@@ -116,11 +118,6 @@ struct GetGridType
     grid::Int
 end
 
-struct GetGridShape
-    fn::String
-    grid::Int
-end
-
 struct GetGridRank
     fn::String
     grid::Int
@@ -134,16 +131,29 @@ end
 struct GetGridX
     fn::String
     grid::Int
+    x::Vector{Wflow.Float}
 end
 
 struct GetGridY
     fn::String
     grid::Int
+    y::Vector{Wflow.Float}
 end
 
 struct GetGridNodeCount
     fn::String
     grid::Int
+end
+
+struct GetGridEdgeCount
+    fn::String
+    grid::Int
+end
+
+struct GetGridEdgeNodes
+    fn::String
+    grid::Int
+    edge_nodes::Vector{Int}
 end
 
 struct GetVarGrid
@@ -259,8 +269,8 @@ function wflow_bmi(m::GetVarLocation, model::Wflow.Model)
 end
 
 function wflow_bmi(m::GetValue, model::Wflow.Model)
-    value = getfield(Wflow.BMI, Symbol(m.fn))(model, m.name)
-    return Dict("value" => value)
+    getfield(Wflow.BMI, Symbol(m.fn))(model, m.name, m.dest)
+    return Dict("value" => m.dest)
 end
 
 function wflow_bmi(m::GetValuePtr, model::Wflow.Model)
@@ -269,8 +279,8 @@ function wflow_bmi(m::GetValuePtr, model::Wflow.Model)
 end
 
 function wflow_bmi(m::GetValueAtIndices, model::Wflow.Model)
-    value_at_indices = getfield(Wflow.BMI, Symbol(m.fn))(model, m.name, m.inds)
-    return Dict("value_at_indices" => value_at_indices)
+    getfield(Wflow.BMI, Symbol(m.fn))(model, m.name, m.dest, m.inds)
+    return Dict("value_at_indices" => m.dest)
 end
 
 function wflow_bmi(m::SetValue, model::Wflow.Model)
@@ -288,11 +298,6 @@ function wflow_bmi(m::GetGridType, model::Wflow.Model)
     return Dict("grid_type" => grid_type)
 end
 
-function wflow_bmi(m::GetGridShape, model::Wflow.Model)
-    grid_shape = getfield(Wflow.BMI, Symbol(m.fn))(model, m.grid)
-    return Dict("grid_shape" => grid_shape)
-end
-
 function wflow_bmi(m::GetGridRank, model::Wflow.Model)
     grid_rank = getfield(Wflow.BMI, Symbol(m.fn))(model, m.grid)
     return Dict("grid_rank" => grid_rank)
@@ -304,18 +309,28 @@ function wflow_bmi(m::GetGridSize, model::Wflow.Model)
 end
 
 function wflow_bmi(m::GetGridX, model::Wflow.Model)
-    grid_x = getfield(Wflow.BMI, Symbol(m.fn))(model, m.grid)
-    return Dict("grid_x" => grid_x)
+    getfield(Wflow.BMI, Symbol(m.fn))(model, m.grid, m.x)
+    return Dict("grid_x" => m.x)
 end
 
 function wflow_bmi(m::GetGridY, model::Wflow.Model)
-    grid_y = getfield(Wflow.BMI, Symbol(m.fn))(model, m.grid)
-    return Dict("grid_y" => grid_y)
+    getfield(Wflow.BMI, Symbol(m.fn))(model, m.grid, m.y)
+    return Dict("grid_y" => m.y)
 end
 
 function wflow_bmi(m::GetGridNodeCount, model::Wflow.Model)
     grid_node_count = getfield(Wflow.BMI, Symbol(m.fn))(model, m.grid)
     return Dict("grid_node_count" => grid_node_count)
+end
+
+function wflow_bmi(m::GetGridEdgeCount, model::Wflow.Model)
+    grid_edge_count = getfield(Wflow.BMI, Symbol(m.fn))(model, m.grid)
+    return Dict("grid_edge_count" => grid_edge_count)
+end
+
+function wflow_bmi(m::GetGridEdgeNodes, model::Wflow.Model)
+    getfield(Wflow.BMI, Symbol(m.fn))(model, m.grid, m.edge_nodes)
+    return Dict("grid_edge_nodes" => m.edge_nodes)
 end
 
 function wflow_bmi(m::GetVarGrid, model::Wflow.Model)
