@@ -338,6 +338,9 @@ function BMI.get_grid_node_count(model::Model, grid::Int)
     return length(active_indices(model.network, grids[grid]))
 end
 
+function BMI.get_grid_size(model::Model, grid::Int)
+    return length(active_indices(model.network, grids[grid]))
+end
 function BMI.get_grid_edge_count(model::Model, grid::Int)
     @unpack network = model
     if grid == 4
