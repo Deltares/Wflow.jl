@@ -12,6 +12,7 @@
         targetminfrac = [0.2425554726620697],
         precipitation = [4.2],
         evaporation = [1.5],
+        actevap = [1.5],
         outflow = [NaN],
         percfull = [NaN],
         demandrelease = [NaN],

@@ -14,6 +14,7 @@
     demandrelease::Vector{T} | "m3 s-1"                 # minimum (environmental) flow released from reservoir [m³ s⁻¹]
     precipitation::Vector{T}                            # average precipitation for reservoir area [mm Δt⁻¹]
     evaporation::Vector{T}                              # average evaporation for reservoir area [mm Δt⁻¹]
+    actevap::Vector{T}                                  # average actual evaporation for reservoir area [mm Δt⁻¹]
 
     function SimpleReservoir{T}(args...) where {T}
         equal_size_vectors(args)
@@ -148,6 +149,7 @@ function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, Δt)
         demandrelease = fill(mv, n),
         precipitation = fill(mv, n),
         evaporation = fill(mv, n),
+        actevap = fill(mv, n),
     )
 
     return reservoirs,
@@ -168,15 +170,13 @@ element rather than all at once.
 """
 function update(res::SimpleReservoir, i, inflow, timestepsecs)
 
-    vol = max(
-        0.0,
-        (
-            res.volume[i] +
-            (inflow * timestepsecs) +
-            (res.precipitation[i] * (timestepsecs / res.Δt) / 1000.0) * res.area[i] -
-            (res.evaporation[i] * (timestepsecs / res.Δt) / 1000.0) * res.area[i]
-        ),
-    )
+    # limit lake evaporation based on total available volume [m³]
+    precipitation = 0.001 * res.precipitation[i] * (timestepsecs / res.Δt) * res.area[i]
+    available_volume = res.volume[i] + inflow * timestepsecs + precipitation
+    evap = 0.001 * res.evaporation[i] * (timestepsecs / res.Δt) * res.area[i]
+    actevap = min(available_volume, evap) # [m³/timestepsecs]
+
+    vol = res.volume[i] + (inflow * timestepsecs) + precipitation - actevap
 
     percfull = vol / res.maxvolume[i]
     # first determine minimum (environmental) flow using a simple sigmoid curve to scale for target level
@@ -199,6 +199,7 @@ function update(res::SimpleReservoir, i, inflow, timestepsecs)
     res.demandrelease[i] = demandrelease / timestepsecs
     res.percfull[i] = percfull
     res.volume[i] = vol
+    res.actevap[i] += 1000.0 * (actevap / res.area[i])
 
     return res
 end

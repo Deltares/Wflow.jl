@@ -266,6 +266,7 @@ function update(sf::SurfaceFlowRiver, network, inflow_wb, doy)
     if !isnothing(sf.reservoir)
         sf.reservoir.inflow .= 0.0
         sf.reservoir.totaloutflow .= 0.0
+        sf.reservoir.actevap .= 0.0
     end
     if !isnothing(sf.lake)
         sf.lake.inflow .= 0.0
@@ -899,6 +900,7 @@ function update(
     if !isnothing(sw.reservoir)
         sw.reservoir.inflow .= 0.0
         sw.reservoir.totaloutflow .= 0.0
+        sw.reservoir.actevap .= 0.0
     end
     if !isnothing(sw.lake)
         sw.lake.inflow .= 0.0
@@ -1140,6 +1142,7 @@ function update(
     if !isnothing(swr.reservoir)
         swr.reservoir.inflow .= 0.0
         swr.reservoir.totaloutflow .= 0.0
+        swr.reservoir.actevap .= 0.0
     end
     if !isnothing(swr.lake)
         swr.lake.inflow .= 0.0
