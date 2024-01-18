@@ -116,7 +116,7 @@ sh = [
     Wflow.update(lake, 1, 500.0, 15, 86400.0)
     Wflow.update(lake, 2, 500.0, 15, 86400.0)
     @test lake.outflow ≈ [0.0, 239.66710359986183] atol = 1e-2
-    @test lake.totaloutflow ≈ [-2.2446764487487033e7, 2.070723775102806e7] atol = 1e3
+    @test lake.totaloutflow ≈ [-2.2446764487487033e7, 4.3154002238515094e7] atol = 1e3
     @test lake.storage ≈ [1.3431699662524352e9, 2.6073035986708355e8] atol = 1e4
     @test lake.waterlevel ≈ [395.239782021054, 395.21771942667266] atol = 1e-2
     @test lake.actevap ≈ [2.0, 2.0]

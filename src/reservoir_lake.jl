@@ -177,6 +177,7 @@ function update(res::SimpleReservoir, i, inflow, timestepsecs)
     actevap = min(available_volume, evap) # [m³/timestepsecs]
 
     vol = res.volume[i] + (inflow * timestepsecs) + precipitation - actevap
+    vol = max(vol, 0.0)
 
     percfull = vol / res.maxvolume[i]
     # first determine minimum (environmental) flow using a simple sigmoid curve to scale for target level
@@ -514,14 +515,17 @@ function update(lake::Lake, i, inflow, doy, timestepsecs)
         si_factor_adj = si_factor - lake.area[i] * lake.threshold[i] / timestepsecs
         # Calculate the new lake outflow/waterlevel/storage
         if si_factor_adj > 0.0
-            outflow = pow(
-                0.5 *
-                (-lakefactor + pow((pow(lakefactor, 2.0) + 4.0 * si_factor_adj), 0.5)),
-                2.0,
-            )
+            quadratic_sol_term =
+                -lakefactor + pow((pow(lakefactor, 2.0) + 4.0 * si_factor_adj), 0.5)
+            if quadratic_sol_term > 0.0
+                outflow = pow(0.5 * quadratic_sol_term, 2.0)
+            else
+                outflow = 0.0
+            end
         else
             outflow = 0.0
         end
+        outflow = min(outflow, si_factor)
         storage = (si_factor - outflow) * timestepsecs
         waterlevel = storage / lake.area[i]
     end
@@ -553,10 +557,13 @@ function update(lake::Lake, i, inflow, doy, timestepsecs)
                 end
             end
         end
-
-        storage =
-            lake.storage[i] + inflow * timestepsecs + precipitation - actevap -
-            outflow * timestepsecs
+        storage_input = (lake.storage[i] + precipitation - actevap) / timestepsecs + inflow
+        if diff_wl >= 0.0
+            outflow = min(outflow, storage_input)
+        else
+            outflow = max(outflow, -lake.storage[lo])
+        end
+        storage = (storage_input - outflow) * timestepsecs
 
         # update storage and outflow for lake with rating curve of type 1.
         if lake.outflowfunc[i] == 1
@@ -583,6 +590,7 @@ function update(lake::Lake, i, inflow, doy, timestepsecs)
 
             # update values for the lower lake in place
             lake.outflow[lo] = -outflow
+            lake.totaloutflow[lo] += -outflow * timestepsecs
             lake.storage[lo] = lowerlake_storage
             lake.waterlevel[lo] = lowerlake_waterlevel
         end
