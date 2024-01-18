@@ -270,6 +270,7 @@ function update(sf::SurfaceFlowRiver, network, inflow_wb, doy)
     if !isnothing(sf.lake)
         sf.lake.inflow .= 0.0
         sf.lake.totaloutflow .= 0.0
+        sf.lake.actevap .= 0.0
     end
 
     Δt, its = stable_timestep(sf)
@@ -902,6 +903,7 @@ function update(
     if !isnothing(sw.lake)
         sw.lake.inflow .= 0.0
         sw.lake.totaloutflow .= 0.0
+        sw.lake.actevap .= 0.0
     end
     if !isnothing(sw.floodplain)
         sw.floodplain.q_av .= 0.0
@@ -1142,6 +1144,7 @@ function update(
     if !isnothing(swr.lake)
         swr.lake.inflow .= 0.0
         swr.lake.totaloutflow .= 0.0
+        swr.lake.actevap .= 0.0
     end
     swr.q_av .= 0.0
     swr.h_av .= 0.0

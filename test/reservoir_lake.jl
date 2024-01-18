@@ -46,6 +46,7 @@ end
         waterlevel = [18.5],
         precipitation = [20.0],
         evaporation = [3.2],
+        actevap = [3.2],
         outflow = [NaN],
     )
 
@@ -90,6 +91,7 @@ sh = [
         waterlevel = [395.03027, 394.87833],
         precipitation = [10.0, 10.0],
         evaporation = [2.0, 2.0],
+        actevap = [2.0, 2.0],
         outflow = [NaN, NaN],
         storage = Wflow.initialize_storage(
             [2, 2],
@@ -139,6 +141,7 @@ end
         waterlevel = [397.75],
         precipitation = [10.0],
         evaporation = [2.0],
+        actevap = [2.0],
         outflow = [NaN],
         storage = [410_760_000],
     )

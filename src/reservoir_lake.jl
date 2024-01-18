@@ -222,6 +222,7 @@ end
     totaloutflow::Vector{T} | "m3"              # total outflow lake [m³]
     precipitation::Vector{T}                    # average precipitation for lake area [mm Δt⁻¹]
     evaporation::Vector{T}                      # average evaporation for lake area [mm Δt⁻¹]
+    actevap::Vector{T}                          # average actual evapotranspiration for lake area [mm Δt⁻¹]
 
     function Lake{T}(args...) where {T}
         equal_size_vectors(args)
@@ -415,6 +416,7 @@ function initialize_lake(config, nc, inds_riv, nriv, pits, Δt)
         totaloutflow = fill(mv, n),
         precipitation = fill(mv, n),
         evaporation = fill(mv, n),
+        actevap = fill(mv, n),
     )
 
     return lakes,
@@ -495,22 +497,21 @@ function update(lake::Lake, i, inflow, doy, timestepsecs)
     lo = lake.lowerlake_ind[i]
     has_lowerlake = lo != 0
 
+    # limit lake evaporation based on total available volume [m³]
+    precipitation = 0.001 * lake.precipitation[i] * (timestepsecs / lake.Δt) * lake.area[i]
+    available_volume = lake.storage[i] + inflow * timestepsecs + precipitation
+    evap = 0.001 * lake.evaporation[i] * (timestepsecs / lake.Δt) * lake.area[i]
+    actevap = min(available_volume, evap) # [m³/timestepsecs]
+
     ### Modified Puls Approach (Burek et al., 2013, LISFLOOD) ###
     # outflowfunc = 3
     # Calculate lake factor and SI parameter
     if lake.outflowfunc[i] == 3
         lakefactor = lake.area[i] / (timestepsecs * pow(lake.b[i], 0.5))
-        si_factor =
-            (
-                lake.storage[i] +
-                (lake.precipitation[i] - lake.evaporation[i]) *
-                (timestepsecs / lake.Δt) *
-                lake.area[i] / 1000.0
-            ) / timestepsecs + inflow
-        #Adjust SIFactor for ResThreshold != 0
+        si_factor = (lake.storage[i] + precipitation - actevap) / timestepsecs + inflow
+        # Adjust SIFactor for ResThreshold != 0
         si_factor_adj = si_factor - lake.area[i] * lake.threshold[i] / timestepsecs
-        #Calculate the new lake outflow/waterlevel/storage
-
+        # Calculate the new lake outflow/waterlevel/storage
         if si_factor_adj > 0.0
             outflow = pow(
                 0.5 *
@@ -553,10 +554,7 @@ function update(lake::Lake, i, inflow, doy, timestepsecs)
         end
 
         storage =
-            lake.storage[i] +
-            inflow * timestepsecs +
-            (lake.precipitation[i] / 1000.0) * (timestepsecs / lake.Δt) * lake.area[i] -
-            (lake.evaporation[i] / 1000.0) * (timestepsecs / lake.Δt) * lake.area[i] -
+            lake.storage[i] + inflow * timestepsecs + precipitation - actevap -
             outflow * timestepsecs
 
         # update storage and outflow for lake with rating curve of type 1.
@@ -596,6 +594,7 @@ function update(lake::Lake, i, inflow, doy, timestepsecs)
     lake.inflow[i] += inflow * timestepsecs
     lake.totaloutflow[i] += outflow * timestepsecs
     lake.storage[i] = storage
+    lake.actevap[i] += 1000.0 * (actevap / lake.area[i])
 
     return lake
 end
