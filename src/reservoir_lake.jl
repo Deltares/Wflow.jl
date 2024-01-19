@@ -535,14 +535,17 @@ function update(lake::Lake, i, inflow, doy, timestepsecs)
 
         diff_wl = has_lowerlake ? lake.waterlevel[i] - lake.waterlevel[lo] : 0.0
 
+        storage_input = (lake.storage[i] + precipitation - actevap) / timestepsecs + inflow
         if lake.outflowfunc[i] == 1
             outflow =
                 interpolate_linear(lake.waterlevel[i], lake.hq[i].H, lake.hq[i].Q[:, doy])
+            outflow = min(outflow, storage_input)
         else
             if diff_wl >= 0.0
                 if lake.waterlevel[i] > lake.threshold[i]
                     outflow =
                         lake.b[i] * pow((lake.waterlevel[i] - lake.threshold[i]), lake.e[i])
+                    outflow = min(outflow, storage_input)
                 else
                     outflow = Float(0)
                 end
@@ -552,16 +555,11 @@ function update(lake::Lake, i, inflow, doy, timestepsecs)
                         -1.0 *
                         lake.b[i] *
                         pow((lake.waterlevel[lo] - lake.threshold[i]), lake.e[i])
+                    outflow = max(outflow, -lake.storage[lo])
                 else
                     outflow = Float(0)
                 end
             end
-        end
-        storage_input = (lake.storage[i] + precipitation - actevap) / timestepsecs + inflow
-        if diff_wl >= 0.0
-            outflow = min(outflow, storage_input)
-        else
-            outflow = max(outflow, -lake.storage[lo])
         end
         storage = (storage_input - outflow) * timestepsecs
 
