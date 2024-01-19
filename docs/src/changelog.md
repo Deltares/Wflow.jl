@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Added missing BMI function `get_grid_size`, it is used for unstructured grids, for example
   to get the length of arrays returned by BMI functions `get_grid_x` and `get_grid_y`.
+- Added a check for the solution of the quadratic equation as part of the Modified Puls
+  approach for lake outflow. Lower limit should be zero (very small negative values can
+  occur).
+- Limit lake evaporation (added variable `actevap`) and lake outflow to prevent negative
+  lake storage. The variable `actevap` has also been added to the reservoir module.
 
 ## v0.7.3 - 2024-01-12
 
