@@ -543,19 +543,19 @@ function update(lake::Lake, i, inflow, doy, timestepsecs)
         else
             if diff_wl >= 0.0
                 if lake.waterlevel[i] > lake.threshold[i]
-                    outflow =
-                        lake.b[i] * pow((lake.waterlevel[i] - lake.threshold[i]), lake.e[i])
-                    outflow = min(outflow, storage_input)
+                    Δh = lake.waterlevel[i] - lake.threshold[i]
+                    outflow = lake.b[i] * pow(Δh, lake.e[i])
+                    maxflow = (Δh * lake.area[i]) / timestepsecs
+                    outflow = min(outflow, maxflow)
                 else
                     outflow = Float(0)
                 end
             else
                 if lake.waterlevel[lo] > lake.threshold[i]
-                    outflow =
-                        -1.0 *
-                        lake.b[i] *
-                        pow((lake.waterlevel[lo] - lake.threshold[i]), lake.e[i])
-                    outflow = max(outflow, -lake.storage[lo])
+                    Δh = lake.waterlevel[lo] - lake.threshold[i]
+                    outflow = -1.0 * lake.b[i] * pow(Δh, lake.e[i])
+                    maxflow = (Δh * lake.area[lo]) / timestepsecs
+                    outflow = max(outflow, -maxflow)
                 else
                     outflow = Float(0)
                 end
