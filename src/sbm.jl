@@ -194,7 +194,7 @@
     waterlevel_land::Vector{T} | "mm"
     # Water level river [mm]
     waterlevel_river::Vector{T} | "mm"
-    # Total water storage (excluding floodplain volume) [mm]
+    # Total water storage (excluding floodplain volume, lakes and reservoirs) [mm]
     total_storage::Vector{T} | "mm"
 
     function SBM{T,N,M}(args...) where {T,N,M}
@@ -1053,14 +1053,43 @@ function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
     end
 end
 
-function update_total_water_storage(sbm::SBM, rnet, rrouting, lrouting)
+@doc """
+Update the total water storage per cell at the end of a timestep.
+
+Takes the following parameters:
+- sbm:
+    The vertical concept (SBM struct)
+- river_network:
+    The indices of the river cells in relation to the active cells, i.e. model.network.index_river
+- cell_xsize:
+    Size in X direction of the cells acquired from model.network.land.xl
+- cell_ysize:
+    Size in Y direction of the cells acquired from model.network.land.yl
+- river_routing:
+    The river routing struct, i.e. model.lateral.river
+- land_routing:
+    The land routing struct, i.e. model.lateral.land
+"""
+function update_total_water_storage(
+    sbm::SBM, 
+    river_network, 
+    cell_xsize, 
+    cell_ysize, 
+    river_routing, 
+    land_routing
+)
+    # Get length active river cells
+    nriv = length(river_network)
 
     # Set the total storage to zero
     fill!(sbm.total_storage, 0)
 
     # Burn the river routing values
-    sbm.total_storage[rnet] = (
-        rrouting.h_av .* sbm.riverfrac[rnet] * 0.001 # convert to mm
+    sbm.total_storage[river_network] = (
+        ( river_routing.h_av[1:nriv] .* river_routing.width[1:nriv] .* 
+        river_routing.dl[1:nriv] ) ./
+        ( cell_xsize[river_network] .* cell_ysize[river_network] ) * 
+        1000 # Convert to mm
     )
 
     # Chunk the data for parallel computing
@@ -1068,19 +1097,18 @@ function update_total_water_storage(sbm::SBM, rnet, rrouting, lrouting)
 
         # Cumulate per vertical type
         # Maybe re-categorize in the future
-        # Unique are those that are not always present
-        unique = sbm.glacierstore[i] * sbm.glacierfrac[i]
         surface = (
+            sbm.glacierstore[i] * sbm.glacierfrac[i] +
             sbm.snow[i] + sbm.snowwater[i] + sbm.canopystorage[i]
         )
-        sub_surfuce = sbm.ustoredepth[i] + sbm.satwaterdepth[i]
+        sub_surface = sbm.ustoredepth[i] + sbm.satwaterdepth[i]
         lateral = (
-            lrouting.h_av[i] * (1 - sbm.riverfrac[i]) * 0.001 # convert to mm
+            land_routing.h_av[i] * (1 - sbm.riverfrac[i]) * 1000 # convert to mm
         )
         
         # Add everything to the total water storage
         sbm.total_storage[i] += (
-            unique + surface + sub_surfuce + lateral
+            surface + sub_surface + lateral
         )
     end
 end

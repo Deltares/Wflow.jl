@@ -81,7 +81,7 @@ end
     @test sbm.soilevap[50063] == 0.0
     @test sbm.snow[5] ≈ 3.592840840467347f0
     @test sbm.total_storage[50063] ≈ 559.70849973344f0
-    @test sbm.total_storage[429] ≈ 583.9800667536956f0 # river cell
+    @test sbm.total_storage[429] ≈ 597.4578475404879f0 # river cell
 end
 
 # run the second timestep
@@ -95,7 +95,7 @@ model = Wflow.run_timestep(model)
     @test sbm.soilevap[50063] ≈ 0.006358004660566856f0
     @test sbm.snow[5] ≈ 3.667748983774868f0
     @test sbm.total_storage[50063] ≈ 559.7935411649405f0
-    @test sbm.total_storage[429] ≈ 589.7026699582976f0 # river cell
+    @test sbm.total_storage[429] ≈ 617.0062092646873f0 # river cell
 end
 
 @testset "subsurface flow" begin

@@ -116,7 +116,7 @@ specific_leaf = "Sl"
 | **`leaf_area_index`** | leaf area index | m``^2`` m``{-2}`` | - |
 | `waterlevel_land` | water level land | mm | - |
 | `waterlevel_river` | water level river | mm | - |
-| `total_storage` | total water storage (excluding floodplains) | mm | - |
+| `total_storage` | total water storage (excluding floodplains, lakes and reservoirs) | mm | - |
 
 
 ## [HBV](@id params_hbv)
