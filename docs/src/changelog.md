@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Fixed
+
+### Changed
+
+### Added
+- Total water storage as an export variable for `SBM` concept. This is the total water stored
+  per grid cell in millimeters. Excluded from this variable are the floodplain, lakes and
+  reservoirs.
+
 ## v0.7.3 - 2024-01-12
 
 ### Fixed
