@@ -41,6 +41,9 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test BMI.get_var_nbytes(model, "lateral.river.q") ==
                   length(model.lateral.river.q) * sizeof(Float)
             @test BMI.get_var_location(model, "lateral.river.q") == "node"
+            @test_throws ErrorException(
+                "lateral.land.alpha_pow not listed as variable for BMI exchange",
+            ) BMI.get_var_itemsize(model, "lateral.land.alpha_pow")
         end
 
         model = BMI.update(model)
