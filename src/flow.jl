@@ -955,7 +955,7 @@ const dirs = (:yd, :xd, :xu, :yu)
     θ::T | "-" | 0 | "scalar"                               # weighting factor (de Almeida et al., 2012)
     α::T | "-" | 0 | "scalar"                               # stability coefficient (de Almeida et al., 2012)
     h_thresh::T | "m" | 0 | "scalar"                        # depth threshold for calculating flow
-    Δt::T | "s" | 0 | "scalar"                              # model time step [s]
+    Δt::T | "s" | 0 | "none" | "none"                       # model time step [s]
     qy0::Vector{T} | "m3 s-1" | _ | "edge"                  # flow in y direction at previous time step
     qx0::Vector{T} | "m3 s-1" | _ | "edge"                  # flow in x direction at previous time step
     qx::Vector{T} | "m3 s-1" | _ | "edge"                   # flow in x direction
