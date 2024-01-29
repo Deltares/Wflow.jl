@@ -16,6 +16,20 @@ external netCDF variable `Sl`:
 specific_leaf = "Sl"
 ```
 
+Different [vertical hydraulic conductivity depth profiles](@ref soil): `exponential`
+(default), `exponential_constant`, `layered` and `layered_exponential` can be provided
+through the TOML file. Below an example for the `exponential_constant` profile:
+
+```toml
+[input.vertical]
+ksat_profile = "exponential_constant"
+```
+
+For the `exponential` profile the input parameters `kv₀` and `f` are used. For the
+`exponential_constant` profile `kv₀` and `f` are used, and `z_exp` is required as input. For
+the `layered` profile, input parameter `kv` is used, and for the `layered_exponential`
+profile `kv` is used and `z_exp` is required as input.
+
 |  parameter | description    | unit | default |
 |:---------------| --------------- | ---------------------- | ----- |
 | **`cfmax`**  | degree-day factor | mm ᵒC``^{-1}`` Δt``^{-1}`` | 3.75653 mm ᵒC``^{-1}`` day``^{-1}``  |
@@ -33,7 +47,9 @@ specific_leaf = "Sl"
 | **`θₛ`** (`theta_s`) | saturated water content (porosity) | - | 0.6  |
 | **`θᵣ`** (`theta_r`) | residual water content | - | 0.01  |
 | **`kv₀`** (`kv_0`) | Vertical hydraulic conductivity at soil surface | mm Δt``^{-1}`` | 3000.0 mm day``^{-1}``|
-| **`f`** | scaling parameter (controls exponential decline of kv₀) | mm``^{-1}`` | 0.001  |
+| **`kv`** |  Vertical hydraulic conductivity per soil layer | mm Δt``^{-1}`` | 1000.0 mm day``^{-1}``|
+| **`f`** | scaling parameter (controls exponential decline of `kv₀`) | mm``^{-1}`` | 0.001  |
+| **`z_exp`** | Depth from soil surface for which exponential decline of `kv₀` is valid | mm | -  |
 | **`hb`** | air entry pressure of soil (Brooks-Corey) | cm | 10.0  |
 | **`soilthickness`** | soil thickness | mm | 2000.0  |
 | **`infiltcappath`** | infiltration capacity of the compacted areas  | mm Δt``^{-1}`` | 10.0 mm day``^{-1}`` |
@@ -59,6 +75,7 @@ specific_leaf = "Sl"
 | `n`      |  number of grid cells    | - | - |
 | `nlayers`      |  number of soil layers    | - | - |
 | `n_unsatlayers`      |  number of unsaturated soil layers    | - | - |
+| `nlayers_kv`      |  number of soil layers with vertical hydraulic conductivity value `kv` | - | - |
 | `riverfrac`      |  fraction of river    | - | - |
 | `act_thickl`      |  thickness of soil layers    | mm | - |
 | `sumlayers`      |  cumulative sum of soil layers thickness, starting at soil surface | mm | - |
@@ -69,7 +86,6 @@ specific_leaf = "Sl"
 | `zi`|  pseudo-water table depth (top of the saturated zone) | mm | - |
 | `soilwatercapacity`|  soilwater capacity | mm | - |
 | `canopystorage`|  canopy storage | mm | - |
-| `canopygapfraction` | canopygapfraction | - | - |
 |**`precipitation`** | precipitation | mm Δt``^{-1}``|  - |
 | **`temperature`** | temperature | ᵒC | - |
 | **`potential_evaporation`** | potential evaporation | mm Δt``^{-1}`` | - |
@@ -111,7 +127,6 @@ specific_leaf = "Sl"
 | `snow` | snow storage  | mm | - |
 | `snowwater` | liquid water content in the snow pack  | mm | - |
 | `rainfallplusmelt` | snowmelt + precipitation as rainfall | mm Δt``^{-1}`` | - |
-| `glacierstore` | water within the glacier | mm | - |
 | `tsoil` | top soil temperature | ᵒC | - |
 | **`leaf_area_index`** | leaf area index | m``^2`` m``{-2}`` | - |
 | `waterlevel_land` | water level land | mm | - |

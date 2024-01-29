@@ -350,14 +350,28 @@ t``^{-1}``]) is in that case controlled by the saturated hydraulic conductivity 
 ```math
     st=K_{\mathit{sat}}\frac{U_{s}}{S_{d}}
 ```
-Saturated conductivity (``K_{sat}`` [mm t``^{-1}``]) declines with soil depth (``z`` [mm])
-in the model according to:
+
+Four different saturated hydraulic conductivity depth profiles (`ksat_profile`) are
+available and a `ksat_profile` can be specified in the TOML file as follows:
+
+```toml
+[input.vertical]
+ksat_profile = "exponential_constant" # optional, one of ("exponential", "exponential_constant", "layered", "layered_exponential"), default is "exponential"
+```
+
+Soil measurements are often available for about the upper 1.5-2 m of the soil column to
+estimate the saturated hydraulic conductivity, while these measurements are often lacking
+for soil depths beyond 1.5-2 m. These different profiles allow to extent the saturated
+hydraulic conductivity profile based on measurements (either an exponential fit or hydraulic
+conductivity value per soil layer) with an exponential of constant profile. By default, with
+`ksat_profile` "exponential", the saturated hydraulic conductivity (``K_{sat}`` [mm
+t``^{-1}``]) declines with soil depth (``z`` [mm]) in the model according to:
 
 ```math
-    K_{sat}=K_{0}e^{(-fz)}
+    K_{sat}=K_{0}e^{(-fz)},
 ```
-where ``K_{0}`` [mm t``^{-1}``] is the saturated conductivity at the soil surface and ``f``
-is a scaling parameter [mm``^{-1}``].
+where ``K_{0}`` [mm t``^{-1}``] is the saturated hydraulic conductivity at the soil surface
+and ``f`` is a scaling parameter [mm``^{-1}``].
 
 The plot below shows the relation between soil depth ``z`` and saturated hydraulic
 conductivity ``K_{sat}`` for different values of ``f``.
@@ -384,6 +398,25 @@ conductivity ``K_{sat}`` for different values of ``f``.
         fig                                                                                 # hide
     end                                                                                     # hide
 ```
+
+With `ksat_profile` "exponential\_constant", ``K_{sat}`` declines exponentially with soil
+depth ``z`` until ``z_\mathrm{exp}`` [mm] below the soil surface, and stays constant at and
+beyond soil depth ``z_\mathrm{exp}``:
+
+```math
+    K_{sat} = \begin{cases}
+    K_{0}e^{(-fz)} & \text{if $z < z_\mathrm{exp}$}\\
+    K_{0}e^{(-fz_\mathrm{exp})} & \text{if $z \ge z_\mathrm{exp}$}.
+    \end{cases}
+```
+
+It is also possible to provide a ``K_{sat}`` value per soil layer by specifying
+`ksat_profile` "layered", these ``K_{sat}`` values are used directly to compute the vertical
+transfer of water between soil layers and to the saturated store ``S``. Finally, with the
+`ksat_profile` "layered\_exponential" a ``K_{sat}`` value per soil layer is used until depth
+``z_\mathrm{exp}`` below the soil surface, and beyond ``z_\mathrm{exp}`` an exponential
+decline of ``K_{sat}`` (of the soil layer with bottom ``z_\mathrm{exp}``) controlled by
+``f`` occurs.
 
 ### Infiltration
 
