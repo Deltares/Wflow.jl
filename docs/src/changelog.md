@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Added missing BMI function `get_grid_size`, it is used for unstructured grids, for example
   to get the length of arrays returned by BMI functions `get_grid_x` and `get_grid_y`.
+  
+### Changed
+
+### Added
+- Total water storage as an export variable for `SBM` concept. This is the total water stored
+  per grid cell in millimeters. Excluded from this variable are the floodplain, lakes and
+  reservoirs.
 
 ### Changed
 - Stop exposing scalar variables through BMI. The `BMI.get_value_ptr` function was
