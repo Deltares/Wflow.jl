@@ -12,9 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   to get the length of arrays returned by BMI functions `get_grid_x` and `get_grid_y`.
 
 ### Changed
-- Omitted the exposion of scalar variables through BMI. The `BMI.get_value_ptr` function was
+- Stop exposing scalar variables through BMI. The `BMI.get_value_ptr` function was
   not working correctly for scalar model variables (a `view` was applied). Only a few scalar
-  model parameters are defined, and it is not expected that exposion of these variables is
+  model parameters are defined, and it is not expected that exposing these variables is
   required (e.g. for model coupling) while code changes for these variables (including
   struct fields) are required.
 
