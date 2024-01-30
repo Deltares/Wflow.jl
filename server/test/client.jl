@@ -50,22 +50,22 @@ end
         msg = Dict("fn" => "get_component_name")
         @test request(msg) == Dict("component_name" => "sbm")
         msg = Dict("fn" => "get_input_item_count")
-        @test request(msg) == Dict("input_item_count" => 183)
+        @test request(msg) == Dict("input_item_count" => 180)
         msg = Dict("fn" => "get_output_item_count")
-        @test request(msg) == Dict("output_item_count" => 183)
+        @test request(msg) == Dict("output_item_count" => 180)
         msg = Dict("fn" => "get_input_var_names")
-        @test request(msg)["input_var_names"][[1, 5, 120, 174]] == [
+        @test request(msg)["input_var_names"][[1, 5, 151, 175]] == [
             "vertical.nlayers",
             "vertical.θᵣ",
-            "lateral.subsurface.θᵣ",
-            "lateral.river.reservoir.targetminfrac",
+            "lateral.river.q",
+            "lateral.river.reservoir.outflow",
         ]
         msg = Dict("fn" => "get_output_var_names")
-        @test request(msg)["output_var_names"][[1, 5, 120, 174]] == [
+        @test request(msg)["output_var_names"][[1, 5, 151, 175]] == [
             "vertical.nlayers",
             "vertical.θᵣ",
-            "lateral.subsurface.θᵣ",
-            "lateral.river.reservoir.targetminfrac",
+            "lateral.river.q",
+            "lateral.river.reservoir.outflow",
         ]
     end
 
@@ -93,7 +93,7 @@ end
         vwc_1_itemsize = request(msg)["var_itemsize"]
         vwc_1_size = Int(vwc_1_nbytes / vwc_1_itemsize)
         msg = Dict("fn" => "get_var_grid", "name" => "lateral.river.h")
-        @test request(msg) == Dict("var_grid" => 4)
+        @test request(msg) == Dict("var_grid" => 3)
     end
 
     @testset "get and set functions" begin
@@ -184,25 +184,25 @@ end
 
     @testset "model grid functions" begin
         msg = Dict("fn" => "get_grid_type", "grid" => 0)
-        @test request(msg) == Dict("grid_type" => "scalar")
+        @test request(msg) == Dict("grid_type" => "points")
         msg = Dict("fn" => "get_grid_rank", "grid" => 0)
-        @test request(msg) == Dict("grid_rank" => 0)
-        msg = Dict("fn" => "get_grid_size", "grid" => 5)
+        @test request(msg) == Dict("grid_rank" => 2)
+        msg = Dict("fn" => "get_grid_size", "grid" => 4)
         grid_size = request(msg)["grid_size"]
         @test grid_size == 50063
-        msg = Dict("fn" => "get_grid_x", "grid" => 5, "x" => fill(0.0, grid_size))
+        msg = Dict("fn" => "get_grid_x", "grid" => 4, "x" => fill(0.0, grid_size))
         @test request(msg)["grid_x"][1:3] ≈
               [6.826666666666673, 6.810000000000006, 6.81833333333334]
-        msg = Dict("fn" => "get_grid_y", "grid" => 5, "y" => fill(0.0, grid_size))
+        msg = Dict("fn" => "get_grid_y", "grid" => 4, "y" => fill(0.0, grid_size))
         @test request(msg)["grid_y"][1:3] ≈
               [47.8175, 47.825833333333335, 47.825833333333335]
-        msg = Dict("fn" => "get_grid_node_count", "grid" => 1)
+        msg = Dict("fn" => "get_grid_node_count", "grid" => 0)
         @test request(msg) == Dict("grid_node_count" => 2)
-        msg = Dict("fn" => "get_grid_edge_count", "grid" => 4)
+        msg = Dict("fn" => "get_grid_edge_count", "grid" => 3)
         @test request(msg)["grid_edge_count"] == 5808
         msg = Dict(
             "fn" => "get_grid_edge_nodes",
-            "grid" => 4,
+            "grid" => 3,
             "edge_nodes" => fill(0, 2 * 5808),
         )
         @test request(msg)["grid_edge_nodes"][1:6] == [1, 5, 2, 1, 3, 2]
