@@ -13,7 +13,7 @@
     percfull::Vector{T} | "-"                           # fraction full (of max storage) [-]
     demandrelease::Vector{T} | "m3 s-1"                 # minimum (environmental) flow released from reservoir [m³ s⁻¹]
     precipitation::Vector{T}                            # average precipitation for reservoir area [mm Δt⁻¹]
-    evaporation::Vector{T}                              # average evaporation for reservoir area [mm Δt⁻¹]
+    evaporation::Vector{T}                              # average potential evaporation for reservoir area [mm Δt⁻¹]
     actevap::Vector{T}                                  # average actual evaporation for reservoir area [mm Δt⁻¹]
 
     function SimpleReservoir{T}(args...) where {T}
@@ -223,7 +223,7 @@ end
     outflow::Vector{T} | "m3 s-1"               # outflow lake [m³ s⁻¹]
     totaloutflow::Vector{T} | "m3"              # total outflow lake [m³]
     precipitation::Vector{T}                    # average precipitation for lake area [mm Δt⁻¹]
-    evaporation::Vector{T}                      # average evaporation for lake area [mm Δt⁻¹]
+    evaporation::Vector{T}                      # average potential evaporation for lake area [mm Δt⁻¹]
     actevap::Vector{T}                          # average actual evapotranspiration for lake area [mm Δt⁻¹]
 
     function Lake{T}(args...) where {T}

@@ -105,7 +105,7 @@ locs = "wflow_reservoirlocs"
 | `totaloutflow`        | total outflow into reservoir | m``^3`` | - |
 | `percfull`             | fraction full (of max storage) | - | - |
 | `precipitation`             | average precipitation for reservoir area | mm Δt⁻¹ | - |
-| `evaporation`             | average evaporation for reservoir area | mm Δt⁻¹ | - |
+| `evaporation`             | average potential evaporation for reservoir area | mm Δt⁻¹ | - |
 | `actevap` | average actual evaporation for lake area | mm Δt⁻¹  | - |
 
 ### [Lakes](@id lake_params)
@@ -148,7 +148,7 @@ between parentheses.
 | `outflow` | outflow lake | m``^3`` s``^{-1}``  | - |
 | `totaloutflow` | total outflow lake | m``^3``  | - |
 | `precipitation` | average precipitation for lake area | mm Δt⁻¹  | - |
-| `evaporation` | average evaporation for lake area | mm Δt⁻¹  | - |
+| `evaporation` | average potential evaporation for lake area | mm Δt⁻¹  | - |
 | `actevap` | average actual evaporation for lake area | mm Δt⁻¹  | - |
 
 ### [Lateral subsurface flow](@id params_ssf)
