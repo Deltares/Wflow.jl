@@ -376,6 +376,7 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
     # update lateral subsurface flow domain (kinematic wave)
     update(lateral.subsurface, network.land, network.frac_toriver)
     model = update_after_subsurfaceflow(model)
+    model = update_total_water_storage(model)
 end
 
 """
@@ -435,6 +436,29 @@ function update_after_subsurfaceflow(
     ssf_toriver = lateral.subsurface.to_river ./ tosecond(basetimestep)
     surface_routing(model, ssf_toriver = ssf_toriver)
 
+    return model
+end
+
+"""
+Update of the total water storage at the end of each timestep per model cell.
+
+This is done here at model level.
+"""
+function update_total_water_storage(
+    model::Model{N,L,V,R,W,T},
+) where {N,L,V,R,W,T<:SbmModel}
+    @unpack lateral, vertical, network, clock, config = model
+
+    # Update the total water storage based on vertical states
+    # TODO Maybe look at routing in the near future
+    update_total_water_storage(
+        vertical,
+        network.index_river,
+        network.land.xl,
+        network.land.yl,
+        lateral.river,
+        lateral.land,
+    )
     return model
 end
 

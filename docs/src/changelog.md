@@ -16,6 +16,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Limit lake evaporation (added variable `actevap`) and lake outflow to prevent negative
   lake storage. The variable `actevap` has also been added to the reservoir module.
 
+### Changed
+- Stop exposing scalar variables through BMI. The `BMI.get_value_ptr` function was
+  not working correctly for scalar model variables (a `view` was applied). Only a few scalar
+  model parameters are defined, and it is not expected that exposing these variables is
+  required (e.g. for model coupling) while code changes for these variables (including
+  struct fields) are required.
+
+### Added
+- Total water storage as an export variable for `SBM` concept. This is the total water stored
+  per grid cell in millimeters. Excluded from this variable are the floodplain, lakes and
+  reservoirs.
+
 ## v0.7.3 - 2024-01-12
 
 ### Fixed

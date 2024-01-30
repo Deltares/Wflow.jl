@@ -20,20 +20,20 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 
         @testset "model information functions" begin
             @test BMI.get_component_name(model) == "sbm"
-            @test BMI.get_input_item_count(model) == 184
-            @test BMI.get_output_item_count(model) == 184
-            @test BMI.get_input_var_names(model)[[1, 5, 150, 174]] == [
+            @test BMI.get_input_item_count(model) == 181
+            @test BMI.get_output_item_count(model) == 181
+            @test BMI.get_input_var_names(model)[[1, 5, 151, 175]] == [
                 "vertical.nlayers",
                 "vertical.θᵣ",
-                "lateral.river.sl",
-                "lateral.river.reservoir.targetminfrac",
+                "lateral.river.q",
+                "lateral.river.reservoir.outflow",
             ]
         end
 
         @testset "variable information functions" begin
-            @test BMI.get_var_grid(model, "vertical.θₛ") == 7
-            @test BMI.get_var_grid(model, "lateral.river.h") == 4
-            @test BMI.get_var_grid(model, "lateral.river.reservoir.inflow") == 1
+            @test BMI.get_var_grid(model, "vertical.θₛ") == 6
+            @test BMI.get_var_grid(model, "lateral.river.h") == 3
+            @test BMI.get_var_grid(model, "lateral.river.reservoir.inflow") == 0
             @test_throws ErrorException BMI.get_var_grid(model, "lateral.river.lake.volume")
             @test BMI.get_var_type(model, "lateral.river.reservoir.inflow") == "$Float"
             @test BMI.get_var_units(model, "vertical.θₛ") == "-"
@@ -41,6 +41,9 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test BMI.get_var_nbytes(model, "lateral.river.q") ==
                   length(model.lateral.river.q) * sizeof(Float)
             @test BMI.get_var_location(model, "lateral.river.q") == "node"
+            @test_throws ErrorException(
+                "lateral.land.alpha_pow not listed as variable for BMI exchange",
+            ) BMI.get_var_itemsize(model, "lateral.land.alpha_pow")
         end
 
         model = BMI.update(model)
@@ -79,32 +82,32 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
         end
 
         @testset "model grid functions" begin
-            @test BMI.get_grid_type(model, 0) == "scalar"
+            @test BMI.get_grid_type(model, 0) == "points"
             @test BMI.get_grid_type(model, 2) == "points"
-            @test BMI.get_grid_type(model, 7) == "unstructured"
+            @test BMI.get_grid_type(model, 6) == "unstructured"
             @test_throws ErrorException BMI.get_grid_rank(model, 8)
-            @test BMI.get_grid_rank(model, 0) == 0
-            @test BMI.get_grid_rank(model, 7) == 2
+            @test BMI.get_grid_rank(model, 0) == 2
+            @test BMI.get_grid_rank(model, 6) == 2
             @test_throws ErrorException BMI.get_grid_rank(model, 8)
-            @test BMI.get_grid_node_count(model, 1) == 2
-            @test BMI.get_grid_node_count(model, 4) == 5809
+            @test BMI.get_grid_node_count(model, 0) == 2
+            @test BMI.get_grid_node_count(model, 3) == 5809
+            @test BMI.get_grid_node_count(model, 4) == 50063
             @test BMI.get_grid_node_count(model, 5) == 50063
-            @test BMI.get_grid_node_count(model, 6) == 50063
-            @test BMI.get_grid_size(model, 1) == 2
-            @test BMI.get_grid_size(model, 4) == 5809
+            @test BMI.get_grid_size(model, 0) == 2
+            @test BMI.get_grid_size(model, 3) == 5809
+            @test BMI.get_grid_size(model, 4) == 50063
             @test BMI.get_grid_size(model, 5) == 50063
-            @test BMI.get_grid_size(model, 6) == 50063
             @test minimum(BMI.get_grid_x(model, 5, zeros(Float, 50063))) ≈
                   5.426666666666667f0
             @test maximum(BMI.get_grid_x(model, 5, zeros(Float, 50063))) ≈
                   7.843333333333344f0
-            @test BMI.get_grid_x(model, 1, zeros(Float, 2)) ≈
+            @test BMI.get_grid_x(model, 0, zeros(Float, 2)) ≈
                   [5.760000000000002f0, 5.918333333333336f0]
-            @test BMI.get_grid_y(model, 1, zeros(Float, 2)) ≈
+            @test BMI.get_grid_y(model, 0, zeros(Float, 2)) ≈
                   [48.92583333333333f0, 49.909166666666664f0]
-            @test BMI.get_grid_node_count(model, 1) == 2
-            @test BMI.get_grid_edge_count(model, 4) == 5808
-            @test BMI.get_grid_edge_nodes(model, 4, fill(0, 2 * 5808))[1:6] ==
+            @test BMI.get_grid_node_count(model, 0) == 2
+            @test BMI.get_grid_edge_count(model, 3) == 5808
+            @test BMI.get_grid_edge_nodes(model, 3, fill(0, 2 * 5808))[1:6] ==
                   [1, 5, 2, 1, 3, 2]
         end
 
@@ -120,17 +123,17 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     @testset "BMI grid edges" begin
         tomlpath = joinpath(@__DIR__, "sbm_swf_config.toml")
         model = BMI.initialize(Wflow.Model, tomlpath)
-        @test BMI.get_var_grid(model, "lateral.land.qx") == 5
-        @test BMI.get_var_grid(model, "lateral.land.qy") == 6
+        @test BMI.get_var_grid(model, "lateral.land.qx") == 4
+        @test BMI.get_var_grid(model, "lateral.land.qy") == 5
+        @test BMI.get_grid_edge_count(model, 4) == 50063
         @test BMI.get_grid_edge_count(model, 5) == 50063
-        @test BMI.get_grid_edge_count(model, 6) == 50063
-        @test BMI.get_grid_edge_nodes(model, 5, fill(0, 2 * 50063))[1:4] == [1, -999, 2, 3]
-        @test BMI.get_grid_edge_nodes(model, 6, fill(0, 2 * 50063))[1:4] == [1, 4, 2, 10]
+        @test BMI.get_grid_edge_nodes(model, 4, fill(0, 2 * 50063))[1:4] == [1, -999, 2, 3]
+        @test BMI.get_grid_edge_nodes(model, 5, fill(0, 2 * 50063))[1:4] == [1, 4, 2, 10]
         @test_logs (
             :warn,
-            "edges are not provided for grid type 3 (variables are located at nodes)",
-        ) BMI.get_grid_edge_nodes(model, 3, fill(0, 2 * 50063))
-        @test_throws ErrorException BMI.get_grid_edge_nodes(model, 8, fill(0, 2 * 50063))
+            "edges are not provided for grid type 2 (variables are located at nodes)",
+        ) BMI.get_grid_edge_nodes(model, 2, fill(0, 2 * 50063))
+        @test_throws ErrorException BMI.get_grid_edge_nodes(model, 7, fill(0, 2 * 50063))
         BMI.finalize(model)
     end
 
