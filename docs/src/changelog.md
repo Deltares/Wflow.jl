@@ -10,13 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Added missing BMI function `get_grid_size`, it is used for unstructured grids, for example
   to get the length of arrays returned by BMI functions `get_grid_x` and `get_grid_y`.
-  
-### Changed
-
-### Added
-- Total water storage as an export variable for `SBM` concept. This is the total water stored
-  per grid cell in millimeters. Excluded from this variable are the floodplain, lakes and
-  reservoirs.
+- Added a check for the solution of the quadratic equation as part of the Modified Puls
+  approach for lake outflow. Lower limit should be zero (very small negative values can
+  occur).
+- Limit lake evaporation (added variable `actevap`) and lake outflow to prevent negative
+  lake storage. The variable `actevap` has also been added to the reservoir module.
 
 ### Changed
 - Stop exposing scalar variables through BMI. The `BMI.get_value_ptr` function was
@@ -24,6 +22,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   model parameters are defined, and it is not expected that exposing these variables is
   required (e.g. for model coupling) while code changes for these variables (including
   struct fields) are required.
+
+### Added
+- Total water storage as an export variable for `SBM` concept. This is the total water stored
+  per grid cell in millimeters. Excluded from this variable are the floodplain, lakes and
+  reservoirs.
 
 ## v0.7.3 - 2024-01-12
 
