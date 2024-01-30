@@ -2,7 +2,7 @@
 abstract type SurfaceFlow end
 
 @get_units @exchange @grid_type @grid_location @with_kw struct SurfaceFlowRiver{T,R,L} <: SurfaceFlow
-    β::T | "-" | _ | "scalar"                    # constant in Manning's equation
+    β::T | "-" | 0 | "scalar"                    # constant in Manning's equation
     sl::Vector{T} | "m m-1"                      # Slope [m m⁻¹]
     n::Vector{T} | "s m-1/3"                     # Manning's roughness [s m⁻⅓]
     dl::Vector{T} | "m"                          # Drain length [m]
@@ -19,7 +19,7 @@ abstract type SurfaceFlow end
     Δt::T | "s" | 0 | "none" | "none"            # Model time step [s]
     its::Int | "-" | 0 | "none" | "none"         # Number of fixed iterations
     width::Vector{T} | "m"                       # Flow width [m]
-    alpha_pow::T | "-" | _ | "scalar"            # Used in the power part of α
+    alpha_pow::T | "-" | 0 | "scalar"            # Used in the power part of α
     alpha_term::Vector{T} | "-"                  # Term used in computation of α
     α::Vector{T} | "s3/5 m1/5"                   # Constant in momentum equation A = αQᵝ, based on Manning's equation
     cel::Vector{T} | "m s-1"                     # Celerity of the kinematic wave
@@ -37,7 +37,7 @@ abstract type SurfaceFlow end
 end
 
 @get_units @exchange @grid_type @grid_location @with_kw struct SurfaceFlowLand{T} <: SurfaceFlow
-    β::T | "-"  | _ | "scalar"                      # constant in Manning's equation
+    β::T | "-"  | 0 | "scalar"                      # constant in Manning's equation
     sl::Vector{T} | "m m-1"                         # Slope [m m⁻¹]
     n::Vector{T} | "s m-1/3"                        # Manning's roughness [s m⁻⅓]
     dl::Vector{T} | "m"                             # Drain length [m]
@@ -52,7 +52,7 @@ end
     Δt::T | "s" | 0 | "none" | "none"               # Model time step [s]
     its::Int | "-" | 0 | "none" | "none"            # Number of fixed iterations
     width::Vector{T} | "m"                          # Flow width [m]
-    alpha_pow::T | "-" | _ | "scalar"               # Used in the power part of α
+    alpha_pow::T | "-" | 0 | "scalar"               # Used in the power part of α
     alpha_term::Vector{T} | "-"                     # Term used in computation of α
     α::Vector{T} | "s3/5 m1/5"                      # Constant in momentum equation A = αQᵝ, based on Manning's equation
     cel::Vector{T} | "m s-1"                        # Celerity of the kinematic wave
@@ -468,9 +468,9 @@ end
     ne::Int | "-" | 0 | "none" | "none"                     # number of edges/links
     active_n::Vector{Int} | "-"                             # active nodes
     active_e::Vector{Int} | "-" | _ | "edge"                # active edges/links
-    g::T | "m s-2" | _ | "scalar"                           # acceleration due to gravity
-    α::T | "-" | _ | "scalar"                               # stability coefficient (Bates et al., 2010)
-    h_thresh::T | "m" | _ | "scalar"                        # depth threshold for calculating flow
+    g::T | "m s-2" | 0 | "scalar"                           # acceleration due to gravity
+    α::T | "-" | 0 | "scalar"                               # stability coefficient (Bates et al., 2010)
+    h_thresh::T | "m" | 0 | "scalar"                        # depth threshold for calculating flow
     Δt::T | "s" | 0 | "none" | "none"                       # model time step [s]
     q::Vector{T} | "m3 s-1" | _ | "edge"                    # river discharge (subgrid channel)
     q0::Vector{T} | "m3 s-1"| _ | "edge"                    # river discharge (subgrid channel) at previous time step
@@ -951,11 +951,11 @@ const dirs = (:yd, :xd, :xu, :yu)
     yl::Vector{T} | "m"                                     # cell length y direction
     xwidth::Vector{T} | "m" | _ | "edge"                    # effective flow width x direction (floodplain)
     ywidth::Vector{T} | "m" | _ | "edge"                    # effective flow width y direction (floodplain)
-    g::T | "m2 s-1" | _ | "scalar"                          # acceleration due to gravity
-    θ::T | "-" | _ | "scalar"                               # weighting factor (de Almeida et al., 2012)
-    α::T | "-" | _ | "scalar"                               # stability coefficient (de Almeida et al., 2012)
-    h_thresh::T | "m" | _ | "scalar"                        # depth threshold for calculating flow
-    Δt::T | "s" | _ | "scalar"                              # model time step [s]
+    g::T | "m2 s-1" | 0 | "scalar"                          # acceleration due to gravity
+    θ::T | "-" | 0 | "scalar"                               # weighting factor (de Almeida et al., 2012)
+    α::T | "-" | 0 | "scalar"                               # stability coefficient (de Almeida et al., 2012)
+    h_thresh::T | "m" | 0 | "scalar"                        # depth threshold for calculating flow
+    Δt::T | "s" | 0 | "none" | "none"                       # model time step [s]
     qy0::Vector{T} | "m3 s-1" | _ | "edge"                  # flow in y direction at previous time step
     qx0::Vector{T} | "m3 s-1" | _ | "edge"                  # flow in x direction at previous time step
     qx::Vector{T} | "m3 s-1" | _ | "edge"                   # flow in x direction
