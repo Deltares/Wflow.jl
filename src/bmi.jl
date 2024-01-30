@@ -4,13 +4,13 @@
 # Mapping of grid identifier to a key, to get the active indices of the model domain.
 # See also function active_indices(network, key::Tuple).
 const grids = Dict{Int,Tuple{Symbol}}(
-    1 => (:reservoir,),
-    2 => (:lake,),
-    3 => (:drain,),
-    4 => (:river,),
+    0 => (:reservoir,),
+    1 => (:lake,),
+    2 => (:drain,),
+    3 => (:river,),
+    4 => (:land,),
     5 => (:land,),
     6 => (:land,),
-    7 => (:land,),
 )
 
 """
@@ -145,22 +145,20 @@ function BMI.get_var_grid(model::Model, name::String)
     if exchange(param(model, key[1:end-1]), key[end]) == 1
         gridtype = grid_type(param(model, key))
         type = typeof(param(model, key[1:end-1]))
-        return if gridtype == "scalar"
+        return if :reservoir in key
             0
-        elseif :reservoir in key
-            1
         elseif :lake in key
-            2
+            1
         elseif :drain in key
-            3
+            2
         elseif :river in key
-            4
+            3
         elseif type <: ShallowWaterLand && occursin("x", s[end])
-            5
+            4
         elseif type <: ShallowWaterLand && occursin("y", s[end])
-            6
+            5
         else
-            7
+            6
         end
     else
         error("$name not listed as variable for BMI exchange")
@@ -293,11 +291,9 @@ function BMI.set_value_at_indices(
 end
 
 function BMI.get_grid_type(model::Model, grid::Int)
-    if grid == 0
-        "scalar"
-    elseif grid in 1:3
+    if grid in 0:2
         "points"
-    elseif grid in 4:7
+    elseif grid in 3:6
         "unstructured"
     else
         error("unknown grid type $grid")
@@ -305,9 +301,7 @@ function BMI.get_grid_type(model::Model, grid::Int)
 end
 
 function BMI.get_grid_rank(model::Model, grid::Int)
-    if grid == 0
-        0
-    elseif grid in 1:7
+    if grid in 0:6
         2
     else
         error("unknown grid type $grid")
@@ -344,13 +338,13 @@ end
 
 function BMI.get_grid_edge_count(model::Model, grid::Int)
     @unpack network = model
-    if grid == 4
+    if grid == 3
         return ne(network.river.graph)
-    elseif grid == 5
+    elseif grid == 4
         return length(network.land.staggered_indices.xu)
-    elseif grid == 6
+    elseif grid == 5
         return length(network.land.staggered_indices.yu)
-    elseif grid in 0:3 || grid == 7
+    elseif grid in 0:2 || grid == 6
         warn("edges are not provided for grid type $grid (variables are located at nodes)")
     else
         error("unknown grid type $grid")
@@ -362,25 +356,25 @@ function BMI.get_grid_edge_nodes(model::Model, grid::Int, edge_nodes::Vector{Int
     n = length(edge_nodes)
     m = div(n, 2)
     # inactive nodes (boundary/ghost points) are set at -999
-    if grid == 4
+    if grid == 3
         nodes_at_edge = adjacent_nodes_at_link(network.river.graph)
         nodes_at_edge.dst[nodes_at_edge.dst.==m+1] .= -999
         edge_nodes[range(1, n, step = 2)] = nodes_at_edge.src
         edge_nodes[range(2, n, step = 2)] = nodes_at_edge.dst
         return edge_nodes
-    elseif grid == 5
+    elseif grid == 4
         xu = network.land.staggered_indices.xu
         edge_nodes[range(1, n, step = 2)] = 1:m
         xu[xu.==m+1] .= -999
         edge_nodes[range(2, n, step = 2)] = xu
         return edge_nodes
-    elseif grid == 6
+    elseif grid == 5
         yu = network.land.staggered_indices.yu
         edge_nodes[range(1, n, step = 2)] = 1:m
         yu[yu.==m+1] .= -999
         edge_nodes[range(2, n, step = 2)] = yu
         return edge_nodes
-    elseif grid in 0:3 || grid == 7
+    elseif grid in 0:2 || grid == 6
         @warn("edges are not provided for grid type $grid (variables are located at nodes)")
     else
         error("unknown grid type $grid")
