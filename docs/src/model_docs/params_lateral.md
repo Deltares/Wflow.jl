@@ -619,9 +619,9 @@ slope = "RiverSlope"
 | `outsagg`              | sediment with particle class small aggregates  | t Δt``^{-1}``| - |
 | `outlagg`              | sediment with particle class large aggregates  | t Δt``^{-1}``| - |
 | `outgrav`              | sediment with particle class gravel  | t Δt``^{-1}``| - |
-| `Sedconc`              | sediment concentration  | kg m``^{-3}``| - |
-| `SSconc`               | sediment concentration   | kg m``^{-3}``| - |
-| `Bedconc`              | sediment concentration  | kg m``^{-3}``| - |
+| `Sedconc`              | sediment concentration  | g m``^{-3}``| - |
+| `SSconc`               | sediment concentration   | g m``^{-3}``| - |
+| `Bedconc`              | sediment concentration  | g m``^{-3}``| - |
 | `maxsed`              | river transport capacity | t Δt``^{-1}``| - |
 | `erodsed`              | total eroded sediment | t Δt``^{-1}``| - |
 | `erodsedbank`          | eroded bank sediment | t Δt``^{-1}``| - |
