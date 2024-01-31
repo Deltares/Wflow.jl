@@ -27,6 +27,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Total water storage as an export variable for `SBM` concept. This is the total water stored
   per grid cell in millimeters. Excluded from this variable are the floodplain, lakes and
   reservoirs.
+- Support different vertical hydraulic conductivity profiles for the `SBM` concept. See also
+  the following sections: [The SBM soil water accounting scheme](@ref) and [Subsurface flow
+  routing](@ref) for a short description.
 
 ## v0.7.3 - 2024-01-12
 

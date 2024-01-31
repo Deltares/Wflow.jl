@@ -363,7 +363,7 @@ Soil measurements are often available for about the upper 1.5-2 m of the soil co
 estimate the saturated hydraulic conductivity, while these measurements are often lacking
 for soil depths beyond 1.5-2 m. These different profiles allow to extent the saturated
 hydraulic conductivity profile based on measurements (either an exponential fit or hydraulic
-conductivity value per soil layer) with an exponential of constant profile. By default, with
+conductivity value per soil layer) with an exponential or constant profile. By default, with
 `ksat_profile` "exponential", the saturated hydraulic conductivity (``K_{sat}`` [mm
 t``^{-1}``]) declines with soil depth (``z`` [mm]) in the model according to:
 
