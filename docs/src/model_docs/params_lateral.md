@@ -105,7 +105,8 @@ locs = "wflow_reservoirlocs"
 | `totaloutflow`        | total outflow into reservoir | m``^3`` | - |
 | `percfull`             | fraction full (of max storage) | - | - |
 | `precipitation`             | average precipitation for reservoir area | mm Δt⁻¹ | - |
-| `evaporation`             | average evaporation for reservoir area | mm Δt⁻¹ | - |
+| `evaporation`             | average potential evaporation for reservoir area | mm Δt⁻¹ | - |
+| `actevap` | average actual evaporation for lake area | mm Δt⁻¹  | - |
 
 ### [Lakes](@id lake_params)
 The Table below shows the parameters (fields) of struct `Lake`, including a description of
@@ -147,7 +148,8 @@ between parentheses.
 | `outflow` | outflow lake | m``^3`` s``^{-1}``  | - |
 | `totaloutflow` | total outflow lake | m``^3``  | - |
 | `precipitation` | average precipitation for lake area | mm Δt⁻¹  | - |
-| `evaporation` | average precipitation for lake area | mm Δt⁻¹  | - |
+| `evaporation` | average potential evaporation for lake area | mm Δt⁻¹  | - |
+| `actevap` | average actual evaporation for lake area | mm Δt⁻¹  | - |
 
 ### [Lateral subsurface flow](@id params_ssf)
 The Table below shows the parameters (fields) of struct `LateralSSF`, including a
@@ -203,7 +205,7 @@ the `layered_exponential` profile `kv` is used and `z_exp` is required as part o
 | `zi` | pseudo-water table depth (top of the saturated zone) | m | - |
 | **`z_exp`** | depth from soil surface for which exponential decline of `kh₀` is valid | m | - |
 | `exfiltwater` | exfiltration (groundwater above surface level, saturated excess conditions) | m Δt⁻¹ | - |
-| `recharge` | net recharge to saturated store  | m Δt⁻¹ | - |
+| `recharge` | net recharge to saturated store  | m``^2`` Δt⁻¹ | - |
 | `ssf` | subsurface flow  | m``^3`` d``{-1}``  | - |
 | `ssfin` | inflow from upstream cells | m``^3`` d``{-1}``  | - |
 | `ssfmax` | maximum subsurface flow | m``^2`` d``{-1}``  | - |

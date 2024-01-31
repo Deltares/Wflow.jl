@@ -1,8 +1,8 @@
 
 abstract type SurfaceFlow end
 
-@get_units @exchange @grid_type @grid_location @with_kw struct SurfaceFlowRiver{T,R,L} <:SurfaceFlow
-    β::T | "-" | _ | "scalar"                    # constant in Manning's equation
+@get_units @exchange @grid_type @grid_location @with_kw struct SurfaceFlowRiver{T,R,L} <: SurfaceFlow
+    β::T | "-" | 0 | "scalar"                    # constant in Manning's equation
     sl::Vector{T} | "m m-1"                      # Slope [m m⁻¹]
     n::Vector{T} | "s m-1/3"                     # Manning's roughness [s m⁻⅓]
     dl::Vector{T} | "m"                          # Drain length [m]
@@ -19,7 +19,7 @@ abstract type SurfaceFlow end
     Δt::T | "s" | 0 | "none" | "none"            # Model time step [s]
     its::Int | "-" | 0 | "none" | "none"         # Number of fixed iterations
     width::Vector{T} | "m"                       # Flow width [m]
-    alpha_pow::T | "-" | _ | "scalar"            # Used in the power part of α
+    alpha_pow::T | "-" | 0 | "scalar"            # Used in the power part of α
     alpha_term::Vector{T} | "-"                  # Term used in computation of α
     α::Vector{T} | "s3/5 m1/5"                   # Constant in momentum equation A = αQᵝ, based on Manning's equation
     cel::Vector{T} | "m s-1"                     # Celerity of the kinematic wave
@@ -36,8 +36,8 @@ abstract type SurfaceFlow end
     # end
 end
 
-@get_units @exchange @grid_type @grid_location @with_kw struct SurfaceFlowLand{T} <:SurfaceFlow
-    β::T | "-" | _ | "scalar"                      # constant in Manning's equation
+@get_units @exchange @grid_type @grid_location @with_kw struct SurfaceFlowLand{T} <: SurfaceFlow
+    β::T | "-"  | 0 | "scalar"                      # constant in Manning's equation
     sl::Vector{T} | "m m-1"                         # Slope [m m⁻¹]
     n::Vector{T} | "s m-1/3"                        # Manning's roughness [s m⁻⅓]
     dl::Vector{T} | "m"                             # Drain length [m]
@@ -52,7 +52,7 @@ end
     Δt::T | "s" | 0 | "none" | "none"               # Model time step [s]
     its::Int | "-" | 0 | "none" | "none"            # Number of fixed iterations
     width::Vector{T} | "m"                          # Flow width [m]
-    alpha_pow::T | "-" | _ | "scalar"               # Used in the power part of α
+    alpha_pow::T | "-" | 0 | "scalar"               # Used in the power part of α
     alpha_term::Vector{T} | "-"                     # Term used in computation of α
     α::Vector{T} | "s3/5 m1/5"                      # Constant in momentum equation A = αQᵝ, based on Manning's equation
     cel::Vector{T} | "m s-1"                        # Celerity of the kinematic wave
@@ -266,10 +266,12 @@ function update(sf::SurfaceFlowRiver, network, inflow_wb, doy)
     if !isnothing(sf.reservoir)
         sf.reservoir.inflow .= 0.0
         sf.reservoir.totaloutflow .= 0.0
+        sf.reservoir.actevap .= 0.0
     end
     if !isnothing(sf.lake)
         sf.lake.inflow .= 0.0
         sf.lake.totaloutflow .= 0.0
+        sf.lake.actevap .= 0.0
     end
 
     Δt, its = stable_timestep(sf)
@@ -401,7 +403,7 @@ end
     zi::Vector{T} | "m"                    # Pseudo-water table depth [m] (top of the saturated zone)
     z_exp::Vector{T} | "m"                 # Depth [m] from soil surface for which exponential decline of kv₀ is valid
     exfiltwater::Vector{T} | "m Δt-1"      # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
-    recharge::Vector{T} | "m Δt-1"         # Net recharge to saturated store [m Δt⁻¹]
+    recharge::Vector{T} | "m2 Δt-1"        # Net recharge to saturated store [m² Δt⁻¹]
     ssf::Vector{T} | "m3 d-1"              # Subsurface flow [m³ d⁻¹]
     ssfin::Vector{T} | "m3 d-1"            # Inflow from upstream cells [m³ d⁻¹]
     ssfmax::Vector{T} | "m2 d-1"           # Maximum subsurface flow [m² d⁻¹]
@@ -491,9 +493,9 @@ end
     ne::Int | "-" | 0 | "none" | "none"                     # number of edges/links
     active_n::Vector{Int} | "-"                             # active nodes
     active_e::Vector{Int} | "-" | _ | "edge"                # active edges/links
-    g::T | "m s-2" | _ | "scalar"                           # acceleration due to gravity
-    α::T | "-" | _ | "scalar"                               # stability coefficient (Bates et al., 2010)
-    h_thresh::T | "m" | _ | "scalar"                        # depth threshold for calculating flow
+    g::T | "m s-2" | 0 | "scalar"                           # acceleration due to gravity
+    α::T | "-" | 0 | "scalar"                               # stability coefficient (Bates et al., 2010)
+    h_thresh::T | "m" | 0 | "scalar"                        # depth threshold for calculating flow
     Δt::T | "s" | 0 | "none" | "none"                       # model time step [s]
     q::Vector{T} | "m3 s-1" | _ | "edge"                    # river discharge (subgrid channel)
     q0::Vector{T} | "m3 s-1" | _ | "edge"                   # river discharge (subgrid channel) at previous time step
@@ -921,10 +923,12 @@ function update(
     if !isnothing(sw.reservoir)
         sw.reservoir.inflow .= 0.0
         sw.reservoir.totaloutflow .= 0.0
+        sw.reservoir.actevap .= 0.0
     end
     if !isnothing(sw.lake)
         sw.lake.inflow .= 0.0
         sw.lake.totaloutflow .= 0.0
+        sw.lake.actevap .= 0.0
     end
     if !isnothing(sw.floodplain)
         sw.floodplain.q_av .= 0.0
@@ -974,11 +978,11 @@ const dirs = (:yd, :xd, :xu, :yu)
     yl::Vector{T} | "m"                                     # cell length y direction
     xwidth::Vector{T} | "m" | _ | "edge"                    # effective flow width x direction (floodplain)
     ywidth::Vector{T} | "m" | _ | "edge"                    # effective flow width y direction (floodplain)
-    g::T | "m2 s-1" | _ | "scalar"                          # acceleration due to gravity
-    θ::T | "-" | _ | "scalar"                               # weighting factor (de Almeida et al., 2012)
-    α::T | "-" | _ | "scalar"                               # stability coefficient (de Almeida et al., 2012)
-    h_thresh::T | "m" | _ | "scalar"                        # depth threshold for calculating flow
-    Δt::T | "s" | _ | "scalar"                              # model time step [s]
+    g::T | "m2 s-1" | 0 | "scalar"                          # acceleration due to gravity
+    θ::T | "-" | 0 | "scalar"                               # weighting factor (de Almeida et al., 2012)
+    α::T | "-" | 0 | "scalar"                               # stability coefficient (de Almeida et al., 2012)
+    h_thresh::T | "m" | 0 | "scalar"                        # depth threshold for calculating flow
+    Δt::T | "s" | 0 | "none" | "none"                       # model time step [s]
     qy0::Vector{T} | "m3 s-1" | _ | "edge"                  # flow in y direction at previous time step
     qx0::Vector{T} | "m3 s-1" | _ | "edge"                  # flow in x direction at previous time step
     qx::Vector{T} | "m3 s-1" | _ | "edge"                   # flow in x direction
@@ -1161,10 +1165,12 @@ function update(
     if !isnothing(swr.reservoir)
         swr.reservoir.inflow .= 0.0
         swr.reservoir.totaloutflow .= 0.0
+        swr.reservoir.actevap .= 0.0
     end
     if !isnothing(swr.lake)
         swr.lake.inflow .= 0.0
         swr.lake.totaloutflow .= 0.0
+        swr.lake.actevap .= 0.0
     end
     swr.q_av .= 0.0
     swr.h_av .= 0.0
