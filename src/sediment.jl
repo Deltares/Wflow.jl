@@ -757,10 +757,10 @@ end
     outsagg::Vector{T} | "t Δt⁻¹"
     outlagg::Vector{T} | "t Δt⁻¹"
     outgrav::Vector{T} | "t Δt⁻¹"
-    # Sediment concentrations [kg/m3]
-    Sedconc::Vector{T} | "kg m-3"
-    SSconc::Vector{T} | "kg m-3"
-    Bedconc::Vector{T} | "kg m-3"
+    # Sediment concentrations [g/m3]
+    Sedconc::Vector{T} | "g m-3"
+    SSconc::Vector{T} | "g m-3"
+    Bedconc::Vector{T} | "g m-3"
     # River transport capacity
     maxsed::Vector{T} | "t Δt⁻¹"
     # Eroded sediment (total, bank and bed)
