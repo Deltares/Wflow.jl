@@ -228,8 +228,8 @@ dissertation, <https://doi.org/10.18174/513157>.
 Rohrmueller, I., 2019. BENCHMARKING THE NEW WFLOW DISTRIBUTED HYDROLOGICAL MODEL, MSc
 Thesis, School of Engineering - Newcastle University.
 
-Rusli, S.R., 202'4. Deepening the quantitative understanding of groundwater systems in 
-data-scarce areas : application in the Bandung Groundwater Basin, Indonesia. Wageningen 
+Rusli, S.R., 2024. Deepening the quantitative understanding of groundwater systems in 
+data-scarce areas: application in the Bandung Groundwater Basin, Indonesia. Wageningen 
 University, Doctoral dissertation, <https://edepot.wur.nl/640983>.
 
 Tretjakova, D., 2015. Investigating the effect of using fully-distributed model and data
