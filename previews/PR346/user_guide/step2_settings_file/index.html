@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Step 2: Preparing the settings file · Wflow.jl</title><script data-outdated-warner src="../../assets/warner.js"></script><link rel="canonical" href="https://deltares.github.io/Wflow.jl/user_guide/step2_settings_file/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.png" alt="Wflow.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Wflow.jl</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><span class="tocitem">Introduction</span><ul><li><a class="tocitem" href="../../">About wflow</a></li><li><a class="tocitem" href="../../intro/use_cases/">Case studies</a></li><li><a class="tocitem" href="../../intro/publications/">Publications</a></li><li><a class="tocitem" href="../../changelog/">Changelog</a></li></ul></li><li><span class="tocitem">User guide</span><ul><li><a class="tocitem" href="../intro/">About the user guide</a></li><li><a class="tocitem" href="../install/">How to install</a></li><li><input class="collapse-toggle" id="menuitem-2-3" type="checkbox" checked/><label class="tocitem" for="menuitem-2-3"><span class="docs-label">How to use wflow</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../step1_requirements/">Step 1: Understanding the requirements</a></li><li class="is-active"><a class="tocitem" href>Step 2: Preparing the settings file</a><ul class="internal"><li><a class="tocitem" href="#General-time-info"><span>General time info</span></a></li><li><a class="tocitem" href="#logging_toml"><span>Logging</span></a></li><li><a class="tocitem" href="#Model-section"><span>Model section</span></a></li><li><a class="tocitem" href="#State-options"><span>State options</span></a></li><li><a class="tocitem" href="#Input-section"><span>Input section</span></a></li><li><a class="tocitem" href="#Output-NetCDF-section"><span>Output NetCDF section</span></a></li><li><a class="tocitem" href="#Output-CSV-section"><span>Output CSV section</span></a></li><li><a class="tocitem" href="#Modify-parameters"><span>Modify parameters</span></a></li><li><a class="tocitem" href="#Fixed-forcing-values"><span>Fixed forcing values</span></a></li></ul></li><li><a class="tocitem" href="../step3_input_data/">Step 3: Preparing the input data</a></li><li><a class="tocitem" href="../step4_running/">Step 4: Running a simulation</a></li><li><a class="tocitem" href="../step5_output/">Step 5: Analyzing the model output</a></li><li><a class="tocitem" href="../additional_options/">Additional wflow options</a></li><li><a class="tocitem" href="../sample_data/">Example models</a></li></ul></li><li><a class="tocitem" href="../model-setup/">Building a model from scratch</a></li></ul></li><li><span class="tocitem">Model documentation</span><ul><li><a class="tocitem" href="../../model_docs/intro/">About the model documentation</a></li><li><a class="tocitem" href="../../model_docs/model_configurations/">Model configurations</a></li><li><input class="collapse-toggle" id="menuitem-3-3" type="checkbox"/><label class="tocitem" for="menuitem-3-3"><span class="docs-label">Vertical concepts</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../model_docs/vertical/sbm/">SBM</a></li><li><a class="tocitem" href="../../model_docs/vertical/hbv/">HBV</a></li><li><a class="tocitem" href="../../model_docs/vertical/flextopo/">FLEXTopo</a></li><li><a class="tocitem" href="../../model_docs/vertical/sediment/">Sediment</a></li><li><a class="tocitem" href="../../model_docs/shared_concepts/">Shared processes</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-3-4" type="checkbox"/><label class="tocitem" for="menuitem-3-4"><span class="docs-label">Lateral concepts</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../model_docs/lateral/gwf/">Groundwater flow</a></li><li><a class="tocitem" href="../../model_docs/lateral/kinwave/">Kinematic wave</a></li><li><a class="tocitem" href="../../model_docs/lateral/local-inertial/">Local inertial</a></li><li><a class="tocitem" href="../../model_docs/lateral/waterbodies/">Reservoirs and Lakes</a></li><li><a class="tocitem" href="../../model_docs/lateral/sediment_flux/">Sediment flux</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-3-5" type="checkbox"/><label class="tocitem" for="menuitem-3-5"><span class="docs-label">Model parameters</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../model_docs/params_vertical/">Parameters vertical concepts</a></li><li><a class="tocitem" href="../../model_docs/params_lateral/">Parameters lateral concepts</a></li><li><a class="tocitem" href="../../model_docs/structures/">Julia structures</a></li></ul></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">User guide</a></li><li><a class="is-disabled">How to use wflow</a></li><li class="is-active"><a href>Step 2: Preparing the settings file</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Step 2: Preparing the settings file</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/Deltares/Wflow.jl/blob/master/docs/src/user_guide/step2_settings_file.md#L" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="config_toml"><a class="docs-heading-anchor" href="#config_toml">Step 2: Preparing the settings file</a><a id="config_toml-1"></a><a class="docs-heading-anchor-permalink" href="#config_toml" title="Permalink"></a></h1><p>A settings file is essential for wflow, as it contains information on the model configuration, simulation period, input files, and parameters. The settings are provided in a TOML file. The settings file is structured in several sections, which are explained below. The filepaths that are provided in this file are relative to the location of the TOML file, or to <code>dir_input</code> and <code>dir_output</code> if they are given.</p><h2 id="General-time-info"><a class="docs-heading-anchor" href="#General-time-info">General time info</a><a id="General-time-info-1"></a><a class="docs-heading-anchor-permalink" href="#General-time-info" title="Permalink"></a></h2><p>Time information is optional. When left out, for each timestamp in the forcing NetCDF Wflow will do computations, except for the first forcing timestamp that is considered equal to the initial conditions of the Wflow model (state time). If you wish to calculate a subset of this time range, or a different timestep, you can specify a <code>starttime</code>, <code>endtime</code> and <code>timestepsecs</code> yourself. The <code>starttime</code> is defined as the model state time. In the TOML file settings below the <code>starttime</code> is 2000-01-01T00:00:00 (state time) and the first update (and output) of the Wflow model is at 2000-01-02T00:00:00. The <code>time_units</code> optional information is used by the <code>writer</code> of the model, for model output in netCDF format. The <code>calendar</code> option allows you to calculate in one of the different <a href="http://cfconventions.org/cf-conventions/cf-conventions.html#calendar">CF conventions calendars</a> provided by the <a href="https://juliageo.org/CFTime.jl/latest/">CFTime.jl package</a>, such as <code>&quot;360_day&quot;</code>. This is useful if you want to calculate climate scenarios which are sometimes provided in these alternative calendars.</p><pre><code class="language-toml hljs">calendar = &quot;standard&quot;                           # optional, this is default value
+starttime = 2000-01-01T00:00:00                 # optional, default from forcing NetCDF
+endtime = 2000-02-01T00:00:00                   # optional, default from forcing NetCDF
+time_units = &quot;days since 1900-01-01 00:00:00&quot;   # optional, this is default value
+timestepsecs = 86400                            # optional, default from forcing NetCDF
+dir_input = &quot;data/input&quot;                        # optional, default is the path of the TOML
+dir_output = &quot;data/output&quot;                      # optional, default is the path of the TOML</code></pre><h2 id="logging_toml"><a class="docs-heading-anchor" href="#logging_toml">Logging</a><a id="logging_toml-1"></a><a class="docs-heading-anchor-permalink" href="#logging_toml" title="Permalink"></a></h2><p>Wflow emits logging messages at various levels such as debug, info, and error. These get sent to both the terminal as well as a log file. Note that logging to a file is only part of the <code>Wflow.run(tomlpath::AbstractString)</code> method. If you want to debug an issue it can be helpful to set <code>loglevel = &quot;debug&quot;</code> in the TOML. To avoid flooding the screen, debug messages are only sent to the log file. The following settings will affect the logging:</p><pre><code class="language-toml hljs">silent = false          # optional, default is &quot;false&quot;
+loglevel = &quot;debug&quot;      # optional, default is &quot;info&quot;
+path_log = &quot;log.txt&quot;    # optional, default is &quot;log.txt&quot;
+fews_run = false        # optional, default value is false</code></pre><p><code>silent</code> avoids logging to the terminal, and only writes the log file. <code>loglevel</code> controls which levels are filtered out, so the default setting <code>&quot;info&quot;</code> does not show any debug level messages. Note that for finer control, you can also pass an integer log level, see Julia&#39;s <a href="https://docs.julialang.org/en/v1/stdlib/Logging/#Log-event-structure">Logging</a> documentation. <code>path_log</code> sets the desired output path for the log file. For information regarding <code>fews_run</code>, see <a href="../additional_options/#run_fews">Run from Delft-FEWS</a>.</p><h2 id="Model-section"><a class="docs-heading-anchor" href="#Model-section">Model section</a><a id="Model-section-1"></a><a class="docs-heading-anchor-permalink" href="#Model-section" title="Permalink"></a></h2><p>Model specific settings can be included in the model section of the TOML file.</p><pre><code class="language-toml hljs">[model]
+type = &quot;sbm&quot;                        # one of (&quot;sbm&quot;, &quot;sbm_gwf, &quot;hbv&quot;)
+masswasting = false                 # include lateral snow transport in the model, default is false
+snow = false                        # include snow modelling, default is false
+reinit = true                       # cold (reinit = true) or warm state (reinit = false), default is true
+reservoirs = false                  # include reservoir modelling, default is false
+kin_wave_iteration = false          # enable kinematic wave iterations in the model, default is false
+thicknesslayers = [100, 300, 800]   # specific SBM setting: for each soil layer a thickness [mm] is specified
+min_streamorder_river = 5           # minimum stream order to delineate subbasins for river domain, default is 6 (for multi-threading computing purposes)
+min_streamorder_land = 4            # minimum stream order to delineate subbasins for land domain, default is 5 (for multi-threading computing purposes)
+</code></pre><h2 id="State-options"><a class="docs-heading-anchor" href="#State-options">State options</a><a id="State-options-1"></a><a class="docs-heading-anchor-permalink" href="#State-options" title="Permalink"></a></h2><p>The <code>state</code> section in the TOML file provides information about the location of input and output states of the model. This section is mostly relevant if the model needs to be started with a &quot;warm&quot; state (i.e. based on the results of a previous simulation). The example below shows how to save the output states of the current simulation, so it can be used to initialize another model in the future. Details on the settings required to start a model with a warm state can be found in the <a href="../additional_options/#reinit">additional model options</a>. If it is not required to store the outstates of the current simulation, the entire <code>state</code> section can be removed.</p><pre><code class="language-toml hljs">[state]
+path_input = &quot;instates-moselle.nc&quot;
+path_output = &quot;outstates-moselle.nc&quot;
+
+[state.vertical]
+satwaterdepth = &quot;satwaterdepth&quot;
+snow = &quot;snow&quot;
+tsoil = &quot;tsoil&quot;
+ustorelayerdepth = &quot;ustorelayerdepth&quot;
+snowwater = &quot;snowwater&quot;
+canopystorage = &quot;canopystorage&quot;
+
+[state.lateral.river]
+q = &quot;q_river&quot;
+h = &quot;h_river&quot;
+h_av = &quot;h_av_river&quot;
+
+[state.lateral.river.reservoir]
+volume = &quot;volume_reservoir&quot;
+
+[state.lateral.subsurface]
+ssf = &quot;ssf&quot;
+
+[state.lateral.land]
+q = &quot;q_land&quot;
+h = &quot;h_land&quot;
+h_av = &quot;h_av_land&quot;</code></pre><h2 id="Input-section"><a class="docs-heading-anchor" href="#Input-section">Input section</a><a id="Input-section-1"></a><a class="docs-heading-anchor-permalink" href="#Input-section" title="Permalink"></a></h2><p>The <code>input</code> section of the TOML file contains information about the input forcing and model parameters files (netCDF format). Forcing is applied to the vertical component of the model, and needs to be mapped to the external netCDF variable name. <code>forcing</code> lists the internal model forcing parameters, and these are mapped to the external netCDF variables listed under the section <code>[input.vertical]</code>. It is possible to provide cyclic parameters to the model (minimum time step of 1 day). In the example below this is done for the internal <code>vertical.leaf_area_index</code> model parameter, that is linked to the external netCDF variable &quot;LAI&quot; variable. Cyclic time inputs of parameters can be different (for example daily and monthly). The <code>time</code> dimension name of these cylic input parameters in the model parameter netCDF file should start with &quot;time&quot;. If a model parameter is not mapped, a default value will be used if available.</p><pre><code class="language-toml hljs">[input]
+# use &quot;forcing-year-*.nc&quot; if forcing files are split in time
+path_forcing = &quot;forcing-moselle.nc&quot;    # Location of the forcing data
+path_static = &quot;staticmaps-moselle.nc&quot;  # Location of the static data
+
+# these are not directly part of the model
+gauges = &quot;wflow_gauges&quot;
+ldd = &quot;wflow_ldd&quot;
+river_location = &quot;wflow_river&quot;
+subcatchment = &quot;wflow_subcatch&quot;
+
+# specify the internal IDs of the parameters which vary over time
+# the external name mapping needs to be below together with the other mappings
+forcing = [
+&quot;vertical.precipitation&quot;,
+&quot;vertical.temperature&quot;,
+&quot;vertical.potential_evaporation&quot;,
+]
+
+cyclic = [&quot;vertical.leaf_area_index&quot;]
+
+[input.vertical]    # Map internal model variable/parameter names to names of the variables in the NetCDF files
+altitude = &quot;wflow_dem&quot;
+c = &quot;c&quot;
+cf_soil = &quot;cf_soil&quot;
+cfmax = &quot;Cfmax&quot;
+e_r = &quot;EoverR&quot;
+infiltcappath = &quot;InfiltCapPath&quot;
+infiltcapsoil = &quot;InfiltCapSoil&quot;
+kext = &quot;Kext&quot;
+&quot;kv₀&quot; = &quot;KsatVer&quot;
+leaf_area_index = &quot;LAI&quot;             # Cyclic variable
+m = &quot;M&quot;
+maxleakage = &quot;MaxLeakage&quot;
+pathfrac = &quot;PathFrac&quot;
+potential_evaporation = &quot;PET&quot;       # Forcing variable
+precipitation = &quot;P&quot;                 # Forcing variable
+rootdistpar = &quot;rootdistpar&quot;
+rootingdepth = &quot;RootingDepth&quot;
+soilminthickness = &quot;SoilMinThickness&quot;
+soilthickness = &quot;SoilThickness&quot;
+specific_leaf = &quot;Sl&quot;
+storage_wood = &quot;Swood&quot;
+temperature = &quot;TEMP&quot;                # Forcing variable
+tt = &quot;TT&quot;
+tti = &quot;TTI&quot;
+ttm = &quot;TTM&quot;
+w_soil = &quot;wflow_soil&quot;
+water_holding_capacity = &quot;WHC&quot;
+waterfrac = &quot;WaterFrac&quot;
+&quot;θᵣ&quot; = &quot;thetaR&quot;
+&quot;θₛ&quot; = &quot;thetaS&quot;
+
+[input.lateral.river]
+length = &quot;wflow_riverlength&quot;
+n = &quot;N_River&quot;
+slope = &quot;RiverSlope&quot;
+width = &quot;wflow_riverwidth&quot;
+
+[input.lateral.subsurface]
+ksathorfrac = &quot;KsatHorFrac&quot;
+
+[input.lateral.land]
+n = &quot;N&quot;
+slope = &quot;Slope&quot;</code></pre><h2 id="Output-NetCDF-section"><a class="docs-heading-anchor" href="#Output-NetCDF-section">Output NetCDF section</a><a id="Output-NetCDF-section-1"></a><a class="docs-heading-anchor-permalink" href="#Output-NetCDF-section" title="Permalink"></a></h2><h3 id="Grid-data"><a class="docs-heading-anchor" href="#Grid-data">Grid data</a><a id="Grid-data-1"></a><a class="docs-heading-anchor-permalink" href="#Grid-data" title="Permalink"></a></h3><p>This optional section of the TOML file contains the output netCDF file for writing gridded model output, including a mapping between internal model parameter components and external netCDF variables.</p><p>To limit the size of the resulting NetCDF file, file compression can be enabled. This causes an increase in computational time, but can significantly reduce the file size of the NetCDF file. This can be enabled by setting the <code>compressionlevel</code> variable to any value between <code>0</code> and <code>9</code>. A setting of <code>0</code> indicates that compression is not enabled, and values between 1 and 9 indicate different levels of compression (1: least compression, smallest impact on run time, 9: highest compression level, biggest impact on run times). If file size becomes an issue, we recommend using a value of <code>1</code>, as higher compression levels generally have only a limited effect on the file size.</p><pre><code class="language-toml hljs">[output]
+path = &quot;output_moselle.nc&quot;         # Location of the output file
+compressionlevel = 1               # Amount of compression (default 0)
+
+[output.vertical]   # Mapping of names between internal model components and external netCDF variables
+satwaterdepth = &quot;satwaterdepth&quot;
+snow = &quot;snow&quot;
+tsoil = &quot;tsoil&quot;
+ustorelayerdepth = &quot;ustorelayerdepth&quot;
+snowwater = &quot;snowwater&quot;
+canopystorage = &quot;canopystorage&quot;
+
+[output.lateral.river]
+q = &quot;q_river&quot;
+h = &quot;h_river&quot;
+
+[output.lateral.river.reservoir]
+volume = &quot;volume_reservoir&quot;
+
+[output.lateral.subsurface]
+ssf = &quot;ssf&quot;
+
+[output.lateral.land]
+q = &quot;q_land&quot;
+h = &quot;h_land&quot;</code></pre><h3 id="Scalar-data"><a class="docs-heading-anchor" href="#Scalar-data">Scalar data</a><a id="Scalar-data-1"></a><a class="docs-heading-anchor-permalink" href="#Scalar-data" title="Permalink"></a></h3><p>Besides gridded data, it is also possible to write scalar data to a NetCDF file. Below is an example that writes scalar data to the file &quot;output_scalar_moselle.nc&quot;. For each NetCDF variable a <code>name</code> (external variable name) and <code>parameter</code> (internal model parameter) is required. A <code>reducer</code> can be specified to apply to the model output, see for more information the following section <a href="#Output-CSV-section">Output CSV section</a>. When a <code>map</code> is provided to extract data for certain locations (e.g. <code>gauges</code>) or areas (e.g. <code>subcatchment</code>), the NetCDF location names are extracted from these maps. For a specific location (grid cell) a <code>location</code> is required. For layered model parameters and variables that have an extra dimension <code>layer</code> and are part of the vertical <code>sbm</code> concept it is possible to specify an internal layer index (see also example below). For model parameters and variables that have an extra dimension <code>classes</code> and are part of the vertical <code>FLEXTopo</code> concept it is possible to specify the class name. If multiple layers or classes are desired, this can be specified in separate <code>[[netcdf.variable]]</code> entries. Note that the specification of the extra dimension is not optional when Wflow is integrated with Delft-FEWS, for NetCDF scalar data an extra dimension is not allowed by the <code>importNetcdfActivity</code> of the Delft-FEWS General Adapter. In the section <a href="#Output-CSV-section">Output CSV section</a>, similar functionality is available for CSV. For integration with Delft-FEWS, see also <a href="../additional_options/#run_fews">Run from Delft-FEWS</a>, it is recommended to write scalar data to NetCDF format since the General Adapter of Delft-FEWS can ingest this data format directly.</p><pre><code class="language-toml hljs">[netcdf]
+path = &quot;output_scalar_moselle.nc&quot;  # Location of the results
+
+[[netcdf.variable]] # Extract the values of lateral.river.q using the gauges map, and assigning it with the name &#39;Q&#39; as variable to the netCDF
+name = &quot;Q&quot;
+map = &quot;gauges&quot;
+parameter = &quot;lateral.river.q&quot;
+
+[[netcdf.variable]] # Using coordinates to extract the temperature
+coordinate.x = 6.255
+coordinate.y = 50.012
+name = &quot;vwc_layer2_bycoord&quot;
+location = &quot;vwc_bycoord&quot;
+parameter = &quot;vertical.vwc&quot;
+layer = 2
+
+[[netcdf.variable]] # Using indices to extract the temperature
+location = &quot;temp_byindex&quot;
+name = &quot;temp_index&quot;
+index.x = 100
+index.y = 264
+parameter = &quot;vertical.temperature&quot;</code></pre><h2 id="Output-CSV-section"><a class="docs-heading-anchor" href="#Output-CSV-section">Output CSV section</a><a id="Output-CSV-section-1"></a><a class="docs-heading-anchor-permalink" href="#Output-CSV-section" title="Permalink"></a></h2><p>Model output can also be written to CSV output. Below is an example that writes model output to the file &quot;output_moselle.csv&quot;. For each CSV column a <code>header</code> and <code>parameter</code> (internal model parameter) is required. A <code>reducer</code> can be specified to apply to the model output, with the following available reducers:</p><ul><li>maximum</li><li>minimum</li><li>mean</li><li>median</li><li>sum</li><li>first</li><li>last</li><li>only</li></ul><p>with <code>only</code> as the default. To extract data for a specific location (grid cell), the <code>index</code> of the vector, the coordinates <code>coordinate.x</code> and <code>coordinate.y</code>, or the x and y indices of the 2D array (<code>index.x</code> and <code>index.y</code>) can be provided. Finally a <code>map</code> can be provided to extract data for certain locations (e.g. <code>gauges</code>) or areas (e.g. <code>subcatchment</code>). In this case a single entry can lead to multiple columns in the CSV file, which will be of the form <code>header_id</code>, e.g. <code>Q_20</code>, for a gauge with integer ID 20. For layered model parameters and variables that have an extra dimension <code>layer</code> and are part of the vertical <code>sbm</code> concept an internal layer index (see also example below) should be specified. For model parameters and variables that have an extra dimension <code>classes</code> and are part of the vertical <code>FLEXTopo</code> concept it is possible to specify the class name. If multiple layers or classes are desired, this can be specified in separate <code>[[csv.column]]</code> entries.</p><p>The double brackets in <code>[[csv.column]]</code> is TOML syntax to indicate that it is part of a list. You may specify as many entries as you wish.</p><pre><code class="language-toml hljs">[csv]
+path = &quot;output_moselle.csv&quot;
+
+[[csv.column]]
+header = &quot;Q&quot;
+parameter = &quot;lateral.river.q&quot;
+reducer = &quot;maximum&quot;
+
+[[csv.column]]
+header = &quot;volume&quot;
+index = 1
+parameter = &quot;lateral.river.reservoir.volume&quot;
+
+[[csv.column]]
+coordinate.x = 6.255
+coordinate.y = 50.012
+header = &quot;temp_bycoord&quot;
+parameter = &quot;vertical.temperature&quot;
+
+[[csv.column]]
+coordinate.x = 6.255
+coordinate.y = 50.012
+header = &quot;vwc_layer2_bycoord&quot;
+parameter = &quot;vertical.vwc&quot;
+layer = 2
+
+[[csv.column]]
+header = &quot;temp_byindex&quot;
+index.x = 100
+index.y = 264
+parameter = &quot;vertical.temperature&quot;
+
+[[csv.column]]
+header = &quot;Q&quot;
+map = &quot;gauges&quot;
+parameter = &quot;lateral.river.q&quot;
+
+[[csv.column]]
+header = &quot;recharge&quot;
+map = &quot;subcatchment&quot;
+parameter = &quot;vertical.recharge&quot;
+reducer = &quot;mean&quot;</code></pre><h2 id="Modify-parameters"><a class="docs-heading-anchor" href="#Modify-parameters">Modify parameters</a><a id="Modify-parameters-1"></a><a class="docs-heading-anchor-permalink" href="#Modify-parameters" title="Permalink"></a></h2><p>It is possible to modify model parameters and forcing through the TOML file. Two options to modify input parameters are available:</p><ul><li>Set an input parameter (static) to an uniform value.</li><li>Modify an input parameter (cyclic and static) or forcing variable through the use of a <code>scale</code> factor and <code>offset</code>.</li></ul><p>To set for example the input parameter <code>cfmax</code> to an uniform value of 2.5:</p><pre><code class="language-toml hljs">[input.vertical]
+water_holding_capacity = &quot;WHC&quot;
+waterfrac = &quot;WaterFrac&quot;
+cfmax.value = 2.5</code></pre><p>For input parameters with an extra dimension (e.g. <code>layer</code> or <code>classes</code>) one uniform value can be provided or a list of values that should be equal to the length of the extra dimension. For example, for input parameter <code>c</code>, a list of values can be provided as follows:</p><pre><code class="language-toml hljs">[input.vertical]
+water_holding_capacity = &quot;WHC&quot;
+waterfrac = &quot;WaterFrac&quot;
+c.value = [10.5, 11.25, 9.5, 7.0]</code></pre><p>To change for example the forcing variable <code>precipitation</code> with a <code>scale</code> factor of 1.5 and an <code>offset</code> of 0.5:</p><pre><code class="language-toml hljs">[input.vertical.precipitation]
+netcdf.variable.name = &quot;P&quot;
+scale = 1.5
+offset = 0.5</code></pre><p>For input parameters with an extra dimension it is also possible to modify multiple indices at once with different <code>scale</code> and <code>offset</code> values. In the example below the external NetCDF variable <code>c</code> is modified at <code>layer</code> index 1 and 2, with a <code>scale</code> factor of 2.0 and 1.5 respectively, and an <code>offset</code> of 0.0 for both indices:</p><pre><code class="language-toml hljs">[input.vertical.c]
+netcdf.variable.name = &quot;c&quot;
+scale = [2.0, 1.5]
+offset = [0.0, 0.0]
+layer = [1, 2]</code></pre><h2 id="Fixed-forcing-values"><a class="docs-heading-anchor" href="#Fixed-forcing-values">Fixed forcing values</a><a id="Fixed-forcing-values-1"></a><a class="docs-heading-anchor-permalink" href="#Fixed-forcing-values" title="Permalink"></a></h2><p>It is possible to set fixed values for forcing parameters through the TOML file. To set for example <code>temperature</code> to a fixed value of 10 <span>$\degree$</span>C, the complete <code>forcing</code> list is required:</p><pre><code class="language-toml hljs">forcing = [
+  &quot;vertical.precipitation&quot;,
+  &quot;vertical.temperature&quot;,
+  &quot;vertical.potential_evaporation&quot;,
+]
+
+[input.vertical.temperature]
+value = 10</code></pre><p>Note that the mapping to the external netCDF variable listed under the section <code>[input.vertical]</code> needs to be removed or commented out:</p><pre><code class="language-toml hljs">[input.vertical]
+potential_evaporation = &quot;PET&quot; # forcing
+# temperature = &quot;TEMP&quot; # forcing
+precipitation = &quot;P&quot; # forcing</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../step1_requirements/">« Step 1: Understanding the requirements</a><a class="docs-footer-nextpage" href="../step3_input_data/">Step 3: Preparing the input data »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Thursday 8 February 2024 15:07">Thursday 8 February 2024</span>. Using Julia version 1.10.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
