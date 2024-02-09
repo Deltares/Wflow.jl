@@ -1,3 +1,4 @@
+# map JSON function name to Struct (bmi_service.jl)
 const map_structs = Dict(
     "initialize" => Initialize,
     "get_component_name" => GetComponentName,
@@ -41,21 +42,25 @@ mutable struct ModelHandler
     model::Union{Wflow.Model,Nothing}
 end
 
+"Shutdown ZMQ server"
 function shutdown(s::Socket, ctx::Context)
     ZMQ.close(s)
     ZMQ.close(ctx)
 end
 
+"Error response ZMQ server"
 function response(err::AbstractString, s::Socket)
     resp = Dict{String,String}("status" => "ERROR", "error" => err)
     ZMQ.send(s, JSON3.write(resp))
 end
 
+"Status response ZMQ server"
 function response(s::Socket)
     resp = Dict{String,String}("status" => "OK")
     ZMQ.send(s, JSON3.write(resp))
 end
 
+"Validate JSON request against mapped Struct"
 function valid_request(json)
     for f in fieldnames(map_structs[json.fn])
         if f ∉ keys(json)
@@ -65,6 +70,12 @@ function valid_request(json)
     end
 end
 
+"""
+    wflow_bmi(s::Socket, handler::ModelHandler, f)
+
+Run a Wflow.BMI (or Wflow) function through `wflow.bmi(f, handler.model)` and update Wflow
+Model `handler` if required, depending on return type of `wflow.bmi(f, handler.model)`.
+"""
 function wflow_bmi(s::Socket, handler::ModelHandler, f)
     try
         ret = wflow_bmi(f, handler.model)
@@ -86,7 +97,7 @@ function wflow_bmi(s::Socket, handler::ModelHandler, f)
     end
 end
 
-
+# initialize Wflow model handler
 handler = ModelHandler(nothing)
 
 # set up a ZMQ context, with optional port number (default = 5555) argument

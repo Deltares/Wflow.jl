@@ -1,3 +1,6 @@
+# Structs that contain function name `fn` and possible other function arguments. These
+# structs are used in `wflow_bmi` functions (below these structs), that run Wflow.BMI (and
+# Wflow) functions.
 
 struct Initialize
     config_file::String

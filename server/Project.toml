@@ -1,8 +1,18 @@
+name = "WflowBmiServer"
+authors = ["Deltares and contributors"]
+version = "0.1"
+
 [deps]
 JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
 StructTypes = "856f2bd8-1eba-4b0a-8007-ebc267875bd4"
 Wflow = "d48b7d99-76e7-47ae-b1d5-ff0c1cf9a818"
 ZMQ = "c2297ded-f4af-51ae-bb23-16f91089e4e1"
+
+[compat]
+JSON3 = "1.14"
+StructTypes = "1.10"
+ZMQ = "1.2"
+julia = "1.6"
 
 [extras]
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
