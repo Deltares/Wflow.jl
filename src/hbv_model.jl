@@ -12,7 +12,6 @@ function initialize_hbv_model(config::Config)
     clock = Clock(config, reader)
     Δt = clock.Δt
 
-    reinit = get(config.model, "reinit", true)::Bool
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
     do_lakes = get(config.model, "lakes", false)::Bool
     do_pits = get(config.model, "pits", false)::Bool
@@ -381,33 +380,7 @@ function initialize_hbv_model(config::Config)
         HbvModel(),
     )
 
-    # read and set states in model object if reinit=true
-    if reinit == false
-        instate_path = input_path(config, config.state.path_input)
-        @info "Set initial conditions from state file `$instate_path`."
-        state_ncnames = ncnames(config.state)
-        set_states(instate_path, model, state_ncnames; type = Float)
-        # update kinematic wave volume for river and land domain
-        @unpack lateral = model
-        # makes sure land cells with zero flow width are set to zero q and h
-        for i in eachindex(lateral.land.width)
-            if lateral.land.width[i] <= 0.0
-                lateral.land.q[i] = 0.0
-                lateral.land.h[i] = 0.0
-            end
-        end
-        lateral.land.volume .= lateral.land.h .* lateral.land.width .* lateral.land.dl
-        lateral.river.volume .= lateral.river.h .* lateral.river.width .* lateral.river.dl
-
-        if do_lakes
-            # storage must be re-initialized after loading the state with the current
-            # waterlevel otherwise the storage will be based on the initial water level
-            lakes.storage .=
-                initialize_storage(lakes.storfunc, lakes.area, lakes.waterlevel, lakes.sh)
-        end
-    else
-        @info "Set initial conditions from default values."
-    end
+    model = set_states(model)
 
     return model
 end
@@ -435,6 +408,43 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:HbvModel}
     update_after_snow(vertical, config)
 
     surface_routing(model)
+
+    return model
+end
+
+function set_states(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:HbvModel}
+    @unpack lateral, config = model
+
+    reinit = get(config.model, "reinit", true)::Bool
+    do_lakes = get(config.model, "lakes", false)::Bool
+    # read and set states in model object if reinit=true
+    if reinit == false
+        instate_path = input_path(config, config.state.path_input)
+        @info "Set initial conditions from state file `$instate_path`."
+        state_ncnames = ncnames(config.state)
+        set_states(instate_path, model, state_ncnames; type = Float)
+        # update kinematic wave volume for river and land domain
+        @unpack lateral = model
+        # makes sure land cells with zero flow width are set to zero q and h
+        for i in eachindex(lateral.land.width)
+            if lateral.land.width[i] <= 0.0
+                lateral.land.q[i] = 0.0
+                lateral.land.h[i] = 0.0
+            end
+        end
+        lateral.land.volume .= lateral.land.h .* lateral.land.width .* lateral.land.dl
+        lateral.river.volume .= lateral.river.h .* lateral.river.width .* lateral.river.dl
+
+        if do_lakes
+            # storage must be re-initialized after loading the state with the current
+            # waterlevel otherwise the storage will be based on the initial water level
+            lakes = lateral.river.lake
+            lakes.storage .=
+                initialize_storage(lakes.storfunc, lakes.area, lakes.waterlevel, lakes.sh)
+        end
+    else
+        @info "Set initial conditions from default values."
+    end
 
     return model
 end

@@ -134,8 +134,8 @@ through a simple explicit scheme. In summary the following limitations apply:
 
 ## External inflows
 External inflows, for example water supply or abstractions, can be added to the kinematic
-wave via the `inflow` variable. For this, the user can supply a 2D map of the inflow which
-can be static or dynamic (changing every timestep or cyclic is possible). These inflow are
+wave via the `inflow` variable. For this, the user can supply a 2D map of the inflow, as a
+cyclic parameter or as part of forcing (see also [Input section](@ref)). These inflows are
 added or abstracted from the upstream inflow `qin` before running the kinematic wave to
 solve the impact on resulting `q`. In case of a negative inflow (abstractions), a minimum of
 zero is applied to the upstream flow `qin`.

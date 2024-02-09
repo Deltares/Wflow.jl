@@ -12,6 +12,7 @@
         targetminfrac = [0.2425554726620697],
         precipitation = [4.2],
         evaporation = [1.5],
+        actevap = [0.0],
         outflow = [NaN],
         percfull = [NaN],
         demandrelease = [NaN],
@@ -25,6 +26,7 @@
     @test res.demandrelease[1] ≈ 52.5229994727611
     @test res.precipitation[1] ≈ 4.2
     @test res.evaporation[1] ≈ 1.5
+    @test res.actevap[1] ≈ 1.5
 end
 
 @testset "lake" begin
@@ -46,16 +48,18 @@ end
         waterlevel = [18.5],
         precipitation = [20.0],
         evaporation = [3.2],
+        actevap = [0.0],
         outflow = [NaN],
     )
 
     Wflow.update(lake, 1, 2500.0, 181, 86400.0)
-    @test lake.outflow[1] ≈ 85.31903276150577
-    @test lake.totaloutflow[1] ≈ 7.371564430594098e6
-    @test lake.storage[1] ≈ 3.551103576940606e9
-    @test lake.waterlevel[1] ≈ 19.672569557695734
+    @test lake.outflow[1] ≈ 85.14292808113598
+    @test lake.totaloutflow[1] ≈ 7.356348986210149e6
+    @test lake.storage[1] ≈ 3.55111879238499e9
+    @test lake.waterlevel[1] ≈ 19.672653848925634
     @test lake.precipitation[1] ≈ 20.0
     @test lake.evaporation[1] ≈ 3.2
+    @test lake.actevap[1] ≈ 3.2
 end
 
 datadir = joinpath(@__DIR__, "data")
@@ -90,6 +94,7 @@ sh = [
         waterlevel = [395.03027, 394.87833],
         precipitation = [10.0, 10.0],
         evaporation = [2.0, 2.0],
+        actevap = [0.0, 0.0],
         outflow = [NaN, NaN],
         storage = Wflow.initialize_storage(
             [2, 2],
@@ -105,14 +110,16 @@ sh = [
     @test lake.totaloutflow ≈ [1.855886761104877e7, 2.0462355302400187e7] atol = 1e3
     @test lake.storage ≈ [1.2737435094769483e9, 2.6019755340159863e8] atol = 1e4
     @test lake.waterlevel ≈ [395.0912274997361, 395.2101079057371] atol = 1e-2
+    lake.actevap .= 0.0
     lake.totaloutflow .= 0.0
     lake.inflow .= 0.0
     Wflow.update(lake, 1, 500.0, 15, 86400.0)
     Wflow.update(lake, 2, 500.0, 15, 86400.0)
     @test lake.outflow ≈ [0.0, 239.66710359986183] atol = 1e-2
-    @test lake.totaloutflow ≈ [-2.2446764487487033e7, 2.070723775102806e7] atol = 1e3
+    @test lake.totaloutflow ≈ [-2.2446764487487033e7, 4.3154002238515094e7] atol = 1e3
     @test lake.storage ≈ [1.3431699662524352e9, 2.6073035986708355e8] atol = 1e4
     @test lake.waterlevel ≈ [395.239782021054, 395.21771942667266] atol = 1e-2
+    @test lake.actevap ≈ [2.0, 2.0]
 end
 
 @testset "overflowing lake with sh and hq" begin
@@ -139,6 +146,7 @@ end
         waterlevel = [397.75],
         precipitation = [10.0],
         evaporation = [2.0],
+        actevap = [0.0],
         outflow = [NaN],
         storage = [410_760_000],
     )

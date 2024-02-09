@@ -16,7 +16,6 @@ function initialize_sbm_model(config::Config)
     clock = Clock(config, reader)
     Δt = clock.Δt
 
-    reinit = get(config.model, "reinit", true)::Bool
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
     do_lakes = get(config.model, "lakes", false)::Bool
     do_pits = get(config.model, "pits", false)::Bool
@@ -359,8 +358,123 @@ function initialize_sbm_model(config::Config)
         SbmModel(),
     )
 
+    model = set_states(model)
+
+    @info "Initialized model"
+    return model
+end
+
+"update SBM model for a single timestep"
+function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
+
+    @unpack lateral, vertical, network, clock, config = model
+    model = update_until_recharge(model)
+    # exchange of recharge between vertical sbm concept and subsurface flow domain
+    lateral.subsurface.recharge .= vertical.recharge ./ 1000.0
+    lateral.subsurface.recharge .*= lateral.subsurface.dw
+    lateral.subsurface.zi .= vertical.zi ./ 1000.0
+    # update lateral subsurface flow domain (kinematic wave)
+    update(lateral.subsurface, network.land, network.frac_toriver)
+    model = update_after_subsurfaceflow(model)
+    model = update_total_water_storage(model)
+end
+
+"""
+    update_until_recharge(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
+
+Update SBM model until recharge for a single timestep. This function is also accessible
+through BMI, to couple the SBM model to an external groundwater model.
+"""
+function update_until_recharge(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
+    @unpack lateral, vertical, network, clock, config = model
+
+    inds_riv = network.index_river
+
+    # extract water levels h_av [m] from the land and river domains
+    # this is used to limit open water evaporation
+    vertical.waterlevel_land .= lateral.land.h_av .* 1000.0
+    vertical.waterlevel_river[inds_riv] .= lateral.river.h_av .* 1000.0
+
+    # vertical sbm concept is updated until snow state, after that (optional)
+    # snow transport is possible
+    update_until_snow(vertical, config)
+
+    # lateral snow transport
+    if get(config.model, "masswasting", false)::Bool
+        lateral_snow_transport!(
+            vertical.snow,
+            vertical.snowwater,
+            network.land.slope,
+            network.land,
+        )
+    end
+
+    # update vertical sbm concept until recharge [mm] to the saturated store
+    update_until_recharge(vertical, config)
+
+    return model
+end
+
+"""
+    update_after_subsurfaceflow(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
+
+Update SBM model after subsurface flow for a single timestep. This function is also
+accessible through BMI, to couple the SBM model to an external groundwater model.
+"""
+function update_after_subsurfaceflow(
+    model::Model{N,L,V,R,W,T},
+) where {N,L,V,R,W,T<:SbmModel}
+    @unpack lateral, vertical, network, clock, config = model
+
+    # update vertical sbm concept (runoff, ustorelayerdepth and satwaterdepth)
+    update_after_subsurfaceflow(
+        vertical,
+        lateral.subsurface.zi * 1000.0,
+        lateral.subsurface.exfiltwater * 1000.0,
+    )
+
+    ssf_toriver = lateral.subsurface.to_river ./ tosecond(basetimestep)
+    surface_routing(model, ssf_toriver = ssf_toriver)
+
+    return model
+end
+
+"""
+Update of the total water storage at the end of each timestep per model cell.
+
+This is done here at model level.
+"""
+function update_total_water_storage(
+    model::Model{N,L,V,R,W,T},
+) where {N,L,V,R,W,T<:SbmModel}
+    @unpack lateral, vertical, network, clock, config = model
+
+    # Update the total water storage based on vertical states
+    # TODO Maybe look at routing in the near future
+    update_total_water_storage(
+        vertical,
+        network.index_river,
+        network.land.xl,
+        network.land.yl,
+        lateral.river,
+        lateral.land,
+    )
+    return model
+end
+
+function set_states(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
+    @unpack lateral, vertical, network, config = model
+
+    reinit = get(config.model, "reinit", true)::Bool
+    routing_options = ("kinematic-wave", "local-inertial")
+    land_routing =
+        get_options(config.model, "land_routing", routing_options, "kinematic-wave")::String
+    do_lakes = get(config.model, "lakes", false)::Bool
+    floodplain_1d = get(config.model, "floodplain_1d", false)::Bool
+
     # read and set states in model object if reinit=false
     if reinit == false
+        nriv = length(network.river.indices)
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
         state_ncnames = ncnames(config.state)
@@ -421,92 +535,16 @@ function initialize_sbm_model(config::Config)
         if floodplain_1d
             initialize_volume!(lateral.river, nriv)
         end
-
+    
         if do_lakes
             # storage must be re-initialized after loading the state with the current
             # waterlevel otherwise the storage will be based on the initial water level
+            lakes = lateral.river.lake
             lakes.storage .=
                 initialize_storage(lakes.storfunc, lakes.area, lakes.waterlevel, lakes.sh)
         end
     else
         @info "Set initial conditions from default values."
     end
-
-    @info "Initialized model"
-
-    return model
-end
-
-"update SBM model for a single timestep"
-function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
-
-    @unpack lateral, vertical, network, clock, config = model
-    model = update_until_recharge(model)
-    # exchange of recharge between vertical sbm concept and subsurface flow domain
-    lateral.subsurface.recharge .= vertical.recharge ./ 1000.0
-    lateral.subsurface.recharge .*= lateral.subsurface.dw
-    lateral.subsurface.zi .= vertical.zi ./ 1000.0
-    # update lateral subsurface flow domain (kinematic wave)
-    update(lateral.subsurface, network.land, network.frac_toriver)
-    model = update_after_subsurfaceflow(model)
-end
-
-"""
-    update_until_recharge(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
-
-Update SBM model until recharge for a single timestep. This function is also accessible
-through BMI, to couple the SBM model to an external groundwater model.
-"""
-function update_until_recharge(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
-    @unpack lateral, vertical, network, clock, config = model
-
-    inds_riv = network.index_river
-
-    # extract water levels h_av [m] from the land and river domains
-    # this is used to limit open water evaporation
-    vertical.waterlevel_land .= lateral.land.h_av .* 1000.0
-    vertical.waterlevel_river[inds_riv] .= lateral.river.h_av .* 1000.0
-
-    # vertical sbm concept is updated until snow state, after that (optional)
-    # snow transport is possible
-    update_until_snow(vertical, config)
-
-    # lateral snow transport
-    if get(config.model, "masswasting", false)::Bool
-        lateral_snow_transport!(
-            vertical.snow,
-            vertical.snowwater,
-            network.land.slope,
-            network.land,
-        )
-    end
-
-    # update vertical sbm concept until recharge [mm] to the saturated store
-    update_until_recharge(vertical, config)
-
-    return model
-end
-
-"""
-    update_after_subsurfaceflow(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
-
-Update SBM model after subsurface flow for a single timestep. This function is also
-accessible through BMI, to couple the SBM model to an external groundwater model.
-"""
-function update_after_subsurfaceflow(
-    model::Model{N,L,V,R,W,T},
-) where {N,L,V,R,W,T<:SbmModel}
-    @unpack lateral, vertical, network, clock, config = model
-
-    # update vertical sbm concept (runoff, ustorelayerdepth and satwaterdepth)
-    update_after_subsurfaceflow(
-        vertical,
-        lateral.subsurface.zi * 1000.0,
-        lateral.subsurface.exfiltwater * 1000.0,
-    )
-
-    ssf_toriver = lateral.subsurface.to_river ./ tosecond(basetimestep)
-    surface_routing(model, ssf_toriver = ssf_toriver)
-
     return model
 end

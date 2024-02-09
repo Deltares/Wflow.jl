@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WixLocalization Culture="en-US" xmlns="http://schemas.microsoft.com/wix/2006/localization">
+  <String Id="ApplicationGroupShortName">wflow</String>
+  <String Id="ApplicationLongName">wflow</String>
+  <String Id="ApplicationShortName">wflow</String>
+  <String Id="Manufacturer">Deltares</String>
+  <String Id="DowngradeErrorMessage">A newer version of !(loc.ApplicationLongName) is already installed. If you are sure you want to downgrade, remove the existing installation via the Control Panel.</String>
+  <String Id="StartApplicationDescription">Assess !(loc.ApplicationLongName) directory.</String>
+
+  <String Id="UserManualName">User manual</String>
+  <String Id="UserManualDescription">Open the user manual of !(loc.ApplicationLongName).</String>
+
+  <String Id="InstallationVerification">Verification of the installation</String>
+
+  <String Id="Dlg_Title">[ProductName] installation wizard</String>
+
+  <String Id="WelcomeDlgDescription">[ProductName] will be installed on your computer. Click Next to continue or click Cancel to quit the installation wizard.</String>
+  <String Id="MaintenanceWelcomeDlgDescription">The installation wizard allows you to change the way in which [ProductName] components are installed on your computer or you can delete [ProductName] from your computer. Click Next to continue or Cancel to quit the installation wizard.</String>
+  <String Id="VerifyReadyDlgRemoveText">Click Remove to uninstall [ProductName] from your computer. Click Cancel to quit the installation wizard.</String>
+  <String Id="VerifyReadyDlgInstallText">Click Install to start the installation. Click Back to view or change the chosen installation folder. Click Cancel to quit the installation wizard.</String>
+  <String Id="VerifyReadyDlgRepairText">Click Repair to restore the installation of [ProductName]. Click Cancel to quit the installation wizard.</String>
+  <String Id="CancelDlgText">Are you sure you want to quit the [ProductName] installation wizard?</String>
+  <String Id="FatalErrorDlgDescriptionCustom">The installation wizard of [ProductName] has ended due to an error. The system has not been changed. If you want to install [ProductName] at a later time, run the installation wizard again. Click the Finish button to close the installation wizard.</String>
+  <String Id="UserExitDescriptionCustom">The installation of [ProductName] has been interrupted. The system has not been changed. If you want to install [ProductName] at a later time, run the installation wizard again. Click the Finish button to close the installation wizard.</String>
+  <String Id="ExitDialogDescription">Click the Finish button to close the installation wizard.</String>
+
+  <String Id="MaintenanceTypeDlgTitle">{\WixUI_Font_Title}Repair or delete [ProductName]</String>
+  <String Id="InstallDirDlgTitle">{\WixUI_Font_Title}Install folder</String>
+  <String Id="InstallDirDlgFolderLabel">Install [ProductName]:</String>
+  <String Id="InstallDirDlgDescription">{\WixUI_Font_Banner_Description}Select the folder where you want to install [ProductName].</String>
+  <String Id="InstallDirDlgText">Click Next to install in the above folder or click Change to choose a different folder.</String>
+
+  <String Id="BackButtonText">&amp;Back</String>
+  <String Id="NextButtonText">&amp;Next</String>
+  <String Id="PrintButtonText">&amp;Print</String>
+  <String Id="CancelButtonText">&amp;Cancel</String>
+  <String Id="InstallDirDlgChange">C&amp;hange</String>
+  <String Id="CompleteInstallationButtonText">C&amp;omplete</String>
+  <String Id="InstallButtonText">&amp;Install</String>
+  <String Id="MaintenanceTypeRepairButtonText">&amp;Repair</String>
+  <String Id="MaintenanceTypeRemoveButtonText">R&amp;emove</String>
+  <String Id="DiskUsageButtonText">&amp;Disk usage</String>
+  <String Id="NoButtonText">&amp;No</String>
+  <String Id="YesButtonText">&amp;Yes</String>
+  <String Id="FinishButtonText">&amp;Finish</String>
+  <String Id="LicenseAgreementDlgLicenseAcceptedCheckBoxText">I &amp;agree with the terms in the license agreement.</String>
+</WixLocalization>

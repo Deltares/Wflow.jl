@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Copyright (c) Microsoft Corporation.  All rights reserved.
+    
+    The use and distribution terms for this software are covered by the
+    Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.php)
+    which can be found in the file CPL.TXT at the root of this distribution.
+    By using this software in any fashion, you are agreeing to be bound by
+    the terms of this license.
+    
+    You must not remove this notice, or any other, from this software.
+-->
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+    <Fragment>
+        <UI>
+	     <Dialog Id="MaintenanceTypeDlgDeltares" Width="370" Height="270" Title="!(loc.Dlg_Title)">
+                <Control Id="RepairButton" Type="PushButton" X="40" Y="65" Width="80" Height="17" ToolTip="!(loc.MaintenanceTypeDlgRepairButtonTooltip)" Text="!(loc.MaintenanceTypeRepairButtonText)">
+                    <Publish Property="WixUI_InstallMode" Value="Repair">1</Publish>
+                    <Condition Action="disable">ARPNOREPAIR</Condition>
+                </Control>
+                <Control Id="RepairText" Type="Text" X="60" Y="85" Width="280" Height="30" Text="!(loc.MaintenanceTypeDlgRepairText)">
+                    <Condition Action="hide">ARPNOREPAIR</Condition>
+                </Control>
+                <Control Id="RepairDisabledText" Type="Text" X="60" Y="85" Width="280" Height="30" NoPrefix="yes" Text="!(loc.MaintenanceTypeDlgRepairDisabledText)" Hidden="yes">
+                    <Condition Action="show">ARPNOREPAIR</Condition>
+                </Control>
+                <Control Id="RemoveButton" Type="PushButton" X="40" Y="118" Width="80" Height="17" ToolTip="!(loc.MaintenanceTypeDlgRemoveButtonTooltip)" Text="!(loc.MaintenanceTypeRemoveButtonText)">
+                    <Publish Property="WixUI_InstallMode" Value="Remove">1</Publish>
+                    <Condition Action="disable">ARPNOREMOVE</Condition>
+                </Control>
+                <Control Id="RemoveText" Type="Text" X="60" Y="138" Width="280" Height="20" NoPrefix="yes" Text="!(loc.MaintenanceTypeDlgRemoveText)">
+                    <Condition Action="hide">ARPNOREMOVE</Condition>
+                </Control>
+                <Control Id="RemoveDisabledText" Type="Text" X="60" Y="138" Width="280" Height="20" NoPrefix="yes" Text="!(loc.MaintenanceTypeDlgRemoveDisabledText)" Hidden="yes">
+                    <Condition Action="show">ARPNOREMOVE</Condition>
+                </Control>
+                <Control Id="Back" Type="PushButton" X="236" Y="!(loc.NavigateButtonY)" Width="56" Height="17" Text="!(loc.BackButtonText)" />
+                <Control Id="Cancel" Type="PushButton" X="304" Y="!(loc.NavigateButtonY)" Width="56" Height="17" Cancel="yes" Text="!(loc.CancelButtonText)">
+                    <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
+                </Control>
+                <Control Id="BannerBitmap" Type="Bitmap"  X="!(loc.BannerImageX)" Y="!(loc.BannerImageY)" Width="!(loc.BannerImageWidth)" Height="!(loc.BannerImageHeight)" TabSkip="no" Text="!(loc.MaintenanceTypeDlgBannerBitmap)" />
+		            <Control Id="HeaderLine" Type="Line" X="0" Y="!(loc.HeaderHeight)" Width="!(loc.DialogWidth)" Height="0" />
+                <Control Id="BottomLine" Type="Line" X="0" Y="!(loc.BottomLineY)" Width="!(loc.DialogWidth)" Height="0" />
+		            <Control Id="Title" Type="Text" X="!(loc.TextX)" Y="16" Width="325" Height="15" Transparent="yes" NoPrefix="yes" Text="!(loc.MaintenanceTypeDlgTitle)" />
+                <Control Id="Description" Type="Text" X="!(loc.TextX)" Y="29" Width="325" Height="20" Transparent="yes" NoPrefix="yes" Text="!(loc.MaintenanceTypeDlgDescription)" />
+            </Dialog>
+        </UI>
+    </Fragment>
+</Wix>

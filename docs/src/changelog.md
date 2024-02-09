@@ -5,6 +5,76 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [unreleased]
+
+### Fixed
+- Added missing BMI function `get_grid_size`, it is used for unstructured grids, for example
+  to get the length of arrays returned by BMI functions `get_grid_x` and `get_grid_y`.
+- Added a check for the solution of the quadratic equation as part of the Modified Puls
+  approach for lake outflow. Lower limit should be zero (very small negative values can
+  occur).
+- Limit lake evaporation (added variable `actevap`) and lake outflow to prevent negative
+  lake storage. The variable `actevap` has also been added to the reservoir module.
+
+### Changed
+- Stop exposing scalar variables through BMI. The `BMI.get_value_ptr` function was
+  not working correctly for scalar model variables (a `view` was applied). Only a few scalar
+  model parameters are defined, and it is not expected that exposing these variables is
+  required (e.g. for model coupling) while code changes for these variables (including
+  struct fields) are required.
+
+### Added
+- Total water storage as an export variable for `SBM` concept. This is the total water stored
+  per grid cell in millimeters. Excluded from this variable are the floodplain, lakes and
+  reservoirs.
+
+## v0.7.3 - 2024-01-12
+
+### Fixed
+- Documentation: add leakage term to the wflow\_sbm figure, document external input
+  parameter `ksathorfrac` and fix description of adding external `inflow` to the kinematic
+  wave.
+- Fixed BMI functions (e.g. `BMI.get_value`) that deviated from BMI specifications
+  (BasicModelInterface.jl), including function arguments, return types and the BMI
+  specification that arrays are always flattened (this was not the case for variables stored
+  as 2-dimensional arrays or as vector of SVectors).
+- Bump compat for NCDatasets to 0.13, 0.14.
+- The solution for lake outflow as part of the Modified Puls Approach. The inflow and
+  outflow variables are defined for period `Δt`, and not at `t1` and `t2` (instantaneous) as
+  in the original mass balance equation of the Modified Puls Approach. Because of this, the
+  terms of the quadratic equation (and solution) were fixed.
+- Use `kvfrac` for the computation of vertical saturated hydraulic conductivity at the
+  bottom of the soil layer, since `kvfrac` is also used for the computation of vertical
+  unsaturated flow. 
+
+### Changed
+- For cyclic parameters different cyclic time inputs are supported (only one common cyclic
+  time (for example daily or monthly) was allowed).
+- BMI: 1) added grid information (type and location) and whether a variable can be exchanged
+  to metadata Structs, 2) extend model grid functions for Wflow components that store
+  variables on `edges` (local inertial model) with `get_grid_edge_count` and
+  `get_grid_edge_nodes`.
+
+### Added
+- Functions for loading and saving states and getting the `starttime` in Unix time format.
+  This is convenient for coupling with OpenDA (and other external) software. The set states
+  functionality from the initialization function has been moved to a separate `set_states`
+  function for each `Model` type, to support loading states independent of initialization.
+
+## v0.7.2 - 2023-09-27
+
+### Fixed
+- Water balance of modified Rutter interception model. The sum of the stemflow partitioning
+  coefficient `pt` and free throughfall coefficient `p` could get larger than 1, resulting
+  in an overestimation of stemflow and throughfall amounts and negative net interception
+  amounts. And the first drainage amount `dd`, controlled by a change over time in canopy
+  storage capacity `cmax`, should not be subtracted from precipitation to compute net
+  interception.
+- The `netinterception` (net interception) computed by the modified Rutter interception
+  model was stored as `interception` in `SBM`, while this should be the `interception`
+  (interception loss by evaporation) output of the modified Rutter interception model. The
+  `interception` of `SBM` is used to compute the total actual evapotranspiration `actevap`.
+
 ## v0.7.1 - 2023-06-30
 
 ### Fixed

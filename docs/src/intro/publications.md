@@ -18,13 +18,14 @@ latest release. The DOIs of previous versions are also available at Zenodo.
 
 If you use a snapshot of the development (without a DOI) please cite as follows:
 
-van Verseveld, Willem, Visser, Martijn, Boisgontier, Hélène, Bootsma, Huite, Bouaziz,
-Laurène, Buitink, Joost, Eilander, Dirk & Hegnauer, Mark (YEAR). Deltares/Wflow.jl:
+van Verseveld, Willem, Visser, Martijn, Buitink, Joost, Bouaziz, Laurène, Boisgontier,
+Hélène, Bootsma, Huite, Pronk, Maarten, Hartgring, Sebastian, Eilander, Dirk, Weerts,
+Albrecht, Dalmijn, Brendan, Hofer, Julian, & Hegnauer, Mark (YEAR). Deltares/Wflow.jl:
 unstable-master. <https://github.com/Deltares/Wflow.jl>, obtained: DATE\_OF\_DOWNLOAD.
 
 ## Publications using wflow
 
-### Papers
+### Peer reviewed journal papers
 
 Aerts, J. P. M., Hut, R. W., van de Giesen, N. C., Drost, N., van Verseveld, W. J., Weerts,
 A. H., and Hazenberg, P., 2022. Large-sample assessment of varying spatial resolution on the
@@ -114,10 +115,26 @@ Rakovec, O., Weerts, A.H., Sumihar, J., Uijlenhoet, R., 2015. Operational aspect
 asynchronous filtering for flood forecasting. Hydrol. Earth Syst. Sci., 19, 2911–2924,
 <https://doi.org/10.5194/hess-19-2911-2015>.
 
-Rusli,S., A.H. Weerts, A. Taufiq, V. Bense, 2021. Estimating water balance components and
+Ratri, D.N., A.H. Weerts, R. Muharsyah, K. Whan, A. Klein Tank, E. Aldrian, M. H. Hariadi,
+Calibration of ECMWF SEAS5 based streamflow forecast in Seasonal hydrological forecasting
+for Citarum river basin, West Java, Indonesia, Journal of Hydrology: Regional
+Studies,45,101305, <https://doi.org/10.1016/j.ejrh.2022.101305>.
+
+Rusli, S.R., A.H. Weerts, A. Taufiq, V. Bense, 2021. Estimating water balance components and
 their uncertainty bounds in highly groundwater-dependent and data-scarce area: An example
 for the Upper Citarum basin, J. Hydrol. Regional Studies,
 <https://doi.org/10.1016/j.ejrh.2021.100911>.
+
+Rusli, S.R., V.F. Bense, A. Taufiq, A.H. Weerts,2023. Quantifying basin-scale changes in
+groundwater storage using GRACE and one-way coupled hydrological and groundwater flow model
+in the data-scarce Bandung groundwater Basin, Indonesia, Groundwater for Sustainable
+Development,22, 100953, <https://doi.org/10.1016/j.gsd.2023.100953>.
+
+Rusli, S.R., A.H. Weerts, S.M.T. Mustafa, D.E. Irawan, A. Taufiq, V.F. Bense, 2023.
+Quantifying aquifer interaction using numerical groundwater flow model evaluated by
+environmental water tracer data: Application to the data-scarce area of the Bandung
+groundwater basin, West Java, Indonesia, Journal of Hydrology: Regional Studies, 50,
+<https://doi.org/10.1016/j.ejrh.2023.101585>.
 
 Schaller, N., Sillmann, J., Müller, M., Haarsma, R., Hazeleger, W., Hegdahl, T.J., Kelder,
 T., van den Oord, G., Weerts, A., Whan, K., 2020. The role of spatial and temporal model
@@ -125,7 +142,7 @@ resolution in a flood event storyline approach in western Norway. Weather and Cl
 Extremes, doi: <https://doi.org/10.1016/j.wace.2020.100259>.
 
 Sperna Weiland, F.C.,  R.D. Visser, P. Greve, B. Bisselink, L. Brunner and A.H. Weerts,
-2021. Estimating Regionalized Hydrological Impacts of Climate Change Over Europe by
+2021\. Estimating Regionalized Hydrological Impacts of Climate Change Over Europe by
 Performance-Based Weighting of CORDEX Projections, Frontiers of Water,
 <https://doi.org/10.3389/frwa.2021.713537>.
 
@@ -153,42 +170,67 @@ Wang, X., Zhang, J., Babovic, V., 2016. Improving real-time forecasting of water
 indicators with combination of process-based models and data assimilation technique.
 Ecological Indicators 66, 428–439. <https://doi:10.1016/j.ecolind.2016.02.016>.
 
+### PhD, MSc, BSc Theses & Internship reports
 
-### Theses & Internship reports
+Abdelnour, A., 2022. Bias Correction of Climate Simulations to Assess Climate Change Impacts
+on Low Flows in the Rhine River, MSc thesis, Delft Universitry of technology,
+<https://repository.tudelft.nl/islandora/object/uuid:50489399-cbd2-467f-9b82-98e5f3e371e9>.
+
+Ali, M.A., 2023. Machine learning for predicting spatially variable lateral hydraulic conductivity:
+a step towards efficient hydrological model calibration and global applicability, Intersnhip
+report, Deltares.
 
 Arnal, L., 2014. An intercomparison of flood forecasting models for the Meuse River basin,
-MSc. Thesis, Vrije Universiteit, Amsterdam. <https://hal.inrae.fr/hal-02600749>.
+MSc Thesis, Vrije Universiteit, Amsterdam, <https://hal.inrae.fr/hal-02600749>.
 
-Alkemade, G., 2019. Routing and calibration of distributed hydrological models, MSc. Thesis,
-Vrije Universiteit Amsterdam, Faculty of Science, Hydrology.
+Alkemade, G., 2019. Routing and calibration of distributed hydrological models, MSc Thesis,
+Vrije Universiteit, Amsterdam, Faculty of Science, Hydrology.
 
 Azadeh Karami Fard, 2015. Modeling runoff of an Ethiopian catchment with WFLOW, MSc. Thesis,
 Vrije Universiteit, Amsterdam.
 
-Beusen, B. The effect of rooting depth on discharge and evapotranspiration in (semi-)arid
-areas, MSC Thesis, HWM, Wageningen University, 2021.
+Benschop, J., 2023. The application of hybrid lateral routing in hydrological simulations
+of the Rhine catchment, MSc Thesis, Hydrology and Environmental Hydraulics Group, Wageningen
+University.
 
-Beusen, B. Plastic transport and the effect of climate change in the Rhine, Internship
-Deltares, 2021
+Beusen, B., 2021. The effect of rooting depth on discharge and evapotranspiration in
+(semi-)arid areas, MSc Thesis, Hydrology and Quantitative Water Management Group, Wageningen
+University.
+
+Beusen, B., 2021. Plastic transport and the effect of climate change in the Rhine,
+Internship report, Deltares.
 
 Bouaziz, L. J. E., 2021. Internal processes in hydrological models: A glance at the Meuse
 basin from space. Delft University of Technology, Delft, the Netherlands, Doctoral
-dissertation. <https://doi.org/10.4233/uuid:09d84cc1-27e2-4327-a8c7-207a75952061>
+dissertation, <https://doi.org/10.4233/uuid:09d84cc1-27e2-4327-a8c7-207a75952061>.
+
+Hartgring, S., 2023. On Forecasting the Rur River: Using hindcasts and forecasts of the 2021
+flood event to improve understanding of flood forecasting in the Rur catchment. Delft
+University of Technology, Delft, the Netherlands, MSc thesis,
+<http://resolver.tudelft.nl/uuid:2909d997-a983-490a-a588-87119998543a>.
+
+Jaime, D.E.V, 2021. Ensemble hydrological forecasts to derive extreme return
+periods: Case Study of the Overijsselse Vecht River using the wflow_sbm model, MSc thesis,
+Unesco IHE, Delft.
 
 López López, P., 2018. Application of Global Hydrological Datasets for River Basin Modelling
-Utrecht University, Utrecht, the Netherlands, pp. 1-214, Doctoral dissertation.
+Utrecht University, Utrecht, the Netherlands, pp. 1-214, Doctoral dissertation,
 <http://dspace.library.uu.nl/handle/1874/364148>.
 
 Maat, W.H., 2015. Simulating discharges and forecasting floods using a conceptual
-rainfall-runoff model for the Bolivian Mamoré basin, MSc. Thesis, University of Twente,
+rainfall-runoff model for the Bolivian Mamoré basin, MSc Thesis, University of Twente,
 Enschede. <https://essay.utwente.nl/67046/>.
 
 van Osnabrugge, B., 2020. Interpolate, simulate, assimilate: operational aspects of
-improving hydrological forecasts in the Rhine basin. Wageningen University.
-<https://doi.org/10.18174/513157>.
+improving hydrological forecasts in the Rhine basin. Wageningen University, Doctoral
+dissertation, <https://doi.org/10.18174/513157>.
 
-Rohrmueller, I., 2019. BENCHMARKING THE NEW WFLOW DISTRIBUTED HYDROLOGICAL MODEL, MSc.
+Rohrmueller, I., 2019. BENCHMARKING THE NEW WFLOW DISTRIBUTED HYDROLOGICAL MODEL, MSc
 Thesis, School of Engineering - Newcastle University.
+
+Rusli, S.R., 2024. Deepening the quantitative understanding of groundwater systems in 
+data-scarce areas: application in the Bandung Groundwater Basin, Indonesia. Wageningen 
+University, Doctoral dissertation, <https://edepot.wur.nl/640983>.
 
 Tretjakova, D., 2015. Investigating the effect of using fully-distributed model and data
 assimilation on the performance of hydrological forecasting in the Karasu catchment, Turkey,
@@ -197,15 +239,25 @@ MSc thesis, Wageningen University.
 Verbrugge, M., 2019. Reservoir Operation Optimization, a case study in the Chao Phraya
 Basin, BSc thesis, Hydrology and Quantitative Water Management Group, Wageningen University.
 
-Viguures, P. 2020. Modelling of flash floods in current and future climate with high
-resolution convection permitting regional climate models in the European Alps, MSc Thesis,
-Wageningen University, 2020
+Verbrugge, M., 2023. Bias-correcting meteorological forcing to improve seasonal discharge
+forecasting of the Rhine, Internship report, Deltares.
 
-Visser, B. 2020. Impact of climate change on local water resources of European catchments,
-Intersnhip report, Deltares, 2020
+Viguures, P., 2020. Modelling of flash floods in current and future climate with high
+resolution convection permitting regional climate models in the European Alps, MSc Thesis,
+Wageningen University.
+
+Visser, B., 2020. Impact of climate change on local water resources of European catchments,
+Intersnhip report, Deltares.
+
+Wannasin, C., 2023. Modelling and forecasting daily streamflow with reservoir operation in the
+upper Chao Phraya River basin, Thailand.  
+Wageningen University, Doctoral dissertation, <https://doi.org/10.18174/584572>.
 
 ### Reports
 
 World Bank. 2021. Plastic Waste Discharges from Rivers and Coastlines in Indonesia. Marine
-Plastics Series;. World Bank, Washington, DC. © World Bank.
-<https://openknowledge.worldbank.org/handle/10986/35607> License: CC BY 3.0 IGO
+Plastics Series;. World Bank, Washington, DC. © World Bank,
+<https://openknowledge.worldbank.org/handle/10986/35607>, License: CC BY 3.0 IGO.
+
+World Meteorological Organization (WMO), 2023. State of Global Water Resources report 2022,
+WMO-No. 1333, <https://library.wmo.int/idurl/4/68473>.

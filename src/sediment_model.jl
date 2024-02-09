@@ -16,8 +16,6 @@ function initialize_sediment_model(config::Config)
     clock = Clock(config, reader)
     Δt = clock.Δt
 
-    reinit = get(config.model, "reinit", true)::Bool
-
     do_river = get(config.model, "runrivermodel", false)::Bool
 
     nc = NCDataset(static_path)
@@ -150,15 +148,7 @@ function initialize_sediment_model(config::Config)
         SedimentModel(),
     )
 
-    # read and set states in model object if reinit=false
-    if reinit == false
-        instate_path = input_path(config, config.state.path_input)
-        @info "Set initial conditions from state file `$instate_path`."
-        state_ncnames = ncnames(config.state)
-        set_states(instate_path, model, state_ncnames; type = Float)
-    else
-        @info "Set initial conditions from default values."
-    end
+    model = set_states(model)
 
     @info "Initialized model"
     return model
@@ -199,5 +189,20 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SedimentModel}
         update(lateral.river, network.river, config)
     end
 
+    return model
+end
+
+function set_states(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SedimentModel}
+    # read and set states in model object if reinit=false
+    @unpack config = model
+    reinit = get(config.model, "reinit", true)::Bool
+    if reinit == false
+        instate_path = input_path(config, config.state.path_input)
+        @info "Set initial conditions from state file `$instate_path`."
+        state_ncnames = ncnames(config.state)
+        set_states(instate_path, model, state_ncnames; type = Float)
+    else
+        @info "Set initial conditions from default values."
+    end
     return model
 end

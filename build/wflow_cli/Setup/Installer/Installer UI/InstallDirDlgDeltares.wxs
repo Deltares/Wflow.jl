@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright (c) Microsoft Corporation.  All rights reserved.
+
+The use and distribution terms for this software are covered by the
+Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.php)
+which can be found in the file CPL.TXT at the root of this distribution.
+By using this software in any fashion, you are agreeing to be bound by
+the terms of this license.
+
+You must not remove this notice, or any other, from this software.
+-->
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Fragment>
+    <UI>
+      <Dialog Id="InstallDirDlgDeltares" Width="370" Height="270" Title="!(loc.Dlg_Title)">
+        <Control Id="Next" Type="PushButton" X="236" Y="!(loc.NavigateButtonY)" Width="56" Height="17" Default="yes" Text="!(loc.NextButtonText)" />
+        <Control Id="Back" Type="PushButton" X="180" Y="!(loc.NavigateButtonY)" Width="56" Height="17" Text="!(loc.BackButtonText)" />
+        <Control Id="Cancel" Type="PushButton" X="304" Y="!(loc.NavigateButtonY)" Width="56" Height="17" Cancel="yes" Text="!(loc.CancelButtonText)">
+          <Publish Event="SpawnDialog" Value="CancelDlgDeltares">1</Publish>
+        </Control>
+
+        <Control Id="BannerBitmap" Type="Bitmap"  X="!(loc.BannerImageX)" Y="!(loc.BannerImageY)" Width="!(loc.BannerImageWidth)" Height="!(loc.BannerImageHeight)" TabSkip="no" Text="!(loc.InstallDirDlgBannerBitmap)" />
+        <Control Id="Text" Type="Text" X="25" Y="214" Width="320" Height="20" Text="!(loc.InstallDirDlgText)" />
+        <Control Id="HeaderLine" Type="Line" X="0" Y="!(loc.HeaderHeight)" Width="!(loc.DialogWidth)" Height="0" />
+        <Control Id="BottomLine" Type="Line" X="0" Y="!(loc.BottomLineY)" Width="!(loc.DialogWidth)" Height="0" />
+        <Control Id="Description" Type="Text" X="!(loc.TextX)" Y="!(loc.DescriptionTextY)" Width="325" Height="15" Transparent="yes" NoPrefix="yes" Text="!(loc.InstallDirDlgDescription)" />
+        <Control Id="Title" Type="Text" X="!(loc.TextX)" Y="!(loc.TitleTextY)" Width="325" Height="15" Transparent="yes" NoPrefix="yes" Text="!(loc.InstallDirDlgTitle)" />
+
+        <Control Id="FolderLabel" Type="Text" X="!(loc.TextX)" Y="56" Width="290" Height="30" NoPrefix="yes" Text="!(loc.InstallDirDlgFolderLabel)" />
+        <Control Id="Folder" Type="PathEdit" X="!(loc.TextX)" Y="86" Width="320" Height="18" Property="WIXUI_INSTALLDIR" Indirect="yes" />
+        <Control Id="ChangeFolder" Type="PushButton" X="!(loc.TextX)" Y="106" Width="56" Height="17" Text="!(loc.InstallDirDlgChange)" />
+      </Dialog>
+    </UI>
+  </Fragment>
+</Wix>

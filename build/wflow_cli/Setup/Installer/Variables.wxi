@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Include>
+  <!--
+    BUILD_NUMBER is an environment variable, for example defined by build server.
+    ReleaseVersion is defined as custom variable in Application.Setup.wixproj.
+  -->
+  <?define FullReleaseVersion="$(var.ReleaseVersion)"?>
+  <?ifdef env.BUILD_NUMBER and not $(var.Configuration) == "Release" ?>
+    <?define ApplicationFullName="!(loc.ApplicationShortName) $(var.FullReleaseVersion).$(env.BUILD_NUMBER)" ?>
+  <?else?>
+    <?define ApplicationFullName="!(loc.ApplicationShortName) $(var.FullReleaseVersion)" ?>
+  <?endif?>
+</Include>
