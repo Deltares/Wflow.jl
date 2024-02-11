@@ -230,7 +230,7 @@ Thesis, School of Engineering - Newcastle University.
 
 Rusli, S.R., 2024. Deepening the quantitative understanding of groundwater systems in 
 data-scarce areas: application in the Bandung Groundwater Basin, Indonesia. Wageningen 
-University, Doctoral dissertation, <https://edepot.wur.nl/640983>.
+University, Doctoral dissertation, <https://doi.org/10.18174/640983>.
 
 Tretjakova, D., 2015. Investigating the effect of using fully-distributed model and data
 assimilation on the performance of hydrological forecasting in the Karasu catchment, Turkey,
