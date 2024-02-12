@@ -8,7 +8,7 @@ many other programming languages with ZeroMQ bindings. An example is the use of
 and Wflow through a black box model approach is too slow because it requires a restart of
 Wflow (multiple times), while this is not required with a client-server approach.  
 
-Specify the `WflowServer` environment on startup, in the [directory](/server/):
+Specify the `WflowServer` environment on startup, in the current directory:
 ```
 julia --project=.
 ```
