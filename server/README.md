@@ -8,8 +8,7 @@ many other programming languages with ZeroMQ bindings. An example is the use of
 and Wflow through a black box model approach is too slow because it requires a restart of
 Wflow (multiple times), while this is not required with a client-server approach.  
 
-Specify the `WflowServer` environment on startup, in the
-[directory](https://github.com/Deltares/Wflow.jl/tree/zmq_server/server):
+Specify the `WflowServer` environment on startup, in the [directory](/server/):
 ```
 julia --project=.
 ```
@@ -31,5 +30,5 @@ other arguments required by the exposed Wflow functions (mostly through BMI):
 """{"fn": "update_until", "time": 86400.0}"""
 ```
 
-The [tests](https://github.com/Deltares/Wflow.jl/tree/zmq_server/server/test) provide
-further examples of the interface to the Wflow (BMI) and server functions.
+The [tests](/server/test/) provide further examples of the interface to the Wflow (BMI) and
+server functions.
