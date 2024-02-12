@@ -757,9 +757,11 @@ end
     outsagg::Vector{T} | "t Δt⁻¹"
     outlagg::Vector{T} | "t Δt⁻¹"
     outgrav::Vector{T} | "t Δt⁻¹"
-    # Sediment concentrations [g/m3]
+    # Total sediment concentrations (SSconc + Bedconc) [g/m3]
     Sedconc::Vector{T} | "g m-3"
+    # Suspended load concentration [g/m3]
     SSconc::Vector{T} | "g m-3"
+    # Bed load concentration [g/m3]
     Bedconc::Vector{T} | "g m-3"
     # River transport capacity
     maxsed::Vector{T} | "t Δt⁻¹"
