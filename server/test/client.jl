@@ -1,13 +1,10 @@
-@info("start ZMQ server for Wflow (@async)")
+# start Wflow ZMQ server (@async)
 @async begin
-    include("../src/WflowBmiServer.jl")
+    WflowServer.start()
 end
-sleep(2)
-@info("Started ZMQ server for Wflow")
 
+# Connecting to the Wflow ZMQ Server
 context = Context()
-
-@info("Connecting to the ZMQ server for Wflow...")
 socket = Socket(context, REQ)
 ZMQ.connect(socket, "tcp://localhost:5555")
 
@@ -222,13 +219,13 @@ end
     msg = Dict("fn" => "not_existing_function")
     @test request(msg) == Dict(
         "status" => "ERROR",
-        "error" => "Received invalid function: not_existing_function",
+        "error" => "Received invalid Wflow function: `not_existing_function`",
     )
 
     msg = Dict("fn" => "initialize")
     @test request(msg) == Dict(
         "status" => "ERROR",
-        "error" => "At least one required argument name \n(config_file) not available for function: initialize",
+        "error" => "At least one required argument name (`config_file`) not available for function: `initialize`",
     )
 
     msg = Dict("fn" => "shutdown")

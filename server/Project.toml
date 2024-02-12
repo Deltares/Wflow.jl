@@ -1,4 +1,4 @@
-name = "WflowBmiServer"
+name = "WflowServer"
 authors = ["Deltares and contributors"]
 version = "0.1"
 

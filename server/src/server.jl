@@ -1,3 +1,6 @@
+export
+    start
+
 # map JSON function name to Struct (bmi_service.jl)
 const map_structs = Dict(
     "initialize" => Initialize,
@@ -44,18 +47,21 @@ end
 
 "Shutdown ZMQ server"
 function shutdown(s::Socket, ctx::Context)
+    @info "Shutting down Wflow ZMQ server on request..."
     ZMQ.close(s)
     ZMQ.close(ctx)
 end
 
 "Error response ZMQ server"
 function response(err::AbstractString, s::Socket)
+    @info "Send error response"
     resp = Dict{String,String}("status" => "ERROR", "error" => err)
     ZMQ.send(s, JSON3.write(resp))
 end
 
 "Status response ZMQ server"
 function response(s::Socket)
+    @info "Send status response"
     resp = Dict{String,String}("status" => "OK")
     ZMQ.send(s, JSON3.write(resp))
 end
@@ -73,81 +79,86 @@ end
 """
     wflow_bmi(s::Socket, handler::ModelHandler, f)
 
-Run a Wflow.BMI (or Wflow) function through `wflow.bmi(f, handler.model)` and update Wflow
-Model `handler` if required, depending on return type of `wflow.bmi(f, handler.model)`.
+Run a Wflow function through `wflow.bmi(f, handler.model)` and update Wflow Model `handler`
+if required, depending on return type of `wflow.bmi(f, handler.model)`.
 """
 function wflow_bmi(s::Socket, handler::ModelHandler, f)
     try
         ret = wflow_bmi(f, handler.model)
-        if typeof(ret) <: Wflow.Model
+        if typeof(ret) <: Wflow.Model # update of Wflow model
             handler.model = ret
             response(s)
-        elseif isnothing(ret)
+        elseif isnothing(ret) # for SetValue and SetValueAtIndices
             response(s)
         else
+            @info "Send response including output from Wflow function `$(f.fn)`"
             ZMQ.send(s, JSON3.write(ret))
         end
     catch e
-        @error "Wflow BMI $(f.fn) failed" exception = (e, catch_backtrace())
+        @error "Wflow function `$(f.fn)` failed" exception = (e, catch_backtrace())
         err = string(
-            "Wflow BMI $(f.fn) failed\n exception =\n ",
+            "Wflow function `$(f.fn)` failed\n exception =\n ",
             sprint(showerror, e, catch_backtrace()),
         )
         response(err, s)
     end
 end
 
-# initialize Wflow model handler
-handler = ModelHandler(nothing)
+"Start Wflow ZMQ Server"
+function start()
+    @info "Start Wflow ZMQ Server..."
+    
+    # initialize Wflow model handler
+    handler = ModelHandler(nothing)
 
-# set up a ZMQ context, with optional port number (default = 5555) argument
-context = Context()
-socket = Socket(context, REP)
-n = length(ARGS)
-if n == 0
-    port = 5555
-elseif n == 1
-    port = parse(Int, ARGS[1])
-else
-    throw(
-        ArgumentError(
-            "More than one argument provided, while only one port number is allowed.",
-        ),
-    )
-end
-ZMQ.bind(socket, "tcp://*:$port")
+    # set up a ZMQ context, with optional port number (default = 5555) argument
+    context = Context()
+    socket = Socket(context, REP)
+    n = length(ARGS)
+    if n == 0
+        port = 5555
+    elseif n == 1
+        port = parse(Int, ARGS[1])
+    else
+        throw(
+            ArgumentError(
+                "More than one argument provided, while only one port number is allowed.",
+            ),
+        )
+    end
+    ZMQ.bind(socket, "tcp://*:$port")
 
-try
-    while true
-        # Wait for next request from client
-        req = ZMQ.recv(socket)
-        json = JSON3.read(req)
+    try
+        while true
+            # Wait for next request from client
+            req = ZMQ.recv(socket)
+            json = JSON3.read(req)
+            @info "Received request to run function `$(json.fn)`..."
 
-        if haskey(map_structs, json.fn)
-            v = valid_request(json)
-            if isnothing(v)
-                f = StructTypes.constructfrom(map_structs[json.fn], json)
-                wflow_bmi(socket, handler, f)
+            if haskey(map_structs, json.fn)
+                v = valid_request(json)
+                if isnothing(v)
+                    f = StructTypes.constructfrom(map_structs[json.fn], json)
+                    wflow_bmi(socket, handler, f)
+                else
+                    err = ("""At least one required argument name (`$v`) not available for function: `$(json.fn)`""")
+                    @error err
+                    response(err, socket)
+                end
+            elseif json.fn === "shutdown"
+                response(socket)
+                break
             else
-                err = ("""At least one required argument name 
-                        ($v) not available for function: $(json.fn)""")
+                err = "Received invalid Wflow function: `$(json.fn)`"
                 @error err
                 response(err, socket)
             end
-        elseif json.fn === "shutdown"
-            response(socket)
-            shutdown(socket, context)
-            break
-        else
-            err = "Received invalid function: $(json.fn)"
-            @error err
-            response(err, socket)
         end
+    catch e
+        err = "Wflow ZMQ Server: exception in process"
+        @error err
+        response(err, socket)
+    finally
+        shutdown(socket, context)
     end
-catch e
-    err = "ZMQ Wflow Server: exception in process"
-    @error err
-    response(err, socket)
-finally
-    shutdown(socket, context)
 end

@@ -1,4 +1,4 @@
-module WflowBmiServer
+module WflowServer
 using ZMQ
 using JSON3
 using StructTypes
