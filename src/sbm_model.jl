@@ -444,9 +444,7 @@ Update of the total water storage at the end of each timestep per model cell.
 
 This is done here at model level.
 """
-function update_total_water_storage(
-    model::Model{N,L,V,R,W,T},
-) where {N,L,V,R,W,T<:SbmModel}
+function update_total_water_storage(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
     @unpack lateral, vertical, network, clock, config = model
 
     # Update the total water storage based on vertical states
@@ -534,7 +532,7 @@ function set_states(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
         if floodplain_1d
             initialize_volume!(lateral.river, nriv)
         end
-    
+
         if do_lakes
             # storage must be re-initialized after loading the state with the current
             # waterlevel otherwise the storage will be based on the initial water level

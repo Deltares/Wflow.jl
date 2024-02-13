@@ -6,17 +6,17 @@
     # Number of cells
     n::Int | "-" | 0 | "none" | "none"
     #dictionary with all possible functions for each store
-    dic_function::Dict |"-"| 0 | "none" | "none"
+    dic_function::Dict | "-" | 0 | "none" | "none"
     #current class
-    kclass::Vector{Int64} |"-"| 0 | "none" | "none"
-    classes::Vector{String} |"-"| 0 | "none" | "none"
-    select_snow::Vector{String} |"-"| 0 | "none" | "none"
-    select_interception::Vector{String} |"-"| 0 | "none" | "none"
-    select_hortonponding::Vector{String} |"-"| 0 | "none" | "none"
-    select_hortonrunoff::Vector{String} |"-"| 0 | "none" | "none"
-    select_rootzone::Vector{String} |"-"| 0 | "none" | "none"
-    select_fast::Vector{String} |"-"| 0 | "none" | "none"
-    select_slow::Vector{String} |"-"| 0 | "none" | "none"
+    kclass::Vector{Int64} | "-" | 0 | "none" | "none"
+    classes::Vector{String} | "-" | 0 | "none" | "none"
+    select_snow::Vector{String} | "-" | 0 | "none" | "none"
+    select_interception::Vector{String} | "-" | 0 | "none" | "none"
+    select_hortonponding::Vector{String} | "-" | 0 | "none" | "none"
+    select_hortonrunoff::Vector{String} | "-" | 0 | "none" | "none"
+    select_rootzone::Vector{String} | "-" | 0 | "none" | "none"
+    select_fast::Vector{String} | "-" | 0 | "none" | "none"
+    select_slow::Vector{String} | "-" | 0 | "none" | "none"
 
     #fraction of each class
     hrufrac::Vector{SVector{N,T}} | "-"

@@ -154,7 +154,7 @@ function acttransp_unsat_sbm(
     θₛ,
     θᵣ,
     hb,
-    ust::Bool=false,
+    ust::Bool = false,
 )
 
     # AvailCap is fraction of unsat zone containing roots
@@ -363,9 +363,9 @@ function snowpack_hbv(
     ttm,
     cfmax,
     whc;
-    rfcf=1.0,
-    sfcf=1.0,
-    cfr=0.05
+    rfcf = 1.0,
+    sfcf = 1.0,
+    cfr = 0.05,
 )
 
     # fraction of precipitation which falls as rain

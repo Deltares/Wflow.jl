@@ -52,7 +52,7 @@ end
 
 function Clock(config, reader)
     nctimes = reader.dataset["time"][:]
-    
+
     # if the timestep is not given, use the difference between NetCDF time 1 and 2
     timestepsecs = get(config, "timestepsecs", nothing)
     if timestepsecs === nothing
@@ -60,7 +60,7 @@ function Clock(config, reader)
         config.timestepsecs = timestepsecs
     end
     Δt = Second(timestepsecs)
-    
+
     # if the config file does not have a start or endtime, follow the NetCDF times
     # and add them to the config
     starttime = get(config, "starttime", nothing)
@@ -80,7 +80,7 @@ function Clock(config, reader)
         config.starttime = starttime + Δt
     end
     starttime = cftime(config.starttime, calendar)
-    
+
     Clock(starttime, 0, Δt)
 end
 
@@ -219,8 +219,8 @@ function run(model::Model; close_files = true)
     # determine timesteps to run
     calendar = get(config, "calendar", "standard")::String
     @warn string(
-        "The definition of `starttime` has changed (equal to model state time).\n Please", 
-        " update your settings TOML file by subtracting one model timestep Δt from the", 
+        "The definition of `starttime` has changed (equal to model state time).\n Please",
+        " update your settings TOML file by subtracting one model timestep Δt from the",
         " `starttime`, if it was used with a Wflow version up to v0.6.3.",
     )
     starttime = clock.time
