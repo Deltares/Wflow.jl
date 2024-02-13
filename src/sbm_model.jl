@@ -508,7 +508,7 @@ function set_states(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
                 " bed elevation `zb` to cell elevation `z`. Please update the input state",
                 " file if it was produced with Wflow version v0.5.2.",
             )
-            for i = 1:n
+            for i in eachindex(lateral.land.volume)
                 if lateral.land.rivercells[i]
                     j = network.land.index_river[i]
                     if lateral.land.h[i] > 0.0
