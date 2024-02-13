@@ -97,6 +97,7 @@ function extract_required_states(config)
     do_glaciers = get(config.model, "glacier", false)::Bool
     do_lakes = get(config.model, "lakes", false)::Bool
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
+    do_floodplains = get(config.model, "floodplain_1d", false)::Bool
 
     # Extract required stated based on model configuration file
     vertical_states = get_vertical_states(model_type; snow = do_snow, glacier = do_glaciers)
@@ -159,9 +160,7 @@ function extract_required_states(config)
     end
 
     # Floodplain states
-    floodplain_states =
-        haskey(config.model, "floodplain_1d") && config.model.floodplain_1d ? (:q, :h) :
-        nothing
+    floodplain_states = do_floodplains ? (:q, :h) : nothing
 
     # Lake and reservoir states
     lake_states = do_lakes ? (:waterlevel,) : nothing
