@@ -177,8 +177,6 @@ function initialize_surfaceflow_river(
     return sf_river
 end
 
-statevars(::SurfaceFlowRiver) = (:q, :h, :h_av)
-statevars(::SurfaceFlowLand) = (:q, :h, :h_av)
 
 function update(sf::SurfaceFlowLand, network, frac_toriver)
     @unpack graph, subdomain_order, topo_subdomain, indices_subdomain, upstream_nodes =
@@ -412,7 +410,6 @@ end
     end
 end
 
-statevars(::LateralSSF) = (:ssf,)
 
 function update(ssf::LateralSSF, network, frac_toriver)
     @unpack subdomain_order, topo_subdomain, indices_subdomain, upstream_nodes = network

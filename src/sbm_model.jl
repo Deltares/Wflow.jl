@@ -477,12 +477,11 @@ function set_states(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
         nriv = length(network.river.indices)
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
-        state_ncnames = ncnames(config.state)
         @warn string(
             "The unit of `ssf` (lateral subsurface flow) is now m3 d-1. Please update your",
             " input state file if it was produced with a Wflow version up to v0.5.2.",
         )
-        set_states(instate_path, model, state_ncnames; type = Float, dimname = :layer)
+        set_states(instate_path, model; type = Float, dimname = :layer)
         @unpack lateral, vertical, network = model
         # update zi for vertical sbm and kinematic wave volume for river and land domain
         zi =

@@ -223,16 +223,6 @@
 
 end
 
-statevars(::FLEXTOPO) = (
-    :snow,
-    :snowwater,
-    :interceptionstorage,
-    :hortonpondingstorage,
-    :hortonrunoffstorage,
-    :rootzonestorage,
-    :faststorage,
-    :slowstorage,
-)
 
 function common_snow_hbv(flextopo::FLEXTOPO)
     for i = 1:flextopo.n
