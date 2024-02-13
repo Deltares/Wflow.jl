@@ -49,6 +49,8 @@ function get_vertical_states(model_type::String; snow = false, glacier = false)
             :faststorage,
             :slowstorage,
         )
+    elseif model_type == "sediment"
+        vertical_states = ()
     else
         throw(ArgumentError("Unknown model_type provided (`$model_type`)"))
     end
@@ -86,37 +88,82 @@ Returns as list of required states, in the same formats as the keys that are ret
 `ncnames` function.
 """
 function extract_required_states(config)
+    # Extract model type
+    model_type_options = ("sbm", "sbm_gwf", "hbv", "flextopo", "sediment")
+    model_type = get(config.model, "type", model_type_options)::String
+
     # Extract model settings
-    do_snow = config.model.snow
-    do_glaciers = config.model.glacier
+    do_lakes = get(config.model, "lakes", false)::Bool
+    do_reservoirs = get(config.model, "reservoirs", false)::Bool
 
     # Extract required stated based on model configuration file
-    vertical_states =
-        get_vertical_states(config.model.type; snow = do_snow, glacier = do_glaciers)
+    vertical_states = get_vertical_states(model_type; snow = do_snow, glacier = do_glaciers)
 
     # Subsurface states
-    if config.model.type == "sbm_gwf"
+    if model_type == "sbm_gwf"
         ssf_states = (:head,)
     else
         ssf_states = haskey(config.input.lateral, "subsurface") ? (:ssf,) : nothing
     end
 
     # Land states
-    if haskey(config.model, "land_routing")
-        if config.model.land_routing == "local-inertial"
-            land_states = (:qx, :qy, :h, :h_av)
-        end
+    if model_type == "sediment"
+        land_states = ()
     else
-        land_states = (:q, :h, :h_av)
+        routing_options = ("kinematic-wave", "local-inertial")
+        land_routing = get_options(
+            config.model,
+            "land_routing",
+            routing_options,
+            "kinematic-wave",
+        )::String
+        if land_routing == "local-inertial"
+            land_states = (:qx, :qy, :h, :h_av)
+        elseif land_routing == "kinematic-wave"
+            if model_type == "sbm"
+                land_states = (:q, :h, :h_av)
+            else
+                land_states = (:q, :h)
+            end
+        end
     end
+
     # River states
-    river_states = (:q, :h, :h_av)
+    if model_type == "sediment"
+        river_states = (
+            :clayload,
+            :siltload,
+            :sandload,
+            :saggload,
+            :laggload,
+            :gravload,
+            :claystore,
+            :siltstore,
+            :sandstore,
+            :saggstore,
+            :laggstore,
+            :gravstore,
+            :outclay,
+            :outsilt,
+            :outsand,
+            :outsagg,
+            :outlagg,
+            :outgrav,
+        )
+    elseif model_type == "sbm"
+        river_states = (:q, :h, :h_av)
+    else
+        river_states = (:q, :h)
+    end
+
+    # Floodplain states
     floodplain_states =
         haskey(config.model, "floodplain_1d") && config.model.floodplain_1d ? (:q, :h) :
         nothing
-    lake_states = config.model.lakes ? (:waterlevel,) : nothing
-    reservoir_states = config.model.reservoirs ? (:volume,) : nothing
 
+    # Lake and reservoir states
+    lake_states = do_lakes ? (:waterlevel,) : nothing
+    reservoir_states = do_reservoirs ? (:volume,) : nothing
 
     # Build required states in a tuple, similar to the keys in the output of
     # `ncnames(config.state)`
@@ -124,7 +171,7 @@ function extract_required_states(config)
     # Add vertical states to dict
     required_states = add_to_required_states(required_states, (:vertical,), vertical_states)
     # Add subsurface states to dict
-    if config.model.type == "sbm_gwf"
+    if model_type == "sbm_gwf"
         key_entry = (:lateral, :subsurface, :flow, :aquifer)
     else
         key_entry = (:lateral, :subsurface)
@@ -172,6 +219,7 @@ function check_states(config)
 
     # Flag to keep track of whether to throw an error
     error = false
+    missing_states = ()
     # Check if all states are covered
     for state in required_states
         if !haskey(state_ncnames, state)
@@ -180,13 +228,14 @@ function check_states(config)
                 "correctly in the model configuration",
             )
             error = true
+            missing_states = (missing_states..., state)
         end
     end
     # Throw error when not all states are covered
     if error
         throw(
             ArgumentError(
-                "Not all required states are provided, check error messages above",
+                "Not all required states are provided, these states are missing: `$missing_states`",
             ),
         )
     end
