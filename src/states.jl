@@ -93,6 +93,8 @@ function extract_required_states(config)
     model_type = get(config.model, "type", model_type_options)::String
 
     # Extract model settings
+    do_snow = get(config.model, "snow", false)::Bool
+    do_glaciers = get(config.model, "glacier", false)::Bool
     do_lakes = get(config.model, "lakes", false)::Bool
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
 
