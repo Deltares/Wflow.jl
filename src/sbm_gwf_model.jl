@@ -3,10 +3,11 @@
 
 Initial part of the sbm_gwf model concept. The model contains:
     - the vertical SBM concept
-    - the following lateral components:
-        - 1-D kinematic wave for river flow
-        - 1-D kinematic wave for overland flow
-        - unconfined aquifer with groundwater flow in four directions (adjacent cells)
+    - unconfined aquifer with groundwater flow in four directions (adjacent cells)
+    - the following surface routing options:
+        - 1-D kinematic wave for river flow and 1-D kinematic wave for overland flow
+        - 1-D local inertial model for river flow (optional floodplain) and 1-D kinematic wave for overland flow
+        - 1-D local inertial model for river flow (optional floodplain) and 2-D local inertial model for overland flow
 
 The unconfined aquifer contains a recharge, river and a drain (optional) boundary.
 
