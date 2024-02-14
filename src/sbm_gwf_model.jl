@@ -109,6 +109,14 @@ function initialize_sbm_gwf_model(config::Config)
     dw = (xl .* yl) ./ dl
     sw = map(det_surfacewidth, dw, riverwidth, river)
 
+    graph = flowgraph(ldd, inds, pcr_dir)
+    ldd_riv = ldd_2d[inds_riv]
+    graph_riv = flowgraph(ldd_riv, inds_riv, pcr_dir)
+
+    # the indices of the river cells in the land(+river) cell vector
+    index_river = filter(i -> !isequal(river[i], 0), 1:n)
+    frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, βₗ, n)
+    
     if land_routing == "kinematic-wave"
         olf = initialize_surfaceflow_land(
             nc,
@@ -141,20 +149,11 @@ function initialize_sbm_gwf_model(config::Config)
         )
     end
 
-    graph = flowgraph(ldd, inds, pcr_dir)
-
     # river flow (kinematic wave)
     riverlength = riverlength_2d[inds_riv]
     riverwidth = riverwidth_2d[inds_riv]
     minimum(riverlength) > 0 || error("river length must be positive on river cells")
     minimum(riverwidth) > 0 || error("river width must be positive on river cells")
-
-    ldd_riv = ldd_2d[inds_riv]
-    graph_riv = flowgraph(ldd_riv, inds_riv, pcr_dir)
-
-    # the indices of the river cells in the land(+river) cell vector
-    index_river = filter(i -> !isequal(river[i], 0), 1:n)
-    frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, βₗ, n)
 
     if river_routing == "kinematic-wave"
         rf = initialize_surfaceflow_river(
