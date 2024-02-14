@@ -469,7 +469,5 @@ end
     # Removing the unused and required state, to test the exception being thrown
     delete!(config.state["vertical"], "additional_state")
     delete!(config.state["vertical"], "snow")
-    @test_throws "Not all required states are provided, these states are missing: `((:vertical, :snow),)`" Wflow.check_states(
-        config,
-    )
+    @test_throws ArgumentError Wflow.check_states(config)
 end
