@@ -441,3 +441,35 @@ end
     Wflow.advance!(clock)
     @test clock.time == DateTimeNoLeap(2000, 3, 1)
 end
+
+@testset "State checking" begin
+    tomlpath = joinpath(@__DIR__, "sbm_config.toml")
+    config = Wflow.Config(tomlpath)
+    config = Wflow.Config(tomlpath)
+
+    # Extracting required states and test if some are covered (not all are tested!)
+    required_states = Wflow.extract_required_states(config)
+    @test (:vertical, :satwaterdepth) in required_states
+    @test (:vertical, :ustorelayerdepth) in required_states
+    @test (:vertical, :canopystorage) in required_states
+    @test (:lateral, :subsurface, :ssf) in required_states
+    @test (:lateral, :river, :q) in required_states
+    @test !((:lateral, :river, :lake, :waterlevel) in required_states)
+
+    # Adding an unused state the see if the right warning message is thrown
+    config.state.vertical.additional_state = "additional_state"
+    @test_logs (
+        :warn,
+        string(
+            "State variable `(:vertical, :additional_state)` provided, but is not used in ",
+            "model setup, skipping.",
+        ),
+    ) Wflow.check_states(config)
+
+    # Removing the unused and required state, to test the exception being thrown
+    delete!(config.state["vertical"], "additional_state")
+    delete!(config.state["vertical"], "snow")
+    @test_throws "Not all required states are provided, these states are missing: `((:vertical, :snow),)`" Wflow.check_states(
+        config,
+    )
+end
