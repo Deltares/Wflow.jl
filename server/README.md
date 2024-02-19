@@ -4,7 +4,7 @@ Interface (BMI) implementation of Wflow and three additonal Wflow functions rela
 states and start time of the model in Unix time, using [ZeroMQ](https://zeromq.org/) with
 TCP data transport. The Wflow ZMQ Server allows users to interact with a Wflow model from
 many other programming languages with ZeroMQ bindings. An example is the use of
-[OpenDa](https://openda.org/) Java software for data-assimilation. The coupling of OpenDA
+[OpenDA](https://openda.org/) Java software for data-assimilation. The coupling of OpenDA
 and Wflow through a black box model approach is too slow because it requires a restart of
 Wflow (multiple times), while this is not required with a client-server approach.  
 
