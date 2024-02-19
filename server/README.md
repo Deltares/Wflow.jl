@@ -8,14 +8,31 @@ many other programming languages with ZeroMQ bindings. An example is the use of
 and Wflow through a black box model approach is too slow because it requires a restart of
 Wflow (multiple times), while this is not required with a client-server approach.
 
-Specify the `WflowServer` environment on startup, in the current directory:
+The Wflow ZMQ Server can be started through an interactive Julia version, using different
+functions. First, start the `WflowServer` environment on startup, in the current directory:
 ```
 julia --project=.
 ```
-and start the Wflow ZMQ Server, listening on port `<port>` (default: 5555) as follows:
+then start the Wflow ZMQ Server, listening on port 5556 with the `start` function as
+follows:
 ```julia-repl
 julia> using WflowServer
-julia> WflowServer.start() <port>
+julia> WflowServer.start(5556)
+```
+or start the Wflow ZMQ Server, listening on port 5556 with the `main` function:
+```julia-repl
+julia> using WflowServer
+julia> WflowServer.main(["port=5556"])
+```
+or start the Wflow ZMQ Server with the `main` function using the default port number 5555:
+```julia-repl
+julia> using WflowServer
+julia> WflowServer.main()
+```
+Finally, it is also possible to start the Wflow ZMQ server directly from the command line
+with the Julia script `run_server.jl` in the current directory, as follows:
+```
+julia --project=. run_server.jl --port 5556
 ```
 
 ## JSON

@@ -1,8 +1,8 @@
 module WflowServer
-using ZMQ
-using JSON3
-using StructTypes
-using Wflow
+import ZMQ
+import JSON3
+import StructTypes
+import Wflow
 
 include("bmi_service.jl")
 include("server.jl")

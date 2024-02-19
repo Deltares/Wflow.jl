@@ -1,11 +1,11 @@
-using ZMQ
-using JSON3
-using StructTypes
-using Wflow
-using WflowServer
-using Statistics
-using Logging
-using Test
+import ZMQ
+import JSON3
+import StructTypes
+import Wflow
+import WflowServer
+import Statistics: mean
+import Logging: NullLogger
+import Test: @testset
 
 # The tests depend on wflow_sbm model files (Moselle), which are downloaded as part of the
 # Wflow.jl tests, so these need to run first.
