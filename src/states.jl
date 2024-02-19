@@ -5,7 +5,7 @@ Function to extract all required vertical states, given a certain model type. Pa
 and glacier options only for the `sbm` model_type. Returns a tuple with the required states
 (internal names as symbols)
 """
-function get_vertical_states(model_type::String; snow = false, glacier = false)
+function get_vertical_states(model_type::AbstractString; snow = false, glacier = false)
     if model_type == "sbm" || model_type == "sbm_gwf"
         if snow && glacier
             vertical_states = (
@@ -58,39 +58,41 @@ function get_vertical_states(model_type::String; snow = false, glacier = false)
 end
 
 """
-    add_to_required_states(required_states, key_entry, state_list)
+    add_to_required_states(required_states::Tuple, key_entry::Tuple, states::Tuple)
+    add_to_required_states(required_states::Tuple, key_entry::Tuple, states::Nothing)
 
-Function to iterate through the several lists to add them to the `required_states` variables.
-This is a tuple of tuples, that contians the correct "prefix" to the state category (provided
-by the `key_entry` variable). The this is added in front of each element in the list of states
-(`state_list`), and the required_states tuple is returned.
+Function to iterate through the list of `states` and add these to the `required_states`
+variable. This is a tuple of tuples, that contains the correct "prefix" to the state
+category (provided by the `key_entry` variable). This is added in front of each element in
+the list of `states`, and the `required_states` tuple is returned.
+
+When `nothing` is passed as the `states`, the `required_states` variable is simply returned.
 """
 function add_to_required_states(
     required_states::Tuple,
     key_entry::Tuple,
-    state_list::Union{Nothing,Tuple},
+    states::Tuple,
 )
-
-    if !isnothing(state_list)
-        for state in state_list
-            required_states = (required_states..., (key_entry..., state))
-        end
+    for state in states
+        required_states = (required_states..., (key_entry..., state))
     end
+
     return required_states
 end
 
+add_to_required_states(required_states::Tuple, key_entry::Tuple, states::Nothing,) = required_states
+
 """
-    extract_required_states(config)
+    extract_required_states(config::Config)
 
 Function to retrieve the required states, given the model configuration. The required states
 are inferred from the model settings (mainly model_type, model options and routing types).
 Returns as list of required states, in the same formats as the keys that are returned from the
 `ncnames` function.
 """
-function extract_required_states(config)
+function extract_required_states(config::Config)
     # Extract model type
-    model_type_options = ("sbm", "sbm_gwf", "hbv", "flextopo", "sediment")
-    model_type = get(config.model, "type", model_type_options)::String
+    model_type = config.model.type::String
 
     # Extract model settings
     do_snow = get(config.model, "snow", false)::Bool
@@ -204,15 +206,14 @@ function extract_required_states(config)
 end
 
 """
-    check_states(config)
+    check_states(config::Config)
 
 This function checks whether the states provided in the model configuration are covering all
-required states. If not all states are covered, and error is thrown to warn the user (including
-@error logging messages to explain which variables are missing). If more states are provided
-than required, a warning is logged, and the unnecessary state is removed.
+required states. If not all states are covered, an error is thrown to warn the user
+(including logging messages to explain which variables are missing). If more states are
+provided than required, a warning is logged, and the unnecessary state is removed.
 """
-function check_states(config)
-    # Get covered states from toml
+function check_states(config::Config)
     state_ncnames = ncnames(config.state)
 
     # Get required states
