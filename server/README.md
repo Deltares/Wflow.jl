@@ -6,7 +6,7 @@ TCP data transport. The Wflow ZMQ Server allows users to interact with a Wflow m
 many other programming languages with ZeroMQ bindings. An example is the use of
 [OpenDA](https://openda.org/) Java software for data-assimilation. The coupling of OpenDA
 and Wflow through a black box model approach is too slow because it requires a restart of
-Wflow (multiple times), while this is not required with a client-server approach.  
+Wflow (multiple times), while this is not required with a client-server approach.
 
 Specify the `WflowServer` environment on startup, in the current directory:
 ```
