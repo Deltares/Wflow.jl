@@ -1,6 +1,3 @@
-export
-    start
-
 # map JSON function name to Struct (bmi_service.jl)
 const map_structs = Dict(
     "initialize" => Initialize,
