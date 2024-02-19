@@ -298,7 +298,7 @@ function update(sf::SurfaceFlowRiver, network, inflow_wb, doy)
                         sf.β,
                         Δt,
                         sf.dl[v],
-                    )  
+                    )
 
                     if !isnothing(sf.reservoir) && sf.reservoir_index[v] != 0
                         # run reservoir model and copy reservoir outflow to inflow (qin) of
