@@ -444,9 +444,7 @@ Update of the total water storage at the end of each timestep per model cell.
 
 This is done here at model level.
 """
-function update_total_water_storage(
-    model::Model{N,L,V,R,W,T},
-) where {N,L,V,R,W,T<:SbmModel}
+function update_total_water_storage(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
     @unpack lateral, vertical, network, clock, config = model
 
     # Update the total water storage based on vertical states
@@ -477,12 +475,11 @@ function set_states(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
         nriv = length(network.river.indices)
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
-        state_ncnames = ncnames(config.state)
         @warn string(
             "The unit of `ssf` (lateral subsurface flow) is now m3 d-1. Please update your",
             " input state file if it was produced with a Wflow version up to v0.5.2.",
         )
-        set_states(instate_path, model, state_ncnames; type = Float, dimname = :layer)
+        set_states(instate_path, model; type = Float, dimname = :layer)
         # update zi for vertical sbm and kinematic wave volume for river and land domain
         zi =
             max.(
@@ -534,7 +531,7 @@ function set_states(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
         if floodplain_1d
             initialize_volume!(lateral.river, nriv)
         end
-    
+
         if do_lakes
             # storage must be re-initialized after loading the state with the current
             # waterlevel otherwise the storage will be based on the initial water level

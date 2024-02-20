@@ -282,7 +282,7 @@ model = Wflow.run_timestep(model)
 end
 Wflow.close_files(model, delete_output = false)
 
-# test local-inertial option for river flow including 1D floodplain schematization 
+# test local-inertial option for river flow including 1D floodplain schematization
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 
@@ -290,6 +290,8 @@ config.model.floodplain_1d = true
 config.model.river_routing = "local-inertial"
 config.model.land_routing = "kinematic-wave"
 Dict(config.input.lateral.river)["floodplain"] = Dict("volume" => "floodplain_volume")
+Dict(config.state.lateral.river)["floodplain"] =
+    Dict("q" => "q_floodplain", "h" => "h_floodplain")
 
 model = Wflow.initialize_sbm_model(config)
 
