@@ -41,7 +41,7 @@ jobs:
         run: |
           using Pkg;
           # dev install Wflow
-          pkg"dev Wflow"
+          pkg"dev ."
       - name: Run the Wflow Server tests
         continue-on-error: true
         run: >
