@@ -16,7 +16,7 @@ end
 
 @testset "initialization and time functions" begin
     msg =
-        (fn = "initialize", config_file = joinpath(@__DIR__, "../../test/sbm_config.toml"))
+        (fn = "initialize", config_file = joinpath(@__DIR__, "sbm_config.toml"))
     @test request(msg) == Dict("status" => "OK")
     @test request((fn = "get_end_time",)) == Dict("end_time" => 2678400)
     @test request((fn = "get_start_time",)) == Dict("start_time" => 0)
