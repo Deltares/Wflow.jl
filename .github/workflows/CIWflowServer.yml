@@ -42,6 +42,7 @@ jobs:
           using Pkg;
           # dev install Wflow
           pkg"dev Wflow"
+      - uses: julia-actions/julia-runtest@v1
       - uses: julia-actions/julia-processcoverage@v1
       - uses: codecov/codecov-action@v3
         with:
