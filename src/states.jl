@@ -68,11 +68,7 @@ the list of `states`, and the `required_states` tuple is returned.
 
 When `nothing` is passed as the `states`, the `required_states` variable is simply returned.
 """
-function add_to_required_states(
-    required_states::Tuple,
-    key_entry::Tuple,
-    states::Tuple,
-)
+function add_to_required_states(required_states::Tuple, key_entry::Tuple, states::Tuple)
     for state in states
         required_states = (required_states..., (key_entry..., state))
     end
@@ -80,7 +76,8 @@ function add_to_required_states(
     return required_states
 end
 
-add_to_required_states(required_states::Tuple, key_entry::Tuple, states::Nothing,) = required_states
+add_to_required_states(required_states::Tuple, key_entry::Tuple, states::Nothing) =
+    required_states
 
 """
     extract_required_states(config::Config)
