@@ -136,8 +136,12 @@ and set states in `model` object. Active cells are selected with the correspondi
 # Arguments
 - `type = nothing`: type to convert data to after reading. By default no conversion is done.
 """
-function set_states(instate_path, model, state_ncnames; type = nothing, dimname = nothing)
-    @unpack network = model
+function set_states(instate_path, model; type = nothing, dimname = nothing)
+    @unpack network, config = model
+
+    # Check if required states are covered
+    state_ncnames = check_states(config)
+
     # states in NetCDF include dim time (one value) at index 3 or 4, 3 or 4 dims are allowed
     NCDataset(instate_path) do ds
         for (state, ncname) in state_ncnames

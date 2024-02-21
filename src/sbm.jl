@@ -203,9 +203,6 @@
     end
 end
 
-statevars(::SBM; snow = false) =
-    snow ? (:satwaterdepth, :snow, :tsoil, :ustorelayerdepth, :snowwater, :canopystorage) :
-    (:satwaterdepth, :ustorelayerdepth, :canopystorage)
 
 function initialize_canopy(nc, config, inds)
     n = length(inds)
@@ -599,7 +596,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         leaf_area_index = fill(mv, n),
         waterlevel_land = fill(mv, n),
         waterlevel_river = zeros(Float, n), #set to zero to account for cells outside river domain
-        total_storage = zeros(Float, n) # Set the total water storage from initialized values
+        total_storage = zeros(Float, n), # Set the total water storage from initialized values
     )
 
     return sbm
@@ -613,7 +610,7 @@ function update_until_snow(sbm::SBM, config)
     modelglacier = get(config.model, "glacier", false)::Bool
     modelsnow = get(config.model, "snow", false)::Bool
 
-    threaded_foreach(1:sbm.n, basesize=1000) do i
+    threaded_foreach(1:sbm.n, basesize = 1000) do i
         if do_lai
             cmax = sbm.sl[i] * sbm.leaf_area_index[i] + sbm.swood[i]
             canopygapfraction = exp(-sbm.kext[i] * sbm.leaf_area_index[i])
@@ -696,7 +693,7 @@ function update_until_recharge(sbm::SBM, config)
     transfermethod = get(config.model, "transfermethod", false)::Bool
     ust = get(config.model, "whole_ust_available", false)::Bool # should be removed from optional setting and code?
 
-    threaded_foreach(1:sbm.n, basesize=250) do i
+    threaded_foreach(1:sbm.n, basesize = 250) do i
         if modelsnow
             rainfallplusmelt = sbm.rainfallplusmelt[i]
             if modelglacier
@@ -977,7 +974,7 @@ end
 
 function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
 
-    threaded_foreach(1:sbm.n, basesize=1000) do i
+    threaded_foreach(1:sbm.n, basesize = 1000) do i
         usl, n_usl = set_layerthickness(zi[i], sbm.sumlayers[i], sbm.act_thickl[i])
         # exfiltration from ustore
         usld = sbm.ustorelayerdepth[i]
@@ -1071,12 +1068,12 @@ Takes the following parameters:
     The land routing struct, i.e. model.lateral.land
 """
 function update_total_water_storage(
-    sbm::SBM, 
-    river_network, 
-    cell_xsize, 
-    cell_ysize, 
-    river_routing, 
-    land_routing
+    sbm::SBM,
+    river_network,
+    cell_xsize,
+    cell_ysize,
+    river_routing,
+    land_routing,
 )
     # Get length active river cells
     nriv = length(river_network)
@@ -1086,29 +1083,29 @@ function update_total_water_storage(
 
     # Burn the river routing values
     sbm.total_storage[river_network] = (
-        ( river_routing.h_av[1:nriv] .* river_routing.width[1:nriv] .* 
-        river_routing.dl[1:nriv] ) ./
-        ( cell_xsize[river_network] .* cell_ysize[river_network] ) * 
-        1000 # Convert to mm
+        (
+            river_routing.h_av[1:nriv] .* river_routing.width[1:nriv] .*
+            river_routing.dl[1:nriv]
+        ) ./ (cell_xsize[river_network] .* cell_ysize[river_network]) * 1000 # Convert to mm
     )
 
     # Chunk the data for parallel computing
-    threaded_foreach(1:sbm.n, basesize=1000) do i
+    threaded_foreach(1:sbm.n, basesize = 1000) do i
 
         # Cumulate per vertical type
         # Maybe re-categorize in the future
         surface = (
             sbm.glacierstore[i] * sbm.glacierfrac[i] +
-            sbm.snow[i] + sbm.snowwater[i] + sbm.canopystorage[i]
+            sbm.snow[i] +
+            sbm.snowwater[i] +
+            sbm.canopystorage[i]
         )
         sub_surface = sbm.ustoredepth[i] + sbm.satwaterdepth[i]
         lateral = (
             land_routing.h_av[i] * (1 - sbm.riverfrac[i]) * 1000 # convert to mm
         )
-        
+
         # Add everything to the total water storage
-        sbm.total_storage[i] += (
-            surface + sub_surface + lateral
-        )
+        sbm.total_storage[i] += (surface + sub_surface + lateral)
     end
 end

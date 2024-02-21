@@ -105,7 +105,8 @@ locs = "wflow_reservoirlocs"
 | `totaloutflow`        | total outflow into reservoir | m``^3`` | - |
 | `percfull`             | fraction full (of max storage) | - | - |
 | `precipitation`             | average precipitation for reservoir area | mm Δt⁻¹ | - |
-| `evaporation`             | average evaporation for reservoir area | mm Δt⁻¹ | - |
+| `evaporation`             | average potential evaporation for reservoir area | mm Δt⁻¹ | - |
+| `actevap` | average actual evaporation for lake area | mm Δt⁻¹  | - |
 
 ### [Lakes](@id lake_params)
 The Table below shows the parameters (fields) of struct `Lake`, including a description of
@@ -147,7 +148,8 @@ between parentheses.
 | `outflow` | outflow lake | m``^3`` s``^{-1}``  | - |
 | `totaloutflow` | total outflow lake | m``^3``  | - |
 | `precipitation` | average precipitation for lake area | mm Δt⁻¹  | - |
-| `evaporation` | average precipitation for lake area | mm Δt⁻¹  | - |
+| `evaporation` | average potential evaporation for lake area | mm Δt⁻¹  | - |
+| `actevap` | average actual evaporation for lake area | mm Δt⁻¹  | - |
 
 ### [Lateral subsurface flow](@id params_ssf)
 The Table below shows the parameters (fields) of struct `LateralSSF`, including a
@@ -617,9 +619,9 @@ slope = "RiverSlope"
 | `outsagg`              | sediment with particle class small aggregates  | t Δt``^{-1}``| - |
 | `outlagg`              | sediment with particle class large aggregates  | t Δt``^{-1}``| - |
 | `outgrav`              | sediment with particle class gravel  | t Δt``^{-1}``| - |
-| `Sedconc`              | sediment concentration  | kg m``^{-3}``| - |
-| `SSconc`               | sediment concentration   | kg m``^{-3}``| - |
-| `Bedconc`              | sediment concentration  | kg m``^{-3}``| - |
+| `Sedconc`              | total sediment concentration (`SSconc` + `Bedconc`)  | g m``^{-3}``| - |
+| `SSconc`               | suspended load concentration | g m``^{-3}``| - |
+| `Bedconc`              | bed load concentration  | g m``^{-3}``| - |
 | `maxsed`              | river transport capacity | t Δt``^{-1}``| - |
 | `erodsed`              | total eroded sediment | t Δt``^{-1}``| - |
 | `erodsedbank`          | eroded bank sediment | t Δt``^{-1}``| - |
