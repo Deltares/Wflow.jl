@@ -38,12 +38,12 @@ model = Wflow.run_timestep(model)
     @test sbm.transpiration[1] ≈ 1.0122634204681036f0
 end
 
-@testset "overland flow" begin
+@testset "overland flow (kinematic wave)" begin
     q = model.lateral.land.q_av
     @test sum(q) ≈ 2.2298616f-7
 end
 
-@testset "river domain" begin
+@testset "river domain (kinematic wave)" begin
     q = model.lateral.river.q_av
     river = model.lateral.river
     @test sum(q) ≈ 0.034846861707851576f0
@@ -72,3 +72,63 @@ Wflow.close_files(model)
     @test collect(keys(model.lateral.subsurface)) == [:flow, :recharge, :river]
     Wflow.close_files(model)
 end
+
+# test local-inertial option for river flow routing
+tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
+config = Wflow.Config(tomlpath)
+config.model.river_routing = "local-inertial"
+
+config.input.lateral.river.bankfull_elevation = "bankfull_elevation"
+config.input.lateral.river.bankfull_depth = "bankfull_depth"
+
+model = Wflow.initialize_sbm_gwf_model(config)
+model = Wflow.run_timestep(model)
+model = Wflow.run_timestep(model)
+
+@testset "river domain (local inertial)" begin
+    q = model.lateral.river.q_av
+    river = model.lateral.river
+    @test sum(q) ≈ 0.026752212882189867f0
+    @test q[6] ≈ 0.005962226036202787f0
+    @test river.volume[6] ≈ 7.498085951460259f0
+    @test river.inwater[6] ≈ 0.00017741362380231486f0
+    @test q[13] ≈ 0.0004586401133311585f0
+    @test q[5] ≈ 0.006312330297863098f0
+end
+Wflow.close_files(model, delete_output = false)
+
+# test local-inertial option for river and overland flow routing
+tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
+config = Wflow.Config(tomlpath)
+config.model.river_routing = "local-inertial"
+config.model.land_routing = "local-inertial"
+
+config.input.lateral.river.bankfull_elevation = "bankfull_elevation"
+config.input.lateral.river.bankfull_depth = "bankfull_depth"
+config.input.lateral.land.elevation = "wflow_dem"
+
+pop!(Dict(config.state.lateral.land), "q")
+config.state.lateral.land.h_av = "h_av_land"
+config.state.lateral.land.qx = "qx_land"
+config.state.lateral.land.qy = "qy_land"
+
+model = Wflow.initialize_sbm_gwf_model(config)
+model = Wflow.run_timestep(model)
+model = Wflow.run_timestep(model)
+
+@testset "river and land domain (local inertial)" begin
+    q = model.lateral.river.q_av
+    @test sum(q) ≈ 0.026759512926399318f0
+    @test q[6] ≈ 0.005964050519182144f0
+    @test q[13] ≈ 0.00045874863609566906f0
+    @test q[5] ≈ 0.006314336504100363f0
+    h = model.lateral.river.h_av
+    @test h[6] ≈ 0.08023321813680799f0
+    @test h[5] ≈ 0.07761589477563689f0
+    @test h[13] ≈ 0.08226917799750776f0
+    qx = model.lateral.land.qx
+    qy = model.lateral.land.qy
+    @test all(qx .== 0.0f0)
+    @test all(qy .== 0.0f0)
+end
+Wflow.close_files(model, delete_output = false)
