@@ -283,7 +283,6 @@ function update(sf::SurfaceFlowRiver, network, inflow_wb, doy)
                 for (n, v) in zip(indices_subdomain[m], topo_subdomain[m])
                     # sf.qin by outflow from upstream reservoir or lake location is added
                     sf.qin[v] += sum_at(sf.q, upstream_nodes[n])
-
                     # Inflow supply/abstraction is added to qlat (divide by flow length)
                     # If inflow < 0, abstraction is limited
                     if sf.inflow[v] < 0.0
@@ -349,7 +348,6 @@ function update(sf::SurfaceFlowRiver, network, inflow_wb, doy)
                     # update h
                     crossarea = sf.α[v] * pow(sf.q[v], sf.β)
                     sf.h[v] = crossarea / sf.width[v]
-
                     sf.q_av[v] += sf.q[v]
                     sf.h_av[v] += sf.h[v]
                 end
