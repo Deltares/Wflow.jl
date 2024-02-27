@@ -126,59 +126,12 @@ function initialize_sbm_model(config::Config)
         f = sbm.f .* 1000.0
         zi = sbm.zi .* 0.001
         soilthickness = sbm.soilthickness .* 0.001
-
-        ksat_profile = get(config.input.vertical, "ksat_profile", "exponential")::String
         z_exp = sbm.z_exp .* 0.001
-        kh = fill(mv, n)
-        if ksat_profile == "exponential"
-            ssfmax = @. ((kh₀ * βₗ) / f) * (1.0 - exp(-f * soilthickness))
-            ssf = @. ((kh₀ * βₗ) / f) * (exp(-f * zi) - exp(-f * soilthickness)) * dw
-        elseif ksat_profile == "exponential_constant"
-            ssf_constant = @. kh₀ * exp(-f * z_exp) * βₗ * (soilthickness - z_exp)
-            ssfmax = @. ((kh₀ * βₗ) / f) * (1.0 - exp(-f * z_exp)) + ssf_constant
-            ssf = zeros(n)
-            for i in eachindex(ssf)
-                if zi[i] < z_exp[i]
-                    ssf[i] =
-                        (
-                            ((kh₀[i] * βₗ[i]) / f[i]) *
-                            (exp(-f[i] * zi[i]) - exp(-f[i] * z_exp[i])) + ssf_constant[i]
-                        ) * dw[i]
-                else
-                    ssf[i] =
-                        kh₀[i] *
-                        exp(-f[i] * zi[i]) *
-                        βₗ[i] *
-                        (soilthickness[i] - zi[i]) *
-                        dw[i]
-                end
-            end
-        elseif ksat_profile == "layered" || ksat_profile == "layered_exponential"
-            ssf = zeros(n)
-            ssfmax = zeros(n)
-            for i in eachindex(ssf)
-                kh[i] = kh_layered_profile(sbm, khfrac[i], i, ksat_profile)
-                ssf[i] = kh[i] * (soilthickness[i] - zi[i]) * βₗ[i] * dw[i]
-                kh_max = 0.0
-                for j = 1:sbm.nlayers[i]
-                    if j <= sbm.nlayers_kv[i]
-                        kh_max += sbm.kv[i][j] * sbm.act_thickl[i][j]
-                    else
-                        zt = sbm.soilthickness[i] - sbm.z_exp[i]
-                        k = max(j - 1, 1)
-                        kh_max += sbm.kv[i][k] / sbm.f[i] * (1.0 - exp(-sbm.f[i] * zt))
-                        break
-                    end
-                end
-                kh_max = kh_max * khfrac[i] * 0.001 * 0.001
-                ssfmax[i] = kh_max * βₗ[i]
-            end
-        end
 
         ssf = LateralSSF{Float}(
             kh₀ = kh₀,
             f = f,
-            kh = kh,
+            kh = fill(mv, n),
             khfrac = khfrac,
             zi = zi,
             z_exp = z_exp,
@@ -191,11 +144,20 @@ function initialize_sbm_model(config::Config)
             dw = dw,
             exfiltwater = fill(mv, n),
             recharge = fill(mv, n),
-            ssf = ssf,
+            ssf = fill(mv, n),
             ssfin = fill(mv, n),
-            ssfmax = ssfmax,
+            ssfmax = fill(mv, n),
             to_river = zeros(n),
         )
+        # update variables `ssf`, `ssfmax` and `kh` (layered profile) based on ksat_profile
+        ksat_profile = get(config.input.vertical, "ksat_profile", "exponential")::String
+        if ksat_profile == "exponential"
+            initialize_lateralssf_exp!(ssf::LateralSSF)
+        elseif ksat_profile == "exponential_constant"
+            initialize_lateralssf_exp_const!(ssf::LateralSSF)
+        elseif ksat_profile == "layered" || ksat_profile == "layered_exponential"
+            initialize_lateralssf_layered!(ssf::LateralSSF, sbm::SBM, ksat_profile)
+        end
     else
         # when the SBM model is coupled (BMI) to a groundwater model, the following
         # variables are expected to be exchanged from the groundwater model.

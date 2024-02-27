@@ -763,3 +763,66 @@ function kh_layered_profile(sbm::SBM, khfrac, i, ksat_profile)
     end
     return kh
 end
+
+"Initialize lateral subsurface variables `ssf` and `ssfmax` with `ksat_profile` `exponential`"
+function initialize_lateralssf_exp!(ssf::LateralSSF)
+    for i in eachindex(ssf.ssf)
+        ssf.ssfmax[i] =
+            ((ssf.kh₀[i] * ssf.βₗ[i]) / ssf.f[i]) *
+            (1.0 - exp(-ssf.f[i] * ssf.soilthickness[i]))
+        ssf.ssf[i] =
+            ((ssf.kh₀[i] * ssf.βₗ[i]) / ssf.f[i]) *
+            (exp(-ssf.f[i] * ssf.zi[i]) - exp(-ssf.f[i] * ssf.soilthickness[i])) *
+            ssf.dw[i]
+    end
+end
+
+"Initialize lateral subsurface variables `ssf` and `ssfmax` with `ksat_profile` `exponential_constant`"
+function initialize_lateralssf_exp_const!(ssf::LateralSSF)
+    ssf_constant = @. ssf.khfrac *
+       ssf.kh₀ *
+       exp(-ssf.f * ssf.z_exp) *
+       ssf.βₗ *
+       (ssf.soilthickness - ssf.z_exp)
+    for i in eachindex(ssf.ssf)
+        ssf.ssfmax[i] =
+            ((ssf.khfrac[i] * ssf.kh₀[i] * ssf.βₗ[i]) / ssf.f[i]) *
+            (1.0 - exp(-ssf.f[i] * ssf.z_exp[i])) + ssf_constant[i]
+        if ssf.zi[i] < ssf.z_exp[i]
+            ssf.ssf[i] =
+                (
+                    ((ssf.kh₀[i] * ssf.βₗ[i]) / ssf.f[i]) *
+                    (exp(-ssf.f[i] * ssf.zi[i]) - exp(-ssf.f[i] * ssf.z_exp[i])) +
+                    ssf_constant[i]
+                ) * ssf.dw[i]
+        else
+            ssf.ssf[i] =
+                ssf.kh₀[i] *
+                exp(-ssf.f[i] * ssf.zi[i]) *
+                ssf.βₗ[i] *
+                (ssf.soilthickness[i] - ssf.zi[i]) *
+                ssf.dw[i]
+        end
+    end
+end
+
+"Initialize lateral subsurface variables `ssf`, `ssfmax` and `kh` with ksat_profile` `layered` or `layered_exponential`"
+function initialize_lateralssf_layered!(ssf::LateralSSF, sbm::SBM, ksat_profile)
+    for i in eachindex(ssf.ssf)
+        ssf.kh[i] = kh_layered_profile(sbm, ssf.khfrac[i], i, ksat_profile)
+        ssf.ssf[i] = ssf.kh[i] * (ssf.soilthickness[i] - ssf.zi[i]) * ssf.βₗ[i] * ssf.dw[i]
+        kh_max = 0.0
+        for j = 1:sbm.nlayers[i]
+            if j <= sbm.nlayers_kv[i]
+                kh_max += sbm.kv[i][j] * sbm.act_thickl[i][j]
+            else
+                zt = sbm.soilthickness[i] - sbm.z_exp[i]
+                k = max(j - 1, 1)
+                kh_max += sbm.kv[i][k] / sbm.f[i] * (1.0 - exp(-sbm.f[i] * zt))
+                break
+            end
+        end
+        kh_max = kh_max * ssf.khfrac[i] * 0.001 * 0.001
+        ssf.ssfmax[i] = kh_max * ssf.βₗ[i]
+    end
+end
