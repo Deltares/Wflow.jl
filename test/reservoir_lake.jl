@@ -80,7 +80,7 @@ sh = [
             [2, 1],
             [472461536.0, 60851088.0],
             sh,
-            [missing, Wflow.read_hq_csv(joinpath(datadir, "input", "lake_hq_2.csv"))]
+            [missing, Wflow.read_hq_csv(joinpath(datadir, "input", "lake_hq_2.csv"))],
         ),
         threshold = [393.7, 0.0],
         storfunc = [2, 2],
@@ -132,7 +132,7 @@ end
             [1],
             [200_000_000],
             [Wflow.read_sh_csv(joinpath(datadir, "input", "lake_sh_2.csv"))],
-            [Wflow.read_hq_csv(joinpath(datadir, "input", "lake_hq_2.csv"))]
+            [Wflow.read_hq_csv(joinpath(datadir, "input", "lake_hq_2.csv"))],
         ),
         threshold = [0.0],
         storfunc = [2],

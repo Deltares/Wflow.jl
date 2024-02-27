@@ -99,7 +99,6 @@
     end
 end
 
-statevars(::LandSediment) = ()
 
 function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
     # Initialize parameters for the soil loss part
@@ -636,7 +635,6 @@ end
     end
 end
 
-statevars(::OverlandFlowSediment) = ()
 
 function partial_update!(inland, rivcell, eroded)
     no_erosion = zero(eltype(eroded))
@@ -757,10 +755,12 @@ end
     outsagg::Vector{T} | "t Δt⁻¹"
     outlagg::Vector{T} | "t Δt⁻¹"
     outgrav::Vector{T} | "t Δt⁻¹"
-    # Sediment concentrations [kg/m3]
-    Sedconc::Vector{T} | "kg m-3"
-    SSconc::Vector{T} | "kg m-3"
-    Bedconc::Vector{T} | "kg m-3"
+    # Total sediment concentrations (SSconc + Bedconc) [g/m3]
+    Sedconc::Vector{T} | "g m-3"
+    # Suspended load concentration [g/m3]
+    SSconc::Vector{T} | "g m-3"
+    # Bed load concentration [g/m3]
+    Bedconc::Vector{T} | "g m-3"
     # River transport capacity
     maxsed::Vector{T} | "t Δt⁻¹"
     # Eroded sediment (total, bank and bed)
@@ -783,26 +783,6 @@ end
     # end
 end
 
-statevars(::RiverSediment) = (
-    :clayload,
-    :siltload,
-    :sandload,
-    :saggload,
-    :laggload,
-    :gravload,
-    :claystore,
-    :siltstore,
-    :sandstore,
-    :saggstore,
-    :laggstore,
-    :gravstore,
-    :outclay,
-    :outsilt,
-    :outsand,
-    :outsagg,
-    :outlagg,
-    :outgrav,
-)
 
 function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     # Initialize river parameters

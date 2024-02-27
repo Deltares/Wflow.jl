@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   occur).
 - Limit lake evaporation (added variable `actevap`) and lake outflow to prevent negative
   lake storage. The variable `actevap` has also been added to the reservoir module.
+- The `set_states` function for model type `sbm` with local inertial routing for river and
+  land component.
 
 ### Changed
 - Stop exposing scalar variables through BMI. The `BMI.get_value_ptr` function was
@@ -27,6 +29,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Total water storage as an export variable for `SBM` concept. This is the total water stored
   per grid cell in millimeters. Excluded from this variable are the floodplain, lakes and
   reservoirs.
+- Checks to see if all states are covered in the .toml file. If not all states are covered,
+  an error is thrown. If there are more states specified than required, these states are
+  ignored (with a warning in the logging), and the simulation will continue.
 - Support different vertical hydraulic conductivity profiles for the `SBM` concept. See also
   the following sections: [The SBM soil water accounting scheme](@ref) and [Subsurface flow
   routing](@ref) for a short description.
@@ -48,7 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   terms of the quadratic equation (and solution) were fixed.
 - Use `kvfrac` for the computation of vertical saturated hydraulic conductivity at the
   bottom of the soil layer, since `kvfrac` is also used for the computation of vertical
-  unsaturated flow. 
+  unsaturated flow.
 
 ### Changed
 - For cyclic parameters different cyclic time inputs are supported (only one common cyclic

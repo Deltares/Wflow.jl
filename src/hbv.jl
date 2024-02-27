@@ -57,14 +57,6 @@
     runoff::Vector{T}                   # Total specific runoff per cell [mm Δt⁻¹]
 end
 
-statevars(::HBV) = (
-    :soilmoisture,
-    :snow,
-    :snowwater,
-    :upperzonestorage,
-    :lowerzonestorage,
-    :interceptionstorage,
-)
 
 function update_until_snow(hbv::HBV, config)
 

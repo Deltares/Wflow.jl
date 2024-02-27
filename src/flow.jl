@@ -1,7 +1,8 @@
 
 abstract type SurfaceFlow end
 
-@get_units @exchange @grid_type @grid_location @with_kw struct SurfaceFlowRiver{T,R,L} <: SurfaceFlow
+@get_units @exchange @grid_type @grid_location @with_kw struct SurfaceFlowRiver{T,R,L} <:
+                                                               SurfaceFlow
     β::T | "-" | 0 | "scalar"                    # constant in Manning's equation
     sl::Vector{T} | "m m-1"                      # Slope [m m⁻¹]
     n::Vector{T} | "s m-1/3"                     # Manning's roughness [s m⁻⅓]
@@ -36,8 +37,9 @@ abstract type SurfaceFlow end
     # end
 end
 
-@get_units @exchange @grid_type @grid_location @with_kw struct SurfaceFlowLand{T} <: SurfaceFlow
-    β::T | "-"  | 0 | "scalar"                      # constant in Manning's equation
+@get_units @exchange @grid_type @grid_location @with_kw struct SurfaceFlowLand{T} <:
+                                                               SurfaceFlow
+    β::T | "-" | 0 | "scalar"                       # constant in Manning's equation
     sl::Vector{T} | "m m-1"                         # Slope [m m⁻¹]
     n::Vector{T} | "s m-1/3"                        # Manning's roughness [s m⁻⅓]
     dl::Vector{T} | "m"                             # Drain length [m]
@@ -57,7 +59,7 @@ end
     α::Vector{T} | "s3/5 m1/5"                      # Constant in momentum equation A = αQᵝ, based on Manning's equation
     cel::Vector{T} | "m s-1"                        # Celerity of the kinematic wave
     to_river::Vector{T} | "m3 s-1"                  # Part of overland flow [m³ s⁻¹] that flows to the river
-    kinwave_it::Bool | "-" | 0 | "none" | "none"   # Boolean for iterations kinematic wave
+    kinwave_it::Bool | "-" | 0 | "none" | "none"    # Boolean for iterations kinematic wave
 end
 
 function initialize_surfaceflow_land(nc, config, inds; sl, dl, width, iterate, tstep, Δt)
@@ -177,8 +179,6 @@ function initialize_surfaceflow_river(
     return sf_river
 end
 
-statevars(::SurfaceFlowRiver) = (:q, :h, :h_av)
-statevars(::SurfaceFlowLand) = (:q, :h, :h_av)
 
 function update(sf::SurfaceFlowLand, network, frac_toriver)
     @unpack graph, subdomain_order, topo_subdomain, indices_subdomain, upstream_nodes =
@@ -415,7 +415,6 @@ end
     end
 end
 
-statevars(::LateralSSF) = (:ssf,)
 
 function update(ssf::LateralSSF, network, frac_toriver, ksat_profile)
     @unpack subdomain_order, topo_subdomain, indices_subdomain, upstream_nodes = network
@@ -1342,7 +1341,7 @@ function update(sw::ShallowWaterLand{T}, swr::ShallowWaterRiver{T}, network, Δt
     end
 end
 
-""" 
+"""
     FloodPlainProfile
 
 Floodplain `volume` is a function of `depth` (flood depth intervals). Based on the

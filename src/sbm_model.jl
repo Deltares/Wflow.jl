@@ -503,9 +503,7 @@ Update of the total water storage at the end of each timestep per model cell.
 
 This is done here at model level.
 """
-function update_total_water_storage(
-    model::Model{N,L,V,R,W,T},
-) where {N,L,V,R,W,T<:SbmModel}
+function update_total_water_storage(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
     @unpack lateral, vertical, network, clock, config = model
 
     # Update the total water storage based on vertical states
@@ -536,13 +534,11 @@ function set_states(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
         nriv = length(network.river.indices)
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
-        state_ncnames = ncnames(config.state)
         @warn string(
             "The unit of `ssf` (lateral subsurface flow) is now m3 d-1. Please update your",
             " input state file if it was produced with a Wflow version up to v0.5.2.",
         )
-        set_states(instate_path, model, state_ncnames; type = Float, dimname = :layer)
-        @unpack lateral, vertical, network = model
+        set_states(instate_path, model; type = Float, dimname = :layer)
         # update zi for vertical sbm and kinematic wave volume for river and land domain
         zi =
             max.(
@@ -567,7 +563,7 @@ function set_states(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
                 " bed elevation `zb` to cell elevation `z`. Please update the input state",
                 " file if it was produced with Wflow version v0.5.2.",
             )
-            for i = 1:n
+            for i in eachindex(lateral.land.volume)
                 if lateral.land.rivercells[i]
                     j = network.land.index_river[i]
                     if lateral.land.h[i] > 0.0
