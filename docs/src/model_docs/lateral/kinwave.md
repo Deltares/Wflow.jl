@@ -58,9 +58,15 @@ also [Input section](@ref)).
 In the SBM model the kinematic wave approach is used to route subsurface flow laterally.
 Different vertical hydraulic conductivity depth profiles are possible as part of the
 vertical [SBM](@ref soil) concept, and these profiles (after unit conversion) are also used
-to compute lateral subsurface flow. For the profiles `exponential` (default) and
-`exponential_constant`, the saturated store ``S`` is drained laterally by saturated
-downslope subsurface flow for a slope with width ``w`` [m] according to:
+to compute lateral subsurface flow. The following profiles (see [SBM](@ref soil) for a
+detailed description) are available:
+- `exponential` (default)
+- `exponential_constant`
+- `layered`
+- `layered_exponential` 
+For the profiles `exponential` and `exponential_constant`, the saturated store ``S`` is
+drained laterally by saturated downslope subsurface flow for a slope with width ``w`` [m]
+according to:
 ```math
     Q = \begin{cases}
     \frac{K_0\tan(\beta)}{f}\left(e^{(-fz_{i})}-e^{(-fz_\mathrm{exp})}\right) w + 
