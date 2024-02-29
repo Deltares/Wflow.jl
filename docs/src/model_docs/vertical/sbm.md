@@ -416,7 +416,12 @@ transfer of water between soil layers and to the saturated store ``S``. Finally,
 `ksat_profile` "layered\_exponential" a ``K_{sat}`` value per soil layer is used until depth
 ``z_\mathrm{layered}`` below the soil surface, and beyond ``z_\mathrm{layered}`` an
 exponential decline of ``K_{sat}`` (of the soil layer with bottom ``z_\mathrm{layered}``)
-controlled by ``f`` occurs.
+controlled by ``f`` occurs. The different available `ksat_profle` options are schematized in
+the figure below where the blue line represents the ``K_{sat}`` value.
+
+![ksat_profiles](../../images/sbm_ksat_profiles.png)
+
+*Overview of available `ksat_profile` options, for a soil column with five layers*
 
 ### Infiltration
 
