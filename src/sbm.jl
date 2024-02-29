@@ -61,6 +61,8 @@
     f::Vector{T} | "mm-1"
     # Depth [mm] from soil surface for which exponential decline of kv₀ is valid
     z_exp::Vector{T} | "mm"
+    # Depth [mm] from soil surface for which layered profile is valid
+    z_layered::Vector{T} | "mm"
     # Amount of water in the unsaturated store, per layer [mm]
     ustorelayerdepth::Vector{SVector{N,T}} | "mm"
     # Saturated store [mm]
@@ -508,14 +510,17 @@ function initialize_sbm(nc, config, riverfrac, inds)
     # ksat profiles
     if ksat_profile == "exponential"
         z_exp = soilthickness
+        z_layered = fill(mv, n)
         kv = fill(mv, (maxlayers, n))
         nlayers_kv = fill(0, n)
     elseif ksat_profile == "exponential_constant"
         z_exp =
             ncread(nc, config, "vertical.z_exp"; optional = false, sel = inds, type = Float)
+        z_layered = fill(mv, n)
         kv = fill(mv, (maxlayers, n))
         nlayers_kv = fill(0, n)
     elseif ksat_profile == "layered" || ksat_profile == "layered_exponential"
+        z_exp = fill(mv, n)
         kv =
             ncread(
                 nc,
@@ -532,23 +537,23 @@ function initialize_sbm(nc, config, riverfrac, inds)
             error("$parname needs a layer dimension of size $maxlayers, but is $size1")
         end
         if ksat_profile == "layered"
-            z_exp = soilthickness
+            z_layered = soilthickness
             nlayers_kv = nlayers
         else
-            z_exp = ncread(
+            z_layered = ncread(
                 nc,
                 config,
-                "vertical.z_exp";
+                "vertical.z_layered";
                 optional = false,
                 sel = inds,
                 type = Float,
             )
             nlayers_kv = fill(0, n)
-            for i in eachindex(z_exp)
+            for i in eachindex(nlayers_kv)
                 layers = @view sumlayers[i][2:nlayers[i]]
-                _, k = findmin(abs.(z_exp[i] .- layers))
+                _, k = findmin(abs.(z_layered[i] .- layers))
                 nlayers_kv[i] = k
-                z_exp[i] = layers[k]
+                z_layered[i] = layers[k]
             end
         end
     else
@@ -590,6 +595,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         throughfall = fill(mv, n),
         f = f,
         z_exp = z_exp,
+        z_layered = z_layered,
         ustorelayerdepth = zero(act_thickl),
         satwaterdepth = satwaterdepth,
         zi = zi,

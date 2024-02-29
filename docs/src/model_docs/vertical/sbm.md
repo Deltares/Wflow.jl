@@ -414,9 +414,9 @@ It is also possible to provide a ``K_{sat}`` value per soil layer by specifying
 `ksat_profile` "layered", these ``K_{sat}`` values are used directly to compute the vertical
 transfer of water between soil layers and to the saturated store ``S``. Finally, with the
 `ksat_profile` "layered\_exponential" a ``K_{sat}`` value per soil layer is used until depth
-``z_\mathrm{exp}`` below the soil surface, and beyond ``z_\mathrm{exp}`` an exponential
-decline of ``K_{sat}`` (of the soil layer with bottom ``z_\mathrm{exp}``) controlled by
-``f`` occurs.
+``z_\mathrm{layered}`` below the soil surface, and beyond ``z_\mathrm{layered}`` an
+exponential decline of ``K_{sat}`` (of the soil layer with bottom ``z_\mathrm{layered}``)
+controlled by ``f`` occurs.
 
 ### Infiltration
 

@@ -412,6 +412,7 @@ Wflow.close_files(model, delete_output = false)
     config = Wflow.Config(tomlpath)
     config.input.vertical.kv = "kv"
     config.input.vertical.z_exp = Dict("value" => 400.0)
+    config.input.vertical.z_layered = Dict("value" => 400.0)
 
     @testset "exponential profile" begin
         model = Wflow.initialize_sbm_model(config)
@@ -426,6 +427,7 @@ Wflow.close_files(model, delete_output = false)
             i,
             "exponential",
         )
+        @test all(isnan.(vertical.z_layered))
         @test all(isnan.(vertical.kv[i]))
         @test all(vertical.nlayers_kv .== 0)
     end
@@ -459,6 +461,7 @@ Wflow.close_files(model, delete_output = false)
             i,
             "exponential_constant",
         )
+        @test all(isnan.(vertical.z_layered))
         @test all(isnan.(vertical.kv[i]))
         @test all(vertical.nlayers_kv .== 0)
         @test all(vertical.z_exp .== 400.0)
@@ -473,7 +476,8 @@ Wflow.close_files(model, delete_output = false)
               vertical.kv[100][2]
         @test Wflow.kh_layered_profile(vertical, 100.0, i, "layered") ≈ 47.508932674632355f0
         @test vertical.nlayers_kv[i] == 4
-        @test vertical.z_exp == vertical.soilthickness
+        @test vertical.z_layered == vertical.soilthickness
+        @test all(isnan.(vertical.z_exp))
     end
 
     @testset "layered exponential profile" begin
@@ -491,7 +495,8 @@ Wflow.close_files(model, delete_output = false)
         @test vertical.nlayers_kv[i] == 2
         @test Wflow.kh_layered_profile(vertical, 100.0, i, "layered_exponential") ≈
               33.76026208801769f0
-        @test all(vertical.z_exp[1:10] .== 400.0)
+        @test all(vertical.z_layered[1:10] .== 400.0)
+        @test all(isnan.(vertical.z_exp))
     end
 
     model = Wflow.run_timestep(model)

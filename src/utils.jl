@@ -675,11 +675,11 @@ function hydraulic_conductivity_at_depth(sbm::SBM, z, i, n, ksat_profile)
     elseif ksat_profile == "layered"
         kv_z = sbm.kvfrac[i][n] * sbm.kv[i][n]
     elseif ksat_profile == "layered_exponential"
-        if z < sbm.z_exp[i]
+        if z < sbm.z_layered[i]
             kv_z = sbm.kvfrac[i][n] * sbm.kv[i][n]
         else
             n = sbm.nlayers_kv[i]
-            kv_z = sbm.kvfrac[i][n] * sbm.kv[i][n] * exp(-sbm.f[i] * (z - sbm.z_exp[i]))
+            kv_z = sbm.kvfrac[i][n] * sbm.kv[i][n] * exp(-sbm.f[i] * (z - sbm.z_layered[i]))
         end
     else
         error("unknown ksat_profile")
@@ -706,12 +706,12 @@ function kh_layered_profile(sbm::SBM, khfrac, i, ksat_profile)
         if ksat_profile == "layered"
             transmissivity += (sumlayers[n] - sbm.zi[i]) * sbm.kv[i][n]
         elseif ksat_profile == "layered_exponential"
-            if sbm.zi[i] >= sbm.z_exp[i]
-                zt = sbm.soilthickness[i] - sbm.z_exp[i]
+            if sbm.zi[i] >= sbm.z_layered[i]
+                zt = sbm.soilthickness[i] - sbm.z_layered[i]
                 j = sbm.nlayers_kv[i]
                 transmissivity +=
                     sbm.kv[i][j] / sbm.f[i] *
-                    (exp(-sbm.f[i] * (sbm.zi[i] - sbm.z_exp[i])) - exp(-sbm.f[i] * zt))
+                    (exp(-sbm.f[i] * (sbm.zi[i] - sbm.z_layered[i])) - exp(-sbm.f[i] * zt))
                 n = m
             else
                 transmissivity += (sumlayers[n] - sbm.zi[i]) * sbm.kv[i][n]
@@ -725,7 +725,7 @@ function kh_layered_profile(sbm::SBM, khfrac, i, ksat_profile)
                 transmissivity += sbm.act_thickl[i][n] * sbm.kv[i][n]
             elseif ksat_profile == "layered_exponential"
                 if n > sbm.nlayers_kv[i]
-                    zt = sbm.soilthickness[i] - sbm.z_exp[i]
+                    zt = sbm.soilthickness[i] - sbm.z_layered[i]
                     j = sbm.nlayers_kv[i]
                     transmissivity += sbm.kv[i][j] / sbm.f[i] * (1.0 - exp(-sbm.f[i] * zt))
                     n = m
@@ -746,12 +746,12 @@ function kh_layered_profile(sbm::SBM, khfrac, i, ksat_profile)
         if ksat_profile == "layered"
             kh = 0.001 * sbm.kv[i][m] * t_factor * khfrac
         elseif ksat_profile == "layered_exponential"
-            if sbm.zi[i] >= sbm.z_exp[i]
+            if sbm.zi[i] >= sbm.z_layered[i]
                 j = sbm.nlayers_kv[i]
                 kh =
                     0.001 *
                     sbm.kv[i][j] *
-                    exp(-sbm.f[i] * (sbm.zi[i] - sbm.z_exp[i])) *
+                    exp(-sbm.f[i] * (sbm.zi[i] - sbm.z_layered[i])) *
                     khfrac *
                     t_factor
             else
@@ -816,7 +816,7 @@ function initialize_lateralssf_layered!(ssf::LateralSSF, sbm::SBM, ksat_profile)
             if j <= sbm.nlayers_kv[i]
                 kh_max += sbm.kv[i][j] * sbm.act_thickl[i][j]
             else
-                zt = sbm.soilthickness[i] - sbm.z_exp[i]
+                zt = sbm.soilthickness[i] - sbm.z_layered[i]
                 k = max(j - 1, 1)
                 kh_max += sbm.kv[i][k] / sbm.f[i] * (1.0 - exp(-sbm.f[i] * zt))
                 break
