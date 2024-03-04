@@ -496,8 +496,7 @@ function update_total_water_storage(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,
     update_total_water_storage(
         vertical,
         network.index_river,
-        network.land.xl,
-        network.land.yl,
+        network.land.area,
         lateral.river,
         lateral.land,
     )

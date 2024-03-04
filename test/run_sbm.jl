@@ -94,7 +94,7 @@ model = Wflow.run_timestep(model)
     @test sbm.runoff[50063] == 0.0
     @test sbm.soilevap[50063] ≈ 0.006358004660566856f0
     @test sbm.snow[5] ≈ 3.667748983774868f0
-    @test sbm.total_storage[50063] ≈ 559.7935411649405f0
+    @test sbm.total_storage[50063] ≈ 560.0046800202498f0
     @test sbm.total_storage[429] ≈ 617.0062092646873f0 # river cell
 end
 
