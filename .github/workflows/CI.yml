@@ -30,8 +30,8 @@ jobs:
         with:
           pixi-version: "latest"
       - name: Prepare pixi
-        run: pixi run install-ci
-      - name: Test Ribasim Core
+        run: pixi run install-julia
+      - name: Test Wflow
         run: |
           pixi run test-wflow-cov
         env:
