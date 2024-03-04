@@ -17,11 +17,16 @@ initialize-julia = { depends_on = [
     "instantiate-julia",
 ] }
 # Build
+instantiate-create-binaries = { cmd = "julia --project --eval='using Pkg; Pkg.instantiate()'", cwd = "build/create_binaries"} 
+instantiate-wflow-cli = { cmd = "julia --project --eval='using Pkg; Pkg.instantiate()'", cwd = "build/wflow_cli"} 
 download-test-data = { cmd = "julia --project download_test_data.jl", cwd = "build/create_binaries", depends_on = [
     "initialize-julia",
+    "instantiate-create-binaries",
 ] }
 build-wflow-cli = { cmd = "julia --project create_app.jl", cwd = "build/create_binaries", depends_on = [
     "download-test-data",
+    "instantiate-wflow-cli",
+    
 ] }
 # Test
 test-wflow-cli = { cmd = "julia --project --eval 'using Pkg; Pkg.test()'", cwd = "build/wflow_cli", depends_on = ["download-test-data"]}
