@@ -4,9 +4,6 @@
 # VS Code stuff
 .vscode
 
-# Manifest toml from project toml
-**/Manifest.toml
-
 # Packaging stuff
 *.jl.*.cov
 *.jl.cov
@@ -24,3 +21,5 @@
 
 # Build files
 /build/create_binaries/wflow_bundle/
+# pixi environments
+.pixi
