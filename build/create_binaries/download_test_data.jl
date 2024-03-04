@@ -1,7 +1,6 @@
 using Wflow
 using Downloads
 
-# this assumes that the Wflow tests have already been run, so the data has been downloaded
 testdir = abspath(dirname(pathof(Wflow)), "..", "test")
 
 # ensure test data is present

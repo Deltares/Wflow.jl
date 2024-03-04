@@ -9,6 +9,8 @@ channels = ["conda-forge"]
 platforms = ["win-64", "linux-64"]
 
 [tasks]
+# Installation
+install-julia = "juliaup add 1.10.0 && juliaup default 1.10.0"
 # Julia
 update-registry-julia = "julia --eval='using Pkg; Registry.update()'"
 instantiate-julia = "julia --project --eval='using Pkg; Pkg.instantiate()'"
@@ -33,3 +35,4 @@ test-wflow-cli = { cmd = "julia --project --eval 'using Pkg; Pkg.test()'", cwd =
 
 
 [dependencies]
+juliaup = "*"
