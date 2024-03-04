@@ -212,6 +212,8 @@
     waterlevel_land::Vector{T} | "mm"
     # Water level river [mm]
     waterlevel_river::Vector{T} | "mm"
+    # Total water storage (excluding floodplain volume, lakes and reservoirs) [mm]
+    total_storage::Vector{T} | "mm"
     # Water demand structs (of arrays)
     paddy::P | "-" | 0
     nonpaddy::NP | "-" | 0
@@ -220,15 +222,13 @@
     industry::I | "-" | 0
     waterallocation::W | "-" | 0
 
+
     function SBM{T,N,M,P,NP,D,L,I,W}(args...) where {T,N,M,P,NP,D,L,I,W}
         equal_size_vectors(args)
         return new(args...)
     end
 end
 
-statevars(::SBM; snow = false) =
-    snow ? (:satwaterdepth, :snow, :tsoil, :ustorelayerdepth, :snowwater, :canopystorage) :
-    (:satwaterdepth, :ustorelayerdepth, :canopystorage)
 
 function initialize_canopy(nc, config, inds)
     n = length(inds)
@@ -696,6 +696,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         # water level land and river domain
         waterlevel_land = fill(mv, n),
         waterlevel_river = zeros(Float, n), #set to zero to account for cells outside river domain
+        total_storage = zeros(Float, n), # Set the total water storage from initialized values
         # water demand
         paddy = paddy ? initialize_paddy(nc, config, inds) : nothing,
         nonpaddy = nonpaddy ? initialize_nonpaddy(nc, config, inds) : nothing,
@@ -1078,7 +1079,7 @@ function update_until_recharge(sbm::SBM, config)
                 actcapflux = actcapflux + toadd
             end
         end
-        deepksat = sbm.kv₀[i] * exp(-sbm.f[i] * sbm.soilthickness[i])
+        deepksat = sbm.kvfrac[i][end] * sbm.kv₀[i] * exp(-sbm.f[i] * sbm.soilthickness[i])
         deeptransfer = min(satwaterdepth, deepksat)
         actleakage = max(0.0, min(sbm.maxleakage[i], deeptransfer))
 
@@ -1218,5 +1219,62 @@ function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
         sbm.vwc_root[i] = vwc_root
         sbm.vwc_percroot[i] = vwc_percroot
         sbm.zi[i] = zi[i]
+    end
+end
+
+"""
+Update the total water storage per cell at the end of a timestep.
+
+Takes the following parameters:
+- sbm:
+    The vertical concept (SBM struct)
+- river_network:
+    The indices of the river cells in relation to the active cells, i.e. model.network.index_river
+- area:
+    Area of the cells acquired from model.network.land.area
+- river_routing:
+    The river routing struct, i.e. model.lateral.river
+- land_routing:
+    The land routing struct, i.e. model.lateral.land
+"""
+function update_total_water_storage(
+    sbm::SBM,
+    river_network,
+    area,
+    river_routing,
+    land_routing,
+)
+    # Get length active river cells
+    nriv = length(river_network)
+
+    # Set the total storage to zero
+    fill!(sbm.total_storage, 0)
+
+    # Burn the river routing values
+    sbm.total_storage[river_network] = (
+        (
+            river_routing.h_av[1:nriv] .* river_routing.width[1:nriv] .*
+            river_routing.dl[1:nriv]
+        ) ./ (area[river_network]) * 1000 # Convert to mm
+    )
+
+    # Chunk the data for parallel computing
+    threaded_foreach(1:sbm.n, basesize = 1000) do i
+
+        # Cumulate per vertical type
+        # Maybe re-categorize in the future
+        surface = (
+            sbm.glacierstore[i] * sbm.glacierfrac[i] +
+            sbm.snow[i] +
+            sbm.snowwater[i] +
+            sbm.canopystorage[i]
+        )
+        sub_surface = sbm.ustoredepth[i] + sbm.satwaterdepth[i]
+        lateral = (
+            land_routing.h_av[i] * (1 - sbm.riverfrac[i]) * 1000 # convert to mm
+        )
+
+        # Add everything to the total water storage
+        sbm.total_storage[i] += (surface + sub_surface + lateral)
     end
 end

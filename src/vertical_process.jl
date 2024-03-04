@@ -350,9 +350,9 @@ function snowpack_hbv(
     ttm,
     cfmax,
     whc;
-    rfcf=1.0,
-    sfcf=1.0,
-    cfr=0.05
+    rfcf = 1.0,
+    sfcf = 1.0,
+    cfr = 0.05,
 )
 
     # fraction of precipitation which falls as rain

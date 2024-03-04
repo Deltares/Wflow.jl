@@ -1,4 +1,4 @@
-name: CI
+name: Wflow Server CI
 on:
   pull_request:
   push:
@@ -7,7 +7,7 @@ on:
     tags: '*'
 jobs:
   test:
-    name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ matrix.threads }} threads - ${{ github.event_name }}
+    name: WflowServer Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -20,9 +20,6 @@ jobs:
           - windows-latest
         arch:
           - x64
-        threads:
-          - '1'
-          - '2'
     steps:
       - uses: actions/checkout@v4
       - uses: julia-actions/setup-julia@v1
@@ -39,11 +36,20 @@ jobs:
             ${{ runner.os }}-test-${{ env.cache-name }}-
             ${{ runner.os }}-test-
             ${{ runner.os }}-
-      - uses: julia-actions/julia-buildpkg@v1
-      - uses: julia-actions/julia-runtest@v1
-        env:
-          JULIA_NUM_THREADS: ${{ matrix.threads }}
+      - name: Install Julia dependencies
+        shell: julia --project=server {0}
+        run: |
+          using Pkg;
+          # dev install Wflow
+          pkg"dev ."
+      - name: Run the Wflow Server tests
+        continue-on-error: true
+        run: >
+          julia --color=yes --project=server -e 'using Pkg; Pkg.test("WflowServer", coverage=true)'
+          shell: bash
       - uses: julia-actions/julia-processcoverage@v1
+        with:
+          directories: server/src
       - uses: codecov/codecov-action@v4
         with:
           files: lcov.info

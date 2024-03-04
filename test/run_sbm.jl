@@ -80,6 +80,8 @@ end
     @test sbm.runoff[50063] == 0.0
     @test sbm.soilevap[50063] == 0.0
     @test sbm.snow[5] ≈ 3.592840840467347f0
+    @test sbm.total_storage[50063] ≈ 559.70849973344f0
+    @test sbm.total_storage[429] ≈ 597.4578475404879f0 # river cell
 end
 
 # run the second timestep
@@ -92,6 +94,8 @@ model = Wflow.run_timestep(model)
     @test sbm.runoff[50063] == 0.0
     @test sbm.soilevap[50063] ≈ 0.006358004660566856f0
     @test sbm.snow[5] ≈ 3.667748983774868f0
+    @test sbm.total_storage[50063] ≈ 559.7935411649405f0
+    @test sbm.total_storage[429] ≈ 617.0062092646873f0 # river cell
 end
 
 @testset "subsurface flow" begin
@@ -278,7 +282,7 @@ model = Wflow.run_timestep(model)
 end
 Wflow.close_files(model, delete_output = false)
 
-# test local-inertial option for river flow including 1D floodplain schematization 
+# test local-inertial option for river flow including 1D floodplain schematization
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 
@@ -286,6 +290,8 @@ config.model.floodplain_1d = true
 config.model.river_routing = "local-inertial"
 config.model.land_routing = "kinematic-wave"
 Dict(config.input.lateral.river)["floodplain"] = Dict("volume" => "floodplain_volume")
+Dict(config.state.lateral.river)["floodplain"] =
+    Dict("q" => "q_floodplain", "h" => "h_floodplain")
 
 model = Wflow.initialize_sbm_model(config)
 

@@ -1,7 +1,7 @@
 name = "Wflow"
 uuid = "d48b7d99-76e7-47ae-b1d5-ff0c1cf9a818"
 authors = ["Deltares and contributors"]
-version = "0.7.2"
+version = "0.7.3"
 
 [deps]
 BasicModelInterface = "59605e27-edc0-445a-b93d-c09a3a50b330"
@@ -38,7 +38,7 @@ Graphs = "1.4"
 IfElse = "0.1"
 LoggingExtras = "0.4.6,0.5,1"
 LoopVectorization = "0.12"
-NCDatasets = "0.13, 0.14"
+NCDatasets = "0.13.2"
 Parameters = "0.12"
 Polyester = "0.7"
 Polynomials = "3,4"

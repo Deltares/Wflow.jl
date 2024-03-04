@@ -412,6 +412,7 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
     # update lateral subsurface flow domain (kinematic wave)
     update(lateral.subsurface, network.land, network.frac_toriver)
     model = update_after_subsurfaceflow(model)
+    model = update_total_water_storage(model)
 end
 
 """
@@ -482,6 +483,27 @@ function update_after_subsurfaceflow(
     return model
 end
 
+"""
+Update of the total water storage at the end of each timestep per model cell.
+
+This is done here at model level.
+"""
+function update_total_water_storage(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
+    @unpack lateral, vertical, network, clock, config = model
+
+    # Update the total water storage based on vertical states
+    # TODO Maybe look at routing in the near future
+    update_total_water_storage(
+        vertical,
+        network.index_river,
+        network.land.xl,
+        network.land.yl,
+        lateral.river,
+        lateral.land,
+    )
+    return model
+end
+
 function set_states(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
     @unpack lateral, vertical, network, config = model
 
@@ -497,13 +519,11 @@ function set_states(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
         nriv = length(network.river.indices)
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
-        state_ncnames = ncnames(config.state)
         @warn string(
             "The unit of `ssf` (lateral subsurface flow) is now m3 d-1. Please update your",
             " input state file if it was produced with a Wflow version up to v0.5.2.",
         )
-        set_states(instate_path, model, state_ncnames; type = Float, dimname = :layer)
-        @unpack lateral, vertical, network = model
+        set_states(instate_path, model; type = Float, dimname = :layer)
         # update zi for vertical sbm and kinematic wave volume for river and land domain
         zi =
             max.(
@@ -528,7 +548,7 @@ function set_states(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
                 " bed elevation `zb` to cell elevation `z`. Please update the input state",
                 " file if it was produced with Wflow version v0.5.2.",
             )
-            for i = 1:n
+            for i in eachindex(lateral.land.volume)
                 if lateral.land.rivercells[i]
                     j = network.land.index_river[i]
                     if lateral.land.h[i] > 0.0
@@ -555,7 +575,7 @@ function set_states(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
         if floodplain_1d
             initialize_volume!(lateral.river, nriv)
         end
-    
+
         if do_lakes
             # storage must be re-initialized after loading the state with the current
             # waterlevel otherwise the storage will be based on the initial water level

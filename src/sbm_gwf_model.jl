@@ -470,8 +470,7 @@ function set_states(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
     if reinit == false
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
-        state_ncnames = ncnames(config.state)
-        set_states(instate_path, model, state_ncnames, type = Float, dimname = :layer)
+        set_states(instate_path, model, type = Float, dimname = :layer)
         # update kinematic wave volume for river and land domain
         @unpack lateral = model
         # makes sure land cells with zero flow width are set to zero q and h

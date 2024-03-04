@@ -18,8 +18,9 @@ latest release. The DOIs of previous versions are also available at Zenodo.
 
 If you use a snapshot of the development (without a DOI) please cite as follows:
 
-van Verseveld, Willem, Visser, Martijn, Boisgontier, Hélène, Bootsma, Huite, Bouaziz,
-Laurène, Buitink, Joost, Eilander, Dirk & Hegnauer, Mark (YEAR). Deltares/Wflow.jl:
+van Verseveld, Willem, Visser, Martijn, Buitink, Joost, Bouaziz, Laurène, Boisgontier,
+Hélène, Bootsma, Huite, Pronk, Maarten, Hartgring, Sebastian, Eilander, Dirk, Weerts,
+Albrecht, Dalmijn, Brendan, Hofer, Julian, & Hegnauer, Mark (YEAR). Deltares/Wflow.jl:
 unstable-master. <https://github.com/Deltares/Wflow.jl>, obtained: DATE\_OF\_DOWNLOAD.
 
 ## Publications using wflow
@@ -175,6 +176,10 @@ Abdelnour, A., 2022. Bias Correction of Climate Simulations to Assess Climate Ch
 on Low Flows in the Rhine River, MSc thesis, Delft Universitry of technology,
 <https://repository.tudelft.nl/islandora/object/uuid:50489399-cbd2-467f-9b82-98e5f3e371e9>.
 
+Ali, M.A., 2023. Machine learning for predicting spatially variable lateral hydraulic conductivity:
+a step towards efficient hydrological model calibration and global applicability, Intersnhip
+report, Deltares.
+
 Arnal, L., 2014. An intercomparison of flood forecasting models for the Meuse River basin,
 MSc Thesis, Vrije Universiteit, Amsterdam, <https://hal.inrae.fr/hal-02600749>.
 
@@ -183,6 +188,10 @@ Vrije Universiteit, Amsterdam, Faculty of Science, Hydrology.
 
 Azadeh Karami Fard, 2015. Modeling runoff of an Ethiopian catchment with WFLOW, MSc. Thesis,
 Vrije Universiteit, Amsterdam.
+
+Benschop, J., 2023. The application of hybrid lateral routing in hydrological simulations
+of the Rhine catchment, MSc Thesis, Hydrology and Environmental Hydraulics Group, Wageningen
+University.
 
 Beusen, B., 2021. The effect of rooting depth on discharge and evapotranspiration in
 (semi-)arid areas, MSc Thesis, Hydrology and Quantitative Water Management Group, Wageningen
@@ -218,6 +227,10 @@ dissertation, <https://doi.org/10.18174/513157>.
 
 Rohrmueller, I., 2019. BENCHMARKING THE NEW WFLOW DISTRIBUTED HYDROLOGICAL MODEL, MSc
 Thesis, School of Engineering - Newcastle University.
+
+Rusli, S.R., 2024. Deepening the quantitative understanding of groundwater systems in 
+data-scarce areas: application in the Bandung Groundwater Basin, Indonesia. Wageningen 
+University, Doctoral dissertation, <https://doi.org/10.18174/640983>.
 
 Tretjakova, D., 2015. Investigating the effect of using fully-distributed model and data
 assimilation on the performance of hydrological forecasting in the Karasu catchment, Turkey,

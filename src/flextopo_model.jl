@@ -721,8 +721,7 @@ function set_states(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:FlextopoModel
     # read and set states in model object if reinit=true
     if reinit == false
         instate_path = input_path(config, config.state.path_input)
-        state_ncnames = ncnames(config.state)
-        set_states(instate_path, model, state_ncnames; type = Float, dimname = :classes)
+        set_states(instate_path, model; type = Float, dimname = :classes)
 
         # update kinematic wave volume for river and land domain
         lateral.land.volume .= lateral.land.h .* lateral.land.width .* lateral.land.dl

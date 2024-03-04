@@ -149,8 +149,8 @@ function initialize_sediment_model(config::Config)
     )
 
     model = set_states(model)
-
     @info "Initialized model"
+
     return model
 end
 
@@ -199,8 +199,7 @@ function set_states(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SedimentModel
     if reinit == false
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
-        state_ncnames = ncnames(config.state)
-        set_states(instate_path, model, state_ncnames; type = Float)
+        set_states(instate_path, model; type = Float)
     else
         @info "Set initial conditions from default values."
     end
