@@ -23,3 +23,5 @@
 /build/create_binaries/wflow_bundle/
 # pixi environments
 .pixi
+# juliaup
+utils/juliaup

@@ -36,3 +36,12 @@ test-wflow-cli = { cmd = "julia --project --eval 'using Pkg; Pkg.test()'", cwd =
 
 [dependencies]
 juliaup = "*"
+
+[activation]
+scripts = ["utils/env_setup.sh"]
+
+[target.win-64.activation]
+scripts = ["utils/env_setup.bat"]
+
+[system-requirements]
+linux = "3.10.0"
