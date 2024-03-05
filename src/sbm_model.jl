@@ -342,11 +342,11 @@ function initialize_sbm_model(config::Config)
         # exclude waterbodies for local surface water abstraction
         inds_riv_2d = copy(rev_inds_riv)
         if !isempty(reservoir)
-            inds_cov = collect(Iterators.flatten(model.network.reservoir.indices_coverage))
+            inds_cov = collect(Iterators.flatten(reservoir.indices_coverage))
             inds_riv_2d[inds_cov] .= 0
         end
         if !isempty(lake)
-            inds_cov = collect(Iterators.flatten(model.network.lake.indices_coverage))
+            inds_cov = collect(Iterators.flatten(lake.indices_coverage))
             inds_riv_2d[inds_cov] .= 0
         end
         land = merge(land, (index_river_wb = inds_riv_2d[inds],))
