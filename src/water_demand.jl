@@ -297,7 +297,7 @@ function update_water_demand(sbm::SBM)
         livestock_dem = isnothing(sbm.livestock) ? 0.0 : sbm.livestock.demand_gross[i]
 
         irri_dem_gross = 0.0
-        if sbm.nonpaddy !== nothing && sbm.nonpaddy.irrigation_areas[i] !== 0
+        if !isnothing(sbm.nonpaddy) && sbm.nonpaddy.irrigation_areas[i]
             usl, _ = set_layerthickness(sbm.zi[i], sbm.sumlayers[i], sbm.act_thickl[i])
             for k = 1:sbm.n_unsatlayers[i]
                 rootfrac =
@@ -324,7 +324,7 @@ function update_water_demand(sbm::SBM)
                 sbm.soilinfredu[i] * (sbm.infiltcappath[i] + sbm.infiltcapsoil[i])
             irri_dem_gross = min(irri_dem_gross, infiltration_capacity)
             irri_dem_gross /= sbm.nonpaddy.irrigation_efficiency[i]
-        elseif sbm.paddy !== nothing && sbm.paddy.irrigation_areas[i] !== 0
+        elseif !isnothing(sbm.paddy) && sbm.paddy.irrigation_areas[i]
             irr_depth_paddy =
                 sbm.paddy.h[i] < sbm.paddy.h_min[i] ?
                 (sbm.paddy.h_opt[i] - sbm.paddy.h[i]) : 0.0
