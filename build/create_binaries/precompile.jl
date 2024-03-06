@@ -5,6 +5,7 @@
 using Wflow
 
 testdir = abspath(dirname(pathof(Wflow)), "..", "test")
+
 Wflow.run(joinpath(testdir, "sbm_config.toml"))
 Wflow.run(joinpath(testdir, "sbm_gwf_config.toml"))
 Wflow.run(joinpath(testdir, "hbv_config.toml"))
