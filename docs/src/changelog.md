@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   lake storage. The variable `actevap` has also been added to the reservoir module.
 - The `set_states` function for model type `sbm` with local inertial routing for river and
   land component.
+- Inflow to reservoir and lake locations for local inertial routing with floodplain routing,
+  the floodplain discharge was not added to the inflow of these locations.
 
 ### Changed
 - Stop exposing scalar variables through BMI. The `BMI.get_value_ptr` function was
