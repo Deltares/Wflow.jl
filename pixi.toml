@@ -36,6 +36,11 @@ test-wflow-cli = { cmd = "julia --project --eval 'using Pkg; Pkg.test()'", cwd =
 test-wflow-cov = { cmd = "julia --project --eval 'using Pkg; Pkg.test(coverage=true, julia_args=[\"--check-bounds=yes\"])'", depends_on = [
     "initialize-julia",
 ] }
+# Server
+test-wflow-server = { cmd = "julia --project=server --eval 'using Pkg; Pkg.test(\"WflowServer\", coverage=true)'", depends_on = [
+    "instantiate-wflow-server",
+] }
+instantiate-wflow-server = "julia --project=server --eval 'using Pkg; Pkg.instantiate()'"
 
 [dependencies]
 juliaup = "*"

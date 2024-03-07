@@ -22,31 +22,18 @@ jobs:
           - x64
     steps:
       - uses: actions/checkout@v4
-      - uses: julia-actions/setup-julia@v1
+      - uses: julia-actions/cache@v1
         with:
-          version: ${{ matrix.version }}
-          arch: ${{ matrix.arch }}
-      - uses: actions/cache@v4
-        env:
-          cache-name: cache-artifacts
+          cache-compiled: "true"
+          cache-registries: "true"
+      - uses: prefix-dev/setup-pixi@v0.5.1
         with:
-          path: ~/.julia/artifacts
-          key: ${{ runner.os }}-test-${{ env.cache-name }}-${{ hashFiles('**/Project.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-test-${{ env.cache-name }}-
-            ${{ runner.os }}-test-
-            ${{ runner.os }}-
-      - name: Install Julia dependencies
-        shell: julia --project=server {0}
+          pixi-version: "latest"
+      - name: Prepare pixi
+        run: pixi run install-julia
+      - name: Test WflowServer
         run: |
-          using Pkg;
-          # dev install Wflow
-          pkg"dev ."
-      - name: Run the Wflow Server tests
-        continue-on-error: true
-        run: >
-          julia --color=yes --project=server -e 'using Pkg; Pkg.test("WflowServer", coverage=true)'
-          shell: bash
+          pixi run test-wflow-server
       - uses: julia-actions/julia-processcoverage@v1
         with:
           directories: server/src
