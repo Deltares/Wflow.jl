@@ -688,24 +688,23 @@ function shallowwater_river_update(
     # local inertial model (fixed h).
     for v in eachindex(sw.reservoir_index)
         i = sw.reservoir_index[v]
-        update(
-            sw.reservoir,
-            v,
-            sum_at(sw.q0, links_at_node.src[i]) + inflow_wb[i] + sw.inflow_wb[i],
-            Δt,
-        )
+
+        q_in = sum_at(sw.q0, links_at_node.src[i])
+        if !isnothing(sw.floodplain)
+            q_in = q_in + sum_at(sw.floodplain.q0, links_at_node.src[i])
+        end
+        update(sw.reservoir, v, q_in + inflow_wb[i] + sw.inflow_wb[i], Δt)
         sw.q[i] = sw.reservoir.outflow[v]
         sw.q_av[i] += sw.q[i] * Δt
     end
     for v in eachindex(sw.lake_index)
         i = sw.lake_index[v]
-        update(
-            sw.lake,
-            v,
-            sum_at(sw.q0, links_at_node.src[i]) + inflow_wb[i] + sw.inflow_wb[i],
-            doy,
-            Δt,
-        )
+
+        q_in = sum_at(sw.q0, links_at_node.src[i])
+        if !isnothing(sw.floodplain)
+            q_in = q_in + sum_at(sw.floodplain.q0, links_at_node.src[i])
+        end
+        update(sw.lake, v, q_in + inflow_wb[i] + sw.inflow_wb[i], doy, Δt)
         sw.q[i] = sw.lake.outflow[v]
         sw.q_av[i] += sw.q[i] * Δt
     end
