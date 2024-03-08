@@ -668,6 +668,15 @@ function initialize_shallowwater_river(
     return sw_river, nodes_at_link
 end
 
+"Return the upstream inflow for a waterbody in `ShallowWaterRiver`"
+function get_inflow_waterbody(sw::ShallowWaterRiver, src_edge)
+    q_in = sum_at(sw.q, src_edge)
+    if !isnothing(sw.floodplain)
+        q_in = q_in + sum_at(sw.floodplain.q, src_edge)
+    end
+    return q_in
+end
+
 function shallowwater_river_update(
     sw::ShallowWaterRiver,
     network,
@@ -682,31 +691,6 @@ function shallowwater_river_update(
     sw.q0 .= sw.q
     if !isnothing(sw.floodplain)
         sw.floodplain.q0 .= sw.floodplain.q
-    end
-    # For reservoir and lake locations the local inertial solution is replaced by the
-    # reservoir or lake model. These locations are handled as boundary conditions in the
-    # local inertial model (fixed h).
-    for v in eachindex(sw.reservoir_index)
-        i = sw.reservoir_index[v]
-
-        q_in = sum_at(sw.q0, links_at_node.src[i])
-        if !isnothing(sw.floodplain)
-            q_in = q_in + sum_at(sw.floodplain.q0, links_at_node.src[i])
-        end
-        update(sw.reservoir, v, q_in + inflow_wb[i] + sw.inflow_wb[i], Δt)
-        sw.q[i] = sw.reservoir.outflow[v]
-        sw.q_av[i] += sw.q[i] * Δt
-    end
-    for v in eachindex(sw.lake_index)
-        i = sw.lake_index[v]
-
-        q_in = sum_at(sw.q0, links_at_node.src[i])
-        if !isnothing(sw.floodplain)
-            q_in = q_in + sum_at(sw.floodplain.q0, links_at_node.src[i])
-        end
-        update(sw.lake, v, q_in + inflow_wb[i] + sw.inflow_wb[i], doy, Δt)
-        sw.q[i] = sw.lake.outflow[v]
-        sw.q_av[i] += sw.q[i] * Δt
     end
     @tturbo for j in eachindex(sw.active_e)
         i = sw.active_e[j]
@@ -836,6 +820,25 @@ function shallowwater_river_update(
                 IfElse.ifelse(sw.floodplain.q[i] * sw.q[i] < 0.0, 0.0, sw.floodplain.q[i])
             sw.floodplain.q_av[i] += sw.floodplain.q[i] * Δt
         end
+    end
+    # For reservoir and lake locations the local inertial solution is replaced by the
+    # reservoir or lake model. These locations are handled as boundary conditions in the
+    # local inertial model (fixed h).
+    for v in eachindex(sw.reservoir_index)
+        i = sw.reservoir_index[v]
+
+        q_in = get_inflow_waterbody(sw, links_at_node.src[i])
+        update(sw.reservoir, v, q_in + inflow_wb[i] + sw.inflow_wb[i], Δt)
+        sw.q[i] = sw.reservoir.outflow[v]
+        sw.q_av[i] += sw.q[i] * Δt
+    end
+    for v in eachindex(sw.lake_index)
+        i = sw.lake_index[v]
+
+        q_in = get_inflow_waterbody(sw, links_at_node.src[i])
+        update(sw.lake, v, q_in + inflow_wb[i] + sw.inflow_wb[i], doy, Δt)
+        sw.q[i] = sw.lake.outflow[v]
+        sw.q_av[i] += sw.q[i] * Δt
     end
     if update_h
         @batch per = thread minbatch = 2000 for i in sw.active_n
