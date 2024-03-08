@@ -83,12 +83,10 @@ end
 
 @testset "wflow_sbm_timing" begin
 
-    ENV["JULIA_NUM_THREADS"] = 1
     toml = normpath(testdir, "sbm_config.toml")
-    time_sbm_1thread = @elapsed run(`$wflow_exe $toml`)
+    time_sbm_1thread = @elapsed run(Cmd(`$wflow_exe $toml`, env=("JULIA_NUM_THREADS" => "1",)))
 
-    ENV["JULIA_NUM_THREADS"] = 4
-    time_sbm_4thread = @elapsed run(`$wflow_exe $toml`)
+    time_sbm_4thread = @elapsed run(Cmd(`$wflow_exe $toml`, env=("JULIA_NUM_THREADS" => "4", )))
 
     # Test if run with more threads is indeed faster
     @test time_sbm_4thread < time_sbm_1thread
