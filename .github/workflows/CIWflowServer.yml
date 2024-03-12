@@ -49,8 +49,9 @@ jobs:
           && echo "TESTS_PASS=true" >> $GITHUB_ENV
           shell: bash
       - name: Exit if some tests did not pass
+        shell: bash
         if: ${{ env.TESTS_PASS != 'true' }}
-        run: echo "State is: '${{ env.TESTS_PASS }}'" # exit 1
+        run: exit 1
       - uses: julia-actions/julia-processcoverage@v1
         with:
           directories: server/src
