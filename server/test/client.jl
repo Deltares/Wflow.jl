@@ -153,7 +153,7 @@ end
 
 @testset "model states and finalize functions" begin
     @test request((fn = "load_state",)) == Dict("status" => "OK")
-#    @test request((fn = "save_state",)) == Dict("status" => "OK")
+    @test request((fn = "save_state",)) == Dict("status" => "OK")
     @test request((fn = "finalize",)) == Dict("status" => "OK")
 end
 
