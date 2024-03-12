@@ -33,15 +33,15 @@ end
 
 @testset "model information functions" begin
     @test request((fn = "get_component_name",)) == Dict("component_name" => "sbm")
-    @test request((fn = "get_input_item_count",)) == Dict("input_item_count" => 181)
-    @test request((fn = "get_output_item_count",)) == Dict("output_item_count" => 181)
-    @test request((fn = "get_input_var_names",))["input_var_names"][[1, 5, 151, 175]] == [
+    @test request((fn = "get_input_item_count",)) == Dict("input_item_count" => 191)
+    @test request((fn = "get_output_item_count",)) == Dict("output_item_count" => 191)
+    @test request((fn = "get_input_var_names",))["input_var_names"][[1, 6, 161, 185]] == [
         "vertical.nlayers",
         "vertical.θᵣ",
         "lateral.river.q",
         "lateral.river.reservoir.outflow",
     ]
-    @test request((fn = "get_output_var_names",))["output_var_names"][[1, 5, 151, 175]] == [
+    @test request((fn = "get_output_var_names",))["output_var_names"][[1, 6, 161, 185]] == [
         "vertical.nlayers",
         "vertical.θᵣ",
         "lateral.river.q",
