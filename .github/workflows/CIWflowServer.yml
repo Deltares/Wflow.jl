@@ -58,6 +58,7 @@ jobs:
       - name: Exit if some tests did not pass
         if: ${{ env.TESTS_PASS != 'true' }}
         run: echo "response = $env.TESTS_PASS"
+        shell: pwsh
       - uses: julia-actions/julia-processcoverage@v1
         with:
           directories: server/src
