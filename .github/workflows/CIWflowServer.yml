@@ -55,9 +55,6 @@ jobs:
           julia --color=yes --project=server -e "using Pkg; Pkg.test(\""WflowServer\"", coverage=true)"
           && echo "TESTS_PASS=true" | Out-File -FilePath $env:GITHUB_ENV -Append
         if: runner.os == 'Windows'
-      - name: Exit if some tests did not pass
-        if: ${{ env.TESTS_PASS != 'true' }}
-        run: echo "response is: $env.TESTS_PASS"
       - uses: julia-actions/julia-processcoverage@v1
         with:
           directories: server/src
