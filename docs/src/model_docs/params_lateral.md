@@ -155,11 +155,11 @@ between parentheses.
 The Table below shows the parameters (fields) of struct `LateralSSF`, including a
 description of these parameters, the unit, and default value if applicable. The parameters
 in bold represent model parameters that can be set through static input data (netCDF). The
-soil related parameters `f`, `soilthickness`, `θₛ` and `θᵣ` are derived from the vertical
-`SBM` concept (including unit conversion for `f` and `soilthickness`), and can be listed in
-the TOML configuration file under `[input.vertical]`, to map the internal model parameter to
-the external netCDF variable. The internal slope model parameter `βₗ` is set through the
-TOML file as follows:
+soil related parameters `f`, `soilthickness`, `z_exp`, `θₛ` and `θᵣ` are derived from the
+vertical `SBM` concept (including unit conversion for `f`, `z_exp` and `soilthickness`), and
+can be listed in the TOML configuration file under `[input.vertical]`, to map the internal
+model parameter to the external netCDF variable. The internal slope model parameter `βₗ` is
+set through the TOML file as follows:
 
 ```toml
 [input.lateral.land]
@@ -168,22 +168,33 @@ slope = "Slope"
 
 The parameter `kh₀` is computed by multiplying the vertical hydraulic conductivity at the
 soil surface `kv₀` (including unit conversion) of the vertical `SBM` concept with the
-external parameter `ksathorfrac` \[-\] (default value of 1.0). The external parameter
-`ksathorfrac` can be set as follows through the TOML file:
+internal parameter `khfrac` \[-\] (default value of 1.0). The internal model parameter
+`khfrac` is set through the TOML file as follows:
 
 ```toml
 [input.lateral.subsurface]
 ksathorfrac = "KsatHorFrac"
 ```
 
-The `ksathorfrac` parameter compensates for anisotropy, small scale `kv₀` measurements (soil
+The `khfrac` parameter compensates for anisotropy, small scale `kv₀` measurements (soil
 core) that do not represent larger scale hydraulic conductivity, and smaller flow length
 scales (hillslope) in reality, not represented by the model resolution.
+
+For the vertical [SBM](@ref params_sbm) concept different vertical hydraulic conductivity
+depth profiles are possible, and these also determine which `LateralSSF` parameters are used
+including the input requirements for the computation of lateral subsurface flow. For the
+`exponential` profile the model parameters `kh₀` and `f` are used. For the
+`exponential_constant` profile `kh₀` and `f` are used, and `z_exp` is required as part of
+`[input.vertical]`. For the `layered` profile, `SBM` model parameter `kv` is used, and for
+the `layered_exponential` profile `kv` is used and `z_exp` is required as part of
+`[input.vertical]`.
 
 | parameter | description  	        | unit | default |
 |:---------------| --------------- | ---------------------- | ----- |
 | `kh₀`          | horizontal hydraulic conductivity at soil surface  | m d``^{-1}`` |  3.0 |
-| **`f`** | a scaling parameter (controls exponential decline of kh₀) | m``^{-1}``  | 1.0 |
+| **`f`** | a scaling parameter (controls exponential decline of `kh₀`) | m``^{-1}``  | 1.0 |
+| `kh` | horizontal hydraulic conductivity | m d``^{-1}``  | - |
+| **`khfrac`** (`ksathorfrac`) | a muliplication factor applied to vertical hydraulic conductivity `kv` | -  | 100.0 |
 | **`soilthickness`** | soil thickness | m  | 2.0 |
 | **`θₛ`** | saturated water content (porosity) | -  | 0.6 |
 | **`θᵣ`** | residual water content  | -  | 0.01 |
@@ -192,13 +203,13 @@ scales (hillslope) in reality, not represented by the model resolution.
 | `dl` | drain length | m | - |
 | `dw` | drain width | m | - |
 | `zi` | pseudo-water table depth (top of the saturated zone) | m | - |
+| **`z_exp`** | depth from soil surface for which exponential decline of `kh₀` is valid | m | - |
 | `exfiltwater` | exfiltration (groundwater above surface level, saturated excess conditions) | m Δt⁻¹ | - |
 | `recharge` | net recharge to saturated store  | m``^2`` Δt⁻¹ | - |
 | `ssf` | subsurface flow  | m``^3`` d``{-1}``  | - |
 | `ssfin` | inflow from upstream cells | m``^3`` d``{-1}``  | - |
 | `ssfmax` | maximum subsurface flow | m``^2`` d``{-1}``  | - |
 | `to_river` | part of subsurface flow that flows to the river | m``^3`` d``{-1}``  | - |
-| `wb_pit` | boolean location (0 or 1) of a waterbody (wb, reservoir or lake) | -  | - |
 
 ## Local inertial
 

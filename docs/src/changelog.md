@@ -32,6 +32,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Checks to see if all states are covered in the .toml file. If not all states are covered,
   an error is thrown. If there are more states specified than required, these states are
   ignored (with a warning in the logging), and the simulation will continue.
+- Support different vertical hydraulic conductivity profiles for the `SBM` concept. See also
+  the following sections: [The SBM soil water accounting scheme](@ref) and [Subsurface flow
+  routing](@ref) for a short description.
 
 ## v0.7.3 - 2024-01-12
 
