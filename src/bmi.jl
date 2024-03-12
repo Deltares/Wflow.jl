@@ -394,6 +394,7 @@ function save_state(model::Model)
         @info "Write output states to NetCDF file `$(model.writer.state_nc_path)`."
     end
     write_netcdf_timestep(model, writer.state_dataset, writer.state_parameters)
+    close(writer.state_dataset)
 end
 
 function get_start_unix_time(model::Model)
