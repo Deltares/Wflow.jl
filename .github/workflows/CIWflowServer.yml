@@ -42,16 +42,22 @@ jobs:
           using Pkg;
           # dev install Wflow
           pkg"dev ."
-      - name: Run the Wflow Server tests
+      - name: Run the Wflow Server tests (Linux)
         continue-on-error: true
         run: >
           julia --color=yes --project=server -e 'using Pkg; Pkg.test("WflowServer", coverage=true)'
           && echo "TESTS_PASS=true" >> $GITHUB_ENV
           shell: bash
+        if: runner.os == 'Linux'
+      - name: Run the Wflow Server tests (Windows)
+        continue-on-error: true
+        run: >
+          julia --color=yes --project=server -e "using Pkg; Pkg.test(\""WflowServer\"", coverage=true)"
+          && echo "TESTS_PASS=true" | Out-File -FilePath $env:GITHUB_ENV -Append
+        if: runner.os == 'Windows'
       - name: Exit if some tests did not pass
-        shell: bash
         if: ${{ env.TESTS_PASS != 'true' }}
-        run: echo ${{ env.TESTS_PASS }}
+        run: echo "response is: $env.TESTS_PASS"
       - uses: julia-actions/julia-processcoverage@v1
         with:
           directories: server/src
