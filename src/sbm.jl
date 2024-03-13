@@ -9,6 +9,8 @@
     nlayers::Vector{Int} | "-"
     # Number of unsaturated soil layers
     n_unsatlayers::Vector{Int} | "-"
+    # Number of soil layers with vertical hydraulic conductivity value `kv`
+    nlayers_kv::Vector{Int} | "-"
     # Fraction of river [-]
     riverfrac::Vector{T} | "-"
     # Saturated water content (porosity) [-]
@@ -17,6 +19,8 @@
     θᵣ::Vector{T} | "-"
     # Vertical hydraulic conductivity [mm Δt⁻¹] at soil surface
     kv₀::Vector{T}
+    # Vertical hydraulic conductivity [mm Δt⁻¹] per soil layer
+    kv::Vector{SVector{N,T}} | "-"
     # Muliplication factor [-] applied to kv_z (vertical flow)
     kvfrac::Vector{SVector{N,T}} | "-"
     # Air entry pressure [cm] of soil (Brooks-Corey)
@@ -55,6 +59,10 @@
     throughfall::Vector{T}
     # A scaling parameter [mm⁻¹] (controls exponential decline of kv₀)
     f::Vector{T} | "mm-1"
+    # Depth [mm] from soil surface for which exponential decline of kv₀ is valid
+    z_exp::Vector{T} | "mm"
+    # Depth [mm] from soil surface for which layered profile is valid
+    z_layered::Vector{T} | "mm"
     # Amount of water in the unsaturated store, per layer [mm]
     ustorelayerdepth::Vector{SVector{N,T}} | "mm"
     # Saturated store [mm]
@@ -254,6 +262,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
 
     Δt = Second(config.timestepsecs)
     config_thicknesslayers = get(config.model, "thicknesslayers", Float[])
+    ksat_profile = get(config.input.vertical, "ksat_profile", "exponential")::String
     if length(config_thicknesslayers) > 0
         thicknesslayers = SVector(Tuple(push!(Float.(config_thicknesslayers), mv)))
         sumlayers = pushfirst(cumsum(thicknesslayers), 0.0)
@@ -463,9 +472,15 @@ function initialize_sbm(nc, config, riverfrac, inds)
 
     cmax, e_r, canopygapfraction, sl, swood, kext = initialize_canopy(nc, config, inds)
 
+    θₑ = θₛ .- θᵣ
+    soilwatercapacity = soilthickness .* θₑ
+    satwaterdepth = 0.85 .* soilwatercapacity # cold state value for satwaterdepth
+    zi = max.(0.0, soilthickness .- satwaterdepth ./ θₑ) # cold state value for zi
+
     # these are filled in the loop below
     # TODO see if we can replace this approach
     nlayers = zeros(Int, n)
+    n_unsatlayers = zeros(Int, n)
     act_thickl = zeros(Float, maxlayers, n)
     s_layers = zeros(Float, maxlayers + 1, n)
 
@@ -478,39 +493,93 @@ function initialize_sbm(nc, config, riverfrac, inds)
             nlayers[i] = nlayers_
             act_thickl[:, i] = act_thickl_
             s_layers[:, i] = s_layers_
+            _, n_unsatlayers[i] = set_layerthickness(zi[i], sumlayers, thicknesslayers)
         else
             nlayers[i] = 1
             act_thickl[:, i] = SVector(soilthickness[i])
             s_layers[:, i] = pushfirst(cumsum(SVector(soilthickness[i])), 0.0)
         end
     end
-
-    # needed for derived parameters below
     act_thickl = svectorscopy(act_thickl, Val{maxlayers}())
-    θₑ = θₛ .- θᵣ
-    soilwatercapacity = soilthickness .* θₑ
-    satwaterdepth = 0.85 .* soilwatercapacity # cold state value for satwaterdepth
-    zi = max.(0.0, soilthickness .- satwaterdepth ./ θₑ) # cold state value for zi
 
     # copied to array of sarray below
     vwc = fill(mv, maxlayers, n)
     vwc_perc = fill(mv, maxlayers, n)
+    sumlayers = svectorscopy(s_layers, Val{maxlayers + 1}())
+
+    # ksat profiles
+    if ksat_profile == "exponential"
+        z_exp = soilthickness
+        z_layered = fill(mv, n)
+        kv = fill(mv, (maxlayers, n))
+        nlayers_kv = fill(0, n)
+    elseif ksat_profile == "exponential_constant"
+        z_exp =
+            ncread(nc, config, "vertical.z_exp"; optional = false, sel = inds, type = Float)
+        z_layered = fill(mv, n)
+        kv = fill(mv, (maxlayers, n))
+        nlayers_kv = fill(0, n)
+    elseif ksat_profile == "layered" || ksat_profile == "layered_exponential"
+        z_exp = fill(mv, n)
+        kv =
+            ncread(
+                nc,
+                config,
+                "vertical.kv";
+                sel = inds,
+                defaults = 1000.0,
+                type = Float,
+                dimname = :layer,
+            ) .* (Δt / basetimestep)
+        if size(kv, 1) != maxlayers
+            parname = param(config.input.vertical, "kv")
+            size1 = size(kv, 1)
+            error("$parname needs a layer dimension of size $maxlayers, but is $size1")
+        end
+        if ksat_profile == "layered"
+            z_layered = soilthickness
+            nlayers_kv = nlayers
+        else
+            z_layered = ncread(
+                nc,
+                config,
+                "vertical.z_layered";
+                optional = false,
+                sel = inds,
+                type = Float,
+            )
+            nlayers_kv = fill(0, n)
+            for i in eachindex(nlayers_kv)
+                layers = @view sumlayers[i][2:nlayers[i]]
+                _, k = findmin(abs.(z_layered[i] .- layers))
+                nlayers_kv[i] = k
+                z_layered[i] = layers[k]
+            end
+        end
+    else
+        error("""An unknown "ksat_profile" is specified in the TOML file ($ksat_profile).
+              This should be "exponential", "exponential_constant", "layered" or
+              "layered_exponential".
+              """)
+    end
 
     sbm = SBM{Float,maxlayers,maxlayers + 1}(
         Δt = tosecond(Δt),
         maxlayers = maxlayers,
         n = n,
         nlayers = nlayers,
-        n_unsatlayers = fill(0, n),
+        n_unsatlayers = n_unsatlayers,
+        nlayers_kv = nlayers_kv,
         riverfrac = riverfrac,
         θₛ = θₛ,
         θᵣ = θᵣ,
         kv₀ = kv₀,
+        kv = svectorscopy(kv, Val{maxlayers}()),
         kvfrac = svectorscopy(kvfrac, Val{maxlayers}()),
         hb = hb,
         soilthickness = soilthickness,
         act_thickl = act_thickl,
-        sumlayers = svectorscopy(s_layers, Val{maxlayers + 1}()),
+        sumlayers = sumlayers,
         infiltcappath = infiltcappath,
         infiltcapsoil = infiltcapsoil,
         maxleakage = maxleakage,
@@ -525,6 +594,8 @@ function initialize_sbm(nc, config, riverfrac, inds)
         stemflow = fill(mv, n),
         throughfall = fill(mv, n),
         f = f,
+        z_exp = z_exp,
+        z_layered = z_layered,
         ustorelayerdepth = zero(act_thickl),
         satwaterdepth = satwaterdepth,
         zi = zi,
@@ -692,6 +763,7 @@ function update_until_recharge(sbm::SBM, config)
     modelsnow = get(config.model, "snow", false)::Bool
     transfermethod = get(config.model, "transfermethod", false)::Bool
     ust = get(config.model, "whole_ust_available", false)::Bool # should be removed from optional setting and code?
+    ksat_profile = get(config.input.vertical, "ksat_profile", "exponential")::String
 
     threaded_foreach(1:sbm.n, basesize = 250) do i
         if modelsnow
@@ -775,7 +847,7 @@ function update_until_recharge(sbm::SBM, config)
             # (ast) and the updated unsaturated storage for each soil layer.
             if transfermethod && sbm.maxlayers == 1
                 ustorelayerdepth = sbm.ustorelayerdepth[i][1] + infiltsoilpath
-                kv_z = sbm.kvfrac[i][1] * sbm.kv₀[i] * exp(-sbm.f[i] * sbm.zi[i])
+                kv_z = hydraulic_conductivity_at_depth(sbm, sbm.zi[i], i, 1, ksat_profile)
                 ustorelayerdepth, ast = unsatzone_flow_sbm(
                     ustorelayerdepth,
                     sbm.soilwatercapacity[i],
@@ -789,7 +861,7 @@ function update_until_recharge(sbm::SBM, config)
             else
                 for m = 1:n_usl
                     l_sat = usl[m] * (sbm.θₛ[i] - sbm.θᵣ[i])
-                    kv_z = sbm.kvfrac[i][m] * sbm.kv₀[i] * exp(-sbm.f[i] * z[m])
+                    kv_z = hydraulic_conductivity_at_depth(sbm, z[m], i, m, ksat_profile)
                     ustorelayerdepth =
                         m == 1 ? sbm.ustorelayerdepth[i][m] + infiltsoilpath :
                         sbm.ustorelayerdepth[i][m] + ast
@@ -901,7 +973,7 @@ function update_until_recharge(sbm::SBM, config)
 
         actcapflux = 0.0
         if n_usl > 0
-            ksat = sbm.kvfrac[i][n_usl] * sbm.kv₀[i] * exp(-sbm.f[i] * sbm.zi[i])
+            ksat = hydraulic_conductivity_at_depth(sbm, sbm.zi[i], i, n_usl, ksat_profile)
             ustorecapacity =
                 sbm.soilwatercapacity[i] - satwaterdepth - sum(@view usld[1:sbm.nlayers[i]])
             maxcapflux = max(0.0, min(ksat, actevapustore, ustorecapacity, satwaterdepth))
@@ -925,7 +997,13 @@ function update_until_recharge(sbm::SBM, config)
                 actcapflux = actcapflux + toadd
             end
         end
-        deepksat = sbm.kvfrac[i][end] * sbm.kv₀[i] * exp(-sbm.f[i] * sbm.soilthickness[i])
+        deepksat = hydraulic_conductivity_at_depth(
+            sbm,
+            sbm.soilthickness[i],
+            i,
+            sbm.nlayers[i],
+            ksat_profile,
+        )
         deeptransfer = min(satwaterdepth, deepksat)
         actleakage = max(0.0, min(sbm.maxleakage[i], deeptransfer))
 

@@ -68,8 +68,65 @@ function kin_wave!(Q, graph, toposort, Qold, q, α, β, DCL, Δt)
     return Q
 end
 
-"Kinematic wave for lateral subsurface flow for a single cell and timestep"
-function kinematic_wave_ssf(ssfin, ssfₜ₋₁, ziₜ₋₁, r, kh₀, β, θₑ, f, d, Δt, Δx, dw, ssfmax)
+"Returns water table depth `zi` based on lateral subsurface flow `ssf` and hydraulic conductivity profile `ksat_profile`"
+function ssf_water_table_depth(ssf, kh₀, β, f, d, dw, z_exp, ksat_profile)
+    if ksat_profile == "exponential"
+        zi = log((f * ssf) / (dw * kh₀ * β) + exp(-f * d)) / -f
+    elseif ksat_profile == "exponential_constant"
+        ssf_constant = kh₀ * β * exp(-f * z_exp) * (d - z_exp) * dw
+        if ssf > ssf_constant
+            zi = log((f * (ssf - ssf_constant)) / (dw * kh₀ * β) + exp(-f * z_exp)) / -f
+        else
+            zi = d - ssf / (dw * kh₀ * β * exp(-f * z_exp))
+        end
+    end
+    return zi
+end
+
+"Returns kinematic wave celecity `Cn` of lateral subsurface flow based on hydraulic conductivity profile `ksat_profile`"
+function ssf_celerity(zi, kh₀, β, θₑ, f, z_exp, ksat_profile)
+    if ksat_profile == "exponential"
+        Cn = (kh₀ * exp(-f * zi) * β) / θₑ
+    elseif ksat_profile == "exponential_constant"
+        Cn_const = (kh₀ * exp(-f * z_exp) * β) / θₑ
+        if zi < z_exp
+            Cn = (kh₀ * exp(-f * zi) * β) / θₑ + Cn_const
+        else
+            Cn = Cn_const
+        end
+    end
+    return Cn
+end
+
+"""
+    kinematic_wave_ssf(ssfin, ssfₜ₋₁, ziₜ₋₁, r, kh₀, β, θₑ, f, d, Δt, Δx, dw, ssfmax, z_exp, ksat_profile)
+
+Kinematic wave for lateral subsurface flow for a single cell and timestep. An exponential
+decline of hydraulic conductivity at the soil surface `kh₀`, controllled by parameter `f`,
+is assumed. The hydraulic conductivity profile `ksat_profile` is either `exponential` or
+`exponential_constant`, with `z_exp` the depth from the soil surface for which the
+exponential decline of `kh₀` is valid.
+
+Returns lateral subsurface flow `ssf`, water table depth `zi` and exfiltration rate
+`exfilt`.
+"""
+function kinematic_wave_ssf(
+    ssfin,
+    ssfₜ₋₁,
+    ziₜ₋₁,
+    r,
+    kh₀,
+    β,
+    θₑ,
+    f,
+    d,
+    Δt,
+    Δx,
+    dw,
+    ssfmax,
+    z_exp,
+    ksat_profile,
+)
 
     ϵ = 1.0e-12
     max_iters = 3000
@@ -81,10 +138,10 @@ function kinematic_wave_ssf(ssfin, ssfₜ₋₁, ziₜ₋₁, r, kh₀, β, θ�
         ssf = (ssfₜ₋₁ + ssfin) / 2.0
         count = 1
 
-        # Estimate zi on the basis of the relation between subsurfacel flow and zi
-        zi = log((f * ssf) / (dw * kh₀ * β) + exp(-f * d)) / -f
+        # Estimate zi on the basis of the relation between subsurface flow and zi
+        zi = ssf_water_table_depth(ssf, kh₀, β, f, d, dw, z_exp, ksat_profile)
         # Reciprocal of derivative delta Q/ delta z_i, constrained w.r.t. neff on the basis of the continuity equation)
-        Cn = (kh₀ * exp(-f * zi) * β) / θₑ
+        Cn = ssf_celerity(zi, kh₀, β, θₑ, f, z_exp, ksat_profile)
         # Term of the continuity equation for Newton-Raphson iteration for iteration 1
         # because celerity Cn is depending on zi, the increase or decrease of zi is moved to the recharge term of the continuity equation
         # then (1./Cn)*ssfₜ₋₁ can be replaced with (1./Cn)*ssf, and thus celerity and lateral flow rate ssf are then in line
@@ -104,10 +161,9 @@ function kinematic_wave_ssf(ssfin, ssfₜ₋₁, ziₜ₋₁, r, kh₀, β, θ�
         # Start while loop of Newton-Raphson iteration m until continuity equation approaches zero
         while true
             # Estimate zi on the basis of the relation between lateral flow rate and groundwater level
-            zi = log((f * ssf) / (dw * kh₀ * β) + exp(-f * d)) / -f
+            zi = ssf_water_table_depth(ssf, kh₀, β, f, d, dw, z_exp, ksat_profile)
             # Reciprocal of derivative delta Q/ delta z_i, constrained w.r.t. neff on the basis of the continuity equation
-            Cn = (kh₀ * exp(-f * zi) * β) / θₑ
-
+            Cn = ssf_celerity(zi, kh₀, β, θₑ, f, z_exp, ksat_profile)
             # Term of the continuity equation for given Newton-Raphson iteration m
             # because celerity Cn is depending on zi, the increase or decrease of zi is moved to the recharge term of the continuity equation
             # then (1./Cn)*ssfₜ₋₁ can be replaced with (1./Cn)*ssf, and thus celerity and lateral flow rate ssf are then in line
@@ -139,6 +195,71 @@ function kinematic_wave_ssf(ssfin, ssfₜ₋₁, ziₜ₋₁, r, kh₀, β, θ�
 
         return ssf, zi, exfilt
 
+    end
+end
+
+"""
+    kinematic_wave_ssf(ssfin, ssfₜ₋₁, ziₜ₋₁, r, kh, β, θₑ, d, Δt, Δx, dw, ssfmax)
+
+Kinematic wave for lateral subsurface flow for a single cell and timestep, based on
+(average) hydraulic conductivity `kh`.
+
+Returns lateral subsurface flow `ssf`, water table depth `zi` and exfiltration rate
+`exfilt`.
+"""
+function kinematic_wave_ssf(ssfin, ssfₜ₋₁, ziₜ₋₁, r, kh, β, θₑ, d, Δt, Δx, dw, ssfmax)
+
+    ϵ = 1.0e-12
+    max_iters = 3000
+
+    if ssfin + ssfₜ₋₁ ≈ 0.0 && r <= 0.0
+        return 0.0, d, 0.0
+    else
+        # initial estimate
+        ssf = (ssfₜ₋₁ + ssfin) / 2.0
+        count = 1
+        # celerity (Cn)
+        Cn = (β * kh) / θₑ
+        # constant term of the continuity equation for Newton-Raphson
+        c = (Δt / Δx) * ssfin + (1.0 / Cn) * ssfₜ₋₁ + r
+        # continuity equation of which solution should be zero
+        fQ = (Δt / Δx) * ssf + (1.0 / Cn) * ssf - c
+        # Derivative of the continuity equation
+        dfQ = (Δt / Δx) + 1.0 / Cn
+        # Update lateral subsurface flow estimate ssf
+        ssf = ssf - (fQ / dfQ)
+        if isnan(ssf)
+            ssf = 0.0
+        end
+        ssf = max(ssf, 1.0e-30)
+
+        # Start while loop of Newton-Raphson iteration
+        while true
+            fQ = (Δt / Δx) * ssf + (1.0 / Cn) * ssf - c
+            dfQ = (Δt / Δx) + 1.0 / Cn
+            ssf = ssf - (fQ / dfQ)
+            if isnan(ssf)
+                ssf = 0.0
+            end
+            ssf = max(ssf, 1.0e-30)
+            if (abs(fQ) <= ϵ) || (count >= max_iters)
+                break
+            end
+            count += 1
+        end
+
+        # Constrain the lateral subsurface flow rate ssf
+        ssf = min(ssf, (ssfmax * dw))
+        # On the basis of the lateral flow rate, estimate the amount of groundwater level above surface (saturation excess conditions), then rest = negative
+        zi = ziₜ₋₁ - (ssfin * Δt + r * Δx - ssf * Δt) / (dw * Δx) / θₑ
+        if zi > d
+            ssf = max(ssf - (dw * Δx) * θₑ * (zi - d), 1.0e-30)
+        end
+        # Exfiltration rate and set zi to zero.
+        exfilt = min(zi, 0.0) * -θₑ
+        zi = clamp(zi, 0.0, d)
+
+        return ssf, zi, exfilt
     end
 end
 
