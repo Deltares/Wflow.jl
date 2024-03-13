@@ -76,7 +76,9 @@ end
 "Write state output to netCDF and close files."
 function BMI.finalize(model::Model)
     @unpack config, writer, clock = model
-    write_netcdf_timestep(model, writer.state_dataset, writer.state_parameters)
+    if isopen(writer.state_dataset) # it is possible that the state dataset has been closed by `save_state`  
+        write_netcdf_timestep(model, writer.state_dataset, writer.state_parameters)
+    end
     reset_clock!(model.clock, config)
     close_files(model, delete_output = false)
 end
