@@ -33,7 +33,7 @@ end
 
 @testset "model information functions" begin
     @test request((fn = "get_component_name",)) == Dict("component_name" => "sbm")
-    @test request((fn = "get_input_item_count",)) == Dict("input_item_count" => 181)
+    @test request((fn = "get_input_item_count",)) == Dict("input_item_count" => 180)
     @test request((fn = "get_output_item_count",)) == Dict("output_item_count" => 181)
     @test request((fn = "get_input_var_names",))["input_var_names"][[1, 5, 151, 175]] == [
         "vertical.nlayers",
