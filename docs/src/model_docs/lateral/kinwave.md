@@ -55,30 +55,64 @@ kinematic wave for surface water routing, as a cyclic parameter or as part of fo
 also [Input section](@ref)).
 
 ## Subsurface flow routing
-In the SBM model the kinematic wave approach is used to route subsurface flow laterally. The
-saturated store ``S`` can be drained laterally by saturated downslope subsurface flow per
-unit width of slope ``w`` [m] according to:
+In the SBM model the kinematic wave approach is used to route subsurface flow laterally.
+Different vertical hydraulic conductivity depth profiles are possible as part of the
+vertical [SBM](@ref soil) concept, and these profiles (after unit conversion) are also used
+to compute lateral subsurface flow. The following profiles (see [SBM](@ref soil) for a
+detailed description) are available:
+- `exponential` (default)
+- `exponential_constant`
+- `layered`
+- `layered_exponential` 
+For the profiles `exponential` and `exponential_constant`, the saturated store ``S`` is
+drained laterally by saturated downslope subsurface flow for a slope with width ``w`` [m]
+according to:
 ```math
-    q=\frac{K_{0}\mathit{tan(\beta)}}{f}(e^{(-fz_{i})}-e^{(-fz_{t})})
+    Q = \begin{cases}
+    \frac{K_0\tan(\beta)}{f}\left(e^{(-fz_{i})}-e^{(-fz_\mathrm{exp})}\right) w + 
+    K_0e^{(-fz_\mathrm{exp})}(z_t-z_\mathrm{exp})\tan(\beta) w & \text{if $z_i < z_\mathrm{exp}$}\\
+    \\
+    K_0e^{(-fz_\mathrm{exp})}(z_t - z_i)\tan(\beta) w & \text{if $z_i \ge z_\mathrm{exp}$},
+    \end{cases}
 ```
-where ``\beta`` is element slope angle [deg.], ``q`` is subsurface flow [m``^{2}``/t],
-``K_{0}`` is the saturated hydraulic conductivity at the soil surface [m/t], ``z_{i}`` is
-the water table depth [m], ``z_{t}`` is total soil depth [m], and ``f`` is a scaling
-parameter [m``^{-1}``], that controls the decrease of vertical saturated conductivity with
-depth.
+where ``\beta`` is element slope angle, ``Q`` is subsurface flow [m``^{3}`` d``^{-1}``],
+``K_0`` is the saturated hydraulic conductivity at the soil surface [m d``^{-1}``], ``z_i``
+is the water table depth [m], ``z_{t}`` is the total soil depth [m], ``f`` is a scaling
+parameter [m``^{-1}``] that controls the decrease of ``K_0`` with depth and
+``z_\mathrm{exp}`` [m] is the depth from soil surface for which the exponential decline of
+``K_0`` is valid. For the `exponential` profile, ``z_\mathrm{exp}`` is equal to ``z_t``.
 
 Combining with the following continuity equation:
 ```math
-    (\theta_s-\theta_r)\frac{\partial h}{\partial t} = -w\frac{\partial q}{\partial x} + wr
+    (\theta_s-\theta_r)w\frac{\partial h}{\partial t} = -\frac{\partial Q}{\partial x} + wr
 ```
-where ``h`` is the water table height [m], ``x`` is the distance downslope [m], and ``r``
-is the net input rate [m/t] to the saturated store. Substituting for ``h (\frac{\partial
-q}{\partial h})``, gives:
+where ``h`` is the water table height [m], ``x`` is the distance downslope [m], and ``r`` is
+the net input rate [m d``^{-1}``] to the saturated store. Substituting for ``h
+(\frac{\partial Q}{\partial h})``, gives:
 ```math
-  w \frac{\partial q}{\partial t} = -cw\frac{\partial q}{\partial x} + cwr
+  \frac{\partial Q}{\partial t} = -c\frac{\partial Q}{\partial x} + cwr
 ```
 
-where celerity ``c = \frac{K_{0}\mathit{tan(\beta)}}{(\theta_s-\theta_r)} e^{(-fz_{i})}``
+where celerity ``c`` is calculated as follows:
+```math
+    c = \begin{cases}
+    \frac{K_0e^{(-fz_{i})}\tan(\beta)}{(\theta_s-\theta_r)} 
+    + \frac{K_0e^{(-fz_\mathrm{exp})}\tan(\beta)}{(\theta_s-\theta_r)}  & \text{if $z_i < z_\mathrm{exp}$}\\
+    \\
+    \frac{K_0e^{(-fz_\mathrm{exp})}\tan(\beta)}{(\theta_s-\theta_r)} & \text{if $z_i \ge z_\mathrm{exp}$}.
+    \end{cases}
+```
+
+For the `layered` and `layered_exponential` profiles the equivalent horizontal hydraulic
+conductivity ``K_h`` [m d``^{-1}``] is calculated for water table height ``h = z_t-z_i``
+[m], and lateral subsurface flow is calculated as follows:
+```math
+  Q = K_h h \tan(\beta) w,
+```
+and celerity ``c`` is given by:
+```math
+    c = \frac{K_h \tan(\beta)}{(\theta_s-\theta_r)}.
+```
 
 The kinematic wave equation for lateral subsurface flow is solved iteratively using Newton's
 method.

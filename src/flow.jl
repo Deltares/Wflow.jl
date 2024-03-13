@@ -391,6 +391,8 @@ end
 @get_units @exchange @grid_type @grid_location @with_kw struct LateralSSF{T}
     kh₀::Vector{T} | "m d-1"               # Horizontal hydraulic conductivity at soil surface [m d⁻¹]
     f::Vector{T} | "m-1"                   # A scaling parameter [m⁻¹] (controls exponential decline of kh₀)
+    kh::Vector{T} | "m d-1"                # Horizontal hydraulic conductivity [m d⁻¹]
+    khfrac::Vector{T} | "-"                # A muliplication factor applied to vertical hydraulic conductivity `kv` [-]
     soilthickness::Vector{T} | "m"         # Soil thickness [m]
     θₛ::Vector{T} | "-"                     # Saturated water content (porosity) [-]
     θᵣ::Vector{T} | "-"                    # Residual water content [-]
@@ -399,6 +401,7 @@ end
     dl::Vector{T} | "m"                    # Drain length [m]
     dw::Vector{T} | "m"                    # Flow width [m]
     zi::Vector{T} | "m"                    # Pseudo-water table depth [m] (top of the saturated zone)
+    z_exp::Vector{T} | "m"                 # Depth [m] from soil surface for which exponential decline of kv₀ is valid
     exfiltwater::Vector{T} | "m Δt-1"      # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
     recharge::Vector{T} | "m2 Δt-1"        # Net recharge to saturated store [m² Δt⁻¹]
     ssf::Vector{T} | "m3 d-1"              # Subsurface flow [m³ d⁻¹]
@@ -413,7 +416,7 @@ end
 end
 
 
-function update(ssf::LateralSSF, network, frac_toriver)
+function update(ssf::LateralSSF, network, frac_toriver, ksat_profile)
     @unpack subdomain_order, topo_subdomain, indices_subdomain, upstream_nodes = network
 
     ns = length(subdomain_order)
@@ -435,22 +438,42 @@ function update(ssf::LateralSSF, network, frac_toriver)
                     upstream_nodes[n],
                     eltype(ssf.to_river),
                 )
-
-                ssf.ssf[v], ssf.zi[v], ssf.exfiltwater[v] = kinematic_wave_ssf(
-                    ssf.ssfin[v],
-                    ssf.ssf[v],
-                    ssf.zi[v],
-                    ssf.recharge[v],
-                    ssf.kh₀[v],
-                    ssf.βₗ[v],
-                    ssf.θₛ[v] - ssf.θᵣ[v],
-                    ssf.f[v],
-                    ssf.soilthickness[v],
-                    ssf.Δt,
-                    ssf.dl[v],
-                    ssf.dw[v],
-                    ssf.ssfmax[v],
-                )
+                if (ksat_profile == "exponential") ||
+                   (ksat_profile == "exponential_constant")
+                    ssf.ssf[v], ssf.zi[v], ssf.exfiltwater[v] = kinematic_wave_ssf(
+                        ssf.ssfin[v],
+                        ssf.ssf[v],
+                        ssf.zi[v],
+                        ssf.recharge[v],
+                        ssf.kh₀[v],
+                        ssf.βₗ[v],
+                        ssf.θₛ[v] - ssf.θᵣ[v],
+                        ssf.f[v],
+                        ssf.soilthickness[v],
+                        ssf.Δt,
+                        ssf.dl[v],
+                        ssf.dw[v],
+                        ssf.ssfmax[v],
+                        ssf.z_exp[v],
+                        ksat_profile,
+                    )
+                elseif (ksat_profile == "layered") ||
+                       (ksat_profile == "layered_exponential")
+                    ssf.ssf[v], ssf.zi[v], ssf.exfiltwater[v] = kinematic_wave_ssf(
+                        ssf.ssfin[v],
+                        ssf.ssf[v],
+                        ssf.zi[v],
+                        ssf.recharge[v],
+                        ssf.kh[v],
+                        ssf.βₗ[v],
+                        ssf.θₛ[v] - ssf.θᵣ[v],
+                        ssf.soilthickness[v],
+                        ssf.Δt,
+                        ssf.dl[v],
+                        ssf.dw[v],
+                        ssf.ssfmax[v],
+                    )
+                end
             end
         end
     end
