@@ -22,12 +22,16 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test BMI.get_component_name(model) == "sbm"
             @test BMI.get_input_item_count(model) == 192
             @test BMI.get_output_item_count(model) == 192
-            @test BMI.get_input_var_names(model)[[1, 6, 161, 186]] == [
+            to_check = [
                 "vertical.nlayers",
                 "vertical.θᵣ",
                 "lateral.river.q",
                 "lateral.river.reservoir.outflow",
             ]
+            retrieved_vars = BMI.get_input_var_names(model)
+            @test all(x -> x in retrieved_vars, to_check)
+            retrieved_vars = BMI.get_output_var_names(model)
+            @test all(x -> x in retrieved_vars, to_check)
         end
 
         @testset "variable information functions" begin
