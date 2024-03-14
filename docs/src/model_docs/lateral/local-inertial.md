@@ -37,7 +37,7 @@ river length [m] for river cell ``i`` and ``\alpha`` is a coefficient (typically
 and 0.7) to enhance the stability of the simulation.
 
 In the TOML file the following properties related to the local inertial model can be
-provided for the `sbm` model type:
+provided for the `sbm` and `sbm_gwf` model types:
 
 ```toml
 [model]
@@ -46,7 +46,15 @@ inertial_flow_alpha = 0.5         # alpha coefficient for model stability (defau
 froude_limit = true               # default is true, limit flow to subcritical-critical according to Froude number
 h_thresh = 0.1                    # water depth [m] threshold for calculating flow between cells (default = 1e-03)
 riverlength_bc = 1000.0           # river length [m] for boundary points (default = 1e04)
+riverdepth_bc = 1.5               # river depth [m] for boundary points (default = 0.0)
 floodplain_1d = true              # include 1D floodplain schematization (default = false)
+```
+It is also possible to provide the `riverlength_bc` and `riverdepth_bc` parameters through
+the model parameter NetCDF file, as follows:
+```toml
+[input.lateral.river]
+riverlength_bc = "riverlength_bc"
+riverdepth_bc = "riverdepth_bc"
 ```
 
 The optional 1D floodplain schematization is based on provided flood volumes as a function
