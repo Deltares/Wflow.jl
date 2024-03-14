@@ -566,21 +566,36 @@ function initialize_shallowwater_river(
     # NetCDF model parameter file.
     index_pit = findall(x -> x == 5, ldd)
     npits = length(index_pit)
-    if haskey(config.model,"riverlength_bc") || haskey(config.model,"riverdepth_bc")
+    inds_pit = inds[index_pit]
+    if haskey(config.model, "riverlength_bc")
         riverlength_bc = get(config.model, "riverlength_bc", 1.0e04)::Float64 # river length at ghost node
-        riverdepth_bc = get(config.model, "riverdepth_bc", 0.0)::Float64 # river depth at ghost node
-        
-        @info "Local inertial approach is used for river flow." alpha h_thresh froude_limit riverlength_bc riverdepth_bc floodplain_1d
-        
-        riverlength_bc = fill(riverlength_bc, npits)
-        riverdepth_bc = fill(riverdepth_bc, npits)
+        v_riverlength_bc = fill(riverlength_bc, npits)
     else
-        @info "Local inertial approach is used for river flow." alpha h_thresh froude_limit floodplain_1d
-
-        inds_pit = inds[index_pit]
-        riverlength_bc = ncread(nc, config, "lateral.river.riverlength_bc"; sel = inds_pit, defaults = 1.0e04, type = Float)
-        riverdepth_bc = ncread(nc, config, "lateral.river.riverdepth_bc"; sel = inds_pit, defaults = 0.0, type = Float)
+        riverlength_bc = "provided by file `$(config.input.path_static)`"
+        v_riverlength_bc = ncread(
+            nc,
+            config,
+            "lateral.river.riverlength_bc";
+            sel = inds_pit,
+            defaults = 1.0e04,
+            type = Float,
+        )
     end
+    if haskey(config.model, "riverdepth_bc")
+        riverdepth_bc = get(config.model, "riverdepth_bc", 0.0)::Float64 # river depth at ghost node
+        v_riverdepth_bc = fill(riverdepth_bc, npits)
+    else
+        riverdepth_bc = "provided by file `$(config.input.path_static)`"
+        v_riverdepth_bc = ncread(
+            nc,
+            config,
+            "lateral.river.riverdepth_bc";
+            sel = inds_pit,
+            defaults = 0.0,
+            type = Float,
+        )
+    end
+    @info "Local inertial approach is used for river flow." alpha h_thresh froude_limit riverlength_bc riverdepth_bc floodplain_1d
 
     bankfull_elevation_2d = ncread(
         nc,
@@ -607,7 +622,7 @@ function initialize_shallowwater_river(
         ncread(nc, config, "lateral.river.n"; sel = inds, defaults = 0.036, type = Float)
 
     n = length(inds)
-    
+
     # set river depth h to zero (including reservoir and lake locations)
     h = fill(0.0, n)
 
@@ -616,8 +631,8 @@ function initialize_shallowwater_river(
     index_pit = findall(x -> x == 5, ldd)
     npits = length(index_pit)
     add_vertex_edge_graph!(graph, index_pit)
-    append!(dl, riverlength_bc)
-    append!(h, riverdepth_bc)
+    append!(dl, v_riverlength_bc)
+    append!(h, v_riverdepth_bc)
     append!(zb, zb[index_pit])
     append!(width, width[index_pit])
     append!(n_river, n_river[index_pit])
