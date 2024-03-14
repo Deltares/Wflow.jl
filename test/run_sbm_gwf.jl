@@ -57,21 +57,26 @@ end
 @testset "groundwater" begin
     gw = model.lateral.subsurface
     @test gw.river.stage[1] ≈ 1.2123636929067039f0
-    @test gw.flow.aquifer.head[19] ≈ 1.7999999523162842f0
+    @test gw.flow.aquifer.head[17:21] ≈ [
+        1.288882128227083f0,
+        1.344816977641676f0,
+        1.7999999523162842f0,
+        1.803682542252168f0,
+        1.4049539807162532f0,
+    ]
     @test gw.river.flux[1] ≈ -50.46515313302901f0
     @test gw.drain.flux[1] ≈ 0.0
     @test gw.recharge.rate[19] ≈ -0.0014241196552847502f0
 end
-
-Wflow.close_files(model)
 
 @testset "no drains" begin
     config.model.drains = false
     delete!(Dict(config.output.lateral.subsurface), "drain")
     model = Wflow.initialize_sbm_gwf_model(config)
     @test collect(keys(model.lateral.subsurface)) == [:flow, :recharge, :river]
-    Wflow.close_files(model)
 end
+
+Wflow.close_files(model, delete_output = false)
 
 # test local-inertial option for river flow routing
 tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
@@ -130,5 +135,55 @@ model = Wflow.run_timestep(model)
     qy = model.lateral.land.qy
     @test all(qx .== 0.0f0)
     @test all(qy .== 0.0f0)
+end
+Wflow.close_files(model, delete_output = false)
+
+# test with warm start
+tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
+config = Wflow.Config(tomlpath)
+config.model.reinit = false
+
+model = Wflow.initialize_sbm_gwf_model(config)
+@unpack network = model
+
+model = Wflow.run_timestep(model)
+model = Wflow.run_timestep(model)
+
+@testset "second timestep warm start" begin
+    sbm = model.vertical
+    @test sbm.runoff[1] == 0.0
+    @test sbm.soilevap[1] == 0.2927279656884887
+    @test sbm.transpiration[1] ≈ 1.0122634204681036f0
+end
+
+@testset "overland flow warm start (kinematic wave)" begin
+    q = model.lateral.land.q_av
+    @test sum(q) ≈ 1.4411427003142072f-5
+end
+
+@testset "river domain warm start (kinematic wave)" begin
+    q = model.lateral.river.q_av
+    river = model.lateral.river
+    @test sum(q) ≈ 0.011317441400219936f0
+    @test q[6] ≈ 0.002255753266287542f0
+    @test river.volume[6] ≈ 2.1212499727096956f0
+    @test river.inwater[6] ≈ -6.888767545965421f-5
+    @test q[13] ≈ 8.664553314598283f-5
+    @test q[network.river.order[end]] ≈ 0.002258255913217909f0
+end
+
+@testset "groundwater warm start" begin
+    gw = model.lateral.subsurface
+    @test gw.river.stage[1] ≈ 1.2031171676781156f0
+    @test gw.flow.aquifer.head[17:21] ≈ [
+        1.2195537323067487f0,
+        1.2741313108104333f0,
+        1.7999999523162842f0,
+        1.5862473868459186f0,
+        1.202268433263572f0,
+    ]
+    @test gw.river.flux[1] ≈ -6.044849112655228f0
+    @test gw.drain.flux[1] ≈ 0.0
+    @test gw.recharge.rate[19] ≈ -0.0014241196552847502f0
 end
 Wflow.close_files(model, delete_output = false)

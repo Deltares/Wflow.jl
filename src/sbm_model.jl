@@ -481,7 +481,9 @@ function update_total_water_storage(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,
     return model
 end
 
-function set_states(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
+function set_states(
+    model::Model{N,L,V,R,W,T},
+) where {N,L,V,R,W,T<:Union{SbmModel,SbmGwfModel}}
     @unpack lateral, vertical, network, config = model
 
     reinit = get(config.model, "reinit", true)::Bool
@@ -496,12 +498,14 @@ function set_states(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
         nriv = length(network.river.indices)
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
-        @warn string(
-            "The unit of `ssf` (lateral subsurface flow) is now m3 d-1. Please update your",
-            " input state file if it was produced with a Wflow version up to v0.5.2.",
-        )
+        if T <: SbmModel
+            @warn string(
+                "The unit of `ssf` (lateral subsurface flow) is now m3 d-1. Please update your",
+                " input state file if it was produced with a Wflow version up to v0.5.2.",
+            )
+        end
         set_states(instate_path, model; type = Float, dimname = :layer)
-        # update zi for vertical sbm and kinematic wave volume for river and land domain
+        # update zi for vertical sbm
         zi =
             max.(
                 0.0,
