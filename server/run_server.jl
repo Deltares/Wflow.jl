@@ -1,0 +1,3 @@
+using WflowServer
+
+WflowServer.main()

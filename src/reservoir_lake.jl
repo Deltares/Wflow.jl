@@ -22,7 +22,6 @@
     end
 end
 
-statevars(::SimpleReservoir) = (:volume,)
 
 function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, Δt)
     # read only reservoir data if reservoirs true
@@ -461,18 +460,6 @@ function maximum_storage(storfunc, outflowfunc, area, sh, hq)
     return maxstorage
 end
 
-statevars(::Lake) = (:waterlevel,)
-
-"""
-    statevars(::SBM; snow=false)
-    statevars(::LateralSSF)
-    statevars(::SurfaceFlow)
-    statevars(::NaturalLake)
-    statevars(::SimpleReservoir)
-
-Get a tuple of symbols representing the fields that are model states.
-"""
-function statevars end
 
 function interpolate_linear(x, xp, fp)
     if x <= minimum(xp)

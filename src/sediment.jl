@@ -99,7 +99,6 @@
     end
 end
 
-statevars(::LandSediment) = ()
 
 function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
     # Initialize parameters for the soil loss part
@@ -636,7 +635,6 @@ end
     end
 end
 
-statevars(::OverlandFlowSediment) = ()
 
 function partial_update!(inland, rivcell, eroded)
     no_erosion = zero(eltype(eroded))
@@ -785,26 +783,6 @@ end
     # end
 end
 
-statevars(::RiverSediment) = (
-    :clayload,
-    :siltload,
-    :sandload,
-    :saggload,
-    :laggload,
-    :gravload,
-    :claystore,
-    :siltstore,
-    :sandstore,
-    :saggstore,
-    :laggstore,
-    :gravstore,
-    :outclay,
-    :outsilt,
-    :outsand,
-    :outsagg,
-    :outlagg,
-    :outgrav,
-)
 
 function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     # Initialize river parameters

@@ -15,10 +15,10 @@ create_app(
     project_dir,
     output_dir;
     # map from binary name to julia function name
-    executables=["wflow_cli" => "julia_main"],
-    precompile_execution_file="precompile.jl",
-    filter_stdlibs=false,
-    force=true,
+    executables = ["wflow_cli" => "julia_main"],
+    precompile_execution_file = "precompile.jl",
+    filter_stdlibs = false,
+    force = true,
 )
 
 include("add_metadata.jl")
