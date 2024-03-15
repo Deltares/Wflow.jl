@@ -20,7 +20,7 @@ Wflow can be used in two different ways, depending on the required use of the co
   version is available. This consists of a single executable, `wflow_cli`, allowing you to
   run the model via the command line.
 
-Below, we describe how to install both versions of wflow.
+Below we describe how to install both versions of wflow.
 
 ## Installing as Julia package
 
@@ -75,7 +75,7 @@ have to pull in the latest changes yourself using `git pull`.
 
 ### Check installation of wflow
 
-Finally, go back the Julia REPL and try to load wflow:
+Finally, go back to the Julia REPL and try to load wflow:
 
 ```julia-repl
 julia> using Wflow
@@ -85,7 +85,7 @@ The first time this will take longer as any package that is new or changed needs
 pre-compiled first, to allow faster loading on subsequent uses. No error messages should
 appear, indicating that you have now successfully installed wflow.
 
-Before ending this section, we still want to recommend a few tools that can make using and
+Before ending this section, we want to recommend a few tools that can make using and
 developing Julia code easier.
 
 !!! tip
@@ -115,8 +115,8 @@ artifacts\
 bin\wflow_cli
 ```
 
-Check whether the installation was performed successfully, run `wflow_cli` with no
-arguments in the command line will give the following message:
+Check whether the installation was performed successfully by running `wflow_cli` with no
+arguments in the command line. This will give the following message:
 
 ```
 Usage: wflow_cli 'path/to/config.toml'
