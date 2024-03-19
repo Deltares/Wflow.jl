@@ -28,6 +28,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   model parameters are defined, and it is not expected that exposing these variables is
   required (e.g. for model coupling) while code changes for these variables (including
   struct fields) are required.
+- Remove lower limit of zero for computation of `runoff` variable of `SBM` vertical concept
+  as it may result in water balance errors. As part of the `runoff` computation, actual open
+  water evaporation `ae_openw_l` is subtracted, which may result in negative `runoff`
+  values. This lower limit was implemented in the Python version of wflow\_sbm, to avoid a
+  very slow kinematic wave solution for surface flow computation (no distinction between a
+  kinematic wave for overland and river flow). When in the Python version of wflow_sbm the
+  kinematic wave for surface flow was split into a river and land component, the lower limit
+  was removed for river runoff, but not for land runoff.
 
 ### Added
 - Total water storage as an export variable for `SBM` concept. This is the total water stored
