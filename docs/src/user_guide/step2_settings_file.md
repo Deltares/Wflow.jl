@@ -6,7 +6,7 @@ The filepaths that are provided in this file are relative to the location of the
 or to `dir_input` and `dir_output` if they are given.
 
 ## General time info
-Time information is optional. When left out, for each timestamp in the forcing NetCDF Wflow
+Time information is optional. When left out, for each timestamp in the forcing netCDF Wflow
 will do computations, except for the first forcing timestamp that is considered equal to the
 initial conditions of the Wflow model (state time). If you wish to calculate a subset of
 this time range, or a different timestep, you can specify a `starttime`, `endtime` and
@@ -22,10 +22,10 @@ alternative calendars.
 
 ```toml
 calendar = "standard"                           # optional, this is default value
-starttime = 2000-01-01T00:00:00                 # optional, default from forcing NetCDF
-endtime = 2000-02-01T00:00:00                   # optional, default from forcing NetCDF
+starttime = 2000-01-01T00:00:00                 # optional, default from forcing netCDF
+endtime = 2000-02-01T00:00:00                   # optional, default from forcing netCDF
 time_units = "days since 1900-01-01 00:00:00"   # optional, this is default value
-timestepsecs = 86400                            # optional, default from forcing NetCDF
+timestepsecs = 86400                            # optional, default from forcing netCDF
 dir_input = "data/input"                        # optional, default is the path of the TOML
 dir_output = "data/output"                      # optional, default is the path of the TOML
 ```
@@ -143,7 +143,7 @@ forcing = [
 
 cyclic = ["vertical.leaf_area_index"]
 
-[input.vertical]    # Map internal model variable/parameter names to names of the variables in the NetCDF files
+[input.vertical]    # Map internal model variable/parameter names to names of the variables in the netCDF files
 altitude = "wflow_dem"
 c = "c"
 cf_soil = "cf_soil"
@@ -189,15 +189,15 @@ n = "N"
 slope = "Slope"
 ```
 
-## Output NetCDF section
+## Output netCDF section
 
 ### Grid data
 This optional section of the TOML file contains the output netCDF file for writing gridded
 model output, including a mapping between internal model parameter components and external
 netCDF variables.
 
-To limit the size of the resulting NetCDF file, file compression can be enabled. This causes
-an increase in computational time, but can significantly reduce the file size of the NetCDF
+To limit the size of the resulting netCDF file, file compression can be enabled. This causes
+an increase in computational time, but can significantly reduce the file size of the netCDF
 file. This can be enabled by setting the `compressionlevel` variable to any value between
 `0` and `9`. A setting of `0` indicates that compression is not enabled, and values between
 1 and 9 indicate different levels of compression (1: least compression, smallest impact on
@@ -234,24 +234,24 @@ h = "h_land"
 ```
 
 ### Scalar data
-Besides gridded data, it is also possible to write scalar data to a NetCDF file. Below is an
-example that writes scalar data to the file "output\_scalar\_moselle.nc". For each NetCDF
+Besides gridded data, it is also possible to write scalar data to a netCDF file. Below is an
+example that writes scalar data to the file "output\_scalar\_moselle.nc". For each netCDF
 variable a `name` (external variable name) and `parameter` (internal model parameter) is
 required. A `reducer` can be specified to apply to the model output, see for more
 information the following section [Output CSV section](@ref). When a `map` is provided to
 extract data for certain locations (e.g. `gauges`) or areas (e.g. `subcatchment`), the
-NetCDF location names are extracted from these maps. For a specific location (grid cell) a
+netCDF location names are extracted from these maps. For a specific location (grid cell) a
 `location` is required. For layered model parameters and variables that have an extra
 dimension `layer` and are part of the vertical `sbm` concept it is possible to specify an
 internal layer index (see also example below). For model parameters and variables that have
 an extra dimension `classes` and are part of the vertical `FLEXTopo` concept it is possible
 to specify the class name. If multiple layers or classes are desired, this can be specified
 in separate `[[netcdf.variable]]` entries. Note that the specification of the extra
-dimension is not optional when Wflow is integrated with Delft-FEWS, for NetCDF scalar data
+dimension is not optional when Wflow is integrated with Delft-FEWS, for netCDF scalar data
 an extra dimension is not allowed by the `importNetcdfActivity` of the Delft-FEWS General
 Adapter. In the section [Output CSV section](@ref), similar functionality is available for
 CSV. For integration with Delft-FEWS, see also [Run from Delft-FEWS](@ref run_fews), it is
-recommended to write scalar data to NetCDF format since the General Adapter of Delft-FEWS
+recommended to write scalar data to netCDF format since the General Adapter of Delft-FEWS
 can ingest this data format directly.
 
 ```toml
@@ -395,7 +395,7 @@ offset = 0.5
 
 For input parameters with an extra dimension it is also possible to modify multiple indices
 at once with different `scale` and `offset` values. In the example below the external
-NetCDF variable `c` is modified at `layer` index 1 and 2, with a `scale` factor of 2.0 and
+netCDF variable `c` is modified at `layer` index 1 and 2, with a `scale` factor of 2.0 and
 1.5 respectively, and an `offset` of 0.0 for both indices:
 
 ```toml

@@ -19,7 +19,7 @@ and [Command Line Interface](@ref cli).
 
 ## [wflow\_sbm + kinematic wave](@id wflow_sbm_data)
 ```julia
-# urls to TOML and NetCDF of the Moselle example model
+# urls to TOML and netCDF of the Moselle example model
 toml_url = "https://raw.githubusercontent.com/Deltares/Wflow.jl/master/test/sbm_config.toml"
 staticmaps = "https://github.com/visr/wflow-artifacts/releases/download/v0.2.7/staticmaps-moselle.nc"
 forcing = "https://github.com/visr/wflow-artifacts/releases/download/v0.2.6/forcing-moselle.nc"
@@ -39,7 +39,7 @@ download(toml_url, toml_path)
 
 ## wflow\_sbm + groundwater flow
 ```julia
-# urls to TOML and NetCDF of the Moselle example model
+# urls to TOML and netCDF of the Moselle example model
 toml_url = "https://raw.githubusercontent.com/Deltares/Wflow.jl/master/test/sbm_gwf_config.toml"
 staticmaps = "https://github.com/visr/wflow-artifacts/releases/download/v0.2.2/staticmaps-sbm-groundwater.nc"
 forcing = "https://github.com/visr/wflow-artifacts/releases/download/v0.2.1/forcing-sbm-groundwater.nc"
@@ -57,7 +57,7 @@ download(toml_url, toml_path)
 
 ## wflow\_hbv
 ```julia
-# urls to TOML and NetCDF of the Moselle example model
+# urls to TOML and netCDF of the Moselle example model
 toml_url = "https://raw.githubusercontent.com/Deltares/Wflow.jl/master/test/hbv_config.toml"
 staticmaps = "https://github.com/visr/wflow-artifacts/releases/download/v0.2.1/staticmaps-lahn.nc"
 forcing = "https://github.com/visr/wflow-artifacts/releases/download/v0.2.0/forcing-lahn.nc"
@@ -75,7 +75,7 @@ download(toml_url, toml_path)
 
 ## [wflow\_flextopo](@id wflow_flextopo_data)
 ```julia
-# urls to TOML and NetCDF of the Meuse example model
+# urls to TOML and netCDF of the Meuse example model
 toml_url = "https://raw.githubusercontent.com/Deltares/Wflow.jl/master/test/flextopo_config.toml"
 staticmaps = "https://github.com/visr/wflow-artifacts/releases/download/v0.2.8/staticmaps_flex_meuse.nc"
 forcing = "https://github.com/visr/wflow-artifacts/releases/download/v0.2.8/forcing_meuse.nc"
@@ -93,7 +93,7 @@ download(toml_url, toml_path)
 
 ## wflow\_sediment
 ```julia
-# urls to TOML and NetCDF of the Moselle example model
+# urls to TOML and netCDF of the Moselle example model
 toml_url = "https://raw.githubusercontent.com/Deltares/Wflow.jl/master/test/sediment_config.toml"
 staticmaps = "https://github.com/visr/wflow-artifacts/releases/download/v0.2.3/staticmaps-moselle-sed.nc"
 forcing = "https://github.com/visr/wflow-artifacts/releases/download/v0.2.3/forcing-moselle-sed.nc"

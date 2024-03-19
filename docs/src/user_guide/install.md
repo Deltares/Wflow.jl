@@ -108,7 +108,7 @@ Binaries of `wflow_cli` can be downloaded from our website
 [download.deltares.nl](https://download.deltares.nl/en/download/wflow/), and are currently
 available for Windows. Download and install the `.msi` file. After installing you can see
 two folders in the installation directory. It is only the `bin/wflow_cli` that is used. The
-artifacts folder contains binary dependencies such as NetCDF.
+artifacts folder contains binary dependencies such as netCDF.
 
 ```
 artifacts\

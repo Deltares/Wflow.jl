@@ -97,7 +97,7 @@ flow](@ref) of the Model parameters section.
 
 The Model parameters section lists all the parameters per Model component and these Tables
 can also be used to check which parameters can be part of the output, see also [Output
-NetCDF section](@ref) and [Output CSV section](@ref).
+netCDF section](@ref) and [Output CSV section](@ref).
 
 Example models can be found in the [Example model section](@ref sample_data).
 

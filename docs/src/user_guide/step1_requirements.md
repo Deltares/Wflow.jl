@@ -2,12 +2,12 @@
 
 In order to run wflow, several files are required. These consist of a settings file and
 input data. The input data is typically separated into static maps and forcing data, both
-are supplied in a NetCDF file, except for lake storage and rating curves that are supplied
+are supplied in a netCDF file, except for lake storage and rating curves that are supplied
 via CSV files. A brief overview of the different files:
 
  - The `settings.toml` file contains information on the simulation period, links to the
-   input files (and their names in the NetCDF files), and links the correct names of the
-   variables in the NetCDF files to the variables and parameters of wflow.
+   input files (and their names in the netCDF files), and links the correct names of the
+   variables in the netCDF files to the variables and parameters of wflow.
  - The `staticmaps.nc` file contains spatial information on the elevation, locations of the
    gauges, land-use, drainage direction, etc. This file can also contain maps with parameter
    values.
