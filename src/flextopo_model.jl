@@ -5,7 +5,7 @@ Initial part of the FlexTopo model concept. Reads the input settings and data as
 Config object. Will return a Model that is ready to run.
 """
 function initialize_flextopo_model(config::Config)
-    # unpack the paths to the NetCDF files
+    # unpack the paths to the netCDF files
     static_path = input_path(config, config.input.path_static)
 
     reader = prepare_reader(config)
@@ -598,7 +598,7 @@ function initialize_flextopo_model(config::Config)
     )
 
     # if fews_run = true, then classes are specified as Float64 index so FEWS can import
-    # NetCDF output (3D data/SVector).
+    # netCDF output (3D data/SVector).
     fews_run = get(config, "fews_run", false)::Bool
     classes = fews_run ? Float64.(collect(1:length(flextopo.classes))) : flextopo.classes
 

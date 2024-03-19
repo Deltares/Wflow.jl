@@ -9,7 +9,7 @@ function initialize_sbm_model(config::Config)
     model_type = config.model.type::String
     @info "Initialize model variables for model type `$model_type`."
 
-    # unpack the paths to the NetCDF files
+    # unpack the paths to the netCDF files
     static_path = input_path(config, config.input.path_static)
 
     reader = prepare_reader(config)

@@ -129,9 +129,9 @@ end
 """
     set_states(instate_path, model, state_ncnames; <keyword arguments>)
 
-Read states contained in `Dict` `state_ncnames` from NetCDF file located in `instate_path`,
+Read states contained in `Dict` `state_ncnames` from netCDF file located in `instate_path`,
 and set states in `model` object. Active cells are selected with the corresponding network's
-(`Vector{CartesianIndex}`) from the NetCDF file.
+(`Vector{CartesianIndex}`) from the netCDF file.
 
 # Arguments
 - `type = nothing`: type to convert data to after reading. By default no conversion is done.
@@ -142,10 +142,10 @@ function set_states(instate_path, model; type = nothing, dimname = nothing)
     # Check if required states are covered
     state_ncnames = check_states(config)
 
-    # states in NetCDF include dim time (one value) at index 3 or 4, 3 or 4 dims are allowed
+    # states in netCDF include dim time (one value) at index 3 or 4, 3 or 4 dims are allowed
     NCDataset(instate_path) do ds
         for (state, ncname) in state_ncnames
-            @info "Setting initial state from NetCDF." ncpath = instate_path ncvarname =
+            @info "Setting initial state from netCDF." ncpath = instate_path ncvarname =
                 ncname state
             sel = active_indices(network, state)
             n = length(sel)
@@ -200,7 +200,7 @@ end
 """
     ncread(nc, config::Config, parameter::AbstractString; <keyword arguments>)
 
-Read a NetCDF variable `var` from file `nc`, based on `config` (parsed TOML file) and the
+Read a netCDF variable `var` from file `nc`, based on `config` (parsed TOML file) and the
 model `parameter` specified in the TOML configuration file. Supports various keyword
 arguments to get selections of data in desired types, with or without missing values.
 
@@ -209,7 +209,7 @@ arguments to get selections of data in desired types, with or without missing va
 - `optional=true` : By default specifying a model `parameter` in the TOML file is optional.
         Set to false if the model `parameter` is required.
 - `sel=nothing`: A selection of indices, such as a `Vector{CartesianIndex}` of active cells,
-        to return from the NetCDF. By default all cells are returned.
+        to return from the netCDF. By default all cells are returned.
 - `defaults=nothing`: A default value if `var` is not in `nc`. By default it gives an error
     in this case.
 - `type=nothing`: Type to convert data to after reading. By default no conversion is done.
@@ -233,7 +233,7 @@ function ncread(
     fill = nothing,
     dimname = nothing,
 )
-    # get var (NetCDF variable or type Config) from TOML file.
+    # get var (netCDF variable or type Config) from TOML file.
     # if var has type Config, input parameters can be changed.
     if isnothing(alias)
         if optional
@@ -273,8 +273,8 @@ function ncread(
     end
 
     # If var has type Config, input parameters can be changed (through scale, offset and
-    # input NetCDF var) or set to a uniform value (providing a value). Otherwise, input
-    # NetCDF var is read directly.
+    # input netCDF var) or set to a uniform value (providing a value). Otherwise, input
+    # netCDF var is read directly.
     var, mod = ncvar_name_modifier(var; config = config)
 
     if !isnothing(mod.value)
@@ -290,7 +290,7 @@ function ncread(
             return repeat(mod.value, 1, length(sel))
         end
     else
-        @info "Set `$parameter` using NetCDF variable `$var`."
+        @info "Set `$parameter` using netCDF variable `$var`."
         A = read_standardized(nc, var, dim_sel)
         if !isnothing(mod.index)
             # the modifier index is only set in combination with scale and offset for SVectors,

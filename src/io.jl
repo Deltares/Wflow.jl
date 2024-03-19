@@ -1,7 +1,7 @@
 #=
 Code to support input and output of data and configuration.
-Input data can be loaded from NetCDF files.
-Output data can be written to NetCDF or CSV files.
+Input data can be loaded from netCDF files.
+Output data can be written to netCDF or CSV files.
 For configuration files we use TOML.
 =#
 
@@ -109,7 +109,7 @@ function output_path(config::Config, path::AbstractString)
     return combined_path(config, dir, path)
 end
 
-"Extract NetCDF variable name `ncname` from `var` (type `String` or `Config`). If `var` has
+"Extract netCDF variable name `ncname` from `var` (type `String` or `Config`). If `var` has
 type `Config`, either `scale`, `offset` and an optional `index` are expected (with `ncname`)
 or a `value` (uniform value), these are stored as part of `NamedTuple` `modifier`."
 function ncvar_name_modifier(var; config = nothing)
@@ -159,7 +159,7 @@ function ncvar_name_modifier(var; config = nothing)
     return ncname, modifier
 end
 
-"Extract a NetCDF variable at a given time"
+"Extract a netCDF variable at a given time"
 function get_at(
     ds::CFDataset,
     varname::AbstractString,
@@ -239,7 +239,7 @@ function load_fixed_forcing(model)
     end
 end
 
-"Get dynamic NetCDF input for the given time"
+"Get dynamic netCDF input for the given time"
 function update_forcing!(model)
     @unpack vertical, clock, reader, network, config = model
     @unpack dataset, dataset_times, forcing_parameters = reader
@@ -260,7 +260,7 @@ function update_forcing!(model)
     # at 01-02-2000 00:00:00 is the accumulated total precipitation between 01-01-2000
     # 00:00:00 and 01-02-2000 00:00:00.
 
-    # load from NetCDF into the model according to the mapping
+    # load from netCDF into the model according to the mapping
     for (par, ncvar) in forcing_parameters
         # no need to update fixed values
         ncvar.name === nothing && continue
@@ -321,7 +321,7 @@ true
 """
 monthday_passed(curr, avail) = (curr[1] >= avail[1]) && (curr[2] >= avail[2])
 
-"Get dynamic and cyclic NetCDF input"
+"Get dynamic and cyclic netCDF input"
 function load_dynamic_input!(model)
     update_forcing!(model)
     if haskey(model.config.input, "cyclic")
@@ -329,7 +329,7 @@ function load_dynamic_input!(model)
     end
 end
 
-"Get cyclic NetCDF input for the given time"
+"Get cyclic netCDF input for the given time"
 function update_cyclic!(model)
     @unpack vertical, clock, reader, network, config = model
     @unpack cyclic_dataset, cyclic_times, cyclic_parameters = reader
@@ -345,7 +345,7 @@ function update_cyclic!(model)
             i = findlast(t -> monthday_passed(month_day, t), cyclic_times[par])
             isnothing(i) &&
                 error("Could not find applicable cyclic timestep for $month_day")
-            # load from NetCDF into the model according to the mapping
+            # load from netCDF into the model according to the mapping
             data = get_at(cyclic_dataset, ncvar.name, i)
             param_vector = param(model, par)
             sel = active_indices(network, par)
@@ -360,7 +360,7 @@ end
 """
     nc_handles::Dict{String, NCDataset{Nothing}}
 
-For each NetCDF file that will be opened for writing, store an entry in this Dict from the
+For each netCDF file that will be opened for writing, store an entry in this Dict from the
 absolute path of the file to the NCDataset. This allows us to close the NCDataset if we try
 to create them twice in the same session, and thus providing a workaround for this issue:
 https://github.com/Alexander-Barth/NCDatasets.jl/issues/106
@@ -370,7 +370,7 @@ NCDataset.
 """
 const nc_handles = Dict{String,NCDataset{Nothing}}()
 
-"Safely create a NetCDF file, even if it has already been opened for creation"
+"Safely create a netCDF file, even if it has already been opened for creation"
 function create_tracked_netcdf(path)
     abs_path = abspath(path)
     # close existing NCDataset if it exists
@@ -407,7 +407,7 @@ function setup_scalar_netcdf(
     )
     set_extradim_netcdf(ds, extra_dim)
     for (nc, netcdfvars) in zip(ncvars, config.netcdf.variable)
-        # Delft-FEWS requires the attribute :cf_role = "timeseries_id" when a NetCDF file
+        # Delft-FEWS requires the attribute :cf_role = "timeseries_id" when a netCDF file
         # contains more than one location list
         defVar(
             ds,
@@ -451,7 +451,7 @@ function setup_scalar_netcdf(
     return ds
 end
 
-"set extra dimension in output NetCDF file"
+"set extra dimension in output netCDF file"
 function set_extradim_netcdf(
     ds,
     extra_dim::NamedTuple{
@@ -630,19 +630,19 @@ struct NCReader{T}
 end
 
 struct Writer
-    dataset::Union{NCDataset,Nothing}           # dataset (NetCDF) for grid data
-    parameters::Dict{String,Any}                # mapping of NetCDF variable names to model parameters (arrays)
-    nc_path::Union{String,Nothing}              # path NetCDF file (grid data)
+    dataset::Union{NCDataset,Nothing}           # dataset (netCDF) for grid data
+    parameters::Dict{String,Any}                # mapping of netCDF variable names to model parameters (arrays)
+    nc_path::Union{String,Nothing}              # path netCDF file (grid data)
     csv_path::Union{String,Nothing}             # path of CSV file
     csv_cols::Vector                            # model parameter (arrays) and associated reducer function for CSV output
     csv_io::IO                                  # file handle to CSV file
-    state_dataset::Union{NCDataset,Nothing}     # dataset with model states (NetCDF)
-    state_parameters::Dict{String,Any}          # mapping of NetCDF variable names to model states (arrays)
-    state_nc_path::Union{String,Nothing}        # path NetCDF file with states
-    dataset_scalar::Union{NCDataset,Nothing}    # dataset (NetCDF) for scalar data
-    nc_scalar::Vector                           # model parameter (arrays) and associated reducer function for NetCDF scalar output
-    ncvars_dims::Vector                         # model parameter (String) and associated NetCDF variable, location dimension and location name for scalar data
-    nc_scalar_path::Union{String,Nothing}       # path NetCDF file (scalar data)
+    state_dataset::Union{NCDataset,Nothing}     # dataset with model states (netCDF)
+    state_parameters::Dict{String,Any}          # mapping of netCDF variable names to model states (arrays)
+    state_nc_path::Union{String,Nothing}        # path netCDF file with states
+    dataset_scalar::Union{NCDataset,Nothing}    # dataset (netCDF) for scalar data
+    nc_scalar::Vector                           # model parameter (arrays) and associated reducer function for netCDF scalar output
+    ncvars_dims::Vector                         # model parameter (String) and associated netCDF variable, location dimension and location name for scalar data
+    nc_scalar_path::Union{String,Nothing}       # path netCDF file (scalar data)
     extra_dim::Union{NamedTuple,Nothing}        # name and values for extra dimension (to store SVectors)
 end
 
@@ -694,7 +694,7 @@ function prepare_reader(config)
     # check for cyclic parameters
     do_cyclic = haskey(config.input, "cyclic")
 
-    # create map from internal location to NetCDF variable name for forcing parameters
+    # create map from internal location to netCDF variable name for forcing parameters
     forcing_parameters = Dict{Tuple{Symbol,Vararg{Symbol}},NamedTuple}()
     for par in config.input.forcing
         fields = symbols(par)
@@ -702,10 +702,10 @@ function prepare_reader(config)
         forcing_parameters[fields] =
             (name = ncname, scale = mod.scale, offset = mod.offset, value = mod.value)
 
-        @info "Set `$par` using NetCDF variable `$ncname` as forcing parameter."
+        @info "Set `$par` using netCDF variable `$ncname` as forcing parameter."
     end
 
-    # create map from internal location to NetCDF variable name for cyclic parameters and
+    # create map from internal location to netCDF variable name for cyclic parameters and
     # store cyclic times for each internal location (duplicate cyclic times are possible
     # this way, however it seems not worth to keep track of unique cyclic times for now
     # (memory usage))
@@ -723,7 +723,7 @@ function prepare_reader(config)
             cyclic_parameters[fields] =
                 (name = ncname, scale = mod.scale, offset = mod.offset)
 
-            @info "Set `$par` using NetCDF variable `$ncname` as cyclic parameter, with `$(length(cyclic_nc_times))` timesteps."
+            @info "Set `$par` using netCDF variable `$ncname` as cyclic parameter, with `$(length(cyclic_nc_times))` timesteps."
         end
     else
         cyclic_parameters = Dict{Tuple{Symbol,Vararg{Symbol}},NamedTuple}()
@@ -766,7 +766,7 @@ function locations_map(ds, mapname, config)
     return ids
 end
 
-"Get a Vector{Tuple} with model parameter and associated NetCDF variable name, dimension and location names for scalar data"
+"Get a Vector{Tuple} with model parameter and associated netCDF variable name, dimension and location names for scalar data"
 function nc_variables_dims(nc_variables, dataset, config)
     ncvars_dims = []
     for nc_var in nc_variables
@@ -846,7 +846,7 @@ end
 """
     ncnames(dict)
 
-Create a flat mapping from internal parameter locations to NetCDF variable names.
+Create a flat mapping from internal parameter locations to netCDF variable names.
 
 Ignores top level values in the Dict. This function is used to convert a TOML such as:
 
@@ -861,8 +861,8 @@ canopystorage = "my_canopystorage"
 q = "my_q"
 ```
 
-To a dictionary of the flattened parameter locations and NetCDF names. The top level
-values are ignored since the output path is not a NetCDF name.
+To a dictionary of the flattened parameter locations and netCDF names. The top level
+values are ignored since the output path is not a netCDF name.
 
 ```julia
 Dict(
@@ -884,7 +884,7 @@ end
 """
     out_map(ncnames_dict, modelmap)
 
-Create a Dict that maps parameter NetCDF names to arrays in the Model.
+Create a Dict that maps parameter netCDF names to arrays in the Model.
 """
 function out_map(ncnames_dict, modelmap)
     output_map = Dict{String,Any}()
@@ -925,15 +925,15 @@ function prepare_writer(
     calendar = get(config, "calendar", "standard")::String
     time_units = get(config, "time_units", CFTime.DEFAULT_TIME_UNITS)
 
-    # create an output NetCDF that will hold all timesteps of selected parameters for grid
+    # create an output netCDF that will hold all timesteps of selected parameters for grid
     # data but only if config.output.path has been set
     if haskey(config, "output") && haskey(config.output, "path")
         nc_path = output_path(config, config.output.path)
         deflatelevel = get(config.output, "compressionlevel", 0)::Int
-        @info "Create an output NetCDF file `$nc_path` for grid data, using compression level `$deflatelevel`."
-        # create a flat mapping from internal parameter locations to NetCDF variable names
+        @info "Create an output netCDF file `$nc_path` for grid data, using compression level `$deflatelevel`."
+        # create a flat mapping from internal parameter locations to netCDF variable names
         output_ncnames = ncnames(config.output)
-        # fill the output_map by mapping parameter NetCDF names to arrays
+        # fill the output_map by mapping parameter netCDF names to arrays
         output_map = out_map(output_ncnames, modelmap)
         ds = setup_grid_netcdf(
             nc_path,
@@ -952,13 +952,13 @@ function prepare_writer(
         ds = nothing
     end
 
-    # create a separate state output NetCDF that will hold the last timestep of all states
+    # create a separate state output netCDF that will hold the last timestep of all states
     # but only if config.state.path_output has been set
     if haskey(config, "state") && haskey(config.state, "path_output")
         state_ncnames = check_states(config)
         state_map = out_map(state_ncnames, modelmap)
         nc_state_path = output_path(config, config.state.path_output)
-        @info "Create a state output NetCDF file `$nc_state_path`."
+        @info "Create a state output netCDF file `$nc_state_path`."
         ds_outstate = setup_grid_netcdf(
             nc_state_path,
             x_nc,
@@ -976,12 +976,12 @@ function prepare_writer(
         nc_state_path = nothing
     end
 
-    # create an output NetCDF that will hold all timesteps of selected parameters for scalar
+    # create an output netCDF that will hold all timesteps of selected parameters for scalar
     # data, but only if config.netcdf.variable has been set.
     if haskey(config, "netcdf") && haskey(config.netcdf, "variable")
         nc_scalar_path = output_path(config, config.netcdf.path)
-        @info "Create an output NetCDF file `$nc_scalar_path` for scalar data."
-        # get NetCDF info for scalar data (variable name, locationset (dim) and
+        @info "Create an output netCDF file `$nc_scalar_path` for scalar data."
+        # get netCDF info for scalar data (variable name, locationset (dim) and
         # location ids)
         ncvars_dims = nc_variables_dims(config.netcdf.variable, nc_static, config)
         ds_scalar = setup_scalar_netcdf(
@@ -999,7 +999,7 @@ function prepare_writer(
         for var in config.netcdf.variable
             parameter = var["parameter"]
             reducer_func =
-                get_reducer_func(var, rev_inds, x_nc, y_nc, config, nc_static, "NetCDF")
+                get_reducer_func(var, rev_inds, x_nc, y_nc, config, nc_static, "netCDF")
             push!(nc_scalar, (parameter = parameter, reducer = reducer_func))
         end
     else
@@ -1056,7 +1056,7 @@ function prepare_writer(
     )
 end
 
-"Write a new timestep with scalar data to a NetCDF file"
+"Write a new timestep with scalar data to a netCDF file"
 function write_netcdf_timestep(model, dataset)
     @unpack writer, clock, config = model
 
@@ -1088,7 +1088,7 @@ function write_netcdf_timestep(model, dataset)
     return model
 end
 
-"Write a new timestep with grid data to a NetCDF file"
+"Write a new timestep with grid data to a netCDF file"
 function write_netcdf_timestep(model, dataset, parameters)
     @unpack vertical, clock, reader, network = model
 
@@ -1122,7 +1122,7 @@ function write_netcdf_timestep(model, dataset, parameters)
     return model
 end
 
-# don't do anything for no dataset, used if no output NetCDF is needed
+# don't do anything for no dataset, used if no output netCDF is needed
 write_netcdf_timestep(model, dataset::Nothing, parameters) = model
 write_netcdf_timestep(model, dataset::Nothing) = model
 
@@ -1392,8 +1392,8 @@ is_increasing(v) = last(v) > first(v)
     nc_dim_name(dims::Vector{Symbol}, name::Symbol)
     nc_dim_name(ds::CFDataset, name::Symbol)
 
-Given a NetCDF dataset or list of dimensions, and an internal dimension name, return the
-corresponding NetCDF dimension name. Certain common alternatives are supported, e.g. :lon or
+Given a netCDF dataset or list of dimensions, and an internal dimension name, return the
+corresponding netCDF dimension name. Certain common alternatives are supported, e.g. :lon or
 :longitude instead of :x.
 """
 function nc_dim_name(dims::Vector{Symbol}, name::Symbol)
@@ -1421,7 +1421,7 @@ nc_dim_name(ds::CFDataset, name::Symbol) = nc_dim_name(Symbol.(keys(ds.dim)), na
     nc_dim(ds::CFDataset, name::Symbol)
 
 Return the dimension coordinate, based on the internal name (:x, :y, :`extra_dim.name`,
-:time), `extra_dim` depends on the model type, which will map to the correct NetCDF name
+:time), `extra_dim` depends on the model type, which will map to the correct netCDF name
 using `nc_dim_name`.
 """
 nc_dim(ds::CFDataset, name) = ds[nc_dim_name(ds, name)]
@@ -1430,7 +1430,7 @@ nc_dim(ds::CFDataset, name) = ds[nc_dim_name(ds, name)]
 """
     internal_dim_name(name::Symbol)
 
-Given a NetCDF dimension name string, return the corresponding internal dimension name.
+Given a netCDF dimension name string, return the corresponding internal dimension name.
 """
 function internal_dim_name(name::Symbol)
     if name in (:x, :lon, :longitude)
@@ -1449,7 +1449,7 @@ end
 """
     read_dims(A::CFVariable_MF, dim_sel)
 
-Return the data of a NetCDF data variable as an Array. Only dimensions in `dim_sel`, a
+Return the data of a netCDF data variable as an Array. Only dimensions in `dim_sel`, a
 NamedTuple like (x=:, y=:, time=1). Other dimensions that may be present need to be size 1,
 otherwise an error is thrown.
 
@@ -1475,7 +1475,7 @@ function read_dims(A::CFVariable_MF, dim_sel::NamedTuple)
                     push!(data_dim_order, dim)
                 end
             else
-                throw(ArgumentError("""NetCDF dimension $dim_name has length $dim_size.
+                throw(ArgumentError("""netCDF dimension $dim_name has length $dim_size.
                     Only extra dimensions of length 1 are supported."""))
             end
         end
@@ -1584,7 +1584,7 @@ end
 """
     read_standardized(ds::CFDataset, varname::AbstractString, dim_names)
 
-Read the dimensions listed in dim_names from a variable with name `varname` from a NetCDF
+Read the dimensions listed in dim_names from a variable with name `varname` from a netCDF
 dataset `ds`. `dim_sel` should be a NamedTuple like (x=:, y=:, time=1), which will return
 a 2 dimensional array with x and y axes, representing the first index in the time dimension.
 """
