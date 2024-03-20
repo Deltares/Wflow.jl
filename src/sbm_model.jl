@@ -111,7 +111,8 @@ function initialize_sbm_model(config::Config)
 
     # check if lateral subsurface flow component is defined for the SBM model, when coupled
     # to another groundwater model, this component is not defined in the TOML file.
-    if haskey(config.input.lateral, "subsurface")
+    subsurface_flow = haskey(config.input.lateral, "subsurface")
+    if subsurface_flow
         khfrac = ncread(
             nc,
             config,
@@ -259,16 +260,23 @@ function initialize_sbm_model(config::Config)
     # setup subdomains for the land and river kinematic wave domain, if nthreads = 1
     # subdomain is equal to the complete domain
     toposort = topological_sort_by_dfs(graph)
-    index_pit_land = findall(x -> x == 5, ldd)
-    streamorder = stream_order(graph, toposort)
-    min_streamorder_land = get(config.model, "min_streamorder_land", 5)
-    subbas_order, indices_subbas, topo_subbas = kinwave_set_subdomains(
-        graph,
-        toposort,
-        index_pit_land,
-        streamorder,
-        min_streamorder_land,
-    )
+    if land_routing == "kinematic-wave" ||
+       river_routing == "kinematic-wave" ||
+       subsurface_flow
+        streamorder = stream_order(graph, toposort)
+    end
+    if land_routing == "kinematic-wave" || subsurface_flow
+        toposort = topological_sort_by_dfs(graph)
+        index_pit_land = findall(x -> x == 5, ldd)
+        min_streamorder_land = get(config.model, "min_streamorder_land", 5)
+        subbas_order, indices_subbas, topo_subbas = kinwave_set_subdomains(
+            graph,
+            toposort,
+            index_pit_land,
+            streamorder,
+            min_streamorder_land,
+        )
+    end
     if river_routing == "kinematic-wave"
         min_streamorder_river = get(config.model, "min_streamorder_river", 6)
         toposort_riv = topological_sort_by_dfs(graph_riv)
@@ -285,7 +293,7 @@ function initialize_sbm_model(config::Config)
     if nthreads() > 1
         if river_routing == "kinematic-wave"
             @info "Parallel execution of kinematic wave" min_streamorder_land min_streamorder_river
-        else
+        elseif land_routing == "kinematic-wave" || subsurface_flow
             @info "Parallel execution of kinematic wave" min_streamorder_land
         end
     end

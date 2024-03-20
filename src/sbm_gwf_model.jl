@@ -421,6 +421,7 @@ function initialize_sbm_gwf_model(config::Config)
             reverse_indices = rev_inds,
             xl = xl,
             yl = yl,
+            slope = βₗ,
             altitude = altitude,
         )
     elseif land_routing == "local-inertial"
@@ -431,6 +432,7 @@ function initialize_sbm_gwf_model(config::Config)
             reverse_indices = rev_inds,
             xl = xl,
             yl = yl,
+            slope = βₗ,
             altitude = altitude,
             index_river = index_river_nf,
             staggered_indices = indices,
@@ -496,7 +498,7 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
         lateral_snow_transport!(
             vertical.snow,
             vertical.snowwater,
-            lateral.land.sl,
+            network.land.slope,
             network.land,
         )
     end
