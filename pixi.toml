@@ -44,6 +44,7 @@ instantiate-wflow-server = "julia --project=server --eval 'using Pkg; Pkg.instan
 
 [dependencies]
 juliaup = "*"
+python = ">=3.10"
 
 [activation]
 scripts = ["utils/env_setup.sh"]
