@@ -561,42 +561,32 @@ function initialize_shallowwater_river(
     froude_limit = get(config.model, "froude_limit", true)::Bool # limit flow to subcritical according to Froude number
     floodplain_1d = floodplain
 
+    @info "Local inertial approach is used for river flow." alpha h_thresh froude_limit floodplain_1d
+    @warn string(
+        "Providing the boundary condition `riverlength_bc` as part of the `[model]` setting ",
+        "in the TOML file has been deprecated as of Wflow v0.8.0.\n The boundary condition should ",
+        "be provided as part of the file `$(config.input.path_static)`.",
+    )
     # The following boundary conditions can be set at ghost nodes, downstream of river
-    # outlets (pits): river length and river depth, either through the TOML file or the
-    # NetCDF model parameter file.
+    # outlets (pits): river length and river depth
     index_pit = findall(x -> x == 5, ldd)
-    npits = length(index_pit)
     inds_pit = inds[index_pit]
-    if haskey(config.model, "riverlength_bc")
-        riverlength_bc = get(config.model, "riverlength_bc", 1.0e04)::Float64 # river length at ghost node
-        v_riverlength_bc = fill(riverlength_bc, npits)
-    else
-        riverlength_bc = "provided by file `$(config.input.path_static)`"
-        v_riverlength_bc = ncread(
-            nc,
-            config,
-            "lateral.river.riverlength_bc";
-            sel = inds_pit,
-            defaults = 1.0e04,
-            type = Float,
-        )
-    end
-    if haskey(config.model, "riverdepth_bc")
-        riverdepth_bc = get(config.model, "riverdepth_bc", 0.0)::Float64 # river depth at ghost node
-        v_riverdepth_bc = fill(riverdepth_bc, npits)
-    else
-        riverdepth_bc = "provided by file `$(config.input.path_static)`"
-        v_riverdepth_bc = ncread(
-            nc,
-            config,
-            "lateral.river.riverdepth_bc";
-            sel = inds_pit,
-            defaults = 0.0,
-            type = Float,
-        )
-    end
-    @info "Local inertial approach is used for river flow." alpha h_thresh froude_limit riverlength_bc riverdepth_bc floodplain_1d
-
+    riverlength_bc = ncread(
+        nc,
+        config,
+        "lateral.river.riverlength_bc";
+        sel = inds_pit,
+        defaults = 1.0e04,
+        type = Float,
+    )
+    riverdepth_bc = ncread(
+        nc,
+        config,
+        "lateral.river.riverdepth_bc";
+        sel = inds_pit,
+        defaults = 0.0,
+        type = Float,
+    )
     bankfull_elevation_2d = ncread(
         nc,
         config,
@@ -628,11 +618,9 @@ function initialize_shallowwater_river(
 
     # set ghost points for boundary condition (downstream river outlet): river width, bed
     # elevation, manning n is copied from the upstream cell.
-    index_pit = findall(x -> x == 5, ldd)
-    npits = length(index_pit)
     add_vertex_edge_graph!(graph, index_pit)
-    append!(dl, v_riverlength_bc)
-    append!(h, v_riverdepth_bc)
+    append!(dl, riverlength_bc)
+    append!(h, riverdepth_bc)
     append!(zb, zb[index_pit])
     append!(width, width[index_pit])
     append!(n_river, n_river[index_pit])
