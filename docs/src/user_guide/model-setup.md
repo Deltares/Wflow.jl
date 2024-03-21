@@ -103,7 +103,7 @@ Example models can be found in the [Example model section](@ref sample_data).
 
 ## hydroMT
 [hydroMT](https://github.com/Deltares/hydromt) is a Python package, developed by Deltares,
-to build and analysis hydro models. It provides a generic model api with attributes to
+to build and analyze hydro models. It provides a generic model api with attributes to
 access the model schematization, (dynamic) forcing data, results and states.
 
 For the following Wflow models:
@@ -111,7 +111,7 @@ For the following Wflow models:
   - wflow_sediment
 
 the Wflow plugin [hydroMT-wflow](https://github.com/Deltares/hydromt_wflow) of hydroMT can
-be used to build and analyse these Wflow model types in an automated way.
+be used to build and analyze these Wflow model types in an automated way.
 
 To learn more about the Wflow plugin of this Python package, we refer to the [hydroMT-wflow
 documentation](https://deltares.github.io/hydromt_wflow/latest/index.html).
