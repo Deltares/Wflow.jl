@@ -274,7 +274,7 @@ function ncread(
 
     # If var has type Config, input parameters can be changed (through scale, offset and
     # input netCDF var) or set to a uniform value (providing a value). Otherwise, input
-    # netCDF var is read directly.
+    # NetCDF var is read directly.
     var, mod = ncvar_name_modifier(var; config = config)
 
     if !isnothing(mod.value)

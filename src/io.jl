@@ -1475,7 +1475,7 @@ function read_dims(A::CFVariable_MF, dim_sel::NamedTuple)
                     push!(data_dim_order, dim)
                 end
             else
-                throw(ArgumentError("""netCDF dimension $dim_name has length $dim_size.
+                throw(ArgumentError("""NetCDF dimension $dim_name has length $dim_size.
                     Only extra dimensions of length 1 are supported."""))
             end
         end
