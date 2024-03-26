@@ -20,7 +20,7 @@ the floodplains, which will likely improve extreme streamflow predictions.
 In Australia, there was a need for high-resolution, fast and accurate rainfall-runoff models to
 provide boundary conditions for a fast and detailed flood inundation model (SFINCS). The
 domain of the flood model covers the complete North and East Coast of Australia. Although
-many observation stations are available to provide real-time information, many rivers are not
+many gauging stations are available to provide real-time information, many rivers are not
 covered. For these locations, wflow\_sbm models are used to provide this real-time information.
 Additionally, these models are used to provide projections for potential future scenarios.
 Using the HydroMT library, all wflow\_sbm models were automatically built. The high level of
@@ -40,9 +40,8 @@ model results were already quite satisfying, especially given the complex nature
 basins, including several small and big reservoirs. We could also demonstrate the potential
 for further calibration by changing the KsatHorFrac parameter.
 
-Reference: De Kleermaeker, S., Maguire, S., Druery, C., Morales, Y., Lijnse, T., Hegnauer, M.,
-2022 (in preperation). Developing a real-time data and modeling framework for operational
-flood inundation forecasting in Australia. Hydrology Water and Resources Symposium.
+Reference: De Kleermaeker, S., Leijnse, T., Morales, Y., Druery, C., Maguire, S.,
+2022. Developing a real-time data and modelling framework for operational flood inundation forecasting in Australia. In Hydrology & Water Resources Symposium 2022 (HWRS 2022): The Past, the Present, the Future. Engineers Australia. https://search.informit.org/doi/10.3316/informit.916755150845355
 
 ![fig_case_flifs](../images/case_flifs_2.png)
 
