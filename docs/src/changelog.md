@@ -28,11 +28,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   model parameters are defined, and it is not expected that exposing these variables is
   required (e.g. for model coupling) while code changes for these variables (including
   struct fields) are required.
-- The local inertial routing (constant) boundary condition `river_depth` at a ghost node
+- The local inertial routing (constant) river boundary condition `depth` at a ghost node
   (downstream river outlet) was set at 0.0 in the code and can now be provided through the
-  TOML configuration file or model parameter NetCDF file. In addition, it is also possible
-  to set the boundary condition `river_length` through the model parameter NetCDF file
-  (besides the TOML configuation file).
+  model parameter netCDF file (`riverdepth_bc`). In addition, the boundary condition river
+  length `dl` at a ghost node should be set through the model parameter netCDF file
+  (`riverlength_bc`), providing this boundary condition through the `[model]` settings in
+  the TOML file (`model.riverlength_bc`) has been deprecated.
 
 ### Added
 - Total water storage as an export variable for `SBM` concept. This is the total water stored
