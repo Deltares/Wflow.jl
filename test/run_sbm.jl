@@ -14,53 +14,53 @@ flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
     row = csv_first_row(model.writer.csv_path)
 
     @test row.time == DateTime("2000-01-02T00:00:00")
-    @test row.Q ≈ 8.1396354649197f0
+    @test row.Q ≈ 8.15299947254324f0
     @test row.volume ≈ 2.7535003939625636f7
     @test row.temp_bycoord ≈ 2.390000104904175f0
-    @test row.vwc_layer2_bycoord ≈ 0.25901943991019094f0
+    @test row.vwc_layer2_bycoord ≈ 0.25938809638672006f0
     @test row.temp_byindex ≈ 2.390000104904175f0
-    @test row.Q_6336050 ≈ 0.006160282939850074f0
-    @test row.Q_6336510 ≈ 0.029177309556712334f0
-    @test row.Q_6836100 ≈ 0.19621282450614713f0
-    @test row.Q_6336500 ≈ 0.006089112638001381f0
+    @test row.Q_6336050 ≈ 0.006583064321841488f0
+    @test row.Q_6336510 ≈ 0.029864230092642642f0
+    @test row.Q_6836100 ≈ 0.19995488963854305f0
+    @test row.Q_6336500 ≈ 0.006277726622788425f0
     @test row.Q_6836190 ≈ 0.0031262850749354237f0
-    @test row.Q_6336800 ≈ 0.007770868657277307f0
-    @test row.Q_6336900 ≈ 0.006403194169947582f0
-    @test row.Q_6336930 ≈ 0.08888787154163148f0
-    @test row.Q_6336910 ≈ 0.007071851236520184f0
-    @test row.Q_6136500 ≈ 0.0016367337487926633f0
-    @test row.Q_6136520 ≈ 0.002084670434294102f0
-    @test row.Q_6136150 ≈ 0.006095549758915344f0
-    @test row.Q_6136151 ≈ 0.007643634432992056f0
-    @test row.Q_6136160 ≈ 3.9199531493174726f0
-    @test row.Q_6136202 ≈ 1.4125847550988493f0
-    @test row.recharge_1 ≈ -0.05653226176238641f0
+    @test row.Q_6336800 ≈ 0.008278375560053742f0
+    @test row.Q_6336900 ≈ 0.0066141980189014385f0
+    @test row.Q_6336930 ≈ 0.09141703511009937f0
+    @test row.Q_6336910 ≈ 0.007475453481320056f0
+    @test row.Q_6136500 ≈ 0.001834989281902289f0
+    @test row.Q_6136520 ≈ 0.0022266031120691397f0
+    @test row.Q_6136150 ≈ 0.006310361139139334f0
+    @test row.Q_6136151 ≈ 0.007946301730645885f0
+    @test row.Q_6136160 ≈ 3.927719795530719f0
+    @test row.Q_6136202 ≈ 1.4162246003743886f0
+    @test row.recharge_1 ≈ -0.002257181032501202f0
 end
 
 @testset "NetCDF scalar output" begin
     ds = model.writer.dataset_scalar
     @test ds["time"][1] == DateTime("2000-01-02T00:00:00")
     @test ds["Q"][:][1:20] ≈ [
-        0.73993874f0,
-        1.4125848f0,
-        1.4389194f0,
-        1.4036233f0,
-        5.7276225f0,
-        2.7586424f0,
-        2.1080604f0,
-        4.1026044f0,
-        0.008365918f0,
-        3.919953f0,
-        4.0615087f0,
-        0.006050462f0,
-        0.0076436345f0,
-        0.00780229f0,
-        0.00346879f0,
-        0.7066179f0,
-        0.0022446192f0,
-        1.3323202f0,
-        3.8271446f0,
-        1.6729931f0,
+        0.7425387f0,
+        1.4162246f0,
+        1.4425076f0,
+        1.4044669f0,
+        5.738109f0,
+        2.7616737f0,
+        2.1128905f0,
+        4.105428f0,
+        0.008651769f0,
+        3.9277198f0,
+        4.069447f0,
+        0.006356805f0,
+        0.007946302f0,
+        0.008135906f0,
+        0.0037393502f0,
+        0.70888275f0,
+        0.0024000728f0,
+        1.3347782f0,
+        3.8374817f0,
+        1.676597f0,
     ]
     @test ds["Q_gauges"].attrib["cf_role"] == "timeseries_id"
     @test ds["temp_index"][:] ≈ [2.39f0]
@@ -78,9 +78,9 @@ end
     @test sbm.θₛ[50063] ≈ 0.48755401372909546f0
     @test sbm.θᵣ[50063] ≈ 0.15943120419979095f0
     @test sbm.runoff[50063] == 0.0
-    @test sbm.soilevap[50063] == 0.0
-    @test sbm.snow[5] ≈ 3.592840840467347f0
-    @test sbm.total_storage[50063] ≈ 559.70849973344f0
+    @test sbm.soilevap[50063] ≈ 0.011096671644901038f0
+    @test sbm.snow[5] ≈ 3.7685133905888146f0
+    @test sbm.total_storage[50063] ≈ 559.9035608052374f0
     @test sbm.total_storage[429] ≈ 597.4578475404879f0 # river cell
 end
 
@@ -92,23 +92,23 @@ model = Wflow.run_timestep(model)
     @test sbm.θₛ[50063] ≈ 0.48755401372909546f0
     @test sbm.θᵣ[50063] ≈ 0.15943120419979095f0
     @test sbm.runoff[50063] == 0.0
-    @test sbm.soilevap[50063] ≈ 0.006358004660566856f0
-    @test sbm.snow[5] ≈ 3.667748983774868f0
-    @test sbm.total_storage[50063] ≈ 559.7935411649405f0
-    @test sbm.total_storage[429] ≈ 617.0062092646873f0 # river cell
+    @test sbm.soilevap[50063] ≈ 0.008718333439094138f0
+    @test sbm.snow[5] ≈ 3.8434125240523125f0
+    @test sbm.total_storage[50063] ≈ 560.0152135062889f0
+    @test sbm.total_storage[429] ≈ 617.2238533241972f0 # river cell
 end
 
 @testset "subsurface flow" begin
     ssf = model.lateral.subsurface.ssf
     @test sum(ssf) ≈ 6.370399148012509f7
     @test ssf[network.land.order[1]] ≈ 7.169036749244327f2
-    @test ssf[network.land.order[end-100]] ≈ 2335.2465707069578f0
+    @test ssf[network.land.order[end-100]] ≈ 2333.801056570759f0
     @test ssf[network.land.order[end]] ≈ 288.19428729403944f0
 end
 
 @testset "overland flow" begin
     q = model.lateral.land.q_av
-    @test sum(q) ≈ 290.5520014030802f0
+    @test sum(q) ≈ 291.27639107427285f0
     @test q[26625] ≈ 0.0
     @test q[39308] ≈ 0.0
     @test q[network.land.order[end]] ≈ 1.0f-30
@@ -116,10 +116,10 @@ end
 
 @testset "river flow" begin
     q = model.lateral.river.q_av
-    @test sum(q) ≈ 3615.2084127447865f0
-    @test q[1622] ≈ 0.0005986272622329333f0
-    @test q[43] ≈ 12.036342425160155f0
-    @test q[network.river.order[end]] ≈ 0.03835913312643948f0
+    @test sum(q) ≈ 3622.7369292570543f0
+    @test q[1622] ≈ 0.0006497468064774366f0
+    @test q[43] ≈ 12.05767242907667f0
+    @test q[network.river.order[end]] ≈ 0.039200124520463835f0
 end
 
 @testset "reservoir simple" begin
@@ -159,10 +159,10 @@ end
 
 @testset "river flow at basin outlets and downstream of one pit" begin
     q = model.lateral.river.q_av
-    @test q[4009] ≈ 8.60480399680283f0 # pit/ outlet, CartesianIndex(141, 228)
+    @test q[4009] ≈ 8.51907041734622f0 # pit/ outlet, CartesianIndex(141, 228)
     @test q[4020] ≈ 0.006779014715290862f0 # downstream of pit 4009, CartesianIndex(141, 229)
-    @test q[2508] ≈ 150.15321264134985f0 # pit/ outlet
-    @test q[5808] ≈ 0.12625654862968252f0 # pit/ outlet
+    @test q[2508] ≈ 150.28398167251638f0 # pit/ outlet
+    @test q[5808] ≈ 0.12419895007970105f0 # pit/ outlet
 end
 
 # test changing forcing and cyclic LAI parameter
@@ -205,7 +205,7 @@ model = Wflow.run_timestep(model)
 
 @testset "river inflow (cyclic)" begin
     @test model.lateral.river.inflow[44] ≈ 0.75
-    @test model.lateral.river.q_av[44] ≈ 10.698591283662008
+    @test model.lateral.river.q_av[44] ≈ 10.71846407068599
 end
 
 # test fixed forcing (precipitation = 2.5)
@@ -241,14 +241,14 @@ model = Wflow.run_timestep(model)
 
 @testset "river flow and depth (local inertial)" begin
     q = model.lateral.river.q_av
-    @test sum(q) ≈ 3910.2095742376546f0
-    @test q[1622] ≈ 6.0094181857060604f-5
-    @test q[43] ≈ 11.900372477232786f0
-    @test q[501] ≈ 3.536628093804679f0
+    @test sum(q) ≈ 3919.6025219496014f0
+    @test q[1622] ≈ 7.31010246736994f-5
+    @test q[43] ≈ 11.92153120707289f0
+    @test q[501] ≈ 3.5736389982451895f0
     h = model.lateral.river.h_av
-    @test h[1622] ≈ 0.001809965063947279f0
-    @test h[43] ≈ 0.43627044208669874f0
-    @test h[501] ≈ 0.05669956233680719f0
+    @test h[1622] ≈ 0.001987887644883981f0
+    @test h[43] ≈ 0.4366415244811759f0
+    @test h[501] ≈ 0.057265962518284294f0
     q_channel = model.lateral.river.q_channel_av
     @test q ≈ q_channel
 end
@@ -264,21 +264,21 @@ model = Wflow.run_timestep(model)
 
 @testset "river and overland flow and depth (local inertial)" begin
     q = model.lateral.river.q_av
-    @test sum(q) ≈ 2375.1186861861243f0
-    @test q[1622] ≈ 6.011407534125278f-5
-    @test q[43] ≈ 5.358152280519331f0
-    @test q[501] ≈ 1.5878151534724314f0
+    @test sum(q) ≈ 2380.64389229669f0
+    @test q[1622] ≈ 7.322956970529551f-5
+    @test q[43] ≈ 5.361283165612762f0
+    @test q[501] ≈ 1.6021771576366957f0
     h = model.lateral.river.h_av
-    @test h[1622] ≈ 0.0018101771426228585f0
+    @test h[1622] ≈ 0.0019891342000364796f0
     @test h[43] ≈ 0.3003008810153667f0
-    @test h[501] ≈ 0.03162351626631113f0
+    @test h[501] ≈ 0.031925992442532f0
     qx = model.lateral.land.qx
     qy = model.lateral.land.qy
-    @test qx[[26, 35, 631]] ≈ [0.18613687016733824f0, 0.0004519163131931592f0, 0.0f0]
-    @test qy[[26, 35, 631]] ≈ [0.12681702046955443f0, 1.7210193779889194f0, 0.0f0]
+    @test qx[[26, 35, 631]] ≈ [0.18614776104106373f0, 0.029502872625766417f0, 0.0f0]
+    @test qy[[26, 35, 631]] ≈ [0.12757214437549858f0, 1.7212079599401755f0, 0.0f0]
     h = model.lateral.land.h
     @test h[[26, 35, 631]] ≈
-          [0.07341443653334193f0, 0.009152294150993293f0, 0.0006875940563996746f0]
+          [0.07361854999908582f0, 0.009155393111676267f0, 0.0007258741013439351f0]
 end
 Wflow.close_files(model, delete_output = false)
 
@@ -394,14 +394,14 @@ model = Wflow.run_timestep(model)
 
 @testset "river flow (local inertial) with floodplain schematization simulation" begin
     q = model.lateral.river.q_av
-    @test sum(q) ≈ 3898.719057830299f0
-    @test q[1622] ≈ 6.0094627478450016f-5
-    @test q[43] ≈ 11.900372477232796f0
-    @test q[501] ≈ 3.470259878228359f0
+    @test sum(q) ≈ 3908.039208613999f0
+    @test q[1622] ≈ 7.310102468091527f-5
+    @test q[43] ≈ 11.921531207072922f0
+    @test q[501] ≈ 3.5061516913374717f0
     h = model.lateral.river.h_av
-    @test h[1622] ≈ 0.0018099697988149294f0
-    @test h[43] ≈ 0.4362704420867342f0
-    @test h[501] ≈ 0.05610231297517167f0
+    @test h[1622] ≈ 0.001987887580593841f0
+    @test h[43] ≈ 0.436641524481545f0
+    @test h[501] ≈ 0.05665942153713204f0
 end
 Wflow.close_files(model, delete_output = false)
 
@@ -503,9 +503,9 @@ Wflow.close_files(model, delete_output = false)
     model = Wflow.run_timestep(model)
     @testset "river flow layered exponential profile" begin
         q = model.lateral.river.q_av
-        @test sum(q) ≈ 3118.8690178033266f0
-        @test q[1622] ≈ 0.000548447582354063f0
-        @test q[43] ≈ 9.860543811678328f0
+        @test sum(q) ≈ 3126.3509477318844f0
+        @test q[1622] ≈ 0.0005972577112819149f0
+        @test q[43] ≈ 9.880641908157857f0
     end
 
     Wflow.close_files(model, delete_output = false)

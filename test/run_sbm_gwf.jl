@@ -46,19 +46,19 @@ end
 @testset "river domain" begin
     q = model.lateral.river.q_av
     river = model.lateral.river
-    @test sum(q) ≈ 0.034846861707851576f0
-    @test q[6] ≈ 0.007866587223009643f0
-    @test river.volume[6] ≈ 4.474556355925399f0
-    @test river.inwater[6] ≈ 0.00036392604840276924f0
-    @test q[13] ≈ 0.0005952292000597283f0
-    @test q[network.river.order[end]] ≈ 0.008387430132453135f0
+    @test sum(q) ≈ 0.034904078613089404f0
+    @test q[6] ≈ 0.007881734464420193f0
+    @test river.volume[6] ≈ 4.479866566743959f0
+    @test river.inwater[6] ≈ 0.00036640965826798314f0
+    @test q[13] ≈ 0.0005958036525897934f0
+    @test q[network.river.order[end]] ≈ 0.008405059891856978f0
 end
 
 @testset "groundwater" begin
     gw = model.lateral.subsurface
     @test gw.river.stage[1] ≈ 1.2123636929067039f0
     @test gw.flow.aquifer.head[19] ≈ 1.7999999523162842f0
-    @test gw.river.flux[1] ≈ -50.46515313302901f0
+    @test gw.river.flux[1] ≈ -50.568389286368145f0
     @test gw.drain.flux[1] ≈ 0.0
     @test gw.recharge.rate[19] ≈ -0.0014241196552847502f0
 end
