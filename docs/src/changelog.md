@@ -70,7 +70,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - For cyclic parameters different cyclic time inputs are supported (only one common cyclic
   time (for example daily or monthly) was allowed).
 - BMI: 1) added grid information (type and location) and whether a variable can be exchanged
-  to metadata Structs, 2) extend model grid functions for Wflow components that store
+  to metadata Structs, 2) extend model grid functions for wflow components that store
   variables on `edges` (local inertial model) with `get_grid_edge_count` and
   `get_grid_edge_nodes`.
 
@@ -114,7 +114,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   seconds since the model start time. This is more in line with standard BMI practices.
 - The `starttime` was defined one model timestep `Δt` ahead of the actual model time (the
   initial conditions timestamp (state time)). As a consequence this was also the case for
-  the current model time. To allow for an easier interpretation of Wflow time handling,
+  the current model time. To allow for an easier interpretation of wflow time handling,
   either through BMI or directly, the `starttime` is now equal to the state time, resulting
   in current model times without an offset.
 - Using more than 8 threads can result in too much overhead with `Threads.@threads`. After
@@ -135,7 +135,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## v0.6.3 - 2023-03-01
 
 ### Fixed
-- Removed error when `_FillValue` is present in the time dimension of the forcing NetCDF
+- Removed error when `_FillValue` is present in the time dimension of the forcing netCDF
   file. The simulation is allowed to continue with the attribute present, given that there
   are no missing values in the time dimension. This is checked by the code, and an error is
   thrown if this is the case.
@@ -144,9 +144,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   counted).
 
 ### Changed
-- `NCDatasets` version. Reading the `time` dimension of multifile NetCDF file became very
+- `NCDatasets` version. Reading the `time` dimension of multifile netCDF file became very
   slow since `NCDatasets` v0.12.4, this issue has been solved in v0.12.11.
-- Store the `time` dimension of the forcing NetCDF file as part of the struct `NCreader`
+- Store the `time` dimension of the forcing netCDF file as part of the struct `NCreader`
   instead of calling `dataset["time"][:]` each time step when loading forcing data.
 
 ### Added
@@ -202,7 +202,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   parameters](@ref).
 - Modify input parameters with an extra dimension at multiple indices with different `scale`
   and `offset` values, through the TOML file. See also [Modify parameters](@ref).
-- Added support for NetCDF compression for gridded model output, through the option
+- Added support for netCDF compression for gridded model output, through the option
   `compressionlevel` in the `[output]` section in the TOML file. The setting defaults to 0
   (no compression), but all levels between 0 and 9 can be used.
 
@@ -253,7 +253,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Model type `hbv`: the surface width for overland flow was not corrected with the river
   width.
-- Fixed use of absolute path for `path_forcing` in TOML file, which gave an error in Wflow
+- Fixed use of absolute path for `path_forcing` in TOML file, which gave an error in wflow
   v0.5.1.
 - Fixed a crash when glacier processes are simulated as part of the `hbv` concept (Δt was
   not defined).
@@ -264,10 +264,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed how number of iterations `its` for kinematic wave river flow are calculated during
   initialization when using a fixed sub-timestep (specified in the TOML file). For a model
   timestep smaller than the fixed sub-timestep an InexactError was thrown.
-- Fixed providing a cyclic parameter when the NetCDF variable is read during model
-  initialization with `ncread`, this gave an error about the size of the NetCDF `time`
+- Fixed providing a cyclic parameter when the netCDF variable is read during model
+  initialization with `ncread`, this gave an error about the size of the netCDF `time`
   dimension.
-- Fixed CSV and NetCDF scalar output of variables with dimension `layer` (`SVector`).
+- Fixed CSV and netCDF scalar output of variables with dimension `layer` (`SVector`).
 
 ## v0.5.1 - 2021-11-24
 
@@ -361,7 +361,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   larger or smaller than `xp`, maximum(`xp`) or minimum(`xp`) was returned instead of
   maximum(`fp`) or minimum(`fp`).
 - Fixed model timestep of reservoirs (`SimpleReservoir`) and lakes (`NaturalLake`) in
-  relation to precipitation and evapotranspiration fluxes. This was set to the fixed Wflow
+  relation to precipitation and evapotranspiration fluxes. This was set to the fixed wflow
   `basetimestep` of 86400 s, and should be set to the actual model time step from the TOML
   configuration file.
 - Add `flux` from `Drainage` (`GroundwaterFlow`) in the `sbm_gwf_model` to the overland flow
@@ -380,7 +380,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## v0.3.1 - 2021-05-19
 
 ### Fixed
-- Ignore extra dimensions in input NetCDFs if they are size 1
+- Ignore extra dimensions in input netCDFs if they are size 1
 
 ## v0.3.0 - 2021-05-10
 
@@ -413,7 +413,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Removed dependency of the `f` model parameter of wflow\_sbm on the parameters
   ``\theta_{s}``, ``\theta_{r}`` and ``M``. This approach is used in Topog\_SBM, but not
-  applicable for wflow\_sbm. The `f` parameter needs to be provided as part of the NetCDF
+  applicable for wflow\_sbm. The `f` parameter needs to be provided as part of the netCDF
   model parameter file.
 - Grid properties as cell length and elevation now stored as part of the
   `model.land.network` component and not as part of the vertical model components, as it is
@@ -423,10 +423,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed parameter ``\theta_{e}`` from SBM struct (not used in update). Parameters
   ``\theta_{s}`` and ``\theta_{r}`` included separately (instead of ``\theta_{e}``) in
   `LateralSSF struct`, now directly linked to SBM parameters.
-- Improve error messages (NetCDF and cyclic flow graph).
+- Improve error messages (netCDF and cyclic flow graph).
 
 ### Added
-- Export of NetCDF scalar timeseries (separate NetCDF file from gridded timeseries). This
+- Export of netCDF scalar timeseries (separate netCDF file from gridded timeseries). This
   also allows for importing these timeseries by Delft-FEWS (General Adapter).
 
 ### Fixed

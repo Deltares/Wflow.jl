@@ -381,7 +381,7 @@ internal model parameter `z`, and is listed in the Table below between parenthes
 ### Confined aquifer
 The Table below shows the parameters (fields) of struct `ConfinedAquifer`, including a
 description of these parameters, the unit, and default value if applicable. Struct
-`ConfinedAquifer` is not (yet) part of a Wflow Model.
+`ConfinedAquifer` is not (yet) part of a wflow model.
 
 |  parameter  | description  	      | unit  | default |
 |:--------------- | ------------------| ----- | -------|

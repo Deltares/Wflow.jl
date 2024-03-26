@@ -16,7 +16,7 @@ Will return a Model that is ready to run.
 """
 function initialize_sbm_gwf_model(config::Config)
 
-    # unpack the paths to the NetCDF files
+    # unpack the paths to the netCDF files
     static_path = input_path(config, config.input.path_static)
 
     reader = prepare_reader(config)

@@ -29,7 +29,7 @@ Wflow.run(config)
 
 ## [Using the command line interface](@id cli)
 
-If you don't need the extra features of using Wflow as a library, but just want to run
+If you don't need the extra features of using wflow as a library, but just want to run
 simulations, the command line interface makes it easier to do so. It consists of a single
 executable, `wflow_cli` that accepts a single argument, the path to a TOML configuration
 file.

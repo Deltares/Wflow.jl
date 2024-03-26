@@ -391,7 +391,7 @@ end
 function save_state(model::Model)
     @unpack config, writer, clock = model
     if haskey(config, "state") && haskey(config.state, "path_output")
-        @info "Write output states to NetCDF file `$(model.writer.state_nc_path)`."
+        @info "Write output states to netCDF file `$(model.writer.state_nc_path)`."
     end
     write_netcdf_timestep(model, writer.state_dataset, writer.state_parameters)
 end
