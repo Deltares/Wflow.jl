@@ -54,7 +54,7 @@ example with a part of the `SBM` struct:
 ```julia
 @get_units @with_kw struct SBM{T,N,M}
     # Model time step [s]
-    Δt::T | "s"
+    delta_t::T | "s"
     # Maximum number of soil layers
     maxlayers::Int | "-"
     # number of cells
@@ -66,9 +66,9 @@ example with a part of the `SBM` struct:
     # Fraction of river [-]
     riverfrac::Vector{T} | "-"
     # Saturated water content (porosity) [mm mm⁻¹]
-    θₛ::Vector{T} | "mm mm-1"
+    theta_s::Vector{T} | "mm mm-1"
     # Residual water content [mm mm⁻¹]
-    θᵣ::Vector{T} | "mm mm-1"
+    theta_r::Vector{T} | "mm mm-1"
     # Vertical hydraulic conductivity [mm Δt⁻¹] at soil surface
     kv₀::Vector{T} | "mm Δt-1"
     # Muliplication factor [-] applied to kv_z (vertical flow)
@@ -83,7 +83,7 @@ refers to the maximum number of soil layers + 1. See also part of the following 
 
 ```julia
 sbm = SBM{Float,maxlayers,maxlayers + 1}(
-    Δt = tosecond(Δt),
+    delta_t = tosecond(delta_t),
     maxlayers = maxlayers,
     n = n,
 ```

@@ -549,7 +549,7 @@ the vector that contains all active cells within the spatial model domain, and `
 the layer position):
 
 ```julia
-    usl[k] * (sbm.θₛ[i] - sbm.θᵣ[i]) - usld[k]
+    usl[k] * (sbm.theta_s[i] - sbm.theta_r[i]) - usld[k]
 ```
 
 where `usl` [mm] is the unsaturated layer thickness, `usld` is the `ustorelayerdepth` \[mm\]
@@ -565,7 +565,7 @@ spatial model domain, and `k` refers to the layer position):
     netcapflux = capflux
     for k = n_usl:-1:1
         toadd =
-            min(netcapflux, max(usl[k] * (sbm.θₛ[i] - sbm.θᵣ[i]) - usld[k], 0.0))
+            min(netcapflux, max(usl[k] * (sbm.theta_s[i] - sbm.theta_r[i]) - usld[k], 0.0))
         usld = setindex(usld, usld[k] + toadd, k)
         netcapflux = netcapflux - toadd
         actcapflux = actcapflux + toadd
