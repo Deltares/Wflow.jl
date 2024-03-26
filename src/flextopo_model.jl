@@ -5,7 +5,7 @@ Initial part of the FlexTopo model concept. Reads the input settings and data as
 Config object. Will return a Model that is ready to run.
 """
 function initialize_flextopo_model(config::Config)
-    # unpack the paths to the NetCDF files
+    # unpack the paths to the netCDF files
     static_path = input_path(config, config.input.path_static)
 
     reader = prepare_reader(config)

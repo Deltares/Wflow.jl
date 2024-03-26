@@ -65,7 +65,7 @@ end
     ds = NCDataset(ncpath)
     reader = (; dataset = ds)
 
-    # if these keys are missing, they are derived from the NetCDF
+    # if these keys are missing, they are derived from the netCDF
     pop!(Dict(config), "starttime")
     pop!(Dict(config), "endtime")
     pop!(Dict(config), "timestepsecs")
@@ -413,7 +413,7 @@ end
     rm(tomlpath_error)
 end
 
-# test calendar setting `noleap` in forcing NetCDF file (including `_FillValue` in time
+# test calendar setting `noleap` in forcing netCDF file (including `_FillValue` in time
 # dimension) and in TOML file (Clock{DateTimeNoLeap}).
 @testset "Calendar noleap (DateTimeNoLeap) for time and clock" begin
     config = Wflow.Config(tomlpath)

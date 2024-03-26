@@ -38,12 +38,12 @@ model = Wflow.run_timestep(model)
     @test sbm.transpiration[1] ≈ 1.0122634204681036f0
 end
 
-@testset "overland flow" begin
+@testset "overland flow (kinematic wave)" begin
     q = model.lateral.land.q_av
     @test sum(q) ≈ 2.2298616f-7
 end
 
-@testset "river domain" begin
+@testset "river domain (kinematic wave)" begin
     q = model.lateral.river.q_av
     river = model.lateral.river
     @test sum(q) ≈ 0.034904078613089404f0
@@ -57,18 +57,133 @@ end
 @testset "groundwater" begin
     gw = model.lateral.subsurface
     @test gw.river.stage[1] ≈ 1.2123636929067039f0
-    @test gw.flow.aquifer.head[19] ≈ 1.7999999523162842f0
+    @test gw.flow.aquifer.head[17:21] ≈ [
+        1.288882128227083f0,
+        1.344816977641676f0,
+        1.7999999523162842f0,
+        1.803682542252168f0,
+        1.4049539807162532f0,
+    ]
     @test gw.river.flux[1] ≈ -50.568389286368145f0
     @test gw.drain.flux[1] ≈ 0.0
     @test gw.recharge.rate[19] ≈ -0.0014241196552847502f0
 end
-
-Wflow.close_files(model)
 
 @testset "no drains" begin
     config.model.drains = false
     delete!(Dict(config.output.lateral.subsurface), "drain")
     model = Wflow.initialize_sbm_gwf_model(config)
     @test collect(keys(model.lateral.subsurface)) == [:flow, :recharge, :river]
-    Wflow.close_files(model)
 end
+
+Wflow.close_files(model, delete_output = false)
+
+# test local-inertial option for river flow routing
+tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
+config = Wflow.Config(tomlpath)
+config.model.river_routing = "local-inertial"
+
+config.input.lateral.river.bankfull_elevation = "bankfull_elevation"
+config.input.lateral.river.bankfull_depth = "bankfull_depth"
+
+model = Wflow.initialize_sbm_gwf_model(config)
+model = Wflow.run_timestep(model)
+model = Wflow.run_timestep(model)
+
+@testset "river domain (local inertial)" begin
+    q = model.lateral.river.q_av
+    river = model.lateral.river
+    @test sum(q) ≈ 0.026802342283209452f0
+    @test q[6] ≈ 0.005975747422547475f0
+    @test river.volume[6] ≈ 7.509678393246221f0
+    @test river.inwater[6] ≈ 0.00017989723366752878f0
+    @test q[13] ≈ 0.0004590884299495001f0
+    @test q[5] ≈ 0.006328157455390906f0
+end
+Wflow.close_files(model, delete_output = false)
+
+# test local-inertial option for river and overland flow routing
+tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
+config = Wflow.Config(tomlpath)
+config.model.river_routing = "local-inertial"
+config.model.land_routing = "local-inertial"
+
+config.input.lateral.river.bankfull_elevation = "bankfull_elevation"
+config.input.lateral.river.bankfull_depth = "bankfull_depth"
+config.input.lateral.land.elevation = "wflow_dem"
+
+pop!(Dict(config.state.lateral.land), "q")
+config.state.lateral.land.h_av = "h_av_land"
+config.state.lateral.land.qx = "qx_land"
+config.state.lateral.land.qy = "qy_land"
+
+model = Wflow.initialize_sbm_gwf_model(config)
+model = Wflow.run_timestep(model)
+model = Wflow.run_timestep(model)
+
+@testset "river and land domain (local inertial)" begin
+    q = model.lateral.river.q_av
+    @test sum(q) ≈ 0.026809644054064f0
+    @test q[6] ≈ 0.005977572310302902f0
+    @test q[13] ≈ 0.0004591969811223254f0
+    @test q[5] ≈ 0.006330164124991123f0
+    h = model.lateral.river.h_av
+    @test h[6] ≈ 0.08033159784710718f0
+    @test h[5] ≈ 0.0777121612660625f0
+    @test h[13] ≈ 0.08236630657766124f0
+    qx = model.lateral.land.qx
+    qy = model.lateral.land.qy
+    @test all(qx .== 0.0f0)
+    @test all(qy .== 0.0f0)
+end
+Wflow.close_files(model, delete_output = false)
+
+# test with warm start
+tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
+config = Wflow.Config(tomlpath)
+config.model.reinit = false
+
+model = Wflow.initialize_sbm_gwf_model(config)
+@unpack network = model
+
+model = Wflow.run_timestep(model)
+model = Wflow.run_timestep(model)
+
+@testset "second timestep warm start" begin
+    sbm = model.vertical
+    @test sbm.runoff[1] == 0.0
+    @test sbm.soilevap[1] == 0.2927279656884887
+    @test sbm.transpiration[1] ≈ 1.0122634204681036f0
+end
+
+@testset "overland flow warm start (kinematic wave)" begin
+    q = model.lateral.land.q_av
+    @test sum(q) ≈ 1.4411427003142072f-5
+end
+
+@testset "river domain warm start (kinematic wave)" begin
+    q = model.lateral.river.q_av
+    river = model.lateral.river
+    @test sum(q) ≈ 0.011317441400219936f0
+    @test q[6] ≈ 0.002255753266287542f0
+    @test river.volume[6] ≈ 2.1212499727096956f0
+    @test river.inwater[6] ≈ -6.888767545965421f-5
+    @test q[13] ≈ 8.664553314598283f-5
+    @test q[network.river.order[end]] ≈ 0.002258255913217909f0
+end
+
+@testset "groundwater warm start" begin
+    gw = model.lateral.subsurface
+    @test gw.river.stage[1] ≈ 1.2031171676781156f0
+    @test gw.flow.aquifer.head[17:21] ≈ [
+        1.2195537323067487f0,
+        1.2741313108104333f0,
+        1.7999999523162842f0,
+        1.5862473868459186f0,
+        1.202268433263572f0,
+    ]
+    @test gw.river.flux[1] ≈ -6.044849112655228f0
+    @test gw.drain.flux[1] ≈ 0.0
+    @test gw.recharge.rate[19] ≈ -0.0014241196552847502f0
+end
+Wflow.close_files(model, delete_output = false)

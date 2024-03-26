@@ -216,7 +216,7 @@ function initialize_canopy(nc, config, inds)
     n = length(inds)
     # if leaf area index climatology provided use sl, swood and kext to calculate cmax, e_r and canopygapfraction
     if haskey(config.input.vertical, "leaf_area_index")
-        # TODO confirm if leaf area index climatology is present in the NetCDF
+        # TODO confirm if leaf area index climatology is present in the netCDF
         sl = ncread(
             nc,
             config,

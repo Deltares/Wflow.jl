@@ -8,7 +8,7 @@ planning. In collaboration with Rijkswaterstaat, Deltares is setting-up a new li
 for the Rhine and the Meuse basins. The models will be used for forecasting and to estimate the
 impact of climate change on water resources and extreme streamflow. In the model development,
 we seek to improve hydrological predictions by including relevant processes in the model
-schematization. The modularity of the Wflow framework is ideal for this as we can easily
+schematization. The modularity of the wflow framework is ideal for this as we can easily
 evaluate the combination of different vertical and lateral model components. For example, the
 local inertial routing for river and overland flow enables us to consider retention of water in
 the floodplains, which will likely improve extreme streamflow predictions.
@@ -49,7 +49,7 @@ flood inundation forecasting in Australia. Hydrology Water and Resources Symposi
 ## [Simulating plastic transport in Thailand](@id case_mfa)
 
 For the Polution Control Board of the Government of Thailand and The World Bank, we supported
-the material flow analysis of plastics in Thailand using Wflow. Plastic polution is a growing
+the material flow analysis of plastics in Thailand using wflow. Plastic polution is a growing
 problem globally. Plastic waste enters the rivers and is transported to the ocean where it
 remains and threatens the health of the ocean, seas and coasts. The initial movement of plastic
 waste is in many cases triggered by runoff from (heavy) rainfall and with the flow of water

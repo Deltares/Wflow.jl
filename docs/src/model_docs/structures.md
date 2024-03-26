@@ -19,7 +19,7 @@ end
 ```
 
 The `lateral` field of the `struct Model` can contain different lateral concepts. For each
-Wflow model these different lateral concepts are mapped through the use of a `NamedTuple`.
+wflow model these different lateral concepts are mapped through the use of a `NamedTuple`.
 The `vertical` field of the `struct Model` always contains one vertical concept, for example
 the SBM or HBV vertical concept.
 
@@ -41,7 +41,7 @@ name. See also the next paragraph [Vertical and lateral models](@ref) for a more
 detailed description.
 
 ## Vertical and lateral models
-The different model concepts used in Wflow are defined as parametric [composite
+The different model concepts used in wflow are defined as parametric [composite
 types](https://docs.julialang.org/en/v1/manual/types/#Composite-Types). For example the
 vertical `SBM` concept is defined as follows: `struct SBM{T,N,M}`. `T`, `N` and `M` between
 curly braces after the `struct` name refer to type parameters, for more information about
@@ -75,7 +75,7 @@ example with a part of the `SBM` struct:
     kvfrac::Vector{SVector{N,T}} | "-"
 ```
 
-The type parameter `T` is used in Wflow as a subtype of `AbstractFloat`, allowing to store
+The type parameter `T` is used in wflow as a subtype of `AbstractFloat`, allowing to store
 fields with a certain floating point precision (e.g. `Float64` or `Float32`) in a flexible
 way. `N` refers to the maximum number of soil layers of the `SBM` soil column, and `M`
 refers to the maximum number of soil layers + 1. See also part of the following instance of

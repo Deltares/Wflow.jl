@@ -398,10 +398,33 @@ model = Wflow.run_timestep(model)
     @test q[1622] ≈ 7.310102468091527f-5
     @test q[43] ≈ 11.921531207072922f0
     @test q[501] ≈ 3.5061516913374717f0
+    @test q[5808] ≈ 0.0022258226497210145f0
     h = model.lateral.river.h_av
     @test h[1622] ≈ 0.001987887580593841f0
     @test h[43] ≈ 0.436641524481545f0
     @test h[501] ≈ 0.05665942153713204f0
+	@test h[5808] ≈ 0.005933025055544241f0
+end
+
+# set boundary condition local inertial routing from netCDF file
+config.input.lateral.river.riverlength_bc = "riverlength_bc"
+config.input.lateral.river.riverdepth_bc = "riverdepth_bc"
+model = Wflow.initialize_sbm_model(config)
+model = Wflow.run_timestep(model)
+model = Wflow.run_timestep(model)
+
+@testset "change boundary condition for local inertial routing (including floodplain)" begin
+    q = model.lateral.river.q_av
+    @test sum(q) ≈ 3908.2493947503826f0
+    @test q[1622] ≈ 7.310183576829848f-5
+    @test q[43] ≈ 11.921531207085014f0
+    @test q[501] ≈ 3.5061513868779763f0
+    @test q[5808] ≈ 0.060518234525259465f0
+    h = model.lateral.river.h_av
+    @test h[1622] ≈ 0.0019878952928530183f0
+    @test h[43] ≈ 0.4366415249636809f0
+    @test h[501] ≈ 0.05665929962422606f0
+    @test h[5808] ≈ 2.0000006940603936f0
 end
 Wflow.close_files(model, delete_output = false)
 
