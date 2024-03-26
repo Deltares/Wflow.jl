@@ -44,8 +44,8 @@ profile `kv` is used and `z_layered` is required as input.
 | **`g_sifrac`**  | fraction of the snowpack on top of the glacier converted into ice  | Δt``^{-1}`` | 0.001 day``^{-1}`` |
 | **`glacierfrac`**  | fraction covered by a glacier | - | 0.0  |
 | **`glacierstore`**  | water within the glacier  | mm | 5500.0  |
-| **`θₛ`** (`theta_s`) | saturated water content (porosity) | - | 0.6  |
-| **`θᵣ`** (`theta_r`) | residual water content | - | 0.01  |
+| **`theta_s`** | saturated water content (porosity) | - | 0.6  |
+| **`theta_r`** | residual water content | - | 0.01  |
 | **`kv₀`** (`kv_0`) | Vertical hydraulic conductivity at soil surface | mm Δt``^{-1}`` | 3000.0 mm day``^{-1}``|
 | **`kv`** |  Vertical hydraulic conductivity per soil layer | mm Δt``^{-1}`` | 1000.0 mm day``^{-1}``|
 | **`f`** | scaling parameter (controls exponential decline of `kv₀`) | mm``^{-1}`` | 0.001  |
@@ -71,7 +71,7 @@ profile `kv` is used and `z_layered` is required as input.
 | **`cmax`** | maximum canopy storage | mm | 1.0 |
 | **`e_r`** (`eoverr`) | Gash interception model parameter | - | 0.1 |
 | **`canopygapfraction`** | canopy gap fraction | - | 0.1 | - |
-| `Δt`             | model time step     | s | - |
+| `delta_t`             | model time step     | s | - |
 | `maxlayers`      | maximum number of soil layers     | - | - |
 | `n`      |  number of grid cells    | - | - |
 | `nlayers`      |  number of soil layers    | - | - |

@@ -13,7 +13,7 @@ internal model parameter `sl`, and is listed in the Table below between parenthe
 
 |  parameter  | description  	  | unit  | default |
 |:--------------- | ------------------| ----- | -------- |
-| `β`             |  constant in Manning's equation | - | - |
+| `beta`             |  constant in Manning's equation | - | - |
 | **`sl`** (`slope`) |  slope       | m m``^{-1}``| - |
 | **`n`**         | Manning's roughness | s m``^{-\frac{1}{3}}``| 0.036 |
 | **`dl`**        |  length      | m     |  -      |
@@ -27,12 +27,12 @@ internal model parameter `sl`, and is listed in the Table below between parenthe
 | `h`             | water level | m | - |
 | `h_av`          | average water level | m | - |
 | **`bankfull_depth`**   | bankfull river depth  | m | 1.0 |
-| `Δt`            | model time step | s | - |
+| `delta_t`            | model time step | s | - |
 | `its`           | number of fixed iterations | - | - |
 | **`width`**     |  width       | m          | - |
 | `alpha_pow`     | used in the power part of ``\alpha`` | - | - |
 | `alpha_term`    | term used in computation of ``\alpha`` | - | - |
-| `α`             | constant in momentum equation ``A = \alpha Q^{\beta}`` | s``^{\frac{3}{5}}`` m``^{\frac{1}{5}}`` | - |
+| `alpha`             | constant in momentum equation ``A = \alpha Q^{\beta}`` | s``^{\frac{3}{5}}`` m``^{\frac{1}{5}}`` | - |
 | `cel`           | celerity of kinematic wave | m s``^{-1}`` | - |
 | `reservoir_index`   |  map cell to 0 (no reservoir) or i (pick reservoir i in reservoir field) | - | - |
 | `lake_index`   |  map cell to 0 (no lake) or i (pick lake i in lake field) | - | - |
@@ -50,7 +50,7 @@ internal model parameter `sl`, and is listed in the Table below between parenthe
 
 |  parameter  | description  	  | unit  | default |
 |:--------------- | ------------------| ----- | -------- |
-| `β`             |  constant in Manning's equation | - | - |
+| `beta`             |  constant in Manning's equation | - | - |
 | **`sl`** (`slope`) |  slope       | m m``^{-1}``| - |
 | **`n`**         | Manning's roughness | s m``^{-\frac{1}{3}}``| 0.072 |
 | `dl`            |  length      | m     |  -      |
@@ -62,12 +62,12 @@ internal model parameter `sl`, and is listed in the Table below between parenthe
 | `volume`        | kinematic wave volume |m``^3``| - |
 | `h`             | water level | m | - |
 | `h_av`          | average water level | m | - |
-| `Δt`            | model time step | s | - |
+| `delta_t`            | model time step | s | - |
 | `its`           | number of fixed iterations | - | - |
 | `width`         |  width       | m          | - |
 | `alpha_pow`     | used in the power part of ``\alpha`` | - | - |
 | `alpha_term`    | term used in computation of ``\alpha`` | - | - |
-| `α`             | constant in momentum equation ``A = \alpha Q^{\beta}`` | s``^{\frac{3}{5}}`` m``^{\frac{1}{5}}`` | - |
+| `alpha`             | constant in momentum equation ``A = \alpha Q^{\beta}`` | s``^{\frac{3}{5}}`` m``^{\frac{1}{5}}`` | - |
 | `cel`           | celerity of kinematic wave | m s``^{-1}`` | - |
 | `to_river`      | part of overland flow that flows to the river | m``^3`` s``^{-1}`` | - |
 | `kinwave_it`    | boolean for kinematic wave iterations | - | false |
@@ -98,7 +98,7 @@ locs = "wflow_reservoirlocs"
 | **`targetfullfrac`** | target fraction full (of max storage)| -        | - |
 | **`targetminfrac`** | target minimum full fraction (of max storage) | -  | - |
 | `demandrelease`| minimum (environmental) flow released from reservoir  | m``^3`` s``^{-1}``| - |
-| `Δt`             | model time step     | s | - |
+| `delta_t`             | model time step     | s | - |
 | `volume`             | volume     | m``^3`` | - |
 | `inflow`             | total inflow into reservoir | m``^3`` | - |
 | `outflow`             | outflow into reservoir | m``^3`` s``^{-1}`` | - |
@@ -141,7 +141,7 @@ between parentheses.
 | **`lowerlake_ind`** (`linkedlakelocs`) | Index of lower lake (linked lakes) | - | 0 |
 | **`sh`** | data for storage curve | - | - |
 | **`hq`** | data rating curve | - | - |
-| `Δt`             | model time step     | s |  - |
+| `delta_t`             | model time step     | s |  - |
 | `inflow` | total inflow to the lake | m``^3``  | - |
 | `storage` | storage lake | m``^3``  | - |
 | `maxstorage`| maximum storage lake with rating curve type 1 | m``^3``  | - |
@@ -155,10 +155,10 @@ between parentheses.
 The Table below shows the parameters (fields) of struct `LateralSSF`, including a
 description of these parameters, the unit, and default value if applicable. The parameters
 in bold represent model parameters that can be set through static input data (netCDF). The
-soil related parameters `f`, `soilthickness`, `z_exp`, `θₛ` and `θᵣ` are derived from the
+soil related parameters `f`, `soilthickness`, `z_exp`, `theta_s` and `theta_r` are derived from the
 vertical `SBM` concept (including unit conversion for `f`, `z_exp` and `soilthickness`), and
 can be listed in the TOML configuration file under `[input.vertical]`, to map the internal
-model parameter to the external netCDF variable. The internal slope model parameter `βₗ` is
+model parameter to the external netCDF variable. The internal slope model parameter `beta_l` is
 set through the TOML file as follows:
 
 ```toml
@@ -196,10 +196,10 @@ the `layered_exponential` profile `kv` is used and `z_exp` is required as part o
 | `kh` | horizontal hydraulic conductivity | m d``^{-1}``  | - |
 | **`khfrac`** (`ksathorfrac`) | a muliplication factor applied to vertical hydraulic conductivity `kv` | -  | 100.0 |
 | **`soilthickness`** | soil thickness | m  | 2.0 |
-| **`θₛ`** | saturated water content (porosity) | -  | 0.6 |
-| **`θᵣ`** | residual water content  | -  | 0.01 |
-| `Δt` | model time step | d  | - |
-| **`βₗ`** (`slope`) | slope | m m``^{-1}``  | - |
+| **`theta_s`** | saturated water content (porosity) | -  | 0.6 |
+| **`theta_r`** | residual water content  | -  | 0.01 |
+| `delta_t` | model time step | d  | - |
+| **`beta_l`** (`slope`) | slope | m m``^{-1}``  | - |
 | `dl` | drain length | m | - |
 | `dw` | drain width | m | - |
 | `zi` | pseudo-water table depth (top of the saturated zone) | m | - |
@@ -247,18 +247,18 @@ model parameter `mannings_n`, and is listed in the Table below between parenthes
 | `active_n`    |  active nodes | - | - |
 | `active_e`    |  active edges | - | - |
 | `g`    |  acceleration due to gravity | m s``^{-2}`` | - |
-| `α`    |  stability coefficient (Bates et al., 2010) | - | 0.7 |
+| `alpha`    |  stability coefficient (Bates et al., 2010) | - | 0.7 |
 | `h_thresh`    |  depth threshold for calculating flow | m | 0.001 |
-| `Δt`    |  model time step | s | - |
+| `delta_t`    |  model time step | s | - |
 | `q`    |  river discharge (subgrid channel) | m``^3`` s``^{-1}`` | - |
 | `q_av`    |  average river channel (+ floodplain) discharge | m``^3`` s``^{-1}`` | - |
 | `q_channel_av` | average river channel discharge | m``^3`` s``^{-1}`` | - |
 | `zb_max`    | maximum channel bed elevation | m | - |
 | `mannings_n_sq` | Manning's roughness squared at edge/link | (s m``^{-\frac{1}{3}}``)``^2`` | - |
 | `h`    | water depth | m | - |
-| `η_max`    | maximum water elevation | m | - |
-| `η_src`    | water elevation of source node of edge | m | - |
-| `η_dst`    | water elevation of downstream node of edge | m | - |
+| `eta_max`    | maximum water elevation | m | - |
+| `eta_src`    | water elevation of source node of edge | m | - |
+| `eta_dst`    | water elevation of downstream node of edge | m | - |
 | `hf`    | water depth at edge/link | m | - |
 | `h_av`    | average water depth | m | - |
 | `dl`    | river length | m | - |
@@ -356,10 +356,10 @@ internal model parameter `z`, and is listed in the Table below between parenthes
 | `xwidth`| effective flow width x direction (floodplain) | m | - |
 | `ywidth`| effective flow width y direction (floodplain) | m | - |
 | `g` | acceleration due to gravity | m s``^{-2}`` | - |
-| `θ` | weighting factor (de Almeida et al., 2012) | - | 0.8 |
-| `α`    |  stability coefficient (Bates et al., 2010) | - | 0.7 |
+| `theta` | weighting factor (de Almeida et al., 2012) | - | 0.8 |
+| `alpha`    |  stability coefficient (Bates et al., 2010) | - | 0.7 |
 | `h_thresh`    |  depth threshold for calculating flow | m | 0.001 |
-| `Δt`   |  model time step| s | - |
+| `delta_t`   |  model time step| s | - |
 | `qy0`  |  flow in y direction at previous time step| m``^3`` s``^{-1}`` | - |
 | `qx0`  |  flow in x direction at previous time step| m``^3`` s``^{-1}`` | - |
 | `qx`  |  flow in x direction | m``^3`` s``^{-1}`` | - |
@@ -592,7 +592,7 @@ slope = "RiverSlope"
 | **`cbagnold`**| Bagnold c coefficient  | - | - |
 | **`ebagnold`**| Bagnold exponent | - | - |
 | `n`             | number of cells     | - |  - |
-| `Δt`             | model time step     | s |  - |
+| `delta_t`             | model time step     | s |  - |
 | `ak`             | Kodatie coefficient `a`    | - |  - |
 | `bk`             | Kodatie coefficient `b`    | - |  - |
 | `ck`             | Kodatie coefficient `c`    | - |  - |

@@ -172,8 +172,8 @@ ttm = "TTM"
 w_soil = "wflow_soil"
 water_holding_capacity = "WHC"
 waterfrac = "WaterFrac"
-"θᵣ" = "thetaR"
-"θₛ" = "thetaS"
+"theta_r" = "thetaR"
+"theta_s" = "thetaS"
 
 [input.lateral.river]
 length = "wflow_riverlength"
