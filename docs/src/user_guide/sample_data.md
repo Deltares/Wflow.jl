@@ -1,6 +1,6 @@
 # [Example models](@id sample_data)
 
-For each Wflow Model a test model is available that can help to understand the data
+For each wflow Model a test model is available that can help to understand the data
 requirements and the usage of each Model. The TOML configuration file per available model
 are listed in the Table below:
 

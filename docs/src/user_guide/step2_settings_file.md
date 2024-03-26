@@ -6,13 +6,13 @@ The filepaths that are provided in this file are relative to the location of the
 or to `dir_input` and `dir_output` if they are given.
 
 ## General time info
-Time information is optional. When left out, for each timestamp in the forcing netCDF Wflow
+Time information is optional. When left out, for each timestamp in the forcing netCDF wflow
 will do computations, except for the first forcing timestamp that is considered equal to the
-initial conditions of the Wflow model (state time). If you wish to calculate a subset of
+initial conditions of the wflow model (state time). If you wish to calculate a subset of
 this time range, or a different timestep, you can specify a `starttime`, `endtime` and
 `timestepsecs` yourself. The `starttime` is defined as the model state time. In the TOML
 file settings below the `starttime` is 2000-01-01T00:00:00 (state time) and the first update
-(and output) of the Wflow model is at 2000-01-02T00:00:00. The `time_units` optional
+(and output) of the wflow model is at 2000-01-02T00:00:00. The `time_units` optional
 information is used by the `writer` of the model, for model output in netCDF format. The
 `calendar` option allows you to calculate in one of the different [CF conventions
 calendars](http://cfconventions.org/cf-conventions/cf-conventions.html#calendar) provided by
@@ -247,7 +247,7 @@ internal layer index (see also example below). For model parameters and variable
 an extra dimension `classes` and are part of the vertical `FLEXTopo` concept it is possible
 to specify the class name. If multiple layers or classes are desired, this can be specified
 in separate `[[netcdf.variable]]` entries. Note that the specification of the extra
-dimension is not optional when Wflow is integrated with Delft-FEWS, for netCDF scalar data
+dimension is not optional when wflow is integrated with Delft-FEWS, for netCDF scalar data
 an extra dimension is not allowed by the `importNetcdfActivity` of the Delft-FEWS General
 Adapter. In the section [Output CSV section](@ref), similar functionality is available for
 CSV. For integration with Delft-FEWS, see also [Run from Delft-FEWS](@ref run_fews), it is

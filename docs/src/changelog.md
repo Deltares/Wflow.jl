@@ -63,7 +63,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - For cyclic parameters different cyclic time inputs are supported (only one common cyclic
   time (for example daily or monthly) was allowed).
 - BMI: 1) added grid information (type and location) and whether a variable can be exchanged
-  to metadata Structs, 2) extend model grid functions for Wflow components that store
+  to metadata Structs, 2) extend model grid functions for wflow components that store
   variables on `edges` (local inertial model) with `get_grid_edge_count` and
   `get_grid_edge_nodes`.
 
@@ -107,7 +107,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   seconds since the model start time. This is more in line with standard BMI practices.
 - The `starttime` was defined one model timestep `Δt` ahead of the actual model time (the
   initial conditions timestamp (state time)). As a consequence this was also the case for
-  the current model time. To allow for an easier interpretation of Wflow time handling,
+  the current model time. To allow for an easier interpretation of wflow time handling,
   either through BMI or directly, the `starttime` is now equal to the state time, resulting
   in current model times without an offset.
 - Using more than 8 threads can result in too much overhead with `Threads.@threads`. After
@@ -246,7 +246,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Model type `hbv`: the surface width for overland flow was not corrected with the river
   width.
-- Fixed use of absolute path for `path_forcing` in TOML file, which gave an error in Wflow
+- Fixed use of absolute path for `path_forcing` in TOML file, which gave an error in wflow
   v0.5.1.
 - Fixed a crash when glacier processes are simulated as part of the `hbv` concept (Δt was
   not defined).
@@ -354,7 +354,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   larger or smaller than `xp`, maximum(`xp`) or minimum(`xp`) was returned instead of
   maximum(`fp`) or minimum(`fp`).
 - Fixed model timestep of reservoirs (`SimpleReservoir`) and lakes (`NaturalLake`) in
-  relation to precipitation and evapotranspiration fluxes. This was set to the fixed Wflow
+  relation to precipitation and evapotranspiration fluxes. This was set to the fixed wflow
   `basetimestep` of 86400 s, and should be set to the actual model time step from the TOML
   configuration file.
 - Add `flux` from `Drainage` (`GroundwaterFlow`) in the `sbm_gwf_model` to the overland flow

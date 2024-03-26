@@ -182,7 +182,7 @@ The kinematic wave function is used to route the water downstream. In a similar 
 HBV, all runoff that is generated in a cell in one of the FLEXTopo storages is added to the
 kinematic wave reservoir at the end of a timestep. There is no connection between the
 different vertical FLEXTopo cells within the model. The FLEXTopo model is implemented in a
-fully distributed way in the Wflow Julia framework.
+fully distributed way in the wflow Julia framework.
 
 In wflow\_flextopo, the user is free to determine the number of classes and which model
 components to include or exclude for each class, this is done in the TOML file. Currently,
