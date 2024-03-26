@@ -49,8 +49,8 @@
     cap_hmax::Vector{T} | "mm"
     # Coefficient [-] controlling capillary rise
     cap_n::Vector{T} | "-"
-    # Multiplication factor [-] to correct
-    et_reftopot::Vector{T} | "-"
+    # Crop coefficient Kc [-]
+    kc::Vector{T} | "-"
     # Brooks-Corey power coefﬁcient [-] for each soil layer
     c::Vector{SVector{N,T}} | "-"
     # Stemflow [mm Δt⁻¹]
@@ -467,8 +467,21 @@ function initialize_sbm(nc, config, riverfrac, inds)
     cap_hmax =
         ncread(nc, config, "vertical.cap_hmax"; sel = inds, defaults = 2000.0, type = Float)
     cap_n = ncread(nc, config, "vertical.cap_n"; sel = inds, defaults = 2.0, type = Float)
-    et_reftopot =
-        ncread(nc, config, "vertical.et_reftopot"; sel = inds, defaults = 1.0, type = Float)
+    kc = ncread(
+        nc,
+        config,
+        "vertical.kc";
+        alias = "vertical.et_reftopot",
+        sel = inds,
+        defaults = 1.0,
+        type = Float,
+    )
+    if haskey(config.input.vertical, "et_reftopot")
+        @warn string(
+            "The `et_reftopot` key in `[input.vertical]` is now called ",
+            "`kc`. Please update your TOML file.",
+        )
+    end
 
     cmax, e_r, canopygapfraction, sl, swood, kext = initialize_canopy(nc, config, inds)
 
@@ -589,7 +602,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         rootdistpar = rootdistpar,
         cap_hmax = cap_hmax,
         cap_n = cap_n,
-        et_reftopot = et_reftopot,
+        kc = kc,
         c = svectorscopy(c, Val{maxlayers}()),
         stemflow = fill(mv, n),
         throughfall = fill(mv, n),
@@ -697,7 +710,7 @@ function update_until_snow(sbm::SBM, config)
             e_r = sbm.e_r[i]
         end
 
-        canopy_potevap = sbm.et_reftopot[i] * sbm.potential_evaporation[i] * (1.0 - canopygapfraction)
+        canopy_potevap = sbm.kc[i] * sbm.potential_evaporation[i] * (1.0 - canopygapfraction)
         if Second(sbm.Δt) >= Hour(23)
             throughfall, interception, stemflow, canopystorage = rainfall_interception_gash(
                 cmax,
