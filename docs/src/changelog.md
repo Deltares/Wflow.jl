@@ -28,6 +28,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   model parameters are defined, and it is not expected that exposing these variables is
   required (e.g. for model coupling) while code changes for these variables (including
   struct fields) are required.
+- The local inertial routing (constant) river boundary condition `depth` at a ghost node
+  (downstream river outlet) was set at 0.0 in the code and can now be provided through the
+  model parameter netCDF file (`riverdepth_bc`). In addition, the boundary condition river
+  length `dl` at a ghost node should be set through the model parameter netCDF file
+  (`riverlength_bc`), providing this boundary condition through the `[model]` settings in
+  the TOML file (`model.riverlength_bc`) has been deprecated.
 
 ### Added
 - Total water storage as an export variable for `SBM` concept. This is the total water stored
@@ -39,6 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support different vertical hydraulic conductivity profiles for the `SBM` concept. See also
   the following sections: [The SBM soil water accounting scheme](@ref) and [Subsurface flow
   routing](@ref) for a short description.
+- Local inertial routing to `sbm_gwf` model type.
 
 ## v0.7.3 - 2024-01-12
 
