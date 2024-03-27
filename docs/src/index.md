@@ -27,7 +27,8 @@ From 2021 the [wflow code](https://github.com/Deltares/Wflow.jl) is distributed 
 [MIT License](https://github.com/Deltares/Wflow.jl/blob/master/LICENSE). Wflow is also
 available as a [compiled executable](https://download.deltares.nl/en/download/wflow/) under
 the Deltares terms and conditions. The wflow computational engine is built in the
-[Julia](https://julialang.org/) language, a high-performance computing language and does not
-have a graphical user interface, being designed for maximum user flexibility. Prior to 2021,
-wflow was developed in PCRaster Python language and is [still
-available](https://github.com/openstreams/wflow) but not actively developed.
+[Julia](https://julialang.org/) language, a high-performance computing language.
+Wflow does not include a graphical user interface and is designed for maximum user
+flexibility. Prior to 2021, wflow was developed in Python on top of the PCRaster Python
+extension. The Python version is [still available](https://github.com/openstreams/wflow),
+but not actively developed.

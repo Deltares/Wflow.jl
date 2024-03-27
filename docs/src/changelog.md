@@ -21,9 +21,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   routing, the floodplain discharge was not added to the inflow of these locations, 2) the
   `to_river` variable from overland flow and lateral subsurface flow was not added to the
   inflow of these locations.
+- Close netCDF `NCDataset` with state variables in extended BMI function `save_state`.
 - For the computation of Gash interception model parameter `e_r` multiply the precipitation
   input with the canopy fraction (this was only done for the potential evapotranspiration
   input).
+
 
 ### Changed
 - Stop exposing scalar variables through BMI. The `BMI.get_value_ptr` function was
