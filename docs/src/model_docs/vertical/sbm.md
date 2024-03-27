@@ -134,22 +134,31 @@ The extinction coefficient `kext` can be related to land cover.
 
 ## [Evaporation](@id evap)
 
-The wflow\_sbm model assumes the input to be potential evaporation. A multiplication factor
-(`et_reftopot`, set to 1 by default) is present to correct the input evaporation if
-required.
+The wflow\_sbm model assumes the input to be potential reference evapotranspiration. A crop
+coefficient (`kc`, set to 1 by default) is used to convert the potential evapotranspiration
+rate of a reference crop fully covering the soil to the potential evapotranspiration rate of
+vegetation (natural and agricultural) fully covering the soil. The crop coefficient `kc` of
+wflow\_sbm is used for a surface completely covered by vegetation, and does not include the
+effect of growing stages of vegetation and soil cover. These effects are handled separately
+through the use of the canopy gap fraction. 
 
-The potential evaporation left over after interception and open water evaporation (rivers
-and water bodies) is split in potential soil evaporation and potential transpiration based
-on the canopy gap fraction (assumed to be identical to the amount of bare soil).
+It is assumed that the potential evaporation rate of intercepted water by vegetation is
+equal to the potential evapotranspiration rate of vegetation (fully covering the soil)
+multiplied by the canopy fraction. The potential evapotranspiration rate left over after
+interception is available for transpiration. For potential open water evaporation (river and
+water bodies) the potential reference evapotranspiration rate is used (multipled by the
+river fraction `riverfrac`, and open water fraction `waterfrac`). Also for potential soil
+evaporation the potential reference evapotranspiration rate is used, multiplied by the
+canopy gap fraction corrected by the total water fraction (`riverfrac` and `waterfrac`).
 
 ### Bare soil evaporation
 
 If there is only one soil layer present in the wflow\_sbm model, the bare soil evaporation
 is scaled according to the wetness of the soil layer. The fraction of bare soil is assumed
-to be equal to the fraction not covered by the canopy (`conapygapfraction`). When the soil
-is fully saturated, evaporation is set to equal the potential evaporation. When the soil is
-not fully saturated, actual evaporation decrease linearly with decreasing soil moisture
-values, as indicated by the figure below.
+to be equal to the fraction not covered by the canopy (`canopygapfraction`) corrected by the
+total water fraction. When the soil is fully saturated, evaporation is set to equal the
+potential reference evaporation. When the soil is not fully saturated, actual evaporation
+decrease linearly with decreasing soil moisture values, as indicated by the figure below.
 
 ![soil_evap](../../images/soil_evap.png)
 
@@ -182,10 +191,10 @@ index of the vector that contains all active cells within the spatial model doma
 
 ```julia
     # transpiration from saturated store
-    wetroots = scurve(sbm.zi[i], rootingdepth, 1.0, sbm.rootdistpar[i])
-    actevapsat = min(pottrans * wetroots, satwaterdepth)
+    wetroots = scurve(sbm.zi[i], rootingdepth, Float(1.0), sbm.rootdistpar[i])
+    actevapsat = min(sbm.pottrans[i] * wetroots, satwaterdepth)
     satwaterdepth = satwaterdepth - actevapsat
-    restpottrans = pottrans - actevapsat
+    restpottrans = sbm.pottrans[i] - actevapsat
 ```
 
 ![soil_wetroots](../../images/soil_wetroots.png)

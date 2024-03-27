@@ -84,7 +84,7 @@
     precipitation::Vector{T}
     # Temperature [ᵒC]
     temperature::Vector{T} | "°C"
-    # Potential evapotranspiration [mm Δt⁻¹]
+    # Potential reference evapotranspiration [mm Δt⁻¹]
     potential_evaporation::Vector{T}
     # Potential transpiration (after subtracting interception from potential_evaporation)
     pottrans::Vector{T}
@@ -698,19 +698,19 @@ function update_until_snow(sbm::SBM, config)
         if do_lai
             cmax = sbm.sl[i] * sbm.leaf_area_index[i] + sbm.swood[i]
             canopygapfraction = exp(-sbm.kext[i] * sbm.leaf_area_index[i])
-            ewet =
-                (1.0 - exp(-sbm.kext[i] * sbm.leaf_area_index[i])) *
-                sbm.potential_evaporation[i]
+            canopyfraction = 1.0 - canopygapfraction
+            ewet = canopyfraction * sbm.potential_evaporation[i] * sbm.kc[i]
             e_r =
                 sbm.precipitation[i] > 0.0 ?
-                min(0.25, ewet / max(0.0001, sbm.precipitation[i])) : 0.0
+                min(0.25, ewet / max(0.0001, canopyfraction * sbm.precipitation[i])) : 0.0
         else
             cmax = sbm.cmax[i]
             canopygapfraction = sbm.canopygapfraction[i]
             e_r = sbm.e_r[i]
         end
 
-        canopy_potevap = sbm.kc[i] * sbm.potential_evaporation[i] * (1.0 - canopygapfraction)
+        canopy_potevap =
+            sbm.kc[i] * sbm.potential_evaporation[i] * (1.0 - canopygapfraction)
         if Second(sbm.Δt) >= Hour(23)
             throughfall, interception, stemflow, canopystorage = rainfall_interception_gash(
                 cmax,
@@ -821,7 +821,9 @@ function update_until_recharge(sbm::SBM, config)
         )
 
         # evap available for soil evaporation
-        potsoilevap = max(sbm.canopygapfraction[i] - sbm.riverfrac[i] - sbm.waterfrac[i], 0.0) * sbm.potential_evaporation[i]
+        potsoilevap =
+            max(sbm.canopygapfraction[i] - sbm.riverfrac[i] - sbm.waterfrac[i], 0.0) *
+            sbm.potential_evaporation[i]
 
         # Calculate the initial capacity of the unsaturated store
         ustorecapacity = sbm.soilwatercapacity[i] - sbm.satwaterdepth[i] - ustoredepth
