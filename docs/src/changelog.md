@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   routing, the floodplain discharge was not added to the inflow of these locations, 2) the
   `to_river` variable from overland flow and lateral subsurface flow was not added to the
   inflow of these locations.
+- For the computation of Gash interception model parameter `e_r` multiply the precipitation
+  input with the canopy fraction (this was only done for the potential evapotranspiration
+  input).
 
 ### Changed
 - Stop exposing scalar variables through BMI. The `BMI.get_value_ptr` function was
@@ -34,6 +37,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   length `dl` at a ghost node should be set through the model parameter netCDF file
   (`riverlength_bc`), providing this boundary condition through the `[model]` settings in
   the TOML file (`model.riverlength_bc`) has been deprecated.
+- Always use fractions for the computation of potential evapotranspiration (interception and
+  transpiration) and potential evaporation (open water and soil). Replaced variable
+  `et_reftopot` by crop coefficient `kc` (use of `et_reftopot` has been deprecated).
 
 ### Added
 - Total water storage as an export variable for `SBM` concept. This is the total water stored
