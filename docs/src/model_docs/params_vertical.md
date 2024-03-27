@@ -64,7 +64,7 @@ profile `kv` is used and `z_layered` is required as input.
 | **`rootdistpar`** | controls how roots are linked to water table | - | -500.0  |
 | **`cap_hmax`** | water depth beyond which capillary flux ceases | mm | 2000.0  |
 | **`cap_n`** | coefficient controlling capillary rise | - | 2.0  |
-| **`et_reftopot`** | multiplication factor to correct reference evaporation | - | 1.0  |
+| **`kc`** | crop coefficient Kc | - | 1.0  |
 | **`sl`** (`specific_leaf`) | specific leaf storage  | mm | - |
 | **`swood`** (`storage_wood`) | storage woody part of vegetation | mm | - |
 | **`kext`** | extinction coefficient (to calculate canopy gap fraction) | - | - |
@@ -89,8 +89,8 @@ profile `kv` is used and `z_layered` is required as input.
 | `canopystorage`|  canopy storage | mm | - |
 |**`precipitation`** | precipitation | mm Δt``^{-1}``|  - |
 | **`temperature`** | temperature | ᵒC | - |
-| **`potential_evaporation`** | potential evaporation | mm Δt``^{-1}`` | - |
-| `pottrans_soil` | interception subtracted from potential evaporation) | mm Δt``^{-1}`` | - |
+| **`potential_evaporation`** | potential reference evapotranspiration | mm Δt``^{-1}`` | - |
+| `pottrans` | interception subtracted from potential evapotranspiration | mm Δt``^{-1}`` | - |
 | `transpiration` | transpiration | mm Δt``^{-1}`` | - |
 | `ae_ustore` | actual evaporation from unsaturated store | mm Δt``^{-1}`` | - |
 | `interception` | interception loss by evaporation | mm Δt``^{-1}`` | - |
