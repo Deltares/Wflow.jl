@@ -201,4 +201,5 @@ end
         :info,
         "Write output states to netCDF file `$(model.writer.state_nc_path)`.",
     ) Wflow.save_state(model)
+    @test !isopen(model.writer.state_dataset)
 end

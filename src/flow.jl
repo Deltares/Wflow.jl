@@ -524,8 +524,8 @@ end
     bankfull_depth::Vector{T} | "m"                         # bankfull depth
     zb::Vector{T} | "m"                                     # river bed elevation
     froude_limit::Bool | "-" | 0 | "none" | "none"          # if true a check is performed if froude number > 1.0 (algorithm is modified)
-    reservoir_index::Vector{Int} | "-"                      # river cell index with a reservoir (each index of reservoir_index maps to reservoir i in reservoir field)
-    lake_index::Vector{Int} | "-"                           # river cell index with a lake (each index of lake_index maps to lake i in lake field)
+    reservoir_index::Vector{Int} | "-" | 0                  # river cell index with a reservoir (each index of reservoir_index maps to reservoir i in reservoir field)
+    lake_index::Vector{Int} | "-" | 0                       # river cell index with a lake (each index of lake_index maps to lake i in lake field)
     waterbody::Vector{Bool} | "-"                           # water body cells (reservoir or lake)
     reservoir::R | "-" | 0                                  # Reservoir model struct of arrays
     lake::L | "-" | 0                                       # Lake model struct of arrays
