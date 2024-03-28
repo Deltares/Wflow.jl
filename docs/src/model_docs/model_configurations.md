@@ -7,7 +7,7 @@ that have the [SBM](@ref vert_sbm) vertical concept in common, but can have diff
 lateral concepts that control how water is routed for example over the land or river domain.
 The soil part of SBM is largely based on the Topog\_SBM model but has had considerable
 changes over time. Topog\_SBM is specifically designed to simulate fast runoff processes in
-small catchments while wflow\_sbm model can be applied more widely. The main differences are
+small catchments while the wflow\_sbm model can be applied more widely. The main differences are
 for the vertical concept SBM of wflow\_sbm:
 
 - The unsaturated zone can be split-up in different layers
@@ -125,12 +125,12 @@ model](@ref local_inertial).
 
 ## [wflow\_hbv](@id config_hbv)
 The Hydrologiska Byrans Vattenbalansavdelning (HBV) model was introduced back in 1972 by the
-Swedisch Meteological and Hydrological Institute (SMHI).  The HBV model is mainly used for
+Swedish Meteological and Hydrological Institute (SMHI).  The HBV model is mainly used for
 runoff simulation and hydrological forecasting. The model is particularly useful for
 catchments where snow fall and snow melt are dominant factors, but application of the model
 is by no means restricted to these type of catchments.
 
-The model is based on the HBV-96 model. However, the hydrological routing represent in HBV
+The model is based on the HBV-96 model. However, the hydrological routing represented in HBV
 by a triangular function controlled by the MAXBAS parameter has been removed. Instead, the
 kinematic wave function is used to route the water downstream. All runoff that is generated
 in a cell in one of the HBV reservoirs is added to the kinematic wave reservoir at the end
