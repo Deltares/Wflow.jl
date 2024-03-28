@@ -33,20 +33,18 @@ end
 
 @testset "model information functions" begin
     @test request((fn = "get_component_name",)) == Dict("component_name" => "sbm")
-    @test request((fn = "get_input_item_count",)) == Dict("input_item_count" => 181)
-    @test request((fn = "get_output_item_count",)) == Dict("output_item_count" => 181)
-    @test request((fn = "get_input_var_names",))["input_var_names"][[1, 5, 151, 175]] == [
+    @test request((fn = "get_input_item_count",)) == Dict("input_item_count" => 192)
+    @test request((fn = "get_output_item_count",)) == Dict("output_item_count" => 192)
+    to_check = [
         "vertical.nlayers",
         "vertical.θᵣ",
         "lateral.river.q",
         "lateral.river.reservoir.outflow",
     ]
-    @test request((fn = "get_output_var_names",))["output_var_names"][[1, 5, 151, 175]] == [
-        "vertical.nlayers",
-        "vertical.θᵣ",
-        "lateral.river.q",
-        "lateral.river.reservoir.outflow",
-    ]
+    retrieved_vars = request((fn = "get_input_var_names",))["input_var_names"]
+    @test all(x -> x in retrieved_vars, to_check)
+    retrieved_vars = request((fn = "get_output_var_names",))["output_var_names"]
+    @test all(x -> x in retrieved_vars, to_check)
 end
 
 zi_size = 0

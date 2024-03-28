@@ -45,48 +45,6 @@ lateral.river.lake => struct NaturalLake{T} # optional
 lateral.river.reservoir => struct SimpleReservoir{T} # optional
 ```
 
-### SBM + Local inertial river and floodplain
-By default the model type `sbm` uses the kinematic wave approach for river flow. There is
-also the option to use the local inertial model for river flow with an optional 1D
-floodplain schematization (routing is done separately for the river channel and floodplain),
-by providing the following in the TOML file:
-
-```toml
-[model]
-river_routing = "local-inertial"    # optional, default is "kinematic-wave"
-floodplain_1d = true                # optional, default is false
-```
-
-Only the mapping for the river component changes, as shown below. For an explanation about
-the type parameters between curly braces after the `struct` name see the section on the model
-parameters.
-
-```julia
-lateral.river => struct ShallowWaterRiver{T,R,L}
-```
-
-### SBM + Local inertial river (1D) and land (2D)
-By default the model type `sbm` uses the kinematic wave approach for river and overland
-flow. There is also the option to use the local inertial model for 1D river and 2D overland
-flow, by providing the following in the TOML file:
-
-```toml
-[model]
-river_routing = "local-inertial"
-land_routing = "local-inertial"
-```
-The mapping for the river and land component changes, as shown below. For an explanation
-about the type parameters between curly braces after the `struct` name see the section on
-the model parameters.
-
-```julia
-lateral.river => struct ShallowWaterRiver{T,R,L}
-lateral.land => struct ShallowWaterLand{T}
-```
-
-The local inertial approach is described in more detail in the section [Local inertial
-model](@ref local_inertial).
-
 ### SBM + Groundwater flow
 For river and overland flow the kinematic wave approach over a D8 network is used for this
 wflow\_sbm model. For the subsurface domain, an unconfined aquifer with groundwater flow in
@@ -122,6 +80,48 @@ lateral.river => struct SurfaceFlow{T,R,L}
 lateral.river.lake => struct NaturalLake{T} # optional
 lateral.river.reservoir => struct SimpleReservoir{T} # optional
 ```
+
+### Local inertial river and floodplain + `sbm` and `sbm_gwf` model types
+By default the model types `sbm` and `sbm_gwf` uses the kinematic wave approach for river
+flow. There is also the option to use the local inertial model for river flow with an
+optional 1D floodplain schematization (routing is done separately for the river channel and
+floodplain), by providing the following in the TOML file:
+
+```toml
+[model]
+river_routing = "local-inertial"    # optional, default is "kinematic-wave"
+floodplain_1d = true                # optional, default is false
+```
+
+Only the mapping for the river component changes, as shown below. For an explanation about
+the type parameters between curly braces after the `struct` name see the section on the model
+parameters.
+
+```julia
+lateral.river => struct ShallowWaterRiver{T,R,L}
+```
+
+### Local inertial river (1D) and land (2D) + `sbm` and `sbm_gwf` model types
+By default the model types `sbm` and `sbm_gwf` uses the kinematic wave approach for river
+and overland flow. There is also the option to use the local inertial model for 1D river and
+2D overland flow, by providing the following in the TOML file:
+
+```toml
+[model]
+river_routing = "local-inertial"
+land_routing = "local-inertial"
+```
+The mapping for the river and land component changes, as shown below. For an explanation
+about the type parameters between curly braces after the `struct` name see the section on
+the model parameters.
+
+```julia
+lateral.river => struct ShallowWaterRiver{T,R,L}
+lateral.land => struct ShallowWaterLand{T}
+```
+
+The local inertial approach is described in more detail in the section [Local inertial
+model](@ref local_inertial).
 
 ## [wflow\_hbv](@id config_hbv)
 The Hydrologiska Byrans Vattenbalansavdelning (HBV) model was introduced back in 1972 by the
@@ -182,7 +182,7 @@ The kinematic wave function is used to route the water downstream. In a similar 
 HBV, all runoff that is generated in a cell in one of the FLEXTopo storages is added to the
 kinematic wave reservoir at the end of a timestep. There is no connection between the
 different vertical FLEXTopo cells within the model. The FLEXTopo model is implemented in a
-fully distributed way in the Wflow Julia framework.
+fully distributed way in the wflow Julia framework.
 
 In wflow\_flextopo, the user is free to determine the number of classes and which model
 components to include or exclude for each class, this is done in the TOML file. Currently,

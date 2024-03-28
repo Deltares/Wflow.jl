@@ -53,7 +53,7 @@ end
 function Clock(config, reader)
     nctimes = reader.dataset["time"][:]
 
-    # if the timestep is not given, use the difference between NetCDF time 1 and 2
+    # if the timestep is not given, use the difference between netCDF time 1 and 2
     timestepsecs = get(config, "timestepsecs", nothing)
     if timestepsecs === nothing
         timestepsecs = Dates.value(Second(nctimes[2] - nctimes[1]))
@@ -61,7 +61,7 @@ function Clock(config, reader)
     end
     Δt = Second(timestepsecs)
 
-    # if the config file does not have a start or endtime, follow the NetCDF times
+    # if the config file does not have a start or endtime, follow the netCDF times
     # and add them to the config
     starttime = get(config, "starttime", nothing)
     if starttime === nothing
@@ -237,16 +237,16 @@ function run(model::Model; close_files = true)
     end
     @info "Simulation duration: $(canonicalize(now() - runstart_time))"
 
-    # write output state NetCDF
+    # write output state netCDF
     if haskey(config, "state") && haskey(config.state, "path_output")
-        @info "Write output states to NetCDF file `$(model.writer.state_nc_path)`."
+        @info "Write output states to netCDF file `$(model.writer.state_nc_path)`."
     end
     write_netcdf_timestep(model, writer.state_dataset, writer.state_parameters)
 
     reset_clock!(model.clock, config)
 
     # option to support running function twice without re-initializing
-    # and thus opening the NetCDF files
+    # and thus opening the netCDF files
     if close_files
         Wflow.close_files(model, delete_output = false)
     end

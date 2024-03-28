@@ -20,14 +20,18 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 
         @testset "model information functions" begin
             @test BMI.get_component_name(model) == "sbm"
-            @test BMI.get_input_item_count(model) == 195
-            @test BMI.get_output_item_count(model) == 195
-            @test BMI.get_input_var_names(model)[[1, 5, 164, 189]] == [
+            @test BMI.get_input_item_count(model) == 206
+            @test BMI.get_output_item_count(model) == 206
+            to_check = [
                 "vertical.nlayers",
                 "vertical.θᵣ",
                 "lateral.river.q",
                 "lateral.river.reservoir.outflow",
             ]
+            retrieved_vars = BMI.get_input_var_names(model)
+            @test all(x -> x in retrieved_vars, to_check)
+            retrieved_vars = BMI.get_output_var_names(model)
+            @test all(x -> x in retrieved_vars, to_check)
         end
 
         @testset "variable information functions" begin
@@ -195,6 +199,7 @@ end
     @test satwaterdepth ≠ mean(model.vertical.satwaterdepth)
     @test_logs (
         :info,
-        "Write output states to NetCDF file `$(model.writer.state_nc_path)`.",
+        "Write output states to netCDF file `$(model.writer.state_nc_path)`.",
     ) Wflow.save_state(model)
+    @test !isopen(model.writer.state_dataset)
 end

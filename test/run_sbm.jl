@@ -398,9 +398,138 @@ model = Wflow.run_timestep(model)
     @test q[1622] ≈ 6.0304175689041315f-5
     @test q[43] ≈ 11.908657947106594f0
     @test q[501] ≈ 3.476572392254365f0
+    @test q[5808] ≈ 0.0022006393999208116f0
     h = model.lateral.river.h_av
     @test h[1622] ≈ 0.001812376379900435f0
     @test h[43] ≈ 0.4362704420867342f0
-    @test h[501] ≈ 0.05617496307967874f0
+    @test h[501] ≈ 0.05617496307967947f0
+    @test h[5808] ≈ 0.005901095907129176f0
+end
+
+# set boundary condition local inertial routing from NetCDF file
+config.input.lateral.river.riverlength_bc = "riverlength_bc"
+config.input.lateral.river.riverdepth_bc = "riverdepth_bc"
+model = Wflow.initialize_sbm_model(config)
+model = Wflow.run_timestep(model)
+model = Wflow.run_timestep(model)
+
+@testset "change boundary condition for local inertial routing (including floodplain)" begin
+    q = model.lateral.river.q_av
+    @test sum(q) ≈ 3901.9766352543033f0
+    @test q[1622] ≈ 6.0294584878708734f-5
+    @test q[43] ≈ 11.90865794710775f0
+    @test q[501] ≈ 3.4765718113668562f0
+    @test q[5808] ≈ 0.0597765722709849f0
+    h = model.lateral.river.h_av
+    @test h[1622] ≈ 0.0018122759422981363f0
+    @test h[43] ≈ 0.4362709200147433f0
+    @test h[501] ≈ 0.05617494119417713f0
+    @test h[5808] ≈ 2.0000006940603936f0
 end
 Wflow.close_files(model, delete_output = false)
+
+# test different ksat profiles
+@testset "ksat profiles (SBM)" begin
+    i = 100
+    tomlpath = joinpath(@__DIR__, "sbm_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.input.vertical.kv = "kv"
+    config.input.vertical.z_exp = Dict("value" => 400.0)
+    config.input.vertical.z_layered = Dict("value" => 400.0)
+
+    @testset "exponential profile" begin
+        model = Wflow.initialize_sbm_model(config)
+        @unpack vertical = model
+        z = vertical.zi[i]
+        kv_z = Wflow.hydraulic_conductivity_at_depth(vertical, z, i, 2, "exponential")
+        @test kv_z ≈ vertical.kvfrac[i][2] * vertical.kv₀[i] * exp(-vertical.f[i] * z)
+        @test vertical.z_exp == vertical.soilthickness
+        @test_throws ErrorException Wflow.kh_layered_profile(
+            vertical,
+            100.0,
+            i,
+            "exponential",
+        )
+        @test all(isnan.(vertical.z_layered))
+        @test all(isnan.(vertical.kv[i]))
+        @test all(vertical.nlayers_kv .== 0)
+    end
+
+    @testset "exponential constant profile" begin
+        config.input.vertical.ksat_profile = "exponential_constant"
+        model = Wflow.initialize_sbm_model(config)
+        @unpack vertical = model
+        z = vertical.zi[i]
+        kv_z =
+            Wflow.hydraulic_conductivity_at_depth(vertical, z, i, 2, "exponential_constant")
+        @test kv_z ≈ vertical.kvfrac[i][2] * vertical.kv₀[i] * exp(-vertical.f[i] * z)
+        kv_400 = Wflow.hydraulic_conductivity_at_depth(
+            vertical,
+            400.0,
+            i,
+            2,
+            "exponential_constant",
+        )
+        kv_1000 = Wflow.hydraulic_conductivity_at_depth(
+            vertical,
+            1000.0,
+            i,
+            3,
+            "exponential_constant",
+        )
+        @test kv_400 ≈ kv_1000
+        @test_throws ErrorException Wflow.kh_layered_profile(
+            vertical,
+            100.0,
+            i,
+            "exponential_constant",
+        )
+        @test all(isnan.(vertical.z_layered))
+        @test all(isnan.(vertical.kv[i]))
+        @test all(vertical.nlayers_kv .== 0)
+        @test all(vertical.z_exp .== 400.0)
+    end
+
+    @testset "layered profile" begin
+        config.input.vertical.ksat_profile = "layered"
+        model = Wflow.initialize_sbm_model(config)
+        @unpack vertical = model
+        z = vertical.zi[i]
+        @test Wflow.hydraulic_conductivity_at_depth(vertical, z, i, 2, "layered") ≈
+              vertical.kv[100][2]
+        @test Wflow.kh_layered_profile(vertical, 100.0, i, "layered") ≈ 47.508932674632355f0
+        @test vertical.nlayers_kv[i] == 4
+        @test vertical.z_layered == vertical.soilthickness
+        @test all(isnan.(vertical.z_exp))
+    end
+
+    @testset "layered exponential profile" begin
+        config.input.vertical.ksat_profile = "layered_exponential"
+        model = Wflow.initialize_sbm_model(config)
+        @unpack vertical = model
+        z = vertical.zi[i]
+        @test Wflow.hydraulic_conductivity_at_depth(
+            vertical,
+            z,
+            i,
+            2,
+            "layered_exponential",
+        ) ≈ vertical.kv[i][2]
+        @test vertical.nlayers_kv[i] == 2
+        @test Wflow.kh_layered_profile(vertical, 100.0, i, "layered_exponential") ≈
+              33.76026208801769f0
+        @test all(vertical.z_layered[1:10] .== 400.0)
+        @test all(isnan.(vertical.z_exp))
+    end
+
+    model = Wflow.run_timestep(model)
+    model = Wflow.run_timestep(model)
+    @testset "river flow layered exponential profile" begin
+        q = model.lateral.river.q_av
+        @test sum(q) ≈ 3120.252390324335f0
+        @test q[1622] ≈ 0.000548447582354063f0
+        @test q[43] ≈ 9.866079635688212f0
+    end
+
+    Wflow.close_files(model, delete_output = false)
+end

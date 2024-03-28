@@ -62,6 +62,8 @@ end
                 1697.05 * 1000.0,
                 1200.0 * 1000.0,
                 2443723.716252628,
+                1.0,
+                "exponential",
             ),
             (7.410313985168225e10, 1540.1496836278836, -0.0),
         ),
@@ -230,7 +232,7 @@ end
         sw_river.inwater[1] = 20.0
         h0 = mean(sw_river.h)
         Δt = Wflow.stable_timestep(sw_river)
-        Wflow.shallowwater_river_update(sw_river, network, Δt, nothing, 0.0, true)
+        Wflow.shallowwater_river_update(sw_river, network, Δt, 0.0, true)
         d = abs(h0 - mean(sw_river.h))
         if d <= ϵ
             break

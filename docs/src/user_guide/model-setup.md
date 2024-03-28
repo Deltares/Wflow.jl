@@ -97,26 +97,26 @@ flow](@ref) of the Model parameters section.
 
 The Model parameters section lists all the parameters per Model component and these Tables
 can also be used to check which parameters can be part of the output, see also [Output
-NetCDF section](@ref) and [Output CSV section](@ref).
+netCDF section](@ref) and [Output CSV section](@ref).
 
 Example models can be found in the [Example model section](@ref sample_data).
 
 ## hydroMT
 [hydroMT](https://github.com/Deltares/hydromt) is a Python package, developed by Deltares,
-to build and analysis hydro models. It provides a generic model api with attributes to
+to build and analyze hydro models. It provides a generic model api with attributes to
 access the model schematization, (dynamic) forcing data, results and states.
 
-For the following Wflow models:
+For the following wflow models:
   - wflow\_sbm + kinematic wave
   - wflow_sediment
 
-the Wflow plugin [hydroMT-wflow](https://github.com/Deltares/hydromt_wflow) of hydroMT can
-be used to build and analyse these Wflow model types in an automated way.
+the wflow plugin [hydroMT-wflow](https://github.com/Deltares/hydromt_wflow) of hydroMT can
+be used to build and analyze these wflow model types in an automated way.
 
-To learn more about the Wflow plugin of this Python package, we refer to the [hydroMT-wflow
+To learn more about the wflow plugin of this Python package, we refer to the [hydroMT-wflow
 documentation](https://deltares.github.io/hydromt_wflow/latest/index.html).
 
-To inspect or modify (for example in QGIS) the netCDF static data of these Wflow models it
+To inspect or modify (for example in QGIS) the netCDF static data of these wflow models it
 is convenient to export the maps to a raster format. This can be done as part of the
 hydroMT-wflow plugin, see also the following [example]
 (https://deltares.github.io/hydromt_wflow/latest/examples/examples/convert_staticmaps_to_mapstack.html).

@@ -9,7 +9,7 @@ function initialize_sbm_model(config::Config)
     model_type = config.model.type::String
     @info "Initialize model variables for model type `$model_type`."
 
-    # unpack the paths to the NetCDF files
+    # unpack the paths to the netCDF files
     static_path = input_path(config, config.input.path_static)
 
     reader = prepare_reader(config)
@@ -112,7 +112,8 @@ function initialize_sbm_model(config::Config)
 
     # check if lateral subsurface flow component is defined for the SBM model, when coupled
     # to another groundwater model, this component is not defined in the TOML file.
-    if haskey(config.input.lateral, "subsurface")
+    subsurface_flow = haskey(config.input.lateral, "subsurface")
+    if subsurface_flow
         khfrac = ncread(
             nc,
             config,
@@ -127,11 +128,15 @@ function initialize_sbm_model(config::Config)
         f = sbm.f .* 1000.0
         zi = sbm.zi .* 0.001
         soilthickness = sbm.soilthickness .* 0.001
+        z_exp = sbm.z_exp .* 0.001
 
         ssf = LateralSSF{Float}(
             kh₀ = kh₀,
             f = f,
+            kh = fill(mv, n),
+            khfrac = khfrac,
             zi = zi,
+            z_exp = z_exp,
             soilthickness = soilthickness,
             θₛ = sbm.θₛ,
             θᵣ = sbm.θᵣ,
@@ -141,12 +146,21 @@ function initialize_sbm_model(config::Config)
             dw = dw,
             exfiltwater = fill(mv, n),
             recharge = fill(mv, n),
-            ssf = ((kh₀ .* βₗ) ./ f) .* (exp.(-f .* zi) - exp.(-f .* soilthickness)) .* dw,
+            ssf = fill(mv, n),
             ssfin = fill(mv, n),
-            ssfmax = ((kh₀ .* βₗ) ./ f) .* (1.0 .- exp.(-f .* soilthickness)),
+            ssfmax = fill(mv, n),
             to_river = zeros(n),
             volume = (sbm.θₛ .- sbm.θᵣ) .* (soilthickness .- zi) .* (xl .* yl),
         )
+        # update variables `ssf`, `ssfmax` and `kh` (layered profile) based on ksat_profile
+        ksat_profile = get(config.input.vertical, "ksat_profile", "exponential")::String
+        if ksat_profile == "exponential"
+            initialize_lateralssf_exp!(ssf::LateralSSF)
+        elseif ksat_profile == "exponential_constant"
+            initialize_lateralssf_exp_const!(ssf::LateralSSF)
+        elseif ksat_profile == "layered" || ksat_profile == "layered_exponential"
+            initialize_lateralssf_layered!(ssf::LateralSSF, sbm::SBM, ksat_profile)
+        end
     else
         # when the SBM model is coupled (BMI) to a groundwater model, the following
         # variables are expected to be exchanged from the groundwater model.
@@ -260,16 +274,23 @@ function initialize_sbm_model(config::Config)
     # setup subdomains for the land and river kinematic wave domain, if nthreads = 1
     # subdomain is equal to the complete domain
     toposort = topological_sort_by_dfs(graph)
-    index_pit_land = findall(x -> x == 5, ldd)
-    streamorder = stream_order(graph, toposort)
-    min_streamorder_land = get(config.model, "min_streamorder_land", 5)
-    subbas_order, indices_subbas, topo_subbas = kinwave_set_subdomains(
-        graph,
-        toposort,
-        index_pit_land,
-        streamorder,
-        min_streamorder_land,
-    )
+    if land_routing == "kinematic-wave" ||
+       river_routing == "kinematic-wave" ||
+       subsurface_flow
+        streamorder = stream_order(graph, toposort)
+    end
+    if land_routing == "kinematic-wave" || subsurface_flow
+        toposort = topological_sort_by_dfs(graph)
+        index_pit_land = findall(x -> x == 5, ldd)
+        min_streamorder_land = get(config.model, "min_streamorder_land", 5)
+        subbas_order, indices_subbas, topo_subbas = kinwave_set_subdomains(
+            graph,
+            toposort,
+            index_pit_land,
+            streamorder,
+            min_streamorder_land,
+        )
+    end
     if river_routing == "kinematic-wave"
         min_streamorder_river = get(config.model, "min_streamorder_river", 6)
         toposort_riv = topological_sort_by_dfs(graph_riv)
@@ -286,7 +307,7 @@ function initialize_sbm_model(config::Config)
     if nthreads() > 1
         if river_routing == "kinematic-wave"
             @info "Parallel execution of kinematic wave" min_streamorder_land min_streamorder_river
-        else
+        elseif land_routing == "kinematic-wave" || subsurface_flow
             @info "Parallel execution of kinematic wave" min_streamorder_land
         end
     end
@@ -399,6 +420,7 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
 
     @unpack lateral, vertical, network, clock, config = model
     do_water_demand = haskey(config.model, "water_demand")
+    ksat_profile = get(config.input.vertical, "ksat_profile", "exponential")::String
 
     model = update_until_recharge(model)
     # exchange of recharge between vertical sbm concept and subsurface flow domain
@@ -410,7 +432,13 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
     lateral.subsurface.recharge .*= lateral.subsurface.dw
     lateral.subsurface.zi .= vertical.zi ./ 1000.0
     # update lateral subsurface flow domain (kinematic wave)
-    update(lateral.subsurface, network.land, network.frac_toriver)
+    if (ksat_profile == "layered") || (ksat_profile == "layered_exponential")
+        for i in eachindex(lateral.subsurface.kh)
+            lateral.subsurface.kh[i] =
+                kh_layered_profile(vertical, lateral.subsurface.khfrac[i], i, ksat_profile)
+        end
+    end
+    update(lateral.subsurface, network.land, network.frac_toriver, ksat_profile)
     model = update_after_subsurfaceflow(model)
     model = update_total_water_storage(model)
 end
@@ -503,7 +531,9 @@ function update_total_water_storage(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,
     return model
 end
 
-function set_states(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
+function set_states(
+    model::Model{N,L,V,R,W,T},
+) where {N,L,V,R,W,T<:Union{SbmModel,SbmGwfModel}}
     @unpack lateral, vertical, network, config = model
 
     reinit = get(config.model, "reinit", true)::Bool
@@ -518,12 +548,14 @@ function set_states(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
         nriv = length(network.river.indices)
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
-        @warn string(
-            "The unit of `ssf` (lateral subsurface flow) is now m3 d-1. Please update your",
-            " input state file if it was produced with a Wflow version up to v0.5.2.",
-        )
+        if T <: SbmModel
+            @warn string(
+                "The unit of `ssf` (lateral subsurface flow) is now m3 d-1. Please update your",
+                " input state file if it was produced with a Wflow version up to v0.5.2.",
+            )
+        end
         set_states(instate_path, model; type = Float, dimname = :layer)
-        # update zi for vertical sbm and kinematic wave volume for river and land domain
+        # update zi for vertical sbm
         zi =
             max.(
                 0.0,
