@@ -6,7 +6,7 @@
 
 If the air temperature, ``T_a``, is below a user-defined threshold `tt` (``\degree``C)
 precipitation occurs as snowfall, whereas it occurs as rainfall if ``Ta ≥ tt``. A another
-parameter `tti` defines how precipitation can occur partly as rain of snowfall (see the
+parameter `tti` defines how precipitation can occur partly as rain or snowfall (see the
 figure below). If precipitation occurs as snowfall, it is added to the dry snow component
 within the snow pack. Otherwise it ends up in the free water reservoir, which represents the
 liquid water content of the snow pack. Between the two components of the snow pack,
