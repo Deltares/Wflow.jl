@@ -94,7 +94,8 @@ model = Wflow.run_timestep(model)
     sbm = model.vertical
     @test sbm.θₛ[50063] ≈ 0.48755401372909546f0
     @test sbm.θᵣ[50063] ≈ 0.15943120419979095f0
-    @test mean(sbm.runoff) ≈ 0.23657364759232993f0
+    @test mean(sbm.net_runoff) ≈ 0.23657364759232993f0
+    @test mean(sbm.runoff) ≈ 0.2369017651524159f0
     @test mean(sbm.soilevap) ≈ 0.015275916086112940
     @test mean(sbm.actevap) ≈ 0.29716147685525746f0
     @test mean(sbm.actinfilt) ≈ 0.08829600284076534f0
