@@ -425,7 +425,7 @@ the figure below where the blue line represents the ``K_{sat}`` value.
 
 ### Infiltration
 
-The water available for infiltration is taken as the rainfall including melted water.
+The water available for infiltration is taken as the rainfall including meltwater.
 Infiltration is determined separately for the compacted and non-compacted areas, as these
 have different infiltration capacities. Naturally, only the water that can be stored in the
 soil can infiltrate. If not all water can infiltrate, this is added as excess water to the
