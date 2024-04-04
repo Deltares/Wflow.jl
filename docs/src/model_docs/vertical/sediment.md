@@ -31,18 +31,18 @@ rainerosmethod = "answers" # Rainfall erosion equation: ["answers", "eurosem"]
 ### Rainfall erosion
 In wflow\_sediment, rainfall erosion can both be modelled using EUROSEM or ANSWERS equation.
 The main difference between the models is that EUROSEM uses a more physics-based approach
-using the kinetic energy of the rain drops impacting the soil (Morgan et al, 1998), while
+based on the kinetic energy of the rain drops impacting the soil (Morgan et al, 1998), while
 ANSWERS is more empirical and uses parameters from the USLE model (Beasley et al, 1991).
 
 In EUROSEM, rainfall erosion is modelled according to rainfall intensity and its kinetic
-energy while it reaches the soil according to equations developed by Brandt (1990). As the
+energy when it reaches the soil according to equations developed by Brandt (1990). As the
 intensity of the rain kinetic energy depends on the length of the fall, rainfall intercepted
 by vegetation will then be reduced compared to direct throughfall. The kinetic energy of
 direct throughfall is estimated by (Morgan et al, 1998):
 ```math
    KE_{direct} = 8.95 + 8.44\,log_{10}\,R_{i}
 ```
-where ``KE_{direct}`` is kinetic energy of direct throughfall (J m``^{-2}`` mm``^{-1}``) and
+where ``KE_{direct}`` is the kinetic energy of direct throughfall (J m``^{-2}`` mm``^{-1}``) and
 ``R_{i}`` is rainfall intensity (mm h``^{-1}``). If the rainfall is intercepted by
 vegetation and falls as leaf drainage, its kinetic energy is then reduced according to
 (Brandt, 1990):

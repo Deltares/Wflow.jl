@@ -524,8 +524,8 @@ end
     bankfull_depth::Vector{T} | "m"                         # bankfull depth
     zb::Vector{T} | "m"                                     # river bed elevation
     froude_limit::Bool | "-" | 0 | "none" | "none"          # if true a check is performed if froude number > 1.0 (algorithm is modified)
-    reservoir_index::Vector{Int} | "-"                      # river cell index with a reservoir (each index of reservoir_index maps to reservoir i in reservoir field)
-    lake_index::Vector{Int} | "-"                           # river cell index with a lake (each index of lake_index maps to lake i in lake field)
+    reservoir_index::Vector{Int} | "-" | 0                  # river cell index with a reservoir (each index of reservoir_index maps to reservoir i in reservoir field)
+    lake_index::Vector{Int} | "-" | 0                       # river cell index with a lake (each index of lake_index maps to lake i in lake field)
     waterbody::Vector{Bool} | "-"                           # water body cells (reservoir or lake)
     reservoir::R | "-" | 0                                  # Reservoir model struct of arrays
     lake::L | "-" | 0                                       # Lake model struct of arrays
@@ -556,14 +556,37 @@ function initialize_shallowwater_river(
     # Edge 3 => 2
     # Edge 4 => 9
     # ⋮ )
-    riverlength_bc = get(config.model, "riverlength_bc", 1.0e04)::Float64 # river length at boundary point (ghost point)
     alpha = get(config.model, "inertial_flow_alpha", 0.7)::Float64 # stability coefficient for model time step (0.2-0.7)
     h_thresh = get(config.model, "h_thresh", 1.0e-03)::Float64 # depth threshold for flow at link
     froude_limit = get(config.model, "froude_limit", true)::Bool # limit flow to subcritical according to Froude number
     floodplain_1d = floodplain
 
-    @info "Local inertial approach is used for river flow." alpha h_thresh froude_limit riverlength_bc floodplain_1d
-
+    @info "Local inertial approach is used for river flow." alpha h_thresh froude_limit floodplain_1d
+    @warn string(
+        "Providing the boundary condition `riverlength_bc` as part of the `[model]` setting ",
+        "in the TOML file has been deprecated as of Wflow v0.8.0.\n The boundary condition should ",
+        "be provided as part of the file `$(config.input.path_static)`.",
+    )
+    # The following boundary conditions can be set at ghost nodes, downstream of river
+    # outlets (pits): river length and river depth
+    index_pit = findall(x -> x == 5, ldd)
+    inds_pit = inds[index_pit]
+    riverlength_bc = ncread(
+        nc,
+        config,
+        "lateral.river.riverlength_bc";
+        sel = inds_pit,
+        defaults = 1.0e04,
+        type = Float,
+    )
+    riverdepth_bc = ncread(
+        nc,
+        config,
+        "lateral.river.riverdepth_bc";
+        sel = inds_pit,
+        defaults = 0.0,
+        type = Float,
+    )
     bankfull_elevation_2d = ncread(
         nc,
         config,
@@ -589,13 +612,15 @@ function initialize_shallowwater_river(
         ncread(nc, config, "lateral.river.n"; sel = inds, defaults = 0.036, type = Float)
 
     n = length(inds)
+
+    # set river depth h to zero (including reservoir and lake locations)
+    h = fill(0.0, n)
+
     # set ghost points for boundary condition (downstream river outlet): river width, bed
-    # elevation, manning n is copied from the upstream cell, river depth h is set at 0.0
-    # (fixed). river length at boundary point is by default 1.0e4 m (riverlength_bc).
-    index_pit = findall(x -> x == 5, ldd)
-    npits = length(index_pit)
+    # elevation, manning n is copied from the upstream cell.
     add_vertex_edge_graph!(graph, index_pit)
-    append!(dl, fill(riverlength_bc, npits))
+    append!(dl, riverlength_bc)
+    append!(h, riverdepth_bc)
     append!(zb, zb[index_pit])
     append!(width, width[index_pit])
     append!(n_river, n_river[index_pit])
@@ -639,10 +664,7 @@ function initialize_shallowwater_river(
         mannings_n_sq[i] = mannings_n * mannings_n
     end
 
-    # set depth h to zero (including reservoir and lake locations)
-    h = fill(0.0, n + length(index_pit))
     q_av = zeros(_ne)
-
     waterbody = !=(0).(reservoir_index .+ lake_index)
     active_index = findall(x -> x == 0, waterbody)
 

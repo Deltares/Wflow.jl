@@ -10,7 +10,7 @@ As mentioned before, the input data can be classified into two types:
 
 ## Meteorological data
 
-Meteorological data is provided as a single NetCDF file, with several variables containing
+Meteorological data is provided as a single netCDF file, with several variables containing
 the forcing data for precipitation, temperature and potential evaporation. The code snippet
 below shows the contents of the example file (downloaded [here](@ref wflow_sbm_data)), and
 displaying the content with `NCDatasets` in Julia. As can be seen, each forcing variable
@@ -122,6 +122,6 @@ Land slope | `Slope` | m m$^{-1}$
 River slope | `RiverSlope` | m m$^{-1}$
 
 As mentioned before, the model parameters can also be defined as spatial maps. They can be
-included in the same NetCDF file, as long as their variable names are correctly mapped in
+included in the same netCDF file, as long as their variable names are correctly mapped in
 the TOML settings file. See the section on [example models](@ref sample_data) on how to
 use this functionality.

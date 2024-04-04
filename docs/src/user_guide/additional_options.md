@@ -147,10 +147,10 @@ and land (2D)](@ref), both part of wflow\_sbm, can also run on multiple threads.
 threading functionality for the kinematic wave may also be useful for models that make
 (partly) use of this routing approach as the [wflow_hbv](@ref config_hbv) model and
 the wflow\_sbm model [SBM + Groundwater flow](@ref). The multi-threading functionality in
-Wflow is considered experimental, see also the following
+wflow is considered experimental, see also the following
 [issue](https://github.com/Deltares/Wflow.jl/issues/139), where an error was not thrown
-running code multi-threaded. Because of this we advise to start with running a Wflow model
-single-threaded (for example during the testing phase of setting up an new Wflow model).
+running code multi-threaded. Because of this we advise to start with running a wflow model
+single-threaded (for example during the testing phase of setting up an new wflow model).
 
 For information on how to start Julia with multiple threads we refer to [How to start Julia
 with multiple
@@ -190,14 +190,14 @@ in the [Julia programming language](https://julialang.org/), makes use of the fo
 [Julia specification](https://github.com/Deltares/BasicModelInterface.jl), based on BMI 2.0
 version.
 
-For the BMI implementation of Wflow all grids are defined as [unstructured
+For the BMI implementation of wflow all grids are defined as [unstructured
 grids](https://bmi-spec.readthedocs.io/en/latest/model_grids.html#unstructured-grids),
 including the special cases `scalar` and `points`. While the input (forcing and model
 parameters) is structured (uniform rectilinear), internally wflow works with one dimensional
 arrays based on the active grid cells of the 2D model domain.
 
 ### Configuration
-The variables that Wflow can exchange through BMI are based on the different model
+The variables that wflow can exchange through BMI are based on the different model
 components and these components should be listed under the `API` section of the TOML
 configuration file of the model type. Below an example of this `API` section, that lists the
 `vertical` component and different `lateral` components:
@@ -220,7 +220,7 @@ Wflow.BMI.get_input_var_names
 ```
 
 Variables with a third dimension, for example `layer` as part of the vertical `SBM` concept,
-are exposed as two-dimensional grids through the Wflow BMI implementation. For these
+are exposed as two-dimensional grids through the wflow BMI implementation. For these
 variables the index of this third dimension is required, by adding `[k]` to the variable
 name (`k` refers to the index of the third dimension). For example, the variable
 `vertical.vwc[1]` refers to the first soil layer of the vertical `SBM` concept.
@@ -231,7 +231,7 @@ MODFLOW) it is possible to run:
 - wflow\_sbm in parts from the BMI, and
 - to switch off the lateral subsurface flow component of wflow\_sbm.
 
-The lateral subsurface component of wflow\_sbm is not initialized by Wflow when the
+The lateral subsurface component of wflow\_sbm is not initialized by wflow when the
 `[input.lateral.subsurface]` part of the TOML file is not included. Then from the BMI it is
 possible to run first the recharge part of SBM:
 
@@ -262,18 +262,18 @@ world.
 
 This can be done without a model adapter that provides the interface between Delft-FEWS and
 an external model (or module). This is possible because time information in the TOML
-configuration file is optional and Delft-FEWS can import and export NetCDF files. When time
+configuration file is optional and Delft-FEWS can import and export netCDF files. When time
 information is left out from the TOML configuration file, the `starttime`, `endtime` and
-`timestepsecs` (timestep) of the run is extracted from the NetCDF forcing file by Wflow.
+`timestepsecs` (timestep) of the run is extracted from the netCDF forcing file by wflow.
 
-To indicate that a Wflow model runs from Delft-FEWS, the following setting needs to be
+To indicate that a wflow model runs from Delft-FEWS, the following setting needs to be
 specified in the main section of the TOML configuration file:
 
 ```toml
 fews_run = true  # optional, default value is false
 ```
 
-This ensures that Wflow offsets the time handling, to meet the expectations of Delft-FEWS.
+This ensures that wflow offsets the time handling, to meet the expectations of Delft-FEWS.
 
 It also uses a different format for the log file such that each log message takes up only
 one line. That meets the [General Adapter
@@ -290,8 +290,8 @@ expectations, which then can get parsed with these Delft-FEWS log parsing settin
 </logFile>
 ```
 
-## [Run Wflow as a ZMQ Server]
-It is possible to run Wflow as a ZMQ Server, for example for the coupling to the
-[OpenDA](https://openda.org/) software for data-assimilation. The code for the Wflow ZMQ
+## [Run wflow as a ZMQ Server]
+It is possible to run wflow as a ZMQ Server, for example for the coupling to the
+[OpenDA](https://openda.org/) software for data-assimilation. The code for the wflow ZMQ
 Server is not part of the Wflow.jl package, and is located
 [here](https://github.com/Deltares/Wflow.jl/tree/zmq_server/server).
