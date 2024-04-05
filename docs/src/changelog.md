@@ -22,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `to_river` variable from overland flow and lateral subsurface flow was not added to the
   inflow of these locations.
 - Close netCDF `NCDataset` with state variables in extended BMI function `save_state`.
+- `BMI.update_until` could throw an `InexactError: Int64` caused by a not whole number. This
+  is fixed by applying `round()`.
 
 ### Changed
 - Stop exposing scalar variables through BMI. The `BMI.get_value_ptr` function was
