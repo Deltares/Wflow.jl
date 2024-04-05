@@ -66,7 +66,8 @@ end
 function BMI.update_until(model::Model, time::Float64)
     @unpack clock, network, config = model
     curtime = BMI.get_current_time(model)
-    n = Int(max(0, (time - curtime) / model.clock.Δt.value))
+    steps = round((time - curtime) / model.clock.Δt.value)
+    n = Int(max(0, steps))
     for _ = 1:n
         model = run_timestep(model)
     end
