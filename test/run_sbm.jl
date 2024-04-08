@@ -77,9 +77,12 @@ end
 
     @test sbm.θₛ[50063] ≈ 0.48755401372909546f0
     @test sbm.θᵣ[50063] ≈ 0.15943120419979095f0
-    @test sbm.runoff[50063] == 0.0
-    @test sbm.soilevap[50063] == 0.0
+    @test mean(sbm.runoff) ≈ 0.0416027711985709f0
+    @test mean(sbm.soilevap) ≈ 0.00616346765710303f0
+    @test mean(sbm.actevap) ≈ 0.5393128846181061f0
+    @test mean(sbm.actinfilt) ≈ 1.4860556930083888f0
     @test sbm.snow[5] ≈ 3.592840840467347f0
+    @test mean(sbm.snow) ≈ 0.035197394854698104f0
     @test sbm.total_storage[50063] ≈ 559.70849973344f0
     @test sbm.total_storage[429] ≈ 597.4578475404879f0 # river cell
 end
@@ -91,9 +94,13 @@ model = Wflow.run_timestep(model)
     sbm = model.vertical
     @test sbm.θₛ[50063] ≈ 0.48755401372909546f0
     @test sbm.θᵣ[50063] ≈ 0.15943120419979095f0
-    @test sbm.runoff[50063] == 0.0
-    @test sbm.soilevap[50063] ≈ 0.006358004660566856f0
+    @test mean(sbm.net_runoff) ≈ 0.23657364759232993f0
+    @test mean(sbm.runoff) ≈ 0.2369017651524159f0
+    @test mean(sbm.soilevap) ≈ 0.015275916086112940
+    @test mean(sbm.actevap) ≈ 0.29716147685525746f0
+    @test mean(sbm.actinfilt) ≈ 0.08829600284076534f0
     @test sbm.snow[5] ≈ 3.667748983774868f0
+    @test mean(sbm.snow) ≈ 0.03209680141455693f0
     @test sbm.total_storage[50063] ≈ 559.7935411649405f0
     @test sbm.total_storage[429] ≈ 617.0062092646873f0 # river cell
 end
