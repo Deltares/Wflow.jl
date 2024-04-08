@@ -136,7 +136,7 @@
     excesswatersoil::Vector{T}
     # Excess water for compacted fraction [mm Δt⁻¹]
     excesswaterpath::Vector{T}
-    # Total surface runoff from infiltration and saturation excess and actual open water evaporation [mm Δt⁻¹]
+    # Total surface runoff from infiltration and saturation excess (excluding actual open water evaporation) [mm Δt⁻¹]
     runoff::Vector{T}
     # Net surface runoff (surface runoff - actual open water evaporation) [mm Δt⁻¹]
     net_runoff::Vector{T}
