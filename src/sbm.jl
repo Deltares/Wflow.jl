@@ -49,8 +49,8 @@
     cap_hmax::Vector{T} | "mm"
     # Coefficient [-] controlling capillary rise
     cap_n::Vector{T} | "-"
-    # Multiplication factor [-] to correct
-    et_reftopot::Vector{T} | "-"
+    # Crop coefficient Kc [-]
+    kc::Vector{T} | "-"
     # Brooks-Corey power coefﬁcient [-] for each soil layer
     c::Vector{SVector{N,T}} | "-"
     # Stemflow [mm Δt⁻¹]
@@ -84,10 +84,10 @@
     precipitation::Vector{T}
     # Temperature [ᵒC]
     temperature::Vector{T} | "°C"
-    # Potential evapotranspiration [mm Δt⁻¹]
+    # Potential reference evapotranspiration [mm Δt⁻¹]
     potential_evaporation::Vector{T}
-    # Potential transpiration, open water, river and soil evaporation (after subtracting interception from potential_evaporation)
-    pottrans_soil::Vector{T}
+    # Potential transpiration (after subtracting interception from potential_evaporation)
+    pottrans::Vector{T}
     # Transpiration [mm Δt⁻¹]
     transpiration::Vector{T}
     # Actual evaporation from unsaturated store [mm Δt⁻¹]
@@ -136,8 +136,10 @@
     excesswatersoil::Vector{T}
     # Excess water for compacted fraction [mm Δt⁻¹]
     excesswaterpath::Vector{T}
-    # Total surface runoff from infiltration and saturation excess [mm Δt⁻¹]
+    # Total surface runoff from infiltration and saturation excess (excluding actual open water evaporation) [mm Δt⁻¹]
     runoff::Vector{T}
+    # Net surface runoff (surface runoff - actual open water evaporation) [mm Δt⁻¹]
+    net_runoff::Vector{T}
     # Volumetric water content [-] per soil layer (including θᵣ and saturated zone)
     vwc::Vector{SVector{N,T}} | "-"
     # Volumetric water content [%] per soil layer (including θᵣ and saturated zone)
@@ -467,8 +469,21 @@ function initialize_sbm(nc, config, riverfrac, inds)
     cap_hmax =
         ncread(nc, config, "vertical.cap_hmax"; sel = inds, defaults = 2000.0, type = Float)
     cap_n = ncread(nc, config, "vertical.cap_n"; sel = inds, defaults = 2.0, type = Float)
-    et_reftopot =
-        ncread(nc, config, "vertical.et_reftopot"; sel = inds, defaults = 1.0, type = Float)
+    kc = ncread(
+        nc,
+        config,
+        "vertical.kc";
+        alias = "vertical.et_reftopot",
+        sel = inds,
+        defaults = 1.0,
+        type = Float,
+    )
+    if haskey(config.input.vertical, "et_reftopot")
+        @warn string(
+            "The `et_reftopot` key in `[input.vertical]` is now called ",
+            "`kc`. Please update your TOML file.",
+        )
+    end
 
     cmax, e_r, canopygapfraction, sl, swood, kext = initialize_canopy(nc, config, inds)
 
@@ -589,7 +604,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         rootdistpar = rootdistpar,
         cap_hmax = cap_hmax,
         cap_n = cap_n,
-        et_reftopot = et_reftopot,
+        kc = kc,
         c = svectorscopy(c, Val{maxlayers}()),
         stemflow = fill(mv, n),
         throughfall = fill(mv, n),
@@ -607,7 +622,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         precipitation = fill(mv, n),
         temperature = fill(mv, n),
         potential_evaporation = fill(mv, n),
-        pottrans_soil = fill(mv, n),
+        pottrans = fill(mv, n),
         transpiration = fill(mv, n),
         ae_ustore = fill(mv, n),
         interception = fill(mv, n),
@@ -632,6 +647,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         excesswatersoil = fill(mv, n),
         excesswaterpath = fill(mv, n),
         runoff = fill(mv, n),
+        net_runoff = fill(mv, n),
         net_runoff_river = fill(mv, n),
         vwc = svectorscopy(vwc, Val{maxlayers}()),
         vwc_perc = svectorscopy(vwc_perc, Val{maxlayers}()),
@@ -685,22 +701,19 @@ function update_until_snow(sbm::SBM, config)
         if do_lai
             cmax = sbm.sl[i] * sbm.leaf_area_index[i] + sbm.swood[i]
             canopygapfraction = exp(-sbm.kext[i] * sbm.leaf_area_index[i])
-            ewet =
-                (1.0 - exp(-sbm.kext[i] * sbm.leaf_area_index[i])) *
-                sbm.potential_evaporation[i]
+            canopyfraction = 1.0 - canopygapfraction
+            ewet = canopyfraction * sbm.potential_evaporation[i] * sbm.kc[i]
             e_r =
                 sbm.precipitation[i] > 0.0 ?
-                min(0.25, ewet / max(0.0001, sbm.precipitation[i])) : 0.0
+                min(0.25, ewet / max(0.0001, canopyfraction * sbm.precipitation[i])) : 0.0
         else
             cmax = sbm.cmax[i]
             canopygapfraction = sbm.canopygapfraction[i]
             e_r = sbm.e_r[i]
         end
 
-        potential_evaporation = sbm.potential_evaporation[i] * sbm.et_reftopot[i]
-        # should we include tempcor in SBM?
-        # potential_evaporation = PotenEvap #??
-
+        canopy_potevap =
+            sbm.kc[i] * sbm.potential_evaporation[i] * (1.0 - canopygapfraction)
         if Second(sbm.Δt) >= Hour(23)
             throughfall, interception, stemflow, canopystorage = rainfall_interception_gash(
                 cmax,
@@ -708,19 +721,19 @@ function update_until_snow(sbm::SBM, config)
                 canopygapfraction,
                 sbm.precipitation[i],
                 sbm.canopystorage[i],
-                potential_evaporation,
+                canopy_potevap,
             )
-            pottrans_soil = max(0.0, potential_evaporation - interception) # now in mm
+            pottrans = max(0.0, canopy_potevap - interception) # now in mm
         else
             netinterception, throughfall, stemflow, leftover, interception, canopystorage =
                 rainfall_interception_modrut(
                     sbm.precipitation[i],
-                    potential_evaporation,
+                    canopy_potevap,
                     sbm.canopystorage[i],
                     canopygapfraction,
                     cmax,
                 )
-            pottrans_soil = max(0.0, leftover)  # now in mm
+            pottrans = max(0.0, leftover)  # now in mm
         end
 
         if modelsnow
@@ -745,7 +758,7 @@ function update_until_snow(sbm::SBM, config)
         sbm.interception[i] = interception
         sbm.stemflow[i] = stemflow
         sbm.throughfall[i] = throughfall
-        sbm.pottrans_soil[i] = pottrans_soil
+        sbm.pottrans[i] = pottrans
         if modelsnow
             sbm.snow[i] = snow
             sbm.snowwater[i] = snowwater
@@ -803,18 +816,20 @@ function update_until_recharge(sbm::SBM, config)
 
         ae_openw_r = min(
             sbm.waterlevel_river[i] * sbm.riverfrac[i],
-            sbm.riverfrac[i] * sbm.pottrans_soil[i],
+            sbm.riverfrac[i] * sbm.potential_evaporation[i],
         )
         ae_openw_l = min(
             sbm.waterlevel_land[i] * sbm.waterfrac[i],
-            sbm.waterfrac[i] * sbm.pottrans_soil[i],
+            sbm.waterfrac[i] * sbm.potential_evaporation[i],
         )
 
-        restevap = sbm.pottrans_soil[i] - ae_openw_r - ae_openw_l
-
-        # evap available for soil evaporation and transpiration
-        potsoilevap = restevap * sbm.canopygapfraction[i]
-        pottrans = restevap * (1.0 - sbm.canopygapfraction[i])
+        # evap available for soil evaporation
+        soilevap_fraction = max(
+            sbm.canopygapfraction[i] - sbm.riverfrac[i] - sbm.waterfrac[i] -
+            sbm.glacierfrac[i],
+            0.0,
+        )
+        potsoilevap = soilevap_fraction * sbm.potential_evaporation[i]
 
         # Calculate the initial capacity of the unsaturated store
         ustorecapacity = sbm.soilwatercapacity[i] - sbm.satwaterdepth[i] - ustoredepth
@@ -923,9 +938,9 @@ function update_until_recharge(sbm::SBM, config)
 
         # transpiration from saturated store
         wetroots = scurve(sbm.zi[i], rootingdepth, Float(1.0), sbm.rootdistpar[i])
-        actevapsat = min(pottrans * wetroots, satwaterdepth)
+        actevapsat = min(sbm.pottrans[i] * wetroots, satwaterdepth)
         satwaterdepth = satwaterdepth - actevapsat
-        restpottrans = pottrans - actevapsat
+        restpottrans = sbm.pottrans[i] - actevapsat
 
         # actual transpiration from ustore
         actevapustore = 0.0
@@ -1071,14 +1086,12 @@ function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
 
         ustoredepth = sum(@view usld[1:n_usl])
 
-        runoff = max(
+        runoff =
             exfiltustore +
             exfiltsatwater[i] +
             sbm.excesswater[i] +
             sbm.runoff_land[i] +
-            sbm.infiltexcess[i] - sbm.ae_openw_l[i],
-            0.0,
-        )
+            sbm.infiltexcess[i]
 
         # volumetric water content per soil layer and root zone
         vwc = sbm.vwc[i]
@@ -1119,6 +1132,7 @@ function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
         sbm.exfiltsatwater[i] = exfiltsatwater[i]
         sbm.exfiltustore[i] = exfiltustore
         sbm.runoff[i] = runoff
+        sbm.net_runoff[i] = runoff - sbm.ae_openw_l[i]
         sbm.vwc[i] = vwc
         sbm.vwc_perc[i] = vwc_perc
         sbm.rootstore[i] = rootstore
