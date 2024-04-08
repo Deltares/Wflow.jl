@@ -15,8 +15,7 @@ function request(message)
 end
 
 @testset "initialization and time functions" begin
-    msg =
-        (fn = "initialize", config_file = joinpath(@__DIR__, "sbm_config.toml"))
+    msg = (fn = "initialize", config_file = joinpath(@__DIR__, "sbm_config.toml"))
     @test request(msg) == Dict("status" => "OK")
     @test request((fn = "get_end_time",)) == Dict("end_time" => 2678400)
     @test request((fn = "get_start_time",)) == Dict("start_time" => 0)
@@ -67,7 +66,7 @@ vwc_1_size = 0
     vwc_1_size = Int(vwc_1_nbytes / vwc_1_itemsize)
     @test request((fn = "get_var_grid", name = "lateral.river.h")) == Dict("var_grid" => 3)
     msg = (fn = "get_value", name = "vertical.zi", dest = fill(0.0, zi_size))
-    @test mean(request(msg)["value"]) ≈ 278.1510965581235
+    @test mean(request(msg)["value"]) ≈ 277.8362161218515
     msg = (fn = "get_value_ptr", name = "vertical.θₛ")
     @test mean(request(msg)["value_ptr"]) ≈ 0.4409211971535584
     msg = (
@@ -77,7 +76,7 @@ vwc_1_size = 0
         inds = [1, 5, 10],
     )
     @test request(msg)["value_at_indices"] ≈
-          [2.1901434445889123, 2.6778265820894545, 3.470059871798756]
+          [2.196562540141252f0, 2.6853997213000866f0, 3.4814142040324985f0]
     msg = (fn = "set_value", name = "vertical.zi", src = fill(300.0, zi_size))
     @test request(msg) == Dict("status" => "OK")
     msg = (fn = "get_value", name = "vertical.zi", dest = fill(0.0, zi_size))
@@ -97,7 +96,7 @@ vwc_1_size = 0
     )
     @test request(msg)["value_at_indices"] == [250.0, 350.0, 300.0]
     msg = (fn = "get_value", name = "vertical.vwc[1]", dest = fill(0.0, vwc_1_size))
-    @test mean(request(msg)["value"]) ≈ 0.1845159140308566f0
+    @test mean(request(msg)["value"]) ≈ 0.18600013563085036f0
     msg = (
         fn = "get_value_at_indices",
         name = "vertical.vwc[1]",
@@ -105,7 +104,7 @@ vwc_1_size = 0
         inds = [1, 2, 3],
     )
     @test request(msg)["value_at_indices"] ≈
-          [0.12089607119560242f0, 0.11967185322648062f0, 0.14503555864288548f0]
+          [0.12089607119560242f0, 0.11968416924304527f0, 0.14602328618707333f0]
     msg = (fn = "set_value", name = "vertical.vwc[1]", src = fill(0.3, vwc_1_size))
     @test request(msg) == Dict("status" => "OK")
     msg = (fn = "get_value", name = "vertical.vwc[1]", dest = fill(0.0, vwc_1_size))

@@ -22,6 +22,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `to_river` variable from overland flow and lateral subsurface flow was not added to the
   inflow of these locations.
 - Close netCDF `NCDataset` with state variables in extended BMI function `save_state`.
+- For the computation of Gash interception model parameter `e_r` multiply the precipitation
+  input with the canopy fraction (this was only done for the potential evapotranspiration
+  input).
+
 
 ### Changed
 - Stop exposing scalar variables through BMI. The `BMI.get_value_ptr` function was not
@@ -46,6 +50,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   When in the Python version of wflow\_sbm the kinematic wave for surface flow was split
   into a river and land component, the lower limit was removed for river runoff
   (`net_runoff_river`), but not for land runoff.
+- Always use fractions for the computation of potential evapotranspiration (interception and
+  transpiration) and potential evaporation (open water and soil). Replaced variable
+  `et_reftopot` by crop coefficient `kc` (use of `et_reftopot` has been deprecated).
 
 ### Added
 - Total water storage as an export variable for `SBM` concept. This is the total water stored
