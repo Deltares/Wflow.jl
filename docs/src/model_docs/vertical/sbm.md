@@ -149,7 +149,8 @@ interception is available for transpiration. For potential open water evaporatio
 water bodies) the potential reference evapotranspiration rate is used (multipled by the
 river fraction `riverfrac`, and open water fraction `waterfrac`). Also for potential soil
 evaporation the potential reference evapotranspiration rate is used, multiplied by the
-canopy gap fraction corrected by the total water fraction (`riverfrac` and `waterfrac`).
+canopy gap fraction corrected by the sum of total water fraction (`riverfrac` and
+`waterfrac`) and the fraction covered by a glacier (`glacierfrac`).
 
 ### Bare soil evaporation
 

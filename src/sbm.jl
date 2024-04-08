@@ -824,9 +824,12 @@ function update_until_recharge(sbm::SBM, config)
         )
 
         # evap available for soil evaporation
-        potsoilevap =
-            max(sbm.canopygapfraction[i] - sbm.riverfrac[i] - sbm.waterfrac[i], 0.0) *
-            sbm.potential_evaporation[i]
+        soilevap_fraction = max(
+            sbm.canopygapfraction[i] - sbm.riverfrac[i] - sbm.waterfrac[i] -
+            sbm.glacierfrac[i],
+            0.0,
+        )
+        potsoilevap = soilevap_fraction * sbm.potential_evaporation[i]
 
         # Calculate the initial capacity of the unsaturated store
         ustorecapacity = sbm.soilwatercapacity[i] - sbm.satwaterdepth[i] - ustoredepth
