@@ -13,7 +13,7 @@ The sections below describe the working of the SBM vertical concept in more deta
 ## Precipitation
 The division between solid and liquid precipitation (snowfall and rainfall, respectively) is
 performed based on the air temperature. If the temperature is below a threshold temperature
-(`tt`), precipitation will fall as snow. A interval parameter (`tti`) defines the range over
+(`tt`), precipitation will fall as snow. An interval parameter (`tti`) defines the range over
 which precipitation is partly falling as snow, and partly as rain. Snowfall is added to the
 snowpack, where it is subject to melting and refreezing (see the section on [snow and
 glaciers](@ref snow)). The amount of rainfall is subject to [interception](@ref
@@ -37,8 +37,8 @@ Rutter model. The simulation timestep defines which interception model is used, 
 Rutter model.
 
 ### The analytical (Gash) model (Gash, 1979)
-The analytical model of rainfall interception is based on Rutter’s numerical model. The
-simplifications that introduced allow the model to be applied on a daily basis, although a
+The analytical model of rainfall interception is based on Rutter’s numerical model. Simplifications 
+allow the model to be applied on a daily basis, although a
 storm-based approach will yield better results in situations with more than one storm per
 day. The amount of water needed to completely saturate the canopy is defined as:
 
@@ -51,7 +51,7 @@ where ``\overline{R}`` is the average precipitation intensity on a saturated can
 parameters ``S``, ``p`` and ``p_t`` as defined previously. The model uses a series of
 expressions to calculate the interception loss during different phases of a storm. An
 analytical integration of the total evaporation and rainfall under saturated canopy
-conditions is then done for each storm to determine average values of ``\overline{E}_{w}``
+conditions is performed for each storm to determine average values of ``\overline{E}_{w}``
 and ``\overline{R}``. The total evaporation from the canopy (the total interception loss) is
 calculated as the sum of the components listed in the table below. Interception losses from
 the stems are calculated for days with ``P\geq S_{t}/p_{t}``. ``p_t`` and ``S_t`` are small
@@ -111,7 +111,7 @@ Furthermore these additional parameters are required:
 + Extinction coefficient (`kext` \[-\])
 
 Here it is assumed that `cmax` \[mm\] (leaves) (canopy storage capacity for the leaves only)
-relates linearly with LAI (c.f. Van Dijk and Bruijnzeel 2001). This done via the `sl`. `sl`
+relates linearly with LAI (c.f. Van Dijk and Bruijnzeel 2001). This is done via the `sl`. `sl`
 can be determined through a lookup table with land cover based on literature (Pitman 1989,
 Lui 1998). Next the `cmax` (leaves) is determined using:
 
@@ -134,22 +134,32 @@ The extinction coefficient `kext` can be related to land cover.
 
 ## [Evaporation](@id evap)
 
-The wflow\_sbm model assumes the input to be potential evaporation. A multiplication factor
-(`et_reftopot`, set to 1 by default) is present to correct the input evaporation if
-required.
+The wflow\_sbm model assumes the input to be potential reference evapotranspiration. A crop
+coefficient (`kc`, set to 1 by default) is used to convert the potential evapotranspiration
+rate of a reference crop fully covering the soil to the potential evapotranspiration rate of
+vegetation (natural and agricultural) fully covering the soil. The crop coefficient `kc` of
+wflow\_sbm is used for a surface completely covered by vegetation, and does not include the
+effect of growing stages of vegetation and soil cover. These effects are handled separately
+through the use of the canopy gap fraction. 
 
-The potential evaporation left over after interception and open water evaporation (rivers
-and water bodies) is split in potential soil evaporation and potential transpiration based
-on the canopy gap fraction (assumed to be identical to the amount of bare soil).
+It is assumed that the potential evaporation rate of intercepted water by vegetation is
+equal to the potential evapotranspiration rate of vegetation (fully covering the soil)
+multiplied by the canopy fraction. The potential evapotranspiration rate left over after
+interception is available for transpiration. For potential open water evaporation (river and
+water bodies) the potential reference evapotranspiration rate is used (multipled by the
+river fraction `riverfrac`, and open water fraction `waterfrac`). Also for potential soil
+evaporation the potential reference evapotranspiration rate is used, multiplied by the
+canopy gap fraction corrected by the sum of total water fraction (`riverfrac` and
+`waterfrac`) and the fraction covered by a glacier (`glacierfrac`).
 
 ### Bare soil evaporation
 
 If there is only one soil layer present in the wflow\_sbm model, the bare soil evaporation
 is scaled according to the wetness of the soil layer. The fraction of bare soil is assumed
-to be equal to the fraction not covered by the canopy (`conapygapfraction`). When the soil
-is fully saturated, evaporation is set to equal the potential evaporation. When the soil is
-not fully saturated, actual evaporation decrease linearly with decreasing soil moisture
-values, as indicated by the figure below.
+to be equal to the fraction not covered by the canopy (`canopygapfraction`) corrected by the
+total water fraction. When the soil is fully saturated, evaporation is set to equal the
+potential reference evaporation. When the soil is not fully saturated, actual evaporation
+decreases linearly with decreasing soil moisture values, as indicated by the figure below.
 
 ![soil_evap](../../images/soil_evap.png)
 
@@ -175,17 +185,17 @@ availability.
 
 The fraction of wet roots is determined using a sigmoid fuction (see figure below). The
 parameter `rootdistpar` defines the sharpness of the transition between fully wet and fully
-dry roots. The returned wetroots fraction is multiplied by the potential evaporation (and
+dry roots. The returned wet roots fraction is multiplied by the potential evaporation (and
 limited by the available water in saturated zone) to get the transpiration from the
 saturated part of the soil. This is implemented using the following code (`i` refers to the
 index of the vector that contains all active cells within the spatial model domain):
 
 ```julia
     # transpiration from saturated store
-    wetroots = scurve(sbm.zi[i], rootingdepth, 1.0, sbm.rootdistpar[i])
-    actevapsat = min(pottrans * wetroots, satwaterdepth)
+    wetroots = scurve(sbm.zi[i], rootingdepth, Float(1.0), sbm.rootdistpar[i])
+    actevapsat = min(sbm.pottrans[i] * wetroots, satwaterdepth)
     satwaterdepth = satwaterdepth - actevapsat
-    restpottrans = pottrans - actevapsat
+    restpottrans = sbm.pottrans[i] - actevapsat
 ```
 
 ![soil_wetroots](../../images/soil_wetroots.png)
@@ -426,7 +436,7 @@ the figure below where the blue line represents the ``K_{sat}`` value.
 ### Infiltration
 
 The water available for infiltration is taken as the rainfall including meltwater.
-Infiltration is determined separately for the compacted and non compacted areas, as these
+Infiltration is determined separately for the compacted and non-compacted areas, as these
 have different infiltration capacities. Naturally, only the water that can be stored in the
 soil can infiltrate. If not all water can infiltrate, this is added as excess water to the
 runoff routing scheme.
@@ -437,7 +447,7 @@ on non-compacted areas. The maximum amount of water that can infiltrate in these
 calculated by taking the minimum of the maximum infiltration rate (`infiltcapsoil` [mm
 t``^{-1}``] for non-compacted areas and `infiltcappath` [mm t``^{-1}``] for compacted areas)
 and the amount of water available for infiltration `avail_forinfilt` [mm t``^{-1}``]. The
-water that can actual infiltrate `infiltsoilpath` [mm t``^{-1}``] is calculated by taking
+water that can actually infiltrate `infiltsoilpath` [mm t``^{-1}``] is calculated by taking
 the minimum of the total maximum infiltration rate (compacted and non-compacted areas) and
 the remaining storage capacity.
 
@@ -575,7 +585,7 @@ saturated zone and runs out of the model.
 
 Part of the water available for infiltration is diverted to the open water, based on the
 fractions of river and lakes of each grid cell. The amount of evaporation from open water is
-taken assumed to be equal to potential evaporation (if sufficient water is available).
+assumed to be equal to potential evaporation (if sufficient water is available).
 
 ## References
 + Brooks, R. H., and Corey, A. T., 1964, Hydraulic properties of porous media, Hydrology

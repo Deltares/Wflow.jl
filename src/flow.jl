@@ -14,7 +14,7 @@ abstract type SurfaceFlow end
     inwater::Vector{T} | "m3 s-1"                # Lateral inflow [m³ s⁻¹]
     inflow::Vector{T} | "m3 s-1"                 # External inflow (abstraction/supply/demand) [m³ s⁻¹]
     inflow_wb::Vector{T} | "m3 s-1"              # inflow waterbody (lake or reservoir model) from land part [m³ s⁻¹]
-    abstraction::Vector{T} | "m3 s-1"       	 # Abstraction (computed) [m³ s⁻¹]
+    abstraction::Vector{T} | "m3 s-1"        # Abstraction (computed) [m³ s⁻¹]
     volume::Vector{T} | "m3"                     # Kinematic wave volume [m³] (based on water level h)
     h::Vector{T} | "m"                           # Water level [m]
     h_av::Vector{T} | "m"                        # Average water level [m]
@@ -425,7 +425,8 @@ end
 end
 
 function update(ssf::LateralSSF, network, frac_toriver, ksat_profile)
-    @unpack subdomain_order, topo_subdomain, indices_subdomain, upstream_nodes, area = network
+    @unpack subdomain_order, topo_subdomain, indices_subdomain, upstream_nodes, area =
+        network
 
 
     ns = length(subdomain_order)
@@ -484,7 +485,7 @@ function update(ssf::LateralSSF, network, frac_toriver, ksat_profile)
                     )
                 end
                 ssf.volume[v] =
-                (ssf.θₛ[v] - ssf.θᵣ[v]) * (ssf.soilthickness[v] - ssf.zi[v]) * area[v]
+                    (ssf.θₛ[v] - ssf.θᵣ[v]) * (ssf.soilthickness[v] - ssf.zi[v]) * area[v]
             end
         end
     end
@@ -1664,7 +1665,7 @@ end
 """
     set_land_inwater(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
 
-Set `inwater` of the lateral land component for the `SbmGwgModel` type.
+Set `inwater` of the lateral land component for the `SbmGwfModel` type.
 """
 function set_land_inwater(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
     @unpack lateral, vertical, network, config = model
@@ -1677,7 +1678,18 @@ function set_land_inwater(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfM
     end
 
     lateral.land.inwater .=
-        (vertical.runoff .* network.land.area .* 0.001) ./ lateral.land.Δt .+ drainflux
+        (vertical.net_runoff .* network.land.area .* 0.001) ./ lateral.land.Δt .+ drainflux
+end
+
+"""
+    set_land_inwater(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
+
+Set `inwater` of the lateral land component for the `SbmModel` type.
+"""
+function set_land_inwater(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
+    @unpack lateral, vertical, network = model
+    lateral.land.inwater .=
+        (vertical.net_runoff .* network.land.area .* 0.001) ./ lateral.land.Δt
 end
 
 """
@@ -1821,7 +1833,7 @@ function surface_routing(
     @unpack lateral, vertical, network, clock = model
 
     @. lateral.land.runoff = (
-        (vertical.runoff / 1000.0) * (network.land.area) / vertical.Δt +
+        (vertical.net_runoff / 1000.0) * network.land.area / vertical.Δt +
         ssf_toriver +
         # net_runoff_river
         ((vertical.net_runoff_river * network.land.area * 0.001) / vertical.Δt)

@@ -46,12 +46,12 @@ end
 @testset "river domain (kinematic wave)" begin
     q = model.lateral.river.q_av
     river = model.lateral.river
-    @test sum(q) ≈ 0.034846861707851576f0
-    @test q[6] ≈ 0.007866587223009643f0
-    @test river.volume[6] ≈ 4.474556355925399f0
-    @test river.inwater[6] ≈ 0.00036392604840276924f0
-    @test q[13] ≈ 0.0005952292000597283f0
-    @test q[network.river.order[end]] ≈ 0.008387430132453135f0
+    @test sum(q) ≈ 0.034904078613089404f0
+    @test q[6] ≈ 0.007881734464420193f0
+    @test river.volume[6] ≈ 4.479866566743959f0
+    @test river.inwater[6] ≈ 0.00036640965826798314f0
+    @test q[13] ≈ 0.0005958036525897934f0
+    @test q[network.river.order[end]] ≈ 0.008405059891856978f0
 end
 
 @testset "groundwater" begin
@@ -64,7 +64,7 @@ end
         1.8082975252602111f0,
         1.410083583757707f0,
     ]
-    @test gw.river.flux[1] ≈ -50.46515313302901f0
+    @test gw.river.flux[1] ≈ -50.568389286368145f0
     @test gw.drain.flux[1] ≈ 0.0
     @test gw.recharge.rate[19] ≈ -0.0014241196552847502f0
 end
@@ -93,12 +93,12 @@ model = Wflow.run_timestep(model)
 @testset "river domain (local inertial)" begin
     q = model.lateral.river.q_av
     river = model.lateral.river
-    @test sum(q) ≈ 0.026752212882189867f0
-    @test q[6] ≈ 0.005962226036202787f0
-    @test river.volume[6] ≈ 7.498085951460259f0
-    @test river.inwater[6] ≈ 0.00017741362380231486f0
-    @test q[13] ≈ 0.0004586401133311585f0
-    @test q[5] ≈ 0.006312330297863098f0
+    @test sum(q) ≈ 0.026802342283209452f0
+    @test q[6] ≈ 0.005975747422547475f0
+    @test river.volume[6] ≈ 7.509678393246221f0
+    @test river.inwater[6] ≈ 0.00017989723366752878f0
+    @test q[13] ≈ 0.0004590884299495001f0
+    @test q[5] ≈ 0.006328157455390906f0
 end
 Wflow.close_files(model, delete_output = false)
 
@@ -123,14 +123,14 @@ model = Wflow.run_timestep(model)
 
 @testset "river and land domain (local inertial)" begin
     q = model.lateral.river.q_av
-    @test sum(q) ≈ 0.026759512926399318f0
-    @test q[6] ≈ 0.005964050519182144f0
-    @test q[13] ≈ 0.00045874863609566906f0
-    @test q[5] ≈ 0.006314336504100363f0
+    @test sum(q) ≈ 0.026809644054064f0
+    @test q[6] ≈ 0.005977572310302902f0
+    @test q[13] ≈ 0.0004591969811223254f0
+    @test q[5] ≈ 0.006330164124991123f0
     h = model.lateral.river.h_av
-    @test h[6] ≈ 0.08023321813680799f0
-    @test h[5] ≈ 0.07761589477563689f0
-    @test h[13] ≈ 0.08226917799750776f0
+    @test h[6] ≈ 0.08033159784710718f0
+    @test h[5] ≈ 0.0777121612660625f0
+    @test h[13] ≈ 0.08236630657766124f0
     qx = model.lateral.land.qx
     qy = model.lateral.land.qy
     @test all(qx .== 0.0f0)
