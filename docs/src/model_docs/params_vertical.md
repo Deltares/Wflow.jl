@@ -115,7 +115,8 @@ profile `kv` is used and `z_layered` is required as input.
 | `exfiltustore` | water exfiltrating from unsaturated store because of change in water table | mm Δt``^{-1}`` | - |
 | `excesswatersoil` | excess water for non-compacted fraction | mm Δt``^{-1}`` | - |
 | `excesswaterpath` | excess water for compacted fraction | mm Δt``^{-1}`` | - |
-| `runoff` | total surface runoff from infiltration and saturation excess  | mm Δt``^{-1}`` | - |
+| `runoff` | total surface runoff from infiltration and saturation excess | mm Δt``^{-1}`` | - |
+| `net_runoff` | net surface runoff (`runoff` - `ae_openw_l`) | mm Δt``^{-1}`` | - |
 | `vwc` | volumetric water content per soil layer (including θᵣ and saturated zone)  | - | - |
 | `vwc_perc` | volumetric water content per soil layer (including θᵣ and saturated zone)  | % | - |
 | `rootstore` | root water storage in unsaturated and saturated zone (excluding θᵣ)  | mm| - |

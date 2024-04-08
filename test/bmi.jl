@@ -20,8 +20,8 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 
         @testset "model information functions" begin
             @test BMI.get_component_name(model) == "sbm"
-            @test BMI.get_input_item_count(model) == 192
-            @test BMI.get_output_item_count(model) == 192
+            @test BMI.get_input_item_count(model) == 193
+            @test BMI.get_output_item_count(model) == 193
             to_check = [
                 "vertical.nlayers",
                 "vertical.θᵣ",

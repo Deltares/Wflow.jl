@@ -136,8 +136,10 @@
     excesswatersoil::Vector{T}
     # Excess water for compacted fraction [mm Δt⁻¹]
     excesswaterpath::Vector{T}
-    # Total surface runoff from infiltration and saturation excess [mm Δt⁻¹]
+    # Total surface runoff from infiltration and saturation excess (excluding actual open water evaporation) [mm Δt⁻¹]
     runoff::Vector{T}
+    # Net surface runoff (surface runoff - actual open water evaporation) [mm Δt⁻¹]
+    net_runoff::Vector{T}
     # Volumetric water content [-] per soil layer (including θᵣ and saturated zone)
     vwc::Vector{SVector{N,T}} | "-"
     # Volumetric water content [%] per soil layer (including θᵣ and saturated zone)
@@ -645,6 +647,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         excesswatersoil = fill(mv, n),
         excesswaterpath = fill(mv, n),
         runoff = fill(mv, n),
+        net_runoff = fill(mv, n),
         net_runoff_river = fill(mv, n),
         vwc = svectorscopy(vwc, Val{maxlayers}()),
         vwc_perc = svectorscopy(vwc_perc, Val{maxlayers}()),
@@ -1080,14 +1083,12 @@ function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
 
         ustoredepth = sum(@view usld[1:n_usl])
 
-        runoff = max(
+        runoff =
             exfiltustore +
             exfiltsatwater[i] +
             sbm.excesswater[i] +
             sbm.runoff_land[i] +
-            sbm.infiltexcess[i] - sbm.ae_openw_l[i],
-            0.0,
-        )
+            sbm.infiltexcess[i]
 
         # volumetric water content per soil layer and root zone
         vwc = sbm.vwc[i]
@@ -1128,6 +1129,7 @@ function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
         sbm.exfiltsatwater[i] = exfiltsatwater[i]
         sbm.exfiltustore[i] = exfiltustore
         sbm.runoff[i] = runoff
+        sbm.net_runoff[i] = runoff - sbm.ae_openw_l[i]
         sbm.vwc[i] = vwc
         sbm.vwc_perc[i] = vwc_perc
         sbm.rootstore[i] = rootstore

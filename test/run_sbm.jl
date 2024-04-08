@@ -77,9 +77,12 @@ end
 
     @test sbm.θₛ[50063] ≈ 0.48755401372909546f0
     @test sbm.θᵣ[50063] ≈ 0.15943120419979095f0
-    @test sbm.runoff[50063] == 0.0
-    @test sbm.soilevap[50063] ≈ 0.011096671644901038f0
-    @test sbm.snow[5] ≈ 3.7685133905888146f0
+    @test mean(sbm.runoff) ≈ 0.04177459898728149f0
+    @test mean(sbm.soilevap) ≈ 0.02122698830889417f0
+    @test mean(sbm.actevap) ≈ 0.33545623834952154f0
+    @test mean(sbm.actinfilt) ≈ 1.6444774688444848f0
+    @test sbm.snow[5] ≈ 3.768513390588815f0
+    @test mean(sbm.snow) ≈ 0.038019723676094325f0
     @test sbm.total_storage[50063] ≈ 559.9035608052374f0
     @test sbm.total_storage[429] ≈ 597.4578475404879f0 # river cell
 end
@@ -91,9 +94,13 @@ model = Wflow.run_timestep(model)
     sbm = model.vertical
     @test sbm.θₛ[50063] ≈ 0.48755401372909546f0
     @test sbm.θᵣ[50063] ≈ 0.15943120419979095f0
-    @test sbm.runoff[50063] == 0.0
-    @test sbm.soilevap[50063] ≈ 0.008718333439094138f0
-    @test sbm.snow[5] ≈ 3.8434125240523125f0
+    @test mean(sbm.net_runoff) ≈ 0.23710522236947756f0
+    @test mean(sbm.runoff) ≈ 0.23747368431143517f0
+    @test mean(sbm.soilevap) ≈ 0.018750808322054897f0
+    @test mean(sbm.actevap) ≈ 0.27379330211866343f0
+    @test mean(sbm.actinfilt) ≈ 0.08863102527394363f0
+    @test sbm.snow[5] ≈ 3.843412524052313f0
+    @test mean(sbm.snow) ≈ 0.03461317061870949f0
     @test sbm.total_storage[50063] ≈ 560.0152135062889f0
     @test sbm.total_storage[429] ≈ 617.2238533241972f0 # river cell
 end
@@ -526,9 +533,9 @@ Wflow.close_files(model, delete_output = false)
     model = Wflow.run_timestep(model)
     @testset "river flow layered exponential profile" begin
         q = model.lateral.river.q_av
-        @test sum(q) ≈ 3126.3509477318844f0
+        @test sum(q) ≈ 3158.1868156296678f0
         @test q[1622] ≈ 0.0005972577112819149f0
-        @test q[43] ≈ 9.880641908157857f0
+        @test q[43] ≈ 10.013363662625276f0
     end
 
     Wflow.close_files(model, delete_output = false)

@@ -28,8 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 ### Changed
-- Stop exposing scalar variables through BMI. The `BMI.get_value_ptr` function was
-  not working correctly for scalar model variables (a `view` was applied). Only a few scalar
+- Stop exposing scalar variables through BMI. The `BMI.get_value_ptr` function was not
+  working correctly for scalar model variables (a `view` was applied). Only a few scalar
   model parameters are defined, and it is not expected that exposing these variables is
   required (e.g. for model coupling) while code changes for these variables (including
   struct fields) are required.
@@ -39,6 +39,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   length `dl` at a ghost node should be set through the model parameter netCDF file
   (`riverlength_bc`), providing this boundary condition through the `[model]` settings in
   the TOML file (`model.riverlength_bc`) has been deprecated.
+- As part of the vertical `SBM` concept: 1) add variable `net_runoff` (land runoff minus
+  actual open water evaporation `ae_openw_l`) and 2) change the definition of variable
+  `runoff` by removing the subtraction of `ae_openw_l` (total land runoff). The variable
+  `net_runoff` is now input to the kinematic wave for overland flow (replaces the original
+  `runoff` variable as input). The lower limit of the original `runoff` variable was set at
+  zero, which may result in water balance errors. This lower limit was implemented in the
+  Python version of wflow\_sbm, to avoid a very slow kinematic wave solution for surface
+  flow computation (no distinction between a kinematic wave for overland and river flow).
+  When in the Python version of wflow\_sbm the kinematic wave for surface flow was split
+  into a river and land component, the lower limit was removed for river runoff
+  (`net_runoff_river`), but not for land runoff.
 - Always use fractions for the computation of potential evapotranspiration (interception and
   transpiration) and potential evaporation (open water and soil). Replaced variable
   `et_reftopot` by crop coefficient `kc` (use of `et_reftopot` has been deprecated).
