@@ -423,12 +423,12 @@ function update_water_allocation(model)
         # surface water availability (allocation area)
         sw_available = 0.0
         for j in inds_river[i]
-            if lateral.river.reservoir_index[j] > 0
-                k = lateral.river.reservoir_index[j]
+            if network.river.reservoir_index[j] > 0
+                k = network.river.reservoir_index[j]
                 river.available_surfacewater[j] = lateral.river.reservoir.volume[k] * 0.98
                 sw_available += river.available_surfacewater[j]
-            elseif lateral.river.lake_index[j] > 0
-                k = lateral.river.lake_index[j]
+            elseif network.river.lake_index[j] > 0
+                k = network.river.lake_index[j]
                 river.available_surfacewater[j] = lateral.river.lake.storage[k] * 0.98
                 sw_available += river.available_surfacewater[j]
             else

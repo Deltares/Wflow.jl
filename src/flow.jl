@@ -14,7 +14,7 @@ abstract type SurfaceFlow end
     inwater::Vector{T} | "m3 s-1"                # Lateral inflow [m³ s⁻¹]
     inflow::Vector{T} | "m3 s-1"                 # External inflow (abstraction/supply/demand) [m³ s⁻¹]
     inflow_wb::Vector{T} | "m3 s-1"              # inflow waterbody (lake or reservoir model) from land part [m³ s⁻¹]
-    abstraction::Vector{T} | "m3 s-1"        # Abstraction (computed) [m³ s⁻¹]
+    abstraction::Vector{T} | "m3 s-1"            # Abstraction (computed) [m³ s⁻¹]
     volume::Vector{T} | "m3"                     # Kinematic wave volume [m³] (based on water level h)
     h::Vector{T} | "m"                           # Water level [m]
     h_av::Vector{T} | "m"                        # Average water level [m]
@@ -499,7 +499,7 @@ end
     ssf::Vector{T} | "m3 d-1"           # Subsurface flow [m³ d⁻¹]
 end
 
-@get_units @exchange @grid_type @grid_location @with_kw struct ShallowWaterRiver{T,R,L,F}
+@get_units @exchange @grid_type @grid_location @with_kw struct ShallowWaterRiver{T,R,L,F,W}
     n::Int | "-" | 0 | "none" | "none"                      # number of cells
     ne::Int | "-" | 0 | "none" | "none"                     # number of edges/links
     active_n::Vector{Int} | "-"                             # active nodes
@@ -531,6 +531,7 @@ end
     error::Vector{T} | "m3"                                 # error volume
     inwater::Vector{T} | "m3 s-1"                           # lateral inflow [m³ s⁻¹]
     inflow::Vector{T} | "m3 s-1"                            # external inflow (abstraction/supply/demand) [m³ s⁻¹]
+    abstraction::Vector{T} | "m3 s-1"                       # abstraction (computed) [m³ s⁻¹]
     inflow_wb::Vector{T} | "m3 s-1"                         # inflow waterbody (lake or reservoir model) from land part [m³ s⁻¹]
     bankfull_volume::Vector{T} | "m3"                       # bankfull volume
     bankfull_depth::Vector{T} | "m"                         # bankfull depth
@@ -542,6 +543,7 @@ end
     reservoir::R | "-" | 0                                  # Reservoir model struct of arrays
     lake::L | "-" | 0                                       # Lake model struct of arrays
     floodplain::F | "-" | 0                                 # Floodplain (1D) schematization
+    waterallocation::W | "-" | 0                            # Water allocation
 end
 
 function initialize_shallowwater_river(
@@ -680,6 +682,7 @@ function initialize_shallowwater_river(
     waterbody = !=(0).(reservoir_index .+ lake_index)
     active_index = findall(x -> x == 0, waterbody)
 
+    do_water_demand = haskey(config.model, "water_demand")
     sw_river = ShallowWaterRiver(
         n = n,
         ne = _ne,
@@ -709,6 +712,7 @@ function initialize_shallowwater_river(
         volume = fill(0.0, n),
         error = zeros(n),
         inflow = zeros(n),
+        abstraction = zeros(n),
         inflow_wb = zeros(n),
         inwater = zeros(n),
         dl = dl,
@@ -723,6 +727,7 @@ function initialize_shallowwater_river(
         reservoir = reservoir,
         lake = lake,
         floodplain = floodplain,
+        waterallocation = do_water_demand ? initialize_waterallocation_river(n) : nothing,
     )
     return sw_river, nodes_at_link
 end
@@ -897,7 +902,8 @@ function shallowwater_river_update(sw::ShallowWaterRiver, network, Δt, doy, upd
 
             q_src = sum_at(sw.q, links_at_node.src[i])
             q_dst = sum_at(sw.q, links_at_node.dst[i])
-            sw.volume[i] = sw.volume[i] + (q_src - q_dst + sw.inwater[i]) * Δt
+            sw.volume[i] =
+                sw.volume[i] + (q_src - q_dst + sw.inwater[i] - sw.abstraction[i]) * Δt
 
             if sw.volume[i] < 0.0
                 sw.error[i] = sw.error[i] + abs(sw.volume[i])
@@ -1337,7 +1343,7 @@ function shallowwater_update(
                         sum_at(swr.q, links_at_node.dst[inds_riv[i]]) + sw.qx[xd] -
                         sw.qx[i] + sw.qy[yd] - sw.qy[i] +
                         swr.inflow[inds_riv[i]] +
-                        sw.runoff[i]
+                        sw.runoff[i] - swr.abstraction[inds_riv[i]]
                     ) * Δt
                 if sw.volume[i] < T(0.0)
                     sw.error[i] = sw.error[i] + abs(sw.volume[i])

@@ -377,6 +377,9 @@ function initialize_sbm_model(config::Config)
             graph = graph_riv,
             indices = inds_riv,
             reverse_indices = rev_inds_riv,
+            # reservoir and lake index
+            reservoir_index = resindex,
+            lake_index = lakeindex,
             # specific for kinematic_wave
             upstream_nodes = filter_upsteam_nodes(graph_riv, pits[inds_riv]),
             subdomain_order = subriv_order,
@@ -392,9 +395,15 @@ function initialize_sbm_model(config::Config)
             graph = graph_riv,
             indices = inds_riv,
             reverse_indices = rev_inds_riv,
+            # reservoir and lake index
+            reservoir_index = resindex,
+            lake_index = lakeindex,
             # specific for local-inertial
             nodes_at_link = nodes_at_link,
             links_at_node = adjacent_links_at_node(graph_riv, nodes_at_link),
+            # water allocation areas
+            indices_allocation_areas = inds_riv_allocation_areas,
+            area = xl[index_river] .* yl[index_river],
         )
     end
 
