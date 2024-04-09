@@ -20,12 +20,14 @@ end
     demand_gross::Vector{T}                 # irrigation gross demand [mm Δt⁻¹] 
     irrigation_efficiency::Vector{T} | "-"  # irrigation efficiency [-]
     irrigation_areas::Vector{Bool} | "-"    # irrigation areas [-]
+    irrigation_trigger::Vector{Bool} | "-"  # irrigation on or off [-]
 end
 
 @get_units @exchange @grid_type @grid_location @with_kw struct Paddy{T}
     demand_gross::Vector{T}                 # irrigation gross demand [mm Δt⁻¹] 
     irrigation_efficiency::Vector{T} | "-"  # irrigation efficiency [-]
     irrigation_areas::Vector{Bool} | "-"    # irrigation areas [-]
+    irrigation_trigger::Vector{Bool} | "-"  # irrigation on or off [-]
     h_min::Vector{T} | "mm"                 # minimum required water depth in the irrigated rice field [mm]
     h_opt::Vector{T} | "mm"                 # optimal water depth in the irrigated rice fields [mm]
     h_max::Vector{T} | "mm"                 # water depth when rice field starts spilling water (overflow) [mm]
@@ -169,7 +171,8 @@ function initialize_paddy(nc, config, inds)
         ncread(nc, config, "vertical.paddy.h_min"; sel = inds, defaults = 0.0, type = Float)
     h_opt =
         ncread(nc, config, "vertical.paddy.h_opt"; sel = inds, defaults = 0.0, type = Float)
-    h_max = ncread(nc, config, "vertical.paddy.h_max"; sel = inds, defaults = 0.0, type = Float)
+    h_max =
+        ncread(nc, config, "vertical.paddy.h_max"; sel = inds, defaults = 0.0, type = Float)
     efficiency = ncread(
         nc,
         config,
@@ -183,15 +186,23 @@ function initialize_paddy(nc, config, inds)
         config,
         "vertical.paddy.irrigation_areas";
         sel = inds,
-        defaults = 1,
-        #optional = false,
+        optional = false,
         type = Int,
-        #fill = 0,
     )
+    irrigation_trigger = ncread(
+        nc,
+        config,
+        "vertical.paddy.irrigation_trigger";
+        sel = inds,
+        optional = false,
+        type = Bool,
+    )
+
 
     paddy = Paddy{Float}(
         demand_gross = fill(mv, length(inds)),
         irrigation_efficiency = efficiency,
+        irrigation_trigger = irrigation_trigger,
         h_min = h_min,
         h_max = h_max,
         h_opt = h_opt,
@@ -218,15 +229,24 @@ function initialize_nonpaddy(nc, config, inds)
         "vertical.nonpaddy.irrigation_areas";
         sel = inds,
         defaults = 1,
-        #optional = false,
+        optional = false,
         type = Int,
-        #fill = 0,
+    )
+    irrigation_trigger = ncread(
+        nc,
+        config,
+        "vertical.nonpaddy.irrigation_trigger";
+        sel = inds,
+        defaults = 1,
+        optional = false,
+        type = Bool,
     )
 
     nonpaddy = NonPaddy{Float}(
         demand_gross = fill(mv, length(inds)),
         irrigation_efficiency = efficiency,
         irrigation_areas = areas,
+        irrigation_trigger = irrigation_trigger,
     )
 
     return nonpaddy
