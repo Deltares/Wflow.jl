@@ -318,37 +318,50 @@ function update_water_demand(sbm::SBM)
 
         irri_dem_gross = 0.0
         if !isnothing(sbm.nonpaddy) && sbm.nonpaddy.irrigation_areas[i]
-            usl, _ = set_layerthickness(sbm.zi[i], sbm.sumlayers[i], sbm.act_thickl[i])
-            for k = 1:sbm.n_unsatlayers[i]
-                rootfrac =
-                    min(1.0, (max(0.0, sbm.rootingdepth[i] - sbm.sumlayers[i][k]) / usl[k]))
-                vwc_fc =
-                    vwc_brooks_corey(-100.0, sbm.hb[i], sbm.θₛ[i], sbm.θᵣ[i], sbm.c[i][k])
-                vwc_h3 = vwc_brooks_corey(
-                    sbm.h3[i],
-                    sbm.hb[i],
-                    sbm.θₛ[i],
-                    sbm.θᵣ[i],
-                    sbm.c[i][k],
-                )
-                depletion = (vwc_fc * usl[k]) - sbm.ustorelayerdepth[i][k]
-                depletion *= rootfrac
-                raw = (vwc_fc - vwc_h3) * usl[k] # readily available water
-                raw *= rootfrac
-                if depletion >= raw
-                    irri_dem_gross += depletion
+            if sbm.nonpaddy.irrigation_trigger[i]
+                usl, _ = set_layerthickness(sbm.zi[i], sbm.sumlayers[i], sbm.act_thickl[i])
+                for k = 1:sbm.n_unsatlayers[i]
+                    rootfrac = min(
+                        1.0,
+                        (max(0.0, sbm.rootingdepth[i] - sbm.sumlayers[i][k]) / usl[k]),
+                    )
+                    vwc_fc = vwc_brooks_corey(
+                        -100.0,
+                        sbm.hb[i],
+                        sbm.θₛ[i],
+                        sbm.θᵣ[i],
+                        sbm.c[i][k],
+                    )
+                    vwc_h3 = vwc_brooks_corey(
+                        sbm.h3[i],
+                        sbm.hb[i],
+                        sbm.θₛ[i],
+                        sbm.θᵣ[i],
+                        sbm.c[i][k],
+                    )
+                    depletion = (vwc_fc * usl[k]) - sbm.ustorelayerdepth[i][k]
+                    depletion *= rootfrac
+                    raw = (vwc_fc - vwc_h3) * usl[k] # readily available water
+                    raw *= rootfrac
+                    if depletion >= raw
+                        irri_dem_gross += depletion
+                    end
                 end
+                # limit irrigation demand to infiltration capacity    
+                infiltration_capacity =
+                    sbm.soilinfredu[i] * (sbm.infiltcappath[i] + sbm.infiltcapsoil[i])
+                irri_dem_gross = min(irri_dem_gross, infiltration_capacity)
+                irri_dem_gross /= sbm.nonpaddy.irrigation_efficiency[i]
+            else
+                irri_dem_gross = 0.0
             end
-            # limit irrigation demand to infiltration capacity    
-            infiltration_capacity =
-                sbm.soilinfredu[i] * (sbm.infiltcappath[i] + sbm.infiltcapsoil[i])
-            irri_dem_gross = min(irri_dem_gross, infiltration_capacity)
-            irri_dem_gross /= sbm.nonpaddy.irrigation_efficiency[i]
         elseif !isnothing(sbm.paddy) && sbm.paddy.irrigation_areas[i]
-            irr_depth_paddy =
-                sbm.paddy.h[i] < sbm.paddy.h_min[i] ?
-                (sbm.paddy.h_opt[i] - sbm.paddy.h[i]) : 0.0
-            irri_dem_gross += irr_depth_paddy / sbm.paddy.irrigation_efficiency[i]
+            if sbm.paddy.irrigation_trigger[i]
+                irr_depth_paddy =
+                    sbm.paddy.h[i] < sbm.paddy.h_min[i] ?
+                    (sbm.paddy.h_opt[i] - sbm.paddy.h[i]) : 0.0
+                irri_dem_gross += irr_depth_paddy / sbm.paddy.irrigation_efficiency[i]
+            end
         end
         sbm.waterallocation.irri_demand_gross[i] = irri_dem_gross
         sbm.waterallocation.nonirri_demand_gross[i] =
