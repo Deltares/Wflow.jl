@@ -665,12 +665,12 @@ concept `SBM` (at index `i`) based on hydraulic conductivity profile `ksat_profi
 """
 function hydraulic_conductivity_at_depth(sbm::SBM, z, i, n, ksat_profile)
     if ksat_profile == "exponential"
-        kv_z = sbm.kvfrac[i][n] * sbm.kv₀[i] * exp(-sbm.f[i] * z)
+        kv_z = sbm.kvfrac[i][n] * sbm.kv_0[i] * exp(-sbm.f[i] * z)
     elseif ksat_profile == "exponential_constant"
         if z < sbm.z_exp[i]
-            kv_z = sbm.kvfrac[i][n] * sbm.kv₀[i] * exp(-sbm.f[i] * z)
+            kv_z = sbm.kvfrac[i][n] * sbm.kv_0[i] * exp(-sbm.f[i] * z)
         else
-            kv_z = sbm.kvfrac[i][n] * sbm.kv₀[i] * exp(-sbm.f[i] * sbm.z_exp[i])
+            kv_z = sbm.kvfrac[i][n] * sbm.kv_0[i] * exp(-sbm.f[i] * sbm.z_exp[i])
         end
     elseif ksat_profile == "layered"
         kv_z = sbm.kvfrac[i][n] * sbm.kv[i][n]
@@ -768,10 +768,10 @@ end
 function initialize_lateralssf_exp!(ssf::LateralSSF)
     for i in eachindex(ssf.ssf)
         ssf.ssfmax[i] =
-            ((ssf.kh₀[i] * ssf.beta_l[i]) / ssf.f[i]) *
+            ((ssf.kh_0[i] * ssf.beta_l[i]) / ssf.f[i]) *
             (1.0 - exp(-ssf.f[i] * ssf.soilthickness[i]))
         ssf.ssf[i] =
-            ((ssf.kh₀[i] * ssf.beta_l[i]) / ssf.f[i]) *
+            ((ssf.kh_0[i] * ssf.beta_l[i]) / ssf.f[i]) *
             (exp(-ssf.f[i] * ssf.zi[i]) - exp(-ssf.f[i] * ssf.soilthickness[i])) *
             ssf.dw[i]
     end
@@ -780,24 +780,24 @@ end
 "Initialize lateral subsurface variables `ssf` and `ssfmax` with `ksat_profile` `exponential_constant`"
 function initialize_lateralssf_exp_const!(ssf::LateralSSF)
     ssf_constant = @. ssf.khfrac *
-       ssf.kh₀ *
+       ssf.kh_0 *
        exp(-ssf.f * ssf.z_exp) *
        ssf.beta_l *
        (ssf.soilthickness - ssf.z_exp)
     for i in eachindex(ssf.ssf)
         ssf.ssfmax[i] =
-            ((ssf.khfrac[i] * ssf.kh₀[i] * ssf.beta_l[i]) / ssf.f[i]) *
+            ((ssf.khfrac[i] * ssf.kh_0[i] * ssf.beta_l[i]) / ssf.f[i]) *
             (1.0 - exp(-ssf.f[i] * ssf.z_exp[i])) + ssf_constant[i]
         if ssf.zi[i] < ssf.z_exp[i]
             ssf.ssf[i] =
                 (
-                    ((ssf.kh₀[i] * ssf.beta_l[i]) / ssf.f[i]) *
+                    ((ssf.kh_0[i] * ssf.beta_l[i]) / ssf.f[i]) *
                     (exp(-ssf.f[i] * ssf.zi[i]) - exp(-ssf.f[i] * ssf.z_exp[i])) +
                     ssf_constant[i]
                 ) * ssf.dw[i]
         else
             ssf.ssf[i] =
-                ssf.kh₀[i] *
+                ssf.kh_0[i] *
                 exp(-ssf.f[i] * ssf.zi[i]) *
                 ssf.beta_l[i] *
                 (ssf.soilthickness[i] - ssf.zi[i]) *

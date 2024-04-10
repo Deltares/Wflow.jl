@@ -122,15 +122,15 @@ function initialize_sbm_model(config::Config)
             type = Float,
         )
 
-        # unit for lateral subsurface flow component is [m³ d⁻¹], sbm.kv₀ [mm Δt⁻¹]
-        kh₀ = khfrac .* sbm.kv₀ .* 0.001 .* (basetimestep / dt)
+        # unit for lateral subsurface flow component is [m³ d⁻¹], sbm.kv_0 [mm Δt⁻¹]
+        kh_0 = khfrac .* sbm.kv_0 .* 0.001 .* (basetimestep / dt)
         f = sbm.f .* 1000.0
         zi = sbm.zi .* 0.001
         soilthickness = sbm.soilthickness .* 0.001
         z_exp = sbm.z_exp .* 0.001
 
         ssf = LateralSSF{Float}(
-            kh₀ = kh₀,
+            kh_0 = kh_0,
             f = f,
             kh = fill(mv, n),
             khfrac = khfrac,

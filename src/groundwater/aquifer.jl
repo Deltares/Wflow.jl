@@ -322,7 +322,7 @@ The following criterion can be found in Chu & Willis (1984)
 Δt * k * H / (Δx * Δy * S) <= 1/4
 """
 function stable_timestep(aquifer, conductivity_profile::String)
-    dtₘᵢₙ = Inf
+    dt_min = Inf
     for i in eachindex(aquifer.head)
         if conductivity_profile == "exponential"
             zi = aquifer.top[i] - aquifer.head[i]
@@ -335,9 +335,9 @@ function stable_timestep(aquifer, conductivity_profile::String)
         end
 
         dt = aquifer.area[i] * storativity(aquifer)[i] / value
-        dtₘᵢₙ = dt < dtₘᵢₙ ? dt : dtₘᵢₙ
+        dt_min = dt < dt_min ? dt : dt_min
     end
-    return 0.25 * dtₘᵢₙ
+    return 0.25 * dt_min
 end
 
 minimum_head(aquifer::ConfinedAquifer) = aquifer.head

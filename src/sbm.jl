@@ -18,7 +18,7 @@
     # Residual water content [-]
     theta_r::Vector{T} | "-"
     # Vertical hydraulic conductivity [mm Δt⁻¹] at soil surface
-    kv₀::Vector{T}
+    kv_0::Vector{T}
     # Vertical hydraulic conductivity [mm Δt⁻¹] per soil layer
     kv::Vector{SVector{N,T}} | "-"
     # Muliplication factor [-] applied to kv_z (vertical flow)
@@ -57,9 +57,9 @@
     stemflow::Vector{T}
     # Throughfall [mm Δt⁻¹]
     throughfall::Vector{T}
-    # A scaling parameter [mm⁻¹] (controls exponential decline of kv₀)
+    # A scaling parameter [mm⁻¹] (controls exponential decline of kv_0)
     f::Vector{T} | "mm-1"
-    # Depth [mm] from soil surface for which exponential decline of kv₀ is valid
+    # Depth [mm] from soil surface for which exponential decline of kv_0 is valid
     z_exp::Vector{T} | "mm"
     # Depth [mm] from soil surface for which layered profile is valid
     z_layered::Vector{T} | "mm"
@@ -366,12 +366,12 @@ function initialize_sbm(nc, config, riverfrac, inds)
         defaults = 0.01,
         type = Float,
     )
-    kv₀ =
+    kv_0 =
         ncread(
             nc,
             config,
             "vertical.kv_0";
-            alias = "vertical.kv₀",
+            alias = "vertical.kv_0",
             sel = inds,
             defaults = 3000.0,
             type = Float,
@@ -588,7 +588,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         riverfrac = riverfrac,
         theta_s = theta_s,
         theta_r = theta_r,
-        kv₀ = kv₀,
+        kv_0 = kv_0,
         kv = svectorscopy(kv, Val{maxlayers}()),
         kvfrac = svectorscopy(kvfrac, Val{maxlayers}()),
         hb = hb,

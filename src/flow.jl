@@ -389,8 +389,8 @@ function stable_timestep(sf::S) where {S<:SurfaceFlow}
 end
 
 @get_units @exchange @grid_type @grid_location @with_kw struct LateralSSF{T}
-    kh₀::Vector{T} | "m d-1"               # Horizontal hydraulic conductivity at soil surface [m d⁻¹]
-    f::Vector{T} | "m-1"                   # A scaling parameter [m⁻¹] (controls exponential decline of kh₀)
+    kh_0::Vector{T} | "m d-1"               # Horizontal hydraulic conductivity at soil surface [m d⁻¹]
+    f::Vector{T} | "m-1"                   # A scaling parameter [m⁻¹] (controls exponential decline of kh_0)
     kh::Vector{T} | "m d-1"                # Horizontal hydraulic conductivity [m d⁻¹]
     khfrac::Vector{T} | "-"                # A muliplication factor applied to vertical hydraulic conductivity `kv` [-]
     soilthickness::Vector{T} | "m"         # Soil thickness [m]
@@ -401,7 +401,7 @@ end
     dl::Vector{T} | "m"                    # Drain length [m]
     dw::Vector{T} | "m"                    # Flow width [m]
     zi::Vector{T} | "m"                    # Pseudo-water table depth [m] (top of the saturated zone)
-    z_exp::Vector{T} | "m"                 # Depth [m] from soil surface for which exponential decline of kv₀ is valid
+    z_exp::Vector{T} | "m"                 # Depth [m] from soil surface for which exponential decline of kv_0 is valid
     exfiltwater::Vector{T} | "m dt-1"      # Exfiltration [m dt⁻¹] (groundwater above surface level, saturated excess conditions)
     recharge::Vector{T} | "m2 dt-1"        # Net recharge to saturated store [m² dt⁻¹]
     ssf::Vector{T} | "m3 d-1"              # Subsurface flow [m³ d⁻¹]
@@ -445,7 +445,7 @@ function update(ssf::LateralSSF, network, frac_toriver, ksat_profile)
                         ssf.ssf[v],
                         ssf.zi[v],
                         ssf.recharge[v],
-                        ssf.kh₀[v],
+                        ssf.kh_0[v],
                         ssf.beta_l[v],
                         ssf.theta_s[v] - ssf.theta_r[v],
                         ssf.f[v],
@@ -1140,27 +1140,27 @@ Compute a stable timestep size for the local inertial approach, based on Bates e
 dt = alpha * (Δx / sqrt(g max(h))
 """
 function stable_timestep(sw::ShallowWaterRiver{T})::T where {T}
-    dtₘᵢₙ = T(Inf)
+    dt_min = T(Inf)
     @tturbo for i = 1:sw.n
         dt = sw.alpha * sw.dl[i] / sqrt(sw.g * sw.h[i])
-        dtₘᵢₙ = dt < dtₘᵢₙ ? dt : dtₘᵢₙ
+        dt_min = dt < dt_min ? dt : dt_min
     end
-    dtₘᵢₙ = isinf(dtₘᵢₙ) ? T(10.0) : dtₘᵢₙ
-    return dtₘᵢₙ
+    dt_min = isinf(dt_min) ? T(10.0) : dt_min
+    return dt_min
 end
 
 function stable_timestep(sw::ShallowWaterLand{T})::T where {T}
-    dtₘᵢₙ = T(Inf)
+    dt_min = T(Inf)
     @tturbo for i = 1:sw.n
         dt = IfElse.ifelse(
             sw.rivercells[i] == 0,
             sw.alpha * min(sw.xl[i], sw.yl[i]) / sqrt(sw.g * sw.h[i]),
             T(Inf),
         )
-        dtₘᵢₙ = dt < dtₘᵢₙ ? dt : dtₘᵢₙ
+        dt_min = dt < dt_min ? dt : dt_min
     end
-    dtₘᵢₙ = isinf(dtₘᵢₙ) ? T(10.0) : dtₘᵢₙ
-    return dtₘᵢₙ
+    dt_min = isinf(dt_min) ? T(10.0) : dt_min
+    return dt_min
 end
 
 function update(

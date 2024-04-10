@@ -25,8 +25,8 @@ through the TOML file. Below an example for the `exponential_constant` profile:
 ksat_profile = "exponential_constant"
 ```
 
-For the `exponential` profile the input parameters `kv₀` and `f` are used. For the
-`exponential_constant` profile `kv₀` and `f` are used, and `z_exp` is required as input. For
+For the `exponential` profile the input parameters `kv_0` and `f` are used. For the
+`exponential_constant` profile `kv_0` and `f` are used, and `z_exp` is required as input. For
 the `layered` profile, input parameter `kv` is used, and for the `layered_exponential`
 profile `kv` is used and `z_layered` is required as input.
 
@@ -46,10 +46,10 @@ profile `kv` is used and `z_layered` is required as input.
 | **`glacierstore`**  | water within the glacier  | mm | 5500.0  |
 | **`theta_s`** | saturated water content (porosity) | - | 0.6  |
 | **`theta_r`** | residual water content | - | 0.01  |
-| **`kv₀`** (`kv_0`) | Vertical hydraulic conductivity at soil surface | mm Δt``^{-1}`` | 3000.0 mm day``^{-1}``|
+| **`kv_0`** (`kv_0`) | Vertical hydraulic conductivity at soil surface | mm Δt``^{-1}`` | 3000.0 mm day``^{-1}``|
 | **`kv`** |  Vertical hydraulic conductivity per soil layer | mm Δt``^{-1}`` | 1000.0 mm day``^{-1}``|
-| **`f`** | scaling parameter (controls exponential decline of `kv₀`) | mm``^{-1}`` | 0.001  |
-| **`z_exp`** | Depth from soil surface for which exponential decline of `kv₀` is valid | mm | -  |
+| **`f`** | scaling parameter (controls exponential decline of `kv_0`) | mm``^{-1}`` | 0.001  |
+| **`z_exp`** | Depth from soil surface for which exponential decline of `kv_0` is valid | mm | -  |
 | **`z_layered`** | Depth from soil surface for which layered profile (of `layered_exponential`) is valid | mm | -  |
 | **`hb`** | air entry pressure of soil (Brooks-Corey) | cm | 10.0  |
 | **`soilthickness`** | soil thickness | mm | 2000.0  |

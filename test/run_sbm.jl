@@ -449,7 +449,7 @@ Wflow.close_files(model, delete_output = false)
         @unpack vertical = model
         z = vertical.zi[i]
         kv_z = Wflow.hydraulic_conductivity_at_depth(vertical, z, i, 2, "exponential")
-        @test kv_z ≈ vertical.kvfrac[i][2] * vertical.kv₀[i] * exp(-vertical.f[i] * z)
+        @test kv_z ≈ vertical.kvfrac[i][2] * vertical.kv_0[i] * exp(-vertical.f[i] * z)
         @test vertical.z_exp == vertical.soilthickness
         @test_throws ErrorException Wflow.kh_layered_profile(
             vertical,
@@ -469,7 +469,7 @@ Wflow.close_files(model, delete_output = false)
         z = vertical.zi[i]
         kv_z =
             Wflow.hydraulic_conductivity_at_depth(vertical, z, i, 2, "exponential_constant")
-        @test kv_z ≈ vertical.kvfrac[i][2] * vertical.kv₀[i] * exp(-vertical.f[i] * z)
+        @test kv_z ≈ vertical.kvfrac[i][2] * vertical.kv_0[i] * exp(-vertical.f[i] * z)
         kv_400 = Wflow.hydraulic_conductivity_at_depth(
             vertical,
             400.0,

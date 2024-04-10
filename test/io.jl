@@ -31,7 +31,7 @@ config = Wflow.Config(tomlpath)
     @test Wflow.get_alias(config.input.vertical, "theta_s", "theta_s", nothing) == "thetaS"
 
     # modifiers can also be applied
-    kvconf = Wflow.get_alias(config.input.vertical, "kv_0", "kv₀", nothing)
+    kvconf = Wflow.get_alias(config.input.vertical, "kv_0", "kv_0", nothing)
     @test kvconf isa Wflow.Config
     ncname, modifier = Wflow.ncvar_name_modifier(kvconf, config = config)
     @test ncname === "KsatVer"

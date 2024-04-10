@@ -166,8 +166,8 @@ set through the TOML file as follows:
 slope = "Slope"
 ```
 
-The parameter `kh₀` is computed by multiplying the vertical hydraulic conductivity at the
-soil surface `kv₀` (including unit conversion) of the vertical `SBM` concept with the
+The parameter `kh_0` is computed by multiplying the vertical hydraulic conductivity at the
+soil surface `kv_0` (including unit conversion) of the vertical `SBM` concept with the
 internal parameter `khfrac` \[-\] (default value of 1.0). The internal model parameter
 `khfrac` is set through the TOML file as follows:
 
@@ -176,23 +176,23 @@ internal parameter `khfrac` \[-\] (default value of 1.0). The internal model par
 ksathorfrac = "KsatHorFrac"
 ```
 
-The `khfrac` parameter compensates for anisotropy, small scale `kv₀` measurements (soil
+The `khfrac` parameter compensates for anisotropy, small scale `kv_0` measurements (soil
 core) that do not represent larger scale hydraulic conductivity, and smaller flow length
 scales (hillslope) in reality, not represented by the model resolution.
 
 For the vertical [SBM](@ref params_sbm) concept different vertical hydraulic conductivity
 depth profiles are possible, and these also determine which `LateralSSF` parameters are used
 including the input requirements for the computation of lateral subsurface flow. For the
-`exponential` profile the model parameters `kh₀` and `f` are used. For the
-`exponential_constant` profile `kh₀` and `f` are used, and `z_exp` is required as part of
+`exponential` profile the model parameters `kh_0` and `f` are used. For the
+`exponential_constant` profile `kh_0` and `f` are used, and `z_exp` is required as part of
 `[input.vertical]`. For the `layered` profile, `SBM` model parameter `kv` is used, and for
 the `layered_exponential` profile `kv` is used and `z_exp` is required as part of
 `[input.vertical]`.
 
 | parameter | description  	        | unit | default |
 |:---------------| --------------- | ---------------------- | ----- |
-| `kh₀`          | horizontal hydraulic conductivity at soil surface  | m d``^{-1}`` |  3.0 |
-| **`f`** | a scaling parameter (controls exponential decline of `kh₀`) | m``^{-1}``  | 1.0 |
+| `kh_0`          | horizontal hydraulic conductivity at soil surface  | m d``^{-1}`` |  3.0 |
+| **`f`** | a scaling parameter (controls exponential decline of `kh_0`) | m``^{-1}``  | 1.0 |
 | `kh` | horizontal hydraulic conductivity | m d``^{-1}``  | - |
 | **`khfrac`** (`ksathorfrac`) | a muliplication factor applied to vertical hydraulic conductivity `kv` | -  | 100.0 |
 | **`soilthickness`** | soil thickness | m  | 2.0 |
@@ -203,7 +203,7 @@ the `layered_exponential` profile `kv` is used and `z_exp` is required as part o
 | `dl` | drain length | m | - |
 | `dw` | drain width | m | - |
 | `zi` | pseudo-water table depth (top of the saturated zone) | m | - |
-| **`z_exp`** | depth from soil surface for which exponential decline of `kh₀` is valid | m | - |
+| **`z_exp`** | depth from soil surface for which exponential decline of `kh_0` is valid | m | - |
 | `exfiltwater` | exfiltration (groundwater above surface level, saturated excess conditions) | m Δt⁻¹ | - |
 | `recharge` | net recharge to saturated store  | m``^2`` Δt⁻¹ | - |
 | `ssf` | subsurface flow  | m``^3`` d``{-1}``  | - |
@@ -412,11 +412,11 @@ altitude = "wflow_dem"
 ```
 
 The input parameter `conductivity` (listed under `[input.lateral.subsurface]`) is not equal
-to the internal model parameter `kh₀`, and is listed in the Table below between parentheses.
+to the internal model parameter `kh_0`, and is listed in the Table below between parentheses.
 
 |  parameter  | description  	        | unit  | default |
 |:--------------- | ------------------| ----- | -------|
-| **`kh₀`** (`conductivity`) | horizontal conductivity  | m d``^{-1}``s | - |
+| **`kh_0`** (`conductivity`) | horizontal conductivity  | m d``^{-1}``s | - |
 | **`specific_yield`**    | specific yield  | m m``^{-1}`` | - |
 | **`top`** (`altitude`)  | top groundwater layer  | m | - |
 | `bottom`     | bottom groundwater layer  | m | - |
