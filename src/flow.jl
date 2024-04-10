@@ -402,8 +402,8 @@ end
     dw::Vector{T} | "m"                    # Flow width [m]
     zi::Vector{T} | "m"                    # Pseudo-water table depth [m] (top of the saturated zone)
     z_exp::Vector{T} | "m"                 # Depth [m] from soil surface for which exponential decline of kv_0 is valid
-    exfiltwater::Vector{T} | "m dt-1"      # Exfiltration [m dt⁻¹] (groundwater above surface level, saturated excess conditions)
-    recharge::Vector{T} | "m2 dt-1"        # Net recharge to saturated store [m² dt⁻¹]
+    exfiltwater::Vector{T} | "m dt-1"      # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
+    recharge::Vector{T} | "m2 dt-1"        # Net recharge to saturated store [m² Δt⁻¹]
     ssf::Vector{T} | "m3 d-1"              # Subsurface flow [m³ d⁻¹]
     ssfin::Vector{T} | "m3 d-1"            # Inflow from upstream cells [m³ d⁻¹]
     ssfmax::Vector{T} | "m2 d-1"           # Maximum subsurface flow [m² d⁻¹]
@@ -481,7 +481,7 @@ end
 
 @get_units @exchange @grid_type @grid_location @with_kw struct GroundwaterExchange{T}
     dt::T | "d" | 0 | "none" | "none"   # model time step [d]
-    exfiltwater::Vector{T} | "m dt-1"   # Exfiltration [m dt⁻¹]  (groundwater above surface level, saturated excess conditions)
+    exfiltwater::Vector{T} | "m dt-1"   # Exfiltration [m Δt⁻¹]  (groundwater above surface level, saturated excess conditions)
     zi::Vector{T} | "m"                 # Pseudo-water table depth [m] (top of the saturated zone)
     to_river::Vector{T} | "m3 d-1"      # Part of subsurface flow [m³ d⁻¹] that flows to the river
     ssf::Vector{T} | "m3 d-1"           # Subsurface flow [m³ d⁻¹]
@@ -1433,8 +1433,8 @@ Compute floodplain flow area based on flow depth `h` and floodplain `depth`, `ar
 `width` of a floodplain profile.
 """
 function flow_area(width, area, depth, h)
-    Δh = h - depth  # depth at i1
-    area = area + (width * Δh) # area at i1, width at i2
+    dh = h - depth  # depth at i1
+    area = area + (width * dh) # area at i1, width at i2
     return area
 end
 
@@ -1445,8 +1445,8 @@ Compute floodplain wetted perimeter based on flow depth `h` and floodplain `dept
 wetted perimeter `p` of a floodplain profile.
 """
 function wetted_perimeter(p, depth, h)
-    Δh = h - depth # depth at i1
-    p = p + (2.0 * Δh) # p at i1
+    dh = h - depth # depth at i1
+    p = p + (2.0 * dh) # p at i1
     return p
 end
 
@@ -1454,8 +1454,8 @@ end
 function flood_depth(profile::FloodPlainProfile{T}, flood_volume, dl, i::Int)::T where {T}
     i1, i2 = interpolation_indices(flood_volume, @view profile.volume[:, i])
     ΔA = (flood_volume - profile.volume[i1, i]) / dl
-    Δh = ΔA / profile.width[i2, i]
-    flood_depth = profile.depth[i1] + Δh
+    dh = ΔA / profile.width[i2, i]
+    flood_depth = profile.depth[i1] + dh
     return flood_depth
 end
 

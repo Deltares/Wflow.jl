@@ -304,7 +304,7 @@ model = Wflow.initialize_sbm_model(config)
 
 fp = model.lateral.river.floodplain.profile
 river = model.lateral.river
-Δh = diff(fp.depth)
+dh = diff(fp.depth)
 Δv = diff(fp.volume[:, 3])
 Δa = diff(fp.a[:, 3])
 
@@ -335,7 +335,7 @@ river = model.lateral.river
         297.8700179533214f0,
         463.35655296229805f0,
     ]
-    @test Δh .* fp.width[2:end, 3] * river.dl[3] ≈ Δv
+    @test dh .* fp.width[2:end, 3] * river.dl[3] ≈ Δv
     @test fp.a[:, 3] * river.dl[3] ≈ fp.volume[:, 3]
     # flood depth from flood volume (8000.0)
     flood_vol = 8000.0f0
