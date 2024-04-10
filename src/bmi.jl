@@ -282,7 +282,7 @@ end
     BMI.set_value(model::Model, name::String, src::Vector{T}) where T<:AbstractFloat
 
 Set a model variable `name` to the values in vector `src`, overwriting the current contents.
-The type and size of `src` must match the model’s internal array.
+The type and size of `src` must match the model's internal array.
 """
 function BMI.set_value(model::Model, name::String, src::Vector{T}) where {T<:AbstractFloat}
     BMI.get_value_ptr(model, name) .= src

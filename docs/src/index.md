@@ -4,7 +4,7 @@ CurrentModule = Wflow
 
 # About wflow
 
-Wflow is Deltares’ solution for modelling hydrological processes, allowing users to account
+Wflow is Deltares' solution for modelling hydrological processes, allowing users to account
 for precipitation, interception, snow accumulation and melt, evapotranspiration, soil water,
 surface water and groundwater recharge in a fully distributed environment. Successfully
 applied worldwide for analyzing flood hazards, drought, climate change impacts and land use

@@ -88,7 +88,7 @@ Both the Gash and Rutter models are available to estimate rainfall interception 
 vegetation. The selection of an interception model depends on the simulation timestep.
 
 ### The analytical (Gash) model
-The analytical model of rainfall interception is based on Rutter’s numerical model. The
+The analytical model of rainfall interception is based on Rutter's numerical model. The
 simplifications that introduced allow the model to be applied on a daily basis, although a
 storm-based approach will yield better results in situations with more than one storm per
 day. The amount of water needed to completely saturate the canopy is defined as:

@@ -37,7 +37,7 @@ Rutter model. The simulation timestep defines which interception model is used, 
 Rutter model.
 
 ### The analytical (Gash) model (Gash, 1979)
-The analytical model of rainfall interception is based on Rutter’s numerical model. Simplifications 
+The analytical model of rainfall interception is based on Rutter's numerical model. Simplifications 
 allow the model to be applied on a daily basis, although a
 storm-based approach will yield better results in situations with more than one storm per
 day. The amount of water needed to completely saturate the canopy is defined as:
