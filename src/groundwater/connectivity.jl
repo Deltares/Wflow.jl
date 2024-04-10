@@ -39,19 +39,19 @@ connections(C::Connectivity, id::Int) = C.colptr[id]:(C.colptr[id+1]-1)
 
 
 """
-    connection_geometry(I, J, dx, Δy)
+    connection_geometry(I, J, dx, dy)
 
 Compute geometrical properties of connections for structured input.
 """
-function connection_geometry(I, J, dx, Δy)
+function connection_geometry(I, J, dx, dy)
     if I[1] != J[1]  # connection in y
-        length1 = 0.5 * Δy[I[1]]
-        length2 = 0.5 * Δy[J[1]]
+        length1 = 0.5 * dy[I[1]]
+        length2 = 0.5 * dy[J[1]]
         width = dx[I[2]]
     elseif I[2] != J[2]  # connection in x
         length1 = 0.5 * dx[I[2]]
         length2 = 0.5 * dx[J[2]]
-        width = Δy[I[1]]
+        width = dy[I[1]]
     else
         # TODO: more specific exception? --> Martijn
         error("Inconsistent index")
@@ -69,7 +69,7 @@ const neighbors = (
 )
 
 # Constructor for the Connectivity structure for structured input
-function Connectivity(indices, reverse_indices, dx::Vector{T}, Δy::Vector{T}) where {T}
+function Connectivity(indices, reverse_indices, dx::Vector{T}, dy::Vector{T}) where {T}
     # indices: These map from the 1D internal domain to the 2D external domain.
     # reverse_indices: from the 2D external domain to the 1D internal domain,
     # providing an Int which can be used as a linear index
@@ -92,7 +92,7 @@ function Connectivity(indices, reverse_indices, dx::Vector{T}, Δy::Vector{T}) w
             J = I + neighbor
             if (1 <= J[1] <= nrow) && (1 <= J[2] <= ncol && reverse_indices[J] != 0) # Check if it's inbounds and neighbor is active
                 rowval[i] = reverse_indices[J]
-                length1[i], length2[i], width[i] = connection_geometry(I, J, dx, Δy)
+                length1[i], length2[i], width[i] = connection_geometry(I, J, dx, dy)
                 i += 1
             end
         end

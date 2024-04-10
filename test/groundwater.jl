@@ -32,9 +32,9 @@ function homogenous_aquifer(nrow, ncol)
     # Domain, geometry
     domain = ones(Bool, shape)
     dx = fill(10.0, ncol)
-    Δy = fill(10.0, nrow)
+    dy = fill(10.0, nrow)
     indices, reverse_indices = Wflow.active_indices(domain, false)
-    connectivity = Wflow.Connectivity(indices, reverse_indices, dx, Δy)
+    connectivity = Wflow.Connectivity(indices, reverse_indices, dx, dy)
     ncell = connectivity.ncell
 
     conf_aqf = Wflow.ConfinedAquifer(
@@ -66,7 +66,7 @@ end
     nrow = 3
     shape = (ncol, nrow)
     dx = [10.0, 20.0]
-    Δy = [5.0, 15.0, 25.0]
+    dy = [5.0, 15.0, 25.0]
     collect_connections(con, cell_id) =
         [con.rowval[nzi] for nzi in Wflow.connections(con, cell_id)]
 
@@ -74,15 +74,15 @@ end
         @testset "connection_geometry: y" begin
             I = CartesianIndex(1, 1)
             J = CartesianIndex(2, 1)
-            @test Wflow.connection_geometry(I, J, dx, Δy) == (2.5, 7.5, 10.0)
-            @test_throws Exception Wflow.connection_geometry(I, I, dx, Δy)
+            @test Wflow.connection_geometry(I, J, dx, dy) == (2.5, 7.5, 10.0)
+            @test_throws Exception Wflow.connection_geometry(I, I, dx, dy)
         end
 
         @testset "connection_geometry: x" begin
             I = CartesianIndex(1, 1)
             J = CartesianIndex(1, 2)
-            @test Wflow.connection_geometry(I, J, dx, Δy) == (5.0, 10.0, 5.0)
-            @test_throws Exception Wflow.connection_geometry(I, I, dx, Δy)
+            @test Wflow.connection_geometry(I, J, dx, dy) == (5.0, 10.0, 5.0)
+            @test_throws Exception Wflow.connection_geometry(I, I, dx, dy)
         end
 
         @testset "Connectivity 1D(x)" begin
@@ -113,7 +113,7 @@ end
             # +---+
             domain = ones(Bool, (3, 1))
             indices, reverse_indices = Wflow.active_indices(domain, false)
-            conn = Wflow.Connectivity(indices, reverse_indices, [10.0], Δy)
+            conn = Wflow.Connectivity(indices, reverse_indices, [10.0], dy)
             @test conn.ncell == 3
             @test conn.nconnection == 4
             @test conn.length1 == [2.5, 7.5, 7.5, 12.5]
@@ -136,7 +136,7 @@ end
             # +---+---+
             domain = ones(Bool, (nrow, ncol))
             indices, reverse_indices = Wflow.active_indices(domain, false)
-            conn = Wflow.Connectivity(indices, reverse_indices, dx, Δy)
+            conn = Wflow.Connectivity(indices, reverse_indices, dx, dy)
             @test conn.ncell == 6
             @test conn.nconnection == 14
             @test conn.colptr == [1, 3, 6, 8, 10, 13, 15]
@@ -160,7 +160,7 @@ end
             domain = ones(Bool, (nrow, ncol))
             domain[2, 1] = false
             indices, reverse_indices = Wflow.active_indices(domain, false)
-            conn = Wflow.Connectivity(indices, reverse_indices, dx, Δy)
+            conn = Wflow.Connectivity(indices, reverse_indices, dx, dy)
             @test conn.ncell == 5
             @test conn.nconnection == 8
             @test conn.colptr == [1, 2, 3, 5, 7, 9]
@@ -398,9 +398,9 @@ end
         # Domain, geometry
         domain = ones(Bool, shape)
         dx = fill(cellsize, ncol)
-        Δy = fill(cellsize, nrow)
+        dy = fill(cellsize, nrow)
         indices, reverse_indices = Wflow.active_indices(domain, false)
-        connectivity = Wflow.Connectivity(indices, reverse_indices, dx, Δy)
+        connectivity = Wflow.Connectivity(indices, reverse_indices, dx, dy)
         ncell = connectivity.ncell
         xc = collect(range(0.0, stop = aquifer_length - cellsize, step = cellsize))
         aquifer = Wflow.UnconfinedAquifer(
@@ -458,9 +458,9 @@ end
         # Domain, geometry
         domain = ones(Bool, shape)
         dx = fill(cellsize, ncol)
-        Δy = fill(cellsize, nrow)
+        dy = fill(cellsize, nrow)
         indices, reverse_indices = Wflow.active_indices(domain, false)
-        connectivity = Wflow.Connectivity(indices, reverse_indices, dx, Δy)
+        connectivity = Wflow.Connectivity(indices, reverse_indices, dx, dy)
         ncell = connectivity.ncell
         xc = collect(range(0.0, stop = aquifer_length - cellsize, step = cellsize))
         aquifer = Wflow.UnconfinedAquifer(
@@ -522,9 +522,9 @@ end
         # Domain, geometry
         domain = ones(Bool, shape)
         dx = fill(cellsize, ncol)
-        Δy = fill(cellsize, nrow)
+        dy = fill(cellsize, nrow)
         indices, reverse_indices = Wflow.active_indices(domain, false)
-        connectivity = Wflow.Connectivity(indices, reverse_indices, dx, Δy)
+        connectivity = Wflow.Connectivity(indices, reverse_indices, dx, dy)
         ncell = connectivity.ncell
         aquifer = Wflow.ConfinedAquifer(
             fill(startinghead, ncell),
