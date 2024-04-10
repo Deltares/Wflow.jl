@@ -24,11 +24,11 @@ config = Wflow.Config(tomlpath)
     @test config.output isa Wflow.Config
     @test collect(keys(config.output)) == ["lateral", "vertical", "path"]
 
-    # theta_s can also be provided under the alias θₛ
-    @test Wflow.get_alias(config.input.vertical, "theta_s", "θₛ", nothing) == "thetaS"
+    # theta_s can also be provided under the alias theta_s
+    @test Wflow.get_alias(config.input.vertical, "theta_s", "theta_s", nothing) == "thetaS"
     val = pop!(config.input.vertical, "theta_s")
-    config.input.vertical["θₛ"] = val
-    @test Wflow.get_alias(config.input.vertical, "theta_s", "θₛ", nothing) == "thetaS"
+    config.input.vertical["theta_s"] = val
+    @test Wflow.get_alias(config.input.vertical, "theta_s", "theta_s", nothing) == "thetaS"
 
     # modifiers can also be applied
     kvconf = Wflow.get_alias(config.input.vertical, "kv_0", "kv₀", nothing)

@@ -120,7 +120,7 @@ function rainfall_interception_modrut(
 end
 
 """
-    acttransp_unsat_sbm(rootingdepth, ustorelayerdepth, sumlayer, restpotevap, sum_actevapustore, c, usl, θₛ, θᵣ, hb, ust::Bool = false)
+    acttransp_unsat_sbm(rootingdepth, ustorelayerdepth, sumlayer, restpotevap, sum_actevapustore, c, usl, theta_s, theta_r, hb, ust::Bool = false)
 
 Compute actual transpiration for unsaturated zone.
 If `ust` is `true`, the whole unsaturated store is available for transpiration.
@@ -133,8 +133,8 @@ If `ust` is `true`, the whole unsaturated store is available for transpiration.
 - `sum_actevapustore` (cumulative actual transpiration (more than one unsaturated layers))
 - `c` (Brooks-Corey coefficient)
 - `usl` (thickness of unsaturated zone)
-- `θₛ`
-- `θᵣ`
+- `theta_s`
+- `theta_r`
 - `hb` (air entry pressure)
 - `ust`
 
@@ -151,8 +151,8 @@ function acttransp_unsat_sbm(
     sum_actevapustore,
     c,
     usl,
-    θₛ,
-    θᵣ,
+    theta_s,
+    theta_r,
     hb,
     ust::Bool = false,
 )
@@ -186,7 +186,7 @@ function acttransp_unsat_sbm(
         vwc = 0.0
     end
     vwc = max(vwc, 0.0000001)
-    head = hb / (pow(((vwc) / (θₛ - θᵣ)), (1.0 / par_lambda)))  # Note that in the original formula, thetaR is extracted from vwc, but thetaR is not part of the numerical vwc calculation
+    head = hb / (pow(((vwc) / (theta_s - theta_r)), (1.0 / par_lambda)))  # Note that in the original formula, thetaR is extracted from vwc, but thetaR is not part of the numerical vwc calculation
     head = max(head, hb)
 
     # Transform h to a reduction coefficient value according to Feddes et al. (1978).
@@ -293,7 +293,7 @@ function unsatzone_flow_layer(usd, kv_z, l_sat, c)
 end
 
 """
-    unsatzone_flow_sbm(ustorelayerdepth, soilwatercapacity, satwaterdepth, kv_z, usl, θₛ, θᵣ)
+    unsatzone_flow_sbm(ustorelayerdepth, soilwatercapacity, satwaterdepth, kv_z, usl, theta_s, theta_r)
 
 The transfer of water from the unsaturated store `ustorelayerdepth` to the saturated store `satwaterdepth`
 is controlled by the vertical saturated hydraulic conductivity `kv_z` at the water table and the ratio between
@@ -307,15 +307,15 @@ function unsatzone_flow_sbm(
     satwaterdepth,
     kv_z,
     usl,
-    θₛ,
-    θᵣ,
+    theta_s,
+    theta_r,
 )
 
     sd = soilwatercapacity - satwaterdepth
     if sd <= 0.00001
         ast = 0.0
     else
-        st = kv_z * min(ustorelayerdepth, usl * (θₛ - θᵣ)) / sd
+        st = kv_z * min(ustorelayerdepth, usl * (theta_s - theta_r)) / sd
         ast = min(st, ustorelayerdepth)
         ustorelayerdepth = ustorelayerdepth - ast
     end

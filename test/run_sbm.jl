@@ -75,8 +75,8 @@ end
 
     @test model.clock.iteration == 1
 
-    @test sbm.θₛ[50063] ≈ 0.48755401372909546f0
-    @test sbm.θᵣ[50063] ≈ 0.15943120419979095f0
+    @test sbm.theta_s[50063] ≈ 0.48755401372909546f0
+    @test sbm.theta_r[50063] ≈ 0.15943120419979095f0
     @test mean(sbm.runoff) ≈ 0.04177459898728149f0
     @test mean(sbm.soilevap) ≈ 0.02122698830889417f0
     @test mean(sbm.actevap) ≈ 0.33545623834952154f0
@@ -92,8 +92,8 @@ model = Wflow.run_timestep(model)
 
 @testset "second timestep" begin
     sbm = model.vertical
-    @test sbm.θₛ[50063] ≈ 0.48755401372909546f0
-    @test sbm.θᵣ[50063] ≈ 0.15943120419979095f0
+    @test sbm.theta_s[50063] ≈ 0.48755401372909546f0
+    @test sbm.theta_r[50063] ≈ 0.15943120419979095f0
     @test mean(sbm.net_runoff) ≈ 0.23710522236947756f0
     @test mean(sbm.runoff) ≈ 0.23747368431143517f0
     @test mean(sbm.soilevap) ≈ 0.018750808322054897f0

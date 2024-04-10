@@ -249,9 +249,9 @@ function initialize_hbv_model(config::Config)
         ldd = set_pit_ldd(pits_2d, ldd, inds)
     end
 
-    βₗ =
+    beta_l =
         ncread(nc, config, "lateral.land.slope"; optional = false, sel = inds, type = Float)
-    clamp!(βₗ, 0.00001, Inf)
+    clamp!(beta_l, 0.00001, Inf)
 
     dl = map(detdrainlength, ldd, xl, yl)
     dw = (xl .* yl) ./ dl
@@ -259,7 +259,7 @@ function initialize_hbv_model(config::Config)
         nc,
         config,
         inds;
-        sl = βₗ,
+        sl = beta_l,
         dl = dl,
         width = map(det_surfacewidth, dw, riverwidth, river),
         iterate = kinwave_it,
@@ -282,7 +282,7 @@ function initialize_hbv_model(config::Config)
 
     # the indices of the river cells in the land(+river) cell vector
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
-    frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, βₗ, n)
+    frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, beta_l, n)
 
     rf = initialize_surfaceflow_river(
         nc,

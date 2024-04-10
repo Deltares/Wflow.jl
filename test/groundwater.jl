@@ -4,14 +4,14 @@ function initial_head(x)
 end
 
 """
-    transient_aquifer_1d(x, time, conductivity, specific_yield, aquifer_length, Β)
+    transient_aquifer_1d(x, time, conductivity, specific_yield, aquifer_length, beta)
 
 Non-steady flow in an unconfined rectangular aquifer, with Dirichlet h(0, t) = 0
 on the left edge, and a Neumann Boundary Condition (dh/dx = 0) on the right.
 """
-function transient_aquifer_1d(x, time, conductivity, specific_yield, aquifer_length, Β)
+function transient_aquifer_1d(x, time, conductivity, specific_yield, aquifer_length, beta)
     initial_head(x) / 1.0 +
-    (Β * conductivity * initial_head(aquifer_length) * time) /
+    (beta * conductivity * initial_head(aquifer_length) * time) /
     (specific_yield * aquifer_length * aquifer_length)
 end
 
@@ -23,7 +23,7 @@ Non-steady flow in a confined aquifer, using the well function of Theis.
 """
 function drawdown_theis(distance, time, discharge, transmissivity, storativity)
     u = (storativity * distance^2) / (4 * transmissivity * time)
-    return discharge / (4 * π * transmissivity) * expint(u)
+    return discharge / (4 * pi * transmissivity) * expint(u)
 end
 
 
@@ -390,7 +390,7 @@ end
         bottom = 0.0
         specific_yield = 0.15
         cellsize = 500.0
-        Β = 1.12
+        beta = 1.12
         aquifer_length = cellsize * ncol
         gwf_f = 3.0
         conductivity_profile = "uniform"
@@ -434,10 +434,10 @@ end
             @test all(diff(gwf.aquifer.head) .> 0.0)
         end
 
-        ϕ_analytical = [
-            transient_aquifer_1d(x, time, conductivity, specific_yield, aquifer_length, Β) for x in xc
+        phi_analytical = [
+            transient_aquifer_1d(x, time, conductivity, specific_yield, aquifer_length, beta) for x in xc
         ]
-        difference = gwf.aquifer.head .- ϕ_analytical
+        difference = gwf.aquifer.head .- phi_analytical
         # @test all(difference .< ?)  #TODO
     end
 
@@ -450,7 +450,7 @@ end
         bottom = 0.0
         specific_yield = 0.15
         cellsize = 500.0
-        Β = 1.12
+        beta = 1.12
         aquifer_length = cellsize * ncol
         gwf_f = 3.0
         conductivity_profile = "exponential"
@@ -494,10 +494,10 @@ end
             @test all(diff(gwf.aquifer.head) .> 0.0)
         end
 
-        ϕ_analytical = [
-            transient_aquifer_1d(x, time, conductivity, specific_yield, aquifer_length, Β) for x in xc
+        phi_analytical = [
+            transient_aquifer_1d(x, time, conductivity, specific_yield, aquifer_length, beta) for x in xc
         ]
-        difference = gwf.aquifer.head .- ϕ_analytical
+        difference = gwf.aquifer.head .- phi_analytical
         # @test all(difference .< ?)  #TODO
     end
 
@@ -555,18 +555,18 @@ end
         end
 
         # test for symmetry on x and y axes
-        ϕ = reshape(gwf.aquifer.head, shape)
-        @test ϕ[1:halfnrow, :] ≈ ϕ[end:-1:halfnrow+2, :]
-        @test ϕ[:, 1:halfnrow] ≈ ϕ[:, end:-1:halfnrow+2]
+        phi = reshape(gwf.aquifer.head, shape)
+        @test phi[1:halfnrow, :] ≈ phi[end:-1:halfnrow+2, :]
+        @test phi[:, 1:halfnrow] ≈ phi[:, end:-1:halfnrow+2]
 
         # compare with analytical solution
         start = -0.5 * aquifer_length + 0.5 * cellsize
         stop = 0.5 * aquifer_length - 0.5 * cellsize
         X = collect(range(start, stop = stop, step = cellsize))
-        ϕ_analytical =
+        phi_analytical =
             [drawdown_theis(x, time, discharge, transmissivity, storativity) for x in X] .+ 10.0
         # compare left-side, since it's symmetric anyway. Skip the well cell, and its first neighbor
-        difference = ϕ[1:halfnrow-1, halfnrow] - ϕ_analytical[1:halfnrow-1]
+        difference = phi[1:halfnrow-1, halfnrow] - phi_analytical[1:halfnrow-1]
         @test all(difference .< 0.02)
     end
 

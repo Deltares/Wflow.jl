@@ -99,9 +99,9 @@ function initialize_sbm_gwf_model(config::Config)
     end
 
     # overland flow (kinematic wave)
-    βₗ =
+    beta_l =
         ncread(nc, config, "lateral.land.slope"; optional = false, sel = inds, type = Float)
-    clamp!(βₗ, 0.00001, Inf)
+    clamp!(beta_l, 0.00001, Inf)
     ldd_2d = ncread(nc, config, "ldd"; optional = false, allow_missing = true)
 
     ldd = ldd_2d[inds]
@@ -116,14 +116,14 @@ function initialize_sbm_gwf_model(config::Config)
 
     # the indices of the river cells in the land(+river) cell vector
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
-    frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, βₗ, n)
+    frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, beta_l, n)
 
     if land_routing == "kinematic-wave"
         olf = initialize_surfaceflow_land(
             nc,
             config,
             inds;
-            sl = βₗ,
+            sl = beta_l,
             dl,
             width = map(det_surfacewidth, dw, riverwidth, river),
             iterate = kinwave_it,
@@ -247,7 +247,7 @@ function initialize_sbm_gwf_model(config::Config)
 
     # reset zi and satwaterdepth with groundwater head from unconfined aquifer
     sbm.zi .= (altitude .- initial_head) .* 1000.0
-    sbm.satwaterdepth .= (sbm.soilthickness .- sbm.zi) .* (sbm.θₛ .- sbm.θᵣ)
+    sbm.satwaterdepth .= (sbm.soilthickness .- sbm.zi) .* (sbm.theta_s .- sbm.theta_r)
 
     # river boundary of unconfined aquifer
     infiltration_conductance = ncread(
@@ -421,7 +421,7 @@ function initialize_sbm_gwf_model(config::Config)
             reverse_indices = rev_inds,
             xl = xl,
             yl = yl,
-            slope = βₗ,
+            slope = beta_l,
             altitude = altitude,
         )
     elseif land_routing == "local-inertial"
@@ -432,7 +432,7 @@ function initialize_sbm_gwf_model(config::Config)
             reverse_indices = rev_inds,
             xl = xl,
             yl = yl,
-            slope = βₗ,
+            slope = beta_l,
             altitude = altitude,
             index_river = index_river_nf,
             staggered_indices = indices,

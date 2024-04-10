@@ -102,9 +102,9 @@ function initialize_sbm_model(config::Config)
         ldd = set_pit_ldd(pits_2d, ldd, inds)
     end
 
-    βₗ =
+    beta_l =
         ncread(nc, config, "lateral.land.slope"; optional = false, sel = inds, type = Float)
-    clamp!(βₗ, 0.00001, Inf)
+    clamp!(beta_l, 0.00001, Inf)
 
     dl = map(detdrainlength, ldd, xl, yl)
     dw = (xl .* yl) ./ dl
@@ -137,10 +137,10 @@ function initialize_sbm_model(config::Config)
             zi = zi,
             z_exp = z_exp,
             soilthickness = soilthickness,
-            θₛ = sbm.θₛ,
-            θᵣ = sbm.θᵣ,
+            theta_s = sbm.theta_s,
+            theta_r = sbm.theta_r,
             Δt = Δt / basetimestep,
-            βₗ = βₗ,
+            beta_l = beta_l,
             dl = dl,
             dw = dw,
             exfiltwater = fill(mv, n),
@@ -180,14 +180,14 @@ function initialize_sbm_model(config::Config)
 
     # the indices of the river cells in the land(+river) cell vector
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
-    frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, βₗ, n)
+    frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, beta_l, n)
 
     if land_routing == "kinematic-wave"
         olf = initialize_surfaceflow_land(
             nc,
             config,
             inds;
-            sl = βₗ,
+            sl = beta_l,
             dl,
             width = map(det_surfacewidth, dw, riverwidth, river),
             iterate = kinwave_it,
@@ -340,7 +340,7 @@ function initialize_sbm_model(config::Config)
         reverse_indices = rev_inds,
         xl,
         yl,
-        slope = βₗ,
+        slope = beta_l,
     )
     if land_routing == "local-inertial"
         land = merge(land, (index_river = index_river_nf, staggered_indices = indices))
@@ -518,7 +518,7 @@ function set_states(
             max.(
                 0.0,
                 vertical.soilthickness .-
-                vertical.satwaterdepth ./ (vertical.θₛ .- vertical.θᵣ),
+                vertical.satwaterdepth ./ (vertical.theta_s .- vertical.theta_r),
             )
         vertical.zi .= zi
         if land_routing == "kinematic-wave"

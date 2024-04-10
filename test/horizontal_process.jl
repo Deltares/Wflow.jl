@@ -29,14 +29,14 @@ sink = toposort[end]
 
 # calculate parameters of kinematic wave
 const q = 0.000001
-const β = 0.6
-const AlpPow = (2.0 / 3.0) * β
-AlpTermR = (N ./ sqrt.(slope)) .^ β
+const beta = 0.6
+const AlpPow = (2.0 / 3.0) * beta
+AlpTermR = (N ./ sqrt.(slope)) .^ beta
 P = Bw + (2.0 * waterlevel)
-α = AlpTermR .* P .^ AlpPow
+alpha = AlpTermR .* P .^ AlpPow
 
 Q = zeros(n)
-Q = Wflow.kin_wave!(Q, graph, toposort, Qold, q, α, β, DCL, Δt_sec)
+Q = Wflow.kin_wave!(Q, graph, toposort, Qold, q, alpha, beta, DCL, Δt_sec)
 
 @testset "flow rate" begin
     @test sum(Q) ≈ 2.957806043289641e6
@@ -187,7 +187,7 @@ end
         active_n = collect(1:n-1),
         active_e = collect(1:_ne),
         g = 9.80665,
-        α = alpha,
+        alpha = alpha,
         h_thresh = h_thresh,
         Δt = Δt,
         q0 = zeros(_ne),
@@ -198,9 +198,9 @@ end
         mannings_n_sq = mannings_n_sq,
         mannings_n = n_river,
         h = h_init,
-        η_max = zeros(_ne),
-        η_src = zeros(_ne),
-        η_dst = zeros(_ne),
+        eta_max = zeros(_ne),
+        eta_src = zeros(_ne),
+        eta_dst = zeros(_ne),
         hf = zeros(_ne),
         h_av = zeros(n),
         width = width,
@@ -227,14 +227,14 @@ end
     )
 
     # run until steady state is reached
-    ϵ = 1.0e-12
+    epsilon = 1.0e-12
     while true
         sw_river.inwater[1] = 20.0
         h0 = mean(sw_river.h)
         Δt = Wflow.stable_timestep(sw_river)
         Wflow.shallowwater_river_update(sw_river, network, Δt, 0.0, true)
         d = abs(h0 - mean(sw_river.h))
-        if d <= ϵ
+        if d <= epsilon
             break
         end
     end

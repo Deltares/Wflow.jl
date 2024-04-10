@@ -14,9 +14,9 @@
     # Fraction of river [-]
     riverfrac::Vector{T} | "-"
     # Saturated water content (porosity) [-]
-    θₛ::Vector{T} | "-"
+    theta_s::Vector{T} | "-"
     # Residual water content [-]
-    θᵣ::Vector{T} | "-"
+    theta_r::Vector{T} | "-"
     # Vertical hydraulic conductivity [mm Δt⁻¹] at soil surface
     kv₀::Vector{T}
     # Vertical hydraulic conductivity [mm Δt⁻¹] per soil layer
@@ -140,15 +140,15 @@
     runoff::Vector{T}
     # Net surface runoff (surface runoff - actual open water evaporation) [mm Δt⁻¹]
     net_runoff::Vector{T}
-    # Volumetric water content [-] per soil layer (including θᵣ and saturated zone)
+    # Volumetric water content [-] per soil layer (including theta_r and saturated zone)
     vwc::Vector{SVector{N,T}} | "-"
-    # Volumetric water content [%] per soil layer (including θᵣ and saturated zone)
+    # Volumetric water content [%] per soil layer (including theta_r and saturated zone)
     vwc_perc::Vector{SVector{N,T}} | "%"
-    # Root water storage [mm] in unsaturated and saturated zone (excluding θᵣ)
+    # Root water storage [mm] in unsaturated and saturated zone (excluding theta_r)
     rootstore::Vector{T} | "mm"
-    # Volumetric water content [-] in root zone (including θᵣ and saturated zone)
+    # Volumetric water content [-] in root zone (including theta_r and saturated zone)
     vwc_root::Vector{T} | "-"
-    # Volumetric water content [%] in root zone (including θᵣ and saturated zone)
+    # Volumetric water content [%] in root zone (including theta_r and saturated zone)
     vwc_percroot::Vector{T} | "%"
     # Amount of available water in the unsaturated zone [mm]
     ustoredepth::Vector{T} | "mm"
@@ -348,20 +348,20 @@ function initialize_sbm(nc, config, riverfrac, inds)
         fill = 0.0,
     )
     # soil parameters
-    θₛ = ncread(
+    theta_s = ncread(
         nc,
         config,
         "vertical.theta_s";
-        alias = "vertical.θₛ",
+        alias = "vertical.theta_s",
         sel = inds,
         defaults = 0.6,
         type = Float,
     )
-    θᵣ = ncread(
+    theta_r = ncread(
         nc,
         config,
         "vertical.theta_r";
-        alias = "vertical.θᵣ",
+        alias = "vertical.theta_r",
         sel = inds,
         defaults = 0.01,
         type = Float,
@@ -487,10 +487,10 @@ function initialize_sbm(nc, config, riverfrac, inds)
 
     cmax, e_r, canopygapfraction, sl, swood, kext = initialize_canopy(nc, config, inds)
 
-    θₑ = θₛ .- θᵣ
-    soilwatercapacity = soilthickness .* θₑ
+    theta_e = theta_s .- theta_r
+    soilwatercapacity = soilthickness .* theta_e
     satwaterdepth = 0.85 .* soilwatercapacity # cold state value for satwaterdepth
-    zi = max.(0.0, soilthickness .- satwaterdepth ./ θₑ) # cold state value for zi
+    zi = max.(0.0, soilthickness .- satwaterdepth ./ theta_e) # cold state value for zi
 
     # these are filled in the loop below
     # TODO see if we can replace this approach
@@ -586,8 +586,8 @@ function initialize_sbm(nc, config, riverfrac, inds)
         n_unsatlayers = n_unsatlayers,
         nlayers_kv = nlayers_kv,
         riverfrac = riverfrac,
-        θₛ = θₛ,
-        θᵣ = θᵣ,
+        theta_s = theta_s,
+        theta_r = theta_r,
         kv₀ = kv₀,
         kv = svectorscopy(kv, Val{maxlayers}()),
         kvfrac = svectorscopy(kvfrac, Val{maxlayers}()),
@@ -869,13 +869,13 @@ function update_until_recharge(sbm::SBM, config)
                     sbm.satwaterdepth[i],
                     kv_z,
                     usl[1],
-                    sbm.θₛ[i],
-                    sbm.θᵣ[i],
+                    sbm.theta_s[i],
+                    sbm.theta_r[i],
                 )
                 usld = setindex(usld, ustorelayerdepth, 1)
             else
                 for m = 1:n_usl
-                    l_sat = usl[m] * (sbm.θₛ[i] - sbm.θᵣ[i])
+                    l_sat = usl[m] * (sbm.theta_s[i] - sbm.theta_r[i])
                     kv_z = hydraulic_conductivity_at_depth(sbm, z[m], i, m, ksat_profile)
                     ustorelayerdepth =
                         m == 1 ? sbm.ustorelayerdepth[i][m] + infiltsoilpath :
@@ -901,12 +901,12 @@ function update_until_recharge(sbm::SBM, config)
                     # Check if groundwater level lies below the surface
                     soilevapunsat =
                         potsoilevap *
-                        min(1.0, usld[1] / (sbm.zi[i] * (sbm.θₛ[i] - sbm.θᵣ[i])))
+                        min(1.0, usld[1] / (sbm.zi[i] * (sbm.theta_s[i] - sbm.theta_r[i])))
                 else
                     # In case first layer contains no saturated storage
                     soilevapunsat =
                         potsoilevap *
-                        min(1.0, usld[1] / (usl[1] * ((sbm.θₛ[i] - sbm.θᵣ[i]))))
+                        min(1.0, usld[1] / (usl[1] * ((sbm.theta_s[i] - sbm.theta_r[i]))))
                 end
             end
             # Ensure that the unsaturated evaporation rate does not exceed the
@@ -927,7 +927,7 @@ function update_until_recharge(sbm::SBM, config)
                     min(1.0, (sbm.act_thickl[i][1] - sbm.zi[i]) / sbm.act_thickl[i][1])
                 soilevapsat = min(
                     soilevapsat,
-                    (sbm.act_thickl[i][1] - sbm.zi[i]) * (sbm.θₛ[i] - sbm.θᵣ[i]),
+                    (sbm.act_thickl[i][1] - sbm.zi[i]) * (sbm.theta_s[i] - sbm.theta_r[i]),
                 )
             else
                 soilevapsat = 0.0
@@ -953,8 +953,8 @@ function update_until_recharge(sbm::SBM, config)
                 actevapustore,
                 sbm.c[i][k],
                 usl[k],
-                sbm.θₛ[i],
-                sbm.θᵣ[i],
+                sbm.theta_s[i],
+                sbm.theta_r[i],
                 sbm.hb[i],
                 ust,
             )
@@ -964,7 +964,7 @@ function update_until_recharge(sbm::SBM, config)
         # check soil moisture balance per layer
         du = 0.0
         for k = n_usl:-1:1
-            du = max(0.0, usld[k] - usl[k] * (sbm.θₛ[i] - sbm.θᵣ[i]))
+            du = max(0.0, usld[k] - usl[k] * (sbm.theta_s[i] - sbm.theta_r[i]))
             usld = setindex(usld, usld[k] - du, k)
             if k > 1
                 usld = setindex(usld, usld[k-1] + du, k - 1)
@@ -1006,7 +1006,7 @@ function update_until_recharge(sbm::SBM, config)
             netcapflux = capflux
             for k = n_usl:-1:1
                 toadd =
-                    min(netcapflux, max(usl[k] * (sbm.θₛ[i] - sbm.θᵣ[i]) - usld[k], 0.0))
+                    min(netcapflux, max(usl[k] * (sbm.theta_s[i] - sbm.theta_r[i]) - usld[k], 0.0))
                 usld = setindex(usld, usld[k] + toadd, k)
                 netcapflux = netcapflux - toadd
                 actcapflux = actcapflux + toadd
@@ -1074,7 +1074,7 @@ function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
         exfiltustore = 0.0
         for k = sbm.n_unsatlayers[i]:-1:1
             if k <= n_usl
-                exfiltustore = max(0, usld[k] - usl[k] * (sbm.θₛ[i] - sbm.θᵣ[i]))
+                exfiltustore = max(0, usld[k] - usl[k] * (sbm.theta_s[i] - sbm.theta_r[i]))
             else
                 exfiltustore = usld[k]
             end
@@ -1100,13 +1100,13 @@ function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
             if k <= n_usl
                 vwc = setindex(
                     vwc,
-                    (usld[k] + (sbm.act_thickl[i][k] - usl[k]) * (sbm.θₛ[i] - sbm.θᵣ[i])) / sbm.act_thickl[i][k] + sbm.θᵣ[i],
+                    (usld[k] + (sbm.act_thickl[i][k] - usl[k]) * (sbm.theta_s[i] - sbm.theta_r[i])) / sbm.act_thickl[i][k] + sbm.theta_r[i],
                     k,
                 )
             else
-                vwc = setindex(vwc, sbm.θₛ[i], k)
+                vwc = setindex(vwc, sbm.theta_s[i], k)
             end
-            vwc_perc = setindex(vwc_perc, (vwc[k] / sbm.θₛ[i]) * 100.0, k)
+            vwc_perc = setindex(vwc_perc, (vwc[k] / sbm.theta_s[i]) * 100.0, k)
         end
 
         rootstore_unsat = 0
@@ -1117,12 +1117,12 @@ function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
                 usld[k]
         end
 
-        rootstore_sat = max(0.0, sbm.rootingdepth[i] - zi[i]) * (sbm.θₛ[i] - sbm.θᵣ[i])
+        rootstore_sat = max(0.0, sbm.rootingdepth[i] - zi[i]) * (sbm.theta_s[i] - sbm.theta_r[i])
         rootstore = rootstore_sat + rootstore_unsat
-        vwc_root = rootstore / sbm.rootingdepth[i] + sbm.θᵣ[i]
-        vwc_percroot = (vwc_root / sbm.θₛ[i]) * 100.0
+        vwc_root = rootstore / sbm.rootingdepth[i] + sbm.theta_r[i]
+        vwc_percroot = (vwc_root / sbm.theta_s[i]) * 100.0
 
-        satwaterdepth = (sbm.soilthickness[i] - zi[i]) * (sbm.θₛ[i] - sbm.θᵣ[i])
+        satwaterdepth = (sbm.soilthickness[i] - zi[i]) * (sbm.theta_s[i] - sbm.theta_r[i])
 
         # update the outputs and states
         sbm.n_unsatlayers[i] = n_usl
