@@ -1,6 +1,6 @@
 @get_units @exchange @grid_type @grid_location @with_kw struct FLEXTOPO{T,N}
     # Model time step [s]
-    Δt::T | "s" | 0 | "none" | "none"
+    dt::T | "s" | 0 | "none" | "none"
     # Number of classes
     nclass::Int | "-" | 0 | "none" | "none"
     # Number of cells
@@ -25,7 +25,7 @@
     # Correction factor for precipitation [-]
     pcorr::Vector{T} | "-"
     # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹]
-    cfmax::Vector{T} | "mm ᵒC-1 Δt-1"
+    cfmax::Vector{T} | "mm ᵒC-1 dt-1"
     # Threshold temperature for snowfall [ᵒC]
     tt::Vector{T} | "ᵒC"
     # Threshold temperature interval length [ᵒC]
@@ -44,9 +44,9 @@
     # Threshold temperature for snowfall above glacier [ᵒC]
     g_tt::Vector{T} | "ᵒC"
     # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹] for glacier
-    g_cfmax::Vector{T} | "mm ᵒC-1 Δt-1"
+    g_cfmax::Vector{T} | "mm ᵒC-1 dt-1"
     # Fraction of the snowpack on top of the glacier converted into ice [Δt⁻¹]
-    g_sifrac::Vector{T} | "Δt-1"
+    g_sifrac::Vector{T} | "dt-1"
     # Water within the glacier [mm]
     glacierstore::Vector{T} | "mm"
     # Fraction covered by a glacier [-]
@@ -59,16 +59,16 @@
     ##HORTON
     # Maximum storage capacity in the hortonian ponding storage [mm]
     shmax::Vector{SVector{N,T}} | "mm"
-    #recession coefficient of the hortonian runoff storage [Δt-1]
-    khf::Vector{SVector{N,T}} | "Δt-1"
+    #recession coefficient of the hortonian runoff storage [dt-1]
+    khf::Vector{SVector{N,T}} | "dt-1"
     #maximum modelled accumulated frost resulting in shmin [ᵒC Δt]
     facc0::Vector{SVector{N,T}} | "ᵒC"
     #minimum modelled accumulated frost resulting in shmax [ᵒC Δt]
     facc1::Vector{SVector{N,T}} | "ᵒC"
     #exponent for the decline of infiltration capacity [-]
     fdec::Vector{SVector{N,T}} | "-"
-    #maximum infiltration capacity from horton ponding [mm Δt-1]
-    fmax::Vector{SVector{N,T}} | "mm Δt-1"
+    #maximum infiltration capacity from horton ponding [mm dt-1]
+    fmax::Vector{SVector{N,T}} | "mm dt-1"
     #minimum storage capacity in horton ponding (relative to shmax) [-]
     shmin::Vector{SVector{N,T}} | "-"
     #melt coefficient for melt of frozen topsoil [-]
@@ -81,19 +81,19 @@
     # Exponent in soil runoff generation equation [-]
     beta::Vector{SVector{N,T}} | "-"
     # maximum percolation rate [mm Δt⁻¹]
-    perc::Vector{SVector{N,T}} | "mm Δt-1"
+    perc::Vector{SVector{N,T}} | "mm dt-1"
     # maximum capillary rise rate [mm Δt⁻¹]
-    cap::Vector{SVector{N,T}} | "mm Δt-1"
+    cap::Vector{SVector{N,T}} | "mm dt-1"
     #FAST
     # Exponent for non linear recession [-]
     alfa::Vector{SVector{N,T}} | "-"
-    #recession coefficient of fast storage [Δt-1]
-    kf::Vector{SVector{N,T}} | "Δt-1"
+    #recession coefficient of fast storage [dt-1]
+    kf::Vector{SVector{N,T}} | "dt-1"
     # fraction of qrootzone to slowstorage (1-ds to faststorage)
     ds::Vector{SVector{N,T}} | "-"
     # SLOW
-    #recession coefficient of slow storage [Δt-1]
-    ks::Vector{T} | "Δt-1"
+    #recession coefficient of slow storage [dt-1]
+    ks::Vector{T} | "dt-1"
 
     ## STATES
     ##SNOW
@@ -130,96 +130,96 @@
     ## FLUXES
     #SNOW
     # Precipitation [mm Δt⁻¹]
-    precipitation::Vector{T} | "mm Δt-1"
+    precipitation::Vector{T} | "mm dt-1"
     # Temperature [ᵒC]
     temperature::Vector{T} | "ᵒC"
     # Potential evapotranspiration [mm Δt⁻¹]
-    potential_evaporation::Vector{T} | "mm Δt-1"
+    potential_evaporation::Vector{T} | "mm dt-1"
     # Potential evapotranspiration corrected [mm Δt⁻¹]
-    epotcorr::Vector{T} | "mm Δt-1"
+    epotcorr::Vector{T} | "mm dt-1"
     # Precipitation corrected [mm Δt⁻¹]
-    precipcorr::Vector{T} | "mm Δt-1"
+    precipcorr::Vector{T} | "mm dt-1"
     # Snow melt + precipitation as rainfall [mm]
-    rainfallplusmelt::Vector{T} | "mm Δt-1"
+    rainfallplusmelt::Vector{T} | "mm dt-1"
     # Snowfall [mm]
-    snowfall::Vector{T} | "mm Δt-1"
+    snowfall::Vector{T} | "mm dt-1"
     # Snowmelt [mm]
-    snowmelt::Vector{T} | "mm Δt-1"
+    snowmelt::Vector{T} | "mm dt-1"
     #INTERCEPTION
     # Potential soil evaporation [mm Δt⁻¹]
-    potsoilevap::Vector{SVector{N,T}} | "mm Δt-1"
+    potsoilevap::Vector{SVector{N,T}} | "mm dt-1"
     # Evaporation from interception storage [mm Δt⁻¹]
-    intevap::Vector{SVector{N,T}} | "mm Δt-1"
+    intevap::Vector{SVector{N,T}} | "mm dt-1"
     #effective precipitation [mm Δt⁻¹]
-    precipeffective::Vector{SVector{N,T}} | "mm Δt-1"
+    precipeffective::Vector{SVector{N,T}} | "mm dt-1"
     # Evaporation from interception sum classes [mm Δt⁻¹]
-    intevap_m::Vector{T} | "mm Δt-1"
+    intevap_m::Vector{T} | "mm dt-1"
     #HORTONPONDING
     # Evaporation from the hortonion ponding storage [-]
-    hortonevap::Vector{SVector{N,T}} | "mm Δt-1"
+    hortonevap::Vector{SVector{N,T}} | "mm dt-1"
     # Flux from the hortonian ponding storage to the hortonian runoff storage [mm Δt⁻¹]
-    qhortonpond::Vector{SVector{N,T}} | "mm Δt-1"
+    qhortonpond::Vector{SVector{N,T}} | "mm dt-1"
     # Flux from the hortonian ponding storage to the root zone storage [mm Δt⁻¹]
-    qhortonrootzone::Vector{SVector{N,T}} | "mm Δt-1"
+    qhortonrootzone::Vector{SVector{N,T}} | "mm dt-1"
     # modeled accumulated frost [ᵒC Δt]
     facc::Vector{SVector{N,T}} | "ᵒC Δt"
     # Evaporation from the hortonian sum classes [mm Δt⁻¹]
-    hortonevap_m::Vector{T} | "mm Δt-1"
+    hortonevap_m::Vector{T} | "mm dt-1"
     #HORTONRUNOFF
     # Flux from the hortonian runoff storage [mm Δt⁻¹]
-    qhortonrun::Vector{SVector{N,T}} | "mm Δt-1"
+    qhortonrun::Vector{SVector{N,T}} | "mm dt-1"
     #ROOTZONE
     # Evaporation from the root-zone storage [mm Δt⁻¹]
-    rootevap::Vector{SVector{N,T}} | "mm Δt-1"
+    rootevap::Vector{SVector{N,T}} | "mm dt-1"
     # Flux from the root-zone storage [mm Δt⁻¹]
-    qrootzone::Vector{SVector{N,T}} | "mm Δt-1"
+    qrootzone::Vector{SVector{N,T}} | "mm dt-1"
     # Pref. recharge to fast storage [mm Δt⁻¹]
-    qrootzonefast::Vector{SVector{N,T}} | "mm Δt-1"
+    qrootzonefast::Vector{SVector{N,T}} | "mm dt-1"
     # Pref. recharge to slow storage sum classes [mm Δt⁻¹]
-    qrootzoneslow_m::Vector{T} | "mm Δt-1"
+    qrootzoneslow_m::Vector{T} | "mm dt-1"
     # Capillary flux from the slow to the root-zone storage [mm Δt⁻¹]
-    qcapillary::Vector{SVector{N,T}} | "mm Δt-1"
+    qcapillary::Vector{SVector{N,T}} | "mm dt-1"
     # Capillary flux from the slow to the root-zone storage sum classes [mm Δt⁻¹]
-    qcapillary_m::Vector{T} | "mm Δt-1"
+    qcapillary_m::Vector{T} | "mm dt-1"
     # Percolation flux from the root-zone to the slow storage [mm Δt⁻¹]
-    qpercolation::Vector{SVector{N,T}} | "mm Δt-1"
+    qpercolation::Vector{SVector{N,T}} | "mm dt-1"
     # Percolation flux from the root-zone to the slow storage sum classes [mm Δt⁻¹]
-    qpercolation_m::Vector{T} | "mm Δt-1"
+    qpercolation_m::Vector{T} | "mm dt-1"
     # Evaporation from the root-zone storage, interception and hortonian [mm Δt⁻¹]
-    actevap::Vector{SVector{N,T}} | "mm Δt-1"
+    actevap::Vector{SVector{N,T}} | "mm dt-1"
     # Evaporation from the root-zone storage, interception and hortonian sum classes [mm Δt⁻¹]
-    actevap_m::Vector{T} | "mm Δt-1"
+    actevap_m::Vector{T} | "mm dt-1"
     # Evaporation from the root-zone storage sum classes [mm Δt⁻¹]
-    rootevap_m::Vector{T} | "mm Δt-1"
+    rootevap_m::Vector{T} | "mm dt-1"
     #FAST
     # runoff from fast reservoir [mm Δt⁻¹]
-    qfast::Vector{SVector{N,T}} | "mm Δt-1"
+    qfast::Vector{SVector{N,T}} | "mm dt-1"
     #SLOW
     # runoff from slow reservoir [mm Δt⁻¹]
-    qslow::Vector{T} | "mm Δt-1"
+    qslow::Vector{T} | "mm dt-1"
     #Total [mm Δt⁻¹]
-    runoff::Vector{T} | "mm Δt-1"
+    runoff::Vector{T} | "mm dt-1"
     # fast runoff sum classes [mm Δt⁻¹]
-    qfast_tot = Vector{T} | "mm Δt-1"
+    qfast_tot = Vector{T} | "mm dt-1"
 
 
     ## WATERBALANCES
     #water balance snow store
-    wb_snow::Vector{T} | "mm Δt-1"
+    wb_snow::Vector{T} | "mm dt-1"
     #water balance interception storage [mm Δt⁻¹]
-    wb_interception::Vector{SVector{N,T}} | "mm Δt-1"
+    wb_interception::Vector{SVector{N,T}} | "mm dt-1"
     #water balance hortonian ponding storage [mm Δt⁻¹]
-    wb_hortonponding::Vector{SVector{N,T}} | "mm Δt-1"
+    wb_hortonponding::Vector{SVector{N,T}} | "mm dt-1"
     #water balance hortonian runoff storage [mm Δt⁻¹]
-    wb_hortonrunoff::Vector{SVector{N,T}} | "mm Δt-1"
+    wb_hortonrunoff::Vector{SVector{N,T}} | "mm dt-1"
     #water balance root-zone storage [mm Δt⁻¹]
-    wb_rootzone::Vector{SVector{N,T}} | "mm Δt-1"
+    wb_rootzone::Vector{SVector{N,T}} | "mm dt-1"
     #water balance fast storage [mm Δt⁻¹]
-    wb_fast::Vector{SVector{N,T}} | "mm Δt-1"
+    wb_fast::Vector{SVector{N,T}} | "mm dt-1"
     #water balance slow storage [mm Δt⁻¹]
-    wb_slow::Vector{T} | "mm Δt-1"
+    wb_slow::Vector{T} | "mm dt-1"
     #total water balance [mm Δt⁻¹]
-    wb_tot::Vector{T} | "mm Δt-1"
+    wb_tot::Vector{T} | "mm dt-1"
 
 end
 
@@ -302,7 +302,7 @@ function common_glaciers(flextopo::FLEXTOPO, config)
                     flextopo.g_tt[i],
                     flextopo.g_cfmax[i],
                     flextopo.g_sifrac[i],
-                    Second(flextopo.Δt),
+                    Second(flextopo.dt),
                 )
             # Convert to mm per grid cell and add to snowmelt
             glaciermelt = glaciermelt * flextopo.glacierfrac[i]

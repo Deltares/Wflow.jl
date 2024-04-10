@@ -402,7 +402,7 @@ function snowpack_hbv(
 end
 
 """
-    glacier_hbv(glacierfrac, glacierstore, snow, temperature, tt, cfmax, g_sifrac, Δt)
+    glacier_hbv(glacierfrac, glacierstore, snow, temperature, tt, cfmax, g_sifrac, dt)
 
 HBV-light type of glacier modelling.
 First, a fraction of the snowpack is converted into ice using the HBV-light
@@ -418,7 +418,7 @@ occurs if the snow cover < 10 mm.
 - `tt` temperature threshold for ice melting [°C]
 - `cfmax` ice degree-day factor in [mm/(°C/day)]
 - `g_sifrac` fraction of the snow turned into ice [-]
-- `Δt` model timestep [s]
+- `dt` model timestep [s]
 
 # Output
 - `snow`
@@ -427,14 +427,14 @@ occurs if the snow cover < 10 mm.
 - `glaciermelt`
 
 """
-function glacier_hbv(glacierfrac, glacierstore, snow, temperature, tt, cfmax, g_sifrac, Δt)
+function glacier_hbv(glacierfrac, glacierstore, snow, temperature, tt, cfmax, g_sifrac, dt)
 
     # Fraction of the snow transformed into ice (HBV-light model)
     snow2glacier = g_sifrac * snow
     snow2glacier = glacierfrac > 0.0 ? snow2glacier : 0.0
 
     # Max conversion to 8mm/day
-    snow2glacier = min(snow2glacier, 8.0 * (Δt / basetimestep))
+    snow2glacier = min(snow2glacier, 8.0 * (dt / basetimestep))
 
     snow = snow - (snow2glacier * glacierfrac)
     glacierstore = glacierstore + snow2glacier

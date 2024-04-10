@@ -351,9 +351,9 @@ end
         gwf.aquifer.head[gwf.constanthead.index] .= gwf.constanthead.head
 
         Q = zeros(3)
-        Δt = 0.25 # days
+        dt = 0.25 # days
         for _ = 1:50
-            Wflow.update(gwf, Q, Δt, conductivity_profile)
+            Wflow.update(gwf, Q, dt, conductivity_profile)
         end
 
         @test gwf.aquifer.head ≈ [2.0, 3.0, 4.0]
@@ -373,9 +373,9 @@ end
         gwf.aquifer.head[gwf.constanthead.index] .= gwf.constanthead.head
 
         Q = zeros(3)
-        Δt = 0.25 # days
+        dt = 0.25 # days
         for _ = 1:50
-            Wflow.update(gwf, Q, Δt, conductivity_profile)
+            Wflow.update(gwf, Q, dt, conductivity_profile)
         end
 
         @test gwf.aquifer.head ≈ [2.0, 3.0, 4.0]
@@ -422,14 +422,14 @@ end
             Wflow.AquiferBoundaryCondition[],
         )
 
-        Δt = Wflow.stable_timestep(gwf.aquifer, conductivity_profile)
+        dt = Wflow.stable_timestep(gwf.aquifer, conductivity_profile)
         Q = zeros(ncell)
         time = 20.0
-        nstep = Int(ceil(time / Δt))
-        time = nstep * Δt
+        nstep = Int(ceil(time / dt))
+        time = nstep * dt
 
         for i = 1:nstep
-            Wflow.update(gwf, Q, Δt, conductivity_profile)
+            Wflow.update(gwf, Q, dt, conductivity_profile)
             # Gradient dh/dx is positive, all flow to the left
             @test all(diff(gwf.aquifer.head) .> 0.0)
         end
@@ -482,14 +482,14 @@ end
             Wflow.AquiferBoundaryCondition[],
         )
 
-        Δt = Wflow.stable_timestep(gwf.aquifer, conductivity_profile)
+        dt = Wflow.stable_timestep(gwf.aquifer, conductivity_profile)
         Q = zeros(ncell)
         time = 20.0
-        nstep = Int(ceil(time / Δt))
-        time = nstep * Δt
+        nstep = Int(ceil(time / dt))
+        time = nstep * dt
 
         for i = 1:nstep
-            Wflow.update(gwf, Q, Δt, conductivity_profile)
+            Wflow.update(gwf, Q, dt, conductivity_profile)
             # Gradient dh/dx is positive, all flow to the left
             @test all(diff(gwf.aquifer.head) .> 0.0)
         end
@@ -544,14 +544,14 @@ end
         well = Wflow.Well([discharge], [0.0], [reverse_indices[wellrow, wellrow]])
         gwf = Wflow.GroundwaterFlow(aquifer, connectivity, constanthead, [well])
 
-        Δt = Wflow.stable_timestep(gwf.aquifer, conductivity_profile)
+        dt = Wflow.stable_timestep(gwf.aquifer, conductivity_profile)
         Q = zeros(ncell)
         time = 20.0
-        nstep = Int(ceil(time / Δt))
-        time = nstep * Δt
+        nstep = Int(ceil(time / dt))
+        time = nstep * dt
 
         for i = 1:nstep
-            Wflow.update(gwf, Q, Δt, conductivity_profile)
+            Wflow.update(gwf, Q, dt, conductivity_profile)
         end
 
         # test for symmetry on x and y axes

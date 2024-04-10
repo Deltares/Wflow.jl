@@ -1,6 +1,6 @@
 @get_units @exchange @grid_type @grid_location @with_kw struct SBM{T,N,M}
     # Model time step [s]
-    Δt::T | "s" | 0 | "none" | "none"
+    dt::T | "s" | 0 | "none" | "none"
     # Maximum number of soil layers
     maxlayers::Int | "-" | 0 | "none" | "none"
     # number of cells
@@ -160,7 +160,7 @@
     actleakage::Vector{T}
     ### Snow parameters ###
     # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹]
-    cfmax::Vector{T} | "mm ᵒC-1 Δt-1"
+    cfmax::Vector{T} | "mm ᵒC-1 dt-1"
     # Threshold temperature for snowfall [ᵒC]
     tt::Vector{T} | "ᵒC"
     # Threshold temperature interval length [ᵒC]
@@ -182,9 +182,9 @@
     # Threshold temperature for snowfall above glacier [ᵒC]
     g_tt::Vector{T} | "ᵒC"
     # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹] for glacier
-    g_cfmax::Vector{T} | "mm ᵒC-1 Δt-1"
+    g_cfmax::Vector{T} | "mm ᵒC-1 dt-1"
     # Fraction of the snowpack on top of the glacier converted into ice [Δt⁻¹]
-    g_sifrac::Vector{T} | "Δt-1"
+    g_sifrac::Vector{T} | "dt-1"
     # Water within the glacier [mm]
     glacierstore::Vector{T} | "mm"
     # Fraction covered by a glacier [-]
@@ -262,7 +262,7 @@ end
 
 function initialize_sbm(nc, config, riverfrac, inds)
 
-    Δt = Second(config.timestepsecs)
+    dt = Second(config.timestepsecs)
     config_thicknesslayers = get(config.model, "thicknesslayers", Float[])
     ksat_profile = get(config.input.vertical, "ksat_profile", "exponential")::String
     if length(config_thicknesslayers) > 0
@@ -283,7 +283,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
             sel = inds,
             defaults = 3.75653,
             type = Float,
-        ) .* (Δt / basetimestep)
+        ) .* (dt / basetimestep)
     tt = ncread(nc, config, "vertical.tt"; sel = inds, defaults = 0.0, type = Float)
     tti = ncread(nc, config, "vertical.tti"; sel = inds, defaults = 1.0, type = Float)
     ttm = ncread(nc, config, "vertical.ttm"; sel = inds, defaults = 0.0, type = Float)
@@ -296,7 +296,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
             sel = inds,
             defaults = 0.1125,
             type = Float,
-        ) .* (Δt / basetimestep)
+        ) .* (dt / basetimestep)
     cf_soil =
         ncread(nc, config, "vertical.cf_soil"; sel = inds, defaults = 0.038, type = Float)
     # glacier parameters
@@ -318,7 +318,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
             defaults = 3.0,
             type = Float,
             fill = 0.0,
-        ) .* (Δt / basetimestep)
+        ) .* (dt / basetimestep)
     g_sifrac =
         ncread(
             nc,
@@ -328,7 +328,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
             defaults = 0.001,
             type = Float,
             fill = 0.0,
-        ) .* (Δt / basetimestep)
+        ) .* (dt / basetimestep)
     glacierfrac = ncread(
         nc,
         config,
@@ -375,7 +375,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
             sel = inds,
             defaults = 3000.0,
             type = Float,
-        ) .* (Δt / basetimestep)
+        ) .* (dt / basetimestep)
     f = ncread(nc, config, "vertical.f"; sel = inds, defaults = 0.001, type = Float)
     hb = ncread(nc, config, "vertical.hb"; sel = inds, defaults = 10.0, type = Float)
     soilthickness = ncread(
@@ -394,7 +394,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
             sel = inds,
             defaults = 10.0,
             type = Float,
-        ) .* (Δt / basetimestep)
+        ) .* (dt / basetimestep)
     infiltcapsoil =
         ncread(
             nc,
@@ -403,7 +403,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
             sel = inds,
             defaults = 100.0,
             type = Float,
-        ) .* (Δt / basetimestep)
+        ) .* (dt / basetimestep)
     maxleakage =
         ncread(
             nc,
@@ -412,7 +412,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
             sel = inds,
             defaults = 0.0,
             type = Float,
-        ) .* (Δt / basetimestep)
+        ) .* (dt / basetimestep)
 
     c = ncread(
         nc,
@@ -545,7 +545,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
                 defaults = 1000.0,
                 type = Float,
                 dimname = :layer,
-            ) .* (Δt / basetimestep)
+            ) .* (dt / basetimestep)
         if size(kv, 1) != maxlayers
             parname = param(config.input.vertical, "kv")
             size1 = size(kv, 1)
@@ -579,7 +579,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
     end
 
     sbm = SBM{Float,maxlayers,maxlayers + 1}(
-        Δt = tosecond(Δt),
+        dt = tosecond(dt),
         maxlayers = maxlayers,
         n = n,
         nlayers = nlayers,
@@ -714,7 +714,7 @@ function update_until_snow(sbm::SBM, config)
 
         canopy_potevap =
             sbm.kc[i] * sbm.potential_evaporation[i] * (1.0 - canopygapfraction)
-        if Second(sbm.Δt) >= Hour(23)
+        if Second(sbm.dt) >= Hour(23)
             throughfall, interception, stemflow, canopystorage = rainfall_interception_gash(
                 cmax,
                 e_r,
@@ -794,7 +794,7 @@ function update_until_recharge(sbm::SBM, config)
                     sbm.g_tt[i],
                     sbm.g_cfmax[i],
                     sbm.g_sifrac[i],
-                    Second(sbm.Δt),
+                    Second(sbm.dt),
                 )
                 # Convert to mm per grid cell and add to snowmelt
                 glaciermelt = glaciermelt * sbm.glacierfrac[i]

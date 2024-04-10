@@ -70,7 +70,7 @@ example with a part of the `SBM` struct:
     # Residual water content [mm mm⁻¹]
     theta_r::Vector{T} | "mm mm-1"
     # Vertical hydraulic conductivity [mm Δt⁻¹] at soil surface
-    kv₀::Vector{T} | "mm Δt-1"
+    kv₀::Vector{T} | "mm dt-1"
     # Muliplication factor [-] applied to kv_z (vertical flow)
     kvfrac::Vector{SVector{N,T}} | "-"
 ```

@@ -61,7 +61,7 @@ bar, that gives an estimate of how much time is needed to finish the simulation:
 ┌ Info: Run information
 │   model_type = "sbm"
 │   starttime = CFTime.DateTimeStandard(2000-01-01T00:00:00)
-│   Δt = 86400 seconds
+│   dt = 86400 seconds
 │   endtime = CFTime.DateTimeStandard(2000-12-31T00:00:00)
 └   nthreads() = 4
 

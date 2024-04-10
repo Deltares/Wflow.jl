@@ -1,5 +1,5 @@
 @get_units @exchange @grid_type @grid_location @with_kw struct SimpleReservoir{T}
-    Δt::T | "s" | 0 | "none" | "none"                   # Model time step [s]
+    dt::T | "s" | 0 | "none" | "none"                   # Model time step [s]
     maxvolume::Vector{T} | "m3"                         # maximum storage (above which water is spilled) [m³]
     area::Vector{T} | "m2"                              # reservoir area [m²]
     maxrelease::Vector{T} | "m3 s-1"                    # maximum amount that can be released if below spillway [m³ s⁻¹]
@@ -23,7 +23,7 @@
 end
 
 
-function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, Δt)
+function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, dt)
     # read only reservoir data if reservoirs true
     # allow reservoirs only in river cells
     # note that these locations are only the reservoir outlet pixels
@@ -133,7 +133,7 @@ function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, Δt)
     n = length(resarea)
     @info "Read `$n` reservoir locations."
     reservoirs = SimpleReservoir{Float}(
-        Δt = Δt,
+        dt = dt,
         demand = resdemand,
         maxrelease = resmaxrelease,
         maxvolume = resmaxvolume,
@@ -170,9 +170,9 @@ element rather than all at once.
 function update(res::SimpleReservoir, i, inflow, timestepsecs)
 
     # limit lake evaporation based on total available volume [m³]
-    precipitation = 0.001 * res.precipitation[i] * (timestepsecs / res.Δt) * res.area[i]
+    precipitation = 0.001 * res.precipitation[i] * (timestepsecs / res.dt) * res.area[i]
     available_volume = res.volume[i] + inflow * timestepsecs + precipitation
-    evap = 0.001 * res.evaporation[i] * (timestepsecs / res.Δt) * res.area[i]
+    evap = 0.001 * res.evaporation[i] * (timestepsecs / res.dt) * res.area[i]
     actevap = min(available_volume, evap) # [m³/timestepsecs]
 
     vol = res.volume[i] + (inflow * timestepsecs) + precipitation - actevap
@@ -205,7 +205,7 @@ function update(res::SimpleReservoir, i, inflow, timestepsecs)
 end
 
 @get_units @exchange @grid_type @grid_location @with_kw struct Lake{T}
-    Δt::T | "s" | 0 | "none" | "none"           # Model time step [s]
+    dt::T | "s" | 0 | "none" | "none"           # Model time step [s]
     lowerlake_ind::Vector{Int} | "-"            # Index of lower lake (linked lakes)
     area::Vector{T} | "m2"                      # lake area [m²]
     maxstorage::Vector{Union{T,Missing}} | "m3" # lake maximum storage from rating curve 1 [m³]
@@ -231,7 +231,7 @@ end
     end
 end
 
-function initialize_lake(config, nc, inds_riv, nriv, pits, Δt)
+function initialize_lake(config, nc, inds_riv, nriv, pits, dt)
     # read only lake data if lakes true
     # allow lakes only in river cells
     # note that these locations are only the lake outlet pixels
@@ -399,7 +399,7 @@ function initialize_lake(config, nc, inds_riv, nriv, pits, Δt)
     end
     n = length(lakearea)
     lakes = Lake{Float}(
-        Δt = Δt,
+        dt = dt,
         lowerlake_ind = lowerlake_ind,
         area = lakearea,
         maxstorage = maximum_storage(lake_storfunc, lake_outflowfunc, lakearea, sh, hq),
@@ -487,9 +487,9 @@ function update(lake::Lake, i, inflow, doy, timestepsecs)
     has_lowerlake = lo != 0
 
     # limit lake evaporation based on total available volume [m³]
-    precipitation = 0.001 * lake.precipitation[i] * (timestepsecs / lake.Δt) * lake.area[i]
+    precipitation = 0.001 * lake.precipitation[i] * (timestepsecs / lake.dt) * lake.area[i]
     available_volume = lake.storage[i] + inflow * timestepsecs + precipitation
-    evap = 0.001 * lake.evaporation[i] * (timestepsecs / lake.Δt) * lake.area[i]
+    evap = 0.001 * lake.evaporation[i] * (timestepsecs / lake.dt) * lake.area[i]
     actevap = min(available_volume, evap) # [m³/timestepsecs]
 
     ### Modified Puls Approach (Burek et al., 2013, LISFLOOD) ###

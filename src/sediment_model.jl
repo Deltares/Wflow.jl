@@ -14,7 +14,7 @@ function initialize_sediment_model(config::Config)
 
     reader = prepare_reader(config)
     clock = Clock(config, reader)
-    Δt = clock.Δt
+    dt = clock.dt
 
     do_river = get(config.model, "runrivermodel", false)::Bool
 

@@ -697,7 +697,7 @@ table depth `z` [mm] and hydraulic conductivity profile `ksat_profile`.
 function kh_layered_profile(sbm::SBM, khfrac, i, ksat_profile)
 
     m = sbm.nlayers[i]
-    t_factor = (tosecond(basetimestep) / sbm.Δt)
+    t_factor = (tosecond(basetimestep) / sbm.dt)
     if (sbm.soilthickness[i] - sbm.zi[i]) > 0.0
         transmissivity = 0.0
         sumlayers = @view sbm.sumlayers[i][2:end]

@@ -24,7 +24,7 @@ function flowgraph(ldd::AbstractVector, inds::AbstractVector, pcr_dir::AbstractV
 end
 
 "Kinematic wave flow rate for a single cell and timestep"
-function kinematic_wave(Qin, Qold, q, alpha, beta, Δt, Δx)
+function kinematic_wave(Qin, Qold, q, alpha, beta, dt, Δx)
     epsilon = 1.0e-12
     max_iters = 3000
 
@@ -33,10 +33,10 @@ function kinematic_wave(Qin, Qold, q, alpha, beta, Δt, Δx)
     else
         # common terms
         ab_pQ = alpha * beta * pow(((Qold + Qin) / 2.0), (beta - 1.0))
-        Δtx = Δt / Δx
-        C = Δtx * Qin + alpha * pow(Qold, beta) + Δt * q
+        dtx = dt / Δx
+        C = dtx * Qin + alpha * pow(Qold, beta) + dt * q
 
-        Qkx = (Δtx * Qin + Qold * ab_pQ + Δt * q) / (Δtx + ab_pQ)
+        Qkx = (dtx * Qin + Qold * ab_pQ + dt * q) / (dtx + ab_pQ)
         if isnan(Qkx)
             Qkx = 0.0
         end
@@ -44,8 +44,8 @@ function kinematic_wave(Qin, Qold, q, alpha, beta, Δt, Δx)
         count = 1
 
         while true
-            fQkx = Δtx * Qkx + alpha * pow(Qkx, beta) - C
-            dfQkx = Δtx + alpha * beta * pow(Qkx, (beta - 1.0))
+            fQkx = dtx * Qkx + alpha * pow(Qkx, beta) - C
+            dfQkx = dtx + alpha * beta * pow(Qkx, (beta - 1.0))
             Qkx = Qkx - fQkx / dfQkx
             Qkx = max(Qkx, 1.0e-30)
             if (abs(fQkx) <= epsilon) || (count >= max_iters)
@@ -59,11 +59,11 @@ function kinematic_wave(Qin, Qold, q, alpha, beta, Δt, Δx)
 end
 
 "Kinematic wave flow rate over the whole network for a single timestep"
-function kin_wave!(Q, graph, toposort, Qold, q, alpha, beta, DCL, Δt)
+function kin_wave!(Q, graph, toposort, Qold, q, alpha, beta, DCL, dt)
     for v in toposort
         upstream_nodes = inneighbors(graph, v)
         Qin = sum_at(Q, upstream_nodes)
-        Q[v] = kinematic_wave(Qin, Qold[v], q, alpha[v], beta, Δt, DCL[v])
+        Q[v] = kinematic_wave(Qin, Qold[v], q, alpha[v], beta, dt, DCL[v])
     end
     return Q
 end
@@ -99,7 +99,7 @@ function ssf_celerity(zi, kh₀, beta, theta_e, f, z_exp, ksat_profile)
 end
 
 """
-    kinematic_wave_ssf(ssfin, ssfₜ₋₁, ziₜ₋₁, r, kh₀, beta, theta_e, f, d, Δt, Δx, dw, ssfmax, z_exp, ksat_profile)
+    kinematic_wave_ssf(ssfin, ssfₜ₋₁, ziₜ₋₁, r, kh₀, beta, theta_e, f, d, dt, Δx, dw, ssfmax, z_exp, ksat_profile)
 
 Kinematic wave for lateral subsurface flow for a single cell and timestep. An exponential
 decline of hydraulic conductivity at the soil surface `kh₀`, controllled by parameter `f`,
@@ -120,7 +120,7 @@ function kinematic_wave_ssf(
     theta_e,
     f,
     d,
-    Δt,
+    dt,
     Δx,
     dw,
     ssfmax,
@@ -145,12 +145,12 @@ function kinematic_wave_ssf(
         # Term of the continuity equation for Newton-Raphson iteration for iteration 1
         # because celerity Cn is depending on zi, the increase or decrease of zi is moved to the recharge term of the continuity equation
         # then (1./Cn)*ssfₜ₋₁ can be replaced with (1./Cn)*ssf, and thus celerity and lateral flow rate ssf are then in line
-        c = (Δt / Δx) * ssfin + (1.0 / Cn) * ssf + (r - (ziₜ₋₁ - zi) * theta_e * dw)
+        c = (dt / Δx) * ssfin + (1.0 / Cn) * ssf + (r - (ziₜ₋₁ - zi) * theta_e * dw)
 
         # Continuity equation of which solution should be zero
-        fQ = (Δt / Δx) * ssf + (1.0 / Cn) * ssf - c
+        fQ = (dt / Δx) * ssf + (1.0 / Cn) * ssf - c
         # Derivative of the continuity equation w.r.t. Q_out for iteration 1
-        dfQ = (Δt / Δx) + 1.0 / Cn
+        dfQ = (dt / Δx) + 1.0 / Cn
         # Update lateral outflow estimate ssf (Q_out) for iteration 1
         ssf = ssf - (fQ / dfQ)
         if isnan(ssf)
@@ -167,12 +167,12 @@ function kinematic_wave_ssf(
             # Term of the continuity equation for given Newton-Raphson iteration m
             # because celerity Cn is depending on zi, the increase or decrease of zi is moved to the recharge term of the continuity equation
             # then (1./Cn)*ssfₜ₋₁ can be replaced with (1./Cn)*ssf, and thus celerity and lateral flow rate ssf are then in line
-            c = (Δt / Δx) * ssfin + (1.0 / Cn) * ssf + (r - (ziₜ₋₁ - zi) * theta_e * dw)
+            c = (dt / Δx) * ssfin + (1.0 / Cn) * ssf + (r - (ziₜ₋₁ - zi) * theta_e * dw)
 
             # Continuity equation of which solution should be zero
-            fQ = (Δt / Δx) * ssf + (1.0 / Cn) * ssf - c
+            fQ = (dt / Δx) * ssf + (1.0 / Cn) * ssf - c
             # Derivative of the continuity equation w.r.t. Q_out for iteration m+1
-            dfQ = (Δt / Δx) + 1.0 / Cn
+            dfQ = (dt / Δx) + 1.0 / Cn
             # Update lateral outflow estimate ssf (Q_out) for iteration m+1
             ssf = ssf - (fQ / dfQ)
             if isnan(ssf)
@@ -188,7 +188,7 @@ function kinematic_wave_ssf(
         # Constrain the lateral flow rate ssf
         ssf = min(ssf, (ssfmax * dw))
         # On the basis of the lateral flow rate, estimate the amount of groundwater level above surface (saturation excess conditions), then rest = negative
-        rest = ziₜ₋₁ - (ssfin * Δt + r * Δx - ssf * Δt) / (dw * Δx) / theta_e
+        rest = ziₜ₋₁ - (ssfin * dt + r * Δx - ssf * dt) / (dw * Δx) / theta_e
         # In case the groundwater level lies above surface (saturation excess conditions, rest = negative), calculate the exfiltration rate and set groundwater back to zero.
         exfilt = min(rest, 0.0) * -theta_e
         zi = clamp(zi, 0.0, d)
@@ -199,7 +199,7 @@ function kinematic_wave_ssf(
 end
 
 """
-    kinematic_wave_ssf(ssfin, ssfₜ₋₁, ziₜ₋₁, r, kh, beta, theta_e, d, Δt, Δx, dw, ssfmax)
+    kinematic_wave_ssf(ssfin, ssfₜ₋₁, ziₜ₋₁, r, kh, beta, theta_e, d, dt, Δx, dw, ssfmax)
 
 Kinematic wave for lateral subsurface flow for a single cell and timestep, based on
 (average) hydraulic conductivity `kh`.
@@ -207,7 +207,7 @@ Kinematic wave for lateral subsurface flow for a single cell and timestep, based
 Returns lateral subsurface flow `ssf`, water table depth `zi` and exfiltration rate
 `exfilt`.
 """
-function kinematic_wave_ssf(ssfin, ssfₜ₋₁, ziₜ₋₁, r, kh, beta, theta_e, d, Δt, Δx, dw, ssfmax)
+function kinematic_wave_ssf(ssfin, ssfₜ₋₁, ziₜ₋₁, r, kh, beta, theta_e, d, dt, Δx, dw, ssfmax)
 
     epsilon = 1.0e-12
     max_iters = 3000
@@ -221,11 +221,11 @@ function kinematic_wave_ssf(ssfin, ssfₜ₋₁, ziₜ₋₁, r, kh, beta, theta
         # celerity (Cn)
         Cn = (beta * kh) / theta_e
         # constant term of the continuity equation for Newton-Raphson
-        c = (Δt / Δx) * ssfin + (1.0 / Cn) * ssfₜ₋₁ + r
+        c = (dt / Δx) * ssfin + (1.0 / Cn) * ssfₜ₋₁ + r
         # continuity equation of which solution should be zero
-        fQ = (Δt / Δx) * ssf + (1.0 / Cn) * ssf - c
+        fQ = (dt / Δx) * ssf + (1.0 / Cn) * ssf - c
         # Derivative of the continuity equation
-        dfQ = (Δt / Δx) + 1.0 / Cn
+        dfQ = (dt / Δx) + 1.0 / Cn
         # Update lateral subsurface flow estimate ssf
         ssf = ssf - (fQ / dfQ)
         if isnan(ssf)
@@ -235,8 +235,8 @@ function kinematic_wave_ssf(ssfin, ssfₜ₋₁, ziₜ₋₁, r, kh, beta, theta
 
         # Start while loop of Newton-Raphson iteration
         while true
-            fQ = (Δt / Δx) * ssf + (1.0 / Cn) * ssf - c
-            dfQ = (Δt / Δx) + 1.0 / Cn
+            fQ = (dt / Δx) * ssf + (1.0 / Cn) * ssf - c
+            dfQ = (dt / Δx) + 1.0 / Cn
             ssf = ssf - (fQ / dfQ)
             if isnan(ssf)
                 ssf = 0.0
@@ -251,7 +251,7 @@ function kinematic_wave_ssf(ssfin, ssfₜ₋₁, ziₜ₋₁, r, kh, beta, theta
         # Constrain the lateral subsurface flow rate ssf
         ssf = min(ssf, (ssfmax * dw))
         # On the basis of the lateral flow rate, estimate the amount of groundwater level above surface (saturation excess conditions), then rest = negative
-        zi = ziₜ₋₁ - (ssfin * Δt + r * Δx - ssf * Δt) / (dw * Δx) / theta_e
+        zi = ziₜ₋₁ - (ssfin * dt + r * Δx - ssf * dt) / (dw * Δx) / theta_e
         if zi > d
             ssf = max(ssf - (dw * Δx) * theta_e * (zi - d), 1.0e-30)
         end
@@ -355,7 +355,7 @@ function lateral_snow_transport!(snow, snowwater, slope, network)
 end
 
 """
-    local_inertial_flow(q0, eta0, eta1, hf, A, R, length, mannings_n, g, froude_limit, Δt)
+    local_inertial_flow(q0, eta0, eta1, hf, A, R, length, mannings_n, g, froude_limit, dt)
 
 Local inertial approach for flow through area `A`. Returns the flow `q` between two adjacent
 river cells (nodes) for a single timestep.
@@ -371,14 +371,14 @@ function local_inertial_flow(
     mannings_n_sq,
     g,
     froude_limit,
-    Δt,
+    dt,
 )
 
     slope = (eta1 - eta0) / length
     pow_R = cbrt(R * R * R * R)
     unit = one(hf)
     q = (
-        (q0 - g * A * Δt * slope) / (unit + g * Δt * mannings_n_sq * abs(q0) / (pow_R * A))
+        (q0 - g * A * dt * slope) / (unit + g * dt * mannings_n_sq * abs(q0) / (pow_R * A))
     )
 
     # if froude number > 1.0, limit flow
@@ -390,7 +390,7 @@ function local_inertial_flow(
 end
 
 """
-    local_inertial_flow(theta, q0, qd, qu, eta0, eta1, hf, width, length, mannings_n, g, froude_limit, Δt)
+    local_inertial_flow(theta, q0, qd, qu, eta0, eta1, hf, width, length, mannings_n, g, froude_limit, dt)
 
 Local inertial approach for flow through a rectangular area. Returns the flow `q` between
 two adjacent cells (nodes) for a single timestep. Algorithm is based on de Almeida et al.
@@ -409,7 +409,7 @@ function local_inertial_flow(
     mannings_n_sq,
     g,
     froude_limit,
-    Δt,
+    dt,
 )
 
     slope = (eta1 - eta0) / length
@@ -418,8 +418,8 @@ function local_inertial_flow(
     pow_hf = cbrt(hf * hf * hf * hf * hf * hf * hf)
 
     q = (
-        ((theta * q0 + half * (unit - theta) * (qu + qd)) - g * hf * width * Δt * slope) /
-        (unit + g * Δt * mannings_n_sq * abs(q0) / (pow_hf * width))
+        ((theta * q0 + half * (unit - theta) * (qu + qd)) - g * hf * width * dt * slope) /
+        (unit + g * dt * mannings_n_sq * abs(q0) / (pow_hf * width))
     )
     # if froude number > 1.0, limit flow
     if froude_limit

@@ -1,4 +1,4 @@
-const Δt_sec = 86400.0
+const dt_sec = 86400.0
 const ldd_mv = 255
 
 # read the staticmaps into memory
@@ -36,7 +36,7 @@ P = Bw + (2.0 * waterlevel)
 alpha = AlpTermR .* P .^ AlpPow
 
 Q = zeros(n)
-Q = Wflow.kin_wave!(Q, graph, toposort, Qold, q, alpha, beta, DCL, Δt_sec)
+Q = Wflow.kin_wave!(Q, graph, toposort, Qold, q, alpha, beta, DCL, dt_sec)
 
 @testset "flow rate" begin
     @test sum(Q) ≈ 2.957806043289641e6
@@ -175,7 +175,7 @@ end
     )
 
     alpha = 0.7
-    Δt = 1.0
+    dt = 1.0
     h_thresh = 1.0e-03
     froude_limit = true
     h_init = zeros(n - 1)
@@ -189,7 +189,7 @@ end
         g = 9.80665,
         alpha = alpha,
         h_thresh = h_thresh,
-        Δt = Δt,
+        dt = dt,
         q0 = zeros(_ne),
         q = zeros(_ne),
         q_av = zeros(_ne),
@@ -231,8 +231,8 @@ end
     while true
         sw_river.inwater[1] = 20.0
         h0 = mean(sw_river.h)
-        Δt = Wflow.stable_timestep(sw_river)
-        Wflow.shallowwater_river_update(sw_river, network, Δt, 0.0, true)
+        dt = Wflow.stable_timestep(sw_river)
+        Wflow.shallowwater_river_update(sw_river, network, dt, 0.0, true)
         d = abs(h0 - mean(sw_river.h))
         if d <= epsilon
             break

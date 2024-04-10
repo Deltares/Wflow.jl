@@ -10,7 +10,7 @@ function initialize_hbv_model(config::Config)
 
     reader = prepare_reader(config)
     clock = Clock(config, reader)
-    Δt = clock.Δt
+    dt = clock.dt
 
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
     do_lakes = get(config.model, "lakes", false)::Bool
@@ -36,7 +36,7 @@ function initialize_hbv_model(config::Config)
             sel = inds,
             defaults = 3.75653,
             type = Float,
-        ) .* (Δt / basetimestep)
+        ) .* (dt / basetimestep)
     tt = ncread(nc, config, "vertical.tt"; sel = inds, defaults = -1.41934, type = Float)
     tti = ncread(nc, config, "vertical.tti"; sel = inds, defaults = 1.0, type = Float)
     ttm = ncread(nc, config, "vertical.ttm"; sel = inds, defaults = -1.41934, type = Float)
@@ -60,7 +60,7 @@ function initialize_hbv_model(config::Config)
             defaults = 3.0,
             type = Float,
             fill = 0.0,
-        ) .* (Δt / basetimestep)
+        ) .* (dt / basetimestep)
     g_sifrac =
         ncread(
             nc,
@@ -70,7 +70,7 @@ function initialize_hbv_model(config::Config)
             defaults = 0.001,
             type = Float,
             fill = 0.0,
-        ) .* (Δt / basetimestep)
+        ) .* (dt / basetimestep)
     glacierfrac = ncread(
         nc,
         config,
@@ -95,7 +95,7 @@ function initialize_hbv_model(config::Config)
     lp = ncread(nc, config, "vertical.lp"; sel = inds, defaults = 0.53, type = Float)
     k4 =
         ncread(nc, config, "vertical.k4"; sel = inds, defaults = 0.02307, type = Float) .*
-        (Δt / basetimestep)
+        (dt / basetimestep)
     kquickflow =
         ncread(
             nc,
@@ -104,29 +104,29 @@ function initialize_hbv_model(config::Config)
             sel = inds,
             defaults = 0.09880,
             type = Float,
-        ) .* (Δt / basetimestep)
+        ) .* (dt / basetimestep)
     suz = ncread(nc, config, "vertical.suz"; sel = inds, defaults = 100.0, type = Float)
     k0 =
         ncread(nc, config, "vertical.k0"; sel = inds, defaults = 0.30, type = Float) .*
-        (Δt / basetimestep)
+        (dt / basetimestep)
     khq =
         ncread(nc, config, "vertical.khq"; sel = inds, defaults = 0.09880, type = Float) .*
-        (Δt / basetimestep)
+        (dt / basetimestep)
     hq =
         ncread(nc, config, "vertical.hq"; sel = inds, defaults = 3.27, type = Float) .*
-        (Δt / basetimestep)
+        (dt / basetimestep)
     alphanl =
         ncread(nc, config, "vertical.alphanl"; sel = inds, defaults = 1.1, type = Float)
     perc =
         ncread(nc, config, "vertical.perc"; sel = inds, defaults = 0.4, type = Float) .*
-        (Δt / basetimestep)
+        (dt / basetimestep)
     cfr = ncread(nc, config, "vertical.cfr"; sel = inds, defaults = 0.05, type = Float)
     pcorr = ncread(nc, config, "vertical.pcorr"; sel = inds, defaults = 1.0, type = Float)
     rfcf = ncread(nc, config, "vertical.rfcf"; sel = inds, defaults = 1.0, type = Float)
     sfcf = ncread(nc, config, "vertical.sfcf"; sel = inds, defaults = 1.0, type = Float)
     cflux =
         ncread(nc, config, "vertical.cflux"; sel = inds, defaults = 2.0, type = Float) .*
-        (Δt / basetimestep)
+        (dt / basetimestep)
     icf = ncread(nc, config, "vertical.icf"; sel = inds, defaults = 2.0, type = Float)
     cevpf = ncread(nc, config, "vertical.cevpf"; sel = inds, defaults = 1.0, type = Float)
     epf = ncread(nc, config, "vertical.epf"; sel = inds, defaults = 1.0, type = Float)
@@ -145,7 +145,7 @@ function initialize_hbv_model(config::Config)
     threshold = fc .* lp
 
     hbv = HBV{Float}(
-        Δt = Float(tosecond(Δt)),
+        dt = Float(tosecond(dt)),
         n = n,
         fc = fc,
         betaseepage = betaseepage,
@@ -225,7 +225,7 @@ function initialize_hbv_model(config::Config)
     pits = zeros(Bool, modelsize_2d)
     if do_reservoirs
         reservoirs, resindex, reservoir, pits =
-            initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, tosecond(Δt))
+            initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, tosecond(dt))
     else
         reservoir = ()
         reservoirs = nothing
@@ -235,7 +235,7 @@ function initialize_hbv_model(config::Config)
     # lakes
     if do_lakes
         lakes, lakeindex, lake, pits =
-            initialize_lake(config, nc, inds_riv, nriv, pits, tosecond(Δt))
+            initialize_lake(config, nc, inds_riv, nriv, pits, tosecond(dt))
     else
         lake = ()
         lakes = nothing
@@ -264,7 +264,7 @@ function initialize_hbv_model(config::Config)
         width = map(det_surfacewidth, dw, riverwidth, river),
         iterate = kinwave_it,
         tstep = kw_land_tstep,
-        Δt = Δt,
+        dt = dt,
     )
 
     graph = flowgraph(ldd, inds, pcr_dir)
@@ -296,7 +296,7 @@ function initialize_hbv_model(config::Config)
         lake = lakes,
         iterate = kinwave_it,
         tstep = kw_river_tstep,
-        Δt = Δt,
+        dt = dt,
     )
 
     # setup subdomains for the land and river kinematic wave domain, if nthreads = 1
