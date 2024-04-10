@@ -27,7 +27,7 @@ internal model parameter `sl`, and is listed in the Table below between parenthe
 | `h`             | water level | m | - |
 | `h_av`          | average water level | m | - |
 | **`bankfull_depth`**   | bankfull river depth  | m | 1.0 |
-| `delta_t`            | model time step | s | - |
+| `dt`            | model time step | s | - |
 | `its`           | number of fixed iterations | - | - |
 | **`width`**     |  width       | m          | - |
 | `alpha_pow`     | used in the power part of ``\alpha`` | - | - |
@@ -62,7 +62,7 @@ internal model parameter `sl`, and is listed in the Table below between parenthe
 | `volume`        | kinematic wave volume |m``^3``| - |
 | `h`             | water level | m | - |
 | `h_av`          | average water level | m | - |
-| `delta_t`            | model time step | s | - |
+| `dt`            | model time step | s | - |
 | `its`           | number of fixed iterations | - | - |
 | `width`         |  width       | m          | - |
 | `alpha_pow`     | used in the power part of ``\alpha`` | - | - |
@@ -98,7 +98,7 @@ locs = "wflow_reservoirlocs"
 | **`targetfullfrac`** | target fraction full (of max storage)| -        | - |
 | **`targetminfrac`** | target minimum full fraction (of max storage) | -  | - |
 | `demandrelease`| minimum (environmental) flow released from reservoir  | m``^3`` s``^{-1}``| - |
-| `delta_t`             | model time step     | s | - |
+| `dt`             | model time step     | s | - |
 | `volume`             | volume     | m``^3`` | - |
 | `inflow`             | total inflow into reservoir | m``^3`` | - |
 | `outflow`             | outflow into reservoir | m``^3`` s``^{-1}`` | - |
@@ -141,7 +141,7 @@ between parentheses.
 | **`lowerlake_ind`** (`linkedlakelocs`) | Index of lower lake (linked lakes) | - | 0 |
 | **`sh`** | data for storage curve | - | - |
 | **`hq`** | data rating curve | - | - |
-| `delta_t`             | model time step     | s |  - |
+| `dt`             | model time step     | s |  - |
 | `inflow` | total inflow to the lake | m``^3``  | - |
 | `storage` | storage lake | m``^3``  | - |
 | `maxstorage`| maximum storage lake with rating curve type 1 | m``^3``  | - |
@@ -198,7 +198,7 @@ the `layered_exponential` profile `kv` is used and `z_exp` is required as part o
 | **`soilthickness`** | soil thickness | m  | 2.0 |
 | **`theta_s`** | saturated water content (porosity) | -  | 0.6 |
 | **`theta_r`** | residual water content  | -  | 0.01 |
-| `delta_t` | model time step | d  | - |
+| `dt` | model time step | d  | - |
 | **`beta_l`** (`slope`) | slope | m m``^{-1}``  | - |
 | `dl` | drain length | m | - |
 | `dw` | drain width | m | - |
@@ -249,7 +249,7 @@ model parameter `mannings_n`, and is listed in the Table below between parenthes
 | `g`    |  acceleration due to gravity | m s``^{-2}`` | - |
 | `alpha`    |  stability coefficient (Bates et al., 2010) | - | 0.7 |
 | `h_thresh`    |  depth threshold for calculating flow | m | 0.001 |
-| `delta_t`    |  model time step | s | - |
+| `dt`    |  model time step | s | - |
 | `q`    |  river discharge (subgrid channel) | m``^3`` s``^{-1}`` | - |
 | `q_av`    |  average river channel (+ floodplain) discharge | m``^3`` s``^{-1}`` | - |
 | `q_channel_av` | average river channel discharge | m``^3`` s``^{-1}`` | - |
@@ -359,7 +359,7 @@ internal model parameter `z`, and is listed in the Table below between parenthes
 | `theta` | weighting factor (de Almeida et al., 2012) | - | 0.8 |
 | `alpha`    |  stability coefficient (Bates et al., 2010) | - | 0.7 |
 | `h_thresh`    |  depth threshold for calculating flow | m | 0.001 |
-| `delta_t`   |  model time step| s | - |
+| `dt`   |  model time step| s | - |
 | `qy0`  |  flow in y direction at previous time step| m``^3`` s``^{-1}`` | - |
 | `qx0`  |  flow in x direction at previous time step| m``^3`` s``^{-1}`` | - |
 | `qx`  |  flow in x direction | m``^3`` s``^{-1}`` | - |
@@ -592,7 +592,7 @@ slope = "RiverSlope"
 | **`cbagnold`**| Bagnold c coefficient  | - | - |
 | **`ebagnold`**| Bagnold exponent | - | - |
 | `n`             | number of cells     | - |  - |
-| `delta_t`             | model time step     | s |  - |
+| `dt`             | model time step     | s |  - |
 | `ak`             | Kodatie coefficient `a`    | - |  - |
 | `bk`             | Kodatie coefficient `b`    | - |  - |
 | `ck`             | Kodatie coefficient `c`    | - |  - |

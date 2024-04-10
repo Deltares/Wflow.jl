@@ -54,7 +54,7 @@ example with a part of the `SBM` struct:
 ```julia
 @get_units @with_kw struct SBM{T,N,M}
     # Model time step [s]
-    delta_t::T | "s"
+    dt::T | "s"
     # Maximum number of soil layers
     maxlayers::Int | "-"
     # number of cells
@@ -83,7 +83,7 @@ refers to the maximum number of soil layers + 1. See also part of the following 
 
 ```julia
 sbm = SBM{Float,maxlayers,maxlayers + 1}(
-    delta_t = tosecond(delta_t),
+    dt = tosecond(dt),
     maxlayers = maxlayers,
     n = n,
 ```

@@ -71,7 +71,7 @@ profile `kv` is used and `z_layered` is required as input.
 | **`cmax`** | maximum canopy storage | mm | 1.0 |
 | **`e_r`** (`eoverr`) | Gash interception model parameter | - | 0.1 |
 | **`canopygapfraction`** | canopy gap fraction | - | 0.1 | - |
-| `delta_t`             | model time step     | s | - |
+| `dt`             | model time step     | s | - |
 | `maxlayers`      | maximum number of soil layers     | - | - |
 | `n`      |  number of grid cells    | - | - |
 | `nlayers`      |  number of soil layers    | - | - |
