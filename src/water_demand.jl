@@ -382,6 +382,11 @@ function update_water_allocation(model)
 
     river = lateral.river.waterallocation
 
+    res_index = network.river.reservoir_index
+    res_index_f = network.river.reservoir_index_f
+    lake_index = network.river.lake_index
+    lake_index_f = network.river.lake_index_f
+
     n = length(network.land.indices)
     # local surface water abstraction (river, excluding reservoirs and lakes)
     for i = 1:n
@@ -391,7 +396,8 @@ function update_water_allocation(model)
             waterallocation.frac_sw_used[i] * waterallocation.irri_demand_gross[i]
 
         if index_river_wb[i] > 0.0
-            # check for abstraction through inflow and adjust available volume
+            # check for abstraction through inflow (external negative inflow) of reservoir
+            # or lake and adjust available volume
             if lateral.river.inflow[index_river_wb[i]] < 0.0
                 inflow = lateral.river.inflow[index_river_wb[i]] * vertical.Δt
                 available_volume =
@@ -423,12 +429,12 @@ function update_water_allocation(model)
         # surface water availability (allocation area)
         sw_available = 0.0
         for j in inds_river[i]
-            if network.river.reservoir_index[j] > 0
-                k = network.river.reservoir_index[j]
+            if res_index[j] > 0
+                k = res_index[j]
                 river.available_surfacewater[j] = lateral.river.reservoir.volume[k] * 0.98
                 sw_available += river.available_surfacewater[j]
-            elseif network.river.lake_index[j] > 0
-                k = network.river.lake_index[j]
+            elseif lake_index[j] > 0
+                k = lake_index[j]
                 river.available_surfacewater[j] = lateral.river.lake.storage[k] * 0.98
                 sw_available += river.available_surfacewater[j]
             else
@@ -453,6 +459,18 @@ function update_water_allocation(model)
         end
     end
     @. lateral.river.abstraction = river.act_surfacewater_abst_vol / vertical.Δt
+
+    # for reservoir and lake locations set river abstraction at zero and abstract volume
+    # from reservoir and lake 
+    if !isnothing(lateral.river.reservoir)
+        @. lateral.river.abstraction[res_index_f] = 0.0
+        @. lateral.river.reservoir.volume -=
+            lateral.river.act_surfacewater_abst_vol[res_index_f]
+    elseif !isnothing(lateral.river.lake)
+        @. lateral.river.abstraction[lake_index_f] = 0.0
+        @. lateral.river.lake.volume -=
+            lateral.river.act_surfacewater_abst_vol[lake_index_f]
+    end
 
     # local groundwater abstraction
     for i = 1:n

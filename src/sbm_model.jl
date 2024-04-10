@@ -380,6 +380,8 @@ function initialize_sbm_model(config::Config)
             # reservoir and lake index
             reservoir_index = resindex,
             lake_index = lakeindex,
+            reservoir_index_f = filter(x -> x ≠ 0, resindex),
+            lake_index_f = filter(x -> x ≠ 0, lakeindex),
             # specific for kinematic_wave
             upstream_nodes = filter_upsteam_nodes(graph_riv, pits[inds_riv]),
             subdomain_order = subriv_order,
@@ -398,6 +400,8 @@ function initialize_sbm_model(config::Config)
             # reservoir and lake index
             reservoir_index = resindex,
             lake_index = lakeindex,
+            reservoir_index_f = filter(x -> x ≠ 0, resindex),
+            lake_index_f = filter(x -> x ≠ 0, lakeindex),
             # specific for local-inertial
             nodes_at_link = nodes_at_link,
             links_at_node = adjacent_links_at_node(graph_riv, nodes_at_link),
