@@ -568,7 +568,12 @@ end
 """
     update_water_allocation(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
 
-Update water allocation for model type `sbm` for a single timestep.
+Update water allocation for model type `sbm` for a single timestep. First, surface water
+abstraction is computed to satisfy local water demand (non-irrigation and irrigation), and
+then updated (including lakes and reservoirs) to satisfy the remaining water demand for
+allocation areas. Then groundwater abstraction is computed to satisfy the remaining local
+water demand, and then updated to satisfy the remaining water demand for allocation areas.
+Finally, non-irrigation return flows are updated.
 """
 function update_water_allocation(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
 
