@@ -119,9 +119,10 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             time = BMI.get_current_time(model) + 2 * BMI.get_time_step(model)
             model = BMI.update_until(model, time)
             @test model.clock.iteration == 3
-            time = BMI.get_current_time(model) + 1 * BMI.get_time_step(model) + 1e-06
-            @test_throws ErrorException model = BMI.update_until(model, time)
-            @test_throws ErrorException model = BMI.update_until(model, -0.01)
+            time_off = BMI.get_current_time(model) + 1 * BMI.get_time_step(model) + 1e-06
+            @test_throws ErrorException model = BMI.update_until(model, time_off)
+            @test_throws ErrorException model =
+                BMI.update_until(model, time - BMI.get_time_step(model))
             BMI.finalize(model)
         end
 
