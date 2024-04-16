@@ -1141,9 +1141,9 @@ Compute a stable timestep size for the local inertial approach, based on Bates e
 """
 function stable_timestep(sw::ShallowWaterRiver{T})::T where {T}
     Δtₘᵢₙ = T(Inf)
-    @tturbo for i = 1:sw.n
-        Δt = sw.α * sw.dl[i] / sqrt(sw.g * sw.h[i])
-        Δtₘᵢₙ = Δt < Δtₘᵢₙ ? Δt : Δtₘᵢₙ
+    @batch per = thread reduction = ((min, Δtₘᵢₙ),) for i = 1:sw.n
+        @fastmath @inbounds Δt = sw.α * sw.dl[i] / sqrt(sw.g * sw.h[i])
+        Δtₘᵢₙ = min(Δt, Δtₘᵢₙ)
     end
     Δtₘᵢₙ = isinf(Δtₘᵢₙ) ? T(10.0) : Δtₘᵢₙ
     return Δtₘᵢₙ
@@ -1151,13 +1151,11 @@ end
 
 function stable_timestep(sw::ShallowWaterLand{T})::T where {T}
     Δtₘᵢₙ = T(Inf)
-    @tturbo for i = 1:sw.n
-        Δt = IfElse.ifelse(
-            sw.rivercells[i] == 0,
-            sw.α * min(sw.xl[i], sw.yl[i]) / sqrt(sw.g * sw.h[i]),
-            T(Inf),
-        )
-        Δtₘᵢₙ = Δt < Δtₘᵢₙ ? Δt : Δtₘᵢₙ
+    @batch per = thread reduction = ((min, Δtₘᵢₙ),) for i = 1:sw.n
+        @fastmath @inbounds Δt =
+            sw.rivercells[i] == 0 ? sw.α * min(sw.xl[i], sw.yl[i]) / sqrt(sw.g * sw.h[i]) :
+            T(Inf)
+        Δtₘᵢₙ = min(Δtₘᵢₙ, Δt)
     end
     Δtₘᵢₙ = isinf(Δtₘᵢₙ) ? T(10.0) : Δtₘᵢₙ
     return Δtₘᵢₙ
