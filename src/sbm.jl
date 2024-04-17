@@ -352,7 +352,6 @@ function initialize_sbm(nc, config, riverfrac, inds)
         nc,
         config,
         "vertical.theta_s";
-        alias = "vertical.theta_s",
         sel = inds,
         defaults = 0.6,
         type = Float,
@@ -361,7 +360,6 @@ function initialize_sbm(nc, config, riverfrac, inds)
         nc,
         config,
         "vertical.theta_r";
-        alias = "vertical.theta_r",
         sel = inds,
         defaults = 0.01,
         type = Float,
@@ -371,7 +369,6 @@ function initialize_sbm(nc, config, riverfrac, inds)
             nc,
             config,
             "vertical.kv_0";
-            alias = "vertical.kv_0",
             sel = inds,
             defaults = 3000.0,
             type = Float,
