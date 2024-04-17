@@ -65,9 +65,19 @@ end
 
 function BMI.update_until(model::Model, time::Float64)
     @unpack clock, network, config = model
-    curtime = BMI.get_current_time(model)
-    n = Int(max(0, (time - curtime) / model.clock.Δt.value))
-    for _ = 1:n
+    t = BMI.get_current_time(model)
+    _div, _rem = divrem(time - t, model.clock.Δt.value)
+    steps = Int(_div)
+    if steps < 0
+        error("The current model timestamp $t is larger than provided `time` $time")
+    elseif abs(_rem) > eps()
+        error_message = string(
+            "Provided `time` $time minus the current model timestamp $t",
+            " is not an integer multiple of model time step $(model.clock.Δt.value)",
+        )
+        error(error_message)
+    end
+    for _ = 1:steps
         model = run_timestep(model)
     end
     return model
