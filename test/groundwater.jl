@@ -434,10 +434,10 @@ end
             @test all(diff(gwf.aquifer.head) .> 0.0)
         end
 
-        phi_analytical = [
+        head_analytical = [
             transient_aquifer_1d(x, time, conductivity, specific_yield, aquifer_length, beta) for x in xc
         ]
-        difference = gwf.aquifer.head .- phi_analytical
+        difference = gwf.aquifer.head .- head_analytical
         # @test all(difference .< ?)  #TODO
     end
 
@@ -494,10 +494,10 @@ end
             @test all(diff(gwf.aquifer.head) .> 0.0)
         end
 
-        phi_analytical = [
+        head_analytical = [
             transient_aquifer_1d(x, time, conductivity, specific_yield, aquifer_length, beta) for x in xc
         ]
-        difference = gwf.aquifer.head .- phi_analytical
+        difference = gwf.aquifer.head .- head_analytical
         # @test all(difference .< ?)  #TODO
     end
 
@@ -555,18 +555,18 @@ end
         end
 
         # test for symmetry on x and y axes
-        phi = reshape(gwf.aquifer.head, shape)
-        @test phi[1:halfnrow, :] ≈ phi[end:-1:halfnrow+2, :]
-        @test phi[:, 1:halfnrow] ≈ phi[:, end:-1:halfnrow+2]
+        head = reshape(gwf.aquifer.head, shape)
+        @test head[1:halfnrow, :] ≈ head[end:-1:halfnrow+2, :]
+        @test head[:, 1:halfnrow] ≈ head[:, end:-1:halfnrow+2]
 
         # compare with analytical solution
         start = -0.5 * aquifer_length + 0.5 * cellsize
         stop = 0.5 * aquifer_length - 0.5 * cellsize
         X = collect(range(start, stop = stop, step = cellsize))
-        phi_analytical =
+        head_analytical =
             [drawdown_theis(x, time, discharge, transmissivity, storativity) for x in X] .+ 10.0
         # compare left-side, since it's symmetric anyway. Skip the well cell, and its first neighbor
-        difference = phi[1:halfnrow-1, halfnrow] - phi_analytical[1:halfnrow-1]
+        difference = head[1:halfnrow-1, halfnrow] - head_analytical[1:halfnrow-1]
         @test all(difference .< 0.02)
     end
 

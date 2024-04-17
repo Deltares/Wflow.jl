@@ -135,8 +135,7 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
     cmax, _, canopygapfraction, sl, swood, kext = initialize_canopy(nc, config, inds)
 
     # Initialise parameters for the transport capacity part
-    beta_l = slope
-    clamp!(beta_l, 0.00001, Inf)
+    clamp!(slope, 0.00001, Inf)
     ldd_2d = ncread(nc, config, "ldd"; optional = false, allow_missing = true)
     ldd = ldd_2d[inds]
 

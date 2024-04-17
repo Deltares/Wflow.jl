@@ -768,10 +768,10 @@ end
 function initialize_lateralssf_exp!(ssf::LateralSSF)
     for i in eachindex(ssf.ssf)
         ssf.ssfmax[i] =
-            ((ssf.kh_0[i] * ssf.beta_l[i]) / ssf.f[i]) *
+            ((ssf.kh_0[i] * ssf.slope[i]) / ssf.f[i]) *
             (1.0 - exp(-ssf.f[i] * ssf.soilthickness[i]))
         ssf.ssf[i] =
-            ((ssf.kh_0[i] * ssf.beta_l[i]) / ssf.f[i]) *
+            ((ssf.kh_0[i] * ssf.slope[i]) / ssf.f[i]) *
             (exp(-ssf.f[i] * ssf.zi[i]) - exp(-ssf.f[i] * ssf.soilthickness[i])) *
             ssf.dw[i]
     end
@@ -782,16 +782,16 @@ function initialize_lateralssf_exp_const!(ssf::LateralSSF)
     ssf_constant = @. ssf.khfrac *
        ssf.kh_0 *
        exp(-ssf.f * ssf.z_exp) *
-       ssf.beta_l *
+       ssf.slope *
        (ssf.soilthickness - ssf.z_exp)
     for i in eachindex(ssf.ssf)
         ssf.ssfmax[i] =
-            ((ssf.khfrac[i] * ssf.kh_0[i] * ssf.beta_l[i]) / ssf.f[i]) *
+            ((ssf.khfrac[i] * ssf.kh_0[i] * ssf.slope[i]) / ssf.f[i]) *
             (1.0 - exp(-ssf.f[i] * ssf.z_exp[i])) + ssf_constant[i]
         if ssf.zi[i] < ssf.z_exp[i]
             ssf.ssf[i] =
                 (
-                    ((ssf.kh_0[i] * ssf.beta_l[i]) / ssf.f[i]) *
+                    ((ssf.kh_0[i] * ssf.slope[i]) / ssf.f[i]) *
                     (exp(-ssf.f[i] * ssf.zi[i]) - exp(-ssf.f[i] * ssf.z_exp[i])) +
                     ssf_constant[i]
                 ) * ssf.dw[i]
@@ -799,7 +799,7 @@ function initialize_lateralssf_exp_const!(ssf::LateralSSF)
             ssf.ssf[i] =
                 ssf.kh_0[i] *
                 exp(-ssf.f[i] * ssf.zi[i]) *
-                ssf.beta_l[i] *
+                ssf.slope[i] *
                 (ssf.soilthickness[i] - ssf.zi[i]) *
                 ssf.dw[i]
         end
@@ -810,7 +810,7 @@ end
 function initialize_lateralssf_layered!(ssf::LateralSSF, sbm::SBM, ksat_profile)
     for i in eachindex(ssf.ssf)
         ssf.kh[i] = kh_layered_profile(sbm, ssf.khfrac[i], i, ksat_profile)
-        ssf.ssf[i] = ssf.kh[i] * (ssf.soilthickness[i] - ssf.zi[i]) * ssf.beta_l[i] * ssf.dw[i]
+        ssf.ssf[i] = ssf.kh[i] * (ssf.soilthickness[i] - ssf.zi[i]) * ssf.slope[i] * ssf.dw[i]
         kh_max = 0.0
         for j = 1:sbm.nlayers[i]
             if j <= sbm.nlayers_kv[i]
@@ -823,6 +823,6 @@ function initialize_lateralssf_layered!(ssf::LateralSSF, sbm::SBM, ksat_profile)
             end
         end
         kh_max = kh_max * ssf.khfrac[i] * 0.001 * 0.001
-        ssf.ssfmax[i] = kh_max * ssf.beta_l[i]
+        ssf.ssfmax[i] = kh_max * ssf.slope[i]
     end
 end

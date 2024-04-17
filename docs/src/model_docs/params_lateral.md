@@ -158,7 +158,7 @@ in bold represent model parameters that can be set through static input data (ne
 soil related parameters `f`, `soilthickness`, `z_exp`, `theta_s` and `theta_r` are derived from the
 vertical `SBM` concept (including unit conversion for `f`, `z_exp` and `soilthickness`), and
 can be listed in the TOML configuration file under `[input.vertical]`, to map the internal
-model parameter to the external netCDF variable. The internal slope model parameter `beta_l` is
+model parameter to the external netCDF variable. The internal slope model parameter `slope` is
 set through the TOML file as follows:
 
 ```toml
@@ -199,7 +199,7 @@ the `layered_exponential` profile `kv` is used and `z_exp` is required as part o
 | **`theta_s`** | saturated water content (porosity) | -  | 0.6 |
 | **`theta_r`** | residual water content  | -  | 0.01 |
 | `dt` | model time step | d  | - |
-| **`beta_l`** (`slope`) | slope | m m``^{-1}``  | - |
+| **`slope`** | slope | m m``^{-1}``  | - |
 | `dl` | drain length | m | - |
 | `dw` | drain width | m | - |
 | `zi` | pseudo-water table depth (top of the saturated zone) | m | - |
@@ -256,9 +256,9 @@ model parameter `mannings_n`, and is listed in the Table below between parenthes
 | `zb_max`    | maximum channel bed elevation | m | - |
 | `mannings_n_sq` | Manning's roughness squared at edge/link | (s m``^{-\frac{1}{3}}``)``^2`` | - |
 | `h`    | water depth | m | - |
-| `eta_max`    | maximum water elevation | m | - |
-| `eta_src`    | water elevation of source node of edge | m | - |
-| `eta_dst`    | water elevation of downstream node of edge | m | - |
+| `zs_max`    | maximum water elevation | m | - |
+| `zs_src`    | water elevation of source node of edge | m | - |
+| `zs_dst`    | water elevation of downstream node of edge | m | - |
 | `hf`    | water depth at edge/link | m | - |
 | `h_av`    | average water depth | m | - |
 | `dl`    | river length | m | - |

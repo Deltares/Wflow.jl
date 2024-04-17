@@ -25,16 +25,16 @@ end
 
 function flux!(Q, river::River, aquifer)
     for (i, index) in enumerate(river.index)
-        phi= aquifer.head[index]
+        head = aquifer.head[index]
         stage = river.stage[i]
-        if stage > phi
+        if stage > head
             cond = river.infiltration_conductance[i]
-            delta_phi = min(stage - river.bottom[i], stage - phi)
+            delta_head = min(stage - river.bottom[i], stage - head)
         else
             cond = river.exfiltration_conductance[i]
-            delta_phi = stage - phi
+            delta_head = stage - head
         end
-        river.flux[i] = check_flux(cond * delta_phi, aquifer, index)
+        river.flux[i] = check_flux(cond * delta_head, aquifer, index)
         Q[index] += river.flux[i]
     end
     return Q
@@ -53,8 +53,8 @@ end
 function flux!(Q, drainage::Drainage, aquifer)
     for (i, index) in enumerate(drainage.index)
         cond = drainage.conductance[i]
-        delta_phi = min(0, drainage.elevation[i] - aquifer.head[index])
-        drainage.flux[i] = check_flux(cond * delta_phi, aquifer, index)
+        delta_head = min(0, drainage.elevation[i] - aquifer.head[index])
+        drainage.flux[i] = check_flux(cond * delta_head, aquifer, index)
         Q[index] += drainage.flux[i]
     end
     return Q
@@ -72,8 +72,8 @@ end
 function flux!(Q, headboundary::HeadBoundary, aquifer)
     for (i, index) in enumerate(headboundary.index)
         cond = headboundary.conductance[i]
-        delta_phi = headboundary.head[i] - aquifer.head[index]
-        headboundary.flux[i] = check_flux(cond * delta_phi, aquifer, index)
+        delta_head = headboundary.head[i] - aquifer.head[index]
+        headboundary.flux[i] = check_flux(cond * delta_head, aquifer, index)
         Q[index] += headboundary.flux[i]
     end
     return Q

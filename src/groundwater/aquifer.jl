@@ -273,9 +273,9 @@ function conductance(
             connectivity.width[nzi],
         )
     elseif conductivity_profile == "uniform"
-        phi_i = aquifer.head[i]
-        phi_j = aquifer.head[j]
-        if phi_i >= phi_j
+        head_i = aquifer.head[i]
+        head_j = aquifer.head[j]
+        if head_i >= head_j
             saturation =
                 saturated_thickness(aquifer, i) / (aquifer.top[i] - aquifer.bottom[i])
         else
@@ -298,9 +298,9 @@ function flux!(Q, aquifer, connectivity, conductivity_profile)
         for nzi in connections(connectivity, i)
             # connection from i -> j
             j = connectivity.rowval[nzi]
-            delta_phi = aquifer.head[i] - aquifer.head[j]
+            delta_head = aquifer.head[i] - aquifer.head[j]
             cond = conductance(aquifer, i, j, nzi, conductivity_profile, connectivity)
-            Q[i] -= cond * delta_phi
+            Q[i] -= cond * delta_head
         end
     end
     return Q

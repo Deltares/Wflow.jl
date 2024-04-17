@@ -397,7 +397,7 @@ end
     theta_s::Vector{T} | "-"               # Saturated water content (porosity) [-]
     theta_r::Vector{T} | "-"               # Residual water content [-]
     dt::T | "d" | 0 | "none" | "none"      # model time step [d]
-    beta_l::Vector{T} | "m m-1"            # Slope [m m⁻¹]
+    slope::Vector{T} | "m m-1"            # Slope [m m⁻¹]
     dl::Vector{T} | "m"                    # Drain length [m]
     dw::Vector{T} | "m"                    # Flow width [m]
     zi::Vector{T} | "m"                    # Pseudo-water table depth [m] (top of the saturated zone)
@@ -446,7 +446,7 @@ function update(ssf::LateralSSF, network, frac_toriver, ksat_profile)
                         ssf.zi[v],
                         ssf.recharge[v],
                         ssf.kh_0[v],
-                        ssf.beta_l[v],
+                        ssf.slope[v],
                         ssf.theta_s[v] - ssf.theta_r[v],
                         ssf.f[v],
                         ssf.soilthickness[v],
@@ -465,7 +465,7 @@ function update(ssf::LateralSSF, network, frac_toriver, ksat_profile)
                         ssf.zi[v],
                         ssf.recharge[v],
                         ssf.kh[v],
-                        ssf.beta_l[v],
+                        ssf.slope[v],
                         ssf.theta_s[v] - ssf.theta_r[v],
                         ssf.soilthickness[v],
                         ssf.dt,
@@ -504,9 +504,9 @@ end
     mannings_n_sq::Vector{T} | "(s m-1/3)2" | _ | "edge"    # Manning's roughness squared at edge/link
     mannings_n::Vector{T} | "s m-1/3"                       # Manning's roughness at node
     h::Vector{T} | "m"                                      # water depth
-    eta_max::Vector{T} | "m" | _ | "edge"                   # maximum water elevation at edge
-    eta_src::Vector{T} | "m"                                # water elevation of source node of edge
-    eta_dst::Vector{T} | "m"                                # water elevation of downstream node of edge
+    zs_max::Vector{T} | "m" | _ | "edge"                    # maximum water elevation at edge
+    zs_src::Vector{T} | "m"                                 # water elevation of source node of edge
+    zs_dst::Vector{T} | "m"                                 # water elevation of downstream node of edge
     hf::Vector{T} | "m" | _ | "edge"                        # water depth at edge/link
     h_av::Vector{T} | "m"                                   # average water depth
     dl::Vector{T} | "m"                                     # river length
@@ -685,9 +685,9 @@ function initialize_shallowwater_river(
         mannings_n_sq = mannings_n_sq,
         mannings_n = n_river,
         h = h,
-        eta_max = zeros(_ne),
-        eta_src = zeros(_ne),
-        eta_dst = zeros(_ne),
+        zs_max = zeros(_ne),
+        zs_src = zeros(_ne),
+        zs_dst = zeros(_ne),
         hf = zeros(_ne),
         h_av = zeros(n),
         width = width,
@@ -736,11 +736,11 @@ function shallowwater_river_update(sw::ShallowWaterRiver, network, dt, doy, upda
         i = sw.active_e[j]
         i_src = nodes_at_link.src[i]
         i_dst = nodes_at_link.dst[i]
-        sw.eta_src[i] = sw.zb[i_src] + sw.h[i_src]
-        sw.eta_dst[i] = sw.zb[i_dst] + sw.h[i_dst]
+        sw.zs_src[i] = sw.zb[i_src] + sw.h[i_src]
+        sw.zs_dst[i] = sw.zb[i_dst] + sw.h[i_dst]
 
-        sw.eta_max[i] = max(sw.eta_src[i], sw.eta_dst[i])
-        sw.hf[i] = (sw.eta_max[i] - sw.zb_max[i])
+        sw.zs_max[i] = max(sw.zs_src[i], sw.zs_dst[i])
+        sw.hf[i] = (sw.zs_max[i] - sw.zb_max[i])
 
         sw.a[i] = sw.width_at_link[i] * sw.hf[i] # flow area (rectangular channel)
         sw.r[i] = sw.a[i] / (sw.width_at_link[i] + 2.0 * sw.hf[i]) # hydraulic radius (rectangular channel)
@@ -749,8 +749,8 @@ function shallowwater_river_update(sw::ShallowWaterRiver, network, dt, doy, upda
             sw.hf[i] > sw.h_thresh,
             local_inertial_flow(
                 sw.q0[i],
-                sw.eta_src[i],
-                sw.eta_dst[i],
+                sw.zs_src[i],
+                sw.zs_dst[i],
                 sw.hf[i],
                 sw.a[i],
                 sw.r[i],
@@ -770,7 +770,7 @@ function shallowwater_river_update(sw::ShallowWaterRiver, network, dt, doy, upda
         sw.q_av[i] += sw.q[i] * dt
     end
     if !isnothing(sw.floodplain)
-        @tturbo @. sw.floodplain.hf = max(sw.eta_max - sw.floodplain.zb_max, 0.0)
+        @tturbo @. sw.floodplain.hf = max(sw.zs_max - sw.floodplain.zb_max, 0.0)
 
         n = 0
         @inbounds for i in sw.active_e
@@ -830,8 +830,8 @@ function shallowwater_river_update(sw::ShallowWaterRiver, network, dt, doy, upda
                 sw.floodplain.a[i] > 1.0e-05,
                 local_inertial_flow(
                     sw.floodplain.q0[i],
-                    sw.eta_src[i],
-                    sw.eta_dst[i],
+                    sw.zs_src[i],
+                    sw.zs_dst[i],
                     sw.floodplain.hf[i],
                     sw.floodplain.a[i],
                     sw.floodplain.r[i],
@@ -1230,10 +1230,10 @@ function shallowwater_update(
         # for flow in x dir) and floodplain flow is not calculated.
         if xu <= sw.n && sw.ywidth[i] != T(0.0)
 
-            eta_x = sw.z[i] + sw.h[i]
-            eta_xu = sw.z[xu] + sw.h[xu]
-            eta_max = max(eta_x, eta_xu)
-            hf = (eta_max - sw.zx_max[i])
+            zs_x = sw.z[i] + sw.h[i]
+            zs_xu = sw.z[xu] + sw.h[xu]
+            zs_max = max(zs_x, zs_xu)
+            hf = (zs_max - sw.zx_max[i])
 
             if hf > sw.h_thresh
                 length = T(0.5) * (sw.xl[i] + sw.xl[xu]) # can be precalculated
@@ -1242,8 +1242,8 @@ function shallowwater_update(
                     sw.qx0[i],
                     sw.qx0[xd],
                     sw.qx0[xu],
-                    eta_x,
-                    eta_xu,
+                    zs_x,
+                    zs_xu,
                     hf,
                     sw.ywidth[i],
                     length,
@@ -1270,10 +1270,10 @@ function shallowwater_update(
         # for flow in y dir) and floodplain flow is not calculated.
         if yu <= sw.n && sw.xwidth[i] != T(0.0)
 
-            eta_y = sw.z[i] + sw.h[i]
-            eta_yu = sw.z[yu] + sw.h[yu]
-            eta_max = max(eta_y, eta_yu)
-            hf = (eta_max - sw.zy_max[i])
+            zs_y = sw.z[i] + sw.h[i]
+            zs_yu = sw.z[yu] + sw.h[yu]
+            zs_max = max(zs_y, zs_yu)
+            hf = (zs_max - sw.zy_max[i])
 
             if hf > sw.h_thresh
                 length = T(0.5) * (sw.yl[i] + sw.yl[yu]) # can be precalculated
@@ -1282,8 +1282,8 @@ function shallowwater_update(
                     sw.qy0[i],
                     sw.qy0[yd],
                     sw.qy0[yu],
-                    eta_y,
-                    eta_yu,
+                    zs_y,
+                    zs_yu,
                     hf,
                     sw.xwidth[i],
                     length,

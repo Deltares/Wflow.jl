@@ -99,9 +99,9 @@ function initialize_sbm_gwf_model(config::Config)
     end
 
     # overland flow (kinematic wave)
-    beta_l =
+    landslope =
         ncread(nc, config, "lateral.land.slope"; optional = false, sel = inds, type = Float)
-    clamp!(beta_l, 0.00001, Inf)
+    clamp!(landslope, 0.00001, Inf)
     ldd_2d = ncread(nc, config, "ldd"; optional = false, allow_missing = true)
 
     ldd = ldd_2d[inds]
@@ -116,14 +116,14 @@ function initialize_sbm_gwf_model(config::Config)
 
     # the indices of the river cells in the land(+river) cell vector
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
-    frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, beta_l, n)
+    frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, landslope, n)
 
     if land_routing == "kinematic-wave"
         olf = initialize_surfaceflow_land(
             nc,
             config,
             inds;
-            sl = beta_l,
+            sl = landslope,
             dl,
             width = map(det_surfacewidth, dw, riverwidth, river),
             iterate = kinwave_it,
@@ -421,7 +421,7 @@ function initialize_sbm_gwf_model(config::Config)
             reverse_indices = rev_inds,
             xl = xl,
             yl = yl,
-            slope = beta_l,
+            slope = landslope,
             altitude = altitude,
         )
     elseif land_routing == "local-inertial"
@@ -432,7 +432,7 @@ function initialize_sbm_gwf_model(config::Config)
             reverse_indices = rev_inds,
             xl = xl,
             yl = yl,
-            slope = beta_l,
+            slope = landslope,
             altitude = altitude,
             index_river = index_river_nf,
             staggered_indices = indices,

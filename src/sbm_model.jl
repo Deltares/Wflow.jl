@@ -102,9 +102,9 @@ function initialize_sbm_model(config::Config)
         ldd = set_pit_ldd(pits_2d, ldd, inds)
     end
 
-    beta_l =
+    landslope =
         ncread(nc, config, "lateral.land.slope"; optional = false, sel = inds, type = Float)
-    clamp!(beta_l, 0.00001, Inf)
+    clamp!(landslope, 0.00001, Inf)
 
     dl = map(detdrainlength, ldd, xl, yl)
     dw = (xl .* yl) ./ dl
@@ -140,7 +140,7 @@ function initialize_sbm_model(config::Config)
             theta_s = sbm.theta_s,
             theta_r = sbm.theta_r,
             dt = dt / basetimestep,
-            beta_l = beta_l,
+            slope = landslope,
             dl = dl,
             dw = dw,
             exfiltwater = fill(mv, n),
@@ -180,14 +180,14 @@ function initialize_sbm_model(config::Config)
 
     # the indices of the river cells in the land(+river) cell vector
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
-    frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, beta_l, n)
+    frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, landslope, n)
 
     if land_routing == "kinematic-wave"
         olf = initialize_surfaceflow_land(
             nc,
             config,
             inds;
-            sl = beta_l,
+            sl = landslope,
             dl,
             width = map(det_surfacewidth, dw, riverwidth, river),
             iterate = kinwave_it,
@@ -340,7 +340,7 @@ function initialize_sbm_model(config::Config)
         reverse_indices = rev_inds,
         xl,
         yl,
-        slope = beta_l,
+        slope = landslope,
     )
     if land_routing == "local-inertial"
         land = merge(land, (index_river = index_river_nf, staggered_indices = indices))
