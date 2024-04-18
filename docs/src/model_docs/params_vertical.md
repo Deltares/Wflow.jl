@@ -46,7 +46,7 @@ profile `kv` is used and `z_layered` is required as input.
 | **`glacierstore`**  | water within the glacier  | mm | 5500.0  |
 | **`theta_s`** | saturated water content (porosity) | - | 0.6  |
 | **`theta_r`** | residual water content | - | 0.01  |
-| **`kv_0`** (`kv_0`) | Vertical hydraulic conductivity at soil surface | mm Δt``^{-1}`` | 3000.0 mm day``^{-1}``|
+| **`kv_0`** | Vertical hydraulic conductivity at soil surface | mm Δt``^{-1}`` | 3000.0 mm day``^{-1}``|
 | **`kv`** |  Vertical hydraulic conductivity per soil layer | mm Δt``^{-1}`` | 1000.0 mm day``^{-1}``|
 | **`f`** | scaling parameter (controls exponential decline of `kv_0`) | mm``^{-1}`` | 0.001  |
 | **`z_exp`** | Depth from soil surface for which exponential decline of `kv_0` is valid | mm | -  |
