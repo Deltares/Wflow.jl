@@ -118,10 +118,10 @@ profile `kv` is used and `z_layered` is required as input.
 | `runoff` | total surface runoff from infiltration and saturation excess | mm Δt``^{-1}`` | - |
 | `net_runoff` | net surface runoff (`runoff` - `ae_openw_l`) | mm Δt``^{-1}`` | - |
 | `vwc` | volumetric water content per soil layer (including `theta_r` and saturated zone)  | - | - |
-| `vwc_perc` | volumetric water content per soil layer (including theta_r and saturated zone)  | % | - |
-| `rootstore` | root water storage in unsaturated and saturated zone (excluding theta_r)  | mm| - |
-| `vwc_root` | volumetric water content in root zone (including theta_r and saturated zone) | -| - |
-| `vwc_percroot` | volumetric water content in root zone (including theta_r and saturated zone) | % | - |
+| `vwc_perc` | volumetric water content per soil layer (including `theta_r` and saturated zone)  | % | - |
+| `rootstore` | root water storage in unsaturated and saturated zone (excluding `theta_r`)  | mm| - |
+| `vwc_root` | volumetric water content in root zone (including `theta_r` and saturated zone) | -| - |
+| `vwc_percroot` | volumetric water content in root zone (including `theta_r` and saturated zone) | % | - |
 | `ustoredepth` | total amount of available water in the unsaturated zone | mm | - |
 | `transfer` | downward flux from unsaturated to saturated zone | mm Δt``^{-1}`` | - |
 | `recharge` | net recharge to saturated zone | mm Δt``^{-1}`` | - |
