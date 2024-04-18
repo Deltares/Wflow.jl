@@ -3,7 +3,7 @@ abstract type SurfaceFlow end
 
 @get_units @exchange @grid_type @grid_location @with_kw struct SurfaceFlowRiver{T,R,L} <:
                                                                SurfaceFlow
-    β::T | "-" | 0 | "scalar"                    # constant in Manning's equation
+    beta::T | "-" | 0 | "scalar"                 # constant in Manning's equation
     sl::Vector{T} | "m m-1"                      # Slope [m m⁻¹]
     n::Vector{T} | "s m-1/3"                     # Manning's roughness [s m⁻⅓]
     dl::Vector{T} | "m"                          # Drain length [m]
@@ -18,12 +18,12 @@ abstract type SurfaceFlow end
     h::Vector{T} | "m"                           # Water level [m]
     h_av::Vector{T} | "m"                        # Average water level [m]
     bankfull_depth::Vector{T} | "m"              # Bankfull water level [m]
-    Δt::T | "s" | 0 | "none" | "none"            # Model time step [s]
+    dt::T | "s" | 0 | "none" | "none"            # Model time step [s]
     its::Int | "-" | 0 | "none" | "none"         # Number of fixed iterations
     width::Vector{T} | "m"                       # Flow width [m]
-    alpha_pow::T | "-" | 0 | "scalar"            # Used in the power part of α
-    alpha_term::Vector{T} | "-"                  # Term used in computation of α
-    α::Vector{T} | "s3/5 m1/5"                   # Constant in momentum equation A = αQᵝ, based on Manning's equation
+    alpha_pow::T | "-" | 0 | "scalar"            # Used in the power part of alpha
+    alpha_term::Vector{T} | "-"                  # Term used in computation of alpha
+    alpha::Vector{T} | "s3/5 m1/5"               # Constant in momentum equation A = alpha*Q^beta, based on Manning's equation
     cel::Vector{T} | "m s-1"                     # Celerity of the kinematic wave
     reservoir_index::Vector{Int} | "-"           # map cell to 0 (no reservoir) or i (pick reservoir i in reservoir field)
     lake_index::Vector{Int} | "-"                # map cell to 0 (no lake) or i (pick lake i in lake field)
@@ -40,7 +40,7 @@ end
 
 @get_units @exchange @grid_type @grid_location @with_kw struct SurfaceFlowLand{T} <:
                                                                SurfaceFlow
-    β::T | "-" | 0 | "scalar"                       # constant in Manning's equation
+    beta::T | "-" | 0 | "scalar"                       # constant in Manning's equation
     sl::Vector{T} | "m m-1"                         # Slope [m m⁻¹]
     n::Vector{T} | "s m-1/3"                        # Manning's roughness [s m⁻⅓]
     dl::Vector{T} | "m"                             # Drain length [m]
@@ -52,18 +52,18 @@ end
     volume::Vector{T} | "m3"                        # Kinematic wave volume [m³] (based on water level h)
     h::Vector{T} | "m"                              # Water level [m]
     h_av::Vector{T} | "m"                           # Average water level [m]
-    Δt::T | "s" | 0 | "none" | "none"               # Model time step [s]
+    dt::T | "s" | 0 | "none" | "none"               # Model time step [s]
     its::Int | "-" | 0 | "none" | "none"            # Number of fixed iterations
     width::Vector{T} | "m"                          # Flow width [m]
-    alpha_pow::T | "-" | 0 | "scalar"               # Used in the power part of α
-    alpha_term::Vector{T} | "-"                     # Term used in computation of α
-    α::Vector{T} | "s3/5 m1/5"                      # Constant in momentum equation A = αQᵝ, based on Manning's equation
+    alpha_pow::T | "-" | 0 | "scalar"               # Used in the power part of alpha
+    alpha_term::Vector{T} | "-"                     # Term used in computation of alpha
+    alpha::Vector{T} | "s3/5 m1/5"                  # Constant in momentum equation A = alpha * Q^beta, based on Manning's equation
     cel::Vector{T} | "m s-1"                        # Celerity of the kinematic wave
     to_river::Vector{T} | "m3 s-1"                  # Part of overland flow [m³ s⁻¹] that flows to the river
     kinwave_it::Bool | "-" | 0 | "none" | "none"    # Boolean for iterations kinematic wave
 end
 
-function initialize_surfaceflow_land(nc, config, inds; sl, dl, width, iterate, tstep, Δt)
+function initialize_surfaceflow_land(nc, config, inds; sl, dl, width, iterate, tstep, dt)
     @info "Kinematic wave approach is used for overland flow." iterate
     if tstep > 0
         @info "Using a fixed sub-timestep (seconds) $tstep for kinematic wave overland flow."
@@ -74,7 +74,7 @@ function initialize_surfaceflow_land(nc, config, inds; sl, dl, width, iterate, t
     n = length(inds)
 
     sf_land = SurfaceFlowLand(
-        β = Float(0.6),
+        beta = Float(0.6),
         sl = sl,
         n = n_land,
         dl = dl,
@@ -86,12 +86,12 @@ function initialize_surfaceflow_land(nc, config, inds; sl, dl, width, iterate, t
         volume = zeros(Float, n),
         h = zeros(Float, n),
         h_av = zeros(Float, n),
-        Δt = Float(tosecond(Δt)),
-        its = tstep > 0 ? Int(cld(tosecond(Δt), tstep)) : tstep,
+        dt = Float(tosecond(dt)),
+        its = tstep > 0 ? Int(cld(tosecond(dt), tstep)) : tstep,
         width = width,
         alpha_pow = Float((2.0 / 3.0) * 0.6),
         alpha_term = fill(mv, n),
-        α = fill(mv, n),
+        alpha = fill(mv, n),
         cel = zeros(Float, n),
         to_river = zeros(Float, n),
         kinwave_it = iterate,
@@ -112,7 +112,7 @@ function initialize_surfaceflow_river(
     lake,
     iterate,
     tstep,
-    Δt,
+    dt,
 )
     @info "Kinematic wave approach is used for river flow." iterate
     if tstep > 0
@@ -149,7 +149,7 @@ function initialize_surfaceflow_river(
     n = length(inds)
 
     sf_river = SurfaceFlowRiver(
-        β = Float(0.6),
+        beta = Float(0.6),
         sl = sl,
         n = n_river,
         dl = dl,
@@ -164,12 +164,12 @@ function initialize_surfaceflow_river(
         h = zeros(Float, n),
         h_av = zeros(Float, n),
         bankfull_depth = bankfull_depth,
-        Δt = Float(tosecond(Δt)),
-        its = tstep > 0 ? Int(cld(tosecond(Δt), tstep)) : tstep,
+        dt = Float(tosecond(dt)),
+        its = tstep > 0 ? Int(cld(tosecond(dt), tstep)) : tstep,
         width = width,
         alpha_pow = Float((2.0 / 3.0) * 0.6),
         alpha_term = fill(mv, n),
-        α = fill(mv, n),
+        alpha = fill(mv, n),
         cel = zeros(Float, n),
         reservoir_index = reservoir_index,
         lake_index = lake_index,
@@ -188,16 +188,16 @@ function update(sf::SurfaceFlowLand, network, frac_toriver)
 
     ns = length(subdomain_order)
 
-    @. sf.alpha_term = pow(sf.n / sqrt(sf.sl), sf.β)
+    @. sf.alpha_term = pow(sf.n / sqrt(sf.sl), sf.beta)
     # use fixed alpha value based flow width
-    @. sf.α = sf.alpha_term * pow(sf.width, sf.alpha_pow)
+    @. sf.alpha = sf.alpha_term * pow(sf.width, sf.alpha_pow)
     @. sf.qlat = sf.inwater / sf.dl
 
     sf.q_av .= 0.0
     sf.h_av .= 0.0
     sf.to_river .= 0.0
 
-    Δt, its = stable_timestep(sf)
+    dt, its = stable_timestep(sf)
     for _ = 1:its
         sf.qin .= 0.0
         for k = 1:ns
@@ -225,15 +225,15 @@ function update(sf::SurfaceFlowLand, network, frac_toriver)
                         sf.qin[v],
                         sf.q[v],
                         sf.qlat[v],
-                        sf.α[v],
-                        sf.β,
-                        Δt,
+                        sf.alpha[v],
+                        sf.beta,
+                        dt,
                         sf.dl[v],
                     )
 
                     # update h, only if surface width > 0.0
                     if sf.width[v] > 0.0
-                        crossarea = sf.α[v] * pow(sf.q[v], sf.β)
+                        crossarea = sf.alpha[v] * pow(sf.q[v], sf.beta)
                         sf.h[v] = crossarea / sf.width[v]
                     end
                     sf.q_av[v] += sf.q[v]
@@ -255,9 +255,9 @@ function update(sf::SurfaceFlowRiver, network, doy)
 
     ns = length(subdomain_order)
 
-    @. sf.alpha_term = pow(sf.n / sqrt(sf.sl), sf.β)
+    @. sf.alpha_term = pow(sf.n / sqrt(sf.sl), sf.beta)
     # use fixed alpha value based on 0.5 * bankfull_depth
-    @. sf.α = sf.alpha_term * pow(sf.width + sf.bankfull_depth, sf.alpha_pow)
+    @. sf.alpha = sf.alpha_term * pow(sf.width + sf.bankfull_depth, sf.alpha_pow)
 
     @. sf.qlat = sf.inwater / sf.dl
 
@@ -276,7 +276,7 @@ function update(sf::SurfaceFlowRiver, network, doy)
         sf.lake.actevap .= 0.0
     end
 
-    Δt, its = stable_timestep(sf)
+    dt, its = stable_timestep(sf)
     for _ = 1:its
         sf.qin .= 0.0
         for k = 1:ns
@@ -298,9 +298,9 @@ function update(sf::SurfaceFlowRiver, network, doy)
                         sf.qin[v],
                         sf.q[v],
                         sf.qlat[v] + inflow,
-                        sf.α[v],
-                        sf.β,
-                        Δt,
+                        sf.alpha[v],
+                        sf.beta,
+                        dt,
                         sf.dl[v],
                     )
 
@@ -308,7 +308,7 @@ function update(sf::SurfaceFlowRiver, network, doy)
                         # run reservoir model and copy reservoir outflow to inflow (qin) of
                         # downstream river cell
                         i = sf.reservoir_index[v]
-                        update(sf.reservoir, i, sf.q[v] + sf.inflow_wb[v], Δt)
+                        update(sf.reservoir, i, sf.q[v] + sf.inflow_wb[v], dt)
 
                         downstream_nodes = outneighbors(graph, v)
                         n_downstream = length(downstream_nodes)
@@ -329,7 +329,7 @@ function update(sf::SurfaceFlowRiver, network, doy)
                         # run lake model and copy lake outflow to inflow (qin) of downstream river
                         # cell
                         i = sf.lake_index[v]
-                        update(sf.lake, i, sf.q[v] + sf.inflow_wb[v], doy, Δt)
+                        update(sf.lake, i, sf.q[v] + sf.inflow_wb[v], doy, dt)
 
                         downstream_nodes = outneighbors(graph, v)
                         n_downstream = length(downstream_nodes)
@@ -348,7 +348,7 @@ function update(sf::SurfaceFlowRiver, network, doy)
                     end
 
                     # update h
-                    crossarea = sf.α[v] * pow(sf.q[v], sf.β)
+                    crossarea = sf.alpha[v] * pow(sf.q[v], sf.beta)
                     sf.h[v] = crossarea / sf.width[v]
                     sf.q_av[v] += sf.q[v]
                     sf.h_av[v] += sf.h[v]
@@ -372,8 +372,8 @@ function stable_timestep(sf::S) where {S<:SurfaceFlow}
             courant = zeros(n)
             for v = 1:n
                 if sf.q[v] > 0.0
-                    sf.cel[v] = 1.0 / (sf.α[v] * sf.β * pow(sf.q[v], (sf.β - 1.0)))
-                    courant[v] = (sf.Δt / sf.dl[v]) * sf.cel[v]
+                    sf.cel[v] = 1.0 / (sf.alpha[v] * sf.beta * pow(sf.q[v], (sf.beta - 1.0)))
+                    courant[v] = (sf.dt / sf.dl[v]) * sf.cel[v]
                 end
             end
             filter!(x -> x ≠ 0.0, courant)
@@ -384,26 +384,26 @@ function stable_timestep(sf::S) where {S<:SurfaceFlow}
     end
 
     # sub time step
-    Δt = sf.Δt / its
-    return Δt, its
+    dt = sf.dt / its
+    return dt, its
 end
 
 @get_units @exchange @grid_type @grid_location @with_kw struct LateralSSF{T}
-    kh₀::Vector{T} | "m d-1"               # Horizontal hydraulic conductivity at soil surface [m d⁻¹]
-    f::Vector{T} | "m-1"                   # A scaling parameter [m⁻¹] (controls exponential decline of kh₀)
+    kh_0::Vector{T} | "m d-1"               # Horizontal hydraulic conductivity at soil surface [m d⁻¹]
+    f::Vector{T} | "m-1"                   # A scaling parameter [m⁻¹] (controls exponential decline of kh_0)
     kh::Vector{T} | "m d-1"                # Horizontal hydraulic conductivity [m d⁻¹]
     khfrac::Vector{T} | "-"                # A muliplication factor applied to vertical hydraulic conductivity `kv` [-]
     soilthickness::Vector{T} | "m"         # Soil thickness [m]
-    θₛ::Vector{T} | "-"                     # Saturated water content (porosity) [-]
-    θᵣ::Vector{T} | "-"                    # Residual water content [-]
-    Δt::T | "d" | 0 | "none" | "none"      # model time step [d]
-    βₗ::Vector{T} | "m m-1"                 # Slope [m m⁻¹]
+    theta_s::Vector{T} | "-"               # Saturated water content (porosity) [-]
+    theta_r::Vector{T} | "-"               # Residual water content [-]
+    dt::T | "d" | 0 | "none" | "none"      # model time step [d]
+    slope::Vector{T} | "m m-1"            # Slope [m m⁻¹]
     dl::Vector{T} | "m"                    # Drain length [m]
     dw::Vector{T} | "m"                    # Flow width [m]
     zi::Vector{T} | "m"                    # Pseudo-water table depth [m] (top of the saturated zone)
-    z_exp::Vector{T} | "m"                 # Depth [m] from soil surface for which exponential decline of kv₀ is valid
-    exfiltwater::Vector{T} | "m Δt-1"      # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
-    recharge::Vector{T} | "m2 Δt-1"        # Net recharge to saturated store [m² Δt⁻¹]
+    z_exp::Vector{T} | "m"                 # Depth [m] from soil surface for which exponential decline of kv_0 is valid
+    exfiltwater::Vector{T} | "m dt-1"      # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
+    recharge::Vector{T} | "m2 dt-1"        # Net recharge to saturated store [m² Δt⁻¹]
     ssf::Vector{T} | "m3 d-1"              # Subsurface flow [m³ d⁻¹]
     ssfin::Vector{T} | "m3 d-1"            # Inflow from upstream cells [m³ d⁻¹]
     ssfmax::Vector{T} | "m2 d-1"           # Maximum subsurface flow [m² d⁻¹]
@@ -445,12 +445,12 @@ function update(ssf::LateralSSF, network, frac_toriver, ksat_profile)
                         ssf.ssf[v],
                         ssf.zi[v],
                         ssf.recharge[v],
-                        ssf.kh₀[v],
-                        ssf.βₗ[v],
-                        ssf.θₛ[v] - ssf.θᵣ[v],
+                        ssf.kh_0[v],
+                        ssf.slope[v],
+                        ssf.theta_s[v] - ssf.theta_r[v],
                         ssf.f[v],
                         ssf.soilthickness[v],
-                        ssf.Δt,
+                        ssf.dt,
                         ssf.dl[v],
                         ssf.dw[v],
                         ssf.ssfmax[v],
@@ -465,10 +465,10 @@ function update(ssf::LateralSSF, network, frac_toriver, ksat_profile)
                         ssf.zi[v],
                         ssf.recharge[v],
                         ssf.kh[v],
-                        ssf.βₗ[v],
-                        ssf.θₛ[v] - ssf.θᵣ[v],
+                        ssf.slope[v],
+                        ssf.theta_s[v] - ssf.theta_r[v],
                         ssf.soilthickness[v],
-                        ssf.Δt,
+                        ssf.dt,
                         ssf.dl[v],
                         ssf.dw[v],
                         ssf.ssfmax[v],
@@ -480,8 +480,8 @@ function update(ssf::LateralSSF, network, frac_toriver, ksat_profile)
 end
 
 @get_units @exchange @grid_type @grid_location @with_kw struct GroundwaterExchange{T}
-    Δt::T | "d" | 0 | "none" | "none"   # model time step [d]
-    exfiltwater::Vector{T} | "m Δt-1"   # Exfiltration [m Δt⁻¹]  (groundwater above surface level, saturated excess conditions)
+    dt::T | "d" | 0 | "none" | "none"   # model time step [d]
+    exfiltwater::Vector{T} | "m dt-1"   # Exfiltration [m Δt⁻¹]  (groundwater above surface level, saturated excess conditions)
     zi::Vector{T} | "m"                 # Pseudo-water table depth [m] (top of the saturated zone)
     to_river::Vector{T} | "m3 d-1"      # Part of subsurface flow [m³ d⁻¹] that flows to the river
     ssf::Vector{T} | "m3 d-1"           # Subsurface flow [m³ d⁻¹]
@@ -493,9 +493,9 @@ end
     active_n::Vector{Int} | "-"                             # active nodes
     active_e::Vector{Int} | "-" | _ | "edge"                # active edges/links
     g::T | "m s-2" | 0 | "scalar"                           # acceleration due to gravity
-    α::T | "-" | 0 | "scalar"                               # stability coefficient (Bates et al., 2010)
+    alpha::T | "-" | 0 | "scalar"                           # stability coefficient (Bates et al., 2010)
     h_thresh::T | "m" | 0 | "scalar"                        # depth threshold for calculating flow
-    Δt::T | "s" | 0 | "none" | "none"                       # model time step [s]
+    dt::T | "s" | 0 | "none" | "none"                       # model time step [s]
     q::Vector{T} | "m3 s-1" | _ | "edge"                    # river discharge (subgrid channel)
     q0::Vector{T} | "m3 s-1" | _ | "edge"                   # river discharge (subgrid channel) at previous time step
     q_av::Vector{T} | "m3 s-1" | _ | "edge"                 # average river channel (+ floodplain) discharge [m³ s⁻¹]
@@ -504,9 +504,9 @@ end
     mannings_n_sq::Vector{T} | "(s m-1/3)2" | _ | "edge"    # Manning's roughness squared at edge/link
     mannings_n::Vector{T} | "s m-1/3"                       # Manning's roughness at node
     h::Vector{T} | "m"                                      # water depth
-    η_max::Vector{T} | "m" | _ | "edge"                     # maximum water elevation at edge
-    η_src::Vector{T} | "m"                                  # water elevation of source node of edge
-    η_dst::Vector{T} | "m"                                  # water elevation of downstream node of edge
+    zs_max::Vector{T} | "m" | _ | "edge"                    # maximum water elevation at edge
+    zs_src::Vector{T} | "m"                                 # water elevation of source node of edge
+    zs_dst::Vector{T} | "m"                                 # water elevation of downstream node of edge
     hf::Vector{T} | "m" | _ | "edge"                        # water depth at edge/link
     h_av::Vector{T} | "m"                                   # average water depth
     dl::Vector{T} | "m"                                     # river length
@@ -544,7 +544,7 @@ function initialize_shallowwater_river(
     reservoir,
     lake_index,
     lake,
-    Δt,
+    dt,
     floodplain,
 )
     # The local inertial approach makes use of a staggered grid (Bates et al. (2010)),
@@ -674,9 +674,9 @@ function initialize_shallowwater_river(
         active_n = active_index,
         active_e = active_index,
         g = 9.80665,
-        α = alpha,
+        alpha = alpha,
         h_thresh = h_thresh,
-        Δt = tosecond(Δt),
+        dt = tosecond(dt),
         q = zeros(_ne),
         q0 = zeros(_ne),
         q_av = q_av,
@@ -685,9 +685,9 @@ function initialize_shallowwater_river(
         mannings_n_sq = mannings_n_sq,
         mannings_n = n_river,
         h = h,
-        η_max = zeros(_ne),
-        η_src = zeros(_ne),
-        η_dst = zeros(_ne),
+        zs_max = zeros(_ne),
+        zs_src = zeros(_ne),
+        zs_dst = zeros(_ne),
         hf = zeros(_ne),
         h_av = zeros(n),
         width = width,
@@ -724,7 +724,7 @@ function get_inflow_waterbody(sw::ShallowWaterRiver, src_edge)
     return q_in
 end
 
-function shallowwater_river_update(sw::ShallowWaterRiver, network, Δt, doy, update_h)
+function shallowwater_river_update(sw::ShallowWaterRiver, network, dt, doy, update_h)
 
     @unpack nodes_at_link, links_at_node = network
 
@@ -736,11 +736,11 @@ function shallowwater_river_update(sw::ShallowWaterRiver, network, Δt, doy, upd
         i = sw.active_e[j]
         i_src = nodes_at_link.src[i]
         i_dst = nodes_at_link.dst[i]
-        sw.η_src[i] = sw.zb[i_src] + sw.h[i_src]
-        sw.η_dst[i] = sw.zb[i_dst] + sw.h[i_dst]
+        sw.zs_src[i] = sw.zb[i_src] + sw.h[i_src]
+        sw.zs_dst[i] = sw.zb[i_dst] + sw.h[i_dst]
 
-        sw.η_max[i] = max(sw.η_src[i], sw.η_dst[i])
-        sw.hf[i] = (sw.η_max[i] - sw.zb_max[i])
+        sw.zs_max[i] = max(sw.zs_src[i], sw.zs_dst[i])
+        sw.hf[i] = (sw.zs_max[i] - sw.zb_max[i])
 
         sw.a[i] = sw.width_at_link[i] * sw.hf[i] # flow area (rectangular channel)
         sw.r[i] = sw.a[i] / (sw.width_at_link[i] + 2.0 * sw.hf[i]) # hydraulic radius (rectangular channel)
@@ -749,8 +749,8 @@ function shallowwater_river_update(sw::ShallowWaterRiver, network, Δt, doy, upd
             sw.hf[i] > sw.h_thresh,
             local_inertial_flow(
                 sw.q0[i],
-                sw.η_src[i],
-                sw.η_dst[i],
+                sw.zs_src[i],
+                sw.zs_dst[i],
                 sw.hf[i],
                 sw.a[i],
                 sw.r[i],
@@ -758,7 +758,7 @@ function shallowwater_river_update(sw::ShallowWaterRiver, network, Δt, doy, upd
                 sw.mannings_n_sq[i],
                 sw.g,
                 sw.froude_limit,
-                Δt,
+                dt,
             ),
             0.0,
         )
@@ -767,10 +767,10 @@ function shallowwater_river_update(sw::ShallowWaterRiver, network, Δt, doy, upd
         sw.q[i] = IfElse.ifelse(sw.h[i_src] <= 0.0, min(sw.q[i], 0.0), sw.q[i])
         sw.q[i] = IfElse.ifelse(sw.h[i_dst] <= 0.0, max(sw.q[i], 0.0), sw.q[i])
 
-        sw.q_av[i] += sw.q[i] * Δt
+        sw.q_av[i] += sw.q[i] * dt
     end
     if !isnothing(sw.floodplain)
-        @tturbo @. sw.floodplain.hf = max(sw.η_max - sw.floodplain.zb_max, 0.0)
+        @tturbo @. sw.floodplain.hf = max(sw.zs_max - sw.floodplain.zb_max, 0.0)
 
         n = 0
         @inbounds for i in sw.active_e
@@ -830,8 +830,8 @@ function shallowwater_river_update(sw::ShallowWaterRiver, network, Δt, doy, upd
                 sw.floodplain.a[i] > 1.0e-05,
                 local_inertial_flow(
                     sw.floodplain.q0[i],
-                    sw.η_src[i],
-                    sw.η_dst[i],
+                    sw.zs_src[i],
+                    sw.zs_dst[i],
                     sw.floodplain.hf[i],
                     sw.floodplain.a[i],
                     sw.floodplain.r[i],
@@ -839,7 +839,7 @@ function shallowwater_river_update(sw::ShallowWaterRiver, network, Δt, doy, upd
                     sw.floodplain.mannings_n_sq[i],
                     sw.g,
                     sw.froude_limit,
-                    Δt,
+                    dt,
                 ),
                 0.0,
             )
@@ -858,7 +858,7 @@ function shallowwater_river_update(sw::ShallowWaterRiver, network, Δt, doy, upd
 
             sw.floodplain.q[i] =
                 IfElse.ifelse(sw.floodplain.q[i] * sw.q[i] < 0.0, 0.0, sw.floodplain.q[i])
-            sw.floodplain.q_av[i] += sw.floodplain.q[i] * Δt
+            sw.floodplain.q_av[i] += sw.floodplain.q[i] * dt
         end
     end
     # For reservoir and lake locations the local inertial solution is replaced by the
@@ -868,35 +868,35 @@ function shallowwater_river_update(sw::ShallowWaterRiver, network, Δt, doy, upd
         i = sw.reservoir_index[v]
 
         q_in = get_inflow_waterbody(sw, links_at_node.src[i])
-        update(sw.reservoir, v, q_in + sw.inflow_wb[i], Δt)
+        update(sw.reservoir, v, q_in + sw.inflow_wb[i], dt)
         sw.q[i] = sw.reservoir.outflow[v]
-        sw.q_av[i] += sw.q[i] * Δt
+        sw.q_av[i] += sw.q[i] * dt
     end
     for v in eachindex(sw.lake_index)
         i = sw.lake_index[v]
 
         q_in = get_inflow_waterbody(sw, links_at_node.src[i])
-        update(sw.lake, v, q_in + sw.inflow_wb[i], doy, Δt)
+        update(sw.lake, v, q_in + sw.inflow_wb[i], doy, dt)
         sw.q[i] = sw.lake.outflow[v]
-        sw.q_av[i] += sw.q[i] * Δt
+        sw.q_av[i] += sw.q[i] * dt
     end
     if update_h
         @batch per = thread minbatch = 2000 for i in sw.active_n
 
             q_src = sum_at(sw.q, links_at_node.src[i])
             q_dst = sum_at(sw.q, links_at_node.dst[i])
-            sw.volume[i] = sw.volume[i] + (q_src - q_dst + sw.inwater[i]) * Δt
+            sw.volume[i] = sw.volume[i] + (q_src - q_dst + sw.inwater[i]) * dt
 
             if sw.volume[i] < 0.0
                 sw.error[i] = sw.error[i] + abs(sw.volume[i])
                 sw.volume[i] = 0.0 # set volume to zero
             end
-            sw.volume[i] = max(sw.volume[i] + sw.inflow[i] * Δt, 0.0) # add external inflow
+            sw.volume[i] = max(sw.volume[i] + sw.inflow[i] * dt, 0.0) # add external inflow
 
             if !isnothing(sw.floodplain)
                 q_src = sum_at(sw.floodplain.q, links_at_node.src[i])
                 q_dst = sum_at(sw.floodplain.q, links_at_node.dst[i])
-                sw.floodplain.volume[i] = sw.floodplain.volume[i] + (q_src - q_dst) * Δt
+                sw.floodplain.volume[i] = sw.floodplain.volume[i] + (q_src - q_dst) * dt
                 # TODO check following approach:
                 # if floodplain volume negative, extract from river volume first
                 if sw.floodplain.volume[i] < 0.0
@@ -918,11 +918,11 @@ function shallowwater_river_update(sw::ShallowWaterRiver, network, Δt, doy, upd
                     sw.floodplain.h[i] = 0.0
                     sw.floodplain.volume[i] = 0.0
                 end
-                sw.floodplain.h_av[i] += sw.floodplain.h[i] * Δt
+                sw.floodplain.h_av[i] += sw.floodplain.h[i] * dt
             else
                 sw.h[i] = sw.volume[i] / (sw.dl[i] * sw.width[i])
             end
-            sw.h_av[i] += sw.h[i] * Δt
+            sw.h_av[i] += sw.h[i] * dt
         end
     end
 end
@@ -948,20 +948,20 @@ function update(sw::ShallowWaterRiver{T}, network, doy; update_h = true) where {
     sw.h_av .= 0.0
 
     t = T(0.0)
-    while t < sw.Δt
-        Δt = stable_timestep(sw)
-        if t + Δt > sw.Δt
-            Δt = sw.Δt - t
+    while t < sw.dt
+        dt = stable_timestep(sw)
+        if t + dt > sw.dt
+            dt = sw.dt - t
         end
-        shallowwater_river_update(sw, network, Δt, doy, update_h)
-        t = t + Δt
+        shallowwater_river_update(sw, network, dt, doy, update_h)
+        t = t + dt
     end
-    sw.q_av ./= sw.Δt
-    sw.h_av ./= sw.Δt
+    sw.q_av ./= sw.dt
+    sw.h_av ./= sw.dt
 
     if !isnothing(sw.floodplain)
-        sw.floodplain.q_av ./= sw.Δt
-        sw.floodplain.h_av ./= sw.Δt
+        sw.floodplain.q_av ./= sw.dt
+        sw.floodplain.h_av ./= sw.dt
         sw.q_channel_av .= sw.q_av
         sw.q_av .= sw.q_channel_av .+ sw.floodplain.q_av
     end
@@ -989,10 +989,10 @@ const dirs = (:yd, :xd, :xu, :yu)
     xwidth::Vector{T} | "m" | _ | "edge"                    # effective flow width x direction (floodplain)
     ywidth::Vector{T} | "m" | _ | "edge"                    # effective flow width y direction (floodplain)
     g::T | "m2 s-1" | 0 | "scalar"                          # acceleration due to gravity
-    θ::T | "-" | 0 | "scalar"                               # weighting factor (de Almeida et al., 2012)
-    α::T | "-" | 0 | "scalar"                               # stability coefficient (de Almeida et al., 2012)
+    theta::T | "-" | 0 | "scalar"                           # weighting factor (de Almeida et al., 2012)
+    alpha::T | "-" | 0 | "scalar"                           # stability coefficient (de Almeida et al., 2012)
     h_thresh::T | "m" | 0 | "scalar"                        # depth threshold for calculating flow
-    Δt::T | "s" | 0 | "none" | "none"                       # model time step [s]
+    dt::T | "s" | 0 | "none" | "none"                       # model time step [s]
     qy0::Vector{T} | "m3 s-1" | _ | "edge"                  # flow in y direction at previous time step
     qx0::Vector{T} | "m3 s-1" | _ | "edge"                  # flow in x direction at previous time step
     qx::Vector{T} | "m3 s-1" | _ | "edge"                   # flow in x direction
@@ -1025,7 +1025,7 @@ function initialize_shallowwater_land(
     inds_riv,
     river,
     waterbody,
-    Δt,
+    dt,
 )
     froude_limit = get(config.model, "froude_limit", true)::Bool # limit flow to subcritical according to Froude number
     alpha = get(config.model, "inertial_flow_alpha", 0.7)::Float64 # stability coefficient for model time step (0.2-0.7)
@@ -1106,10 +1106,10 @@ function initialize_shallowwater_land(
         xwidth = we_x,
         ywidth = we_y,
         g = 9.80665,
-        θ = theta,
-        α = alpha,
+        theta = theta,
+        alpha = alpha,
         h_thresh = h_thresh,
-        Δt = tosecond(Δt),
+        dt = tosecond(dt),
         qx0 = zeros(n + 1),
         qy0 = zeros(n + 1),
         qx = zeros(n + 1),
@@ -1137,30 +1137,30 @@ end
 
 Compute a stable timestep size for the local inertial approach, based on Bates et al. (2010).
 
-Δt = α * (Δx / sqrt(g max(h))
+dt = alpha * (Δx / sqrt(g max(h))
 """
 function stable_timestep(sw::ShallowWaterRiver{T})::T where {T}
-    Δtₘᵢₙ = T(Inf)
+    dt_min = T(Inf)
     @tturbo for i = 1:sw.n
-        Δt = sw.α * sw.dl[i] / sqrt(sw.g * sw.h[i])
-        Δtₘᵢₙ = Δt < Δtₘᵢₙ ? Δt : Δtₘᵢₙ
+        dt = sw.alpha * sw.dl[i] / sqrt(sw.g * sw.h[i])
+        dt_min = dt < dt_min ? dt : dt_min
     end
-    Δtₘᵢₙ = isinf(Δtₘᵢₙ) ? T(10.0) : Δtₘᵢₙ
-    return Δtₘᵢₙ
+    dt_min = isinf(dt_min) ? T(10.0) : dt_min
+    return dt_min
 end
 
 function stable_timestep(sw::ShallowWaterLand{T})::T where {T}
-    Δtₘᵢₙ = T(Inf)
+    dt_min = T(Inf)
     @tturbo for i = 1:sw.n
-        Δt = IfElse.ifelse(
+        dt = IfElse.ifelse(
             sw.rivercells[i] == 0,
-            sw.α * min(sw.xl[i], sw.yl[i]) / sqrt(sw.g * sw.h[i]),
+            sw.alpha * min(sw.xl[i], sw.yl[i]) / sqrt(sw.g * sw.h[i]),
             T(Inf),
         )
-        Δtₘᵢₙ = Δt < Δtₘᵢₙ ? Δt : Δtₘᵢₙ
+        dt_min = dt < dt_min ? dt : dt_min
     end
-    Δtₘᵢₙ = isinf(Δtₘᵢₙ) ? T(10.0) : Δtₘᵢₙ
-    return Δtₘᵢₙ
+    dt_min = isinf(dt_min) ? T(10.0) : dt_min
+    return dt_min
 end
 
 function update(
@@ -1188,27 +1188,27 @@ function update(
     sw.h_av .= 0.0
 
     t = T(0.0)
-    while t < swr.Δt
-        Δt_river = stable_timestep(swr)
-        Δt_land = stable_timestep(sw)
-        Δt = min(Δt_river, Δt_land)
-        if t + Δt > swr.Δt
-            Δt = swr.Δt - t
+    while t < swr.dt
+        dt_river = stable_timestep(swr)
+        dt_land = stable_timestep(sw)
+        dt = min(dt_river, dt_land)
+        if t + dt > swr.dt
+            dt = swr.dt - t
         end
-        shallowwater_river_update(swr, network.river, Δt, doy, update_h)
-        shallowwater_update(sw, swr, network, Δt)
-        t = t + Δt
+        shallowwater_river_update(swr, network.river, dt, doy, update_h)
+        shallowwater_update(sw, swr, network, dt)
+        t = t + dt
     end
-    swr.q_av ./= swr.Δt
-    swr.h_av ./= swr.Δt
-    sw.h_av ./= sw.Δt
+    swr.q_av ./= swr.dt
+    swr.h_av ./= swr.dt
+    sw.h_av ./= sw.dt
 end
 
 function shallowwater_update(
     sw::ShallowWaterLand{T},
     swr::ShallowWaterRiver{T},
     network,
-    Δt,
+    dt,
 ) where {T}
 
     indices = network.land.staggered_indices
@@ -1230,27 +1230,27 @@ function shallowwater_update(
         # for flow in x dir) and floodplain flow is not calculated.
         if xu <= sw.n && sw.ywidth[i] != T(0.0)
 
-            η_x = sw.z[i] + sw.h[i]
-            η_xu = sw.z[xu] + sw.h[xu]
-            η_max = max(η_x, η_xu)
-            hf = (η_max - sw.zx_max[i])
+            zs_x = sw.z[i] + sw.h[i]
+            zs_xu = sw.z[xu] + sw.h[xu]
+            zs_max = max(zs_x, zs_xu)
+            hf = (zs_max - sw.zx_max[i])
 
             if hf > sw.h_thresh
                 length = T(0.5) * (sw.xl[i] + sw.xl[xu]) # can be precalculated
                 sw.qx[i] = local_inertial_flow(
-                    sw.θ,
+                    sw.theta,
                     sw.qx0[i],
                     sw.qx0[xd],
                     sw.qx0[xu],
-                    η_x,
-                    η_xu,
+                    zs_x,
+                    zs_xu,
                     hf,
                     sw.ywidth[i],
                     length,
                     sw.mannings_n_sq[i],
                     sw.g,
                     sw.froude_limit,
-                    Δt,
+                    dt,
                 )
                 # limit qx in case water is not available
                 if sw.h[i] <= T(0.0)
@@ -1270,27 +1270,27 @@ function shallowwater_update(
         # for flow in y dir) and floodplain flow is not calculated.
         if yu <= sw.n && sw.xwidth[i] != T(0.0)
 
-            η_y = sw.z[i] + sw.h[i]
-            η_yu = sw.z[yu] + sw.h[yu]
-            η_max = max(η_y, η_yu)
-            hf = (η_max - sw.zy_max[i])
+            zs_y = sw.z[i] + sw.h[i]
+            zs_yu = sw.z[yu] + sw.h[yu]
+            zs_max = max(zs_y, zs_yu)
+            hf = (zs_max - sw.zy_max[i])
 
             if hf > sw.h_thresh
                 length = T(0.5) * (sw.yl[i] + sw.yl[yu]) # can be precalculated
                 sw.qy[i] = local_inertial_flow(
-                    sw.θ,
+                    sw.theta,
                     sw.qy0[i],
                     sw.qy0[yd],
                     sw.qy0[yu],
-                    η_y,
-                    η_yu,
+                    zs_y,
+                    zs_yu,
                     hf,
                     sw.xwidth[i],
                     length,
                     sw.mannings_n_sq[i],
                     sw.g,
                     sw.froude_limit,
-                    Δt,
+                    dt,
                 )
                 # limit qy in case water is not available
                 if sw.h[i] <= T(0.0)
@@ -1326,7 +1326,7 @@ function shallowwater_update(
                         sw.qx[i] + sw.qy[yd] - sw.qy[i] +
                         swr.inflow[inds_riv[i]] +
                         sw.runoff[i]
-                    ) * Δt
+                    ) * dt
                 if sw.volume[i] < T(0.0)
                     sw.error[i] = sw.error[i] + abs(sw.volume[i])
                     sw.volume[i] = T(0.0) # set volume to zero
@@ -1345,18 +1345,18 @@ function shallowwater_update(
                     sw.h[i] = T(0.0)
                     swr.volume[inds_riv[i]] = sw.volume[i]
                 end
-                swr.h_av[inds_riv[i]] += swr.h[inds_riv[i]] * Δt
+                swr.h_av[inds_riv[i]] += swr.h[inds_riv[i]] * dt
             end
         else
             sw.volume[i] +=
-                (sw.qx[xd] - sw.qx[i] + sw.qy[yd] - sw.qy[i] + sw.runoff[i]) * Δt
+                (sw.qx[xd] - sw.qx[i] + sw.qy[yd] - sw.qy[i] + sw.runoff[i]) * dt
             if sw.volume[i] < T(0.0)
                 sw.error[i] = sw.error[i] + abs(sw.volume[i])
                 sw.volume[i] = T(0.0) # set volume to zero
             end
             sw.h[i] = sw.volume[i] / (sw.xl[i] * sw.yl[i])
         end
-        sw.h_av[i] += sw.h[i] * Δt
+        sw.h_av[i] += sw.h[i] * dt
     end
 end
 
@@ -1433,8 +1433,8 @@ Compute floodplain flow area based on flow depth `h` and floodplain `depth`, `ar
 `width` of a floodplain profile.
 """
 function flow_area(width, area, depth, h)
-    Δh = h - depth  # depth at i1
-    area = area + (width * Δh) # area at i1, width at i2
+    dh = h - depth  # depth at i1
+    area = area + (width * dh) # area at i1, width at i2
     return area
 end
 
@@ -1445,8 +1445,8 @@ Compute floodplain wetted perimeter based on flow depth `h` and floodplain `dept
 wetted perimeter `p` of a floodplain profile.
 """
 function wetted_perimeter(p, depth, h)
-    Δh = h - depth # depth at i1
-    p = p + (2.0 * Δh) # p at i1
+    dh = h - depth # depth at i1
+    p = p + (2.0 * dh) # p at i1
     return p
 end
 
@@ -1454,8 +1454,8 @@ end
 function flood_depth(profile::FloodPlainProfile{T}, flood_volume, dl, i::Int)::T where {T}
     i1, i2 = interpolation_indices(flood_volume, @view profile.volume[:, i])
     ΔA = (flood_volume - profile.volume[i1, i]) / dl
-    Δh = ΔA / profile.width[i2, i]
-    flood_depth = profile.depth[i1] + Δh
+    dh = ΔA / profile.width[i2, i]
+    flood_depth = profile.depth[i1] + dh
     return flood_depth
 end
 
@@ -1625,7 +1625,7 @@ function set_river_inwater(model::Model{N,L,V,R,W,T}, ssf_toriver) where {N,L,V<
                 network.land.xl[inds] *
                 network.land.yl[inds] *
                 0.001
-            ) / vertical.Δt
+            ) / vertical.dt
         )
     )
 end
@@ -1658,7 +1658,7 @@ function set_land_inwater(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfM
 
     lateral.land.inwater .=
         (vertical.net_runoff .* network.land.xl .* network.land.yl .* 0.001) ./
-        lateral.land.Δt .+ drainflux
+        lateral.land.dt .+ drainflux
 end
 
 """
@@ -1670,7 +1670,7 @@ function set_land_inwater(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmMode
     @unpack lateral, vertical, network = model
     lateral.land.inwater .=
         (vertical.net_runoff .* network.land.xl .* network.land.yl .* 0.001) ./
-        lateral.land.Δt
+        lateral.land.dt
 end
 
 """
@@ -1681,7 +1681,7 @@ Set `inwater` of the lateral land component, based on `runoff` of the `vertical`
 function set_land_inwater(model)
     @unpack lateral, vertical, network = model
     lateral.land.inwater .=
-        (vertical.runoff .* network.land.xl .* network.land.yl .* 0.001) ./ lateral.land.Δt
+        (vertical.runoff .* network.land.xl .* network.land.yl .* 0.001) ./ lateral.land.dt
 end
 
 # Computation of inflow from the lateral components `land` and `subsurface` to water bodies
@@ -1786,7 +1786,7 @@ function surface_routing(model; ssf_toriver = 0.0)
     # run river flow
     set_river_inwater(model, ssf_toriver)
     set_inflow_waterbody(model)
-    update(lateral.river, network.river, julian_day(clock.time - clock.Δt))
+    update(lateral.river, network.river, julian_day(clock.time - clock.dt))
 end
 
 """
@@ -1806,14 +1806,14 @@ function surface_routing(
     @unpack lateral, vertical, network, clock = model
 
     @. lateral.land.runoff = (
-        (vertical.net_runoff / 1000.0) * (network.land.xl * network.land.yl) / vertical.Δt +
+        (vertical.net_runoff / 1000.0) * (network.land.xl * network.land.yl) / vertical.dt +
         ssf_toriver +
         # net_runoff_river
         (
             (vertical.net_runoff_river * network.land.xl * network.land.yl * 0.001) /
-            vertical.Δt
+            vertical.dt
         )
     )
     set_inflow_waterbody(model)
-    update(lateral.land, lateral.river, network, julian_day(clock.time - clock.Δt))
+    update(lateral.land, lateral.river, network, julian_day(clock.time - clock.dt))
 end

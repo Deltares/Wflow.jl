@@ -24,7 +24,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test BMI.get_output_item_count(model) == 193
             to_check = [
                 "vertical.nlayers",
-                "vertical.θᵣ",
+                "vertical.theta_r",
                 "lateral.river.q",
                 "lateral.river.reservoir.outflow",
             ]
@@ -35,12 +35,12 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
         end
 
         @testset "variable information functions" begin
-            @test BMI.get_var_grid(model, "vertical.θₛ") == 6
+            @test BMI.get_var_grid(model, "vertical.theta_s") == 6
             @test BMI.get_var_grid(model, "lateral.river.h") == 3
             @test BMI.get_var_grid(model, "lateral.river.reservoir.inflow") == 0
             @test_throws ErrorException BMI.get_var_grid(model, "lateral.river.lake.volume")
             @test BMI.get_var_type(model, "lateral.river.reservoir.inflow") == "$Float"
-            @test BMI.get_var_units(model, "vertical.θₛ") == "-"
+            @test BMI.get_var_units(model, "vertical.theta_s") == "-"
             @test BMI.get_var_itemsize(model, "lateral.subsurface.ssf") == sizeof(Float)
             @test BMI.get_var_nbytes(model, "lateral.river.q") ==
                   length(model.lateral.river.q) * sizeof(Float)

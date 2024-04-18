@@ -57,6 +57,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Always use fractions for the computation of potential evapotranspiration (interception and
   transpiration) and potential evaporation (open water and soil). Replaced variable
   `et_reftopot` by crop coefficient `kc` (use of `et_reftopot` has been deprecated).
+- For improved code readability it is now discouraged to use non-ASCII characters for the
+  names of variables, structs, functions and macros. Using the non-ASCII character for
+  built-in operators is still allowed. This change in naming convention is now in effect and
+  all invalid uses of non-ASCII characters have been replaced by ASCII equivalents.
 
 ### Added
 - Total water storage as an export variable for `SBM` concept. This is the total water stored

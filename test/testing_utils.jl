@@ -11,7 +11,7 @@
 #     https://github.com/stevengj/18S096-iap17/blob/master/pset3/pset3-solutions.ipynb
 
 # n coefficients of the Taylor series of E₁(z) + log(z), in type T:
-function E₁_taylor_coefficients(::Type{T}, n::Integer) where {T<:Number}
+function E1_taylor_coefficients(::Type{T}, n::Integer) where {T<:Number}
     n < 0 && throw(ArgumentError("$n ≥ 0 is required"))
     n == 0 && return T[]
     n == 1 && return T[-eulergamma]
@@ -26,8 +26,8 @@ function E₁_taylor_coefficients(::Type{T}, n::Integer) where {T<:Number}
 end
 
 # inline the Taylor expansion for a given order n, in double precision
-macro E₁_taylor64(z, n::Integer)
-    c = E₁_taylor_coefficients(Float64, n)
+macro E1_taylor64(z, n::Integer)
+    c = E1_taylor_coefficients(Float64, n)
     taylor = :(@evalpoly zz)
     append!(taylor.args, c)
     quote
@@ -38,9 +38,9 @@ macro E₁_taylor64(z, n::Integer)
 end
 
 # for numeric-literal coefficients: simplify to a ratio of two polynomials:
-# return (p,q): the polynomials p(x) / q(x) corresponding to E₁_cf(x, a...),
+# return (p,q): the polynomials p(x) / q(x) corresponding to E1_cf(x, a...),
 # but without the exp(-x) term
-function E₁_cfpoly(n::Integer, ::Type{T} = BigInt) where {T<:Real}
+function E1_cfpoly(n::Integer, ::Type{T} = BigInt) where {T<:Real}
     q = Polynomials.Polynomial(T[1])
     p = x = Polynomials.Polynomial(T[0, 1])
     for i = n:-1:1
@@ -51,8 +51,8 @@ function E₁_cfpoly(n::Integer, ::Type{T} = BigInt) where {T<:Real}
     return p, x * p + q
 end
 
-macro E₁_cf64(z, n::Integer)
-    p, q = E₁_cfpoly(n, BigInt)
+macro E1_cf64(z, n::Integer)
+    p, q = E1_cfpoly(n, BigInt)
     num_expr = :(@evalpoly zz)
     append!(num_expr.args, Float64.(Polynomials.coeffs(p)))
     den_expr = :(@evalpoly zz)
@@ -66,26 +66,26 @@ end
 
 # exponential integral function E₁(z)
 function expint(z::Union{Float64,Complex{Float64}})
-    x² = real(z)^2
-    y² = imag(z)^2
-    if real(z) > 0 && x² + 0.233 * y² ≥ 7.84 # use cf expansion, ≤ 30 terms
-        if (x² ≥ 546121) & (real(z) > 0) # underflow
+    xSq = real(z)^2
+    ySq = imag(z)^2
+    if real(z) > 0 && xSq + 0.233 * ySq ≥ 7.84 # use cf expansion, ≤ 30 terms
+        if (xSq ≥ 546121) & (real(z) > 0) # underflow
             return zero(z)
-        elseif x² + 0.401 * y² ≥ 58.0 # ≤ 15 terms
-            if x² + 0.649 * y² ≥ 540.0 # ≤ 8 terms
-                x² + y² ≥ 4e4 && return @E₁_cf64 z 4
-                return @E₁_cf64 z 8
+        elseif xSq + 0.401 * ySq ≥ 58.0 # ≤ 15 terms
+            if xSq + 0.649 * ySq ≥ 540.0 # ≤ 8 terms
+                xSq + ySq ≥ 4e4 && return @E1_cf64 z 4
+                return @E1_cf64 z 8
             end
-            return @E₁_cf64 z 15
+            return @E1_cf64 z 15
         end
-        return @E₁_cf64 z 30
+        return @E1_cf64 z 30
     else # use Taylor expansion, ≤ 37 terms
-        r² = x² + y²
-        return r² ≤ 0.36 ?
+        rSq = xSq + ySq
+        return rSq ≤ 0.36 ?
                (
-            r² ≤ 2.8e-3 ? (r² ≤ 2e-7 ? @E₁_taylor64(z, 4) : @E₁_taylor64(z, 8)) :
-            @E₁_taylor64(z, 15)
-        ) : @E₁_taylor64(z, 37)
+            rSq ≤ 2.8e-3 ? (rSq ≤ 2e-7 ? @E1_taylor64(z, 4) : @E1_taylor64(z, 8)) :
+            @E1_taylor64(z, 15)
+        ) : @E1_taylor64(z, 37)
     end
 end
 expint(z::Union{T,Complex{T},Rational{T},Complex{Rational{T}}}) where {T<:Integer} =
@@ -100,21 +100,21 @@ function expint(n::Integer, z)
     elseif n < 1
         # backwards recurrence from E₀ = e⁻ᶻ/z
         zinv = inv(z)
-        e⁻ᶻ = exp(-z)
-        Eᵢ = zinv * e⁻ᶻ
+        exp_minus_z = exp(-z)
+        Ei = zinv * exp_minus_z
         for i = 1:-n
-            Eᵢ = zinv * (e⁻ᶻ + i * Eᵢ)
+            Ei = zinv * (exp_minus_z + i * Ei)
         end
-        return Eᵢ
+        return Ei
     else
         # forwards recurrence from E₁
-        e⁻ᶻ = exp(-z)
-        Eᵢ = expint(z)
-        Eᵢ *= !isinf(Eᵢ)
+        exp_minus_z = exp(-z)
+        Ei = expint(z)
+        Ei *= !isinf(Ei)
         for i = 2:n
-            Eᵢ = (e⁻ᶻ - z * Eᵢ) / (i - 1)
+            Ei = (exp_minus_z - z * Ei) / (i - 1)
         end
-        return Eᵢ
+        return Ei
     end
 end
 

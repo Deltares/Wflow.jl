@@ -57,7 +57,7 @@ routing](@ref) and parameters that are part of this component are described in t
 subsurface flow](@ref) section of Model parameters. Input parameters for this component of
 the SBM + Kinematic wave model are derived from the SBM vertical concept and the land slope.
 One external parameter [`ksathorfrac`](@ref params_ssf) is used to calculate the horizontal
-hydraulic conductivity at the soil surface `kh₀`.
+hydraulic conductivity at the soil surface `kh_0`.
 
 There is also the option to use the local inertial model as part of the `sbm` model type:
 + for river flow, see also  [SBM + Local inertial river](@ref) model.

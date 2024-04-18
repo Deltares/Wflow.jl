@@ -66,14 +66,14 @@ end
 function BMI.update_until(model::Model, time::Float64)
     @unpack clock, network, config = model
     t = BMI.get_current_time(model)
-    _div, _rem = divrem(time - t, model.clock.Δt.value)
+    _div, _rem = divrem(time - t, model.clock.dt.value)
     steps = Int(_div)
     if steps < 0
         error("The current model timestamp $t is larger than provided `time` $time")
     elseif abs(_rem) > eps()
         error_message = string(
             "Provided `time` $time minus the current model timestamp $t",
-            " is not an integer multiple of model time step $(model.clock.Δt.value)",
+            " is not an integer multiple of model time step $(model.clock.dt.value)",
         )
         error(error_message)
     end
@@ -86,7 +86,7 @@ end
 "Write state output to netCDF and close files."
 function BMI.finalize(model::Model)
     @unpack config, writer, clock = model
-    # it is possible that the state dataset has been closed by `save_state`  
+    # it is possible that the state dataset has been closed by `save_state`
     if !isnothing(writer.state_dataset) && isopen(writer.state_dataset)
         write_netcdf_timestep(model, writer.state_dataset, writer.state_parameters)
     end
@@ -282,7 +282,7 @@ end
     BMI.set_value(model::Model, name::String, src::Vector{T}) where T<:AbstractFloat
 
 Set a model variable `name` to the values in vector `src`, overwriting the current contents.
-The type and size of `src` must match the model’s internal array.
+The type and size of `src` must match the model's internal array.
 """
 function BMI.set_value(model::Model, name::String, src::Vector{T}) where {T<:AbstractFloat}
     BMI.get_value_ptr(model, name) .= src
