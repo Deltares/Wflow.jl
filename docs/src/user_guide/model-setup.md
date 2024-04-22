@@ -100,7 +100,7 @@ The Model parameters section lists all the parameters per Model component and th
 can also be used to check which parameters can be part of the output, see also [Output
 netCDF section](@ref) and [Output CSV section](@ref).
 
-Example models can be found in the [Example model section](@ref sample_data).
+Example models can be found in the [Example models section](@ref sample_data).
 
 ## hydroMT
 [hydroMT](https://github.com/Deltares/hydromt) is a Python package, developed by Deltares,
