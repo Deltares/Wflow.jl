@@ -36,7 +36,7 @@ end
     @test request((fn = "get_output_item_count",)) == Dict("output_item_count" => 193)
     to_check = [
         "vertical.nlayers",
-        "vertical.θᵣ",
+        "vertical.theta_r",
         "lateral.river.q",
         "lateral.river.reservoir.outflow",
     ]
@@ -52,7 +52,7 @@ vwc_1_size = 0
     @test request((fn = "get_var_itemsize", name = "lateral.subsurface.ssf")) ==
           Dict("var_itemsize" => sizeof(Wflow.Float))
     @test request((fn = "get_var_type", name = "vertical.n"))["status"] == "ERROR"
-    @test request((fn = "get_var_units", name = "vertical.θₛ")) == Dict("var_units" => "-")
+    @test request((fn = "get_var_units", name = "vertical.theta_s")) == Dict("var_units" => "-")
     @test request((fn = "get_var_location", name = "lateral.river.q")) ==
           Dict("var_location" => "node")
     zi_nbytes = request((fn = "get_var_nbytes", name = "vertical.zi"))["var_nbytes"]
@@ -67,7 +67,7 @@ vwc_1_size = 0
     @test request((fn = "get_var_grid", name = "lateral.river.h")) == Dict("var_grid" => 3)
     msg = (fn = "get_value", name = "vertical.zi", dest = fill(0.0, zi_size))
     @test mean(request(msg)["value"]) ≈ 277.8362161218515
-    msg = (fn = "get_value_ptr", name = "vertical.θₛ")
+    msg = (fn = "get_value_ptr", name = "vertical.theta_s")
     @test mean(request(msg)["value_ptr"]) ≈ 0.4409211971535584
     msg = (
         fn = "get_value_at_indices",

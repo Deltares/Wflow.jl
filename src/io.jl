@@ -335,7 +335,7 @@ function update_cyclic!(model)
     @unpack cyclic_dataset, cyclic_times, cyclic_parameters = reader
 
     # pick up the data that is valid for the past model time step
-    month_day = monthday(clock.time - clock.Δt)
+    month_day = monthday(clock.time - clock.dt)
 
     is_first_timestep = clock.iteration == 1
 
@@ -1345,19 +1345,19 @@ function reset_clock!(clock::Clock, config)
     # we want this method to be mutating
     clock.time = new_clock.time
     clock.iteration = new_clock.iteration
-    clock.Δt = new_clock.Δt
+    clock.dt = new_clock.dt
     return clock
 end
 
 function advance!(clock)
     clock.iteration += 1
-    clock.time += clock.Δt
+    clock.time += clock.dt
     return clock
 end
 
 function rewind!(clock)
     clock.iteration -= 1
-    clock.time -= clock.Δt
+    clock.time -= clock.dt
     return clock
 end
 

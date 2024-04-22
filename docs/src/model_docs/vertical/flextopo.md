@@ -129,10 +129,10 @@ The shape of the beta function for various values of ``\beta`` [-] is shown belo
         ax = Axis(fig[1, 1], xlabel = "S/Smax [-]", ylabel = "Fraction of runoff [-]")      # hide
         x = 0:0.01:1                                                                        # hide
         betas = [0.3, 1.0, 3.0]                                                             # hide
-        for β in betas                                                                      # hide
-            lines!(ax, x, (1 .- (1 .- x).^β), label = @sprintf("β = %.1f", β))              # hide
+        for beta in betas                                                                   # hide
+            lines!(ax, x, (1 .- (1 .- x).^beta), label = @sprintf("beta = %.1f", beta))     # hide
         end                                                                                 # hide
-        Legend(fig[1, 2], ax, "β")                                                          # hide
+        Legend(fig[1, 2], ax, "beta")                                                       # hide
         fig                                                                                 # hide
     end                                                                                     # hide
 ```

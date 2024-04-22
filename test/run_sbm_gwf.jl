@@ -21,7 +21,7 @@ end
     sbm = model.vertical
 
     @test model.clock.iteration == 1
-    @test sbm.θₛ[1] ≈ 0.44999998807907104f0
+    @test sbm.theta_s[1] ≈ 0.44999998807907104f0
     @test sbm.runoff[1] == 0.0
     @test sbm.soilevap[1] == 0.0
     @test sbm.transpiration[1] ≈ 0.6117526566330049f0
@@ -32,7 +32,7 @@ model = Wflow.run_timestep(model)
 
 @testset "second timestep" begin
     sbm = model.vertical
-    @test sbm.θₛ[1] ≈ 0.44999998807907104f0
+    @test sbm.theta_s[1] ≈ 0.44999998807907104f0
     @test sbm.runoff[1] == 0.0
     @test sbm.soilevap[1] == 0.0
     @test sbm.transpiration[1] ≈ 1.0122634204681036f0

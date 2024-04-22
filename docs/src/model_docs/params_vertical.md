@@ -25,8 +25,8 @@ through the TOML file. Below an example for the `exponential_constant` profile:
 ksat_profile = "exponential_constant"
 ```
 
-For the `exponential` profile the input parameters `kv₀` and `f` are used. For the
-`exponential_constant` profile `kv₀` and `f` are used, and `z_exp` is required as input. For
+For the `exponential` profile the input parameters `kv_0` and `f` are used. For the
+`exponential_constant` profile `kv_0` and `f` are used, and `z_exp` is required as input. For
 the `layered` profile, input parameter `kv` is used, and for the `layered_exponential`
 profile `kv` is used and `z_layered` is required as input.
 
@@ -44,12 +44,12 @@ profile `kv` is used and `z_layered` is required as input.
 | **`g_sifrac`**  | fraction of the snowpack on top of the glacier converted into ice  | Δt``^{-1}`` | 0.001 day``^{-1}`` |
 | **`glacierfrac`**  | fraction covered by a glacier | - | 0.0  |
 | **`glacierstore`**  | water within the glacier  | mm | 5500.0  |
-| **`θₛ`** (`theta_s`) | saturated water content (porosity) | - | 0.6  |
-| **`θᵣ`** (`theta_r`) | residual water content | - | 0.01  |
-| **`kv₀`** (`kv_0`) | Vertical hydraulic conductivity at soil surface | mm Δt``^{-1}`` | 3000.0 mm day``^{-1}``|
+| **`theta_s`** | saturated water content (porosity) | - | 0.6  |
+| **`theta_r`** | residual water content | - | 0.01  |
+| **`kv_0`** | Vertical hydraulic conductivity at soil surface | mm Δt``^{-1}`` | 3000.0 mm day``^{-1}``|
 | **`kv`** |  Vertical hydraulic conductivity per soil layer | mm Δt``^{-1}`` | 1000.0 mm day``^{-1}``|
-| **`f`** | scaling parameter (controls exponential decline of `kv₀`) | mm``^{-1}`` | 0.001  |
-| **`z_exp`** | Depth from soil surface for which exponential decline of `kv₀` is valid | mm | -  |
+| **`f`** | scaling parameter (controls exponential decline of `kv_0`) | mm``^{-1}`` | 0.001  |
+| **`z_exp`** | Depth from soil surface for which exponential decline of `kv_0` is valid | mm | -  |
 | **`z_layered`** | Depth from soil surface for which layered profile (of `layered_exponential`) is valid | mm | -  |
 | **`hb`** | air entry pressure of soil (Brooks-Corey) | cm | 10.0  |
 | **`soilthickness`** | soil thickness | mm | 2000.0  |
@@ -71,7 +71,7 @@ profile `kv` is used and `z_layered` is required as input.
 | **`cmax`** | maximum canopy storage | mm | 1.0 |
 | **`e_r`** (`eoverr`) | Gash interception model parameter | - | 0.1 |
 | **`canopygapfraction`** | canopy gap fraction | - | 0.1 | - |
-| `Δt`             | model time step     | s | - |
+| `dt`             | model time step     | s | - |
 | `maxlayers`      | maximum number of soil layers     | - | - |
 | `n`      |  number of grid cells    | - | - |
 | `nlayers`      |  number of soil layers    | - | - |
@@ -117,11 +117,11 @@ profile `kv` is used and `z_layered` is required as input.
 | `excesswaterpath` | excess water for compacted fraction | mm Δt``^{-1}`` | - |
 | `runoff` | total surface runoff from infiltration and saturation excess | mm Δt``^{-1}`` | - |
 | `net_runoff` | net surface runoff (`runoff` - `ae_openw_l`) | mm Δt``^{-1}`` | - |
-| `vwc` | volumetric water content per soil layer (including θᵣ and saturated zone)  | - | - |
-| `vwc_perc` | volumetric water content per soil layer (including θᵣ and saturated zone)  | % | - |
-| `rootstore` | root water storage in unsaturated and saturated zone (excluding θᵣ)  | mm| - |
-| `vwc_root` | volumetric water content in root zone (including θᵣ and saturated zone) | -| - |
-| `vwc_percroot` | volumetric water content in root zone (including θᵣ and saturated zone) | % | - |
+| `vwc` | volumetric water content per soil layer (including `theta_r` and saturated zone)  | - | - |
+| `vwc_perc` | volumetric water content per soil layer (including `theta_r` and saturated zone)  | % | - |
+| `rootstore` | root water storage in unsaturated and saturated zone (excluding `theta_r`)  | mm| - |
+| `vwc_root` | volumetric water content in root zone (including `theta_r` and saturated zone) | -| - |
+| `vwc_percroot` | volumetric water content in root zone (including `theta_r` and saturated zone) | % | - |
 | `ustoredepth` | total amount of available water in the unsaturated zone | mm | - |
 | `transfer` | downward flux from unsaturated to saturated zone | mm Δt``^{-1}`` | - |
 | `recharge` | net recharge to saturated zone | mm Δt``^{-1}`` | - |

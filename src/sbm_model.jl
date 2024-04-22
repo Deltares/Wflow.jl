@@ -14,7 +14,7 @@ function initialize_sbm_model(config::Config)
 
     reader = prepare_reader(config)
     clock = Clock(config, reader)
-    Δt = clock.Δt
+    dt = clock.dt
 
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
     do_lakes = get(config.model, "lakes", false)::Bool
@@ -78,7 +78,7 @@ function initialize_sbm_model(config::Config)
     pits = zeros(Bool, modelsize_2d)
     if do_reservoirs
         reservoirs, resindex, reservoir, pits =
-            initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, tosecond(Δt))
+            initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, tosecond(dt))
     else
         reservoir = ()
         reservoirs = nothing
@@ -88,7 +88,7 @@ function initialize_sbm_model(config::Config)
     # lakes
     if do_lakes
         lakes, lakeindex, lake, pits =
-            initialize_lake(config, nc, inds_riv, nriv, pits, tosecond(Δt))
+            initialize_lake(config, nc, inds_riv, nriv, pits, tosecond(dt))
     else
         lake = ()
         lakes = nothing
@@ -102,9 +102,9 @@ function initialize_sbm_model(config::Config)
         ldd = set_pit_ldd(pits_2d, ldd, inds)
     end
 
-    βₗ =
+    landslope =
         ncread(nc, config, "lateral.land.slope"; optional = false, sel = inds, type = Float)
-    clamp!(βₗ, 0.00001, Inf)
+    clamp!(landslope, 0.00001, Inf)
 
     dl = map(detdrainlength, ldd, xl, yl)
     dw = (xl .* yl) ./ dl
@@ -122,25 +122,25 @@ function initialize_sbm_model(config::Config)
             type = Float,
         )
 
-        # unit for lateral subsurface flow component is [m³ d⁻¹], sbm.kv₀ [mm Δt⁻¹]
-        kh₀ = khfrac .* sbm.kv₀ .* 0.001 .* (basetimestep / Δt)
+        # unit for lateral subsurface flow component is [m³ d⁻¹], sbm.kv_0 [mm Δt⁻¹]
+        kh_0 = khfrac .* sbm.kv_0 .* 0.001 .* (basetimestep / dt)
         f = sbm.f .* 1000.0
         zi = sbm.zi .* 0.001
         soilthickness = sbm.soilthickness .* 0.001
         z_exp = sbm.z_exp .* 0.001
 
         ssf = LateralSSF{Float}(
-            kh₀ = kh₀,
+            kh_0 = kh_0,
             f = f,
             kh = fill(mv, n),
             khfrac = khfrac,
             zi = zi,
             z_exp = z_exp,
             soilthickness = soilthickness,
-            θₛ = sbm.θₛ,
-            θᵣ = sbm.θᵣ,
-            Δt = Δt / basetimestep,
-            βₗ = βₗ,
+            theta_s = sbm.theta_s,
+            theta_r = sbm.theta_r,
+            dt = dt / basetimestep,
+            slope = landslope,
             dl = dl,
             dw = dw,
             exfiltwater = fill(mv, n),
@@ -163,7 +163,7 @@ function initialize_sbm_model(config::Config)
         # when the SBM model is coupled (BMI) to a groundwater model, the following
         # variables are expected to be exchanged from the groundwater model.
         ssf = GroundwaterExchange{Float}(
-            Δt = Δt / basetimestep,
+            dt = dt / basetimestep,
             exfiltwater = fill(mv, n),
             zi = fill(mv, n),
             to_river = fill(mv, n),
@@ -180,19 +180,19 @@ function initialize_sbm_model(config::Config)
 
     # the indices of the river cells in the land(+river) cell vector
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
-    frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, βₗ, n)
+    frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, landslope, n)
 
     if land_routing == "kinematic-wave"
         olf = initialize_surfaceflow_land(
             nc,
             config,
             inds;
-            sl = βₗ,
+            sl = landslope,
             dl,
             width = map(det_surfacewidth, dw, riverwidth, river),
             iterate = kinwave_it,
             tstep = kw_land_tstep,
-            Δt,
+            dt,
         )
     elseif land_routing == "local-inertial"
         index_river_nf = rev_inds_riv[inds] # not filtered (with zeros)
@@ -210,7 +210,7 @@ function initialize_sbm_model(config::Config)
             inds_riv,
             river,
             waterbody = !=(0).(resindex + lakeindex),
-            Δt,
+            dt,
         )
     end
 
@@ -231,7 +231,7 @@ function initialize_sbm_model(config::Config)
             lake = lakes,
             iterate = kinwave_it,
             tstep = kw_river_tstep,
-            Δt = Δt,
+            dt = dt,
         )
     elseif river_routing == "local-inertial"
         rf, nodes_at_link = initialize_shallowwater_river(
@@ -246,7 +246,7 @@ function initialize_sbm_model(config::Config)
             reservoir = reservoirs,
             lake_index = lakeindex,
             lake = lakes,
-            Δt = Δt,
+            dt = dt,
             floodplain = floodplain_1d,
         )
     else
@@ -340,7 +340,7 @@ function initialize_sbm_model(config::Config)
         reverse_indices = rev_inds,
         xl,
         yl,
-        slope = βₗ,
+        slope = landslope,
     )
     if land_routing == "local-inertial"
         land = merge(land, (index_river = index_river_nf, staggered_indices = indices))
@@ -518,7 +518,7 @@ function set_states(
             max.(
                 0.0,
                 vertical.soilthickness .-
-                vertical.satwaterdepth ./ (vertical.θₛ .- vertical.θᵣ),
+                vertical.satwaterdepth ./ (vertical.theta_s .- vertical.theta_r),
             )
         vertical.zi .= zi
         if land_routing == "kinematic-wave"
