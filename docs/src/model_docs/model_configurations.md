@@ -21,7 +21,7 @@ Topog\_SBM uses an element network based on contour lines and trajectories for w
 routing. Wflow\_sbm models differ in how the lateral components river, land, and subsurface
 are solved. Below the different wflow\_sbm model configurations are described.
 
-### SBM + Kinematic wave
+### [SBM + Kinematic wave](@id config_sbm)
 For the lateral components of this wflow\_sbm model water is routed over a D8 network, and
 the kinematic wave approach is used for river, overland and lateral subsurface flow. This is
 described in more detail in the section [Kinematic wave](@ref kin_wave).
@@ -45,7 +45,7 @@ lateral.river.lake => struct NaturalLake{T} # optional
 lateral.river.reservoir => struct SimpleReservoir{T} # optional
 ```
 
-### SBM + Groundwater flow
+### [SBM + Groundwater flow](@id config_sbm_gwf)
 For river and overland flow the kinematic wave approach over a D8 network is used for this
 wflow\_sbm model. For the subsurface domain, an unconfined aquifer with groundwater flow in
 four directions (adjacent cells) is used. This is described in more detail in the section
@@ -81,7 +81,7 @@ lateral.river.lake => struct NaturalLake{T} # optional
 lateral.river.reservoir => struct SimpleReservoir{T} # optional
 ```
 
-### [Local inertial river and floodplain + `sbm` and `sbm_gwf` model types](@id LIE_river_floodplain_model)
+### [Local inertial river and floodplain + `sbm` and `sbm_gwf` model types](@id config_sbm_gwf_lie_river)
 By default the model types `sbm` and `sbm_gwf` uses the kinematic wave approach for river
 flow. There is also the option to use the local inertial model for river flow with an
 optional 1D floodplain schematization (routing is done separately for the river channel and
@@ -101,7 +101,7 @@ parameters.
 lateral.river => struct ShallowWaterRiver{T,R,L}
 ```
 
-### [Local inertial river (1D) and land (2D) + `sbm` and `sbm_gwf` model types](@id LIE_river_land_model)
+### [Local inertial river (1D) and land (2D) + `sbm` and `sbm_gwf` model types](@id config_sbm_gwf_lie_river_land)
 By default the model types `sbm` and `sbm_gwf` uses the kinematic wave approach for river
 and overland flow. There is also the option to use the local inertial model for 1D river and
 2D overland flow, by providing the following in the TOML file:
@@ -245,7 +245,7 @@ offset = [0.0, 0.0, 0.0]
 class = ["h", "p", "w"]
 ```
 
-## wflow\_sediment
+## [wflow\_sediment](@id config_sediment)
 The processes and fate of many particles and pollutants impacting water quality at the
 catchment level are intricately linked to the processes governing sediment dynamics. Both
 nutrients such as phosphorus, carbon or other pollutants such as metals are influenced by
