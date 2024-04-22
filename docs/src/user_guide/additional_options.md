@@ -290,7 +290,7 @@ expectations, which then can get parsed with these Delft-FEWS log parsing settin
 </logFile>
 ```
 
-## [Run wflow as a ZMQ Server]
+## Run wflow as a ZMQ Server
 It is possible to run wflow as a ZMQ Server, for example for the coupling to the
 [OpenDA](https://openda.org/) software for data-assimilation. The code for the wflow ZMQ
 Server is not part of the Wflow.jl package, and is located

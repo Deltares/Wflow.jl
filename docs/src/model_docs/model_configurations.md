@@ -81,7 +81,7 @@ lateral.river.lake => struct NaturalLake{T} # optional
 lateral.river.reservoir => struct SimpleReservoir{T} # optional
 ```
 
-### Local inertial river and floodplain + `sbm` and `sbm_gwf` model types
+### [Local inertial river and floodplain + `sbm` and `sbm_gwf` model types](@id LIE_river_floodplain_model)
 By default the model types `sbm` and `sbm_gwf` uses the kinematic wave approach for river
 flow. There is also the option to use the local inertial model for river flow with an
 optional 1D floodplain schematization (routing is done separately for the river channel and
@@ -101,7 +101,7 @@ parameters.
 lateral.river => struct ShallowWaterRiver{T,R,L}
 ```
 
-### Local inertial river (1D) and land (2D) + `sbm` and `sbm_gwf` model types
+### [Local inertial river (1D) and land (2D) + `sbm` and `sbm_gwf` model types](@id LIE_river_land_model)
 By default the model types `sbm` and `sbm_gwf` uses the kinematic wave approach for river
 and overland flow. There is also the option to use the local inertial model for 1D river and
 2D overland flow, by providing the following in the TOML file:

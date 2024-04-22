@@ -24,10 +24,10 @@ An approach to generate `ldd` data is to make use of the Python package
 [pyflwdir](https://github.com/Deltares/pyflwdir):
 
 + to [upscale existing flow direction
-  data](https://deltares.github.io/pyflwdir/latest/upscaling.html) as the 3 arcsec MERIT
+  data](https://deltares.github.io/pyflwdir/latest/_examples/upscaling.html) as the 3 arcsec MERIT
   Hydro data (Yamazaki et al., 2019)
 + or to [derive flow directions from elevation
-  data](https://deltares.github.io/pyflwdir/latest/from_dem.html),
+  data](https://deltares.github.io/pyflwdir/latest/_examples/from_dem.html),
 
 see also Eilander et al. (2021) for more information.
 Pyflwdir is also used by the [hydroMT](@ref) Python package described in the next paragraph.
@@ -54,15 +54,17 @@ consists of the vertical concept [SBM](@ref vert_sbm) and input parameters for t
 component are described in the [SBM](@ref params_sbm) section of Model parameters. Finally,
 the SBM + Kinematic wave model includes the lateral component [Subsurface flow
 routing](@ref) and parameters that are part of this component are described in the [Lateral
-subsurface flow](@ref) section of Model parameters. Input parameters for this component of
-the SBM + Kinematic wave model are derived from the SBM vertical concept and the land slope.
-One external parameter [`ksathorfrac`](@ref params_ssf) is used to calculate the horizontal
-hydraulic conductivity at the soil surface `kh_0`.
+subsurface flow](@ref params_ssf) section of Model parameters. Input parameters for this
+component of the SBM + Kinematic wave model are derived from the SBM vertical concept and
+the land slope. One external parameter [`ksathorfrac`](@ref params_ssf) is used to calculate
+the horizontal hydraulic conductivity at the soil surface `kh_0`.
 
-There is also the option to use the local inertial model as part of the `sbm` model type:
-+ for river flow, see also  [SBM + Local inertial river](@ref) model.
-+ for 1D river flow and 2D overland flow combined, see also [SBM + Local inertial river (1D)
-  and land (2D)](@ref) model.
+There is also the option to use the local inertial model as part of the `sbm` and `sbm_gwf`
+model types:
++ for river flow, see also [Local inertial river and floodplain](@ref
+  LIE_river_floodplain_model) model.
++ for 1D river flow and 2D overland flow combined, see also [Local inertial river (1D) and
+  land (2D)](@ref LIE_river_land_model) model.
 
 Input parameters for this approach are described in [River flow (local inertial)](@ref
 local-inertial_river_params), including the optional 1D [floodplain schematization](@ref
