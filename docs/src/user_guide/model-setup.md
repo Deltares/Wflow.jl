@@ -121,10 +121,9 @@ documentation](https://deltares.github.io/hydromt_wflow/latest/index.html).
 To inspect or modify (for example in QGIS) the netCDF static data of these wflow models it
 is convenient to export the maps to a raster format. This can be done as part of the
 hydroMT-wflow plugin, see also the following [example]
-(https://deltares.github.io/hydromt_wflow/latest/examples/examples/convert_staticmaps_to_mapstack.html).
+(https://deltares.github.io/hydromt_wflow/latest/_examples/convert_staticmaps_to_mapstack.html).
 It is also possible to create again the netCDF static data file based on the modified raster
 map stack.
-
 
 ## References
 + Yamazaki, D., Ikeshima, D., Sosa, J., Bates, P. D., Allen, G. H. and Pavelsky, T. M.:
