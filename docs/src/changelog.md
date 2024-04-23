@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   is fixed by using `divrem` for the computation of the number of `steps` in this function.
   An error is thrown when the absolute remainder of `divrem` is larger than `eps()`, or when
   the number of `steps` is negative.
+- Fixed internal and external broken links in docs. 
   
 ### Changed
 - Stop exposing scalar variables through BMI. The `BMI.get_value_ptr` function was not
@@ -61,6 +62,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   names of variables, structs, functions and macros. Using the non-ASCII character for
   built-in operators is still allowed. This change in naming convention is now in effect and
   all invalid uses of non-ASCII characters have been replaced by ASCII equivalents.
+- Improved description of different model configurations in model-setup.md, also in relation
+  to hydromt_wflow in docs.
 
 ### Added
 - Total water storage as an export variable for `SBM` concept. This is the total water stored
