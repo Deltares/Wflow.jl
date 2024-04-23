@@ -341,15 +341,15 @@ function update_water_demand(sbm::SBM)
                     vwc_fc = vwc_brooks_corey(
                         -100.0,
                         sbm.hb[i],
-                        sbm.θₛ[i],
-                        sbm.θᵣ[i],
+                        sbm.theta_s[i],
+                        sbm.theta_r[i],
                         sbm.c[i][k],
                     )
                     vwc_h3 = vwc_brooks_corey(
                         sbm.h3[i],
                         sbm.hb[i],
-                        sbm.θₛ[i],
-                        sbm.θᵣ[i],
+                        sbm.theta_s[i],
+                        sbm.theta_r[i],
                         sbm.c[i][k],
                     )
                     depletion = (vwc_fc * usl[k]) - sbm.ustorelayerdepth[i][k]

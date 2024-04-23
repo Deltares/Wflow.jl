@@ -1639,7 +1639,7 @@ function set_river_inwater(model::Model{N,L,V,R,W,T}, ssf_toriver) where {N,L,V<
             lateral.land.to_river[inds] +
             # net_runoff_river
             (vertical.net_runoff_river[inds] * network.land.area[inds] * 0.001) /
-            vertical.Δt +
+            vertical.dt +
             (
                 lateral.river.waterallocation.nonirri_returnflow *
                 0.001 *
