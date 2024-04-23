@@ -139,7 +139,7 @@ h_thresh = 0.1                   # water depth [m] threshold for calculating flo
 The properties `inertial_flow_alpha`, `froude_limit` and `h_thresh` apply to 1D river
 routing as well as 2D overland flow. The properties `inertial_flow_alpha` and
 `froude_limit`, and the adaptive model time step ``\Delta t`` are explained in more detail
-in the [River routing](@ref) section of the local inertial model.
+in the [River and floodplain routing](@ref) section of the local inertial model.
 
 ## Inflow
 External water (supply/abstraction) `inflow` [m``^3`` s``^{-1}``]  can be added to the local

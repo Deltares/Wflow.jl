@@ -141,13 +141,13 @@ h = "h_floodplain"
 Wflow supports multi-threading execution of the wflow\_sbm model that uses the kinematic
 wave approach for river, overland and lateral subsurface flow. Both the vertical SBM concept
 and the kinematic wave components of this model can run on multiple threads. The optional
-local inertial model for river flow [SBM + Local inertial river](@ref) model and the
-optional local inertial model for river (1D) and land (2D) [SBM + Local inertial river (1D)
-and land (2D)](@ref), both part of wflow\_sbm, can also run on multiple threads. The
-threading functionality for the kinematic wave may also be useful for models that make
-(partly) use of this routing approach as the [wflow_hbv](@ref config_hbv) model and
-the wflow\_sbm model [SBM + Groundwater flow](@ref). The multi-threading functionality in
-wflow is considered experimental, see also the following
+[local inertial model for river flow](@ref config_sbm_gwf_lie_river_land) and the optional
+[local inertial model for river (1D) and land (2D)](@ref config_sbm_gwf_lie_river_land),
+both part of wflow\_sbm, can also run on multiple threads. The threading functionality for
+the kinematic wave may also be useful for models that make (partly) use of this routing
+approach as the [wflow_hbv](@ref config_hbv) model and the wflow\_sbm model [SBM +
+Groundwater flow](@ref config_sbm_gwf). The multi-threading functionality in wflow is
+considered experimental, see also the following
 [issue](https://github.com/Deltares/Wflow.jl/issues/139), where an error was not thrown
 running code multi-threaded. Because of this we advise to start with running a wflow model
 single-threaded (for example during the testing phase of setting up an new wflow model).
@@ -290,8 +290,8 @@ expectations, which then can get parsed with these Delft-FEWS log parsing settin
 </logFile>
 ```
 
-## [Run wflow as a ZMQ Server]
+## Run wflow as a ZMQ Server
 It is possible to run wflow as a ZMQ Server, for example for the coupling to the
 [OpenDA](https://openda.org/) software for data-assimilation. The code for the wflow ZMQ
 Server is not part of the Wflow.jl package, and is located
-[here](https://github.com/Deltares/Wflow.jl/tree/zmq_server/server).
+[here](https://github.com/Deltares/Wflow.jl/tree/master/server).
