@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   is fixed by using `divrem` for the computation of the number of `steps` in this function.
   An error is thrown when the absolute remainder of `divrem` is larger than `eps()`, or when
   the number of `steps` is negative.
+- Fixed internal and external broken links in docs. 
   
 ### Changed
 - Stop exposing scalar variables through BMI. The `BMI.get_value_ptr` function was not
@@ -61,6 +62,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   names of variables, structs, functions and macros. Using the non-ASCII character for
   built-in operators is still allowed. This change in naming convention is now in effect and
   all invalid uses of non-ASCII characters have been replaced by ASCII equivalents.
+- Improved description of different model configurations in model-setup.md, also in relation
+  to hydromt_wflow in docs.
 
 ### Added
 - Total water storage as an export variable for `SBM` concept. This is the total water stored
@@ -179,15 +182,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Show total duration of simulation in the log file (info), and show the current time at
   execution of each timestep (debug).
-- Support for exponential decline in horizontal conductivity in the sbm\_gwf concept. This can
-  be enabled using the `conductivity_profile` setting (either "uniform" or "exponential"). If
-  set to "exponential", it exponentially reduces the `kh0` (or `conductivity`) based on the
-  value of `gwf_f` to the actual horizontal conductivity (`k`).
+- Support for exponential decline in horizontal conductivity in the sbm\_gwf concept. This
+  can be enabled using the `conductivity_profile` setting (either "uniform" or
+  "exponential"). If set to "exponential", it exponentially reduces the `kh0` (or
+  `conductivity`) based on the value of `gwf_f` to the actual horizontal conductivity (`k`).
 - An optional 1D floodplain schematization for the river flow inertial model, based on
   provided flood volumes as a function of flood depth per river cell. See also the following
-  sections: [SBM + Local inertial river and floodplain](@ref) and [River and floodplain
-  routing](@ref) for a short description, and the following section for associated [model
-  parameters](@ref local-inertial_floodplain_params).
+  sections: [SBM + Local inertial river](@ref config_sbm_gwf_lie_river) and [River and
+  floodplain routing](@ref) for a short description, and the following section for
+  associated [model parameters](@ref local-inertial_floodplain_params).
 
 ## v0.6.2 - 2022-09-01
 
@@ -208,8 +211,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   model from `bankfull_depth` to zero.
 
 ### Added
-- External inflow to the [SBM + Local inertial river (1D) and land (2D)](@ref) model
-  configuration.
+- External inflow to the [SBM + Local inertial river (1D) and land (2D)](@ref
+  config_sbm_gwf_lie_river_land) model configuration.
 
 ## v0.6.1 - 2022-04-26
 
@@ -272,10 +275,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Additional log messages and log file as output, see also [Logging](@ref logging_toml).
 - Option to use the local inertial model for river flow as part of the `sbm` model type. See
-  also [SBM + Local inertial river](@ref).
+  also [SBM + Local inertial river](@ref config_sbm_gwf_lie_river).
 - Option to use the local inertial model for 1D river flow combined with 2D overland flow as
   part of the `sbm` model type. See also [SBM + Local inertial river (1D) and land
-  (2D)](@ref).
+  (2D)](@ref config_sbm_gwf_lie_river_land).
 
 ### Fixed
 - Model type `hbv`: the surface width for overland flow was not corrected with the river
@@ -356,7 +359,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Option to use the local inertial model for river flow as part of the [SBM + Kinematic
-  wave](@ref). See also [SBM + Local inertial river](@ref).
+  wave](@ref config_sbm). See also [SBM + Local inertial river](@ref config_sbm_gwf_lie_river_land).
 
 ### Fixed
 - River inflow for reservoirs and lakes in the kinematic wave. This inflow was based on
@@ -372,11 +375,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Multi-threading of vertical SBM concept and lateral kinematic wave components (overland,
-  river and subsurface flow) of wflow\_sbm model [SBM + Kinematic wave](@ref).
+  river and subsurface flow) of wflow\_sbm model [SBM + Kinematic wave](@ref config_sbm).
 - Improved error message for CSV Reducer.
 - The TOML keys `kv₀`, `θᵣ` and `θₛ` have been replaced with the ASCII versions `kv_0`,
-  `theta_r` and `theta_s`, to avoid encoding issues with certain text editors. The old keys still
-  work as well.
+  `theta_r` and `theta_s`, to avoid encoding issues with certain text editors. The old keys
+  still work as well.
 
 ### Fixed
 - Calculation of volumetric water content of vertical SBM (soil layers and root zone).
