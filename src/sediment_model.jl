@@ -14,7 +14,7 @@ function initialize_sediment_model(config::Config)
 
     reader = prepare_reader(config)
     clock = Clock(config, reader)
-    Δt = clock.Δt
+    dt = clock.dt
 
     do_river = get(config.model, "runrivermodel", false)::Bool
 
@@ -95,9 +95,9 @@ function initialize_sediment_model(config::Config)
     # River processes
 
     # the indices of the river cells in the land(+river) cell vector
-    βₗ =
+    landslope =
         ncread(nc, config, "lateral.land.slope"; optional = false, sel = inds, type = Float)
-    clamp!(βₗ, 0.00001, Inf)
+    clamp!(landslope, 0.00001, Inf)
 
     riverlength = riverlength_2d[inds_riv]
     riverwidth = riverwidth_2d[inds_riv]
@@ -108,7 +108,7 @@ function initialize_sediment_model(config::Config)
     graph_riv = flowgraph(ldd_riv, inds_riv, pcr_dir)
 
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
-    frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, βₗ, n)
+    frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, landslope, n)
 
     rs = initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
 

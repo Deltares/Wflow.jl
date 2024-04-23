@@ -22,7 +22,7 @@ using Polyester
 using LoopVectorization
 using IfElse
 
-@metadata get_units "mm Δt-1" String
+@metadata get_units "mm dt-1" String
 # metadata for BMI grid
 @metadata exchange 1 Integer
 @metadata grid_type "unstructured" String
@@ -38,7 +38,7 @@ const version =
 mutable struct Clock{T}
     time::T
     iteration::Int
-    Δt::Second
+    dt::Second
 end
 
 function Clock(config)
@@ -46,8 +46,8 @@ function Clock(config)
     # been constructed before, the config is complete
     calendar = get(config, "calendar", "standard")::String
     starttime = cftime(config.starttime, calendar)
-    Δt = Second(config.timestepsecs)
-    Clock(starttime, 0, Δt)
+    dt = Second(config.timestepsecs)
+    Clock(starttime, 0, dt)
 end
 
 function Clock(config, reader)
@@ -59,13 +59,13 @@ function Clock(config, reader)
         timestepsecs = Dates.value(Second(nctimes[2] - nctimes[1]))
         config.timestepsecs = timestepsecs
     end
-    Δt = Second(timestepsecs)
+    dt = Second(timestepsecs)
 
     # if the config file does not have a start or endtime, follow the netCDF times
     # and add them to the config
     starttime = get(config, "starttime", nothing)
     if starttime === nothing
-        starttime = first(nctimes) - Δt
+        starttime = first(nctimes) - dt
         config.starttime = starttime
     end
     endtime = get(config, "endtime", nothing)
@@ -77,11 +77,11 @@ function Clock(config, reader)
     calendar = get(config, "calendar", "standard")::String
     fews_run = get(config, "fews_run", false)::Bool
     if fews_run
-        config.starttime = starttime + Δt
+        config.starttime = starttime + dt
     end
     starttime = cftime(config.starttime, calendar)
 
-    Clock(starttime, 0, Δt)
+    Clock(starttime, 0, dt)
 end
 
 include("io.jl")
@@ -221,15 +221,15 @@ function run(model::Model; close_files = true)
     calendar = get(config, "calendar", "standard")::String
     @warn string(
         "The definition of `starttime` has changed (equal to model state time).\n Please",
-        " update your settings TOML file by subtracting one model timestep Δt from the",
+        " update your settings TOML file by subtracting one model timestep dt from the",
         " `starttime`, if it was used with a Wflow version up to v0.6.3.",
     )
     starttime = clock.time
-    Δt = clock.Δt
+    dt = clock.dt
     endtime = cftime(config.endtime, calendar)
-    times = range(starttime + Δt, endtime, step = Δt)
+    times = range(starttime + dt, endtime, step = dt)
 
-    @info "Run information" model_type starttime Δt endtime nthreads()
+    @info "Run information" model_type starttime dt endtime nthreads()
     runstart_time = now()
     @progress for (i, time) in enumerate(times)
         @debug "Starting timestep." time i now()

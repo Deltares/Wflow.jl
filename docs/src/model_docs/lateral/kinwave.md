@@ -16,7 +16,7 @@ where ``Q`` is the surface runoff in the kinematic wave [m``^3``/s], ``x`` is th
 the runoff pathway [m], ``A`` is the cross-section area of the runoff pathway [m``^{2}``],
 ``t`` is the integration timestep [s] and ``\alpha`` and ``\beta`` are coefficients.
 
-These equations are solved with a nonlinear scheme using Newton’s method and can also be
+These equations are solved with a nonlinear scheme using Newton's method and can also be
 iterated depending on the  model space and time resolution. By default, the iterations are
 performed until a stable solution is reached (``\epsilon < 10^{-12}``). For larger models,
 the number of iterations can also be fixed for to a specific sub-timestep (in seconds) for

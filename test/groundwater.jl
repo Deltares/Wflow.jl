@@ -4,14 +4,14 @@ function initial_head(x)
 end
 
 """
-    transient_aquifer_1d(x, time, conductivity, specific_yield, aquifer_length, Β)
+    transient_aquifer_1d(x, time, conductivity, specific_yield, aquifer_length, beta)
 
 Non-steady flow in an unconfined rectangular aquifer, with Dirichlet h(0, t) = 0
 on the left edge, and a Neumann Boundary Condition (dh/dx = 0) on the right.
 """
-function transient_aquifer_1d(x, time, conductivity, specific_yield, aquifer_length, Β)
+function transient_aquifer_1d(x, time, conductivity, specific_yield, aquifer_length, beta)
     initial_head(x) / 1.0 +
-    (Β * conductivity * initial_head(aquifer_length) * time) /
+    (beta * conductivity * initial_head(aquifer_length) * time) /
     (specific_yield * aquifer_length * aquifer_length)
 end
 
@@ -23,7 +23,7 @@ Non-steady flow in a confined aquifer, using the well function of Theis.
 """
 function drawdown_theis(distance, time, discharge, transmissivity, storativity)
     u = (storativity * distance^2) / (4 * transmissivity * time)
-    return discharge / (4 * π * transmissivity) * expint(u)
+    return discharge / (4 * pi * transmissivity) * expint(u)
 end
 
 
@@ -31,10 +31,10 @@ function homogenous_aquifer(nrow, ncol)
     shape = (nrow, ncol)
     # Domain, geometry
     domain = ones(Bool, shape)
-    Δx = fill(10.0, ncol)
-    Δy = fill(10.0, nrow)
+    dx = fill(10.0, ncol)
+    dy = fill(10.0, nrow)
     indices, reverse_indices = Wflow.active_indices(domain, false)
-    connectivity = Wflow.Connectivity(indices, reverse_indices, Δx, Δy)
+    connectivity = Wflow.Connectivity(indices, reverse_indices, dx, dy)
     ncell = connectivity.ncell
 
     conf_aqf = Wflow.ConfinedAquifer(
@@ -65,8 +65,8 @@ end
     ncol = 2
     nrow = 3
     shape = (ncol, nrow)
-    Δx = [10.0, 20.0]
-    Δy = [5.0, 15.0, 25.0]
+    dx = [10.0, 20.0]
+    dy = [5.0, 15.0, 25.0]
     collect_connections(con, cell_id) =
         [con.rowval[nzi] for nzi in Wflow.connections(con, cell_id)]
 
@@ -74,15 +74,15 @@ end
         @testset "connection_geometry: y" begin
             I = CartesianIndex(1, 1)
             J = CartesianIndex(2, 1)
-            @test Wflow.connection_geometry(I, J, Δx, Δy) == (2.5, 7.5, 10.0)
-            @test_throws Exception Wflow.connection_geometry(I, I, Δx, Δy)
+            @test Wflow.connection_geometry(I, J, dx, dy) == (2.5, 7.5, 10.0)
+            @test_throws Exception Wflow.connection_geometry(I, I, dx, dy)
         end
 
         @testset "connection_geometry: x" begin
             I = CartesianIndex(1, 1)
             J = CartesianIndex(1, 2)
-            @test Wflow.connection_geometry(I, J, Δx, Δy) == (5.0, 10.0, 5.0)
-            @test_throws Exception Wflow.connection_geometry(I, I, Δx, Δy)
+            @test Wflow.connection_geometry(I, J, dx, dy) == (5.0, 10.0, 5.0)
+            @test_throws Exception Wflow.connection_geometry(I, I, dx, dy)
         end
 
         @testset "Connectivity 1D(x)" begin
@@ -91,7 +91,7 @@ end
             # +---+---+
             domain = ones(Bool, (1, 2))
             indices, reverse_indices = Wflow.active_indices(domain, false)
-            conn = Wflow.Connectivity(indices, reverse_indices, Δx, [5.0])
+            conn = Wflow.Connectivity(indices, reverse_indices, dx, [5.0])
             @test conn.ncell == 2
             @test conn.nconnection == 2
             @test conn.length1 == [5.0, 10.0]
@@ -113,7 +113,7 @@ end
             # +---+
             domain = ones(Bool, (3, 1))
             indices, reverse_indices = Wflow.active_indices(domain, false)
-            conn = Wflow.Connectivity(indices, reverse_indices, [10.0], Δy)
+            conn = Wflow.Connectivity(indices, reverse_indices, [10.0], dy)
             @test conn.ncell == 3
             @test conn.nconnection == 4
             @test conn.length1 == [2.5, 7.5, 7.5, 12.5]
@@ -136,7 +136,7 @@ end
             # +---+---+
             domain = ones(Bool, (nrow, ncol))
             indices, reverse_indices = Wflow.active_indices(domain, false)
-            conn = Wflow.Connectivity(indices, reverse_indices, Δx, Δy)
+            conn = Wflow.Connectivity(indices, reverse_indices, dx, dy)
             @test conn.ncell == 6
             @test conn.nconnection == 14
             @test conn.colptr == [1, 3, 6, 8, 10, 13, 15]
@@ -160,7 +160,7 @@ end
             domain = ones(Bool, (nrow, ncol))
             domain[2, 1] = false
             indices, reverse_indices = Wflow.active_indices(domain, false)
-            conn = Wflow.Connectivity(indices, reverse_indices, Δx, Δy)
+            conn = Wflow.Connectivity(indices, reverse_indices, dx, dy)
             @test conn.ncell == 5
             @test conn.nconnection == 8
             @test conn.colptr == [1, 2, 3, 5, 7, 9]
@@ -351,9 +351,9 @@ end
         gwf.aquifer.head[gwf.constanthead.index] .= gwf.constanthead.head
 
         Q = zeros(3)
-        Δt = 0.25 # days
+        dt = 0.25 # days
         for _ = 1:50
-            Wflow.update(gwf, Q, Δt, conductivity_profile)
+            Wflow.update(gwf, Q, dt, conductivity_profile)
         end
 
         @test gwf.aquifer.head ≈ [2.0, 3.0, 4.0]
@@ -373,9 +373,9 @@ end
         gwf.aquifer.head[gwf.constanthead.index] .= gwf.constanthead.head
 
         Q = zeros(3)
-        Δt = 0.25 # days
+        dt = 0.25 # days
         for _ = 1:50
-            Wflow.update(gwf, Q, Δt, conductivity_profile)
+            Wflow.update(gwf, Q, dt, conductivity_profile)
         end
 
         @test gwf.aquifer.head ≈ [2.0, 3.0, 4.0]
@@ -390,17 +390,17 @@ end
         bottom = 0.0
         specific_yield = 0.15
         cellsize = 500.0
-        Β = 1.12
+        beta = 1.12
         aquifer_length = cellsize * ncol
         gwf_f = 3.0
         conductivity_profile = "uniform"
 
         # Domain, geometry
         domain = ones(Bool, shape)
-        Δx = fill(cellsize, ncol)
-        Δy = fill(cellsize, nrow)
+        dx = fill(cellsize, ncol)
+        dy = fill(cellsize, nrow)
         indices, reverse_indices = Wflow.active_indices(domain, false)
-        connectivity = Wflow.Connectivity(indices, reverse_indices, Δx, Δy)
+        connectivity = Wflow.Connectivity(indices, reverse_indices, dx, dy)
         ncell = connectivity.ncell
         xc = collect(range(0.0, stop = aquifer_length - cellsize, step = cellsize))
         aquifer = Wflow.UnconfinedAquifer(
@@ -422,22 +422,22 @@ end
             Wflow.AquiferBoundaryCondition[],
         )
 
-        Δt = Wflow.stable_timestep(gwf.aquifer, conductivity_profile)
+        dt = Wflow.stable_timestep(gwf.aquifer, conductivity_profile)
         Q = zeros(ncell)
         time = 20.0
-        nstep = Int(ceil(time / Δt))
-        time = nstep * Δt
+        nstep = Int(ceil(time / dt))
+        time = nstep * dt
 
         for i = 1:nstep
-            Wflow.update(gwf, Q, Δt, conductivity_profile)
+            Wflow.update(gwf, Q, dt, conductivity_profile)
             # Gradient dh/dx is positive, all flow to the left
             @test all(diff(gwf.aquifer.head) .> 0.0)
         end
 
-        ϕ_analytical = [
-            transient_aquifer_1d(x, time, conductivity, specific_yield, aquifer_length, Β) for x in xc
+        head_analytical = [
+            transient_aquifer_1d(x, time, conductivity, specific_yield, aquifer_length, beta) for x in xc
         ]
-        difference = gwf.aquifer.head .- ϕ_analytical
+        difference = gwf.aquifer.head .- head_analytical
         # @test all(difference .< ?)  #TODO
     end
 
@@ -450,17 +450,17 @@ end
         bottom = 0.0
         specific_yield = 0.15
         cellsize = 500.0
-        Β = 1.12
+        beta = 1.12
         aquifer_length = cellsize * ncol
         gwf_f = 3.0
         conductivity_profile = "exponential"
 
         # Domain, geometry
         domain = ones(Bool, shape)
-        Δx = fill(cellsize, ncol)
-        Δy = fill(cellsize, nrow)
+        dx = fill(cellsize, ncol)
+        dy = fill(cellsize, nrow)
         indices, reverse_indices = Wflow.active_indices(domain, false)
-        connectivity = Wflow.Connectivity(indices, reverse_indices, Δx, Δy)
+        connectivity = Wflow.Connectivity(indices, reverse_indices, dx, dy)
         ncell = connectivity.ncell
         xc = collect(range(0.0, stop = aquifer_length - cellsize, step = cellsize))
         aquifer = Wflow.UnconfinedAquifer(
@@ -482,22 +482,22 @@ end
             Wflow.AquiferBoundaryCondition[],
         )
 
-        Δt = Wflow.stable_timestep(gwf.aquifer, conductivity_profile)
+        dt = Wflow.stable_timestep(gwf.aquifer, conductivity_profile)
         Q = zeros(ncell)
         time = 20.0
-        nstep = Int(ceil(time / Δt))
-        time = nstep * Δt
+        nstep = Int(ceil(time / dt))
+        time = nstep * dt
 
         for i = 1:nstep
-            Wflow.update(gwf, Q, Δt, conductivity_profile)
+            Wflow.update(gwf, Q, dt, conductivity_profile)
             # Gradient dh/dx is positive, all flow to the left
             @test all(diff(gwf.aquifer.head) .> 0.0)
         end
 
-        ϕ_analytical = [
-            transient_aquifer_1d(x, time, conductivity, specific_yield, aquifer_length, Β) for x in xc
+        head_analytical = [
+            transient_aquifer_1d(x, time, conductivity, specific_yield, aquifer_length, beta) for x in xc
         ]
-        difference = gwf.aquifer.head .- ϕ_analytical
+        difference = gwf.aquifer.head .- head_analytical
         # @test all(difference .< ?)  #TODO
     end
 
@@ -521,10 +521,10 @@ end
 
         # Domain, geometry
         domain = ones(Bool, shape)
-        Δx = fill(cellsize, ncol)
-        Δy = fill(cellsize, nrow)
+        dx = fill(cellsize, ncol)
+        dy = fill(cellsize, nrow)
         indices, reverse_indices = Wflow.active_indices(domain, false)
-        connectivity = Wflow.Connectivity(indices, reverse_indices, Δx, Δy)
+        connectivity = Wflow.Connectivity(indices, reverse_indices, dx, dy)
         ncell = connectivity.ncell
         aquifer = Wflow.ConfinedAquifer(
             fill(startinghead, ncell),
@@ -544,29 +544,29 @@ end
         well = Wflow.Well([discharge], [0.0], [reverse_indices[wellrow, wellrow]])
         gwf = Wflow.GroundwaterFlow(aquifer, connectivity, constanthead, [well])
 
-        Δt = Wflow.stable_timestep(gwf.aquifer, conductivity_profile)
+        dt = Wflow.stable_timestep(gwf.aquifer, conductivity_profile)
         Q = zeros(ncell)
         time = 20.0
-        nstep = Int(ceil(time / Δt))
-        time = nstep * Δt
+        nstep = Int(ceil(time / dt))
+        time = nstep * dt
 
         for i = 1:nstep
-            Wflow.update(gwf, Q, Δt, conductivity_profile)
+            Wflow.update(gwf, Q, dt, conductivity_profile)
         end
 
         # test for symmetry on x and y axes
-        ϕ = reshape(gwf.aquifer.head, shape)
-        @test ϕ[1:halfnrow, :] ≈ ϕ[end:-1:halfnrow+2, :]
-        @test ϕ[:, 1:halfnrow] ≈ ϕ[:, end:-1:halfnrow+2]
+        head = reshape(gwf.aquifer.head, shape)
+        @test head[1:halfnrow, :] ≈ head[end:-1:halfnrow+2, :]
+        @test head[:, 1:halfnrow] ≈ head[:, end:-1:halfnrow+2]
 
         # compare with analytical solution
         start = -0.5 * aquifer_length + 0.5 * cellsize
         stop = 0.5 * aquifer_length - 0.5 * cellsize
         X = collect(range(start, stop = stop, step = cellsize))
-        ϕ_analytical =
+        head_analytical =
             [drawdown_theis(x, time, discharge, transmissivity, storativity) for x in X] .+ 10.0
         # compare left-side, since it's symmetric anyway. Skip the well cell, and its first neighbor
-        difference = ϕ[1:halfnrow-1, halfnrow] - ϕ_analytical[1:halfnrow-1]
+        difference = head[1:halfnrow-1, halfnrow] - head_analytical[1:halfnrow-1]
         @test all(difference .< 0.02)
     end
 

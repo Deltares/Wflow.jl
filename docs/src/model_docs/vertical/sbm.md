@@ -37,7 +37,7 @@ Rutter model. The simulation timestep defines which interception model is used, 
 Rutter model.
 
 ### The analytical (Gash) model (Gash, 1979)
-The analytical model of rainfall interception is based on Rutter’s numerical model. Simplifications 
+The analytical model of rainfall interception is based on Rutter's numerical model. Simplifications 
 allow the model to be applied on a daily basis, although a
 storm-based approach will yield better results in situations with more than one storm per
 day. The amount of water needed to completely saturate the canopy is defined as:
@@ -549,7 +549,7 @@ the vector that contains all active cells within the spatial model domain, and `
 the layer position):
 
 ```julia
-    usl[k] * (sbm.θₛ[i] - sbm.θᵣ[i]) - usld[k]
+    usl[k] * (sbm.theta_s[i] - sbm.theta_r[i]) - usld[k]
 ```
 
 where `usl` [mm] is the unsaturated layer thickness, `usld` is the `ustorelayerdepth` \[mm\]
@@ -565,7 +565,7 @@ spatial model domain, and `k` refers to the layer position):
     netcapflux = capflux
     for k = n_usl:-1:1
         toadd =
-            min(netcapflux, max(usl[k] * (sbm.θₛ[i] - sbm.θᵣ[i]) - usld[k], 0.0))
+            min(netcapflux, max(usl[k] * (sbm.theta_s[i] - sbm.theta_r[i]) - usld[k], 0.0))
         usld = setindex(usld, usld[k] + toadd, k)
         netcapflux = netcapflux - toadd
         actcapflux = actcapflux + toadd

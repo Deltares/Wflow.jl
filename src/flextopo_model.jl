@@ -10,7 +10,7 @@ function initialize_flextopo_model(config::Config)
 
     reader = prepare_reader(config)
     clock = Clock(config, reader)
-    Δt = clock.Δt
+    dt = clock.dt
 
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
     do_lakes = get(config.model, "lakes", false)::Bool
@@ -82,7 +82,7 @@ function initialize_flextopo_model(config::Config)
             defaults = 3.0,
             type = Float,
             fill = 0.0,
-        ) .* (Δt / basetimestep)
+        ) .* (dt / basetimestep)
 
     g_sifrac =
         ncread(
@@ -93,7 +93,7 @@ function initialize_flextopo_model(config::Config)
             defaults = 0.001,
             type = Float,
             fill = 0.0,
-        ) .* (Δt / basetimestep)
+        ) .* (dt / basetimestep)
     glacierfrac = ncread(
         nc,
         config,
@@ -122,7 +122,7 @@ function initialize_flextopo_model(config::Config)
             sel = inds,
             defaults = 3.75653,
             type = Float,
-        ) .* (Δt / basetimestep)
+        ) .* (dt / basetimestep)
 
     tt = ncread(nc, config, "vertical.tt"; sel = inds, defaults = -1.41934, type = Float)
 
@@ -141,7 +141,7 @@ function initialize_flextopo_model(config::Config)
     sfcf = ncread(nc, config, "vertical.sfcf"; sel = inds, defaults = 1.0, type = Float)
     ks =
         ncread(nc, config, "vertical.ks"; sel = inds, defaults = 0.006, type = Float) .*
-        (Δt / basetimestep)
+        (dt / basetimestep)
 
     #initialize parameters that differ per class
     hrufrac = ncread(
@@ -180,7 +180,7 @@ function initialize_flextopo_model(config::Config)
             defaults = 0.5,
             type = Float,
             dimname = :classes,
-        ) .* (Δt / basetimestep)
+        ) .* (dt / basetimestep)
     facc0 = ncread(
         nc,
         config,
@@ -217,7 +217,7 @@ function initialize_flextopo_model(config::Config)
             defaults = 2.0,
             type = Float,
             dimname = :classes,
-        ) .* (Δt / basetimestep)
+        ) .* (dt / basetimestep)
     shmin = ncread(
         nc,
         config,
@@ -272,7 +272,7 @@ function initialize_flextopo_model(config::Config)
             defaults = 0.30,
             type = Float,
             dimname = :classes,
-        ) .* (Δt / basetimestep)
+        ) .* (dt / basetimestep)
     cap =
         ncread(
             nc,
@@ -282,7 +282,7 @@ function initialize_flextopo_model(config::Config)
             defaults = 0.20,
             type = Float,
             dimname = :classes,
-        ) .* (Δt / basetimestep)
+        ) .* (dt / basetimestep)
     kf =
         ncread(
             nc,
@@ -292,7 +292,7 @@ function initialize_flextopo_model(config::Config)
             defaults = 0.1,
             type = Float,
             dimname = :classes,
-        ) .* (Δt / basetimestep)
+        ) .* (dt / basetimestep)
     alfa = ncread(
         nc,
         config,
@@ -354,7 +354,7 @@ function initialize_flextopo_model(config::Config)
 
 
     flextopo = FLEXTOPO{Float,nclass}(
-        Δt = Float(tosecond(Δt)),
+        dt = Float(tosecond(dt)),
         nclass = nclass,
         n = n,
         dic_function = dic_function,
@@ -493,7 +493,7 @@ function initialize_flextopo_model(config::Config)
     pits = zeros(Bool, modelsize_2d)
     if do_reservoirs
         reservoirs, resindex, reservoir, pits =
-            initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, tosecond(Δt))
+            initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, tosecond(dt))
     else
         reservoir = ()
         reservoirs = nothing
@@ -503,7 +503,7 @@ function initialize_flextopo_model(config::Config)
     # lakes
     if do_lakes
         lakes, lakeindex, lake, pits =
-            initialize_lake(config, nc, inds_riv, nriv, pits, tosecond(Δt))
+            initialize_lake(config, nc, inds_riv, nriv, pits, tosecond(dt))
     else
         lake = ()
         lakes = nothing
@@ -517,9 +517,9 @@ function initialize_flextopo_model(config::Config)
         ldd = set_pit_ldd(pits_2d, ldd, inds)
     end
 
-    βₗ =
+    landslope =
         ncread(nc, config, "lateral.land.slope"; optional = false, sel = inds, type = Float)
-    clamp!(βₗ, 0.00001, Inf)
+    clamp!(landslope, 0.00001, Inf)
 
     dl = map(detdrainlength, ldd, xl, yl)
     dw = (xl .* yl) ./ dl
@@ -527,12 +527,12 @@ function initialize_flextopo_model(config::Config)
         nc,
         config,
         inds;
-        sl = βₗ,
+        sl = landslope,
         dl = dl,
         width = map(det_surfacewidth, dw, riverwidth, river),
         iterate = kinwave_it,
         tstep = kw_land_tstep,
-        Δt = Δt,
+        dt = dt,
     )
 
     graph = flowgraph(ldd, inds, pcr_dir)
@@ -548,7 +548,7 @@ function initialize_flextopo_model(config::Config)
 
     # the indices of the river cells in the land(+river) cell vector
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
-    frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, βₗ, n)
+    frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, landslope, n)
 
     rf = initialize_surfaceflow_river(
         nc,
@@ -562,7 +562,7 @@ function initialize_flextopo_model(config::Config)
         lake = lakes,
         iterate = kinwave_it,
         tstep = kw_river_tstep,
-        Δt = Δt,
+        dt = dt,
     )
 
     # setup subdomains for the land and river kinematic wave domain, if nthreads = 1

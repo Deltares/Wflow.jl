@@ -665,12 +665,12 @@ concept `SBM` (at index `i`) based on hydraulic conductivity profile `ksat_profi
 """
 function hydraulic_conductivity_at_depth(sbm::SBM, z, i, n, ksat_profile)
     if ksat_profile == "exponential"
-        kv_z = sbm.kvfrac[i][n] * sbm.kv₀[i] * exp(-sbm.f[i] * z)
+        kv_z = sbm.kvfrac[i][n] * sbm.kv_0[i] * exp(-sbm.f[i] * z)
     elseif ksat_profile == "exponential_constant"
         if z < sbm.z_exp[i]
-            kv_z = sbm.kvfrac[i][n] * sbm.kv₀[i] * exp(-sbm.f[i] * z)
+            kv_z = sbm.kvfrac[i][n] * sbm.kv_0[i] * exp(-sbm.f[i] * z)
         else
-            kv_z = sbm.kvfrac[i][n] * sbm.kv₀[i] * exp(-sbm.f[i] * sbm.z_exp[i])
+            kv_z = sbm.kvfrac[i][n] * sbm.kv_0[i] * exp(-sbm.f[i] * sbm.z_exp[i])
         end
     elseif ksat_profile == "layered"
         kv_z = sbm.kvfrac[i][n] * sbm.kv[i][n]
@@ -697,7 +697,7 @@ table depth `z` [mm] and hydraulic conductivity profile `ksat_profile`.
 function kh_layered_profile(sbm::SBM, khfrac, i, ksat_profile)
 
     m = sbm.nlayers[i]
-    t_factor = (tosecond(basetimestep) / sbm.Δt)
+    t_factor = (tosecond(basetimestep) / sbm.dt)
     if (sbm.soilthickness[i] - sbm.zi[i]) > 0.0
         transmissivity = 0.0
         sumlayers = @view sbm.sumlayers[i][2:end]
@@ -768,10 +768,10 @@ end
 function initialize_lateralssf_exp!(ssf::LateralSSF)
     for i in eachindex(ssf.ssf)
         ssf.ssfmax[i] =
-            ((ssf.kh₀[i] * ssf.βₗ[i]) / ssf.f[i]) *
+            ((ssf.kh_0[i] * ssf.slope[i]) / ssf.f[i]) *
             (1.0 - exp(-ssf.f[i] * ssf.soilthickness[i]))
         ssf.ssf[i] =
-            ((ssf.kh₀[i] * ssf.βₗ[i]) / ssf.f[i]) *
+            ((ssf.kh_0[i] * ssf.slope[i]) / ssf.f[i]) *
             (exp(-ssf.f[i] * ssf.zi[i]) - exp(-ssf.f[i] * ssf.soilthickness[i])) *
             ssf.dw[i]
     end
@@ -780,26 +780,26 @@ end
 "Initialize lateral subsurface variables `ssf` and `ssfmax` with `ksat_profile` `exponential_constant`"
 function initialize_lateralssf_exp_const!(ssf::LateralSSF)
     ssf_constant = @. ssf.khfrac *
-       ssf.kh₀ *
+       ssf.kh_0 *
        exp(-ssf.f * ssf.z_exp) *
-       ssf.βₗ *
+       ssf.slope *
        (ssf.soilthickness - ssf.z_exp)
     for i in eachindex(ssf.ssf)
         ssf.ssfmax[i] =
-            ((ssf.khfrac[i] * ssf.kh₀[i] * ssf.βₗ[i]) / ssf.f[i]) *
+            ((ssf.khfrac[i] * ssf.kh_0[i] * ssf.slope[i]) / ssf.f[i]) *
             (1.0 - exp(-ssf.f[i] * ssf.z_exp[i])) + ssf_constant[i]
         if ssf.zi[i] < ssf.z_exp[i]
             ssf.ssf[i] =
                 (
-                    ((ssf.kh₀[i] * ssf.βₗ[i]) / ssf.f[i]) *
+                    ((ssf.kh_0[i] * ssf.slope[i]) / ssf.f[i]) *
                     (exp(-ssf.f[i] * ssf.zi[i]) - exp(-ssf.f[i] * ssf.z_exp[i])) +
                     ssf_constant[i]
                 ) * ssf.dw[i]
         else
             ssf.ssf[i] =
-                ssf.kh₀[i] *
+                ssf.kh_0[i] *
                 exp(-ssf.f[i] * ssf.zi[i]) *
-                ssf.βₗ[i] *
+                ssf.slope[i] *
                 (ssf.soilthickness[i] - ssf.zi[i]) *
                 ssf.dw[i]
         end
@@ -810,7 +810,7 @@ end
 function initialize_lateralssf_layered!(ssf::LateralSSF, sbm::SBM, ksat_profile)
     for i in eachindex(ssf.ssf)
         ssf.kh[i] = kh_layered_profile(sbm, ssf.khfrac[i], i, ksat_profile)
-        ssf.ssf[i] = ssf.kh[i] * (ssf.soilthickness[i] - ssf.zi[i]) * ssf.βₗ[i] * ssf.dw[i]
+        ssf.ssf[i] = ssf.kh[i] * (ssf.soilthickness[i] - ssf.zi[i]) * ssf.slope[i] * ssf.dw[i]
         kh_max = 0.0
         for j = 1:sbm.nlayers[i]
             if j <= sbm.nlayers_kv[i]
@@ -823,7 +823,7 @@ function initialize_lateralssf_layered!(ssf::LateralSSF, sbm::SBM, ksat_profile)
             end
         end
         kh_max = kh_max * ssf.khfrac[i] * 0.001 * 0.001
-        ssf.ssfmax[i] = kh_max * ssf.βₗ[i]
+        ssf.ssfmax[i] = kh_max * ssf.slope[i]
     end
 end
 

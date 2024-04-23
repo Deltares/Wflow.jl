@@ -75,8 +75,8 @@ end
 
     @test model.clock.iteration == 1
 
-    @test sbm.θₛ[50063] ≈ 0.48755401372909546f0
-    @test sbm.θᵣ[50063] ≈ 0.15943120419979095f0
+    @test sbm.theta_s[50063] ≈ 0.48755401372909546f0
+    @test sbm.theta_r[50063] ≈ 0.15943120419979095f0
     @test mean(sbm.runoff) ≈ 0.04177459898728149f0
     @test mean(sbm.soilevap) ≈ 0.02122698830889417f0
     @test mean(sbm.actevap) ≈ 0.3353001180202587f0
@@ -92,8 +92,8 @@ model = Wflow.run_timestep(model)
 
 @testset "second timestep" begin
     sbm = model.vertical
-    @test sbm.θₛ[50063] ≈ 0.48755401372909546f0
-    @test sbm.θᵣ[50063] ≈ 0.15943120419979095f0
+    @test sbm.theta_s[50063] ≈ 0.48755401372909546f0
+    @test sbm.theta_r[50063] ≈ 0.15943120419979095f0
     @test mean(sbm.net_runoff) ≈ 0.23734052031823816f0
     @test mean(sbm.runoff) ≈ 0.23770898226019577f0
     @test mean(sbm.soilevap) ≈ 0.018750808322054897f0
@@ -304,7 +304,7 @@ model = Wflow.initialize_sbm_model(config)
 
 fp = model.lateral.river.floodplain.profile
 river = model.lateral.river
-Δh = diff(fp.depth)
+dh = diff(fp.depth)
 Δv = diff(fp.volume[:, 3])
 Δa = diff(fp.a[:, 3])
 
@@ -335,7 +335,7 @@ river = model.lateral.river
         297.8700179533214f0,
         463.35655296229805f0,
     ]
-    @test Δh .* fp.width[2:end, 3] * river.dl[3] ≈ Δv
+    @test dh .* fp.width[2:end, 3] * river.dl[3] ≈ Δv
     @test fp.a[:, 3] * river.dl[3] ≈ fp.volume[:, 3]
     # flood depth from flood volume (8000.0)
     flood_vol = 8000.0f0
@@ -449,7 +449,7 @@ Wflow.close_files(model, delete_output = false)
         @unpack vertical = model
         z = vertical.zi[i]
         kv_z = Wflow.hydraulic_conductivity_at_depth(vertical, z, i, 2, "exponential")
-        @test kv_z ≈ vertical.kvfrac[i][2] * vertical.kv₀[i] * exp(-vertical.f[i] * z)
+        @test kv_z ≈ vertical.kvfrac[i][2] * vertical.kv_0[i] * exp(-vertical.f[i] * z)
         @test vertical.z_exp == vertical.soilthickness
         @test_throws ErrorException Wflow.kh_layered_profile(
             vertical,
@@ -469,7 +469,7 @@ Wflow.close_files(model, delete_output = false)
         z = vertical.zi[i]
         kv_z =
             Wflow.hydraulic_conductivity_at_depth(vertical, z, i, 2, "exponential_constant")
-        @test kv_z ≈ vertical.kvfrac[i][2] * vertical.kv₀[i] * exp(-vertical.f[i] * z)
+        @test kv_z ≈ vertical.kvfrac[i][2] * vertical.kv_0[i] * exp(-vertical.f[i] * z)
         kv_400 = Wflow.hydraulic_conductivity_at_depth(
             vertical,
             400.0,

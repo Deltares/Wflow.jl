@@ -1,15 +1,15 @@
 @get_units @exchange @grid_type @grid_location @with_kw struct HBV{T}
-    Δt::T | "s" | 0 | "none" | "none"   # Model time step [s]
+    dt::T | "s" | 0 | "none" | "none"   # Model time step [s]
     n::Int | "-" | 0 | "none" | "none"  # Number of cells
     fc::Vector{T} | "mm"                # Field capacity [mm]
     betaseepage::Vector{T} | "-"        # Exponent in soil runoff generation equation [-]
     lp::Vector{T} | "-"                 # Fraction of field capacity below which actual evaporation=potential evaporation [-]
     threshold::Vector{T} | "mm"         # Threshold soilwater storage above which AE=PE [mm]
-    k4::Vector{T} | "Δt-1"              # Recession constant baseflow [Δt⁻¹]
-    kquickflow::Vector{T} | "Δt-1"      # Recession constant upper reservoir [Δt⁻¹]
+    k4::Vector{T} | "dt-1"              # Recession constant baseflow [Δt⁻¹]
+    kquickflow::Vector{T} | "dt-1"      # Recession constant upper reservoir [Δt⁻¹]
     suz::Vector{T} | "mm"               # Level over which k0 is used [mm]
-    k0::Vector{T} | "Δt-1"              # Recession constant upper reservoir [Δt⁻¹]
-    khq::Vector{T} | "Δt-1"             # Recession rate at flow hq [Δt⁻¹]
+    k0::Vector{T} | "dt-1"              # Recession constant upper reservoir [Δt⁻¹]
+    khq::Vector{T} | "dt-1"             # Recession rate at flow hq [Δt⁻¹]
     hq::Vector{T}                       # High flow rate hq for which recession rate of upper reservoir is known [mm Δt⁻¹]
     alphanl::Vector{T}                  # Measure of non-linearity of upper reservoir
     perc::Vector{T}                     # Percolation from upper to lower zone [mm Δt⁻¹]
@@ -25,11 +25,11 @@
     tti::Vector{T} | "ᵒC"               # Critical temperature for snowmelt and refreezing [ᵒC]
     tt::Vector{T} | "ᵒC"                # Defines interval in which precipitation falls as rainfall and snowfall [ᵒC]
     ttm::Vector{T} | "ᵒC"               # Threshold temperature for snowmelt [ᵒC]
-    cfmax::Vector{T} | "mm ᵒC-1 Δt-1"   # Meltconstant in temperature-index [-]
+    cfmax::Vector{T} | "mm ᵒC-1 dt-1"   # Meltconstant in temperature-index [-]
     whc::Vector{T} | "-"                # Fraction of snow volume that can store water [-]
     g_tt::Vector{T} | "ᵒC"              # Threshold temperature for snowfall above glacier [ᵒC]
-    g_cfmax::Vector{T} | "mm ᵒC-1 Δt-1" # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹] for glacier
-    g_sifrac::Vector{T} | "Δt-1"        # Fraction of the snowpack on top of the glacier converted into ice [Δt⁻¹]
+    g_cfmax::Vector{T} | "mm ᵒC-1 dt-1" # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹] for glacier
+    g_sifrac::Vector{T} | "dt-1"        # Fraction of the snowpack on top of the glacier converted into ice [Δt⁻¹]
     glacierstore::Vector{T} | "mm"      # Water within the glacier [mm]
     glacierfrac::Vector{T} | "-"        # Fraction covered by a glacier [-]
     precipitation::Vector{T}            # Precipitation [mm Δt⁻¹]
@@ -136,7 +136,7 @@ function update_after_snow(hbv::HBV, config)
                 hbv.g_tt[i],
                 hbv.g_cfmax[i],
                 hbv.g_sifrac[i],
-                Second(hbv.Δt),
+                Second(hbv.dt),
             )
             # Convert to mm per grid cell and add to snowmelt
             glaciermelt = glaciermelt * hbv.glacierfrac[i]

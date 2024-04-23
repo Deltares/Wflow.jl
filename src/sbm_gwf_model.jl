@@ -21,7 +21,7 @@ function initialize_sbm_gwf_model(config::Config)
 
     reader = prepare_reader(config)
     clock = Clock(config, reader)
-    Δt = clock.Δt
+    dt = clock.dt
 
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
     do_lakes = get(config.model, "lakes", false)::Bool
@@ -81,7 +81,7 @@ function initialize_sbm_gwf_model(config::Config)
     pits = zeros(Bool, modelsize_2d)
     if do_reservoirs
         reservoirs, resindex, reservoir, pits =
-            initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, tosecond(Δt))
+            initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, tosecond(dt))
     else
         reservoir = ()
         reservoirs = nothing
@@ -91,7 +91,7 @@ function initialize_sbm_gwf_model(config::Config)
     # lakes
     if do_lakes
         lakes, lakeindex, lake, pits =
-            initialize_lake(config, nc, inds_riv, nriv, pits, tosecond(Δt))
+            initialize_lake(config, nc, inds_riv, nriv, pits, tosecond(dt))
     else
         lake = ()
         lakes = nothing
@@ -99,9 +99,9 @@ function initialize_sbm_gwf_model(config::Config)
     end
 
     # overland flow (kinematic wave)
-    βₗ =
+    landslope =
         ncread(nc, config, "lateral.land.slope"; optional = false, sel = inds, type = Float)
-    clamp!(βₗ, 0.00001, Inf)
+    clamp!(landslope, 0.00001, Inf)
     ldd_2d = ncread(nc, config, "ldd"; optional = false, allow_missing = true)
 
     ldd = ldd_2d[inds]
@@ -116,19 +116,19 @@ function initialize_sbm_gwf_model(config::Config)
 
     # the indices of the river cells in the land(+river) cell vector
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
-    frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, βₗ, n)
+    frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, landslope, n)
 
     if land_routing == "kinematic-wave"
         olf = initialize_surfaceflow_land(
             nc,
             config,
             inds;
-            sl = βₗ,
+            sl = landslope,
             dl,
             width = map(det_surfacewidth, dw, riverwidth, river),
             iterate = kinwave_it,
             tstep = kw_land_tstep,
-            Δt,
+            dt,
         )
     elseif land_routing == "local-inertial"
         index_river_nf = rev_inds_riv[inds] # not filtered (with zeros)
@@ -146,7 +146,7 @@ function initialize_sbm_gwf_model(config::Config)
             inds_riv,
             river,
             waterbody = !=(0).(resindex + lakeindex),
-            Δt,
+            dt,
         )
     end
 
@@ -169,7 +169,7 @@ function initialize_sbm_gwf_model(config::Config)
             lake = lakes,
             iterate = kinwave_it,
             tstep = kw_river_tstep,
-            Δt = Δt,
+            dt = dt,
         )
     elseif river_routing == "local-inertial"
         rf, nodes_at_link = initialize_shallowwater_river(
@@ -184,7 +184,7 @@ function initialize_sbm_gwf_model(config::Config)
             reservoir = reservoirs,
             lake_index = lakeindex,
             lake = lakes,
-            Δt = Δt,
+            dt = dt,
             floodplain = floodplain_1d,
         )
     else
@@ -247,7 +247,7 @@ function initialize_sbm_gwf_model(config::Config)
 
     # reset zi and satwaterdepth with groundwater head from unconfined aquifer
     sbm.zi .= (altitude .- initial_head) .* 1000.0
-    sbm.satwaterdepth .= (sbm.soilthickness .- sbm.zi) .* (sbm.θₛ .- sbm.θᵣ)
+    sbm.satwaterdepth .= (sbm.soilthickness .- sbm.zi) .* (sbm.theta_s .- sbm.theta_r)
 
     # river boundary of unconfined aquifer
     infiltration_conductance = ncread(
@@ -420,7 +420,7 @@ function initialize_sbm_gwf_model(config::Config)
             indices = inds,
             reverse_indices = rev_inds,
             area = xl .* yl,
-            slope = βₗ,
+            slope = landslope,
             altitude = altitude,
         )
     elseif land_routing == "local-inertial"
@@ -430,7 +430,7 @@ function initialize_sbm_gwf_model(config::Config)
             indices = inds,
             reverse_indices = rev_inds,
             area = xl .* yl,
-            slope = βₗ,
+            slope = landslope,
             altitude = altitude,
             index_river = index_river_nf,
             staggered_indices = indices,
@@ -510,20 +510,20 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
     # determine stable time step for groundwater flow
     conductivity_profile =
         get(config.input.lateral.subsurface, "conductivity_profile", "uniform")
-    Δt_gw = stable_timestep(lateral.subsurface.flow.aquifer, conductivity_profile) # time step in day (Float64)
-    Δt_sbm = (vertical.Δt / tosecond(basetimestep)) # vertical.Δt is in seconds (Float64)
-    if Δt_gw < Δt_sbm
+    dt_gw = stable_timestep(lateral.subsurface.flow.aquifer, conductivity_profile) # time step in day (Float64)
+    dt_sbm = (vertical.dt / tosecond(basetimestep)) # vertical.dt is in seconds (Float64)
+    if dt_gw < dt_sbm
         @warn(
-            "stable time step Δt $Δt_gw for groundwater flow is smaller than sbm Δt $Δt_sbm"
+            "stable time step dt $dt_gw for groundwater flow is smaller than sbm dt $dt_sbm"
         )
     end
 
     Q = zeros(vertical.n)
     # exchange of recharge between vertical sbm concept and groundwater flow domain
     # recharge rate groundwater is required in units [m d⁻¹]
-    lateral.subsurface.recharge.rate .= vertical.recharge ./ 1000.0 .* (1.0 / Δt_sbm)
+    lateral.subsurface.recharge.rate .= vertical.recharge ./ 1000.0 .* (1.0 / dt_sbm)
     # update groundwater domain
-    update(lateral.subsurface.flow, Q, Δt_sbm, conductivity_profile)
+    update(lateral.subsurface.flow, Q, dt_sbm, conductivity_profile)
 
     # determine excess water depth [m] (exfiltwater) in groundwater domain (head > surface)
     # and reset head
@@ -543,7 +543,7 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
     )
 
     ssf_toriver = zeros(vertical.n)
-    ssf_toriver[inds_riv] = -lateral.subsurface.river.flux ./ lateral.river.Δt
+    ssf_toriver[inds_riv] = -lateral.subsurface.river.flux ./ lateral.river.dt
     surface_routing(model, ssf_toriver = ssf_toriver)
 
     return model

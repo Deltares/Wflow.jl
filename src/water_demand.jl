@@ -39,7 +39,7 @@ end
 
 @get_units @exchange @grid_type @grid_location @with_kw struct WaterAllocationRiver{T}
     act_surfacewater_abst::Vector{T}                    # actual surface water abstraction [mm Δt⁻¹]
-    act_surfacewater_abst_vol::Vector{T} | "m3 Δt-1"    # actual surface water abstraction [m³ Δt⁻¹]
+    act_surfacewater_abst_vol::Vector{T} | "m3 dt-1"    # actual surface water abstraction [m³ Δt⁻¹]
     available_surfacewater::Vector{T} | "m3"            # available surface water [m³]
     nonirri_returnflow::Vector{T}                       # return flow from non irrigation [mm Δt⁻¹] 
 end
@@ -53,7 +53,7 @@ end
     surfacewater_demand::Vector{T}                      # demand from surface water [mm Δt⁻¹]
     surfacewater_alloc::Vector{T}                       # allocation from surface water [mm Δt⁻¹]
     act_groundwater_abst::Vector{T}                     # actual groundwater abstraction [mm Δt⁻¹]
-    act_groundwater_abst_vol::Vector{T} | "m3 Δt-1"     # actual groundwater abstraction [m³ Δt⁻¹]
+    act_groundwater_abst_vol::Vector{T} | "m3 dt-1"     # actual groundwater abstraction [m³ Δt⁻¹]
     available_groundwater::Vector{T} | "m3"             # available groundwater [m³]
     groundwater_demand::Vector{T}                       # demand from groundwater [mm Δt⁻¹]
     groundwater_alloc::Vector{T}                        # allocation from groundwater [mm Δt⁻¹]
@@ -73,7 +73,7 @@ function set_returnflow_fraction(returnflow_fraction, demand_gross, demand_net)
 end
 
 "Initialize water demand for the domestic sector"
-function initialize_domestic_demand(nc, config, inds, Δt)
+function initialize_domestic_demand(nc, config, inds, dt)
     demand_gross =
         ncread(
             nc,
@@ -82,7 +82,7 @@ function initialize_domestic_demand(nc, config, inds, Δt)
             sel = inds,
             defaults = 0.0,
             type = Float,
-        ) .* (Δt / basetimestep)
+        ) .* (dt / basetimestep)
     demand_net =
         ncread(
             nc,
@@ -91,7 +91,7 @@ function initialize_domestic_demand(nc, config, inds, Δt)
             sel = inds,
             defaults = 0.0,
             type = Float,
-        ) .* (Δt / basetimestep)
+        ) .* (dt / basetimestep)
     n = length(inds)
     returnflow_fraction = set_returnflow_fraction(fill(mv, n), demand_gross, demand_net)
 
@@ -106,7 +106,7 @@ function initialize_domestic_demand(nc, config, inds, Δt)
 end
 
 "Initialize water demand for the industry sector"
-function initialize_industry_demand(nc, config, inds, Δt)
+function initialize_industry_demand(nc, config, inds, dt)
     demand_gross =
         ncread(
             nc,
@@ -115,7 +115,7 @@ function initialize_industry_demand(nc, config, inds, Δt)
             sel = inds,
             defaults = 0.0,
             type = Float,
-        ) .* (Δt / basetimestep)
+        ) .* (dt / basetimestep)
     demand_net =
         ncread(
             nc,
@@ -124,7 +124,7 @@ function initialize_industry_demand(nc, config, inds, Δt)
             sel = inds,
             defaults = 0.0,
             type = Float,
-        ) .* (Δt / basetimestep)
+        ) .* (dt / basetimestep)
     n = length(inds)
     returnflow_fraction = set_returnflow_fraction(fill(mv, n), demand_gross, demand_net)
 
@@ -139,7 +139,7 @@ function initialize_industry_demand(nc, config, inds, Δt)
 end
 
 "Initialize water demand for the livestock sector"
-function initialize_livestock_demand(nc, config, inds, Δt)
+function initialize_livestock_demand(nc, config, inds, dt)
     demand_gross =
         ncread(
             nc,
@@ -148,7 +148,7 @@ function initialize_livestock_demand(nc, config, inds, Δt)
             sel = inds,
             defaults = 0.0,
             type = Float,
-        ) .* (Δt / basetimestep)
+        ) .* (dt / basetimestep)
     demand_net =
         ncread(
             nc,
@@ -157,7 +157,7 @@ function initialize_livestock_demand(nc, config, inds, Δt)
             sel = inds,
             defaults = 0.0,
             type = Float,
-        ) .* (Δt / basetimestep)
+        ) .* (dt / basetimestep)
     n = length(inds)
     returnflow_fraction = set_returnflow_fraction(fill(mv, n), demand_gross, demand_net)
 
@@ -392,7 +392,7 @@ function surface_water_allocation_local(land, river, network)
             # check for abstraction through inflow (external negative inflow and adjust
             # available volume
             if river.inflow[index_river[i]] < 0.0
-                inflow = river.inflow[index_river[i]] * land.Δt
+                inflow = river.inflow[index_river[i]] * land.dt
                 available_volume = max(river.volume[index_river[i]] * 0.80 + inflow, 0.0)
             else
                 available_volume = river.volume[index_river[i]] * 0.80
@@ -596,7 +596,7 @@ function update_water_allocation(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:
     # surface water demand and allocation for areas
     surface_water_allocation_area(vertical, river, network)
 
-    @. river.abstraction = river.waterallocation.act_surfacewater_abst_vol / vertical.Δt
+    @. river.abstraction = river.waterallocation.act_surfacewater_abst_vol / vertical.dt
 
     # for reservoir and lake locations set river abstraction at zero and abstract volume
     # from reservoir and lake 

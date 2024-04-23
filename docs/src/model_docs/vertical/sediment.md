@@ -97,12 +97,12 @@ is the soil cover-management factor from the USLE equation, ``K_{USLE}`` is the 
 erodibility factor from the USLE equation, ``A_{i}`` is the area of the cell (m``^{2}``) and
 ``R_{i}`` is the rainfall intensity (here in mm min``^{-1}``). There are several methods
 available to estimate the ``C`` and ``K`` factors from the USLE. They can come from user
-input maps, for example maps resulting from Panagos & al.’s recent studies for Europe
+input maps, for example maps resulting from Panagos & al.'s recent studies for Europe
 (Panagos et al, 2015) (Ballabio et al, 2016). To get an estimate of the ``C`` factor
 globally, the other method is to estimate ``C`` values for the different land use type in
 from global land cover maps (e.g. GlobCover). An example is given for the global land cover
 map GlobCover, summed up in the table below, the values come from a literature study
-including Panagos et al.’s review (2015), Gericke & al. (2015), Mansoor & al. (2013), Chadli
+including Panagos et al.'s review (2015), Gericke & al. (2015), Mansoor & al. (2013), Chadli
 et al. (2016), de Vente et al. (2009), Borrelli et al. (2014), Yang et al. (2003) and Bosco
 et al. (2015).
 

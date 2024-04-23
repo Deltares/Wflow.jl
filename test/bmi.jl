@@ -24,7 +24,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test BMI.get_output_item_count(model) == 207
             to_check = [
                 "vertical.nlayers",
-                "vertical.θᵣ",
+                "vertical.theta_r",
                 "lateral.river.q",
                 "lateral.river.reservoir.outflow",
             ]
@@ -35,12 +35,12 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
         end
 
         @testset "variable information functions" begin
-            @test BMI.get_var_grid(model, "vertical.θₛ") == 6
+            @test BMI.get_var_grid(model, "vertical.theta_s") == 6
             @test BMI.get_var_grid(model, "lateral.river.h") == 3
             @test BMI.get_var_grid(model, "lateral.river.reservoir.inflow") == 0
             @test_throws ErrorException BMI.get_var_grid(model, "lateral.river.lake.volume")
             @test BMI.get_var_type(model, "lateral.river.reservoir.inflow") == "$Float"
-            @test BMI.get_var_units(model, "vertical.θₛ") == "-"
+            @test BMI.get_var_units(model, "vertical.theta_s") == "-"
             @test BMI.get_var_itemsize(model, "lateral.subsurface.ssf") == sizeof(Float)
             @test BMI.get_var_nbytes(model, "lateral.river.q") ==
                   length(model.lateral.river.q) * sizeof(Float)
@@ -117,8 +117,12 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 
         @testset "update until and finalize" begin
             time = BMI.get_current_time(model) + 2 * BMI.get_time_step(model)
-            @test_logs (:info, "update model until 9.470304e8")
             model = BMI.update_until(model, time)
+            @test model.clock.iteration == 3
+            time_off = BMI.get_current_time(model) + 1 * BMI.get_time_step(model) + 1e-06
+            @test_throws ErrorException model = BMI.update_until(model, time_off)
+            @test_throws ErrorException model =
+                BMI.update_until(model, time - BMI.get_time_step(model))
             BMI.finalize(model)
         end
 

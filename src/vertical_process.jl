@@ -120,28 +120,28 @@ function rainfall_interception_modrut(
 end
 
 """
-    vwc_brooks_corey(h, hb, θₛ, θᵣ, c)
+    vwc_brooks_corey(h, hb, theta_s, theta_r, c)
 
 Volumetric water content based on the Brooks-Corey soil hydraulic model.
 """
-function vwc_brooks_corey(h, hb, θₛ, θᵣ, c)
+function vwc_brooks_corey(h, hb, theta_s, theta_r, c)
     if h < hb
         par_lambda = 2.0 / (c - 3.0)
-        vwc = (θₛ - θᵣ) * pow(h / hb, par_lambda)
+        vwc = (theta_s - theta_r) * pow(h / hb, par_lambda)
     else
-        vwc = (θₛ - θᵣ)
+        vwc = (theta_s - theta_r)
     end
     return vwc
 end
 
 """
-    head_brooks_corey(vwc, θₛ, θᵣ, c, hb)
+    head_brooks_corey(vwc, theta_s, theta_r, c, hb)
 
 Soil water pressure head based on the Brooks-Corey soil hydraulic model.
 """
-function head_brooks_corey(vwc, θₛ, θᵣ, c, hb)
+function head_brooks_corey(vwc, theta_s, theta_r, c, hb)
     par_lambda = 2.0 / (c - 3.0)
-    h = hb / (pow(((vwc) / (θₛ - θᵣ)), (1.0 / par_lambda)))  # Note that in the original formula, thetaR is extracted from vwc, but thetaR is not part of the numerical vwc calculation
+    h = hb / (pow(((vwc) / (theta_s - theta_r)), (1.0 / par_lambda)))  # Note that in the original formula, thetaR is extracted from vwc, but thetaR is not part of the numerical vwc calculation
     h = min(h, hb)
     return h
 end
@@ -280,7 +280,7 @@ function unsatzone_flow_layer(usd, kv_z, l_sat, c)
 end
 
 """
-    unsatzone_flow_sbm(ustorelayerdepth, soilwatercapacity, satwaterdepth, kv_z, usl, θₛ, θᵣ)
+    unsatzone_flow_sbm(ustorelayerdepth, soilwatercapacity, satwaterdepth, kv_z, usl, theta_s, theta_r)
 
 The transfer of water from the unsaturated store `ustorelayerdepth` to the saturated store `satwaterdepth`
 is controlled by the vertical saturated hydraulic conductivity `kv_z` at the water table and the ratio between
@@ -294,15 +294,15 @@ function unsatzone_flow_sbm(
     satwaterdepth,
     kv_z,
     usl,
-    θₛ,
-    θᵣ,
+    theta_s,
+    theta_r,
 )
 
     sd = soilwatercapacity - satwaterdepth
     if sd <= 0.00001
         ast = 0.0
     else
-        st = kv_z * min(ustorelayerdepth, usl * (θₛ - θᵣ)) / sd
+        st = kv_z * min(ustorelayerdepth, usl * (theta_s - theta_r)) / sd
         ast = min(st, ustorelayerdepth)
         ustorelayerdepth = ustorelayerdepth - ast
     end
@@ -389,7 +389,7 @@ function snowpack_hbv(
 end
 
 """
-    glacier_hbv(glacierfrac, glacierstore, snow, temperature, tt, cfmax, g_sifrac, Δt)
+    glacier_hbv(glacierfrac, glacierstore, snow, temperature, tt, cfmax, g_sifrac, dt)
 
 HBV-light type of glacier modelling.
 First, a fraction of the snowpack is converted into ice using the HBV-light
@@ -405,7 +405,7 @@ occurs if the snow cover < 10 mm.
 - `tt` temperature threshold for ice melting [°C]
 - `cfmax` ice degree-day factor in [mm/(°C/day)]
 - `g_sifrac` fraction of the snow turned into ice [-]
-- `Δt` model timestep [s]
+- `dt` model timestep [s]
 
 # Output
 - `snow`
@@ -414,14 +414,14 @@ occurs if the snow cover < 10 mm.
 - `glaciermelt`
 
 """
-function glacier_hbv(glacierfrac, glacierstore, snow, temperature, tt, cfmax, g_sifrac, Δt)
+function glacier_hbv(glacierfrac, glacierstore, snow, temperature, tt, cfmax, g_sifrac, dt)
 
     # Fraction of the snow transformed into ice (HBV-light model)
     snow2glacier = g_sifrac * snow
     snow2glacier = glacierfrac > 0.0 ? snow2glacier : 0.0
 
     # Max conversion to 8mm/day
-    snow2glacier = min(snow2glacier, 8.0 * (Δt / basetimestep))
+    snow2glacier = min(snow2glacier, 8.0 * (dt / basetimestep))
 
     snow = snow - (snow2glacier * glacierfrac)
     glacierstore = glacierstore + snow2glacier

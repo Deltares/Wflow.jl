@@ -273,9 +273,9 @@ function conductance(
             connectivity.width[nzi],
         )
     elseif conductivity_profile == "uniform"
-        ϕᵢ = aquifer.head[i]
-        ϕⱼ = aquifer.head[j]
-        if ϕᵢ >= ϕⱼ
+        head_i = aquifer.head[i]
+        head_j = aquifer.head[j]
+        if head_i >= head_j
             saturation =
                 saturated_thickness(aquifer, i) / (aquifer.top[i] - aquifer.bottom[i])
         else
@@ -298,9 +298,9 @@ function flux!(Q, aquifer, connectivity, conductivity_profile)
         for nzi in connections(connectivity, i)
             # connection from i -> j
             j = connectivity.rowval[nzi]
-            Δϕ = aquifer.head[i] - aquifer.head[j]
+            delta_head = aquifer.head[i] - aquifer.head[j]
             cond = conductance(aquifer, i, j, nzi, conductivity_profile, connectivity)
-            Q[i] -= cond * Δϕ
+            Q[i] -= cond * delta_head
         end
     end
     return Q
@@ -322,7 +322,7 @@ The following criterion can be found in Chu & Willis (1984)
 Δt * k * H / (Δx * Δy * S) <= 1/4
 """
 function stable_timestep(aquifer, conductivity_profile::String)
-    Δtₘᵢₙ = Inf
+    dt_min = Inf
     for i in eachindex(aquifer.head)
         if conductivity_profile == "exponential"
             zi = aquifer.top[i] - aquifer.head[i]
@@ -334,23 +334,23 @@ function stable_timestep(aquifer, conductivity_profile::String)
             value = aquifer.k[i] * saturated_thickness(aquifer, i)
         end
 
-        Δt = aquifer.area[i] * storativity(aquifer)[i] / value
-        Δtₘᵢₙ = Δt < Δtₘᵢₙ ? Δt : Δtₘᵢₙ
+        dt = aquifer.area[i] * storativity(aquifer)[i] / value
+        dt_min = dt < dt_min ? dt : dt_min
     end
-    return 0.25 * Δtₘᵢₙ
+    return 0.25 * dt_min
 end
 
 minimum_head(aquifer::ConfinedAquifer) = aquifer.head
 minimum_head(aquifer::UnconfinedAquifer) = max.(aquifer.head, aquifer.bottom)
 
 
-function update(gwf, Q, Δt, conductivity_profile)
+function update(gwf, Q, dt, conductivity_profile)
     Q .= 0.0  # TODO: Probably remove this when linking with other components
     flux!(Q, gwf.aquifer, gwf.connectivity, conductivity_profile)
     for boundary in gwf.boundaries
         flux!(Q, boundary, gwf.aquifer)
     end
-    gwf.aquifer.head .+= (Q ./ gwf.aquifer.area .* Δt ./ storativity(gwf.aquifer))
+    gwf.aquifer.head .+= (Q ./ gwf.aquifer.area .* dt ./ storativity(gwf.aquifer))
     # Set constant head (dirichlet) boundaries
     gwf.aquifer.head[gwf.constanthead.index] .= gwf.constanthead.head
     # Make sure no heads ends up below an unconfined aquifer bottom

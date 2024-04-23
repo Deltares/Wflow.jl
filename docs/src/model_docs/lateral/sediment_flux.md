@@ -38,7 +38,7 @@ mobilize 5 classes of sediment:
 where ``CLA``, ``SIL`` and ``SAN`` are the primary clay, silt, sand fractions of the topsoil
 and ``PCL``, ``PSI``, ``PSA``, ``SAG`` and ``LAG`` are the clay, silt, sand, small and large
 aggregates fractions of the detached sediment respectively. The transport capacity of the
-flow using Yalin’s equation with particle differentiation, developed by Foster (1982), is:
+flow using Yalin's equation with particle differentiation, developed by Foster (1982), is:
 ```math
    TC_{i} = (P_{e})_{i}  (S_{g})_{i} \, \rho_{w} \,  g \, d_{i}  V_{*}
 ```
@@ -79,7 +79,7 @@ are much rarer than for soil loss and inland dynamics. The simpler models such a
 default sediment river model uses again the transport capacity of the ﬂow to determine if
 there is erosion or deposition (Neitsch et al., 2011).  A more physics-based approach
 (Partheniades, 1965) to determine river erosion is used by Liu et al. (2018) and in the new
-SWAT’s approach developed by Narasimhan et al. (2017). For wﬂow\_sediment, the new
+SWAT's approach developed by Narasimhan et al. (2017). For wﬂow\_sediment, the new
 physics-based model of SWAT was chosen for transport and erosion as it enables the use of
 parameter estimation for erosion of bed and bank of the channel and separates the suspended
 from the bed loads.
@@ -313,7 +313,7 @@ deposited sediment and the river bed/bank erosion.
 As sediments have a higher density than water, moving sediments in water can be deposited in
 the river bed. The deposition process depends on the mass of the sediment, but also on flow
 characteristics such as velocity. In wflow_sediment, as in SWAT, deposition is modelled with
-Einstein’s equation (Neitsch et al, 2011):
+Einstein's equation (Neitsch et al, 2011):
 ```math
    P_{dep}=\left(1-\dfrac{1}{e^{x}}\right)100
 ```
@@ -359,14 +359,14 @@ and shifted to the outlet cell. wflow\_sediment handles the lakes and reservoirs
 cell belongs to a lake/reservoir and is not the outlet then the model assumes that no
 erosion/deposition of sediments is happening and the sediments are only all transported to
 the lake/reservoir outlet. Once the sediments reach the outlet, then sediments are deposited
-in the lake/reservoir according to Camp’s model (1945) (Verstraeten et al, 2000):
+in the lake/reservoir according to Camp's model (1945) (Verstraeten et al, 2000):
 ```math
    TE = \dfrac{\omega_{s}}{u_{cr,res}} = \dfrac{A_{res}}{Q_{out,res}} \omega_{s}
 ```
 where ``TE`` is the trapping efficiency of the lake/reservoir (or the fraction of particles
 trapped), ``\omega_{s}`` is the particle velocity from Stokes (m s``^{-1}``), ``u_{cr,res}``
-is the reservoir’s critical settling velocity (m/s) which is equal to the reservoir’s
-outflow ``Q_{out,res}`` (m``^{3}`` s``^{-1}``) divided by the reservoir’s surface area
+is the reservoir's critical settling velocity (m/s) which is equal to the reservoir's
+outflow ``Q_{out,res}`` (m``^{3}`` s``^{-1}``) divided by the reservoir's surface area
 ``A_{res}`` (m``^{2}``).
 
 For reservoirs, coarse sediment particles from the bed load are also assumed to be trapped by the
