@@ -474,6 +474,7 @@ function groundwater_allocation_local(land, groundwater, area)
             land.waterallocation.groundwater_demand[i] * 0.001 * area[i]
         available_volume = groundwater.volume[i] * 0.75
         abstraction_vol = min(groundwater_demand_vol, available_volume)
+        land.waterallocation.act_groundwater_abst_vol[i] = abstraction_vol
         land.waterallocation.available_groundwater[i] = available_volume - abstraction_vol
         abstraction = (abstraction_vol / area[i]) * 1000.0
         land.waterallocation.groundwater_demand[i] -= abstraction
