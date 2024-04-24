@@ -360,7 +360,7 @@ function update_water_demand(sbm::SBM)
                 end
                 # limit irrigation demand to infiltration capacity    
                 infiltration_capacity =
-                    sbm.soilinfredu[i] * (sbm.infiltcappath[i] + sbm.infiltcapsoil[i])
+                    sbm.soilinfredu[i] * (1.0 - sbm.pathfrac[i]) * sbm.infiltcapsoil[i]
                 irri_dem_gross = min(irri_dem_gross, infiltration_capacity)
                 irri_dem_gross /= sbm.nonpaddy.irrigation_efficiency[i]
             else
