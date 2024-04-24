@@ -127,9 +127,9 @@ Volumetric water content based on the Brooks-Corey soil hydraulic model.
 function vwc_brooks_corey(h, hb, theta_s, theta_r, c)
     if h < hb
         par_lambda = 2.0 / (c - 3.0)
-        vwc = (theta_s - theta_r) * pow(h / hb, par_lambda)
+        vwc = (theta_s - theta_r) * pow(hb / h, par_lambda) + theta_r
     else
-        vwc = (theta_s - theta_r)
+        vwc = theta_s
     end
     return vwc
 end

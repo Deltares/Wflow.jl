@@ -440,7 +440,7 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
     lateral.subsurface.recharge .= vertical.recharge ./ 1000.0
     if do_water_demand
         @. lateral.subsurface.recharge -=
-            vertical.waterallocation.act_groundwater_abst / network.land.area
+            vertical.waterallocation.act_groundwater_abst / 1000.0
     end
     lateral.subsurface.recharge .*= lateral.subsurface.dw
     lateral.subsurface.zi .= vertical.zi ./ 1000.0

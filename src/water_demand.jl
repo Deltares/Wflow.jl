@@ -274,9 +274,7 @@ function initialize_waterallocation_land(nc, config, inds)
         "vertical.waterallocation.frac_sw_used";
         sel = inds,
         defaults = 1,
-        #optional = false,
         type = Float,
-        #fill = 0,
     )
     areas = ncread(
         nc,
@@ -284,9 +282,7 @@ function initialize_waterallocation_land(nc, config, inds)
         "vertical.waterallocation.areas";
         sel = inds,
         defaults = 1,
-        #optional = false,
         type = Int,
-        #fill = 0,
     )
 
     n = length(inds)
@@ -352,7 +348,9 @@ function update_water_demand(sbm::SBM)
                         sbm.theta_r[i],
                         sbm.c[i][k],
                     )
-                    depletion = (vwc_fc * usl[k]) - sbm.ustorelayerdepth[i][k]
+                    depletion =
+                        (vwc_fc * usl[k]) -
+                        (sbm.ustorelayerdepth[i][k] + sbm.theta_r[i] * usl[k])
                     depletion *= rootfrac
                     raw = (vwc_fc - vwc_h3) * usl[k] # readily available water
                     raw *= rootfrac
