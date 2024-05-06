@@ -1,22 +1,19 @@
 # Publications
 
-The paper introducing Wflow.jl and describing the wflow\_sbm concept, together with some
-case studies, can be found here:
+## Citing wflow
+
+For publications, please cite the following paper introducing Wflow.jl and describing the
+wflow\_sbm concept, together with some case studies:
 
 van Verseveld, W. J., Weerts, A. H., Visser, M., Buitink, J., Imhoff, R. O., Boisgontier,
 H., Bouaziz, L., Eilander, D., Hegnauer, M., ten Velden, C., and Russell, B., 2024.
 Wflow_sbm v0.7.3, a spatially distributed hydrological model: from global data to local
 applications. Geosci. Model Dev., 17, 3199–3234. <https://doi.org/10.5194/gmd-17-3199-2024>.
 
-## Citing wflow
-
-[![DOI](https://zenodo.org/badge/246787232.svg)](https://zenodo.org/badge/latestdoi/246787232)
-
-When using Wflow.jl as part of for example research or project work or teaching please cite
-our work. Wflow has been published in Zenodo, see the Zenodo badge above, that points to the
-latest release. The DOIs of previous versions are also available at Zenodo.
-
-If you use a snapshot of the development (without a DOI) please cite as follows:
+To cite a specific software version please use the DOI provided in the Zenodo badge
+[![DOI](https://zenodo.org/badge/246787232.svg)](https://zenodo.org/badge/latestdoi/246787232),
+that points to the latest release. The DOIs of previous versions are also available at
+Zenodo. If you use a snapshot of the development (without a DOI) please cite as follows:
 
 van Verseveld, Willem, Visser, Martijn, Buitink, Joost, Bouaziz, Laurène, Boisgontier,
 Hélène, Bootsma, Huite, Pronk, Maarten, Hartgring, Sebastian, Eilander, Dirk, Weerts,
