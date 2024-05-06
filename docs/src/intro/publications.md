@@ -4,9 +4,9 @@ The paper introducing Wflow.jl and describing the wflow\_sbm concept, together w
 case studies, can be found here:
 
 van Verseveld, W. J., Weerts, A. H., Visser, M., Buitink, J., Imhoff, R. O., Boisgontier,
-H., Bouaziz, L., Eilander, D., Hegnauer, M., ten Velden, C., and Russell, B., 2022.
-Wflow_sbm v0.6.1, a spatially distributed hydrologic model: from global data to local
-applications, Geosci. Model Dev. Discuss. <https://doi.org/10.5194/gmd-2022-182>, in review.
+H., Bouaziz, L., Eilander, D., Hegnauer, M., ten Velden, C., and Russell, B., 2024.
+Wflow_sbm v0.7.3, a spatially distributed hydrological model: from global data to local
+applications. Geosci. Model Dev., 17, 3199–3234. <https://doi.org/10.5194/gmd-17-3199-2024>.
 
 ## Citing wflow
 
