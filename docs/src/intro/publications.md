@@ -149,6 +149,10 @@ assimilation of GRACE terrestrial water storage estimates into a regional hydrol
 of the Rhine River basin. Hydrol. Earth Syst. Sci. 19, 2079–2100.
 <https://doi:10.5194/hess-19-2079-2015>.
 
+van der Laan, E., P. Hazenberg, A.H. Weerts, 2024. Simulation of long-term storage dynamics
+of headwater reservoirs across the globe using public cloud computing infrastructure.
+Science of The Total Environment, 172678, <https://doi.org/10.1016/j.scitotenv.2024.172678>.
+
 van der Vat, M., Boderie, P., Bons, K.A., Hegnauer, M., Hendriksen, G., van Oorschot, M.,
 Ottow, B., Roelofsen, F., Sankhua, R.N., Sinha, S.K., Warren, A., Young, W., 2019.
 Participatory Modelling of Surface and Groundwater to Support Strategic Planning in the
