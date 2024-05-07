@@ -4,9 +4,9 @@ The paper introducing Wflow.jl and describing the wflow\_sbm concept, together w
 case studies, can be found here:
 
 van Verseveld, W. J., Weerts, A. H., Visser, M., Buitink, J., Imhoff, R. O., Boisgontier,
-H., Bouaziz, L., Eilander, D., Hegnauer, M., ten Velden, C., and Russell, B., 2022.
-Wflow_sbm v0.6.1, a spatially distributed hydrologic model: from global data to local
-applications, Geosci. Model Dev. Discuss. <https://doi.org/10.5194/gmd-2022-182>, in review.
+H., Bouaziz, L., Eilander, D., Hegnauer, M., ten Velden, C., and Russell, B., 2024.
+Wflow_sbm v0.7.3, a spatially distributed hydrologic model: from global data to local
+applications, Geosci. Model Dev. <https://doi.org/10.5194/gmd-17-3199-2024>.
 
 ## Citing wflow
 
@@ -150,6 +150,10 @@ Tangdamrongsub, N., Steele-Dunne, S.C., Gunter, B.C., Ditmar, P.G., Weerts, A.H.
 assimilation of GRACE terrestrial water storage estimates into a regional hydrological model
 of the Rhine River basin. Hydrol. Earth Syst. Sci. 19, 2079–2100.
 <https://doi:10.5194/hess-19-2079-2015>.
+
+van der Laan, E., P. Hazenberg, A.H. Weerts, 2024. Simulation of long-term storage dynamics of 
+headwater reservoirs across the globe using public cloud computing infrastructure. Science 
+of The Total Environment, 172678, <https://doi.org/10.1016/j.scitotenv.2024.172678>.
 
 van der Vat, M., Boderie, P., Bons, K.A., Hegnauer, M., Hendriksen, G., van Oorschot, M.,
 Ottow, B., Roelofsen, F., Sankhua, R.N., Sinha, S.K., Warren, A., Young, W., 2019.
