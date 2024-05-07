@@ -172,12 +172,30 @@ end
 
 "Initialize paddy (rice) fields for water demand and irrigation computations"
 function initialize_paddy(nc, config, inds)
-    h_min =
-        ncread(nc, config, "vertical.paddy.h_min"; sel = inds, defaults = 0.0, type = Float)
-    h_opt =
-        ncread(nc, config, "vertical.paddy.h_opt"; sel = inds, defaults = 0.0, type = Float)
-    h_max =
-        ncread(nc, config, "vertical.paddy.h_max"; sel = inds, defaults = 0.0, type = Float)
+    h_min = ncread(
+        nc,
+        config,
+        "vertical.paddy.h_min";
+        sel = inds,
+        defaults = 20.0,
+        type = Float,
+    )
+    h_opt = ncread(
+        nc,
+        config,
+        "vertical.paddy.h_opt";
+        sel = inds,
+        defaults = 50.0,
+        type = Float,
+    )
+    h_max = ncread(
+        nc,
+        config,
+        "vertical.paddy.h_max";
+        sel = inds,
+        defaults = 80.0,
+        type = Float,
+    )
     efficiency = ncread(
         nc,
         config,
@@ -192,7 +210,7 @@ function initialize_paddy(nc, config, inds)
         "vertical.paddy.irrigation_areas";
         sel = inds,
         optional = false,
-        type = Int,
+        type = Bool,
     )
     irrigation_trigger = ncread(
         nc,

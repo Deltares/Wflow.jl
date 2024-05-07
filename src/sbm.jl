@@ -374,31 +374,13 @@ function initialize_sbm(nc, config, riverfrac, inds)
         fill = 0.0,
     )
     # soil parameters
-    theta_s = ncread(
-        nc,
-        config,
-        "vertical.theta_s";
-        sel = inds,
-        defaults = 0.6,
-        type = Float,
-    )
-    theta_r = ncread(
-        nc,
-        config,
-        "vertical.theta_r";
-        sel = inds,
-        defaults = 0.01,
-        type = Float,
-    )
+    theta_s =
+        ncread(nc, config, "vertical.theta_s"; sel = inds, defaults = 0.6, type = Float)
+    theta_r =
+        ncread(nc, config, "vertical.theta_r"; sel = inds, defaults = 0.01, type = Float)
     kv_0 =
-        ncread(
-            nc,
-            config,
-            "vertical.kv_0";
-            sel = inds,
-            defaults = 3000.0,
-            type = Float,
-        ) .* (dt / basetimestep)
+        ncread(nc, config, "vertical.kv_0"; sel = inds, defaults = 3000.0, type = Float) .*
+        (dt / basetimestep)
     f = ncread(nc, config, "vertical.f"; sel = inds, defaults = 0.001, type = Float)
     hb = ncread(nc, config, "vertical.hb"; sel = inds, defaults = -10.0, type = Float)
     h1 = ncread(nc, config, "vertical.h1"; sel = inds, defaults = 0.0, type = Float)
@@ -928,7 +910,7 @@ function update_until_recharge(sbm::SBM, config)
         )
         potsoilevap = soilevap_fraction * sbm.potential_evaporation[i]
 
-        if !isnothing(sbm.paddy)
+        if !isnothing(sbm.paddy) && sbm.paddy.irrigation_areas[i]
             paddy_actevap = min(sbm.paddy.h[i], potsoilevap)
             sbm.paddy.h[i] -= paddy_actevap
             potsoilevap -= paddy_actevap
@@ -1053,7 +1035,13 @@ function update_until_recharge(sbm::SBM, config)
         h3 = feddes_h3(sbm.h3_high[i], sbm.h3_low[i], sbm.pottrans[i], Second(sbm.dt))
         for k = 1:n_usl
             vwc = max(usld[k] / usl[k], Float(0.0000001))
-            head = head_brooks_corey(vwc, sbm.theta_s[i], sbm.theta_r[i], sbm.c[i][k], sbm.hb[i])
+            head = head_brooks_corey(
+                vwc,
+                sbm.theta_s[i],
+                sbm.theta_r[i],
+                sbm.c[i][k],
+                sbm.hb[i],
+            )
             alpha = rwu_reduction_feddes(
                 head,
                 sbm.h1[i],
@@ -1147,8 +1135,10 @@ function update_until_recharge(sbm::SBM, config)
 
             netcapflux = capflux
             for k = n_usl:-1:1
-                toadd =
-                    min(netcapflux, max(usl[k] * (sbm.theta_s[i] - sbm.theta_r[i]) - usld[k], 0.0))
+                toadd = min(
+                    netcapflux,
+                    max(usl[k] * (sbm.theta_s[i] - sbm.theta_r[i]) - usld[k], 0.0),
+                )
                 usld = setindex(usld, usld[k] + toadd, k)
                 netcapflux = netcapflux - toadd
                 actcapflux = actcapflux + toadd
@@ -1236,7 +1226,9 @@ function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
 
         ustoredepth = sum(@view usld[1:n_usl])
 
-        if sbm.paddy !== nothing && sbm.paddy.h_max[i] > 0.0
+        if !isnothing(sbm.paddy) &&
+           sbm.paddy.h_max[i] > 0.0 &&
+           sbm.paddy.irrigation_areas[i]
             paddy_h_add = min(
                 exfiltustore + exfiltsatwater[i] + sbm.excesswater[i] + sbm.infiltexcess[i],
                 sbm.paddy.h_max[i] - sbm.paddy.h[i],
@@ -1260,7 +1252,10 @@ function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
             if k <= n_usl
                 vwc = setindex(
                     vwc,
-                    (usld[k] + (sbm.act_thickl[i][k] - usl[k]) * (sbm.theta_s[i] - sbm.theta_r[i])) / sbm.act_thickl[i][k] + sbm.theta_r[i],
+                    (
+                        usld[k] +
+                        (sbm.act_thickl[i][k] - usl[k]) * (sbm.theta_s[i] - sbm.theta_r[i])
+                    ) / sbm.act_thickl[i][k] + sbm.theta_r[i],
                     k,
                 )
             else
@@ -1277,7 +1272,8 @@ function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
                 usld[k]
         end
 
-        rootstore_sat = max(0.0, sbm.rootingdepth[i] - zi[i]) * (sbm.theta_s[i] - sbm.theta_r[i])
+        rootstore_sat =
+            max(0.0, sbm.rootingdepth[i] - zi[i]) * (sbm.theta_s[i] - sbm.theta_r[i])
         rootstore = rootstore_sat + rootstore_unsat
         vwc_root = rootstore / sbm.rootingdepth[i] + sbm.theta_r[i]
         vwc_percroot = (vwc_root / sbm.theta_s[i]) * 100.0
