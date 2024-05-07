@@ -33,12 +33,17 @@
         },
         {
             "affiliation": "Deltares",
-            "name": "Pronk, Maarten",
-            "orcid": "0000-0001-8758-3939"
+            "name": "Weerts, Albrecht",
+            "orcid": "0000-0002-3249-8363"
         },
         {
             "affiliation": "Deltares",
-            "name": "Hartgring, Sebastian"
+            "name": "Baptista, Carlos Fernando"
+        },
+        {
+            "affiliation": "Deltares",
+            "name": "Pronk, Maarten",
+            "orcid": "0000-0001-8758-3939"
         },
         {
             "affiliation": "Deltares",
@@ -47,8 +52,7 @@
         },
         {
             "affiliation": "Deltares",
-            "name": "Weerts, Albrecht",
-            "orcid": "0000-0002-3249-8363"
+            "name": "Hartgring, Sebastian"
         },
         {
             "affiliation": "Deltares",
@@ -61,6 +65,10 @@
         {
             "affiliation": "Deltares",
             "name": "Hegnauer, Mark"
+        },
+        {
+            "affiliation": "Deltares",
+            "name": "Mendoza, Raul"
         }
     ],
     "access_right": "open",
