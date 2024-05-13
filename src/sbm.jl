@@ -826,6 +826,9 @@ function update_until_snow(sbm::SBM, config)
                 sbm.whc[i],
             )
         end
+
+        h3 = feddes_h3(sbm.h3_high[i], sbm.h3_low[i], pottrans, Second(sbm.dt))
+
         # update the outputs and states
         sbm.e_r[i] = e_r
         sbm.cmax[i] = cmax
@@ -835,6 +838,7 @@ function update_until_snow(sbm::SBM, config)
         sbm.stemflow[i] = stemflow
         sbm.throughfall[i] = throughfall
         sbm.pottrans[i] = pottrans
+        sbm.h3[i] = h3
         if modelsnow
             sbm.snow[i] = snow
             sbm.snowwater[i] = snowwater
@@ -1032,7 +1036,6 @@ function update_until_recharge(sbm::SBM, config)
         # depth based on the rootfraction
         actevapustore = 0.0
         rootfraction_unsat = 0.0
-        h3 = feddes_h3(sbm.h3_high[i], sbm.h3_low[i], sbm.pottrans[i], Second(sbm.dt))
         for k = 1:n_usl
             vwc = max(usld[k] / usl[k], Float(0.0000001))
             head = head_brooks_corey(
@@ -1046,7 +1049,7 @@ function update_until_recharge(sbm::SBM, config)
                 head,
                 sbm.h1[i],
                 sbm.h2[i],
-                h3,
+                sbm.h3[i],
                 sbm.h4[i],
                 sbm.alpha_h1[i],
             )
@@ -1081,7 +1084,7 @@ function update_until_recharge(sbm::SBM, config)
             Float(0.0),
             sbm.h1[i],
             sbm.h2[i],
-            h3,
+            sbm.h3[i],
             sbm.h4[i],
             sbm.alpha_h1[i],
         )
@@ -1194,7 +1197,6 @@ function update_until_recharge(sbm::SBM, config)
         sbm.rainfallplusmelt[i] = rainfallplusmelt
         sbm.infiltsoilpath[i] = infiltsoilpath
         sbm.satwaterdepth[i] = satwaterdepth
-        sbm.h3[i] = h3
         sbm.soilinfredu[i] = soilinfredu
         if modelsnow
             if modelglacier

@@ -1,9 +1,9 @@
 
-function run_piave(model, n)
+function run_piave(model, steps)
     q = zeros(n)
     ssf_vol = zeros(n)
     riv_vol = zeros(n)
-    for i = 1:n
+    for i = 1:steps
         model = Wflow.run_timestep(model)
         ssf_vol[i] = mean(model.lateral.subsurface.volume)
         riv_vol[i] = mean(model.lateral.river.volume)
@@ -24,19 +24,19 @@ model = Wflow.initialize_sbm_model(config)
 q_, riv_vol, ssf_vol = run_piave(model, 30)
 Wflow.close_files(model, delete_output = false)
 
-@testset "test" begin
+@testset "piave with and without water demand" begin
     idx = 1:3:28
     @test q_demand[idx] ≈ [
-        211.60191686938927f0,
-        187.14939240959606f0,
-        255.85466698023617f0,
-        158.28294613863787f0,
-        158.94287648692935f0,
-        140.2883247143146f0,
-        116.3305839298688f0,
-        100.41372287052879f0,
-        162.63678501047173f0,
-        97.26172730671782f0,
+        211.99857232972093f0,
+        187.36607290941348f0,
+        256.93915861230613f0,
+        158.05552787697064f0,
+        158.7873979875523f0,
+        140.32256192256094f0,
+        116.6701746161749f0,
+        100.15204336618213f0,
+        162.61886168901148f0,
+        97.19096285459914f0,
     ]
     @test q_[idx] ≈ [
         214.11044869595924f0,
@@ -51,16 +51,16 @@ Wflow.close_files(model, delete_output = false)
         104.30259811567151f0,
     ]
     @test riv_vol_demand[idx] ≈ [
-        59426.33251331146f0,
-        54602.78728357842f0,
-        61328.198149894866f0,
-        48024.884483637456f0,
-        50443.612657953374f0,
-        42361.92365184224f0,
-        40321.343567591524f0,
-        38105.538336440084f0,
-        42254.5735284774f0,
-        36991.42856399449f0,
+        59533.69348978292f0,
+        54620.38570310184f0,
+        61322.43260348127f0,
+        47995.855664860675f0,
+        50515.64469041329f0,
+        42348.99287033218f0,
+        40331.780886294684f0,
+        38081.953202775796f0,
+        42249.57246495851f0,
+        36981.497741891144f0,
     ]
     @test riv_vol[idx] ≈ [
         60170.899828551424f0,
