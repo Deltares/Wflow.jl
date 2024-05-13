@@ -99,3 +99,55 @@ Wflow.close_files(model, delete_output = false)
         207513.09867755277f0,
     ]
 end
+
+tomlpath = joinpath(@__DIR__, "sbm_piave_demand_config.toml")
+config = Wflow.Config(tomlpath)
+model = Wflow.initialize_sbm_model(config)
+model = Wflow.run_timestep(model)
+sbm = model.vertical
+
+@testset "piave water demand and allocation first timestep" begin
+    sum_total_alloc = sum(sbm.waterallocation.total_alloc)
+    @test sum(sbm.waterallocation.irri_alloc) + sum(sbm.waterallocation.nonirri_alloc) ≈
+          sum_total_alloc
+    @test sum(sbm.waterallocation.surfacewater_alloc) ≈ sum_total_alloc
+    @test sum(sbm.waterallocation.act_groundwater_abst) ≈ 0.0
+    @test sbm.paddy.h[[45, 76, 296]] ≈
+          [57.99029315541105f0, 63.464082609007f0, 58.69101417732485f0]
+    @test sbm.paddy.irrigation_trigger[[45, 76, 296]] == [1, 1, 1]
+    @test sbm.paddy.demand_gross[[45, 76, 296]] ≈ [0.0, 0.0, 0.0]
+    @test sbm.nonpaddy.irrigation_trigger[[10, 33, 1293]] == [1, 1, 1]
+    @test sbm.nonpaddy.demand_gross[[10, 33, 1293]] ≈
+          [2.713358341229611f0, 3.1355235274375515f0, 0.5028707708193706f0]
+    @test sbm.industry.demand_gross[[1, end]] ≈ [0.2105557769536972f0, 0.0485190823674202f0]
+    @test sbm.industry.demand_net[[1, end]] ≈
+          [0.05265098437666893f0, 0.012132546864449978f0]
+    @test sbm.industry.returnflow[[1, end]] ≈ [0.15790479257702827f0, 0.03638653550297022f0]
+    @test sbm.livestock.demand_gross[[1, end]] ≈
+          [9.896758274408057f-5, 6.352497439365834f-5]
+    @test sbm.livestock.demand_net[[1, end]] ≈ [9.896758274408057f-5, 6.352497439365834f-5]
+    @test sbm.livestock.returnflow[[1, end]] ≈ [0.0f0, 0.0f0]
+    @test sbm.domestic.demand_gross[[1, end]] ≈ [0.5389957427978516f0, 0.0f0]
+    @test sbm.domestic.demand_net[[1, end]] ≈ [0.33949509263038635f0, 0.0f0]
+    @test sbm.domestic.returnflow[[1, end]] ≈ [0.1995004952035704f0, 0.0f0]
+end
+
+model = Wflow.run_timestep(model)
+sbm = model.vertical
+
+@testset "piave water demand and allocation second timestep" begin
+    sum_total_alloc = sum(sbm.waterallocation.total_alloc)
+    @test sum(sbm.waterallocation.irri_alloc) + sum(sbm.waterallocation.nonirri_alloc) ≈
+          sum_total_alloc
+    @test sum(sbm.waterallocation.surfacewater_alloc) ≈ sum_total_alloc
+    @test sum(sbm.waterallocation.act_groundwater_abst) ≈ 0.0
+    @test sbm.paddy.h[[45, 76, 296]] ≈
+          [56.613468512915006f0, 62.46165185807484f0, 57.15655152892856f0]
+    @test sbm.paddy.irrigation_trigger[[45, 76, 296]] == [1, 1, 1]
+    @test sbm.paddy.demand_gross[[45, 76, 296]] ≈ [0.0f0, 0.0f0, 0.0f0]
+    @test sbm.nonpaddy.irrigation_trigger[[10, 33, 1293]] == [1, 1, 1]
+    @test sbm.nonpaddy.demand_gross[[10, 33, 1293]] ≈
+          [3.1395876909926344f0, 3.2744316785721637f0, 1.464243282784869f0]
+end
+
+Wflow.close_files(model, delete_output = false)

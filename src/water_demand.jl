@@ -384,6 +384,7 @@ function update_water_demand(sbm::SBM)
             else
                 irri_dem_gross = 0.0
             end
+            sbm.nonpaddy.demand_gross[i] = irri_dem_gross
         elseif !isnothing(sbm.paddy) && sbm.paddy.irrigation_areas[i]
             if sbm.paddy.irrigation_trigger[i]
                 irr_depth_paddy =
@@ -391,6 +392,7 @@ function update_water_demand(sbm::SBM)
                     (sbm.paddy.h_opt[i] - sbm.paddy.h[i]) : 0.0
                 irri_dem_gross += irr_depth_paddy / sbm.paddy.irrigation_efficiency[i]
             end
+            sbm.paddy.demand_gross[i] = irri_dem_gross
         end
         sbm.waterallocation.irri_demand_gross[i] = irri_dem_gross
         sbm.waterallocation.nonirri_demand_gross[i] =
