@@ -1243,7 +1243,7 @@ function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
             exfiltsatwater[i] +
             sbm.excesswater[i] +
             sbm.runoff_land[i] +
-            sbm.infiltexcess[i]
+            sbm.infiltexcess[i] - paddy_h_add
 
         # volumetric water content per soil layer and root zone
         vwc = sbm.vwc[i]
