@@ -1339,13 +1339,17 @@ function update_total_water_storage(
     # Chunk the data for parallel computing
     threaded_foreach(1:sbm.n, basesize = 1000) do i
 
+        # Paddy water depth
+        paddy_h = isnothing(sbm.paddy) ? 0.0 : sbm.paddy.h[i]
+
         # Cumulate per vertical type
         # Maybe re-categorize in the future
         surface = (
             sbm.glacierstore[i] * sbm.glacierfrac[i] +
             sbm.snow[i] +
             sbm.snowwater[i] +
-            sbm.canopystorage[i]
+            sbm.canopystorage[i] +
+            paddy_h
         )
         sub_surface = sbm.ustoredepth[i] + sbm.satwaterdepth[i]
         lateral = (
