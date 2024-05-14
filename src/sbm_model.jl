@@ -360,17 +360,20 @@ function initialize_sbm_model(config::Config)
         land = merge(land, (index_river = index_river_nf, staggered_indices = indices))
     end
     if do_water_demand
-        # exclude waterbodies for local surface water abstraction
+        # exclude waterbodies for local surface and ground water abstraction
         inds_riv_2d = copy(rev_inds_riv)
+        inds_2d = ones(Bool, modelsize_2d)
         if !isempty(reservoir)
             inds_cov = collect(Iterators.flatten(reservoir.indices_coverage))
             inds_riv_2d[inds_cov] .= 0
+            inds_2d[inds_cov] .= 0
         end
         if !isempty(lake)
             inds_cov = collect(Iterators.flatten(lake.indices_coverage))
             inds_riv_2d[inds_cov] .= 0
+            inds_2d[inds_cov] .= 0
         end
-        land = merge(land, (index_river_wb = inds_riv_2d[inds],))
+        land = merge(land, (index_river_wb = inds_riv_2d[inds], index_wb = inds_2d[inds]))
     end
     if river_routing == "kinematic-wave"
         river = (

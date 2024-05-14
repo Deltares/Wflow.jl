@@ -483,26 +483,28 @@ function surface_water_allocation_area(land, river, network)
 end
 
 "Update water allocation for subsurface domain based on local groundwater availability."
-function groundwater_allocation_local(land, groundwater, area)
+function groundwater_allocation_local(land, groundwater, network)
     for i in eachindex(land.waterallocation.groundwater_demand)
-        land.waterallocation.groundwater_demand[i] = max(
-            land.waterallocation.irri_demand_gross[i] +
-            land.waterallocation.nonirri_demand_gross[i] -
-            land.waterallocation.surfacewater_alloc[i],
-            0.0,
-        )
-        groundwater_demand_vol =
-            land.waterallocation.groundwater_demand[i] * 0.001 * area[i]
-        available_volume = groundwater.volume[i] * 0.75
-        abstraction_vol = min(groundwater_demand_vol, available_volume)
-        land.waterallocation.act_groundwater_abst_vol[i] = abstraction_vol
-        land.waterallocation.available_groundwater[i] =
-            max(available_volume - abstraction_vol, 0.0)
-        abstraction = (abstraction_vol / area[i]) * 1000.0
-        land.waterallocation.groundwater_demand[i] =
-            max(land.waterallocation.groundwater_demand[i] - abstraction, 0.0)
-        land.waterallocation.act_groundwater_abst[i] = abstraction
-        land.waterallocation.groundwater_alloc[i] = abstraction
+        if network.index_wb[i]
+            land.waterallocation.groundwater_demand[i] = max(
+                land.waterallocation.irri_demand_gross[i] +
+                land.waterallocation.nonirri_demand_gross[i] -
+                land.waterallocation.surfacewater_alloc[i],
+                0.0,
+            )
+            groundwater_demand_vol =
+                land.waterallocation.groundwater_demand[i] * 0.001 * network.area[i]
+            available_volume = groundwater.volume[i] * 0.75
+            abstraction_vol = min(groundwater_demand_vol, available_volume)
+            land.waterallocation.act_groundwater_abst_vol[i] = abstraction_vol
+            land.waterallocation.available_groundwater[i] =
+                max(available_volume - abstraction_vol, 0.0)
+            abstraction = (abstraction_vol / network.area[i]) * 1000.0
+            land.waterallocation.groundwater_demand[i] =
+                max(land.waterallocation.groundwater_demand[i] - abstraction, 0.0)
+            land.waterallocation.act_groundwater_abst[i] = abstraction
+            land.waterallocation.groundwater_alloc[i] = abstraction
+        end
     end
 end
 
@@ -635,7 +637,7 @@ function update_water_allocation(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:
     end
 
     # local groundwater demand and allocation
-    groundwater_allocation_local(vertical, lateral.subsurface, network.land.area)
+    groundwater_allocation_local(vertical, lateral.subsurface, network.land)
     # groundwater demand and allocation for areas
     groundwater_allocation_area(vertical, network)
 
