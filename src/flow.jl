@@ -1141,9 +1141,9 @@ dt = alpha * (Δx / sqrt(g max(h))
 """
 function stable_timestep(sw::ShallowWaterRiver{T})::T where {T}
     dt_min = T(Inf)
-    @tturbo for i = 1:sw.n
-        dt = sw.alpha * sw.dl[i] / sqrt(sw.g * sw.h[i])
-        dt_min = dt < dt_min ? dt : dt_min
+    @batch per = thread reduction = ((min, dt_min),) for i = 1:sw.n
+        @fastmath @inbounds dt = sw.alpha * sw.dl[i] / sqrt(sw.g * sw.h[i])
+        dt_min = min(dt, dt_min)
     end
     dt_min = isinf(dt_min) ? T(10.0) : dt_min
     return dt_min
@@ -1151,13 +1151,11 @@ end
 
 function stable_timestep(sw::ShallowWaterLand{T})::T where {T}
     dt_min = T(Inf)
-    @tturbo for i = 1:sw.n
-        dt = IfElse.ifelse(
-            sw.rivercells[i] == 0,
-            sw.alpha * min(sw.xl[i], sw.yl[i]) / sqrt(sw.g * sw.h[i]),
-            T(Inf),
-        )
-        dt_min = dt < dt_min ? dt : dt_min
+    @batch per = thread reduction = ((min, dt_min),) for i = 1:sw.n
+        @fastmath @inbounds dt =
+            sw.rivercells[i] == 0 ? sw.alpha * min(sw.xl[i], sw.yl[i]) / sqrt(sw.g * sw.h[i]) :
+            T(Inf)
+        dt_min = min(dt, dt_min)
     end
     dt_min = isinf(dt_min) ? T(10.0) : dt_min
     return dt_min

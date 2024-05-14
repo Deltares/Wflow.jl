@@ -30,8 +30,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   is fixed by using `divrem` for the computation of the number of `steps` in this function.
   An error is thrown when the absolute remainder of `divrem` is larger than `eps()`, or when
   the number of `steps` is negative.
-- Fixed internal and external broken links in docs. 
-  
+ - Fixed internal and external broken links in docs. 
+ - The internal time step of the local inertial model (`stable_timestep` function) can get
+  zero when `LoopVectorization` is applied (`@tturbo`) to the for loop of these functions.
+  This issue occured on a virtual machine, Windows 10 Enterprise, with Intel(R) Xeon(R) Gold
+  6144 CPU (2 processors). This has been fixed by replacing `@tturbo` with `reduction` of
+
 ### Changed
 - Stop exposing scalar variables through BMI. The `BMI.get_value_ptr` function was not
   working correctly for scalar model variables (a `view` was applied). Only a few scalar
