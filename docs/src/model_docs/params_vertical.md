@@ -134,7 +134,12 @@ profile `kv` is used and `z_layered` is required as input.
 | `waterlevel_land` | water level land | mm | - |
 | `waterlevel_river` | water level river | mm | - |
 | `total_storage` | total water storage (excluding floodplains, lakes and reservoirs) | mm | - |
-
+| `paddy` | optional paddy (rice) fields of type `Paddy` (water demand and irrigation) | - | - |
+| `nonpaddy` | optional non-paddy fields of type `NonPaddy` (water demand and irrigation) | - | - |
+| `domestic` | optional domestic water demand of type `NonIrrigationDemand` | - | - |
+| `livestock` | optional livestock water demand of type `NonIrrigationDemand` | - | - |
+| `industry` | optional industry water demand of type `NonIrrigationDemand` | - | - |
+| `waterallocation` | optional water allocation of type `WaterAllocationLand` | - | - |
 
 ## [HBV](@id params_hbv)
 The Table below shows the parameters (fields) of struct `HBV`, including a description of
@@ -378,3 +383,80 @@ specific_leaf = "Sl"
 | `TCsand` | transport capacity of overland flow for particle class sand  | ton Δt``^{-1}`` | - |
 | `TCsagg` | transport capacity of overland flow for particle class small aggregates  | ton Δt``^{-1}`` | - |
 | `TClagg` | transport capacity of overland flow for particle class large aggregates  | ton Δt``^{-1}`` | - |
+
+## Water demand and allocation
+
+### Paddy
+The Table below shows the parameters (fields) of struct `Paddy`, including a description of
+these parameters, the unit, and default value if applicable. The parameters in bold
+represent model parameters that can be set through static and forcing input data (netCDF),
+and can be listed in the TOML configuration file under `[input.vertical.paddy]`, to map the
+internal model parameter to the external netCDF variable.
+
+|  parameter | description    | unit | default |
+|:---------------| --------------- | ---------------------- | ----- |
+| `demand_gross` | irrigation gross demand | mm Δt``^{-1}`` | - |
+| **`irrigation_efficiency`** | irrigation efficiency | - | - |
+| **`irrigation_areas`** | irrigation areas | - | - |
+| **`irrigation_trigger`** | irrigation on or off | - | - |
+| **`h_min`** | minimum required water depth in the irrigated paddy fields | mm | 20.0 |
+| **`h_opt`** | optimal water depth in the irrigated paddy fields | mm | 50.0 |
+| **`h_max`** | water depth when paddy field starts spilling water (overflow) | mm | 80.0 |
+| `h` | actual water depth in paddy field | mm | - |
+
+### Non-paddy
+The Table below shows the parameters (fields) of struct `NonPaddy`, including a description
+of these parameters, the unit, and default value if applicable. The parameters in bold
+represent model parameters that can be set through static and forcing input data (netCDF),
+and can be listed in the TOML configuration file under `[input.vertical.nonpaddy]`, to map
+the internal model parameter to the external netCDF variable.
+
+|  parameter | description    | unit | default |
+|:---------------| --------------- | ---------------------- | ----- |
+| `demand_gross` | irrigation gross demand | mm Δt``^{-1}`` | - |
+| **`irrigation_efficiency`** | irrigation efficiency | - | - |
+| **`irrigation_areas`** | irrigation areas | - | - |
+| **`irrigation_trigger`** | irrigation on or off | - | - |
+
+### Non-irrigation (industry, domestic and livestock)
+The Table below shows the parameters (fields) of struct `NonIrrigationDemand`, including a
+description of these parameters, the unit, and default value if applicable. The parameters
+in bold represent model parameters that can be set through static and forcing input data
+(netCDF). These parameters can be listed for the sectors industry, domestic and livestock,
+in the TOML configuration file under `[input.vertical.industry]`,
+`[input.vertical.domestic]` and `[input.vertical.livestock]`, to map the internal model
+parameter to the external netCDF variable.
+
+|  parameter | description    | unit | default |
+|:---------------| --------------- | ---------------------- | ----- |
+| **`demand_gross`** | gross industry water demand | mm Δt``^{-1}`` | 0.0 |
+| **`demand_net`** | net industry water demand | mm Δt``^{-1}`` | 0.0 |
+| `returnflow_fraction` | return flow fraction | - | - |
+| `returnflow` | return flow | mm Δt``^{-1}`` | - |
+
+### Water allocation land
+The Table below shows the parameters (fields) of struct `WaterAllocationLand`, including a
+description of these parameters, the unit, and default value if applicable. The parameters
+in bold represent model parameters that can be set through static and forcing input data
+(netCDF), and can be listed in the TOML configuration file under
+`[input.vertical.waterallocation]`, to map the internal model parameter to the external
+netCDF variable.
+
+|  parameter | description    | unit | default |
+|:---------------| --------------- | ---------------------- | ----- |
+| `irri_demand_gross` | irrigation gross demand | mm Δt``^{-1}`` | - |
+| `nonirri_demand_gross` | non-irrigation gross demand | mm Δt``^{-1}`` | - |
+| `total_gross_demand` | total gross demand | mm Δt``^{-1}`` | - |
+| **`frac_sw_used`** | fraction surface water used | - | 1.0 |
+| **`areas`** | allocation areas | - | 1 |
+| `surfacewater_demand` | demand from surface water | mm Δt``^{-1}`` | - |
+| `surfacewater_alloc` | allocation from surface water | mm Δt``^{-1}`` | - |
+| `act_groundwater_abst` | actual groundwater abstraction | mm Δt``^{-1}`` | - |
+| `act_groundwater_abst_vol` | actual groundwater abstraction | m``^3`` Δt``^{-1}`` | - |
+| `available_groundwater` | available groundwater | m``^3`` | - |
+| `groundwater_demand` | groundwater_demand |mm Δt``^{-1}`` | - |
+| `groundwater_alloc` | allocation from groundwater |mm Δt``^{-1}`` | - |
+| `irri_alloc` | allocated water for irrigation |mm Δt``^{-1}`` | - |
+| `nonirri_alloc` | allocated water for non-irrigation |mm Δt``^{-1}`` | - |
+| `total_alloc` | total allocated water |mm Δt``^{-1}`` | - |
+| `nonirri_returnflow` | return flow from non-irrigation |mm Δt``^{-1}`` | - |

@@ -14,7 +14,7 @@ abstract type SurfaceFlow end
     inwater::Vector{T} | "m3 s-1"                # Lateral inflow [m³ s⁻¹]
     inflow::Vector{T} | "m3 s-1"                 # External inflow (abstraction/supply/demand) [m³ s⁻¹]
     inflow_wb::Vector{T} | "m3 s-1"              # inflow waterbody (lake or reservoir model) from land part [m³ s⁻¹]
-    abstraction::Vector{T} | "m3 s-1"            # Abstraction (computed) [m³ s⁻¹]
+    abstraction::Vector{T} | "m3 s-1"            # Abstraction (computed as part of water demand and allocation) [m³ s⁻¹]
     volume::Vector{T} | "m3"                     # Kinematic wave volume [m³] (based on water level h)
     h::Vector{T} | "m"                           # Water level [m]
     h_av::Vector{T} | "m"                        # Average water level [m]
@@ -380,7 +380,8 @@ function stable_timestep(sf::S) where {S<:SurfaceFlow}
             courant = zeros(n)
             for v = 1:n
                 if sf.q[v] > 0.0
-                    sf.cel[v] = 1.0 / (sf.alpha[v] * sf.beta * pow(sf.q[v], (sf.beta - 1.0)))
+                    sf.cel[v] =
+                        1.0 / (sf.alpha[v] * sf.beta * pow(sf.q[v], (sf.beta - 1.0)))
                     courant[v] = (sf.dt / sf.dl[v]) * sf.cel[v]
                 end
             end
@@ -485,7 +486,9 @@ function update(ssf::LateralSSF, network, frac_toriver, ksat_profile)
                     )
                 end
                 ssf.volume[v] =
-                    (ssf.theta_s[v] - ssf.theta_r[v]) * (ssf.soilthickness[v] - ssf.zi[v]) * area[v]
+                    (ssf.theta_s[v] - ssf.theta_r[v]) *
+                    (ssf.soilthickness[v] - ssf.zi[v]) *
+                    area[v]
             end
         end
     end
@@ -531,7 +534,7 @@ end
     error::Vector{T} | "m3"                                 # error volume
     inwater::Vector{T} | "m3 s-1"                           # lateral inflow [m³ s⁻¹]
     inflow::Vector{T} | "m3 s-1"                            # external inflow (abstraction/supply/demand) [m³ s⁻¹]
-    abstraction::Vector{T} | "m3 s-1"                       # abstraction (computed) [m³ s⁻¹]
+    abstraction::Vector{T} | "m3 s-1"                       # abstraction (computed as part of water demand and allocation) [m³ s⁻¹]
     inflow_wb::Vector{T} | "m3 s-1"                         # inflow waterbody (lake or reservoir model) from land part [m³ s⁻¹]
     bankfull_volume::Vector{T} | "m3"                       # bankfull volume
     bankfull_depth::Vector{T} | "m"                         # bankfull depth

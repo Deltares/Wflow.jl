@@ -32,7 +32,7 @@ end
 
 @get_units @exchange @grid_type @grid_location @with_kw struct WaterAllocationLand{T}
     irri_demand_gross::Vector{T}                        # irrigation gross demand [mm Δt⁻¹]
-    nonirri_demand_gross::Vector{T}                     # non irrigation (industry and domestic) gross demand [mm Δt⁻¹]
+    nonirri_demand_gross::Vector{T}                     # non-irrigation gross demand [mm Δt⁻¹]
     total_gross_demand::Vector{T}                       # total gross demand [mm Δt⁻¹]
     frac_sw_used::Vector{T} | "-"                       # fraction surface water used [-]
     areas::Vector{Int} | "-"                            # allocation areas [-]
