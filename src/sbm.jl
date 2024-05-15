@@ -1,4 +1,4 @@
-@get_units @exchange @grid_type @grid_location @with_kw struct SBM{T,N,M,P,NP,D,L,I,W}
+@get_units @exchange @grid_type @grid_location @with_kw struct SBM{T,N,M,P,NP,NI,W}
     # Model time step [s]
     dt::T | "s" | 0 | "none" | "none"
     # Maximum number of soil layers
@@ -227,13 +227,13 @@
     # Water demand structs (of arrays)
     paddy::P | "-" | 0
     nonpaddy::NP | "-" | 0
-    domestic::D | "-" | 0
-    livestock::L | "-" | 0
-    industry::I | "-" | 0
+    domestic::NI | "-" | 0
+    livestock::NI | "-" | 0
+    industry::NI | "-" | 0
     waterallocation::W | "-" | 0
 
 
-    function SBM{T,N,M,P,NP,D,L,I,W}(args...) where {T,N,M,P,NP,D,L,I,W}
+    function SBM{T,N,M,P,NP,NI,W}(args...) where {T,N,M,P,NP,NI,W}
         equal_size_vectors(args)
         return new(args...)
     end

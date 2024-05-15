@@ -1,20 +1,6 @@
-@get_units @exchange @grid_type @grid_location @with_kw struct Industry{T}
-    demand_gross::Vector{T}                 # gross industry water demand [mm Δt⁻¹]
-    demand_net::Vector{T}                   # net industry water demand [mm Δt⁻¹]
-    returnflow_fraction::Vector{T} | "-"    # return flow fraction [-]
-    returnflow::Vector{T}                   # return flow [mm Δt⁻¹]
-end
-
-@get_units @exchange @grid_type @grid_location @with_kw struct Domestic{T}
-    demand_gross::Vector{T}                 # gross domestic water demand [mm Δt⁻¹]
-    demand_net::Vector{T}                   # net domestic water demand [mm Δt⁻¹]
-    returnflow_fraction::Vector{T} | "-"    # return flow fraction [-]
-    returnflow::Vector{T}                   # return flow [mm Δt⁻¹]
-end
-
-@get_units @exchange @grid_type @grid_location @with_kw struct Livestock{T}
-    demand_gross::Vector{T}                 # gross livestock water demand [mm Δt⁻¹]
-    demand_net::Vector{T}                   # net livestock water demand [mm Δt⁻¹]
+@get_units @exchange @grid_type @grid_location @with_kw struct NonIrrigationDemand{T}
+    demand_gross::Vector{T}                 # gross water demand [mm Δt⁻¹]
+    demand_net::Vector{T}                   # net water demand [mm Δt⁻¹]
     returnflow_fraction::Vector{T} | "-"    # return flow fraction [-]
     returnflow::Vector{T}                   # return flow [mm Δt⁻¹]
 end
@@ -95,7 +81,7 @@ function initialize_domestic_demand(nc, config, inds, dt)
     n = length(inds)
     returnflow_fraction = set_returnflow_fraction(fill(mv, n), demand_gross, demand_net)
 
-    domestic = Domestic{Float}(
+    domestic = NonIrrigationDemand{Float}(
         demand_gross = demand_gross,
         demand_net = demand_net,
         returnflow_fraction = returnflow_fraction,
@@ -128,7 +114,7 @@ function initialize_industry_demand(nc, config, inds, dt)
     n = length(inds)
     returnflow_fraction = set_returnflow_fraction(fill(mv, n), demand_gross, demand_net)
 
-    industry = Industry{Float}(
+    industry = NonIrrigationDemand{Float}(
         demand_gross = demand_gross,
         demand_net = demand_net,
         returnflow_fraction = returnflow_fraction,
@@ -161,7 +147,7 @@ function initialize_livestock_demand(nc, config, inds, dt)
     n = length(inds)
     returnflow_fraction = set_returnflow_fraction(fill(mv, n), demand_gross, demand_net)
 
-    livestock = Livestock{Float}(
+    livestock = NonIrrigationDemand{Float}(
         demand_gross = demand_gross,
         demand_net = demand_net,
         returnflow_fraction = returnflow_fraction,
