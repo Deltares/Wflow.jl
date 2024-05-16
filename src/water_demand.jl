@@ -49,12 +49,10 @@ end
     nonirri_returnflow::Vector{T}                       # return flow from non irrigation [mm Δt⁻¹]
 end
 
-"Set return flow fraction based on gross water demand `demand_gross` and net water demand `demand_net`"
-function set_returnflow_fraction(returnflow_fraction, demand_gross, demand_net)
-    for i in eachindex(demand_gross)
-        fraction = divide(demand_net[i], demand_gross[i])
-        returnflow_fraction[i] = 1.0 - fraction
-    end
+"Return return flow fraction based on gross water demand `demand_gross` and net water demand `demand_net`"
+function returnflow_fraction(demand_gross, demand_net)
+    fraction = divide(demand_net, demand_gross)
+    returnflow_fraction = 1.0 - fraction
     return returnflow_fraction
 end
 
@@ -79,12 +77,12 @@ function initialize_domestic_demand(nc, config, inds, dt)
             type = Float,
         ) .* (dt / basetimestep)
     n = length(inds)
-    returnflow_fraction = set_returnflow_fraction(fill(mv, n), demand_gross, demand_net)
+    returnflow_f = returnflow_fraction.(demand_gross, demand_net)
 
     domestic = NonIrrigationDemand{Float}(
         demand_gross = demand_gross,
         demand_net = demand_net,
-        returnflow_fraction = returnflow_fraction,
+        returnflow_fraction = returnflow_f,
         returnflow = fill(Float(0), n),
     )
 
@@ -112,12 +110,12 @@ function initialize_industry_demand(nc, config, inds, dt)
             type = Float,
         ) .* (dt / basetimestep)
     n = length(inds)
-    returnflow_fraction = set_returnflow_fraction(fill(mv, n), demand_gross, demand_net)
+    returnflow_f = returnflow_fraction.(demand_gross, demand_net)
 
     industry = NonIrrigationDemand{Float}(
         demand_gross = demand_gross,
         demand_net = demand_net,
-        returnflow_fraction = returnflow_fraction,
+        returnflow_fraction = returnflow_f,
         returnflow = fill(Float(0), n),
     )
 
@@ -145,12 +143,12 @@ function initialize_livestock_demand(nc, config, inds, dt)
             type = Float,
         ) .* (dt / basetimestep)
     n = length(inds)
-    returnflow_fraction = set_returnflow_fraction(fill(mv, n), demand_gross, demand_net)
+    returnflow_f = returnflow_fraction.(demand_gross, demand_net)
 
     livestock = NonIrrigationDemand{Float}(
         demand_gross = demand_gross,
         demand_net = demand_net,
-        returnflow_fraction = returnflow_fraction,
+        returnflow_fraction = returnflow_f,
         returnflow = fill(Float(0), n),
     )
     return livestock
@@ -312,6 +310,18 @@ function initialize_waterallocation_land(nc, config, inds)
     return waterallocation
 end
 
+"Return non-irrigation gross demand and update `returnflow_fraction`"
+function update_non_irrigation_demand(non_irri::NonIrrigationDemand, i)
+    non_irri.returnflow_fraction[i] =
+        returnflow_fraction(non_irri.demand_gross[i], non_irri.demand_net[i])
+    return non_irri.demand_gross[i]
+end
+
+# return zero (gross demand) if non-irrigation sector is not defined
+function update_non_irrigation_demand(non_irri::Nothing, i)
+    return 0.0
+end
+
 """
     update_water_demand(sbm::SBM)
 
@@ -325,9 +335,10 @@ part of `SBM` water allocation (`waterallocation`).
 """
 function update_water_demand(sbm::SBM)
     for i = 1:sbm.n
-        industry_dem = isnothing(sbm.industry) ? 0.0 : sbm.industry.demand_gross[i]
-        domestic_dem = isnothing(sbm.domestic) ? 0.0 : sbm.domestic.demand_gross[i]
-        livestock_dem = isnothing(sbm.livestock) ? 0.0 : sbm.livestock.demand_gross[i]
+
+        industry_dem = update_non_irrigation_demand(sbm.industry, i)
+        domestic_dem = update_non_irrigation_demand(sbm.domestic, i)
+        livestock_dem = update_non_irrigation_demand(sbm.livestock, i)
 
         irri_dem_gross = 0.0
         if !isnothing(sbm.nonpaddy) && sbm.nonpaddy.irrigation_areas[i]
