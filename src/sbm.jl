@@ -1,4 +1,4 @@
-@get_units @exchange @grid_type @grid_location @with_kw struct SBM{T,N,M,P,NP,NI,W}
+@get_units @exchange @grid_type @grid_location @with_kw struct SBM{T,N,M}
     # Model time step [s]
     dt::T | "s" | 0 | "none" | "none"
     # Maximum number of soil layers
@@ -225,15 +225,15 @@
     # Total water storage (excluding floodplain volume, lakes and reservoirs) [mm]
     total_storage::Vector{T} | "mm"
     # Water demand structs (of arrays)
-    paddy::P | "-" | 0
-    nonpaddy::NP | "-" | 0
-    domestic::NI | "-" | 0
-    livestock::NI | "-" | 0
-    industry::NI | "-" | 0
-    waterallocation::W | "-" | 0
+    paddy::Union{Paddy,Nothing} | "-" | 0
+    nonpaddy::Union{NonPaddy,Nothing} | "-" | 0
+    domestic::Union{NonIrrigationDemand,Nothing} | "-" | 0
+    livestock::Union{NonIrrigationDemand,Nothing} | "-" | 0
+    industry::Union{NonIrrigationDemand,Nothing} | "-" | 0
+    waterallocation::Union{WaterAllocationLand,Nothing} | "-" | 0
 
 
-    function SBM{T,N,M,P,NP,NI,W}(args...) where {T,N,M,P,NP,NI,W}
+    function SBM{T,N,M}(args...) where {T,N,M}
         equal_size_vectors(args)
         return new(args...)
     end
@@ -1358,5 +1358,82 @@ function update_total_water_storage(
 
         # Add everything to the total water storage
         sbm.total_storage[i] += (surface + sub_surface + lateral)
+    end
+end
+
+"""
+    update_water_demand(sbm::SBM)
+
+Update water demand for vertical `SBM` concept for a single timestep. Water demand is
+computed for sectors `industry`, `domestic` and `livestock`, and `paddy` rice fields and
+`nonpaddy` (other crop) fields. 
+
+Gross water demand for irrigation `irri_demand_gross` and non-irrigation
+`nonirri_demand_gross`, and total gross water demand `total_gross_demand` are updated as
+part of `SBM` water allocation (`waterallocation`).
+"""
+function update_water_demand(sbm::SBM)
+    for i = 1:sbm.n
+
+        industry_dem = update_non_irrigation_demand(sbm.industry, i)
+        domestic_dem = update_non_irrigation_demand(sbm.domestic, i)
+        livestock_dem = update_non_irrigation_demand(sbm.livestock, i)
+
+        irri_dem_gross = 0.0
+        if !isnothing(sbm.nonpaddy) && sbm.nonpaddy.irrigation_areas[i]
+            if sbm.nonpaddy.irrigation_trigger[i]
+                usl, _ = set_layerthickness(sbm.zi[i], sbm.sumlayers[i], sbm.act_thickl[i])
+                for k = 1:sbm.n_unsatlayers[i]
+                    rootfrac = min(
+                        1.0,
+                        (max(0.0, sbm.rootingdepth[i] - sbm.sumlayers[i][k]) / usl[k]),
+                    )
+                    vwc_fc = vwc_brooks_corey(
+                        -100.0,
+                        sbm.hb[i],
+                        sbm.theta_s[i],
+                        sbm.theta_r[i],
+                        sbm.c[i][k],
+                    )
+                    vwc_h3 = vwc_brooks_corey(
+                        sbm.h3[i],
+                        sbm.hb[i],
+                        sbm.theta_s[i],
+                        sbm.theta_r[i],
+                        sbm.c[i][k],
+                    )
+                    depletion =
+                        (vwc_fc * usl[k]) -
+                        (sbm.ustorelayerdepth[i][k] + sbm.theta_r[i] * usl[k])
+                    depletion *= rootfrac
+                    raw = (vwc_fc - vwc_h3) * usl[k] # readily available water
+                    raw *= rootfrac
+                    if depletion >= raw
+                        irri_dem_gross += depletion
+                    end
+                end
+                # limit irrigation demand to infiltration capacity    
+                infiltration_capacity =
+                    sbm.soilinfredu[i] * (1.0 - sbm.pathfrac[i]) * sbm.infiltcapsoil[i]
+                irri_dem_gross = min(irri_dem_gross, infiltration_capacity)
+                irri_dem_gross /= sbm.nonpaddy.irrigation_efficiency[i]
+            else
+                irri_dem_gross = 0.0
+            end
+            sbm.nonpaddy.demand_gross[i] = irri_dem_gross
+        elseif !isnothing(sbm.paddy) && sbm.paddy.irrigation_areas[i]
+            if sbm.paddy.irrigation_trigger[i]
+                irr_depth_paddy =
+                    sbm.paddy.h[i] < sbm.paddy.h_min[i] ?
+                    (sbm.paddy.h_opt[i] - sbm.paddy.h[i]) : 0.0
+                irri_dem_gross += irr_depth_paddy / sbm.paddy.irrigation_efficiency[i]
+            end
+            sbm.paddy.demand_gross[i] = irri_dem_gross
+        end
+        sbm.waterallocation.irri_demand_gross[i] = irri_dem_gross
+        sbm.waterallocation.nonirri_demand_gross[i] =
+            industry_dem + domestic_dem + livestock_dem
+        sbm.waterallocation.total_gross_demand[i] =
+            irri_dem_gross + industry_dem + domestic_dem + livestock_dem
     end
 end
