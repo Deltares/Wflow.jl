@@ -457,58 +457,19 @@ function groundwater_allocation_area(land, network)
     end
 end
 
-"Return livestock sector `returnflow`"
-function livestock_return_flow(land)
-    if isnothing(land.livestock)
-        return 0.0
-    else
-        for i in eachindex(land.livestock.returnflow)
-            frac_livestock = divide(
-                land.livestock.demand_gross[i],
-                land.waterallocation.nonirri_demand_gross[i],
-            )
-            livestock_alloc = frac_livestock * land.waterallocation.nonirri_alloc[i]
-            land.livestock.returnflow[i] =
-                land.livestock.returnflow_fraction[i] * livestock_alloc
-        end
-        return land.livestock.returnflow
+"Return and update non-irrigation sector (domestic, livestock, industry) return flow"
+function return_flow(non_irri::NonIrrigationDemand, waterallocation)
+    for i in eachindex(non_irri.returnflow)
+        frac = divide(non_irri.demand_gross[i], waterallocation.nonirri_demand_gross[i])
+        allocate = frac * waterallocation.nonirri_alloc[i]
+        non_irri.returnflow[i] = non_irri.returnflow_fraction[i] * allocate
     end
+    return non_irri.returnflow
 end
 
-"Return domestic sector `returnflow`"
-function domestic_return_flow(land)
-    if isnothing(land.domestic)
-        return 0.0
-    else
-        for i in eachindex(land.domestic.returnflow)
-            frac_domestic = divide(
-                land.domestic.demand_gross[i],
-                land.waterallocation.nonirri_demand_gross[i],
-            )
-            domestic_alloc = frac_domestic * land.waterallocation.nonirri_alloc[i]
-            land.domestic.returnflow[i] =
-                land.domestic.returnflow_fraction[i] * domestic_alloc
-        end
-        return land.domestic.returnflow
-    end
-end
-
-"Return industry sector `returnflow`"
-function industry_return_flow(land)
-    if isnothing(land.industry)
-        return 0.0
-    else
-        for i in eachindex(land.industry.returnflow)
-            frac_industry = divide(
-                land.industry.demand_gross[i],
-                land.waterallocation.nonirri_demand_gross[i],
-            )
-            industry_alloc = frac_industry * land.waterallocation.nonirri_alloc[i]
-            land.industry.returnflow[i] =
-                land.industry.returnflow_fraction[i] * industry_alloc
-        end
-        return land.industry.returnflow
-    end
+# return zero (return flow) if non-irrigation sector is not defined
+function return_flow(non_irri::Nothing, waterallocation)
+    return 0.0
 end
 
 """
@@ -577,9 +538,9 @@ function update_water_allocation(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:
     end
 
     # non-irrigation return flows
-    returnflow_livestock = livestock_return_flow(vertical)
-    returnflow_domestic = domestic_return_flow(vertical)
-    returnflow_industry = industry_return_flow(vertical)
+    returnflow_livestock = return_flow(vertical.livestock, vertical.waterallocation)
+    returnflow_domestic = return_flow(vertical.domestic, vertical.waterallocation)
+    returnflow_industry = return_flow(vertical.industry, vertical.waterallocation)
 
     # map non-irrigation return flow to land and river water allocation
     if (
