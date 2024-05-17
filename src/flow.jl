@@ -1627,12 +1627,15 @@ function initialize_floodplain_1d(
 end
 
 """
-    set_river_inwater(model::Model{N,L,V,R,W,T}, ssf_toriver) where {N,L,V<:SBM,R,W,T}
+    set_river_inwater(model::Model{N,L,V,R,W,T}, ssf_toriver) where {N,L,V,R,W,T<:Union{SbmModel,SbmGwfModel}}
 
-Set `inwater` of the lateral river component for a `Model` with vertical `SBM` concept.
+Set `inwater` of the lateral river component for a `Model` of type `SbmModel` or `SbmGwfModel`.
 `ssf_toriver` is the subsurface flow to the river.
 """
-function set_river_inwater(model::Model{N,L,V,R,W,T}, ssf_toriver) where {N,L,V<:SBM,R,W,T}
+function set_river_inwater(
+    model::Model{N,L,V,R,W,T},
+    ssf_toriver,
+) where {N,L,V,R,W,T<:Union{SbmModel,SbmGwfModel}}
     @unpack lateral, vertical, network, config = model
     inds = network.index_river
     do_water_demand = haskey(config.model, "water_demand")

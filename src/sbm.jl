@@ -915,11 +915,11 @@ function update_until_recharge(sbm::SBM, config)
         potsoilevap = soilevap_fraction * sbm.potential_evaporation[i]
 
         if !isnothing(sbm.paddy) && sbm.paddy.irrigation_areas[i]
-            paddy_actevap = min(sbm.paddy.h[i], potsoilevap)
-            sbm.paddy.h[i] -= paddy_actevap
-            potsoilevap -= paddy_actevap
+            evap_paddy_water = min(sbm.paddy.h[i], potsoilevap)
+            sbm.paddy.h[i] -= evap_paddy_water
+            potsoilevap -= evap_paddy_water
         else
-            paddy_actevap = 0.0
+            evap_paddy_water = 0.0
         end
 
         # Calculate the initial capacity of the unsaturated store
@@ -1166,7 +1166,7 @@ function update_until_recharge(sbm::SBM, config)
             ae_openw_r +
             ae_openw_l +
             sbm.interception[i] +
-            paddy_actevap
+            evap_paddy_water
 
         # update the outputs and states
         sbm.n_unsatlayers[i] = n_usl

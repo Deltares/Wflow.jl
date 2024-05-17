@@ -318,9 +318,7 @@ function update_non_irrigation_demand(non_irri::NonIrrigationDemand, i)
 end
 
 # return zero (gross demand) if non-irrigation sector is not defined
-function update_non_irrigation_demand(non_irri::Nothing, i)
-    return 0.0
-end
+update_non_irrigation_demand(non_irri::Nothing, i) = 0.0
 
 "Update water allocation for river and land domains based on local surface water (river) availability."
 function surface_water_allocation_local(land, river, network)
@@ -403,7 +401,7 @@ function surface_water_allocation_area(land, river, network)
 end
 
 "Update water allocation for subsurface domain based on local groundwater availability."
-function groundwater_allocation_local(land, groundwater, network)
+function groundwater_allocation_local(land, groundwater_volume, network)
     for i in eachindex(land.waterallocation.groundwater_demand)
         if network.index_wb[i]
             land.waterallocation.groundwater_demand[i] = max(
@@ -414,7 +412,7 @@ function groundwater_allocation_local(land, groundwater, network)
             )
             groundwater_demand_vol =
                 land.waterallocation.groundwater_demand[i] * 0.001 * network.area[i]
-            available_volume = groundwater.volume[i] * 0.75
+            available_volume = groundwater_volume[i] * 0.75
             abstraction_vol = min(groundwater_demand_vol, available_volume)
             land.waterallocation.act_groundwater_abst_vol[i] = abstraction_vol
             land.waterallocation.available_groundwater[i] =
@@ -468,21 +466,24 @@ function return_flow(non_irri::NonIrrigationDemand, waterallocation)
 end
 
 # return zero (return flow) if non-irrigation sector is not defined
-function return_flow(non_irri::Nothing, waterallocation)
-    return 0.0
-end
+return_flow(non_irri::Nothing, waterallocation) = 0.0
+
+groundwater_volume(gw::LateralSSF) = gw.volume
+groundwater_volume(gw) = gw.flow.aquifer.volume
 
 """
-    update_water_allocation(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
+    update_water_allocation(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:Union{SbmModel, SbmGwfModel}}
 
-Update water allocation for model type `sbm` for a single timestep. First, surface water
-abstraction is computed to satisfy local water demand (non-irrigation and irrigation), and
-then updated (including lakes and reservoirs) to satisfy the remaining water demand for
-allocation areas. Then groundwater abstraction is computed to satisfy the remaining local
-water demand, and then updated to satisfy the remaining water demand for allocation areas.
-Finally, non-irrigation return flows are updated.
+Update water allocation for model type `sbm` or `sbm_gwf` for a single timestep. First,
+surface water abstraction is computed to satisfy local water demand (non-irrigation and
+irrigation), and then updated (including lakes and reservoirs) to satisfy the remaining
+water demand for allocation areas. Then groundwater abstraction is computed to satisfy the
+remaining local water demand, and then updated to satisfy the remaining water demand for
+allocation areas. Finally, non-irrigation return flows are updated.
 """
-function update_water_allocation(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
+function update_water_allocation(
+    model::Model{N,L,V,R,W,T},
+) where {N,L,V,R,W,T<:Union{SbmModel,SbmGwfModel}}
 
     @unpack network, lateral, vertical = model
 
@@ -513,12 +514,18 @@ function update_water_allocation(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:
             river.waterallocation.act_surfacewater_abst_vol[res_index_f]
     elseif !isnothing(river.lake)
         @. river.abstraction[lake_index_f] = 0.0
-        @. river.lake.volume -=
-            river.waterallocation.act_surfacewater_abst_vol[lake_index_f]
+        lakes = river.lake
+        @. lakes.storage -= river.waterallocation.act_surfacewater_abst_vol[lake_index_f]
+        @. lakes.waterlevel =
+            waterlevel(lakes.storfunc, lakes.area, lakes.storage, lakes.sh)
     end
 
     # local groundwater demand and allocation
-    groundwater_allocation_local(vertical, lateral.subsurface, network.land)
+    groundwater_allocation_local(
+        vertical,
+        groundwater_volume(lateral.subsurface),
+        network.land,
+    )
     # groundwater demand and allocation for areas
     groundwater_allocation_area(vertical, network)
 
