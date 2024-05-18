@@ -73,6 +73,7 @@ forcing_calendar_noleap_path =
 forcing_piave_path = testdata(v"0.2.9", "inmaps-era5-2010-piave.nc", "forcing-piave.nc")
 staticmaps_piave_path = testdata(v"0.2.9", "staticmaps-piave.nc", "staticmaps-piave.nc")
 instates_piave_path = testdata(v"0.2.9", "instates-piave.nc", "instates-piave.nc")
+instates_piave_gwf_path = testdata(v"0.2.9", "instates-piave-gwf.nc", "instates-piave-gwf.nc")
 
 include("testing_utils.jl")
 
@@ -88,6 +89,7 @@ with_logger(NullLogger()) do
         include("reservoir_lake.jl")
         include("run_sbm.jl")
         include("run_sbm_piave.jl")
+        include("run_sbm_gwf_piave.jl")
         include("run_hbv.jl")
         include("run_sbm_gwf.jl")
         include("run.jl")

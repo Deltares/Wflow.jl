@@ -240,7 +240,7 @@ function initialize_sbm_gwf_model(config::Config)
         get(config.input.lateral.subsurface, "conductivity_profile", "uniform")::String
 
     connectivity = Connectivity(inds, rev_inds, xl, yl)
-    initial_head = altitude .- Float(0.10) # cold state for groundwater head
+    initial_head = altitude .- sbm.zi / 1000.0 # cold state for groundwater head based on SBM zi
     initial_head[index_river] = altitude[index_river]
 
     if do_constanthead
@@ -262,10 +262,6 @@ function initialize_sbm_gwf_model(config::Config)
         volume,
         gwf_f,
     )
-
-    # reset zi and satwaterdepth with groundwater head from unconfined aquifer
-    sbm.zi .= (altitude .- initial_head) .* 1000.0
-    sbm.satwaterdepth .= (sbm.soilthickness .- sbm.zi) .* (sbm.theta_s .- sbm.theta_r)
 
     # river boundary of unconfined aquifer
     infiltration_conductance = ncread(
@@ -552,6 +548,12 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
             network.land.slope,
             network.land,
         )
+    end
+
+    # optional water demand and allocation
+    if do_water_demand
+        update_water_demand(vertical)
+        update_water_allocation(model)
     end
 
     # update vertical sbm concept until recharge [mm]
