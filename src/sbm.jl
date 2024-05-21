@@ -918,6 +918,7 @@ function update_until_recharge(sbm::SBM, config)
             evap_paddy_water = min(sbm.paddy.h[i], potsoilevap)
             sbm.paddy.h[i] -= evap_paddy_water
             potsoilevap -= evap_paddy_water
+            avail_forinfilt += sbm.paddy.h[i] # allow infiltration of paddy water
         else
             evap_paddy_water = 0.0
         end
@@ -1228,24 +1229,19 @@ function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
 
         ustoredepth = sum(@view usld[1:n_usl])
 
-        if !isnothing(sbm.paddy) &&
-           sbm.paddy.h_max[i] > 0.0 &&
-           sbm.paddy.irrigation_areas[i]
-            paddy_h_add = min(
-                exfiltustore + exfiltsatwater[i] + sbm.excesswater[i] + sbm.infiltexcess[i],
-                sbm.paddy.h_max[i] - sbm.paddy.h[i],
-            )
-            sbm.paddy.h[i] += paddy_h_add
+        if !isnothing(sbm.paddy) && sbm.paddy.irrigation_areas[i]
+            paddy_h_add =
+                exfiltustore + exfiltsatwater[i] + sbm.excesswater[i] + sbm.infiltexcess[i]
+            runoff = max(paddy_h_add - sbm.paddy.h_max[i], 0.0)
+            sbm.paddy.h[i] = paddy_h_add - runoff
         else
-            paddy_h_add = 0.0
+            runoff =
+                exfiltustore +
+                exfiltsatwater[i] +
+                sbm.excesswater[i] +
+                sbm.runoff_land[i] +
+                sbm.infiltexcess[i]
         end
-
-        runoff =
-            exfiltustore +
-            exfiltsatwater[i] +
-            sbm.excesswater[i] +
-            sbm.runoff_land[i] +
-            sbm.infiltexcess[i] - paddy_h_add
 
         # volumetric water content per soil layer and root zone
         vwc = sbm.vwc[i]

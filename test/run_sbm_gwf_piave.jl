@@ -11,7 +11,7 @@ sbm = model.vertical
     @test sum(sbm.waterallocation.surfacewater_alloc) ≈ sum_total_alloc
     @test sum(sbm.waterallocation.act_groundwater_abst) ≈ 0.0
     @test sbm.paddy.h[[45, 76, 296]] ≈
-          [57.99029315541105f0, 73.84503777933752f0, 58.68647399385417f0]
+          [34.927751365200145f0, 49.96131375190183f0, 35.895741285947274f0]
     @test sbm.paddy.irrigation_trigger[[45, 76, 296]] == [1, 1, 1]
     @test sbm.paddy.demand_gross[[45, 76, 296]] ≈ [0.0, 0.0, 0.0]
     @test sbm.nonpaddy.irrigation_trigger[[10, 33, 1293]] == [1, 1, 1]
@@ -38,8 +38,7 @@ sbm = model.vertical
           sum_total_alloc
     @test sum(sbm.waterallocation.surfacewater_alloc) ≈ sum_total_alloc
     @test sum(sbm.waterallocation.act_groundwater_abst) ≈ 0.0
-    @test sbm.paddy.h[[45, 76, 296]] ≈
-          [56.613468512915006f0, 72.84260702840535f0, 57.15201134545788f0]
+    @test sbm.paddy.h[[45, 76, 296]] ≈ [29.276378250122455f0, 0.0f0, 30.45379620324706f0]
     @test sbm.paddy.irrigation_trigger[[45, 76, 296]] == [1, 1, 1]
     @test sbm.paddy.demand_gross[[45, 76, 296]] ≈ [0.0f0, 0.0f0, 0.0f0]
     @test sbm.nonpaddy.irrigation_trigger[[10, 33, 1293]] == [1, 1, 1]
