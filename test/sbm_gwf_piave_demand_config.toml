@@ -48,12 +48,13 @@ canopystorage = "canopystorage"
 glacierstore = "glacierstore"
 
 [state.vertical.paddy]
-h = "h"
+h = "h_paddy"
 
 [state.lateral.subsurface.flow.aquifer]
 head = "head"
 
 [input.vertical]
+alpha_h1 = "alpha_h1"
 altitude = "wflow_dem"
 c = "c"
 cf_soil = "cf_soil"
@@ -91,6 +92,11 @@ g_tt = "G_TT"
 g_sifrac = "G_SIfrac"
 kc = "crop_factor"
 kvfrac = "kvfrac"
+h1 = "h1"
+h2 = "h2"
+h3_high = "h3_high"
+h3_low = "h3_low"
+h4 = "h4"
 
 [model.water_demand]
 domestic = true
