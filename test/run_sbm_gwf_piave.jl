@@ -43,7 +43,7 @@ sbm = model.vertical
     @test sbm.paddy.demand_gross[[45, 76, 296]] ≈ [0.0f0, 0.0f0, 0.0f0]
     @test sbm.nonpaddy.irrigation_trigger[[10, 33, 1293]] == [1, 1, 1]
     @test sbm.nonpaddy.demand_gross[[10, 33, 1293]] ≈
-          [3.354877862802484f0, 30.14891851799069f0, 2.1229912278306555f0]
+          [3.354877862802484f0, 25.0f0, 2.1229912278306555f0]
 end
 
 Wflow.close_files(model, delete_output = false)

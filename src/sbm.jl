@@ -753,8 +753,8 @@ function initialize_sbm(nc, config, riverfrac, inds)
         waterlevel_river = zeros(Float, n), #set to zero to account for cells outside river domain
         total_storage = zeros(Float, n), # Set the total water storage from initialized values
         # water demand
-        paddy = paddy ? initialize_paddy(nc, config, inds) : nothing,
-        nonpaddy = nonpaddy ? initialize_nonpaddy(nc, config, inds) : nothing,
+        paddy = paddy ? initialize_paddy(nc, config, inds, dt) : nothing,
+        nonpaddy = nonpaddy ? initialize_nonpaddy(nc, config, inds, dt) : nothing,
         domestic = domestic ? initialize_domestic_demand(nc, config, inds, dt) : nothing,
         industry = industry ? initialize_industry_demand(nc, config, inds, dt) : nothing,
         livestock = livestock ? initialize_livestock_demand(nc, config, inds, dt) : nothing,
@@ -1404,7 +1404,13 @@ function update_water_demand(sbm::SBM)
                     depletion *= rootfrac
                     raw = (vwc_fc - vwc_h3) * usl[k] # readily available water
                     raw *= rootfrac
+
+                    max_irri_depth_applied =
+                        sbm.nonpaddy.demand_gross[i] ==
+                        sbm.nonpaddy.maximum_irrigation_depth
                     if depletion >= raw
+                        irri_dem_gross += depletion
+                    elseif depletion > 0.0 && max_irri_depth_applied
                         irri_dem_gross += depletion
                     end
                 end
@@ -1413,16 +1419,24 @@ function update_water_demand(sbm::SBM)
                     sbm.soilinfredu[i] * (1.0 - sbm.pathfrac[i]) * sbm.infiltcapsoil[i]
                 irri_dem_gross = min(irri_dem_gross, infiltration_capacity)
                 irri_dem_gross /= sbm.nonpaddy.irrigation_efficiency[i]
+                irri_dem_gross = min(irri_dem_gross, sbm.nonpaddy.maximum_irrigation_depth)
             else
                 irri_dem_gross = 0.0
             end
             sbm.nonpaddy.demand_gross[i] = irri_dem_gross
         elseif !isnothing(sbm.paddy) && sbm.paddy.irrigation_areas[i]
             if sbm.paddy.irrigation_trigger[i]
-                irr_depth_paddy =
-                    sbm.paddy.h[i] < sbm.paddy.h_min[i] ?
-                    (sbm.paddy.h_opt[i] - sbm.paddy.h[i]) : 0.0
+                max_irri_depth_applied =
+                    sbm.paddy.demand_gross[i] == sbm.paddy.maximum_irrigation_depth
+                if sbm.paddy.h[i] < sbm.paddy.h_min[i]
+                    irr_depth_paddy = sbm.paddy.h_opt[i] - sbm.paddy.h[i]
+                elseif sbm.paddy.h[i] < sbm.paddy.h_opt[i] && max_irri_depth_applied
+                    irr_depth_paddy = sbm.paddy.h_opt[i] - sbm.paddy.h[i]
+                else
+                    irr_depth_paddy = 0.0
+                end
                 irri_dem_gross += irr_depth_paddy / sbm.paddy.irrigation_efficiency[i]
+                irri_dem_gross = min(irri_dem_gross, sbm.paddy.maximum_irrigation_depth)
             end
             sbm.paddy.demand_gross[i] = irri_dem_gross
         end
