@@ -10,8 +10,8 @@ distinguished in two different structures.
 Once the amount of soil detached by both rainfall and overland flow has been estimated, it
 has then to be routed and delivered to the river network. Inland routing in sediment models
 is usually done by comparing the amount of detached sediment with the transport capacity of
-the flow, which is the maximum amount of sediment than the flow can carry downslope. There
-are several existing formulas available in the literature. For a wide range of slope and for
+the flow, which is the maximum amount of sediment that the flow can carry downslope. There
+are several existing formulas available in the literature. For a wide range of slopes and for
 overland flow, the Govers equation (1990) seems the most appropriate choice (Hessel et al,
 2007). However, as the wflow\_sediment model was developed to be linked to water quality
 issues, the Yalin transport equation was chosen as it can handle particle differentiation
