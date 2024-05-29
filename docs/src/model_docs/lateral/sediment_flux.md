@@ -63,18 +63,18 @@ flow and can therefore not be used in combination with the river part of the sed
 
 ## River Sediment Model
 
-Sediment dynamics in the river can be described by the three same processes than on the
+Sediment dynamics in rivers can be described by the same three processes on
 land: erosion, deposition and transport. The difference is that channel ﬂow is much higher,
 deeper and permanent compared to overland ﬂow. In channels, erosion is the direct removal of
 sediments from the river bed or bank (lateral erosion). Sediments are transported in the
 river either by rolling, sliding and silting (bed load transport) or via turbulent flow in
 the higher water column (suspended load transport). The type of transport is determined by
 the river bed shear stress. As sediment particles have a higher density than water, they can
-also be deposited on the river bed according to their settling velocity compared to ﬂow
+also be deposited on the river bed according to their settling velocity compared to the ﬂow
 velocity. In addition to regular deposition in the river, lakes, reservoirs and floodplains
 represents additional major sediment settling pools.
 
-Complete models of sediment dynamics based on hydrology and not hydraulic or hydrodynamic
+Complete models of sediment dynamics based on hydrology and not on hydraulics or hydrodynamics
 are much rarer than for soil loss and inland dynamics. The simpler models such as the SWAT
 default sediment river model uses again the transport capacity of the ﬂow to determine if
 there is erosion or deposition (Neitsch et al., 2011).  A more physics-based approach
