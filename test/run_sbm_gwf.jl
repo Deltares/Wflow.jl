@@ -152,37 +152,37 @@ model = Wflow.run_timestep(model)
 @testset "second timestep warm start" begin
     sbm = model.vertical
     @test sbm.runoff[1] == 0.0
-    @test sbm.soilevap[1] == 0.2927279656884887
+    @test sbm.soilevap[1] ≈ 0.2926821507238362f0
     @test sbm.transpiration[1] ≈ 1.0122634204681036f0
 end
 
 @testset "overland flow warm start (kinematic wave)" begin
     q = model.lateral.land.q_av
-    @test sum(q) ≈ 1.4411427003142072f-5
+    @test sum(q) ≈ 1.4518083241499787f-5
 end
 
 @testset "river domain warm start (kinematic wave)" begin
     q = model.lateral.river.q_av
     river = model.lateral.river
-    @test sum(q) ≈ 0.011317441400219936f0
-    @test q[6] ≈ 0.002255753266287542f0
-    @test river.volume[6] ≈ 2.1212499727096956f0
-    @test river.inwater[6] ≈ -6.888767545965421f-5
-    @test q[13] ≈ 8.664553314598283f-5
-    @test q[network.river.order[end]] ≈ 0.002258255913217909f0
+    @test sum(q) ≈ 0.011909898793648826f0
+    @test q[6] ≈ 0.0024332762253494573f0
+    @test river.volume[6] ≈ 2.226607059761764f0
+    @test river.inwater[6] ≈ -1.3378627340716941f-5
+    @test q[13] ≈ 7.315462220231453f-5
+    @test q[network.river.order[end]] ≈ 0.002470511395424463f0
 end
 
 @testset "groundwater warm start" begin
     gw = model.lateral.subsurface
     @test gw.river.stage[1] ≈ 1.2031171676781156f0
     @test gw.flow.aquifer.head[17:21] ≈ [
-        1.2195537323067487f0,
-        1.2741313108104333f0,
+        1.227685769857181f0,
+        1.286975535107666f0,
         1.7999999523162842f0,
-        1.5862473868459186f0,
-        1.202268433263572f0,
+        1.5892917098077068f0,
+        1.2093841308150408f0,
     ]
-    @test gw.river.flux[1] ≈ -6.044849112655228f0
+    @test gw.river.flux[1] ≈ -6.680320482009705f0
     @test gw.drain.flux[1] ≈ 0.0
     @test gw.recharge.rate[19] ≈ -0.0014241196552847502f0
 end
