@@ -1231,7 +1231,11 @@ function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
 
         if !isnothing(sbm.paddy) && sbm.paddy.irrigation_areas[i]
             paddy_h_add =
-                exfiltustore + exfiltsatwater[i] + sbm.excesswater[i] + sbm.infiltexcess[i]
+                exfiltustore +
+                exfiltsatwater[i] +
+                sbm.excesswater[i] +
+                sbm.runoff_land[i] +
+                sbm.infiltexcess[i]
             runoff = max(paddy_h_add - sbm.paddy.h_max[i], 0.0)
             sbm.paddy.h[i] = paddy_h_add - runoff
         else
@@ -1380,10 +1384,12 @@ function update_water_demand(sbm::SBM)
             if sbm.nonpaddy.irrigation_trigger[i]
                 usl, _ = set_layerthickness(sbm.zi[i], sbm.sumlayers[i], sbm.act_thickl[i])
                 for k = 1:sbm.n_unsatlayers[i]
+                    # compute water demand only for root zone through root fraction per layer
                     rootfrac = min(
                         1.0,
                         (max(0.0, sbm.rootingdepth[i] - sbm.sumlayers[i][k]) / usl[k]),
                     )
+                    # vwc_f and vwc_h3 can be precalculated.
                     vwc_fc = vwc_brooks_corey(
                         -100.0,
                         sbm.hb[i],
@@ -1405,12 +1411,15 @@ function update_water_demand(sbm::SBM)
                     raw = (vwc_fc - vwc_h3) * usl[k] # readily available water
                     raw *= rootfrac
 
+                    # check if maximum irrigation depth has been applied at the previous time step.
                     max_irri_depth_applied =
                         sbm.nonpaddy.demand_gross[i] ==
                         sbm.nonpaddy.maximum_irrigation_depth
-                    if depletion >= raw
+                    if depletion >= raw # start irrigation
                         irri_dem_gross += depletion
-                    elseif depletion > 0.0 && max_irri_depth_applied
+                        # add depletion to irrigation gross demand when the maximum irrigation depth has been 
+                        # applied at the previous time step (to get volumetric water content at field capacity)
+                    elseif depletion > 0.0 && max_irri_depth_applied # continue irrigation
                         irri_dem_gross += depletion
                     end
                 end
@@ -1419,6 +1428,7 @@ function update_water_demand(sbm::SBM)
                     sbm.soilinfredu[i] * (1.0 - sbm.pathfrac[i]) * sbm.infiltcapsoil[i]
                 irri_dem_gross = min(irri_dem_gross, infiltration_capacity)
                 irri_dem_gross /= sbm.nonpaddy.irrigation_efficiency[i]
+                # limit irrigation demand to the maximum irrigation depth
                 irri_dem_gross = min(irri_dem_gross, sbm.nonpaddy.maximum_irrigation_depth)
             else
                 irri_dem_gross = 0.0
@@ -1426,20 +1436,24 @@ function update_water_demand(sbm::SBM)
             sbm.nonpaddy.demand_gross[i] = irri_dem_gross
         elseif !isnothing(sbm.paddy) && sbm.paddy.irrigation_areas[i]
             if sbm.paddy.irrigation_trigger[i]
+                # check if maximum irrigation depth has been applied at the previous time step.
                 max_irri_depth_applied =
                     sbm.paddy.demand_gross[i] == sbm.paddy.maximum_irrigation_depth
+                # start irrigation
                 if sbm.paddy.h[i] < sbm.paddy.h_min[i]
                     irr_depth_paddy = sbm.paddy.h_opt[i] - sbm.paddy.h[i]
-                elseif sbm.paddy.h[i] < sbm.paddy.h_opt[i] && max_irri_depth_applied
+                elseif sbm.paddy.h[i] < sbm.paddy.h_opt[i] && max_irri_depth_applied # continue irrigation
                     irr_depth_paddy = sbm.paddy.h_opt[i] - sbm.paddy.h[i]
                 else
                     irr_depth_paddy = 0.0
                 end
                 irri_dem_gross += irr_depth_paddy / sbm.paddy.irrigation_efficiency[i]
+                # limit irrigation demand to the maximum irrigation depth
                 irri_dem_gross = min(irri_dem_gross, sbm.paddy.maximum_irrigation_depth)
             end
             sbm.paddy.demand_gross[i] = irri_dem_gross
         end
+        # update gross water demands 
         sbm.waterallocation.irri_demand_gross[i] = irri_dem_gross
         sbm.waterallocation.nonirri_demand_gross[i] =
             industry_dem + domestic_dem + livestock_dem

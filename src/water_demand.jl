@@ -332,27 +332,31 @@ update_non_irrigation_demand(non_irri::Nothing, i) = 0.0
 
 "Update water allocation for river and land domains based on local surface water (river) availability."
 function surface_water_allocation_local(land, river, network)
-    index_river = network.land.index_river_wb
+    index_river = network.land.index_river_wb # maps from the land domain to the internal river domain (linear index)
     for i in eachindex(land.waterallocation.surfacewater_demand)
         if index_river[i] > 0.0
-            # check for abstraction through inflow (external negative inflow and adjust
-            # available volume
+            # the available volume is limited by a fixed scaling factor of 0.8 to prevent
+            # rivers completely drying out. check for abstraction through inflow (external
+            # negative inflow) and adjust available volume.
             if river.inflow[index_river[i]] < 0.0
                 inflow = river.inflow[index_river[i]] * land.dt
                 available_volume = max(river.volume[index_river[i]] * 0.80 + inflow, 0.0)
             else
                 available_volume = river.volume[index_river[i]] * 0.80
             end
+            # satisfy surface water demand with available local river volume
             surfacewater_demand_vol =
                 land.waterallocation.surfacewater_demand[i] * 0.001 * network.land.area[i]
             abstraction_vol = min(surfacewater_demand_vol, available_volume)
             river.waterallocation.act_surfacewater_abst_vol[index_river[i]] =
                 abstraction_vol
+            # remaining available surface water and demand 
             river.waterallocation.available_surfacewater[index_river[i]] =
                 max(available_volume - abstraction_vol, 0.0)
             abstraction = (abstraction_vol / network.land.area[i]) * 1000.0
             land.waterallocation.surfacewater_demand[i] =
                 max(land.waterallocation.surfacewater_demand[i] - abstraction, 0.0)
+            # update actual abstraction from river and surface water allocation (land cell)
             river.waterallocation.act_surfacewater_abst[index_river[i]] = abstraction
             land.waterallocation.surfacewater_alloc[i] = abstraction
         end
@@ -367,6 +371,7 @@ function surface_water_allocation_area(land, river, network)
     lake_index = network.river.lake_index
 
     m = length(inds_river)
+    # loop over allocation areas
     for i = 1:m
         # surface water demand (allocation area)
         sw_demand_vol = 0.0
@@ -380,22 +385,29 @@ function surface_water_allocation_area(land, river, network)
             if res_index[j] > 0
                 k = res_index[j]
                 river.waterallocation.available_surfacewater[j] =
-                    river.reservoir.volume[k] * 0.98
+                    river.reservoir.volume[k] * 0.98 # limit available reservoir volume
                 sw_available += river.waterallocation.available_surfacewater[j]
             elseif lake_index[j] > 0
                 k = lake_index[j]
                 river.waterallocation.available_surfacewater[j] =
-                    river.lake.storage[k] * 0.98
+                    river.lake.storage[k] * 0.98 # limit available lake volume
                 sw_available += river.waterallocation.available_surfacewater[j]
             else
                 sw_available += river.waterallocation.available_surfacewater[j]
             end
         end
+        # total actual surface water abstraction [m3] in an allocation area, minimum of
+        # available surface water and demand in an allocation area.
         sw_abstraction = min(sw_available, sw_demand_vol)
 
+        # fraction of available surface water that can be abstracted at allocation area
+        # level
         frac_abstract_sw = divide(sw_abstraction, sw_available)
+        # fraction of water demand that can be satisfied by available surface water at
+        # allocation area level. 
         frac_allocate_sw = divide(sw_abstraction, sw_demand_vol)
 
+        # water abstracted from surface water at each river cell.
         for j in inds_river[i]
             river.waterallocation.act_surfacewater_abst_vol[j] +=
                 frac_abstract_sw * river.waterallocation.available_surfacewater[j]
@@ -403,6 +415,7 @@ function surface_water_allocation_area(land, river, network)
                 river.waterallocation.act_surfacewater_abst_vol[j] / network.river.area[j]
         end
 
+        # water allocated to each land cell.
         for j in inds_land[i]
             land.waterallocation.surfacewater_alloc[j] +=
                 frac_allocate_sw * land.waterallocation.surfacewater_demand[j]
@@ -414,22 +427,26 @@ end
 function groundwater_allocation_local(land, groundwater_volume, network)
     for i in eachindex(land.waterallocation.groundwater_demand)
         if network.index_wb[i]
+            # groundwater demand based on allocation from surface water.
             land.waterallocation.groundwater_demand[i] = max(
                 land.waterallocation.irri_demand_gross[i] +
                 land.waterallocation.nonirri_demand_gross[i] -
                 land.waterallocation.surfacewater_alloc[i],
                 0.0,
             )
+            # satisfy groundwater demand with available local groundwater volume
             groundwater_demand_vol =
                 land.waterallocation.groundwater_demand[i] * 0.001 * network.area[i]
-            available_volume = groundwater_volume[i] * 0.75
+            available_volume = groundwater_volume[i] * 0.75 # limit available groundwater volume
             abstraction_vol = min(groundwater_demand_vol, available_volume)
             land.waterallocation.act_groundwater_abst_vol[i] = abstraction_vol
+            # remaining available groundwater and demand 
             land.waterallocation.available_groundwater[i] =
                 max(available_volume - abstraction_vol, 0.0)
             abstraction = (abstraction_vol / network.area[i]) * 1000.0
             land.waterallocation.groundwater_demand[i] =
                 max(land.waterallocation.groundwater_demand[i] - abstraction, 0.0)
+            # update actual abstraction from groundwater and groundwater allocation (land cell)
             land.waterallocation.act_groundwater_abst[i] = abstraction
             land.waterallocation.groundwater_alloc[i] = abstraction
         end
@@ -441,7 +458,9 @@ function groundwater_allocation_area(land, network)
     inds_river = network.river.indices_allocation_areas
     inds_land = network.land.indices_allocation_areas
     m = length(inds_river)
+    # loop over allocation areas
     for i = 1:m
+        # groundwater demand and availability (allocation area)
         gw_demand_vol = 0.0
         gw_available = 0.0
         for j in inds_land[i]
@@ -449,11 +468,17 @@ function groundwater_allocation_area(land, network)
                 land.waterallocation.groundwater_demand[j] * 0.001 * network.land.area[j]
             gw_available += land.waterallocation.available_groundwater[j]
         end
+        # total actual groundwater abstraction [m3] in an allocation area, minimum of
+        # available  groundwater and demand in an allocation area.
         gw_abstraction = min(gw_available, gw_demand_vol)
 
+        # fraction of available groundwater that can be abstracted at allocation area level
         frac_abstract_gw = divide(gw_abstraction, gw_available)
+        # fraction of water demand that can be satisfied by available groundwater at
+        # allocation area level.
         frac_allocate_gw = divide(gw_abstraction, gw_demand_vol)
 
+        # water abstracted from groundwater and allocated.
         for j in inds_land[i]
             land.waterallocation.act_groundwater_abst_vol[j] +=
                 frac_abstract_gw * land.waterallocation.available_groundwater[j]
