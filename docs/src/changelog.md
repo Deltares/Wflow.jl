@@ -35,6 +35,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   zero when `LoopVectorization` is applied (`@tturbo`) to the for loop of these functions.
   This issue occured on a virtual machine, Windows 10 Enterprise, with Intel(R) Xeon(R) Gold
   6144 CPU (2 processors). This has been fixed by replacing `@tturbo` with `reduction` of
+  `Polyester.jl`.
+- Fixed required states of the model type `sbm_gwf`: added `h_av` for the river and land
+  domain.
 
 ### Changed
 - Stop exposing scalar variables through BMI. The `BMI.get_value_ptr` function was not
