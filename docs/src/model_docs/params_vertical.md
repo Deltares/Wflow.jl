@@ -397,6 +397,7 @@ internal model parameter to the external netCDF variable.
 |:---------------| --------------- | ---------------------- | ----- |
 | `demand_gross` | irrigation gross demand | mm Δt``^{-1}`` | - |
 | **`irrigation_efficiency`** | irrigation efficiency | - | - |
+| **`maximum_irrigation_depth`** | maximum irrigation depth | mm Δt``^{-1}`` | 25.0 |
 | **`irrigation_areas`** | irrigation areas | - | - |
 | **`irrigation_trigger`** | irrigation on or off | - | - |
 | **`h_min`** | minimum required water depth in the irrigated paddy fields | mm | 20.0 |
@@ -415,6 +416,7 @@ the internal model parameter to the external netCDF variable.
 |:---------------| --------------- | ---------------------- | ----- |
 | `demand_gross` | irrigation gross demand | mm Δt``^{-1}`` | - |
 | **`irrigation_efficiency`** | irrigation efficiency | - | - |
+| **`maximum_irrigation_depth`** | maximum irrigation depth | mm Δt``^{-1}`` | 25.0 |
 | **`irrigation_areas`** | irrigation areas | - | - |
 | **`irrigation_trigger`** | irrigation on or off | - | - |
 

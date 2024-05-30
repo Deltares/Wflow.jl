@@ -1414,7 +1414,7 @@ function update_water_demand(sbm::SBM)
                     # check if maximum irrigation depth has been applied at the previous time step.
                     max_irri_depth_applied =
                         sbm.nonpaddy.demand_gross[i] ==
-                        sbm.nonpaddy.maximum_irrigation_depth
+                        sbm.nonpaddy.maximum_irrigation_depth[i]
                     if depletion >= raw # start irrigation
                         irri_dem_gross += depletion
                         # add depletion to irrigation gross demand when the maximum irrigation depth has been 
@@ -1429,7 +1429,8 @@ function update_water_demand(sbm::SBM)
                 irri_dem_gross = min(irri_dem_gross, infiltration_capacity)
                 irri_dem_gross /= sbm.nonpaddy.irrigation_efficiency[i]
                 # limit irrigation demand to the maximum irrigation depth
-                irri_dem_gross = min(irri_dem_gross, sbm.nonpaddy.maximum_irrigation_depth)
+                irri_dem_gross =
+                    min(irri_dem_gross, sbm.nonpaddy.maximum_irrigation_depth[i])
             else
                 irri_dem_gross = 0.0
             end
@@ -1438,7 +1439,7 @@ function update_water_demand(sbm::SBM)
             if sbm.paddy.irrigation_trigger[i]
                 # check if maximum irrigation depth has been applied at the previous time step.
                 max_irri_depth_applied =
-                    sbm.paddy.demand_gross[i] == sbm.paddy.maximum_irrigation_depth
+                    sbm.paddy.demand_gross[i] == sbm.paddy.maximum_irrigation_depth[i]
                 # start irrigation
                 if sbm.paddy.h[i] < sbm.paddy.h_min[i]
                     irr_depth_paddy = sbm.paddy.h_opt[i] - sbm.paddy.h[i]
@@ -1449,7 +1450,7 @@ function update_water_demand(sbm::SBM)
                 end
                 irri_dem_gross += irr_depth_paddy / sbm.paddy.irrigation_efficiency[i]
                 # limit irrigation demand to the maximum irrigation depth
-                irri_dem_gross = min(irri_dem_gross, sbm.paddy.maximum_irrigation_depth)
+                irri_dem_gross = min(irri_dem_gross, sbm.paddy.maximum_irrigation_depth[i])
             end
             sbm.paddy.demand_gross[i] = irri_dem_gross
         end
