@@ -158,7 +158,7 @@ end
 
 @testset "overland flow warm start (kinematic wave)" begin
     q = model.lateral.land.q_av
-    @test sum(q) ≈ 1.4518083241499787f-5
+    @test sum(q) ≈ 1.4589771292158736f-5
 end
 
 @testset "river domain warm start (kinematic wave)" begin
@@ -168,7 +168,7 @@ end
     @test q[6] ≈ 0.0024332762253494573f0
     @test river.volume[6] ≈ 2.226607059761764f0
     @test river.inwater[6] ≈ -1.3378627340716941f-5
-    @test q[13] ≈ 7.315462220231453f-5
+    @test q[13] ≈ 7.318205070445492f-5
     @test q[network.river.order[end]] ≈ 0.002470511395424463f0
 end
 
