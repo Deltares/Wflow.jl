@@ -445,7 +445,6 @@ end
 @testset "State checking" begin
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
-    config = Wflow.Config(tomlpath)
 
     # Extracting required states and test if some are covered (not all are tested!)
     required_states = Wflow.extract_required_states(config)
@@ -454,6 +453,8 @@ end
     @test (:vertical, :canopystorage) in required_states
     @test (:lateral, :subsurface, :ssf) in required_states
     @test (:lateral, :river, :q) in required_states
+    @test (:lateral, :river, :h_av) in required_states
+    @test (:lateral, :land, :h_av) in required_states
     @test !((:lateral, :river, :lake, :waterlevel) in required_states)
 
     # Adding an unused state the see if the right warning message is thrown
@@ -470,4 +471,16 @@ end
     delete!(config.state["vertical"], "additional_state")
     delete!(config.state["vertical"], "snow")
     @test_throws ArgumentError Wflow.check_states(config)
+
+    # Extracting required states for model type sbm_gwf and test if some are covered
+    tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
+    config = Wflow.Config(tomlpath)
+    required_states = Wflow.extract_required_states(config)
+    @test (:vertical, :satwaterdepth) in required_states
+    @test (:vertical, :ustorelayerdepth) in required_states
+    @test (:vertical, :canopystorage) in required_states
+    @test (:lateral, :subsurface, :flow, :aquifer, :head) in required_states
+    @test (:lateral, :river, :q) in required_states
+    @test (:lateral, :river, :h_av) in required_states
+    @test (:lateral, :land, :h_av) in required_states
 end
