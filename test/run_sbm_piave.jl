@@ -27,16 +27,16 @@ Wflow.close_files(model, delete_output = false)
 @testset "piave with and without water demand" begin
     idx = 1:3:28
     @test q_demand[idx] ≈ [
-        218.1285669095914f0,
-        191.46486266622458f0,
-        267.60287032620323f0,
-        159.15112460916848f0,
-        163.31200420083195f0,
-        146.1925096889228f0,
-        121.74542922114756f0,
-        99.34527897575026f0,
-        173.3271884204265f0,
-        104.16300399612398f0,
+        218.49829767205395f0,
+        192.26513603179683f0,
+        268.8372738623575f0,
+        160.22423821589794f0,
+        162.1093423655203f0,
+        148.22988516272903f0,
+        118.46881724216179f0,
+        106.06772222743426f0,
+        171.3264853732719f0,
+        104.6559884963633f0,
     ]
     @test q_[idx] ≈ [
         219.9040394356358f0,
@@ -51,16 +51,16 @@ Wflow.close_files(model, delete_output = false)
         110.00512168415872f0,
     ]
     @test riv_vol_demand[idx] ≈ [
-        60025.18532815029f0,
-        55185.136078992065f0,
-        61796.67207719701f0,
-        48385.896647135814f0,
-        51293.053398843396f0,
-        43072.66724938669f0,
-        41069.81520388879f0,
-        38375.70313184596f0,
-        44046.44421735246f0,
-        38667.714114523245f0,
+        60119.52320796903f0,
+        55280.67738410332f0,
+        61843.175499167526f0,
+        48502.070698987896f0,
+        51315.2679065027f0,
+        43198.47343529057f0,
+        40986.80096794426f0,
+        38822.45987754742f0,
+        43899.56858086549f0,
+        38558.88933342881f0,
     ]
 
     @test riv_vol[idx] ≈ [
@@ -76,16 +76,16 @@ Wflow.close_files(model, delete_output = false)
         39393.633346173156f0,
     ]
     @test ssf_vol_demand[idx] ≈ [
-        244164.36452182673f0,
-        239251.33252052963f0,
-        237840.70731844133f0,
-        233367.45954980003f0,
-        229975.36237559692f0,
-        225408.34640607517f0,
-        221132.71178529615f0,
-        217000.35371304862f0,
-        216282.7491124505f0,
-        212897.1776435227f0,
+        244149.81771426898f0,
+        239205.5037877743f0,
+        237749.2625556856f0,
+        233257.1175894683f0,
+        229822.63769575363f0,
+        225255.17832343685f0,
+        220944.8345415463f0,
+        216807.0855559181f0,
+        216112.96364731618f0,
+        212731.17253347262f0,
     ]
     @test ssf_vol[idx] ≈ [
         244138.43308252218f0,
@@ -111,8 +111,8 @@ sbm = model.vertical
     sum_total_alloc = sum(sbm.waterallocation.total_alloc)
     @test sum(sbm.waterallocation.irri_alloc) + sum(sbm.waterallocation.nonirri_alloc) ≈
           sum_total_alloc
-    @test sum(sbm.waterallocation.surfacewater_alloc) ≈ sum_total_alloc
-    @test sum(sbm.waterallocation.act_groundwater_abst) ≈ 0.0
+    @test sum(sbm.waterallocation.surfacewater_alloc) ≈ 1030.1528204311428f0
+    @test sum(sbm.waterallocation.act_groundwater_abst) ≈ 184.47031930837645f0
     @test sbm.paddy.h[[45, 76, 296]] ≈
           [34.759292485507515f0, 42.517504464353635f0, 35.83766686539591f0]
     @test sbm.paddy.irrigation_trigger[[45, 76, 296]] == [1, 1, 1]
@@ -140,15 +140,15 @@ sbm = model.vertical
     sum_total_alloc = sum(sbm.waterallocation.total_alloc)
     @test sum(sbm.waterallocation.irri_alloc) + sum(sbm.waterallocation.nonirri_alloc) ≈
           sum_total_alloc
-    @test sum(sbm.waterallocation.surfacewater_alloc) ≈ sum_total_alloc
-    @test sum(sbm.waterallocation.act_groundwater_abst) ≈ 0.0
+    @test sum(sbm.waterallocation.surfacewater_alloc) ≈ 920.8714263051696f0
+    @test sum(sbm.waterallocation.act_groundwater_abst) ≈ 156.97872686011868f0
     @test sbm.paddy.h[[45, 76, 296]] ≈
-          [29.320512733904195f0, 38.0260019155862f0, 30.538289526380538f0]
+          [29.320510520992286f0, 37.98384192241392f0, 30.496788535054463f0]
     @test sbm.paddy.irrigation_trigger[[45, 76, 296]] == [1, 1, 1]
     @test sbm.paddy.demand_gross[[45, 76, 296]] ≈ [0.0f0, 0.0f0, 0.0f0]
     @test sbm.nonpaddy.irrigation_trigger[[10, 33, 1293]] == [1, 1, 1]
     @test sbm.nonpaddy.demand_gross[[10, 33, 1293]] ≈
-          [3.3516483822247363f0, 0.0f0, 1.3680586501618137f0]
+          [3.7240080443089862f0, 0.0f0, 1.3680586501618137f0]
 end
 
 Wflow.close_files(model, delete_output = false)

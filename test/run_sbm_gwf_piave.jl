@@ -8,14 +8,14 @@ sbm = model.vertical
     sum_total_alloc = sum(sbm.waterallocation.total_alloc)
     @test sum(sbm.waterallocation.irri_alloc) + sum(sbm.waterallocation.nonirri_alloc) ≈
           sum_total_alloc
-    @test sum(sbm.waterallocation.surfacewater_alloc) ≈ sum_total_alloc
-    @test sum(sbm.waterallocation.act_groundwater_abst) ≈ 0.0
+    @test sum(sbm.waterallocation.surfacewater_alloc) ≈ 1016.4268126167575f0
+    @test sum(sbm.waterallocation.act_groundwater_abst) ≈ 182.2057678312209f0
     @test sbm.paddy.h[[45, 76, 296]] ≈
-          [33.5571270837349f0, 43.93797960749032f0, 35.69215868189631f0]
+          [33.55659436283413f0, 44.11663357735189f0, 35.232731550849486f0]
     @test sbm.paddy.irrigation_trigger[[45, 76, 296]] == [1, 1, 1]
     @test sbm.paddy.demand_gross[[45, 76, 296]] ≈ [0.0, 0.0, 0.0]
     @test sbm.nonpaddy.irrigation_trigger[[10, 33, 1293]] == [1, 1, 1]
-    @test sbm.nonpaddy.demand_gross[[10, 33, 1293]] ≈ [3.027752820314065f0, 0.0f0, 0.0f0]
+    @test sbm.nonpaddy.demand_gross[[10, 33, 1293]] ≈ [3.3014913197447964f0, 0.0f0, 0.0f0]
     @test sbm.industry.demand_gross[[1, end]] ≈ [0.2105557769536972f0, 0.0485190823674202f0]
     @test sbm.industry.demand_net[[1, end]] ≈
           [0.05265098437666893f0, 0.012132546864449978f0]
@@ -36,15 +36,14 @@ sbm = model.vertical
     sum_total_alloc = sum(sbm.waterallocation.total_alloc)
     @test sum(sbm.waterallocation.irri_alloc) + sum(sbm.waterallocation.nonirri_alloc) ≈
           sum_total_alloc
-    @test sum(sbm.waterallocation.surfacewater_alloc) ≈ sum_total_alloc
-    @test sum(sbm.waterallocation.act_groundwater_abst) ≈ 0.0
+    @test sum(sbm.waterallocation.surfacewater_alloc) ≈ 1040.0177693609326f0
+    @test sum(sbm.waterallocation.act_groundwater_abst) ≈ 183.93121472382694f0
     @test sbm.paddy.h[[45, 76, 296]] ≈
-          [28.003485200346688f0, 25.559375991958753f0, 30.37909118479871f0]
+          [28.002849362721747f0, 25.880301981405225f0, 29.880048223290544f0]
     @test sbm.paddy.irrigation_trigger[[45, 76, 296]] == [1, 1, 1]
     @test sbm.paddy.demand_gross[[45, 76, 296]] ≈ [0.0f0, 0.0f0, 0.0f0]
     @test sbm.nonpaddy.irrigation_trigger[[10, 33, 1293]] == [1, 1, 1]
-    @test sbm.nonpaddy.demand_gross[[10, 33, 1293]] ≈
-          [3.354877862802484f0, 0.0f0, 2.1229912278306555f0]
+    @test sbm.nonpaddy.demand_gross[[10, 33, 1293]] ≈ [0.0f0, 0.0f0, 2.1321618457666403f0]
 end
 
 Wflow.close_files(model, delete_output = false)

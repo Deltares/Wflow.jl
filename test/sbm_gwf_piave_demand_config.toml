@@ -120,6 +120,7 @@ h_av = "h_av_land"
 
 [input.vertical.waterallocation]
 areas = "allocation_areas"
+frac_sw_used = "SurfaceWaterFrac"
 
 [input.vertical.domestic]
 demand_gross = "dom_gross"
