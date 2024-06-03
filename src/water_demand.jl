@@ -501,7 +501,8 @@ function groundwater_allocation_area(land, network)
             land.waterallocation.act_groundwater_abst_vol[j] +=
                 frac_abstract_gw * land.waterallocation.available_groundwater[j]
             land.waterallocation.act_groundwater_abst[j] =
-                land.waterallocation.act_groundwater_abst_vol[j] / network.land.area[j]
+                1000.0 *
+                (land.waterallocation.act_groundwater_abst_vol[j] / network.land.area[j])
             land.waterallocation.groundwater_alloc[j] +=
                 frac_allocate_gw * land.waterallocation.groundwater_demand[j]
         end
