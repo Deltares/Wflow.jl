@@ -126,7 +126,7 @@ function extract_required_states(config::Config)
         if land_routing == "local-inertial"
             land_states = (:qx, :qy, :h, :h_av)
         elseif land_routing == "kinematic-wave"
-            if model_type == "sbm"
+            if model_type == "sbm" || model_type == "sbm_gwf"
                 land_states = (:q, :h, :h_av)
             else
                 land_states = (:q, :h)
@@ -156,7 +156,7 @@ function extract_required_states(config::Config)
             :outlagg,
             :outgrav,
         )
-    elseif model_type == "sbm"
+    elseif model_type == "sbm" || model_type == "sbm_gwf"
         river_states = (:q, :h, :h_av)
     else
         river_states = (:q, :h)

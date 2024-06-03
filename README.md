@@ -32,4 +32,13 @@ practices](https://github.com/SciML/ColPrac). New contributors should make sure 
 guide.
 
 ## Citing
-For citing our work see the Zenodo badge above, that points to the latest release.
+For publications, please cite the following paper introducing Wflow.jl and describing the
+wflow\_sbm concept, together with some case studies:
+
+van Verseveld, W. J., Weerts, A. H., Visser, M., Buitink, J., Imhoff, R. O., Boisgontier,
+H., Bouaziz, L., Eilander, D., Hegnauer, M., ten Velden, C., and Russell, B., 2024.
+Wflow_sbm v0.7.3, a spatially distributed hydrological model: from global data to local
+applications. Geosci. Model Dev., 17, 3199–3234. <https://doi.org/10.5194/gmd-17-3199-2024>.
+
+To cite a specific software version of wflow please use the DOI provided in the Zenodo badge
+above, that points to the latest release.

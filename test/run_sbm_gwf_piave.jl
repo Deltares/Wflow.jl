@@ -38,12 +38,13 @@ sbm = model.vertical
           sum_total_alloc
     @test sum(sbm.waterallocation.surfacewater_alloc) ≈ sum_total_alloc
     @test sum(sbm.waterallocation.act_groundwater_abst) ≈ 0.0
-    @test sbm.paddy.h[[45, 76, 296]] ≈ [28.003485206536936f0, 0.0f0, 30.37909118479871f0]
+    @test sbm.paddy.h[[45, 76, 296]] ≈
+          [28.003485200346688f0, 25.559375991958753f0, 30.37909118479871f0]
     @test sbm.paddy.irrigation_trigger[[45, 76, 296]] == [1, 1, 1]
     @test sbm.paddy.demand_gross[[45, 76, 296]] ≈ [0.0f0, 0.0f0, 0.0f0]
     @test sbm.nonpaddy.irrigation_trigger[[10, 33, 1293]] == [1, 1, 1]
     @test sbm.nonpaddy.demand_gross[[10, 33, 1293]] ≈
-          [3.354877862802484f0, 25.0f0, 2.1229912278306555f0]
+          [3.354877862802484f0, 0.0f0, 2.1229912278306555f0]
 end
 
 Wflow.close_files(model, delete_output = false)

@@ -25,10 +25,12 @@ ustorelayerdepth = "ustorelayerdepth"
 
 [state.lateral.river]
 h = "h_river"
+h_av = "h_av_river"
 q = "q_river"
 
 [state.lateral.land]
 h = "h_land"
+h_av = "h_av_land"
 q = "q_land"
 
 [state.lateral.subsurface.flow.aquifer]

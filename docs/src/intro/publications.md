@@ -1,27 +1,25 @@
 # Publications
 
-The paper introducing Wflow.jl and describing the wflow\_sbm concept, together with some
-case studies, can be found here:
-
-van Verseveld, W. J., Weerts, A. H., Visser, M., Buitink, J., Imhoff, R. O., Boisgontier,
-H., Bouaziz, L., Eilander, D., Hegnauer, M., ten Velden, C., and Russell, B., 2022.
-Wflow_sbm v0.6.1, a spatially distributed hydrologic model: from global data to local
-applications, Geosci. Model Dev. Discuss. <https://doi.org/10.5194/gmd-2022-182>, in review.
-
 ## Citing wflow
 
-[![DOI](https://zenodo.org/badge/246787232.svg)](https://zenodo.org/badge/latestdoi/246787232)
+For publications, please cite the following paper introducing Wflow.jl and describing the
+wflow\_sbm concept, together with some case studies:
 
-When using Wflow.jl as part of for example research or project work or teaching please cite
-our work. Wflow has been published in Zenodo, see the Zenodo badge above, that points to the
-latest release. The DOIs of previous versions are also available at Zenodo.
+van Verseveld, W. J., Weerts, A. H., Visser, M., Buitink, J., Imhoff, R. O., Boisgontier,
+H., Bouaziz, L., Eilander, D., Hegnauer, M., ten Velden, C., and Russell, B., 2024.
+Wflow_sbm v0.7.3, a spatially distributed hydrological model: from global data to local
+applications. Geosci. Model Dev., 17, 3199–3234. <https://doi.org/10.5194/gmd-17-3199-2024>.
 
-If you use a snapshot of the development (without a DOI) please cite as follows:
+To cite a specific software version please use the DOI provided in the Zenodo badge
+[![DOI](https://zenodo.org/badge/246787232.svg)](https://zenodo.org/badge/latestdoi/246787232),
+that points to the latest release. The DOIs of previous versions are also available at
+Zenodo. If you use a snapshot of the development (without a DOI) please cite as follows:
 
 van Verseveld, Willem, Visser, Martijn, Buitink, Joost, Bouaziz, Laurène, Boisgontier,
-Hélène, Bootsma, Huite, Pronk, Maarten, Hartgring, Sebastian, Eilander, Dirk, Weerts,
-Albrecht, Dalmijn, Brendan, Hofer, Julian, & Hegnauer, Mark (YEAR). Deltares/Wflow.jl:
-unstable-master. <https://github.com/Deltares/Wflow.jl>, obtained: DATE\_OF\_DOWNLOAD.
+Hélène, Bootsma, Huite, Weerts, Albrecht, Baptista, Carlos Fernando, Pronk, Maarten,
+Eilander, Dirk, Hartgring, Sebastian, Dalmijn, Brendan, Hofer, Julian, Hegnauer, Mark, &
+Mendoza, Raul, (YEAR). Deltares/Wflow.jl: unstable-master.
+<https://github.com/Deltares/Wflow.jl>, obtained: DATE\_OF\_DOWNLOAD.
 
 ## Publications using wflow
 
@@ -150,6 +148,10 @@ Tangdamrongsub, N., Steele-Dunne, S.C., Gunter, B.C., Ditmar, P.G., Weerts, A.H.
 assimilation of GRACE terrestrial water storage estimates into a regional hydrological model
 of the Rhine River basin. Hydrol. Earth Syst. Sci. 19, 2079–2100.
 <https://doi:10.5194/hess-19-2079-2015>.
+
+van der Laan, E., P. Hazenberg, A.H. Weerts, 2024. Simulation of long-term storage dynamics
+of headwater reservoirs across the globe using public cloud computing infrastructure.
+Science of The Total Environment, 172678, <https://doi.org/10.1016/j.scitotenv.2024.172678>.
 
 van der Vat, M., Boderie, P., Bons, K.A., Hegnauer, M., Hendriksen, G., van Oorschot, M.,
 Ottow, B., Roelofsen, F., Sankhua, R.N., Sinha, S.K., Warren, A., Young, W., 2019.

@@ -22,11 +22,11 @@ jobs:
           - '2'
     steps:
       - uses: actions/checkout@v4
-      - uses: julia-actions/cache@v1
+      - uses: julia-actions/cache@v2
         with:
           cache-compiled: "true"
           cache-registries: "true"
-      - uses: prefix-dev/setup-pixi@v0.6.0
+      - uses: prefix-dev/setup-pixi@v0.8.0
         with:
           pixi-version: "latest"
       - name: Prepare pixi
