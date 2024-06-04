@@ -441,15 +441,14 @@ have different infiltration capacities. Naturally, only the water that can be st
 soil can infiltrate. If not all water can infiltrate, this is added as excess water to the
 runoff routing scheme.
 
-The infiltrating
-water is split in two parts, the part that falls on compacted areas and the part that falls
-on non-compacted areas. The maximum amount of water that can infiltrate in these areas is
-calculated by taking the minimum of the maximum infiltration rate (`infiltcapsoil` [mm
-t``^{-1}``] for non-compacted areas and `infiltcappath` [mm t``^{-1}``] for compacted areas)
-and the amount of water available for infiltration `avail_forinfilt` [mm t``^{-1}``]. The
-water that can actually infiltrate `infiltsoilpath` [mm t``^{-1}``] is calculated by taking
-the minimum of the total maximum infiltration rate (compacted and non-compacted areas) and
-the remaining storage capacity.
+The infiltrating water is split in two parts, the part that falls on compacted areas and the
+part that falls on non-compacted areas. The maximum amount of water that can infiltrate in
+these areas is calculated by taking the minimum of the maximum infiltration rate
+(`infiltcapsoil` [mm t``^{-1}``] for non-compacted areas and `infiltcappath` [mm t``^{-1}``]
+for compacted areas) and the amount of water available for infiltration `avail_forinfilt`
+[mm t``^{-1}``]. The water that can actually infiltrate `infiltsoilpath` [mm t``^{-1}``] is
+calculated by taking the minimum of the total maximum infiltration rate (compacted and
+non-compacted areas) and the remaining storage capacity.
 
 Infiltration excess occurs when the infiltration capacity is smaller then the throughfall
 and stemflow rate. This amount of water (`infiltexcess` [mm t``^{-1}``]) becomes overland
@@ -587,6 +586,74 @@ Part of the water available for infiltration is diverted to the open water, base
 fractions of river and lakes of each grid cell. The amount of evaporation from open water is
 assumed to be equal to potential evaporation (if sufficient water is available).
 
+## Water demand and allocation
+
+As part of the `SBM` concept water demand and allocation computations are supported. These
+computations can be enabled by specifying the following in the TOML file:
+
+```toml
+[model.water_demand]
+domestic = true
+industry = true
+livestock = true
+paddy = true
+nonpaddy = true
+```
+
+For non-irrigation water demand the sectors domestic, industry and livestock are available.
+For these sectors the gross demand (``d_\mathrm{gross}``) and net demand
+(``d_\mathrm{net}``) are provided to the model (input through cyclic or forcing data). The
+return flow fraction (``f_\mathrm{return}``) is calculated as follows:
+
+```math
+    f_\mathrm{return} = 1.0 - \frac{d_\mathrm{net}}{d_\mathrm{gross}},
+```
+and used to calculate the return flow rate (water abstracted from surface water or
+groundwater but not consumed). For grid cells containing a river the return flow is directly
+returned to the river routing component, otherwise the return flow is returned to the
+overland flow routing component.
+
+For non-paddy (other crops than flooded rice) irrigation is applied during the growing
+season (indicated by input parameter `irrigation_trigger` [-]) and when water depletion
+exceeds the readily available water:
+
+```math
+    (U_\mathrm{field} - U_\mathrm{a}) \ge (U_\mathrm{field} - U_\mathrm{h3})
+```
+where ``U_\mathrm{field}`` \[mm\] is the unsaturated store in the root zone at field
+capacity (defined at a soil water pressure head of -100 cm), ``U_\mathrm{a}`` \[mm\] is the
+actual unsaturated store in the root zone and ``U_\mathrm{h3}`` \[mm\] is the unsaturated
+store in the root zone at the critical soil water pressure head `h3`, below this pressure
+head reduction of root water uptake starts due to drought stress. The net irrigation demand
+is the amount that brings the root zone back to field capacity, limited by the soil
+infiltration capacity. To account for limited irrigation efficiency the net irrigation
+demand is divided by the irrigation efficiency for non-paddy crops (`irrigation_efficiency`
+[-], default is 1.0), resulting in gross irrigation demand. Finally, the gross irrigation
+demand is limited by the maximum irrigation depth (`maximum_irrigation_depth` [mm
+t``^{-1}``], default is 25 mm d``^{-1}``). If the maximum irrigation depth is applied,
+irrigation continues at subsequent time steps until field capacity is reached.
+
+For paddy (flooded rice) irrigation is applied during the growing season (indicated by input
+parameter `irrigation_trigger` [-]) and when the paddy water depth `h` \[mm\] reaches below
+the minimum water depth `h_min` \[mm\] (see also the figure below). The net irrigation
+demand is the amount required to reach the optimal paddy water depth `h_opt` \[mm\], an
+approach similar to Xie and Cui (2011). To account for limited irrigation efficiency the net
+irrigation demand is divided by the irrigation efficiency for paddy fields
+(`irrigation_efficiency` [-], default is 1.0), resulting in gross irrigation demand.
+Finally, the gross irrigation demand is limited by the maximum irrigation depth
+(`maximum_irrigation_depth` [mm t``^{-1}``], default is 25 mm d``^{-1}``). If the maximum
+irrigation depth is applied, irrigation continues at subsequent time steps until the optimal
+paddy water depth `h_opt` is reached. When the paddy water depth `h` exceeds `h_max` \[mm\]
+runoff occurs, and this amount is added to the runoff routing scheme for overland flow. The
+figure below shows a typical vertical soil profile of a puddled rice soil with a muddy layer
+of about 15 cm (in this case represented by two soil layers of 5 cm and 10 cm thickness), a
+plow soil layer of 5 cm with relative low permeability (vertical hydraulic conductivity
+``k_v`` of about 5 mm d``^{-1}``), and a non-puddled soil below the plow soil layer. 
+
+![paddy_profile](../../images/paddy_profile.png)
+
+*Schematic diagram of a paddy field with water balance components and soil profile*
+
 ## References
 + Brooks, R. H., and Corey, A. T., 1964, Hydraulic properties of porous media, Hydrology
   Papers 3, Colorado State University, Fort Collins, 27 p.
@@ -609,3 +676,5 @@ assumed to be equal to potential evaporation (if sufficient water is available).
 + Wigmosta, M. S., Lane, L. J., Tagestad, J. D., and Coleman A. M., 2009, Hydrologic and
   erosion models to assess land use and management practices affecting soil erosion, J.
   Hydrol. Eng., 14, 27-41.
++ Xie, X. and Cui, Y., 2011, Development and test of SWAT for modeling hydrological
+  processes in irrigation districts with paddy rice, J. Hydrol., 396, pp. 61-71.
