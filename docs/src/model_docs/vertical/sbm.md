@@ -246,12 +246,19 @@ implemented using the following code:
 
 Next, a root water uptake reduction model is used to calculate a reduction coefficient as a
 function of soil water pressure. This concept is based on the concept presented by Feddes et
-al. (1978). This concept defines a reduction coefficient `a` as a function of soil water
-pressure (`h`). Four different levels of `h` are defined: `h2`, `h3`, and `h4` are defined
-as fixed values, and `h1` can be defined as input to the model (defaults to -10 cm). `h1`
-represents the air entry pressure, `h2` represents field capacity, `h3` represents the point
-of critical soil moisture content, and `h4` represents the wilting point. The current soil
-water pressure is determined following the concept defined by Brooks and Corey (1964):
+al. (1978). This concept defines a reduction coefficient ``\alpha`` as a function of soil
+water pressure (``h``). Four different levels of ``h`` are defined: `h1`, `h2`, `h3` and
+`h4`, and these critical pressure heads can be defined as input to the model. `h1`
+represents anoxoc moisture conditions, `h2` represents field capacity, `h3` represents the
+point of critical soil moisture content (onset of drought stress), and `h4` represents the
+wilting point. The value of `h3` is a function of the potential transpiration rate ``T_p``,
+between 1 and 5 mm d``^{-1}``. If  ``T_p \le 1 \text{ mm d}^{-1}``, `h3` is set equal to
+`h3_low` (input model parameter). If ``T_p \ge 5 \text{ mm d}^{-1}``, `h3` is set equal to
+`h3_high` (input model parameter). For ``T_p`` values between 1 and 5 mm d``^{-1}``, the
+value of `h3` is linearly related to ``T_p`` (between `h3_low` and `h3_high`).
+
+The current soil water pressure is determined following the concept defined by Brooks and
+Corey (1964):
 
 ```math
     \frac{(\theta-\theta_r)}{(\theta_s-\theta_r)} =  \Bigg\lbrace{\left(\frac{h_b}{h}\right)^{\lambda}, h > h_b \atop 1 , h \leq h_b}
@@ -262,12 +269,12 @@ where ``h`` is the pressure head [cm], ``h_b`` is the air entry pressure head [c
 
 Whenever the current soil water pressure drops below `h4`, the root water uptake is set to
 zero. The root water uptake is at ideal conditions whenever the soil water pressure is above
-`h3`, with a linear transition between `h3` and `h4`. Note that in the original
-transpiration reduction-curve of Feddes (1978) root water uptake above `h1` is set to zero
-(oxygen deficit) and between `h1` and `h2` root water uptake is limited. The assumption that
-very wet conditions do not affect root water uptake too much is probably generally
-applicable to natural vegetation, however for crops this assumption is not valid. This could
-be improved in the wflow code by applying the reduction to crops only.
+`h3`, with a linear transition between `h3` and `h4`.  The assumption that very wet
+conditions do not affect root water uptake too much is probably generally applicable to
+natural vegetation. For crops this assumption is not valid and in this case root water
+uptake above `h1` should be set to zero (oxygen deficit) and between `h1` and `h2` root
+water uptake is limited. This is possible by setting the input model parameter `alpha_h1` at
+0 (default is 1).
 
 ![soil_rootwateruptake](../../images/soil_rootwateruptake.png)
 
