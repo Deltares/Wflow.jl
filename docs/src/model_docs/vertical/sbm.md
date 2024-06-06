@@ -593,8 +593,9 @@ Part of the water available for infiltration is diverted to the open water, base
 fractions of river and lakes of each grid cell. The amount of evaporation from open water is
 assumed to be equal to potential evaporation (if sufficient water is available).
 
-## Water demand and allocation
+## [Water demand and allocation](@id sbm_demand_allocation)
 
+### Water demand
 As part of the `SBM` concept water demand and allocation computations are supported. These
 computations can be enabled by specifying the following in the TOML file:
 
@@ -608,9 +609,10 @@ nonpaddy = true
 ```
 
 For non-irrigation water demand the sectors domestic, industry and livestock are available.
-For these sectors the gross demand (``d_\mathrm{gross}``) and net demand
-(``d_\mathrm{net}``) are provided to the model (input through cyclic or forcing data). The
-return flow fraction (``f_\mathrm{return}``) is calculated as follows:
+For these sectors the gross demand (``d_\mathrm{gross}`` [mm t``^{-1}``]) and net demand
+(``d_\mathrm{net}`` [mm t``^{-1}``]) are provided to the model (input through cyclic or
+forcing data). The return flow fraction (``f_\mathrm{return}`` [-]) is calculated as
+follows:
 
 ```math
     f_\mathrm{return} = 1.0 - \frac{d_\mathrm{net}}{d_\mathrm{gross}},
@@ -660,6 +662,89 @@ plow soil layer of 5 cm with relative low permeability (vertical hydraulic condu
 ![paddy_profile](../../images/paddy_profile.png)
 
 *Schematic diagram of a paddy field with water balance components and soil profile*
+
+### Water withdrawal and allocation
+For the water withdrawal the total gross demand is computed (sum over the irrigation and
+non-irrigation water demand sectors), in case sufficient water is available the water
+withdrawal is equal to the total gross demand. In case of insufficient watr availability,
+the water withdrawal is scaled down to the available water, and allocation is then
+proportional to the gross demand per sector (industry, domestic, livestock and irrigation).
+Water can be abstracted from two sources: surface water (rivers, reservoirs and lakes) and
+groundwater. 
+
+The model parameter `frac_sw_used` (fraction surface water used, default is 1.0) determines
+how much water is supplied by available surface water and groundwater. First, surface water
+abstraction (excluding reservoir and lake locations) is computed to satisfy local water
+demand. The available surface water volume is limited by a fixed scaling factor of 0.8 to
+prevent rivers from completely drying out. It is assumed that the water demand cannot be
+satisfied completely from local surface water and groundwater. The next step is to satisfy
+the remaining water demand for allocation `areas` [-]. For these areas the water demand
+``V_\mathrm{sw, demand}`` [m``^3``] and availability ``V_\mathrm{sw, availabilty}``
+[m``^3``] are summed (including reservoir and lake locations limited by a fixed scaling
+factor of 0.98), and the total surface water abstraction is then:
+
+```math
+    V_\mathrm{sw, abstraction} = \mathrm{min}(V_\mathrm{sw, demand}, V_\mathrm{sw, availabilty})
+```
+The fraction of available surface water that can be abstracted at allocation area level
+``f_\mathrm{sw, abstraction}`` [-] at the allocation area level is then:
+
+```math
+    f_\mathrm{sw, abstraction} = \frac{V_\mathrm{sw, available}}{V_\mathrm{sw, available}}
+```
+This fraction is applied to the remaining available surface water of each river cell
+(including lake and reservoir locations) to compute surface water abstraction at each river
+cell and to update the local surface water abstraction.
+
+The fraction of water demand that can be satisfied by available surface water
+``f_\mathrm{sw, allocation}`` [-] at the allocation area level is then:
+
+```math
+    f_\mathrm{sw, allocation} = \frac{V_\mathrm{sw, abstraction}}{V_\mathrm{sw, demand}}
+```
+This fraction is applied to the remaining surface water demand of each land cell to compute
+the allocated surface water to each land cell.
+
+Then groundwater abstraction is computed to satisfy the remaining local water demand, where
+groundwater abstraction is limited by a fixed scaling factor of 0.75 applied to the
+groundwater volume. Finally, for allocation `areas` the water demand ``V_\mathrm{gw,
+demand}`` [m``^3``] and availability ``V_\mathrm{gw, availabilty}`` [m``^3``] are summed,
+and the total groundwaterwater abstraction is then:
+
+```math
+    V_\mathrm{gw, abstraction} = \mathrm{min}(V_\mathrm{gw, demand}, V_\mathrm{gw, availabilty})
+```
+The fraction of available groundwater that can be abstracted at allocation area level
+``f_\mathrm{gw, abstraction}`` [-] at the allocation area level is then:
+
+```math
+    f_\mathrm{gw, abstraction} = \frac{V_\mathrm{gw, available}}{V_\mathrm{gw, available}}
+```
+This fraction is applied to the remaining available groundwater of each land cell to compute
+groundwater abstraction and to update the local groundwater abstraction.
+
+The fraction of water demand that can be satisfied by available groundwater ``f_\mathrm{gw,
+allocation}`` [-] at the allocation area level is then:
+
+```math
+    f_\mathrm{gw, allocation} = \frac{V_\mathrm{gw, abstraction}}{V_\mathrm{gw, demand}}
+```
+This fraction is applied to the remaining groundwater demand of each land cell to compute
+the allocated groundwater to each land cell.
+
+As part of the `SBM` concept the total water allocated for irrigation `irri_alloc` [mm
+t``^{-1}``] is applied to non-paddy or paddy cells (added to the amount of water available
+for infiltration `avail_forinfilt` [mm t``^{-1}``]). Groundwater abstraction is implemented
+by subtracting this amount from the `recharge` variable of the lateral subsurface flow
+component (kinematic wave) or the Recharge `rate` of the groundwater flow module. Surface
+water `abstraction` [m``^3`` s``^{-1}``] is divided by the flow length `dl` [m] and
+subtracted from the lateral inflow of kinematic wave routing scheme for river flow. For the
+local inertial routing scheme (river and optional floodplain routing), the surface water
+`abstraction` [m``^3`` s``^{-1}``] is subtracted as part of the continuity equation of the
+local inertial model. For reservoir and lake locations surface water is abstracted
+(`act_surfacewater_abst_vol` [m``^3`` t``^{-1}``]) from the reservoir `volume` [m``^3``] and
+lake `storage` [m``^3``] respectively, with a subsequent update of the lake `waterlevel`
+[m].
 
 ## References
 + Brooks, R. H., and Corey, A. T., 1964, Hydraulic properties of porous media, Hydrology

@@ -70,7 +70,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   built-in operators is still allowed. This change in naming convention is now in effect and
   all invalid uses of non-ASCII characters have been replaced by ASCII equivalents.
 - Docs: 1) improved description of different model configurations in model-setup.md, also in
-  relation to hydromt_wflow in docs, 2) citing info related to wflow\_sbm publication in
+  relation to hydromt\_wflow in docs, 2) citing info related to wflow\_sbm publication in
   Geosci. Model Dev. (from in review to published).
 
 ### Added
