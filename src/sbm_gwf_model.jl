@@ -537,6 +537,11 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
     lateral.subsurface.flow.aquifer.head .=
         min.(lateral.subsurface.flow.aquifer.head, lateral.subsurface.flow.aquifer.top)
 
+    # Adjust for constant head
+    exfiltwater[lateral.subsurface.flow.constanthead.index] .= 0
+    lateral.subsurface.flow.aquifer.head[lateral.subsurface.flow.constanthead.index] .=
+        lateral.subsurface.flow.constanthead.head
+
     # update vertical sbm concept (runoff, ustorelayerdepth and satwaterdepth)
     update_after_subsurfaceflow(
         vertical,
