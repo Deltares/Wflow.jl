@@ -294,7 +294,10 @@ function update(sf::SurfaceFlowRiver, network, doy)
                     # Inflow supply/abstraction is added to qlat (divide by flow length)
                     # If inflow < 0, abstraction is limited
                     if sf.inflow[v] < 0.0
-                        max_abstract = min((sf.q[v] + sf.volume[v]) * 0.80, -sf.inflow[v])
+                        max_abstract = min(
+                            (sf.inwater[v] + sf.qin[v] + sf.volume[v] / dt) * 0.80,
+                            -sf.inflow[v],
+                        )
                         inflow = -max_abstract / sf.dl[v]
                     else
                         inflow = sf.inflow[v] / sf.dl[v]
@@ -1174,8 +1177,8 @@ function stable_timestep(sw::ShallowWaterLand{T})::T where {T}
     dt_min = T(Inf)
     @batch per = thread reduction = ((min, dt_min),) for i = 1:sw.n
         @fastmath @inbounds dt =
-            sw.rivercells[i] == 0 ? sw.alpha * min(sw.xl[i], sw.yl[i]) / sqrt(sw.g * sw.h[i]) :
-            T(Inf)
+            sw.rivercells[i] == 0 ?
+            sw.alpha * min(sw.xl[i], sw.yl[i]) / sqrt(sw.g * sw.h[i]) : T(Inf)
         dt_min = min(dt, dt_min)
     end
     dt_min = isinf(dt_min) ? T(10.0) : dt_min
