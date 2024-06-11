@@ -38,6 +38,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `Polyester.jl`.
 - Fixed required states of the model type `sbm_gwf`: added `h_av` for the river and land
   domain.
+- For the `constanthead` boundary of `GroundwaterFlow` the `head` should not be changed (was
+  set to `top` elevation of the `aquifer` if `head` > `top`), and `exfiltwater` should be 0
+  for these boundary cells.
 
 ### Changed
 - Stop exposing scalar variables through BMI. The `BMI.get_value_ptr` function was not
