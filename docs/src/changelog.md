@@ -72,6 +72,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Docs: 1) improved description of different model configurations in model-setup.md, also in
   relation to hydromt\_wflow in docs, 2) citing info related to wflow\_sbm publication in
   Geosci. Model Dev. (from in review to published).
+- Root water uptake reduction (Feddes): 1) extend critical pressure head parameters with
+  `h3_low` and `h3_high`, 2) all critical pressure head parameters can be set (values for
+  `h1`, `h2` and `h3` were fixed) and 3) the root water uptake reduction coefficient
+  ``\alpha`` can be set at 0 (default is 1) at critical pressure head `h1` (through the
+  model parameter `alpha_h1`).
 
 ### Added
 - Total water storage as an export variable for `SBM` concept. This is the total water stored
