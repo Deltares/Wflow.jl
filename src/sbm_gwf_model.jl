@@ -483,6 +483,8 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
     @unpack lateral, vertical, network, clock, config = model
 
     inds_riv = network.index_river
+    aquifer = lateral.subsurface.flow.aquifer
+    constanthead = lateral.subsurface.flow.constanthead
 
     # extract water levels h_av [m] from the land and river domains
     # this is used to limit open water evaporation
@@ -512,7 +514,7 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
     # determine stable time step for groundwater flow
     conductivity_profile =
         get(config.input.lateral.subsurface, "conductivity_profile", "uniform")
-    dt_gw = stable_timestep(lateral.subsurface.flow.aquifer, conductivity_profile) # time step in day (Float64)
+    dt_gw = stable_timestep(aquifer, conductivity_profile) # time step in day (Float64)
     dt_sbm = (vertical.dt / tosecond(basetimestep)) # vertical.dt is in seconds (Float64)
     if dt_gw < dt_sbm
         @warn(
@@ -529,23 +531,17 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
 
     # determine excess water depth [m] (exfiltwater) in groundwater domain (head > surface)
     # and reset head
-    exfiltwater =
-        (
-            lateral.subsurface.flow.aquifer.head .-
-            min.(lateral.subsurface.flow.aquifer.head, lateral.subsurface.flow.aquifer.top)
-        ) .* storativity(lateral.subsurface.flow.aquifer)
-    lateral.subsurface.flow.aquifer.head .=
-        min.(lateral.subsurface.flow.aquifer.head, lateral.subsurface.flow.aquifer.top)
+    exfiltwater = (aquifer.head .- min.(aquifer.head, aquifer.top)) .* storativity(aquifer)
+    aquifer.head .= min.(aquifer.head, aquifer.top)
 
-    # Adjust for constant head
-    exfiltwater[lateral.subsurface.flow.constanthead.index] .= 0
-    lateral.subsurface.flow.aquifer.head[lateral.subsurface.flow.constanthead.index] .=
-        lateral.subsurface.flow.constanthead.head
+    # Adjust for constant head boundary of groundwater domain
+    exfiltwater[constanthead.index] .= 0
+    aquifer.head[constanthead.index] .= constanthead.head
 
     # update vertical sbm concept (runoff, ustorelayerdepth and satwaterdepth)
     update_after_subsurfaceflow(
         vertical,
-        (network.land.altitude .- lateral.subsurface.flow.aquifer.head) .* 1000.0, # zi [mm] in vertical concept SBM
+        (network.land.altitude .- aquifer.head) .* 1000.0, # zi [mm] in vertical concept SBM
         exfiltwater .* 1000.0,
     )
 
