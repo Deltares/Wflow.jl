@@ -1059,15 +1059,13 @@ function update_until_recharge(sbm::SBM, config)
             if ust
                 availcap = usld[k] * 0.99
             else
-                availcap =
-                    min(1.0, max(0.0, (sbm.rootingdepth[i] - sbm.sumlayers[i][k]) / usl[k]))
+                availcap = min(1.0, max(0.0, (rootingdepth - sbm.sumlayers[i][k]) / usl[k]))
             end
             # the rootfraction is valid for the root length in a soil layer, if zi decreases the root length
-            # the rootfraction needs to be adapted
-            if k == n_usl && sbm.zi[i] < sbm.rootingdepth[i]
-                rootfraction_act =
-                    sbm.rootfraction[i][k] *
-                    (usl[k] / (sbm.rootingdepth[i] - sbm.sumlayers[i][k]))
+            # the rootfraction needs to be adapted           
+            if k == n_usl && sbm.zi[i] < rootingdepth
+                rootlength = min(sbm.act_thickl[i][k], rootingdepth - sbm.sumlayers[i][k])
+                rootfraction_act = sbm.rootfraction[i][k] * (usl[k] / rootlength)
             else
                 rootfraction_act = sbm.rootfraction[i][k]
             end
@@ -1089,10 +1087,13 @@ function update_until_recharge(sbm::SBM, config)
             sbm.h4[i],
             sbm.alpha_h1[i],
         )
-        actevapsat = min(
-            sbm.pottrans[i] * wetroots * (1.0 - rootfraction_unsat) * alpha,
-            satwaterdepth,
-        )
+        # include remaining root fraction if rooting depth is below water table zi
+        if sbm.zi[i] >= rootingdepth
+            f_roots = wetroots
+        else
+            f_roots = wetroots * (1.0 - rootfraction_unsat)
+        end
+        actevapsat = min(sbm.pottrans[i] * f_roots * alpha, satwaterdepth)
         satwaterdepth = satwaterdepth - actevapsat
 
         # check soil moisture balance per layer

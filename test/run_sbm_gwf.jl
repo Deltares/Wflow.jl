@@ -14,7 +14,7 @@ flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
 
     @test row.time == DateTime("2000-06-01T00:00:00")
     @test row.Q_av ≈ 0.01620324716944374f0
-    @test row.head ≈ 1.6506700475116074f0
+    @test row.head ≈ 1.6471323360175287f0
 end
 
 @testset "first timestep" begin
@@ -24,7 +24,7 @@ end
     @test sbm.theta_s[1] ≈ 0.44999998807907104f0
     @test sbm.runoff[1] == 0.0
     @test sbm.soilevap[1] == 0.0
-    @test sbm.transpiration[1] ≈ 0.0
+    @test sbm.transpiration[1] ≈ 0.30587632831650247f0
 end
 
 # run the second timestep
@@ -35,7 +35,7 @@ model = Wflow.run_timestep(model)
     @test sbm.theta_s[1] ≈ 0.44999998807907104f0
     @test sbm.runoff[1] == 0.0
     @test sbm.soilevap[1] == 0.0
-    @test sbm.transpiration[4] ≈ 0.8696975782458946f0
+    @test sbm.transpiration[4] ≈ 0.7000003898938235f0
 end
 
 @testset "overland flow (kinematic wave)" begin
@@ -46,25 +46,25 @@ end
 @testset "river domain (kinematic wave)" begin
     q = model.lateral.river.q_av
     river = model.lateral.river
-    @test sum(q) ≈ 0.035820105590583136f0
-    @test q[6] ≈ 0.008130882953221714f0
-    @test river.volume[6] ≈ 4.5666019378430995f0
-    @test river.inwater[6] ≈ 0.00042601629503311733f0
-    @test q[13] ≈ 0.0006060110827771738f0
-    @test q[network.river.order[end]] ≈ 0.008668026817817552f0
+    @test sum(q) ≈ 0.035443370536496675f0
+    @test q[6] ≈ 0.008031554512314907f0
+    @test river.volume[6] ≈ 4.532124903256408f0
+    @test river.inwater[6] ≈ 0.0004073892212290558f0
+    @test q[13] ≈ 0.0006017024138583771f0
+    @test q[network.river.order[end]] ≈ 0.008559590281509943f0
 end
 
 @testset "groundwater" begin
     gw = model.lateral.subsurface
     @test gw.river.stage[1] ≈ 1.2123636929067039f0
     @test gw.flow.aquifer.head[17:21] ≈ [
-        1.2880480319282992f0,
-        1.3490883291679163f0,
+        1.2866380350225155f0,
+        1.3477853512604643f0,
         1.7999999523162842f0,
-        1.625090613936394f0,
-        1.4071376687672454f0,
+        1.6225103807809076f0,
+        1.4053590307668113f0,
     ]
-    @test gw.river.flux[1] ≈ -52.12101697937548f0
+    @test gw.river.flux[1] ≈ -51.34674583702381f0
     @test gw.drain.flux[1] ≈ 0.0
     @test gw.recharge.rate[19] ≈ -0.0014241196552847502f0
 end
@@ -93,12 +93,12 @@ model = Wflow.run_timestep(model)
 @testset "river domain (local inertial)" begin
     q = model.lateral.river.q_av
     river = model.lateral.river
-    @test sum(q) ≈ 0.02761343108159262f0
-    @test q[6] ≈ 0.006200879624415703f0
-    @test river.volume[6] ≈ 7.682451475056573f0
-    @test river.inwater[6] ≈ 0.00023950387043266292f0
-    @test q[13] ≈ 0.00046741800834202964f0
-    @test q[5] ≈ 0.006564513429686601f0
+    @test sum(q) ≈ 0.02727911500112358f0
+    @test q[6] ≈ 0.006111263175002127f0
+    @test river.volume[6] ≈ 7.6120096530771075f0
+    @test river.inwater[6] ≈ 0.00022087679662860144f0
+    @test q[13] ≈ 0.0004638698607639214f0
+    @test q[5] ≈ 0.0064668491697542786f0
 end
 Wflow.close_files(model, delete_output = false)
 
@@ -123,14 +123,14 @@ model = Wflow.run_timestep(model)
 
 @testset "river and land domain (local inertial)" begin
     q = model.lateral.river.q_av
-    @test sum(q) ≈ 0.027620758141556154f0
-    @test q[6] ≈ 0.006202710435741449f0
-    @test q[13] ≈ 0.0004675269778568993f0
-    @test q[5] ≈ 0.006566526863956613f0
+    @test sum(q) ≈ 0.027286431923384962f0
+    @test q[6] ≈ 0.00611309161099138f0
+    @test q[13] ≈ 0.0004639786629631376f0
+    @test q[5] ≈ 0.006468859889145798f0
     h = model.lateral.river.h_av
-    @test h[6] ≈ 0.08180205294088073f0
-    @test h[5] ≈ 0.07913252828380887f0
-    @test h[13] ≈ 0.08383078664048482f0
+    @test h[6] ≈ 0.08120137914886108f0
+    @test h[5] ≈ 0.07854966203902745f0
+    @test h[13] ≈ 0.08323543174453409f0
     qx = model.lateral.land.qx
     qy = model.lateral.land.qy
     @test all(qx .== 0.0f0)

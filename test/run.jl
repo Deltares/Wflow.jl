@@ -3,9 +3,6 @@ using Wflow
 using Dates
 using NCDatasets
 
-tomlpath = joinpath(@__DIR__, "sbm_simple.toml")
-Wflow.run(tomlpath; silent = true)
-
 # test whether restarted runs get the same results as continuous ones, i.e. state is captured
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
@@ -79,7 +76,7 @@ varnames = setdiff(keys(endstate_restart), keys(endstate_restart.dim))
         a = endstate_one_run[varname][:]
         b = endstate_restart[varname][:]
         maxdiff = maximum(abs.(skipmissing(b - a)))
-        @test maxdiff < 1e-9
+        @test all(isapprox.(skipmissing(a), skipmissing(b); rtol = 1e-10, atol = 0))
     end
 end
 

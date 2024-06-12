@@ -57,7 +57,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test_throws ErrorException BMI.get_value_ptr(model, "vertical.")
             dest = zeros(Float, size(model.vertical.zi))
             BMI.get_value(model, "vertical.zi", dest)
-            @test mean(dest) ≈ 276.16258000838536
+            @test mean(dest) ≈ 276.1625022866973
             @test BMI.get_value_at_indices(
                 model,
                 "vertical.vwc[1]",

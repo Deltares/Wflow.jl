@@ -66,7 +66,7 @@ vwc_1_size = 0
     vwc_1_size = Int(vwc_1_nbytes / vwc_1_itemsize)
     @test request((fn = "get_var_grid", name = "lateral.river.h")) == Dict("var_grid" => 3)
     msg = (fn = "get_value", name = "vertical.zi", dest = fill(0.0, zi_size))
-    @test mean(request(msg)["value"]) ≈ 277.3735639009932
+    @test mean(request(msg)["value"]) ≈ 277.3620724821974
     msg = (fn = "get_value_ptr", name = "vertical.theta_s")
     @test mean(request(msg)["value_ptr"]) ≈ 0.4409211971535584
     msg = (

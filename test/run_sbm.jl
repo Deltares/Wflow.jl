@@ -34,7 +34,7 @@ flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
     @test row.Q_6136151 ≈ 0.007946301730645885f0
     @test row.Q_6136160 ≈ 3.927719795530719f0
     @test row.Q_6136202 ≈ 1.4162246003743886f0
-    @test row.recharge_1 ≈ -0.0021010607032383556f0
+    @test row.recharge_1 ≈ -0.0020800523945940217f0
 end
 
 @testset "NetCDF scalar output" begin
@@ -97,7 +97,7 @@ model = Wflow.run_timestep(model)
     @test mean(sbm.net_runoff) ≈ 0.23734052031823816f0
     @test mean(sbm.runoff) ≈ 0.23770898226019577f0
     @test mean(sbm.soilevap) ≈ 0.018750808322054897f0
-    @test mean(sbm.actevap) ≈ 0.14872283281368032f0
+    @test mean(sbm.actevap) ≈ 0.14545276216428166f0
     @test mean(sbm.actinfilt) ≈ 0.08863102527394363f0
     @test sbm.snow[5] ≈ 3.843412524052313f0
     @test mean(sbm.snow) ≈ 0.03461317061870949f0
@@ -273,15 +273,15 @@ model = Wflow.run_timestep(model)
     q = model.lateral.river.q_av
     @test sum(q) ≈ 2380.64389229669f0
     @test q[1622] ≈ 7.328535246760549f-5
-    @test q[43] ≈ 5.356307271258081f0
+    @test q[43] ≈ 5.3566292152594155f0
     @test q[501] ≈ 1.6042388573126602f0
     h = model.lateral.river.h_av
     @test h[1622] ≈ 0.0019891342000364796f0
-    @test h[43] ≈ 0.3003008810153667f0
+    @test h[43] ≈ 0.30026439683630496f0
     @test h[501] ≈ 0.03195324587192846f0
     qx = model.lateral.land.qx
     qy = model.lateral.land.qy
-    @test qx[[26, 35, 631]] ≈ [0.1938545494818624f0, 0.02675010990266658f0, 0.0f0]
+    @test qx[[26, 35, 631]] ≈ [0.1939736998417174f0, 0.026579954465883678f0, 0.0f0]
     @test qy[[26, 35, 631]] ≈ [0.12906530420401777f0, 1.7225115950614904f0, 0.0f0]
     h = model.lateral.land.h
     @test h[[26, 35, 631]] ≈
@@ -405,7 +405,7 @@ model = Wflow.run_timestep(model)
     @test q[1622] ≈ 7.315676384849305f-5
     @test q[43] ≈ 11.92787156357908f0
     @test q[501] ≈ 3.510668846752431f0
-    @test q[5808] ≈ 0.002222842810252029f0
+    @test q[5808] ≈ 0.002223993845806248f0
     h = model.lateral.river.h_av
     @test h[1622] ≈ 0.001987887580593841f0
     @test h[43] ≈ 0.436641524481545f0
