@@ -472,6 +472,8 @@ function initialize_sbm(nc, config, riverfrac, inds)
         defaults = 750.0,
         type = Float,
     )
+    # correct rooting depth for soilthickness
+    rootingdepth = @. min(0.99 * soilthickness, rootingdepth)
     rootdistpar = ncread(
         nc,
         config,
@@ -547,13 +549,13 @@ function initialize_sbm(nc, config, riverfrac, inds)
             # default root fraction in case of multiple soil layers
             rootfraction = zeros(Float, maxlayers, n)
             for i = 1:n
-                rtd = min(soilthickness[i] * 0.99, rootingdepth[i])
-                if rtd > 0.0
+                if rootingdepth[i] > 0.0
                     for k = 1:maxlayers
-                        if (rtd - s_layers[k, i]) >= act_thickl[k, i]
-                            rootfraction[k, i] = act_thickl[k, i] / rtd
+                        if (rootingdepth[i] - s_layers[k, i]) >= act_thickl[k, i]
+                            rootfraction[k, i] = act_thickl[k, i] / rootingdepth[i]
                         else
-                            rootfraction[k, i] = max(rtd - s_layers[k, i], 0.0) / rtd
+                            rootfraction[k, i] =
+                                max(rootingdepth[i] - s_layers[k, i], 0.0) / rootingdepth[i]
                         end
                     end
                 end
@@ -895,8 +897,6 @@ function update_until_recharge(sbm::SBM, config)
         end
         avail_forinfilt = max(avail_forinfilt - runoff_river - runoff_land, 0.0)
 
-        rootingdepth = min(sbm.soilthickness[i] * 0.99, sbm.rootingdepth[i])
-
         ae_openw_r = min(
             sbm.waterlevel_river[i] * sbm.riverfrac[i],
             sbm.riverfrac[i] * sbm.potential_evaporation[i],
@@ -1059,12 +1059,14 @@ function update_until_recharge(sbm::SBM, config)
             if ust
                 availcap = usld[k] * 0.99
             else
-                availcap = min(1.0, max(0.0, (rootingdepth - sbm.sumlayers[i][k]) / usl[k]))
+                availcap =
+                    min(1.0, max(0.0, (sbm.rootingdepth[i] - sbm.sumlayers[i][k]) / usl[k]))
             end
             # the rootfraction is valid for the root length in a soil layer, if zi decreases the root length
             # the rootfraction needs to be adapted           
-            if k == n_usl && sbm.zi[i] < rootingdepth
-                rootlength = min(sbm.act_thickl[i][k], rootingdepth - sbm.sumlayers[i][k])
+            if k == n_usl && sbm.zi[i] < sbm.rootingdepth[i]
+                rootlength =
+                    min(sbm.act_thickl[i][k], sbm.rootingdepth[i] - sbm.sumlayers[i][k])
                 rootfraction_act = sbm.rootfraction[i][k] * (usl[k] / rootlength)
             else
                 rootfraction_act = sbm.rootfraction[i][k]
@@ -1078,7 +1080,7 @@ function update_until_recharge(sbm::SBM, config)
         end
 
         # transpiration from saturated store
-        wetroots = scurve(sbm.zi[i], rootingdepth, Float(1.0), sbm.rootdistpar[i])
+        wetroots = scurve(sbm.zi[i], sbm.rootingdepth[i], Float(1.0), sbm.rootdistpar[i])
         alpha = rwu_reduction_feddes(
             Float(0.0),
             sbm.h1[i],
@@ -1088,7 +1090,7 @@ function update_until_recharge(sbm::SBM, config)
             sbm.alpha_h1[i],
         )
         # include remaining root fraction if rooting depth is below water table zi
-        if sbm.zi[i] >= rootingdepth
+        if sbm.zi[i] >= sbm.rootingdepth[i]
             f_roots = wetroots
         else
             f_roots = wetroots * (1.0 - rootfraction_unsat)
@@ -1128,7 +1130,7 @@ function update_until_recharge(sbm::SBM, config)
                 sbm.soilwatercapacity[i] - satwaterdepth - sum(@view usld[1:sbm.nlayers[i]])
             maxcapflux = max(0.0, min(ksat, actevapustore, ustorecapacity, satwaterdepth))
 
-            if sbm.zi[i] > rootingdepth
+            if sbm.zi[i] > sbm.rootingdepth[i]
                 capflux =
                     maxcapflux * pow(
                         1.0 - min(sbm.zi[i], sbm.cap_hmax[i]) / (sbm.cap_hmax[i]),
