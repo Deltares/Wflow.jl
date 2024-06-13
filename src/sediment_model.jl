@@ -8,99 +8,109 @@ function initialize_sediment_model(config::Config)
     model_type = config.model.type::String
     @info "Initialize model variables for model type `$model_type`."
 
-    # unpack the paths to the netCDF files
+    # Unpack the paths to the netCDF files
     static_path = input_path(config, config.input.path_static)
     nc = NCDataset(static_path)
 
-    reader = prepare_reader(config)
-    clock = Clock(config, reader)
-
     subcatch_2d = ncread(nc, config, "subcatchment"; optional = false, allow_missing = true)
     # indices based on catchment
-    inds, rev_inds = active_indices(subcatch_2d, missing)
-    n = length(inds)
+    indices_subcatch, reverse_indices_subcatch = active_indices(subcatch_2d, missing)
+    n = length(indices_subcatch)
 
     river_2d =
         ncread(nc, config, "river_location"; optional = false, type = Bool, fill = false)
-    river = river_2d[inds]
-    riverwidth_2d =
+    river = river_2d[indices_subcatch]
+    river_width_2d =
         ncread(nc, config, "lateral.river.width"; optional = false, type = Float, fill = 0)
-    riverwidth = riverwidth_2d[inds]
-    riverlength_2d =
+    river_width = river_width_2d[indices_subcatch]
+    river_length_2d =
         ncread(nc, config, "lateral.river.length"; optional = false, type = Float, fill = 0)
-    riverlength = riverlength_2d[inds]
+    river_length = river_length_2d[indices_subcatch]
 
-    inds_riv, rev_inds_riv = active_indices(river_2d, 0)
+    indices_river, reverse_indices_river = active_indices(river_2d, 0)
 
     # read x, y coordinates and calculate cell length [m]
     y_nc = read_y_axis(nc)
     x_nc = read_x_axis(nc)
-    y = permutedims(repeat(y_nc; outer = (1, length(x_nc))))[inds]
-    cellength = abs(mean(diff(x_nc)))
 
-    sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
-    xl, yl = cell_lengths(y, cellength, sizeinmetres)
-    riverfrac = river_fraction(river, riverlength, riverwidth, xl, yl)
+    y = permutedims(repeat(y_nc; outer = (1, length(x_nc))))[indices_subcatch]
+    cell_length = abs(mean(diff(x_nc)))
 
-    eros = initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
+    size_in_metres = get(config.model, "sizeinmetres", false)::Bool
+    xl, yl = cell_lengths(y, cell_length, size_in_metres)
+    river_frac = river_fraction(river, river_length, river_width, xl, yl)
 
     ldd_2d = ncread(nc, config, "ldd"; optional = false, allow_missing = true)
-    ldd = ldd_2d[inds]
+    ldd = ldd_2d[indices_subcatch]
 
     # lateral part sediment in overland flow
     ols = overland_flow_sediment(river, mv, n)
 
-    graph = flowgraph(ldd, inds, pcr_dir)
+    graph = flowgraph(ldd, indices_subcatch, pcr_dir)
 
     # River processes
 
     # the indices of the river cells in the land(+river) cell vector
-    landslope =
-        ncread(nc, config, "lateral.land.slope"; optional = false, sel = inds, type = Float)
-    clamp!(landslope, 0.00001, Inf)
+    land_slope = ncread(
+        nc,
+        config,
+        "lateral.land.slope";
+        optional = false,
+        sel = indices_subcatch,
+        type = Float,
+    )
+    clamp!(land_slope, 0.00001, Inf)
 
-    riverlength = riverlength_2d[inds_riv]
-    riverwidth = riverwidth_2d[inds_riv]
-    minimum(riverlength) > 0 || error("river length must be positive on river cells")
-    minimum(riverwidth) > 0 || error("river width must be positive on river cells")
+    river_length = river_length_2d[indices_river]
+    river_width = river_width_2d[indices_river]
+    minimum(river_length) > 0 || error("river length must be positive on river cells")
+    minimum(river_width) > 0 || error("river width must be positive on river cells")
 
-    ldd_riv = ldd_2d[inds_riv]
-    graph_riv = flowgraph(ldd_riv, inds_riv, pcr_dir)
+    rs = initialize_riversed(nc, config, river_width, river_length, indices_river)
+
+    ldd_riv = ldd_2d[indices_river]
+    graph_riv = flowgraph(ldd_riv, indices_river, pcr_dir)
 
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
-    frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, landslope, n)
+    frac_to_river = fraction_runoff_toriver(graph, ldd, index_river, land_slope, n)
 
     river = (
         graph = graph_riv,
         order = topological_sort_by_dfs(graph_riv),
-        indices = inds_riv,
-        reverse_indices = rev_inds_riv,
+        indices = indices_river,
+        reverse_indices = reverse_indices_river,
     )
 
-    rs = initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
+    eros = initialize_landsed(nc, config, river, river_frac, xl, yl, indices_subcatch)
 
     modelmap = (vertical = eros, lateral = (land = ols, river = rs))
     indices_reverse = (
-        land = rev_inds,
-        river = rev_inds_riv,
+        land = reverse_indices_subcatch,
+        river = reverse_indices_river,
         reservoir = nothing,
         lake = nothing,
     )
-    writer = prepare_writer(config, modelmap, indices_reverse, x_nc, y_nc, nc)
-    close(nc)
 
     # for each domain save the directed acyclic graph, the traversion order,
     # and the indices that map it back to the two dimensional grid
     land = (
         graph = graph,
         order = topological_sort_by_dfs(graph),
-        indices = inds,
-        reverse_indices = rev_inds,
+        indices = indices_subcatch,
+        reverse_indices = reverse_indices_subcatch,
     )
+
+    reader = prepare_reader(config)
+
+    clock = Clock(config, reader)
+
+    writer = prepare_writer(config, modelmap, indices_reverse, x_nc, y_nc, nc)
+
+    close(nc)
 
     model = Model(
         config,
-        (; land, river, (), (), index_river, frac_toriver),
+        (; land, river, reservoir = (), lake = (), index_river, frac_to_river),
         (land = ols, river = rs),
         eros,
         clock,
