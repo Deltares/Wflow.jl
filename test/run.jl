@@ -76,7 +76,7 @@ varnames = setdiff(keys(endstate_restart), keys(endstate_restart.dim))
         a = endstate_one_run[varname][:]
         b = endstate_restart[varname][:]
         maxdiff = maximum(abs.(skipmissing(b - a)))
-        @test all(isapprox.(skipmissing(a), skipmissing(b); rtol = 1e-10, atol = 0))
+        @test maxdiff < 1e-9
     end
 end
 

@@ -1092,10 +1092,12 @@ function update_until_recharge(sbm::SBM, config)
         # include remaining root fraction if rooting depth is below water table zi
         if sbm.zi[i] >= sbm.rootingdepth[i]
             f_roots = wetroots
+            restevap = sbm.pottrans[i] - actevapustore
         else
             f_roots = wetroots * (1.0 - rootfraction_unsat)
+            restevap = sbm.pottrans[i]
         end
-        actevapsat = min(sbm.pottrans[i] * f_roots * alpha, satwaterdepth)
+        actevapsat = min(restevap * f_roots * alpha, satwaterdepth)
         satwaterdepth = satwaterdepth - actevapsat
 
         # check soil moisture balance per layer
