@@ -10,11 +10,10 @@ function initialize_sediment_model(config::Config)
 
     # unpack the paths to the netCDF files
     static_path = input_path(config, config.input.path_static)
+    nc = NCDataset(static_path)
 
     reader = prepare_reader(config)
     clock = Clock(config, reader)
-
-    nc = NCDataset(static_path)
 
     subcatch_2d = ncread(nc, config, "subcatchment"; optional = false, allow_missing = true)
     # indices based on catchment
@@ -53,35 +52,7 @@ function initialize_sediment_model(config::Config)
     ldd = ldd_2d[inds]
 
     # lateral part sediment in overland flow
-    rivcell = float(river)
-    ols = OverlandFlowSediment{Float}(
-        n = n,
-        rivcell = rivcell,
-        soilloss = fill(mv, n),
-        erosclay = fill(mv, n),
-        erossilt = fill(mv, n),
-        erossand = fill(mv, n),
-        erossagg = fill(mv, n),
-        eroslagg = fill(mv, n),
-        TCsed = fill(mv, n),
-        TCclay = fill(mv, n),
-        TCsilt = fill(mv, n),
-        TCsand = fill(mv, n),
-        TCsagg = fill(mv, n),
-        TClagg = fill(mv, n),
-        olsed = fill(mv, n),
-        olclay = fill(mv, n),
-        olsilt = fill(mv, n),
-        olsand = fill(mv, n),
-        olsagg = fill(mv, n),
-        ollagg = fill(mv, n),
-        inlandsed = fill(mv, n),
-        inlandclay = fill(mv, n),
-        inlandsilt = fill(mv, n),
-        inlandsand = fill(mv, n),
-        inlandsagg = fill(mv, n),
-        inlandlagg = fill(mv, n),
-    )
+    ols = overland_flow_sediment(river, mv, n)
 
     graph = flowgraph(ldd, inds, pcr_dir)
 
@@ -103,6 +74,13 @@ function initialize_sediment_model(config::Config)
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
     frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, landslope, n)
 
+    river = (
+        graph = graph_riv,
+        order = topological_sort_by_dfs(graph_riv),
+        indices = inds_riv,
+        reverse_indices = rev_inds_riv,
+    )
+
     rs = initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
 
     modelmap = (vertical = eros, lateral = (land = ols, river = rs))
@@ -123,12 +101,6 @@ function initialize_sediment_model(config::Config)
         indices = inds,
         reverse_indices = rev_inds,
     )
-    river = (
-        graph = graph_riv,
-        order = topological_sort_by_dfs(graph_riv),
-        indices = inds_riv,
-        reverse_indices = rev_inds_riv,
-    )
 
     model = Model(
         config,
@@ -146,6 +118,38 @@ function initialize_sediment_model(config::Config)
 
     return model
 end
+
+function overland_flow_sediment(T::Type{<:AbstractFloat}, river_cell, number_of_elements)
+    return OverlandFlowSediment{T}(
+        n = number_of_elements,
+        rivcell = float(river_cell),
+        soilloss = fill(T(NaN), number_of_elements),
+        erosclay = fill(T(NaN), number_of_elements),
+        erossilt = fill(T(NaN), number_of_elements),
+        erossand = fill(T(NaN), number_of_elements),
+        erossagg = fill(T(NaN), number_of_elements),
+        eroslagg = fill(T(NaN), number_of_elements),
+        TCsed = fill(T(NaN), number_of_elements),
+        TCclay = fill(T(NaN), number_of_elements),
+        TCsilt = fill(T(NaN), number_of_elements),
+        TCsand = fill(T(NaN), number_of_elements),
+        TCsagg = fill(T(NaN), number_of_elements),
+        TClagg = fill(T(NaN), number_of_elements),
+        olsed = fill(T(NaN), number_of_elements),
+        olclay = fill(T(NaN), number_of_elements),
+        olsilt = fill(T(NaN), number_of_elements),
+        olsand = fill(T(NaN), number_of_elements),
+        olsagg = fill(T(NaN), number_of_elements),
+        ollagg = fill(T(NaN), number_of_elements),
+        inlandsed = fill(T(NaN), number_of_elements),
+        inlandclay = fill(T(NaN), number_of_elements),
+        inlandsilt = fill(T(NaN), number_of_elements),
+        inlandsand = fill(T(NaN), number_of_elements),
+        inlandsagg = fill(T(NaN), number_of_elements),
+        inlandlagg = fill(T(NaN), number_of_elements),
+    )
+end
+overland_flow_sediment(river_cell, number_of_elements) = overland_flow_sediment(Float, river_cell, number_of_elements)
 
 function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SedimentModel}
     @unpack lateral, vertical, network, clock, config = model
