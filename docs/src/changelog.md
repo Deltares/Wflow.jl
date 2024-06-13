@@ -77,6 +77,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `h1`, `h2` and `h3` were fixed) and 3) the root water uptake reduction coefficient
   ``\alpha`` can be set at 0 (default is 1) at critical pressure head `h1` (through the
   model parameter `alpha_h1`).
+- For the actual transpiration computation in `SBM`, the potential transpiration is
+  partitioned over the soil layers with roots according to the model parameter
+  `rootfraction` (fraction of the total root length in a soil layer). Previously, for each
+  soil layer (from top to bottom) the actual transpiration was computed, and the remaining
+  potential transpiration was used in the next soil layer.
 
 ### Added
 - Total water storage as an export variable for `SBM` concept. This is the total water stored
