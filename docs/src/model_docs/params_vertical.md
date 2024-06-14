@@ -51,7 +51,7 @@ profile `kv` is used and `z_layered` is required as input.
 | **`f`** | scaling parameter (controls exponential decline of `kv_0`) | mm``^{-1}`` | 0.001  |
 | **`z_exp`** | Depth from soil surface for which exponential decline of `kv_0` is valid | mm | -  |
 | **`z_layered`** | Depth from soil surface for which layered profile (of `layered_exponential`) is valid | mm | -  |
-| **`hb`** | air entry pressure of soil (Brooks-Corey) | cm | 10.0  |
+| **`hb`** | air entry pressure of soil (Brooks-Corey) | cm | -10.0  |
 | **`soilthickness`** | soil thickness | mm | 2000.0  |
 | **`infiltcappath`** | infiltration capacity of the compacted areas  | mm Δt``^{-1}`` | 10.0 mm day``^{-1}`` |
 | **`infiltcapsoil`** | soil infiltration capacity | mm Δt``^{-1}`` | 100.0 mm day``^{-1}``|
@@ -61,6 +61,13 @@ profile `kv` is used and `z_layered` is required as input.
 | **`waterfrac`** | fraction of open water (excluding rivers) | - | 0.0  |
 | **`pathfrac`** | fraction of compacted area | - | 0.01  |
 | **`rootingdepth`** | rooting depth  | mm | 750.0  |
+| **`rootfraction`** | root fraction per soil layer (relative to the total root length) | - | - |
+| **`h1`** | soil water pressure head h1 of the root water uptake reduction function (Feddes) | cm | 0.0 cm |
+| **`h2`** | soil water pressure head h2 of the root water uptake reduction function (Feddes) | cm | -100.0 cm |
+| **`h3_high`** | soil water pressure head h3_high of the root water uptake reduction function (Feddes) | cm | -400.0 cm |
+| **`h3_low`** | soil water pressure head h3_low of the root water uptake reduction function (Feddes) | cm | -1000.0 cm |
+| **`h4`** | soil water pressure head h4 of the root water uptake reduction function (Feddes) | cm | -15849.0 cm |
+| **`alpha_h1`** |  root water uptake reduction at soil water pressure head h1 (0.0 or 1.0) | - | 1.0 |
 | **`rootdistpar`** | controls how roots are linked to water table | - | -500.0  |
 | **`cap_hmax`** | water depth beyond which capillary flux ceases | mm | 2000.0  |
 | **`cap_n`** | coefficient controlling capillary rise | - | 2.0  |

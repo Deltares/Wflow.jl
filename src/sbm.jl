@@ -45,7 +45,7 @@
     pathfrac::Vector{T} | "-"
     # Rooting depth [mm]
     rootingdepth::Vector{T} | "mm"
-    # Root fraction per soil layer (relative to the total rootingdepth) [-]
+    # Root fraction per soil layer (relative to the total root length) [-]
     rootfraction::Vector{SVector{N,T}} | "-"
     # Soil water pressure head h1 of the root water uptake reduction function (Feddes) [cm]
     h1::Vector{T} | "cm"
@@ -1062,6 +1062,7 @@ function update_until_recharge(sbm::SBM, config)
                 availcap =
                     min(1.0, max(0.0, (sbm.rootingdepth[i] - sbm.sumlayers[i][k]) / usl[k]))
             end
+			maxextr = usld[k] * availcap
             # the rootfraction is valid for the root length in a soil layer, if zi decreases the root length
             # the rootfraction needs to be adapted           
             if k == n_usl && sbm.zi[i] < sbm.rootingdepth[i]
@@ -1072,7 +1073,7 @@ function update_until_recharge(sbm::SBM, config)
                 rootfraction_act = sbm.rootfraction[i][k]
             end
             actevapustore_layer =
-                min(alpha * rootfraction_act * sbm.pottrans[i], usld[k] * availcap)
+                min(alpha * rootfraction_act * sbm.pottrans[i], maxextr)
             rootfraction_unsat = rootfraction_unsat + rootfraction_act
             ustorelayerdepth = usld[k] - actevapustore_layer
             actevapustore = actevapustore + actevapustore_layer

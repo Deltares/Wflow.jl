@@ -183,47 +183,71 @@ availability.
 
 ### Transpiration
 
-The fraction of wet roots is determined using a sigmoid fuction (see figure below). The
-parameter `rootdistpar` defines the sharpness of the transition between fully wet and fully
-dry roots. The returned wet roots fraction is multiplied by the potential evaporation (and
-limited by the available water in saturated zone) to get the transpiration from the
-saturated part of the soil. This is implemented using the following code (`i` refers to the
-index of the vector that contains all active cells within the spatial model domain):
+The maximum possible root water extraction rate for each soil layer is determined by
+partitioning the potential transpiration rate ``T_p`` based on the fraction of the total
+root length (`rootfraction` [-]) in each soil layer. A root water uptake reduction model is
+used to calculate a reduction coefficient as a function of soil water pressure, that may
+reduce the maximum possible root water extraction rate. The root water uptake reduction
+model is based on the concept proposed by Feddes et al. (1978). This concept defines a
+reduction coefficient ``\alpha`` [-] as a function of soil water pressure (``h`` [cm]). Four
+different levels of ``h`` are defined: `h1`, `h2`, `h3` and `h4`. `h1` represents anoxoc
+moisture conditions, `h2` represents field capacity, `h3` represents the point of critical
+soil moisture content (onset of drought stress), and `h4` represents the wilting point. The
+value of `h3` is a function of the potential transpiration rate, between 1 and 5 mm
+d``^{-1}``. If ``T_p \le 1 \text{ mm d}^{-1}``, `h3` is set equal to `h3_low` (input model
+parameter). If ``T_p \ge 5 \text{ mm d}^{-1}``, `h3` is set equal to `h3_high` (input model
+parameter). For ``T_p`` values between 1 and 5 mm d``^{-1}``, the value of `h3` is linearly
+related to ``T_p`` (between `h3_low` and `h3_high`). Besides model parameters `h3_high` and
+`h3_low`, the critical pressure heads `h1`, `h2` and `h4` can be defined as input to the
+model.
 
-```julia
-    # transpiration from saturated store
-    wetroots = scurve(sbm.zi[i], rootingdepth, Float(1.0), sbm.rootdistpar[i])
-    actevapsat = min(sbm.pottrans[i] * wetroots, satwaterdepth)
-    satwaterdepth = satwaterdepth - actevapsat
-    restpottrans = sbm.pottrans[i] - actevapsat
+The current soil water pressure is determined following the concept defined by Brooks and
+Corey (1964):
+
+```math
+    \frac{(\theta-\theta_r)}{(\theta_s-\theta_r)} =  \Bigg\lbrace{\left(\frac{h_b}{h}\right)^{\lambda}, h > h_b \atop 1 , h \leq h_b}
 ```
 
-![soil_wetroots](../../images/soil_wetroots.png)
+where ``h`` is the pressure head [cm], ``h_b`` is the air entry pressure head [cm], and
+``\theta``, ``\theta_s``, ``\theta_r`` and ``\lambda`` as previously defined.
 
-*Amount of wet roots and the effect of the rootdistpar parameter*
+Whenever the current soil water pressure drops below `h4`, the root water uptake is set to
+zero. The root water uptake is at ideal conditions whenever the soil water pressure is above
+`h3`, with a linear transition between `h3` and `h4`. The assumption that very wet
+conditions do not affect root water uptake too much is probably generally applicable to
+natural vegetation. For crops this assumption is not valid and in this case root water
+uptake above `h1` should be set to zero (oxygen deficit) and between `h1` and `h2` root
+water uptake is limited. This is possible by setting the input model parameter `alpha_h1` at
+0 (default is 1).
+
+![soil_rootwateruptake](../../images/soil_rootwateruptake.png)
+
+*Root water uptake reduction coefficient as a function of soil water pressure*
 
 ```@setup
 # Figure created using python: # hide
 # https://gist.github.com/JoostBuitink/21dd32e71fd1360117fcd1c532c4fd9d#file-sbm_soil_figs-py # hide
 ```
 
-The remaining potential evaporation is used to extract water from the unsaturated store. The
-maximum allowed extraction of the unsaturated zone is determined based on the fraction of
-the unsaturated zone that is above the rooting depth, see conceptual figure below. This is
-implemented using the following code:
+The maximum allowed root water extraction from each soil layer in the unsaturated zone is
+determined based on the fraction of each soil layer in the unsaturated zone that is above
+the rooting depth (`availcap`) and the unsaturated storage `usld`, see conceptual figure
+below. This is implemented using the following code (`i` refers to the index of the vector
+that contains all active cells within the spatial model domain and `k` refers to the soil
+layer (from top to bottom) in the unsaturated zone):
 
 ```julia
-    if ust # whole_ust_available = true
-        availcap = ustorelayerdepth * 0.99
+    # availcap is fraction of soil layer containing roots
+    # if `ust` is `true`, the whole unsaturated store is available for transpiration
+    if ust
+        availcap = usld[k] * 0.99
     else
-        if usl > 0.0
-            availcap = min(1.0, max(0.0, (rootingdepth - sumlayer) / usl))
-        else
-            availcap = 0.0
-        end
+        availcap =
+            min(1.0, max(0.0, (sbm.rootingdepth[i] - sbm.sumlayers[i][k]) / usl[k]))
     end
-    maxextr = availcap * ustorelayerdepth
+    maxextr = usld[k] * availcap
 ```
+
 
 ![soil_unsatevap](../../images/soil_unsatevap.png)
 
@@ -244,41 +268,48 @@ implemented using the following code:
     whole_ust_available = true
     ```
 
-Next, a root water uptake reduction model is used to calculate a reduction coefficient as a
-function of soil water pressure. This concept is based on the concept presented by Feddes et
-al. (1978). This concept defines a reduction coefficient ``\alpha`` as a function of soil
-water pressure (``h``). Four different levels of ``h`` are defined: `h1`, `h2`, `h3` and
-`h4`, and these critical pressure heads can be defined as input to the model. `h1`
-represents anoxoc moisture conditions, `h2` represents field capacity, `h3` represents the
-point of critical soil moisture content (onset of drought stress), and `h4` represents the
-wilting point. The value of `h3` is a function of the potential transpiration rate ``T_p``,
-between 1 and 5 mm d``^{-1}``. If  ``T_p \le 1 \text{ mm d}^{-1}``, `h3` is set equal to
-`h3_low` (input model parameter). If ``T_p \ge 5 \text{ mm d}^{-1}``, `h3` is set equal to
-`h3_high` (input model parameter). For ``T_p`` values between 1 and 5 mm d``^{-1}``, the
-value of `h3` is linearly related to ``T_p`` (between `h3_low` and `h3_high`).
+The computation of transpiration from the saturated store depends on the water table depth,
+rooting depth, the reduction coefficient ``\alpha``, the fraction of wet roots and the
+`rootfraction` below the water table. The fraction of wet roots is determined using a
+sigmoid fuction (see figure below). The parameter `rootdistpar` defines the sharpness of the
+transition between fully wet and fully dry roots. If the water table depth is equal to or
+lower than the rooting depth, the remaining potential transpiration is used based on the
+potential transpiration and actual transpiration in the unsaturated zone. The remaining
+potential transpiration is multiplied by the wet roots fraction and the reduction
+coefficient (and limited by the available water in saturated zone) to get the transpiration
+from the saturated part of the soil. If the water table depth intersects the rooting depth,
+the potential transpiration is multiplied by the remaining `rootfraction` (below the water
+table), wet roots fraction and the reduction coefficient (and limited by the available water
+in saturated zone) to get the transpiration from the saturated part of the soil. This is
+implemented using the following code (`i` refers to the index of the vector that contains
+all active cells within the spatial model domain):
 
-The current soil water pressure is determined following the concept defined by Brooks and
-Corey (1964):
-
-```math
-    \frac{(\theta-\theta_r)}{(\theta_s-\theta_r)} =  \Bigg\lbrace{\left(\frac{h_b}{h}\right)^{\lambda}, h > h_b \atop 1 , h \leq h_b}
+```julia
+        # transpiration from saturated store
+        wetroots = scurve(sbm.zi[i], sbm.rootingdepth[i], Float(1.0), sbm.rootdistpar[i])
+        alpha = rwu_reduction_feddes(
+            Float(0.0),
+            sbm.h1[i],
+            sbm.h2[i],
+            sbm.h3[i],
+            sbm.h4[i],
+            sbm.alpha_h1[i],
+        )
+        # include remaining root fraction if rooting depth is below water table zi
+        if sbm.zi[i] >= sbm.rootingdepth[i]
+            f_roots = wetroots
+            restevap = sbm.pottrans[i] - actevapustore
+        else
+            f_roots = wetroots * (1.0 - rootfraction_unsat)
+            restevap = sbm.pottrans[i]
+        end
+        actevapsat = min(restevap * f_roots * alpha, satwaterdepth)
+        satwaterdepth = satwaterdepth - actevapsat
 ```
 
-where ``h`` is the pressure head [cm], ``h_b`` is the air entry pressure head [cm], and
-``\theta``, ``\theta_s``, ``\theta_r`` and ``\lambda`` as previously defined.
+![soil_wetroots](../../images/soil_wetroots.png)
 
-Whenever the current soil water pressure drops below `h4`, the root water uptake is set to
-zero. The root water uptake is at ideal conditions whenever the soil water pressure is above
-`h3`, with a linear transition between `h3` and `h4`.  The assumption that very wet
-conditions do not affect root water uptake too much is probably generally applicable to
-natural vegetation. For crops this assumption is not valid and in this case root water
-uptake above `h1` should be set to zero (oxygen deficit) and between `h1` and `h2` root
-water uptake is limited. This is possible by setting the input model parameter `alpha_h1` at
-0 (default is 1).
-
-![soil_rootwateruptake](../../images/soil_rootwateruptake.png)
-
-*Root water uptake reduction coefficient as a function of soil water pressure*
+*Amount of wet roots and the effect of the rootdistpar parameter*
 
 ```@setup
 # Figure created using python: # hide
