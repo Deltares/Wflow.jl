@@ -154,8 +154,6 @@ function set_states(instate_path, model; type = nothing, dimname = nothing)
             if dims == 4
                 if dimname == :layer
                     dimensions = (x = :, y = :, layer = :, time = 1)
-                elseif dimname == :classes
-                    dimensions = (x = :, y = :, classes = :, time = 1)
                 else
                     error("Unrecognized dimension name $dimname")
                 end
@@ -249,8 +247,6 @@ function ncread(
     # first timestep), that is later updated with the `update_cyclic!` function.
     if isnothing(dimname)
         dim_sel = (x = :, y = :, time = 1)
-    elseif dimname == :classes
-        dim_sel = (x = :, y = :, classes = :, time = 1)
     elseif dimname == :layer
         dim_sel = (x = :, y = :, layer = :, time = 1)
     elseif dimname == :flood_depth
@@ -810,7 +806,8 @@ end
 function initialize_lateralssf_layered!(ssf::LateralSSF, sbm::SBM, ksat_profile)
     for i in eachindex(ssf.ssf)
         ssf.kh[i] = kh_layered_profile(sbm, ssf.khfrac[i], i, ksat_profile)
-        ssf.ssf[i] = ssf.kh[i] * (ssf.soilthickness[i] - ssf.zi[i]) * ssf.slope[i] * ssf.dw[i]
+        ssf.ssf[i] =
+            ssf.kh[i] * (ssf.soilthickness[i] - ssf.zi[i]) * ssf.slope[i] * ssf.dw[i]
         kh_max = 0.0
         for j = 1:sbm.nlayers[i]
             if j <= sbm.nlayers_kv[i]
