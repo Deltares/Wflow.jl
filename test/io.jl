@@ -47,14 +47,6 @@ config = Wflow.Config(tomlpath)
           joinpath(@__DIR__, "data", "input", "instates-moselle.nc")
     @test Wflow.output_path(config, config.state.path_output) ==
           joinpath(@__DIR__, "data", "output", "outstates-moselle.nc")
-    # hbv_config doesn't use dir_input and dir_output
-    hbv_config = Wflow.Config(joinpath(@__DIR__, "hbv_config.toml"))
-    @test !haskey(hbv_config, "dir_input")
-    @test !haskey(hbv_config, "dir_output")
-    @test Wflow.input_path(hbv_config, hbv_config.state.path_input) ==
-          joinpath(@__DIR__, "data", "input", "instates-lahn.nc")
-    @test Wflow.output_path(hbv_config, hbv_config.state.path_output) ==
-          joinpath(@__DIR__, "data", "output", "outstates-lahn.nc")
 end
 
 @testset "Clock constructor" begin

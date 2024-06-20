@@ -38,9 +38,7 @@ end
 staticmaps_rhine_path = testdata(v"0.1", "staticmaps.nc", "staticmaps-rhine.nc")
 staticmaps_moselle_path =
     testdata(v"0.2.9", "staticmaps-moselle.nc", "staticmaps-moselle.nc")
-staticmaps_lahn_path = testdata(v"0.2.1", "staticmaps-lahn.nc", "staticmaps-lahn.nc")
 forcing_moselle_path = testdata(v"0.2.6", "forcing-moselle.nc", "forcing-moselle.nc")
-forcing_lahn_path = testdata(v"0.2", "forcing-lahn.nc", "forcing-lahn.nc")
 forcing_moselle_sed_path =
     testdata(v"0.2.3", "forcing-moselle-sed.nc", "forcing-moselle-sed.nc")
 staticmaps_moselle_sed_path =
@@ -82,7 +80,6 @@ with_logger(NullLogger()) do
         include("vertical_process.jl")
         include("reservoir_lake.jl")
         include("run_sbm.jl")
-        include("run_hbv.jl")
         include("run_sbm_gwf.jl")
         include("run.jl")
         include("groundwater.jl")

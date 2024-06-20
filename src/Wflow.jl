@@ -106,19 +106,16 @@ end
 # different model types (used for dispatch)
 struct SbmModel end         # "sbm" type / sbm_model.jl
 struct SbmGwfModel end      # "sbm_gwf" type / sbm_gwf_model.jl
-struct HbvModel end         # "hbv" type / hbv_model.jl
 struct SedimentModel end    # "sediment" type / sediment_model.jl
 
 # prevent a large printout of model components and arrays
 Base.show(io::IO, m::Model) = print(io, "model of type ", typeof(m))
 
 include("horizontal_process.jl")
-include("hbv.jl")
 include("sbm.jl")
 include("flow.jl")
 include("sediment.jl")
 include("reservoir_lake.jl")
-include("hbv_model.jl")
 include("sbm_model.jl")
 include("sediment_model.jl")
 include("vertical_process.jl")
@@ -185,8 +182,6 @@ function run(config::Config)
         initialize_sbm_model(config)
     elseif modeltype == "sbm_gwf"
         initialize_sbm_gwf_model(config)
-    elseif modeltype == "hbv"
-        initialize_hbv_model(config)
     elseif modeltype == "sediment"
         initialize_sediment_model(config)
     else
