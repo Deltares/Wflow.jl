@@ -38,17 +38,6 @@ function get_vertical_states(model_type::AbstractString; snow = false, glacier =
             :lowerzonestorage,
             :interceptionstorage,
         )
-    elseif model_type == "flextopo"
-        vertical_states = (
-            :snow,
-            :snowwater,
-            :interceptionstorage,
-            :hortonpondingstorage,
-            :hortonrunoffstorage,
-            :rootzonestorage,
-            :faststorage,
-            :slowstorage,
-        )
     elseif model_type == "sediment"
         vertical_states = ()
     else

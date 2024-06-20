@@ -39,8 +39,6 @@ staticmaps_rhine_path = testdata(v"0.1", "staticmaps.nc", "staticmaps-rhine.nc")
 staticmaps_moselle_path =
     testdata(v"0.2.9", "staticmaps-moselle.nc", "staticmaps-moselle.nc")
 staticmaps_lahn_path = testdata(v"0.2.1", "staticmaps-lahn.nc", "staticmaps-lahn.nc")
-staticmaps_meuse_path =
-    testdata(v"0.2.8", "staticmaps_flex_meuse.nc", "staticmaps_flex_meuse.nc")
 forcing_moselle_path = testdata(v"0.2.6", "forcing-moselle.nc", "forcing-moselle.nc")
 forcing_lahn_path = testdata(v"0.2", "forcing-lahn.nc", "forcing-lahn.nc")
 forcing_moselle_sed_path =
@@ -60,7 +58,6 @@ forcing_sbm_gw_path = testdata(
     "forcing-sbm-groundwater-part2.nc",
     "forcing-sbm-groundwater-part2.nc",
 )
-forcing_meuse_path = testdata(v"0.2.8", "forcing_meuse.nc", "forcing_meuse.nc")
 staticmaps_sbm_gw_path =
     testdata(v"0.2.3", "staticmaps-sbm-groundwater.nc", "staticmaps-sbm-groundwater.nc")
 instates_sbm_gw_path =
@@ -93,7 +90,6 @@ with_logger(NullLogger()) do
         include("bmi.jl")
         include("run_sediment.jl")
         include("subdomains.jl")
-        include("run_flextopo.jl")
 
         Aqua.test_all(Wflow; ambiguities = false)
     end
