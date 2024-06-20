@@ -56,7 +56,7 @@ Model specific settings can be included in the model section of the TOML file.
 
 ```toml
 [model]
-type = "sbm"                        # one of ("sbm", "sbm_gwf, "hbv")
+type = "sbm"                        # one of ("sbm" or "sbm_gwf)
 masswasting = false                 # include lateral snow transport in the model, default is false
 snow = false                        # include snow modelling, default is false
 reinit = true                       # cold (reinit = true) or warm state (reinit = false), default is true
@@ -243,16 +243,14 @@ extract data for certain locations (e.g. `gauges`) or areas (e.g. `subcatchment`
 netCDF location names are extracted from these maps. For a specific location (grid cell) a
 `location` is required. For layered model parameters and variables that have an extra
 dimension `layer` and are part of the vertical `sbm` concept it is possible to specify an
-internal layer index (see also example below). For model parameters and variables that have
-an extra dimension `classes` and are part of the vertical `FLEXTopo` concept it is possible
-to specify the class name. If multiple layers or classes are desired, this can be specified
-in separate `[[netcdf.variable]]` entries. Note that the specification of the extra
-dimension is not optional when wflow is integrated with Delft-FEWS, for netCDF scalar data
-an extra dimension is not allowed by the `importNetcdfActivity` of the Delft-FEWS General
-Adapter. In the section [Output CSV section](@ref), similar functionality is available for
-CSV. For integration with Delft-FEWS, see also [Run from Delft-FEWS](@ref run_fews), it is
-recommended to write scalar data to netCDF format since the General Adapter of Delft-FEWS
-can ingest this data format directly.
+internal layer index (see also example below). If multiple layers are desired, this can be
+specified in separate `[[netcdf.variable]]` entries. Note that the specification of the
+extra dimension is not optional when wflow is integrated with Delft-FEWS, for netCDF scalar
+data an extra dimension is not allowed by the `importNetcdfActivity` of the Delft-FEWS
+General Adapter. In the section [Output CSV section](@ref), similar functionality is
+available for CSV. For integration with Delft-FEWS, see also [Run from Delft-FEWS](@ref
+run_fews), it is recommended to write scalar data to netCDF format since the General Adapter
+of Delft-FEWS can ingest this data format directly.
 
 ```toml
 [netcdf]
@@ -301,10 +299,8 @@ extract data for certain locations (e.g. `gauges`) or areas (e.g. `subcatchment`
 case a single entry can lead to multiple columns in the CSV file, which will be of the form
 `header_id`, e.g. `Q_20`, for a gauge with integer ID 20. For layered model parameters and
 variables that have an extra dimension `layer` and are part of the vertical `sbm` concept an
-internal layer index (see also example below) should be specified. For model parameters and
-variables that have an extra dimension `classes` and are part of the vertical `FLEXTopo`
-concept it is possible to specify the class name. If multiple layers or classes are desired,
-this can be specified in separate `[[csv.column]]` entries.
+internal layer index (see also example below) should be specified. If multiple layers are
+desired, this can be specified in separate `[[csv.column]]` entries.
 
 The double brackets in `[[csv.column]]` is TOML syntax to indicate that it is part of a
 list. You may specify as many entries as you wish.
