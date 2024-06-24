@@ -1682,16 +1682,22 @@ Set `inwater` of the lateral land component for the `SbmGwfModel` type.
 """
 function set_land_inwater(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
     @unpack lateral, vertical, network, config = model
-
+    do_water_demand = haskey(config.model, "water_demand")
     do_drains = get(config.model, "drains", false)::Bool
     drainflux = zeros(vertical.n)
     if do_drains
         drainflux[lateral.subsurface.drain.index] =
             -lateral.subsurface.drain.flux ./ tosecond(basetimestep)
     end
-
-    lateral.land.inwater .=
-        (vertical.net_runoff .* network.land.area .* 0.001) ./ lateral.land.dt .+ drainflux
+    if do_water_demand
+        @. lateral.land.inwater =
+            (vertical.net_runoff + vertical.waterallocation.nonirri_returnflow) *
+            network.land.area *
+            0.001 / lateral.land.dt + drainflux
+    else
+        @. lateral.land.inwater =
+            (vertical.net_runoff * network.land.area * 0.001) / lateral.land.dt + drainflux
+    end
 end
 
 """
@@ -1700,9 +1706,17 @@ end
 Set `inwater` of the lateral land component for the `SbmModel` type.
 """
 function set_land_inwater(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
-    @unpack lateral, vertical, network = model
-    lateral.land.inwater .=
-        (vertical.net_runoff .* network.land.area .* 0.001) ./ lateral.land.dt
+    @unpack lateral, vertical, network, config = model
+    do_water_demand = haskey(config.model, "water_demand")
+    if do_water_demand
+        @. lateral.land.inwater =
+            (vertical.net_runoff + vertical.waterallocation.nonirri_returnflow) *
+            network.land.area *
+            0.001 / lateral.land.dt
+    else
+        @. lateral.land.inwater =
+            (vertical.net_runoff * network.land.area * 0.001) / lateral.land.dt
+    end
 end
 
 """
@@ -1711,17 +1725,9 @@ end
 Set `inwater` of the lateral land component, based on `runoff` of the `vertical` concept.
 """
 function set_land_inwater(model)
-    @unpack lateral, vertical, network, config = model
-    do_water_demand = haskey(config.model, "water_demand")
-    if do_water_demand
-        @. lateral.land.inwater =
-            (vertical.runoff + vertical.waterallocation.nonirri_returnflow) *
-            network.land.area *
-            0.001 / lateral.land.dt
-    else
-        @. lateral.land.inwater =
-            (vertical.runoff * network.land.area * 0.001) / lateral.land.dt
-    end
+    @unpack lateral, vertical, network = model
+    @. lateral.land.inwater =
+        (vertical.runoff * network.land.area * 0.001) / lateral.land.dt
 end
 
 # Computation of inflow from the lateral components `land` and `subsurface` to water bodies
