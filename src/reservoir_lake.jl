@@ -1,5 +1,5 @@
-@get_units @exchange @grid_type @grid_location @with_kw struct SimpleReservoir{T}
-    dt::T | "s" | 0 | "none" | "none"                   # Model time step [s]
+@get_units @with_kw struct SimpleReservoir{T}
+    dt::T | "s"                                         # Model time step [s]
     maxvolume::Vector{T} | "m3"                         # maximum storage (above which water is spilled) [m³]
     area::Vector{T} | "m2"                              # reservoir area [m²]
     maxrelease::Vector{T} | "m3 s-1"                    # maximum amount that can be released if below spillway [m³ s⁻¹]
@@ -22,6 +22,8 @@
     end
 end
 
+exchange(::SimpleReservoir, var) = var == :dt ? 0 : 1
+grid_location(::SimpleReservoir, var) = var == :dt ? "none" : "node"
 
 function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, dt)
     # read only reservoir data if reservoirs true
@@ -204,8 +206,8 @@ function update(res::SimpleReservoir, i, inflow, timestepsecs)
     return res
 end
 
-@get_units @exchange @grid_type @grid_location @with_kw struct Lake{T}
-    dt::T | "s" | 0 | "none" | "none"           # Model time step [s]
+@get_units @with_kw struct Lake{T}
+    dt::T | "s"                                 # Model time step [s]
     lowerlake_ind::Vector{Int} | "-"            # Index of lower lake (linked lakes)
     area::Vector{T} | "m2"                      # lake area [m²]
     maxstorage::Vector{Union{T,Missing}} | "m3" # lake maximum storage from rating curve 1 [m³]
@@ -230,6 +232,9 @@ end
         return new(args...)
     end
 end
+
+exchange(::Lake, var) = var == :dt ? 0 : 1
+grid_location(::Lake, var) = var == :dt ? "none" : "node"
 
 function initialize_lake(config, nc, inds_riv, nriv, pits, dt)
     # read only lake data if lakes true

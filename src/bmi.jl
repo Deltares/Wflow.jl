@@ -116,22 +116,23 @@ function BMI.get_input_var_names(model::Model)
         var_names = Vector{String}()
         for c in config.API.components
             type = typeof(param(model, c))
-            inds = findall(x -> x != 0, exchange(type))
-            field_names = fieldnames(type)[inds]
+            field_names = fieldnames(type)
 
             for name in field_names
-                var = string(c, ".", name)
-                model_var = param(model, var)
-                if eltype(model_var) <: SVector
-                    for i = 1:length(first(model_var))
-                        push!(var_names, string(var, "[", i, "]"))
+                if exchange(param(model, c), name) == 1
+                    var = string(c, ".", name)
+                    model_var = param(model, var)
+                    if eltype(model_var) <: SVector
+                        for i = 1:length(first(model_var))
+                            push!(var_names, string(var, "[", i, "]"))
+                        end
+                    elseif ndims(model_var) > 1
+                        for i = 1:length(first(model_var))
+                            push!(var_names, string(var, "[", i, "]"))
+                        end
+                    else
+                        push!(var_names, var)
                     end
-                elseif ndims(model_var) > 1
-                    for i = 1:length(first(model_var))
-                        push!(var_names, string(var, "[", i, "]"))
-                    end
-                else
-                    push!(var_names, var)
                 end
             end
         end
@@ -152,7 +153,6 @@ function BMI.get_var_grid(model::Model, name::String)
     s = split(name, "[")
     key = symbols(first(s))
     if exchange(param(model, key[1:end-1]), key[end]) == 1
-        gridtype = grid_type(param(model, key))
         type = typeof(param(model, key[1:end-1]))
         return if :reservoir in key
             0
@@ -199,8 +199,9 @@ end
 
 function BMI.get_var_location(model::Model, name::String)
     key = symbols(first(split(name, "[")))
-    if exchange(param(model, key[1:end-1]), key[end]) == 1
-        return grid_location(model, key)
+    type = param(model, key[1:end-1])
+    if exchange(type, key[end]) == 1
+        return grid_location(type, key[end])
     else
         error("$name not listed as variable for BMI exchange")
     end
@@ -409,3 +410,6 @@ end
 function get_start_unix_time(model::Model)
     datetime2unix(DateTime(model.config.starttime))
 end
+
+exchange(::Nothing, var) = 0
+grid_location(::Nothing, var) = "none"
