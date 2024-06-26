@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Removed vertical concepts `HBV` and `FLEXTopo`.
+- Removed metadata macros `exchange`, `grid_type` and `grid_location`. The macro `grid_type`
+  is not required because this functionality is already part of `BMI`. The macros `exchange`
+  and `grid_location` are replaced by functions resulting in cleaner code.
 
 ### Added
 
