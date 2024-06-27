@@ -1081,7 +1081,9 @@ function exchange(::ShallowWaterLand, var)
 end
 
 function grid_location(::ShallowWaterLand, var)
-    if var in (:mannings_n_sq,)
+    if var in (:n, :dt, :froude_limit)
+        "none"
+    elseif var in (:xwidth, :ywidth, :qy0, :qx0, :qx, :qy, :zx_max, :zy_max, :mannings_n_sq)
         "edge"
     else
         "node"
