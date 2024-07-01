@@ -48,8 +48,8 @@ exceeds `whc`, either through snow melt or incoming rainfall, the surplus water
 
 ### Glacier modelling
 
-Glacier processes can be modelled if the snow model is enabled.Glacier modelling is very
-close to snow modelling and considers two main processes: glacier build-up from snow turning
+Glacier processes can be modelled if the snow model is enabled. Glacier modelling is very
+similar to snow modelling and considers two main processes: glacier build-up from snow turning
 into firn/ice (using the HBV-light model) and glacier melt (using a temperature degree-day
 model).
 
