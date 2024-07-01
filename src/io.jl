@@ -464,12 +464,6 @@ function set_extradim_netcdf(
     if extra_dim.name == "layer"
         attributes =
             ["long_name" => "layer_index", "standard_name" => "layer_index", "axis" => "Z"]
-    elseif extra_dim.name == "classes"
-        attributes = [
-            "long_name" => extra_dim.name,
-            "standard_name" => extra_dim.name,
-            "axis" => "Z",
-        ]
     end
     defVar(ds, extra_dim.name, extra_dim.value, (extra_dim.name,), attrib = attributes)
     return nothing
@@ -1437,7 +1431,7 @@ function internal_dim_name(name::Symbol)
         return :x
     elseif name in (:y, :lat, :latitude)
         return :y
-    elseif name in (:time, :layer, :flood_depth, :classes)
+    elseif name in (:time, :layer, :flood_depth)
         return name
     elseif startswith(string(name), "time")
         return :time
@@ -1522,8 +1516,6 @@ function permute_data(data, dim_names)
     @assert ndims(data) == length(dim_names)
     if :layer in dim_names
         desired_order = (:x, :y, :layer)
-    elseif :classes in dim_names
-        desired_order = (:x, :y, :classes)
     elseif :flood_depth in dim_names
         desired_order = (:x, :y, :flood_depth)
     else
@@ -1566,12 +1558,6 @@ function reverse_data!(data, dims_increasing)
             x = dims_increasing.x,
             y = dims_increasing.y,
             flood_depth = dims_increasing.flood_depth,
-        )
-    elseif length(dims_increasing) == 3 && haskey(dims_increasing, :classes)
-        dims_increasing_ordered = (
-            x = dims_increasing.x,
-            y = dims_increasing.y,
-            classes = dims_increasing.classes,
         )
     else
         error("Unsupported number of dimensions")
@@ -1628,29 +1614,24 @@ function read_y_axis(ds::CFDataset)::Vector{Float64}
     error("no y axis found in $(path(ds))")
 end
 
-"Get `index` for dimension name `layer` or `classes` based on `model`"
+"Get `index` for dimension name `layer` based on `model`"
 function get_index_dimension(var, model)::Int
     @unpack vertical = model
     if haskey(var, "layer")
         inds = collect(1:vertical.maxlayers)
         index = inds[var["layer"]]
-    elseif haskey(var, "class")
-        index = findfirst(x -> x == var["class"], vertical.classes)
     else
         error("Unrecognized or missing dimension name to index $(var)")
     end
     return index
 end
 
-"Get `index` for dimension name `layer` or `classes` based on `config` (TOML file)"
+"Get `index` for dimension name `layer` based on `config` (TOML file)"
 function get_index_dimension(var, config::Config, dim_value)::Int
     if haskey(var, "layer")
         v = get(config.model, "thicknesslayers", Float[])
         inds = collect(1:length(v)+1)
         index = inds[dim_value]
-    elseif haskey(var, "class")
-        classes = get(config.model, "classes", "")
-        index = findfirst(x -> x == dim_value, classes)
     else
         error("Unrecognized or missing dimension name to index $(var)")
     end

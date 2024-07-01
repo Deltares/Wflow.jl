@@ -372,7 +372,8 @@ function stable_timestep(sf::S) where {S<:SurfaceFlow}
             courant = zeros(n)
             for v = 1:n
                 if sf.q[v] > 0.0
-                    sf.cel[v] = 1.0 / (sf.alpha[v] * sf.beta * pow(sf.q[v], (sf.beta - 1.0)))
+                    sf.cel[v] =
+                        1.0 / (sf.alpha[v] * sf.beta * pow(sf.q[v], (sf.beta - 1.0)))
                     courant[v] = (sf.dt / sf.dl[v]) * sf.cel[v]
                 end
             end
@@ -1153,8 +1154,8 @@ function stable_timestep(sw::ShallowWaterLand{T})::T where {T}
     dt_min = T(Inf)
     @batch per = thread reduction = ((min, dt_min),) for i = 1:sw.n
         @fastmath @inbounds dt =
-            sw.rivercells[i] == 0 ? sw.alpha * min(sw.xl[i], sw.yl[i]) / sqrt(sw.g * sw.h[i]) :
-            T(Inf)
+            sw.rivercells[i] == 0 ?
+            sw.alpha * min(sw.xl[i], sw.yl[i]) / sqrt(sw.g * sw.h[i]) : T(Inf)
         dt_min = min(dt, dt_min)
     end
     dt_min = isinf(dt_min) ? T(10.0) : dt_min
@@ -1604,12 +1605,12 @@ function initialize_floodplain_1d(
 end
 
 """
-    set_river_inwater(model::Model{N,L,V,R,W,T}, ssf_toriver) where {N,L,V<:SBM,R,W,T}
+    set_river_inwater(model, ssf_toriver)
 
-Set `inwater` of the lateral river component for a `Model` with vertical `SBM` concept.
-`ssf_toriver` is the subsurface flow to the river.
+Set `inwater` of the lateral river component for a model `ssf_toriver` is the subsurface
+flow to the river.
 """
-function set_river_inwater(model::Model{N,L,V,R,W,T}, ssf_toriver) where {N,L,V<:SBM,R,W,T}
+function set_river_inwater(model, ssf_toriver)
     @unpack lateral, vertical, network = model
     inds = network.index_river
 
@@ -1626,17 +1627,6 @@ function set_river_inwater(model::Model{N,L,V,R,W,T}, ssf_toriver) where {N,L,V<
             ) / vertical.dt
         )
     )
-end
-
-"""
-    set_river_inwater(model, ssf_toriver)
-
-Set `inwater` of the lateral river component (based on overland flow).
-"""
-function set_river_inwater(model, ssf_toriver)
-    @unpack lateral, network = model
-    inds = network.index_river
-    lateral.river.inwater .= lateral.land.to_river[inds]
 end
 
 """
@@ -1669,17 +1659,6 @@ function set_land_inwater(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmMode
     lateral.land.inwater .=
         (vertical.net_runoff .* network.land.xl .* network.land.yl .* 0.001) ./
         lateral.land.dt
-end
-
-"""
-    set_land_inwater(model)
-
-Set `inwater` of the lateral land component, based on `runoff` of the `vertical` concept.
-"""
-function set_land_inwater(model)
-    @unpack lateral, vertical, network = model
-    lateral.land.inwater .=
-        (vertical.runoff .* network.land.xl .* network.land.yl .* 0.001) ./ lateral.land.dt
 end
 
 # Computation of inflow from the lateral components `land` and `subsurface` to water bodies
