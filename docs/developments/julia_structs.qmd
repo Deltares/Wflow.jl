@@ -21,9 +21,9 @@ end
 ```
 
 The `lateral` field of the `struct Model` can contain different lateral concepts. For each
-wflow model these different lateral concepts are mapped through the use of a `NamedTuple`. The
-`vertical` field of the `struct Model` always contains one vertical concept, for example the
-SBM vertical concept.
+wflow model these different lateral concepts are mapped through the use of a `NamedTuple`.
+The `vertical` field of the `struct Model` always contains one vertical concept, for example
+the SBM vertical concept.
 
 Below an example how lateral concepts are mapped for the SBM model through a `NamedTuple`:
 

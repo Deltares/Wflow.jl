@@ -234,25 +234,23 @@ h = "h_land"
 ```
 
 ### Scalar data
-In addition to gridded data, scalar data can also be written to a netCDF file. Below is an
-example that shows how to write scalar data to the file "output\_scalar\_moselle.nc". For each
-netCDF variable, a `name` (external variable name) and a `parameter` (internal model parameter)
-are required. A `reducer` can be specified to apply to the model output. See more details in
-the [Output CSV section](#output-csv-section) section. If a `map` is provided to extract data
-for specific locations (e.g. `gauges`) or areas (e.g. `subcatchment`), the netCDF location
-names are extracted from these maps. For a specific location (grid cell) a `location` is
-required. For layered model parameters and variables that have an extra `layer` dimension and
-are part of the vertical `sbm` concept, an internal layer index can be specified (an example is
-provided below). Similarly, for model parameters and variables that have an extra dimension
-`classes` and are part of the vertical `FLEXTopo` concept, the class name can be specified. If
-multiple layers or classes are desired, this can be specified in separate `[[netcdf.variable]]`
-entries. Note that the additional dimension should be specified when wflow is integrated with
-Delft-FEWS, for netCDF scalar data an extra dimension is not allowed by the
-`importNetcdfActivity` of the Delft-FEWS General Adapter. In the section [Output CSV
-section](#output-csv-section), similar functionality is available for CSV. For integration with
-Delft-FEWS, it is recommended to write scalar data to netCDF format, as the General Adapter of
-Delft-FEWS can directly ingest data from netCDF files. For more information, see [Run from
-Delft-FEWS](./fews.qmd).
+Besides gridded data, it is also possible to write scalar data to a netCDF file. Below is an
+example that writes scalar data to the file "output\_scalar\_moselle.nc". For each netCDF
+variable a `name` (external variable name) and `parameter` (internal model parameter) is
+required. A `reducer` can be specified to apply to the model output, see for more
+information the following section [Output CSV section](@ref). When a `map` is provided to
+extract data for certain locations (e.g. `gauges`) or areas (e.g. `subcatchment`), the
+netCDF location names are extracted from these maps. For a specific location (grid cell) a
+`location` is required. For layered model parameters and variables that have an extra
+dimension `layer` and are part of the vertical `sbm` concept it is possible to specify an
+internal layer index (see also example below). If multiple layers are desired, this can be
+specified in separate `[[netcdf.variable]]` entries. Note that the specification of the
+extra dimension is not optional when wflow is integrated with Delft-FEWS, for netCDF scalar
+data an extra dimension is not allowed by the `importNetcdfActivity` of the Delft-FEWS
+General Adapter. In the section [Output CSV section](@ref), similar functionality is
+available for CSV. For integration with Delft-FEWS, see also [Run from Delft-FEWS](@ref
+run_fews), it is recommended to write scalar data to netCDF format since the General Adapter
+of Delft-FEWS can ingest this data format directly.
 
 ```toml
 [netcdf]
@@ -301,10 +299,8 @@ extract data for certain locations (e.g. `gauges`) or areas (e.g. `subcatchment`
 case, a single entry can lead to multiple columns in the CSV file, which will be of the form
 `header_id`, e.g. `Q_20`, for a gauge with integer ID 20. For layered model parameters and
 variables that have an extra dimension `layer` and are part of the vertical `sbm` concept an
-internal layer index (see also example below) should be specified. For model parameters and
-variables that have an extra dimension `classes` and are part of the vertical `FLEXTopo`
-concept, it is possible to specify the class name. If multiple layers or classes are desired,
-this can be specified in separate `[[csv.column]]` entries.
+internal layer index (see also example below) should be specified. If multiple layers are
+desired, this can be specified in separate `[[csv.column]]` entries.
 
 The double brackets in `[[csv.column]]` follow TOML syntax, indicating that it is part of a
 list. You can specify as many entries as you want.

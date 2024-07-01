@@ -1161,11 +1161,9 @@ end
 function stable_timestep(sw::ShallowWaterLand{T})::T where {T}
     dt_min = T(Inf)
     @batch per = thread reduction = ((min, dt_min),) for i in 1:(sw.n)
-        @fastmath @inbounds dt = if sw.rivercells[i] == 0
-            sw.alpha * min(sw.xl[i], sw.yl[i]) / sqrt(sw.g * sw.h[i])
-        else
-            T(Inf)
-        end
+        @fastmath @inbounds dt =
+            sw.rivercells[i] == 0 ?
+            sw.alpha * min(sw.xl[i], sw.yl[i]) / sqrt(sw.g * sw.h[i]) : T(Inf)
         dt_min = min(dt, dt_min)
     end
     dt_min = isinf(dt_min) ? T(10.0) : dt_min
@@ -1614,14 +1612,13 @@ function initialize_floodplain_1d(
 end
 
 """
-    set_river_inwater!(model::Model, ssf_toriver)
+    set_river_inwater(model, ssf_toriver)
 
-Set `inwater` of the lateral river component for a `Model`. `ssf_toriver` is the subsurface
+Set `inwater` of the lateral river component for a model `ssf_toriver` is the subsurface
 flow to the river.
 """
-function set_river_inwater!(model::Model, ssf_toriver)
-    (; lateral, vertical, network, config) = model
-    (; net_runoff_river) = vertical.runoff.variables
+function set_river_inwater(model, ssf_toriver)
+    @unpack lateral, vertical, network = model
     inds = network.index_river
     do_water_demand = haskey(config.model, "water_demand")
     if do_water_demand
@@ -1648,7 +1645,7 @@ function set_river_inwater!(model::Model, ssf_toriver)
 end
 
 """
-    set_land_inwater!(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
+    set_land_inwater(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
 
 Set `inwater` of the lateral land component for the `SbmGwfModel` type.
 """
@@ -1681,21 +1678,13 @@ end
 
 Set `inwater` of the lateral land component for the `SbmModel` type.
 """
-function set_land_inwater!(
+function set_land_inwater(
     model::Model{N, L, V, R, W, T},
 ) where {N, L, V, R, W, T <: SbmModel}
-    (; lateral, vertical, network, config) = model
-    (; net_runoff) = vertical.soil.variables
-    do_water_demand = haskey(config.model, "water_demand")
-    if do_water_demand
-        @. lateral.land.inwater =
-            (net_runoff + vertical.allocation.variables.nonirri_returnflow) *
-            network.land.area *
-            0.001 / lateral.land.dt
-    else
-        @. lateral.land.inwater = (net_runoff * network.land.area * 0.001) / lateral.land.dt
-    end
-    return nothing
+    @unpack lateral, vertical, network = model
+    lateral.land.inwater .=
+        (vertical.net_runoff .* network.land.xl .* network.land.yl .* 0.001) ./
+        lateral.land.dt
 end
 
 # Computation of inflow from the lateral components `land` and `subsurface` to water bodies
