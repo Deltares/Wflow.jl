@@ -122,9 +122,6 @@ instead. Specific yield will vary roughly between 0.05 (clay) and 0.45 (peat)
     # conductivity_profile is set to "exponential")
 end
 
-exchange(::Aquifer, var) = 1
-grid_location(::Aquifer, var) = "node"
-
 storativity(A::UnconfinedAquifer) = A.specific_yield
 storativity(A::ConfinedAquifer) = A.storativity
 
@@ -312,9 +309,6 @@ end
     head::Vector{T} | "m"
     index::Vector{Int} | "-"
 end
-
-exchange(::ConstantHead, var) = 0
-grid_location(::ConstantHead, var) = "node"
 
 """
     stable_timestep(aquifer)

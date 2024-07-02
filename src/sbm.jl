@@ -213,9 +213,6 @@
     end
 end
 
-exchange(::SBM, var) = var in (:n, :dt, :maxlayers) ? 0 : 1
-grid_location(::SBM, var) = var in (:n, :dt, :maxlayers) ? "none" : "node"
-
 function initialize_canopy(nc, config, inds)
     n = length(inds)
     # if leaf area index climatology provided use sl, swood and kext to calculate cmax, e_r and canopygapfraction

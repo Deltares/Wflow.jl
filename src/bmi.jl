@@ -411,5 +411,124 @@ function get_start_unix_time(model::Model)
     datetime2unix(DateTime(model.config.starttime))
 end
 
+# Exchange and grid location functions.
 exchange(::Nothing, var) = 0
 grid_location(::Nothing, var) = "none"
+
+function exchange(::SurfaceFlow, var)
+    if var in (:dt, :beta, :its, :alpha_pow, :reservoir, :lake, :kinwave_it)
+        0
+    else
+        1
+    end
+end
+
+function grid_location(::SurfaceFlow, var)
+    if var in (:dt, :its, :kinwave_it)
+        "none"
+    else
+        "node"
+    end
+end
+
+exchange(::Union{LateralSSF,GroundwaterExchange}, var) = var == :dt ? 0 : 1
+grid_location(::Union{LateralSSF,GroundwaterExchange}, var) = var == :dt ? "none" : "node"
+
+function exchange(::ShallowWaterRiver, var)
+    if var in (
+        :dt,
+        :n,
+        :ne,
+        :g,
+        :alpha,
+        :h_thresh,
+        :froude_limit,
+        :reservoir_index,
+        :lake_index,
+        :reservoir,
+        :lake,
+        :floodplain,
+    )
+        0
+    else
+        1
+    end
+end
+
+function grid_location(::ShallowWaterRiver, var)
+    if var in (:n, :ne, :dt, :froude_limit)
+        "none"
+    elseif var in (
+        :active_e,
+        :q,
+        :q0,
+        :q_av,
+        :mannings_n_sq,
+        :zs_max,
+        :hf,
+        :dl_at_link,
+        :width_at_link,
+        :a,
+        :r,
+    )
+        "edge"
+    else
+        "node"
+    end
+end
+
+function exchange(::ShallowWaterLand, var)
+    if var in (:n, :g, :theta, :alpha, :h_thresh, :dt, :froude_limit)
+        0
+    else
+        1
+    end
+end
+
+function grid_location(::ShallowWaterLand, var)
+    if var in (:n, :dt, :froude_limit)
+        "none"
+    elseif var in (:xwidth, :ywidth, :qy0, :qx0, :qx, :qy, :zx_max, :zy_max, :mannings_n_sq)
+        "edge"
+    else
+        "node"
+    end
+end
+
+exchange(::FloodPlainProfile, var) = 1
+grid_location(::FloodPlainProfile, var) = "node"
+
+exchange(::FloodPlain, var) = var == :profile ? 0 : 1
+function grid_location(::FloodPlain, var)
+    if var in (:mannings_n_sq, :a, :r, :hf, :zb_max, :q0, :q, :q_av, :hf_index)
+        "edge"
+    else
+        "node"
+    end
+
+end
+
+exchange(::SimpleReservoir, var) = var == :dt ? 0 : 1
+grid_location(::SimpleReservoir, var) = var == :dt ? "none" : "node"
+
+exchange(::Lake, var) = var == :dt ? 0 : 1
+grid_location(::Lake, var) = var == :dt ? "none" : "node"
+
+exchange(::SBM, var) = var in (:n, :dt, :maxlayers) ? 0 : 1
+grid_location(::SBM, var) = var in (:n, :dt, :maxlayers) ? "none" : "node"
+
+exchange(::Union{LandSediment,OverlandFlowSediment}, var) = var == :n ? 0 : 1
+grid_location(::Union{LandSediment,OverlandFlowSediment}, var) = var == :n ? "none" : "node"
+
+exchange(::RiverSediment, var) = var in (:n, :dt) ? 0 : 1
+grid_location(::RiverSediment, var) = var in (:n, :dt) ? "none" : "node"
+
+
+exchange(::Aquifer, var) = 1
+grid_location(::Aquifer, var) = "node"
+
+exchange(::ConstantHead, var) = 0
+grid_location(::ConstantHead, var) = "node"
+
+exchange(::AquiferBoundaryCondition, var) = 1
+grid_location(::AquiferBoundaryCondition, var) = "node"

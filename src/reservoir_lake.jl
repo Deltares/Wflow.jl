@@ -22,9 +22,6 @@
     end
 end
 
-exchange(::SimpleReservoir, var) = var == :dt ? 0 : 1
-grid_location(::SimpleReservoir, var) = var == :dt ? "none" : "node"
-
 function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, dt)
     # read only reservoir data if reservoirs true
     # allow reservoirs only in river cells
@@ -232,9 +229,6 @@ end
         return new(args...)
     end
 end
-
-exchange(::Lake, var) = var == :dt ? 0 : 1
-grid_location(::Lake, var) = var == :dt ? "none" : "node"
 
 function initialize_lake(config, nc, inds_riv, nriv, pits, dt)
     # read only lake data if lakes true

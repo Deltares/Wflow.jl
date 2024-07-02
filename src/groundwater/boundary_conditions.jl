@@ -110,6 +110,3 @@ function flux!(Q, well::Well, aquifer)
     end
     return Q
 end
-
-exchange(::AquiferBoundaryCondition, var) = 1
-grid_location(::AquiferBoundaryCondition, var) = "node"

@@ -634,9 +634,6 @@ end
     end
 end
 
-exchange(::Union{LandSediment,OverlandFlowSediment}, var) = var == :n ? 0 : 1
-grid_location(::Union{LandSediment,OverlandFlowSediment}, var) = var == :n ? "none" : "node"
-
 function partial_update!(inland, rivcell, eroded)
     no_erosion = zero(eltype(eroded))
     for i in eachindex(inland)
@@ -783,9 +780,6 @@ end
     #     return new(args...)
     # end
 end
-
-exchange(::RiverSediment, var) = var in (:n, :dt) ? 0 : 1
-grid_location(::RiverSediment, var) = var in (:n, :dt) ? "none" : "node"
 
 function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     # Initialize river parameters

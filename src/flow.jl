@@ -61,22 +61,6 @@ end
     kinwave_it::Bool | "-"              # Boolean for iterations kinematic wave
 end
 
-function exchange(::SurfaceFlow, var)
-    if var in (:dt, :beta, :its, :alpha_pow, :reservoir, :lake, :kinwave_it)
-        0
-    else
-        1
-    end
-end
-
-function grid_location(::SurfaceFlow, var)
-    if var in (:dt, :its, :kinwave_it)
-        "none"
-    else
-        "node"
-    end
-end
-
 function initialize_surfaceflow_land(nc, config, inds; sl, dl, width, iterate, tstep, dt)
     @info "Kinematic wave approach is used for overland flow." iterate
     if tstep > 0
@@ -502,9 +486,6 @@ end
     ssf::Vector{T} | "m3 d-1"           # Subsurface flow [m³ d⁻¹]
 end
 
-exchange(::Union{LateralSSF,GroundwaterExchange}, var) = var == :dt ? 0 : 1
-grid_location(::Union{LateralSSF,GroundwaterExchange}, var) = var == :dt ? "none" : "node"
-
 @get_units @with_kw struct ShallowWaterRiver{T,R,L,F}
     n::Int | "-"                                # number of cells
     ne::Int | "-"                               # number of edges/links
@@ -548,49 +529,6 @@ grid_location(::Union{LateralSSF,GroundwaterExchange}, var) = var == :dt ? "none
     reservoir::R | "-"                          # Reservoir model struct of arrays
     lake::L | "-"                               # Lake model struct of arrays
     floodplain::F | "-"                         # Floodplain (1D) schematization
-end
-
-function exchange(::ShallowWaterRiver, var)
-    if var in (
-        :dt,
-        :n,
-        :ne,
-        :g,
-        :alpha,
-        :h_thresh,
-        :froude_limit,
-        :reservoir_index,
-        :lake_index,
-        :reservoir,
-        :lake,
-        :floodplain,
-    )
-        0
-    else
-        1
-    end
-end
-
-function grid_location(::ShallowWaterRiver, var)
-    if var in (:n, :ne, :dt, :froude_limit)
-        "none"
-    elseif var in (
-        :active_e,
-        :q,
-        :q0,
-        :q_av,
-        :mannings_n_sq,
-        :zs_max,
-        :hf,
-        :dl_at_link,
-        :width_at_link,
-        :a,
-        :r,
-    )
-        "edge"
-    else
-        "node"
-    end
 end
 
 function initialize_shallowwater_river(
@@ -1072,24 +1010,6 @@ const dirs = (:yd, :xd, :xu, :yu)
     h_av::Vector{T} | "m"                       # average water depth (for river cells the reference is the river bed elevation `zb`)
 end
 
-function exchange(::ShallowWaterLand, var)
-    if var in (:n, :g, :theta, :alpha, :h_thresh, :dt, :froude_limit)
-        0
-    else
-        1
-    end
-end
-
-function grid_location(::ShallowWaterLand, var)
-    if var in (:n, :dt, :froude_limit)
-        "none"
-    elseif var in (:xwidth, :ywidth, :qy0, :qx0, :qx, :qy, :zx_max, :zy_max, :mannings_n_sq)
-        "edge"
-    else
-        "node"
-    end
-end
-
 function initialize_shallowwater_land(
     nc,
     config,
@@ -1468,19 +1388,6 @@ end
     q::Vector{T} | "m3 s-1"                    # discharge
     q_av::Vector{T} | "m"                      # average river discharge
     hf_index::Vector{Int} | "-"                # index with `hf` above depth threshold
-end
-
-exchange(::FloodPlainProfile, var) = 1
-grid_location(::FloodPlainProfile, var) = "node"
-
-exchange(::FloodPlain, var) = var == :profile ? 0 : 1
-function grid_location(::FloodPlain, var)
-    if var in (:mannings_n_sq, :a, :r, :hf, :zb_max, :q0, :q, :q_av, :hf_index)
-        "edge"
-    else
-        "node"
-    end
-
 end
 
 "Determine the initial floodplain volume"
