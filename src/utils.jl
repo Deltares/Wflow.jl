@@ -826,3 +826,8 @@ function initialize_lateralssf_layered!(ssf::LateralSSF, sbm::SBM, ksat_profile)
         ssf.ssfmax[i] = kh_max * ssf.slope[i]
     end
 end
+
+function divide(x, y; max = 1.0, default = 0.0)
+    z = y > 0.0 ? min(x / y, max) : default
+    return z
+end

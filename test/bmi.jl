@@ -20,8 +20,8 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 
         @testset "model information functions" begin
             @test BMI.get_component_name(model) == "sbm"
-            @test BMI.get_input_item_count(model) == 193
-            @test BMI.get_output_item_count(model) == 193
+            @test BMI.get_input_item_count(model) == 207
+            @test BMI.get_output_item_count(model) == 207
             to_check = [
                 "vertical.nlayers",
                 "vertical.theta_r",
@@ -57,7 +57,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test_throws ErrorException BMI.get_value_ptr(model, "vertical.")
             dest = zeros(Float, size(model.vertical.zi))
             BMI.get_value(model, "vertical.zi", dest)
-            @test mean(dest) ≈ 276.16325589542333
+            @test mean(dest) ≈ 276.1625022866973
             @test BMI.get_value_at_indices(
                 model,
                 "vertical.vwc[1]",
@@ -75,7 +75,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
                 "lateral.river.q",
                 zeros(Float, 3),
                 [1, 100, 5617],
-            ) ≈ [0.623325399343309, 5.227139951657074, 0.02794287432778194]
+            ) ≈ [0.623325399343309, 5.227139951657074, 0.027942874327781947]
             BMI.set_value(model, "vertical.zi", fill(300.0, length(model.vertical.zi)))
             @test mean(
                 BMI.get_value(model, "vertical.zi", zeros(Float, size(model.vertical.zi))),
@@ -156,8 +156,8 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             sbm = model.vertical
             @test sbm.interception[1] ≈ 0.32734913737568716f0
             @test sbm.ustorelayerdepth[1][1] ≈ 0.0f0
-            @test sbm.snow[1] ≈ 3.484789961176288f0
-            @test sbm.recharge[5] ≈ -0.0f0
+            @test sbm.snow[1] ≈ 3.4847899611762876f0
+            @test sbm.recharge[5] ≈ 0.0f0
             @test sbm.zi[5] ≈ 300.0f0
         end
 
@@ -180,7 +180,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             sub = model.lateral.subsurface
             @test sbm.interception[1] ≈ 0.32734913737568716f0
             @test sbm.ustorelayerdepth[1][1] ≈ 0.0f0
-            @test sbm.snow[1] ≈ 3.484789961176288f0
+            @test sbm.snow[1] ≈ 3.4847899611762876f0
             @test sbm.recharge[5] ≈ 0.0f0
             @test sbm.zi[5] ≈ 250.0f0
             @test sub.zi[5] ≈ 0.25f0

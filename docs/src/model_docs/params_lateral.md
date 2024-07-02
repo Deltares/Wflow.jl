@@ -22,7 +22,9 @@ internal model parameter `sl`, and is listed in the Table below between parenthe
 | `q_av`          | average discharge | m``^3`` s``^{-1}``| - |
 | `qlat`          | lateral inflow per unit length  | m``^2`` s``^{-1}``| - |
 | `inwater`       | lateral inflow | m``^3`` s``^{-1}``| - |
-| `inflow`        | external inflow (abstraction/supply/demand) | m``^3`` s``^{-1}``| 0.0 |
+| **`inflow`**    | external inflow (abstraction/supply/demand) | m``^3`` s``^{-1}``| 0.0 |
+| `inflow_wb`     | inflow waterbody (lake or reservoir model) from land part | m``^3`` s``^{-1}``| 0.0 |
+| `abstraction`   | abstraction (computed as part of water demand and allocation) | m``^3`` s``^{-1}``| 0.0 |
 | `volume`        | kinematic wave volume |m``^3``| - |
 | `h`             | water level | m | - |
 | `h_av`          | average water level | m | - |
@@ -38,6 +40,7 @@ internal model parameter `sl`, and is listed in the Table below between parenthe
 | `lake_index`   |  map cell to 0 (no lake) or i (pick lake i in lake field) | - | - |
 | `reservoir`    | an array of reservoir models `SimpleReservoir` | - | - |
 | `lake`         | an array of lake models `Lake` | - | - |
+| `waterallocation`| water allocation of type `WaterAllocationRiver` | - | - |
 | `kinwave_it`   | boolean for kinematic wave iterations | - | false |
 
 The Table below shows the parameters (fields) of struct `SurfaceFlowLand` used for overland
@@ -210,6 +213,7 @@ the `layered_exponential` profile `kv` is used and `z_exp` is required as part o
 | `ssfin` | inflow from upstream cells | m``^3`` d``{-1}``  | - |
 | `ssfmax` | maximum subsurface flow | m``^2`` d``{-1}``  | - |
 | `to_river` | part of subsurface flow that flows to the river | m``^3`` d``{-1}``  | - |
+| `volume` | subsurface volume | m``^3`` | - |
 
 ## Local inertial
 
@@ -270,7 +274,8 @@ model parameter `mannings_n`, and is listed in the Table below between parenthes
 | `volume`    | river volume | m``^3`` | - |
 | `error`    | error volume | m``^3`` | - |
 | `inwater`    | lateral inflow | m``^3`` s``^{-1}`` | - |
-| `inflow`        | external inflow (abstraction/supply/demand) | m``^3`` s``^{-1}``| 0.0 |
+| **`inflow`**  | external inflow (abstraction/supply/demand) | m``^3`` s``^{-1}``| 0.0 |
+| `abstraction` | abstraction (computed as part of water demand and allocation) | m``^3`` s``^{-1}``| 0.0 |
 | `inflow_wb`        | inflow waterbody (lake or reservoir model) from land part | m``^3`` s``^{-1}``| 0.0 |
 | `bankfull_volume`    | bankfull volume | m``^3`` | - |
 | **`bankfull_depth`**    | bankfull depth | m | - |
@@ -280,6 +285,7 @@ model parameter `mannings_n`, and is listed in the Table below between parenthes
 | `waterbody`   |  water body cells (reservoir or lake) | - | - |
 | `reservoir`    | an array of reservoir models `SimpleReservoir` | - | - |
 | `lake` | an array of lake models `Lake` | - | - |
+| `waterallocation`| optional water allocation of type `WaterAllocationRiver` | - | - |
 | `floodplain` | optional 1D floodplain routing `FloodPlain` | - | - |
 
 ### [1D floodplain](@id local-inertial_floodplain_params)
@@ -375,6 +381,18 @@ internal model parameter `z`, and is listed in the Table below between parenthes
 | `froude_limit`  |  if true a check is performed if froude number > 1.0 (algorithm is modified)| - | - |
 | `rivercells`  |  river cells| - | - |
 | `h_av` | average water depth| m | - |
+
+## Water allocation river
+The Table below shows the parameters (fields) of struct `WaterAllocationRiver`, used when
+water demand and allocation is computed (optional), including a description of these
+parameters, the unit, and default value if applicable.
+
+|  parameter  | description  	  | unit  | default |
+|:--------------- | ------------------| ----- | -------- |
+| `act_surfacewater_abst` |  actual surface water abstraction | mm Δt⁻¹ | - |
+| `act_surfacewater_abst_vol`| actual surface water abstraction | m``^3`` Δt⁻¹ | - |
+| `available_surfacewater`| available surface water | m``^3`` | - |
+| `nonirri_returnflow`| return flow from non-irrigation | mm Δt⁻¹ | - |
 
 ## Groundwater flow
 

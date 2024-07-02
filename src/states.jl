@@ -97,6 +97,10 @@ function extract_required_states(config::Config)
     do_lakes = get(config.model, "lakes", false)::Bool
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
     do_floodplains = get(config.model, "floodplain_1d", false)::Bool
+    do_paddy = false
+    if haskey(config.model, "water_demand")
+        do_paddy = get(config.model.water_demand, "paddy", false)::Bool
+    end 
 
     # Extract required stated based on model configuration file
     vertical_states = get_vertical_states(model_type; snow = do_snow, glacier = do_glaciers)
@@ -165,6 +169,9 @@ function extract_required_states(config::Config)
     lake_states = do_lakes ? (:waterlevel,) : nothing
     reservoir_states = do_reservoirs ? (:volume,) : nothing
 
+    # Paddy states
+    paddy_states = do_paddy ? (:h,) : nothing
+
     # Build required states in a tuple, similar to the keys in the output of
     # `ncnames(config.state)`
     required_states = ()
@@ -198,7 +205,12 @@ function extract_required_states(config::Config)
         (:lateral, :river, :reservoir),
         reservoir_states,
     )
-
+    # Add paddy states to dict
+    required_states = add_to_required_states(
+        required_states,
+        (:vertical, :paddy),
+        paddy_states,
+    )
     return required_states
 end
 
