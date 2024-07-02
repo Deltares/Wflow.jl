@@ -186,4 +186,21 @@ end
     @test gw.drain.flux[1] ≈ 0.0
     @test gw.recharge.rate[19] ≈ -0.0014241196552847502f0
 end
+
+@testset "Exchange and grid location aquifer, recharge and constant head" begin
+    aquifer = model.lateral.subsurface.flow.aquifer
+    @test Wflow.exchange(aquifer, :head) == 1
+    @test Wflow.exchange(aquifer, :k) == 1
+    @test Wflow.grid_location(aquifer, :head) == "node"
+    @test Wflow.grid_location(aquifer, :k) == "node"
+    recharge = model.lateral.subsurface.recharge
+    @test Wflow.exchange(recharge, :rate) == 1
+    @test Wflow.exchange(recharge, :flux) == 1
+    @test Wflow.grid_location(recharge, :rate) == "node"
+    @test Wflow.grid_location(recharge, :flux) == "node"
+    constanthead = model.lateral.subsurface.flow.constanthead
+    @test Wflow.exchange(constanthead, :head) == 0
+    @test Wflow.grid_location(constanthead, :head) == "node"
+end
+
 Wflow.close_files(model, delete_output = false)

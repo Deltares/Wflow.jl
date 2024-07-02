@@ -138,6 +138,42 @@ end
     @test res.evaporation[1] ≈ 0.5400000810623169f0
 end
 
+@testset "Exchange and grid location SBM" begin
+    sbm = model.vertical
+    @test Wflow.exchange(sbm, :n) == 0
+    @test Wflow.exchange(sbm, :rootingdepth) == 1
+    @test Wflow.grid_location(sbm, :dt) == "none"
+    @test Wflow.grid_location(sbm, :rootingdepth) == "node"
+    @test Wflow.grid_location(sbm, :runoff) == "node"
+end
+
+@testset "Exchange and grid location subsurface flow" begin
+    ssf = model.lateral.subsurface
+    @test Wflow.exchange(ssf, :dt) == 0
+    @test Wflow.exchange(ssf, :ssf) == 1
+    @test Wflow.exchange(ssf, :slope) == 1
+    @test Wflow.grid_location(ssf, :dt) == "none"
+    @test Wflow.grid_location(ssf, :ssf) == "node"
+    @test Wflow.grid_location(ssf, :slope) == "node"
+end
+
+@testset "Exchange and grid location kinematic wave" begin
+    land = model.lateral.land
+    @test Wflow.exchange(land, :dt) == 0
+    @test Wflow.exchange(land, :q_av) == 1
+    @test Wflow.exchange(land, :inwater) == 1
+    @test Wflow.grid_location(land, :dt) == "none"
+    @test Wflow.grid_location(land, :q_av) == "node"
+    @test Wflow.grid_location(land, :inwater) == "node"
+    river = model.lateral.river
+    @test Wflow.exchange(river, :dt) == 0
+    @test Wflow.exchange(river, :q_av) == 1
+    @test Wflow.exchange(river, :inwater) == 1
+    @test Wflow.grid_location(river, :dt) == "none"
+    @test Wflow.grid_location(river, :q_av) == "node"
+    @test Wflow.grid_location(river, :inwater) == "node"
+end
+
 # set these variables for comparison in "changed dynamic parameters"
 precip = copy(model.vertical.precipitation)
 evap = copy(model.vertical.potential_evaporation)
@@ -287,6 +323,19 @@ model = Wflow.run_timestep(model)
     @test h[[26, 35, 631]] ≈
           [0.07361854999908582f0, 0.009155393111676267f0, 0.0007258741013439351f0]
 end
+
+@testset "Exchange and grid location local inertial overland flow" begin
+    land = model.lateral.land
+    @test Wflow.exchange(land, :dt) == 0
+    @test Wflow.exchange(land, :g) == 0
+    @test Wflow.exchange(land, :h) == 1
+    @test Wflow.exchange(land, :qx) == 1
+    @test Wflow.grid_location(land, :dt) == "none"
+    @test Wflow.grid_location(land, :g) == "node"
+    @test Wflow.grid_location(land, :h) == "node"
+    @test Wflow.grid_location(land, :qx) == "edge"
+end
+
 Wflow.close_files(model, delete_output = false)
 
 # test local-inertial option for river flow including 1D floodplain schematization
@@ -410,7 +459,33 @@ model = Wflow.run_timestep(model)
     @test h[1622] ≈ 0.001987887580593841f0
     @test h[43] ≈ 0.436641524481545f0
     @test h[501] ≈ 0.05665942153713204f0
-	@test h[5808] ≈ 0.005933025055544241f0
+    @test h[5808] ≈ 0.005933025055544241f0
+end
+
+@testset "Exchange and grid location local inertial river flow" begin
+    river = model.lateral.river
+    @test Wflow.exchange(river, :dt) == 0
+    @test Wflow.exchange(river, :g) == 0
+    @test Wflow.exchange(river, :h) == 1
+    @test Wflow.exchange(river, :q_av) == 1
+    @test Wflow.grid_location(river, :dt) == "none"
+    @test Wflow.grid_location(river, :g) == "node"
+    @test Wflow.grid_location(river, :h) == "node"
+    @test Wflow.grid_location(river, :q_av) == "edge"
+end
+
+@testset "Exchange and grid location floodplain" begin
+    floodplain = model.lateral.river.floodplain
+    @test Wflow.exchange(floodplain.profile, :depth) == 1
+    @test Wflow.exchange(floodplain.profile, :a) == 1
+    @test Wflow.grid_location(floodplain.profile, :depth) == "node"
+    @test Wflow.grid_location(floodplain.profile, :a) == "node"
+    @test Wflow.exchange(floodplain, :profile) == 0
+    @test Wflow.exchange(floodplain, :h) == 1
+    @test Wflow.exchange(floodplain, :q) == 1
+    @test Wflow.grid_location(floodplain, :profile) == "node"
+    @test Wflow.grid_location(floodplain, :h) == "node"
+    @test Wflow.grid_location(floodplain, :q) == "edge"
 end
 
 # set boundary condition local inertial routing from netCDF file

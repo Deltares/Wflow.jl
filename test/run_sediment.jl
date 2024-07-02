@@ -51,4 +51,20 @@ end
     @test lat.river.outclay[5649] ≈ 2.359031898208781f-9
 end
 
+@testset "Exchange and grid location sediment" begin
+    @test Wflow.exchange(model.vertical, :n) == 0
+    @test Wflow.exchange(model.vertical, :erosk) == 1
+    @test Wflow.exchange(model.vertical, :leaf_area_index) == 1
+    @test Wflow.grid_location(model.vertical, :n) == "none"
+    @test Wflow.grid_location(model.vertical, :erosk) == "node"
+    @test Wflow.grid_location(model.vertical, :leaf_area_index) == "node"
+    land = model.lateral.land
+    @test Wflow.exchange(land, :n) == 0
+    @test Wflow.exchange(land, :soilloss) == 1
+    @test Wflow.exchange(land, :inlandsed) == 1
+    @test Wflow.grid_location(land, :n) == "none"
+    @test Wflow.grid_location(land, :soilloss) == "node"
+    @test Wflow.grid_location(land, :inlandsed) == "node"
+end
+
 Wflow.close_files(model)

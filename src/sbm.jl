@@ -1,10 +1,10 @@
-@get_units @exchange @grid_type @grid_location @with_kw struct SBM{T,N,M}
+@get_units @with_kw struct SBM{T,N,M}
     # Model time step [s]
-    dt::T | "s" | 0 | "none" | "none"
+    dt::T | "s"
     # Maximum number of soil layers
-    maxlayers::Int | "-" | 0 | "none" | "none"
+    maxlayers::Int | "-"
     # number of cells
-    n::Int | "-" | 0 | "none" | "none"
+    n::Int | "-"
     # Number of soil layers
     nlayers::Vector{Int} | "-"
     # Number of unsaturated soil layers
@@ -213,7 +213,6 @@
     end
 end
 
-
 function initialize_canopy(nc, config, inds)
     n = length(inds)
     # if leaf area index climatology provided use sl, swood and kext to calculate cmax, e_r and canopygapfraction
@@ -348,31 +347,13 @@ function initialize_sbm(nc, config, riverfrac, inds)
         fill = 0.0,
     )
     # soil parameters
-    theta_s = ncread(
-        nc,
-        config,
-        "vertical.theta_s";
-        sel = inds,
-        defaults = 0.6,
-        type = Float,
-    )
-    theta_r = ncread(
-        nc,
-        config,
-        "vertical.theta_r";
-        sel = inds,
-        defaults = 0.01,
-        type = Float,
-    )
+    theta_s =
+        ncread(nc, config, "vertical.theta_s"; sel = inds, defaults = 0.6, type = Float)
+    theta_r =
+        ncread(nc, config, "vertical.theta_r"; sel = inds, defaults = 0.01, type = Float)
     kv_0 =
-        ncread(
-            nc,
-            config,
-            "vertical.kv_0";
-            sel = inds,
-            defaults = 3000.0,
-            type = Float,
-        ) .* (dt / basetimestep)
+        ncread(nc, config, "vertical.kv_0"; sel = inds, defaults = 3000.0, type = Float) .*
+        (dt / basetimestep)
     f = ncread(nc, config, "vertical.f"; sel = inds, defaults = 0.001, type = Float)
     hb = ncread(nc, config, "vertical.hb"; sel = inds, defaults = 10.0, type = Float)
     soilthickness = ncread(
@@ -1002,8 +983,10 @@ function update_until_recharge(sbm::SBM, config)
 
             netcapflux = capflux
             for k = n_usl:-1:1
-                toadd =
-                    min(netcapflux, max(usl[k] * (sbm.theta_s[i] - sbm.theta_r[i]) - usld[k], 0.0))
+                toadd = min(
+                    netcapflux,
+                    max(usl[k] * (sbm.theta_s[i] - sbm.theta_r[i]) - usld[k], 0.0),
+                )
                 usld = setindex(usld, usld[k] + toadd, k)
                 netcapflux = netcapflux - toadd
                 actcapflux = actcapflux + toadd
@@ -1097,7 +1080,10 @@ function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
             if k <= n_usl
                 vwc = setindex(
                     vwc,
-                    (usld[k] + (sbm.act_thickl[i][k] - usl[k]) * (sbm.theta_s[i] - sbm.theta_r[i])) / sbm.act_thickl[i][k] + sbm.theta_r[i],
+                    (
+                        usld[k] +
+                        (sbm.act_thickl[i][k] - usl[k]) * (sbm.theta_s[i] - sbm.theta_r[i])
+                    ) / sbm.act_thickl[i][k] + sbm.theta_r[i],
                     k,
                 )
             else
@@ -1114,7 +1100,8 @@ function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
                 usld[k]
         end
 
-        rootstore_sat = max(0.0, sbm.rootingdepth[i] - zi[i]) * (sbm.theta_s[i] - sbm.theta_r[i])
+        rootstore_sat =
+            max(0.0, sbm.rootingdepth[i] - zi[i]) * (sbm.theta_s[i] - sbm.theta_r[i])
         rootstore = rootstore_sat + rootstore_unsat
         vwc_root = rootstore / sbm.rootingdepth[i] + sbm.theta_r[i]
         vwc_percroot = (vwc_root / sbm.theta_s[i]) * 100.0
