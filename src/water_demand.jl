@@ -624,7 +624,7 @@ function update_water_allocation(
             if index_river[i] > 0.0
                 k = index_river[i]
                 river.waterallocation.nonirri_returnflow[k] =
-                    vertical.waterallocation.nonirri_returnflow[k]
+                    vertical.waterallocation.nonirri_returnflow[i]
                 vertical.waterallocation.nonirri_returnflow[i] = 0.0
             else
                 vertical.waterallocation.nonirri_returnflow[i] =
