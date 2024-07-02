@@ -546,8 +546,10 @@ function update_water_allocation(
     res_index_f = network.river.reservoir_index_f
     lake_index_f = network.river.lake_index_f
 
-    # total surface water demand for each land cell
     vertical.waterallocation.surfacewater_alloc .= 0.0
+    river.waterallocation.act_surfacewater_abst .= 0.0
+    river.waterallocation.act_surfacewater_abst_vol .= 0.0
+    # total surface water demand for each land cell
     @. vertical.waterallocation.surfacewater_demand =
         vertical.waterallocation.frac_sw_used *
         vertical.waterallocation.nonirri_demand_gross +
@@ -574,6 +576,9 @@ function update_water_allocation(
             waterlevel(lakes.storfunc, lakes.area, lakes.storage, lakes.sh)
     end
 
+    vertical.waterallocation.groundwater_alloc .= 0.0
+    vertical.waterallocation.act_groundwater_abst_vol .= 0.0
+    vertical.waterallocation.act_groundwater_abst .= 0.0
     # local groundwater demand and allocation
     groundwater_allocation_local(
         vertical,
