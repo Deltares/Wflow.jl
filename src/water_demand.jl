@@ -429,7 +429,10 @@ function surface_water_allocation_area(land, river, network)
             river.waterallocation.act_surfacewater_abst_vol[j] +=
                 frac_abstract_sw * river.waterallocation.available_surfacewater[j]
             river.waterallocation.act_surfacewater_abst[j] =
-                river.waterallocation.act_surfacewater_abst_vol[j] / network.river.area[j]
+                (
+                    river.waterallocation.act_surfacewater_abst_vol[j] /
+                    network.river.area[j]
+                ) * 1000.0
         end
 
         # water allocated to each land cell.
