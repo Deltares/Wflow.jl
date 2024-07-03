@@ -446,15 +446,15 @@ end
 "Update water allocation for subsurface domain based on local groundwater availability."
 function groundwater_allocation_local(land, groundwater_volume, network)
     for i in eachindex(land.waterallocation.groundwater_demand)
+        # groundwater demand based on allocation from surface water.
+        land.waterallocation.groundwater_demand[i] = max(
+            land.waterallocation.irri_demand_gross[i] +
+            land.waterallocation.nonirri_demand_gross[i] -
+            land.waterallocation.surfacewater_alloc[i],
+            0.0,
+        )
         # land index excluding water bodies
         if network.index_wb[i]
-            # groundwater demand based on allocation from surface water.
-            land.waterallocation.groundwater_demand[i] = max(
-                land.waterallocation.irri_demand_gross[i] +
-                land.waterallocation.nonirri_demand_gross[i] -
-                land.waterallocation.surfacewater_alloc[i],
-                0.0,
-            )
             # satisfy groundwater demand with available local groundwater volume
             groundwater_demand_vol =
                 land.waterallocation.groundwater_demand[i] * 0.001 * network.area[i]
