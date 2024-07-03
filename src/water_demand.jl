@@ -448,8 +448,7 @@ function groundwater_allocation_local(land, groundwater_volume, network)
     for i in eachindex(land.waterallocation.groundwater_demand)
         # groundwater demand based on allocation from surface water.
         land.waterallocation.groundwater_demand[i] = max(
-            land.waterallocation.irri_demand_gross[i] +
-            land.waterallocation.nonirri_demand_gross[i] -
+            land.waterallocation.total_gross_demand[i] -
             land.waterallocation.surfacewater_alloc[i],
             0.0,
         )
