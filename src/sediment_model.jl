@@ -46,7 +46,7 @@ function initialize_sediment_model(config::Config)
     # lateral part sediment in overland flow
     ols = overland_flow_sediment(river, mv, n)
 
-    graph = flowgraph(ldd, indices_subcatch, pcr_dir)
+    graph_land = flowgraph(ldd, indices_subcatch, pcr_dir)
 
     # River processes
 
@@ -69,49 +69,46 @@ function initialize_sediment_model(config::Config)
     rs = initialize_riversed(nc, config, river_width, river_length, indices_river)
 
     ldd_riv = ldd_2d[indices_river]
-    graph_riv = flowgraph(ldd_riv, indices_river, pcr_dir)
+    graph_river = flowgraph(ldd_riv, indices_river, pcr_dir)
 
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
-    frac_to_river = fraction_runoff_toriver(graph, ldd, index_river, land_slope, n)
+    frac_to_river = fraction_runoff_toriver(graph_land, ldd, index_river, land_slope, n)
 
-    river = (
-        graph = graph_riv,
-        order = topological_sort_by_dfs(graph_riv),
-        indices = indices_river,
-        reverse_indices = reverse_indices_river,
+    river = sediment_component_graph(
+        graph_river,
+        topological_sort_by_dfs(graph_river),
+        indices_river,
+        reverse_indices_river,
+    )
+
+    land = sediment_component_graph(
+        graph_land,
+        topological_sort_by_dfs(graph_land),
+        indices_subcatch,
+        reverse_indices_subcatch,
     )
 
     eros = initialize_landsed(nc, config, river, river_frac, xl, yl, indices_subcatch)
-
-    modelmap = (vertical = eros, lateral = (land = ols, river = rs))
-    indices_reverse = (
-        land = reverse_indices_subcatch,
-        river = reverse_indices_river,
-        reservoir = nothing,
-        lake = nothing,
-    )
-
-    # for each domain save the directed acyclic graph, the traversion order,
-    # and the indices that map it back to the two dimensional grid
-    land = (
-        graph = graph,
-        order = topological_sort_by_dfs(graph),
-        indices = indices_subcatch,
-        reverse_indices = reverse_indices_subcatch,
-    )
 
     reader = prepare_reader(config)
 
     clock = Clock(config, reader)
 
-    writer = prepare_writer(config, modelmap, indices_reverse, x_nc, y_nc, nc)
+    model_map = sediment_model_map(eros, ols, rs)
+
+    indices_reverse = sediment_reverse_indices(;
+        land = reverse_indices_subcatch,
+        river = reverse_indices_river,
+    )
+
+    writer = prepare_writer(config, model_map, indices_reverse, x_nc, y_nc, nc)
 
     close(nc)
 
     model = Model(
         config,
         (; land, river, reservoir = (), lake = (), index_river, frac_to_river),
-        (land = ols, river = rs),
+        model_map.lateral,
         eros,
         clock,
         reader,
@@ -123,6 +120,32 @@ function initialize_sediment_model(config::Config)
     @info "Initialized model"
 
     return model
+end
+
+function sediment_component_graph(graph, order, indices, reverse_indices)
+    return (
+        graph = graph,
+        order = order,
+        indices = indices,
+        reverse_indices = reverse_indices,
+    )
+end
+
+function sediment_reverse_indices(;
+    land = nothing,
+    river = nothing,
+    reservoir = nothing,
+    lake = nothing,
+)
+    indices_reversed = (land = land, river = river, reservoir = reservoir, lake = lake)
+    return indices_reversed
+end
+
+function sediment_model_map(eros, ols, rs)
+    vertical_model_map = eros
+    lateral_model_map = (land = ols, river = rs)
+    model_map = (vertical = vertical_model_map, lateral = lateral_model_map)
+    return model_map
 end
 
 function overland_flow_sediment(T::Type{<:AbstractFloat}, river_cell, number_of_elements)
