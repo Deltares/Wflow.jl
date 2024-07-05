@@ -1,1 +1,15 @@
-style = "blue"
+# Options for the JuliaFormatter auto syntax formatting tool.
+# https://domluna.github.io/JuliaFormatter.jl/stable/
+# https://docs.sciml.ai/SciMLStyle/stable/
+
+# We don't use SciML style since aligning with opening brackets doesn't look good if
+# the opening bracket is near the end of the line. This squeezes the code to the right,
+# and this alignment confuses auto indent.
+# Based on the default style we do pick these non-default options from SciML style:
+whitespace_ops_in_indices = true
+remove_extra_newlines = true
+always_for_in = true
+whitespace_typedefs = true
+
+# And add other options we like:
+separate_kwargs_with_semicolon = true
