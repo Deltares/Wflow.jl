@@ -18,7 +18,7 @@ const mv = Float(NaN)
 const basetimestep = Second(Day(1))
 
 "Set at indices pit values (default = 5) in a gridded local drainage direction vector"
-function set_pit_ldd(pits_2d, ldd, indices; pit = 5)
+function set_pit_ldd(pits_2d, ldd, indices; pit=5)
     pits = pits_2d[indices]
     index = filter(i -> isequal(pits[i], true), 1:length(indices))
     ldd[index] .= pit
@@ -98,7 +98,7 @@ function cell_lengths(y::AbstractVector, cellength::Real, sizeinmetres::Bool)
         xl .= cellength
         yl .= cellength
     else
-        for i = 1:n
+        for i in 1:n
             longlen, latlen = lattometres(y[i])
             xl[i] = longlen * cellength
             yl[i] = latlen * cellength
@@ -116,7 +116,7 @@ function river_fraction(
 )
     n = length(river)
     riverfrac = fill(mv, n)
-    for i = 1:n
+    for i in 1:n
         riverfrac[i] = if river[i]
             min((riverlength[i] * riverwidth[i]) / (xl[i] * yl[i]), 1.0)
         else
@@ -136,7 +136,7 @@ and set states in `model` object. Active cells are selected with the correspondi
 # Arguments
 - `type = nothing`: type to convert data to after reading. By default no conversion is done.
 """
-function set_states(instate_path, model; type = nothing, dimname = nothing)
+function set_states(instate_path, model; type=nothing, dimname=nothing)
     @unpack network, config = model
 
     # Check if required states are covered
@@ -153,7 +153,7 @@ function set_states(instate_path, model; type = nothing, dimname = nothing)
             # 4 dims, for example (x,y,layer,time) where dim layer is an SVector for soil layers
             if dims == 4
                 if dimname == :layer
-                    dimensions = (x = :, y = :, layer = :, time = 1)
+                    dimensions = (x=:, y=:, layer=:, time=1)
                 else
                     error("Unrecognized dimension name $dimname")
                 end
@@ -174,7 +174,7 @@ function set_states(instate_path, model; type = nothing, dimname = nothing)
                 param(model, state) .= svectorscopy(A, Val{size(A)[1]}())
                 # 3 dims (x,y,time)
             elseif dims == 3
-                A = read_standardized(ds, ncname, (x = :, y = :, time = 1))
+                A = read_standardized(ds, ncname, (x=:, y=:, time=1))
                 A = A[sel]
                 A = nomissing(A)
                 # Convert to desired type if needed
@@ -187,8 +187,7 @@ function set_states(instate_path, model; type = nothing, dimname = nothing)
                 param(model, state)[1:n] .= A
             else
                 error(
-                    "Number of state dims should be 3 or 4, number of dims = ",
-                    string(dims),
+                    "Number of state dims should be 3 or 4, number of dims = ", string(dims)
                 )
             end
         end
@@ -222,14 +221,14 @@ function ncread(
     nc,
     config::Config,
     parameter::AbstractString;
-    alias = nothing,
-    optional = true,
-    sel = nothing,
-    defaults = nothing,
-    type = nothing,
-    allow_missing = false,
-    fill = nothing,
-    dimname = nothing,
+    alias=nothing,
+    optional=true,
+    sel=nothing,
+    defaults=nothing,
+    type=nothing,
+    allow_missing=false,
+    fill=nothing,
+    dimname=nothing,
 )
     # get var (netCDF variable or type Config) from TOML file.
     # if var has type Config, input parameters can be changed.
@@ -246,11 +245,11 @@ function ncread(
     # dim `time` is also included in `dim_sel`: this allows for cyclic parameters (read
     # first timestep), that is later updated with the `update_cyclic!` function.
     if isnothing(dimname)
-        dim_sel = (x = :, y = :, time = 1)
+        dim_sel = (x=:, y=:, time=1)
     elseif dimname == :layer
-        dim_sel = (x = :, y = :, layer = :, time = 1)
+        dim_sel = (x=:, y=:, layer=:, time=1)
     elseif dimname == :flood_depth
-        dim_sel = (x = :, y = :, flood_depth = :, time = 1)
+        dim_sel = (x=:, y=:, flood_depth=:, time=1)
     else
         error("Unrecognized dimension name $dimname")
     end
@@ -271,7 +270,7 @@ function ncread(
     # If var has type Config, input parameters can be changed (through scale, offset and
     # input netCDF var) or set to a uniform value (providing a value). Otherwise, input
     # NetCDF var is read directly.
-    var, mod = ncvar_name_modifier(var; config = config)
+    var, mod = ncvar_name_modifier(var; config=config)
 
     if !isnothing(mod.value)
         @info "Set `$parameter` using default value `$(mod.value)`."
@@ -293,7 +292,7 @@ function ncread(
             # provided through the TOML file.
             if length(mod.index) > 1
                 # if index, scale and offset is provided in the TOML as a list.
-                for i = 1:length(mod.index)
+                for i in 1:length(mod.index)
                     A[:, :, mod.index[i]] =
                         A[:, :, mod.index[i]] .* mod.scale[i] .+ mod.offset[i]
                 end
@@ -347,10 +346,9 @@ a SVector `sl` with cumulative soil depth starting at soil surface (0), and a SV
 per soil layer.
 """
 function set_layerthickness(d::Real, sl::SVector, tl::SVector)
-
     act_d = tl .* mv
-    for i = 1:length(act_d)
-        if d > sl[i+1]
+    for i in 1:length(act_d)
+        if d > sl[i + 1]
             act_d = setindex(act_d, tl[i], i)
         elseif d - sl[i] > 0.0
             act_d = setindex(act_d, d - sl[i], i)
@@ -438,7 +436,7 @@ end
 function svectorscopy(x::Matrix{T}, ::Val{N}) where {T,N}
     size(x, 1) == N || error("sizes mismatch")
     isbitstype(T) || error("use for bitstypes only")
-    copy(reinterpret(SVector{N,T}, vec(x)))
+    return copy(reinterpret(SVector{N,T}, vec(x)))
 end
 
 """
@@ -507,7 +505,7 @@ Return the source node `src` and destination node `dst` of each link of a direct
 """
 function adjacent_nodes_at_link(graph)
     links = collect(edges(graph))
-    return (src = src.(links), dst = dst.(links))
+    return (src=src.(links), dst=dst.(links))
 end
 
 """
@@ -519,11 +517,11 @@ function adjacent_links_at_node(graph, nodes_at_link)
     nodes = vertices(graph)
     src_link = Vector{Int}[]
     dst_link = copy(src_link)
-    for i = 1:nv(graph)
+    for i in 1:nv(graph)
         push!(src_link, findall(isequal(nodes[i]), nodes_at_link.dst))
         push!(dst_link, findall(isequal(nodes[i]), nodes_at_link.src))
     end
-    return (src = src_link, dst = dst_link)
+    return (src=src_link, dst=dst_link)
 end
 
 "Add `vertex` and `edge` to `pits` of a directed `graph`"
@@ -547,16 +545,8 @@ x and (+ CartesianIndex(0, 1)) for y. For cells that contain a `waterbody` (rese
 lake), the effective flow width is set to zero.
 """
 function set_effective_flowwidth!(
-    we_x,
-    we_y,
-    indices,
-    graph_riv,
-    riverwidth,
-    ldd_riv,
-    waterbody,
-    inds_rev_riv,
+    we_x, we_y, indices, graph_riv, riverwidth, ldd_riv, waterbody, inds_rev_riv
 )
-
     toposort = topological_sort_by_dfs(graph_riv)
     n = length(we_x)
     for v in toposort
@@ -618,7 +608,7 @@ end
 "Partition indices with at least size `basesize`"
 function _partition(xs::Integer, basesize::Integer)
     n = Int(max(1, xs ÷ basesize))
-    return (Int(1 + ((i - 1) * xs) ÷ n):Int((i * xs) ÷ n) for i = 1:n)
+    return (Int(1 + ((i - 1) * xs) ÷ n):Int((i * xs) ÷ n) for i in 1:n)
 end
 
 """
@@ -691,7 +681,6 @@ of vertical concept `SBM` (at index `i`) based on multiplication factor `khfrac`
 table depth `z` [mm] and hydraulic conductivity profile `ksat_profile`.
 """
 function kh_layered_profile(sbm::SBM, khfrac, i, ksat_profile)
-
     m = sbm.nlayers[i]
     t_factor = (tosecond(basetimestep) / sbm.dt)
     if (sbm.soilthickness[i] - sbm.zi[i]) > 0.0
@@ -776,10 +765,10 @@ end
 "Initialize lateral subsurface variables `ssf` and `ssfmax` with `ksat_profile` `exponential_constant`"
 function initialize_lateralssf_exp_const!(ssf::LateralSSF)
     ssf_constant = @. ssf.khfrac *
-       ssf.kh_0 *
-       exp(-ssf.f * ssf.z_exp) *
-       ssf.slope *
-       (ssf.soilthickness - ssf.z_exp)
+        ssf.kh_0 *
+        exp(-ssf.f * ssf.z_exp) *
+        ssf.slope *
+        (ssf.soilthickness - ssf.z_exp)
     for i in eachindex(ssf.ssf)
         ssf.ssfmax[i] =
             ((ssf.khfrac[i] * ssf.kh_0[i] * ssf.slope[i]) / ssf.f[i]) *
@@ -809,7 +798,7 @@ function initialize_lateralssf_layered!(ssf::LateralSSF, sbm::SBM, ksat_profile)
         ssf.ssf[i] =
             ssf.kh[i] * (ssf.soilthickness[i] - ssf.zi[i]) * ssf.slope[i] * ssf.dw[i]
         kh_max = 0.0
-        for j = 1:sbm.nlayers[i]
+        for j in 1:sbm.nlayers[i]
             if j <= sbm.nlayers_kv[i]
                 kh_max += sbm.kv[i][j] * sbm.act_thickl[i][j]
             else

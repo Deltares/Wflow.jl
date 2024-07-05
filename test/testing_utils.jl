@@ -18,7 +18,7 @@ function E1_taylor_coefficients(::Type{T}, n::Integer) where {T<:Number}
     # iteratively compute the terms in the series, starting with k=1
     term::T = 1
     terms = T[-eulergamma, term]
-    for k = 2:n
+    for k in 2:n
         term = -term * (k - 1) / (k * k)
         push!(terms, term)
     end
@@ -40,10 +40,10 @@ end
 # for numeric-literal coefficients: simplify to a ratio of two polynomials:
 # return (p,q): the polynomials p(x) / q(x) corresponding to E1_cf(x, a...),
 # but without the exp(-x) term
-function E1_cfpoly(n::Integer, ::Type{T} = BigInt) where {T<:Real}
+function E1_cfpoly(n::Integer, ::Type{T}=BigInt) where {T<:Real}
     q = Polynomials.Polynomial(T[1])
     p = x = Polynomials.Polynomial(T[0, 1])
-    for i = n:-1:1
+    for i in n:-1:1
         p, q = x * p + (1 + i) * q, p # from cf = x + (1+i)/cf = x + (1+i)*q/p
         p, q = p + i * q, p     # from cf = 1 + i/cf = 1 + i*q/p
     end
@@ -81,15 +81,22 @@ function expint(z::Union{Float64,Complex{Float64}})
         return @E1_cf64 z 30
     else # use Taylor expansion, ≤ 37 terms
         rSq = xSq + ySq
-        return rSq ≤ 0.36 ?
-               (
-            rSq ≤ 2.8e-3 ? (rSq ≤ 2e-7 ? @E1_taylor64(z, 4) : @E1_taylor64(z, 8)) :
-            @E1_taylor64(z, 15)
-        ) : @E1_taylor64(z, 37)
+        return if rSq ≤ 0.36
+            (
+                if rSq ≤ 2.8e-3
+                    (rSq ≤ 2e-7 ? @E1_taylor64(z, 4) : @E1_taylor64(z, 8))
+                else
+                    @E1_taylor64(z, 15)
+                end
+            )
+        else
+            @E1_taylor64(z, 37)
+        end
     end
 end
-expint(z::Union{T,Complex{T},Rational{T},Complex{Rational{T}}}) where {T<:Integer} =
-    expint(float(z))
+function expint(z::Union{T,Complex{T},Rational{T},Complex{Rational{T}}}) where {T<:Integer}
+    return expint(float(z))
+end
 
 ######################################################################
 # exponential integral Eₙ(z)
@@ -102,7 +109,7 @@ function expint(n::Integer, z)
         zinv = inv(z)
         exp_minus_z = exp(-z)
         Ei = zinv * exp_minus_z
-        for i = 1:-n
+        for i in 1:(-n)
             Ei = zinv * (exp_minus_z + i * Ei)
         end
         return Ei
@@ -111,7 +118,7 @@ function expint(n::Integer, z)
         exp_minus_z = exp(-z)
         Ei = expint(z)
         Ei *= !isinf(Ei)
-        for i = 2:n
+        for i in 2:n
             Ei = (exp_minus_z - z * Ei) / (i - 1)
         end
         return Ei

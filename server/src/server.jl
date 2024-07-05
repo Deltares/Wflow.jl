@@ -46,21 +46,21 @@ end
 function shutdown(s::ZMQ.Socket, ctx::ZMQ.Context)
     @info "Shutting down Wflow ZMQ server on request..."
     ZMQ.close(s)
-    ZMQ.close(ctx)
+    return ZMQ.close(ctx)
 end
 
 "Error response ZMQ server"
 function response(err::AbstractString, s::ZMQ.Socket)
     @info "Send error response"
     resp = Dict{String,String}("status" => "ERROR", "error" => err)
-    ZMQ.send(s, JSON3.write(resp))
+    return ZMQ.send(s, JSON3.write(resp))
 end
 
 "Status response ZMQ server"
 function response(s::ZMQ.Socket)
     @info "Send status response"
     resp = Dict{String,String}("status" => "OK")
-    ZMQ.send(s, JSON3.write(resp))
+    return ZMQ.send(s, JSON3.write(resp))
 end
 
 "Validate JSON request against mapped Struct"
@@ -128,7 +128,7 @@ function main(ARGS::Vector{String})
             ),
         )
     end
-    start(port)
+    return start(port)
 end
 
 """

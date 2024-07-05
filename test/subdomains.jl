@@ -12,14 +12,10 @@ index_pit = [network.land.order[end]]
 
 streamorder = Wflow.stream_order(network.land.graph, network.land.order)
 subbas_order, indices_subbas, topo_subbas = Wflow.kinwave_set_subdomains(
-    network.land.graph,
-    network.land.order,
-    index_pit,
-    streamorder,
-    min_sto_land,
+    network.land.graph, network.land.order, index_pit, streamorder, min_sto_land
 )
 
-Wflow.close_files(model, delete_output = false)
+Wflow.close_files(model; delete_output=false)
 
 if nthreads() == 1
     @testset "Nonparallel subdomains kinematic wave (nthreads = 1)" begin
@@ -69,8 +65,9 @@ end
     subbas_fill = Wflow.fillnodata_upstream(g, toposort, subbas, 0)
     graph_subbas = Wflow.graph_from_nodes(g, subbas, subbas_fill)
     toposort_subbas = topological_sort_by_dfs(graph_subbas)
-    dist =
-        Graphs.Experimental.Traversals.distances(Graph(graph_subbas), toposort_subbas[end])
+    dist = Graphs.Experimental.Traversals.distances(
+        Graph(graph_subbas), toposort_subbas[end]
+    )
     max_dist = maximum([dist; 1])
     subbas_order = Wflow.subbasins_order(graph_subbas, toposort_subbas[end], max_dist)
 

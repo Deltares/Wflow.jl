@@ -20,18 +20,18 @@ function add_metadata(project_dir, license_file, output_dir, git_repo)
     cp(
         normpath(project_dir, "Project.toml"),
         normpath(output_dir, "share/julia/Project.toml");
-        force = true,
+        force=true,
     )
     # the Manifest.toml always gives the exact version of Wflow that was built
     cp(
         normpath(project_dir, "Manifest.toml"),
         normpath(output_dir, "share/julia/Manifest.toml");
-        force = true,
+        force=true,
     )
 
     # put the LICENSE in the top level directory
-    cp(license_file, normpath(output_dir, "LICENSE"); force = true)
-    cp(normpath(project_dir, "README.md"), normpath(output_dir, "README.md"); force = true)
+    cp(license_file, normpath(output_dir, "LICENSE"); force=true)
+    cp(normpath(project_dir, "README.md"), normpath(output_dir, "README.md"); force=true)
     open(normpath(output_dir, "README.md"), "a") do io
         # since the exact Wflow version may be hard to find in the Manifest.toml file
         # we can also extract that information, and add it to the README.md

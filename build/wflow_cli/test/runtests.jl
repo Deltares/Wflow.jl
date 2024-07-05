@@ -2,7 +2,9 @@ using Test
 using Wflow
 
 extension = Sys.iswindows() ? ".exe" : ""
-wflow_exe = normpath(@__DIR__, "../../create_binaries/wflow_bundle/bin/wflow_cli" * extension)
+wflow_exe = normpath(
+    @__DIR__, "../../create_binaries/wflow_bundle/bin/wflow_cli" * extension
+)
 
 # this assumes that the Wflow tests have already been run, so the data has been downloaded
 testdir = abspath(dirname(pathof(Wflow)), "..", "test")
@@ -82,11 +84,14 @@ end
 end
 
 @testset "wflow_sbm_timing" begin
-
     toml = normpath(testdir, "sbm_config.toml")
-    time_sbm_1thread = @elapsed run(Cmd(`$wflow_exe $toml`, env=("JULIA_NUM_THREADS" => "1",)))
+    time_sbm_1thread = @elapsed run(
+        Cmd(`$wflow_exe $toml`; env=("JULIA_NUM_THREADS" => "1",))
+    )
 
-    time_sbm_4thread = @elapsed run(Cmd(`$wflow_exe $toml`, env=("JULIA_NUM_THREADS" => "4", )))
+    time_sbm_4thread = @elapsed run(
+        Cmd(`$wflow_exe $toml`; env=("JULIA_NUM_THREADS" => "4",))
+    )
 
     # Test if run with more threads is indeed faster
     @test time_sbm_4thread < time_sbm_1thread

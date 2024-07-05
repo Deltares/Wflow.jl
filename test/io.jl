@@ -33,7 +33,7 @@ config = Wflow.Config(tomlpath)
     # modifiers can also be applied
     kvconf = Wflow.get_alias(config.input.vertical, "kv_0", "kv_0", nothing)
     @test kvconf isa Wflow.Config
-    ncname, modifier = Wflow.ncvar_name_modifier(kvconf, config = config)
+    ncname, modifier = Wflow.ncvar_name_modifier(kvconf; config=config)
     @test ncname === "KsatVer"
     @test modifier.scale == 1.0
     @test modifier.offset == 0.0
@@ -44,9 +44,9 @@ config = Wflow.Config(tomlpath)
     @test haskey(config, "dir_input")
     @test haskey(config, "dir_output")
     @test Wflow.input_path(config, config.state.path_input) ==
-          joinpath(@__DIR__, "data", "input", "instates-moselle.nc")
+        joinpath(@__DIR__, "data", "input", "instates-moselle.nc")
     @test Wflow.output_path(config, config.state.path_output) ==
-          joinpath(@__DIR__, "data", "output", "outstates-moselle.nc")
+        joinpath(@__DIR__, "data", "output", "outstates-moselle.nc")
 end
 
 @testset "Clock constructor" begin
@@ -55,7 +55,7 @@ end
     # mock a NCReader object
     ncpath = Wflow.input_path(config, config.input.path_forcing)
     ds = NCDataset(ncpath)
-    reader = (; dataset = ds)
+    reader = (; dataset=ds)
 
     # if these keys are missing, they are derived from the netCDF
     pop!(Dict(config), "starttime")
@@ -104,7 +104,7 @@ end
     @test clock.dt == dt
 
     config = Wflow.Config(
-        Dict("starttime" => starttime, "timestepsecs" => Dates.value(Second(dt))),
+        Dict("starttime" => starttime, "timestepsecs" => Dates.value(Second(dt)))
     )
     Wflow.reset_clock!(clock, config)
     @test clock.time == starttime
@@ -145,13 +145,13 @@ end
 
 @testset "CFTime" begin
     @test Wflow.cftime("2006-01-02T15:04:05", "standard") ==
-          DateTimeStandard(2006, 1, 2, 15, 4, 5)
+        DateTimeStandard(2006, 1, 2, 15, 4, 5)
     @test Wflow.cftime("2006-01-02", "proleptic_gregorian") ==
-          DateTimeProlepticGregorian(2006, 1, 2)
+        DateTimeProlepticGregorian(2006, 1, 2)
     @test Wflow.cftime("2006-01-02T15:04:05", "360_day") ==
-          DateTime360Day(2006, 1, 2, 15, 4, 5)
+        DateTime360Day(2006, 1, 2, 15, 4, 5)
     @test Wflow.cftime(DateTime("2006-01-02T15:04:05"), "360_day") ==
-          DateTime360Day(2006, 1, 2, 15, 4, 5)
+        DateTime360Day(2006, 1, 2, 15, 4, 5)
     @test Wflow.cftime(Date("2006-01-02"), "360_day") == DateTime360Day(2006, 1, 2)
 end
 
@@ -161,7 +161,7 @@ end
     @test_throws ErrorException Wflow.timecycles(collect(1:400))
     @test Wflow.timecycles(collect(1:12)) == collect(zip(1:12, fill(1, 12)))
     @test Wflow.timecycles(collect(1:366)) ==
-          monthday.(Date(2000, 1, 1):Day(1):Date(2000, 12, 31))
+        monthday.(Date(2000, 1, 1):Day(1):Date(2000, 12, 31))
 
     @test Wflow.monthday_passed((1, 1), (1, 1))  # same day
     @test Wflow.monthday_passed((1, 2), (1, 1))  # day later
@@ -249,7 +249,7 @@ end
     @test vertical.soilthickness[1] ≈ 2000.0
     @test vertical.precipitation[49951] ≈ 2.2100000381469727
     @test vertical.c[1] ≈
-          [9.152995289601465, 8.919674421902961, 8.70537452585209, 8.690681062890977]
+        [9.152995289601465, 8.919674421902961, 8.70537452585209, 8.690681062890977]
 end
 
 config.input.vertical.cfmax = Dict("value" => 2.0)
@@ -258,8 +258,9 @@ config.input.vertical.soilthickness = Dict(
     "offset" => 100.0,
     "netcdf" => Dict("variable" => Dict("name" => "SoilThickness")),
 )
-config.input.vertical.precipitation =
-    Dict("scale" => 1.5, "netcdf" => Dict("variable" => Dict("name" => "precip")))
+config.input.vertical.precipitation = Dict(
+    "scale" => 1.5, "netcdf" => Dict("variable" => Dict("name" => "precip"))
+)
 config.input.vertical.c = Dict(
     "scale" => [2.0, 3.0],
     "offset" => [0.0, 0.0],
@@ -284,7 +285,7 @@ Wflow.load_dynamic_input!(model)
     ]
 end
 
-Wflow.close_files(model, delete_output = false)
+Wflow.close_files(model; delete_output=false)
 
 @testset "NetCDF creation" begin
     path = Base.Filesystem.tempname()
@@ -296,7 +297,6 @@ end
 
 @testset "NetCDF read variants" begin
     NCDataset(staticmaps_moselle_path) do ds
-
         @test Wflow.is_increasing(ds[:lon])
         @test !Wflow.is_increasing(ds[:lat])
 
@@ -313,17 +313,16 @@ end
         @test Wflow.internal_dim_name(:latitude) == :y
         @test Wflow.internal_dim_name(:time) == :time
 
-        @test_throws ArgumentError Wflow.read_dims(ds["c"], (x = :, y = :))
-        @test_throws ArgumentError Wflow.read_dims(ds["LAI"], (x = :, y = :))
-        data, data_dim_order = Wflow.read_dims(ds["wflow_dem"], (x = :, y = :))
+        @test_throws ArgumentError Wflow.read_dims(ds["c"], (x=:, y=:))
+        @test_throws ArgumentError Wflow.read_dims(ds["LAI"], (x=:, y=:))
+        data, data_dim_order = Wflow.read_dims(ds["wflow_dem"], (x=:, y=:))
         @test data isa Matrix{Union{Float32,Missing}}
         @test data[end, end] === missing
         @test data[125, 1] ≈ 647.187f0
         @test data_dim_order == (:x, :y)
 
-        @test Wflow.dim_directions(ds, (:x, :y)) === (x = true, y = false)
-        @test Wflow.dim_directions(ds, (:y, :x, :layer)) ===
-              (y = false, x = true, layer = true)
+        @test Wflow.dim_directions(ds, (:x, :y)) === (x=true, y=false)
+        @test Wflow.dim_directions(ds, (:y, :x, :layer)) === (y=false, x=true, layer=true)
 
         data, dims = Wflow.permute_data(zeros(1, 2, 3), (:layer, :y, :x))
         @test size(data) == (3, 2, 1)
@@ -335,17 +334,17 @@ end
 
         data = collect(reshape(1:6, (2, 3)))
         # flip y, which is the second dimension
-        @test Wflow.reverse_data!(data, (y = false, x = true))[1, :] == [5, 3, 1]
+        @test Wflow.reverse_data!(data, (y=false, x=true))[1, :] == [5, 3, 1]
         # and mutate it back, the NamedTuple order should not matter
-        @test Wflow.reverse_data!(data, (x = true, y = false))[1, :] == [1, 3, 5]
+        @test Wflow.reverse_data!(data, (x=true, y=false))[1, :] == [1, 3, 5]
         # flip both dimensions at the same time
-        data = Wflow.reverse_data!(data, (x = false, y = false))
+        data = Wflow.reverse_data!(data, (x=false, y=false))
         @test data[1, :] == [6, 4, 2]
         @test data[:, 1] == [6, 5]
 
-        data = Wflow.read_standardized(ds, "wflow_dem", (x = :, y = :))
+        data = Wflow.read_standardized(ds, "wflow_dem", (x=:, y=:))
         # since in this case only the second dimension needs reversing, we can easily do it manually
-        manual_fix = reverse(ds["wflow_dem"]; dims = 2)
+        manual_fix = reverse(ds["wflow_dem"]; dims=2)
         @test all(data .=== manual_fix)
     end
 end
@@ -356,7 +355,7 @@ end
     @test Wflow.parse_loglevel(0) == Logging.Info
 
     tomlpath = joinpath(@__DIR__, "sbm_simple.toml")
-    Wflow.run(tomlpath; silent = true)
+    Wflow.run(tomlpath; silent=true)
 
     config = Wflow.Config(tomlpath)
     output = normpath(abspath(Wflow.get(config, "dir_output", ".")))
@@ -420,7 +419,7 @@ end
     @test eltype(reader.dataset_times) == DateTimeNoLeap
     @test ismissing(reader.dataset_times) == false # missing in time dimension is not allowed
     @test reader.dataset_times ==
-          collect(DateTimeNoLeap(2000, 1, 2):Day(1):DateTimeNoLeap(2000, 1, 6))
+        collect(DateTimeNoLeap(2000, 1, 2):Day(1):DateTimeNoLeap(2000, 1, 6))
 
     # test Clock{DateTimeNoLeap}
     clock = Wflow.Clock(config, reader)

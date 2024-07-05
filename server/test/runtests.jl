@@ -1,12 +1,12 @@
-import ZMQ
-import JSON3
-import StructTypes
-import Wflow
-import WflowServer
+using ZMQ: ZMQ
+using JSON3: JSON3
+using StructTypes: StructTypes
+using Wflow: Wflow
+using WflowServer: WflowServer
 import Statistics: mean
 import Logging: with_logger, NullLogger
 import Test: @testset, @test
-import Downloads
+using Downloads: Downloads
 
 # ensure test data is present
 testdir = @__DIR__
@@ -23,8 +23,9 @@ function testdata(version, source_filename, target_filename)
     return target_path
 end
 
-staticmaps_moselle_path =
-    testdata(v"0.2.9", "staticmaps-moselle.nc", "staticmaps-moselle.nc")
+staticmaps_moselle_path = testdata(
+    v"0.2.9", "staticmaps-moselle.nc", "staticmaps-moselle.nc"
+)
 forcing_moselle_path = testdata(v"0.2.6", "forcing-moselle.nc", "forcing-moselle.nc")
 instates_moselle_path = testdata(v"0.2.6", "instates-moselle.nc", "instates-moselle.nc")
 

@@ -64,9 +64,7 @@ instead.
 """
 abstract type Aquifer end
 
-
 abstract type AquiferBoundaryCondition end
-
 
 """
     ConfinedAquifer{T} <: Aquifer
@@ -97,7 +95,6 @@ transmissivity).
     conductance::Vector{T} | "m2 d-1" # Confined aquifer conductance is constant
 end
 
-
 """
     UnconfinedAquifer{T} <: Aquifer
 
@@ -125,7 +122,6 @@ end
 storativity(A::UnconfinedAquifer) = A.specific_yield
 storativity(A::ConfinedAquifer) = A.storativity
 
-
 """
     harmonicmean_conductance(kH1, kH2, l1, l2, width)
 
@@ -149,14 +145,12 @@ function harmonicmean_conductance(kH1, kH2, l1, l2, width)
 end
 
 function saturated_thickness(aquifer::UnconfinedAquifer, index::Int)
-    min(aquifer.top[index], aquifer.head[index]) - aquifer.bottom[index]
+    return min(aquifer.top[index], aquifer.head[index]) - aquifer.bottom[index]
 end
-
 
 function saturated_thickness(aquifer::ConfinedAquifer, index::Int)
-    aquifer.top[index] - aquifer.bottom[index]
+    return aquifer.top[index] - aquifer.bottom[index]
 end
-
 
 """
     horizontal_conductance(i, j, nzi, aquifer, C)
@@ -167,11 +161,7 @@ connectivity struct `C`, using the non-zero index (nzi) of its CSC data
 structure.
 """
 function horizontal_conductance(
-    i::Int,
-    j::Int,
-    nzi::Int,
-    aquifer::A,
-    connectivity::Connectivity,
+    i::Int, j::Int, nzi::Int, aquifer::A, connectivity::Connectivity
 ) where {A<:Aquifer}
     k1 = aquifer.k[i]
     k2 = aquifer.k[j]
@@ -193,16 +183,16 @@ For an unconfined aquifer, conductance is computed per timestep by multiplying b
 degree of saturation [0.0 - 1.0].
 """
 function initialize_conductance!(aquifer::A, connectivity::Connectivity) where {A<:Aquifer}
-    for i = 1:connectivity.ncell
+    for i in 1:(connectivity.ncell)
         # Loop over connections for cell j
         for nzi in connections(connectivity, i)
             j = connectivity.rowval[nzi]
-            aquifer.conductance[nzi] =
-                horizontal_conductance(i, j, nzi, aquifer, connectivity)
+            aquifer.conductance[nzi] = horizontal_conductance(
+                i, j, nzi, aquifer, connectivity
+            )
         end
     end
 end
-
 
 function conductance(
     aquifer::ConfinedAquifer,
@@ -214,7 +204,6 @@ function conductance(
 )
     return aquifer.conductance[nzi]
 end
-
 
 """
     conductance(aquifer::UnconfinedAquifer, connectivity::Connectivity)
@@ -250,7 +239,6 @@ function conductance(
     conductivity_profile::String,
     connectivity::Connectivity,
 )
-
     if conductivity_profile == "exponential"
         # Extract required variables
         zi1 = aquifer.top[i] - aquifer.head[i]
@@ -292,7 +280,7 @@ function conductance(
 end
 
 function flux!(Q, aquifer, connectivity, conductivity_profile)
-    for i = 1:connectivity.ncell
+    for i in 1:(connectivity.ncell)
         # Loop over connections for cell j
         for nzi in connections(connectivity, i)
             # connection from i -> j
@@ -340,7 +328,6 @@ end
 minimum_head(aquifer::ConfinedAquifer) = aquifer.head
 minimum_head(aquifer::UnconfinedAquifer) = max.(aquifer.head, aquifer.bottom)
 
-
 function update(gwf, Q, dt, conductivity_profile)
     Q .= 0.0  # TODO: Probably remove this when linking with other components
     flux!(Q, gwf.aquifer, gwf.connectivity, conductivity_profile)
@@ -355,19 +342,15 @@ function update(gwf, Q, dt, conductivity_profile)
     return gwf
 end
 
-
 Base.@kwdef struct GroundwaterFlow{A,B}
     aquifer::A
     connectivity::Connectivity
     constanthead::ConstantHead
     boundaries::Vector{B}
     function GroundwaterFlow(
-        aquifer::A,
-        connectivity,
-        constanthead,
-        boundaries::Vector{B},
+        aquifer::A, connectivity, constanthead, boundaries::Vector{B}
     ) where {A<:Aquifer,B<:AquiferBoundaryCondition}
         initialize_conductance!(aquifer, connectivity)
-        new{A,B}(aquifer, connectivity, constanthead, boundaries)
+        return new{A,B}(aquifer, connectivity, constanthead, boundaries)
     end
 end

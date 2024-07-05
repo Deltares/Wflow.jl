@@ -1,6 +1,6 @@
 
 function initial_head(x)
-    2 * √x
+    return 2 * √x
 end
 
 """
@@ -10,11 +10,10 @@ Non-steady flow in an unconfined rectangular aquifer, with Dirichlet h(0, t) = 0
 on the left edge, and a Neumann Boundary Condition (dh/dx = 0) on the right.
 """
 function transient_aquifer_1d(x, time, conductivity, specific_yield, aquifer_length, beta)
-    initial_head(x) / 1.0 +
-    (beta * conductivity * initial_head(aquifer_length) * time) /
-    (specific_yield * aquifer_length * aquifer_length)
+    return initial_head(x) / 1.0 +
+           (beta * conductivity * initial_head(aquifer_length) * time) /
+           (specific_yield * aquifer_length * aquifer_length)
 end
-
 
 """
     drawdown_theis(distance, time, discharge, transmissivity, storativity)
@@ -25,7 +24,6 @@ function drawdown_theis(distance, time, discharge, transmissivity, storativity)
     u = (storativity * distance^2) / (4 * transmissivity * time)
     return discharge / (4 * pi * transmissivity) * expint(u)
 end
-
 
 function homogenous_aquifer(nrow, ncol)
     shape = (nrow, ncol)
@@ -59,7 +57,6 @@ function homogenous_aquifer(nrow, ncol)
     )
     return (connectivity, conf_aqf, unconf_aqf)
 end
-
 
 @testset "groundwater" begin
     ncol = 2
@@ -177,14 +174,14 @@ end
         @testset "harmonicmean_conductance" begin
             # harmonicmean_conductance(kH1, kH2, l1, l2, width)
             @test Wflow.harmonicmean_conductance(10.0 * 5.0, 10.0 * 5.0, 0.5, 0.5, 1.0) ==
-                  50.0
+                50.0
             @test Wflow.harmonicmean_conductance(10.0 * 0.0, 10.0 * 5.0, 0.5, 0.5, 1.0) ==
-                  0.0
+                0.0
             @test Wflow.harmonicmean_conductance(10.0 * 5.0, 10.0 * 0.0, 0.5, 0.5, 1.0) ==
-                  0.0
+                0.0
             # kD of 10 and 20 -> harmonicmean = 1/(1/10 + 1/20)
             @test Wflow.harmonicmean_conductance(10.0 * 1.0, 10.0 * 2.0, 1.0, 1.0, 1.0) ≈
-                  (6.0 + 2.0 / 3.0)
+                (6.0 + 2.0 / 3.0)
         end
 
         nrow = 1
@@ -219,28 +216,13 @@ end
         @testset "conductance" begin
             conductivity_profile = "uniform"
             @test Wflow.conductance(
-                conf_aqf,
-                2,
-                3,
-                3,
-                conductivity_profile,
-                connectivity,
+                conf_aqf, 2, 3, 3, conductivity_profile, connectivity
             ) == 100.0
             @test Wflow.conductance(
-                unconf_aqf,
-                2,
-                3,
-                3,
-                conductivity_profile,
-                connectivity,
+                unconf_aqf, 2, 3, 3, conductivity_profile, connectivity
             ) == 100.0  # upstream sat. thickness
             @test Wflow.conductance(
-                unconf_aqf,
-                1,
-                2,
-                1,
-                conductivity_profile,
-                connectivity,
+                unconf_aqf, 1, 2, 1, conductivity_profile, connectivity
             ) == 75.0  # upstream sat. thickness
         end
 
@@ -290,12 +272,7 @@ end
 
         @testset "river" begin
             river = Wflow.River(
-                [2.0, 2.0],
-                [100.0, 100.0],
-                [200.0, 200.0],
-                [1.0, 1.0],
-                [0.0, 0.0],
-                [1, 3],
+                [2.0, 2.0], [100.0, 100.0], [200.0, 200.0], [1.0, 1.0], [0.0, 0.0], [1, 3]
             )
             Q = zeros(3)
             Wflow.flux!(Q, river, conf_aqf)
@@ -314,8 +291,9 @@ end
         end
 
         @testset "headboundary" begin
-            headboundary =
-                Wflow.HeadBoundary([2.0, 2.0], [100.0, 100.0], [0.0, 0.0], [1, 2])
+            headboundary = Wflow.HeadBoundary(
+                [2.0, 2.0], [100.0, 100.0], [0.0, 0.0], [1, 2]
+            )
             Q = zeros(3)
             Wflow.flux!(Q, headboundary, conf_aqf)
             @test Q[1] == 100.0 * (2.0 - 0.0)
@@ -342,17 +320,14 @@ end
         constanthead = Wflow.ConstantHead([2.0, 4.0], [1, 3])
         conductivity_profile = "uniform"
         gwf = Wflow.GroundwaterFlow(
-            aquifer,
-            connectivity,
-            constanthead,
-            Wflow.AquiferBoundaryCondition[],
+            aquifer, connectivity, constanthead, Wflow.AquiferBoundaryCondition[]
         )
         # Set constant head (dirichlet) boundaries
         gwf.aquifer.head[gwf.constanthead.index] .= gwf.constanthead.head
 
         Q = zeros(3)
         dt = 0.25 # days
-        for _ = 1:50
+        for _ in 1:50
             Wflow.update(gwf, Q, dt, conductivity_profile)
         end
 
@@ -364,17 +339,14 @@ end
         constanthead = Wflow.ConstantHead([2.0, 4.0], [1, 3])
         conductivity_profile = "exponential"
         gwf = Wflow.GroundwaterFlow(
-            aquifer,
-            connectivity,
-            constanthead,
-            Wflow.AquiferBoundaryCondition[],
+            aquifer, connectivity, constanthead, Wflow.AquiferBoundaryCondition[]
         )
         # Set constant head (dirichlet) boundaries
         gwf.aquifer.head[gwf.constanthead.index] .= gwf.constanthead.head
 
         Q = zeros(3)
         dt = 0.25 # days
-        for _ = 1:50
+        for _ in 1:50
             Wflow.update(gwf, Q, dt, conductivity_profile)
         end
 
@@ -402,7 +374,7 @@ end
         indices, reverse_indices = Wflow.active_indices(domain, false)
         connectivity = Wflow.Connectivity(indices, reverse_indices, dx, dy)
         ncell = connectivity.ncell
-        xc = collect(range(0.0, stop = aquifer_length - cellsize, step = cellsize))
+        xc = collect(range(0.0; stop=aquifer_length - cellsize, step=cellsize))
         aquifer = Wflow.UnconfinedAquifer(
             initial_head.(xc),
             fill(conductivity, ncell),
@@ -416,10 +388,7 @@ end
         # constant head on left boundary, 0 at 0
         constanthead = Wflow.ConstantHead([0.0], [1])
         gwf = Wflow.GroundwaterFlow(
-            aquifer,
-            connectivity,
-            constanthead,
-            Wflow.AquiferBoundaryCondition[],
+            aquifer, connectivity, constanthead, Wflow.AquiferBoundaryCondition[]
         )
 
         dt = Wflow.stable_timestep(gwf.aquifer, conductivity_profile)
@@ -428,14 +397,16 @@ end
         nstep = Int(ceil(time / dt))
         time = nstep * dt
 
-        for i = 1:nstep
+        for i in 1:nstep
             Wflow.update(gwf, Q, dt, conductivity_profile)
             # Gradient dh/dx is positive, all flow to the left
             @test all(diff(gwf.aquifer.head) .> 0.0)
         end
 
         head_analytical = [
-            transient_aquifer_1d(x, time, conductivity, specific_yield, aquifer_length, beta) for x in xc
+            transient_aquifer_1d(
+                x, time, conductivity, specific_yield, aquifer_length, beta
+            ) for x in xc
         ]
         difference = gwf.aquifer.head .- head_analytical
         # @test all(difference .< ?)  #TODO
@@ -462,7 +433,7 @@ end
         indices, reverse_indices = Wflow.active_indices(domain, false)
         connectivity = Wflow.Connectivity(indices, reverse_indices, dx, dy)
         ncell = connectivity.ncell
-        xc = collect(range(0.0, stop = aquifer_length - cellsize, step = cellsize))
+        xc = collect(range(0.0; stop=aquifer_length - cellsize, step=cellsize))
         aquifer = Wflow.UnconfinedAquifer(
             initial_head.(xc),
             fill(conductivity, ncell),
@@ -476,10 +447,7 @@ end
         # constant head on left boundary, 0 at 0
         constanthead = Wflow.ConstantHead([0.0], [1])
         gwf = Wflow.GroundwaterFlow(
-            aquifer,
-            connectivity,
-            constanthead,
-            Wflow.AquiferBoundaryCondition[],
+            aquifer, connectivity, constanthead, Wflow.AquiferBoundaryCondition[]
         )
 
         dt = Wflow.stable_timestep(gwf.aquifer, conductivity_profile)
@@ -488,14 +456,16 @@ end
         nstep = Int(ceil(time / dt))
         time = nstep * dt
 
-        for i = 1:nstep
+        for i in 1:nstep
             Wflow.update(gwf, Q, dt, conductivity_profile)
             # Gradient dh/dx is positive, all flow to the left
             @test all(diff(gwf.aquifer.head) .> 0.0)
         end
 
         head_analytical = [
-            transient_aquifer_1d(x, time, conductivity, specific_yield, aquifer_length, beta) for x in xc
+            transient_aquifer_1d(
+                x, time, conductivity, specific_yield, aquifer_length, beta
+            ) for x in xc
         ]
         difference = gwf.aquifer.head .- head_analytical
         # @test all(difference .< ?)  #TODO
@@ -537,7 +507,7 @@ end
             fill(0.0, connectivity.nconnection), # conductance, to be set
         )
 
-        cell_index = reshape(collect(range(1, ncell, step = 1)), shape)
+        cell_index = reshape(collect(range(1, ncell; step=1)), shape)
         indices = vcat(cell_index[1, :], cell_index[end, :])# , cell_index[:, 1], cell_index[:, end],)
         constanthead = Wflow.ConstantHead(fill(10.0, size(indices)), indices)
         # Place a well in the middle of the domain
@@ -550,24 +520,23 @@ end
         nstep = Int(ceil(time / dt))
         time = nstep * dt
 
-        for i = 1:nstep
+        for i in 1:nstep
             Wflow.update(gwf, Q, dt, conductivity_profile)
         end
 
         # test for symmetry on x and y axes
         head = reshape(gwf.aquifer.head, shape)
-        @test head[1:halfnrow, :] ≈ head[end:-1:halfnrow+2, :]
-        @test head[:, 1:halfnrow] ≈ head[:, end:-1:halfnrow+2]
+        @test head[1:halfnrow, :] ≈ head[end:-1:(halfnrow + 2), :]
+        @test head[:, 1:halfnrow] ≈ head[:, end:-1:(halfnrow + 2)]
 
         # compare with analytical solution
         start = -0.5 * aquifer_length + 0.5 * cellsize
         stop = 0.5 * aquifer_length - 0.5 * cellsize
-        X = collect(range(start, stop = stop, step = cellsize))
+        X = collect(range(start; stop=stop, step=cellsize))
         head_analytical =
             [drawdown_theis(x, time, discharge, transmissivity, storativity) for x in X] .+ 10.0
         # compare left-side, since it's symmetric anyway. Skip the well cell, and its first neighbor
-        difference = head[1:halfnrow-1, halfnrow] - head_analytical[1:halfnrow-1]
+        difference = head[1:(halfnrow - 1), halfnrow] - head_analytical[1:(halfnrow - 1)]
         @test all(difference .< 0.02)
     end
-
 end

@@ -46,7 +46,7 @@ function format_message(io::IO, args)::Nothing
 end
 
 "Initialize a logger, which is different if `fews_run` is set in the Config."
-function init_logger(config::Config; silent = false)::Tuple{TeeLogger,IOStream}
+function init_logger(config::Config; silent=false)::Tuple{TeeLogger,IOStream}
     loglevel = parse_loglevel(get(config, "loglevel", "info"))
     path_log = output_path(config, get(config, "path_log", "log.txt"))
     mkpath(dirname(path_log))
@@ -61,8 +61,8 @@ function init_logger(config::Config; silent = false)::Tuple{TeeLogger,IOStream}
         # https://github.com/JuliaLogging/LoggingExtras.jl/issues/46#issuecomment-803716480
         ConsoleLogger(
             IOContext(log_handle, :compact => false, :limit => false, :color => false),
-            loglevel,
-            show_limited = false,
+            loglevel;
+            show_limited=false,
         )
     end
 
@@ -72,16 +72,14 @@ function init_logger(config::Config; silent = false)::Tuple{TeeLogger,IOStream}
         # avoid debug information overflowing the terminal, -1 is the level of ProgressLogging
         # avoid double stacktraces by filtering the @error catch in Wflow.run
         EarlyFilteredLogger(
-            log -> log.id !== :wflow_run,
-            MinLevelLogger(TerminalLogger(), LogLevel(-1)),
+            log -> log.id !== :wflow_run, MinLevelLogger(TerminalLogger(), LogLevel(-1))
         )
     end
 
     logger = TeeLogger(
         # avoid progresslogger and NCDatasets debug messages in the file
         EarlyFilteredLogger(
-            log -> log.group !== :ProgressLogging && log._module != NCDatasets,
-            file_logger,
+            log -> log.group !== :ProgressLogging && log._module != NCDatasets, file_logger
         ),
         terminal_logger,
     )

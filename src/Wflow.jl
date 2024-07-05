@@ -28,8 +28,9 @@ const BMI = BasicModelInterface
 const Float = Float64
 const CFDataset = Union{NCDataset,NCDatasets.MFDataset}
 const CFVariable_MF = Union{NCDatasets.CFVariable,NCDatasets.MFCFVariable}
-const version =
-    VersionNumber(TOML.parsefile(joinpath(@__DIR__, "..", "Project.toml"))["version"])
+const version = VersionNumber(
+    TOML.parsefile(joinpath(@__DIR__, "..", "Project.toml"))["version"]
+)
 
 mutable struct Clock{T}
     time::T
@@ -43,7 +44,7 @@ function Clock(config)
     calendar = get(config, "calendar", "standard")::String
     starttime = cftime(config.starttime, calendar)
     dt = Second(config.timestepsecs)
-    Clock(starttime, 0, dt)
+    return Clock(starttime, 0, dt)
 end
 
 function Clock(config, reader)
@@ -77,7 +78,7 @@ function Clock(config, reader)
     end
     starttime = cftime(config.starttime, calendar)
 
-    Clock(starttime, 0, dt)
+    return Clock(starttime, 0, dt)
 end
 
 include("io.jl")
@@ -142,7 +143,7 @@ This makes it easier to start a run from the command line without having to esca
 
     julia -e "using Wflow; Wflow.run()" "path/to/config.toml"
 """
-function run(tomlpath::AbstractString; silent = nothing)
+function run(tomlpath::AbstractString; silent=nothing)
     config = Config(tomlpath)
     # if the silent kwarg is not set, check if it is set in the TOML
     if silent === nothing
@@ -184,10 +185,10 @@ function run(config::Config)
         error("unknown model type")
     end
     load_fixed_forcing(model)
-    run(model)
+    return run(model)
 end
 
-function run_timestep(model::Model; update_func = update, write_model_output = true)
+function run_timestep(model::Model; update_func=update, write_model_output=true)
     advance!(model.clock)
     load_dynamic_input!(model)
     model = update_func(model)
@@ -197,7 +198,7 @@ function run_timestep(model::Model; update_func = update, write_model_output = t
     return model
 end
 
-function run(model::Model; close_files = true)
+function run(model::Model; close_files=true)
     @unpack network, config, writer, clock = model
 
     model_type = config.model.type::String
@@ -212,7 +213,7 @@ function run(model::Model; close_files = true)
     starttime = clock.time
     dt = clock.dt
     endtime = cftime(config.endtime, calendar)
-    times = range(starttime + dt, endtime, step = dt)
+    times = range(starttime + dt, endtime; step=dt)
 
     @info "Run information" model_type starttime dt endtime nthreads()
     runstart_time = now()
@@ -233,7 +234,7 @@ function run(model::Model; close_files = true)
     # option to support running function twice without re-initializing
     # and thus opening the netCDF files
     if close_files
-        Wflow.close_files(model, delete_output = false)
+        Wflow.close_files(model; delete_output=false)
     end
 
     # copy TOML to dir_output, to archive what settings were used
@@ -242,7 +243,7 @@ function run(model::Model; close_files = true)
         dst = output_path(config, basename(src))
         if src != dst
             @debug "Copying TOML file." src dst
-            cp(src, dst, force = true)
+            cp(src, dst; force=true)
         end
     end
     return model
@@ -258,7 +259,7 @@ function run()
     if !isfile(toml_path)
         throw(ArgumentError("File not found: $(toml_path)\n" * usage))
     end
-    run(toml_path)
+    return run(toml_path)
 end
 
 end # module

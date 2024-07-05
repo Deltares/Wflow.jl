@@ -219,23 +219,12 @@ function initialize_canopy(nc, config, inds)
     if haskey(config.input.vertical, "leaf_area_index")
         # TODO confirm if leaf area index climatology is present in the netCDF
         sl = ncread(
-            nc,
-            config,
-            "vertical.specific_leaf";
-            optional = false,
-            sel = inds,
-            type = Float,
+            nc, config, "vertical.specific_leaf"; optional=false, sel=inds, type=Float
         )
         swood = ncread(
-            nc,
-            config,
-            "vertical.storage_wood";
-            optional = false,
-            sel = inds,
-            type = Float,
+            nc, config, "vertical.storage_wood"; optional=false, sel=inds, type=Float
         )
-        kext =
-            ncread(nc, config, "vertical.kext"; optional = false, sel = inds, type = Float)
+        kext = ncread(nc, config, "vertical.kext"; optional=false, sel=inds, type=Float)
         cmax = fill(mv, n)
         e_r = fill(mv, n)
         canopygapfraction = fill(mv, n)
@@ -244,23 +233,16 @@ function initialize_canopy(nc, config, inds)
         swood = fill(mv, n)
         kext = fill(mv, n)
         # cmax, e_r, canopygapfraction only required when leaf area index climatology not provided
-        cmax = ncread(nc, config, "vertical.cmax"; sel = inds, defaults = 1.0, type = Float)
-        e_r =
-            ncread(nc, config, "vertical.eoverr"; sel = inds, defaults = 0.1, type = Float)
+        cmax = ncread(nc, config, "vertical.cmax"; sel=inds, defaults=1.0, type=Float)
+        e_r = ncread(nc, config, "vertical.eoverr"; sel=inds, defaults=0.1, type=Float)
         canopygapfraction = ncread(
-            nc,
-            config,
-            "vertical.canopygapfraction";
-            sel = inds,
-            defaults = 0.1,
-            type = Float,
+            nc, config, "vertical.canopygapfraction"; sel=inds, defaults=0.1, type=Float
         )
     end
     return cmax, e_r, canopygapfraction, sl, swood, kext
 end
 
 function initialize_sbm(nc, config, riverfrac, inds)
-
     dt = Second(config.timestepsecs)
     config_thicknesslayers = get(config.model, "thicknesslayers", Float[])
     ksat_profile = get(config.input.vertical, "ksat_profile", "exponential")::String
@@ -275,131 +257,56 @@ function initialize_sbm(nc, config, riverfrac, inds)
     n = length(inds)
 
     cfmax =
-        ncread(
-            nc,
-            config,
-            "vertical.cfmax";
-            sel = inds,
-            defaults = 3.75653,
-            type = Float,
-        ) .* (dt / basetimestep)
-    tt = ncread(nc, config, "vertical.tt"; sel = inds, defaults = 0.0, type = Float)
-    tti = ncread(nc, config, "vertical.tti"; sel = inds, defaults = 1.0, type = Float)
-    ttm = ncread(nc, config, "vertical.ttm"; sel = inds, defaults = 0.0, type = Float)
-    whc = ncread(nc, config, "vertical.whc"; sel = inds, defaults = 0.1, type = Float)
+        ncread(nc, config, "vertical.cfmax"; sel=inds, defaults=3.75653, type=Float) .*
+        (dt / basetimestep)
+    tt = ncread(nc, config, "vertical.tt"; sel=inds, defaults=0.0, type=Float)
+    tti = ncread(nc, config, "vertical.tti"; sel=inds, defaults=1.0, type=Float)
+    ttm = ncread(nc, config, "vertical.ttm"; sel=inds, defaults=0.0, type=Float)
+    whc = ncread(nc, config, "vertical.whc"; sel=inds, defaults=0.1, type=Float)
     w_soil =
-        ncread(
-            nc,
-            config,
-            "vertical.w_soil";
-            sel = inds,
-            defaults = 0.1125,
-            type = Float,
-        ) .* (dt / basetimestep)
-    cf_soil =
-        ncread(nc, config, "vertical.cf_soil"; sel = inds, defaults = 0.038, type = Float)
+        ncread(nc, config, "vertical.w_soil"; sel=inds, defaults=0.1125, type=Float) .*
+        (dt / basetimestep)
+    cf_soil = ncread(nc, config, "vertical.cf_soil"; sel=inds, defaults=0.038, type=Float)
     # glacier parameters
-    g_tt = ncread(
-        nc,
-        config,
-        "vertical.g_tt";
-        sel = inds,
-        defaults = 0.0,
-        type = Float,
-        fill = 0.0,
-    )
+    g_tt = ncread(nc, config, "vertical.g_tt"; sel=inds, defaults=0.0, type=Float, fill=0.0)
     g_cfmax =
         ncread(
-            nc,
-            config,
-            "vertical.g_cfmax";
-            sel = inds,
-            defaults = 3.0,
-            type = Float,
-            fill = 0.0,
+            nc, config, "vertical.g_cfmax"; sel=inds, defaults=3.0, type=Float, fill=0.0
         ) .* (dt / basetimestep)
     g_sifrac =
         ncread(
-            nc,
-            config,
-            "vertical.g_sifrac";
-            sel = inds,
-            defaults = 0.001,
-            type = Float,
-            fill = 0.0,
+            nc, config, "vertical.g_sifrac"; sel=inds, defaults=0.001, type=Float, fill=0.0
         ) .* (dt / basetimestep)
     glacierfrac = ncread(
-        nc,
-        config,
-        "vertical.glacierfrac";
-        sel = inds,
-        defaults = 0.0,
-        type = Float,
-        fill = 0.0,
+        nc, config, "vertical.glacierfrac"; sel=inds, defaults=0.0, type=Float, fill=0.0
     )
     glacierstore = ncread(
-        nc,
-        config,
-        "vertical.glacierstore";
-        sel = inds,
-        defaults = 5500.0,
-        type = Float,
-        fill = 0.0,
+        nc, config, "vertical.glacierstore"; sel=inds, defaults=5500.0, type=Float, fill=0.0
     )
     # soil parameters
-    theta_s =
-        ncread(nc, config, "vertical.theta_s"; sel = inds, defaults = 0.6, type = Float)
-    theta_r =
-        ncread(nc, config, "vertical.theta_r"; sel = inds, defaults = 0.01, type = Float)
+    theta_s = ncread(nc, config, "vertical.theta_s"; sel=inds, defaults=0.6, type=Float)
+    theta_r = ncread(nc, config, "vertical.theta_r"; sel=inds, defaults=0.01, type=Float)
     kv_0 =
-        ncread(nc, config, "vertical.kv_0"; sel = inds, defaults = 3000.0, type = Float) .*
+        ncread(nc, config, "vertical.kv_0"; sel=inds, defaults=3000.0, type=Float) .*
         (dt / basetimestep)
-    f = ncread(nc, config, "vertical.f"; sel = inds, defaults = 0.001, type = Float)
-    hb = ncread(nc, config, "vertical.hb"; sel = inds, defaults = 10.0, type = Float)
+    f = ncread(nc, config, "vertical.f"; sel=inds, defaults=0.001, type=Float)
+    hb = ncread(nc, config, "vertical.hb"; sel=inds, defaults=10.0, type=Float)
     soilthickness = ncread(
-        nc,
-        config,
-        "vertical.soilthickness";
-        sel = inds,
-        defaults = 2000.0,
-        type = Float,
+        nc, config, "vertical.soilthickness"; sel=inds, defaults=2000.0, type=Float
     )
     infiltcappath =
-        ncread(
-            nc,
-            config,
-            "vertical.infiltcappath";
-            sel = inds,
-            defaults = 10.0,
-            type = Float,
-        ) .* (dt / basetimestep)
+        ncread(nc, config, "vertical.infiltcappath"; sel=inds, defaults=10.0, type=Float) .*
+        (dt / basetimestep)
     infiltcapsoil =
         ncread(
-            nc,
-            config,
-            "vertical.infiltcapsoil";
-            sel = inds,
-            defaults = 100.0,
-            type = Float,
+            nc, config, "vertical.infiltcapsoil"; sel=inds, defaults=100.0, type=Float
         ) .* (dt / basetimestep)
     maxleakage =
-        ncread(
-            nc,
-            config,
-            "vertical.maxleakage";
-            sel = inds,
-            defaults = 0.0,
-            type = Float,
-        ) .* (dt / basetimestep)
+        ncread(nc, config, "vertical.maxleakage"; sel=inds, defaults=0.0, type=Float) .*
+        (dt / basetimestep)
 
     c = ncread(
-        nc,
-        config,
-        "vertical.c";
-        sel = inds,
-        defaults = 10.0,
-        type = Float,
-        dimname = :layer,
+        nc, config, "vertical.c"; sel=inds, defaults=10.0, type=Float, dimname=:layer
     )
     if size(c, 1) != maxlayers
         parname = param(config.input.vertical, "c")
@@ -407,13 +314,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         error("$parname needs a layer dimension of size $maxlayers, but is $size1")
     end
     kvfrac = ncread(
-        nc,
-        config,
-        "vertical.kvfrac";
-        sel = inds,
-        defaults = 1.0,
-        type = Float,
-        dimname = :layer,
+        nc, config, "vertical.kvfrac"; sel=inds, defaults=1.0, type=Float, dimname=:layer
     )
     if size(kvfrac, 1) != maxlayers
         parname = param(config.input, "vertical.kvfrac")
@@ -422,39 +323,28 @@ function initialize_sbm(nc, config, riverfrac, inds)
     end
 
     # fraction open water and compacted area (land cover)
-    waterfrac =
-        ncread(nc, config, "vertical.waterfrac"; sel = inds, defaults = 0.0, type = Float)
-    pathfrac =
-        ncread(nc, config, "vertical.pathfrac"; sel = inds, defaults = 0.01, type = Float)
+    waterfrac = ncread(nc, config, "vertical.waterfrac"; sel=inds, defaults=0.0, type=Float)
+    pathfrac = ncread(nc, config, "vertical.pathfrac"; sel=inds, defaults=0.01, type=Float)
 
     # vegetation parameters
     rootingdepth = ncread(
-        nc,
-        config,
-        "vertical.rootingdepth";
-        sel = inds,
-        defaults = 750.0,
-        type = Float,
+        nc, config, "vertical.rootingdepth"; sel=inds, defaults=750.0, type=Float
     )
     rootdistpar = ncread(
-        nc,
-        config,
-        "vertical.rootdistpar";
-        sel = inds,
-        defaults = -500.0,
-        type = Float,
+        nc, config, "vertical.rootdistpar"; sel=inds, defaults=-500.0, type=Float
     )
-    cap_hmax =
-        ncread(nc, config, "vertical.cap_hmax"; sel = inds, defaults = 2000.0, type = Float)
-    cap_n = ncread(nc, config, "vertical.cap_n"; sel = inds, defaults = 2.0, type = Float)
+    cap_hmax = ncread(
+        nc, config, "vertical.cap_hmax"; sel=inds, defaults=2000.0, type=Float
+    )
+    cap_n = ncread(nc, config, "vertical.cap_n"; sel=inds, defaults=2.0, type=Float)
     kc = ncread(
         nc,
         config,
         "vertical.kc";
-        alias = "vertical.et_reftopot",
-        sel = inds,
-        defaults = 1.0,
-        type = Float,
+        alias="vertical.et_reftopot",
+        sel=inds,
+        defaults=1.0,
+        type=Float,
     )
     if haskey(config.input.vertical, "et_reftopot")
         @warn string(
@@ -477,10 +367,11 @@ function initialize_sbm(nc, config, riverfrac, inds)
     act_thickl = zeros(Float, maxlayers, n)
     s_layers = zeros(Float, maxlayers + 1, n)
 
-    for i = 1:n
+    for i in 1:n
         if length(config_thicknesslayers) > 0
-            act_thickl_, nlayers_ =
-                set_layerthickness(soilthickness[i], sumlayers, thicknesslayers)
+            act_thickl_, nlayers_ = set_layerthickness(
+                soilthickness[i], sumlayers, thicknesslayers
+            )
             s_layers_ = pushfirst(cumsum(act_thickl_), 0.0)
 
             nlayers[i] = nlayers_
@@ -507,8 +398,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         kv = fill(mv, (maxlayers, n))
         nlayers_kv = fill(0, n)
     elseif ksat_profile == "exponential_constant"
-        z_exp =
-            ncread(nc, config, "vertical.z_exp"; optional = false, sel = inds, type = Float)
+        z_exp = ncread(nc, config, "vertical.z_exp"; optional=false, sel=inds, type=Float)
         z_layered = fill(mv, n)
         kv = fill(mv, (maxlayers, n))
         nlayers_kv = fill(0, n)
@@ -519,10 +409,10 @@ function initialize_sbm(nc, config, riverfrac, inds)
                 nc,
                 config,
                 "vertical.kv";
-                sel = inds,
-                defaults = 1000.0,
-                type = Float,
-                dimname = :layer,
+                sel=inds,
+                defaults=1000.0,
+                type=Float,
+                dimname=:layer,
             ) .* (dt / basetimestep)
         if size(kv, 1) != maxlayers
             parname = param(config.input.vertical, "kv")
@@ -534,12 +424,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
             nlayers_kv = nlayers
         else
             z_layered = ncread(
-                nc,
-                config,
-                "vertical.z_layered";
-                optional = false,
-                sel = inds,
-                type = Float,
+                nc, config, "vertical.z_layered"; optional=false, sel=inds, type=Float
             )
             nlayers_kv = fill(0, n)
             for i in eachindex(nlayers_kv)
@@ -556,134 +441,133 @@ function initialize_sbm(nc, config, riverfrac, inds)
               """)
     end
 
-    sbm = SBM{Float,maxlayers,maxlayers + 1}(
-        dt = tosecond(dt),
-        maxlayers = maxlayers,
-        n = n,
-        nlayers = nlayers,
-        n_unsatlayers = n_unsatlayers,
-        nlayers_kv = nlayers_kv,
-        riverfrac = riverfrac,
-        theta_s = theta_s,
-        theta_r = theta_r,
-        kv_0 = kv_0,
-        kv = svectorscopy(kv, Val{maxlayers}()),
-        kvfrac = svectorscopy(kvfrac, Val{maxlayers}()),
-        hb = hb,
-        soilthickness = soilthickness,
-        act_thickl = act_thickl,
-        sumlayers = sumlayers,
-        infiltcappath = infiltcappath,
-        infiltcapsoil = infiltcapsoil,
-        maxleakage = maxleakage,
-        waterfrac = max.(waterfrac .- riverfrac, Float(0.0)),
-        pathfrac = pathfrac,
-        rootingdepth = rootingdepth,
-        rootdistpar = rootdistpar,
-        cap_hmax = cap_hmax,
-        cap_n = cap_n,
-        kc = kc,
-        c = svectorscopy(c, Val{maxlayers}()),
-        stemflow = fill(mv, n),
-        throughfall = fill(mv, n),
-        f = f,
-        z_exp = z_exp,
-        z_layered = z_layered,
-        ustorelayerdepth = zero(act_thickl),
-        satwaterdepth = satwaterdepth,
-        zi = zi,
-        soilwatercapacity = soilwatercapacity,
-        canopystorage = zeros(Float, n),
-        cmax = cmax,
-        canopygapfraction = canopygapfraction,
-        e_r = e_r,
-        precipitation = fill(mv, n),
-        temperature = fill(mv, n),
-        potential_evaporation = fill(mv, n),
-        pottrans = fill(mv, n),
-        transpiration = fill(mv, n),
-        ae_ustore = fill(mv, n),
-        interception = fill(mv, n),
-        soilevap = fill(mv, n),
-        soilevapsat = fill(mv, n),
-        actcapflux = fill(mv, n),
-        actevapsat = fill(mv, n),
-        actevap = fill(mv, n),
-        runoff_river = fill(mv, n),
-        runoff_land = fill(mv, n),
-        ae_openw_l = fill(mv, n),
-        ae_openw_r = fill(mv, n),
-        avail_forinfilt = fill(mv, n),
-        actinfilt = fill(mv, n),
-        actinfiltsoil = fill(mv, n),
-        actinfiltpath = fill(mv, n),
-        infiltsoilpath = fill(mv, n),
-        infiltexcess = fill(mv, n),
-        excesswater = fill(mv, n),
-        exfiltsatwater = fill(mv, n),
-        exfiltustore = fill(mv, n),
-        excesswatersoil = fill(mv, n),
-        excesswaterpath = fill(mv, n),
-        runoff = fill(mv, n),
-        net_runoff = fill(mv, n),
-        net_runoff_river = fill(mv, n),
-        vwc = svectorscopy(vwc, Val{maxlayers}()),
-        vwc_perc = svectorscopy(vwc_perc, Val{maxlayers}()),
-        rootstore = fill(mv, n),
-        vwc_root = fill(mv, n),
-        vwc_percroot = fill(mv, n),
-        ustoredepth = fill(mv, n),
-        transfer = fill(mv, n),
-        recharge = fill(mv, n),
-        actleakage = fill(mv, n),
+    sbm = SBM{Float,maxlayers,maxlayers + 1}(;
+        dt=tosecond(dt),
+        maxlayers=maxlayers,
+        n=n,
+        nlayers=nlayers,
+        n_unsatlayers=n_unsatlayers,
+        nlayers_kv=nlayers_kv,
+        riverfrac=riverfrac,
+        theta_s=theta_s,
+        theta_r=theta_r,
+        kv_0=kv_0,
+        kv=svectorscopy(kv, Val{maxlayers}()),
+        kvfrac=svectorscopy(kvfrac, Val{maxlayers}()),
+        hb=hb,
+        soilthickness=soilthickness,
+        act_thickl=act_thickl,
+        sumlayers=sumlayers,
+        infiltcappath=infiltcappath,
+        infiltcapsoil=infiltcapsoil,
+        maxleakage=maxleakage,
+        waterfrac=max.(waterfrac .- riverfrac, Float(0.0)),
+        pathfrac=pathfrac,
+        rootingdepth=rootingdepth,
+        rootdistpar=rootdistpar,
+        cap_hmax=cap_hmax,
+        cap_n=cap_n,
+        kc=kc,
+        c=svectorscopy(c, Val{maxlayers}()),
+        stemflow=fill(mv, n),
+        throughfall=fill(mv, n),
+        f=f,
+        z_exp=z_exp,
+        z_layered=z_layered,
+        ustorelayerdepth=zero(act_thickl),
+        satwaterdepth=satwaterdepth,
+        zi=zi,
+        soilwatercapacity=soilwatercapacity,
+        canopystorage=zeros(Float, n),
+        cmax=cmax,
+        canopygapfraction=canopygapfraction,
+        e_r=e_r,
+        precipitation=fill(mv, n),
+        temperature=fill(mv, n),
+        potential_evaporation=fill(mv, n),
+        pottrans=fill(mv, n),
+        transpiration=fill(mv, n),
+        ae_ustore=fill(mv, n),
+        interception=fill(mv, n),
+        soilevap=fill(mv, n),
+        soilevapsat=fill(mv, n),
+        actcapflux=fill(mv, n),
+        actevapsat=fill(mv, n),
+        actevap=fill(mv, n),
+        runoff_river=fill(mv, n),
+        runoff_land=fill(mv, n),
+        ae_openw_l=fill(mv, n),
+        ae_openw_r=fill(mv, n),
+        avail_forinfilt=fill(mv, n),
+        actinfilt=fill(mv, n),
+        actinfiltsoil=fill(mv, n),
+        actinfiltpath=fill(mv, n),
+        infiltsoilpath=fill(mv, n),
+        infiltexcess=fill(mv, n),
+        excesswater=fill(mv, n),
+        exfiltsatwater=fill(mv, n),
+        exfiltustore=fill(mv, n),
+        excesswatersoil=fill(mv, n),
+        excesswaterpath=fill(mv, n),
+        runoff=fill(mv, n),
+        net_runoff=fill(mv, n),
+        net_runoff_river=fill(mv, n),
+        vwc=svectorscopy(vwc, Val{maxlayers}()),
+        vwc_perc=svectorscopy(vwc_perc, Val{maxlayers}()),
+        rootstore=fill(mv, n),
+        vwc_root=fill(mv, n),
+        vwc_percroot=fill(mv, n),
+        ustoredepth=fill(mv, n),
+        transfer=fill(mv, n),
+        recharge=fill(mv, n),
+        actleakage=fill(mv, n),
         # snow parameters
-        cfmax = cfmax,
-        tt = tt,
-        tti = tti,
-        ttm = ttm,
-        whc = whc,
-        w_soil = w_soil,
-        cf_soil = cf_soil,
-        snow = zeros(Float, n),
-        snowwater = zeros(Float, n),
-        rainfallplusmelt = fill(mv, n),
-        tsoil = fill(Float(10.0), n),
+        cfmax=cfmax,
+        tt=tt,
+        tti=tti,
+        ttm=ttm,
+        whc=whc,
+        w_soil=w_soil,
+        cf_soil=cf_soil,
+        snow=zeros(Float, n),
+        snowwater=zeros(Float, n),
+        rainfallplusmelt=fill(mv, n),
+        tsoil=fill(Float(10.0), n),
         # glacier parameters
-        g_tt = g_tt,
-        g_sifrac = g_sifrac,
-        g_cfmax = g_cfmax,
-        glacierstore = glacierstore,
-        glacierfrac = glacierfrac,
+        g_tt=g_tt,
+        g_sifrac=g_sifrac,
+        g_cfmax=g_cfmax,
+        glacierstore=glacierstore,
+        glacierfrac=glacierfrac,
         # Interception related to climatology (leaf_area_index)
-        sl = sl,
-        swood = swood,
-        kext = kext,
-        leaf_area_index = fill(mv, n),
-        waterlevel_land = fill(mv, n),
-        waterlevel_river = zeros(Float, n), #set to zero to account for cells outside river domain
-        total_storage = zeros(Float, n), # Set the total water storage from initialized values
+        sl=sl,
+        swood=swood,
+        kext=kext,
+        leaf_area_index=fill(mv, n),
+        waterlevel_land=fill(mv, n),
+        waterlevel_river=zeros(Float, n), #set to zero to account for cells outside river domain
+        total_storage=zeros(Float, n), # Set the total water storage from initialized values
     )
 
     return sbm
-
 end
 
-
 function update_until_snow(sbm::SBM, config)
-
     do_lai = haskey(config.input.vertical, "leaf_area_index")
     modelglacier = get(config.model, "glacier", false)::Bool
     modelsnow = get(config.model, "snow", false)::Bool
 
-    threaded_foreach(1:sbm.n, basesize = 1000) do i
+    threaded_foreach(1:(sbm.n); basesize=1000) do i
         if do_lai
             cmax = sbm.sl[i] * sbm.leaf_area_index[i] + sbm.swood[i]
             canopygapfraction = exp(-sbm.kext[i] * sbm.leaf_area_index[i])
             canopyfraction = 1.0 - canopygapfraction
             ewet = canopyfraction * sbm.potential_evaporation[i] * sbm.kc[i]
-            e_r =
-                sbm.precipitation[i] > 0.0 ?
-                min(0.25, ewet / max(0.0001, canopyfraction * sbm.precipitation[i])) : 0.0
+            e_r = if sbm.precipitation[i] > 0.0
+                min(0.25, ewet / max(0.0001, canopyfraction * sbm.precipitation[i]))
+            else
+                0.0
+            end
         else
             cmax = sbm.cmax[i]
             canopygapfraction = sbm.canopygapfraction[i]
@@ -703,14 +587,13 @@ function update_until_snow(sbm::SBM, config)
             )
             pottrans = max(0.0, canopy_potevap - interception) # now in mm
         else
-            netinterception, throughfall, stemflow, leftover, interception, canopystorage =
-                rainfall_interception_modrut(
-                    sbm.precipitation[i],
-                    canopy_potevap,
-                    sbm.canopystorage[i],
-                    canopygapfraction,
-                    cmax,
-                )
+            netinterception, throughfall, stemflow, leftover, interception, canopystorage = rainfall_interception_modrut(
+                sbm.precipitation[i],
+                canopy_potevap,
+                sbm.canopystorage[i],
+                canopygapfraction,
+                cmax,
+            )
             pottrans = max(0.0, leftover)  # now in mm
         end
 
@@ -756,7 +639,7 @@ function update_until_recharge(sbm::SBM, config)
     ust = get(config.model, "whole_ust_available", false)::Bool # should be removed from optional setting and code?
     ksat_profile = get(config.input.vertical, "ksat_profile", "exponential")::String
 
-    threaded_foreach(1:sbm.n, basesize = 250) do i
+    threaded_foreach(1:(sbm.n); basesize=250) do i
         if modelsnow
             rainfallplusmelt = sbm.rainfallplusmelt[i]
             if modelglacier
@@ -777,7 +660,6 @@ function update_until_recharge(sbm::SBM, config)
                 # Convert to mm per grid cell and add to snowmelt
                 glaciermelt = glaciermelt * sbm.glacierfrac[i]
                 rainfallplusmelt = rainfallplusmelt + glaciermelt
-
             end
         else
             rainfallplusmelt = sbm.stemflow[i] + sbm.throughfall[i]
@@ -813,19 +695,17 @@ function update_until_recharge(sbm::SBM, config)
         ustorecapacity = sbm.soilwatercapacity[i] - sbm.satwaterdepth[i] - ustoredepth
 
         # Calculate the infiltration flux into the soil column
-        infiltsoilpath, infiltsoil, infiltpath, soilinf, pathinf, infiltexcess =
-            infiltration(
-                avail_forinfilt,
-                sbm.pathfrac[i],
-                sbm.cf_soil[i],
-                sbm.tsoil[i],
-                sbm.infiltcapsoil[i],
-                sbm.infiltcappath[i],
-                ustorecapacity,
-                modelsnow,
-                soilinfreduction,
-            )
-
+        infiltsoilpath, infiltsoil, infiltpath, soilinf, pathinf, infiltexcess = infiltration(
+            avail_forinfilt,
+            sbm.pathfrac[i],
+            sbm.cf_soil[i],
+            sbm.tsoil[i],
+            sbm.infiltcapsoil[i],
+            sbm.infiltcappath[i],
+            ustorecapacity,
+            modelsnow,
+            soilinfreduction,
+        )
 
         usl, n_usl = set_layerthickness(sbm.zi[i], sbm.sumlayers[i], sbm.act_thickl[i])
         z = cumsum(usl)
@@ -852,14 +732,17 @@ function update_until_recharge(sbm::SBM, config)
                 )
                 usld = setindex(usld, ustorelayerdepth, 1)
             else
-                for m = 1:n_usl
+                for m in 1:n_usl
                     l_sat = usl[m] * (sbm.theta_s[i] - sbm.theta_r[i])
                     kv_z = hydraulic_conductivity_at_depth(sbm, z[m], i, m, ksat_profile)
-                    ustorelayerdepth =
-                        m == 1 ? sbm.ustorelayerdepth[i][m] + infiltsoilpath :
+                    ustorelayerdepth = if m == 1
+                        sbm.ustorelayerdepth[i][m] + infiltsoilpath
+                    else
                         sbm.ustorelayerdepth[i][m] + ast
-                    ustorelayerdepth, ast =
-                        unsatzone_flow_layer(ustorelayerdepth, kv_z, l_sat, sbm.c[i][m])
+                    end
+                    ustorelayerdepth, ast = unsatzone_flow_layer(
+                        ustorelayerdepth, kv_z, l_sat, sbm.c[i][m]
+                    )
                     usld = setindex(usld, ustorelayerdepth, m)
                 end
             end
@@ -922,7 +805,7 @@ function update_until_recharge(sbm::SBM, config)
 
         # actual transpiration from ustore
         actevapustore = 0.0
-        for k = 1:n_usl
+        for k in 1:n_usl
             ustorelayerdepth, actevapustore, restpottrans = acttransp_unsat_sbm(
                 rootingdepth,
                 usld[k],
@@ -941,11 +824,11 @@ function update_until_recharge(sbm::SBM, config)
 
         # check soil moisture balance per layer
         du = 0.0
-        for k = n_usl:-1:1
+        for k in n_usl:-1:1
             du = max(0.0, usld[k] - usl[k] * (sbm.theta_s[i] - sbm.theta_r[i]))
             usld = setindex(usld, usld[k] - du, k)
             if k > 1
-                usld = setindex(usld, usld[k-1] + du, k - 1)
+                usld = setindex(usld, usld[k - 1] + du, k - 1)
             end
         end
 
@@ -982,7 +865,7 @@ function update_until_recharge(sbm::SBM, config)
             end
 
             netcapflux = capflux
-            for k = n_usl:-1:1
+            for k in n_usl:-1:1
                 toadd = min(
                     netcapflux,
                     max(usl[k] * (sbm.theta_s[i] - sbm.theta_r[i]) - usld[k], 0.0),
@@ -993,11 +876,7 @@ function update_until_recharge(sbm::SBM, config)
             end
         end
         deepksat = hydraulic_conductivity_at_depth(
-            sbm,
-            sbm.soilthickness[i],
-            i,
-            sbm.nlayers[i],
-            ksat_profile,
+            sbm, sbm.soilthickness[i], i, sbm.nlayers[i], ksat_profile
         )
         deeptransfer = min(satwaterdepth, deepksat)
         actleakage = max(0.0, min(sbm.maxleakage[i], deeptransfer))
@@ -1046,13 +925,12 @@ function update_until_recharge(sbm::SBM, config)
 end
 
 function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
-
-    threaded_foreach(1:sbm.n, basesize = 1000) do i
+    threaded_foreach(1:(sbm.n); basesize=1000) do i
         usl, n_usl = set_layerthickness(zi[i], sbm.sumlayers[i], sbm.act_thickl[i])
         # exfiltration from ustore
         usld = sbm.ustorelayerdepth[i]
         exfiltustore = 0.0
-        for k = sbm.n_unsatlayers[i]:-1:1
+        for k in sbm.n_unsatlayers[i]:-1:1
             if k <= n_usl
                 exfiltustore = max(0, usld[k] - usl[k] * (sbm.theta_s[i] - sbm.theta_r[i]))
             else
@@ -1060,7 +938,7 @@ function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
             end
             usld = setindex(usld, usld[k] - exfiltustore, k)
             if k > 1
-                usld = setindex(usld, usld[k-1] + exfiltustore, k - 1)
+                usld = setindex(usld, usld[k - 1] + exfiltustore, k - 1)
             end
         end
 
@@ -1076,7 +954,7 @@ function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
         # volumetric water content per soil layer and root zone
         vwc = sbm.vwc[i]
         vwc_perc = sbm.vwc_perc[i]
-        for k = 1:sbm.nlayers[i]
+        for k in 1:sbm.nlayers[i]
             if k <= n_usl
                 vwc = setindex(
                     vwc,
@@ -1093,7 +971,7 @@ function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
         end
 
         rootstore_unsat = 0
-        for k = 1:n_usl
+        for k in 1:n_usl
             rootstore_unsat =
                 rootstore_unsat +
                 min(1.0, (max(0.0, sbm.rootingdepth[i] - sbm.sumlayers[i][k]) / usl[k])) *
@@ -1144,12 +1022,7 @@ Takes the following parameters:
     The land routing struct, i.e. model.lateral.land
 """
 function update_total_water_storage(
-    sbm::SBM,
-    river_network,
-    cell_xsize,
-    cell_ysize,
-    river_routing,
-    land_routing,
+    sbm::SBM, river_network, cell_xsize, cell_ysize, river_routing, land_routing
 )
     # Get length active river cells
     nriv = length(river_network)
@@ -1166,7 +1039,7 @@ function update_total_water_storage(
     )
 
     # Chunk the data for parallel computing
-    threaded_foreach(1:sbm.n, basesize = 1000) do i
+    threaded_foreach(1:(sbm.n); basesize=1000) do i
 
         # Cumulate per vertical type
         # Maybe re-categorize in the future

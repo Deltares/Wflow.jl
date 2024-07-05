@@ -1,20 +1,20 @@
-res = Wflow.SimpleReservoir{Float64}(
-    dt = 86400.0,
-    demand = [52.523],
-    maxrelease = [420.184],
-    maxvolume = [25_000_000.0],
-    volume = [1.925e7],
-    totaloutflow = [0.0],
-    inflow = [0.0],
-    area = [1885665.353626924],
-    targetfullfrac = [0.8],
-    targetminfrac = [0.2425554726620697],
-    precipitation = [4.2],
-    evaporation = [1.5],
-    actevap = [0.0],
-    outflow = [NaN],
-    percfull = [NaN],
-    demandrelease = [NaN],
+res = Wflow.SimpleReservoir{Float64}(;
+    dt=86400.0,
+    demand=[52.523],
+    maxrelease=[420.184],
+    maxvolume=[25_000_000.0],
+    volume=[1.925e7],
+    totaloutflow=[0.0],
+    inflow=[0.0],
+    area=[1885665.353626924],
+    targetfullfrac=[0.8],
+    targetminfrac=[0.2425554726620697],
+    precipitation=[4.2],
+    evaporation=[1.5],
+    actevap=[0.0],
+    outflow=[NaN],
+    percfull=[NaN],
+    demandrelease=[NaN],
 )
 @testset "Update reservoir simple" begin
     Wflow.update(res, 1, 100.0, 86400.0)
@@ -37,26 +37,26 @@ end
     @test Wflow.grid_location(res, :outflow) == "node"
 end
 
-lake = Wflow.Lake{Float64}(
-    dt = 86400.0,
-    lowerlake_ind = [0],
-    area = [180510409.0],
-    maxstorage = Wflow.maximum_storage([1], [3], [180510409.0], [missing], [missing]),
-    threshold = [0.0],
-    storfunc = [1],
-    outflowfunc = [3],
-    totaloutflow = [0.0],
-    inflow = [0.0],
-    b = [0.22],
-    e = [2.0],
-    sh = [missing],
-    hq = [missing],
-    storage = Wflow.initialize_storage([1], [180510409.0], [18.5], [missing]),
-    waterlevel = [18.5],
-    precipitation = [20.0],
-    evaporation = [3.2],
-    actevap = [0.0],
-    outflow = [NaN],
+lake = Wflow.Lake{Float64}(;
+    dt=86400.0,
+    lowerlake_ind=[0],
+    area=[180510409.0],
+    maxstorage=Wflow.maximum_storage([1], [3], [180510409.0], [missing], [missing]),
+    threshold=[0.0],
+    storfunc=[1],
+    outflowfunc=[3],
+    totaloutflow=[0.0],
+    inflow=[0.0],
+    b=[0.22],
+    e=[2.0],
+    sh=[missing],
+    hq=[missing],
+    storage=Wflow.initialize_storage([1], [180510409.0], [18.5], [missing]),
+    waterlevel=[18.5],
+    precipitation=[20.0],
+    evaporation=[3.2],
+    actevap=[0.0],
+    outflow=[NaN],
 )
 @testset "Update lake" begin
     Wflow.update(lake, 1, 2500.0, 181, 86400.0)
@@ -87,36 +87,33 @@ sh = [
     @test keys(sh[1]) == (:H, :S)
     @test typeof(values(sh[1])) == Tuple{Vector{Float},Vector{Float}}
 
-    lake = Wflow.Lake{Float}(
-        dt = 86400.0,
-        lowerlake_ind = [2, 0],
-        area = [472461536.0, 60851088.0],
-        maxstorage = Wflow.maximum_storage(
+    lake = Wflow.Lake{Float}(;
+        dt=86400.0,
+        lowerlake_ind=[2, 0],
+        area=[472461536.0, 60851088.0],
+        maxstorage=Wflow.maximum_storage(
             [2, 2],
             [2, 1],
             [472461536.0, 60851088.0],
             sh,
             [missing, Wflow.read_hq_csv(joinpath(datadir, "input", "lake_hq_2.csv"))],
         ),
-        threshold = [393.7, 0.0],
-        storfunc = [2, 2],
-        inflow = [0.0, 0.0],
-        totaloutflow = [0.0, 0.0],
-        outflowfunc = [2, 1],
-        b = [140.0, 0.0],
-        e = [1.5, 1.5],
-        sh = sh,
-        hq = [missing, Wflow.read_hq_csv(joinpath(datadir, "input", "lake_hq_2.csv"))],
-        waterlevel = [395.03027, 394.87833],
-        precipitation = [10.0, 10.0],
-        evaporation = [2.0, 2.0],
-        actevap = [0.0, 0.0],
-        outflow = [NaN, NaN],
-        storage = Wflow.initialize_storage(
-            [2, 2],
-            [472461536.0, 60851088.0],
-            [395.03027, 394.87833],
-            sh,
+        threshold=[393.7, 0.0],
+        storfunc=[2, 2],
+        inflow=[0.0, 0.0],
+        totaloutflow=[0.0, 0.0],
+        outflowfunc=[2, 1],
+        b=[140.0, 0.0],
+        e=[1.5, 1.5],
+        sh=sh,
+        hq=[missing, Wflow.read_hq_csv(joinpath(datadir, "input", "lake_hq_2.csv"))],
+        waterlevel=[395.03027, 394.87833],
+        precipitation=[10.0, 10.0],
+        evaporation=[2.0, 2.0],
+        actevap=[0.0, 0.0],
+        outflow=[NaN, NaN],
+        storage=Wflow.initialize_storage(
+            [2, 2], [472461536.0, 60851088.0], [395.03027, 394.87833], sh
         ),
     )
 
@@ -139,32 +136,32 @@ sh = [
 end
 
 @testset "overflowing lake with sh and hq" begin
-    lake = Wflow.Lake{Float}(
-        dt = 86400.0,
-        lowerlake_ind = [0],
-        area = [200_000_000],
-        maxstorage = Wflow.maximum_storage(
+    lake = Wflow.Lake{Float}(;
+        dt=86400.0,
+        lowerlake_ind=[0],
+        area=[200_000_000],
+        maxstorage=Wflow.maximum_storage(
             [2],
             [1],
             [200_000_000],
             [Wflow.read_sh_csv(joinpath(datadir, "input", "lake_sh_2.csv"))],
             [Wflow.read_hq_csv(joinpath(datadir, "input", "lake_hq_2.csv"))],
         ),
-        threshold = [0.0],
-        storfunc = [2],
-        inflow = [0.00],
-        totaloutflow = [0.0],
-        outflowfunc = [1],
-        b = [0.0],
-        e = [0.0],
-        sh = [Wflow.read_sh_csv(joinpath(datadir, "input", "lake_sh_2.csv"))],
-        hq = [Wflow.read_hq_csv(joinpath(datadir, "input", "lake_hq_2.csv"))],
-        waterlevel = [397.75],
-        precipitation = [10.0],
-        evaporation = [2.0],
-        actevap = [0.0],
-        outflow = [NaN],
-        storage = [410_760_000],
+        threshold=[0.0],
+        storfunc=[2],
+        inflow=[0.00],
+        totaloutflow=[0.0],
+        outflowfunc=[1],
+        b=[0.0],
+        e=[0.0],
+        sh=[Wflow.read_sh_csv(joinpath(datadir, "input", "lake_sh_2.csv"))],
+        hq=[Wflow.read_hq_csv(joinpath(datadir, "input", "lake_hq_2.csv"))],
+        waterlevel=[397.75],
+        precipitation=[10.0],
+        evaporation=[2.0],
+        actevap=[0.0],
+        outflow=[NaN],
+        storage=[410_760_000],
     )
 
     Wflow.update(lake, 1, 1500.0, 15, 86400.0)

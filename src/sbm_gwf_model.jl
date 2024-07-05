@@ -34,37 +34,35 @@ function initialize_sbm_gwf_model(config::Config)
     routing_options = ("kinematic-wave", "local-inertial")
     floodplain_1d = get(config.model, "floodplain_1d", false)::Bool
     river_routing = get_options(
-        config.model,
-        "river_routing",
-        routing_options,
-        "kinematic-wave",
+        config.model, "river_routing", routing_options, "kinematic-wave"
     )::String
     land_routing =
         get_options(config.model, "land_routing", routing_options, "kinematic-wave")::String
 
     nc = NCDataset(static_path)
 
-    subcatch_2d = ncread(nc, config, "subcatchment"; optional = false, allow_missing = true)
+    subcatch_2d = ncread(nc, config, "subcatchment"; optional=false, allow_missing=true)
     # indices based on catchment
     inds, rev_inds = active_indices(subcatch_2d, missing)
     n = length(inds)
     modelsize_2d = size(subcatch_2d)
 
-    river_2d =
-        ncread(nc, config, "river_location"; optional = false, type = Bool, fill = false)
+    river_2d = ncread(nc, config, "river_location"; optional=false, type=Bool, fill=false)
     river = river_2d[inds]
-    riverwidth_2d =
-        ncread(nc, config, "lateral.river.width"; optional = false, type = Float, fill = 0)
+    riverwidth_2d = ncread(
+        nc, config, "lateral.river.width"; optional=false, type=Float, fill=0
+    )
     riverwidth = riverwidth_2d[inds]
-    riverlength_2d =
-        ncread(nc, config, "lateral.river.length"; optional = false, type = Float, fill = 0)
+    riverlength_2d = ncread(
+        nc, config, "lateral.river.length"; optional=false, type=Float, fill=0
+    )
     riverlength = riverlength_2d[inds]
 
-    altitude = ncread(nc, config, "altitude"; optional = false, sel = inds, type = Float)
+    altitude = ncread(nc, config, "altitude"; optional=false, sel=inds, type=Float)
     # read x, y coordinates and calculate cell length [m]
     y_nc = read_y_axis(nc)
     x_nc = read_x_axis(nc)
-    y = permutedims(repeat(y_nc, outer = (1, length(x_nc))))[inds]
+    y = permutedims(repeat(y_nc; outer=(1, length(x_nc))))[inds]
     cellength = abs(mean(diff(x_nc)))
 
     sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
@@ -80,8 +78,9 @@ function initialize_sbm_gwf_model(config::Config)
     # reservoirs
     pits = zeros(Bool, modelsize_2d)
     if do_reservoirs
-        reservoirs, resindex, reservoir, pits =
-            initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, tosecond(dt))
+        reservoirs, resindex, reservoir, pits = initialize_simple_reservoir(
+            config, nc, inds_riv, nriv, pits, tosecond(dt)
+        )
     else
         reservoir = ()
         reservoirs = nothing
@@ -90,8 +89,9 @@ function initialize_sbm_gwf_model(config::Config)
 
     # lakes
     if do_lakes
-        lakes, lakeindex, lake, pits =
-            initialize_lake(config, nc, inds_riv, nriv, pits, tosecond(dt))
+        lakes, lakeindex, lake, pits = initialize_lake(
+            config, nc, inds_riv, nriv, pits, tosecond(dt)
+        )
     else
         lake = ()
         lakes = nothing
@@ -99,10 +99,11 @@ function initialize_sbm_gwf_model(config::Config)
     end
 
     # overland flow (kinematic wave)
-    landslope =
-        ncread(nc, config, "lateral.land.slope"; optional = false, sel = inds, type = Float)
+    landslope = ncread(
+        nc, config, "lateral.land.slope"; optional=false, sel=inds, type=Float
+    )
     clamp!(landslope, 0.00001, Inf)
-    ldd_2d = ncread(nc, config, "ldd"; optional = false, allow_missing = true)
+    ldd_2d = ncread(nc, config, "ldd"; optional=false, allow_missing=true)
 
     ldd = ldd_2d[inds]
 
@@ -123,11 +124,11 @@ function initialize_sbm_gwf_model(config::Config)
             nc,
             config,
             inds;
-            sl = landslope,
+            sl=landslope,
             dl,
-            width = map(det_surfacewidth, dw, riverwidth, river),
-            iterate = kinwave_it,
-            tstep = kw_land_tstep,
+            width=map(det_surfacewidth, dw, riverwidth, river),
+            iterate=kinwave_it,
+            tstep=kw_land_tstep,
             dt,
         )
     elseif land_routing == "local-inertial"
@@ -137,15 +138,15 @@ function initialize_sbm_gwf_model(config::Config)
             config,
             inds;
             modelsize_2d,
-            indices_reverse = rev_inds,
-            xlength = xl,
-            ylength = yl,
-            riverwidth = riverwidth_2d[inds_riv],
+            indices_reverse=rev_inds,
+            xlength=xl,
+            ylength=yl,
+            riverwidth=riverwidth_2d[inds_riv],
             graph_riv,
             ldd_riv,
             inds_riv,
             river,
-            waterbody = !=(0).(resindex + lakeindex),
+            waterbody=!=(0).(resindex + lakeindex),
             dt,
         )
     end
@@ -161,31 +162,31 @@ function initialize_sbm_gwf_model(config::Config)
             nc,
             config,
             inds_riv;
-            dl = riverlength,
-            width = riverwidth,
-            reservoir_index = resindex,
-            reservoir = reservoirs,
-            lake_index = lakeindex,
-            lake = lakes,
-            iterate = kinwave_it,
-            tstep = kw_river_tstep,
-            dt = dt,
+            dl=riverlength,
+            width=riverwidth,
+            reservoir_index=resindex,
+            reservoir=reservoirs,
+            lake_index=lakeindex,
+            lake=lakes,
+            iterate=kinwave_it,
+            tstep=kw_river_tstep,
+            dt=dt,
         )
     elseif river_routing == "local-inertial"
         rf, nodes_at_link = initialize_shallowwater_river(
             nc,
             config,
             inds_riv;
-            graph = graph_riv,
-            ldd = ldd_riv,
-            dl = riverlength,
-            width = riverwidth,
-            reservoir_index = resindex,
-            reservoir = reservoirs,
-            lake_index = lakeindex,
-            lake = lakes,
-            dt = dt,
-            floodplain = floodplain_1d,
+            graph=graph_riv,
+            ldd=ldd_riv,
+            dl=riverlength,
+            width=riverwidth,
+            reservoir_index=resindex,
+            reservoir=reservoirs,
+            lake_index=lakeindex,
+            lake=lakes,
+            dt=dt,
+            floodplain=floodplain_1d,
         )
     else
         error(
@@ -198,12 +199,7 @@ function initialize_sbm_gwf_model(config::Config)
     # unconfined aquifer
     if do_constanthead
         constanthead = ncread(
-            nc,
-            config,
-            "lateral.subsurface.constant_head";
-            sel = inds,
-            type = Float,
-            fill = mv,
+            nc, config, "lateral.subsurface.constant_head"; sel=inds, type=Float, fill=mv
         )
         index_constanthead = filter(i -> !isequal(constanthead[i], mv), 1:n)
         constant_head = ConstantHead(constanthead[index_constanthead], index_constanthead)
@@ -211,17 +207,14 @@ function initialize_sbm_gwf_model(config::Config)
         constant_head = ConstantHead{Float}(Float[], Int64[])
     end
 
-    conductivity =
-        ncread(nc, config, "lateral.subsurface.conductivity"; sel = inds, type = Float)
-    specific_yield =
-        ncread(nc, config, "lateral.subsurface.specific_yield"; sel = inds, type = Float)
+    conductivity = ncread(
+        nc, config, "lateral.subsurface.conductivity"; sel=inds, type=Float
+    )
+    specific_yield = ncread(
+        nc, config, "lateral.subsurface.specific_yield"; sel=inds, type=Float
+    )
     gwf_f = ncread(
-        nc,
-        config,
-        "lateral.subsurface.gwf_f";
-        sel = inds,
-        type = Float,
-        defaults = 3.0,
+        nc, config, "lateral.subsurface.gwf_f"; sel=inds, type=Float, defaults=3.0
     )
     conductivity_profile =
         get(config.input.lateral.subsurface, "conductivity_profile", "uniform")::String
@@ -251,21 +244,14 @@ function initialize_sbm_gwf_model(config::Config)
 
     # river boundary of unconfined aquifer
     infiltration_conductance = ncread(
-        nc,
-        config,
-        "lateral.subsurface.infiltration_conductance";
-        sel = inds_riv,
-        type = Float,
+        nc, config, "lateral.subsurface.infiltration_conductance"; sel=inds_riv, type=Float
     )
     exfiltration_conductance = ncread(
-        nc,
-        config,
-        "lateral.subsurface.exfiltration_conductance";
-        sel = inds_riv,
-        type = Float,
+        nc, config, "lateral.subsurface.exfiltration_conductance"; sel=inds_riv, type=Float
     )
-    river_bottom =
-        ncread(nc, config, "lateral.subsurface.river_bottom"; sel = inds_riv, type = Float)
+    river_bottom = ncread(
+        nc, config, "lateral.subsurface.river_bottom"; sel=inds_riv, type=Float
+    )
 
     river_flux = fill(mv, nriv)
     river_stage = fill(mv, nriv)
@@ -284,7 +270,7 @@ function initialize_sbm_gwf_model(config::Config)
 
     # drain boundary of unconfined aquifer (optional)
     if do_drains
-        drain_2d = ncread(nc, config, "lateral.subsurface.drain"; type = Bool, fill = false)
+        drain_2d = ncread(nc, config, "lateral.subsurface.drain"; type=Bool, fill=false)
 
         drain = drain_2d[inds]
         # check if drain occurs where overland flow is not possible (sw = 0.0)
@@ -300,20 +286,15 @@ function initialize_sbm_gwf_model(config::Config)
         inds_drain, rev_inds_drain = active_indices(drain_2d, 0)
 
         drain_elevation = ncread(
-            nc,
-            config,
-            "lateral.subsurface.drain_elevation";
-            sel = inds,
-            type = Float,
-            fill = mv,
+            nc, config, "lateral.subsurface.drain_elevation"; sel=inds, type=Float, fill=mv
         )
         drain_conductance = ncread(
             nc,
             config,
             "lateral.subsurface.drain_conductance";
-            sel = inds,
-            type = Float,
-            fill = mv,
+            sel=inds,
+            type=Float,
+            fill=mv,
         )
         index_drain = filter(i -> !isequal(drain[i], 0), 1:n)
         drain_flux = fill(mv, length(index_drain))
@@ -323,7 +304,7 @@ function initialize_sbm_gwf_model(config::Config)
             drain_flux,
             index_drain,
         )
-        drain = (indices = inds_drain, reverse_indices = rev_inds_drain)
+        drain = (indices=inds_drain, reverse_indices=rev_inds_drain)
         aquifer_boundaries = AquiferBoundaryCondition[recharge, river, drains]
     else
         aquifer_boundaries = AquiferBoundaryCondition[recharge, river]
@@ -335,14 +316,13 @@ function initialize_sbm_gwf_model(config::Config)
     # map GroundwaterFlow and its boundaries
     if do_drains
         subsurface_map = (
-            flow = gwf,
-            recharge = gwf.boundaries[1],
-            river = gwf.boundaries[2],
-            drain = gwf.boundaries[3],
+            flow=gwf,
+            recharge=gwf.boundaries[1],
+            river=gwf.boundaries[2],
+            drain=gwf.boundaries[3],
         )
     else
-        subsurface_map =
-            (flow = gwf, recharge = gwf.boundaries[1], river = gwf.boundaries[2])
+        subsurface_map = (flow=gwf, recharge=gwf.boundaries[1], river=gwf.boundaries[2])
     end
 
     # setup subdomains for the land and river kinematic wave domain, if nthreads = 1
@@ -356,11 +336,7 @@ function initialize_sbm_gwf_model(config::Config)
         index_pit_land = findall(x -> x == 5, ldd)
         min_streamorder_land = get(config.model, "min_streamorder_land", 5)
         subbas_order, indices_subbas, topo_subbas = kinwave_set_subdomains(
-            graph,
-            toposort,
-            index_pit_land,
-            streamorder,
-            min_streamorder_land,
+            graph, toposort, index_pit_land, streamorder, min_streamorder_land
         )
     end
     if river_routing == "kinematic-wave"
@@ -376,14 +352,13 @@ function initialize_sbm_gwf_model(config::Config)
         )
     end
 
-    modelmap =
-        (vertical = sbm, lateral = (subsurface = subsurface_map, land = olf, river = rf))
+    modelmap = (vertical=sbm, lateral=(subsurface=subsurface_map, land=olf, river=rf))
     indices_reverse = (
-        land = rev_inds,
-        river = rev_inds_riv,
-        reservoir = isempty(reservoir) ? nothing : reservoir.reverse_indices,
-        lake = isempty(lake) ? nothing : lake.reverse_indices,
-        drain = isempty(drain) ? nothing : rev_inds_drain,
+        land=rev_inds,
+        river=rev_inds_riv,
+        reservoir=isempty(reservoir) ? nothing : reservoir.reverse_indices,
+        lake=isempty(lake) ? nothing : lake.reverse_indices,
+        drain=isempty(drain) ? nothing : rev_inds_drain,
     )
     writer = prepare_writer(
         config,
@@ -391,8 +366,8 @@ function initialize_sbm_gwf_model(config::Config)
         indices_reverse,
         x_nc,
         y_nc,
-        nc,
-        extra_dim = (name = "layer", value = Float64.(1:sbm.maxlayers)),
+        nc;
+        extra_dim=(name="layer", value=Float64.(1:(sbm.maxlayers))),
     )
     close(nc)
 
@@ -411,60 +386,60 @@ function initialize_sbm_gwf_model(config::Config)
     # functions
     if land_routing == "kinematic-wave"
         land = (
-            graph = graph,
-            upstream_nodes = filter_upsteam_nodes(graph, pits[inds]),
-            subdomain_order = subbas_order,
-            topo_subdomain = topo_subbas,
-            indices_subdomain = indices_subbas,
-            order = toposort,
-            indices = inds,
-            reverse_indices = rev_inds,
-            xl = xl,
-            yl = yl,
-            slope = landslope,
-            altitude = altitude,
+            graph=graph,
+            upstream_nodes=filter_upsteam_nodes(graph, pits[inds]),
+            subdomain_order=subbas_order,
+            topo_subdomain=topo_subbas,
+            indices_subdomain=indices_subbas,
+            order=toposort,
+            indices=inds,
+            reverse_indices=rev_inds,
+            xl=xl,
+            yl=yl,
+            slope=landslope,
+            altitude=altitude,
         )
     elseif land_routing == "local-inertial"
         land = (
-            graph = graph,
-            order = toposort,
-            indices = inds,
-            reverse_indices = rev_inds,
-            xl = xl,
-            yl = yl,
-            slope = landslope,
-            altitude = altitude,
-            index_river = index_river_nf,
-            staggered_indices = indices,
+            graph=graph,
+            order=toposort,
+            indices=inds,
+            reverse_indices=rev_inds,
+            xl=xl,
+            yl=yl,
+            slope=landslope,
+            altitude=altitude,
+            index_river=index_river_nf,
+            staggered_indices=indices,
         )
     end
     if river_routing == "kinematic-wave"
         river = (
-            graph = graph_riv,
-            indices = inds_riv,
-            reverse_indices = rev_inds_riv,
+            graph=graph_riv,
+            indices=inds_riv,
+            reverse_indices=rev_inds_riv,
             # specific for kinematic_wave
-            upstream_nodes = filter_upsteam_nodes(graph_riv, pits[inds_riv]),
-            subdomain_order = subriv_order,
-            topo_subdomain = topo_subriv,
-            indices_subdomain = indices_subriv,
-            order = toposort_riv,
+            upstream_nodes=filter_upsteam_nodes(graph_riv, pits[inds_riv]),
+            subdomain_order=subriv_order,
+            topo_subdomain=topo_subriv,
+            indices_subdomain=indices_subriv,
+            order=toposort_riv,
         )
     elseif river_routing == "local-inertial"
         river = (
-            graph = graph_riv,
-            indices = inds_riv,
-            reverse_indices = rev_inds_riv,
+            graph=graph_riv,
+            indices=inds_riv,
+            reverse_indices=rev_inds_riv,
             # specific for local-inertial
-            nodes_at_link = nodes_at_link,
-            links_at_node = adjacent_links_at_node(graph_riv, nodes_at_link),
+            nodes_at_link=nodes_at_link,
+            links_at_node=adjacent_links_at_node(graph_riv, nodes_at_link),
         )
     end
 
     model = Model(
         config,
         (; land, river, reservoir, lake, drain, index_river, frac_toriver),
-        (subsurface = subsurface_map, land = olf, river = rf),
+        (subsurface=subsurface_map, land=olf, river=rf),
         sbm,
         clock,
         reader,
@@ -476,7 +451,6 @@ function initialize_sbm_gwf_model(config::Config)
 
     return model
 end
-
 
 "update the sbm_gwf model for a single timestep"
 function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
@@ -498,10 +472,7 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
     # lateral snow transport
     if get(config.model, "masswasting", false)::Bool
         lateral_snow_transport!(
-            vertical.snow,
-            vertical.snowwater,
-            network.land.slope,
-            network.land,
+            vertical.snow, vertical.snowwater, network.land.slope, network.land
         )
     end
 
@@ -512,8 +483,9 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
     lateral.subsurface.river.stage .= lateral.river.h_av .+ lateral.subsurface.river.bottom
 
     # determine stable time step for groundwater flow
-    conductivity_profile =
-        get(config.input.lateral.subsurface, "conductivity_profile", "uniform")
+    conductivity_profile = get(
+        config.input.lateral.subsurface, "conductivity_profile", "uniform"
+    )
     dt_gw = stable_timestep(aquifer, conductivity_profile) # time step in day (Float64)
     dt_sbm = (vertical.dt / tosecond(basetimestep)) # vertical.dt is in seconds (Float64)
     if dt_gw < dt_sbm
@@ -547,7 +519,7 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
 
     ssf_toriver = zeros(vertical.n)
     ssf_toriver[inds_riv] = -lateral.subsurface.river.flux ./ lateral.river.dt
-    surface_routing(model, ssf_toriver = ssf_toriver)
+    surface_routing(model; ssf_toriver=ssf_toriver)
 
     return model
 end
