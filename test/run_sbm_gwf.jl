@@ -76,7 +76,7 @@ end
     @test collect(keys(model.lateral.subsurface)) == [:flow, :recharge, :river]
 end
 
-Wflow.close_files(model; delete_output=false)
+Wflow.close_files(model; delete_output = false)
 
 # test local-inertial option for river flow routing
 tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
@@ -100,7 +100,7 @@ model = Wflow.run_timestep(model)
     @test q[13] ≈ 0.0004590884299495001f0
     @test q[5] ≈ 0.006328157455390906f0
 end
-Wflow.close_files(model; delete_output=false)
+Wflow.close_files(model; delete_output = false)
 
 # test local-inertial option for river and overland flow routing
 tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
@@ -136,7 +136,7 @@ model = Wflow.run_timestep(model)
     @test all(qx .== 0.0f0)
     @test all(qy .== 0.0f0)
 end
-Wflow.close_files(model; delete_output=false)
+Wflow.close_files(model; delete_output = false)
 
 # test with warm start
 tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
@@ -203,4 +203,4 @@ end
     @test Wflow.grid_location(constanthead, :head) == "node"
 end
 
-Wflow.close_files(model; delete_output=false)
+Wflow.close_files(model; delete_output = false)

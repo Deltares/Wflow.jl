@@ -161,8 +161,12 @@ connectivity struct `C`, using the non-zero index (nzi) of its CSC data
 structure.
 """
 function horizontal_conductance(
-    i::Int, j::Int, nzi::Int, aquifer::A, connectivity::Connectivity
-) where {A<:Aquifer}
+    i::Int,
+    j::Int,
+    nzi::Int,
+    aquifer::A,
+    connectivity::Connectivity,
+) where {A <: Aquifer}
     k1 = aquifer.k[i]
     k2 = aquifer.k[j]
     H1 = aquifer.top[i] - aquifer.bottom[i]
@@ -182,14 +186,16 @@ Conductance for a confined aquifer is constant, and only has to be set once.
 For an unconfined aquifer, conductance is computed per timestep by multiplying by
 degree of saturation [0.0 - 1.0].
 """
-function initialize_conductance!(aquifer::A, connectivity::Connectivity) where {A<:Aquifer}
+function initialize_conductance!(
+    aquifer::A,
+    connectivity::Connectivity,
+) where {A <: Aquifer}
     for i in 1:(connectivity.ncell)
         # Loop over connections for cell j
         for nzi in connections(connectivity, i)
             j = connectivity.rowval[nzi]
-            aquifer.conductance[nzi] = horizontal_conductance(
-                i, j, nzi, aquifer, connectivity
-            )
+            aquifer.conductance[nzi] =
+                horizontal_conductance(i, j, nzi, aquifer, connectivity)
         end
     end
 end
@@ -342,15 +348,18 @@ function update(gwf, Q, dt, conductivity_profile)
     return gwf
 end
 
-Base.@kwdef struct GroundwaterFlow{A,B}
+Base.@kwdef struct GroundwaterFlow{A, B}
     aquifer::A
     connectivity::Connectivity
     constanthead::ConstantHead
     boundaries::Vector{B}
     function GroundwaterFlow(
-        aquifer::A, connectivity, constanthead, boundaries::Vector{B}
-    ) where {A<:Aquifer,B<:AquiferBoundaryCondition}
+        aquifer::A,
+        connectivity,
+        constanthead,
+        boundaries::Vector{B},
+    ) where {A <: Aquifer, B <: AquiferBoundaryCondition}
         initialize_conductance!(aquifer, connectivity)
-        return new{A,B}(aquifer, connectivity, constanthead, boundaries)
+        return new{A, B}(aquifer, connectivity, constanthead, boundaries)
     end
 end

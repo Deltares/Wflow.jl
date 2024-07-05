@@ -59,7 +59,10 @@ end
 
 # Define cartesian indices for neighbors
 const neighbors = (
-    CartesianIndex(0, -1), CartesianIndex(-1, 0), CartesianIndex(1, 0), CartesianIndex(0, 1)
+    CartesianIndex(0, -1),
+    CartesianIndex(-1, 0),
+    CartesianIndex(1, 0),
+    CartesianIndex(0, 1),
 )
 
 # Constructor for the Connectivity structure for structured input

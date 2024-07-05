@@ -4,7 +4,7 @@ const ldd_mv = 255
 # read the staticmaps into memory
 nc = NCDataset(staticmaps_rhine_path)
 # helper function to get the axis order and directionality right
-read_right(nc, var) = reverse(permutedims(Array(nc[var])); dims=2)
+read_right(nc, var) = reverse(permutedims(Array(nc[var])); dims = 2)
 ldd_2d = read_right(nc, "ldd")
 
 inds, _ = Wflow.active_indices(ldd_2d, ldd_mv)
@@ -80,7 +80,7 @@ end
     add_edge!(g, 3, 5)
     add_edge!(g, 4, 6)
     add_edge!(g, 5, 6)
-    network = (graph=g, order=[1, 2, 3, 4, 5, 6])
+    network = (graph = g, order = [1, 2, 3, 4, 5, 6])
 
     # example 1, accucapacityflux
     material = Float64[0.5, 2, 2, 0.5, 2, 0.5]
@@ -134,7 +134,7 @@ end
     h_a = h.([dx:dx:L;]) # water depth profile (analytical solution)
     # integrate slope to get elevation (bed level) z
     x = [dx:dx:L;]
-    zb = first.([quadgk(s, xi, L; rtol=1e-12) for xi in x])
+    zb = first.([quadgk(s, xi, L; rtol = 1e-12) for xi in x])
 
     # initialize ShallowWaterRiver
     graph = DiGraph(n)
@@ -168,8 +168,8 @@ end
     end
 
     network = (
-        nodes_at_link=nodes_at_link,
-        links_at_node=Wflow.adjacent_links_at_node(graph, nodes_at_link),
+        nodes_at_link = nodes_at_link,
+        links_at_node = Wflow.adjacent_links_at_node(graph, nodes_at_link),
     )
 
     alpha = 0.7
@@ -180,48 +180,48 @@ end
     push!(h_init, h_a[n])
 
     sw_river = Wflow.ShallowWaterRiver(;
-        n=n,
-        ne=_ne,
-        active_n=collect(1:(n - 1)),
-        active_e=collect(1:_ne),
-        g=9.80665,
-        alpha=alpha,
-        h_thresh=h_thresh,
-        dt=dt,
-        q0=zeros(_ne),
-        q=zeros(_ne),
-        q_av=zeros(_ne),
-        q_channel_av=zeros(_ne),
-        zb_max=zb_max,
-        mannings_n_sq=mannings_n_sq,
-        mannings_n=n_river,
-        h=h_init,
-        zs_max=zeros(_ne),
-        zs_src=zeros(_ne),
-        zs_dst=zeros(_ne),
-        hf=zeros(_ne),
-        h_av=zeros(n),
-        width=width,
-        width_at_link=width_at_link,
-        a=zeros(_ne),
-        r=zeros(_ne),
-        volume=fill(0.0, n),
-        error=zeros(n),
-        inflow=zeros(n),
-        inflow_wb=zeros(n),
-        inwater=zeros(n),
-        dl=dl,
-        dl_at_link=length_at_link,
-        bankfull_volume=fill(Wflow.mv, n),
-        bankfull_depth=fill(Wflow.mv, n),
-        zb=zb,
-        froude_limit=froude_limit,
-        reservoir_index=Int[],
-        lake_index=Int[],
-        waterbody=zeros(n),
-        reservoir=nothing,
-        lake=nothing,
-        floodplain=nothing,
+        n = n,
+        ne = _ne,
+        active_n = collect(1:(n - 1)),
+        active_e = collect(1:_ne),
+        g = 9.80665,
+        alpha = alpha,
+        h_thresh = h_thresh,
+        dt = dt,
+        q0 = zeros(_ne),
+        q = zeros(_ne),
+        q_av = zeros(_ne),
+        q_channel_av = zeros(_ne),
+        zb_max = zb_max,
+        mannings_n_sq = mannings_n_sq,
+        mannings_n = n_river,
+        h = h_init,
+        zs_max = zeros(_ne),
+        zs_src = zeros(_ne),
+        zs_dst = zeros(_ne),
+        hf = zeros(_ne),
+        h_av = zeros(n),
+        width = width,
+        width_at_link = width_at_link,
+        a = zeros(_ne),
+        r = zeros(_ne),
+        volume = fill(0.0, n),
+        error = zeros(n),
+        inflow = zeros(n),
+        inflow_wb = zeros(n),
+        inwater = zeros(n),
+        dl = dl,
+        dl_at_link = length_at_link,
+        bankfull_volume = fill(Wflow.mv, n),
+        bankfull_depth = fill(Wflow.mv, n),
+        zb = zb,
+        froude_limit = froude_limit,
+        reservoir_index = Int[],
+        lake_index = Int[],
+        waterbody = zeros(n),
+        reservoir = nothing,
+        lake = nothing,
+        floodplain = nothing,
     )
 
     # run until steady state is reached

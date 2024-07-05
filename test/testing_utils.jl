@@ -11,7 +11,7 @@
 #     https://github.com/stevengj/18S096-iap17/blob/master/pset3/pset3-solutions.ipynb
 
 # n coefficients of the Taylor series of E₁(z) + log(z), in type T:
-function E1_taylor_coefficients(::Type{T}, n::Integer) where {T<:Number}
+function E1_taylor_coefficients(::Type{T}, n::Integer) where {T <: Number}
     n < 0 && throw(ArgumentError("$n ≥ 0 is required"))
     n == 0 && return T[]
     n == 1 && return T[-eulergamma]
@@ -40,7 +40,7 @@ end
 # for numeric-literal coefficients: simplify to a ratio of two polynomials:
 # return (p,q): the polynomials p(x) / q(x) corresponding to E1_cf(x, a...),
 # but without the exp(-x) term
-function E1_cfpoly(n::Integer, ::Type{T}=BigInt) where {T<:Real}
+function E1_cfpoly(n::Integer, ::Type{T} = BigInt) where {T <: Real}
     q = Polynomials.Polynomial(T[1])
     p = x = Polynomials.Polynomial(T[0, 1])
     for i in n:-1:1
@@ -65,7 +65,7 @@ macro E1_cf64(z, n::Integer)
 end
 
 # exponential integral function E₁(z)
-function expint(z::Union{Float64,Complex{Float64}})
+function expint(z::Union{Float64, Complex{Float64}})
     xSq = real(z)^2
     ySq = imag(z)^2
     if real(z) > 0 && xSq + 0.233 * ySq ≥ 7.84 # use cf expansion, ≤ 30 terms
@@ -94,7 +94,9 @@ function expint(z::Union{Float64,Complex{Float64}})
         end
     end
 end
-function expint(z::Union{T,Complex{T},Rational{T},Complex{Rational{T}}}) where {T<:Integer}
+function expint(
+    z::Union{T, Complex{T}, Rational{T}, Complex{Rational{T}}},
+) where {T <: Integer}
     return expint(float(z))
 end
 
@@ -137,10 +139,10 @@ function csv_first_row(path)
     names = Tuple(Symbol.(split(header, ',')))
     ncol = length(names)
     # this assumes the first column is a time, the rest a float
-    types = Tuple{DateTime,fill(Float64, ncol - 1)...}
+    types = Tuple{DateTime, fill(Float64, ncol - 1)...}
 
     parts = split(dataline, ',')
     values = parse.(Float64, parts[2:end])
-    row = NamedTuple{names,types}((DateTime(parts[1]), values...))
+    row = NamedTuple{names, types}((DateTime(parts[1]), values...))
     return row
 end

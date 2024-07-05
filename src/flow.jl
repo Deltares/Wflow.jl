@@ -1,7 +1,7 @@
 
 abstract type SurfaceFlow end
 
-@get_units @with_kw struct SurfaceFlowRiver{T,R,L} <: SurfaceFlow
+@get_units @with_kw struct SurfaceFlowRiver{T, R, L} <: SurfaceFlow
     beta::T | "-"                           # constant in Manning's equation
     sl::Vector{T} | "m m-1"                 # Slope [m m⁻¹]
     n::Vector{T} | "s m-1/3"                # Manning's roughness [s m⁻⅓]
@@ -67,31 +67,32 @@ function initialize_surfaceflow_land(nc, config, inds; sl, dl, width, iterate, t
         @info "Using a fixed sub-timestep (seconds) $tstep for kinematic wave overland flow."
     end
 
-    n_land = ncread(nc, config, "lateral.land.n"; sel=inds, defaults=0.072, type=Float)
+    n_land =
+        ncread(nc, config, "lateral.land.n"; sel = inds, defaults = 0.072, type = Float)
     n = length(inds)
 
     sf_land = SurfaceFlowLand(;
-        beta=Float(0.6),
-        sl=sl,
-        n=n_land,
-        dl=dl,
-        q=zeros(Float, n),
-        qin=zeros(Float, n),
-        q_av=zeros(Float, n),
-        qlat=zeros(Float, n),
-        inwater=zeros(Float, n),
-        volume=zeros(Float, n),
-        h=zeros(Float, n),
-        h_av=zeros(Float, n),
-        dt=Float(tosecond(dt)),
-        its=tstep > 0 ? Int(cld(tosecond(dt), tstep)) : tstep,
-        width=width,
-        alpha_pow=Float((2.0 / 3.0) * 0.6),
-        alpha_term=fill(mv, n),
-        alpha=fill(mv, n),
-        cel=zeros(Float, n),
-        to_river=zeros(Float, n),
-        kinwave_it=iterate,
+        beta = Float(0.6),
+        sl = sl,
+        n = n_land,
+        dl = dl,
+        q = zeros(Float, n),
+        qin = zeros(Float, n),
+        q_av = zeros(Float, n),
+        qlat = zeros(Float, n),
+        inwater = zeros(Float, n),
+        volume = zeros(Float, n),
+        h = zeros(Float, n),
+        h_av = zeros(Float, n),
+        dt = Float(tosecond(dt)),
+        its = tstep > 0 ? Int(cld(tosecond(dt), tstep)) : tstep,
+        width = width,
+        alpha_pow = Float((2.0 / 3.0) * 0.6),
+        alpha_term = fill(mv, n),
+        alpha = fill(mv, n),
+        cel = zeros(Float, n),
+        to_river = zeros(Float, n),
+        kinwave_it = iterate,
     )
 
     return sf_land
@@ -116,15 +117,16 @@ function initialize_surfaceflow_river(
         @info "Using a fixed sub-timestep (seconds) $tstep for kinematic wave river flow."
     end
 
-    n_river = ncread(nc, config, "lateral.river.n"; sel=inds, defaults=0.036, type=Float)
+    n_river =
+        ncread(nc, config, "lateral.river.n"; sel = inds, defaults = 0.036, type = Float)
     bankfull_depth = ncread(
         nc,
         config,
         "lateral.river.bankfull_depth";
-        alias="lateral.river.h_bankfull",
-        sel=inds,
-        defaults=1.0,
-        type=Float,
+        alias = "lateral.river.h_bankfull",
+        sel = inds,
+        defaults = 1.0,
+        type = Float,
     )
     if haskey(config.input.lateral.river, "h_bankfull")
         @warn string(
@@ -132,39 +134,46 @@ function initialize_surfaceflow_river(
             "`bankfull_depth`. Please update your TOML file.",
         )
     end
-    sl = ncread(nc, config, "lateral.river.slope"; optional=false, sel=inds, type=Float)
+    sl = ncread(
+        nc,
+        config,
+        "lateral.river.slope";
+        optional = false,
+        sel = inds,
+        type = Float,
+    )
     clamp!(sl, 0.00001, Inf)
 
     n = length(inds)
 
     sf_river = SurfaceFlowRiver(;
-        beta=Float(0.6),
-        sl=sl,
-        n=n_river,
-        dl=dl,
-        q=zeros(Float, n),
-        qin=zeros(Float, n),
-        q_av=zeros(Float, n),
-        qlat=zeros(Float, n),
-        inwater=zeros(Float, n),
-        inflow=zeros(Float, n),
-        inflow_wb=zeros(Float, n),
-        volume=zeros(Float, n),
-        h=zeros(Float, n),
-        h_av=zeros(Float, n),
-        bankfull_depth=bankfull_depth,
-        dt=Float(tosecond(dt)),
-        its=tstep > 0 ? Int(cld(tosecond(dt), tstep)) : tstep,
-        width=width,
-        alpha_pow=Float((2.0 / 3.0) * 0.6),
-        alpha_term=fill(mv, n),
-        alpha=fill(mv, n),
-        cel=zeros(Float, n),
-        reservoir_index=reservoir_index,
-        lake_index=lake_index,
-        reservoir=reservoir,
-        lake=lake,
-        kinwave_it=iterate,
+        beta = Float(0.6),
+        sl = sl,
+        n = n_river,
+        dl = dl,
+        q = zeros(Float, n),
+        qin = zeros(Float, n),
+        q_av = zeros(Float, n),
+        qlat = zeros(Float, n),
+        inwater = zeros(Float, n),
+        inflow = zeros(Float, n),
+        inflow_wb = zeros(Float, n),
+        volume = zeros(Float, n),
+        h = zeros(Float, n),
+        h_av = zeros(Float, n),
+        bankfull_depth = bankfull_depth,
+        dt = Float(tosecond(dt)),
+        its = tstep > 0 ? Int(cld(tosecond(dt), tstep)) : tstep,
+        width = width,
+        alpha_pow = Float((2.0 / 3.0) * 0.6),
+        alpha_term = fill(mv, n),
+        alpha = fill(mv, n),
+        cel = zeros(Float, n),
+        reservoir_index = reservoir_index,
+        lake_index = lake_index,
+        reservoir = reservoir,
+        lake = lake,
+        kinwave_it = iterate,
     )
 
     return sf_river
@@ -189,7 +198,7 @@ function update(sf::SurfaceFlowLand, network, frac_toriver)
     for _ in 1:its
         sf.qin .= 0.0
         for k in 1:ns
-            threaded_foreach(eachindex(subdomain_order[k]); basesize=1) do i
+            threaded_foreach(eachindex(subdomain_order[k]); basesize = 1) do i
                 m = subdomain_order[k][i]
                 for (n, v) in zip(indices_subdomain[m], topo_subdomain[m])
                     # for a river cell without a reservoir or lake part of the upstream
@@ -210,7 +219,13 @@ function update(sf::SurfaceFlowLand, network, frac_toriver)
                     end
 
                     sf.q[v] = kinematic_wave(
-                        sf.qin[v], sf.q[v], sf.qlat[v], sf.alpha[v], sf.beta, dt, sf.dl[v]
+                        sf.qin[v],
+                        sf.q[v],
+                        sf.qlat[v],
+                        sf.alpha[v],
+                        sf.beta,
+                        dt,
+                        sf.dl[v],
                     )
 
                     # update h, only if surface width > 0.0
@@ -261,7 +276,7 @@ function update(sf::SurfaceFlowRiver, network, doy)
     for _ in 1:its
         sf.qin .= 0.0
         for k in 1:ns
-            threaded_foreach(eachindex(subdomain_order[k]); basesize=1) do i
+            threaded_foreach(eachindex(subdomain_order[k]); basesize = 1) do i
                 m = subdomain_order[k][i]
                 for (n, v) in zip(indices_subdomain[m], topo_subdomain[m])
                     # sf.qin by outflow from upstream reservoir or lake location is added
@@ -342,7 +357,7 @@ function update(sf::SurfaceFlowRiver, network, doy)
     return sf.volume .= sf.dl .* sf.width .* sf.h
 end
 
-function stable_timestep(sf::S) where {S<:SurfaceFlow}
+function stable_timestep(sf::S) where {S <: SurfaceFlow}
     n = length(sf.q)
     # two options for iteration, fixed or based on courant number.
     if sf.kinwave_it
@@ -402,7 +417,7 @@ function update(ssf::LateralSSF, network, frac_toriver, ksat_profile)
 
     ns = length(subdomain_order)
     for k in 1:ns
-        threaded_foreach(eachindex(subdomain_order[k]); basesize=1) do i
+        threaded_foreach(eachindex(subdomain_order[k]); basesize = 1) do i
             m = subdomain_order[k][i]
             for (n, v) in zip(indices_subdomain[m], topo_subdomain[m])
                 # for a river cell without a reservoir or lake part of the upstream
@@ -420,7 +435,7 @@ function update(ssf::LateralSSF, network, frac_toriver, ksat_profile)
                     eltype(ssf.to_river),
                 )
                 if (ksat_profile == "exponential") ||
-                    (ksat_profile == "exponential_constant")
+                   (ksat_profile == "exponential_constant")
                     ssf.ssf[v], ssf.zi[v], ssf.exfiltwater[v] = kinematic_wave_ssf(
                         ssf.ssfin[v],
                         ssf.ssf[v],
@@ -439,7 +454,7 @@ function update(ssf::LateralSSF, network, frac_toriver, ksat_profile)
                         ksat_profile,
                     )
                 elseif (ksat_profile == "layered") ||
-                    (ksat_profile == "layered_exponential")
+                       (ksat_profile == "layered_exponential")
                     ssf.ssf[v], ssf.zi[v], ssf.exfiltwater[v] = kinematic_wave_ssf(
                         ssf.ssfin[v],
                         ssf.ssf[v],
@@ -468,7 +483,7 @@ end
     ssf::Vector{T} | "m3 d-1"           # Subsurface flow [m³ d⁻¹]
 end
 
-@get_units @with_kw struct ShallowWaterRiver{T,R,L,F}
+@get_units @with_kw struct ShallowWaterRiver{T, R, L, F}
     n::Int | "-"                                # number of cells
     ne::Int | "-"                               # number of edges/links
     active_n::Vector{Int} | "-"                 # active nodes
@@ -556,25 +571,41 @@ function initialize_shallowwater_river(
         nc,
         config,
         "lateral.river.riverlength_bc";
-        sel=inds_pit,
-        defaults=1.0e04,
-        type=Float,
+        sel = inds_pit,
+        defaults = 1.0e04,
+        type = Float,
     )
     riverdepth_bc = ncread(
-        nc, config, "lateral.river.riverdepth_bc"; sel=inds_pit, defaults=0.0, type=Float
+        nc,
+        config,
+        "lateral.river.riverdepth_bc";
+        sel = inds_pit,
+        defaults = 0.0,
+        type = Float,
     )
     bankfull_elevation_2d = ncread(
-        nc, config, "lateral.river.bankfull_elevation"; optional=false, type=Float, fill=0
+        nc,
+        config,
+        "lateral.river.bankfull_elevation";
+        optional = false,
+        type = Float,
+        fill = 0,
     )
     bankfull_depth_2d = ncread(
-        nc, config, "lateral.river.bankfull_depth"; optional=false, type=Float, fill=0
+        nc,
+        config,
+        "lateral.river.bankfull_depth";
+        optional = false,
+        type = Float,
+        fill = 0,
     )
     bankfull_depth = bankfull_depth_2d[inds]
     zb = bankfull_elevation_2d[inds] - bankfull_depth # river bed elevation
 
     bankfull_volume = bankfull_depth .* width .* dl
 
-    n_river = ncread(nc, config, "lateral.river.n"; sel=inds, defaults=0.036, type=Float)
+    n_river =
+        ncread(nc, config, "lateral.river.n"; sel = inds, defaults = 0.036, type = Float)
 
     n = length(inds)
 
@@ -598,7 +629,15 @@ function initialize_shallowwater_river(
     if floodplain
         zb_floodplain = zb .+ bankfull_depth
         floodplain = initialize_floodplain_1d(
-            nc, config, inds, width, dl, zb_floodplain, index_pit, _ne, nodes_at_link
+            nc,
+            config,
+            inds,
+            width,
+            dl,
+            zb_floodplain,
+            index_pit,
+            _ne,
+            nodes_at_link,
         )
     else
         floodplain = nothing
@@ -626,48 +665,48 @@ function initialize_shallowwater_river(
     active_index = findall(x -> x == 0, waterbody)
 
     sw_river = ShallowWaterRiver(;
-        n=n,
-        ne=_ne,
-        active_n=active_index,
-        active_e=active_index,
-        g=9.80665,
-        alpha=alpha,
-        h_thresh=h_thresh,
-        dt=tosecond(dt),
-        q=zeros(_ne),
-        q0=zeros(_ne),
-        q_av=q_av,
-        q_channel_av=isnothing(floodplain) ? q_av : zeros(_ne),
-        zb_max=zb_max,
-        mannings_n_sq=mannings_n_sq,
-        mannings_n=n_river,
-        h=h,
-        zs_max=zeros(_ne),
-        zs_src=zeros(_ne),
-        zs_dst=zeros(_ne),
-        hf=zeros(_ne),
-        h_av=zeros(n),
-        width=width,
-        width_at_link=width_at_link,
-        a=zeros(_ne),
-        r=zeros(_ne),
-        volume=fill(0.0, n),
-        error=zeros(n),
-        inflow=zeros(n),
-        inflow_wb=zeros(n),
-        inwater=zeros(n),
-        dl=dl,
-        dl_at_link=length_at_link,
-        bankfull_volume=bankfull_volume,
-        bankfull_depth=bankfull_depth,
-        zb=zb,
-        froude_limit=froude_limit,
-        reservoir_index=findall(x -> x > 0, reservoir_index),
-        lake_index=findall(x -> x > 0, lake_index),
-        waterbody=waterbody,
-        reservoir=reservoir,
-        lake=lake,
-        floodplain=floodplain,
+        n = n,
+        ne = _ne,
+        active_n = active_index,
+        active_e = active_index,
+        g = 9.80665,
+        alpha = alpha,
+        h_thresh = h_thresh,
+        dt = tosecond(dt),
+        q = zeros(_ne),
+        q0 = zeros(_ne),
+        q_av = q_av,
+        q_channel_av = isnothing(floodplain) ? q_av : zeros(_ne),
+        zb_max = zb_max,
+        mannings_n_sq = mannings_n_sq,
+        mannings_n = n_river,
+        h = h,
+        zs_max = zeros(_ne),
+        zs_src = zeros(_ne),
+        zs_dst = zeros(_ne),
+        hf = zeros(_ne),
+        h_av = zeros(n),
+        width = width,
+        width_at_link = width_at_link,
+        a = zeros(_ne),
+        r = zeros(_ne),
+        volume = fill(0.0, n),
+        error = zeros(n),
+        inflow = zeros(n),
+        inflow_wb = zeros(n),
+        inwater = zeros(n),
+        dl = dl,
+        dl_at_link = length_at_link,
+        bankfull_volume = bankfull_volume,
+        bankfull_depth = bankfull_depth,
+        zb = zb,
+        froude_limit = froude_limit,
+        reservoir_index = findall(x -> x > 0, reservoir_index),
+        lake_index = findall(x -> x > 0, lake_index),
+        waterbody = waterbody,
+        reservoir = reservoir,
+        lake = lake,
+        floodplain = floodplain,
     )
     return sw_river, nodes_at_link
 end
@@ -812,9 +851,8 @@ function shallowwater_river_update(sw::ShallowWaterRiver, network, dt, doy, upda
                 sw.floodplain.q[i],
             )
 
-            sw.floodplain.q[i] = IfElse.ifelse(
-                sw.floodplain.q[i] * sw.q[i] < 0.0, 0.0, sw.floodplain.q[i]
-            )
+            sw.floodplain.q[i] =
+                IfElse.ifelse(sw.floodplain.q[i] * sw.q[i] < 0.0, 0.0, sw.floodplain.q[i])
             sw.floodplain.q_av[i] += sw.floodplain.q[i] * dt
         end
     end
@@ -883,7 +921,7 @@ function shallowwater_river_update(sw::ShallowWaterRiver, network, dt, doy, upda
     end
 end
 
-function update(sw::ShallowWaterRiver{T}, network, doy; update_h=true) where {T}
+function update(sw::ShallowWaterRiver{T}, network, doy; update_h = true) where {T}
     @unpack nodes_at_link, links_at_node = network
 
     if !isnothing(sw.reservoir)
@@ -990,15 +1028,21 @@ function initialize_shallowwater_land(
 
     @info "Local inertial approach is used for overlandflow." alpha theta h_thresh froude_limit
 
-    n_land = ncread(nc, config, "lateral.land.n"; sel=inds, defaults=0.072, type=Float)
+    n_land =
+        ncread(nc, config, "lateral.land.n"; sel = inds, defaults = 0.072, type = Float)
     elevation_2d = ncread(
-        nc, config, "lateral.land.elevation"; optional=false, type=Float, fill=0
+        nc,
+        config,
+        "lateral.land.elevation";
+        optional = false,
+        type = Float,
+        fill = 0,
     )
     elevation = elevation_2d[inds]
     n = length(inds)
 
     # initialize links between cells in x and y direction.
-    indices = Indices(; xu=zeros(n), xd=zeros(n), yu=zeros(n), yd=zeros(n))
+    indices = Indices(; xu = zeros(n), xd = zeros(n), yu = zeros(n), yd = zeros(n))
 
     # links without neigbors are handled by an extra index (at n + 1, with n links), which
     # is set to a value of 0.0 m³ s⁻¹ for qx and qy fields at initialization.
@@ -1050,32 +1094,32 @@ function initialize_shallowwater_land(
     )
 
     sw_land = ShallowWaterLand{Float}(;
-        n=n,
-        xl=xlength,
-        yl=ylength,
-        xwidth=we_x,
-        ywidth=we_y,
-        g=9.80665,
-        theta=theta,
-        alpha=alpha,
-        h_thresh=h_thresh,
-        dt=tosecond(dt),
-        qx0=zeros(n + 1),
-        qy0=zeros(n + 1),
-        qx=zeros(n + 1),
-        qy=zeros(n + 1),
-        zx_max=zx_max,
-        zy_max=zy_max,
-        mannings_n_sq=n_land .* n_land,
-        volume=zeros(n),
-        error=zeros(n),
-        runoff=zeros(n),
-        inflow_wb=zeros(n),
-        h=zeros(n),
-        h_av=zeros(n),
-        z=elevation,
-        froude_limit=froude_limit,
-        rivercells=river,
+        n = n,
+        xl = xlength,
+        yl = ylength,
+        xwidth = we_x,
+        ywidth = we_y,
+        g = 9.80665,
+        theta = theta,
+        alpha = alpha,
+        h_thresh = h_thresh,
+        dt = tosecond(dt),
+        qx0 = zeros(n + 1),
+        qy0 = zeros(n + 1),
+        qx = zeros(n + 1),
+        qy = zeros(n + 1),
+        zx_max = zx_max,
+        zy_max = zy_max,
+        mannings_n_sq = n_land .* n_land,
+        volume = zeros(n),
+        error = zeros(n),
+        runoff = zeros(n),
+        inflow_wb = zeros(n),
+        h = zeros(n),
+        h_av = zeros(n),
+        z = elevation,
+        froude_limit = froude_limit,
+        rivercells = river,
     )
 
     return sw_land, indices
@@ -1114,7 +1158,11 @@ function stable_timestep(sw::ShallowWaterLand{T})::T where {T}
 end
 
 function update(
-    sw::ShallowWaterLand{T}, swr::ShallowWaterRiver{T}, network, doy; update_h=false
+    sw::ShallowWaterLand{T},
+    swr::ShallowWaterRiver{T},
+    network,
+    doy;
+    update_h = false,
 ) where {T}
     @unpack nodes_at_link, links_at_node = network.river
 
@@ -1150,7 +1198,10 @@ function update(
 end
 
 function shallowwater_update(
-    sw::ShallowWaterLand{T}, swr::ShallowWaterRiver{T}, network, dt
+    sw::ShallowWaterLand{T},
+    swr::ShallowWaterRiver{T},
+    network,
+    dt,
 ) where {T}
     indices = network.land.staggered_indices
     inds_riv = network.land.index_river
@@ -1306,15 +1357,15 @@ Floodplain `volume` is a function of `depth` (flood depth intervals). Based on t
 cumulative floodplain `volume` a floodplain profile as a function of `flood_depth` is
 derived with floodplain area `a` (cumulative) and wetted perimeter radius `p` (cumulative).
 """
-@get_units @with_kw struct FloodPlainProfile{T,N}
+@get_units @with_kw struct FloodPlainProfile{T, N}
     depth::Vector{T} | "m"                    # Flood depth
-    volume::Array{T,2} | "m3"                 # Flood volume (cumulative)
-    width::Array{T,2} | "m"                   # Flood width
-    a::Array{T,2} | "m2"                      # Flow area (cumulative)
-    p::Array{T,2} | "m"                       # Wetted perimeter (cumulative)
+    volume::Array{T, 2} | "m3"                 # Flood volume (cumulative)
+    width::Array{T, 2} | "m"                   # Flood width
+    a::Array{T, 2} | "m2"                      # Flow area (cumulative)
+    p::Array{T, 2} | "m"                       # Wetted perimeter (cumulative)
 end
 
-@get_units @with_kw struct FloodPlain{T,P}
+@get_units @with_kw struct FloodPlain{T, P}
     profile::P | "-"                           # floodplain profile
     mannings_n::Vector{T} | "s m-1/3"          # manning's roughness
     mannings_n_sq::Vector{T} | "(s m-1/3)2"    # manning's roughness squared
@@ -1335,9 +1386,8 @@ end
 "Determine the initial floodplain volume"
 function initialize_volume!(river, nriv::Int)
     for i in 1:nriv
-        i1, i2 = interpolation_indices(
-            river.floodplain.h[i], river.floodplain.profile.depth
-        )
+        i1, i2 =
+            interpolation_indices(river.floodplain.h[i], river.floodplain.profile.depth)
         a = flow_area(
             river.floodplain.profile.width[i2, i],
             river.floodplain.profile.a[i1, i],
@@ -1401,18 +1451,31 @@ end
 
 "Initialize floodplain geometry and `FloodPlain` parameters"
 function initialize_floodplain_1d(
-    nc, config, inds, riverwidth, riverlength, zb, index_pit, n_edges, nodes_at_link
+    nc,
+    config,
+    inds,
+    riverwidth,
+    riverlength,
+    zb,
+    index_pit,
+    n_edges,
+    nodes_at_link,
 )
     n_floodplain = ncread(
-        nc, config, "lateral.river.floodplain.n"; sel=inds, defaults=0.072, type=Float
+        nc,
+        config,
+        "lateral.river.floodplain.n";
+        sel = inds,
+        defaults = 0.072,
+        type = Float,
     )
     volume = ncread(
         nc,
         config,
         "lateral.river.floodplain.volume";
-        sel=inds,
-        type=Float,
-        dimname=:flood_depth,
+        sel = inds,
+        type = Float,
+        dimname = :flood_depth,
     )
     n = length(inds)
 
@@ -1472,8 +1535,8 @@ function initialize_floodplain_1d(
     end
 
     if incorrect_vol > 0
-        perc_riv_cells = round(100.0 * (riv_cells / n); digits=2)
-        perc_error_vol = round(100.0 * (error_vol / sum(start_volume[end, :])); digits=2)
+        perc_riv_cells = round(100.0 * (riv_cells / n); digits = 2)
+        perc_error_vol = round(100.0 * (error_vol / sum(start_volume[end, :])); digits = 2)
         @warn string(
             "The provided volume of $incorrect_vol rectangular floodplain schematization",
             " segments for $riv_cells river cells ($perc_riv_cells % of total river cells)",
@@ -1488,8 +1551,12 @@ function initialize_floodplain_1d(
     p = hcat(p, p[:, index_pit])
 
     # initialize floodplain profile parameters
-    profile = FloodPlainProfile{Float,n_depths}(;
-        volume=volume, width=width, depth=flood_depths, a=a, p=p
+    profile = FloodPlainProfile{Float, n_depths}(;
+        volume = volume,
+        width = width,
+        depth = flood_depths,
+        a = a,
+        p = p,
     )
 
     # manning roughness at edges
@@ -1509,21 +1576,21 @@ function initialize_floodplain_1d(
     end
 
     floodplain = FloodPlain(;
-        profile=profile,
-        mannings_n=n_floodplain,
-        mannings_n_sq=mannings_n_sq,
-        volume=zeros(n),
-        error=zeros(n),
-        h=zeros(n + length(index_pit)),
-        h_av=zeros(n),
-        a=zeros(n_edges),
-        r=zeros(n_edges),
-        hf=zeros(n_edges),
-        zb_max=zb_max,
-        q=zeros(n_edges),
-        q_av=zeros(n_edges),
-        q0=zeros(n_edges),
-        hf_index=zeros(Int, n_edges),
+        profile = profile,
+        mannings_n = n_floodplain,
+        mannings_n_sq = mannings_n_sq,
+        volume = zeros(n),
+        error = zeros(n),
+        h = zeros(n + length(index_pit)),
+        h_av = zeros(n),
+        a = zeros(n_edges),
+        r = zeros(n_edges),
+        hf = zeros(n_edges),
+        zb_max = zb_max,
+        q = zeros(n_edges),
+        q_av = zeros(n_edges),
+        q0 = zeros(n_edges),
+        hf_index = zeros(Int, n_edges),
     )
     return floodplain
 end
@@ -1558,7 +1625,9 @@ end
 
 Set `inwater` of the lateral land component for the `SbmGwfModel` type.
 """
-function set_land_inwater(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
+function set_land_inwater(
+    model::Model{N, L, V, R, W, T},
+) where {N, L, V, R, W, T <: SbmGwfModel}
     @unpack lateral, vertical, network, config = model
 
     do_drains = get(config.model, "drains", false)::Bool
@@ -1578,7 +1647,9 @@ end
 
 Set `inwater` of the lateral land component for the `SbmModel` type.
 """
-function set_land_inwater(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
+function set_land_inwater(
+    model::Model{N, L, V, R, W, T},
+) where {N, L, V, R, W, T <: SbmModel}
     @unpack lateral, vertical, network = model
     return lateral.land.inwater .=
         (vertical.net_runoff .* network.land.xl .* network.land.yl .* 0.001) ./
@@ -1602,8 +1673,8 @@ Set inflow from the subsurface and land components to a water body (reservoir or
 `inflow_wb` from a model type that contains the lateral components `SurfaceFlow`.
 """
 function set_inflow_waterbody(
-    model::Model{N,L,V,R,W,T}
-) where {N,L<:NamedTuple{<:Any,<:Tuple{Any,SurfaceFlow,SurfaceFlow}},V,R,W,T}
+    model::Model{N, L, V, R, W, T},
+) where {N, L <: NamedTuple{<:Any, <:Tuple{Any, SurfaceFlow, SurfaceFlow}}, V, R, W, T}
     @unpack lateral, network = model
     @unpack subsurface, land, river = lateral
     inds = network.index_river
@@ -1628,8 +1699,15 @@ Set inflow from the subsurface and land components to a water body (reservoir or
 `ShallowWaterRiver`.
 """
 function set_inflow_waterbody(
-    model::Model{N,L,V,R,W,T}
-) where {N,L<:NamedTuple{<:Any,<:Tuple{Any,SurfaceFlow,ShallowWaterRiver}},V,R,W,T}
+    model::Model{N, L, V, R, W, T},
+) where {
+    N,
+    L <: NamedTuple{<:Any, <:Tuple{Any, SurfaceFlow, ShallowWaterRiver}},
+    V,
+    R,
+    W,
+    T,
+}
     @unpack lateral, network = model
     @unpack subsurface, land, river = lateral
     inds = network.index_river
@@ -1657,8 +1735,15 @@ Set inflow from the subsurface and land components to a water body (reservoir or
 `ShallowWaterRiver`.
 """
 function set_inflow_waterbody(
-    model::Model{N,L,V,R,W,T}
-) where {N,L<:NamedTuple{<:Any,<:Tuple{Any,ShallowWaterLand,ShallowWaterRiver}},V,R,W,T}
+    model::Model{N, L, V, R, W, T},
+) where {
+    N,
+    L <: NamedTuple{<:Any, <:Tuple{Any, ShallowWaterLand, ShallowWaterRiver}},
+    V,
+    R,
+    W,
+    T,
+}
     @unpack lateral, network = model
     @unpack subsurface, land, river = lateral
     inds = network.index_river
@@ -1677,7 +1762,7 @@ end
 Run surface routing (land and river). Kinematic wave for overland flow and kinematic wave or
 local inertial model for river flow.
 """
-function surface_routing(model; ssf_toriver=0.0)
+function surface_routing(model; ssf_toriver = 0.0)
     @unpack lateral, network, clock = model
 
     # run kinematic wave for overland flow
@@ -1700,8 +1785,16 @@ Run surface routing (land and river) for a model type that contains the lateral 
 `ShallowWaterLand` and `ShallowWaterRiver`.
 """
 function surface_routing(
-    model::Model{N,L,V,R,W,T}; ssf_toriver=0.0
-) where {N,L<:NamedTuple{<:Any,<:Tuple{Any,ShallowWaterLand,ShallowWaterRiver}},V,R,W,T}
+    model::Model{N, L, V, R, W, T};
+    ssf_toriver = 0.0,
+) where {
+    N,
+    L <: NamedTuple{<:Any, <:Tuple{Any, ShallowWaterLand, ShallowWaterRiver}},
+    V,
+    R,
+    W,
+    T,
+}
     @unpack lateral, vertical, network, clock = model
 
     @. lateral.land.runoff = (

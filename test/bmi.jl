@@ -40,10 +40,10 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test BMI.get_var_units(model, "vertical.theta_s") == "-"
             @test BMI.get_var_itemsize(model, "lateral.subsurface.ssf") == sizeof(Float)
             @test BMI.get_var_nbytes(model, "lateral.river.q") ==
-                length(model.lateral.river.q) * sizeof(Float)
+                  length(model.lateral.river.q) * sizeof(Float)
             @test BMI.get_var_location(model, "lateral.river.q") == "node"
             @test_throws ErrorException(
-                "lateral.land.alpha_pow not listed as variable for BMI exchange"
+                "lateral.land.alpha_pow not listed as variable for BMI exchange",
             ) BMI.get_var_itemsize(model, "lateral.land.alpha_pow")
         end
 
@@ -56,21 +56,30 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             BMI.get_value(model, "vertical.zi", dest)
             @test mean(dest) ≈ 276.16325589542333
             @test BMI.get_value_at_indices(
-                model, "vertical.vwc[1]", zeros(Float, 3), [1, 2, 3]
+                model,
+                "vertical.vwc[1]",
+                zeros(Float, 3),
+                [1, 2, 3],
             ) ≈ getindex.(model.vertical.vwc, 1)[1:3]
             BMI.set_value_at_indices(
-                model, "vertical.vwc[2]", [1, 2, 3], [0.10, 0.15, 0.20]
+                model,
+                "vertical.vwc[2]",
+                [1, 2, 3],
+                [0.10, 0.15, 0.20],
             ) ≈ getindex.(model.vertical.vwc, 2)[1:3]
             @test BMI.get_value_at_indices(
-                model, "lateral.river.q", zeros(Float, 3), [1, 100, 5617]
+                model,
+                "lateral.river.q",
+                zeros(Float, 3),
+                [1, 100, 5617],
             ) ≈ [0.623325399343309, 5.227139951657074, 0.02794287432778194]
             BMI.set_value(model, "vertical.zi", fill(300.0, length(model.vertical.zi)))
             @test mean(
-                BMI.get_value(model, "vertical.zi", zeros(Float, size(model.vertical.zi)))
+                BMI.get_value(model, "vertical.zi", zeros(Float, size(model.vertical.zi))),
             ) == 300.0
             BMI.set_value_at_indices(model, "vertical.zi", [1], [250.0])
             @test BMI.get_value_at_indices(model, "vertical.zi", zeros(Float, 2), [1, 2]) ==
-                [250.0, 300.0]
+                  [250.0, 300.0]
         end
 
         @testset "model grid functions" begin
@@ -90,17 +99,17 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test BMI.get_grid_size(model, 4) == 50063
             @test BMI.get_grid_size(model, 5) == 50063
             @test minimum(BMI.get_grid_x(model, 5, zeros(Float, 50063))) ≈
-                5.426666666666667f0
+                  5.426666666666667f0
             @test maximum(BMI.get_grid_x(model, 5, zeros(Float, 50063))) ≈
-                7.843333333333344f0
+                  7.843333333333344f0
             @test BMI.get_grid_x(model, 0, zeros(Float, 2)) ≈
-                [5.760000000000002f0, 5.918333333333336f0]
+                  [5.760000000000002f0, 5.918333333333336f0]
             @test BMI.get_grid_y(model, 0, zeros(Float, 2)) ≈
-                [48.92583333333333f0, 49.909166666666664f0]
+                  [48.92583333333333f0, 49.909166666666664f0]
             @test BMI.get_grid_node_count(model, 0) == 2
             @test BMI.get_grid_edge_count(model, 3) == 5808
             @test BMI.get_grid_edge_nodes(model, 3, fill(0, 2 * 5808))[1:6] ==
-                [1, 5, 2, 1, 3, 2]
+                  [1, 5, 2, 1, 3, 2]
         end
 
         @testset "update until and finalize" begin
@@ -109,9 +118,8 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test model.clock.iteration == 3
             time_off = BMI.get_current_time(model) + 1 * BMI.get_time_step(model) + 1e-06
             @test_throws ErrorException model = BMI.update_until(model, time_off)
-            @test_throws ErrorException model = BMI.update_until(
-                model, time - BMI.get_time_step(model)
-            )
+            @test_throws ErrorException model =
+                BMI.update_until(model, time - BMI.get_time_step(model))
             BMI.finalize(model)
         end
     end
@@ -126,7 +134,8 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
         @test BMI.get_grid_edge_nodes(model, 4, fill(0, 2 * 50063))[1:4] == [1, -999, 2, 3]
         @test BMI.get_grid_edge_nodes(model, 5, fill(0, 2 * 50063))[1:4] == [1, 4, 2, 10]
         @test_logs (
-            :warn, "edges are not provided for grid type 2 (variables are located at nodes)"
+            :warn,
+            "edges are not provided for grid type 2 (variables are located at nodes)",
         ) BMI.get_grid_edge_nodes(model, 2, fill(0, 2 * 50063))
         @test_throws ErrorException BMI.get_grid_edge_nodes(model, 7, fill(0, 2 * 50063))
         BMI.finalize(model)
@@ -137,7 +146,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
         model = BMI.initialize(Wflow.Model, tomlpath)
 
         # update the recharge part of the SBM model
-        model = BMI.update(model; run="sbm_until_recharge")
+        model = BMI.update(model; run = "sbm_until_recharge")
 
         @testset "recharge part of SBM" begin
             sbm = model.vertical
@@ -150,7 +159,9 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 
         # set zi and exfiltwater from external source (e.g. a groundwater model)
         BMI.set_value(
-            model, "lateral.subsurface.zi", fill(0.25, BMI.get_grid_node_count(model, 6))
+            model,
+            "lateral.subsurface.zi",
+            fill(0.25, BMI.get_grid_node_count(model, 6)),
         )
         BMI.set_value(
             model,
@@ -158,7 +169,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             fill(1.0e-5, BMI.get_grid_node_count(model, 6)),
         )
         # update SBM after subsurface flow
-        model = BMI.update(model; run="sbm_after_subsurfaceflow")
+        model = BMI.update(model; run = "sbm_after_subsurfaceflow")
 
         @testset "SBM after subsurface flow" begin
             sbm = model.vertical
@@ -185,7 +196,8 @@ end
     model = Wflow.load_state(model)
     @test satwaterdepth ≠ mean(model.vertical.satwaterdepth)
     @test_logs (
-        :info, "Write output states to netCDF file `$(model.writer.state_nc_path)`."
+        :info,
+        "Write output states to netCDF file `$(model.writer.state_nc_path)`.",
     ) Wflow.save_state(model)
     @test !isopen(model.writer.state_dataset)
 end

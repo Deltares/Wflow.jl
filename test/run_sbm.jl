@@ -180,7 +180,7 @@ evap = copy(model.vertical.potential_evaporation)
 lai = copy(model.vertical.leaf_area_index)
 res_evap = copy(model.lateral.river.reservoir.evaporation)
 
-Wflow.close_files(model; delete_output=false)
+Wflow.close_files(model; delete_output = false)
 
 # test for setting a pit and multithreading multiple basins (by setting 2 extra pits
 # resulting in 3 basins)
@@ -212,15 +212,15 @@ end
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 
-config.input.vertical.precipitation = Dict(
-    "scale" => 2.0, "netcdf" => Dict("variable" => Dict("name" => "precip"))
-)
+config.input.vertical.precipitation =
+    Dict("scale" => 2.0, "netcdf" => Dict("variable" => Dict("name" => "precip")))
 config.input.vertical.potential_evaporation = Dict(
-    "scale" => 3.0, "offset" => 1.50, "netcdf" => Dict("variable" => Dict("name" => "pet"))
+    "scale" => 3.0,
+    "offset" => 1.50,
+    "netcdf" => Dict("variable" => Dict("name" => "pet")),
 )
-config.input.vertical.leaf_area_index = Dict(
-    "scale" => 1.6, "netcdf" => Dict("variable" => Dict("name" => "LAI"))
-)
+config.input.vertical.leaf_area_index =
+    Dict("scale" => 1.6, "netcdf" => Dict("variable" => Dict("name" => "LAI")))
 
 model = Wflow.initialize_sbm_model(config)
 model = Wflow.run_timestep(model)
@@ -271,7 +271,7 @@ model = Wflow.run_timestep(model)
     @test all(isapprox.(model.lateral.river.reservoir.precipitation, 2.5))
 end
 
-Wflow.close_files(model; delete_output=false)
+Wflow.close_files(model; delete_output = false)
 
 # test local-inertial option for river flow river_routing
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
@@ -295,7 +295,7 @@ model = Wflow.run_timestep(model)
     q_channel = model.lateral.river.q_channel_av
     @test q ≈ q_channel
 end
-Wflow.close_files(model; delete_output=false)
+Wflow.close_files(model; delete_output = false)
 
 # test local-inertial option for river and overland flow
 tomlpath = joinpath(@__DIR__, "sbm_swf_config.toml")
@@ -321,7 +321,7 @@ model = Wflow.run_timestep(model)
     @test qy[[26, 35, 631]] ≈ [0.12757214437549858f0, 1.7212079599401755f0, 0.0f0]
     h = model.lateral.land.h
     @test h[[26, 35, 631]] ≈
-        [0.07361854999908582f0, 0.009155393111676267f0, 0.0007258741013439351f0]
+          [0.07361854999908582f0, 0.009155393111676267f0, 0.0007258741013439351f0]
 end
 
 @testset "Exchange and grid location local inertial overland flow" begin
@@ -336,7 +336,7 @@ end
     @test Wflow.grid_location(land, :qx) == "edge"
 end
 
-Wflow.close_files(model; delete_output=false)
+Wflow.close_files(model; delete_output = false)
 
 # test local-inertial option for river flow including 1D floodplain schematization
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
@@ -346,9 +346,8 @@ config.model.floodplain_1d = true
 config.model.river_routing = "local-inertial"
 config.model.land_routing = "kinematic-wave"
 Dict(config.input.lateral.river)["floodplain"] = Dict("volume" => "floodplain_volume")
-Dict(config.state.lateral.river)["floodplain"] = Dict(
-    "q" => "q_floodplain", "h" => "h_floodplain"
-)
+Dict(config.state.lateral.river)["floodplain"] =
+    Dict("q" => "q_floodplain", "h" => "h_floodplain")
 
 model = Wflow.initialize_sbm_model(config)
 
@@ -395,7 +394,7 @@ dh = diff(fp.depth)
     flood_depth = Wflow.flood_depth(fp, flood_vol, river.dl[3], 3)
     @test flood_depth ≈ 0.46290938548779076f0
     @test (flood_depth - fp.depth[i1]) * fp.width[i2, 3] * river.dl[3] + fp.volume[i1, 3] ≈
-        flood_vol
+          flood_vol
     # flood depth from flood volume (12000.0)
     flood_vol = 12000.0f0
     river.volume[3] = flood_vol + river.bankfull_volume[3]
@@ -404,7 +403,7 @@ dh = diff(fp.depth)
     flood_depth = Wflow.flood_depth(fp, flood_vol, river.dl[3], 3)
     @test flood_depth ≈ 0.6619575699132112f0
     @test (flood_depth - fp.depth[i1]) * fp.width[i2, 3] * river.dl[3] + fp.volume[i1, 3] ≈
-        flood_vol
+          flood_vol
     # test extrapolation of segment
     flood_vol = 95000.0f0
     river.volume[3] = flood_vol + river.bankfull_volume[3]
@@ -413,36 +412,36 @@ dh = diff(fp.depth)
     flood_depth = Wflow.flood_depth(fp, flood_vol, river.dl[3], 3)
     @test flood_depth ≈ 2.749036625585836f0
     @test (flood_depth - fp.depth[i1]) * fp.width[i2, 3] * river.dl[3] + fp.volume[i1, 3] ≈
-        flood_vol
+          flood_vol
     river.volume[3] = 0.0 # reset volume
     # flow area and wetted perimeter based on hf
     h = 0.5
     i1, i2 = Wflow.interpolation_indices(h, fp.depth)
     @test Wflow.flow_area(fp.width[i2, 3], fp.a[i1, 3], fp.depth[i1], h) ≈
-        49.64308797127469f0
+          49.64308797127469f0
     @test Wflow.wetted_perimeter(fp.p[i1, 3], fp.depth[i1], h) ≈ 70.28617594254938f0
     h = 1.5
     i1, i2 = Wflow.interpolation_indices(h, fp.depth)
     @test Wflow.flow_area(fp.width[i2, 3], fp.a[i1, 3], fp.depth[i1], h) ≈
-        182.032315978456f0
+          182.032315978456f0
     @test Wflow.wetted_perimeter(fp.p[i1, 3], fp.depth[i1], h) ≈ 118.62585278276481f0
     h = 1.7
     i1, i2 = Wflow.interpolation_indices(h, fp.depth)
     @test Wflow.flow_area(fp.width[i2, 3], fp.a[i1, 3], fp.depth[i1], h) ≈
-        228.36739676840216f0
+          228.36739676840216f0
     @test Wflow.wetted_perimeter(fp.p[i1, 3], fp.depth[i1], h) ≈ 119.02585278276482f0
     h = 3.2
     i1, i2 = Wflow.interpolation_indices(h, fp.depth)
     @test Wflow.flow_area(fp.width[i2, 3], fp.a[i1, 3], fp.depth[i1], h) ≈
-        695.0377019748654f0
+          695.0377019748654f0
     @test Wflow.wetted_perimeter(fp.p[i1, 3], fp.depth[i1], h) ≈ 307.3730700179533f0
     h = 4.0
     i1, i2 = Wflow.interpolation_indices(h, fp.depth)
     @test Wflow.flow_area(fp.width[i2, 3], fp.a[i1, 3], fp.depth[i1], h) ≈
-        959.816157989228f0
+          959.816157989228f0
     @test Wflow.wetted_perimeter(fp.p[i1, 3], fp.depth[i1], h) ≈ 308.9730700179533f0
     @test Wflow.flow_area(fp.width[i2, 4], fp.a[i1, 4], fp.depth[i1], h) ≈
-        407.6395313908081f0
+          407.6395313908081f0
     @test Wflow.wetted_perimeter(fp.p[i1, 4], fp.depth[i1], h) ≈ 90.11775307900271f0
 end
 
@@ -509,7 +508,7 @@ model = Wflow.run_timestep(model)
     @test h[501] ≈ 0.05665929962422606f0
     @test h[5808] ≈ 2.0000006940603936f0
 end
-Wflow.close_files(model; delete_output=false)
+Wflow.close_files(model; delete_output = false)
 
 # test different ksat profiles
 @testset "ksat profiles (SBM)" begin
@@ -528,7 +527,10 @@ Wflow.close_files(model; delete_output=false)
         @test kv_z ≈ vertical.kvfrac[i][2] * vertical.kv_0[i] * exp(-vertical.f[i] * z)
         @test vertical.z_exp == vertical.soilthickness
         @test_throws ErrorException Wflow.kh_layered_profile(
-            vertical, 100.0, i, "exponential"
+            vertical,
+            100.0,
+            i,
+            "exponential",
         )
         @test all(isnan.(vertical.z_layered))
         @test all(isnan.(vertical.kv[i]))
@@ -540,19 +542,29 @@ Wflow.close_files(model; delete_output=false)
         model = Wflow.initialize_sbm_model(config)
         @unpack vertical = model
         z = vertical.zi[i]
-        kv_z = Wflow.hydraulic_conductivity_at_depth(
-            vertical, z, i, 2, "exponential_constant"
-        )
+        kv_z =
+            Wflow.hydraulic_conductivity_at_depth(vertical, z, i, 2, "exponential_constant")
         @test kv_z ≈ vertical.kvfrac[i][2] * vertical.kv_0[i] * exp(-vertical.f[i] * z)
         kv_400 = Wflow.hydraulic_conductivity_at_depth(
-            vertical, 400.0, i, 2, "exponential_constant"
+            vertical,
+            400.0,
+            i,
+            2,
+            "exponential_constant",
         )
         kv_1000 = Wflow.hydraulic_conductivity_at_depth(
-            vertical, 1000.0, i, 3, "exponential_constant"
+            vertical,
+            1000.0,
+            i,
+            3,
+            "exponential_constant",
         )
         @test kv_400 ≈ kv_1000
         @test_throws ErrorException Wflow.kh_layered_profile(
-            vertical, 100.0, i, "exponential_constant"
+            vertical,
+            100.0,
+            i,
+            "exponential_constant",
         )
         @test all(isnan.(vertical.z_layered))
         @test all(isnan.(vertical.kv[i]))
@@ -566,7 +578,7 @@ Wflow.close_files(model; delete_output=false)
         @unpack vertical = model
         z = vertical.zi[i]
         @test Wflow.hydraulic_conductivity_at_depth(vertical, z, i, 2, "layered") ≈
-            vertical.kv[100][2]
+              vertical.kv[100][2]
         @test Wflow.kh_layered_profile(vertical, 100.0, i, "layered") ≈ 47.508932674632355f0
         @test vertical.nlayers_kv[i] == 4
         @test vertical.z_layered == vertical.soilthickness
@@ -579,11 +591,15 @@ Wflow.close_files(model; delete_output=false)
         @unpack vertical = model
         z = vertical.zi[i]
         @test Wflow.hydraulic_conductivity_at_depth(
-            vertical, z, i, 2, "layered_exponential"
+            vertical,
+            z,
+            i,
+            2,
+            "layered_exponential",
         ) ≈ vertical.kv[i][2]
         @test vertical.nlayers_kv[i] == 2
         @test Wflow.kh_layered_profile(vertical, 100.0, i, "layered_exponential") ≈
-            33.76026208801769f0
+              33.76026208801769f0
         @test all(vertical.z_layered[1:10] .== 400.0)
         @test all(isnan.(vertical.z_exp))
     end
@@ -597,5 +613,5 @@ Wflow.close_files(model; delete_output=false)
         @test q[43] ≈ 10.013363662625276f0
     end
 
-    Wflow.close_files(model; delete_output=false)
+    Wflow.close_files(model; delete_output = false)
 end

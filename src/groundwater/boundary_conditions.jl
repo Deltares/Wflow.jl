@@ -79,9 +79,8 @@ end
 
 function flux!(Q, recharge::Recharge, aquifer)
     for (i, index) in enumerate(recharge.index)
-        recharge.flux[i] = check_flux(
-            recharge.rate[i] * aquifer.area[index], aquifer, index
-        )
+        recharge.flux[i] =
+            check_flux(recharge.rate[i] * aquifer.area[index], aquifer, index)
         Q[index] += recharge.flux[i]
     end
     return Q

@@ -207,7 +207,18 @@ Returns lateral subsurface flow `ssf`, water table depth `zi` and exfiltration r
 `exfilt`.
 """
 function kinematic_wave_ssf(
-    ssfin, ssf_prev, zi_prev, r, kh, slope, theta_e, d, dt, dx, dw, ssfmax
+    ssfin,
+    ssf_prev,
+    zi_prev,
+    r,
+    kh,
+    slope,
+    theta_e,
+    d,
+    dt,
+    dx,
+    dw,
+    ssfmax,
 )
     epsilon = 1.0e-12
     max_iters = 3000
@@ -361,7 +372,17 @@ Local inertial approach for flow through area `A`. Returns the flow `q` between 
 river cells (nodes) for a single timestep.
 """
 function local_inertial_flow(
-    q0, zs0, zs1, hf, A, R, length, mannings_n_sq, g, froude_limit, dt
+    q0,
+    zs0,
+    zs1,
+    hf,
+    A,
+    R,
+    length,
+    mannings_n_sq,
+    g,
+    froude_limit,
+    dt,
 )
     slope = (zs1 - zs0) / length
     pow_R = cbrt(R * R * R * R)
@@ -386,7 +407,19 @@ two adjacent cells (nodes) for a single timestep. Algorithm is based on de Almei
 (2012).
 """
 function local_inertial_flow(
-    theta, q0, qd, qu, zs0, zs1, hf, width, length, mannings_n_sq, g, froude_limit, dt
+    theta,
+    q0,
+    qd,
+    qu,
+    zs0,
+    zs1,
+    hf,
+    width,
+    length,
+    mannings_n_sq,
+    g,
+    froude_limit,
+    dt,
 )
     slope = (zs1 - zs0) / length
     unit = one(theta)
@@ -394,8 +427,7 @@ function local_inertial_flow(
     pow_hf = cbrt(hf * hf * hf * hf * hf * hf * hf)
 
     q = (
-        ((theta * q0 + half * (unit - theta) * (qu + qd)) - g * hf * width * dt * slope) /
-        (unit + g * dt * mannings_n_sq * abs(q0) / (pow_hf * width))
+        ((theta * q0 + half * (unit - theta) * (qu + qd)) - g * hf * width * dt * slope) / (unit + g * dt * mannings_n_sq * abs(q0) / (pow_hf * width))
     )
     # if froude number > 1.0, limit flow
     if froude_limit

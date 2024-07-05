@@ -23,7 +23,12 @@ Interception according to the Gash model (for daily timesteps). `cmax` is the ma
 a saturated canopy.
 """
 function rainfall_interception_gash(
-    cmax, e_r, canopygapfraction, precipitation, canopystorage, maxevap
+    cmax,
+    e_r,
+    canopygapfraction,
+    precipitation,
+    canopystorage,
+    maxevap,
 )
     # TODO: add other rainfall interception method (lui)
     # TODO: include subdaily Gash model
@@ -69,7 +74,11 @@ Interception according to a modified Rutter model. The model is solved explicitl
 drainage below `cmax`.
 """
 function rainfall_interception_modrut(
-    precipitation, potential_evaporation, canopystorage, canopygapfraction, cmax
+    precipitation,
+    potential_evaporation,
+    canopystorage,
+    canopygapfraction,
+    cmax,
 )
 
     # TODO: improve computation of stemflow partitioning coefficient pt (0.1 * canopygapfraction)
@@ -143,7 +152,7 @@ function acttransp_unsat_sbm(
     theta_s,
     theta_r,
     hb,
-    ust::Bool=false,
+    ust::Bool = false,
 )
 
     # AvailCap is fraction of unsat zone containing roots
@@ -291,7 +300,13 @@ original Topog_SBM vertical transfer formulation.
 
 """
 function unsatzone_flow_sbm(
-    ustorelayerdepth, soilwatercapacity, satwaterdepth, kv_z, usl, theta_s, theta_r
+    ustorelayerdepth,
+    soilwatercapacity,
+    satwaterdepth,
+    kv_z,
+    usl,
+    theta_s,
+    theta_r,
 )
     sd = soilwatercapacity - satwaterdepth
     if sd <= 0.00001
@@ -343,9 +358,9 @@ function snowpack_hbv(
     ttm,
     cfmax,
     whc;
-    rfcf=1.0,
-    sfcf=1.0,
-    cfr=0.05,
+    rfcf = 1.0,
+    sfcf = 1.0,
+    cfr = 0.05,
 )
 
     # fraction of precipitation which falls as rain

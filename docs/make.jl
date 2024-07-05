@@ -42,17 +42,17 @@ pages = [
 ]
 
 makedocs(;
-    modules=[Wflow],
-    authors="Deltares and contributors",
-    repo="https://github.com/Deltares/Wflow.jl/blob/{commit}{path}#L{line}",
-    sitename="Wflow.jl",
-    format=Documenter.HTML(;
-        prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://deltares.github.io/Wflow.jl",
-        assets=String[],
-        collapselevel=2,
+    modules = [Wflow],
+    authors = "Deltares and contributors",
+    repo = "https://github.com/Deltares/Wflow.jl/blob/{commit}{path}#L{line}",
+    sitename = "Wflow.jl",
+    format = Documenter.HTML(;
+        prettyurls = get(ENV, "CI", "false") == "true",
+        canonical = "https://deltares.github.io/Wflow.jl",
+        assets = String[],
+        collapselevel = 2,
     ),
-    pages=pages,
+    pages = pages,
 )
 
-deploydocs(; repo="github.com/Deltares/Wflow.jl", push_preview=true)
+deploydocs(; repo = "github.com/Deltares/Wflow.jl", push_preview = true)

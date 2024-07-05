@@ -111,33 +111,46 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
     # Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]
     landtransportmethod = get(config.model, "landtransportmethod", "yalinpart")::String
 
-    altitude = ncread(nc, config, "vertical.altitude"; optional=false, sel=inds, type=Float)
+    altitude =
+        ncread(nc, config, "vertical.altitude"; optional = false, sel = inds, type = Float)
     canopyheight = ncread(
-        nc, config, "vertical.canopyheight"; sel=inds, defaults=3.0, type=Float
+        nc,
+        config,
+        "vertical.canopyheight";
+        sel = inds,
+        defaults = 3.0,
+        type = Float,
     )
-    erosk = ncread(nc, config, "vertical.erosk"; sel=inds, defaults=0.6, type=Float)
-    erosspl = ncread(nc, config, "vertical.erosspl"; sel=inds, defaults=2.0, type=Float)
-    erosov = ncread(nc, config, "vertical.erosov"; sel=inds, defaults=0.9, type=Float)
-    pathfrac = ncread(nc, config, "vertical.pathfrac"; sel=inds, defaults=0.01, type=Float)
-    slope = ncread(nc, config, "vertical.slope"; sel=inds, defaults=0.01, type=Float)
-    usleC = ncread(nc, config, "vertical.usleC"; sel=inds, defaults=0.01, type=Float)
-    usleK = ncread(nc, config, "vertical.usleK"; sel=inds, defaults=0.1, type=Float)
+    erosk = ncread(nc, config, "vertical.erosk"; sel = inds, defaults = 0.6, type = Float)
+    erosspl =
+        ncread(nc, config, "vertical.erosspl"; sel = inds, defaults = 2.0, type = Float)
+    erosov = ncread(nc, config, "vertical.erosov"; sel = inds, defaults = 0.9, type = Float)
+    pathfrac =
+        ncread(nc, config, "vertical.pathfrac"; sel = inds, defaults = 0.01, type = Float)
+    slope = ncread(nc, config, "vertical.slope"; sel = inds, defaults = 0.01, type = Float)
+    usleC = ncread(nc, config, "vertical.usleC"; sel = inds, defaults = 0.01, type = Float)
+    usleK = ncread(nc, config, "vertical.usleK"; sel = inds, defaults = 0.1, type = Float)
 
     cmax, _, canopygapfraction, sl, swood, kext = initialize_canopy(nc, config, inds)
 
     # Initialise parameters for the transport capacity part
     clamp!(slope, 0.00001, Inf)
-    ldd_2d = ncread(nc, config, "ldd"; optional=false, allow_missing=true)
+    ldd_2d = ncread(nc, config, "ldd"; optional = false, allow_missing = true)
     ldd = ldd_2d[inds]
 
-    dmclay = ncread(nc, config, "vertical.dmclay"; sel=inds, defaults=2.0, type=Float)
-    dmsilt = ncread(nc, config, "vertical.dmsilt"; sel=inds, defaults=10.0, type=Float)
-    dmsand = ncread(nc, config, "vertical.dmsand"; sel=inds, defaults=200.0, type=Float)
-    dmsagg = ncread(nc, config, "vertical.dmsagg"; sel=inds, defaults=30.0, type=Float)
-    dmlagg = ncread(nc, config, "vertical.dmlagg"; sel=inds, defaults=500.0, type=Float)
-    pclay = ncread(nc, config, "vertical.pclay"; sel=inds, defaults=0.1, type=Float)
-    psilt = ncread(nc, config, "vertical.psilt"; sel=inds, defaults=0.1, type=Float)
-    rhos = ncread(nc, config, "vertical.rhosed"; sel=inds, defaults=2650.0, type=Float)
+    dmclay = ncread(nc, config, "vertical.dmclay"; sel = inds, defaults = 2.0, type = Float)
+    dmsilt =
+        ncread(nc, config, "vertical.dmsilt"; sel = inds, defaults = 10.0, type = Float)
+    dmsand =
+        ncread(nc, config, "vertical.dmsand"; sel = inds, defaults = 200.0, type = Float)
+    dmsagg =
+        ncread(nc, config, "vertical.dmsagg"; sel = inds, defaults = 30.0, type = Float)
+    dmlagg =
+        ncread(nc, config, "vertical.dmlagg"; sel = inds, defaults = 500.0, type = Float)
+    pclay = ncread(nc, config, "vertical.pclay"; sel = inds, defaults = 0.1, type = Float)
+    psilt = ncread(nc, config, "vertical.psilt"; sel = inds, defaults = 0.1, type = Float)
+    rhos =
+        ncread(nc, config, "vertical.rhosed"; sel = inds, defaults = 2650.0, type = Float)
 
     ### Initialize transport capacity variables ###
     rivcell = float(river)
@@ -195,79 +208,91 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
     wbcover = zeros(Float, n)
     if do_reservoirs
         rescoverage_2d = ncread(
-            nc, config, "vertical.resareas"; optional=false, sel=inds, type=Float, fill=0.0
+            nc,
+            config,
+            "vertical.resareas";
+            optional = false,
+            sel = inds,
+            type = Float,
+            fill = 0.0,
         )
         wbcover = wbcover .+ rescoverage_2d
     end
     if do_lakes
         lakecoverage_2d = ncread(
-            nc, config, "vertical.lakeareas"; optional=false, sel=inds, type=Float, fill=0.0
+            nc,
+            config,
+            "vertical.lakeareas";
+            optional = false,
+            sel = inds,
+            type = Float,
+            fill = 0.0,
         )
         wbcover = wbcover .+ lakecoverage_2d
     end
 
     eros = LandSediment{Float}(;
-        n=n,
-        yl=yl,
-        xl=xl,
-        riverfrac=riverfrac,
-        wbcover=wbcover,
+        n = n,
+        yl = yl,
+        xl = xl,
+        riverfrac = riverfrac,
+        wbcover = wbcover,
         ### Soil erosion part ###
         # Forcing
-        interception=fill(mv, n),
-        h_land=fill(mv, n),
-        precipitation=fill(mv, n),
-        q_land=fill(mv, n),
+        interception = fill(mv, n),
+        h_land = fill(mv, n),
+        precipitation = fill(mv, n),
+        q_land = fill(mv, n),
         # Parameters
-        canopyheight=canopyheight,
-        canopygapfraction=canopygapfraction,
-        erosk=erosk,
-        erosspl=erosspl,
-        erosov=erosov,
-        pathfrac=pathfrac,
-        slope=slope,
-        usleC=usleC,
-        usleK=usleK,
+        canopyheight = canopyheight,
+        canopygapfraction = canopygapfraction,
+        erosk = erosk,
+        erosspl = erosspl,
+        erosov = erosov,
+        pathfrac = pathfrac,
+        slope = slope,
+        usleC = usleC,
+        usleK = usleK,
         # Interception related to climatology (leaf_area_index)
-        sl=sl,
-        swood=swood,
-        kext=kext,
-        leaf_area_index=fill(mv, n),
+        sl = sl,
+        swood = swood,
+        kext = kext,
+        leaf_area_index = fill(mv, n),
         # Outputs
-        sedspl=fill(mv, n),
-        sedov=fill(mv, n),
-        soilloss=fill(mv, n),
-        erosclay=fill(mv, n),
-        erossilt=fill(mv, n),
-        erossand=fill(mv, n),
-        erossagg=fill(mv, n),
-        eroslagg=fill(mv, n),
+        sedspl = fill(mv, n),
+        sedov = fill(mv, n),
+        soilloss = fill(mv, n),
+        erosclay = fill(mv, n),
+        erossilt = fill(mv, n),
+        erossand = fill(mv, n),
+        erossagg = fill(mv, n),
+        eroslagg = fill(mv, n),
         ### Transport capacity part ###
         # Parameters
-        dl=map(detdrainlength, ldd, xl, yl),
-        dw=map(detdrainwidth, ldd, xl, yl),
-        cGovers=cGovers,
-        D50=D50,
-        dmclay=dmclay,
-        dmsilt=dmsilt,
-        dmsand=dmsand,
-        dmsagg=dmsagg,
-        dmlagg=dmlagg,
-        fclay=fclay,
-        fsilt=fsilt,
-        fsand=fsand,
-        fsagg=fsagg,
-        flagg=flagg,
-        nGovers=nGovers,
-        rhos=rhos,
-        rivcell=rivcell,
+        dl = map(detdrainlength, ldd, xl, yl),
+        dw = map(detdrainwidth, ldd, xl, yl),
+        cGovers = cGovers,
+        D50 = D50,
+        dmclay = dmclay,
+        dmsilt = dmsilt,
+        dmsand = dmsand,
+        dmsagg = dmsagg,
+        dmlagg = dmlagg,
+        fclay = fclay,
+        fsilt = fsilt,
+        fsand = fsand,
+        fsagg = fsagg,
+        flagg = flagg,
+        nGovers = nGovers,
+        rhos = rhos,
+        rivcell = rivcell,
         # Outputs
-        TCsed=fill(mv, n),
-        TCclay=fill(mv, n),
-        TCsilt=fill(mv, n),
-        TCsand=fill(mv, n),
-        TCsagg=fill(mv, n),
-        TClagg=fill(mv, n),
+        TCsed = fill(mv, n),
+        TCclay = fill(mv, n),
+        TCsilt = fill(mv, n),
+        TCsand = fill(mv, n),
+        TCsagg = fill(mv, n),
+        TClagg = fill(mv, n),
     )
 
     return eros
@@ -770,38 +795,38 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
             nc,
             config,
             "lateral.river.reslocs";
-            optional=false,
-            sel=inds_riv,
-            type=Float,
-            fill=0,
+            optional = false,
+            sel = inds_riv,
+            type = Float,
+            fill = 0,
         )
         rescoverage_2d = ncread(
             nc,
             config,
             "lateral.river.resareas";
-            optional=false,
-            sel=inds_riv,
-            type=Float,
-            fill=0,
+            optional = false,
+            sel = inds_riv,
+            type = Float,
+            fill = 0,
         )
         resarea = ncread(
             nc,
             config,
             "lateral.river.resarea";
-            optional=false,
-            sel=inds_riv,
-            type=Float,
-            fill=0.0,
+            optional = false,
+            sel = inds_riv,
+            type = Float,
+            fill = 0.0,
         )
         restrapefficiency = ncread(
             nc,
             config,
             "lateral.river.restrapeff";
-            optional=false,
-            sel=inds_riv,
-            type=Float,
-            defaults=1.0,
-            fill=0.0,
+            optional = false,
+            sel = inds_riv,
+            type = Float,
+            defaults = 1.0,
+            fill = 0.0,
         )
 
         wbcover = wbcover .+ rescoverage_2d
@@ -815,28 +840,28 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
             nc,
             config,
             "lateral.river.lakelocs";
-            optional=false,
-            sel=inds_riv,
-            type=Float,
-            fill=0,
+            optional = false,
+            sel = inds_riv,
+            type = Float,
+            fill = 0,
         )
         lakecoverage_2d = ncread(
             nc,
             config,
             "lateral.river.lakeareas";
-            optional=false,
-            sel=inds_riv,
-            type=Float,
-            fill=0,
+            optional = false,
+            sel = inds_riv,
+            type = Float,
+            fill = 0,
         )
         lakearea = ncread(
             nc,
             config,
             "lateral.river.lakearea";
-            optional=false,
-            sel=inds_riv,
-            type=Float,
-            fill=0.0,
+            optional = false,
+            sel = inds_riv,
+            type = Float,
+            fill = 0.0,
         )
 
         wbcover = wbcover .+ lakecoverage_2d
@@ -845,53 +870,133 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     end
 
     riverslope = ncread(
-        nc, config, "lateral.river.slope"; optional=false, sel=inds_riv, type=Float
+        nc,
+        config,
+        "lateral.river.slope";
+        optional = false,
+        sel = inds_riv,
+        type = Float,
     )
     clamp!(riverslope, 0.00001, Inf)
     rhos = ncread(
-        nc, config, "lateral.river.rhosed"; sel=inds_riv, defaults=2650.0, type=Float
+        nc,
+        config,
+        "lateral.river.rhosed";
+        sel = inds_riv,
+        defaults = 2650.0,
+        type = Float,
     )
     dmclay = ncread(
-        nc, config, "lateral.river.dmclay"; sel=inds_riv, defaults=2.0, type=Float
+        nc,
+        config,
+        "lateral.river.dmclay";
+        sel = inds_riv,
+        defaults = 2.0,
+        type = Float,
     )
     dmsilt = ncread(
-        nc, config, "lateral.river.dmsilt"; sel=inds_riv, defaults=10.0, type=Float
+        nc,
+        config,
+        "lateral.river.dmsilt";
+        sel = inds_riv,
+        defaults = 10.0,
+        type = Float,
     )
     dmsand = ncread(
-        nc, config, "lateral.river.dmsand"; sel=inds_riv, defaults=200.0, type=Float
+        nc,
+        config,
+        "lateral.river.dmsand";
+        sel = inds_riv,
+        defaults = 200.0,
+        type = Float,
     )
     dmsagg = ncread(
-        nc, config, "lateral.river.dmsagg"; sel=inds_riv, defaults=30.0, type=Float
+        nc,
+        config,
+        "lateral.river.dmsagg";
+        sel = inds_riv,
+        defaults = 30.0,
+        type = Float,
     )
     dmlagg = ncread(
-        nc, config, "lateral.river.dmlagg"; sel=inds_riv, defaults=500.0, type=Float
+        nc,
+        config,
+        "lateral.river.dmlagg";
+        sel = inds_riv,
+        defaults = 500.0,
+        type = Float,
     )
     dmgrav = ncread(
-        nc, config, "lateral.river.dmgrav"; sel=inds_riv, defaults=2000.0, type=Float
+        nc,
+        config,
+        "lateral.river.dmgrav";
+        sel = inds_riv,
+        defaults = 2000.0,
+        type = Float,
     )
     fclayriv = ncread(
-        nc, config, "lateral.river.fclayriv"; optional=false, sel=inds_riv, type=Float
+        nc,
+        config,
+        "lateral.river.fclayriv";
+        optional = false,
+        sel = inds_riv,
+        type = Float,
     )
     fsiltriv = ncread(
-        nc, config, "lateral.river.fsiltriv"; optional=false, sel=inds_riv, type=Float
+        nc,
+        config,
+        "lateral.river.fsiltriv";
+        optional = false,
+        sel = inds_riv,
+        type = Float,
     )
     fsandriv = ncread(
-        nc, config, "lateral.river.fsandriv"; optional=false, sel=inds_riv, type=Float
+        nc,
+        config,
+        "lateral.river.fsandriv";
+        optional = false,
+        sel = inds_riv,
+        type = Float,
     )
     fgravriv = ncread(
-        nc, config, "lateral.river.fgravriv"; optional=false, sel=inds_riv, type=Float
+        nc,
+        config,
+        "lateral.river.fgravriv";
+        optional = false,
+        sel = inds_riv,
+        type = Float,
     )
     d50riv = ncread(
-        nc, config, "lateral.river.d50"; optional=false, sel=inds_riv, type=Float
+        nc,
+        config,
+        "lateral.river.d50";
+        optional = false,
+        sel = inds_riv,
+        type = Float,
     )
     d50engelund = ncread(
-        nc, config, "lateral.river.d50engelund"; optional=false, sel=inds_riv, type=Float
+        nc,
+        config,
+        "lateral.river.d50engelund";
+        optional = false,
+        sel = inds_riv,
+        type = Float,
     )
     cbagnold = ncread(
-        nc, config, "lateral.river.cbagnold"; optional=false, sel=inds_riv, type=Float
+        nc,
+        config,
+        "lateral.river.cbagnold";
+        optional = false,
+        sel = inds_riv,
+        type = Float,
     )
     ebagnold = ncread(
-        nc, config, "lateral.river.ebagnold"; optional=false, sel=inds_riv, type=Float
+        nc,
+        config,
+        "lateral.river.ebagnold";
+        optional = false,
+        sel = inds_riv,
+        type = Float,
     )
 
     # Initialisation of parameters for Kodatie transport capacity
@@ -939,82 +1044,82 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     kdbed = @. Float(0.2 * TCrbed^(-0.5) * 1e-6)
 
     rs = RiverSediment(;
-        n=nriv,
-        dt=Float(dt.value),
+        n = nriv,
+        dt = Float(dt.value),
         # Parameters
-        sl=riverslope,
-        dl=riverlength,
-        width=riverwidth,
-        dmclay=dmclay,
-        dmsilt=dmsilt,
-        dmsand=dmsand,
-        dmsagg=dmsagg,
-        dmlagg=dmlagg,
-        dmgrav=dmgrav,
-        fclayriv=fclayriv,
-        fsiltriv=fsiltriv,
-        fsandriv=fsandriv,
-        fgravriv=fgravriv,
-        d50=d50riv,
-        d50engelund=d50engelund,
-        cbagnold=cbagnold,
-        ebagnold=ebagnold,
-        ak=ak,
-        bk=bk,
-        ck=ck,
-        dk=dk,
-        kdbank=kdbank,
-        kdbed=kdbed,
-        TCrbank=TCrbank,
-        TCrbed=TCrbed,
-        rhos=rhos,
+        sl = riverslope,
+        dl = riverlength,
+        width = riverwidth,
+        dmclay = dmclay,
+        dmsilt = dmsilt,
+        dmsand = dmsand,
+        dmsagg = dmsagg,
+        dmlagg = dmlagg,
+        dmgrav = dmgrav,
+        fclayriv = fclayriv,
+        fsiltriv = fsiltriv,
+        fsandriv = fsandriv,
+        fgravriv = fgravriv,
+        d50 = d50riv,
+        d50engelund = d50engelund,
+        cbagnold = cbagnold,
+        ebagnold = ebagnold,
+        ak = ak,
+        bk = bk,
+        ck = ck,
+        dk = dk,
+        kdbank = kdbank,
+        kdbed = kdbed,
+        TCrbank = TCrbank,
+        TCrbed = TCrbed,
+        rhos = rhos,
         # Forcing
-        h_riv=fill(mv, nriv),
-        q_riv=fill(mv, nriv),
+        h_riv = fill(mv, nriv),
+        q_riv = fill(mv, nriv),
         # Input from land
-        inlandclay=zeros(Float, nriv),
-        inlandsilt=zeros(Float, nriv),
-        inlandsand=zeros(Float, nriv),
-        inlandsagg=zeros(Float, nriv),
-        inlandlagg=zeros(Float, nriv),
-        inlandsed=zeros(Float, nriv),
+        inlandclay = zeros(Float, nriv),
+        inlandsilt = zeros(Float, nriv),
+        inlandsand = zeros(Float, nriv),
+        inlandsagg = zeros(Float, nriv),
+        inlandlagg = zeros(Float, nriv),
+        inlandsed = zeros(Float, nriv),
         # States
-        sedload=zeros(Float, nriv),
-        clayload=zeros(Float, nriv),
-        siltload=zeros(Float, nriv),
-        sandload=zeros(Float, nriv),
-        saggload=zeros(Float, nriv),
-        laggload=zeros(Float, nriv),
-        gravload=zeros(Float, nriv),
-        sedstore=zeros(Float, nriv),
-        claystore=zeros(Float, nriv),
-        siltstore=zeros(Float, nriv),
-        sandstore=zeros(Float, nriv),
-        saggstore=zeros(Float, nriv),
-        laggstore=zeros(Float, nriv),
-        gravstore=zeros(Float, nriv),
-        outsed=zeros(Float, nriv),
-        outclay=zeros(Float, nriv),
-        outsilt=zeros(Float, nriv),
-        outsand=zeros(Float, nriv),
-        outsagg=zeros(Float, nriv),
-        outlagg=zeros(Float, nriv),
-        outgrav=zeros(Float, nriv),
+        sedload = zeros(Float, nriv),
+        clayload = zeros(Float, nriv),
+        siltload = zeros(Float, nriv),
+        sandload = zeros(Float, nriv),
+        saggload = zeros(Float, nriv),
+        laggload = zeros(Float, nriv),
+        gravload = zeros(Float, nriv),
+        sedstore = zeros(Float, nriv),
+        claystore = zeros(Float, nriv),
+        siltstore = zeros(Float, nriv),
+        sandstore = zeros(Float, nriv),
+        saggstore = zeros(Float, nriv),
+        laggstore = zeros(Float, nriv),
+        gravstore = zeros(Float, nriv),
+        outsed = zeros(Float, nriv),
+        outclay = zeros(Float, nriv),
+        outsilt = zeros(Float, nriv),
+        outsand = zeros(Float, nriv),
+        outsagg = zeros(Float, nriv),
+        outlagg = zeros(Float, nriv),
+        outgrav = zeros(Float, nriv),
         # Outputs
-        Sedconc=zeros(Float, nriv),
-        SSconc=zeros(Float, nriv),
-        Bedconc=zeros(Float, nriv),
-        maxsed=zeros(Float, nriv),
-        erodsed=zeros(Float, nriv),
-        erodsedbank=zeros(Float, nriv),
-        erodsedbed=zeros(Float, nriv),
-        depsed=zeros(Float, nriv),
-        insed=zeros(Float, nriv),
+        Sedconc = zeros(Float, nriv),
+        SSconc = zeros(Float, nriv),
+        Bedconc = zeros(Float, nriv),
+        maxsed = zeros(Float, nriv),
+        erodsed = zeros(Float, nriv),
+        erodsedbank = zeros(Float, nriv),
+        erodsedbed = zeros(Float, nriv),
+        depsed = zeros(Float, nriv),
+        insed = zeros(Float, nriv),
         # Reservoir / lake
-        wbcover=wbcover,
-        wblocs=wblocs,
-        wbarea=wbarea,
-        wbtrap=wbtrap,
+        wbcover = wbcover,
+        wblocs = wblocs,
+        wbarea = wbarea,
+        wbtrap = wbtrap,
     )
 
     return rs
@@ -1074,9 +1179,8 @@ function update(rs::RiverSediment, network, config)
 
         # Engelund and Hansen transport formula
         if tcmethod == "engelund"
-            vmean = ifelse(
-                rs.h_riv[v] > 0.0, rs.q_riv[v] / (rs.width[v] * rs.h_riv[v]), 0.0
-            )
+            vmean =
+                ifelse(rs.h_riv[v] > 0.0, rs.q_riv[v] / (rs.width[v] * rs.h_riv[v]), 0.0)
             vshear = (9.81 * hydrad * rs.sl[v])^0.5
             # Concentration by weight
             cw = ifelse(
@@ -1094,14 +1198,12 @@ function update(rs::RiverSediment, network, config)
             maxsed =
                 rs.cbagnold[v] * (rs.q_riv[v] / (rs.h_riv[v] * rs.width[v]))^rs.ebagnold[v]
         elseif tcmethod == "kodatie"
-            vmean = ifelse(
-                rs.h_riv[v] > 0.0, rs.q_riv[v] / (rs.width[v] * rs.h_riv[v]), 0.0
-            )
+            vmean =
+                ifelse(rs.h_riv[v] > 0.0, rs.q_riv[v] / (rs.width[v] * rs.h_riv[v]), 0.0)
             maxsed = rs.ak[v] * vmean^rs.bk[v] * rs.h_riv[v]^rs.ck[v] * rs.sl[v]^rs.dk[v]
             # Transport capacity [tons/m3]
-            maxsed = ifelse(
-                rs.q_riv[v] > 0.0, maxsed * rs.width[v] / (rs.q_riv[v] * rs.dt), 0.0
-            )
+            maxsed =
+                ifelse(rs.q_riv[v] > 0.0, maxsed * rs.width[v] / (rs.q_riv[v] * rs.dt), 0.0)
         elseif tcmethod == "yang"
             ws = 411 * rs.d50[v]^2 / 3600
             vshear = (9.81 * hydrad * rs.sl[v])^0.5
@@ -1138,9 +1240,8 @@ function update(rs::RiverSediment, network, config)
             maxsed = max(cw / (cw + (1 - cw) * rs.rhos[v] / 1000) * rs.rhos[v] / 1000, 0.0)
         elseif tcmethod == "molinas"
             ws = 411 * rs.d50[v]^2 / 3600
-            vmean = ifelse(
-                rs.h_riv[v] > 0.0, rs.q_riv[v] / (rs.width[v] * rs.h_riv[v]), 0.0
-            )
+            vmean =
+                ifelse(rs.h_riv[v] > 0.0, rs.q_riv[v] / (rs.width[v] * rs.h_riv[v]), 0.0)
             if rs.h_riv[v] > 0.0
                 psi = (
                     vmean^3 / (

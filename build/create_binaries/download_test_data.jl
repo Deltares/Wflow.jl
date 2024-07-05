@@ -19,32 +19,30 @@ function testdata(version, source_filename, target_filename)
 end
 
 staticmaps_rhine_path = testdata(v"0.1", "staticmaps.nc", "staticmaps-rhine.nc")
-staticmaps_moselle_path = testdata(
-    v"0.2.9", "staticmaps-moselle.nc", "staticmaps-moselle.nc"
-)
+staticmaps_moselle_path =
+    testdata(v"0.2.9", "staticmaps-moselle.nc", "staticmaps-moselle.nc")
 forcing_moselle_path = testdata(v"0.2.6", "forcing-moselle.nc", "forcing-moselle.nc")
-forcing_moselle_sed_path = testdata(
-    v"0.2.3", "forcing-moselle-sed.nc", "forcing-moselle-sed.nc"
-)
-staticmaps_moselle_sed_path = testdata(
-    v"0.2.3", "staticmaps-moselle-sed.nc", "staticmaps-moselle-sed.nc"
-)
-instates_moselle_sed_path = testdata(
-    v"0.2", "instates-moselle-sed.nc", "instates-moselle-sed.nc"
-)
+forcing_moselle_sed_path =
+    testdata(v"0.2.3", "forcing-moselle-sed.nc", "forcing-moselle-sed.nc")
+staticmaps_moselle_sed_path =
+    testdata(v"0.2.3", "staticmaps-moselle-sed.nc", "staticmaps-moselle-sed.nc")
+instates_moselle_sed_path =
+    testdata(v"0.2", "instates-moselle-sed.nc", "instates-moselle-sed.nc")
 instates_moselle_path = testdata(v"0.2.6", "instates-moselle.nc", "instates-moselle.nc")
 forcing_sbm_gw_path = testdata(
-    v"0.2.1", "forcing-sbm-groundwater-part1.nc", "forcing-sbm-groundwater-part1.nc"
+    v"0.2.1",
+    "forcing-sbm-groundwater-part1.nc",
+    "forcing-sbm-groundwater-part1.nc",
 )
 forcing_sbm_gw_path = testdata(
-    v"0.2.1", "forcing-sbm-groundwater-part2.nc", "forcing-sbm-groundwater-part2.nc"
+    v"0.2.1",
+    "forcing-sbm-groundwater-part2.nc",
+    "forcing-sbm-groundwater-part2.nc",
 )
-staticmaps_sbm_gw_path = testdata(
-    v"0.2.3", "staticmaps-sbm-groundwater.nc", "staticmaps-sbm-groundwater.nc"
-)
-instates_sbm_gw_path = testdata(
-    v"0.2.3", "instates-example-sbm-gwf.nc", "instates-example-sbm-gwf.nc"
-)
+staticmaps_sbm_gw_path =
+    testdata(v"0.2.3", "staticmaps-sbm-groundwater.nc", "staticmaps-sbm-groundwater.nc")
+instates_sbm_gw_path =
+    testdata(v"0.2.3", "instates-example-sbm-gwf.nc", "instates-example-sbm-gwf.nc")
 lake_sh_1_path = testdata(v"0.2.1", "lake_sh_1.csv", "lake_sh_1.csv")
 lake_sh_2_path = testdata(v"0.2.1", "lake_sh_2.csv", "lake_sh_2.csv")
 lake_hq_2_path = testdata(v"0.2.1", "lake_hq_2.csv", "lake_hq_2.csv")

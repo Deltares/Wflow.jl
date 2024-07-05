@@ -183,7 +183,8 @@ function kinwave_set_subdomains(graph, toposort, index_pit, streamorder, min_sto
                 graph_subbas = graph_from_nodes(g, subbas, subbas_fill)
                 toposort_subbas = topological_sort_by_dfs(graph_subbas)
                 dist = Graphs.Experimental.Traversals.distances(
-                    Graph(graph_subbas), toposort_subbas[end]
+                    Graph(graph_subbas),
+                    toposort_subbas[end],
                 )
                 max_dist = maximum([dist; 1])
                 v_subbas = subbasins_order(graph_subbas, toposort_subbas[end], max_dist)

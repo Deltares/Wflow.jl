@@ -20,21 +20,20 @@ function initialize_sediment_model(config::Config)
     nc = NCDataset(static_path)
     dims = dimnames(nc[param(config, "input.subcatchment")])
 
-    subcatch_2d = ncread(nc, config, "subcatchment"; optional=false, allow_missing=true)
+    subcatch_2d = ncread(nc, config, "subcatchment"; optional = false, allow_missing = true)
     # indices based on catchment
     inds, rev_inds = active_indices(subcatch_2d, missing)
     n = length(inds)
     modelsize_2d = size(subcatch_2d)
 
-    river_2d = ncread(nc, config, "river_location"; optional=false, type=Bool, fill=false)
+    river_2d =
+        ncread(nc, config, "river_location"; optional = false, type = Bool, fill = false)
     river = river_2d[inds]
-    riverwidth_2d = ncread(
-        nc, config, "lateral.river.width"; optional=false, type=Float, fill=0
-    )
+    riverwidth_2d =
+        ncread(nc, config, "lateral.river.width"; optional = false, type = Float, fill = 0)
     riverwidth = riverwidth_2d[inds]
-    riverlength_2d = ncread(
-        nc, config, "lateral.river.length"; optional=false, type=Float, fill=0
-    )
+    riverlength_2d =
+        ncread(nc, config, "lateral.river.length"; optional = false, type = Float, fill = 0)
     riverlength = riverlength_2d[inds]
 
     inds_riv, rev_inds_riv = active_indices(river_2d, 0)
@@ -47,7 +46,7 @@ function initialize_sediment_model(config::Config)
     # read x, y coordinates and calculate cell length [m]
     y_nc = read_y_axis(nc)
     x_nc = read_x_axis(nc)
-    y = permutedims(repeat(y_nc; outer=(1, length(x_nc))))[inds]
+    y = permutedims(repeat(y_nc; outer = (1, length(x_nc))))[inds]
     cellength = abs(mean(diff(x_nc)))
 
     sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
@@ -56,38 +55,38 @@ function initialize_sediment_model(config::Config)
 
     eros = initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
 
-    ldd_2d = ncread(nc, config, "ldd"; optional=false, allow_missing=true)
+    ldd_2d = ncread(nc, config, "ldd"; optional = false, allow_missing = true)
     ldd = ldd_2d[inds]
 
     # # lateral part sediment in overland flow
     rivcell = float(river)
     ols = OverlandFlowSediment{Float}(;
-        n=n,
-        rivcell=rivcell,
-        soilloss=fill(mv, n),
-        erosclay=fill(mv, n),
-        erossilt=fill(mv, n),
-        erossand=fill(mv, n),
-        erossagg=fill(mv, n),
-        eroslagg=fill(mv, n),
-        TCsed=fill(mv, n),
-        TCclay=fill(mv, n),
-        TCsilt=fill(mv, n),
-        TCsand=fill(mv, n),
-        TCsagg=fill(mv, n),
-        TClagg=fill(mv, n),
-        olsed=fill(mv, n),
-        olclay=fill(mv, n),
-        olsilt=fill(mv, n),
-        olsand=fill(mv, n),
-        olsagg=fill(mv, n),
-        ollagg=fill(mv, n),
-        inlandsed=fill(mv, n),
-        inlandclay=fill(mv, n),
-        inlandsilt=fill(mv, n),
-        inlandsand=fill(mv, n),
-        inlandsagg=fill(mv, n),
-        inlandlagg=fill(mv, n),
+        n = n,
+        rivcell = rivcell,
+        soilloss = fill(mv, n),
+        erosclay = fill(mv, n),
+        erossilt = fill(mv, n),
+        erossand = fill(mv, n),
+        erossagg = fill(mv, n),
+        eroslagg = fill(mv, n),
+        TCsed = fill(mv, n),
+        TCclay = fill(mv, n),
+        TCsilt = fill(mv, n),
+        TCsand = fill(mv, n),
+        TCsagg = fill(mv, n),
+        TClagg = fill(mv, n),
+        olsed = fill(mv, n),
+        olclay = fill(mv, n),
+        olsilt = fill(mv, n),
+        olsand = fill(mv, n),
+        olsagg = fill(mv, n),
+        ollagg = fill(mv, n),
+        inlandsed = fill(mv, n),
+        inlandclay = fill(mv, n),
+        inlandsilt = fill(mv, n),
+        inlandsand = fill(mv, n),
+        inlandsagg = fill(mv, n),
+        inlandlagg = fill(mv, n),
     )
 
     graph = flowgraph(ldd, inds, pcr_dir)
@@ -95,9 +94,8 @@ function initialize_sediment_model(config::Config)
     # River processes
 
     # the indices of the river cells in the land(+river) cell vector
-    landslope = ncread(
-        nc, config, "lateral.land.slope"; optional=false, sel=inds, type=Float
-    )
+    landslope =
+        ncread(nc, config, "lateral.land.slope"; optional = false, sel = inds, type = Float)
     clamp!(landslope, 0.00001, Inf)
 
     riverlength = riverlength_2d[inds_riv]
@@ -113,12 +111,12 @@ function initialize_sediment_model(config::Config)
 
     rs = initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
 
-    modelmap = (vertical=eros, lateral=(land=ols, river=rs))
+    modelmap = (vertical = eros, lateral = (land = ols, river = rs))
     indices_reverse = (
-        land=rev_inds,
-        river=rev_inds_riv,
-        reservoir=isempty(reservoir) ? nothing : reservoir.reverse_indices,
-        lake=isempty(lake) ? nothing : lake.reverse_indices,
+        land = rev_inds,
+        river = rev_inds_riv,
+        reservoir = isempty(reservoir) ? nothing : reservoir.reverse_indices,
+        lake = isempty(lake) ? nothing : lake.reverse_indices,
     )
     writer = prepare_writer(config, modelmap, indices_reverse, x_nc, y_nc, nc)
     close(nc)
@@ -126,22 +124,22 @@ function initialize_sediment_model(config::Config)
     # for each domain save the directed acyclic graph, the traversion order,
     # and the indices that map it back to the two dimensional grid
     land = (
-        graph=graph,
-        order=topological_sort_by_dfs(graph),
-        indices=inds,
-        reverse_indices=rev_inds,
+        graph = graph,
+        order = topological_sort_by_dfs(graph),
+        indices = inds,
+        reverse_indices = rev_inds,
     )
     river = (
-        graph=graph_riv,
-        order=topological_sort_by_dfs(graph_riv),
-        indices=inds_riv,
-        reverse_indices=rev_inds_riv,
+        graph = graph_riv,
+        order = topological_sort_by_dfs(graph_riv),
+        indices = inds_riv,
+        reverse_indices = rev_inds_riv,
     )
 
     model = Model(
         config,
         (; land, river, reservoir, lake, index_river, frac_toriver),
-        (land=ols, river=rs),
+        (land = ols, river = rs),
         eros,
         clock,
         reader,
@@ -155,7 +153,7 @@ function initialize_sediment_model(config::Config)
     return model
 end
 
-function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SedimentModel}
+function update(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SedimentModel}
     @unpack lateral, vertical, network, clock, config = model
 
     update_until_ols(vertical, config)
@@ -193,14 +191,16 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SedimentModel}
     return model
 end
 
-function set_states(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SedimentModel}
+function set_states(
+    model::Model{N, L, V, R, W, T},
+) where {N, L, V, R, W, T <: SedimentModel}
     # read and set states in model object if reinit=false
     @unpack config = model
     reinit = get(config.model, "reinit", true)::Bool
     if reinit == false
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
-        set_states(instate_path, model; type=Float)
+        set_states(instate_path, model; type = Float)
     else
         @info "Set initial conditions from default values."
     end

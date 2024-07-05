@@ -30,15 +30,19 @@ function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, dt)
         nc,
         config,
         "lateral.river.reservoir.locs";
-        optional=false,
-        sel=inds_riv,
-        type=Int,
-        fill=0,
+        optional = false,
+        sel = inds_riv,
+        type = Int,
+        fill = 0,
     )
 
     # this holds the same ids as reslocs, but covers the entire reservoir
     rescoverage_2d = ncread(
-        nc, config, "lateral.river.reservoir.areas"; optional=false, allow_missing=true
+        nc,
+        config,
+        "lateral.river.reservoir.areas";
+        optional = false,
+        allow_missing = true,
     )
     # for each reservoir, a list of 2D indices, needed for getting the mean precipitation
     inds_res_cov = Vector{CartesianIndex{2}}[]
@@ -70,55 +74,55 @@ function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, dt)
         nc,
         config,
         "lateral.river.reservoir.demand";
-        optional=false,
-        sel=inds_res,
-        type=Float,
-        fill=0,
+        optional = false,
+        sel = inds_res,
+        type = Float,
+        fill = 0,
     )
     resmaxrelease = ncread(
         nc,
         config,
         "lateral.river.reservoir.maxrelease";
-        optional=false,
-        sel=inds_res,
-        type=Float,
-        fill=0,
+        optional = false,
+        sel = inds_res,
+        type = Float,
+        fill = 0,
     )
     resmaxvolume = ncread(
         nc,
         config,
         "lateral.river.reservoir.maxvolume";
-        optional=false,
-        sel=inds_res,
-        type=Float,
-        fill=0,
+        optional = false,
+        sel = inds_res,
+        type = Float,
+        fill = 0,
     )
     resarea = ncread(
         nc,
         config,
         "lateral.river.reservoir.area";
-        optional=false,
-        sel=inds_res,
-        type=Float,
-        fill=0,
+        optional = false,
+        sel = inds_res,
+        type = Float,
+        fill = 0,
     )
     res_targetfullfrac = ncread(
         nc,
         config,
         "lateral.river.reservoir.targetfullfrac";
-        optional=false,
-        sel=inds_res,
-        type=Float,
-        fill=0,
+        optional = false,
+        sel = inds_res,
+        type = Float,
+        fill = 0,
     )
     res_targetminfrac = ncread(
         nc,
         config,
         "lateral.river.reservoir.targetminfrac";
-        optional=false,
-        sel=inds_res,
-        type=Float,
-        fill=0,
+        optional = false,
+        sel = inds_res,
+        type = Float,
+        fill = 0,
     )
 
     # for surface water routing reservoir locations are considered pits in the flow network
@@ -128,30 +132,30 @@ function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, dt)
     n = length(resarea)
     @info "Read `$n` reservoir locations."
     reservoirs = SimpleReservoir{Float}(;
-        dt=dt,
-        demand=resdemand,
-        maxrelease=resmaxrelease,
-        maxvolume=resmaxvolume,
-        area=resarea,
-        targetfullfrac=res_targetfullfrac,
-        targetminfrac=res_targetminfrac,
-        volume=res_targetfullfrac .* resmaxvolume,
-        inflow=fill(mv, n),
-        outflow=fill(mv, n),
-        totaloutflow=fill(mv, n),
-        percfull=fill(mv, n),
-        demandrelease=fill(mv, n),
-        precipitation=fill(mv, n),
-        evaporation=fill(mv, n),
-        actevap=fill(mv, n),
+        dt = dt,
+        demand = resdemand,
+        maxrelease = resmaxrelease,
+        maxvolume = resmaxvolume,
+        area = resarea,
+        targetfullfrac = res_targetfullfrac,
+        targetminfrac = res_targetminfrac,
+        volume = res_targetfullfrac .* resmaxvolume,
+        inflow = fill(mv, n),
+        outflow = fill(mv, n),
+        totaloutflow = fill(mv, n),
+        percfull = fill(mv, n),
+        demandrelease = fill(mv, n),
+        precipitation = fill(mv, n),
+        evaporation = fill(mv, n),
+        actevap = fill(mv, n),
     )
 
     return reservoirs,
     resindex,
     (
-        indices_outlet=inds_res,
-        indices_coverage=inds_res_cov,
-        reverse_indices=rev_inds_reservoir,
+        indices_outlet = inds_res,
+        indices_coverage = inds_res_cov,
+        reverse_indices = rev_inds_reservoir,
     ),
     pits
 end
@@ -203,14 +207,14 @@ end
     dt::T | "s"                                 # Model time step [s]
     lowerlake_ind::Vector{Int} | "-"            # Index of lower lake (linked lakes)
     area::Vector{T} | "m2"                      # lake area [m²]
-    maxstorage::Vector{Union{T,Missing}} | "m3" # lake maximum storage from rating curve 1 [m³]
+    maxstorage::Vector{Union{T, Missing}} | "m3" # lake maximum storage from rating curve 1 [m³]
     threshold::Vector{T} | "m"                  # water level threshold H₀ [m] below that level outflow is zero
     storfunc::Vector{Int} | "-"                 # type of lake storage curve, 1: S = AH, 2: S = f(H) from lake data and interpolation
     outflowfunc::Vector{Int} | "-"              # type of lake rating curve, 1: Q = f(H) from lake data and interpolation, 2: General Q = b(H - H₀)ᵉ, 3: Case of Puls Approach Q = b(H - H₀)²
     b::Vector{T} | "m3/2 s-1 (if e=3/2)"        # rating curve coefficient
     e::Vector{T} | "-"                          # rating curve exponent
-    sh::Vector{Union{SH,Missing}}               # data for storage curve
-    hq::Vector{Union{HQ,Missing}}               # data for rating curve
+    sh::Vector{Union{SH, Missing}}               # data for storage curve
+    hq::Vector{Union{HQ, Missing}}               # data for rating curve
     waterlevel::Vector{T} | "m"                 # waterlevel H [m] of lake
     inflow::Vector{T} | "m3"                    # inflow to the lake [m³]
     storage::Vector{T} | "m3"                   # storage lake [m³]
@@ -231,13 +235,22 @@ function initialize_lake(config, nc, inds_riv, nriv, pits, dt)
     # allow lakes only in river cells
     # note that these locations are only the lake outlet pixels
     lakelocs_2d = ncread(
-        nc, config, "lateral.river.lake.locs"; optional=false, type=Int, fill=0
+        nc,
+        config,
+        "lateral.river.lake.locs";
+        optional = false,
+        type = Int,
+        fill = 0,
     )
     lakelocs = lakelocs_2d[inds_riv]
 
     # this holds the same ids as lakelocs, but covers the entire lake
     lakecoverage_2d = ncread(
-        nc, config, "lateral.river.lake.areas"; optional=false, allow_missing=true
+        nc,
+        config,
+        "lateral.river.lake.areas";
+        optional = false,
+        allow_missing = true,
     )
     # for each lake, a list of 2D indices, needed for getting the mean precipitation
     inds_lake_cov = Vector{CartesianIndex{2}}[]
@@ -269,73 +282,73 @@ function initialize_lake(config, nc, inds_riv, nriv, pits, dt)
         nc,
         config,
         "lateral.river.lake.area";
-        optional=false,
-        sel=inds_lake,
-        type=Float,
-        fill=0,
+        optional = false,
+        sel = inds_lake,
+        type = Float,
+        fill = 0,
     )
     lake_b = ncread(
         nc,
         config,
         "lateral.river.lake.b";
-        optional=false,
-        sel=inds_lake,
-        type=Float,
-        fill=0,
+        optional = false,
+        sel = inds_lake,
+        type = Float,
+        fill = 0,
     )
     lake_e = ncread(
         nc,
         config,
         "lateral.river.lake.e";
-        optional=false,
-        sel=inds_lake,
-        type=Float,
-        fill=0,
+        optional = false,
+        sel = inds_lake,
+        type = Float,
+        fill = 0,
     )
     lake_threshold = ncread(
         nc,
         config,
         "lateral.river.lake.threshold";
-        optional=false,
-        sel=inds_lake,
-        type=Float,
-        fill=0,
+        optional = false,
+        sel = inds_lake,
+        type = Float,
+        fill = 0,
     )
     linked_lakelocs = ncread(
         nc,
         config,
         "lateral.river.lake.linkedlakelocs";
-        sel=inds_lake,
-        defaults=0,
-        type=Int,
-        fill=0,
+        sel = inds_lake,
+        defaults = 0,
+        type = Int,
+        fill = 0,
     )
     lake_storfunc = ncread(
         nc,
         config,
         "lateral.river.lake.storfunc";
-        optional=false,
-        sel=inds_lake,
-        type=Int,
-        fill=0,
+        optional = false,
+        sel = inds_lake,
+        type = Int,
+        fill = 0,
     )
     lake_outflowfunc = ncread(
         nc,
         config,
         "lateral.river.lake.outflowfunc";
-        optional=false,
-        sel=inds_lake,
-        type=Int,
-        fill=0,
+        optional = false,
+        sel = inds_lake,
+        type = Int,
+        fill = 0,
     )
     lake_waterlevel = ncread(
         nc,
         config,
         "lateral.river.lake.waterlevel";
-        optional=false,
-        sel=inds_lake,
-        type=Float,
-        fill=0,
+        optional = false,
+        sel = inds_lake,
+        type = Float,
+        fill = 0,
     )
 
     # for surface water routing lake locations are considered pits in the flow network
@@ -349,8 +362,8 @@ function initialize_lake(config, nc, inds_riv, nriv, pits, dt)
 
     @info "Read `$n_lakes` lake locations."
 
-    sh = Vector{Union{SH,Missing}}(missing, n_lakes)
-    hq = Vector{Union{HQ,Missing}}(missing, n_lakes)
+    sh = Vector{Union{SH, Missing}}(missing, n_lakes)
+    hq = Vector{Union{HQ, Missing}}(missing, n_lakes)
     lowerlake_ind = fill(0, n_lakes)
     # lake CSV parameter files are expected in the same directory as path_static
     path = dirname(input_path(config, config.input.path_static))
@@ -385,33 +398,33 @@ function initialize_lake(config, nc, inds_riv, nriv, pits, dt)
     end
     n = length(lakearea)
     lakes = Lake{Float}(;
-        dt=dt,
-        lowerlake_ind=lowerlake_ind,
-        area=lakearea,
-        maxstorage=maximum_storage(lake_storfunc, lake_outflowfunc, lakearea, sh, hq),
-        threshold=lake_threshold,
-        storfunc=lake_storfunc,
-        outflowfunc=lake_outflowfunc,
-        b=lake_b,
-        e=lake_e,
-        waterlevel=lake_waterlevel,
-        sh=sh,
-        hq=hq,
-        inflow=fill(mv, n),
-        storage=initialize_storage(lake_storfunc, lakearea, lake_waterlevel, sh),
-        outflow=fill(mv, n),
-        totaloutflow=fill(mv, n),
-        precipitation=fill(mv, n),
-        evaporation=fill(mv, n),
-        actevap=fill(mv, n),
+        dt = dt,
+        lowerlake_ind = lowerlake_ind,
+        area = lakearea,
+        maxstorage = maximum_storage(lake_storfunc, lake_outflowfunc, lakearea, sh, hq),
+        threshold = lake_threshold,
+        storfunc = lake_storfunc,
+        outflowfunc = lake_outflowfunc,
+        b = lake_b,
+        e = lake_e,
+        waterlevel = lake_waterlevel,
+        sh = sh,
+        hq = hq,
+        inflow = fill(mv, n),
+        storage = initialize_storage(lake_storfunc, lakearea, lake_waterlevel, sh),
+        outflow = fill(mv, n),
+        totaloutflow = fill(mv, n),
+        precipitation = fill(mv, n),
+        evaporation = fill(mv, n),
+        actevap = fill(mv, n),
     )
 
     return lakes,
     lakeindex,
     (
-        indices_outlet=inds_lake,
-        indices_coverage=inds_lake_cov,
-        reverse_indices=rev_inds_lake,
+        indices_outlet = inds_lake,
+        indices_coverage = inds_lake_cov,
+        reverse_indices = rev_inds_lake,
     ),
     pits
 end
@@ -431,7 +444,7 @@ end
 
 "Determine the maximum storage for lakes with a rating curve of type 1"
 function maximum_storage(storfunc, outflowfunc, area, sh, hq)
-    maxstorage = Vector{Union{Float,Missing}}(missing, length(area))
+    maxstorage = Vector{Union{Float, Missing}}(missing, length(area))
     # maximum storage is based on the maximum water level (H) value in the H-Q table
     for i in eachindex(maxstorage)
         if outflowfunc[i] == 1
@@ -506,9 +519,8 @@ function update(lake::Lake, i, inflow, doy, timestepsecs)
 
         storage_input = (lake.storage[i] + precipitation - actevap) / timestepsecs + inflow
         if lake.outflowfunc[i] == 1
-            outflow = interpolate_linear(
-                lake.waterlevel[i], lake.hq[i].H, lake.hq[i].Q[:, doy]
-            )
+            outflow =
+                interpolate_linear(lake.waterlevel[i], lake.hq[i].H, lake.hq[i].Q[:, doy])
             outflow = min(outflow, storage_input)
         else
             if diff_wl >= 0.0

@@ -5,7 +5,7 @@ Function to extract all required vertical states, given a certain model type. Pa
 and glacier options only for the `sbm` model_type. Returns a tuple with the required states
 (internal names as symbols)
 """
-function get_vertical_states(model_type::AbstractString; snow=false, glacier=false)
+function get_vertical_states(model_type::AbstractString; snow = false, glacier = false)
     if model_type == "sbm" || model_type == "sbm_gwf"
         if snow && glacier
             vertical_states = (
@@ -19,7 +19,12 @@ function get_vertical_states(model_type::AbstractString; snow=false, glacier=fal
             )
         elseif snow
             vertical_states = (
-                :satwaterdepth, :snow, :tsoil, :ustorelayerdepth, :snowwater, :canopystorage
+                :satwaterdepth,
+                :snow,
+                :tsoil,
+                :ustorelayerdepth,
+                :snowwater,
+                :canopystorage,
             )
         else
             vertical_states = (:satwaterdepth, :ustorelayerdepth, :canopystorage)
@@ -75,7 +80,7 @@ function extract_required_states(config::Config)
     do_floodplains = get(config.model, "floodplain_1d", false)::Bool
 
     # Extract required stated based on model configuration file
-    vertical_states = get_vertical_states(model_type; snow=do_snow, glacier=do_glaciers)
+    vertical_states = get_vertical_states(model_type; snow = do_snow, glacier = do_glaciers)
 
     # Subsurface states
     if model_type == "sbm_gwf"
@@ -90,7 +95,10 @@ function extract_required_states(config::Config)
     else
         routing_options = ("kinematic-wave", "local-inertial")
         land_routing = get_options(
-            config.model, "land_routing", routing_options, "kinematic-wave"
+            config.model,
+            "land_routing",
+            routing_options,
+            "kinematic-wave",
         )::String
         if land_routing == "local-inertial"
             land_states = (:qx, :qy, :h, :h_av)
@@ -151,24 +159,25 @@ function extract_required_states(config::Config)
     end
     required_states = add_to_required_states(required_states, key_entry, ssf_states)
     # Add land states to dict
-    required_states = add_to_required_states(
-        required_states, (:lateral, :land), land_states
-    )
+    required_states =
+        add_to_required_states(required_states, (:lateral, :land), land_states)
     # Add river states to dict
-    required_states = add_to_required_states(
-        required_states, (:lateral, :river), river_states
-    )
+    required_states =
+        add_to_required_states(required_states, (:lateral, :river), river_states)
     # Add floodplain states to dict
     required_states = add_to_required_states(
-        required_states, (:lateral, :river, :floodplain), floodplain_states
+        required_states,
+        (:lateral, :river, :floodplain),
+        floodplain_states,
     )
     # Add lake states to dict
-    required_states = add_to_required_states(
-        required_states, (:lateral, :river, :lake), lake_states
-    )
+    required_states =
+        add_to_required_states(required_states, (:lateral, :river, :lake), lake_states)
     # Add reservoir states to dict
     required_states = add_to_required_states(
-        required_states, (:lateral, :river, :reservoir), reservoir_states
+        required_states,
+        (:lateral, :river, :reservoir),
+        reservoir_states,
     )
 
     return required_states

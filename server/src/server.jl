@@ -39,7 +39,7 @@ const map_structs = Dict(
 )
 
 mutable struct ModelHandler
-    model::Union{Wflow.Model,Nothing}
+    model::Union{Wflow.Model, Nothing}
 end
 
 "Shutdown ZMQ server"
@@ -52,14 +52,14 @@ end
 "Error response ZMQ server"
 function response(err::AbstractString, s::ZMQ.Socket)
     @info "Send error response"
-    resp = Dict{String,String}("status" => "ERROR", "error" => err)
+    resp = Dict{String, String}("status" => "ERROR", "error" => err)
     return ZMQ.send(s, JSON3.write(resp))
 end
 
 "Status response ZMQ server"
 function response(s::ZMQ.Socket)
     @info "Send status response"
-    resp = Dict{String,String}("status" => "OK")
+    resp = Dict{String, String}("status" => "OK")
     return ZMQ.send(s, JSON3.write(resp))
 end
 
