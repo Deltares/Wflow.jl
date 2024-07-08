@@ -10,7 +10,7 @@ platforms = ["win-64", "linux-64"]
 
 [tasks]
 # Installation
-install-julia = "juliaup add 1.10.0 && juliaup default 1.10.0"
+install-julia = "juliaup add 1.10.0 && juliaup override set 1.10.0"
 # Julia
 update-registry-julia = "julia --eval='using Pkg; Registry.update()'"
 instantiate-julia = "julia --project --eval='using Pkg; Pkg.instantiate()'"
@@ -45,12 +45,6 @@ instantiate-wflow-server = "julia --project=server --eval 'using Pkg; Pkg.instan
 [dependencies]
 juliaup = "*"
 python = ">=3.10"
-
-[activation]
-scripts = ["utils/env_setup.sh"]
-
-[target.win-64.activation]
-scripts = ["utils/env_setup.bat"]
 
 [system-requirements]
 linux = "3.10.0"
