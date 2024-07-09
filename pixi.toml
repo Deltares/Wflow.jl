@@ -10,7 +10,7 @@ platforms = ["win-64", "linux-64"]
 
 [tasks]
 # Installation
-install-julia = "juliaup add 1.10.0 && juliaup override set 1.10.0"
+install-julia = "juliaup add 1.10.0 && juliaup override unset && juliaup override set 1.10.0"
 # Julia
 update-registry-julia = "julia --eval='using Pkg; Registry.update()'"
 instantiate-julia = "julia --project --eval='using Pkg; Pkg.instantiate()'"
