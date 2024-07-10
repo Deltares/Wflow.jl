@@ -12,7 +12,7 @@ dir_input = "data/input"
 dir_output = "data/output"
 loglevel = "info"
 
-[state]
+#[state]
 path_input = "instates-moselle.nc"
 path_output = "outstates-moselle.nc"
 
@@ -61,7 +61,10 @@ forcing = [
   "vertical.potential_evaporation",
 ]
 
-cyclic = ["vertical.leaf_area_index"]
+cyclic = ["vertical.interception_model.parameters.veg_param_set.leaf_area_index"]
+
+[input.vertical.interception_model.parameters.veg_param_set]
+leaf_area_index = "LAI"
 
 [input.vertical]
 c = "c"
@@ -72,7 +75,7 @@ f = "f"
 infiltcappath = "InfiltCapPath"
 infiltcapsoil = "InfiltCapSoil"
 kext = "Kext"
-leaf_area_index = "LAI"
+#leaf_area_index = "LAI"
 maxleakage = "MaxLeakage"
 pathfrac = "PathFrac"
 potential_evaporation = "pet"
@@ -132,7 +135,7 @@ type = "sbm"
 min_streamorder_river = 6
 min_streamorder_land = 5
 
-[output]
+#[output]
 path = "output_moselle.nc"
 
 [output.vertical]

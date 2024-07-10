@@ -1,4 +1,6 @@
-@get_units @with_kw struct SBM{T, N, M}
+@get_units @with_kw struct SBM{I, T, N, M}
+    veg_param_set::VegetationParameters | "-"
+    interception_model::I | "-"
     # Model time step [s]
     dt::T | "s"
     # Maximum number of soil layers
@@ -41,22 +43,14 @@
     waterfrac::Vector{T} | "-"
     # Fraction of compacted area  [-]
     pathfrac::Vector{T} | "-"
-    # Rooting depth [mm]
-    rootingdepth::Vector{T} | "mm"
     # Controls how roots are linked to water table [-]
     rootdistpar::Vector{T} | "-"
     # Parameter [mm] controlling capillary rise
     cap_hmax::Vector{T} | "mm"
     # Coefficient [-] controlling capillary rise
     cap_n::Vector{T} | "-"
-    # Crop coefficient Kc [-]
-    kc::Vector{T} | "-"
     # Brooks-Corey power coefﬁcient [-] for each soil layer
     c::Vector{SVector{N, T}} | "-"
-    # Stemflow [mm Δt⁻¹]
-    stemflow::Vector{T}
-    # Throughfall [mm Δt⁻¹]
-    throughfall::Vector{T}
     # A scaling parameter [mm⁻¹] (controls exponential decline of kv_0)
     f::Vector{T} | "mm-1"
     # Depth [mm] from soil surface for which exponential decline of kv_0 is valid
@@ -71,15 +65,6 @@
     zi::Vector{T} | "mm"
     # Soilwater capacity [mm]
     soilwatercapacity::Vector{T} | "mm"
-    # Canopy storage [mm]
-    canopystorage::Vector{T} | "mm"
-    # Maximum canopy storage [mm]
-    cmax::Vector{T} | "mm"
-    # Canopy gap fraction [-]
-    canopygapfraction::Vector{T} | "-"
-    # Gash interception model parameter, ratio of the average evaporation from the
-    # wet canopy [mm Δt⁻¹] and the average precipitation intensity [mm Δt⁻¹] on a saturated canopy
-    e_r::Vector{T} | "-"
     # Precipitation [mm Δt⁻¹]
     precipitation::Vector{T}
     # Temperature [ᵒC]
@@ -92,8 +77,6 @@
     transpiration::Vector{T}
     # Actual evaporation from unsaturated store [mm Δt⁻¹]
     ae_ustore::Vector{T}
-    # Interception loss by evaporation [mm Δt⁻¹]
-    interception::Vector{T}
     # Soil evaporation from unsaturated and saturated store [mm Δt⁻¹]
     soilevap::Vector{T}
     # Soil evaporation from saturated store [mm Δt⁻¹]
@@ -191,15 +174,6 @@
     glacierfrac::Vector{T} | "-"
     # Top soil temperature [ᵒC]
     tsoil::Vector{T} | "ᵒC"
-    ## Interception related to leaf_area_index climatology ###
-    # Specific leaf storage [mm]
-    sl::Vector{T} | "mm"
-    # Storage woody part of vegetation [mm]
-    swood::Vector{T} | "mm"
-    # Extinction coefficient [-] (to calculate canopy gap fraction)
-    kext::Vector{T} | "-"
-    # Leaf area index [m² m⁻²]
-    leaf_area_index::Vector{T} | "m2 m-2"
     # Water level land [mm]
     waterlevel_land::Vector{T} | "mm"
     # Water level river [mm]
@@ -207,56 +181,10 @@
     # Total water storage (excluding floodplain volume, lakes and reservoirs) [mm]
     total_storage::Vector{T} | "mm"
 
-    function SBM{T, N, M}(args...) where {T, N, M}
+    function SBM{I, T, N, M}(args...) where {I, T, N, M}
         equal_size_vectors(args)
         return new(args...)
     end
-end
-
-function initialize_canopy(nc, config, inds)
-    n = length(inds)
-    # if leaf area index climatology provided use sl, swood and kext to calculate cmax, e_r and canopygapfraction
-    if haskey(config.input.vertical, "leaf_area_index")
-        # TODO confirm if leaf area index climatology is present in the netCDF
-        sl = ncread(
-            nc,
-            config,
-            "vertical.specific_leaf";
-            optional = false,
-            sel = inds,
-            type = Float,
-        )
-        swood = ncread(
-            nc,
-            config,
-            "vertical.storage_wood";
-            optional = false,
-            sel = inds,
-            type = Float,
-        )
-        kext =
-            ncread(nc, config, "vertical.kext"; optional = false, sel = inds, type = Float)
-        cmax = fill(mv, n)
-        e_r = fill(mv, n)
-        canopygapfraction = fill(mv, n)
-    else
-        sl = fill(mv, n)
-        swood = fill(mv, n)
-        kext = fill(mv, n)
-        # cmax, e_r, canopygapfraction only required when leaf area index climatology not provided
-        cmax = ncread(nc, config, "vertical.cmax"; sel = inds, defaults = 1.0, type = Float)
-        e_r =
-            ncread(nc, config, "vertical.eoverr"; sel = inds, defaults = 0.1, type = Float)
-        canopygapfraction = ncread(
-            nc,
-            config,
-            "vertical.canopygapfraction";
-            sel = inds,
-            defaults = 0.1,
-            type = Float,
-        )
-    end
-    return cmax, e_r, canopygapfraction, sl, swood, kext
 end
 
 function initialize_sbm(nc, config, riverfrac, inds)
@@ -272,6 +200,14 @@ function initialize_sbm(nc, config, riverfrac, inds)
     end
 
     n = length(inds)
+
+    veg_param_set = initialize_vegetation_params(nc, config, inds)
+    if dt >= Hour(23)
+        interception_model =
+            initialize_gash_interception_model(nc, config, inds, veg_param_set)
+    else
+        interception_model = initialize_rutter_interception_model(veg_param_set, n)
+    end
 
     cfmax =
         ncread(
@@ -462,8 +398,6 @@ function initialize_sbm(nc, config, riverfrac, inds)
         )
     end
 
-    cmax, e_r, canopygapfraction, sl, swood, kext = initialize_canopy(nc, config, inds)
-
     theta_e = theta_s .- theta_r
     soilwatercapacity = soilthickness .* theta_e
     satwaterdepth = 0.85 .* soilwatercapacity # cold state value for satwaterdepth
@@ -555,7 +489,9 @@ function initialize_sbm(nc, config, riverfrac, inds)
               """)
     end
 
-    sbm = SBM{Float, maxlayers, maxlayers + 1}(;
+    sbm = SBM{typeof(interception_model), Float, maxlayers, maxlayers + 1}(;
+        veg_param_set = veg_param_set,
+        interception_model = interception_model,
         dt = tosecond(dt),
         maxlayers = maxlayers,
         n = n,
@@ -577,14 +513,10 @@ function initialize_sbm(nc, config, riverfrac, inds)
         maxleakage = maxleakage,
         waterfrac = max.(waterfrac .- riverfrac, Float(0.0)),
         pathfrac = pathfrac,
-        rootingdepth = rootingdepth,
         rootdistpar = rootdistpar,
         cap_hmax = cap_hmax,
         cap_n = cap_n,
-        kc = kc,
         c = svectorscopy(c, Val{maxlayers}()),
-        stemflow = fill(mv, n),
-        throughfall = fill(mv, n),
         f = f,
         z_exp = z_exp,
         z_layered = z_layered,
@@ -592,17 +524,12 @@ function initialize_sbm(nc, config, riverfrac, inds)
         satwaterdepth = satwaterdepth,
         zi = zi,
         soilwatercapacity = soilwatercapacity,
-        canopystorage = zeros(Float, n),
-        cmax = cmax,
-        canopygapfraction = canopygapfraction,
-        e_r = e_r,
         precipitation = fill(mv, n),
         temperature = fill(mv, n),
         potential_evaporation = fill(mv, n),
         pottrans = fill(mv, n),
         transpiration = fill(mv, n),
         ae_ustore = fill(mv, n),
-        interception = fill(mv, n),
         soilevap = fill(mv, n),
         soilevapsat = fill(mv, n),
         actcapflux = fill(mv, n),
@@ -653,11 +580,6 @@ function initialize_sbm(nc, config, riverfrac, inds)
         g_cfmax = g_cfmax,
         glacierstore = glacierstore,
         glacierfrac = glacierfrac,
-        # Interception related to climatology (leaf_area_index)
-        sl = sl,
-        swood = swood,
-        kext = kext,
-        leaf_area_index = fill(mv, n),
         waterlevel_land = fill(mv, n),
         waterlevel_river = zeros(Float, n), #set to zero to account for cells outside river domain
         total_storage = zeros(Float, n), # Set the total water storage from initialized values
@@ -667,57 +589,59 @@ function initialize_sbm(nc, config, riverfrac, inds)
 end
 
 function update_until_snow(sbm::SBM, config)
-    do_lai = haskey(config.input.vertical, "leaf_area_index")
-    modelglacier = get(config.model, "glacier", false)::Bool
     modelsnow = get(config.model, "snow", false)::Bool
 
-    threaded_foreach(1:(sbm.n); basesize = 1000) do i
-        if do_lai
-            cmax = sbm.sl[i] * sbm.leaf_area_index[i] + sbm.swood[i]
-            canopygapfraction = exp(-sbm.kext[i] * sbm.leaf_area_index[i])
-            canopyfraction = 1.0 - canopygapfraction
-            ewet = canopyfraction * sbm.potential_evaporation[i] * sbm.kc[i]
-            e_r = if sbm.precipitation[i] > 0.0
-                min(0.25, ewet / max(0.0001, canopyfraction * sbm.precipitation[i]))
-            else
-                0.0
-            end
-        else
-            cmax = sbm.cmax[i]
-            canopygapfraction = sbm.canopygapfraction[i]
-            e_r = sbm.e_r[i]
-        end
+    (; canopy_potevap, interception, throughfall, stemflow) =
+        sbm.interception_model.variables
 
-        canopy_potevap =
-            sbm.kc[i] * sbm.potential_evaporation[i] * (1.0 - canopygapfraction)
-        if Second(sbm.dt) >= Hour(23)
-            throughfall, interception, stemflow, canopystorage = rainfall_interception_gash(
-                cmax,
-                e_r,
-                canopygapfraction,
-                sbm.precipitation[i],
-                sbm.canopystorage[i],
-                canopy_potevap,
-            )
-            pottrans = max(0.0, canopy_potevap - interception) # now in mm
-        else
-            netinterception, throughfall, stemflow, leftover, interception, canopystorage =
-                rainfall_interception_modrut(
-                    sbm.precipitation[i],
-                    canopy_potevap,
-                    sbm.canopystorage[i],
-                    canopygapfraction,
-                    cmax,
-                )
-            pottrans = max(0.0, leftover)  # now in mm
-        end
+    update(sbm.interception_model, sbm.precipitation, sbm.potential_evaporation)
+    @. sbm.pottrans = max(0.0, canopy_potevap - interception)
+
+    threaded_foreach(1:(sbm.n); basesize = 1000) do i
+        #=         if do_lai
+                    cmax = sbm.sl[i] * sbm.leaf_area_index[i] + sbm.swood[i]
+                    canopygapfraction = exp(-sbm.kext[i] * sbm.leaf_area_index[i])
+                    canopyfraction = 1.0 - canopygapfraction
+                    ewet = canopyfraction * sbm.potential_evaporation[i] * sbm.kc[i]
+                    e_r =
+                        sbm.precipitation[i] > 0.0 ?
+                        min(0.25, ewet / max(0.0001, canopyfraction * sbm.precipitation[i])) : 0.0
+                else
+                    cmax = sbm.cmax[i]
+                    canopygapfraction = sbm.canopygapfraction[i]
+                    e_r = sbm.e_r[i]
+                end
+
+                canopy_potevap =
+                    sbm.kc[i] * sbm.potential_evaporation[i] * (1.0 - canopygapfraction)
+                if Second(sbm.dt) >= Hour(23)
+                    throughfall, interception, stemflow, canopystorage = rainfall_interception_gash(
+                        cmax,
+                        e_r,
+                        canopygapfraction,
+                        sbm.precipitation[i],
+                        sbm.canopystorage[i],
+                        canopy_potevap,
+                    )
+                    pottrans = max(0.0, canopy_potevap - interception) # now in mm
+                else
+                    netinterception, throughfall, stemflow, leftover, interception, canopystorage =
+                        rainfall_interception_modrut(
+                            sbm.precipitation[i],
+                            canopy_potevap,
+                            sbm.canopystorage[i],
+                            canopygapfraction,
+                            cmax,
+                        )
+                    pottrans = max(0.0, leftover)  # now in mm
+                end =#
 
         if modelsnow
             tsoil = sbm.tsoil[i] + sbm.w_soil[i] * (sbm.temperature[i] - sbm.tsoil[i])
             snow, snowwater, snowmelt, rainfallplusmelt, snowfall = snowpack_hbv(
                 sbm.snow[i],
                 sbm.snowwater[i],
-                throughfall + stemflow,
+                throughfall[i] + stemflow[i],
                 sbm.temperature[i],
                 sbm.tti[i],
                 sbm.tt[i],
@@ -727,14 +651,14 @@ function update_until_snow(sbm::SBM, config)
             )
         end
         # update the outputs and states
-        sbm.e_r[i] = e_r
-        sbm.cmax[i] = cmax
-        sbm.canopygapfraction[i] = canopygapfraction
-        sbm.canopystorage[i] = canopystorage
-        sbm.interception[i] = interception
-        sbm.stemflow[i] = stemflow
-        sbm.throughfall[i] = throughfall
-        sbm.pottrans[i] = pottrans
+        #sbm.e_r[i] = e_r
+        #sbm.cmax[i] = cmax
+        #sbm.canopygapfraction[i] = canopygapfraction
+        #sbm.canopystorage[i] = canopystorage
+        #sbm.interception[i] = interception
+        #sbm.stemflow[i] = stemflow
+        #sbm.throughfall[i] = throughfall
+        #sbm.pottrans[i] = pottrans
         if modelsnow
             sbm.snow[i] = snow
             sbm.snowwater[i] = snowwater
