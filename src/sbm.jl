@@ -593,44 +593,6 @@ function update_until_snow(sbm::SBM, config)
     @. sbm.pottrans = max(0.0, canopy_potevap - interception)
 
     threaded_foreach(1:(sbm.n); basesize = 1000) do i
-        #=         if do_lai
-                    cmax = sbm.sl[i] * sbm.leaf_area_index[i] + sbm.swood[i]
-                    canopygapfraction = exp(-sbm.kext[i] * sbm.leaf_area_index[i])
-                    canopyfraction = 1.0 - canopygapfraction
-                    ewet = canopyfraction * sbm.potential_evaporation[i] * sbm.kc[i]
-                    e_r =
-                        sbm.precipitation[i] > 0.0 ?
-                        min(0.25, ewet / max(0.0001, canopyfraction * sbm.precipitation[i])) : 0.0
-                else
-                    cmax = sbm.cmax[i]
-                    canopygapfraction = sbm.canopygapfraction[i]
-                    e_r = sbm.e_r[i]
-                end
-
-                canopy_potevap =
-                    sbm.kc[i] * sbm.potential_evaporation[i] * (1.0 - canopygapfraction)
-                if Second(sbm.dt) >= Hour(23)
-                    throughfall, interception, stemflow, canopystorage = rainfall_interception_gash(
-                        cmax,
-                        e_r,
-                        canopygapfraction,
-                        sbm.precipitation[i],
-                        sbm.canopystorage[i],
-                        canopy_potevap,
-                    )
-                    pottrans = max(0.0, canopy_potevap - interception) # now in mm
-                else
-                    netinterception, throughfall, stemflow, leftover, interception, canopystorage =
-                        rainfall_interception_modrut(
-                            sbm.precipitation[i],
-                            canopy_potevap,
-                            sbm.canopystorage[i],
-                            canopygapfraction,
-                            cmax,
-                        )
-                    pottrans = max(0.0, leftover)  # now in mm
-                end =#
-
         if modelsnow
             tsoil = sbm.tsoil[i] + sbm.w_soil[i] * (temperature[i] - sbm.tsoil[i])
             snow, snowwater, snowmelt, rainfallplusmelt, snowfall = snowpack_hbv(
@@ -646,14 +608,6 @@ function update_until_snow(sbm::SBM, config)
             )
         end
         # update the outputs and states
-        #sbm.e_r[i] = e_r
-        #sbm.cmax[i] = cmax
-        #sbm.canopygapfraction[i] = canopygapfraction
-        #sbm.canopystorage[i] = canopystorage
-        #sbm.interception[i] = interception
-        #sbm.stemflow[i] = stemflow
-        #sbm.throughfall[i] = throughfall
-        #sbm.pottrans[i] = pottrans
         if modelsnow
             sbm.snow[i] = snow
             sbm.snowwater[i] = snowwater

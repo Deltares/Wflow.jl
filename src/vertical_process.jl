@@ -16,56 +16,6 @@ function scurve(x, a, b, c)
 end
 
 """
-    rainfall_interception_modrut(precipitation, potential_evaporation, canopystorage, canopygapfraction, cmax)
-
-Interception according to a modified Rutter model. The model is solved explicitly and there is no
-drainage below `cmax`.
-"""
-function rainfall_interception_modrut(
-    precipitation,
-    potential_evaporation,
-    canopystorage,
-    canopygapfraction,
-    cmax,
-)
-
-    # TODO: improve computation of stemflow partitioning coefficient pt (0.1 * canopygapfraction)
-    pt = min(0.1 * canopygapfraction, 1.0 - canopygapfraction)
-
-    # Amount of p that falls on the canopy
-    precip_canopy = (1.0 - canopygapfraction - pt) * precipitation
-
-    # Canopystorage cannot be larger than cmax, no gravity drainage below that. This check
-    # is required because cmax can change over time
-    canopy_drainage1 = canopystorage > cmax ? canopystorage - cmax : 0.0
-    canopystorage = canopystorage - canopy_drainage1
-
-    # Add the precipitation that falls on the canopy to the store
-    canopystorage = canopystorage + precip_canopy
-
-    # Now do the Evap, make sure the store does not get negative
-    canopy_evap = min(canopystorage, potential_evaporation)
-    canopystorage = canopystorage - canopy_evap
-
-    # Amount of evap not used
-    leftover = potential_evaporation - canopy_evap
-
-    # Now drain the canopystorage again if needed...
-    canopy_drainage2 = canopystorage > cmax ? canopystorage - cmax : 0.0
-    canopystorage = canopystorage - canopy_drainage2
-
-    # Calculate throughfall and stemflow
-    throughfall = canopy_drainage1 + canopy_drainage2 + canopygapfraction * precipitation
-    stemflow = precipitation * pt
-
-    # Calculate interception, this is NET Interception
-    netinterception = precipitation + canopy_drainage1 - throughfall - stemflow
-    interception = canopy_evap
-
-    return netinterception, throughfall, stemflow, leftover, interception, canopystorage
-end
-
-"""
     acttransp_unsat_sbm(rootingdepth, ustorelayerdepth, sumlayer, restpotevap, sum_actevapustore, c, usl, theta_s, theta_r, hb, ust::Bool = false)
 
 Compute actual transpiration for unsaturated zone.
