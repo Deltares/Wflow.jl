@@ -1,4 +1,5 @@
-@get_units @with_kw struct SBM{I, T, N, M}
+@get_units @with_kw struct SBM{A, I, T, N, M}
+    atmospheric_forcing::AtmosphericForcing | "-"
     veg_param_set::VegetationParameters | "-"
     interception_model::I | "-"
     # Model time step [s]
@@ -65,12 +66,6 @@
     zi::Vector{T} | "mm"
     # Soilwater capacity [mm]
     soilwatercapacity::Vector{T} | "mm"
-    # Precipitation [mm Δt⁻¹]
-    precipitation::Vector{T}
-    # Temperature [ᵒC]
-    temperature::Vector{T} | "°C"
-    # Potential reference evapotranspiration [mm Δt⁻¹]
-    potential_evaporation::Vector{T}
     # Potential transpiration (after subtracting interception from potential_evaporation)
     pottrans::Vector{T}
     # Transpiration [mm Δt⁻¹]
@@ -181,7 +176,7 @@
     # Total water storage (excluding floodplain volume, lakes and reservoirs) [mm]
     total_storage::Vector{T} | "mm"
 
-    function SBM{I, T, N, M}(args...) where {I, T, N, M}
+    function SBM{A, I, T, N, M}(args...) where {A, I, T, N, M}
         equal_size_vectors(args)
         return new(args...)
     end
@@ -201,6 +196,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
 
     n = length(inds)
 
+    atmospheric_forcing = initialize_atmospheric_forcing(n)
     veg_param_set = initialize_vegetation_params(nc, config, inds)
     if dt >= Hour(23)
         interception_model =
@@ -489,7 +485,14 @@ function initialize_sbm(nc, config, riverfrac, inds)
               """)
     end
 
-    sbm = SBM{typeof(interception_model), Float, maxlayers, maxlayers + 1}(;
+    sbm = SBM{
+        typeof(atmospheric_forcing),
+        typeof(interception_model),
+        Float,
+        maxlayers,
+        maxlayers + 1,
+    }(;
+        atmospheric_forcing = atmospheric_forcing,
         veg_param_set = veg_param_set,
         interception_model = interception_model,
         dt = tosecond(dt),
@@ -524,9 +527,6 @@ function initialize_sbm(nc, config, riverfrac, inds)
         satwaterdepth = satwaterdepth,
         zi = zi,
         soilwatercapacity = soilwatercapacity,
-        precipitation = fill(mv, n),
-        temperature = fill(mv, n),
-        potential_evaporation = fill(mv, n),
         pottrans = fill(mv, n),
         transpiration = fill(mv, n),
         ae_ustore = fill(mv, n),
@@ -593,8 +593,9 @@ function update_until_snow(sbm::SBM, config)
 
     (; canopy_potevap, interception, throughfall, stemflow) =
         sbm.interception_model.variables
+    (; temperature) = sbm.atmospheric_forcing
 
-    update(sbm.interception_model, sbm.precipitation, sbm.potential_evaporation)
+    update(sbm.interception_model, sbm.atmospheric_forcing)
     @. sbm.pottrans = max(0.0, canopy_potevap - interception)
 
     threaded_foreach(1:(sbm.n); basesize = 1000) do i
@@ -637,12 +638,12 @@ function update_until_snow(sbm::SBM, config)
                 end =#
 
         if modelsnow
-            tsoil = sbm.tsoil[i] + sbm.w_soil[i] * (sbm.temperature[i] - sbm.tsoil[i])
+            tsoil = sbm.tsoil[i] + sbm.w_soil[i] * (temperature[i] - sbm.tsoil[i])
             snow, snowwater, snowmelt, rainfallplusmelt, snowfall = snowpack_hbv(
                 sbm.snow[i],
                 sbm.snowwater[i],
                 throughfall[i] + stemflow[i],
-                sbm.temperature[i],
+                temperature[i],
                 sbm.tti[i],
                 sbm.tt[i],
                 sbm.ttm[i],

@@ -156,13 +156,13 @@ end
 
 function update(
     interception_model::GashInterceptionModel,
-    precipitation,
-    potential_evaporation,
+    atmospheric_forcing::AtmosphericForcing,
 )
     (; leaf_area_index, canopygapfraction, cmax, kc) =
         interception_model.parameters.veg_param_set
     (; canopy_potevap, throughfall, interception, stemflow, canopystorage) =
         interception_model.variables
+    (; precipitation, potential_evaporation) = atmospheric_forcing
     e_r = interception_model.parameters.e_r
     n = length(precipitation)
     if !isnothing(leaf_area_index)

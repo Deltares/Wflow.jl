@@ -107,6 +107,7 @@ struct SedimentModel end    # "sediment" type / sediment_model.jl
 # prevent a large printout of model components and arrays
 Base.show(io::IO, m::Model) = print(io, "model of type ", typeof(m))
 
+include("forcing.jl")
 include("horizontal_process.jl")
 include("vegetation/rainfall_interception.jl")
 include("vegetation/canopy.jl")
