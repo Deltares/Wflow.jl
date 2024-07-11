@@ -1,4 +1,4 @@
-@get_units @with_kw struct SBM{A, I, T, N, M}
+@get_units @with_kw struct SBM{I, T, N, M}
     atmospheric_forcing::AtmosphericForcing | "-"
     veg_param_set::VegetationParameters | "-"
     interception_model::I | "-"
@@ -176,7 +176,7 @@
     # Total water storage (excluding floodplain volume, lakes and reservoirs) [mm]
     total_storage::Vector{T} | "mm"
 
-    function SBM{A, I, T, N, M}(args...) where {A, I, T, N, M}
+    function SBM{I, T, N, M}(args...) where {I, T, N, M}
         equal_size_vectors(args)
         return new(args...)
     end
@@ -485,13 +485,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
               """)
     end
 
-    sbm = SBM{
-        typeof(atmospheric_forcing),
-        typeof(interception_model),
-        Float,
-        maxlayers,
-        maxlayers + 1,
-    }(;
+    sbm = SBM{typeof(interception_model), Float, maxlayers, maxlayers + 1}(;
         atmospheric_forcing = atmospheric_forcing,
         veg_param_set = veg_param_set,
         interception_model = interception_model,
