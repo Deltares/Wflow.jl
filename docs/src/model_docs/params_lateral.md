@@ -40,7 +40,7 @@ internal model parameter `sl`, and is listed in the Table below between parenthe
 | `lake_index`   |  map cell to 0 (no lake) or i (pick lake i in lake field) | - | - |
 | `reservoir`    | an array of reservoir models `SimpleReservoir` | - | - |
 | `lake`         | an array of lake models `Lake` | - | - |
-| `waterallocation`| water allocation of type `WaterAllocationRiver` | - | - |
+| `allocation`| water allocation of type `AllocationRiver` | - | - |
 | `kinwave_it`   | boolean for kinematic wave iterations | - | false |
 
 The Table below shows the parameters (fields) of struct `SurfaceFlowLand` used for overland
@@ -285,7 +285,7 @@ model parameter `mannings_n`, and is listed in the Table below between parenthes
 | `waterbody`   |  water body cells (reservoir or lake) | - | - |
 | `reservoir`    | an array of reservoir models `SimpleReservoir` | - | - |
 | `lake` | an array of lake models `Lake` | - | - |
-| `waterallocation`| optional water allocation of type `WaterAllocationRiver` | - | - |
+| `allocation`| optional water allocation of type `AllocationRiver` | - | - |
 | `floodplain` | optional 1D floodplain routing `FloodPlain` | - | - |
 
 ### [1D floodplain](@id local-inertial_floodplain_params)
@@ -383,9 +383,9 @@ internal model parameter `z`, and is listed in the Table below between parenthes
 | `h_av` | average water depth| m | - |
 
 ## Water allocation river
-The Table below shows the parameters (fields) of struct `WaterAllocationRiver`, used when
-water demand and allocation is computed (optional), including a description of these
-parameters, the unit, and default value if applicable.
+The Table below shows the parameters (fields) of struct `AllocationRiver`, used when water
+demand and allocation is computed (optional), including a description of these parameters,
+the unit, and default value if applicable.
 
 |  parameter  | description  	  | unit  | default |
 |:--------------- | ------------------| ----- | -------- |

@@ -675,10 +675,10 @@ apply an irrigation rate higher than the soil infiltration capacity. To account 
 irrigation efficiency the net irrigation demand is divided by the irrigation efficiency for
 non-paddy crops (`irrigation_efficiency` [-], default is 1.0), resulting in gross irrigation
 demand [mm t``^{-1}``]. Finally, the gross irrigation demand is limited by the maximum
-irrigation depth (`maximum_irrigation_depth` [mm t``^{-1}``], default is 25 mm d``^{-1}``).
-If the maximum irrigation depth is applied, irrigation continues at subsequent time steps
-until field capacity is reached. Irrigation is added to the `SBM` variable `avail_forinfilt`
-[mm t``^{-1}``], the amount of water available for infiltration.
+irrigation rate (`maximum_irrigation_rate` [mm t``^{-1}``], default is 25 mm d``^{-1}``). If
+the maximum irrigation rate is applied, irrigation continues at subsequent time steps until
+field capacity is reached. Irrigation is added to the `SBM` variable `avail_forinfilt` [mm
+t``^{-1}``], the amount of water available for infiltration.
 
 ## Paddy irrigation
 Paddy water demand and allocation computations are supported. These computations can be
@@ -696,8 +696,8 @@ paddy water depth `h_opt` \[mm\], an approach similar to Xie and Cui (2011). To 
 limited irrigation efficiency the net irrigation demand is divided by the irrigation
 efficiency for paddy fields (`irrigation_efficiency` [-], default is 1.0), resulting in
 gross irrigation demand [mm t``^{-1}``]. Finally, the gross irrigation demand is limited by
-the maximum irrigation depth (`maximum_irrigation_depth` [mm t``^{-1}``], default is 25 mm
-d``^{-1}``). If the maximum irrigation depth is applied, irrigation continues at subsequent
+the maximum irrigation rate (`maximum_irrigation_rate` [mm t``^{-1}``], default is 25 mm
+d``^{-1}``). If the maximum irrigation rate is applied, irrigation continues at subsequent
 time steps until the optimal paddy water depth `h_opt` is reached. Irrigation is added to
 the `SBM` variable `avail_forinfilt` [mm t``^{-1}``], the amount of water available for
 infiltration. When the paddy water depth `h` exceeds `h_max` \[mm\] runoff occurs, and this

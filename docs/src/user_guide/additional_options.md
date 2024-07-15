@@ -154,7 +154,7 @@ livestock = true    # optional, default is "false"
 paddy = true        # optional, default is "false"
 nonpaddy = true     # optional, default is "false"
 
-[input.vertical.waterallocation]
+[input.vertical.allocation]
 areas = "allocation_areas"
 frac_sw_used = "SurfaceWaterFrac"
 

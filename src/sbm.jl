@@ -1416,15 +1416,15 @@ function update_water_demand(sbm::SBM)
                     raw = (vwc_fc - vwc_h3) * usl[k] # readily available water
                     raw *= rootfrac
 
-                    # check if maximum irrigation depth has been applied at the previous time step.
-                    max_irri_depth_applied =
+                    # check if maximum irrigation rate has been applied at the previous time step.
+                    max_irri_rate_applied =
                         sbm.nonpaddy.demand_gross[i] ==
-                        sbm.nonpaddy.maximum_irrigation_depth[i]
+                        sbm.nonpaddy.maximum_irrigation_rate[i]
                     if depletion >= raw # start irrigation
                         irri_dem_gross += depletion
-                        # add depletion to irrigation gross demand when the maximum irrigation depth has been 
+                        # add depletion to irrigation gross demand when the maximum irrigation rate has been 
                         # applied at the previous time step (to get volumetric water content at field capacity)
-                    elseif depletion > 0.0 && max_irri_depth_applied # continue irrigation
+                    elseif depletion > 0.0 && max_irri_rate_applied # continue irrigation
                         irri_dem_gross += depletion
                     end
                 end
@@ -1433,29 +1433,29 @@ function update_water_demand(sbm::SBM)
                     sbm.soilinfredu[i] * (1.0 - sbm.pathfrac[i]) * sbm.infiltcapsoil[i]
                 irri_dem_gross = min(irri_dem_gross, infiltration_capacity)
                 irri_dem_gross /= sbm.nonpaddy.irrigation_efficiency[i]
-                # limit irrigation demand to the maximum irrigation depth
+                # limit irrigation demand to the maximum irrigation rate
                 irri_dem_gross =
-                    min(irri_dem_gross, sbm.nonpaddy.maximum_irrigation_depth[i])
+                    min(irri_dem_gross, sbm.nonpaddy.maximum_irrigation_rate[i])
             else
                 irri_dem_gross = 0.0
             end
             sbm.nonpaddy.demand_gross[i] = irri_dem_gross
         elseif !isnothing(sbm.paddy) && sbm.paddy.irrigation_areas[i]
             if sbm.paddy.irrigation_trigger[i]
-                # check if maximum irrigation depth has been applied at the previous time step.
-                max_irri_depth_applied =
-                    sbm.paddy.demand_gross[i] == sbm.paddy.maximum_irrigation_depth[i]
+                # check if maximum irrigation rate has been applied at the previous time step.
+                max_irri_rate_applied =
+                    sbm.paddy.demand_gross[i] == sbm.paddy.maximum_irrigation_rate[i]
                 # start irrigation
                 if sbm.paddy.h[i] < sbm.paddy.h_min[i]
                     irr_depth_paddy = sbm.paddy.h_opt[i] - sbm.paddy.h[i]
-                elseif sbm.paddy.h[i] < sbm.paddy.h_opt[i] && max_irri_depth_applied # continue irrigation
+                elseif sbm.paddy.h[i] < sbm.paddy.h_opt[i] && max_irri_rate_applied # continue irrigation
                     irr_depth_paddy = sbm.paddy.h_opt[i] - sbm.paddy.h[i]
                 else
                     irr_depth_paddy = 0.0
                 end
                 irri_dem_gross += irr_depth_paddy / sbm.paddy.irrigation_efficiency[i]
-                # limit irrigation demand to the maximum irrigation depth
-                irri_dem_gross = min(irri_dem_gross, sbm.paddy.maximum_irrigation_depth[i])
+                # limit irrigation demand to the maximum irrigation rate
+                irri_dem_gross = min(irri_dem_gross, sbm.paddy.maximum_irrigation_rate[i])
             end
             sbm.paddy.demand_gross[i] = irri_dem_gross
         end

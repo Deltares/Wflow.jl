@@ -146,7 +146,7 @@ profile `kv` is used and `z_layered` is required as input.
 | `domestic` | optional domestic water demand of type `NonIrrigationDemand` | - | - |
 | `livestock` | optional livestock water demand of type `NonIrrigationDemand` | - | - |
 | `industry` | optional industry water demand of type `NonIrrigationDemand` | - | - |
-| `waterallocation` | optional water allocation of type `WaterAllocationLand` | - | - |
+| `allocation` | optional water allocation of type `AllocationLand` | - | - |
 
 ## [HBV](@id params_hbv)
 The Table below shows the parameters (fields) of struct `HBV`, including a description of
@@ -404,9 +404,9 @@ internal model parameter to the external netCDF variable.
 |:---------------| --------------- | ---------------------- | ----- |
 | `demand_gross` | irrigation gross demand | mm Δt``^{-1}`` | - |
 | **`irrigation_efficiency`** | irrigation efficiency | - | - |
-| **`maximum_irrigation_depth`** | maximum irrigation depth | mm Δt``^{-1}`` | 25.0 |
+| **`maximum_irrigation_rate`** | maximum irrigation rate | mm Δt``^{-1}`` | 25.0 mm day``^{-1}`` |
 | **`irrigation_areas`** | irrigation areas | - | - |
-| **`irrigation_trigger`** | irrigation on or off | - | - |
+| **`irrigation_trigger`** | irrigation on or off (boolean) | - | - |
 | **`h_min`** | minimum required water depth in the irrigated paddy fields | mm | 20.0 |
 | **`h_opt`** | optimal water depth in the irrigated paddy fields | mm | 50.0 |
 | **`h_max`** | water depth when paddy field starts spilling water (overflow) | mm | 80.0 |
@@ -423,7 +423,7 @@ the internal model parameter to the external netCDF variable.
 |:---------------| --------------- | ---------------------- | ----- |
 | `demand_gross` | irrigation gross demand | mm Δt``^{-1}`` | - |
 | **`irrigation_efficiency`** | irrigation efficiency | - | - |
-| **`maximum_irrigation_depth`** | maximum irrigation depth | mm Δt``^{-1}`` | 25.0 |
+| **`maximum_irrigation_rate`** | maximum irrigation rate | mm Δt``^{-1}`` | 25.0 mm day``^{-1}``|
 | **`irrigation_areas`** | irrigation areas | - | - |
 | **`irrigation_trigger`** | irrigation on or off (boolean) | - | - |
 
@@ -444,12 +444,12 @@ parameter to the external netCDF variable.
 | `returnflow` | return flow | mm Δt``^{-1}`` | - |
 
 ### Water allocation land
-The Table below shows the parameters (fields) of struct `WaterAllocationLand`, including a
+The Table below shows the parameters (fields) of struct `AllocationLand`, including a
 description of these parameters, the unit, and default value if applicable. The parameters
 in bold represent model parameters that can be set through static and forcing input data
 (netCDF), and can be listed in the TOML configuration file under
-`[input.vertical.waterallocation]`, to map the internal model parameter to the external
-netCDF variable.
+`[input.vertical.allocation]`, to map the internal model parameter to the external netCDF
+variable.
 
 |  parameter | description    | unit | default |
 |:---------------| --------------- | ---------------------- | ----- |
