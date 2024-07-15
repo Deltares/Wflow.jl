@@ -53,7 +53,7 @@ end
 
 "Return return flow fraction based on gross water demand `demand_gross` and net water demand `demand_net`"
 function returnflow_fraction(demand_gross, demand_net)
-    fraction = divide(demand_net, demand_gross)
+    fraction = bounded_divide(demand_net, demand_gross)
     returnflow_fraction = 1.0 - fraction
     return returnflow_fraction
 end
@@ -416,10 +416,10 @@ function surface_water_allocation_area(land, river, network)
 
         # fraction of available surface water that can be abstracted at allocation area
         # level
-        frac_abstract_sw = divide(sw_abstraction, sw_available)
+        frac_abstract_sw = bounded_divide(sw_abstraction, sw_available)
         # fraction of water demand that can be satisfied by available surface water at
         # allocation area level. 
-        frac_allocate_sw = divide(sw_abstraction, sw_demand_vol)
+        frac_allocate_sw = bounded_divide(sw_abstraction, sw_demand_vol)
 
         # water abstracted from surface water at each river cell (including reservoir and
         # lake locations).
@@ -488,10 +488,10 @@ function groundwater_allocation_area(land, network)
         gw_abstraction = min(gw_available, gw_demand_vol)
 
         # fraction of available groundwater that can be abstracted at allocation area level
-        frac_abstract_gw = divide(gw_abstraction, gw_available)
+        frac_abstract_gw = bounded_divide(gw_abstraction, gw_available)
         # fraction of water demand that can be satisfied by available groundwater at
         # allocation area level.
-        frac_allocate_gw = divide(gw_abstraction, gw_demand_vol)
+        frac_allocate_gw = bounded_divide(gw_abstraction, gw_demand_vol)
 
         # water abstracted from groundwater and allocated.
         for j in inds_land[i]
@@ -509,7 +509,7 @@ end
 "Return and update non-irrigation sector (domestic, livestock, industry) return flow"
 function return_flow(non_irri::NonIrrigationDemand, allocation)
     for i in eachindex(non_irri.returnflow)
-        frac = divide(non_irri.demand_gross[i], allocation.nonirri_demand_gross[i])
+        frac = bounded_divide(non_irri.demand_gross[i], allocation.nonirri_demand_gross[i])
         allocate = frac * allocation.nonirri_alloc[i]
         non_irri.returnflow[i] = non_irri.returnflow_fraction[i] * allocate
     end
@@ -588,7 +588,7 @@ function update_water_allocation(
         vertical.allocation.total_alloc[i] =
             vertical.allocation.groundwater_alloc[i] +
             vertical.allocation.surfacewater_alloc[i]
-        frac_irri = divide(
+        frac_irri = bounded_divide(
             vertical.allocation.irri_demand_gross[i],
             vertical.allocation.total_gross_demand[i],
         )
