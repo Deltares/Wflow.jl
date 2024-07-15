@@ -230,7 +230,7 @@
     domestic::Union{NonIrrigationDemand,Nothing} | "-" | 0
     livestock::Union{NonIrrigationDemand,Nothing} | "-" | 0
     industry::Union{NonIrrigationDemand,Nothing} | "-" | 0
-    waterallocation::Union{WaterAllocationLand,Nothing} | "-" | 0
+    allocation::Union{AllocationLand,Nothing} | "-" | 0
 
 
     function SBM{T,N,M}(args...) where {T,N,M}
@@ -760,8 +760,8 @@ function initialize_sbm(nc, config, riverfrac, inds)
         domestic = domestic ? initialize_domestic_demand(nc, config, inds, dt) : nothing,
         industry = industry ? initialize_industry_demand(nc, config, inds, dt) : nothing,
         livestock = livestock ? initialize_livestock_demand(nc, config, inds, dt) : nothing,
-        waterallocation = do_water_demand ?
-                          initialize_waterallocation_land(nc, config, inds) : nothing,
+        allocation = do_water_demand ? initialize_allocation_land(nc, config, inds) :
+                     nothing,
     )
 
     return sbm
@@ -893,7 +893,7 @@ function update_until_recharge(sbm::SBM, config)
         runoff_river = min(1.0, sbm.riverfrac[i]) * avail_forinfilt
         runoff_land = min(1.0, sbm.waterfrac[i]) * avail_forinfilt
         if !isnothing(sbm.paddy) || !isnothing(sbm.nonpaddy)
-            avail_forinfilt = avail_forinfilt + sbm.waterallocation.irri_alloc[i]
+            avail_forinfilt = avail_forinfilt + sbm.allocation.irri_alloc[i]
         end
         avail_forinfilt = max(avail_forinfilt - runoff_river - runoff_land, 0.0)
 
@@ -1062,7 +1062,7 @@ function update_until_recharge(sbm::SBM, config)
                 availcap =
                     min(1.0, max(0.0, (sbm.rootingdepth[i] - sbm.sumlayers[i][k]) / usl[k]))
             end
-			maxextr = usld[k] * availcap
+            maxextr = usld[k] * availcap
             # the rootfraction is valid for the root length in a soil layer, if zi decreases the root length
             # the rootfraction needs to be adapted           
             if k == n_usl && sbm.zi[i] < sbm.rootingdepth[i]
@@ -1072,8 +1072,7 @@ function update_until_recharge(sbm::SBM, config)
             else
                 rootfraction_act = sbm.rootfraction[i][k]
             end
-            actevapustore_layer =
-                min(alpha * rootfraction_act * sbm.pottrans[i], maxextr)
+            actevapustore_layer = min(alpha * rootfraction_act * sbm.pottrans[i], maxextr)
             rootfraction_unsat = rootfraction_unsat + rootfraction_act
             ustorelayerdepth = usld[k] - actevapustore_layer
             actevapustore = actevapustore + actevapustore_layer
@@ -1376,7 +1375,7 @@ computed for sectors `industry`, `domestic` and `livestock`, and `paddy` rice fi
 
 Gross water demand for irrigation `irri_demand_gross` and non-irrigation
 `nonirri_demand_gross`, and total gross water demand `total_gross_demand` are updated as
-part of `SBM` water allocation (`waterallocation`).
+part of `SBM` water allocation (`allocation`).
 """
 function update_water_demand(sbm::SBM)
     for i = 1:sbm.n
@@ -1461,10 +1460,9 @@ function update_water_demand(sbm::SBM)
             sbm.paddy.demand_gross[i] = irri_dem_gross
         end
         # update gross water demands 
-        sbm.waterallocation.irri_demand_gross[i] = irri_dem_gross
-        sbm.waterallocation.nonirri_demand_gross[i] =
-            industry_dem + domestic_dem + livestock_dem
-        sbm.waterallocation.total_gross_demand[i] =
+        sbm.allocation.irri_demand_gross[i] = irri_dem_gross
+        sbm.allocation.nonirri_demand_gross[i] = industry_dem + domestic_dem + livestock_dem
+        sbm.allocation.total_gross_demand[i] =
             irri_dem_gross + industry_dem + domestic_dem + livestock_dem
     end
 end

@@ -5,11 +5,11 @@ model = Wflow.run_timestep(model)
 sbm = model.vertical
 
 @testset "piave water demand and allocation first timestep" begin
-    sum_total_alloc = sum(sbm.waterallocation.total_alloc)
-    @test sum(sbm.waterallocation.irri_alloc) + sum(sbm.waterallocation.nonirri_alloc) ≈
+    sum_total_alloc = sum(sbm.allocation.total_alloc)
+    @test sum(sbm.allocation.irri_alloc) + sum(sbm.allocation.nonirri_alloc) ≈
           sum_total_alloc
-    @test sum(sbm.waterallocation.surfacewater_alloc) ≈ 1016.4268126167575f0
-    @test sum(sbm.waterallocation.act_groundwater_abst) ≈ 182.2057678312209f0
+    @test sum(sbm.allocation.surfacewater_alloc) ≈ 1016.4268126167575f0
+    @test sum(sbm.allocation.act_groundwater_abst) ≈ 182.2057678312209f0
     @test sbm.paddy.h[[45, 76, 296]] ≈
           [33.55659436283413f0, 44.11663357735189f0, 35.232731550849486f0]
     @test sbm.paddy.irrigation_trigger[[45, 76, 296]] == [1, 1, 1]
@@ -33,11 +33,11 @@ model = Wflow.run_timestep(model)
 sbm = model.vertical
 
 @testset "piave water demand and allocation second timestep" begin
-    sum_total_alloc = sum(sbm.waterallocation.total_alloc)
-    @test sum(sbm.waterallocation.irri_alloc) + sum(sbm.waterallocation.nonirri_alloc) ≈
+    sum_total_alloc = sum(sbm.allocation.total_alloc)
+    @test sum(sbm.allocation.irri_alloc) + sum(sbm.allocation.nonirri_alloc) ≈
           sum_total_alloc
-    @test sum(sbm.waterallocation.surfacewater_alloc) ≈ 1057.2573971583527f0
-    @test sum(sbm.waterallocation.act_groundwater_abst) ≈ 189.12436534660375f0
+    @test sum(sbm.allocation.surfacewater_alloc) ≈ 1057.2573971583527f0
+    @test sum(sbm.allocation.act_groundwater_abst) ≈ 189.12436534660375f0
     @test sbm.paddy.h[[45, 76, 296]] ≈
           [28.197082339552537f0, 25.873022895247782f0, 30.066801639786547f0]
     @test sbm.paddy.irrigation_trigger[[45, 76, 296]] == [1, 1, 1]

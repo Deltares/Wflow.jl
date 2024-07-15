@@ -225,7 +225,7 @@ end
         reservoir = nothing,
         lake = nothing,
         floodplain = nothing,
-        waterallocation = nothing,
+        allocation = nothing,
     )
 
     # run until steady state is reached

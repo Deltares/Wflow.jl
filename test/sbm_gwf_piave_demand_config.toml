@@ -118,7 +118,7 @@ q = "q_land"
 h = "h_land"
 h_av = "h_av_land"
 
-[input.vertical.waterallocation]
+[input.vertical.allocation]
 areas = "allocation_areas"
 frac_sw_used = "SurfaceWaterFrac"
 

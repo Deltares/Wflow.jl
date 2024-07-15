@@ -113,7 +113,7 @@ q = "q_land"
 h = "h_land"
 h_av = "h_av_land"
 
-[input.vertical.waterallocation]
+[input.vertical.allocation]
 areas = "allocation_areas"
 frac_sw_used = "SurfaceWaterFrac"
 
@@ -183,4 +183,4 @@ parameter = "vertical.paddy.h"
 coordinate.x = 12.7243
 coordinate.y = 45.5851
 header = "irri_bycoord"
-parameter = "vertical.waterallocation.irri_alloc"
+parameter = "vertical.allocation.irri_alloc"

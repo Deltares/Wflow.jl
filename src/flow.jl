@@ -30,7 +30,7 @@ abstract type SurfaceFlow end
     lake_index::Vector{Int} | "-"                # map cell to 0 (no lake) or i (pick lake i in lake field)
     reservoir::R | "-" | 0                       # Reservoir model struct of arrays
     lake::L | "-" | 0                            # Lake model struct of arrays
-    waterallocation::W | "-" | 0                 # Water allocation
+    allocation::W | "-" | 0                      # Water allocation
     kinwave_it::Bool | "-" | 0 | "none" | "none" # Boolean for iterations kinematic wave
 
     # TODO unclear why this causes a MethodError
@@ -181,7 +181,7 @@ function initialize_surfaceflow_river(
         reservoir = reservoir,
         lake = lake,
         kinwave_it = iterate,
-        waterallocation = do_water_demand ? initialize_waterallocation_river(n) : nothing,
+        allocation = do_water_demand ? initialize_allocation_river(n) : nothing,
     )
 
     return sf_river
@@ -549,7 +549,7 @@ end
     reservoir::R | "-" | 0                                  # Reservoir model struct of arrays
     lake::L | "-" | 0                                       # Lake model struct of arrays
     floodplain::F | "-" | 0                                 # Floodplain (1D) schematization
-    waterallocation::W | "-" | 0                            # Water allocation
+    allocation::W | "-" | 0                                 # Water allocation
 end
 
 function initialize_shallowwater_river(
@@ -733,7 +733,7 @@ function initialize_shallowwater_river(
         reservoir = reservoir,
         lake = lake,
         floodplain = floodplain,
-        waterallocation = do_water_demand ? initialize_waterallocation_river(n) : nothing,
+        allocation = do_water_demand ? initialize_allocation_river(n) : nothing,
     )
     return sw_river, nodes_at_link
 end
@@ -1647,11 +1647,8 @@ function set_river_inwater(
             # net_runoff_river
             (vertical.net_runoff_river[inds] * network.land.area[inds] * 0.001) /
             vertical.dt +
-            (
-                lateral.river.waterallocation.nonirri_returnflow *
-                0.001 *
-                network.river.area
-            ) / vertical.dt
+            (lateral.river.allocation.nonirri_returnflow * 0.001 * network.river.area) /
+            vertical.dt
         )
     else
         @. lateral.river.inwater = (
@@ -1691,7 +1688,7 @@ function set_land_inwater(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfM
     end
     if do_water_demand
         @. lateral.land.inwater =
-            (vertical.net_runoff + vertical.waterallocation.nonirri_returnflow) *
+            (vertical.net_runoff + vertical.allocation.nonirri_returnflow) *
             network.land.area *
             0.001 / lateral.land.dt + drainflux
     else
@@ -1710,7 +1707,7 @@ function set_land_inwater(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmMode
     do_water_demand = haskey(config.model, "water_demand")
     if do_water_demand
         @. lateral.land.inwater =
-            (vertical.net_runoff + vertical.waterallocation.nonirri_returnflow) *
+            (vertical.net_runoff + vertical.allocation.nonirri_returnflow) *
             network.land.area *
             0.001 / lateral.land.dt
     else
