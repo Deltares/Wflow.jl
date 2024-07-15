@@ -52,7 +52,8 @@ vwc_1_size = 0
     @test request((fn = "get_var_itemsize", name = "lateral.subsurface.ssf")) ==
           Dict("var_itemsize" => sizeof(Wflow.Float))
     @test request((fn = "get_var_type", name = "vertical.n"))["status"] == "ERROR"
-    @test request((fn = "get_var_units", name = "vertical.theta_s")) == Dict("var_units" => "-")
+    @test request((fn = "get_var_units", name = "vertical.theta_s")) ==
+          Dict("var_units" => "-")
     @test request((fn = "get_var_location", name = "lateral.river.q")) ==
           Dict("var_location" => "node")
     zi_nbytes = request((fn = "get_var_nbytes", name = "vertical.zi"))["var_nbytes"]

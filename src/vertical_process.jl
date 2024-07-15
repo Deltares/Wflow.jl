@@ -65,7 +65,6 @@ function rainfall_interception_gash(
     throughfall = throughfall + canopy_drainage
 
     return throughfall, interception, stemflow, canopystorage
-
 end
 
 """
@@ -116,7 +115,6 @@ function rainfall_interception_modrut(
     interception = canopy_evap
 
     return netinterception, throughfall, stemflow, leftover, interception, canopystorage
-
 end
 
 """
@@ -282,7 +280,7 @@ function unsatzone_flow_layer(usd, kv_z, l_sat, c)
     ast = max(min(st - min(st, st_sat), usd), 0.0)
     # number of iterations (to reduce "overshooting") based on fixed maximum change in soil water per iteration step (0.2 mm / model timestep)
     its = Int(cld(ast, 0.2))
-    for _ = 1:its
+    for _ in 1:its
         st = (kv_z / its) * min(pow(usd / l_sat, c), 1.0)
         ast = min(st, usd)
         usd -= ast
@@ -310,7 +308,6 @@ function unsatzone_flow_sbm(
     theta_s,
     theta_r,
 )
-
     sd = soilwatercapacity - satwaterdepth
     if sd <= 0.00001
         ast = 0.0
@@ -321,9 +318,7 @@ function unsatzone_flow_sbm(
     end
 
     return ustorelayerdepth, ast
-
 end
-
 
 """
     snowpack_hbv(snow, snowwater, precipitation, temperature, tti, tt, ttm, cfmax, whc)
@@ -447,5 +442,4 @@ function glacier_hbv(glacierfrac, glacierstore, snow, temperature, tt, cfmax, g_
     glacierstore = glacierstore - glaciermelt
 
     return snow, snow2glacier, glacierstore, glaciermelt
-
 end

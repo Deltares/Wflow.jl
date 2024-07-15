@@ -26,8 +26,8 @@ using IfElse
 
 const BMI = BasicModelInterface
 const Float = Float64
-const CFDataset = Union{NCDataset,NCDatasets.MFDataset}
-const CFVariable_MF = Union{NCDatasets.CFVariable,NCDatasets.MFCFVariable}
+const CFDataset = Union{NCDataset, NCDatasets.MFDataset}
+const CFVariable_MF = Union{NCDatasets.CFVariable, NCDatasets.MFCFVariable}
 const version =
     VersionNumber(TOML.parsefile(joinpath(@__DIR__, "..", "Project.toml"))["version"])
 
@@ -43,7 +43,7 @@ function Clock(config)
     calendar = get(config, "calendar", "standard")::String
     starttime = cftime(config.starttime, calendar)
     dt = Second(config.timestepsecs)
-    Clock(starttime, 0, dt)
+    return Clock(starttime, 0, dt)
 end
 
 function Clock(config, reader)
@@ -77,7 +77,7 @@ function Clock(config, reader)
     end
     starttime = cftime(config.starttime, calendar)
 
-    Clock(starttime, 0, dt)
+    return Clock(starttime, 0, dt)
 end
 
 include("io.jl")
@@ -88,7 +88,7 @@ include("io.jl")
 Composite type that represents all different aspects of a Wflow Model, such as the
 network, parameters, clock, configuration and input and output.
 """
-struct Model{N,L,V,R,W,T}
+struct Model{N, L, V, R, W, T}
     config::Config  # all configuration options
     network::N  # connectivity information, directed graph
     lateral::L  # lateral model that holds lateral state, moves along network
@@ -184,7 +184,7 @@ function run(config::Config)
         error("unknown model type")
     end
     load_fixed_forcing(model)
-    run(model)
+    return run(model)
 end
 
 function run_timestep(model::Model; update_func = update, write_model_output = true)
@@ -212,7 +212,7 @@ function run(model::Model; close_files = true)
     starttime = clock.time
     dt = clock.dt
     endtime = cftime(config.endtime, calendar)
-    times = range(starttime + dt, endtime, step = dt)
+    times = range(starttime + dt, endtime; step = dt)
 
     @info "Run information" model_type starttime dt endtime nthreads()
     runstart_time = now()
@@ -233,7 +233,7 @@ function run(model::Model; close_files = true)
     # option to support running function twice without re-initializing
     # and thus opening the netCDF files
     if close_files
-        Wflow.close_files(model, delete_output = false)
+        Wflow.close_files(model; delete_output = false)
     end
 
     # copy TOML to dir_output, to archive what settings were used
@@ -242,7 +242,7 @@ function run(model::Model; close_files = true)
         dst = output_path(config, basename(src))
         if src != dst
             @debug "Copying TOML file." src dst
-            cp(src, dst, force = true)
+            cp(src, dst; force = true)
         end
     end
     return model
@@ -258,7 +258,7 @@ function run()
     if !isfile(toml_path)
         throw(ArgumentError("File not found: $(toml_path)\n" * usage))
     end
-    run(toml_path)
+    return run(toml_path)
 end
 
 end # module

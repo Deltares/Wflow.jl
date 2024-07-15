@@ -1,11 +1,8 @@
 
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 
-
 @testset "BMI" begin
-
     @testset "BMI functions" begin
-
         model = BMI.initialize(Wflow.Model, tomlpath)
 
         @testset "initialization and time functions" begin
@@ -125,7 +122,6 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
                 BMI.update_until(model, time - BMI.get_time_step(model))
             BMI.finalize(model)
         end
-
     end
 
     @testset "BMI grid edges" begin
@@ -150,7 +146,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
         model = BMI.initialize(Wflow.Model, tomlpath)
 
         # update the recharge part of the SBM model
-        model = BMI.update(model, run = "sbm_until_recharge")
+        model = BMI.update(model; run = "sbm_until_recharge")
 
         @testset "recharge part of SBM" begin
             sbm = model.vertical
@@ -173,7 +169,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             fill(1.0e-5, BMI.get_grid_node_count(model, 6)),
         )
         # update SBM after subsurface flow
-        model = BMI.update(model, run = "sbm_after_subsurfaceflow")
+        model = BMI.update(model; run = "sbm_after_subsurfaceflow")
 
         @testset "SBM after subsurface flow" begin
             sbm = model.vertical
@@ -190,11 +186,9 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 
         BMI.finalize(model)
     end
-
 end
 
 @testset "BMI extension functions" begin
-
     model = BMI.initialize(Wflow.Model, tomlpath)
     @test Wflow.get_start_unix_time(model) == 9.466848e8
     satwaterdepth = mean(model.vertical.satwaterdepth)

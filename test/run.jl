@@ -46,7 +46,6 @@ config.output.path =
 model = Wflow.initialize_sbm_model(config)
 Wflow.run(model)
 
-
 # second half of January, warm start, fews_run set to true, and starttime set one day earlier
 # to match endtime of part 1
 config.starttime = DateTime("2000-01-14T00:00:00")

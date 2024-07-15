@@ -1,12 +1,12 @@
-import ZMQ
-import JSON3
-import StructTypes
-import Wflow
-import WflowServer
+using ZMQ: ZMQ
+using JSON3: JSON3
+using StructTypes: StructTypes
+using Wflow: Wflow
+using WflowServer: WflowServer
 import Statistics: mean
 import Logging: with_logger, NullLogger
 import Test: @testset, @test
-import Downloads
+using Downloads: Downloads
 
 # ensure test data is present
 testdir = @__DIR__

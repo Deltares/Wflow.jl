@@ -98,7 +98,7 @@ function cell_lengths(y::AbstractVector, cellength::Real, sizeinmetres::Bool)
         xl .= cellength
         yl .= cellength
     else
-        for i = 1:n
+        for i in 1:n
             longlen, latlen = lattometres(y[i])
             xl[i] = longlen * cellength
             yl[i] = latlen * cellength
@@ -116,7 +116,7 @@ function river_fraction(
 )
     n = length(river)
     riverfrac = fill(mv, n)
-    for i = 1:n
+    for i in 1:n
         riverfrac[i] = if river[i]
             min((riverlength[i] * riverwidth[i]) / (xl[i] * yl[i]), 1.0)
         else
@@ -293,7 +293,7 @@ function ncread(
             # provided through the TOML file.
             if length(mod.index) > 1
                 # if index, scale and offset is provided in the TOML as a list.
-                for i = 1:length(mod.index)
+                for i in 1:length(mod.index)
                     A[:, :, mod.index[i]] =
                         A[:, :, mod.index[i]] .* mod.scale[i] .+ mod.offset[i]
                 end
@@ -347,10 +347,9 @@ a SVector `sl` with cumulative soil depth starting at soil surface (0), and a SV
 per soil layer.
 """
 function set_layerthickness(d::Real, sl::SVector, tl::SVector)
-
     act_d = tl .* mv
-    for i = 1:length(act_d)
-        if d > sl[i+1]
+    for i in 1:length(act_d)
+        if d > sl[i + 1]
             act_d = setindex(act_d, tl[i], i)
         elseif d - sl[i] > 0.0
             act_d = setindex(act_d, d - sl[i], i)
@@ -435,10 +434,10 @@ function sum_at(f::Function, inds, T)
 end
 
 # https://juliaarrays.github.io/StaticArrays.jl/latest/pages/api/#Arrays-of-static-arrays-1
-function svectorscopy(x::Matrix{T}, ::Val{N}) where {T,N}
+function svectorscopy(x::Matrix{T}, ::Val{N}) where {T, N}
     size(x, 1) == N || error("sizes mismatch")
     isbitstype(T) || error("use for bitstypes only")
-    copy(reinterpret(SVector{N,T}, vec(x)))
+    return copy(reinterpret(SVector{N, T}, vec(x)))
 end
 
 """
@@ -497,8 +496,8 @@ julia> tosecond(Day(1))
 """
 tosecond(x::Hour) = Float64(Dates.value(Second(x)))
 tosecond(x::Minute) = Float64(Dates.value(Second(x)))
-tosecond(x::T) where {T<:DatePeriod} = Float64(Dates.value(Second(x)))
-tosecond(x::T) where {T<:TimePeriod} = x / convert(T, Second(1))
+tosecond(x::T) where {T <: DatePeriod} = Float64(Dates.value(Second(x)))
+tosecond(x::T) where {T <: TimePeriod} = x / convert(T, Second(1))
 
 """
     adjacent_nodes_at_link(graph)
@@ -519,7 +518,7 @@ function adjacent_links_at_node(graph, nodes_at_link)
     nodes = vertices(graph)
     src_link = Vector{Int}[]
     dst_link = copy(src_link)
-    for i = 1:nv(graph)
+    for i in 1:nv(graph)
         push!(src_link, findall(isequal(nodes[i]), nodes_at_link.dst))
         push!(dst_link, findall(isequal(nodes[i]), nodes_at_link.src))
     end
@@ -556,7 +555,6 @@ function set_effective_flowwidth!(
     waterbody,
     inds_rev_riv,
 )
-
     toposort = topological_sort_by_dfs(graph_riv)
     n = length(we_x)
     for v in toposort
@@ -618,7 +616,7 @@ end
 "Partition indices with at least size `basesize`"
 function _partition(xs::Integer, basesize::Integer)
     n = Int(max(1, xs ÷ basesize))
-    return (Int(1 + ((i - 1) * xs) ÷ n):Int((i * xs) ÷ n) for i = 1:n)
+    return (Int(1 + ((i - 1) * xs) ÷ n):Int((i * xs) ÷ n) for i in 1:n)
 end
 
 """
@@ -691,7 +689,6 @@ of vertical concept `SBM` (at index `i`) based on multiplication factor `khfrac`
 table depth `z` [mm] and hydraulic conductivity profile `ksat_profile`.
 """
 function kh_layered_profile(sbm::SBM, khfrac, i, ksat_profile)
-
     m = sbm.nlayers[i]
     t_factor = (tosecond(basetimestep) / sbm.dt)
     if (sbm.soilthickness[i] - sbm.zi[i]) > 0.0
@@ -809,7 +806,7 @@ function initialize_lateralssf_layered!(ssf::LateralSSF, sbm::SBM, ksat_profile)
         ssf.ssf[i] =
             ssf.kh[i] * (ssf.soilthickness[i] - ssf.zi[i]) * ssf.slope[i] * ssf.dw[i]
         kh_max = 0.0
-        for j = 1:sbm.nlayers[i]
+        for j in 1:sbm.nlayers[i]
             if j <= sbm.nlayers_kv[i]
                 kh_max += sbm.kv[i][j] * sbm.act_thickl[i][j]
             else

@@ -75,7 +75,8 @@ function ssf_water_table_depth(ssf, kh_0, slope, f, d, dw, z_exp, ksat_profile)
     elseif ksat_profile == "exponential_constant"
         ssf_constant = kh_0 * slope * exp(-f * z_exp) * (d - z_exp) * dw
         if ssf > ssf_constant
-            zi = log((f * (ssf - ssf_constant)) / (dw * kh_0 * slope) + exp(-f * z_exp)) / -f
+            zi =
+                log((f * (ssf - ssf_constant)) / (dw * kh_0 * slope) + exp(-f * z_exp)) / -f
         else
             zi = d - ssf / (dw * kh_0 * slope * exp(-f * z_exp))
         end
@@ -127,7 +128,6 @@ function kinematic_wave_ssf(
     z_exp,
     ksat_profile,
 )
-
     epsilon = 1.0e-12
     max_iters = 3000
 
@@ -194,7 +194,6 @@ function kinematic_wave_ssf(
         zi = clamp(zi, 0.0, d)
 
         return ssf, zi, exfilt
-
     end
 end
 
@@ -207,8 +206,20 @@ Kinematic wave for lateral subsurface flow for a single cell and timestep, based
 Returns lateral subsurface flow `ssf`, water table depth `zi` and exfiltration rate
 `exfilt`.
 """
-function kinematic_wave_ssf(ssfin, ssf_prev, zi_prev, r, kh, slope, theta_e, d, dt, dx, dw, ssfmax)
-
+function kinematic_wave_ssf(
+    ssfin,
+    ssf_prev,
+    zi_prev,
+    r,
+    kh,
+    slope,
+    theta_e,
+    d,
+    dt,
+    dx,
+    dw,
+    ssfmax,
+)
     epsilon = 1.0e-12
     max_iters = 3000
 
@@ -298,7 +309,7 @@ end
 Non mutating version of `accucapacitystate!`.
 """
 function accucapacitystate(material, network, capacity)
-    accucapacitystate!(copy(material), network, capacity)
+    return accucapacitystate!(copy(material), network, capacity)
 end
 
 """
@@ -338,7 +349,7 @@ end
 Non mutating version of `accucapacityflux!`.
 """
 function accucapacityflux(material, network, capacity)
-    accucapacityflux!(zero(material), copy(material), network, capacity)
+    return accucapacityflux!(zero(material), copy(material), network, capacity)
 end
 
 """
@@ -373,7 +384,6 @@ function local_inertial_flow(
     froude_limit,
     dt,
 )
-
     slope = (zs1 - zs0) / length
     pow_R = cbrt(R * R * R * R)
     unit = one(hf)
@@ -411,15 +421,13 @@ function local_inertial_flow(
     froude_limit,
     dt,
 )
-
     slope = (zs1 - zs0) / length
     unit = one(theta)
     half = oftype(theta, 0.5)
     pow_hf = cbrt(hf * hf * hf * hf * hf * hf * hf)
 
     q = (
-        ((theta * q0 + half * (unit - theta) * (qu + qd)) - g * hf * width * dt * slope) /
-        (unit + g * dt * mannings_n_sq * abs(q0) / (pow_hf * width))
+        ((theta * q0 + half * (unit - theta) * (qu + qd)) - g * hf * width * dt * slope) / (unit + g * dt * mannings_n_sq * abs(q0) / (pow_hf * width))
     )
     # if froude number > 1.0, limit flow
     if froude_limit

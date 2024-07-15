@@ -56,8 +56,9 @@ function add_to_required_states(required_states::Tuple, key_entry::Tuple, states
     return required_states
 end
 
-add_to_required_states(required_states::Tuple, key_entry::Tuple, states::Nothing) =
-    required_states
+function add_to_required_states(required_states::Tuple, key_entry::Tuple, states::Nothing)
+    return required_states
+end
 
 """
     extract_required_states(config::Config)

@@ -11,7 +11,7 @@ parsed_toml = TOML.parsefile(tomlpath)
 config = Wflow.Config(tomlpath)
 
 @testset "configuration file" begin
-    @test parsed_toml isa Dict{String,Any}
+    @test parsed_toml isa Dict{String, Any}
     @test config isa Wflow.Config
     @test Dict(config) == parsed_toml
     @test pathof(config) == tomlpath
@@ -33,7 +33,7 @@ config = Wflow.Config(tomlpath)
     # modifiers can also be applied
     kvconf = Wflow.get_alias(config.input.vertical, "kv_0", "kv_0", nothing)
     @test kvconf isa Wflow.Config
-    ncname, modifier = Wflow.ncvar_name_modifier(kvconf, config = config)
+    ncname, modifier = Wflow.ncvar_name_modifier(kvconf; config = config)
     @test ncname === "KsatVer"
     @test modifier.scale == 1.0
     @test modifier.offset == 0.0
@@ -284,7 +284,7 @@ Wflow.load_dynamic_input!(model)
     ]
 end
 
-Wflow.close_files(model, delete_output = false)
+Wflow.close_files(model; delete_output = false)
 
 @testset "NetCDF creation" begin
     path = Base.Filesystem.tempname()
@@ -296,7 +296,6 @@ end
 
 @testset "NetCDF read variants" begin
     NCDataset(staticmaps_moselle_path) do ds
-
         @test Wflow.is_increasing(ds[:lon])
         @test !Wflow.is_increasing(ds[:lat])
 
@@ -307,7 +306,7 @@ end
 
         x = collect(Wflow.nc_dim(ds, :lon))
         @test length(x) == 291
-        @test x isa Vector{Union{Missing,Float64}}
+        @test x isa Vector{Union{Missing, Float64}}
 
         @test Wflow.internal_dim_name(:lon) == :x
         @test Wflow.internal_dim_name(:latitude) == :y
@@ -316,7 +315,7 @@ end
         @test_throws ArgumentError Wflow.read_dims(ds["c"], (x = :, y = :))
         @test_throws ArgumentError Wflow.read_dims(ds["LAI"], (x = :, y = :))
         data, data_dim_order = Wflow.read_dims(ds["wflow_dem"], (x = :, y = :))
-        @test data isa Matrix{Union{Float32,Missing}}
+        @test data isa Matrix{Union{Float32, Missing}}
         @test data[end, end] === missing
         @test data[125, 1] ≈ 647.187f0
         @test data_dim_order == (:x, :y)

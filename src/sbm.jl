@@ -1,4 +1,4 @@
-@get_units @with_kw struct SBM{T,N,M}
+@get_units @with_kw struct SBM{T, N, M}
     # Model time step [s]
     dt::T | "s"
     # Maximum number of soil layers
@@ -20,17 +20,17 @@
     # Vertical hydraulic conductivity [mm Δt⁻¹] at soil surface
     kv_0::Vector{T}
     # Vertical hydraulic conductivity [mm Δt⁻¹] per soil layer
-    kv::Vector{SVector{N,T}} | "-"
+    kv::Vector{SVector{N, T}} | "-"
     # Muliplication factor [-] applied to kv_z (vertical flow)
-    kvfrac::Vector{SVector{N,T}} | "-"
+    kvfrac::Vector{SVector{N, T}} | "-"
     # Air entry pressure [cm] of soil (Brooks-Corey)
     hb::Vector{T} | "cm"
     # Soil thickness [mm]
     soilthickness::Vector{T} | "mm"
     # Thickness of soil layers [mm]
-    act_thickl::Vector{SVector{N,T}} | "mm"
+    act_thickl::Vector{SVector{N, T}} | "mm"
     # Cumulative sum of soil layers [mm], starting at soil surface (0)
-    sumlayers::Vector{SVector{M,T}} | "mm"
+    sumlayers::Vector{SVector{M, T}} | "mm"
     # Infiltration capacity of the compacted areas [mm Δt⁻¹]
     infiltcappath::Vector{T}
     # Soil infiltration capacity [mm Δt⁻¹]
@@ -52,7 +52,7 @@
     # Crop coefficient Kc [-]
     kc::Vector{T} | "-"
     # Brooks-Corey power coefﬁcient [-] for each soil layer
-    c::Vector{SVector{N,T}} | "-"
+    c::Vector{SVector{N, T}} | "-"
     # Stemflow [mm Δt⁻¹]
     stemflow::Vector{T}
     # Throughfall [mm Δt⁻¹]
@@ -64,7 +64,7 @@
     # Depth [mm] from soil surface for which layered profile is valid
     z_layered::Vector{T} | "mm"
     # Amount of water in the unsaturated store, per layer [mm]
-    ustorelayerdepth::Vector{SVector{N,T}} | "mm"
+    ustorelayerdepth::Vector{SVector{N, T}} | "mm"
     # Saturated store [mm]
     satwaterdepth::Vector{T} | "mm"
     # Pseudo-water table depth [mm] (top of the saturated zone)
@@ -141,9 +141,9 @@
     # Net surface runoff (surface runoff - actual open water evaporation) [mm Δt⁻¹]
     net_runoff::Vector{T}
     # Volumetric water content [-] per soil layer (including theta_r and saturated zone)
-    vwc::Vector{SVector{N,T}} | "-"
+    vwc::Vector{SVector{N, T}} | "-"
     # Volumetric water content [%] per soil layer (including theta_r and saturated zone)
-    vwc_perc::Vector{SVector{N,T}} | "%"
+    vwc_perc::Vector{SVector{N, T}} | "%"
     # Root water storage [mm] in unsaturated and saturated zone (excluding theta_r)
     rootstore::Vector{T} | "mm"
     # Volumetric water content [-] in root zone (including theta_r and saturated zone)
@@ -207,7 +207,7 @@
     # Total water storage (excluding floodplain volume, lakes and reservoirs) [mm]
     total_storage::Vector{T} | "mm"
 
-    function SBM{T,N,M}(args...) where {T,N,M}
+    function SBM{T, N, M}(args...) where {T, N, M}
         equal_size_vectors(args)
         return new(args...)
     end
@@ -260,7 +260,6 @@ function initialize_canopy(nc, config, inds)
 end
 
 function initialize_sbm(nc, config, riverfrac, inds)
-
     dt = Second(config.timestepsecs)
     config_thicknesslayers = get(config.model, "thicknesslayers", Float[])
     ksat_profile = get(config.input.vertical, "ksat_profile", "exponential")::String
@@ -477,7 +476,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
     act_thickl = zeros(Float, maxlayers, n)
     s_layers = zeros(Float, maxlayers + 1, n)
 
-    for i = 1:n
+    for i in 1:n
         if length(config_thicknesslayers) > 0
             act_thickl_, nlayers_ =
                 set_layerthickness(soilthickness[i], sumlayers, thicknesslayers)
@@ -556,7 +555,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
               """)
     end
 
-    sbm = SBM{Float,maxlayers,maxlayers + 1}(
+    sbm = SBM{Float, maxlayers, maxlayers + 1}(;
         dt = tosecond(dt),
         maxlayers = maxlayers,
         n = n,
@@ -665,25 +664,24 @@ function initialize_sbm(nc, config, riverfrac, inds)
     )
 
     return sbm
-
 end
 
-
 function update_until_snow(sbm::SBM, config)
-
     do_lai = haskey(config.input.vertical, "leaf_area_index")
     modelglacier = get(config.model, "glacier", false)::Bool
     modelsnow = get(config.model, "snow", false)::Bool
 
-    threaded_foreach(1:sbm.n, basesize = 1000) do i
+    threaded_foreach(1:(sbm.n); basesize = 1000) do i
         if do_lai
             cmax = sbm.sl[i] * sbm.leaf_area_index[i] + sbm.swood[i]
             canopygapfraction = exp(-sbm.kext[i] * sbm.leaf_area_index[i])
             canopyfraction = 1.0 - canopygapfraction
             ewet = canopyfraction * sbm.potential_evaporation[i] * sbm.kc[i]
-            e_r =
-                sbm.precipitation[i] > 0.0 ?
-                min(0.25, ewet / max(0.0001, canopyfraction * sbm.precipitation[i])) : 0.0
+            e_r = if sbm.precipitation[i] > 0.0
+                min(0.25, ewet / max(0.0001, canopyfraction * sbm.precipitation[i]))
+            else
+                0.0
+            end
         else
             cmax = sbm.cmax[i]
             canopygapfraction = sbm.canopygapfraction[i]
@@ -756,7 +754,7 @@ function update_until_recharge(sbm::SBM, config)
     ust = get(config.model, "whole_ust_available", false)::Bool # should be removed from optional setting and code?
     ksat_profile = get(config.input.vertical, "ksat_profile", "exponential")::String
 
-    threaded_foreach(1:sbm.n, basesize = 250) do i
+    threaded_foreach(1:(sbm.n); basesize = 250) do i
         if modelsnow
             rainfallplusmelt = sbm.rainfallplusmelt[i]
             if modelglacier
@@ -777,7 +775,6 @@ function update_until_recharge(sbm::SBM, config)
                 # Convert to mm per grid cell and add to snowmelt
                 glaciermelt = glaciermelt * sbm.glacierfrac[i]
                 rainfallplusmelt = rainfallplusmelt + glaciermelt
-
             end
         else
             rainfallplusmelt = sbm.stemflow[i] + sbm.throughfall[i]
@@ -826,7 +823,6 @@ function update_until_recharge(sbm::SBM, config)
                 soilinfreduction,
             )
 
-
         usl, n_usl = set_layerthickness(sbm.zi[i], sbm.sumlayers[i], sbm.act_thickl[i])
         z = cumsum(usl)
         usld = sbm.ustorelayerdepth[i]
@@ -852,12 +848,14 @@ function update_until_recharge(sbm::SBM, config)
                 )
                 usld = setindex(usld, ustorelayerdepth, 1)
             else
-                for m = 1:n_usl
+                for m in 1:n_usl
                     l_sat = usl[m] * (sbm.theta_s[i] - sbm.theta_r[i])
                     kv_z = hydraulic_conductivity_at_depth(sbm, z[m], i, m, ksat_profile)
-                    ustorelayerdepth =
-                        m == 1 ? sbm.ustorelayerdepth[i][m] + infiltsoilpath :
+                    ustorelayerdepth = if m == 1
+                        sbm.ustorelayerdepth[i][m] + infiltsoilpath
+                    else
                         sbm.ustorelayerdepth[i][m] + ast
+                    end
                     ustorelayerdepth, ast =
                         unsatzone_flow_layer(ustorelayerdepth, kv_z, l_sat, sbm.c[i][m])
                     usld = setindex(usld, ustorelayerdepth, m)
@@ -922,7 +920,7 @@ function update_until_recharge(sbm::SBM, config)
 
         # actual transpiration from ustore
         actevapustore = 0.0
-        for k = 1:n_usl
+        for k in 1:n_usl
             ustorelayerdepth, actevapustore, restpottrans = acttransp_unsat_sbm(
                 rootingdepth,
                 usld[k],
@@ -941,11 +939,11 @@ function update_until_recharge(sbm::SBM, config)
 
         # check soil moisture balance per layer
         du = 0.0
-        for k = n_usl:-1:1
+        for k in n_usl:-1:1
             du = max(0.0, usld[k] - usl[k] * (sbm.theta_s[i] - sbm.theta_r[i]))
             usld = setindex(usld, usld[k] - du, k)
             if k > 1
-                usld = setindex(usld, usld[k-1] + du, k - 1)
+                usld = setindex(usld, usld[k - 1] + du, k - 1)
             end
         end
 
@@ -982,7 +980,7 @@ function update_until_recharge(sbm::SBM, config)
             end
 
             netcapflux = capflux
-            for k = n_usl:-1:1
+            for k in n_usl:-1:1
                 toadd = min(
                     netcapflux,
                     max(usl[k] * (sbm.theta_s[i] - sbm.theta_r[i]) - usld[k], 0.0),
@@ -1046,13 +1044,12 @@ function update_until_recharge(sbm::SBM, config)
 end
 
 function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
-
-    threaded_foreach(1:sbm.n, basesize = 1000) do i
+    threaded_foreach(1:(sbm.n); basesize = 1000) do i
         usl, n_usl = set_layerthickness(zi[i], sbm.sumlayers[i], sbm.act_thickl[i])
         # exfiltration from ustore
         usld = sbm.ustorelayerdepth[i]
         exfiltustore = 0.0
-        for k = sbm.n_unsatlayers[i]:-1:1
+        for k in sbm.n_unsatlayers[i]:-1:1
             if k <= n_usl
                 exfiltustore = max(0, usld[k] - usl[k] * (sbm.theta_s[i] - sbm.theta_r[i]))
             else
@@ -1060,7 +1057,7 @@ function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
             end
             usld = setindex(usld, usld[k] - exfiltustore, k)
             if k > 1
-                usld = setindex(usld, usld[k-1] + exfiltustore, k - 1)
+                usld = setindex(usld, usld[k - 1] + exfiltustore, k - 1)
             end
         end
 
@@ -1076,7 +1073,7 @@ function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
         # volumetric water content per soil layer and root zone
         vwc = sbm.vwc[i]
         vwc_perc = sbm.vwc_perc[i]
-        for k = 1:sbm.nlayers[i]
+        for k in 1:sbm.nlayers[i]
             if k <= n_usl
                 vwc = setindex(
                     vwc,
@@ -1093,7 +1090,7 @@ function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
         end
 
         rootstore_unsat = 0
-        for k = 1:n_usl
+        for k in 1:n_usl
             rootstore_unsat =
                 rootstore_unsat +
                 min(1.0, (max(0.0, sbm.rootingdepth[i] - sbm.sumlayers[i][k]) / usl[k])) *
@@ -1166,7 +1163,7 @@ function update_total_water_storage(
     )
 
     # Chunk the data for parallel computing
-    threaded_foreach(1:sbm.n, basesize = 1000) do i
+    threaded_foreach(1:(sbm.n); basesize = 1000) do i
 
         # Cumulate per vertical type
         # Maybe re-categorize in the future

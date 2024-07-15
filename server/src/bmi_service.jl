@@ -176,7 +176,7 @@ struct SaveState
     fn::String
 end
 
-function wflow_bmi(m::Initialize, model::Union{Wflow.Model,Nothing})
+function wflow_bmi(m::Initialize, model::Union{Wflow.Model, Nothing})
     model = getfield(Wflow.BMI, Symbol(m.fn))(Wflow.Model, m.config_file)
     return model
 end

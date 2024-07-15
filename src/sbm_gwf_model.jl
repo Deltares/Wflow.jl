@@ -64,7 +64,7 @@ function initialize_sbm_gwf_model(config::Config)
     # read x, y coordinates and calculate cell length [m]
     y_nc = read_y_axis(nc)
     x_nc = read_x_axis(nc)
-    y = permutedims(repeat(y_nc, outer = (1, length(x_nc))))[inds]
+    y = permutedims(repeat(y_nc; outer = (1, length(x_nc))))[inds]
     cellength = abs(mean(diff(x_nc)))
 
     sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
@@ -391,8 +391,8 @@ function initialize_sbm_gwf_model(config::Config)
         indices_reverse,
         x_nc,
         y_nc,
-        nc,
-        extra_dim = (name = "layer", value = Float64.(1:sbm.maxlayers)),
+        nc;
+        extra_dim = (name = "layer", value = Float64.(1:(sbm.maxlayers))),
     )
     close(nc)
 
@@ -477,9 +477,8 @@ function initialize_sbm_gwf_model(config::Config)
     return model
 end
 
-
 "update the sbm_gwf model for a single timestep"
-function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
+function update(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmGwfModel}
     @unpack lateral, vertical, network, clock, config = model
 
     inds_riv = network.index_river
@@ -547,7 +546,7 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
 
     ssf_toriver = zeros(vertical.n)
     ssf_toriver[inds_riv] = -lateral.subsurface.river.flux ./ lateral.river.dt
-    surface_routing(model, ssf_toriver = ssf_toriver)
+    surface_routing(model; ssf_toriver = ssf_toriver)
 
     return model
 end

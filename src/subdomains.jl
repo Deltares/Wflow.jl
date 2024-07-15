@@ -82,7 +82,7 @@ subbasins without upstream neighbor and distance < `max_dist`) to distance 0 (`o
 function subbasins_order(g, outlet, max_dist)
     order = Vector{Vector{Int}}(undef, max_dist + 1)
     order[1] = [outlet]
-    for i = 1:max_dist
+    for i in 1:max_dist
         v = Vector{Int}()
         for n in order[i]
             ups_nodes = inneighbors(g, n)
@@ -90,14 +90,14 @@ function subbasins_order(g, outlet, max_dist)
                 append!(v, ups_nodes)
             end
         end
-        order[i+1] = v
+        order[i + 1] = v
     end
 
     # move subbasins without upstream neighbor (headwater) to index [max_dist+1]
-    for i = 1:max_dist
+    for i in 1:max_dist
         for s in order[i]
             if isempty(inneighbors(g, s))
-                append!(order[max_dist+1], s)
+                append!(order[max_dist + 1], s)
                 filter!(e -> e ≠ s, order[i])
             end
         end
@@ -116,7 +116,7 @@ flow network for each subbasin cell.
 function graph_from_nodes(graph, subbas, subbas_fill)
     n = maximum(subbas)
     g = DiGraph(n)
-    for i = 1:n
+    for i in 1:n
         idx = findall(x -> x == i, subbas)
         ds_idx = outneighbors(graph, only(idx))
         to_node = subbas_fill[ds_idx]
@@ -149,7 +149,6 @@ streamorder, toposort, min_sto)`). Subbasins are extracted for each basin outlet
 - `topo_subbas` topological order per subbasin id stored as `Vector{Vector{Int}}`
 """
 function kinwave_set_subdomains(graph, toposort, index_pit, streamorder, min_sto)
-
     if nthreads() > 1
         # extract basins (per outlet/pit), assign unique basin id
         n_pits = length(index_pit)
@@ -169,7 +168,7 @@ function kinwave_set_subdomains(graph, toposort, index_pit, streamorder, min_sto
         topo_subbas = Vector{Vector{Int}}()
         index = Vector{Int}()
         total_subbas = 0
-        for i = 1:n_pits
+        for i in 1:n_pits
             # extract subbasins per basin, make a graph at the subbasin level, calculate the
             # maximum distance of this graph, and group and order the subbasin ids from
             # upstream to downstream
@@ -179,7 +178,7 @@ function kinwave_set_subdomains(graph, toposort, index_pit, streamorder, min_sto
             streamorder_subbas = streamorder[vmap]
             subbas = subbasins(g, streamorder_subbas, toposort_b, min_sto)
             subbas_fill = fillnodata_upstream(g, toposort_b, subbas, 0)
-            n_subbas = max(length(subbas[subbas.>0]), 1)
+            n_subbas = max(length(subbas[subbas .> 0]), 1)
             if n_subbas > 1
                 graph_subbas = graph_from_nodes(g, subbas, subbas_fill)
                 toposort_subbas = topological_sort_by_dfs(graph_subbas)
@@ -194,7 +193,7 @@ function kinwave_set_subdomains(graph, toposort, index_pit, streamorder, min_sto
             end
             # subbasins need a unique id (in case of multiple basins/outlets in the
             # kinematic wave domain)
-            for n = 1:length(v_subbas)
+            for n in 1:length(v_subbas)
                 v_subbas[n] .= v_subbas[n] .+ total_subbas
             end
             total_subbas += n_subbas
@@ -204,7 +203,7 @@ function kinwave_set_subdomains(graph, toposort, index_pit, streamorder, min_sto
             # (subgraph of the corresponding basin graph g), and the indices that match the
             # subbasin topological order
             if n_subbas > 1
-                for s = 1:n_subbas
+                for s in 1:n_subbas
                     subbas_s = findall(x -> x == s, subbas_fill)
                     sg, _ = induced_subgraph(g, subbas_s)
                     toposort_sg = topological_sort_by_dfs(sg)
@@ -219,8 +218,8 @@ function kinwave_set_subdomains(graph, toposort, index_pit, streamorder, min_sto
         # reduce the order of subbasin ids by merging groups of subbasins that have the same
         # index (multiple basins/outlets in the kinematic wave domain)
         subbas_order = Vector{Vector{Int}}(undef, maximum(index))
-        for m = 1:maximum(index)
-            subbas_order[m] = reduce(vcat, order_subbas[index.==m])
+        for m in 1:maximum(index)
+            subbas_order[m] = reduce(vcat, order_subbas[index .== m])
         end
     else
         subbas_order = [[1]]

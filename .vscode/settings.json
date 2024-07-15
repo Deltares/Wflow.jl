@@ -1,0 +1,9 @@
+{
+    "[julia]": {
+        "editor.formatOnSave": true,
+    },
+    "julia.lint.disabledDirs": [
+        ".pixi"
+    ],
+    "julia.lint.run": true,
+}

@@ -5,7 +5,6 @@ Initial part of the sediment model concept. Reads the input settings and data as
 Config object. Will return a Model that is ready to run.
 """
 function initialize_sediment_model(config::Config)
-
     model_type = config.model.type::String
     @info "Initialize model variables for model type `$model_type`."
 
@@ -47,7 +46,7 @@ function initialize_sediment_model(config::Config)
     # read x, y coordinates and calculate cell length [m]
     y_nc = read_y_axis(nc)
     x_nc = read_x_axis(nc)
-    y = permutedims(repeat(y_nc, outer = (1, length(x_nc))))[inds]
+    y = permutedims(repeat(y_nc; outer = (1, length(x_nc))))[inds]
     cellength = abs(mean(diff(x_nc)))
 
     sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
@@ -61,7 +60,7 @@ function initialize_sediment_model(config::Config)
 
     # # lateral part sediment in overland flow
     rivcell = float(river)
-    ols = OverlandFlowSediment{Float}(
+    ols = OverlandFlowSediment{Float}(;
         n = n,
         rivcell = rivcell,
         soilloss = fill(mv, n),
@@ -154,7 +153,7 @@ function initialize_sediment_model(config::Config)
     return model
 end
 
-function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SedimentModel}
+function update(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SedimentModel}
     @unpack lateral, vertical, network, clock, config = model
 
     update_until_ols(vertical, config)
@@ -192,7 +191,9 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SedimentModel}
     return model
 end
 
-function set_states(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SedimentModel}
+function set_states(
+    model::Model{N, L, V, R, W, T},
+) where {N, L, V, R, W, T <: SedimentModel}
     # read and set states in model object if reinit=false
     @unpack config = model
     reinit = get(config.model, "reinit", true)::Bool

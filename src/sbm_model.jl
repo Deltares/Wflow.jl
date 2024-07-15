@@ -5,7 +5,6 @@ Initial part of the SBM model concept. Reads the input settings and data as defi
 Config object. Will return a Model that is ready to run.
 """
 function initialize_sbm_model(config::Config)
-
     model_type = config.model.type::String
     @info "Initialize model variables for model type `$model_type`."
 
@@ -62,7 +61,7 @@ function initialize_sbm_model(config::Config)
     # read x, y coordinates and calculate cell length [m]
     y_nc = read_y_axis(nc)
     x_nc = read_x_axis(nc)
-    y = permutedims(repeat(y_nc, outer = (1, length(x_nc))))[inds]
+    y = permutedims(repeat(y_nc; outer = (1, length(x_nc))))[inds]
     cellength = abs(mean(diff(x_nc)))
 
     sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
@@ -129,7 +128,7 @@ function initialize_sbm_model(config::Config)
         soilthickness = sbm.soilthickness .* 0.001
         z_exp = sbm.z_exp .* 0.001
 
-        ssf = LateralSSF{Float}(
+        ssf = LateralSSF{Float}(;
             kh_0 = kh_0,
             f = f,
             kh = fill(mv, n),
@@ -162,7 +161,7 @@ function initialize_sbm_model(config::Config)
     else
         # when the SBM model is coupled (BMI) to a groundwater model, the following
         # variables are expected to be exchanged from the groundwater model.
-        ssf = GroundwaterExchange{Float}(
+        ssf = GroundwaterExchange{Float}(;
             dt = dt / basetimestep,
             exfiltwater = fill(mv, n),
             zi = fill(mv, n),
@@ -311,8 +310,8 @@ function initialize_sbm_model(config::Config)
         indices_reverse,
         x_nc,
         y_nc,
-        nc,
-        extra_dim = (name = "layer", value = Float64.(1:sbm.maxlayers)),
+        nc;
+        extra_dim = (name = "layer", value = Float64.(1:(sbm.maxlayers))),
     )
     close(nc)
 
@@ -386,8 +385,7 @@ function initialize_sbm_model(config::Config)
 end
 
 "update SBM model for a single timestep"
-function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
-
+function update(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmModel}
     @unpack lateral, vertical, network, clock, config = model
     ksat_profile = get(config.input.vertical, "ksat_profile", "exponential")::String
 
@@ -405,7 +403,7 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
     end
     update(lateral.subsurface, network.land, network.frac_toriver, ksat_profile)
     model = update_after_subsurfaceflow(model)
-    model = update_total_water_storage(model)
+    return model = update_total_water_storage(model)
 end
 
 """
@@ -414,7 +412,9 @@ end
 Update SBM model until recharge for a single timestep. This function is also accessible
 through BMI, to couple the SBM model to an external groundwater model.
 """
-function update_until_recharge(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
+function update_until_recharge(
+    model::Model{N, L, V, R, W, T},
+) where {N, L, V, R, W, T <: SbmModel}
     @unpack lateral, vertical, network, clock, config = model
 
     inds_riv = network.index_river
@@ -451,8 +451,8 @@ Update SBM model after subsurface flow for a single timestep. This function is a
 accessible through BMI, to couple the SBM model to an external groundwater model.
 """
 function update_after_subsurfaceflow(
-    model::Model{N,L,V,R,W,T},
-) where {N,L,V,R,W,T<:SbmModel}
+    model::Model{N, L, V, R, W, T},
+) where {N, L, V, R, W, T <: SbmModel}
     @unpack lateral, vertical, network, clock, config = model
 
     # update vertical sbm concept (runoff, ustorelayerdepth and satwaterdepth)
@@ -463,7 +463,7 @@ function update_after_subsurfaceflow(
     )
 
     ssf_toriver = lateral.subsurface.to_river ./ tosecond(basetimestep)
-    surface_routing(model, ssf_toriver = ssf_toriver)
+    surface_routing(model; ssf_toriver = ssf_toriver)
 
     return model
 end
@@ -473,7 +473,9 @@ Update of the total water storage at the end of each timestep per model cell.
 
 This is done here at model level.
 """
-function update_total_water_storage(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
+function update_total_water_storage(
+    model::Model{N, L, V, R, W, T},
+) where {N, L, V, R, W, T <: SbmModel}
     @unpack lateral, vertical, network, clock, config = model
 
     # Update the total water storage based on vertical states
@@ -490,8 +492,8 @@ function update_total_water_storage(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,
 end
 
 function set_states(
-    model::Model{N,L,V,R,W,T},
-) where {N,L,V,R,W,T<:Union{SbmModel,SbmGwfModel}}
+    model::Model{N, L, V, R, W, T},
+) where {N, L, V, R, W, T <: Union{SbmModel, SbmGwfModel}}
     @unpack lateral, vertical, network, config = model
 
     reinit = get(config.model, "reinit", true)::Bool

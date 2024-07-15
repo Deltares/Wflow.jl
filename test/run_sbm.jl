@@ -109,7 +109,7 @@ end
     ssf = model.lateral.subsurface.ssf
     @test sum(ssf) ≈ 6.370399148012509f7
     @test ssf[network.land.order[1]] ≈ 7.169036749244327f2
-    @test ssf[network.land.order[end-100]] ≈ 2333.801056570759f0
+    @test ssf[network.land.order[end - 100]] ≈ 2333.801056570759f0
     @test ssf[network.land.order[end]] ≈ 288.19428729403944f0
 end
 
@@ -180,7 +180,7 @@ evap = copy(model.vertical.potential_evaporation)
 lai = copy(model.vertical.leaf_area_index)
 res_evap = copy(model.lateral.river.reservoir.evaporation)
 
-Wflow.close_files(model, delete_output = false)
+Wflow.close_files(model; delete_output = false)
 
 # test for setting a pit and multithreading multiple basins (by setting 2 extra pits
 # resulting in 3 basins)
@@ -271,7 +271,7 @@ model = Wflow.run_timestep(model)
     @test all(isapprox.(model.lateral.river.reservoir.precipitation, 2.5))
 end
 
-Wflow.close_files(model, delete_output = false)
+Wflow.close_files(model; delete_output = false)
 
 # test local-inertial option for river flow river_routing
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
@@ -295,7 +295,7 @@ model = Wflow.run_timestep(model)
     q_channel = model.lateral.river.q_channel_av
     @test q ≈ q_channel
 end
-Wflow.close_files(model, delete_output = false)
+Wflow.close_files(model; delete_output = false)
 
 # test local-inertial option for river and overland flow
 tomlpath = joinpath(@__DIR__, "sbm_swf_config.toml")
@@ -336,7 +336,7 @@ end
     @test Wflow.grid_location(land, :qx) == "edge"
 end
 
-Wflow.close_files(model, delete_output = false)
+Wflow.close_files(model; delete_output = false)
 
 # test local-inertial option for river flow including 1D floodplain schematization
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
@@ -508,7 +508,7 @@ model = Wflow.run_timestep(model)
     @test h[501] ≈ 0.05665929962422606f0
     @test h[5808] ≈ 2.0000006940603936f0
 end
-Wflow.close_files(model, delete_output = false)
+Wflow.close_files(model; delete_output = false)
 
 # test different ksat profiles
 @testset "ksat profiles (SBM)" begin
@@ -613,5 +613,5 @@ Wflow.close_files(model, delete_output = false)
         @test q[43] ≈ 10.013363662625276f0
     end
 
-    Wflow.close_files(model, delete_output = false)
+    Wflow.close_files(model; delete_output = false)
 end

@@ -1,7 +1,7 @@
 
 abstract type SurfaceFlow end
 
-@get_units @with_kw struct SurfaceFlowRiver{T,R,L} <: SurfaceFlow
+@get_units @with_kw struct SurfaceFlowRiver{T, R, L} <: SurfaceFlow
     beta::T | "-"                           # constant in Manning's equation
     sl::Vector{T} | "m m-1"                 # Slope [m m⁻¹]
     n::Vector{T} | "s m-1/3"                # Manning's roughness [s m⁻⅓]
@@ -71,7 +71,7 @@ function initialize_surfaceflow_land(nc, config, inds; sl, dl, width, iterate, t
         ncread(nc, config, "lateral.land.n"; sel = inds, defaults = 0.072, type = Float)
     n = length(inds)
 
-    sf_land = SurfaceFlowLand(
+    sf_land = SurfaceFlowLand(;
         beta = Float(0.6),
         sl = sl,
         n = n_land,
@@ -146,7 +146,7 @@ function initialize_surfaceflow_river(
 
     n = length(inds)
 
-    sf_river = SurfaceFlowRiver(
+    sf_river = SurfaceFlowRiver(;
         beta = Float(0.6),
         sl = sl,
         n = n_river,
@@ -179,7 +179,6 @@ function initialize_surfaceflow_river(
     return sf_river
 end
 
-
 function update(sf::SurfaceFlowLand, network, frac_toriver)
     @unpack graph, subdomain_order, topo_subdomain, indices_subdomain, upstream_nodes =
         network
@@ -196,10 +195,10 @@ function update(sf::SurfaceFlowLand, network, frac_toriver)
     sf.to_river .= 0.0
 
     dt, its = stable_timestep(sf)
-    for _ = 1:its
+    for _ in 1:its
         sf.qin .= 0.0
-        for k = 1:ns
-            threaded_foreach(eachindex(subdomain_order[k]), basesize = 1) do i
+        for k in 1:ns
+            threaded_foreach(eachindex(subdomain_order[k]); basesize = 1) do i
                 m = subdomain_order[k][i]
                 for (n, v) in zip(indices_subdomain[m], topo_subdomain[m])
                     # for a river cell without a reservoir or lake part of the upstream
@@ -243,11 +242,10 @@ function update(sf::SurfaceFlowLand, network, frac_toriver)
     sf.q_av ./= its
     sf.h_av ./= its
     sf.to_river ./= its
-    sf.volume .= sf.dl .* sf.width .* sf.h
+    return sf.volume .= sf.dl .* sf.width .* sf.h
 end
 
 function update(sf::SurfaceFlowRiver, network, doy)
-
     @unpack graph, subdomain_order, topo_subdomain, indices_subdomain, upstream_nodes =
         network
 
@@ -275,10 +273,10 @@ function update(sf::SurfaceFlowRiver, network, doy)
     end
 
     dt, its = stable_timestep(sf)
-    for _ = 1:its
+    for _ in 1:its
         sf.qin .= 0.0
-        for k = 1:ns
-            threaded_foreach(eachindex(subdomain_order[k]), basesize = 1) do i
+        for k in 1:ns
+            threaded_foreach(eachindex(subdomain_order[k]); basesize = 1) do i
                 m = subdomain_order[k][i]
                 for (n, v) in zip(indices_subdomain[m], topo_subdomain[m])
                     # sf.qin by outflow from upstream reservoir or lake location is added
@@ -356,10 +354,10 @@ function update(sf::SurfaceFlowRiver, network, doy)
     end
     sf.q_av ./= its
     sf.h_av ./= its
-    sf.volume .= sf.dl .* sf.width .* sf.h
+    return sf.volume .= sf.dl .* sf.width .* sf.h
 end
 
-function stable_timestep(sf::S) where {S<:SurfaceFlow}
+function stable_timestep(sf::S) where {S <: SurfaceFlow}
     n = length(sf.q)
     # two options for iteration, fixed or based on courant number.
     if sf.kinwave_it
@@ -368,7 +366,7 @@ function stable_timestep(sf::S) where {S<:SurfaceFlow}
         else
             # calculate celerity
             courant = zeros(n)
-            for v = 1:n
+            for v in 1:n
                 if sf.q[v] > 0.0
                     sf.cel[v] =
                         1.0 / (sf.alpha[v] * sf.beta * pow(sf.q[v], (sf.beta - 1.0)))
@@ -414,13 +412,12 @@ end
     end
 end
 
-
 function update(ssf::LateralSSF, network, frac_toriver, ksat_profile)
     @unpack subdomain_order, topo_subdomain, indices_subdomain, upstream_nodes = network
 
     ns = length(subdomain_order)
-    for k = 1:ns
-        threaded_foreach(eachindex(subdomain_order[k]), basesize = 1) do i
+    for k in 1:ns
+        threaded_foreach(eachindex(subdomain_order[k]); basesize = 1) do i
             m = subdomain_order[k][i]
             for (n, v) in zip(indices_subdomain[m], topo_subdomain[m])
                 # for a river cell without a reservoir or lake part of the upstream
@@ -486,7 +483,7 @@ end
     ssf::Vector{T} | "m3 d-1"           # Subsurface flow [m³ d⁻¹]
 end
 
-@get_units @with_kw struct ShallowWaterRiver{T,R,L,F}
+@get_units @with_kw struct ShallowWaterRiver{T, R, L, F}
     n::Int | "-"                                # number of cells
     ne::Int | "-"                               # number of edges/links
     active_n::Vector{Int} | "-"                 # active nodes
@@ -651,7 +648,7 @@ function initialize_shallowwater_river(
     width_at_link = fill(Float(0), _ne)
     length_at_link = fill(Float(0), _ne)
     mannings_n_sq = fill(Float(0), _ne)
-    for i = 1:_ne
+    for i in 1:_ne
         src_node = nodes_at_link.src[i]
         dst_node = nodes_at_link.dst[i]
         zb_max[i] = max(zb[src_node], zb[dst_node])
@@ -667,7 +664,7 @@ function initialize_shallowwater_river(
     waterbody = !=(0).(reservoir_index .+ lake_index)
     active_index = findall(x -> x == 0, waterbody)
 
-    sw_river = ShallowWaterRiver(
+    sw_river = ShallowWaterRiver(;
         n = n,
         ne = _ne,
         active_n = active_index,
@@ -724,7 +721,6 @@ function get_inflow_waterbody(sw::ShallowWaterRiver, src_edge)
 end
 
 function shallowwater_river_update(sw::ShallowWaterRiver, network, dt, doy, update_h)
-
     @unpack nodes_at_link, links_at_node = network
 
     sw.q0 .= sw.q
@@ -781,7 +777,7 @@ function shallowwater_river_update(sw::ShallowWaterRiver, network, dt, doy, upda
             end
         end
 
-        @tturbo for j = 1:n
+        @tturbo for j in 1:n
             i = sw.floodplain.hf_index[j]
             i_src = nodes_at_link.src[i]
             i_dst = nodes_at_link.dst[i]
@@ -881,7 +877,6 @@ function shallowwater_river_update(sw::ShallowWaterRiver, network, dt, doy, upda
     end
     if update_h
         @batch per = thread minbatch = 2000 for i in sw.active_n
-
             q_src = sum_at(sw.q, links_at_node.src[i])
             q_dst = sum_at(sw.q, links_at_node.dst[i])
             sw.volume[i] = sw.volume[i] + (q_src - q_dst + sw.inwater[i]) * dt
@@ -1047,7 +1042,7 @@ function initialize_shallowwater_land(
     n = length(inds)
 
     # initialize links between cells in x and y direction.
-    indices = Indices(xu = zeros(n), xd = zeros(n), yu = zeros(n), yd = zeros(n))
+    indices = Indices(; xu = zeros(n), xd = zeros(n), yu = zeros(n), yd = zeros(n))
 
     # links without neigbors are handled by an extra index (at n + 1, with n links), which
     # is set to a value of 0.0 m³ s⁻¹ for qx and qy fields at initialization.
@@ -1071,7 +1066,7 @@ function initialize_shallowwater_land(
     # determine z at links in x and y direction
     zx_max = fill(Float(0), n)
     zy_max = fill(Float(0), n)
-    for i = 1:n
+    for i in 1:n
         xu = indices.xu[i]
         if xu <= n
             zx_max[i] = max(elevation[i], elevation[xu])
@@ -1098,7 +1093,7 @@ function initialize_shallowwater_land(
         indices_reverse[inds_riv],
     )
 
-    sw_land = ShallowWaterLand{Float}(
+    sw_land = ShallowWaterLand{Float}(;
         n = n,
         xl = xlength,
         yl = ylength,
@@ -1140,7 +1135,7 @@ dt = alpha * (Δx / sqrt(g max(h))
 """
 function stable_timestep(sw::ShallowWaterRiver{T})::T where {T}
     dt_min = T(Inf)
-    @batch per = thread reduction = ((min, dt_min),) for i = 1:sw.n
+    @batch per = thread reduction = ((min, dt_min),) for i in 1:(sw.n)
         @fastmath @inbounds dt = sw.alpha * sw.dl[i] / sqrt(sw.g * sw.h[i])
         dt_min = min(dt, dt_min)
     end
@@ -1150,10 +1145,12 @@ end
 
 function stable_timestep(sw::ShallowWaterLand{T})::T where {T}
     dt_min = T(Inf)
-    @batch per = thread reduction = ((min, dt_min),) for i = 1:sw.n
-        @fastmath @inbounds dt =
-            sw.rivercells[i] == 0 ?
-            sw.alpha * min(sw.xl[i], sw.yl[i]) / sqrt(sw.g * sw.h[i]) : T(Inf)
+    @batch per = thread reduction = ((min, dt_min),) for i in 1:(sw.n)
+        @fastmath @inbounds dt = if sw.rivercells[i] == 0
+            sw.alpha * min(sw.xl[i], sw.yl[i]) / sqrt(sw.g * sw.h[i])
+        else
+            T(Inf)
+        end
         dt_min = min(dt, dt_min)
     end
     dt_min = isinf(dt_min) ? T(10.0) : dt_min
@@ -1167,7 +1164,6 @@ function update(
     doy;
     update_h = false,
 ) where {T}
-
     @unpack nodes_at_link, links_at_node = network.river
 
     if !isnothing(swr.reservoir)
@@ -1198,7 +1194,7 @@ function update(
     end
     swr.q_av ./= swr.dt
     swr.h_av ./= swr.dt
-    sw.h_av ./= sw.dt
+    return sw.h_av ./= sw.dt
 end
 
 function shallowwater_update(
@@ -1207,7 +1203,6 @@ function shallowwater_update(
     network,
     dt,
 ) where {T}
-
     indices = network.land.staggered_indices
     inds_riv = network.land.index_river
 
@@ -1217,7 +1212,7 @@ function shallowwater_update(
     sw.qy0 .= sw.qy
 
     # update qx
-    @batch per = thread minbatch = 6000 for i = 1:sw.n
+    @batch per = thread minbatch = 6000 for i in 1:(sw.n)
         yu = indices.yu[i]
         yd = indices.yd[i]
         xu = indices.xu[i]
@@ -1226,7 +1221,6 @@ function shallowwater_update(
         # the effective flow width is zero when the river width exceeds the cell width (dy
         # for flow in x dir) and floodplain flow is not calculated.
         if xu <= sw.n && sw.ywidth[i] != T(0.0)
-
             zs_x = sw.z[i] + sw.h[i]
             zs_xu = sw.z[xu] + sw.h[xu]
             zs_max = max(zs_x, zs_xu)
@@ -1266,7 +1260,6 @@ function shallowwater_update(
         # the effective flow width is zero when the river width exceeds the cell width (dx
         # for flow in y dir) and floodplain flow is not calculated.
         if yu <= sw.n && sw.xwidth[i] != T(0.0)
-
             zs_y = sw.z[i] + sw.h[i]
             zs_yu = sw.z[yu] + sw.h[yu]
             zs_max = max(zs_y, zs_yu)
@@ -1303,7 +1296,7 @@ function shallowwater_update(
     end
 
     # change in volume and water levels based on horizontal fluxes for river and land cells
-    @batch per = thread minbatch = 6000 for i = 1:sw.n
+    @batch per = thread minbatch = 6000 for i in 1:(sw.n)
         yd = indices.yd[i]
         xd = indices.xd[i]
 
@@ -1364,15 +1357,15 @@ Floodplain `volume` is a function of `depth` (flood depth intervals). Based on t
 cumulative floodplain `volume` a floodplain profile as a function of `flood_depth` is
 derived with floodplain area `a` (cumulative) and wetted perimeter radius `p` (cumulative).
 """
-@get_units @with_kw struct FloodPlainProfile{T,N}
+@get_units @with_kw struct FloodPlainProfile{T, N}
     depth::Vector{T} | "m"                    # Flood depth
-    volume::Array{T,2} | "m3"                 # Flood volume (cumulative)
-    width::Array{T,2} | "m"                   # Flood width
-    a::Array{T,2} | "m2"                      # Flow area (cumulative)
-    p::Array{T,2} | "m"                       # Wetted perimeter (cumulative)
+    volume::Array{T, 2} | "m3"                 # Flood volume (cumulative)
+    width::Array{T, 2} | "m"                   # Flood width
+    a::Array{T, 2} | "m2"                      # Flow area (cumulative)
+    p::Array{T, 2} | "m"                       # Wetted perimeter (cumulative)
 end
 
-@get_units @with_kw struct FloodPlain{T,P}
+@get_units @with_kw struct FloodPlain{T, P}
     profile::P | "-"                           # floodplain profile
     mannings_n::Vector{T} | "s m-1/3"          # manning's roughness
     mannings_n_sq::Vector{T} | "(s m-1/3)2"    # manning's roughness squared
@@ -1392,7 +1385,7 @@ end
 
 "Determine the initial floodplain volume"
 function initialize_volume!(river, nriv::Int)
-    for i = 1:nriv
+    for i in 1:nriv
         i1, i2 =
             interpolation_indices(river.floodplain.h[i], river.floodplain.profile.depth)
         a = flow_area(
@@ -1468,7 +1461,6 @@ function initialize_floodplain_1d(
     n_edges,
     nodes_at_link,
 )
-
     n_floodplain = ncread(
         nc,
         config,
@@ -1506,31 +1498,32 @@ function initialize_floodplain_1d(
     incorrect_vol = 0
     riv_cells = 0
     error_vol = 0
-    for i = 1:n
+    for i in 1:n
         riv_cell = 0
         diff_volume = diff(volume[:, i])
 
-        for j = 1:(n_depths-1)
+        for j in 1:(n_depths - 1)
             # assume rectangular shape of flood depth segment
-            width[j+1, i] = diff_volume[j] / (h[j] * riverlength[i])
+            width[j + 1, i] = diff_volume[j] / (h[j] * riverlength[i])
             # check provided flood volume (floodplain width should be constant or increasing
             # as a function of flood depth)
-            if width[j+1, i] < width[j, i]
+            if width[j + 1, i] < width[j, i]
                 # raise warning only if difference is larger than rounding error of 0.01 m³
-                if ((width[j, i] - width[j+1, i]) * h[j] * riverlength[i]) > 0.01
+                if ((width[j, i] - width[j + 1, i]) * h[j] * riverlength[i]) > 0.01
                     incorrect_vol += 1
                     riv_cell = 1
                     error_vol =
-                        error_vol + ((width[j, i] - width[j+1, i]) * h[j] * riverlength[i])
+                        error_vol +
+                        ((width[j, i] - width[j + 1, i]) * h[j] * riverlength[i])
                 end
-                width[j+1, i] = width[j, i]
+                width[j + 1, i] = width[j, i]
             end
-            a[j+1, i] = width[j+1, i] * h[j]
-            p[j+1, i] = (width[j+1, i] - width[j, i]) + 2.0 * h[j]
-            segment_volume[j+1, i] = a[j+1, i] * riverlength[i]
+            a[j + 1, i] = width[j + 1, i] * h[j]
+            p[j + 1, i] = (width[j + 1, i] - width[j, i]) + 2.0 * h[j]
+            segment_volume[j + 1, i] = a[j + 1, i] * riverlength[i]
             if j == 1
                 # for interpolation wetted perimeter at flood depth 0.0 is required
-                p[j, i] = p[j+1, i] - 2.0 * h[j]
+                p[j, i] = p[j + 1, i] - 2.0 * h[j]
             end
         end
 
@@ -1542,8 +1535,8 @@ function initialize_floodplain_1d(
     end
 
     if incorrect_vol > 0
-        perc_riv_cells = round(100.0 * (riv_cells / n), digits = 2)
-        perc_error_vol = round(100.0 * (error_vol / sum(start_volume[end, :])), digits = 2)
+        perc_riv_cells = round(100.0 * (riv_cells / n); digits = 2)
+        perc_error_vol = round(100.0 * (error_vol / sum(start_volume[end, :])); digits = 2)
         @warn string(
             "The provided volume of $incorrect_vol rectangular floodplain schematization",
             " segments for $riv_cells river cells ($perc_riv_cells % of total river cells)",
@@ -1558,7 +1551,7 @@ function initialize_floodplain_1d(
     p = hcat(p, p[:, index_pit])
 
     # initialize floodplain profile parameters
-    profile = FloodPlainProfile{Float,n_depths}(
+    profile = FloodPlainProfile{Float, n_depths}(;
         volume = volume,
         width = width,
         depth = flood_depths,
@@ -1570,7 +1563,7 @@ function initialize_floodplain_1d(
     append!(n_floodplain, n_floodplain[index_pit]) # copy to ghost nodes
     mannings_n_sq = fill(Float(0), n_edges)
     zb_max = fill(Float(0), n_edges)
-    for i = 1:n_edges
+    for i in 1:n_edges
         src_node = nodes_at_link.src[i]
         dst_node = nodes_at_link.dst[i]
         mannings_n =
@@ -1582,7 +1575,7 @@ function initialize_floodplain_1d(
         zb_max[i] = max(zb[src_node], zb[dst_node])
     end
 
-    floodplain = FloodPlain(
+    floodplain = FloodPlain(;
         profile = profile,
         mannings_n = n_floodplain,
         mannings_n_sq = mannings_n_sq,
@@ -1632,7 +1625,9 @@ end
 
 Set `inwater` of the lateral land component for the `SbmGwfModel` type.
 """
-function set_land_inwater(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
+function set_land_inwater(
+    model::Model{N, L, V, R, W, T},
+) where {N, L, V, R, W, T <: SbmGwfModel}
     @unpack lateral, vertical, network, config = model
 
     do_drains = get(config.model, "drains", false)::Bool
@@ -1642,7 +1637,7 @@ function set_land_inwater(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfM
             -lateral.subsurface.drain.flux ./ tosecond(basetimestep)
     end
 
-    lateral.land.inwater .=
+    return lateral.land.inwater .=
         (vertical.net_runoff .* network.land.xl .* network.land.yl .* 0.001) ./
         lateral.land.dt .+ drainflux
 end
@@ -1652,9 +1647,11 @@ end
 
 Set `inwater` of the lateral land component for the `SbmModel` type.
 """
-function set_land_inwater(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
+function set_land_inwater(
+    model::Model{N, L, V, R, W, T},
+) where {N, L, V, R, W, T <: SbmModel}
     @unpack lateral, vertical, network = model
-    lateral.land.inwater .=
+    return lateral.land.inwater .=
         (vertical.net_runoff .* network.land.xl .* network.land.yl .* 0.001) ./
         lateral.land.dt
 end
@@ -1676,8 +1673,8 @@ Set inflow from the subsurface and land components to a water body (reservoir or
 `inflow_wb` from a model type that contains the lateral components `SurfaceFlow`.
 """
 function set_inflow_waterbody(
-    model::Model{N,L,V,R,W,T},
-) where {N,L<:NamedTuple{<:Any,<:Tuple{Any,SurfaceFlow,SurfaceFlow}},V,R,W,T}
+    model::Model{N, L, V, R, W, T},
+) where {N, L <: NamedTuple{<:Any, <:Tuple{Any, SurfaceFlow, SurfaceFlow}}, V, R, W, T}
     @unpack lateral, network = model
     @unpack subsurface, land, river = lateral
     inds = network.index_river
@@ -1702,8 +1699,15 @@ Set inflow from the subsurface and land components to a water body (reservoir or
 `ShallowWaterRiver`.
 """
 function set_inflow_waterbody(
-    model::Model{N,L,V,R,W,T},
-) where {N,L<:NamedTuple{<:Any,<:Tuple{Any,SurfaceFlow,ShallowWaterRiver}},V,R,W,T}
+    model::Model{N, L, V, R, W, T},
+) where {
+    N,
+    L <: NamedTuple{<:Any, <:Tuple{Any, SurfaceFlow, ShallowWaterRiver}},
+    V,
+    R,
+    W,
+    T,
+}
     @unpack lateral, network = model
     @unpack subsurface, land, river = lateral
     inds = network.index_river
@@ -1731,8 +1735,15 @@ Set inflow from the subsurface and land components to a water body (reservoir or
 `ShallowWaterRiver`.
 """
 function set_inflow_waterbody(
-    model::Model{N,L,V,R,W,T},
-) where {N,L<:NamedTuple{<:Any,<:Tuple{Any,ShallowWaterLand,ShallowWaterRiver}},V,R,W,T}
+    model::Model{N, L, V, R, W, T},
+) where {
+    N,
+    L <: NamedTuple{<:Any, <:Tuple{Any, ShallowWaterLand, ShallowWaterRiver}},
+    V,
+    R,
+    W,
+    T,
+}
     @unpack lateral, network = model
     @unpack subsurface, land, river = lateral
     inds = network.index_river
@@ -1761,7 +1772,7 @@ function surface_routing(model; ssf_toriver = 0.0)
     # run river flow
     set_river_inwater(model, ssf_toriver)
     set_inflow_waterbody(model)
-    update(lateral.river, network.river, julian_day(clock.time - clock.dt))
+    return update(lateral.river, network.river, julian_day(clock.time - clock.dt))
 end
 
 """
@@ -1774,10 +1785,16 @@ Run surface routing (land and river) for a model type that contains the lateral 
 `ShallowWaterLand` and `ShallowWaterRiver`.
 """
 function surface_routing(
-    model::Model{N,L,V,R,W,T};
+    model::Model{N, L, V, R, W, T};
     ssf_toriver = 0.0,
-) where {N,L<:NamedTuple{<:Any,<:Tuple{Any,ShallowWaterLand,ShallowWaterRiver}},V,R,W,T}
-
+) where {
+    N,
+    L <: NamedTuple{<:Any, <:Tuple{Any, ShallowWaterLand, ShallowWaterRiver}},
+    V,
+    R,
+    W,
+    T,
+}
     @unpack lateral, vertical, network, clock = model
 
     @. lateral.land.runoff = (
@@ -1790,5 +1807,5 @@ function surface_routing(
         )
     )
     set_inflow_waterbody(model)
-    update(lateral.land, lateral.river, network, julian_day(clock.time - clock.dt))
+    return update(lateral.land, lateral.river, network, julian_day(clock.time - clock.dt))
 end

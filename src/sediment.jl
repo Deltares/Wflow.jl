@@ -99,7 +99,6 @@
     end
 end
 
-
 function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
     # Initialize parameters for the soil loss part
     n = length(inds)
@@ -189,7 +188,7 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
         fsilt = 0.13 .* psilt ./ 100
         fsand = 0.01 .* psand .* (1 .- 0.01 .* pclay) .^ (2.4)
         fsagg = 0.28 .* (0.01 .* pclay .- 0.25) .+ 0.5
-        for i = 1:n
+        for i in 1:n
             if pclay[i] > 50.0
                 fsagg[i] = 0.57
             elseif pclay[i] < 25
@@ -232,7 +231,7 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
         wbcover = wbcover .+ lakecoverage_2d
     end
 
-    eros = LandSediment{Float}(
+    eros = LandSediment{Float}(;
         n = n,
         yl = yl,
         xl = xl,
@@ -307,7 +306,7 @@ function update_until_ols(eros::LandSediment, config)
     dt = Second(config.timestepsecs)
     ts = Float(dt.value)
 
-    for i = 1:eros.n
+    for i in 1:(eros.n)
 
         ### Splash / Rainfall erosion ###
         # ANSWERS method
@@ -392,18 +391,16 @@ function update_until_ols(eros::LandSediment, config)
         eros.erossagg[i] = soilloss * eros.fsagg[i]
         eros.eroslagg[i] = soilloss * eros.flagg[i]
     end
-
 end
 
 ### Sediment transport capacity in overland flow ###
 function update_until_oltransport(ols::LandSediment, config::Config)
-
     do_river = get(config.model, "runrivermodel", false)::Bool
     tcmethod = get(config.model, "landtransportmethod", "yalinpart")::String
     dt = Second(config.timestepsecs)
     ts = Float(dt.value)
 
-    for i = 1:ols.n
+    for i in 1:(ols.n)
         sinslope = sin(atan(ols.slope[i]))
 
         if !do_river
@@ -441,7 +438,6 @@ function update_until_oltransport(ols::LandSediment, config::Config)
         ols.TCsagg[i] = TCsagg
         ols.TClagg[i] = TClagg
     end
-
 end
 
 function tc_govers(ols::LandSediment, i::Int, sinslope::Float, ts::Float)::Float
@@ -626,7 +622,6 @@ end
     inlandsand::Vector{T} | "t dt-1"
     inlandsagg::Vector{T} | "t dt-1"
     inlandlagg::Vector{T} | "t dt-1"
-
 
     function OverlandFlowSediment{T}(args...) where {T}
         equal_size_vectors(args)
@@ -1010,7 +1005,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     ck = zeros(Float, nriv)
     dk = zeros(Float, nriv)
     if tcmethodriv == "kodatie"
-        for i = 1:nriv
+        for i in 1:nriv
             if d50riv[i] <= 0.05
                 ak[i] = 281.4
                 bk[i] = 2.622
@@ -1048,7 +1043,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     kdbank = @. Float(0.2 * TCrbank^(-0.5) * 1e-6)
     kdbed = @. Float(0.2 * TCrbed^(-0.5) * 1e-6)
 
-    rs = RiverSediment(
+    rs = RiverSediment(;
         n = nriv,
         dt = Float(dt.value),
         # Parameters
@@ -1570,7 +1565,5 @@ function update(rs::RiverSediment, network, config)
 
         rs.SSconc[v] = SS * toconc
         rs.Bedconc[v] = Bed * toconc
-
     end
-
 end

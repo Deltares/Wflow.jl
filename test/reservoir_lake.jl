@@ -1,4 +1,4 @@
-res = Wflow.SimpleReservoir{Float64}(
+res = Wflow.SimpleReservoir{Float64}(;
     dt = 86400.0,
     demand = [52.523],
     maxrelease = [420.184],
@@ -37,7 +37,7 @@ end
     @test Wflow.grid_location(res, :outflow) == "node"
 end
 
-lake = Wflow.Lake{Float64}(
+lake = Wflow.Lake{Float64}(;
     dt = 86400.0,
     lowerlake_ind = [0],
     area = [180510409.0],
@@ -85,9 +85,9 @@ sh = [
 ]
 @testset "linked lakes (HBV)" begin
     @test keys(sh[1]) == (:H, :S)
-    @test typeof(values(sh[1])) == Tuple{Vector{Float},Vector{Float}}
+    @test typeof(values(sh[1])) == Tuple{Vector{Float}, Vector{Float}}
 
-    lake = Wflow.Lake{Float}(
+    lake = Wflow.Lake{Float}(;
         dt = 86400.0,
         lowerlake_ind = [2, 0],
         area = [472461536.0, 60851088.0],
@@ -139,7 +139,7 @@ sh = [
 end
 
 @testset "overflowing lake with sh and hq" begin
-    lake = Wflow.Lake{Float}(
+    lake = Wflow.Lake{Float}(;
         dt = 86400.0,
         lowerlake_ind = [0],
         area = [200_000_000],
