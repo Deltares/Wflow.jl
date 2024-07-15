@@ -213,7 +213,7 @@ the `layered_exponential` profile `kv` is used and `z_exp` is required as part o
 | `ssfin` | inflow from upstream cells | m``^3`` d``{-1}``  | - |
 | `ssfmax` | maximum subsurface flow | m``^2`` d``{-1}``  | - |
 | `to_river` | part of subsurface flow that flows to the river | m``^3`` d``{-1}``  | - |
-| `volume` | subsurface volume | m``^3`` | - |
+| `volume` | subsurface water volume | m``^3`` | - |
 
 ## Local inertial
 
@@ -392,7 +392,7 @@ parameters, the unit, and default value if applicable.
 | `act_surfacewater_abst` |  actual surface water abstraction | mm Δt⁻¹ | - |
 | `act_surfacewater_abst_vol`| actual surface water abstraction | m``^3`` Δt⁻¹ | - |
 | `available_surfacewater`| available surface water | m``^3`` | - |
-| `nonirri_returnflow`| return flow from non-irrigation | mm Δt⁻¹ | - |
+| `nonirri_returnflow`| return flow from non-irrigation (industry, domestic and livestock) | mm Δt⁻¹ | - |
 
 ## Groundwater flow
 

@@ -45,7 +45,7 @@
     pathfrac::Vector{T} | "-"
     # Rooting depth [mm]
     rootingdepth::Vector{T} | "mm"
-    # Root fraction per soil layer (relative to the total root length) [-]
+    # Fraction of the root length density in each soil layer [-]
     rootfraction::Vector{SVector{N,T}} | "-"
     # Soil water pressure head h1 of the root water uptake reduction function (Feddes) [cm]
     h1::Vector{T} | "cm"
@@ -1064,7 +1064,7 @@ function update_until_recharge(sbm::SBM, config)
             end
             maxextr = usld[k] * availcap
             # the rootfraction is valid for the root length in a soil layer, if zi decreases the root length
-            # the rootfraction needs to be adapted           
+            # the rootfraction needs to be adapted
             if k == n_usl && sbm.zi[i] < sbm.rootingdepth[i]
                 rootlength =
                     min(sbm.act_thickl[i][k], sbm.rootingdepth[i] - sbm.sumlayers[i][k])
@@ -1371,11 +1371,11 @@ end
 
 Update water demand for vertical `SBM` concept for a single timestep. Water demand is
 computed for sectors `industry`, `domestic` and `livestock`, and `paddy` rice fields and
-`nonpaddy` (other crop) fields. 
+`nonpaddy` (other crop) fields.
 
 Gross water demand for irrigation `irri_demand_gross` and non-irrigation
 `nonirri_demand_gross`, and total gross water demand `total_gross_demand` are updated as
-part of `SBM` water allocation (`allocation`).
+part of `SBM` water allocation (`allocation`)
 """
 function update_water_demand(sbm::SBM)
     for i = 1:sbm.n

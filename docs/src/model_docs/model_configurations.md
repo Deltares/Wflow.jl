@@ -13,7 +13,7 @@ for the vertical concept SBM of wflow\_sbm:
 - The unsaturated zone can be split-up in different layers
 - The addition of evapotranspiration losses
 - The addition of a capillary rise
-- The addition of [water demand and allocation](@ref sbm_demand_allocation)
+- The addition of water demand and allocation
 
 The water demand and allocation computations are supported by the wflow\_sbm model
 configurations:

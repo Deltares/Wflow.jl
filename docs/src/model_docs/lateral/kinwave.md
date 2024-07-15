@@ -54,12 +54,12 @@ External water (supply/abstraction) `inflow` [m``^3`` s``^{-1}``]  can be added 
 kinematic wave for surface water routing, as a cyclic parameter or as part of forcing (see
 also [Input section](@ref)).
 
-## Abstractions (internal)
-Abstractions (internal) from the river are possible when water demand and allocation is
-computed through the variable `abstraction` [m``^3`` s``{-1}``], that is set from the water
-demand and allocation module each time step. The `abstraction` is divided by the length of
-the runoff pathway and subtracted from the lateral inflow of the kinematic wave routing
-scheme for river flow.
+## Abstractions
+Abstractions from the river through the variable `abstraction` [m``^3`` s``{-1}``] are
+possible when water demand and allocation is computed. The variable `abstraction` is set
+from the water demand and allocation module each time step. The `abstraction` is divided by
+the length of the runoff pathway and subtracted from the lateral inflow of the kinematic
+wave routing scheme for river flow.
 
 ## Subsurface flow routing
 In the SBM model the kinematic wave approach is used to route subsurface flow laterally.

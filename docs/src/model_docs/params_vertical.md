@@ -61,7 +61,7 @@ profile `kv` is used and `z_layered` is required as input.
 | **`waterfrac`** | fraction of open water (excluding rivers) | - | 0.0  |
 | **`pathfrac`** | fraction of compacted area | - | 0.01  |
 | **`rootingdepth`** | rooting depth  | mm | 750.0  |
-| **`rootfraction`** | root fraction per soil layer (relative to the total root length) | - | - |
+| **`rootfraction`** | fraction of the root length density in each soil layer | - | - |
 | **`h1`** | soil water pressure head h1 of the root water uptake reduction function (Feddes) | cm | 0.0 cm |
 | **`h2`** | soil water pressure head h2 of the root water uptake reduction function (Feddes) | cm | -100.0 cm |
 | **`h3_high`** | soil water pressure head h3_high of the root water uptake reduction function (Feddes) | cm | -400.0 cm |
@@ -425,7 +425,7 @@ the internal model parameter to the external netCDF variable.
 | **`irrigation_efficiency`** | irrigation efficiency | - | - |
 | **`maximum_irrigation_depth`** | maximum irrigation depth | mm Δt``^{-1}`` | 25.0 |
 | **`irrigation_areas`** | irrigation areas | - | - |
-| **`irrigation_trigger`** | irrigation on or off | - | - |
+| **`irrigation_trigger`** | irrigation on or off (boolean) | - | - |
 
 ### Non-irrigation (industry, domestic and livestock)
 The Table below shows the parameters (fields) of struct `NonIrrigationDemand`, including a
