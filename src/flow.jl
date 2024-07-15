@@ -1682,7 +1682,7 @@ function set_land_inwater(
     model::Model{N, L, V, R, W, T},
 ) where {N, L, V, R, W, T <: SbmModel}
     @unpack lateral, vertical, network = model
-    lateral.land.inwater .=
+    return lateral.land.inwater .=
         (vertical.net_runoff .* network.land.xl .* network.land.yl .* 0.001) ./
         lateral.land.dt
 end

@@ -112,6 +112,7 @@ end
     @test ssf[network.land.order[1]] ≈ 718.2802566393531f0
     @test ssf[network.land.order[end - 100]] ≈ 2337.771227118579f0
     @test ssf[network.land.order[end]] ≈ 288.19428729403984f0
+    @test sum(ssf) ≈ 6.370399148012509f7
 end
 
 @testset "overland flow" begin
