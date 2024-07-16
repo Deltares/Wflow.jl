@@ -653,16 +653,15 @@ returned to the river routing component, otherwise the return flow is returned t
 overland flow routing component.
 
 ## Non-paddy irrigation
-Non-paddy water demand and allocation computations are supported. These computations can be
-enabled by specifying the following in the TOML file:
+Non-paddy (other crops than flooded rice) water demand and allocation computations are
+supported. These computations can be enabled by specifying the following in the TOML file:
 
 ```toml
 [model.water_demand]
 nonpaddy = true
 ```
-For non-paddy (other crops than flooded rice) irrigation is applied during the growing
-season (when input parameter `irrigation_trigger` [-] is `true` (or `on`)) and when water
-depletion exceeds the readily available water:
+Irrigation is applied during the growing season (when input parameter `irrigation_trigger`
+[-] is `true` (or `on`)) and when water depletion exceeds the readily available water:
 
 ```math
     (U_\mathrm{field} - U_\mathrm{a}) \ge (U_\mathrm{field} - U_\mathrm{h3})
@@ -684,34 +683,34 @@ field capacity is reached. Irrigation is added to the `SBM` variable `avail_fori
 t``^{-1}``], the amount of water available for infiltration.
 
 ## Paddy irrigation
-Paddy water demand and allocation computations are supported. These computations can be
-enabled by specifying the following in the TOML file:
+Paddy (flooded rice) water demand and allocation computations are supported. These
+computations can be enabled by specifying the following in the TOML file:
 
 ```toml
 [model.water_demand]
 paddy = true
 ```
-For paddy (flooded rice) irrigation is applied during the growing season (when input
-parameter `irrigation_trigger` [-] is `true` (or `on`)) and when the paddy water depth `h`
-\[mm\] reaches below the minimum water depth `h_min` \[mm\] (see also the figure below). The
-net irrigation demand [mm t``^{-1}``] is the irrigation rate required to reach the optimal
-paddy water depth `h_opt` \[mm\], an approach similar to Xie and Cui (2011). To account for
-limited irrigation efficiency the net irrigation demand is divided by the irrigation
-efficiency for paddy fields (`irrigation_efficiency` [-], default is 1.0), resulting in
-gross irrigation demand [mm t``^{-1}``]. Finally, the gross irrigation demand is limited by
-the maximum irrigation rate (`maximum_irrigation_rate` [mm t``^{-1}``], default is 25 mm
-d``^{-1}``). If the maximum irrigation rate is applied, irrigation continues at subsequent
-time steps until the optimal paddy water depth `h_opt` is reached. Irrigation is added to
-the `SBM` variable `avail_forinfilt` [mm t``^{-1}``], the amount of water available for
-infiltration. When the paddy water depth `h` exceeds `h_max` \[mm\] runoff occurs, and this
-amount is added to the runoff routing scheme for overland flow. The figure below shows a
-typical vertical soil profile of a puddled rice soil with a muddy layer of about 15 cm (in
-this case represented by two soil layers of 5 cm and 10 cm thickness), a plow soil layer of
-5 cm with relative low permeability (vertical hydraulic conductivity ``k_v`` of about 5 mm
-d``^{-1}``), and a non-puddled soil below the plow soil layer. The low vertical hydraulic
-conductivity of the plow soil layer can be realized by making use of the parameter `kvfrac`
-[-], a multiplication factor applied to the vertical hydraulic conductivity at soil depth
-``z`` [mm].
+Irrigation is applied during the growing season (when input parameter `irrigation_trigger`
+[-] is `true` (or `on`)) and when the paddy water depth `h` \[mm\] reaches below the minimum
+water depth `h_min` \[mm\] (see also the figure below). The net irrigation demand [mm
+t``^{-1}``] is the irrigation rate required to reach the optimal paddy water depth `h_opt`
+\[mm\], an approach similar to Xie and Cui (2011). To account for limited irrigation
+efficiency the net irrigation demand is divided by the irrigation efficiency for paddy
+fields (`irrigation_efficiency` [-], default is 1.0), resulting in gross irrigation demand
+[mm t``^{-1}``]. Finally, the gross irrigation demand is limited by the maximum irrigation
+rate (`maximum_irrigation_rate` [mm t``^{-1}``], default is 25 mm d``^{-1}``). If the
+maximum irrigation rate is applied, irrigation continues at subsequent time steps until the
+optimal paddy water depth `h_opt` is reached. Irrigation is added to the `SBM` variable
+`avail_forinfilt` [mm t``^{-1}``], the amount of water available for infiltration. When the
+paddy water depth `h` exceeds `h_max` \[mm\] runoff occurs, and this amount is added to the
+runoff routing scheme for overland flow. The figure below shows a typical vertical soil
+profile of a puddled rice soil with a muddy layer of about 15 cm (in this case represented
+by two soil layers of 5 cm and 10 cm thickness), a plow soil layer of 5 cm with relative low
+permeability (vertical hydraulic conductivity ``k_v`` of about 5 mm d``^{-1}``), and a
+non-puddled soil below the plow soil layer. The low vertical hydraulic conductivity of the
+plow soil layer can be realized by making use of the parameter `kvfrac` [-], a
+multiplication factor applied to the vertical hydraulic conductivity at soil depth ``z``
+[mm].
 
 ![paddy_profile](../../images/paddy_profile.png)
 
