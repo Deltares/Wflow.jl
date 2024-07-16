@@ -638,8 +638,11 @@ livestock = true
 
 For these non-irrigation sectors the gross demand (``d_\mathrm{gross}`` [mm t``^{-1}``]) and
 net demand (``d_\mathrm{net}`` [mm t``^{-1}``]) are provided to the model (input through
-cyclic or forcing data). The return flow fraction (``f_\mathrm{return}`` [-]) is calculated
-as follows:
+cyclic or forcing data). Gross demand represents the total demand and hence the total
+abstraction from surface water or groundwater when sufficient water is available. Net demand
+represents water consumption. The portion of total abstracted water that is not consumed is
+returned as surface water. The return flow fraction (``f_\mathrm{return}`` [-]) is
+calculated as follows:
 
 ```math
     f_\mathrm{return} = 1.0 - \frac{d_\mathrm{net}}{d_\mathrm{gross}},
@@ -705,7 +708,10 @@ amount is added to the runoff routing scheme for overland flow. The figure below
 typical vertical soil profile of a puddled rice soil with a muddy layer of about 15 cm (in
 this case represented by two soil layers of 5 cm and 10 cm thickness), a plow soil layer of
 5 cm with relative low permeability (vertical hydraulic conductivity ``k_v`` of about 5 mm
-d``^{-1}``), and a non-puddled soil below the plow soil layer.
+d``^{-1}``), and a non-puddled soil below the plow soil layer. The low vertical hydraulic
+conductivity of the plow soil layer can be realized by making use of the parameter `kvfrac`
+[-], a multiplication factor applied to the vertical hydraulic conductivity at soil depth
+``z`` [mm].
 
 ![paddy_profile](../../images/paddy_profile.png)
 
@@ -717,17 +723,22 @@ non-irrigation water demand sectors), in case sufficient water is available the 
 withdrawal is equal to the total gross demand. In case of insufficient water availability,
 the water withdrawal is scaled down to the available water, and allocation is then
 proportional to the gross demand per sector (industry, domestic, livestock and irrigation).
-Water can be abstracted from two sources: surface water (rivers, reservoirs and lakes) and
-groundwater. The model parameter `frac_sw_used` (fraction surface water used, default is
-1.0) determines how much water is supplied by available surface water and groundwater.
+Water can be abstracted from the following sources:
+
+- surface water from rivers (max 80% of total available water) 
+- reservoirs and lakes (max 98% of total available water)
+- groundwater (max 75% of total available water)
+
+The model parameter `frac_sw_used` (fraction surface water used, default is 1.0) determines
+how much water is supplied by available surface water and groundwater.
 
 ### Local
 First, surface water abstraction (excluding reservoir and lake locations) is computed to
-satisfy local water demand. The available surface water volume is limited by a fixed scaling
-factor of 0.8 to prevent rivers from completely drying out. It is assumed that the water
-demand cannot be satisfied completely from local surface water and groundwater. The next
-step is to satisfy the remaining water demand for allocation `areas` [-], described in the
-next sub-section.
+satisfy local (same grid cell) water demand. The available surface water volume is limited
+by a fixed scaling factor of 0.8 to prevent rivers from completely drying out. It is assumed
+that the water demand cannot be satisfied completely from local surface water and
+groundwater. The next step is to satisfy the remaining water demand for allocation `areas`
+[-], described in the next sub-section.
 
 ### Allocation areas
 For allocation areas the water demand ``V_\mathrm{sw, demand}`` [m``^3``] and availability

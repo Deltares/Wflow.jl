@@ -405,18 +405,17 @@ end
         connectivity = Wflow.Connectivity(indices, reverse_indices, dx, dy)
         ncell = connectivity.ncell
         xc = collect(range(0.0, stop = aquifer_length - cellsize, step = cellsize))
-        volume =
-            aquifer = Wflow.UnconfinedAquifer(
-                initial_head.(xc),
-                fill(conductivity, ncell),
-                fill(top, ncell),
-                fill(bottom, ncell),
-                fill(cellsize * cellsize, ncell),
-                fill(specific_yield, ncell),
-                fill(0.0, connectivity.nconnection),
-                fill(0.0, ncell),
-                fill(gwf_f, ncell),
-            )
+        aquifer = Wflow.UnconfinedAquifer(
+            initial_head.(xc),
+            fill(conductivity, ncell),
+            fill(top, ncell),
+            fill(bottom, ncell),
+            fill(cellsize * cellsize, ncell),
+            fill(specific_yield, ncell),
+            fill(0.0, connectivity.nconnection),
+            fill(0.0, ncell),
+            fill(gwf_f, ncell),
+        )
         # constant head on left boundary, 0 at 0
         constanthead = Wflow.ConstantHead([0.0], [1])
         gwf = Wflow.GroundwaterFlow(
