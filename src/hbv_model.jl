@@ -355,8 +355,7 @@ function initialize_hbv_model(config::Config)
         order = toposort,
         indices = inds,
         reverse_indices = rev_inds,
-        xl = xl,
-        yl = yl,
+        area = xl .* yl,
     )
     river = (
         graph = graph_riv,

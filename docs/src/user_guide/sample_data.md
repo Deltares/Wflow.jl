@@ -21,7 +21,7 @@ and [Command Line Interface](@ref cli).
 ```julia
 # urls to TOML and netCDF of the Moselle example model
 toml_url = "https://raw.githubusercontent.com/Deltares/Wflow.jl/master/test/sbm_config.toml"
-staticmaps = "https://github.com/visr/wflow-artifacts/releases/download/v0.2.7/staticmaps-moselle.nc"
+staticmaps = "https://github.com/visr/wflow-artifacts/releases/download/v0.2.9/staticmaps-moselle.nc"
 forcing = "https://github.com/visr/wflow-artifacts/releases/download/v0.2.6/forcing-moselle.nc"
 instates = "https://github.com/visr/wflow-artifacts/releases/download/v0.2.6/instates-moselle.nc"
 
@@ -41,7 +41,7 @@ download(toml_url, toml_path)
 ```julia
 # urls to TOML and netCDF of the Moselle example model
 toml_url = "https://raw.githubusercontent.com/Deltares/Wflow.jl/master/test/sbm_gwf_config.toml"
-staticmaps = "https://github.com/visr/wflow-artifacts/releases/download/v0.2.2/staticmaps-sbm-groundwater.nc"
+staticmaps = "https://github.com/visr/wflow-artifacts/releases/download/v0.2.3/staticmaps-sbm-groundwater.nc"
 forcing = "https://github.com/visr/wflow-artifacts/releases/download/v0.2.1/forcing-sbm-groundwater.nc"
 
 # create a "data" directory in the current directory

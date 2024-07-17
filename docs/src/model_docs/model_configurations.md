@@ -13,6 +13,14 @@ for the vertical concept SBM of wflow\_sbm:
 - The unsaturated zone can be split-up in different layers
 - The addition of evapotranspiration losses
 - The addition of a capillary rise
+- The addition of water demand and allocation
+
+The water demand and allocation computations are supported by the wflow\_sbm model
+configurations:
+- [SBM + Kinematic wave](@ref config_sbm)
+- [SBM + Groundwater flow](@ref config_sbm_gwf)
+- [SBM + Local inertial river](@ref config_sbm_gwf_lie_river)
+- [SBM + Local inertial river (1D) and land (2D)](@ref config_sbm_gwf_lie_river_land)
 
 The vertical SBM concept is explained in more detail in the following section [SBM vertical
 concept](@ref vert_sbm).

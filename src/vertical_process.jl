@@ -120,96 +120,78 @@ function rainfall_interception_modrut(
 end
 
 """
-    acttransp_unsat_sbm(rootingdepth, ustorelayerdepth, sumlayer, restpotevap, sum_actevapustore, c, usl, theta_s, theta_r, hb, ust::Bool = false)
+    vwc_brooks_corey(h, hb, theta_s, theta_r, c)
 
-Compute actual transpiration for unsaturated zone.
-If `ust` is `true`, the whole unsaturated store is available for transpiration.
-
-# Arguments
-- `rootingdepth`
-- `ustorelayerdepth`
-- `sumlayer` (depth (z) of upper boundary unsaturated layer)
-- `restpotevap` (remaining evaporation)
-- `sum_actevapustore` (cumulative actual transpiration (more than one unsaturated layers))
-- `c` (Brooks-Corey coefficient)
-- `usl` (thickness of unsaturated zone)
-- `theta_s`
-- `theta_r`
-- `hb` (air entry pressure)
-- `ust`
-
-# Output
-- `ustorelayerdepth`
-- `sum_actevapustore`
-- `restpotevap`
+Volumetric water content based on the Brooks-Corey soil hydraulic model.
 """
-function acttransp_unsat_sbm(
-    rootingdepth,
-    ustorelayerdepth,
-    sumlayer,
-    restpotevap,
-    sum_actevapustore,
-    c,
-    usl,
-    theta_s,
-    theta_r,
-    hb,
-    ust::Bool = false,
-)
-
-    # AvailCap is fraction of unsat zone containing roots
-    if ust
-        availcap = ustorelayerdepth * 0.99
+function vwc_brooks_corey(h, hb, theta_s, theta_r, c)
+    if h < hb
+        par_lambda = 2.0 / (c - 3.0)
+        vwc = (theta_s - theta_r) * pow(hb / h, par_lambda) + theta_r
     else
-        if usl > 0.0
-            availcap = min(1.0, max(0.0, (rootingdepth - sumlayer) / usl))
-        else
-            availcap = 0.0
+        vwc = theta_s
+    end
+    return vwc
+end
+
+"""
+    head_brooks_corey(vwc, theta_s, theta_r, c, hb)
+
+Soil water pressure head based on the Brooks-Corey soil hydraulic model.
+"""
+function head_brooks_corey(vwc, theta_s, theta_r, c, hb)
+    par_lambda = 2.0 / (c - 3.0)
+    # Note that in the original formula, theta_r is extracted from vwc, but theta_r is not part of the numerical vwc calculation
+    h = hb / (pow(((vwc) / (theta_s - theta_r)), (1.0 / par_lambda)))
+    h = min(h, hb)
+    return h
+end
+
+"""
+    feddes_h3(h3_high, h3_low, tpot, Δt)
+
+Return soil water pressure head `h3` of Feddes root water uptake reduction function.
+"""
+function feddes_h3(h3_high, h3_low, tpot, Δt)
+    # value of h3 is a function of potential transpiration [mm/d]
+    tpot_daily = tpot * (basetimestep / Δt)
+    if (tpot_daily >= 0.0) && (tpot_daily <= 1.0)
+        h3 = h3_low
+    elseif (tpot_daily > 1.0) && (tpot_daily < 5.0)
+        h3 = h3_high + ((h3_low - h3_high) * (5.0 - tpot_daily)) / (5.0 - 1.0)
+    else
+        h3 = h3_high
+    end
+    return h3
+end
+
+"""
+    rwu_reduction_feddes(h, h1, h2, h3, h4, alpha_h1)
+
+Root water uptake reduction factor based on Feddes.
+"""
+function rwu_reduction_feddes(h, h1, h2, h3, h4, alpha_h1)
+    # root water uptake reduction coefficient alpha (see also Feddes et al., 1978)
+    if alpha_h1 == 0.0
+        if (h <= h4) || (h > h1)
+            alpha = 0.0
+        elseif (h > h2) && (h <= h1)
+            alpha = (h - h1) / (h2 - h1)
+        elseif (h >= h3) && (h <= h2)
+            alpha = 1.0
+        elseif (h >= h4) && (h < h3)
+            alpha = (h - h4) / (h3 - h4)
+        end
+    else
+        if h <= h4
+            alpha = 0.0
+        elseif h >= h3
+            alpha = 1.0
+        elseif (h >= h4) && (h < h3)
+            alpha = (h - h4) / (h3 - h4)
         end
     end
-
-    maxextr = availcap * ustorelayerdepth
-
-    # Next step is to make use of the Feddes curve in order to decrease actevapustore when soil moisture values
-    # occur above or below ideal plant growing conditions (see also Feddes et al., 1978). h1-h4 values are
-    # actually negative, but all values are made positive for simplicity.
-    h1 = hb  # cm (air entry pressure)
-    h2 = 100.0  # cm (pF 2 for field capacity)
-    h3 = 400.0  # cm (pF 3, critical pF value)
-    h4 = 15849.0  # cm (pF 4.2, wilting point)
-
-    # According to Brooks-Corey
-    par_lambda = 2.0 / (c - 3.0)
-    if usl > 0.0
-        vwc = ustorelayerdepth / usl
-    else
-        vwc = 0.0
-    end
-    vwc = max(vwc, 0.0000001)
-    head = hb / (pow(((vwc) / (theta_s - theta_r)), (1.0 / par_lambda)))  # Note that in the original formula, thetaR is extracted from vwc, but thetaR is not part of the numerical vwc calculation
-    head = max(head, hb)
-
-    # Transform h to a reduction coefficient value according to Feddes et al. (1978).
-    # For now: no reduction for head < h2 until following improvement (todo):
-    #       - reduction only applied to crops
-    if head <= h1
-        alpha = 1.0
-    elseif head >= h4
-        alpha = 0.0
-    elseif (head < h2) && (head > h1)
-        alpha = 1.0
-    elseif (head > h3) && (head < h4)
-        alpha = 1.0 - (head - h3) / (h4 - h3)
-    else
-        alpha = 1.0
-    end
-
-    actevapustore = (min(maxextr, restpotevap, ustorelayerdepth)) * alpha
-    ustorelayerdepth = ustorelayerdepth - actevapustore
-    restpotevap = restpotevap - actevapustore
-    sum_actevapustore = actevapustore + sum_actevapustore
-
-    return ustorelayerdepth, sum_actevapustore, restpotevap
+    return alpha
 end
 
 """
@@ -259,7 +241,13 @@ function infiltration(
 
     infiltexcess = (soilinf - max_infiltsoil) + (pathinf - max_infiltpath)
 
-    return infiltsoilpath, infiltsoil, infiltpath, soilinf, pathinf, infiltexcess
+    return infiltsoilpath,
+    infiltsoil,
+    infiltpath,
+    soilinf,
+    pathinf,
+    infiltexcess,
+    soilinfredu
 end
 
 """

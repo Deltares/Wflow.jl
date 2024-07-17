@@ -114,10 +114,11 @@ struct SedimentModel end    # "sediment" type / sediment_model.jl
 Base.show(io::IO, m::Model) = print(io, "model of type ", typeof(m))
 
 include("horizontal_process.jl")
+include("flow.jl")
 include("hbv.jl")
+include("water_demand.jl")
 include("sbm.jl")
 include("flextopo.jl")
-include("flow.jl")
 include("sediment.jl")
 include("reservoir_lake.jl")
 include("hbv_model.jl")

@@ -810,7 +810,8 @@ end
 function initialize_lateralssf_layered!(ssf::LateralSSF, sbm::SBM, ksat_profile)
     for i in eachindex(ssf.ssf)
         ssf.kh[i] = kh_layered_profile(sbm, ssf.khfrac[i], i, ksat_profile)
-        ssf.ssf[i] = ssf.kh[i] * (ssf.soilthickness[i] - ssf.zi[i]) * ssf.slope[i] * ssf.dw[i]
+        ssf.ssf[i] =
+            ssf.kh[i] * (ssf.soilthickness[i] - ssf.zi[i]) * ssf.slope[i] * ssf.dw[i]
         kh_max = 0.0
         for j = 1:sbm.nlayers[i]
             if j <= sbm.nlayers_kv[i]
@@ -825,4 +826,15 @@ function initialize_lateralssf_layered!(ssf::LateralSSF, sbm::SBM, ksat_profile)
         kh_max = kh_max * ssf.khfrac[i] * 0.001 * 0.001
         ssf.ssfmax[i] = kh_max * ssf.slope[i]
     end
+end
+
+"""
+    bounded_divide(x, y; max = 1.0, default = 0.0)
+
+Return the division of `x` by `y`, bounded by a maximum value `max`, when `y` > 0.0.
+Otherwise return a `default` value.
+"""
+function bounded_divide(x, y; max = 1.0, default = 0.0)
+    z = y > 0.0 ? min(x / y, max) : default
+    return z
 end

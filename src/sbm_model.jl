@@ -33,6 +33,7 @@ function initialize_sbm_model(config::Config)
     )::String
     land_routing =
         get_options(config.model, "land_routing", routing_options, "kinematic-wave")::String
+    do_water_demand = haskey(config.model, "water_demand")
 
     snow = get(config.model, "snow", false)::Bool
     reservoirs = do_reservoirs
@@ -69,10 +70,10 @@ function initialize_sbm_model(config::Config)
     xl, yl = cell_lengths(y, cellength, sizeinmetres)
     riverfrac = river_fraction(river, riverlength, riverwidth, xl, yl)
 
-    sbm = initialize_sbm(nc, config, riverfrac, inds)
-
     inds_riv, rev_inds_riv = active_indices(river_2d, 0)
     nriv = length(inds_riv)
+
+    sbm = initialize_sbm(nc, config, riverfrac, inds)
 
     # reservoirs
     pits = zeros(Bool, modelsize_2d)
@@ -149,6 +150,7 @@ function initialize_sbm_model(config::Config)
             ssfin = fill(mv, n),
             ssfmax = fill(mv, n),
             to_river = zeros(n),
+            volume = (sbm.theta_s .- sbm.theta_r) .* (soilthickness .- zi) .* (xl .* yl),
         )
         # update variables `ssf`, `ssfmax` and `kh` (layered profile) based on ksat_profile
         ksat_profile = get(config.input.vertical, "ksat_profile", "exponential")::String
@@ -181,6 +183,18 @@ function initialize_sbm_model(config::Config)
     # the indices of the river cells in the land(+river) cell vector
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
     frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, landslope, n)
+
+    inds_allocation_areas = Vector{Int}[]
+    inds_riv_allocation_areas = Vector{Int}[]
+    if do_water_demand
+        areas = unique(sbm.allocation.areas)
+        for a in areas
+            area_index = findall(x -> x == a, sbm.allocation.areas)
+            push!(inds_allocation_areas, area_index)
+            area_riv_index = findall(x -> x == a, sbm.allocation.areas[index_river])
+            push!(inds_riv_allocation_areas, area_riv_index)
+        end
+    end
 
     if land_routing == "kinematic-wave"
         olf = initialize_surfaceflow_land(
@@ -338,33 +352,65 @@ function initialize_sbm_model(config::Config)
         order = toposort,
         indices = inds,
         reverse_indices = rev_inds,
-        xl,
-        yl,
+        area = xl .* yl,
         slope = landslope,
+        indices_allocation_areas = inds_allocation_areas,
     )
     if land_routing == "local-inertial"
         land = merge(land, (index_river = index_river_nf, staggered_indices = indices))
+    end
+    if do_water_demand
+        # exclude waterbodies for local surface and ground water abstraction
+        inds_riv_2d = copy(rev_inds_riv)
+        inds_2d = ones(Bool, modelsize_2d)
+        if !isempty(reservoir)
+            inds_cov = collect(Iterators.flatten(reservoir.indices_coverage))
+            inds_riv_2d[inds_cov] .= 0
+            inds_2d[inds_cov] .= 0
+        end
+        if !isempty(lake)
+            inds_cov = collect(Iterators.flatten(lake.indices_coverage))
+            inds_riv_2d[inds_cov] .= 0
+            inds_2d[inds_cov] .= 0
+        end
+        land = merge(land, (index_river_wb = inds_riv_2d[inds], index_wb = inds_2d[inds]))
     end
     if river_routing == "kinematic-wave"
         river = (
             graph = graph_riv,
             indices = inds_riv,
             reverse_indices = rev_inds_riv,
+            # reservoir and lake index
+            reservoir_index = resindex,
+            lake_index = lakeindex,
+            reservoir_index_f = filter(x -> x ≠ 0, resindex),
+            lake_index_f = filter(x -> x ≠ 0, lakeindex),
             # specific for kinematic_wave
             upstream_nodes = filter_upsteam_nodes(graph_riv, pits[inds_riv]),
             subdomain_order = subriv_order,
             topo_subdomain = topo_subriv,
             indices_subdomain = indices_subriv,
             order = toposort_riv,
+            # water allocation areas
+            indices_allocation_areas = inds_riv_allocation_areas,
+            area = xl[index_river] .* yl[index_river],
         )
     elseif river_routing == "local-inertial"
         river = (
             graph = graph_riv,
             indices = inds_riv,
             reverse_indices = rev_inds_riv,
+            # reservoir and lake index
+            reservoir_index = resindex,
+            lake_index = lakeindex,
+            reservoir_index_f = filter(x -> x ≠ 0, resindex),
+            lake_index_f = filter(x -> x ≠ 0, lakeindex),
             # specific for local-inertial
             nodes_at_link = nodes_at_link,
             links_at_node = adjacent_links_at_node(graph_riv, nodes_at_link),
+            # water allocation areas
+            indices_allocation_areas = inds_riv_allocation_areas,
+            area = xl[index_river] .* yl[index_river],
         )
     end
 
@@ -389,11 +435,15 @@ end
 function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
 
     @unpack lateral, vertical, network, clock, config = model
+    do_water_demand = haskey(config.model, "water_demand")
     ksat_profile = get(config.input.vertical, "ksat_profile", "exponential")::String
 
     model = update_until_recharge(model)
     # exchange of recharge between vertical sbm concept and subsurface flow domain
     lateral.subsurface.recharge .= vertical.recharge ./ 1000.0
+    if do_water_demand
+        @. lateral.subsurface.recharge -= vertical.allocation.act_groundwater_abst / 1000.0
+    end
     lateral.subsurface.recharge .*= lateral.subsurface.dw
     lateral.subsurface.zi .= vertical.zi ./ 1000.0
     # update lateral subsurface flow domain (kinematic wave)
@@ -417,6 +467,8 @@ through BMI, to couple the SBM model to an external groundwater model.
 function update_until_recharge(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
     @unpack lateral, vertical, network, clock, config = model
 
+    do_water_demand = haskey(config.model, "water_demand")
+
     inds_riv = network.index_river
 
     # extract water levels h_av [m] from the land and river domains
@@ -436,6 +488,12 @@ function update_until_recharge(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:Sb
             network.land.slope,
             network.land,
         )
+    end
+
+    # optional water demand and allocation
+    if do_water_demand
+        update_water_demand(vertical)
+        update_water_allocation(model)
     end
 
     # update vertical sbm concept until recharge [mm] to the saturated store
@@ -481,8 +539,7 @@ function update_total_water_storage(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,
     update_total_water_storage(
         vertical,
         network.index_river,
-        network.land.xl,
-        network.land.yl,
+        network.land.area,
         lateral.river,
         lateral.land,
     )

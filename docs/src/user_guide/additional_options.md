@@ -134,6 +134,55 @@ q = "q_floodplain"
 h = "h_floodplain"
 ```
 
+## Enabling water demand and allocation
+The model types `sbm` and `sbm_gwf` support water demand and allocation computations, in
+combination with the kinematic wave and local inertial runoff routing scheme for river and
+overland flow.
+
+```toml
+# example of water demand and allocation input parameters as cyclic data
+[input]
+cyclic = ["vertical.domestic.demand_gross", "vertical.domestic.demand_net", 
+"vertical.industry.demand_gross", "vertical.industry.demand_net", 
+"vertical.livestock.demand_gross", "vertical.livestock.demand_net", 
+"vertical.paddy.irrigation_trigger", "vertical.nonpaddy.irrigation_trigger",]
+
+[model.water_demand]
+domestic = true     # optional, default is "false"
+industry = true     # optional, default is "false"
+livestock = true    # optional, default is "false"
+paddy = true        # optional, default is "false"
+nonpaddy = true     # optional, default is "false"
+
+[input.vertical.allocation]
+areas = "allocation_areas"
+frac_sw_used = "SurfaceWaterFrac"
+
+[input.vertical.domestic]
+demand_gross = "dom_gross"
+demand_net = "dom_net"
+
+[input.vertical.industry]
+demand_gross = "ind_gross"
+demand_net = "ind_net"
+
+[input.vertical.livestock]
+demand_gross = "lsk_gross"
+demand_net = "lsk_net"
+
+[input.vertical.paddy]
+irrigation_areas = "paddy_irrigation_areas"
+irrigation_trigger = "irrigation_trigger"
+
+[input.vertical.nonpaddy]
+irrigation_areas = "nonpaddy_irrigation_areas"
+irrigation_trigger = "irrigation_trigger"
+
+# required if paddy is set to "true"
+[state.vertical.paddy]
+h = "h_paddy"
+```
+
 ## [Using multithreading] (@id multi_threading)
 
 ### Using wflow in Julia

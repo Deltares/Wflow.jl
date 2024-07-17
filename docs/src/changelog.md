@@ -73,8 +73,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   built-in operators is still allowed. This change in naming convention is now in effect and
   all invalid uses of non-ASCII characters have been replaced by ASCII equivalents.
 - Docs: 1) improved description of different model configurations in model-setup.md, also in
-  relation to hydromt_wflow in docs, 2) citing info related to wflow\_sbm publication in
+  relation to hydromt\_wflow in docs, 2) citing info related to wflow\_sbm publication in
   Geosci. Model Dev. (from in review to published).
+- Root water uptake reduction (Feddes): 1) extend critical pressure head parameters with
+  `h3_low` and `h3_high`, 2) all critical pressure head parameters can be set (values for
+  `h1`, `h2` and `h3` were fixed) and 3) the root water uptake reduction coefficient
+  ``\alpha`` can be set at 0 (default is 1) at critical pressure head `h1` (through the
+  model parameter `alpha_h1`).
+- For the actual transpiration computation in `SBM`, the potential transpiration is
+  partitioned over the soil layers with roots according to the model parameter
+  `rootfraction` (fraction of the total root length in a soil layer). Previously,
+  for each soil layer (from top to bottom) the actual transpiration was computed, and the
+  remaining potential transpiration was used in the next soil layer.
 
 ### Added
 - Total water storage as an export variable for `SBM` concept. This is the total water stored
@@ -87,6 +97,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the following sections: [The SBM soil water accounting scheme](@ref) and [Subsurface flow
   routing](@ref) for a short description.
 - Local inertial routing to `sbm_gwf` model type.
+- Water demand and allocation computations for model types `sbm` and `sbm_gwf`.
 
 ## v0.7.3 - 2024-01-12
 

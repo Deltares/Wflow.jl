@@ -32,8 +32,8 @@ end
 
 @testset "model information functions" begin
     @test request((fn = "get_component_name",)) == Dict("component_name" => "sbm")
-    @test request((fn = "get_input_item_count",)) == Dict("input_item_count" => 193)
-    @test request((fn = "get_output_item_count",)) == Dict("output_item_count" => 193)
+    @test request((fn = "get_input_item_count",)) == Dict("input_item_count" => 207)
+    @test request((fn = "get_output_item_count",)) == Dict("output_item_count" => 207)
     to_check = [
         "vertical.nlayers",
         "vertical.theta_r",
@@ -66,7 +66,7 @@ vwc_1_size = 0
     vwc_1_size = Int(vwc_1_nbytes / vwc_1_itemsize)
     @test request((fn = "get_var_grid", name = "lateral.river.h")) == Dict("var_grid" => 3)
     msg = (fn = "get_value", name = "vertical.zi", dest = fill(0.0, zi_size))
-    @test mean(request(msg)["value"]) ≈ 277.8362161218515
+    @test mean(request(msg)["value"]) ≈ 277.3620724821974
     msg = (fn = "get_value_ptr", name = "vertical.theta_s")
     @test mean(request(msg)["value_ptr"]) ≈ 0.4409211971535584
     msg = (
@@ -76,7 +76,7 @@ vwc_1_size = 0
         inds = [1, 5, 10],
     )
     @test request(msg)["value_at_indices"] ≈
-          [2.196562540141252f0, 2.6853997213000866f0, 3.4814142040324985f0]
+          [2.198747900215207f0, 2.6880427720508515f0, 3.4848783702629564f0]
     msg = (fn = "set_value", name = "vertical.zi", src = fill(300.0, zi_size))
     @test request(msg) == Dict("status" => "OK")
     msg = (fn = "get_value", name = "vertical.zi", dest = fill(0.0, zi_size))
