@@ -9,7 +9,7 @@
 end
 
 function initialize_atmospheric_forcing(n)
-    atmospheric_forcing = AtmosphericForcing(
+    atmospheric_forcing = AtmosphericForcing(;
         precipitation = fill(mv, n),
         potential_evaporation = fill(mv, n),
         temperature = fill(mv, n),

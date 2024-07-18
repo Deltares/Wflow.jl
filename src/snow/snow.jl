@@ -1,0 +1,113 @@
+
+@get_units @with_kw struct SnowModelVars{T}
+    # Snow storage [mm]
+    snow::Vector{T} | "mm"
+    # Liquid water content in the snow pack [mm]
+    snowwater::Vector{T} | "mm"
+    # Snow water equivalent (SWE) [mm]
+    swe::Vector{T} | "mm"
+    # Runoff from snowpack [mm Δt⁻¹]
+    runoff::Vector{T}
+end
+
+function snow_model_vars(n)
+    vars = SnowModelVars(;
+        snow = fill(0.0, n),
+        snowwater = fill(0.0, n),
+        swe = fill(mv, n),
+        runoff = fill(mv, n),
+    )
+    return vars
+end
+
+@get_units @with_kw struct SnowBC{T}
+    # Effective precipitation [mm Δt⁻¹]
+    effective_precip::Vector{T}
+    # Snow precipitation [mm Δt⁻¹]
+    snow_precip::Vector{T}
+    # Liquid precipitation [mm Δt⁻¹]
+    liquid_precip::Vector{T}
+end
+
+function snow_model_bc(n)
+    bc = SnowBC(;
+        effective_precip = fill(mv, n),
+        snow_precip = fill(mv, n),
+        liquid_precip = fill(mv, n),
+    )
+    return bc
+end
+
+@get_units @with_kw struct SnowHbvParameters{T}
+    # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹]
+    cfmax::Vector{T} | "mm ᵒC-1 dt-1"
+    # Threshold temperature for snowfall [ᵒC]
+    tt::Vector{T} | "ᵒC"
+    # Threshold temperature interval length [ᵒC]
+    tti::Vector{T} | "ᵒC"
+    # Threshold temperature for snowmelt [ᵒC]
+    ttm::Vector{T} | "ᵒC"
+    # Water holding capacity as fraction of current snow pack [-]
+    whc::Vector{T} | "-"
+end
+
+abstract type AbstractSnowModel{T} end
+
+@get_units @with_kw struct SnowHbvModel{T} <: AbstractSnowModel{T}
+    boundary_conditions::SnowBC{T} | "-"
+    parameters::SnowHbvParameters{T} | "-"
+    variables::SnowModelVars{T} | "-"
+end
+
+function initialize_snow_hbv_params(nc, config, inds, dt)
+    cfmax =
+        ncread(
+            nc,
+            config,
+            "vertical.cfmax";
+            sel = inds,
+            defaults = 3.75653,
+            type = Float,
+        ) .* (dt / basetimestep)
+    tt = ncread(nc, config, "vertical.tt"; sel = inds, defaults = 0.0, type = Float)
+    tti = ncread(nc, config, "vertical.tti"; sel = inds, defaults = 1.0, type = Float)
+    ttm = ncread(nc, config, "vertical.ttm"; sel = inds, defaults = 0.0, type = Float)
+    whc = ncread(nc, config, "vertical.whc"; sel = inds, defaults = 0.1, type = Float)
+    snow_hbv_params =
+        SnowHbvParameters(; cfmax = cfmax, tt = tt, tti = tti, ttm = ttm, whc = whc)
+    return snow_hbv_params
+end
+
+function initialize_snow_hbv_model(nc, config, inds, dt)
+    n = length(inds)
+    params = initialize_snow_hbv_params(nc, config, inds, dt)
+    vars = snow_model_vars(n)
+    bc = snow_model_bc(n)
+    model = SnowHbvModel(; boundary_conditions = bc, parameters = params, variables = vars)
+    return model
+end
+
+function update(snow_model::SnowHbvModel, atmospheric_forcing::AtmosphericForcing)
+    (; temperature) = atmospheric_forcing
+    (; snow, snowwater, swe, runoff) = snow_model.variables
+    (; effective_precip, snow_precip, liquid_precip) = snow_model.boundary_conditions
+    (; tt, tti, ttm, cfmax, whc) = snow_model.parameters
+
+    n = length(temperature)
+    threaded_foreach(1:n; basesize = 1000) do i
+        snow_precip[i], liquid_precip[i] =
+            precipitation_hbv(effective_precip[i], temperature[i], tti[i], tt[i])
+    end
+    threaded_foreach(1:n; basesize = 1000) do i
+        snow[i], snowwater[i], swe[i], runoff[i] = snowpack_hbv(
+            snow[i],
+            snowwater[i],
+            snow_precip[i],
+            liquid_precip[i],
+            temperature[i],
+            ttm[i],
+            cfmax[i],
+            whc[i],
+        )
+    end
+end

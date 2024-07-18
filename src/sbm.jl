@@ -2,6 +2,7 @@
     atmospheric_forcing::AtmosphericForcing | "-"
     veg_param_set::VegetationParameters | "-"
     interception_model::I | "-"
+    snow_model::SnowHbvModel
     # Model time step [s]
     dt::T | "s"
     # Maximum number of soil layers
@@ -136,27 +137,10 @@
     recharge::Vector{T}
     # Actual leakage from saturated store [mm Δt⁻¹]
     actleakage::Vector{T}
-    ### Snow parameters ###
-    # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹]
-    cfmax::Vector{T} | "mm ᵒC-1 dt-1"
-    # Threshold temperature for snowfall [ᵒC]
-    tt::Vector{T} | "ᵒC"
-    # Threshold temperature interval length [ᵒC]
-    tti::Vector{T} | "ᵒC"
-    # Threshold temperature for snowmelt [ᵒC]
-    ttm::Vector{T} | "ᵒC"
-    # Water holding capacity as fraction of current snow pack [-]
-    whc::Vector{T} | "-"
     # Soil temperature smooth factor [-]
     w_soil::Vector{T} | "-"
     # Controls soil infiltration reduction factor when soil is frozen [-]
     cf_soil::Vector{T} | "-"
-    # Snow storage [mm]
-    snow::Vector{T} | "mm"
-    # Liquid water content in the snow pack [mm]
-    snowwater::Vector{T} | "mm"
-    # Snow melt + precipitation as rainfall [mm]
-    rainfallplusmelt::Vector{T} | "mm"
     # Threshold temperature for snowfall above glacier [ᵒC]
     g_tt::Vector{T} | "ᵒC"
     # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹] for glacier
@@ -205,19 +189,8 @@ function initialize_sbm(nc, config, riverfrac, inds)
         interception_model = initialize_rutter_interception_model(veg_param_set, n)
     end
 
-    cfmax =
-        ncread(
-            nc,
-            config,
-            "vertical.cfmax";
-            sel = inds,
-            defaults = 3.75653,
-            type = Float,
-        ) .* (dt / basetimestep)
-    tt = ncread(nc, config, "vertical.tt"; sel = inds, defaults = 0.0, type = Float)
-    tti = ncread(nc, config, "vertical.tti"; sel = inds, defaults = 1.0, type = Float)
-    ttm = ncread(nc, config, "vertical.ttm"; sel = inds, defaults = 0.0, type = Float)
-    whc = ncread(nc, config, "vertical.whc"; sel = inds, defaults = 0.1, type = Float)
+    snow_model = initialize_snow_hbv_model(nc, config, inds, dt)
+
     w_soil =
         ncread(
             nc,
@@ -359,14 +332,6 @@ function initialize_sbm(nc, config, riverfrac, inds)
         ncread(nc, config, "vertical.pathfrac"; sel = inds, defaults = 0.01, type = Float)
 
     # vegetation parameters
-    rootingdepth = ncread(
-        nc,
-        config,
-        "vertical.rootingdepth";
-        sel = inds,
-        defaults = 750.0,
-        type = Float,
-    )
     rootdistpar = ncread(
         nc,
         config,
@@ -378,15 +343,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
     cap_hmax =
         ncread(nc, config, "vertical.cap_hmax"; sel = inds, defaults = 2000.0, type = Float)
     cap_n = ncread(nc, config, "vertical.cap_n"; sel = inds, defaults = 2.0, type = Float)
-    kc = ncread(
-        nc,
-        config,
-        "vertical.kc";
-        alias = "vertical.et_reftopot",
-        sel = inds,
-        defaults = 1.0,
-        type = Float,
-    )
+
     if haskey(config.input.vertical, "et_reftopot")
         @warn string(
             "The `et_reftopot` key in `[input.vertical]` is now called ",
@@ -489,6 +446,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         atmospheric_forcing = atmospheric_forcing,
         veg_param_set = veg_param_set,
         interception_model = interception_model,
+        snow_model = snow_model,
         dt = tosecond(dt),
         maxlayers = maxlayers,
         n = n,
@@ -556,17 +514,8 @@ function initialize_sbm(nc, config, riverfrac, inds)
         transfer = fill(mv, n),
         recharge = fill(mv, n),
         actleakage = fill(mv, n),
-        # snow parameters
-        cfmax = cfmax,
-        tt = tt,
-        tti = tti,
-        ttm = ttm,
-        whc = whc,
         w_soil = w_soil,
         cf_soil = cf_soil,
-        snow = zeros(Float, n),
-        snowwater = zeros(Float, n),
-        rainfallplusmelt = fill(mv, n),
         tsoil = fill(Float(10.0), n),
         # glacier parameters
         g_tt = g_tt,
@@ -587,34 +536,13 @@ function update_until_snow(sbm::SBM, config)
 
     (; canopy_potevap, interception, throughfall, stemflow) =
         sbm.interception_model.variables
-    (; temperature) = sbm.atmospheric_forcing
+    (; effective_precip) = sbm.snow_model.boundary_conditions
 
     update(sbm.interception_model, sbm.atmospheric_forcing)
     @. sbm.pottrans = max(0.0, canopy_potevap - interception)
 
-    threaded_foreach(1:(sbm.n); basesize = 1000) do i
-        if modelsnow
-            tsoil = sbm.tsoil[i] + sbm.w_soil[i] * (temperature[i] - sbm.tsoil[i])
-            snow, snowwater, snowmelt, rainfallplusmelt, snowfall = snowpack_hbv(
-                sbm.snow[i],
-                sbm.snowwater[i],
-                throughfall[i] + stemflow[i],
-                temperature[i],
-                sbm.tti[i],
-                sbm.tt[i],
-                sbm.ttm[i],
-                sbm.cfmax[i],
-                sbm.whc[i],
-            )
-        end
-        # update the outputs and states
-        if modelsnow
-            sbm.snow[i] = snow
-            sbm.snowwater[i] = snowwater
-            sbm.tsoil[i] = tsoil
-            sbm.rainfallplusmelt[i] = rainfallplusmelt
-        end
-    end
+    @. effective_precip = throughfall + stemflow
+    update(sbm.snow_model, sbm.atmospheric_forcing)
 end
 
 function update_until_recharge(sbm::SBM, config)
