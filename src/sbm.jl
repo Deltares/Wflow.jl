@@ -2,7 +2,8 @@
     atmospheric_forcing::AtmosphericForcing | "-"
     veg_param_set::VegetationParameters | "-"
     interception_model::I | "-"
-    snow_model::SnowHbvModel
+    snow_model::SnowHbvModel | "-"
+    glacier_model::GlacierHbvModel | "-"
     # Model time step [s]
     dt::T | "s"
     # Maximum number of soil layers
@@ -141,16 +142,6 @@
     w_soil::Vector{T} | "-"
     # Controls soil infiltration reduction factor when soil is frozen [-]
     cf_soil::Vector{T} | "-"
-    # Threshold temperature for snowfall above glacier [ᵒC]
-    g_tt::Vector{T} | "ᵒC"
-    # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹] for glacier
-    g_cfmax::Vector{T} | "mm ᵒC-1 dt-1"
-    # Fraction of the snowpack on top of the glacier converted into ice [Δt⁻¹]
-    g_sifrac::Vector{T} | "dt-1"
-    # Water within the glacier [mm]
-    glacierstore::Vector{T} | "mm"
-    # Fraction covered by a glacier [-]
-    glacierfrac::Vector{T} | "-"
     # Top soil temperature [ᵒC]
     tsoil::Vector{T} | "ᵒC"
     # Water level land [mm]
@@ -190,6 +181,8 @@ function initialize_sbm(nc, config, riverfrac, inds)
     end
 
     snow_model = initialize_snow_hbv_model(nc, config, inds, dt)
+    glacier_bc = glacier_model_bc(snow_model.variables.snow)
+    glacier_model = initialize_glacier_hbv_model(nc, config, inds, dt, glacier_bc)
 
     w_soil =
         ncread(
@@ -202,54 +195,6 @@ function initialize_sbm(nc, config, riverfrac, inds)
         ) .* (dt / basetimestep)
     cf_soil =
         ncread(nc, config, "vertical.cf_soil"; sel = inds, defaults = 0.038, type = Float)
-    # glacier parameters
-    g_tt = ncread(
-        nc,
-        config,
-        "vertical.g_tt";
-        sel = inds,
-        defaults = 0.0,
-        type = Float,
-        fill = 0.0,
-    )
-    g_cfmax =
-        ncread(
-            nc,
-            config,
-            "vertical.g_cfmax";
-            sel = inds,
-            defaults = 3.0,
-            type = Float,
-            fill = 0.0,
-        ) .* (dt / basetimestep)
-    g_sifrac =
-        ncread(
-            nc,
-            config,
-            "vertical.g_sifrac";
-            sel = inds,
-            defaults = 0.001,
-            type = Float,
-            fill = 0.0,
-        ) .* (dt / basetimestep)
-    glacierfrac = ncread(
-        nc,
-        config,
-        "vertical.glacierfrac";
-        sel = inds,
-        defaults = 0.0,
-        type = Float,
-        fill = 0.0,
-    )
-    glacierstore = ncread(
-        nc,
-        config,
-        "vertical.glacierstore";
-        sel = inds,
-        defaults = 5500.0,
-        type = Float,
-        fill = 0.0,
-    )
     # soil parameters
     theta_s =
         ncread(nc, config, "vertical.theta_s"; sel = inds, defaults = 0.6, type = Float)
@@ -447,6 +392,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         veg_param_set = veg_param_set,
         interception_model = interception_model,
         snow_model = snow_model,
+        glacier_model = glacier_model,
         dt = tosecond(dt),
         maxlayers = maxlayers,
         n = n,
@@ -517,12 +463,6 @@ function initialize_sbm(nc, config, riverfrac, inds)
         w_soil = w_soil,
         cf_soil = cf_soil,
         tsoil = fill(Float(10.0), n),
-        # glacier parameters
-        g_tt = g_tt,
-        g_sifrac = g_sifrac,
-        g_cfmax = g_cfmax,
-        glacierstore = glacierstore,
-        glacierfrac = glacierfrac,
         waterlevel_land = fill(mv, n),
         waterlevel_river = zeros(Float, n), #set to zero to account for cells outside river domain
         total_storage = zeros(Float, n), # Set the total water storage from initialized values
@@ -543,6 +483,8 @@ function update_until_snow(sbm::SBM, config)
 
     @. effective_precip = throughfall + stemflow
     update(sbm.snow_model, sbm.atmospheric_forcing)
+
+    update(sbm.glacier_model, sbm.atmospheric_forcing)
 end
 
 function update_until_recharge(sbm::SBM, config)
