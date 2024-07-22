@@ -34,13 +34,15 @@ end
     max_snow_to_glacier::T
 end
 
-abstract type AbstractGlacierModel{T} end
+abstract type AbstractGlacierModel end
 
-@get_units @with_kw struct GlacierHbvModel{T} <: AbstractGlacierModel{T}
+@get_units @with_kw struct GlacierHbvModel{T} <: AbstractGlacierModel
     boundary_conditions::SnowStateBC{T} | "-"
     parameters::GlacierHbvParameters{T} | "-"
     variables::GlacierModelVars{T} | "-"
 end
+
+struct NoGlacierModel <: AbstractGlacierModel end
 
 function initialize_glacier_hbv_params(nc, config, inds, dt)
     g_tt = ncread(
@@ -130,4 +132,8 @@ function update(glacier_model::GlacierHbvModel, atmospheric_forcing::Atmospheric
             max_snow_to_glacier,
         )
     end
+end
+
+function update(glacier_model::NoGlacierModel, atmospheric_forcing::AtmosphericForcing)
+    return nothing
 end

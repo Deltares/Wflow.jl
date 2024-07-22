@@ -1,9 +1,9 @@
-@get_units @with_kw struct SBM{I, T, N, M}
+@get_units @with_kw struct SBM{IM, SM, GM, T, N, M}
     atmospheric_forcing::AtmosphericForcing | "-"
     veg_param_set::VegetationParameters | "-"
-    interception_model::I | "-"
-    snow_model::SnowHbvModel | "-"
-    glacier_model::GlacierHbvModel | "-"
+    interception_model::IM | "-"
+    snow_model::SM | "-"
+    glacier_model::GM | "-"
     # Model time step [s]
     dt::T | "s"
     # Maximum number of soil layers
@@ -150,11 +150,6 @@
     waterlevel_river::Vector{T} | "mm"
     # Total water storage (excluding floodplain volume, lakes and reservoirs) [mm]
     total_storage::Vector{T} | "mm"
-
-    function SBM{I, T, N, M}(args...) where {I, T, N, M}
-        equal_size_vectors(args)
-        return new(args...)
-    end
 end
 
 function initialize_sbm(nc, config, riverfrac, inds)
@@ -180,10 +175,19 @@ function initialize_sbm(nc, config, riverfrac, inds)
         interception_model = initialize_rutter_interception_model(veg_param_set, n)
     end
 
-    snow_model = initialize_snow_hbv_model(nc, config, inds, dt)
-    glacier_bc = glacier_model_bc(snow_model.variables.snow)
-    glacier_model = initialize_glacier_hbv_model(nc, config, inds, dt, glacier_bc)
-
+    modelsnow = get(config.model, "snow", false)::Bool
+    if modelsnow
+        snow_model = initialize_snow_hbv_model(nc, config, inds, dt)
+    else
+        snow_model = NoSnowModel()
+    end
+    modelglacier = get(config.model, "glacier", false)::Bool
+    if modelsnow && modelglacier
+        glacier_bc = glacier_model_bc(snow_model.variables.snow)
+        glacier_model = initialize_glacier_hbv_model(nc, config, inds, dt, glacier_bc)
+    else
+        glacier_model = NoGlacierModel()
+    end
     w_soil =
         ncread(
             nc,
@@ -387,7 +391,15 @@ function initialize_sbm(nc, config, riverfrac, inds)
               """)
     end
 
-    sbm = SBM{typeof(interception_model), Float, maxlayers, maxlayers + 1}(;
+    # TODO (part of refactor v1.0): simplify typeof arguments
+    sbm = SBM{
+        typeof(interception_model),
+        typeof(snow_model),
+        typeof(glacier_model),
+        Float,
+        maxlayers,
+        maxlayers + 1,
+    }(;
         atmospheric_forcing = atmospheric_forcing,
         veg_param_set = veg_param_set,
         interception_model = interception_model,
@@ -472,8 +484,6 @@ function initialize_sbm(nc, config, riverfrac, inds)
 end
 
 function update_until_snow(sbm::SBM, config)
-    modelsnow = get(config.model, "snow", false)::Bool
-
     (; canopy_potevap, interception, throughfall, stemflow) =
         sbm.interception_model.variables
     (; effective_precip) = sbm.snow_model.boundary_conditions

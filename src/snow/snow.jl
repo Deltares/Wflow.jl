@@ -51,13 +51,15 @@ end
     whc::Vector{T} | "-"
 end
 
-abstract type AbstractSnowModel{T} end
+abstract type AbstractSnowModel end
 
-@get_units @with_kw struct SnowHbvModel{T} <: AbstractSnowModel{T}
+@get_units @with_kw struct SnowHbvModel{T} <: AbstractSnowModel
     boundary_conditions::SnowBC{T} | "-"
     parameters::SnowHbvParameters{T} | "-"
     variables::SnowModelVars{T} | "-"
 end
+
+struct NoSnowModel <: AbstractSnowModel end
 
 function initialize_snow_hbv_params(nc, config, inds, dt)
     cfmax =
@@ -110,4 +112,8 @@ function update(snow_model::SnowHbvModel, atmospheric_forcing::AtmosphericForcin
             whc[i],
         )
     end
+end
+
+function update(snow_model::NoSnowModel, atmospheric_forcing::AtmosphericForcing)
+    return nothing
 end
