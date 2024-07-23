@@ -121,23 +121,20 @@ function initialize_sbm_model(config::Config)
             type = Float,
         )
 
-        # unit for lateral subsurface flow component is [m³ d⁻¹], sbm.kv_0 [mm Δt⁻¹]
-        kh_0 = khfrac .* sbm.kv_0 .* 0.001 .* (basetimestep / dt)
-        f = sbm.f .* 1000.0
-        zi = sbm.zi .* 0.001
-        soilthickness = sbm.soilthickness .* 0.001
-        z_exp = sbm.z_exp .* 0.001
+        (; theta_s, theta_r, kv_0, f, soilthickness, z_exp) = sbm.soil_model.parameters
+        (; zi) = sbm.soil_model.variables
+        # unit for lateral subsurface flow component is [m³ d⁻¹], kv_0 [mm Δt⁻¹]
 
         ssf = LateralSSF{Float}(;
-            kh_0 = kh_0,
-            f = f,
+            kh_0 = khfrac .* kv_0 .* 0.001 .* (basetimestep / dt),
+            f = f .* 1000.0,
             kh = fill(mv, n),
             khfrac = khfrac,
-            zi = zi,
-            z_exp = z_exp,
-            soilthickness = soilthickness,
-            theta_s = sbm.theta_s,
-            theta_r = sbm.theta_r,
+            zi = zi .* 0.001,
+            z_exp = z_exp .* 0.001,
+            soilthickness = soilthickness .* 0.001,
+            theta_s = theta_s,
+            theta_r = theta_r,
             dt = dt / basetimestep,
             slope = landslope,
             dl = dl,
@@ -304,6 +301,7 @@ function initialize_sbm_model(config::Config)
         reservoir = isempty(reservoir) ? nothing : reservoir.reverse_indices,
         lake = isempty(lake) ? nothing : lake.reverse_indices,
     )
+    (; maxlayers) = sbm.soil_model.parameters
     writer = prepare_writer(
         config,
         modelmap,
@@ -311,7 +309,7 @@ function initialize_sbm_model(config::Config)
         x_nc,
         y_nc,
         nc;
-        extra_dim = (name = "layer", value = Float64.(1:(sbm.maxlayers))),
+        extra_dim = (name = "layer", value = Float64.(1:(maxlayers))),
     )
     close(nc)
 

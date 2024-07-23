@@ -340,24 +340,27 @@ function ncread(
 end
 
 """
-    set_layerthickness(d::Real, sl::SVector)
+    set_layerthickness(reference_depth::Real, cum_depth::SVector, thickness::SVector)
 
-Calculate actual soil thickness of layers based on a reference depth (e.g. soil depth or water table depth) `d`,
-a SVector `sl` with cumulative soil depth starting at soil surface (0), and a SVector `tl` with actual thickness
-per soil layer.
+Calculate actual soil thickness of layers based on a reference depth (e.g. soil depth or
+water table depth) `reference_depth`, a SVector `cum_depth` with cumulative soil depth starting
+at soil surface (0), and a SVector `thickness` with thickness per soil layer.
 """
-function set_layerthickness(d::Real, sl::SVector, tl::SVector)
-    act_d = tl .* mv
-    for i in 1:length(act_d)
-        if d > sl[i + 1]
-            act_d = setindex(act_d, tl[i], i)
-        elseif d - sl[i] > 0.0
-            act_d = setindex(act_d, d - sl[i], i)
+function set_layerthickness(reference_depth::Real, cum_depth::SVector, thickness::SVector)
+    thicknesslayers = thickness .* mv
+    for i in 1:length(thicknesslayers)
+        if reference_depth > cum_depth[i + 1]
+            thicknesslayers = setindex(thicknesslayers, thickness[i], i)
+        elseif reference_depth - cum_depth[i] > 0.0
+            thicknesslayers = setindex(thicknesslayers, reference_depth - cum_depth[i], i)
         end
     end
+    return thicknesslayers
+end
 
-    nlayers = length(act_d) - sum(isnan.(act_d))
-    return act_d, nlayers
+function number_of_active_layers(thickness::SVector)
+    nlayers = length(thickness) - sum(isnan.(thickness))
+    return nlayers
 end
 
 """
