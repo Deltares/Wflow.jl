@@ -89,11 +89,11 @@ function initialize_snow_hbv_model(nc, config, inds, dt)
     return model
 end
 
-function update(snow_model::SnowHbvModel, atmospheric_forcing::AtmosphericForcing)
+function update(model::SnowHbvModel, atmospheric_forcing::AtmosphericForcing)
     (; temperature) = atmospheric_forcing
-    (; snow, snowwater, swe, runoff) = snow_model.variables
-    (; effective_precip, snow_precip, liquid_precip) = snow_model.boundary_conditions
-    (; tt, tti, ttm, cfmax, whc) = snow_model.parameters
+    (; snow, snowwater, swe, runoff) = model.variables
+    (; effective_precip, snow_precip, liquid_precip) = model.boundary_conditions
+    (; tt, tti, ttm, cfmax, whc) = model.parameters
 
     n = length(temperature)
     threaded_foreach(1:n; basesize = 1000) do i
@@ -114,6 +114,9 @@ function update(snow_model::SnowHbvModel, atmospheric_forcing::AtmosphericForcin
     end
 end
 
-function update(snow_model::NoSnowModel, atmospheric_forcing::AtmosphericForcing)
+function update(model::NoSnowModel, atmospheric_forcing::AtmosphericForcing)
     return nothing
 end
+
+runoff(model::NoSnowModel) = 0.0
+runoff(model::AbstractSnowModel) = model.variables.runoff

@@ -484,14 +484,17 @@ function initialize_sbm(nc, config, riverfrac, inds)
 end
 
 function update_until_snow(sbm::SBM, config)
+    modelsnow = get(config.model, "snow", false)::Bool
     (; canopy_potevap, interception, throughfall, stemflow) =
         sbm.interception_model.variables
-    (; effective_precip) = sbm.snow_model.boundary_conditions
 
     update(sbm.interception_model, sbm.atmospheric_forcing)
     @. sbm.pottrans = max(0.0, canopy_potevap - interception)
 
-    @. effective_precip = throughfall + stemflow
+    if modelsnow
+        (; effective_precip) = sbm.snow_model.boundary_conditions
+        @. effective_precip = throughfall + stemflow
+    end
     update(sbm.snow_model, sbm.atmospheric_forcing)
 
     update(sbm.glacier_model, sbm.atmospheric_forcing)

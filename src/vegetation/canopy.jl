@@ -141,11 +141,9 @@ function initialize_rutter_interception_model(vegetation_params, n)
     return model
 end
 
-function update_canopy_parameters!(
-    interception_model::I,
-) where {I <: AbstractInterceptionModel}
+function update_canopy_parameters!(model::I) where {I <: AbstractInterceptionModel}
     (; leaf_area_index, swood, kext, sl, canopygapfraction, cmax) =
-        interception_model.parameters.veg_param_set
+        model.parameters.veg_param_set
 
     n = length(leaf_area_index)
     threaded_foreach(1:n; basesize = 1000) do i
@@ -154,19 +152,14 @@ function update_canopy_parameters!(
     end
 end
 
-function update(
-    interception_model::GashInterceptionModel,
-    atmospheric_forcing::AtmosphericForcing,
-)
-    (; leaf_area_index, canopygapfraction, cmax, kc) =
-        interception_model.parameters.veg_param_set
-    (; canopy_potevap, throughfall, interception, stemflow, canopystorage) =
-        interception_model.variables
+function update(model::GashInterceptionModel, atmospheric_forcing::AtmosphericForcing)
+    (; leaf_area_index, canopygapfraction, cmax, kc) = model.parameters.veg_param_set
+    (; canopy_potevap, throughfall, interception, stemflow, canopystorage) = model.variables
     (; precipitation, potential_evaporation) = atmospheric_forcing
-    e_r = interception_model.parameters.e_r
+    e_r = model.parameters.e_r
     n = length(precipitation)
     if !isnothing(leaf_area_index)
-        update_canopy_parameters!(interception_model)
+        update_canopy_parameters!(model)
         threaded_foreach(1:n; basesize = 1000) do i
             canopyfraction = 1.0 - canopygapfraction[i]
             ewet = canopyfraction * potential_evaporation[i] * kc[i]
@@ -189,17 +182,12 @@ function update(
     end
 end
 
-function update(
-    interception_model::RutterInterceptionModel,
-    atmospheric_forcing::AtmosphericForcing,
-)
-    (; leaf_area_index, canopygapfraction, cmax, kc) =
-        interception_model.parameters.veg_param_set
-    (; canopy_potevap, throughfall, interception, stemflow, canopystorage) =
-        interception_model.variables
+function update(model::RutterInterceptionModel, atmospheric_forcing::AtmosphericForcing)
+    (; leaf_area_index, canopygapfraction, cmax, kc) = model.parameters.veg_param_set
+    (; canopy_potevap, throughfall, interception, stemflow, canopystorage) = model.variables
     (; precipitation, potential_evaporation) = atmospheric_forcing
     if !isnothing(leaf_area_index)
-        update_canopy_parameters!(interception_model)
+        update_canopy_parameters!(model)
     end
     n = length(precipitation)
     threaded_foreach(1:n; basesize = 1000) do i
