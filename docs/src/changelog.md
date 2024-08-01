@@ -98,6 +98,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   routing](@ref) for a short description.
 - Local inertial routing to `sbm_gwf` model type.
 - Water demand and allocation computations for model types `sbm` and `sbm_gwf`.
+- Support direct output of melt from snow and glaciers.
 
 ## v0.7.3 - 2024-01-12
 
