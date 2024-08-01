@@ -135,7 +135,9 @@ profile `kv` is used and `z_layered` is required as input.
 | `actleakage` | actual leakage from saturated store  | mm Δt``^{-1}`` | - |
 | `snow` | snow storage  | mm | - |
 | `snowwater` | liquid water content in the snow pack  | mm | - |
-| `rainfallplusmelt` | snowmelt + precipitation as rainfall | mm Δt``^{-1}`` | - |
+| `snowmelt` | melt from now | mm Δt``^{-1}`` | - |
+| `glaciermelt` | melt from glaciers | mm Δt``^{-1}`` | - |
+| `rainfallplusmelt` | snowmelt (and glaciers) + precipitation as rainfall | mm Δt``^{-1}`` | - |
 | `tsoil` | top soil temperature | ᵒC | - |
 | **`leaf_area_index`** | leaf area index | m``^2`` m``{-2}`` | - |
 | `waterlevel_land` | water level land | mm | - |
