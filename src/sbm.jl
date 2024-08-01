@@ -195,6 +195,10 @@
     snow::Vector{T} | "mm"
     # Liquid water content in the snow pack [mm]
     snowwater::Vector{T} | "mm"
+    # Snow melt [mm]
+    snowmelt::Vector{T} | "mm"
+    # Glacier melt [mm]
+    glaciermelt::Vector{T} | "mm"
     # Snow melt + precipitation as rainfall [mm]
     rainfallplusmelt::Vector{T} | "mm"
     # Threshold temperature for snowfall above glacier [ᵒC]
@@ -737,6 +741,8 @@ function initialize_sbm(nc, config, riverfrac, inds)
         cf_soil = cf_soil,
         snow = zeros(Float, n),
         snowwater = zeros(Float, n),
+        snowmelt = fill(mv, n),
+        glaciermelt = fill(mv, n),
         rainfallplusmelt = fill(mv, n),
         tsoil = fill(Float(10.0), n),
         # glacier parameters
@@ -844,6 +850,7 @@ function update_until_snow(sbm::SBM, config)
         if modelsnow
             sbm.snow[i] = snow
             sbm.snowwater[i] = snowwater
+            sbm.snowmelt[i] = snowmelt
             sbm.tsoil[i] = tsoil
             sbm.rainfallplusmelt[i] = rainfallplusmelt
         end
@@ -1207,6 +1214,7 @@ function update_until_recharge(sbm::SBM, config)
         if modelsnow
             if modelglacier
                 sbm.snow[i] = snow
+                sbm.glaciermelt[i] = glaciermelt
                 sbm.glacierstore[i] = glacierstore
             end
         end
