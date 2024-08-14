@@ -13,18 +13,13 @@ function initialize_sediment_model(config::Config)
 
     reader = prepare_reader(config)
     clock = Clock(config, reader)
-    dt = clock.dt
-
-    do_river = get(config.model, "runrivermodel", false)::Bool
 
     nc = NCDataset(static_path)
-    dims = dimnames(nc[param(config, "input.subcatchment")])
 
     subcatch_2d = ncread(nc, config, "subcatchment"; optional = false, allow_missing = true)
     # indices based on catchment
     inds, rev_inds = active_indices(subcatch_2d, missing)
     n = length(inds)
-    modelsize_2d = size(subcatch_2d)
 
     river_2d =
         ncread(nc, config, "river_location"; optional = false, type = Bool, fill = false)
@@ -37,7 +32,6 @@ function initialize_sediment_model(config::Config)
     riverlength = riverlength_2d[inds]
 
     inds_riv, rev_inds_riv = active_indices(river_2d, 0)
-    nriv = length(inds_riv)
 
     # Needed to update the forcing
     reservoir = ()
