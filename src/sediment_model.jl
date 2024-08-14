@@ -54,10 +54,6 @@ function initialize_sediment_model(config::Config)
 
     indices_river, reverse_indices_river = active_indices(river_2d, 0)
 
-    # Needed to update the forcing
-    reservoir = ()
-    lake = ()
-
     # read x, y coordinates and calculate cell length [m]
     y_axis = read_y_axis(dataset)
     x_axis = read_x_axis(dataset)
@@ -122,8 +118,8 @@ function initialize_sediment_model(config::Config)
     indices_reverse = (
         land = reverse_indices_subcatch,
         river = reverse_indices_river,
-        reservoir = isempty(reservoir) ? nothing : reservoir.reverse_indices,
-        lake = isempty(lake) ? nothing : lake.reverse_indices,
+        reservoir = nothing,
+        lake = nothing,
     )
     writer = prepare_writer(config, model_map, indices_reverse, x_axis, y_axis, dataset)
     close(dataset)
@@ -145,7 +141,7 @@ function initialize_sediment_model(config::Config)
 
     model = Model(
         config,
-        (; land, river, reservoir, lake, index_river, frac_to_river),
+        (; land, river, reservoir = nothing, lake = nothing, index_river, frac_to_river),
         (land = overland_flow_sediment, river = river_sediment),
         erosion,
         clock,
