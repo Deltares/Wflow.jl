@@ -139,6 +139,8 @@ function initialize_sediment_model(config::Config)
         reverse_indices = reverse_indices_river,
     )
 
+    sediment_model = SedimentModel()
+
     model = Model(
         config,
         (; land, river, reservoir = nothing, lake = nothing, index_river, frac_to_river),
@@ -147,7 +149,7 @@ function initialize_sediment_model(config::Config)
         clock,
         reader,
         writer,
-        SedimentModel(),
+        sediment_model,
     )
 
     model = set_states(model)
