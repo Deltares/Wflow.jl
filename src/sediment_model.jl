@@ -82,35 +82,7 @@ function initialize_sediment_model(config::Config)
     ldd = ldd_2d[indices_subcatch]
 
     # # lateral part sediment in overland flow
-    river_cell = float(river)
-    overland_flow_sediment = OverlandFlowSediment{Float}(;
-        n = number_of_cells,
-        rivcell = river_cell,
-        soilloss = fill(mv, number_of_cells),
-        erosclay = fill(mv, number_of_cells),
-        erossilt = fill(mv, number_of_cells),
-        erossand = fill(mv, number_of_cells),
-        erossagg = fill(mv, number_of_cells),
-        eroslagg = fill(mv, number_of_cells),
-        TCsed = fill(mv, number_of_cells),
-        TCclay = fill(mv, number_of_cells),
-        TCsilt = fill(mv, number_of_cells),
-        TCsand = fill(mv, number_of_cells),
-        TCsagg = fill(mv, number_of_cells),
-        TClagg = fill(mv, number_of_cells),
-        olsed = fill(mv, number_of_cells),
-        olclay = fill(mv, number_of_cells),
-        olsilt = fill(mv, number_of_cells),
-        olsand = fill(mv, number_of_cells),
-        olsagg = fill(mv, number_of_cells),
-        ollagg = fill(mv, number_of_cells),
-        inlandsed = fill(mv, number_of_cells),
-        inlandclay = fill(mv, number_of_cells),
-        inlandsilt = fill(mv, number_of_cells),
-        inlandsand = fill(mv, number_of_cells),
-        inlandsagg = fill(mv, number_of_cells),
-        inlandlagg = fill(mv, number_of_cells),
-    )
+    overland_flow_sediment = init_overland_flow_sediment(river, number_of_cells)
 
     graph = flowgraph(ldd, indices_subcatch, pcr_dir)
 
@@ -186,6 +158,41 @@ function initialize_sediment_model(config::Config)
     @info "Initialized model"
 
     return model
+end
+
+function init_overland_flow_sediment(river, number_of_cells)
+    river_cell = float(river)
+
+    overland_flow_sediment = OverlandFlowSediment{Float}(;
+        n = number_of_cells,
+        rivcell = river_cell,
+        soilloss = fill(mv, number_of_cells),
+        erosclay = fill(mv, number_of_cells),
+        erossilt = fill(mv, number_of_cells),
+        erossand = fill(mv, number_of_cells),
+        erossagg = fill(mv, number_of_cells),
+        eroslagg = fill(mv, number_of_cells),
+        TCsed = fill(mv, number_of_cells),
+        TCclay = fill(mv, number_of_cells),
+        TCsilt = fill(mv, number_of_cells),
+        TCsand = fill(mv, number_of_cells),
+        TCsagg = fill(mv, number_of_cells),
+        TClagg = fill(mv, number_of_cells),
+        olsed = fill(mv, number_of_cells),
+        olclay = fill(mv, number_of_cells),
+        olsilt = fill(mv, number_of_cells),
+        olsand = fill(mv, number_of_cells),
+        olsagg = fill(mv, number_of_cells),
+        ollagg = fill(mv, number_of_cells),
+        inlandsed = fill(mv, number_of_cells),
+        inlandclay = fill(mv, number_of_cells),
+        inlandsilt = fill(mv, number_of_cells),
+        inlandsand = fill(mv, number_of_cells),
+        inlandsagg = fill(mv, number_of_cells),
+        inlandlagg = fill(mv, number_of_cells),
+    )
+
+    return overland_flow_sediment
 end
 
 function update(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SedimentModel}
