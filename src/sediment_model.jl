@@ -237,12 +237,12 @@ function set_states(
     # read and set states in model object if reinit=false
     @unpack config = model
     reinit = get(config.model, "reinit", true)::Bool
-    if reinit == false
+    if reinit
+        @info "Set initial conditions from default values."
+    else
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
         set_states(instate_path, model; type = Float)
-    else
-        @info "Set initial conditions from default values."
     end
     return model
 end
