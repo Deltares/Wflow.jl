@@ -128,8 +128,9 @@ function initialize_sediment_model(config::Config)
     clamp!(land_slope, 0.00001, Inf)
 
     river_length = river_length_2d[indices_river]
-    river_width = river_width_2d[indices_river]
     minimum(river_length) > 0 || error("river length must be positive on river cells")
+
+    river_width = river_width_2d[indices_river]
     minimum(river_width) > 0 || error("river width must be positive on river cells")
 
     ldd_river = ldd_2d[indices_river]
