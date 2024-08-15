@@ -1,0 +1,17 @@
+---
+title: Developers guide
+---
+
+## Contributions and reporting issues
+
+We welcome reporting of issues on [our GitHub page](https://github.com/Deltares/Wflow.jl/issues/new/choose).
+Please provide a minimum working example so we are able to reproduce the issue. Furthermore, we
+welcome contributions. We follow the [ColPrac guide for collaborative practices](https://github.com/SciML/ColPrac). New
+contributors should make sure to read that guide.
+
+## Style/decisions
+
+- For improved code readability, we decided to avoid non-ASCII characters for naming variables,
+  structs, functions and macros. Using the non-ASCII character for built-in operators is still
+  allowed. This change in naming convention is now in effect and all invalid uses of non-ASCII
+  characters have been replaced by ASCII equivalents.

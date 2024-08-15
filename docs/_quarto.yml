@@ -1,0 +1,139 @@
+project:
+  type: website
+  output-dir: "_site"
+  render:
+    - "*.qmd"
+
+# filters:
+#    - include-code-files
+#    - interlinks
+#   #  - section-bibliographies
+
+number-sections: false
+
+website:
+  title: "Wflow.jl"
+  favicon: _static/logo.png
+  search:
+    location: navbar
+    limit: 5
+    type: textbox
+  back-to-top-navigation: true
+  page-footer:
+    left: |
+        <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener">
+          <img
+            src="/_static/images/deltares-blue.svg"
+            alt="Deltares"
+            style="height: 40px;"
+          />
+        </a>
+  navbar:
+    logo: _static/logo.png
+    search: true
+    pinned: true
+    left:
+      - text: Home
+        file: index.qmd
+      - text: "Getting started"
+        file: getting_started/index.qmd
+      - text: "User guide"
+        file: user_guide/index.qmd
+      - text: "Examples"
+        file: examples/index.qmd
+      - text: "Model documentation"
+        file: model_docs/index.qmd
+      - text: "Developments"
+        file: developments/index.qmd
+    right:
+      - icon: github
+        menu:
+          - text: Source Code
+            url:  https://github.com/Deltares/Wflow.jl
+          - text: Report an Issue
+            url:  https://github.com/Deltares/Wflow.jl/issues/new/choose
+      - text: Version
+        menu:
+          - text: empty
+
+  sidebar:
+    - title: "Home"
+      border: true
+      # collapse-level: 3
+      contents:
+        - file: index.qmd
+        - file: home/case_studies.qmd
+        - file: home/publications.qmd
+        - file: changelog.qmd
+    - title: Getting started
+      # collapse-level: 3
+      contents:
+        - file: getting_started/index.qmd
+        - file: getting_started/install.qmd
+        - file: getting_started/download_example_models.qmd
+        - file: getting_started/building_a_model.qmd
+        - file: getting_started/running_wflow.qmd
+    - title: User guide
+      contents:
+        - user_guide/index.qmd
+        - file: user_guide/required_files.qmd
+        - file: user_guide/toml_file.qmd
+        - text: Supported options
+          contents:
+          - file: user_guide/warm_states.qmd
+          - file: user_guide/model_config.qmd
+          - file: user_guide/multi_threading.qmd
+        - file: user_guide/output.qmd
+        - text: Integrations
+          contents:
+          - file: user_guide/bmi.qmd
+          - file: user_guide/fews.qmd
+          - file: user_guide/zmq_server.qmd
+        - text: Frequently asked questions
+          file: user_guide/faq.qmd
+    - title: Examples
+    - title: Model documentation
+      contents:
+        - file: model_docs/index.qmd
+        - file: model_docs/model_configurations.qmd
+        - text: Vertical processes
+          contents:
+          - file: model_docs/vertical/sbm.qmd
+          - file: model_docs/vertical/sediment.qmd
+          - file: model_docs/vertical/shared_processes.qmd
+        - text: Lateral processes
+          contents:
+          - file: model_docs/lateral/kinwave.qmd
+          - file: model_docs/lateral/local-inertial.qmd
+          - file: model_docs/lateral/waterbodies.qmd
+          - file: model_docs/lateral/gwf.qmd
+          - file: model_docs/lateral/sediment_flux.qmd
+        - text: Parameters
+          contents:
+          - file: model_docs/parameters_vertical.qmd
+          - file: model_docs/parameters_lateral.qmd
+    - title: Developments
+      contents:
+        - developments/index.qmd
+        - changelog.qmd
+        - developments/guide.qmd
+        - developments/julia_structs.qmd
+
+format:
+  html:
+    theme:
+      light: [cosmo, _static/theme-light.scss]
+      dark: [cosmo, _static/theme-dark.scss]
+    css: _static/styles.css
+    toc: true
+    toc-expand: true
+    page-layout: article
+    grid:
+      content-mode: standard
+    include-in-header:
+      - text: |
+          <script type="text/javascript" src="/_static/version.js"></script>
+
+# bibliography: references.bib
+# citeproc: false
+
