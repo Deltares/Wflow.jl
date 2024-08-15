@@ -19,15 +19,15 @@ internal model parameter `sl`, and is listed in the Table below between parenthe
 | **`sl`** (`slope`) |  slope       | m m$^{-1}$| - |
 | **`n`**         | Manning's roughness | s m$^{-\frac{1}{3}}$| 0.036 |
 | **`dl`**        |  length      | m     |  -      |
-| `q`             | discharge     | m``^3`` s``^{-1}``| - |
-| `qin`           | inflow from upstream cells | m``^3`` s``^{-1}``| - |
-| `q_av`          | average discharge | m``^3`` s``^{-1}``| - |
-| `qlat`          | lateral inflow per unit length  | m``^2`` s``^{-1}``| - |
-| `inwater`       | lateral inflow | m``^3`` s``^{-1}``| - |
-| **`inflow`**    | external inflow (abstraction/supply/demand) | m``^3`` s``^{-1}``| 0.0 |
-| `inflow_wb`     | inflow waterbody (lake or reservoir model) from land part | m``^3`` s``^{-1}``| 0.0 |
-| `abstraction`   | abstraction (computed as part of water demand and allocation) | m``^3`` s``^{-1}``| 0.0 |
-| `volume`        | kinematic wave volume |m``^3``| - |
+| `q`             | discharge     | m$^3$ s$^{-1}$| - |
+| `qin`           | inflow from upstream cells | m$^3$ s$^{-1}$| - |
+| `q_av`          | average discharge | m$^3$ s$^{-1}$| - |
+| `qlat`          | lateral inflow per unit length  | m$^2$ s$^{-1}$| - |
+| `inwater`       | lateral inflow | m$^3$ s$^{-1}$| - |
+| **`inflow`**    | external inflow (abstraction/supply/demand) | m$^3$ s$^{-1}$| 0.0 |
+| `inflow_wb`     | inflow waterbody (lake or reservoir model) from land part | m$^3$ s$^{-1}$| 0.0 |
+| `abstraction`   | abstraction (computed as part of water demand and allocation) | m$^3$ s$^{-1}$| 0.0 |
+| `volume`        | kinematic wave volume |m$^3$| - |
 | `h`             | water level | m | - |
 | `h_av`          | average water level | m | - |
 | **`bankfull_depth`**   | bankfull river depth  | m | 1.0 |
@@ -133,12 +133,12 @@ the `layered_exponential` profile `kv` is used and `z_exp` is required as part o
 | `zi` | pseudo-water table depth (top of the saturated zone) | m | - |
 | **`z_exp`** | depth from soil surface for which exponential decline of `kh_0` is valid | m | - |
 | `exfiltwater` | exfiltration (groundwater above surface level, saturated excess conditions) | m Δt⁻¹ | - |
-| `recharge` | net recharge to saturated store  | m``^2`` Δt⁻¹ | - |
-| `ssf` | subsurface flow  | m``^3`` d``{-1}``  | - |
-| `ssfin` | inflow from upstream cells | m``^3`` d``{-1}``  | - |
-| `ssfmax` | maximum subsurface flow | m``^2`` d``{-1}``  | - |
-| `to_river` | part of subsurface flow that flows to the river | m``^3`` d``{-1}``  | - |
-| `volume` | subsurface water volume | m``^3`` | - |
+| `recharge` | net recharge to saturated store  | m$^2$ Δt⁻¹ | - |
+| `ssf` | subsurface flow  | m$^3$ d${-1}$  | - |
+| `ssfin` | inflow from upstream cells | m$^3$ d${-1}$  | - |
+| `ssfmax` | maximum subsurface flow | m$^2$ d${-1}$  | - |
+| `to_river` | part of subsurface flow that flows to the river | m$^3$ d${-1}$  | - |
+| `volume` | subsurface water volume | m$^3$ | - |
 
 ## Local inertial
 
@@ -196,13 +196,13 @@ model parameter `mannings_n`, and is listed in the Table below between parenthes
 | `width_at_link`    | river width at edge/link | m | - |
 | `a`    | flow area at edge/link | m$^2$ | - |
 | `r`    | hydraulic radius at edge/link | m | - |
-| `volume`    | river volume | m``^3`` | - |
-| `error`    | error volume | m``^3`` | - |
-| `inwater`    | lateral inflow | m``^3`` s``^{-1}`` | - |
-| **`inflow`**  | external inflow (abstraction/supply/demand) | m``^3`` s``^{-1}``| 0.0 |
-| `abstraction` | abstraction (computed as part of water demand and allocation) | m``^3`` s``^{-1}``| 0.0 |
-| `inflow_wb`        | inflow waterbody (lake or reservoir model) from land part | m``^3`` s``^{-1}``| 0.0 |
-| `bankfull_volume`    | bankfull volume | m``^3`` | - |
+| `volume`    | river volume | m$^3$ | - |
+| `error`    | error volume | m$^3$ | - |
+| `inwater`    | lateral inflow | m$^3$ s$^{-1}$ | - |
+| **`inflow`**  | external inflow (abstraction/supply/demand) | m$^3$ s$^{-1}$| 0.0 |
+| `abstraction` | abstraction (computed as part of water demand and allocation) | m$^3$ s$^{-1}$| 0.0 |
+| `inflow_wb`        | inflow waterbody (lake or reservoir model) from land part | m$^3$ s$^{-1}$| 0.0 |
+| `bankfull_volume`    | bankfull volume | m$^3$ | - |
 | **`bankfull_depth`**    | bankfull depth | m | - |
 | `froude_limit`    | if true a check is performed if froude number > 1.0 (algorithm is modified) | - | - |
 | `reservoir_index`   |  river cell index with a reservoir | - | - |

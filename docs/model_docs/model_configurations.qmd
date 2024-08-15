@@ -38,6 +38,7 @@ for the vertical concept SBM of wflow\_sbm:
 
 The water demand and allocation computations are supported by the wflow\_sbm model
 configurations:
+
 - [SBM + Kinematic wave](@ref config_sbm)
 - [SBM + Groundwater flow](@ref config_sbm_gwf)
 - [SBM + Local inertial river](@ref config_sbm_gwf_lie_river)
