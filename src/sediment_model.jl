@@ -158,8 +158,8 @@ function initialize_sediment_model(config::Config)
     return model
 end
 
-function init_overland_flow_sediment(river, number_of_cells)
-    river_cell = float(river)
+function init_overland_flow_sediment(river::Vector, number_of_cells::Integer)
+    river_cell = convert(Vector{Float}, river)
 
     overland_flow_sediment = OverlandFlowSediment{Float}(;
         n = number_of_cells,
