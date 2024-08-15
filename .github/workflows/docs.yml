@@ -1,0 +1,46 @@
+name: Docs
+on:
+  push:
+    branches: [v1, v1_quarto_docs]
+  pull_request:
+    branches: [v1]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+# needed to allow julia-actions/cache to delete old caches that it has created
+permissions:
+  actions: write
+  contents: read
+jobs:
+  publish:
+    name: Docs Julia
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: julia-actions/cache@v2
+        with:
+          cache-compiled: "true"
+          cache-registries: "true"
+      - uses: prefix-dev/setup-pixi@v0.8.1
+        with:
+          pixi-version: "latest"
+      - name: Prepare pixi
+        run: pixi run install-ci
+
+      - name: Check Quarto installation and all engines
+        run: pixi run quarto-check
+
+      - name: Render Quarto Project
+        run: pixi run quarto-render
+
+      - name: Publish Quarto Project
+        # if: github.ref == 'refs/heads/v1'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/_site
+          destination_dir: quarto
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

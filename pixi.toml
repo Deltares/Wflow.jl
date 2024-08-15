@@ -42,6 +42,7 @@ test-wflow-server = { cmd = "julia --project=server --eval 'using Pkg; Pkg.test(
 ] }
 instantiate-wflow-server = "julia --project=server --eval 'using Pkg; Pkg.instantiate(); Pkg.develop(path=\"./\")'"
 # Docs
+install-ci = { depends_on = ["install-julia", "update-registry-julia"] }
 quarto-check = { cmd = "quarto check all" }
 quarto-render = { cmd = "quarto render docs --to html --execute" }
 
