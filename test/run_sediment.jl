@@ -8,6 +8,40 @@ model = Wflow.initialize_sediment_model(config)
 
 model = Wflow.run_timestep(model)
 
+@testset "Model type equals sediment model" begin
+    @test typeof(model.type) == Wflow.SedimentModel
+end
+
+@testset "Overland flow sediment type equals Float" begin
+    # Given
+
+    number_of_cells = 100
+    river = rand(Bool, number_of_cells)
+
+    # When
+
+    overland_flow_sediment = Wflow.init_overland_flow_sediment(river, number_of_cells)
+
+    # Then
+
+    @test eltype(overland_flow_sediment.rivcell) == Float
+end
+
+@testset "Overland flow sediment size" begin
+    # Given
+
+    number_of_cells = 100
+    river = rand(Bool, number_of_cells)
+
+    # When
+
+    overland_flow_sediment = Wflow.init_overland_flow_sediment(river, number_of_cells)
+
+    # Then
+
+    @test length(overland_flow_sediment.rivcell) == number_of_cells
+end
+
 @testset "first timestep sediment model (vertical)" begin
     eros = model.vertical
 
