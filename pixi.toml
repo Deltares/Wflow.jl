@@ -52,3 +52,6 @@ python = ">=3.10"
 
 [system-requirements]
 linux = "3.10.0"
+
+[feature.dev.dependencies]
+quarto = "*"
