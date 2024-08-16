@@ -8,40 +8,6 @@ model = Wflow.initialize_sediment_model(config)
 
 model = Wflow.run_timestep(model)
 
-@testset "Model type equals sediment model" begin
-    @test typeof(model.type) == Wflow.SedimentModel
-end
-
-@testset "Overland flow sediment type equals Float" begin
-    # Given
-
-    number_of_cells = 100
-    river = rand(Bool, number_of_cells)
-
-    # When
-
-    overland_flow_sediment = Wflow.init_overland_flow_sediment(river, number_of_cells)
-
-    # Then
-
-    @test eltype(overland_flow_sediment.rivcell) == Float
-end
-
-@testset "Overland flow sediment size" begin
-    # Given
-
-    number_of_cells = 100
-    river = rand(Bool, number_of_cells)
-
-    # When
-
-    overland_flow_sediment = Wflow.init_overland_flow_sediment(river, number_of_cells)
-
-    # Then
-
-    @test length(overland_flow_sediment.rivcell) == number_of_cells
-end
-
 @testset "first timestep sediment model (vertical)" begin
     eros = model.vertical
 
@@ -99,6 +65,56 @@ end
     @test Wflow.grid_location(land, :n) == "none"
     @test Wflow.grid_location(land, :soilloss) == "node"
     @test Wflow.grid_location(land, :inlandsed) == "node"
+end
+
+@testset "Model type equals sediment model" begin
+    @test isa(model.type, Wflow.SedimentModel)
+end
+
+@testset "Set initial conditions from state file" begin
+    # Given
+
+    config_ = Wflow.Config(tomlpath)
+    setproperty!(config_, :reinit, false)
+
+    # When
+
+    model_ = Wflow.initialize_sediment_model(config_)
+    model__ = Wflow.set_states(model_)
+
+    # Then
+
+    @test model_ === model__
+end
+
+@testset "Overland flow sediment type equals Float" begin
+    # Given
+
+    number_of_cells = 100
+    river = rand(Bool, number_of_cells)
+
+    # When
+
+    overland_flow_sediment = Wflow.init_overland_flow_sediment(river, number_of_cells)
+
+    # Then
+
+    @test eltype(overland_flow_sediment.rivcell) == Float
+end
+
+@testset "Overland flow sediment size" begin
+    # Given
+
+    number_of_cells = 100
+    river = rand(Bool, number_of_cells)
+
+    # When
+
+    overland_flow_sediment = Wflow.init_overland_flow_sediment(river, number_of_cells)
+
+    # Then
+
+    @test length(overland_flow_sediment.rivcell) == number_of_cells
 end
 
 Wflow.close_files(model)
