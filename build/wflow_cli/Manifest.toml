@@ -642,7 +642,7 @@ git-tree-sha1 = "414d32f07561872f03cb4f347df719962dfddc5e"
 repo-rev = "master"
 repo-url = "../.."
 uuid = "d48b7d99-76e7-47ae-b1d5-ff0c1cf9a818"
-version = "0.7.3"
+version = "0.8.0"
 
 [[deps.XML2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Libiconv_jll", "Zlib_jll"]
