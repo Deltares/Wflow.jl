@@ -653,10 +653,8 @@ version = "0.21.70"
 [[deps.Wflow]]
 deps = ["BasicModelInterface", "CFTime", "Dates", "DelimitedFiles", "FieldMetadata", "Glob", "Graphs", "IfElse", "LoggingExtras", "LoopVectorization", "NCDatasets", "Parameters", "Polyester", "ProgressLogging", "Random", "StaticArrays", "Statistics", "TOML", "TerminalLoggers", "UnPack"]
 git-tree-sha1 = "414d32f07561872f03cb4f347df719962dfddc5e"
-repo-rev = "master"
 path = "../.."
 uuid = "d48b7d99-76e7-47ae-b1d5-ff0c1cf9a818"
-version = "0.8.0"
 
 [[deps.XML2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Libiconv_jll", "Zlib_jll"]
