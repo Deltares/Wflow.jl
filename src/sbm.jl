@@ -1337,19 +1337,16 @@ function update_total_water_storage(
     river_routing,
     land_routing,
 )
-    # Get length active river cells
-    nriv = length(river_network)
-
     # Set the total storage to zero
     fill!(sbm.total_storage, 0)
 
     # Burn the river routing values
-    sbm.total_storage[river_network] = (
-        (
-            river_routing.h_av[1:nriv] .* river_routing.width[1:nriv] .*
-            river_routing.dl[1:nriv]
-        ) ./ (area[river_network]) * 1000 # Convert to mm
-    )
+    for (i, index_river) in enumerate(river_network)
+        sbm.total_storage[index_river] = (
+            (river_routing.h_av[i] * river_routing.width[i] * river_routing.dl[i]) /
+            (area[index_river]) * 1000 # Convert to mm
+        )
+    end
 
     # Chunk the data for parallel computing
     threaded_foreach(1:sbm.n, basesize = 1000) do i
