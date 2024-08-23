@@ -106,13 +106,9 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
     # Reservoir / lake
     do_reservoirs = get(config.model, "doreservoir", false)::Bool
     do_lakes = get(config.model, "dolake", false)::Bool
-    # Rainfall erosion equation: ["answers", "eurosem"]
-    rainerosmethod = get(config.model, "rainerosmethod", "answers")::String
     # Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]
     landtransportmethod = get(config.model, "landtransportmethod", "yalinpart")::String
 
-    altitude =
-        ncread(nc, config, "vertical.altitude"; optional = false, sel = inds, type = Float)
     canopyheight = ncread(
         nc,
         config,
@@ -131,7 +127,7 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
     usleC = ncread(nc, config, "vertical.usleC"; sel = inds, defaults = 0.01, type = Float)
     usleK = ncread(nc, config, "vertical.usleK"; sel = inds, defaults = 0.1, type = Float)
 
-    cmax, _, canopygapfraction, sl, swood, kext = initialize_canopy(nc, config, inds)
+    _, _, canopygapfraction, sl, swood, kext = initialize_canopy(nc, config, inds)
 
     # Initialise parameters for the transport capacity part
     clamp!(slope, 0.00001, Inf)
