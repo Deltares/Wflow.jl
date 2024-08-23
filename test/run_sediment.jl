@@ -117,4 +117,19 @@ end
     @test length(overland_flow_sediment.rivcell) == number_of_cells
 end
 
+@testset "Reinit false" begin
+    # Given
+
+    config_ = Wflow.Config(tomlpath)
+
+    # When
+
+    model_ = Wflow.initialize_sediment_model(config_)
+    model_.config.model.reinit = false
+
+    # Then
+
+    @test_throws ErrorException Wflow.set_states(model_)
+end
+
 Wflow.close_files(model)
