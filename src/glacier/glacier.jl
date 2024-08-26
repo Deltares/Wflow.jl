@@ -141,3 +141,5 @@ end
 glaciermelt(model::NoGlacierModel) = 0.0
 glaciermelt(model::AbstractGlacierModel) =
     @. model.variables.glaciermelt * model.variables.glacierfrac
+glacierfrac(model::NoGlacierModel) = 0.0
+glacierfrac(model::AbstractGlacierModel) = model.variables.glacierfrac
