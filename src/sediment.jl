@@ -209,30 +209,14 @@ function initialize_land_sediment(
 
     # Reservoir and lakes
     water_body_coverage = zeros(Float, number_of_cells)
-    if do_reservoirs
-        rescoverage_2d = ncread(
-            dataset,
-            config,
-            "vertical.resareas";
-            optional = false,
-            sel = indices,
-            type = Float,
-            fill = 0.0,
-        )
-        water_body_coverage = water_body_coverage .+ rescoverage_2d
-    end
-    if do_lakes
-        lakecoverage_2d = ncread(
-            dataset,
-            config,
-            "vertical.lakeareas";
-            optional = false,
-            sel = indices,
-            type = Float,
-            fill = 0.0,
-        )
-        water_body_coverage = water_body_coverage .+ lakecoverage_2d
-    end
+    add_water_body_coverages!(
+        water_body_coverage,
+        dataset,
+        config,
+        indices;
+        reservoirs = do_reservoirs,
+        lakes = do_lakes,
+    )
 
     erosion = LandSediment{Float}(;
         n = number_of_cells,
@@ -491,6 +475,51 @@ function read_sediment_density(dataset, config, indices)
         type = Float,
     )
     return sediment_density
+end
+
+function read_reservoir_coverage(dataset, config, indices)
+    reservoir_coverage_2d = ncread(
+        dataset,
+        config,
+        "vertical.resareas";
+        optional = false,
+        sel = indices,
+        type = Float,
+        fill = 0.0,
+    )
+    return reservoir_coverage_2d
+end
+
+function read_lake_coverage(dataset, config, indices)
+    lake_coverage_2d = ncread(
+        dataset,
+        config,
+        "vertical.lakeareas";
+        optional = false,
+        sel = indices,
+        type = Float,
+        fill = 0.0,
+    )
+    return lake_coverage_2d
+end
+
+function add_water_body_coverages!(
+    water_body_coverage,
+    dataset,
+    config,
+    indices;
+    reservoirs = false,
+    lakes = false,
+)
+    if reservoirs
+        reservoir_coverage = read_reservoir_coverage(dataset, config, indices)
+        water_body_coverage .+= reservoir_coverage
+    end
+
+    if lakes
+        lake_coverage = read_lake_coverage(dataset, config, indices)
+        water_body_coverage .+= lake_coverage
+    end
 end
 
 # Soil erosion
