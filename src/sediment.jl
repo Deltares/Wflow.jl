@@ -99,7 +99,7 @@
     end
 end
 
-function initialize_landsed(
+function initialize_land_sediment(
     dataset,
     config,
     river,
