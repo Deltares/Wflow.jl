@@ -117,71 +117,18 @@ function initialize_land_sediment(
     # Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]
     land_transport_method = get(config.model, "landtransportmethod", "yalinpart")::String
 
-    canopy_height = ncread(
-        dataset,
-        config,
-        "vertical.canopyheight";
-        sel = indices,
-        defaults = 3.0,
-        type = Float,
-    )
-    eurosem_rainfall_erosion_coefficient = ncread(
-        dataset,
-        config,
-        "vertical.erosk";
-        sel = indices,
-        defaults = 0.6,
-        type = Float,
-    )
-    eurosem_rainfall_erosion_exponent = ncread(
-        dataset,
-        config,
-        "vertical.erosspl";
-        sel = indices,
-        defaults = 2.0,
-        type = Float,
-    )
-    answers_overland_flow_erosion_coefficient = ncread(
-        dataset,
-        config,
-        "vertical.erosov";
-        sel = indices,
-        defaults = 0.9,
-        type = Float,
-    )
-    path_fraction = ncread(
-        dataset,
-        config,
-        "vertical.pathfrac";
-        sel = indices,
-        defaults = 0.01,
-        type = Float,
-    )
-    land_slope = ncread(
-        dataset,
-        config,
-        "vertical.slope";
-        sel = indices,
-        defaults = 0.01,
-        type = Float,
-    )
-    usle_crop_management_factor = ncread(
-        dataset,
-        config,
-        "vertical.usleC";
-        sel = indices,
-        defaults = 0.01,
-        type = Float,
-    )
-    usle_soil_erodibility_factor = ncread(
-        dataset,
-        config,
-        "vertical.usleK";
-        sel = indices,
-        defaults = 0.1,
-        type = Float,
-    )
-
+    canopy_height = read_canopy_height(dataset, config, indices)
+    eurosem_rainfall_erosion_coefficient =
+        read_eurosem_rainfall_erosion_coefficient(dataset, config, indices)
+    eurosem_rainfall_erosion_exponent =
+        read_eurosem_rainfall_erosion_exponent(dataset, config, indices)
+    answers_overland_flow_erosion_coefficient =
+        read_answers_overland_flow_erosion_coefficient(dataset, config, indices)
+    path_fraction = read_path_fraction(dataset, config, indices)
+    land_slope = read_land_slope(dataset, config, indices)
+    usle_crop_management_factor = read_usle_crop_management_factor(dataset, config, indices)
+    usle_soil_erodibility_factor =
+        read_usle_soil_erodibility_factor(dataset, config, indices)
     _,
     _,
     canopy_gap_fraction,
@@ -194,70 +141,14 @@ function initialize_land_sediment(
     ldd_2d = ncread(dataset, config, "ldd"; optional = false, allow_missing = true)
     ldd = ldd_2d[indices]
 
-    median_diameter_clay = ncread(
-        dataset,
-        config,
-        "vertical.dmclay";
-        sel = indices,
-        defaults = 2.0,
-        type = Float,
-    )
-    median_diameter_silt = ncread(
-        dataset,
-        config,
-        "vertical.dmsilt";
-        sel = indices,
-        defaults = 10.0,
-        type = Float,
-    )
-    median_diameter_sand = ncread(
-        dataset,
-        config,
-        "vertical.dmsand";
-        sel = indices,
-        defaults = 200.0,
-        type = Float,
-    )
-    dmsagg = ncread(
-        dataset,
-        config,
-        "vertical.dmsagg";
-        sel = indices,
-        defaults = 30.0,
-        type = Float,
-    )
-    dmlagg = ncread(
-        dataset,
-        config,
-        "vertical.dmlagg";
-        sel = indices,
-        defaults = 500.0,
-        type = Float,
-    )
-    pclay = ncread(
-        dataset,
-        config,
-        "vertical.pclay";
-        sel = indices,
-        defaults = 0.1,
-        type = Float,
-    )
-    psilt = ncread(
-        dataset,
-        config,
-        "vertical.psilt";
-        sel = indices,
-        defaults = 0.1,
-        type = Float,
-    )
-    sediment_density = ncread(
-        dataset,
-        config,
-        "vertical.rhosed";
-        sel = indices,
-        defaults = 2650.0,
-        type = Float,
-    )
+    median_diameter_clay = read_median_diameter_clay(dataset, config, indices)
+    median_diameter_silt = read_median_diameter_silt(dataset, config, indices)
+    median_diameter_sand = read_median_diameter_sand(dataset, config, indices)
+    dmsagg = read_median_diameter_sagg(dataset, config, indices)
+    dmlagg = read_median_diameter_lagg(dataset, config, indices)
+    pclay = read_particle_fraction_pclay(dataset, config, indices)
+    psilt = read_particle_fraction_psilt(dataset, config, indices)
+    sediment_density = read_sediment_density(dataset, config, indices)
 
     ### Initialize transport capacity variables ###
     river_cell = float(river)
@@ -408,6 +299,198 @@ function initialize_land_sediment(
     )
 
     return erosion
+end
+
+function read_canopy_height(dataset, config, indices)
+    canopy_height = ncread(
+        dataset,
+        config,
+        "vertical.canopyheight";
+        sel = indices,
+        defaults = 3.0,
+        type = Float,
+    )
+    return canopy_height
+end
+
+function read_eurosem_rainfall_erosion_coefficient(dataset, config, indices)
+    eurosem_rainfall_erosion_coefficient = ncread(
+        dataset,
+        config,
+        "vertical.erosk";
+        sel = indices,
+        defaults = 0.6,
+        type = Float,
+    )
+    return eurosem_rainfall_erosion_coefficient
+end
+
+function read_eurosem_rainfall_erosion_exponent(dataset, config, indices)
+    eurosem_rainfall_erosion_exponent = ncread(
+        dataset,
+        config,
+        "vertical.erosspl";
+        sel = indices,
+        defaults = 2.0,
+        type = Float,
+    )
+    return eurosem_rainfall_erosion_exponent
+end
+
+function read_answers_overland_flow_erosion_coefficient(dataset, config, indices)
+    answers_overland_flow_erosion_coefficient = ncread(
+        dataset,
+        config,
+        "vertical.erosov";
+        sel = indices,
+        defaults = 0.9,
+        type = Float,
+    )
+    return answers_overland_flow_erosion_coefficient
+end
+
+function read_path_fraction(dataset, config, indices)
+    path_fraction = ncread(
+        dataset,
+        config,
+        "vertical.pathfrac";
+        sel = indices,
+        defaults = 0.01,
+        type = Float,
+    )
+    return path_fraction
+end
+
+function read_land_slope(dataset, config, indices)
+    land_slope = ncread(
+        dataset,
+        config,
+        "vertical.slope";
+        sel = indices,
+        defaults = 0.01,
+        type = Float,
+    )
+    return land_slope
+end
+
+function read_usle_crop_management_factor(dataset, config, indices)
+    usle_crop_management_factor = ncread(
+        dataset,
+        config,
+        "vertical.usleC";
+        sel = indices,
+        defaults = 0.01,
+        type = Float,
+    )
+    return usle_crop_management_factor
+end
+
+function read_usle_soil_erodibility_factor(dataset, config, indices)
+    usle_soil_erodibility_factor = ncread(
+        dataset,
+        config,
+        "vertical.usleK";
+        sel = indices,
+        defaults = 0.1,
+        type = Float,
+    )
+    return usle_soil_erodibility_factor
+end
+
+function read_median_diameter_clay(dataset, config, indices)
+    median_diameter_clay = ncread(
+        dataset,
+        config,
+        "vertical.dmclay";
+        sel = indices,
+        defaults = 2.0,
+        type = Float,
+    )
+    return median_diameter_clay
+end
+
+function read_median_diameter_silt(dataset, config, indices)
+    median_diameter_silt = ncread(
+        dataset,
+        config,
+        "vertical.dmsilt";
+        sel = indices,
+        defaults = 10.0,
+        type = Float,
+    )
+    return median_diameter_silt
+end
+
+function read_median_diameter_sand(dataset, config, indices)
+    median_diameter_sand = ncread(
+        dataset,
+        config,
+        "vertical.dmsand";
+        sel = indices,
+        defaults = 200.0,
+        type = Float,
+    )
+    return median_diameter_sand
+end
+
+function read_median_diameter_sagg(dataset, config, indices)
+    dmsagg = ncread(
+        dataset,
+        config,
+        "vertical.dmsagg";
+        sel = indices,
+        defaults = 30.0,
+        type = Float,
+    )
+    return dmsagg
+end
+
+function read_median_diameter_lagg(dataset, config, indices)
+    dmlagg = ncread(
+        dataset,
+        config,
+        "vertical.dmlagg";
+        sel = indices,
+        defaults = 500.0,
+        type = Float,
+    )
+    return dmlagg
+end
+
+function read_particle_fraction_pclay(dataset, config, indices)
+    pclay = ncread(
+        dataset,
+        config,
+        "vertical.pclay";
+        sel = indices,
+        defaults = 0.1,
+        type = Float,
+    )
+    return pclay
+end
+
+function read_particle_fraction_psilt(dataset, config, indices)
+    psilt = ncread(
+        dataset,
+        config,
+        "vertical.psilt";
+        sel = indices,
+        defaults = 0.1,
+        type = Float,
+    )
+    return psilt
+end
+
+function read_sediment_density(dataset, config, indices)
+    sediment_density = ncread(
+        dataset,
+        config,
+        "vertical.rhosed";
+        sel = indices,
+        defaults = 2650.0,
+        type = Float,
+    )
+    return sediment_density
 end
 
 # Soil erosion
