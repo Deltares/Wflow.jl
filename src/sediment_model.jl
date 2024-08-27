@@ -78,7 +78,7 @@ function initialize_sediment_model(config::Config)
     ldd = ldd_2d[indices_subcatch]
 
     # # lateral part sediment in overland flow
-    overland_flow_sediment = init_overland_flow_sediment(river, number_of_cells)
+    overland_flow_sediment = init_overland_flow_sediment(Float, river, number_of_cells)
 
     graph = flowgraph(ldd, indices_subcatch, pcr_dir)
 
@@ -158,10 +158,14 @@ function initialize_sediment_model(config::Config)
     return model
 end
 
-function init_overland_flow_sediment(river::Vector, number_of_cells::Integer)
-    river_cell = convert(Vector{Float}, river)
+function init_overland_flow_sediment(
+    type::Type{<:AbstractFloat},
+    river::Vector,
+    number_of_cells::Integer,
+)
+    river_cell = convert(Vector{type}, river)
 
-    overland_flow_sediment = OverlandFlowSediment{Float}(;
+    overland_flow_sediment = OverlandFlowSediment{type}(;
         n = number_of_cells,
         rivcell = river_cell,
         soilloss = fill(mv, number_of_cells),
