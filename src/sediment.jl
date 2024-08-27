@@ -250,7 +250,11 @@ function initialize_land_sediment(
     return erosion
 end
 
-function read_canopy_height(dataset, config, indices)
+function read_canopy_height(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     canopy_height = ncread(
         dataset,
         config,
@@ -262,7 +266,11 @@ function read_canopy_height(dataset, config, indices)
     return canopy_height
 end
 
-function read_eurosem_rainfall_erosion_coefficient(dataset, config, indices)
+function read_eurosem_rainfall_erosion_coefficient(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     eurosem_rainfall_erosion_coefficient = ncread(
         dataset,
         config,
@@ -274,7 +282,11 @@ function read_eurosem_rainfall_erosion_coefficient(dataset, config, indices)
     return eurosem_rainfall_erosion_coefficient
 end
 
-function read_eurosem_rainfall_erosion_exponent(dataset, config, indices)
+function read_eurosem_rainfall_erosion_exponent(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     eurosem_rainfall_erosion_exponent = ncread(
         dataset,
         config,
@@ -286,7 +298,11 @@ function read_eurosem_rainfall_erosion_exponent(dataset, config, indices)
     return eurosem_rainfall_erosion_exponent
 end
 
-function read_answers_overland_flow_erosion_coefficient(dataset, config, indices)
+function read_answers_overland_flow_erosion_coefficient(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     answers_overland_flow_erosion_coefficient = ncread(
         dataset,
         config,
@@ -298,7 +314,11 @@ function read_answers_overland_flow_erosion_coefficient(dataset, config, indices
     return answers_overland_flow_erosion_coefficient
 end
 
-function read_path_fraction(dataset, config, indices)
+function read_path_fraction(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     path_fraction = ncread(
         dataset,
         config,
@@ -310,7 +330,11 @@ function read_path_fraction(dataset, config, indices)
     return path_fraction
 end
 
-function read_land_slope(dataset, config, indices)
+function read_land_slope(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     land_slope = ncread(
         dataset,
         config,
@@ -322,7 +346,11 @@ function read_land_slope(dataset, config, indices)
     return land_slope
 end
 
-function read_usle_crop_management_factor(dataset, config, indices)
+function read_usle_crop_management_factor(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     usle_crop_management_factor = ncread(
         dataset,
         config,
@@ -334,7 +362,11 @@ function read_usle_crop_management_factor(dataset, config, indices)
     return usle_crop_management_factor
 end
 
-function read_usle_soil_erodibility_factor(dataset, config, indices)
+function read_usle_soil_erodibility_factor(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     usle_soil_erodibility_factor = ncread(
         dataset,
         config,
@@ -346,7 +378,11 @@ function read_usle_soil_erodibility_factor(dataset, config, indices)
     return usle_soil_erodibility_factor
 end
 
-function read_median_diameter_clay(dataset, config, indices)
+function read_median_diameter_clay(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     median_diameter_clay = ncread(
         dataset,
         config,
@@ -358,7 +394,11 @@ function read_median_diameter_clay(dataset, config, indices)
     return median_diameter_clay
 end
 
-function read_median_diameter_silt(dataset, config, indices)
+function read_median_diameter_silt(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     median_diameter_silt = ncread(
         dataset,
         config,
@@ -370,7 +410,11 @@ function read_median_diameter_silt(dataset, config, indices)
     return median_diameter_silt
 end
 
-function read_median_diameter_sand(dataset, config, indices)
+function read_median_diameter_sand(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     median_diameter_sand = ncread(
         dataset,
         config,
@@ -382,7 +426,11 @@ function read_median_diameter_sand(dataset, config, indices)
     return median_diameter_sand
 end
 
-function read_median_diameter_sagg(dataset, config, indices)
+function read_median_diameter_sagg(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     dmsagg = ncread(
         dataset,
         config,
@@ -394,7 +442,11 @@ function read_median_diameter_sagg(dataset, config, indices)
     return dmsagg
 end
 
-function read_median_diameter_lagg(dataset, config, indices)
+function read_median_diameter_lagg(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     dmlagg = ncread(
         dataset,
         config,
@@ -406,7 +458,11 @@ function read_median_diameter_lagg(dataset, config, indices)
     return dmlagg
 end
 
-function read_percentage_clay(dataset, config, indices)
+function read_percentage_clay(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     pclay = ncread(
         dataset,
         config,
@@ -418,7 +474,11 @@ function read_percentage_clay(dataset, config, indices)
     return pclay
 end
 
-function read_percentage_silt(dataset, config, indices)
+function read_percentage_silt(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     psilt = ncread(
         dataset,
         config,
@@ -430,7 +490,11 @@ function read_percentage_silt(dataset, config, indices)
     return psilt
 end
 
-function read_sediment_density(dataset, config, indices)
+function read_sediment_density(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     sediment_density = ncread(
         dataset,
         config,
@@ -442,7 +506,11 @@ function read_sediment_density(dataset, config, indices)
     return sediment_density
 end
 
-function read_reservoir_coverage(dataset, config, indices)
+function read_reservoir_coverage(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     reservoir_coverage_2d = ncread(
         dataset,
         config,
@@ -455,7 +523,11 @@ function read_reservoir_coverage(dataset, config, indices)
     return reservoir_coverage_2d
 end
 
-function read_lake_coverage(dataset, config, indices)
+function read_lake_coverage(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     lake_coverage_2d = ncread(
         dataset,
         config,
@@ -469,12 +541,12 @@ function read_lake_coverage(dataset, config, indices)
 end
 
 function add_water_body_coverages!(
-    water_body_coverage,
-    dataset,
-    config,
-    indices;
-    reservoirs = false,
-    lakes = false,
+    water_body_coverage::Vector{Float},
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}};
+    reservoirs::Bool = false,
+    lakes::Bool = false,
 )
     if reservoirs
         reservoir_coverage = read_reservoir_coverage(dataset, config, indices)
@@ -547,8 +619,8 @@ end
 
 function compute_particle_fractions(
     particle_percentage::NamedTuple;
-    do_river = do_river,
-    land_transport_method = land_transport_method,
+    do_river::Bool = do_river,
+    land_transport_method::String = land_transport_method,
 )
     number_of_cells = length(particle_percentage.clay)
 
