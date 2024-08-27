@@ -153,64 +153,24 @@ function initialize_land_sediment(
     ### Initialize transport capacity variables ###
     river_cell = float(river)
     # Percent Sand
-    psand = 100 .- percentage_clay .- percentage_silt
-    # Govers coefficient for transport capacity
-    if land_transport_method != "yalinpart"
-        # Calculation of D50 and fraction of fine and very fine sand (fvfs) from Fooladmand et al, 2006
-        psand999 = psand .* ((999 - 25) / (1000 - 25))
-        vd50 =
-            log.(
-                (1 ./ (0.01 .* (percentage_clay .+ percentage_silt)) .- 1) ./
-                (1 ./ (0.01 .* percentage_clay) .- 1)
-            )
-        wd50 =
-            log.(
-                (1 ./ (0.01 .* (percentage_clay .+ percentage_silt .+ psand999)) .- 1) ./
-                (1 ./ (0.01 .* percentage_clay) .- 1),
-            )
-        ad50 = 1 / log((25 - 1) / (999 - 1))
-        bd50 = ad50 ./ log((25 - 1) / 1)
-        cd50 = ad50 .* log.(vd50 ./ wd50)
-        ud50 = (.-vd50) .^ (1 .- bd50) ./ ((.-wd50) .^ (.-bd50))
-        top_soil_particle_median_diameter =
-            1 .+
-            (-1 ./ ud50 .* log.(1 ./ (1 ./ (0.01 .* percentage_clay) .- 1))) .^ (1 ./ cd50) #[um]
-        top_soil_particle_median_diameter = top_soil_particle_median_diameter ./ 1000 # [mm]
-    else
-        top_soil_particle_median_diameter = fill(mv, number_of_cells)
-    end
-    if land_transport_method == "govers"
-        govers_transport_capacity_coefficient_c =
-            ((top_soil_particle_median_diameter .* 1000 .+ 5) ./ 0.32) .^ (-0.6)
-        govers_transport_capacity_coefficient_n =
-            ((top_soil_particle_median_diameter .* 1000 .+ 5) ./ 300) .^ (0.25)
-    else
-        govers_transport_capacity_coefficient_c = fill(mv, number_of_cells)
-        govers_transport_capacity_coefficient_n = fill(mv, number_of_cells)
-    end
-    if do_river || land_transport_method == "yalinpart"
-        # Determine sediment size distribution, estimated from primary particle size distribution (Foster et al., 1980)
-        particle_fraction_clay = 0.20 .* percentage_clay ./ 100
-        particle_fraction_silt = 0.13 .* percentage_silt ./ 100
-        particle_fraction_sand = 0.01 .* psand .* (1 .- 0.01 .* percentage_clay) .^ (2.4)
-        particle_fraction_sagg = 0.28 .* (0.01 .* percentage_clay .- 0.25) .+ 0.5
-        for i in 1:number_of_cells
-            if percentage_clay[i] > 50.0
-                particle_fraction_sagg[i] = 0.57
-            elseif percentage_clay[i] < 25
-                particle_fraction_sagg[i] = 2.0 * 0.01 * percentage_clay[i]
-            end
-        end
-        particle_fraction_lagg =
-            1.0 .- particle_fraction_clay .- particle_fraction_silt .-
-            particle_fraction_sand .- particle_fraction_sagg
-    else
-        particle_fraction_clay = fill(mv, number_of_cells)
-        particle_fraction_silt = fill(mv, number_of_cells)
-        particle_fraction_sand = fill(mv, number_of_cells)
-        particle_fraction_sagg = fill(mv, number_of_cells)
-        particle_fraction_lagg = fill(mv, number_of_cells)
-    end
+    percentage_sand = 100 .- percentage_clay .- percentage_silt
+
+    top_soil_particle_median_diameter = compute_top_soil_particle_median_diameter(
+        percentage_clay,
+        percentage_silt;
+        land_transport_method = land_transport_method,
+    )
+
+    govers_transport_capacity_coefficient = compute_govers_transport_capacity_coefficients(
+        top_soil_particle_median_diameter;
+        land_transport_method = land_transport_method,
+    )
+
+    particle_fraction = compute_particle_fractions(
+        (clay = percentage_clay, silt = percentage_silt, sand = percentage_sand);
+        do_river = do_river,
+        land_transport_method = land_transport_method,
+    )
 
     # Reservoir and lakes
     water_body_coverage = zeros(Float, number_of_cells)
@@ -263,19 +223,19 @@ function initialize_land_sediment(
         # Parameters
         dl = map(detdrainlength, ldd, cell_length_x, cell_length_y),
         dw = map(detdrainwidth, ldd, cell_length_x, cell_length_y),
-        cGovers = govers_transport_capacity_coefficient_c,
+        cGovers = govers_transport_capacity_coefficient.c,
         D50 = top_soil_particle_median_diameter,
         dmclay = median_diameter_clay,
         dmsilt = median_diameter_silt,
         dmsand = median_diameter_sand,
         dmsagg = median_diameter_sagg,
         dmlagg = median_diameter_lagg,
-        fclay = particle_fraction_clay,
-        fsilt = particle_fraction_silt,
-        fsand = particle_fraction_sand,
-        fsagg = particle_fraction_sagg,
-        flagg = particle_fraction_lagg,
-        nGovers = govers_transport_capacity_coefficient_n,
+        fclay = particle_fraction.clay,
+        fsilt = particle_fraction.silt,
+        fsand = particle_fraction.sand,
+        fsagg = particle_fraction.sagg,
+        flagg = particle_fraction.lagg,
+        nGovers = govers_transport_capacity_coefficient.n,
         rhos = sediment_density,
         rivcell = river_cell,
         # Outputs
@@ -525,6 +485,106 @@ function add_water_body_coverages!(
         lake_coverage = read_lake_coverage(dataset, config, indices)
         water_body_coverage .+= lake_coverage
     end
+end
+
+function compute_top_soil_particle_median_diameter(
+    percentage_clay::Vector{Float},
+    percentage_silt::Vector{Float};
+    land_transport_method::String = "yalinpart",
+)
+    number_of_cells = length(percentage_clay)
+
+    if land_transport_method != "yalinpart"
+        # Calculation of D50 and fraction of fine and very fine sand (fvfs) from Fooladmand et al, 2006
+        psand999 = psand .* ((999 - 25) / (1000 - 25))
+        vd50 =
+            log.(
+                (1 ./ (0.01 .* (percentage_clay .+ percentage_silt)) .- 1) ./
+                (1 ./ (0.01 .* percentage_clay) .- 1)
+            )
+        wd50 =
+            log.(
+                (1 ./ (0.01 .* (percentage_clay .+ percentage_silt .+ psand999)) .- 1) ./
+                (1 ./ (0.01 .* percentage_clay) .- 1),
+            )
+        ad50 = 1 / log((25 - 1) / (999 - 1))
+        bd50 = ad50 ./ log((25 - 1) / 1)
+        cd50 = ad50 .* log.(vd50 ./ wd50)
+        ud50 = (.-vd50) .^ (1 .- bd50) ./ ((.-wd50) .^ (.-bd50))
+        top_soil_particle_median_diameter =
+            1 .+
+            (-1 ./ ud50 .* log.(1 ./ (1 ./ (0.01 .* percentage_clay) .- 1))) .^ (1 ./ cd50) #[um]
+        top_soil_particle_median_diameter = top_soil_particle_median_diameter ./ 1000 # [mm]
+    else
+        top_soil_particle_median_diameter = fill(mv, number_of_cells)
+    end
+
+    return top_soil_particle_median_diameter
+end
+
+function compute_govers_transport_capacity_coefficients(
+    top_soil_particle_median_diameter::Vector{Float};
+    land_transport_method::String = "govers",
+)
+    number_of_cells = length(top_soil_particle_median_diameter)
+
+    # Govers coefficient for transport capacity
+    if land_transport_method == "govers"
+        govers_transport_capacity_coefficient_c =
+            ((top_soil_particle_median_diameter .* 1000 .+ 5) ./ 0.32) .^ (-0.6)
+        govers_transport_capacity_coefficient_n =
+            ((top_soil_particle_median_diameter .* 1000 .+ 5) ./ 300) .^ (0.25)
+    else
+        govers_transport_capacity_coefficient_c = fill(mv, number_of_cells)
+        govers_transport_capacity_coefficient_n = fill(mv, number_of_cells)
+    end
+
+    return (
+        c = govers_transport_capacity_coefficient_c,
+        n = govers_transport_capacity_coefficient_n,
+    )
+end
+
+function compute_particle_fractions(
+    particle_percentage::NamedTuple;
+    do_river = do_river,
+    land_transport_method = land_transport_method,
+)
+    number_of_cells = length(particle_percentage.clay)
+
+    if do_river || land_transport_method == "yalinpart"
+        # Determine sediment size distribution, estimated from primary particle size distribution (Foster et al., 1980)
+        particle_fraction_clay = 0.20 .* particle_percentage.clay ./ 100
+        particle_fraction_silt = 0.13 .* particle_percentage.silt ./ 100
+        particle_fraction_sand =
+            0.01 .* particle_percentage.sand .*
+            (1 .- 0.01 .* particle_percentage.clay) .^ (2.4)
+        particle_fraction_sagg = 0.28 .* (0.01 .* particle_percentage.clay .- 0.25) .+ 0.5
+        for i in 1:number_of_cells
+            if particle_percentage.clay[i] > 50.0
+                particle_fraction_sagg[i] = 0.57
+            elseif particle_percentage.clay[i] < 25
+                particle_fraction_sagg[i] = 2.0 * 0.01 * particle_percentage.clay[i]
+            end
+        end
+        particle_fraction_lagg =
+            1.0 .- particle_fraction_clay .- particle_fraction_silt .-
+            particle_fraction_sand .- particle_fraction_sagg
+    else
+        particle_fraction_clay = fill(mv, number_of_cells)
+        particle_fraction_silt = fill(mv, number_of_cells)
+        particle_fraction_sand = fill(mv, number_of_cells)
+        particle_fraction_sagg = fill(mv, number_of_cells)
+        particle_fraction_lagg = fill(mv, number_of_cells)
+    end
+
+    return (
+        clay = particle_fraction_clay,
+        silt = particle_fraction_silt,
+        sand = particle_fraction_sand,
+        sagg = particle_fraction_sagg,
+        lagg = particle_fraction_lagg,
+    )
 end
 
 # Soil erosion
