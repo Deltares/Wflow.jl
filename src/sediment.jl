@@ -144,32 +144,37 @@ function initialize_land_sediment(
     median_diameter_clay = read_median_diameter_clay(dataset, config, indices)
     median_diameter_silt = read_median_diameter_silt(dataset, config, indices)
     median_diameter_sand = read_median_diameter_sand(dataset, config, indices)
-    dmsagg = read_median_diameter_sagg(dataset, config, indices)
-    dmlagg = read_median_diameter_lagg(dataset, config, indices)
-    pclay = read_particle_fraction_pclay(dataset, config, indices)
-    psilt = read_particle_fraction_psilt(dataset, config, indices)
+    median_diameter_sagg = read_median_diameter_sagg(dataset, config, indices)
+    median_diameter_lagg = read_median_diameter_lagg(dataset, config, indices)
+    percentage_clay = read_percentage_clay(dataset, config, indices)
+    percentage_silt = read_percentage_silt(dataset, config, indices)
     sediment_density = read_sediment_density(dataset, config, indices)
 
     ### Initialize transport capacity variables ###
     river_cell = float(river)
     # Percent Sand
-    psand = 100 .- pclay .- psilt
+    psand = 100 .- percentage_clay .- percentage_silt
     # Govers coefficient for transport capacity
     if land_transport_method != "yalinpart"
         # Calculation of D50 and fraction of fine and very fine sand (fvfs) from Fooladmand et al, 2006
         psand999 = psand .* ((999 - 25) / (1000 - 25))
-        vd50 = log.((1 ./ (0.01 .* (pclay .+ psilt)) .- 1) ./ (1 ./ (0.01 .* pclay) .- 1))
+        vd50 =
+            log.(
+                (1 ./ (0.01 .* (percentage_clay .+ percentage_silt)) .- 1) ./
+                (1 ./ (0.01 .* percentage_clay) .- 1)
+            )
         wd50 =
             log.(
-                (1 ./ (0.01 .* (pclay .+ psilt .+ psand999)) .- 1) ./
-                (1 ./ (0.01 .* pclay) .- 1),
+                (1 ./ (0.01 .* (percentage_clay .+ percentage_silt .+ psand999)) .- 1) ./
+                (1 ./ (0.01 .* percentage_clay) .- 1),
             )
         ad50 = 1 / log((25 - 1) / (999 - 1))
         bd50 = ad50 ./ log((25 - 1) / 1)
         cd50 = ad50 .* log.(vd50 ./ wd50)
         ud50 = (.-vd50) .^ (1 .- bd50) ./ ((.-wd50) .^ (.-bd50))
         top_soil_particle_median_diameter =
-            1 .+ (-1 ./ ud50 .* log.(1 ./ (1 ./ (0.01 .* pclay) .- 1))) .^ (1 ./ cd50) #[um]
+            1 .+
+            (-1 ./ ud50 .* log.(1 ./ (1 ./ (0.01 .* percentage_clay) .- 1))) .^ (1 ./ cd50) #[um]
         top_soil_particle_median_diameter = top_soil_particle_median_diameter ./ 1000 # [mm]
     else
         top_soil_particle_median_diameter = fill(mv, number_of_cells)
@@ -185,26 +190,26 @@ function initialize_land_sediment(
     end
     if do_river || land_transport_method == "yalinpart"
         # Determine sediment size distribution, estimated from primary particle size distribution (Foster et al., 1980)
-        particle_fraction_clay = 0.20 .* pclay ./ 100
-        particle_fraction_silt = 0.13 .* psilt ./ 100
-        particle_fraction_sand = 0.01 .* psand .* (1 .- 0.01 .* pclay) .^ (2.4)
-        fsagg = 0.28 .* (0.01 .* pclay .- 0.25) .+ 0.5
+        particle_fraction_clay = 0.20 .* percentage_clay ./ 100
+        particle_fraction_silt = 0.13 .* percentage_silt ./ 100
+        particle_fraction_sand = 0.01 .* psand .* (1 .- 0.01 .* percentage_clay) .^ (2.4)
+        particle_fraction_sagg = 0.28 .* (0.01 .* percentage_clay .- 0.25) .+ 0.5
         for i in 1:number_of_cells
-            if pclay[i] > 50.0
-                fsagg[i] = 0.57
-            elseif pclay[i] < 25
-                fsagg[i] = 2.0 * 0.01 * pclay[i]
+            if percentage_clay[i] > 50.0
+                particle_fraction_sagg[i] = 0.57
+            elseif percentage_clay[i] < 25
+                particle_fraction_sagg[i] = 2.0 * 0.01 * percentage_clay[i]
             end
         end
-        flagg =
+        particle_fraction_lagg =
             1.0 .- particle_fraction_clay .- particle_fraction_silt .-
-            particle_fraction_sand .- fsagg
+            particle_fraction_sand .- particle_fraction_sagg
     else
         particle_fraction_clay = fill(mv, number_of_cells)
         particle_fraction_silt = fill(mv, number_of_cells)
         particle_fraction_sand = fill(mv, number_of_cells)
-        fsagg = fill(mv, number_of_cells)
-        flagg = fill(mv, number_of_cells)
+        particle_fraction_sagg = fill(mv, number_of_cells)
+        particle_fraction_lagg = fill(mv, number_of_cells)
     end
 
     # Reservoir and lakes
@@ -263,13 +268,13 @@ function initialize_land_sediment(
         dmclay = median_diameter_clay,
         dmsilt = median_diameter_silt,
         dmsand = median_diameter_sand,
-        dmsagg = dmsagg,
-        dmlagg = dmlagg,
+        dmsagg = median_diameter_sagg,
+        dmlagg = median_diameter_lagg,
         fclay = particle_fraction_clay,
         fsilt = particle_fraction_silt,
         fsand = particle_fraction_sand,
-        fsagg = fsagg,
-        flagg = flagg,
+        fsagg = particle_fraction_sagg,
+        flagg = particle_fraction_lagg,
         nGovers = govers_transport_capacity_coefficient_n,
         rhos = sediment_density,
         rivcell = river_cell,
@@ -441,7 +446,7 @@ function read_median_diameter_lagg(dataset, config, indices)
     return dmlagg
 end
 
-function read_particle_fraction_pclay(dataset, config, indices)
+function read_percentage_clay(dataset, config, indices)
     pclay = ncread(
         dataset,
         config,
@@ -453,7 +458,7 @@ function read_particle_fraction_pclay(dataset, config, indices)
     return pclay
 end
 
-function read_particle_fraction_psilt(dataset, config, indices)
+function read_percentage_silt(dataset, config, indices)
     psilt = ncread(
         dataset,
         config,
