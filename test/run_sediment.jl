@@ -95,7 +95,8 @@ end
 
     # When
 
-    overland_flow_sediment = Wflow.init_overland_flow_sediment(river, number_of_cells)
+    overland_flow_sediment =
+        Wflow.init_overland_flow_sediment(Float64, river, number_of_cells)
 
     # Then
 
@@ -110,7 +111,8 @@ end
 
     # When
 
-    overland_flow_sediment = Wflow.init_overland_flow_sediment(river, number_of_cells)
+    overland_flow_sediment =
+        Wflow.init_overland_flow_sediment(Float64, river, number_of_cells)
 
     # Then
 
