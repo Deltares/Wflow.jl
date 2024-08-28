@@ -5,6 +5,9 @@ Output data can be written to netCDF or CSV files.
 For configuration files we use TOML.
 =#
 
+#TODO (v1.0): check if mapping of variables (input and output) in TOML file should be
+#simplified. Direct mapping is now used.
+
 """Turn "a.aa.aaa" into (:a, :aa, :aaa)"""
 symbols(s) = Tuple(Symbol(x) for x in split(s, '.'))
 
@@ -179,20 +182,26 @@ end
 
 function get_param_res(model)
     return Dict(
-        symbols"vertical.precipitation" => model.lateral.river.reservoir.precipitation,
-        symbols"vertical.potential_evaporation" =>
+        symbols"vertical.atmospheric_forcing.precipitation" =>
+            model.lateral.river.reservoir.precipitation,
+        symbols"vertical.atmospheric_forcing.potential_evaporation" =>
             model.lateral.river.reservoir.evaporation,
     )
 end
 
 function get_param_lake(model)
     return Dict(
-        symbols"vertical.precipitation" => model.lateral.river.lake.precipitation,
-        symbols"vertical.potential_evaporation" => model.lateral.river.lake.evaporation,
+        symbols"vertical.atmospheric_forcing.precipitation" =>
+            model.lateral.river.lake.precipitation,
+        symbols"vertical.atmospheric_forcing.potential_evaporation" =>
+            model.lateral.river.lake.evaporation,
     )
 end
 
-mover_params = (symbols"vertical.precipitation", symbols"vertical.potential_evaporation")
+mover_params = (
+    symbols"vertical.atmospheric_forcing.precipitation",
+    symbols"vertical.atmospheric_forcing.potential_evaporation",
+)
 
 function load_fixed_forcing(model)
     @unpack reader, network, config = model
@@ -201,8 +210,10 @@ function load_fixed_forcing(model)
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
     do_lakes = get(config.model, "lakes", false)::Bool
 
-    mover_params =
-        (symbols"vertical.precipitation", symbols"vertical.potential_evaporation")
+    mover_params = (
+        symbols"vertical.atmospheric_forcing.precipitation",
+        symbols"vertical.atmospheric_forcing.potential_evaporation",
+    )
     reverse_indices = network.land.reverse_indices
     if do_reservoirs
         sel_reservoirs = network.reservoir.indices_coverage
@@ -1614,7 +1625,7 @@ end
 function get_index_dimension(var, model)::Int
     @unpack vertical = model
     if haskey(var, "layer")
-        inds = collect(1:(vertical.maxlayers))
+        inds = collect(1:(vertical.bucket.parameters.maxlayers))
         index = inds[var["layer"]]
     else
         error("Unrecognized or missing dimension name to index $(var)")

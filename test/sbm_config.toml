@@ -19,13 +19,17 @@ path_output = "outstates-moselle.nc"
 # if listed, the variable must be present in the NetCDF or error
 # if not listed, the variable can get a default value if it has one
 
-[state.vertical]
+[state.vertical.interception.variables]
 canopystorage = "canopystorage"
+
+[state.vertical.bucket.variables]
 satwaterdepth = "satwaterdepth"
-snow = "snow"
-snowwater = "snowwater"
 tsoil = "tsoil"
 ustorelayerdepth = "ustorelayerdepth"
+
+[state.vertical.snow.variables]
+snow_storage = "snow"
+snow_water = "snowwater"
 
 [state.lateral.river]
 h = "h_river"
@@ -61,45 +65,45 @@ forcing = [
   "vertical.atmospheric_forcing.potential_evaporation",
 ]
 
-cyclic = ["vertical.interception_model.parameters.veg_param_set.leaf_area_index"]
+cyclic = ["vertical.vegetation_parameters.leaf_area_index"]
 
-[input.vertical.interception_model.parameters.veg_param_set]
+[input.vertical.vegetation_parameters]
 leaf_area_index = "LAI"
+kext = "Kext"
+specific_leaf = "Sl"
+storage_wood = "Swood"
+rootingdepth = "RootingDepth"
+
+[input.vertical.interception.parameters]
+e_r = "EoverR"
 
 [input.vertical.atmospheric_forcing]
 potential_evaporation = "pet"
 precipitation = "precip"
 temperature = "temp"
 
-[input.vertical]
+[input.vertical.bucket.parameters]
 c = "c"
 cf_soil = "cf_soil"
-cfmax = "Cfmax"
-e_r = "EoverR"
 f = "f"
 infiltcappath = "InfiltCapPath"
 infiltcapsoil = "InfiltCapSoil"
-kext = "Kext"
-#leaf_area_index = "LAI"
-maxleakage = "MaxLeakage"
-pathfrac = "PathFrac"
-#potential_evaporation = "pet"
-#precipitation = "precip"
-rootdistpar = "rootdistpar"
-rootingdepth = "RootingDepth"
-soilthickness = "SoilThickness"
-specific_leaf = "Sl"
-storage_wood = "Swood"
-#temperature = "temp"
-tt = "TT"
-tti = "TTI"
-ttm = "TTM"
 water_holding_capacity = "WHC"
 waterfrac = "WaterFrac"
 theta_r = "thetaR"
 theta_s = "thetaS"
+maxleakage = "MaxLeakage"
+pathfrac = "PathFrac"
+rootdistpar = "rootdistpar"
+soilthickness = "SoilThickness"
 
-[input.vertical.kv_0]
+[input.vertical.snow.parameters]
+tt = "TT"
+tti = "TTI"
+ttm = "TTM"
+cfmax = "Cfmax"
+
+[input.vertical.bucket.kv_0]
 netcdf.variable.name = "KsatVer"
 scale = 1.0
 offset = 0.0
@@ -140,16 +144,20 @@ type = "sbm"
 min_streamorder_river = 6
 min_streamorder_land = 5
 
-#[output]
+[output]
 path = "output_moselle.nc"
 
-[output.vertical]
-canopystorage = "canopystorage"
+[output.vertical.interception.variables]
+canopy_storage = "canopystorage"
+
+[output.vertical.bucket.variables]
 satwaterdepth = "satwaterdepth"
-snow = "snow"
-snowwater = "snowwater"
 tsoil = "tsoil"
 ustorelayerdepth = "ustorelayerdepth"
+
+[output.vertical.snow.variables]
+snow_storage = "snow"
+snow_water = "snowwater"
 
 [output.lateral.river]
 h = "h_river"
@@ -210,7 +218,7 @@ parameter = "vertical.atmospheric_forcing.temperature"
 coordinate.x = 6.255
 coordinate.y = 50.012
 header = "vwc_layer2_bycoord"
-parameter = "vertical.vwc"
+parameter = "vertical.bucket.variables.vwc"
 layer = 2
 
 [[csv.column]]
@@ -227,7 +235,7 @@ parameter = "lateral.river.q"
 [[csv.column]]
 header = "recharge"
 map = "subcatchment"
-parameter = "vertical.recharge"
+parameter = "vertical.bucket.variables.recharge"
 reducer = "mean"
 
 [API]

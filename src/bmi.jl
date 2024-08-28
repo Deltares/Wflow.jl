@@ -521,8 +521,8 @@ grid_location(::SimpleReservoir, var) = var == :dt ? "none" : "node"
 exchange(::Lake, var) = var == :dt ? 0 : 1
 grid_location(::Lake, var) = var == :dt ? "none" : "node"
 
-exchange(::SBM, var) = var in (:n, :dt, :maxlayers) ? 0 : 1
-grid_location(::SBM, var) = var in (:n, :dt, :maxlayers) ? "none" : "node"
+exchange(::SimpleBucketModel, var) = var in (:maxlayers) ? 0 : 1
+grid_location(::SimpleBucketModel, var) = var in (:maxlayers) ? "none" : "node"
 
 exchange(::Union{LandSediment, OverlandFlowSediment}, var) = var == :n ? 0 : 1
 grid_location(::Union{LandSediment, OverlandFlowSediment}, var) =

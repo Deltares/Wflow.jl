@@ -68,7 +68,7 @@ function initialize_sbm_model(config::Config)
     xl, yl = cell_lengths(y, cellength, sizeinmetres)
     riverfrac = river_fraction(river, riverlength, riverwidth, xl, yl)
 
-    sbm = initialize_sbm(nc, config, riverfrac, inds)
+    lsm = initialize_land_hydrology_sbm(nc, config, riverfrac, inds)
 
     inds_riv, rev_inds_riv = active_indices(river_2d, 0)
     nriv = length(inds_riv)
@@ -121,8 +121,8 @@ function initialize_sbm_model(config::Config)
             type = Float,
         )
 
-        (; theta_s, theta_r, kv_0, f, soilthickness, z_exp) = sbm.soil_model.parameters
-        (; zi) = sbm.soil_model.variables
+        (; theta_s, theta_r, kv_0, f, soilthickness, z_exp) = lsm.bucket.parameters
+        (; zi) = lsm.bucket.variables
         # unit for lateral subsurface flow component is [m³ d⁻¹], kv_0 [mm Δt⁻¹]
 
         ssf = LateralSSF{Float}(;
@@ -153,7 +153,12 @@ function initialize_sbm_model(config::Config)
         elseif ksat_profile == "exponential_constant"
             initialize_lateralssf_exp_const!(ssf::LateralSSF)
         elseif ksat_profile == "layered" || ksat_profile == "layered_exponential"
-            initialize_lateralssf_layered!(ssf::LateralSSF, sbm::SBM, ksat_profile)
+            initialize_lateralssf_layered!(
+                ssf::LateralSSF,
+                lsm.bucket_model,
+                ksat_profile,
+                dt,
+            )
         end
     else
         # when the SBM model is coupled (BMI) to a groundwater model, the following
@@ -294,14 +299,14 @@ function initialize_sbm_model(config::Config)
         end
     end
 
-    modelmap = (vertical = sbm, lateral = (subsurface = ssf, land = olf, river = rf))
+    modelmap = (vertical = lsm, lateral = (subsurface = ssf, land = olf, river = rf))
     indices_reverse = (
         land = rev_inds,
         river = rev_inds_riv,
         reservoir = isempty(reservoir) ? nothing : reservoir.reverse_indices,
         lake = isempty(lake) ? nothing : lake.reverse_indices,
     )
-    (; maxlayers) = sbm.soil_model.parameters
+    (; maxlayers) = lsm.bucket.parameters
     writer = prepare_writer(
         config,
         modelmap,
@@ -369,7 +374,7 @@ function initialize_sbm_model(config::Config)
         config,
         (; land, river, reservoir, lake, index_river, frac_toriver),
         (subsurface = ssf, land = olf, river = rf),
-        sbm,
+        lsm,
         clock,
         reader,
         writer,
@@ -389,14 +394,19 @@ function update(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmMo
 
     model = update_until_recharge(model)
     # exchange of recharge between vertical sbm concept and subsurface flow domain
-    lateral.subsurface.recharge .= vertical.recharge ./ 1000.0
+    lateral.subsurface.recharge .= vertical.bucket.variables.recharge ./ 1000.0
     lateral.subsurface.recharge .*= lateral.subsurface.dw
-    lateral.subsurface.zi .= vertical.zi ./ 1000.0
+    lateral.subsurface.zi .= vertical.bucket.variables.zi ./ 1000.0
     # update lateral subsurface flow domain (kinematic wave)
     if (ksat_profile == "layered") || (ksat_profile == "layered_exponential")
         for i in eachindex(lateral.subsurface.kh)
-            lateral.subsurface.kh[i] =
-                kh_layered_profile(vertical, lateral.subsurface.khfrac[i], i, ksat_profile)
+            lateral.subsurface.kh[i] = kh_layered_profile(
+                vertical.soil_model,
+                lateral.subsurface.khfrac[i],
+                i,
+                ksat_profile,
+                vertical.dt,
+            )
         end
     end
     update(lateral.subsurface, network.land, network.frac_toriver, ksat_profile)
@@ -413,31 +423,29 @@ through BMI, to couple the SBM model to an external groundwater model.
 function update_until_recharge(
     model::Model{N, L, V, R, W, T},
 ) where {N, L, V, R, W, T <: SbmModel}
-    @unpack lateral, vertical, network, clock, config = model
+    (; lateral, vertical, network, config) = model
+    (; bucket, snow) = vertical
 
     inds_riv = network.index_river
 
     # extract water levels h_av [m] from the land and river domains
     # this is used to limit open water evaporation
-    vertical.waterlevel_land .= lateral.land.h_av .* 1000.0
-    vertical.waterlevel_river[inds_riv] .= lateral.river.h_av .* 1000.0
+    bucket.variables.waterlevel_land .= lateral.land.h_av .* 1000.0
+    bucket.variables.waterlevel_river[inds_riv] .= lateral.river.h_av .* 1000.0
 
     # vertical sbm concept is updated until snow state, after that (optional)
     # snow transport is possible
-    update_until_snow(vertical, config)
+    update!(vertical, config)
 
     # lateral snow transport
     if get(config.model, "masswasting", false)::Bool
         lateral_snow_transport!(
-            vertical.snow,
-            vertical.snowwater,
+            snow.variables.snow_storage,
+            snow.variables.snow_water,
             network.land.slope,
             network.land,
         )
     end
-
-    # update vertical sbm concept until recharge [mm] to the saturated store
-    update_until_recharge(vertical, config)
 
     return model
 end
@@ -454,8 +462,8 @@ function update_after_subsurfaceflow(
     @unpack lateral, vertical, network, clock, config = model
 
     # update vertical sbm concept (runoff, ustorelayerdepth and satwaterdepth)
-    update_after_subsurfaceflow(
-        vertical,
+    update!(
+        vertical.bucket,
         lateral.subsurface.zi * 1000.0,
         lateral.subsurface.exfiltwater * 1000.0,
     )

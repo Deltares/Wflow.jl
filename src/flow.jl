@@ -1602,7 +1602,8 @@ Set `inwater` of the lateral river component for a model `ssf_toriver` is the su
 flow to the river.
 """
 function set_river_inwater(model, ssf_toriver)
-    @unpack lateral, vertical, network = model
+    (; lateral, vertical, network) = model
+    (; net_runoff_river) = vertical.bucket.variables
     inds = network.index_river
 
     @. lateral.river.inwater = (
@@ -1611,7 +1612,7 @@ function set_river_inwater(model, ssf_toriver)
         # net_runoff_river
         (
             (
-                vertical.net_runoff_river[inds] *
+                net_runoff_river[inds] *
                 network.land.xl[inds] *
                 network.land.yl[inds] *
                 0.001
@@ -1650,10 +1651,10 @@ Set `inwater` of the lateral land component for the `SbmModel` type.
 function set_land_inwater(
     model::Model{N, L, V, R, W, T},
 ) where {N, L, V, R, W, T <: SbmModel}
-    @unpack lateral, vertical, network = model
+    (; lateral, vertical, network) = model
+    (; net_runoff) = vertical.bucket.variables
     return lateral.land.inwater .=
-        (vertical.net_runoff .* network.land.xl .* network.land.yl .* 0.001) ./
-        lateral.land.dt
+        (net_runoff .* network.land.xl .* network.land.yl .* 0.001) ./ lateral.land.dt
 end
 
 # Computation of inflow from the lateral components `land` and `subsurface` to water bodies

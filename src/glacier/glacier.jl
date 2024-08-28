@@ -1,23 +1,23 @@
 
 @get_units @with_kw struct GlacierModelVars{T}
     # Water within the glacier [mm]
-    glacierstore::Vector{T} | "mm"
+    glacier_store::Vector{T} | "mm"
     # Glacier melt [mm Δt⁻¹]  
-    glaciermelt::Vector{T}
+    glacier_melt::Vector{T}
 end
 
-function glacier_model_vars(glacierstore, n)
-    vars = GlacierModelVars(; glacierstore = glacierstore, glaciermelt = fill(mv, n))
+function glacier_model_vars(glacier_store, n)
+    vars = GlacierModelVars(; glacier_store = glacier_store, glacier_melt = fill(mv, n))
     return vars
 end
 
 @get_units @with_kw struct SnowStateBC{T}
     # Snow storage [mm]
-    snow::Vector{T} | "mm"
+    snow_storage::Vector{T} | "mm"
 end
 
-function glacier_model_bc(snow)
-    bc = SnowStateBC(; snow = snow)
+function glacier_model_bc(snow_storage)
+    bc = SnowStateBC(; snow_storage = snow_storage)
     return bc
 end
 
@@ -97,7 +97,7 @@ end
 function initialize_glacier_hbv_model(nc, config, inds, dt, bc)
     n = length(inds)
     params = initialize_glacier_hbv_params(nc, config, inds, dt)
-    glacierstore = ncread(
+    glacier_store = ncread(
         nc,
         config,
         "vertical.glacierstore";
@@ -106,25 +106,25 @@ function initialize_glacier_hbv_model(nc, config, inds, dt, bc)
         type = Float,
         fill = 0.0,
     )
-    vars = glacier_model_vars(glacierstore, n)
+    vars = glacier_model_vars(glacier_store, n)
     model =
         GlacierHbvModel(; boundary_conditions = bc, parameters = params, variables = vars)
     return model
 end
 
-function update(model::GlacierHbvModel, atmospheric_forcing::AtmosphericForcing)
+function update!(model::GlacierHbvModel, atmospheric_forcing::AtmosphericForcing)
     (; temperature) = atmospheric_forcing
-    (; glacierstore, glaciermelt) = model.variables
+    (; glacier_store, glacier_melt) = model.variables
     (; snow) = model.boundary_conditions
     (; g_tt, g_cfmax, g_sifrac, glacierfrac, max_snow_to_glacier) = model.parameters
 
     n = length(temperature)
 
     threaded_foreach(1:n; basesize = 1000) do i
-        snow[i], _, glacierstore[i], glaciermelt[i] = glacier_hbv(
+        snow_storage[i], _, glacier_store[i], glacier_melt[i] = glacier_hbv(
             glacierfrac[i],
-            glacierstore[i],
-            snow[i],
+            glacier_store[i],
+            snow_storage[i],
             temperature[i],
             g_tt[i],
             g_cfmax[i],
@@ -134,12 +134,15 @@ function update(model::GlacierHbvModel, atmospheric_forcing::AtmosphericForcing)
     end
 end
 
-function update(model::NoGlacierModel, atmospheric_forcing::AtmosphericForcing)
+function update!(model::NoGlacierModel, atmospheric_forcing::AtmosphericForcing)
     return nothing
 end
 
-glaciermelt(model::NoGlacierModel) = 0.0
-glaciermelt(model::AbstractGlacierModel) =
-    @. model.variables.glaciermelt * model.variables.glacierfrac
-glacierfrac(model::NoGlacierModel) = 0.0
-glacierfrac(model::AbstractGlacierModel) = model.variables.glacierfrac
+get_glacier_melt(model::NoGlacierModel) = 0.0
+get_glacier_melt(model::AbstractGlacierModel) =
+    @. model.variables.glacier_melt * model.variables.glacier_frac
+get_glacier_frac(model::NoGlacierModel) = 0.0
+get_glacier_frac(model::AbstractGlacierModel) = model.variables.glacier_frac
+get_glacier_store(model::NoGlacierModel) = 0.0
+get_glacier_store(model::AbstractGlacierModel) =
+    @. model.variables.glacier_store * model.variables.glacier_frac

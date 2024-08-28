@@ -660,7 +660,13 @@ end
 Return vertical hydraulic conductivity `kv_z` for soil layer `n` at depth `z` using `SBM`
 soil parameters (at index `i`) based on hydraulic conductivity profile `ksat_profile`.
 """
-function hydraulic_conductivity_at_depth(p::SoilSbmParameters, z, i, n, ksat_profile)
+function hydraulic_conductivity_at_depth(
+    p::SimpleBucketModelParameters,
+    z,
+    i,
+    n,
+    ksat_profile,
+)
     if ksat_profile == "exponential"
         kv_z = p.kvfrac[i][n] * p.kv_0[i] * exp(-p.f[i] * z)
     elseif ksat_profile == "exponential_constant"
@@ -691,10 +697,10 @@ Return equivalent horizontal hydraulic conductivity `kh` [m d⁻¹] for a layere
 of type `SoilSbmModel` (at index `i`) based on multiplication factor `khfrac` [-], water
 table depth `z` [mm] and hydraulic conductivity profile `ksat_profile`.
 """
-function kh_layered_profile(soil::SoilSbmModel, khfrac, i, ksat_profile, dt)
+function kh_layered_profile(model::SimpleBucketModel, khfrac, i, ksat_profile, dt)
     (; nlayers, nlayers_kv, sumlayers, act_thickl, soilthickness, z_layered, kv, f) =
-        soil.parameters
-    (; n_unsatlayers, zi) = soil.variables
+        model.parameters
+    (; n_unsatlayers, zi) = model.variables
     m = nlayers[i]
     t_factor = (tosecond(basetimestep) / dt)
     if (soilthickness[i] - zi[i]) > 0.0
@@ -802,9 +808,14 @@ function initialize_lateralssf_exp_const!(ssf::LateralSSF)
 end
 
 "Initialize lateral subsurface variables `ssf`, `ssfmax` and `kh` with ksat_profile` `layered` or `layered_exponential`"
-function initialize_lateralssf_layered!(ssf::LateralSSF, sbm::SBM, ksat_profile)
+function initialize_lateralssf_layered!(
+    ssf::LateralSSF,
+    sbm::SimpleBucketModel,
+    ksat_profile,
+    dt,
+)
     for i in eachindex(ssf.ssf)
-        ssf.kh[i] = kh_layered_profile(sbm, ssf.khfrac[i], i, ksat_profile)
+        ssf.kh[i] = kh_layered_profile(sbm, ssf.khfrac[i], i, ksat_profile, dt)
         ssf.ssf[i] =
             ssf.kh[i] * (ssf.soilthickness[i] - ssf.zi[i]) * ssf.slope[i] * ssf.dw[i]
         kh_max = 0.0

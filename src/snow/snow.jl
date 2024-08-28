@@ -1,9 +1,9 @@
 
 @get_units @with_kw struct SnowModelVars{T}
     # Snow storage [mm]
-    snow::Vector{T} | "mm"
+    snow_storage::Vector{T} | "mm"
     # Liquid water content in the snow pack [mm]
-    snowwater::Vector{T} | "mm"
+    snow_water::Vector{T} | "mm"
     # Snow water equivalent (SWE) [mm]
     swe::Vector{T} | "mm"
     # Runoff from snowpack [mm Δt⁻¹]
@@ -12,8 +12,8 @@ end
 
 function snow_model_vars(n)
     vars = SnowModelVars(;
-        snow = fill(0.0, n),
-        snowwater = fill(0.0, n),
+        snow_storage = fill(0.0, n),
+        snow_water = fill(0.0, n),
         swe = fill(mv, n),
         runoff = fill(mv, n),
     )
@@ -66,15 +66,43 @@ function initialize_snow_hbv_params(nc, config, inds, dt)
         ncread(
             nc,
             config,
-            "vertical.cfmax";
+            "vertical.snow.parameters.cfmax";
             sel = inds,
             defaults = 3.75653,
             type = Float,
         ) .* (dt / basetimestep)
-    tt = ncread(nc, config, "vertical.tt"; sel = inds, defaults = 0.0, type = Float)
-    tti = ncread(nc, config, "vertical.tti"; sel = inds, defaults = 1.0, type = Float)
-    ttm = ncread(nc, config, "vertical.ttm"; sel = inds, defaults = 0.0, type = Float)
-    whc = ncread(nc, config, "vertical.whc"; sel = inds, defaults = 0.1, type = Float)
+    tt = ncread(
+        nc,
+        config,
+        "vertical.snow.parameters.tt";
+        sel = inds,
+        defaults = 0.0,
+        type = Float,
+    )
+    tti = ncread(
+        nc,
+        config,
+        "vertical.snow.parameters.tti";
+        sel = inds,
+        defaults = 1.0,
+        type = Float,
+    )
+    ttm = ncread(
+        nc,
+        config,
+        "vertical.snow.parameters.ttm";
+        sel = inds,
+        defaults = 0.0,
+        type = Float,
+    )
+    whc = ncread(
+        nc,
+        config,
+        "vertical.snow.parameters.whc";
+        sel = inds,
+        defaults = 0.1,
+        type = Float,
+    )
     snow_hbv_params =
         SnowHbvParameters(; cfmax = cfmax, tt = tt, tti = tti, ttm = ttm, whc = whc)
     return snow_hbv_params
@@ -89,9 +117,9 @@ function initialize_snow_hbv_model(nc, config, inds, dt)
     return model
 end
 
-function update(model::SnowHbvModel, atmospheric_forcing::AtmosphericForcing)
+function update!(model::SnowHbvModel, atmospheric_forcing::AtmosphericForcing)
     (; temperature) = atmospheric_forcing
-    (; snow, snowwater, swe, runoff) = model.variables
+    (; snow_storage, snow_water, swe, runoff) = model.variables
     (; effective_precip, snow_precip, liquid_precip) = model.boundary_conditions
     (; tt, tti, ttm, cfmax, whc) = model.parameters
 
@@ -101,9 +129,9 @@ function update(model::SnowHbvModel, atmospheric_forcing::AtmosphericForcing)
             precipitation_hbv(effective_precip[i], temperature[i], tti[i], tt[i])
     end
     threaded_foreach(1:n; basesize = 1000) do i
-        snow[i], snowwater[i], swe[i], runoff[i] = snowpack_hbv(
-            snow[i],
-            snowwater[i],
+        snow_storage[i], snow_water[i], swe[i], runoff[i] = snowpack_hbv(
+            snow_storage[i],
+            snow_water[i],
             snow_precip[i],
             liquid_precip[i],
             temperature[i],
@@ -114,9 +142,13 @@ function update(model::SnowHbvModel, atmospheric_forcing::AtmosphericForcing)
     end
 end
 
-function update(model::NoSnowModel, atmospheric_forcing::AtmosphericForcing)
+function update!(model::NoSnowModel, atmospheric_forcing::AtmosphericForcing)
     return nothing
 end
 
-runoff(model::NoSnowModel) = 0.0
-runoff(model::AbstractSnowModel) = model.variables.runoff
+get_runoff(model::NoSnowModel) = 0.0
+get_runoff(model::AbstractSnowModel) = model.variables.runoff
+get_snow_storage(model::NoSnowModel) = 0.0
+get_snow_storage(model::AbstractSnowModel) = model.variables.snow_storage
+get_snow_water(model::NoSnowModel) = 0.0
+get_snow_water(model::AbstractSnowModel) = model.variables.snow_water
