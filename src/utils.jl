@@ -17,6 +17,23 @@ const mv = Float(NaN)
 # timestep that the parameter units are defined in
 const basetimestep = Second(Day(1))
 
+"""
+    scurve(x, a, b, c)
+
+Sigmoid "S"-shaped curve.
+
+# Arguments
+- `x::Real`: input
+- `a::Real`: determines the centre level
+- `b::Real`: determines the amplitude of the curve
+- `c::Real`: determines the steepness or "stepwiseness" of the curve.
+             The higher c the sharper the function. A negative c reverses the function.
+"""
+function scurve(x, a, b, c)
+    s = one(x) / (b + exp(-c * (x - a)))
+    return s
+end
+
 "Set at indices pit values (default = 5) in a gridded local drainage direction vector"
 function set_pit_ldd(pits_2d, ldd, indices; pit = 5)
     pits = pits_2d[indices]
