@@ -791,7 +791,7 @@ function initialize_riversed(dataset, config, river_width, river_length, river_i
     water_body_trap = zeros(Float, number_of_cells)
 
     if do_reservoirs
-        reslocs = ncread(
+        reservoir_location = ncread(
             dataset,
             config,
             "lateral.river.reslocs";
@@ -800,7 +800,7 @@ function initialize_riversed(dataset, config, river_width, river_length, river_i
             type = Float,
             fill = 0,
         )
-        rescoverage_2d = ncread(
+        reservoir_coverage_2d = ncread(
             dataset,
             config,
             "lateral.river.resareas";
@@ -809,7 +809,7 @@ function initialize_riversed(dataset, config, river_width, river_length, river_i
             type = Float,
             fill = 0,
         )
-        resarea = ncread(
+        reservoir_area = ncread(
             dataset,
             config,
             "lateral.river.resarea";
@@ -818,7 +818,7 @@ function initialize_riversed(dataset, config, river_width, river_length, river_i
             type = Float,
             fill = 0.0,
         )
-        restrapefficiency = ncread(
+        reservoir_trap_efficiency = ncread(
             dataset,
             config,
             "lateral.river.restrapeff";
@@ -829,10 +829,10 @@ function initialize_riversed(dataset, config, river_width, river_length, river_i
             fill = 0.0,
         )
 
-        water_body_coverage = water_body_coverage .+ rescoverage_2d
-        water_body_location = water_body_location .+ reslocs
-        water_body_area = water_body_area .+ resarea
-        water_body_trap = water_body_trap .+ restrapefficiency
+        water_body_coverage = water_body_coverage .+ reservoir_coverage_2d
+        water_body_location = water_body_location .+ reservoir_location
+        water_body_area = water_body_area .+ reservoir_area
+        water_body_trap = water_body_trap .+ reservoir_trap_efficiency
     end
 
     if do_lakes
