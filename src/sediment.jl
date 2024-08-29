@@ -776,350 +776,350 @@ end
     # end
 end
 
-function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
+function initialize_riversed(dataset, config, river_width, river_length, river_indices)
     # Initialize river parameters
-    nriv = length(inds_riv)
+    number_of_cells = length(river_indices)
     # River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]
-    tcmethodriv = get(config.model, "rivtransportmethod", "bagnold")::String
-    dt = Second(config.timestepsecs)
+    transport_capacity_method = get(config.model, "rivtransportmethod", "bagnold")::String
+    time_step = Second(config.timestepsecs)
     # Reservoir / lakes
     do_reservoirs = get(config.model, "doreservoir", false)::Bool
     do_lakes = get(config.model, "dolake", false)::Bool
-    wbcover = zeros(Float, nriv)
-    wblocs = zeros(Float, nriv)
-    wbarea = zeros(Float, nriv)
-    wbtrap = zeros(Float, nriv)
+    water_body_coverage = zeros(Float, number_of_cells)
+    water_body_location = zeros(Float, number_of_cells)
+    water_body_area = zeros(Float, number_of_cells)
+    water_body_trap = zeros(Float, number_of_cells)
 
     if do_reservoirs
         reslocs = ncread(
-            nc,
+            dataset,
             config,
             "lateral.river.reslocs";
             optional = false,
-            sel = inds_riv,
+            sel = river_indices,
             type = Float,
             fill = 0,
         )
         rescoverage_2d = ncread(
-            nc,
+            dataset,
             config,
             "lateral.river.resareas";
             optional = false,
-            sel = inds_riv,
+            sel = river_indices,
             type = Float,
             fill = 0,
         )
         resarea = ncread(
-            nc,
+            dataset,
             config,
             "lateral.river.resarea";
             optional = false,
-            sel = inds_riv,
+            sel = river_indices,
             type = Float,
             fill = 0.0,
         )
         restrapefficiency = ncread(
-            nc,
+            dataset,
             config,
             "lateral.river.restrapeff";
             optional = false,
-            sel = inds_riv,
+            sel = river_indices,
             type = Float,
             defaults = 1.0,
             fill = 0.0,
         )
 
-        wbcover = wbcover .+ rescoverage_2d
-        wblocs = wblocs .+ reslocs
-        wbarea = wbarea .+ resarea
-        wbtrap = wbtrap .+ restrapefficiency
+        water_body_coverage = water_body_coverage .+ rescoverage_2d
+        water_body_location = water_body_location .+ reslocs
+        water_body_area = water_body_area .+ resarea
+        water_body_trap = water_body_trap .+ restrapefficiency
     end
 
     if do_lakes
-        lakelocs = ncread(
-            nc,
+        lake_location = ncread(
+            dataset,
             config,
             "lateral.river.lakelocs";
             optional = false,
-            sel = inds_riv,
+            sel = river_indices,
             type = Float,
             fill = 0,
         )
-        lakecoverage_2d = ncread(
-            nc,
+        lake_coverage_2d = ncread(
+            dataset,
             config,
             "lateral.river.lakeareas";
             optional = false,
-            sel = inds_riv,
+            sel = river_indices,
             type = Float,
             fill = 0,
         )
-        lakearea = ncread(
-            nc,
+        lake_area = ncread(
+            dataset,
             config,
             "lateral.river.lakearea";
             optional = false,
-            sel = inds_riv,
+            sel = river_indices,
             type = Float,
             fill = 0.0,
         )
 
-        wbcover = wbcover .+ lakecoverage_2d
-        wblocs = wblocs .+ lakelocs
-        wbarea = wbarea .+ lakearea
+        water_body_coverage = water_body_coverage .+ lake_coverage_2d
+        water_body_location = water_body_location .+ lake_location
+        water_body_area = water_body_area .+ lake_area
     end
 
     riverslope = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.slope";
         optional = false,
-        sel = inds_riv,
+        sel = river_indices,
         type = Float,
     )
     clamp!(riverslope, 0.00001, Inf)
-    rhos = ncread(
-        nc,
+    sediment_density = ncread(
+        dataset,
         config,
         "lateral.river.rhosed";
-        sel = inds_riv,
+        sel = river_indices,
         defaults = 2650.0,
         type = Float,
     )
-    dmclay = ncread(
-        nc,
+    median_diameter_clay = ncread(
+        dataset,
         config,
         "lateral.river.dmclay";
-        sel = inds_riv,
+        sel = river_indices,
         defaults = 2.0,
         type = Float,
     )
-    dmsilt = ncread(
-        nc,
+    median_diameter_silt = ncread(
+        dataset,
         config,
         "lateral.river.dmsilt";
-        sel = inds_riv,
+        sel = river_indices,
         defaults = 10.0,
         type = Float,
     )
-    dmsand = ncread(
-        nc,
+    median_diameter_sand = ncread(
+        dataset,
         config,
         "lateral.river.dmsand";
-        sel = inds_riv,
+        sel = river_indices,
         defaults = 200.0,
         type = Float,
     )
-    dmsagg = ncread(
-        nc,
+    median_diameter_sagg = ncread(
+        dataset,
         config,
         "lateral.river.dmsagg";
-        sel = inds_riv,
+        sel = river_indices,
         defaults = 30.0,
         type = Float,
     )
-    dmlagg = ncread(
-        nc,
+    median_diameter_lagg = ncread(
+        dataset,
         config,
         "lateral.river.dmlagg";
-        sel = inds_riv,
+        sel = river_indices,
         defaults = 500.0,
         type = Float,
     )
-    dmgrav = ncread(
-        nc,
+    median_diameter_gravel = ncread(
+        dataset,
         config,
         "lateral.river.dmgrav";
-        sel = inds_riv,
+        sel = river_indices,
         defaults = 2000.0,
         type = Float,
     )
-    fclayriv = ncread(
-        nc,
+    fraction_clay = ncread(
+        dataset,
         config,
         "lateral.river.fclayriv";
         optional = false,
-        sel = inds_riv,
+        sel = river_indices,
         type = Float,
     )
-    fsiltriv = ncread(
-        nc,
+    fraction_silt = ncread(
+        dataset,
         config,
         "lateral.river.fsiltriv";
         optional = false,
-        sel = inds_riv,
+        sel = river_indices,
         type = Float,
     )
-    fsandriv = ncread(
-        nc,
+    fraction_sand = ncread(
+        dataset,
         config,
         "lateral.river.fsandriv";
         optional = false,
-        sel = inds_riv,
+        sel = river_indices,
         type = Float,
     )
-    fgravriv = ncread(
-        nc,
+    fraction_gravel = ncread(
+        dataset,
         config,
         "lateral.river.fgravriv";
         optional = false,
-        sel = inds_riv,
+        sel = river_indices,
         type = Float,
     )
-    d50riv = ncread(
-        nc,
+    median_diameter = ncread(
+        dataset,
         config,
         "lateral.river.d50";
         optional = false,
-        sel = inds_riv,
+        sel = river_indices,
         type = Float,
     )
-    d50engelund = ncread(
-        nc,
+    median_diameter_engelund = ncread(
+        dataset,
         config,
         "lateral.river.d50engelund";
         optional = false,
-        sel = inds_riv,
+        sel = river_indices,
         type = Float,
     )
-    cbagnold = ncread(
-        nc,
+    bagnold_coefficient_c = ncread(
+        dataset,
         config,
         "lateral.river.cbagnold";
         optional = false,
-        sel = inds_riv,
+        sel = river_indices,
         type = Float,
     )
-    ebagnold = ncread(
-        nc,
+    bagnold_coefficient_e = ncread(
+        dataset,
         config,
         "lateral.river.ebagnold";
         optional = false,
-        sel = inds_riv,
+        sel = river_indices,
         type = Float,
     )
 
     # Initialisation of parameters for Kodatie transport capacity
-    ak = zeros(Float, nriv)
-    bk = zeros(Float, nriv)
-    ck = zeros(Float, nriv)
-    dk = zeros(Float, nriv)
-    if tcmethodriv == "kodatie"
-        for i in 1:nriv
-            if d50riv[i] <= 0.05
-                ak[i] = 281.4
-                bk[i] = 2.622
-                ck[i] = 0.182
-                dk[i] = 0.0
-            elseif d50riv[i] <= 0.25
-                ak[i] = 2829.6
-                bk[i] = 3.646
-                ck[i] = 0.406
-                dk[i] = 0.412
-            elseif d50riv[i] <= 2.0
-                ak[i] = 2123.4
-                bk[i] = 3.3
-                ck[i] = 0.468
-                dk[i] = 0.613
+    kodatie_coefficient_a = zeros(Float, number_of_cells)
+    kodatie_coefficient_b = zeros(Float, number_of_cells)
+    kodatie_coefficient_c = zeros(Float, number_of_cells)
+    kodatie_coefficient_d = zeros(Float, number_of_cells)
+    if transport_capacity_method == "kodatie"
+        for i in 1:number_of_cells
+            if median_diameter[i] <= 0.05
+                kodatie_coefficient_a[i] = 281.4
+                kodatie_coefficient_b[i] = 2.622
+                kodatie_coefficient_c[i] = 0.182
+                kodatie_coefficient_d[i] = 0.0
+            elseif median_diameter[i] <= 0.25
+                kodatie_coefficient_a[i] = 2829.6
+                kodatie_coefficient_b[i] = 3.646
+                kodatie_coefficient_c[i] = 0.406
+                kodatie_coefficient_d[i] = 0.412
+            elseif median_diameter[i] <= 2.0
+                kodatie_coefficient_a[i] = 2123.4
+                kodatie_coefficient_b[i] = 3.3
+                kodatie_coefficient_c[i] = 0.468
+                kodatie_coefficient_d[i] = 0.613
             else
-                ak[i] = 431884.8
-                bk[i] = 1.0
-                ck[i] = 1.0
-                dk[i] = 2.0
+                kodatie_coefficient_a[i] = 431884.8
+                kodatie_coefficient_b[i] = 1.0
+                kodatie_coefficient_c[i] = 1.0
+                kodatie_coefficient_d[i] = 2.0
             end
         end
     end
     # Initialisation of parameters for river erosion
     # Bed and Bank from Shields diagram, Da Silva & Yalin (2017)
     E_ = (2.65 - 1) * 9.81
-    E = (E_ .* (d50riv .* 1e-3) .^ 3 ./ 1e-12) .^ 0.33
-    TCrbed = @. Float(
+    E = (E_ .* (median_diameter .* 1e-3) .^ 3 ./ 1e-12) .^ 0.33
+    bed_criticial_shear_stress = @. Float(
         E_ *
-        d50riv *
+        median_diameter *
         (0.13 * E^(-0.392) * exp(-0.015 * E^2) + 0.045 * (1 - exp(-0.068 * E))),
     )
-    TCrbank = TCrbed
+    bank_critical_shear_stress = bed_criticial_shear_stress
     # kd from Hanson & Simon 2001
-    kdbank = @. Float(0.2 * TCrbank^(-0.5) * 1e-6)
-    kdbed = @. Float(0.2 * TCrbed^(-0.5) * 1e-6)
+    bank_erodibility = @. Float(0.2 * bank_critical_shear_stress^(-0.5) * 1e-6)
+    bed_erodibility = @. Float(0.2 * bed_criticial_shear_stress^(-0.5) * 1e-6)
 
     rs = RiverSediment(;
-        n = nriv,
-        dt = Float(dt.value),
+        n = number_of_cells,
+        dt = Float(time_step.value),
         # Parameters
         sl = riverslope,
-        dl = riverlength,
-        width = riverwidth,
-        dmclay = dmclay,
-        dmsilt = dmsilt,
-        dmsand = dmsand,
-        dmsagg = dmsagg,
-        dmlagg = dmlagg,
-        dmgrav = dmgrav,
-        fclayriv = fclayriv,
-        fsiltriv = fsiltriv,
-        fsandriv = fsandriv,
-        fgravriv = fgravriv,
-        d50 = d50riv,
-        d50engelund = d50engelund,
-        cbagnold = cbagnold,
-        ebagnold = ebagnold,
-        ak = ak,
-        bk = bk,
-        ck = ck,
-        dk = dk,
-        kdbank = kdbank,
-        kdbed = kdbed,
-        TCrbank = TCrbank,
-        TCrbed = TCrbed,
-        rhos = rhos,
+        dl = river_length,
+        width = river_width,
+        dmclay = median_diameter_clay,
+        dmsilt = median_diameter_silt,
+        dmsand = median_diameter_sand,
+        dmsagg = median_diameter_sagg,
+        dmlagg = median_diameter_lagg,
+        dmgrav = median_diameter_gravel,
+        fclayriv = fraction_clay,
+        fsiltriv = fraction_silt,
+        fsandriv = fraction_sand,
+        fgravriv = fraction_gravel,
+        d50 = median_diameter,
+        d50engelund = median_diameter_engelund,
+        cbagnold = bagnold_coefficient_c,
+        ebagnold = bagnold_coefficient_e,
+        ak = kodatie_coefficient_a,
+        bk = kodatie_coefficient_b,
+        ck = kodatie_coefficient_c,
+        dk = kodatie_coefficient_d,
+        kdbank = bank_erodibility,
+        kdbed = bed_erodibility,
+        TCrbank = bank_critical_shear_stress,
+        TCrbed = bed_criticial_shear_stress,
+        rhos = sediment_density,
         # Forcing
-        h_riv = fill(mv, nriv),
-        q_riv = fill(mv, nriv),
+        h_riv = fill(mv, number_of_cells),
+        q_riv = fill(mv, number_of_cells),
         # Input from land
-        inlandclay = zeros(Float, nriv),
-        inlandsilt = zeros(Float, nriv),
-        inlandsand = zeros(Float, nriv),
-        inlandsagg = zeros(Float, nriv),
-        inlandlagg = zeros(Float, nriv),
-        inlandsed = zeros(Float, nriv),
+        inlandclay = zeros(Float, number_of_cells),
+        inlandsilt = zeros(Float, number_of_cells),
+        inlandsand = zeros(Float, number_of_cells),
+        inlandsagg = zeros(Float, number_of_cells),
+        inlandlagg = zeros(Float, number_of_cells),
+        inlandsed = zeros(Float, number_of_cells),
         # States
-        sedload = zeros(Float, nriv),
-        clayload = zeros(Float, nriv),
-        siltload = zeros(Float, nriv),
-        sandload = zeros(Float, nriv),
-        saggload = zeros(Float, nriv),
-        laggload = zeros(Float, nriv),
-        gravload = zeros(Float, nriv),
-        sedstore = zeros(Float, nriv),
-        claystore = zeros(Float, nriv),
-        siltstore = zeros(Float, nriv),
-        sandstore = zeros(Float, nriv),
-        saggstore = zeros(Float, nriv),
-        laggstore = zeros(Float, nriv),
-        gravstore = zeros(Float, nriv),
-        outsed = zeros(Float, nriv),
-        outclay = zeros(Float, nriv),
-        outsilt = zeros(Float, nriv),
-        outsand = zeros(Float, nriv),
-        outsagg = zeros(Float, nriv),
-        outlagg = zeros(Float, nriv),
-        outgrav = zeros(Float, nriv),
+        sedload = zeros(Float, number_of_cells),
+        clayload = zeros(Float, number_of_cells),
+        siltload = zeros(Float, number_of_cells),
+        sandload = zeros(Float, number_of_cells),
+        saggload = zeros(Float, number_of_cells),
+        laggload = zeros(Float, number_of_cells),
+        gravload = zeros(Float, number_of_cells),
+        sedstore = zeros(Float, number_of_cells),
+        claystore = zeros(Float, number_of_cells),
+        siltstore = zeros(Float, number_of_cells),
+        sandstore = zeros(Float, number_of_cells),
+        saggstore = zeros(Float, number_of_cells),
+        laggstore = zeros(Float, number_of_cells),
+        gravstore = zeros(Float, number_of_cells),
+        outsed = zeros(Float, number_of_cells),
+        outclay = zeros(Float, number_of_cells),
+        outsilt = zeros(Float, number_of_cells),
+        outsand = zeros(Float, number_of_cells),
+        outsagg = zeros(Float, number_of_cells),
+        outlagg = zeros(Float, number_of_cells),
+        outgrav = zeros(Float, number_of_cells),
         # Outputs
-        Sedconc = zeros(Float, nriv),
-        SSconc = zeros(Float, nriv),
-        Bedconc = zeros(Float, nriv),
-        maxsed = zeros(Float, nriv),
-        erodsed = zeros(Float, nriv),
-        erodsedbank = zeros(Float, nriv),
-        erodsedbed = zeros(Float, nriv),
-        depsed = zeros(Float, nriv),
-        insed = zeros(Float, nriv),
+        Sedconc = zeros(Float, number_of_cells),
+        SSconc = zeros(Float, number_of_cells),
+        Bedconc = zeros(Float, number_of_cells),
+        maxsed = zeros(Float, number_of_cells),
+        erodsed = zeros(Float, number_of_cells),
+        erodsedbank = zeros(Float, number_of_cells),
+        erodsedbed = zeros(Float, number_of_cells),
+        depsed = zeros(Float, number_of_cells),
+        insed = zeros(Float, number_of_cells),
         # Reservoir / lake
-        wbcover = wbcover,
-        wblocs = wblocs,
-        wbarea = wbarea,
-        wbtrap = wbtrap,
+        wbcover = water_body_coverage,
+        wblocs = water_body_location,
+        wbarea = water_body_area,
+        wbtrap = water_body_trap,
     )
 
     return rs
