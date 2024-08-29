@@ -776,7 +776,13 @@ end
     # end
 end
 
-function initialize_riversed(dataset, config, river_width, river_length, river_indices)
+function initialize_river_sediment(
+    dataset::NCDataset,
+    config::Config,
+    river_width::Vector{Float},
+    river_length::Vector{Float},
+    river_indices::Vector{CartesianIndex{2}},
+)
     # Initialize river parameters
     number_of_cells = length(river_indices)
     # River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]
@@ -839,20 +845,15 @@ function initialize_riversed(dataset, config, river_width, river_length, river_i
         compute_kodatie_coefficient(median_diameter, transport_capacity_method)
 
     # Initialisation of parameters for river erosion
-    # Bed and Bank from Shields diagram, Da Silva & Yalin (2017)
-    E_ = (2.65 - 1) * 9.81
-    E = (E_ .* (median_diameter .* 1e-3) .^ 3 ./ 1e-12) .^ 0.33
-    bed_criticial_shear_stress = @. Float(
-        E_ *
-        median_diameter *
-        (0.13 * E^(-0.392) * exp(-0.015 * E^2) + 0.045 * (1 - exp(-0.068 * E))),
-    )
-    bank_critical_shear_stress = bed_criticial_shear_stress
-    # kd from Hanson & Simon 2001
-    bank_erodibility = @. Float(0.2 * bank_critical_shear_stress^(-0.5) * 1e-6)
-    bed_erodibility = @. Float(0.2 * bed_criticial_shear_stress^(-0.5) * 1e-6)
 
-    rs = RiverSediment(;
+    # Bed and Bank from Shields diagram, Da Silva & Yalin (2017)
+    bed_critical_shear_stress = compute_bed_critical_shear_stress(median_diameter)
+    bank_critical_shear_stress = bed_critical_shear_stress
+
+    bank_erodibility = compute_bank_erosion_coefficient(bank_critical_shear_stress)
+    bed_erodibility = compute_bed_erosion_coefficient(bed_critical_shear_stress)
+
+    river_sediment = RiverSediment(;
         n = number_of_cells,
         dt = Float(time_step.value),
         # Parameters
@@ -880,7 +881,7 @@ function initialize_riversed(dataset, config, river_width, river_length, river_i
         kdbank = bank_erodibility,
         kdbed = bed_erodibility,
         TCrbank = bank_critical_shear_stress,
-        TCrbed = bed_criticial_shear_stress,
+        TCrbed = bed_critical_shear_stress,
         rhos = sediment_density,
         # Forcing
         h_riv = fill(mv, number_of_cells),
@@ -931,7 +932,7 @@ function initialize_riversed(dataset, config, river_width, river_length, river_i
         wbtrap = water_body_trap,
     )
 
-    return rs
+    return river_sediment
 end
 
 function read_reservoir_location(
@@ -1377,6 +1378,30 @@ function compute_kodatie_coefficient(
         c = kodatie_coefficient_c,
         d = kodatie_coefficient_d,
     )
+end
+
+function compute_bed_critical_shear_stress(median_diameter::Vector{Float})
+    # Bed from Shields diagram, Da Silva & Yalin (2017)
+
+    E_ = (2.65 - 1) * 9.81
+    E = (E_ .* (median_diameter .* 1e-3) .^ 3 ./ 1e-12) .^ 0.33
+    bed_critical_shear_stress = @. Float(
+        E_ *
+        median_diameter *
+        (0.13 * E^(-0.392) * exp(-0.015 * E^2) + 0.045 * (1 - exp(-0.068 * E))),
+    )
+
+    return bed_critical_shear_stress
+end
+
+function compute_bank_erosion_coefficient(bank_critical_shear_stress::Vector{Float})
+    # kd from Hanson & Simon 2001
+    return @. 0.2 * bank_critical_shear_stress^(-0.5) * 1e-6
+end
+
+function compute_bed_erosion_coefficient(bed_critical_shear_stress::Vector{Float})
+    # kd from Hanson & Simon 2001
+    return @. 0.2 * bed_critical_shear_stress^(-0.5) * 1e-6
 end
 
 function update(rs::RiverSediment, network, config)

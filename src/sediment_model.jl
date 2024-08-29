@@ -109,7 +109,7 @@ function initialize_sediment_model(config::Config)
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
     frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, landslope, n)
 
-    rs = initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
+    rs = initialize_river_sediment(nc, config, riverwidth, riverlength, inds_riv)
 
     modelmap = (vertical = eros, lateral = (land = ols, river = rs))
     indices_reverse = (
