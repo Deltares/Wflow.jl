@@ -33,7 +33,7 @@ flood inundation model SFINCS.
 ![fig_case_flifs](../images/case_flifs_1.png)
 
 The results of this proof of concept are very promising. Technically, we were able to
-quickly set up the Wflow\_sbm models, couple them to the flood inundation models (SFINCS), and
+quickly set up the wflow\_sbm models, couple them to the flood inundation models (SFINCS), and
 run the models operationally under the Delft-FEWS platform. Model validation was conducted
 for two basins by comparing the results of Wflow\_sbm against observations and the
 results of calibrated URBS models. This validation demonstrated that the uncalibrated Wflow\_sbm
