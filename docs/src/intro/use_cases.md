@@ -8,7 +8,7 @@ management planning. In collaboration with Rijkswaterstaat, Deltares is developi
 line of models for the Rhine and the Meuse basins. The models will be used for forecasting
 and to estimate the impact of climate change on water resources and extreme streamflow. In
 the model development, we aim to improve hydrological predictions by including relevant
-processes in the model schematization. The modularity of the Wflow framework is ideal for
+processes in the model schematization. The modularity of the wflow framework is ideal for
 this as we can easily evaluate the combination of different vertical and lateral model
 components. For example, the local inertial routing for river and overland flow enables us
 to consider retention of water in the floodplains, which is likely to improve extreme
