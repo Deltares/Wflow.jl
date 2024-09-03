@@ -38,7 +38,7 @@ run the models operationally under the Delft-FEWS platform. Model validation was
 for two basins by comparing the results of Wflow\_sbm against observations and the
 results of calibrated URBS models. This validation demonstrated that the uncalibrated Wflow\_sbm
 model results were already quite satisfactory, especially given the complex nature of these
-basins, which include several small and large reservoirs. We could also showed the potential
+basins, which include several small and large reservoirs. We could also show the potential
 for further calibration by adjusting the KsatHorFrac parameter.
 
 Reference: De Kleermaeker, S., Leijnse, T., Morales, Y., Druery, C., Maguire, S.,
