@@ -69,7 +69,7 @@ Thailand and recommend priority areas for reducing plastic waste reaching the se
 
 ![fig_case_mfa](../images/case_mfa_1.png)
 
-The Wflow\_sbm models for the five large basins were calibrated. The presence of large dams and
+The wflow\_sbm models for the five large basins were calibrated. The presence of large dams and
 reservoirs complicated calibration, but with the input for the dam operation,
 the model performance for these basins could be largely improved. The figure below shows the
 calibrated model results for the Chao Phraya, just upstream of Bangkok. The input from the
