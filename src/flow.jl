@@ -1,7 +1,7 @@
 
 abstract type SurfaceFlow end
 
-@get_units @with_kw struct SurfaceFlowRiver{T, R, L} <: SurfaceFlow
+@get_units @with_kw struct SurfaceFlowRiver{T, R, L, A} <: SurfaceFlow
     beta::T | "-"                           # constant in Manning's equation
     sl::Vector{T} | "m m-1"                 # Slope [m m⁻¹]
     n::Vector{T} | "s m-1/3"                # Manning's roughness [s m⁻⅓]
@@ -13,6 +13,7 @@ abstract type SurfaceFlow end
     inwater::Vector{T} | "m3 s-1"           # Lateral inflow [m³ s⁻¹]
     inflow::Vector{T} | "m3 s-1"            # External inflow (abstraction/supply/demand) [m³ s⁻¹]
     inflow_wb::Vector{T} | "m3 s-1"         # inflow waterbody (lake or reservoir model) from land part [m³ s⁻¹]
+    abstraction::Vector{T} | "m3 s-1"       # Abstraction (computed as part of water demand and allocation) [m³ s⁻¹]
     volume::Vector{T} | "m3"                # Kinematic wave volume [m³] (based on water level h)
     h::Vector{T} | "m"                      # Water level [m]
     h_av::Vector{T} | "m"                   # Average water level [m]
@@ -28,6 +29,7 @@ abstract type SurfaceFlow end
     lake_index::Vector{Int} | "-"           # map cell to 0 (no lake) or i (pick lake i in lake field)
     reservoir::R | "-"                      # Reservoir model struct of arrays
     lake::L | "-"                           # Lake model struct of arrays
+    allocation::A | "-"                     # Water allocation
     kinwave_it::Bool | "-"                  # Boolean for iterations kinematic wave
 
     # TODO unclear why this causes a MethodError
@@ -144,6 +146,7 @@ function initialize_surfaceflow_river(
     )
     clamp!(sl, 0.00001, Inf)
 
+    do_water_demand = haskey(config.model, "water_demand")
     n = length(inds)
 
     sf_river = SurfaceFlowRiver(;
@@ -157,6 +160,7 @@ function initialize_surfaceflow_river(
         qlat = zeros(Float, n),
         inwater = zeros(Float, n),
         inflow = zeros(Float, n),
+        abstraction = zeros(Float, n),
         inflow_wb = zeros(Float, n),
         volume = zeros(Float, n),
         h = zeros(Float, n),
@@ -174,6 +178,7 @@ function initialize_surfaceflow_river(
         reservoir = reservoir,
         lake = lake,
         kinwave_it = iterate,
+        allocation = do_water_demand ? initialize_allocation_river(n) : nothing,
     )
 
     return sf_river
@@ -284,11 +289,15 @@ function update(sf::SurfaceFlowRiver, network, doy)
                     # Inflow supply/abstraction is added to qlat (divide by flow length)
                     # If inflow < 0, abstraction is limited
                     if sf.inflow[v] < 0.0
-                        max_abstract = min(sf.qin[v] + sf.qlat[v] * sf.dl[v], -sf.inflow[v])
+                        max_abstract = min(
+                            (sf.inwater[v] + sf.qin[v] + sf.volume[v] / dt) * 0.80,
+                            -sf.inflow[v],
+                        )
                         inflow = -max_abstract / sf.dl[v]
                     else
                         inflow = sf.inflow[v] / sf.dl[v]
                     end
+                    inflow -= sf.abstraction[v] / sf.dl[v]
 
                     sf.q[v] = kinematic_wave(
                         sf.qin[v],
@@ -346,6 +355,7 @@ function update(sf::SurfaceFlowRiver, network, doy)
                     # update h
                     crossarea = sf.alpha[v] * pow(sf.q[v], sf.beta)
                     sf.h[v] = crossarea / sf.width[v]
+                    sf.volume[v] = sf.dl[v] * sf.width[v] * sf.h[v]
                     sf.q_av[v] += sf.q[v]
                     sf.h_av[v] += sf.h[v]
                 end
@@ -405,6 +415,7 @@ end
     ssfin::Vector{T} | "m3 d-1"            # Inflow from upstream cells [m³ d⁻¹]
     ssfmax::Vector{T} | "m2 d-1"           # Maximum subsurface flow [m² d⁻¹]
     to_river::Vector{T} | "m3 d-1"         # Part of subsurface flow [m³ d⁻¹] that flows to the river
+    volume::Vector{T} | "m3"               # Subsurface volume [m³]
 
     function LateralSSF{T}(args...) where {T}
         equal_size_vectors(args)
@@ -413,7 +424,8 @@ end
 end
 
 function update(ssf::LateralSSF, network, frac_toriver, ksat_profile)
-    @unpack subdomain_order, topo_subdomain, indices_subdomain, upstream_nodes = network
+    @unpack subdomain_order, topo_subdomain, indices_subdomain, upstream_nodes, area =
+        network
 
     ns = length(subdomain_order)
     for k in 1:ns
@@ -470,6 +482,10 @@ function update(ssf::LateralSSF, network, frac_toriver, ksat_profile)
                         ssf.ssfmax[v],
                     )
                 end
+                ssf.volume[v] =
+                    (ssf.theta_s[v] - ssf.theta_r[v]) *
+                    (ssf.soilthickness[v] - ssf.zi[v]) *
+                    area[v]
             end
         end
     end
@@ -483,7 +499,7 @@ end
     ssf::Vector{T} | "m3 d-1"           # Subsurface flow [m³ d⁻¹]
 end
 
-@get_units @with_kw struct ShallowWaterRiver{T, R, L, F}
+@get_units @with_kw struct ShallowWaterRiver{T, R, L, F, A}
     n::Int | "-"                                # number of cells
     ne::Int | "-"                               # number of edges/links
     active_n::Vector{Int} | "-"                 # active nodes
@@ -515,6 +531,7 @@ end
     error::Vector{T} | "m3"                     # error volume
     inwater::Vector{T} | "m3 s-1"               # lateral inflow [m³ s⁻¹]
     inflow::Vector{T} | "m3 s-1"                # external inflow (abstraction/supply/demand) [m³ s⁻¹]
+    abstraction::Vector{T} | "m3 s-1"           # abstraction (computed as part of water demand and allocation) [m³ s⁻¹]
     inflow_wb::Vector{T} | "m3 s-1"             # inflow waterbody (lake or reservoir model) from land part [m³ s⁻¹]
     bankfull_volume::Vector{T} | "m3"           # bankfull volume
     bankfull_depth::Vector{T} | "m"             # bankfull depth
@@ -526,6 +543,7 @@ end
     reservoir::R | "-"                          # Reservoir model struct of arrays
     lake::L | "-"                               # Lake model struct of arrays
     floodplain::F | "-"                         # Floodplain (1D) schematization
+    allocation::A | "-"                         # Water allocation
 end
 
 function initialize_shallowwater_river(
@@ -693,6 +711,7 @@ function initialize_shallowwater_river(
         volume = fill(0.0, n),
         error = zeros(n),
         inflow = zeros(n),
+        abstraction = zeros(n),
         inflow_wb = zeros(n),
         inwater = zeros(n),
         dl = dl,
@@ -707,6 +726,7 @@ function initialize_shallowwater_river(
         reservoir = reservoir,
         lake = lake,
         floodplain = floodplain,
+        allocation = do_water_demand ? initialize_allocation_river(n) : nothing,
     )
     return sw_river, nodes_at_link
 end
@@ -879,7 +899,8 @@ function shallowwater_river_update(sw::ShallowWaterRiver, network, dt, doy, upda
         @batch per = thread minbatch = 2000 for i in sw.active_n
             q_src = sum_at(sw.q, links_at_node.src[i])
             q_dst = sum_at(sw.q, links_at_node.dst[i])
-            sw.volume[i] = sw.volume[i] + (q_src - q_dst + sw.inwater[i]) * dt
+            sw.volume[i] =
+                sw.volume[i] + (q_src - q_dst + sw.inwater[i] - sw.abstraction[i]) * dt
 
             if sw.volume[i] < 0.0
                 sw.error[i] = sw.error[i] + abs(sw.volume[i])
@@ -1315,7 +1336,7 @@ function shallowwater_update(
                         sum_at(swr.q, links_at_node.dst[inds_riv[i]]) + sw.qx[xd] -
                         sw.qx[i] + sw.qy[yd] - sw.qy[i] +
                         swr.inflow[inds_riv[i]] +
-                        sw.runoff[i]
+                        sw.runoff[i] - swr.abstraction[inds_riv[i]]
                     ) * dt
                 if sw.volume[i] < T(0.0)
                     sw.error[i] = sw.error[i] + abs(sw.volume[i])
@@ -1596,29 +1617,33 @@ function initialize_floodplain_1d(
 end
 
 """
-    set_river_inwater(model, ssf_toriver)
+    set_river_inwater(model::Model, ssf_toriver)
 
-Set `inwater` of the lateral river component for a model `ssf_toriver` is the subsurface
+Set `inwater` of the lateral river component for a `Model`. `ssf_toriver` is the subsurface
 flow to the river.
 """
-function set_river_inwater(model, ssf_toriver)
-    (; lateral, vertical, network) = model
+function set_river_inwater(model::Model, ssf_toriver)
+    @unpack lateral, vertical, network, config = model
     (; net_runoff_river) = vertical.bucket.variables
     inds = network.index_river
-
-    @. lateral.river.inwater = (
-        ssf_toriver[inds] +
-        lateral.land.to_river[inds] +
-        # net_runoff_river
-        (
-            (
-                net_runoff_river[inds] *
-                network.land.xl[inds] *
-                network.land.yl[inds] *
-                0.001
-            ) / vertical.dt
+    do_water_demand = haskey(config.model, "water_demand")
+    if do_water_demand
+        @. lateral.river.inwater = (
+            ssf_toriver[inds] +
+            lateral.land.to_river[inds] +
+            # net_runoff_river
+            (net_runoff_river[inds] * network.land.area[inds] * 0.001) / vertical.dt +
+            (lateral.river.allocation.nonirri_returnflow * 0.001 * network.river.area) /
+            vertical.dt
         )
-    )
+    else
+        @. lateral.river.inwater = (
+            ssf_toriver[inds] +
+            lateral.land.to_river[inds] +
+            # net_runoff_river
+            (net_runoff_river[inds] * network.land.area[inds] * 0.001) / vertical.dt
+        )
+    end
 end
 
 """
@@ -1630,17 +1655,22 @@ function set_land_inwater(
     model::Model{N, L, V, R, W, T},
 ) where {N, L, V, R, W, T <: SbmGwfModel}
     @unpack lateral, vertical, network, config = model
-
+    (; net_runoff) = vertical.bucket.variables
     do_drains = get(config.model, "drains", false)::Bool
     drainflux = zeros(vertical.n)
     if do_drains
         drainflux[lateral.subsurface.drain.index] =
             -lateral.subsurface.drain.flux ./ tosecond(basetimestep)
     end
-
-    return lateral.land.inwater .=
-        (vertical.net_runoff .* network.land.xl .* network.land.yl .* 0.001) ./
-        lateral.land.dt .+ drainflux
+    if do_water_demand
+        @. lateral.land.inwater =
+            (net_runoff + vertical.allocation.nonirri_returnflow) *
+            network.land.area *
+            0.001 / lateral.land.dt + drainflux
+    else
+        @. lateral.land.inwater =
+            (net_runoff * network.land.area * 0.001) / lateral.land.dt + drainflux
+    end
 end
 
 """
@@ -1651,10 +1681,17 @@ Set `inwater` of the lateral land component for the `SbmModel` type.
 function set_land_inwater(
     model::Model{N, L, V, R, W, T},
 ) where {N, L, V, R, W, T <: SbmModel}
-    (; lateral, vertical, network) = model
+    @unpack lateral, vertical, network, config = model
     (; net_runoff) = vertical.bucket.variables
-    return lateral.land.inwater .=
-        (net_runoff .* network.land.xl .* network.land.yl .* 0.001) ./ lateral.land.dt
+    do_water_demand = haskey(config.model, "water_demand")
+    if do_water_demand
+        @. lateral.land.inwater =
+            (net_runoff + vertical.allocation.nonirri_returnflow) *
+            network.land.area *
+            0.001 / lateral.land.dt
+    else
+        @. lateral.land.inwater = (net_runoff * network.land.area * 0.001) / lateral.land.dt
+    end
 end
 
 # Computation of inflow from the lateral components `land` and `subsurface` to water bodies
@@ -1797,15 +1834,13 @@ function surface_routing(
     T,
 }
     @unpack lateral, vertical, network, clock = model
+    (; net_runoff, net_runoff_river) = vertical.bucket.variables
 
     @. lateral.land.runoff = (
-        (vertical.net_runoff / 1000.0) * (network.land.xl * network.land.yl) / vertical.dt +
+        (net_runoff / 1000.0) * (network.land.xl * network.land.yl) / vertical.dt +
         ssf_toriver +
         # net_runoff_river
-        (
-            (vertical.net_runoff_river * network.land.xl * network.land.yl * 0.001) /
-            vertical.dt
-        )
+        ((net_runoff_river * network.land.xl * network.land.yl * 0.001) / vertical.dt)
     )
     set_inflow_waterbody(model)
     return update(lateral.land, lateral.river, network, julian_day(clock.time - clock.dt))

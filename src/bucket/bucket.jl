@@ -5,6 +5,8 @@
 # store all parameters (depends on profile).
 
 @get_units @with_kw struct SimpleBucketModelVars{T, N}
+    # Calculated soil water pressure head h3 of the root water uptake reduction function (Feddes) [cm]
+    h3::Vector{T} | "cm"
     # Amount of water in the unsaturated store, per layer [mm]
     ustorelayerdepth::Vector{SVector{N, T}} | "mm"
     # Saturated store [mm]
@@ -13,8 +15,6 @@
     zi::Vector{T} | "mm"
     # Number of unsaturated soil layers
     n_unsatlayers::Vector{Int} | "-"
-    # Potential transpiration (after subtracting interception from potential_evaporation)
-    pottrans::Vector{T}
     # Transpiration [mm Δt⁻¹]
     transpiration::Vector{T}
     # Actual evaporation from unsaturated store [mm Δt⁻¹]
@@ -116,8 +116,8 @@ function simple_bucket_model_vars(n, parameters)
         satwaterdepth = satwaterdepth,
         zi = zi,
         n_unsatlayers = n_unsatlayers,
-        pottrans = fill(mv, n),
         transpiration = fill(mv, n),
+        h3 = fill(mv, n),
         ae_ustore = fill(mv, n),
         soilevap = fill(mv, n),
         soilevapsat = fill(mv, n),
@@ -231,6 +231,20 @@ end
     pathfrac::Vector{T} | "-"
     # Controls how roots are linked to water table [-]
     rootdistpar::Vector{T} | "-"
+    # Fraction of the root length density in each soil layer [-]
+    rootfraction::Vector{SVector{N, T}} | "-"
+    # Soil water pressure head h1 of the root water uptake reduction function (Feddes) [cm]
+    h1::Vector{T} | "cm"
+    # Soil water pressure head h2 of the root water uptake reduction function (Feddes) [cm]
+    h2::Vector{T} | "cm"
+    # Soil water pressure head h3_high of the root water uptake reduction function (Feddes) [cm]
+    h3_high::Vector{T} | "cm"
+    # Soil water pressure head h3_low of the root water uptake reduction function (Feddes) [cm]
+    h3_low::Vector{T} | "cm"
+    # Soil water pressure head h4 of the root water uptake reduction function (Feddes) [cm]
+    h4::Vector{T} | "cm"
+    # Root water uptake reduction at soil water pressure head h1 (0.0 or 1.0) [-]
+    alpha_h1::Vector{T} | "-"
     vegetation_parameters::VegetationParameters{T} | "-"
 end
 
@@ -379,6 +393,54 @@ function initialize_simple_bucket_model_params(
         defaults = 10.0,
         type = Float,
     )
+    h1 = ncread(
+        nc,
+        config,
+        "vertical.bucket.parameters.h1";
+        sel = inds,
+        defaults = 0.0,
+        type = Float,
+    )
+    h2 = ncread(
+        nc,
+        config,
+        "vertical.bucket.parameters.h2";
+        sel = inds,
+        defaults = -100.0,
+        type = Float,
+    )
+    h3_high = ncread(
+        nc,
+        config,
+        "vertical.bucket.parameters.h3_high";
+        sel = inds,
+        defaults = -400.0,
+        type = Float,
+    )
+    h3_low = ncread(
+        nc,
+        config,
+        "vertical.bucket.parameters.h3_low";
+        sel = inds,
+        defaults = -1000.0,
+        type = Float,
+    )
+    h4 = ncread(
+        nc,
+        config,
+        "vertical.bucket.parameters.h4";
+        sel = inds,
+        defaults = -15849.0,
+        type = Float,
+    )
+    alpha_h1 = ncread(
+        nc,
+        config,
+        "vertical.bucket.parameters.alpha_h1";
+        sel = inds,
+        defaults = 1.0,
+        type = Float,
+    )
     soilthickness = ncread(
         nc,
         config,
@@ -499,6 +561,43 @@ function initialize_simple_bucket_model_params(
     sumlayers = @. pushfirst(cumsum(act_thickl), 0.0)
     nlayers = number_of_active_layers.(act_thickl)
 
+    if length(config_thicknesslayers) > 0
+        # root fraction read from nc file, in case of multiple soil layers and TOML file
+        # includes "vertical.rootfraction"
+        if haskey(config.input.vertical.bucket.parameters, "rootfraction")
+            rootfraction = ncread(
+                nc,
+                config,
+                "vertical.bucket.parameters.rootfraction";
+                sel = inds,
+                optional = false,
+                type = Float,
+                dimname = :layer,
+            )
+        else
+            n = length(inds)
+            (; rootingdepth) = vegetation_parameters
+            # default root fraction in case of multiple soil layers
+            rootfraction = zeros(Float, maxlayers, n)
+            for i in 1:n
+                if rootingdepth[i] > 0.0
+                    for k in 1:maxlayers
+                        if (rootingdepth[i] - sumlayers[i][k]) >= act_thickl[i][k]
+                            rootfraction[k, i] = act_thickl[i][k] / rootingdepth[i]
+                        else
+                            rootfraction[k, i] =
+                                max(rootingdepth[i] - sumlayers[i][k], 0.0) /
+                                rootingdepth[i]
+                        end
+                    end
+                end
+            end
+        end
+    else
+        # for the case of 1 soil layer
+        rootfraction = ones(Float, maxlayers, n)
+    end
+
     z_exp, z_layered, kv, nlayers_kv =
         sbm_ksat_profiles(nc, config, inds, soilthickness, maxlayers)
 
@@ -516,6 +615,12 @@ function initialize_simple_bucket_model_params(
         kv = svectorscopy(kv, Val{maxlayers}()),
         kvfrac = svectorscopy(kvfrac, Val{maxlayers}()),
         hb = hb,
+        h1 = h1,
+        h2 = h2,
+        h3_high = h3_high,
+        h3_low = h3_low,
+        h4 = h4,
+        alpha_h1 = alpha_h1,
         soilthickness = soilthickness,
         act_thickl = act_thickl,
         sumlayers = sumlayers,
@@ -525,6 +630,7 @@ function initialize_simple_bucket_model_params(
         waterfrac = max.(waterfrac .- riverfrac, Float(0.0)),
         pathfrac = pathfrac,
         rootdistpar = rootdistpar,
+        rootfraction = svectorscopy(rootfraction, Val{maxlayers}()),
         cap_hmax = cap_hmax,
         cap_n = cap_n,
         c = svectorscopy(c, Val{maxlayers}()),
@@ -571,13 +677,21 @@ end
 #   - capillary rise
 #   - deep transfer 
 
-function update!(model::SimpleBucketModel, atmospheric_forcing::AtmosphericForcing, config)
+function update!(
+    model::SimpleBucketModel,
+    demand,
+    allocation,
+    atmospheric_forcing::AtmosphericForcing,
+    config,
+    dt,
+)
     soilinfreduction = get(config.model, "soilinfreduction", false)::Bool
     modelsnow = get(config.model, "snow", false)::Bool
     transfermethod = get(config.model, "transfermethod", false)::Bool
     ust = get(config.model, "whole_ust_available", false)::Bool # should be removed from optional setting and code?
     ksat_profile = get(config.input.vertical, "ksat_profile", "exponential")::String
 
+    (; rootingdepth) = model.parameters.vegetation_parameters
     (; potential_evaporation, temperature) = atmospheric_forcing
     (; surface_water_flux, potential_soilevaporation, potential_transpiration) =
         model.boundary_conditions
@@ -586,14 +700,15 @@ function update!(model::SimpleBucketModel, atmospheric_forcing::AtmosphericForci
 
     n = length(potential_evaporation)
     threaded_foreach(1:n; basesize = 250) do i
+        h3 = feddes_h3(p.h3_high[i], p.h3_low[i], potential_transpiration[i], dt)
         ustoredepth = sum(@view v.ustorelayerdepth[i][1:p.nlayers[i]])
 
         runoff_river = min(1.0, p.riverfrac[i]) * surface_water_flux[i]
         runoff_land = min(1.0, p.waterfrac[i]) * surface_water_flux[i]
+        if !isnothing(demand) && (!isnothing(demand.paddy) || !isnothing(demand.nonpaddy))
+            avail_forinfilt = avail_forinfilt + allocation.irri_alloc[i]
+        end
         avail_forinfilt = max(surface_water_flux[i] - runoff_river - runoff_land, 0.0)
-
-        rootingdepth =
-            min(p.soilthickness[i] * 0.99, p.vegetation_parameters.rootingdepth[i])
 
         ae_openw_r = min(
             v.waterlevel_river[i] * p.riverfrac[i],
@@ -603,6 +718,18 @@ function update!(model::SimpleBucketModel, atmospheric_forcing::AtmosphericForci
             v.waterlevel_land[i] * p.waterfrac[i],
             p.waterfrac[i] * potential_evaporation[i],
         )
+
+        potsoilevap = potential_soilevaporation[i]
+        if !isnothing(demand) &&
+           !isnothing(demand.paddy) &&
+           demand.paddy.irrigation_areas[i]
+            evap_paddy_water = min(paddy.h[i], potsoilevap)
+            demand.paddy.h[i] -= evap_paddy_water
+            potsoilevap -= evap_paddy_water
+            avail_forinfilt += paddy.h[i] # allow infiltration of paddy water
+        else
+            evap_paddy_water = 0.0
+        end
 
         # Calculate the initial capacity of the unsaturated store
         ustorecapacity = p.soilwatercapacity[i] - v.satwaterdepth[i] - ustoredepth
@@ -632,7 +759,6 @@ function update!(model::SimpleBucketModel, atmospheric_forcing::AtmosphericForci
 
         ast = 0.0
         soilevapunsat = 0.0
-        potsoilevap = potential_soilevaporation[i]
         if n_usl > 0
             # Using the surface infiltration rate, calculate the flow rate between the
             # different soil layers that contain unsaturated storage assuming gravity
@@ -716,31 +842,53 @@ function update!(model::SimpleBucketModel, atmospheric_forcing::AtmosphericForci
         soilevap = soilevapunsat + soilevapsat
         satwaterdepth = v.satwaterdepth[i] - soilevapsat
 
-        # transpiration from saturated store
-        wetroots = scurve(v.zi[i], rootingdepth, Float(1.0), p.rootdistpar[i])
-        actevapsat = min(potential_transpiration[i] * wetroots, satwaterdepth)
-        satwaterdepth = satwaterdepth - actevapsat
-        restpottrans = potential_transpiration[i] - actevapsat
-
-        # actual transpiration from ustore
+        # actual transpiration, first from ustore, potential transpiration is partitioned over
+        # depth based on the rootfraction
         actevapustore = 0.0
+        rootfraction_unsat = 0.0
         for k in 1:n_usl
-            ustorelayerdepth, actevapustore, restpottrans = acttransp_unsat_sbm(
-                rootingdepth,
-                usld[k],
-                p.sumlayers[i][k],
-                restpottrans,
-                actevapustore,
-                p.c[i][k],
-                usl[k],
-                p.theta_s[i],
-                p.theta_r[i],
-                p.hb[i],
-                ust,
-            )
+            vwc = max(usld[k] / usl[k], Float(0.0000001))
+            head = head_brooks_corey(vwc, p.theta_s[i], p.theta_r[i], p.c[i][k], p.hb[i])
+            alpha = rwu_reduction_feddes(head, p.h1[i], p.h2[i], h3, p.h4[i], p.alpha_h1[i])
+            # availcap is fraction of soil layer containing roots
+            # if `ust` is `true`, the whole unsaturated store is available for transpiration
+            if ust
+                availcap = usld[k] * 0.99
+            else
+                availcap =
+                    min(1.0, max(0.0, (rootingdepth[i] - p.sumlayers[i][k]) / usl[k]))
+            end
+            maxextr = usld[k] * availcap
+            # the rootfraction is valid for the root length in a soil layer, if zi decreases the root length
+            # the rootfraction needs to be adapted
+            if k == n_usl && v.zi[i] < rootingdepth[i]
+                rootlength = min(p.act_thickl[i][k], rootingdepth[i] - p.sumlayers[i][k])
+                rootfraction_act = p.rootfraction[i][k] * (usl[k] / rootlength)
+            else
+                rootfraction_act = p.rootfraction[i][k]
+            end
+            actevapustore_layer =
+                min(alpha * rootfraction_act * potential_transpiration[i], maxextr)
+            rootfraction_unsat = rootfraction_unsat + rootfraction_act
+            ustorelayerdepth = usld[k] - actevapustore_layer
+            actevapustore = actevapustore + actevapustore_layer
             usld = setindex(usld, ustorelayerdepth, k)
         end
 
+        # transpiration from saturated store
+        wetroots = scurve(v.zi[i], rootingdepth[i], Float(1.0), p.rootdistpar[i])
+        alpha =
+            rwu_reduction_feddes(Float(0.0), p.h1[i], p.h2[i], h3, p.h4[i], p.alpha_h1[i])
+        # include remaining root fraction if rooting depth is below water table zi
+        if v.zi[i] >= rootingdepth[i]
+            f_roots = wetroots
+            restevap = potential_transpiration[i] - actevapustore
+        else
+            f_roots = wetroots * (1.0 - rootfraction_unsat)
+            restevap = potential_transpiration[i]
+        end
+        actevapsat = min(restevap * f_roots * alpha, satwaterdepth)
+        satwaterdepth = satwaterdepth - actevapsat
         # check soil moisture balance per layer
         du = 0.0
         for k in n_usl:-1:1
@@ -773,7 +921,7 @@ function update!(model::SimpleBucketModel, atmospheric_forcing::AtmosphericForci
                 p.soilwatercapacity[i] - satwaterdepth - sum(@view usld[1:p.nlayers[i]])
             maxcapflux = max(0.0, min(ksat, actevapustore, ustorecapacity, satwaterdepth))
 
-            if v.zi[i] > rootingdepth
+            if v.zi[i] > rootingdepth[i]
                 capflux =
                     maxcapflux *
                     pow(1.0 - min(v.zi[i], p.cap_hmax[i]) / (p.cap_hmax[i]), p.cap_n[i])
@@ -805,10 +953,11 @@ function update!(model::SimpleBucketModel, atmospheric_forcing::AtmosphericForci
         # recharge (mm) for saturated zone
         recharge = (transfer - actcapflux - actleakage - actevapsat - soilevapsat)
         transpiration = actevapsat + actevapustore
-        actevap = soilevap + transpiration + ae_openw_r + ae_openw_l
+        actevap = soilevap + transpiration + ae_openw_r + ae_openw_l + evap_paddy_water
 
         # update the outputs and states
         v.n_unsatlayers[i] = n_usl
+        v.h3[i] = h3
         v.net_runoff_river[i] = runoff_river - ae_openw_r
         v.avail_forinfilt[i] = avail_forinfilt
         v.actinfilt[i] = actinfilt
@@ -838,7 +987,7 @@ function update!(model::SimpleBucketModel, atmospheric_forcing::AtmosphericForci
     end
 end
 
-function update!(model::SimpleBucketModel, zi, exfiltsatwater)
+function update!(model::SimpleBucketModel, demand, zi, exfiltsatwater)
     v = model.variables
     (;
         ustorelayerdepth,
@@ -873,12 +1022,25 @@ function update!(model::SimpleBucketModel, zi, exfiltsatwater)
 
         ustoredepth = sum(@view usld[1:n_usl])
 
-        runoff =
-            exfiltustore +
-            exfiltsatwater[i] +
-            excesswater[i] +
-            runoff_land[i] +
-            infiltexcess[i]
+        if !isnothing(demand) &&
+           !isnothing(demand.paddy) &&
+           demand.paddy.irrigation_areas[i]
+            paddy_h_add =
+                exfiltustore +
+                exfiltsatwater[i] +
+                excesswater[i] +
+                runoff_land[i] +
+                infiltexcess[i]
+            runoff = max(paddy_h_add - paddy.h_max[i], 0.0)
+            paddy.h[i] = paddy_h_add - runoff
+        else
+            runoff =
+                exfiltustore +
+                exfiltsatwater[i] +
+                excesswater[i] +
+                runoff_land[i] +
+                infiltexcess[i]
+        end
 
         # volumetric water content per soil layer and root zone
         vwc_ = vwc[i]

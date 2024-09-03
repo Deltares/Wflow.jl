@@ -115,7 +115,7 @@ end
 function update!(model::GlacierHbvModel, atmospheric_forcing::AtmosphericForcing)
     (; temperature) = atmospheric_forcing
     (; glacier_store, glacier_melt) = model.variables
-    (; snow) = model.boundary_conditions
+    (; snow_storage) = model.boundary_conditions
     (; g_tt, g_cfmax, g_sifrac, glacierfrac, max_snow_to_glacier) = model.parameters
 
     n = length(temperature)
