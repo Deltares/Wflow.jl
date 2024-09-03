@@ -24,7 +24,7 @@ domain of the flood model covers the entire North and East Coast of Australia. A
 many gauging stations are available to provide real-time information, many rivers are not
 covered. For these locations, Wflow\_sbm models are used to provide this real-time
 information. Additionally, these models are used to provide projections for potential future
-scenarios. Using the HydroMT library, all Wflow\_sbm models were automatically built. The
+scenarios. Using the HydroMT library, all wflow\_sbm models were automatically built. The
 high level of flexibility in spatial and temporal resolution, combined with the physics-based nature
 of the concept, makes Wflow\_sbm particularly suitable for ungauged basins. Furthermore, the
 model is detailed and computationally efficient enough for coupling with the fast
