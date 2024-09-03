@@ -660,7 +660,7 @@ version = "0.21.70"
 deps = ["BasicModelInterface", "CFTime", "Dates", "DelimitedFiles", "FieldMetadata", "Glob", "Graphs", "IfElse", "LoggingExtras", "LoopVectorization", "NCDatasets", "Parameters", "Polyester", "ProgressLogging", "Random", "StaticArrays", "Statistics", "TOML", "TerminalLoggers", "UnPack"]
 path = ".."
 uuid = "d48b7d99-76e7-47ae-b1d5-ff0c1cf9a818"
-version = "0.8.0"
+version = "0.8.1"
 
 [[deps.XML2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Libiconv_jll", "Zlib_jll"]

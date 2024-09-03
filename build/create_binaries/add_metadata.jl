@@ -42,7 +42,7 @@ function add_metadata(project_dir, license_file, output_dir, git_repo)
         julia_version = manifest["julia_version"]
         wflow_entry = only(manifest["deps"]["Wflow"])
         tree = wflow_entry["git-tree-sha1"]
-        version = wflow_entry["version"]
+        version = TOML.parsefile(normpath(git_repo, "Project.toml"))["version"]
         repo = GitRepo(git_repo)
         branch = LibGit2.head(repo)
         # commit = LibGit2.peel(LibGit2.GitCommit, branch)

@@ -1,4 +1,14 @@
-@get_units @exchange @grid_type @grid_location @with_kw struct SBM{T,N,M}
+@get_units @exchange @grid_type @grid_location @with_kw struct SBM{
+    T,
+    N,
+    M,
+    P<:Union{Paddy,Nothing},
+    NP<:Union{NonPaddy,Nothing},
+    D<:Union{NonIrrigationDemand,Nothing},
+    L<:Union{NonIrrigationDemand,Nothing},
+    I<:Union{NonIrrigationDemand,Nothing},
+    A<:Union{AllocationLand,Nothing},
+}
     # Model time step [s]
     dt::T | "s" | 0 | "none" | "none"
     # Maximum number of soil layers
@@ -227,15 +237,15 @@
     # Total water storage (excluding floodplain volume, lakes and reservoirs) [mm]
     total_storage::Vector{T} | "mm"
     # Water demand structs (of arrays)
-    paddy::Union{Paddy,Nothing} | "-" | 0
-    nonpaddy::Union{NonPaddy,Nothing} | "-" | 0
-    domestic::Union{NonIrrigationDemand,Nothing} | "-" | 0
-    livestock::Union{NonIrrigationDemand,Nothing} | "-" | 0
-    industry::Union{NonIrrigationDemand,Nothing} | "-" | 0
-    allocation::Union{AllocationLand,Nothing} | "-" | 0
+    paddy::P | "-" | 0
+    nonpaddy::NP | "-" | 0
+    domestic::D | "-" | 0
+    livestock::L | "-" | 0
+    industry::I | "-" | 0
+    allocation::A | "-" | 0
 
 
-    function SBM{T,N,M}(args...) where {T,N,M}
+    function SBM{T,N,M,P,NP,D,L,I,A}(args...) where {T,N,M,P,NP,D,L,I,A}
         equal_size_vectors(args)
         return new(args...)
     end
@@ -1351,19 +1361,16 @@ function update_total_water_storage(
     river_routing,
     land_routing,
 )
-    # Get length active river cells
-    nriv = length(river_network)
-
     # Set the total storage to zero
     fill!(sbm.total_storage, 0)
 
     # Burn the river routing values
-    sbm.total_storage[river_network] = (
-        (
-            river_routing.h_av[1:nriv] .* river_routing.width[1:nriv] .*
-            river_routing.dl[1:nriv]
-        ) ./ (area[river_network]) * 1000 # Convert to mm
-    )
+    for (i, index_river) in enumerate(river_network)
+        sbm.total_storage[index_river] = (
+            (river_routing.h_av[i] * river_routing.width[i] * river_routing.dl[i]) /
+            (area[index_river]) * 1000 # Convert to mm
+        )
+    end
 
     # Chunk the data for parallel computing
     threaded_foreach(1:sbm.n, basesize = 1000) do i
