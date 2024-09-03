@@ -60,7 +60,7 @@ transported by water flow towards small streams and rivers. Therefore there is s
 relation to rainfall-runoff processes, which can be modeled using high-resolution
 rainfall-runoff models.
 
-In this study we applied the Wflow\_sbm model in combination with a fate-and-transport and
+In this study we applied the wflow\_sbm model in combination with a fate-and-transport and
 water quality model (DelWaq) to simulate the movement of plastics through five large river
 basins and on three island and coastal zones (Krabi, Phuket, and Ko Samui; see screenshot of the
 model below) in Thailand. Together with our partners Panya Consultants and HII, we were able
