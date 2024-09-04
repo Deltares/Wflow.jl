@@ -13,144 +13,188 @@ function initialize_sediment_model(config::Config)
 
     reader = prepare_reader(config)
     clock = Clock(config, reader)
-    dt = clock.dt
 
-    do_river = get(config.model, "runrivermodel", false)::Bool
+    dataset = NCDataset(static_path)
 
-    nc = NCDataset(static_path)
-    dims = dimnames(nc[param(config, "input.subcatchment")])
-
-    subcatch_2d = ncread(nc, config, "subcatchment"; optional = false, allow_missing = true)
+    subcatch_2d =
+        ncread(dataset, config, "subcatchment"; optional = false, allow_missing = true)
     # indices based on catchment
-    inds, rev_inds = active_indices(subcatch_2d, missing)
-    n = length(inds)
-    modelsize_2d = size(subcatch_2d)
+    indices_subcatch, reverse_indices_subcatch = active_indices(subcatch_2d, missing)
+    number_of_cells = length(indices_subcatch)
 
-    river_2d =
-        ncread(nc, config, "river_location"; optional = false, type = Bool, fill = false)
-    river = river_2d[inds]
-    riverwidth_2d =
-        ncread(nc, config, "lateral.river.width"; optional = false, type = Float, fill = 0)
-    riverwidth = riverwidth_2d[inds]
-    riverlength_2d =
-        ncread(nc, config, "lateral.river.length"; optional = false, type = Float, fill = 0)
-    riverlength = riverlength_2d[inds]
+    river_2d = ncread(
+        dataset,
+        config,
+        "river_location";
+        optional = false,
+        type = Bool,
+        fill = false,
+    )
+    river = river_2d[indices_subcatch]
 
-    inds_riv, rev_inds_riv = active_indices(river_2d, 0)
-    nriv = length(inds_riv)
+    river_width_2d = ncread(
+        dataset,
+        config,
+        "lateral.river.width";
+        optional = false,
+        type = Float,
+        fill = 0,
+    )
+    river_width = river_width_2d[indices_subcatch]
 
-    # Needed to update the forcing
-    reservoir = ()
-    lake = ()
+    river_length_2d = ncread(
+        dataset,
+        config,
+        "lateral.river.length";
+        optional = false,
+        type = Float,
+        fill = 0,
+    )
+    river_length = river_length_2d[indices_subcatch]
+
+    indices_river, reverse_indices_river = active_indices(river_2d, 0)
 
     # read x, y coordinates and calculate cell length [m]
-    y_nc = read_y_axis(nc)
-    x_nc = read_x_axis(nc)
-    y = permutedims(repeat(y_nc; outer = (1, length(x_nc))))[inds]
-    cellength = abs(mean(diff(x_nc)))
+    y_axis = read_y_axis(dataset)
+    x_axis = read_x_axis(dataset)
+    y = permutedims(repeat(y_axis; outer = (1, length(x_axis))))[indices_subcatch]
+    cell_length = abs(mean(diff(x_axis)))
 
-    sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
-    xl, yl = cell_lengths(y, cellength, sizeinmetres)
-    riverfrac = river_fraction(river, riverlength, riverwidth, xl, yl)
+    size_in_metres = get(config.model, "sizeinmetres", false)::Bool
+    x_length, y_length = cell_lengths(y, cell_length, size_in_metres)
+    river_fraction_ = river_fraction(river, river_length, river_width, x_length, y_length)
 
-    eros = initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
-
-    ldd_2d = ncread(nc, config, "ldd"; optional = false, allow_missing = true)
-    ldd = ldd_2d[inds]
-
-    # # lateral part sediment in overland flow
-    rivcell = float(river)
-    ols = OverlandFlowSediment{Float}(;
-        n = n,
-        rivcell = rivcell,
-        soilloss = fill(mv, n),
-        erosclay = fill(mv, n),
-        erossilt = fill(mv, n),
-        erossand = fill(mv, n),
-        erossagg = fill(mv, n),
-        eroslagg = fill(mv, n),
-        TCsed = fill(mv, n),
-        TCclay = fill(mv, n),
-        TCsilt = fill(mv, n),
-        TCsand = fill(mv, n),
-        TCsagg = fill(mv, n),
-        TClagg = fill(mv, n),
-        olsed = fill(mv, n),
-        olclay = fill(mv, n),
-        olsilt = fill(mv, n),
-        olsand = fill(mv, n),
-        olsagg = fill(mv, n),
-        ollagg = fill(mv, n),
-        inlandsed = fill(mv, n),
-        inlandclay = fill(mv, n),
-        inlandsilt = fill(mv, n),
-        inlandsand = fill(mv, n),
-        inlandsagg = fill(mv, n),
-        inlandlagg = fill(mv, n),
+    erosion = initialize_landsed(
+        dataset,
+        config,
+        river,
+        river_fraction_,
+        x_length,
+        y_length,
+        indices_subcatch,
     )
 
-    graph = flowgraph(ldd, inds, pcr_dir)
+    ldd_2d = ncread(dataset, config, "ldd"; optional = false, allow_missing = true)
+    ldd = ldd_2d[indices_subcatch]
+
+    # # lateral part sediment in overland flow
+    overland_flow_sediment = init_overland_flow_sediment(Float, river, number_of_cells)
+
+    graph = flowgraph(ldd, indices_subcatch, pcr_dir)
 
     # River processes
 
     # the indices of the river cells in the land(+river) cell vector
-    landslope =
-        ncread(nc, config, "lateral.land.slope"; optional = false, sel = inds, type = Float)
-    clamp!(landslope, 0.00001, Inf)
-
-    riverlength = riverlength_2d[inds_riv]
-    riverwidth = riverwidth_2d[inds_riv]
-    minimum(riverlength) > 0 || error("river length must be positive on river cells")
-    minimum(riverwidth) > 0 || error("river width must be positive on river cells")
-
-    ldd_riv = ldd_2d[inds_riv]
-    graph_riv = flowgraph(ldd_riv, inds_riv, pcr_dir)
-
-    index_river = filter(i -> !isequal(river[i], 0), 1:n)
-    frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, landslope, n)
-
-    rs = initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
-
-    modelmap = (vertical = eros, lateral = (land = ols, river = rs))
-    indices_reverse = (
-        land = rev_inds,
-        river = rev_inds_riv,
-        reservoir = isempty(reservoir) ? nothing : reservoir.reverse_indices,
-        lake = isempty(lake) ? nothing : lake.reverse_indices,
+    land_slope = ncread(
+        dataset,
+        config,
+        "lateral.land.slope";
+        optional = false,
+        sel = indices_subcatch,
+        type = Float,
     )
-    writer = prepare_writer(config, modelmap, indices_reverse, x_nc, y_nc, nc)
-    close(nc)
+    clamp!(land_slope, 0.00001, Inf)
+
+    river_length = river_length_2d[indices_river]
+    minimum(river_length) > 0 || error("river length must be positive on river cells")
+
+    river_width = river_width_2d[indices_river]
+    minimum(river_width) > 0 || error("river width must be positive on river cells")
+
+    ldd_river = ldd_2d[indices_river]
+    graph_river = flowgraph(ldd_river, indices_river, pcr_dir)
+
+    index_river = filter(i -> !isequal(river[i], 0), 1:number_of_cells)
+    frac_to_river =
+        fraction_runoff_toriver(graph, ldd, index_river, land_slope, number_of_cells)
+
+    river_sediment =
+        initialize_riversed(dataset, config, river_width, river_length, indices_river)
+
+    model_map = (
+        vertical = erosion,
+        lateral = (land = overland_flow_sediment, river = river_sediment),
+    )
+    indices_reverse = (
+        land = reverse_indices_subcatch,
+        river = reverse_indices_river,
+        reservoir = nothing,
+        lake = nothing,
+    )
+    writer = prepare_writer(config, model_map, indices_reverse, x_axis, y_axis, dataset)
+    close(dataset)
 
     # for each domain save the directed acyclic graph, the traversion order,
     # and the indices that map it back to the two dimensional grid
     land = (
         graph = graph,
         order = topological_sort_by_dfs(graph),
-        indices = inds,
-        reverse_indices = rev_inds,
+        indices = indices_subcatch,
+        reverse_indices = reverse_indices_subcatch,
     )
     river = (
-        graph = graph_riv,
-        order = topological_sort_by_dfs(graph_riv),
-        indices = inds_riv,
-        reverse_indices = rev_inds_riv,
+        graph = graph_river,
+        order = topological_sort_by_dfs(graph_river),
+        indices = indices_river,
+        reverse_indices = reverse_indices_river,
     )
+
+    sediment_model = SedimentModel()
 
     model = Model(
         config,
-        (; land, river, reservoir, lake, index_river, frac_toriver),
-        (land = ols, river = rs),
-        eros,
+        (; land, river, reservoir = nothing, lake = nothing, index_river, frac_to_river),
+        (land = overland_flow_sediment, river = river_sediment),
+        erosion,
         clock,
         reader,
         writer,
-        SedimentModel(),
+        sediment_model,
     )
 
     model = set_states(model)
     @info "Initialized model"
 
     return model
+end
+
+function init_overland_flow_sediment(
+    type::Type{<:AbstractFloat},
+    river::Vector,
+    number_of_cells::Integer,
+)
+    river_cell = convert(Vector{type}, river)
+
+    overland_flow_sediment = OverlandFlowSediment{type}(;
+        n = number_of_cells,
+        rivcell = river_cell,
+        soilloss = fill(mv, number_of_cells),
+        erosclay = fill(mv, number_of_cells),
+        erossilt = fill(mv, number_of_cells),
+        erossand = fill(mv, number_of_cells),
+        erossagg = fill(mv, number_of_cells),
+        eroslagg = fill(mv, number_of_cells),
+        TCsed = fill(mv, number_of_cells),
+        TCclay = fill(mv, number_of_cells),
+        TCsilt = fill(mv, number_of_cells),
+        TCsand = fill(mv, number_of_cells),
+        TCsagg = fill(mv, number_of_cells),
+        TClagg = fill(mv, number_of_cells),
+        olsed = fill(mv, number_of_cells),
+        olclay = fill(mv, number_of_cells),
+        olsilt = fill(mv, number_of_cells),
+        olsand = fill(mv, number_of_cells),
+        olsagg = fill(mv, number_of_cells),
+        ollagg = fill(mv, number_of_cells),
+        inlandsed = fill(mv, number_of_cells),
+        inlandclay = fill(mv, number_of_cells),
+        inlandsilt = fill(mv, number_of_cells),
+        inlandsand = fill(mv, number_of_cells),
+        inlandsagg = fill(mv, number_of_cells),
+        inlandlagg = fill(mv, number_of_cells),
+    )
+
+    return overland_flow_sediment
 end
 
 function update(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SedimentModel}
@@ -197,12 +241,12 @@ function set_states(
     # read and set states in model object if reinit=false
     @unpack config = model
     reinit = get(config.model, "reinit", true)::Bool
-    if reinit == false
+    if reinit
+        @info "Set initial conditions from default values."
+    else
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
         set_states(instate_path, model; type = Float)
-    else
-        @info "Set initial conditions from default values."
     end
     return model
 end
