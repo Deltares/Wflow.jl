@@ -44,6 +44,7 @@ function homogenous_aquifer(nrow, ncol)
         fill(0.1, ncell), # specific storage
         fill(1.0, ncell),  # storativity
         fill(0.0, connectivity.nconnection),  # conductance
+        fill(0.0, ncell), # total volume that can be released
     )
     unconf_aqf = Wflow.UnconfinedAquifer(
         [0.0, 7.5, 20.0],  # head
@@ -53,6 +54,7 @@ function homogenous_aquifer(nrow, ncol)
         fill(100.0, ncell),  # area
         fill(0.15, ncell),  # specific yield
         fill(0.0, connectivity.nconnection),  # conductance
+        fill(0.0, ncell), # total volume that can be released
         fill(3.0, ncell), # conductance reduction factor
     )
     return (connectivity, conf_aqf, unconf_aqf)
@@ -408,6 +410,7 @@ end
             fill(cellsize * cellsize, ncell),
             fill(specific_yield, ncell),
             fill(0.0, connectivity.nconnection),
+            fill(0.0, ncell),
             fill(gwf_f, ncell),
         )
         # constant head on left boundary, 0 at 0
@@ -475,6 +478,7 @@ end
             fill(cellsize * cellsize, ncell),
             fill(specific_yield, ncell),
             fill(0.0, connectivity.nconnection),
+            fill(0.0, ncell),
             fill(gwf_f, ncell),
         )
         # constant head on left boundary, 0 at 0
@@ -546,6 +550,7 @@ end
             fill(specific_storage, ncell),
             fill(storativity, ncell),
             fill(0.0, connectivity.nconnection), # conductance, to be set
+            fill(0.0, ncell), # total volume that can be released, to be set
         )
 
         cell_index = reshape(collect(range(1, ncell; step = 1)), shape)

@@ -820,3 +820,14 @@ function initialize_lateralssf_layered!(ssf::LateralSSF, sbm::SBM, ksat_profile)
         ssf.ssfmax[i] = kh_max * ssf.slope[i]
     end
 end
+
+"""
+    bounded_divide(x, y; max = 1.0, default = 0.0)
+
+Return the division of `x` by `y`, bounded by a maximum value `max`, when `y` > 0.0.
+Otherwise return a `default` value.
+"""
+function bounded_divide(x, y; max = 1.0, default = 0.0)
+    z = y > 0.0 ? min(x / y, max) : default
+    return z
+end

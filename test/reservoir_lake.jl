@@ -60,6 +60,7 @@ lake = Wflow.Lake{Float64}(;
 )
 @testset "Update lake" begin
     Wflow.update(lake, 1, 2500.0, 181, 86400.0)
+    @test Wflow.waterlevel(lake.storfunc, lake.area, lake.storage, lake.sh)[1] ≈ 19.672653848925634
     @test lake.outflow[1] ≈ 85.14292808113598
     @test lake.totaloutflow[1] ≈ 7.356348986210149e6
     @test lake.storage[1] ≈ 3.55111879238499e9
@@ -168,6 +169,7 @@ end
     )
 
     Wflow.update(lake, 1, 1500.0, 15, 86400.0)
+    @test Wflow.waterlevel(lake.storfunc, lake.area, lake.storage, lake.sh) ≈ [398.0] atol = 1e-2
     @test lake.outflow ≈ [1303.67476852] atol = 1e-2
     @test lake.totaloutflow ≈ [11.26375000e7] atol = 1e3
     @test lake.storage ≈ [4.293225e8] atol = 1e4

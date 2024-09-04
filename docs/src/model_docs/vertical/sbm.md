@@ -183,47 +183,71 @@ availability.
 
 ### Transpiration
 
-The fraction of wet roots is determined using a sigmoid fuction (see figure below). The
-parameter `rootdistpar` defines the sharpness of the transition between fully wet and fully
-dry roots. The returned wet roots fraction is multiplied by the potential evaporation (and
-limited by the available water in saturated zone) to get the transpiration from the
-saturated part of the soil. This is implemented using the following code (`i` refers to the
-index of the vector that contains all active cells within the spatial model domain):
+The maximum possible root water extraction rate for each soil layer is determined by
+partitioning the potential transpiration rate ``T_p`` based on the fraction of the total
+root length (`rootfraction` [-]) in each soil layer. A root water uptake reduction model is
+used to calculate a reduction coefficient as a function of soil water pressure, that may
+reduce the maximum possible root water extraction rate. The root water uptake reduction
+model is based on the concept proposed by Feddes et al. (1978). This concept defines a
+reduction coefficient ``\alpha`` [-] as a function of soil water pressure (``h`` [cm]). Four
+different levels of ``h`` are defined: `h1`, `h2`, `h3` and `h4`. `h1` represents anoxic
+moisture conditions, `h2` represents field capacity, `h3` represents the point of critical
+soil moisture content (onset of drought stress), and `h4` represents the wilting point. The
+value of `h3` is a function of the potential transpiration rate, between 1 and 5 mm
+d``^{-1}``. If ``T_p \le 1 \text{ mm d}^{-1}``, `h3` is set equal to `h3_low` (input model
+parameter). If ``T_p \ge 5 \text{ mm d}^{-1}``, `h3` is set equal to `h3_high` (input model
+parameter). For ``T_p`` values between 1 and 5 mm d``^{-1}``, the value of `h3` is linearly
+related to ``T_p`` (between `h3_low` and `h3_high`). Besides model parameters `h3_high` and
+`h3_low`, the critical pressure heads `h1`, `h2` and `h4` can be defined as input to the
+model.
 
-```julia
-    # transpiration from saturated store
-    wetroots = scurve(sbm.zi[i], rootingdepth, Float(1.0), sbm.rootdistpar[i])
-    actevapsat = min(sbm.pottrans[i] * wetroots, satwaterdepth)
-    satwaterdepth = satwaterdepth - actevapsat
-    restpottrans = sbm.pottrans[i] - actevapsat
+The current soil water pressure is determined following the concept defined by Brooks and
+Corey (1964):
+
+```math
+    \frac{(\theta-\theta_r)}{(\theta_s-\theta_r)} =  \Bigg\lbrace{\left(\frac{h_b}{h}\right)^{\lambda}, h > h_b \atop 1 , h \leq h_b}
 ```
 
-![soil_wetroots](../../images/soil_wetroots.png)
+where ``h`` is the pressure head [cm], ``h_b`` is the air entry pressure head [cm], and
+``\theta``, ``\theta_s``, ``\theta_r`` and ``\lambda`` as previously defined.
 
-*Amount of wet roots and the effect of the rootdistpar parameter*
+Whenever the current soil water pressure drops below `h4`, the root water uptake is set to
+zero. The root water uptake is at ideal conditions whenever the soil water pressure is above
+`h3`, with a linear transition between `h3` and `h4`. The assumption that very wet
+conditions do not affect root water uptake too much is probably generally applicable to
+natural vegetation. For crops this assumption is not valid and in this case root water
+uptake above `h1` should be set to zero (oxygen deficit) and between `h1` and `h2` root
+water uptake is limited. This is possible by setting the input model parameter `alpha_h1` at
+0 (default is 1).
+
+![soil_rootwateruptake](../../images/soil_rootwateruptake.png)
+
+*Root water uptake reduction coefficient as a function of soil water pressure*
 
 ```@setup
 # Figure created using python: # hide
 # https://gist.github.com/JoostBuitink/21dd32e71fd1360117fcd1c532c4fd9d#file-sbm_soil_figs-py # hide
 ```
 
-The remaining potential evaporation is used to extract water from the unsaturated store. The
-maximum allowed extraction of the unsaturated zone is determined based on the fraction of
-the unsaturated zone that is above the rooting depth, see conceptual figure below. This is
-implemented using the following code:
+The maximum allowed root water extraction from each soil layer in the unsaturated zone is
+determined based on the fraction of each soil layer in the unsaturated zone that is above
+the rooting depth (`availcap`) and the unsaturated storage `usld`, see conceptual figure
+below. This is implemented using the following code (`i` refers to the index of the vector
+that contains all active cells within the spatial model domain and `k` refers to the soil
+layer (from top to bottom) in the unsaturated zone):
 
 ```julia
-    if ust # whole_ust_available = true
-        availcap = ustorelayerdepth * 0.99
+    # availcap is fraction of soil layer containing roots
+    # if `ust` is `true`, the whole unsaturated store is available for transpiration
+    if ust
+        availcap = usld[k] * 0.99
     else
-        if usl > 0.0
-            availcap = min(1.0, max(0.0, (rootingdepth - sumlayer) / usl))
-        else
-            availcap = 0.0
-        end
+        availcap =
+            min(1.0, max(0.0, (sbm.rootingdepth[i] - sbm.sumlayers[i][k]) / usl[k]))
     end
-    maxextr = availcap * ustorelayerdepth
+    maxextr = usld[k] * availcap
 ```
+
 
 ![soil_unsatevap](../../images/soil_unsatevap.png)
 
@@ -244,34 +268,48 @@ implemented using the following code:
     whole_ust_available = true
     ```
 
-Next, a root water uptake reduction model is used to calculate a reduction coefficient as a
-function of soil water pressure. This concept is based on the concept presented by Feddes et
-al. (1978). This concept defines a reduction coefficient `a` as a function of soil water
-pressure (`h`). Four different levels of `h` are defined: `h2`, `h3`, and `h4` are defined
-as fixed values, and `h1` can be defined as input to the model (defaults to -10 cm). `h1`
-represents the air entry pressure, `h2` represents field capacity, `h3` represents the point
-of critical soil moisture content, and `h4` represents the wilting point. The current soil
-water pressure is determined following the concept defined by Brooks and Corey (1964):
+The computation of transpiration from the saturated store depends on the water table depth,
+rooting depth, the reduction coefficient ``\alpha``, the fraction of wet roots and the
+`rootfraction` below the water table. The fraction of wet roots is determined using a
+sigmoid fuction (see figure below). The parameter `rootdistpar` defines the sharpness of the
+transition between fully wet and fully dry roots. If the water table depth is equal to or
+lower than the rooting depth, the remaining potential transpiration is used based on the
+potential transpiration and actual transpiration in the unsaturated zone. The remaining
+potential transpiration is multiplied by the wet roots fraction and the reduction
+coefficient (and limited by the available water in saturated zone) to get the transpiration
+from the saturated part of the soil. If the water table depth intersects the rooting depth,
+the potential transpiration is multiplied by the remaining `rootfraction` (below the water
+table), wet roots fraction and the reduction coefficient (and limited by the available water
+in saturated zone) to get the transpiration from the saturated part of the soil. This is
+implemented using the following code (`i` refers to the index of the vector that contains
+all active cells within the spatial model domain):
 
-```math
-    \frac{(\theta-\theta_r)}{(\theta_s-\theta_r)} =  \Bigg\lbrace{\left(\frac{h_b}{h}\right)^{\lambda}, h > h_b \atop 1 , h \leq h_b}
+```julia
+        # transpiration from saturated store
+        wetroots = scurve(sbm.zi[i], sbm.rootingdepth[i], Float(1.0), sbm.rootdistpar[i])
+        alpha = rwu_reduction_feddes(
+            Float(0.0),
+            sbm.h1[i],
+            sbm.h2[i],
+            sbm.h3[i],
+            sbm.h4[i],
+            sbm.alpha_h1[i],
+        )
+        # include remaining root fraction if rooting depth is below water table zi
+        if sbm.zi[i] >= sbm.rootingdepth[i]
+            f_roots = wetroots
+            restevap = sbm.pottrans[i] - actevapustore
+        else
+            f_roots = wetroots * (1.0 - rootfraction_unsat)
+            restevap = sbm.pottrans[i]
+        end
+        actevapsat = min(restevap * f_roots * alpha, satwaterdepth)
+        satwaterdepth = satwaterdepth - actevapsat
 ```
 
-where ``h`` is the pressure head [cm], ``h_b`` is the air entry pressure head [cm], and
-``\theta``, ``\theta_s``, ``\theta_r`` and ``\lambda`` as previously defined.
+![soil_wetroots](../../images/soil_wetroots.png)
 
-Whenever the current soil water pressure drops below `h4`, the root water uptake is set to
-zero. The root water uptake is at ideal conditions whenever the soil water pressure is above
-`h3`, with a linear transition between `h3` and `h4`. Note that in the original
-transpiration reduction-curve of Feddes (1978) root water uptake above `h1` is set to zero
-(oxygen deficit) and between `h1` and `h2` root water uptake is limited. The assumption that
-very wet conditions do not affect root water uptake too much is probably generally
-applicable to natural vegetation, however for crops this assumption is not valid. This could
-be improved in the wflow code by applying the reduction to crops only.
-
-![soil_rootwateruptake](../../images/soil_rootwateruptake.png)
-
-*Root water uptake reduction coefficient as a function of soil water pressure*
+*Amount of wet roots and the effect of the rootdistpar parameter*
 
 ```@setup
 # Figure created using python: # hide
@@ -441,15 +479,14 @@ have different infiltration capacities. Naturally, only the water that can be st
 soil can infiltrate. If not all water can infiltrate, this is added as excess water to the
 runoff routing scheme.
 
-The infiltrating
-water is split in two parts, the part that falls on compacted areas and the part that falls
-on non-compacted areas. The maximum amount of water that can infiltrate in these areas is
-calculated by taking the minimum of the maximum infiltration rate (`infiltcapsoil` [mm
-t``^{-1}``] for non-compacted areas and `infiltcappath` [mm t``^{-1}``] for compacted areas)
-and the amount of water available for infiltration `avail_forinfilt` [mm t``^{-1}``]. The
-water that can actually infiltrate `infiltsoilpath` [mm t``^{-1}``] is calculated by taking
-the minimum of the total maximum infiltration rate (compacted and non-compacted areas) and
-the remaining storage capacity.
+The infiltrating water is split in two parts, the part that falls on compacted areas and the
+part that falls on non-compacted areas. The maximum amount of water that can infiltrate in
+these areas is calculated by taking the minimum of the maximum infiltration rate
+(`infiltcapsoil` [mm t``^{-1}``] for non-compacted areas and `infiltcappath` [mm t``^{-1}``]
+for compacted areas) and the amount of water available for infiltration `avail_forinfilt`
+[mm t``^{-1}``]. The water that can actually infiltrate `infiltsoilpath` [mm t``^{-1}``] is
+calculated by taking the minimum of the total maximum infiltration rate (compacted and
+non-compacted areas) and the remaining storage capacity.
 
 Infiltration excess occurs when the infiltration capacity is smaller then the throughfall
 and stemflow rate. This amount of water (`infiltexcess` [mm t``^{-1}``]) becomes overland
@@ -587,6 +624,187 @@ Part of the water available for infiltration is diverted to the open water, base
 fractions of river and lakes of each grid cell. The amount of evaporation from open water is
 assumed to be equal to potential evaporation (if sufficient water is available).
 
+## Non-irrigation
+Non-irrigation water demand and allocation computations are supported for the sectors
+domestic, industry and livestock. These computations can be enabled by specifying the
+following in the TOML file:
+
+```toml
+[model.water_demand]
+domestic = true
+industry = true
+livestock = true
+```
+
+For these non-irrigation sectors the gross demand (``d_\mathrm{gross}`` [mm t``^{-1}``]) and
+net demand (``d_\mathrm{net}`` [mm t``^{-1}``]) are provided to the model (input through
+cyclic or forcing data). Gross demand represents the total demand and hence the total
+abstraction from surface water or groundwater when sufficient water is available. Net demand
+represents water consumption. The portion of total abstracted water that is not consumed is
+returned as surface water. The return flow fraction (``f_\mathrm{return}`` [-]) is
+calculated as follows:
+
+```math
+    f_\mathrm{return} = 1.0 - \frac{d_\mathrm{net}}{d_\mathrm{gross}},
+```
+and used to calculate the return flow rate (water abstracted from surface water or
+groundwater but not consumed). For grid cells containing a river the return flow is directly
+returned to the river routing component, otherwise the return flow is returned to the
+overland flow routing component.
+
+## Non-paddy irrigation
+Non-paddy (other crops than flooded rice) water demand and allocation computations are
+supported. These computations can be enabled by specifying the following in the TOML file:
+
+```toml
+[model.water_demand]
+nonpaddy = true
+```
+Irrigation is applied during the growing season (when input parameter `irrigation_trigger`
+[-] is `true` (or `on`)) and when water depletion exceeds the readily available water:
+
+```math
+    (U_\mathrm{field} - U_\mathrm{a}) \ge (U_\mathrm{field} - U_\mathrm{h3})
+```
+where ``U_\mathrm{field}`` \[mm\] is the unsaturated store in the root zone at field
+capacity (defined at a soil water pressure head of -100 cm), ``U_\mathrm{a}`` \[mm\] is the
+actual unsaturated store in the root zone and ``U_\mathrm{h3}`` \[mm\] is the unsaturated
+store in the root zone at the critical soil water pressure head `h3`, below this pressure
+head reduction of root water uptake starts due to drought stress. The net irrigation demand
+[mm t``^{-1}``] is the irrigation rate that brings the root zone back to field capacity,
+limited by the soil infiltration capacity [mm t``^{-1}``], assuming that farmers do not
+apply an irrigation rate higher than the soil infiltration capacity. To account for limited
+irrigation efficiency the net irrigation demand is divided by the irrigation efficiency for
+non-paddy crops (`irrigation_efficiency` [-], default is 1.0), resulting in gross irrigation
+demand [mm t``^{-1}``]. Finally, the gross irrigation demand is limited by the maximum
+irrigation rate (`maximum_irrigation_rate` [mm t``^{-1}``], default is 25 mm d``^{-1}``). If
+the maximum irrigation rate is applied, irrigation continues at subsequent time steps until
+field capacity is reached. Irrigation is added to the `SBM` variable `avail_forinfilt` [mm
+t``^{-1}``], the amount of water available for infiltration.
+
+## Paddy irrigation
+Paddy (flooded rice) water demand and allocation computations are supported. These
+computations can be enabled by specifying the following in the TOML file:
+
+```toml
+[model.water_demand]
+paddy = true
+```
+Irrigation is applied during the growing season (when input parameter `irrigation_trigger`
+[-] is `true` (or `on`)) and when the paddy water depth `h` \[mm\] reaches below the minimum
+water depth `h_min` \[mm\] (see also the figure below). The net irrigation demand [mm
+t``^{-1}``] is the irrigation rate required to reach the optimal paddy water depth `h_opt`
+\[mm\], an approach similar to Xie and Cui (2011). To account for limited irrigation
+efficiency the net irrigation demand is divided by the irrigation efficiency for paddy
+fields (`irrigation_efficiency` [-], default is 1.0), resulting in gross irrigation demand
+[mm t``^{-1}``]. Finally, the gross irrigation demand is limited by the maximum irrigation
+rate (`maximum_irrigation_rate` [mm t``^{-1}``], default is 25 mm d``^{-1}``). If the
+maximum irrigation rate is applied, irrigation continues at subsequent time steps until the
+optimal paddy water depth `h_opt` is reached. Irrigation is added to the `SBM` variable
+`avail_forinfilt` [mm t``^{-1}``], the amount of water available for infiltration. When the
+paddy water depth `h` exceeds `h_max` \[mm\] runoff occurs, and this amount is added to the
+runoff routing scheme for overland flow. The figure below shows a typical vertical soil
+profile of a puddled rice soil with a muddy layer of about 15 cm (in this case represented
+by two soil layers of 5 cm and 10 cm thickness), a plow soil layer of 5 cm with relative low
+permeability (vertical hydraulic conductivity ``k_v`` of about 5 mm d``^{-1}``), and a
+non-puddled soil below the plow soil layer. The low vertical hydraulic conductivity of the
+plow soil layer can be realized by making use of the parameter `kvfrac` [-], a
+multiplication factor applied to the vertical hydraulic conductivity at soil depth ``z``
+[mm].
+
+![paddy_profile](../../images/paddy_profile.png)
+
+*Schematic diagram of a paddy field with water balance components and soil profile*
+
+## Water withdrawal and allocation
+For the water withdrawal the total gross demand is computed (sum over the irrigation and
+non-irrigation water demand sectors), in case sufficient water is available the water
+withdrawal is equal to the total gross demand. In case of insufficient water availability,
+the water withdrawal is scaled down to the available water, and allocation is then
+proportional to the gross demand per sector (industry, domestic, livestock and irrigation).
+Water can be abstracted from the following sources:
+
+- surface water from rivers (max 80% of total available water) 
+- reservoirs and lakes (max 98% of total available water)
+- groundwater (max 75% of total available water)
+
+The model parameter `frac_sw_used` (fraction surface water used, default is 1.0) determines
+how much water is supplied by available surface water and groundwater.
+
+### Local
+First, surface water abstraction (excluding reservoir and lake locations) is computed to
+satisfy local (same grid cell) water demand. The available surface water volume is limited
+by a fixed scaling factor of 0.8 to prevent rivers from completely drying out. It is assumed
+that the water demand cannot be satisfied completely from local surface water and
+groundwater. The next step is to satisfy the remaining water demand for allocation `areas`
+[-], described in the next sub-section.
+
+### Allocation areas
+For allocation areas the water demand ``V_\mathrm{sw, demand}`` [m``^3``] and availability
+``V_\mathrm{sw, availabilty}`` [m``^3``] are summed (including reservoir and lake locations
+limited by a fixed scaling factor of 0.98), and the total surface water abstraction is then:
+
+```math
+    V_\mathrm{sw, abstraction} = \mathrm{min}(V_\mathrm{sw, demand}, V_\mathrm{sw, availabilty})
+```
+The fraction of available surface water that can be abstracted ``f_\mathrm{sw,
+abstraction}`` [-] at the allocation area level is then:
+
+```math
+    f_\mathrm{sw, abstraction} = \frac{V_\mathrm{sw, abstraction}}{V_\mathrm{sw, available}}
+```
+This fraction is applied to the remaining available surface water of each river cell
+(including lake and reservoir locations) to compute surface water abstraction at each river
+cell and to update the local surface water abstraction.
+
+The fraction of water demand that can be satisfied by available surface water
+``f_\mathrm{sw, allocation}`` [-] at the allocation area level is then:
+
+```math
+    f_\mathrm{sw, allocation} = \frac{V_\mathrm{sw, abstraction}}{V_\mathrm{sw, demand}}
+```
+This fraction is applied to the remaining surface water demand of each land cell to compute
+the allocated surface water to each land cell.
+
+Then groundwater abstraction is computed to satisfy the remaining local water demand, where
+groundwater abstraction is limited by a fixed scaling factor of 0.75 applied to the
+groundwater volume. Finally, for allocation `areas` the water demand ``V_\mathrm{gw,
+demand}`` [m``^3``] and availability ``V_\mathrm{gw, availabilty}`` [m``^3``] are summed,
+and the total groundwater abstraction is then:
+
+```math
+    V_\mathrm{gw, abstraction} = \mathrm{min}(V_\mathrm{gw, demand}, V_\mathrm{gw, availabilty})
+```
+The fraction of available groundwater that can be abstracted at allocation area level
+``f_\mathrm{gw, abstraction}`` [-] at the allocation area level is then:
+
+```math
+    f_\mathrm{gw, abstraction} = \frac{V_\mathrm{gw, abstraction}}{V_\mathrm{gw, available}}
+```
+This fraction is applied to the remaining available groundwater of each land cell to compute
+groundwater abstraction and to update the local groundwater abstraction.
+
+The fraction of water demand that can be satisfied by available groundwater ``f_\mathrm{gw,
+allocation}`` [-] at the allocation area level is then:
+
+```math
+    f_\mathrm{gw, allocation} = \frac{V_\mathrm{gw, abstraction}}{V_\mathrm{gw, demand}}
+```
+This fraction is applied to the remaining groundwater demand of each land cell to compute
+the allocated groundwater to each land cell.
+
+### Abstractions
+Groundwater abstraction is implemented by subtracting this amount from the `recharge`
+variable of the lateral subsurface flow component (kinematic wave) or the recharge `rate` of
+the groundwater flow module. Surface water `abstraction` [m``^3`` s``^{-1}``] is divided by
+the flow length `dl` [m] and subtracted from the lateral inflow of kinematic wave routing
+scheme for river flow. For the local inertial routing scheme (river and optional floodplain
+routing), the surface water `abstraction` [m``^3`` s``^{-1}``] is subtracted as part of the
+continuity equation of the local inertial model. For reservoir and lake locations surface
+water is abstracted (`act_surfacewater_abst_vol` [m``^3`` t``^{-1}``]) from the reservoir
+`volume` [m``^3``] and lake `storage` [m``^3``] respectively, with a subsequent update of
+the lake `waterlevel` [m].
+
 ## References
 + Brooks, R. H., and Corey, A. T., 1964, Hydraulic properties of porous media, Hydrology
   Papers 3, Colorado State University, Fort Collins, 27 p.
@@ -609,3 +827,5 @@ assumed to be equal to potential evaporation (if sufficient water is available).
 + Wigmosta, M. S., Lane, L. J., Tagestad, J. D., and Coleman A. M., 2009, Hydrologic and
   erosion models to assess land use and management practices affecting soil erosion, J.
   Hydrol. Eng., 14, 27-41.
++ Xie, X. and Cui, Y., 2011, Development and test of SWAT for modeling hydrological
+  processes in irrigation districts with paddy rice, J. Hydrol., 396, pp. 61-71.

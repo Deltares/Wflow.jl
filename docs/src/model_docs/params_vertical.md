@@ -51,7 +51,7 @@ profile `kv` is used and `z_layered` is required as input.
 | **`f`** | scaling parameter (controls exponential decline of `kv_0`) | mm``^{-1}`` | 0.001  |
 | **`z_exp`** | Depth from soil surface for which exponential decline of `kv_0` is valid | mm | -  |
 | **`z_layered`** | Depth from soil surface for which layered profile (of `layered_exponential`) is valid | mm | -  |
-| **`hb`** | air entry pressure of soil (Brooks-Corey) | cm | 10.0  |
+| **`hb`** | air entry pressure of soil (Brooks-Corey) | cm | -10.0  |
 | **`soilthickness`** | soil thickness | mm | 2000.0  |
 | **`infiltcappath`** | infiltration capacity of the compacted areas  | mm Δt``^{-1}`` | 10.0 mm day``^{-1}`` |
 | **`infiltcapsoil`** | soil infiltration capacity | mm Δt``^{-1}`` | 100.0 mm day``^{-1}``|
@@ -61,6 +61,13 @@ profile `kv` is used and `z_layered` is required as input.
 | **`waterfrac`** | fraction of open water (excluding rivers) | - | 0.0  |
 | **`pathfrac`** | fraction of compacted area | - | 0.01  |
 | **`rootingdepth`** | rooting depth  | mm | 750.0  |
+| **`rootfraction`** | fraction of the root length density in each soil layer | - | - |
+| **`h1`** | soil water pressure head h1 of the root water uptake reduction function (Feddes) | cm | 0.0 cm |
+| **`h2`** | soil water pressure head h2 of the root water uptake reduction function (Feddes) | cm | -100.0 cm |
+| **`h3_high`** | soil water pressure head h3_high of the root water uptake reduction function (Feddes) | cm | -400.0 cm |
+| **`h3_low`** | soil water pressure head h3_low of the root water uptake reduction function (Feddes) | cm | -1000.0 cm |
+| **`h4`** | soil water pressure head h4 of the root water uptake reduction function (Feddes) | cm | -15849.0 cm |
+| **`alpha_h1`** |  root water uptake reduction at soil water pressure head h1 (0.0 or 1.0) | - | 1.0 |
 | **`rootdistpar`** | controls how roots are linked to water table | - | -500.0  |
 | **`cap_hmax`** | water depth beyond which capillary flux ceases | mm | 2000.0  |
 | **`cap_n`** | coefficient controlling capillary rise | - | 2.0  |
@@ -134,6 +141,12 @@ profile `kv` is used and `z_layered` is required as input.
 | `waterlevel_land` | water level land | mm | - |
 | `waterlevel_river` | water level river | mm | - |
 | `total_storage` | total water storage (excluding floodplains, lakes and reservoirs) | mm | - |
+| `paddy` | optional paddy (rice) fields of type `Paddy` (water demand and irrigation) | - | - |
+| `nonpaddy` | optional non-paddy fields of type `NonPaddy` (water demand and irrigation) | - | - |
+| `domestic` | optional domestic water demand of type `NonIrrigationDemand` | - | - |
+| `livestock` | optional livestock water demand of type `NonIrrigationDemand` | - | - |
+| `industry` | optional industry water demand of type `NonIrrigationDemand` | - | - |
+| `allocation` | optional water allocation of type `AllocationLand` | - | - |
 
 ## [Sediment](@id params_sediment)
 
@@ -220,3 +233,82 @@ specific_leaf = "Sl"
 | `TCsand` | transport capacity of overland flow for particle class sand  | ton Δt``^{-1}`` | - |
 | `TCsagg` | transport capacity of overland flow for particle class small aggregates  | ton Δt``^{-1}`` | - |
 | `TClagg` | transport capacity of overland flow for particle class large aggregates  | ton Δt``^{-1}`` | - |
+
+## Water demand and allocation
+
+### Paddy
+The Table below shows the parameters (fields) of struct `Paddy`, including a description of
+these parameters, the unit, and default value if applicable. The parameters in bold
+represent model parameters that can be set through static and forcing input data (netCDF),
+and can be listed in the TOML configuration file under `[input.vertical.paddy]`, to map the
+internal model parameter to the external netCDF variable.
+
+|  parameter | description    | unit | default |
+|:---------------| --------------- | ---------------------- | ----- |
+| `demand_gross` | irrigation gross demand | mm Δt``^{-1}`` | - |
+| **`irrigation_efficiency`** | irrigation efficiency | - | - |
+| **`maximum_irrigation_rate`** | maximum irrigation rate | mm Δt``^{-1}`` | 25.0 mm day``^{-1}`` |
+| **`irrigation_areas`** | irrigation areas | - | - |
+| **`irrigation_trigger`** | irrigation on or off (boolean) | - | - |
+| **`h_min`** | minimum required water depth in the irrigated paddy fields | mm | 20.0 |
+| **`h_opt`** | optimal water depth in the irrigated paddy fields | mm | 50.0 |
+| **`h_max`** | water depth when paddy field starts spilling water (overflow) | mm | 80.0 |
+| `h` | actual water depth in paddy field | mm | - |
+
+### Non-paddy
+The Table below shows the parameters (fields) of struct `NonPaddy`, including a description
+of these parameters, the unit, and default value if applicable. The parameters in bold
+represent model parameters that can be set through static and forcing input data (netCDF),
+and can be listed in the TOML configuration file under `[input.vertical.nonpaddy]`, to map
+the internal model parameter to the external netCDF variable.
+
+|  parameter | description    | unit | default |
+|:---------------| --------------- | ---------------------- | ----- |
+| `demand_gross` | irrigation gross demand | mm Δt``^{-1}`` | - |
+| **`irrigation_efficiency`** | irrigation efficiency | - | - |
+| **`maximum_irrigation_rate`** | maximum irrigation rate | mm Δt``^{-1}`` | 25.0 mm day``^{-1}``|
+| **`irrigation_areas`** | irrigation areas | - | - |
+| **`irrigation_trigger`** | irrigation on or off (boolean) | - | - |
+
+### Non-irrigation (industry, domestic and livestock)
+The Table below shows the parameters (fields) of struct `NonIrrigationDemand`, including a
+description of these parameters, the unit, and default value if applicable. The parameters
+in bold represent model parameters that can be set through static and forcing input data
+(netCDF). These parameters can be listed for the sectors industry, domestic and livestock,
+in the TOML configuration file under `[input.vertical.industry]`,
+`[input.vertical.domestic]` and `[input.vertical.livestock]`, to map the internal model
+parameter to the external netCDF variable.
+
+|  parameter | description    | unit | default |
+|:---------------| --------------- | ---------------------- | ----- |
+| **`demand_gross`** | gross industry water demand | mm Δt``^{-1}`` | 0.0 |
+| **`demand_net`** | net industry water demand | mm Δt``^{-1}`` | 0.0 |
+| `returnflow_fraction` | return flow fraction | - | - |
+| `returnflow` | return flow | mm Δt``^{-1}`` | - |
+
+### Water allocation land
+The Table below shows the parameters (fields) of struct `AllocationLand`, including a
+description of these parameters, the unit, and default value if applicable. The parameters
+in bold represent model parameters that can be set through static and forcing input data
+(netCDF), and can be listed in the TOML configuration file under
+`[input.vertical.allocation]`, to map the internal model parameter to the external netCDF
+variable.
+
+|  parameter | description    | unit | default |
+|:---------------| --------------- | ---------------------- | ----- |
+| `irri_demand_gross` | irrigation gross demand | mm Δt``^{-1}`` | - |
+| `nonirri_demand_gross` | non-irrigation gross demand | mm Δt``^{-1}`` | - |
+| `total_gross_demand` | total gross demand | mm Δt``^{-1}`` | - |
+| **`frac_sw_used`** | fraction surface water used | - | 1.0 |
+| **`areas`** | allocation areas | - | 1 |
+| `surfacewater_demand` | demand from surface water | mm Δt``^{-1}`` | - |
+| `surfacewater_alloc` | allocation from surface water | mm Δt``^{-1}`` | - |
+| `act_groundwater_abst` | actual groundwater abstraction | mm Δt``^{-1}`` | - |
+| `act_groundwater_abst_vol` | actual groundwater abstraction | m``^3`` Δt``^{-1}`` | - |
+| `available_groundwater` | available groundwater | m``^3`` | - |
+| `groundwater_demand` | groundwater_demand |mm Δt``^{-1}`` | - |
+| `groundwater_alloc` | allocation from groundwater |mm Δt``^{-1}`` | - |
+| `irri_alloc` | allocated water for irrigation |mm Δt``^{-1}`` | - |
+| `nonirri_alloc` | allocated water for non-irrigation |mm Δt``^{-1}`` | - |
+| `total_alloc` | total allocated water |mm Δt``^{-1}`` | - |
+| `nonirri_returnflow` | return flow from non-irrigation |mm Δt``^{-1}`` | - |

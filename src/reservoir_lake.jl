@@ -442,6 +442,19 @@ function initialize_storage(storfunc, area, waterlevel, sh)
     return storage
 end
 
+"Determine the water level depending on the storage function"
+function waterlevel(storfunc, area, storage, sh)
+    waterlevel = similar(area)
+    for i in eachindex(storage)
+        if storfunc[i] == 1
+            waterlevel[i] = storage[i] / area[i]
+        else
+            waterlevel[i] = interpolate_linear(storage[i], sh[i].S, sh[i].H)
+        end
+    end
+    return waterlevel
+end
+
 "Determine the maximum storage for lakes with a rating curve of type 1"
 function maximum_storage(storfunc, outflowfunc, area, sh, hq)
     maxstorage = Vector{Union{Float, Missing}}(missing, length(area))

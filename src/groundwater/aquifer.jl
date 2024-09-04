@@ -93,6 +93,7 @@ transmissivity).
     specific_storage::Vector{T} | "m m-1 m-1" # [m m⁻¹ m⁻¹]
     storativity::Vector{T} | "m m-1" # [m m⁻¹]
     conductance::Vector{T} | "m2 d-1" # Confined aquifer conductance is constant
+    volume::Vector{T} | "m3" # total volume of water that can be released
 end
 
 """
@@ -114,6 +115,7 @@ instead. Specific yield will vary roughly between 0.05 (clay) and 0.45 (peat)
     area::Vector{T} | "m2"
     specific_yield::Vector{T} | "m m-1" # [m m⁻¹]
     conductance::Vector{T} | "m2 d-1" #
+    volume::Vector{T} | "m3" # total volume of water that can be released
     f::Vector{T} | "-" # factor controlling the reduction of reference horizontal conductivity
     # Unconfined aquifer conductance is computed with degree of saturation (only when
     # conductivity_profile is set to "exponential")
@@ -150,6 +152,14 @@ end
 
 function saturated_thickness(aquifer::ConfinedAquifer, index::Int)
     return aquifer.top[index] - aquifer.bottom[index]
+end
+
+function saturated_thickness(aquifer::UnconfinedAquifer)
+    @. min(aquifer.top, aquifer.head) - aquifer.bottom
+end
+
+function saturated_thickness(aquifer::ConfinedAquifer)
+    @. aquifer.top - aquifer.bottom
 end
 
 """
@@ -345,6 +355,8 @@ function update(gwf, Q, dt, conductivity_profile)
     gwf.aquifer.head[gwf.constanthead.index] .= gwf.constanthead.head
     # Make sure no heads ends up below an unconfined aquifer bottom
     gwf.aquifer.head .= minimum_head(gwf.aquifer)
+    gwf.aquifer.volume .=
+        saturated_thickness(gwf.aquifer) .* gwf.aquifer.area .* storativity(gwf.aquifer)
     return gwf
 end
 

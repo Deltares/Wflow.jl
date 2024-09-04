@@ -121,6 +121,7 @@ function BMI.get_input_var_names(model::Model)
             for name in field_names
                 if exchange(param(model, c), name) == 1
                     var = string(c, ".", name)
+                    println(var)
                     model_var = param(model, var)
                     if eltype(model_var) <: SVector
                         for i in 1:length(first(model_var))
@@ -424,7 +425,7 @@ exchange(::Nothing, var) = 0
 grid_location(::Nothing, var) = "none"
 
 function exchange(::SurfaceFlow, var)
-    if var in (:dt, :beta, :its, :alpha_pow, :reservoir, :lake, :kinwave_it)
+    if var in (:dt, :beta, :its, :alpha_pow, :reservoir, :lake, :kinwave_it, :allocation)
         0
     else
         1
@@ -456,6 +457,7 @@ function exchange(::ShallowWaterRiver, var)
         :reservoir,
         :lake,
         :floodplain,
+        :allocation,
     )
         0
     else
@@ -521,7 +523,18 @@ grid_location(::SimpleReservoir, var) = var == :dt ? "none" : "node"
 exchange(::Lake, var) = var == :dt ? 0 : 1
 grid_location(::Lake, var) = var == :dt ? "none" : "node"
 
-exchange(::SBM, var) = var in (:n, :dt, :maxlayers) ? 0 : 1
+exchange(::SBM, var) =
+    var in (
+        :n,
+        :dt,
+        :maxlayers,
+        :paddy,
+        :nonpaddy,
+        :industry,
+        :domestic,
+        :livestock,
+        :allocation,
+    ) ? 0 : 1
 grid_location(::SBM, var) = var in (:n, :dt, :maxlayers) ? "none" : "node"
 
 exchange(::Union{LandSediment, OverlandFlowSediment}, var) = var == :n ? 0 : 1

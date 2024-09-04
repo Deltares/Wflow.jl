@@ -208,6 +208,7 @@ end
         volume = fill(0.0, n),
         error = zeros(n),
         inflow = zeros(n),
+        abstraction = zeros(n),
         inflow_wb = zeros(n),
         inwater = zeros(n),
         dl = dl,
@@ -222,6 +223,7 @@ end
         reservoir = nothing,
         lake = nothing,
         floodplain = nothing,
+        allocation = nothing,
     )
 
     # run until steady state is reached
