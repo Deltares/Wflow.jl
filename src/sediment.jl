@@ -99,203 +99,564 @@
     end
 end
 
-function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
+function initialize_land_sediment(
+    dataset,
+    config,
+    river,
+    river_fraction,
+    cell_length_x,
+    cell_length_y,
+    indices,
+)
     # Initialize parameters for the soil loss part
-    n = length(inds)
+    number_of_cells = length(indices)
     do_river = get(config.model, "runrivermodel", false)::Bool
     # Reservoir / lake
     do_reservoirs = get(config.model, "doreservoir", false)::Bool
     do_lakes = get(config.model, "dolake", false)::Bool
-    # Rainfall erosion equation: ["answers", "eurosem"]
-    rainerosmethod = get(config.model, "rainerosmethod", "answers")::String
     # Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]
-    landtransportmethod = get(config.model, "landtransportmethod", "yalinpart")::String
+    land_transport_method = get(config.model, "landtransportmethod", "yalinpart")::String
 
-    altitude =
-        ncread(nc, config, "vertical.altitude"; optional = false, sel = inds, type = Float)
-    canopyheight = ncread(
-        nc,
+    canopy_height = read_canopy_height(dataset, config, indices)
+    eurosem_rainfall_erosion_coefficient =
+        read_eurosem_rainfall_erosion_coefficient(dataset, config, indices)
+    eurosem_rainfall_erosion_exponent =
+        read_eurosem_rainfall_erosion_exponent(dataset, config, indices)
+    answers_overland_flow_erosion_coefficient =
+        read_answers_overland_flow_erosion_coefficient(dataset, config, indices)
+    path_fraction = read_path_fraction(dataset, config, indices)
+    land_slope = read_land_slope(dataset, config, indices)
+    usle_crop_management_factor = read_usle_crop_management_factor(dataset, config, indices)
+    usle_soil_erodibility_factor =
+        read_usle_soil_erodibility_factor(dataset, config, indices)
+    _,
+    _,
+    canopy_gap_fraction,
+    specific_leaf_storage,
+    vegetation_wood_storage,
+    extinction_coefficient = initialize_canopy(dataset, config, indices)
+
+    # Initialise parameters for the transport capacity part
+    clamp!(land_slope, 0.00001, Inf)
+    ldd_2d = ncread(dataset, config, "ldd"; optional = false, allow_missing = true)
+    ldd = ldd_2d[indices]
+
+    median_diameter_clay = read_median_diameter_clay(dataset, config, indices)
+    median_diameter_silt = read_median_diameter_silt(dataset, config, indices)
+    median_diameter_sand = read_median_diameter_sand(dataset, config, indices)
+    median_diameter_sagg = read_median_diameter_sagg(dataset, config, indices)
+    median_diameter_lagg = read_median_diameter_lagg(dataset, config, indices)
+    percentage_clay = read_percentage_clay(dataset, config, indices)
+    percentage_silt = read_percentage_silt(dataset, config, indices)
+    sediment_density = read_sediment_density(dataset, config, indices)
+
+    ### Initialize transport capacity variables ###
+    river_cell = float(river)
+    # Percent Sand
+    percentage_sand = 100 .- percentage_clay .- percentage_silt
+
+    top_soil_particle_median_diameter = compute_top_soil_particle_median_diameter(
+        percentage_clay,
+        percentage_silt;
+        land_transport_method = land_transport_method,
+    )
+
+    govers_transport_capacity_coefficient = compute_govers_transport_capacity_coefficients(
+        top_soil_particle_median_diameter;
+        land_transport_method = land_transport_method,
+    )
+
+    particle_fraction = compute_particle_fractions(
+        (clay = percentage_clay, silt = percentage_silt, sand = percentage_sand);
+        do_river = do_river,
+        land_transport_method = land_transport_method,
+    )
+
+    # Reservoir and lakes
+    water_body_coverage = zeros(Float, number_of_cells)
+    add_water_body_coverages!(
+        water_body_coverage,
+        dataset,
+        config,
+        indices;
+        reservoirs = do_reservoirs,
+        lakes = do_lakes,
+    )
+
+    erosion = LandSediment{Float}(;
+        n = number_of_cells,
+        yl = cell_length_y,
+        xl = cell_length_x,
+        riverfrac = river_fraction,
+        wbcover = water_body_coverage,
+        ### Soil erosion part ###
+        # Forcing
+        interception = fill(mv, number_of_cells),
+        h_land = fill(mv, number_of_cells),
+        precipitation = fill(mv, number_of_cells),
+        q_land = fill(mv, number_of_cells),
+        # Parameters
+        canopyheight = canopy_height,
+        canopygapfraction = canopy_gap_fraction,
+        erosk = eurosem_rainfall_erosion_coefficient,
+        erosspl = eurosem_rainfall_erosion_exponent,
+        erosov = answers_overland_flow_erosion_coefficient,
+        pathfrac = path_fraction,
+        slope = land_slope,
+        usleC = usle_crop_management_factor,
+        usleK = usle_soil_erodibility_factor,
+        # Interception related to climatology (leaf_area_index)
+        sl = specific_leaf_storage,
+        swood = vegetation_wood_storage,
+        kext = extinction_coefficient,
+        leaf_area_index = fill(mv, number_of_cells),
+        # Outputs
+        sedspl = fill(mv, number_of_cells),
+        sedov = fill(mv, number_of_cells),
+        soilloss = fill(mv, number_of_cells),
+        erosclay = fill(mv, number_of_cells),
+        erossilt = fill(mv, number_of_cells),
+        erossand = fill(mv, number_of_cells),
+        erossagg = fill(mv, number_of_cells),
+        eroslagg = fill(mv, number_of_cells),
+        ### Transport capacity part ###
+        # Parameters
+        dl = map(detdrainlength, ldd, cell_length_x, cell_length_y),
+        dw = map(detdrainwidth, ldd, cell_length_x, cell_length_y),
+        cGovers = govers_transport_capacity_coefficient.c,
+        D50 = top_soil_particle_median_diameter,
+        dmclay = median_diameter_clay,
+        dmsilt = median_diameter_silt,
+        dmsand = median_diameter_sand,
+        dmsagg = median_diameter_sagg,
+        dmlagg = median_diameter_lagg,
+        fclay = particle_fraction.clay,
+        fsilt = particle_fraction.silt,
+        fsand = particle_fraction.sand,
+        fsagg = particle_fraction.sagg,
+        flagg = particle_fraction.lagg,
+        nGovers = govers_transport_capacity_coefficient.n,
+        rhos = sediment_density,
+        rivcell = river_cell,
+        # Outputs
+        TCsed = fill(mv, number_of_cells),
+        TCclay = fill(mv, number_of_cells),
+        TCsilt = fill(mv, number_of_cells),
+        TCsand = fill(mv, number_of_cells),
+        TCsagg = fill(mv, number_of_cells),
+        TClagg = fill(mv, number_of_cells),
+    )
+
+    return erosion
+end
+
+function read_canopy_height(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
+    canopy_height = ncread(
+        dataset,
         config,
         "vertical.canopyheight";
-        sel = inds,
+        sel = indices,
         defaults = 3.0,
         type = Float,
     )
-    erosk = ncread(nc, config, "vertical.erosk"; sel = inds, defaults = 0.6, type = Float)
-    erosspl =
-        ncread(nc, config, "vertical.erosspl"; sel = inds, defaults = 2.0, type = Float)
-    erosov = ncread(nc, config, "vertical.erosov"; sel = inds, defaults = 0.9, type = Float)
-    pathfrac =
-        ncread(nc, config, "vertical.pathfrac"; sel = inds, defaults = 0.01, type = Float)
-    slope = ncread(nc, config, "vertical.slope"; sel = inds, defaults = 0.01, type = Float)
-    usleC = ncread(nc, config, "vertical.usleC"; sel = inds, defaults = 0.01, type = Float)
-    usleK = ncread(nc, config, "vertical.usleK"; sel = inds, defaults = 0.1, type = Float)
+    return canopy_height
+end
 
-    cmax, _, canopygapfraction, sl, swood, kext = initialize_canopy(nc, config, inds)
+function read_eurosem_rainfall_erosion_coefficient(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
+    eurosem_rainfall_erosion_coefficient = ncread(
+        dataset,
+        config,
+        "vertical.erosk";
+        sel = indices,
+        defaults = 0.6,
+        type = Float,
+    )
+    return eurosem_rainfall_erosion_coefficient
+end
 
-    # Initialise parameters for the transport capacity part
-    clamp!(slope, 0.00001, Inf)
-    ldd_2d = ncread(nc, config, "ldd"; optional = false, allow_missing = true)
-    ldd = ldd_2d[inds]
+function read_eurosem_rainfall_erosion_exponent(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
+    eurosem_rainfall_erosion_exponent = ncread(
+        dataset,
+        config,
+        "vertical.erosspl";
+        sel = indices,
+        defaults = 2.0,
+        type = Float,
+    )
+    return eurosem_rainfall_erosion_exponent
+end
 
-    dmclay = ncread(nc, config, "vertical.dmclay"; sel = inds, defaults = 2.0, type = Float)
-    dmsilt =
-        ncread(nc, config, "vertical.dmsilt"; sel = inds, defaults = 10.0, type = Float)
-    dmsand =
-        ncread(nc, config, "vertical.dmsand"; sel = inds, defaults = 200.0, type = Float)
-    dmsagg =
-        ncread(nc, config, "vertical.dmsagg"; sel = inds, defaults = 30.0, type = Float)
-    dmlagg =
-        ncread(nc, config, "vertical.dmlagg"; sel = inds, defaults = 500.0, type = Float)
-    pclay = ncread(nc, config, "vertical.pclay"; sel = inds, defaults = 0.1, type = Float)
-    psilt = ncread(nc, config, "vertical.psilt"; sel = inds, defaults = 0.1, type = Float)
-    rhos =
-        ncread(nc, config, "vertical.rhosed"; sel = inds, defaults = 2650.0, type = Float)
+function read_answers_overland_flow_erosion_coefficient(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
+    answers_overland_flow_erosion_coefficient = ncread(
+        dataset,
+        config,
+        "vertical.erosov";
+        sel = indices,
+        defaults = 0.9,
+        type = Float,
+    )
+    return answers_overland_flow_erosion_coefficient
+end
 
-    ### Initialize transport capacity variables ###
-    rivcell = float(river)
-    # Percent Sand
-    psand = 100 .- pclay .- psilt
-    # Govers coefficient for transport capacity
-    if landtransportmethod != "yalinpart"
+function read_path_fraction(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
+    path_fraction = ncread(
+        dataset,
+        config,
+        "vertical.pathfrac";
+        sel = indices,
+        defaults = 0.01,
+        type = Float,
+    )
+    return path_fraction
+end
+
+function read_land_slope(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
+    land_slope = ncread(
+        dataset,
+        config,
+        "vertical.slope";
+        sel = indices,
+        defaults = 0.01,
+        type = Float,
+    )
+    return land_slope
+end
+
+function read_usle_crop_management_factor(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
+    usle_crop_management_factor = ncread(
+        dataset,
+        config,
+        "vertical.usleC";
+        sel = indices,
+        defaults = 0.01,
+        type = Float,
+    )
+    return usle_crop_management_factor
+end
+
+function read_usle_soil_erodibility_factor(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
+    usle_soil_erodibility_factor = ncread(
+        dataset,
+        config,
+        "vertical.usleK";
+        sel = indices,
+        defaults = 0.1,
+        type = Float,
+    )
+    return usle_soil_erodibility_factor
+end
+
+function read_median_diameter_clay(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
+    median_diameter_clay = ncread(
+        dataset,
+        config,
+        "vertical.dmclay";
+        sel = indices,
+        defaults = 2.0,
+        type = Float,
+    )
+    return median_diameter_clay
+end
+
+function read_median_diameter_silt(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
+    median_diameter_silt = ncread(
+        dataset,
+        config,
+        "vertical.dmsilt";
+        sel = indices,
+        defaults = 10.0,
+        type = Float,
+    )
+    return median_diameter_silt
+end
+
+function read_median_diameter_sand(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
+    median_diameter_sand = ncread(
+        dataset,
+        config,
+        "vertical.dmsand";
+        sel = indices,
+        defaults = 200.0,
+        type = Float,
+    )
+    return median_diameter_sand
+end
+
+function read_median_diameter_sagg(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
+    dmsagg = ncread(
+        dataset,
+        config,
+        "vertical.dmsagg";
+        sel = indices,
+        defaults = 30.0,
+        type = Float,
+    )
+    return dmsagg
+end
+
+function read_median_diameter_lagg(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
+    dmlagg = ncread(
+        dataset,
+        config,
+        "vertical.dmlagg";
+        sel = indices,
+        defaults = 500.0,
+        type = Float,
+    )
+    return dmlagg
+end
+
+function read_percentage_clay(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
+    pclay = ncread(
+        dataset,
+        config,
+        "vertical.pclay";
+        sel = indices,
+        defaults = 0.1,
+        type = Float,
+    )
+    return pclay
+end
+
+function read_percentage_silt(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
+    psilt = ncread(
+        dataset,
+        config,
+        "vertical.psilt";
+        sel = indices,
+        defaults = 0.1,
+        type = Float,
+    )
+    return psilt
+end
+
+function read_sediment_density(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
+    sediment_density = ncread(
+        dataset,
+        config,
+        "vertical.rhosed";
+        sel = indices,
+        defaults = 2650.0,
+        type = Float,
+    )
+    return sediment_density
+end
+
+function read_reservoir_coverage(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
+    reservoir_coverage_2d = ncread(
+        dataset,
+        config,
+        "vertical.resareas";
+        optional = false,
+        sel = indices,
+        type = Float,
+        fill = 0.0,
+    )
+    return reservoir_coverage_2d
+end
+
+function read_lake_coverage(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
+    lake_coverage_2d = ncread(
+        dataset,
+        config,
+        "vertical.lakeareas";
+        optional = false,
+        sel = indices,
+        type = Float,
+        fill = 0.0,
+    )
+    return lake_coverage_2d
+end
+
+function add_water_body_coverages!(
+    water_body_coverage::Vector{Float},
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}};
+    reservoirs::Bool = false,
+    lakes::Bool = false,
+)
+    if reservoirs
+        reservoir_coverage = read_reservoir_coverage(dataset, config, indices)
+        water_body_coverage .+= reservoir_coverage
+    end
+
+    if lakes
+        lake_coverage = read_lake_coverage(dataset, config, indices)
+        water_body_coverage .+= lake_coverage
+    end
+end
+
+function compute_top_soil_particle_median_diameter(
+    percentage_clay::Vector{Float},
+    percentage_silt::Vector{Float};
+    land_transport_method::String = "yalinpart",
+)
+    number_of_cells = length(percentage_clay)
+
+    if land_transport_method != "yalinpart"
         # Calculation of D50 and fraction of fine and very fine sand (fvfs) from Fooladmand et al, 2006
         psand999 = psand .* ((999 - 25) / (1000 - 25))
-        vd50 = log.((1 ./ (0.01 .* (pclay .+ psilt)) .- 1) ./ (1 ./ (0.01 .* pclay) .- 1))
+        vd50 =
+            log.(
+                (1 ./ (0.01 .* (percentage_clay .+ percentage_silt)) .- 1) ./
+                (1 ./ (0.01 .* percentage_clay) .- 1)
+            )
         wd50 =
             log.(
-                (1 ./ (0.01 .* (pclay .+ psilt .+ psand999)) .- 1) ./
-                (1 ./ (0.01 .* pclay) .- 1),
+                (1 ./ (0.01 .* (percentage_clay .+ percentage_silt .+ psand999)) .- 1) ./
+                (1 ./ (0.01 .* percentage_clay) .- 1),
             )
         ad50 = 1 / log((25 - 1) / (999 - 1))
         bd50 = ad50 ./ log((25 - 1) / 1)
         cd50 = ad50 .* log.(vd50 ./ wd50)
         ud50 = (.-vd50) .^ (1 .- bd50) ./ ((.-wd50) .^ (.-bd50))
-        D50 = 1 .+ (-1 ./ ud50 .* log.(1 ./ (1 ./ (0.01 .* pclay) .- 1))) .^ (1 ./ cd50) #[um]
-        D50 = D50 ./ 1000 # [mm]
+        top_soil_particle_median_diameter =
+            1 .+
+            (-1 ./ ud50 .* log.(1 ./ (1 ./ (0.01 .* percentage_clay) .- 1))) .^ (1 ./ cd50) #[um]
+        top_soil_particle_median_diameter = top_soil_particle_median_diameter ./ 1000 # [mm]
     else
-        D50 = fill(mv, n)
+        top_soil_particle_median_diameter = fill(mv, number_of_cells)
     end
-    if landtransportmethod == "govers"
-        cGovers = ((D50 .* 1000 .+ 5) ./ 0.32) .^ (-0.6)
-        nGovers = ((D50 .* 1000 .+ 5) ./ 300) .^ (0.25)
+
+    return top_soil_particle_median_diameter
+end
+
+function compute_govers_transport_capacity_coefficients(
+    top_soil_particle_median_diameter::Vector{Float};
+    land_transport_method::String = "govers",
+)
+    number_of_cells = length(top_soil_particle_median_diameter)
+
+    # Govers coefficient for transport capacity
+    if land_transport_method == "govers"
+        govers_transport_capacity_coefficient_c =
+            ((top_soil_particle_median_diameter .* 1000 .+ 5) ./ 0.32) .^ (-0.6)
+        govers_transport_capacity_coefficient_n =
+            ((top_soil_particle_median_diameter .* 1000 .+ 5) ./ 300) .^ (0.25)
     else
-        cGovers = fill(mv, n)
-        nGovers = fill(mv, n)
+        govers_transport_capacity_coefficient_c = fill(mv, number_of_cells)
+        govers_transport_capacity_coefficient_n = fill(mv, number_of_cells)
     end
-    if do_river || landtransportmethod == "yalinpart"
+
+    return (
+        c = govers_transport_capacity_coefficient_c,
+        n = govers_transport_capacity_coefficient_n,
+    )
+end
+
+function compute_particle_fractions(
+    particle_percentage::NamedTuple;
+    do_river::Bool = do_river,
+    land_transport_method::String = land_transport_method,
+)
+    number_of_cells = length(particle_percentage.clay)
+
+    if do_river || land_transport_method == "yalinpart"
         # Determine sediment size distribution, estimated from primary particle size distribution (Foster et al., 1980)
-        fclay = 0.20 .* pclay ./ 100
-        fsilt = 0.13 .* psilt ./ 100
-        fsand = 0.01 .* psand .* (1 .- 0.01 .* pclay) .^ (2.4)
-        fsagg = 0.28 .* (0.01 .* pclay .- 0.25) .+ 0.5
-        for i in 1:n
-            if pclay[i] > 50.0
-                fsagg[i] = 0.57
-            elseif pclay[i] < 25
-                fsagg[i] = 2.0 * 0.01 * pclay[i]
+        particle_fraction_clay = 0.20 .* particle_percentage.clay ./ 100
+        particle_fraction_silt = 0.13 .* particle_percentage.silt ./ 100
+        particle_fraction_sand =
+            0.01 .* particle_percentage.sand .*
+            (1 .- 0.01 .* particle_percentage.clay) .^ (2.4)
+        particle_fraction_sagg = 0.28 .* (0.01 .* particle_percentage.clay .- 0.25) .+ 0.5
+        for i in 1:number_of_cells
+            if particle_percentage.clay[i] > 50.0
+                particle_fraction_sagg[i] = 0.57
+            elseif particle_percentage.clay[i] < 25
+                particle_fraction_sagg[i] = 2.0 * 0.01 * particle_percentage.clay[i]
             end
         end
-        flagg = 1.0 .- fclay .- fsilt .- fsand .- fsagg
+        particle_fraction_lagg =
+            1.0 .- particle_fraction_clay .- particle_fraction_silt .-
+            particle_fraction_sand .- particle_fraction_sagg
     else
-        fclay = fill(mv, n)
-        fsilt = fill(mv, n)
-        fsand = fill(mv, n)
-        fsagg = fill(mv, n)
-        flagg = fill(mv, n)
+        particle_fraction_clay = fill(mv, number_of_cells)
+        particle_fraction_silt = fill(mv, number_of_cells)
+        particle_fraction_sand = fill(mv, number_of_cells)
+        particle_fraction_sagg = fill(mv, number_of_cells)
+        particle_fraction_lagg = fill(mv, number_of_cells)
     end
 
-    # Reservoir and lakes
-    wbcover = zeros(Float, n)
-    if do_reservoirs
-        rescoverage_2d = ncread(
-            nc,
-            config,
-            "vertical.resareas";
-            optional = false,
-            sel = inds,
-            type = Float,
-            fill = 0.0,
-        )
-        wbcover = wbcover .+ rescoverage_2d
-    end
-    if do_lakes
-        lakecoverage_2d = ncread(
-            nc,
-            config,
-            "vertical.lakeareas";
-            optional = false,
-            sel = inds,
-            type = Float,
-            fill = 0.0,
-        )
-        wbcover = wbcover .+ lakecoverage_2d
-    end
-
-    eros = LandSediment{Float}(;
-        n = n,
-        yl = yl,
-        xl = xl,
-        riverfrac = riverfrac,
-        wbcover = wbcover,
-        ### Soil erosion part ###
-        # Forcing
-        interception = fill(mv, n),
-        h_land = fill(mv, n),
-        precipitation = fill(mv, n),
-        q_land = fill(mv, n),
-        # Parameters
-        canopyheight = canopyheight,
-        canopygapfraction = canopygapfraction,
-        erosk = erosk,
-        erosspl = erosspl,
-        erosov = erosov,
-        pathfrac = pathfrac,
-        slope = slope,
-        usleC = usleC,
-        usleK = usleK,
-        # Interception related to climatology (leaf_area_index)
-        sl = sl,
-        swood = swood,
-        kext = kext,
-        leaf_area_index = fill(mv, n),
-        # Outputs
-        sedspl = fill(mv, n),
-        sedov = fill(mv, n),
-        soilloss = fill(mv, n),
-        erosclay = fill(mv, n),
-        erossilt = fill(mv, n),
-        erossand = fill(mv, n),
-        erossagg = fill(mv, n),
-        eroslagg = fill(mv, n),
-        ### Transport capacity part ###
-        # Parameters
-        dl = map(detdrainlength, ldd, xl, yl),
-        dw = map(detdrainwidth, ldd, xl, yl),
-        cGovers = cGovers,
-        D50 = D50,
-        dmclay = dmclay,
-        dmsilt = dmsilt,
-        dmsand = dmsand,
-        dmsagg = dmsagg,
-        dmlagg = dmlagg,
-        fclay = fclay,
-        fsilt = fsilt,
-        fsand = fsand,
-        fsagg = fsagg,
-        flagg = flagg,
-        nGovers = nGovers,
-        rhos = rhos,
-        rivcell = rivcell,
-        # Outputs
-        TCsed = fill(mv, n),
-        TCclay = fill(mv, n),
-        TCsilt = fill(mv, n),
-        TCsand = fill(mv, n),
-        TCsagg = fill(mv, n),
-        TClagg = fill(mv, n),
+    return (
+        clay = particle_fraction_clay,
+        silt = particle_fraction_silt,
+        sand = particle_fraction_sand,
+        sagg = particle_fraction_sagg,
+        lagg = particle_fraction_lagg,
     )
-
-    return eros
 end
 
 # Soil erosion

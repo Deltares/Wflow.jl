@@ -53,7 +53,7 @@ function initialize_sediment_model(config::Config)
     xl, yl = cell_lengths(y, cellength, sizeinmetres)
     riverfrac = river_fraction(river, riverlength, riverwidth, xl, yl)
 
-    eros = initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
+    eros = initialize_land_sediment(nc, config, river, riverfrac, xl, yl, inds)
 
     ldd_2d = ncread(nc, config, "ldd"; optional = false, allow_missing = true)
     ldd = ldd_2d[inds]
