@@ -1,26 +1,21 @@
 # Step 1: Understanding the requirements
 
-In order to run wflow, several files are required. These consist of a settings file and
-input data. The input data is typically separated into static maps and forcing data, both
-are supplied in a netCDF file, except for lake storage and rating curves that are supplied
-via CSV files. A brief overview of the different files:
+To run wflow, several files are required. These include a settings file and
+input data. The input data is typically separated into static maps and forcing data, and both
+are provided in netCDF files, except for lake storage and rating curves that are supplied
+via CSV files. Below is a brief overview of the different files:
 
  - The `settings.toml` file contains information on the simulation period, links to the
-   input files (and their names in the netCDF files), and links the correct names of the
-   variables in the netCDF files to the variables and parameters of wflow.
- - The `staticmaps.nc` file contains spatial information on the elevation, locations of the
-   gauges, land-use, drainage direction, etc. This file can also contain maps with parameter
+   input files (and their names in the netCDF files), and connect the correct variable names in the netCDF files to the variables and parameters of wflow.
+ - The `staticmaps.nc` file contains spatial information such as elevation, guage locations, land use, and drainage direction, etc. This file can also contain maps with parameter
    values.
- - The `forcing.nc` file contains the precipitation, temperature and potential evaporation
-   time series (as a 3D array).
+ - The `forcing.nc` file contains time series data for  precipitation, temperature and potential evaporation (as a 3D array).
 
-There are several model configurations supported by wflow. These model configurations
-require slightly different input requirements, yet the general structure is similar for each
-model. A wflow model configuration consists of a `vertical` concept like the [SBM](@ref
+Wflow supports several model configurations, each requiring slightly different input, but with a similar general structure. A wflow model configuration consists of a `vertical` concept like [SBM](@ref
 vert_sbm), [HBV](@ref vert_hbv) or [FLEXTOPO](@ref vert_flextopo) in
 combination with `lateral` concepts that control how water is routed for example over the
-land or river domain. For the wflow\_sbm model different model configurations are possible.
-The following model configurations are supported in wflow:
+land or river domain. For the wflow\_sbm model, different model configurations are possible.
+The following configurations are supported in wflow:
 
  - wflow\_sbm:
     - SBM + kinematic wave for subsurface and surface flow
@@ -33,5 +28,5 @@ The following model configurations are supported in wflow:
  - wflow\_sediment as post processing of wflow\_sbm or wflow\_hbv output
 
 In the following pages, some examples will be given on how to prepare a basic wflow\_sbm
-model. Example data for other model configurations is provided in the section with [sample
-data](@ref sample_data).
+model. Sample data for other model configurations is provided in the [sample
+data](@ref sample_data) section.
