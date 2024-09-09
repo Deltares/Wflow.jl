@@ -63,6 +63,8 @@ end
     cel::Vector{T} | "m s-1"                        # Celerity of the kinematic wave
     to_river::Vector{T} | "m3 s-1"                  # Part of overland flow [m³ s⁻¹] that flows to the river
     kinwave_it::Bool | "-" | 0 | "none" | "none"    # Boolean for iterations kinematic wave
+    h_thresh::Vector{T} | "m"                       # Threshold for water level before flow occurs
+    pond_height::Vector{T} | "m"                    # Waterlevel of the pond (water stored on land surface)
 end
 
 function initialize_surfaceflow_land(nc, config, inds; sl, dl, width, iterate, tstep, dt)
@@ -74,6 +76,9 @@ function initialize_surfaceflow_land(nc, config, inds; sl, dl, width, iterate, t
     n_land =
         ncread(nc, config, "lateral.land.n"; sel = inds, defaults = 0.072, type = Float)
     n = length(inds)
+
+    h_thresh =
+        ncread(nc, config, "lateral.land.h_thresh"; sel = inds, defaults = 0, type = Float)
 
     sf_land = SurfaceFlowLand(
         beta = Float(0.6),
@@ -97,6 +102,8 @@ function initialize_surfaceflow_land(nc, config, inds; sl, dl, width, iterate, t
         cel = zeros(Float, n),
         to_river = zeros(Float, n),
         kinwave_it = iterate,
+        h_thresh = h_thresh,
+        pond_height = zeros(Float, n),
     )
 
     return sf_land
@@ -199,6 +206,12 @@ function update(sf::SurfaceFlowLand, network, frac_toriver)
     @. sf.alpha = sf.alpha_term * pow(sf.width, sf.alpha_pow)
     @. sf.qlat = sf.inwater / sf.dl
 
+    # Convert threshold to volume
+    threshold_volume = sf.h_thresh .* sf.width .* sf.dl
+
+    # Get pond volume at the start of the time step
+    pond_volume_current = sf.pond_height .* sf.width .* sf.dl
+
     sf.q_av .= 0.0
     sf.h_av .= 0.0
     sf.to_river .= 0.0
@@ -227,23 +240,51 @@ function update(sf::SurfaceFlowLand, network, frac_toriver)
                         )
                     end
 
-                    sf.q[v] = kinematic_wave(
-                        sf.qin[v],
-                        sf.q[v],
-                        sf.qlat[v],
-                        sf.alpha[v],
-                        sf.beta,
-                        dt,
-                        sf.dl[v],
+                    # Check potential pond volume, to see if flow is allowed to occur
+                    pond_volume_pot = max(
+                        pond_volume_current[v] +
+                        (sf.qlat[v] * sf.dl[v] * dt) +
+                        (sf.qin[v] * dt),
+                        0.0,
                     )
 
-                    # update h, only if surface width > 0.0
-                    if sf.width[v] > 0.0
-                        crossarea = sf.alpha[v] * pow(sf.q[v], sf.beta)
-                        sf.h[v] = crossarea / sf.width[v]
+                    # Start kinematic wave if pond volume exceeds threshold
+                    if pond_volume_pot >= threshold_volume[v]
+                        q_ = kinematic_wave(
+                            sf.qin[v],
+                            sf.q[v],
+                            sf.qlat[v],
+                            sf.alpha[v],
+                            sf.beta,
+                            dt,
+                            sf.dl[v],
+                        )
+
+                        # update h, only if surface width > 0.0
+                        if sf.width[v] > 0.0
+                            crossarea = sf.alpha[v] * pow(q_, sf.beta)
+                            h_ = crossarea / sf.width[v]
+                        else
+                            h_ = 0.0
+                        end
+
+                    else
+                        # No flow if pond volume is below threshold
+                        q_ = 0.0
+                        h_ = 0.0
+                        # Update pond volume
+                        pond_volume_current[v] = pond_volume_pot
                     end
+
+                    # Update values
+                    sf.q[v] = q_
+                    sf.h[v] = h_
+                    sf.pond_height[v] = pond_volume_current[v] / (sf.width[v] * sf.dl[v])
+
+                    # Update average values
                     sf.q_av[v] += sf.q[v]
-                    sf.h_av[v] += sf.h[v]
+                    sf.h_av[v] += (sf.h[v] + sf.pond_height[v])
+
                 end
             end
         end

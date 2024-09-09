@@ -872,7 +872,8 @@ function update_until_recharge(sbm::SBM, config)
     transfermethod = get(config.model, "transfermethod", false)::Bool
     ust = get(config.model, "whole_ust_available", false)::Bool # should be removed from optional setting and code?
     ksat_profile = get(config.input.vertical, "ksat_profile", "exponential")::String
-    do_surface_water_infiltration = get(config.model, "surface_water_infiltration", false)::Bool
+    do_surface_water_infiltration =
+        get(config.model, "surface_water_infiltration", false)::Bool
 
     threaded_foreach(1:sbm.n, basesize = 250) do i
         if modelsnow
@@ -1140,7 +1141,8 @@ function update_until_recharge(sbm::SBM, config)
             infilt_ratio = iszero(infiltsoilpath) ? 0.0 : actinfilt / infiltsoilpath
             infilt_surfacewater = max(0.0, waterlevel_land * infilt_ratio)
             # Subtract waterlevel_land from this, as this water is already excess water
-            excesswater = avail_forinfilt - waterlevel_land - infiltsoilpath - infiltexcess + du
+            excesswater =
+                avail_forinfilt - waterlevel_land - infiltsoilpath - infiltexcess + du
         else
             infilt_surfacewater = 0.0
             excesswater = avail_forinfilt - infiltsoilpath - infiltexcess + du
