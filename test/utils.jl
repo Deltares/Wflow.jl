@@ -21,3 +21,11 @@ end
     @test Wflow.julian_day(DateTime(2001, 3, 1)) == 60
     @test Wflow.julian_day(DateTime(2001, 12, 31)) == 365
 end
+
+@testset "Bounded divide" begin
+    @test Wflow.bounded_divide(1.0, 0.0) == 0.0
+    @test Wflow.bounded_divide(1.0, 0.0, default = 0.5) == 0.5
+    @test Wflow.bounded_divide(1.0, 0.5) == 1.0
+    @test Wflow.bounded_divide(1.0, 0.5, max = 0.75) == 0.75
+    @test Wflow.bounded_divide(1.0, 2.0) == 0.5
+end

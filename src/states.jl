@@ -5,36 +5,53 @@ Function to extract all required vertical states, given a certain model type. Pa
 and glacier options only for the `sbm` model_type. Returns a tuple with the required states
 (internal names as symbols)
 """
-function get_vertical_states(model_type::AbstractString; snow = false, glacier = false)
+
+function get_snow_states(model_type::AbstractString)
     if model_type == "sbm" || model_type == "sbm_gwf"
-        if snow && glacier
-            vertical_states = (
-                :satwaterdepth,
-                :snow,
-                :tsoil,
-                :ustorelayerdepth,
-                :snowwater,
-                :canopystorage,
-                :glacierstore,
-            )
-        elseif snow
-            vertical_states = (
-                :satwaterdepth,
-                :snow,
-                :tsoil,
-                :ustorelayerdepth,
-                :snowwater,
-                :canopystorage,
-            )
-        else
-            vertical_states = (:satwaterdepth, :ustorelayerdepth, :canopystorage)
-        end
+        states = (:snow_storage, :snow_water)
     elseif model_type == "sediment"
-        vertical_states = ()
+        states = ()
     else
         throw(ArgumentError("Unknown model_type provided (`$model_type`)"))
     end
-    return vertical_states
+    return states
+end
+
+function get_glacier_states(model_type::AbstractString)
+    if model_type == "sbm" || model_type == "sbm_gwf"
+        states = (:glacier_store,)
+    elseif model_type == "sediment"
+        states = ()
+    else
+        throw(ArgumentError("Unknown model_type provided (`$model_type`)"))
+    end
+    return states
+end
+
+function get_interception_states(model_type::AbstractString)
+    if model_type == "sbm" || model_type == "sbm_gwf"
+        states = (:canopy_storage,)
+    elseif model_type == "sediment"
+        states = ()
+    else
+        throw(ArgumentError("Unknown model_type provided (`$model_type`)"))
+    end
+    return states
+end
+
+function get_bucket_states(model_type::AbstractString; snow = false)
+    if model_type == "sbm" || model_type == "sbm_gwf"
+        if snow
+            states = (:satwaterdepth, :tsoil, :ustorelayerdepth)
+        else
+            states = (:satwaterdepth, :ustorelayerdepth)
+        end
+    elseif model_type == "sediment"
+        states = ()
+    else
+        throw(ArgumentError("Unknown model_type provided (`$model_type`)"))
+    end
+    return states
 end
 
 """
@@ -78,9 +95,24 @@ function extract_required_states(config::Config)
     do_lakes = get(config.model, "lakes", false)::Bool
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
     do_floodplains = get(config.model, "floodplain_1d", false)::Bool
+    do_paddy = false
+    if haskey(config.model, "water_demand")
+        do_paddy = get(config.model.water_demand, "paddy", false)::Bool
+    end
 
     # Extract required stated based on model configuration file
-    vertical_states = get_vertical_states(model_type; snow = do_snow, glacier = do_glaciers)
+    if do_snow
+        snow_states = get_snow_states(model_type)
+    else
+        snow_states = ()
+    end
+    if do_snow && do_glaciers
+        glacier_states = get_glacier_states(model_type)
+    else
+        glacier_states = ()
+    end
+    interception_states = get_interception_states(model_type)
+    bucket_states = get_bucket_states(model_type; snow = do_snow)
 
     # Subsurface states
     if model_type == "sbm_gwf"
@@ -146,11 +178,30 @@ function extract_required_states(config::Config)
     lake_states = do_lakes ? (:waterlevel,) : nothing
     reservoir_states = do_reservoirs ? (:volume,) : nothing
 
+    # Paddy states
+    paddy_states = do_paddy ? (:h,) : nothing
+
     # Build required states in a tuple, similar to the keys in the output of
     # `ncnames(config.state)`
     required_states = ()
-    # Add vertical states to dict
-    required_states = add_to_required_states(required_states, (:vertical,), vertical_states)
+    # Add snow, glacier, interception and sbm bucket states to dict
+    required_states =
+        add_to_required_states(required_states, (:vertical, :snow, :variables), snow_states)
+    required_states = add_to_required_states(
+        required_states,
+        (:vertical, :glacier, :variables),
+        glacier_states,
+    )
+    required_states = add_to_required_states(
+        required_states,
+        (:vertical, :interception, :variables),
+        interception_states,
+    )
+    required_states = add_to_required_states(
+        required_states,
+        (:vertical, :bucket, :variables),
+        bucket_states,
+    )
     # Add subsurface states to dict
     if model_type == "sbm_gwf"
         key_entry = (:lateral, :subsurface, :flow, :aquifer)
@@ -179,7 +230,9 @@ function extract_required_states(config::Config)
         (:lateral, :river, :reservoir),
         reservoir_states,
     )
-
+    # Add paddy states to dict
+    required_states =
+        add_to_required_states(required_states, (:vertical, :demand, :paddy), paddy_states)
     return required_states
 end
 

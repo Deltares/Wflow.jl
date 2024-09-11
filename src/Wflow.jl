@@ -23,6 +23,7 @@ using LoopVectorization
 using IfElse
 
 @metadata get_units "mm dt-1" String
+@metadata grid_loc "node" String #BMI grid location
 
 const BMI = BasicModelInterface
 const Float = Float64

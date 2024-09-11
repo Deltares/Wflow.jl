@@ -1,1 +1,0 @@
-set JULIAUP_DEPOT_PATH=%~dp0

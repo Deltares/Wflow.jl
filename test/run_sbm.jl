@@ -34,7 +34,7 @@ flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
     @test row.Q_6136151 ≈ 0.007946301730645885f0
     @test row.Q_6136160 ≈ 3.927719795530719f0
     @test row.Q_6136202 ≈ 1.4162246003743886f0
-    @test row.recharge_1 ≈ -0.002257181032501202f0
+    @test row.recharge_1 ≈ -0.0020800523945940217f0
 end
 
 @testset "NetCDF scalar output" begin
@@ -69,53 +69,54 @@ end
 end
 
 @testset "first timestep" begin
-    sbm = model.vertical
-
-    @test sbm.tt[50063] ≈ 0.0f0
+    sbm = model.vertical.bucket
+    snow = model.vertical.snow
+    @test snow.parameters.tt[50063] ≈ 0.0f0
 
     @test model.clock.iteration == 1
 
-    @test sbm.theta_s[50063] ≈ 0.48755401372909546f0
-    @test sbm.theta_r[50063] ≈ 0.15943120419979095f0
-    @test mean(sbm.runoff) ≈ 0.04177459898728149f0
-    @test mean(sbm.soilevap) ≈ 0.02122698830889417f0
-    @test mean(sbm.actevap) ≈ 0.33545623834952154f0
-    @test mean(sbm.actinfilt) ≈ 1.6444774688444848f0
-    @test sbm.snow[5] ≈ 3.768513390588815f0
-    @test mean(sbm.snow) ≈ 0.038019723676094325f0
-    @test sbm.total_storage[50063] ≈ 559.9035608052374f0
-    @test sbm.total_storage[429] ≈ 597.4578475404879f0 # river cell
+    @test sbm.parameters.theta_s[50063] ≈ 0.48755401372909546f0
+    @test sbm.parameters.theta_r[50063] ≈ 0.15943120419979095f0
+    @test mean(sbm.variables.runoff) ≈ 0.04177459898728149f0
+    @test mean(sbm.variables.soilevap) ≈ 0.02122698830889417f0
+    @test mean(sbm.variables.actevap) ≈ 0.3353001180202587f0
+    @test mean(sbm.variables.actinfilt) ≈ 1.6444774688444848f0
+    @test snow.variables.snow_storage[5] ≈ 3.768513390588815f0
+    @test mean(snow.variables.snow_storage) ≈ 0.038019723676094325f0
+    @test sbm.variables.total_storage[50063] ≈ 559.9035608052374f0
+    @test sbm.variables.total_storage[429] ≈ 597.4578475404879f0 # river cell
 end
 
 # run the second timestep
 model = Wflow.run_timestep(model)
 
 @testset "second timestep" begin
-    sbm = model.vertical
-    @test sbm.theta_s[50063] ≈ 0.48755401372909546f0
-    @test sbm.theta_r[50063] ≈ 0.15943120419979095f0
-    @test mean(sbm.net_runoff) ≈ 0.23710522236947756f0
-    @test mean(sbm.runoff) ≈ 0.23747368431143517f0
-    @test mean(sbm.soilevap) ≈ 0.018750808322054897f0
-    @test mean(sbm.actevap) ≈ 0.27379330211866343f0
-    @test mean(sbm.actinfilt) ≈ 0.08863102527394363f0
-    @test sbm.snow[5] ≈ 3.843412524052313f0
-    @test mean(sbm.snow) ≈ 0.03461317061870949f0
-    @test sbm.total_storage[50063] ≈ 560.0152135062889f0
-    @test sbm.total_storage[429] ≈ 617.2238533241972f0 # river cell
+    sbm = model.vertical.bucket
+    snow = model.vertical.snow
+    @test sbm.parameters.theta_s[50063] ≈ 0.48755401372909546f0
+    @test sbm.parameters.theta_r[50063] ≈ 0.15943120419979095f0
+    @test mean(sbm.variables.net_runoff) ≈ 0.23734052031823816f0
+    @test mean(sbm.variables.runoff) ≈ 0.23770898226019577f0
+    @test mean(sbm.variables.soilevap) ≈ 0.018750808322054897f0
+    @test mean(sbm.variables.actevap) ≈ 0.14545276216428166f0
+    @test mean(sbm.variables.actinfilt) ≈ 0.08863102527394363f0
+    @test snow.variables.snow_storage[5] ≈ 3.843412524052313f0
+    @test mean(snow.variables.snow_storage) ≈ 0.03461317061870949f0
+    @test sbm.variables.total_storage[50063] ≈ 560.0152135062889f0
+    @test sbm.variables.total_storage[429] ≈ 617.2238533241972f0 # river cell
 end
 
 @testset "subsurface flow" begin
     ssf = model.lateral.subsurface.ssf
-    @test sum(ssf) ≈ 6.370399148012509f7
-    @test ssf[network.land.order[1]] ≈ 7.169036749244327f2
-    @test ssf[network.land.order[end - 100]] ≈ 2333.801056570759f0
-    @test ssf[network.land.order[end]] ≈ 288.19428729403944f0
+    @test sum(ssf) ≈ 6.3761585406186976f7
+    @test ssf[network.land.order[1]] ≈ 718.2802566393531f0
+    @test ssf[network.land.order[end - 100]] ≈ 2337.771227118579f0
+    @test ssf[network.land.order[end]] ≈ 288.19428729403984f0
 end
 
 @testset "overland flow" begin
     q = model.lateral.land.q_av
-    @test sum(q) ≈ 291.27639107427285f0
+    @test sum(q) ≈ 291.4923871784623f0
     @test q[26625] ≈ 0.0
     @test q[39308] ≈ 0.0
     @test q[network.land.order[end]] ≈ 1.0f-30
@@ -123,9 +124,9 @@ end
 
 @testset "river flow" begin
     q = model.lateral.river.q_av
-    @test sum(q) ≈ 3622.7369292570543f0
-    @test q[1622] ≈ 0.0006497468064774366f0
-    @test q[43] ≈ 12.05767242907667f0
+    @test sum(q) ≈ 3625.0013368279815f0
+    @test q[1622] ≈ 0.0006503254947860838f0
+    @test q[43] ≈ 12.06416878694095f0
     @test q[network.river.order[end]] ≈ 0.039200124520463835f0
 end
 
@@ -139,45 +140,45 @@ end
 end
 
 @testset "Exchange and grid location SBM" begin
-    sbm = model.vertical
-    @test Wflow.exchange(sbm, :n) == 0
-    @test Wflow.exchange(sbm, :rootingdepth) == 1
-    @test Wflow.grid_location(sbm, :dt) == "none"
-    @test Wflow.grid_location(sbm, :rootingdepth) == "node"
-    @test Wflow.grid_location(sbm, :runoff) == "node"
+    sbm = model.vertical.bucket
+    @test Wflow.exchange(sbm.variables.ustoredepth) == true
+    @test Wflow.exchange(model.vertical.vegetation_parameters.rootingdepth) == true
+    @test Wflow.grid_loc(sbm.parameters, :waterfrac) == "node"
+    @test Wflow.grid_loc(sbm.parameters, :rootingdepth) == "node"
+    @test Wflow.grid_loc(sbm.variables, :runoff) == "node"
 end
 
 @testset "Exchange and grid location subsurface flow" begin
     ssf = model.lateral.subsurface
-    @test Wflow.exchange(ssf, :dt) == 0
-    @test Wflow.exchange(ssf, :ssf) == 1
-    @test Wflow.exchange(ssf, :slope) == 1
-    @test Wflow.grid_location(ssf, :dt) == "none"
-    @test Wflow.grid_location(ssf, :ssf) == "node"
-    @test Wflow.grid_location(ssf, :slope) == "node"
+    @test Wflow.exchange(ssf.dt) == false
+    @test Wflow.exchange(ssf.ssf) == true
+    @test Wflow.exchange(ssf.slope) == true
+    @test Wflow.grid_loc(ssf, :dt) == "none"
+    @test Wflow.grid_loc(ssf, :ssf) == "node"
+    @test Wflow.grid_loc(ssf, :slope) == "node"
 end
 
 @testset "Exchange and grid location kinematic wave" begin
     land = model.lateral.land
-    @test Wflow.exchange(land, :dt) == 0
-    @test Wflow.exchange(land, :q_av) == 1
-    @test Wflow.exchange(land, :inwater) == 1
-    @test Wflow.grid_location(land, :dt) == "none"
-    @test Wflow.grid_location(land, :q_av) == "node"
-    @test Wflow.grid_location(land, :inwater) == "node"
+    @test Wflow.exchange(land.dt) == false
+    @test Wflow.exchange(land.q_av) == true
+    @test Wflow.exchange(land.inwater) == true
+    @test Wflow.grid_loc(land, :dt) == "none"
+    @test Wflow.grid_loc(land, :q_av) == "node"
+    @test Wflow.grid_loc(land, :inwater) == "node"
     river = model.lateral.river
-    @test Wflow.exchange(river, :dt) == 0
-    @test Wflow.exchange(river, :q_av) == 1
-    @test Wflow.exchange(river, :inwater) == 1
-    @test Wflow.grid_location(river, :dt) == "none"
-    @test Wflow.grid_location(river, :q_av) == "node"
-    @test Wflow.grid_location(river, :inwater) == "node"
+    @test Wflow.exchange(river.dt) == false
+    @test Wflow.exchange(river.q_av) == true
+    @test Wflow.exchange(river.inwater) == true
+    @test Wflow.grid_loc(river, :dt) == "none"
+    @test Wflow.grid_loc(river, :q_av) == "node"
+    @test Wflow.grid_loc(river, :inwater) == "node"
 end
 
 # set these variables for comparison in "changed dynamic parameters"
-precip = copy(model.vertical.precipitation)
-evap = copy(model.vertical.potential_evaporation)
-lai = copy(model.vertical.leaf_area_index)
+precip = copy(model.vertical.atmospheric_forcing.precipitation)
+evap = copy(model.vertical.atmospheric_forcing.potential_evaporation)
+lai = copy(model.vertical.vegetation_parameters.leaf_area_index)
 res_evap = copy(model.lateral.river.reservoir.evaporation)
 
 Wflow.close_files(model; delete_output = false)
@@ -202,24 +203,24 @@ end
 
 @testset "river flow at basin outlets and downstream of one pit" begin
     q = model.lateral.river.q_av
-    @test q[4009] ≈ 8.51907041734622f0 # pit/ outlet, CartesianIndex(141, 228)
+    @test q[4009] ≈ 8.543145028037452f0 # pit/ outlet, CartesianIndex(141, 228)
     @test q[4020] ≈ 0.006779014715290862f0 # downstream of pit 4009, CartesianIndex(141, 229)
-    @test q[2508] ≈ 150.28398167251638f0 # pit/ outlet
-    @test q[5808] ≈ 0.12419895007970105f0 # pit/ outlet
+    @test q[2508] ≈ 150.5640617045796f0 # pit/ outlet
+    @test q[5808] ≈ 0.12438899196040518f0 # pit/ outlet
 end
 
 # test changing forcing and cyclic LAI parameter
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 
-config.input.vertical.precipitation =
+config.input.vertical.atmospheric_forcing.precipitation =
     Dict("scale" => 2.0, "netcdf" => Dict("variable" => Dict("name" => "precip")))
-config.input.vertical.potential_evaporation = Dict(
+config.input.vertical.atmospheric_forcing.potential_evaporation = Dict(
     "scale" => 3.0,
     "offset" => 1.50,
     "netcdf" => Dict("variable" => Dict("name" => "pet")),
 )
-config.input.vertical.leaf_area_index =
+config.input.vertical.vegetation_parameters.leaf_area_index =
     Dict("scale" => 1.6, "netcdf" => Dict("variable" => Dict("name" => "LAI")))
 
 model = Wflow.initialize_sbm_model(config)
@@ -229,9 +230,10 @@ model = Wflow.run_timestep(model)
 @testset "changed dynamic parameters" begin
     res = model.lateral.river.reservoir
     vertical = model.vertical
-    @test vertical.precipitation[2] / precip[2] ≈ 2.0f0
-    @test (vertical.potential_evaporation[100] - 1.50) / evap[100] ≈ 3.0f0
-    @test vertical.leaf_area_index[100] / lai[100] ≈ 1.6f0
+    @test vertical.atmospheric_forcing.precipitation[2] / precip[2] ≈ 2.0f0
+    @test (vertical.atmospheric_forcing.potential_evaporation[100] - 1.50) / evap[100] ≈
+          3.0f0
+    @test vertical.vegetation_parameters.leaf_area_index[100] / lai[100] ≈ 1.6f0
     @test (res.evaporation[2] - 1.50) / res_evap[2] ≈ 3.0000012203408635f0
 end
 
@@ -239,7 +241,8 @@ end
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 
-config.input.cyclic = ["vertical.leaf_area_index", "lateral.river.inflow"]
+config.input.cyclic =
+    ["vertical.vegetation_parameters.leaf_area_index", "lateral.river.inflow"]
 config.input.lateral.river.inflow = "inflow"
 
 model = Wflow.initialize_sbm_model(config)
@@ -248,26 +251,26 @@ model = Wflow.run_timestep(model)
 
 @testset "river inflow (cyclic)" begin
     @test model.lateral.river.inflow[44] ≈ 0.75
-    @test model.lateral.river.q_av[44] ≈ 10.71846407068599
+    @test model.lateral.river.q_av[44] ≈ 10.723729440690567f0
 end
 
 # test fixed forcing (precipitation = 2.5)
 config = Wflow.Config(tomlpath)
-config.input.vertical.precipitation = Dict("value" => 2.5)
+config.input.vertical.atmospheric_forcing.precipitation = Dict("value" => 2.5)
 model = Wflow.initialize_sbm_model(config)
 Wflow.load_fixed_forcing(model)
 
 @testset "fixed precipitation forcing (initialize)" begin
-    @test maximum(model.vertical.precipitation) ≈ 2.5
-    @test minimum(model.vertical.precipitation) ≈ 0.0
+    @test maximum(model.vertical.atmospheric_forcing.precipitation) ≈ 2.5
+    @test minimum(model.vertical.atmospheric_forcing.precipitation) ≈ 0.0
     @test all(isapprox.(model.lateral.river.reservoir.precipitation, 2.5))
 end
 
 model = Wflow.run_timestep(model)
 
 @testset "fixed precipitation forcing (first timestep)" begin
-    @test maximum(model.vertical.precipitation) ≈ 2.5
-    @test minimum(model.vertical.precipitation) ≈ 0.0
+    @test maximum(model.vertical.atmospheric_forcing.precipitation) ≈ 2.5
+    @test minimum(model.vertical.atmospheric_forcing.precipitation) ≈ 0.0
     @test all(isapprox.(model.lateral.river.reservoir.precipitation, 2.5))
 end
 
@@ -284,14 +287,14 @@ model = Wflow.run_timestep(model)
 
 @testset "river flow and depth (local inertial)" begin
     q = model.lateral.river.q_av
-    @test sum(q) ≈ 3919.6025219496014f0
-    @test q[1622] ≈ 7.31010246736994f-5
-    @test q[43] ≈ 11.92153120707289f0
-    @test q[501] ≈ 3.5736389982451895f0
+    @test sum(q) ≈ 3922.0644366362544f0
+    @test q[1622] ≈ 7.315676375562105f-5
+    @test q[43] ≈ 11.92787156357907f0
+    @test q[501] ≈ 3.57855182713785f0
     h = model.lateral.river.h_av
     @test h[1622] ≈ 0.001987887644883981f0
     @test h[43] ≈ 0.4366415244811759f0
-    @test h[501] ≈ 0.057265962518284294f0
+    @test h[501] ≈ 0.057317706869865745f0
     q_channel = model.lateral.river.q_channel_av
     @test q ≈ q_channel
 end
@@ -308,32 +311,32 @@ model = Wflow.run_timestep(model)
 @testset "river and overland flow and depth (local inertial)" begin
     q = model.lateral.river.q_av
     @test sum(q) ≈ 2380.64389229669f0
-    @test q[1622] ≈ 7.322956970529551f-5
-    @test q[43] ≈ 5.361283165612762f0
-    @test q[501] ≈ 1.6021771576366957f0
+    @test q[1622] ≈ 7.328535246760549f-5
+    @test q[43] ≈ 5.3566292152594155f0
+    @test q[501] ≈ 1.6042388573126602f0
     h = model.lateral.river.h_av
     @test h[1622] ≈ 0.0019891342000364796f0
-    @test h[43] ≈ 0.3003008810153667f0
-    @test h[501] ≈ 0.031925992442532f0
+    @test h[43] ≈ 0.30026439683630496f0
+    @test h[501] ≈ 0.03195324587192846f0
     qx = model.lateral.land.qx
     qy = model.lateral.land.qy
-    @test qx[[26, 35, 631]] ≈ [0.18614776104106373f0, 0.029502872625766417f0, 0.0f0]
-    @test qy[[26, 35, 631]] ≈ [0.12757214437549858f0, 1.7212079599401755f0, 0.0f0]
+    @test qx[[26, 35, 631]] ≈ [0.1939736998417174f0, 0.026579954465883678f0, 0.0f0]
+    @test qy[[26, 35, 631]] ≈ [0.12906530420401777f0, 1.7225115950614904f0, 0.0f0]
     h = model.lateral.land.h
     @test h[[26, 35, 631]] ≈
-          [0.07361854999908582f0, 0.009155393111676267f0, 0.0007258741013439351f0]
+          [0.07367301172613304f0, 0.009139882310161706f0, 0.0007482998926237368f0]
 end
 
 @testset "Exchange and grid location local inertial overland flow" begin
     land = model.lateral.land
-    @test Wflow.exchange(land, :dt) == 0
-    @test Wflow.exchange(land, :g) == 0
-    @test Wflow.exchange(land, :h) == 1
-    @test Wflow.exchange(land, :qx) == 1
-    @test Wflow.grid_location(land, :dt) == "none"
-    @test Wflow.grid_location(land, :g) == "node"
-    @test Wflow.grid_location(land, :h) == "node"
-    @test Wflow.grid_location(land, :qx) == "edge"
+    @test Wflow.exchange(land.dt) == false
+    @test Wflow.exchange(land.g) == false
+    @test Wflow.exchange(land.h) == true
+    @test Wflow.exchange(land.qx) == true
+    @test Wflow.grid_loc(land, :dt) == "none"
+    @test Wflow.grid_loc(land, :g) == "node"
+    @test Wflow.grid_loc(land, :h) == "node"
+    @test Wflow.grid_loc(land, :qx) == "edge"
 end
 
 Wflow.close_files(model; delete_output = false)
@@ -450,42 +453,16 @@ model = Wflow.run_timestep(model)
 
 @testset "river flow (local inertial) with floodplain schematization simulation" begin
     q = model.lateral.river.q_av
-    @test sum(q) ≈ 3908.039208613999f0
-    @test q[1622] ≈ 7.310102468091527f-5
-    @test q[43] ≈ 11.921531207072922f0
-    @test q[501] ≈ 3.5061516913374717f0
-    @test q[5808] ≈ 0.0022258226497210145f0
+    @test sum(q) ≈ 3910.4728717811836f0
+    @test q[1622] ≈ 7.315676384849305f-5
+    @test q[43] ≈ 11.92787156357908f0
+    @test q[501] ≈ 3.510668846752431f0
+    @test q[5808] ≈ 0.002223993845806248f0
     h = model.lateral.river.h_av
     @test h[1622] ≈ 0.001987887580593841f0
     @test h[43] ≈ 0.436641524481545f0
-    @test h[501] ≈ 0.05665942153713204f0
-    @test h[5808] ≈ 0.005933025055544241f0
-end
-
-@testset "Exchange and grid location local inertial river flow" begin
-    river = model.lateral.river
-    @test Wflow.exchange(river, :dt) == 0
-    @test Wflow.exchange(river, :g) == 0
-    @test Wflow.exchange(river, :h) == 1
-    @test Wflow.exchange(river, :q_av) == 1
-    @test Wflow.grid_location(river, :dt) == "none"
-    @test Wflow.grid_location(river, :g) == "node"
-    @test Wflow.grid_location(river, :h) == "node"
-    @test Wflow.grid_location(river, :q_av) == "edge"
-end
-
-@testset "Exchange and grid location floodplain" begin
-    floodplain = model.lateral.river.floodplain
-    @test Wflow.exchange(floodplain.profile, :depth) == 1
-    @test Wflow.exchange(floodplain.profile, :a) == 1
-    @test Wflow.grid_location(floodplain.profile, :depth) == "node"
-    @test Wflow.grid_location(floodplain.profile, :a) == "node"
-    @test Wflow.exchange(floodplain, :profile) == 0
-    @test Wflow.exchange(floodplain, :h) == 1
-    @test Wflow.exchange(floodplain, :q) == 1
-    @test Wflow.grid_location(floodplain, :profile) == "node"
-    @test Wflow.grid_location(floodplain, :h) == "node"
-    @test Wflow.grid_location(floodplain, :q) == "edge"
+    @test h[501] ≈ 0.05670770509802258f0
+    @test h[5808] ≈ 0.005929945681367346f0
 end
 
 # set boundary condition local inertial routing from netCDF file
@@ -497,15 +474,15 @@ model = Wflow.run_timestep(model)
 
 @testset "change boundary condition for local inertial routing (including floodplain)" begin
     q = model.lateral.river.q_av
-    @test sum(q) ≈ 3908.2493947503826f0
-    @test q[1622] ≈ 7.310183576829848f-5
-    @test q[43] ≈ 11.921531207085014f0
-    @test q[501] ≈ 3.5061513868779763f0
+    @test sum(q) ≈ 3910.683449719468f0
+    @test q[1622] ≈ 7.315757521099307f-5
+    @test q[43] ≈ 11.927871563591228f0
+    @test q[501] ≈ 3.5106678593721496f0
     @test q[5808] ≈ 0.060518234525259465f0
     h = model.lateral.river.h_av
     @test h[1622] ≈ 0.0019878952928530183f0
     @test h[43] ≈ 0.4366415249636809f0
-    @test h[501] ≈ 0.05665929962422606f0
+    @test h[501] ≈ 0.056707564314724804f0
     @test h[5808] ≈ 2.0000006940603936f0
 end
 Wflow.close_files(model; delete_output = false)
@@ -515,45 +492,58 @@ Wflow.close_files(model; delete_output = false)
     i = 100
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
-    config.input.vertical.kv = "kv"
-    config.input.vertical.z_exp = Dict("value" => 400.0)
-    config.input.vertical.z_layered = Dict("value" => 400.0)
+    config.input.vertical.bucket.parameters.kv = "kv"
+    config.input.vertical.bucket.parameters.z_exp = Dict("value" => 400.0)
+    config.input.vertical.bucket.parameters.z_layered = Dict("value" => 400.0)
 
     @testset "exponential profile" begin
         model = Wflow.initialize_sbm_model(config)
-        @unpack vertical = model
-        z = vertical.zi[i]
-        kv_z = Wflow.hydraulic_conductivity_at_depth(vertical, z, i, 2, "exponential")
-        @test kv_z ≈ vertical.kvfrac[i][2] * vertical.kv_0[i] * exp(-vertical.f[i] * z)
-        @test vertical.z_exp == vertical.soilthickness
+        @unpack bucket = model.vertical
+        z = bucket.variables.zi[i]
+        kv_z =
+            Wflow.hydraulic_conductivity_at_depth(bucket.parameters, z, i, 2, "exponential")
+        @test kv_z ≈
+              bucket.parameters.kvfrac[i][2] *
+              bucket.parameters.kv_0[i] *
+              exp(-bucket.parameters.f[i] * z)
+        @test bucket.parameters.z_exp == bucket.parameters.soilthickness
         @test_throws ErrorException Wflow.kh_layered_profile(
-            vertical,
+            bucket,
             100.0,
             i,
             "exponential",
+            86400.0,
         )
-        @test all(isnan.(vertical.z_layered))
-        @test all(isnan.(vertical.kv[i]))
-        @test all(vertical.nlayers_kv .== 0)
+        @test all(isnan.(bucket.parameters.z_layered))
+        @test all(isnan.(bucket.parameters.kv[i]))
+        @test all(bucket.parameters.nlayers_kv .== 0)
     end
 
     @testset "exponential constant profile" begin
         config.input.vertical.ksat_profile = "exponential_constant"
         model = Wflow.initialize_sbm_model(config)
-        @unpack vertical = model
-        z = vertical.zi[i]
-        kv_z =
-            Wflow.hydraulic_conductivity_at_depth(vertical, z, i, 2, "exponential_constant")
-        @test kv_z ≈ vertical.kvfrac[i][2] * vertical.kv_0[i] * exp(-vertical.f[i] * z)
+        @unpack bucket = model.vertical
+        z = bucket.variables.zi[i]
+        kv_z = Wflow.hydraulic_conductivity_at_depth(
+            bucket.parameters,
+            z,
+            i,
+            2,
+            "exponential_constant",
+        )
+        @test kv_z ≈
+              bucket.parameters.kvfrac[i][2] *
+              bucket.parameters.kv_0[i] *
+              exp(-bucket.parameters.f[i] * z)
         kv_400 = Wflow.hydraulic_conductivity_at_depth(
-            vertical,
+            bucket.parameters,
             400.0,
             i,
             2,
             "exponential_constant",
         )
         kv_1000 = Wflow.hydraulic_conductivity_at_depth(
-            vertical,
+            bucket.parameters,
             1000.0,
             i,
             3,
@@ -561,56 +551,58 @@ Wflow.close_files(model; delete_output = false)
         )
         @test kv_400 ≈ kv_1000
         @test_throws ErrorException Wflow.kh_layered_profile(
-            vertical,
+            bucket,
             100.0,
             i,
             "exponential_constant",
+            86400.0,
         )
-        @test all(isnan.(vertical.z_layered))
-        @test all(isnan.(vertical.kv[i]))
-        @test all(vertical.nlayers_kv .== 0)
-        @test all(vertical.z_exp .== 400.0)
+        @test all(isnan.(bucket.parameters.z_layered))
+        @test all(isnan.(bucket.parameters.kv[i]))
+        @test all(bucket.parameters.nlayers_kv .== 0)
+        @test all(bucket.parameters.z_exp .== 400.0)
     end
 
     @testset "layered profile" begin
         config.input.vertical.ksat_profile = "layered"
         model = Wflow.initialize_sbm_model(config)
-        @unpack vertical = model
-        z = vertical.zi[i]
-        @test Wflow.hydraulic_conductivity_at_depth(vertical, z, i, 2, "layered") ≈
-              vertical.kv[100][2]
-        @test Wflow.kh_layered_profile(vertical, 100.0, i, "layered") ≈ 47.508932674632355f0
-        @test vertical.nlayers_kv[i] == 4
-        @test vertical.z_layered == vertical.soilthickness
-        @test all(isnan.(vertical.z_exp))
+        @unpack bucket = model.vertical
+        z = bucket.variables.zi[i]
+        @test Wflow.hydraulic_conductivity_at_depth(bucket.parameters, z, i, 2, "layered") ≈
+              bucket.parameters.kv[100][2]
+        @test Wflow.kh_layered_profile(bucket, 100.0, i, "layered", 86400.0) ≈
+              47.508932674632355f0
+        @test bucket.parameters.nlayers_kv[i] == 4
+        @test bucket.parameters.z_layered == bucket.parameters.soilthickness
+        @test all(isnan.(bucket.parameters.z_exp))
     end
 
     @testset "layered exponential profile" begin
         config.input.vertical.ksat_profile = "layered_exponential"
         model = Wflow.initialize_sbm_model(config)
-        @unpack vertical = model
-        z = vertical.zi[i]
+        @unpack bucket = model.vertical
+        z = bucket.variables.zi[i]
         @test Wflow.hydraulic_conductivity_at_depth(
-            vertical,
+            bucket.parameters,
             z,
             i,
             2,
             "layered_exponential",
-        ) ≈ vertical.kv[i][2]
-        @test vertical.nlayers_kv[i] == 2
-        @test Wflow.kh_layered_profile(vertical, 100.0, i, "layered_exponential") ≈
+        ) ≈ bucket.parameters.kv[i][2]
+        @test bucket.parameters.nlayers_kv[i] == 2
+        @test Wflow.kh_layered_profile(bucket, 100.0, i, "layered_exponential", 86400.0) ≈
               33.76026208801769f0
-        @test all(vertical.z_layered[1:10] .== 400.0)
-        @test all(isnan.(vertical.z_exp))
+        @test all(bucket.parameters.z_layered[1:10] .== 400.0)
+        @test all(isnan.(bucket.parameters.z_exp))
     end
 
     model = Wflow.run_timestep(model)
     model = Wflow.run_timestep(model)
     @testset "river flow layered exponential profile" begin
         q = model.lateral.river.q_av
-        @test sum(q) ≈ 3158.1868156296678f0
+        @test sum(q) ≈ 3159.38300016008f0
         @test q[1622] ≈ 0.0005972577112819149f0
-        @test q[43] ≈ 10.013363662625276f0
+        @test q[43] ≈ 10.017642376280731f0
     end
 
     Wflow.close_files(model; delete_output = false)

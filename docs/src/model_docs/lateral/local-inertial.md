@@ -146,6 +146,12 @@ External water (supply/abstraction) `inflow` [m``^3`` s``^{-1}``]  can be added 
 inertial model for river flow (1D) and river and overland flow combined (1D-2D), as a cyclic
 parameter or as part of forcing (see also [Input section](@ref)).
 
+## Abstractions
+Abstractions from the river through the variable `abstraction` [m``^3`` s``{-1}``] are
+possible when water demand and allocation is computed. The variable `abstraction` is set
+from the water demand and allocation module each time step. Abstractions are subtracted as
+part of the continuity equation of the local inertial model.
+
 ## Multi-Threading
 The local inertial model for river flow (1D) and river and overland flow combined (1D-2D)
 can be executed in parallel using multiple threads.

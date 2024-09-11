@@ -159,9 +159,9 @@ function initialize_sbm_model(config::Config)
         elseif ksat_profile == "layered" || ksat_profile == "layered_exponential"
             initialize_lateralssf_layered!(
                 ssf::LateralSSF,
-                lsm.bucket_model,
+                lsm.bucket,
                 ksat_profile,
-                dt,
+                tosecond(dt),
             )
         end
     else
@@ -190,11 +190,11 @@ function initialize_sbm_model(config::Config)
     inds_allocation_areas = Vector{Int}[]
     inds_riv_allocation_areas = Vector{Int}[]
     if do_water_demand
-        areas = unique(sbm.allocation.areas)
+        areas = unique(lsm.allocation.areas)
         for a in areas
-            area_index = findall(x -> x == a, sbm.allocation.areas)
+            area_index = findall(x -> x == a, lsm.allocation.areas)
             push!(inds_allocation_areas, area_index)
-            area_riv_index = findall(x -> x == a, sbm.allocation.areas[index_river])
+            area_riv_index = findall(x -> x == a, lsm.allocation.areas[index_river])
             push!(inds_riv_allocation_areas, area_riv_index)
         end
     end
@@ -453,7 +453,7 @@ function update(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmMo
     if (ksat_profile == "layered") || (ksat_profile == "layered_exponential")
         for i in eachindex(lateral.subsurface.kh)
             lateral.subsurface.kh[i] = kh_layered_profile(
-                vertical.soil_model,
+                vertical.bucket,
                 lateral.subsurface.khfrac[i],
                 i,
                 ksat_profile,
@@ -486,13 +486,20 @@ function update_until_recharge(
     bucket.variables.waterlevel_land .= lateral.land.h_av .* 1000.0
     bucket.variables.waterlevel_river[inds_riv] .= lateral.river.h_av .* 1000.0
 
+    vertical = update_surface(vertical, config)
+
     if do_water_demand
+        (; h3_high, h3_low) = bucket.parameters
+        (; potential_transpiration) = bucket.boundary_conditions
+        @. bucket.variables.h3 =
+            feddes_h3(h3_high, h3_low, potential_transpiration, clock.dt)
+        update_water_demand(vertical)
         update_water_allocation(model)
     end
 
     # vertical sbm concept is updated until snow state, after that (optional)
     # snow transport is possible
-    update!(vertical, config, Second(clock.dt))
+    vertical = update_subsurface(vertical, config, clock.dt)
 
     # lateral snow transport
     if get(config.model, "masswasting", false)::Bool
@@ -582,10 +589,11 @@ function set_states(
         zi =
             max.(
                 0.0,
-                vertical.soilthickness .-
-                vertical.satwaterdepth ./ (vertical.theta_s .- vertical.theta_r),
+                vertical.bucket.parameters.soilthickness .-
+                vertical.bucket.variables.satwaterdepth ./
+                (vertical.bucket.parameters.theta_s .- vertical.bucket.parameters.theta_r),
             )
-        vertical.zi .= zi
+        vertical.bucket.variables.zi .= zi
         if land_routing == "kinematic-wave"
             # make sure land cells with zero flow width are set to zero q and h
             for i in eachindex(lateral.land.width)

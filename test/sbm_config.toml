@@ -12,7 +12,7 @@ dir_input = "data/input"
 dir_output = "data/output"
 loglevel = "info"
 
-#[state]
+[state]
 path_input = "instates-moselle.nc"
 path_output = "outstates-moselle.nc"
 
@@ -20,7 +20,7 @@ path_output = "outstates-moselle.nc"
 # if not listed, the variable can get a default value if it has one
 
 [state.vertical.interception.variables]
-canopystorage = "canopystorage"
+canopy_storage = "canopystorage"
 
 [state.vertical.bucket.variables]
 satwaterdepth = "satwaterdepth"
@@ -103,7 +103,7 @@ tti = "TTI"
 ttm = "TTM"
 cfmax = "Cfmax"
 
-[input.vertical.bucket.kv_0]
+[input.vertical.bucket.parameters.kv_0]
 netcdf.variable.name = "KsatVer"
 scale = 1.0
 offset = 0.0
@@ -240,7 +240,16 @@ reducer = "mean"
 
 [API]
 components = [
-  "vertical",
+  "vertical.atmospheric_forcing",
+  "vertical.vegetation_parameters",
+  "vertical.bucket.boundary_conditions",
+  "vertical.bucket.variables",
+  "vertical.bucket.parameters",
+  "vertical.interception.variables",
+  "vertical.interception.parameters",
+  "vertical.snow.boundary_conditions",
+  "vertical.snow.variables",
+  "vertical.snow.parameters",
   "lateral.subsurface",
   "lateral.land",
   "lateral.river",

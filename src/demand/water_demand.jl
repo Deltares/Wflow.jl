@@ -1,11 +1,11 @@
-@get_units @with_kw struct NonIrrigationDemand{T}
+@get_units @grid_loc @with_kw struct NonIrrigationDemand{T}
     demand_gross::Vector{T}                 # gross water demand [mm Δt⁻¹]
     demand_net::Vector{T}                   # net water demand [mm Δt⁻¹]
     returnflow_fraction::Vector{T} | "-"    # return flow fraction [-]
     returnflow::Vector{T}                   # return flow [mm Δt⁻¹]
 end
 
-@get_units @with_kw struct NonPaddy{T}
+@get_units @grid_loc @with_kw struct NonPaddy{T}
     demand_gross::Vector{T}                     # irrigation gross demand [mm Δt⁻¹] 
     irrigation_efficiency::Vector{T} | "-"      # irrigation efficiency [-]
     maximum_irrigation_rate::Vector{T}          # maximum irrigation depth [mm Δt⁻¹]
@@ -13,7 +13,7 @@ end
     irrigation_trigger::Vector{Bool} | "-"      # irrigation on or off [-]
 end
 
-@get_units @with_kw struct Paddy{T}
+@get_units @grid_loc @with_kw struct Paddy{T}
     demand_gross::Vector{T}                     # irrigation gross demand [mm Δt⁻¹] 
     irrigation_efficiency::Vector{T} | "-"      # irrigation efficiency [-]
     maximum_irrigation_rate::Vector{T}          # maximum irrigation depth [mm Δt⁻¹]
@@ -25,22 +25,22 @@ end
     h::Vector{T} | "mm"                         # actual water depth in rice field [mm]
 end
 
-@get_units @with_kw struct Demand{D, I, L, P, NP}
-    domestic::D | "-"
-    industry::I | "-"
-    livestock::L | "-"
-    paddy::P | "-"
-    nonpaddy::NP | "-"
+@get_units @grid_loc @with_kw struct Demand{D, I, L, P, NP}
+    domestic::D | "-" | "none"
+    industry::I | "-" | "none"
+    livestock::L | "-" | "none"
+    paddy::P | "-" | "none"
+    nonpaddy::NP | "-" | "none"
 end
 
-@get_units @with_kw struct AllocationRiver{T}
+@get_units @grid_loc @with_kw struct AllocationRiver{T}
     act_surfacewater_abst::Vector{T}                    # actual surface water abstraction [mm Δt⁻¹]
     act_surfacewater_abst_vol::Vector{T} | "m3 dt-1"    # actual surface water abstraction [m³ Δt⁻¹]
     available_surfacewater::Vector{T} | "m3"            # available surface water [m³]
     nonirri_returnflow::Vector{T}                       # return flow from non irrigation [mm Δt⁻¹] 
 end
 
-@get_units @with_kw struct AllocationLand{T}
+@get_units @grid_loc @with_kw struct AllocationLand{T}
     irri_demand_gross::Vector{T}                        # irrigation gross demand [mm Δt⁻¹]
     nonirri_demand_gross::Vector{T}                     # non-irrigation gross demand [mm Δt⁻¹]
     total_gross_demand::Vector{T}                       # total gross demand [mm Δt⁻¹]
@@ -73,9 +73,9 @@ function initialize_water_demand(nc, config, inds, dt)
         domestic = nothing
     end
     if get(config.model.water_demand, "industry", false)
-        livestock = initialize_industry_demand(nc, config, inds, dt)
+        industry = initialize_industry_demand(nc, config, inds, dt)
     else
-        livestock = nothing
+        industry = nothing
     end
     if get(config.model.water_demand, "livestock", false)
         livestock = initialize_livestock_demand(nc, config, inds, dt)
@@ -83,12 +83,12 @@ function initialize_water_demand(nc, config, inds, dt)
         livestock = nothing
     end
     if get(config.model.water_demand, "paddy", false)
-        paddy = initialize_paddy_demand(nc, config, inds, dt)
+        paddy = initialize_paddy(nc, config, inds, dt)
     else
         paddy = nothing
     end
     if get(config.model.water_demand, "nonpaddy", false)
-        nonpaddy = initialize_nonpaddy_demand(nc, config, inds, dt)
+        nonpaddy = initialize_nonpaddy(nc, config, inds, dt)
     else
         nonpaddy = nothing
     end
@@ -109,7 +109,7 @@ function initialize_domestic_demand(nc, config, inds, dt)
         ncread(
             nc,
             config,
-            "vertical.domestic.demand_gross";
+            "vertical.demand.domestic.demand_gross";
             sel = inds,
             defaults = 0.0,
             type = Float,
@@ -118,7 +118,7 @@ function initialize_domestic_demand(nc, config, inds, dt)
         ncread(
             nc,
             config,
-            "vertical.domestic.demand_net";
+            "vertical.demand.domestic.demand_net";
             sel = inds,
             defaults = 0.0,
             type = Float,
@@ -142,7 +142,7 @@ function initialize_industry_demand(nc, config, inds, dt)
         ncread(
             nc,
             config,
-            "vertical.industry.demand_gross";
+            "vertical.demand.industry.demand_gross";
             sel = inds,
             defaults = 0.0,
             type = Float,
@@ -151,7 +151,7 @@ function initialize_industry_demand(nc, config, inds, dt)
         ncread(
             nc,
             config,
-            "vertical.industry.demand_net";
+            "vertical.demand.industry.demand_net";
             sel = inds,
             defaults = 0.0,
             type = Float,
@@ -175,7 +175,7 @@ function initialize_livestock_demand(nc, config, inds, dt)
         ncread(
             nc,
             config,
-            "vertical.livestock.demand_gross";
+            "vertical.demand.livestock.demand_gross";
             sel = inds,
             defaults = 0.0,
             type = Float,
@@ -184,7 +184,7 @@ function initialize_livestock_demand(nc, config, inds, dt)
         ncread(
             nc,
             config,
-            "vertical.livestock.demand_net";
+            "vertical.demand.livestock.demand_net";
             sel = inds,
             defaults = 0.0,
             type = Float,
@@ -206,7 +206,7 @@ function initialize_paddy(nc, config, inds, dt)
     h_min = ncread(
         nc,
         config,
-        "vertical.paddy.h_min";
+        "vertical.demand.paddy.h_min";
         sel = inds,
         defaults = 20.0,
         type = Float,
@@ -214,7 +214,7 @@ function initialize_paddy(nc, config, inds, dt)
     h_opt = ncread(
         nc,
         config,
-        "vertical.paddy.h_opt";
+        "vertical.demand.paddy.h_opt";
         sel = inds,
         defaults = 50.0,
         type = Float,
@@ -222,7 +222,7 @@ function initialize_paddy(nc, config, inds, dt)
     h_max = ncread(
         nc,
         config,
-        "vertical.paddy.h_max";
+        "vertical.demand.paddy.h_max";
         sel = inds,
         defaults = 80.0,
         type = Float,
@@ -230,7 +230,7 @@ function initialize_paddy(nc, config, inds, dt)
     efficiency = ncread(
         nc,
         config,
-        "vertical.paddy.irrigation_efficiency";
+        "vertical.demand.paddy.irrigation_efficiency";
         sel = inds,
         defaults = 1.0,
         type = Float,
@@ -238,7 +238,7 @@ function initialize_paddy(nc, config, inds, dt)
     areas = ncread(
         nc,
         config,
-        "vertical.paddy.irrigation_areas";
+        "vertical.demand.paddy.irrigation_areas";
         sel = inds,
         optional = false,
         type = Bool,
@@ -246,7 +246,7 @@ function initialize_paddy(nc, config, inds, dt)
     irrigation_trigger = ncread(
         nc,
         config,
-        "vertical.paddy.irrigation_trigger";
+        "vertical.demand.paddy.irrigation_trigger";
         sel = inds,
         optional = false,
         type = Bool,
@@ -255,7 +255,7 @@ function initialize_paddy(nc, config, inds, dt)
         ncread(
             nc,
             config,
-            "vertical.paddy.maximum_irrigation_rate";
+            "vertical.demand.paddy.maximum_irrigation_rate";
             sel = inds,
             defaults = 25.0,
             type = Float,
@@ -280,7 +280,7 @@ function initialize_nonpaddy(nc, config, inds, dt)
     efficiency = ncread(
         nc,
         config,
-        "vertical.nonpaddy.irrigation_efficiency";
+        "vertical.demand.nonpaddy.irrigation_efficiency";
         sel = inds,
         defaults = 1.0,
         type = Float,
@@ -288,7 +288,7 @@ function initialize_nonpaddy(nc, config, inds, dt)
     areas = ncread(
         nc,
         config,
-        "vertical.nonpaddy.irrigation_areas";
+        "vertical.demand.nonpaddy.irrigation_areas";
         sel = inds,
         defaults = 1,
         optional = false,
@@ -297,7 +297,7 @@ function initialize_nonpaddy(nc, config, inds, dt)
     irrigation_trigger = ncread(
         nc,
         config,
-        "vertical.nonpaddy.irrigation_trigger";
+        "vertical.demand.nonpaddy.irrigation_trigger";
         sel = inds,
         defaults = 1,
         optional = false,
@@ -307,7 +307,7 @@ function initialize_nonpaddy(nc, config, inds, dt)
         ncread(
             nc,
             config,
-            "vertical.nonpaddy.maximum_irrigation_rate";
+            "vertical.demand.nonpaddy.maximum_irrigation_rate";
             sel = inds,
             defaults = 25.0,
             type = Float,
@@ -642,15 +642,15 @@ function update_water_allocation(
     end
 
     # non-irrigation return flows
-    returnflow_livestock = return_flow(vertical.livestock, vertical.allocation)
-    returnflow_domestic = return_flow(vertical.domestic, vertical.allocation)
-    returnflow_industry = return_flow(vertical.industry, vertical.allocation)
+    returnflow_livestock = return_flow(vertical.demand.livestock, vertical.allocation)
+    returnflow_domestic = return_flow(vertical.demand.domestic, vertical.allocation)
+    returnflow_industry = return_flow(vertical.demand.industry, vertical.allocation)
 
     # map non-irrigation return flow to land and river water allocation
     if (
-        !isnothing(vertical.livestock) ||
-        !isnothing(vertical.domestic) ||
-        !isnothing(vertical.industry)
+        !isnothing(vertical.demand.livestock) ||
+        !isnothing(vertical.demand.domestic) ||
+        !isnothing(vertical.demand.industry)
     )
         @. vertical.allocation.nonirri_returnflow =
             returnflow_livestock + returnflow_domestic + returnflow_industry

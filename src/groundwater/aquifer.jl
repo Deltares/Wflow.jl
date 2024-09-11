@@ -84,7 +84,7 @@ NOTA BENE: **specific** storage is per m of aquifer (conf. specific weight).
 **Storativity** or (**storage coefficient**) is for the entire aquifer (conf.
 transmissivity).
 """
-@get_units struct ConfinedAquifer{T} <: Aquifer
+@get_units @grid_loc struct ConfinedAquifer{T} <: Aquifer
     head::Vector{T} | "m"  # hydraulic head [m]
     k::Vector{T} | "m d-1"  # horizontal conductivity [m d⁻¹]
     top::Vector{T} | "m" # top of groundwater layer [m]
@@ -93,6 +93,7 @@ transmissivity).
     specific_storage::Vector{T} | "m m-1 m-1" # [m m⁻¹ m⁻¹]
     storativity::Vector{T} | "m m-1" # [m m⁻¹]
     conductance::Vector{T} | "m2 d-1" # Confined aquifer conductance is constant
+    volume::Vector{T} | "m3" # total volume of water that can be released
 end
 
 """
@@ -106,7 +107,7 @@ aquifer will yield when all water drains and the pore volume is filled by air
 instead. Specific yield will vary roughly between 0.05 (clay) and 0.45 (peat)
 (Johnson, 1967).
 """
-@get_units struct UnconfinedAquifer{T} <: Aquifer
+@get_units @grid_loc struct UnconfinedAquifer{T} <: Aquifer
     head::Vector{T} | "m"  # hydraulic head [m]
     k::Vector{T} | "m d-1"  # reference horizontal conductivity [m d⁻¹]
     top::Vector{T} | "m" # top of groundwater layer [m]
@@ -114,6 +115,7 @@ instead. Specific yield will vary roughly between 0.05 (clay) and 0.45 (peat)
     area::Vector{T} | "m2"
     specific_yield::Vector{T} | "m m-1" # [m m⁻¹]
     conductance::Vector{T} | "m2 d-1" #
+    volume::Vector{T} | "m3" # total volume of water that can be released
     f::Vector{T} | "-" # factor controlling the reduction of reference horizontal conductivity
     # Unconfined aquifer conductance is computed with degree of saturation (only when
     # conductivity_profile is set to "exponential")
@@ -150,6 +152,14 @@ end
 
 function saturated_thickness(aquifer::ConfinedAquifer, index::Int)
     return aquifer.top[index] - aquifer.bottom[index]
+end
+
+function saturated_thickness(aquifer::UnconfinedAquifer)
+    @. min(aquifer.top, aquifer.head) - aquifer.bottom
+end
+
+function saturated_thickness(aquifer::ConfinedAquifer)
+    @. aquifer.top - aquifer.bottom
 end
 
 """
@@ -299,7 +309,7 @@ function flux!(Q, aquifer, connectivity, conductivity_profile)
     return Q
 end
 
-@get_units struct ConstantHead{T}
+@get_units @grid_loc struct ConstantHead{T}
     head::Vector{T} | "m"
     index::Vector{Int} | "-"
 end
@@ -345,6 +355,8 @@ function update(gwf, Q, dt, conductivity_profile)
     gwf.aquifer.head[gwf.constanthead.index] .= gwf.constanthead.head
     # Make sure no heads ends up below an unconfined aquifer bottom
     gwf.aquifer.head .= minimum_head(gwf.aquifer)
+    gwf.aquifer.volume .=
+        saturated_thickness(gwf.aquifer) .* gwf.aquifer.area .* storativity(gwf.aquifer)
     return gwf
 end
 

@@ -45,7 +45,13 @@ function infiltration(
 
     infiltexcess = (soilinf - max_infiltsoil) + (pathinf - max_infiltpath)
 
-    return infiltsoilpath, infiltsoil, infiltpath, soilinf, pathinf, infiltexcess
+    return infiltsoilpath,
+    infiltsoil,
+    infiltpath,
+    soilinf,
+    pathinf,
+    infiltexcess,
+    soilinfredu
 end
 
 """
@@ -106,6 +112,21 @@ function unsatzone_flow_sbm(
     end
 
     return ustorelayerdepth, ast
+end
+
+"""
+    vwc_brooks_corey(h, hb, theta_s, theta_r, c)
+
+Volumetric water content based on the Brooks-Corey soil hydraulic model.
+"""
+function vwc_brooks_corey(h, hb, theta_s, theta_r, c)
+    if h < hb
+        par_lambda = 2.0 / (c - 3.0)
+        vwc = (theta_s - theta_r) * pow(hb / h, par_lambda) + theta_r
+    else
+        vwc = theta_s
+    end
+    return vwc
 end
 
 """

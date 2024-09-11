@@ -11,7 +11,7 @@ end
 # Do nothing for a confined aquifer: aquifer can always provide flux
 check_flux(flux, aquifer::ConfinedAquifer, index::Int) = flux
 
-@get_units struct River{T} <: AquiferBoundaryCondition
+@get_units @grid_loc struct River{T} <: AquiferBoundaryCondition
     stage::Vector{T} | "m"
     infiltration_conductance::Vector{T} | "m2 d-1"
     exfiltration_conductance::Vector{T} | "m2 d-1"
@@ -37,7 +37,7 @@ function flux!(Q, river::River, aquifer)
     return Q
 end
 
-@get_units struct Drainage{T} <: AquiferBoundaryCondition
+@get_units @grid_loc struct Drainage{T} <: AquiferBoundaryCondition
     elevation::Vector{T} | "m"
     conductance::Vector{T} | "m2 d-1"
     flux::Vector{T} | "m3 d-1"
@@ -54,7 +54,7 @@ function flux!(Q, drainage::Drainage, aquifer)
     return Q
 end
 
-@get_units struct HeadBoundary{T} <: AquiferBoundaryCondition
+@get_units @grid_loc struct HeadBoundary{T} <: AquiferBoundaryCondition
     head::Vector{T} | "m"
     conductance::Vector{T} | "m2 d-1"
     flux::Vector{T} | "m3 d-1"
@@ -71,7 +71,7 @@ function flux!(Q, headboundary::HeadBoundary, aquifer)
     return Q
 end
 
-@get_units struct Recharge{T} <: AquiferBoundaryCondition
+@get_units @grid_loc struct Recharge{T} <: AquiferBoundaryCondition
     rate::Vector{T} | "m d-1"
     flux::Vector{T} | "m3 d-1"
     index::Vector{Int} | "-"
@@ -86,7 +86,7 @@ function flux!(Q, recharge::Recharge, aquifer)
     return Q
 end
 
-@get_units struct Well{T} <: AquiferBoundaryCondition
+@get_units @grid_loc struct Well{T} <: AquiferBoundaryCondition
     volumetric_rate::Vector{T} | "m3 d-1"
     flux::Vector{T} | "m3 d-1"
     index::Vector{Int} | "-"

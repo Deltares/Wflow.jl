@@ -1,14 +1,61 @@
-@get_units @with_kw struct LandHydrologySBM{IM, SM, GM, D, A, T}
-    atmospheric_forcing::AtmosphericForcing | "-"
-    vegetation_parameters::VegetationParameters | "-"
-    interception::IM | "-"
-    snow::SM | "-"
-    glacier::GM | "-"
-    bucket::SimpleBucketModel | "-"
-    demand::D | "-"
-    allocation::A | "-"
+@get_units @grid_loc @with_kw struct LandHydrologySBM{IM, SM, GM, D, A, T}
+    atmospheric_forcing::AtmosphericForcing | "-" | "none"
+    vegetation_parameters::VegetationParameters | "-" | "none"
+    interception::IM | "-" | "none"
+    snow::SM | "-" | "none"
+    glacier::GM | "-" | "none"
+    bucket::SimpleBucketModel | "-" | "none"
+    demand::D | "-" | "none"
+    allocation::A | "-" | "none"
     # Model time step [s]
-    dt::T | "s"
+    dt::T | "s" | "none"
+end
+
+# used by Sediment model
+function initialize_canopy(nc, config, inds)
+    n = length(inds)
+    # if leaf area index climatology provided use sl, swood and kext to calculate cmax, e_r and canopygapfraction
+    if haskey(config.input.vertical, "leaf_area_index")
+        # TODO confirm if leaf area index climatology is present in the netCDF
+        sl = ncread(
+            nc,
+            config,
+            "vertical.specific_leaf";
+            optional = false,
+            sel = inds,
+            type = Float,
+        )
+        swood = ncread(
+            nc,
+            config,
+            "vertical.storage_wood";
+            optional = false,
+            sel = inds,
+            type = Float,
+        )
+        kext =
+            ncread(nc, config, "vertical.kext"; optional = false, sel = inds, type = Float)
+        cmax = fill(mv, n)
+        e_r = fill(mv, n)
+        canopygapfraction = fill(mv, n)
+    else
+        sl = fill(mv, n)
+        swood = fill(mv, n)
+        kext = fill(mv, n)
+        # cmax, e_r, canopygapfraction only required when leaf area index climatology not provided
+        cmax = ncread(nc, config, "vertical.cmax"; sel = inds, defaults = 1.0, type = Float)
+        e_r =
+            ncread(nc, config, "vertical.eoverr"; sel = inds, defaults = 0.1, type = Float)
+        canopygapfraction = ncread(
+            nc,
+            config,
+            "vertical.canopygapfraction";
+            sel = inds,
+            defaults = 0.1,
+            type = Float,
+        )
+    end
+    return cmax, e_r, canopygapfraction, sl, swood, kext
 end
 
 function initialize_land_hydrology_sbm(nc, config, riverfrac, inds)
@@ -32,7 +79,7 @@ function initialize_land_hydrology_sbm(nc, config, riverfrac, inds)
     end
     modelglacier = get(config.model, "glacier", false)::Bool
     if modelsnow && modelglacier
-        glacier_bc = glacier_model_bc(snow_model.variables.snow)
+        glacier_bc = glacier_model_bc(snow_model.variables.snow_storage)
         glacier_model = initialize_glacier_hbv_model(nc, config, inds, dt, glacier_bc)
     else
         glacier_model = NoGlacierModel()
@@ -59,8 +106,8 @@ function initialize_land_hydrology_sbm(nc, config, riverfrac, inds)
         typeof(interception_model),
         typeof(snow_model),
         typeof(glacier_model),
-        typeof(allocation),
         typeof(demand),
+        typeof(allocation),
         Float,
     }(;
         atmospheric_forcing = atmospheric_forcing,
@@ -76,9 +123,8 @@ function initialize_land_hydrology_sbm(nc, config, riverfrac, inds)
     return lsm
 end
 
-function update!(lsm::LandHydrologySBM, config, dt)
+function update_surface(lsm::LandHydrologySBM, config)
     modelsnow = get(config.model, "snow", false)::Bool
-    do_water_demand = haskey(config.model, "water_demand")::Bool
 
     (; potential_evaporation) = lsm.atmospheric_forcing
     (; canopy_potevap, interception_flux, throughfall, stemflow) =
@@ -99,7 +145,7 @@ function update!(lsm::LandHydrologySBM, config, dt)
     @. potential_transpiration = max(0.0, canopy_potevap - interception_flux)
     snow_runoff = get_runoff(lsm.snow)
     glacier_melt = get_glacier_melt(lsm.glacier)
-    @. surface_water_flux = throughfall + stemflow + snow_runoff + glacier_melt
+    @. surface_water_flux = modelsnow ? snow_runoff + glacier_melt : throughfall + stemflow
     (; riverfrac, waterfrac) = lsm.bucket.parameters
     (; canopygapfraction) = lsm.interception.parameters.vegetation_parameters
     glacier_frac = get_glacier_frac(lsm.glacier)
@@ -107,14 +153,13 @@ function update!(lsm::LandHydrologySBM, config, dt)
         max(canopygapfraction - riverfrac - waterfrac - glacier_frac, 0.0) *
         potential_evaporation
 
-    if do_water_demand
-        (h3_high, h3_low) = lsm.bucket.parameters
-        @. lsm.bucket.h3 = feddes_h3(h3_high, h3_low, potential_transpiration, dt)
-        update_water_demand(lsm)
-    end
+    return lsm
+end
 
+function update_subsurface(lsm::LandHydrologySBM, config, dt)
     update!(lsm.bucket, lsm.demand, lsm.allocation, lsm.atmospheric_forcing, config, dt)
-    @. lsm.bucket.variables.actevap += interception_flux
+    @. lsm.bucket.variables.actevap += lsm.interception.variables.interception_flux
+    return lsm
 end
 
 """
@@ -125,10 +170,8 @@ Takes the following parameters:
     The vertical concept (SBM struct)
 - river_network:
     The indices of the river cells in relation to the active cells, i.e. model.network.index_river
-- cell_xsize:
-    Size in X direction of the cells acquired from model.network.land.xl
-- cell_ysize:
-    Size in Y direction of the cells acquired from model.network.land.yl
+- area:
+    Area of the cells acquired from model.network.land.area
 - river_routing:
     The river routing struct, i.e. model.lateral.river
 - land_routing:
@@ -160,8 +203,8 @@ function update_total_water_storage(
     snow_storage = get_snow_storage(snow)
     snow_water = get_snow_water(snow)
     glacier_store = get_glacier_store(glacier)
-    paddy_h = !isnothing(demand) && !isnothing(sbm.paddy) ? demand.paddy.h : 0.0
-    @. total_storage =
+    paddy_h = !isnothing(demand) && !isnothing(demand.paddy) ? demand.paddy.h : 0.0
+    @. total_storage +=
         snow_storage +
         snow_water +
         glacier_store +
@@ -197,17 +240,17 @@ function update_water_demand(lsm::LandHydrologySBM)
     (; nonpaddy, paddy, domestic, industry, livestock) = lsm.demand
     (; hb, theta_s, theta_r, c, sumlayers, act_thickl, pathfrac, infiltcapsoil) =
         lsm.bucket.parameters
-    (; h3, n_unsatlayers, zi, ustorelayerdepth) = lsm.bucket.variables
+    (; h3, n_unsatlayers, zi, ustorelayerdepth, soilinfredu) = lsm.bucket.variables
 
-    n = length(bucket.variabes.ustoredepth)
+    n = length(zi)
     for i in 1:n
         industry_dem = update_non_irrigation_demand(industry, i)
         domestic_dem = update_non_irrigation_demand(domestic, i)
         livestock_dem = update_non_irrigation_demand(livestock, i)
 
         irri_dem_gross = 0.0
-        if !isnothing(demand.nonpaddy) && demand.nonpaddy.irrigation_areas[i]
-            if demand.nonpaddy.irrigation_trigger[i]
+        if !isnothing(nonpaddy) && nonpaddy.irrigation_areas[i]
+            if nonpaddy.irrigation_trigger[i]
                 usl = set_layerthickness(zi[i], sumlayers[i], act_thickl[i])
                 for k in 1:n_unsatlayers[i]
                     # compute water demand only for root zone through root fraction per layer
@@ -225,8 +268,7 @@ function update_water_demand(lsm::LandHydrologySBM)
 
                     # check if maximum irrigation rate has been applied at the previous time step.
                     max_irri_rate_applied =
-                        demand.nonpaddy.demand_gross[i] ==
-                        demand.nonpaddy.maximum_irrigation_rate[i]
+                        nonpaddy.demand_gross[i] == nonpaddy.maximum_irrigation_rate[i]
                     if depletion >= raw # start irrigation
                         irri_dem_gross += depletion
                         # add depletion to irrigation gross demand when the maximum irrigation rate has been 
@@ -247,14 +289,14 @@ function update_water_demand(lsm::LandHydrologySBM)
             end
             nonpaddy.demand_gross[i] = irri_dem_gross
         elseif !isnothing(paddy) && paddy.irrigation_areas[i]
-            if sbm.paddy.irrigation_trigger[i]
+            if paddy.irrigation_trigger[i]
                 # check if maximum irrigation rate has been applied at the previous time step.
                 max_irri_rate_applied =
                     paddy.demand_gross[i] == paddy.maximum_irrigation_rate[i]
                 # start irrigation
                 if paddy.h[i] < paddy.h_min[i]
                     irr_depth_paddy = paddy.h_opt[i] - paddy.h[i]
-                elseif sbm.paddy.h[i] < paddy.h_opt[i] && max_irri_rate_applied # continue irrigation
+                elseif paddy.h[i] < paddy.h_opt[i] && max_irri_rate_applied # continue irrigation
                     irr_depth_paddy = paddy.h_opt[i] - paddy.h[i]
                 else
                     irr_depth_paddy = 0.0

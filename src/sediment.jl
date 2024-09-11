@@ -1,7 +1,7 @@
 ### Soil erosion ###
-@get_units @with_kw struct LandSediment{T}
+@get_units @grid_loc @with_kw struct LandSediment{T}
     # number of cells
-    n::Int | "-"
+    n::Int | "-" | "none"
     ### Soil erosion part ###
     # length of cells in y direction [m]
     yl::Vector{T} | "m"
@@ -587,9 +587,9 @@ function tc_yalinpart(ols::LandSediment, i::Int, sinslope::Float, ts::Float)
 end
 
 ### Sediment transport in overland flow ###
-@get_units @with_kw struct OverlandFlowSediment{T}
+@get_units @grid_loc @with_kw struct OverlandFlowSediment{T}
     # number of cells
-    n::Int | "-"
+    n::Int | "-" | "none"
     # Filter with river cells
     rivcell::Vector{T} | "-"
     # Total eroded soil [ton Δt⁻¹]
@@ -672,9 +672,9 @@ function update(ols::OverlandFlowSediment, network, config)
 end
 
 ### River transport and processes ###
-@get_units @with_kw struct RiverSediment{T}
+@get_units @grid_loc @with_kw struct RiverSediment{T}
     # number of cells
-    n::Int | "-"
+    n::Int | "-" | "none"
     # Timestep [s]
     dt::T | "s"
     # River geometry (slope [-], length [m], width [m])

@@ -119,8 +119,8 @@ function BMI.get_input_var_names(model::Model)
             field_names = fieldnames(type)
 
             for name in field_names
-                if exchange(param(model, c), name) == 1
-                    var = string(c, ".", name)
+                var = string(c, ".", name)
+                if exchange(param(model, var))
                     model_var = param(model, var)
                     if eltype(model_var) <: SVector
                         for i in 1:length(first(model_var))
@@ -133,6 +133,8 @@ function BMI.get_input_var_names(model::Model)
                     else
                         push!(var_names, var)
                     end
+                else
+                    @warn("$var is not listed as variable for BMI exchange")
                 end
             end
         end
@@ -152,7 +154,7 @@ end
 function BMI.get_var_grid(model::Model, name::String)
     s = split(name, "[")
     key = symbols(first(s))
-    if exchange(param(model, key[1:(end - 1)]), key[end]) == 1
+    if exchange(param(model, key))
         type = typeof(param(model, key[1:(end - 1)]))
         return if :reservoir in key
             0
@@ -181,7 +183,7 @@ end
 
 function BMI.get_var_units(model::Model, name::String)
     key = symbols(first(split(name, "[")))
-    if exchange(param(model, key[1:(end - 1)]), key[end]) == 1
+    if exchange(param(model, key))
         get_units(param(model, key[1:(end - 1)]), key[end])
     else
         error("$name not listed as variable for BMI exchange")
@@ -199,9 +201,8 @@ end
 
 function BMI.get_var_location(model::Model, name::String)
     key = symbols(first(split(name, "[")))
-    type = param(model, key[1:(end - 1)])
-    if exchange(type, key[end]) == 1
-        return grid_location(type, key[end])
+    if exchange(param(model, key))
+        return grid_loc(param(model, key[1:(end - 1)]), key[end])
     else
         error("$name not listed as variable for BMI exchange")
     end
@@ -247,7 +248,7 @@ function BMI.get_value_ptr(model::Model, name::String)
     @unpack network = model
     s = split(name, "[")
     key = symbols(first(s))
-    if exchange(param(model, key[1:(end - 1)]), key[end]) == 1
+    if exchange(param(model, key))
         n = length(active_indices(network, key))
         if occursin("[", name)
             ind = tryparse(Int, split(s[end], "]")[1])
@@ -419,123 +420,5 @@ function get_start_unix_time(model::Model)
     return datetime2unix(DateTime(model.config.starttime))
 end
 
-# Exchange and grid location functions.
-exchange(::Nothing, var) = 0
-grid_location(::Nothing, var) = "none"
-
-function exchange(::SurfaceFlow, var)
-    if var in (:dt, :beta, :its, :alpha_pow, :reservoir, :lake, :kinwave_it)
-        0
-    else
-        1
-    end
-end
-
-function grid_location(::SurfaceFlow, var)
-    if var in (:dt, :its, :kinwave_it)
-        "none"
-    else
-        "node"
-    end
-end
-
-exchange(::Union{LateralSSF, GroundwaterExchange}, var) = var == :dt ? 0 : 1
-grid_location(::Union{LateralSSF, GroundwaterExchange}, var) = var == :dt ? "none" : "node"
-
-function exchange(::ShallowWaterRiver, var)
-    if var in (
-        :dt,
-        :n,
-        :ne,
-        :g,
-        :alpha,
-        :h_thresh,
-        :froude_limit,
-        :reservoir_index,
-        :lake_index,
-        :reservoir,
-        :lake,
-        :floodplain,
-    )
-        0
-    else
-        1
-    end
-end
-
-function grid_location(::ShallowWaterRiver, var)
-    if var in (:n, :ne, :dt, :froude_limit)
-        "none"
-    elseif var in (
-        :active_e,
-        :q,
-        :q0,
-        :q_av,
-        :mannings_n_sq,
-        :zs_max,
-        :hf,
-        :dl_at_link,
-        :width_at_link,
-        :a,
-        :r,
-    )
-        "edge"
-    else
-        "node"
-    end
-end
-
-function exchange(::ShallowWaterLand, var)
-    if var in (:n, :g, :theta, :alpha, :h_thresh, :dt, :froude_limit)
-        0
-    else
-        1
-    end
-end
-
-function grid_location(::ShallowWaterLand, var)
-    if var in (:n, :dt, :froude_limit)
-        "none"
-    elseif var in (:xwidth, :ywidth, :qy0, :qx0, :qx, :qy, :zx_max, :zy_max, :mannings_n_sq)
-        "edge"
-    else
-        "node"
-    end
-end
-
-exchange(::FloodPlainProfile, var) = 1
-grid_location(::FloodPlainProfile, var) = "node"
-
-exchange(::FloodPlain, var) = var == :profile ? 0 : 1
-function grid_location(::FloodPlain, var)
-    if var in (:mannings_n_sq, :a, :r, :hf, :zb_max, :q0, :q, :q_av, :hf_index)
-        "edge"
-    else
-        "node"
-    end
-end
-
-exchange(::SimpleReservoir, var) = var == :dt ? 0 : 1
-grid_location(::SimpleReservoir, var) = var == :dt ? "none" : "node"
-
-exchange(::Lake, var) = var == :dt ? 0 : 1
-grid_location(::Lake, var) = var == :dt ? "none" : "node"
-
-exchange(::SimpleBucketModel, var) = var in (:maxlayers) ? 0 : 1
-grid_location(::SimpleBucketModel, var) = var in (:maxlayers) ? "none" : "node"
-
-exchange(::Union{LandSediment, OverlandFlowSediment}, var) = var == :n ? 0 : 1
-grid_location(::Union{LandSediment, OverlandFlowSediment}, var) =
-    var == :n ? "none" : "node"
-
-exchange(::RiverSediment, var) = var in (:n, :dt) ? 0 : 1
-grid_location(::RiverSediment, var) = var in (:n, :dt) ? "none" : "node"
-
-exchange(::Aquifer, var) = 1
-grid_location(::Aquifer, var) = "node"
-
-exchange(::ConstantHead, var) = 0
-grid_location(::ConstantHead, var) = "node"
-
-exchange(::AquiferBoundaryCondition, var) = 1
-grid_location(::AquiferBoundaryCondition, var) = "node"
+exchange(t::Vector) = true
+exchange(t) = false

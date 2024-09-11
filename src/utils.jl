@@ -687,7 +687,7 @@ function hydraulic_conductivity_at_depth(
     if ksat_profile == "exponential"
         kv_z = p.kvfrac[i][n] * p.kv_0[i] * exp(-p.f[i] * z)
     elseif ksat_profile == "exponential_constant"
-        if z < sbm.z_exp[i]
+        if z < p.z_exp[i]
             kv_z = p.kvfrac[i][n] * p.kv_0[i] * exp(-p.f[i] * z)
         else
             kv_z = p.kvfrac[i][n] * p.kv_0[i] * exp(-p.f[i] * p.z_exp[i])
@@ -695,7 +695,7 @@ function hydraulic_conductivity_at_depth(
     elseif ksat_profile == "layered"
         kv_z = p.kvfrac[i][n] * p.kv[i][n]
     elseif ksat_profile == "layered_exponential"
-        if z < sbm.z_layered[i]
+        if z < p.z_layered[i]
             kv_z = p.kvfrac[i][n] * p.kv[i][n]
         else
             n = p.nlayers_kv[i]
@@ -730,7 +730,7 @@ function kh_layered_profile(model::SimpleBucketModel, khfrac, i, ksat_profile, d
         elseif ksat_profile == "layered_exponential"
             if zi[i] >= z_layered[i]
                 zt = soilthickness[i] - z_layered[i]
-                j = sbm.nlayers_kv[i]
+                j = nlayers_kv[i]
                 transmissivity +=
                     kv[i][j] / f[i] *
                     (exp(-f[i] * (zi[i] - z_layered[i])) - exp(-f[i] * zt))
@@ -836,17 +836,30 @@ function initialize_lateralssf_layered!(
         ssf.ssf[i] =
             ssf.kh[i] * (ssf.soilthickness[i] - ssf.zi[i]) * ssf.slope[i] * ssf.dw[i]
         kh_max = 0.0
-        for j in 1:sbm.nlayers[i]
-            if j <= sbm.nlayers_kv[i]
-                kh_max += sbm.kv[i][j] * sbm.act_thickl[i][j]
+        for j in 1:sbm.parameters.nlayers[i]
+            if j <= sbm.parameters.nlayers_kv[i]
+                kh_max += sbm.parameters.kv[i][j] * sbm.parameters.act_thickl[i][j]
             else
-                zt = sbm.soilthickness[i] - sbm.z_layered[i]
+                zt = sbm.parameters.soilthickness[i] - sbm.parameters.z_layered[i]
                 k = max(j - 1, 1)
-                kh_max += sbm.kv[i][k] / sbm.f[i] * (1.0 - exp(-sbm.f[i] * zt))
+                kh_max +=
+                    sbm.parameters.kv[i][k] / sbm.parameters.f[i] *
+                    (1.0 - exp(-sbm.parameters.f[i] * zt))
                 break
             end
         end
         kh_max = kh_max * ssf.khfrac[i] * 0.001 * 0.001
         ssf.ssfmax[i] = kh_max * ssf.slope[i]
     end
+end
+
+"""
+    bounded_divide(x, y; max = 1.0, default = 0.0)
+
+Return the division of `x` by `y`, bounded by a maximum value `max`, when `y` > 0.0.
+Otherwise return a `default` value.
+"""
+function bounded_divide(x, y; max = 1.0, default = 0.0)
+    z = y > 0.0 ? min(x / y, max) : default
+    return z
 end

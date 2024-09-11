@@ -1,5 +1,5 @@
 
-@get_units @with_kw struct SnowModelVars{T}
+@get_units @grid_loc @with_kw struct SnowModelVars{T}
     # Snow storage [mm]
     snow_storage::Vector{T} | "mm"
     # Liquid water content in the snow pack [mm]
@@ -20,7 +20,7 @@ function snow_model_vars(n)
     return vars
 end
 
-@get_units @with_kw struct SnowBC{T}
+@get_units @grid_loc @with_kw struct SnowBC{T}
     # Effective precipitation [mm Δt⁻¹]
     effective_precip::Vector{T}
     # Snow precipitation [mm Δt⁻¹]
@@ -38,7 +38,7 @@ function snow_model_bc(n)
     return bc
 end
 
-@get_units @with_kw struct SnowHbvParameters{T}
+@get_units @grid_loc @with_kw struct SnowHbvParameters{T}
     # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹]
     cfmax::Vector{T} | "mm ᵒC-1 dt-1"
     # Threshold temperature for snowfall [ᵒC]
@@ -53,10 +53,10 @@ end
 
 abstract type AbstractSnowModel end
 
-@get_units @with_kw struct SnowHbvModel{T} <: AbstractSnowModel
-    boundary_conditions::SnowBC{T} | "-"
-    parameters::SnowHbvParameters{T} | "-"
-    variables::SnowModelVars{T} | "-"
+@with_kw struct SnowHbvModel{T} <: AbstractSnowModel
+    boundary_conditions::SnowBC{T}
+    parameters::SnowHbvParameters{T}
+    variables::SnowModelVars{T}
 end
 
 struct NoSnowModel <: AbstractSnowModel end

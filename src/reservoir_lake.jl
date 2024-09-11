@@ -1,5 +1,5 @@
-@get_units @with_kw struct SimpleReservoir{T}
-    dt::T | "s"                                         # Model time step [s]
+@get_units @grid_loc @with_kw struct SimpleReservoir{T}
+    dt::T | "s" | "none"                                # Model time step [s]
     maxvolume::Vector{T} | "m3"                         # maximum storage (above which water is spilled) [m³]
     area::Vector{T} | "m2"                              # reservoir area [m²]
     maxrelease::Vector{T} | "m3 s-1"                    # maximum amount that can be released if below spillway [m³ s⁻¹]
@@ -203,8 +203,8 @@ function update(res::SimpleReservoir, i, inflow, timestepsecs)
     return res
 end
 
-@get_units @with_kw struct Lake{T}
-    dt::T | "s"                                 # Model time step [s]
+@get_units @grid_loc @with_kw struct Lake{T}
+    dt::T | "s" | "none"                        # Model time step [s]
     lowerlake_ind::Vector{Int} | "-"            # Index of lower lake (linked lakes)
     area::Vector{T} | "m2"                      # lake area [m²]
     maxstorage::Vector{Union{T, Missing}} | "m3" # lake maximum storage from rating curve 1 [m³]
@@ -440,6 +440,19 @@ function initialize_storage(storfunc, area, waterlevel, sh)
         end
     end
     return storage
+end
+
+"Determine the water level depending on the storage function"
+function waterlevel(storfunc, area, storage, sh)
+    waterlevel = similar(area)
+    for i in eachindex(storage)
+        if storfunc[i] == 1
+            waterlevel[i] = storage[i] / area[i]
+        else
+            waterlevel[i] = interpolate_linear(storage[i], sh[i].S, sh[i].H)
+        end
+    end
+    return waterlevel
 end
 
 "Determine the maximum storage for lakes with a rating curve of type 1"

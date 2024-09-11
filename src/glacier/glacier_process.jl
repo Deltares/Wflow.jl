@@ -37,7 +37,7 @@ function glacier_hbv(
 
     # Fraction of the snow transformed into ice (HBV-light model)
     snow_to_glacier = g_sifrac * snow
-    snow_to_glacier = glacierfrac > 0.0 ? snow2glacier : 0.0
+    snow_to_glacier = glacierfrac > 0.0 ? snow_to_glacier : 0.0
 
     # Restrict snow_to_glacier conversion
     snow_to_glacier = min(snow_to_glacier, max_snow_to_glacier)

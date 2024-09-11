@@ -1,0 +1,219 @@
+calendar = "proleptic_gregorian"
+starttime = 2010-07-01T00:00:00
+endtime = 2010-10-01T00:00:00
+time_units = "days since 1900-01-01 00:00:00"
+timestepsecs = 86400
+dir_input = "data/input"
+dir_output = "data/output"
+loglevel = "info"
+
+[state]
+path_input = "instates-piave-gwf.nc"
+path_output = "outstates-piave-gwf.nc"
+
+[input]
+path_forcing = "forcing-piave.nc"
+path_static = "staticmaps-piave.nc"
+ldd = "wflow_ldd"
+river_location = "wflow_river"
+altitude = "wflow_dem"
+subcatchment = "wflow_subcatch"
+gauges = "wflow_gauges"
+gauges_grdc = "wflow_gauges_grdc"
+
+forcing = [
+  "vertical.atmospheric_forcing.precipitation",
+  "vertical.atmospheric_forcing.temperature",
+  "vertical.atmospheric_forcing.potential_evaporation",
+]
+cyclic = [ 
+    "vertical.vegetation_parameters.leaf_area_index", 
+    "vertical.demand.domestic.demand_gross", 
+    "vertical.demand.domestic.demand_net", 
+    "vertical.demand.industry.demand_gross", 
+    "vertical.demand.industry.demand_net", 
+    "vertical.demand.livestock.demand_gross", 
+    "vertical.demand.livestock.demand_net", 
+    "vertical.demand.paddy.irrigation_trigger", 
+    "vertical.demand.nonpaddy.irrigation_trigger",
+]
+
+[model]
+type = "sbm_gwf"
+constanthead = true
+masswasting = true
+snow = true
+reinit = false
+reservoirs = false
+lakes = false
+glacier = true
+kin_wave_iteration = true
+kw_river_tstep = 900
+kw_land_tstep = 3600
+thicknesslayers = [ 50, 100, 50, 200, 800,]
+river_routing = "kinematic-wave"
+
+[state.vertical.interception.variables]
+canopy_storage = "canopystorage"
+
+[state.vertical.bucket.variables]
+satwaterdepth = "satwaterdepth"
+tsoil = "tsoil"
+ustorelayerdepth = "ustorelayerdepth"
+
+[state.vertical.snow.variables]
+snow_storage = "snow"
+snow_water = "snowwater"
+
+[state.vertical.glacier.variables]
+glacier_store = "glacierstore"
+
+[state.vertical.demand.paddy]
+h = "h_paddy"
+
+[state.lateral.subsurface.flow.aquifer]
+head = "head"
+
+[input.vertical.glacier.parameters]
+glacier_frac = "wflow_glacierfrac"
+g_cfmax = "G_Cfmax"
+g_tt = "G_TT"
+g_sifrac = "G_SIfrac"
+
+[input.vertical.glacier.variables]
+glacier_store = "wflow_glacierstore"
+
+[input.vertical.vegetation_parameters]
+leaf_area_index = "LAI"
+kext = "Kext"
+specific_leaf = "Sl"
+storage_wood = "Swood"
+rootingdepth = "RootingDepth"
+kc = "crop_factor"
+
+[input.vertical.interception.parameters]
+e_r = "EoverR"
+
+[input.vertical.atmospheric_forcing]
+potential_evaporation = "pet"
+precipitation = "precip"
+temperature = "temp"
+
+[input.vertical.bucket.parameters]
+alpha_h1 = "alpha_h1"
+c = "c"
+cf_soil = "cf_soil"
+f = "f"
+h1 = "h1"
+h2 = "h2"
+h3_high = "h3_high"
+h3_low = "h3_low"
+h4 = "h4"
+infiltcappath = "InfiltCapPath"
+infiltcapsoil = "InfiltCapSoil"
+water_holding_capacity = "WHC"
+waterfrac = "WaterFrac"
+theta_r = "thetaR"
+theta_s = "thetaS"
+maxleakage = "MaxLeakage"
+pathfrac = "PathFrac"
+rootdistpar = "rootdistpar"
+soilthickness = "SoilThickness_gw"
+kv_0 = "KsatVer"
+kvfrac = "kvfrac"
+
+[input.vertical.snow.parameters]
+tt = "TT"
+tti = "TTI"
+ttm = "TTM"
+cfmax = "Cfmax"
+
+[model.water_demand]
+domestic = true
+industry = true
+livestock = true
+paddy = true
+nonpaddy = true
+
+[state.lateral.river]
+q = "q_river"
+h = "h_river"
+h_av = "h_av_river"
+
+[state.lateral.subsurface]
+ssf = "ssf"
+
+[state.lateral.land]
+q = "q_land"
+h = "h_land"
+h_av = "h_av_land"
+
+[input.vertical.allocation]
+areas = "allocation_areas"
+frac_sw_used = "SurfaceWaterFrac"
+
+[input.vertical.demand.domestic]
+demand_gross = "dom_gross"
+demand_net = "dom_net"
+
+[input.vertical.demand.industry]
+demand_gross = "ind_gross"
+demand_net = "ind_net"
+
+[input.vertical.demand.livestock]
+demand_gross = "lsk_gross"
+demand_net = "lsk_net"
+
+[input.vertical.demand.paddy]
+irrigation_areas = "paddy_irrigation_areas"
+irrigation_trigger = "irrigation_trigger"
+
+[input.vertical.demand.nonpaddy]
+irrigation_areas = "nonpaddy_irrigation_areas"
+irrigation_trigger = "irrigation_trigger"
+
+[input.lateral.river]
+length = "wflow_riverlength"
+n = "N_River"
+slope = "RiverSlope"
+width = "wflow_riverwidth"
+bankfull_depth = "RiverDepth"
+
+[input.lateral.subsurface]
+constant_head = "constant_head"
+conductivity_profile = "exponential"
+conductivity = "kh_surface"
+exfiltration_conductance = "riverbed_cond"
+infiltration_conductance = "riverbed_cond"
+river_bottom = "zb_river"
+specific_yield = "specific_yield"
+gwf_f = "gwf_f"
+
+[input.lateral.land]
+n = "N"
+slope = "Slope"
+
+[output]
+path = "output-piave-gwf.nc"
+
+[output.lateral.river]
+q_av = "q_river"
+
+[output.vertical.bucket.variables]
+zi = "zi"
+
+[output.lateral.subsurface.flow.aquifer]
+head = "head"
+
+[csv]
+path = "output.csv"
+
+[[csv.column]]
+header = "Q"
+map = "gauges"
+parameter = "lateral.river.q_av"
+
+[[csv.column]]
+header = "Q"
+map = "gauges_grdc"
+parameter = "lateral.river.q_av"

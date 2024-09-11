@@ -1,0 +1,95 @@
+[ Info: Wflow version `v0.8.1`
+[ Info: Cyclic parameters are provided by `C:\Users\verseve\.julia\dev\Wflow\test\data\input\staticmaps-lahn.nc`.
+[ Info: Forcing parameters are provided by `C:\Users\verseve\.julia\dev\Wflow\test\data\input\forcing-lahn.nc`.
+[ Info: Set `vertical.precipitation` using netCDF variable `P` as forcing parameter.
+[ Info: Set `vertical.temperature` using netCDF variable `TEMP` as forcing parameter.
+[ Info: Set `vertical.potential_evaporation` using netCDF variable `PET` as forcing parameter.
+[ Info: Set `subcatchment` using netCDF variable `wflow_subcatch`.
+[ Info: Set `vertical.cfmax` using netCDF variable `Cfmax`.
+[ Info: Set `vertical.tt` using netCDF variable `TT`.
+[ Info: Set `vertical.tti` using netCDF variable `TTI`.
+[ Info: Set `vertical.ttm` using netCDF variable `TTM`.
+[ Info: Set `vertical.whc` using netCDF variable `WHC`.
+[ Info: Set `vertical.g_tt` using default value `0.0`.
+[ Info: Set `vertical.g_cfmax` using default value `3.0`.
+[ Info: Set `vertical.g_sifrac` using default value `0.001`.
+[ Info: Set `vertical.glacierfrac` using default value `0.0`.
+[ Info: Set `vertical.glacierstore` using default value `5500.0`.
+[ Info: Set `vertical.fc` using netCDF variable `FC`.
+[ Info: Set `vertical.betaseepage` using netCDF variable `BetaSeepage`.
+[ Info: Set `vertical.lp` using netCDF variable `LP`.
+[ Info: Set `vertical.k4` using netCDF variable `K4`.
+[ Info: Set `vertical.kquickflow` using default value `0.0988`.
+[ Info: Set `vertical.suz` using default value `100.0`.
+[ Info: Set `vertical.k0` using default value `0.3`.
+[ Info: Set `vertical.khq` using netCDF variable `KHQ`.
+[ Info: Set `vertical.hq` using netCDF variable `HQ`.
+[ Info: Set `vertical.alphanl` using netCDF variable `AlphaNL`.
+[ Info: Set `vertical.perc` using netCDF variable `PERC`.
+[ Info: Set `vertical.cfr` using netCDF variable `CFR`.
+[ Info: Set `vertical.pcorr` using default value `1.0`.
+[ Info: Set `vertical.rfcf` using default value `1.0`.
+[ Info: Set `vertical.sfcf` using netCDF variable `SFCF`.
+[ Info: Set `vertical.cflux` using netCDF variable `Cflux`.
+[ Info: Set `vertical.icf` using netCDF variable `ICF`.
+[ Info: Set `vertical.cevpf` using netCDF variable `CEVPF`.
+[ Info: Set `vertical.epf` using netCDF variable `EPF`.
+[ Info: Set `vertical.ecorr` using default value `1.0`.
+[ Info: Set `river_location` using netCDF variable `wflow_river`.
+[ Info: Set `lateral.river.width` using netCDF variable `wflow_riverwidth`.
+[ Info: Set `lateral.river.length` using netCDF variable `wflow_riverlength`.
+[ Info: Set `ldd` using netCDF variable `wflow_ldd`.
+[ Info: Set `lateral.land.slope` using netCDF variable `Slope`.
+┌ Info: Kinematic wave approach is used for overland flow.
+└   iterate = true
+[ Info: Set `lateral.land.n` using netCDF variable `N`.
+┌ Info: Kinematic wave approach is used for river flow.
+└   iterate = true
+[ Info: Set `lateral.river.n` using netCDF variable `N_River`.
+[ Info: Set `lateral.river.bankfull_depth` using default value `1.0`.
+[ Info: Set `lateral.river.slope` using netCDF variable `RiverSlope`.
+[ Info: Create an output netCDF file `C:\Users\verseve\.julia\dev\Wflow\test\data\output\output_lahn.nc` for grid data, using compression level `0`.
+[ Info: Create a state output netCDF file `C:\Users\verseve\.julia\dev\Wflow\test\data\output\outstates-lahn.nc`.
+[ Info: Create an output CSV file `C:\Users\verseve\.julia\dev\Wflow\test\data\output\output_lahn.csv` for scalar data.
+[ Info: Set `gauges` using netCDF variable `wflow_gauges`.
+[ Info: Set `subcatchment` using netCDF variable `wflow_subcatch`.
+┌ Info: Adding scalar output of all active cells with reducer function.
+│   fileformat = "CSV"
+│   param = "lateral.river.q"
+└   reducer_name = "maximum"
+┌ Info: Adding scalar output for coordinate.
+│   fileformat = "CSV"
+│   param = "vertical.temperature"
+│   x = 8.279
+└   y = 50.534
+┌ Info: Adding scalar output for 2D index.
+│   fileformat = "CSV"
+│   param = "vertical.temperature"
+│   index =
+│    Dict{String, Any} with 2 entries:
+│      "x" => 88
+└      "y" => 95
+[ Info: Set `gauges` using netCDF variable `wflow_gauges`.
+┌ Info: Adding scalar output for a map with a reducer function.
+│   fileformat = "CSV"
+│   param = "lateral.river.q"
+│   mapname = "gauges"
+└   reducer_name = "only"
+[ Info: Set `subcatchment` using netCDF variable `wflow_subcatch`.
+┌ Info: Adding scalar output for a map with a reducer function.
+│   fileformat = "CSV"
+│   param = "vertical.perc"
+│   mapname = "subcatchment"
+└   reducer_name = "mean"
+[ Info: Set initial conditions from default values.
+┌ Warning: The definition of `starttime` has changed (equal to model state time).
+│  Please update your settings TOML file by subtracting one model timestep dt from the `starttime`, if it was used with a Wflow version up to v0.6.3.
+└ @ Wflow C:\Users\verseve\.julia\dev\Wflow\src\Wflow.jl:222
+┌ Info: Run information
+│   model_type = "hbv"
+│   starttime = CFTime.DateTimeProlepticGregorian(1999-12-31T00:00:00)
+│   dt = 86400 seconds
+│   endtime = CFTime.DateTimeProlepticGregorian(2000-02-01T00:00:00)
+└   nthreads() = 1
+[ Info: Simulation duration: 3 seconds, 760 milliseconds
+[ Info: Write output states to netCDF file `C:\Users\verseve\.julia\dev\Wflow\test\data\output\outstates-lahn.nc`.

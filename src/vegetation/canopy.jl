@@ -1,4 +1,4 @@
-@get_units @with_kw struct InterceptionModelVars{T}
+@get_units @grid_loc @with_kw struct InterceptionModelVars{T}
     # Canopy potential evaporation [mm Δt⁻¹]
     canopy_potevap::Vector{T}
     # Interception loss by evaporation [mm Δt⁻¹]
@@ -22,7 +22,7 @@ function interception_model_vars(n)
     return vars
 end
 
-@get_units @with_kw struct VegetationParameters{T}
+@get_units @grid_loc @with_kw struct VegetationParameters{T}
     # Leaf area index [m² m⁻²]
     leaf_area_index::Union{Vector{T}, Nothing} | "m2 m-2"
     # Storage woody part of vegetation [mm]
@@ -43,20 +43,20 @@ end
 
 abstract type AbstractInterceptionModel end
 
-@get_units @with_kw struct GashParameters{T}
+@get_units @grid_loc @with_kw struct GashParameters{T}
     # wet canopy [mm Δt⁻¹] and the average precipitation intensity [mm Δt⁻¹] on a saturated canopy
     e_r::Vector{T} | "-"
-    vegetation_parameters::VegetationParameters{T} | "-"
+    vegetation_parameters::VegetationParameters{T}
 end
 
-@get_units @with_kw struct GashInterceptionModel{T} <: AbstractInterceptionModel
-    parameters::GashParameters{T} | "-"
-    variables::InterceptionModelVars{T} | "-"
+@with_kw struct GashInterceptionModel{T} <: AbstractInterceptionModel
+    parameters::GashParameters{T}
+    variables::InterceptionModelVars{T}
 end
 
-@get_units @with_kw struct RutterInterceptionModel{T} <: AbstractInterceptionModel
-    parameters::VegetationParameters{T} | "-"
-    variables::InterceptionModelVars{T} | "-"
+@with_kw struct RutterInterceptionModel{T} <: AbstractInterceptionModel
+    parameters::VegetationParameters{T}
+    variables::InterceptionModelVars{T}
 end
 
 function initialize_vegetation_params(nc, config, inds)
@@ -144,7 +144,14 @@ function initialize_vegetation_params(nc, config, inds)
 end
 
 function initialize_gash_interception_model(nc, config, inds, vegetation_parameters)
-    e_r = ncread(nc, config, "vertical.eoverr"; sel = inds, defaults = 0.1, type = Float)
+    e_r = ncread(
+        nc,
+        config,
+        "vertical.bucket.parameters.eoverr";
+        sel = inds,
+        defaults = 0.1,
+        type = Float,
+    )
 
     params = GashParameters(; e_r = e_r, vegetation_parameters = vegetation_parameters)
     vars = interception_model_vars(length(inds))
