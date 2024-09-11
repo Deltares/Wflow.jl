@@ -577,30 +577,26 @@ water demand for allocation areas. Then groundwater abstraction is computed to s
 remaining local water demand, and then updated to satisfy the remaining water demand for
 allocation areas. Finally, non-irrigation return flows are updated.
 """
-function update_water_allocation(
-    model::Model{N, L, V, R, W, T},
-) where {N, L, V, R, W, T <: Union{SbmModel, SbmGwfModel}}
-    @unpack network, lateral, vertical = model
-
+function update_water_allocation(lsm::LandHydrologySBM, lateral, network)
     river = lateral.river
     index_river = network.land.index_river_wb
     res_index_f = network.river.reservoir_index_f
     lake_index_f = network.river.lake_index_f
 
-    vertical.allocation.surfacewater_alloc .= 0.0
+    lsm.allocation.surfacewater_alloc .= 0.0
     river.allocation.act_surfacewater_abst .= 0.0
     river.allocation.act_surfacewater_abst_vol .= 0.0
     # total surface water demand for each land cell
-    @. vertical.allocation.surfacewater_demand =
-        vertical.allocation.frac_sw_used * vertical.allocation.nonirri_demand_gross +
-        vertical.allocation.frac_sw_used * vertical.allocation.irri_demand_gross
+    @. lsm.allocation.surfacewater_demand =
+        lsm.allocation.frac_sw_used * lsm.allocation.nonirri_demand_gross +
+        lsm.allocation.frac_sw_used * lsm.allocation.irri_demand_gross
 
     # local surface water demand and allocation (river, excluding reservoirs and lakes)
-    surface_water_allocation_local(vertical, river, network)
+    surface_water_allocation_local(lsm, river, network)
     # surface water demand and allocation for areas
-    surface_water_allocation_area(vertical, river, network)
+    surface_water_allocation_area(lsm, river, network)
 
-    @. river.abstraction = river.allocation.act_surfacewater_abst_vol / vertical.dt
+    @. river.abstraction = river.allocation.act_surfacewater_abst_vol / lsm.dt
 
     # for reservoir and lake locations set river abstraction at zero and abstract volume
     # from reservoir and lake, including an update of lake waterlevel
@@ -615,55 +611,49 @@ function update_water_allocation(
             waterlevel(lakes.storfunc, lakes.area, lakes.storage, lakes.sh)
     end
 
-    vertical.allocation.groundwater_alloc .= 0.0
-    vertical.allocation.act_groundwater_abst_vol .= 0.0
-    vertical.allocation.act_groundwater_abst .= 0.0
+    lsm.allocation.groundwater_alloc .= 0.0
+    lsm.allocation.act_groundwater_abst_vol .= 0.0
+    lsm.allocation.act_groundwater_abst .= 0.0
     # local groundwater demand and allocation
-    groundwater_allocation_local(
-        vertical,
-        groundwater_volume(lateral.subsurface),
-        network.land,
-    )
+    groundwater_allocation_local(lsm, groundwater_volume(lateral.subsurface), network.land)
     # groundwater demand and allocation for areas
-    groundwater_allocation_area(vertical, network)
+    groundwater_allocation_area(lsm, network)
 
     # irrigation allocation
-    for i in eachindex(vertical.allocation.total_alloc)
-        vertical.allocation.total_alloc[i] =
-            vertical.allocation.groundwater_alloc[i] +
-            vertical.allocation.surfacewater_alloc[i]
+    for i in eachindex(lsm.allocation.total_alloc)
+        lsm.allocation.total_alloc[i] =
+            lsm.allocation.groundwater_alloc[i] + lsm.allocation.surfacewater_alloc[i]
         frac_irri = bounded_divide(
-            vertical.allocation.irri_demand_gross[i],
-            vertical.allocation.total_gross_demand[i],
+            lsm.allocation.irri_demand_gross[i],
+            lsm.allocation.total_gross_demand[i],
         )
-        vertical.allocation.irri_alloc[i] = frac_irri * vertical.allocation.total_alloc[i]
-        vertical.allocation.nonirri_alloc[i] =
-            vertical.allocation.total_alloc[i] - vertical.allocation.irri_alloc[i]
+        lsm.allocation.irri_alloc[i] = frac_irri * lsm.allocation.total_alloc[i]
+        lsm.allocation.nonirri_alloc[i] =
+            lsm.allocation.total_alloc[i] - lsm.allocation.irri_alloc[i]
     end
 
     # non-irrigation return flows
-    returnflow_livestock = return_flow(vertical.demand.livestock, vertical.allocation)
-    returnflow_domestic = return_flow(vertical.demand.domestic, vertical.allocation)
-    returnflow_industry = return_flow(vertical.demand.industry, vertical.allocation)
+    returnflow_livestock = return_flow(lsm.demand.livestock, lsm.allocation)
+    returnflow_domestic = return_flow(lsm.demand.domestic, lsm.allocation)
+    returnflow_industry = return_flow(lsm.demand.industry, lsm.allocation)
 
     # map non-irrigation return flow to land and river water allocation
     if (
-        !isnothing(vertical.demand.livestock) ||
-        !isnothing(vertical.demand.domestic) ||
-        !isnothing(vertical.demand.industry)
+        !isnothing(lsm.demand.livestock) ||
+        !isnothing(lsm.demand.domestic) ||
+        !isnothing(lsm.demand.industry)
     )
-        @. vertical.allocation.nonirri_returnflow =
+        @. lsm.allocation.nonirri_returnflow =
             returnflow_livestock + returnflow_domestic + returnflow_industry
 
-        for i in eachindex(vertical.allocation.nonirri_returnflow)
+        for i in eachindex(lsm.allocation.nonirri_returnflow)
             if index_river[i] > 0.0
                 k = index_river[i]
                 river.allocation.nonirri_returnflow[k] =
-                    vertical.allocation.nonirri_returnflow[i]
-                vertical.allocation.nonirri_returnflow[i] = 0.0
+                    lsm.allocation.nonirri_returnflow[i]
+                lsm.allocation.nonirri_returnflow[i] = 0.0
             else
-                vertical.allocation.nonirri_returnflow[i] =
-                    vertical.allocation.nonirri_returnflow[i]
+                lsm.allocation.nonirri_returnflow[i] = lsm.allocation.nonirri_returnflow[i]
             end
         end
     end

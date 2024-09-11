@@ -476,9 +476,8 @@ function update_until_recharge(
     model::Model{N, L, V, R, W, T},
 ) where {N, L, V, R, W, T <: SbmModel}
     (; lateral, vertical, network, config, clock) = model
-    (; bucket, snow) = vertical
+    (; bucket) = vertical
 
-    do_water_demand = haskey(config.model, "water_demand")::Bool
     inds_riv = network.index_river
 
     # extract water levels h_av [m] from the land and river domains
@@ -486,30 +485,7 @@ function update_until_recharge(
     bucket.variables.waterlevel_land .= lateral.land.h_av .* 1000.0
     bucket.variables.waterlevel_river[inds_riv] .= lateral.river.h_av .* 1000.0
 
-    vertical = update_surface(vertical, config)
-
-    if do_water_demand
-        (; h3_high, h3_low) = bucket.parameters
-        (; potential_transpiration) = bucket.boundary_conditions
-        @. bucket.variables.h3 =
-            feddes_h3(h3_high, h3_low, potential_transpiration, clock.dt)
-        update_water_demand(vertical)
-        update_water_allocation(model)
-    end
-
-    # vertical sbm concept is updated until snow state, after that (optional)
-    # snow transport is possible
-    vertical = update_subsurface(vertical, config, clock.dt)
-
-    # lateral snow transport
-    if get(config.model, "masswasting", false)::Bool
-        lateral_snow_transport!(
-            snow.variables.snow_storage,
-            snow.variables.snow_water,
-            network.land.slope,
-            network.land,
-        )
-    end
+    vertical = update(vertical, lateral, network, config)
 
     return model
 end

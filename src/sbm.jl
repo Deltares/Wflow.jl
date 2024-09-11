@@ -124,8 +124,9 @@ function initialize_land_hydrology_sbm(nc, config, riverfrac, inds)
     return lsm
 end
 
-function update_surface(lsm::LandHydrologySBM, config)
+function update(lsm::LandHydrologySBM, lateral, network, config)
     modelsnow = get(config.model, "snow", false)::Bool
+    do_water_demand = haskey(config.model, "water_demand")::Bool
 
     (; potential_evaporation) = lsm.atmospheric_forcing
     (; canopy_potevap, interception_flux, throughfall, stemflow) =
@@ -138,6 +139,16 @@ function update_surface(lsm::LandHydrologySBM, config)
         @. effective_precip = throughfall + stemflow
     end
     update!(lsm.snow, lsm.atmospheric_forcing)
+
+    # lateral snow transport
+    if get(config.model, "masswasting", false)::Bool
+        lateral_snow_transport!(
+            lsm.snow.variables.snow_storage,
+            lsm.snow.variables.snow_water,
+            network.land.slope,
+            network.land,
+        )
+    end
 
     update!(lsm.glacier, lsm.atmospheric_forcing)
 
@@ -154,11 +165,15 @@ function update_surface(lsm::LandHydrologySBM, config)
         max(canopygapfraction - riverfrac - waterfrac - glacier_frac, 0.0) *
         potential_evaporation
 
-    return lsm
-end
+    if do_water_demand
+        (; h3_high, h3_low) = lsm.bucket.parameters
+        @. lsm.bucket.variables.h3 =
+            feddes_h3(h3_high, h3_low, potential_transpiration, lsm.dt)
+        update_water_demand(lsm)
+        update_water_allocation(lsm, lateral, network)
+    end
 
-function update_subsurface(lsm::LandHydrologySBM, config, dt)
-    update!(lsm.bucket, lsm.demand, lsm.allocation, lsm.atmospheric_forcing, config, dt)
+    update!(lsm.bucket, lsm.demand, lsm.allocation, lsm.atmospheric_forcing, config, lsm.dt)
     @. lsm.bucket.variables.actevap += lsm.interception.variables.interception_flux
     return lsm
 end

@@ -13,9 +13,9 @@ using Dates
         ),
     )
     @test Wflow.head_brooks_corey(0.25, 0.6, 0.15, 10.5, -10.0) ≈ -90.6299820833844
-    @test Wflow.feddes_h3(-300.0, -600.0, 3.5, Second(86400)) ≈ -412.5
-    @test Wflow.feddes_h3(-300.0, -600.0, 0.5, Second(86400)) == -600.0
-    @test Wflow.feddes_h3(-300.0, -600.0, 6.0, Second(86400)) == -300.0
+    @test Wflow.feddes_h3(-300.0, -600.0, 3.5, 86400.0) ≈ -412.5
+    @test Wflow.feddes_h3(-300.0, -600.0, 0.5, 86400.0) == -600.0
+    @test Wflow.feddes_h3(-300.0, -600.0, 6.0, 86400.0) == -300.0
     @test Wflow.rwu_reduction_feddes(0.0, -10.0, -100.0, -300.0, -15000.0, 0.0) == 0.0
     @test Wflow.rwu_reduction_feddes(0.0, -10.0, -100.0, -300.0, -15000.0, 1.0) == 1.0
     @test Wflow.rwu_reduction_feddes(-90.0, -10.0, -100.0, -412.5, -15000.0, 0.0) ≈
