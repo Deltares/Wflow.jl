@@ -26,7 +26,7 @@ forcing = [
   "vertical.atmospheric_forcing.potential_evaporation",
 ]
 cyclic = [ 
-    "vertical.vegetation_parameters.leaf_area_index", 
+    "vertical.vegetation_parameter_set.leaf_area_index", 
     "vertical.demand.domestic.demand_gross", 
     "vertical.demand.domestic.demand_net", 
     "vertical.demand.industry.demand_gross", 
@@ -78,7 +78,7 @@ g_sifrac = "G_SIfrac"
 [input.vertical.glacier.variables]
 glacier_store = "wflow_glacierstore"
 
-[input.vertical.vegetation_parameters]
+[input.vertical.vegetation_parameter_set]
 leaf_area_index = "LAI"
 kext = "Kext"
 specific_leaf = "Sl"

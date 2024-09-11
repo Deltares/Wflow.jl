@@ -248,7 +248,7 @@ end
     h4::Vector{T} | "cm"
     # Root water uptake reduction at soil water pressure head h1 (0.0 or 1.0) [-]
     alpha_h1::Vector{T} | "-"
-    vegetation_parameters::VegetationParameters{T} | "-" | "none"
+    vegetation_parameter_set::VegetationParameters{T} | "-" | "none"
 end
 
 abstract type AbstractBucketModel{T} end
@@ -337,7 +337,7 @@ end
 function initialize_simple_bucket_model_params(
     nc,
     config,
-    vegetation_parameters,
+    vegetation_parameter_set,
     riverfrac,
     inds,
     dt,
@@ -594,7 +594,7 @@ function initialize_simple_bucket_model_params(
             )
         else
             n = length(inds)
-            (; rootingdepth) = vegetation_parameters
+            (; rootingdepth) = vegetation_parameter_set
             # default root fraction in case of multiple soil layers
             rootfraction = zeros(Float, maxlayers, n)
             for i in 1:n
@@ -665,7 +665,7 @@ function initialize_simple_bucket_model_params(
         z_layered = z_layered,
         w_soil = w_soil,
         cf_soil = cf_soil,
-        vegetation_parameters = vegetation_parameters,
+        vegetation_parameter_set = vegetation_parameter_set,
     )
     return sbm_params
 end
@@ -673,7 +673,7 @@ end
 function initialize_simple_bucket_model(
     nc,
     config,
-    vegetation_parameters,
+    vegetation_parameter_set,
     riverfrac,
     inds,
     dt,
@@ -682,7 +682,7 @@ function initialize_simple_bucket_model(
     params = initialize_simple_bucket_model_params(
         nc,
         config,
-        vegetation_parameters,
+        vegetation_parameter_set,
         riverfrac,
         inds,
         dt,
@@ -717,7 +717,7 @@ function update!(
     ust = get(config.model, "whole_ust_available", false)::Bool # should be removed from optional setting and code?
     ksat_profile = get(config.input.vertical, "ksat_profile", "exponential")::String
 
-    (; rootingdepth) = model.parameters.vegetation_parameters
+    (; rootingdepth) = model.parameters.vegetation_parameter_set
     (; potential_evaporation, temperature) = atmospheric_forcing
     (; surface_water_flux, potential_soilevaporation, potential_transpiration) =
         model.boundary_conditions
@@ -1038,7 +1038,7 @@ function update!(model::SimpleBucketModel, demand, zi, exfiltsatwater)
         vwc_perc,
     ) = v
     (; theta_s, theta_r, act_thickl, soilthickness, sumlayers, nlayers) = model.parameters
-    (; rootingdepth) = model.parameters.vegetation_parameters
+    (; rootingdepth) = model.parameters.vegetation_parameter_set
 
     n = length(zi)
     threaded_foreach(1:n; basesize = 1000) do i

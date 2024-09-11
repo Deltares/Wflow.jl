@@ -55,7 +55,7 @@ forcing = [
   "vertical.atmospheric_forcing.potential_evaporation",
 ]
 
-[input.vertical.vegetation_parameters]
+[input.vertical.vegetation_parameter_set]
 rootingdepth = "rootingdepth"
 canopygapfraction = "canopygapfraction"
 cmax = "cmax"

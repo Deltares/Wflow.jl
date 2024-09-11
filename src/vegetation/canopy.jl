@@ -46,7 +46,7 @@ abstract type AbstractInterceptionModel end
 @get_units @grid_loc @with_kw struct GashParameters{T}
     # wet canopy [mm Δt⁻¹] and the average precipitation intensity [mm Δt⁻¹] on a saturated canopy
     e_r::Vector{T} | "-"
-    vegetation_parameters::VegetationParameters{T}
+    vegetation_parameter_set::VegetationParameters{T}
 end
 
 @with_kw struct GashInterceptionModel{T} <: AbstractInterceptionModel
@@ -64,7 +64,7 @@ function initialize_vegetation_params(nc, config, inds)
     rootingdepth = ncread(
         nc,
         config,
-        "vertical.vegetation_parameters.rootingdepth";
+        "vertical.vegetation_parameter_set.rootingdepth";
         sel = inds,
         defaults = 750.0,
         type = Float,
@@ -72,16 +72,16 @@ function initialize_vegetation_params(nc, config, inds)
     kc = ncread(
         nc,
         config,
-        "vertical.vegetation_parameters.kc";
+        "vertical.vegetation_parameter_set.kc";
         sel = inds,
         defaults = 1.0,
         type = Float,
     )
-    if haskey(config.input.vertical.vegetation_parameters, "leaf_area_index")
+    if haskey(config.input.vertical.vegetation_parameter_set, "leaf_area_index")
         sl = ncread(
             nc,
             config,
-            "vertical.vegetation_parameters.specific_leaf";
+            "vertical.vegetation_parameter_set.specific_leaf";
             optional = false,
             sel = inds,
             type = Float,
@@ -89,7 +89,7 @@ function initialize_vegetation_params(nc, config, inds)
         swood = ncread(
             nc,
             config,
-            "vertical.vegetation_parameters.storage_wood";
+            "vertical.vegetation_parameter_set.storage_wood";
             optional = false,
             sel = inds,
             type = Float,
@@ -97,12 +97,12 @@ function initialize_vegetation_params(nc, config, inds)
         kext = ncread(
             nc,
             config,
-            "vertical.vegetation_parameters.kext";
+            "vertical.vegetation_parameter_set.kext";
             optional = false,
             sel = inds,
             type = Float,
         )
-        vegetation_parameters = VegetationParameters(;
+        vegetation_parameter_set = VegetationParameters(;
             leaf_area_index = fill(mv, n),
             swood = swood,
             kext = kext,
@@ -116,7 +116,7 @@ function initialize_vegetation_params(nc, config, inds)
         canopygapfraction = ncread(
             nc,
             config,
-            "vertical.vegetation_parameters.canopygapfraction";
+            "vertical.vegetation_parameter_set.canopygapfraction";
             sel = inds,
             defaults = 0.1,
             type = Float,
@@ -124,12 +124,12 @@ function initialize_vegetation_params(nc, config, inds)
         cmax = ncread(
             nc,
             config,
-            "vertical.vegetation_parameters.cmax";
+            "vertical.vegetation_parameter_set.cmax";
             sel = inds,
             defaults = 1.0,
             type = Float,
         )
-        vegetation_parameters = VegetationParameters(;
+        vegetation_parameter_set = VegetationParameters(;
             leaf_area_index = nothing,
             swood = nothing,
             kext = nothing,
@@ -140,10 +140,10 @@ function initialize_vegetation_params(nc, config, inds)
             kc = kc,
         )
     end
-    return vegetation_parameters
+    return vegetation_parameter_set
 end
 
-function initialize_gash_interception_model(nc, config, inds, vegetation_parameters)
+function initialize_gash_interception_model(nc, config, inds, vegetation_parameter_set)
     e_r = ncread(
         nc,
         config,
@@ -153,21 +153,23 @@ function initialize_gash_interception_model(nc, config, inds, vegetation_paramet
         type = Float,
     )
 
-    params = GashParameters(; e_r = e_r, vegetation_parameters = vegetation_parameters)
+    params =
+        GashParameters(; e_r = e_r, vegetation_parameter_set = vegetation_parameter_set)
     vars = interception_model_vars(length(inds))
     model = GashInterceptionModel(; parameters = params, variables = vars)
     return model
 end
 
-function initialize_rutter_interception_model(vegetation_params, n)
+function initialize_rutter_interception_model(vegetation_parameter_set, n)
     vars = interception_model_vars(n)
-    model = RutterInterceptionModel(; parameters = vegetation_params, variables = vars)
+    model =
+        RutterInterceptionModel(; parameters = vegetation_parameter_set, variables = vars)
     return model
 end
 
 function update_canopy_parameters!(model::I) where {I <: AbstractInterceptionModel}
     (; leaf_area_index, swood, kext, sl, canopygapfraction, cmax) =
-        model.parameters.vegetation_parameters
+        model.parameters.vegetation_parameter_set
 
     n = length(leaf_area_index)
     threaded_foreach(1:n; basesize = 1000) do i
@@ -178,7 +180,7 @@ end
 
 function update!(model::GashInterceptionModel, atmospheric_forcing::AtmosphericForcing)
     (; leaf_area_index, canopygapfraction, cmax, kc) =
-        model.parameters.vegetation_parameters
+        model.parameters.vegetation_parameter_set
     (; canopy_potevap, throughfall, interception_flux, stemflow, canopy_storage) =
         model.variables
     (; precipitation, potential_evaporation) = atmospheric_forcing
@@ -210,7 +212,7 @@ end
 
 function update!(model::RutterInterceptionModel, atmospheric_forcing::AtmosphericForcing)
     (; leaf_area_index, canopygapfraction, cmax, kc) =
-        model.parameters.vegetation_parameters
+        model.parameters.vegetation_parameter_set
     (; canopy_potevap, throughfall, interception_flux, stemflow, canopy_storage) =
         model.variables
     (; precipitation, potential_evaporation) = atmospheric_forcing

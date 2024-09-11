@@ -61,14 +61,14 @@ forcing = [
   "vertical.atmospheric_forcing.potential_evaporation",
 ]
 
-cyclic = ["vertical.vegetation_parameters.leaf_area_index"]
+cyclic = ["vertical.vegetation_parameter_set.leaf_area_index"]
 
 [input.vertical.atmospheric_forcing]
 potential_evaporation = "pet"
 precipitation = "precip"
 temperature = "temp"
 
-[input.vertical.vegetation_parameters]
+[input.vertical.vegetation_parameter_set]
 leaf_area_index = "LAI"
 kext = "Kext"
 specific_leaf = "Sl"

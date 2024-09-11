@@ -142,7 +142,7 @@ end
 @testset "Exchange and grid location SBM" begin
     sbm = model.vertical.bucket
     @test Wflow.exchange(sbm.variables.ustoredepth) == true
-    @test Wflow.exchange(model.vertical.vegetation_parameters.rootingdepth) == true
+    @test Wflow.exchange(model.vertical.vegetation_parameter_set.rootingdepth) == true
     @test Wflow.grid_loc(sbm.parameters, :waterfrac) == "node"
     @test Wflow.grid_loc(sbm.parameters, :rootingdepth) == "node"
     @test Wflow.grid_loc(sbm.variables, :runoff) == "node"
@@ -178,7 +178,7 @@ end
 # set these variables for comparison in "changed dynamic parameters"
 precip = copy(model.vertical.atmospheric_forcing.precipitation)
 evap = copy(model.vertical.atmospheric_forcing.potential_evaporation)
-lai = copy(model.vertical.vegetation_parameters.leaf_area_index)
+lai = copy(model.vertical.vegetation_parameter_set.leaf_area_index)
 res_evap = copy(model.lateral.river.reservoir.evaporation)
 
 Wflow.close_files(model; delete_output = false)
@@ -220,7 +220,7 @@ config.input.vertical.atmospheric_forcing.potential_evaporation = Dict(
     "offset" => 1.50,
     "netcdf" => Dict("variable" => Dict("name" => "pet")),
 )
-config.input.vertical.vegetation_parameters.leaf_area_index =
+config.input.vertical.vegetation_parameter_set.leaf_area_index =
     Dict("scale" => 1.6, "netcdf" => Dict("variable" => Dict("name" => "LAI")))
 
 model = Wflow.initialize_sbm_model(config)
@@ -233,7 +233,7 @@ model = Wflow.run_timestep(model)
     @test vertical.atmospheric_forcing.precipitation[2] / precip[2] ≈ 2.0f0
     @test (vertical.atmospheric_forcing.potential_evaporation[100] - 1.50) / evap[100] ≈
           3.0f0
-    @test vertical.vegetation_parameters.leaf_area_index[100] / lai[100] ≈ 1.6f0
+    @test vertical.vegetation_parameter_set.leaf_area_index[100] / lai[100] ≈ 1.6f0
     @test (res.evaporation[2] - 1.50) / res_evap[2] ≈ 3.0000012203408635f0
 end
 
@@ -242,7 +242,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 
 config.input.cyclic =
-    ["vertical.vegetation_parameters.leaf_area_index", "lateral.river.inflow"]
+    ["vertical.vegetation_parameter_set.leaf_area_index", "lateral.river.inflow"]
 config.input.lateral.river.inflow = "inflow"
 
 model = Wflow.initialize_sbm_model(config)

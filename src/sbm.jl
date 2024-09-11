@@ -1,6 +1,6 @@
 @get_units @grid_loc @with_kw struct LandHydrologySBM{IM, SM, GM, D, A, T}
     atmospheric_forcing::AtmosphericForcing | "-" | "none"
-    vegetation_parameters::VegetationParameters | "-" | "none"
+    vegetation_parameter_set::VegetationParameters | "-" | "none"
     interception::IM | "-" | "none"
     snow::SM | "-" | "none"
     glacier::GM | "-" | "none"
@@ -63,12 +63,13 @@ function initialize_land_hydrology_sbm(nc, config, riverfrac, inds)
     n = length(inds)
 
     atmospheric_forcing = initialize_atmospheric_forcing(n)
-    vegetation_parameters = initialize_vegetation_params(nc, config, inds)
+    vegetation_parameter_set = initialize_vegetation_params(nc, config, inds)
     if dt >= Hour(23)
         interception_model =
-            initialize_gash_interception_model(nc, config, inds, vegetation_parameters)
+            initialize_gash_interception_model(nc, config, inds, vegetation_parameter_set)
     else
-        interception_model = initialize_rutter_interception_model(vegetation_parameters, n)
+        interception_model =
+            initialize_rutter_interception_model(vegetation_parameter_set, n)
     end
 
     modelsnow = get(config.model, "snow", false)::Bool
@@ -87,14 +88,14 @@ function initialize_land_hydrology_sbm(nc, config, riverfrac, inds)
     bucket_model = initialize_simple_bucket_model(
         nc,
         config,
-        vegetation_parameters,
+        vegetation_parameter_set,
         riverfrac,
         inds,
         dt,
     )
-    @. vegetation_parameters.rootingdepth = min(
+    @. vegetation_parameter_set.rootingdepth = min(
         bucket_model.parameters.soilthickness * 0.99,
-        vegetation_parameters.rootingdepth,
+        vegetation_parameter_set.rootingdepth,
     )
 
     do_water_demand = haskey(config.model, "water_demand")
@@ -111,7 +112,7 @@ function initialize_land_hydrology_sbm(nc, config, riverfrac, inds)
         Float,
     }(;
         atmospheric_forcing = atmospheric_forcing,
-        vegetation_parameters = vegetation_parameters,
+        vegetation_parameter_set = vegetation_parameter_set,
         interception = interception_model,
         snow = snow_model,
         glacier = glacier_model,
@@ -147,7 +148,7 @@ function update_surface(lsm::LandHydrologySBM, config)
     glacier_melt = get_glacier_melt(lsm.glacier)
     @. surface_water_flux = modelsnow ? snow_runoff + glacier_melt : throughfall + stemflow
     (; riverfrac, waterfrac) = lsm.bucket.parameters
-    (; canopygapfraction) = lsm.interception.parameters.vegetation_parameters
+    (; canopygapfraction) = lsm.interception.parameters.vegetation_parameter_set
     glacier_frac = get_glacier_frac(lsm.glacier)
     @. potential_soilevaporation =
         max(canopygapfraction - riverfrac - waterfrac - glacier_frac, 0.0) *
@@ -236,7 +237,7 @@ Gross water demand for irrigation `irri_demand_gross` and non-irrigation
 part of `LandHydrologySBM` water allocation (`allocation`).
 """
 function update_water_demand(lsm::LandHydrologySBM)
-    (; rootingdepth) = lsm.vegetation_parameters
+    (; rootingdepth) = lsm.vegetation_parameter_set
     (; nonpaddy, paddy, domestic, industry, livestock) = lsm.demand
     (; hb, theta_s, theta_r, c, sumlayers, act_thickl, pathfrac, infiltcapsoil) =
         lsm.bucket.parameters
