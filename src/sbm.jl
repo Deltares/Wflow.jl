@@ -125,19 +125,12 @@ function initialize_land_hydrology_sbm(nc, config, riverfrac, inds)
 end
 
 function update(lsm::LandHydrologySBM, lateral, network, config)
-    modelsnow = get(config.model, "snow", false)::Bool
     do_water_demand = haskey(config.model, "water_demand")::Bool
-
-    (; potential_evaporation) = lsm.atmospheric_forcing
-    (; canopy_potevap, interception_flux, throughfall, stemflow) =
-        lsm.interception.variables
 
     update!(lsm.interception, lsm.atmospheric_forcing)
 
-    if modelsnow
-        (; effective_precip) = lsm.snow.boundary_conditions
-        @. effective_precip = throughfall + stemflow
-    end
+    (; throughfall, stemflow) = lsm.interception.variables
+    update_boundary_conditions!(lsm.snow, throughfall .+ stemflow)
     update!(lsm.snow, lsm.atmospheric_forcing)
 
     # lateral snow transport
@@ -152,20 +145,17 @@ function update(lsm::LandHydrologySBM, lateral, network, config)
 
     update!(lsm.glacier, lsm.atmospheric_forcing)
 
-    (; potential_transpiration, surface_water_flux, potential_soilevaporation) =
-        lsm.bucket.boundary_conditions
-    @. potential_transpiration = max(0.0, canopy_potevap - interception_flux)
-    snow_runoff = get_runoff(lsm.snow)
-    glacier_melt = get_glacier_melt(lsm.glacier)
-    @. surface_water_flux = modelsnow ? snow_runoff + glacier_melt : throughfall + stemflow
-    (; riverfrac, waterfrac) = lsm.bucket.parameters
-    (; canopygapfraction) = lsm.interception.parameters.vegetation_parameter_set
-    glacier_frac = get_glacier_frac(lsm.glacier)
-    @. potential_soilevaporation =
-        max(canopygapfraction - riverfrac - waterfrac - glacier_frac, 0.0) *
-        potential_evaporation
+    (; potential_evaporation) = lsm.atmospheric_forcing
+    update_boundary_conditions!(
+        lsm.bucket,
+        lsm.interception,
+        lsm.snow,
+        lsm.glacier,
+        potential_evaporation,
+    )
 
     if do_water_demand
+        (; potential_transpiration) = lsm.bucket.boundary_conditions
         (; h3_high, h3_low) = lsm.bucket.parameters
         @. lsm.bucket.variables.h3 =
             feddes_h3(h3_high, h3_low, potential_transpiration, lsm.dt)

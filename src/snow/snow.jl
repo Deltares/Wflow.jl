@@ -117,6 +117,15 @@ function initialize_snow_hbv_model(nc, config, inds, dt)
     return model
 end
 
+function update_boundary_conditions!(model::AbstractSnowModel, flux_bc)
+    (; effective_precip) = model.boundary_conditions
+    @. effective_precip = flux_bc
+end
+
+function update_boundary_conditions!(model::NoSnowModel, flux_bc)
+    return nothing
+end
+
 function update!(model::SnowHbvModel, atmospheric_forcing::AtmosphericForcing)
     (; temperature) = atmospheric_forcing
     (; snow_storage, snow_water, swe, runoff) = model.variables

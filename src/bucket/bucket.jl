@@ -694,8 +694,37 @@ function initialize_simple_bucket_model(
     return model
 end
 
-#TODO (v1.0): 
-# add water demand functionality from Master branch
+get_surface_water_flux(snow::NoSnowModel, glacier, effective_precip) = effective_precip
+function get_surface_water_flux(snow::AbstractSnowModel, glacier, effective_precip)
+    return get_runoff(snow) .+ get_glacier_melt(glacier)
+end
+
+function update_boundary_conditions!(
+    model::SimpleBucketModel,
+    interception,
+    snow,
+    glacier,
+    potential_evaporation,
+)
+    (; potential_transpiration, surface_water_flux, potential_soilevaporation) =
+        model.boundary_conditions
+
+    @. potential_transpiration = max(
+        0.0,
+        interception.variables.canopy_potevap - interception.variables.interception_flux,
+    )
+    (; throughfall, stemflow) = interception.variables
+    surface_water_flux .= get_surface_water_flux(snow, glacier, throughfall .+ stemflow)
+
+    (; riverfrac, waterfrac) = model.parameters
+    (; canopygapfraction) = interception.parameters.vegetation_parameter_set
+    glacier_frac = get_glacier_frac(glacier)
+    @. potential_soilevaporation =
+        max(canopygapfraction - riverfrac - waterfrac - glacier_frac, 0.0) *
+        potential_evaporation
+end
+
+#TODO (v1.0):
 # check if it's feasible to make the SimpleBucketModel (SBM) modular:
 #   - soil evaporation
 #   - transpiration (root water uptake Feddes)
