@@ -1138,7 +1138,7 @@ function update_until_recharge(sbm::SBM, config)
         # Scale infiltration from surface water based on the ratio between actinfil and
         # infiltsoilpath (and prevent division by zero)
         if do_surface_water_infiltration
-            infilt_ratio = iszero(infiltsoilpath) ? 0.0 : actinfilt / infiltsoilpath
+            infilt_ratio = iszero(actinfilt) ? 0.0 : actinfilt / avail_forinfilt
             infilt_surfacewater = max(0.0, waterlevel_land * infilt_ratio)
         else
             infilt_surfacewater = 0.0
