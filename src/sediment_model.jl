@@ -13,18 +13,15 @@ function initialize_sediment_model(config::Config)
 
     reader = prepare_reader(config)
     clock = Clock(config, reader)
-    dt = clock.dt
 
     do_river = get(config.model, "runrivermodel", false)::Bool
 
     nc = NCDataset(static_path)
-    dims = dimnames(nc[param(config, "input.subcatchment")])
 
     subcatch_2d = ncread(nc, config, "subcatchment"; optional = false, allow_missing = true)
     # indices based on catchment
     inds, rev_inds = active_indices(subcatch_2d, missing)
     n = length(inds)
-    modelsize_2d = size(subcatch_2d)
 
     river_2d =
         ncread(nc, config, "river_location"; optional = false, type = Bool, fill = false)
@@ -37,7 +34,6 @@ function initialize_sediment_model(config::Config)
     riverlength = riverlength_2d[inds]
 
     inds_riv, rev_inds_riv = active_indices(river_2d, 0)
-    nriv = length(inds_riv)
 
     # Needed to update the forcing
     reservoir = ()
@@ -52,8 +48,12 @@ function initialize_sediment_model(config::Config)
     sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
     xl, yl = cell_lengths(y, cellength, sizeinmetres)
     riverfrac = river_fraction(river, riverlength, riverwidth, xl, yl)
+    area = xl .* yl
+    landslope =
+        ncread(nc, config, "vertical.slope"; optional = false, sel = inds, type = Float)
+    clamp!(landslope, 0.00001, Inf)
 
-    eros = initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
+    soilloss = initialize_soil_loss(nc, config, inds, area, landslope)
 
     ldd_2d = ncread(nc, config, "ldd"; optional = false, allow_missing = true)
     ldd = ldd_2d[inds]
@@ -111,7 +111,7 @@ function initialize_sediment_model(config::Config)
 
     rs = initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
 
-    modelmap = (vertical = eros, lateral = (land = ols, river = rs))
+    modelmap = (vertical = soilloss, lateral = (land = ols, river = rs))
     indices_reverse = (
         land = rev_inds,
         river = rev_inds_riv,
@@ -140,7 +140,7 @@ function initialize_sediment_model(config::Config)
         config,
         (; land, river, reservoir, lake, index_river, frac_toriver),
         (land = ols, river = rs),
-        eros,
+        soilloss,
         clock,
         reader,
         writer,
@@ -154,39 +154,41 @@ function initialize_sediment_model(config::Config)
 end
 
 function update(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SedimentModel}
-    @unpack lateral, vertical, network, clock, config = model
+    (; lateral, vertical, network, config, clock) = model
+    dt = clock.dt
 
-    update_until_ols(vertical, config)
-    update_until_oltransport(vertical, config)
+    # Soil erosion
+    update!(vertical, dt)
+    # update_until_oltransport(vertical, config)
 
-    lateral.land.soilloss .= vertical.soilloss
-    lateral.land.erosclay .= vertical.erosclay
-    lateral.land.erossilt .= vertical.erossilt
-    lateral.land.erossand .= vertical.erossand
-    lateral.land.erossagg .= vertical.erossagg
-    lateral.land.eroslagg .= vertical.eroslagg
+    # lateral.land.soilloss .= vertical.soilloss
+    # lateral.land.erosclay .= vertical.erosclay
+    # lateral.land.erossilt .= vertical.erossilt
+    # lateral.land.erossand .= vertical.erossand
+    # lateral.land.erossagg .= vertical.erossagg
+    # lateral.land.eroslagg .= vertical.eroslagg
 
-    lateral.land.TCsed .= vertical.TCsed
-    lateral.land.TCclay .= vertical.TCclay
-    lateral.land.TCsilt .= vertical.TCsilt
-    lateral.land.TCsand .= vertical.TCsand
-    lateral.land.TCsagg .= vertical.TCsagg
-    lateral.land.TClagg .= vertical.TClagg
+    # lateral.land.TCsed .= vertical.TCsed
+    # lateral.land.TCclay .= vertical.TCclay
+    # lateral.land.TCsilt .= vertical.TCsilt
+    # lateral.land.TCsand .= vertical.TCsand
+    # lateral.land.TCsagg .= vertical.TCsagg
+    # lateral.land.TClagg .= vertical.TClagg
 
-    update(lateral.land, network.land, config)
+    # update(lateral.land, network.land, config)
 
-    do_river = get(config.model, "runrivermodel", false)::Bool
+    # do_river = get(config.model, "runrivermodel", false)::Bool
 
-    if do_river
-        inds_riv = network.index_river
-        lateral.river.inlandclay .= lateral.land.inlandclay[inds_riv]
-        lateral.river.inlandsilt .= lateral.land.inlandsilt[inds_riv]
-        lateral.river.inlandsand .= lateral.land.inlandsand[inds_riv]
-        lateral.river.inlandsagg .= lateral.land.inlandsagg[inds_riv]
-        lateral.river.inlandlagg .= lateral.land.inlandlagg[inds_riv]
+    # if do_river
+    #     inds_riv = network.index_river
+    #     lateral.river.inlandclay .= lateral.land.inlandclay[inds_riv]
+    #     lateral.river.inlandsilt .= lateral.land.inlandsilt[inds_riv]
+    #     lateral.river.inlandsand .= lateral.land.inlandsand[inds_riv]
+    #     lateral.river.inlandsagg .= lateral.land.inlandsagg[inds_riv]
+    #     lateral.river.inlandlagg .= lateral.land.inlandlagg[inds_riv]
 
-        update(lateral.river, network.river, config)
-    end
+    #     update(lateral.river, network.river, config)
+    # end
 
     return model
 end

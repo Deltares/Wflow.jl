@@ -51,41 +51,56 @@ subcatchment = "wflow_subcatch"
 # specify the internal IDs of the parameters which vary over time
 # the external name mapping needs to be below together with the other mappings
 forcing = [
-  "vertical.h_land",
-  "vertical.interception",
-  "vertical.precipitation",
-  "vertical.q_land",
+  "vertical.hydrometeo_forcing.waterlevel_land",
+  #"vertical.interception",
+  "vertical.hydrometeo_forcing.precipitation",
+  "vertical.hydrometeo_forcing.q_land",
   "lateral.river.h_riv",
   "lateral.river.q_riv",
 ]
 
-cyclic = ["vertical.leaf_area_index"]
+#cyclic = ["vertical.leaf_area_index"]
 
 [input.vertical]
-altitude = "wflow_dem"
-canopyheight = "CanopyHeight"
-erosk = "ErosK"
-erosov = "eros_ov"
-erosspl = "eros_spl_EUROSEM"
-h_land = "levKinL"
-interception = "int"
-kext = "Kext"
-leaf_area_index = "LAI" # cyclic
+## interception parameters to be moved
+#kext = "Kext"
+#leaf_area_index = "LAI" # cyclic
+#specific_leaf = "Sl"
+#storage_wood = "Swood"
+## other parameters
 pathfrac = "PathFrac"
-pclay = "PercentClay"
-precipitation = "P"
-psilt = "PercentSilt"
-q_land = "runL"
 rivcell = "wflow_river"
 slope = "Slope"
-specific_leaf = "Sl"
-storage_wood = "Swood"
-usleC = "USLE_C"
-usleK = "USLE_K"
 # Reservoir
 resareas = "wflow_reservoirareas"
 # Lake
 lakeareas = "wflow_lakeareas"
+
+[input.vertical.hydrometeo_forcing]
+precipitation = "P"
+waterlevel_land = "levKinL"
+#interception = "int"
+q_land = "runL"
+
+[input.vertical.rainfall_erosion.parameters]
+soil_detachability = "soil_detachability"
+eurosem_exponent = "eros_spl_EUROSEM"
+canopyheight = "CanopyHeight"
+canopygapfraction = "CanopyGapFraction"
+usle_k = "usle_k"
+usle_c = "USLE_C"
+
+[input.vertical.overland_flow_erosion.parameters]
+usle_k = "usle_k"
+usle_c = "USLE_C"
+answers_k = "eros_ov"
+
+[input.vertical.soil_erosion.parameters]
+clay_fraction = "fclay_soil"
+silt_fraction = "fsilt_soil"
+sand_fraction = "fsand_soil"
+sagg_fraction = "fsagg_soil"
+lagg_fraction = "flagg_soil"
 
 [input.lateral.land]
 slope = "Slope"
@@ -121,37 +136,39 @@ landtransportmethod = "yalinpart" # Overland flow transport capacity method: ["y
 rainerosmethod = "answers" # Rainfall erosion equation: ["answers", "eurosem"]
 reinit = true
 rivtransportmethod = "bagnold" # River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]
-runrivermodel = true
+runrivermodel = false
 type = "sediment"
 
 [output]
 path = "output-moselle-sed.nc"
 
-[output.vertical]
-TCclay = "TCclay"
-TCsed = "TCsed"
-erosclay = "erosclay"
-pathfrac = "pathfrac"
-precipitation = "prec"
-sedov = "sedov"
-sedspl = "sedspl"
-soilloss = "soilloss"
+[output.vertical.rainfall_erosion.variables]
+amount = "rainfall_erosion"
 
-[output.lateral.land]
-inlandclay = "inlandclay"
-inlandsed = "inlandsed"
-olclay = "olclay"
-olsed = "olsed"
+[output.vertical.overland_flow_erosion.variables]
+amount = "overland_flow_erosion"
 
-[output.lateral.river]
-Bedconc = "Bedconc"
-SSconc = "SSconc"
-Sedconc = "Sedconc"
-clayload = "clayload"
-h_riv = "h_riv"
-inlandclay = "inlandclayriv"
-outclay = "outclay"
-width = "widthriv"
+[output.vertical.soil_erosion.variables]
+amount = "soilloss"
+clay = "erosclay"
+
+# [output.lateral.land]
+# #TCclay = "TCclay"
+# #TCsed = "TCsed"
+# inlandclay = "inlandclay"
+# inlandsed = "inlandsed"
+# olclay = "olclay"
+# olsed = "olsed"
+
+# [output.lateral.river]
+# Bedconc = "Bedconc"
+# SSconc = "SSconc"
+# Sedconc = "Sedconc"
+# clayload = "clayload"
+# h_riv = "h_riv"
+# inlandclay = "inlandclayriv"
+# outclay = "outclay"
+# width = "widthriv"
 
 [csv]
 path = "output-moselle-sediment.csv"
@@ -160,46 +177,46 @@ path = "output-moselle-sediment.csv"
 coordinate.x = 6.931
 coordinate.y = 48.085
 header = "SL"
-parameter = "vertical.soilloss"
+parameter = "vertical.soil_erosion.variables.amount"
 
 [[csv.column]]
 coordinate.x = 6.931
 coordinate.y = 48.085
 header = "SSPL"
-parameter = "vertical.sedspl"
+parameter = "vertical.rainfall_erosion.variables.amount"
 
 [[csv.column]]
 coordinate.x = 6.931
 coordinate.y = 48.085
 header = "SOV"
-parameter = "vertical.sedov"
+parameter = "vertical.overland_flow_erosion.variables.amount"
 
 [[csv.column]]
 coordinate.x = 6.931
 coordinate.y = 48.085
 header = "P"
-parameter = "vertical.precipitation"
+parameter = "vertical.hydrometeo_forcing.precipitation"
 
 [[csv.column]]
 coordinate.x = 6.931
 coordinate.y = 48.085
 header = "ql"
-parameter = "vertical.q_land"
+parameter = "vertical.hydrometeo_forcing.q_land"
 
-[[csv.column]]
-coordinate.x = 6.931
-coordinate.y = 48.085
-header = "TCsed"
-parameter = "vertical.TCsed"
+# [[csv.column]]
+# coordinate.x = 6.931
+# coordinate.y = 48.085
+# header = "TCsed"
+# parameter = "vertical.TCsed"
 
-[[csv.column]]
-coordinate.x = 6.931
-coordinate.y = 48.085
-header = "TCclay"
-parameter = "vertical.TCclay"
+# [[csv.column]]
+# coordinate.x = 6.931
+# coordinate.y = 48.085
+# header = "TCclay"
+# parameter = "vertical.TCclay"
 
-[[csv.column]]
-coordinate.x = 6.931
-coordinate.y = 48.085
-header = "inlandsed"
-parameter = "lateral.land.inlandsed"
+# [[csv.column]]
+# coordinate.x = 6.931
+# coordinate.y = 48.085
+# header = "inlandsed"
+# parameter = "lateral.land.inlandsed"
