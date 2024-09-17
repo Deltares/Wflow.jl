@@ -42,14 +42,15 @@ potential_evaporation = "pet"
 precipitation = "precip"
 temperature = "temp"
 
-[input.vertical.bucket.parameters]
+[input.vertical.land_parameter_set]
+waterfrac = "WaterFrac"
+
+[input.vertical.soil.parameters]
 c = "c"
 cf_soil = "cf_soil"
 f = "f"
 infiltcappath = "InfiltCapPath"
 infiltcapsoil = "InfiltCapSoil"
-water_holding_capacity = "WHC"
-waterfrac = "WaterFrac"
 theta_r = "thetaR"
 theta_s = "thetaS"
 maxleakage = "MaxLeakage"
@@ -102,5 +103,5 @@ parameter = "lateral.river.q"
 
 [[csv.column]]
 header = "recharge"
-parameter = "vertical.bucket.variables.recharge"
+parameter = "vertical.soil.variables.recharge"
 reducer = "mean"

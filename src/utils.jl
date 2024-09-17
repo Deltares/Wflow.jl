@@ -677,13 +677,7 @@ end
 Return vertical hydraulic conductivity `kv_z` for soil layer `n` at depth `z` using `SBM`
 soil parameters (at index `i`) based on hydraulic conductivity profile `ksat_profile`.
 """
-function hydraulic_conductivity_at_depth(
-    p::SimpleBucketModelParameters,
-    z,
-    i,
-    n,
-    ksat_profile,
-)
+function hydraulic_conductivity_at_depth(p::SbmSoilModelParameters, z, i, n, ksat_profile)
     if ksat_profile == "exponential"
         kv_z = p.kvfrac[i][n] * p.kv_0[i] * exp(-p.f[i] * z)
     elseif ksat_profile == "exponential_constant"
@@ -714,7 +708,7 @@ Return equivalent horizontal hydraulic conductivity `kh` [m d⁻¹] for a layere
 of type `SoilSbmModel` (at index `i`) based on multiplication factor `khfrac` [-], water
 table depth `z` [mm] and hydraulic conductivity profile `ksat_profile`.
 """
-function kh_layered_profile(model::SimpleBucketModel, khfrac, i, ksat_profile, dt)
+function kh_layered_profile(model::SbmSoilModel, khfrac, i, ksat_profile, dt)
     (; nlayers, nlayers_kv, sumlayers, act_thickl, soilthickness, z_layered, kv, f) =
         model.parameters
     (; n_unsatlayers, zi) = model.variables
@@ -827,7 +821,7 @@ end
 "Initialize lateral subsurface variables `ssf`, `ssfmax` and `kh` with ksat_profile` `layered` or `layered_exponential`"
 function initialize_lateralssf_layered!(
     ssf::LateralSSF,
-    sbm::SimpleBucketModel,
+    sbm::SbmSoilModel,
     ksat_profile,
     dt,
 )

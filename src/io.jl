@@ -1625,7 +1625,7 @@ end
 function get_index_dimension(var, model)::Int
     @unpack vertical = model
     if haskey(var, "layer")
-        inds = collect(1:(vertical.bucket.parameters.maxlayers))
+        inds = collect(1:(vertical.soil.parameters.maxlayers))
         index = inds[var["layer"]]
     else
         error("Unrecognized or missing dimension name to index $(var)")

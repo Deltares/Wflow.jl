@@ -240,14 +240,14 @@ function initialize_sbm_gwf_model(config::Config)
         get(config.input.lateral.subsurface, "conductivity_profile", "uniform")::String
 
     connectivity = Connectivity(inds, rev_inds, xl, yl)
-    initial_head = altitude .- lsm.bucket.variables.zi / 1000.0 # cold state for groundwater head based on SBM zi
+    initial_head = altitude .- lsm.soil.variables.zi / 1000.0 # cold state for groundwater head based on SBM zi
     initial_head[index_river] = altitude[index_river]
 
     if do_constanthead
         initial_head[constant_head.index] = constant_head.head
     end
 
-    bottom = altitude .- lsm.bucket.parameters.soilthickness ./ Float(1000.0)
+    bottom = altitude .- lsm.soil.parameters.soilthickness ./ Float(1000.0)
     area = xl .* yl
     volume = @. (min(altitude, initial_head) - bottom) * area * specific_yield # total volume than can be released
 
@@ -406,7 +406,7 @@ function initialize_sbm_gwf_model(config::Config)
         x_nc,
         y_nc,
         nc;
-        extra_dim = (name = "layer", value = Float64.(1:(lsm.bucket.parameters.maxlayers))),
+        extra_dim = (name = "layer", value = Float64.(1:(lsm.soil.parameters.maxlayers))),
     )
     close(nc)
 
@@ -526,17 +526,12 @@ end
 "update the sbm_gwf model for a single timestep"
 function update(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmGwfModel}
     @unpack lateral, vertical, network, clock, config = model
-    (; bucket) = vertical
+    (; soil, runoff, demand) = vertical
 
     do_water_demand = haskey(config.model, "water_demand")
     inds_riv = network.index_river
     aquifer = lateral.subsurface.flow.aquifer
     constanthead = lateral.subsurface.flow.constanthead
-
-    # extract water levels h_av [m] from the land and river domains
-    # this is used to limit open water evaporation
-    bucket.variables.waterlevel_land .= lateral.land.h_av .* 1000.0
-    bucket.variables.waterlevel_river[inds_riv] .= lateral.river.h_av .* 1000.0
 
     vertical = update(vertical, lateral, network, config)
 
@@ -557,8 +552,7 @@ function update(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmGw
     Q = zeros(lateral.subsurface.flow.connectivity.ncell)
     # exchange of recharge between vertical sbm concept and groundwater flow domain
     # recharge rate groundwater is required in units [m d⁻¹]
-    @. lateral.subsurface.recharge.rate =
-        bucket.variables.recharge / 1000.0 * (1.0 / dt_sbm)
+    @. lateral.subsurface.recharge.rate = soil.variables.recharge / 1000.0 * (1.0 / dt_sbm)
     if do_water_demand
         @. lateral.subsurface.recharge.rate -=
             vertical.allocation.act_groundwater_abst / 1000.0 * (1.0 / dt_sbm)
@@ -576,14 +570,11 @@ function update(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmGw
     aquifer.head[constanthead.index] .= constanthead.head
 
     # update vertical sbm concept (runoff, ustorelayerdepth and satwaterdepth)
-    update!(
-        vertical.bucket,
-        vertical.demand,
-        (network.land.altitude .- aquifer.head) .* 1000.0, # zi [mm] in vertical concept SBM
-        exfiltwater * 1000.0,
-    )
+    zi = (network.land.altitude .- aquifer.head) .* 1000.0 # zi [mm] in vertical concept SBM
+    exfiltsatwater = exfiltwater * 1000.0
+    update!(soil, (; runoff, demand), (; zi, exfiltsatwater))
 
-    ssf_toriver = zeros(length(vertical.bucket.variables.zi))
+    ssf_toriver = zeros(length(soil.variables.zi))
     ssf_toriver[inds_riv] = -lateral.subsurface.river.flux ./ lateral.river.dt
     surface_routing(model; ssf_toriver = ssf_toriver)
 

@@ -1625,7 +1625,7 @@ flow to the river.
 """
 function set_river_inwater(model::Model, ssf_toriver)
     @unpack lateral, vertical, network, config = model
-    (; net_runoff_river) = vertical.bucket.variables
+    (; net_runoff_river) = vertical.runoff.variables
     inds = network.index_river
     do_water_demand = haskey(config.model, "water_demand")
     if do_water_demand
@@ -1656,7 +1656,7 @@ function set_land_inwater(
     model::Model{N, L, V, R, W, T},
 ) where {N, L, V, R, W, T <: SbmGwfModel}
     @unpack lateral, vertical, network, config = model
-    (; net_runoff) = vertical.bucket.variables
+    (; net_runoff) = vertical.soil.variables
     do_drains = get(config.model, "drains", false)::Bool
     drainflux = zeros(length(net_runoff))
     do_water_demand = haskey(config.model, "water_demand")
@@ -1684,7 +1684,7 @@ function set_land_inwater(
     model::Model{N, L, V, R, W, T},
 ) where {N, L, V, R, W, T <: SbmModel}
     @unpack lateral, vertical, network, config = model
-    (; net_runoff) = vertical.bucket.variables
+    (; net_runoff) = vertical.soil.variables
     do_water_demand = haskey(config.model, "water_demand")
     if do_water_demand
         @. lateral.land.inwater =
@@ -1836,7 +1836,8 @@ function surface_routing(
     T,
 }
     @unpack lateral, vertical, network, clock = model
-    (; net_runoff, net_runoff_river) = vertical.bucket.variables
+    (; net_runoff) = vertical.soil.variables
+    (; net_runoff_river) = vertical.runoff.variables
 
     @. lateral.land.runoff = (
         (net_runoff / 1000.0) * (network.land.area) / vertical.dt +

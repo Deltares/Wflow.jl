@@ -22,7 +22,7 @@ path_output = "outstates-moselle.nc"
 [state.vertical.interception.variables]
 canopy_storage = "canopystorage"
 
-[state.vertical.bucket.variables]
+[state.vertical.soil.variables]
 satwaterdepth = "satwaterdepth"
 tsoil = "tsoil"
 ustorelayerdepth = "ustorelayerdepth"
@@ -74,6 +74,9 @@ specific_leaf = "Sl"
 storage_wood = "Swood"
 rootingdepth = "RootingDepth"
 
+[input.vertical.land_parameter_set]
+waterfrac = "WaterFrac"
+
 [input.vertical.interception.parameters]
 e_r = "EoverR"
 
@@ -82,14 +85,13 @@ potential_evaporation = "pet"
 precipitation = "precip"
 temperature = "temp"
 
-[input.vertical.bucket.parameters]
+[input.vertical.soil.parameters]
 c = "c"
 cf_soil = "cf_soil"
 f = "f"
 infiltcappath = "InfiltCapPath"
 infiltcapsoil = "InfiltCapSoil"
 water_holding_capacity = "WHC"
-waterfrac = "WaterFrac"
 theta_r = "thetaR"
 theta_s = "thetaS"
 maxleakage = "MaxLeakage"
@@ -103,7 +105,7 @@ tti = "TTI"
 ttm = "TTM"
 cfmax = "Cfmax"
 
-[input.vertical.bucket.parameters.kv_0]
+[input.vertical.soil.parameters.kv_0]
 netcdf.variable.name = "KsatVer"
 scale = 1.0
 offset = 0.0
@@ -150,7 +152,7 @@ path = "output_moselle.nc"
 [output.vertical.interception.variables]
 canopy_storage = "canopystorage"
 
-[output.vertical.bucket.variables]
+[output.vertical.soil.variables]
 satwaterdepth = "satwaterdepth"
 tsoil = "tsoil"
 ustorelayerdepth = "ustorelayerdepth"
@@ -218,7 +220,7 @@ parameter = "vertical.atmospheric_forcing.temperature"
 coordinate.x = 6.255
 coordinate.y = 50.012
 header = "vwc_layer2_bycoord"
-parameter = "vertical.bucket.variables.vwc"
+parameter = "vertical.soil.variables.vwc"
 layer = 2
 
 [[csv.column]]
@@ -235,16 +237,20 @@ parameter = "lateral.river.q"
 [[csv.column]]
 header = "recharge"
 map = "subcatchment"
-parameter = "vertical.bucket.variables.recharge"
+parameter = "vertical.soil.variables.recharge"
 reducer = "mean"
 
 [API]
 components = [
   "vertical.atmospheric_forcing",
   "vertical.vegetation_parameter_set",
-  "vertical.bucket.boundary_conditions",
-  "vertical.bucket.variables",
-  "vertical.bucket.parameters",
+  "vertical.land_parameter_set",
+  "vertical.runoff.boundary_conditions",
+  "vertical.runoff.variables",
+  "vertical.runoff.parameters",
+  "vertical.soil.boundary_conditions",
+  "vertical.soil.variables",
+  "vertical.soil.parameters",
   "vertical.interception.variables",
   "vertical.interception.parameters",
   "vertical.snow.boundary_conditions",

@@ -1,10 +1,12 @@
 @get_units @grid_loc @with_kw struct LandHydrologySBM{IM, SM, GM, D, A, T}
     atmospheric_forcing::AtmosphericForcing | "-" | "none"
     vegetation_parameter_set::VegetationParameters | "-" | "none"
+    land_parameter_set::LandParameters | "-" | "none"
     interception::IM | "-" | "none"
     snow::SM | "-" | "none"
     glacier::GM | "-" | "none"
-    bucket::SimpleBucketModel | "-" | "none"
+    runoff::SurfaceRunoff | "-" | "none"
+    soil::SbmSoilModel | "-" | "none"
     demand::D | "-" | "none"
     allocation::A | "-" | "none"
     # Model time step [s]
@@ -64,6 +66,7 @@ function initialize_land_hydrology_sbm(nc, config, riverfrac, inds)
 
     atmospheric_forcing = initialize_atmospheric_forcing(n)
     vegetation_parameter_set = initialize_vegetation_params(nc, config, inds)
+    land_parameter_set = initialize_land_params(nc, config, inds, riverfrac)
     if dt >= Hour(23)
         interception_model =
             initialize_gash_interception_model(nc, config, inds, vegetation_parameter_set)
@@ -85,16 +88,10 @@ function initialize_land_hydrology_sbm(nc, config, riverfrac, inds)
     else
         glacier_model = NoGlacierModel()
     end
-    bucket_model = initialize_simple_bucket_model(
-        nc,
-        config,
-        vegetation_parameter_set,
-        riverfrac,
-        inds,
-        dt,
-    )
+    runoff_model = initialize_surface_runoff_model(land_parameter_set, n)
+    soil_model = initialize_sbm_soil_model(nc, config, vegetation_parameter_set, inds, dt)
     @. vegetation_parameter_set.rootingdepth = min(
-        bucket_model.parameters.soilthickness * 0.99,
+        soil_model.parameters.soilthickness * 0.99,
         vegetation_parameter_set.rootingdepth,
     )
 
@@ -113,10 +110,12 @@ function initialize_land_hydrology_sbm(nc, config, riverfrac, inds)
     }(;
         atmospheric_forcing = atmospheric_forcing,
         vegetation_parameter_set = vegetation_parameter_set,
+        land_parameter_set = land_parameter_set,
         interception = interception_model,
         snow = snow_model,
         glacier = glacier_model,
-        bucket = bucket_model,
+        runoff = runoff_model,
+        soil = soil_model,
         demand = demand,
         allocation = allocation,
         dt = tosecond(dt),
@@ -124,48 +123,57 @@ function initialize_land_hydrology_sbm(nc, config, riverfrac, inds)
     return lsm
 end
 
-function update(lsm::LandHydrologySBM, lateral, network, config)
+function update(model::LandHydrologySBM, lateral, network, config)
     do_water_demand = haskey(config.model, "water_demand")::Bool
+    (;
+        glacier,
+        snow,
+        interception,
+        runoff,
+        soil,
+        demand,
+        allocation,
+        atmospheric_forcing,
+        dt,
+    ) = model
 
-    update!(lsm.interception, lsm.atmospheric_forcing)
+    update!(interception, atmospheric_forcing)
 
-    (; throughfall, stemflow) = lsm.interception.variables
-    update_boundary_conditions!(lsm.snow, throughfall .+ stemflow)
-    update!(lsm.snow, lsm.atmospheric_forcing)
+    update_boundary_conditions!(snow, (; interception))
+    update!(snow, atmospheric_forcing)
 
     # lateral snow transport
     if get(config.model, "masswasting", false)::Bool
         lateral_snow_transport!(
-            lsm.snow.variables.snow_storage,
-            lsm.snow.variables.snow_water,
+            snow.variables.snow_storage,
+            snow.variables.snow_water,
             network.land.slope,
             network.land,
         )
     end
 
-    update!(lsm.glacier, lsm.atmospheric_forcing)
+    update_glacier!(glacier, atmospheric_forcing)
 
-    (; potential_evaporation) = lsm.atmospheric_forcing
-    update_boundary_conditions!(
-        lsm.bucket,
-        lsm.interception,
-        lsm.snow,
-        lsm.glacier,
-        potential_evaporation,
-    )
+    update_boundary_conditions!(runoff, (; glacier, snow, interception), lateral, network)
+    update!(runoff, atmospheric_forcing)
 
     if do_water_demand
-        (; potential_transpiration) = lsm.bucket.boundary_conditions
-        (; h3_high, h3_low) = lsm.bucket.parameters
-        @. lsm.bucket.variables.h3 =
-            feddes_h3(h3_high, h3_low, potential_transpiration, lsm.dt)
-        update_water_demand(lsm)
-        update_water_allocation(lsm, lateral, network)
+        (; potential_transpiration) = soil.boundary_conditions
+        (; h3_high, h3_low) = soil.parameters
+        potential_transpiration .= get_potential_transpiration(interception)
+        @. soil.variables.h3 = feddes_h3(h3_high, h3_low, potential_transpiration, dt)
+        update_water_demand(model)
+        update_water_allocation(model, lateral, network)
     end
 
-    update!(lsm.bucket, lsm.demand, lsm.allocation, lsm.atmospheric_forcing, config, lsm.dt)
-    @. lsm.bucket.variables.actevap += lsm.interception.variables.interception_flux
-    return lsm
+    update_boundary_conditions!(
+        soil,
+        (; glacier, snow, interception, runoff, demand, allocation, atmospheric_forcing),
+    )
+
+    update!(soil, (; runoff, demand, atmospheric_forcing), config, dt)
+    @. soil.variables.actevap += interception.variables.interception_flux
+    return model
 end
 
 """
@@ -190,9 +198,9 @@ function update_total_water_storage(
     river_routing,
     land_routing,
 )
-    (; interception, snow, glacier, bucket, demand) = model
-    (; total_storage, ustoredepth, satwaterdepth) = bucket.variables
-    (; riverfrac) = bucket.parameters
+    (; interception, snow, glacier, soil, demand) = model
+    (; total_storage, ustoredepth, satwaterdepth) = soil.variables
+    (; riverfrac) = model.land_parameter_set
 
     # Set the total storage to zero
     fill!(total_storage, 0)
@@ -245,8 +253,8 @@ function update_water_demand(lsm::LandHydrologySBM)
     (; rootingdepth) = lsm.vegetation_parameter_set
     (; nonpaddy, paddy, domestic, industry, livestock) = lsm.demand
     (; hb, theta_s, theta_r, c, sumlayers, act_thickl, pathfrac, infiltcapsoil) =
-        lsm.bucket.parameters
-    (; h3, n_unsatlayers, zi, ustorelayerdepth, soilinfredu) = lsm.bucket.variables
+        lsm.soil.parameters
+    (; h3, n_unsatlayers, zi, ustorelayerdepth, soilinfredu) = lsm.soil.variables
 
     n = length(zi)
     for i in 1:n

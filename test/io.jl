@@ -26,23 +26,22 @@ config = Wflow.Config(tomlpath)
 
     # theta_s can also be provided under the alias theta_s
     @test Wflow.get_alias(
-        config.input.vertical.bucket.parameters,
+        config.input.vertical.soil.parameters,
         "theta_s",
         "theta_s",
         nothing,
     ) == "thetaS"
-    val = pop!(config.input.vertical.bucket.parameters, "theta_s")
-    config.input.vertical.bucket.parameters["theta_s"] = val
+    val = pop!(config.input.vertical.soil.parameters, "theta_s")
+    config.input.vertical.soil.parameters["theta_s"] = val
     @test Wflow.get_alias(
-        config.input.vertical.bucket.parameters,
+        config.input.vertical.soil.parameters,
         "theta_s",
         "theta_s",
         nothing,
     ) == "thetaS"
 
     # modifiers can also be applied
-    kvconf =
-        Wflow.get_alias(config.input.vertical.bucket.parameters, "kv_0", "kv_0", nothing)
+    kvconf = Wflow.get_alias(config.input.vertical.soil.parameters, "kv_0", "kv_0", nothing)
     @test kvconf isa Wflow.Config
     ncname, modifier = Wflow.ncvar_name_modifier(kvconf; config = config)
     @test ncname === "KsatVer"
@@ -216,15 +215,15 @@ end
 
 @testset "warm states" begin
     @test Wflow.param(model, "lateral.river.reservoir.volume")[1] ≈ 3.2807224993363418e7
-    @test Wflow.param(model, "vertical.bucket.variables.satwaterdepth")[9115] ≈
+    @test Wflow.param(model, "vertical.soil.variables.satwaterdepth")[9115] ≈
           477.13548089422125
     @test Wflow.param(model, "vertical.snow.variables.snow_storage")[5] ≈ 11.019233179897599
-    @test Wflow.param(model, "vertical.bucket.variables.tsoil")[5] ≈ 0.21814478119608938
-    @test Wflow.param(model, "vertical.bucket.variables.ustorelayerdepth")[50063][1] ≈
+    @test Wflow.param(model, "vertical.soil.variables.tsoil")[5] ≈ 0.21814478119608938
+    @test Wflow.param(model, "vertical.soil.variables.ustorelayerdepth")[50063][1] ≈
           9.969116007201725
     @test Wflow.param(model, "vertical.snow.variables.snow_water")[5] ≈ 0.0
     @test Wflow.param(model, "vertical.interception.variables.canopy_storage")[50063] ≈ 0.0
-    @test Wflow.param(model, "vertical.bucket.variables.zi")[50063] ≈ 296.8028609104624
+    @test Wflow.param(model, "vertical.soil.variables.zi")[50063] ≈ 296.8028609104624
     @test Wflow.param(model, "lateral.subsurface.ssf")[10606] ≈ 39.972334552895816
     @test Wflow.param(model, "lateral.river.q")[149] ≈ 53.48673634956338
     @test Wflow.param(model, "lateral.river.h")[149] ≈ 1.167635369628945
@@ -259,21 +258,21 @@ end
 @testset "initial parameter values" begin
     @unpack vertical = model
     @test vertical.snow.parameters.cfmax[1] ≈ 3.7565300464630127
-    @test vertical.bucket.parameters.soilthickness[1] ≈ 2000.0
+    @test vertical.soil.parameters.soilthickness[1] ≈ 2000.0
     @test vertical.atmospheric_forcing.precipitation[49951] ≈ 2.2100000381469727
-    @test vertical.bucket.parameters.c[1] ≈
+    @test vertical.soil.parameters.c[1] ≈
           [9.152995289601465, 8.919674421902961, 8.70537452585209, 8.690681062890977]
 end
 
 config.input.vertical.snow.parameters.cfmax = Dict("value" => 2.0)
-config.input.vertical.bucket.parameters.soilthickness = Dict(
+config.input.vertical.soil.parameters.soilthickness = Dict(
     "scale" => 3.0,
     "offset" => 100.0,
     "netcdf" => Dict("variable" => Dict("name" => "SoilThickness")),
 )
 config.input.vertical.atmospheric_forcing.precipitation =
     Dict("scale" => 1.5, "netcdf" => Dict("variable" => Dict("name" => "precip")))
-config.input.vertical.bucket.parameters.c = Dict(
+config.input.vertical.soil.parameters.c = Dict(
     "scale" => [2.0, 3.0],
     "offset" => [0.0, 0.0],
     "layer" => [1, 3],
@@ -287,9 +286,9 @@ Wflow.load_dynamic_input!(model)
 @testset "changed parameter values" begin
     @unpack vertical = model
     @test vertical.snow.parameters.cfmax[1] == 2.0
-    @test vertical.bucket.parameters.soilthickness[1] ≈ 2000.0 * 3.0 + 100.0
+    @test vertical.soil.parameters.soilthickness[1] ≈ 2000.0 * 3.0 + 100.0
     @test vertical.atmospheric_forcing.precipitation[49951] ≈ 1.5 * 2.2100000381469727
-    @test vertical.bucket.parameters.c[1] ≈ [
+    @test vertical.soil.parameters.c[1] ≈ [
         2.0 * 9.152995289601465,
         8.919674421902961,
         3.0 * 8.70537452585209,
@@ -452,8 +451,8 @@ end
 
     # Extracting required states and test if some are covered (not all are tested!)
     required_states = Wflow.extract_required_states(config)
-    @test (:vertical, :bucket, :variables, :satwaterdepth) in required_states
-    @test (:vertical, :bucket, :variables, :ustorelayerdepth) in required_states
+    @test (:vertical, :soil, :variables, :satwaterdepth) in required_states
+    @test (:vertical, :soil, :variables, :ustorelayerdepth) in required_states
     @test (:vertical, :interception, :variables, :canopy_storage) in required_states
     @test (:lateral, :subsurface, :ssf) in required_states
     @test (:lateral, :river, :q) in required_states
@@ -462,17 +461,17 @@ end
     @test !((:lateral, :river, :lake, :waterlevel) in required_states)
 
     # Adding an unused state the see if the right warning message is thrown
-    config.state.vertical.bucket.variables.additional_state = "additional_state"
+    config.state.vertical.soil.variables.additional_state = "additional_state"
     @test_logs (
         :warn,
         string(
-            "State variable `(:vertical, :bucket, :variables, :additional_state)` provided, but is not used in ",
+            "State variable `(:vertical, :soil, :variables, :additional_state)` provided, but is not used in ",
             "model setup, skipping.",
         ),
     ) Wflow.check_states(config)
 
     # Removing the unused and required state, to test the exception being thrown
-    delete!(config.state.vertical.bucket["variables"], "additional_state")
+    delete!(config.state.vertical.soil["variables"], "additional_state")
     delete!(config.state.vertical.snow["variables"], "snow_storage")
     @test_throws ArgumentError Wflow.check_states(config)
 
@@ -480,8 +479,8 @@ end
     tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
     config = Wflow.Config(tomlpath)
     required_states = Wflow.extract_required_states(config)
-    @test (:vertical, :bucket, :variables, :satwaterdepth) in required_states
-    @test (:vertical, :bucket, :variables, :ustorelayerdepth) in required_states
+    @test (:vertical, :soil, :variables, :satwaterdepth) in required_states
+    @test (:vertical, :soil, :variables, :ustorelayerdepth) in required_states
     @test (:vertical, :interception, :variables, :canopy_storage) in required_states
     @test (:lateral, :subsurface, :flow, :aquifer, :head) in required_states
     @test (:lateral, :river, :q) in required_states

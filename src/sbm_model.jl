@@ -122,8 +122,8 @@ function initialize_sbm_model(config::Config)
             type = Float,
         )
 
-        (; theta_s, theta_r, kv_0, f, soilthickness, z_exp) = lsm.bucket.parameters
-        (; zi) = lsm.bucket.variables
+        (; theta_s, theta_r, kv_0, f, soilthickness, z_exp) = lsm.soil.parameters
+        (; zi) = lsm.soil.variables
         _soilthickness = soilthickness .* 0.001
         _zi = zi .* 0.001
 
@@ -159,7 +159,7 @@ function initialize_sbm_model(config::Config)
         elseif ksat_profile == "layered" || ksat_profile == "layered_exponential"
             initialize_lateralssf_layered!(
                 ssf::LateralSSF,
-                lsm.bucket,
+                lsm.soil,
                 ksat_profile,
                 tosecond(dt),
             )
@@ -322,7 +322,7 @@ function initialize_sbm_model(config::Config)
         reservoir = isempty(reservoir) ? nothing : reservoir.reverse_indices,
         lake = isempty(lake) ? nothing : lake.reverse_indices,
     )
-    (; maxlayers) = lsm.bucket.parameters
+    (; maxlayers) = lsm.soil.parameters
     writer = prepare_writer(
         config,
         modelmap,
@@ -443,17 +443,17 @@ function update(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmMo
 
     model = update_until_recharge(model)
     # exchange of recharge between vertical sbm concept and subsurface flow domain
-    lateral.subsurface.recharge .= vertical.bucket.variables.recharge ./ 1000.0
+    lateral.subsurface.recharge .= vertical.soil.variables.recharge ./ 1000.0
     if do_water_demand
         @. lateral.subsurface.recharge -= vertical.allocation.act_groundwater_abst / 1000.0
     end
     lateral.subsurface.recharge .*= lateral.subsurface.dw
-    lateral.subsurface.zi .= vertical.bucket.variables.zi ./ 1000.0
+    lateral.subsurface.zi .= vertical.soil.variables.zi ./ 1000.0
     # update lateral subsurface flow domain (kinematic wave)
     if (ksat_profile == "layered") || (ksat_profile == "layered_exponential")
         for i in eachindex(lateral.subsurface.kh)
             lateral.subsurface.kh[i] = kh_layered_profile(
-                vertical.bucket,
+                vertical.soil,
                 lateral.subsurface.khfrac[i],
                 i,
                 ksat_profile,
@@ -475,18 +475,8 @@ through BMI, to couple the SBM model to an external groundwater model.
 function update_until_recharge(
     model::Model{N, L, V, R, W, T},
 ) where {N, L, V, R, W, T <: SbmModel}
-    (; lateral, vertical, network, config, clock) = model
-    (; bucket) = vertical
-
-    inds_riv = network.index_river
-
-    # extract water levels h_av [m] from the land and river domains
-    # this is used to limit open water evaporation
-    bucket.variables.waterlevel_land .= lateral.land.h_av .* 1000.0
-    bucket.variables.waterlevel_river[inds_riv] .= lateral.river.h_av .* 1000.0
-
+    (; lateral, vertical, network, config) = model
     vertical = update(vertical, lateral, network, config)
-
     return model
 end
 
@@ -500,14 +490,12 @@ function update_after_subsurfaceflow(
     model::Model{N, L, V, R, W, T},
 ) where {N, L, V, R, W, T <: SbmModel}
     @unpack lateral, vertical, network, clock, config = model
+    (; soil, runoff, demand) = vertical
 
     # update vertical sbm concept (runoff, ustorelayerdepth and satwaterdepth)
-    update!(
-        vertical.bucket,
-        vertical.demand,
-        lateral.subsurface.zi * 1000.0,
-        lateral.subsurface.exfiltwater * 1000.0,
-    )
+    zi = lateral.subsurface.zi * 1000.0
+    exfiltsatwater = lateral.subsurface.exfiltwater * 1000.0
+    update!(soil, (; runoff, demand), (; zi, exfiltsatwater))
 
     ssf_toriver = lateral.subsurface.to_river ./ tosecond(basetimestep)
     surface_routing(model; ssf_toriver = ssf_toriver)
@@ -565,11 +553,11 @@ function set_states(
         zi =
             max.(
                 0.0,
-                vertical.bucket.parameters.soilthickness .-
-                vertical.bucket.variables.satwaterdepth ./
-                (vertical.bucket.parameters.theta_s .- vertical.bucket.parameters.theta_r),
+                vertical.soil.parameters.soilthickness .-
+                vertical.soil.variables.satwaterdepth ./
+                (vertical.soil.parameters.theta_s .- vertical.soil.parameters.theta_r),
             )
-        vertical.bucket.variables.zi .= zi
+        vertical.soil.variables.zi .= zi
         if land_routing == "kinematic-wave"
             # make sure land cells with zero flow width are set to zero q and h
             for i in eachindex(lateral.land.width)

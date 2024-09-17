@@ -39,7 +39,7 @@ function get_interception_states(model_type::AbstractString)
     return states
 end
 
-function get_bucket_states(model_type::AbstractString; snow = false)
+function get_soil_states(model_type::AbstractString; snow = false)
     if model_type == "sbm" || model_type == "sbm_gwf"
         if snow
             states = (:satwaterdepth, :tsoil, :ustorelayerdepth)
@@ -112,7 +112,7 @@ function extract_required_states(config::Config)
         glacier_states = ()
     end
     interception_states = get_interception_states(model_type)
-    bucket_states = get_bucket_states(model_type; snow = do_snow)
+    soil_states = get_soil_states(model_type; snow = do_snow)
 
     # Subsurface states
     if model_type == "sbm_gwf"
@@ -184,7 +184,7 @@ function extract_required_states(config::Config)
     # Build required states in a tuple, similar to the keys in the output of
     # `ncnames(config.state)`
     required_states = ()
-    # Add snow, glacier, interception and sbm bucket states to dict
+    # Add snow, glacier, interception and sbm soil states to dict
     required_states =
         add_to_required_states(required_states, (:vertical, :snow, :variables), snow_states)
     required_states = add_to_required_states(
@@ -197,11 +197,8 @@ function extract_required_states(config::Config)
         (:vertical, :interception, :variables),
         interception_states,
     )
-    required_states = add_to_required_states(
-        required_states,
-        (:vertical, :bucket, :variables),
-        bucket_states,
-    )
+    required_states =
+        add_to_required_states(required_states, (:vertical, :soil, :variables), soil_states)
     # Add subsurface states to dict
     if model_type == "sbm_gwf"
         key_entry = (:lateral, :subsurface, :flow, :aquifer)

@@ -56,7 +56,7 @@ river_routing = "kinematic-wave"
 [state.vertical.interception.variables]
 canopy_storage = "canopystorage"
 
-[state.vertical.bucket.variables]
+[state.vertical.soil.variables]
 satwaterdepth = "satwaterdepth"
 tsoil = "tsoil"
 ustorelayerdepth = "ustorelayerdepth"
@@ -99,7 +99,10 @@ potential_evaporation = "pet"
 precipitation = "precip"
 temperature = "temp"
 
-[input.vertical.bucket.parameters]
+[input.vertical.land_parameter_set]
+waterfrac = "WaterFrac"
+
+[input.vertical.soil.parameters]
 alpha_h1 = "alpha_h1"
 c = "c"
 cf_soil = "cf_soil"
@@ -111,8 +114,6 @@ h3_low = "h3_low"
 h4 = "h4"
 infiltcappath = "InfiltCapPath"
 infiltcapsoil = "InfiltCapSoil"
-water_holding_capacity = "WHC"
-waterfrac = "WaterFrac"
 theta_r = "thetaR"
 theta_s = "thetaS"
 maxleakage = "MaxLeakage"
@@ -199,7 +200,7 @@ path = "output-piave-gwf.nc"
 [output.lateral.river]
 q_av = "q_river"
 
-[output.vertical.bucket.variables]
+[output.vertical.soil.variables]
 zi = "zi"
 
 [output.lateral.subsurface.flow.aquifer]

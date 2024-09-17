@@ -21,7 +21,7 @@ path_output = "outstates-moselle.nc"
 [state.vertical.interception.variables]
 canopy_storage = "canopystorage"
 
-[state.vertical.bucket.variables] 
+[state.vertical.soil.variables] 
 satwaterdepth = "satwaterdepth"
 tsoil = "tsoil"
 ustorelayerdepth = "ustorelayerdepth"
@@ -75,7 +75,10 @@ specific_leaf = "Sl"
 storage_wood = "Swood"
 rootingdepth = "RootingDepth"
 
-[input.vertical.bucket.parameters]
+[input.vertical.land_parameter_set]
+waterfrac = "WaterFrac"
+
+[input.vertical.soil.parameters]
 c = "c"
 cf_soil = "cf_soil"
 cfmax = "Cfmax"
@@ -89,7 +92,6 @@ pathfrac = "PathFrac"
 rootdistpar = "rootdistpar"
 rootingdepth = "RootingDepth"
 soilthickness = "SoilThickness"
-waterfrac = "WaterFrac"
 theta_r = "thetaR"
 theta_s = "thetaS"
 
@@ -133,7 +135,7 @@ path = "output_moselle.nc"
 [output.vertical.interception.variables]
 canopy_storage = "canopystorage"
 
-[output.vertical.bucket.variables]
+[output.vertical.soil.variables]
 satwaterdepth = "satwaterdepth"
 tsoil = "tsoil"
 ustorelayerdepth = "ustorelayerdepth"
@@ -208,7 +210,7 @@ parameter = "lateral.river.q"
 [[csv.column]]
 header = "recharge"
 map = "subcatchment"
-parameter = "vertical.bucket.variables.recharge"
+parameter = "vertical.soil.variables.recharge"
 reducer = "mean"
 
 [API]

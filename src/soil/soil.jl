@@ -4,7 +4,7 @@
 # riverfrac and waterfrac parameters). For ksat_profile parameters it is not required to
 # store all parameters (depends on profile).
 
-@get_units @grid_loc @with_kw struct SimpleBucketModelVars{T, N}
+@get_units @grid_loc @with_kw struct SbmSoilModelVars{T, N}
     # Calculated soil water pressure head h3 of the root water uptake reduction function (Feddes) [cm]
     h3::Vector{T} | "cm"
     # Amount of water in the unsaturated store, per layer [mm]
@@ -29,16 +29,6 @@
     actevapsat::Vector{T}
     # Total actual evapotranspiration [mm Δt⁻¹]
     actevap::Vector{T}
-    # Runoff from river based on riverfrac [mm Δt⁻¹]
-    runoff_river::Vector{T}
-    # Runoff from land based on waterfrac [mm Δt⁻¹]
-    runoff_land::Vector{T}
-    # Actual evaporation from open water (land) [mm Δt⁻¹]
-    ae_openw_l::Vector{T}
-    # Actual evaporation from river [mm Δt⁻¹]
-    ae_openw_r::Vector{T}
-    # Net runoff from river [mm Δt⁻¹]
-    net_runoff_river::Vector{T}
     # Water available for infiltration [mm Δt⁻¹]
     avail_forinfilt::Vector{T}
     # Actual infiltration into the unsaturated zone [mm Δt⁻¹]
@@ -83,10 +73,6 @@
     recharge::Vector{T}
     # Actual leakage from saturated store [mm Δt⁻¹]
     actleakage::Vector{T}
-    # Water level land [mm]
-    waterlevel_land::Vector{T} | "mm"
-    # Water level river [mm]
-    waterlevel_river::Vector{T} | "mm"
     # Total water storage (excluding floodplain volume, lakes and reservoirs) [mm]
     total_storage::Vector{T} | "mm"
     # Top soil temperature [ᵒC]
@@ -95,7 +81,7 @@
     soilinfredu::Vector{T} | "-"
 end
 
-function simple_bucket_model_vars(n, parameters)
+function sbm_soil_model_vars(n, parameters)
     (;
         soilthickness,
         maxlayers,
@@ -113,7 +99,7 @@ function simple_bucket_model_vars(n, parameters)
     vwc = fill(mv, maxlayers, n)
     vwc_perc = fill(mv, maxlayers, n)
 
-    vars = SimpleBucketModelVars(;
+    vars = SbmSoilModelVars(;
         ustorelayerdepth = zero(act_thickl),
         satwaterdepth = satwaterdepth,
         zi = zi,
@@ -126,10 +112,6 @@ function simple_bucket_model_vars(n, parameters)
         actcapflux = fill(mv, n),
         actevapsat = fill(mv, n),
         actevap = fill(mv, n),
-        runoff_river = fill(mv, n),
-        runoff_land = fill(mv, n),
-        ae_openw_l = fill(mv, n),
-        ae_openw_r = fill(mv, n),
         soilinfredu = fill(Float(1), n),
         avail_forinfilt = fill(mv, n),
         actinfilt = fill(mv, n),
@@ -144,7 +126,6 @@ function simple_bucket_model_vars(n, parameters)
         excesswaterpath = fill(mv, n),
         runoff = fill(mv, n),
         net_runoff = fill(mv, n),
-        net_runoff_river = fill(mv, n),
         vwc = svectorscopy(vwc, Val{maxlayers}()),
         vwc_perc = svectorscopy(vwc_perc, Val{maxlayers}()),
         rootstore = fill(mv, n),
@@ -155,21 +136,19 @@ function simple_bucket_model_vars(n, parameters)
         recharge = fill(mv, n),
         actleakage = fill(mv, n),
         tsoil = fill(Float(10.0), n),
-        waterlevel_land = fill(mv, n),
-        waterlevel_river = zeros(Float, n), #set to zero to account for cells outside river domain
         total_storage = zeros(Float, n), # Set the total water storage from initialized values
     )
     return vars
 end
 
-@get_units @grid_loc @with_kw struct SimpleBucketModelBC{T}
-    surface_water_flux::Vector{T} | "-" | "none"
-    potential_transpiration::Vector{T} | "-" | "none"
-    potential_soilevaporation::Vector{T} | "-" | "none"
+@get_units @grid_loc @with_kw struct SbmSoilModelBC{T}
+    surface_water_flux::Vector{T}
+    potential_transpiration::Vector{T}
+    potential_soilevaporation::Vector{T}
 end
 
-function simple_bucket_model_bc(n)
-    bc = SimpleBucketModelBC(;
+function sbm_soil_model_bc(n)
+    bc = SbmSoilModelBC(;
         surface_water_flux = fill(mv, n),
         potential_transpiration = fill(mv, n),
         potential_soilevaporation = fill(mv, n),
@@ -177,7 +156,7 @@ function simple_bucket_model_bc(n)
     return bc
 end
 
-@get_units @grid_loc @with_kw struct SimpleBucketModelParameters{T, N, M}
+@get_units @grid_loc @with_kw struct SbmSoilModelParameters{T, N, M}
     # Maximum number of soil layers
     maxlayers::Int | "-"
     # Number of soil layers
@@ -226,10 +205,6 @@ end
     w_soil::Vector{T} | "-"
     # Controls soil infiltration reduction factor when soil is frozen [-]
     cf_soil::Vector{T} | "-"
-    # Fraction of river [-]
-    riverfrac::Vector{T} | "-"
-    # Fraction of open water (excluding rivers) [-]
-    waterfrac::Vector{T} | "-"
     # Fraction of compacted area  [-]
     pathfrac::Vector{T} | "-"
     # Controls how roots are linked to water table [-]
@@ -251,13 +226,16 @@ end
     vegetation_parameter_set::VegetationParameters{T} | "-" | "none"
 end
 
-abstract type AbstractBucketModel{T} end
+abstract type AbstractSoilModel{T} end
 
-@get_units @with_kw struct SimpleBucketModel{T} <: AbstractBucketModel{T}
-    boundary_conditions::SimpleBucketModelBC{T} | "-"
-    parameters::SimpleBucketModelParameters{T} | "-"
-    variables::SimpleBucketModelVars{T} | "-"
+@get_units @with_kw struct SbmSoilModel{T} <: AbstractSoilModel{T}
+    boundary_conditions::SbmSoilModelBC{T} | "-"
+    parameters::SbmSoilModelParameters{T} | "-"
+    variables::SbmSoilModelVars{T} | "-"
 end
+
+get_rootingdepth(model::SbmSoilModel) =
+    model.parameters.vegetation_parameter_set.rootingdepth
 
 function sbm_ksat_profiles(
     nc,
@@ -280,7 +258,7 @@ function sbm_ksat_profiles(
         z_exp = ncread(
             nc,
             config,
-            "vertical.bucket.parameters.z_exp";
+            "vertical.soil.parameters.z_exp";
             optional = false,
             sel = inds,
             type = Float,
@@ -294,14 +272,14 @@ function sbm_ksat_profiles(
             ncread(
                 nc,
                 config,
-                "vertical.bucket.parameters.kv";
+                "vertical.soil.parameters.kv";
                 sel = inds,
                 defaults = 1000.0,
                 type = Float,
                 dimname = :layer,
             ) .* (dt / basetimestep)
         if size(kv, 1) != maxlayers
-            parname = param(config.input.vertical.bucket.parameter, "kv")
+            parname = param(config.input.vertical.soil.parameter, "kv")
             size1 = size(kv, 1)
             error("$parname needs a layer dimension of size $maxlayers, but is $size1")
         end
@@ -312,7 +290,7 @@ function sbm_ksat_profiles(
             z_layered = ncread(
                 nc,
                 config,
-                "vertical.bucket.parameters.z_layered";
+                "vertical.soil.parameters.z_layered";
                 optional = false,
                 sel = inds,
                 type = Float,
@@ -334,14 +312,7 @@ function sbm_ksat_profiles(
     return z_exp, z_layered, kv, nlayers_kv
 end
 
-function initialize_simple_bucket_model_params(
-    nc,
-    config,
-    vegetation_parameter_set,
-    riverfrac,
-    inds,
-    dt,
-)
+function initialize_sbm_soil_model_params(nc, config, vegetation_parameter_set, inds, dt)
     config_thicknesslayers = get(config.model, "thicknesslayers", Float[])
     if length(config_thicknesslayers) > 0
         thicknesslayers = SVector(Tuple(push!(Float.(config_thicknesslayers), mv)))
@@ -356,7 +327,7 @@ function initialize_simple_bucket_model_params(
         ncread(
             nc,
             config,
-            "vertical.bucket.parameters.w_soil";
+            "vertical.soil.parameters.w_soil";
             sel = inds,
             defaults = 0.1125,
             type = Float,
@@ -364,7 +335,7 @@ function initialize_simple_bucket_model_params(
     cf_soil = ncread(
         nc,
         config,
-        "vertical.bucket.parameters.cf_soil";
+        "vertical.soil.parameters.cf_soil";
         sel = inds,
         defaults = 0.038,
         type = Float,
@@ -373,7 +344,7 @@ function initialize_simple_bucket_model_params(
     theta_s = ncread(
         nc,
         config,
-        "vertical.bucket.parameters.theta_s";
+        "vertical.soil.parameters.theta_s";
         sel = inds,
         defaults = 0.6,
         type = Float,
@@ -381,7 +352,7 @@ function initialize_simple_bucket_model_params(
     theta_r = ncread(
         nc,
         config,
-        "vertical.bucket.parameters.theta_r";
+        "vertical.soil.parameters.theta_r";
         sel = inds,
         defaults = 0.01,
         type = Float,
@@ -390,7 +361,7 @@ function initialize_simple_bucket_model_params(
         ncread(
             nc,
             config,
-            "vertical.bucket.parameters.kv_0";
+            "vertical.soil.parameters.kv_0";
             sel = inds,
             defaults = 3000.0,
             type = Float,
@@ -398,7 +369,7 @@ function initialize_simple_bucket_model_params(
     f = ncread(
         nc,
         config,
-        "vertical.bucket.parameters.f";
+        "vertical.soil.parameters.f";
         sel = inds,
         defaults = 0.001,
         type = Float,
@@ -406,7 +377,7 @@ function initialize_simple_bucket_model_params(
     hb = ncread(
         nc,
         config,
-        "vertical.bucket.parameters.hb";
+        "vertical.soil.parameters.hb";
         sel = inds,
         defaults = -10.0,
         type = Float,
@@ -414,7 +385,7 @@ function initialize_simple_bucket_model_params(
     h1 = ncread(
         nc,
         config,
-        "vertical.bucket.parameters.h1";
+        "vertical.soil.parameters.h1";
         sel = inds,
         defaults = 0.0,
         type = Float,
@@ -422,7 +393,7 @@ function initialize_simple_bucket_model_params(
     h2 = ncread(
         nc,
         config,
-        "vertical.bucket.parameters.h2";
+        "vertical.soil.parameters.h2";
         sel = inds,
         defaults = -100.0,
         type = Float,
@@ -430,7 +401,7 @@ function initialize_simple_bucket_model_params(
     h3_high = ncread(
         nc,
         config,
-        "vertical.bucket.parameters.h3_high";
+        "vertical.soil.parameters.h3_high";
         sel = inds,
         defaults = -400.0,
         type = Float,
@@ -438,7 +409,7 @@ function initialize_simple_bucket_model_params(
     h3_low = ncread(
         nc,
         config,
-        "vertical.bucket.parameters.h3_low";
+        "vertical.soil.parameters.h3_low";
         sel = inds,
         defaults = -1000.0,
         type = Float,
@@ -446,7 +417,7 @@ function initialize_simple_bucket_model_params(
     h4 = ncread(
         nc,
         config,
-        "vertical.bucket.parameters.h4";
+        "vertical.soil.parameters.h4";
         sel = inds,
         defaults = -15849.0,
         type = Float,
@@ -454,7 +425,7 @@ function initialize_simple_bucket_model_params(
     alpha_h1 = ncread(
         nc,
         config,
-        "vertical.bucket.parameters.alpha_h1";
+        "vertical.soil.parameters.alpha_h1";
         sel = inds,
         defaults = 1.0,
         type = Float,
@@ -462,7 +433,7 @@ function initialize_simple_bucket_model_params(
     soilthickness = ncread(
         nc,
         config,
-        "vertical.bucket.parameters.soilthickness";
+        "vertical.soil.parameters.soilthickness";
         sel = inds,
         defaults = 2000.0,
         type = Float,
@@ -471,7 +442,7 @@ function initialize_simple_bucket_model_params(
         ncread(
             nc,
             config,
-            "vertical.bucket.parameters.infiltcappath";
+            "vertical.soil.parameters.infiltcappath";
             sel = inds,
             defaults = 10.0,
             type = Float,
@@ -480,7 +451,7 @@ function initialize_simple_bucket_model_params(
         ncread(
             nc,
             config,
-            "vertical.bucket.parameters.infiltcapsoil";
+            "vertical.soil.parameters.infiltcapsoil";
             sel = inds,
             defaults = 100.0,
             type = Float,
@@ -489,7 +460,7 @@ function initialize_simple_bucket_model_params(
         ncread(
             nc,
             config,
-            "vertical.bucket.parameters.maxleakage";
+            "vertical.soil.parameters.maxleakage";
             sel = inds,
             defaults = 0.0,
             type = Float,
@@ -498,7 +469,7 @@ function initialize_simple_bucket_model_params(
     c = ncread(
         nc,
         config,
-        "vertical.bucket.parameters.c";
+        "vertical.soil.parameters.c";
         sel = inds,
         defaults = 10.0,
         type = Float,
@@ -512,31 +483,22 @@ function initialize_simple_bucket_model_params(
     kvfrac = ncread(
         nc,
         config,
-        "vertical.bucket.parameters.kvfrac";
+        "vertical.soil.parameters.kvfrac";
         sel = inds,
         defaults = 1.0,
         type = Float,
         dimname = :layer,
     )
     if size(kvfrac, 1) != maxlayers
-        parname = param(config.input, "vertical.bucket.parameters.kvfrac")
+        parname = param(config.input, "vertical.soil.parameters.kvfrac")
         size1 = size(kvfrac, 1)
         error("$parname needs a layer dimension of size $maxlayers, but is $size1")
     end
-
-    # fraction open water and compacted area (land cover)
-    waterfrac = ncread(
-        nc,
-        config,
-        "vertical.bucket.parameters.waterfrac";
-        sel = inds,
-        defaults = 0.0,
-        type = Float,
-    )
+    # fraction compacted area
     pathfrac = ncread(
         nc,
         config,
-        "vertical.bucket.parameters.pathfrac";
+        "vertical.soil.parameters.pathfrac";
         sel = inds,
         defaults = 0.01,
         type = Float,
@@ -546,7 +508,7 @@ function initialize_simple_bucket_model_params(
     rootdistpar = ncread(
         nc,
         config,
-        "vertical.bucket.parameters.rootdistpar";
+        "vertical.soil.parameters.rootdistpar";
         sel = inds,
         defaults = -500.0,
         type = Float,
@@ -554,7 +516,7 @@ function initialize_simple_bucket_model_params(
     cap_hmax = ncread(
         nc,
         config,
-        "vertical.bucket.parameters.cap_hmax";
+        "vertical.soil.parameters.cap_hmax";
         sel = inds,
         defaults = 2000.0,
         type = Float,
@@ -562,15 +524,15 @@ function initialize_simple_bucket_model_params(
     cap_n = ncread(
         nc,
         config,
-        "vertical.bucket.parameters.cap_n";
+        "vertical.soil.parameters.cap_n";
         sel = inds,
         defaults = 2.0,
         type = Float,
     )
 
-    if haskey(config.input.vertical.bucket.parameters, "et_reftopot")
+    if haskey(config.input.vertical.soil.parameters, "et_reftopot")
         @warn string(
-            "The `et_reftopot` key in `[input.vertical.bucket.parameters]` is now called ",
+            "The `et_reftopot` key in `[input.vertical.soil.parameters]` is now called ",
             "`kc`. Please update your TOML file.",
         )
     end
@@ -582,11 +544,11 @@ function initialize_simple_bucket_model_params(
     if length(config_thicknesslayers) > 0
         # root fraction read from nc file, in case of multiple soil layers and TOML file
         # includes "vertical.rootfraction"
-        if haskey(config.input.vertical.bucket.parameters, "rootfraction")
+        if haskey(config.input.vertical.soil.parameters, "rootfraction")
             rootfraction = ncread(
                 nc,
                 config,
-                "vertical.bucket.parameters.rootfraction";
+                "vertical.soil.parameters.rootfraction";
                 sel = inds,
                 optional = false,
                 type = Float,
@@ -629,12 +591,11 @@ function initialize_simple_bucket_model_params(
 
     soilwatercapacity = @. soilthickness * (theta_s - theta_r)
 
-    sbm_params = SimpleBucketModelParameters(;
+    sbm_params = SbmSoilModelParameters(;
         maxlayers = maxlayers,
         nlayers = nlayers,
         nlayers_kv = nlayers_kv,
         soilwatercapacity = soilwatercapacity,
-        riverfrac = riverfrac,
         theta_s = theta_s,
         theta_r = theta_r,
         kv_0 = kv_0,
@@ -653,7 +614,6 @@ function initialize_simple_bucket_model_params(
         infiltcappath = infiltcappath,
         infiltcapsoil = infiltcapsoil,
         maxleakage = maxleakage,
-        waterfrac = max.(waterfrac .- riverfrac, Float(0.0)),
         pathfrac = pathfrac,
         rootdistpar = rootdistpar,
         rootfraction = svectorscopy(rootfraction, Val{maxlayers}()),
@@ -670,86 +630,71 @@ function initialize_simple_bucket_model_params(
     return sbm_params
 end
 
-function initialize_simple_bucket_model(
-    nc,
-    config,
-    vegetation_parameter_set,
-    riverfrac,
-    inds,
-    dt,
-)
+function initialize_sbm_soil_model(nc, config, vegetation_parameter_set, inds, dt)
     n = length(inds)
-    params = initialize_simple_bucket_model_params(
-        nc,
-        config,
-        vegetation_parameter_set,
-        riverfrac,
-        inds,
-        dt,
-    )
-    vars = simple_bucket_model_vars(n, params)
-    bc = simple_bucket_model_bc(n)
-    model =
-        SimpleBucketModel(; boundary_conditions = bc, parameters = params, variables = vars)
+    params =
+        initialize_sbm_soil_model_params(nc, config, vegetation_parameter_set, inds, dt)
+    vars = sbm_soil_model_vars(n, params)
+    bc = sbm_soil_model_bc(n)
+    model = SbmSoilModel(; boundary_conditions = bc, parameters = params, variables = vars)
     return model
 end
 
-get_surface_water_flux(snow::NoSnowModel, glacier, effective_precip) = effective_precip
-function get_surface_water_flux(snow::AbstractSnowModel, glacier, effective_precip)
-    return get_runoff(snow) .+ get_glacier_melt(glacier)
-end
-
-function update_boundary_conditions!(
-    model::SimpleBucketModel,
-    interception,
-    snow,
-    glacier,
-    potential_evaporation,
-)
+function update_boundary_conditions!(model::SbmSoilModel, external_models::NamedTuple)
+    (; interception, glacier, snow, runoff, demand, allocation, atmospheric_forcing) =
+        external_models
     (; potential_transpiration, surface_water_flux, potential_soilevaporation) =
         model.boundary_conditions
 
-    @. potential_transpiration = max(
-        0.0,
-        interception.variables.canopy_potevap - interception.variables.interception_flux,
-    )
-    (; throughfall, stemflow) = interception.variables
-    surface_water_flux .= get_surface_water_flux(snow, glacier, throughfall .+ stemflow)
+    potential_transpiration .= get_potential_transpiration(interception)
 
-    (; riverfrac, waterfrac) = model.parameters
-    (; canopygapfraction) = interception.parameters.vegetation_parameter_set
+    for i in eachindex(surface_water_flux)
+        if !isnothing(demand) && (!isnothing(demand.paddy) || !isnothing(demand.nonpaddy))
+            surface_water_flux[i] = max(
+                runoff.boundary_conditions.surface_water_flux[i] +
+                allocation.irri_alloc[i] - runoff.variables.runoff_river[i] -
+                runoff.variables.runoff_land[i],
+                0.0,
+            )
+        else
+            surface_water_flux[i] = max(
+                runoff.boundary_conditions.surface_water_flux[i] -
+                runoff.variables.runoff_river[i] - runoff.variables.runoff_land[i],
+                0.0,
+            )
+        end
+    end
+
+    (; riverfrac, waterfrac) = runoff.parameters
+    canopygapfraction = get_canopygapfraction(interception)
     glacier_frac = get_glacier_frac(glacier)
     @. potential_soilevaporation =
         max(canopygapfraction - riverfrac - waterfrac - glacier_frac, 0.0) *
-        potential_evaporation
+        atmospheric_forcing.potential_evaporation
 end
 
 #TODO (v1.0):
-# check if it's feasible to make the SimpleBucketModel (SBM) modular:
+# check if it's feasible to make the SbmSoilModel modular:
 #   - soil evaporation
 #   - transpiration (root water uptake Feddes)
 #   - unsaturated flow (soil_model)
 #   - capillary rise
-#   - deep transfer 
+#   - deep transfer
 
-function update!(
-    model::SimpleBucketModel,
-    demand,
-    allocation,
-    atmospheric_forcing::AtmosphericForcing,
-    config,
-    dt,
-)
+function update!(model::SbmSoilModel, external_models::NamedTuple, config, dt)
     soilinfreduction = get(config.model, "soilinfreduction", false)::Bool
     modelsnow = get(config.model, "snow", false)::Bool
     transfermethod = get(config.model, "transfermethod", false)::Bool
     ust = get(config.model, "whole_ust_available", false)::Bool # should be removed from optional setting and code?
     ksat_profile = get(config.input.vertical, "ksat_profile", "exponential")::String
 
-    (; rootingdepth) = model.parameters.vegetation_parameter_set
+    (; runoff, demand, atmospheric_forcing) = external_models
     (; potential_evaporation, temperature) = atmospheric_forcing
+    (; ae_openw_r, ae_openw_l) = runoff.variables
+
     (; surface_water_flux, potential_soilevaporation, potential_transpiration) =
         model.boundary_conditions
+    rootingdepth = get_rootingdepth(model)
     v = model.variables
     p = model.parameters
 
@@ -758,28 +703,8 @@ function update!(
         h3 = feddes_h3(p.h3_high[i], p.h3_low[i], potential_transpiration[i], dt)
         ustoredepth = sum(@view v.ustorelayerdepth[i][1:p.nlayers[i]])
 
-        runoff_river = min(1.0, p.riverfrac[i]) * surface_water_flux[i]
-        runoff_land = min(1.0, p.waterfrac[i]) * surface_water_flux[i]
-        if !isnothing(demand) && (!isnothing(demand.paddy) || !isnothing(demand.nonpaddy))
-            avail_forinfilt = max(
-                surface_water_flux[i] + allocation.irri_alloc[i] - runoff_river -
-                runoff_land,
-                0.0,
-            )
-        else
-            avail_forinfilt = max(surface_water_flux[i] - runoff_river - runoff_land, 0.0)
-        end
-
-        ae_openw_r = min(
-            v.waterlevel_river[i] * p.riverfrac[i],
-            p.riverfrac[i] * potential_evaporation[i],
-        )
-        ae_openw_l = min(
-            v.waterlevel_land[i] * p.waterfrac[i],
-            p.waterfrac[i] * potential_evaporation[i],
-        )
-
         potsoilevap = potential_soilevaporation[i]
+        avail_forinfilt = surface_water_flux[i]
         if !isnothing(demand) &&
            !isnothing(demand.paddy) &&
            demand.paddy.irrigation_areas[i]
@@ -1020,12 +945,12 @@ function update!(
         # recharge (mm) for saturated zone
         recharge = (transfer - actcapflux - actleakage - actevapsat - soilevapsat)
         transpiration = actevapsat + actevapustore
-        actevap = soilevap + transpiration + ae_openw_r + ae_openw_l + evap_paddy_water
+        actevap =
+            soilevap + transpiration + ae_openw_r[i] + ae_openw_l[i] + evap_paddy_water
 
         # update the outputs and states
         v.n_unsatlayers[i] = n_usl
         v.h3[i] = h3
-        v.net_runoff_river[i] = runoff_river - ae_openw_r
         v.avail_forinfilt[i] = avail_forinfilt
         v.actinfilt[i] = actinfilt
         v.infiltexcess[i] = infiltexcess
@@ -1033,10 +958,6 @@ function update!(
         v.transpiration[i] = transpiration
         v.soilevap[i] = soilevap
         v.soilevapsat[i] = soilevapsat
-        v.ae_openw_r[i] = ae_openw_r
-        v.ae_openw_l[i] = ae_openw_l
-        v.runoff_land[i] = runoff_land
-        v.runoff_river[i] = runoff_river
         v.actevapsat[i] = actevapsat
         v.actevap[i] = actevap
         v.ae_ustore[i] = actevapustore
@@ -1055,23 +976,23 @@ function update!(
     end
 end
 
-function update!(model::SimpleBucketModel, demand, zi, exfiltsatwater)
-    v = model.variables
-    (;
-        ustorelayerdepth,
-        n_unsatlayers,
-        excesswater,
-        runoff_land,
-        infiltexcess,
-        vwc,
-        vwc_perc,
-    ) = v
+function update!(
+    model::SbmSoilModel,
+    external_models::NamedTuple,
+    boundary_conditions::NamedTuple,
+)
+    (; runoff, demand) = external_models
+    (; ustorelayerdepth, n_unsatlayers, excesswater, infiltexcess, vwc, vwc_perc) =
+        model.variables
+    (; runoff_land, ae_openw_l) = runoff.variables
     (; theta_s, theta_r, act_thickl, soilthickness, sumlayers, nlayers) = model.parameters
-    (; rootingdepth) = model.parameters.vegetation_parameter_set
+    rootingdepth = get_rootingdepth(model)
 
-    n = length(zi)
+    v = model.variables
+
+    n = length(boundary_conditions.zi)
     threaded_foreach(1:n; basesize = 1000) do i
-        usl = set_layerthickness(zi[i], sumlayers[i], act_thickl[i])
+        usl = set_layerthickness(boundary_conditions.zi[i], sumlayers[i], act_thickl[i])
         n_usl = number_of_active_layers(usl)
         # exfiltration from ustore
         usld = ustorelayerdepth[i]
@@ -1095,7 +1016,7 @@ function update!(model::SimpleBucketModel, demand, zi, exfiltsatwater)
            demand.paddy.irrigation_areas[i]
             paddy_h_add =
                 exfiltustore +
-                exfiltsatwater[i] +
+                boundary_conditions.exfiltsatwater[i] +
                 excesswater[i] +
                 runoff_land[i] +
                 infiltexcess[i]
@@ -1104,7 +1025,7 @@ function update!(model::SimpleBucketModel, demand, zi, exfiltsatwater)
         else
             runoff =
                 exfiltustore +
-                exfiltsatwater[i] +
+                boundary_conditions.exfiltsatwater[i] +
                 excesswater[i] +
                 runoff_land[i] +
                 infiltexcess[i]
@@ -1133,27 +1054,30 @@ function update!(model::SimpleBucketModel, demand, zi, exfiltsatwater)
                 min(1.0, (max(0.0, rootingdepth[i] - sumlayers[i][k]) / usl[k])) * usld[k]
         end
 
-        rootstore_sat = max(0.0, rootingdepth[i] - zi[i]) * (theta_s[i] - theta_r[i])
+        rootstore_sat =
+            max(0.0, rootingdepth[i] - boundary_conditions.zi[i]) *
+            (theta_s[i] - theta_r[i])
         rootstore = rootstore_sat + rootstore_unsat
         vwc_root = rootstore / rootingdepth[i] + theta_r[i]
         vwc_percroot = (vwc_root / theta_s[i]) * 100.0
 
-        satwaterdepth = (soilthickness[i] - zi[i]) * (theta_s[i] - theta_r[i])
+        satwaterdepth =
+            (soilthickness[i] - boundary_conditions.zi[i]) * (theta_s[i] - theta_r[i])
 
         # update the outputs and states
         v.n_unsatlayers[i] = n_usl
         v.ustorelayerdepth[i] = usld
         v.ustoredepth[i] = ustoredepth
         v.satwaterdepth[i] = satwaterdepth
-        v.exfiltsatwater[i] = exfiltsatwater[i]
+        v.exfiltsatwater[i] = boundary_conditions.exfiltsatwater[i]
         v.exfiltustore[i] = exfiltustore
         v.runoff[i] = runoff
-        v.net_runoff[i] = runoff - v.ae_openw_l[i]
+        v.net_runoff[i] = runoff - ae_openw_l[i]
         v.vwc[i] = vwc_
         v.vwc_perc[i] = vwc_perc_
         v.rootstore[i] = rootstore
         v.vwc_root[i] = vwc_root
         v.vwc_percroot[i] = vwc_percroot
-        v.zi[i] = zi[i]
+        v.zi[i] = boundary_conditions.zi[i]
     end
 end

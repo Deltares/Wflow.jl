@@ -21,7 +21,7 @@ path_output = "outstates-example-sbm-gwf.nc"
 [state.vertical.interception.variables]
 canopy_storage = "canopystorage"
 
-[state.vertical.bucket.variables]
+[state.vertical.soil.variables]
 satwaterdepth = "satwaterdepth"
 ustorelayerdepth = "ustorelayerdepth"
 
@@ -67,7 +67,7 @@ e_r = "EoverR"
 potential_evaporation = "PET"
 precipitation = "P"
 
-[input.vertical.bucket.parameters]
+[input.vertical.soil.parameters]
 infiltcapsoil = "InfiltCapSoil"
 kv_0 = "kv"
 pathfrac = "PathFrac"
@@ -112,11 +112,11 @@ path = "output_example-sbm-gwf.nc"
 [output.vertical.interception.variables]
 canopy_storage = "canopystorage"
 
-[output.vertical.bucket.variables]
+[output.vertical.soil.variables]
 satwaterdepth = "satwaterdepth"
 ustorelayerdepth = "ustorelayerdepth"
 
-[output.vertical.bucket.parameters]
+[output.vertical.soil.parameters]
 soilthickness = "soilthickness"
 
 [output.lateral.river]

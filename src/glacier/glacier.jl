@@ -112,7 +112,7 @@ function initialize_glacier_hbv_model(nc, config, inds, dt, bc)
     return model
 end
 
-function update!(model::GlacierHbvModel, atmospheric_forcing::AtmosphericForcing)
+function update_glacier!(model::GlacierHbvModel, atmospheric_forcing::AtmosphericForcing)
     (; temperature) = atmospheric_forcing
     (; glacier_store, glacier_melt) = model.variables
     (; snow_storage) = model.boundary_conditions
@@ -134,7 +134,7 @@ function update!(model::GlacierHbvModel, atmospheric_forcing::AtmosphericForcing
     end
 end
 
-function update!(model::NoGlacierModel, atmospheric_forcing::AtmosphericForcing)
+function update_glacier!(model::NoGlacierModel, atmospheric_forcing::AtmosphericForcing)
     return nothing
 end
 

@@ -21,10 +21,10 @@ end
     sbm = model.vertical
 
     @test model.clock.iteration == 1
-    @test sbm.bucket.parameters.theta_s[1] ≈ 0.44999998807907104f0
-    @test sbm.bucket.variables.runoff[1] == 0.0
-    @test sbm.bucket.variables.soilevap[1] == 0.0
-    @test sbm.bucket.variables.transpiration[1] ≈ 0.30587632831650247f0
+    @test sbm.soil.parameters.theta_s[1] ≈ 0.44999998807907104f0
+    @test sbm.soil.variables.runoff[1] == 0.0
+    @test sbm.soil.variables.soilevap[1] == 0.0
+    @test sbm.soil.variables.transpiration[1] ≈ 0.30587632831650247f0
 end
 
 # run the second timestep
@@ -32,10 +32,10 @@ model = Wflow.run_timestep(model)
 
 @testset "second timestep" begin
     sbm = model.vertical
-    @test sbm.bucket.parameters.theta_s[1] ≈ 0.44999998807907104f0
-    @test sbm.bucket.variables.runoff[1] == 0.0
-    @test sbm.bucket.variables.soilevap[1] == 0.0
-    @test sbm.bucket.variables.transpiration[4] ≈ 0.7000003898938235f0
+    @test sbm.soil.parameters.theta_s[1] ≈ 0.44999998807907104f0
+    @test sbm.soil.variables.runoff[1] == 0.0
+    @test sbm.soil.variables.soilevap[1] == 0.0
+    @test sbm.soil.variables.transpiration[4] ≈ 0.7000003898938235f0
 end
 
 @testset "overland flow (kinematic wave)" begin
@@ -151,9 +151,9 @@ model = Wflow.run_timestep(model)
 
 @testset "second timestep warm start" begin
     sbm = model.vertical
-    @test sbm.bucket.variables.runoff[1] == 0.0
-    @test sbm.bucket.variables.soilevap[1] ≈ 0.2889306511074693f0
-    @test sbm.bucket.variables.transpiration[1] ≈ 0.8370726722706481f0
+    @test sbm.soil.variables.runoff[1] == 0.0
+    @test sbm.soil.variables.soilevap[1] ≈ 0.2889306511074693f0
+    @test sbm.soil.variables.transpiration[1] ≈ 0.8370726722706481f0
 end
 
 @testset "overland flow warm start (kinematic wave)" begin

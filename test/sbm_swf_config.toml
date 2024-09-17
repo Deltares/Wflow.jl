@@ -17,7 +17,7 @@ dir_output = "data/output"
 [state.vertical.interception.variables]
 canopy_storage = "canopystorage"
 
-[state.vertical.bucket.variables]
+[state.vertical.soil.variables]
 satwaterdepth = "satwaterdepth"
 tsoil = "tsoil"
 ustorelayerdepth = "ustorelayerdepth"
@@ -78,14 +78,15 @@ potential_evaporation = "pet"
 precipitation = "precip"
 temperature = "temp"
 
-[input.vertical.bucket.parameters]
+[input.vertical.land_parameter_set]
+waterfrac = "WaterFrac"
+
+[input.vertical.soil.parameters]
 c = "c"
 cf_soil = "cf_soil"
 f = "f"
 infiltcappath = "InfiltCapPath"
 infiltcapsoil = "InfiltCapSoil"
-water_holding_capacity = "WHC"
-waterfrac = "WaterFrac"
 theta_r = "thetaR"
 theta_s = "thetaS"
 maxleakage = "MaxLeakage"
@@ -142,7 +143,7 @@ path = "output_moselle_swf.nc"
 [output.vertical.interception.variables]
 canopy_storage = "canopystorage"
 
-[output.vertical.bucket.variables]
+[output.vertical.soil.variables]
 satwaterdepth = "satwaterdepth"
 tsoil = "tsoil"
 ustorelayerdepth = "ustorelayerdepth"

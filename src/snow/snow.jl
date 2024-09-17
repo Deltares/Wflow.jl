@@ -117,12 +117,14 @@ function initialize_snow_hbv_model(nc, config, inds, dt)
     return model
 end
 
-function update_boundary_conditions!(model::AbstractSnowModel, flux_bc)
+function update_boundary_conditions!(model::AbstractSnowModel, external_models::NamedTuple)
     (; effective_precip) = model.boundary_conditions
-    @. effective_precip = flux_bc
+    (; interception) = external_models
+    @. effective_precip =
+        interception.variables.throughfall + interception.variables.stemflow
 end
 
-function update_boundary_conditions!(model::NoSnowModel, flux_bc)
+function update_boundary_conditions!(model::NoSnowModel, external_models::NamedTuple)
     return nothing
 end
 
