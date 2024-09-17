@@ -83,6 +83,8 @@ with_logger(NullLogger()) do
         include("vertical_process.jl")
         include("reservoir_lake.jl")
         include("run_sbm.jl")
+        include("run_sbm_piave.jl")
+        include("run_sbm_gwf_piave.jl")
         include("run_sbm_gwf.jl")
         include("run.jl")
         include("groundwater.jl")
