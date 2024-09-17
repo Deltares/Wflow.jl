@@ -1140,11 +1140,13 @@ function update_until_recharge(sbm::SBM, config)
         if do_surface_water_infiltration
             infilt_ratio = iszero(actinfilt) ? 0.0 : actinfilt / avail_forinfilt
             infilt_surfacewater = max(0.0, waterlevel_land * infilt_ratio)
+            # Subtract waterlevel_land from this, as this water is already excess water
+            excesswater = avail_forinfilt - waterlevel_land - infiltsoilpath - infiltexcess + du
         else
             infilt_surfacewater = 0.0
+            # Calculate excess water
+            excesswater = avail_forinfilt - infiltsoilpath - infiltexcess + du
         end
-        # Subtract waterlevel_land from this, as this water is already excess water
-        excesswater = avail_forinfilt - waterlevel_land - infiltsoilpath - infiltexcess + du
 
         # Separation between compacted and non compacted areas (correction with the satflow du)
         # This is required for D-Emission/Delwaq
