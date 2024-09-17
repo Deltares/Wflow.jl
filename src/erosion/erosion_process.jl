@@ -9,7 +9,7 @@
         canopygapfraction,
         soilcover_fraction,
         area,
-        dt,
+        ts,
     )
 
 Rainfall erosion model based on EUROSEM.
@@ -24,7 +24,7 @@ Rainfall erosion model based on EUROSEM.
 - `canopygapfraction` (canopy gap fraction [-])
 - `soilcover_fraction` (soil cover fraction [-])
 - `area` (area [m2])
-- `dt` (timestep [seconds])
+- `ts` (timestep [seconds])
 
 # Output
 - `rainfall_erosion` (soil loss [t Δt⁻¹])
@@ -39,10 +39,10 @@ function rainfall_erosion_eurosem(
     canopygapfraction,
     soilcover_fraction,
     area,
-    dt,
+    ts,
 )
     # calculate rainfall intensity [mm/h]
-    rintnsty = precip / (dt / 3600)
+    rintnsty = precip / (ts / 3600)
     # Kinetic energy of direct throughfall [J/m2/mm]
     # kedir = max(11.87 + 8.73 * log10(max(0.0001, rintnsty)),0.0) #basis used in USLE
     kedir = max(8.95 + 8.44 * log10(max(0.0001, rintnsty)), 0.0) #variant used in most distributed mdoels
@@ -58,11 +58,11 @@ function rainfall_erosion_eurosem(
     #Total kinetic energy by rainfall [J/m2]
     ketot = (rddir * kedir + rdleaf * keleaf) * 0.001
     # Rainfall / splash erosion [g/m2]
-    sedspl = soil_detachability * ketot * exp(-eurosem_exponent * waterlevel)
-    sedspl = sedspl * area * 1e-6 # ton/cell
+    rainfall_erosion = soil_detachability * ketot * exp(-eurosem_exponent * waterlevel)
+    rainfall_erosion = rainfall_erosion * area * 1e-6 # ton/cell
 
     # Remove the impervious area
-    sedspl = sedspl * (1.0 - soilcover_fraction)
+    rainfall_erosion = rainfall_erosion * (1.0 - soilcover_fraction)
     return rainfall_erosion
 end
 
@@ -72,7 +72,7 @@ end
         usle_k,
         usle_c,
         area,
-        dt,
+        ts,
     )
 
 Rainfall erosion model based on ANSWERS.
@@ -83,18 +83,18 @@ Rainfall erosion model based on ANSWERS.
 - `usle_c` (USLE cover and management factor [-])
 - `soilcover_fraction` (soil cover fraction [-])
 - `area` (area [m2])
-- `dt` (timestep [seconds])
+- `ts` (timestep [seconds])
 
 # Output
 - `rainfall_erosion` (soil loss [t Δt⁻¹])
 """
-function rainfall_erosion_answers(precip, usle_k, usle_c, area, dt)
+function rainfall_erosion_answers(precip, usle_k, usle_c, area, ts)
     # calculate rainfall intensity [mm/min]
     rintnsty = precip / (ts / 60)
     # splash erosion [kg/min]
-    sedspl = 0.108 * usle_c * usle_k * area * rintnsty^2
+    rainfall_erosion = 0.108 * usle_c * usle_k * area * rintnsty^2
     # [ton/timestep]
-    sedspl = sedspl * (dt / 60) * 1e-3
+    rainfall_erosion = rainfall_erosion * (ts / 60) * 1e-3
     return rainfall_erosion
 end
 
@@ -108,7 +108,7 @@ end
         slope,
         soilcover_fraction,
         area,
-        dt,
+        ts,
     )
 
 Overland flow erosion model based on ANSWERS.
@@ -121,7 +121,7 @@ Overland flow erosion model based on ANSWERS.
 - `answers_k` (ANSWERS overland flow factor [-])
 - `slope` (slope [-])
 - `area` (area [m2])
-- `dt` (timestep [seconds])
+- `ts` (timestep [seconds])
 
 # Output
 - `overland_flow_erosion` (soil loss [t Δt⁻¹])
@@ -133,10 +133,10 @@ function overland_flow_erosion_answers(
     answers_k,
     slope,
     area,
-    dt,
+    ts,
 )
     # Overland flow rate [m2/min]
-    qr_land = overland_flow * 60 / ((area) / 2)
+    qr_land = overland_flow * 60 / (area .^ 0.5)
     # Sine of the slope
     sinslope = sin(atan(slope))
 
@@ -144,7 +144,7 @@ function overland_flow_erosion_answers(
     # For a wide range of slope, it is better to use the sine of slope rather than tangeant
     erosion = answers_k * usle_c * usle_k * area * sinslope * qr_land
     # [ton/timestep]
-    erosion = erosion * (dt / 60) * 1e-3
+    erosion = erosion * (ts / 60) * 1e-3
     return erosion
 end
 

@@ -3,27 +3,27 @@ abstract type AbstractSoilErosionModel end
 ## Total soil erosion and differentiation structs and functions
 @get_units @with_kw struct SoilErosionModelVars{T}
     # Total soil erosion
-    soil_erosion::Vector{T} | "t dt-1"
+    amount::Vector{T} | "t dt-1"
     # Total clay erosion
-    clay_erosion::Vector{T} | "t dt-1"
+    clay::Vector{T} | "t dt-1"
     # Total silt erosion
-    silt_erosion::Vector{T} | "t dt-1"
+    silt::Vector{T} | "t dt-1"
     # Total sand erosion
-    sand_erosion::Vector{T} | "t dt-1"
+    sand::Vector{T} | "t dt-1"
     # Total small aggregates erosion
-    sagg_erosion::Vector{T} | "t dt-1"
+    sagg::Vector{T} | "t dt-1"
     # Total large aggregates erosion
-    lagg_erosion::Vector{T} | "t dt-1"
+    lagg::Vector{T} | "t dt-1"
 end
 
 function soil_erosion_model_vars(n)
     vars = SoilErosionModelVars(;
-        soil_erosion = fill(mv, n),
-        clay_erosion = fill(mv, n),
-        silt_erosion = fill(mv, n),
-        sand_erosion = fill(mv, n),
-        sagg_erosion = fill(mv, n),
-        lagg_erosion = fill(mv, n),
+        amount = fill(mv, n),
+        clay = fill(mv, n),
+        silt = fill(mv, n),
+        sand = fill(mv, n),
+        sagg = fill(mv, n),
+        lagg = fill(mv, n),
     )
     return vars
 end
@@ -105,7 +105,7 @@ function initialize_soil_erosion_params(nc, config, inds)
     # Check that soil fractions sum to 1
     soil_fractions =
         clay_fraction + silt_fraction + sand_fraction + sagg_fraction + lagg_fraction
-    if any(abs.(soil_fractions .- 1.0) .> 1e-6)
+    if any(abs.(soil_fractions .- 1.0) .> 1e-3)
         error("Particle fractions in the soil must sum to 1")
     end
     soil_parameters = SoilErosionParameters(;
@@ -133,17 +133,11 @@ function update!(model::SoilErosionModel)
     (; rainfall_erosion, overland_flow_erosion) = model.boundary_conditions
     (; clay_fraction, silt_fraction, sand_fraction, sagg_fraction, lagg_fraction) =
         model.parameters
-    (; soil_erosion, clay_erosion, silt_erosion, sand_erosion, sagg_erosion, lagg_erosion) =
-        model.variables
+    (; amount, clay, silt, sand, sagg, lagg) = model.variables
 
     n = length(rainfall_erosion)
     threaded_foreach(1:n; basesize = 1000) do i
-        soil_erosion[i],
-        clay_erosion[i],
-        silt_erosion[i],
-        sand_erosion[i],
-        sagg_erosion[i],
-        lagg_erosion[i] = total_soil_erosion(
+        amount[i], clay[i], silt[i], sand[i], sagg[i], lagg[i] = total_soil_erosion(
             rainfall_erosion[i],
             overland_flow_erosion[i],
             clay_fraction[i],

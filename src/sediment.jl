@@ -1569,8 +1569,4 @@ function update!(rs::RiverSediment, network, config)
         rs.SSconc[v] = SS * toconc
         rs.Bedconc[v] = Bed * toconc
     end
-<<<<<<< HEAD
-    return nothing
-=======
->>>>>>> d21c93089 (Refactor/style guide (#437))
 end

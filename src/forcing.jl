@@ -15,9 +15,29 @@ function AtmosphericForcing(
     potential_evaporation::Vector{T} = fill(mv, n),
     temperature::Vector{T} = fill(mv, n),
 ) where {T}
-    return AtmosphericForcing{T}(;
-        precipitation,
-        potential_evaporation,
-        temperature,
+    return AtmosphericForcing{T}(; precipitation, potential_evaporation, temperature)
+end
+
+@get_units @with_kw struct HydrometeoForcing{T}
+    # Precipitation [mm Δt⁻¹]
+    precipitation::Vector{T}
+    # Overland flow depth [m]
+    waterlevel_land::Vector{T} | "m"
+    # Overland flow discharge [m3 s-1]
+    q_land::Vector{T} | "m3 s-1"
+    # River depth [m]
+    waterlevel_river::Vector{T} | "m"
+    # River discharge [m3 s-1]
+    q_river::Vector{T} | "m3 s-1"
+end
+
+function initialize_hydrometeo_forcing(n)
+    hydrometeo_forcing = HydrometeoForcing(;
+        precipitation = fill(mv, n),
+        waterlevel_land = fill(mv, n),
+        q_land = fill(mv, n),
+        waterlevel_river = fill(mv, n),
+        q_river = fill(mv, n),
     )
+    return hydrometeo_forcing
 end
