@@ -250,7 +250,7 @@ function update(sf::SurfaceFlowLand, network, frac_toriver)
 
                     # Start kinematic wave if pond volume exceeds threshold
                     if pond_volume_pot >= threshold_volume[v]
-                        q_ = kinematic_wave(
+                        sf.q[v] = kinematic_wave(
                             sf.qin[v],
                             sf.q[v],
                             sf.qlat[v],
@@ -262,23 +262,19 @@ function update(sf::SurfaceFlowLand, network, frac_toriver)
 
                         # update h, only if surface width > 0.0
                         if sf.width[v] > 0.0
-                            crossarea = sf.alpha[v] * pow(q_, sf.beta)
-                            h_ = crossarea / sf.width[v]
-                        else
-                            h_ = 0.0
+                            crossarea = sf.alpha[v] * pow(sf.q[v], sf.beta)
+                            sf.h[v] = crossarea / sf.width[v]
                         end
 
                     else
                         # No flow if pond volume is below threshold
-                        q_ = 0.0
-                        h_ = 0.0
+                        sf.q[v] = 0.0
+                        sf.h[v] = 0.0
                         # Update pond volume
                         pond_volume_current[v] = pond_volume_pot
                     end
 
                     # Update values
-                    sf.q[v] = q_
-                    sf.h[v] = h_
                     sf.pond_height[v] = pond_volume_current[v] / (sf.width[v] * sf.dl[v])
 
                     # Update average values
