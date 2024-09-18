@@ -168,10 +168,11 @@ function update(model::LandHydrologySBM, lateral, network, config)
 
     update_boundary_conditions!(
         soil,
-        (; glacier, snow, interception, runoff, demand, allocation, atmospheric_forcing),
+        atmospheric_forcing,
+        (; glacier, interception, runoff, demand, allocation),
     )
 
-    update!(soil, (; runoff, demand, atmospheric_forcing), config, dt)
+    update!(soil, atmospheric_forcing, (; runoff, demand), config, dt)
     @. soil.variables.actevap += interception.variables.interception_flux
     return model
 end

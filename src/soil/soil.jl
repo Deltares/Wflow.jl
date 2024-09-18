@@ -640,9 +640,12 @@ function initialize_sbm_soil_model(nc, config, vegetation_parameter_set, inds, d
     return model
 end
 
-function update_boundary_conditions!(model::SbmSoilModel, external_models::NamedTuple)
-    (; interception, glacier, snow, runoff, demand, allocation, atmospheric_forcing) =
-        external_models
+function update_boundary_conditions!(
+    model::SbmSoilModel,
+    atmospheric_forcing::AtmosphericForcing,
+    external_models::NamedTuple,
+)
+    (; glacier, interception, runoff, demand, allocation) = external_models
     (; potential_transpiration, surface_water_flux, potential_soilevaporation) =
         model.boundary_conditions
 
@@ -681,14 +684,20 @@ end
 #   - capillary rise
 #   - deep transfer
 
-function update!(model::SbmSoilModel, external_models::NamedTuple, config, dt)
+function update!(
+    model::SbmSoilModel,
+    atmospheric_forcing::AtmosphericForcing,
+    external_models::NamedTuple,
+    config,
+    dt,
+)
     soilinfreduction = get(config.model, "soilinfreduction", false)::Bool
     modelsnow = get(config.model, "snow", false)::Bool
     transfermethod = get(config.model, "transfermethod", false)::Bool
     ust = get(config.model, "whole_ust_available", false)::Bool # should be removed from optional setting and code?
     ksat_profile = get(config.input.vertical, "ksat_profile", "exponential")::String
 
-    (; runoff, demand, atmospheric_forcing) = external_models
+    (; runoff, demand) = external_models
     (; potential_evaporation, temperature) = atmospheric_forcing
     (; ae_openw_r, ae_openw_l) = runoff.variables
 
