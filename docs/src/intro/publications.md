@@ -53,6 +53,11 @@ to improve hydrological assessment and snow water equivalent estimation in a sub
 watershed. Hydrol. Earth Syst. Sci., 22, 4685–4697.
 <https://doi.org/10.5194/hess-22-4685-2018>.
 
+Droppers, B., Rakovec, O., Avila, L., Azimi, S., Cortés-Torres N., De León Pérez, D., 
+Imhoff, R., Francés, F., Kollet, S., Rigon, R., Weerts, A. & Samaniego, L, 2024. Multi-model 
+hydrological reference dataset over continental Europe and an African basin. Sci Data, 11, 1009. 
+<https://doi.org/10.1038/s41597-024-03825-9>.
+
 Emerton, R.E., Stephens, E.M., Pappenberger, F., Pagano, T.C., Weerts, A.H., Wood, A.W.,
 Salamon, P., Brown, J.D., Hjerdt, N., Donnelly, C., Baugh, C.A., Cloke, H.L., 2016.
 Continental and global scale flood forecasting systems. WIREs Water 3, 391–418.
