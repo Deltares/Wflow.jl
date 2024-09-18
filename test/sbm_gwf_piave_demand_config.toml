@@ -99,7 +99,7 @@ potential_evaporation = "pet"
 precipitation = "precip"
 temperature = "temp"
 
-[input.vertical.land_parameter_set]
+[input.vertical.runoff.parameters]
 waterfrac = "WaterFrac"
 
 [input.vertical.soil.parameters]

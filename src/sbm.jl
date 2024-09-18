@@ -1,7 +1,6 @@
 @get_units @grid_loc @with_kw struct LandHydrologySBM{IM, SM, GM, D, A, T}
     atmospheric_forcing::AtmosphericForcing | "-" | "none"
     vegetation_parameter_set::VegetationParameters | "-" | "none"
-    land_parameter_set::LandParameters | "-" | "none"
     interception::IM | "-" | "none"
     snow::SM | "-" | "none"
     glacier::GM | "-" | "none"
@@ -66,7 +65,6 @@ function initialize_land_hydrology_sbm(nc, config, riverfrac, inds)
 
     atmospheric_forcing = initialize_atmospheric_forcing(n)
     vegetation_parameter_set = initialize_vegetation_params(nc, config, inds)
-    land_parameter_set = initialize_land_params(nc, config, inds, riverfrac)
     if dt >= Hour(23)
         interception_model =
             initialize_gash_interception_model(nc, config, inds, vegetation_parameter_set)
@@ -88,7 +86,7 @@ function initialize_land_hydrology_sbm(nc, config, riverfrac, inds)
     else
         glacier_model = NoGlacierModel()
     end
-    runoff_model = initialize_surface_runoff_model(land_parameter_set, n)
+    runoff_model = initialize_surface_runoff_model(nc, config, inds, riverfrac)
     soil_model = initialize_sbm_soil_model(nc, config, vegetation_parameter_set, inds, dt)
     @. vegetation_parameter_set.rootingdepth = min(
         soil_model.parameters.soilthickness * 0.99,
@@ -110,7 +108,6 @@ function initialize_land_hydrology_sbm(nc, config, riverfrac, inds)
     }(;
         atmospheric_forcing = atmospheric_forcing,
         vegetation_parameter_set = vegetation_parameter_set,
-        land_parameter_set = land_parameter_set,
         interception = interception_model,
         snow = snow_model,
         glacier = glacier_model,
@@ -199,9 +196,9 @@ function update_total_water_storage(
     river_routing,
     land_routing,
 )
-    (; interception, snow, glacier, soil, demand) = model
+    (; interception, snow, glacier, runoff, soil, demand) = model
     (; total_storage, ustoredepth, satwaterdepth) = soil.variables
-    (; riverfrac) = model.land_parameter_set
+    (; riverfrac) = runoff.parameters
 
     # Set the total storage to zero
     fill!(total_storage, 0)

@@ -75,7 +75,7 @@ specific_leaf = "Sl"
 storage_wood = "Swood"
 rootingdepth = "RootingDepth"
 
-[input.vertical.land_parameter_set]
+[input.vertical.runoff.parameters]
 waterfrac = "WaterFrac"
 
 [input.vertical.soil.parameters]
