@@ -537,9 +537,8 @@ exchange(::SBM, var) =
     ) ? 0 : 1
 grid_location(::SBM, var) = var in (:n, :dt, :maxlayers) ? "none" : "node"
 
-exchange(::Union{LandSediment, OverlandFlowSediment}, var) = var == :n ? 0 : 1
-grid_location(::Union{LandSediment, OverlandFlowSediment}, var) =
-    var == :n ? "none" : "node"
+exchange(::Union{SoilLoss, OverlandFlowSediment}, var) = var == :n ? 0 : 1
+grid_location(::Union{SoilLoss, OverlandFlowSediment}, var) = var == :n ? "none" : "node"
 
 exchange(::RiverSediment, var) = var in (:n, :dt) ? 0 : 1
 grid_location(::RiverSediment, var) = var in (:n, :dt) ? "none" : "node"
