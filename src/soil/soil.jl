@@ -648,6 +648,16 @@ function SbmSoilModel(nc, config, vegetation_parameter_set, inds, dt)
     return model
 end
 
+function soil_fraction!(soil, runoff, glacier)
+    (; canopygapfraction) = soil.parameters.vegetation_parameter_set
+    (; soil_fraction) = soil.parameters
+    (; waterfrac, riverfrac) = runoff.parameters
+    glacier_fraction = get_glacier_fraction(glacier)
+
+    @. soil_fraction =
+        max(canopygapfraction - waterfrac - riverfrac - glacier_fraction, 0.0)
+end
+
 function update_boundary_conditions!(
     model::SbmSoilModel,
     atmospheric_forcing::AtmosphericForcing,
