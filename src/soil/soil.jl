@@ -229,6 +229,9 @@ end
     h4::Vector{T} | "cm"
     # Root water uptake reduction at soil water pressure head h1 (0.0 or 1.0) [-]
     alpha_h1::Vector{T} | "-"
+    # Soil fraction [-]
+    soil_fraction::Vector{T} | "-"
+    # Vegetation parameter set
     vegetation_parameter_set::VegetationParameters{T} | "-" | "none"
 end
 
@@ -595,6 +598,7 @@ function SbmSoilParameters(nc, config, vegetation_parameter_set, inds, dt)
 
     soilwatercapacity = @. soilthickness * (theta_s - theta_r)
 
+    n = length(inds)
     sbm_params = SbmSoilParameters(;
         maxlayers = maxlayers,
         nlayers = nlayers,
@@ -629,6 +633,7 @@ function SbmSoilParameters(nc, config, vegetation_parameter_set, inds, dt)
         z_layered = z_layered,
         w_soil = w_soil,
         cf_soil = cf_soil,
+        soil_fraction = fill(mv, n),
         vegetation_parameter_set = vegetation_parameter_set,
     )
     return sbm_params
@@ -648,7 +653,7 @@ function update_boundary_conditions!(
     atmospheric_forcing::AtmosphericForcing,
     external_models::NamedTuple,
 )
-    (; glacier, interception, runoff, demand, allocation) = external_models
+    (; interception, runoff, demand, allocation) = external_models
     (; potential_transpiration, surface_water_flux, potential_soilevaporation) =
         model.boundary_conditions
 
@@ -671,12 +676,8 @@ function update_boundary_conditions!(
         end
     end
 
-    (; riverfrac, waterfrac) = runoff.parameters
-    canopygapfraction = get_canopygapfraction(interception)
-    glacier_frac = get_glacier_frac(glacier)
     @. potential_soilevaporation =
-        max(canopygapfraction - riverfrac - waterfrac - glacier_frac, 0.0) *
-        atmospheric_forcing.potential_evaporation
+        model.parameters.soil_fraction * atmospheric_forcing.potential_evaporation
 end
 
 #TODO (v1.0):

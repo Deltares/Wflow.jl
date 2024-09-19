@@ -76,6 +76,7 @@ function LandHydrologySBM(nc, config, riverfrac, inds)
         glacier_model = NoGlacierModel{Float}()
     end
     runoff_model = SurfaceRunoff(nc, config, inds, riverfrac)
+
     soil_model = SbmSoilModel(nc, config, vegetation_parameter_set, inds, dt)
     @. vegetation_parameter_set.rootingdepth = min(
         soil_model.parameters.soilthickness * 0.99,
@@ -130,7 +131,7 @@ function update(model::LandHydrologySBM, lateral, network, config)
         )
     end
 
-    update_glacier!(glacier, atmospheric_forcing)
+    update!(glacier, atmospheric_forcing)
 
     update_boundary_conditions!(runoff, (; glacier, snow, interception), lateral, network)
     update!(runoff, atmospheric_forcing)
@@ -144,10 +145,11 @@ function update(model::LandHydrologySBM, lateral, network, config)
         update_water_allocation(model, lateral, network)
     end
 
+    soil_fraction!(soil, runoff, glacier)
     update_boundary_conditions!(
         soil,
         atmospheric_forcing,
-        (; glacier, interception, runoff, demand, allocation),
+        (; interception, runoff, demand, allocation),
     )
 
     update!(soil, atmospheric_forcing, (; runoff, demand), config, dt)

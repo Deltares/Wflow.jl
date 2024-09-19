@@ -17,8 +17,8 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 
         @testset "model information functions" begin
             @test BMI.get_component_name(model) == "sbm"
-            @test BMI.get_input_item_count(model) == 210
-            @test BMI.get_output_item_count(model) == 210
+            @test BMI.get_input_item_count(model) == 211
+            @test BMI.get_output_item_count(model) == 211
             to_check = [
                 "vertical.soil.parameters.nlayers",
                 "vertical.soil.parameters.theta_r",

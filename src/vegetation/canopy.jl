@@ -81,11 +81,6 @@ function update_canopy_parameters!(model::I) where {I <: AbstractInterceptionMod
     end
 end
 
-get_canopygapfraction(model::GashInterceptionModel) =
-    model.parameters.vegetation_parameter_set.canopygapfraction
-
-get_canopygapfraction(model::RutterInterceptionModel) = model.parameters.canopygapfraction
-
 get_potential_transpiration(model::AbstractInterceptionModel) =
     @. max(0.0, model.variables.canopy_potevap - model.variables.interception_flux)
 

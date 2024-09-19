@@ -106,7 +106,7 @@ function GlacierHbvModel(nc, config, inds, dt, bc)
     return model
 end
 
-function update_glacier!(model::GlacierHbvModel, atmospheric_forcing::AtmosphericForcing)
+function update!(model::GlacierHbvModel, atmospheric_forcing::AtmosphericForcing)
     (; temperature) = atmospheric_forcing
     (; glacier_store, glacier_melt) = model.variables
     (; snow_storage) = model.boundary_conditions
@@ -128,15 +128,15 @@ function update_glacier!(model::GlacierHbvModel, atmospheric_forcing::Atmospheri
     end
 end
 
-function update_glacier!(model::NoGlacierModel, atmospheric_forcing::AtmosphericForcing)
+function update!(model::NoGlacierModel, atmospheric_forcing::AtmosphericForcing)
     return nothing
 end
 
 get_glacier_melt(model::NoGlacierModel) = 0.0
 get_glacier_melt(model::AbstractGlacierModel) =
     @. model.variables.glacier_melt * model.parameters.glacier_frac
-get_glacier_frac(model::NoGlacierModel) = 0.0
-get_glacier_frac(model::AbstractGlacierModel) = model.parameters.glacier_frac
+get_glacier_fraction(model::NoGlacierModel) = 0.0
+get_glacier_fraction(model::AbstractGlacierModel) = model.parameters.glacier_frac
 get_glacier_store(model::NoGlacierModel) = 0.0
 get_glacier_store(model::AbstractGlacierModel) =
     @. model.variables.glacier_store * model.parameters.glacier_frac
