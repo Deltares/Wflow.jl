@@ -1,6 +1,6 @@
 abstract type AbstractRunoffModel{T} end
 
-@get_units @grid_loc @with_kw struct SurfaceRunoffVariables{T}
+@get_units @grid_loc @with_kw struct OpenWaterRunoffVariables{T}
     # Runoff from river based on riverfrac [mm Δt⁻¹]
     runoff_river::Vector{T}
     # Net runoff from river [mm Δt⁻¹]
@@ -13,7 +13,7 @@ abstract type AbstractRunoffModel{T} end
     ae_openw_r::Vector{T}
 end
 
-function SurfaceRunoffVariables(
+function OpenWaterRunoffVariables(
     n;
     runoff_river::Vector{T} = fill(mv, n),
     runoff_land::Vector{T} = fill(mv, n),
@@ -21,7 +21,7 @@ function SurfaceRunoffVariables(
     ae_openw_r::Vector{T} = fill(mv, n),
     net_runoff_river::Vector{T} = fill(mv, n),
 ) where {T}
-    return SurfaceRunoffVariables{T}(;
+    return OpenWaterRunoffVariables{T}(;
         runoff_river = runoff_river,
         runoff_land = runoff_land,
         ae_openw_l = ae_openw_l,
@@ -30,33 +30,33 @@ function SurfaceRunoffVariables(
     )
 end
 
-@get_units @grid_loc @with_kw struct SurfaceRunoffParameters{T}
+@get_units @grid_loc @with_kw struct OpenWaterRunoffParameters{T}
     # Fraction of river [-]
     riverfrac::Vector{T} | "-"
     # Fraction of open water (excluding rivers) [-]
     waterfrac::Vector{T} | "-"
 end
 
-@get_units @grid_loc @with_kw struct SurfaceRunoffBC{T}
+@get_units @grid_loc @with_kw struct OpenWaterRunoffBC{T}
     surface_water_flux::Vector{T}
     waterlevel_land::Vector{T} | "mm"
     waterlevel_river::Vector{T} | "mm"
 end
 
-function SurfaceRunoffBC(
+function OpenWaterRunoffBC(
     n;
     surface_water_flux::Vector{T} = fill(mv, n),
     waterlevel_land::Vector{T} = fill(mv, n),
     waterlevel_river::Vector{T} = zeros(Float, n), # set to zero to account for cells outside river domain
 ) where {T}
-    return SurfaceRunoffBC{T}(;
+    return OpenWaterRunoffBC{T}(;
         surface_water_flux = surface_water_flux,
         waterlevel_land = waterlevel_land,
         waterlevel_river = waterlevel_river,
     )
 end
 
-function SurfaceRunoffParameters(nc, config, inds, riverfrac)
+function OpenWaterRunoffParameters(nc, config, inds, riverfrac)
     # fraction open water
     waterfrac = ncread(
         nc,
@@ -67,22 +67,23 @@ function SurfaceRunoffParameters(nc, config, inds, riverfrac)
         type = Float,
     )
     waterfrac = max.(waterfrac .- riverfrac, Float(0.0))
-    params = SurfaceRunoffParameters(; waterfrac = waterfrac, riverfrac = riverfrac)
+    params = OpenWaterRunoffParameters(; waterfrac = waterfrac, riverfrac = riverfrac)
     return params
 end
 
-@get_units @with_kw struct SurfaceRunoff{T} <: AbstractRunoffModel{T}
-    boundary_conditions::SurfaceRunoffBC{T} | "-"
-    parameters::SurfaceRunoffParameters{T} | "-"
-    variables::SurfaceRunoffVariables{T} | "-"
+@get_units @with_kw struct OpenWaterRunoff{T} <: AbstractRunoffModel{T}
+    boundary_conditions::OpenWaterRunoffBC{T} | "-"
+    parameters::OpenWaterRunoffParameters{T} | "-"
+    variables::OpenWaterRunoffVariables{T} | "-"
 end
 
-function SurfaceRunoff(nc, config, inds, riverfrac)
+function OpenWaterRunoff(nc, config, inds, riverfrac)
     n = length(riverfrac)
-    vars = SurfaceRunoffVariables(n)
-    bc = SurfaceRunoffBC(n)
-    params = SurfaceRunoffParameters(nc, config, inds, riverfrac)
-    model = SurfaceRunoff(; boundary_conditions = bc, parameters = params, variables = vars)
+    vars = OpenWaterRunoffVariables(n)
+    bc = OpenWaterRunoffBC(n)
+    params = OpenWaterRunoffParameters(nc, config, inds, riverfrac)
+    model =
+        OpenWaterRunoff(; boundary_conditions = bc, parameters = params, variables = vars)
     return model
 end
 
@@ -92,7 +93,7 @@ function get_surface_water_flux(snow::AbstractSnowModel, glacier, effective_prec
 end
 
 function update_boundary_conditions!(
-    model::SurfaceRunoff,
+    model::OpenWaterRunoff,
     external_models::NamedTuple,
     lateral,
     network,
@@ -110,7 +111,7 @@ function update_boundary_conditions!(
     waterlevel_river[inds_riv] .= lateral.river.h_av .* 1000.0
 end
 
-function update!(model::SurfaceRunoff, atmospheric_forcing::AtmosphericForcing)
+function update!(model::OpenWaterRunoff, atmospheric_forcing::AtmosphericForcing)
     (; potential_evaporation) = atmospheric_forcing
     (; runoff_river, net_runoff_river, runoff_land, ae_openw_r, ae_openw_l) =
         model.variables

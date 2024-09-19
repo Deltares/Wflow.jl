@@ -1,21 +1,10 @@
-@get_units @grid_loc @with_kw struct LandHydrologySBM{
-    ATM,
-    VP,
-    IM,
-    SNM,
-    GM,
-    SRM,
-    SM,
-    D,
-    A,
-    T,
-}
+@get_units @grid_loc @with_kw struct LandHydrologySBM{ATM, VP, IM, SNM, GM, RM, SM, D, A, T}
     atmospheric_forcing::ATM | "-" | "none"
     vegetation_parameter_set::VP | "-" | "none"
     interception::IM | "-" | "none"
     snow::SNM | "-" | "none"
     glacier::GM | "-" | "none"
-    runoff::SRM | "-" | "none"
+    runoff::RM | "-" | "none"
     soil::SM | "-" | "none"
     demand::D | "-" | "none"
     allocation::A | "-" | "none"
@@ -75,7 +64,7 @@ function LandHydrologySBM(nc, config, riverfrac, inds)
     else
         glacier_model = NoGlacierModel{Float}()
     end
-    runoff_model = SurfaceRunoff(nc, config, inds, riverfrac)
+    runoff_model = OpenWaterRunoff(nc, config, inds, riverfrac)
 
     soil_model = SbmSoilModel(nc, config, vegetation_parameter_set, inds, dt)
     @. vegetation_parameter_set.rootingdepth = min(
