@@ -4,7 +4,9 @@
 # riverfrac and waterfrac parameters). For ksat_profile parameters it is not required to
 # store all parameters (depends on profile).
 
-@get_units @grid_loc @with_kw struct SbmSoilModelVars{T, N}
+abstract type AbstractSoilModel{T} end
+
+@get_units @grid_loc @with_kw struct SbmSoilVariables{T, N}
     # Calculated soil water pressure head h3 of the root water uptake reduction function (Feddes) [cm]
     h3::Vector{T} | "cm"
     # Amount of water in the unsaturated store, per layer [mm]
@@ -81,7 +83,7 @@
     soilinfredu::Vector{T} | "-"
 end
 
-function sbm_soil_model_vars(n, parameters)
+function SbmSoilVariables(n, parameters)
     (;
         soilthickness,
         maxlayers,
@@ -99,7 +101,7 @@ function sbm_soil_model_vars(n, parameters)
     vwc = fill(mv, maxlayers, n)
     vwc_perc = fill(mv, maxlayers, n)
 
-    vars = SbmSoilModelVars(;
+    vars = SbmSoilVariables(;
         ustorelayerdepth = zero(act_thickl),
         satwaterdepth = satwaterdepth,
         zi = zi,
@@ -141,22 +143,26 @@ function sbm_soil_model_vars(n, parameters)
     return vars
 end
 
-@get_units @grid_loc @with_kw struct SbmSoilModelBC{T}
+@get_units @grid_loc @with_kw struct SbmSoilBC{T}
     surface_water_flux::Vector{T}
     potential_transpiration::Vector{T}
     potential_soilevaporation::Vector{T}
 end
 
-function sbm_soil_model_bc(n)
-    bc = SbmSoilModelBC(;
-        surface_water_flux = fill(mv, n),
-        potential_transpiration = fill(mv, n),
-        potential_soilevaporation = fill(mv, n),
+function SbmSoilBC(
+    n;
+    surface_water_flux::Vector{T} = fill(mv, n),
+    potential_transpiration::Vector{T} = fill(mv, n),
+    potential_soilevaporation::Vector{T} = fill(mv, n),
+) where {T}
+    return SbmSoilBC{T}(;
+        surface_water_flux = surface_water_flux,
+        potential_transpiration = potential_transpiration,
+        potential_soilevaporation = potential_soilevaporation,
     )
-    return bc
 end
 
-@get_units @grid_loc @with_kw struct SbmSoilModelParameters{T, N, M}
+@get_units @grid_loc @with_kw struct SbmSoilParameters{T, N, M}
     # Maximum number of soil layers
     maxlayers::Int | "-"
     # Number of soil layers
@@ -226,12 +232,10 @@ end
     vegetation_parameter_set::VegetationParameters{T} | "-" | "none"
 end
 
-abstract type AbstractSoilModel{T} end
-
 @get_units @with_kw struct SbmSoilModel{T} <: AbstractSoilModel{T}
-    boundary_conditions::SbmSoilModelBC{T} | "-"
-    parameters::SbmSoilModelParameters{T} | "-"
-    variables::SbmSoilModelVars{T} | "-"
+    boundary_conditions::SbmSoilBC{T} | "-"
+    parameters::SbmSoilParameters{T} | "-"
+    variables::SbmSoilVariables{T} | "-"
 end
 
 get_rootingdepth(model::SbmSoilModel) =
@@ -312,7 +316,7 @@ function sbm_ksat_profiles(
     return z_exp, z_layered, kv, nlayers_kv
 end
 
-function initialize_sbm_soil_model_params(nc, config, vegetation_parameter_set, inds, dt)
+function SbmSoilParameters(nc, config, vegetation_parameter_set, inds, dt)
     config_thicknesslayers = get(config.model, "thicknesslayers", Float[])
     if length(config_thicknesslayers) > 0
         thicknesslayers = SVector(Tuple(push!(Float.(config_thicknesslayers), mv)))
@@ -591,7 +595,7 @@ function initialize_sbm_soil_model_params(nc, config, vegetation_parameter_set, 
 
     soilwatercapacity = @. soilthickness * (theta_s - theta_r)
 
-    sbm_params = SbmSoilModelParameters(;
+    sbm_params = SbmSoilParameters(;
         maxlayers = maxlayers,
         nlayers = nlayers,
         nlayers_kv = nlayers_kv,
@@ -630,12 +634,11 @@ function initialize_sbm_soil_model_params(nc, config, vegetation_parameter_set, 
     return sbm_params
 end
 
-function initialize_sbm_soil_model(nc, config, vegetation_parameter_set, inds, dt)
+function SbmSoilModel(nc, config, vegetation_parameter_set, inds, dt)
     n = length(inds)
-    params =
-        initialize_sbm_soil_model_params(nc, config, vegetation_parameter_set, inds, dt)
-    vars = sbm_soil_model_vars(n, params)
-    bc = sbm_soil_model_bc(n)
+    params = SbmSoilParameters(nc, config, vegetation_parameter_set, inds, dt)
+    vars = SbmSoilVariables(n, params)
+    bc = SbmSoilBC(n)
     model = SbmSoilModel(; boundary_conditions = bc, parameters = params, variables = vars)
     return model
 end

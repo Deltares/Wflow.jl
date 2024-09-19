@@ -69,7 +69,7 @@ function initialize_sbm_model(config::Config)
     xl, yl = cell_lengths(y, cellength, sizeinmetres)
     riverfrac = river_fraction(river, riverlength, riverwidth, xl, yl)
 
-    lsm = initialize_land_hydrology_sbm(nc, config, riverfrac, inds)
+    lsm = LandHydrologySBM(nc, config, riverfrac, inds)
 
     inds_riv, rev_inds_riv = active_indices(river_2d, 0)
     nriv = length(inds_riv)

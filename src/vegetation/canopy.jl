@@ -1,4 +1,6 @@
-@get_units @grid_loc @with_kw struct InterceptionModelVars{T}
+abstract type AbstractInterceptionModel{T} end
+
+@get_units @grid_loc @with_kw struct InterceptionVariables{T}
     # Canopy potential evaporation [mm Δt⁻¹]
     canopy_potevap::Vector{T}
     # Interception loss by evaporation [mm Δt⁻¹]
@@ -11,18 +13,22 @@
     throughfall::Vector{T}
 end
 
-function interception_model_vars(n)
-    vars = InterceptionModelVars(;
-        canopy_potevap = fill(mv, n),
-        interception_flux = fill(mv, n),
-        canopy_storage = fill(0.0, n),
-        stemflow = fill(mv, n),
-        throughfall = fill(mv, n),
+function InterceptionVariables(
+    n;
+    canopy_potevap::Vector{T} = fill(mv, n),
+    interception_flux::Vector{T} = fill(mv, n),
+    canopy_storage::Vector{T} = fill(0.0, n),
+    stemflow::Vector{T} = fill(mv, n),
+    throughfall::Vector{T} = fill(mv, n),
+) where {T}
+    return InterceptionVariables(;
+        canopy_potevap = canopy_potevap,
+        interception_flux = interception_flux,
+        canopy_storage = canopy_storage,
+        stemflow = stemflow,
+        throughfall = throughfall,
     )
-    return vars
 end
-
-abstract type AbstractInterceptionModel end
 
 @get_units @grid_loc @with_kw struct GashParameters{T}
     # wet canopy [mm Δt⁻¹] and the average precipitation intensity [mm Δt⁻¹] on a saturated canopy
@@ -30,17 +36,17 @@ abstract type AbstractInterceptionModel end
     vegetation_parameter_set::VegetationParameters{T}
 end
 
-@with_kw struct GashInterceptionModel{T} <: AbstractInterceptionModel
+@with_kw struct GashInterceptionModel{T} <: AbstractInterceptionModel{T}
     parameters::GashParameters{T}
-    variables::InterceptionModelVars{T}
+    variables::InterceptionVariables{T}
 end
 
-@with_kw struct RutterInterceptionModel{T} <: AbstractInterceptionModel
+@with_kw struct RutterInterceptionModel{T} <: AbstractInterceptionModel{T}
     parameters::VegetationParameters{T}
-    variables::InterceptionModelVars{T}
+    variables::InterceptionVariables{T}
 end
 
-function initialize_gash_interception_model(nc, config, inds, vegetation_parameter_set)
+function GashInterceptionModel(nc, config, inds, vegetation_parameter_set)
     e_r = ncread(
         nc,
         config,
@@ -52,13 +58,13 @@ function initialize_gash_interception_model(nc, config, inds, vegetation_paramet
 
     params =
         GashParameters(; e_r = e_r, vegetation_parameter_set = vegetation_parameter_set)
-    vars = interception_model_vars(length(inds))
+    vars = InterceptionVariables(length(inds))
     model = GashInterceptionModel(; parameters = params, variables = vars)
     return model
 end
 
-function initialize_rutter_interception_model(vegetation_parameter_set, n)
-    vars = interception_model_vars(n)
+function RutterInterceptionModel(vegetation_parameter_set, n)
+    vars = InterceptionVariables(n)
     model =
         RutterInterceptionModel(; parameters = vegetation_parameter_set, variables = vars)
     return model

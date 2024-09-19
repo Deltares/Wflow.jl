@@ -1,93 +1,82 @@
-@get_units @grid_loc @with_kw struct LandHydrologySBM{IM, SM, GM, D, A, T}
-    atmospheric_forcing::AtmosphericForcing | "-" | "none"
-    vegetation_parameter_set::VegetationParameters | "-" | "none"
+@get_units @grid_loc @with_kw struct LandHydrologySBM{
+    ATM,
+    VP,
+    IM,
+    SNM,
+    GM,
+    SRM,
+    SM,
+    D,
+    A,
+    T,
+}
+    atmospheric_forcing::ATM | "-" | "none"
+    vegetation_parameter_set::VP | "-" | "none"
     interception::IM | "-" | "none"
-    snow::SM | "-" | "none"
+    snow::SNM | "-" | "none"
     glacier::GM | "-" | "none"
-    runoff::SurfaceRunoff | "-" | "none"
-    soil::SbmSoilModel | "-" | "none"
+    runoff::SRM | "-" | "none"
+    soil::SM | "-" | "none"
     demand::D | "-" | "none"
     allocation::A | "-" | "none"
-    # Model time step [s]
     dt::T | "s" | "none"
 end
 
-# used by Sediment model
-function initialize_canopy(nc, config, inds)
-    n = length(inds)
-    # if leaf area index climatology provided use sl, swood and kext to calculate cmax, e_r and canopygapfraction
-    if haskey(config.input.vertical, "leaf_area_index")
-        # TODO confirm if leaf area index climatology is present in the netCDF
-        sl = ncread(
-            nc,
-            config,
-            "vertical.specific_leaf";
-            optional = false,
-            sel = inds,
-            type = Float,
-        )
-        swood = ncread(
-            nc,
-            config,
-            "vertical.storage_wood";
-            optional = false,
-            sel = inds,
-            type = Float,
-        )
-        kext =
-            ncread(nc, config, "vertical.kext"; optional = false, sel = inds, type = Float)
-        cmax = fill(mv, n)
-        e_r = fill(mv, n)
-        canopygapfraction = fill(mv, n)
-    else
-        sl = fill(mv, n)
-        swood = fill(mv, n)
-        kext = fill(mv, n)
-        # cmax, e_r, canopygapfraction only required when leaf area index climatology not provided
-        cmax = ncread(nc, config, "vertical.cmax"; sel = inds, defaults = 1.0, type = Float)
-        e_r =
-            ncread(nc, config, "vertical.eoverr"; sel = inds, defaults = 0.1, type = Float)
-        canopygapfraction = ncread(
-            nc,
-            config,
-            "vertical.canopygapfraction";
-            sel = inds,
-            defaults = 0.1,
-            type = Float,
-        )
-    end
-    return cmax, e_r, canopygapfraction, sl, swood, kext
+function LandHydrologySBM{T}(;
+    atmospheric_forcing::AtmosphericForcing{T},
+    vegetation_parameter_set::VegetationParameters{T},
+    interception::AbstractInterceptionModel{T},
+    snow::AbstractSnowModel{T},
+    glacier::AbstractGlacierModel{T},
+    runoff::AbstractRunoffModel{T},
+    soil::SbmSoilModel{T},
+    demand::D,
+    allocation::A,
+    dt::T,
+) where {D, A, T}
+    args = (
+        atmospheric_forcing,
+        vegetation_parameter_set,
+        interception,
+        snow,
+        glacier,
+        runoff,
+        soil,
+        demand,
+        allocation,
+        dt,
+    )
+    LandHydrologySBM{typeof.(args)...}(args...)
 end
 
-function initialize_land_hydrology_sbm(nc, config, riverfrac, inds)
+function LandHydrologySBM(nc, config, riverfrac, inds)
     dt = Second(config.timestepsecs)
     n = length(inds)
 
-    atmospheric_forcing = initialize_atmospheric_forcing(n)
-    vegetation_parameter_set = initialize_vegetation_params(nc, config, inds)
+    atmospheric_forcing = AtmosphericForcing(n)
+    vegetation_parameter_set = VegetationParameters(nc, config, inds)
     if dt >= Hour(23)
         interception_model =
-            initialize_gash_interception_model(nc, config, inds, vegetation_parameter_set)
+            GashInterceptionModel(nc, config, inds, vegetation_parameter_set)
     else
-        interception_model =
-            initialize_rutter_interception_model(vegetation_parameter_set, n)
+        interception_model = RutterInterceptionModel(vegetation_parameter_set, n)
     end
 
     modelsnow = get(config.model, "snow", false)::Bool
     if modelsnow
-        snow_model = initialize_snow_hbv_model(nc, config, inds, dt)
+        snow_model = SnowHbvModel(nc, config, inds, dt)
     else
-        snow_model = NoSnowModel()
+        snow_model = NoSnowModel{Float}()
     end
     modelglacier = get(config.model, "glacier", false)::Bool
     if modelsnow && modelglacier
-        glacier_bc = glacier_model_bc(snow_model.variables.snow_storage)
-        glacier_model = initialize_glacier_hbv_model(nc, config, inds, dt, glacier_bc)
+        glacier_bc = SnowStateBC{Float}(; snow_storage = snow_model.variables.snow_storage)
+        glacier_model = GlacierHbvModel(nc, config, inds, dt, glacier_bc)
     else
-        glacier_model = NoGlacierModel()
+        glacier_model = NoGlacierModel{Float}()
     end
-    runoff_model = initialize_surface_runoff_model(nc, config, inds, riverfrac)
-    soil_model = initialize_sbm_soil_model(nc, config, vegetation_parameter_set, inds, dt)
+    runoff_model = SurfaceRunoff(nc, config, inds, riverfrac)
+    soil_model = SbmSoilModel(nc, config, vegetation_parameter_set, inds, dt)
     @. vegetation_parameter_set.rootingdepth = min(
         soil_model.parameters.soilthickness * 0.99,
         vegetation_parameter_set.rootingdepth,
@@ -97,15 +86,7 @@ function initialize_land_hydrology_sbm(nc, config, riverfrac, inds)
     allocation = do_water_demand ? initialize_allocation_land(nc, config, inds) : nothing
     demand = do_water_demand ? initialize_water_demand(nc, config, inds, dt) : nothing
 
-    # TODO (part of refactor v1.0): simplify typeof arguments
-    lsm = LandHydrologySBM{
-        typeof(interception_model),
-        typeof(snow_model),
-        typeof(glacier_model),
-        typeof(demand),
-        typeof(allocation),
-        Float,
-    }(;
+    lsm = LandHydrologySBM{Float}(;
         atmospheric_forcing = atmospheric_forcing,
         vegetation_parameter_set = vegetation_parameter_set,
         interception = interception_model,

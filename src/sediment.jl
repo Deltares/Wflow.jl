@@ -99,6 +99,53 @@
     end
 end
 
+# This function is not used by SBM (was part of sbm.jl)
+function initialize_canopy(nc, config, inds)
+    n = length(inds)
+    # if leaf area index climatology provided use sl, swood and kext to calculate cmax, e_r and canopygapfraction
+    if haskey(config.input.vertical, "leaf_area_index")
+        # TODO confirm if leaf area index climatology is present in the netCDF
+        sl = ncread(
+            nc,
+            config,
+            "vertical.specific_leaf";
+            optional = false,
+            sel = inds,
+            type = Float,
+        )
+        swood = ncread(
+            nc,
+            config,
+            "vertical.storage_wood";
+            optional = false,
+            sel = inds,
+            type = Float,
+        )
+        kext =
+            ncread(nc, config, "vertical.kext"; optional = false, sel = inds, type = Float)
+        cmax = fill(mv, n)
+        e_r = fill(mv, n)
+        canopygapfraction = fill(mv, n)
+    else
+        sl = fill(mv, n)
+        swood = fill(mv, n)
+        kext = fill(mv, n)
+        # cmax, e_r, canopygapfraction only required when leaf area index climatology not provided
+        cmax = ncread(nc, config, "vertical.cmax"; sel = inds, defaults = 1.0, type = Float)
+        e_r =
+            ncread(nc, config, "vertical.eoverr"; sel = inds, defaults = 0.1, type = Float)
+        canopygapfraction = ncread(
+            nc,
+            config,
+            "vertical.canopygapfraction";
+            sel = inds,
+            defaults = 0.1,
+            type = Float,
+        )
+    end
+    return cmax, e_r, canopygapfraction, sl, swood, kext
+end
+
 function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
     # Initialize parameters for the soil loss part
     n = length(inds)

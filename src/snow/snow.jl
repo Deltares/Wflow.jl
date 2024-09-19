@@ -1,5 +1,6 @@
+abstract type AbstractSnowModel{T} end
 
-@get_units @grid_loc @with_kw struct SnowModelVars{T}
+@get_units @grid_loc @with_kw struct SnowVariables{T}
     # Snow storage [mm]
     snow_storage::Vector{T} | "mm"
     # Liquid water content in the snow pack [mm]
@@ -10,14 +11,19 @@
     runoff::Vector{T}
 end
 
-function snow_model_vars(n)
-    vars = SnowModelVars(;
-        snow_storage = fill(0.0, n),
-        snow_water = fill(0.0, n),
-        swe = fill(mv, n),
-        runoff = fill(mv, n),
+function SnowVariables(
+    n;
+    snow_storage::Vector{T} = fill(0.0, n),
+    snow_water::Vector{T} = fill(0.0, n),
+    swe::Vector{T} = fill(mv, n),
+    runoff::Vector{T} = fill(mv, n),
+) where {T}
+    return SnowVariables{T}(;
+        snow_storage = snow_storage,
+        snow_water = snow_water,
+        swe = swe,
+        runoff = runoff,
     )
-    return vars
 end
 
 @get_units @grid_loc @with_kw struct SnowBC{T}
@@ -29,13 +35,17 @@ end
     liquid_precip::Vector{T}
 end
 
-function snow_model_bc(n)
-    bc = SnowBC(;
-        effective_precip = fill(mv, n),
-        snow_precip = fill(mv, n),
-        liquid_precip = fill(mv, n),
+function SnowBC(
+    n;
+    effective_precip::Vector{T} = fill(mv, n),
+    snow_precip::Vector{T} = fill(mv, n),
+    liquid_precip::Vector{T} = fill(mv, n),
+) where {T}
+    return SnowBC{T}(;
+        effective_precip = effective_precip,
+        snow_precip = snow_precip,
+        liquid_precip = liquid_precip,
     )
-    return bc
 end
 
 @get_units @grid_loc @with_kw struct SnowHbvParameters{T}
@@ -51,17 +61,15 @@ end
     whc::Vector{T} | "-"
 end
 
-abstract type AbstractSnowModel end
-
-@with_kw struct SnowHbvModel{T} <: AbstractSnowModel
+@with_kw struct SnowHbvModel{T} <: AbstractSnowModel{T}
     boundary_conditions::SnowBC{T}
     parameters::SnowHbvParameters{T}
-    variables::SnowModelVars{T}
+    variables::SnowVariables{T}
 end
 
-struct NoSnowModel <: AbstractSnowModel end
+struct NoSnowModel{T} <: AbstractSnowModel{T} end
 
-function initialize_snow_hbv_params(nc, config, inds, dt)
+function SnowHbvParameters(nc, config, inds, dt)
     cfmax =
         ncread(
             nc,
@@ -108,11 +116,11 @@ function initialize_snow_hbv_params(nc, config, inds, dt)
     return snow_hbv_params
 end
 
-function initialize_snow_hbv_model(nc, config, inds, dt)
+function SnowHbvModel(nc, config, inds, dt)
     n = length(inds)
-    params = initialize_snow_hbv_params(nc, config, inds, dt)
-    vars = snow_model_vars(n)
-    bc = snow_model_bc(n)
+    params = SnowHbvParameters(nc, config, inds, dt)
+    vars = SnowVariables(n)
+    bc = SnowBC(n)
     model = SnowHbvModel(; boundary_conditions = bc, parameters = params, variables = vars)
     return model
 end

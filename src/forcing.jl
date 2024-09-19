@@ -8,11 +8,15 @@
     temperature::Vector{T} | "°C"
 end
 
-function initialize_atmospheric_forcing(n)
-    atmospheric_forcing = AtmosphericForcing(;
-        precipitation = fill(mv, n),
-        potential_evaporation = fill(mv, n),
-        temperature = fill(mv, n),
+function AtmosphericForcing(
+    n;
+    precipitation::Vector{T} = fill(mv, n),
+    potential_evaporation::Vector{T} = fill(mv, n),
+    temperature::Vector{T} = fill(mv, n),
+) where {T}
+    return AtmosphericForcing{T}(;
+        precipitation = precipitation,
+        potential_evaporation = potential_evaporation,
+        temperature = temperature,
     )
-    return atmospheric_forcing
 end

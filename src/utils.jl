@@ -677,7 +677,7 @@ end
 Return vertical hydraulic conductivity `kv_z` for soil layer `n` at depth `z` using `SBM`
 soil parameters (at index `i`) based on hydraulic conductivity profile `ksat_profile`.
 """
-function hydraulic_conductivity_at_depth(p::SbmSoilModelParameters, z, i, n, ksat_profile)
+function hydraulic_conductivity_at_depth(p::SbmSoilParameters, z, i, n, ksat_profile)
     if ksat_profile == "exponential"
         kv_z = p.kvfrac[i][n] * p.kv_0[i] * exp(-p.f[i] * z)
     elseif ksat_profile == "exponential_constant"

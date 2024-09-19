@@ -1,5 +1,6 @@
+abstract type AbstractRunoffModel{T} end
 
-@get_units @grid_loc @with_kw struct SurfaceRunoffModelVars{T}
+@get_units @grid_loc @with_kw struct SurfaceRunoffVariables{T}
     # Runoff from river based on riverfrac [mm Δt⁻¹]
     runoff_river::Vector{T}
     # Net runoff from river [mm Δt⁻¹]
@@ -12,7 +13,24 @@
     ae_openw_r::Vector{T}
 end
 
-@get_units @grid_loc @with_kw struct SurfaceRunoffModelParameters{T}
+function SurfaceRunoffVariables(
+    n;
+    runoff_river::Vector{T} = fill(mv, n),
+    runoff_land::Vector{T} = fill(mv, n),
+    ae_openw_l::Vector{T} = fill(mv, n),
+    ae_openw_r::Vector{T} = fill(mv, n),
+    net_runoff_river::Vector{T} = fill(mv, n),
+) where {T}
+    return SurfaceRunoffVariables{T}(;
+        runoff_river = runoff_river,
+        runoff_land = runoff_land,
+        ae_openw_l = ae_openw_l,
+        ae_openw_r = ae_openw_r,
+        net_runoff_river = net_runoff_river,
+    )
+end
+
+@get_units @grid_loc @with_kw struct SurfaceRunoffParameters{T}
     # Fraction of river [-]
     riverfrac::Vector{T} | "-"
     # Fraction of open water (excluding rivers) [-]
@@ -25,16 +43,20 @@ end
     waterlevel_river::Vector{T} | "mm"
 end
 
-function surface_runoff_model_bc(n)
-    bc = SurfaceRunoffBC(;
-        surface_water_flux = fill(mv, n),
-        waterlevel_land = fill(mv, n),
-        waterlevel_river = zeros(Float, n), # set to zero to account for cells outside river domain
+function SurfaceRunoffBC(
+    n;
+    surface_water_flux::Vector{T} = fill(mv, n),
+    waterlevel_land::Vector{T} = fill(mv, n),
+    waterlevel_river::Vector{T} = zeros(Float, n), # set to zero to account for cells outside river domain
+) where {T}
+    return SurfaceRunoffBC{T}(;
+        surface_water_flux = surface_water_flux,
+        waterlevel_land = waterlevel_land,
+        waterlevel_river = waterlevel_river,
     )
-    return bc
 end
 
-function initialize_surface_runoff_model_params(nc, config, inds, riverfrac)
+function SurfaceRunoffParameters(nc, config, inds, riverfrac)
     # fraction open water
     waterfrac = ncread(
         nc,
@@ -45,32 +67,21 @@ function initialize_surface_runoff_model_params(nc, config, inds, riverfrac)
         type = Float,
     )
     waterfrac = max.(waterfrac .- riverfrac, Float(0.0))
-    params = SurfaceRunoffModelParameters(; waterfrac = waterfrac, riverfrac = riverfrac)
+    params = SurfaceRunoffParameters(; waterfrac = waterfrac, riverfrac = riverfrac)
     return params
 end
 
-@get_units @with_kw struct SurfaceRunoff{T}
+@get_units @with_kw struct SurfaceRunoff{T} <: AbstractRunoffModel{T}
     boundary_conditions::SurfaceRunoffBC{T} | "-"
-    parameters::SurfaceRunoffModelParameters{T} | "-"
-    variables::SurfaceRunoffModelVars{T} | "-"
+    parameters::SurfaceRunoffParameters{T} | "-"
+    variables::SurfaceRunoffVariables{T} | "-"
 end
 
-function surface_runoff_model_vars(n)
-    vars = SurfaceRunoffModelVars(;
-        runoff_river = fill(mv, n),
-        runoff_land = fill(mv, n),
-        ae_openw_l = fill(mv, n),
-        ae_openw_r = fill(mv, n),
-        net_runoff_river = fill(mv, n),
-    )
-    return vars
-end
-
-function initialize_surface_runoff_model(nc, config, inds, riverfrac)
+function SurfaceRunoff(nc, config, inds, riverfrac)
     n = length(riverfrac)
-    vars = surface_runoff_model_vars(n)
-    bc = surface_runoff_model_bc(n)
-    params = initialize_surface_runoff_model_params(nc, config, inds, riverfrac)
+    vars = SurfaceRunoffVariables(n)
+    bc = SurfaceRunoffBC(n)
+    params = SurfaceRunoffParameters(nc, config, inds, riverfrac)
     model = SurfaceRunoff(; boundary_conditions = bc, parameters = params, variables = vars)
     return model
 end

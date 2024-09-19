@@ -18,7 +18,7 @@
     kc::Vector{T} | "-"
 end
 
-function initialize_vegetation_params(nc, config, inds)
+function VegetationParameters(nc, config, inds)
     n = length(inds)
     rootingdepth = ncread(
         nc,
@@ -100,26 +100,4 @@ function initialize_vegetation_params(nc, config, inds)
         )
     end
     return vegetation_parameter_set
-end
-
-@get_units @grid_loc @with_kw struct LandParameters{T}
-    # Fraction of river [-]
-    riverfrac::Vector{T} | "-"
-    # Fraction of open water (excluding rivers) [-]
-    waterfrac::Vector{T} | "-"
-end
-
-function initialize_land_params(nc, config, inds, riverfrac)
-    # fraction open water
-    waterfrac = ncread(
-        nc,
-        config,
-        "vertical.land_parameter_set.waterfrac";
-        sel = inds,
-        defaults = 0.0,
-        type = Float,
-    )
-    waterfrac = max.(waterfrac .- riverfrac, Float(0.0))
-    params = LandParameters(; waterfrac = waterfrac, riverfrac = riverfrac)
-    return params
 end

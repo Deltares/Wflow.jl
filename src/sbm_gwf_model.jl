@@ -76,7 +76,7 @@ function initialize_sbm_gwf_model(config::Config)
     nriv = length(inds_riv)
 
     # initialize vertical SBM concept
-    lsm = initialize_land_hydrology_sbm(nc, config, riverfrac, inds)
+    lsm = LandHydrologySBM(nc, config, riverfrac, inds)
 
     # reservoirs
     pits = zeros(Bool, modelsize_2d)

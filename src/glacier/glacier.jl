@@ -1,24 +1,30 @@
+abstract type AbstractGlacierModel{T} end
 
-@get_units @grid_loc @with_kw struct GlacierModelVars{T}
+@get_units @grid_loc @with_kw struct GlacierVariables{T}
     # Water within the glacier [mm]
     glacier_store::Vector{T} | "mm"
     # Glacier melt [mm Δt⁻¹]  
     glacier_melt::Vector{T}
 end
 
-function glacier_model_vars(glacier_store, n)
-    vars = GlacierModelVars(; glacier_store = glacier_store, glacier_melt = fill(mv, n))
+function GlacierVariables(nc, config, inds)
+    glacier_store = ncread(
+        nc,
+        config,
+        "vertical.glacier.variables.glacier_store";
+        sel = inds,
+        defaults = 5500.0,
+        type = Float,
+        fill = 0.0,
+    )
+    n = length(glacier_store)
+    vars = GlacierVariables(; glacier_store = glacier_store, glacier_melt = fill(mv, n))
     return vars
 end
 
 @get_units @with_kw struct SnowStateBC{T}
     # Snow storage [mm]
     snow_storage::Vector{T} | "mm"
-end
-
-function glacier_model_bc(snow_storage)
-    bc = SnowStateBC(; snow_storage = snow_storage)
-    return bc
 end
 
 @get_units @grid_loc @with_kw struct GlacierHbvParameters{T}
@@ -34,17 +40,15 @@ end
     max_snow_to_glacier::T
 end
 
-abstract type AbstractGlacierModel end
-
-@get_units @grid_loc @with_kw struct GlacierHbvModel{T} <: AbstractGlacierModel
+@get_units @grid_loc @with_kw struct GlacierHbvModel{T} <: AbstractGlacierModel{T}
     boundary_conditions::SnowStateBC{T} | "-" | "none"
     parameters::GlacierHbvParameters{T} | "-" | "none"
-    variables::GlacierModelVars{T} | "-" | "none"
+    variables::GlacierVariables{T} | "-" | "none"
 end
 
-struct NoGlacierModel <: AbstractGlacierModel end
+struct NoGlacierModel{T} <: AbstractGlacierModel{T} end
 
-function initialize_glacier_hbv_params(nc, config, inds, dt)
+function GlacierHbvParameters(nc, config, inds, dt)
     g_tt = ncread(
         nc,
         config,
@@ -94,19 +98,9 @@ function initialize_glacier_hbv_params(nc, config, inds, dt)
     return glacier_hbv_params
 end
 
-function initialize_glacier_hbv_model(nc, config, inds, dt, bc)
-    n = length(inds)
-    params = initialize_glacier_hbv_params(nc, config, inds, dt)
-    glacier_store = ncread(
-        nc,
-        config,
-        "vertical.glacier.variables.glacier_store";
-        sel = inds,
-        defaults = 5500.0,
-        type = Float,
-        fill = 0.0,
-    )
-    vars = glacier_model_vars(glacier_store, n)
+function GlacierHbvModel(nc, config, inds, dt, bc)
+    params = GlacierHbvParameters(nc, config, inds, dt)
+    vars = GlacierVariables(nc, config, inds)
     model =
         GlacierHbvModel(; boundary_conditions = bc, parameters = params, variables = vars)
     return model
