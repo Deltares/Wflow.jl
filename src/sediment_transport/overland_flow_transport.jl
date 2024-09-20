@@ -2,12 +2,13 @@ abstract type AbstractSedimentLandTransportModel end
 
 ## Total sediment transport in overland flow structs and functions
 @get_units @with_kw struct SedimentLandTransportVars{T}
-    # Total sediment reaching the river
+    # Total sediment flux
     amount::Vector{T} | "t dt-1"
+    deposition::Vector{T} | "t dt-1"
 end
 
 function sediment_land_transport_vars(n)
-    vars = SedimentLandTransportVars(; amount = fill(mv, n))
+    vars = SedimentLandTransportVars(; amount = fill(mv, n), deposition = fill(mv, n))
     return vars
 end
 
@@ -52,35 +53,54 @@ end
 
 function update!(model::SedimentLandTransportModel, network)
     (; erosion, transport_capacity) = model.boundary_conditions
-    (; amount) = model.variables
+    (; amount, deposition) = model.variables
 
     accucapacityflux!(amount, erosion, network, transport_capacity)
+    deposition .= erosion
 end
 
 ## Total transport capacity with particle differentiation structs and functions
 @get_units @with_kw struct SedimentLandTransportDifferentiationVars{T}
     # Total sediment flux
     amount::Vector{T} | "t dt-1"
+    # Deposition
+    deposition::Vector{T} | "t dt-1"
     # Clay flux
     clay::Vector{T} | "t dt-1"
+    # Deposition clay
+    deposition_clay::Vector{T} | "t dt-1"
     # Silt
     silt::Vector{T} | "t dt-1"
+    # Deposition silt
+    deposition_silt::Vector{T} | "t dt-1"
     # Sand flux
     sand::Vector{T} | "t dt-1"
+    # Deposition sand
+    deposition_sand::Vector{T} | "t dt-1"
     # Small aggregates flux
     sagg::Vector{T} | "t dt-1"
+    # Deposition small aggregates
+    deposition_sagg::Vector{T} | "t dt-1"
     # Large aggregates flux
     lagg::Vector{T} | "t dt-1"
+    # Deposition large aggregates
+    deposition_lagg::Vector{T} | "t dt-1"
 end
 
 function sediment_land_transport_differentiation_vars(n)
     vars = SedimentLandTransportDifferentiationVars(;
         amount = fill(mv, n),
+        deposition = fill(mv, n),
         clay = fill(mv, n),
+        deposition_clay = fill(mv, n),
         silt = fill(mv, n),
+        deposition_silt = fill(mv, n),
         sand = fill(mv, n),
+        deposition_sand = fill(mv, n),
         sagg = fill(mv, n),
+        deposition_sagg = fill(mv, n),
         lagg = fill(mv, n),
+        deposition_lagg = fill(mv, n),
     )
     return vars
 end
@@ -186,12 +206,33 @@ function update!(model::SedimentLandTransportDifferentiationModel, network)
         transport_capacity_sagg,
         transport_capacity_lagg,
     ) = model.boundary_conditions
-    (; amount, clay, silt, sand, sagg, lagg) = model.variables
+    (;
+        amount,
+        deposition,
+        clay,
+        deposition_clay,
+        silt,
+        deposition_silt,
+        sand,
+        deposition_sand,
+        sagg,
+        deposition_sagg,
+        lagg,
+        deposition_lagg,
+    ) = model.variables
 
     accucapacityflux!(clay, erosion_clay, network, transport_capacity_clay)
+    deposition_clay .= erosion_clay
     accucapacityflux!(silt, erosion_silt, network, transport_capacity_silt)
+    deposition_silt .= erosion_silt
     accucapacityflux!(sand, erosion_sand, network, transport_capacity_sand)
+    deposition_sand .= erosion_sand
     accucapacityflux!(sagg, erosion_sagg, network, transport_capacity_sagg)
+    deposition_sagg .= erosion_sagg
     accucapacityflux!(lagg, erosion_lagg, network, transport_capacity_lagg)
+    deposition_lagg .= erosion_lagg
     amount .= clay .+ silt .+ sand .+ sagg .+ lagg
+    deposition .=
+        deposition_clay .+ deposition_silt .+ deposition_sand .+ deposition_sagg .+
+        deposition_lagg
 end
