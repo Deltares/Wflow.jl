@@ -36,8 +36,7 @@ end
 
 function update_bc(model::SedimentToRiverModel, transport_model::SedimentLandTransportModel)
     (; deposition) = model.boundary_conditions
-    (; amount) = transport_model.variables
-    @. deposition = amount
+    @. deposition = transport_model.variables.deposition
 end
 
 function update!(model::SedimentToRiverModel, rivers)
@@ -126,12 +125,11 @@ function update_bc(
         deposition_sagg,
         deposition_lagg,
     ) = model.boundary_conditions
-    (; clay, silt, sand, sagg, lagg) = transport_model.variables
-    @. deposition_clay = clay
-    @. deposition_silt = silt
-    @. deposition_sand = sand
-    @. deposition_sagg = sagg
-    @. deposition_lagg = lagg
+    @. deposition_clay = transport_model.variables.deposition_clay
+    @. deposition_silt = transport_model.variables.deposition_silt
+    @. deposition_sand = transport_model.variables.deposition_sand
+    @. deposition_sagg = transport_model.variables.deposition_sagg
+    @. deposition_lagg = transport_model.variables.deposition_lagg
 end
 
 function update!(model::SedimentToRiverDifferentiationModel, rivers)

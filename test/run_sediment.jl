@@ -51,10 +51,10 @@ end
     @test mean(land.transport_capacity.variables.sand) ≈ 1.0987090622888755f6
     @test mean(land.transport_capacity.variables.clay) ≈ 1.0992655197016734f6
 
-    @test mean(land.to_river.variables.amount) ≈ 0.07463801685030906f0
-    @test mean(land.to_river.variables.clay) ≈ 0.0022367786781657497f0
-    @test mean(land.to_river.variables.sand) ≈ 0.02519222037812127f0
-    @test mean(land.sediment_flux.variables.clay) ≈ 0.006443036462118322f0
+    @test mean(land.to_river.variables.amount) ≈ 0.07624135182616738f0
+    @test mean(land.to_river.variables.clay) ≈ 0.002285341387958068f0
+    @test mean(land.to_river.variables.sand) ≈ 0.02575351604673049f0
+    @test mean(land.sediment_flux.variables.clay) ≈ 0.006578791733506439f0
 
     # @test mean(lat.river.SSconc) ≈ 0.8259993252994058f0
     # @test mean(lat.river.inlandclay) ≈ 0.01980468760667709f0

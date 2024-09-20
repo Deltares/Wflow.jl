@@ -52,8 +52,8 @@ function initialize_sediment_model(config::Config)
     soilloss = initialize_soil_loss(nc, config, inds, area, landslope)
 
     # Get waterbodies mask
-    do_reservoirs = get(config.model, "reservoirs", false)::Bool
-    do_lakes = get(config.model, "lakes", false)::Bool
+    do_reservoirs = get(config.model, "doreservoir", false)::Bool
+    do_lakes = get(config.model, "dolake", false)::Bool
     waterbodies = fill(0.0, n)
     if do_reservoirs
         reservoirs = ncread(
