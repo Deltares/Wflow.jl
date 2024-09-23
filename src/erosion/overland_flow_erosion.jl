@@ -21,8 +21,6 @@ end
     usle_c::Vector{T} | "-"
     # Answers overland flow factor
     answers_k::Vector{T} | "-"
-    # slope
-    slope::Vector{T} | "-"
 end
 
 @get_units @with_kw struct OverlandFlowErosionAnswersModel{T} <:
@@ -31,7 +29,7 @@ end
     variables::OverlandFlowErosionModelVars{T} | "-"
 end
 
-function initialize_answers_params_overland_flow(nc, config, inds, slope)
+function initialize_answers_params_overland_flow(nc, config, inds)
     usle_k = ncread(
         nc,
         config,
@@ -60,15 +58,14 @@ function initialize_answers_params_overland_flow(nc, config, inds, slope)
         usle_k = usle_k,
         usle_c = usle_c,
         answers_k = answers_k,
-        slope = slope,
     )
     return answers_parameters
 end
 
-function initialize_answers_overland_flow_erosion_model(nc, config, inds, slope)
+function initialize_answers_overland_flow_erosion_model(nc, config, inds)
     n = length(inds)
     vars = overland_flow_erosion_model_vars(n)
-    params = initialize_answers_params_overland_flow(nc, config, inds, slope)
+    params = initialize_answers_params_overland_flow(nc, config, inds)
     model = OverlandFlowErosionAnswersModel(; parameters = params, variables = vars)
     return model
 end
@@ -76,11 +73,11 @@ end
 function update!(
     model::OverlandFlowErosionAnswersModel,
     hydrometeo_forcing::HydrometeoForcing,
-    area,
+    geometry::LandGeometry,
     ts,
 )
     (; q_land) = hydrometeo_forcing
-    (; usle_k, usle_c, answers_k, slope) = model.parameters
+    (; usle_k, usle_c, answers_k) = model.parameters
     (; amount) = model.variables
 
     n = length(q_land)
@@ -90,8 +87,8 @@ function update!(
             usle_k[i],
             usle_c[i],
             answers_k[i],
-            slope[i],
-            area[i],
+            geometry.slope[i],
+            geometry.area[i],
             ts,
         )
     end

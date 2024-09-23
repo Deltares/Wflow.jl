@@ -81,7 +81,7 @@ function extract_required_states(config::Config)
     do_paddy = false
     if haskey(config.model, "water_demand")
         do_paddy = get(config.model.water_demand, "paddy", false)::Bool
-    end 
+    end
 
     # Extract required stated based on model configuration file
     vertical_states = get_vertical_states(model_type; snow = do_snow, glacier = do_glaciers)
@@ -118,24 +118,24 @@ function extract_required_states(config::Config)
     # River states
     if model_type == "sediment"
         river_states = (
-            :clayload,
-            :siltload,
-            :sandload,
-            :saggload,
-            :laggload,
-            :gravload,
-            :claystore,
-            :siltstore,
-            :sandstore,
-            :saggstore,
-            :laggstore,
-            :gravstore,
-            :outclay,
-            :outsilt,
-            :outsand,
-            :outsagg,
-            :outlagg,
-            :outgrav,
+            :leftover_clay,
+            :leftover_silt,
+            :leftover_sand,
+            :leftover_sagg,
+            :leftover_lagg,
+            :leftover_gravel,
+            :store_clay,
+            :store_silt,
+            :store_sand,
+            :store_sagg,
+            :store_lagg,
+            :store_gravel,
+            :clay,
+            :silt,
+            :sand,
+            :sagg,
+            :lagg,
+            :gravel,
         )
     elseif model_type == "sbm" || model_type == "sbm_gwf"
         river_states = (:q, :h, :h_av)
@@ -187,11 +187,8 @@ function extract_required_states(config::Config)
         reservoir_states,
     )
     # Add paddy states to dict
-    required_states = add_to_required_states(
-        required_states,
-        (:vertical, :paddy),
-        paddy_states,
-    )
+    required_states =
+        add_to_required_states(required_states, (:vertical, :paddy), paddy_states)
     return required_states
 end
 

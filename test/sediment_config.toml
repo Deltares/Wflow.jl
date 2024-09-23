@@ -18,25 +18,25 @@ path_output = "outstates-moselle-sed.nc"
 # if listed, the variable must be present in the NetCDF or error
 # if not listed, the variable can get a default value if it has one
 
-[state.lateral.river]
-clayload = "clayload"
-claystore = "claystore"
-gravload = "gravload"
-gravstore = "gravstore"
-laggload = "laggload"
-laggstore = "laggstore"
-outclay = "outclay"
-outgrav = "outgrav"
-outlagg = "outlagg"
-outsagg = "outsagg"
-outsand = "outsand"
-outsilt = "outsilt"
-saggload = "saggload"
-saggstore = "saggstore"
-sandload = "sandload"
-sandstore = "sandstore"
-siltload = "siltload"
-siltstore = "siltstore"
+[state.lateral.river.sediment_flux.variables]
+leftover_clay = "clayload"
+store_clay = "claystore"
+leftover_gravel = "gravload"
+store_gravel = "gravstore"
+leftover_lagg = "laggload"
+store_lagg = "laggstore"
+clay = "outclay"
+gravel = "outgrav"
+lagg= "outlagg"
+sagg = "outsagg"
+sand = "outsand"
+silt = "outsilt"
+leftover_sagg= "saggload"
+store_sagg = "saggstore"
+leftover_sand = "sandload"
+store_sand = "sandstore"
+leftover_silt = "siltload"
+store_silt = "siltstore"
 
 [input]
 path_forcing = "forcing-moselle-sed.nc"
@@ -59,27 +59,28 @@ forcing = [
   "lateral.land.hydrometeo_forcing.waterlevel_land",
   "vertical.hydrometeo_forcing.q_land",
   "lateral.land.hydrometeo_forcing.q_land",
-  "lateral.river.h_riv",
-  "lateral.river.q_riv",
+  "lateral.river.hydrometeo_forcing.waterlevel_river",
+  "lateral.river.hydrometeo_forcing.q_river",
 ]
 
 #cyclic = ["vertical.leaf_area_index"]
 
-[input.vertical]
+#[input.vertical]
 ## interception parameters to be moved
 #kext = "Kext"
 #leaf_area_index = "LAI" # cyclic
 #specific_leaf = "Sl"
 #storage_wood = "Swood"
 ## other parameters
-pathfrac = "PathFrac"
-slope = "Slope"
 
 [input.vertical.hydrometeo_forcing]
 precipitation = "P"
 waterlevel_land = "levKinL"
 #interception = "int"
 q_land = "runL"
+
+[input.vertical.geometry]
+slope = "Slope"
 
 [input.vertical.rainfall_erosion.parameters]
 soil_detachability = "soil_detachability"
@@ -88,6 +89,7 @@ canopyheight = "CanopyHeight"
 canopygapfraction = "CanopyGapFraction"
 usle_k = "usle_k"
 usle_c = "USLE_C"
+pathfrac = "PathFrac"
 
 [input.vertical.overland_flow_erosion.parameters]
 usle_k = "usle_k"
@@ -106,7 +108,6 @@ waterlevel_land = "levKinL"
 q_land = "runL"
 
 [input.lateral.land.transport_capacity.parameters]
-slope = "Slope"
 density = "sediment_density"
 d50 = "d50_soil"
 c_govers = "c_govers"
@@ -117,29 +118,54 @@ dm_sand = "dm_sand"
 dm_sagg = "dm_sagg"
 dm_lagg = "dm_lagg"
 
-[input.lateral.river]
-h_riv = "h"
-q_riv = "q"
-cbagnold = "c_Bagnold"
-d50 = "D50_River"
-d50engelund = "D50_River"
-ebagnold = "exp_Bagnold"
-fclayriv = "ClayF_River"
-fgravriv = "GravelF_River"
-fsandriv = "SandF_River"
-fsiltriv = "SiltF_River"
+[input.lateral.river.hydrometeo_forcing]
+waterlevel_river = "h"
+q_river = "q"
+
+[input.lateral.river.geometry]
 length = "wflow_riverlength"
 slope = "RiverSlope"
 width = "wflow_riverwidth"
+
+[input.lateral.river.transport_capacity.parameters]
+density = "sediment_density"
+d50 = "D50_River"
+c_bagnold = "c_Bagnold"
+e_bagnold = "exp_Bagnold"
+a_kodatie = "a_kodatie"
+b_kodatie = "b_kodatie"
+c_kodatie = "c_kodatie"
+d_kodatie = "d_kodatie"
+
+[input.lateral.river.potential_erosion.parameters]
+d50 = "D50_River"
+
+[input.lateral.river.sediment_flux.parameters]
+clay_fraction = "ClayF_River"
+silt_fraction = "SiltF_River"
+sand_fraction = "SandF_River"
+gravel_fraction = "GravelF_River"
+dm_clay = "dm_clay"
+dm_silt = "dm_silt"
+dm_sand = "dm_sand"
+dm_sagg = "dm_sagg"
+dm_lagg = "dm_lagg"
+dm_gravel = "dm_gravel"
 # Reservoir
 resarea = "ResSimpleArea"
 restrapeff = "ResTrapEff"
-resareas = "wflow_reservoirareas"
 reslocs = "wflow_reservoirlocs"
 # Lake
 lakearea = "LakeArea"
-lakeareas = "wflow_lakeareas"
 lakelocs = "wflow_lakelocs"
+
+[input.lateral.river.concentrations.parameters]
+dm_clay = "dm_clay"
+dm_silt = "dm_silt"
+dm_sand = "dm_sand"
+dm_sagg = "dm_sagg"
+dm_lagg = "dm_lagg"
+dm_gravel = "dm_gravel"
 
 [model]
 dolake = false
@@ -176,15 +202,20 @@ amount = "inlandsed"
 clay = "olclay"
 amount = "olsed"
 
-# [output.lateral.river]
-# Bedconc = "Bedconc"
-# SSconc = "SSconc"
-# Sedconc = "Sedconc"
-# clayload = "clayload"
-# h_riv = "h_riv"
-# inlandclay = "inlandclayriv"
-# outclay = "outclay"
-# width = "widthriv"
+[output.lateral.river.concentrations.variables]
+bed = "Bedconc"
+suspended = "SSconc"
+total = "Sedconc"
+
+[output.lateral.river.hydrometeo_forcing]
+waterlevel_river = "h_riv"
+
+[output.lateral.river.sediment_flux.variables]
+leftover_clay = "clayload"
+clay = "outclay"
+
+[output.lateral.river.sediment_flux.boundary_conditions]
+erosion_land_clay = "inlandclayriv"
 
 [csv]
 path = "output-moselle-sediment.csv"

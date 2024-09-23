@@ -1,14 +1,15 @@
 @get_units @with_kw struct SoilLoss{RE, OLE, SE, T}
     hydrometeo_forcing::HydrometeoForcing | "-"
+    geometry::LandGeometry | "-"
     rainfall_erosion::RE | "-"
     overland_flow_erosion::OLE | "-"
     soil_erosion::SE | "-"
-    area::Vector{T} | "m²"
 end
 
-function initialize_soil_loss(nc, config, inds, area, slope)
+function initialize_soil_loss(nc, config, inds)
     n = length(inds)
     hydrometeo_forcing = initialize_hydrometeo_forcing(n)
+    geometry = initialize_land_geometry(nc, config, inds)
     # Rainfall erosion
     rainfallerosionmodel = get(config.model, "rainfall_erosion", "answers")::String
     if rainfallerosionmodel == "answers"
@@ -23,7 +24,7 @@ function initialize_soil_loss(nc, config, inds, area, slope)
     overlandflowerosionmodel = get(config.model, "overland_flow_erosion", "answers")::String
     if overlandflowerosionmodel == "answers"
         overland_flow_erosion_model =
-            initialize_answers_overland_flow_erosion_model(nc, config, inds, slope)
+            initialize_answers_overland_flow_erosion_model(nc, config, inds)
     else
         error("Unknown overland flow erosion model: $overlandflowerosionmodel")
         # overland_flow_erosion_model = NoOverlandFlowErosionModel()
@@ -39,10 +40,10 @@ function initialize_soil_loss(nc, config, inds, area, slope)
         Float,
     }(;
         hydrometeo_forcing = hydrometeo_forcing,
+        geometry = geometry,
         rainfall_erosion = rainfall_erosion_model,
         overland_flow_erosion = overland_flow_erosion_model,
         soil_erosion = soil_erosion_model,
-        area = area,
     )
     return soil_loss
 end
@@ -55,7 +56,7 @@ function update!(model::SoilLoss, dt)
     # Rainfall erosion
     update!(model.rainfall_erosion, model.hydrometeo_forcing, model.area, ts)
     # Overland flow erosion
-    update!(model.overland_flow_erosion, model.hydrometeo_forcing, model.area, ts)
+    update!(model.overland_flow_erosion, model.hydrometeo_forcing, model.geometry, ts)
     # Total soil erosion and particle differentiation
     re = get_rainfall_erosion(model.rainfall_erosion)
     ole = get_overland_flow_erosion(model.overland_flow_erosion)

@@ -56,10 +56,12 @@ end
     @test mean(land.to_river.variables.sand) ≈ 0.02575351604673049f0
     @test mean(land.sediment_flux.variables.clay) ≈ 0.006578791733506439f0
 
-    # @test mean(lat.river.SSconc) ≈ 0.8259993252994058f0
-    # @test mean(lat.river.inlandclay) ≈ 0.01980468760667709f0
-    # @test lat.river.h_riv[network.river.order[end]] ≈ 0.006103649735450745f0
-    # @test lat.river.outclay[5649] ≈ 2.359031898208781f-9
+    @test mean(lat.river.concentrations.variables.suspended) ≈ 0.8259993252994058f0
+    @test mean(lat.river.sediment_flux.boundary_conditions.erosion_land_clay) ≈
+          0.01980468760667709f0
+    @test lat.river.hydrometeo_forcing.waterlevel_river[network.river.order[end]] ≈
+          0.006103649735450745f0
+    @test lat.river.sediment_flux.varibales.clay[5649] ≈ 2.359031898208781f-9
 end
 
 # @testset "Exchange and grid location sediment" begin
