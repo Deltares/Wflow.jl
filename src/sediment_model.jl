@@ -23,33 +23,12 @@ function initialize_sediment_model(config::Config)
     river_2d =
         ncread(nc, config, "river_location"; optional = false, type = Bool, fill = false)
     river = river_2d[inds]
-    riverwidth_2d =
-        ncread(nc, config, "lateral.river.width"; optional = false, type = Float, fill = 0)
-    riverwidth = riverwidth_2d[inds]
-    riverlength_2d =
-        ncread(nc, config, "lateral.river.length"; optional = false, type = Float, fill = 0)
-    riverlength = riverlength_2d[inds]
-
-    inds_riv, rev_inds_riv = active_indices(river_2d, 0)
 
     # Needed to update the forcing
     reservoir = ()
     lake = ()
 
-    # read x, y coordinates and calculate cell length [m]
-    y_nc = read_y_axis(nc)
-    x_nc = read_x_axis(nc)
-    y = permutedims(repeat(y_nc; outer = (1, length(x_nc))))[inds]
-    cellength = abs(mean(diff(x_nc)))
-
-    sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
-    xl, yl = cell_lengths(y, cellength, sizeinmetres)
-    area = xl .* yl
-    landslope =
-        ncread(nc, config, "vertical.slope"; optional = false, sel = inds, type = Float)
-    clamp!(landslope, 0.00001, Inf)
-
-    soilloss = initialize_soil_loss(nc, config, inds, area, landslope)
+    soilloss = initialize_soil_loss(nc, config, inds)
 
     # Get waterbodies mask
     do_reservoirs = get(config.model, "doreservoir", false)::Bool
@@ -84,30 +63,40 @@ function initialize_sediment_model(config::Config)
     ldd_2d = ncread(nc, config, "ldd"; optional = false, allow_missing = true)
     ldd = ldd_2d[inds]
 
-    drain_width = map(detdrainwidth, ldd, xl, yl)
-
     # # lateral part sediment in overland flow
     overland_flow_sediment =
-        initialize_overland_flow_sediment(nc, config, inds, drain_width, waterbodies, river)
+        initialize_overland_flow_sediment(nc, config, inds, waterbodies, river)
 
     graph = flowgraph(ldd, inds, pcr_dir)
 
     # River processes
     do_river = get(config.model, "runrivermodel", false)::Bool
+    # TODO: see if we can skip init if the river model is not needed
+    # or if we leave it when we restructure the Wflow Model struct
 
-    # the indices of the river cells in the land(+river) cell vector
-    riverlength = riverlength_2d[inds_riv]
-    riverwidth = riverwidth_2d[inds_riv]
-    minimum(riverlength) > 0 || error("river length must be positive on river cells")
-    minimum(riverwidth) > 0 || error("river width must be positive on river cells")
+    inds_riv, rev_inds_riv = active_indices(river_2d, 0)
 
     ldd_riv = ldd_2d[inds_riv]
     graph_riv = flowgraph(ldd_riv, inds_riv, pcr_dir)
 
+    # Needed for frac_to_river?
+    landslope = ncread(
+        nc,
+        config,
+        "vertical.geometry.slope";
+        optional = false,
+        sel = inds,
+        type = Float,
+    )
+    clamp!(landslope, 0.00001, Inf)
+
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
     frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, landslope, n)
 
-    rs = initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
+    rs = initialize_river_flow_sediment(nc, config, inds_riv, waterbodies)
+
+    y_nc = read_y_axis(nc)
+    x_nc = read_x_axis(nc)
 
     modelmap = (vertical = soilloss, lateral = (land = overland_flow_sediment, river = rs))
     indices_reverse = (
@@ -161,18 +150,12 @@ function update!(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: Sedi
     # Overland flow sediment transport
     update!(lateral.land, vertical.soil_erosion, network.land, dt)
 
-    # do_river = get(config.model, "runrivermodel", false)::Bool
-
-    # if do_river
-    #     inds_riv = network.index_river
-    #     lateral.river.inlandclay .= lateral.land.inlandclay[inds_riv]
-    #     lateral.river.inlandsilt .= lateral.land.inlandsilt[inds_riv]
-    #     lateral.river.inlandsand .= lateral.land.inlandsand[inds_riv]
-    #     lateral.river.inlandsagg .= lateral.land.inlandsagg[inds_riv]
-    #     lateral.river.inlandlagg .= lateral.land.inlandlagg[inds_riv]
-
-    #     update(lateral.river, network.river, config)
-    # end
+    # River sediment transport
+    do_river = get(config.model, "runrivermodel", false)::Bool
+    if do_river
+        inds_riv = network.index_river
+        update!(lateral.river, lateral.land.to_river, network.river, inds_riv, dt)
+    end
 
     return nothing
 end

@@ -23,7 +23,9 @@ function transport_capacity_bc(n)
     return bc
 end
 
-# Common parameters for transport capacity models
+##################### Overland Flow #####################
+
+# Govers parameters for transport capacity models
 @get_units @with_kw struct TransportCapacityGoversParameters{T}
     # Drain slope
     slope::Vector{T} | "m m-1"
@@ -230,8 +232,6 @@ end
 
 # Common parameters for transport capacity models
 @get_units @with_kw struct TransportCapacityYalinDifferentiationParameters{T}
-    # Drain slope
-    slope::Vector{T} | "m m-1"
     # Particle density
     density::Vector{T} | "kg m-3"
     # Clay mean diameter
@@ -247,14 +247,6 @@ end
 end
 
 function initialize_transport_capacity_yalin_diff_params(nc, config, inds)
-    slope = ncread(
-        nc,
-        config,
-        "lateral.land.transport_capacity.parameters.slope";
-        sel = inds,
-        defaults = 0.01,
-        type = Float,
-    )
     density = ncread(
         nc,
         config,
@@ -304,7 +296,6 @@ function initialize_transport_capacity_yalin_diff_params(nc, config, inds)
         type = Float,
     )
     tc_parameters = TransportCapacityYalinDifferentiationParameters(;
-        slope = slope,
         density = density,
         dm_clay = dm_clay,
         dm_silt = dm_silt,
@@ -420,5 +411,326 @@ function update!(
             ts,
         )
         amount[i] = clay[i] + silt[i] + sand[i] + sagg[i] + lagg[i]
+    end
+end
+
+##################### River Flow #####################
+@get_units @with_kw struct TransportCapacityRiverParameters{T}
+    # Particle density
+    density::Vector{T} | "kg m-3"
+    # Particle mean diameter
+    d50::Vector{T} | "mm"
+end
+
+function initialize_transport_capacity_river_params(nc, config, inds)
+    density = ncread(
+        nc,
+        config,
+        "lateral.river.transport_capacity.parameters.density";
+        sel = inds,
+        defaults = 2650.0,
+        type = Float,
+    )
+    d50 = ncread(
+        nc,
+        config,
+        "lateral.river.transport_capacity.parameters.d50";
+        sel = inds,
+        defaults = 0.1,
+        type = Float,
+    )
+    tc_parameters = TransportCapacityRiverParameters(; density = density, d50 = d50)
+
+    return tc_parameters
+end
+
+# Bagnold parameters for transport capacity models
+@get_units @with_kw struct TransportCapacityBagnoldParameters{T}
+    # Bagnold transport capacity coefficient
+    c_bagnold::Vector{T} | "-"
+    # Bagnold transport capacity exponent
+    e_bagnold::Vector{T} | "-"
+end
+
+function initialize_transport_capacity_bagnold_params(nc, config, inds)
+    c_bagnold = ncread(
+        nc,
+        config,
+        "lateral.river.transport_capacity.parameters.c_bagnold";
+        sel = inds,
+        optional = false,
+        type = Float,
+    )
+    e_bagnold = ncread(
+        nc,
+        config,
+        "lateral.river.transport_capacity.parameters.e_bagnold";
+        sel = inds,
+        optional = false,
+        type = Float,
+    )
+    tc_parameters =
+        TransportCapacityBagnoldParameters(; c_bagnold = c_bagnold, e_bagnold = e_bagnold)
+
+    return tc_parameters
+end
+
+@get_units @with_kw struct TransportCapacityBagnoldModel{T} <:
+                           AbstractTransportCapacityModel
+    boundary_conditions::TransportCapacityBC{T} | "-"
+    parameters::TransportCapacityBagnoldParameters{T} | "-"
+    variables::TransportCapacityModelVars{T} | "-"
+end
+
+function initialize_transport_capacity_bagnold_model(nc, config, inds)
+    n = length(inds)
+    vars = transport_capacity_model_vars(n)
+    params = initialize_transport_capacity_bagnold_params(nc, config, inds)
+    bc = transport_capacity_bc(n)
+    model = TransportCapacityBagnoldModel(;
+        boundary_conditions = bc,
+        parameters = params,
+        variables = vars,
+    )
+    return model
+end
+
+function update!(model::TransportCapacityBagnoldModel, geometry::RiverGeometry, ts)
+    (; q, waterlevel) = model.boundary_conditions
+    (; c_bagnold, e_bagnold) = model.parameters
+    (; amount) = model.variables
+
+    n = length(q)
+    # Note: slope is not used here but this allows for a consistent interface of update! functions
+    # Only Bagnold does not use it
+    threaded_foreach(1:n; basesize = 1000) do i
+        amount[i] = transport_capacity_bagnold(
+            q[i],
+            waterlevel[i],
+            c_bagnold[i],
+            e_bagnold[i],
+            geometry.width[i],
+            geometry.length[i],
+            ts,
+        )
+    end
+end
+
+# Engelund and Hansen parameters for transport capacity models
+@get_units @with_kw struct TransportCapacityEngelundModel{T} <:
+                           AbstractTransportCapacityModel
+    boundary_conditions::TransportCapacityBC{T} | "-"
+    parameters::TransportCapacityRiverParameters{T} | "-"
+    variables::TransportCapacityModelVars{T} | "-"
+end
+
+function initialize_transport_capacity_engelund_model(nc, config, inds)
+    n = length(inds)
+    vars = transport_capacity_model_vars(n)
+    params = initialize_transport_capacity_river_params(nc, config, inds)
+    bc = transport_capacity_bc(n)
+    model = TransportCapacityEngelundModel(;
+        boundary_conditions = bc,
+        parameters = params,
+        variables = vars,
+    )
+    return model
+end
+
+function update!(model::TransportCapacityEngelundModel, geometry::RiverGeometry, ts)
+    (; q, waterlevel) = model.boundary_conditions
+    (; density, d50) = model.parameters
+    (; amount) = model.variables
+
+    n = length(q)
+    threaded_foreach(1:n; basesize = 1000) do i
+        amount[i] = transport_capacity_engelund(
+            q[i],
+            waterlevel[i],
+            density[i],
+            d50[i],
+            geometry.width[i],
+            geometry.length[i],
+            geometry.slope[i],
+            ts,
+        )
+    end
+end
+
+# Kodatie parameters for transport capacity models
+@get_units @with_kw struct TransportCapacityKodatieParameters{T}
+    # Kodatie transport capacity coefficient a
+    a_kodatie::Vector{T} | "-"
+    # Kodatie transport capacity coefficient b
+    b_kodatie::Vector{T} | "-"
+    # Kodatie transport capacity coefficient c
+    c_kodatie::Vector{T} | "-"
+    # Kodatie transport capacity coefficient d
+    d_kodatie::Vector{T} | "-"
+end
+
+function initialize_transport_capacity_kodatie_params(nc, config, inds)
+    a_kodatie = ncread(
+        nc,
+        config,
+        "lateral.river.transport_capacity.parameters.a_kodatie";
+        sel = inds,
+        optional = false,
+        type = Float,
+    )
+    b_kodatie = ncread(
+        nc,
+        config,
+        "lateral.river.transport_capacity.parameters.b_kodatie";
+        sel = inds,
+        optional = false,
+        type = Float,
+    )
+    c_kodatie = ncread(
+        nc,
+        config,
+        "lateral.river.transport_capacity.parameters.c_kodatie";
+        sel = inds,
+        optional = false,
+        type = Float,
+    )
+    d_kodatie = ncread(
+        nc,
+        config,
+        "lateral.river.transport_capacity.parameters.d_kodatie";
+        sel = inds,
+        optional = false,
+        type = Float,
+    )
+    tc_parameters = TransportCapacityKodatieParameters(;
+        a_kodatie = a_kodatie,
+        b_kodatie = b_kodatie,
+        c_kodatie = c_kodatie,
+        d_kodatie = d_kodatie,
+    )
+
+    return tc_parameters
+end
+
+@get_units @with_kw struct TransportCapacityKodatieModel{T} <:
+                           AbstractTransportCapacityModel
+    boundary_conditions::TransportCapacityBC{T} | "-"
+    parameters::TransportCapacityKodatieParameters{T} | "-"
+    variables::TransportCapacityModelVars{T} | "-"
+end
+
+function initialize_transport_capacity_kodatie_model(nc, config, inds)
+    n = length(inds)
+    vars = transport_capacity_model_vars(n)
+    params = initialize_transport_capacity_kodatie_params(nc, config, inds)
+    bc = transport_capacity_bc(n)
+    model = TransportCapacityKodatieModel(;
+        boundary_conditions = bc,
+        parameters = params,
+        variables = vars,
+    )
+    return model
+end
+
+function update!(model::TransportCapacityKodatieModel, geometry::RiverGeometry, ts)
+    (; q, waterlevel) = model.boundary_conditions
+    (; a_kodatie, b_kodatie, c_kodatie, d_kodatie) = model.parameters
+    (; amount) = model.variables
+
+    n = length(q)
+    threaded_foreach(1:n; basesize = 1000) do i
+        amount[i] = transport_capacity_kodatie(
+            q[i],
+            waterlevel[i],
+            a_kodatie[i],
+            b_kodatie[i],
+            c_kodatie[i],
+            d_kodatie[i],
+            geometry.width[i],
+            geometry.length[i],
+            geometry.slope[i],
+            ts,
+        )
+    end
+end
+
+# Yang parameters for transport capacity models
+@get_units @with_kw struct TransportCapacityYangModel{T} <: AbstractTransportCapacityModel
+    boundary_conditions::TransportCapacityBC{T} | "-"
+    parameters::TransportCapacityRiverParameters{T} | "-"
+    variables::TransportCapacityModelVars{T} | "-"
+end
+
+function initialize_transport_capacity_yang_model(nc, config, inds)
+    n = length(inds)
+    vars = transport_capacity_model_vars(n)
+    params = initialize_transport_capacity_river_params(nc, config, inds)
+    bc = transport_capacity_bc(n)
+    model = TransportCapacityYangModel(;
+        boundary_conditions = bc,
+        parameters = params,
+        variables = vars,
+    )
+    return model
+end
+
+function update!(model::TransportCapacityYangModel, geometry::RiverGeometry, ts)
+    (; q, waterlevel) = model.boundary_conditions
+    (; density, d50) = model.parameters
+    (; amount) = model.variables
+
+    n = length(q)
+    threaded_foreach(1:n; basesize = 1000) do i
+        amount[i] = transport_capacity_yang(
+            q[i],
+            waterlevel[i],
+            density[i],
+            d50[i],
+            geometry.width[i],
+            geometry.length[i],
+            geometry.slope[i],
+            ts,
+        )
+    end
+end
+
+# Molinas and Wu parameters for transport capacity models
+@get_units @with_kw struct TransportCapacityMolinasModel{T} <:
+                           AbstractTransportCapacityModel
+    boundary_conditions::TransportCapacityBC{T} | "-"
+    parameters::TransportCapacityRiverParameters{T} | "-"
+    variables::TransportCapacityModelVars{T} | "-"
+end
+
+function initialize_transport_capacity_molinas_model(nc, config, inds)
+    n = length(inds)
+    vars = transport_capacity_model_vars(n)
+    params = initialize_transport_capacity_river_params(nc, config, inds)
+    bc = transport_capacity_bc(n)
+    model = TransportCapacityMolinasModel(;
+        boundary_conditions = bc,
+        parameters = params,
+        variables = vars,
+    )
+    return model
+end
+
+function update!(model::TransportCapacityMolinasModel, geometry::RiverGeometry, ts)
+    (; q, waterlevel) = model.boundary_conditions
+    (; density, d50) = model.parameters
+    (; amount) = model.variables
+
+    n = length(q)
+    threaded_foreach(1:n; basesize = 1000) do i
+        amount[i] = transport_capacity_molinas(
+            q[i],
+            waterlevel[i],
+            density[i],
+            d50[i],
+            geometry.width[i],
+            geometry.length[i],
+            geometry.slope[i],
+            ts,
+        )
     end
 end

@@ -202,3 +202,99 @@ function total_soil_erosion(
     sagg_erosion,
     lagg_erosion
 end
+
+"""
+    function river_erosion_julian_torres(
+        waterlevel,
+        d50,
+        width,
+        length,
+        slope,
+        ts,
+    )
+
+River erosion model based on Julian Torres.
+Repartition of the effective shear stress between the bank and the bed from Knight et al. 1984 [%]
+
+# Arguments
+- `waterlevel` (water level [m])
+- `d50` (median grain size [m])
+- `width` (width [m])
+- `length` (length [m])
+- `slope` (slope [-])
+- `ts` (timestep [seconds])
+
+# Output
+- `bed` (potential river erosion [t Δt⁻¹])
+- `bank` (potential bank erosion [t Δt⁻¹])
+"""
+function river_erosion_julian_torres(waterlevel, d50, width, length, slope, ts)
+    if waterlevel > 0.0
+        # Bed and Bank from Shields diagram, Da Silva & Yalin (2017)
+        E_ = (2.65 - 1) * 9.81
+        E = (E_ * (d50 * 1e-3)^3 / 1e-12)^0.33
+        TCrbed =
+            E_ *
+            d50 *
+            (0.13 * E^(-0.392) * exp(-0.015 * E^2) + 0.045 * (1 - exp(-0.068 * E)))
+        TCrbank = TCrbed
+        # kd from Hanson & Simon 2001
+        kdbank = 0.2 * TCrbank^(-0.5) * 1e-6
+        kdbed = 0.2 * TCrbed^(-0.5) * 1e-6
+
+        # Hydraulic radius of the river [m] (rectangular channel)
+        hydrad = waterlevel * width / (width + 2 * waterlevel)
+
+        # Repartition of the effective shear stress between the bank and the Bed
+        SFbank = exp(-3.23 * log10(width / waterlevel + 3) + 6.146)
+        # Effective shear stress on river bed and banks [N/m2]
+        TEffbank =
+            1000 * 9.81 * hydrad * slope * SFbank / 100 * (1 + width / (2 * waterlevel))
+        TEffbed =
+            1000 * 9.81 * hydrad * slope * (1 - SFbank / 100) * (1 + 2 * waterlevel / width)
+
+        # Potential erosion rates of the bed and bank [t/cell/timestep]
+        #(assuming only one bank is eroding)
+        Tex = max(TEffbank - TCrbank, 0.0)
+        # 1.4 is bank default bulk density
+        ERbank = kdbank * Tex * length * waterlevel * 1.4 * ts
+        # 1.5 is bed default bulk density
+        ERbed = kdbed * (TEffbed - TCrbed) * length * width * 1.5 * ts
+
+        # Potential maximum bed/bank erosion
+        bed = max(ERbed, 0.0)
+        bank = max(ERbank, 0.0)
+
+    else
+        bed = 0.0
+        bank = 0.0
+    end
+
+    return bed, bank
+end
+
+"""
+    function river_erosion_store(
+        excess_sediment,
+        store,
+    )
+
+River erosion of the previously deposited sediment.
+
+# Arguments
+- `excess_sediment` (excess sediment [t Δt⁻¹])
+- `store` (sediment store [t])
+
+# Output
+- `erosion` (river erosion [t Δt⁻¹])
+- `excess_sediment` (updated excess sediment [t Δt⁻¹])
+- `store` (updated sediment store [t])
+"""
+function river_erosion_store(excess_sediment, store)
+    # River erosion of the previously deposited sediment
+    erosion = min(store, excess_sediment)
+    # Update the excess sediment and the sediment store
+    excess_sediment -= erosion
+    store -= erosion
+    return erosion, excess_sediment, store
+end
