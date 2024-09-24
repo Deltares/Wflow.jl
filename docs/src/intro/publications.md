@@ -86,10 +86,15 @@ response to land use and land cover changes using satellite data and hydrologica
 case study of Dinder and Rahad tributaries of the Blue Nile (Ethiopia–Sudan), Hydrol. Earth
 Syst. Sci., 21, 5217–5242. <https://doi.org/10.5194/hess-21-5217-2017>.
 
+Imhoff, R.O., Buitink, J., van Verseveld, W.J., Weerts, A.H., 2024. A fast high resolution
+distributed hydrological model for forecasting, climate scenarios and digital twin
+applications using wflow_sbm. Environmental Modelling & Software, 179, 106099.
+<https://doi.org/10.1016/j.envsoft.2024.106099>
+
 Imhoff, R.O, van Verseveld, W.J., van Osnabrugge, B., Weerts, A.H., 2020. Scaling
 Point-Scale (Pedo)transfer Functions to Seamless Large-Domain Parameter Estimates for
 High-Resolution Distributed Hydrologic Modeling: An Example for the Rhine River. Water
-Resources Research,56,e2019WR026807. <https://doi.org/10.1029/2019WR026807>.
+Resources Research, 56, e2019WR026807. <https://doi.org/10.1029/2019WR026807>.
 
 Imhoff, R.O., van Verseveld, W., van Osnabrugge, B., Weerts, A.H., 2020. Ruimtelijk
 schaalbare hydrologische modelparameters uit open-source omgevingsdata: een voorbeeld voor
