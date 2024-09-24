@@ -243,6 +243,11 @@ Tretjakova, D., 2015. Investigating the effect of using fully-distributed model 
 assimilation on the performance of hydrological forecasting in the Karasu catchment, Turkey,
 MSc thesis, Wageningen University.
 
+van der Gaast, R.H., 2024. Evaluating the transferability of data-driven pedo-transfer
+functions for the wflow\_sbm parameter KsatHorFrac in central and Western Europe.
+Universiteit Twente, Enschede, The Netherlands,
+<https://essay.utwente.nl/103634/1/vandergaast_MA_ET.pdf>.
+
 Verbrugge, M., 2019. Reservoir Operation Optimization, a case study in the Chao Phraya
 Basin, BSc thesis, Hydrology and Quantitative Water Management Group, Wageningen University.
 
@@ -256,8 +261,8 @@ Wageningen University.
 Visser, B., 2020. Impact of climate change on local water resources of European catchments,
 Intersnhip report, Deltares.
 
-Wannasin, C., 2023. Modelling and forecasting daily streamflow with reservoir operation in the
-upper Chao Phraya River basin, Thailand.  
+Wannasin, C., 2023. Modelling and forecasting daily streamflow with reservoir operation in
+the upper Chao Phraya River basin, Thailand.  
 Wageningen University, Doctoral dissertation, <https://doi.org/10.18174/584572>.
 
 ### Reports
