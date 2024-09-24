@@ -663,28 +663,18 @@ function update_boundary_conditions!(
     atmospheric_forcing::AtmosphericForcing,
     external_models::NamedTuple,
 )
-    (; interception, runoff, demand, allocation) = external_models
+    (; interception, runoff, allocation) = external_models
     (; potential_transpiration, surface_water_flux, potential_soilevaporation) =
         model.boundary_conditions
 
     potential_transpiration .= get_potential_transpiration(interception)
 
-    for i in eachindex(surface_water_flux)
-        if !isnothing(demand) && (!isnothing(demand.paddy) || !isnothing(demand.nonpaddy))
-            surface_water_flux[i] = max(
-                runoff.boundary_conditions.surface_water_flux[i] +
-                allocation.irri_alloc[i] - runoff.variables.runoff_river[i] -
-                runoff.variables.runoff_land[i],
-                0.0,
-            )
-        else
-            surface_water_flux[i] = max(
-                runoff.boundary_conditions.surface_water_flux[i] -
-                runoff.variables.runoff_river[i] - runoff.variables.runoff_land[i],
-                0.0,
-            )
-        end
-    end
+    irrigation = get_irrigation_allocated(allocation)
+    @. surface_water_flux = max(
+        runoff.boundary_conditions.surface_water_flux + irrigation -
+        runoff.variables.runoff_river - runoff.variables.runoff_land,
+        0.0,
+    )
 
     @. potential_soilevaporation =
         model.parameters.soil_fraction * atmospheric_forcing.potential_evaporation
@@ -721,23 +711,17 @@ function update!(
     v = model.variables
     p = model.parameters
 
+    evaporation!(demand.paddy, potential_soilevaporation)
+    waterdepth_paddy = get_water_depth(demand.paddy)
+    @. v.avail_forinfilt = surface_water_flux + waterdepth_paddy # allow infiltration of paddy water
+    evap_paddy = get_evaporation(demand.paddy)
+    @. potential_soilevaporation = potential_soilevaporation - evap_paddy
+
     n = length(potential_evaporation)
     threaded_foreach(1:n; basesize = 250) do i
         h3 = feddes_h3(p.h3_high[i], p.h3_low[i], potential_transpiration[i], dt)
         ustoredepth = sum(@view v.ustorelayerdepth[i][1:p.nlayers[i]])
-
         potsoilevap = potential_soilevaporation[i]
-        avail_forinfilt = surface_water_flux[i]
-        if !isnothing(demand) &&
-           !isnothing(demand.paddy) &&
-           demand.paddy.irrigation_areas[i]
-            evap_paddy_water = min(demand.paddy.h[i], potsoilevap)
-            demand.paddy.h[i] -= evap_paddy_water
-            potsoilevap -= evap_paddy_water
-            avail_forinfilt += demand.paddy.h[i] # allow infiltration of paddy water
-        else
-            evap_paddy_water = 0.0
-        end
 
         # Calculate the initial capacity of the unsaturated store
         ustorecapacity = p.soilwatercapacity[i] - v.satwaterdepth[i] - ustoredepth
@@ -756,7 +740,7 @@ function update!(
         pathinf,
         infiltexcess,
         soilinfredu = infiltration(
-            avail_forinfilt,
+            v.avail_forinfilt[i],
             p.pathfrac[i],
             p.cf_soil[i],
             tsoil,
@@ -915,7 +899,7 @@ function update!(
         end
 
         actinfilt = infiltsoilpath - du
-        excesswater = avail_forinfilt - infiltsoilpath - infiltexcess + du
+        excesswater = v.avail_forinfilt[i] - infiltsoilpath - infiltexcess + du
 
         # Separation between compacted and non compacted areas (correction with the satflow du)
         # This is required for D-Emission/Delwaq
@@ -969,12 +953,16 @@ function update!(
         recharge = (transfer - actcapflux - actleakage - actevapsat - soilevapsat)
         transpiration = actevapsat + actevapustore
         actevap =
-            soilevap + transpiration + ae_openw_r[i] + ae_openw_l[i] + evap_paddy_water
+            soilevap +
+            transpiration +
+            ae_openw_r[i] +
+            ae_openw_l[i] +
+            get_evaporation(demand.paddy, i)
 
         # update the outputs and states
         v.n_unsatlayers[i] = n_usl
         v.h3[i] = h3
-        v.avail_forinfilt[i] = avail_forinfilt
+        #v.avail_forinfilt[i] = avail_forinfilt
         v.actinfilt[i] = actinfilt
         v.infiltexcess[i] = infiltexcess
         v.recharge[i] = recharge
@@ -1034,25 +1022,14 @@ function update!(
 
         ustoredepth = sum(@view usld[1:n_usl])
 
-        if !isnothing(demand) &&
-           !isnothing(demand.paddy) &&
-           demand.paddy.irrigation_areas[i]
-            paddy_h_add =
-                exfiltustore +
-                boundary_conditions.exfiltsatwater[i] +
-                excesswater[i] +
-                runoff_land[i] +
-                infiltexcess[i]
-            runoff = max(paddy_h_add - demand.paddy.h_max[i], 0.0)
-            demand.paddy.h[i] = paddy_h_add - runoff
-        else
-            runoff =
-                exfiltustore +
-                boundary_conditions.exfiltsatwater[i] +
-                excesswater[i] +
-                runoff_land[i] +
-                infiltexcess[i]
-        end
+        runoff =
+            exfiltustore +
+            boundary_conditions.exfiltsatwater[i] +
+            excesswater[i] +
+            runoff_land[i] +
+            infiltexcess[i]
+
+        runoff = update_runoff(demand.paddy, runoff, i)
 
         # volumetric water content per soil layer and root zone
         vwc_ = vwc[i]

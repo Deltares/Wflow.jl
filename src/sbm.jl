@@ -73,8 +73,10 @@ function LandHydrologySBM(nc, config, riverfrac, inds)
     )
 
     do_water_demand = haskey(config.model, "water_demand")
-    allocation = do_water_demand ? initialize_allocation_land(nc, config, inds) : nothing
-    demand = do_water_demand ? initialize_water_demand(nc, config, inds, dt) : nothing
+    allocation =
+        do_water_demand ? initialize_allocation_land(nc, config, inds) :
+        NoAllocationLand{Float}()
+    demand = do_water_demand ? initialize_water_demand(nc, config, inds, dt) : NoDemand()
 
     lsm = LandHydrologySBM{Float}(;
         atmospheric_forcing = atmospheric_forcing,
@@ -105,6 +107,8 @@ function update(model::LandHydrologySBM, lateral, network, config)
         dt,
     ) = model
 
+    (; rootingdepth) = model.vegetation_parameter_set
+
     update!(interception, atmospheric_forcing)
 
     update_boundary_conditions!(snow, (; interception))
@@ -130,9 +134,9 @@ function update(model::LandHydrologySBM, lateral, network, config)
         (; h3_high, h3_low) = soil.parameters
         potential_transpiration .= get_potential_transpiration(interception)
         @. soil.variables.h3 = feddes_h3(h3_high, h3_low, potential_transpiration, dt)
-        update_water_demand(model)
-        update_water_allocation(model, lateral, network)
     end
+    update_water_demand!(allocation, demand, soil)
+    update_water_allocation!(allocation, demand, lateral, network, dt)
 
     soil_fraction!(soil, runoff, glacier)
     update_boundary_conditions!(
@@ -187,7 +191,7 @@ function update_total_water_storage(
     snow_storage = get_snow_storage(snow)
     snow_water = get_snow_water(snow)
     glacier_store = get_glacier_store(glacier)
-    paddy_h = !isnothing(demand) && !isnothing(demand.paddy) ? demand.paddy.h : 0.0
+    paddy_h = get_water_depth(demand.paddy)
     @. total_storage +=
         snow_storage +
         snow_water +
@@ -205,96 +209,5 @@ function update_total_water_storage(
 
         # Add everything to the total water storage
         total_storage[i] += (sub_surface + lateral)
-    end
-end
-
-"""
-    update_water_demand(lsm::LandHydrologySBM)
-
-Update water demand for `LandHydrologySBM` for a single timestep. Water demand is computed
-for sectors `industry`, `domestic` and `livestock`, and `paddy` rice fields and `nonpaddy`
-(other crop) fields.
-
-Gross water demand for irrigation `irri_demand_gross` and non-irrigation
-`nonirri_demand_gross`, and total gross water demand `total_gross_demand` are updated as
-part of `LandHydrologySBM` water allocation (`allocation`).
-"""
-function update_water_demand(lsm::LandHydrologySBM)
-    (; rootingdepth) = lsm.vegetation_parameter_set
-    (; nonpaddy, paddy, domestic, industry, livestock) = lsm.demand
-    (; hb, theta_s, theta_r, c, sumlayers, act_thickl, pathfrac, infiltcapsoil) =
-        lsm.soil.parameters
-    (; h3, n_unsatlayers, zi, ustorelayerdepth, soilinfredu) = lsm.soil.variables
-
-    n = length(zi)
-    for i in 1:n
-        industry_dem = update_non_irrigation_demand(industry, i)
-        domestic_dem = update_non_irrigation_demand(domestic, i)
-        livestock_dem = update_non_irrigation_demand(livestock, i)
-
-        irri_dem_gross = 0.0
-        if !isnothing(nonpaddy) && nonpaddy.irrigation_areas[i]
-            if nonpaddy.irrigation_trigger[i]
-                usl = set_layerthickness(zi[i], sumlayers[i], act_thickl[i])
-                for k in 1:n_unsatlayers[i]
-                    # compute water demand only for root zone through root fraction per layer
-                    rootfrac =
-                        min(1.0, (max(0.0, rootingdepth[i] - sumlayers[i][k]) / usl[k]))
-                    # vwc_f and vwc_h3 can be precalculated.
-                    vwc_fc =
-                        vwc_brooks_corey(-100.0, hb[i], theta_s[i], theta_r[i], c[i][k])
-                    vwc_h3 = vwc_brooks_corey(h3[i], hb[i], theta_s[i], theta_r[i], c[i][k])
-                    depletion =
-                        (vwc_fc * usl[k]) - (ustorelayerdepth[i][k] + theta_r[i] * usl[k])
-                    depletion *= rootfrac
-                    raw = (vwc_fc - vwc_h3) * usl[k] # readily available water
-                    raw *= rootfrac
-
-                    # check if maximum irrigation rate has been applied at the previous time step.
-                    max_irri_rate_applied =
-                        nonpaddy.demand_gross[i] == nonpaddy.maximum_irrigation_rate[i]
-                    if depletion >= raw # start irrigation
-                        irri_dem_gross += depletion
-                        # add depletion to irrigation gross demand when the maximum irrigation rate has been 
-                        # applied at the previous time step (to get volumetric water content at field capacity)
-                    elseif depletion > 0.0 && max_irri_rate_applied # continue irrigation
-                        irri_dem_gross += depletion
-                    end
-                end
-                # limit irrigation demand to infiltration capacity 
-                infiltration_capacity =
-                    soilinfredu[i] * (1.0 - pathfrac[i]) * infiltcapsoil[i]
-                irri_dem_gross = min(irri_dem_gross, infiltration_capacity)
-                irri_dem_gross /= nonpaddy.irrigation_efficiency[i]
-                # limit irrigation demand to the maximum irrigation rate
-                irri_dem_gross = min(irri_dem_gross, nonpaddy.maximum_irrigation_rate[i])
-            else
-                irri_dem_gross = 0.0
-            end
-            nonpaddy.demand_gross[i] = irri_dem_gross
-        elseif !isnothing(paddy) && paddy.irrigation_areas[i]
-            if paddy.irrigation_trigger[i]
-                # check if maximum irrigation rate has been applied at the previous time step.
-                max_irri_rate_applied =
-                    paddy.demand_gross[i] == paddy.maximum_irrigation_rate[i]
-                # start irrigation
-                if paddy.h[i] < paddy.h_min[i]
-                    irr_depth_paddy = paddy.h_opt[i] - paddy.h[i]
-                elseif paddy.h[i] < paddy.h_opt[i] && max_irri_rate_applied # continue irrigation
-                    irr_depth_paddy = paddy.h_opt[i] - paddy.h[i]
-                else
-                    irr_depth_paddy = 0.0
-                end
-                irri_dem_gross += irr_depth_paddy / paddy.irrigation_efficiency[i]
-                # limit irrigation demand to the maximum irrigation rate
-                irri_dem_gross = min(irri_dem_gross, paddy.maximum_irrigation_rate[i])
-            end
-            paddy.demand_gross[i] = irri_dem_gross
-        end
-        # update gross water demands 
-        lsm.allocation.irri_demand_gross[i] = irri_dem_gross
-        lsm.allocation.nonirri_demand_gross[i] = industry_dem + domestic_dem + livestock_dem
-        lsm.allocation.total_gross_demand[i] =
-            irri_dem_gross + industry_dem + domestic_dem + livestock_dem
     end
 end

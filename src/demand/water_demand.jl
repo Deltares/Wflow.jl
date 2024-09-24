@@ -1,19 +1,81 @@
-@get_units @grid_loc @with_kw struct NonIrrigationDemand{T}
+abstract type AbstractIrrigationModel{T} end
+abstract type AbstractAllocationModel{T} end
+abstract type AbstractDemandModel end
+
+struct NoIrrigationPaddy{T} <: AbstractIrrigationModel{T} end
+struct NoIrrigationNonPaddy{T} <: AbstractIrrigationModel{T} end
+struct NoNonIrrigationDemand <: AbstractDemandModel end
+struct NoAllocationLand{T} <: AbstractAllocationModel{T} end
+
+@get_units @grid_loc @with_kw struct NonIrrigationDemand{T} <: AbstractDemandModel
     demand_gross::Vector{T}                 # gross water demand [mm Δt⁻¹]
     demand_net::Vector{T}                   # net water demand [mm Δt⁻¹]
     returnflow_fraction::Vector{T} | "-"    # return flow fraction [-]
     returnflow::Vector{T}                   # return flow [mm Δt⁻¹]
 end
 
-@get_units @grid_loc @with_kw struct NonPaddy{T}
+get_demand_gross(model::NonIrrigationDemand) = model.demand_gross
+get_demand_gross(model::NoNonIrrigationDemand) = 0.0
+
+@get_units @grid_loc @with_kw struct NonPaddy{T} <: AbstractIrrigationModel{T}
     demand_gross::Vector{T}                     # irrigation gross demand [mm Δt⁻¹] 
     irrigation_efficiency::Vector{T} | "-"      # irrigation efficiency [-]
-    maximum_irrigation_rate::Vector{T}          # maximum irrigation depth [mm Δt⁻¹]
+    maximum_irrigation_rate::Vector{T}          # maximum irrigation rate [mm Δt⁻¹]
     irrigation_areas::Vector{Bool} | "-"        # irrigation areas [-]
     irrigation_trigger::Vector{Bool} | "-"      # irrigation on or off [-]
 end
 
-@get_units @grid_loc @with_kw struct Paddy{T}
+get_demand_gross(model::NonPaddy) = model.demand_gross
+get_demand_gross(model::NoIrrigationNonPaddy) = 0.0
+
+function update_demand_gross!(nonpaddy::NonPaddy, soil::SbmSoilModel)
+    (; hb, theta_s, theta_r, c, sumlayers, act_thickl, pathfrac, infiltcapsoil) =
+        soil.parameters
+    (; h3, n_unsatlayers, zi, ustorelayerdepth, soilinfredu) = soil.variables
+    rootingdepth = get_rootingdepth(soil)
+
+    for i in eachindex(nonpaddy.irrigation_areas)
+        if nonpaddy.irrigation_areas[i] && nonpaddy.irrigation_trigger[i]
+            usl = set_layerthickness(zi[i], sumlayers[i], act_thickl[i])
+            irri_dem_gross = 0.0
+            for k in 1:n_unsatlayers[i]
+                # compute water demand only for root zone through root fraction per layer
+                rootfrac = min(1.0, (max(0.0, rootingdepth[i] - sumlayers[i][k]) / usl[k]))
+                # vwc_f and vwc_h3 can be precalculated.
+                vwc_fc = vwc_brooks_corey(-100.0, hb[i], theta_s[i], theta_r[i], c[i][k])
+                vwc_h3 = vwc_brooks_corey(h3[i], hb[i], theta_s[i], theta_r[i], c[i][k])
+                depletion =
+                    (vwc_fc * usl[k]) - (ustorelayerdepth[i][k] + theta_r[i] * usl[k])
+                depletion *= rootfrac
+                raw = (vwc_fc - vwc_h3) * usl[k] # readily available water
+                raw *= rootfrac
+
+                # check if maximum irrigation rate has been applied at the previous time step.
+                max_irri_rate_applied =
+                    nonpaddy.demand_gross[i] == nonpaddy.maximum_irrigation_rate[i]
+                if depletion >= raw # start irrigation
+                    irri_dem_gross += depletion
+                    # add depletion to irrigation gross demand when the maximum irrigation rate has been 
+                    # applied at the previous time step (to get volumetric water content at field capacity)
+                elseif depletion > 0.0 && max_irri_rate_applied # continue irrigation
+                    irri_dem_gross += depletion
+                end
+            end
+            # limit irrigation demand to infiltration capacity 
+            infiltration_capacity = soilinfredu[i] * (1.0 - pathfrac[i]) * infiltcapsoil[i]
+            irri_dem_gross = min(irri_dem_gross, infiltration_capacity)
+            irri_dem_gross /= nonpaddy.irrigation_efficiency[i]
+            # limit irrigation demand to the maximum irrigation rate
+            irri_dem_gross = min(irri_dem_gross, nonpaddy.maximum_irrigation_rate[i])
+        else
+            irri_dem_gross = 0.0
+        end
+        nonpaddy.demand_gross[i] = irri_dem_gross
+    end
+end
+update_demand_gross!(nonpaddy::NoIrrigationNonPaddy, soil::SbmSoilModel) = nothing
+
+@get_units @grid_loc @with_kw struct Paddy{T} <: AbstractIrrigationModel{T}
     demand_gross::Vector{T}                     # irrigation gross demand [mm Δt⁻¹] 
     irrigation_efficiency::Vector{T} | "-"      # irrigation efficiency [-]
     maximum_irrigation_rate::Vector{T}          # maximum irrigation depth [mm Δt⁻¹]
@@ -23,24 +85,92 @@ end
     h_opt::Vector{T} | "mm"                     # optimal water depth in the irrigated rice fields [mm]
     h_max::Vector{T} | "mm"                     # water depth when rice field starts spilling water (overflow) [mm]
     h::Vector{T} | "mm"                         # actual water depth in rice field [mm]
+    evaporation::Vector{T}                      # evaporation rate [mm Δt⁻¹]
 end
 
-@get_units @grid_loc @with_kw struct Demand{D, I, L, P, NP}
-    domestic::D | "-" | "none"
-    industry::I | "-" | "none"
-    livestock::L | "-" | "none"
-    paddy::P | "-" | "none"
-    nonpaddy::NP | "-" | "none"
+get_water_depth(model::Paddy) = model.h
+get_water_depth(model::NoIrrigationPaddy) = 0.0
+get_demand_gross(model::Paddy) = model.demand_gross
+get_demand_gross(model::NoIrrigationPaddy) = 0.0
+
+function evaporation!(model::Paddy, potential_evaporation)
+    for i in eachindex(potential_evaporation)
+        if model.irrigation_areas[i]
+            evaporation = min(model.h[i], potential_evaporation[i])
+            model.h[i] -= evaporation
+            model.evaporation[i] = evaporation
+        end
+    end
+end
+evaporation!(model::NoIrrigationPaddy, potential_evaporation) = nothing
+
+get_evaporation(model::NoIrrigationPaddy) = 0.0
+get_evaporation(model::Paddy) = model.evaporation
+get_evaporation(model::NoIrrigationPaddy, index) = 0.0
+get_evaporation(model::Paddy, index) = model.evaporation[index]
+
+function update_runoff(model::Paddy, runoff, i)
+    if model.irrigation_areas[i]
+        paddy_runoff = max(runoff - model.h_max[i], 0.0)
+        model.h[i] = runoff - paddy_runoff
+    else
+        paddy_runoff = runoff
+    end
+    return paddy_runoff
 end
 
-@get_units @grid_loc @with_kw struct AllocationRiver{T}
+update_runoff(model::NoIrrigationPaddy, runoff, i) = runoff
+
+function update_demand_gross!(paddy::Paddy)
+    for i in eachindex(paddy.irrigation_areas)
+        if paddy.irrigation_areas[i] && paddy.irrigation_trigger[i]
+            # check if maximum irrigation rate has been applied at the previous time step.
+            max_irri_rate_applied =
+                paddy.demand_gross[i] == paddy.maximum_irrigation_rate[i]
+            # start irrigation
+            if paddy.h[i] < paddy.h_min[i]
+                irr_depth_paddy = paddy.h_opt[i] - paddy.h[i]
+            elseif paddy.h[i] < paddy.h_opt[i] && max_irri_rate_applied # continue irrigation
+                irr_depth_paddy = paddy.h_opt[i] - paddy.h[i]
+            else
+                irr_depth_paddy = 0.0
+            end
+            irri_dem_gross = irr_depth_paddy / paddy.irrigation_efficiency[i]
+            # limit irrigation demand to the maximum irrigation rate
+            irri_dem_gross = min(irri_dem_gross, paddy.maximum_irrigation_rate[i])
+        else
+            irri_dem_gross = 0.0
+        end
+        paddy.demand_gross[i] = irri_dem_gross
+    end
+end
+
+update_demand_gross!(paddy::NoIrrigationPaddy) = nothing
+
+@get_units @grid_loc @with_kw struct Demand{D, I, L, P, NP} <: AbstractDemandModel
+    domestic::D = NoNonIrrigationDemand() | "-" | "none"
+    industry::I = NoNonIrrigationDemand() | "-" | "none"
+    livestock::L = NoNonIrrigationDemand() | "-" | "none"
+    paddy::P = NoIrrigationPaddy{Float}() | "-" | "none"
+    nonpaddy::NP = NoIrrigationNonPaddy{Float}() | "-" | "none"
+end
+
+@get_units @grid_loc @with_kw struct NoDemand <: AbstractDemandModel
+    domestic = NoNonIrrigationDemand() | "-" | "none"
+    industry = NoNonIrrigationDemand() | "-" | "none"
+    livestock = NoNonIrrigationDemand() | "-" | "none"
+    paddy = NoIrrigationPaddy{Float}() | "-" | "none"
+    nonpaddy = NoIrrigationNonPaddy{Float}() | "-" | "none"
+end
+
+@get_units @grid_loc @with_kw struct AllocationRiver{T} <: AbstractAllocationModel{T}
     act_surfacewater_abst::Vector{T}                    # actual surface water abstraction [mm Δt⁻¹]
     act_surfacewater_abst_vol::Vector{T} | "m3 dt-1"    # actual surface water abstraction [m³ Δt⁻¹]
     available_surfacewater::Vector{T} | "m3"            # available surface water [m³]
     nonirri_returnflow::Vector{T}                       # return flow from non irrigation [mm Δt⁻¹] 
 end
 
-@get_units @grid_loc @with_kw struct AllocationLand{T}
+@get_units @grid_loc @with_kw struct AllocationLand{T} <: AbstractAllocationModel{T}
     irri_demand_gross::Vector{T}                        # irrigation gross demand [mm Δt⁻¹]
     nonirri_demand_gross::Vector{T}                     # non-irrigation gross demand [mm Δt⁻¹]
     total_gross_demand::Vector{T}                       # total gross demand [mm Δt⁻¹]
@@ -59,6 +189,9 @@ end
     nonirri_returnflow::Vector{T}                       # return flow from non irrigation [mm Δt⁻¹]
 end
 
+get_irrigation_allocated(model::AllocationLand) = model.irri_alloc
+get_irrigation_allocated(model::NoAllocationLand) = 0.0
+
 "Return return flow fraction based on gross water demand `demand_gross` and net water demand `demand_net`"
 function returnflow_fraction(demand_gross, demand_net)
     fraction = bounded_divide(demand_net, demand_gross)
@@ -69,28 +202,18 @@ end
 function initialize_water_demand(nc, config, inds, dt)
     if get(config.model.water_demand, "domestic", false)
         domestic = initialize_domestic_demand(nc, config, inds, dt)
-    else
-        domestic = nothing
     end
     if get(config.model.water_demand, "industry", false)
         industry = initialize_industry_demand(nc, config, inds, dt)
-    else
-        industry = nothing
     end
     if get(config.model.water_demand, "livestock", false)
         livestock = initialize_livestock_demand(nc, config, inds, dt)
-    else
-        livestock = nothing
     end
     if get(config.model.water_demand, "paddy", false)
         paddy = initialize_paddy(nc, config, inds, dt)
-    else
-        paddy = nothing
     end
     if get(config.model.water_demand, "nonpaddy", false)
         nonpaddy = initialize_nonpaddy(nc, config, inds, dt)
-    else
-        nonpaddy = nothing
     end
 
     demand = Demand(;
@@ -260,9 +383,9 @@ function initialize_paddy(nc, config, inds, dt)
             defaults = 25.0,
             type = Float,
         ) .* (dt / basetimestep)
-
+    n = length(inds)
     paddy = Paddy{Float}(;
-        demand_gross = fill(mv, length(inds)),
+        demand_gross = fill(mv, n),
         irrigation_efficiency = efficiency,
         maximum_irrigation_rate = max_irri_rate,
         irrigation_trigger = irrigation_trigger,
@@ -270,7 +393,8 @@ function initialize_paddy(nc, config, inds, dt)
         h_max = h_max,
         h_opt = h_opt,
         irrigation_areas = areas,
-        h = fill(0.0, length(inds)),
+        h = fill(0.0, n),
+        evaporation = fill(0.0, n),
     )
     return paddy
 end
@@ -377,21 +501,20 @@ function initialize_allocation_land(nc, config, inds)
     return allocation
 end
 
-"Return non-irrigation gross demand and update returnflow fraction"
-function update_non_irrigation_demand(non_irri::NonIrrigationDemand, i)
-    non_irri.returnflow_fraction[i] =
-        returnflow_fraction(non_irri.demand_gross[i], non_irri.demand_net[i])
-    return non_irri.demand_gross[i]
+"Update returnflow fraction"
+function returnflow_fraction!(non_irri::NonIrrigationDemand)
+    @. non_irri.returnflow_fraction =
+        returnflow_fraction(non_irri.demand_gross, non_irri.demand_net)
 end
 
 # return zero (gross demand) if non-irrigation sector is not defined
-update_non_irrigation_demand(non_irri::Nothing, i) = 0.0
+returnflow_fraction!(non_irri::NoNonIrrigationDemand) = nothing
 
 "Update water allocation for river and land domains based on local surface water (river) availability."
-function surface_water_allocation_local(land, river, network)
+function surface_water_allocation_local(land_allocation, river, network)
     # maps from the land domain to the internal river domain (linear index), excluding water bodies
     index_river = network.land.index_river_wb
-    for i in eachindex(land.allocation.surfacewater_demand)
+    for i in eachindex(land_allocation.surfacewater_demand)
         if index_river[i] > 0.0
             # the available volume is limited by a fixed scaling factor of 0.8 to prevent
             # rivers completely drying out. check for abstraction through inflow (external
@@ -404,24 +527,24 @@ function surface_water_allocation_local(land, river, network)
             end
             # satisfy surface water demand with available local river volume
             surfacewater_demand_vol =
-                land.allocation.surfacewater_demand[i] * 0.001 * network.land.area[i]
+                land_allocation.surfacewater_demand[i] * 0.001 * network.land.area[i]
             abstraction_vol = min(surfacewater_demand_vol, available_volume)
             river.allocation.act_surfacewater_abst_vol[index_river[i]] = abstraction_vol
             # remaining available surface water and demand 
             river.allocation.available_surfacewater[index_river[i]] =
                 max(available_volume - abstraction_vol, 0.0)
             abstraction = (abstraction_vol / network.land.area[i]) * 1000.0
-            land.allocation.surfacewater_demand[i] =
-                max(land.allocation.surfacewater_demand[i] - abstraction, 0.0)
+            land_allocation.surfacewater_demand[i] =
+                max(land_allocation.surfacewater_demand[i] - abstraction, 0.0)
             # update actual abstraction from river and surface water allocation (land cell)
             river.allocation.act_surfacewater_abst[index_river[i]] = abstraction
-            land.allocation.surfacewater_alloc[i] = abstraction
+            land_allocation.surfacewater_alloc[i] = abstraction
         end
     end
 end
 
 "Update water allocation for river and land domains based on surface water (river) availability for allocation areas."
-function surface_water_allocation_area(land, river, network)
+function surface_water_allocation_area(land_allocation, river_allocation, network)
     inds_river = network.river.indices_allocation_areas
     inds_land = network.land.indices_allocation_areas
     res_index = network.river.reservoir_index
@@ -434,25 +557,26 @@ function surface_water_allocation_area(land, river, network)
         sw_demand_vol = 0.0
         for j in inds_land[i]
             sw_demand_vol +=
-                land.allocation.surfacewater_demand[j] * 0.001 * network.land.area[j]
+                land_allocation.surfacewater_demand[j] * 0.001 * network.land.area[j]
         end
         # surface water availability (allocation area)
         sw_available = 0.0
         for j in inds_river[i]
-            # for reservoir locations use reservoir volume
             if res_index[j] > 0
+                # for reservoir locations use reservoir volume
                 k = res_index[j]
-                river.allocation.available_surfacewater[j] =
+                river_allocation.available_surfacewater[j] =
                     river.reservoir.volume[k] * 0.98 # limit available reservoir volume
                 sw_available += river.allocation.available_surfacewater[j]
-                # for lake locations use lake volume
             elseif lake_index[j] > 0
+                # for lake locations use lake volume
                 k = lake_index[j]
-                river.allocation.available_surfacewater[j] = river.lake.storage[k] * 0.98 # limit available lake volume
-                sw_available += river.allocation.available_surfacewater[j]
-                # river volume
+                river_allocation.available_surfacewater[j] = river.lake.storage[k] * 0.98 # limit available lake volume
+                sw_available += river_allocation.available_surfacewater[j]
+
             else
-                sw_available += river.allocation.available_surfacewater[j]
+                # river volume
+                sw_available += river_allocation.available_surfacewater[j]
             end
         end
         # total actual surface water abstraction [m3] in an allocation area, minimum of
@@ -469,52 +593,52 @@ function surface_water_allocation_area(land, river, network)
         # water abstracted from surface water at each river cell (including reservoir and
         # lake locations).
         for j in inds_river[i]
-            river.allocation.act_surfacewater_abst_vol[j] +=
-                frac_abstract_sw * river.allocation.available_surfacewater[j]
-            river.allocation.act_surfacewater_abst[j] =
-                (river.allocation.act_surfacewater_abst_vol[j] / network.river.area[j]) *
+            river_allocation.act_surfacewater_abst_vol[j] +=
+                frac_abstract_sw * river_allocation.available_surfacewater[j]
+            river_allocation.act_surfacewater_abst[j] =
+                (river_allocation.act_surfacewater_abst_vol[j] / network.river.area[j]) *
                 1000.0
         end
 
         # water allocated to each land cell.
         for j in inds_land[i]
-            land.allocation.surfacewater_alloc[j] +=
-                frac_allocate_sw * land.allocation.surfacewater_demand[j]
+            land_allocation.surfacewater_alloc[j] +=
+                frac_allocate_sw * land_allocation.surfacewater_demand[j]
         end
     end
 end
 
-"Update water allocation for subsurface domain based on local groundwater availability."
-function groundwater_allocation_local(land, groundwater_volume, network)
-    for i in eachindex(land.allocation.groundwater_demand)
+"Update water allocation for land domain based on local groundwater availability."
+function groundwater_allocation_local(land_allocation, groundwater_volume, network)
+    for i in eachindex(land_allocation.groundwater_demand)
         # groundwater demand based on allocation from surface water.
-        land.allocation.groundwater_demand[i] = max(
-            land.allocation.total_gross_demand[i] - land.allocation.surfacewater_alloc[i],
+        land_allocation.groundwater_demand[i] = max(
+            land_allocation.total_gross_demand[i] - land_allocation.surfacewater_alloc[i],
             0.0,
         )
         # land index excluding water bodies
         if network.index_wb[i]
             # satisfy groundwater demand with available local groundwater volume
             groundwater_demand_vol =
-                land.allocation.groundwater_demand[i] * 0.001 * network.area[i]
+                land_allocation.groundwater_demand[i] * 0.001 * network.area[i]
             available_volume = groundwater_volume[i] * 0.75 # limit available groundwater volume
             abstraction_vol = min(groundwater_demand_vol, available_volume)
-            land.allocation.act_groundwater_abst_vol[i] = abstraction_vol
+            land_allocation.act_groundwater_abst_vol[i] = abstraction_vol
             # remaining available groundwater and demand 
-            land.allocation.available_groundwater[i] =
+            land_allocation.available_groundwater[i] =
                 max(available_volume - abstraction_vol, 0.0)
             abstraction = (abstraction_vol / network.area[i]) * 1000.0
-            land.allocation.groundwater_demand[i] =
-                max(land.allocation.groundwater_demand[i] - abstraction, 0.0)
+            land_allocation.groundwater_demand[i] =
+                max(land_allocation.groundwater_demand[i] - abstraction, 0.0)
             # update actual abstraction from groundwater and groundwater allocation (land cell)
-            land.allocation.act_groundwater_abst[i] = abstraction
-            land.allocation.groundwater_alloc[i] = abstraction
+            land_allocation.act_groundwater_abst[i] = abstraction
+            land_allocation.groundwater_alloc[i] = abstraction
         end
     end
 end
 
-"Update water allocation for subsurface domain based on groundwater availability for allocation areas."
-function groundwater_allocation_area(land, network)
+"Update water allocation for land domain based on groundwater availability for allocation areas."
+function groundwater_allocation_area(land_allocation, network)
     inds_river = network.river.indices_allocation_areas
     inds_land = network.land.indices_allocation_areas
     m = length(inds_river)
@@ -525,8 +649,8 @@ function groundwater_allocation_area(land, network)
         gw_available = 0.0
         for j in inds_land[i]
             gw_demand_vol +=
-                land.allocation.groundwater_demand[j] * 0.001 * network.land.area[j]
-            gw_available += land.allocation.available_groundwater[j]
+                land_allocation.groundwater_demand[j] * 0.001 * network.land.area[j]
+            gw_available += land_allocation.available_groundwater[j]
         end
         # total actual groundwater abstraction [m3] in an allocation area, minimum of
         # available  groundwater and demand in an allocation area.
@@ -540,63 +664,67 @@ function groundwater_allocation_area(land, network)
 
         # water abstracted from groundwater and allocated.
         for j in inds_land[i]
-            land.allocation.act_groundwater_abst_vol[j] +=
-                frac_abstract_gw * land.allocation.available_groundwater[j]
-            land.allocation.act_groundwater_abst[j] =
+            land_allocation.act_groundwater_abst_vol[j] +=
+                frac_abstract_gw * land_allocation.available_groundwater[j]
+            land_allocation.act_groundwater_abst[j] =
                 1000.0 *
-                (land.allocation.act_groundwater_abst_vol[j] / network.land.area[j])
-            land.allocation.groundwater_alloc[j] +=
-                frac_allocate_gw * land.allocation.groundwater_demand[j]
+                (land_allocation.act_groundwater_abst_vol[j] / network.land.area[j])
+            land_allocation.groundwater_alloc[j] +=
+                frac_allocate_gw * land_allocation.groundwater_demand[j]
         end
     end
 end
 
 "Return and update non-irrigation sector (domestic, livestock, industry) return flow"
-function return_flow(non_irri::NonIrrigationDemand, allocation)
+function return_flow(non_irri::NonIrrigationDemand, land_allocation)
     for i in eachindex(non_irri.returnflow)
-        frac = bounded_divide(non_irri.demand_gross[i], allocation.nonirri_demand_gross[i])
-        allocate = frac * allocation.nonirri_alloc[i]
+        frac = bounded_divide(
+            non_irri.demand_gross[i],
+            land_allocation.nonirri_demand_gross[i],
+        )
+        allocate = frac * land_allocation.nonirri_alloc[i]
         non_irri.returnflow[i] = non_irri.returnflow_fraction[i] * allocate
     end
     return non_irri.returnflow
 end
 
 # return zero (return flow) if non-irrigation sector is not defined
-return_flow(non_irri::Nothing, allocation) = 0.0
+return_flow(non_irri::NoNonIrrigationDemand, land_allocation) = 0.0
 
 groundwater_volume(gw::LateralSSF) = gw.volume
 groundwater_volume(gw) = gw.flow.aquifer.volume
 
 """
-    update_water_allocation(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:Union{SbmModel, SbmGwfModel}}
+    update_water_allocation!(allocation, demand, lateral, network, dt)
 
-Update water allocation for model type `sbm` or `sbm_gwf` for a single timestep. First,
-surface water abstraction is computed to satisfy local water demand (non-irrigation and
-irrigation), and then updated (including lakes and reservoirs) to satisfy the remaining
-water demand for allocation areas. Then groundwater abstraction is computed to satisfy the
-remaining local water demand, and then updated to satisfy the remaining water demand for
-allocation areas. Finally, non-irrigation return flows are updated.
+Update water `allocation` (land domain) and water allocation of river domain (part of
+`lateral`) based on `demand` for a single timestep. First, surface water abstraction is
+computed to satisfy local water demand (non-irrigation and irrigation), and then updated
+(including lakes and reservoirs) to satisfy the remaining water demand for allocation areas.
+Then groundwater abstraction is computed to satisfy the remaining local water demand, and
+then updated to satisfy the remaining water demand for allocation areas. Finally,
+non-irrigation return flows are updated.
 """
-function update_water_allocation(lsm::LandHydrologySBM, lateral, network)
+function update_water_allocation!(land_allocation, demand::Demand, lateral, network, dt)
     river = lateral.river
     index_river = network.land.index_river_wb
     res_index_f = network.river.reservoir_index_f
     lake_index_f = network.river.lake_index_f
 
-    lsm.allocation.surfacewater_alloc .= 0.0
+    land_allocation.surfacewater_alloc .= 0.0
     river.allocation.act_surfacewater_abst .= 0.0
     river.allocation.act_surfacewater_abst_vol .= 0.0
     # total surface water demand for each land cell
-    @. lsm.allocation.surfacewater_demand =
-        lsm.allocation.frac_sw_used * lsm.allocation.nonirri_demand_gross +
-        lsm.allocation.frac_sw_used * lsm.allocation.irri_demand_gross
+    @. land_allocation.surfacewater_demand =
+        land_allocation.frac_sw_used * land_allocation.nonirri_demand_gross +
+        land_allocation.frac_sw_used * land_allocation.irri_demand_gross
 
     # local surface water demand and allocation (river, excluding reservoirs and lakes)
-    surface_water_allocation_local(lsm, river, network)
+    surface_water_allocation_local(land_allocation, river, network)
     # surface water demand and allocation for areas
-    surface_water_allocation_area(lsm, river, network)
+    surface_water_allocation_area(land_allocation, river.allocation, network)
 
-    @. river.abstraction = river.allocation.act_surfacewater_abst_vol / lsm.dt
+    @. river.abstraction = river.allocation.act_surfacewater_abst_vol / dt
 
     # for reservoir and lake locations set river abstraction at zero and abstract volume
     # from reservoir and lake, including an update of lake waterlevel
@@ -611,50 +739,85 @@ function update_water_allocation(lsm::LandHydrologySBM, lateral, network)
             waterlevel(lakes.storfunc, lakes.area, lakes.storage, lakes.sh)
     end
 
-    lsm.allocation.groundwater_alloc .= 0.0
-    lsm.allocation.act_groundwater_abst_vol .= 0.0
-    lsm.allocation.act_groundwater_abst .= 0.0
+    land_allocation.groundwater_alloc .= 0.0
+    land_allocation.act_groundwater_abst_vol .= 0.0
+    land_allocation.act_groundwater_abst .= 0.0
     # local groundwater demand and allocation
-    groundwater_allocation_local(lsm, groundwater_volume(lateral.subsurface), network.land)
+    groundwater_allocation_local(
+        land_allocation,
+        groundwater_volume(lateral.subsurface),
+        network.land,
+    )
     # groundwater demand and allocation for areas
-    groundwater_allocation_area(lsm, network)
+    groundwater_allocation_area(land_allocation, network)
 
     # irrigation allocation
-    for i in eachindex(lsm.allocation.total_alloc)
-        lsm.allocation.total_alloc[i] =
-            lsm.allocation.groundwater_alloc[i] + lsm.allocation.surfacewater_alloc[i]
+    for i in eachindex(land_allocation.total_alloc)
+        land_allocation.total_alloc[i] =
+            land_allocation.groundwater_alloc[i] + land_allocation.surfacewater_alloc[i]
         frac_irri = bounded_divide(
-            lsm.allocation.irri_demand_gross[i],
-            lsm.allocation.total_gross_demand[i],
+            land_allocation.irri_demand_gross[i],
+            land_allocation.total_gross_demand[i],
         )
-        lsm.allocation.irri_alloc[i] = frac_irri * lsm.allocation.total_alloc[i]
-        lsm.allocation.nonirri_alloc[i] =
-            lsm.allocation.total_alloc[i] - lsm.allocation.irri_alloc[i]
+        land_allocation.irri_alloc[i] = frac_irri * land_allocation.total_alloc[i]
+        land_allocation.nonirri_alloc[i] =
+            land_allocation.total_alloc[i] - land_allocation.irri_alloc[i]
     end
 
     # non-irrigation return flows
-    returnflow_livestock = return_flow(lsm.demand.livestock, lsm.allocation)
-    returnflow_domestic = return_flow(lsm.demand.domestic, lsm.allocation)
-    returnflow_industry = return_flow(lsm.demand.industry, lsm.allocation)
+    returnflow_livestock = return_flow(demand.livestock, land_allocation)
+    returnflow_domestic = return_flow(demand.domestic, land_allocation)
+    returnflow_industry = return_flow(demand.industry, land_allocation)
 
-    # map non-irrigation return flow to land and river water allocation
-    if (
-        !isnothing(lsm.demand.livestock) ||
-        !isnothing(lsm.demand.domestic) ||
-        !isnothing(lsm.demand.industry)
-    )
-        @. lsm.allocation.nonirri_returnflow =
-            returnflow_livestock + returnflow_domestic + returnflow_industry
+    @. land_allocation.nonirri_returnflow =
+        returnflow_livestock + returnflow_domestic + returnflow_industry
 
-        for i in eachindex(lsm.allocation.nonirri_returnflow)
-            if index_river[i] > 0.0
-                k = index_river[i]
-                river.allocation.nonirri_returnflow[k] =
-                    lsm.allocation.nonirri_returnflow[i]
-                lsm.allocation.nonirri_returnflow[i] = 0.0
-            else
-                lsm.allocation.nonirri_returnflow[i] = lsm.allocation.nonirri_returnflow[i]
-            end
+    for i in eachindex(land_allocation.nonirri_returnflow)
+        if index_river[i] > 0.0
+            k = index_river[i]
+            river.allocation.nonirri_returnflow[k] = land_allocation.nonirri_returnflow[i]
+            land_allocation.nonirri_returnflow[i] = 0.0
+        else
+            land_allocation.nonirri_returnflow[i] = land_allocation.nonirri_returnflow[i]
         end
     end
 end
+update_water_allocation!(allocation, demand::NoDemand, lateral, network, dt) = nothing
+
+function update_demand_gross!(demand::Demand, land_allocation)
+    (; nonpaddy, paddy, domestic, industry, livestock) = demand
+    # update gross water demands
+    industry_dem = get_demand_gross(industry)
+    domestic_dem = get_demand_gross(domestic)
+    livestock_dem = get_demand_gross(livestock)
+    nonpaddy_dem_gross = get_demand_gross(nonpaddy)
+    paddy_dem_gross = get_demand_gross(paddy)
+    @. land_allocation.irri_demand_gross = nonpaddy_dem_gross + paddy_dem_gross
+    @. land_allocation.nonirri_demand_gross = industry_dem + domestic_dem + livestock_dem
+    @. land_allocation.total_gross_demand =
+        nonpaddy_dem_gross + paddy_dem_gross + industry_dem + domestic_dem + livestock_dem
+end
+update_demand_gross!(demand::NoDemand, land_allocation) = nothing
+
+"""
+    update_water_demand!(land_allocation, demand, soil::AbstractSoilModel)
+
+Update water `demand` containing sectors `industry`, `domestic` and `livestock`, and `paddy`
+rice fields and `nonpaddy` (other crop) fields.
+
+Gross water demand for irrigation `irri_demand_gross` and non-irrigation
+`nonirri_demand_gross`, and total gross water demand `total_gross_demand` are updated as
+part of water allocation (`land_allocation`).
+"""
+function update_water_demand!(land_allocation, demand::Demand, soil)
+    (; nonpaddy, paddy, domestic, industry, livestock) = demand
+
+    returnflow_fraction!(industry)
+    returnflow_fraction!(domestic)
+    returnflow_fraction!(livestock)
+
+    update_demand_gross!(nonpaddy, soil)
+    update_demand_gross!(paddy)
+    update_demand_gross!(demand, land_allocation)
+end
+update_water_demand!(land_allocation, demand::NoDemand, soil) = nothing
