@@ -42,6 +42,7 @@ end
 
 @testset "second timestep sediment model (lateral)" begin
     land = model.lateral.land
+    river = model.lateral.river
 
     @test land.transport_capacity.parameters.dm_sand[1] == 200.0f0
     @test land.transport_capacity.parameters.dm_lagg[1] == 500.0f0
@@ -52,16 +53,31 @@ end
     @test mean(land.transport_capacity.variables.clay) ≈ 1.0992655197016734f6
 
     @test mean(land.to_river.variables.amount) ≈ 0.07624135182616738f0
-    @test mean(land.to_river.variables.clay) ≈ 0.002285341387958068f0
-    @test mean(land.to_river.variables.sand) ≈ 0.02575351604673049f0
+    @test sum(land.to_river.variables.clay) ≈ 114.42704329506047f0
+    @test sum(land.to_river.variables.sand) ≈ 1289.4785484597958f0
     @test mean(land.sediment_flux.variables.clay) ≈ 0.006578791733506439f0
 
-    @test mean(lat.river.concentrations.variables.suspended) ≈ 0.8259993252994058f0
-    @test mean(lat.river.sediment_flux.boundary_conditions.erosion_land_clay) ≈
-          0.01980468760667709f0
-    @test lat.river.hydrometeo_forcing.waterlevel_river[network.river.order[end]] ≈
+    @test mean(river.hydrometeo_forcing.q_river) ≈ 0.6975180562953642f0
+    @test river.hydrometeo_forcing.waterlevel_river[network.river.order[end]] ≈
           0.006103649735450745f0
-    @test lat.river.sediment_flux.varibales.clay[5649] ≈ 2.359031898208781f-9
+    @test mean(river.geometry.width) ≈ 22.628250814095523f0
+
+    @test mean(river.transport_capacity.boundary_conditions.q) ≈ 0.6975180562953642f0
+    @test mean(river.transport_capacity.variables.amount) ≈ 0.4458019733090582f0
+    @test mean(river.potential_erosion.variables.bed) ≈ 307.18492138827116f0
+
+    @test sum(river.sediment_flux.boundary_conditions.erosion_land_clay) ≈
+          114.42704329506047f0
+    @test sum(river.sediment_flux.boundary_conditions.erosion_land_sand) ≈
+          1289.4785484597958f0
+    @test mean(river.sediment_flux.boundary_conditions.transport_capacity) ≈
+          0.4458019733090582f0
+    @test mean(river.sediment_flux.variables.amount) ≈ 0.4333483865969662f0
+    @test mean(river.sediment_flux.variables.erosion) ≈ 0.019077695621351014f0
+    @test mean(river.sediment_flux.variables.deposition) ≈ 0.6941274181387916f0
+    @test river.sediment_flux.variables.clay[5649] ≈ 2.840979764480952f-9
+
+    @test mean(river.concentrations.variables.suspended) ≈ 0.8260083257660087f0
 end
 
 # @testset "Exchange and grid location sediment" begin

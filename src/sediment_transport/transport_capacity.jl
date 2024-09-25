@@ -23,6 +23,23 @@ function transport_capacity_bc(n)
     return bc
 end
 
+function update_boundary_conditions!(
+    model::AbstractTransportCapacityModel,
+    hydrometeo_forcing::HydrometeoForcing,
+    model_type::Symbol,
+)
+    (; q, waterlevel) = model.boundary_conditions
+    (; q_land, waterlevel_land, q_river, waterlevel_river) = hydrometeo_forcing
+
+    if model_type == :land
+        @. q = q_land
+        @. waterlevel = waterlevel_land
+    elseif model_type == :river
+        @. q = q_river
+        @. waterlevel = waterlevel_river
+    end
+end
+
 ##################### Overland Flow #####################
 
 # Govers parameters for transport capacity models
@@ -329,13 +346,13 @@ end
 
 function update!(
     model::TransportCapacityYalinDifferentiationModel,
-    width,
+    geometry::LandGeometry,
     waterbodies,
     rivers,
     ts,
 )
     (; q, waterlevel) = model.boundary_conditions
-    (; slope, density, dm_clay, dm_silt, dm_sand, dm_sagg, dm_lagg) = model.parameters
+    (; density, dm_clay, dm_silt, dm_sand, dm_sagg, dm_lagg) = model.parameters
     (; amount, clay, silt, sand, sagg, lagg) = model.variables
 
     n = length(q)
@@ -348,15 +365,15 @@ function update!(
             dm_sand[i],
             dm_sagg[i],
             dm_lagg[i],
-            slope[i],
+            geometry.slope[i],
         )
         clay[i] = transport_capacity_yalin_differentiation(
             q[i],
             waterlevel[i],
             density[i],
             dm_clay[i],
-            slope[i],
-            width[i],
+            geometry.slope[i],
+            geometry.width[i],
             waterbodies[i],
             rivers[i],
             dtot,
@@ -367,8 +384,8 @@ function update!(
             waterlevel[i],
             density[i],
             dm_silt[i],
-            slope[i],
-            width[i],
+            geometry.slope[i],
+            geometry.width[i],
             waterbodies[i],
             rivers[i],
             dtot,
@@ -379,8 +396,8 @@ function update!(
             waterlevel[i],
             density[i],
             dm_sand[i],
-            slope[i],
-            width[i],
+            geometry.slope[i],
+            geometry.width[i],
             waterbodies[i],
             rivers[i],
             dtot,
@@ -391,8 +408,8 @@ function update!(
             waterlevel[i],
             density[i],
             dm_sagg[i],
-            slope[i],
-            width[i],
+            geometry.slope[i],
+            geometry.width[i],
             waterbodies[i],
             rivers[i],
             dtot,
@@ -403,8 +420,8 @@ function update!(
             waterlevel[i],
             density[i],
             dm_lagg[i],
-            slope[i],
-            width[i],
+            geometry.slope[i],
+            geometry.width[i],
             waterbodies[i],
             rivers[i],
             dtot,

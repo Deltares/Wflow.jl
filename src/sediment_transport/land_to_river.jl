@@ -34,7 +34,10 @@ function initialize_sediment_to_river_model(inds)
     return model
 end
 
-function update_bc(model::SedimentToRiverModel, transport_model::SedimentLandTransportModel)
+function update_boundary_conditions!(
+    model::SedimentToRiverModel,
+    transport_model::SedimentLandTransportModel,
+)
     (; deposition) = model.boundary_conditions
     @. deposition = transport_model.variables.deposition
 end
@@ -114,7 +117,7 @@ function initialize_sediment_to_river_differentiation_model(inds)
     return model
 end
 
-function update_bc(
+function update_boundary_conditions!(
     model::SedimentToRiverDifferentiationModel,
     transport_model::SedimentLandTransportDifferentiationModel,
 )
@@ -143,11 +146,11 @@ function update!(model::SedimentToRiverDifferentiationModel, rivers)
     (; amount, clay, silt, sand, sagg, lagg) = model.variables
 
     zeros = fill(0.0, length(amount))
-    clay .= ifelse.(rivers, deposition_clay, zeros)
-    silt .= ifelse.(rivers, deposition_silt, zeros)
-    sand .= ifelse.(rivers, deposition_sand, zeros)
-    sagg .= ifelse.(rivers, deposition_sagg, zeros)
-    lagg .= ifelse.(rivers, deposition_lagg, zeros)
+    clay .= ifelse.(rivers .> 0, deposition_clay, zeros)
+    silt .= ifelse.(rivers .> 0, deposition_silt, zeros)
+    sand .= ifelse.(rivers .> 0, deposition_sand, zeros)
+    sagg .= ifelse.(rivers .> 0, deposition_sagg, zeros)
+    lagg .= ifelse.(rivers .> 0, deposition_lagg, zeros)
 
     amount .= clay .+ silt .+ sand .+ sagg .+ lagg
 end

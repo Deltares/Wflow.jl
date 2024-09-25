@@ -38,7 +38,7 @@ function initialize_sediment_land_transport_model(inds)
     return model
 end
 
-function update_bc(
+function update_boundary_conditions!(
     model::SedimentLandTransportModel,
     erosion_model::SoilErosionModel,
     transport_capacity_model::AbstractTransportCapacityModel,
@@ -161,7 +161,7 @@ function initialize_sediment_land_transport_differentiation_model(inds)
     return model
 end
 
-function update_bc(
+function update_boundary_conditions!(
     model::SedimentLandTransportDifferentiationModel,
     erosion_model::SoilErosionModel,
     transport_capacity_model::TransportCapacityYalinDifferentiationModel,
