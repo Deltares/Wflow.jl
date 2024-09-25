@@ -91,6 +91,30 @@ function get_soil_states(model_type::AbstractString; snow = false)
     return states
 end
 
+function get_sediment_states()
+    states = (
+        :leftover_clay,
+        :leftover_silt,
+        :leftover_sand,
+        :leftover_sagg,
+        :leftover_lagg,
+        :leftover_gravel,
+        :store_clay,
+        :store_silt,
+        :store_sand,
+        :store_sagg,
+        :store_lagg,
+        :store_gravel,
+        :clay,
+        :silt,
+        :sand,
+        :sagg,
+        :lagg,
+        :gravel,
+    )
+    return states
+end
+
 """
     add_to_required_states(required_states::Tuple, key_entry::Tuple, states::Tuple)
     add_to_required_states(required_states::Tuple, key_entry::Tuple, states::Nothing)
@@ -182,26 +206,7 @@ function extract_required_states(config::Config)
 
     # River states
     if model_type == "sediment"
-        river_states = (
-            :leftover_clay,
-            :leftover_silt,
-            :leftover_sand,
-            :leftover_sagg,
-            :leftover_lagg,
-            :leftover_gravel,
-            :store_clay,
-            :store_silt,
-            :store_sand,
-            :store_sagg,
-            :store_lagg,
-            :store_gravel,
-            :clay,
-            :silt,
-            :sand,
-            :sagg,
-            :lagg,
-            :gravel,
-        )
+        river_states = get_sediment_states()
     elseif model_type == "sbm" || model_type == "sbm_gwf"
         river_states = (:q, :h, :h_av)
     else
@@ -247,8 +252,16 @@ function extract_required_states(config::Config)
     required_states =
         add_to_required_states(required_states, (:lateral, :land), land_states)
     # Add river states to dict
-    required_states =
-        add_to_required_states(required_states, (:lateral, :river), river_states)
+    if model_type == "sediment"
+        required_states = add_to_required_states(
+            required_states,
+            (:lateral, :river, :sediment_flux, :variables),
+            river_states,
+        )
+    else
+        required_states =
+            add_to_required_states(required_states, (:lateral, :river), river_states)
+    end
     # Add floodplain states to dict
     required_states = add_to_required_states(
         required_states,

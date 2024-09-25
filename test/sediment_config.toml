@@ -174,7 +174,7 @@ landtransportmethod = "yalinpart" # Overland flow transport capacity method: ["y
 rainerosmethod = "answers" # Rainfall erosion equation: ["answers", "eurosem"]
 reinit = true
 rivtransportmethod = "bagnold" # River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]
-runrivermodel = false
+runrivermodel = true
 type = "sediment"
 
 [output]
@@ -213,9 +213,12 @@ waterlevel_river = "h_riv"
 [output.lateral.river.sediment_flux.variables]
 leftover_clay = "clayload"
 clay = "outclay"
+erosion = "erosion_riv"
+deposition = "deposition_riv"
 
 [output.lateral.river.sediment_flux.boundary_conditions]
 erosion_land_clay = "inlandclayriv"
+transport_capacity = "TCsed_riv"
 
 [csv]
 path = "output-moselle-sediment.csv"

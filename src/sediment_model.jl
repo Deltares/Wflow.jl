@@ -93,18 +93,20 @@ function initialize_sediment_model(config::Config)
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
     frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, landslope, n)
 
-    rs = initialize_river_flow_sediment(nc, config, inds_riv, waterbodies)
+    river_sediment = initialize_river_flow_sediment(nc, config, inds_riv, waterbodies)
 
-    y_nc = read_y_axis(nc)
-    x_nc = read_x_axis(nc)
-
-    modelmap = (vertical = soilloss, lateral = (land = overland_flow_sediment, river = rs))
+    modelmap = (
+        vertical = soilloss,
+        lateral = (land = overland_flow_sediment, river = river_sediment),
+    )
     indices_reverse = (
         land = rev_inds,
         river = rev_inds_riv,
         reservoir = isempty(reservoir) ? nothing : reservoir.reverse_indices,
         lake = isempty(lake) ? nothing : lake.reverse_indices,
     )
+    y_nc = read_y_axis(nc)
+    x_nc = read_x_axis(nc)
     writer = prepare_writer(config, modelmap, indices_reverse, x_nc, y_nc, nc)
     close(nc)
 
@@ -126,7 +128,7 @@ function initialize_sediment_model(config::Config)
     model = Model(
         config,
         (; land, river, reservoir, lake, index_river, frac_toriver),
-        (land = overland_flow_sediment, river = rs),
+        (land = overland_flow_sediment, river = river_sediment),
         soilloss,
         clock,
         reader,

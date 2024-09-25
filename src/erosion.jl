@@ -54,7 +54,7 @@ function update!(model::SoilLoss, dt)
     #TODO add interception/canopygapfraction calculation here for eurosem
     #need SBM refactor
     # Rainfall erosion
-    update!(model.rainfall_erosion, model.hydrometeo_forcing, model.area, ts)
+    update!(model.rainfall_erosion, model.hydrometeo_forcing, model.geometry, ts)
     # Overland flow erosion
     update!(model.overland_flow_erosion, model.hydrometeo_forcing, model.geometry, ts)
     # Total soil erosion and particle differentiation

@@ -110,7 +110,7 @@ end
 function update!(
     model::RainfallErosionEurosemModel,
     hydrometeo_forcing::HydrometeoForcing,
-    area,
+    geometry::LandGeometry,
     ts,
 )
     (; precipitation, waterlevel_land) = hydrometeo_forcing
@@ -135,7 +135,7 @@ function update!(
             canopyheight[i],
             canopygapfraction[i],
             soilcover_fraction[i],
-            area[i],
+            geometry.area[i],
             ts,
         )
     end
@@ -187,7 +187,7 @@ end
 function update!(
     model::RainfallErosionAnswersModel,
     hydrometeo_forcing::HydrometeoForcing,
-    area,
+    geometry::LandGeometry,
     ts,
 )
     (; precipitation) = hydrometeo_forcing
@@ -196,8 +196,13 @@ function update!(
 
     n = length(precipitation)
     threaded_foreach(1:n; basesize = 1000) do i
-        amount[i] =
-            rainfall_erosion_answers(precipitation[i], usle_k[i], usle_c[i], area[i], ts)
+        amount[i] = rainfall_erosion_answers(
+            precipitation[i],
+            usle_k[i],
+            usle_c[i],
+            geometry.area[i],
+            ts,
+        )
     end
 end
 

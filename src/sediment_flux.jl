@@ -59,21 +59,22 @@ end
 function update!(model::OverlandFlowSediment, erosion_model::SoilErosionModel, network, dt)
     # Convert dt to integer
     ts = tosecond(dt)
-    # Update the boundary conditions of transport capacity
-    (; q, waterlevel) = model.transport_capacity.boundary_conditions
-    (; q_land, waterlevel_land) = model.hydrometeo_forcing
-    @. q = q_land
-    @. waterlevel = waterlevel_land
+
     # Transport capacity
-    update!(model.transport_capacity, model.width, model.waterbodies, model.rivers, ts)
+    update_boundary_conditions!(model.transport_capacity, model.hydrometeo_forcing, :land)
+    update!(model.transport_capacity, model.geometry, model.waterbodies, model.rivers, ts)
 
     # Update boundary conditions before transport
-    update_bc(model.sediment_flux, erosion_model, model.transport_capacity)
+    update_boundary_conditions!(
+        model.sediment_flux,
+        erosion_model,
+        model.transport_capacity,
+    )
     # Compute transport
     update!(model.sediment_flux, network)
 
     # Update boundary conditions before computing sediment reaching the river
-    update_bc(model.to_river, model.sediment_flux)
+    update_boundary_conditions!(model.to_river, model.sediment_flux)
     # Compute sediment reaching the river
     update!(model.to_river, model.rivers)
 end
@@ -152,59 +153,33 @@ function update!(
 )
     # Convert dt to integer
     ts = tosecond(dt)
-    # Update the boundary conditions of transport capacity
-    (; q, waterlevel) = model.transport_capacity.boundary_conditions
-    (; q_river, waterlevel_river) = model.hydrometeo_forcing
-    @. q = q_river
-    @. waterlevel = waterlevel_river
 
     # Transport capacity
+    update_boundary_conditions!(model.transport_capacity, model.hydrometeo_forcing, :river)
     update!(model.transport_capacity, model.geometry, ts)
 
     # Potential maximum river erosion
     (; waterlevel) = model.potential_erosion.boundary_conditions
+    (; waterlevel_river) = model.hydrometeo_forcing
     @. waterlevel = waterlevel_river
     update!(model.potential_erosion, model.geometry, ts)
 
     # River transport
-    (;
-        waterlevel,
-        q,
-        transport_capacity,
-        erosion_land_clay,
-        erosion_land_silt,
-        erosion_land_sand,
-        erosion_land_sagg,
-        erosion_land_lagg,
-        potential_erosion_river,
-    ) = model.boundary_conditions
-    @. q = q_river
-    @. waterlevel = waterlevel_river
-
-    @. transport_capacity = model.transport_capacity.variables.amount
-
-    (; clay, silt, sand, sagg, lagg) = to_river_model.variables
-    @. erosion_land_clay = clay[inds_riv]
-    @. erosion_land_silt = silt[inds_riv]
-    @. erosion_land_sand = sand[inds_riv]
-    @. erosion_land_sagg = sagg[inds_riv]
-    @. erosion_land_lagg = lagg[inds_riv]
-
-    @. potential_erosion_river = model.potential_erosion.variables.amount
-
-    update!(model.sediment_flux, network, model.geometry, ts)
+    update_boundary_conditions!(
+        model.sediment_flux,
+        model.hydrometeo_forcing,
+        model.transport_capacity,
+        to_river_model,
+        model.potential_erosion,
+        inds_riv,
+    )
+    update!(model.sediment_flux, network, model.geometry, model.waterbodies, ts)
 
     # Concentrations
-    (; q, waterlevel, clay, silt, sand, sagg, lagg, gravel) =
-        model.concentrations.boundary_conditions
-    @. q = q_river
-    @. waterlevel = waterlevel_river
-    @. clay = model.sediment_flux.variables.clay
-    @. silt = model.sediment_flux.variables.silt
-    @. sand = model.sediment_flux.variables.sand
-    @. sagg = model.sediment_flux.variables.sagg
-    @. lagg = model.sediment_flux.variables.lagg
-    @. gravel = model.sediment_flux.variables.gravel
-
+    update_boundary_conditions!(
+        model.concentrations,
+        model.hydrometeo_forcing,
+        model.sediment_flux,
+    )
     update!(model.concentrations, model.geometry, ts)
 end
