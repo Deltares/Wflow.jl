@@ -1,15 +1,18 @@
-abstract type AbstractSedimentLandTransportModel end
+abstract type AbstractSedimentLandTransportModel{T} end
 
 ## Total sediment transport in overland flow structs and functions
-@get_units @with_kw struct SedimentLandTransportVars{T}
+@get_units @with_kw struct SedimentLandTransportVariables{T}
     # Total sediment flux
     amount::Vector{T} | "t dt-1"
     deposition::Vector{T} | "t dt-1"
 end
 
-function sediment_land_transport_vars(n)
-    vars = SedimentLandTransportVars(; amount = fill(mv, n), deposition = fill(mv, n))
-    return vars
+function SedimentLandTransportVariables(
+    n;
+    amount::Vector{T} = fill(mv, n),
+    deposition::Vector{T} = fill(mv, n),
+) where {T}
+    return SedimentLandTransportVariables{T}(; amount = amount, deposition = deposition)
 end
 
 @get_units @with_kw struct SedimentLandTransportBC{T}
@@ -19,21 +22,26 @@ end
     transport_capacity::Vector{T} | "t dt-1"
 end
 
-function sediment_land_transport_bc(n)
-    bc = SedimentLandTransportBC(; erosion = fill(mv, n), transport_capacity = fill(mv, n))
-    return bc
+function SedimentLandTransportBC(
+    n;
+    erosion::Vector{T} = fill(mv, n),
+    transport_capacity::Vector{T} = fill(mv, n),
+) where {T}
+    return SedimentLandTransportBC{T}(;
+        erosion = erosion,
+        transport_capacity = transport_capacity,
+    )
 end
 
-@get_units @with_kw struct SedimentLandTransportModel{T} <:
-                           AbstractSedimentLandTransportModel
-    boundary_conditions::SedimentLandTransportBC{T} | "-"
-    variables::SedimentLandTransportVars{T} | "-"
+@with_kw struct SedimentLandTransportModel{T} <: AbstractSedimentLandTransportModel{T}
+    boundary_conditions::SedimentLandTransportBC{T}
+    variables::SedimentLandTransportVariables{T}
 end
 
-function initialize_sediment_land_transport_model(inds)
+function SedimentLandTransportModel(inds)
     n = length(inds)
-    vars = sediment_land_transport_vars(n)
-    bc = sediment_land_transport_bc(n)
+    vars = SedimentLandTransportVariables(n)
+    bc = SedimentLandTransportBC(n)
     model = SedimentLandTransportModel(; boundary_conditions = bc, variables = vars)
     return model
 end
@@ -60,7 +68,7 @@ function update!(model::SedimentLandTransportModel, network)
 end
 
 ## Total transport capacity with particle differentiation structs and functions
-@get_units @with_kw struct SedimentLandTransportDifferentiationVars{T}
+@get_units @with_kw struct SedimentLandTransportDifferentiationVariables{T}
     # Total sediment flux
     amount::Vector{T} | "t dt-1"
     # Deposition
@@ -87,22 +95,35 @@ end
     deposition_lagg::Vector{T} | "t dt-1"
 end
 
-function sediment_land_transport_differentiation_vars(n)
-    vars = SedimentLandTransportDifferentiationVars(;
-        amount = fill(mv, n),
-        deposition = fill(mv, n),
-        clay = fill(mv, n),
-        deposition_clay = fill(mv, n),
-        silt = fill(mv, n),
-        deposition_silt = fill(mv, n),
-        sand = fill(mv, n),
-        deposition_sand = fill(mv, n),
-        sagg = fill(mv, n),
-        deposition_sagg = fill(mv, n),
-        lagg = fill(mv, n),
-        deposition_lagg = fill(mv, n),
+function SedimentLandTransportDifferentiationVariables(
+    n;
+    amount::Vector{T} = fill(mv, n),
+    deposition::Vector{T} = fill(mv, n),
+    clay::Vector{T} = fill(mv, n),
+    deposition_clay::Vector{T} = fill(mv, n),
+    silt::Vector{T} = fill(mv, n),
+    deposition_silt::Vector{T} = fill(mv, n),
+    sand::Vector{T} = fill(mv, n),
+    deposition_sand::Vector{T} = fill(mv, n),
+    sagg::Vector{T} = fill(mv, n),
+    deposition_sagg::Vector{T} = fill(mv, n),
+    lagg::Vector{T} = fill(mv, n),
+    deposition_lagg::Vector{T} = fill(mv, n),
+) where {T}
+    return SedimentLandTransportDifferentiationVariables{T}(;
+        amount = amount,
+        deposition = deposition,
+        clay = clay,
+        deposition_clay = deposition_clay,
+        silt = silt,
+        deposition_silt = deposition_silt,
+        sand = sand,
+        deposition_sand = deposition_sand,
+        sagg = sagg,
+        deposition_sagg = deposition_sagg,
+        lagg = lagg,
+        deposition_lagg = deposition_lagg,
     )
-    return vars
 end
 
 @get_units @with_kw struct SedimentLandTransportDifferentiationBC{T}
@@ -128,32 +149,43 @@ end
     transport_capacity_lagg::Vector{T} | "t dt-1"
 end
 
-function sediment_land_transport_differentiation_bc(n)
-    bc = SedimentLandTransportDifferentiationBC(;
-        erosion_clay = fill(mv, n),
-        erosion_silt = fill(mv, n),
-        erosion_sand = fill(mv, n),
-        erosion_sagg = fill(mv, n),
-        erosion_lagg = fill(mv, n),
-        transport_capacity_clay = fill(mv, n),
-        transport_capacity_silt = fill(mv, n),
-        transport_capacity_sand = fill(mv, n),
-        transport_capacity_sagg = fill(mv, n),
-        transport_capacity_lagg = fill(mv, n),
+function SedimentLandTransportDifferentiationBC(
+    n;
+    erosion_clay::Vector{T} = fill(mv, n),
+    erosion_silt::Vector{T} = fill(mv, n),
+    erosion_sand::Vector{T} = fill(mv, n),
+    erosion_sagg::Vector{T} = fill(mv, n),
+    erosion_lagg::Vector{T} = fill(mv, n),
+    transport_capacity_clay::Vector{T} = fill(mv, n),
+    transport_capacity_silt::Vector{T} = fill(mv, n),
+    transport_capacity_sand::Vector{T} = fill(mv, n),
+    transport_capacity_sagg::Vector{T} = fill(mv, n),
+    transport_capacity_lagg::Vector{T} = fill(mv, n),
+) where {T}
+    return SedimentLandTransportDifferentiationBC{T}(;
+        erosion_clay = erosion_clay,
+        erosion_silt = erosion_silt,
+        erosion_sand = erosion_sand,
+        erosion_sagg = erosion_sagg,
+        erosion_lagg = erosion_lagg,
+        transport_capacity_clay = transport_capacity_clay,
+        transport_capacity_silt = transport_capacity_silt,
+        transport_capacity_sand = transport_capacity_sand,
+        transport_capacity_sagg = transport_capacity_sagg,
+        transport_capacity_lagg = transport_capacity_lagg,
     )
-    return bc
 end
 
-@get_units @with_kw struct SedimentLandTransportDifferentiationModel{T} <:
-                           AbstractSedimentLandTransportModel
-    boundary_conditions::SedimentLandTransportDifferentiationBC{T} | "-"
-    variables::SedimentLandTransportDifferentiationVars{T} | "-"
+@with_kw struct SedimentLandTransportDifferentiationModel{T} <:
+                AbstractSedimentLandTransportModel{T}
+    boundary_conditions::SedimentLandTransportDifferentiationBC{T}
+    variables::SedimentLandTransportDifferentiationVariables{T}
 end
 
-function initialize_sediment_land_transport_differentiation_model(inds)
+function SedimentLandTransportDifferentiationModel(inds)
     n = length(inds)
-    vars = sediment_land_transport_differentiation_vars(n)
-    bc = sediment_land_transport_differentiation_bc(n)
+    vars = SedimentLandTransportDifferentiationVariables(n)
+    bc = SedimentLandTransportDifferentiationBC(n)
     model = SedimentLandTransportDifferentiationModel(;
         boundary_conditions = bc,
         variables = vars,

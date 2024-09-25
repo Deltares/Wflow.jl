@@ -11,8 +11,8 @@ end
 
 function initialize_overland_flow_sediment(nc, config, inds, waterbodies, rivers)
     n = length(inds)
-    hydrometeo_forcing = initialize_hydrometeo_forcing(n)
-    geometry = initialize_land_geometry(nc, config, inds)
+    hydrometeo_forcing = HydrometeoForcing(n)
+    geometry = LandGeometry(nc, config, inds)
     # Check what transport capacity equation will be used
     do_river = get(config.model, "runrivermodel", false)::Bool
     # Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]
@@ -20,23 +20,21 @@ function initialize_overland_flow_sediment(nc, config, inds, waterbodies, rivers
 
     if do_river || landtransportmethod == "yalinpart"
         transport_capacity_model =
-            initialize_transport_capacity_yalin_diff_model(nc, config, inds)
+            TransportCapacityYalinDifferentiationModel(nc, config, inds)
     elseif landtransportmethod == "govers"
-        transport_capacity_model =
-            initialize_transport_capacity_govers_model(nc, config, inds)
+        transport_capacity_model = TransportCapacityGoversModel(nc, config, inds)
     elseif landtransportmethod == "yalin"
-        transport_capacity_model =
-            initialize_transport_capacity_yalin_model(nc, config, inds)
+        transport_capacity_model = TransportCapacityYalinModel(nc, config, inds)
     else
         error("Unknown land transport method: $landtransportmethod")
     end
 
     if do_river || landtransportmethod == "yalinpart"
-        sediment_flux_model = initialize_sediment_land_transport_differentiation_model(inds)
-        to_river_model = initialize_sediment_to_river_differentiation_model(inds)
+        sediment_flux_model = SedimentLandTransportDifferentiationModel(inds)
+        to_river_model = SedimentToRiverDifferentiationModel(inds)
     else
-        sediment_flux_model = initialize_sediment_land_transport_model(inds)
-        to_river_model = initialize_sediment_to_river_model(inds)
+        sediment_flux_model = SedimentLandTransportModel(inds)
+        to_river_model = SedimentToRiverModel(inds)
     end
 
     overland_flow_sediment = OverlandFlowSediment{
@@ -92,39 +90,34 @@ end
 
 function initialize_river_flow_sediment(nc, config, inds, waterbodies)
     n = length(inds)
-    hydrometeo_forcing = initialize_hydrometeo_forcing(n)
-    geometry = initialize_river_geometry(nc, config, inds)
+    hydrometeo_forcing = HydrometeoForcing(n)
+    geometry = RiverGeometry(nc, config, inds)
 
     # Check what transport capacity equation will be used
     # River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]
     transport_method = get(config.model, "rivtransportmethod", "bagnold")::String
     if transport_method == "bagnold"
-        transport_capacity_model =
-            initialize_transport_capacity_bagnold_model(nc, config, inds)
+        transport_capacity_model = TransportCapacityBagnoldModel(nc, config, inds)
     elseif transport_method == "engelund"
-        transport_capacity_model =
-            initialize_transport_capacity_engelund_model(nc, config, inds)
+        transport_capacity_model = TransportCapacityEngelundModel(nc, config, inds)
     elseif transport_method == "yang"
-        transport_capacity_model =
-            initialize_transport_capacity_yang_model(nc, config, inds)
+        transport_capacity_model = TransportCapacityYangModel(nc, config, inds)
     elseif transport_method == "kodatie"
-        transport_capacity_model =
-            initialize_transport_capacity_kodatie_model(nc, config, inds)
+        transport_capacity_model = TransportCapacityKodatieModel(nc, config, inds)
     elseif transport_method == "molinas"
-        transport_capacity_model =
-            initialize_transport_capacity_molinas_model(nc, config, inds)
+        transport_capacity_model = TransportCapacityMolinasModel(nc, config, inds)
     else
         error("Unknown river transport method: $transport_method")
     end
 
     # Potential river erosion
-    potential_erosion_model = initialize_river_erosion_julian_torres_model(nc, config, inds)
+    potential_erosion_model = RiverErosionJulianTorresModel(nc, config, inds)
 
     # Sediment flux in river / mass balance
-    sediment_flux_model = initialize_sediment_river_transport_model(nc, config, inds)
+    sediment_flux_model = SedimentRiverTransportModel(nc, config, inds)
 
     # Concentrations
-    concentrations_model = initialize_sediment_concentrations_river_model(nc, config, inds)
+    concentrations_model = SedimentConcentrationsRiverModel(nc, config, inds)
 
     river_sediment = RiverSediment{
         typeof(transport_capacity_model),
@@ -159,9 +152,7 @@ function update!(
     update!(model.transport_capacity, model.geometry, ts)
 
     # Potential maximum river erosion
-    (; waterlevel) = model.potential_erosion.boundary_conditions
-    (; waterlevel_river) = model.hydrometeo_forcing
-    @. waterlevel = waterlevel_river
+    update_boundary_conditions!(model.potential_erosion, model.hydrometeo_forcing)
     update!(model.potential_erosion, model.geometry, ts)
 
     # River transport

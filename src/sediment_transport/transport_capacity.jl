@@ -1,14 +1,13 @@
-abstract type AbstractTransportCapacityModel end
+abstract type AbstractTransportCapacityModel{T} end
 
 ## Total sediment transport capacity structs and functions
-@get_units @with_kw struct TransportCapacityModelVars{T}
+@get_units @with_kw struct TransportCapacityModelVariables{T}
     # Total sediment transport capacity
     amount::Vector{T} | "t dt-1"
 end
 
-function transport_capacity_model_vars(n)
-    vars = TransportCapacityModelVars(; amount = fill(mv, n))
-    return vars
+function TransportCapacityModelVariables(n; amount::Vector{T} = fill(mv, n)) where {T}
+    return TransportCapacityModelVariables{T}(; amount = amount)
 end
 
 @get_units @with_kw struct TransportCapacityBC{T}
@@ -18,9 +17,12 @@ end
     waterlevel::Vector{T} | "m"
 end
 
-function transport_capacity_bc(n)
-    bc = TransportCapacityBC(; q = fill(mv, n), waterlevel = fill(mv, n))
-    return bc
+function TransportCapacityBC(
+    n;
+    q::Vector{T} = fill(mv, n),
+    waterlevel::Vector{T} = fill(mv, n),
+) where {T}
+    return TransportCapacityBC{T}(; q = q, waterlevel = waterlevel)
 end
 
 function update_boundary_conditions!(
@@ -54,7 +56,7 @@ end
     n_govers::Vector{T} | "-"
 end
 
-function initialize_transport_capacity_govers_params(nc, config, inds)
+function TransportCapacityGoversParameters(nc, config, inds)
     slope = ncread(
         nc,
         config,
@@ -97,17 +99,17 @@ function initialize_transport_capacity_govers_params(nc, config, inds)
     return tc_parameters
 end
 
-@get_units @with_kw struct TransportCapacityGoversModel{T} <: AbstractTransportCapacityModel
-    boundary_conditions::TransportCapacityBC{T} | "-"
-    parameters::TransportCapacityGoversParameters{T} | "-"
-    variables::TransportCapacityModelVars{T} | "-"
+@with_kw struct TransportCapacityGoversModel{T} <: AbstractTransportCapacityModel{T}
+    boundary_conditions::TransportCapacityBC{T}
+    parameters::TransportCapacityGoversParameters{T}
+    variables::TransportCapacityModelVariables{T}
 end
 
-function initialize_transport_capacity_govers_model(nc, config, inds)
+function TransportCapacityGoversModel(nc, config, inds)
     n = length(inds)
-    vars = transport_capacity_model_vars(n)
-    params = initialize_transport_capacity_govers_params(nc, config, inds)
-    bc = transport_capacity_bc(n)
+    vars = TransportCapacityModelVariables(n)
+    params = TransportCapacityGoversParameters(nc, config, inds)
+    bc = TransportCapacityBC(n)
     model = TransportCapacityGoversModel(;
         boundary_conditions = bc,
         parameters = params,
@@ -148,7 +150,7 @@ end
     d50::Vector{T} | "mm"
 end
 
-function initialize_transport_capacity_yalin_params(nc, config, inds)
+function TransportCapacityYalinParameters(nc, config, inds)
     slope = ncread(
         nc,
         config,
@@ -179,17 +181,17 @@ function initialize_transport_capacity_yalin_params(nc, config, inds)
     return tc_parameters
 end
 
-@get_units @with_kw struct TransportCapacityYalinModel{T} <: AbstractTransportCapacityModel
-    boundary_conditions::TransportCapacityBC{T} | "-"
-    parameters::TransportCapacityYalinParameters{T} | "-"
-    variables::TransportCapacityModelVars{T} | "-"
+@with_kw struct TransportCapacityYalinModel{T} <: AbstractTransportCapacityModel{T}
+    boundary_conditions::TransportCapacityBC{T}
+    parameters::TransportCapacityYalinParameters{T}
+    variables::TransportCapacityModelVariables{T}
 end
 
-function initialize_transport_capacity_yalin_model(nc, config, inds)
+function TransportCapacityYalinModel(nc, config, inds)
     n = length(inds)
-    vars = transport_capacity_model_vars(n)
-    params = initialize_transport_capacity_yalin_params(nc, config, inds)
-    bc = transport_capacity_bc(n)
+    vars = TransportCapacityModelVariables(n)
+    params = TransportCapacityYalinParameters(nc, config, inds)
+    bc = TransportCapacityBC(n)
     model = TransportCapacityYalinModel(;
         boundary_conditions = bc,
         parameters = params,
@@ -220,7 +222,7 @@ function update!(model::TransportCapacityYalinModel, width, waterbodies, rivers,
 end
 
 ## Total transport capacity with particle differentiation structs and functions
-@get_units @with_kw struct TransportCapacityYalinDifferentiationModelVars{T}
+@get_units @with_kw struct TransportCapacityYalinDifferentiationModelVariables{T}
     # Total sediment transport capacity
     amount::Vector{T} | "t dt-1"
     # Transport capacity clay
@@ -235,16 +237,23 @@ end
     lagg::Vector{T} | "t dt-1"
 end
 
-function transport_capacity_yalin_differentiation_model_vars(n)
-    vars = TransportCapacityYalinDifferentiationModelVars(;
-        amount = fill(mv, n),
-        clay = fill(mv, n),
-        silt = fill(mv, n),
-        sand = fill(mv, n),
-        sagg = fill(mv, n),
-        lagg = fill(mv, n),
+function TransportCapacityYalinDifferentiationModelVariables(
+    n;
+    amount::Vector{T} = fill(mv, n),
+    clay::Vector{T} = fill(mv, n),
+    silt::Vector{T} = fill(mv, n),
+    sand::Vector{T} = fill(mv, n),
+    sagg::Vector{T} = fill(mv, n),
+    lagg::Vector{T} = fill(mv, n),
+) where {T}
+    return TransportCapacityYalinDifferentiationModelVariables{T}(;
+        amount = amount,
+        clay = clay,
+        silt = silt,
+        sand = sand,
+        sagg = sagg,
+        lagg = lagg,
     )
-    return vars
 end
 
 # Common parameters for transport capacity models
@@ -263,7 +272,7 @@ end
     dm_lagg::Vector{T} | "µm"
 end
 
-function initialize_transport_capacity_yalin_diff_params(nc, config, inds)
+function TransportCapacityYalinDifferentiationParameters(nc, config, inds)
     density = ncread(
         nc,
         config,
@@ -324,18 +333,18 @@ function initialize_transport_capacity_yalin_diff_params(nc, config, inds)
     return tc_parameters
 end
 
-@get_units @with_kw struct TransportCapacityYalinDifferentiationModel{T} <:
-                           AbstractTransportCapacityModel
-    boundary_conditions::TransportCapacityBC{T} | "-"
-    parameters::TransportCapacityYalinDifferentiationParameters{T} | "-"
-    variables::TransportCapacityYalinDifferentiationModelVars{T} | "-"
+@with_kw struct TransportCapacityYalinDifferentiationModel{T} <:
+                AbstractTransportCapacityModel{T}
+    boundary_conditions::TransportCapacityBC{T}
+    parameters::TransportCapacityYalinDifferentiationParameters{T}
+    variables::TransportCapacityYalinDifferentiationModelVariables{T}
 end
 
-function initialize_transport_capacity_yalin_diff_model(nc, config, inds)
+function TransportCapacityYalinDifferentiationModel(nc, config, inds)
     n = length(inds)
-    vars = transport_capacity_yalin_differentiation_model_vars(n)
-    params = initialize_transport_capacity_yalin_diff_params(nc, config, inds)
-    bc = transport_capacity_bc(n)
+    vars = TransportCapacityYalinDifferentiationModelVariables(n)
+    params = TransportCapacityYalinDifferentiationParameters(nc, config, inds)
+    bc = TransportCapacityBC(n)
     model = TransportCapacityYalinDifferentiationModel(;
         boundary_conditions = bc,
         parameters = params,
@@ -439,7 +448,7 @@ end
     d50::Vector{T} | "mm"
 end
 
-function initialize_transport_capacity_river_params(nc, config, inds)
+function TransportCapacityRiverParameters(nc, config, inds)
     density = ncread(
         nc,
         config,
@@ -469,7 +478,7 @@ end
     e_bagnold::Vector{T} | "-"
 end
 
-function initialize_transport_capacity_bagnold_params(nc, config, inds)
+function TransportCapacityBagnoldParameters(nc, config, inds)
     c_bagnold = ncread(
         nc,
         config,
@@ -492,18 +501,17 @@ function initialize_transport_capacity_bagnold_params(nc, config, inds)
     return tc_parameters
 end
 
-@get_units @with_kw struct TransportCapacityBagnoldModel{T} <:
-                           AbstractTransportCapacityModel
-    boundary_conditions::TransportCapacityBC{T} | "-"
-    parameters::TransportCapacityBagnoldParameters{T} | "-"
-    variables::TransportCapacityModelVars{T} | "-"
+@with_kw struct TransportCapacityBagnoldModel{T} <: AbstractTransportCapacityModel{T}
+    boundary_conditions::TransportCapacityBC{T}
+    parameters::TransportCapacityBagnoldParameters{T}
+    variables::TransportCapacityModelVariables{T}
 end
 
-function initialize_transport_capacity_bagnold_model(nc, config, inds)
+function TransportCapacityBagnoldModel(nc, config, inds)
     n = length(inds)
-    vars = transport_capacity_model_vars(n)
-    params = initialize_transport_capacity_bagnold_params(nc, config, inds)
-    bc = transport_capacity_bc(n)
+    vars = TransportCapacityModelVariables(n)
+    params = TransportCapacityBagnoldParameters(nc, config, inds)
+    bc = TransportCapacityBC(n)
     model = TransportCapacityBagnoldModel(;
         boundary_conditions = bc,
         parameters = params,
@@ -534,18 +542,17 @@ function update!(model::TransportCapacityBagnoldModel, geometry::RiverGeometry, 
 end
 
 # Engelund and Hansen parameters for transport capacity models
-@get_units @with_kw struct TransportCapacityEngelundModel{T} <:
-                           AbstractTransportCapacityModel
-    boundary_conditions::TransportCapacityBC{T} | "-"
-    parameters::TransportCapacityRiverParameters{T} | "-"
-    variables::TransportCapacityModelVars{T} | "-"
+@with_kw struct TransportCapacityEngelundModel{T} <: AbstractTransportCapacityModel{T}
+    boundary_conditions::TransportCapacityBC{T}
+    parameters::TransportCapacityRiverParameters{T}
+    variables::TransportCapacityModelVariables{T}
 end
 
-function initialize_transport_capacity_engelund_model(nc, config, inds)
+function TransportCapacityEngelundModel(nc, config, inds)
     n = length(inds)
-    vars = transport_capacity_model_vars(n)
-    params = initialize_transport_capacity_river_params(nc, config, inds)
-    bc = transport_capacity_bc(n)
+    vars = TransportCapacityModelVariables(n)
+    params = TransportCapacityRiverParameters(nc, config, inds)
+    bc = TransportCapacityBC(n)
     model = TransportCapacityEngelundModel(;
         boundary_conditions = bc,
         parameters = params,
@@ -586,7 +593,7 @@ end
     d_kodatie::Vector{T} | "-"
 end
 
-function initialize_transport_capacity_kodatie_params(nc, config, inds)
+function TransportCapacityKodatieParameters(nc, config, inds)
     a_kodatie = ncread(
         nc,
         config,
@@ -629,18 +636,17 @@ function initialize_transport_capacity_kodatie_params(nc, config, inds)
     return tc_parameters
 end
 
-@get_units @with_kw struct TransportCapacityKodatieModel{T} <:
-                           AbstractTransportCapacityModel
-    boundary_conditions::TransportCapacityBC{T} | "-"
-    parameters::TransportCapacityKodatieParameters{T} | "-"
-    variables::TransportCapacityModelVars{T} | "-"
+@with_kw struct TransportCapacityKodatieModel{T} <: AbstractTransportCapacityModel{T}
+    boundary_conditions::TransportCapacityBC{T}
+    parameters::TransportCapacityKodatieParameters{T}
+    variables::TransportCapacityModelVariables{T}
 end
 
-function initialize_transport_capacity_kodatie_model(nc, config, inds)
+function TransportCapacityKodatieModel(nc, config, inds)
     n = length(inds)
-    vars = transport_capacity_model_vars(n)
-    params = initialize_transport_capacity_kodatie_params(nc, config, inds)
-    bc = transport_capacity_bc(n)
+    vars = TransportCapacityModelVariables(n)
+    params = TransportCapacityKodatieParameters(nc, config, inds)
+    bc = TransportCapacityBC(n)
     model = TransportCapacityKodatieModel(;
         boundary_conditions = bc,
         parameters = params,
@@ -672,17 +678,17 @@ function update!(model::TransportCapacityKodatieModel, geometry::RiverGeometry, 
 end
 
 # Yang parameters for transport capacity models
-@get_units @with_kw struct TransportCapacityYangModel{T} <: AbstractTransportCapacityModel
-    boundary_conditions::TransportCapacityBC{T} | "-"
-    parameters::TransportCapacityRiverParameters{T} | "-"
-    variables::TransportCapacityModelVars{T} | "-"
+@with_kw struct TransportCapacityYangModel{T} <: AbstractTransportCapacityModel{T}
+    boundary_conditions::TransportCapacityBC{T}
+    parameters::TransportCapacityRiverParameters{T}
+    variables::TransportCapacityModelVariables{T}
 end
 
-function initialize_transport_capacity_yang_model(nc, config, inds)
+function TransportCapacityYangModel(nc, config, inds)
     n = length(inds)
-    vars = transport_capacity_model_vars(n)
-    params = initialize_transport_capacity_river_params(nc, config, inds)
-    bc = transport_capacity_bc(n)
+    vars = TransportCapacityModelVariables(n)
+    params = TransportCapacityRiverParameters(nc, config, inds)
+    bc = TransportCapacityBC(n)
     model = TransportCapacityYangModel(;
         boundary_conditions = bc,
         parameters = params,
@@ -712,18 +718,17 @@ function update!(model::TransportCapacityYangModel, geometry::RiverGeometry, ts)
 end
 
 # Molinas and Wu parameters for transport capacity models
-@get_units @with_kw struct TransportCapacityMolinasModel{T} <:
-                           AbstractTransportCapacityModel
-    boundary_conditions::TransportCapacityBC{T} | "-"
-    parameters::TransportCapacityRiverParameters{T} | "-"
-    variables::TransportCapacityModelVars{T} | "-"
+@with_kw struct TransportCapacityMolinasModel{T} <: AbstractTransportCapacityModel{T}
+    boundary_conditions::TransportCapacityBC{T}
+    parameters::TransportCapacityRiverParameters{T}
+    variables::TransportCapacityModelVariables{T}
 end
 
-function initialize_transport_capacity_molinas_model(nc, config, inds)
+function TransportCapacityMolinasModel(nc, config, inds)
     n = length(inds)
-    vars = transport_capacity_model_vars(n)
-    params = initialize_transport_capacity_river_params(nc, config, inds)
-    bc = transport_capacity_bc(n)
+    vars = TransportCapacityModelVariables(n)
+    params = TransportCapacityRiverParameters(nc, config, inds)
+    bc = TransportCapacityBC(n)
     model = TransportCapacityMolinasModel(;
         boundary_conditions = bc,
         parameters = params,

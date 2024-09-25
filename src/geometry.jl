@@ -8,7 +8,7 @@
     slope::Vector{T} | "-"
 end
 
-function initialize_land_geometry(nc, config, inds)
+function LandGeometry(nc, config, inds)
     # read x, y coordinates and calculate cell length [m]
     y_nc = read_y_axis(nc)
     x_nc = read_x_axis(nc)
@@ -44,7 +44,7 @@ end
     slope::Vector{T} | "-"
 end
 
-function initialize_river_geometry(nc, config, inds)
+function RiverGeometry(nc, config, inds)
     riverwidth = ncread(
         nc,
         config,

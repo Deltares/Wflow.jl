@@ -31,7 +31,7 @@ end
     q_river::Vector{T} | "m3 s-1"
 end
 
-function initialize_hydrometeo_forcing(n)
+function HydrometeoForcing(n)
     hydrometeo_forcing = HydrometeoForcing(;
         precipitation = fill(mv, n),
         waterlevel_land = fill(mv, n),

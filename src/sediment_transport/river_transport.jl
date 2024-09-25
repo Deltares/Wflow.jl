@@ -1,7 +1,7 @@
-abstract type AbstractSedimentRiverTransportModel end
+abstract type AbstractSedimentRiverTransportModel{T} end
 
 ## Total sediment transport in overland flow structs and functions
-@get_units @with_kw struct SedimentRiverTransportVars{T}
+@get_units @with_kw struct SedimentRiverTransportVariables{T}
     # Sediment flux [ton]
     amount::Vector{T} | "t dt-1"
     clay::Vector{T} | "t dt-1"
@@ -30,31 +30,53 @@ abstract type AbstractSedimentRiverTransportModel end
     store_gravel::Vector{T} | "t dt-1"
 end
 
-function sediment_river_transport_vars(n)
-    vars = SedimentRiverTransportVars(;
-        amount = fill(mv, n),
-        clay = fill(0.0, n),
-        silt = fill(0.0, n),
-        sand = fill(0.0, n),
-        sagg = fill(0.0, n),
-        lagg = fill(0.0, n),
-        gravel = fill(0.0, n),
-        deposition = fill(mv, n),
-        erosion = fill(mv, n),
-        leftover_clay = fill(0.0, n),
-        leftover_silt = fill(0.0, n),
-        leftover_sand = fill(0.0, n),
-        leftover_sagg = fill(0.0, n),
-        leftover_lagg = fill(0.0, n),
-        leftover_gravel = fill(0.0, n),
-        store_clay = fill(0.0, n),
-        store_silt = fill(0.0, n),
-        store_sand = fill(0.0, n),
-        store_sagg = fill(0.0, n),
-        store_lagg = fill(0.0, n),
-        store_gravel = fill(0.0, n),
+function SedimentRiverTransportVariables(
+    n;
+    amount::Vector{T} = fill(mv, n),
+    clay::Vector{T} = fill(0.0, n),
+    silt::Vector{T} = fill(0.0, n),
+    sand::Vector{T} = fill(0.0, n),
+    sagg::Vector{T} = fill(0.0, n),
+    lagg::Vector{T} = fill(0.0, n),
+    gravel::Vector{T} = fill(0.0, n),
+    deposition::Vector{T} = fill(mv, n),
+    erosion::Vector{T} = fill(mv, n),
+    leftover_clay::Vector{T} = fill(0.0, n),
+    leftover_silt::Vector{T} = fill(0.0, n),
+    leftover_sand::Vector{T} = fill(0.0, n),
+    leftover_sagg::Vector{T} = fill(0.0, n),
+    leftover_lagg::Vector{T} = fill(0.0, n),
+    leftover_gravel::Vector{T} = fill(0.0, n),
+    store_clay::Vector{T} = fill(0.0, n),
+    store_silt::Vector{T} = fill(0.0, n),
+    store_sand::Vector{T} = fill(0.0, n),
+    store_sagg::Vector{T} = fill(0.0, n),
+    store_lagg::Vector{T} = fill(0.0, n),
+    store_gravel::Vector{T} = fill(0.0, n),
+) where {T}
+    return SedimentRiverTransportVariables{T}(;
+        amount = amount,
+        clay = clay,
+        silt = silt,
+        sand = sand,
+        sagg = sagg,
+        lagg = lagg,
+        gravel = gravel,
+        deposition = deposition,
+        erosion = erosion,
+        leftover_clay = leftover_clay,
+        leftover_silt = leftover_silt,
+        leftover_sand = leftover_sand,
+        leftover_sagg = leftover_sagg,
+        leftover_lagg = leftover_lagg,
+        leftover_gravel = leftover_gravel,
+        store_clay = store_clay,
+        store_silt = store_silt,
+        store_sand = store_sand,
+        store_sagg = store_sagg,
+        store_lagg = store_lagg,
+        store_gravel = store_gravel,
     )
-    return vars
 end
 
 @get_units @with_kw struct SedimentRiverTransportBC{T}
@@ -75,20 +97,31 @@ end
     potential_erosion_river_bank::Vector{T} | "t dt-1"
 end
 
-function sediment_river_transport_bc(n)
-    bc = SedimentRiverTransportBC(;
-        waterlevel = fill(mv, n),
-        q = fill(mv, n),
-        transport_capacity = fill(mv, n),
-        erosion_land_clay = fill(mv, n),
-        erosion_land_silt = fill(mv, n),
-        erosion_land_sand = fill(mv, n),
-        erosion_land_sagg = fill(mv, n),
-        erosion_land_lagg = fill(mv, n),
-        potential_erosion_river_bed = fill(mv, n),
-        potential_erosion_river_bank = fill(mv, n),
+function SedimentRiverTransportBC(
+    n;
+    waterlevel::Vector{T} = fill(mv, n),
+    q::Vector{T} = fill(mv, n),
+    transport_capacity::Vector{T} = fill(mv, n),
+    erosion_land_clay::Vector{T} = fill(mv, n),
+    erosion_land_silt::Vector{T} = fill(mv, n),
+    erosion_land_sand::Vector{T} = fill(mv, n),
+    erosion_land_sagg::Vector{T} = fill(mv, n),
+    erosion_land_lagg::Vector{T} = fill(mv, n),
+    potential_erosion_river_bed::Vector{T} = fill(mv, n),
+    potential_erosion_river_bank::Vector{T} = fill(mv, n),
+) where {T}
+    return SedimentRiverTransportBC{T}(;
+        waterlevel = waterlevel,
+        q = q,
+        transport_capacity = transport_capacity,
+        erosion_land_clay = erosion_land_clay,
+        erosion_land_silt = erosion_land_silt,
+        erosion_land_sand = erosion_land_sand,
+        erosion_land_sagg = erosion_land_sagg,
+        erosion_land_lagg = erosion_land_lagg,
+        potential_erosion_river_bed = potential_erosion_river_bed,
+        potential_erosion_river_bank = potential_erosion_river_bank,
     )
-    return bc
 end
 
 # Parameters for river transport
@@ -121,7 +154,7 @@ end
     waterbodies_trapping_efficiency::Vector{T} | "-"
 end
 
-function initialize_sediment_river_transport_params(nc, config, inds)
+function SedimentRiverTransportParameters(nc, config, inds)
     n = length(inds)
     clay_fraction = ncread(
         nc,
@@ -291,18 +324,17 @@ function initialize_sediment_river_transport_params(nc, config, inds)
     return river_parameters
 end
 
-@get_units @with_kw struct SedimentRiverTransportModel{T} <:
-                           AbstractSedimentRiverTransportModel
-    boundary_conditions::SedimentRiverTransportBC{T} | "-"
-    parameters::SedimentRiverTransportParameters{T} | "-"
-    variables::SedimentRiverTransportVars{T} | "-"
+@with_kw struct SedimentRiverTransportModel{T} <: AbstractSedimentRiverTransportModel{T}
+    boundary_conditions::SedimentRiverTransportBC{T}
+    parameters::SedimentRiverTransportParameters{T}
+    variables::SedimentRiverTransportVariables{T}
 end
 
-function initialize_sediment_river_transport_model(nc, config, inds)
+function SedimentRiverTransportModel(nc, config, inds)
     n = length(inds)
-    vars = sediment_river_transport_vars(n)
-    params = initialize_sediment_river_transport_params(nc, config, inds)
-    bc = sediment_river_transport_bc(n)
+    vars = SedimentRiverTransportVariables(n)
+    params = SedimentRiverTransportParameters(nc, config, inds)
+    bc = SedimentRiverTransportBC(n)
     model = SedimentRiverTransportModel(;
         boundary_conditions = bc,
         parameters = params,
@@ -545,15 +577,6 @@ function update!(
             erosion_sagg +
             erosion_lagg +
             erosion_gravel
-        #if erosion[v] > transport_capacity[v]
-        #    println("Erosion exceeds transport capacity for node $v")
-        #end
-        if v == 5642
-            println("Erosion at node 5642: ", erosion[v])
-            println("Transport capacity at node 5642: ", transport_capacity[v])
-            println("Sediment stored at node 5642: ", store_sediment)
-            println("Sediemnt need: ", sediment_need)
-        end
 
         ### Deposition / settling ###
         # Different deposition if waterbody outlet or river
@@ -747,10 +770,10 @@ function update!(
     end
 end
 
-abstract type AbstractSedimentConcentrationsRiverModel end
+abstract type AbstractSedimentConcentrationsRiverModel{T} end
 
 ## Total sediment transport in overland flow structs and functions
-@get_units @with_kw struct SedimentConcentrationsRiverVars{T}
+@get_units @with_kw struct SedimentConcentrationsRiverVariables{T}
     # Total sediment concentration in the river
     total::Vector{T} | "g m-3"
     # suspended sediemnt concentration in the river
@@ -759,13 +782,17 @@ abstract type AbstractSedimentConcentrationsRiverModel end
     bed::Vector{T} | "g m-3"
 end
 
-function sediment_concentrations_river_vars(n)
-    vars = SedimentConcentrationsRiverVars(;
-        total = fill(mv, n),
-        suspended = fill(mv, n),
-        bed = fill(mv, n),
+function SedimentConcentrationsRiverVariables(
+    n;
+    total::Vector{T} = fill(mv, n),
+    suspended::Vector{T} = fill(mv, n),
+    bed::Vector{T} = fill(mv, n),
+) where {T}
+    return SedimentConcentrationsRiverVariables{T}(;
+        total = total,
+        suspended = suspended,
+        bed = bed,
     )
-    return vars
 end
 
 @get_units @with_kw struct SedimentConcentrationsRiverBC{T}
@@ -786,18 +813,27 @@ end
     gravel::Vector{T} | "g m-3"
 end
 
-function sediment_concentrations_river_bc(n)
-    bc = SedimentConcentrationsRiverBC(;
-        q = fill(mv, n),
-        waterlevel = fill(mv, n),
-        clay = fill(mv, n),
-        silt = fill(mv, n),
-        sand = fill(mv, n),
-        sagg = fill(mv, n),
-        lagg = fill(mv, n),
-        gravel = fill(mv, n),
+function SedimentConcentrationsRiverBC(
+    n;
+    q::Vector{T} = fill(mv, n),
+    waterlevel::Vector{T} = fill(mv, n),
+    clay::Vector{T} = fill(mv, n),
+    silt::Vector{T} = fill(mv, n),
+    sand::Vector{T} = fill(mv, n),
+    sagg::Vector{T} = fill(mv, n),
+    lagg::Vector{T} = fill(mv, n),
+    gravel::Vector{T} = fill(mv, n),
+) where {T}
+    return SedimentConcentrationsRiverBC{T}(;
+        q = q,
+        waterlevel = waterlevel,
+        clay = clay,
+        silt = silt,
+        sand = sand,
+        sagg = sagg,
+        lagg = lagg,
+        gravel = gravel,
     )
-    return bc
 end
 
 # Common parameters for transport capacity models
@@ -816,7 +852,7 @@ end
     dm_gravel::Vector{T} | "µm"
 end
 
-function initialize_sediment_concentrations_river_params(nc, config, inds)
+function SedimentConcentrationsRiverParameters(nc, config, inds)
     dm_clay = ncread(
         nc,
         config,
@@ -877,18 +913,18 @@ function initialize_sediment_concentrations_river_params(nc, config, inds)
     return conc_parameters
 end
 
-@get_units @with_kw struct SedimentConcentrationsRiverModel{T} <:
-                           AbstractSedimentConcentrationsRiverModel
-    boundary_conditions::SedimentConcentrationsRiverBC{T} | "-"
-    parameters::SedimentConcentrationsRiverParameters{T} | "-"
-    variables::SedimentConcentrationsRiverVars{T} | "-"
+@with_kw struct SedimentConcentrationsRiverModel{T} <:
+                AbstractSedimentConcentrationsRiverModel{T}
+    boundary_conditions::SedimentConcentrationsRiverBC{T}
+    parameters::SedimentConcentrationsRiverParameters{T}
+    variables::SedimentConcentrationsRiverVariables{T}
 end
 
-function initialize_sediment_concentrations_river_model(nc, config, inds)
+function SedimentConcentrationsRiverModel(nc, config, inds)
     n = length(inds)
-    vars = sediment_concentrations_river_vars(n)
-    params = initialize_sediment_concentrations_river_params(nc, config, inds)
-    bc = sediment_concentrations_river_bc(n)
+    vars = SedimentConcentrationsRiverVariables(n)
+    params = SedimentConcentrationsRiverParameters(nc, config, inds)
+    bc = SedimentConcentrationsRiverBC(n)
     model = SedimentConcentrationsRiverModel(;
         boundary_conditions = bc,
         parameters = params,
