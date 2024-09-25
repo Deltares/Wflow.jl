@@ -1138,14 +1138,16 @@ function update_until_recharge(sbm::SBM, config)
         # Scale infiltration from surface water based on the ratio between actinfil and
         # infiltsoilpath (and prevent division by zero)
         if do_surface_water_infiltration
-            infilt_ratio = iszero(actinfilt) ? 0.0 : actinfilt / avail_forinfilt
+            infilt_ratio = iszero(avail_forinfilt) ? 0.0 : actinfilt / avail_forinfilt
             infilt_surfacewater = max(0.0, waterlevel_land * infilt_ratio)
-            # Subtract waterlevel_land from this, as this water is already excess water
-            excesswater = avail_forinfilt - waterlevel_land - infiltsoilpath - infiltexcess + du
+            # correct avail_forinfilt and actinfilt for the parts coming from surface water
+            # as this is already considered to be excess water
+            excesswater = (avail_forinfilt - waterlevel_land) - (actinfilt - infilt_surfacewater) - infiltexcess
+
         else
             infilt_surfacewater = 0.0
             # Calculate excess water
-            excesswater = avail_forinfilt - infiltsoilpath - infiltexcess + du
+            excesswater = avail_forinfilt - actinfilt - infiltexcess
         end
 
         # Separation between compacted and non compacted areas (correction with the satflow du)
