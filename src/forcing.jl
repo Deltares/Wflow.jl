@@ -8,7 +8,7 @@
     temperature::Vector{T} | "°C"
 end
 
-function initialize_atmospheric_forcing(n)
+function AtmosphericForcing(n)
     atmospheric_forcing = AtmosphericForcing(;
         precipitation = fill(mv, n),
         potential_evaporation = fill(mv, n),
@@ -30,7 +30,7 @@ end
     q_river::Vector{T} | "m3 s-1"
 end
 
-function initialize_hydrometeo_forcing(n)
+function HydrometeoForcing(n)
     hydrometeo_forcing = HydrometeoForcing(;
         precipitation = fill(mv, n),
         waterlevel_land = fill(mv, n),

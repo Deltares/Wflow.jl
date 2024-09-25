@@ -1,27 +1,38 @@
-abstract type AbstractRainfallErosionModel end
+abstract type AbstractRainfallErosionModel{T} end
 
-struct NoRainfallErosionModel <: AbstractRainfallErosionModel end
+struct NoRainfallErosionModel{T} <: AbstractRainfallErosionModel{T} end
 
 ## General rainfall erosion functions and structs
-@get_units @with_kw struct RainfallErosionModelVars{T}
+@get_units @with_kw struct RainfallErosionModelVariables{T}
     # Total soil erosion from rainfall (splash)
     amount::Vector{T} | "t dt-1"
 end
 
-function rainfall_erosion_model_vars(n)
-    vars = RainfallErosionModelVars(; amount = fill(mv, n))
-    return vars
+function RainfallErosionModelVariables(n; amount::Vector{T} = fill(mv, n)) where {T}
+    return RainfallErosionModelVariables{T}(; amount = amount)
 end
 
 ## EUROSEM specific structs and functions for rainfall erosion
 @get_units @with_kw struct RainfallErosionEurosemBC{T}
+    # precipitation
+    precipitation::Vector{T} | "mm dt-1"
     # Interception
     interception::Vector{T} | "mm dt-1"
+    # Waterlevel on land
+    waterlevel::Vector{T} | "m"
 end
 
-function rainfall_erosion_eurosem_bc(n)
-    bc = RainfallErosionEurosemBC(; interception = fill(mv, n))
-    return bc
+function RainfallErosionEurosemBC(
+    n;
+    precipitation::Vector{T} = fill(mv, n),
+    interception::Vector{T} = fill(0.0, n),
+    waterlevel::Vector{T} = fill(mv, n),
+) where {T}
+    return RainfallErosionEurosemBC{T}(;
+        precipitation = precipitation,
+        interception = interception,
+        waterlevel = waterlevel,
+    )
 end
 
 @get_units @with_kw struct RainfallErosionEurosemParameters{T}
@@ -37,13 +48,7 @@ end
     soilcover_fraction::Vector{T} | "-"
 end
 
-@get_units @with_kw struct RainfallErosionEurosemModel{T} <: AbstractRainfallErosionModel
-    boundary_conditions::RainfallErosionEurosemBC{T} | "-"
-    parameters::RainfallErosionEurosemParameters{T} | "-"
-    variables::RainfallErosionModelVars{T} | "-"
-end
-
-function initialize_eurosem_params(nc, config, inds)
+function RainfallErosionEurosemParameters(nc, config, inds)
     soil_detachability = ncread(
         nc,
         config,
@@ -94,11 +99,17 @@ function initialize_eurosem_params(nc, config, inds)
     return eurosem_parameters
 end
 
-function initialize_eurosem_rainfall_erosion_model(nc, config, inds)
+@with_kw struct RainfallErosionEurosemModel{T} <: AbstractRainfallErosionModel{T}
+    boundary_conditions::RainfallErosionEurosemBC{T}
+    parameters::RainfallErosionEurosemParameters{T}
+    variables::RainfallErosionModelVariables{T}
+end
+
+function RainfallErosionEurosemModel(nc, config, inds)
     n = length(inds)
-    vars = rainfall_erosion_model_vars(n)
-    params = initialize_eurosem_params(nc, config, inds)
-    bc = rainfall_erosion_eurosem_bc(n)
+    vars = RainfallErosionModelVariables(n)
+    params = RainfallErosionEurosemParameters(nc, config, inds)
+    bc = RainfallErosionEurosemBC(n)
     model = RainfallErosionEurosemModel(;
         boundary_conditions = bc,
         parameters = params,
@@ -107,14 +118,17 @@ function initialize_eurosem_rainfall_erosion_model(nc, config, inds)
     return model
 end
 
-function update!(
+function update_boundary_conditions!(
     model::RainfallErosionEurosemModel,
     hydrometeo_forcing::HydrometeoForcing,
-    geometry::LandGeometry,
-    ts,
 )
-    (; precipitation, waterlevel_land) = hydrometeo_forcing
-    (; interception) = model.boundary_conditions
+    (; precipitation, waterlevel) = model.boundary_conditions
+    @. precipitation = hydrometeo_forcing.precipitation
+    @. waterlevel = model.boundary_conditions.waterlevel_land
+end
+
+function update!(model::RainfallErosionEurosemModel, geometry::LandGeometry, ts)
+    (; precipitation, interception, waterlevel) = model.boundary_conditions
     (;
         soil_detachability,
         eurosem_exponent,
@@ -124,12 +138,12 @@ function update!(
     ) = model.parameters
     (; amount) = model.variables
 
-    n = length(precip)
+    n = length(precipitation)
     threaded_foreach(1:n; basesize = 1000) do i
         amount[i] = rainfall_erosion_eurosem(
             precipitation[i],
             interception[i],
-            waterlevel_land[i],
+            waterlevel[i],
             soil_detachability[i],
             eurosem_exponent[i],
             canopyheight[i],
@@ -141,7 +155,16 @@ function update!(
     end
 end
 
-# ANSWERS specific structs and functions for rainfall erosion
+### ANSWERS specific structs and functions for rainfall erosion
+@get_units @with_kw struct RainfallErosionAnswersBC{T}
+    # precipitation
+    precipitation::Vector{T} | "mm dt-1"
+end
+
+function RainfallErosionAnswersBC(n; precipitation::Vector{T} = fill(mv, n)) where {T}
+    return RainfallErosionAnswersBC{T}(; precipitation = precipitation)
+end
+
 @get_units @with_kw struct RainfallErosionAnswersParameters{T}
     # Soil erodibility factor
     usle_k::Vector{T} | "-"
@@ -149,12 +172,7 @@ end
     usle_c::Vector{T} | "-"
 end
 
-@get_units @with_kw struct RainfallErosionAnswersModel{T} <: AbstractRainfallErosionModel
-    parameters::RainfallErosionAnswersParameters{T} | "-"
-    variables::RainfallErosionModelVars{T} | "-"
-end
-
-function initialize_answers_params_rainfall(nc, config, inds)
+function RainfallErosionAnswersParameters(nc, config, inds)
     usle_k = ncread(
         nc,
         config,
@@ -176,21 +194,35 @@ function initialize_answers_params_rainfall(nc, config, inds)
     return answers_parameters
 end
 
-function initialize_answers_rainfall_erosion_model(nc, config, inds)
+@with_kw struct RainfallErosionAnswersModel{T} <: AbstractRainfallErosionModel{T}
+    boundary_conditions::RainfallErosionAnswersBC{T}
+    parameters::RainfallErosionAnswersParameters{T}
+    variables::RainfallErosionModelVariables{T}
+end
+
+function RainfallErosionAnswersModel(nc, config, inds)
     n = length(inds)
-    vars = rainfall_erosion_model_vars(n)
-    params = initialize_answers_params_rainfall(nc, config, inds)
-    model = RainfallErosionAnswersModel(; parameters = params, variables = vars)
+    bc = RainfallErosionAnswersBC(n)
+    vars = RainfallErosionModelVariables(n)
+    params = RainfallErosionAnswersParameters(nc, config, inds)
+    model = RainfallErosionAnswersModel(;
+        boundary_conditions = bc,
+        parameters = params,
+        variables = vars,
+    )
     return model
 end
 
-function update!(
+function update_boundary_conditions!(
     model::RainfallErosionAnswersModel,
     hydrometeo_forcing::HydrometeoForcing,
-    geometry::LandGeometry,
-    ts,
 )
-    (; precipitation) = hydrometeo_forcing
+    (; precipitation) = model.boundary_conditions
+    @. precipitation = hydrometeo_forcing.precipitation
+end
+
+function update!(model::RainfallErosionAnswersModel, geometry::LandGeometry, ts)
+    (; precipitation) = model.boundary_conditions
     (; usle_k, usle_c) = model.parameters
     (; amount) = model.variables
 
@@ -204,6 +236,13 @@ function update!(
             ts,
         )
     end
+end
+
+function update_boundary_conditions!(
+    model::NoRainfallErosionModel,
+    hydrometeo_forcing::HydrometeoForcing,
+)
+    return nothing
 end
 
 function update!(model::NoRainfallErosionModel)

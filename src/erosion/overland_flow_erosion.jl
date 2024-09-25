@@ -1,16 +1,24 @@
-abstract type AbstractOverlandFlowErosionModel end
+abstract type AbstractOverlandFlowErosionModel{T} end
 
-struct NoOverlandFlowErosionModel <: AbstractOverlandFlowErosionModel end
+struct NoOverlandFlowErosionModel{T} <: AbstractOverlandFlowErosionModel{T} end
 
 ## Overland flow structs and functions
-@get_units @with_kw struct OverlandFlowErosionModelVars{T}
+@get_units @with_kw struct OverlandFlowErosionVariables{T}
     # Total soil erosion from overland flow
     amount::Vector{T} | "t dt-1"
 end
 
-function overland_flow_erosion_model_vars(n)
-    vars = OverlandFlowErosionModelVars(; amount = fill(mv, n))
-    return vars
+function OverlandFlowErosionVariables(n; amount::Vector{T} = fill(mv, n)) where {T}
+    return OverlandFlowErosionVariables{T}(; amount = amount)
+end
+
+@get_units @with_kw struct OverlandFlowErosionBC{T}
+    # Overland flow [m3 s-1]
+    q::Vector{T}
+end
+
+function OverlandFlowErosionBC(n; q::Vector{T} = fill(mv, n)) where {T}
+    return OverlandFlowErosionBC{T}(; q = q)
 end
 
 # ANSWERS specific structs and functions for rainfall erosion
@@ -23,13 +31,7 @@ end
     answers_k::Vector{T} | "-"
 end
 
-@get_units @with_kw struct OverlandFlowErosionAnswersModel{T} <:
-                           AbstractOverlandFlowErosionModel
-    parameters::OverlandFlowErosionAnswersParameters{T} | "-"
-    variables::OverlandFlowErosionModelVars{T} | "-"
-end
-
-function initialize_answers_params_overland_flow(nc, config, inds)
+function OverlandFlowErosionAnswersParameters(nc, config, inds)
     usle_k = ncread(
         nc,
         config,
@@ -62,28 +64,50 @@ function initialize_answers_params_overland_flow(nc, config, inds)
     return answers_parameters
 end
 
-function initialize_answers_overland_flow_erosion_model(nc, config, inds)
+@with_kw struct OverlandFlowErosionAnswersModel{T} <: AbstractOverlandFlowErosionModel{T}
+    boundary_conditions::OverlandFlowErosionBC{T}
+    parameters::OverlandFlowErosionAnswersParameters{T}
+    variables::OverlandFlowErosionVariables{T}
+end
+
+function OverlandFlowErosionAnswersModel(nc, config, inds)
     n = length(inds)
-    vars = overland_flow_erosion_model_vars(n)
-    params = initialize_answers_params_overland_flow(nc, config, inds)
-    model = OverlandFlowErosionAnswersModel(; parameters = params, variables = vars)
+    vars = OverlandFlowErosionVariables(n)
+    params = OverlandFlowErosionAnswersParameters(nc, config, inds)
+    bc = OverlandFlowErosionBC(n)
+    model = OverlandFlowErosionAnswersModel(;
+        boundary_conditions = bc,
+        parameters = params,
+        variables = vars,
+    )
     return model
 end
 
-function update!(
+function update_boundary_conditions!(
     model::OverlandFlowErosionAnswersModel,
     hydrometeo_forcing::HydrometeoForcing,
-    geometry::LandGeometry,
-    ts,
 )
+    (; q) = model.boundary_conditions
     (; q_land) = hydrometeo_forcing
+    @. q = q_land
+end
+
+function update_boundary_conditions!(
+    model::NoOverlandFlowErosionModel,
+    hydrometeo_forcing::HydrometeoForcing,
+)
+    return nothing
+end
+
+function update!(model::OverlandFlowErosionAnswersModel, geometry::LandGeometry, ts)
+    (; q) = model.boundary_conditions
     (; usle_k, usle_c, answers_k) = model.parameters
     (; amount) = model.variables
 
-    n = length(q_land)
+    n = length(q)
     threaded_foreach(1:n; basesize = 1000) do i
         amount[i] = overland_flow_erosion_answers(
-            q_land[i],
+            q[i],
             usle_k[i],
             usle_c[i],
             answers_k[i],

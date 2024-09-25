@@ -1,14 +1,13 @@
-abstract type AbstractSedimentToRiverModel end
+abstract type AbstractSedimentToRiverModel{T} end
 
 ## Total sediment transport in overland flow structs and functions
-@get_units @with_kw struct SedimentToRiverVars{T}
+@get_units @with_kw struct SedimentToRiverVariables{T}
     # Total sediment reaching the river
     amount::Vector{T} | "t dt-1"
 end
 
-function sediment_to_river_vars(n)
-    vars = SedimentToRiverVars(; amount = fill(mv, n))
-    return vars
+function SedimentToRiverVariables(n; amount::Vector{T} = fill(mv, n)) where {T}
+    return SedimentToRiverVariables{T}(; amount = amount)
 end
 
 @get_units @with_kw struct SedimentToRiverBC{T}
@@ -16,20 +15,19 @@ end
     deposition::Vector{T} | "t dt-1"
 end
 
-function sediment_to_river_bc(n)
-    bc = SedimentToRiverBC(; deposition = fill(mv, n))
-    return bc
+function SedimentToRiverBC(n; deposition::Vector{T} = fill(mv, n)) where {T}
+    return SedimentToRiverBC{T}(; deposition = deposition)
 end
 
-@get_units @with_kw struct SedimentToRiverModel{T} <: AbstractSedimentToRiverModel
-    boundary_conditions::SedimentToRiverBC{T} | "-"
-    variables::SedimentToRiverVars{T} | "-"
+@with_kw struct SedimentToRiverModel{T} <: AbstractSedimentToRiverModel{T}
+    boundary_conditions::SedimentToRiverBC{T}
+    variables::SedimentToRiverVariables{T}
 end
 
-function initialize_sediment_to_river_model(inds)
+function SedimentToRiverModel(inds)
     n = length(inds)
-    vars = sediment_to_river_vars(n)
-    bc = sediment_to_river_bc(n)
+    vars = SedimentToRiverVariables(n)
+    bc = SedimentToRiverBC(n)
     model = SedimentToRiverModel(; boundary_conditions = bc, variables = vars)
     return model
 end
@@ -51,7 +49,7 @@ function update!(model::SedimentToRiverModel, rivers)
 end
 
 ## Different particles reaching the river structs and functions
-@get_units @with_kw struct SedimentToRiverDifferentiationVars{T}
+@get_units @with_kw struct SedimentToRiverDifferentiationVariables{T}
     # Total sediment flux
     amount::Vector{T} | "t dt-1"
     # Clay flux
@@ -66,16 +64,23 @@ end
     lagg::Vector{T} | "t dt-1"
 end
 
-function sediment_to_river_differentiation_vars(n)
-    vars = SedimentToRiverDifferentiationVars(;
-        amount = fill(mv, n),
-        clay = fill(mv, n),
-        silt = fill(mv, n),
-        sand = fill(mv, n),
-        sagg = fill(mv, n),
-        lagg = fill(mv, n),
+function SedimentToRiverDifferentiationVariables(
+    n;
+    amount::Vector{T} = fill(mv, n),
+    clay::Vector{T} = fill(mv, n),
+    silt::Vector{T} = fill(mv, n),
+    sand::Vector{T} = fill(mv, n),
+    sagg::Vector{T} = fill(mv, n),
+    lagg::Vector{T} = fill(mv, n),
+) where {T}
+    return SedimentToRiverDifferentiationVariables{T}(;
+        amount = amount,
+        clay = clay,
+        silt = silt,
+        sand = sand,
+        sagg = sagg,
+        lagg = lagg,
     )
-    return vars
 end
 
 @get_units @with_kw struct SedimentToRiverDifferentiationBC{T}
@@ -91,27 +96,33 @@ end
     deposition_lagg::Vector{T} | "t dt-1"
 end
 
-function sediment_to_river_differentiation_bc(n)
-    bc = SedimentToRiverDifferentiationBC(;
-        deposition_clay = fill(mv, n),
-        deposition_silt = fill(mv, n),
-        deposition_sand = fill(mv, n),
-        deposition_sagg = fill(mv, n),
-        deposition_lagg = fill(mv, n),
+function SedimentToRiverDifferentiationBC(
+    n;
+    deposition_clay::Vector{T} = fill(mv, n),
+    deposition_silt::Vector{T} = fill(mv, n),
+    deposition_sand::Vector{T} = fill(mv, n),
+    deposition_sagg::Vector{T} = fill(mv, n),
+    deposition_lagg::Vector{T} = fill(mv, n),
+) where {T}
+    return SedimentToRiverDifferentiationBC{T}(;
+        deposition_clay = deposition_clay,
+        deposition_silt = deposition_silt,
+        deposition_sand = deposition_sand,
+        deposition_sagg = deposition_sagg,
+        deposition_lagg = deposition_lagg,
     )
-    return bc
 end
 
 @get_units @with_kw struct SedimentToRiverDifferentiationModel{T} <:
-                           AbstractSedimentToRiverModel
+                           AbstractSedimentToRiverModel{T}
     boundary_conditions::SedimentToRiverDifferentiationBC{T} | "-"
-    variables::SedimentToRiverDifferentiationVars{T} | "-"
+    variables::SedimentToRiverDifferentiationVariables{T} | "-"
 end
 
-function initialize_sediment_to_river_differentiation_model(inds)
+function SedimentToRiverDifferentiationModel(inds)
     n = length(inds)
-    vars = sediment_to_river_differentiation_vars(n)
-    bc = sediment_to_river_differentiation_bc(n)
+    vars = SedimentToRiverDifferentiationVariables(n)
+    bc = SedimentToRiverDifferentiationBC(n)
     model =
         SedimentToRiverDifferentiationModel(; boundary_conditions = bc, variables = vars)
     return model

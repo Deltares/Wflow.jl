@@ -1,7 +1,7 @@
-abstract type AbstractSoilErosionModel end
+abstract type AbstractSoilErosionModel{T} end
 
 ## Total soil erosion and differentiation structs and functions
-@get_units @with_kw struct SoilErosionModelVars{T}
+@get_units @with_kw struct SoilErosionModelVariables{T}
     # Total soil erosion
     amount::Vector{T} | "t dt-1"
     # Total clay erosion
@@ -16,16 +16,23 @@ abstract type AbstractSoilErosionModel end
     lagg::Vector{T} | "t dt-1"
 end
 
-function soil_erosion_model_vars(n)
-    vars = SoilErosionModelVars(;
-        amount = fill(mv, n),
-        clay = fill(mv, n),
-        silt = fill(mv, n),
-        sand = fill(mv, n),
-        sagg = fill(mv, n),
-        lagg = fill(mv, n),
+function SoilErosionModelVariables(
+    n;
+    amount::Vector{T} = fill(mv, n),
+    clay::Vector{T} = fill(mv, n),
+    silt::Vector{T} = fill(mv, n),
+    sand::Vector{T} = fill(mv, n),
+    sagg::Vector{T} = fill(mv, n),
+    lagg::Vector{T} = fill(mv, n),
+) where {T}
+    return SoilErosionModelVariables{T}(;
+        amount = amount,
+        clay = clay,
+        silt = silt,
+        sand = sand,
+        sagg = sagg,
+        lagg = lagg,
     )
-    return vars
 end
 
 @get_units @with_kw struct SoilErosionBC{T}
@@ -35,10 +42,15 @@ end
     overland_flow_erosion::Vector{T} | "m dt-1"
 end
 
-function soil_erosion_bc(n)
-    bc =
-        SoilErosionBC(; rainfall_erosion = fill(mv, n), overland_flow_erosion = fill(mv, n))
-    return bc
+function SoilErosionBC(
+    n;
+    rainfall_erosion::Vector{T} = fill(mv, n),
+    overland_flow_erosion::Vector{T} = fill(mv, n),
+) where {T}
+    return SoilErosionBC{T}(;
+        rainfall_erosion = rainfall_erosion,
+        overland_flow_erosion = overland_flow_erosion,
+    )
 end
 
 # Parameters for particle differentiation
@@ -55,13 +67,7 @@ end
     lagg_fraction::Vector{T} | "-"
 end
 
-@get_units @with_kw struct SoilErosionModel{T} <: AbstractSoilErosionModel
-    boundary_conditions::SoilErosionBC{T} | "-"
-    parameters::SoilErosionParameters{T} | "-"
-    variables::SoilErosionModelVars{T} | "-"
-end
-
-function initialize_soil_erosion_params(nc, config, inds)
+function SoilErosionParameters(nc, config, inds)
     clay_fraction = ncread(
         nc,
         config,
@@ -119,14 +125,32 @@ function initialize_soil_erosion_params(nc, config, inds)
     return soil_parameters
 end
 
-function initialize_soil_erosion_model(nc, config, inds)
+@with_kw struct SoilErosionModel{T} <: AbstractSoilErosionModel{T}
+    boundary_conditions::SoilErosionBC{T}
+    parameters::SoilErosionParameters{T}
+    variables::SoilErosionModelVariables{T}
+end
+
+function SoilErosionModel(nc, config, inds)
     n = length(inds)
-    vars = soil_erosion_model_vars(n)
-    params = initialize_soil_erosion_params(nc, config, inds)
-    bc = soil_erosion_bc(n)
+    vars = SoilErosionModelVariables(n)
+    params = SoilErosionParameters(nc, config, inds)
+    bc = SoilErosionBC(n)
     model =
         SoilErosionModel(; boundary_conditions = bc, parameters = params, variables = vars)
     return model
+end
+
+function update_boundary_conditions!(
+    model::SoilErosionModel,
+    rainfall_erosion::AbstractRainfallErosionModel,
+    overland_flow_erosion::AbstractOverlandFlowErosionModel,
+)
+    re = get_rainfall_erosion(rainfall_erosion)
+    ole = get_overland_flow_erosion(overland_flow_erosion)
+    (; rainfall_erosion, overland_flow_erosion) = model.boundary_conditions
+    @. rainfall_erosion = re
+    @. overland_flow_erosion = ole
 end
 
 function update!(model::SoilErosionModel)
