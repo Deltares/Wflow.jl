@@ -149,8 +149,13 @@ T., van den Oord, G., Weerts, A., Whan, K., 2020. The role of spatial and tempor
 resolution in a flood event storyline approach in western Norway. Weather and Climate
 Extremes, doi: <https://doi.org/10.1016/j.wace.2020.100259>.
 
+Seizarwati, W. and M. Syahidah, 2021. Rainfall-Runoff Simulation for Water Availability 
+Estimation in Small Island Using Distributed Hydrological Model wflow.  IOP Conf. Ser.: 
+Earth Environ. Sci., 930,012050, doi:10.1088/1755-1315/930/1/012050. 
+<https://iopscience.iop.org/article/10.1088/1755-1315/930/1/012050/pdf>
+
 Sperna Weiland, F.C.,  R.D. Visser, P. Greve, B. Bisselink, L. Brunner and A.H. Weerts,
-2021\. Estimating Regionalized Hydrological Impacts of Climate Change Over Europe by
+2021. Estimating Regionalized Hydrological Impacts of Climate Change Over Europe by
 Performance-Based Weighting of CORDEX Projections, Frontiers of Water,
 <https://doi.org/10.3389/frwa.2021.713537>.
 
