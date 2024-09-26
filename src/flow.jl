@@ -1091,9 +1091,17 @@ function initialize_shallowwater_land(
     froude_limit = get(config.model, "froude_limit", true)::Bool # limit flow to subcritical according to Froude number
     alpha = get(config.model, "inertial_flow_alpha", 0.7)::Float64 # stability coefficient for model time step (0.2-0.7)
     theta = get(config.model, "inertial_flow_theta", 0.8)::Float64 # weighting factor
-    h_thresh = get(config.model, "h_thresh", 1.0e-03)::Float64 # depth threshold for flow at link
+    # depth threshold for flow at link
+    h_thresh = ncread(
+        nc,
+        config,
+        "lateral.land.h_thresh";
+        sel = inds,
+        defaults = 1.0e-03,
+        type = Float,
+    )
 
-    @info "Local inertial approach is used for overlandflow." alpha theta h_thresh froude_limit
+    @info "Local inertial approach is used for overlandflow." alpha theta froude_limit
 
     n_land =
         ncread(nc, config, "lateral.land.n"; sel = inds, defaults = 0.072, type = Float)
@@ -1294,7 +1302,7 @@ function shallowwater_update(
             zs_max = max(zs_x, zs_xu)
             hf = (zs_max - sw.zx_max[i])
 
-            if hf > sw.h_thresh
+            if hf > sw.h_thresh[i]
                 length = T(0.5) * (sw.xl[i] + sw.xl[xu]) # can be precalculated
                 sw.qx[i] = local_inertial_flow(
                     sw.theta,
@@ -1334,7 +1342,7 @@ function shallowwater_update(
             zs_max = max(zs_y, zs_yu)
             hf = (zs_max - sw.zy_max[i])
 
-            if hf > sw.h_thresh
+            if hf > sw.h_thresh[i]
                 length = T(0.5) * (sw.yl[i] + sw.yl[yu]) # can be precalculated
                 sw.qy[i] = local_inertial_flow(
                     sw.theta,
