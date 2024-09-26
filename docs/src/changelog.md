@@ -11,9 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for reinfiltration of surface overland flow water. Can be set through the
   `surface_water_infiltration` key in the `[model]` section. This way, the water stored on the
   land surface is added to the water that is allowed to infiltrate into the soil.
-- Support for adding a water level flow-threshold for kinematic wave overland flow. This
-  setting can be changed by changing the `lateral.land.h_thresh` key in the settings file. This
-  can be added as a map or as a fixed value (through the use of `h_thresh.value`).
+- Support for adding a water level flow-threshold for both kinematic wave and local inertial
+  overland flow. This setting can be changed by changing the `lateral.land.h_thresh` key in the
+  settings file. This can be added as a map or as a fixed value (through the use of
+  `h_thresh.value`).
 
 ## v0.8.1 - 2024-08-27
 
