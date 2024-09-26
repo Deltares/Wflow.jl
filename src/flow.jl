@@ -1052,7 +1052,7 @@ const dirs = (:yd, :xd, :xu, :yu)
     g::T | "m2 s-1" | 0 | "scalar"                          # acceleration due to gravity
     theta::T | "-" | 0 | "scalar"                           # weighting factor (de Almeida et al., 2012)
     alpha::T | "-" | 0 | "scalar"                           # stability coefficient (de Almeida et al., 2012)
-    h_thresh::T | "m" | 0 | "scalar"                        # depth threshold for calculating flow
+    h_thresh::Vector{T} | "m" | 0 | "scalar"                # depth threshold for calculating flow
     dt::T | "s" | 0 | "none" | "none"                       # model time step [s]
     qy0::Vector{T} | "m3 s-1" | _ | "edge"                  # flow in y direction at previous time step
     qx0::Vector{T} | "m3 s-1" | _ | "edge"                  # flow in x direction at previous time step
