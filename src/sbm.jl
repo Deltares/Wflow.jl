@@ -1140,15 +1140,11 @@ function update_until_recharge(sbm::SBM, config)
         if do_surface_water_infiltration
             infilt_ratio = iszero(avail_forinfilt) ? 0.0 : actinfilt / avail_forinfilt
             infilt_surfacewater = max(0.0, waterlevel_land * infilt_ratio)
-            # correct avail_forinfilt and actinfilt for the parts coming from surface water
-            # as this is already considered to be excess water
-            excesswater = (avail_forinfilt - waterlevel_land) - (actinfilt - infilt_surfacewater) - infiltexcess
-
         else
             infilt_surfacewater = 0.0
-            # Calculate excess water
-            excesswater = avail_forinfilt - actinfilt - infiltexcess
         end
+
+        excesswater = avail_forinfilt - actinfilt - infiltexcess
 
         # Separation between compacted and non compacted areas (correction with the satflow du)
         # This is required for D-Emission/Delwaq
@@ -1251,7 +1247,7 @@ function update_until_recharge(sbm::SBM, config)
     end
 end
 
-function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
+function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater, config)
 
     threaded_foreach(1:sbm.n, basesize = 1000) do i
         usl, n_usl = set_layerthickness(zi[i], sbm.sumlayers[i], sbm.act_thickl[i])
@@ -1272,23 +1268,38 @@ function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
 
         ustoredepth = sum(@view usld[1:n_usl])
 
+        # Correct the excess water to only include the water that is not (yet) surface water,
+        # otherwise this water would be accounted for twice. This is only relevant if
+        # do_surface_water_infiltration is true
+        do_surface_water_infiltration =
+            get(config.model, "surface_water_infiltration", false)::Bool
+        if do_surface_water_infiltration
+            contribution_surfacewater = sbm.waterlevel_land[i] - sbm.ae_openw_l[i]
+            correction_surfacewater =
+                iszero(sbm.avail_forinfilt[i]) ? 1.0 :
+                1.0 - (contribution_surfacewater / sbm.avail_forinfilt[i])
+        else
+            correction_surfacewater = 1.0
+        end
+
         if !isnothing(sbm.paddy) && sbm.paddy.irrigation_areas[i]
             paddy_h_add =
                 exfiltustore +
                 exfiltsatwater[i] +
-                sbm.excesswater[i] +
+                sbm.excesswater[i] * correction_surfacewater +
                 sbm.runoff_land[i] +
-                sbm.infiltexcess[i]
+                sbm.infiltexcess[i] * correction_surfacewater
             runoff = max(paddy_h_add - sbm.paddy.h_max[i], 0.0)
             sbm.paddy.h[i] = paddy_h_add - runoff
         else
             runoff =
                 exfiltustore +
                 exfiltsatwater[i] +
-                sbm.excesswater[i] +
+                sbm.excesswater[i] * correction_surfacewater +
                 sbm.runoff_land[i] +
-                sbm.infiltexcess[i]
+                sbm.infiltexcess[i] * correction_surfacewater
         end
+
 
         # volumetric water content per soil layer and root zone
         vwc = sbm.vwc[i]

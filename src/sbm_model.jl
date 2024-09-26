@@ -518,6 +518,7 @@ function update_after_subsurfaceflow(
         vertical,
         lateral.subsurface.zi * 1000.0,
         lateral.subsurface.exfiltwater * 1000.0,
+        config,
     )
 
     ssf_toriver = lateral.subsurface.to_river ./ tosecond(basetimestep)
