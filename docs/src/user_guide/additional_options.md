@@ -211,7 +211,9 @@ flow is allowed to occur. This flow threshold can be set as a map from the stati
 h_thresh = "overland_flow_threshold"
 ```
 
-It should be noted that (for kinematic wave overland flow) flow is allowed to occur when the `pond_height` plus the incoming fluxes would be greater than the `h_thresh`. As a result, flow can occur at pond heights that are slightly lower than the set threshold.
+It should be noted that (for kinematic wave overland flow) flow is allowed to occur when the
+`pond_height` plus the incoming fluxes would be greater than the `h_thresh`. As a result, flow
+can occur at pond heights that are slightly lower than the set threshold.
 
 ## [Using multithreading] (@id multi_threading)
 
