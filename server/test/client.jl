@@ -32,8 +32,8 @@ end
 
 @testset "model information functions" begin
     @test request((fn = "get_component_name",)) == Dict("component_name" => "sbm")
-    @test request((fn = "get_input_item_count",)) == Dict("input_item_count" => 207)
-    @test request((fn = "get_output_item_count",)) == Dict("output_item_count" => 207)
+    @test request((fn = "get_input_item_count",)) == Dict("input_item_count" => 210)
+    @test request((fn = "get_output_item_count",)) == Dict("output_item_count" => 210)
     to_check = [
         "vertical.nlayers",
         "vertical.theta_r",
