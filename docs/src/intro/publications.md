@@ -53,6 +53,11 @@ to improve hydrological assessment and snow water equivalent estimation in a sub
 watershed. Hydrol. Earth Syst. Sci., 22, 4685–4697.
 <https://doi.org/10.5194/hess-22-4685-2018>.
 
+Droppers, B., Rakovec, O., Avila, L., Azimi, S., Cortés-Torres N., De León Pérez, D.,
+Imhoff, R., Francés, F., Kollet, S., Rigon, R., Weerts, A. & Samaniego, L, 2024. Multi-model
+hydrological reference dataset over continental Europe and an African basin. Sci Data, 11,
+1009\. <https://doi.org/10.1038/s41597-024-03825-9>.
+
 Emerton, R.E., Stephens, E.M., Pappenberger, F., Pagano, T.C., Weerts, A.H., Wood, A.W.,
 Salamon, P., Brown, J.D., Hjerdt, N., Donnelly, C., Baugh, C.A., Cloke, H.L., 2016.
 Continental and global scale flood forecasting systems. WIREs Water 3, 391–418.
@@ -81,10 +86,15 @@ response to land use and land cover changes using satellite data and hydrologica
 case study of Dinder and Rahad tributaries of the Blue Nile (Ethiopia–Sudan), Hydrol. Earth
 Syst. Sci., 21, 5217–5242. <https://doi.org/10.5194/hess-21-5217-2017>.
 
+Imhoff, R.O., Buitink, J., van Verseveld, W.J., Weerts, A.H., 2024. A fast high resolution
+distributed hydrological model for forecasting, climate scenarios and digital twin
+applications using wflow_sbm. Environmental Modelling & Software, 179, 106099.
+<https://doi.org/10.1016/j.envsoft.2024.106099>
+
 Imhoff, R.O, van Verseveld, W.J., van Osnabrugge, B., Weerts, A.H., 2020. Scaling
 Point-Scale (Pedo)transfer Functions to Seamless Large-Domain Parameter Estimates for
 High-Resolution Distributed Hydrologic Modeling: An Example for the Rhine River. Water
-Resources Research,56,e2019WR026807. <https://doi.org/10.1029/2019WR026807>.
+Resources Research, 56, e2019WR026807. <https://doi.org/10.1029/2019WR026807>.
 
 Imhoff, R.O., van Verseveld, W., van Osnabrugge, B., Weerts, A.H., 2020. Ruimtelijk
 schaalbare hydrologische modelparameters uit open-source omgevingsdata: een voorbeeld voor
@@ -238,6 +248,11 @@ Tretjakova, D., 2015. Investigating the effect of using fully-distributed model 
 assimilation on the performance of hydrological forecasting in the Karasu catchment, Turkey,
 MSc thesis, Wageningen University.
 
+van der Gaast, R.H., 2024. Evaluating the transferability of data-driven pedo-transfer
+functions for the wflow\_sbm parameter KsatHorFrac in central and Western Europe.
+Universiteit Twente, Enschede, The Netherlands,
+<https://essay.utwente.nl/103634/1/vandergaast_MA_ET.pdf>.
+
 Verbrugge, M., 2019. Reservoir Operation Optimization, a case study in the Chao Phraya
 Basin, BSc thesis, Hydrology and Quantitative Water Management Group, Wageningen University.
 
@@ -251,8 +266,8 @@ Wageningen University.
 Visser, B., 2020. Impact of climate change on local water resources of European catchments,
 Intersnhip report, Deltares.
 
-Wannasin, C., 2023. Modelling and forecasting daily streamflow with reservoir operation in the
-upper Chao Phraya River basin, Thailand.  
+Wannasin, C., 2023. Modelling and forecasting daily streamflow with reservoir operation in
+the upper Chao Phraya River basin, Thailand.  
 Wageningen University, Doctoral dissertation, <https://doi.org/10.18174/584572>.
 
 ### Reports
