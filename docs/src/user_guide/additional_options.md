@@ -183,6 +183,34 @@ irrigation_trigger = "irrigation_trigger"
 h = "h_paddy"
 ```
 
+## Enabling re-infiltration of overland flow
+To allow for re-infiltration of overland flow, the following model flag needs to be set:
+
+```toml
+[model]
+surface_water_infiltration = true
+```
+
+When using this option, the average surface water level (of the previous time step) is added to
+the volume of water that is allowed to infiltrate (`avail_forinfilt`). To keep track of the
+infiltrated water that originates from the surface water, the variable `infilt_surfacewater` is
+used. This variable is then subtracted from the net runoff, such that the overland flow is
+corrected for the loss of this water. Lastly, some corrections are applied on the
+`excesswater`, to prevent the surface water from being counted twice as excess water. This
+option works for both kinematic wave and local inertial overland flow.
+
+## Enabling a water level threshold for overland flow
+A water level threshold can be set for the overland flow. As long as this threshold is not
+exceeded, flow is not allowed to occur, and the water will be considered a "pond" (the variable
+`lateral.land.pond_height` can be used to keep track of its water level for kinematic wave
+overland flow, and the variable `lateral.land.h` can be used). When this threshold is exceeded,
+flow is allowed to occur. This flow threshold can be set as a map from the staticmaps:
+
+```toml
+[input.lateral.land]
+h_thresh = "overland_flow_threshold"
+```
+
 ## [Using multithreading] (@id multi_threading)
 
 ### Using wflow in Julia

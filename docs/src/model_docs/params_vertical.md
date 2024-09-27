@@ -117,6 +117,7 @@ profile `kv` is used and `z_layered` is required as input.
 | `actinfiltpath` | actual infiltration into compacted fraction  | mm Δt``^{-1}`` | - |
 | `infiltsoilpath` | infiltration into the unsaturated zone | mm Δt``^{-1}`` | - |
 | `infiltexcess` | infiltration excess water | mm Δt``^{-1}`` | - |
+| `infilt_surfacewater` | part of infiltration that originates from surface water | mm Δt``^{-1}`` | - |
 | `excesswater` | water that cannot infiltrate due to saturated soil (saturation excess) | mm Δt``^{-1}`` | - |
 | `exfiltsatwater` | water exfiltrating during saturation excess conditions | mm Δt``^{-1}`` | - |
 | `exfiltustore` | water exfiltrating from unsaturated store because of change in water table | mm Δt``^{-1}`` | - |
