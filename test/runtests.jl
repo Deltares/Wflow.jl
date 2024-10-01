@@ -100,6 +100,6 @@ with_logger(NullLogger()) do
         include("subdomains.jl")
         include("run_flextopo.jl")
 
-        Aqua.test_all(Wflow; ambiguities = false)
+        Aqua.test_all(Wflow; ambiguities = false, persistent_tasks = false)
     end
 end
