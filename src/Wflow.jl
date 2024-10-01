@@ -21,6 +21,7 @@ using Glob
 using Polyester
 using LoopVectorization
 using IfElse
+using FastPower: fastpower as pow
 
 @metadata get_units "mm dt-1" String
 # metadata for BMI grid

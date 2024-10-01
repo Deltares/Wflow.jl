@@ -53,11 +53,11 @@ end
     )
 
     Wflow.update(lake, 1, 2500.0, 181, 86400.0)
-    @test Wflow.waterlevel(lake.storfunc, lake.area, lake.storage, lake.sh)[1] ≈ 19.672653848925634
-    @test lake.outflow[1] ≈ 85.14292808113598
-    @test lake.totaloutflow[1] ≈ 7.356348986210149e6
-    @test lake.storage[1] ≈ 3.55111879238499e9
-    @test lake.waterlevel[1] ≈ 19.672653848925634
+    @test Wflow.waterlevel(lake.storfunc, lake.area, lake.storage, lake.sh)[1] ≈ 19.673122f0
+    @test lake.outflow[1] ≈ 84.16451f0
+    @test lake.totaloutflow[1] ≈ 7.271814f6
+    @test lake.storage[1] ≈ 3.5512033f9
+    @test lake.waterlevel[1] ≈ 19.673122f0
     @test lake.precipitation[1] ≈ 20.0
     @test lake.evaporation[1] ≈ 3.2
     @test lake.actevap[1] ≈ 3.2
@@ -107,8 +107,8 @@ sh = [
 
     Wflow.update(lake, 1, 500.0, 15, 86400.0)
     Wflow.update(lake, 2, 500.0, 15, 86400.0)
-    @test lake.outflow ≈ [214.80170846121263, 236.83281600000214] atol = 1e-2
-    @test lake.totaloutflow ≈ [1.855886761104877e7, 2.0462355302400187e7] atol = 1e3
+    @test lake.outflow ≈ [214.77669f0, 236.83281f0] atol = 1e-2
+    @test lake.totaloutflow ≈ [1.8556706f7, 2.0462356f7] atol = 1e3
     @test lake.storage ≈ [1.2737435094769483e9, 2.6019755340159863e8] atol = 1e4
     @test lake.waterlevel ≈ [395.0912274997361, 395.2101079057371] atol = 1e-2
     lake.actevap .= 0.0
@@ -117,7 +117,7 @@ sh = [
     Wflow.update(lake, 1, 500.0, 15, 86400.0)
     Wflow.update(lake, 2, 500.0, 15, 86400.0)
     @test lake.outflow ≈ [0.0, 239.66710359986183] atol = 1e-2
-    @test lake.totaloutflow ≈ [-2.2446764487487033e7, 4.3154002238515094e7] atol = 1e3
+    @test lake.totaloutflow ≈ [-2.2449248f7, 4.3155704f7] atol = 1e3
     @test lake.storage ≈ [1.3431699662524352e9, 2.6073035986708355e8] atol = 1e4
     @test lake.waterlevel ≈ [395.239782021054, 395.21771942667266] atol = 1e-2
     @test lake.actevap ≈ [2.0, 2.0]
