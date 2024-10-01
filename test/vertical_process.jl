@@ -24,12 +24,7 @@ using Dates
     @test Wflow.rwu_reduction_feddes(-12000.0, -10.0, -100.0, -412.5, -15000.0, 0.0) ≈
           0.20565552699228792
     @test Wflow.rwu_reduction_feddes(-16000.0, -10.0, -100.0, -412.5, -15000.0, 0.0) == 0.0
-    @test all(
-        isapprox.(
-            Wflow.infiltration(27.5, 0.2, 0.038, 8.9, 50.0, 5.0, 23.5, false, false),
-            (23.5, 19.14814814814815, 4.351851851851852, 22.0, 5.5, 0.5, 1.0),
-        ),
-    )
+    @test all(isapprox.(Wflow.infiltration(27.5, 0.2, 50.0, 5.0, 23.5, 1.0), (23.5, 0.5)))
     @test all(
         isapprox.(
             Wflow.unsatzone_flow_layer(43.5, 256.0, 135.0, 12.6),

@@ -31,7 +31,7 @@ get_demand_gross(model::NoIrrigationNonPaddy) = 0.0
 function update_demand_gross!(nonpaddy::NonPaddy, soil::SbmSoilModel)
     (; hb, theta_s, theta_r, c, sumlayers, act_thickl, pathfrac, infiltcapsoil) =
         soil.parameters
-    (; h3, n_unsatlayers, zi, ustorelayerdepth, soilinfredu) = soil.variables
+    (; h3, n_unsatlayers, zi, ustorelayerdepth, f_infiltration_reduction) = soil.variables
     rootingdepth = get_rootingdepth(soil)
 
     for i in eachindex(nonpaddy.irrigation_areas)
@@ -62,7 +62,8 @@ function update_demand_gross!(nonpaddy::NonPaddy, soil::SbmSoilModel)
                 end
             end
             # limit irrigation demand to infiltration capacity 
-            infiltration_capacity = soilinfredu[i] * (1.0 - pathfrac[i]) * infiltcapsoil[i]
+            infiltration_capacity =
+                f_infiltration_reduction[i] * (1.0 - pathfrac[i]) * infiltcapsoil[i]
             irri_dem_gross = min(irri_dem_gross, infiltration_capacity)
             irri_dem_gross /= nonpaddy.irrigation_efficiency[i]
             # limit irrigation demand to the maximum irrigation rate
@@ -106,8 +107,6 @@ evaporation!(model::NoIrrigationPaddy, potential_evaporation) = nothing
 
 get_evaporation(model::NoIrrigationPaddy) = 0.0
 get_evaporation(model::Paddy) = model.evaporation
-get_evaporation(model::NoIrrigationPaddy, index) = 0.0
-get_evaporation(model::Paddy, index) = model.evaporation[index]
 
 function update_runoff(model::Paddy, runoff, i)
     if model.irrigation_areas[i]

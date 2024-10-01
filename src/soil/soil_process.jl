@@ -1,5 +1,5 @@
 """
-    infiltration(avail_forinfilt, pathfrac, cf_soil, tsoil, infiltcapsoil, infiltcappath, ustorecapacity, modelsnow::Bool, soilinfreduction::Bool)
+    infiltration(avail_forinfilt, pathfrac, infiltcapsoil, infiltcappath, ustorecapacity, f_infiltration_reduction)
 
 Soil infiltration based on infiltration capacity soil `infiltcapsoil`, infiltration capacity compacted area
 `infiltcappath` and capacity unsatured zone `ustorecapacity`. The soil infiltration capacity can be adjusted
@@ -9,49 +9,23 @@ in case the soil is frozen (`modelsnow` and `soilinfreduction` is `true`).
 function infiltration(
     avail_forinfilt,
     pathfrac,
-    cf_soil,
-    tsoil,
     infiltcapsoil,
     infiltcappath,
     ustorecapacity,
-    modelsnow::Bool,
-    soilinfreduction::Bool,
+    f_infiltration_reduction,
 )
     # First determine if the soil infiltration capacity can deal with the amount of water
     # split between infiltration in undisturbed soil and compacted areas (paths)
     soilinf = avail_forinfilt * (1.0 - pathfrac)
     pathinf = avail_forinfilt * pathfrac
-    if modelsnow && soilinfreduction
-        bb = 1.0 / (1.0 - cf_soil)
-        soilinfredu = scurve(tsoil, Float(0.0), bb, Float(8.0)) + cf_soil
-    else
-        soilinfredu = 1.0
-    end
-    max_infiltsoil = min(infiltcapsoil * soilinfredu, soilinf)
-    max_infiltpath = min(infiltcappath * soilinfredu, pathinf)
-    infiltsoilpath = min(max_infiltpath + max_infiltsoil, max(0.0, ustorecapacity))
 
-    if max_infiltpath + max_infiltsoil > 0.0
-        infiltsoil =
-            max_infiltsoil *
-            min(1.0, max(0.0, ustorecapacity) / (max_infiltpath + max_infiltsoil))
-        infiltpath =
-            max_infiltpath *
-            min(1.0, max(0.0, ustorecapacity) / (max_infiltpath + max_infiltsoil))
-    else
-        infiltsoil = 0.0
-        infiltpath = 0.0
-    end
+    max_infiltsoil = min(infiltcapsoil * f_infiltration_reduction, soilinf)
+    max_infiltpath = min(infiltcappath * f_infiltration_reduction, pathinf)
+    infiltsoilpath = min(max_infiltpath + max_infiltsoil, max(0.0, ustorecapacity))
 
     infiltexcess = (soilinf - max_infiltsoil) + (pathinf - max_infiltpath)
 
-    return infiltsoilpath,
-    infiltsoil,
-    infiltpath,
-    soilinf,
-    pathinf,
-    infiltexcess,
-    soilinfredu
+    return infiltsoilpath, infiltexcess
 end
 
 """
@@ -187,4 +161,89 @@ function rwu_reduction_feddes(h, h1, h2, h3, h4, alpha_h1)
         end
     end
     return alpha
+end
+
+function soil_temperature(tsoil, w_soil, temperature)
+    tsoil + w_soil * (temperature - tsoil)
+    return tsoil
+end
+
+function infiltration_reduction_factor(
+    tsoil,
+    cf_soil;
+    modelsnow = false,
+    soilinfreduction = false,
+)
+    if modelsnow && soilinfreduction
+        bb = 1.0 / (1.0 - cf_soil)
+        f_infiltration_reduction = scurve(tsoil, Float(0.0), bb, Float(8.0)) + cf_soil
+    else
+        f_infiltration_reduction = 1.0
+    end
+    return f_infiltration_reduction
+end
+
+function soil_evaporation_unsatured_store(
+    potential_soilevaporation,
+    ustorelayerdepth,
+    ustorelayerthickness,
+    n_unsatlayers,
+    zi,
+    theta_effective,
+)
+    if n_unsatlayers == 0
+        soilevapunsat = 0.0
+    elseif n_unsatlayers == 1
+        # Check if groundwater level lies below the surface
+        soilevapunsat =
+            potential_soilevaporation * min(1.0, ustorelayerdepth / (zi * theta_effective))
+    else
+        # In case first layer contains no saturated storage
+        soilevapunsat =
+            potential_soilevaporation *
+            min(1.0, ustorelayerdepth / (ustorelayerthickness * (theta_effective)))
+    end
+    return soilevapunsat
+end
+
+function soil_evaporation_satured_store(
+    potential_soilevaporation,
+    n_unsatlayers,
+    layerthickness,
+    zi,
+    theta_effective,
+)
+    if n_unsatlayers == 0 || n_unsatlayers == 1
+        soilevapsat =
+            potential_soilevaporation * min(1.0, (layerthickness - zi) / layerthickness)
+        soilevapsat = min(soilevapsat, (layerthickness - zi) * theta_effective)
+    else
+        soilevapsat = 0.0
+    end
+    return soilevapsat
+end
+
+function actual_infiltration_soil_path(
+    avail_forinfilt,
+    actinfilt,
+    pathfrac,
+    infiltcapsoil,
+    infiltcappath,
+    f_infiltration_reduction,
+)
+    soilinf = avail_forinfilt * (1.0 - pathfrac)
+    pathinf = avail_forinfilt * pathfrac
+    if actinfilt > 0.0
+        max_infiltsoil = min(infiltcapsoil * f_infiltration_reduction, soilinf)
+        max_infiltpath = min(infiltcappath * f_infiltration_reduction, pathinf)
+
+        actinfiltsoil = actinfilt * max_infiltsoil / (max_infiltpath + max_infiltsoil)
+        actinfiltpath = actinfilt * max_infiltpath / (max_infiltpath + max_infiltsoil)
+
+    else
+        actinfiltsoil = 0.0
+        actinfiltpath = 0.0
+    end
+
+    return actinfiltsoil, actinfiltpath
 end

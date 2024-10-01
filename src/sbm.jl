@@ -107,8 +107,6 @@ function update(model::LandHydrologySBM, lateral, network, config)
         dt,
     ) = model
 
-    (; rootingdepth) = model.vegetation_parameter_set
-
     update!(interception, atmospheric_forcing)
 
     update_boundary_conditions!(snow, (; interception))
@@ -145,7 +143,7 @@ function update(model::LandHydrologySBM, lateral, network, config)
         (; interception, runoff, demand, allocation),
     )
 
-    update!(soil, atmospheric_forcing, (; runoff, demand), config, dt)
+    update!(soil, atmospheric_forcing, (; snow, runoff, demand), config, dt)
     @. soil.variables.actevap += interception.variables.interception_flux
     return model
 end
@@ -188,16 +186,9 @@ function update_total_water_storage(
     end
 
     # Add storage from interception, snow and glacier models
-    snow_storage = get_snow_storage(snow)
-    snow_water = get_snow_water(snow)
-    glacier_store = get_glacier_store(glacier)
-    paddy_h = get_water_depth(demand.paddy)
-    @. total_storage +=
-        snow_storage +
-        snow_water +
-        glacier_store +
-        interception.variables.canopy_storage +
-        paddy_h
+    total_storage .+=
+        get_snow_storage(snow) .+ get_snow_water(snow) .+ get_glacier_store(glacier) .+
+        interception.variables.canopy_storage .+ get_water_depth(demand.paddy)
 
     # Chunk the data for parallel computing
     n = length(ustoredepth)
