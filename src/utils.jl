@@ -416,10 +416,6 @@ function det_surfacewidth(dw, riverwidth, river)
     return sw
 end
 
-# 2.5x faster power method
-"Faster method for exponentiation"
-pow(x, y) = exp(y * log(x))
-
 "Return the sum of the array `A` at indices `inds`"
 function sum_at(A, inds)
     v = zero(eltype(A))

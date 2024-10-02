@@ -39,10 +39,10 @@ Q = zeros(n)
 Q = Wflow.kin_wave!(Q, graph, toposort, Qold, q, alpha, beta, DCL, dt_sec)
 
 @testset "flow rate" begin
-    @test sum(Q) ≈ 2.957806043289641e6
-    @test Q[toposort[1]] ≈ 0.007260052312634069f0
-    @test Q[toposort[n-100]] ≈ 3945.762718338739f0
-    @test Q[sink] ≈ 4131.101474418251
+    @test sum(Q) ≈ 2.9577875f6
+    @test Q[toposort[1]] ≈ 0.0072600525f0
+    @test Q[toposort[n-100]] ≈ 3945.7627f0
+    @test Q[sink] ≈ 4131.0044f0
 end
 
 @testset "kinematic wave subsurface flow" begin

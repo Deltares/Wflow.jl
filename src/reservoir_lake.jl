@@ -509,16 +509,16 @@ function update(lake::Lake, i, inflow, doy, timestepsecs)
     # outflowfunc = 3
     # Calculate lake factor and SI parameter
     if lake.outflowfunc[i] == 3
-        lakefactor = lake.area[i] / (timestepsecs * pow(lake.b[i], 0.5))
+        lakefactor = lake.area[i] / (timestepsecs * sqrt(lake.b[i]))
         si_factor = (lake.storage[i] + precipitation - actevap) / timestepsecs + inflow
         # Adjust SIFactor for ResThreshold != 0
         si_factor_adj = si_factor - lake.area[i] * lake.threshold[i] / timestepsecs
         # Calculate the new lake outflow/waterlevel/storage
         if si_factor_adj > 0.0
             quadratic_sol_term =
-                -lakefactor + pow((pow(lakefactor, 2.0) + 4.0 * si_factor_adj), 0.5)
+                -lakefactor + sqrt(lakefactor^2 + 4.0 * si_factor_adj)
             if quadratic_sol_term > 0.0
-                outflow = pow(0.5 * quadratic_sol_term, 2.0)
+                outflow = 0.5 * quadratic_sol_term^2
             else
                 outflow = 0.0
             end

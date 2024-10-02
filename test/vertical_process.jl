@@ -12,7 +12,7 @@ using Dates
             (4.343, 3.87, 0.387, 0.0, 3.8, 2.043),
         ),
     )
-    @test Wflow.head_brooks_corey(0.25, 0.6, 0.15, 10.5, -10.0) ≈ -90.6299820833844
+    @test Wflow.head_brooks_corey(0.25, 0.6, 0.15, 10.5, -10.0) ≈ -90.633095f0
     @test Wflow.feddes_h3(-300.0, -600.0, 3.5, Second(86400)) ≈ -412.5
     @test Wflow.feddes_h3(-300.0, -600.0, 0.5, Second(86400)) == -600.0
     @test Wflow.feddes_h3(-300.0, -600.0, 6.0, Second(86400)) == -300.0
@@ -33,7 +33,7 @@ using Dates
     @test all(
         isapprox.(
             Wflow.unsatzone_flow_layer(43.5, 256.0, 135.0, 12.6),
-            (43.49983744545384, 0.00016255454615829025),
+            (43.499836f0, 0.00016239971f0),
         ),
     )
     @test all(
