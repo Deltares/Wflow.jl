@@ -111,13 +111,11 @@ M.F.P., 2016. Improved large-scale hydrological modelling through the assimilati
 streamflow and downscaled satellite soil moisture observations. Hydrol. Earth Syst. Sci.,
 20, 3059–3076. <https://doi.org/10.5194/hess-20-3059-2016>.
 
-van Osnabrugge, B., Weerts, A.H., Uijlenhoet, R., 2017. genRE: A method to extend gridded
-precipitation climatology data sets in near real-time for hydrological forecasting purposes.
-Water Resources Research, 53. <https://doi.org/10.1002/2017WR021201>.
-
-van Osnabrugge, B., Uijlenhoet, R., Weerts, A., 2019. Contribution of potential evaporation
-forecasts to 10-day streamflow forecast skill for the Rhine River, Hydrol. Earth Syst. Sci.,
-23, 1453–1467, <https://doi.org/10.5194/hess-23-1453-2019>.
+Pranot, B., H. Soekarno, E. Hartulistiyoso, M. Nur Aidi, D.Sutrisno, D. Pohan, Radhika, B. Sutejo,
+A. Heru Kuncoro, I. Nahib1, 2024. Integrating Flood Early Warning System (FEWS)
+for Optimizing Small Hydropower Sites: A West Java. EVERGREEN Joint Journal of Novel Carbon 
+Resource Sciences & Green Asia Strategy, 11, 3, 2691-2699. 
+<https://www.tj.kyushu-u.ac.jp/evergreen/contents/EG2024-11_3_content/pdf/p2691-2699.pdf>
 
 Rakovec, O., Weerts, A.H., Sumihar, J., Uijlenhoet, R., 2015. Operational aspects of
 asynchronous filtering for flood forecasting. Hydrol. Earth Syst. Sci., 19, 2911–2924,
@@ -167,6 +165,14 @@ of the Rhine River basin. Hydrol. Earth Syst. Sci. 19, 2079–2100.
 van der Laan, E., P. Hazenberg, A.H. Weerts, 2024. Simulation of long-term storage dynamics
 of headwater reservoirs across the globe using public cloud computing infrastructure.
 Science of The Total Environment, 172678, <https://doi.org/10.1016/j.scitotenv.2024.172678>.
+
+van Osnabrugge, B., Weerts, A.H., Uijlenhoet, R., 2017. genRE: A method to extend gridded
+precipitation climatology data sets in near real-time for hydrological forecasting purposes.
+Water Resources Research, 53. <https://doi.org/10.1002/2017WR021201>.
+
+van Osnabrugge, B., Uijlenhoet, R., Weerts, A., 2019. Contribution of potential evaporation
+forecasts to 10-day streamflow forecast skill for the Rhine River, Hydrol. Earth Syst. Sci.,
+23, 1453–1467, <https://doi.org/10.5194/hess-23-1453-2019>.
 
 van der Vat, M., Boderie, P., Bons, K.A., Hegnauer, M., Hendriksen, G., van Oorschot, M.,
 Ottow, B., Roelofsen, F., Sankhua, R.N., Sinha, S.K., Warren, A., Young, W., 2019.
