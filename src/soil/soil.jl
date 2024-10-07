@@ -10,7 +10,7 @@ abstract type AbstractSoilModel{T} end
     # Calculated soil water pressure head h3 of the root water uptake reduction function (Feddes) [cm]
     h3::Vector{T} | "cm"
     # Unsaturated store capacity [mm]
-    ustorecapacity | "mm"
+    ustorecapacity::Vector{T} | "mm"
     # Amount of water in the unsaturated store, per layer [mm]
     ustorelayerdepth::Vector{SVector{N, T}} | "mm"
     # Thickness of unsaturated zone, per layer [mm]
@@ -168,23 +168,46 @@ function SbmSoilBC(
     )
 end
 
-@get_units @grid_loc @with_kw struct SbmSoilParameters{T, N, M}
+@get_units @grid_loc struct KvExponential{T}
+    # Vertical hydraulic conductivity [mm Δt⁻¹] at soil surface
+    kv_0::Vector{T}
+    # A scaling parameter [mm⁻¹] (controls exponential decline of kv_0)
+    f::Vector{T} | "mm-1"
+end
+
+@get_units @grid_loc struct KvExponentialConstant{T}
+    exponential::KvExponential | "-" | "none"
+    # Depth [mm] from soil surface for which exponential decline of kv_0 is valid
+    z_exp::Vector{T}
+end
+
+@get_units @grid_loc struct KvLayered{T, N}
+    # Vertical hydraulic conductivity [mm Δt⁻¹] per soil layer
+    kv::Vector{SVector{N, T}} | "-"
+end
+
+@get_units @grid_loc struct KvLayeredExponential{T, N}
+    # A scaling parameter [mm⁻¹] (controls exponential decline of kv_0)
+    f::Vector{T} | "mm-1"
+    # Vertical hydraulic conductivity [mm Δt⁻¹] per soil layer
+    kv::Vector{SVector{N, T}} | "-"
+    # Number of soil layers with vertical hydraulic conductivity value `kv`
+    nlayers_kv::Vector{Int} | "-"
+    # Depth [mm] from soil surface for which layered profile is valid
+    z_layered::Vector{T} | "mm"
+end
+
+@get_units @grid_loc @with_kw struct SbmSoilParameters{T, N, M, Kv}
     # Maximum number of soil layers
     maxlayers::Int | "-"
     # Number of soil layers
     nlayers::Vector{Int} | "-"
-    # Number of soil layers with vertical hydraulic conductivity value `kv`
-    nlayers_kv::Vector{Int} | "-"
     # Saturated water content (porosity) [-]
     theta_s::Vector{T} | "-"
     # Residual water content [-]
     theta_r::Vector{T} | "-"
     # Soilwater capacity [mm]
     soilwatercapacity::Vector{T} | "mm"
-    # Vertical hydraulic conductivity [mm Δt⁻¹] at soil surface
-    kv_0::Vector{T}
-    # Vertical hydraulic conductivity [mm Δt⁻¹] per soil layer
-    kv::Vector{SVector{N, T}} | "-"
     # Muliplication factor [-] applied to kv_z (vertical flow)
     kvfrac::Vector{SVector{N, T}} | "-"
     # Air entry pressure [cm] of soil (Brooks-Corey)
@@ -207,12 +230,6 @@ end
     cap_n::Vector{T} | "-"
     # Brooks-Corey power coefﬁcient [-] for each soil layer
     c::Vector{SVector{N, T}} | "-"
-    # A scaling parameter [mm⁻¹] (controls exponential decline of kv_0)
-    f::Vector{T} | "mm-1"
-    # Depth [mm] from soil surface for which exponential decline of kv_0 is valid
-    z_exp::Vector{T} | "mm"
-    # Depth [mm] from soil surface for which layered profile is valid
-    z_layered::Vector{T} | "mm"
     # Soil temperature smooth factor [-]
     w_soil::Vector{T} | "-"
     # Controls soil infiltration reduction factor when soil is frozen [-]
@@ -237,37 +254,31 @@ end
     alpha_h1::Vector{T} | "-"
     # Soil fraction [-]
     soil_fraction::Vector{T} | "-"
+    # Vertical hydraulic conductivity profile type
+    kv_profile::Kv | "-" | "none"
     # Vegetation parameter set
     vegetation_parameter_set::VegetationParameters{T} | "-" | "none"
 end
 
-@get_units @with_kw struct SbmSoilModel{T} <: AbstractSoilModel{T}
+@get_units @with_kw struct SbmSoilModel{T, N, M, Kv} <: AbstractSoilModel{T}
     boundary_conditions::SbmSoilBC{T} | "-"
-    parameters::SbmSoilParameters{T} | "-"
-    variables::SbmSoilVariables{T} | "-"
+    parameters::SbmSoilParameters{T, N, M, Kv} | "-"
+    variables::SbmSoilVariables{T, N} | "-"
 end
 
 get_rootingdepth(model::SbmSoilModel) =
     model.parameters.vegetation_parameter_set.rootingdepth
 
-function sbm_ksat_profiles(
-    nc,
-    config,
-    inds,
-    soilthickness,
-    maxlayers,
-    nlayers,
-    sumlayers,
-    dt,
-)
-    ksat_profile = get(config.input.vertical, "ksat_profile", "exponential")::String
+function sbm_kv_profiles(nc, config, inds, kv_0, f, maxlayers, nlayers, sumlayers, dt)
+    kv_profile_type = get(config.input.vertical, "ksat_profile", "exponential")::String
     n = length(inds)
-    if ksat_profile == "exponential"
-        z_exp = soilthickness
-        z_layered = fill(mv, n)
-        kv = fill(mv, (maxlayers, n))
-        nlayers_kv = fill(0, n)
-    elseif ksat_profile == "exponential_constant"
+    if kv_profile_type == "exponential"
+        kv_profile = KvExponential(kv_0, f)
+        #z_exp = soilthickness
+        #z_layered = fill(mv, n)
+        #kv = fill(mv, (maxlayers, n))
+        #nlayers_kv = fill(0, n)
+    elseif kv_profile_type == "exponential_constant"
         z_exp = ncread(
             nc,
             config,
@@ -276,11 +287,13 @@ function sbm_ksat_profiles(
             sel = inds,
             type = Float,
         )
-        z_layered = fill(mv, n)
-        kv = fill(mv, (maxlayers, n))
-        nlayers_kv = fill(0, n)
-    elseif ksat_profile == "layered" || ksat_profile == "layered_exponential"
-        z_exp = fill(mv, n)
+        exp_profile = KvExponential(kv_0, f)
+        kv_profile = KvExponentialConstant(exp_profile, z_exp)
+        #z_layered = fill(mv, n)
+        #kv = fill(mv, (maxlayers, n))
+        #nlayers_kv = fill(0, n)
+    elseif kv_profile_type == "layered" || kv_profile_type == "layered_exponential"
+        #z_exp = fill(mv, n)
         kv =
             ncread(
                 nc,
@@ -296,9 +309,10 @@ function sbm_ksat_profiles(
             size1 = size(kv, 1)
             error("$parname needs a layer dimension of size $maxlayers, but is $size1")
         end
-        if ksat_profile == "layered"
-            z_layered = soilthickness
-            nlayers_kv = nlayers
+        if kv_profile_type == "layered"
+            kv_profile = KvLayered(svectorscopy(kv, Val{maxlayers}()))
+            #z_layered = soilthickness
+            #nlayers_kv = nlayers
         else
             z_layered = ncread(
                 nc,
@@ -315,6 +329,12 @@ function sbm_ksat_profiles(
                 nlayers_kv[i] = k
                 z_layered[i] = layers[k]
             end
+            kv_profile = KvLayeredExponential(
+                f,
+                svectorscopy(kv, Val{maxlayers}()),
+                nlayers_kv,
+                z_layered,
+            )
         end
     else
         error("""An unknown "ksat_profile" is specified in the TOML file ($ksat_profile).
@@ -322,7 +342,7 @@ function sbm_ksat_profiles(
               "layered_exponential".
               """)
     end
-    return z_exp, z_layered, kv, nlayers_kv
+    return kv_profile
 end
 
 function SbmSoilParameters(nc, config, vegetation_parameter_set, inds, dt)
@@ -591,16 +611,8 @@ function SbmSoilParameters(nc, config, vegetation_parameter_set, inds, dt)
         rootfraction = ones(Float, maxlayers, n)
     end
 
-    z_exp, z_layered, kv, nlayers_kv = sbm_ksat_profiles(
-        nc,
-        config,
-        inds,
-        soilthickness,
-        maxlayers,
-        nlayers,
-        sumlayers,
-        dt,
-    )
+    kv_profile =
+        sbm_kv_profiles(nc, config, inds, kv_0, f, maxlayers, nlayers, sumlayers, dt)
 
     soilwatercapacity = @. soilthickness * (theta_s - theta_r)
 
@@ -608,12 +620,12 @@ function SbmSoilParameters(nc, config, vegetation_parameter_set, inds, dt)
     sbm_params = SbmSoilParameters(;
         maxlayers = maxlayers,
         nlayers = nlayers,
-        nlayers_kv = nlayers_kv,
+        #nlayers_kv = nlayers_kv,
         soilwatercapacity = soilwatercapacity,
         theta_s = theta_s,
         theta_r = theta_r,
-        kv_0 = kv_0,
-        kv = svectorscopy(kv, Val{maxlayers}()),
+        #kv_0 = kv_0,
+        #kv = svectorscopy(kv, Val{maxlayers}()),
         kvfrac = svectorscopy(kvfrac, Val{maxlayers}()),
         hb = hb,
         h1 = h1,
@@ -634,12 +646,13 @@ function SbmSoilParameters(nc, config, vegetation_parameter_set, inds, dt)
         cap_hmax = cap_hmax,
         cap_n = cap_n,
         c = svectorscopy(c, Val{maxlayers}()),
-        f = f,
-        z_exp = z_exp,
-        z_layered = z_layered,
+        #f = f,
+        #z_exp = z_exp,
+        #z_layered = z_layered,
         w_soil = w_soil,
         cf_soil = cf_soil,
         soil_fraction = fill(mv, n),
+        kv_profile = kv_profile,
         vegetation_parameter_set = vegetation_parameter_set,
     )
     return sbm_params
@@ -694,12 +707,30 @@ end
 
 soil_temperature!(model::SbmSoilModel, snow::NoSnowModel, temperature) = nothing
 
+#= function ustoredepth!(ustorelayerdepth, ustoredepth, nlayers)
+    b = @allocated begin
+        for i in eachindex(ustorelayerdepth)
+            ustoredepth[i] = sum(@view ustorelayerdepth[i][1:nlayers[i]])
+            #u = Float(0)
+            #for k in 1:nlayers[i]
+            #    u += ustorelayerdepth[i][k]
+            #end
+            #ustoredepth = sum(@view ustorelayerdepth[:])
+            #ustoredepth[i] = u
+        end
+    end
+    @show b
+end =#
+
 function ustoredepth!(model::SbmSoilModel)
     v = model.variables
     p = model.parameters
+    #b = @allocated begin
     for i in eachindex(v.ustorelayerdepth)
         v.ustoredepth[i] = sum(@view v.ustorelayerdepth[i][1:p.nlayers[i]])
     end
+    #end
+    #@show b
 end
 
 function infiltration_reduction_factor!(
@@ -738,11 +769,7 @@ function infiltration!(model::SbmSoilModel)
     end
 end
 
-function unsaturated_zone_flow!(
-    model::SbmSoilModel;
-    ksat_profile = "exponential",
-    transfermethod = false,
-)
+function unsaturated_zone_flow!(model::SbmSoilModel; transfermethod = false)
     v = model.variables
     p = model.parameters
 
@@ -755,7 +782,8 @@ function unsaturated_zone_flow!(
             # (ast) and the updated unsaturated storage for each soil layer.
             if transfermethod && p.maxlayers == 1
                 ustorelayerdepth = v.ustorelayerdepth[i][1] + v.infiltsoilpath[i]
-                kv_z = hydraulic_conductivity_at_depth(p, v.zi[i], i, 1, ksat_profile)
+                kv_z =
+                    hydraulic_conductivity_at_depth(p.kv_profile, p.kvfrac, v.zi[i], i, 1)
                 ustorelayerdepth, v.transfer[i] = unsatzone_flow_sbm(
                     ustorelayerdepth,
                     p.soilwatercapacity[i],
@@ -771,7 +799,8 @@ function unsaturated_zone_flow!(
                 flow_rate = 0.0
                 for m in 1:v.n_unsatlayers[i]
                     l_sat = v.ustorelayerthickness[i][m] * (p.theta_s[i] - p.theta_r[i])
-                    kv_z = hydraulic_conductivity_at_depth(p, z[m], i, m, ksat_profile)
+                    kv_z =
+                        hydraulic_conductivity_at_depth(p.kv_profile, p.kvfrac, z[m], i, m)
                     ustorelayerdepth = if m == 1
                         v.ustorelayerdepth[i][m] + v.infiltsoilpath[i]
                     else
@@ -968,7 +997,7 @@ function actual_infiltration_soil_path!(model::SbmSoilModel)
     end
 end
 
-function capillary_flux!(model::SbmSoilModel; ksat_profile = "exponential")
+function capillary_flux!(model::SbmSoilModel)
     v = model.variables
     p = model.parameters
     rootingdepth = get_rootingdepth(model)
@@ -977,14 +1006,17 @@ function capillary_flux!(model::SbmSoilModel; ksat_profile = "exponential")
     threaded_foreach(1:n; basesize = 1000) do i
         if v.n_unsatlayers[i] > 0
             ksat = hydraulic_conductivity_at_depth(
-                p,
+                p.kv_profile,
+                p.kvfrac,
                 v.zi[i],
                 i,
                 v.n_unsatlayers[i],
-                ksat_profile,
             )
-            maxcapflux =
-                max(0.0, min(ksat, v.ae_ustore[i], v.ustorecapacity[i], v.satwaterdepth[i]))
+            maxcapflux = max(
+                0.0,
+                #min(ksat, v.ae_ustore[i], v.ustorecapacity[i], v.satwaterdepth[i]),
+                min(ksat, v.ae_ustore[i], v.ustorecapacity[i], v.satwaterdepth[i]),
+            )
 
             if v.zi[i] > rootingdepth[i]
                 capflux =
@@ -1017,18 +1049,18 @@ function capillary_flux!(model::SbmSoilModel; ksat_profile = "exponential")
     end
 end
 
-function leakage!(model::SbmSoilModel; ksat_profile = "exponential")
+function leakage!(model::SbmSoilModel)
     v = model.variables
     p = model.parameters
 
     n = length(v.actleakage)
     threaded_foreach(1:n; basesize = 1000) do i
         deepksat = hydraulic_conductivity_at_depth(
-            p,
+            p.kv_profile,
+            p.kvfrac,
             p.soilthickness[i],
             i,
             p.nlayers[i],
-            ksat_profile,
         )
         deeptransfer = min(v.satwaterdepth[i], deepksat)
         v.actleakage[i] = max(0.0, min(p.maxleakage[i], deeptransfer))
@@ -1069,11 +1101,7 @@ function update!(
         soilinfreduction = soilinfreduction,
     )
     infiltration!(model)
-    unsaturated_zone_flow!(
-        model;
-        ksat_profile = ksat_profile,
-        transfermethod = transfermethod,
-    )
+    unsaturated_zone_flow!(model; transfermethod = transfermethod)
     soil_evaporation!(model)
     @. v.satwaterdepth = v.satwaterdepth - v.soilevapsat
     transpiration!(model, dt; ust = ust)
@@ -1087,8 +1115,8 @@ function update!(
 
     ustoredepth!(model)
     @. v.ustorecapacity = p.soilwatercapacity - v.satwaterdepth - v.ustoredepth
-    capillary_flux!(model; ksat_profile = ksat_profile)
-    leakage!(model; ksat_profile = ksat_profile)
+    capillary_flux!(model)
+    leakage!(model)
 
     @. v.recharge =
         (v.transfer - v.actcapflux - v.actleakage - v.actevapsat - v.soilevapsat)
@@ -1098,21 +1126,19 @@ function update!(
         runoff.variables.ae_openw_l .+ get_evaporation(demand.paddy)
 end
 
-function update!(
-    model::SbmSoilModel,
-    external_models::NamedTuple,
-    boundary_conditions::NamedTuple,
-)
-    (; runoff, demand) = external_models
+function update!(model::SbmSoilModel, external_models::NamedTuple)
+    (; runoff, demand, subsurface) = external_models
     (; runoff_land, ae_openw_l) = runoff.variables
     p = model.parameters
     v = model.variables
+
+    zi = get_water_depth(subsurface) * 1000.0
+    exfiltsatwater = get_exfiltwater(subsurface) * 1000.0
     rootingdepth = get_rootingdepth(model)
 
-    n = length(boundary_conditions.zi)
+    n = length(model.variables.zi)
     threaded_foreach(1:n; basesize = 1000) do i
-        ustorelayerthickness =
-            set_layerthickness(boundary_conditions.zi[i], p.sumlayers[i], p.act_thickl[i])
+        ustorelayerthickness = set_layerthickness(zi[i], p.sumlayers[i], p.act_thickl[i])
         n_unsatlayers = number_of_active_layers(ustorelayerthickness)
         # exfiltration from ustore
         ustorelayerdepth = v.ustorelayerdepth[i]
@@ -1139,15 +1165,12 @@ function update!(
         end
 
         ustoredepth = sum(@view ustorelayerdepth[1:n_unsatlayers])
-
-        runoff =
+        sbm_runoff =
             exfiltustore +
-            boundary_conditions.exfiltsatwater[i] +
+            exfiltsatwater[i] +
             v.excesswater[i] +
             runoff_land[i] +
             v.infiltexcess[i]
-
-        runoff = update_runoff(demand.paddy, runoff, i)
 
         # volumetric water content per soil layer and root zone
         vwc = v.vwc[i]
@@ -1182,30 +1205,28 @@ function update!(
                 ) * ustorelayerdepth[k]
         end
 
-        rootstore_sat =
-            max(0.0, rootingdepth[i] - boundary_conditions.zi[i]) *
-            (p.theta_s[i] - p.theta_r[i])
+        rootstore_sat = max(0.0, rootingdepth[i] - zi[i]) * (p.theta_s[i] - p.theta_r[i])
         rootstore = rootstore_sat + rootstore_unsat
         vwc_root = rootstore / rootingdepth[i] + p.theta_r[i]
         vwc_percroot = (vwc_root / p.theta_s[i]) * 100.0
 
-        satwaterdepth =
-            (p.soilthickness[i] - boundary_conditions.zi[i]) * (p.theta_s[i] - p.theta_r[i])
+        satwaterdepth = (p.soilthickness[i] - zi[i]) * (p.theta_s[i] - p.theta_r[i])
 
         # update the outputs and states
         v.n_unsatlayers[i] = n_unsatlayers
         v.ustorelayerdepth[i] = ustorelayerdepth
         v.ustoredepth[i] = ustoredepth
         v.satwaterdepth[i] = satwaterdepth
-        v.exfiltsatwater[i] = boundary_conditions.exfiltsatwater[i]
+        v.exfiltsatwater[i] = exfiltsatwater[i]
         v.exfiltustore[i] = exfiltustore
-        v.runoff[i] = runoff
-        v.net_runoff[i] = runoff - ae_openw_l[i]
+        v.runoff[i] = sbm_runoff
         v.vwc[i] = vwc
         v.vwc_perc[i] = vwc_perc
         v.rootstore[i] = rootstore
         v.vwc_root[i] = vwc_root
         v.vwc_percroot[i] = vwc_percroot
-        v.zi[i] = boundary_conditions.zi[i]
+        v.zi[i] = zi[i]
     end
+    v.runoff .= update_runoff!(demand.paddy, v.runoff)
+    @. v.net_runoff = v.runoff - ae_openw_l
 end

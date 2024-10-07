@@ -677,26 +677,33 @@ end
 Return vertical hydraulic conductivity `kv_z` for soil layer `n` at depth `z` using `SBM`
 soil parameters (at index `i`) based on hydraulic conductivity profile `ksat_profile`.
 """
-function hydraulic_conductivity_at_depth(p::SbmSoilParameters, z, i, n, ksat_profile)
-    if ksat_profile == "exponential"
-        kv_z = p.kvfrac[i][n] * p.kv_0[i] * exp(-p.f[i] * z)
-    elseif ksat_profile == "exponential_constant"
-        if z < p.z_exp[i]
-            kv_z = p.kvfrac[i][n] * p.kv_0[i] * exp(-p.f[i] * z)
-        else
-            kv_z = p.kvfrac[i][n] * p.kv_0[i] * exp(-p.f[i] * p.z_exp[i])
-        end
-    elseif ksat_profile == "layered"
-        kv_z = p.kvfrac[i][n] * p.kv[i][n]
-    elseif ksat_profile == "layered_exponential"
-        if z < p.z_layered[i]
-            kv_z = p.kvfrac[i][n] * p.kv[i][n]
-        else
-            n = p.nlayers_kv[i]
-            kv_z = p.kvfrac[i][n] * p.kv[i][n] * exp(-p.f[i] * (z - p.z_layered[i]))
-        end
+
+function hydraulic_conductivity_at_depth(p::KvExponential, kvfrac, z, i, n)
+    kv_z = kvfrac[i][n] * p.kv_0[i] * exp(-p.f[i] * z)
+    return kv_z
+end
+
+function hydraulic_conductivity_at_depth(p::KvExponentialConstant, kvfrac, z, i, n)
+    (; kv_0, f) = p.exponential
+    if z < p.z_exp[i]
+        kv_z = kvfrac[i][n] * kv_0[i] * exp(-f[i] * z)
     else
-        error("unknown ksat_profile")
+        kv_z = kvfrac[i][n] * kv_0[i] * exp(-f[i] * p.z_exp[i])
+    end
+    return kv_z
+end
+
+function hydraulic_conductivity_at_depth(p::KvLayered, kvfrac, z, i, n)
+    kv_z = kvfrac[i][n] * p.kv[i][n]
+    return kv_z
+end
+
+function hydraulic_conductivity_at_depth(p::KvLayeredExponential, kvfrac, z, i, n)
+    if z < p.z_layered[i]
+        kv_z = kvfrac[i][n] * p.kv[i][n]
+    else
+        n = p.nlayers_kv[i]
+        kv_z = kvfrac[i][n] * p.kv[i][n] * exp(-p.f[i] * (z - p.z_layered[i]))
     end
     return kv_z
 end
@@ -708,20 +715,55 @@ Return equivalent horizontal hydraulic conductivity `kh` [m d⁻¹] for a layere
 of type `SoilSbmModel` (at index `i`) based on multiplication factor `khfrac` [-], water
 table depth `z` [mm] and hydraulic conductivity profile `ksat_profile`.
 """
-function kh_layered_profile(model::SbmSoilModel, khfrac, i, ksat_profile, dt)
-    (; nlayers, nlayers_kv, sumlayers, act_thickl, soilthickness, z_layered, kv, f) =
-        model.parameters
-    (; n_unsatlayers, zi) = model.variables
-    m = nlayers[i]
-    t_factor = (tosecond(basetimestep) / dt)
-    if (soilthickness[i] - zi[i]) > 0.0
-        transmissivity = 0.0
-        sumlayers = @view sumlayers[i][2:end]
-        n = max(n_unsatlayers[i], 1)
+function kh_layered_profile!(soil::SbmSoilModel, subsurface, kv_profile::KvLayered, dt)
+    (; nlayers, sumlayers, act_thickl, soilthickness) = soil.parameters
+    (; n_unsatlayers, zi) = soil.variables
+    (; kh) = subsurface.kh_profile
+    (; khfrac) = subsurface
 
-        if ksat_profile == "layered"
-            transmissivity += (sumlayers[n] - zi[i]) * kv[i][n]
-        elseif ksat_profile == "layered_exponential"
+    t_factor = (tosecond(basetimestep) / dt)
+    for i in eachindex(kh)
+        m = nlayers[i]
+
+        if (soilthickness[i] - zi[i]) > 0.0
+            transmissivity = 0.0
+            _sumlayers = @view sumlayers[i][2:end]
+            n = max(n_unsatlayers[i], 1)
+            transmissivity += (_sumlayers[n] - zi[i]) * kv_profile.kv[i][n]
+            n += 1
+            while n <= m
+                transmissivity += act_thickl[i][n] * kv_profile.kv[i][n]
+                n += 1
+            end
+            # convert units for kh [m d⁻¹] computation (transmissivity [mm² Δt⁻¹], soilthickness
+            # [mm] and zi [mm])
+            kh[i] =
+                0.001 * (transmissivity / (soilthickness[i] - zi[i])) * t_factor * khfrac[i]
+        else
+            kh[i] = 0.001 * kv[i][m] * t_factor * khfrac[i]
+        end
+    end
+end
+
+function kh_layered_profile!(
+    soil::SbmSoilModel,
+    subsurface,
+    kv_profile::KvLayeredExponential,
+    dt,
+)
+    (; nlayers, sumlayers, act_thickl, soilthickness) = soil.parameters
+    (; nlayers_kv, z_layered, kv, f) = kv_profile
+    (; n_unsatlayers, zi) = soil.variables
+    (; kh) = subsurface.kh_profile
+    (; khfrac) = subsurface
+    t_factor = (tosecond(basetimestep) / dt)
+
+    for i in eachindex(kh)
+        m = nlayers[i]
+
+        if (soilthickness[i] - zi[i]) > 0.0
+            transmissivity = 0.0
+            n = max(n_unsatlayers[i], 1)
             if zi[i] >= z_layered[i]
                 zt = soilthickness[i] - z_layered[i]
                 j = nlayers_kv[i]
@@ -730,16 +772,11 @@ function kh_layered_profile(model::SbmSoilModel, khfrac, i, ksat_profile, dt)
                     (exp(-f[i] * (zi[i] - z_layered[i])) - exp(-f[i] * zt))
                 n = m
             else
-                transmissivity += (sumlayers[n] - zi[i]) * kv[i][n]
+                _sumlayers = @view sumlayers[i][2:end]
+                transmissivity += (_sumlayers[n] - zi[i]) * kv[i][n]
             end
-        else
-            error("unknown ksat_profile, `layered` or `layered_exponential` are allowed")
-        end
-        n += 1
-        while n <= m
-            if ksat_profile == "layered"
-                transmissivity += act_thickl[i][n] * kv[i][n]
-            elseif ksat_profile == "layered_exponential"
+            n += 1
+            while n <= m
                 if n > nlayers_kv[i]
                     zt = soilthickness[i] - z_layered[i]
                     j = nlayers_kv[i]
@@ -748,102 +785,120 @@ function kh_layered_profile(model::SbmSoilModel, khfrac, i, ksat_profile, dt)
                 else
                     transmissivity += act_thickl[i][n] * kv[i][n]
                 end
+                n += 1
             end
-            n += 1
-        end
-        # convert units for kh [m d⁻¹] computation (transmissivity [mm² Δt⁻¹], soilthickness
-        # [mm] and zi [mm])
-        kh = 0.001 * (transmissivity / (soilthickness[i] - zi[i])) * t_factor * khfrac
-    else
-        if ksat_profile == "layered"
-            kh = 0.001 * kv[i][m] * t_factor * khfrac
-        elseif ksat_profile == "layered_exponential"
+            # convert units for kh [m d⁻¹] computation (transmissivity [mm² Δt⁻¹], soilthickness
+            # [mm] and zi [mm])
+            kh[i] =
+                0.001 * (transmissivity / (soilthickness[i] - zi[i])) * t_factor * khfrac[i]
+        else
             if zi[i] >= z_layered[i]
                 j = nlayers_kv[i]
-                kh =
+                kh[i] =
                     0.001 *
                     kv[i][j] *
                     exp(-f[i] * (zi[i] - z_layered[i])) *
-                    khfrac *
+                    khfrac[i] *
                     t_factor
             else
-                kh = 0.001 * kv[i][m] * t_factor * khfrac
+                kh[i] = 0.001 * kv[i][m] * t_factor * khfrac[i]
             end
-        else
-            error("unknown ksat_profile, `layered` or `layered_exponential` are allowed")
         end
     end
-    return kh
 end
 
+kh_layered_profile!(
+    soil::SbmSoilModel,
+    subsurface,
+    kv_profile::T,
+    dt,
+) where {T <: Union{KvExponential, KvExponentialConstant}} = nothing
+
 "Initialize lateral subsurface variables `ssf` and `ssfmax` with `ksat_profile` `exponential`"
-function initialize_lateralssf_exp!(ssf::LateralSSF)
-    for i in eachindex(ssf.ssf)
-        ssf.ssfmax[i] =
-            ((ssf.kh_0[i] * ssf.slope[i]) / ssf.f[i]) *
-            (1.0 - exp(-ssf.f[i] * ssf.soilthickness[i]))
-        ssf.ssf[i] =
-            ((ssf.kh_0[i] * ssf.slope[i]) / ssf.f[i]) *
-            (exp(-ssf.f[i] * ssf.zi[i]) - exp(-ssf.f[i] * ssf.soilthickness[i])) *
-            ssf.dw[i]
+function initialize_lateralssf!(ssf::LateralSSF, kh_profile::KhExponential)
+    (; kh_0, f) = kh_profile
+    (; ssf, ssfmax, zi, slope, soilthickness, dw) = ssf
+
+    for i in eachindex(ssf)
+        ssfmax[i] = ((kh_0[i] * slope[i]) / f[i]) * (1.0 - exp(-f[i] * soilthickness[i]))
+        ssf[i] =
+            ((kh_0[i] * slope[i]) / f[i]) *
+            (exp(-f[i] * zi[i]) - exp(-f[i] * soilthickness[i])) *
+            dw[i]
     end
 end
 
 "Initialize lateral subsurface variables `ssf` and `ssfmax` with `ksat_profile` `exponential_constant`"
-function initialize_lateralssf_exp_const!(ssf::LateralSSF)
-    ssf_constant = @. ssf.khfrac *
-       ssf.kh_0 *
-       exp(-ssf.f * ssf.z_exp) *
-       ssf.slope *
-       (ssf.soilthickness - ssf.z_exp)
-    for i in eachindex(ssf.ssf)
-        ssf.ssfmax[i] =
-            ((ssf.khfrac[i] * ssf.kh_0[i] * ssf.slope[i]) / ssf.f[i]) *
-            (1.0 - exp(-ssf.f[i] * ssf.z_exp[i])) + ssf_constant[i]
-        if ssf.zi[i] < ssf.z_exp[i]
-            ssf.ssf[i] =
+function initialize_lateralssf!(ssf::LateralSSF, kh_profile::KhExponentialConstant)
+    (; kh_0, f) = kh_profile.exponential
+    (; z_exp) = kh_profile
+    (; ssf, ssfmax, zi, slope, soilthickness, dw) = ssf
+    ssf_constant = @. kh_0 * exp(-f * z_exp) * slope * (soilthickness - z_exp)
+    for i in eachindex(ssf)
+        ssfmax[i] =
+            ((kh_0[i] * slope[i]) / f[i]) * (1.0 - exp(-f[i] * z_exp[i])) + ssf_constant[i]
+        if zi[i] < z_exp[i]
+            ssf[i] =
                 (
-                    ((ssf.kh_0[i] * ssf.slope[i]) / ssf.f[i]) *
-                    (exp(-ssf.f[i] * ssf.zi[i]) - exp(-ssf.f[i] * ssf.z_exp[i])) +
-                    ssf_constant[i]
-                ) * ssf.dw[i]
+                    ((kh_0[i] * slope[i]) / f[i]) *
+                    (exp(-f[i] * zi[i]) - exp(-f[i] * z_exp[i])) + ssf_constant[i]
+                ) * dw[i]
         else
-            ssf.ssf[i] =
-                ssf.kh_0[i] *
-                exp(-ssf.f[i] * ssf.zi[i]) *
-                ssf.slope[i] *
-                (ssf.soilthickness[i] - ssf.zi[i]) *
-                ssf.dw[i]
+            ssf[i] =
+                kh_0[i] * exp(-f[i] * zi[i]) * slope[i] * (soilthickness[i] - zi[i]) * dw[i]
         end
     end
 end
 
-"Initialize lateral subsurface variables `ssf`, `ssfmax` and `kh` with ksat_profile` `layered` or `layered_exponential`"
-function initialize_lateralssf_layered!(
-    ssf::LateralSSF,
-    sbm::SbmSoilModel,
-    ksat_profile,
+function initialize_lateralssf!(
+    subsurface::LateralSSF,
+    soil::SbmSoilModel,
+    kv_profile::KvLayered,
     dt,
 )
-    for i in eachindex(ssf.ssf)
-        ssf.kh[i] = kh_layered_profile(sbm, ssf.khfrac[i], i, ksat_profile, dt)
-        ssf.ssf[i] =
-            ssf.kh[i] * (ssf.soilthickness[i] - ssf.zi[i]) * ssf.slope[i] * ssf.dw[i]
+    (; kh) = subsurface.kh_profile
+    (; nlayers, act_thickl) = soil.parameters
+    (; ssf, ssfmax, zi, khfrac, soilthickness, slope, dw) = subsurface
+    kh_layered_profile!(soil, subsurface, kv_profile, dt)
+    for i in eachindex(ssf)
+        ssf[i] = kh[i] * (soilthickness[i] - zi[i]) * slope[i] * dw[i]
         kh_max = 0.0
-        for j in 1:sbm.parameters.nlayers[i]
-            if j <= sbm.parameters.nlayers_kv[i]
-                kh_max += sbm.parameters.kv[i][j] * sbm.parameters.act_thickl[i][j]
+        for j in 1:nlayers[i]
+            kh_max += kv_profile.kv[i][j] * act_thickl[i][j]
+        end
+        kh_max = kh_max * khfrac[i] * 0.001 * 0.001
+        ssfmax[i] = kh_max * slope[i]
+    end
+end
+
+"Initialize lateral subsurface variables `ssf`, `ssfmax` and `kh` with ksat_profile` `layered` or `layered_exponential`"
+function initialize_lateralssf!(
+    subsurface::LateralSSF,
+    soil::SbmSoilModel,
+    kv_profile::KvLayeredExponential,
+    dt,
+)
+    (; ssf, ssfmax, zi, khfrac, soilthickness, slope, dw) = subsurface
+    (; nlayers, act_thickl) = soil.parameters
+    (; kh) = subsurface.kh_profile
+    (; kv, f, z_layered) = kv_profile
+
+    kh_layered_profile!(soil, subsurface, kv_profile, dt)
+    for i in eachindex(ssf)
+        ssf[i] = kh[i] * (soilthickness[i] - zi[i]) * slope[i] * dw[i]
+        kh_max = 0.0
+        for j in 1:nlayers[i]
+            if j <= kv_profile.nlayers_kv[i]
+                kh_max += kv_profile.kv[i][j] * act_thickl[i][j]
             else
-                zt = sbm.parameters.soilthickness[i] - sbm.parameters.z_layered[i]
+                zt = soil.parameters.soilthickness[i] - z_layered[i]
                 k = max(j - 1, 1)
-                kh_max +=
-                    sbm.parameters.kv[i][k] / sbm.parameters.f[i] *
-                    (1.0 - exp(-sbm.parameters.f[i] * zt))
+                kh_max += kv[i][k] / f[i] * (1.0 - exp(-f[i] * zt))
                 break
             end
         end
-        kh_max = kh_max * ssf.khfrac[i] * 0.001 * 0.001
-        ssf.ssfmax[i] = kh_max * ssf.slope[i]
+        kh_max = kh_max * khfrac[i] * 0.001 * 0.001
+        ssfmax[i] = kh_max * slope[i]
     end
 end
 

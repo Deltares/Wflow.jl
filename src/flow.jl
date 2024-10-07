@@ -395,10 +395,29 @@ function stable_timestep(sf::S) where {S <: SurfaceFlow}
     return dt, its
 end
 
-@get_units @grid_loc @with_kw struct LateralSSF{T}
-    kh_0::Vector{T} | "m d-1"              # Horizontal hydraulic conductivity at soil surface [m d⁻¹]
-    f::Vector{T} | "m-1"                   # A scaling parameter [m⁻¹] (controls exponential decline of kh_0)
-    kh::Vector{T} | "m d-1"                # Horizontal hydraulic conductivity [m d⁻¹]
+@get_units @grid_loc struct KhExponential{T}
+    # Horizontal hydraulic conductivity at soil surface [m d⁻¹]
+    kh_0::Vector{T} | "m d-1"
+    # A scaling parameter [m⁻¹] (controls exponential decline of kh_0)
+    f::Vector{T} | "m-1"
+end
+
+@get_units @grid_loc struct KhExponentialConstant{T}
+    # Exponential horizontal hydraulic conductivity profile type
+    exponential::KhExponential | "-" | "none"
+    # Depth [m] from soil surface for which exponential decline of kv_0 is valid
+    z_exp::Vector{T} | "m"
+end
+
+@get_units @grid_loc struct KhLayered{T}
+    # Horizontal hydraulic conductivity [m d⁻¹]
+    kh::Vector{T} | "m d-1"
+end
+
+abstract type SubsurfaceFlow end
+
+@get_units @grid_loc @with_kw struct LateralSSF{T, Kh} <: SubsurfaceFlow
+    kh_profile::Kh | "-" | "none"          # Horizontal hydraulic conductivity profile type [-]  
     khfrac::Vector{T} | "-"                # A muliplication factor applied to vertical hydraulic conductivity `kv` [-]
     soilthickness::Vector{T} | "m"         # Soil thickness [m]
     theta_s::Vector{T} | "-"               # Saturated water content (porosity) [-]
@@ -408,7 +427,6 @@ end
     dl::Vector{T} | "m"                    # Drain length [m]
     dw::Vector{T} | "m"                    # Flow width [m]
     zi::Vector{T} | "m"                    # Pseudo-water table depth [m] (top of the saturated zone)
-    z_exp::Vector{T} | "m"                 # Depth [m] from soil surface for which exponential decline of kv_0 is valid
     exfiltwater::Vector{T} | "m dt-1"      # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
     recharge::Vector{T} | "m2 dt-1"        # Net recharge to saturated store [m² Δt⁻¹]
     ssf::Vector{T} | "m3 d-1"              # Subsurface flow [m³ d⁻¹]
@@ -417,13 +435,13 @@ end
     to_river::Vector{T} | "m3 d-1"         # Part of subsurface flow [m³ d⁻¹] that flows to the river
     volume::Vector{T} | "m3"               # Subsurface volume [m³]
 
-    function LateralSSF{T}(args...) where {T}
+    function LateralSSF{T, Kh}(args...) where {T, Kh}
         equal_size_vectors(args)
         return new(args...)
     end
 end
 
-function update(ssf::LateralSSF, network, frac_toriver, ksat_profile)
+function update(ssf::LateralSSF, network, frac_toriver)
     @unpack subdomain_order, topo_subdomain, indices_subdomain, upstream_nodes, area =
         network
 
@@ -446,42 +464,21 @@ function update(ssf::LateralSSF, network, frac_toriver, ksat_profile)
                     upstream_nodes[n],
                     eltype(ssf.to_river),
                 )
-                if (ksat_profile == "exponential") ||
-                   (ksat_profile == "exponential_constant")
-                    ssf.ssf[v], ssf.zi[v], ssf.exfiltwater[v] = kinematic_wave_ssf(
-                        ssf.ssfin[v],
-                        ssf.ssf[v],
-                        ssf.zi[v],
-                        ssf.recharge[v],
-                        ssf.kh_0[v],
-                        ssf.slope[v],
-                        ssf.theta_s[v] - ssf.theta_r[v],
-                        ssf.f[v],
-                        ssf.soilthickness[v],
-                        ssf.dt,
-                        ssf.dl[v],
-                        ssf.dw[v],
-                        ssf.ssfmax[v],
-                        ssf.z_exp[v],
-                        ksat_profile,
-                    )
-                elseif (ksat_profile == "layered") ||
-                       (ksat_profile == "layered_exponential")
-                    ssf.ssf[v], ssf.zi[v], ssf.exfiltwater[v] = kinematic_wave_ssf(
-                        ssf.ssfin[v],
-                        ssf.ssf[v],
-                        ssf.zi[v],
-                        ssf.recharge[v],
-                        ssf.kh[v],
-                        ssf.slope[v],
-                        ssf.theta_s[v] - ssf.theta_r[v],
-                        ssf.soilthickness[v],
-                        ssf.dt,
-                        ssf.dl[v],
-                        ssf.dw[v],
-                        ssf.ssfmax[v],
-                    )
-                end
+                ssf.ssf[v], ssf.zi[v], ssf.exfiltwater[v] = kinematic_wave_ssf(
+                    ssf.ssfin[v],
+                    ssf.ssf[v],
+                    ssf.zi[v],
+                    ssf.recharge[v],
+                    ssf.slope[v],
+                    ssf.theta_s[v] - ssf.theta_r[v],
+                    ssf.soilthickness[v],
+                    ssf.dt,
+                    ssf.dl[v],
+                    ssf.dw[v],
+                    ssf.ssfmax[v],
+                    ssf.kh_profile,
+                    v,
+                )
                 ssf.volume[v] =
                     (ssf.theta_s[v] - ssf.theta_r[v]) *
                     (ssf.soilthickness[v] - ssf.zi[v]) *
@@ -491,13 +488,16 @@ function update(ssf::LateralSSF, network, frac_toriver, ksat_profile)
     end
 end
 
-@get_units @grid_loc @with_kw struct GroundwaterExchange{T}
+@get_units@grid_loc @with_kw struct GroundwaterExchange{T} <: SubsurfaceFlow
     dt::T | "d" | "none"                # model time step [d]
     exfiltwater::Vector{T} | "m dt-1"   # Exfiltration [m Δt⁻¹]  (groundwater above surface level, saturated excess conditions)
     zi::Vector{T} | "m"                 # Pseudo-water table depth [m] (top of the saturated zone)
     to_river::Vector{T} | "m3 d-1"      # Part of subsurface flow [m³ d⁻¹] that flows to the river
     ssf::Vector{T} | "m3 d-1"           # Subsurface flow [m³ d⁻¹]
 end
+
+get_water_depth(subsurface::SubsurfaceFlow) = subsurface.zi
+get_exfiltwater(subsurface::SubsurfaceFlow) = subsurface.exfiltwater
 
 @get_units @grid_loc @with_kw struct ShallowWaterRiver{T, R, L, F, A}
     n::Int | "-" | "none"                               # number of cells

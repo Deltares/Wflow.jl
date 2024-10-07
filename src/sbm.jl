@@ -187,7 +187,8 @@ function update_total_water_storage(
 
     # Add storage from interception, snow and glacier models
     total_storage .+=
-        get_snow_storage(snow) .+ get_snow_water(snow) .+ get_glacier_store(glacier) .+
+        get_snow_storage(snow) .+ get_snow_water(snow) .+
+        get_glacier_store(glacier) .* get_glacier_fraction(glacier) .+
         interception.variables.canopy_storage .+ get_water_depth(demand.paddy)
 
     # Chunk the data for parallel computing

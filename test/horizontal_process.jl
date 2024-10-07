@@ -46,6 +46,7 @@ Q = Wflow.kin_wave!(Q, graph, toposort, Qold, q, alpha, beta, DCL, dt_sec)
 end
 
 @testset "kinematic wave subsurface flow" begin
+    kh_profile = Wflow.KhExponential([18021.0], [0.0017669756])
     @test all(
         isapprox.(
             Wflow.kinematic_wave_ssf(
@@ -53,17 +54,15 @@ end
                 215395179156.82645,
                 1540.34273559,
                 1.238,
-                18021.0,
                 0.25,
                 0.346,
-                0.0017669756,
                 1800.0,
                 1.0,
                 1697.05 * 1000.0,
                 1200.0 * 1000.0,
                 2443723.716252628,
-                1.0,
-                "exponential",
+                kh_profile,
+                1,
             ),
             (7.410313985168225e10, 1540.1496836278836, -0.0),
         ),

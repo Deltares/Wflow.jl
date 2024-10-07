@@ -133,10 +133,8 @@ function update!(model::NoGlacierModel, atmospheric_forcing::AtmosphericForcing)
 end
 
 get_glacier_melt(model::NoGlacierModel) = 0.0
-get_glacier_melt(model::AbstractGlacierModel) =
-    @. model.variables.glacier_melt * model.parameters.glacier_frac
+get_glacier_melt(model::AbstractGlacierModel) = model.variables.glacier_melt
 get_glacier_fraction(model::NoGlacierModel) = 0.0
 get_glacier_fraction(model::AbstractGlacierModel) = model.parameters.glacier_frac
 get_glacier_store(model::NoGlacierModel) = 0.0
-get_glacier_store(model::AbstractGlacierModel) =
-    @. model.variables.glacier_store * model.parameters.glacier_frac
+get_glacier_store(model::AbstractGlacierModel) = model.variables.glacier_store

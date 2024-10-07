@@ -375,3 +375,18 @@ Base.@kwdef struct GroundwaterFlow{A, B}
         return new{A, B}(aquifer, connectivity, constanthead, boundaries)
     end
 end
+
+function get_water_depth(gwf::GroundwaterFlow{A, B}) where {A <: UnconfinedAquifer, B}
+    gwf.aquifer.head .= min.(gwf.aquifer.head, gwf.aquifer.top)
+    gwf.aquifer.head[gwf.constanthead.index] .= gwf.constanthead.head
+    wtd = gwf.aquifer.top .- gwf.aquifer.head
+    return wtd
+end
+
+function get_exfiltwater(gwf::GroundwaterFlow{A, B}) where {A <: UnconfinedAquifer, B}
+    exfiltwater =
+        (gwf.aquifer.head .- min.(gwf.aquifer.head, gwf.aquifer.top)) .*
+        storativity(gwf.aquifer)
+    exfiltwater[gwf.constanthead.index] .= 0
+    return exfiltwater
+end

@@ -122,20 +122,32 @@ function initialize_sbm_model(config::Config)
             type = Float,
         )
 
-        (; theta_s, theta_r, kv_0, f, soilthickness, z_exp) = lsm.soil.parameters
+        (; theta_s, theta_r, soilthickness) = lsm.soil.parameters
         (; zi) = lsm.soil.variables
-        _soilthickness = soilthickness .* 0.001
-        _zi = zi .* 0.001
+        ssf_soilthickness = soilthickness .* 0.001
+        ssf_zi = zi .* 0.001
+
+        kh_profile_type = get(config.input.vertical, "ksat_profile", "exponential")::String
+        if kh_profile_type == "exponential"
+            (; kv_0, f) = lsm.soil.parameters.kv_profile
+            kh_0 = khfrac .* kv_0 .* 0.001 .* (basetimestep / dt)
+            kh_profile = KhExponential(kh_0, f .* 1000.0)
+        elseif kh_profile_type == "exponential_constant"
+            (; z_exp) = lsm.soil.parameters.kv_profile
+            (; kv_0, f) = lsm.soil.parameters.kv_profile.exponential
+            kh_0 = khfrac .* kv_0 .* 0.001 .* (basetimestep / dt)
+            exp_profile = KhExponential(kh_0, f .* 1000.0)
+            kh_profile = KhExponentialConstant(exp_profile, z_exp .* 0.001)
+        elseif kh_profile_type == "layered" || kh_profile_type == "layered_exponential"
+            kh_profile = KhLayered(fill(mv, n))
+        end
 
         # unit for lateral subsurface flow component is [m³ d⁻¹], kv_0 [mm Δt⁻¹]
-        ssf = LateralSSF{Float}(;
-            kh_0 = khfrac .* kv_0 .* 0.001 .* (basetimestep / dt),
-            f = f .* 1000.0,
-            kh = fill(mv, n),
+        ssf = LateralSSF{Float, typeof(kh_profile)}(;
+            kh_profile = kh_profile,
             khfrac = khfrac,
-            zi = _zi,
-            z_exp = z_exp .* 0.001,
-            soilthickness = _soilthickness,
+            zi = ssf_zi,
+            soilthickness = ssf_soilthickness,
             theta_s = theta_s,
             theta_r = theta_r,
             dt = dt / basetimestep,
@@ -148,21 +160,14 @@ function initialize_sbm_model(config::Config)
             ssfin = fill(mv, n),
             ssfmax = fill(mv, n),
             to_river = zeros(n),
-            volume = (theta_s .- theta_r) .* (_soilthickness .- _zi) .* (xl .* yl),
+            volume = (theta_s .- theta_r) .* (ssf_soilthickness .- ssf_zi) .* (xl .* yl),
         )
         # update variables `ssf`, `ssfmax` and `kh` (layered profile) based on ksat_profile
-        ksat_profile = get(config.input.vertical, "ksat_profile", "exponential")::String
-        if ksat_profile == "exponential"
-            initialize_lateralssf_exp!(ssf::LateralSSF)
-        elseif ksat_profile == "exponential_constant"
-            initialize_lateralssf_exp_const!(ssf::LateralSSF)
-        elseif ksat_profile == "layered" || ksat_profile == "layered_exponential"
-            initialize_lateralssf_layered!(
-                ssf::LateralSSF,
-                lsm.soil,
-                ksat_profile,
-                tosecond(dt),
-            )
+        if kh_profile_type == "exponential" || kh_profile_type == "exponential_constant"
+            initialize_lateralssf!(ssf, kh_profile)
+        elseif kh_profile_type == "layered" || kh_profile_type == "layered_exponential"
+            (; kv_profile) = lsm.soil.parameters
+            initialize_lateralssf!(ssf, lsm.soil, kv_profile, tosecond(dt))
         end
     else
         # when the SBM model is coupled (BMI) to a groundwater model, the following
@@ -439,7 +444,7 @@ end
 function update(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmModel}
     @unpack lateral, vertical, network, clock, config = model
     do_water_demand = haskey(config.model, "water_demand")
-    ksat_profile = get(config.input.vertical, "ksat_profile", "exponential")::String
+    (; kv_profile) = vertical.soil.parameters
 
     model = update_until_recharge(model)
     # exchange of recharge between vertical sbm concept and subsurface flow domain
@@ -450,18 +455,8 @@ function update(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmMo
     lateral.subsurface.recharge .*= lateral.subsurface.dw
     lateral.subsurface.zi .= vertical.soil.variables.zi ./ 1000.0
     # update lateral subsurface flow domain (kinematic wave)
-    if (ksat_profile == "layered") || (ksat_profile == "layered_exponential")
-        for i in eachindex(lateral.subsurface.kh)
-            lateral.subsurface.kh[i] = kh_layered_profile(
-                vertical.soil,
-                lateral.subsurface.khfrac[i],
-                i,
-                ksat_profile,
-                vertical.dt,
-            )
-        end
-    end
-    update(lateral.subsurface, network.land, network.frac_toriver, ksat_profile)
+    kh_layered_profile!(vertical.soil, lateral.subsurface, kv_profile, vertical.dt)
+    update(lateral.subsurface, network.land, network.frac_toriver)
     model = update_after_subsurfaceflow(model)
     return model = update_total_water_storage(model)
 end
@@ -491,11 +486,10 @@ function update_after_subsurfaceflow(
 ) where {N, L, V, R, W, T <: SbmModel}
     @unpack lateral, vertical, network, clock, config = model
     (; soil, runoff, demand) = vertical
+    (; subsurface) = lateral
 
     # update vertical sbm concept (runoff, ustorelayerdepth and satwaterdepth)
-    zi = lateral.subsurface.zi * 1000.0
-    exfiltsatwater = lateral.subsurface.exfiltwater * 1000.0
-    update!(soil, (; runoff, demand), (; zi, exfiltsatwater))
+    update!(soil, (; runoff, demand, subsurface))
 
     ssf_toriver = lateral.subsurface.to_river ./ tosecond(basetimestep)
     surface_routing(model; ssf_toriver = ssf_toriver)

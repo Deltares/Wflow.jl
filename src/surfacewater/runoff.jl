@@ -87,9 +87,24 @@ function OpenWaterRunoff(nc, config, inds, riverfrac)
     return model
 end
 
-get_surface_water_flux(snow::NoSnowModel, glacier, effective_precip) = effective_precip
-function get_surface_water_flux(snow::AbstractSnowModel, glacier, effective_precip)
-    return get_runoff(snow) .+ get_glacier_melt(glacier)
+function get_surface_water_flux!(
+    surface_water_flux,
+    snow::NoSnowModel,
+    glacier,
+    interception,
+)
+    (; throughfall, stemflow) = interception.variables
+    @. surface_water_flux = throughfall + stemflow
+end
+
+function get_surface_water_flux!(
+    surface_water_flux,
+    snow::AbstractSnowModel,
+    glacier,
+    interception,
+)
+    surface_water_flux .=
+        get_runoff(snow) .+ get_glacier_melt(glacier) .* get_glacier_fraction(glacier)
 end
 
 function update_boundary_conditions!(
@@ -101,9 +116,9 @@ function update_boundary_conditions!(
     (; surface_water_flux, waterlevel_river, waterlevel_land) = model.boundary_conditions
     inds_riv = network.index_river
     (; snow, glacier, interception) = external_models
-    (; throughfall, stemflow) = interception.variables
 
-    surface_water_flux .= get_surface_water_flux(snow, glacier, throughfall .+ stemflow)
+    surface_water_flux .=
+        get_surface_water_flux!(surface_water_flux, snow, glacier, interception)
 
     # extract water levels h_av [m] from the land and river domains this is used to limit
     # open water evaporation

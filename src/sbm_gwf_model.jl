@@ -531,7 +531,6 @@ function update(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmGw
     do_water_demand = haskey(config.model, "water_demand")
     inds_riv = network.index_river
     aquifer = lateral.subsurface.flow.aquifer
-    constanthead = lateral.subsurface.flow.constanthead
 
     vertical = update(vertical, lateral, network, config)
 
@@ -560,19 +559,8 @@ function update(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmGw
     # update groundwater domain
     update(lateral.subsurface.flow, Q, dt_sbm, conductivity_profile)
 
-    # determine excess water depth [m] (exfiltwater) in groundwater domain (head > surface)
-    # and reset head
-    exfiltwater = (aquifer.head .- min.(aquifer.head, aquifer.top)) .* storativity(aquifer)
-    aquifer.head .= min.(aquifer.head, aquifer.top)
-
-    # Adjust for constant head boundary of groundwater domain
-    exfiltwater[constanthead.index] .= 0
-    aquifer.head[constanthead.index] .= constanthead.head
-
     # update vertical sbm concept (runoff, ustorelayerdepth and satwaterdepth)
-    zi = (network.land.altitude .- aquifer.head) .* 1000.0 # zi [mm] in vertical concept SBM
-    exfiltsatwater = exfiltwater * 1000.0
-    update!(soil, (; runoff, demand), (; zi, exfiltsatwater))
+    update!(soil, (; runoff, demand, subsurface = lateral.subsurface.flow))
 
     ssf_toriver = zeros(length(soil.variables.zi))
     ssf_toriver[inds_riv] = -lateral.subsurface.river.flux ./ lateral.river.dt
