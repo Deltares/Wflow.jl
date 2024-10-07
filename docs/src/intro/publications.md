@@ -283,3 +283,6 @@ Plastics Series;. World Bank, Washington, DC. © World Bank,
 
 World Meteorological Organization (WMO), 2023. State of Global Water Resources report 2022,
 WMO-No. 1333, <https://library.wmo.int/idurl/4/68473>.
+
+World Meteorological Organization (WMO), 2024. State of Global Water Resources report 2023,
+WMO-No. 1362, <https://library.wmo.int/idurl/4/69033>.
