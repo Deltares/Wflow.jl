@@ -35,8 +35,6 @@ abstract type AbstractSoilModel{T} end
     actevapsat::Vector{T}
     # Total actual evapotranspiration [mm Δt⁻¹]
     actevap::Vector{T}
-    # Water available for infiltration [mm Δt⁻¹]
-    avail_forinfilt::Vector{T}
     # Actual infiltration into the unsaturated zone [mm Δt⁻¹]
     actinfilt::Vector{T}
     # Actual infiltration non-compacted fraction [mm Δt⁻¹]
@@ -121,7 +119,6 @@ function SbmSoilVariables(n, parameters)
         actevapsat = fill(mv, n),
         actevap = fill(mv, n),
         f_infiltration_reduction = fill(Float(1), n),
-        avail_forinfilt = fill(mv, n),
         actinfilt = fill(mv, n),
         actinfiltsoil = fill(mv, n),
         actinfiltpath = fill(mv, n),
@@ -274,10 +271,6 @@ function sbm_kv_profiles(nc, config, inds, kv_0, f, maxlayers, nlayers, sumlayer
     n = length(inds)
     if kv_profile_type == "exponential"
         kv_profile = KvExponential(kv_0, f)
-        #z_exp = soilthickness
-        #z_layered = fill(mv, n)
-        #kv = fill(mv, (maxlayers, n))
-        #nlayers_kv = fill(0, n)
     elseif kv_profile_type == "exponential_constant"
         z_exp = ncread(
             nc,
@@ -289,11 +282,7 @@ function sbm_kv_profiles(nc, config, inds, kv_0, f, maxlayers, nlayers, sumlayer
         )
         exp_profile = KvExponential(kv_0, f)
         kv_profile = KvExponentialConstant(exp_profile, z_exp)
-        #z_layered = fill(mv, n)
-        #kv = fill(mv, (maxlayers, n))
-        #nlayers_kv = fill(0, n)
     elseif kv_profile_type == "layered" || kv_profile_type == "layered_exponential"
-        #z_exp = fill(mv, n)
         kv =
             ncread(
                 nc,
@@ -311,8 +300,6 @@ function sbm_kv_profiles(nc, config, inds, kv_0, f, maxlayers, nlayers, sumlayer
         end
         if kv_profile_type == "layered"
             kv_profile = KvLayered(svectorscopy(kv, Val{maxlayers}()))
-            #z_layered = soilthickness
-            #nlayers_kv = nlayers
         else
             z_layered = ncread(
                 nc,
@@ -682,21 +669,24 @@ function update_boundary_conditions!(
     atmospheric_forcing::AtmosphericForcing,
     external_models::NamedTuple,
 )
-    (; interception, runoff, allocation) = external_models
+    (; interception, runoff, demand, allocation) = external_models
     (; potential_transpiration, water_flux_surface, potential_soilevaporation) =
         model.boundary_conditions
 
     potential_transpiration .= get_potential_transpiration(interception)
 
-    irrigation = get_irrigation_allocated(allocation)
-    @. water_flux_surface = max(
-        runoff.boundary_conditions.water_flux_surface + irrigation -
-        runoff.variables.runoff_river - runoff.variables.runoff_land,
-        0.0,
-    )
-
     @. potential_soilevaporation =
         model.parameters.soil_fraction * atmospheric_forcing.potential_evaporation
+    evaporation!(demand.paddy, potential_soilevaporation)
+    potential_soilevaporation .= potential_soilevaporation .- get_evaporation(demand.paddy)
+
+    water_flux_surface .=
+        max.(
+            runoff.boundary_conditions.water_flux_surface .+
+            get_irrigation_allocated(allocation) .- runoff.variables.runoff_river .-
+            runoff.variables.runoff_land .+ get_water_depth(demand.paddy),
+            0.0,
+        )
 end
 
 function soil_temperature!(model::SbmSoilModel, snow::AbstractSnowModel, temperature)
@@ -707,30 +697,12 @@ end
 
 soil_temperature!(model::SbmSoilModel, snow::NoSnowModel, temperature) = nothing
 
-#= function ustoredepth!(ustorelayerdepth, ustoredepth, nlayers)
-    b = @allocated begin
-        for i in eachindex(ustorelayerdepth)
-            ustoredepth[i] = sum(@view ustorelayerdepth[i][1:nlayers[i]])
-            #u = Float(0)
-            #for k in 1:nlayers[i]
-            #    u += ustorelayerdepth[i][k]
-            #end
-            #ustoredepth = sum(@view ustorelayerdepth[:])
-            #ustoredepth[i] = u
-        end
-    end
-    @show b
-end =#
-
 function ustoredepth!(model::SbmSoilModel)
     v = model.variables
     p = model.parameters
-    #b = @allocated begin
     for i in eachindex(v.ustorelayerdepth)
         v.ustoredepth[i] = sum(@view v.ustorelayerdepth[i][1:p.nlayers[i]])
     end
-    #end
-    #@show b
 end
 
 function infiltration_reduction_factor!(
@@ -755,11 +727,12 @@ end
 function infiltration!(model::SbmSoilModel)
     v = model.variables
     p = model.parameters
+    (; water_flux_surface) = model.boundary_conditions
 
     n = length(v.infiltsoilpath)
     threaded_foreach(1:n; basesize = 1000) do i
         v.infiltsoilpath[i], v.infiltexcess[i] = infiltration(
-            v.avail_forinfilt[i],
+            water_flux_surface[i],
             p.pathfrac[i],
             p.infiltcapsoil[i],
             p.infiltcappath[i],
@@ -983,11 +956,12 @@ end
 function actual_infiltration_soil_path!(model::SbmSoilModel)
     v = model.variables
     p = model.parameters
+    (; water_flux_surface) = model.boundary_conditions
 
-    n = length(v.avail_forinfilt)
+    n = length(water_flux_surface)
     threaded_foreach(1:n; basesize = 1000) do i
         v.actinfiltsoil[i], v.actinfiltpath[i] = actual_infiltration_soil_path(
-            v.avail_forinfilt[i],
+            water_flux_surface[i],
             v.actinfilt[i],
             p.pathfrac[i],
             p.infiltcapsoil[i],
@@ -1012,11 +986,8 @@ function capillary_flux!(model::SbmSoilModel)
                 i,
                 v.n_unsatlayers[i],
             )
-            maxcapflux = max(
-                0.0,
-                #min(ksat, v.ae_ustore[i], v.ustorecapacity[i], v.satwaterdepth[i]),
-                min(ksat, v.ae_ustore[i], v.ustorecapacity[i], v.satwaterdepth[i]),
-            )
+            maxcapflux =
+                max(0.0, min(ksat, v.ae_ustore[i], v.ustorecapacity[i], v.satwaterdepth[i]))
 
             if v.zi[i] > rootingdepth[i]
                 capflux =
@@ -1081,13 +1052,9 @@ function update!(
 
     (; snow, runoff, demand) = external_models
     (; temperature) = atmospheric_forcing
-    (; water_flux_surface, potential_soilevaporation) = model.boundary_conditions
+    (; water_flux_surface) = model.boundary_conditions
     v = model.variables
     p = model.parameters
-
-    evaporation!(demand.paddy, potential_soilevaporation)
-    v.avail_forinfilt .= water_flux_surface .+ get_water_depth(demand.paddy) # allow infiltration of paddy water
-    potential_soilevaporation .= potential_soilevaporation .- get_evaporation(demand.paddy)
 
     ustoredepth!(model)
     @. v.ustorecapacity = p.soilwatercapacity - v.satwaterdepth - v.ustoredepth
@@ -1106,11 +1073,11 @@ function update!(
     transpiration!(model, dt; ust = ust)
     @. v.satwaterdepth = v.satwaterdepth - v.actevapsat
     actual_infiltration!(model)
-    @. v.excesswater = v.avail_forinfilt - v.actinfilt - v.infiltexcess
+    @. v.excesswater = water_flux_surface - v.actinfilt - v.infiltexcess
     actual_infiltration_soil_path!(model)
     @. v.excesswatersoil =
-        max(v.avail_forinfilt * (1.0 - p.pathfrac) - v.actinfiltsoil, 0.0)
-    @. v.excesswaterpath = max(v.avail_forinfilt * p.pathfrac - v.actinfiltpath, 0.0)
+        max(water_flux_surface * (1.0 - p.pathfrac) - v.actinfiltsoil, 0.0)
+    @. v.excesswaterpath = max(water_flux_surface * p.pathfrac - v.actinfiltpath, 0.0)
 
     ustoredepth!(model)
     @. v.ustorecapacity = p.soilwatercapacity - v.satwaterdepth - v.ustoredepth

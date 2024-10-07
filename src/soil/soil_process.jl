@@ -1,13 +1,12 @@
 """
-    infiltration(avail_forinfilt, pathfrac, infiltcapsoil, infiltcappath, ustorecapacity, f_infiltration_reduction)
+    infiltration(potential_infiltration, pathfrac, infiltcapsoil, infiltcappath, ustorecapacity, f_infiltration_reduction)
 
 Soil infiltration based on infiltration capacity soil `infiltcapsoil`, infiltration capacity compacted area
 `infiltcappath` and capacity unsatured zone `ustorecapacity`. The soil infiltration capacity can be adjusted
 in case the soil is frozen (`modelsnow` and `soilinfreduction` is `true`).
-
 """
 function infiltration(
-    avail_forinfilt,
+    potential_infiltration,
     pathfrac,
     infiltcapsoil,
     infiltcappath,
@@ -16,8 +15,8 @@ function infiltration(
 )
     # First determine if the soil infiltration capacity can deal with the amount of water
     # split between infiltration in undisturbed soil and compacted areas (paths)
-    soilinf = avail_forinfilt * (1.0 - pathfrac)
-    pathinf = avail_forinfilt * pathfrac
+    soilinf = potential_infiltration * (1.0 - pathfrac)
+    pathinf = potential_infiltration * pathfrac
 
     max_infiltsoil = min(infiltcapsoil * f_infiltration_reduction, soilinf)
     max_infiltpath = min(infiltcappath * f_infiltration_reduction, pathinf)
@@ -224,15 +223,15 @@ function soil_evaporation_satured_store(
 end
 
 function actual_infiltration_soil_path(
-    avail_forinfilt,
+    potential_infiltration,
     actinfilt,
     pathfrac,
     infiltcapsoil,
     infiltcappath,
     f_infiltration_reduction,
 )
-    soilinf = avail_forinfilt * (1.0 - pathfrac)
-    pathinf = avail_forinfilt * pathfrac
+    soilinf = potential_infiltration * (1.0 - pathfrac)
+    pathinf = potential_infiltration * pathfrac
     if actinfilt > 0.0
         max_infiltsoil = min(infiltcapsoil * f_infiltration_reduction, soilinf)
         max_infiltpath = min(infiltcappath * f_infiltration_reduction, pathinf)
