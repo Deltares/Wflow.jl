@@ -715,7 +715,12 @@ Return equivalent horizontal hydraulic conductivity `kh` [m d⁻¹] for a layere
 of type `SoilSbmModel` (at index `i`) based on multiplication factor `khfrac` [-], water
 table depth `z` [mm] and hydraulic conductivity profile `ksat_profile`.
 """
-function kh_layered_profile!(soil::SbmSoilModel, subsurface, kv_profile::KvLayered, dt)
+function kh_layered_profile!(
+    soil::SbmSoilModel,
+    subsurface::LateralSSF,
+    kv_profile::KvLayered,
+    dt,
+)
     (; nlayers, sumlayers, act_thickl, soilthickness) = soil.parameters
     (; n_unsatlayers, zi) = soil.variables
     (; kh) = subsurface.kh_profile
@@ -747,7 +752,7 @@ end
 
 function kh_layered_profile!(
     soil::SbmSoilModel,
-    subsurface,
+    subsurface::LateralSSF,
     kv_profile::KvLayeredExponential,
     dt,
 )
@@ -809,10 +814,10 @@ end
 
 kh_layered_profile!(
     soil::SbmSoilModel,
-    subsurface,
-    kv_profile::T,
+    subsurface::LateralSSF,
+    kv_profile::Union{KvExponential, KvExponentialConstant},
     dt,
-) where {T <: Union{KvExponential, KvExponentialConstant}} = nothing
+) = nothing
 
 "Initialize lateral subsurface variables `ssf` and `ssfmax` with `ksat_profile` `exponential`"
 function initialize_lateralssf!(ssf::LateralSSF, kh_profile::KhExponential)
@@ -829,10 +834,10 @@ function initialize_lateralssf!(ssf::LateralSSF, kh_profile::KhExponential)
 end
 
 "Initialize lateral subsurface variables `ssf` and `ssfmax` with `ksat_profile` `exponential_constant`"
-function initialize_lateralssf!(ssf::LateralSSF, kh_profile::KhExponentialConstant)
+function initialize_lateralssf!(model::LateralSSF, kh_profile::KhExponentialConstant)
     (; kh_0, f) = kh_profile.exponential
     (; z_exp) = kh_profile
-    (; ssf, ssfmax, zi, slope, soilthickness, dw) = ssf
+    (; ssf, ssfmax, zi, slope, soilthickness, dw) = model
     ssf_constant = @. kh_0 * exp(-f * z_exp) * slope * (soilthickness - z_exp)
     for i in eachindex(ssf)
         ssfmax[i] =

@@ -1078,7 +1078,6 @@ function update!(
     modelsnow = get(config.model, "snow", false)::Bool
     transfermethod = get(config.model, "transfermethod", false)::Bool
     ust = get(config.model, "whole_ust_available", false)::Bool # should be removed from optional setting and code?
-    ksat_profile = get(config.input.vertical, "ksat_profile", "exponential")::String
 
     (; snow, runoff, demand) = external_models
     (; temperature) = atmospheric_forcing
