@@ -38,19 +38,19 @@ end
 end
 
 @get_units @grid_loc @with_kw struct OpenWaterRunoffBC{T}
-    surface_water_flux::Vector{T}
+    water_flux_surface::Vector{T}
     waterlevel_land::Vector{T} | "mm"
     waterlevel_river::Vector{T} | "mm"
 end
 
 function OpenWaterRunoffBC(
     n;
-    surface_water_flux::Vector{T} = fill(mv, n),
+    water_flux_surface::Vector{T} = fill(mv, n),
     waterlevel_land::Vector{T} = fill(mv, n),
     waterlevel_river::Vector{T} = zeros(Float, n), # set to zero to account for cells outside river domain
 ) where {T}
     return OpenWaterRunoffBC{T}(;
-        surface_water_flux = surface_water_flux,
+        water_flux_surface = water_flux_surface,
         waterlevel_land = waterlevel_land,
         waterlevel_river = waterlevel_river,
     )
@@ -87,23 +87,23 @@ function OpenWaterRunoff(nc, config, inds, riverfrac)
     return model
 end
 
-function get_surface_water_flux!(
-    surface_water_flux,
+function get_water_flux_surface!(
+    water_flux_surface,
     snow::NoSnowModel,
     glacier,
     interception,
 )
     (; throughfall, stemflow) = interception.variables
-    @. surface_water_flux = throughfall + stemflow
+    @. water_flux_surface = throughfall + stemflow
 end
 
-function get_surface_water_flux!(
-    surface_water_flux,
+function get_water_flux_surface!(
+    water_flux_surface,
     snow::AbstractSnowModel,
     glacier,
     interception,
 )
-    surface_water_flux .=
+    water_flux_surface .=
         get_runoff(snow) .+ get_glacier_melt(glacier) .* get_glacier_fraction(glacier)
 end
 
@@ -113,12 +113,12 @@ function update_boundary_conditions!(
     lateral,
     network,
 )
-    (; surface_water_flux, waterlevel_river, waterlevel_land) = model.boundary_conditions
+    (; water_flux_surface, waterlevel_river, waterlevel_land) = model.boundary_conditions
     inds_riv = network.index_river
     (; snow, glacier, interception) = external_models
 
-    surface_water_flux .=
-        get_surface_water_flux!(surface_water_flux, snow, glacier, interception)
+    water_flux_surface .=
+        get_water_flux_surface!(water_flux_surface, snow, glacier, interception)
 
     # extract water levels h_av [m] from the land and river domains this is used to limit
     # open water evaporation
@@ -131,10 +131,10 @@ function update!(model::OpenWaterRunoff, atmospheric_forcing::AtmosphericForcing
     (; runoff_river, net_runoff_river, runoff_land, ae_openw_r, ae_openw_l) =
         model.variables
     (; riverfrac, waterfrac) = model.parameters
-    (; surface_water_flux, waterlevel_river, waterlevel_land) = model.boundary_conditions
+    (; water_flux_surface, waterlevel_river, waterlevel_land) = model.boundary_conditions
 
-    @. runoff_river = min(1.0, riverfrac) * surface_water_flux
-    @. runoff_land = min(1.0, waterfrac) * surface_water_flux
+    @. runoff_river = min(1.0, riverfrac) * water_flux_surface
+    @. runoff_land = min(1.0, waterfrac) * water_flux_surface
     @. ae_openw_r = min(waterlevel_river * riverfrac, riverfrac * potential_evaporation)
     @. ae_openw_l = min(waterlevel_land * waterfrac, waterfrac * potential_evaporation)
     @. net_runoff_river = runoff_river - ae_openw_r

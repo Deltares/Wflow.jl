@@ -150,19 +150,19 @@ function SbmSoilVariables(n, parameters)
 end
 
 @get_units @grid_loc @with_kw struct SbmSoilBC{T}
-    surface_water_flux::Vector{T}
+    water_flux_surface::Vector{T}
     potential_transpiration::Vector{T}
     potential_soilevaporation::Vector{T}
 end
 
 function SbmSoilBC(
     n;
-    surface_water_flux::Vector{T} = fill(mv, n),
+    water_flux_surface::Vector{T} = fill(mv, n),
     potential_transpiration::Vector{T} = fill(mv, n),
     potential_soilevaporation::Vector{T} = fill(mv, n),
 ) where {T}
     return SbmSoilBC{T}(;
-        surface_water_flux = surface_water_flux,
+        water_flux_surface = water_flux_surface,
         potential_transpiration = potential_transpiration,
         potential_soilevaporation = potential_soilevaporation,
     )
@@ -683,14 +683,14 @@ function update_boundary_conditions!(
     external_models::NamedTuple,
 )
     (; interception, runoff, allocation) = external_models
-    (; potential_transpiration, surface_water_flux, potential_soilevaporation) =
+    (; potential_transpiration, water_flux_surface, potential_soilevaporation) =
         model.boundary_conditions
 
     potential_transpiration .= get_potential_transpiration(interception)
 
     irrigation = get_irrigation_allocated(allocation)
-    @. surface_water_flux = max(
-        runoff.boundary_conditions.surface_water_flux + irrigation -
+    @. water_flux_surface = max(
+        runoff.boundary_conditions.water_flux_surface + irrigation -
         runoff.variables.runoff_river - runoff.variables.runoff_land,
         0.0,
     )
@@ -1082,12 +1082,12 @@ function update!(
 
     (; snow, runoff, demand) = external_models
     (; temperature) = atmospheric_forcing
-    (; surface_water_flux, potential_soilevaporation) = model.boundary_conditions
+    (; water_flux_surface, potential_soilevaporation) = model.boundary_conditions
     v = model.variables
     p = model.parameters
 
     evaporation!(demand.paddy, potential_soilevaporation)
-    v.avail_forinfilt .= surface_water_flux .+ get_water_depth(demand.paddy) # allow infiltration of paddy water
+    v.avail_forinfilt .= water_flux_surface .+ get_water_depth(demand.paddy) # allow infiltration of paddy water
     potential_soilevaporation .= potential_soilevaporation .- get_evaporation(demand.paddy)
 
     ustoredepth!(model)
