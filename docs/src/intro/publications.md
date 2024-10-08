@@ -111,10 +111,10 @@ M.F.P., 2016. Improved large-scale hydrological modelling through the assimilati
 streamflow and downscaled satellite soil moisture observations. Hydrol. Earth Syst. Sci.,
 20, 3059–3076. <https://doi.org/10.5194/hess-20-3059-2016>.
 
-Pranot, B., H. Soekarno, E. Hartulistiyoso, M. Nur Aidi, D.Sutrisno, D. Pohan, Radhika, B. Sutejo,
-A. Heru Kuncoro, I. Nahib1, 2024. Integrating Flood Early Warning System (FEWS)
-for Optimizing Small Hydropower Sites: A West Java. EVERGREEN Joint Journal of Novel Carbon 
-Resource Sciences & Green Asia Strategy, 11, 3, 2691-2699. 
+Pranot, B., H. Soekarno, E. Hartulistiyoso, M. Nur Aidi, D.Sutrisno, D. Pohan, Radhika, B.
+Sutejo, A. Heru Kuncoro, I. Nahib1, 2024. Integrating Flood Early Warning System (FEWS) for
+Optimizing Small Hydropower Sites: A West Java. EVERGREEN Joint Journal of Novel Carbon
+Resource Sciences & Green Asia Strategy, 11, 3, 2691-2699.
 <https://www.tj.kyushu-u.ac.jp/evergreen/contents/EG2024-11_3_content/pdf/p2691-2699.pdf>
 
 Rakovec, O., Weerts, A.H., Sumihar, J., Uijlenhoet, R., 2015. Operational aspects of
