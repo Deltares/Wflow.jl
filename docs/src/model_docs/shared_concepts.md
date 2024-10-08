@@ -53,10 +53,10 @@ snow modelling is not optional. Glacier modelling is very close to snow modellin
 considers two main processes: glacier build-up from snow turning into firn/ice (using the
 HBV-light model) and glacier melt (using a temperature degree-day model).
 
-The definition of glacier boundaries and initial volume is defined by two parameters.
-`glacierfrac` is a parameter that gives the fraction of each grid cell covered by a glacier
-as a number between zero and one. `glacierstore` is a state parameter that gives the amount
-of water (in mm w.e.) within the glaciers at each gridcell. Because the glacier store
+The definition of glacier boundaries and initial volume is defined by two parameters. The
+parameter `glacierfrac` gives the fraction of each grid cell covered by a glacier as a
+number between zero and one. The state parameter `glacierstore` gives the amount of water
+(in mm w.e.) within the glaciers at each grid cell. Because the glacier store
 (`glacierstore`) cannot be initialized by running the model for a couple of years, a default
 initial state should be supplied by adding this parameter to the input static file. The
 required glacier data can be prepared from available glacier datasets.
