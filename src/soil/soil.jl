@@ -173,7 +173,7 @@ end
 end
 
 @get_units @grid_loc struct KvExponentialConstant{T}
-    exponential::KvExponential | "-" | "none"
+    exponential::KvExponential{T} | "-" | "none"
     # Depth [mm] from soil surface for which exponential decline of kv_0 is valid
     z_exp::Vector{T}
 end

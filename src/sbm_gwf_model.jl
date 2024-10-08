@@ -344,7 +344,12 @@ function initialize_sbm_gwf_model(config::Config)
         drain = ()
     end
 
-    gwf = GroundwaterFlow(aquifer, connectivity, constant_head, aquifer_boundaries)
+    gwf = GroundwaterFlow{Float}(;
+        aquifer = aquifer,
+        connectivity = connectivity,
+        constanthead = constant_head,
+        boundaries = aquifer_boundaries,
+    )
 
     # map GroundwaterFlow and its boundaries
     if do_drains

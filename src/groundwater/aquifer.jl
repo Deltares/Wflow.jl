@@ -360,30 +360,36 @@ function update(gwf, Q, dt, conductivity_profile)
     return gwf
 end
 
-Base.@kwdef struct GroundwaterFlow{A, B}
+Base.@kwdef struct GroundwaterFlow{A, C, CH, B}
     aquifer::A
-    connectivity::Connectivity
-    constanthead::ConstantHead
-    boundaries::Vector{B}
-    function GroundwaterFlow(
-        aquifer::A,
-        connectivity,
-        constanthead,
-        boundaries::Vector{B},
-    ) where {A <: Aquifer, B <: AquiferBoundaryCondition}
-        initialize_conductance!(aquifer, connectivity)
-        return new{A, B}(aquifer, connectivity, constanthead, boundaries)
-    end
+    connectivity::C
+    constanthead::CH
+    boundaries::B
 end
 
-function get_water_depth(gwf::GroundwaterFlow{A, B}) where {A <: UnconfinedAquifer, B}
+function GroundwaterFlow{T}(;
+    aquifer::Aquifer,
+    connectivity::Connectivity{T},
+    constanthead::ConstantHead{T},
+    boundaries::Vector{AquiferBoundaryCondition},
+) where {T}
+    initialize_conductance!(aquifer, connectivity)
+    args = (aquifer, connectivity, constanthead, boundaries)
+    GroundwaterFlow{typeof.(args)...}(args...)
+end
+
+function get_water_depth(
+    gwf::GroundwaterFlow{A, C, CH, B},
+) where {A <: UnconfinedAquifer, C, CH, B}
     gwf.aquifer.head .= min.(gwf.aquifer.head, gwf.aquifer.top)
     gwf.aquifer.head[gwf.constanthead.index] .= gwf.constanthead.head
     wtd = gwf.aquifer.top .- gwf.aquifer.head
     return wtd
 end
 
-function get_exfiltwater(gwf::GroundwaterFlow{A, B}) where {A <: UnconfinedAquifer, B}
+function get_exfiltwater(
+    gwf::GroundwaterFlow{A, C, CH, B},
+) where {A <: UnconfinedAquifer, C, CH, B}
     exfiltwater =
         (gwf.aquifer.head .- min.(gwf.aquifer.head, gwf.aquifer.top)) .*
         storativity(gwf.aquifer)

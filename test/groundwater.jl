@@ -340,11 +340,11 @@ end
         connectivity, aquifer, _ = homogenous_aquifer(3, 1)
         constanthead = Wflow.ConstantHead([2.0, 4.0], [1, 3])
         conductivity_profile = "uniform"
-        gwf = Wflow.GroundwaterFlow(
-            aquifer,
-            connectivity,
-            constanthead,
-            Wflow.AquiferBoundaryCondition[],
+        gwf = Wflow.GroundwaterFlow{Wflow.Float}(;
+            aquifer = aquifer,
+            connectivity = connectivity,
+            constanthead = constanthead,
+            boundaries = Wflow.AquiferBoundaryCondition[],
         )
         # Set constant head (dirichlet) boundaries
         gwf.aquifer.head[gwf.constanthead.index] .= gwf.constanthead.head
@@ -362,11 +362,11 @@ end
         connectivity, aquifer, _ = homogenous_aquifer(3, 1)
         constanthead = Wflow.ConstantHead([2.0, 4.0], [1, 3])
         conductivity_profile = "exponential"
-        gwf = Wflow.GroundwaterFlow(
-            aquifer,
-            connectivity,
-            constanthead,
-            Wflow.AquiferBoundaryCondition[],
+        gwf = Wflow.GroundwaterFlow{Wflow.Float}(;
+            aquifer = aquifer,
+            connectivity = connectivity,
+            constanthead = constanthead,
+            boundaries = Wflow.AquiferBoundaryCondition[],
         )
         # Set constant head (dirichlet) boundaries
         gwf.aquifer.head[gwf.constanthead.index] .= gwf.constanthead.head
@@ -415,11 +415,11 @@ end
         )
         # constant head on left boundary, 0 at 0
         constanthead = Wflow.ConstantHead([0.0], [1])
-        gwf = Wflow.GroundwaterFlow(
-            aquifer,
-            connectivity,
-            constanthead,
-            Wflow.AquiferBoundaryCondition[],
+        gwf = Wflow.GroundwaterFlow{Wflow.Float}(;
+            aquifer = aquifer,
+            connectivity = connectivity,
+            constanthead = constanthead,
+            boundaries = Wflow.AquiferBoundaryCondition[],
         )
 
         dt = Wflow.stable_timestep(gwf.aquifer, conductivity_profile)
@@ -483,11 +483,11 @@ end
         )
         # constant head on left boundary, 0 at 0
         constanthead = Wflow.ConstantHead([0.0], [1])
-        gwf = Wflow.GroundwaterFlow(
-            aquifer,
-            connectivity,
-            constanthead,
-            Wflow.AquiferBoundaryCondition[],
+        gwf = Wflow.GroundwaterFlow{Wflow.Float}(;
+            aquifer = aquifer,
+            connectivity = connectivity,
+            constanthead = constanthead,
+            boundaries = Wflow.AquiferBoundaryCondition[],
         )
 
         dt = Wflow.stable_timestep(gwf.aquifer, conductivity_profile)
@@ -558,7 +558,12 @@ end
         constanthead = Wflow.ConstantHead(fill(10.0, size(indices)), indices)
         # Place a well in the middle of the domain
         well = Wflow.Well([discharge], [0.0], [reverse_indices[wellrow, wellrow]])
-        gwf = Wflow.GroundwaterFlow(aquifer, connectivity, constanthead, [well])
+        gwf = Wflow.GroundwaterFlow{Wflow.Float}(;
+            aquifer = aquifer,
+            connectivity = connectivity,
+            constanthead = constanthead,
+            boundaries = Wflow.AquiferBoundaryCondition[well],
+        )
 
         dt = Wflow.stable_timestep(gwf.aquifer, conductivity_profile)
         Q = zeros(ncell)

@@ -76,7 +76,8 @@ function LandHydrologySBM(nc, config, riverfrac, inds)
     allocation =
         do_water_demand ? initialize_allocation_land(nc, config, inds) :
         NoAllocationLand{Float}()
-    demand = do_water_demand ? initialize_water_demand(nc, config, inds, dt) : NoDemand()
+    demand =
+        do_water_demand ? initialize_water_demand(nc, config, inds, dt) : NoDemand{Float}()
 
     lsm = LandHydrologySBM{Float}(;
         atmospheric_forcing = atmospheric_forcing,

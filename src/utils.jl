@@ -745,7 +745,7 @@ function kh_layered_profile!(
             kh[i] =
                 0.001 * (transmissivity / (soilthickness[i] - zi[i])) * t_factor * khfrac[i]
         else
-            kh[i] = 0.001 * kv[i][m] * t_factor * khfrac[i]
+            kh[i] = 0.001 * kv_profile.kv[i][m] * t_factor * khfrac[i]
         end
     end
 end
@@ -820,9 +820,9 @@ kh_layered_profile!(
 ) = nothing
 
 "Initialize lateral subsurface variables `ssf` and `ssfmax` with `ksat_profile` `exponential`"
-function initialize_lateralssf!(ssf::LateralSSF, kh_profile::KhExponential)
+function initialize_lateralssf!(model::LateralSSF, kh_profile::KhExponential)
     (; kh_0, f) = kh_profile
-    (; ssf, ssfmax, zi, slope, soilthickness, dw) = ssf
+    (; ssf, ssfmax, zi, slope, soilthickness, dw) = model
 
     for i in eachindex(ssf)
         ssfmax[i] = ((kh_0[i] * slope[i]) / f[i]) * (1.0 - exp(-f[i] * soilthickness[i]))
@@ -886,15 +886,15 @@ function initialize_lateralssf!(
     (; ssf, ssfmax, zi, khfrac, soilthickness, slope, dw) = subsurface
     (; nlayers, act_thickl) = soil.parameters
     (; kh) = subsurface.kh_profile
-    (; kv, f, z_layered) = kv_profile
+    (; kv, f, nlayers_kv, z_layered) = kv_profile
 
     kh_layered_profile!(soil, subsurface, kv_profile, dt)
     for i in eachindex(ssf)
         ssf[i] = kh[i] * (soilthickness[i] - zi[i]) * slope[i] * dw[i]
         kh_max = 0.0
         for j in 1:nlayers[i]
-            if j <= kv_profile.nlayers_kv[i]
-                kh_max += kv_profile.kv[i][j] * act_thickl[i][j]
+            if j <= nlayers_kv[i]
+                kh_max += kv[i][j] * act_thickl[i][j]
             else
                 zt = soil.parameters.soilthickness[i] - z_layered[i]
                 k = max(j - 1, 1)

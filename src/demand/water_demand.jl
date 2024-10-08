@@ -150,19 +150,19 @@ end
 update_demand_gross!(paddy::NoIrrigationPaddy) = nothing
 
 @get_units @grid_loc @with_kw struct Demand{D, I, L, P, NP} <: AbstractDemandModel
-    domestic::D = NoNonIrrigationDemand() | "-" | "none"
-    industry::I = NoNonIrrigationDemand() | "-" | "none"
-    livestock::L = NoNonIrrigationDemand() | "-" | "none"
-    paddy::P = NoIrrigationPaddy{Float}() | "-" | "none"
-    nonpaddy::NP = NoIrrigationNonPaddy{Float}() | "-" | "none"
+    domestic::D | "-" | "none"
+    industry::I | "-" | "none"
+    livestock::L | "-" | "none"
+    paddy::P | "-" | "none"
+    nonpaddy::NP | "-" | "none"
 end
 
-@get_units @grid_loc @with_kw struct NoDemand <: AbstractDemandModel
-    domestic = NoNonIrrigationDemand() | "-" | "none"
-    industry = NoNonIrrigationDemand() | "-" | "none"
-    livestock = NoNonIrrigationDemand() | "-" | "none"
-    paddy = NoIrrigationPaddy{Float}() | "-" | "none"
-    nonpaddy = NoIrrigationNonPaddy{Float}() | "-" | "none"
+@get_units @grid_loc @with_kw struct NoDemand{T} <: AbstractDemandModel
+    domestic::NoNonIrrigationDemand = NoNonIrrigationDemand() | "-" | "none"
+    industry::NoNonIrrigationDemand = NoNonIrrigationDemand() | "-" | "none"
+    livestock::NoNonIrrigationDemand = NoNonIrrigationDemand() | "-" | "none"
+    paddy::NoIrrigationPaddy{T} = NoIrrigationPaddy{T}() | "-" | "none"
+    nonpaddy::NoIrrigationNonPaddy{T} = NoIrrigationNonPaddy{T}() | "-" | "none"
 end
 
 @get_units @grid_loc @with_kw struct AllocationRiver{T} <: AbstractAllocationModel{T}
@@ -204,18 +204,28 @@ end
 function initialize_water_demand(nc, config, inds, dt)
     if get(config.model.water_demand, "domestic", false)
         domestic = initialize_domestic_demand(nc, config, inds, dt)
+    else
+        domestic = NoNonIrrigationDemand()
     end
     if get(config.model.water_demand, "industry", false)
         industry = initialize_industry_demand(nc, config, inds, dt)
+    else
+        industry = NoNonIrrigationDemand()
     end
     if get(config.model.water_demand, "livestock", false)
         livestock = initialize_livestock_demand(nc, config, inds, dt)
+    else
+        livestock = NoNonIrrigationDemand()
     end
     if get(config.model.water_demand, "paddy", false)
         paddy = initialize_paddy(nc, config, inds, dt)
+    else
+        paddy = NoIrrigationPaddy{Float}()
     end
     if get(config.model.water_demand, "nonpaddy", false)
         nonpaddy = initialize_nonpaddy(nc, config, inds, dt)
+    else
+        nonpaddy = NoIrrigationNonPaddy{Float}()
     end
 
     demand = Demand(;
