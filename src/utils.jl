@@ -779,14 +779,11 @@ end
 
 "Initialize lateral subsurface variables `ssf` and `ssfmax` with `ksat_profile` `exponential_constant`"
 function initialize_lateralssf_exp_const!(ssf::LateralSSF)
-    ssf_constant = @. ssf.khfrac *
-       ssf.kh_0 *
-       exp(-ssf.f * ssf.z_exp) *
-       ssf.slope *
-       (ssf.soilthickness - ssf.z_exp)
+    ssf_constant =
+        @. ssf.kh_0 * exp(-ssf.f * ssf.z_exp) * ssf.slope * (ssf.soilthickness - ssf.z_exp)
     for i in eachindex(ssf.ssf)
         ssf.ssfmax[i] =
-            ((ssf.khfrac[i] * ssf.kh_0[i] * ssf.slope[i]) / ssf.f[i]) *
+            ((ssf.kh_0[i] * ssf.slope[i]) / ssf.f[i]) *
             (1.0 - exp(-ssf.f[i] * ssf.z_exp[i])) + ssf_constant[i]
         if ssf.zi[i] < ssf.z_exp[i]
             ssf.ssf[i] =

@@ -457,6 +457,8 @@ Wflow.close_files(model, delete_output = false)
             i,
             "exponential",
         )
+        @test model.lateral.subsurface.ssfmax[i] ≈ 28.32720603576582f0
+        @test model.lateral.subsurface.ssf[i] ≈ 11683.330684556406f0
         @test all(isnan.(vertical.z_layered))
         @test all(isnan.(vertical.kv[i]))
         @test all(vertical.nlayers_kv .== 0)
@@ -491,6 +493,8 @@ Wflow.close_files(model, delete_output = false)
             i,
             "exponential_constant",
         )
+        @test model.lateral.subsurface.ssfmax[i] ≈ 49.38558575188426f0
+        @test model.lateral.subsurface.ssf[i] ≈ 24810.460986497365f0
         @test all(isnan.(vertical.z_layered))
         @test all(isnan.(vertical.kv[i]))
         @test all(vertical.nlayers_kv .== 0)
@@ -505,6 +509,8 @@ Wflow.close_files(model, delete_output = false)
         @test Wflow.hydraulic_conductivity_at_depth(vertical, z, i, 2, "layered") ≈
               vertical.kv[100][2]
         @test Wflow.kh_layered_profile(vertical, 100.0, i, "layered") ≈ 47.508932674632355f0
+        @test model.lateral.subsurface.ssfmax[i] ≈ 30.237094380100316f0
+        @test model.lateral.subsurface.ssf[i] ≈ 14546.518932613191f0
         @test vertical.nlayers_kv[i] == 4
         @test vertical.z_layered == vertical.soilthickness
         @test all(isnan.(vertical.z_exp))
@@ -525,6 +531,8 @@ Wflow.close_files(model, delete_output = false)
         @test vertical.nlayers_kv[i] == 2
         @test Wflow.kh_layered_profile(vertical, 100.0, i, "layered_exponential") ≈
               33.76026208801769f0
+        @test model.lateral.subsurface.ssfmax[i] ≈ 23.4840490395906f0
+        @test model.lateral.subsurface.ssf[i] ≈ 10336.88327617503f0
         @test all(vertical.z_layered[1:10] .== 400.0)
         @test all(isnan.(vertical.z_exp))
     end
