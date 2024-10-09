@@ -40,14 +40,10 @@ function add_metadata(project_dir, license_file, output_dir, git_repo)
             error("Manifest.toml is in the old format, run Pkg.upgrade_manifest()")
         end
         julia_version = manifest["julia_version"]
-        wflow_entry = only(manifest["deps"]["Wflow"])
-        tree = wflow_entry["git-tree-sha1"]
         version = TOML.parsefile(normpath(git_repo, "Project.toml"))["version"]
         repo = GitRepo(git_repo)
         branch = LibGit2.head(repo)
-        # commit = LibGit2.peel(LibGit2.GitCommit, branch)
         short_name = LibGit2.shortname(branch)
-        # short_commit = string(LibGit2.GitShortHash(LibGit2.GitHash(commit), 10))
         url = "https://github.com/Deltares/Wflow.jl/tree"
         version_info = """
 
@@ -57,7 +53,6 @@ function add_metadata(project_dir, license_file, output_dir, git_repo)
 
         ```toml
         version = "$version"
-        git-tree-sha1 = "$tree"
         branch = "$url/$short_name"
         julia_version = "$julia_version"
         ```"""
