@@ -49,7 +49,6 @@ function rainfall_interception_gash(
     throughfall = throughfall + canopy_drainage
 
     return throughfall, interception, stemflow, canopystorage
-
 end
 
 """
@@ -80,14 +79,11 @@ function rainfall_interception_modrut(
     # Add the precipitation that falls on the canopy to the store
     canopystorage = canopystorage + precip_canopy
 
-    # Now do the Evap, make sure the store does not get negative
-    canopy_evap = min(canopystorage, potential_evaporation)
+    # Evaporation, make sure the store does not get negative
+    canopy_evap = min(canopystorage, potential_evaporation) # interception rate
     canopystorage = canopystorage - canopy_evap
 
-    # Amount of evap not used
-    leftover = potential_evaporation - canopy_evap
-
-    # Now drain the canopystorage again if needed...
+    # Drain the canopystorage again if needed
     canopy_drainage2 = canopystorage > cmax ? canopystorage - cmax : 0.0
     canopystorage = canopystorage - canopy_drainage2
 
@@ -95,10 +91,5 @@ function rainfall_interception_modrut(
     throughfall = canopy_drainage1 + canopy_drainage2 + canopygapfraction * precipitation
     stemflow = precipitation * pt
 
-    # Calculate interception, this is NET Interception
-    netinterception = precipitation + canopy_drainage1 - throughfall - stemflow
-    interception = canopy_evap
-
-    return throughfall, interception, stemflow, canopystorage
-
+    return throughfall, canopy_evap, stemflow, canopystorage
 end

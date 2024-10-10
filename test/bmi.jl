@@ -162,7 +162,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 
         @testset "recharge part of SBM" begin
             sbm = model.vertical
-            @test sbm.interception.variables.interception_flux[1] ≈ 0.32734913737568716f0
+            @test sbm.interception.variables.interception_rate[1] ≈ 0.32734913737568716f0
             @test sbm.soil.variables.ustorelayerdepth[1][1] ≈ 0.0f0
             @test sbm.snow.variables.snow_storage[1] ≈ 3.4847899611762876f0
             @test sbm.soil.variables.recharge[5] ≈ 0.0f0
@@ -186,7 +186,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
         @testset "SBM after subsurface flow" begin
             sbm = model.vertical
             sub = model.lateral.subsurface
-            @test sbm.interception.variables.interception_flux[1] ≈ 0.32734913737568716f0
+            @test sbm.interception.variables.interception_rate[1] ≈ 0.32734913737568716f0
             @test sbm.soil.variables.ustorelayerdepth[1][1] ≈ 0.0f0
             @test sbm.snow.variables.snow_storage[1] ≈ 3.4847899611762876f0
             @test sbm.soil.variables.recharge[5] ≈ 0.0f0

@@ -143,7 +143,7 @@ function update(model::LandHydrologySBM, lateral, network, config)
     )
 
     update!(soil, atmospheric_forcing, (; snow, runoff, demand), config, dt)
-    @. soil.variables.actevap += interception.variables.interception_flux
+    @. soil.variables.actevap += interception.variables.interception_rate
     return model
 end
 
