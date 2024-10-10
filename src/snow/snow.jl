@@ -12,6 +12,7 @@ abstract type AbstractSnowModel{T} end
     runoff::Vector{T}
 end
 
+"Initialize snow model variables"
 function SnowVariables(
     n;
     snow_storage::Vector{T} = fill(0.0, n),
@@ -37,6 +38,7 @@ end
     liquid_precip::Vector{T}
 end
 
+"Initialize snow model boundary conditions"
 function SnowBC(
     n;
     effective_precip::Vector{T} = fill(mv, n),

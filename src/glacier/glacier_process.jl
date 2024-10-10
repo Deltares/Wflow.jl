@@ -1,16 +1,16 @@
 """
-    glacier_hbv(glacierfrac, glacierstore, snow, temperature, tt, cfmax, g_sifrac, max_snow_to_glacier)
+    glacier_hbv(glacierfrac, glacierstore, snow_storage, temperature, tt, cfmax, g_sifrac, max_snow_to_glacier)
 
 HBV-light type of glacier modelling.
 First, a fraction of the snowpack is converted into ice using the HBV-light
 model (fraction between 0.001-0.005 per day).
 Glacier melting is modelled using a temperature degree factor and only
-occurs if the snow cover < 10 mm.
+occurs if the snow storage < 10 mm.
 
 # Arguments
 - `glacierFrac` fraction covered by glaciers [-]
 - `glacierstore` volume of the glacier [mm] w.e.
-- `snow` snow pack on top of glacier [mm]
+- `snow_storage` snow storage on top of glacier [mm]
 - `temperature` air temperature [°C]
 - `tt` temperature threshold for ice melting [°C]
 - `cfmax` ice degree-day factor in [mm/(°C/day)]

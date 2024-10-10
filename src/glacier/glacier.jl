@@ -1,5 +1,6 @@
 abstract type AbstractGlacierModel{T} end
 
+"Struct for storing glacier model variables"
 @get_units @grid_loc @with_kw struct GlacierVariables{T}
     # Water within the glacier [mm]
     glacier_store::Vector{T} | "mm"
@@ -7,6 +8,7 @@ abstract type AbstractGlacierModel{T} end
     glacier_melt::Vector{T}
 end
 
+"Initialize glacier model variables"
 function GlacierVariables(nc, config, inds)
     glacier_store = ncread(
         nc,
@@ -22,11 +24,13 @@ function GlacierVariables(nc, config, inds)
     return vars
 end
 
-@get_units @with_kw struct SnowStateBC{T}
+"Struct for storing boundary condition (snow storage from a snow model) of a glacier model"
+@get_units @grid_loc @with_kw struct SnowStateBC{T}
     # Snow storage [mm]
     snow_storage::Vector{T} | "mm"
 end
 
+"Struct for storing glacier HBV model parameters"
 @get_units @grid_loc @with_kw struct GlacierHbvParameters{T}
     # Threshold temperature for snowfall above glacier [ᵒC]
     g_tt::Vector{T} | "ᵒC"
@@ -40,14 +44,16 @@ end
     max_snow_to_glacier::T
 end
 
-@get_units @grid_loc @with_kw struct GlacierHbvModel{T} <: AbstractGlacierModel{T}
-    boundary_conditions::SnowStateBC{T} | "-" | "none"
-    parameters::GlacierHbvParameters{T} | "-" | "none"
-    variables::GlacierVariables{T} | "-" | "none"
+"Glacier HBV model"
+@with_kw struct GlacierHbvModel{T} <: AbstractGlacierModel{T}
+    boundary_conditions::SnowStateBC{T}
+    parameters::GlacierHbvParameters{T}
+    variables::GlacierVariables{T}
 end
 
 struct NoGlacierModel{T} <: AbstractGlacierModel{T} end
 
+"Initialize glacier HBV model parameters"
 function GlacierHbvParameters(nc, config, inds, dt)
     g_tt = ncread(
         nc,
@@ -98,6 +104,7 @@ function GlacierHbvParameters(nc, config, inds, dt)
     return glacier_hbv_params
 end
 
+"Initialize glacier HBV model"
 function GlacierHbvModel(nc, config, inds, dt, bc)
     params = GlacierHbvParameters(nc, config, inds, dt)
     vars = GlacierVariables(nc, config, inds)
@@ -106,6 +113,7 @@ function GlacierHbvModel(nc, config, inds, dt, bc)
     return model
 end
 
+"Update glacier HBV model for a single timestep"
 function update!(model::GlacierHbvModel, atmospheric_forcing::AtmosphericForcing)
     (; temperature) = atmospheric_forcing
     (; glacier_store, glacier_melt) = model.variables
@@ -132,6 +140,7 @@ function update!(model::NoGlacierModel, atmospheric_forcing::AtmosphericForcing)
     return nothing
 end
 
+# wrapper methods
 get_glacier_melt(model::NoGlacierModel) = 0.0
 get_glacier_melt(model::AbstractGlacierModel) = model.variables.glacier_melt
 get_glacier_fraction(model::NoGlacierModel) = 0.0
