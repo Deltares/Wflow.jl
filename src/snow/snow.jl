@@ -1,5 +1,6 @@
 abstract type AbstractSnowModel{T} end
 
+"Struct for storing snow model variables"
 @get_units @grid_loc @with_kw struct SnowVariables{T}
     # Snow storage [mm]
     snow_storage::Vector{T} | "mm"
@@ -26,6 +27,7 @@ function SnowVariables(
     )
 end
 
+"Struct for storing snow model boundary conditions"
 @get_units @grid_loc @with_kw struct SnowBC{T}
     # Effective precipitation [mm Δt⁻¹]
     effective_precip::Vector{T}
@@ -48,6 +50,7 @@ function SnowBC(
     )
 end
 
+"Struct for storing snow HBV model parameters"
 @get_units @grid_loc @with_kw struct SnowHbvParameters{T}
     # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹]
     cfmax::Vector{T} | "mm ᵒC-1 dt-1"
@@ -61,6 +64,7 @@ end
     whc::Vector{T} | "-"
 end
 
+"Snow HBV model"
 @with_kw struct SnowHbvModel{T} <: AbstractSnowModel{T}
     boundary_conditions::SnowBC{T}
     parameters::SnowHbvParameters{T}
@@ -69,6 +73,7 @@ end
 
 struct NoSnowModel{T} <: AbstractSnowModel{T} end
 
+"Initialize snow HBV model parameters"
 function SnowHbvParameters(nc, config, inds, dt)
     cfmax =
         ncread(
@@ -116,6 +121,7 @@ function SnowHbvParameters(nc, config, inds, dt)
     return snow_hbv_params
 end
 
+"Initialize snow HBV model"
 function SnowHbvModel(nc, config, inds, dt)
     n = length(inds)
     params = SnowHbvParameters(nc, config, inds, dt)
@@ -125,6 +131,7 @@ function SnowHbvModel(nc, config, inds, dt)
     return model
 end
 
+"Update boundary condition (effective precipitation provided by an interception model) of a snow model for a single timestep"
 function update_boundary_conditions!(model::AbstractSnowModel, external_models::NamedTuple)
     (; effective_precip) = model.boundary_conditions
     (; interception) = external_models
@@ -136,6 +143,7 @@ function update_boundary_conditions!(model::NoSnowModel, external_models::NamedT
     return nothing
 end
 
+"Update snow HBV model for a single timestep"
 function update!(model::SnowHbvModel, atmospheric_forcing::AtmosphericForcing)
     (; temperature) = atmospheric_forcing
     (; snow_storage, snow_water, swe, runoff) = model.variables
@@ -165,6 +173,7 @@ function update!(model::NoSnowModel, atmospheric_forcing::AtmosphericForcing)
     return nothing
 end
 
+# wrapper methods
 get_runoff(model::NoSnowModel) = 0.0
 get_runoff(model::AbstractSnowModel) = model.variables.runoff
 get_snow_storage(model::NoSnowModel) = 0.0
