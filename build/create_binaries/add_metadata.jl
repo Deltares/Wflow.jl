@@ -43,7 +43,19 @@ function add_metadata(project_dir, license_file, output_dir, git_repo)
         version = TOML.parsefile(normpath(git_repo, "Project.toml"))["version"]
         repo = GitRepo(git_repo)
         branch = LibGit2.head(repo)
+        commit = LibGit2.peel(LibGit2.GitCommit, branch)
         short_name = LibGit2.shortname(branch)
+        short_commit = string(LibGit2.GitShortHash(LibGit2.GitHash(commit), 10))
+
+        # get the release from the current tag, like `git describe --tags`
+        # if it is a commit after a tag, it will be <tag>-g<short-commit>
+        options = LibGit2.DescribeOptions(; describe_strategy = LibGit2.Consts.DESCRIBE_TAGS)
+        result = LibGit2.GitDescribeResult(repo; options)
+        suffix = "-dirty"
+        foptions =
+            LibGit2.DescribeFormatOptions(; dirty_suffix = Base.unsafe_convert(Cstring, suffix))
+        GC.@preserve suffix tag = LibGit2.format(result; options = foptions)[2:end]  # skip v prefix
+
         url = "https://github.com/Deltares/Wflow.jl/tree"
         version_info = """
 
@@ -52,7 +64,9 @@ function add_metadata(project_dir, license_file, output_dir, git_repo)
         This build uses the Wflow.jl version mentioned below.
 
         ```toml
+        release = "$tag"
         version = "$version"
+        commit = "$url/$short_commit"
         branch = "$url/$short_name"
         julia_version = "$julia_version"
         ```"""
