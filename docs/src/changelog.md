@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Added
+- Support for reinfiltration of surface overland flow water. Can be set through the
+  `surface_water_infiltration` key in the `[model]` section. This way, the water stored on the
+  land surface is added to the water that is allowed to infiltrate into the soil.
+- Support for adding a water level flow-threshold for both kinematic wave and local inertial
+  overland flow. This setting can be changed by changing the `lateral.land.h_thresh` key in the
+  settings file. This can be added as a map or as a fixed value (through the use of
+  `h_thresh.value`).
+
 ## v0.8.1 - 2024-08-27
 
 ### Fixed
@@ -35,7 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   is fixed by using `divrem` for the computation of the number of `steps` in this function.
   An error is thrown when the absolute remainder of `divrem` is larger than `eps()`, or when
   the number of `steps` is negative.
- - Fixed internal and external broken links in docs. 
+ - Fixed internal and external broken links in docs.
  - The internal time step of the local inertial model (`stable_timestep` function) can get
   zero when `LoopVectorization` is applied (`@tturbo`) to the for loop of these functions.
   This issue occured on a virtual machine, Windows 10 Enterprise, with Intel(R) Xeon(R) Gold

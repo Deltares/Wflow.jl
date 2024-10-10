@@ -74,6 +74,8 @@ internal model parameter `sl`, and is listed in the Table below between parenthe
 | `cel`           | celerity of kinematic wave | m s``^{-1}`` | - |
 | `to_river`      | part of overland flow that flows to the river | m``^3`` s``^{-1}`` | - |
 | `kinwave_it`    | boolean for kinematic wave iterations | - | false |
+| **`h_thresh`**  | threshold for water level before flow occurs | m | 0 |
+| `pond_height`   | waterlevel of the pond (water stored on land surface) | m | - |
 
 ### [Reservoirs](@id reservoir_params)
 The Table below shows the parameters (fields) of struct `SimpleReservoir`, including a
