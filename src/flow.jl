@@ -178,7 +178,7 @@ function initialize_surfaceflow_river(
         reservoir = reservoir,
         lake = lake,
         kinwave_it = iterate,
-        allocation = do_water_demand ? initialize_allocation_river(n) : nothing,
+        allocation = do_water_demand ? AllocationRiver(n) : nothing,
     )
 
     return sf_river
@@ -1634,8 +1634,11 @@ function set_river_inwater(model::Model, ssf_toriver)
             lateral.land.to_river[inds] +
             # net_runoff_river
             (net_runoff_river[inds] * network.land.area[inds] * 0.001) / vertical.dt +
-            (lateral.river.allocation.nonirri_returnflow * 0.001 * network.river.area) /
-            vertical.dt
+            (
+                lateral.river.allocation.variables.nonirri_returnflow *
+                0.001 *
+                network.river.area
+            ) / vertical.dt
         )
     else
         @. lateral.river.inwater = (
@@ -1666,7 +1669,7 @@ function set_land_inwater(
     end
     if do_water_demand
         @. lateral.land.inwater =
-            (net_runoff + vertical.allocation.nonirri_returnflow) *
+            (net_runoff + vertical.allocation.variables.nonirri_returnflow) *
             network.land.area *
             0.001 / lateral.land.dt + drainflux
     else
@@ -1688,7 +1691,7 @@ function set_land_inwater(
     do_water_demand = haskey(config.model, "water_demand")
     if do_water_demand
         @. lateral.land.inwater =
-            (net_runoff + vertical.allocation.nonirri_returnflow) *
+            (net_runoff + vertical.allocation.variables.nonirri_returnflow) *
             network.land.area *
             0.001 / lateral.land.dt
     else

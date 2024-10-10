@@ -228,8 +228,11 @@ function extract_required_states(config::Config)
         reservoir_states,
     )
     # Add paddy states to dict
-    required_states =
-        add_to_required_states(required_states, (:vertical, :demand, :paddy), paddy_states)
+    required_states = add_to_required_states(
+        required_states,
+        (:vertical, :demand, :paddy, :variables),
+        paddy_states,
+    )
     return required_states
 end
 

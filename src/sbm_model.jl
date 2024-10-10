@@ -195,11 +195,12 @@ function initialize_sbm_model(config::Config)
     inds_allocation_areas = Vector{Int}[]
     inds_riv_allocation_areas = Vector{Int}[]
     if do_water_demand
-        areas = unique(lsm.allocation.areas)
+        areas = unique(lsm.allocation.parameters.areas)
         for a in areas
-            area_index = findall(x -> x == a, lsm.allocation.areas)
+            area_index = findall(x -> x == a, lsm.allocation.parameters.areas)
             push!(inds_allocation_areas, area_index)
-            area_riv_index = findall(x -> x == a, lsm.allocation.areas[index_river])
+            area_riv_index =
+                findall(x -> x == a, lsm.allocation.parameters.areas[index_river])
             push!(inds_riv_allocation_areas, area_riv_index)
         end
     end
@@ -450,7 +451,8 @@ function update(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmMo
     # exchange of recharge between vertical sbm concept and subsurface flow domain
     lateral.subsurface.recharge .= vertical.soil.variables.recharge ./ 1000.0
     if do_water_demand
-        @. lateral.subsurface.recharge -= vertical.allocation.act_groundwater_abst / 1000.0
+        @. lateral.subsurface.recharge -=
+            vertical.allocation.variables.act_groundwater_abst / 1000.0
     end
     lateral.subsurface.recharge .*= lateral.subsurface.dw
     lateral.subsurface.zi .= vertical.soil.variables.zi ./ 1000.0

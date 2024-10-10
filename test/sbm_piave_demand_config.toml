@@ -27,14 +27,14 @@ forcing = [
 ]
 cyclic = [ 
     "vertical.vegetation_parameter_set.leaf_area_index", 
-    "vertical.demand.domestic.demand_gross", 
-    "vertical.demand.domestic.demand_net", 
-    "vertical.demand.industry.demand_gross", 
-    "vertical.demand.industry.demand_net", 
-    "vertical.demand.livestock.demand_gross", 
-    "vertical.demand.livestock.demand_net", 
-    "vertical.demand.paddy.irrigation_trigger", 
-    "vertical.demand.nonpaddy.irrigation_trigger",
+    "vertical.demand.domestic.demand.demand_gross", 
+    "vertical.demand.domestic.demand.demand_net", 
+    "vertical.demand.industry.demand.demand_gross", 
+    "vertical.demand.industry.demand.demand_net", 
+    "vertical.demand.livestock.demand.demand_gross", 
+    "vertical.demand.livestock.demand.demand_net", 
+    "vertical.demand.paddy.parameters.irrigation_trigger", 
+    "vertical.demand.nonpaddy.parameters.irrigation_trigger",
 ]
 
 [model]
@@ -66,7 +66,7 @@ snow_water = "snowwater"
 [state.vertical.glacier.variables]
 glacier_store = "glacierstore"
 
-[state.vertical.demand.paddy]
+[state.vertical.demand.paddy.variables]
 h = "h_paddy"
 
 [input.vertical.glacier.parameters]
@@ -144,27 +144,27 @@ q = "q_land"
 h = "h_land"
 h_av = "h_av_land"
 
-[input.vertical.allocation]
+[input.vertical.allocation.parameters]
 areas = "allocation_areas"
 frac_sw_used = "SurfaceWaterFrac"
 
-[input.vertical.demand.domestic]
+[input.vertical.demand.domestic.demand]
 demand_gross = "dom_gross"
 demand_net = "dom_net"
 
-[input.vertical.demand.industry]
+[input.vertical.demand.industry.demand]
 demand_gross = "ind_gross"
 demand_net = "ind_net"
 
-[input.vertical.demand.livestock]
+[input.vertical.demand.livestock.demand]
 demand_gross = "lsk_gross"
 demand_net = "lsk_net"
 
-[input.vertical.demand.paddy]
+[input.vertical.demand.paddy.parameters]
 irrigation_areas = "paddy_irrigation_areas"
 irrigation_trigger = "irrigation_trigger"
 
-[input.vertical.demand.nonpaddy]
+[input.vertical.demand.nonpaddy.parameters]
 irrigation_areas = "nonpaddy_irrigation_areas"
 irrigation_trigger = "irrigation_trigger"
 
@@ -208,10 +208,10 @@ parameter = "lateral.river.q_av"
 coordinate.x = 12.7243
 coordinate.y = 45.5851
 header = "paddy_h_bycoord"
-parameter = "vertical.demand.paddy.h"
+parameter = "vertical.demand.paddy.variables.h"
 
 [[csv.column]]
 coordinate.x = 12.7243
 coordinate.y = 45.5851
 header = "irri_bycoord"
-parameter = "vertical.allocation.irri_alloc"
+parameter = "vertical.allocation.variables.irri_alloc"

@@ -122,11 +122,12 @@ function initialize_sbm_gwf_model(config::Config)
     inds_allocation_areas = Vector{Int}[]
     inds_riv_allocation_areas = Vector{Int}[]
     if do_water_demand
-        areas = unique(lsm.allocation.areas)
+        areas = unique(lsm.allocation.parameters.areas)
         for a in areas
-            area_index = findall(x -> x == a, lsm.allocation.areas)
+            area_index = findall(x -> x == a, lsm.allocation.parameters.areas)
             push!(inds_allocation_areas, area_index)
-            area_riv_index = findall(x -> x == a, lsm.allocation.areas[index_river])
+            area_riv_index =
+                findall(x -> x == a, lsm.allocation.parameters.areas[index_river])
             push!(inds_riv_allocation_areas, area_riv_index)
         end
     end
@@ -559,7 +560,7 @@ function update(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmGw
     @. lateral.subsurface.recharge.rate = soil.variables.recharge / 1000.0 * (1.0 / dt_sbm)
     if do_water_demand
         @. lateral.subsurface.recharge.rate -=
-            vertical.allocation.act_groundwater_abst / 1000.0 * (1.0 / dt_sbm)
+            vertical.allocation.variables.act_groundwater_abst / 1000.0 * (1.0 / dt_sbm)
     end
     # update groundwater domain
     update(lateral.subsurface.flow, Q, dt_sbm, conductivity_profile)

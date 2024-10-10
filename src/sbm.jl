@@ -74,10 +74,8 @@ function LandHydrologySBM(nc, config, riverfrac, inds)
 
     do_water_demand = haskey(config.model, "water_demand")
     allocation =
-        do_water_demand ? initialize_allocation_land(nc, config, inds) :
-        NoAllocationLand{Float}()
-    demand =
-        do_water_demand ? initialize_water_demand(nc, config, inds, dt) : NoDemand{Float}()
+        do_water_demand ? AllocationLand(nc, config, inds) : NoAllocationLand{Float}()
+    demand = do_water_demand ? Demand(nc, config, inds, dt) : NoDemand{Float}()
 
     lsm = LandHydrologySBM{Float}(;
         atmospheric_forcing = atmospheric_forcing,
@@ -134,7 +132,7 @@ function update(model::LandHydrologySBM, lateral, network, config)
         potential_transpiration .= get_potential_transpiration(interception)
         @. soil.variables.h3 = feddes_h3(h3_high, h3_low, potential_transpiration, dt)
     end
-    update_water_demand!(allocation, demand, soil)
+    update_water_demand!(demand, soil)
     update_water_allocation!(allocation, demand, lateral, network, dt)
 
     soil_fraction!(soil, runoff, glacier)
