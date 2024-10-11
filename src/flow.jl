@@ -240,20 +240,25 @@ function update(sf::SurfaceFlowLand, network, frac_toriver)
                         )
                     end
 
+                    # Calculate potential inflow
+                    pot_inflow = (sf.qlat[v] * sf.dl[v] * dt) + (sf.qin[v] * dt)
+
                     # Check potential pond volume, to see if flow is allowed to occur
                     pond_volume_pot = max(
-                        pond_volume_current[v] +
-                        (sf.qlat[v] * sf.dl[v] * dt) +
-                        (sf.qin[v] * dt),
+                        pond_volume_current[v] + pot_inflow,
                         0.0,
                     )
 
                     # Start kinematic wave if pond volume exceeds threshold
                     if pond_volume_pot >= threshold_volume[v]
+                        # Calculate fraction of pond volume that is above threshold
+                        flowing_fraction = iszero(pot_inflow) ? 1.0 :
+                            (pond_volume_pot - threshold_volume[v]) / pot_inflow
+
                         sf.q[v] = kinematic_wave(
-                            sf.qin[v],
+                            sf.qin[v] * flowing_fraction,
                             sf.q[v],
-                            sf.qlat[v],
+                            sf.qlat[v] * flowing_fraction,
                             sf.alpha[v],
                             sf.beta,
                             dt,
@@ -266,6 +271,8 @@ function update(sf::SurfaceFlowLand, network, frac_toriver)
                             sf.h[v] = crossarea / sf.width[v]
                         end
 
+                        # Update pond volume
+                        pond_volume_current[v] = threshold_volume[v]
                     else
                         # No flow if pond volume is below threshold
                         sf.q[v] = 0.0
