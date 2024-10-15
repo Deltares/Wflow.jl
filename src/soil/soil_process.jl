@@ -1,9 +1,17 @@
 """
-    infiltration(potential_infiltration, pathfrac, infiltcapsoil, infiltcappath, ustorecapacity, f_infiltration_reduction)
+    infiltration(
+        potential_infiltration,
+        pathfrac,
+        infiltcapsoil,
+        infiltcappath,
+        ustorecapacity,
+        f_infiltration_reduction,
+    )
 
-Soil infiltration based on infiltration capacity soil `infiltcapsoil`, infiltration capacity compacted area
-`infiltcappath` and capacity unsatured zone `ustorecapacity`. The soil infiltration capacity can be adjusted
-in case the soil is frozen (`modelsnow` and `soilinfreduction` is `true`).
+Soil infiltration based on infiltration capacity soil `infiltcapsoil`, infiltration capacity
+paved area `infiltcappath` and unsaturated store capacity `ustorecapacity`. The infiltration
+capacity of the soil and paved area can be reduced with the infiltration reduction factor
+`f_infiltration_reduction`.
 """
 function infiltration(
     potential_infiltration,
@@ -14,7 +22,7 @@ function infiltration(
     f_infiltration_reduction,
 )
     # First determine if the soil infiltration capacity can deal with the amount of water
-    # split between infiltration in undisturbed soil and compacted areas (paths)
+    # split between infiltration in undisturbed soil and paved areas (path).
     soilinf = potential_infiltration * (1.0 - pathfrac)
     pathinf = potential_infiltration * pathfrac
 
@@ -30,22 +38,25 @@ end
 """
     unsatzone_flow_layer(usd, kv_z, l_sat, c)
 
-Assuming a unit head gradient, the transfer of water from an unsaturated store layer `usd` is controlled by the
-vertical saturated hydraulic conductivity `kv_z` (bottom layer or water table), the effective saturation
-degree of the layer (ratio `usd` and `l_sat`), and a Brooks-Corey power coefficient `c`.
+Assuming a unit head gradient, the transfer of water from an unsaturated store layer `usd`
+is controlled by the vertical saturated hydraulic conductivity `kv_z` (bottom layer or water
+table), the effective saturation degree of the layer (ratio `usd` and `l_sat`), and a
+Brooks-Corey power coefficient `c`.
 """
 function unsatzone_flow_layer(usd, kv_z, l_sat, c)
     if usd <= 0.0
         return 0.0, 0.0
     end
     sum_ast = 0.0
-    # first transfer soil water > maximum soil water capacity layer (iteration is not required because of steady theta (usd))
+    # first transfer soil water > maximum soil water capacity layer (iteration is not
+    # required because of steady theta (usd))
     st = kv_z * min(pow(usd / l_sat, c), 1.0)
     st_sat = max(0.0, usd - l_sat)
     usd -= min(st, st_sat)
     sum_ast = sum_ast + min(st, st_sat)
     ast = max(min(st - min(st, st_sat), usd), 0.0)
-    # number of iterations (to reduce "overshooting") based on fixed maximum change in soil water per iteration step (0.2 mm / model timestep)
+    # number of iterations (to reduce "overshooting") based on fixed maximum change in soil
+    # water per iteration step (0.2 mm / model timestep)
     its = Int(cld(ast, 0.2))
     for _ in 1:its
         st = (kv_z / its) * min(pow(usd / l_sat, c), 1.0)
@@ -58,12 +69,21 @@ function unsatzone_flow_layer(usd, kv_z, l_sat, c)
 end
 
 """
-    unsatzone_flow_sbm(ustorelayerdepth, soilwatercapacity, satwaterdepth, kv_z, usl, theta_s, theta_r)
+    unsatzone_flow_sbm(
+        ustorelayerdepth,
+        soilwatercapacity,
+        satwaterdepth,
+        kv_z,
+        usl,
+        theta_s,
+        theta_r,
+    )
 
-The transfer of water from the unsaturated store `ustorelayerdepth` to the saturated store `satwaterdepth`
-is controlled by the vertical saturated hydraulic conductivity `kv_z` at the water table and the ratio between
-`ustorelayerdepth` and the saturation deficit (`soilwatercapacity` minus `satwaterdepth`). This is the
-original Topog_SBM vertical transfer formulation.
+The transfer of water from the unsaturated store `ustorelayerdepth` to the saturated store
+`satwaterdepth` is controlled by the vertical saturated hydraulic conductivity `kv_z` at the
+water table and the ratio between `ustorelayerdepth` and the saturation deficit
+(`soilwatercapacity` minus `satwaterdepth`). This is the original Topog_SBM vertical
+transfer formulation.
 
 """
 function unsatzone_flow_sbm(
@@ -90,7 +110,7 @@ end
 """
     vwc_brooks_corey(h, hb, theta_s, theta_r, c)
 
-Volumetric water content based on the Brooks-Corey soil hydraulic model.
+Return volumetric water content based on the Brooks-Corey soil hydraulic model.
 """
 function vwc_brooks_corey(h, hb, theta_s, theta_r, c)
     if h < hb
@@ -105,11 +125,12 @@ end
 """
     head_brooks_corey(vwc, theta_s, theta_r, c, hb)
 
-Soil water pressure head based on the Brooks-Corey soil hydraulic model.
+Return soil water pressure head based on the Brooks-Corey soil hydraulic model.
 """
 function head_brooks_corey(vwc, theta_s, theta_r, c, hb)
     par_lambda = 2.0 / (c - 3.0)
-    # Note that in the original formula, theta_r is extracted from vwc, but theta_r is not part of the numerical vwc calculation
+    # Note that in the original formula, theta_r is extracted from vwc, but theta_r is not
+    # part of the numerical vwc calculation
     h = hb / (pow(((vwc) / (theta_s - theta_r)), (1.0 / par_lambda)))
     h = min(h, hb)
     return h
@@ -162,11 +183,33 @@ function rwu_reduction_feddes(h, h1, h2, h3, h4, alpha_h1)
     return alpha
 end
 
-function soil_temperature(tsoil, w_soil, temperature)
-    tsoil + w_soil * (temperature - tsoil)
+"""
+    soil_temperature(tsoil, w_soil, temperature))
+
+Return the near surface soil temperature `tsoil` based on the near surface soil temperature
+`tsoil_prev` at the previous timestep, and the difference between air `temperature` and near
+surface soil temperature `tsoil_prev` at the previous timestep, weighted with the weighting
+coefficient `w_soil` (Wigmosta et al., 2009).
+"""
+function soil_temperature(tsoil_prev, w_soil, temperature)
+    tsoil = tsoil_prev + w_soil * (temperature - tsoil_prev)
     return tsoil
 end
 
+"""
+    infiltration_reduction_factor(
+        tsoil,
+        cf_soil;
+        modelsnow = false,
+        soilinfreduction = false,
+    )
+
+When both `modelsnow` and `soilinfreduction` are `true` an infiltration reduction factor
+`f_infiltration_reduction` is computed. The infiltration reduction factor is based on the
+near surface soil temperature `tsoil`, parameter `cf_soil` and a s-curve to make a smooth
+transition of `f_infiltration_reduction` as a function of `tsoil` and `cf_soil`. Otherwise,
+`f_infiltration_reduction` is set to 1.0.
+"""
 function infiltration_reduction_factor(
     tsoil,
     cf_soil;
@@ -182,6 +225,7 @@ function infiltration_reduction_factor(
     return f_infiltration_reduction
 end
 
+"Return soil evaporation from the unsaturated store"
 function soil_evaporation_unsatured_store(
     potential_soilevaporation,
     ustorelayerdepth,
@@ -205,6 +249,7 @@ function soil_evaporation_unsatured_store(
     return soilevapunsat
 end
 
+"Return soil evaporation from the saturated store"
 function soil_evaporation_satured_store(
     potential_soilevaporation,
     n_unsatlayers,
@@ -222,6 +267,7 @@ function soil_evaporation_satured_store(
     return soilevapsat
 end
 
+"Return actual infiltration rate for soil `actinfiltsoil` and paved area `actinfiltpath`"
 function actual_infiltration_soil_path(
     potential_infiltration,
     actinfilt,
