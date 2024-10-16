@@ -22,8 +22,9 @@ using Polyester
 using LoopVectorization
 using IfElse
 
+# metadata is used in combination with BMI functions `get_var_units` and `get_var_location`
 @metadata get_units "mm dt-1" String
-@metadata grid_loc "node" String #BMI grid location
+@metadata grid_loc "node" String # BMI grid location
 
 const BMI = BasicModelInterface
 const Float = Float64
