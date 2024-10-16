@@ -196,7 +196,7 @@ end
 
 
 function update(sf::SurfaceFlowLand, network, frac_toriver)
-    @unpack area, graph, subdomain_order, topo_subdomain, indices_subdomain, upstream_nodes =
+    @unpack graph, subdomain_order, topo_subdomain, indices_subdomain, upstream_nodes =
         network
 
     ns = length(subdomain_order)
@@ -207,10 +207,10 @@ function update(sf::SurfaceFlowLand, network, frac_toriver)
     @. sf.qlat = sf.inwater / sf.dl
 
     # Convert threshold to volume
-    threshold_volume = sf.h_thresh .* area
+    threshold_volume = sf.h_thresh .* sf.width .* sf.dl
 
     # Get pond volume at the start of the time step
-    pond_volume_current = sf.pond_height .* area
+    pond_volume_current = sf.pond_height .* sf.width .* sf.dl
 
     sf.q_av .= 0.0
     sf.h_av .= 0.0
@@ -282,7 +282,7 @@ function update(sf::SurfaceFlowLand, network, frac_toriver)
                     end
 
                     # Update values
-                    sf.pond_height[v] = pond_volume_current[v] / area[v]
+                    sf.pond_height[v] = pond_volume_current[v] / (sf.width[v] * sf.dl[v])
 
                     # Update average values
                     sf.q_av[v] += sf.q[v]
