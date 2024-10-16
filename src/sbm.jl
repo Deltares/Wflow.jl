@@ -53,7 +53,7 @@ function LandHydrologySBM(nc, config, riverfrac, inds)
     demand = do_water_demand ? Demand(nc, config, inds, dt) : NoDemand{Float}()
 
     args = (demand, allocation)
-    lsm = LandHydrologySBM{Float, typeof.(args)...}(;
+    land_hydrology_model = LandHydrologySBM{Float, typeof.(args)...}(;
         atmospheric_forcing = atmospheric_forcing,
         vegetation_parameter_set = vegetation_parameter_set,
         interception = interception_model,
@@ -65,7 +65,7 @@ function LandHydrologySBM(nc, config, riverfrac, inds)
         allocation = allocation,
         dt = tosecond(dt),
     )
-    return lsm
+    return land_hydrology_model
 end
 
 "Update land hydrology model with SBM soil model for a single timestep"
@@ -128,8 +128,8 @@ end
 Update the total water storage per cell at the end of a timestep.
 
 Takes the following parameters:
-- sbm:
-    The vertical concept (SBM struct)
+- model:
+    The land hydrology model with the SBM soil model `LandHydrologySBM`
 - river_network:
     The indices of the river cells in relation to the active cells, i.e. model.network.index_river
 - area:

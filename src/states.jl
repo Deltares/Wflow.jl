@@ -1,11 +1,9 @@
 """
-    get_vertical_states(model_type; snow = false, glacier = false)
+    get_snow_states(model_type::AbstractString)
 
-Function to extract all required vertical states, given a certain model type. Passes the snow
-and glacier options only for the `sbm` model_type. Returns a tuple with the required states
-(internal names as symbols)
+Extract required snow model states, given a certain `model_type`. Returns a tuple with the
+required states (internal names as symbols).
 """
-
 function get_snow_states(model_type::AbstractString)
     if model_type == "sbm" || model_type == "sbm_gwf"
         states = (:snow_storage, :snow_water)
@@ -17,6 +15,12 @@ function get_snow_states(model_type::AbstractString)
     return states
 end
 
+"""
+    get_glacier_states(model_type::AbstractString)
+
+Extract required glacier model states, given a certain `model_type`. Returns a tuple with
+the required states (internal names as symbols).
+"""
 function get_glacier_states(model_type::AbstractString)
     if model_type == "sbm" || model_type == "sbm_gwf"
         states = (:glacier_store,)
@@ -28,6 +32,12 @@ function get_glacier_states(model_type::AbstractString)
     return states
 end
 
+"""
+    get_interception_states(model_type::AbstractString)
+
+Extract required interception model states, given a certain `model_type`. Returns a tuple
+with the required states (internal names as symbols).
+"""
 function get_interception_states(model_type::AbstractString)
     if model_type == "sbm" || model_type == "sbm_gwf"
         states = (:canopy_storage,)
@@ -39,6 +49,12 @@ function get_interception_states(model_type::AbstractString)
     return states
 end
 
+"""
+    get_soil_states(model_type::AbstractString; snow = false)
+
+Extract required soil model states, given a certain `model_type` and whether `snow` is
+modelled. Returns a tuple with the required states (internal names as symbols).
+"""
 function get_soil_states(model_type::AbstractString; snow = false)
     if model_type == "sbm" || model_type == "sbm_gwf"
         if snow

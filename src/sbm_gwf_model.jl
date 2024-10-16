@@ -2,7 +2,7 @@
     initialize_sbm_gwf_model(config::Config)
 
 Initial part of the sbm_gwf model concept. The model contains:
-    - the vertical SBM concept
+    - the land hydrology model with the SBM soil model
     - unconfined aquifer with groundwater flow in four directions (adjacent cells)
     - the following surface routing options:
         - 1-D kinematic wave for river flow and 1-D kinematic wave for overland flow
@@ -550,12 +550,12 @@ function update(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmGw
     dt_sbm = (vertical.dt / tosecond(basetimestep)) # vertical.dt is in seconds (Float64)
     if dt_gw < dt_sbm
         @warn(
-            "stable time step dt $dt_gw for groundwater flow is smaller than sbm dt $dt_sbm"
+            "stable time step dt $dt_gw for groundwater flow is smaller than `LandHydrologySBM` model dt $dt_sbm"
         )
     end
 
     Q = zeros(lateral.subsurface.flow.connectivity.ncell)
-    # exchange of recharge between vertical sbm concept and groundwater flow domain
+    # exchange of recharge between SBM soil model and groundwater flow domain
     # recharge rate groundwater is required in units [m d⁻¹]
     @. lateral.subsurface.recharge.rate = soil.variables.recharge / 1000.0 * (1.0 / dt_sbm)
     if do_water_demand
@@ -565,7 +565,7 @@ function update(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmGw
     # update groundwater domain
     update(lateral.subsurface.flow, Q, dt_sbm, conductivity_profile)
 
-    # update vertical sbm concept (runoff, ustorelayerdepth and satwaterdepth)
+    # update SBM soil model (runoff, ustorelayerdepth and satwaterdepth)
     update!(soil, (; runoff, demand, subsurface = lateral.subsurface.flow))
 
     ssf_toriver = zeros(length(soil.variables.zi))

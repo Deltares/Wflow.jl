@@ -448,7 +448,7 @@ function update(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmMo
     (; kv_profile) = vertical.soil.parameters
 
     model = update_until_recharge(model)
-    # exchange of recharge between vertical sbm concept and subsurface flow domain
+    # exchange of recharge between SBM soil model and subsurface flow domain
     lateral.subsurface.recharge .= vertical.soil.variables.recharge ./ 1000.0
     if do_water_demand
         @. lateral.subsurface.recharge -=
@@ -490,7 +490,7 @@ function update_after_subsurfaceflow(
     (; soil, runoff, demand) = vertical
     (; subsurface) = lateral
 
-    # update vertical sbm concept (runoff, ustorelayerdepth and satwaterdepth)
+    # update SBM soil model (runoff, ustorelayerdepth and satwaterdepth)
     update!(soil, (; runoff, demand, subsurface))
 
     ssf_toriver = lateral.subsurface.to_river ./ tosecond(basetimestep)
@@ -545,7 +545,7 @@ function set_states(
             )
         end
         set_states(instate_path, model; type = Float, dimname = :layer)
-        # update zi for vertical sbm
+        # update zi for SBM soil model
         zi =
             max.(
                 0.0,
