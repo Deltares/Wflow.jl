@@ -1,43 +1,18 @@
-@get_units @grid_loc @with_kw struct LandHydrologySBM{ATM, VP, IM, SNM, GM, RM, SM, D, A, T}
-    atmospheric_forcing::ATM | "-" | "none"
-    vegetation_parameter_set::VP | "-" | "none"
-    interception::IM | "-" | "none"
-    snow::SNM | "-" | "none"
-    glacier::GM | "-" | "none"
-    runoff::RM | "-" | "none"
-    soil::SM | "-" | "none"
-    demand::D | "-" | "none"
-    allocation::A | "-" | "none"
-    dt::T | "s" | "none"
+"Land hydrology model with SBM soil model"
+@with_kw struct LandHydrologySBM{T, D, A}
+    atmospheric_forcing::AtmosphericForcing{T}
+    vegetation_parameter_set::VegetationParameters{T}
+    interception::AbstractInterceptionModel{T}
+    snow::AbstractSnowModel{T}
+    glacier::AbstractGlacierModel{T}
+    runoff::AbstractRunoffModel{T}
+    soil::SbmSoilModel
+    demand::D
+    allocation::A
+    dt::T
 end
 
-function LandHydrologySBM{T}(;
-    atmospheric_forcing::AtmosphericForcing{T},
-    vegetation_parameter_set::VegetationParameters{T},
-    interception::AbstractInterceptionModel{T},
-    snow::AbstractSnowModel{T},
-    glacier::AbstractGlacierModel{T},
-    runoff::AbstractRunoffModel{T},
-    soil::SbmSoilModel{T},
-    demand::D,
-    allocation::A,
-    dt::T,
-) where {D, A, T}
-    args = (
-        atmospheric_forcing,
-        vegetation_parameter_set,
-        interception,
-        snow,
-        glacier,
-        runoff,
-        soil,
-        demand,
-        allocation,
-        dt,
-    )
-    LandHydrologySBM{typeof.(args)...}(args...)
-end
-
+"Initialize land hydrology model with SBM soil model"
 function LandHydrologySBM(nc, config, riverfrac, inds)
     dt = Second(config.timestepsecs)
     n = length(inds)
@@ -77,7 +52,8 @@ function LandHydrologySBM(nc, config, riverfrac, inds)
         do_water_demand ? AllocationLand(nc, config, inds) : NoAllocationLand{Float}()
     demand = do_water_demand ? Demand(nc, config, inds, dt) : NoDemand{Float}()
 
-    lsm = LandHydrologySBM{Float}(;
+    args = (demand, allocation)
+    lsm = LandHydrologySBM{Float, typeof.(args)...}(;
         atmospheric_forcing = atmospheric_forcing,
         vegetation_parameter_set = vegetation_parameter_set,
         interception = interception_model,
@@ -92,6 +68,7 @@ function LandHydrologySBM(nc, config, riverfrac, inds)
     return lsm
 end
 
+"Update land hydrology model with SBM soil model for a single timestep"
 function update(model::LandHydrologySBM, lateral, network, config)
     do_water_demand = haskey(config.model, "water_demand")::Bool
     (;

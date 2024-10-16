@@ -139,42 +139,6 @@ end
     @test res.evaporation[1] ≈ 0.5400000810623169f0
 end
 
-@testset "Exchange and grid location SBM" begin
-    sbm = model.vertical.soil
-    @test Wflow.exchange(sbm.variables.ustoredepth) == true
-    @test Wflow.exchange(model.vertical.vegetation_parameter_set.rootingdepth) == true
-    @test Wflow.grid_loc(sbm.parameters, :waterfrac) == "node"
-    @test Wflow.grid_loc(sbm.parameters, :rootingdepth) == "node"
-    @test Wflow.grid_loc(sbm.variables, :runoff) == "node"
-end
-
-@testset "Exchange and grid location subsurface flow" begin
-    ssf = model.lateral.subsurface
-    @test Wflow.exchange(ssf.dt) == false
-    @test Wflow.exchange(ssf.ssf) == true
-    @test Wflow.exchange(ssf.slope) == true
-    @test Wflow.grid_loc(ssf, :dt) == "none"
-    @test Wflow.grid_loc(ssf, :ssf) == "node"
-    @test Wflow.grid_loc(ssf, :slope) == "node"
-end
-
-@testset "Exchange and grid location kinematic wave" begin
-    land = model.lateral.land
-    @test Wflow.exchange(land.dt) == false
-    @test Wflow.exchange(land.q_av) == true
-    @test Wflow.exchange(land.inwater) == true
-    @test Wflow.grid_loc(land, :dt) == "none"
-    @test Wflow.grid_loc(land, :q_av) == "node"
-    @test Wflow.grid_loc(land, :inwater) == "node"
-    river = model.lateral.river
-    @test Wflow.exchange(river.dt) == false
-    @test Wflow.exchange(river.q_av) == true
-    @test Wflow.exchange(river.inwater) == true
-    @test Wflow.grid_loc(river, :dt) == "none"
-    @test Wflow.grid_loc(river, :q_av) == "node"
-    @test Wflow.grid_loc(river, :inwater) == "node"
-end
-
 # set these variables for comparison in "changed dynamic parameters"
 precip = copy(model.vertical.atmospheric_forcing.precipitation)
 evap = copy(model.vertical.atmospheric_forcing.potential_evaporation)
@@ -325,18 +289,6 @@ model = Wflow.run_timestep(model)
     h = model.lateral.land.h
     @test h[[26, 35, 631]] ≈
           [0.07367301172613304f0, 0.009139882310161706f0, 0.0007482998926237368f0]
-end
-
-@testset "Exchange and grid location local inertial overland flow" begin
-    land = model.lateral.land
-    @test Wflow.exchange(land.dt) == false
-    @test Wflow.exchange(land.g) == false
-    @test Wflow.exchange(land.h) == true
-    @test Wflow.exchange(land.qx) == true
-    @test Wflow.grid_loc(land, :dt) == "none"
-    @test Wflow.grid_loc(land, :g) == "node"
-    @test Wflow.grid_loc(land, :h) == "node"
-    @test Wflow.grid_loc(land, :qx) == "edge"
 end
 
 Wflow.close_files(model; delete_output = false)

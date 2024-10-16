@@ -28,15 +28,6 @@ res = Wflow.SimpleReservoir{Float64}(;
     @test res.actevap[1] ≈ 1.5
 end
 
-@testset "Exchange and grid location reservoir" begin
-    @test Wflow.exchange(res.dt) == false
-    @test Wflow.exchange(res.volume) == true
-    @test Wflow.exchange(res.outflow) == true
-    @test Wflow.grid_loc(res, :dt) == "none"
-    @test Wflow.grid_loc(res, :volume) == "node"
-    @test Wflow.grid_loc(res, :outflow) == "node"
-end
-
 lake = Wflow.Lake{Float64}(;
     dt = 86400.0,
     lowerlake_ind = [0],
@@ -69,15 +60,6 @@ lake = Wflow.Lake{Float64}(;
     @test lake.precipitation[1] ≈ 20.0
     @test lake.evaporation[1] ≈ 3.2
     @test lake.actevap[1] ≈ 3.2
-end
-
-@testset "Exchange and grid location lake" begin
-    @test Wflow.exchange(lake.dt) == false
-    @test Wflow.exchange(lake.storage) == true
-    @test Wflow.exchange(lake.outflow) == true
-    @test Wflow.grid_loc(lake, :dt) == "none"
-    @test Wflow.grid_loc(lake, :storage) == "node"
-    @test Wflow.grid_loc(lake, :outflow) == "node"
 end
 
 datadir = joinpath(@__DIR__, "data")

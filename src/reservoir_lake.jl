@@ -1,5 +1,5 @@
 @get_units @grid_loc @with_kw struct SimpleReservoir{T}
-    dt::T | "s" | "none"                                # Model time step [s]
+    dt::T                                               # Model time step [s]
     maxvolume::Vector{T} | "m3"                         # maximum storage (above which water is spilled) [m³]
     area::Vector{T} | "m2"                              # reservoir area [m²]
     maxrelease::Vector{T} | "m3 s-1"                    # maximum amount that can be released if below spillway [m³ s⁻¹]
@@ -204,7 +204,7 @@ function update(res::SimpleReservoir, i, inflow, timestepsecs)
 end
 
 @get_units @grid_loc @with_kw struct Lake{T}
-    dt::T | "s" | "none"                        # Model time step [s]
+    dt::T                                       # Model time step [s]
     lowerlake_ind::Vector{Int} | "-"            # Index of lower lake (linked lakes)
     area::Vector{T} | "m2"                      # lake area [m²]
     maxstorage::Vector{Union{T, Missing}} | "m3" # lake maximum storage from rating curve 1 [m³]

@@ -268,8 +268,8 @@ end
 
 "Struct for storing SBM soil model parameters"
 @get_units @grid_loc @with_kw struct SbmSoilParameters{T, N, M, Kv}
-    # Maximum number of soil layers
-    maxlayers::Int | "-"
+    # Maximum number of soil layers [-]
+    maxlayers::Int
     # Number of soil layers
     nlayers::Vector{Int} | "-"
     # Saturated water content (porosity) [-]

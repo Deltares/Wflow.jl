@@ -2,7 +2,7 @@
 abstract type SurfaceFlow end
 
 @get_units @grid_loc @with_kw struct SurfaceFlowRiver{T, R, L, A} <: SurfaceFlow
-    beta::T | "-"                           # constant in Manning's equation
+    beta::T                                 # constant in Manning's equation [-]
     sl::Vector{T} | "m m-1"                 # Slope [m m⁻¹]
     n::Vector{T} | "s m-1/3"                # Manning's roughness [s m⁻⅓]
     dl::Vector{T} | "m"                     # Drain length [m]
@@ -18,29 +18,23 @@ abstract type SurfaceFlow end
     h::Vector{T} | "m"                      # Water level [m]
     h_av::Vector{T} | "m"                   # Average water level [m]
     bankfull_depth::Vector{T} | "m"         # Bankfull water level [m]
-    dt::T | "s" | "none"                    # Model time step [s]
-    its::Int | "-" | "none"                 # Number of fixed iterations
+    dt::T                                   # Model time step [s]
+    its::Int                                # Number of fixed iterations [-]
     width::Vector{T} | "m"                  # Flow width [m]
-    alpha_pow::T | "-"                      # Used in the power part of alpha
-    alpha_term::Vector{T} | "-"             # Term used in computation of alpha
+    alpha_pow::T                            # Used in the power part of alpha [-]
+    alpha_term::Vector{T} | "-"             # Term used in computation of alpha [-]
     alpha::Vector{T} | "s3/5 m1/5"          # Constant in momentum equation A = alpha*Q^beta, based on Manning's equation
     cel::Vector{T} | "m s-1"                # Celerity of the kinematic wave
     reservoir_index::Vector{Int} | "-"      # map cell to 0 (no reservoir) or i (pick reservoir i in reservoir field)
     lake_index::Vector{Int} | "-"           # map cell to 0 (no lake) or i (pick lake i in lake field)
-    reservoir::R | "-" | "none"             # Reservoir model struct of arrays
-    lake::L | "-" | "none"                  # Lake model struct of arrays
-    allocation::A | "-" | "none"            # Water allocation
-    kinwave_it::Bool | "-" | "none"         # Boolean for iterations kinematic wave
-
-    # TODO unclear why this causes a MethodError
-    # function SurfaceFlow{T,R,L}(args...) where {T,R,L}
-    #     equal_size_vectors(args)
-    #     return new(args...)
-    # end
+    reservoir::R                            # Reservoir model struct of arrays
+    lake::L                                 # Lake model struct of arrays
+    allocation::A                           # Water allocation
+    kinwave_it::Bool                        # Boolean for iterations kinematic wave
 end
 
 @get_units @grid_loc @with_kw struct SurfaceFlowLand{T} <: SurfaceFlow
-    beta::T | "-"                       # constant in Manning's equation
+    beta::T                             # constant in Manning's equation [-]
     sl::Vector{T} | "m m-1"             # Slope [m m⁻¹]
     n::Vector{T} | "s m-1/3"            # Manning's roughness [s m⁻⅓]
     dl::Vector{T} | "m"                 # Drain length [m]
@@ -52,15 +46,15 @@ end
     volume::Vector{T} | "m3"            # Kinematic wave volume [m³] (based on water level h)
     h::Vector{T} | "m"                  # Water level [m]
     h_av::Vector{T} | "m"               # Average water level [m]
-    dt::T | "s" | "none"                # Model time step [s]
-    its::Int | "-" | "none"             # Number of fixed iterations
+    dt::T                               # Model time step [s]
+    its::Int                            # Number of fixed iterations [-]
     width::Vector{T} | "m"              # Flow width [m]
-    alpha_pow::T | "-"                  # Used in the power part of alpha
-    alpha_term::Vector{T} | "-"         # Term used in computation of alpha
+    alpha_pow::T                        # Used in the power part of alpha [-]
+    alpha_term::Vector{T} | "-"         # Term used in computation of alpha [-]
     alpha::Vector{T} | "s3/5 m1/5"      # Constant in momentum equation A = alpha * Q^beta, based on Manning's equation
     cel::Vector{T} | "m s-1"            # Celerity of the kinematic wave
     to_river::Vector{T} | "m3 s-1"      # Part of overland flow [m³ s⁻¹] that flows to the river
-    kinwave_it::Bool | "-" | "none"     # Boolean for iterations kinematic wave
+    kinwave_it::Bool                    # Boolean for iterations kinematic wave [-]
 end
 
 function initialize_surfaceflow_land(nc, config, inds; sl, dl, width, iterate, tstep, dt)
@@ -404,7 +398,7 @@ end
 
 @get_units @grid_loc struct KhExponentialConstant{T}
     # Exponential horizontal hydraulic conductivity profile type
-    exponential::KhExponential | "-" | "none"
+    exponential::KhExponential
     # Depth [m] from soil surface for which exponential decline of kv_0 is valid
     z_exp::Vector{T} | "m"
 end
@@ -417,12 +411,12 @@ end
 abstract type SubsurfaceFlow end
 
 @get_units @grid_loc @with_kw struct LateralSSF{T, Kh} <: SubsurfaceFlow
-    kh_profile::Kh | "-" | "none"          # Horizontal hydraulic conductivity profile type [-]  
+    kh_profile::Kh                         # Horizontal hydraulic conductivity profile type [-]  
     khfrac::Vector{T} | "-"                # A muliplication factor applied to vertical hydraulic conductivity `kv` [-]
     soilthickness::Vector{T} | "m"         # Soil thickness [m]
     theta_s::Vector{T} | "-"               # Saturated water content (porosity) [-]
     theta_r::Vector{T} | "-"               # Residual water content [-]
-    dt::T | "d" | "none"                   # model time step [d]
+    dt::T                                  # model time step [d]
     slope::Vector{T} | "m m-1"             # Slope [m m⁻¹]
     dl::Vector{T} | "m"                    # Drain length [m]
     dw::Vector{T} | "m"                    # Flow width [m]
@@ -489,7 +483,7 @@ function update(ssf::LateralSSF, network, frac_toriver)
 end
 
 @get_units@grid_loc @with_kw struct GroundwaterExchange{T} <: SubsurfaceFlow
-    dt::T | "d" | "none"                # model time step [d]
+    dt::T                               # model time step [d]
     exfiltwater::Vector{T} | "m dt-1"   # Exfiltration [m Δt⁻¹]  (groundwater above surface level, saturated excess conditions)
     zi::Vector{T} | "m"                 # Pseudo-water table depth [m] (top of the saturated zone)
     to_river::Vector{T} | "m3 d-1"      # Part of subsurface flow [m³ d⁻¹] that flows to the river
@@ -500,14 +494,14 @@ get_water_depth(subsurface::SubsurfaceFlow) = subsurface.zi
 get_exfiltwater(subsurface::SubsurfaceFlow) = subsurface.exfiltwater
 
 @get_units @grid_loc @with_kw struct ShallowWaterRiver{T, R, L, F, A}
-    n::Int | "-" | "none"                               # number of cells
-    ne::Int | "-" | "none"                              # number of edges/links
-    active_n::Vector{Int} | "-"                         # active nodes
-    active_e::Vector{Int} | "-" | "edge"                # active edges/links
-    g::T | "m s-2"                                      # acceleration due to gravity
-    alpha::T | "-"                                      # stability coefficient (Bates et al., 2010)
-    h_thresh::T | "m"                                   # depth threshold for calculating flow
-    dt::T | "s" | "none"                                # model time step [s]
+    n::Int                                              # number of cells [-]
+    ne::Int                                             # number of edges/links [-]
+    active_n::Vector{Int} | "-"                         # active nodes [-]
+    active_e::Vector{Int} | "-" | "edge"                # active edges/links [-]
+    g::T                                                # acceleration due to gravity [m s⁻²]
+    alpha::T                                            # stability coefficient (Bates et al., 2010) [-]
+    h_thresh::T                                         # depth threshold for calculating flow [m]
+    dt::T                                               # model time step [s]
     q::Vector{T} | "m3 s-1" | "edge"                    # river discharge (subgrid channel)
     q0::Vector{T} | "m3 s-1" | "edge"                   # river discharge (subgrid channel) at previous time step
     q_av::Vector{T} | "m3 s-1" | "edge"                 # average river channel (+ floodplain) discharge [m³ s⁻¹]
@@ -536,14 +530,14 @@ get_exfiltwater(subsurface::SubsurfaceFlow) = subsurface.exfiltwater
     bankfull_volume::Vector{T} | "m3"                   # bankfull volume
     bankfull_depth::Vector{T} | "m"                     # bankfull depth
     zb::Vector{T} | "m"                                 # river bed elevation
-    froude_limit::Bool | "-" | "none"                   # if true a check is performed if froude number > 1.0 (algorithm is modified)
+    froude_limit::Bool                                  # if true a check is performed if froude number > 1.0 (algorithm is modified) [-]
     reservoir_index::Vector{Int} | "-"                  # river cell index with a reservoir (each index of reservoir_index maps to reservoir i in reservoir field)
     lake_index::Vector{Int} | "-"                       # river cell index with a lake (each index of lake_index maps to lake i in lake field)
     waterbody::Vector{Bool} | "-"                       # water body cells (reservoir or lake)
-    reservoir::R | "-" | "none"                         # Reservoir model struct of arrays
-    lake::L | "-" | "none"                              # Lake model struct of arrays
-    floodplain::F | "-" | "none"                        # Floodplain (1D) schematization
-    allocation::A | "-" | "none"                        # Water allocation
+    reservoir::R                                        # Reservoir model struct of arrays
+    lake::L                                             # Lake model struct of arrays
+    floodplain::F                                       # Floodplain (1D) schematization
+    allocation::A                                       # Water allocation
 end
 
 function initialize_shallowwater_river(
@@ -999,16 +993,16 @@ end
 const dirs = (:yd, :xd, :xu, :yu)
 
 @get_units @grid_loc @with_kw struct ShallowWaterLand{T}
-    n::Int | "-" | "none"                               # number of cells
-    xl::Vector{T} | "m"                                 # cell length x direction
-    yl::Vector{T} | "m"                                 # cell length y direction
-    xwidth::Vector{T} | "m" | "edge"                    # effective flow width x direction (floodplain)
-    ywidth::Vector{T} | "m" | "edge"                    # effective flow width y direction (floodplain)
-    g::T | "m2 s-1"                                     # acceleration due to gravity
-    theta::T | "-"                                      # weighting factor (de Almeida et al., 2012)
-    alpha::T | "-"                                      # stability coefficient (de Almeida et al., 2012)
-    h_thresh::T | "m"                                   # depth threshold for calculating flow
-    dt::T | "s" | "none"                                # model time step [s]
+    n::Int                                              # number of cells [-]
+    xl::Vector{T} | "m"                                 # cell length x direction [m]
+    yl::Vector{T} | "m"                                 # cell length y direction [m]
+    xwidth::Vector{T} | "m" | "edge"                    # effective flow width x direction (floodplain) [m]
+    ywidth::Vector{T} | "m" | "edge"                    # effective flow width y direction (floodplain) [m]
+    g::T                                                # acceleration due to gravity [m s⁻²]
+    theta::T                                            # weighting factor (de Almeida et al., 2012) [-]
+    alpha::T                                            # stability coefficient (de Almeida et al., 2012) [-]
+    h_thresh::T                                         # depth threshold for calculating flow [m]
+    dt::T                                               # model time step [s]
     qy0::Vector{T} | "m3 s-1" | "edge"                  # flow in y direction at previous time step
     qx0::Vector{T} | "m3 s-1" | "edge"                  # flow in x direction at previous time step
     qx::Vector{T} | "m3 s-1" | "edge"                   # flow in x direction
@@ -1022,7 +1016,7 @@ const dirs = (:yd, :xd, :xu, :yu)
     inflow_wb::Vector{T} | "m3 s-1"                     # inflow to water body from hydrological model
     h::Vector{T} | "m"                                  # water depth of cell (for river cells the reference is the river bed elevation `zb`)
     z::Vector{T} | "m"                                  # elevation of cell
-    froude_limit::Bool | "-" | "none"                   # if true a check is performed if froude number > 1.0 (algorithm is modified)
+    froude_limit::Bool                                  # if true a check is performed if froude number > 1.0 (algorithm is modified) [-]
     rivercells::Vector{Bool} | "-"                      # river cells
     h_av::Vector{T} | "m"                               # average water depth (for river cells the reference is the river bed elevation `zb`)
 end
@@ -1388,7 +1382,7 @@ derived with floodplain area `a` (cumulative) and wetted perimeter radius `p` (c
 end
 
 @get_units @grid_loc @with_kw struct FloodPlain{T, P}
-    profile::P | "-" | "none"                           # floodplain profile
+    profile::P                                         # floodplain profile
     mannings_n::Vector{T} | "s m-1/3"                   # manning's roughness
     mannings_n_sq::Vector{T} | "(s m-1/3)2" | "edge"    # manning's roughness squared
     volume::Vector{T} | "m3"                            # volume
