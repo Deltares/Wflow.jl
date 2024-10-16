@@ -1,4 +1,4 @@
-
+"Struct to store (shared) vegetation parameters"
 @get_units @grid_loc @with_kw struct VegetationParameters{T}
     # Leaf area index [m² m⁻²]
     leaf_area_index::Union{Vector{T}, Nothing} | "m2 m-2"
@@ -18,6 +18,7 @@
     kc::Vector{T} | "-"
 end
 
+"Initialize (shared) vegetation parameters"
 function VegetationParameters(nc, config, inds)
     n = length(inds)
     rootingdepth = ncread(
