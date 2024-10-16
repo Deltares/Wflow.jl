@@ -1,4 +1,4 @@
-
+"Struct to store atmospheric forcing variables"
 @get_units @with_kw struct AtmosphericForcing{T}
     # Precipitation [mm Δt⁻¹]
     precipitation::Vector{T}
@@ -8,6 +8,7 @@
     temperature::Vector{T} | "°C"
 end
 
+"Initialize atmospheric forcing"
 function AtmosphericForcing(
     n;
     precipitation::Vector{T} = fill(mv, n),
