@@ -1285,7 +1285,7 @@ function update!(model::SbmSoilModel, external_models::NamedTuple)
     end
     # update runoff and net_runoff (the runoff rate depends on the presence of paddy fields
     # and the h_max parameter of a paddy field)
-    v.runoff .= update_runoff!(demand.paddy, v.runoff)
+    update_runoff!(demand.paddy, v.runoff)
     @. v.net_runoff = v.runoff - ae_openw_l
 end
 
