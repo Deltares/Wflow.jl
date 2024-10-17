@@ -452,10 +452,13 @@ Wflow.close_files(model; delete_output = false)
         model = Wflow.initialize_sbm_model(config)
         @unpack soil = model.vertical
         (; kv_profile) = soil.parameters
+        (; subsurface) = model.lateral
         z = soil.variables.zi[i]
         kvfrac = soil.parameters.kvfrac
         kv_z = Wflow.hydraulic_conductivity_at_depth(kv_profile, kvfrac, z, i, 2)
         @test kv_z ≈ kvfrac[i][2] * kv_profile.kv_0[i] * exp(-kv_profile.f[i] * z)
+        @test subsurface.ssfmax[i] ≈ 28.32720603576582f0
+        @test subsurface.ssf[i] ≈ 11683.330684556406f0
     end
 
     @testset "exponential constant profile" begin
@@ -463,6 +466,7 @@ Wflow.close_files(model; delete_output = false)
         model = Wflow.initialize_sbm_model(config)
         @unpack soil = model.vertical
         (; kv_profile) = soil.parameters
+        (; subsurface) = model.lateral
         z = soil.variables.zi[i]
         kvfrac = soil.parameters.kvfrac
         kv_z = Wflow.hydraulic_conductivity_at_depth(kv_profile, kvfrac, z, i, 2)
@@ -474,6 +478,8 @@ Wflow.close_files(model; delete_output = false)
         kv_1000 = Wflow.hydraulic_conductivity_at_depth(kv_profile, kvfrac, 1000.0, i, 3)
         @test kv_400 ≈ kv_1000
         @test all(kv_profile.z_exp .== 400.0)
+        @test subsurface.ssfmax[i] ≈ 49.38558575188426f0
+        @test subsurface.ssf[i] ≈ 24810.460986497365f0
     end
 
     @testset "layered profile" begin
@@ -488,6 +494,8 @@ Wflow.close_files(model; delete_output = false)
               kv_profile.kv[i][2]
         Wflow.kh_layered_profile!(soil, subsurface, kv_profile, 86400.0)
         @test subsurface.kh_profile.kh[i] ≈ 47.508932674632355f0
+        @test subsurface.ssfmax[i] ≈ 30.237094380100316f0
+        @test subsurface.ssf[i] ≈ 14546.518932613191f0
     end
 
     @testset "layered exponential profile" begin
@@ -504,6 +512,8 @@ Wflow.close_files(model; delete_output = false)
         Wflow.kh_layered_profile!(soil, subsurface, kv_profile, 86400.0)
         @test subsurface.kh_profile.kh[i] ≈ 33.76026208801769f0
         @test all(kv_profile.z_layered[1:10] .== 400.0)
+        @test subsurface.ssfmax[i] ≈ 23.4840490395906f0
+        @test subsurface.ssf[i] ≈ 10336.88327617503f0
     end
 
     model = Wflow.run_timestep(model)
