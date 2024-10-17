@@ -1,7 +1,6 @@
-using Wflow
 using Downloads
 
-testdir = abspath(dirname(pathof(Wflow)), "..", "test")
+testdir = normpath(@__DIR__, "../../test")
 
 # ensure test data is present
 # this code is copied from runtests.jl, and is a temporary solution to get the data in place
