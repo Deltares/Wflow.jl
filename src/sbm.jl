@@ -156,6 +156,8 @@
     infiltexcess::Vector{T}
     # Infiltration from surface water [mm Δt⁻¹]
     infilt_surfacewater::Vector{T}
+    # Contribution from surface water [mm Δt⁻¹]
+    contribution_surfacewater::Vector{T}
     # Water that cannot infiltrate due to saturated soil (saturation excess) [mm Δt⁻¹]
     excesswater::Vector{T}
     # Water exfiltrating during saturation excess conditions [mm Δt⁻¹]
@@ -718,6 +720,7 @@ function initialize_sbm(nc, config, riverfrac, inds)
         ae_openw_r = fill(mv, n),
         avail_forinfilt = fill(mv, n),
         infilt_surfacewater = fill(mv, n),
+        contribution_surfacewater = fill(mv, n),
         actinfilt = fill(mv, n),
         actinfiltsoil = fill(mv, n),
         actinfiltpath = fill(mv, n),
@@ -916,26 +919,31 @@ function update_until_recharge(sbm::SBM, config)
             sbm.waterlevel_river[i] * sbm.riverfrac[i],
             sbm.riverfrac[i] * sbm.potential_evaporation[i],
         )
+        # Determine remaining fraction of available potential_evaporation
+        soilevap_fraction = max(
+            sbm.canopygapfraction[i] - sbm.riverfrac[i] - sbm.glacierfrac[i],
+            0.0,
+        )
+        # Determine amount of surface water
+        surface_water = sbm.waterlevel_land[i] * (1.0 - sbm.riverfrac[i])
+
+        # Calculate open water evaporation
         ae_openw_l = min(
-            sbm.waterlevel_land[i] * sbm.waterfrac[i],
-            sbm.waterfrac[i] * sbm.potential_evaporation[i],
+            surface_water,
+            sbm.potential_evaporation[i] * soilevap_fraction,
         )
 
-        # Update land waterlevel
-        waterlevel_land = sbm.waterlevel_land[i] - ae_openw_l
-
+        # Update land waterlevel and scale to part of cell not covered by rivers
         if do_surface_water_infiltration
+            contribution_surfacewater = surface_water - ae_openw_l
             # Add land waterlevel to infiltration
-            avail_forinfilt += waterlevel_land
+            avail_forinfilt += contribution_surfacewater
+        else
+            contribution_surfacewater = 0.0
         end
 
         # evap available for soil evaporation
-        soilevap_fraction = max(
-            sbm.canopygapfraction[i] - sbm.riverfrac[i] - sbm.waterfrac[i] -
-            sbm.glacierfrac[i],
-            0.0,
-        )
-        potsoilevap = soilevap_fraction * sbm.potential_evaporation[i]
+        potsoilevap = (sbm.potential_evaporation[i] * soilevap_fraction) - ae_openw_l
 
         if !isnothing(sbm.paddy) && sbm.paddy.irrigation_areas[i]
             evap_paddy_water = min(sbm.paddy.h[i], potsoilevap)
@@ -1139,7 +1147,7 @@ function update_until_recharge(sbm::SBM, config)
         # infiltsoilpath (and prevent division by zero)
         if do_surface_water_infiltration
             infilt_ratio = iszero(avail_forinfilt) ? 0.0 : actinfilt / avail_forinfilt
-            infilt_surfacewater = max(0.0, waterlevel_land * infilt_ratio)
+            infilt_surfacewater = max(0.0, contribution_surfacewater * infilt_ratio)
         else
             infilt_surfacewater = 0.0
         end
@@ -1214,6 +1222,7 @@ function update_until_recharge(sbm::SBM, config)
         sbm.actinfilt[i] = actinfilt
         sbm.infiltexcess[i] = infiltexcess
         sbm.infilt_surfacewater[i] = infilt_surfacewater
+        sbm.contribution_surfacewater[i] = contribution_surfacewater
         sbm.recharge[i] = recharge
         sbm.transpiration[i] = transpiration
         sbm.soilevap[i] = soilevap
@@ -1274,10 +1283,9 @@ function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater, config)
         do_surface_water_infiltration =
             get(config.model, "surface_water_infiltration", false)::Bool
         if do_surface_water_infiltration
-            contribution_surfacewater = sbm.waterlevel_land[i] - sbm.ae_openw_l[i]
             correction_surfacewater =
                 iszero(sbm.avail_forinfilt[i]) ? 1.0 :
-                1.0 - (contribution_surfacewater / sbm.avail_forinfilt[i])
+                1.0 - (sbm.contribution_surfacewater[i] / sbm.avail_forinfilt[i])
         else
             correction_surfacewater = 1.0
         end

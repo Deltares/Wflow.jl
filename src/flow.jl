@@ -252,8 +252,11 @@ function update(sf::SurfaceFlowLand, network, frac_toriver)
                     # Start kinematic wave if pond volume exceeds threshold
                     if pond_volume_pot >= threshold_volume[v]
                         # Calculate fraction of pond volume that is above threshold
-                        flowing_fraction = iszero(pot_inflow) ? 1.0 :
-                            (pond_volume_pot - threshold_volume[v]) / pot_inflow
+                        if pot_inflow <= 0.0
+                            flowing_fraction = 1.0
+                        else
+                            flowing_fraction = (pond_volume_pot - threshold_volume[v]) / pot_inflow
+                        end
 
                         sf.q[v] = kinematic_wave(
                             sf.qin[v] * flowing_fraction,
