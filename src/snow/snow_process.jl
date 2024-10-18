@@ -49,7 +49,7 @@ function snowpack_hbv(
     snowwater = snowwater - runoff
     swe = snowwater + snow # snow water equivalent
 
-    return snow, snowwater, swe, runoff
+    return snow, snowwater, swe, snowmelt, runoff
 end
 
 """

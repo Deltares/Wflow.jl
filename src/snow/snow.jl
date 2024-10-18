@@ -8,6 +8,8 @@ abstract type AbstractSnowModel{T} end
     snow_water::Vector{T} | "mm"
     # Snow water equivalent (SWE) [mm]
     swe::Vector{T} | "mm"
+    # Snow melt [mm Δt⁻¹]
+    snow_melt::Vector{T}
     # Runoff from snowpack [mm Δt⁻¹]
     runoff::Vector{T}
 end
@@ -18,6 +20,7 @@ function SnowVariables(
     snow_storage::Vector{T} = fill(0.0, n),
     snow_water::Vector{T} = fill(0.0, n),
     swe::Vector{T} = fill(mv, n),
+    snow_melt::Vector{T} = fill(mv, n),
     runoff::Vector{T} = fill(mv, n),
 ) where {T}
     return SnowVariables{T}(;
@@ -25,6 +28,7 @@ function SnowVariables(
         snow_water = snow_water,
         swe = swe,
         runoff = runoff,
+        snow_melt = snow_melt,
     )
 end
 
@@ -148,7 +152,7 @@ end
 "Update snow HBV model for a single timestep"
 function update!(model::SnowHbvModel, atmospheric_forcing::AtmosphericForcing)
     (; temperature) = atmospheric_forcing
-    (; snow_storage, snow_water, swe, runoff) = model.variables
+    (; snow_storage, snow_water, swe, snow_melt, runoff) = model.variables
     (; effective_precip, snow_precip, liquid_precip) = model.boundary_conditions
     (; tt, tti, ttm, cfmax, whc) = model.parameters
 
@@ -158,7 +162,7 @@ function update!(model::SnowHbvModel, atmospheric_forcing::AtmosphericForcing)
             precipitation_hbv(effective_precip[i], temperature[i], tti[i], tt[i])
     end
     threaded_foreach(1:n; basesize = 1000) do i
-        snow_storage[i], snow_water[i], swe[i], runoff[i] = snowpack_hbv(
+        snow_storage[i], snow_water[i], swe[i], snow_melt[i], runoff[i] = snowpack_hbv(
             snow_storage[i],
             snow_water[i],
             snow_precip[i],
