@@ -1,23 +1,22 @@
-@testset "reservoir simple" begin
-    res = Wflow.SimpleReservoir{Float64}(
-        dt = 86400.0,
-        demand = [52.523],
-        maxrelease = [420.184],
-        maxvolume = [25_000_000.0],
-        volume = [1.925e7],
-        totaloutflow = [0.0],
-        inflow = [0.0],
-        area = [1885665.353626924],
-        targetfullfrac = [0.8],
-        targetminfrac = [0.2425554726620697],
-        precipitation = [4.2],
-        evaporation = [1.5],
-        actevap = [0.0],
-        outflow = [NaN],
-        percfull = [NaN],
-        demandrelease = [NaN],
-    )
-
+res = Wflow.SimpleReservoir{Float64}(;
+    dt = 86400.0,
+    demand = [52.523],
+    maxrelease = [420.184],
+    maxvolume = [25_000_000.0],
+    volume = [1.925e7],
+    totaloutflow = [0.0],
+    inflow = [0.0],
+    area = [1885665.353626924],
+    targetfullfrac = [0.8],
+    targetminfrac = [0.2425554726620697],
+    precipitation = [4.2],
+    evaporation = [1.5],
+    actevap = [0.0],
+    outflow = [NaN],
+    percfull = [NaN],
+    demandrelease = [NaN],
+)
+@testset "Update reservoir simple" begin
     Wflow.update(res, 1, 100.0, 86400.0)
     @test res.outflow[1] ≈ 91.3783714867453
     @test res.totaloutflow[1] ≈ 7.895091296454794e6
@@ -29,31 +28,31 @@
     @test res.actevap[1] ≈ 1.5
 end
 
-@testset "lake" begin
-    lake = Wflow.Lake{Float64}(
-        dt = 86400.0,
-        lowerlake_ind = [0],
-        area = [180510409.0],
-        maxstorage = Wflow.maximum_storage([1], [3], [180510409.0], [missing], [missing]),
-        threshold = [0.0],
-        storfunc = [1],
-        outflowfunc = [3],
-        totaloutflow = [0.0],
-        inflow = [0.0],
-        b = [0.22],
-        e = [2.0],
-        sh = [missing],
-        hq = [missing],
-        storage = Wflow.initialize_storage([1], [180510409.0], [18.5], [missing]),
-        waterlevel = [18.5],
-        precipitation = [20.0],
-        evaporation = [3.2],
-        actevap = [0.0],
-        outflow = [NaN],
-    )
-
+lake = Wflow.Lake{Float64}(;
+    dt = 86400.0,
+    lowerlake_ind = [0],
+    area = [180510409.0],
+    maxstorage = Wflow.maximum_storage([1], [3], [180510409.0], [missing], [missing]),
+    threshold = [0.0],
+    storfunc = [1],
+    outflowfunc = [3],
+    totaloutflow = [0.0],
+    inflow = [0.0],
+    b = [0.22],
+    e = [2.0],
+    sh = [missing],
+    hq = [missing],
+    storage = Wflow.initialize_storage([1], [180510409.0], [18.5], [missing]),
+    waterlevel = [18.5],
+    precipitation = [20.0],
+    evaporation = [3.2],
+    actevap = [0.0],
+    outflow = [NaN],
+)
+@testset "Update lake" begin
     Wflow.update(lake, 1, 2500.0, 181, 86400.0)
-    @test Wflow.waterlevel(lake.storfunc, lake.area, lake.storage, lake.sh)[1] ≈ 19.672653848925634
+    @test Wflow.waterlevel(lake.storfunc, lake.area, lake.storage, lake.sh)[1] ≈
+          19.672653848925634
     @test lake.outflow[1] ≈ 85.14292808113598
     @test lake.totaloutflow[1] ≈ 7.356348986210149e6
     @test lake.storage[1] ≈ 3.55111879238499e9
@@ -70,9 +69,9 @@ sh = [
 ]
 @testset "linked lakes (HBV)" begin
     @test keys(sh[1]) == (:H, :S)
-    @test typeof(values(sh[1])) == Tuple{Vector{Float},Vector{Float}}
+    @test typeof(values(sh[1])) == Tuple{Vector{Float}, Vector{Float}}
 
-    lake = Wflow.Lake{Float}(
+    lake = Wflow.Lake{Float}(;
         dt = 86400.0,
         lowerlake_ind = [2, 0],
         area = [472461536.0, 60851088.0],
@@ -124,7 +123,7 @@ sh = [
 end
 
 @testset "overflowing lake with sh and hq" begin
-    lake = Wflow.Lake{Float}(
+    lake = Wflow.Lake{Float}(;
         dt = 86400.0,
         lowerlake_ind = [0],
         area = [200_000_000],
@@ -153,7 +152,8 @@ end
     )
 
     Wflow.update(lake, 1, 1500.0, 15, 86400.0)
-    @test Wflow.waterlevel(lake.storfunc, lake.area, lake.storage, lake.sh) ≈ [398.0] atol = 1e-2
+    @test Wflow.waterlevel(lake.storfunc, lake.area, lake.storage, lake.sh) ≈ [398.0] atol =
+        1e-2
     @test lake.outflow ≈ [1303.67476852] atol = 1e-2
     @test lake.totaloutflow ≈ [11.26375000e7] atol = 1e3
     @test lake.storage ≈ [4.293225e8] atol = 1e4

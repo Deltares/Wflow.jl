@@ -29,14 +29,12 @@ struct Connectivity{T}
     rowval::Vector{Int}
 end
 
-
 """
     connections(C::Connectivity, id::Int)
 
 Returns connections for a single cell, identified by ``id``.
 """
-connections(C::Connectivity, id::Int) = C.colptr[id]:(C.colptr[id+1]-1)
-
+connections(C::Connectivity, id::Int) = C.colptr[id]:(C.colptr[id + 1] - 1)
 
 """
     connection_geometry(I, J, dx, dy)
@@ -58,7 +56,6 @@ function connection_geometry(I, J, dx, dy)
     end
     return (length1, length2, width)
 end
-
 
 # Define cartesian indices for neighbors
 const neighbors = (

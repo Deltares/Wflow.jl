@@ -23,8 +23,6 @@ pages = [
         "model_docs/model_configurations.md",
         "Vertical concepts" => [
             "model_docs/vertical/sbm.md",
-            "model_docs/vertical/hbv.md",
-            "model_docs/vertical/flextopo.md",
             "model_docs/vertical/sediment.md",
             "model_docs/shared_concepts.md",
         ],
