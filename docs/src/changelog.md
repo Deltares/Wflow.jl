@@ -25,9 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `LandHydrologySBM` (with soil model `SbmSoilModel`). The model component structs have
   model `variables`, `parameters` and `boundary_conditions` (if applicable), including
   associated functions for initializing and updating these model components. The original
-  long update function of the `SbmSoilModel` has been split into separate functions.  
+  long update function of the `SBM` soil part has been split into separate functions. 
 
 ### Added
+- Support direct output of snow and glacier melt, and add computation of snow water
+  equivalent (SWE).
 
 ## v0.8.1 - 2024-08-27
 
