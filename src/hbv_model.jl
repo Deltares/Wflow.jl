@@ -385,9 +385,7 @@ function initialize_hbv_model(config::Config)
 end
 
 function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:HbvModel}
-    @unpack lateral, vertical, network, clock, config = model
-
-    inds_riv = network.index_river
+    (; lateral, vertical, network, config) = model
 
     # vertical hbv concept is updated until snow state, after that (optional)
     # snow transport is possible
@@ -412,7 +410,7 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:HbvModel}
 end
 
 function set_states(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:HbvModel}
-    @unpack lateral, config = model
+    (; lateral, config) = model
 
     reinit = get(config.model, "reinit", true)::Bool
     do_lakes = get(config.model, "lakes", false)::Bool
@@ -422,7 +420,7 @@ function set_states(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:HbvModel}
         @info "Set initial conditions from state file `$instate_path`."
         set_states(instate_path, model; type = Float)
         # update kinematic wave volume for river and land domain
-        @unpack lateral = model
+        (; lateral) = model
         # makes sure land cells with zero flow width are set to zero q and h
         for i in eachindex(lateral.land.width)
             if lateral.land.width[i] <= 0.0

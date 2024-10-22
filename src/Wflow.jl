@@ -6,7 +6,6 @@ using Graphs
 using NCDatasets
 using StaticArrays
 using Statistics
-using UnPack
 using Random
 using BasicModelInterface
 using FieldMetadata
@@ -213,7 +212,7 @@ function run_timestep(model::Model; update_func = update, write_model_output = t
 end
 
 function run(model::Model; close_files = true)
-    @unpack network, config, writer, clock = model
+    (; config, writer, clock) = model
 
     model_type = config.model.type::String
 

@@ -1133,7 +1133,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
 end
 
 function update(rs::RiverSediment, network, config)
-    @unpack graph, order = network
+    (; graph, order) = network
     tcmethod = get(config.model, "rivtransportmethod", "bagnold")::String
 
     # River sediment loads are separated into different particle class.
