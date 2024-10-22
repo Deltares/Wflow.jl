@@ -4,7 +4,7 @@ import BasicModelInterface as BMI
 
 using Base.Threads: nthreads
 using CFTime: CFTime, monthday, dayofyear
-using Dates: Dates, Second, Minute, Hour, Day, Month, year, TimeType, DatePeriod, TimePeriod, Date, DateTime, now, isleapyear
+using Dates: Dates, Second, Minute, Hour, Day, Month, year, TimeType, DatePeriod, TimePeriod, Date, DateTime, now, isleapyear, datetime2unix
 using DelimitedFiles: readdlm
 using FieldMetadata: @metadata
 using Glob: glob
