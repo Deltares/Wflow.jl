@@ -434,7 +434,7 @@ end
 "update SBM model for a single timestep"
 function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
 
-    @unpack lateral, vertical, network, clock, config = model
+    (; lateral, vertical, network, config) = model
     do_water_demand = haskey(config.model, "water_demand")
     ksat_profile = get(config.input.vertical, "ksat_profile", "exponential")::String
 
@@ -465,7 +465,7 @@ Update SBM model until recharge for a single timestep. This function is also acc
 through BMI, to couple the SBM model to an external groundwater model.
 """
 function update_until_recharge(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
-    @unpack lateral, vertical, network, clock, config = model
+    (; lateral, vertical, network, config) = model
 
     do_water_demand = haskey(config.model, "water_demand")
 
@@ -511,7 +511,7 @@ accessible through BMI, to couple the SBM model to an external groundwater model
 function update_after_subsurfaceflow(
     model::Model{N,L,V,R,W,T},
 ) where {N,L,V,R,W,T<:SbmModel}
-    @unpack lateral, vertical, network, clock, config = model
+    (; lateral, vertical) = model
 
     # update vertical sbm concept (runoff, ustorelayerdepth and satwaterdepth)
     update_after_subsurfaceflow(
@@ -532,7 +532,7 @@ Update of the total water storage at the end of each timestep per model cell.
 This is done here at model level.
 """
 function update_total_water_storage(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
-    @unpack lateral, vertical, network, clock, config = model
+    (; lateral, vertical, network) = model
 
     # Update the total water storage based on vertical states
     # TODO Maybe look at routing in the near future
@@ -549,7 +549,7 @@ end
 function set_states(
     model::Model{N,L,V,R,W,T},
 ) where {N,L,V,R,W,T<:Union{SbmModel,SbmGwfModel}}
-    @unpack lateral, vertical, network, config = model
+    (; lateral, vertical, network, config) = model
 
     reinit = get(config.model, "reinit", true)::Bool
     routing_options = ("kinematic-wave", "local-inertial")

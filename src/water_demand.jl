@@ -536,7 +536,7 @@ function update_water_allocation(
     model::Model{N,L,V,R,W,T},
 ) where {N,L,V,R,W,T<:Union{SbmModel,SbmGwfModel}}
 
-    @unpack network, lateral, vertical = model
+    (; network, lateral, vertical) = model
 
     river = lateral.river
     index_river = network.land.index_river_wb

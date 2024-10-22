@@ -155,7 +155,7 @@ function initialize_sediment_model(config::Config)
 end
 
 function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SedimentModel}
-    @unpack lateral, vertical, network, clock, config = model
+    (; lateral, vertical, network, config) = model
 
     update_until_ols(vertical, config)
     update_until_oltransport(vertical, config)
@@ -194,7 +194,7 @@ end
 
 function set_states(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SedimentModel}
     # read and set states in model object if reinit=false
-    @unpack config = model
+    (; config) = model
     reinit = get(config.model, "reinit", true)::Bool
     if reinit == false
         instate_path = input_path(config, config.state.path_input)

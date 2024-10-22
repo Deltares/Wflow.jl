@@ -189,7 +189,7 @@ end
 
 
 function update(sf::SurfaceFlowLand, network, frac_toriver)
-    @unpack graph, subdomain_order, topo_subdomain, indices_subdomain, upstream_nodes =
+    (; subdomain_order, topo_subdomain, indices_subdomain, upstream_nodes) =
         network
 
     ns = length(subdomain_order)
@@ -256,7 +256,7 @@ end
 
 function update(sf::SurfaceFlowRiver, network, doy)
 
-    @unpack graph, subdomain_order, topo_subdomain, indices_subdomain, upstream_nodes =
+    (; graph, subdomain_order, topo_subdomain, indices_subdomain, upstream_nodes) =
         network
 
     ns = length(subdomain_order)
@@ -429,7 +429,7 @@ end
 end
 
 function update(ssf::LateralSSF, network, frac_toriver, ksat_profile)
-    @unpack subdomain_order, topo_subdomain, indices_subdomain, upstream_nodes, area =
+    (; subdomain_order, topo_subdomain, indices_subdomain, upstream_nodes, area) =
         network
 
 
@@ -749,7 +749,7 @@ end
 
 function shallowwater_river_update(sw::ShallowWaterRiver, network, dt, doy, update_h)
 
-    @unpack nodes_at_link, links_at_node = network
+    (; nodes_at_link, links_at_node) = network
 
     sw.q0 .= sw.q
     if !isnothing(sw.floodplain)
@@ -952,8 +952,6 @@ function shallowwater_river_update(sw::ShallowWaterRiver, network, dt, doy, upda
 end
 
 function update(sw::ShallowWaterRiver{T}, network, doy; update_h = true) where {T}
-    @unpack nodes_at_link, links_at_node = network
-
     if !isnothing(sw.reservoir)
         sw.reservoir.inflow .= 0.0
         sw.reservoir.totaloutflow .= 0.0
@@ -1192,9 +1190,6 @@ function update(
     doy;
     update_h = false,
 ) where {T}
-
-    @unpack nodes_at_link, links_at_node = network.river
-
     if !isnothing(swr.reservoir)
         swr.reservoir.inflow .= 0.0
         swr.reservoir.totaloutflow .= 0.0
@@ -1236,7 +1231,7 @@ function shallowwater_update(
     indices = network.land.staggered_indices
     inds_riv = network.land.index_river
 
-    @unpack nodes_at_link, links_at_node = network.river
+    (; links_at_node) = network.river
 
     sw.qx0 .= sw.qx
     sw.qy0 .= sw.qy
@@ -1637,7 +1632,7 @@ function set_river_inwater(
     model::Model{N,L,V,R,W,T},
     ssf_toriver,
 ) where {N,L,V,R,W,T<:Union{SbmModel,SbmGwfModel}}
-    @unpack lateral, vertical, network, config = model
+    (; lateral, vertical, network, config) = model
     inds = network.index_river
     do_water_demand = haskey(config.model, "water_demand")
     if do_water_demand
@@ -1667,7 +1662,7 @@ end
 Set `inwater` of the lateral river component (based on overland flow).
 """
 function set_river_inwater(model, ssf_toriver)
-    @unpack lateral, network = model
+    (; lateral, network) = model
     inds = network.index_river
     lateral.river.inwater .= lateral.land.to_river[inds]
 end
@@ -1678,7 +1673,7 @@ end
 Set `inwater` of the lateral land component for the `SbmGwfModel` type.
 """
 function set_land_inwater(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
-    @unpack lateral, vertical, network, config = model
+    (; lateral, vertical, network, config) = model
     do_water_demand = haskey(config.model, "water_demand")
     do_drains = get(config.model, "drains", false)::Bool
     drainflux = zeros(vertical.n)
@@ -1703,7 +1698,7 @@ end
 Set `inwater` of the lateral land component for the `SbmModel` type.
 """
 function set_land_inwater(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
-    @unpack lateral, vertical, network, config = model
+    (; lateral, vertical, network, config) = model
     do_water_demand = haskey(config.model, "water_demand")
     if do_water_demand
         @. lateral.land.inwater =
@@ -1722,7 +1717,7 @@ end
 Set `inwater` of the lateral land component, based on `runoff` of the `vertical` concept.
 """
 function set_land_inwater(model)
-    @unpack lateral, vertical, network = model
+    (; lateral, vertical, network) = model
     @. lateral.land.inwater =
         (vertical.runoff * network.land.area * 0.001) / lateral.land.dt
 end
@@ -1746,8 +1741,8 @@ Set inflow from the subsurface and land components to a water body (reservoir or
 function set_inflow_waterbody(
     model::Model{N,L,V,R,W,T},
 ) where {N,L<:NamedTuple{<:Any,<:Tuple{Any,SurfaceFlow,SurfaceFlow}},V,R,W,T}
-    @unpack lateral, network = model
-    @unpack subsurface, land, river = lateral
+    (; lateral, network) = model
+    (; subsurface, land, river) = lateral
     inds = network.index_river
 
     if !isnothing(lateral.river.reservoir) || !isnothing(lateral.river.lake)
@@ -1772,8 +1767,8 @@ Set inflow from the subsurface and land components to a water body (reservoir or
 function set_inflow_waterbody(
     model::Model{N,L,V,R,W,T},
 ) where {N,L<:NamedTuple{<:Any,<:Tuple{Any,SurfaceFlow,ShallowWaterRiver}},V,R,W,T}
-    @unpack lateral, network = model
-    @unpack subsurface, land, river = lateral
+    (; lateral, network) = model
+    (; subsurface, land, river) = lateral
     inds = network.index_river
 
     if !isnothing(lateral.river.reservoir) || !isnothing(lateral.river.lake)
@@ -1801,8 +1796,8 @@ Set inflow from the subsurface and land components to a water body (reservoir or
 function set_inflow_waterbody(
     model::Model{N,L,V,R,W,T},
 ) where {N,L<:NamedTuple{<:Any,<:Tuple{Any,ShallowWaterLand,ShallowWaterRiver}},V,R,W,T}
-    @unpack lateral, network = model
-    @unpack subsurface, land, river = lateral
+    (; lateral, network) = model
+    (; subsurface, land) = lateral
     inds = network.index_river
 
     if !isnothing(lateral.river.reservoir) || !isnothing(lateral.river.lake)
@@ -1820,7 +1815,7 @@ Run surface routing (land and river). Kinematic wave for overland flow and kinem
 local inertial model for river flow.
 """
 function surface_routing(model; ssf_toriver = 0.0)
-    @unpack lateral, network, clock = model
+    (; lateral, network, clock) = model
 
     # run kinematic wave for overland flow
     set_land_inwater(model)
@@ -1846,7 +1841,7 @@ function surface_routing(
     ssf_toriver = 0.0,
 ) where {N,L<:NamedTuple{<:Any,<:Tuple{Any,ShallowWaterLand,ShallowWaterRiver}},V,R,W,T}
 
-    @unpack lateral, vertical, network, clock = model
+    (; lateral, vertical, network, clock) = model
 
     @. lateral.land.runoff = (
         (vertical.net_runoff / 1000.0) * network.land.area / vertical.dt +

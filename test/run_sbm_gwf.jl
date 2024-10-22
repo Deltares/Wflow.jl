@@ -3,7 +3,7 @@ tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
 config = Wflow.Config(tomlpath)
 
 model = Wflow.initialize_sbm_gwf_model(config)
-@unpack network = model
+(; network) = model
 
 model = Wflow.run_timestep(model)
 
@@ -144,7 +144,7 @@ config = Wflow.Config(tomlpath)
 config.model.reinit = false
 
 model = Wflow.initialize_sbm_gwf_model(config)
-@unpack network = model
+(; network) = model
 
 model = Wflow.run_timestep(model)
 model = Wflow.run_timestep(model)

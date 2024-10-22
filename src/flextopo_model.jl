@@ -665,7 +665,7 @@ function initialize_flextopo_model(config::Config)
 end
 
 function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:FlextopoModel}
-    @unpack lateral, vertical, network, clock, config = model
+    (; lateral, vertical, network, config) = model
 
     inds_riv = network.index_river
 
@@ -716,7 +716,7 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:FlextopoModel}
 end
 
 function set_states(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:FlextopoModel}
-    @unpack lateral, config = model
+    (; lateral, config) = model
     reinit = get(config.model, "reinit", true)::Bool
     # read and set states in model object if reinit=true
     if reinit == false

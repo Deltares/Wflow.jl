@@ -3,7 +3,7 @@ tomlpath = joinpath(@__DIR__, "hbv_config.toml")
 config = Wflow.Config(tomlpath)
 
 model = Wflow.initialize_hbv_model(config)
-@unpack network = model
+(; network) = model
 
 model = Wflow.run_timestep(model)
 
