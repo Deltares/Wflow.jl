@@ -443,7 +443,7 @@ end
 
 "update SBM model for a single timestep"
 function update(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmModel}
-    @unpack lateral, vertical, network, config = model
+    (; lateral, vertical, network, config) = model
     do_water_demand = haskey(config.model, "water_demand")
     (; kv_profile) = vertical.soil.parameters
 
@@ -486,7 +486,7 @@ accessible through BMI, to couple the SBM model to an external groundwater model
 function update_after_subsurfaceflow(
     model::Model{N, L, V, R, W, T},
 ) where {N, L, V, R, W, T <: SbmModel}
-    @unpack lateral, vertical, network, config = model
+    (; lateral, vertical) = model
     (; soil, runoff, demand) = vertical
     (; subsurface) = lateral
 
@@ -507,7 +507,7 @@ This is done here at model level.
 function update_total_water_storage(
     model::Model{N, L, V, R, W, T},
 ) where {N, L, V, R, W, T <: SbmModel}
-    @unpack lateral, vertical, network, config = model
+    (; lateral, vertical, network) = model
 
     # Update the total water storage based on vertical states
     # TODO Maybe look at routing in the near future
@@ -524,7 +524,7 @@ end
 function set_states(
     model::Model{N, L, V, R, W, T},
 ) where {N, L, V, R, W, T <: Union{SbmModel, SbmGwfModel}}
-    @unpack lateral, vertical, network, config = model
+    (; lateral, vertical, network, config) = model
 
     reinit = get(config.model, "reinit", true)::Bool
     routing_options = ("kinematic-wave", "local-inertial")

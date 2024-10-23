@@ -1,32 +1,30 @@
 module Wflow
 
-using Dates
-using TOML
-using Graphs
-using NCDatasets
-using StaticArrays
-using Statistics
-using UnPack
-using Random
-using BasicModelInterface
-using FieldMetadata
-using Parameters
-using DelimitedFiles
-using ProgressLogging
+import BasicModelInterface as BMI
+
+using Base.Threads: nthreads
+using CFTime: CFTime, monthday, dayofyear
+using Dates: Dates, Second, Minute, Hour, Day, Month, year, TimeType, DatePeriod, TimePeriod, Date, DateTime, now, isleapyear, datetime2unix
+using DelimitedFiles: readdlm
+using FieldMetadata: @metadata
+using Glob: glob
+using Graphs: Graphs, Graph, DiGraph, add_edge!, is_cyclic, inneighbors, outneighbors, edges, topological_sort_by_dfs, src, dst, vertices, nv, ne, induced_subgraph, add_vertex!
+using IfElse: IfElse
 using LoggingExtras
+using LoopVectorization: @tturbo
+using NCDatasets: NCDatasets, NCDataset, dimnames, dimsize, nomissing, defDim, defVar
+using Parameters: @with_kw
+using Polyester: @batch
+using ProgressLogging: @progress
+using StaticArrays: SVector, pushfirst, setindex
+using Statistics: mean, median, quantile!
 using TerminalLoggers
-using CFTime
-using Base.Threads
-using Glob
-using Polyester
-using LoopVectorization
-using IfElse
+using TOML: TOML
 
 # metadata is used in combination with BMI functions `get_var_units` and `get_var_location`
 @metadata get_units "mm dt-1" String
 @metadata grid_loc "node" String # BMI grid location
 
-const BMI = BasicModelInterface
 const Float = Float64
 const CFDataset = Union{NCDataset, NCDatasets.MFDataset}
 const CFVariable_MF = Union{NCDatasets.CFVariable, NCDatasets.MFCFVariable}
@@ -211,7 +209,7 @@ function run_timestep(model::Model; update_func = update, write_model_output = t
 end
 
 function run(model::Model; close_files = true)
-    @unpack network, config, writer, clock = model
+    (; config, writer, clock) = model
 
     model_type = config.model.type::String
 

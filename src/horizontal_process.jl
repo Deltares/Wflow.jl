@@ -297,7 +297,7 @@ such as that returned by `Graphs.topological_sort_by_dfs`.
 Returns the material state after transport.
 """
 function accucapacitystate!(material, network, capacity)
-    @unpack graph, order = network
+    (; graph, order) = network
     for v in order
         downstream_nodes = outneighbors(graph, v)
         n = length(downstream_nodes)
@@ -336,7 +336,7 @@ interface, and the order is a valid topological ordering such as that returned b
 Returns the flux (material leaving each cell), and material (left after transport).
 """
 function accucapacityflux!(flux, material, network, capacity)
-    @unpack graph, order = network
+    (; graph, order) = network
     for v in order
         downstream_nodes = outneighbors(graph, v)
         n = length(downstream_nodes)

@@ -154,7 +154,7 @@ and set states in `model` object. Active cells are selected with the correspondi
 - `type = nothing`: type to convert data to after reading. By default no conversion is done.
 """
 function set_states(instate_path, model; type = nothing, dimname = nothing)
-    @unpack network, config = model
+    (; network, config) = model
 
     # Check if required states are covered
     state_ncnames = check_states(config)

@@ -4,7 +4,7 @@ tomlpath = joinpath(@__DIR__, "sediment_config.toml")
 config = Wflow.Config(tomlpath)
 
 model = Wflow.initialize_sediment_model(config)
-@unpack network = model
+(; network) = model
 
 model = Wflow.run_timestep(model)
 

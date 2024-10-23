@@ -531,7 +531,7 @@ end
 
 "update the sbm_gwf model for a single timestep"
 function update(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmGwfModel}
-    @unpack lateral, vertical, network, clock, config = model
+    (; lateral, vertical, network, clock, config) = model
     (; soil, runoff, demand) = vertical
 
     do_water_demand = haskey(config.model, "water_demand")

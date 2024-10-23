@@ -44,7 +44,6 @@ Update the model for a single timestep.
 - `run = nothing`: to update a model partially.
 """
 function BMI.update(model::Model; run = nothing)
-    @unpack clock, network, config = model
     if isnothing(run)
         model = run_timestep(model)
     elseif run == "sbm_until_recharge"
@@ -60,7 +59,6 @@ function BMI.update(model::Model; run = nothing)
 end
 
 function BMI.update_until(model::Model, time::Float64)
-    @unpack clock, network, config = model
     t = BMI.get_current_time(model)
     _div, _rem = divrem(time - t, model.clock.dt.value)
     steps = Int(_div)
@@ -81,7 +79,7 @@ end
 
 "Write state output to netCDF and close files."
 function BMI.finalize(model::Model)
-    @unpack config, writer, clock = model
+    (; config, writer) = model
     # it is possible that the state dataset has been closed by `save_state`
     if !isnothing(writer.state_dataset) && isopen(writer.state_dataset)
         write_netcdf_timestep(model, writer.state_dataset, writer.state_parameters)
@@ -91,8 +89,7 @@ function BMI.finalize(model::Model)
 end
 
 function BMI.get_component_name(model::Model)
-    @unpack config = model
-    return config.model.type
+    return model.config.model.type
 end
 
 function BMI.get_input_item_count(model::Model)
@@ -111,7 +108,7 @@ This `API` sections contains a list of `Model` components for which variables ca
 exchanged.
 """
 function BMI.get_input_var_names(model::Model)
-    @unpack config = model
+    (; config) = model
     if haskey(config, "API")
         var_names = Vector{String}()
         for c in config.API.components
@@ -209,7 +206,7 @@ function BMI.get_var_location(model::Model, name::String)
 end
 
 function BMI.get_current_time(model::Model)
-    @unpack config = model
+    (; config) = model
     calendar = get(config, "calendar", "standard")::String
     starttime = cftime(config.starttime, calendar)
     return 0.001 * Dates.value(model.clock.time - starttime)
@@ -220,7 +217,7 @@ function BMI.get_start_time(model::Model)
 end
 
 function BMI.get_end_time(model::Model)
-    @unpack config = model
+    (; config) = model
     calendar = get(config, "calendar", "standard")::String
     starttime = cftime(config.starttime, calendar)
     endtime = cftime(config.endtime, calendar)
@@ -245,7 +242,7 @@ function BMI.get_value(
 end
 
 function BMI.get_value_ptr(model::Model, name::String)
-    @unpack network = model
+    (; network) = model
     s = split(name, "[")
     key = symbols(first(s))
     if exchange(param(model, key))
@@ -328,9 +325,9 @@ function BMI.get_grid_rank(model::Model, grid::Int)
 end
 
 function BMI.get_grid_x(model::Model, grid::Int, x::Vector{T}) where {T <: AbstractFloat}
-    @unpack reader, config = model
-    @unpack dataset = reader
-    sel = active_indices(model.network, grids[grid])
+    (; reader, network) = model
+    (; dataset) = reader
+    sel = active_indices(network, grids[grid])
     inds = [sel[i][1] for i in eachindex(sel)]
     x_nc = read_x_axis(dataset)
     x .= x_nc[inds]
@@ -338,9 +335,9 @@ function BMI.get_grid_x(model::Model, grid::Int, x::Vector{T}) where {T <: Abstr
 end
 
 function BMI.get_grid_y(model::Model, grid::Int, y::Vector{T}) where {T <: AbstractFloat}
-    @unpack reader, config = model
-    @unpack dataset = reader
-    sel = active_indices(model.network, grids[grid])
+    (; reader, network) = model
+    (; dataset) = reader
+    sel = active_indices(network, grids[grid])
     inds = [sel[i][2] for i in eachindex(sel)]
     y_nc = read_y_axis(dataset)
     y .= y_nc[inds]
@@ -356,7 +353,7 @@ function BMI.get_grid_size(model::Model, grid::Int)
 end
 
 function BMI.get_grid_edge_count(model::Model, grid::Int)
-    @unpack network = model
+    (; network) = model
     if grid == 3
         return ne(network.river.graph)
     elseif grid == 4
@@ -371,7 +368,7 @@ function BMI.get_grid_edge_count(model::Model, grid::Int)
 end
 
 function BMI.get_grid_edge_nodes(model::Model, grid::Int, edge_nodes::Vector{Int})
-    @unpack network = model
+    (; network) = model
     n = length(edge_nodes)
     m = div(n, 2)
     # inactive nodes (boundary/ghost points) are set at -999
@@ -408,7 +405,7 @@ function load_state(model::Model)
 end
 
 function save_state(model::Model)
-    @unpack config, writer, clock = model
+    (; config, writer) = model
     if haskey(config, "state") && haskey(config.state, "path_output")
         @info "Write output states to netCDF file `$(model.writer.state_nc_path)`."
     end

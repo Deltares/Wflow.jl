@@ -4,7 +4,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 
 model = Wflow.initialize_sbm_model(config)
-@unpack network = model
+(; network) = model
 
 model = Wflow.run_timestep(model)
 
@@ -450,7 +450,7 @@ Wflow.close_files(model; delete_output = false)
 
     @testset "exponential profile" begin
         model = Wflow.initialize_sbm_model(config)
-        @unpack soil = model.vertical
+        (; soil) = model.vertical
         (; kv_profile) = soil.parameters
         (; subsurface) = model.lateral
         z = soil.variables.zi[i]
@@ -464,7 +464,7 @@ Wflow.close_files(model; delete_output = false)
     @testset "exponential constant profile" begin
         config.input.vertical.ksat_profile = "exponential_constant"
         model = Wflow.initialize_sbm_model(config)
-        @unpack soil = model.vertical
+        (; soil) = model.vertical
         (; kv_profile) = soil.parameters
         (; subsurface) = model.lateral
         z = soil.variables.zi[i]
@@ -485,7 +485,7 @@ Wflow.close_files(model; delete_output = false)
     @testset "layered profile" begin
         config.input.vertical.ksat_profile = "layered"
         model = Wflow.initialize_sbm_model(config)
-        @unpack soil = model.vertical
+        (; soil) = model.vertical
         (; kv_profile) = soil.parameters
         (; subsurface) = model.lateral
         z = soil.variables.zi[i]
@@ -501,7 +501,7 @@ Wflow.close_files(model; delete_output = false)
     @testset "layered exponential profile" begin
         config.input.vertical.ksat_profile = "layered_exponential"
         model = Wflow.initialize_sbm_model(config)
-        @unpack soil = model.vertical
+        (; soil) = model.vertical
         (; kv_profile) = soil.parameters
         (; subsurface) = model.lateral
         z = soil.variables.zi[i]

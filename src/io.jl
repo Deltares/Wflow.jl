@@ -204,8 +204,8 @@ mover_params = (
 )
 
 function load_fixed_forcing(model)
-    @unpack reader, network, config = model
-    @unpack forcing_parameters = reader
+    (; reader, network, config) = model
+    (; forcing_parameters) = reader
 
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
     do_lakes = get(config.model, "lakes", false)::Bool
@@ -252,8 +252,8 @@ end
 
 "Get dynamic netCDF input for the given time"
 function update_forcing!(model)
-    @unpack vertical, clock, reader, network, config = model
-    @unpack dataset, dataset_times, forcing_parameters = reader
+    (; clock, reader, network, config) = model
+    (; dataset, dataset_times, forcing_parameters) = reader
 
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
     do_lakes = get(config.model, "lakes", false)::Bool
@@ -342,8 +342,8 @@ end
 
 "Get cyclic netCDF input for the given time"
 function update_cyclic!(model)
-    @unpack vertical, clock, reader, network, config = model
-    @unpack cyclic_dataset, cyclic_times, cyclic_parameters = reader
+    (; clock, reader, network) = model
+    (; cyclic_dataset, cyclic_times, cyclic_parameters) = reader
 
     # pick up the data that is valid for the past model time step
     month_day = monthday(clock.time - clock.dt)
@@ -1060,7 +1060,7 @@ end
 
 "Write a new timestep with scalar data to a netCDF file"
 function write_netcdf_timestep(model, dataset)
-    @unpack writer, clock, config = model
+    (; writer, clock, config) = model
 
     time_index = add_time(dataset, clock.time)
     for (nt, nc) in zip(writer.nc_scalar, config.netcdf.variable)
@@ -1092,13 +1092,13 @@ end
 
 "Write a new timestep with grid data to a netCDF file"
 function write_netcdf_timestep(model, dataset, parameters)
-    @unpack vertical, clock, reader, network = model
+    (; clock, network) = model
 
     time_index = add_time(dataset, clock.time)
 
     buffer = zeros(Union{Float, Missing}, size(model.network.land.reverse_indices))
     for (key, val) in parameters
-        @unpack par, vector = val
+        (; par, vector) = val
         sel = active_indices(network, par)
         # write the active cells vector to the 2d buffer matrix
         elemtype = eltype(vector)
@@ -1130,8 +1130,8 @@ write_netcdf_timestep(model, dataset::Nothing) = model
 
 "Write model output"
 function write_output(model)
-    @unpack vertical, clock, reader, network, writer = model
-    @unpack dataset, dataset_scalar, parameters = writer
+    (; writer) = model
+    (; dataset, dataset_scalar, parameters) = writer
 
     write_csv_row(model)
     write_netcdf_timestep(model, dataset, parameters)
@@ -1185,7 +1185,7 @@ end
 
 "Close input and output datasets that are opened on model initialization"
 function close_files(model; delete_output::Bool = false)
-    @unpack reader, writer, config = model
+    (; reader, writer, config) = model
 
     close(reader.dataset)
     if haskey(config.input, "cyclic")
@@ -1309,7 +1309,7 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset, fileformat)
 end
 
 function write_csv_row(model)
-    @unpack writer, clock, config = model
+    (; writer, clock, config) = model
     isnothing(writer.csv_path) && return nothing
     io = writer.csv_io
     print(io, string(clock.time))
@@ -1623,7 +1623,7 @@ end
 
 "Get `index` for dimension name `layer` based on `model`"
 function get_index_dimension(var, model)::Int
-    @unpack vertical = model
+    (; vertical) = model
     if haskey(var, "layer")
         inds = collect(1:(vertical.soil.parameters.maxlayers))
         index = inds[var["layer"]]

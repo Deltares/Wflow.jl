@@ -3,7 +3,7 @@ config = Wflow.Config(tomlpath)
 
 model = Wflow.initialize_sbm_model(config)
 
-@unpack network = model
+(; network) = model
 
 min_sto_river = get(config.model, "min_streamorder_river", 6)
 min_sto_land = get(config.model, "min_streamorder_land", 5)
