@@ -92,17 +92,9 @@ function BMI.finalize(model::Model)
     close_files(model, delete_output = false)
 end
 
-function BMI.get_component_name(model::Model)
-    return model.config.model.type
-end
-
-function BMI.get_input_item_count(model::Model)
-    length(BMI.get_input_var_names(model))
-end
-
-function BMI.get_output_item_count(model::Model)
-    length(BMI.get_output_var_names(model))
-end
+BMI.get_component_name(model::Model) = model.config.model.type
+BMI.get_input_item_count(model::Model) = length(BMI.get_input_var_names(model))
+BMI.get_output_item_count(model::Model) = length(BMI.get_output_var_names(model))
 
 """
     BMI.get_input_var_names(model::Model)
@@ -153,7 +145,6 @@ function BMI.get_var_grid(model::Model, name::String)
     s = split(name, "[")
     key = symbols(first(s))
     if exchange(param(model, key[1:end-1]), key[end]) == 1
-        gridtype = grid_type(param(model, key))
         type = typeof(param(model, key[1:end-1]))
         return if :reservoir in key
             0
@@ -181,11 +172,42 @@ function BMI.get_var_type(model::Model, name::String)
 end
 
 function BMI.get_var_units(model::Model, name::String)
+    # Say name = "foo.bar.baz[idx]"
+
+    # (:foo, :bar, :baz)
     key = symbols(first(split(name, "[")))
-    if exchange(param(model, key[1:end-1]), key[end]) == 1
-        get_units(param(model, key[1:end-1]), key[end])
+
+    # :baz
+    var_name = key[end]
+
+    # (:foo, :bar)
+    last_struct_path = key[1:end-1]
+
+    # foo.bar
+    last_struct = param(model, last_struct_path)
+
+    get_var_units(last_struct, var_name, name)
+end
+
+var_error(name) = error("$name not listed as variable for BMI exchange")
+
+function get_var_units(::FLEXTOPO, var_name, name)
+    if var_name in (:facc,)
+        "ᵒCΔt"
+    elseif var_name in (:glacierstore, :imax, :shmax, :srmax, :snow, :snowwater, :interceptionstorage, :hortonpondingstorage, :hortonrunoffstorage, :rootzonestorage, :srootzone_over_srmax, :faststorage, :slowstorage, :states_, :states_m, :interceptionstorage_m, :hortonpondingstorage_m, :hortonrunoffstorage_m, :srootzone_m, :faststorage_m, :srootzone_over_srmax_m)
+        "mm"
+    elseif var_name in (:hrufrac, :pcorr, :whc, :cfr, :rfcf, :sfcf, :glacierfrac, :ecorr, :fdec, :shmin, :kmf, :lp, :beta, :alfa, :ds)
+        "-"
+    elseif var_name in (:cfmax, :g_cfmax)
+        "mmᵒC-1dt-1"
+    elseif var_name in (:tt, :tti, :ttm, :g_tt, :facc0, :facc1, :temperature)
+        "ᵒC"
+    elseif var_name in (:g_sifrac, :khf, :kf, :ks)
+        "dt-1"
+    elseif var_name in (:fmax, :perc, :cap, :precipitation, :potential_evaporation, :epotcorr, :precipcorr, :rainfallplusmelt, :snowfall, :snowmelt, :potsoilevap, :intevap, :precipeffective, :intevap_m, :hortonevap, :qhortonpond, :qhortonrootzone, :hortonevap_m, :qhortonrun, :rootevap, :qrootzone, :qrootzonefast, :qrootzoneslow_m, :qcapillary, :qcapillary_m, :qpercolation, :qpercolation_m, :actevap, :actevap_m, :rootevap_m, :qfast, :qslow, :runoff, :qfast_tot, :wb_snow, :wb_interception, :wb_hortonponding, :wb_hortonrunoff, :wb_rootzone, :wb_fast, :wb_slow, :wb_tot)
+        "mmdt-1"
     else
-        error("$name not listed as variable for BMI exchange")
+        var_error(name)
     end
 end
 
@@ -194,16 +216,31 @@ function BMI.get_var_itemsize(model::Model, name::String)
     sizeof(eltype(first(value)))
 end
 
-function BMI.get_var_nbytes(model::Model, name::String)
-    sizeof(BMI.get_value_ptr(model, name))
-end
+BMI.get_var_nbytes(model::Model, name::String) = sizeof(BMI.get_value_ptr(model, name))
 
 function BMI.get_var_location(model::Model, name::String)
+    # Say name = "foo.bar.baz[idx]"
+
+    # (:foo, :bar, :baz)
     key = symbols(first(split(name, "[")))
-    if exchange(param(model, key[1:end-1]), key[end]) == 1
-        return grid_location(model, key)
+
+    # :baz
+    var_name = key[end]
+
+    # (:foo, :bar)
+    last_struct_path = key[1:end-1]
+
+    # foo.bar
+    last_struct = param(model, last_struct_path)
+
+    get_var_location(last_struct, var_name, name)
+end
+
+function get_var_location(::FLEXTOPO, var_name, name)
+    if var_name in (:hrufrac, :pcorr, :cfmax, :tt, :tti, :ttm, :whc, :cfr, :rfcf, :sfcf, :g_tt, :g_cfmax, :g_sifrac, :glacierstore, :glacierfrac, :imax, :ecorr, :shmax, :khf, :facc0, :facc1, :fdec, :fmax, :shmin, :kmf, :srmax, :lp, :beta, :perc, :cap, :alfa, :kf, :ds, :ks, :snow, :snowwater, :interceptionstorage, :hortonpondingstorage, :hortonrunoffstorage, :rootzonestorage, :srootzone_over_srmax, :faststorage, :slowstorage, :states_, :states_m, :interceptionstorage_m, :hortonpondingstorage_m, :hortonrunoffstorage_m, :srootzone_m, :faststorage_m, :srootzone_over_srmax_m, :precipitation, :temperature, :potential_evaporation, :epotcorr, :precipcorr, :rainfallplusmelt, :snowfall, :snowmelt, :potsoilevap, :intevap, :precipeffective, :intevap_m, :hortonevap, :qhortonpond, :qhortonrootzone, :facc, :hortonevap_m, :qhortonrun, :rootevap, :qrootzone, :qrootzonefast, :qrootzoneslow_m, :qcapillary, :qcapillary_m, :qpercolation, :qpercolation_m, :actevap, :actevap_m, :rootevap_m, :qfast, :qslow, :runoff, :qfast_tot, :wb_snow, :wb_interception, :wb_hortonponding, :wb_hortonrunoff, :wb_rootzone, :wb_fast, :wb_slow, :wb_tot)
+        "node"
     else
-        error("$name not listed as variable for BMI exchange")
+        var_error(name)
     end
 end
 
@@ -214,9 +251,9 @@ function BMI.get_current_time(model::Model)
     return 0.001 * Dates.value(model.clock.time - starttime)
 end
 
-function BMI.get_start_time(model::Model)
-    0.0
-end
+BMI.get_start_time(model::Model) = 0.0
+BMI.get_time_units(model::Model) = "s"
+BMI.get_time_step(model::Model) = Float64(model.config.timestepsecs)
 
 function BMI.get_end_time(model::Model)
     (; config) = model
@@ -224,14 +261,6 @@ function BMI.get_end_time(model::Model)
     starttime = cftime(config.starttime, calendar)
     endtime = cftime(config.endtime, calendar)
     return 0.001 * Dates.value(endtime - starttime)
-end
-
-function BMI.get_time_units(model::Model)
-    "s"
-end
-
-function BMI.get_time_step(model::Model)
-    Float64(model.config.timestepsecs)
 end
 
 function BMI.get_value(model::Model, name::String, dest::Vector{T}) where {T<:AbstractFloat}
@@ -338,13 +367,8 @@ function BMI.get_grid_y(model::Model, grid::Int, y::Vector{T}) where {T<:Abstrac
     return y
 end
 
-function BMI.get_grid_node_count(model::Model, grid::Int)
-    return length(active_indices(model.network, grids[grid]))
-end
-
-function BMI.get_grid_size(model::Model, grid::Int)
-    return length(active_indices(model.network, grids[grid]))
-end
+BMI.get_grid_node_count(model::Model, grid::Int) = length(active_indices(model.network, grids[grid]))
+BMI.get_grid_size(model::Model, grid::Int) = length(active_indices(model.network, grids[grid]))
 
 function BMI.get_grid_edge_count(model::Model, grid::Int)
     (; network) = model
@@ -407,6 +431,4 @@ function save_state(model::Model)
     close(writer.state_dataset)
 end
 
-function get_start_unix_time(model::Model)
-    datetime2unix(DateTime(model.config.starttime))
-end
+get_start_unix_time(model::Model) = datetime2unix(DateTime(model.config.starttime))
