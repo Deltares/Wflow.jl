@@ -19,7 +19,7 @@ subbas_order, indices_subbas, topo_subbas = Wflow.kinwave_set_subdomains(
     min_sto_land,
 )
 
-Wflow.close_files(model, delete_output = false)
+Wflow.close_files(model; delete_output = false)
 
 if nthreads() == 1
     @testset "Nonparallel subdomains kinematic wave (nthreads = 1)" begin

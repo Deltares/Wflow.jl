@@ -1,9 +1,6 @@
 # General
 .DS_Store
 
-# VS Code stuff
-.vscode
-
 # Packaging stuff
 *.jl.*.cov
 *.jl.cov

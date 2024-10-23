@@ -193,13 +193,12 @@ and the kinematic wave components of this model can run on multiple threads. The
 [local inertial model for river flow](@ref config_sbm_gwf_lie_river_land) and the optional
 [local inertial model for river (1D) and land (2D)](@ref config_sbm_gwf_lie_river_land),
 both part of wflow\_sbm, can also run on multiple threads. The threading functionality for
-the kinematic wave may also be useful for models that make (partly) use of this routing
-approach as the [wflow_hbv](@ref config_hbv) model and the wflow\_sbm model [SBM +
-Groundwater flow](@ref config_sbm_gwf). The multi-threading functionality in wflow is
-considered experimental, see also the following
-[issue](https://github.com/Deltares/Wflow.jl/issues/139), where an error was not thrown
-running code multi-threaded. Because of this we advise to start with running a wflow model
-single-threaded (for example during the testing phase of setting up an new wflow model).
+the kinematic wave may also be useful for the wflow\_sbm model [SBM + Groundwater flow](@ref
+config_sbm_gwf). The multi-threading functionality in wflow is considered experimental, see
+also the following [issue](https://github.com/Deltares/Wflow.jl/issues/139), where an error
+was not thrown running code multi-threaded. Because of this we advise to start with running
+a wflow model single-threaded (for example during the testing phase of setting up an new
+wflow model).
 
 For information on how to start Julia with multiple threads we refer to [How to start Julia
 with multiple
