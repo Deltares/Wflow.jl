@@ -540,3 +540,81 @@ Wflow.close_files(model, delete_output = false)
 
     Wflow.close_files(model, delete_output = false)
 end
+
+
+# test infiltration of surface water
+@testset "surface water infiltration" begin
+    i_surface = 498 # pixel with surface water, infiltration and excesswater
+    i_nosurface = 2444 # pixel without surface water
+
+    tomlpath = joinpath(@__DIR__, "sbm_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.model.surface_water_infiltration = true
+
+    model = Wflow.initialize_sbm_model(config)
+
+    model = Wflow.run_timestep(model)
+    model = Wflow.run_timestep(model)
+
+    @unpack vertical = model
+
+    # Test is surface water is indeed added to avail_forinfilt
+    @test vertical.waterlevel_land[i_surface] ≈ 16.191219691562683
+    @test vertical.waterlevel_land[i_nosurface] == 0.0
+
+    @test vertical.avail_forinfilt[i_surface] ≈ 16.24809470532854
+    @test vertical.avail_forinfilt[i_nosurface] ≈ 0.08956446991756856
+
+    # Test if the paritioning of infiltrated water is correct
+    @test vertical.infilt_surfacewater[i_surface] ≈ 9.1388544728681
+    @test vertical.infilt_surfacewater[i_nosurface] == 0.0
+
+    # Test excesswater and runoff for two locations
+    @test vertical.excesswater[i_surface] ≈ 7.077138112678853
+    @test vertical.runoff[i_surface] ≈ 88.75818647205926
+
+    # Test is net_runoff is indeed lower than runoff
+    @test vertical.net_runoff[i_surface] ≈ 79.61933199919116
+    @test vertical.net_runoff[i_nosurface] == 0.0
+
+    Wflow.close_files(model, delete_output = false)
+end
+
+
+# test flow threshold for kinematic overland flow
+@testset "surface water infiltration" begin
+    idx = 498 # pixel with surface water, infiltration and excesswater
+    threshold =  0.02
+
+    tomlpath = joinpath(@__DIR__, "sbm_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.input.lateral.land.h_thresh = Dict("value" => threshold)
+
+    mod_threshold = Wflow.initialize_sbm_model(config)
+
+
+    # run two timesteps for both models
+    mod_threshold = Wflow.run_timestep(mod_threshold)
+    mod_threshold = Wflow.run_timestep(mod_threshold)
+    Wflow.close_files(mod_threshold, delete_output = false)
+
+
+    config = Wflow.Config(tomlpath)
+    mod_nothreshold = Wflow.initialize_sbm_model(config)
+
+    mod_nothreshold = Wflow.run_timestep(mod_nothreshold)
+    mod_nothreshold = Wflow.run_timestep(mod_nothreshold)
+    Wflow.close_files(mod_nothreshold, delete_output = false)
+
+
+    @unpack lateral = mod_threshold
+    lateral_threshold = lateral
+    @unpack lateral = mod_nothreshold
+    lateral_nothreshold = lateral
+
+    @test lateral_threshold.land.q_av[idx] ≈ 1.3364541870336923
+    @test lateral_threshold.land.q_av[idx] < lateral_nothreshold.land.q_av[idx]
+    @test lateral_threshold.land.pond_height[idx] ≈ 0.01591595571103741
+    @test lateral_nothreshold.land.pond_height[idx] == 0.0
+
+end

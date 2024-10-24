@@ -154,6 +154,10 @@
     infiltsoilpath::Vector{T}
     # Infiltration excess water [mm Δt⁻¹]
     infiltexcess::Vector{T}
+    # Infiltration from surface water [mm Δt⁻¹]
+    infilt_surfacewater::Vector{T}
+    # Contribution from surface water [mm Δt⁻¹]
+    contribution_surfacewater::Vector{T}
     # Water that cannot infiltrate due to saturated soil (saturation excess) [mm Δt⁻¹]
     excesswater::Vector{T}
     # Water exfiltrating during saturation excess conditions [mm Δt⁻¹]
@@ -715,6 +719,8 @@ function initialize_sbm(nc, config, riverfrac, inds)
         ae_openw_l = fill(mv, n),
         ae_openw_r = fill(mv, n),
         avail_forinfilt = fill(mv, n),
+        infilt_surfacewater = fill(mv, n),
+        contribution_surfacewater = fill(mv, n),
         actinfilt = fill(mv, n),
         actinfiltsoil = fill(mv, n),
         actinfiltpath = fill(mv, n),
@@ -869,6 +875,8 @@ function update_until_recharge(sbm::SBM, config)
     transfermethod = get(config.model, "transfermethod", false)::Bool
     ust = get(config.model, "whole_ust_available", false)::Bool # should be removed from optional setting and code?
     ksat_profile = get(config.input.vertical, "ksat_profile", "exponential")::String
+    do_surface_water_infiltration =
+        get(config.model, "surface_water_infiltration", false)::Bool
 
     threaded_foreach(1:sbm.n, basesize = 250) do i
         if modelsnow
@@ -901,7 +909,18 @@ function update_until_recharge(sbm::SBM, config)
         ustoredepth = sum(@view sbm.ustorelayerdepth[i][1:sbm.nlayers[i]])
 
         runoff_river = min(1.0, sbm.riverfrac[i]) * avail_forinfilt
-        runoff_land = min(1.0, sbm.waterfrac[i]) * avail_forinfilt
+
+        # Calculate the initial capacity of the unsaturated store
+        ustorecapacity = sbm.soilwatercapacity[i] - sbm.satwaterdepth[i] - ustoredepth
+        # Add a flag if the soil is saturated
+        check_saturated = ustorecapacity < 0.1
+
+        if check_saturated
+            runoff_land = min(1.0, 1.0 - sbm.riverfrac[i]) * avail_forinfilt
+        else
+            runoff_land = min(1.0, sbm.waterfrac[i]) * avail_forinfilt
+        end
+
         if !isnothing(sbm.paddy) || !isnothing(sbm.nonpaddy)
             avail_forinfilt = avail_forinfilt + sbm.allocation.irri_alloc[i]
         end
@@ -911,18 +930,38 @@ function update_until_recharge(sbm::SBM, config)
             sbm.waterlevel_river[i] * sbm.riverfrac[i],
             sbm.riverfrac[i] * sbm.potential_evaporation[i],
         )
-        ae_openw_l = min(
-            sbm.waterlevel_land[i] * sbm.waterfrac[i],
-            sbm.waterfrac[i] * sbm.potential_evaporation[i],
-        )
-
-        # evap available for soil evaporation
+        # Determine remaining fraction of available potential_evaporation
         soilevap_fraction = max(
-            sbm.canopygapfraction[i] - sbm.riverfrac[i] - sbm.waterfrac[i] -
-            sbm.glacierfrac[i],
+            sbm.canopygapfraction[i] - sbm.riverfrac[i] - sbm.glacierfrac[i],
             0.0,
         )
-        potsoilevap = soilevap_fraction * sbm.potential_evaporation[i]
+        # Determine amount of surface water
+        surface_water = sbm.waterlevel_land[i] * (1.0 - sbm.riverfrac[i])
+
+        # Calculate open water evaporation
+        if check_saturated
+            ae_openw_l = min(
+                surface_water,
+                sbm.potential_evaporation[i] * soilevap_fraction,
+            )
+        else
+            ae_openw_l = min(
+                surface_water,
+                sbm.potential_evaporation[i] * sbm.waterfrac[i],
+            )
+        end
+
+        # Update land waterlevel and scale to part of cell not covered by rivers
+        if do_surface_water_infiltration
+            contribution_surfacewater = surface_water - ae_openw_l
+            # Add land waterlevel to infiltration
+            avail_forinfilt += contribution_surfacewater
+        else
+            contribution_surfacewater = 0.0
+        end
+
+        # evap available for soil evaporation
+        potsoilevap = (sbm.potential_evaporation[i] * soilevap_fraction) - ae_openw_l
 
         if !isnothing(sbm.paddy) && sbm.paddy.irrigation_areas[i]
             evap_paddy_water = min(sbm.paddy.h[i], potsoilevap)
@@ -932,9 +971,6 @@ function update_until_recharge(sbm::SBM, config)
         else
             evap_paddy_water = 0.0
         end
-
-        # Calculate the initial capacity of the unsaturated store
-        ustorecapacity = sbm.soilwatercapacity[i] - sbm.satwaterdepth[i] - ustoredepth
 
         # Calculate the infiltration flux into the soil column
         infiltsoilpath,
@@ -1121,7 +1157,17 @@ function update_until_recharge(sbm::SBM, config)
         end
 
         actinfilt = infiltsoilpath - du
-        excesswater = avail_forinfilt - infiltsoilpath - infiltexcess + du
+
+        # Scale infiltration from surface water based on the ratio between actinfil and
+        # infiltsoilpath (and prevent division by zero)
+        if do_surface_water_infiltration
+            infilt_ratio = iszero(avail_forinfilt) ? 0.0 : actinfilt / avail_forinfilt
+            infilt_surfacewater = max(0.0, contribution_surfacewater * infilt_ratio)
+        else
+            infilt_surfacewater = 0.0
+        end
+
+        excesswater = avail_forinfilt - actinfilt - infiltexcess
 
         # Separation between compacted and non compacted areas (correction with the satflow du)
         # This is required for D-Emission/Delwaq
@@ -1190,6 +1236,8 @@ function update_until_recharge(sbm::SBM, config)
         sbm.avail_forinfilt[i] = avail_forinfilt
         sbm.actinfilt[i] = actinfilt
         sbm.infiltexcess[i] = infiltexcess
+        sbm.infilt_surfacewater[i] = infilt_surfacewater
+        sbm.contribution_surfacewater[i] = contribution_surfacewater
         sbm.recharge[i] = recharge
         sbm.transpiration[i] = transpiration
         sbm.soilevap[i] = soilevap
@@ -1223,7 +1271,7 @@ function update_until_recharge(sbm::SBM, config)
     end
 end
 
-function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
+function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater, config)
 
     threaded_foreach(1:sbm.n, basesize = 1000) do i
         usl, n_usl = set_layerthickness(zi[i], sbm.sumlayers[i], sbm.act_thickl[i])
@@ -1244,23 +1292,37 @@ function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
 
         ustoredepth = sum(@view usld[1:n_usl])
 
+        # Correct the excess water to only include the water that is not (yet) surface water,
+        # otherwise this water would be accounted for twice. This is only relevant if
+        # do_surface_water_infiltration is true
+        do_surface_water_infiltration =
+            get(config.model, "surface_water_infiltration", false)::Bool
+        if do_surface_water_infiltration
+            correction_surfacewater =
+                iszero(sbm.avail_forinfilt[i]) ? 1.0 :
+                1.0 - (sbm.contribution_surfacewater[i] / sbm.avail_forinfilt[i])
+        else
+            correction_surfacewater = 1.0
+        end
+
         if !isnothing(sbm.paddy) && sbm.paddy.irrigation_areas[i]
             paddy_h_add =
                 exfiltustore +
                 exfiltsatwater[i] +
-                sbm.excesswater[i] +
+                sbm.excesswater[i] * correction_surfacewater +
                 sbm.runoff_land[i] +
-                sbm.infiltexcess[i]
+                sbm.infiltexcess[i] * correction_surfacewater
             runoff = max(paddy_h_add - sbm.paddy.h_max[i], 0.0)
             sbm.paddy.h[i] = paddy_h_add - runoff
         else
             runoff =
                 exfiltustore +
                 exfiltsatwater[i] +
-                sbm.excesswater[i] +
+                sbm.excesswater[i] * correction_surfacewater +
                 sbm.runoff_land[i] +
-                sbm.infiltexcess[i]
+                sbm.infiltexcess[i] * correction_surfacewater
         end
+
 
         # volumetric water content per soil layer and root zone
         vwc = sbm.vwc[i]
@@ -1305,7 +1367,7 @@ function update_after_subsurfaceflow(sbm::SBM, zi, exfiltsatwater)
         sbm.exfiltsatwater[i] = exfiltsatwater[i]
         sbm.exfiltustore[i] = exfiltustore
         sbm.runoff[i] = runoff
-        sbm.net_runoff[i] = runoff - sbm.ae_openw_l[i]
+        sbm.net_runoff[i] = runoff - sbm.ae_openw_l[i] - sbm.infilt_surfacewater[i]
         sbm.vwc[i] = vwc
         sbm.vwc_perc[i] = vwc_perc
         sbm.rootstore[i] = rootstore
@@ -1429,13 +1491,13 @@ function update_water_demand(sbm::SBM)
                         sbm.nonpaddy.maximum_irrigation_rate[i]
                     if depletion >= raw # start irrigation
                         irri_dem_gross += depletion
-                        # add depletion to irrigation gross demand when the maximum irrigation rate has been 
+                        # add depletion to irrigation gross demand when the maximum irrigation rate has been
                         # applied at the previous time step (to get volumetric water content at field capacity)
                     elseif depletion > 0.0 && max_irri_rate_applied # continue irrigation
                         irri_dem_gross += depletion
                     end
                 end
-                # limit irrigation demand to infiltration capacity    
+                # limit irrigation demand to infiltration capacity
                 infiltration_capacity =
                     sbm.soilinfredu[i] * (1.0 - sbm.pathfrac[i]) * sbm.infiltcapsoil[i]
                 irri_dem_gross = min(irri_dem_gross, infiltration_capacity)
@@ -1466,7 +1528,7 @@ function update_water_demand(sbm::SBM)
             end
             sbm.paddy.demand_gross[i] = irri_dem_gross
         end
-        # update gross water demands 
+        # update gross water demands
         sbm.allocation.irri_demand_gross[i] = irri_dem_gross
         sbm.allocation.nonirri_demand_gross[i] = industry_dem + domestic_dem + livestock_dem
         sbm.allocation.total_gross_demand[i] =
