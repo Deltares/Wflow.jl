@@ -206,12 +206,6 @@ function update(sf::SurfaceFlowLand, network, frac_toriver)
     @. sf.alpha = sf.alpha_term * pow(sf.width, sf.alpha_pow)
     @. sf.qlat = sf.inwater / sf.dl
 
-    # Convert threshold to volume
-    threshold_volume = sf.h_thresh .* sf.width .* sf.dl
-
-    # Get pond volume at the start of the time step
-    pond_volume_current = sf.pond_height .* sf.width .* sf.dl
-
     sf.q_av .= 0.0
     sf.h_av .= 0.0
     sf.to_river .= 0.0
@@ -240,22 +234,26 @@ function update(sf::SurfaceFlowLand, network, frac_toriver)
                         )
                     end
 
+                    # Convert threshold to volume
+                    threshold_volume = sf.h_thresh[v] * sf.width[v] * sf.dl[v]
+                    pond_volume_current = sf.pond_height[v] * sf.width[v] * sf.dl[v]
+
                     # Calculate potential inflow
                     pot_inflow = (sf.qlat[v] * sf.dl[v] * dt) + (sf.qin[v] * dt)
 
                     # Check potential pond volume, to see if flow is allowed to occur
                     pond_volume_pot = max(
-                        pond_volume_current[v] + pot_inflow,
+                        pond_volume_current + pot_inflow,
                         0.0,
                     )
 
                     # Start kinematic wave if pond volume exceeds threshold
-                    if pond_volume_pot >= threshold_volume[v]
+                    if pond_volume_pot >= threshold_volume
                         # Calculate fraction of pond volume that is above threshold
                         if pot_inflow <= 0.0
                             flowing_fraction = 1.0
                         else
-                            flowing_fraction = (pond_volume_pot - threshold_volume[v]) / pot_inflow
+                            flowing_fraction = (pond_volume_pot - threshold_volume) / pot_inflow
                         end
 
                         sf.q[v] = kinematic_wave(
@@ -275,17 +273,18 @@ function update(sf::SurfaceFlowLand, network, frac_toriver)
                         end
 
                         # Update pond volume
-                        pond_volume_current[v] = threshold_volume[v]
+                        pond_volume_current = threshold_volume
+
                     else
                         # No flow if pond volume is below threshold
                         sf.q[v] = 0.0
                         sf.h[v] = 0.0
                         # Update pond volume
-                        pond_volume_current[v] = pond_volume_pot
+                        pond_volume_current = pond_volume_pot
                     end
 
                     # Update values
-                    sf.pond_height[v] = pond_volume_current[v] / (sf.width[v] * sf.dl[v])
+                    sf.pond_height[v] = pond_volume_current / (sf.width[v] * sf.dl[v])
 
                     # Update average values
                     sf.q_av[v] += sf.q[v]
