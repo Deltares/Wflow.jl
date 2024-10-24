@@ -909,7 +909,18 @@ function update_until_recharge(sbm::SBM, config)
         ustoredepth = sum(@view sbm.ustorelayerdepth[i][1:sbm.nlayers[i]])
 
         runoff_river = min(1.0, sbm.riverfrac[i]) * avail_forinfilt
-        runoff_land = min(1.0, sbm.waterfrac[i]) * avail_forinfilt
+
+        # Calculate the initial capacity of the unsaturated store
+        ustorecapacity = sbm.soilwatercapacity[i] - sbm.satwaterdepth[i] - ustoredepth
+        # Add a flag if the soil is saturated
+        check_saturated = ustorecapacity < 0.1
+
+        if check_saturated
+            runoff_land = min(1.0, 1.0 - sbm.riverfrac[i]) * avail_forinfilt
+        else
+            runoff_land = min(1.0, sbm.waterfrac[i]) * avail_forinfilt
+        end
+
         if !isnothing(sbm.paddy) || !isnothing(sbm.nonpaddy)
             avail_forinfilt = avail_forinfilt + sbm.allocation.irri_alloc[i]
         end
@@ -928,10 +939,17 @@ function update_until_recharge(sbm::SBM, config)
         surface_water = sbm.waterlevel_land[i] * (1.0 - sbm.riverfrac[i])
 
         # Calculate open water evaporation
-        ae_openw_l = min(
-            surface_water,
-            sbm.potential_evaporation[i] * soilevap_fraction,
-        )
+        if check_saturated
+            ae_openw_l = min(
+                surface_water,
+                sbm.potential_evaporation[i] * soilevap_fraction,
+            )
+        else
+            ae_openw_l = min(
+                surface_water,
+                sbm.potential_evaporation[i] * sbm.waterfrac[i],
+            )
+        end
 
         # Update land waterlevel and scale to part of cell not covered by rivers
         if do_surface_water_infiltration
@@ -953,9 +971,6 @@ function update_until_recharge(sbm::SBM, config)
         else
             evap_paddy_water = 0.0
         end
-
-        # Calculate the initial capacity of the unsaturated store
-        ustorecapacity = sbm.soilwatercapacity[i] - sbm.satwaterdepth[i] - ustoredepth
 
         # Calculate the infiltration flux into the soil column
         infiltsoilpath,
