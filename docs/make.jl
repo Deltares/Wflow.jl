@@ -53,6 +53,13 @@ makedocs(;
         canonical = "https://deltares.github.io/Wflow.jl",
         assets = String[],
         collapselevel = 2,
+        mathengine = Documenter.KaTeX(Dict(
+            :macros => Dict(
+                raw"\SI" => raw"{#1\;\mathrm{#2}}",
+                raw"\SIb" => raw"{#1\;[\mathrm{#2}}]", # b for brackets
+                raw"\subtext" => raw"#1_\text{#2}",
+            )
+        ))
     ),
     pages = pages,
 )

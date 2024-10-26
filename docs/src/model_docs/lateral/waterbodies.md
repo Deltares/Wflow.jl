@@ -7,15 +7,14 @@ Simple reservoirs can be included within the river routing by supplying the foll
 reservoir parameters:
 
 + `locs` - Outlet of the reservoirs in which each reservoir has a unique id
-+ `area` - Surface area of the reservoirs [m``^2``]
++ `area` - Surface area of the reservoirs ``\SIb{}{m^2}``
 + `areas` - Reservoir coverage
 + `targetfullfrac` - Target fraction full (of max storage) for the reservoir: number between
   0 and 1
 + `targetminfrac` - Target minimum full fraction (of max storage). Number between 0 and 1
-+ `maxvolume` - Maximum reservoir storage (above which water is spilled) [m``^3``]
-+ `demand` - Minimum (environmental) flow requirement downstream of the reservoir  [m``^3``
-  s``^{-1}``]
-+ `maxrelease` - Maximum Q that can be released if below spillway [m``^3`` s``^{-1}``]
++ `maxvolume` - Maximum reservoir storage (above which water is spilled) ``\SIb{}{m^3}``
++ `demand` - Minimum (environmental) flow requirement downstream of the reservoir  ``\SIb{}{m^3 s^{-1}}``
++ `maxrelease` - Maximum ``Q`` that can be released if below spillway ``\SIb{}{m^3 s^{-1}}``
 
 By default the reservoirs are not included in the model. To include them put the following
 lines in the TOML file of the model:
@@ -44,20 +43,19 @@ targetminfrac = "ResTargetMinFrac"
 Lakes are modelled using a mass balance approach:
 
 ```math
-    \dfrac{S(t + \Delta t)}{\Delta t} = \dfrac{S(t)}{\Delta t} + Q_{in} + \dfrac{(P-E) A}{\Delta t} - Q_{out}
+    \dfrac{S(t + \Delta t)}{\Delta t} = \dfrac{S(t)}{\Delta t} + \subtext{Q}{in} + \dfrac{(P-E) A}{\Delta t} - \subtext{Q}{out}
 ```
 
-where ``S`` is lake storage [m``^3``], ``\Delta t`` is the model timestep [s], ``Q_{in}`` is
-the sum of inflows (river, overland and lateral subsurface flow) [m``^3`` s``^{-1}``],
-``Q_{out}`` is the lake outflow at the outlet [m``^3`` s``^{-1}``], ``P`` is precipitation
-[m], ``E`` is lake evaporation [m] and ``A`` is the lake surface area [m``^2``].
+where ``\SIb{S}{m^3}`` is lake storage, ``\SIb{\Delta t}{s}`` is the model timestep, ``\SIb{\subtext{Q}{in}}{m^3 s^{-1}}`` is
+the sum of inflows (river, overland and lateral subsurface flow),
+``\SIb{\subtext{Q}{out}}{m^3 s^{-1}}`` is the lake outflow at the outlet, ``\SIb{P}{m}`` is precipitation, ``\SIb{E}{m}`` is lake evaporation and ``\SIb{A}{m^2}`` is the lake surface area.
 
 ![lake_schematisation](../../images/lake.png)
 
 *Lake schematization.*
 
 Most of the variables in this equation are already known or coming from previous timestep,
-apart from ``S(t+ \Delta t)`` and ``Q_{out}`` which can both be linked to the water level
+apart from ``S(t+ \Delta t)`` and ``\subtext{Q}{out}`` which can both be linked to the water level
 ``H`` in the lake using a storage curve ``S = f(H)`` and a rating curve ``Q = f(H)``. In
 wflow, several options are available to select storage and rating curves, and in most cases,
 the mass balance is then solved by linearization and iteration or using the Modified Puls
@@ -69,9 +67,9 @@ Approach from Maniak (Burek et al., 2013). Storage curves in wflow can either:
 Rating curves in wflow can either:
 
 + Come from the interpolation of field data linking lake outflow and water height, also appropriate for regulated lakes/ dams,
-+ Be computed from a rating curve of the form ``Q_{out} = \alpha {(H-H_{0})}^{\beta}``,
++ Be computed from a rating curve of the form ``\subtext{Q}{out} = \alpha (H-H_0)^\beta``,
   where ``H_{0}`` is the minimum water level under which the outflow is zero. Usual values
-  for ``\beta`` are 3/2 for a rectangular weir or 2 for a parabolic weir (Bos, 1989).
+  for ``\beta`` are ``\frac{3}{2}`` for a rectangular weir or ``2`` for a parabolic weir (Bos, 1989).
 
 ### Modified Puls Approach
 The Modified Puls Approach is a resolution method of the lake balance that uses an explicit
@@ -79,22 +77,32 @@ relationship between storage and outflow. Storage is assumed to be equal to ``A 
 rating curve for a parabolic weir (``\beta = 2``):
 
 ```math
-    S = A H = A  (h + H_{0}) = \dfrac{A}{\sqrt{\alpha}} \sqrt{Q} + A H_{0}
+    S = A H = A  (h + H_{0}) = A \sqrt{\frac{Q}{\alpha}} + A H_0
 ```
 
 Inserting this equation in the mass balance gives:
 
 ```math
-    \dfrac{A}{\Delta t \sqrt{\alpha}} \sqrt{Q} + Q = \dfrac{S(t)}{\Delta t} + Q_{in} +
-    \dfrac{(P-E) A}{\Delta t} - \dfrac{A H_{0}}{\Delta t} = SI - \dfrac{A H_{0}}{\Delta t}
+    \dfrac{A}{\Delta t} \sqrt{\frac{Q}{\alpha}} + Q = \dfrac{S(t)}{\Delta t} + \subtext{Q}{in} +
+    A\dfrac{P-E}{\Delta t} - \dfrac{A H_0}{\Delta t} = \mathrm{SI} - \dfrac{A H_0}{\Delta t}
 ```
-The solution for Q is then:
+The solution for ``Q`` is then:
 
 ```math
-    Q = { \left( \dfrac{-LF + \sqrt{LF^{2} + 4  \left( SI - \dfrac{A*H_{0}}{\Delta t} \right)}}
-    {2} \right) }^{2} \text{for } SI > \dfrac{A H_{0}}{\Delta t}  \text{ and where}\\
-    LF = \dfrac{A}{\Delta t \sqrt{\alpha}} \\~\\
-    Q = 0 \text{ for } SI \leq \dfrac{A*H_{0}}{\Delta t}
+  Q = 
+    \begin{cases}
+      \begin{align*}
+        \frac{1}{4}\left(-\mathrm{LF} + \sqrt{\mathrm{LF}^{2} + 4  \left(\mathrm{SI} - \dfrac{A H_0}{\Delta t} \right)}
+        \right)^2 &\text{ if }\quad \mathrm{SI} > \dfrac{A H_0}{\Delta t} \\
+        0 &\text{ if }\quad \mathrm{SI} \leq \dfrac{A H_0}{\Delta t}
+      \end{align*}
+    \end{cases}
+```
+
+where
+
+```math
+ \mathrm{LF} = \dfrac{A}{\Delta t \sqrt{\alpha}}.
 ```
 
 ### Lake parameters
@@ -146,8 +154,8 @@ supplied in the same folder of the TOML file. Naming of the files uses the ID of
 where data are available and is of the form lake\_sh\_1.csv and lake\_hq\_1.csv for
 respectively the storage and rating curves of lake with ID 1.
 
-The storage curve is stored in a CSV file with lake level [m] in the first column `H` and
-corresponding lake storage [m ``^{3}``] in the second column `S`:
+The storage curve is stored in a CSV file with lake level ``\SIb{}{m}`` in the first column `H` and
+corresponding lake storage ``\SIb{}{m^3}`` in the second column `S`:
 
 ```
 H,  S

@@ -11,40 +11,39 @@ Single layer groundwater flow requires the four following components, and each i
 Groundwater flow can occur either in a confined or unconfined aquifer. Confined aquifers are
 overlain by a poorly permeable confining layer (e.g. clay). No air can get in to fill the
 pore space so that the aquifer always remains fully saturated. For a confined aquifer, water
-will always flow along the complete height ``H`` [m] over the aquifer and transmissivity
-``kH`` [m``^2`` d``^{-1}``] is a constant (``k`` [m d``^{-1}``] is the horizontal hydraulic
+will always flow along the complete height ``\SIb{H}{m}`` over the aquifer and transmissivity
+``\SIb{kH}{m^2 d^{-1}}`` is a constant (``\SIb{k}{m d^{-1}}`` is the horizontal hydraulic
 conductivity). Specific storage is the amount of water an aquifer releases per unit change in
 hydraulic head, per unit volume of aquifer, as the aquifer and the groundwater itself is
-compressed. Its value is much smaller than specific yield, between 1e-5 (stiff) and 0.01
+compressed. Its value is much smaller than specific yield, between ``10^{-5}`` (stiff) and ``10^{-2}``
 (weak).
 
 The upper boundary of an unconfined aquifer is the water table (the phreatic
 surface). Specific yield (or drainable porosity) represents the volumetric fraction the
 aquifer will yield when all water drains and the pore volume is filled by air instead.
-Specific yield will vary roughly between 0.05 (clay) and 0.45 (peat) (Johnson, 1967).
+Specific yield will vary roughly between ``0.05`` (clay) and ``0.45`` (peat) (Johnson, 1967).
 
 Groundwater flow is solved forward in time and central in space. The vertically averaged
 governing equation for an inhomogeneous and isotropic aquifer in one dimension can be
 written as:
 
 ```math
-    S \frac{\phi}{\delta t} =  \frac{\delta}{\delta x} (kH \frac{\phi}{\delta x}) + Q
+    S \frac{\partial \phi}{\partial t} =  \frac{\partial}{\partial x} \left(kH \frac{\phi}{\delta x}\right) + Q
 ```
 
-where ``S`` [m m``^{-1}``] is storativity (or specific yield), ``\phi`` [m] is hydraulic
-head, ``t`` is time, ``k`` [m t``^{-1}``] is horizontal hydraulic conductivity, ``H`` [m] is
-the (saturated) aquifer height: groundwater level - aquifer bottom elevation and ``Q`` [m
-t``^{-1}``] represents fluxes from boundary conditions (e.g. recharge or abstraction), see
+where ``\SIb{S}{m m^{-1}}`` is storativity (or specific yield), ``\SIb{\phi}{m}`` is hydraulic
+head, ``t`` is time, ``\SIb{k}{m t^{-1}}`` is horizontal hydraulic conductivity, ``\SIb{H}{m}`` is
+the (saturated) aquifer height: groundwater level - aquifer bottom elevation and ``\SIb{Q}{m t^{-1}}`` represents fluxes from boundary conditions (e.g. recharge or abstraction), see
 also [Aquifer boundary conditions](@ref).
 
 The simplest finite difference formulation is forward in time, central in space, and can be
 written as:
 
 ```math
-    S_i  \frac{(\phi_{i}^{t+1} - \phi_i^{t})}{\Delta t} = -C_{i-1}  (\phi_{i-1} - \phi_i) - C_i  (\phi_{i+1} - \phi_i) + Q_ᵢ
+    S_i  \frac{\phi_{i}^{t+1} - \phi_i^{t}}{\Delta t} = -C_{i-1}  (\phi_{i-1} - \phi_i) - C_i  (\phi_{i+1} - \phi_i) + Q_i
 ```
 
-where ``_i`` is the cell index, ``^t`` is time, ``\Delta t`` is the step size, ``C_{i-1}``
+where ``i`` is the cell index, ``t`` is time, ``\Delta t`` is the step size, ``C_{i-1}``
 is the the intercell conductance between cell ``i-1`` and ``i`` and ``C_i`` is the intercell
 conductance between cell ``i`` and ``i+1``. The connection data between cells is stored as
 part of the `Connectivity` struct, see also [Connectivity](@ref) for more information.
@@ -55,17 +54,17 @@ Conductance ``C`` is defined as:
     C = \frac{kH w}{l}
 ```
 
-where ``w`` [m] is the width of the cell to cell connection, and ``l`` [m] is the length of
+where ``\SIb{w}{m}`` is the width of the cell to cell connection, and ``\SIb{l}{m}`` is the length of
 the cell to cell connection. ``k`` and ``H`` may both vary in space; intercell conductance
 is therefore an average using the properties of two cells.  For the calculation of the
 intercell conductance ``C`` the harmonic mean is used (see also Goode and Appel, 1992), here
 between cell index ``i`` and cell index ``i+1``, in the ``x`` direction:
 
 ```math
-    C_i = w  \frac{(k_iH_i\cdot k_{i+1}H_{i+1})}{(k_iH_i \cdot l_{i+1} + k_{i+1}H_{i+1} \cdot l_i)}
+    C_i = w  \frac{k_iH_i\cdot k_{i+1}H_{i+1}}{k_iH_i \cdot l_{i+1} + k_{i+1}H_{i+1} \cdot l_i}
 ```
 
-where ``H`` [m] is the aquifer top - aquifer bottom, and ``k``, ``l_i`` is the length in
+where ``\SIb{H}{m}`` is the aquifer top - aquifer bottom, and ``k``, ``l_i`` is the length in
 cell ``i`` (``0.5 \Delta x_i``),  ``l_{i+1}`` is the length in cell ``i+1`` (``0.5 \Delta
 x_{i+1}``) and ``w`` as previously defined. For an unconfined aquifer the intercell
 conductance is scaled by using the "upstream saturated fraction" as the MODFLOW
@@ -89,12 +88,12 @@ Finally, a stable time step size can be computed given the forward-in-time, cent
 scheme, based on the following criterion from Chu and Willis (1984):
 
 ```math
-\frac{\Delta t k H}{(\Delta x  \Delta y S)}  \le \frac{1}{4}
+\frac{\Delta t k H}{\Delta x  \Delta y S}  \le \frac{1}{4}
 ```
-where ``\Delta t`` [d] is the stable time step size, ``\Delta x`` [m] is the cell length in
-the ``x`` direction and ``\Delta y`` [m] is the cell length in the ``y`` direction, ``k`` is
-the horizontal hydraulic conductivity [m``^2`` d``^{-1}``] and ``H`` [m] is the saturated
-thickness of the aquifer. For each cell ``\frac{(\Delta x  \Delta y S)}{k H}`` is
+where ``\SIb{\Delta t}{d}`` is the stable time step size, ``\SIb{\Delta x}{m}`` is the cell length in
+the ``x`` direction and ``\SIb{\Delta y}{m}`` is the cell length in the ``y`` direction, ``\SIb{k}{m^2 d^{-1}}`` is
+the horizontal hydraulic conductivity and ``\SIb{H}{m}`` is the saturated
+thickness of the aquifer. For each cell ``\frac{\Delta x  \Delta y S}{k H}`` is
 calculated, the minimum of these values is determined, and multiplied by ``\frac{1}{4}``, to
 get the stable time step size.
 
@@ -146,38 +145,44 @@ The flux between river and aquifer is calculated using Darcy's law following the
 MODFLOW:
 
 ```math
-    Q_{riv} =  \Bigg\lbrace{C_{i} \,\text{min}(h_{riv} - B_{riv}, h_{riv} - \phi), \,h_{riv} > \phi \atop C_{e} (h_{riv} - \phi) , \,h_{riv} \leq \phi}
+  \subtext{Q}{riv} = 
+  \begin{align*}
+    \begin{cases}
+      C_i \min \left\{\subtext{h}{riv} - \subtext{B}{riv}, \subtext{h}{riv} - \phi\right\} &\text{ if }\quad \subtext{h}{riv} > \phi \\
+      C_e (\subtext{h}{riv} - \phi) &\text{ if }\quad \subtext{h}{riv} \le \phi
+    \end{cases}
+  \end{align*}
 ```
-where ``Q_{riv}`` is the exchange flux from river to aquifer [L``^3`` T``^{-1}``], ``C_i``
-[L``^2`` T``^{-1}``] is the river bed infiltration conductance, ``C_e`` [L``^2`` T``^{-1}``]
-is the river bed exfiltration conductance, ``B_{riv}`` the bottom of the river bed [L],
-``h_{riv}`` is the river stage [L] and ``\phi`` is the hydraulic head in the river cell [L].
+<!-- It seems rather inconsistent to use units everywhere and then suddenly use dimensions instead here. -->
+where ``\SIb{\subtext{Q}{riv}}{L^3 T^{-1}}`` is the exchange flux from river to aquifer, ``\SIb{C_i}{L^2 T^{-1}}`` is the river bed infiltration conductance, ``\SIb{C_e}{L^2 T^{-1}}``
+is the river bed exfiltration conductance, ``\SIb{\subtext{B}{riv}}{L}`` the bottom of the river bed,
+``\SIb{\subtext{h}{riv}}{L}`` is the river stage and ``\SIb{\phi}{L}`` is the hydraulic head in the river cell.
 
 The Table in the Groundwater flow [river boundary condition](@ref gwf_river_params) section
 of the Model parameters provides the parameters of the struct `River`. Parameters that can
 be set directly from the static input data (netCDF) are marked in this Table.
 
-The exchange flux (river to aquifer) ``Q_{riv}`` is an output variable (field `flux` of the
+The exchange flux (river to aquifer) ``\subtext{Q}{riv}`` is an output variable (field `flux` of the
 `River` struct), and is used to update the total flux in a river cell. For the model `SBM +
-Groundwater flow`, the water level `h` [m] of the river kinematic wave in combination with
+Groundwater flow`, the water level ``\SIb{h}{m}`` of the river kinematic wave in combination with
 the river `bottom` is used to update the `stage` field of the `River` struct each time step.
 
 ### Drainage
 The flux from drains to the aquifer is calculated as follows:
 
 ```math
-Q_{drain} = C_{drain} \text{min}(0, h_{drain} - \phi)
+\subtext{Q}{drain} = \subtext{C}{drain} \min(0, \subtext{h}{drain} - \phi)
 ```
 
-where ``Q_{drain}`` is the exchange flux from drains to aquifer [L``^3`` T``^{-1}``],
-``C_{drain}`` [L``^2`` T``^{-1}``] is the drain conductance, ``h_{drain}`` is the drain
-elevation [L] and ``\phi`` is the hydraulic head in the cell with drainage [L].
+where ``\SIb{\subtext{Q}{drain}}{L^3 T^{-1}}`` is the exchange flux from drains to aquifer,
+``\SIb{\subtext{C}{drain}}{L^2 T^{-1}}`` is the drain conductance, ``\SIb{\subtext{h}{drain}}{L}`` is the drain
+elevation and ``\SIb{\phi}{L}`` is the hydraulic head in the cell with drainage.
 
-The Table in the Groundwater flow [drainage boundary condition](@ref gwf_drainage_params)
+The table in the Groundwater flow [drainage boundary condition](@ref gwf_drainage_params)
 section of the Model parameters provides the parameters of the struct `Drainage`. Parameters
 that can be set directly from the static input data (netCDF) are marked in this Table.
 
-The exchange flux (drains to aquifer) ``Q_{drain}`` is an output variable (field `flux` of
+The exchange flux (drains to aquifer) ``\subtext{Q}{drain}`` is an output variable (field `flux` of
 struct `Drainage`), and is used to update the total flux in a cell with drains. For the
 model `SBM + Groundwater flow` this boundary condition is optional, and if used should be
 specified in the TOML file as follows (see also
@@ -194,10 +199,10 @@ The recharge flux ``Q_{r}`` to the aquifer is calculated as follows:
 ```math
 Q_{r} = R \, A
 ```
-with ``R`` the recharge rate [L T``^{-1}``] and ``A`` the area [L``^2`` ] of the aquifer
+with ``\SIb{}{L T^{-1}}`` the recharge rate and ``\SIb{A}{L^2}`` the area of the aquifer
 cell.
 
-The Table in the Groundwater flow [recharge boundary condition](@ref gwf_recharge_params)
+The table in the Groundwater flow [recharge boundary condition](@ref gwf_recharge_params)
 section of the Model parameters section provides the parameters of the struct `Recharge`.
 Parameters that can be set directly from the static input data (netCDF) are marked in this
 Table.
@@ -212,15 +217,15 @@ multiplied by the `area` field of the aquifer.
 This boundary is a fixed head with time (not affected by the model stresses over time))
 outside of the model domain, and is generally used to avoid an unnecessary extension of the
 model domain to the location of the fixed boundary (for example a large lake). The flux from
-the boundary ``Q_{hb}`` [L``^3`` T``^{-1}``] is calculated as follows:
+the boundary ``\SIb{Q_{hb}}{L^3 T^{-1}}`` is calculated as follows:
 
 ```math
 Q_{hb} = C_{hb} (\phi_{hb} - \phi)
 ```
-with ``C_{hb}`` the conductance of the head boundary [L``^2`` T``^{-1}``], ``\phi_{hb}`` the
-head [L] of the head boundary and  ``\phi`` the head of the aquifer cell.
+with ``\SIb{C_{hb}}{L^2 T^{-1}}`` the conductance of the head boundary, ``\SIb{\phi_{hb}}{L}`` the
+head of the head boundary and ``\phi`` the head of the aquifer cell.
 
-The Table in the Groundwater flow [head boundary condition](@ref gwf_headboundary_params)
+The table in the Groundwater flow [head boundary condition](@ref gwf_headboundary_params)
 section of the Model parameters provides the parameters of the struct `HeadBoundary`.
 
 The head boundary flux ``Q_{hb}`` is an output variable (field `flux` of struct
@@ -232,12 +237,12 @@ value.
     This boundary is not (yet) part of the model `SBM + Groundwater flow`.
 
 ### Well boundary
-A volumetric well rate [L``^3`` T``^{-1}``] can be specified as a boundary condition.
+A volumetric well rate ``\SIb{}{L^3 T^{-1}}`` can be specified as a boundary condition.
 
 The Table in the [well boundary condition](@ref well_boundary_params) section of the Model
 parameters provides the parameters of the struct `Well`.
 
-The volumetric well rate ``Q_{well}`` can be can be specified as a fixed or time dependent
+The volumetric well rate ``\subtext{Q}{well}`` can be can be specified as a fixed or time dependent
 value. If a cell is dry, the actual well flux `flux` is set to zero (see also the last note
 on this page).
 
