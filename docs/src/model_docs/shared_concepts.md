@@ -4,25 +4,26 @@
 
 ### Snow modelling
 
-If the air temperature, ``T_a``, is below a user-defined threshold `tt` (``\degree``C)
-precipitation occurs as snowfall, whereas it occurs as rainfall if ``Ta ≥ tt``. A another
+If the air temperature, ``T_a``, is below a user-defined threshold `tt` ``\SIb{}{\degree C}``
+precipitation occurs as snowfall, whereas it occurs as rainfall if ``T_a ≥ \mathrm{tt}``. A another
 parameter `tti` defines how precipitation can occur partly as rain or snowfall (see the
 figure below). If precipitation occurs as snowfall, it is added to the dry snow component
 within the snow pack. Otherwise it ends up in the free water reservoir, which represents the
 liquid water content of the snow pack. Between the two components of the snow pack,
 interactions take place, either through snow melt (if temperatures are above a threshold
-`tt`) or through snow refreezing (if temperatures are below threshold `tt`.
+`tt`) or through snow refreezing (if temperatures are below threshold `tt`).
 
 The respective rates of snow melt and refreezing are:
 
 ```math
-Q_m = cfmax(T_a−tt)\, ;\,T_a > tt \\~\\
-Q_r=cfmax \, cfr(tt−T_a)\,;\, Ta < tt
+\begin{align*}
+    Q_m &=& \subtext{\mathrm{cf}}{max}(T_a−\mathrm{tt})\, &&T_a > \mathrm{tt} \\~\\
+    Q_r &=& \subtext{\mathrm{cf}}{max} \, \mathrm{cf}_r(\mathrm{tt}−T_a) &&T_a < \mathrm{tt}
+\end{align*}
 ```
 
 where ``Q_m`` is the rate of snow melt, ``Q_r`` is the rate of snow refreezing, and
-``cfmax`` and ``cfr`` are user defined model parameters (the melting factor
-[mm/(``\degree``C day)] and the refreezing factor respectively).
+``\SIb{\subtext{\mathrm{cf}}{max}}{mm\;(\degree C)^{-1} day^{-1}}`` and ``\mathrm{cf}_r`` are user defined model parameters (the melting factor and the refreezing factor respectively).
 
 The fraction of liquid water in the snow pack is at most equal to a user defined fraction,
 `whc`, of the water equivalent of the dry snow content. If the liquid water concentration
@@ -63,21 +64,20 @@ required glacier data can be prepared from available glacier datasets.
 
 First, a fixed fraction of the snowpack on top of the glacier is converted into ice for each
 timestep and added to the `glacierstore` using the HBV-light model (Seibert et al., 2018).
-This fraction `g_sifrac` typically ranges from 0.001 to 0.006.
+This fraction `g_sifrac` typically ranges from ``0.001`` to ``0.006``.
 
-Then, when the snowpack on top of the glacier is almost all melted (snow cover < 10 mm),
+Then, when the snowpack on top of the glacier is almost all melted (snow cover ``< \SI{10}{mm}``),
 glacier melt is enabled and estimated with a degree-day model. If the air temperature,
-``T_a``, is below a certain threshold `g_tt` (``\degree``C) precipitation occurs as
+``T_a``, is below a certain threshold `g_tt` (``\SIb{}{\degree C}``) precipitation occurs as
 snowfall, whereas it occurs as rainfall if ``T_a ≥`` `g_tt`.
 
 With this the rate of glacier melt in mm is estimated as:
 
 ```math
-Q_m = g\_cfmax(T_a − g\_tt)\, ; \, T_a > g\_tt
+Q_m = \subtext{g}{cfmax}(T_a − \subtext{g}{tt})\, ; \, T_a > \subtext{g}{tt}
 ```
 
-where ``Q_m`` is the rate of glacier melt and ``g\_cfmax`` is the melting factor in
-mm/(``\degree``C day). Parameter `g_tt` can be taken as equal to the snow `tt` parameter.
+where ``Q_m`` is the rate of glacier melt and ``\SIb{\subtext{g}{cfmax}}{mm (\degree C)^{-1}day^{-1}}`` is the melting factor. Parameter `g_tt` can be taken as equal to the snow `tt` parameter.
 Values of the melting factor `g_cfmax` normally varies from one glacier to another and some
 values are reported in the literature. `g_cfmax` can also be estimated by multiplying snow
 `cfmax` by a factor between 1 and 2, to take into account the higher albedo of ice compared
@@ -94,7 +94,7 @@ storm-based approach will yield better results in situations with more than one 
 day. The amount of water needed to completely saturate the canopy is defined as:
 
 ```math
-P'=\frac{-\overline{R}S}{\overline{E}_{w}}ln\left[1-\frac{\overline{E}_{w}}{\overline{R}}(1-p-p_{t})^{-1}\right]
+P'=\frac{-\overline{R}S}{\overline{E}_w}\log\left[1-\frac{\overline{E}_w}{\overline{R}}(1-p-p_t)^{-1}\right]
 ```
 
 where ``\overline{R}`` is the average precipitation intensity on a saturated canopy and
@@ -112,12 +112,12 @@ Table: Formulation of the components of interception loss according to Gash:
 
 | Components  | Interception loss |
 |:----------- | ----------------- |
-| For ``m`` small storms (``P_{g}<{P'}_{g}``)    | ``(1-p-p_{t})\sum_{j=1}^{m}P_{g,j}`` |
-| Wetting up the canopy in ``n`` large storms (``P_{g}\geq{P'}_{g}``)     | ``n(1-p-p_{t}){P'}_{g}-nS`` |
-| Evaporation from saturated canopy during rainfall | ``\overline{E}/\overline{R}\sum_{j=1}^{n}(P_{g,j}-{P'}_{g})``|
+| For ``m`` small storms (``P_g<{P'}_g``)    | ``(1-p-p_t)\sum_{j=1}^m P_{g,j}`` |
+| Wetting up the canopy in ``n`` large storms (``P_g\geq{P'}_g``)     | ``n(1-p-p_{t}){P'}_g-nS`` |
+| Evaporation from saturated canopy during rainfall | ``\overline{E}/\overline{R}\sum_{j=1}^n(P_{g,j}-{P'}_g)``|
 | Evaporation after rainfall ceases for ``n`` large storms | ``nS`` |
-| Evaporation from trunks in ``q`` storms that fill the trunk storage | ``qS_{t}`` |
-| Evaporation from  trunks in ``m+n-q`` storms that do not fill the trunk storage | ``p_{t}\sum_{j=1}^{m+n-q}P_{g,j}`` |
+| Evaporation from trunks in ``q`` storms that fill the trunk storage | ``qS_t`` |
+| Evaporation from  trunks in ``m+n-q`` storms that do not fill the trunk storage | ``p_t\sum_{j=1}^{m+n-q}P_{g,j}`` |
 
 In applying the analytical model, saturated conditions are assumed to occur when the hourly
 rainfall exceeds a certain threshold. Often a threshold of 0.5 mm/hr is used.
@@ -153,18 +153,18 @@ path_static = "data/staticmaps-moselle.nc"
 cyclic = ["vertical.leaf_area_index"]
 ```
 Furthermore these additional parameters are required:
-+ Specific leaf storage  (`sl` \[mm\])
-+ Storage woody part of vegetation (`swood` \[mm\])
-+ Extinction coefficient (`kext` \[-\])
++ Specific leaf storage  (`sl` ``\SIb{}{mm}``)
++ Storage woody part of vegetation (`swood` ``\SIb{}{mm}``)
++ Extinction coefficient (`kext` ``\SIb{}{-}``)
 
-Here it is assumed that `cmax` \[mm\] (leaves) (canopy storage capacity for the leaves only)
+Here it is assumed that `cmax` ``\SIb{}{mm}`` (leaves) (canopy storage capacity for the leaves only)
 relates linearly with LAI (c.f. Van Dijk and Bruijnzeel 2001). This done via the `sl`. `sl`
 can be determined through a lookup table with land cover based on literature (Pitman 1989,
 Lui 1998). Next the `cmax` (leaves) is determined using:
 
 ```math
 
-    cmax(leaves)  = sl \, LAI
+    \mathrm{cmax}(\mathrm{leaves})  = \mathrm{sl} \cdot \mathrm{LAI}
 ```
 To get to total storage (`cmax`) the woody part of the vegetation also needs to be added. As
 for `sl`, the storage of the woody part `swood` can also be related to land cover (lookup
@@ -174,7 +174,7 @@ The canopy gap fraction is determined using the extinction coefficient `kext` (v
 Bruijnzeel 2001):
 
 ```math
-    canopygapfraction = exp(-kext \, LAI)
+    \mathrm{canopygapfraction} = \exp(-\subtext{k}{ext} \cdot \mathrm{LAI})
 ```
 
 The extinction coefficient `kext` can be related to land cover.

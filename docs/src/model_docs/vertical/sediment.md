@@ -40,41 +40,40 @@ intensity of the rain kinetic energy depends on the length of the fall, rainfall
 by vegetation will then be reduced compared to direct throughfall. The kinetic energy of
 direct throughfall is estimated by (Morgan et al, 1998):
 ```math
-   KE_{direct} = 8.95 + 8.44\,log_{10}\,R_{i}
+   \subtext{\mathrm{KE}}{direct} = 8.95 + 8.44\,\log_{10}(R_i)
 ```
-where ``KE_{direct}`` is the kinetic energy of direct throughfall (J m``^{-2}`` mm``^{-1}``) and
-``R_{i}`` is rainfall intensity (mm h``^{-1}``). If the rainfall is intercepted by
+where ``\SIb{\subtext{\mathrm{KE}}{direct}}{J m^{-2} mm^{-1}}`` is the kinetic energy of direct throughfall and
+``\SIb{R_i}{mm h^{-1}}`` is rainfall intensity. If the rainfall is intercepted by
 vegetation and falls as leaf drainage, its kinetic energy is then reduced according to
 (Brandt, 1990):
 ```math
-   KE_{leaf} = 15.8\,H_{p}^{0.5} - 5.87
+   \subtext{\mathrm{KE}}{leaf} = 15.8\,\sqrt{H_p} - 5.87
 ```
-where ``KE_{leaf}`` is kinetic energy of leaf drainage (J m``^{-2}`` mm``^{-1}``) and
-``H_{p}`` is the effective canopy height (half of plant height in m). Canopy height can be
+where ``\SIb{\subtext{\mathrm{KE}}{leaf}}{J m^{-2} mm^{-1}}`` is kinetic energy of leaf drainage and
+``\SIb{H_p}{m}`` is the effective canopy height (half of plant height). Canopy height can be
 derived from the global map from Simard & al. (2011) or by user input depending on the land
 use.
 
 Kinetic energies from both direct throughfall and leaf drainage are then multiplied by the
 respective depths of direct throughfall and leaf drainage (mm) and added to get the total
-rainfall kinetic energy ``KE``. The soil detached by rainfall ``D_{R}`` (g m``^{-2}``) is
+rainfall kinetic energy ``\mathrm{KE}``. The soil detached by rainfall ``\SIb{D_R}{g m^{-2}}`` is
 then:
 ```math
-   D_{R} = k\,KE\,e^{-\varphi h}
+   D_R = k\,\mathrm{KE}\,e^{-\varphi h}
 ```
-where ``k`` is an index of the detachability of the soil (g ``J^{-1}``), ``KE`` is the total
-rainfall kinetic energy (J m``^{-2}``), ``h`` is the surface runoff depth on the soil (m)
-and ``\varphi`` is an exponent varying between 0.9 and 3.1 used to reduce rainfall impact if
+where ``\SIb{k}{g J^{-1}}`` is an index of the detachability of the soil, ``\SIb{\mathrm{KE}}{J m^{-2}}`` is the total
+rainfall kinetic energy, ``\SIb{h}{m}`` is the surface runoff depth on the soil and ``\varphi`` is an exponent varying between ``0.9`` and ``3.1`` used to reduce rainfall impact if
 the soil is already covered by water. As a simplification, Torri (1987) has shown that a
-value of 2.0 for ``\varphi`` is representative enough for a wide range of soil conditions.
+value of ``2.0`` for ``\varphi`` is representative enough for a wide range of soil conditions.
 The detachability of the soil ``k`` depends on the soil texture (proportion of clay, silt
 and sand content) and corresponding values are defined in EUROSEM user guide (Morgan et al,
-1998). As a simplification, in wflow\_sediment, the mean value of the detachability shown in
+1998). As a simplification, in `wflow_sediment`, the mean value of the detachability shown in
 the table below are used. Soil texture can for example be derived from the topsoil clay and
 silt content from SoilGrids (Hengl et al, 2017).
 
 Table: Mean detachability of soil depending on its texture (Morgan et al, 1998).
 
-| Texture (USDA system) | Mean detachability ``k`` (g/J) |
+| Texture (USDA system) | Mean detachability ``\SIb{k}{g J^{-1}}`` |
 |:--------------------- | ------------------------------ |
 | Clay | 2.0 |
 | Clay Loam | 1.7 |
@@ -90,12 +89,12 @@ Rainfall erosion is handled differently in ANSWERS. There, the impacts of vegeta
 soil properties are handled through the USLE coefficients in the equation (Beasley et al,
 1991):
 ```math
-   D_{R} = 0.108 \, C_{USLE} \, K_{USLE} \, A_{i} \, R_{i}^{2}
+   D_R = 0.108 \, \subtext{C}{USLE} \, \subtext{K}{USLE} \, A_i \, R_i^2
 ```
-where ``D_{R}`` is the soil detachment by rainfall (here in kg min``^{-1}``), ``C_{USLE}``
-is the soil cover-management factor from the USLE equation, ``K_{USLE}`` is the soil
-erodibility factor from the USLE equation, ``A_{i}`` is the area of the cell (m``^{2}``) and
-``R_{i}`` is the rainfall intensity (here in mm min``^{-1}``). There are several methods
+where ``\SIb{D_R}{kg min^{-1}}`` is the soil detachment by rainfall, ``\subtext{C}{USLE}``
+is the soil cover-management factor from the USLE equation, ``\subtext{K}{USLE}`` is the soil
+erodibility factor from the USLE equation, ``\SIb{A_i}{m^2}`` is the area of the cell and
+``\SIb{R_i}{mm\;min^{-1}}`` is the rainfall intensity. There are several methods
 available to estimate the ``C`` and ``K`` factors from the USLE. They can come from user
 input maps, for example maps resulting from Panagos & al.'s recent studies for Europe
 (Panagos et al, 2015) (Ballabio et al, 2016). To get an estimate of the ``C`` factor
@@ -110,24 +109,24 @@ The other methods to estimate the USLE ``K`` factor are to use either topsoil co
 topsoil geometric mean diameter. ``K`` estimation from topsoil composition is estimated with
 the equation developed in the EPIC model (Williams et al, 1983):
 ```math
-   K_{USLE} = \left\{ 0.2 + 0.3exp\left[-0.0256SAN\frac{(1-SIL)}{100}\right] \right\}
-   \left(\frac{SIL}{CLA+SIL}\right)^{0.3} \\~\\
-   \left(1-\frac{0.25OC}{OC+e^{(3.72-2.95OC)}}\right)\left(1-\frac{0.75SN}{SN+e^{(-5.51+22.9SN)}}\right)
+   \subtext{K}{USLE} = \left[ 0.2 + 0.3\exp\left(-0.0256\;\mathrm{SAN}\frac{(1-\mathrm{SIL})}{100}\right) \right]
+   \left(\frac{\mathrm{SIL}}{\mathrm{CLA}+\mathrm{SIL}}\right)^{0.3} \\~\\
+   \left(1-\frac{0.25\;\mathrm{OC}}{\mathrm{OC}+e^{3.72-2.95\;\mathrm{OC}}}\right)\left(1-\frac{0.75\;\mathrm{SN}}{\mathrm{SN}+e^{-5.51+22.9\;\mathrm{SN}}}\right)
 ```
-where ``CLA``, ``SIL``, ``SAN`` are respectively the clay, silt and sand fractions of the
-topsoil (%), ``OC`` is the topsoil organic carbon content (%) and ``SN`` is ``1-SAN/100``.
+where ``\SIb{\mathrm{CLA}}{\%}``, ``\SIb{\mathrm{SIL}}{\%}``, ``\SIb{\mathrm{SAN}}{\%}`` are respectively the clay, silt and sand fractions of the
+topsoil, ``\SIb{OC}{\%}`` is the topsoil organic carbon content and ``\mathrm{SN} = 1-\mathrm{SAN}/100``.
 These soil parameters can be derived for example from the SoilGrids dataset. The ``K``
 factor can also be estimated from the soil mean geometric diameter using the formulation
 from the RUSLE guide by Renard & al. (1997):
 ```math
-   K_{USLE} = 0.0034 + 0.0405e^{\left(-\dfrac{1}{2}\left(\dfrac{log_{10}(D_{g})+1.659}{0.7101}\right)^{2}\right)}
+   \subtext{K}{USLE} = 0.0034 + 0.0405\exp\left(-\dfrac{1}{2}\left(\dfrac{\log_{10}(D_g)+1.659}{0.7101}\right)^2\right)
 ```
-where ``D_{g}`` is the soil geometric mean diameter (mm) estimated from topsoil clay, silt,
+where ``D_g`` is the soil geometric mean diameter (mm) estimated from topsoil clay, silt,
 sand fraction.
 
 Table: Estimation of USLE C factor per Globcover land use type
 
-| GlobCover Value | Globcover label | ``C_{USLE}`` |
+| GlobCover Value | Globcover label | ``\subtext{C}{USLE}`` |
 |:--------------- | --------------- | ------------ |
 | 11 | Post-flooding or irrigated croplands (or aquatic) | 0.2 |
 | 14 | Rainfed croplands | 0.35 |
@@ -160,12 +159,11 @@ the surface water on the soil. As in rainfall erosion, the effect of the flow sh
 can be reduced by the soil vegetation or by the soil properties. In wflow_sediment, soil
 detachment by overland flow is modelled as in ANSWERS with (Beasley et al, 1991):
 ```math
-   D_{F} = 0.90 \, C_{USLE} \, K_{USLE} \, A_{i} \, S \, q
+   D_G = 0.90 \, \subtext{C}{USLE} \, \subtext{K}{USLE} \, A_i \, S \, q
 ```
-where ``D_{F}`` is soil detachment by flow (kg min``^{-1}``), ``C_{USLE}`` and ``K_{USLE}``
-are the USLE cover and soil erodibility factors, ``A_{i}`` is the cell area (m``^{2}``),
-``S`` is the slope gradient and ``q`` is the overland flow rate per unit width (m``^{2}``
-min``^{-1}``). The USLE ``C`` and ``K`` factors can be estimated with the same methods as
+where ``\SIb{D_F}{kg\;min^{-1}}`` is soil detachment by flow, ``\subtext{C}{USLE}`` and ``\subtext{K}{USLE}``
+are the USLE cover and soil erodibility factors, ``\SIb{A_i}{m^2}`` is the cell area,
+``S`` is the slope gradient and ``\SIb{q}{m^2 min^{-1}}`` is the overland flow rate per unit width. The USLE ``C`` and ``K`` factors can be estimated with the same methods as
 for rainfall erosion and here the slope gradient is obtained from the sinus rather than the
 tangent of the slope angle.
 
