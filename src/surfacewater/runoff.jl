@@ -15,20 +15,13 @@ abstract type AbstractRunoffModel{T} end
 end
 
 "Initialize open water runoff model variables"
-function OpenWaterRunoffVariables(
-    n;
-    runoff_river::Vector{T} = fill(mv, n),
-    runoff_land::Vector{T} = fill(mv, n),
-    ae_openw_l::Vector{T} = fill(mv, n),
-    ae_openw_r::Vector{T} = fill(mv, n),
-    net_runoff_river::Vector{T} = fill(mv, n),
-) where {T}
+function OpenWaterRunoffVariables(T::Type{<:AbstractFloat}, n::Int)
     return OpenWaterRunoffVariables{T}(;
-        runoff_river = runoff_river,
-        runoff_land = runoff_land,
-        ae_openw_l = ae_openw_l,
-        ae_openw_r = ae_openw_r,
-        net_runoff_river = net_runoff_river,
+        runoff_river = fill(mv, n),
+        runoff_land = fill(mv, n),
+        ae_openw_l = fill(mv, n),
+        ae_openw_r = fill(mv, n),
+        net_runoff_river = fill(mv, n),
     )
 end
 
@@ -64,16 +57,11 @@ end
 end
 
 "Initialize open water runoff boundary conditions"
-function OpenWaterRunoffBC(
-    n;
-    water_flux_surface::Vector{T} = fill(mv, n),
-    waterlevel_land::Vector{T} = fill(mv, n),
-    waterlevel_river::Vector{T} = zeros(Float, n), # set to zero to account for cells outside river domain
-) where {T}
+function OpenWaterRunoffBC(T::Type{<:AbstractFloat}, n::Int)
     return OpenWaterRunoffBC{T}(;
-        water_flux_surface = water_flux_surface,
-        waterlevel_land = waterlevel_land,
-        waterlevel_river = waterlevel_river,
+        water_flux_surface = fill(mv, n),
+        waterlevel_land = fill(mv, n),
+        waterlevel_river = zeros(T, n),
     )
 end
 
@@ -87,8 +75,8 @@ end
 "Initialize open water runoff model"
 function OpenWaterRunoff(nc, config, inds, riverfrac)
     n = length(riverfrac)
-    vars = OpenWaterRunoffVariables(n)
-    bc = OpenWaterRunoffBC(n)
+    vars = OpenWaterRunoffVariables(Float, n)
+    bc = OpenWaterRunoffBC(Float, n)
     params = OpenWaterRunoffParameters(nc, config, inds, riverfrac)
     model =
         OpenWaterRunoff(; boundary_conditions = bc, parameters = params, variables = vars)

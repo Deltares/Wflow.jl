@@ -15,20 +15,13 @@ abstract type AbstractInterceptionModel{T} end
 end
 
 "Initialize interception model variables"
-function InterceptionVariables(
-    n;
-    canopy_potevap::Vector{T} = fill(mv, n),
-    interception_rate::Vector{T} = fill(mv, n),
-    canopy_storage::Vector{T} = fill(0.0, n),
-    stemflow::Vector{T} = fill(mv, n),
-    throughfall::Vector{T} = fill(mv, n),
-) where {T}
+function InterceptionVariables(T::Type{<:AbstractFloat}, n::Int)
     return InterceptionVariables(;
-        canopy_potevap = canopy_potevap,
-        interception_rate = interception_rate,
-        canopy_storage = canopy_storage,
-        stemflow = stemflow,
-        throughfall = throughfall,
+        canopy_potevap = fill(mv, n),
+        interception_rate = fill(mv, n),
+        canopy_storage = zeros(T, n),
+        stemflow = fill(mv, n),
+        throughfall = fill(mv, n),
     )
 end
 
@@ -58,7 +51,7 @@ function GashInterceptionModel(nc, config, inds, vegetation_parameter_set)
     n = length(inds)
     params =
         GashParameters(; e_r = e_r, vegetation_parameter_set = vegetation_parameter_set)
-    vars = InterceptionVariables(n)
+    vars = InterceptionVariables(Float, n)
     model = GashInterceptionModel(; parameters = params, variables = vars)
     return model
 end

@@ -15,20 +15,13 @@ abstract type AbstractSnowModel{T} end
 end
 
 "Initialize snow model variables"
-function SnowVariables(
-    n;
-    snow_storage::Vector{T} = fill(0.0, n),
-    snow_water::Vector{T} = fill(0.0, n),
-    swe::Vector{T} = fill(mv, n),
-    snow_melt::Vector{T} = fill(mv, n),
-    runoff::Vector{T} = fill(mv, n),
-) where {T}
+function SnowVariables(T::Type{<:AbstractFloat}, n::Int)
     return SnowVariables{T}(;
-        snow_storage = snow_storage,
-        snow_water = snow_water,
-        swe = swe,
-        runoff = runoff,
-        snow_melt = snow_melt,
+        snow_storage = fill(0.0, n),
+        snow_water = fill(0.0, n),
+        swe = fill(mv, n),
+        runoff = fill(mv, n),
+        snow_melt = fill(mv, n),
     )
 end
 
@@ -43,16 +36,11 @@ end
 end
 
 "Initialize snow model boundary conditions"
-function SnowBC(
-    n;
-    effective_precip::Vector{T} = fill(mv, n),
-    snow_precip::Vector{T} = fill(mv, n),
-    liquid_precip::Vector{T} = fill(mv, n),
-) where {T}
+function SnowBC(T::Type{<:AbstractFloat}, n::Int)
     return SnowBC{T}(;
-        effective_precip = effective_precip,
-        snow_precip = snow_precip,
-        liquid_precip = liquid_precip,
+        effective_precip = fill(mv, n),
+        snow_precip = fill(mv, n),
+        liquid_precip = fill(mv, n),
     )
 end
 
@@ -131,8 +119,8 @@ end
 function SnowHbvModel(nc, config, inds, dt)
     n = length(inds)
     params = SnowHbvParameters(nc, config, inds, dt)
-    vars = SnowVariables(n)
-    bc = SnowBC(n)
+    vars = SnowVariables(Float, n)
+    bc = SnowBC(Float, n)
     model = SnowHbvModel(; boundary_conditions = bc, parameters = params, variables = vars)
     return model
 end
