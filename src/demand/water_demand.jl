@@ -52,12 +52,12 @@ function NonIrrigationDemand(nc, config, inds, dt, sector)
     n = length(inds)
     returnflow_f = return_flow_fraction.(demand_gross, demand_net)
 
-    demand = PrescibedDemand{Float}(; demand_gross = demand_gross, demand_net = demand_net)
+    demand = PrescibedDemand{Float}(; demand_gross, demand_net)
     vars = NonIrrigationDemandVariables{Float}(;
         returnflow_fraction = returnflow_f,
         returnflow = fill(Float(0), n),
     )
-    non_irrigation_demand = NonIrrigationDemand{Float}(; demand = demand, variables = vars)
+    non_irrigation_demand = NonIrrigationDemand{Float}(; demand, variables = vars)
 
     return non_irrigation_demand
 end
@@ -123,7 +123,7 @@ function NonPaddy(nc, config, inds, dt)
         maximum_irrigation_rate = max_irri_rate,
         irrigation_efficiency = efficiency,
         irrigation_areas = areas,
-        irrigation_trigger = irrigation_trigger,
+        irrigation_trigger,
     )
     vars = NonPaddyVariables{Float}(; demand_gross = fill(mv, length(inds)))
 
@@ -289,10 +289,10 @@ function Paddy(nc, config, inds, dt)
     params = PaddyParameters{Float}(;
         irrigation_efficiency = efficiency,
         maximum_irrigation_rate = max_irri_rate,
-        irrigation_trigger = irrigation_trigger,
-        h_min = h_min,
-        h_max = h_max,
-        h_opt = h_opt,
+        irrigation_trigger,
+        h_min ,
+        h_max,
+        h_opt,
         irrigation_areas = areas,
     )
     vars = PaddyVariables{Float}(;
@@ -374,12 +374,12 @@ function update_demand_gross!(model::Paddy)
             # check if maximum irrigation rate has been applied at the previous time step.
             max_irri_rate_applied = demand_gross[i] == maximum_irrigation_rate[i]
             # start irrigation
-            if h[i] < h_min[i]
-                irr_depth_paddy = h_opt[i] - h[i]
+            irr_depth_paddy = if h[i] < h_min[i]
+                h_opt[i] - h[i]
             elseif h[i] < h_opt[i] && max_irri_rate_applied # continue irrigation
-                irr_depth_paddy = h_opt[i] - h[i]
+                h_opt[i] - h[i]
             else
-                irr_depth_paddy = 0.0
+                0.0
             end
             irri_dem_gross = irr_depth_paddy / irrigation_efficiency[i]
             # limit irrigation demand to the maximum irrigation rate
@@ -458,11 +458,11 @@ function Demand(nc, config, inds, dt)
     )
 
     demand = Demand(;
-        domestic = domestic,
-        industry = industry,
-        livestock = livestock,
-        paddy = paddy,
-        nonpaddy = nonpaddy,
+        domestic,
+        industry,
+        livestock,
+        paddy,
+        nonpaddy,
         variables = vars,
     )
     return demand
