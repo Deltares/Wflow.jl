@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.5.56">
+<meta name="generator" content="quarto-1.5.57">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -382,16 +382,16 @@ window.Quarto = {
 
 <section id="surface-routing" class="level2">
 <h2 class="anchored" data-anchor-id="surface-routing">Surface routing</h2>
-<p>The main flow routing scheme available in Wflow.jl is the kinematic wave approach for channel and overland flow, assuming that the topography controls water flow mostly. The kinematic wave equations are (Chow, 1988): <span class="math display">\[
-\begin{split}
-\dfrac{dQ}{dx} + \dfrac{dA}{dt} &amp;= q \\
-A &amp;= \alpha Q^{\beta}
-\end{split}
+<p>The main flow routing scheme available in <code>Wflow.jl</code> is the kinematic wave approach for channel and overland flow, assuming that water flow is mostly controlled by topography. The kinematic wave equations are (Chow, 1988):</p>
+<p><span class="math display">\[
+  \dfrac{\partial Q}{\partial x} + \dfrac{\partial A}{\partial t} = q, \\~\\
+   A = \alpha Q^{\beta}.
 \]</span></p>
-<p>These equations can then be combined as a function of streamflow only: <span class="math display">\[
-\dfrac{dQ}{dx} + \alpha \beta Q^{\beta - 1} \dfrac{dQ}{dt} = q
+<p>These equations can then be combined as a function of streamflow only:</p>
+<p><span class="math display">\[
+    \dfrac{\partial Q}{\partial x} + \alpha \beta Q^{\beta - 1} \dfrac{\partial Q}{\partial t} = q.
 \]</span></p>
-<p>where <span class="math inline">\(Q\)</span> is the surface runoff in the kinematic wave [m<span class="math inline">\(^3\)</span>/s], <span class="math inline">\(x\)</span> is the length of the runoff pathway [m], <span class="math inline">\(A\)</span> is the cross-section area of the runoff pathway [m<span class="math inline">\(^{2}\)</span>], <span class="math inline">\(t\)</span> is the integration timestep [s] and <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\beta\)</span> are coefficients.</p>
+<p>Here <span class="math inline">\(\SIb{Q}{m^3 s^{-1}}\)</span> is the surface runoff in the kinematic wave, <span class="math inline">\(\SIb{x}{m}\)</span> is the length of the runoff pathway, <span class="math inline">\(\SIb{A}{m}\)</span> is the cross-section area of the runoff pathway, <span class="math inline">\(\SIb{t}{s}\)</span> is the integration timestep and <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\beta\)</span> are unitless coefficients.</p>
 <p>These equations are solved with a nonlinear scheme using Newton’s method and can also be iterated depending on the model space and time resolution. By default, the iterations are performed until a stable solution is reached (<span class="math inline">\(\epsilon &lt; 10^{-12}\)</span>). For larger models, the number of iterations can also be fixed for to a specific sub-timestep (in seconds) for both overland and channel flows to improve simulation time. To enable (fixed or not) iterations of the kinematic wave the following lines can be inserted in the TOML file of the model:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Enable iterations of the kinematic wave</span></span>
@@ -400,7 +400,7 @@ A &amp;= \alpha Q^{\beta}
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="dt">kw_river_tstep</span> <span class="op">=</span> <span class="dv">900</span></span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Fixed sub-timestep for iterations of overland flow (land cells)</span></span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="dt">kw_land_tstep</span> <span class="op">=</span> <span class="dv">3600</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>The <span class="math inline">\(\alpha\)</span> parameter of the kinematic wave is fixed. To estimate the wetted perimeter for the calculation of the <span class="math inline">\(\alpha\)</span> parameter a bankfull river depth map (default value is 1.0 m) for the river can be provided as follows:</p>
+<p>The <span class="math inline">\(\alpha\)</span> parameter of the kinematic wave is fixed. To estimate the wetted perimeter for the calculation of the <span class="math inline">\(\alpha\)</span> parameter a bankfull river depth map (default value is <span class="math inline">\(\SI{1.0}{m}\)</span>) for the river can be provided as follows:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.lateral.river]</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">bankfull_depth</span> <span class="op">=</span> <span class="st">"wflow_riverdepth"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>The wetted perimeter of the river is based on half bankfull river depth. For the land part the wetted perimeter is based on the flow width.</p>
@@ -408,43 +408,48 @@ A &amp;= \alpha Q^{\beta}
 </section>
 <section id="inflow" class="level2">
 <h2 class="anchored" data-anchor-id="inflow">Inflow</h2>
-<p>External water (supply/abstraction) <code>inflow</code> [m<span class="math inline">\(^3\)</span> s<span class="math inline">\(^{-1}\)</span>] can be added to the kinematic wave for surface water routing, as a cyclic parameter or as part of forcing (see also <a href="@ref">Input section</a>).</p>
+<p>External water (supply/abstraction) <code>inflow</code> <span class="math inline">\(\SIb{}{m^3 s^{-1}}\)</span> can be added to the kinematic wave for surface water routing, as a cyclic parameter or as part of forcing (see also <a href="@ref">Input section</a>).</p>
 </section>
 <section id="abstractions" class="level2">
 <h2 class="anchored" data-anchor-id="abstractions">Abstractions</h2>
-<p>Abstractions from the river through the variable <code>abstraction</code> [m<span class="math inline">\(^3\)</span> s<span class="math inline">\({-1}\)</span>] are possible when water demand and allocation is computed. The variable <code>abstraction</code> is set from the water demand and allocation module each time step. The <code>abstraction</code> is divided by the length of the runoff pathway and subtracted from the lateral inflow of the kinematic wave routing scheme for river flow.</p>
+<p>Abstractions from the river through the variable <code>abstraction</code> <span class="math inline">\(\SIb{}{m^3 s^{-1}}\)</span> are possible when water demand and allocation is computed. The variable <code>abstraction</code> is set from the water demand and allocation module each time step. The <code>abstraction</code> is divided by the length of the runoff pathway and subtracted from the lateral inflow of the kinematic wave routing scheme for river flow.</p>
 </section>
 <section id="subsurface-flow-routing" class="level2">
 <h2 class="anchored" data-anchor-id="subsurface-flow-routing">Subsurface flow routing</h2>
-<p>In the SBM model the kinematic wave approach is used to route subsurface flow laterally. Different vertical hydraulic conductivity depth profiles are possible as part of the vertical <a href="@ref soil">SBM</a> concept, and these profiles (after unit conversion) are also used to compute lateral subsurface flow. The following profiles (see <a href="@ref soil">SBM</a> for a detailed description) are available: - <code>exponential</code> (default) - <code>exponential_constant</code> - <code>layered</code> - <code>layered_exponential</code> For the profiles <code>exponential</code> and <code>exponential_constant</code>, the saturated store <span class="math inline">\(S\)</span> is drained laterally by saturated downslope subsurface flow for a slope with width <span class="math inline">\(w\)</span> [m] according to: <span class="math display">\[
-Q = \begin{cases}
-\frac{K_0\tan(\beta)}{f}\left(e^{(-fz_{i})}-e^{(-fz_\mathrm{exp})}\right) w +
-K_0e^{(-fz_\mathrm{exp})}(z_t-z_\mathrm{exp})\tan(\beta) w &amp; \text{if $z_i &lt; z_\mathrm{exp}$}\\
-\\
-K_0e^{(-fz_\mathrm{exp})}(z_t - z_i)\tan(\beta) w &amp; \text{if $z_i \ge z_\mathrm{exp}$},
-\end{cases}
+<p>In the SBM model the kinematic wave approach is used to route subsurface flow laterally. Different vertical hydraulic conductivity depth profiles are possible as part of the vertical <a href="@ref soil">SBM</a> concept, and these profiles (after unit conversion) are also used to compute lateral subsurface flow. The following profiles (see <a href="@ref soil">SBM</a> for a detailed description) are available: - <code>exponential</code> (default) - <code>exponential_constant</code> - <code>layered</code> - <code>layered_exponential</code></p>
+<p>For the profiles <code>exponential</code> and <code>exponential_constant</code>, the saturated store <code>S</code> is drained laterally by saturated downslope subsurface flow for a slope with width <code>\SIb{w}{m}</code> according to:</p>
+<p><span class="math display">\[
+    Q = K_0\tan(\beta)w\begin{cases}
+    \frac{1}{f}\left(e^{-fz_i}-e^{-f\subtext{z}{exp}}\right) +
+    e^{-f\subtext{z}{exp}}(z_t-\subtext{z}{exp}) &amp; \text{if $z_i &lt; \subtext{z}{exp}$}\\
+    \\
+    e^{-f\subtext{z}{exp}}(z_t - z_i) &amp; \text{if $z_i \ge \subtext{z}{exp}$},
+    \end{cases}
 \]</span></p>
-<p>where <span class="math inline">\(\beta\)</span> is element slope angle, <span class="math inline">\(Q\)</span> is subsurface flow [m<span class="math inline">\(^{3}\)</span> d<span class="math inline">\(^{-1}\)</span>], <span class="math inline">\(K_0\)</span> is the saturated hydraulic conductivity at the soil surface [m d<span class="math inline">\(^{-1}\)</span>], <span class="math inline">\(z_i\)</span> is the water table depth [m], <span class="math inline">\(z_{t}\)</span> is the total soil depth [m], <span class="math inline">\(f\)</span> is a scaling parameter [m<span class="math inline">\(^{-1}\)</span>] that controls the decrease of <span class="math inline">\(K_0\)</span> with depth and <span class="math inline">\(z_\mathrm{exp}\)</span> [m] is the depth from soil surface for which the exponential decline of <span class="math inline">\(K_0\)</span> is valid. For the <code>exponential</code> profile, <span class="math inline">\(z_\mathrm{exp}\)</span> is equal to <span class="math inline">\(z_t\)</span>.</p>
+<p>where <span class="math inline">\(\beta\)</span> is element slope angle, <span class="math inline">\(\SIb{Q}{m^3 d^{-1}}\)</span> is subsurface flow, <span class="math inline">\(\SIb{K_0}{m d^{-1}}\)</span> is the saturated hydraulic conductivity at the soil surface, <span class="math inline">\(\SIb{z_i}{m}\)</span> is the water table depth, <span class="math inline">\(\SIb{z_{t}}{m}\)</span> is the total soil depth, <span class="math inline">\(\SIb{f}{m^{-1}}\)</span> is a scaling parameter that controls the decrease of <span class="math inline">\(K_0\)</span> with depth and <span class="math inline">\(\SIb{\subtext{z}{exp}}{m}\)</span> is the depth from soil surface for which the exponential decline of <span class="math inline">\(K_0\)</span> is valid. For the <code>exponential</code> profile, <span class="math inline">\(\subtext{z}{exp}\)</span> is equal to <span class="math inline">\(z_t\)</span>.</p>
 <p>Combining with the following continuity equation: <span class="math display">\[
-(\theta_s-\theta_r)w\frac{\partial h}{\partial t} = -\frac{\partial Q}{\partial x} + wr
+    (\theta_s-\theta_r)w\frac{\partial h}{\partial t} = -\frac{\partial Q}{\partial x} + wr
 \]</span></p>
-<p>where <span class="math inline">\(h\)</span> is the water table height [m], <span class="math inline">\(x\)</span> is the distance downslope [m], and <span class="math inline">\(r\)</span> is the net input rate [m d<span class="math inline">\(^{-1}\)</span>] to the saturated store. Substituting for <span class="math inline">\(h
-(\frac{\partial Q}{\partial h})\)</span>, gives: <span class="math display">\[
-\frac{\partial Q}{\partial t} = -c\frac{\partial Q}{\partial x} + cwr
+<p>where <span class="math inline">\(\SIb{h}{m}\)</span> is the water table height, <span class="math inline">\(\SIb{x}{m}\)</span> is the distance downslope, and <span class="math inline">\(\SIb{r}{m d^{-1}}\)</span> is the net input rate to the saturated store. Substituting for <span class="math inline">\(h
+(\frac{\partial Q}{\partial h})\)</span>, gives:</p>
+<p><span class="math display">\[
+  \frac{\partial Q}{\partial t} = -c\frac{\partial Q}{\partial x} + cwr
 \]</span></p>
 <p>where celerity <span class="math inline">\(c\)</span> is calculated as follows: <span class="math display">\[
-c = \begin{cases}
-\frac{K_0e^{(-fz_{i})}\tan(\beta)}{(\theta_s-\theta_r)}
-+ \frac{K_0e^{(-fz_\mathrm{exp})}\tan(\beta)}{(\theta_s-\theta_r)}  &amp; \text{if $z_i &lt; z_\mathrm{exp}$}\\
-\\
-\frac{K_0e^{(-fz_\mathrm{exp})}\tan(\beta)}{(\theta_s-\theta_r)} &amp; \text{if $z_i \ge z_\mathrm{exp}$}.
-\end{cases}
+    c = \frac{K_0 \tan(\beta)}{\theta_s-\theta_r}\begin{cases}
+    e^{-fz_i}
+    + e^{-f\subtext{z}{exp}} &amp; \text{if $z_i &lt; \subtext{z}{exp}$}\\
+    \\
+    e^{-f\subtext{z}{exp}} &amp; \text{if $z_i \ge \subtext{z}{exp}$}.
+    \end{cases}
 \]</span></p>
-<p>For the <code>layered</code> and <code>layered_exponential</code> profiles the equivalent horizontal hydraulic conductivity <span class="math inline">\(K_h\)</span> [m d<span class="math inline">\(^{-1}\)</span>] is calculated for water table height <span class="math inline">\(h = z_t-z_i\)</span> [m], and lateral subsurface flow is calculated as follows: <span class="math display">\[
-Q = K_h h \tan(\beta) w,
+<p>For the <code>layered</code> and <code>layered_exponential</code> profiles the equivalent horizontal hydraulic conductivity <span class="math inline">\(\SIb{K_h}{m d^{-1}}\)</span> is calculated for water table height <span class="math inline">\(\SIb{h = z_t-z_i}{m}\)</span> and lateral subsurface flow is calculated as follows:</p>
+<p><span class="math display">\[
+  Q = K_h h \tan(\beta) w,
 \]</span></p>
-<p>and celerity <span class="math inline">\(c\)</span> is given by: <span class="math display">\[
-c = \frac{K_h \tan(\beta)}{(\theta_s-\theta_r)}.
+<p>and celerity <span class="math inline">\(c\)</span> is given by:</p>
+<p><span class="math display">\[
+    c = \frac{K_h \tan(\beta)}{\theta_s-\theta_r}.
 \]</span></p>
 <p>The kinematic wave equation for lateral subsurface flow is solved iteratively using Newton’s method.</p>
 <div class="callout callout-style-default callout-note callout-titled">

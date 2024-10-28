@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.5.56">
+<meta name="generator" content="quarto-1.5.57">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -387,15 +387,15 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="snow-and-glaciers">Snow and glaciers</h2>
 <section id="snow-modelling" class="level3">
 <h3 class="anchored" data-anchor-id="snow-modelling">Snow modelling</h3>
-<p>If the air temperature, <span class="math inline">\(T_a\)</span>, is below a user-defined threshold <code>tt</code> (<span class="math inline">\(\degree\)</span>C) precipitation occurs as snowfall, whereas it occurs as rainfall if <span class="math inline">\(Ta ≥ tt\)</span>. A another parameter <code>tti</code> defines how precipitation can occur partly as rain or snowfall (see the figure below). If precipitation occurs as snowfall, it is added to the dry snow component within the snow pack. Otherwise it ends up in the free water reservoir, which represents the liquid water content of the snow pack. Between the two components of the snow pack, interactions take place, either through snow melt (if temperatures are above a threshold <code>tt</code>) or through snow refreezing (if temperatures are below threshold <code>tt</code>).</p>
+<p>If the air temperature, <span class="math inline">\(T_a\)</span>, is below a user-defined threshold <code>tt</code> <span class="math inline">\(\SIb{}{\degree C}\)</span> precipitation occurs as snowfall, whereas it occurs as rainfall if <span class="math inline">\(T_a ≥ \mathrm{tt}\)</span>. A another parameter <code>tti</code> defines how precipitation can occur partly as rain or snowfall (see the figure below). If precipitation occurs as snowfall, it is added to the dry snow component within the snow pack. Otherwise it ends up in the free water reservoir, which represents the liquid water content of the snow pack. Between the two components of the snow pack, interactions take place, either through snow melt (if temperatures are above a threshold <code>tt</code>) or through snow refreezing (if temperatures are below threshold <code>tt</code>).</p>
 <p>The respective rates of snow melt and refreezing are:</p>
 <p><span class="math display">\[
-\begin{split}
-Q_m &amp;= cfmax(T_a−tt)\, ;\,T_a &gt; tt \\
-Q_r &amp;= cfmax \, cfr(tt−T_a)\,;\, Ta &lt; tt
-\end{split}
+\begin{align*}
+    Q_m &amp;=&amp; \subtext{\mathrm{cf}}{max}(T_a−\mathrm{tt})\, &amp;&amp;T_a &gt; \mathrm{tt} \\~\\
+    Q_r &amp;=&amp; \subtext{\mathrm{cf}}{max} \, \mathrm{cf}_r(\mathrm{tt}−T_a) &amp;&amp;T_a &lt; \mathrm{tt}
+\end{align*}
 \]</span></p>
-<p>where <span class="math inline">\(Q_m\)</span> is the rate of snow melt, <span class="math inline">\(Q_r\)</span> is the rate of snow refreezing, and <span class="math inline">\(cfmax\)</span> and <span class="math inline">\(cfr\)</span> are user defined model parameters (the melting factor [mm/(<span class="math inline">\(\degree\)</span>C day)] and the refreezing factor respectively).</p>
+<p>where <span class="math inline">\(Q_m\)</span> is the rate of snow melt, <span class="math inline">\(Q_r\)</span> is the rate of snow refreezing, and <span class="math inline">\(\SIb{\subtext{\mathrm{cf}}{max}}{mm\;(\degree C)^{-1} day^{-1}}\)</span> and <span class="math inline">\(\mathrm{cf}_r\)</span> are user defined model parameters (the melting factor and the refreezing factor respectively).</p>
 <p>The fraction of liquid water in the snow pack is at most equal to a user defined fraction, <code>whc</code>, of the water equivalent of the dry snow content. If the liquid water concentration exceeds <code>whc</code>, either through snow melt or incoming rainfall, the surplus water (<code>rainfall</code>) becomes available for infiltration into the soil:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>snowwater <span class="op">=</span> snowwater <span class="op">-</span> refreezing  <span class="co"># free water content in snow</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>maxsnowwater <span class="op">=</span> snow <span class="op">*</span> whc  <span class="co"># max water in the snow</span></span>
@@ -413,14 +413,14 @@ Q_r &amp;= cfmax \, cfr(tt−T_a)\,;\, Ta &lt; tt
 <section id="glacier-modelling" class="level3">
 <h3 class="anchored" data-anchor-id="glacier-modelling">Glacier modelling</h3>
 <p>Glacier processes can be modelled if the snow model is enabled. Glacier modelling is very similar to snow modelling and considers two main processes: glacier build-up from snow turning into firn/ice (using the HBV-light model) and glacier melt (using a temperature degree-day model).</p>
-<p>The definition of glacier boundaries and initial volume is defined in three parameters. <code>glacierfrac</code> is a parameter that gives the fraction of each grid cell covered by a glacier as a number between zero and one. <code>glacierstore</code> is a state parameter that gives the amount of water (in mm w.e.) within the glaciers at each gridcell. Because the glacier store (<code>glacierstore</code>) cannot be initialized by running the model for a couple of years, a default initial state should be supplied by adding this parameter to the input static file. The required glacier data can be prepared from available glacier datasets.</p>
-<p>First, a fixed fraction of the snowpack on top of the glacier is converted into ice for each timestep and added to the <code>glacierstore</code> using the HBV-light model (Seibert et al., 2018). This fraction <code>g_sifrac</code> typically ranges from 0.001 to 0.006.</p>
-<p>Then, when the snowpack on top of the glacier is almost all melted (snow cover &lt; 10 mm), glacier melt is enabled and estimated with a degree-day model. If the air temperature, <span class="math inline">\(T_a\)</span>, is below a certain threshold <code>g_tt</code> (<span class="math inline">\(\degree\)</span>C) precipitation occurs as snowfall, whereas it occurs as rainfall if <span class="math inline">\(T_a ≥\)</span> <code>g_tt</code>.</p>
+<p>The definition of glacier boundaries and initial volume is defined by two parameters. The parameter <code>glacierfrac</code> gives the fraction of each grid cell covered by a glacier as a number between zero and one. The state parameter <code>glacierstore</code> gives the amount of water (in mm w.e.) within the glaciers at each grid cell. Because the glacier store (<code>glacierstore</code>) cannot be initialized by running the model for a couple of years, a default initial state should be supplied by adding this parameter to the input static file. The required glacier data can be prepared from available glacier datasets.</p>
+<p>First, a fixed fraction of the snowpack on top of the glacier is converted into ice for each timestep and added to the <code>glacierstore</code> using the HBV-light model (Seibert et al., 2018). This fraction <code>g_sifrac</code> typically ranges from <span class="math inline">\(0.001\)</span> to <span class="math inline">\(0.006\)</span>.</p>
+<p>Then, when the snowpack on top of the glacier is almost all melted (snow cover <span class="math inline">\(&lt; \SI{10}{mm}\)</span>), glacier melt is enabled and estimated with a degree-day model. If the air temperature, <span class="math inline">\(T_a\)</span>, is below a certain threshold <code>g_tt</code> (<span class="math inline">\(\SIb{}{\degree C}\)</span>) precipitation occurs as snowfall, whereas it occurs as rainfall if <span class="math inline">\(T_a ≥\)</span> <code>g_tt</code>.</p>
 <p>With this the rate of glacier melt in mm is estimated as:</p>
 <p><span class="math display">\[
-Q_m = g\_cfmax(T_a − g\_tt)\, ; \, T_a &gt; g\_tt
+Q_m = \subtext{g}{cfmax}(T_a − \subtext{g}{tt})\, ; \, T_a &gt; \subtext{g}{tt}
 \]</span></p>
-<p>where <span class="math inline">\(Q_m\)</span> is the rate of glacier melt and <span class="math inline">\(g\_cfmax\)</span> is the melting factor in mm/(<span class="math inline">\(\degree\)</span>C day). Parameter <code>g_tt</code> can be taken as equal to the snow <code>tt</code> parameter. Values of the melting factor <code>g_cfmax</code> normally varies from one glacier to another and some values are reported in the literature. <code>g_cfmax</code> can also be estimated by multiplying snow <code>cfmax</code> by a factor between 1 and 2, to take into account the higher albedo of ice compared to snow.</p>
+<p>where <span class="math inline">\(Q_m\)</span> is the rate of glacier melt and <span class="math inline">\(\SIb{\subtext{g}{cfmax}}{mm (\degree C)^{-1}day^{-1}}\)</span> is the melting factor. Parameter <code>g_tt</code> can be taken as equal to the snow <code>tt</code> parameter. Values of the melting factor <code>g_cfmax</code> normally varies from one glacier to another and some values are reported in the literature. <code>g_cfmax</code> can also be estimated by multiplying snow <code>cfmax</code> by a factor between 1 and 2, to take into account the higher albedo of ice compared to snow.</p>
 </section>
 </section>
 <section id="rainfall-interception" class="level2">
@@ -430,45 +430,45 @@ Q_m = g\_cfmax(T_a − g\_tt)\, ; \, T_a &gt; g\_tt
 <h3 class="anchored" data-anchor-id="the-analytical-gash-model">The analytical (Gash) model</h3>
 <p>The analytical model of rainfall interception is based on Rutter’s numerical model. The simplifications that introduced allow the model to be applied on a daily basis, although a storm-based approach will yield better results in situations with more than one storm per day. The amount of water needed to completely saturate the canopy is defined as:</p>
 <p><span class="math display">\[
-P'=\frac{-\overline{R}S}{\overline{E}_{w}}ln\left[1-\frac{\overline{E}_{w}}{\overline{R}}(1-p-p_{t})^{-1}\right]
+P'=\frac{-\overline{R}S}{\overline{E}_w}\log\left[1-\frac{\overline{E}_w}{\overline{R}}(1-p-p_t)^{-1}\right]
 \]</span></p>
 <p>where <span class="math inline">\(\overline{R}\)</span> is the average precipitation intensity on a saturated canopy and <span class="math inline">\(\overline{E}_{w}\)</span> the average evaporation from the wet canopy and with the vegetation parameters <span class="math inline">\(S\)</span>, <span class="math inline">\(p\)</span> and <span class="math inline">\(p_t\)</span> as defined previously. The model uses a series of expressions to calculate the interception loss during different phases of a storm. An analytical integration of the total evaporation and rainfall under saturated canopy conditions is then done for each storm to determine average values of <span class="math inline">\(\overline{E}_{w}\)</span> and <span class="math inline">\(\overline{R}\)</span>. The total evaporation from the canopy (the total interception loss) is calculated as the sum of the components listed in the table below. Interception losses from the stems are calculated for days with <span class="math inline">\(P\geq S_{t}/p_{t}\)</span>. <span class="math inline">\(p_t\)</span> and <span class="math inline">\(S_t\)</span> are small and neglected.</p>
 <table class="caption-top table">
 <caption>Formulation of the components of interception loss according to Gash:</caption>
 <colgroup>
-<col style="width: 66%">
-<col style="width: 33%">
+<col style="width: 41%">
+<col style="width: 58%">
 </colgroup>
 <thead>
 <tr class="header">
-<th>Components</th>
+<th style="text-align: left;">Components</th>
 <th>Interception loss</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>For <span class="math inline">\(m\)</span> small storms (<span class="math inline">\(P_{g}&lt;{P'}_{g}\)</span>)</td>
-<td><span class="math inline">\((1-p-p_{t})\sum_{j=1}^{m}P_{g,j}\)</span></td>
+<td style="text-align: left;">For <span class="math inline">\(m\)</span> small storms (<span class="math inline">\(P_g&lt;{P'}_g\)</span>)</td>
+<td><span class="math inline">\((1-p-p_t)\sum_{j=1}^m P_{g,j}\)</span></td>
 </tr>
 <tr class="even">
-<td>Wetting up the canopy in <span class="math inline">\(n\)</span> large storms (<span class="math inline">\(P_{g}\geq{P'}_{g}\)</span>)</td>
-<td><span class="math inline">\(n(1-p-p_{t}){P'}_{g}-nS\)</span></td>
+<td style="text-align: left;">Wetting up the canopy in <span class="math inline">\(n\)</span> large storms (<span class="math inline">\(P_g\geq{P'}_g\)</span>)</td>
+<td><span class="math inline">\(n(1-p-p_{t}){P'}_g-nS\)</span></td>
 </tr>
 <tr class="odd">
-<td>Evaporation from saturated canopy during rainfall</td>
-<td><span class="math inline">\(\overline{E}/\overline{R}\sum_{j=1}^{n}(P_{g,j}-{P'}_{g})\)</span></td>
+<td style="text-align: left;">Evaporation from saturated canopy during rainfall</td>
+<td><span class="math inline">\(\overline{E}/\overline{R}\sum_{j=1}^n(P_{g,j}-{P'}_g)\)</span></td>
 </tr>
 <tr class="even">
-<td>Evaporation after rainfall ceases for <span class="math inline">\(n\)</span> large storms</td>
+<td style="text-align: left;">Evaporation after rainfall ceases for <span class="math inline">\(n\)</span> large storms</td>
 <td><span class="math inline">\(nS\)</span></td>
 </tr>
 <tr class="odd">
-<td>Evaporation from trunks in <span class="math inline">\(q\)</span> storms that fill the trunk storage</td>
-<td><span class="math inline">\(qS_{t}\)</span></td>
+<td style="text-align: left;">Evaporation from trunks in <span class="math inline">\(q\)</span> storms that fill the trunk storage</td>
+<td><span class="math inline">\(qS_t\)</span></td>
 </tr>
 <tr class="even">
-<td>Evaporation from trunks in <span class="math inline">\(m+n-q\)</span> storms that do not fill the trunk storage</td>
-<td><span class="math inline">\(p_{t}\sum_{j=1}^{m+n-q}P_{g,j}\)</span></td>
+<td style="text-align: left;">Evaporation from trunks in <span class="math inline">\(m+n-q\)</span> storms that do not fill the trunk storage</td>
+<td><span class="math inline">\(p_t\sum_{j=1}^{m+n-q}P_{g,j}\)</span></td>
 </tr>
 </tbody>
 </table>
@@ -488,16 +488,21 @@ P'=\frac{-\overline{R}S}{\overline{E}_{w}}ln\left[1-\frac{\overline{E}_{w}}{\ove
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="dt">path_static</span> <span class="op">=</span> <span class="st">"data/staticmaps-moselle.nc"</span></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="dt">cyclic</span> <span class="op">=</span> <span class="op">[</span><span class="st">"vertical.leaf_area_index"</span><span class="op">]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Furthermore these additional parameters are required: + Specific leaf storage (<code>sl</code> [mm]) + Storage woody part of vegetation (<code>swood</code> [mm]) + Extinction coefficient (<code>kext</code> [-])</p>
-<p>Here it is assumed that <code>cmax</code> [mm] (leaves) (canopy storage capacity for the leaves only) relates linearly with LAI (c.f. Van Dijk and Bruijnzeel 2001). This done via the <code>sl</code>. <code>sl</code> can be determined through a lookup table with land cover based on literature (Pitman 1989, Lui 1998). Next the <code>cmax</code> (leaves) is determined using:</p>
+<p>Furthermore these additional parameters are required: + Specific leaf storage (<code>sl</code> <span class="math inline">\(\SIb{}{mm}\)</span>) + Storage woody part of vegetation (<code>swood</code> <span class="math inline">\(\SIb{}{mm}\)</span>) + Extinction coefficient (<code>kext</code> <span class="math inline">\(\SIb{}{-}\)</span>)</p>
+<p>Here it is assumed that <code>cmax</code> <span class="math inline">\(\SIb{}{mm}\)</span> (leaves) (canopy storage capacity for the leaves only) relates linearly with LAI (c.f. Van Dijk and Bruijnzeel 2001). This done via the <code>sl</code>. <code>sl</code> can be determined through a lookup table with land cover based on literature (Pitman 1989, Lui 1998). Next the <code>cmax</code> (leaves) is determined using:</p>
 <p><span class="math display">\[
 cmax(leaves)  = sl \, LAI
 \]</span></p>
-<p>To get to total storage (<code>cmax</code>) the woody part of the vegetation also needs to be added. As for <code>sl</code>, the storage of the woody part <code>swood</code> can also be related to land cover (lookup table).</p>
-<p>The canopy gap fraction is determined using the extinction coefficient <code>kext</code> (van Dijk and Bruijnzeel 2001):</p>
-<p><span class="math display">\[
-canopygapfraction = exp(-kext \, LAI)
-\]</span></p>
+<pre><code>\mathrm{cmax}(\mathrm{leaves})  = \mathrm{sl} \cdot \mathrm{LAI}</code></pre>
+<pre><code>To get to total storage (`cmax`) the woody part of the vegetation also needs to be added. As
+for `sl`, the storage of the woody part `swood` can also be related to land cover (lookup
+table).
+
+The canopy gap fraction is determined using the extinction coefficient `kext` (van Dijk and
+Bruijnzeel 2001):
+
+```math
+    \mathrm{canopygapfraction} = \exp(-\subtext{k}{ext} \cdot \mathrm{LAI})</code></pre>
 <p>The extinction coefficient <code>kext</code> can be related to land cover.</p>
 </section>
 </section>

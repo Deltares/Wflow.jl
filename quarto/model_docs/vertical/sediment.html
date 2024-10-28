@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.5.56">
+<meta name="generator" content="quarto-1.5.57">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -396,204 +396,198 @@ window.Quarto = {
 <h3 class="anchored" data-anchor-id="rainfall-erosion">Rainfall erosion</h3>
 <p>In wflow_sediment, rainfall erosion can both be modelled using EUROSEM or ANSWERS equation. The main difference between the models is that EUROSEM uses a more physics-based approach based on the kinetic energy of the rain drops impacting the soil (Morgan et al, 1998), while ANSWERS is more empirical and uses parameters from the USLE model (Beasley et al, 1991).</p>
 <p>In EUROSEM, rainfall erosion is modelled according to rainfall intensity and its kinetic energy when it reaches the soil according to equations developed by Brandt (1990). As the intensity of the rain kinetic energy depends on the length of the fall, rainfall intercepted by vegetation will then be reduced compared to direct throughfall. The kinetic energy of direct throughfall is estimated by (Morgan et al, 1998): <span class="math display">\[
-KE_{direct} = 8.95 + 8.44\,log_{10}\,R_{i}
+   \subtext{\mathrm{KE}}{direct} = 8.95 + 8.44\,\log_{10}(R_i)
 \]</span></p>
-<p>where <span class="math inline">\(KE_{direct}\)</span> is the kinetic energy of direct throughfall (J m<span class="math inline">\(^{-2}\)</span> mm<span class="math inline">\(^{-1}\)</span>) and <span class="math inline">\(R_{i}\)</span> is rainfall intensity (mm h<span class="math inline">\(^{-1}\)</span>). If the rainfall is intercepted by vegetation and falls as leaf drainage, its kinetic energy is then reduced according to (Brandt, 1990): <span class="math display">\[
-KE_{leaf} = 15.8\,H_{p}^{0.5} - 5.87
-\]</span></p>
-<p>where <span class="math inline">\(KE_{leaf}\)</span> is kinetic energy of leaf drainage (J m<span class="math inline">\(^{-2}\)</span> mm<span class="math inline">\(^{-1}\)</span>) and <span class="math inline">\(H_{p}\)</span> is the effective canopy height (half of plant height in m). Canopy height can be derived from the global map from Simard &amp; al.&nbsp;(2011) or by user input depending on the land use.</p>
-<p>Kinetic energies from both direct throughfall and leaf drainage are then multiplied by the respective depths of direct throughfall and leaf drainage (mm) and added to get the total rainfall kinetic energy <span class="math inline">\(KE\)</span>. The soil detached by rainfall <span class="math inline">\(D_{R}\)</span> (g m<span class="math inline">\(^{-2}\)</span>) is then: <span class="math display">\[
-D_{R} = k\,KE\,e^{-\varphi h}
-\]</span></p>
-<p>where <span class="math inline">\(k\)</span> is an index of the detachability of the soil (g <span class="math inline">\(J^{-1}\)</span>), <span class="math inline">\(KE\)</span> is the total rainfall kinetic energy (J m<span class="math inline">\(^{-2}\)</span>), <span class="math inline">\(h\)</span> is the surface runoff depth on the soil (m) and <span class="math inline">\(\varphi\)</span> is an exponent varying between 0.9 and 3.1 used to reduce rainfall impact if the soil is already covered by water. As a simplification, Torri (1987) has shown that a value of 2.0 for <span class="math inline">\(\varphi\)</span> is representative enough for a wide range of soil conditions. The detachability of the soil <span class="math inline">\(k\)</span> depends on the soil texture (proportion of clay, silt and sand content) and corresponding values are defined in EUROSEM user guide (Morgan et al, 1998). As a simplification, in wflow_sediment, the mean value of the detachability shown in the table below are used. Soil texture can for example be derived from the topsoil clay and silt content from SoilGrids (Hengl et al, 2017).</p>
+<p>where <span class="math inline">\(\SIb{\subtext{\mathrm{KE}}{direct}}{J m^{-2} mm^{-1}}\)</span> is the kinetic energy of direct throughfall and <span class="math inline">\(\SIb{R_i}{mm h^{-1}}\)</span> is rainfall intensity. If the rainfall is intercepted by vegetation and falls as leaf drainage, its kinetic energy is then reduced according to (Brandt, 1990): <span class="math display">\[
+   \subtext{\mathrm{KE}}{leaf} = 15.8\,\sqrt{H_p} - 5.87
+\]</span> where <span class="math inline">\(\SIb{\subtext{\mathrm{KE}}{leaf}}{J m^{-2} mm^{-1}}\)</span> is kinetic energy of leaf drainage and <span class="math inline">\(\SIb{H_p}{m}\)</span> is the effective canopy height (half of plant height). Canopy height can be derived from the global map from Simard &amp; al.&nbsp;(2011) or by user input depending on the land use.</p>
+<p>Kinetic energies from both direct throughfall and leaf drainage are then multiplied by the respective depths of direct throughfall and leaf drainage (mm) and added to get the total rainfall kinetic energy <code>\mathrm{KE}</code>. The soil detached by rainfall <code>\SIb{D_R}{g m^{-2}}</code> is then: <span class="math display">\[
+   D_R = k\,\mathrm{KE}\,e^{-\varphi h}
+\]</span> where <span class="math inline">\(\SIb{k}{g J^{-1}}\)</span> is an index of the detachability of the soil, <span class="math inline">\(\SIb{\mathrm{KE}}{J m^{-2}}\)</span> is the total rainfall kinetic energy, <span class="math inline">\(\SIb{h}{m}\)</span> is the surface runoff depth on the soil and <span class="math inline">\(\varphi\)</span> is an exponent varying between <span class="math inline">\(0.9\)</span> and <span class="math inline">\(3.1\)</span> used to reduce rainfall impact if the soil is already covered by water. As a simplification, Torri (1987) has shown that a value of <span class="math inline">\(2.0\)</span> for <span class="math inline">\(\varphi\)</span> is representative enough for a wide range of soil conditions. The detachability of the soil <span class="math inline">\(k\)</span> depends on the soil texture (proportion of clay, silt and sand content) and corresponding values are defined in EUROSEM user guide (Morgan et al, 1998). As a simplification, in <code>wflow_sediment</code>, the mean value of the detachability shown in the table below are used. Soil texture can for example be derived from the topsoil clay and silt content from SoilGrids (Hengl et al, 2017).</p>
 <table class="caption-top table">
 <caption>Mean detachability of soil depending on its texture (Morgan et al, 1998).</caption>
 <thead>
 <tr class="header">
-<th>Texture (USDA system)</th>
-<th>Mean detachability <span class="math inline">\(k\)</span> (g/J)</th>
+<th style="text-align: left;">Texture (USDA system)</th>
+<th>Mean detachability <span class="math inline">\(\SIb{k}{g J^{-1}}\)</span></th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>Clay</td>
+<td style="text-align: left;">Clay</td>
 <td>2.0</td>
 </tr>
 <tr class="even">
-<td>Clay Loam</td>
+<td style="text-align: left;">Clay Loam</td>
 <td>1.7</td>
 </tr>
 <tr class="odd">
-<td>Silt</td>
+<td style="text-align: left;">Silt</td>
 <td>1.2</td>
 </tr>
 <tr class="even">
-<td>Silt Loam</td>
+<td style="text-align: left;">Silt Loam</td>
 <td>1.5</td>
 </tr>
 <tr class="odd">
-<td>Loam</td>
+<td style="text-align: left;">Loam</td>
 <td>2.0</td>
 </tr>
 <tr class="even">
-<td>Sandy Loam</td>
+<td style="text-align: left;">Sandy Loam</td>
 <td>2.6</td>
 </tr>
 <tr class="odd">
-<td>Loamy Sand</td>
+<td style="text-align: left;">Loamy Sand</td>
 <td>3.0</td>
 </tr>
 <tr class="even">
-<td>Fine Sand</td>
+<td style="text-align: left;">Fine Sand</td>
 <td>3.5</td>
 </tr>
 <tr class="odd">
-<td>Sand</td>
+<td style="text-align: left;">Sand</td>
 <td>1.9</td>
 </tr>
 </tbody>
 </table>
 <p>Rainfall erosion is handled differently in ANSWERS. There, the impacts of vegetation and soil properties are handled through the USLE coefficients in the equation (Beasley et al, 1991): <span class="math display">\[
-D_{R} = 0.108 \, C_{USLE} \, K_{USLE} \, A_{i} \, R_{i}^{2}
-\]</span></p>
-<p>where <span class="math inline">\(D_{R}\)</span> is the soil detachment by rainfall (here in kg min<span class="math inline">\(^{-1}\)</span>), <span class="math inline">\(C_{USLE}\)</span> is the soil cover-management factor from the USLE equation, <span class="math inline">\(K_{USLE}\)</span> is the soil erodibility factor from the USLE equation, <span class="math inline">\(A_{i}\)</span> is the area of the cell (m<span class="math inline">\(^{2}\)</span>) and <span class="math inline">\(R_{i}\)</span> is the rainfall intensity (here in mm min<span class="math inline">\(^{-1}\)</span>). There are several methods available to estimate the <span class="math inline">\(C\)</span> and <span class="math inline">\(K\)</span> factors from the USLE. They can come from user input maps, for example maps resulting from Panagos &amp; al.’s recent studies for Europe (Panagos et al, 2015) (Ballabio et al, 2016). To get an estimate of the <span class="math inline">\(C\)</span> factor globally, the other method is to estimate <span class="math inline">\(C\)</span> values for the different land use type in from global land cover maps (e.g.&nbsp;GlobCover). An example is given for the global land cover map GlobCover, summed up in the table below, the values come from a literature study including Panagos et al.’s review (2015), Gericke &amp; al.&nbsp;(2015), Mansoor &amp; al.&nbsp;(2013), Chadli et al.&nbsp;(2016), de Vente et al.&nbsp;(2009), Borrelli et al.&nbsp;(2014), Yang et al.&nbsp;(2003) and Bosco et al.&nbsp;(2015).</p>
+   D_R = 0.108 \, \subtext{C}{USLE} \, \subtext{K}{USLE} \, A_i \, R_i^2
+\]</span> where <span class="math inline">\(\SIb{D_R}{kg min^{-1}}\)</span> is the soil detachment by rainfall, <span class="math inline">\(\subtext{C}{USLE}\)</span> is the soil cover-management factor from the USLE equation, <span class="math inline">\(\subtext{K}{USLE}\)</span> is the soil erodibility factor from the USLE equation, <span class="math inline">\(\SIb{A_i}{m^2}\)</span> is the area of the cell and <span class="math inline">\(\SIb{R_i}{mm\;min^{-1}}\)</span> is the rainfall intensity. There are several methods available to estimate the <span class="math inline">\(C\)</span> and <span class="math inline">\(K\)</span> factors from the USLE. They can come from user input maps, for example maps resulting from Panagos &amp; al.’s recent studies for Europe (Panagos et al, 2015) (Ballabio et al, 2016). To get an estimate of the <span class="math inline">\(C\)</span> factor globally, the other method is to estimate <span class="math inline">\(C\)</span> values for the different land use type in from global land cover maps (e.g.&nbsp;GlobCover). An example is given for the global land cover map GlobCover, summed up in the table below, the values come from a literature study including Panagos et al.’s review (2015), Gericke &amp; al.&nbsp;(2015), Mansoor &amp; al.&nbsp;(2013), Chadli et al.&nbsp;(2016), de Vente et al.&nbsp;(2009), Borrelli et al.&nbsp;(2014), Yang et al.&nbsp;(2003) and Bosco et al.&nbsp;(2015).</p>
 <p>The other methods to estimate the USLE <span class="math inline">\(K\)</span> factor are to use either topsoil composition or topsoil geometric mean diameter. <span class="math inline">\(K\)</span> estimation from topsoil composition is estimated with the equation developed in the EPIC model (Williams et al, 1983): <span class="math display">\[
-\begin{split}
-K_{USLE} &amp;= \left\{ 0.2 + 0.3exp\left[-0.0256SAN\frac{(1-SIL)}{100}\right] \right\}
-\left(\frac{SIL}{CLA+SIL}\right)^{0.3} \\
-&amp; \left(1-\frac{0.25OC}{OC+e^{(3.72-2.95OC)}}\right)\left(1-\frac{0.75SN}{SN+e^{(-5.51+22.9SN)}}\right)
-\end{split}
-\]</span></p>
-<p>where <span class="math inline">\(CLA\)</span>, <span class="math inline">\(SIL\)</span>, <span class="math inline">\(SAN\)</span> are respectively the clay, silt and sand fractions of the topsoil (%), <span class="math inline">\(OC\)</span> is the topsoil organic carbon content (%) and <span class="math inline">\(SN\)</span> is <span class="math inline">\(1-SAN/100\)</span>. These soil parameters can be derived for example from the SoilGrids dataset. The <span class="math inline">\(K\)</span> factor can also be estimated from the soil mean geometric diameter using the formulation from the RUSLE guide by Renard &amp; al.&nbsp;(1997): <span class="math display">\[
-K_{USLE} = 0.0034 + 0.0405e^{\left(-\dfrac{1}{2}\left(\dfrac{log_{10}(D_{g})+1.659}{0.7101}\right)^{2}\right)}
-\]</span> where <span class="math inline">\(D_{g}\)</span> is the soil geometric mean diameter (mm) estimated from topsoil clay, silt, sand fraction.</p>
+   \subtext{K}{USLE} = \left[ 0.2 + 0.3\exp\left(-0.0256\;\mathrm{SAN}\frac{(1-\mathrm{SIL})}{100}\right) \right]
+   \left(\frac{\mathrm{SIL}}{\mathrm{CLA}+\mathrm{SIL}}\right)^{0.3} \\~\\
+   \left(1-\frac{0.25\;\mathrm{OC}}{\mathrm{OC}+e^{3.72-2.95\;\mathrm{OC}}}\right)\left(1-\frac{0.75\;\mathrm{SN}}{\mathrm{SN}+e^{-5.51+22.9\;\mathrm{SN}}}\right)
+\]</span> where <span class="math inline">\(\SIb{\mathrm{CLA}}{\%}\)</span>, <span class="math inline">\(\SIb{\mathrm{SIL}}{\%}\)</span>, <span class="math inline">\(\SIb{\mathrm{SAN}}{\%}\)</span> are respectively the clay, silt and sand fractions of the topsoil, <span class="math inline">\(\SIb{OC}{\%}\)</span> is the topsoil organic carbon content and <span class="math inline">\(\mathrm{SN} = 1-\mathrm{SAN}/100\)</span>. These soil parameters can be derived for example from the SoilGrids dataset. The <span class="math inline">\(K\)</span> factor can also be estimated from the soil mean geometric diameter using the formulation from the RUSLE guide by Renard &amp; al.&nbsp;(1997): <span class="math display">\[
+   \subtext{K}{USLE} = 0.0034 + 0.0405\exp\left(-\dfrac{1}{2}\left(\dfrac{\log_{10}(D_g)+1.659}{0.7101}\right)^2\right)
+\]</span> where <span class="math inline">\(D_g\)</span> is the soil geometric mean diameter (mm) estimated from topsoil clay, silt, sand fraction.</p>
 <table class="caption-top table">
 <caption>Estimation of USLE C factor per Globcover land use type</caption>
 <colgroup>
-<col style="width: 22%">
-<col style="width: 55%">
-<col style="width: 22%">
+<col style="width: 37%">
+<col style="width: 34%">
+<col style="width: 27%">
 </colgroup>
 <thead>
 <tr class="header">
-<th>GlobCover Value</th>
+<th style="text-align: left;">GlobCover Value</th>
 <th>Globcover label</th>
-<th><span class="math inline">\(C_{USLE}\)</span></th>
+<th><span class="math inline">\(\subtext{C}{USLE}\)</span></th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>11</td>
+<td style="text-align: left;">11</td>
 <td>Post-flooding or irrigated croplands (or aquatic)</td>
 <td>0.2</td>
 </tr>
 <tr class="even">
-<td>14</td>
+<td style="text-align: left;">14</td>
 <td>Rainfed croplands</td>
 <td>0.35</td>
 </tr>
 <tr class="odd">
-<td>20</td>
+<td style="text-align: left;">20</td>
 <td>Mosaic cropland (50-70%) vegetation (grassland/shrubland/forest) (20-50%)</td>
 <td>0.27</td>
 </tr>
 <tr class="even">
-<td>30</td>
+<td style="text-align: left;">30</td>
 <td>Mosaic vegetation (grassland/shrubland/forest) (50-70%) / cropland (20-50%)</td>
 <td>0.25</td>
 </tr>
 <tr class="odd">
-<td>40</td>
+<td style="text-align: left;">40</td>
 <td>Closed to open (&gt;15%) broadleaved evergreen or semi-deciduous forest (&gt;5m)</td>
 <td>0.0065</td>
 </tr>
 <tr class="even">
-<td>50</td>
+<td style="text-align: left;">50</td>
 <td>Closed (&gt;40%) broadleaved deciduous forest (&gt;5m)</td>
 <td>0.001</td>
 </tr>
 <tr class="odd">
-<td>60</td>
+<td style="text-align: left;">60</td>
 <td>Open (15-40%) broadleaved deciduous forest/woodland (&gt;5m)</td>
 <td>0.01</td>
 </tr>
 <tr class="even">
-<td>70</td>
+<td style="text-align: left;">70</td>
 <td>Closed (&gt;40%) needleleaved evergreen forest (&gt;5m)</td>
 <td>0.001</td>
 </tr>
 <tr class="odd">
-<td>90</td>
+<td style="text-align: left;">90</td>
 <td>Open (15-40%) needleleaved deciduous or evergreen forest (&gt;5m)</td>
 <td>0.01</td>
 </tr>
 <tr class="even">
-<td>100</td>
+<td style="text-align: left;">100</td>
 <td>Closed to open (&gt;15%) mixed broadleaved and needleleaved forest (&gt;5m)</td>
 <td>0.02</td>
 </tr>
 <tr class="odd">
-<td>110</td>
+<td style="text-align: left;">110</td>
 <td>Mosaic forest or shrubland (50-70%) / grassland (20-50%)</td>
 <td>0.015</td>
 </tr>
 <tr class="even">
-<td>120</td>
+<td style="text-align: left;">120</td>
 <td>Mosaic grassland (50-70%) / forest or shrubland (20-50%)</td>
 <td>0.03</td>
 </tr>
 <tr class="odd">
-<td>130</td>
+<td style="text-align: left;">130</td>
 <td>Closed to open (&gt;15%) (broadleaved or needleleaved, evergreen or deciduous) shrubland (&lt;5m)</td>
 <td>0.035</td>
 </tr>
 <tr class="even">
-<td>140</td>
+<td style="text-align: left;">140</td>
 <td>Closed to open (&gt;15%) herbaceous vegetation (grassland, savannas or lichens/mosses)</td>
 <td>0.05</td>
 </tr>
 <tr class="odd">
-<td>150</td>
+<td style="text-align: left;">150</td>
 <td>Sparse (&lt;15%) vegetation</td>
 <td>0.35</td>
 </tr>
 <tr class="even">
-<td>160</td>
+<td style="text-align: left;">160</td>
 <td>Closed to open (&gt;15%) broadleaved forest regularly flooded (semi-permanently or temporarily) - Fresh or brackish water</td>
 <td>0.001</td>
 </tr>
 <tr class="odd">
-<td>170</td>
+<td style="text-align: left;">170</td>
 <td>Closed (&gt;40%) broadleaved forest or shrubland permanently flooded - Saline or brackish water</td>
 <td>0.0005</td>
 </tr>
 <tr class="even">
-<td>180</td>
+<td style="text-align: left;">180</td>
 <td>Closed to open (&gt;15%) grassland or woody vegetation on regularly flooded or waterlogged soil - Fresh, brackish or saline water</td>
 <td>0.04</td>
 </tr>
 <tr class="odd">
-<td>190</td>
+<td style="text-align: left;">190</td>
 <td>Artificial surfaces and associated areas (Urban areas &gt;50%)</td>
 <td>0.0</td>
 </tr>
 <tr class="even">
-<td>200</td>
+<td style="text-align: left;">200</td>
 <td>Bare areas</td>
 <td>0.0</td>
 </tr>
 <tr class="odd">
-<td>210</td>
+<td style="text-align: left;">210</td>
 <td>Water bodies</td>
 <td>0.0</td>
 </tr>
 <tr class="even">
-<td>220</td>
+<td style="text-align: left;">220</td>
 <td>Permanent snow and ice</td>
 <td>0.0</td>
 </tr>
 <tr class="odd">
-<td>230</td>
+<td style="text-align: left;">230</td>
 <td>No data (burnt areas, clouds,…)</td>
 <td>0.0</td>
 </tr>
@@ -603,9 +597,8 @@ K_{USLE} = 0.0034 + 0.0405e^{\left(-\dfrac{1}{2}\left(\dfrac{log_{10}(D_{g})+1.6
 <section id="overland-flow-erosion" class="level3">
 <h3 class="anchored" data-anchor-id="overland-flow-erosion">Overland flow erosion</h3>
 <p>Overland flow (or surface runoff) erosion is induced by the strength of the shear stress of the surface water on the soil. As in rainfall erosion, the effect of the flow shear stress can be reduced by the soil vegetation or by the soil properties. In wflow_sediment, soil detachment by overland flow is modelled as in ANSWERS with (Beasley et al, 1991): <span class="math display">\[
-D_{F} = 0.90 \, C_{USLE} \, K_{USLE} \, A_{i} \, S \, q
-\]</span></p>
-<p>where <span class="math inline">\(D_{F}\)</span> is soil detachment by flow (kg min<span class="math inline">\(^{-1}\)</span>), <span class="math inline">\(C_{USLE}\)</span> and <span class="math inline">\(K_{USLE}\)</span> are the USLE cover and soil erodibility factors, <span class="math inline">\(A_{i}\)</span> is the cell area (m<span class="math inline">\(^{2}\)</span>), <span class="math inline">\(S\)</span> is the slope gradient and <span class="math inline">\(q\)</span> is the overland flow rate per unit width (m<span class="math inline">\(^{2}\)</span> min<span class="math inline">\(^{-1}\)</span>). The USLE <span class="math inline">\(C\)</span> and <span class="math inline">\(K\)</span> factors can be estimated with the same methods as for rainfall erosion and here the slope gradient is obtained from the sinus rather than the tangent of the slope angle.</p>
+   D_G = 0.90 \, \subtext{C}{USLE} \, \subtext{K}{USLE} \, A_i \, S \, q
+\]</span> where <span class="math inline">\(\SIb{D_F}{kg\;min^{-1}}\)</span> is soil detachment by flow, <span class="math inline">\(\subtext{C}{USLE}\)</span> and <span class="math inline">\(\subtext{K}{USLE}\)</span> are the USLE cover and soil erodibility factors, <span class="math inline">\(\SIb{A_i}{m^2}\)</span> is the cell area, <span class="math inline">\(S\)</span> is the slope gradient and <span class="math inline">\(\SIb{q}{m^2 min^{-1}}\)</span> is the overland flow rate per unit width. The USLE <span class="math inline">\(C\)</span> and <span class="math inline">\(K\)</span> factors can be estimated with the same methods as for rainfall erosion and here the slope gradient is obtained from the sinus rather than the tangent of the slope angle.</p>
 </section>
 </section>
 <section id="delivery-to-the-river-system" class="level2">
