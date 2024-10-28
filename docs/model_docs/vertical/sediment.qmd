@@ -57,7 +57,7 @@ use.
 
 Kinetic energies from both direct throughfall and leaf drainage are then multiplied by the
 respective depths of direct throughfall and leaf drainage (mm) and added to get the total
-rainfall kinetic energy ``\mathrm{KE}``. The soil detached by rainfall ``\SIb{D_R}{g m^{-2}}`` is
+rainfall kinetic energy $\mathrm{KE}$. The soil detached by rainfall $\SIb{D_R}{g m^{-2}}$ is
 then:
 $$
    D_R = k\,\mathrm{KE}\,e^{-\varphi h}
@@ -110,9 +110,11 @@ The other methods to estimate the USLE $K$ factor are to use either topsoil comp
 topsoil geometric mean diameter. $K$ estimation from topsoil composition is estimated with
 the equation developed in the EPIC model (Williams et al, 1983):
 $$
+\begin{gathered}
    \subtext{K}{USLE} = \left[ 0.2 + 0.3\exp\left(-0.0256\;\mathrm{SAN}\frac{(1-\mathrm{SIL})}{100}\right) \right]
-   \left(\frac{\mathrm{SIL}}{\mathrm{CLA}+\mathrm{SIL}}\right)^{0.3} \\~\\
+   \left(\frac{\mathrm{SIL}}{\mathrm{CLA}+\mathrm{SIL}}\right)^{0.3} \\
    \left(1-\frac{0.25\;\mathrm{OC}}{\mathrm{OC}+e^{3.72-2.95\;\mathrm{OC}}}\right)\left(1-\frac{0.75\;\mathrm{SN}}{\mathrm{SN}+e^{-5.51+22.9\;\mathrm{SN}}}\right)
+\end{gathered}
 $$
 where $\SIb{\mathrm{CLA}}{\%}$, $\SIb{\mathrm{SIL}}{\%}$, $\SIb{\mathrm{SAN}}{\%}$ are respectively the clay, silt and sand fractions of the
 topsoil, $\SIb{OC}{\%}$ is the topsoil organic carbon content and $\mathrm{SN} = 1-\mathrm{SAN}/100$.

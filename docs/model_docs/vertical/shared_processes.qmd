@@ -19,7 +19,7 @@ The respective rates of snow melt and refreezing are:
 
 $$
 \begin{align*}
-    Q_m &=& \subtext{\mathrm{cf}}{max}(T_a−\mathrm{tt})\, &&T_a > \mathrm{tt} \\~\\
+    Q_m &=& \subtext{\mathrm{cf}}{max}(T_a−\mathrm{tt})\, &&T_a > \mathrm{tt} \\
     Q_r &=& \subtext{\mathrm{cf}}{max} \, \mathrm{cf}_r(\mathrm{tt}−T_a) &&T_a < \mathrm{tt}
 \end{align*}
 $$
@@ -161,11 +161,9 @@ can be determined through a lookup table with land cover based on literature (Pi
 Lui 1998). Next the `cmax` (leaves) is determined using:
 
 $$
-cmax(leaves)  = sl \, LAI
+    \mathrm{cmax}(\mathrm{leaves})  = \mathrm{sl} \cdot \mathrm{LAI}
 $$
 
-    \mathrm{cmax}(\mathrm{leaves})  = \mathrm{sl} \cdot \mathrm{LAI}
-```
 To get to total storage (`cmax`) the woody part of the vegetation also needs to be added. As
 for `sl`, the storage of the woody part `swood` can also be related to land cover (lookup
 table).
@@ -173,9 +171,9 @@ table).
 The canopy gap fraction is determined using the extinction coefficient `kext` (van Dijk and
 Bruijnzeel 2001):
 
-```math
+$$
     \mathrm{canopygapfraction} = \exp(-\subtext{k}{ext} \cdot \mathrm{LAI})
-```
+$$
 
 The extinction coefficient `kext` can be related to land cover.
 

@@ -369,8 +369,10 @@ degree of the layer, and a Brooks-Corey power coefficient (parameter $c$) based 
 pore size distribution index $\lambda$ (Brooks and Corey, 1964):
 
 $$
-    \mathrm{st}=\subtext{K}{sat}\left(\frac{\theta-\theta_r}{\theta_s-\theta_r}\right)^c\\~\\
+\begin{gathered}
+    \mathrm{st}=\subtext{K}{sat}\left(\frac{\theta-\theta_r}{\theta_s-\theta_r}\right)^c\\
     c=\frac{2+3\lambda}{\lambda}
+\end{gathered}
 $$
 
 Here $\SIb{}{mm t^{-1}}$ denotes milimeter per time step.
@@ -446,7 +448,7 @@ $$
     K_0e^{-fz} & \text{if $z < \subtext{z}{exp}$}\\
     K_0e^{-f\subtext{z}{exp}} & \text{if $z \ge \subtext{z}{exp}$}.
     \end{cases}
-```
+$$
 
 It is also possible to provide a $\subtext{K}{sat}$ value per soil layer by specifying
 `ksat_profile` "layered", these $\subtext{K}{sat}$ values are used directly to compute the vertical
@@ -517,10 +519,12 @@ A S-curve (see plot below) is used to make a smooth transition (a c-factor ($c$)
 used):
 
 $$
-    b = \frac{1.0}{1.0 - \subtext{\mathrm{cf}}{soil}}\\~\\
-    \mathrm{soilinfredu} = \frac{1.0}{b + \exp(-c (T_s - a))} + \subtext{\mathrm{cf}}{soil}\\~\\
+\begin{gathered}
+    b = \frac{1.0}{1.0 - \subtext{\mathrm{cf}}{soil}}\\
+    \mathrm{soilinfredu} = \frac{1.0}{b + \exp(-c (T_s - a))} + \subtext{\mathrm{cf}}{soil}\\
     a = 0.0\\
     c = 8.0
+\end{gathered}
 $$
 
 ![Infiltration correction factor as a function of soil temperature](../../images/soil_frozeninfilt.png)
@@ -658,7 +662,7 @@ apply an irrigation rate higher than the soil infiltration capacity. To account 
 irrigation efficiency the net irrigation demand is divided by the irrigation efficiency for
 non-paddy crops (`irrigation_efficiency` $\SIb{}{-}$, default is $1.0$), resulting in gross irrigation
 demand $\SIb{}{mm t^{-1}}$. Finally, the gross irrigation demand is limited by the maximum
-irrigation rate (`maximum_irrigation_rate` $\SIb{}{mm t^{-1}}$, default is $\SI{25}^{mm\;day-1}$). If
+irrigation rate (`maximum_irrigation_rate` $\SIb{}{mm t^{-1}}$, default is $\SI{25}{mm\;day-1}$). If
 the maximum irrigation rate is applied, irrigation continues at subsequent time steps until
 field capacity is reached. Irrigation is added to the `SBM` variable `avail_forinfilt` $\SIb{}{mm t^{-1}}$, the amount of water available for infiltration.
 

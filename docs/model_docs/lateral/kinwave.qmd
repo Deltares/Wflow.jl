@@ -8,8 +8,10 @@ channel and overland flow, assuming that water flow is mostly controlled by topo
 kinematic wave equations are (Chow, 1988):
 
 $$
-  \dfrac{\partial Q}{\partial x} + \dfrac{\partial A}{\partial t} = q, \\~\\
+\begin{gathered}
+  \dfrac{\partial Q}{\partial x} + \dfrac{\partial A}{\partial t} = q,\\
    A = \alpha Q^{\beta}.
+\end{gathered}
 $$
 
 These equations can then be combined as a function of streamflow only:

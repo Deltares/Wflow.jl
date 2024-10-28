@@ -152,7 +152,7 @@ waterlevel = "lake_waterlevel"
 ### Additional settings
 Storage and rating curves from field measurement can be supplied to wflow via CSV files
 supplied in the same folder of the TOML file. Naming of the files uses the ID of the lakes
-where data are available and is of the form lake\_sh\_1.csv and lake\_hq\_1.csv for
+where data are available and is of the form `lake_sh_1.csv` and `lake_hq_1.csv` for
 respectively the storage and rating curves of lake with ID 1.
 
 The storage curve is stored in a CSV file with lake level $\SIb{}{m}$ in the first column `H` and
