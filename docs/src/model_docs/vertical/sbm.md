@@ -42,7 +42,6 @@ allow the model to be applied on a daily basis, although a
 storm-based approach will yield better results in situations with more than one storm per
 day. The amount of water needed to completely saturate the canopy is defined as:
 
-<!-- For consistancy with the rest of the docs I replaced ln with log here, assuming log is used for the natural logarithm unless a base is specified -->
 ```math
 P'=\frac{-\overline{R}S}{\overline{E}_{w}}\log\left[1-\frac{\overline{E}_{w}}{\overline{R}}(1-p-p_{t})^{-1}\right]
 ```
@@ -370,8 +369,7 @@ thicknesslayers = [100, 300, 800]
 The code checks for each grid cell the specified layers against the `soilthickness` ``\SIb{}{mm}``,
 and adds or removes (partly) layer(s) based on the `soilthickness`.
 
-<!-- What was the unit t here? I replaced it by s. -->
-Assuming a unit head gradient, the transfer of water (``\SIb{\mathrm{st}}{mm s^{-1}}``) from a ``\SIb{U}{mm}`` store layer is controlled by the saturated hydraulic conductivity ``\SIb{\subtext{K}{sat}}{mm s^{-1}}`` at depth ``\SIb{z}{mm}`` (bottom layer) or ``\SIb{z_i}{mm}``, the effective saturation
+Assuming a unit head gradient, the transfer of water (``\SIb{\mathrm{st}}{mm t^{-1}}``) from a ``\SIb{U}{mm}`` store layer is controlled by the saturated hydraulic conductivity ``\SIb{\subtext{K}{sat}}{mm t^{-1}}`` at depth ``\SIb{z}{mm}`` (bottom layer) or ``\SIb{z_i}{mm}``, the effective saturation
 degree of the layer, and a Brooks-Corey power coefficient (parameter ``c``) based on the
 pore size distribution index ``\lambda`` (Brooks and Corey, 1964):
 
@@ -379,6 +377,8 @@ pore size distribution index ``\lambda`` (Brooks and Corey, 1964):
     \mathrm{st}=\subtext{K}{sat}\left(\frac{\theta-\theta_r}{\theta_s-\theta_r}\right)^c\\~\\
     c=\frac{2+3\lambda}{\lambda}
 ```
+
+Here ```\SIb{}{mm t^{-1}}`` denotes milimeter per time step.
 
 When the unsaturated layer is not split-up into different layers, it is possible to use the
 original `Topog\_SBM` vertical transfer formulation, by specifying in the TOML file:
@@ -388,7 +388,7 @@ original `Topog\_SBM` vertical transfer formulation, by specifying in the TOML f
 transfermethod = true
 ```
 
-The transfer of water from the ``\SIb{U}{mm}`` store to the ``\SIb{S}{mm}`` store (``\SIb{st}{mm s^{-1}}``) is in that case controlled by the saturated hydraulic conductivity ``\SIb{\subtext{K}{sat}}{mm s^{-1}}`` at depth ``\SIb{z_i}{mm}`` and the ratio between ``\SIb{U}{mm}`` and ``\SIb{S_d}{mm}``:
+The transfer of water from the ``\SIb{U}{mm}`` store to the ``\SIb{S}{mm}`` store (``\SIb{st}{mm t^{-1}}``) is in that case controlled by the saturated hydraulic conductivity ``\SIb{\subtext{K}{sat}}{mm s^{-1}}`` at depth ``\SIb{z_i}{mm}`` and the ratio between ``\SIb{U}{mm}`` and ``\SIb{S_d}{mm}``:
 
 ```math
     \mathrm{st}=\subtext{K}{sat}\frac{U_s}{S_d}
@@ -407,7 +407,7 @@ estimate the saturated hydraulic conductivity, while these measurements are ofte
 for soil depths beyond ``\SI{1.5-2}{m}``. These different profiles allow to extent the saturated
 hydraulic conductivity profile based on measurements (either an exponential fit or hydraulic
 conductivity value per soil layer) with an exponential or constant profile. By default, with
-`ksat_profile` "exponential", the saturated hydraulic conductivity ``\SIb{\subtext{K}{sat}}{mm s^{-1}}`` declines with soil depth ``\SIb{z}{mm}`` in the model according to:
+`ksat_profile` "exponential", the saturated hydraulic conductivity ``\SIb{\subtext{K}{sat}}{mm t^{-1}}`` declines with soil depth ``\SIb{z}{mm}`` in the model according to:
 
 ```math
     \subtext{K}{sat} = K_0 e^{-fz},
@@ -423,7 +423,6 @@ conductivity ``\subtext{K}{sat}`` for different values of ``f``.
     using CairoMakie
 ```
 
-<!-- I see a lot of inconsistency for the unit of the saturated hydraulic conductivity. This plot states mm/day, flow.jl states m/day, and the text uses t which isn't a unit of time. Maybe I should have changed t to day instead of s above? -->
 ```@example plot
     let                                                                                     # hide
         fig = Figure(resolution = (800, 400))                                               # hide
@@ -474,21 +473,20 @@ have different infiltration capacities. Naturally, only the water that can be st
 soil can infiltrate. If not all water can infiltrate, this is added as excess water to the
 runoff routing scheme.
 
-<!-- I am so confused by this unit t -->
 The infiltrating water is split in two parts, the part that falls on compacted areas and the
 part that falls on non-compacted areas. The maximum amount of water that can infiltrate in
 these areas is calculated by taking the minimum of the maximum infiltration rate
-(`infiltcapsoil` [mm t``^{-1}``] for non-compacted areas and `infiltcappath` [mm t``^{-1}``]
+(`infiltcapsoil` ``\SIb{}{mm t^{-1}}`` for non-compacted areas and `infiltcappath` ``\SIb{}{mm t^{-1}}``
 for compacted areas) and the amount of water available for infiltration `avail_forinfilt`
-[mm t``^{-1}``]. The water that can actually infiltrate `infiltsoilpath` [mm t``^{-1}``] is
+``\SIb{}{mm t^{-1}}``. The water that can actually infiltrate `infiltsoilpath` ``\SIb{}{mm t^{-1}}`` is
 calculated by taking the minimum of the total maximum infiltration rate (compacted and
 non-compacted areas) and the remaining storage capacity.
 
 Infiltration excess occurs when the infiltration capacity is smaller then the throughfall
-and stemflow rate. This amount of water (`infiltexcess` [mm t``^{-1}``]) becomes overland
+and stemflow rate. This amount of water (`infiltexcess` ``\SIb{}{mm t^{-1}}``) becomes overland
 flow (infiltration excess overland flow). Saturation excess occurs when the (upper) soil
 becomes saturated and water cannot infiltrate anymore. This amount of water `excesswater`
-[mm t``^{-1}``] becomes overland flow (saturation excess overland flow).
+``\SIb{}{mm t^{-1}}`` becomes overland flow (saturation excess overland flow).
 
 #### Infiltration in frozen soils
 
@@ -543,11 +541,10 @@ used):
 
 ### Capillary rise
 
-<!-- More unit t -->
-The actual capillary rise `actcapflux` [mm t``^{-1}``] is determined using the following
-approach: first the saturated hydraulic conductivity `ksat` [mm t``^{-1}``] is determined at
-the water table ``z_i``; next a potential capillary rise `maxcapflux` [mm t``^{-1}``] is
-determined from the minimum of `ksat`, actual transpiration `actevapustore` [mm t``^{-1}``]
+The actual capillary rise `actcapflux` ``\SIb{}{mm t^{-1}}`` is determined using the following
+approach: first the saturated hydraulic conductivity `ksat` ``\SIb{}{mm t^{-1}}`` is determined at
+the water table ``z_i``; next a potential capillary rise `maxcapflux` ``\SIb{}{mm t^{-1}}`` is
+determined from the minimum of `ksat`, actual transpiration `actevapustore` ``\SIb{}{mm t^{-1}}``
 taken from the ``U`` store, available water in the ``S`` store (`satwaterdepth` ``\SIb{}{mm}``) and
 the deficit of the ``U`` store (`ustorecapacity` ``\SIb{}{mm}``), as shown by the following code
 block:
@@ -606,7 +603,7 @@ spatial model domain, and `k` refers to the layer position):
 
 In case of multiple unsaturated layers (`n_usl` ``>`` 1), the calculation of the actual
 capillary rise starts at the lowest unsaturated layer while keeping track of the remaining
-capillary rise `netcapflux` [mm t``^{-1}``].
+capillary rise `netcapflux` ``\SIb{}{mm t^{-1}}``.
 
 ### Leakage
 
@@ -631,8 +628,8 @@ industry = true
 livestock = true
 ```
 
-For these non-irrigation sectors the gross demand (``d_\mathrm{gross}`` [mm t``^{-1}``]) and
-net demand (``d_\mathrm{net}`` [mm t``^{-1}``]) are provided to the model (input through
+For these non-irrigation sectors the gross demand (``d_\mathrm{gross}`` ``\SIb{}{mm t^{-1}}``) and
+net demand (``d_\mathrm{net}`` ``\SIb{}{mm t^{-1}}``) are provided to the model (input through
 cyclic or forcing data). Gross demand represents the total demand and hence the total
 abstraction from surface water or groundwater when sufficient water is available. Net demand
 represents water consumption. The portion of total abstracted water that is not consumed is
@@ -666,13 +663,13 @@ capacity (defined at a soil water pressure head of ``\SI{-100}{cm}``), ``\SIb{\s
 actual unsaturated store in the root zone and ``\SIb{\subtext{U}{h3}}{mm}`` is the unsaturated
 store in the root zone at the critical soil water pressure head `h3`, below this pressure
 head reduction of root water uptake starts due to drought stress. The net irrigation demand
-[mm t``^{-1}``] is the irrigation rate that brings the root zone back to field capacity,
-limited by the soil infiltration capacity [mm t``^{-1}``], assuming that farmers do not
+``\SIb{}{mm t^{-1}}`` is the irrigation rate that brings the root zone back to field capacity,
+limited by the soil infiltration capacity ``\SIb{}{mm t^{-1}}``, assuming that farmers do not
 apply an irrigation rate higher than the soil infiltration capacity. To account for limited
 irrigation efficiency the net irrigation demand is divided by the irrigation efficiency for
 non-paddy crops (`irrigation_efficiency` ``\SIb{}{-}}``, default is ``1.0``), resulting in gross irrigation
-demand [mm t``^{-1}``]. Finally, the gross irrigation demand is limited by the maximum
-irrigation rate (`maximum_irrigation_rate` [mm t``^{-1}``], default is 25 mm d``^{-1}``). If
+demand ``\SIb{}{mm t^{-1}}``. Finally, the gross irrigation demand is limited by the maximum
+irrigation rate (`maximum_irrigation_rate` ``\SIb{}{mm t^{-1}}``, default is 25 mm d``^{-1}``). If
 the maximum irrigation rate is applied, irrigation continues at subsequent time steps until
 field capacity is reached. Irrigation is added to the `SBM` variable `avail_forinfilt` [mm
 t``^{-1}``], the amount of water available for infiltration.
@@ -692,11 +689,11 @@ t``^{-1}``] is the irrigation rate required to reach the optimal paddy water dep
 ``\SIb{}{mm}``, an approach similar to Xie and Cui (2011). To account for limited irrigation
 efficiency the net irrigation demand is divided by the irrigation efficiency for paddy
 fields (`irrigation_efficiency` ``\SIb{}{-}``, default is 1.0), resulting in gross irrigation demand
-[mm t``^{-1}``]. Finally, the gross irrigation demand is limited by the maximum irrigation
-rate (`maximum_irrigation_rate` [mm t``^{-1}``], default is ``\SIb{25}{mm d^{-1}}``). If the
+``\SIb{}{mm t^{-1}}``. Finally, the gross irrigation demand is limited by the maximum irrigation
+rate (`maximum_irrigation_rate` ``\SIb{}{mm t^{-1}}``, default is ``\SIb{25}{mm d^{-1}}``). If the
 maximum irrigation rate is applied, irrigation continues at subsequent time steps until the
 optimal paddy water depth `h_opt` is reached. Irrigation is added to the `SBM` variable
-`avail_forinfilt` [mm t``^{-1}``], the amount of water available for infiltration. When the
+`avail_forinfilt` ``\SIb{}{mm t^{-1}}``, the amount of water available for infiltration. When the
 paddy water depth `h` exceeds `h_max` ``\SIb{}{mm}`` runoff occurs, and this amount is added to the
 runoff routing scheme for overland flow. The figure below shows a typical vertical soil
 profile of a puddled rice soil with a muddy layer of about 15 cm (in this case represented

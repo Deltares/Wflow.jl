@@ -83,7 +83,7 @@ according to:
     e^{-f\subtext{z}{exp}}(z_t - z_i) & \text{if $z_i \ge \subtext{z}{exp}$},
     \end{cases}
 ```
-<!-- potentially confusing reuse of symbol beta -->
+
 where ``\beta`` is element slope angle, ``\SIb{Q}{m^3 d^{-1}}`` is subsurface flow,
 ``\SIb{K_0}{m d^{-1}}`` is the saturated hydraulic conductivity at the soil surface, ``\SIb{z_i}{m}``
 is the water table depth, ``\SIb{z_{t}}{m}`` is the total soil depth, ``\SIb{f}{m^{-1}}`` is a scaling
