@@ -831,13 +831,8 @@ function initialize_lateralssf!(model::LateralSSF, kh_profile::KhExponential)
     (; kh_0, f) = kh_profile
     (; ssf, ssfmax, zi, slope, soilthickness, dw) = model
 
-    for i in eachindex(ssf)
-        ssfmax[i] = ((kh_0[i] * slope[i]) / f[i]) * (1.0 - exp(-f[i] * soilthickness[i]))
-        ssf[i] =
-            ((kh_0[i] * slope[i]) / f[i]) *
-            (exp(-f[i] * zi[i]) - exp(-f[i] * soilthickness[i])) *
-            dw[i]
-    end
+    @. ssfmax = ((kh_0 * slope) / f) * (1.0 - exp(-f * soilthickness))
+    @. ssf = ((kh_0 * slope) / f) * (exp(-f * zi) - exp(-f * soilthickness)) * dw
 end
 
 function initialize_lateralssf!(model::LateralSSF, kh_profile::KhExponentialConstant)
