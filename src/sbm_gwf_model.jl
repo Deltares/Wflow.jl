@@ -124,10 +124,10 @@ function initialize_sbm_gwf_model(config::Config)
     if do_water_demand
         areas = unique(lsm.allocation.parameters.areas)
         for a in areas
-            area_index = findall(x -> x == a, lsm.allocation.parameters.areas)
+            area_index = findall(==(a), lsm.allocation.parameters.areas)
             push!(inds_allocation_areas, area_index)
             area_riv_index =
-                findall(x -> x == a, lsm.allocation.parameters.areas[index_river])
+                findall(==(a), lsm.allocation.parameters.areas[index_river])
             push!(inds_riv_allocation_areas, area_riv_index)
         end
     end
@@ -346,8 +346,8 @@ function initialize_sbm_gwf_model(config::Config)
     end
 
     gwf = GroundwaterFlow{Float}(;
-        aquifer = aquifer,
-        connectivity = connectivity,
+        aquifer,
+        connectivity,
         constanthead = constant_head,
         boundaries = aquifer_boundaries,
     )

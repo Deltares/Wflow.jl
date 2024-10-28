@@ -104,12 +104,11 @@ function ssf_celerity(zi, slope, theta_e, kh_profile::KhExponentialConstant, i)
     (; z_exp) = kh_profile
     (; kh_0, f) = kh_profile.exponential
     Cn_const = (kh_0[i] * exp(-f[i] * z_exp[i]) * slope) / theta_e
-    if zi < z_exp[i]
-        Cn = (kh_0[i] * exp(-f[i] * zi) * slope) / theta_e + Cn_const
+    return if zi < z_exp[i]
+        (kh_0[i] * exp(-f[i] * zi) * slope) / theta_e + Cn_const
     else
-        Cn = Cn_const
+        Cn_const
     end
-    return Cn
 end
 
 """

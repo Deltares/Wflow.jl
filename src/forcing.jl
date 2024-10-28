@@ -16,8 +16,8 @@ function AtmosphericForcing(
     temperature::Vector{T} = fill(mv, n),
 ) where {T}
     return AtmosphericForcing{T}(;
-        precipitation = precipitation,
-        potential_evaporation = potential_evaporation,
-        temperature = temperature,
+        precipitation,
+        potential_evaporation,
+        temperature,
     )
 end

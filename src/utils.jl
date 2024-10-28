@@ -701,13 +701,12 @@ function hydraulic_conductivity_at_depth(p::KvLayered, kvfrac, z, i, n)
 end
 
 function hydraulic_conductivity_at_depth(p::KvLayeredExponential, kvfrac, z, i, n)
-    if z < p.z_layered[i]
-        kv_z = kvfrac[i][n] * p.kv[i][n]
+    return if z < p.z_layered[i]
+        kvfrac[i][n] * p.kv[i][n]
     else
         n = p.nlayers_kv[i]
-        kv_z = kvfrac[i][n] * p.kv[i][n] * exp(-p.f[i] * (z - p.z_layered[i]))
+        kvfrac[i][n] * p.kv[i][n] * exp(-p.f[i] * (z - p.z_layered[i]))
     end
-    return kv_z
 end
 
 """
@@ -732,7 +731,7 @@ function kh_layered_profile!(
     for i in eachindex(kh)
         m = nlayers[i]
 
-        if (soilthickness[i] - zi[i]) > 0.0
+        if soilthickness[i] > zi[i]
             transmissivity = 0.0
             _sumlayers = @view sumlayers[i][2:end]
             n = max(n_unsatlayers[i], 1)
@@ -768,7 +767,7 @@ function kh_layered_profile!(
     for i in eachindex(kh)
         m = nlayers[i]
 
-        if (soilthickness[i] - zi[i]) > 0.0
+        if soilthickness[i] > zi[i]
             transmissivity = 0.0
             n = max(n_unsatlayers[i], 1)
             if zi[i] >= z_layered[i]
