@@ -402,7 +402,7 @@ window.Quarto = {
 <p>The respective rates of snow melt and refreezing are:</p>
 <p><span class="math display">\[
 \begin{align*}
-    Q_m &amp;=&amp; \subtext{\mathrm{cf}}{max}(T_a−\mathrm{tt})\, &amp;&amp;T_a &gt; \mathrm{tt} \\~\\
+    Q_m &amp;=&amp; \subtext{\mathrm{cf}}{max}(T_a−\mathrm{tt})\, &amp;&amp;T_a &gt; \mathrm{tt} \\
     Q_r &amp;=&amp; \subtext{\mathrm{cf}}{max} \, \mathrm{cf}_r(\mathrm{tt}−T_a) &amp;&amp;T_a &lt; \mathrm{tt}
 \end{align*}
 \]</span></p>
@@ -502,18 +502,13 @@ P'=\frac{-\overline{R}S}{\overline{E}_w}\log\left[1-\frac{\overline{E}_w}{\overl
 <p>Furthermore these additional parameters are required: + Specific leaf storage (<code>sl</code> <span class="math inline">\(\SIb{}{mm}\)</span>) + Storage woody part of vegetation (<code>swood</code> <span class="math inline">\(\SIb{}{mm}\)</span>) + Extinction coefficient (<code>kext</code> <span class="math inline">\(\SIb{}{-}\)</span>)</p>
 <p>Here it is assumed that <code>cmax</code> <span class="math inline">\(\SIb{}{mm}\)</span> (leaves) (canopy storage capacity for the leaves only) relates linearly with LAI (c.f. Van Dijk and Bruijnzeel 2001). This done via the <code>sl</code>. <code>sl</code> can be determined through a lookup table with land cover based on literature (Pitman 1989, Lui 1998). Next the <code>cmax</code> (leaves) is determined using:</p>
 <p><span class="math display">\[
-cmax(leaves)  = sl \, LAI
+    \mathrm{cmax}(\mathrm{leaves})  = \mathrm{sl} \cdot \mathrm{LAI}
 \]</span></p>
-<pre><code>\mathrm{cmax}(\mathrm{leaves})  = \mathrm{sl} \cdot \mathrm{LAI}</code></pre>
-<pre><code>To get to total storage (`cmax`) the woody part of the vegetation also needs to be added. As
-for `sl`, the storage of the woody part `swood` can also be related to land cover (lookup
-table).
-
-The canopy gap fraction is determined using the extinction coefficient `kext` (van Dijk and
-Bruijnzeel 2001):
-
-```math
-    \mathrm{canopygapfraction} = \exp(-\subtext{k}{ext} \cdot \mathrm{LAI})</code></pre>
+<p>To get to total storage (<code>cmax</code>) the woody part of the vegetation also needs to be added. As for <code>sl</code>, the storage of the woody part <code>swood</code> can also be related to land cover (lookup table).</p>
+<p>The canopy gap fraction is determined using the extinction coefficient <code>kext</code> (van Dijk and Bruijnzeel 2001):</p>
+<p><span class="math display">\[
+    \mathrm{canopygapfraction} = \exp(-\subtext{k}{ext} \cdot \mathrm{LAI})
+\]</span></p>
 <p>The extinction coefficient <code>kext</code> can be related to land cover.</p>
 </section>
 </section>
