@@ -153,7 +153,7 @@ MODFLOW:
     \end{cases}
   \end{align*}
 ```
-<!-- It seems rather inconsistent to use units everywhere and then suddenly use dimensions instead here. -->
+
 where ``\SIb{\subtext{Q}{riv}}{L^3 T^{-1}}`` is the exchange flux from river to aquifer, ``\SIb{C_i}{L^2 T^{-1}}`` is the river bed infiltration conductance, ``\SIb{C_e}{L^2 T^{-1}}``
 is the river bed exfiltration conductance, ``\SIb{\subtext{B}{riv}}{L}`` the bottom of the river bed,
 ``\SIb{\subtext{h}{riv}}{L}`` is the river stage and ``\SIb{\phi}{L}`` is the hydraulic head in the river cell.

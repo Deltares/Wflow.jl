@@ -106,7 +106,6 @@ Q_{i-1/2}^{n+1} = \frac{\left[ \theta Q_{i-1/2}^{n} +\frac{(1-\theta)}{2}(Q_{(i-
    n^2 |Q_{i-1/2}^{n}|/(h_f^{7/3} \Delta y)}
 ```
 
-<!-- n is used both as a time index and as the Manning roughness coefficient! -->
 where subscripts ``i`` and ``n`` refer to space and time indices, respectively. Subscript
 ``i-\frac{1}{2}`` is to the link between node ``i`` and ``i-1``, subscript ``i+\frac{1}{2}`` is the link
 between node ``i`` and node ``i+1``, and subscript ``i-\frac{3}{2}`` is the link between node ``i-1``
