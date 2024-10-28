@@ -6,7 +6,6 @@ using NCDatasets
 using StaticArrays
 using Statistics
 using Test
-using UnPack
 using Wflow
 using Base.MathConstants: eulergamma
 using Base.Threads
@@ -100,6 +99,6 @@ with_logger(NullLogger()) do
         include("subdomains.jl")
         include("run_flextopo.jl")
 
-        Aqua.test_all(Wflow; ambiguities = false)
+        Aqua.test_all(Wflow; ambiguities = false, persistent_tasks = false)
     end
 end

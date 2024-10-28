@@ -3,7 +3,6 @@ using Dates
 using TOML
 using CFTime
 using Random
-using UnPack
 using LoggingExtras
 
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
@@ -196,7 +195,7 @@ model = Wflow.initialize_sbm_model(config)
 Wflow.advance!(model.clock)
 Wflow.load_dynamic_input!(model)
 
-@unpack vertical, clock, reader, writer = model
+(; vertical, clock, reader, writer) = model
 
 @testset "output and state names" begin
     ncdims = ("lon", "lat", "layer", "time")
@@ -242,8 +241,8 @@ end
 end
 
 @testset "network" begin
-    @unpack network = model
-    @unpack indices, reverse_indices = model.network.land
+    (; network) = model
+    (; indices, reverse_indices) = model.network.land
     # test if the reverse index reverses the index
     linear_index = 100
     cartesian_index = indices[linear_index]
@@ -252,7 +251,7 @@ end
 end
 
 @testset "initial parameter values" begin
-    @unpack vertical = model
+    (; vertical) = model
     @test vertical.cfmax[1] ≈ 3.7565300464630127
     @test vertical.soilthickness[1] ≈ 2000.0
     @test vertical.precipitation[49951] ≈ 2.2100000381469727
@@ -280,7 +279,7 @@ Wflow.advance!(model.clock)
 Wflow.load_dynamic_input!(model)
 
 @testset "changed parameter values" begin
-    @unpack vertical = model
+    (; vertical) = model
     @test vertical.cfmax[1] == 2.0
     @test vertical.soilthickness[1] ≈ 2000.0 * 3.0 + 100.0
     @test vertical.precipitation[49951] ≈ 1.5 * 2.2100000381469727

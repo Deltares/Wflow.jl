@@ -3,7 +3,7 @@ tomlpath = joinpath(@__DIR__, "flextopo_config.toml")
 config = Wflow.Config(tomlpath)
 
 model = Wflow.initialize_flextopo_model(config)
-@unpack network = model
+(; network) = model
 
 model = Wflow.run_timestep(model)
 
@@ -82,7 +82,7 @@ config["model"]["select_fast"] = ["fast_no_storage", "fast_storage", "fast_stora
 config["model"]["select_slow"] = ["common_slow_storage"]
 
 model = Wflow.initialize_flextopo_model(config)
-@unpack network = model
+(; network) = model
 
 model = Wflow.run_timestep(model)
 

@@ -3,27 +3,27 @@ title: Kinematic wave
 ---
 
 ## Surface routing
-The main flow routing scheme available in Wflow.jl is the kinematic wave approach for
-channel and overland flow, assuming that the topography controls water flow mostly. The
+The main flow routing scheme available in `Wflow.jl` is the kinematic wave approach for
+channel and overland flow, assuming that water flow is mostly controlled by topography. The
 kinematic wave equations are (Chow, 1988):
+
 $$
-\begin{split}
-\dfrac{dQ}{dx} + \dfrac{dA}{dt} &= q \\
-A &= \alpha Q^{\beta}
-\end{split}
+  \dfrac{\partial Q}{\partial x} + \dfrac{\partial A}{\partial t} = q, \\~\\
+   A = \alpha Q^{\beta}.
 $$
 
 These equations can then be combined as a function of streamflow only:
+
 $$
-\dfrac{dQ}{dx} + \alpha \beta Q^{\beta - 1} \dfrac{dQ}{dt} = q
+    \dfrac{\partial Q}{\partial x} + \alpha \beta Q^{\beta - 1} \dfrac{\partial Q}{\partial t} = q.
 $$
 
-where $Q$ is the surface runoff in the kinematic wave [m$^3$/s], $x$ is the length of
-the runoff pathway [m], $A$ is the cross-section area of the runoff pathway [m$^{2}$],
-$t$ is the integration timestep [s] and $\alpha$ and $\beta$ are coefficients.
+Here $\SIb{Q}{m^3 s^{-1}}$ is the surface runoff in the kinematic wave, $\SIb{x}{m}$ is the length of
+the runoff pathway, $\SIb{A}{m}$ is the cross-section area of the runoff pathway,
+$\SIb{t}{s}$ is the integration timestep and $\alpha$ and $\beta$ are unitless coefficients.
 
 These equations are solved with a nonlinear scheme using Newton's method and can also be
-iterated depending on the  model space and time resolution. By default, the iterations are
+iterated depending on the model space and time resolution. By default, the iterations are
 performed until a stable solution is reached ($\epsilon < 10^{-12}$). For larger models,
 the number of iterations can also be fixed for to a specific sub-timestep (in seconds) for
 both overland and channel flows to improve simulation time. To enable (fixed or not)
@@ -42,7 +42,7 @@ kw_land_tstep = 3600
 
 The $\alpha$ parameter of the kinematic wave is fixed. To estimate the wetted perimeter
 for the calculation of the $\alpha$ parameter a bankfull river depth map (default value
-is 1.0 m) for the river can be provided as follows:
+is $\SI{1.0}{m}$) for the river can be provided as follows:
 
 ```toml
 [input.lateral.river]
@@ -56,12 +56,12 @@ Simplified [reservoir and lake](@ref reservoir_lake) models can be included as p
 river kinematic wave network.
 
 ## Inflow
-External water (supply/abstraction) `inflow` [m$^3$ s$^{-1}$]  can be added to the
+External water (supply/abstraction) `inflow` $\SIb{}{m^3 s^{-1}}$  can be added to the
 kinematic wave for surface water routing, as a cyclic parameter or as part of forcing (see
 also [Input section](@ref)).
 
 ## Abstractions
-Abstractions from the river through the variable `abstraction` [m$^3$ s${-1}$] are
+Abstractions from the river through the variable `abstraction` $\SIb{}{m^3 s^{-1}}$ are
 possible when water demand and allocation is computed. The variable `abstraction` is set
 from the water demand and allocation module each time step. The `abstraction` is divided by
 the length of the runoff pathway and subtracted from the lateral inflow of the kinematic
@@ -76,58 +76,62 @@ detailed description) are available:
 - `exponential` (default)
 - `exponential_constant`
 - `layered`
-- `layered_exponential`
-For the profiles `exponential` and `exponential_constant`, the saturated store $S$ is
-drained laterally by saturated downslope subsurface flow for a slope with width $w$ [m]
+- `layered_exponential` 
+
+For the profiles `exponential` and `exponential_constant`, the saturated store ``S`` is
+drained laterally by saturated downslope subsurface flow for a slope with width ``\SIb{w}{m}``
 according to:
+
 $$
-Q = \begin{cases}
-\frac{K_0\tan(\beta)}{f}\left(e^{(-fz_{i})}-e^{(-fz_\mathrm{exp})}\right) w +
-K_0e^{(-fz_\mathrm{exp})}(z_t-z_\mathrm{exp})\tan(\beta) w & \text{if $z_i < z_\mathrm{exp}$}\\
-\\
-K_0e^{(-fz_\mathrm{exp})}(z_t - z_i)\tan(\beta) w & \text{if $z_i \ge z_\mathrm{exp}$},
-\end{cases}
+    Q = K_0\tan(\beta)w\begin{cases}
+    \frac{1}{f}\left(e^{-fz_i}-e^{-f\subtext{z}{exp}}\right) + 
+    e^{-f\subtext{z}{exp}}(z_t-\subtext{z}{exp}) & \text{if $z_i < \subtext{z}{exp}$}\\
+    \\
+    e^{-f\subtext{z}{exp}}(z_t - z_i) & \text{if $z_i \ge \subtext{z}{exp}$},
+    \end{cases}
 $$
 
-where $\beta$ is element slope angle, $Q$ is subsurface flow [m$^{3}$ d$^{-1}$],
-$K_0$ is the saturated hydraulic conductivity at the soil surface [m d$^{-1}$], $z_i$
-is the water table depth [m], $z_{t}$ is the total soil depth [m], $f$ is a scaling
-parameter [m$^{-1}$] that controls the decrease of $K_0$ with depth and
-$z_\mathrm{exp}$ [m] is the depth from soil surface for which the exponential decline of
-$K_0$ is valid. For the `exponential` profile, $z_\mathrm{exp}$ is equal to $z_t$.
+where $\beta$ is element slope angle, $\SIb{Q}{m^3 d^{-1}}$ is subsurface flow,
+$\SIb{K_0}{m d^{-1}}$ is the saturated hydraulic conductivity at the soil surface, $\SIb{z_i}{m}$
+is the water table depth, $\SIb{z_{t}}{m}$ is the total soil depth, $\SIb{f}{m^{-1}}$ is a scaling
+parameter that controls the decrease of $K_0$ with depth and
+$\SIb{\subtext{z}{exp}}{m}$ is the depth from soil surface for which the exponential decline of
+$K_0$ is valid. For the `exponential` profile, $\subtext{z}{exp}$ is equal to $z_t$.
 
 Combining with the following continuity equation:
 $$
-(\theta_s-\theta_r)w\frac{\partial h}{\partial t} = -\frac{\partial Q}{\partial x} + wr
+    (\theta_s-\theta_r)w\frac{\partial h}{\partial t} = -\frac{\partial Q}{\partial x} + wr
 $$
 
-where $h$ is the water table height [m], $x$ is the distance downslope [m], and $r$ is
-the net input rate [m d$^{-1}$] to the saturated store. Substituting for $h
+where $\SIb{h}{m}$ is the water table height, $\SIb{x}{m}$ is the distance downslope, and $\SIb{r}{m d^{-1}}$ is
+the net input rate to the saturated store. Substituting for $h
 (\frac{\partial Q}{\partial h})$, gives:
+
 $$
-\frac{\partial Q}{\partial t} = -c\frac{\partial Q}{\partial x} + cwr
+  \frac{\partial Q}{\partial t} = -c\frac{\partial Q}{\partial x} + cwr
 $$
 
 where celerity $c$ is calculated as follows:
 $$
-c = \begin{cases}
-\frac{K_0e^{(-fz_{i})}\tan(\beta)}{(\theta_s-\theta_r)}
-+ \frac{K_0e^{(-fz_\mathrm{exp})}\tan(\beta)}{(\theta_s-\theta_r)}  & \text{if $z_i < z_\mathrm{exp}$}\\
-\\
-\frac{K_0e^{(-fz_\mathrm{exp})}\tan(\beta)}{(\theta_s-\theta_r)} & \text{if $z_i \ge z_\mathrm{exp}$}.
-\end{cases}
+    c = \frac{K_0 \tan(\beta)}{\theta_s-\theta_r}\begin{cases}
+    e^{-fz_i}
+    + e^{-f\subtext{z}{exp}} & \text{if $z_i < \subtext{z}{exp}$}\\
+    \\
+    e^{-f\subtext{z}{exp}} & \text{if $z_i \ge \subtext{z}{exp}$}.
+    \end{cases}
 $$
 
 For the `layered` and `layered_exponential` profiles the equivalent horizontal hydraulic
-conductivity $K_h$ [m d$^{-1}$] is calculated for water table height $h = z_t-z_i$
-[m], and lateral subsurface flow is calculated as follows:
+conductivity $\SIb{K_h}{m d^{-1}}$ is calculated for water table height $\SIb{h = z_t-z_i}{m}$ and lateral subsurface flow is calculated as follows:
+
 $$
-Q = K_h h \tan(\beta) w,
+  Q = K_h h \tan(\beta) w,
 $$
 
 and celerity $c$ is given by:
+
 $$
-c = \frac{K_h \tan(\beta)}{(\theta_s-\theta_r)}.
+    c = \frac{K_h \tan(\beta)}{\theta_s-\theta_r}.
 $$
 
 The kinematic wave equation for lateral subsurface flow is solved iteratively using Newton's

@@ -4,7 +4,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 
 model = Wflow.initialize_sbm_model(config)
-@unpack network = model
+(; network) = model
 
 model = Wflow.run_timestep(model)
 
@@ -446,7 +446,7 @@ Wflow.close_files(model, delete_output = false)
 
     @testset "exponential profile" begin
         model = Wflow.initialize_sbm_model(config)
-        @unpack vertical = model
+        (; vertical) = model
         z = vertical.zi[i]
         kv_z = Wflow.hydraulic_conductivity_at_depth(vertical, z, i, 2, "exponential")
         @test kv_z ≈ vertical.kvfrac[i][2] * vertical.kv_0[i] * exp(-vertical.f[i] * z)
@@ -465,7 +465,7 @@ Wflow.close_files(model, delete_output = false)
     @testset "exponential constant profile" begin
         config.input.vertical.ksat_profile = "exponential_constant"
         model = Wflow.initialize_sbm_model(config)
-        @unpack vertical = model
+        (; vertical) = model
         z = vertical.zi[i]
         kv_z =
             Wflow.hydraulic_conductivity_at_depth(vertical, z, i, 2, "exponential_constant")
@@ -500,7 +500,7 @@ Wflow.close_files(model, delete_output = false)
     @testset "layered profile" begin
         config.input.vertical.ksat_profile = "layered"
         model = Wflow.initialize_sbm_model(config)
-        @unpack vertical = model
+        (; vertical) = model
         z = vertical.zi[i]
         @test Wflow.hydraulic_conductivity_at_depth(vertical, z, i, 2, "layered") ≈
               vertical.kv[100][2]
@@ -513,7 +513,7 @@ Wflow.close_files(model, delete_output = false)
     @testset "layered exponential profile" begin
         config.input.vertical.ksat_profile = "layered_exponential"
         model = Wflow.initialize_sbm_model(config)
-        @unpack vertical = model
+        (; vertical) = model
         z = vertical.zi[i]
         @test Wflow.hydraulic_conductivity_at_depth(
             vertical,
