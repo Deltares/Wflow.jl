@@ -130,9 +130,27 @@ format:
     page-layout: article
     grid:
       content-mode: standard
+    html-math-method:
+      method: mathjax  # or katex
+      # MathJax specific options
+      mathjax-extensions:
+        - ams
+        - newcommand
+        - autoload
     include-in-header:
       - text: |
           <script type="text/javascript" src="/_static/version.js"></script>
+          <script>
+            window.MathJax = {
+              tex: {
+                macros: {
+                  SI: ["#1\\;\\mathrm\{#2\}", 2],
+                  SIb: ["#1\\;[\\mathrm\{#2\}]", 2],
+                  subtext: ["#1_\\text\{#2\}", 2]
+                }
+              }
+            };
+          </script>
 
 # bibliography: references.bib
 # citeproc: false

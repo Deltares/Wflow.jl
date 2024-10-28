@@ -45,6 +45,7 @@ instantiate-wflow-server = "julia --project=server --eval 'using Pkg; Pkg.instan
 install-ci = { depends_on = ["install-julia", "update-registry-julia"] }
 quarto-check = { cmd = "quarto check all" }
 quarto-render = { cmd = "quarto render docs --to html --execute" }
+quarto-preview = { cmd = "quarto preview docs" }
 
 [dependencies]
 juliaup = "*"
