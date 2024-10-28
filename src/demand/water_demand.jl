@@ -290,7 +290,7 @@ function Paddy(nc, config, inds, dt)
         irrigation_efficiency = efficiency,
         maximum_irrigation_rate = max_irri_rate,
         irrigation_trigger,
-        h_min ,
+        h_min,
         h_max,
         h_opt,
         irrigation_areas = areas,
@@ -402,6 +402,17 @@ update_demand_gross!(paddy::NoIrrigationPaddy) = nothing
     groundwater_demand::Vector{T}       # demand from groundwater [mm Δt⁻¹]
 end
 
+"Initialize water demand variables"
+function DemandVariables(T::Type{<:AbstractFloat}, n::Int)
+    return DemandVariables{T}(;
+        irri_demand_gross = zeros(T, n),
+        nonirri_demand_gross = zeros(T, n),
+        total_gross_demand = zeros(T, n),
+        surfacewater_demand = zeros(T, n),
+        groundwater_demand = zeros(T, n),
+    )
+end
+
 "Water demand model"
 @with_kw struct Demand{D, I, L, P, NP, V} <: AbstractDemandModel
     domestic::D
@@ -422,49 +433,35 @@ end
 
 "Initialize water demand model"
 function Demand(nc, config, inds, dt)
-    if get(config.model.water_demand, "domestic", false)
-        domestic = NonIrrigationDemand(nc, config, inds, dt, "industry")
+    domestic = if get(config.model.water_demand, "domestic", false)
+        NonIrrigationDemand(nc, config, inds, dt, "industry")
     else
-        domestic = NoNonIrrigationDemand()
+        NoNonIrrigationDemand()
     end
-    if get(config.model.water_demand, "industry", false)
-        industry = NonIrrigationDemand(nc, config, inds, dt, "industry")
+    industry = if get(config.model.water_demand, "industry", false)
+        NonIrrigationDemand(nc, config, inds, dt, "industry")
     else
-        industry = NoNonIrrigationDemand()
+        NoNonIrrigationDemand()
     end
-    if get(config.model.water_demand, "livestock", false)
-        livestock = NonIrrigationDemand(nc, config, inds, dt, "livestock")
+    livestock = if get(config.model.water_demand, "livestock", false)
+        NonIrrigationDemand(nc, config, inds, dt, "livestock")
     else
-        livestock = NoNonIrrigationDemand()
+        NoNonIrrigationDemand()
     end
-    if get(config.model.water_demand, "paddy", false)
-        paddy = Paddy(nc, config, inds, dt)
+    paddy = if get(config.model.water_demand, "paddy", false)
+        Paddy(nc, config, inds, dt)
     else
-        paddy = NoIrrigationPaddy{Float}()
+        NoIrrigationPaddy{Float}()
     end
-    if get(config.model.water_demand, "nonpaddy", false)
-        nonpaddy = NonPaddy(nc, config, inds, dt)
+    nonpaddy = if get(config.model.water_demand, "nonpaddy", false)
+        NonPaddy(nc, config, inds, dt)
     else
-        nonpaddy = NoIrrigationNonPaddy{Float}()
+        NoIrrigationNonPaddy{Float}()
     end
 
     n = length(inds)
-    vars = DemandVariables{Float}(;
-        irri_demand_gross = zeros(Float, n),
-        nonirri_demand_gross = zeros(Float, n),
-        total_gross_demand = zeros(Float, n),
-        surfacewater_demand = zeros(Float, n),
-        groundwater_demand = zeros(Float, n),
-    )
-
-    demand = Demand(;
-        domestic,
-        industry,
-        livestock,
-        paddy,
-        nonpaddy,
-        variables = vars,
-    )
+    vars = DemandVariables(Float, n)
+    demand = Demand(; domestic, industry, livestock, paddy, nonpaddy, variables = vars)
     return demand
 end
 
@@ -476,6 +473,16 @@ end
     nonirri_returnflow::Vector{T}                           # return flow from non irrigation [mm Δt⁻¹] 
 end
 
+"Initialize river allocation model variables"
+function AllocationRiverVariables(T::Type{<:AbstractFloat}, n::Int)
+    return AllocationRiverVariables{T}(;
+        act_surfacewater_abst = zeros(T, n),
+        act_surfacewater_abst_vol = zeros(T, n),
+        available_surfacewater = zeros(T, n),
+        nonirri_returnflow = zeros(T, n),
+    )
+end
+
 "River allocation model"
 @with_kw struct AllocationRiver{T} <: AbstractAllocationModel{T}
     variables::AllocationRiverVariables{T}
@@ -483,12 +490,7 @@ end
 
 "Initialize water allocation for the river domain"
 function AllocationRiver(n)
-    vars = AllocationRiverVariables{Float}(;
-        act_surfacewater_abst = zeros(Float, n),
-        act_surfacewater_abst_vol = zeros(Float, n),
-        available_surfacewater = zeros(Float, n),
-        nonirri_returnflow = zeros(Float, n),
-    )
+    vars = AllocationRiverVariables(Float, n)
     allocation = AllocationRiver{Float}(; variables = vars)
     return allocation
 end
@@ -499,7 +501,7 @@ end
     areas::Vector{Int} | "-"            # allocation areas [-]
 end
 
-"Struct to store land allocation model parameters"
+"Struct to store land allocation model variables"
 @get_units @grid_loc @with_kw struct AllocationLandVariables{T}
     surfacewater_alloc::Vector{T}                       # allocation from surface water [mm Δt⁻¹]
     act_groundwater_abst::Vector{T}                     # actual groundwater abstraction [mm Δt⁻¹]
@@ -510,6 +512,21 @@ end
     nonirri_alloc::Vector{T}                            # allocated water for non-irrigation [mm Δt⁻¹]
     total_alloc::Vector{T}                              # total allocated water [mm Δt⁻¹]
     nonirri_returnflow::Vector{T}                       # return flow from non irrigation [mm Δt⁻¹]
+end
+
+"Initialize land allocation model variables"
+function AllocationLandVariables(T::Type{<:AbstractFloat}, n::Int)
+    return AllocationLandVariables{T}(;
+        surfacewater_alloc = zeros(T, n),
+        act_groundwater_abst = zeros(T, n),
+        act_groundwater_abst_vol = zeros(T, n),
+        available_groundwater = zeros(T, n),
+        groundwater_alloc = zeros(T, n),
+        irri_alloc = zeros(T, n),
+        nonirri_alloc = zeros(T, n),
+        total_alloc = zeros(T, n),
+        nonirri_returnflow = zeros(T, n),
+    )
 end
 
 "Land allocation model"
@@ -540,17 +557,7 @@ function AllocationLand(nc, config, inds)
     n = length(inds)
 
     params = AllocationLandParameters(; areas = areas, frac_sw_used = frac_sw_used)
-    vars = AllocationLandVariables(;
-        surfacewater_alloc = zeros(Float, n),
-        act_groundwater_abst = zeros(Float, n),
-        act_groundwater_abst_vol = zeros(Float, n),
-        available_groundwater = zeros(Float, n),
-        groundwater_alloc = zeros(Float, n),
-        irri_alloc = zeros(Float, n),
-        nonirri_alloc = zeros(Float, n),
-        total_alloc = zeros(Float, n),
-        nonirri_returnflow = zeros(Float, n),
-    )
+    vars = AllocationLandVariables(Float, n)
     allocation = AllocationLand(; parameters = params, variables = vars)
     return allocation
 end
@@ -623,9 +630,8 @@ function surface_water_allocation_area(land_allocation, demand, river, network)
     (; surfacewater_alloc) = land_allocation.variables
     (; surfacewater_demand) = demand.variables
 
-    m = length(inds_river)
     # loop over allocation areas
-    for i in 1:m
+    for i in eachindex(inds_river)
         # surface water demand (allocation area)
         sw_demand_vol = 0.0
         for j in inds_land[i]
@@ -721,9 +727,8 @@ function groundwater_allocation_area(land_allocation, demand, network)
 
     (; groundwater_demand) = demand.variables
 
-    m = length(inds_river)
     # loop over allocation areas
-    for i in 1:m
+    for i in eachindex(inds_river)
         # groundwater demand and availability (allocation area)
         gw_demand_vol = 0.0
         gw_available = 0.0
@@ -818,10 +823,10 @@ function update_water_allocation!(land_allocation, demand::Demand, lateral, netw
 
     # for reservoir and lake locations set river abstraction at zero and abstract volume
     # from reservoir and lake, including an update of lake waterlevel
-    if !isnothing(river.reservoir)
+    if river.reservoir !== nothing
         @. river.abstraction[res_index_f] = 0.0
         @. river.reservoir.volume -= act_surfacewater_abst_vol[res_index_f]
-    elseif !isnothing(river.lake)
+    elseif river.lake !== nothing
         @. river.abstraction[lake_index_f] = 0.0
         lakes = river.lake
         @. lakes.storage -= act_surfacewater_abst_vol[lake_index_f]
