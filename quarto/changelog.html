@@ -68,6 +68,17 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 <script type="text/javascript" src="./_static/version.js"></script>
+<script>
+  window.MathJax = {
+    tex: {
+      macros: {
+        SI: ["#1\\;\\mathrm\{#2\}", 2],
+        SIb: ["#1\\;[\\mathrm\{#2\}]", 2],
+        subtext: ["#1_\\text\{#2\}", 2]
+      }
+    }
+  };
+</script>
 
 
 <link rel="stylesheet" href="_static/styles.css">
