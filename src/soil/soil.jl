@@ -664,6 +664,7 @@ function soil_fraction!(soil, runoff, glacier)
 
     @. soil_fraction =
         max(canopygapfraction - waterfrac - riverfrac - glacier_fraction, 0.0)
+    return nothing
 end
 
 "Update boundary conditions of the SBM soil model for a single timestep"
@@ -690,6 +691,7 @@ function update_boundary_conditions!(
             runoff.variables.runoff_land .+ get_water_depth(demand.paddy),
             0.0,
         )
+    return nothing
 end
 
 "Update soil temperature of the SBM soil model for a single timestep"
@@ -697,6 +699,7 @@ function soil_temperature!(model::SbmSoilModel, snow::AbstractSnowModel, tempera
     v = model.variables
     p = model.parameters
     @. v.tsoil = soil_temperature(v.tsoil, p.w_soil, temperature)
+    return nothing
 end
 
 soil_temperature!(model::SbmSoilModel, snow::NoSnowModel, temperature) = nothing
@@ -708,6 +711,7 @@ function ustoredepth!(model::SbmSoilModel)
     for i in eachindex(v.ustorelayerdepth)
         v.ustoredepth[i] = sum(@view v.ustorelayerdepth[i][1:p.nlayers[i]])
     end
+    return nothing
 end
 
 "Update the infiltration reduction factor of the SBM soil model for a single timestep"
@@ -728,6 +732,7 @@ function infiltration_reduction_factor!(
             soilinfreduction = soilinfreduction,
         )
     end
+    return nothing
 end
 
 """
@@ -752,6 +757,7 @@ function infiltration!(model::SbmSoilModel)
             v.f_infiltration_reduction[i],
         )
     end
+    return nothing
 end
 
 """
@@ -808,6 +814,7 @@ function unsaturated_zone_flow!(model::SbmSoilModel; transfermethod = false)
             v.transfer[i] = 0.0
         end
     end
+    return nothing
 end
 
 """
@@ -865,6 +872,7 @@ function soil_evaporation!(model::SbmSoilModel)
         v.soilevap[i] = soilevapunsat + soilevapsat
         v.satwaterdepth[i] = v.satwaterdepth[i] - soilevapsat
     end
+    return nothing
 end
 
 """
@@ -955,6 +963,7 @@ function transpiration!(model::SbmSoilModel, dt; ust = false)
         v.satwaterdepth[i] = v.satwaterdepth[i] - actevapsat
         v.transpiration[i] = actevapustore + actevapsat
     end
+    return nothing
 end
 
 """
@@ -997,6 +1006,7 @@ function actual_infiltration!(model::SbmSoilModel)
 
         v.actinfilt[i] = v.infiltsoilpath[i] - ustoredepth_excess
     end
+    return nothing
 end
 
 """
@@ -1021,6 +1031,7 @@ function actual_infiltration_soil_path!(model::SbmSoilModel)
             v.f_infiltration_reduction[i],
         )
     end
+    return nothing
 end
 
 """
@@ -1075,6 +1086,7 @@ function capillary_flux!(model::SbmSoilModel)
             v.actcapflux[i] = 0.0
         end
     end
+    return nothing
 end
 
 """
@@ -1098,6 +1110,7 @@ function leakage!(model::SbmSoilModel)
         deeptransfer = min(v.satwaterdepth[i], deepksat)
         v.actleakage[i] = max(0.0, min(p.maxleakage[i], deeptransfer))
     end
+    return nothing
 end
 
 """
@@ -1168,6 +1181,7 @@ function update!(
     v.actevap .=
         v.soilevap .+ v.transpiration .+ runoff.variables.ae_openw_r .+
         runoff.variables.ae_openw_l .+ get_evaporation(demand.paddy)
+    return nothing
 end
 
 """
@@ -1287,6 +1301,7 @@ function update!(model::SbmSoilModel, external_models::NamedTuple)
     # and the h_max parameter of a paddy field)
     update_runoff!(demand.paddy, v.runoff)
     @. v.net_runoff = v.runoff - ae_openw_l
+    return nothing
 end
 
 # wrapper method

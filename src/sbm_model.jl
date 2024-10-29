@@ -435,19 +435,19 @@ function initialize_sbm_model(config::Config)
         SbmModel(),
     )
 
-    model = set_states(model)
+    set_states!(model)
 
     @info "Initialized model"
     return model
 end
 
 "update SBM model for a single timestep"
-function update(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmModel}
+function update!(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmModel}
     (; lateral, vertical, network, config) = model
     do_water_demand = haskey(config.model, "water_demand")
     (; kv_profile) = vertical.soil.parameters
 
-    model = update_until_recharge(model)
+    update_until_recharge!(model)
     # exchange of recharge between SBM soil model and subsurface flow domain
     lateral.subsurface.recharge .= vertical.soil.variables.recharge ./ 1000.0
     if do_water_demand
@@ -458,32 +458,33 @@ function update(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmMo
     lateral.subsurface.zi .= vertical.soil.variables.zi ./ 1000.0
     # update lateral subsurface flow domain (kinematic wave)
     kh_layered_profile!(vertical.soil, lateral.subsurface, kv_profile, vertical.dt)
-    update(lateral.subsurface, network.land, network.frac_toriver)
-    model = update_after_subsurfaceflow(model)
-    return model = update_total_water_storage(model)
+    update!(lateral.subsurface, network.land, network.frac_toriver)
+    update_after_subsurfaceflow!(model)
+    update_total_water_storage!(model)
+    return nothing
 end
 
 """
-    update_until_recharge(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
+    update_until_recharge!(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
 
 Update SBM model until recharge for a single timestep. This function is also accessible
 through BMI, to couple the SBM model to an external groundwater model.
 """
-function update_until_recharge(
+function update_until_recharge!(
     model::Model{N, L, V, R, W, T},
 ) where {N, L, V, R, W, T <: SbmModel}
     (; lateral, vertical, network, config) = model
-    vertical = update(vertical, lateral, network, config)
-    return model
+    update!(vertical, lateral, network, config)
+    return nothing
 end
 
 """
-    update_after_subsurfaceflow(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
+    update_after_subsurfaceflow!(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
 
 Update SBM model after subsurface flow for a single timestep. This function is also
 accessible through BMI, to couple the SBM model to an external groundwater model.
 """
-function update_after_subsurfaceflow(
+function update_after_subsurfaceflow!(
     model::Model{N, L, V, R, W, T},
 ) where {N, L, V, R, W, T <: SbmModel}
     (; lateral, vertical) = model
@@ -494,9 +495,9 @@ function update_after_subsurfaceflow(
     update!(soil, (; runoff, demand, subsurface))
 
     ssf_toriver = lateral.subsurface.to_river ./ tosecond(basetimestep)
-    surface_routing(model; ssf_toriver = ssf_toriver)
+    surface_routing!(model; ssf_toriver = ssf_toriver)
 
-    return model
+    return nothing
 end
 
 """
@@ -504,24 +505,24 @@ Update of the total water storage at the end of each timestep per model cell.
 
 This is done here at model level.
 """
-function update_total_water_storage(
+function update_total_water_storage!(
     model::Model{N, L, V, R, W, T},
 ) where {N, L, V, R, W, T <: SbmModel}
     (; lateral, vertical, network) = model
 
     # Update the total water storage based on vertical states
     # TODO Maybe look at routing in the near future
-    update_total_water_storage(
+    update_total_water_storage!(
         vertical,
         network.index_river,
         network.land.area,
         lateral.river,
         lateral.land,
     )
-    return model
+    return nothing
 end
 
-function set_states(
+function set_states!(
     model::Model{N, L, V, R, W, T},
 ) where {N, L, V, R, W, T <: Union{SbmModel, SbmGwfModel}}
     (; lateral, vertical, network, config) = model
@@ -544,7 +545,7 @@ function set_states(
                 " input state file if it was produced with a Wflow version up to v0.5.2.",
             )
         end
-        set_states(instate_path, model; type = Float, dimname = :layer)
+        set_states!(instate_path, model; type = Float, dimname = :layer)
         # update zi for SBM soil model
         zi =
             max.(
@@ -608,5 +609,5 @@ function set_states(
     else
         @info "Set initial conditions from default values."
     end
-    return model
+    return nothing
 end

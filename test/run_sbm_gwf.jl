@@ -5,7 +5,7 @@ config = Wflow.Config(tomlpath)
 model = Wflow.initialize_sbm_gwf_model(config)
 (; network) = model
 
-model = Wflow.run_timestep(model)
+Wflow.run_timestep!(model)
 
 # test if the first timestep was written to the CSV file
 flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
@@ -28,7 +28,7 @@ end
 end
 
 # run the second timestep
-model = Wflow.run_timestep(model)
+Wflow.run_timestep!(model)
 
 @testset "second timestep" begin
     sbm = model.vertical
@@ -87,8 +87,8 @@ config.input.lateral.river.bankfull_elevation = "bankfull_elevation"
 config.input.lateral.river.bankfull_depth = "bankfull_depth"
 
 model = Wflow.initialize_sbm_gwf_model(config)
-model = Wflow.run_timestep(model)
-model = Wflow.run_timestep(model)
+Wflow.run_timestep!(model)
+Wflow.run_timestep!(model)
 
 @testset "river domain (local inertial)" begin
     q = model.lateral.river.q_av
@@ -118,8 +118,8 @@ config.state.lateral.land.qx = "qx_land"
 config.state.lateral.land.qy = "qy_land"
 
 model = Wflow.initialize_sbm_gwf_model(config)
-model = Wflow.run_timestep(model)
-model = Wflow.run_timestep(model)
+Wflow.run_timestep!(model)
+Wflow.run_timestep!(model)
 
 @testset "river and land domain (local inertial)" begin
     q = model.lateral.river.q_av
@@ -146,8 +146,8 @@ config.model.reinit = false
 model = Wflow.initialize_sbm_gwf_model(config)
 (; network) = model
 
-model = Wflow.run_timestep(model)
-model = Wflow.run_timestep(model)
+Wflow.run_timestep!(model)
+Wflow.run_timestep!(model)
 
 @testset "second timestep warm start" begin
     sbm = model.vertical

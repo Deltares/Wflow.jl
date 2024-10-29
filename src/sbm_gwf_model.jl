@@ -126,8 +126,7 @@ function initialize_sbm_gwf_model(config::Config)
         for a in areas
             area_index = findall(==(a), lsm.allocation.parameters.areas)
             push!(inds_allocation_areas, area_index)
-            area_riv_index =
-                findall(==(a), lsm.allocation.parameters.areas[index_river])
+            area_riv_index = findall(==(a), lsm.allocation.parameters.areas[index_river])
             push!(inds_riv_allocation_areas, area_riv_index)
         end
     end
@@ -524,13 +523,13 @@ function initialize_sbm_gwf_model(config::Config)
         SbmGwfModel(),
     )
 
-    model = set_states(model)
+    set_states!(model)
 
     return model
 end
 
 "update the sbm_gwf model for a single timestep"
-function update(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmGwfModel}
+function update!(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmGwfModel}
     (; lateral, vertical, network, clock, config) = model
     (; soil, runoff, demand) = vertical
 
@@ -538,7 +537,7 @@ function update(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmGw
     inds_riv = network.index_river
     aquifer = lateral.subsurface.flow.aquifer
 
-    vertical = update(vertical, lateral, network, config)
+    update!(vertical, lateral, network, config)
 
     # set river stage (groundwater) to average h from kinematic wave
     lateral.subsurface.river.stage .= lateral.river.h_av .+ lateral.subsurface.river.bottom
@@ -563,14 +562,14 @@ function update(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmGw
             vertical.allocation.variables.act_groundwater_abst / 1000.0 * (1.0 / dt_sbm)
     end
     # update groundwater domain
-    update(lateral.subsurface.flow, Q, dt_sbm, conductivity_profile)
+    update!(lateral.subsurface.flow, Q, dt_sbm, conductivity_profile)
 
     # update SBM soil model (runoff, ustorelayerdepth and satwaterdepth)
     update!(soil, (; runoff, demand, subsurface = lateral.subsurface.flow))
 
     ssf_toriver = zeros(length(soil.variables.zi))
     ssf_toriver[inds_riv] = -lateral.subsurface.river.flux ./ lateral.river.dt
-    surface_routing(model; ssf_toriver = ssf_toriver)
+    surface_routing!(model; ssf_toriver = ssf_toriver)
 
-    return model
+    return nothing
 end

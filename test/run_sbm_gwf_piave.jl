@@ -1,7 +1,7 @@
 tomlpath = joinpath(@__DIR__, "sbm_gwf_piave_demand_config.toml")
 config = Wflow.Config(tomlpath)
 model = Wflow.initialize_sbm_gwf_model(config)
-model = Wflow.run_timestep(model)
+Wflow.run_timestep!(model)
 
 (; paddy, nonpaddy, industry, livestock, domestic) = model.vertical.demand
 (; total_alloc, irri_alloc, nonirri_alloc, surfacewater_alloc, act_groundwater_abst) =
@@ -34,7 +34,7 @@ model = Wflow.run_timestep(model)
     @test domestic.variables.returnflow[[1, end]] ≈ [0.1995004952035704f0, 0.0f0]
 end
 
-model = Wflow.run_timestep(model)
+Wflow.run_timestep!(model)
 (; paddy, nonpaddy, industry, livestock, domestic) = model.vertical.demand
 (; total_alloc, irri_alloc, nonirri_alloc, surfacewater_alloc, act_groundwater_abst) =
     model.vertical.allocation.variables

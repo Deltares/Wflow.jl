@@ -6,7 +6,7 @@ config = Wflow.Config(tomlpath)
 model = Wflow.initialize_sbm_model(config)
 (; network) = model
 
-model = Wflow.run_timestep(model)
+Wflow.run_timestep!(model)
 
 # test if the first timestep was written to the CSV file
 flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
@@ -88,7 +88,7 @@ end
 end
 
 # run the second timestep
-model = Wflow.run_timestep(model)
+Wflow.run_timestep!(model)
 
 @testset "second timestep" begin
     sbm = model.vertical.soil
@@ -188,8 +188,8 @@ config.input.vertical.vegetation_parameter_set.leaf_area_index =
     Dict("scale" => 1.6, "netcdf" => Dict("variable" => Dict("name" => "LAI")))
 
 model = Wflow.initialize_sbm_model(config)
-model = Wflow.run_timestep(model)
-model = Wflow.run_timestep(model)
+Wflow.run_timestep!(model)
+Wflow.run_timestep!(model)
 
 @testset "changed dynamic parameters" begin
     res = model.lateral.river.reservoir
@@ -210,8 +210,8 @@ config.input.cyclic =
 config.input.lateral.river.inflow = "inflow"
 
 model = Wflow.initialize_sbm_model(config)
-model = Wflow.run_timestep(model)
-model = Wflow.run_timestep(model)
+Wflow.run_timestep!(model)
+Wflow.run_timestep!(model)
 
 @testset "river inflow (cyclic)" begin
     @test model.lateral.river.inflow[44] ≈ 0.75
@@ -222,7 +222,7 @@ end
 config = Wflow.Config(tomlpath)
 config.input.vertical.atmospheric_forcing.precipitation = Dict("value" => 2.5)
 model = Wflow.initialize_sbm_model(config)
-Wflow.load_fixed_forcing(model)
+Wflow.load_fixed_forcing!(model)
 
 @testset "fixed precipitation forcing (initialize)" begin
     @test maximum(model.vertical.atmospheric_forcing.precipitation) ≈ 2.5
@@ -230,7 +230,7 @@ Wflow.load_fixed_forcing(model)
     @test all(isapprox.(model.lateral.river.reservoir.precipitation, 2.5))
 end
 
-model = Wflow.run_timestep(model)
+Wflow.run_timestep!(model)
 
 @testset "fixed precipitation forcing (first timestep)" begin
     @test maximum(model.vertical.atmospheric_forcing.precipitation) ≈ 2.5
@@ -246,8 +246,8 @@ config = Wflow.Config(tomlpath)
 config.model.river_routing = "local-inertial"
 
 model = Wflow.initialize_sbm_model(config)
-model = Wflow.run_timestep(model)
-model = Wflow.run_timestep(model)
+Wflow.run_timestep!(model)
+Wflow.run_timestep!(model)
 
 @testset "river flow and depth (local inertial)" begin
     q = model.lateral.river.q_av
@@ -269,8 +269,8 @@ tomlpath = joinpath(@__DIR__, "sbm_swf_config.toml")
 config = Wflow.Config(tomlpath)
 
 model = Wflow.initialize_sbm_model(config)
-model = Wflow.run_timestep(model)
-model = Wflow.run_timestep(model)
+Wflow.run_timestep!(model)
+Wflow.run_timestep!(model)
 
 @testset "river and overland flow and depth (local inertial)" begin
     q = model.lateral.river.q_av
@@ -400,8 +400,8 @@ dh = diff(fp.depth)
     @test Wflow.wetted_perimeter(fp.p[i1, 4], fp.depth[i1], h) ≈ 90.11775307900271f0
 end
 
-model = Wflow.run_timestep(model)
-model = Wflow.run_timestep(model)
+Wflow.run_timestep!(model)
+Wflow.run_timestep!(model)
 
 @testset "river flow (local inertial) with floodplain schematization simulation" begin
     q = model.lateral.river.q_av
@@ -421,8 +421,8 @@ end
 config.input.lateral.river.riverlength_bc = "riverlength_bc"
 config.input.lateral.river.riverdepth_bc = "riverdepth_bc"
 model = Wflow.initialize_sbm_model(config)
-model = Wflow.run_timestep(model)
-model = Wflow.run_timestep(model)
+Wflow.run_timestep!(model)
+Wflow.run_timestep!(model)
 
 @testset "change boundary condition for local inertial routing (including floodplain)" begin
     q = model.lateral.river.q_av
@@ -516,9 +516,10 @@ Wflow.close_files(model; delete_output = false)
         @test subsurface.ssf[i] ≈ 10336.88327617503f0
     end
 
-    model = Wflow.run_timestep(model)
-    model = Wflow.run_timestep(model)
     @testset "river flow layered exponential profile" begin
+        model = Wflow.initialize_sbm_model(config)
+        Wflow.run_timestep!(model)
+        Wflow.run_timestep!(model)
         q = model.lateral.river.q_av
         @test sum(q) ≈ 3159.38300016008f0
         @test q[1622] ≈ 0.0005972577112819149f0

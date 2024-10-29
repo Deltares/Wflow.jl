@@ -55,7 +55,8 @@ end
 
 function Base.setproperty!(config::Config, f::Symbol, x)
     dict = Dict(config)
-    return dict[String(f)] = x
+    dict[String(f)] = x
+    return nothing
 end
 
 "Get a value from the Config with either the key or an alias of the key."
@@ -203,7 +204,7 @@ mover_params = (
     symbols"vertical.atmospheric_forcing.potential_evaporation",
 )
 
-function load_fixed_forcing(model)
+function load_fixed_forcing!(model)
     (; reader, network, config) = model
     (; forcing_parameters) = reader
 
@@ -248,6 +249,7 @@ function load_fixed_forcing(model)
             end
         end
     end
+    return nothing
 end
 
 "Get dynamic netCDF input for the given time"
@@ -314,7 +316,7 @@ function update_forcing!(model)
         param_vector .= data_sel
     end
 
-    return model
+    return nothing
 end
 
 """
@@ -338,6 +340,7 @@ function load_dynamic_input!(model)
     if haskey(model.config.input, "cyclic")
         update_cyclic!(model)
     end
+    return nothing
 end
 
 "Get cyclic netCDF input for the given time"
@@ -366,6 +369,7 @@ function update_cyclic!(model)
             end
         end
     end
+    return nothing
 end
 
 """
@@ -838,13 +842,13 @@ function flat!(d, path, el::Dict)
     for (k, v) in pairs(el)
         flat!(d, string(path, '.', k), v)
     end
-    return d
+    return nothing
 end
 
 function flat!(d, path, el)
     k = symbols(path)
     d[k] = el
-    return d
+    return nothing
 end
 
 """
@@ -1348,19 +1352,19 @@ function reset_clock!(clock::Clock, config)
     clock.time = new_clock.time
     clock.iteration = new_clock.iteration
     clock.dt = new_clock.dt
-    return clock
+    return nothing
 end
 
 function advance!(clock)
     clock.iteration += 1
     clock.time += clock.dt
-    return clock
+    return nothing
 end
 
 function rewind!(clock)
     clock.iteration -= 1
     clock.time -= clock.dt
-    return clock
+    return nothing
 end
 
 "Read a rating curve from CSV into a NamedTuple of vectors"

@@ -6,7 +6,7 @@ config = Wflow.Config(tomlpath)
 model = Wflow.initialize_sediment_model(config)
 (; network) = model
 
-model = Wflow.run_timestep(model)
+Wflow.run_timestep!(model)
 
 @testset "first timestep sediment model (vertical)" begin
     eros = model.vertical
@@ -21,7 +21,7 @@ model = Wflow.run_timestep(model)
 end
 
 # run the second timestep
-model = Wflow.run_timestep(model)
+Wflow.run_timestep!(model)
 
 @testset "second timestep sediment model (vertical)" begin
     eros = model.vertical

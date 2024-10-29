@@ -4,7 +4,7 @@ function run_piave(model, steps)
     ssf_vol = zeros(steps)
     riv_vol = zeros(steps)
     for i in 1:steps
-        model = Wflow.run_timestep(model)
+        Wflow.run_timestep!(model)
         ssf_vol[i] = mean(model.lateral.subsurface.volume)
         riv_vol[i] = mean(model.lateral.river.volume)
         q[i] = model.lateral.river.q_av[1]
@@ -103,7 +103,7 @@ end
 tomlpath = joinpath(@__DIR__, "sbm_piave_demand_config.toml")
 config = Wflow.Config(tomlpath)
 model = Wflow.initialize_sbm_model(config)
-model = Wflow.run_timestep(model)
+Wflow.run_timestep!(model)
 sbm = model.vertical
 (; paddy, nonpaddy, industry, livestock, domestic) = model.vertical.demand
 (; total_alloc, irri_alloc, nonirri_alloc, surfacewater_alloc, act_groundwater_abst) =
@@ -137,7 +137,7 @@ sbm = model.vertical
     @test domestic.variables.returnflow[[1, end]] ≈ [0.1995004952035704f0, 0.0f0]
 end
 
-model = Wflow.run_timestep(model)
+Wflow.run_timestep!(model)
 sbm = model.vertical
 (; paddy, nonpaddy, industry, livestock, domestic) = model.vertical.demand
 (; total_alloc, irri_alloc, nonirri_alloc, surfacewater_alloc, act_groundwater_abst) =

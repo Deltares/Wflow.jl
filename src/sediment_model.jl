@@ -147,17 +147,17 @@ function initialize_sediment_model(config::Config)
         SedimentModel(),
     )
 
-    model = set_states(model)
+    set_states!(model)
     @info "Initialized model"
 
     return model
 end
 
-function update(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SedimentModel}
+function update!(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SedimentModel}
     (; lateral, vertical, network, config) = model
 
-    update_until_ols(vertical, config)
-    update_until_oltransport(vertical, config)
+    update_until_ols!(vertical, config)
+    update_until_oltransport!(vertical, config)
 
     lateral.land.soilloss .= vertical.soilloss
     lateral.land.erosclay .= vertical.erosclay
@@ -173,7 +173,7 @@ function update(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: Sedim
     lateral.land.TCsagg .= vertical.TCsagg
     lateral.land.TClagg .= vertical.TClagg
 
-    update(lateral.land, network.land, config)
+    update!(lateral.land, network.land, config)
 
     do_river = get(config.model, "runrivermodel", false)::Bool
 
@@ -185,13 +185,13 @@ function update(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: Sedim
         lateral.river.inlandsagg .= lateral.land.inlandsagg[inds_riv]
         lateral.river.inlandlagg .= lateral.land.inlandlagg[inds_riv]
 
-        update(lateral.river, network.river, config)
+        update!(lateral.river, network.river, config)
     end
 
-    return model
+    return nothing
 end
 
-function set_states(
+function set_states!(
     model::Model{N, L, V, R, W, T},
 ) where {N, L, V, R, W, T <: SedimentModel}
     # read and set states in model object if reinit=false
@@ -200,9 +200,9 @@ function set_states(
     if reinit == false
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
-        set_states(instate_path, model; type = Float)
+        set_states!(instate_path, model; type = Float)
     else
         @info "Set initial conditions from default values."
     end
-    return model
+    return nothing
 end

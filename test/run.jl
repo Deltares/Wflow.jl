@@ -17,7 +17,7 @@ config.state.path_output =
 config.output.path =
     joinpath(dirname(tomlpath), "data/state-test/output-moselle-january.nc")
 model = Wflow.initialize_sbm_model(config)
-Wflow.run(model)
+Wflow.run!(model)
 
 # first half of January, cold start
 config.starttime = DateTime("2000-01-01T00:00:00")
@@ -28,7 +28,7 @@ config.state.path_output =
 config.output.path =
     joinpath(dirname(tomlpath), "data/state-test/output-moselle-january-1of2.nc")
 model = Wflow.initialize_sbm_model(config)
-Wflow.run(model)
+Wflow.run!(model)
 
 # second half of January, warm start
 config.starttime = DateTime("2000-01-15T00:00:00")
@@ -41,7 +41,7 @@ config.state.path_output =
 config.output.path =
     joinpath(dirname(tomlpath), "data/state-test/output-moselle-january-2of2.nc")
 model = Wflow.initialize_sbm_model(config)
-Wflow.run(model)
+Wflow.run!(model)
 
 # second half of January, warm start, fews_run set to true, and starttime set one day earlier
 # to match endtime of part 1
@@ -58,7 +58,7 @@ config.state.path_output = joinpath(
 config.output.path =
     joinpath(dirname(tomlpath), "data/state-test/output-moselle-january-2of2-fews_run.nc")
 model = Wflow.initialize_sbm_model(config)
-Wflow.run(model)
+Wflow.run!(model)
 
 # verify that there are minimal differences in the end state of the two runs
 endstate_one_run_path =

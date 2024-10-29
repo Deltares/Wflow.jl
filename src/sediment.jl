@@ -346,7 +346,7 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
 end
 
 # Soil erosion
-function update_until_ols(eros::LandSediment, config)
+function update_until_ols!(eros::LandSediment, config)
     # Options from config
     do_lai = haskey(config.input.vertical, "leaf_area_index")
     rainerosmethod = get(config.model, "rainerosmethod", "answers")::String
@@ -438,10 +438,11 @@ function update_until_ols(eros::LandSediment, config)
         eros.erossagg[i] = soilloss * eros.fsagg[i]
         eros.eroslagg[i] = soilloss * eros.flagg[i]
     end
+    return nothing
 end
 
 ### Sediment transport capacity in overland flow ###
-function update_until_oltransport(ols::LandSediment, config::Config)
+function update_until_oltransport!(ols::LandSediment, config::Config)
     do_river = get(config.model, "runrivermodel", false)::Bool
     tcmethod = get(config.model, "landtransportmethod", "yalinpart")::String
     dt = Second(config.timestepsecs)
@@ -485,6 +486,7 @@ function update_until_oltransport(ols::LandSediment, config::Config)
         ols.TCsagg[i] = TCsagg
         ols.TClagg[i] = TClagg
     end
+    return nothing
 end
 
 function tc_govers(ols::LandSediment, i::Int, sinslope::Float, ts::Float)::Float
@@ -684,7 +686,7 @@ function partial_update!(inland, rivcell, eroded)
     return inland
 end
 
-function update(ols::OverlandFlowSediment, network, config)
+function update!(ols::OverlandFlowSediment, network, config)
     do_river = get(config.model, "runrivermodel", false)::Bool
     tcmethod = get(config.model, "landtransportmethod", "yalinpart")::String
     zeroarr = fill(0.0, ols.n)
@@ -716,6 +718,7 @@ function update(ols::OverlandFlowSediment, network, config)
         accucapacityflux!(ols.olsed, ols.soilloss, network, ols.TCsed)
         ols.inlandsed .= ifelse.(ols.rivcell .== 1, ols.soilloss, zeroarr)
     end
+    return nothing
 end
 
 ### River transport and processes ###
@@ -1172,7 +1175,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     return rs
 end
 
-function update(rs::RiverSediment, network, config)
+function update!(rs::RiverSediment, network, config)
     (; graph, order) = network
     tcmethod = get(config.model, "rivtransportmethod", "bagnold")::String
 
@@ -1613,4 +1616,5 @@ function update(rs::RiverSediment, network, config)
         rs.SSconc[v] = SS * toconc
         rs.Bedconc[v] = Bed * toconc
     end
+    return nothing
 end

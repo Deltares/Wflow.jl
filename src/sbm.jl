@@ -69,7 +69,7 @@ function LandHydrologySBM(nc, config, riverfrac, inds)
 end
 
 "Update land hydrology model with SBM soil model for a single timestep"
-function update(model::LandHydrologySBM, lateral, network, config)
+function update!(model::LandHydrologySBM, lateral, network, config)
     do_water_demand = haskey(config.model, "water_demand")::Bool
     (;
         glacier,
@@ -121,7 +121,7 @@ function update(model::LandHydrologySBM, lateral, network, config)
 
     update!(soil, atmospheric_forcing, (; snow, runoff, demand), config, dt)
     @. soil.variables.actevap += interception.variables.interception_rate
-    return model
+    return nothing
 end
 
 """
@@ -139,7 +139,7 @@ Takes the following parameters:
 - land_routing:
     The land routing struct, i.e. model.lateral.land
 """
-function update_total_water_storage(
+function update_total_water_storage!(
     model::LandHydrologySBM,
     river_network,
     area,
@@ -178,4 +178,5 @@ function update_total_water_storage(
         # Add everything to the total water storage
         total_storage[i] += (sub_surface + lateral)
     end
+    return nothing
 end

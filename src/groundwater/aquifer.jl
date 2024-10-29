@@ -344,7 +344,7 @@ end
 minimum_head(aquifer::ConfinedAquifer) = aquifer.head
 minimum_head(aquifer::UnconfinedAquifer) = max.(aquifer.head, aquifer.bottom)
 
-function update(gwf, Q, dt, conductivity_profile)
+function update!(gwf, Q, dt, conductivity_profile)
     Q .= 0.0  # TODO: Probably remove this when linking with other components
     flux!(Q, gwf.aquifer, gwf.connectivity, conductivity_profile)
     for boundary in gwf.boundaries
@@ -357,7 +357,7 @@ function update(gwf, Q, dt, conductivity_profile)
     gwf.aquifer.head .= minimum_head(gwf.aquifer)
     gwf.aquifer.volume .=
         saturated_thickness(gwf.aquifer) .* gwf.aquifer.area .* storativity(gwf.aquifer)
-    return gwf
+    return nothing
 end
 
 Base.@kwdef struct GroundwaterFlow{A, C, CH, B}

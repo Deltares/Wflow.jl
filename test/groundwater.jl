@@ -352,7 +352,7 @@ end
         Q = zeros(3)
         dt = 0.25 # days
         for _ in 1:50
-            Wflow.update(gwf, Q, dt, conductivity_profile)
+            Wflow.update!(gwf, Q, dt, conductivity_profile)
         end
 
         @test gwf.aquifer.head ≈ [2.0, 3.0, 4.0]
@@ -374,7 +374,7 @@ end
         Q = zeros(3)
         dt = 0.25 # days
         for _ in 1:50
-            Wflow.update(gwf, Q, dt, conductivity_profile)
+            Wflow.update!(gwf, Q, dt, conductivity_profile)
         end
 
         @test gwf.aquifer.head ≈ [2.0, 3.0, 4.0]
@@ -429,7 +429,7 @@ end
         time = nstep * dt
 
         for i in 1:nstep
-            Wflow.update(gwf, Q, dt, conductivity_profile)
+            Wflow.update!(gwf, Q, dt, conductivity_profile)
             # Gradient dh/dx is positive, all flow to the left
             @test all(diff(gwf.aquifer.head) .> 0.0)
         end
@@ -497,7 +497,7 @@ end
         time = nstep * dt
 
         for i in 1:nstep
-            Wflow.update(gwf, Q, dt, conductivity_profile)
+            Wflow.update!(gwf, Q, dt, conductivity_profile)
             # Gradient dh/dx is positive, all flow to the left
             @test all(diff(gwf.aquifer.head) .> 0.0)
         end
@@ -572,7 +572,7 @@ end
         time = nstep * dt
 
         for i in 1:nstep
-            Wflow.update(gwf, Q, dt, conductivity_profile)
+            Wflow.update!(gwf, Q, dt, conductivity_profile)
         end
 
         # test for symmetry on x and y axes

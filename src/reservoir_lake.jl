@@ -166,7 +166,7 @@ Update a single reservoir at position `i`.
 This is called from within the kinematic wave loop, therefore updating only for a single
 element rather than all at once.
 """
-function update(res::SimpleReservoir, i, inflow, timestepsecs)
+function update!(res::SimpleReservoir, i, inflow, timestepsecs)
 
     # limit lake evaporation based on total available volume [m³]
     precipitation = 0.001 * res.precipitation[i] * (timestepsecs / res.dt) * res.area[i]
@@ -200,7 +200,7 @@ function update(res::SimpleReservoir, i, inflow, timestepsecs)
     res.volume[i] = vol
     res.actevap[i] += 1000.0 * (actevap / res.area[i])
 
-    return res
+    return nothing
 end
 
 @get_units @grid_loc @with_kw struct Lake{T}
@@ -491,7 +491,7 @@ Update a single lake at position `i`.
 This is called from within the kinematic wave loop, therefore updating only for a single
 element rather than all at once.
 """
-function update(lake::Lake, i, inflow, doy, timestepsecs)
+function update!(lake::Lake, i, inflow, doy, timestepsecs)
     lo = lake.lowerlake_ind[i]
     has_lowerlake = lo != 0
 
@@ -597,5 +597,5 @@ function update(lake::Lake, i, inflow, doy, timestepsecs)
     lake.storage[i] = storage
     lake.actevap[i] += 1000.0 * (actevap / lake.area[i])
 
-    return lake
+    return nothing
 end

@@ -19,7 +19,8 @@ using Dates:
     DateTime,
     now,
     isleapyear,
-    datetime2unix
+    datetime2unix,
+    canonicalize
 using DelimitedFiles: readdlm
 using FieldMetadata: @metadata
 using Glob: glob
@@ -170,7 +171,7 @@ include("states.jl")
 """
     run(tomlpath::AbstractString; silent=false)
     run(config::Config)
-    run(model::Model)
+    run!(model::Model)
     run()
 
 Run an entire simulation starting either from a path to a TOML settings file,
@@ -211,6 +212,7 @@ function run(tomlpath::AbstractString; silent = nothing)
             close(logfile)
         end
     end
+    return nothing
 end
 
 function run(config::Config)
@@ -225,21 +227,22 @@ function run(config::Config)
     else
         error("unknown model type")
     end
-    load_fixed_forcing(model)
-    return run(model)
-end
-
-function run_timestep(model::Model; update_func = update, write_model_output = true)
-    advance!(model.clock)
-    load_dynamic_input!(model)
-    model = update_func(model)
-    if write_model_output
-        write_output(model)
-    end
+    load_fixed_forcing!(model)
+    run!(model)
     return model
 end
 
-function run(model::Model; close_files = true)
+function run_timestep!(model::Model; update_func = update!, write_model_output = true)
+    advance!(model.clock)
+    load_dynamic_input!(model)
+    update_func(model)
+    if write_model_output
+        write_output(model)
+    end
+    return nothing
+end
+
+function run!(model::Model; close_files = true)
     (; config, writer, clock) = model
 
     model_type = config.model.type::String
@@ -260,7 +263,7 @@ function run(model::Model; close_files = true)
     runstart_time = now()
     @progress for (i, time) in enumerate(times)
         @debug "Starting timestep." time i now()
-        model = run_timestep(model)
+        run_timestep!(model)
     end
     @info "Simulation duration: $(canonicalize(now() - runstart_time))"
 
@@ -287,7 +290,7 @@ function run(model::Model; close_files = true)
             cp(src, dst; force = true)
         end
     end
-    return model
+    return nothing
 end
 
 function run()

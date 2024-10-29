@@ -286,14 +286,12 @@ function kinematic_wave_ssf(
 end
 
 """
-    accucapacitystate!(material, network, capacity) -> material
+    accucapacitystate!(material, network, capacity)
 
 Transport of material downstream with a limited transport capacity over a directed graph.
 Mutates the material input. The network is expected to hold a graph and order field, where
 the graph implements the Graphs interface, and the order is a valid topological ordering
 such as that returned by `Graphs.topological_sort_by_dfs`.
-
-Returns the material state after transport.
 """
 function accucapacitystate!(material, network, capacity)
     (; graph, order) = network
@@ -311,7 +309,7 @@ function accucapacitystate!(material, network, capacity)
             error("bifurcations not supported")
         end
     end
-    return material
+    return nothing
 end
 
 """
@@ -320,19 +318,19 @@ end
 Non mutating version of `accucapacitystate!`.
 """
 function accucapacitystate(material, network, capacity)
-    return accucapacitystate!(copy(material), network, capacity)
+    material = copy(material)
+    accucapacitystate!(material, network, capacity)
+    return material
 end
 
 """
-    accucapacityflux!(flux, material, network, capacity) -> flux, material
+    accucapacityflux!(flux, material, network, capacity)
 
 Transport of material downstream with a limited transport capacity over a directed graph.
 Updates the material input, and overwrites the flux input, not using existing values. The
 network is expected to hold a graph and order field, where the graph implements the Graphs
 interface, and the order is a valid topological ordering such as that returned by
 `Graphs.topological_sort_by_dfs`.
-
-Returns the flux (material leaving each cell), and material (left after transport).
 """
 function accucapacityflux!(flux, material, network, capacity)
     (; graph, order) = network
@@ -351,7 +349,7 @@ function accucapacityflux!(flux, material, network, capacity)
             error("bifurcations not supported")
         end
     end
-    return flux, material
+    return nothing
 end
 
 """
@@ -360,7 +358,10 @@ end
 Non mutating version of `accucapacityflux!`.
 """
 function accucapacityflux(material, network, capacity)
-    return accucapacityflux!(zero(material), copy(material), network, capacity)
+    flux = zero(material)
+    material = copy(material)
+    accucapacityflux!(flux, material, network, capacity)
+    return flux, material
 end
 
 """
@@ -371,9 +372,9 @@ Lateral snow transport. Transports snow downhill. Mutates `snow` and `snowwater`
 function lateral_snow_transport!(snow, snowwater, slope, network)
     snowflux_frac = min.(0.5, slope ./ 5.67) .* min.(1.0, snow ./ 10000.0)
     maxflux = snowflux_frac .* snow
-    snow = accucapacitystate!(snow, network, maxflux)
-    snowwater = accucapacitystate!(snowwater, network, snowwater .* snowflux_frac)
-    return snow, snowwater
+    accucapacitystate!(snow, network, maxflux)
+    accucapacitystate!(snowwater, network, snowwater .* snowflux_frac)
+    return nothing
 end
 
 """

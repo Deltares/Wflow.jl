@@ -144,7 +144,7 @@ function river_fraction(
 end
 
 """
-    set_states(instate_path, model, state_ncnames; <keyword arguments>)
+    set_states!(instate_path, model, state_ncnames; <keyword arguments>)
 
 Read states contained in `Dict` `state_ncnames` from netCDF file located in `instate_path`,
 and set states in `model` object. Active cells are selected with the corresponding network's
@@ -153,7 +153,7 @@ and set states in `model` object. Active cells are selected with the correspondi
 # Arguments
 - `type = nothing`: type to convert data to after reading. By default no conversion is done.
 """
-function set_states(instate_path, model; type = nothing, dimname = nothing)
+function set_states!(instate_path, model; type = nothing, dimname = nothing)
     (; network, config) = model
 
     # Check if required states are covered
@@ -210,6 +210,7 @@ function set_states(instate_path, model; type = nothing, dimname = nothing)
             end
         end
     end
+    return nothing
 end
 
 """
@@ -552,6 +553,7 @@ function add_vertex_edge_graph!(graph, pits)
         add_vertex!(graph)
         add_edge!(graph, v, n + i)
     end
+    return nothing
 end
 
 """
@@ -624,6 +626,7 @@ function set_effective_flowwidth!(
             we_x[idx] = waterbody[v] ? 0.0 : max(we_x[idx] - 0.5 * w, 0.0)
         end
     end
+    return nothing
 end
 
 "Return julian day of year (leap days are not counted)"
@@ -749,6 +752,7 @@ function kh_layered_profile!(
             kh[i] = 0.001 * kv_profile.kv[i][m] * t_factor * khfrac[i]
         end
     end
+    return nothing
 end
 
 function kh_layered_profile!(
@@ -811,6 +815,7 @@ function kh_layered_profile!(
             end
         end
     end
+    return nothing
 end
 
 kh_layered_profile!(
@@ -833,6 +838,7 @@ function initialize_lateralssf!(model::LateralSSF, kh_profile::KhExponential)
 
     @. ssfmax = ((kh_0 * slope) / f) * (1.0 - exp(-f * soilthickness))
     @. ssf = ((kh_0 * slope) / f) * (exp(-f * zi) - exp(-f * soilthickness)) * dw
+    return nothing
 end
 
 function initialize_lateralssf!(model::LateralSSF, kh_profile::KhExponentialConstant)
@@ -854,6 +860,7 @@ function initialize_lateralssf!(model::LateralSSF, kh_profile::KhExponentialCons
                 kh_0[i] * exp(-f[i] * zi[i]) * slope[i] * (soilthickness[i] - zi[i]) * dw[i]
         end
     end
+    return nothing
 end
 
 """
@@ -882,6 +889,7 @@ function initialize_lateralssf!(
         kh_max = kh_max * khfrac[i] * 0.001 * 0.001
         ssfmax[i] = kh_max * slope[i]
     end
+    return nothing
 end
 
 function initialize_lateralssf!(
@@ -912,6 +920,7 @@ function initialize_lateralssf!(
         kh_max = kh_max * khfrac[i] * 0.001 * 0.001
         ssfmax[i] = kh_max * slope[i]
     end
+    return nothing
 end
 
 """

@@ -178,7 +178,7 @@ function initialize_surfaceflow_river(
     return sf_river
 end
 
-function update(sf::SurfaceFlowLand, network, frac_toriver)
+function update!(sf::SurfaceFlowLand, network, frac_toriver)
     (; subdomain_order, topo_subdomain, indices_subdomain, upstream_nodes) = network
 
     ns = length(subdomain_order)
@@ -240,10 +240,11 @@ function update(sf::SurfaceFlowLand, network, frac_toriver)
     sf.q_av ./= its
     sf.h_av ./= its
     sf.to_river ./= its
-    return sf.volume .= sf.dl .* sf.width .* sf.h
+    sf.volume .= sf.dl .* sf.width .* sf.h
+    return nothing
 end
 
-function update(sf::SurfaceFlowRiver, network, doy)
+function update!(sf::SurfaceFlowRiver, network, doy)
     (; graph, subdomain_order, topo_subdomain, indices_subdomain, upstream_nodes) = network
 
     ns = length(subdomain_order)
@@ -305,7 +306,7 @@ function update(sf::SurfaceFlowRiver, network, doy)
                         # run reservoir model and copy reservoir outflow to inflow (qin) of
                         # downstream river cell
                         i = sf.reservoir_index[v]
-                        update(sf.reservoir, i, sf.q[v] + sf.inflow_wb[v], dt)
+                        update!(sf.reservoir, i, sf.q[v] + sf.inflow_wb[v], dt)
 
                         downstream_nodes = outneighbors(graph, v)
                         n_downstream = length(downstream_nodes)
@@ -326,7 +327,7 @@ function update(sf::SurfaceFlowRiver, network, doy)
                         # run lake model and copy lake outflow to inflow (qin) of downstream river
                         # cell
                         i = sf.lake_index[v]
-                        update(sf.lake, i, sf.q[v] + sf.inflow_wb[v], doy, dt)
+                        update!(sf.lake, i, sf.q[v] + sf.inflow_wb[v], doy, dt)
 
                         downstream_nodes = outneighbors(graph, v)
                         n_downstream = length(downstream_nodes)
@@ -356,7 +357,8 @@ function update(sf::SurfaceFlowRiver, network, doy)
     end
     sf.q_av ./= its
     sf.h_av ./= its
-    return sf.volume .= sf.dl .* sf.width .* sf.h
+    sf.volume .= sf.dl .* sf.width .* sf.h
+    return nothing
 end
 
 function stable_timestep(sf::S) where {S <: SurfaceFlow}
@@ -433,7 +435,7 @@ abstract type SubsurfaceFlow end
     end
 end
 
-function update(ssf::LateralSSF, network, frac_toriver)
+function update!(ssf::LateralSSF, network, frac_toriver)
     (; subdomain_order, topo_subdomain, indices_subdomain, upstream_nodes, area) = network
 
     ns = length(subdomain_order)
@@ -477,6 +479,7 @@ function update(ssf::LateralSSF, network, frac_toriver)
             end
         end
     end
+    return nothing
 end
 
 @get_units@grid_loc @with_kw struct GroundwaterExchange{T} <: SubsurfaceFlow
@@ -732,7 +735,7 @@ function get_inflow_waterbody(sw::ShallowWaterRiver, src_edge)
     return q_in
 end
 
-function shallowwater_river_update(sw::ShallowWaterRiver, network, dt, doy, update_h)
+function shallowwater_river_update!(sw::ShallowWaterRiver, network, dt, doy, update_h)
     (; nodes_at_link, links_at_node) = network
 
     sw.q0 .= sw.q
@@ -875,7 +878,7 @@ function shallowwater_river_update(sw::ShallowWaterRiver, network, dt, doy, upda
         i = sw.reservoir_index[v]
 
         q_in = get_inflow_waterbody(sw, links_at_node.src[i])
-        update(sw.reservoir, v, q_in + sw.inflow_wb[i], dt)
+        update!(sw.reservoir, v, q_in + sw.inflow_wb[i], dt)
         sw.q[i] = sw.reservoir.outflow[v]
         sw.q_av[i] += sw.q[i] * dt
     end
@@ -883,7 +886,7 @@ function shallowwater_river_update(sw::ShallowWaterRiver, network, dt, doy, upda
         i = sw.lake_index[v]
 
         q_in = get_inflow_waterbody(sw, links_at_node.src[i])
-        update(sw.lake, v, q_in + sw.inflow_wb[i], doy, dt)
+        update!(sw.lake, v, q_in + sw.inflow_wb[i], doy, dt)
         sw.q[i] = sw.lake.outflow[v]
         sw.q_av[i] += sw.q[i] * dt
     end
@@ -932,9 +935,10 @@ function shallowwater_river_update(sw::ShallowWaterRiver, network, dt, doy, upda
             sw.h_av[i] += sw.h[i] * dt
         end
     end
+    return nothing
 end
 
-function update(sw::ShallowWaterRiver{T}, network, doy; update_h = true) where {T}
+function update!(sw::ShallowWaterRiver{T}, network, doy; update_h = true) where {T}
     if !isnothing(sw.reservoir)
         sw.reservoir.inflow .= 0.0
         sw.reservoir.totaloutflow .= 0.0
@@ -958,7 +962,7 @@ function update(sw::ShallowWaterRiver{T}, network, doy; update_h = true) where {
         if t + dt > sw.dt
             dt = sw.dt - t
         end
-        shallowwater_river_update(sw, network, dt, doy, update_h)
+        shallowwater_river_update!(sw, network, dt, doy, update_h)
         t = t + dt
     end
     sw.q_av ./= sw.dt
@@ -1168,7 +1172,7 @@ function stable_timestep(sw::ShallowWaterLand{T})::T where {T}
     return dt_min
 end
 
-function update(
+function update!(
     sw::ShallowWaterLand{T},
     swr::ShallowWaterRiver{T},
     network,
@@ -1199,16 +1203,18 @@ function update(
         if t + dt > swr.dt
             dt = swr.dt - t
         end
-        shallowwater_river_update(swr, network.river, dt, doy, update_h)
-        shallowwater_update(sw, swr, network, dt)
+        shallowwater_river_update!(swr, network.river, dt, doy, update_h)
+        shallowwater_update!(sw, swr, network, dt)
         t = t + dt
     end
     swr.q_av ./= swr.dt
     swr.h_av ./= swr.dt
-    return sw.h_av ./= sw.dt
+    sw.h_av ./= sw.dt
+
+    return nothing
 end
 
-function shallowwater_update(
+function shallowwater_update!(
     sw::ShallowWaterLand{T},
     swr::ShallowWaterRiver{T},
     network,
@@ -1359,6 +1365,7 @@ function shallowwater_update(
         end
         sw.h_av[i] += sw.h[i] * dt
     end
+    return nothing
 end
 
 """
@@ -1607,12 +1614,12 @@ function initialize_floodplain_1d(
 end
 
 """
-    set_river_inwater(model::Model, ssf_toriver)
+    set_river_inwater!(model::Model, ssf_toriver)
 
 Set `inwater` of the lateral river component for a `Model`. `ssf_toriver` is the subsurface
 flow to the river.
 """
-function set_river_inwater(model::Model, ssf_toriver)
+function set_river_inwater!(model::Model, ssf_toriver)
     (; lateral, vertical, network, config) = model
     (; net_runoff_river) = vertical.runoff.variables
     inds = network.index_river
@@ -1637,14 +1644,15 @@ function set_river_inwater(model::Model, ssf_toriver)
             (net_runoff_river[inds] * network.land.area[inds] * 0.001) / vertical.dt
         )
     end
+    return nothing
 end
 
 """
-    set_land_inwater(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
+    set_land_inwater!(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
 
 Set `inwater` of the lateral land component for the `SbmGwfModel` type.
 """
-function set_land_inwater(
+function set_land_inwater!(
     model::Model{N, L, V, R, W, T},
 ) where {N, L, V, R, W, T <: SbmGwfModel}
     (; lateral, vertical, network, config) = model
@@ -1665,14 +1673,15 @@ function set_land_inwater(
         @. lateral.land.inwater =
             (net_runoff * network.land.area * 0.001) / lateral.land.dt + drainflux
     end
+    return nothing
 end
 
 """
-    set_land_inwater(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
+    set_land_inwater!(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
 
 Set `inwater` of the lateral land component for the `SbmModel` type.
 """
-function set_land_inwater(
+function set_land_inwater!(
     model::Model{N, L, V, R, W, T},
 ) where {N, L, V, R, W, T <: SbmModel}
     (; lateral, vertical, network, config) = model
@@ -1686,6 +1695,7 @@ function set_land_inwater(
     else
         @. lateral.land.inwater = (net_runoff * network.land.area * 0.001) / lateral.land.dt
     end
+    return nothing
 end
 
 # Computation of inflow from the lateral components `land` and `subsurface` to water bodies
@@ -1697,14 +1707,14 @@ end
 # (Darcian flow in 4 directions), the lateral subsurface flow is excluded (for now) and
 # inflow consists of overland flow.
 """
-    set_inflow_waterbody(
+    set_inflow_waterbody!(
         model::Model{N,L,V,R,W,T},
     ) where {N,L<:NamedTuple{<:Any,<:Tuple{Any,SurfaceFlow,SurfaceFlow}},V,R,W,T}
 
 Set inflow from the subsurface and land components to a water body (reservoir or lake)
 `inflow_wb` from a model type that contains the lateral components `SurfaceFlow`.
 """
-function set_inflow_waterbody(
+function set_inflow_waterbody!(
     model::Model{N, L, V, R, W, T},
 ) where {N, L <: NamedTuple{<:Any, <:Tuple{Any, SurfaceFlow, SurfaceFlow}}, V, R, W, T}
     (; lateral, network) = model
@@ -1719,10 +1729,11 @@ function set_inflow_waterbody(
             river.inflow_wb .= land.q_av[inds]
         end
     end
+    return nothing
 end
 
 """
-    set_inflow_waterbody(
+    set_inflow_waterbody!(
         model::Model{N,L,V,R,W,T},
     ) where {N,L<:NamedTuple{<:Any,<:Tuple{Any,SurfaceFlow,ShallowWaterRiver}},V,R,W,T}
 
@@ -1730,7 +1741,7 @@ Set inflow from the subsurface and land components to a water body (reservoir or
 `inflow_wb` from a model type that contains the lateral components `SurfaceFlow` and
 `ShallowWaterRiver`.
 """
-function set_inflow_waterbody(
+function set_inflow_waterbody!(
     model::Model{N, L, V, R, W, T},
 ) where {
     N,
@@ -1755,10 +1766,11 @@ function set_inflow_waterbody(
             @. river.inflow_wb = lateral.land.q_av[inds] + lateral.land.to_river[inds]
         end
     end
+    return nothing
 end
 
 """
-    set_inflow_waterbody(
+    set_inflow_waterbody!(
         model::Model{N,L,V,R,W,T},
     ) where {N,L<:NamedTuple{<:Any,<:Tuple{Any,ShallowWaterLand,ShallowWaterRiver}},V,R,W,T}
 
@@ -1766,7 +1778,7 @@ Set inflow from the subsurface and land components to a water body (reservoir or
 `inflow_wb` from a model type that contains the lateral components `ShallowWaterLand` and
 `ShallowWaterRiver`.
 """
-function set_inflow_waterbody(
+function set_inflow_waterbody!(
     model::Model{N, L, V, R, W, T},
 ) where {
     N,
@@ -1786,25 +1798,27 @@ function set_inflow_waterbody(
                 (subsurface.ssf[inds] + subsurface.to_river[inds]) / tosecond(basetimestep)
         end
     end
+    return nothing
 end
 
 """
-    surface_routing(model; ssf_toriver = 0.0)
+    surface_routing!(model; ssf_toriver = 0.0)
 
 Run surface routing (land and river). Kinematic wave for overland flow and kinematic wave or
 local inertial model for river flow.
 """
-function surface_routing(model; ssf_toriver = 0.0)
+function surface_routing!(model; ssf_toriver = 0.0)
     (; lateral, network, clock) = model
 
     # run kinematic wave for overland flow
-    set_land_inwater(model)
-    update(lateral.land, network.land, network.frac_toriver)
+    set_land_inwater!(model)
+    update!(lateral.land, network.land, network.frac_toriver)
 
     # run river flow
-    set_river_inwater(model, ssf_toriver)
-    set_inflow_waterbody(model)
-    return update(lateral.river, network.river, julian_day(clock.time - clock.dt))
+    set_river_inwater!(model, ssf_toriver)
+    set_inflow_waterbody!(model)
+    update!(lateral.river, network.river, julian_day(clock.time - clock.dt))
+    return nothing
 end
 
 """
@@ -1816,7 +1830,7 @@ end
 Run surface routing (land and river) for a model type that contains the lateral components
 `ShallowWaterLand` and `ShallowWaterRiver`.
 """
-function surface_routing(
+function surface_routing!(
     model::Model{N, L, V, R, W, T};
     ssf_toriver = 0.0,
 ) where {
@@ -1837,6 +1851,7 @@ function surface_routing(
         # net_runoff_river
         ((net_runoff_river * network.land.area * 0.001) / vertical.dt)
     )
-    set_inflow_waterbody(model)
-    return update(lateral.land, lateral.river, network, julian_day(clock.time - clock.dt))
+    set_inflow_waterbody!(model)
+    update!(lateral.land, lateral.river, network, julian_day(clock.time - clock.dt))
+    return nothing
 end

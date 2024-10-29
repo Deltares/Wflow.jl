@@ -17,7 +17,7 @@ res = Wflow.SimpleReservoir{Float64}(;
     demandrelease = [NaN],
 )
 @testset "Update reservoir simple" begin
-    Wflow.update(res, 1, 100.0, 86400.0)
+    Wflow.update!(res, 1, 100.0, 86400.0)
     @test res.outflow[1] ≈ 91.3783714867453
     @test res.totaloutflow[1] ≈ 7.895091296454794e6
     @test res.volume[1] ≈ 2.0e7
@@ -50,7 +50,7 @@ lake = Wflow.Lake{Float64}(;
     outflow = [NaN],
 )
 @testset "Update lake" begin
-    Wflow.update(lake, 1, 2500.0, 181, 86400.0)
+    Wflow.update!(lake, 1, 2500.0, 181, 86400.0)
     @test Wflow.waterlevel(lake.storfunc, lake.area, lake.storage, lake.sh)[1] ≈
           19.672653848925634
     @test lake.outflow[1] ≈ 85.14292808113598
@@ -104,8 +104,8 @@ sh = [
         ),
     )
 
-    Wflow.update(lake, 1, 500.0, 15, 86400.0)
-    Wflow.update(lake, 2, 500.0, 15, 86400.0)
+    Wflow.update!(lake, 1, 500.0, 15, 86400.0)
+    Wflow.update!(lake, 2, 500.0, 15, 86400.0)
     @test lake.outflow ≈ [214.80170846121263, 236.83281600000214] atol = 1e-2
     @test lake.totaloutflow ≈ [1.855886761104877e7, 2.0462355302400187e7] atol = 1e3
     @test lake.storage ≈ [1.2737435094769483e9, 2.6019755340159863e8] atol = 1e4
@@ -113,8 +113,8 @@ sh = [
     lake.actevap .= 0.0
     lake.totaloutflow .= 0.0
     lake.inflow .= 0.0
-    Wflow.update(lake, 1, 500.0, 15, 86400.0)
-    Wflow.update(lake, 2, 500.0, 15, 86400.0)
+    Wflow.update!(lake, 1, 500.0, 15, 86400.0)
+    Wflow.update!(lake, 2, 500.0, 15, 86400.0)
     @test lake.outflow ≈ [0.0, 239.66710359986183] atol = 1e-2
     @test lake.totaloutflow ≈ [-2.2446764487487033e7, 4.3154002238515094e7] atol = 1e3
     @test lake.storage ≈ [1.3431699662524352e9, 2.6073035986708355e8] atol = 1e4
@@ -151,7 +151,7 @@ end
         storage = [410_760_000],
     )
 
-    Wflow.update(lake, 1, 1500.0, 15, 86400.0)
+    Wflow.update!(lake, 1, 1500.0, 15, 86400.0)
     @test Wflow.waterlevel(lake.storfunc, lake.area, lake.storage, lake.sh) ≈ [398.0] atol =
         1e-2
     @test lake.outflow ≈ [1303.67476852] atol = 1e-2

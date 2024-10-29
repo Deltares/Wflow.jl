@@ -231,7 +231,7 @@ end
         sw_river.inwater[1] = 20.0
         h0 = mean(sw_river.h)
         dt = Wflow.stable_timestep(sw_river)
-        Wflow.shallowwater_river_update(sw_river, network, dt, 0.0, true)
+        Wflow.shallowwater_river_update!(sw_river, network, dt, 0.0, true)
         d = abs(h0 - mean(sw_river.h))
         if d <= epsilon
             break

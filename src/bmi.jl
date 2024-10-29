@@ -32,7 +32,7 @@ function BMI.initialize(::Type{<:Model}, config_file)
     else
         error("unknown model type")
     end
-    load_fixed_forcing(model)
+    load_fixed_forcing!(model)
     return model
 end
 
@@ -45,15 +45,15 @@ Update the model for a single timestep.
 """
 function BMI.update(model::Model; run = nothing)
     if isnothing(run)
-        model = run_timestep(model)
+        run_timestep!(model)
     elseif run == "sbm_until_recharge"
-        model = run_timestep(
+        run_timestep!(
             model;
-            update_func = update_until_recharge,
+            update_func = update_until_recharge!,
             write_model_output = false,
         )
     elseif run == "sbm_after_subsurfaceflow"
-        model = run_timestep(model; update_func = update_after_subsurfaceflow)
+        run_timestep!(model; update_func = update_after_subsurfaceflow!)
     end
     return model
 end
@@ -72,7 +72,7 @@ function BMI.update_until(model::Model, time::Float64)
         error(error_message)
     end
     for _ in 1:steps
-        model = run_timestep(model)
+        run_timestep!(model)
     end
     return model
 end
@@ -400,7 +400,7 @@ end
 # Extension of BMI functions (state handling and start time), required for OpenDA coupling.
 # May also be useful for other external software packages.
 function load_state(model::Model)
-    model = set_states(model)
+    set_states!(model)
     return model
 end
 

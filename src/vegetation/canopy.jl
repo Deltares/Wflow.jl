@@ -87,6 +87,7 @@ function update!(model::GashInterceptionModel, atmospheric_forcing::AtmosphericF
                 canopy_potevap[i],
             )
     end
+    return nothing
 end
 
 "Rutter interception model"
@@ -125,6 +126,7 @@ function update!(model::RutterInterceptionModel, atmospheric_forcing::Atmospheri
                 cmax[i],
             )
     end
+    return nothing
 end
 
 "Update canopy parameters `cmax` and `canopygapfraction` based on `leaf_area_index` for a single timestep"
@@ -137,6 +139,7 @@ function update_canopy_parameters!(model::AbstractInterceptionModel)
         cmax[i] = sl[i] * leaf_area_index[i] + swood[i]
         canopygapfraction[i] = exp(-kext[i] * leaf_area_index[i])
     end
+    return nothing
 end
 
 "Return potential transpiration rate based on the interception rate"

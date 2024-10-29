@@ -134,6 +134,7 @@ function update!(model::GlacierHbvModel, atmospheric_forcing::AtmosphericForcing
             max_snow_to_glacier,
         )
     end
+    return nothing
 end
 
 function update!(model::NoGlacierModel, atmospheric_forcing::AtmosphericForcing)
