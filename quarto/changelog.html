@@ -80,6 +80,35 @@ ul.task-list li input[type="checkbox"] {
   };
 </script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 <link rel="stylesheet" href="_static/styles.css">
 </head>
@@ -540,7 +569,7 @@ ul.task-list li input[type="checkbox"] {
 <section id="fixed-12" class="level4">
 <h4 class="anchored" data-anchor-id="fixed-12">Fixed</h4>
 <ul>
-<li>Conversion of <code>GroundwaterFlow</code> boundaries [<code>m^3 d^{-1}</code>] as part of model concept <code>sbm_gwf</code> to <code>m^3 s^{-1}</code> for sub-daily model time steps. For the conversion the <code>basetimestep</code> (86400 s) should be used (and not the model time step).</li>
+<li>Conversion of <code>GroundwaterFlow</code> boundaries <span class="math inline">\(\SIb{}{m^3 d^{-1}}\)</span> as part of model concept <code>sbm_gwf</code> to <span class="math inline">\(\SI{m^3 s^{-1}}\)</span> for sub-daily model time steps. For the conversion the <code>basetimestep</code> (86400 s) should be used (and not the model time step).</li>
 </ul>
 </section>
 </section>

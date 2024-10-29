@@ -374,6 +374,7 @@ window.Quarto = {
   <li><a href="#soil-processes" id="toc-soil-processes" class="nav-link" data-scroll-target="#soil-processes">Soil processes</a>
   <ul class="collapse">
   <li><a href="#the-sbm-soil-water-accounting-scheme" id="toc-the-sbm-soil-water-accounting-scheme" class="nav-link" data-scroll-target="#the-sbm-soil-water-accounting-scheme">The SBM soil water accounting scheme</a></li>
+  <li><a href="#infiltration" id="toc-infiltration" class="nav-link" data-scroll-target="#infiltration">Infiltration</a></li>
   <li><a href="#capillary-rise" id="toc-capillary-rise" class="nav-link" data-scroll-target="#capillary-rise">Capillary rise</a></li>
   <li><a href="#leakage" id="toc-leakage" class="nav-link" data-scroll-target="#leakage">Leakage</a></li>
   </ul></li>
@@ -670,88 +671,71 @@ Note
 \]</span></p>
 <p>where <span class="math inline">\(\SIb{K_0}{mm s^{-1}}\)</span> is the saturated hydraulic conductivity at the soil surface and <span class="math inline">\(\SIb{f}{mm^{-1}}\)</span> is a scaling parameter.</p>
 <p>The plot below shows the relation between soil depth <span class="math inline">\(z\)</span> and saturated hydraulic conductivity <span class="math inline">\(\subtext{K}{sat}\)</span> for different values of <span class="math inline">\(f\)</span>.</p>
-<p><code>@setup plot     using Printf     using CairoMakie</code></p>
-<p>```<span class="citation" data-cites="example">@example</span> plot let # hide fig = Figure(resolution = (800, 400)) # hide ax = Axis(fig[1, 1], xlabel = L”K_;[]“, ylabel = L”-z;[]“) # hide</p>
-<p>z = 0:5.0:1000 # hide ksat = 100.0 # hide f = 0.6 ./ collect(50:150.0:800) # hide</p>
-<pre><code>    for fi in f                                                                         # hide
-        lines!(ax, ksat .* exp.(-fi .* z), -z, label = @sprintf("%.2e", fi))            # hide
-    end                                                                                 # hide
-
-    Legend(fig[1, 2], ax, L"f")                                                         # hide
-    fig                                                                                 # hide
-end                                                                                     # hide</code></pre>
-<pre><code>
-With `ksat_profile` "exponential\_constant", $\subtext{K}{sat}$ declines exponentially with soil
-depth $\SIb{z}{mm}$ until $\SIb{\subtext{z}{mm}}{mm}$ below the soil surface, and stays constant at and
-beyond soil depth $\subtext{z}{exp}$:
-
-$$
+<div id="2" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Printf</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    fig <span class="op">=</span> <span class="fu">Figure</span>(resolution <span class="op">=</span> (<span class="fl">800</span>, <span class="fl">400</span>))</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    ax <span class="op">=</span> <span class="fu">Axis</span>(fig[<span class="fl">1</span>, <span class="fl">1</span>], xlabel <span class="op">=</span> L<span class="st">"K_\mathrm{sat}\;[\mathrm{mm/day}]"</span>, ylabel <span class="op">=</span> L<span class="st">"-z\;[\mathrm{mm}]"</span>)</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    z <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">5.0</span><span class="op">:</span><span class="fl">1000</span>                </span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    ksat <span class="op">=</span> <span class="fl">100.0</span>                  </span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    f <span class="op">=</span> <span class="fl">0.6</span> <span class="op">./</span> <span class="fu">collect</span>(<span class="fl">50</span><span class="op">:</span><span class="fl">150.0</span><span class="op">:</span><span class="fl">800</span>)</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> fi <span class="kw">in</span> f                          </span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>        <span class="fu">lines!</span>(ax, ksat <span class="op">.*</span> <span class="fu">exp</span>.(<span class="op">-</span>fi <span class="op">.*</span> z), <span class="op">-</span>z, label <span class="op">=</span> <span class="pp">@sprintf</span>(<span class="st">"%.2e"</span>, fi))</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span>                                  </span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">Legend</span>(fig[<span class="fl">1</span>, <span class="fl">2</span>], ax, L<span class="st">"f"</span>)          </span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>    fig</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>┌ Warning: Found `resolution` in the theme when creating a `Scene`. The `resolution` keyword for `Scene`s and `Figure`s has been deprecated. Use `Figure(; size = ...` or `Scene(; size = ...)` instead, which better reflects that this is a unitless size and not a pixel resolution. The key could also come from `set_theme!` calls or related theming functions.
+└ @ Makie ~/.julia/packages/Makie/XQfuO/src/scenes.jl:229</code></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<div>
+<figure class="figure">
+<p><img src="sbm_files/figure-html/cell-2-output-2.svg" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>With <code>ksat_profile</code> “exponential_constant”, <span class="math inline">\(\subtext{K}{sat}\)</span> declines exponentially with soil depth <span class="math inline">\(\SIb{z}{mm}\)</span> until <span class="math inline">\(\SIb{\subtext{z}{mm}}{mm}\)</span> below the soil surface, and stays constant at and beyond soil depth <span class="math inline">\(\subtext{z}{exp}\)</span>:</p>
+<p><span class="math display">\[
     \subtext{K}{sat} = \begin{cases}
     K_0e^{-fz} &amp; \text{if $z &lt; \subtext{z}{exp}$}\\
     K_0e^{-f\subtext{z}{exp}} &amp; \text{if $z \ge \subtext{z}{exp}$}.
     \end{cases}
-$$
-
-It is also possible to provide a $\subtext{K}{sat}$ value per soil layer by specifying
-`ksat_profile` "layered", these $\subtext{K}{sat}$ values are used directly to compute the vertical
-transfer of water between soil layers and to the saturated store $S$. Finally, with the
-`ksat_profile` "layered\_exponential" a $\subtext{K}{sat}$ value per soil layer is used until depth
-$\subtext{z}{layered}$ below the soil surface, and beyond $\subtext{z}{layered}$ an
-exponential decline of $\subtext{K}{sat}$ (of the soil layer with bottom $\subtext{z}{layered}$)
-controlled by $f$ occurs. The different available `ksat_profle` options are schematized in
-the figure below where the blue line represents the $\subtext{K}{sat}$ value.
-
-![Overview of available `ksat_profile` options, for a soil column with five layers](../../images/sbm_ksat_profiles.png)
-
-### Infiltration
-
-The water available for infiltration is taken as the rainfall including meltwater.
-Infiltration is determined separately for the compacted and non-compacted areas, as these
-have different infiltration capacities. Naturally, only the water that can be stored in the
-soil can infiltrate. If not all water can infiltrate, this is added as excess water to the
-runoff routing scheme.
-
-The infiltrating water is split in two parts, the part that falls on compacted areas and the
-part that falls on non-compacted areas. The maximum amount of water that can infiltrate in
-these areas is calculated by taking the minimum of the maximum infiltration rate
-(`infiltcapsoil` $\SIb{}{mm t^{-1}}$ for non-compacted areas and `infiltcappath` $\SIb{}{mm t^{-1}}$
-for compacted areas) and the amount of water available for infiltration `avail_forinfilt`
-$\SIb{}{mm t^{-1}}$. The water that can actually infiltrate `infiltsoilpath` $\SIb{}{mm t^{-1}}$ is
-calculated by taking the minimum of the total maximum infiltration rate (compacted and
-non-compacted areas) and the remaining storage capacity.
-
-Infiltration excess occurs when the infiltration capacity is smaller then the throughfall
-and stemflow rate. This amount of water (`infiltexcess` $\SIb{}{mm t^{-1}}$) becomes overland
-flow (infiltration excess overland flow). Saturation excess occurs when the (upper) soil
-becomes saturated and water cannot infiltrate anymore. This amount of water `excesswater`
-$\SIb{}{mm t^{-1}}$ becomes overland flow (saturation excess overland flow).
-
-#### Infiltration in frozen soils
-
-If snow processes are modelled, the infiltration capacity is reduced when the soil is frozen
-(or near freezing point). A infiltration correction factor is defined as a S-curve with the
-shape as defined below. A parameter (`cf_soil`) defines the base factor of infiltration when
-the soil is frozen. The soil temperature is calculated based on the soil temperature on the
-previous timestep, and the temperature difference between air and soil temperature weighted
-with a factor (`w_soil`, which defaults to 0.1125).
-
-The near surface soil temperature is modelled using a simple equation (Wigmosta et al.,
-2009):
-
-$$
+\]</span></p>
+<p>It is also possible to provide a <span class="math inline">\(\subtext{K}{sat}\)</span> value per soil layer by specifying <code>ksat_profile</code> “layered”, these <span class="math inline">\(\subtext{K}{sat}\)</span> values are used directly to compute the vertical transfer of water between soil layers and to the saturated store <span class="math inline">\(S\)</span>. Finally, with the <code>ksat_profile</code> “layered_exponential” a <span class="math inline">\(\subtext{K}{sat}\)</span> value per soil layer is used until depth <span class="math inline">\(\subtext{z}{layered}\)</span> below the soil surface, and beyond <span class="math inline">\(\subtext{z}{layered}\)</span> an exponential decline of <span class="math inline">\(\subtext{K}{sat}\)</span> (of the soil layer with bottom <span class="math inline">\(\subtext{z}{layered}\)</span>) controlled by <span class="math inline">\(f\)</span> occurs. The different available <code>ksat_profle</code> options are schematized in the figure below where the blue line represents the <span class="math inline">\(\subtext{K}{sat}\)</span> value.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../../images/sbm_ksat_profiles.png" class="img-fluid figure-img"></p>
+<figcaption>Overview of available <code>ksat_profile</code> options, for a soil column with five layers</figcaption>
+</figure>
+</div>
+</section>
+<section id="infiltration" class="level3">
+<h3 class="anchored" data-anchor-id="infiltration">Infiltration</h3>
+<p>The water available for infiltration is taken as the rainfall including meltwater. Infiltration is determined separately for the compacted and non-compacted areas, as these have different infiltration capacities. Naturally, only the water that can be stored in the soil can infiltrate. If not all water can infiltrate, this is added as excess water to the runoff routing scheme.</p>
+<p>The infiltrating water is split in two parts, the part that falls on compacted areas and the part that falls on non-compacted areas. The maximum amount of water that can infiltrate in these areas is calculated by taking the minimum of the maximum infiltration rate (<code>infiltcapsoil</code> <span class="math inline">\(\SIb{}{mm t^{-1}}\)</span> for non-compacted areas and <code>infiltcappath</code> <span class="math inline">\(\SIb{}{mm t^{-1}}\)</span> for compacted areas) and the amount of water available for infiltration <code>avail_forinfilt</code> <span class="math inline">\(\SIb{}{mm t^{-1}}\)</span>. The water that can actually infiltrate <code>infiltsoilpath</code> <span class="math inline">\(\SIb{}{mm t^{-1}}\)</span> is calculated by taking the minimum of the total maximum infiltration rate (compacted and non-compacted areas) and the remaining storage capacity.</p>
+<p>Infiltration excess occurs when the infiltration capacity is smaller then the throughfall and stemflow rate. This amount of water (<code>infiltexcess</code> <span class="math inline">\(\SIb{}{mm t^{-1}}\)</span>) becomes overland flow (infiltration excess overland flow). Saturation excess occurs when the (upper) soil becomes saturated and water cannot infiltrate anymore. This amount of water <code>excesswater</code> <span class="math inline">\(\SIb{}{mm t^{-1}}\)</span> becomes overland flow (saturation excess overland flow).</p>
+<section id="infiltration-in-frozen-soils" class="level4">
+<h4 class="anchored" data-anchor-id="infiltration-in-frozen-soils">Infiltration in frozen soils</h4>
+<p>If snow processes are modelled, the infiltration capacity is reduced when the soil is frozen (or near freezing point). A infiltration correction factor is defined as a S-curve with the shape as defined below. A parameter (<code>cf_soil</code>) defines the base factor of infiltration when the soil is frozen. The soil temperature is calculated based on the soil temperature on the previous timestep, and the temperature difference between air and soil temperature weighted with a factor (<code>w_soil</code>, which defaults to 0.1125).</p>
+<p>The near surface soil temperature is modelled using a simple equation (Wigmosta et al., 2009):</p>
+<p><span class="math display">\[
 T_s^t = T_s^{t-1} + w  (T_a - T_s^{t-1})
-$$
-where $\SIb{T_s^{t}}{\degree C}$ is the near-surface soil temperature at time $t$, $\SIb{T_a}{\degree C}$ is air temperature and $\SIb{w}{-}$ is a weighting coefficient determined
-through calibration (default is 0.1125 for daily timesteps).
-
-A reduction factor (`cf_soil` $\SIb{}{-}$, default is 0.038) is applied to the maximum infiltration
-rate (`infiltcapsoil` and `infiltcappath`), when the following model settings are specified
-in the TOML file:
-
-```toml
-[model]
-soilinfreduction = true
-snow = true</code></pre>
+\]</span> where <span class="math inline">\(\SIb{T_s^{t}}{\degree C}\)</span> is the near-surface soil temperature at time <span class="math inline">\(t\)</span>, <span class="math inline">\(\SIb{T_a}{\degree C}\)</span> is air temperature and <span class="math inline">\(\SIb{w}{-}\)</span> is a weighting coefficient determined through calibration (default is 0.1125 for daily timesteps).</p>
+<p>A reduction factor (<code>cf_soil</code> <span class="math inline">\(\SIb{}{-}\)</span>, default is 0.038) is applied to the maximum infiltration rate (<code>infiltcapsoil</code> and <code>infiltcappath</code>), when the following model settings are specified in the TOML file:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="dt">soilinfreduction</span> <span class="op">=</span> <span class="cn">true</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="dt">snow</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>If <code>soilinfreduction</code> is set to <code>false</code>, water is allowed to infiltrate the soil, even if the soil is frozen.</p>
 <p>A S-curve (see plot below) is used to make a smooth transition (a c-factor (<span class="math inline">\(c\)</span>) of 8.0 is used):</p>
 <p><span class="math display">\[
@@ -771,34 +755,35 @@ snow = true</code></pre>
 <!-- # Figure created using python: # hide
 # https://gist.github.com/JoostBuitink/21dd32e71fd1360117fcd1c532c4fd9d#file-sbm_soil_figs-py # hide -->
 </section>
+</section>
 <section id="capillary-rise" class="level3">
 <h3 class="anchored" data-anchor-id="capillary-rise">Capillary rise</h3>
 <p>The actual capillary rise <code>actcapflux</code> <span class="math inline">\(\SIb{}{mm t^{-1}}\)</span> is determined using the following approach: first the saturated hydraulic conductivity <code>ksat</code> <span class="math inline">\(\SIb{}{mm t^{-1}}\)</span> is determined at the water table <span class="math inline">\(z_i\)</span>; next a potential capillary rise <code>maxcapflux</code> <span class="math inline">\(\SIb{}{mm t^{-1}}\)</span> is determined from the minimum of <code>ksat</code>, actual transpiration <code>actevapustore</code> <span class="math inline">\(\SIb{}{mm t^{-1}}\)</span> taken from the <span class="math inline">\(U\)</span> store, available water in the <span class="math inline">\(S\)</span> store (<code>satwaterdepth</code> <span class="math inline">\(\SIb{}{mm}\)</span>) and the deficit of the <span class="math inline">\(U\)</span> store (<code>ustorecapacity</code> <span class="math inline">\(\SIb{}{mm}\)</span>), as shown by the following code block:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>maxcapflux <span class="op">=</span> <span class="fu">max</span>(<span class="fl">0.0</span>, <span class="fu">min</span>(ksat, actevapustore, ustorecapacity, satwaterdepth))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>maxcapflux <span class="op">=</span> <span class="fu">max</span>(<span class="fl">0.0</span>, <span class="fu">min</span>(ksat, actevapustore, ustorecapacity, satwaterdepth))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Then the potential rise <code>maxcapflux</code> is scaled using the water table depth <code>zi</code>, a maximum water depth <code>cap_hmax</code> <span class="math inline">\(\SIb{}{mm}\)</span> beyond which capillary rise ceases and a coefficient <code>cap_n</code> <span class="math inline">\(\SIb{}{-}\)</span>, as follows in the code block below (<code>i</code> refers to the index of the vector that contains all active cells within the spatial model domain):</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> sbm.zi[i] <span class="op">&gt;</span> rootingdepth</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    capflux <span class="op">=</span></span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>        maxcapflux <span class="op">*</span> <span class="fu">pow</span>(</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>            <span class="fl">1.0</span> <span class="op">-</span> <span class="fu">min</span>(sbm.zi[i], sbm.cap_hmax[i]) <span class="op">/</span> (sbm.cap_hmax[i]),</span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>            sbm.cap_n[i],</span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>        )</span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span></span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    capflux <span class="op">=</span> <span class="fl">0.0</span></span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> sbm.zi[i] <span class="op">&gt;</span> rootingdepth</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    capflux <span class="op">=</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>        maxcapflux <span class="op">*</span> <span class="fu">pow</span>(</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>            <span class="fl">1.0</span> <span class="op">-</span> <span class="fu">min</span>(sbm.zi[i], sbm.cap_hmax[i]) <span class="op">/</span> (sbm.cap_hmax[i]),</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>            sbm.cap_n[i],</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    capflux <span class="op">=</span> <span class="fl">0.0</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>If the roots reach the water table (<code>rootingdepth</code> <span class="math inline">\(\ge\)</span> <code>sbm.zi</code>), <code>capflux</code> is set to zero.</p>
 <p>Finally, the capillary rise <code>capflux</code> is limited by the unsaturated store deficit (one or multiple layers), calculated as follows in the code block below (<code>i</code> refers to the index of the vector that contains all active cells within the spatial model domain, and <code>k</code> refers to the layer position):</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>usl[k] <span class="op">*</span> (sbm.theta_s[i] <span class="op">-</span> sbm.theta_r[i]) <span class="op">-</span> usld[k]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>usl[k] <span class="op">*</span> (sbm.theta_s[i] <span class="op">-</span> sbm.theta_r[i]) <span class="op">-</span> usld[k]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>where <code>usl</code> <span class="math inline">\(\SIb{}{mm}\)</span> is the unsaturated layer thickness, <code>usld</code> is the <code>ustorelayerdepth</code> <span class="math inline">\(\SIb{}{mm}\)</span> (amount of water in the unsaturated layer), and <span class="math inline">\(\theta_s\)</span> and <span class="math inline">\(\theta_r\)</span> as previously defined.</p>
 <p>The calculation of the actual capillary rise <code>actcapflux</code> is as follows in the code block below (<code>i</code> refers to the index of the vector that contains all active cells within the spatial model domain, and <code>k</code> refers to the layer position):</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>actcapflux <span class="op">=</span> <span class="fl">0.0</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>netcapflux <span class="op">=</span> capflux</span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> k <span class="op">=</span> n_usl<span class="op">:-</span><span class="fl">1</span><span class="op">:</span><span class="fl">1</span></span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    toadd <span class="op">=</span></span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">min</span>(netcapflux, <span class="fu">max</span>(usl[k] <span class="op">*</span> (sbm.theta_s[i] <span class="op">-</span> sbm.theta_r[i]) <span class="op">-</span> usld[k], <span class="fl">0.0</span>))</span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    usld <span class="op">=</span> <span class="fu">setindex</span>(usld, usld[k] <span class="op">+</span> toadd, k)</span>
-<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    netcapflux <span class="op">=</span> netcapflux <span class="op">-</span> toadd</span>
-<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    actcapflux <span class="op">=</span> actcapflux <span class="op">+</span> toadd</span>
-<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>actcapflux <span class="op">=</span> <span class="fl">0.0</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>netcapflux <span class="op">=</span> capflux</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> k <span class="op">=</span> n_usl<span class="op">:-</span><span class="fl">1</span><span class="op">:</span><span class="fl">1</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    toadd <span class="op">=</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">min</span>(netcapflux, <span class="fu">max</span>(usl[k] <span class="op">*</span> (sbm.theta_s[i] <span class="op">-</span> sbm.theta_r[i]) <span class="op">-</span> usld[k], <span class="fl">0.0</span>))</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    usld <span class="op">=</span> <span class="fu">setindex</span>(usld, usld[k] <span class="op">+</span> toadd, k)</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    netcapflux <span class="op">=</span> netcapflux <span class="op">-</span> toadd</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>    actcapflux <span class="op">=</span> actcapflux <span class="op">+</span> toadd</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>In case of multiple unsaturated layers (<code>n_usl</code> <span class="math inline">\(&gt;\)</span> 1), the calculation of the actual capillary rise starts at the lowest unsaturated layer while keeping track of the remaining capillary rise <code>netcapflux</code> <span class="math inline">\(\SIb{}{mm t^{-1}}\)</span>.</p>
 </section>
 <section id="leakage" class="level3">
@@ -813,10 +798,10 @@ snow = true</code></pre>
 <section id="non-irrigation" class="level2">
 <h2 class="anchored" data-anchor-id="non-irrigation">Non-irrigation</h2>
 <p>Non-irrigation water demand and allocation computations are supported for the sectors domestic, industry and livestock. These computations can be enabled by specifying the following in the TOML file:</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model.water_demand]</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="dt">domestic</span> <span class="op">=</span> <span class="cn">true</span></span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="dt">industry</span> <span class="op">=</span> <span class="cn">true</span></span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="dt">livestock</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model.water_demand]</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="dt">domestic</span> <span class="op">=</span> <span class="cn">true</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="dt">industry</span> <span class="op">=</span> <span class="cn">true</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="dt">livestock</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>For these non-irrigation sectors the gross demand (<span class="math inline">\(d_\mathrm{gross}\)</span> <span class="math inline">\(\SIb{}{mm t^{-1}}\)</span>) and net demand (<span class="math inline">\(d_\mathrm{net}\)</span> <span class="math inline">\(\SIb{}{mm t^{-1}}\)</span>) are provided to the model (input through cyclic or forcing data). Gross demand represents the total demand and hence the total abstraction from surface water or groundwater when sufficient water is available. Net demand represents water consumption. The portion of total abstracted water that is not consumed is returned as surface water. The return flow fraction (<span class="math inline">\(f_\mathrm{return}\)</span> [-]) is calculated as follows:</p>
 <p><span class="math display">\[
     \subtext{f}{return} = 1.0 - \frac{\subtext{d}{net}}{\subtext{d}{gross}},
@@ -825,8 +810,8 @@ snow = true</code></pre>
 <section id="non-paddy-irrigation" class="level2">
 <h2 class="anchored" data-anchor-id="non-paddy-irrigation">Non-paddy irrigation</h2>
 <p>Non-paddy (other crops than flooded rice) water demand and allocation computations are supported. These computations can be enabled by specifying the following in the TOML file:</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model.water_demand]</span></span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="dt">nonpaddy</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model.water_demand]</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="dt">nonpaddy</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Irrigation is applied during the growing season (when input parameter <code>irrigation_trigger</code> <span class="math inline">\(\SIb{}{-}\)</span> is <code>true</code> (or <code>on</code>)) and when water depletion exceeds the readily available water:</p>
 <p><span class="math display">\[
     (\subtext{U}{field} - \subtext{U}{a}) \ge (\subtext{U}{field} - \subtext{U}{h3})
@@ -835,8 +820,8 @@ snow = true</code></pre>
 <section id="paddy-irrigation" class="level2">
 <h2 class="anchored" data-anchor-id="paddy-irrigation">Paddy irrigation</h2>
 <p>Paddy (flooded rice) water demand and allocation computations are supported. These computations can be enabled by specifying the following in the TOML file:</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model.water_demand]</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="dt">paddy</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model.water_demand]</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="dt">paddy</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Irrigation is applied during the growing season (when input parameter <code>irrigation_trigger</code> <span class="math inline">\(\SIb{}{-}\)</span> is <code>true</code> (or <code>on</code>)) and when the paddy water depth <code>h</code> <span class="math inline">\(\SIb{}{mm}\)</span> reaches below the minimum water depth <code>h_min</code> <span class="math inline">\(\SIb{}{mm}\)</span> (see also the figure below). The net irrigation demand [mm t<span class="math inline">\(^{-1}\)</span>] is the irrigation rate required to reach the optimal paddy water depth <code>h_opt</code> <span class="math inline">\(\SIb{}{mm}\)</span>, an approach similar to Xie and Cui (2011). To account for limited irrigation efficiency the net irrigation demand is divided by the irrigation efficiency for paddy fields (<code>irrigation_efficiency</code> <span class="math inline">\(\SIb{}{-}\)</span>, default is 1.0), resulting in gross irrigation demand <span class="math inline">\(\SIb{}{mm t^{-1}}\)</span>. Finally, the gross irrigation demand is limited by the maximum irrigation rate (<code>maximum_irrigation_rate</code> <span class="math inline">\(\SIb{}{mm t^{-1}}\)</span>, default is <span class="math inline">\(\SIb{25}{mm d^{-1}}\)</span>). If the maximum irrigation rate is applied, irrigation continues at subsequent time steps until the optimal paddy water depth <code>h_opt</code> is reached. Irrigation is added to the <code>SBM</code> variable <code>avail_forinfilt</code> <span class="math inline">\(\SIb{}{mm t^{-1}}\)</span>, the amount of water available for infiltration. When the paddy water depth <code>h</code> exceeds <code>h_max</code> <span class="math inline">\(\SIb{}{mm}\)</span> runoff occurs, and this amount is added to the runoff routing scheme for overland flow. The figure below shows a typical vertical soil profile of a puddled rice soil with a muddy layer of about 15 cm (in this case represented by two soil layers of 5 cm and 10 cm thickness), a plow soil layer of 5 cm with relative low permeability (vertical hydraulic conductivity <span class="math inline">\(k_v\)</span> of about <span class="math inline">\(\SI{5}{mm d^{-1}}\)</span>), and a non-puddled soil below the plow soil layer. The low vertical hydraulic conductivity of the plow soil layer can be realized by making use of the parameter <code>kvfrac</code> <span class="math inline">\(\SIb{}{-}\)</span>, a multiplication factor applied to the vertical hydraulic conductivity at soil depth <span class="math inline">\(\SIb{z}{mm}\)</span>.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
