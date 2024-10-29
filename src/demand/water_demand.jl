@@ -438,7 +438,7 @@ end
 "Initialize water demand model"
 function Demand(nc, config, inds, dt)
     domestic = if get(config.model.water_demand, "domestic", false)
-        NonIrrigationDemand(nc, config, inds, dt, "industry")
+        NonIrrigationDemand(nc, config, inds, dt, "domestic")
     else
         NoNonIrrigationDemand()
     end
