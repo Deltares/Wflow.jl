@@ -254,6 +254,7 @@ function update(sf::SurfaceFlowLand, network, frac_toriver)
                             flowing_fraction = 1.0
                         else
                             flowing_fraction = (pond_volume_pot - threshold_volume) / pot_inflow
+                            flowing_fraction = min(flowing_fraction, 1.0)
                         end
 
                         sf.q[v] = kinematic_wave(
@@ -297,7 +298,7 @@ function update(sf::SurfaceFlowLand, network, frac_toriver)
     sf.q_av ./= its
     sf.h_av ./= its
     sf.to_river ./= its
-    sf.volume .= sf.dl .* sf.width .* sf.h
+    sf.volume .= sf.dl .* sf.width .* (sf.h .+ sf.pond_height)
 end
 
 function update(sf::SurfaceFlowRiver, network, doy)
