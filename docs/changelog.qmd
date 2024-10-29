@@ -367,8 +367,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `capscale` of the previous approach is not used anymore.
 
 #### Fixed
-- Conversion of `GroundwaterFlow` boundaries [``m^3 d^{-1}``] as part of model concept
-  `sbm_gwf` to ``m^3 s^{-1}`` for sub-daily model time steps. For the conversion the
+- Conversion of `GroundwaterFlow` boundaries $\SIb{}{m^3 d^{-1}}$ as part of model concept
+  `sbm_gwf` to $\SI{m^3 s^{-1}}$ for sub-daily model time steps. For the conversion the
   `basetimestep` (86400 s) should be used (and not the model time step).
 
 ### v0.4.1 - 2021-11-04

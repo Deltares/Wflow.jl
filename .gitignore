@@ -13,7 +13,6 @@
 # Document generation
 /docs/build/
 /docs/site/
-/docs/Manifest.toml
 
 # Temporary files
 /dev/

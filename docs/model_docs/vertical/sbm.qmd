@@ -416,27 +416,26 @@ and $\SIb{f}{mm^{-1}}$ is a scaling parameter.
 The plot below shows the relation between soil depth $z$ and saturated hydraulic
 conductivity $\subtext{K}{sat}$ for different values of $f$.
 
-```@setup plot
-    using Printf
-    using CairoMakie
-```
+```{julia}
+# | code-fold: true
+using Printf
+using CairoMakie
 
-```@example plot
-    let                                                                                     # hide
-        fig = Figure(resolution = (800, 400))                                               # hide
-        ax = Axis(fig[1, 1], xlabel = L"K_\mathrm{sat}\;[\mathrm{mm/day}]", ylabel = L"-z\;[\mathrm{mm}]") # hide
+let
+    fig = Figure(resolution = (800, 400))
+    ax = Axis(fig[1, 1], xlabel = L"K_\mathrm{sat}\;[\mathrm{mm/day}]", ylabel = L"-z\;[\mathrm{mm}]")
 
-z = 0:5.0:1000                                                               # hide
-ksat = 100.0                                                                 # hide
-f = 0.6 ./ collect(50:150.0:800)                                             # hide
+    z = 0:5.0:1000                
+    ksat = 100.0                  
+    f = 0.6 ./ collect(50:150.0:800)
 
-        for fi in f                                                                         # hide
-            lines!(ax, ksat .* exp.(-fi .* z), -z, label = @sprintf("%.2e", fi))            # hide
-        end                                                                                 # hide
+    for fi in f                          
+        lines!(ax, ksat .* exp.(-fi .* z), -z, label = @sprintf("%.2e", fi))
+    end                                  
 
-        Legend(fig[1, 2], ax, L"f")                                                         # hide
-        fig                                                                                 # hide
-    end                                                                                     # hide
+    Legend(fig[1, 2], ax, L"f")          
+    fig
+end                                                             
 ```
 
 With `ksat_profile` "exponential\_constant", $\subtext{K}{sat}$ declines exponentially with soil

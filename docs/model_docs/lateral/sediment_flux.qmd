@@ -286,8 +286,7 @@ Table: Classical values of the channel cover vegetation coefficient (Julian and 
 | Sparse trees | 5.40 |
 | Dense trees | 19.20 |
 
-Table: Composition of the river bed/bank depending on the median diameter $d_{50}$
-\[$\mu$m\] (Neitsch et al, 2011)
+Table: Composition of the river bed/bank depending on the median diameter $\SIb{d_{50}}{\mu m}$ (Neitsch et al, 2011)
 
 |Sediment Fraction   | $\leq$ 5 | 5 to 50 | 50 to 2000 | $>$ 2000 |
 | ---- | ---- | ---- | ---- | ---- |

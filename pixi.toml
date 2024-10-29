@@ -50,6 +50,7 @@ quarto-preview = { cmd = "quarto preview docs" }
 [dependencies]
 juliaup = "*"
 python = ">=3.10"
+jupyter = ">=1.1.1,<2"
 
 [system-requirements]
 linux = "3.10.0"
