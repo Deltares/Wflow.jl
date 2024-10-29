@@ -320,11 +320,11 @@ snow = true
 glacier = true
 ```
 
-## [Soil processes](@id soil)
+## Soil processes
 
 ### The SBM soil water accounting scheme
 
-A detailed description of the `Topog\_SBM` model has been given by Vertessy (1999). Briefly:
+A detailed description of the `Topog_SBM` model has been given by Vertessy (1999). Briefly:
 the soil is considered as a bucket with a certain depth ($\SIb{z_t}{mm}$), divided into a
 saturated store ($\SIb{S}{mm}$) and an unsaturated store ($\SIb{U}{mm}$). The top of the $S$
 store forms a pseudo-water table at depth $\SIb{z_{i}}{mm}$ such that the value of $S$ at any
