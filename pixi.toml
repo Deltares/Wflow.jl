@@ -1,9 +1,10 @@
 [project]
 name = "Wflow.jl"
 authors = [
-    "Joost Buitink <joost.buitink@deltares.nl",
-    "Willem van Verseveld <willem.vanVerseveld@deltares.nl",
+    "Joost Buitink <joost.buitink@deltares.nl>",
+    "Willem van Verseveld <willem.vanVerseveld@deltares.nl>",
     "Hofer-Julian <julian.hofer@deltares.nl>",
+    "Bart de Koning <bart.dekoning@deltares.nl>"
 ]
 channels = ["conda-forge"]
 platforms = ["win-64", "linux-64"]
@@ -44,7 +45,7 @@ instantiate-wflow-server = "julia --project=server --eval 'using Pkg; Pkg.instan
 # Docs
 install-ci = { depends_on = ["install-julia", "update-registry-julia"] }
 quarto-check = { cmd = "quarto check all" }
-quarto-render = { cmd = "quarto render docs --to html --execute" }
+quarto-render = { cmd = "julia --project=docs --eval 'using Pkg; Pkg.build(\"IJulia\")' && quarto render docs --to html --execute" }
 quarto-preview = { cmd = "quarto preview docs" }
 
 [dependencies]
@@ -54,6 +55,3 @@ jupyter = ">=1.1.1,<2"
 
 [system-requirements]
 linux = "3.10.0"
-
-[feature.dev.dependencies]
-quarto = "*"
