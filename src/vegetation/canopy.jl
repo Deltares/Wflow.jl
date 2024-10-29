@@ -43,7 +43,7 @@ function GashInterceptionModel(nc, config, inds, vegetation_parameter_set)
     e_r = ncread(
         nc,
         config,
-        "vertical.interception.parameters.eoverr";
+        "vertical.interception.parameters.e_r";
         sel = inds,
         defaults = 0.1,
         type = Float,
@@ -131,12 +131,18 @@ end
 
 "Update canopy parameters `cmax` and `canopygapfraction` based on `leaf_area_index` for a single timestep"
 function update_canopy_parameters!(model::AbstractInterceptionModel)
-    (; leaf_area_index, swood, kext, sl, canopygapfraction, cmax) =
-        model.parameters.vegetation_parameter_set
+    (;
+        leaf_area_index,
+        storage_wood,
+        kext,
+        storage_specific_leaf,
+        canopygapfraction,
+        cmax,
+    ) = model.parameters.vegetation_parameter_set
 
     n = length(leaf_area_index)
     threaded_foreach(1:n; basesize = 1000) do i
-        cmax[i] = sl[i] * leaf_area_index[i] + swood[i]
+        cmax[i] = storage_specific_leaf[i] * leaf_area_index[i] + storage_wood[i]
         canopygapfraction[i] = exp(-kext[i] * leaf_area_index[i])
     end
     return nothing

@@ -81,7 +81,7 @@ glacier_store = "wflow_glacierstore"
 [input.vertical.vegetation_parameter_set]
 leaf_area_index = "LAI"
 kext = "Kext"
-specific_leaf = "Sl"
+storage_specific_leaf = "Sl"
 storage_wood = "Swood"
 rootingdepth = "RootingDepth"
 kc = "crop_factor"

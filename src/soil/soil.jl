@@ -549,13 +549,6 @@ function SbmSoilParameters(nc, config, vegetation_parameter_set, inds, dt)
         type = Float,
     )
 
-    if haskey(config.input.vertical.soil.parameters, "et_reftopot")
-        @warn string(
-            "The `et_reftopot` key in `[input.vertical.soil.parameters]` is now called ",
-            "`kc`. Please update your TOML file.",
-        )
-    end
-
     act_thickl = set_layerthickness.(soilthickness, (cum_depth_layers,), (thicknesslayers,))
     sumlayers = @. pushfirst(cumsum(act_thickl), 0.0)
     nlayers = number_of_active_layers.(act_thickl)

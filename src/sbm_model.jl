@@ -69,7 +69,7 @@ function initialize_sbm_model(config::Config)
     xl, yl = cell_lengths(y, cellength, sizeinmetres)
     riverfrac = river_fraction(river, riverlength, riverwidth, xl, yl)
 
-    lsm = LandHydrologySBM(nc, config, riverfrac, inds)
+    lhm = LandHydrologySBM(nc, config, riverfrac, inds)
 
     inds_riv, rev_inds_riv = active_indices(river_2d, 0)
     nriv = length(inds_riv)
@@ -122,19 +122,19 @@ function initialize_sbm_model(config::Config)
             type = Float,
         )
 
-        (; theta_s, theta_r, soilthickness) = lsm.soil.parameters
-        (; zi) = lsm.soil.variables
+        (; theta_s, theta_r, soilthickness) = lhm.soil.parameters
+        (; zi) = lhm.soil.variables
         ssf_soilthickness = soilthickness .* 0.001
         ssf_zi = zi .* 0.001
 
         kh_profile_type = get(config.input.vertical, "ksat_profile", "exponential")::String
         if kh_profile_type == "exponential"
-            (; kv_0, f) = lsm.soil.parameters.kv_profile
+            (; kv_0, f) = lhm.soil.parameters.kv_profile
             kh_0 = khfrac .* kv_0 .* 0.001 .* (basetimestep / dt)
             kh_profile = KhExponential(kh_0, f .* 1000.0)
         elseif kh_profile_type == "exponential_constant"
-            (; z_exp) = lsm.soil.parameters.kv_profile
-            (; kv_0, f) = lsm.soil.parameters.kv_profile.exponential
+            (; z_exp) = lhm.soil.parameters.kv_profile
+            (; kv_0, f) = lhm.soil.parameters.kv_profile.exponential
             kh_0 = khfrac .* kv_0 .* 0.001 .* (basetimestep / dt)
             exp_profile = KhExponential(kh_0, f .* 1000.0)
             kh_profile = KhExponentialConstant(exp_profile, z_exp .* 0.001)
@@ -166,8 +166,8 @@ function initialize_sbm_model(config::Config)
         if kh_profile_type == "exponential" || kh_profile_type == "exponential_constant"
             initialize_lateralssf!(ssf, kh_profile)
         elseif kh_profile_type == "layered" || kh_profile_type == "layered_exponential"
-            (; kv_profile) = lsm.soil.parameters
-            initialize_lateralssf!(ssf, lsm.soil, kv_profile, tosecond(dt))
+            (; kv_profile) = lhm.soil.parameters
+            initialize_lateralssf!(ssf, lhm.soil, kv_profile, tosecond(dt))
         end
     else
         # when the SBM model is coupled (BMI) to a groundwater model, the following
@@ -195,12 +195,12 @@ function initialize_sbm_model(config::Config)
     inds_allocation_areas = Vector{Int}[]
     inds_riv_allocation_areas = Vector{Int}[]
     if do_water_demand
-        areas = unique(lsm.allocation.parameters.areas)
+        areas = unique(lhm.allocation.parameters.areas)
         for a in areas
-            area_index = findall(x -> x == a, lsm.allocation.parameters.areas)
+            area_index = findall(x -> x == a, lhm.allocation.parameters.areas)
             push!(inds_allocation_areas, area_index)
             area_riv_index =
-                findall(x -> x == a, lsm.allocation.parameters.areas[index_river])
+                findall(x -> x == a, lhm.allocation.parameters.areas[index_river])
             push!(inds_riv_allocation_areas, area_riv_index)
         end
     end
@@ -321,14 +321,14 @@ function initialize_sbm_model(config::Config)
         end
     end
 
-    modelmap = (vertical = lsm, lateral = (subsurface = ssf, land = olf, river = rf))
+    modelmap = (vertical = lhm, lateral = (subsurface = ssf, land = olf, river = rf))
     indices_reverse = (
         land = rev_inds,
         river = rev_inds_riv,
         reservoir = isempty(reservoir) ? nothing : reservoir.reverse_indices,
         lake = isempty(lake) ? nothing : lake.reverse_indices,
     )
-    (; maxlayers) = lsm.soil.parameters
+    (; maxlayers) = lhm.soil.parameters
     writer = prepare_writer(
         config,
         modelmap,
@@ -428,7 +428,7 @@ function initialize_sbm_model(config::Config)
         config,
         (; land, river, reservoir, lake, index_river, frac_toriver),
         (subsurface = ssf, land = olf, river = rf),
-        lsm,
+        lhm,
         clock,
         reader,
         writer,
@@ -539,12 +539,6 @@ function set_states!(
         nriv = length(network.river.indices)
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
-        if T <: SbmModel
-            @warn string(
-                "The unit of `ssf` (lateral subsurface flow) is now m3 d-1. Please update your",
-                " input state file if it was produced with a Wflow version up to v0.5.2.",
-            )
-        end
         set_states!(instate_path, model; type = Float, dimname = :layer)
         # update zi for SBM soil model
         zi =
@@ -565,12 +559,6 @@ function set_states!(
             end
             lateral.land.volume .= lateral.land.h .* lateral.land.width .* lateral.land.dl
         elseif land_routing == "local-inertial"
-            @warn string(
-                "The reference level for the water depth `h` and `h_av` of overland flow ",
-                "(local inertial model) for cells containing a river has changed from river",
-                " bed elevation `zb` to cell elevation `z`. Please update the input state",
-                " file if it was produced with Wflow version v0.5.2.",
-            )
             for i in eachindex(lateral.land.volume)
                 if lateral.land.rivercells[i]
                     j = network.land.index_river[i]

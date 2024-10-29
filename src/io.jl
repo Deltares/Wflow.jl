@@ -211,10 +211,6 @@ function load_fixed_forcing!(model)
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
     do_lakes = get(config.model, "lakes", false)::Bool
 
-    mover_params = (
-        symbols"vertical.atmospheric_forcing.precipitation",
-        symbols"vertical.atmospheric_forcing.potential_evaporation",
-    )
     reverse_indices = network.land.reverse_indices
     if do_reservoirs
         sel_reservoirs = network.reservoir.indices_coverage

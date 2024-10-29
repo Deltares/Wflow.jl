@@ -36,6 +36,12 @@ function LandHydrologySBM(nc, config, riverfrac, inds)
     if modelsnow && modelglacier
         glacier_bc = SnowStateBC{Float}(; snow_storage = snow_model.variables.snow_storage)
         glacier_model = GlacierHbvModel(nc, config, inds, dt, glacier_bc)
+    elseif modelsnow == false && modelglacier == true
+        @warn string(
+            "Glacier processes can be modelled when snow modelling is enabled. To include ",
+            "glacier modelling, set `snow` to `true` in the Model section of the TOML file.",
+        )
+        glacier_model = NoGlacierModel{Float}()
     else
         glacier_model = NoGlacierModel{Float}()
     end

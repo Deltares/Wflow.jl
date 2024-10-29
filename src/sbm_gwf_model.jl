@@ -76,7 +76,7 @@ function initialize_sbm_gwf_model(config::Config)
     nriv = length(inds_riv)
 
     # initialize vertical SBM concept
-    lsm = LandHydrologySBM(nc, config, riverfrac, inds)
+    lhm = LandHydrologySBM(nc, config, riverfrac, inds)
 
     # reservoirs
     pits = zeros(Bool, modelsize_2d)
@@ -122,11 +122,11 @@ function initialize_sbm_gwf_model(config::Config)
     inds_allocation_areas = Vector{Int}[]
     inds_riv_allocation_areas = Vector{Int}[]
     if do_water_demand
-        areas = unique(lsm.allocation.parameters.areas)
+        areas = unique(lhm.allocation.parameters.areas)
         for a in areas
-            area_index = findall(==(a), lsm.allocation.parameters.areas)
+            area_index = findall(==(a), lhm.allocation.parameters.areas)
             push!(inds_allocation_areas, area_index)
-            area_riv_index = findall(==(a), lsm.allocation.parameters.areas[index_river])
+            area_riv_index = findall(==(a), lhm.allocation.parameters.areas[index_river])
             push!(inds_riv_allocation_areas, area_riv_index)
         end
     end
@@ -240,14 +240,14 @@ function initialize_sbm_gwf_model(config::Config)
         get(config.input.lateral.subsurface, "conductivity_profile", "uniform")::String
 
     connectivity = Connectivity(inds, rev_inds, xl, yl)
-    initial_head = altitude .- lsm.soil.variables.zi / 1000.0 # cold state for groundwater head based on SBM zi
+    initial_head = altitude .- lhm.soil.variables.zi / 1000.0 # cold state for groundwater head based on SBM zi
     initial_head[index_river] = altitude[index_river]
 
     if do_constanthead
         initial_head[constant_head.index] = constant_head.head
     end
 
-    bottom = altitude .- lsm.soil.parameters.soilthickness ./ Float(1000.0)
+    bottom = altitude .- lhm.soil.parameters.soilthickness ./ Float(1000.0)
     area = xl .* yl
     volume = @. (min(altitude, initial_head) - bottom) * area * specific_yield # total volume than can be released
 
@@ -396,7 +396,7 @@ function initialize_sbm_gwf_model(config::Config)
     end
 
     modelmap =
-        (vertical = lsm, lateral = (subsurface = subsurface_map, land = olf, river = rf))
+        (vertical = lhm, lateral = (subsurface = subsurface_map, land = olf, river = rf))
     indices_reverse = (
         land = rev_inds,
         river = rev_inds_riv,
@@ -411,7 +411,7 @@ function initialize_sbm_gwf_model(config::Config)
         x_nc,
         y_nc,
         nc;
-        extra_dim = (name = "layer", value = Float64.(1:(lsm.soil.parameters.maxlayers))),
+        extra_dim = (name = "layer", value = Float64.(1:(lhm.soil.parameters.maxlayers))),
     )
     close(nc)
 
@@ -516,7 +516,7 @@ function initialize_sbm_gwf_model(config::Config)
         config,
         (; land, river, reservoir, lake, drain, index_river, frac_toriver),
         (subsurface = subsurface_map, land = olf, river = rf),
-        lsm,
+        lhm,
         clock,
         reader,
         writer,

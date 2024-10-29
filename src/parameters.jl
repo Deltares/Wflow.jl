@@ -3,11 +3,11 @@
     # Leaf area index [m² m⁻²]
     leaf_area_index::Union{Vector{T}, Nothing} | "m2 m-2"
     # Storage woody part of vegetation [mm]
-    swood::Union{Vector{T}, Nothing} | "mm"
+    storage_wood::Union{Vector{T}, Nothing} | "mm"
     # Extinction coefficient [-] (to calculate canopy gap fraction)
     kext::Union{Vector{T}, Nothing} | "-"
     # Specific leaf storage [mm]
-    sl::Union{Vector{T}, Nothing} | "mm"
+    storage_specific_leaf::Union{Vector{T}, Nothing} | "mm"
     # Canopy gap fraction [-]
     canopygapfraction::Vector{T} | "-"
     # Maximum canopy storage [mm] 
@@ -38,15 +38,15 @@ function VegetationParameters(nc, config, inds)
         type = Float,
     )
     if haskey(config.input.vertical.vegetation_parameter_set, "leaf_area_index")
-        sl = ncread(
+        storage_specific_leaf = ncread(
             nc,
             config,
-            "vertical.vegetation_parameter_set.specific_leaf";
+            "vertical.vegetation_parameter_set.storage_specific_leaf";
             optional = false,
             sel = inds,
             type = Float,
         )
-        swood = ncread(
+        storage_wood = ncread(
             nc,
             config,
             "vertical.vegetation_parameter_set.storage_wood";
@@ -64,13 +64,13 @@ function VegetationParameters(nc, config, inds)
         )
         vegetation_parameter_set = VegetationParameters(;
             leaf_area_index = fill(mv, n),
-            swood = swood,
-            kext = kext,
-            sl = sl,
+            storage_wood,
+            kext,
+            storage_specific_leaf,
             canopygapfraction = fill(mv, n),
             cmax = fill(mv, n),
-            rootingdepth = rootingdepth,
-            kc = kc,
+            rootingdepth,
+            kc,
         )
     else
         canopygapfraction = ncread(
@@ -91,13 +91,13 @@ function VegetationParameters(nc, config, inds)
         )
         vegetation_parameter_set = VegetationParameters(;
             leaf_area_index = nothing,
-            swood = nothing,
+            storage_wood = nothing,
             kext = nothing,
-            sl = nothing,
-            canopygapfraction = canopygapfraction,
-            cmax = cmax,
-            rootingdepth = rootingdepth,
-            kc = kc,
+            storage_specific_leaf = nothing,
+            canopygapfraction,
+            cmax,
+            rootingdepth,
+            kc,
         )
     end
     return vegetation_parameter_set
