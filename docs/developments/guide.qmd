@@ -4,9 +4,10 @@ title: Developers guide
 
 ## Contributions and reporting issues
 
-We welcome reporting of issues on [our GitHub page](https://github.com/Deltares/Wflow.jl/issues/new/choose).
-Please provide a minimum working example so we are able to reproduce the issue. Furthermore, we
-welcome contributions. We follow the [ColPrac guide for collaborative practices](https://github.com/SciML/ColPrac). New
+We welcome reporting of issues on [our GitHub
+page](https://github.com/Deltares/Wflow.jl/issues/new/choose). Please provide a minimum working
+example so we are able to reproduce the issue. Furthermore, we welcome contributions. We follow
+the [ColPrac guide for collaborative practices](https://github.com/SciML/ColPrac). New
 contributors should make sure to read that guide.
 
 ## Style/decisions

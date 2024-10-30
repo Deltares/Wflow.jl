@@ -4,7 +4,9 @@ title: Frequently asked questions
 
 ### How do I easily modify input parameters?
 
-See [this section](./toml_file.qmd#modify-parameters) on how to adjust maps, and [this section](./toml_file.qmd#fixed-forcing-values) on how to directly pass uniform values. Note that both options work for any parameter.
+See [this section](./toml_file.qmd#modify-parameters) on how to adjust maps, and [this
+section](./toml_file.qmd#fixed-forcing-values) on how to directly pass uniform values. Note
+that both options work for any parameter.
 
 ### How do I start wflow with initial conditions from a previous run?{#sec-modify-pars}
 
@@ -12,7 +14,8 @@ See [here](./toml_file.qmd#state-options)
 
 ### How do I add external inflows and/or abstractions?
 
-`lateral.river.inflow`: positive for inflows, negative for abstraction. If parameter is time varying, add it to the correct section, see [below](#how-do-i-add-time-varying-parameters).
+`lateral.river.inflow`: positive for inflows, negative for abstraction. If parameter is time
+varying, add it to the correct section, see [below](#how-do-i-add-time-varying-parameters).
 
 ### How do I add time-varying parameters?
 
@@ -20,4 +23,6 @@ Either through cyclic (add parameter to `cyclic` list in the toml), or to the fo
 
 ### How do I add different output?
 
-See [here for csv output](./toml_file.qmd#output-csv-section), [here for scalar netcdf data](./toml_file.qmd#scalar-data), and [here for gridded output](./toml_file.qmd#output-netcdf-section).
+See [here for csv output](./toml_file.qmd#output-csv-section), [here for scalar netcdf
+data](./toml_file.qmd#scalar-data), and [here for gridded
+output](./toml_file.qmd#output-netcdf-section).

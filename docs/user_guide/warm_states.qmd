@@ -3,18 +3,17 @@ title: Starting with "warm" states
 ---
 
 The `state` section in the TOML file provides information on the input file if the model is
-initialized with a warm state (`path_input`) and to what file the states are written at the
-end of the model run (`path_output`). Please note that the model setting `reinit` needs to
-be set to `false` in order to initialize the model with states from the file located at
-`path_input`. A mapping between external state names and internal model states is required.
-This information is specified for each model component, the `vertical` model and `lateral`
-model components. In the example below the `vertical` component represents the SBM concept,
-and for the `lateral` components there is a `river` (including optional `reservoir`, `lake`
-and `floodplain` components), `land` and `subsurface` domain. The internal model states are
-listed on the left side, and the external state names are listed on the right side. Note
-that `path_input` is only required when `reinit` is set to false. `path_output` is optional,
-an output state file is only written when it is defined. If neither is set, the entire
-`state` section can be left out.
+initialized with a warm state (`path_input`) and to what file the states are written at the end
+of the model run (`path_output`). Please note that the model setting `reinit` needs to be set
+to `false` in order to initialize the model with states from the file located at `path_input`.
+A mapping between external state names and internal model states is required. This information
+is specified for each model component, the `vertical` model and `lateral` model components. In
+the example below the `vertical` component represents the SBM concept, and for the `lateral`
+components there is a `river` (including optional `reservoir`, `lake` and `floodplain`
+components), `land` and `subsurface` domain. The internal model states are listed on the left
+side, and the external state names are listed on the right side. Note that `path_input` is only
+required when `reinit` is set to false. `path_output` is optional, an output state file is only
+written when it is defined. If neither is set, the entire `state` section can be left out.
 
 ```toml
 [model]

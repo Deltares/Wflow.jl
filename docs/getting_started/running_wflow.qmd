@@ -4,8 +4,8 @@ title: Running a simulation
 
 ## Using Julia
 
-Once you installed Julia and Wflow.jl, a simulation can be started from the command line
-as follows:
+Once you installed Julia and Wflow.jl, a simulation can be started from the command line as
+follows:
 
 ```bash
 julia -e 'using Wflow; Wflow.run()' path/to/config.toml
@@ -29,20 +29,19 @@ config.endtime = DateTime("2000-01-03T00:00:00")
 Wflow.run(config)
 ```
 
-## [Using the command line interface](@id cli)
+## Using the command line interface
 
 If you don't need the extra features of using wflow as a library, but just want to run
 simulations, the command line interface makes it easier to do so. It consists of a single
-executable, `wflow_cli` that accepts a single argument, the path to a TOML configuration
-file.
+executable, `wflow_cli` that accepts a single argument, the path to a TOML configuration file.
 
 Binaries of `wflow_cli` can be downloaded from our website
 [download.deltares.nl](https://download.deltares.nl/en/download/wflow/), and are currently
 available for Windows.
 
 After installing you can see three folders in the installation directory. It is only the
-`bin/wflow_cli` that is directly used. All three folders need to stay together however.
-The share folder contains TOML files with more information about the build.
+`bin/wflow_cli` that is directly used. All three folders need to stay together however. The
+share folder contains TOML files with more information about the build.
 
 ```bash
 bin\wflow_cli

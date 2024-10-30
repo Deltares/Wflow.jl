@@ -3,24 +3,23 @@ title: Vertical concepts
 ---
 
 ## SBM
-The Table below shows the parameters (fields) of struct `SBM`, including a description of
-these parameters, the unit, and default value if applicable. The parameters in bold
-represent model parameters that can be set through static and forcing input data (netCDF),
-and can be listed in the TOML configuration file under `[input.vertical]`, to map the
-internal model parameter to the external netCDF variable. For some input parameters the
-parameter listed under `[input.vertical]` is not equal to the internal model parameter,
-these are listed in the Table below between parentheses after the internal model parameter.
-For example, internal model parameter `sl` is mapped as follows in the TOML file to the
-external netCDF variable `Sl`:
+The Table below shows the parameters (fields) of struct `SBM`, including a description of these
+parameters, the unit, and default value if applicable. The parameters in bold represent model
+parameters that can be set through static and forcing input data (netCDF), and can be listed in
+the TOML configuration file under `[input.vertical]`, to map the internal model parameter to
+the external netCDF variable. For some input parameters the parameter listed under
+`[input.vertical]` is not equal to the internal model parameter, these are listed in the Table
+below between parentheses after the internal model parameter. For example, internal model
+parameter `sl` is mapped as follows in the TOML file to the external netCDF variable `Sl`:
 
 ```toml
 [input.vertical]
 specific_leaf = "Sl"
 ```
 
-Different [vertical hydraulic conductivity depth profiles](@ref soil): `exponential`
-(default), `exponential_constant`, `layered` and `layered_exponential` can be provided
-through the TOML file. Below an example for the `exponential_constant` profile:
+Different [vertical hydraulic conductivity depth profiles](@ref soil): `exponential` (default),
+`exponential_constant`, `layered` and `layered_exponential` can be provided through the TOML
+file. Below an example for the `exponential_constant` profile:
 
 ```toml
 [input.vertical]
@@ -29,8 +28,8 @@ ksat_profile = "exponential_constant"
 
 For the `exponential` profile the input parameters `kv_0` and `f` are used. For the
 `exponential_constant` profile `kv_0` and `f` are used, and `z_exp` is required as input. For
-the `layered` profile, input parameter `kv` is used, and for the `layered_exponential`
-profile `kv` is used and `z_layered` is required as input.
+the `layered` profile, input parameter `kv` is used, and for the `layered_exponential` profile
+`kv` is used and `z_layered` is required as input.
 
 | Parameter | Description | Unit | Default |
 |:----| -------- | ---- | ---- |
@@ -155,10 +154,10 @@ profile `kv` is used and `z_layered` is required as input.
 
 ### Paddy
 The Table below shows the parameters (fields) of struct `Paddy`, including a description of
-these parameters, the unit, and default value if applicable. The parameters in bold
-represent model parameters that can be set through static and forcing input data (netCDF),
-and can be listed in the TOML configuration file under `[input.vertical.paddy]`, to map the
-internal model parameter to the external netCDF variable.
+these parameters, the unit, and default value if applicable. The parameters in bold represent
+model parameters that can be set through static and forcing input data (netCDF), and can be
+listed in the TOML configuration file under `[input.vertical.paddy]`, to map the internal model
+parameter to the external netCDF variable.
 
 |  parameter | description    | unit | default |
 |:---------------| --------------- | ---------------------- | ----- |
@@ -173,11 +172,11 @@ internal model parameter to the external netCDF variable.
 | `h` | actual water depth in paddy field | mm | - |
 
 ### Non-paddy
-The Table below shows the parameters (fields) of struct `NonPaddy`, including a description
-of these parameters, the unit, and default value if applicable. The parameters in bold
-represent model parameters that can be set through static and forcing input data (netCDF),
-and can be listed in the TOML configuration file under `[input.vertical.nonpaddy]`, to map
-the internal model parameter to the external netCDF variable.
+The Table below shows the parameters (fields) of struct `NonPaddy`, including a description of
+these parameters, the unit, and default value if applicable. The parameters in bold represent
+model parameters that can be set through static and forcing input data (netCDF), and can be
+listed in the TOML configuration file under `[input.vertical.nonpaddy]`, to map the internal
+model parameter to the external netCDF variable.
 
 |  parameter | description    | unit | default |
 |:---------------| --------------- | ---------------------- | ----- |
@@ -189,12 +188,12 @@ the internal model parameter to the external netCDF variable.
 
 ### Non-irrigation (industry, domestic and livestock)
 The Table below shows the parameters (fields) of struct `NonIrrigationDemand`, including a
-description of these parameters, the unit, and default value if applicable. The parameters
-in bold represent model parameters that can be set through static and forcing input data
-(netCDF). These parameters can be listed for the sectors industry, domestic and livestock,
-in the TOML configuration file under `[input.vertical.industry]`,
-`[input.vertical.domestic]` and `[input.vertical.livestock]`, to map the internal model
-parameter to the external netCDF variable.
+description of these parameters, the unit, and default value if applicable. The parameters in
+bold represent model parameters that can be set through static and forcing input data (netCDF).
+These parameters can be listed for the sectors industry, domestic and livestock, in the TOML
+configuration file under `[input.vertical.industry]`, `[input.vertical.domestic]` and
+`[input.vertical.livestock]`, to map the internal model parameter to the external netCDF
+variable.
 
 |  parameter | description    | unit | default |
 |:---------------| --------------- | ---------------------- | ----- |
@@ -205,11 +204,10 @@ parameter to the external netCDF variable.
 
 ### Water allocation land
 The Table below shows the parameters (fields) of struct `AllocationLand`, including a
-description of these parameters, the unit, and default value if applicable. The parameters
-in bold represent model parameters that can be set through static and forcing input data
-(netCDF), and can be listed in the TOML configuration file under
-`[input.vertical.allocation]`, to map the internal model parameter to the external netCDF
-variable.
+description of these parameters, the unit, and default value if applicable. The parameters in
+bold represent model parameters that can be set through static and forcing input data (netCDF),
+and can be listed in the TOML configuration file under `[input.vertical.allocation]`, to map
+the internal model parameter to the external netCDF variable.
 
 |  parameter | description    | unit | default |
 |:---------------| --------------- | ---------------------- | ----- |
@@ -232,10 +230,10 @@ variable.
 
 ## Sediment
 
-The Table below shows external parameters that can be set through static input data
-(netCDF), and can be listed in the TOML configuration file under `[input.vertical]`. These
-external parameters are not part of struct `LandSediment`, but used to calculate parameters
-of struct `LandSediment`.
+The Table below shows external parameters that can be set through static input data (netCDF),
+and can be listed in the TOML configuration file under `[input.vertical]`. These external
+parameters are not part of struct `LandSediment`, but used to calculate parameters of struct
+`LandSediment`.
 
 | Parameter | Description | Unit | Default |
 |:----| -------- | ---- | ---- |
@@ -245,15 +243,14 @@ of struct `LandSediment`.
 | `lakeareas` | lake coverage | - | - |
 : {.striped .hover}
 
-The Table below shows the parameters (fields) of struct `LandSediment`, including a
-description of these parameters, the unit, and default value if applicable. The parameters
-in bold represent model parameters that can be set through static and forcing input data
-(netCDF), and can be listed in the TOML configuration file under `[input.vertical]`, to map
-the internal model parameter to the external netCDF variable. For some input parameters the
-parameter listed under `[input.vertical]` is not equal to the internal model parameter,
-these are listed in the Table below between parentheses after the internal model parameter.
-For example, internal model parameter `sl` is mapped as follows in the TOML file to the
-external netCDF variable `Sl`:
+The Table below shows the parameters (fields) of struct `LandSediment`, including a description
+of these parameters, the unit, and default value if applicable. The parameters in bold
+represent model parameters that can be set through static and forcing input data (netCDF), and
+can be listed in the TOML configuration file under `[input.vertical]`, to map the internal
+model parameter to the external netCDF variable. For some input parameters the parameter listed
+under `[input.vertical]` is not equal to the internal model parameter, these are listed in the
+Table below between parentheses after the internal model parameter. For example, internal model
+parameter `sl` is mapped as follows in the TOML file to the external netCDF variable `Sl`:
 
 ```toml
 [input.vertical]

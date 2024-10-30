@@ -2,12 +2,12 @@
 title: Model configurations
 ---
 
-There are several model configurations supported by wflow. These model configurations
-require slightly different input requirements, yet the general structure is similar for each
-model. A wflow model configuration consists of a `vertical` [SBM](@ref vert_sbm) concept in
-combination with `lateral` concepts that control how water is routed for example over the
-land or river domain. For the wflow\_sbm model different model configurations are possible.
-The following model configurations are supported in wflow:
+There are several model configurations supported by wflow. These model configurations require
+slightly different input requirements, yet the general structure is similar for each model. A
+wflow model configuration consists of a `vertical` [SBM](@ref vert_sbm) concept in combination
+with `lateral` concepts that control how water is routed for example over the land or river
+domain. For the wflow\_sbm model different model configurations are possible. The following
+model configurations are supported in wflow:
 
  - wflow\_sbm:
     - SBM + kinematic wave for subsurface and surface flow
@@ -17,19 +17,18 @@ The following model configurations are supported in wflow:
     - SBM + groundwater flow + kinematic wave for surface flow
  - wflow\_sediment as post processing of wflow\_sbm output
 
-Below, some explanation will be given on how to prepare a basic wflow\_sbm
-model. Example data for other model configurations is provided in the section with [sample
-data](@ref sample_data).
+Below, some explanation will be given on how to prepare a basic wflow\_sbm model. Example data
+for other model configurations is provided in the section with [sample data](@ref sample_data).
 
 ## wflow\_sbm
 
 Wflow\_sbm represents hydrological models derived from the CQflow model (Köhler et al., 2006)
-that have the [SBM](@ref vert_sbm) vertical concept in common, but can have different
-lateral concepts that control how water is routed for example over the land or river domain.
-The soil part of SBM is largely based on the Topog\_SBM model but has had considerable
-changes over time. Topog\_SBM is specifically designed to simulate fast runoff processes in
-small catchments while the wflow\_sbm model can be applied more widely. The main differences are
-for the vertical concept SBM of wflow\_sbm:
+that have the [SBM](@ref vert_sbm) vertical concept in common, but can have different lateral
+concepts that control how water is routed for example over the land or river domain. The soil
+part of SBM is largely based on the Topog\_SBM model but has had considerable changes over
+time. Topog\_SBM is specifically designed to simulate fast runoff processes in small catchments
+while the wflow\_sbm model can be applied more widely. The main differences are for the
+vertical concept SBM of wflow\_sbm:
 
 - The unsaturated zone can be split-up in different layers
 - The addition of evapotranspiration losses
@@ -47,13 +46,13 @@ configurations:
 The vertical SBM concept is explained in more detail in the following section [SBM vertical
 concept](@ref vert_sbm).
 
-Topog\_SBM uses an element network based on contour lines and trajectories for water
-routing. Wflow\_sbm models differ in how the lateral components river, land, and subsurface
-are solved. Below the different wflow\_sbm model configurations are described.
+Topog\_SBM uses an element network based on contour lines and trajectories for water routing.
+Wflow\_sbm models differ in how the lateral components river, land, and subsurface are solved.
+Below the different wflow\_sbm model configurations are described.
 
 ### SBM + Kinematic wave
-For the lateral components of this wflow\_sbm model water is routed over a D8 network, and
-the kinematic wave approach is used for river, overland and lateral subsurface flow. This is
+For the lateral components of this wflow\_sbm model water is routed over a D8 network, and the
+kinematic wave approach is used for river, overland and lateral subsurface flow. This is
 described in more detail in the section [Kinematic wave](@ref kin_wave).
 
 An overview of the different processes and fluxes in the wflow_sbm model with the kinematic
@@ -61,10 +60,10 @@ wave approach for river, overland and lateral subsurface flow:
 
 ![Conceptual overview of the wflow_sbm model](../images/wflow_sbm_soil.png)
 
-Below the mapping for this wflow\_sbm model (type `sbm`) to the vertical SBM concept
-(instance of `struct SBM`) and the different lateral concepts is presented. For an
-explanation about the type parameters between curly braces after the `struct` name see the
-section on the model parameters.
+Below the mapping for this wflow\_sbm model (type `sbm`) to the vertical SBM concept (instance
+of `struct SBM`) and the different lateral concepts is presented. For an explanation about the
+type parameters between curly braces after the `struct` name see the section on the model
+parameters.
 
 ```julia
 vertical => struct SBM{T,N,M}
@@ -97,7 +96,8 @@ gwf_f.value = 3.0
 ```
 Below the mapping for this wflow\_sbm model (type `sbm_gwf`) to the vertical SBM concept
 (instance of `struct SBM`) and the different lateral concepts. For an explanation about the
-type parameters between curly braces after the `struct` name see the section on model parameters.
+type parameters between curly braces after the `struct` name see the section on model
+parameters.
 
 ```julia
 vertical => struct SBM{T,N,M}
@@ -112,10 +112,10 @@ lateral.river.reservoir => struct SimpleReservoir{T} # optional
 ```
 
 ### SBM + Local inertial river
-By default the model types `sbm` and `sbm_gwf` use the kinematic wave approach for river
-flow. There is also the option to use the local inertial model for river flow with an
-optional 1D floodplain schematization (routing is done separately for the river channel and
-floodplain), by providing the following in the TOML file:
+By default the model types `sbm` and `sbm_gwf` use the kinematic wave approach for river flow.
+There is also the option to use the local inertial model for river flow with an optional 1D
+floodplain schematization (routing is done separately for the river channel and floodplain), by
+providing the following in the TOML file:
 
 ```toml
 [model]
@@ -123,8 +123,8 @@ river_routing = "local-inertial"    # optional, default is "kinematic-wave"
 floodplain_1d = true                # optional, default is false
 ```
 
-Only the mapping for the river component changes, as shown below. For an explanation about
-the type parameters between curly braces after the `struct` name see the section on the model
+Only the mapping for the river component changes, as shown below. For an explanation about the
+type parameters between curly braces after the `struct` name see the section on the model
 parameters.
 
 ```julia
@@ -141,9 +141,9 @@ overland flow, by providing the following in the TOML file:
 river_routing = "local-inertial"
 land_routing = "local-inertial"
 ```
-The mapping for the river and land component changes, as shown below. For an explanation
-about the type parameters between curly braces after the `struct` name see the section on
-the model parameters.
+The mapping for the river and land component changes, as shown below. For an explanation about
+the type parameters between curly braces after the `struct` name see the section on the model
+parameters.
 
 ```julia
 lateral.river => struct ShallowWaterRiver{T,R,L}
@@ -159,31 +159,31 @@ catchment level are intricately linked to the processes governing sediment dynam
 nutrients such as phosphorus, carbon or other pollutants such as metals are influenced by
 sediment properties in processes such as mobilization, flocculation or deposition. To better
 assert and model water quality in inland systems, a better comprehension and modelling of
-sediment sources and fate in the river is needed at a spatial and time scale relevant to
-such issues.
+sediment sources and fate in the river is needed at a spatial and time scale relevant to such
+issues.
 
 The wflow\_sediment model was developed to answer such issues. It is a distributed
 physics-based model, based on the distributed hydrologic wflow\_sbm model. It is able to
-simulate both land and in-stream processes, and relies on available global datasets,
-parameter estimation and small calibration effort.
+simulate both land and in-stream processes, and relies on available global datasets, parameter
+estimation and small calibration effort.
 
 In order to model the exports of terrestrial sediment to the coast through the Land Ocean
 Aquatic Continuum or LOAC (inland waters network such as streams, lakes...), two different
 modelling parts were considered. The first part, called the inland sediment model, is the
-modelling and estimation of soil loss and sediment yield to the river system by land
-erosion, separated into vertical [Soil Erosion](@ref) processes and lateral [Sediment Flux
-in overland flow](@ref). The second part, called the [River Sediment Model](@ref) is the
-transport and processes of the sediment in the river system. The two parts together
-constitute the wflow\_sediment model.
+modelling and estimation of soil loss and sediment yield to the river system by land erosion,
+separated into vertical [Soil Erosion](@ref) processes and lateral [Sediment Flux in overland
+flow](@ref). The second part, called the [River Sediment Model](@ref) is the transport and
+processes of the sediment in the river system. The two parts together constitute the
+wflow\_sediment model.
 
 Overview of the concepts of the wflow\_sediment model:
 ![wflow_sediment](../images/wflow_sediment.png)
 
 ### Configuration
 
-As sediment generation and transport processes are linked to the hydrology and water flows,
-the inputs to the wflow\_sediment model come directly from a hydrological model. The
-required dynamic inputs to run wflow\_sediment are:
+As sediment generation and transport processes are linked to the hydrology and water flows, the
+inputs to the wflow\_sediment model come directly from a hydrological model. The required
+dynamic inputs to run wflow\_sediment are:
 
 -  Precipitation (can also come from the hydrological forcing data),
 -  Land runoff (overland flow) from the kinematic wave,

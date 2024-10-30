@@ -3,8 +3,8 @@ title: Download example models
 ---
 
 For each wflow Model a test model is available that can help to understand the data
-requirements and the usage of each Model. The TOML configuration file per available model
-are listed in the Table below:
+requirements and the usage of each Model. The TOML configuration file per available model are
+listed in the Table below:
 
 |  model  | TOML configuration file |
 |:--------------- | ------------------|
@@ -12,9 +12,9 @@ are listed in the Table below:
 | wflow\_sbm + groundwater flow | [sbm\_gwf\_config.toml](https://raw.githubusercontent.com/Deltares/Wflow.jl/master/test/sbm_gwf_config.toml) |
 | wflow_sediment | [sediment_config.toml](https://raw.githubusercontent.com/Deltares/Wflow.jl/master/test/sediment_config.toml) |
 
-The associated Model files (input static, forcing and state files) can easily be downloaded
-and for this we share the following Julia code (per Model) that downloads the required files
-to your current working directory. For running these test model see also [Usage](@ref run_wflow)
+The associated Model files (input static, forcing and state files) can easily be downloaded and
+for this we share the following Julia code (per Model) that downloads the required files to
+your current working directory. For running these test model see also [Usage](@ref run_wflow)
 and [Command Line Interface](@ref cli).
 
 ## wflow\_sbm + kinematic wave
