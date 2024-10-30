@@ -161,7 +161,7 @@ respectively the storage and rating curves of lake with ID 1.
 The storage curve is stored in a CSV file with lake level $\SIb{}{m}$ in the first column `H`
 and corresponding lake storage $\SIb{}{m^3}$ in the second column `S`:
 
-```
+```bash
 H,  S
 392.21, 0
 393.21, 430202000
@@ -176,7 +176,7 @@ different JDOY (1-365), see also the example below, that shows part of a CSV fil
 Julian days). The volume above the maximum water level of the rating curve is assumed to flow
 instantaneously out of the lake (overflow).
 
-```
+```bash
 H
 394,    43,     43,     43,     43
 394.01, 44.838, 44.838, 44.838, 44.838
@@ -185,6 +185,7 @@ H
 394.04, 50.347, 50.347, 50.347, 50.347
 394.05, 52.179, 52.179, 52.179, 52.179
 ```
+
 Linked lakes: In some cases, lakes can be linked and return flow can be allowed from the
 downstream to the upstream lake. The linked lakes are defined in the `linkedlakelocs` parameter
 that represent the downstream lake location ID, at the grid cell of the upstream lake location.
