@@ -20,6 +20,40 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -276,26 +310,26 @@ Tip
 </div>
 <div class="callout-body-container callout-body">
 <p>If you haven’t used Julia in a while, it’s a good idea to run <code>up</code> to update your packages.</p>
-<pre class="julia-repl"><code>pkg&gt; up</code></pre>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pkg</span><span class="op">&gt;</span> up</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 <p>To access Julia’s package manager and install wflow, use:</p>
-<pre class="julia-repl"><code>pkg&gt; add Wflow</code></pre>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pkg</span><span class="op">&gt;</span> add Wflow</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>This process can take a while, especially on the first run, as compatible dependencies are automatically resolved and installed from the Pkg General registry.</p>
 </section>
 <section id="install-from-github" class="level3">
 <h3 class="anchored" data-anchor-id="install-from-github">Install from GitHub</h3>
 <p>You can also install wflow from the <code>master</code> branch on the repository as follows:</p>
-<pre class="julia-repl"><code>pkg&gt; add Wflow#master</code></pre>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pkg</span><span class="op">&gt;</span> add Wflow#master</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>This command tracks the <code>master</code> branch and updates to the latest commit on that branch when you run <code>update</code>, or simply <code>up</code>, in the Pkg REPL. The <code>add</code> installs wflow in your home directory under <code>.julia/packages/Wflow</code>. Note that packages installed under <code>packages</code> by <code>add</code> should not be changed in the directory, as the change could disrupt Pkg’s automatic dependency handling.</p>
 <p>If you want to modify any files in the repository, you need to do a development install. This can be done using:</p>
-<pre class="julia-repl"><code>pkg&gt; dev Wflow</code></pre>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pkg</span><span class="op">&gt;</span> dev Wflow</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>This will clone the git repository, place it under your home directory in <code>.julia/dev/Wflow</code>, and add the wflow package to your project environment. To receive updates, you’ll need to pull the latest changes manually using <code>git pull</code>.</p>
 </section>
 <section id="check-installation-of-wflow" class="level3">
 <h3 class="anchored" data-anchor-id="check-installation-of-wflow">Check installation of wflow</h3>
 <p>Finally, go back to the Julia REPL and try to load wflow:</p>
-<pre class="julia-repl"><code>julia&gt; using Wflow</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">julia</span><span class="op">&gt;</span> using Wflow</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>The first time you do this, it may take longer as any new or changed packages need to be precompiled to enable faster loading on subsequent uses. No error messages should appear, which indicates that you have successfully installed wflow.</p>
 <p>Before concluding this section, we recommend a few tools that can make using and developing Julia code easier.</p>
 <div class="callout callout-style-default callout-tip callout-titled">
@@ -329,10 +363,10 @@ Tip
 <section id="installing-the-compiled-executable" class="level2">
 <h2 class="anchored" data-anchor-id="installing-the-compiled-executable">Installing the compiled executable</h2>
 <p>Binaries of <code>wflow_cli</code> can be downloaded from our website <a href="https://download.deltares.nl/en/download/wflow/">download.deltares.nl</a>, and are currently available for Windows. Download and install the <code>.msi</code> file. After installation, you will see two folders in the installation directory. Only the <code>bin/wflow_cli</code> is used. The <code>artifacts</code> folder contains binary dependencies such as netCDF.</p>
-<pre><code>artifacts\
-bin\wflow_cli</code></pre>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">artifacts</span><span class="dt">\</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">bin\wflow_cli</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>To verify whether the installation was completed successfully, run <code>wflow_cli</code> with no arguments in the command line. This will display the following message:</p>
-<pre><code>Usage: wflow_cli 'path/to/config.toml'</code></pre>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">Usage:</span> wflow_cli <span class="st">'path/to/config.toml'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
