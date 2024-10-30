@@ -251,8 +251,6 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>First download and install the <a href="https://julialang.org/downloads/#current_stable_release">current stable release of Julia</a>. Please see <a href="https://julialang.org/downloads/platform/">platform specific instructions</a> for further installation instructions and if you have trouble installing Julia.</p>
-<p>If you are new to Julia, it might be a good idea to check out the <a href="https://docs.julialang.org/en/v1/manual/getting-started/">Getting Started section of the Julia Manual</a>. You can also find additional learning resources at <a href="https://julialang.org/learning/">julialang.org/learning</a>.</p>
 <p>Wflow can be used in two different ways, depending on the required use of the code:</p>
 <ul>
 <li>If you want to stay up-to-date with the latest version, explore and modify the model code, and write your own Julia scripts around the wflow package, we recommend installing wflow as a <a href="https://julialang.org/">Julia</a> package.</li>
@@ -262,6 +260,8 @@ ul.task-list li input[type="checkbox"] {
 <section id="installing-as-julia-package" class="level2">
 <h2 class="anchored" data-anchor-id="installing-as-julia-package">Installing as Julia package</h2>
 <p>Wflow is a <a href="https://julialang.org/">Julia</a> package that can be installed in several ways. Below, we show how to install wflow from Julia’s package repository and how to install the latest version from GitHub.</p>
+<p>First, download and install the <a href="https://julialang.org/downloads/#current_stable_release">current stable release of Julia</a>. If you have any issues installing Julia, please see <a href="https://julialang.org/downloads/platform/">platform specific instructions</a> for further instructions.</p>
+<p>If you are new to Julia, it might be a good idea to check out the <a href="https://docs.julialang.org/en/v1/manual/getting-started/">Getting Started section of the Julia Manual</a>. You can also find additional learning resources at <a href="https://julialang.org/learning/">julialang.org/learning</a>.</p>
 <section id="install-from-julias-package-repository" class="level3">
 <h3 class="anchored" data-anchor-id="install-from-julias-package-repository">Install from Julia’s package repository</h3>
 <p>To access Julia’s package manager, press <code>]</code> in the Julia REPL. To get back to the Julia REPL, press backspace or ^C.</p>
@@ -275,7 +275,7 @@ Tip
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>If you have not used Julia in a while, it can be a good idea to run <code>up</code> to update your packages.</p>
+<p>If you haven’t used Julia in a while, it’s a good idea to run <code>up</code> to update your packages.</p>
 <pre class="julia-repl"><code>pkg&gt; up</code></pre>
 </div>
 </div>
@@ -321,7 +321,7 @@ Tip
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>When planning to make changes to the code of wflow, we recommend installing the <code>Revise.jl</code> package. This package allows you to modify code and use the changes without restarting Julia. Install it with <code>add Revise</code> from the Pkg REPL. Then create a file called <code>.julia/config/startup.jl</code>, and put <code>using Revise</code> there. This will load Revise every time you start a Julia session.</p>
+<p>If you plan to modify the code of wflow, we recommend installing the <code>Revise.jl</code> package. This package allows you to modify code and use the changes without restarting Julia. Install it with <code>add Revise</code> from the Pkg REPL. Then create a file called <code>.julia/config/startup.jl</code>, and put <code>using Revise</code> there. This will load Revise every time you start a Julia session.</p>
 </div>
 </div>
 </section>

@@ -409,7 +409,8 @@ window.Quarto = {
 <p><span class="math display">\[
     S \frac{\partial \phi}{\partial t} =  \frac{\partial}{\partial x} \left(kH \frac{\phi}{\delta x}\right) + Q
 \]</span></p>
-<p>where <span class="math inline">\(\SIb{S}{m m^{-1}}\)</span> is storativity (or specific yield), <span class="math inline">\(\SIb{\phi}{m}\)</span> is hydraulic head, <span class="math inline">\(t\)</span> is time, <span class="math inline">\(\SIb{k}{m t^{-1}}\)</span> is horizontal hydraulic conductivity, <span class="math inline">\(\SIb{H}{m}\)</span> is the (saturated) aquifer height: groundwater level - aquifer bottom elevation and <span class="math inline">\(\SIb{Q}{m t^{-1}}\)</span> represents fluxes from boundary conditions (e.g.&nbsp;recharge or abstraction), see also <a href="@ref">Aquifer boundary conditions</a>.</p>
+<p>where <span class="math inline">\(\SIb{S}{m m^{-1}}\)</span> is storativity (or specific yield), <span class="math inline">\(\SIb{\phi}{m}\)</span> is hydraulic head, <span class="math inline">\(t\)</span> is time, <span class="math inline">\(\SIb{k}{m t^{-1}}\)</span> is horizontal hydraulic conductivity, <span class="math inline">\(\SIb{H}{m}\)</span> is the (saturated) aquifer height: groundwater level - aquifer bottom elevation and <span class="math inline">\(\SIb{Q}{m
+t^{-1}}\)</span> represents fluxes from boundary conditions (e.g.&nbsp;recharge or abstraction), see also <a href="@ref">Aquifer boundary conditions</a>.</p>
 <p>The simplest finite difference formulation is forward in time, central in space, and can be written as:</p>
 <p><span class="math display">\[
     S_i  \frac{\phi_{i}^{t+1} - \phi_i^{t}}{\Delta t} = -C_{i-1}  (\phi_{i-1} - \phi_i) - C_i  (\phi_{i+1} - \phi_i) + Q_i
@@ -423,8 +424,7 @@ C = \frac{kH w}{l}
 <p><span class="math display">\[
     C_i = w  \frac{k_iH_i\cdot k_{i+1}H_{i+1}}{k_iH_i \cdot l_{i+1} + k_{i+1}H_{i+1} \cdot l_i}
 \]</span></p>
-<p>where <span class="math inline">\(\SIb{H}{m}\)</span> is the aquifer top - aquifer bottom, and <span class="math inline">\(k\)</span>, <span class="math inline">\(l_i\)</span> is the length in cell <span class="math inline">\(i\)</span> (<span class="math inline">\(0.5 \Delta x_i\)</span>), <span class="math inline">\(l_{i+1}\)</span> is the length in cell <span class="math inline">\(i+1\)</span> (<span class="math inline">\(0.5 \Delta
-x_{i+1}\)</span>) and <span class="math inline">\(w\)</span> as previously defined. For an unconfined aquifer the intercell conductance is scaled by using the “upstream saturated fraction” as the MODFLOW documentation calls it. In this approach, the saturated thickness of a cell-to-cell is approximated using the cell with the highest head. This results in a consistent overestimation of the saturated thickness, but it avoids complexities related with cell drying and rewetting, such as having to define a “wetting threshold” or a “wetting factor”. See also the documentation for MODFLOW-NWT (Niswonger et al., 2011) or MODFLOW6 (Langevin et al., 2017) for more background information. For more background on drying and rewetting, see for example McDonald et al.&nbsp;(1991).</p>
+<p>where <span class="math inline">\(\SIb{H}{m}\)</span> is the aquifer top - aquifer bottom, and <span class="math inline">\(k\)</span>, <span class="math inline">\(l_i\)</span> is the length in cell <span class="math inline">\(i\)</span> (<span class="math inline">\(0.5 \Delta x_i\)</span>), <span class="math inline">\(l_{i+1}\)</span> is the length in cell <span class="math inline">\(i+1\)</span> (<span class="math inline">\(0.5 \Delta x_{i+1}\)</span>) and <span class="math inline">\(w\)</span> as previously defined. For an unconfined aquifer the intercell conductance is scaled by using the “upstream saturated fraction” as the MODFLOW documentation calls it. In this approach, the saturated thickness of a cell-to-cell is approximated using the cell with the highest head. This results in a consistent overestimation of the saturated thickness, but it avoids complexities related with cell drying and rewetting, such as having to define a “wetting threshold” or a “wetting factor”. See also the documentation for MODFLOW-NWT (Niswonger et al., 2011) or MODFLOW6 (Langevin et al., 2017) for more background information. For more background on drying and rewetting, see for example McDonald et al.&nbsp;(1991).</p>
 <p>For the finite difference formulation, there is only one unknown, <span class="math inline">\(\phi_i^{t+1}\)</span>. Reshuffling terms:</p>
 <p><span class="math display">\[
 \phi_i^{t+1} = \phi_i^t + (C_{i-1}  (\phi_i - \phi_{i-1}) + C_i  (\phi_{i+1} - \phi_i) + Q_i) \frac{Δt}{S_i}
@@ -501,7 +501,7 @@ Q_r = R \, A
 </section>
 <section id="head-boundary" class="level3">
 <h3 class="anchored" data-anchor-id="head-boundary">Head boundary</h3>
-<p>This boundary is a fixed head with time (not affected by the model stresses over time)) outside of the model domain, and is generally used to avoid an unnecessary extension of the model domain to the location of the fixed boundary (for example a large lake). The flux from the boundary <span class="math inline">\(\SIb{Q_{hb}}{L^3 T^{-1}}\)</span> is calculated as follows:</p>
+<p>This boundary is a fixed head with time (not affected by the model stresses over time) outside of the model domain, and is generally used to avoid an unnecessary extension of the model domain to the location of the fixed boundary (for example a large lake). The flux from the boundary <span class="math inline">\(\SIb{Q_{hb}}{L^3 T^{-1}}\)</span> is calculated as follows:</p>
 <p><span class="math display">\[
 Q_{hb} = C_{hb} (\phi_{hb} - \phi)
 \]</span></p>
