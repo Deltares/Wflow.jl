@@ -30,18 +30,18 @@ additional learning resources at [julialang.org/learning](https://julialang.org/
 
 ### Install from Julia's package repository
 
-To access Julia's package manager, press `]` in the Julia REPL.  To get back to the Julia
-REPL, press backspace or ^C.
+To access Julia's package manager, press `]` in the Julia REPL. To get back to the Julia REPL,
+press backspace or ^C.
 
 ::: {.callout-tip}
 If you haven't used Julia in a while, it's a good idea to run `up` to update your packages.
-```julia-repl
+```bash
 pkg> up
 ```
 :::
 
 To access Julia's package manager and install wflow, use:
-```julia-repl
+```bash
 pkg> add Wflow
 ```
 
@@ -52,7 +52,7 @@ automatically resolved and installed from the Pkg General registry.
 
 You can also install wflow from the `master` branch on the repository as follows:
 
-```julia-repl
+```bash
 pkg> add Wflow#master
 ```
 
@@ -65,7 +65,7 @@ handling.
 If you want to modify any files in the repository, you need to do a development install. This
 can be done using:
 
-```julia-repl
+```bash
 pkg> dev Wflow
 ```
 
@@ -77,7 +77,7 @@ the latest changes manually using `git pull`.
 
 Finally, go back to the Julia REPL and try to load wflow:
 
-```julia-repl
+```bash
 julia> using Wflow
 ```
 
@@ -112,7 +112,7 @@ available for Windows. Download and install the `.msi` file. After installation,
 two folders in the installation directory. Only the `bin/wflow_cli` is used. The `artifacts`
 folder contains binary dependencies such as netCDF.
 
-```
+```bash
 artifacts\
 bin\wflow_cli
 ```
@@ -120,7 +120,7 @@ bin\wflow_cli
 To verify whether the installation was completed successfully, run `wflow_cli` with no
 arguments in the command line. This will display the following message:
 
-```
+```bash
 Usage: wflow_cli 'path/to/config.toml'
 ```
 
