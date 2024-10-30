@@ -7,11 +7,14 @@ title: Multithreading
 Wflow supports multi-threading execution of the wflow\_sbm model that uses the kinematic wave
 approach for river, overland and lateral subsurface flow. Both the vertical SBM concept and the
 kinematic wave components of this model can run on multiple threads. The optional [local
-inertial model for river flow](@ref config_sbm_gwf_lie_river_land) and the optional [local
-inertial model for river (1D) and land (2D)](@ref config_sbm_gwf_lie_river_land), both part of
-wflow\_sbm, can also run on multiple threads. The threading functionality for the kinematic
-wave may also be useful for the wflow\_sbm model [SBM + Groundwater flow](@ref config_sbm_gwf).
-The multi-threading functionality in wflow is considered experimental, see also the following
+inertial model for river
+flow](../model_docs/model_configurations.qmd#sbm--local-inertial-river-1d-and-land-2d) and the
+optional [local inertial model for river (1D) and land
+(2D)](../model_docs/model_configurations.qmd#sbm--local-inertial-river-1d-and-land-2d), both
+part of wflow\_sbm, can also run on multiple threads. The threading functionality for the
+kinematic wave may also be useful for the wflow\_sbm model [SBM + Groundwater
+flow](../model_docs/model_configurations.qmd#sbm--groundwater-flow). The multi-threading
+functionality in wflow is considered experimental, see also the following
 [issue](https://github.com/Deltares/Wflow.jl/issues/139), where an error was not thrown running
 code multi-threaded. Because of this we advise to start with running a wflow model
 single-threaded (for example during the testing phase of setting up an new wflow model).

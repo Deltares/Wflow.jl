@@ -36,8 +36,9 @@ file is presented below.
 
 The list below contains a brief overview of several essential static maps required to run
 wflow. These NC variables names refer to the example data of the wflow\_sbm + kinematic wave
-model (see [here](@ref wflow_sbm_data)). Example data for the other model configurations can be
-found [here](@ref sample_data).
+model (see [here](../getting_started/download_example_models.qmd#wflow_sbm--kinematic-wave)).
+Example data for the other model configurations can be found
+[here](../getting_started/download_example_models.qmd).
 
 Description | NC variable name | unit
 --- | --- | ---
@@ -51,8 +52,8 @@ River slope | `RiverSlope` | m m$^{-1}$
 
 As mentioned before, the model parameters can also be defined as spatial maps. They can be
 included in the same netCDF file, as long as their variable names are correctly mapped in the
-TOML settings file. See the section on [example models](@ref sample_data) on how to use this
-functionality.
+TOML settings file. See the section on [example
+models](../getting_started/download_example_models.qmd) on how to use this functionality.
 
 ::: callout-important
 When using cyclic data, three different options are supported:
@@ -71,10 +72,12 @@ provided) or 166 (when 366 values are provided).
 The forcing data typically contains the meteorological boundary conditions. This data is
 provided as a single netCDF file, with several variables containing the forcing data for
 precipitation, temperature and potential evaporation. The code snippet below shows the contents
-of the example file (downloaded [here](@ref wflow_sbm_data)), and displaying the content with
-`NCDatasets` in Julia. As can be seen, each forcing variable (`precip`, `pet` and `temp`)
-consists of a three-dimensional dataset (`x`, `y`, and `time`), and each timestep consists of a
-two-dimensional map with values at each grid cell. Only values within the basin are required.
+of the example file (downloaded
+[here](../getting_started/download_example_models.qmd#wflow_sbm--kinematic-wave)), and
+displaying the content with `NCDatasets` in Julia. As can be seen, each forcing variable
+(`precip`, `pet` and `temp`) consists of a three-dimensional dataset (`x`, `y`, and `time`),
+and each timestep consists of a two-dimensional map with values at each grid cell. Only values
+within the basin are required.
 
 ::: callout-important
 Wflow expects the forcing to be "right-labelled". This means that e.g. daily precipitation at

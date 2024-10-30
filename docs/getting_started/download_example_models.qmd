@@ -14,8 +14,8 @@ listed in the Table below:
 
 The associated Model files (input static, forcing and state files) can easily be downloaded and
 for this we share the following Julia code (per Model) that downloads the required files to
-your current working directory. For running these test model see also [Usage](@ref run_wflow)
-and [Command Line Interface](@ref cli).
+your current working directory. For running these test model see also [Usage](./running_wflow.qmd#running-a-simulation)
+and [Command Line Interface](./running_wflow.qmd#using-the-command-line-interface).
 
 ## wflow\_sbm + kinematic wave
 ```julia

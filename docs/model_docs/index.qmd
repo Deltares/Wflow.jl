@@ -8,8 +8,8 @@ modelling framework of wflow. Descriptions are given regarding the model concept
 the original scientific papers which explain the concepts in more detail. The model parameters
 which influence the processes are also shown, using inline code blocks. An overview of all
 model parameters is also provided for easy reference, including their short names, long
-descriptions and their units (see [parameters vertical concepts](@ref params_vert) and
-[parameters lateral concepts](@ref params_lat)).
+descriptions and their units (see [parameters vertical concepts](./parameters_vertical.qmd) and
+[parameters lateral concepts](./parameters_lateral.qmd)).
 
 ## Division between vertical and lateral
 

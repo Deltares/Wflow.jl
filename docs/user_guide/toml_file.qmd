@@ -53,7 +53,7 @@ debug-level messages. Note that for finer control, you can also pass an integer 
 details, see Julia's
 [Logging](https://docs.julialang.org/en/v1/stdlib/Logging/#Log-event-structure) documentation.
 `path_log` sets the desired output path for the log file. For information on `fews_run`, see
-[Run from Delft-FEWS](@ref run_fews).
+[Run from Delft-FEWS](./fews.qmd).
 
 ## Model section
 Model-specific settings can be included in the model section of the TOML file.
@@ -77,7 +77,7 @@ output states of the model. This section is mostly relevant if the model needs t
 "warm" state (i.e. based on the results of a previous simulation). The example below shows how
 to save the output states of the current simulation, so it can be used to initialize another
 model in the future. Details on the settings required to start a model with a warm state can be
-found in the [additional model options](@ref reinit). If it is not required to store the
+found in the [additional model options](./warm_states.qmd). If it is not required to store the
 outstates of the current simulation, the entire `state` section can be removed.
 
 ```toml
@@ -238,21 +238,21 @@ In addition to gridded data, scalar data can also be written to a netCDF file. B
 example that shows how to write scalar data to the file "output\_scalar\_moselle.nc". For each
 netCDF variable, a `name` (external variable name) and a `parameter` (internal model parameter)
 are required. A `reducer` can be specified to apply to the model output. See more details in
-the [Output CSV section](@ref) section. If a `map` is provided to extract data for specific
-locations (e.g. `gauges`) or areas (e.g. `subcatchment`), the netCDF location names are
-extracted from these maps. For a specific location (grid cell) a `location` is required. For
-layered model parameters and variables that have an extra `layer` dimension and are part of the
-vertical `sbm` concept, an internal layer index can be specified (an example is provided
-below). Similarly, for model parameters and variables that have an extra dimension `classes`
-and are part of the vertical `FLEXTopo` concept, the class name can be specified. If multiple
-layers or classes are desired, this can be specified in separate `[[netcdf.variable]]` entries.
-Note that the additional dimension should be specified when wflow is integrated with
+the [Output CSV section](#output-csv-section) section. If a `map` is provided to extract data
+for specific locations (e.g. `gauges`) or areas (e.g. `subcatchment`), the netCDF location
+names are extracted from these maps. For a specific location (grid cell) a `location` is
+required. For layered model parameters and variables that have an extra `layer` dimension and
+are part of the vertical `sbm` concept, an internal layer index can be specified (an example is
+provided below). Similarly, for model parameters and variables that have an extra dimension
+`classes` and are part of the vertical `FLEXTopo` concept, the class name can be specified. If
+multiple layers or classes are desired, this can be specified in separate `[[netcdf.variable]]`
+entries. Note that the additional dimension should be specified when wflow is integrated with
 Delft-FEWS, for netCDF scalar data an extra dimension is not allowed by the
 `importNetcdfActivity` of the Delft-FEWS General Adapter. In the section [Output CSV
-section](@ref), similar functionality is available for CSV. For integration with Delft-FEWS, it
-is recommended to write scalar data to netCDF format, as the General Adapter of Delft-FEWS can
-directly ingest data from netCDF files. For more information, see [Run from Delft-FEWS](@ref
-run_fews).
+section](#output-csv-section), similar functionality is available for CSV. For integration with
+Delft-FEWS, it is recommended to write scalar data to netCDF format, as the General Adapter of
+Delft-FEWS can directly ingest data from netCDF files. For more information, see [Run from
+Delft-FEWS](./fews.qmd).
 
 ```toml
 [netcdf]

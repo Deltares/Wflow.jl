@@ -53,13 +53,13 @@ bankfull_depth = "wflow_riverdepth"
 The wetted perimeter of the river is based on half bankfull river depth. For the land part the
 wetted perimeter is based on the flow width.
 
-Simplified [reservoir and lake](@ref reservoir_lake) models can be included as part of the
-river kinematic wave network.
+Simplified [reservoir and lake](./waterbodies.qmd) models can be included as part of the river
+kinematic wave network.
 
 ## Inflow
 External water (supply/abstraction) `inflow` $\SIb{}{m^3 s^{-1}}$  can be added to the
 kinematic wave for surface water routing, as a cyclic parameter or as part of forcing (see also
-[Input section](@ref)).
+[Input section](../../user_guide/required_files.qmd)).
 
 ## Abstractions
 Abstractions from the river through the variable `abstraction` $\SIb{}{m^3 s^{-1}}$ are
@@ -71,9 +71,9 @@ routing scheme for river flow.
 ## Subsurface flow routing
 In the SBM model the kinematic wave approach is used to route subsurface flow laterally.
 Different vertical hydraulic conductivity depth profiles are possible as part of the vertical
-[SBM](@ref soil) concept, and these profiles (after unit conversion) are also used to compute
-lateral subsurface flow. The following profiles (see [SBM](@ref soil) for a detailed
-description) are available:
+[SBM](../vertical/sbm.qmd#soil-processes) concept, and these profiles (after unit conversion)
+are also used to compute lateral subsurface flow. The following profiles (see
+[SBM](../vertical/sbm.qmd#soil-processes) for a detailed description) are available:
 - `exponential` (default)
 - `exponential_constant`
 - `layered`
@@ -190,10 +190,11 @@ scheme. In summary the following limitations apply:
 ## External inflows
 External inflows, for example water supply or abstractions, can be added to the kinematic wave
 via the `inflow` variable. For this, the user can supply a 2D map of the inflow, as a cyclic
-parameter or as part of forcing (see also [Input section](@ref)). These inflows are added or
-abstracted from the upstream inflow `qin` before running the kinematic wave to solve the impact
-on resulting `q`. In case of a negative inflow (abstractions), a minimum of zero is applied to
-the upstream flow `qin`.
+parameter or as part of forcing (see also [Input
+section](../../user_guide/required_files.qmd)). These inflows are added or abstracted from the
+upstream inflow `qin` before running the kinematic wave to solve the impact on resulting `q`.
+In case of a negative inflow (abstractions), a minimum of zero is applied to the upstream flow
+`qin`.
 
 ## References
 + Chow, V., Maidment, D. and Mays, L., 1988, Applied Hydrology. McGraw-Hill Book Company,

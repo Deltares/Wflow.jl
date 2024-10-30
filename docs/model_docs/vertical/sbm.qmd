@@ -19,9 +19,9 @@ performed based on the air temperature. If the temperature is below a threshold 
 (`tt`), precipitation will fall as snow. An interval parameter (`tti`) defines the range over
 which precipitation is partly falling as snow, and partly as rain. Snowfall is added to the
 snowpack, where it is subject to melting and refreezing (see the section on [snow and
-glaciers](@ref snow)). The amount of rainfall is subject to [interception](@ref interception),
-and ultimately becomes available for [evaporation](@ref evap) and/or [soil processes](@ref
-soil).
+glaciers](./shared_processes.qmd#snow-and-glaciers)). The amount of rainfall is subject to
+[interception](#rainfall-interception), and ultimately becomes available for
+[evaporation](#evaporation) and/or [soil processes](#soil-processes).
 
 ![Division between snow and precipitation based on the threshold temperature](../../images/snowfall.png)
 
@@ -308,8 +308,9 @@ satwaterdepth = satwaterdepth - actevapsat
 
 ## Snow and glaciers
 
-The snow and glacier model is described in [Snow and glaciers](@ref snow_and_glac). Both
-options can be enabled by specifying the following in the TOML file:
+The snow and glacier model is described in [Snow and
+glaciers](./shared_processes.qmd#snow-and-glaciers). Both options can be enabled by specifying
+the following in the TOML file:
 
 ```toml
 [model]

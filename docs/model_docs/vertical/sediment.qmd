@@ -172,7 +172,8 @@ slope angle.
 
 ## Delivery to the river system
 Once soil is detached, it can be transported by overland flow and reach the river system. This
-process is described in [Sediment Flux in overland flow](@ref).
+process is described in [Sediment Flux in overland
+flow](../lateral/sediment_flux.qmd#sediment-flux-in-overland-flow).
 
 ## References
 + D.B Beasley and L.F Huggins. ANSWERS - Users Manual. Technical report, EPA, 1991.

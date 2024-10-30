@@ -35,11 +35,11 @@ The `subsurface` part is mapped to the lateral subsurface flow kinematic wave co
 `land` part is mapped the overland flow kinematic wave concept and the `river` part is mapped
 to the river flow kinematic wave concept. Knowledge of this specific mapping is required to
 understand and correctly set input, output and state variables in the TOML configuration file,
-see also [Config and TOML](@ref config_toml). This mapping is described in more detail for each
+see also [Config and TOML](../user_guide/toml_file.qmd). This mapping is described in more detail for each
 model in the section Models. Also the `struct` of each mapped concept is provided, so one can
 check the internal variables in the code. These structs are defined as a parametric composite
 type, with type parameters between curly braces after the `struct` name. See also the next
-paragraph [Vertical and lateral models](@ref) for a more detailed description.
+paragraph [Vertical and lateral models](#vertical-and-lateral-models) for a more detailed description.
 
 ## Vertical and lateral models
 The different model concepts used in wflow are defined as parametric [composite

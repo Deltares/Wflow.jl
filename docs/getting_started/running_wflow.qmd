@@ -12,7 +12,7 @@ julia -e 'using Wflow; Wflow.run()' path/to/config.toml
 ```
 
 Furthermore, it is possible to write a Julia script to run a simulation. Example data to
-explore how this works can be found [here](@ref sample_data).
+explore how this works can be found [here](./download_example_models.qmd).
 
 ```julia
 using Wflow

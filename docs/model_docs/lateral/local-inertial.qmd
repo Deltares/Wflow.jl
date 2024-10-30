@@ -93,13 +93,13 @@ river cell. The river length $\SIb{}{m}$ of the boundary cell can be set through
 with `riverlength_bc`, and has a default value of $\SI{10}{km}$. The water depth at the
 boundary cell is fixed at $\SI{0.0}{m}$.
 
-Simplified [reservoir and lake](@ref reservoir_lake) models can be included as part of the
-local inertial model for river flow (1D) and river and overland flow combined (see next
-section). Reservoir and lake models are included as a boundary point with zero water depth for
-both river and overland flow. For river flow the reservoir or lake model replaces the local
-inertial model at the reservoir or lake location, and $Q$ is set by the outflow from the
-reservoir or lake. Overland flow at a reservoir or lake location is not allowed to or from the
-downstream river grid cell.
+Simplified [reservoir and lake](./waterbodies.qmd) models can be included as part of the local
+inertial model for river flow (1D) and river and overland flow combined (see next section).
+Reservoir and lake models are included as a boundary point with zero water depth for both river
+and overland flow. For river flow the reservoir or lake model replaces the local inertial model
+at the reservoir or lake location, and $Q$ is set by the outflow from the reservoir or lake.
+Overland flow at a reservoir or lake location is not allowed to or from the downstream river
+grid cell.
 
 ## Overland flow (2D)
 For the simulation of 2D overland flow on a staggered grid the numerical scheme proposed by de
@@ -148,12 +148,13 @@ h_thresh = 0.1                   # water depth [m] threshold for calculating flo
 The properties `inertial_flow_alpha`, `froude_limit` and `h_thresh` apply to 1D river routing
 as well as 2D overland flow. The properties `inertial_flow_alpha` and `froude_limit`, and the
 adaptive model time step $\Delta t$ are explained in more detail in the [River and floodplain
-routing](@ref) section of the local inertial model.
+routing](#river-and-floodplain-routing) section of the local inertial model.
 
 ## Inflow
 External water (supply/abstraction) `inflow` $\SIb{}{m^3 s^{-1}}$ can be added to the local
 inertial model for river flow (1D) and river and overland flow combined (1D-2D), as a cyclic
-parameter or as part of forcing (see also [Input section](@ref)).
+parameter or as part of forcing (see also [Input
+section](../../user_guide/required_files.qmd)).
 
 ## Abstractions
 Abstractions from the river through the variable `abstraction` $\SIb{}{m^3 s^{-1}}$ are
