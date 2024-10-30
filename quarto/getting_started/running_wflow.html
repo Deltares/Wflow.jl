@@ -284,7 +284,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="using-julia">Using Julia</h2>
 <p>Once you installed Julia and Wflow.jl, a simulation can be started from the command line as follows:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">julia</span> <span class="at">-e</span> <span class="st">'using Wflow; Wflow.run()'</span> path/to/config.toml</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Furthermore, it is possible to write a Julia script to run a simulation. Example data to explore how this works can be found <a href="@ref sample_data">here</a>.</p>
+<p>Furthermore, it is possible to write a Julia script to run a simulation. Example data to explore how this works can be found <a href="../getting_started/download_example_models.html">here</a>.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Wflow</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>Wflow.<span class="fu">run</span>(toml_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Julia can also be used to modify settings after reading the settings file. In the example below, we show how to adjust the end date of the simulation.</p>

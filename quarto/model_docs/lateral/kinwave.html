@@ -417,11 +417,11 @@ window.Quarto = {
 <div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.lateral.river]</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">bankfull_depth</span> <span class="op">=</span> <span class="st">"wflow_riverdepth"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>The wetted perimeter of the river is based on half bankfull river depth. For the land part the wetted perimeter is based on the flow width.</p>
-<p>Simplified <a href="@ref reservoir_lake">reservoir and lake</a> models can be included as part of the river kinematic wave network.</p>
+<p>Simplified <a href="../../model_docs/lateral/waterbodies.html">reservoir and lake</a> models can be included as part of the river kinematic wave network.</p>
 </section>
 <section id="inflow" class="level2">
 <h2 class="anchored" data-anchor-id="inflow">Inflow</h2>
-<p>External water (supply/abstraction) <code>inflow</code> <span class="math inline">\(\SIb{}{m^3 s^{-1}}\)</span> can be added to the kinematic wave for surface water routing, as a cyclic parameter or as part of forcing (see also <a href="@ref">Input section</a>).</p>
+<p>External water (supply/abstraction) <code>inflow</code> <span class="math inline">\(\SIb{}{m^3 s^{-1}}\)</span> can be added to the kinematic wave for surface water routing, as a cyclic parameter or as part of forcing (see also <a href="../../user_guide/required_files.html">Input section</a>).</p>
 </section>
 <section id="abstractions" class="level2">
 <h2 class="anchored" data-anchor-id="abstractions">Abstractions</h2>
@@ -429,7 +429,7 @@ window.Quarto = {
 </section>
 <section id="subsurface-flow-routing" class="level2">
 <h2 class="anchored" data-anchor-id="subsurface-flow-routing">Subsurface flow routing</h2>
-<p>In the SBM model the kinematic wave approach is used to route subsurface flow laterally. Different vertical hydraulic conductivity depth profiles are possible as part of the vertical <a href="@ref soil">SBM</a> concept, and these profiles (after unit conversion) are also used to compute lateral subsurface flow. The following profiles (see <a href="@ref soil">SBM</a> for a detailed description) are available: - <code>exponential</code> (default) - <code>exponential_constant</code> - <code>layered</code> - <code>layered_exponential</code></p>
+<p>In the SBM model the kinematic wave approach is used to route subsurface flow laterally. Different vertical hydraulic conductivity depth profiles are possible as part of the vertical <a href="../../model_docs/vertical/sbm.html#soil-processes">SBM</a> concept, and these profiles (after unit conversion) are also used to compute lateral subsurface flow. The following profiles (see <a href="../../model_docs/vertical/sbm.html#soil-processes">SBM</a> for a detailed description) are available: - <code>exponential</code> (default) - <code>exponential_constant</code> - <code>layered</code> - <code>layered_exponential</code></p>
 <p>For the profiles <code>exponential</code> and <code>exponential_constant</code>, the saturated store <code>S</code> is drained laterally by saturated downslope subsurface flow for a slope with width <code>\SIb{w}{m}</code> according to:</p>
 <p><span class="math display">\[
     Q = K_0\tan(\beta)w\begin{cases}
@@ -507,7 +507,7 @@ Note
 </section>
 <section id="external-inflows" class="level2">
 <h2 class="anchored" data-anchor-id="external-inflows">External inflows</h2>
-<p>External inflows, for example water supply or abstractions, can be added to the kinematic wave via the <code>inflow</code> variable. For this, the user can supply a 2D map of the inflow, as a cyclic parameter or as part of forcing (see also <a href="@ref">Input section</a>). These inflows are added or abstracted from the upstream inflow <code>qin</code> before running the kinematic wave to solve the impact on resulting <code>q</code>. In case of a negative inflow (abstractions), a minimum of zero is applied to the upstream flow <code>qin</code>.</p>
+<p>External inflows, for example water supply or abstractions, can be added to the kinematic wave via the <code>inflow</code> variable. For this, the user can supply a 2D map of the inflow, as a cyclic parameter or as part of forcing (see also <a href="../../user_guide/required_files.html">Input section</a>). These inflows are added or abstracted from the upstream inflow <code>qin</code> before running the kinematic wave to solve the impact on resulting <code>q</code>. In case of a negative inflow (abstractions), a minimum of zero is applied to the upstream flow <code>qin</code>.</p>
 </section>
 <section id="references" class="level2">
 <h2 class="anchored" data-anchor-id="references">References</h2>

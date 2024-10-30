@@ -368,6 +368,11 @@ window.Quarto = {
   <li><a href="#d-floodplain" id="toc-d-floodplain" class="nav-link" data-scroll-target="#d-floodplain">1D floodplain</a></li>
   <li><a href="#overland-flow" id="toc-overland-flow" class="nav-link" data-scroll-target="#overland-flow">Overland flow</a></li>
   </ul></li>
+  <li><a href="#water-bodies" id="toc-water-bodies" class="nav-link" data-scroll-target="#water-bodies">Water bodies</a>
+  <ul class="collapse">
+  <li><a href="#reservoirs" id="toc-reservoirs" class="nav-link" data-scroll-target="#reservoirs">Reservoirs</a></li>
+  <li><a href="#lakes" id="toc-lakes" class="nav-link" data-scroll-target="#lakes">Lakes</a></li>
+  </ul></li>
   <li><a href="#water-allocation-river" id="toc-water-allocation-river" class="nav-link" data-scroll-target="#water-allocation-river">Water allocation river</a></li>
   <li><a href="#groundwater-flow" id="toc-groundwater-flow" class="nav-link" data-scroll-target="#groundwater-flow">Groundwater flow</a>
   <ul class="collapse">
@@ -758,7 +763,7 @@ window.Quarto = {
 <div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.lateral.subsurface]</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">ksathorfrac</span> <span class="op">=</span> <span class="st">"KsatHorFrac"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>The <code>khfrac</code> parameter compensates for anisotropy, small scale <code>kv_0</code> measurements (soil core) that do not represent larger scale hydraulic conductivity, and smaller flow length scales (hillslope) in reality, not represented by the model resolution.</p>
-<p>For the vertical <a href="@ref params_sbm">SBM</a> concept different vertical hydraulic conductivity depth profiles are possible, and these also determine which <code>LateralSSF</code> parameters are used including the input requirements for the computation of lateral subsurface flow. For the <code>exponential</code> profile the model parameters <code>kh_0</code> and <code>f</code> are used. For the <code>exponential_constant</code> profile <code>kh_0</code> and <code>f</code> are used, and <code>z_exp</code> is required as part of <code>[input.vertical]</code>. For the <code>layered</code> profile, <code>SBM</code> model parameter <code>kv</code> is used, and for the <code>layered_exponential</code> profile <code>kv</code> is used and <code>z_exp</code> is required as part of <code>[input.vertical]</code>.</p>
+<p>For the vertical <a href="../model_docs/parameters_vertical.html#sbm">SBM</a> concept different vertical hydraulic conductivity depth profiles are possible, and these also determine which <code>LateralSSF</code> parameters are used including the input requirements for the computation of lateral subsurface flow. For the <code>exponential</code> profile the model parameters <code>kh_0</code> and <code>f</code> are used. For the <code>exponential_constant</code> profile <code>kh_0</code> and <code>f</code> are used, and <code>z_exp</code> is required as part of <code>[input.vertical]</code>. For the <code>layered</code> profile, <code>SBM</code> model parameter <code>kv</code> is used, and for the <code>layered_exponential</code> profile <code>kv</code> is used and <code>z_exp</code> is required as part of <code>[input.vertical]</code>.</p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 23%">
@@ -1540,6 +1545,272 @@ window.Quarto = {
 </table>
 </section>
 </section>
+<section id="water-bodies" class="level2">
+<h2 class="anchored" data-anchor-id="water-bodies">Water bodies</h2>
+<section id="reservoirs" class="level3">
+<h3 class="anchored" data-anchor-id="reservoirs">Reservoirs</h3>
+<p>The Table below shows the parameters (fields) of struct <code>SimpleReservoir</code>, including a description of these parameters, the unit, and default value if applicable. The parameters in bold represent model parameters that can be set through static input data (netCDF), and can be listed in the TOML configuration file under <code>[input.lateral.river.reservoir]</code>, to map the internal model parameter to the external netCDF variable.</p>
+<p>Two parameters reservoir coverage <code>areas</code> and the outlet of reservoirs (unique id) <code>locs</code> that are not part of the <code>SimpleReservoir</code> struct are also required, and can be set as follows through the TOML file:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.lateral.river.reservoir]</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="dt">areas</span> <span class="op">=</span> <span class="st">"wflow_reservoirareas"</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="dt">locs</span> <span class="op">=</span> <span class="st">"wflow_reservoirlocs"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 27%">
+<col style="width: 25%">
+<col style="width: 37%">
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">parameter</th>
+<th>description</th>
+<th>unit</th>
+<th>default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>area</code></strong></td>
+<td>area</td>
+<td>m<code>^2</code></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>demand</code></strong></td>
+<td>minimum (environmental) flow requirement downstream of the reservoir</td>
+<td>m<code>^3</code> s<code>^{-1}</code></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>maxrelease</code></strong></td>
+<td>maximum amount that can be released if below spillway</td>
+<td>m<code>^3</code> s<code>^{-1}</code></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>maxvolume</code></strong></td>
+<td>maximum storage (above which water is spilled)</td>
+<td>m<code>^3</code></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>targetfullfrac</code></strong></td>
+<td>target fraction full (of max storage)</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>targetminfrac</code></strong></td>
+<td>target minimum full fraction (of max storage)</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>demandrelease</code></td>
+<td>minimum (environmental) flow released from reservoir</td>
+<td>m<code>^3</code> s<code>^{-1}</code></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>dt</code></td>
+<td>model time step</td>
+<td>s</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>volume</code></td>
+<td>volume</td>
+<td>m<code>^3</code></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>inflow</code></td>
+<td>total inflow into reservoir</td>
+<td>m<code>^3</code></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>outflow</code></td>
+<td>outflow of reservoir</td>
+<td>m<code>^3</code> s<code>^{-1}</code></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>totaloutflow</code></td>
+<td>total outflow of reservoir</td>
+<td>m<code>^3</code></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>percfull</code></td>
+<td>fraction full (of max storage)</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>precipitation</code></td>
+<td>average precipitation for reservoir area</td>
+<td>mm Δt⁻¹</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>evaporation</code></td>
+<td>average potential evaporation for reservoir area</td>
+<td>mm Δt⁻¹</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>actevap</code></td>
+<td>average actual evaporation for lake area</td>
+<td>mm Δt⁻¹</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="lakes" class="level3">
+<h3 class="anchored" data-anchor-id="lakes">Lakes</h3>
+<p>The Table below shows the parameters (fields) of struct <code>Lake</code>, including a description of these parameters, the unit, and default value if applicable. The parameters in bold represent model parameters that can be set through static input data (netCDF), and can be listed in the TOML configuration file under <code>[input.lateral.river.lake]</code>, to map the internal model parameter to the external netCDF variable.</p>
+<p>Two parameters lake coverage <code>areas</code> and the outlet of lakes (unique id) <code>locs</code> that are not part of the <code>Lake</code> struct are also required, and can be set as follows through the TOML file:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.lateral.river.lake]</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="dt">areas</span> <span class="op">=</span> <span class="st">"wflow_lakeareas"</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="dt">locs</span> <span class="op">=</span> <span class="st">"wflow_lakelocs"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The input parameter <code>linkedlakelocs</code> (listed under <code>[input.lateral.river.lake]</code>) is not equal to the internal model parameter <code>lowerlake_ind</code>, and is listed in the Table below between parentheses.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 27%">
+<col style="width: 25%">
+<col style="width: 37%">
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">parameter</th>
+<th>description</th>
+<th>unit</th>
+<th>default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>area</code></strong></td>
+<td>area</td>
+<td>m<code>^2</code></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>b</code></strong></td>
+<td>Rating curve coefficient</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>e</code></strong></td>
+<td>Rating curve exponent</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>outflowfunc</code></strong></td>
+<td>type of lake rating curve</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>storfunc</code></strong></td>
+<td>type of lake storage curve</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>threshold</code></strong></td>
+<td>water level threshold <code>H_0</code> below that level outflow is zero</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>waterlevel</code></strong></td>
+<td>waterlevel <code>H</code> of lake</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>lowerlake_ind</code></strong> (<code>linkedlakelocs</code>)</td>
+<td>Index of lower lake (linked lakes)</td>
+<td>-</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>sh</code></strong></td>
+<td>data for storage curve</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>hq</code></strong></td>
+<td>data rating curve</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>dt</code></td>
+<td>model time step</td>
+<td>s</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>inflow</code></td>
+<td>total inflow to the lake</td>
+<td>m<code>^3</code></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>storage</code></td>
+<td>storage lake</td>
+<td>m<code>^3</code></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>maxstorage</code></td>
+<td>maximum storage lake with rating curve type 1</td>
+<td>m<code>^3</code></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>outflow</code></td>
+<td>outflow lake</td>
+<td>m<code>^3</code> s<code>^{-1}</code></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>totaloutflow</code></td>
+<td>total outflow lake</td>
+<td>m<code>^3</code></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>precipitation</code></td>
+<td>average precipitation for lake area</td>
+<td>mm Δt⁻¹</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>evaporation</code></td>
+<td>average potential evaporation for lake area</td>
+<td>mm Δt⁻¹</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>actevap</code></td>
+<td>average actual evaporation for lake area</td>
+<td>mm Δt⁻¹</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
 <section id="water-allocation-river" class="level2">
 <h2 class="anchored" data-anchor-id="water-allocation-river">Water allocation river</h2>
 <p>The Table below shows the parameters (fields) of struct <code>AllocationRiver</code>, used when water demand and allocation is computed (optional), including a description of these parameters, the unit, and default value if applicable.</p>
@@ -1655,9 +1926,9 @@ window.Quarto = {
 <section id="unconfined-aquifer" class="level3">
 <h3 class="anchored" data-anchor-id="unconfined-aquifer">Unconfined aquifer</h3>
 <p>The Table below shows the parameters (fields) of struct <code>UnconfinedAquifer</code>, including a description of these parameters, the unit, and default value if applicable. The parameters in bold represent model parameters that can be set through static input data (netCDF), and can be listed in the TOML configuration file under <code>[input.lateral.subsurface]</code>, to map the internal model parameter to the external netCDF variable. For some input parameters the parameter listed under <code>[input.lateral.subsurface]</code> is not equal to the internal model parameter, these are listed in the Table below between parentheses after the internal model parameter. The <code>top</code> parameter is provided by the external parameter <code>altitude</code> as part of the static input data and set as follows through the TOML file:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input]</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co"># these are not directly part of the model</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="dt">altitude</span> <span class="op">=</span> <span class="st">"wflow_dem"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input]</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co"># these are not directly part of the model</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="dt">altitude</span> <span class="op">=</span> <span class="st">"wflow_dem"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>The input parameter <code>conductivity</code> (listed under <code>[input.lateral.subsurface]</code>) is not equal to the internal model parameter <code>kh_0</code>, and is listed in the Table below between parentheses.</p>
 <table class="table-striped table-hover caption-top table">
 <colgroup>
@@ -2178,8 +2449,8 @@ window.Quarto = {
 </tbody>
 </table>
 <p>The Table below shows the parameters (fields) of struct <code>RiverSediment</code>, including a description of these parameters, the unit, and default value if applicable. The parameters in bold represent model parameters that can be set through static and forcing input data (netCDF), and can be listed in the TOML configuration file under <code>[input.lateral.river]</code>, to map the internal model parameter to the external netCDF variable. For some input parameters the parameter listed under <code>[input.lateral.river]</code> is not equal to the internal model parameter, these are listed in the Table below between parentheses after the internal model parameter. For example, internal model parameter <code>sl</code> is mapped as follows in the TOML file to the external netCDF variable <code>RiverSlope</code>:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.vertical]</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="dt">slope</span> <span class="op">=</span> <span class="st">"RiverSlope"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.vertical]</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="dt">slope</span> <span class="op">=</span> <span class="st">"RiverSlope"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <table class="table-striped table-hover caption-top table">
 <colgroup>
 <col style="width: 23%">

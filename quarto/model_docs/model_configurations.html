@@ -365,7 +365,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>There are several model configurations supported by wflow. These model configurations require slightly different input requirements, yet the general structure is similar for each model. A wflow model configuration consists of a <code>vertical</code> <a href="@ref vert_sbm">SBM</a> concept in combination with <code>lateral</code> concepts that control how water is routed for example over the land or river domain. For the wflow_sbm model different model configurations are possible. The following model configurations are supported in wflow:</p>
+<p>There are several model configurations supported by wflow. These model configurations require slightly different input requirements, yet the general structure is similar for each model. A wflow model configuration consists of a <code>vertical</code> <a href="../model_docs/vertical/sbm.html">SBM</a> concept in combination with <code>lateral</code> concepts that control how water is routed for example over the land or river domain. For the wflow_sbm model different model configurations are possible. The following model configurations are supported in wflow:</p>
 <ul>
 <li>wflow_sbm:
 <ul>
@@ -376,10 +376,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul></li>
 <li>wflow_sediment as post processing of wflow_sbm output</li>
 </ul>
-<p>Below, some explanation will be given on how to prepare a basic wflow_sbm model. Example data for other model configurations is provided in the section with <a href="@ref sample_data">sample data</a>.</p>
+<p>Below, some explanation will be given on how to prepare a basic wflow_sbm model. Example data for other model configurations is provided in the section with <a href="../getting_started/download_example_models.html">sample data</a>.</p>
 <section id="wflow_sbm" class="level2">
 <h2 class="anchored" data-anchor-id="wflow_sbm">wflow_sbm</h2>
-<p>Wflow_sbm represents hydrological models derived from the CQflow model (Köhler et al., 2006) that have the <a href="@ref vert_sbm">SBM</a> vertical concept in common, but can have different lateral concepts that control how water is routed for example over the land or river domain. The soil part of SBM is largely based on the Topog_SBM model but has had considerable changes over time. Topog_SBM is specifically designed to simulate fast runoff processes in small catchments while the wflow_sbm model can be applied more widely. The main differences are for the vertical concept SBM of wflow_sbm:</p>
+<p>Wflow_sbm represents hydrological models derived from the CQflow model (Köhler et al., 2006) that have the <a href="../model_docs/vertical/sbm.html">SBM</a> vertical concept in common, but can have different lateral concepts that control how water is routed for example over the land or river domain. The soil part of SBM is largely based on the Topog_SBM model but has had considerable changes over time. Topog_SBM is specifically designed to simulate fast runoff processes in small catchments while the wflow_sbm model can be applied more widely. The main differences are for the vertical concept SBM of wflow_sbm:</p>
 <ul>
 <li>The unsaturated zone can be split-up in different layers</li>
 <li>The addition of evapotranspiration losses</li>
@@ -388,16 +388,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
 <p>The water demand and allocation computations are supported by the wflow_sbm model configurations:</p>
 <ul>
-<li><a href="@ref config_sbm">SBM + Kinematic wave</a></li>
-<li><a href="@ref config_sbm_gwf">SBM + Groundwater flow</a></li>
-<li><a href="@ref config_sbm_gwf_lie_river">SBM + Local inertial river</a></li>
-<li><a href="@ref config_sbm_gwf_lie_river_land">SBM + Local inertial river (1D) and land (2D)</a></li>
+<li>SBM + Kinematic wave</li>
+<li>SBM + Groundwater flow</li>
+<li>SBM + Local inertial river</li>
+<li>SBM + Local inertial river (1D) and land (2D)</li>
 </ul>
-<p>The vertical SBM concept is explained in more detail in the following section <a href="@ref vert_sbm">SBM vertical concept</a>.</p>
+<p>The vertical SBM concept is explained in more detail in the following section <a href="../model_docs/vertical/sbm.html">SBM vertical concept</a>.</p>
 <p>Topog_SBM uses an element network based on contour lines and trajectories for water routing. Wflow_sbm models differ in how the lateral components river, land, and subsurface are solved. Below the different wflow_sbm model configurations are described.</p>
 <section id="sbm-kinematic-wave" class="level3">
 <h3 class="anchored" data-anchor-id="sbm-kinematic-wave">SBM + Kinematic wave</h3>
-<p>For the lateral components of this wflow_sbm model water is routed over a D8 network, and the kinematic wave approach is used for river, overland and lateral subsurface flow. This is described in more detail in the section <a href="@ref kin_wave">Kinematic wave</a>.</p>
+<p>For the lateral components of this wflow_sbm model water is routed over a D8 network, and the kinematic wave approach is used for river, overland and lateral subsurface flow. This is described in more detail in the section <a href="../model_docs/lateral/kinwave.html">Kinematic wave</a>.</p>
 <p>An overview of the different processes and fluxes in the wflow_sbm model with the kinematic wave approach for river, overland and lateral subsurface flow:</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -415,7 +415,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="sbm-groundwater-flow" class="level3">
 <h3 class="anchored" data-anchor-id="sbm-groundwater-flow">SBM + Groundwater flow</h3>
-<p>For river and overland flow the kinematic wave approach over a D8 network is used for this wflow_sbm model. For the subsurface domain, an unconfined aquifer with groundwater flow in four directions (adjacent cells) is used. This is described in more detail in the section <a href="@ref lateral_gwf">Groundwater flow</a>.</p>
+<p>For river and overland flow the kinematic wave approach over a D8 network is used for this wflow_sbm model. For the subsurface domain, an unconfined aquifer with groundwater flow in four directions (adjacent cells) is used. This is described in more detail in the section <a href="../model_docs/lateral/gwf.html">Groundwater flow</a>.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">type</span> <span class="op">=</span> <span class="st">"sbm_gwf"</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -457,14 +457,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>The mapping for the river and land component changes, as shown below. For an explanation about the type parameters between curly braces after the <code>struct</code> name see the section on the model parameters.</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>lateral.river <span class="op">=&gt;</span> <span class="kw">struct</span> ShallowWaterRiver{T,R,L}</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>lateral.land <span class="op">=&gt;</span> <span class="kw">struct</span> ShallowWaterLand{T}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>The local inertial approach is described in more detail in the section <a href="@ref local_inertial">Local inertial model</a>.</p>
+<p>The local inertial approach is described in more detail in the section <a href="../model_docs/lateral/local-inertial.html">Local inertial model</a>.</p>
 </section>
 </section>
 <section id="wflow_sediment" class="level2">
 <h2 class="anchored" data-anchor-id="wflow_sediment">wflow_sediment</h2>
 <p>The processes and fate of many particles and pollutants impacting water quality at the catchment level are intricately linked to the processes governing sediment dynamics. Both nutrients such as phosphorus, carbon or other pollutants such as metals are influenced by sediment properties in processes such as mobilization, flocculation or deposition. To better assert and model water quality in inland systems, a better comprehension and modelling of sediment sources and fate in the river is needed at a spatial and time scale relevant to such issues.</p>
 <p>The wflow_sediment model was developed to answer such issues. It is a distributed physics-based model, based on the distributed hydrologic wflow_sbm model. It is able to simulate both land and in-stream processes, and relies on available global datasets, parameter estimation and small calibration effort.</p>
-<p>In order to model the exports of terrestrial sediment to the coast through the Land Ocean Aquatic Continuum or LOAC (inland waters network such as streams, lakes…), two different modelling parts were considered. The first part, called the inland sediment model, is the modelling and estimation of soil loss and sediment yield to the river system by land erosion, separated into vertical <a href="@ref">Soil Erosion</a> processes and lateral <a href="@ref">Sediment Flux in overland flow</a>. The second part, called the <a href="@ref">River Sediment Model</a> is the transport and processes of the sediment in the river system. The two parts together constitute the wflow_sediment model.</p>
+<p>In order to model the exports of terrestrial sediment to the coast through the Land Ocean Aquatic Continuum or LOAC (inland waters network such as streams, lakes…), two different modelling parts were considered. The first part, called the inland sediment model, is the modelling and estimation of soil loss and sediment yield to the river system by land erosion, separated into vertical <a href="../model_docs/vertical/sediment.html#soil-erosion">Soil Erosion</a> processes and lateral <a href="../model_docs/lateral/sediment_flux.html#sediment-flux-in-overland-flow">Sediment Flux in overland flow</a>. The second part, called the <a href="../model_docs/lateral/sediment_flux.html#river-sediment-model">River Sediment Model</a> is the transport and processes of the sediment in the river system. The two parts together constitute the wflow_sediment model.</p>
 <p>Overview of the concepts of the wflow_sediment model: <img src="../images/wflow_sediment.png" class="img-fluid" alt="wflow_sediment"></p>
 <section id="configuration" class="level3">
 <h3 class="anchored" data-anchor-id="configuration">Configuration</h3>
