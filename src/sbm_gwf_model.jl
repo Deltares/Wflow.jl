@@ -600,6 +600,7 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
         vertical,
         (network.land.altitude .- aquifer.head) .* 1000.0, # zi [mm] in vertical concept SBM
         exfiltwater .* 1000.0,
+        config,
     )
 
     ssf_toriver = zeros(vertical.n)

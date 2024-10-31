@@ -63,6 +63,8 @@ end
     cel::Vector{T} | "m s-1"                        # Celerity of the kinematic wave
     to_river::Vector{T} | "m3 s-1"                  # Part of overland flow [m³ s⁻¹] that flows to the river
     kinwave_it::Bool | "-" | 0 | "none" | "none"    # Boolean for iterations kinematic wave
+    h_thresh::Vector{T} | "m"                       # Threshold for water level before flow occurs
+    pond_height::Vector{T} | "m"                    # Waterlevel of the pond (water stored on land surface)
 end
 
 function initialize_surfaceflow_land(nc, config, inds; sl, dl, width, iterate, tstep, dt)
@@ -74,6 +76,9 @@ function initialize_surfaceflow_land(nc, config, inds; sl, dl, width, iterate, t
     n_land =
         ncread(nc, config, "lateral.land.n"; sel = inds, defaults = 0.072, type = Float)
     n = length(inds)
+
+    h_thresh =
+        ncread(nc, config, "lateral.land.h_thresh"; sel = inds, defaults = 0, type = Float)
 
     sf_land = SurfaceFlowLand(
         beta = Float(0.6),
@@ -97,6 +102,8 @@ function initialize_surfaceflow_land(nc, config, inds; sl, dl, width, iterate, t
         cel = zeros(Float, n),
         to_river = zeros(Float, n),
         kinwave_it = iterate,
+        h_thresh = h_thresh,
+        pond_height = zeros(Float, n),
     )
 
     return sf_land
@@ -227,23 +234,63 @@ function update(sf::SurfaceFlowLand, network, frac_toriver)
                         )
                     end
 
-                    sf.q[v] = kinematic_wave(
-                        sf.qin[v],
-                        sf.q[v],
-                        sf.qlat[v],
-                        sf.alpha[v],
-                        sf.beta,
-                        dt,
-                        sf.dl[v],
+                    # Convert threshold to volume
+                    threshold_volume = sf.h_thresh[v] * sf.width[v] * sf.dl[v]
+                    pond_volume_current = sf.pond_height[v] * sf.width[v] * sf.dl[v]
+
+                    # Calculate potential inflow
+                    pot_inflow = (sf.qlat[v] * sf.dl[v] * dt) + (sf.qin[v] * dt)
+
+                    # Check potential pond volume, to see if flow is allowed to occur
+                    pond_volume_pot = max(
+                        pond_volume_current + pot_inflow,
+                        0.0,
                     )
 
-                    # update h, only if surface width > 0.0
-                    if sf.width[v] > 0.0
-                        crossarea = sf.alpha[v] * pow(sf.q[v], sf.beta)
-                        sf.h[v] = crossarea / sf.width[v]
+                    # Start kinematic wave if pond volume exceeds threshold
+                    if pond_volume_pot >= threshold_volume
+                        # Calculate fraction of pond volume that is above threshold
+                        if pot_inflow <= 0.0
+                            flowing_fraction = 1.0
+                        else
+                            flowing_fraction = (pond_volume_pot - threshold_volume) / pot_inflow
+                            flowing_fraction = min(flowing_fraction, 1.0)
+                        end
+
+                        sf.q[v] = kinematic_wave(
+                            sf.qin[v] * flowing_fraction,
+                            sf.q[v],
+                            sf.qlat[v] * flowing_fraction,
+                            sf.alpha[v],
+                            sf.beta,
+                            dt,
+                            sf.dl[v],
+                        )
+
+                        # update h, only if surface width > 0.0
+                        if sf.width[v] > 0.0
+                            crossarea = sf.alpha[v] * pow(sf.q[v], sf.beta)
+                            sf.h[v] = crossarea / sf.width[v]
+                        end
+
+                        # Update pond volume
+                        pond_volume_current = threshold_volume
+
+                    else
+                        # No flow if pond volume is below threshold
+                        sf.q[v] = 0.0
+                        sf.h[v] = 0.0
+                        # Update pond volume
+                        pond_volume_current = pond_volume_pot
                     end
+
+                    # Update values
+                    sf.pond_height[v] = pond_volume_current / (sf.width[v] * sf.dl[v])
+
+                    # Update average values
                     sf.q_av[v] += sf.q[v]
-                    sf.h_av[v] += sf.h[v]
+                    sf.h_av[v] += (sf.h[v] + sf.pond_height[v])
+
                 end
             end
         end
@@ -251,7 +298,7 @@ function update(sf::SurfaceFlowLand, network, frac_toriver)
     sf.q_av ./= its
     sf.h_av ./= its
     sf.to_river ./= its
-    sf.volume .= sf.dl .* sf.width .* sf.h
+    sf.volume .= sf.dl .* sf.width .* (sf.h .+ sf.pond_height)
 end
 
 function update(sf::SurfaceFlowRiver, network, doy)
@@ -1013,7 +1060,7 @@ const dirs = (:yd, :xd, :xu, :yu)
     g::T | "m2 s-1" | 0 | "scalar"                          # acceleration due to gravity
     theta::T | "-" | 0 | "scalar"                           # weighting factor (de Almeida et al., 2012)
     alpha::T | "-" | 0 | "scalar"                           # stability coefficient (de Almeida et al., 2012)
-    h_thresh::T | "m" | 0 | "scalar"                        # depth threshold for calculating flow
+    h_thresh::Vector{T} | "m" | 0 | "scalar"                # depth threshold for calculating flow
     dt::T | "s" | 0 | "none" | "none"                       # model time step [s]
     qy0::Vector{T} | "m3 s-1" | _ | "edge"                  # flow in y direction at previous time step
     qx0::Vector{T} | "m3 s-1" | _ | "edge"                  # flow in x direction at previous time step
@@ -1052,9 +1099,17 @@ function initialize_shallowwater_land(
     froude_limit = get(config.model, "froude_limit", true)::Bool # limit flow to subcritical according to Froude number
     alpha = get(config.model, "inertial_flow_alpha", 0.7)::Float64 # stability coefficient for model time step (0.2-0.7)
     theta = get(config.model, "inertial_flow_theta", 0.8)::Float64 # weighting factor
-    h_thresh = get(config.model, "h_thresh", 1.0e-03)::Float64 # depth threshold for flow at link
+    # depth threshold for flow at link
+    h_thresh = ncread(
+        nc,
+        config,
+        "lateral.land.h_thresh";
+        sel = inds,
+        defaults = 1.0e-03,
+        type = Float,
+    )
 
-    @info "Local inertial approach is used for overlandflow." alpha theta h_thresh froude_limit
+    @info "Local inertial approach is used for overlandflow." alpha theta froude_limit
 
     n_land =
         ncread(nc, config, "lateral.land.n"; sel = inds, defaults = 0.072, type = Float)
@@ -1252,7 +1307,7 @@ function shallowwater_update(
             zs_max = max(zs_x, zs_xu)
             hf = (zs_max - sw.zx_max[i])
 
-            if hf > sw.h_thresh
+            if hf > sw.h_thresh[i]
                 length = T(0.5) * (sw.xl[i] + sw.xl[xu]) # can be precalculated
                 sw.qx[i] = local_inertial_flow(
                     sw.theta,
@@ -1292,7 +1347,7 @@ function shallowwater_update(
             zs_max = max(zs_y, zs_yu)
             hf = (zs_max - sw.zy_max[i])
 
-            if hf > sw.h_thresh
+            if hf > sw.h_thresh[i]
                 length = T(0.5) * (sw.yl[i] + sw.yl[yu]) # can be precalculated
                 sw.qy[i] = local_inertial_flow(
                     sw.theta,
