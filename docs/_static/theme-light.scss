@@ -23,3 +23,11 @@ $navbar-hl: $links ;
     border-color: $links;
     border: 1px solid $links;
 }
+
+.footer-image-dark {
+    display: none;
+}
+
+.footer-image-light {
+    display: inline;
+}
