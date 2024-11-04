@@ -832,10 +832,10 @@ function update_water_allocation!(land_allocation, demand::Demand, lateral, netw
 
     # for reservoir and lake locations set river abstraction at zero and abstract volume
     # from reservoir and lake, including an update of lake waterlevel
-    if river.reservoir !== nothing
+    if !isnothing(river.reservoir)
         @. river.abstraction[res_index_f] = 0.0
         @. river.reservoir.volume -= act_surfacewater_abst_vol[res_index_f]
-    elseif river.lake !== nothing
+    elseif !isnothing(river.lake)
         @. river.abstraction[lake_index_f] = 0.0
         lakes = river.lake
         @. lakes.storage -= act_surfacewater_abst_vol[lake_index_f]
