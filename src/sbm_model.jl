@@ -5,7 +5,6 @@ Initial part of the SBM model concept. Reads the input settings and data as defi
 Config object. Will return a Model that is ready to run.
 """
 function initialize_sbm_model(config::Config)
-
     model_type = config.model.type::String
     @info "Initialize model variables for model type `$model_type`."
 
@@ -63,17 +62,17 @@ function initialize_sbm_model(config::Config)
     # read x, y coordinates and calculate cell length [m]
     y_nc = read_y_axis(nc)
     x_nc = read_x_axis(nc)
-    y = permutedims(repeat(y_nc, outer = (1, length(x_nc))))[inds]
+    y = permutedims(repeat(y_nc; outer = (1, length(x_nc))))[inds]
     cellength = abs(mean(diff(x_nc)))
 
     sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
     xl, yl = cell_lengths(y, cellength, sizeinmetres)
     riverfrac = river_fraction(river, riverlength, riverwidth, xl, yl)
 
+    lhm = LandHydrologySBM(nc, config, riverfrac, inds)
+
     inds_riv, rev_inds_riv = active_indices(river_2d, 0)
     nriv = length(inds_riv)
-
-    sbm = initialize_sbm(nc, config, riverfrac, inds)
 
     # reservoirs
     pits = zeros(Bool, modelsize_2d)
@@ -123,23 +122,34 @@ function initialize_sbm_model(config::Config)
             type = Float,
         )
 
-        # unit for lateral subsurface flow component is [m³ d⁻¹], sbm.kv_0 [mm Δt⁻¹]
-        kh_0 = khfrac .* sbm.kv_0 .* 0.001 .* (basetimestep / dt)
-        f = sbm.f .* 1000.0
-        zi = sbm.zi .* 0.001
-        soilthickness = sbm.soilthickness .* 0.001
-        z_exp = sbm.z_exp .* 0.001
+        (; theta_s, theta_r, soilthickness) = lhm.soil.parameters
+        (; zi) = lhm.soil.variables
+        ssf_soilthickness = soilthickness .* 0.001
+        ssf_zi = zi .* 0.001
 
-        ssf = LateralSSF{Float}(
-            kh_0 = kh_0,
-            f = f,
-            kh = fill(mv, n),
+        kh_profile_type = get(config.input.vertical, "ksat_profile", "exponential")::String
+        if kh_profile_type == "exponential"
+            (; kv_0, f) = lhm.soil.parameters.kv_profile
+            kh_0 = khfrac .* kv_0 .* 0.001 .* (basetimestep / dt)
+            kh_profile = KhExponential(kh_0, f .* 1000.0)
+        elseif kh_profile_type == "exponential_constant"
+            (; z_exp) = lhm.soil.parameters.kv_profile
+            (; kv_0, f) = lhm.soil.parameters.kv_profile.exponential
+            kh_0 = khfrac .* kv_0 .* 0.001 .* (basetimestep / dt)
+            exp_profile = KhExponential(kh_0, f .* 1000.0)
+            kh_profile = KhExponentialConstant(exp_profile, z_exp .* 0.001)
+        elseif kh_profile_type == "layered" || kh_profile_type == "layered_exponential"
+            kh_profile = KhLayered(fill(mv, n))
+        end
+
+        # unit for lateral subsurface flow component is [m³ d⁻¹], kv_0 [mm Δt⁻¹]
+        ssf = LateralSSF{Float, typeof(kh_profile)}(;
+            kh_profile = kh_profile,
             khfrac = khfrac,
-            zi = zi,
-            z_exp = z_exp,
-            soilthickness = soilthickness,
-            theta_s = sbm.theta_s,
-            theta_r = sbm.theta_r,
+            zi = ssf_zi,
+            soilthickness = ssf_soilthickness,
+            theta_s,
+            theta_r,
             dt = dt / basetimestep,
             slope = landslope,
             dl = dl,
@@ -150,21 +160,19 @@ function initialize_sbm_model(config::Config)
             ssfin = fill(mv, n),
             ssfmax = fill(mv, n),
             to_river = zeros(n),
-            volume = (sbm.theta_s .- sbm.theta_r) .* (soilthickness .- zi) .* (xl .* yl),
+            volume = (theta_s .- theta_r) .* (ssf_soilthickness .- ssf_zi) .* (xl .* yl),
         )
         # update variables `ssf`, `ssfmax` and `kh` (layered profile) based on ksat_profile
-        ksat_profile = get(config.input.vertical, "ksat_profile", "exponential")::String
-        if ksat_profile == "exponential"
-            initialize_lateralssf_exp!(ssf::LateralSSF)
-        elseif ksat_profile == "exponential_constant"
-            initialize_lateralssf_exp_const!(ssf::LateralSSF)
-        elseif ksat_profile == "layered" || ksat_profile == "layered_exponential"
-            initialize_lateralssf_layered!(ssf::LateralSSF, sbm::SBM, ksat_profile)
+        if kh_profile_type == "exponential" || kh_profile_type == "exponential_constant"
+            initialize_lateralssf!(ssf, kh_profile)
+        elseif kh_profile_type == "layered" || kh_profile_type == "layered_exponential"
+            (; kv_profile) = lhm.soil.parameters
+            initialize_lateralssf!(ssf, lhm.soil, kv_profile, tosecond(dt))
         end
     else
         # when the SBM model is coupled (BMI) to a groundwater model, the following
         # variables are expected to be exchanged from the groundwater model.
-        ssf = GroundwaterExchange{Float}(
+        ssf = GroundwaterExchange{Float}(;
             dt = dt / basetimestep,
             exfiltwater = fill(mv, n),
             zi = fill(mv, n),
@@ -187,11 +195,12 @@ function initialize_sbm_model(config::Config)
     inds_allocation_areas = Vector{Int}[]
     inds_riv_allocation_areas = Vector{Int}[]
     if do_water_demand
-        areas = unique(sbm.allocation.areas)
+        areas = unique(lhm.allocation.parameters.areas)
         for a in areas
-            area_index = findall(x -> x == a, sbm.allocation.areas)
+            area_index = findall(x -> x == a, lhm.allocation.parameters.areas)
             push!(inds_allocation_areas, area_index)
-            area_riv_index = findall(x -> x == a, sbm.allocation.areas[index_river])
+            area_riv_index =
+                findall(x -> x == a, lhm.allocation.parameters.areas[index_river])
             push!(inds_riv_allocation_areas, area_riv_index)
         end
     end
@@ -312,21 +321,22 @@ function initialize_sbm_model(config::Config)
         end
     end
 
-    modelmap = (vertical = sbm, lateral = (subsurface = ssf, land = olf, river = rf))
+    modelmap = (vertical = lhm, lateral = (subsurface = ssf, land = olf, river = rf))
     indices_reverse = (
         land = rev_inds,
         river = rev_inds_riv,
         reservoir = isempty(reservoir) ? nothing : reservoir.reverse_indices,
         lake = isempty(lake) ? nothing : lake.reverse_indices,
     )
+    (; maxlayers) = lhm.soil.parameters
     writer = prepare_writer(
         config,
         modelmap,
         indices_reverse,
         x_nc,
         y_nc,
-        nc,
-        extra_dim = (name = "layer", value = Float64.(1:sbm.maxlayers)),
+        nc;
+        extra_dim = (name = "layer", value = Float64.(1:(maxlayers))),
     )
     close(nc)
 
@@ -418,112 +428,76 @@ function initialize_sbm_model(config::Config)
         config,
         (; land, river, reservoir, lake, index_river, frac_toriver),
         (subsurface = ssf, land = olf, river = rf),
-        sbm,
+        lhm,
         clock,
         reader,
         writer,
         SbmModel(),
     )
 
-    model = set_states(model)
+    set_states!(model)
 
     @info "Initialized model"
     return model
 end
 
 "update SBM model for a single timestep"
-function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
-
+function update!(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmModel}
     (; lateral, vertical, network, config) = model
     do_water_demand = haskey(config.model, "water_demand")
-    ksat_profile = get(config.input.vertical, "ksat_profile", "exponential")::String
+    (; kv_profile) = vertical.soil.parameters
 
-    model = update_until_recharge(model)
-    # exchange of recharge between vertical sbm concept and subsurface flow domain
-    lateral.subsurface.recharge .= vertical.recharge ./ 1000.0
+    update_until_recharge!(model)
+    # exchange of recharge between SBM soil model and subsurface flow domain
+    lateral.subsurface.recharge .= vertical.soil.variables.recharge ./ 1000.0
     if do_water_demand
-        @. lateral.subsurface.recharge -= vertical.allocation.act_groundwater_abst / 1000.0
+        @. lateral.subsurface.recharge -=
+            vertical.allocation.variables.act_groundwater_abst / 1000.0
     end
     lateral.subsurface.recharge .*= lateral.subsurface.dw
-    lateral.subsurface.zi .= vertical.zi ./ 1000.0
+    lateral.subsurface.zi .= vertical.soil.variables.zi ./ 1000.0
     # update lateral subsurface flow domain (kinematic wave)
-    if (ksat_profile == "layered") || (ksat_profile == "layered_exponential")
-        for i in eachindex(lateral.subsurface.kh)
-            lateral.subsurface.kh[i] =
-                kh_layered_profile(vertical, lateral.subsurface.khfrac[i], i, ksat_profile)
-        end
-    end
-    update(lateral.subsurface, network.land, network.frac_toriver, ksat_profile)
-    model = update_after_subsurfaceflow(model)
-    model = update_total_water_storage(model)
+    kh_layered_profile!(vertical.soil, lateral.subsurface, kv_profile, vertical.dt)
+    update!(lateral.subsurface, network.land, network.frac_toriver)
+    update_after_subsurfaceflow!(model)
+    update_total_water_storage!(model)
+    return nothing
 end
 
 """
-    update_until_recharge(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
+    update_until_recharge!(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
 
 Update SBM model until recharge for a single timestep. This function is also accessible
 through BMI, to couple the SBM model to an external groundwater model.
 """
-function update_until_recharge(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
+function update_until_recharge!(
+    model::Model{N, L, V, R, W, T},
+) where {N, L, V, R, W, T <: SbmModel}
     (; lateral, vertical, network, config) = model
-
-    do_water_demand = haskey(config.model, "water_demand")
-
-    inds_riv = network.index_river
-
-    # extract water levels h_av [m] from the land and river domains
-    # this is used to limit open water evaporation
-    vertical.waterlevel_land .= lateral.land.h_av .* 1000.0
-    vertical.waterlevel_river[inds_riv] .= lateral.river.h_av .* 1000.0
-
-    # vertical sbm concept is updated until snow state, after that (optional)
-    # snow transport is possible
-    update_until_snow(vertical, config)
-
-    # lateral snow transport
-    if get(config.model, "masswasting", false)::Bool
-        lateral_snow_transport!(
-            vertical.snow,
-            vertical.snowwater,
-            network.land.slope,
-            network.land,
-        )
-    end
-
-    # optional water demand and allocation
-    if do_water_demand
-        update_water_demand(vertical)
-        update_water_allocation(model)
-    end
-
-    # update vertical sbm concept until recharge [mm] to the saturated store
-    update_until_recharge(vertical, config)
-
-    return model
+    update!(vertical, lateral, network, config)
+    return nothing
 end
 
 """
-    update_after_subsurfaceflow(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
+    update_after_subsurfaceflow!(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
 
 Update SBM model after subsurface flow for a single timestep. This function is also
 accessible through BMI, to couple the SBM model to an external groundwater model.
 """
-function update_after_subsurfaceflow(
-    model::Model{N,L,V,R,W,T},
-) where {N,L,V,R,W,T<:SbmModel}
+function update_after_subsurfaceflow!(
+    model::Model{N, L, V, R, W, T},
+) where {N, L, V, R, W, T <: SbmModel}
     (; lateral, vertical) = model
+    (; soil, runoff, demand) = vertical
+    (; subsurface) = lateral
 
-    # update vertical sbm concept (runoff, ustorelayerdepth and satwaterdepth)
-    update_after_subsurfaceflow(
-        vertical,
-        lateral.subsurface.zi * 1000.0,
-        lateral.subsurface.exfiltwater * 1000.0,
-    )
+    # update SBM soil model (runoff, ustorelayerdepth and satwaterdepth)
+    update!(soil, (; runoff, demand, subsurface))
 
     ssf_toriver = lateral.subsurface.to_river ./ tosecond(basetimestep)
-    surface_routing(model, ssf_toriver = ssf_toriver)
+    surface_routing!(model; ssf_toriver = ssf_toriver)
 
-    return model
+    return nothing
 end
 
 """
@@ -531,24 +505,26 @@ Update of the total water storage at the end of each timestep per model cell.
 
 This is done here at model level.
 """
-function update_total_water_storage(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
+function update_total_water_storage!(
+    model::Model{N, L, V, R, W, T},
+) where {N, L, V, R, W, T <: SbmModel}
     (; lateral, vertical, network) = model
 
     # Update the total water storage based on vertical states
     # TODO Maybe look at routing in the near future
-    update_total_water_storage(
+    update_total_water_storage!(
         vertical,
         network.index_river,
         network.land.area,
         lateral.river,
         lateral.land,
     )
-    return model
+    return nothing
 end
 
-function set_states(
-    model::Model{N,L,V,R,W,T},
-) where {N,L,V,R,W,T<:Union{SbmModel,SbmGwfModel}}
+function set_states!(
+    model::Model{N, L, V, R, W, T},
+) where {N, L, V, R, W, T <: Union{SbmModel, SbmGwfModel}}
     (; lateral, vertical, network, config) = model
 
     reinit = get(config.model, "reinit", true)::Bool
@@ -563,21 +539,16 @@ function set_states(
         nriv = length(network.river.indices)
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
-        if T <: SbmModel
-            @warn string(
-                "The unit of `ssf` (lateral subsurface flow) is now m3 d-1. Please update your",
-                " input state file if it was produced with a Wflow version up to v0.5.2.",
-            )
-        end
-        set_states(instate_path, model; type = Float, dimname = :layer)
-        # update zi for vertical sbm
+        set_states!(instate_path, model; type = Float, dimname = :layer)
+        # update zi for SBM soil model
         zi =
             max.(
                 0.0,
-                vertical.soilthickness .-
-                vertical.satwaterdepth ./ (vertical.theta_s .- vertical.theta_r),
+                vertical.soil.parameters.soilthickness .-
+                vertical.soil.variables.satwaterdepth ./
+                (vertical.soil.parameters.theta_s .- vertical.soil.parameters.theta_r),
             )
-        vertical.zi .= zi
+        vertical.soil.variables.zi .= zi
         if land_routing == "kinematic-wave"
             # make sure land cells with zero flow width are set to zero q and h
             for i in eachindex(lateral.land.width)
@@ -588,12 +559,6 @@ function set_states(
             end
             lateral.land.volume .= lateral.land.h .* lateral.land.width .* lateral.land.dl
         elseif land_routing == "local-inertial"
-            @warn string(
-                "The reference level for the water depth `h` and `h_av` of overland flow ",
-                "(local inertial model) for cells containing a river has changed from river",
-                " bed elevation `zb` to cell elevation `z`. Please update the input state",
-                " file if it was produced with Wflow version v0.5.2.",
-            )
             for i in eachindex(lateral.land.volume)
                 if lateral.land.rivercells[i]
                     j = network.land.index_river[i]
@@ -632,5 +597,5 @@ function set_states(
     else
         @info "Set initial conditions from default values."
     end
-    return model
+    return nothing
 end

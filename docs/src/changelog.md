@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Fixed
+- Initialization of `LateralSSF` variables `ssf` and `ssfmax` with vertical hydraulic
+  conductivity profile `exponential_constant`. Removed parameter `khfrac` from the
+  computation, as it is already part of parameter `kh_0`.
+
+### Changed
+- Removed vertical concepts `HBV` and `FLEXTopo`.
+- Removed metadata macros `exchange` and `grid_type`. The macro `grid_type` is not required
+  because this functionality is already part of `BMI`. The macro `exchange` is replaced by a
+  function used by `BMI`. Remaining metadata macros `get_units` and `grid_loc` are only used
+  by `BMI`.
+- Refactor the vertical `SBM` concept: divide the long struct `SBM` into different model
+  components for interception, snow, glacier, (open water) runoff, soil, water demand and
+  allocation stored in the struct `LandHydrologySBM`. Additionally, the atmospheric forcing
+  and a shared vegetation parameterset are stored as separate fields in struct
+  `LandHydrologySBM` (with soil model `SbmSoilModel`). The model component structs have
+  model `variables`, `parameters` and `boundary_conditions` (if applicable), including
+  associated functions for initializing and updating these model components. The original
+  long update function of the `SBM` soil part has been split into separate functions. 
+
+### Added
+- Support direct output of snow and glacier melt, and add computation of snow water
+  equivalent (SWE).
+
 ## v0.8.1 - 2024-08-27
 
 ### Fixed

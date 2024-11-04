@@ -5,7 +5,7 @@ config = Wflow.Config(tomlpath)
 model = Wflow.initialize_sbm_gwf_model(config)
 (; network) = model
 
-model = Wflow.run_timestep(model)
+Wflow.run_timestep!(model)
 
 # test if the first timestep was written to the CSV file
 flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
@@ -21,21 +21,21 @@ end
     sbm = model.vertical
 
     @test model.clock.iteration == 1
-    @test sbm.theta_s[1] ≈ 0.44999998807907104f0
-    @test sbm.runoff[1] == 0.0
-    @test sbm.soilevap[1] == 0.0
-    @test sbm.transpiration[1] ≈ 0.30587632831650247f0
+    @test sbm.soil.parameters.theta_s[1] ≈ 0.44999998807907104f0
+    @test sbm.soil.variables.runoff[1] == 0.0
+    @test sbm.soil.variables.soilevap[1] == 0.0
+    @test sbm.soil.variables.transpiration[1] ≈ 0.30587632831650247f0
 end
 
 # run the second timestep
-model = Wflow.run_timestep(model)
+Wflow.run_timestep!(model)
 
 @testset "second timestep" begin
     sbm = model.vertical
-    @test sbm.theta_s[1] ≈ 0.44999998807907104f0
-    @test sbm.runoff[1] == 0.0
-    @test sbm.soilevap[1] == 0.0
-    @test sbm.transpiration[4] ≈ 0.7000003898938235f0
+    @test sbm.soil.parameters.theta_s[1] ≈ 0.44999998807907104f0
+    @test sbm.soil.variables.runoff[1] == 0.0
+    @test sbm.soil.variables.soilevap[1] == 0.0
+    @test sbm.soil.variables.transpiration[4] ≈ 0.7000003898938235f0
 end
 
 @testset "overland flow (kinematic wave)" begin
@@ -76,7 +76,7 @@ end
     @test collect(keys(model.lateral.subsurface)) == [:flow, :recharge, :river]
 end
 
-Wflow.close_files(model, delete_output = false)
+Wflow.close_files(model; delete_output = false)
 
 # test local-inertial option for river flow routing
 tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
@@ -87,8 +87,8 @@ config.input.lateral.river.bankfull_elevation = "bankfull_elevation"
 config.input.lateral.river.bankfull_depth = "bankfull_depth"
 
 model = Wflow.initialize_sbm_gwf_model(config)
-model = Wflow.run_timestep(model)
-model = Wflow.run_timestep(model)
+Wflow.run_timestep!(model)
+Wflow.run_timestep!(model)
 
 @testset "river domain (local inertial)" begin
     q = model.lateral.river.q_av
@@ -100,7 +100,7 @@ model = Wflow.run_timestep(model)
     @test q[13] ≈ 0.0004638698607639214f0
     @test q[5] ≈ 0.0064668491697542786f0
 end
-Wflow.close_files(model, delete_output = false)
+Wflow.close_files(model; delete_output = false)
 
 # test local-inertial option for river and overland flow routing
 tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
@@ -118,8 +118,8 @@ config.state.lateral.land.qx = "qx_land"
 config.state.lateral.land.qy = "qy_land"
 
 model = Wflow.initialize_sbm_gwf_model(config)
-model = Wflow.run_timestep(model)
-model = Wflow.run_timestep(model)
+Wflow.run_timestep!(model)
+Wflow.run_timestep!(model)
 
 @testset "river and land domain (local inertial)" begin
     q = model.lateral.river.q_av
@@ -136,7 +136,7 @@ model = Wflow.run_timestep(model)
     @test all(qx .== 0.0f0)
     @test all(qy .== 0.0f0)
 end
-Wflow.close_files(model, delete_output = false)
+Wflow.close_files(model; delete_output = false)
 
 # test with warm start
 tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
@@ -146,14 +146,14 @@ config.model.reinit = false
 model = Wflow.initialize_sbm_gwf_model(config)
 (; network) = model
 
-model = Wflow.run_timestep(model)
-model = Wflow.run_timestep(model)
+Wflow.run_timestep!(model)
+Wflow.run_timestep!(model)
 
 @testset "second timestep warm start" begin
     sbm = model.vertical
-    @test sbm.runoff[1] == 0.0
-    @test sbm.soilevap[1] ≈ 0.2889306511074693f0
-    @test sbm.transpiration[1] ≈ 0.8370726722706481f0
+    @test sbm.soil.variables.runoff[1] == 0.0
+    @test sbm.soil.variables.soilevap[1] ≈ 0.2889306511074693f0
+    @test sbm.soil.variables.transpiration[1] ≈ 0.8370726722706481f0
 end
 
 @testset "overland flow warm start (kinematic wave)" begin
@@ -186,4 +186,21 @@ end
     @test gw.drain.flux[1] ≈ 0.0
     @test gw.recharge.rate[19] ≈ -0.0014241196552847502f0
 end
-Wflow.close_files(model, delete_output = false)
+
+@testset "Exchange and grid location aquifer, recharge and constant head" begin
+    aquifer = model.lateral.subsurface.flow.aquifer
+    @test Wflow.exchange(aquifer.head) == true
+    @test Wflow.exchange(aquifer.k) == true
+    @test Wflow.grid_loc(aquifer, :head) == "node"
+    @test Wflow.grid_loc(aquifer, :k) == "node"
+    recharge = model.lateral.subsurface.recharge
+    @test Wflow.exchange(recharge.rate) == true
+    @test Wflow.exchange(recharge.flux) == true
+    @test Wflow.grid_loc(recharge, :rate) == "node"
+    @test Wflow.grid_loc(recharge, :flux) == "node"
+    constanthead = model.lateral.subsurface.flow.constanthead
+    @test Wflow.exchange(constanthead) == false
+    @test Wflow.grid_loc(constanthead, :head) == "node"
+end
+
+Wflow.close_files(model; delete_output = false)

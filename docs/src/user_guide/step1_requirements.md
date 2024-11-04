@@ -21,15 +21,13 @@ combination with `lateral` concepts that control how water is routed for example
 land or river domain. For the wflow\_sbm model, different model configurations are possible.
 The following configurations are supported in wflow:
 
-- wflow\_sbm:
-  - SBM + kinematic wave for subsurface and surface flow
-  - SBM + kinematic wave for subsurface and overland flow + local inertial river (+ optional
-      floodplain)
-  - SBM + kinematic wave for subsurface flow + local inertial river (1D) and land (2D)
-  - SBM + groundwater flow + kinematic wave for surface flow
-- wflow\_hbv: HBV + kinematic wave for surface routing
-- wflow\_flextopo: FLEXTOPO + kinematic wave for surface routing
-- wflow\_sediment as post processing of wflow\_sbm or wflow\_hbv output
+ - wflow\_sbm:
+    - SBM + kinematic wave for subsurface and surface flow
+    - SBM + kinematic wave for subsurface and overland flow + local inertial river (+
+      optional floodplain)
+    - SBM + kinematic wave for subsurface flow + local inertial river (1D) and land (2D)
+    - SBM + groundwater flow + kinematic wave for surface flow
+ - wflow\_sediment as post processing of wflow\_sbm output
 
 In the following pages, some examples will be given on how to prepare a basic wflow\_sbm
 model. Sample data for other model configurations is provided in the [sample data](@ref

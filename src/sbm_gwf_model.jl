@@ -2,7 +2,7 @@
     initialize_sbm_gwf_model(config::Config)
 
 Initial part of the sbm_gwf model concept. The model contains:
-    - the vertical SBM concept
+    - the land hydrology model with the SBM soil model
     - unconfined aquifer with groundwater flow in four directions (adjacent cells)
     - the following surface routing options:
         - 1-D kinematic wave for river flow and 1-D kinematic wave for overland flow
@@ -65,7 +65,7 @@ function initialize_sbm_gwf_model(config::Config)
     # read x, y coordinates and calculate cell length [m]
     y_nc = read_y_axis(nc)
     x_nc = read_x_axis(nc)
-    y = permutedims(repeat(y_nc, outer = (1, length(x_nc))))[inds]
+    y = permutedims(repeat(y_nc; outer = (1, length(x_nc))))[inds]
     cellength = abs(mean(diff(x_nc)))
 
     sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
@@ -76,7 +76,7 @@ function initialize_sbm_gwf_model(config::Config)
     nriv = length(inds_riv)
 
     # initialize vertical SBM concept
-    sbm = initialize_sbm(nc, config, riverfrac, inds)
+    lhm = LandHydrologySBM(nc, config, riverfrac, inds)
 
     # reservoirs
     pits = zeros(Bool, modelsize_2d)
@@ -122,11 +122,11 @@ function initialize_sbm_gwf_model(config::Config)
     inds_allocation_areas = Vector{Int}[]
     inds_riv_allocation_areas = Vector{Int}[]
     if do_water_demand
-        areas = unique(sbm.allocation.areas)
+        areas = unique(lhm.allocation.parameters.areas)
         for a in areas
-            area_index = findall(x -> x == a, sbm.allocation.areas)
+            area_index = findall(==(a), lhm.allocation.parameters.areas)
             push!(inds_allocation_areas, area_index)
-            area_riv_index = findall(x -> x == a, sbm.allocation.areas[index_river])
+            area_riv_index = findall(==(a), lhm.allocation.parameters.areas[index_river])
             push!(inds_riv_allocation_areas, area_riv_index)
         end
     end
@@ -240,14 +240,14 @@ function initialize_sbm_gwf_model(config::Config)
         get(config.input.lateral.subsurface, "conductivity_profile", "uniform")::String
 
     connectivity = Connectivity(inds, rev_inds, xl, yl)
-    initial_head = altitude .- sbm.zi / 1000.0 # cold state for groundwater head based on SBM zi
+    initial_head = altitude .- lhm.soil.variables.zi / 1000.0 # cold state for groundwater head based on SBM zi
     initial_head[index_river] = altitude[index_river]
 
     if do_constanthead
         initial_head[constant_head.index] = constant_head.head
     end
 
-    bottom = altitude .- sbm.soilthickness ./ Float(1000.0)
+    bottom = altitude .- lhm.soil.parameters.soilthickness ./ Float(1000.0)
     area = xl .* yl
     volume = @. (min(altitude, initial_head) - bottom) * area * specific_yield # total volume than can be released
 
@@ -344,7 +344,12 @@ function initialize_sbm_gwf_model(config::Config)
         drain = ()
     end
 
-    gwf = GroundwaterFlow(aquifer, connectivity, constant_head, aquifer_boundaries)
+    gwf = GroundwaterFlow{Float}(;
+        aquifer,
+        connectivity,
+        constanthead = constant_head,
+        boundaries = aquifer_boundaries,
+    )
 
     # map GroundwaterFlow and its boundaries
     if do_drains
@@ -391,7 +396,7 @@ function initialize_sbm_gwf_model(config::Config)
     end
 
     modelmap =
-        (vertical = sbm, lateral = (subsurface = subsurface_map, land = olf, river = rf))
+        (vertical = lhm, lateral = (subsurface = subsurface_map, land = olf, river = rf))
     indices_reverse = (
         land = rev_inds,
         river = rev_inds_riv,
@@ -405,8 +410,8 @@ function initialize_sbm_gwf_model(config::Config)
         indices_reverse,
         x_nc,
         y_nc,
-        nc,
-        extra_dim = (name = "layer", value = Float64.(1:sbm.maxlayers)),
+        nc;
+        extra_dim = (name = "layer", value = Float64.(1:(lhm.soil.parameters.maxlayers))),
     )
     close(nc)
 
@@ -511,55 +516,28 @@ function initialize_sbm_gwf_model(config::Config)
         config,
         (; land, river, reservoir, lake, drain, index_river, frac_toriver),
         (subsurface = subsurface_map, land = olf, river = rf),
-        sbm,
+        lhm,
         clock,
         reader,
         writer,
         SbmGwfModel(),
     )
 
-    model = set_states(model)
+    set_states!(model)
 
     return model
 end
 
-
 "update the sbm_gwf model for a single timestep"
-function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
-    (; lateral, vertical, network, config) = model
+function update!(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmGwfModel}
+    (; lateral, vertical, network, clock, config) = model
+    (; soil, runoff, demand) = vertical
 
     do_water_demand = haskey(config.model, "water_demand")
     inds_riv = network.index_river
     aquifer = lateral.subsurface.flow.aquifer
-    constanthead = lateral.subsurface.flow.constanthead
 
-    # extract water levels h_av [m] from the land and river domains
-    # this is used to limit open water evaporation
-    vertical.waterlevel_land .= lateral.land.h_av .* 1000.0
-    vertical.waterlevel_river[inds_riv] .= lateral.river.h_av .* 1000.0
-
-    # vertical sbm concept is updated until snow state, after that (optional)
-    # snow transport is possible
-    update_until_snow(vertical, config)
-
-    # lateral snow transport
-    if get(config.model, "masswasting", false)::Bool
-        lateral_snow_transport!(
-            vertical.snow,
-            vertical.snowwater,
-            network.land.slope,
-            network.land,
-        )
-    end
-
-    # optional water demand and allocation
-    if do_water_demand
-        update_water_demand(vertical)
-        update_water_allocation(model)
-    end
-
-    # update vertical sbm concept until recharge [mm]
-    update_until_recharge(vertical, config)
+    update!(vertical, lateral, network, config)
 
     # set river stage (groundwater) to average h from kinematic wave
     lateral.subsurface.river.stage .= lateral.river.h_av .+ lateral.subsurface.river.bottom
@@ -571,40 +549,27 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
     dt_sbm = (vertical.dt / tosecond(basetimestep)) # vertical.dt is in seconds (Float64)
     if dt_gw < dt_sbm
         @warn(
-            "stable time step dt $dt_gw for groundwater flow is smaller than sbm dt $dt_sbm"
+            "stable time step dt $dt_gw for groundwater flow is smaller than `LandHydrologySBM` model dt $dt_sbm"
         )
     end
 
-    Q = zeros(vertical.n)
-    # exchange of recharge between vertical sbm concept and groundwater flow domain
+    Q = zeros(lateral.subsurface.flow.connectivity.ncell)
+    # exchange of recharge between SBM soil model and groundwater flow domain
     # recharge rate groundwater is required in units [m d⁻¹]
-    @. lateral.subsurface.recharge.rate = vertical.recharge / 1000.0 * (1.0 / dt_sbm)
+    @. lateral.subsurface.recharge.rate = soil.variables.recharge / 1000.0 * (1.0 / dt_sbm)
     if do_water_demand
         @. lateral.subsurface.recharge.rate -=
-            vertical.allocation.act_groundwater_abst / 1000.0 * (1.0 / dt_sbm)
+            vertical.allocation.variables.act_groundwater_abst / 1000.0 * (1.0 / dt_sbm)
     end
     # update groundwater domain
-    update(lateral.subsurface.flow, Q, dt_sbm, conductivity_profile)
+    update!(lateral.subsurface.flow, Q, dt_sbm, conductivity_profile)
 
-    # determine excess water depth [m] (exfiltwater) in groundwater domain (head > surface)
-    # and reset head
-    exfiltwater = (aquifer.head .- min.(aquifer.head, aquifer.top)) .* storativity(aquifer)
-    aquifer.head .= min.(aquifer.head, aquifer.top)
+    # update SBM soil model (runoff, ustorelayerdepth and satwaterdepth)
+    update!(soil, (; runoff, demand, subsurface = lateral.subsurface.flow))
 
-    # Adjust for constant head boundary of groundwater domain
-    exfiltwater[constanthead.index] .= 0
-    aquifer.head[constanthead.index] .= constanthead.head
-
-    # update vertical sbm concept (runoff, ustorelayerdepth and satwaterdepth)
-    update_after_subsurfaceflow(
-        vertical,
-        (network.land.altitude .- aquifer.head) .* 1000.0, # zi [mm] in vertical concept SBM
-        exfiltwater .* 1000.0,
-    )
-
-    ssf_toriver = zeros(vertical.n)
+    ssf_toriver = zeros(length(soil.variables.zi))
     ssf_toriver[inds_riv] = -lateral.subsurface.river.flux ./ lateral.river.dt
-    surface_routing(model, ssf_toriver = ssf_toriver)
+    surface_routing!(model; ssf_toriver = ssf_toriver)
 
-    return model
+    return nothing
 end

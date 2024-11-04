@@ -5,7 +5,6 @@ Initial part of the sediment model concept. Reads the input settings and data as
 Config object. Will return a Model that is ready to run.
 """
 function initialize_sediment_model(config::Config)
-
     model_type = config.model.type::String
     @info "Initialize model variables for model type `$model_type`."
 
@@ -47,7 +46,7 @@ function initialize_sediment_model(config::Config)
     # read x, y coordinates and calculate cell length [m]
     y_nc = read_y_axis(nc)
     x_nc = read_x_axis(nc)
-    y = permutedims(repeat(y_nc, outer = (1, length(x_nc))))[inds]
+    y = permutedims(repeat(y_nc; outer = (1, length(x_nc))))[inds]
     cellength = abs(mean(diff(x_nc)))
 
     sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
@@ -61,7 +60,7 @@ function initialize_sediment_model(config::Config)
 
     # # lateral part sediment in overland flow
     rivcell = float(river)
-    ols = OverlandFlowSediment{Float}(
+    ols = OverlandFlowSediment{Float}(;
         n = n,
         rivcell = rivcell,
         soilloss = fill(mv, n),
@@ -148,17 +147,17 @@ function initialize_sediment_model(config::Config)
         SedimentModel(),
     )
 
-    model = set_states(model)
+    set_states!(model)
     @info "Initialized model"
 
     return model
 end
 
-function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SedimentModel}
+function update!(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SedimentModel}
     (; lateral, vertical, network, config) = model
 
-    update_until_ols(vertical, config)
-    update_until_oltransport(vertical, config)
+    update_until_ols!(vertical, config)
+    update_until_oltransport!(vertical, config)
 
     lateral.land.soilloss .= vertical.soilloss
     lateral.land.erosclay .= vertical.erosclay
@@ -174,7 +173,7 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SedimentModel}
     lateral.land.TCsagg .= vertical.TCsagg
     lateral.land.TClagg .= vertical.TClagg
 
-    update(lateral.land, network.land, config)
+    update!(lateral.land, network.land, config)
 
     do_river = get(config.model, "runrivermodel", false)::Bool
 
@@ -186,22 +185,24 @@ function update(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SedimentModel}
         lateral.river.inlandsagg .= lateral.land.inlandsagg[inds_riv]
         lateral.river.inlandlagg .= lateral.land.inlandlagg[inds_riv]
 
-        update(lateral.river, network.river, config)
+        update!(lateral.river, network.river, config)
     end
 
-    return model
+    return nothing
 end
 
-function set_states(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SedimentModel}
+function set_states!(
+    model::Model{N, L, V, R, W, T},
+) where {N, L, V, R, W, T <: SedimentModel}
     # read and set states in model object if reinit=false
     (; config) = model
     reinit = get(config.model, "reinit", true)::Bool
     if reinit == false
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
-        set_states(instate_path, model; type = Float)
+        set_states!(instate_path, model; type = Float)
     else
         @info "Set initial conditions from default values."
     end
-    return model
+    return nothing
 end
