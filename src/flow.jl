@@ -197,7 +197,7 @@ end
     inwater::Vector{T} | "m3 s-1"       # Lateral inflow [m³ s⁻¹]
 end
 
-@get_units @grid_loc @with_kw struct SurfaceFlowLand{T}
+@with_kw struct SurfaceFlowLand{T}
     boundary_conditions::LandFlowBC{T}
     parameters::ManningFlowParameters{T}
     variables::LandFlowVariables{T}
@@ -477,16 +477,61 @@ end
 
 abstract type SubsurfaceFlow end
 
-@get_units @grid_loc @with_kw struct LateralSSF{T, Kh} <: SubsurfaceFlow
+@get_units @grid_loc @with_kw struct LateralSsfParameters{T, Kh}
     kh_profile::Kh                         # Horizontal hydraulic conductivity profile type [-]  
     khfrac::Vector{T} | "-"                # A muliplication factor applied to vertical hydraulic conductivity `kv` [-]
     soilthickness::Vector{T} | "m"         # Soil thickness [m]
     theta_s::Vector{T} | "-"               # Saturated water content (porosity) [-]
-    theta_r::Vector{T} | "-"               # Residual water content [-]
+    theta_r::Vector{T} | "-"               # Residual water content [-]   
     dt::T                                  # model time step [d]
     slope::Vector{T} | "m m-1"             # Slope [m m⁻¹]
     dl::Vector{T} | "m"                    # Drain length [m]
     dw::Vector{T} | "m"                    # Flow width [m]
+end
+
+function LateralSsfParameters(nc, config, inds, soil, slope, dl, dw, dt)
+    khfrac = ncread(
+        nc,
+        config,
+        "lateral.subsurface.ksathorfrac";
+        sel = inds,
+        defaults = 1.0,
+        type = Float,
+    )
+    n = length(khfrac)
+
+    (; theta_s, theta_r, soilthickness) = soil
+    soilthickness = soilthickness .* 0.001
+
+    kh_profile_type = get(config.input.vertical, "ksat_profile", "exponential")::String
+    if kh_profile_type == "exponential"
+        (; kv_0, f) = soil.kv_profile
+        kh_0 = khfrac .* kv_0 .* 0.001 .* dt
+        kh_profile = KhExponential(kh_0, f .* 1000.0)
+    elseif kh_profile_type == "exponential_constant"
+        (; z_exp) = soil.kv_profile
+        (; kv_0, f) = soil.kv_profile.exponential
+        kh_0 = khfrac .* kv_0 .* 0.001 .* dt
+        exp_profile = KhExponential(kh_0, f .* 1000.0)
+        kh_profile = KhExponentialConstant(exp_profile, z_exp .* 0.001)
+    elseif kh_profile_type == "layered" || kh_profile_type == "layered_exponential"
+        kh_profile = KhLayered(fill(mv, n))
+    end
+    parameters = LateralSsfParameters(
+        kh_profile,
+        khfrac,
+        soilthickness,
+        theta_s,
+        theta_r,
+        dt,
+        slope,
+        dl,
+        dw,
+    )
+    return parameters
+end
+
+@get_units @grid_loc @with_kw struct LateralSsfVariables{T}
     zi::Vector{T} | "m"                    # Pseudo-water table depth [m] (top of the saturated zone)
     exfiltwater::Vector{T} | "m dt-1"      # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
     recharge::Vector{T} | "m2 dt-1"        # Net recharge to saturated store [m² Δt⁻¹]
@@ -495,15 +540,49 @@ abstract type SubsurfaceFlow end
     ssfmax::Vector{T} | "m2 d-1"           # Maximum subsurface flow [m² d⁻¹]
     to_river::Vector{T} | "m3 d-1"         # Part of subsurface flow [m³ d⁻¹] that flows to the river
     volume::Vector{T} | "m3"               # Subsurface volume [m³]
-
-    function LateralSSF{T, Kh}(args...) where {T, Kh}
-        equal_size_vectors(args)
-        return new(args...)
-    end
 end
 
-function update!(ssf::LateralSSF, network, frac_toriver)
+function LateralSsfVariables(ssf, zi, xl, yl)
+    n = length(zi)
+    volume = @. (ssf.theta_s - ssf.theta_r) * (ssf.soilthickness - zi) * (xl * yl)
+    variables = LateralSsfVariables(;
+        zi,
+        exfiltwater = fill(mv, n),
+        recharge = fill(mv, n),
+        ssf = fill(mv, n),
+        ssfin = fill(mv, n),
+        ssfmax = fill(mv, n),
+        to_river = zeros(n),
+        volume,
+    )
+    return variables
+end
+
+@get_units @grid_loc @with_kw struct LateralSsfBC{T}
+    recharge::Vector{T} | "m2 dt-1"        # Net recharge to saturated store [m² Δt⁻¹]
+end
+
+@with_kw struct LateralSSF{T, Kh} <: SubsurfaceFlow
+    boundary_conditions::LateralSsfBC{T}
+    parameters::LateralSsfParameters{T, Kh}
+    variables::LateralSsfVariables{T}
+end
+
+function LateralSSF(nc, config, inds, soil, slope, dl, dw, xl, yl, dt)
+    parameters = LateralSsfParameters(nc, config, inds, soil.parameters, slope, dl, dw, dt)
+    zi = 0.001 * soil.variables.zi
+    variables = LateralSsfVariables(parameters, zi, xl, yl)
+    boundary_conditions = LateralSsfBC(; recharge = fill(mv, length(zi)))
+    ssf = LateralSSF(; boundary_conditions, parameters, variables)
+    return ssf
+end
+
+function update!(model::LateralSSF, network, frac_toriver)
     (; subdomain_order, topo_subdomain, indices_subdomain, upstream_nodes, area) = network
+
+    (; recharge) = model.boundary_conditions
+    (; ssfin, ssf, ssfmax, to_river, zi, exfiltwater, volume) = model.variables
+    (; slope, theta_s, theta_r, soilthickness, dl, dw, dt, kh_profile) = model.parameters
 
     ns = length(subdomain_order)
     for k in 1:ns
@@ -514,35 +593,32 @@ function update!(ssf::LateralSSF, network, frac_toriver)
                 # subsurface flow goes to the river (frac_toriver) and part goes to the
                 # subsurface flow reservoir (1.0 - frac_toriver) upstream nodes with a
                 # reservoir or lake are excluded
-                ssf.ssfin[v] = sum_at(
-                    i -> ssf.ssf[i] * (1.0 - frac_toriver[i]),
+                ssfin[v] = sum_at(
+                    i -> ssf[i] * (1.0 - frac_toriver[i]),
                     upstream_nodes[n],
-                    eltype(ssf.ssfin),
+                    eltype(ssfin),
                 )
-                ssf.to_river[v] = sum_at(
-                    i -> ssf.ssf[i] * frac_toriver[i],
+                to_river[v] = sum_at(
+                    i -> ssf[i] * frac_toriver[i],
                     upstream_nodes[n],
-                    eltype(ssf.to_river),
+                    eltype(to_river),
                 )
-                ssf.ssf[v], ssf.zi[v], ssf.exfiltwater[v] = kinematic_wave_ssf(
-                    ssf.ssfin[v],
-                    ssf.ssf[v],
-                    ssf.zi[v],
-                    ssf.recharge[v],
-                    ssf.slope[v],
-                    ssf.theta_s[v] - ssf.theta_r[v],
-                    ssf.soilthickness[v],
-                    ssf.dt,
-                    ssf.dl[v],
-                    ssf.dw[v],
-                    ssf.ssfmax[v],
-                    ssf.kh_profile,
+                ssf[v], zi[v], exfiltwater[v] = kinematic_wave_ssf(
+                    ssfin[v],
+                    ssf[v],
+                    zi[v],
+                    recharge[v],
+                    slope[v],
+                    theta_s[v] - theta_r[v],
+                    soilthickness[v],
+                    dt,
+                    dl[v],
+                    dw[v],
+                    ssfmax[v],
+                    kh_profile,
                     v,
                 )
-                ssf.volume[v] =
-                    (ssf.theta_s[v] - ssf.theta_r[v]) *
-                    (ssf.soilthickness[v] - ssf.zi[v]) *
-                    area[v]
+                volume[v] = (theta_s[v] - theta_r[v]) * (soilthickness[v] - zi[v]) * area[v]
             end
         end
     end
@@ -557,8 +633,8 @@ end
     ssf::Vector{T} | "m3 d-1"           # Subsurface flow [m³ d⁻¹]
 end
 
-get_water_depth(subsurface::SubsurfaceFlow) = subsurface.zi
-get_exfiltwater(subsurface::SubsurfaceFlow) = subsurface.exfiltwater
+get_water_depth(subsurface::SubsurfaceFlow) = subsurface.variables.zi
+get_exfiltwater(subsurface::SubsurfaceFlow) = subsurface.variables.exfiltwater
 
 @get_units @grid_loc @with_kw struct ShallowWaterRiver{T, R, L, F, A}
     n::Int                                              # number of cells [-]
@@ -1802,9 +1878,10 @@ function set_inflow_waterbody!(
     if !isnothing(reservoir) || !isnothing(lake)
         if typeof(subsurface) <: LateralSSF || typeof(subsurface) <: GroundwaterExchange
             @. inflow_wb =
-                subsurface.ssf[inds] / tosecond(basetimestep) + land.variables.q_av[inds]
+                subsurface.variables.ssf[inds] / tosecond(basetimestep) +
+                land.variables.q_av[inds]
         elseif typof(subsurface.flow) <: GroundwaterFlow || isnothing(subsurface)
-            inflow_wb .= land.q_av[inds]
+            inflow_wb .= land.variables.q_av[inds]
         end
     end
     return nothing
@@ -1836,12 +1913,13 @@ function set_inflow_waterbody!(
     if !isnothing(lateral.river.reservoir) || !isnothing(lateral.river.lake)
         if typeof(subsurface) <: LateralSSF || typeof(subsurface) <: GroundwaterExchange
             @. river.inflow_wb =
-                (subsurface.ssf[inds] + subsurface.to_river[inds]) /
+                (subsurface.variables.ssf[inds] + subsurface.variables.to_river[inds]) /
                 tosecond(basetimestep) +
-                land.q_av[inds] +
-                land.to_river[inds]
+                land.variables.q_av[inds] +
+                land.variables.to_river[inds]
         elseif typeof(subsurface.flow) <: GroundwaterFlow || isnothing(subsurface)
-            @. river.inflow_wb = lateral.land.q_av[inds] + lateral.land.to_river[inds]
+            @. river.inflow_wb =
+                lateral.land.variables.q_av[inds] + lateral.land.variables.to_river[inds]
         end
     end
     return nothing
@@ -1870,10 +1948,11 @@ function set_inflow_waterbody!(
     (; subsurface, land, river) = lateral
     inds = network.index_river
 
-    if !isnothing(lateral.river.reservoir) || !isnothing(lateral.river.lake)
+    if !isnothing(river.reservoir) || !isnothing(river.lake)
         if typeof(subsurface) <: LateralSSF || typeof(subsurface) <: GroundwaterExchange
             @. land.inflow_wb[inds] =
-                (subsurface.ssf[inds] + subsurface.to_river[inds]) / tosecond(basetimestep)
+                (subsurface.variables.ssf[inds] + subsurface.variabels.to_river[inds]) /
+                tosecond(basetimestep)
         end
     end
     return nothing

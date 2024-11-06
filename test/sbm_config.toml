@@ -39,7 +39,7 @@ q = "q_river"
 [state.lateral.river.boundary_conditions.reservoir]
 volume = "volume_reservoir"
 
-[state.lateral.subsurface]
+[state.lateral.subsurface.variables]
 ssf = "ssf"
 
 [state.lateral.land.variables]
@@ -168,7 +168,7 @@ q = "q_river"
 [output.lateral.river.boundary_conditions.reservoir]
 volume = "volume_reservoir"
 
-[output.lateral.subsurface]
+[output.lateral.subsurface.variables]
 ssf = "ssf"
 
 [output.lateral.land.variables]
