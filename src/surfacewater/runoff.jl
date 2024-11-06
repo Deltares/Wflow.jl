@@ -122,8 +122,8 @@ function update_boundary_conditions!(
 
     # extract water levels h_av [m] from the land and river domains this is used to limit
     # open water evaporation
-    waterlevel_land .= lateral.land.h_av .* 1000.0
-    waterlevel_river[inds_riv] .= lateral.river.h_av .* 1000.0
+    waterlevel_land .= lateral.land.variables.h_av .* 1000.0
+    waterlevel_river[inds_riv] .= lateral.river.variables.h_av .* 1000.0
     return nothing
 end
 

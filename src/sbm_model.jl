@@ -206,7 +206,7 @@ function initialize_sbm_model(config::Config)
     end
 
     if land_routing == "kinematic-wave"
-        olf = initialize_surfaceflow_land(
+        olf = SurfaceFlowLand(
             nc,
             config,
             inds;
@@ -242,7 +242,7 @@ function initialize_sbm_model(config::Config)
     minimum(riverlength) > 0 || error("river length must be positive on river cells")
     minimum(riverwidth) > 0 || error("river width must be positive on river cells")
     if river_routing == "kinematic-wave"
-        rf = initialize_surfaceflow_river(
+        rf = SurfaceFlowRiver(
             nc,
             config,
             inds_riv;

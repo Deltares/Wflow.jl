@@ -162,8 +162,11 @@ function update_total_water_storage!(
     # Burn the river routing values
     for (i, index_river) in enumerate(river_network)
         total_storage[index_river] = (
-            (river_routing.h_av[i] * river_routing.width[i] * river_routing.dl[i]) /
-            (area[index_river]) * 1000 # Convert to mm
+            (
+                river_routing.variables.h_av[i] *
+                river_routing.parameters.width[i] *
+                river_routing.parameters.dl[i]
+            ) / (area[index_river]) * 1000 # Convert to mm
         )
     end
 
@@ -178,7 +181,7 @@ function update_total_water_storage!(
     threaded_foreach(1:n; basesize = 1000) do i
         sub_surface = ustoredepth[i] + satwaterdepth[i]
         lateral = (
-            land_routing.h_av[i] * (1 - riverfrac[i]) * 1000 # convert to mm
+            land_routing.variables.h_av[i] * (1 - riverfrac[i]) * 1000 # convert to mm
         )
 
         # Add everything to the total water storage

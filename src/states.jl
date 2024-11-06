@@ -224,10 +224,13 @@ function extract_required_states(config::Config)
     required_states = add_to_required_states(required_states, key_entry, ssf_states)
     # Add land states to dict
     required_states =
-        add_to_required_states(required_states, (:lateral, :land), land_states)
+        add_to_required_states(required_states, (:lateral, :land, :variables), land_states)
     # Add river states to dict
-    required_states =
-        add_to_required_states(required_states, (:lateral, :river), river_states)
+    required_states = add_to_required_states(
+        required_states,
+        (:lateral, :river, :variables),
+        river_states,
+    )
     # Add floodplain states to dict
     required_states = add_to_required_states(
         required_states,
@@ -240,7 +243,7 @@ function extract_required_states(config::Config)
     # Add reservoir states to dict
     required_states = add_to_required_states(
         required_states,
-        (:lateral, :river, :reservoir),
+        (:lateral, :river, :boundary_conditions, :reservoir),
         reservoir_states,
     )
     # Add paddy states to dict
