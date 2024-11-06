@@ -102,7 +102,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - For improved code readability it is now discouraged to use non-ASCII characters for the
   names of variables, structs, functions and macros. Using the non-ASCII character for
   built-in operators is still allowed. This change in naming convention is now in effect and
-  all invalid uses of non-ASCII characters have been replaced by ASCII equivalents.
+  all invalid uses of non-ASCII characters have been replaced by ASCII equivalents. This
+  change also impacts the TOML keys `kv₀`, `θᵣ` and `θₛ`. These keys have been replaced with
+  the ASCII versions `kv_0`, `theta_r` and `theta_s` in v0.4.0 and the old keys are not
+  supported anymore.
 - Docs: 1) improved description of different model configurations in model-setup.md, also in
   relation to hydromt\_wflow in docs, 2) citing info related to wflow\_sbm publication in
   Geosci. Model Dev. (from in review to published).
