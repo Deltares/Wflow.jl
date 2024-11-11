@@ -242,7 +242,7 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#v1.0.0" id="toc-v1.0.0" class="nav-link active" data-scroll-target="#v1.0.0">v1.0.0</a>
+  <li><a href="#unreleased" id="toc-unreleased" class="nav-link active" data-scroll-target="#unreleased">Unreleased</a>
   <ul class="collapse">
   <li><a href="#fixed" id="toc-fixed" class="nav-link" data-scroll-target="#fixed">Fixed</a></li>
   <li><a href="#changed" id="toc-changed" class="nav-link" data-scroll-target="#changed">Changed</a></li>
@@ -296,20 +296,27 @@ window.Quarto = {
 
 <p>All notable changes to this project will be documented in this file.</p>
 <p>The format is based on <a href="https://keepachangelog.com/en/1.0.0/">Keep a Changelog</a>, and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
-<section id="v1.0.0" class="level2">
-<h2 class="anchored" data-anchor-id="v1.0.0">v1.0.0</h2>
+<section id="unreleased" class="level2">
+<h2 class="anchored" data-anchor-id="unreleased">Unreleased</h2>
 <section id="fixed" class="level3">
 <h3 class="anchored" data-anchor-id="fixed">Fixed</h3>
+<ul>
+<li>Initialization of <code>LateralSSF</code> variables <code>ssf</code> and <code>ssfmax</code> with vertical hydraulic conductivity profile <code>exponential_constant</code>. Removed parameter <code>khfrac</code> from the computation, as it is already part of parameter <code>kh_0</code>.</li>
+</ul>
 </section>
 <section id="changed" class="level3">
 <h3 class="anchored" data-anchor-id="changed">Changed</h3>
 <ul>
 <li>Removed vertical concepts <code>HBV</code> and <code>FLEXTopo</code>.</li>
-<li>Removed metadata macros <code>exchange</code>, <code>grid_type</code> and <code>grid_location</code>. The macro <code>grid_type</code> is not required because this functionality is already part of <code>BMI</code>. The macros <code>exchange</code> and <code>grid_location</code> are replaced by functions resulting in cleaner code.</li>
+<li>Removed metadata macros <code>exchange</code> and <code>grid_type</code>. The macro <code>grid_type</code> is not required because this functionality is already part of <code>BMI</code>. The macro <code>exchange</code> is replaced by a function used by <code>BMI</code>. Remaining metadata macros <code>get_units</code> and <code>grid_loc</code> are only used by <code>BMI</code>.</li>
+<li>Refactor the vertical <code>SBM</code> concept: divide the long struct <code>SBM</code> into different model components for interception, snow, glacier, (open water) runoff, soil, water demand and allocation stored in the struct <code>LandHydrologySBM</code>. Additionally, the atmospheric forcing and a shared vegetation parameterset are stored as separate fields in struct <code>LandHydrologySBM</code> (with soil model <code>SbmSoilModel</code>). The model component structs have model <code>variables</code>, <code>parameters</code> and <code>boundary_conditions</code> (if applicable), including associated functions for initializing and updating these model components. The original long update function of the <code>SBM</code> soil part has been split into separate functions.</li>
 </ul>
 </section>
 <section id="added" class="level3">
 <h3 class="anchored" data-anchor-id="added">Added</h3>
+<ul>
+<li>Support direct output of snow and glacier melt, and add computation of snow water equivalent (SWE).</li>
+</ul>
 </section>
 </section>
 <section id="v0.x-releases" class="level2">
@@ -349,7 +356,7 @@ window.Quarto = {
 <li>The local inertial routing (constant) river boundary condition <code>depth</code> at a ghost node (downstream river outlet) was set at 0.0 in the code and can now be provided through the model parameter netCDF file (<code>riverdepth_bc</code>). In addition, the boundary condition river length <code>dl</code> at a ghost node should be set through the model parameter netCDF file (<code>riverlength_bc</code>), providing this boundary condition through the <code>[model]</code> settings in the TOML file (<code>model.riverlength_bc</code>) has been deprecated.</li>
 <li>As part of the vertical <code>SBM</code> concept: 1) add variable <code>net_runoff</code> (land runoff minus actual open water evaporation <code>ae_openw_l</code>) and 2) change the definition of variable <code>runoff</code> by removing the subtraction of <code>ae_openw_l</code> (total land runoff). The variable <code>net_runoff</code> is now input to the kinematic wave for overland flow (replaces the original <code>runoff</code> variable as input). The lower limit of the original <code>runoff</code> variable was set at zero, which may result in water balance errors. This lower limit was implemented in the Python version of wflow_sbm, to avoid a very slow kinematic wave solution for surface flow computation (no distinction between a kinematic wave for overland and river flow). When in the Python version of wflow_sbm the kinematic wave for surface flow was split into a river and land component, the lower limit was removed for river runoff (<code>net_runoff_river</code>), but not for land runoff.</li>
 <li>Always use fractions for the computation of potential evapotranspiration (interception and transpiration) and potential evaporation (open water and soil). Replaced variable <code>et_reftopot</code> by crop coefficient <code>kc</code> (use of <code>et_reftopot</code> has been deprecated).</li>
-<li>For improved code readability it is now discouraged to use non-ASCII characters for the names of variables, structs, functions and macros. Using the non-ASCII character for built-in operators is still allowed. This change in naming convention is now in effect and all invalid uses of non-ASCII characters have been replaced by ASCII equivalents.</li>
+<li>For improved code readability it is now discouraged to use non-ASCII characters for the names of variables, structs, functions and macros. Using the non-ASCII character for built-in operators is still allowed. This change in naming convention is now in effect and all invalid uses of non-ASCII characters have been replaced by ASCII equivalents. This change also impacts the TOML keys <code>kv₀</code>, <code>θᵣ</code> and <code>θₛ</code>. These keys have been replaced with the ASCII versions <code>kv_0</code>, <code>theta_r</code> and <code>theta_s</code> in v0.4.0 and the old keys are not supported anymore.</li>
 <li>Docs: 1) improved description of different model configurations in model-setup.md, also in relation to hydromt_wflow in docs, 2) citing info related to wflow_sbm publication in Geosci. Model Dev. (from in review to published).</li>
 <li>Root water uptake reduction (Feddes): 1) extend critical pressure head parameters with <code>h3_low</code> and <code>h3_high</code>, 2) all critical pressure head parameters can be set (values for <code>h1</code>, <code>h2</code> and <code>h3</code> were fixed) and 3) the root water uptake reduction coefficient <code>\alpha</code> can be set at 0 (default is 1) at critical pressure head <code>h1</code> (through the model parameter <code>alpha_h1</code>).</li>
 <li>For the actual transpiration computation in <code>SBM</code>, the potential transpiration is partitioned over the soil layers with roots according to the model parameter <code>rootfraction</code> (fraction of the total root length in a soil layer). Previously, for each soil layer (from top to bottom) the actual transpiration was computed, and the remaining potential transpiration was used in the next soil layer.</li>
