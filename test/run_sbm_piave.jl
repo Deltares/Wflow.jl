@@ -3,8 +3,8 @@ function run_piave(model, steps)
     q = zeros(steps)
     ssf_vol = zeros(steps)
     riv_vol = zeros(steps)
-    for i = 1:steps
-        model = Wflow.run_timestep(model)
+    for i in 1:steps
+        Wflow.run_timestep!(model)
         ssf_vol[i] = mean(model.lateral.subsurface.volume)
         riv_vol[i] = mean(model.lateral.river.volume)
         q[i] = model.lateral.river.q_av[1]
@@ -16,13 +16,13 @@ tomlpath = joinpath(@__DIR__, "sbm_piave_demand_config.toml")
 config = Wflow.Config(tomlpath)
 model = Wflow.initialize_sbm_model(config)
 q_demand, riv_vol_demand, ssf_vol_demand = run_piave(model, 30)
-Wflow.close_files(model, delete_output = false)
+Wflow.close_files(model; delete_output = false)
 
 tomlpath = joinpath(@__DIR__, "sbm_piave_config.toml")
 config = Wflow.Config(tomlpath)
 model = Wflow.initialize_sbm_model(config)
 q_, riv_vol, ssf_vol = run_piave(model, 30)
-Wflow.close_files(model, delete_output = false)
+Wflow.close_files(model; delete_output = false)
 
 @testset "piave with and without water demand" begin
     idx = 1:3:28
@@ -103,51 +103,57 @@ end
 tomlpath = joinpath(@__DIR__, "sbm_piave_demand_config.toml")
 config = Wflow.Config(tomlpath)
 model = Wflow.initialize_sbm_model(config)
-model = Wflow.run_timestep(model)
+Wflow.run_timestep!(model)
 sbm = model.vertical
+(; paddy, nonpaddy, industry, livestock, domestic) = model.vertical.demand
+(; total_alloc, irri_alloc, nonirri_alloc, surfacewater_alloc, act_groundwater_abst) =
+    sbm.allocation.variables
 
 @testset "piave water demand and allocation first timestep" begin
-    sum_total_alloc = sum(sbm.allocation.total_alloc)
-    @test sum(sbm.allocation.irri_alloc) + sum(sbm.allocation.nonirri_alloc) ≈
-          sum_total_alloc
-    @test sum(sbm.allocation.surfacewater_alloc) ≈ 1030.1528204311428f0
-    @test sum(sbm.allocation.act_groundwater_abst) ≈ 184.47031930837645f0
-    @test sbm.paddy.h[[45, 76, 296]] ≈
+    sum_total_alloc = sum(total_alloc)
+    @test sum(irri_alloc) + sum(nonirri_alloc) ≈ sum_total_alloc
+    @test sum(surfacewater_alloc) ≈ 1030.1528204311428f0
+    @test sum(act_groundwater_abst) ≈ 184.47031930837645f0
+    @test paddy.variables.h[[45, 76, 296]] ≈
           [34.759292485507515f0, 42.517504464353635f0, 35.83766686539591f0]
-    @test sbm.paddy.irrigation_trigger[[45, 76, 296]] == [1, 1, 1]
-    @test sbm.paddy.demand_gross[[45, 76, 296]] ≈ [0.0, 0.0, 0.0]
-    @test sbm.nonpaddy.irrigation_trigger[[10, 33, 1293]] == [1, 1, 1]
-    @test sbm.nonpaddy.demand_gross[[10, 33, 1293]] ≈
+    @test paddy.parameters.irrigation_trigger[[45, 76, 296]] == [1, 1, 1]
+    @test paddy.variables.demand_gross[[45, 76, 296]] ≈ [0.0, 0.0, 0.0]
+    @test nonpaddy.parameters.irrigation_trigger[[10, 33, 1293]] == [1, 1, 1]
+    @test nonpaddy.variables.demand_gross[[10, 33, 1293]] ≈
           [3.031574420740574f0, 1.8618934872392217f0, 0.42233065562148375f0]
-    @test sbm.industry.demand_gross[[1, end]] ≈ [0.2105557769536972f0, 0.0485190823674202f0]
-    @test sbm.industry.demand_net[[1, end]] ≈
+    @test industry.demand.demand_gross[[1, end]] ≈
+          [0.2105557769536972f0, 0.0485190823674202f0]
+    @test industry.demand.demand_net[[1, end]] ≈
           [0.05265098437666893f0, 0.012132546864449978f0]
-    @test sbm.industry.returnflow[[1, end]] ≈ [0.15790479257702827f0, 0.03638653550297022f0]
-    @test sbm.livestock.demand_gross[[1, end]] ≈
+    @test industry.variables.returnflow[[1, end]] ≈
+          [0.15790479257702827f0, 0.03638653550297022f0]
+    @test livestock.demand.demand_gross[[1, end]] ≈
           [9.896758274408057f-5, 6.352497439365834f-5]
-    @test sbm.livestock.demand_net[[1, end]] ≈ [9.896758274408057f-5, 6.352497439365834f-5]
-    @test sbm.livestock.returnflow[[1, end]] ≈ [0.0f0, 0.0f0]
-    @test sbm.domestic.demand_gross[[1, end]] ≈ [0.5389957427978516f0, 0.0f0]
-    @test sbm.domestic.demand_net[[1, end]] ≈ [0.33949509263038635f0, 0.0f0]
-    @test sbm.domestic.returnflow[[1, end]] ≈ [0.1995004952035704f0, 0.0f0]
+    @test livestock.demand.demand_net[[1, end]] ≈
+          [9.896758274408057f-5, 6.352497439365834f-5]
+    @test livestock.variables.returnflow[[1, end]] ≈ [0.0f0, 0.0f0]
+    @test domestic.demand.demand_gross[[1, end]] ≈ [0.5389957427978516f0, 0.0f0]
+    @test domestic.demand.demand_net[[1, end]] ≈ [0.33949509263038635f0, 0.0f0]
+    @test domestic.variables.returnflow[[1, end]] ≈ [0.1995004952035704f0, 0.0f0]
 end
 
-model = Wflow.run_timestep(model)
+Wflow.run_timestep!(model)
 sbm = model.vertical
-
+(; paddy, nonpaddy, industry, livestock, domestic) = model.vertical.demand
+(; total_alloc, irri_alloc, nonirri_alloc, surfacewater_alloc, act_groundwater_abst) =
+    sbm.allocation.variables
 @testset "piave water demand and allocation second timestep" begin
-    sum_total_alloc = sum(sbm.allocation.total_alloc)
-    @test sum(sbm.allocation.irri_alloc) + sum(sbm.allocation.nonirri_alloc) ≈
-          sum_total_alloc
-    @test sum(sbm.allocation.surfacewater_alloc) ≈ 940.1941924010235f0
-    @test sum(sbm.allocation.act_groundwater_abst) ≈ 163.59123515939052f0
-    @test sbm.paddy.h[[45, 76, 296]] ≈
+    sum_total_alloc = sum(total_alloc)
+    @test sum(irri_alloc) + sum(nonirri_alloc) ≈ sum_total_alloc
+    @test sum(surfacewater_alloc) ≈ 940.1941924010235f0
+    @test sum(act_groundwater_abst) ≈ 163.59123515939052f0
+    @test paddy.variables.h[[45, 76, 296]] ≈
           [29.50674105890283f0, 38.11966817469463f0, 30.679920457042897f0]
-    @test sbm.paddy.irrigation_trigger[[45, 76, 296]] == [1, 1, 1]
-    @test sbm.paddy.demand_gross[[45, 76, 296]] ≈ [0.0f0, 0.0f0, 0.0f0]
-    @test sbm.nonpaddy.irrigation_trigger[[10, 33, 1293]] == [1, 1, 1]
-    @test sbm.nonpaddy.demand_gross[[10, 33, 1293]] ≈
+    @test paddy.parameters.irrigation_trigger[[45, 76, 296]] == [1, 1, 1]
+    @test paddy.variables.demand_gross[[45, 76, 296]] ≈ [0.0f0, 0.0f0, 0.0f0]
+    @test nonpaddy.parameters.irrigation_trigger[[10, 33, 1293]] == [1, 1, 1]
+    @test nonpaddy.variables.demand_gross[[10, 33, 1293]] ≈
           [3.8551909476218054f0, 0.0f0, 1.3531153828385536f0]
 end
 
-Wflow.close_files(model, delete_output = false)
+Wflow.close_files(model; delete_output = false)

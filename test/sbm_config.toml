@@ -19,13 +19,17 @@ path_output = "outstates-moselle.nc"
 # if listed, the variable must be present in the NetCDF or error
 # if not listed, the variable can get a default value if it has one
 
-[state.vertical]
-canopystorage = "canopystorage"
+[state.vertical.interception.variables]
+canopy_storage = "canopystorage"
+
+[state.vertical.soil.variables]
 satwaterdepth = "satwaterdepth"
-snow = "snow"
-snowwater = "snowwater"
 tsoil = "tsoil"
 ustorelayerdepth = "ustorelayerdepth"
+
+[state.vertical.snow.variables]
+snow_storage = "snow"
+snow_water = "snowwater"
 
 [state.lateral.river]
 h = "h_river"
@@ -56,42 +60,52 @@ subcatchment = "wflow_subcatch"
 # specify the internal IDs of the parameters which vary over time
 # the external name mapping needs to be below together with the other mappings
 forcing = [
-  "vertical.precipitation",
-  "vertical.temperature",
-  "vertical.potential_evaporation",
+  "vertical.atmospheric_forcing.precipitation",
+  "vertical.atmospheric_forcing.temperature",
+  "vertical.atmospheric_forcing.potential_evaporation",
 ]
 
-cyclic = ["vertical.leaf_area_index"]
+cyclic = ["vertical.vegetation_parameter_set.leaf_area_index"]
 
-[input.vertical]
+[input.vertical.vegetation_parameter_set]
+leaf_area_index = "LAI"
+kext = "Kext"
+storage_specific_leaf = "Sl"
+storage_wood = "Swood"
+rootingdepth = "RootingDepth"
+
+[input.vertical.runoff.parameters]
+waterfrac = "WaterFrac"
+
+[input.vertical.interception.parameters]
+e_r = "EoverR"
+
+[input.vertical.atmospheric_forcing]
+potential_evaporation = "pet"
+precipitation = "precip"
+temperature = "temp"
+
+[input.vertical.soil.parameters]
 c = "c"
 cf_soil = "cf_soil"
-cfmax = "Cfmax"
-e_r = "EoverR"
 f = "f"
 infiltcappath = "InfiltCapPath"
 infiltcapsoil = "InfiltCapSoil"
-kext = "Kext"
-leaf_area_index = "LAI"
+water_holding_capacity = "WHC"
+theta_r = "thetaR"
+theta_s = "thetaS"
 maxleakage = "MaxLeakage"
 pathfrac = "PathFrac"
-potential_evaporation = "pet"
-precipitation = "precip"
 rootdistpar = "rootdistpar"
-rootingdepth = "RootingDepth"
 soilthickness = "SoilThickness"
-specific_leaf = "Sl"
-storage_wood = "Swood"
-temperature = "temp"
+
+[input.vertical.snow.parameters]
 tt = "TT"
 tti = "TTI"
 ttm = "TTM"
-water_holding_capacity = "WHC"
-waterfrac = "WaterFrac"
-theta_r = "thetaR"
-theta_s = "thetaS"
+cfmax = "Cfmax"
 
-[input.vertical.kv_0]
+[input.vertical.soil.parameters.kv_0]
 netcdf.variable.name = "KsatVer"
 scale = 1.0
 offset = 0.0
@@ -135,13 +149,17 @@ min_streamorder_land = 5
 [output]
 path = "output_moselle.nc"
 
-[output.vertical]
-canopystorage = "canopystorage"
+[output.vertical.interception.variables]
+canopy_storage = "canopystorage"
+
+[output.vertical.soil.variables]
 satwaterdepth = "satwaterdepth"
-snow = "snow"
-snowwater = "snowwater"
 tsoil = "tsoil"
 ustorelayerdepth = "ustorelayerdepth"
+
+[output.vertical.snow.variables]
+snow_storage = "snow"
+snow_water = "snowwater"
 
 [output.lateral.river]
 h = "h_river"
@@ -170,14 +188,14 @@ coordinate.x = 6.255
 coordinate.y = 50.012
 name = "temp_coord"
 location = "temp_bycoord"
-parameter = "vertical.temperature"
+parameter = "vertical.atmospheric_forcing.temperature"
 
 [[netcdf.variable]]
 location = "temp_byindex"
 name = "temp_index"
 index.x = 100
 index.y = 264
-parameter = "vertical.temperature"
+parameter = "vertical.atmospheric_forcing.temperature"
 
 [csv]
 path = "output_moselle.csv"
@@ -196,20 +214,20 @@ parameter = "lateral.river.reservoir.volume"
 coordinate.x = 6.255
 coordinate.y = 50.012
 header = "temp_bycoord"
-parameter = "vertical.temperature"
+parameter = "vertical.atmospheric_forcing.temperature"
 
 [[csv.column]]
 coordinate.x = 6.255
 coordinate.y = 50.012
 header = "vwc_layer2_bycoord"
-parameter = "vertical.vwc"
+parameter = "vertical.soil.variables.vwc"
 layer = 2
 
 [[csv.column]]
 header = "temp_byindex"
 index.x = 100
 index.y = 264
-parameter = "vertical.temperature"
+parameter = "vertical.atmospheric_forcing.temperature"
 
 [[csv.column]]
 header = "Q"
@@ -219,12 +237,24 @@ parameter = "lateral.river.q"
 [[csv.column]]
 header = "recharge"
 map = "subcatchment"
-parameter = "vertical.recharge"
+parameter = "vertical.soil.variables.recharge"
 reducer = "mean"
 
 [API]
 components = [
-  "vertical",
+  "vertical.atmospheric_forcing",
+  "vertical.vegetation_parameter_set",
+  "vertical.runoff.boundary_conditions",
+  "vertical.runoff.variables",
+  "vertical.runoff.parameters",
+  "vertical.soil.boundary_conditions",
+  "vertical.soil.variables",
+  "vertical.soil.parameters",
+  "vertical.interception.variables",
+  "vertical.interception.parameters",
+  "vertical.snow.boundary_conditions",
+  "vertical.snow.variables",
+  "vertical.snow.parameters",
   "lateral.subsurface",
   "lateral.land",
   "lateral.river",

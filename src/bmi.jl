@@ -3,7 +3,7 @@
 
 # Mapping of grid identifier to a key, to get the active indices of the model domain.
 # See also function active_indices(network, key::Tuple).
-const grids = Dict{Int,Tuple{Symbol}}(
+const grids = Dict{Int, Tuple{Symbol}}(
     0 => (:reservoir,),
     1 => (:lake,),
     2 => (:drain,),
@@ -27,16 +27,12 @@ function BMI.initialize(::Type{<:Model}, config_file)
         initialize_sbm_model(config)
     elseif modeltype == "sbm_gwf"
         initialize_sbm_gwf_model(config)
-    elseif modeltype == "hbv"
-        initialize_hbv_model(config)
     elseif modeltype == "sediment"
         initialize_sediment_model(config)
-    elseif modeltype == "flextopo"
-        initialize_flextopo_model(config)
     else
         error("unknown model type")
     end
-    load_fixed_forcing(model)
+    load_fixed_forcing!(model)
     return model
 end
 
@@ -49,15 +45,15 @@ Update the model for a single timestep.
 """
 function BMI.update(model::Model; run = nothing)
     if isnothing(run)
-        model = run_timestep(model)
+        run_timestep!(model)
     elseif run == "sbm_until_recharge"
-        model = run_timestep(
-            model,
-            update_func = update_until_recharge,
+        run_timestep!(
+            model;
+            update_func = update_until_recharge!,
             write_model_output = false,
         )
     elseif run == "sbm_after_subsurfaceflow"
-        model = run_timestep(model, update_func = update_after_subsurfaceflow)
+        run_timestep!(model; update_func = update_after_subsurfaceflow!)
     end
     return model
 end
@@ -75,8 +71,8 @@ function BMI.update_until(model::Model, time::Float64)
         )
         error(error_message)
     end
-    for _ = 1:steps
-        model = run_timestep(model)
+    for _ in 1:steps
+        run_timestep!(model)
     end
     return model
 end
@@ -89,7 +85,7 @@ function BMI.finalize(model::Model)
         write_netcdf_timestep(model, writer.state_dataset, writer.state_parameters)
     end
     reset_clock!(model.clock, config)
-    close_files(model, delete_output = false)
+    return close_files(model; delete_output = false)
 end
 
 function BMI.get_component_name(model::Model)
@@ -97,11 +93,11 @@ function BMI.get_component_name(model::Model)
 end
 
 function BMI.get_input_item_count(model::Model)
-    length(BMI.get_input_var_names(model))
+    return length(BMI.get_input_var_names(model))
 end
 
 function BMI.get_output_item_count(model::Model)
-    length(BMI.get_output_var_names(model))
+    return length(BMI.get_output_var_names(model))
 end
 
 """
@@ -117,22 +113,25 @@ function BMI.get_input_var_names(model::Model)
         var_names = Vector{String}()
         for c in config.API.components
             type = typeof(param(model, c))
-            inds = findall(x -> x != 0, exchange(type))
-            field_names = fieldnames(type)[inds]
+            field_names = fieldnames(type)
 
             for name in field_names
                 var = string(c, ".", name)
-                model_var = param(model, var)
-                if eltype(model_var) <: SVector
-                    for i = 1:length(first(model_var))
-                        push!(var_names, string(var, "[", i, "]"))
-                    end
-                elseif ndims(model_var) > 1
-                    for i = 1:length(first(model_var))
-                        push!(var_names, string(var, "[", i, "]"))
+                if exchange(param(model, var))
+                    model_var = param(model, var)
+                    if eltype(model_var) <: SVector
+                        for i in 1:length(first(model_var))
+                            push!(var_names, string(var, "[", i, "]"))
+                        end
+                    elseif ndims(model_var) > 1
+                        for i in 1:length(first(model_var))
+                            push!(var_names, string(var, "[", i, "]"))
+                        end
+                    else
+                        push!(var_names, var)
                     end
                 else
-                    push!(var_names, var)
+                    @warn("$var is not listed as variable for BMI exchange")
                 end
             end
         end
@@ -146,15 +145,14 @@ end
 "Returns input variables from `BMI.get_input_var_names(model::Model)`, there is no
 distinction between input - and output variables."
 function BMI.get_output_var_names(model::Model)
-    BMI.get_input_var_names(model)
+    return BMI.get_input_var_names(model)
 end
 
 function BMI.get_var_grid(model::Model, name::String)
     s = split(name, "[")
     key = symbols(first(s))
-    if exchange(param(model, key[1:end-1]), key[end]) == 1
-        gridtype = grid_type(param(model, key))
-        type = typeof(param(model, key[1:end-1]))
+    if exchange(param(model, key))
+        type = typeof(param(model, key[1:(end - 1)]))
         return if :reservoir in key
             0
         elseif :lake in key
@@ -177,13 +175,13 @@ end
 
 function BMI.get_var_type(model::Model, name::String)
     value = BMI.get_value_ptr(model, name)
-    repr(eltype(first(value)))
+    return repr(eltype(first(value)))
 end
 
 function BMI.get_var_units(model::Model, name::String)
     key = symbols(first(split(name, "[")))
-    if exchange(param(model, key[1:end-1]), key[end]) == 1
-        get_units(param(model, key[1:end-1]), key[end])
+    if exchange(param(model, key))
+        get_units(param(model, key[1:(end - 1)]), key[end])
     else
         error("$name not listed as variable for BMI exchange")
     end
@@ -191,17 +189,17 @@ end
 
 function BMI.get_var_itemsize(model::Model, name::String)
     value = BMI.get_value_ptr(model, name)
-    sizeof(eltype(first(value)))
+    return sizeof(eltype(first(value)))
 end
 
 function BMI.get_var_nbytes(model::Model, name::String)
-    sizeof(BMI.get_value_ptr(model, name))
+    return sizeof(BMI.get_value_ptr(model, name))
 end
 
 function BMI.get_var_location(model::Model, name::String)
     key = symbols(first(split(name, "[")))
-    if exchange(param(model, key[1:end-1]), key[end]) == 1
-        return grid_location(model, key)
+    if exchange(param(model, key))
+        return grid_loc(param(model, key[1:(end - 1)]), key[end])
     else
         error("$name not listed as variable for BMI exchange")
     end
@@ -215,7 +213,7 @@ function BMI.get_current_time(model::Model)
 end
 
 function BMI.get_start_time(model::Model)
-    0.0
+    return 0.0
 end
 
 function BMI.get_end_time(model::Model)
@@ -227,14 +225,18 @@ function BMI.get_end_time(model::Model)
 end
 
 function BMI.get_time_units(model::Model)
-    "s"
+    return "s"
 end
 
 function BMI.get_time_step(model::Model)
-    Float64(model.config.timestepsecs)
+    return Float64(model.config.timestepsecs)
 end
 
-function BMI.get_value(model::Model, name::String, dest::Vector{T}) where {T<:AbstractFloat}
+function BMI.get_value(
+    model::Model,
+    name::String,
+    dest::Vector{T},
+) where {T <: AbstractFloat}
     dest .= copy(BMI.get_value_ptr(model, name))
     return dest
 end
@@ -243,7 +245,7 @@ function BMI.get_value_ptr(model::Model, name::String)
     (; network) = model
     s = split(name, "[")
     key = symbols(first(s))
-    if exchange(param(model, key[1:end-1]), key[end]) == 1
+    if exchange(param(model, key))
         n = length(active_indices(network, key))
         if occursin("[", name)
             ind = tryparse(Int, split(s[end], "]")[1])
@@ -270,7 +272,7 @@ function BMI.get_value_at_indices(
     name::String,
     dest::Vector{T},
     inds::Vector{Int},
-) where {T<:AbstractFloat}
+) where {T <: AbstractFloat}
     dest .= BMI.get_value_ptr(model, name)[inds]
     return dest
 end
@@ -281,8 +283,12 @@ end
 Set a model variable `name` to the values in vector `src`, overwriting the current contents.
 The type and size of `src` must match the model's internal array.
 """
-function BMI.set_value(model::Model, name::String, src::Vector{T}) where {T<:AbstractFloat}
-    BMI.get_value_ptr(model, name) .= src
+function BMI.set_value(
+    model::Model,
+    name::String,
+    src::Vector{T},
+) where {T <: AbstractFloat}
+    return BMI.get_value_ptr(model, name) .= src
 end
 
 """
@@ -296,8 +302,8 @@ function BMI.set_value_at_indices(
     name::String,
     inds::Vector{Int},
     src::Vector{T},
-) where {T<:AbstractFloat}
-    BMI.get_value_ptr(model, name)[inds] .= src
+) where {T <: AbstractFloat}
+    return BMI.get_value_ptr(model, name)[inds] .= src
 end
 
 function BMI.get_grid_type(model::Model, grid::Int)
@@ -318,7 +324,7 @@ function BMI.get_grid_rank(model::Model, grid::Int)
     end
 end
 
-function BMI.get_grid_x(model::Model, grid::Int, x::Vector{T}) where {T<:AbstractFloat}
+function BMI.get_grid_x(model::Model, grid::Int, x::Vector{T}) where {T <: AbstractFloat}
     (; reader, network) = model
     (; dataset) = reader
     sel = active_indices(network, grids[grid])
@@ -328,7 +334,7 @@ function BMI.get_grid_x(model::Model, grid::Int, x::Vector{T}) where {T<:Abstrac
     return x
 end
 
-function BMI.get_grid_y(model::Model, grid::Int, y::Vector{T}) where {T<:AbstractFloat}
+function BMI.get_grid_y(model::Model, grid::Int, y::Vector{T}) where {T <: AbstractFloat}
     (; reader, network) = model
     (; dataset) = reader
     sel = active_indices(network, grids[grid])
@@ -368,21 +374,21 @@ function BMI.get_grid_edge_nodes(model::Model, grid::Int, edge_nodes::Vector{Int
     # inactive nodes (boundary/ghost points) are set at -999
     if grid == 3
         nodes_at_edge = adjacent_nodes_at_link(network.river.graph)
-        nodes_at_edge.dst[nodes_at_edge.dst.==m+1] .= -999
-        edge_nodes[range(1, n, step = 2)] = nodes_at_edge.src
-        edge_nodes[range(2, n, step = 2)] = nodes_at_edge.dst
+        nodes_at_edge.dst[nodes_at_edge.dst .== m + 1] .= -999
+        edge_nodes[range(1, n; step = 2)] = nodes_at_edge.src
+        edge_nodes[range(2, n; step = 2)] = nodes_at_edge.dst
         return edge_nodes
     elseif grid == 4
         xu = network.land.staggered_indices.xu
-        edge_nodes[range(1, n, step = 2)] = 1:m
-        xu[xu.==m+1] .= -999
-        edge_nodes[range(2, n, step = 2)] = xu
+        edge_nodes[range(1, n; step = 2)] = 1:m
+        xu[xu .== m + 1] .= -999
+        edge_nodes[range(2, n; step = 2)] = xu
         return edge_nodes
     elseif grid == 5
         yu = network.land.staggered_indices.yu
-        edge_nodes[range(1, n, step = 2)] = 1:m
-        yu[yu.==m+1] .= -999
-        edge_nodes[range(2, n, step = 2)] = yu
+        edge_nodes[range(1, n; step = 2)] = 1:m
+        yu[yu .== m + 1] .= -999
+        edge_nodes[range(2, n; step = 2)] = yu
         return edge_nodes
     elseif grid in 0:2 || grid == 6
         @warn("edges are not provided for grid type $grid (variables are located at nodes)")
@@ -394,7 +400,7 @@ end
 # Extension of BMI functions (state handling and start time), required for OpenDA coupling.
 # May also be useful for other external software packages.
 function load_state(model::Model)
-    model = set_states(model)
+    set_states!(model)
     return model
 end
 
@@ -404,9 +410,12 @@ function save_state(model::Model)
         @info "Write output states to netCDF file `$(model.writer.state_nc_path)`."
     end
     write_netcdf_timestep(model, writer.state_dataset, writer.state_parameters)
-    close(writer.state_dataset)
+    return close(writer.state_dataset)
 end
 
 function get_start_unix_time(model::Model)
-    datetime2unix(DateTime(model.config.starttime))
+    return datetime2unix(DateTime(model.config.starttime))
 end
+
+exchange(t::Vector) = true
+exchange(t) = false

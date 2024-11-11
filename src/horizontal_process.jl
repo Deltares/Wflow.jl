@@ -68,34 +68,47 @@ function kin_wave!(Q, graph, toposort, Qold, q, alpha, beta, DCL, dt)
     return Q
 end
 
-"Returns water table depth `zi` based on lateral subsurface flow `ssf` and hydraulic conductivity profile `ksat_profile`"
-function ssf_water_table_depth(ssf, kh_0, slope, f, d, dw, z_exp, ksat_profile)
-    if ksat_profile == "exponential"
-        zi = log((f * ssf) / (dw * kh_0 * slope) + exp(-f * d)) / -f
-    elseif ksat_profile == "exponential_constant"
-        ssf_constant = kh_0 * slope * exp(-f * z_exp) * (d - z_exp) * dw
-        if ssf > ssf_constant
-            zi = log((f * (ssf - ssf_constant)) / (dw * kh_0 * slope) + exp(-f * z_exp)) / -f
-        else
-            zi = d - ssf / (dw * kh_0 * slope * exp(-f * z_exp))
-        end
+"Returns water table depth `zi` based on lateral subsurface flow `ssf` and hydraulic conductivity profile `KhExponential`"
+function ssf_water_table_depth(ssf, slope, d, dw, kh_profile::KhExponential, i)
+    (; f, kh_0) = kh_profile
+    zi = log((f[i] * ssf) / (dw * kh_0[i] * slope) + exp(-f[i] * d)) / -f[i]
+    return zi
+end
+
+"Returns water table depth `zi` based on lateral subsurface flow `ssf` and hydraulic conductivity profile `KhExponentialConstant`"
+function ssf_water_table_depth(ssf, slope, d, dw, kh_profile::KhExponentialConstant, i)
+    (; z_exp) = kh_profile
+    (; kh_0, f) = kh_profile.exponential
+    ssf_constant = kh_0[i] * slope * exp(-f[i] * z_exp[i]) * (d - z_exp[i]) * dw
+    if ssf > ssf_constant
+        zi =
+            log(
+                (f[i] * (ssf - ssf_constant)) / (dw * kh_0[i] * slope) +
+                exp(-f[i] * z_exp[i]),
+            ) / -f[i]
+    else
+        zi = d - ssf / (dw * kh_0[i] * slope * exp(-f[i] * z_exp[i]))
     end
     return zi
 end
 
-"Returns kinematic wave celecity `Cn` of lateral subsurface flow based on hydraulic conductivity profile `ksat_profile`"
-function ssf_celerity(zi, kh_0, slope, theta_e, f, z_exp, ksat_profile)
-    if ksat_profile == "exponential"
-        Cn = (kh_0 * exp(-f * zi) * slope) / theta_e
-    elseif ksat_profile == "exponential_constant"
-        Cn_const = (kh_0 * exp(-f * z_exp) * slope) / theta_e
-        if zi < z_exp
-            Cn = (kh_0 * exp(-f * zi) * slope) / theta_e + Cn_const
-        else
-            Cn = Cn_const
-        end
-    end
+"Returns kinematic wave celecity `Cn` of lateral subsurface flow based on hydraulic conductivity profile `KhExponential`"
+function ssf_celerity(zi, slope, theta_e, kh_profile::KhExponential, i)
+    (; kh_0, f) = kh_profile
+    Cn = (kh_0[i] * exp(-f[i] * zi) * slope) / theta_e
     return Cn
+end
+
+"Returns kinematic wave celecity `Cn` of lateral subsurface flow based on hydraulic conductivity profile `KhExponentialConstant`"
+function ssf_celerity(zi, slope, theta_e, kh_profile::KhExponentialConstant, i)
+    (; z_exp) = kh_profile
+    (; kh_0, f) = kh_profile.exponential
+    Cn_const = (kh_0[i] * exp(-f[i] * z_exp[i]) * slope) / theta_e
+    return if zi < z_exp[i]
+        (kh_0[i] * exp(-f[i] * zi) * slope) / theta_e + Cn_const
+    else
+        Cn_const
+    end
 end
 
 """
@@ -115,19 +128,16 @@ function kinematic_wave_ssf(
     ssf_prev,
     zi_prev,
     r,
-    kh_0,
     slope,
     theta_e,
-    f,
     d,
     dt,
     dx,
     dw,
     ssfmax,
-    z_exp,
-    ksat_profile,
+    kh_profile::Union{KhExponential, KhExponentialConstant},
+    i,
 )
-
     epsilon = 1.0e-12
     max_iters = 3000
 
@@ -139,9 +149,9 @@ function kinematic_wave_ssf(
         count = 1
 
         # Estimate zi on the basis of the relation between subsurface flow and zi
-        zi = ssf_water_table_depth(ssf, kh_0, slope, f, d, dw, z_exp, ksat_profile)
+        zi = ssf_water_table_depth(ssf, slope, d, dw, kh_profile, i)
         # Reciprocal of derivative delta Q/ delta z_i, constrained w.r.t. neff on the basis of the continuity equation)
-        Cn = ssf_celerity(zi, kh_0, slope, theta_e, f, z_exp, ksat_profile)
+        Cn = ssf_celerity(zi, slope, theta_e, kh_profile, i)
         # Term of the continuity equation for Newton-Raphson iteration for iteration 1
         # because celerity Cn is depending on zi, the increase or decrease of zi is moved to the recharge term of the continuity equation
         # then (1./Cn)*ssf_prev can be replaced with (1./Cn)*ssf, and thus celerity and lateral flow rate ssf are then in line
@@ -161,9 +171,9 @@ function kinematic_wave_ssf(
         # Start while loop of Newton-Raphson iteration m until continuity equation approaches zero
         while true
             # Estimate zi on the basis of the relation between lateral flow rate and groundwater level
-            zi = ssf_water_table_depth(ssf, kh_0, slope, f, d, dw, z_exp, ksat_profile)
+            zi = ssf_water_table_depth(ssf, slope, d, dw, kh_profile, i)
             # Reciprocal of derivative delta Q/ delta z_i, constrained w.r.t. neff on the basis of the continuity equation
-            Cn = ssf_celerity(zi, kh_0, slope, theta_e, f, z_exp, ksat_profile)
+            Cn = ssf_celerity(zi, slope, theta_e, kh_profile, i)
             # Term of the continuity equation for given Newton-Raphson iteration m
             # because celerity Cn is depending on zi, the increase or decrease of zi is moved to the recharge term of the continuity equation
             # then (1./Cn)*ssf_prev can be replaced with (1./Cn)*ssf, and thus celerity and lateral flow rate ssf are then in line
@@ -194,7 +204,6 @@ function kinematic_wave_ssf(
         zi = clamp(zi, 0.0, d)
 
         return ssf, zi, exfilt
-
     end
 end
 
@@ -207,8 +216,21 @@ Kinematic wave for lateral subsurface flow for a single cell and timestep, based
 Returns lateral subsurface flow `ssf`, water table depth `zi` and exfiltration rate
 `exfilt`.
 """
-function kinematic_wave_ssf(ssfin, ssf_prev, zi_prev, r, kh, slope, theta_e, d, dt, dx, dw, ssfmax)
-
+function kinematic_wave_ssf(
+    ssfin,
+    ssf_prev,
+    zi_prev,
+    r,
+    slope,
+    theta_e,
+    d,
+    dt,
+    dx,
+    dw,
+    ssfmax,
+    kh_profile::KhLayered,
+    i,
+)
     epsilon = 1.0e-12
     max_iters = 3000
 
@@ -219,7 +241,7 @@ function kinematic_wave_ssf(ssfin, ssf_prev, zi_prev, r, kh, slope, theta_e, d, 
         ssf = (ssf_prev + ssfin) / 2.0
         count = 1
         # celerity (Cn)
-        Cn = (slope * kh) / theta_e
+        Cn = (slope * kh_profile.kh[i]) / theta_e
         # constant term of the continuity equation for Newton-Raphson
         c = (dt / dx) * ssfin + (1.0 / Cn) * ssf_prev + r
         # continuity equation of which solution should be zero
@@ -264,14 +286,12 @@ function kinematic_wave_ssf(ssfin, ssf_prev, zi_prev, r, kh, slope, theta_e, d, 
 end
 
 """
-    accucapacitystate!(material, network, capacity) -> material
+    accucapacitystate!(material, network, capacity)
 
 Transport of material downstream with a limited transport capacity over a directed graph.
 Mutates the material input. The network is expected to hold a graph and order field, where
 the graph implements the Graphs interface, and the order is a valid topological ordering
 such as that returned by `Graphs.topological_sort_by_dfs`.
-
-Returns the material state after transport.
 """
 function accucapacitystate!(material, network, capacity)
     (; graph, order) = network
@@ -289,7 +309,7 @@ function accucapacitystate!(material, network, capacity)
             error("bifurcations not supported")
         end
     end
-    return material
+    return nothing
 end
 
 """
@@ -298,19 +318,19 @@ end
 Non mutating version of `accucapacitystate!`.
 """
 function accucapacitystate(material, network, capacity)
-    accucapacitystate!(copy(material), network, capacity)
+    material = copy(material)
+    accucapacitystate!(material, network, capacity)
+    return material
 end
 
 """
-    accucapacityflux!(flux, material, network, capacity) -> flux, material
+    accucapacityflux!(flux, material, network, capacity)
 
 Transport of material downstream with a limited transport capacity over a directed graph.
 Updates the material input, and overwrites the flux input, not using existing values. The
 network is expected to hold a graph and order field, where the graph implements the Graphs
 interface, and the order is a valid topological ordering such as that returned by
 `Graphs.topological_sort_by_dfs`.
-
-Returns the flux (material leaving each cell), and material (left after transport).
 """
 function accucapacityflux!(flux, material, network, capacity)
     (; graph, order) = network
@@ -329,7 +349,7 @@ function accucapacityflux!(flux, material, network, capacity)
             error("bifurcations not supported")
         end
     end
-    return flux, material
+    return nothing
 end
 
 """
@@ -338,7 +358,10 @@ end
 Non mutating version of `accucapacityflux!`.
 """
 function accucapacityflux(material, network, capacity)
-    accucapacityflux!(zero(material), copy(material), network, capacity)
+    flux = zero(material)
+    material = copy(material)
+    accucapacityflux!(flux, material, network, capacity)
+    return flux, material
 end
 
 """
@@ -349,9 +372,9 @@ Lateral snow transport. Transports snow downhill. Mutates `snow` and `snowwater`
 function lateral_snow_transport!(snow, snowwater, slope, network)
     snowflux_frac = min.(0.5, slope ./ 5.67) .* min.(1.0, snow ./ 10000.0)
     maxflux = snowflux_frac .* snow
-    snow = accucapacitystate!(snow, network, maxflux)
-    snowwater = accucapacitystate!(snowwater, network, snowwater .* snowflux_frac)
-    return snow, snowwater
+    accucapacitystate!(snow, network, maxflux)
+    accucapacitystate!(snowwater, network, snowwater .* snowflux_frac)
+    return nothing
 end
 
 """
@@ -373,7 +396,6 @@ function local_inertial_flow(
     froude_limit,
     dt,
 )
-
     slope = (zs1 - zs0) / length
     pow_R = cbrt(R * R * R * R)
     unit = one(hf)
@@ -411,15 +433,13 @@ function local_inertial_flow(
     froude_limit,
     dt,
 )
-
     slope = (zs1 - zs0) / length
     unit = one(theta)
     half = oftype(theta, 0.5)
     pow_hf = cbrt(hf * hf * hf * hf * hf * hf * hf)
 
     q = (
-        ((theta * q0 + half * (unit - theta) * (qu + qd)) - g * hf * width * dt * slope) /
-        (unit + g * dt * mannings_n_sq * abs(q0) / (pow_hf * width))
+        ((theta * q0 + half * (unit - theta) * (qu + qd)) - g * hf * width * dt * slope) / (unit + g * dt * mannings_n_sq * abs(q0) / (pow_hf * width))
     )
     # if froude number > 1.0, limit flow
     if froude_limit

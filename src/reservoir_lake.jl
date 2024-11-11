@@ -1,5 +1,5 @@
-@get_units @exchange @grid_type @grid_location @with_kw struct SimpleReservoir{T}
-    dt::T | "s" | 0 | "none" | "none"                   # Model time step [s]
+@get_units @grid_loc @with_kw struct SimpleReservoir{T}
+    dt::T                                               # Model time step [s]
     maxvolume::Vector{T} | "m3"                         # maximum storage (above which water is spilled) [m³]
     area::Vector{T} | "m2"                              # reservoir area [m²]
     maxrelease::Vector{T} | "m3 s-1"                    # maximum amount that can be released if below spillway [m³ s⁻¹]
@@ -21,7 +21,6 @@
         return new(args...)
     end
 end
-
 
 function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, dt)
     # read only reservoir data if reservoirs true
@@ -132,7 +131,7 @@ function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, dt)
 
     n = length(resarea)
     @info "Read `$n` reservoir locations."
-    reservoirs = SimpleReservoir{Float}(
+    reservoirs = SimpleReservoir{Float}(;
         dt = dt,
         demand = resdemand,
         maxrelease = resmaxrelease,
@@ -167,7 +166,7 @@ Update a single reservoir at position `i`.
 This is called from within the kinematic wave loop, therefore updating only for a single
 element rather than all at once.
 """
-function update(res::SimpleReservoir, i, inflow, timestepsecs)
+function update!(res::SimpleReservoir, i, inflow, timestepsecs)
 
     # limit lake evaporation based on total available volume [m³]
     precipitation = 0.001 * res.precipitation[i] * (timestepsecs / res.dt) * res.area[i]
@@ -201,21 +200,21 @@ function update(res::SimpleReservoir, i, inflow, timestepsecs)
     res.volume[i] = vol
     res.actevap[i] += 1000.0 * (actevap / res.area[i])
 
-    return res
+    return nothing
 end
 
-@get_units @exchange @grid_type @grid_location @with_kw struct Lake{T}
-    dt::T | "s" | 0 | "none" | "none"           # Model time step [s]
+@get_units @grid_loc @with_kw struct Lake{T}
+    dt::T                                       # Model time step [s]
     lowerlake_ind::Vector{Int} | "-"            # Index of lower lake (linked lakes)
     area::Vector{T} | "m2"                      # lake area [m²]
-    maxstorage::Vector{Union{T,Missing}} | "m3" # lake maximum storage from rating curve 1 [m³]
+    maxstorage::Vector{Union{T, Missing}} | "m3" # lake maximum storage from rating curve 1 [m³]
     threshold::Vector{T} | "m"                  # water level threshold H₀ [m] below that level outflow is zero
     storfunc::Vector{Int} | "-"                 # type of lake storage curve, 1: S = AH, 2: S = f(H) from lake data and interpolation
     outflowfunc::Vector{Int} | "-"              # type of lake rating curve, 1: Q = f(H) from lake data and interpolation, 2: General Q = b(H - H₀)ᵉ, 3: Case of Puls Approach Q = b(H - H₀)²
     b::Vector{T} | "m3/2 s-1 (if e=3/2)"        # rating curve coefficient
     e::Vector{T} | "-"                          # rating curve exponent
-    sh::Vector{Union{SH,Missing}}               # data for storage curve
-    hq::Vector{Union{HQ,Missing}}               # data for rating curve
+    sh::Vector{Union{SH, Missing}}               # data for storage curve
+    hq::Vector{Union{HQ, Missing}}               # data for rating curve
     waterlevel::Vector{T} | "m"                 # waterlevel H [m] of lake
     inflow::Vector{T} | "m3"                    # inflow to the lake [m³]
     storage::Vector{T} | "m3"                   # storage lake [m³]
@@ -363,13 +362,13 @@ function initialize_lake(config, nc, inds_riv, nriv, pits, dt)
 
     @info "Read `$n_lakes` lake locations."
 
-    sh = Vector{Union{SH,Missing}}(missing, n_lakes)
-    hq = Vector{Union{HQ,Missing}}(missing, n_lakes)
+    sh = Vector{Union{SH, Missing}}(missing, n_lakes)
+    hq = Vector{Union{HQ, Missing}}(missing, n_lakes)
     lowerlake_ind = fill(0, n_lakes)
     # lake CSV parameter files are expected in the same directory as path_static
     path = dirname(input_path(config, config.input.path_static))
 
-    for i = 1:n_lakes
+    for i in 1:n_lakes
         lakeloc = lakelocs[i]
         if linked_lakelocs[i] > 0
             lowerlake_ind[i] = only(findall(x -> x == linked_lakelocs[i], lakelocs))
@@ -398,7 +397,7 @@ function initialize_lake(config, nc, inds_riv, nriv, pits, dt)
         end
     end
     n = length(lakearea)
-    lakes = Lake{Float}(
+    lakes = Lake{Float}(;
         dt = dt,
         lowerlake_ind = lowerlake_ind,
         area = lakearea,
@@ -430,7 +429,6 @@ function initialize_lake(config, nc, inds_riv, nriv, pits, dt)
     pits
 end
 
-
 "Determine the initial storage depending on the storage function"
 function initialize_storage(storfunc, area, waterlevel, sh)
     storage = similar(area)
@@ -459,7 +457,7 @@ end
 
 "Determine the maximum storage for lakes with a rating curve of type 1"
 function maximum_storage(storfunc, outflowfunc, area, sh, hq)
-    maxstorage = Vector{Union{Float,Missing}}(missing, length(area))
+    maxstorage = Vector{Union{Float, Missing}}(missing, length(area))
     # maximum storage is based on the maximum water level (H) value in the H-Q table
     for i in eachindex(maxstorage)
         if outflowfunc[i] == 1
@@ -472,7 +470,6 @@ function maximum_storage(storfunc, outflowfunc, area, sh, hq)
     end
     return maxstorage
 end
-
 
 function interpolate_linear(x, xp, fp)
     if x <= minimum(xp)
@@ -494,8 +491,7 @@ Update a single lake at position `i`.
 This is called from within the kinematic wave loop, therefore updating only for a single
 element rather than all at once.
 """
-function update(lake::Lake, i, inflow, doy, timestepsecs)
-
+function update!(lake::Lake, i, inflow, doy, timestepsecs)
     lo = lake.lowerlake_ind[i]
     has_lowerlake = lo != 0
 
@@ -532,7 +528,6 @@ function update(lake::Lake, i, inflow, doy, timestepsecs)
 
     ### Linearisation for specific storage/rating curves ###
     if lake.outflowfunc[i] == 1 || lake.outflowfunc[i] == 2
-
         diff_wl = has_lowerlake ? lake.waterlevel[i] - lake.waterlevel[lo] : 0.0
 
         storage_input = (lake.storage[i] + precipitation - actevap) / timestepsecs + inflow
@@ -592,7 +587,6 @@ function update(lake::Lake, i, inflow, doy, timestepsecs)
             lake.storage[lo] = lowerlake_storage
             lake.waterlevel[lo] = lowerlake_waterlevel
         end
-
     end
 
     # update values in place
@@ -603,5 +597,5 @@ function update(lake::Lake, i, inflow, doy, timestepsecs)
     lake.storage[i] = storage
     lake.actevap[i] += 1000.0 * (actevap / lake.area[i])
 
-    return lake
+    return nothing
 end

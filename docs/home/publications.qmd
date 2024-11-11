@@ -59,6 +59,11 @@ R., Francés, F., Kollet, S., Rigon, R., Weerts, A. & Samaniego, L, 2024. Multi-
 hydrological reference dataset over continental Europe and an African basin. Sci Data, 11,
 1009\. <https://doi.org/10.1038/s41597-024-03825-9>.
 
+Droppers, B., Rakovec, O., Avila, L., Azimi, S., Cortés-Torres N., De León Pérez, D.,
+Imhoff, R., Francés, F., Kollet, S., Rigon, R., Weerts, A. & Samaniego, L, 2024. Multi-model
+hydrological reference dataset over continental Europe and an African basin. Sci Data, 11,
+1009\. <https://doi.org/10.1038/s41597-024-03825-9>.
+
 Emerton, R.E., Stephens, E.M., Pappenberger, F., Pagano, T.C., Weerts, A.H., Wood, A.W.,
 Salamon, P., Brown, J.D., Hjerdt, N., Donnelly, C., Baugh, C.A., Cloke, H.L., 2016. Continental
 and global scale flood forecasting systems. WIREs Water 3, 391–418.
@@ -166,6 +171,12 @@ the Rhine River basin. Hydrol. Earth Syst. Sci. 19, 2079–2100.
 van der Laan, E., P. Hazenberg, A.H. Weerts, 2024. Simulation of long-term storage dynamics of
 headwater reservoirs across the globe using public cloud computing infrastructure. Science of
 The Total Environment, 172678, <https://doi.org/10.1016/j.scitotenv.2024.172678>.
+
+Pranoto, B., Soekarno, H., Hartulistiyoso, E., Nur Aidi, M., Sutrisno, D., Pohan, D.,
+Radhika, Sutejo, B., Heru Kuncoro, A., Nahib, I., 2024. Integrating Flood Early Warning
+System (FEWS) for Optimizing Small Hydropower Sites: A West Java Case Study. EVERGREEN Joint
+Journal of Novel Carbon Resource Sciences & Green Asia Strategy, 11, 3, 2691-2699.
+<https://www.tj.kyushu-u.ac.jp/evergreen/contents/EG2024-11_3_content/pdf/p2691-2699.pdf>
 
 van Osnabrugge, B., Weerts, A.H., Uijlenhoet, R., 2017. genRE: A method to extend gridded
 precipitation climatology data sets in near real-time for hydrological forecasting purposes.

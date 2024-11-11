@@ -1,7 +1,7 @@
 ### Soil erosion ###
-@get_units @exchange @grid_type @grid_location @with_kw struct LandSediment{T}
+@get_units @grid_loc @with_kw struct LandSediment{T}
     # number of cells
-    n::Int | "-" | 0 | "none" | "none"
+    n::Int | "-" | "none"
     ### Soil erosion part ###
     # length of cells in y direction [m]
     yl::Vector{T} | "m"
@@ -99,6 +99,52 @@
     end
 end
 
+# This function is not used by SBM (was part of sbm.jl)
+function initialize_canopy(nc, config, inds)
+    n = length(inds)
+    # if leaf area index climatology provided use sl, swood and kext to calculate cmax, e_r and canopygapfraction
+    if haskey(config.input.vertical, "leaf_area_index")
+        # TODO confirm if leaf area index climatology is present in the netCDF
+        sl = ncread(
+            nc,
+            config,
+            "vertical.specific_leaf";
+            optional = false,
+            sel = inds,
+            type = Float,
+        )
+        swood = ncread(
+            nc,
+            config,
+            "vertical.storage_wood";
+            optional = false,
+            sel = inds,
+            type = Float,
+        )
+        kext =
+            ncread(nc, config, "vertical.kext"; optional = false, sel = inds, type = Float)
+        cmax = fill(mv, n)
+        e_r = fill(mv, n)
+        canopygapfraction = fill(mv, n)
+    else
+        sl = fill(mv, n)
+        swood = fill(mv, n)
+        kext = fill(mv, n)
+        # cmax, e_r, canopygapfraction only required when leaf area index climatology not provided
+        cmax = ncread(nc, config, "vertical.cmax"; sel = inds, defaults = 1.0, type = Float)
+        e_r =
+            ncread(nc, config, "vertical.eoverr"; sel = inds, defaults = 0.1, type = Float)
+        canopygapfraction = ncread(
+            nc,
+            config,
+            "vertical.canopygapfraction";
+            sel = inds,
+            defaults = 0.1,
+            type = Float,
+        )
+    end
+    return cmax, e_r, canopygapfraction, sl, swood, kext
+end
 
 function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
     # Initialize parameters for the soil loss part
@@ -189,7 +235,7 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
         fsilt = 0.13 .* psilt ./ 100
         fsand = 0.01 .* psand .* (1 .- 0.01 .* pclay) .^ (2.4)
         fsagg = 0.28 .* (0.01 .* pclay .- 0.25) .+ 0.5
-        for i = 1:n
+        for i in 1:n
             if pclay[i] > 50.0
                 fsagg[i] = 0.57
             elseif pclay[i] < 25
@@ -232,7 +278,7 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
         wbcover = wbcover .+ lakecoverage_2d
     end
 
-    eros = LandSediment{Float}(
+    eros = LandSediment{Float}(;
         n = n,
         yl = yl,
         xl = xl,
@@ -300,14 +346,14 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
 end
 
 # Soil erosion
-function update_until_ols(eros::LandSediment, config)
+function update_until_ols!(eros::LandSediment, config)
     # Options from config
     do_lai = haskey(config.input.vertical, "leaf_area_index")
     rainerosmethod = get(config.model, "rainerosmethod", "answers")::String
     dt = Second(config.timestepsecs)
     ts = Float(dt.value)
 
-    for i = 1:eros.n
+    for i in 1:(eros.n)
 
         ### Splash / Rainfall erosion ###
         # ANSWERS method
@@ -392,18 +438,17 @@ function update_until_ols(eros::LandSediment, config)
         eros.erossagg[i] = soilloss * eros.fsagg[i]
         eros.eroslagg[i] = soilloss * eros.flagg[i]
     end
-
+    return nothing
 end
 
 ### Sediment transport capacity in overland flow ###
-function update_until_oltransport(ols::LandSediment, config::Config)
-
+function update_until_oltransport!(ols::LandSediment, config::Config)
     do_river = get(config.model, "runrivermodel", false)::Bool
     tcmethod = get(config.model, "landtransportmethod", "yalinpart")::String
     dt = Second(config.timestepsecs)
     ts = Float(dt.value)
 
-    for i = 1:ols.n
+    for i in 1:(ols.n)
         sinslope = sin(atan(ols.slope[i]))
 
         if !do_river
@@ -441,7 +486,7 @@ function update_until_oltransport(ols::LandSediment, config::Config)
         ols.TCsagg[i] = TCsagg
         ols.TClagg[i] = TClagg
     end
-
+    return nothing
 end
 
 function tc_govers(ols::LandSediment, i::Int, sinslope::Float, ts::Float)::Float
@@ -591,9 +636,9 @@ function tc_yalinpart(ols::LandSediment, i::Int, sinslope::Float, ts::Float)
 end
 
 ### Sediment transport in overland flow ###
-@get_units @exchange @grid_type @grid_location @with_kw struct OverlandFlowSediment{T}
+@get_units @grid_loc @with_kw struct OverlandFlowSediment{T}
     # number of cells
-    n::Int | "-" | 0 | "none" | "none"
+    n::Int | "-" | "none"
     # Filter with river cells
     rivcell::Vector{T} | "-"
     # Total eroded soil [ton Δt⁻¹]
@@ -627,13 +672,11 @@ end
     inlandsagg::Vector{T} | "t dt-1"
     inlandlagg::Vector{T} | "t dt-1"
 
-
     function OverlandFlowSediment{T}(args...) where {T}
         equal_size_vectors(args)
         return new(args...)
     end
 end
-
 
 function partial_update!(inland, rivcell, eroded)
     no_erosion = zero(eltype(eroded))
@@ -643,7 +686,7 @@ function partial_update!(inland, rivcell, eroded)
     return inland
 end
 
-function update(ols::OverlandFlowSediment, network, config)
+function update!(ols::OverlandFlowSediment, network, config)
     do_river = get(config.model, "runrivermodel", false)::Bool
     tcmethod = get(config.model, "landtransportmethod", "yalinpart")::String
     zeroarr = fill(0.0, ols.n)
@@ -675,14 +718,15 @@ function update(ols::OverlandFlowSediment, network, config)
         accucapacityflux!(ols.olsed, ols.soilloss, network, ols.TCsed)
         ols.inlandsed .= ifelse.(ols.rivcell .== 1, ols.soilloss, zeroarr)
     end
+    return nothing
 end
 
 ### River transport and processes ###
-@get_units @exchange @grid_type @grid_location @with_kw struct RiverSediment{T}
+@get_units @grid_loc @with_kw struct RiverSediment{T}
     # number of cells
-    n::Int | "-" | 0 | "none" | "none"
+    n::Int | "-" | "none"
     # Timestep [s]
-    dt::T | "s" | 0 | "none" | "none"
+    dt::T | "s"
     # River geometry (slope [-], length [m], width [m])
     sl::Vector{T} | "m"
     dl::Vector{T} | "m"
@@ -781,7 +825,6 @@ end
     #     return new(args...)
     # end
 end
-
 
 function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     # Initialize river parameters
@@ -1012,7 +1055,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     ck = zeros(Float, nriv)
     dk = zeros(Float, nriv)
     if tcmethodriv == "kodatie"
-        for i = 1:nriv
+        for i in 1:nriv
             if d50riv[i] <= 0.05
                 ak[i] = 281.4
                 bk[i] = 2.622
@@ -1050,7 +1093,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     kdbank = @. Float(0.2 * TCrbank^(-0.5) * 1e-6)
     kdbed = @. Float(0.2 * TCrbed^(-0.5) * 1e-6)
 
-    rs = RiverSediment(
+    rs = RiverSediment(;
         n = nriv,
         dt = Float(dt.value),
         # Parameters
@@ -1132,7 +1175,7 @@ function initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
     return rs
 end
 
-function update(rs::RiverSediment, network, config)
+function update!(rs::RiverSediment, network, config)
     (; graph, order) = network
     tcmethod = get(config.model, "rivtransportmethod", "bagnold")::String
 
@@ -1572,7 +1615,6 @@ function update(rs::RiverSediment, network, config)
 
         rs.SSconc[v] = SS * toconc
         rs.Bedconc[v] = Bed * toconc
-
     end
-
+    return nothing
 end

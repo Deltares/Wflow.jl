@@ -41,11 +41,12 @@ Q = Wflow.kin_wave!(Q, graph, toposort, Qold, q, alpha, beta, DCL, dt_sec)
 @testset "flow rate" begin
     @test sum(Q) ≈ 2.957806043289641e6
     @test Q[toposort[1]] ≈ 0.007260052312634069f0
-    @test Q[toposort[n-100]] ≈ 3945.762718338739f0
+    @test Q[toposort[n - 100]] ≈ 3945.762718338739f0
     @test Q[sink] ≈ 4131.101474418251
 end
 
 @testset "kinematic wave subsurface flow" begin
+    kh_profile = Wflow.KhExponential([18021.0], [0.0017669756])
     @test all(
         isapprox.(
             Wflow.kinematic_wave_ssf(
@@ -53,17 +54,15 @@ end
                 215395179156.82645,
                 1540.34273559,
                 1.238,
-                18021.0,
                 0.25,
                 0.346,
-                0.0017669756,
                 1800.0,
                 1.0,
                 1697.05 * 1000.0,
                 1200.0 * 1000.0,
                 2443723.716252628,
-                1.0,
-                "exponential",
+                kh_profile,
+                1,
             ),
             (7.410313985168225e10, 1540.1496836278836, -0.0),
         ),
@@ -114,7 +113,6 @@ end
 end
 
 @testset "local inertial long channel MacDonald (1997)" begin
-
     g = 9.80665
     L = 1000.0
     dx = 5.0
@@ -135,11 +133,11 @@ end
     h_a = h.([dx:dx:L;]) # water depth profile (analytical solution)
     # integrate slope to get elevation (bed level) z
     x = [dx:dx:L;]
-    zb = first.([quadgk(s, xi, L, rtol = 1e-12) for xi in x])
+    zb = first.([quadgk(s, xi, L; rtol = 1e-12) for xi in x])
 
     # initialize ShallowWaterRiver
     graph = DiGraph(n)
-    for i = 1:n
+    for i in 1:n
         add_edge!(graph, i, i + 1)
     end
 
@@ -156,7 +154,7 @@ end
     width_at_link = fill(0.0, _ne)
     length_at_link = fill(0.0, _ne)
     mannings_n_sq = fill(0.0, _ne)
-    for i = 1:_ne
+    for i in 1:_ne
         zb_max[i] = max(zb[nodes_at_link.src[i]], zb[nodes_at_link.dst[i]])
         width_at_link[i] = min(width[nodes_at_link.dst[i]], width[nodes_at_link.src[i]])
         length_at_link[i] = 0.5 * (dl[nodes_at_link.dst[i]] + dl[nodes_at_link.src[i]])
@@ -167,7 +165,6 @@ end
             ) / (dl[nodes_at_link.dst[i]] + dl[nodes_at_link.src[i]])
         mannings_n_sq[i] = mannings_n * mannings_n
     end
-
 
     network = (
         nodes_at_link = nodes_at_link,
@@ -181,10 +178,10 @@ end
     h_init = zeros(n - 1)
     push!(h_init, h_a[n])
 
-    sw_river = Wflow.ShallowWaterRiver(
+    sw_river = Wflow.ShallowWaterRiver(;
         n = n,
         ne = _ne,
-        active_n = collect(1:n-1),
+        active_n = collect(1:(n - 1)),
         active_e = collect(1:_ne),
         g = 9.80665,
         alpha = alpha,
@@ -234,7 +231,7 @@ end
         sw_river.inwater[1] = 20.0
         h0 = mean(sw_river.h)
         dt = Wflow.stable_timestep(sw_river)
-        Wflow.shallowwater_river_update(sw_river, network, dt, 0.0, true)
+        Wflow.shallowwater_river_update!(sw_river, network, dt, 0.0, true)
         d = abs(h0 - mean(sw_river.h))
         if d <= epsilon
             break
@@ -243,5 +240,4 @@ end
 
     # test for mean absolute error [cm]
     @test mean(abs.(sw_river.h .- h_a)) * 100.0 ≈ 1.873574206931199
-
 end

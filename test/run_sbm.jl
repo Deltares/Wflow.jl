@@ -6,7 +6,7 @@ config = Wflow.Config(tomlpath)
 model = Wflow.initialize_sbm_model(config)
 (; network) = model
 
-model = Wflow.run_timestep(model)
+Wflow.run_timestep!(model)
 
 # test if the first timestep was written to the CSV file
 flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
@@ -69,47 +69,48 @@ end
 end
 
 @testset "first timestep" begin
-    sbm = model.vertical
-
-    @test sbm.tt[50063] ≈ 0.0f0
+    sbm = model.vertical.soil
+    snow = model.vertical.snow
+    @test snow.parameters.tt[50063] ≈ 0.0f0
 
     @test model.clock.iteration == 1
 
-    @test sbm.theta_s[50063] ≈ 0.48755401372909546f0
-    @test sbm.theta_r[50063] ≈ 0.15943120419979095f0
-    @test mean(sbm.runoff) ≈ 0.04177459898728149f0
-    @test mean(sbm.soilevap) ≈ 0.02122698830889417f0
-    @test mean(sbm.actevap) ≈ 0.3353001180202587f0
-    @test mean(sbm.actinfilt) ≈ 1.6444774688444848f0
-    @test sbm.snow[5] ≈ 3.768513390588815f0
-    @test mean(sbm.snow) ≈ 0.038019723676094325f0
-    @test sbm.total_storage[50063] ≈ 559.9035608052374f0
-    @test sbm.total_storage[429] ≈ 597.4578475404879f0 # river cell
+    @test sbm.parameters.theta_s[50063] ≈ 0.48755401372909546f0
+    @test sbm.parameters.theta_r[50063] ≈ 0.15943120419979095f0
+    @test mean(sbm.variables.runoff) ≈ 0.04177459898728149f0
+    @test mean(sbm.variables.soilevap) ≈ 0.02122698830889417f0
+    @test mean(sbm.variables.actevap) ≈ 0.3353001180202587f0
+    @test mean(sbm.variables.actinfilt) ≈ 1.6444774688444848f0
+    @test snow.variables.snow_storage[5] ≈ 3.768513390588815f0
+    @test mean(snow.variables.snow_storage) ≈ 0.038019723676094325f0
+    @test sbm.variables.total_storage[50063] ≈ 559.9035608052374f0
+    @test sbm.variables.total_storage[429] ≈ 597.4578475404879f0 # river cell
 end
 
 # run the second timestep
-model = Wflow.run_timestep(model)
+Wflow.run_timestep!(model)
 
 @testset "second timestep" begin
-    sbm = model.vertical
-    @test sbm.theta_s[50063] ≈ 0.48755401372909546f0
-    @test sbm.theta_r[50063] ≈ 0.15943120419979095f0
-    @test mean(sbm.net_runoff) ≈ 0.23734052031823816f0
-    @test mean(sbm.runoff) ≈ 0.23770898226019577f0
-    @test mean(sbm.soilevap) ≈ 0.018750808322054897f0
-    @test mean(sbm.actevap) ≈ 0.14545276216428166f0
-    @test mean(sbm.actinfilt) ≈ 0.08863102527394363f0
-    @test sbm.snow[5] ≈ 3.843412524052313f0
-    @test mean(sbm.snow) ≈ 0.03461317061870949f0
-    @test sbm.total_storage[50063] ≈ 560.0152135062889f0
-    @test sbm.total_storage[429] ≈ 617.2238533241972f0 # river cell
+    sbm = model.vertical.soil
+    snow = model.vertical.snow
+    @test sbm.parameters.theta_s[50063] ≈ 0.48755401372909546f0
+    @test sbm.parameters.theta_r[50063] ≈ 0.15943120419979095f0
+    @test mean(sbm.variables.net_runoff) ≈ 0.23734052031823816f0
+    @test mean(sbm.variables.runoff) ≈ 0.23770898226019577f0
+    @test mean(sbm.variables.soilevap) ≈ 0.018750808322054897f0
+    @test mean(sbm.variables.actevap) ≈ 0.14545276216428166f0
+    @test mean(sbm.variables.actinfilt) ≈ 0.08863102527394363f0
+    @test snow.variables.snow_storage[5] ≈ 3.843412524052313f0
+    @test mean(snow.variables.snow_storage) ≈ 0.03461317061870949f0
+    @test sbm.variables.total_storage[50063] ≈ 560.0152135062889f0
+    @test sbm.variables.total_storage[429] ≈ 617.2238533241972f0 # river cell
 end
 
 @testset "subsurface flow" begin
     ssf = model.lateral.subsurface.ssf
     @test sum(ssf) ≈ 6.3761585406186976f7
     @test ssf[network.land.order[1]] ≈ 718.2802566393531f0
-    @test ssf[network.land.order[end-100]] ≈ 2337.771227118579f0
+    @test ssf[network.land.order[end - 100]] ≈ 2337.771227118579f0
     @test ssf[network.land.order[end]] ≈ 288.19428729403984f0
 end
 
@@ -139,12 +140,12 @@ end
 end
 
 # set these variables for comparison in "changed dynamic parameters"
-precip = copy(model.vertical.precipitation)
-evap = copy(model.vertical.potential_evaporation)
-lai = copy(model.vertical.leaf_area_index)
+precip = copy(model.vertical.atmospheric_forcing.precipitation)
+evap = copy(model.vertical.atmospheric_forcing.potential_evaporation)
+lai = copy(model.vertical.vegetation_parameter_set.leaf_area_index)
 res_evap = copy(model.lateral.river.reservoir.evaporation)
 
-Wflow.close_files(model, delete_output = false)
+Wflow.close_files(model; delete_output = false)
 
 # test for setting a pit and multithreading multiple basins (by setting 2 extra pits
 # resulting in 3 basins)
@@ -176,26 +177,27 @@ end
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 
-config.input.vertical.precipitation =
+config.input.vertical.atmospheric_forcing.precipitation =
     Dict("scale" => 2.0, "netcdf" => Dict("variable" => Dict("name" => "precip")))
-config.input.vertical.potential_evaporation = Dict(
+config.input.vertical.atmospheric_forcing.potential_evaporation = Dict(
     "scale" => 3.0,
     "offset" => 1.50,
     "netcdf" => Dict("variable" => Dict("name" => "pet")),
 )
-config.input.vertical.leaf_area_index =
+config.input.vertical.vegetation_parameter_set.leaf_area_index =
     Dict("scale" => 1.6, "netcdf" => Dict("variable" => Dict("name" => "LAI")))
 
 model = Wflow.initialize_sbm_model(config)
-model = Wflow.run_timestep(model)
-model = Wflow.run_timestep(model)
+Wflow.run_timestep!(model)
+Wflow.run_timestep!(model)
 
 @testset "changed dynamic parameters" begin
     res = model.lateral.river.reservoir
     vertical = model.vertical
-    @test vertical.precipitation[2] / precip[2] ≈ 2.0f0
-    @test (vertical.potential_evaporation[100] - 1.50) / evap[100] ≈ 3.0f0
-    @test vertical.leaf_area_index[100] / lai[100] ≈ 1.6f0
+    @test vertical.atmospheric_forcing.precipitation[2] / precip[2] ≈ 2.0f0
+    @test (vertical.atmospheric_forcing.potential_evaporation[100] - 1.50) / evap[100] ≈
+          3.0f0
+    @test vertical.vegetation_parameter_set.leaf_area_index[100] / lai[100] ≈ 1.6f0
     @test (res.evaporation[2] - 1.50) / res_evap[2] ≈ 3.0000012203408635f0
 end
 
@@ -203,12 +205,13 @@ end
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 
-config.input.cyclic = ["vertical.leaf_area_index", "lateral.river.inflow"]
+config.input.cyclic =
+    ["vertical.vegetation_parameter_set.leaf_area_index", "lateral.river.inflow"]
 config.input.lateral.river.inflow = "inflow"
 
 model = Wflow.initialize_sbm_model(config)
-model = Wflow.run_timestep(model)
-model = Wflow.run_timestep(model)
+Wflow.run_timestep!(model)
+Wflow.run_timestep!(model)
 
 @testset "river inflow (cyclic)" begin
     @test model.lateral.river.inflow[44] ≈ 0.75
@@ -217,25 +220,25 @@ end
 
 # test fixed forcing (precipitation = 2.5)
 config = Wflow.Config(tomlpath)
-config.input.vertical.precipitation = Dict("value" => 2.5)
+config.input.vertical.atmospheric_forcing.precipitation = Dict("value" => 2.5)
 model = Wflow.initialize_sbm_model(config)
-Wflow.load_fixed_forcing(model)
+Wflow.load_fixed_forcing!(model)
 
 @testset "fixed precipitation forcing (initialize)" begin
-    @test maximum(model.vertical.precipitation) ≈ 2.5
-    @test minimum(model.vertical.precipitation) ≈ 0.0
+    @test maximum(model.vertical.atmospheric_forcing.precipitation) ≈ 2.5
+    @test minimum(model.vertical.atmospheric_forcing.precipitation) ≈ 0.0
     @test all(isapprox.(model.lateral.river.reservoir.precipitation, 2.5))
 end
 
-model = Wflow.run_timestep(model)
+Wflow.run_timestep!(model)
 
 @testset "fixed precipitation forcing (first timestep)" begin
-    @test maximum(model.vertical.precipitation) ≈ 2.5
-    @test minimum(model.vertical.precipitation) ≈ 0.0
+    @test maximum(model.vertical.atmospheric_forcing.precipitation) ≈ 2.5
+    @test minimum(model.vertical.atmospheric_forcing.precipitation) ≈ 0.0
     @test all(isapprox.(model.lateral.river.reservoir.precipitation, 2.5))
 end
 
-Wflow.close_files(model, delete_output = false)
+Wflow.close_files(model; delete_output = false)
 
 # test local-inertial option for river flow river_routing
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
@@ -243,8 +246,8 @@ config = Wflow.Config(tomlpath)
 config.model.river_routing = "local-inertial"
 
 model = Wflow.initialize_sbm_model(config)
-model = Wflow.run_timestep(model)
-model = Wflow.run_timestep(model)
+Wflow.run_timestep!(model)
+Wflow.run_timestep!(model)
 
 @testset "river flow and depth (local inertial)" begin
     q = model.lateral.river.q_av
@@ -259,15 +262,15 @@ model = Wflow.run_timestep(model)
     q_channel = model.lateral.river.q_channel_av
     @test q ≈ q_channel
 end
-Wflow.close_files(model, delete_output = false)
+Wflow.close_files(model; delete_output = false)
 
 # test local-inertial option for river and overland flow
 tomlpath = joinpath(@__DIR__, "sbm_swf_config.toml")
 config = Wflow.Config(tomlpath)
 
 model = Wflow.initialize_sbm_model(config)
-model = Wflow.run_timestep(model)
-model = Wflow.run_timestep(model)
+Wflow.run_timestep!(model)
+Wflow.run_timestep!(model)
 
 @testset "river and overland flow and depth (local inertial)" begin
     q = model.lateral.river.q_av
@@ -287,7 +290,8 @@ model = Wflow.run_timestep(model)
     @test h[[26, 35, 631]] ≈
           [0.07367301172613304f0, 0.009139882310161706f0, 0.0007482998926237368f0]
 end
-Wflow.close_files(model, delete_output = false)
+
+Wflow.close_files(model; delete_output = false)
 
 # test local-inertial option for river flow including 1D floodplain schematization
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
@@ -396,8 +400,8 @@ dh = diff(fp.depth)
     @test Wflow.wetted_perimeter(fp.p[i1, 4], fp.depth[i1], h) ≈ 90.11775307900271f0
 end
 
-model = Wflow.run_timestep(model)
-model = Wflow.run_timestep(model)
+Wflow.run_timestep!(model)
+Wflow.run_timestep!(model)
 
 @testset "river flow (local inertial) with floodplain schematization simulation" begin
     q = model.lateral.river.q_av
@@ -417,8 +421,8 @@ end
 config.input.lateral.river.riverlength_bc = "riverlength_bc"
 config.input.lateral.river.riverdepth_bc = "riverdepth_bc"
 model = Wflow.initialize_sbm_model(config)
-model = Wflow.run_timestep(model)
-model = Wflow.run_timestep(model)
+Wflow.run_timestep!(model)
+Wflow.run_timestep!(model)
 
 @testset "change boundary condition for local inertial routing (including floodplain)" begin
     q = model.lateral.river.q_av
@@ -433,110 +437,94 @@ model = Wflow.run_timestep(model)
     @test h[501] ≈ 0.056707564314724804f0
     @test h[5808] ≈ 2.0000006940603936f0
 end
-Wflow.close_files(model, delete_output = false)
+Wflow.close_files(model; delete_output = false)
 
 # test different ksat profiles
 @testset "ksat profiles (SBM)" begin
     i = 100
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
-    config.input.vertical.kv = "kv"
-    config.input.vertical.z_exp = Dict("value" => 400.0)
-    config.input.vertical.z_layered = Dict("value" => 400.0)
+    config.input.vertical.soil.parameters.kv = "kv"
+    config.input.vertical.soil.parameters.z_exp = Dict("value" => 400.0)
+    config.input.vertical.soil.parameters.z_layered = Dict("value" => 400.0)
 
     @testset "exponential profile" begin
         model = Wflow.initialize_sbm_model(config)
-        (; vertical) = model
-        z = vertical.zi[i]
-        kv_z = Wflow.hydraulic_conductivity_at_depth(vertical, z, i, 2, "exponential")
-        @test kv_z ≈ vertical.kvfrac[i][2] * vertical.kv_0[i] * exp(-vertical.f[i] * z)
-        @test vertical.z_exp == vertical.soilthickness
-        @test_throws ErrorException Wflow.kh_layered_profile(
-            vertical,
-            100.0,
-            i,
-            "exponential",
-        )
-        @test all(isnan.(vertical.z_layered))
-        @test all(isnan.(vertical.kv[i]))
-        @test all(vertical.nlayers_kv .== 0)
+        (; soil) = model.vertical
+        (; kv_profile) = soil.parameters
+        (; subsurface) = model.lateral
+        z = soil.variables.zi[i]
+        kvfrac = soil.parameters.kvfrac
+        kv_z = Wflow.hydraulic_conductivity_at_depth(kv_profile, kvfrac, z, i, 2)
+        @test kv_z ≈ kvfrac[i][2] * kv_profile.kv_0[i] * exp(-kv_profile.f[i] * z)
+        @test subsurface.ssfmax[i] ≈ 28.32720603576582f0
+        @test subsurface.ssf[i] ≈ 11683.330684556406f0
     end
 
     @testset "exponential constant profile" begin
         config.input.vertical.ksat_profile = "exponential_constant"
         model = Wflow.initialize_sbm_model(config)
-        (; vertical) = model
-        z = vertical.zi[i]
-        kv_z =
-            Wflow.hydraulic_conductivity_at_depth(vertical, z, i, 2, "exponential_constant")
-        @test kv_z ≈ vertical.kvfrac[i][2] * vertical.kv_0[i] * exp(-vertical.f[i] * z)
-        kv_400 = Wflow.hydraulic_conductivity_at_depth(
-            vertical,
-            400.0,
-            i,
-            2,
-            "exponential_constant",
-        )
-        kv_1000 = Wflow.hydraulic_conductivity_at_depth(
-            vertical,
-            1000.0,
-            i,
-            3,
-            "exponential_constant",
-        )
+        (; soil) = model.vertical
+        (; kv_profile) = soil.parameters
+        (; subsurface) = model.lateral
+        z = soil.variables.zi[i]
+        kvfrac = soil.parameters.kvfrac
+        kv_z = Wflow.hydraulic_conductivity_at_depth(kv_profile, kvfrac, z, i, 2)
+        @test kv_z ≈
+              kvfrac[i][2] *
+              kv_profile.exponential.kv_0[i] *
+              exp(-kv_profile.exponential.f[i] * z)
+        kv_400 = Wflow.hydraulic_conductivity_at_depth(kv_profile, kvfrac, 400.0, i, 2)
+        kv_1000 = Wflow.hydraulic_conductivity_at_depth(kv_profile, kvfrac, 1000.0, i, 3)
         @test kv_400 ≈ kv_1000
-        @test_throws ErrorException Wflow.kh_layered_profile(
-            vertical,
-            100.0,
-            i,
-            "exponential_constant",
-        )
-        @test all(isnan.(vertical.z_layered))
-        @test all(isnan.(vertical.kv[i]))
-        @test all(vertical.nlayers_kv .== 0)
-        @test all(vertical.z_exp .== 400.0)
+        @test all(kv_profile.z_exp .== 400.0)
+        @test subsurface.ssfmax[i] ≈ 49.38558575188426f0
+        @test subsurface.ssf[i] ≈ 24810.460986497365f0
     end
 
     @testset "layered profile" begin
         config.input.vertical.ksat_profile = "layered"
         model = Wflow.initialize_sbm_model(config)
-        (; vertical) = model
-        z = vertical.zi[i]
-        @test Wflow.hydraulic_conductivity_at_depth(vertical, z, i, 2, "layered") ≈
-              vertical.kv[100][2]
-        @test Wflow.kh_layered_profile(vertical, 100.0, i, "layered") ≈ 47.508932674632355f0
-        @test vertical.nlayers_kv[i] == 4
-        @test vertical.z_layered == vertical.soilthickness
-        @test all(isnan.(vertical.z_exp))
+        (; soil) = model.vertical
+        (; kv_profile) = soil.parameters
+        (; subsurface) = model.lateral
+        z = soil.variables.zi[i]
+        kvfrac = soil.parameters.kvfrac
+        @test Wflow.hydraulic_conductivity_at_depth(kv_profile, kvfrac, z, i, 2) ≈
+              kv_profile.kv[i][2]
+        Wflow.kh_layered_profile!(soil, subsurface, kv_profile, 86400.0)
+        @test subsurface.kh_profile.kh[i] ≈ 47.508932674632355f0
+        @test subsurface.ssfmax[i] ≈ 30.237094380100316f0
+        @test subsurface.ssf[i] ≈ 14546.518932613191f0
     end
 
     @testset "layered exponential profile" begin
         config.input.vertical.ksat_profile = "layered_exponential"
         model = Wflow.initialize_sbm_model(config)
-        (; vertical) = model
-        z = vertical.zi[i]
-        @test Wflow.hydraulic_conductivity_at_depth(
-            vertical,
-            z,
-            i,
-            2,
-            "layered_exponential",
-        ) ≈ vertical.kv[i][2]
-        @test vertical.nlayers_kv[i] == 2
-        @test Wflow.kh_layered_profile(vertical, 100.0, i, "layered_exponential") ≈
-              33.76026208801769f0
-        @test all(vertical.z_layered[1:10] .== 400.0)
-        @test all(isnan.(vertical.z_exp))
+        (; soil) = model.vertical
+        (; kv_profile) = soil.parameters
+        (; subsurface) = model.lateral
+        z = soil.variables.zi[i]
+        kvfrac = soil.parameters.kvfrac
+        @test Wflow.hydraulic_conductivity_at_depth(kv_profile, kvfrac, z, i, 2) ≈
+              kv_profile.kv[i][2]
+        @test kv_profile.nlayers_kv[i] == 2
+        Wflow.kh_layered_profile!(soil, subsurface, kv_profile, 86400.0)
+        @test subsurface.kh_profile.kh[i] ≈ 33.76026208801769f0
+        @test all(kv_profile.z_layered[1:10] .== 400.0)
+        @test subsurface.ssfmax[i] ≈ 23.4840490395906f0
+        @test subsurface.ssf[i] ≈ 10336.88327617503f0
     end
 
-    model = Wflow.run_timestep(model)
-    model = Wflow.run_timestep(model)
     @testset "river flow layered exponential profile" begin
+        model = Wflow.initialize_sbm_model(config)
+        Wflow.run_timestep!(model)
+        Wflow.run_timestep!(model)
         q = model.lateral.river.q_av
         @test sum(q) ≈ 3159.38300016008f0
         @test q[1622] ≈ 0.0005972577112819149f0
         @test q[43] ≈ 10.017642376280731f0
     end
 
-    Wflow.close_files(model, delete_output = false)
+    Wflow.close_files(model; delete_output = false)
 end
