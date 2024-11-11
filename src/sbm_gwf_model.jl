@@ -132,7 +132,7 @@ function initialize_sbm_gwf_model(config::Config)
     end
 
     if land_routing == "kinematic-wave"
-        olf = initialize_surfaceflow_land(
+        olf = SurfaceFlowLand(
             nc,
             config,
             inds;
@@ -145,7 +145,7 @@ function initialize_sbm_gwf_model(config::Config)
         )
     elseif land_routing == "local-inertial"
         index_river_nf = rev_inds_riv[inds] # not filtered (with zeros)
-        olf, indices = initialize_shallowwater_land(
+        olf, indices = ShallowWaterLand(
             nc,
             config,
             inds;
@@ -170,7 +170,7 @@ function initialize_sbm_gwf_model(config::Config)
     minimum(riverwidth) > 0 || error("river width must be positive on river cells")
 
     if river_routing == "kinematic-wave"
-        rf = initialize_surfaceflow_river(
+        rf = SurfaceFlowRiver(
             nc,
             config,
             inds_riv;
@@ -185,7 +185,7 @@ function initialize_sbm_gwf_model(config::Config)
             dt = dt,
         )
     elseif river_routing == "local-inertial"
-        rf, nodes_at_link = initialize_shallowwater_river(
+        rf, nodes_at_link = ShallowWaterRiver(
             nc,
             config,
             inds_riv;
@@ -198,7 +198,6 @@ function initialize_sbm_gwf_model(config::Config)
             lake_index = lakeindex,
             lake = lakes,
             dt = dt,
-            floodplain = floodplain_1d,
         )
     else
         error(
@@ -540,7 +539,8 @@ function update!(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmG
     update!(vertical, lateral, network, config)
 
     # set river stage (groundwater) to average h from kinematic wave
-    lateral.subsurface.river.stage .= lateral.river.h_av .+ lateral.subsurface.river.bottom
+    lateral.subsurface.river.stage .=
+        lateral.river.variables.h_av .+ lateral.subsurface.river.bottom
 
     # determine stable time step for groundwater flow
     conductivity_profile =
@@ -568,7 +568,7 @@ function update!(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmG
     update!(soil, (; runoff, demand, subsurface = lateral.subsurface.flow))
 
     ssf_toriver = zeros(length(soil.variables.zi))
-    ssf_toriver[inds_riv] = -lateral.subsurface.river.flux ./ lateral.river.dt
+    ssf_toriver[inds_riv] = -lateral.subsurface.river.flux ./ tosecond(basetimestep)
     surface_routing!(model; ssf_toriver = ssf_toriver)
 
     return nothing

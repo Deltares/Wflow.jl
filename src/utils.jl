@@ -902,7 +902,8 @@ function initialize_lateralssf!(
     kv_profile::KvLayeredExponential,
     dt,
 )
-    (; ssf, ssfmax, zi, khfrac, soilthickness, slope, dw) = subsurface
+    (; ssf, ssfmax, zi) = subsurface.variables
+    (; khfrac, soilthickness, slope, dw) = subsurface.parameters
     (; nlayers, act_thickl) = soil.parameters
     (; kh) = subsurface.parameters.kh_profile
     (; kv, f, nlayers_kv, z_layered) = kv_profile

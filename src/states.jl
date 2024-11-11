@@ -226,20 +226,24 @@ function extract_required_states(config::Config)
     required_states =
         add_to_required_states(required_states, (:lateral, :land, :variables), land_states)
     # Add river states to dict
-    required_states = add_to_required_states(
-        required_states,
-        (:lateral, :river, :variables),
-        river_states,
-    )
+    if model_type == "sediment"
+        key_entry = (:lateral, :river)
+    else
+        key_entry = (:lateral, :river, :variables)
+    end
+    required_states = add_to_required_states(required_states, key_entry, river_states)
     # Add floodplain states to dict
     required_states = add_to_required_states(
         required_states,
-        (:lateral, :river, :floodplain),
+        (:lateral, :river, :floodplain, :variables),
         floodplain_states,
     )
     # Add lake states to dict
-    required_states =
-        add_to_required_states(required_states, (:lateral, :river, :lake), lake_states)
+    required_states = add_to_required_states(
+        required_states,
+        (:lateral, :river, :boundary_conditions, :lake),
+        lake_states,
+    )
     # Add reservoir states to dict
     required_states = add_to_required_states(
         required_states,

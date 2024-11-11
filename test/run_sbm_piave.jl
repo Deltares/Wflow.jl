@@ -5,9 +5,9 @@ function run_piave(model, steps)
     riv_vol = zeros(steps)
     for i in 1:steps
         Wflow.run_timestep!(model)
-        ssf_vol[i] = mean(model.lateral.subsurface.volume)
-        riv_vol[i] = mean(model.lateral.river.volume)
-        q[i] = model.lateral.river.q_av[1]
+        ssf_vol[i] = mean(model.lateral.subsurface.variables.volume)
+        riv_vol[i] = mean(model.lateral.river.variables.volume)
+        q[i] = model.lateral.river.variables.q_av[1]
     end
     return q, riv_vol, ssf_vol
 end

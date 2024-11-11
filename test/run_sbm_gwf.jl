@@ -39,17 +39,17 @@ Wflow.run_timestep!(model)
 end
 
 @testset "overland flow (kinematic wave)" begin
-    q = model.lateral.land.q_av
+    q = model.lateral.land.variables.q_av
     @test sum(q) ≈ 2.229860508650628f-7
 end
 
 @testset "river domain (kinematic wave)" begin
-    q = model.lateral.river.q_av
+    q = model.lateral.river.variables.q_av
     river = model.lateral.river
     @test sum(q) ≈ 0.035443370536496675f0
     @test q[6] ≈ 0.008031554512314907f0
-    @test river.volume[6] ≈ 4.532124903256408f0
-    @test river.inwater[6] ≈ 0.0004073892212290558f0
+    @test river.variables.volume[6] ≈ 4.532124903256408f0
+    @test river.boundary_conditions.inwater[6] ≈ 0.0004073892212290558f0
     @test q[13] ≈ 0.0006017024138583771f0
     @test q[network.river.order[end]] ≈ 0.008559590281509943f0
 end
@@ -91,12 +91,12 @@ Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
 
 @testset "river domain (local inertial)" begin
-    q = model.lateral.river.q_av
+    q = model.lateral.river.variables.q_av
     river = model.lateral.river
     @test sum(q) ≈ 0.02727911500112358f0
     @test q[6] ≈ 0.006111263175002127f0
-    @test river.volume[6] ≈ 7.6120096530771075f0
-    @test river.inwater[6] ≈ 0.00022087679662860144f0
+    @test river.variables.volume[6] ≈ 7.6120096530771075f0
+    @test river.boundary_conditions.inwater[6] ≈ 0.00022087679662860144f0
     @test q[13] ≈ 0.0004638698607639214f0
     @test q[5] ≈ 0.0064668491697542786f0
 end
@@ -112,27 +112,27 @@ config.input.lateral.river.bankfull_elevation = "bankfull_elevation"
 config.input.lateral.river.bankfull_depth = "bankfull_depth"
 config.input.lateral.land.elevation = "wflow_dem"
 
-pop!(Dict(config.state.lateral.land), "q")
-config.state.lateral.land.h_av = "h_av_land"
-config.state.lateral.land.qx = "qx_land"
-config.state.lateral.land.qy = "qy_land"
+pop!(Dict(config.state.lateral.land.variables), "q")
+config.state.lateral.land.variables.h_av = "h_av_land"
+config.state.lateral.land.variables.qx = "qx_land"
+config.state.lateral.land.variables.qy = "qy_land"
 
 model = Wflow.initialize_sbm_gwf_model(config)
 Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
 
 @testset "river and land domain (local inertial)" begin
-    q = model.lateral.river.q_av
+    q = model.lateral.river.variables.q_av
     @test sum(q) ≈ 0.027286431923384962f0
     @test q[6] ≈ 0.00611309161099138f0
     @test q[13] ≈ 0.0004639786629631376f0
     @test q[5] ≈ 0.006468859889145798f0
-    h = model.lateral.river.h_av
+    h = model.lateral.river.variables.h_av
     @test h[6] ≈ 0.08120137914886108f0
     @test h[5] ≈ 0.07854966203902745f0
     @test h[13] ≈ 0.08323543174453409f0
-    qx = model.lateral.land.qx
-    qy = model.lateral.land.qy
+    qx = model.lateral.land.variables.qx
+    qy = model.lateral.land.variables.qy
     @test all(qx .== 0.0f0)
     @test all(qy .== 0.0f0)
 end
@@ -157,17 +157,17 @@ Wflow.run_timestep!(model)
 end
 
 @testset "overland flow warm start (kinematic wave)" begin
-    q = model.lateral.land.q_av
+    q = model.lateral.land.variables.q_av
     @test sum(q) ≈ 1.4589771292158736f-5
 end
 
 @testset "river domain warm start (kinematic wave)" begin
-    q = model.lateral.river.q_av
+    q = model.lateral.river.variables.q_av
     river = model.lateral.river
     @test sum(q) ≈ 0.01191742350356312f0
     @test q[6] ≈ 0.0024353072305122064f0
-    @test river.volume[6] ≈ 2.2277585577366357f0
-    @test river.inwater[6] ≈ -1.3019072795599315f-5
+    @test river.variables.volume[6] ≈ 2.2277585577366357f0
+    @test river.boundary_conditions.inwater[6] ≈ -1.3019072795599315f-5
     @test q[13] ≈ 7.332742814063803f-5
     @test q[network.river.order[end]] ≈ 0.002472526149620472f0
 end

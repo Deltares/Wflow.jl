@@ -178,7 +178,7 @@ end
     h_init = zeros(n - 1)
     push!(h_init, h_a[n])
 
-    sw_river = Wflow.ShallowWaterRiver(;
+    parameters = Wflow.ShallowWaterRiverParameters(;
         n = n,
         ne = _ne,
         active_n = collect(1:(n - 1)),
@@ -187,40 +187,52 @@ end
         alpha = alpha,
         h_thresh = h_thresh,
         dt = dt,
-        q0 = zeros(_ne),
-        q = zeros(_ne),
-        q_av = zeros(_ne),
-        q_channel_av = zeros(_ne),
         zb_max = zb_max,
         mannings_n_sq = mannings_n_sq,
         mannings_n = n_river,
-        h = h_init,
-        zs_max = zeros(_ne),
-        zs_src = zeros(_ne),
-        zs_dst = zeros(_ne),
-        hf = zeros(_ne),
-        h_av = zeros(n),
         width = width,
         width_at_link = width_at_link,
-        a = zeros(_ne),
-        r = zeros(_ne),
-        volume = fill(0.0, n),
-        error = zeros(n),
-        inflow = zeros(n),
-        abstraction = zeros(n),
-        inflow_wb = zeros(n),
-        inwater = zeros(n),
         dl = dl,
         dl_at_link = length_at_link,
         bankfull_volume = fill(Wflow.mv, n),
         bankfull_depth = fill(Wflow.mv, n),
         zb = zb,
         froude_limit = froude_limit,
+        waterbody = zeros(n),
+    )
+
+    variables = Wflow.ShallowWaterRiverVariables(;
+        q0 = zeros(_ne),
+        q = zeros(_ne),
+        q_av = zeros(_ne),
+        q_channel_av = zeros(_ne),
+        h = h_init,
+        zs_max = zeros(_ne),
+        zs_src = zeros(_ne),
+        zs_dst = zeros(_ne),
+        hf = zeros(_ne),
+        h_av = zeros(n),
+        a = zeros(_ne),
+        r = zeros(_ne),
+        volume = fill(0.0, n),
+        error = zeros(n),
+    )
+
+    boundary_conditions = Wflow.RiverFlowBC(;
+        inflow = zeros(n),
+        abstraction = zeros(n),
+        inflow_wb = zeros(n),
+        inwater = zeros(n),
         reservoir_index = Int[],
         lake_index = Int[],
-        waterbody = zeros(n),
         reservoir = nothing,
         lake = nothing,
+    )
+
+    sw_river = Wflow.ShallowWaterRiver(;
+        boundary_conditions,
+        parameters,
+        variables,
         floodplain = nothing,
         allocation = nothing,
     )
@@ -228,16 +240,16 @@ end
     # run until steady state is reached
     epsilon = 1.0e-12
     while true
-        sw_river.inwater[1] = 20.0
-        h0 = mean(sw_river.h)
+        sw_river.boundary_conditions.inwater[1] = 20.0
+        h0 = mean(sw_river.variables.h)
         dt = Wflow.stable_timestep(sw_river)
         Wflow.shallowwater_river_update!(sw_river, network, dt, 0.0, true)
-        d = abs(h0 - mean(sw_river.h))
+        d = abs(h0 - mean(sw_river.variables.h))
         if d <= epsilon
             break
         end
     end
 
     # test for mean absolute error [cm]
-    @test mean(abs.(sw_river.h .- h_a)) * 100.0 ≈ 1.873574206931199
+    @test mean(abs.(sw_river.variables.h .- h_a)) * 100.0 ≈ 1.873574206931199
 end

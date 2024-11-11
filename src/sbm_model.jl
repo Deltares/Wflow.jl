@@ -23,7 +23,6 @@ function initialize_sbm_model(config::Config)
     kw_land_tstep = get(config.model, "kw_land_tstep", 0)
     kinwave_it = get(config.model, "kin_wave_iteration", false)::Bool
     routing_options = ("kinematic-wave", "local-inertial")
-    floodplain_1d = get(config.model, "floodplain_1d", false)::Bool
     river_routing = get_options(
         config.model,
         "river_routing",
@@ -113,18 +112,8 @@ function initialize_sbm_model(config::Config)
     # to another groundwater model, this component is not defined in the TOML file.
     subsurface_flow = haskey(config.input.lateral, "subsurface")
     if subsurface_flow
-        ssf = LateralSSF(
-            nc,
-            config,
-            inds,
-            lhm.soil,
-            landslope,
-            dl,
-            dw,
-            xl,
-            yl,
-            dt / basetimestep,
-        )
+        dt_ssf = dt / basetimestep
+        ssf = LateralSSF(nc, config, inds, lhm.soil, landslope, dl, dw, xl, yl, dt_ssf)
         # update variables `ssf`, `ssfmax` and `kh` (layered profile) based on ksat_profile
         kh_profile_type = get(config.input.vertical, "ksat_profile", "exponential")::String
         if kh_profile_type == "exponential" || kh_profile_type == "exponential_constant"
@@ -136,13 +125,7 @@ function initialize_sbm_model(config::Config)
     else
         # when the SBM model is coupled (BMI) to a groundwater model, the following
         # variables are expected to be exchanged from the groundwater model.
-        ssf = GroundwaterExchange{Float}(;
-            dt = dt / basetimestep,
-            exfiltwater = fill(mv, n),
-            zi = fill(mv, n),
-            to_river = fill(mv, n),
-            ssf = zeros(n),
-        )
+        ssf = GroundwaterExchange(n, dt)
     end
 
     graph = flowgraph(ldd, inds, pcr_dir)
@@ -183,7 +166,7 @@ function initialize_sbm_model(config::Config)
         )
     elseif land_routing == "local-inertial"
         index_river_nf = rev_inds_riv[inds] # not filtered (with zeros)
-        olf, indices = initialize_shallowwater_land(
+        olf, indices = ShallowWaterLand(
             nc,
             config,
             inds;
@@ -221,7 +204,7 @@ function initialize_sbm_model(config::Config)
             dt = dt,
         )
     elseif river_routing == "local-inertial"
-        rf, nodes_at_link = initialize_shallowwater_river(
+        rf, nodes_at_link = ShallowWaterRiver(
             nc,
             config,
             inds_riv;
@@ -234,7 +217,6 @@ function initialize_sbm_model(config::Config)
             lake_index = lakeindex,
             lake = lakes,
             dt = dt,
-            floodplain = floodplain_1d,
         )
     else
         error(
@@ -491,6 +473,10 @@ function set_states!(
     model::Model{N, L, V, R, W, T},
 ) where {N, L, V, R, W, T <: Union{SbmModel, SbmGwfModel}}
     (; lateral, vertical, network, config) = model
+    land_v = lateral.land.variables
+    land_p = lateral.land.parameters
+    river_v = lateral.river.variables
+    river_p = lateral.river.parameters
 
     reinit = get(config.model, "reinit", true)::Bool
     routing_options = ("kinematic-wave", "local-inertial")
@@ -516,26 +502,23 @@ function set_states!(
         vertical.soil.variables.zi .= zi
         if land_routing == "kinematic-wave"
             # make sure land cells with zero flow width are set to zero q and h
-            for i in eachindex(lateral.land.width)
-                if lateral.land.width[i] <= 0.0
-                    lateral.land.q[i] = 0.0
-                    lateral.land.h[i] = 0.0
+            for i in eachindex(land_p.width)
+                if land_p.width[i] <= 0.0
+                    land_v.q[i] = 0.0
+                    land_v.h[i] = 0.0
                 end
             end
-            lateral.land.volume .= lateral.land.h .* lateral.land.width .* lateral.land.dl
+            land_v.volume .= land_v.h .* land_p.width .* land_p.dl
         elseif land_routing == "local-inertial"
             for i in eachindex(lateral.land.volume)
-                if lateral.land.rivercells[i]
+                if land_p.rivercells[i]
                     j = network.land.index_river[i]
-                    if lateral.land.h[i] > 0.0
-                        lateral.land.volume[i] =
-                            lateral.land.h[i] * lateral.land.xl[i] * lateral.land.yl[i] +
-                            lateral.river.bankfull_volume[j]
+                    if land_v.h[i] > 0.0
+                        land_v.volume[i] =
+                            land_v.h[i] * land_p.xl[i] * land_p.yl[i] +
+                            land_p.bankfull_volume[j]
                     else
-                        lateral.land.volume[i] =
-                            lateral.river.h[j] *
-                            lateral.river.width[j] *
-                            lateral.river.dl[j]
+                        land_v.volume[i] = river_v.h[j] * river_p.width[j] * river_p.dl[j]
                     end
                 else
                     lateral.land.volume[i] =
@@ -544,9 +527,8 @@ function set_states!(
             end
         end
         # only set active cells for river (ignore boundary conditions/ghost points)
-        lateral.river.volume[1:nriv] .=
-            lateral.river.h[1:nriv] .* lateral.river.width[1:nriv] .*
-            lateral.river.dl[1:nriv]
+        river_v.volume[1:nriv] .=
+            river_v.h[1:nriv] .* river_p.width[1:nriv] .* river_p.dl[1:nriv]
 
         if floodplain_1d
             initialize_volume!(lateral.river, nriv)

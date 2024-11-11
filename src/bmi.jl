@@ -152,7 +152,7 @@ function BMI.get_var_grid(model::Model, name::String)
     s = split(name, "[")
     key = symbols(first(s))
     if exchange(param(model, key))
-        type = typeof(param(model, key[1:(end - 1)]))
+        type = typeof(param(model, key[1:2]))
         return if :reservoir in key
             0
         elseif :lake in key

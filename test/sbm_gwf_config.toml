@@ -25,12 +25,12 @@ canopy_storage = "canopystorage"
 satwaterdepth = "satwaterdepth"
 ustorelayerdepth = "ustorelayerdepth"
 
-[state.lateral.river]
+[state.lateral.river.variables]
 h = "h_river"
 h_av = "h_av_river"
 q = "q_river"
 
-[state.lateral.land]
+[state.lateral.land.variables]
 h = "h_land"
 h_av = "h_av_land"
 q = "q_land"
@@ -77,12 +77,12 @@ theta_s = "thetaS"
 
 [input.lateral.river]
 length = "wflow_riverlength"
-n = "N_river"
+mannings_n = "N_river"
 slope = "RiverSlope"
 width = "wflow_riverwidth"
 
 [input.lateral.land]
-n = "N"
+mannings_n = "N"
 slope = "Slope"
 
 [input.lateral.subsurface]
@@ -119,7 +119,7 @@ ustorelayerdepth = "ustorelayerdepth"
 [output.vertical.soil.parameters]
 soilthickness = "soilthickness"
 
-[output.lateral.river]
+[output.lateral.river.variables]
 q = "q"
 
 [output.lateral.subsurface.flow.aquifer]
@@ -140,7 +140,7 @@ path = "output_example-sbm-gwf.csv"
 [[csv.column]]
 header = "Q_av"
 index = 5
-parameter = "lateral.river.q_av"
+parameter = "lateral.river.variables.q_av"
 
 [[csv.column]]
 header = "head"
