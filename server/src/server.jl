@@ -82,10 +82,10 @@ if required, depending on return type of `wflow.bmi(f, handler.model)`.
 function wflow_bmi(s::ZMQ.Socket, handler::ModelHandler, f)
     try
         ret = wflow_bmi(f, handler.model)
-        if typeof(ret) <: Wflow.Model # update of Wflow model
+        if typeof(ret) <: Wflow.Model # initialize Wflow model
             handler.model = ret
             response(s)
-        elseif isnothing(ret) # for SetValue and SetValueAtIndices
+        elseif isnothing(ret) # for muting BMI functions (e.g. update, update_until and set_value)
             response(s)
         else
             @info "Send response including output from Wflow function `$(f.fn)`"
