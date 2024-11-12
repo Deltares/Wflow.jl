@@ -13,6 +13,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Initialization of `LateralSSF` variables `ssf` and `ssfmax` with vertical hydraulic
   conductivity profile `exponential_constant`. Removed parameter `khfrac` from the
   computation, as it is already part of parameter `kh_0`.
+- Mutating BMI model control functions (`update`, `update_until` and `finalize`) and
+  extended mutating BMI functions (`load_state` and `save_state`) should return `nothing`.
 
 ### Changed
 - Removed vertical concepts `HBV` and `FLEXTopo`.
