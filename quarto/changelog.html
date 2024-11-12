@@ -302,6 +302,7 @@ window.Quarto = {
 <h3 class="anchored" data-anchor-id="fixed">Fixed</h3>
 <ul>
 <li>Initialization of <code>LateralSSF</code> variables <code>ssf</code> and <code>ssfmax</code> with vertical hydraulic conductivity profile <code>exponential_constant</code>. Removed parameter <code>khfrac</code> from the computation, as it is already part of parameter <code>kh_0</code>.</li>
+<li>Mutating BMI model control functions (<code>update</code>, <code>update_until</code> and <code>finalize</code>) and extended mutating BMI functions (<code>load_state</code> and <code>save_state</code>) should return <code>nothing</code>.</li>
 </ul>
 </section>
 <section id="changed" class="level3">
