@@ -213,8 +213,10 @@ end
 @test Wflow.param(model, "lateral.doesnt_exist", -1) == -1
 
 @testset "warm states" begin
-    @test Wflow.param(model, "lateral.river.boundary_conditions.reservoir.volume")[1] ≈
-          3.2807224993363418e7
+    @test Wflow.param(
+        model,
+        "lateral.river.boundary_conditions.reservoir.variables.volume",
+    )[1] ≈ 3.2807224993363418e7
     @test Wflow.param(model, "vertical.soil.variables.satwaterdepth")[9115] ≈
           477.13548089422125
     @test Wflow.param(model, "vertical.snow.variables.snow_storage")[5] ≈ 11.019233179897599
@@ -458,7 +460,10 @@ end
     @test (:lateral, :river, :variables, :q) in required_states
     @test (:lateral, :river, :variables, :h_av) in required_states
     @test (:lateral, :land, :variables, :h_av) in required_states
-    @test !((:lateral, :river, :boundary_conditions, :lake, :waterlevel) in required_states)
+    @test !(
+        (:lateral, :river, :boundary_conditions, :lake, :variables, :waterlevel) in
+        required_states
+    )
 
     # Adding an unused state the see if the right warning message is thrown
     config.state.vertical.soil.variables.additional_state = "additional_state"

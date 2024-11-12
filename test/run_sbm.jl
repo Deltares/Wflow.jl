@@ -132,18 +132,19 @@ end
 
 @testset "reservoir simple" begin
     res = model.lateral.river.boundary_conditions.reservoir
-    @test res.outflow[1] ≈ 0.21750000119148086f0
-    @test res.inflow[1] ≈ 43.18479982574888f0
-    @test res.volume[1] ≈ 2.751299001489657f7
-    @test res.precipitation[1] ≈ 0.17999997735023499f0
-    @test res.evaporation[1] ≈ 0.5400000810623169f0
+    @test res.variables.outflow[1] ≈ 0.21750000119148086f0
+    @test res.boundary_conditions.inflow[1] ≈ 43.18479982574888f0
+    @test res.variables.volume[1] ≈ 2.751299001489657f7
+    @test res.boundary_conditions.precipitation[1] ≈ 0.17999997735023499f0
+    @test res.boundary_conditions.evaporation[1] ≈ 0.5400000810623169f0
 end
 
 # set these variables for comparison in "changed dynamic parameters"
 precip = copy(model.vertical.atmospheric_forcing.precipitation)
 evap = copy(model.vertical.atmospheric_forcing.potential_evaporation)
 lai = copy(model.vertical.vegetation_parameter_set.leaf_area_index)
-res_evap = copy(model.lateral.river.boundary_conditions.reservoir.evaporation)
+res_evap =
+    copy(model.lateral.river.boundary_conditions.reservoir.boundary_conditions.evaporation)
 
 Wflow.close_files(model; delete_output = false)
 
@@ -198,7 +199,8 @@ Wflow.run_timestep!(model)
     @test (vertical.atmospheric_forcing.potential_evaporation[100] - 1.50) / evap[100] ≈
           3.0f0
     @test vertical.vegetation_parameter_set.leaf_area_index[100] / lai[100] ≈ 1.6f0
-    @test (res.evaporation[2] - 1.50) / res_evap[2] ≈ 3.0000012203408635f0
+    @test (res.boundary_conditions.evaporation[2] - 1.50) / res_evap[2] ≈
+          3.0000012203408635f0
 end
 
 # test cyclic river inflow
@@ -230,7 +232,10 @@ Wflow.load_fixed_forcing!(model)
     @test maximum(model.vertical.atmospheric_forcing.precipitation) ≈ 2.5
     @test minimum(model.vertical.atmospheric_forcing.precipitation) ≈ 0.0
     @test all(
-        isapprox.(model.lateral.river.boundary_conditions.reservoir.precipitation, 2.5),
+        isapprox.(
+            model.lateral.river.boundary_conditions.reservoir.boundary_conditions.precipitation,
+            2.5,
+        ),
     )
 end
 
@@ -240,7 +245,10 @@ Wflow.run_timestep!(model)
     @test maximum(model.vertical.atmospheric_forcing.precipitation) ≈ 2.5
     @test minimum(model.vertical.atmospheric_forcing.precipitation) ≈ 0.0
     @test all(
-        isapprox.(model.lateral.river.boundary_conditions.reservoir.precipitation, 2.5),
+        isapprox.(
+            model.lateral.river.boundary_conditions.reservoir.boundary_conditions.precipitation,
+            2.5,
+        ),
     )
 end
 

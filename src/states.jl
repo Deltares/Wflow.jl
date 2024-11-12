@@ -241,13 +241,13 @@ function extract_required_states(config::Config)
     # Add lake states to dict
     required_states = add_to_required_states(
         required_states,
-        (:lateral, :river, :boundary_conditions, :lake),
+        (:lateral, :river, :boundary_conditions, :lake, :variables),
         lake_states,
     )
     # Add reservoir states to dict
     required_states = add_to_required_states(
         required_states,
-        (:lateral, :river, :boundary_conditions, :reservoir),
+        (:lateral, :river, :boundary_conditions, :reservoir, :variables),
         reservoir_states,
     )
     # Add paddy states to dict

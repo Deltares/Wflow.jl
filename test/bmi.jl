@@ -23,7 +23,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
                 "vertical.soil.parameters.nlayers",
                 "vertical.soil.parameters.theta_r",
                 "lateral.river.variables.q",
-                "lateral.river.boundary_conditions.reservoir.outflow",
+                "lateral.river.boundary_conditions.reservoir.variables.outflow",
             ]
             retrieved_vars = BMI.get_input_var_names(model)
             @test all(x -> x in retrieved_vars, to_check)
@@ -36,7 +36,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test BMI.get_var_grid(model, "lateral.river.variables.h") == 3
             @test BMI.get_var_grid(
                 model,
-                "lateral.river.boundary_conditions.reservoir.inflow",
+                "lateral.river.boundary_conditions.reservoir.boundary_conditions.inflow",
             ) == 0
             @test_throws ErrorException BMI.get_var_grid(
                 model,
@@ -44,7 +44,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             )
             @test BMI.get_var_type(
                 model,
-                "lateral.river.boundary_conditions.reservoir.inflow",
+                "lateral.river.boundary_conditions.reservoir.boundary_conditions.inflow",
             ) == "$Float"
             @test BMI.get_var_units(model, "vertical.soil.parameters.theta_s") == "-"
             @test BMI.get_var_itemsize(model, "lateral.subsurface.variables.ssf") ==

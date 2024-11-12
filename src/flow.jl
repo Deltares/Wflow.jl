@@ -326,14 +326,14 @@ function update!(sf::SurfaceFlowRiver, network, doy)
     # because of possible iterations set reservoir and lake inflow and total outflow at
     # start to zero, the total sum of inflow and outflow at each sub time step is calculated
     if !isnothing(reservoir)
-        reservoir.inflow .= 0.0
-        reservoir.totaloutflow .= 0.0
-        reservoir.actevap .= 0.0
+        reservoir.boundary_conditions.inflow .= 0.0
+        reservoir.variables.totaloutflow .= 0.0
+        reservoir.variables.actevap .= 0.0
     end
     if !isnothing(lake)
-        lake.inflow .= 0.0
-        lake.totaloutflow .= 0.0
-        lake.actevap .= 0.0
+        lake.boundary_conditions.inflow .= 0.0
+        lake.variables.totaloutflow .= 0.0
+        lake.variables.actevap .= 0.0
     end
 
     dt, its = stable_timestep(sf)
@@ -376,7 +376,7 @@ function update!(sf::SurfaceFlowRiver, network, doy)
                         n_downstream = length(downstream_nodes)
                         if n_downstream == 1
                             j = only(downstream_nodes)
-                            qin[j] = reservoir.outflow[i]
+                            qin[j] = reservoir.variables.outflow[i]
                         elseif n_downstream == 0
                             error(
                                 """A reservoir without a downstream river node is not supported.
@@ -397,7 +397,7 @@ function update!(sf::SurfaceFlowRiver, network, doy)
                         n_downstream = length(downstream_nodes)
                         if n_downstream == 1
                             j = only(downstream_nodes)
-                            qin[j] = lake.outflow[i]
+                            qin[j] = lake.variables.outflow[i]
                         elseif n_downstream == 0
                             error(
                                 """A lake without a downstream river node is not supported.
@@ -1108,7 +1108,7 @@ function shallowwater_river_update!(sw::ShallowWaterRiver, network, dt, doy, upd
 
         q_in = get_inflow_waterbody(sw, links_at_node.src[i])
         update!(reservoir, v, q_in + inflow_wb[i], dt)
-        river_v.q[i] = reservoir.outflow[v]
+        river_v.q[i] = reservoir.variables.outflow[v]
         river_v.q_av[i] += river_v.q[i] * dt
     end
     (; lake, lake_index, inflow_wb) = sw.boundary_conditions
@@ -1117,7 +1117,7 @@ function shallowwater_river_update!(sw::ShallowWaterRiver, network, dt, doy, upd
 
         q_in = get_inflow_waterbody(sw, links_at_node.src[i])
         update!(lake, v, q_in + inflow_wb[i], doy, dt)
-        river_v.q[i] = lake.outflow[v]
+        river_v.q[i] = lake.variables.outflow[v]
         river_v.q_av[i] += river_v.q[i] * dt
     end
     if update_h
@@ -1173,14 +1173,14 @@ end
 function update!(sw::ShallowWaterRiver{T}, network, doy; update_h = true) where {T}
     (; reservoir, lake) = sw.boundary_conditions
     if !isnothing(reservoir)
-        reservoir.inflow .= 0.0
-        reservoir.totaloutflow .= 0.0
-        reservoir.actevap .= 0.0
+        reservoir.boundary_conditions.inflow .= 0.0
+        reservoir.variables.totaloutflow .= 0.0
+        reservoir.variables.actevap .= 0.0
     end
     if !isnothing(lake)
-        lake.inflow .= 0.0
-        lake.totaloutflow .= 0.0
-        lake.actevap .= 0.0
+        lake.boundary_conditions.inflow .= 0.0
+        lake.variables.totaloutflow .= 0.0
+        lake.variables.actevap .= 0.0
     end
     if !isnothing(sw.floodplain)
         sw.floodplain.variables.q_av .= 0.0
@@ -1485,14 +1485,14 @@ function update!(
     (; reservoir, lake) = swr.boundary_conditions
 
     if !isnothing(reservoir)
-        reservoir.inflow .= 0.0
-        reservoir.totaloutflow .= 0.0
-        reservoir.actevap .= 0.0
+        reservoir.boundary_conditions.inflow .= 0.0
+        reservoir.variables.totaloutflow .= 0.0
+        reservoir.variables.actevap .= 0.0
     end
     if !isnothing(lake)
-        lake.inflow .= 0.0
-        lake.totaloutflow .= 0.0
-        lake.actevap .= 0.0
+        lake.boundary_conditions.inflow .= 0.0
+        lake.variables.totaloutflow .= 0.0
+        lake.variables.actevap .= 0.0
     end
     swr.variables.q_av .= 0.0
     swr.variables.h_av .= 0.0

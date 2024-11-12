@@ -1,28 +1,15 @@
-@get_units @grid_loc @with_kw struct SimpleReservoir{T}
-    dt::T                                               # Model time step [s]
-    maxvolume::Vector{T} | "m3"                         # maximum storage (above which water is spilled) [m³]
-    area::Vector{T} | "m2"                              # reservoir area [m²]
-    maxrelease::Vector{T} | "m3 s-1"                    # maximum amount that can be released if below spillway [m³ s⁻¹]
-    demand::Vector{T} | "m3 s-1"                        # minimum (environmental) flow requirement downstream of the reservoir [m³ s⁻¹]
-    targetminfrac::Vector{T} | "-"                      # target minimum full fraction (of max storage) [-]
-    targetfullfrac::Vector{T} | "-"                     # target fraction full (of max storage) [-]
-    volume::Vector{T} | "m3"                            # reservoir volume [m³]
-    inflow::Vector{T} | "m3"                            # total inflow into reservoir [m³]
-    outflow::Vector{T} | "m3 s-1"                       # outflow from reservoir [m³ s⁻¹]
-    totaloutflow::Vector{T} | "m3"                      # total outflow from reservoir [m³]
-    percfull::Vector{T} | "-"                           # fraction full (of max storage) [-]
-    demandrelease::Vector{T} | "m3 s-1"                 # minimum (environmental) flow released from reservoir [m³ s⁻¹]
-    precipitation::Vector{T}                            # average precipitation for reservoir area [mm Δt⁻¹]
-    evaporation::Vector{T}                              # average potential evaporation for reservoir area [mm Δt⁻¹]
-    actevap::Vector{T}                                  # average actual evaporation for reservoir area [mm Δt⁻¹]
 
-    function SimpleReservoir{T}(args...) where {T}
-        equal_size_vectors(args)
-        return new(args...)
-    end
+@get_units @grid_loc @with_kw struct ReservoirParameters{T}
+    dt::T                                   # Model time step [s]
+    maxvolume::Vector{T} | "m3"             # maximum storage (above which water is spilled) [m³]
+    area::Vector{T} | "m2"                  # reservoir area [m²]
+    maxrelease::Vector{T} | "m3 s-1"        # maximum amount that can be released if below spillway [m³ s⁻¹]
+    demand::Vector{T} | "m3 s-1"            # minimum (environmental) flow requirement downstream of the reservoir [m³ s⁻¹]
+    targetminfrac::Vector{T} | "-"          # target minimum full fraction (of max storage) [-]
+    targetfullfrac::Vector{T} | "-"         # target fraction full (of max storage
 end
 
-function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, dt)
+function ReservoirParameters(config, nc, inds_riv, nriv, pits, dt)
     # read only reservoir data if reservoirs true
     # allow reservoirs only in river cells
     # note that these locations are only the reservoir outlet pixels
@@ -129,9 +116,13 @@ function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, dt)
     # all upstream flow goes to the river and flows into the reservoir
     pits[inds_res] .= true
 
-    n = length(resarea)
-    @info "Read `$n` reservoir locations."
-    reservoirs = SimpleReservoir{Float}(;
+    reservoir_indices = (
+        indices_outlet = inds_res,
+        indices_coverage = inds_res_cov,
+        reverse_indices = rev_inds_reservoir,
+    )
+
+    parameters = ReservoirParameters{Float}(;
         dt = dt,
         demand = resdemand,
         maxrelease = resmaxrelease,
@@ -139,25 +130,66 @@ function initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, dt)
         area = resarea,
         targetfullfrac = res_targetfullfrac,
         targetminfrac = res_targetminfrac,
-        volume = res_targetfullfrac .* resmaxvolume,
-        inflow = fill(mv, n),
+    )
+
+    return parameters, reservoir_indices, resindex, pits
+end
+
+@get_units @grid_loc @with_kw struct ReservoirVariables{T}
+    volume::Vector{T} | "m3"                # reservoir volume [m³]
+    outflow::Vector{T} | "m3 s-1"           # outflow from reservoir [m³ s⁻¹]
+    totaloutflow::Vector{T} | "m3"          # total outflow from reservoir [m³]
+    percfull::Vector{T} | "-"               # fraction full (of max storage) [-]
+    demandrelease::Vector{T} | "m3 s-1"     # minimum (environmental) flow released from reservoir [m³ s⁻¹]
+    actevap::Vector{T}                      # average actual evaporation for reservoir area [mm Δt⁻¹]
+end
+
+function ReservoirVariables(n, parameters)
+    (; targetfullfrac, maxvolume) = parameters
+    variables = ReservoirVariables{Float}(;
+        volume = targetfullfrac .* maxvolume,
         outflow = fill(mv, n),
         totaloutflow = fill(mv, n),
         percfull = fill(mv, n),
         demandrelease = fill(mv, n),
-        precipitation = fill(mv, n),
-        evaporation = fill(mv, n),
         actevap = fill(mv, n),
     )
+    return variables
+end
 
-    return reservoirs,
-    resindex,
-    (
-        indices_outlet = inds_res,
-        indices_coverage = inds_res_cov,
-        reverse_indices = rev_inds_reservoir,
-    ),
-    pits
+@get_units @grid_loc @with_kw struct ReservoirBC{T}
+    inflow::Vector{T} | "m3"        # total inflow into reservoir [m³]
+    precipitation::Vector{T}        # average precipitation for reservoir area [mm Δt⁻¹]
+    evaporation::Vector{T}          # average potential evaporation for reservoir area [mm Δt⁻¹]
+end
+
+function ReservoirBC(n)
+    bc = ReservoirBC{Float}(;
+        inflow = fill(mv, n),
+        precipitation = fill(mv, n),
+        evaporation = fill(mv, n),
+    )
+    return bc
+end
+
+@with_kw struct SimpleReservoir{T}
+    boundary_conditions::ReservoirBC{T}
+    parameters::ReservoirParameters{T}
+    variables::ReservoirVariables{T}
+end
+
+function SimpleReservoir(config, nc, inds_riv, nriv, pits, dt)
+    parameters, reservoir_indices, resindex, pits =
+        ReservoirParameters(config, nc, inds_riv, nriv, pits, dt)
+
+    n = length(parameters.area)
+    @info "Read `$n` reservoir locations."
+
+    variables = ReservoirVariables(n, parameters)
+    boundary_conditions = ReservoirBC(n)
+    reservoirs = SimpleReservoir{Float}(; boundary_conditions, parameters, variables)
+
+    return reservoirs, resindex, reservoir_indices, pits
 end
 
 """
@@ -167,70 +199,62 @@ This is called from within the kinematic wave loop, therefore updating only for 
 element rather than all at once.
 """
 function update!(res::SimpleReservoir, i, inflow, timestepsecs)
+    res_bc = res.boundary_conditions
+    res_p = res.parameters
+    res_v = res.variables
 
     # limit lake evaporation based on total available volume [m³]
-    precipitation = 0.001 * res.precipitation[i] * (timestepsecs / res.dt) * res.area[i]
-    available_volume = res.volume[i] + inflow * timestepsecs + precipitation
-    evap = 0.001 * res.evaporation[i] * (timestepsecs / res.dt) * res.area[i]
+    precipitation =
+        0.001 * res_bc.precipitation[i] * (timestepsecs / res_p.dt) * res_p.area[i]
+    available_volume = res_v.volume[i] + inflow * timestepsecs + precipitation
+    evap = 0.001 * res_bc.evaporation[i] * (timestepsecs / res_p.dt) * res_p.area[i]
     actevap = min(available_volume, evap) # [m³/timestepsecs]
 
-    vol = res.volume[i] + (inflow * timestepsecs) + precipitation - actevap
+    vol = res_v.volume[i] + (inflow * timestepsecs) + precipitation - actevap
     vol = max(vol, 0.0)
 
-    percfull = vol / res.maxvolume[i]
+    percfull = vol / res_p.maxvolume[i]
     # first determine minimum (environmental) flow using a simple sigmoid curve to scale for target level
-    fac = scurve(percfull, res.targetminfrac[i], Float(1.0), Float(30.0))
-    demandrelease = min(fac * res.demand[i] * timestepsecs, vol)
+    fac = scurve(percfull, res_p.targetminfrac[i], Float(1.0), Float(30.0))
+    demandrelease = min(fac * res_p.demand[i] * timestepsecs, vol)
     vol = vol - demandrelease
 
-    wantrel = max(0.0, vol - (res.maxvolume[i] * res.targetfullfrac[i]))
+    wantrel = max(0.0, vol - (res_p.maxvolume[i] * res_p.targetfullfrac[i]))
     # Assume extra maximum Q if spilling
-    overflow_q = max((vol - res.maxvolume[i]), 0.0)
-    torelease = min(wantrel, overflow_q + res.maxrelease[i] * timestepsecs - demandrelease)
+    overflow_q = max((vol - res_p.maxvolume[i]), 0.0)
+    torelease =
+        min(wantrel, overflow_q + res_p.maxrelease[i] * timestepsecs - demandrelease)
     vol = vol - torelease
     outflow = torelease + demandrelease
-    percfull = vol / res.maxvolume[i]
+    percfull = vol / res_p.maxvolume[i]
 
     # update values in place
-    res.outflow[i] = outflow / timestepsecs
-    res.inflow[i] += inflow * timestepsecs
-    res.totaloutflow[i] += outflow
-    res.demandrelease[i] = demandrelease / timestepsecs
-    res.percfull[i] = percfull
-    res.volume[i] = vol
-    res.actevap[i] += 1000.0 * (actevap / res.area[i])
+    res_v.outflow[i] = outflow / timestepsecs
+    res_bc.inflow[i] += inflow * timestepsecs
+    res_v.totaloutflow[i] += outflow
+    res_v.demandrelease[i] = demandrelease / timestepsecs
+    res_v.percfull[i] = percfull
+    res_v.volume[i] = vol
+    res_v.actevap[i] += 1000.0 * (actevap / res_p.area[i])
 
     return nothing
 end
 
-@get_units @grid_loc @with_kw struct Lake{T}
-    dt::T                                       # Model time step [s]
-    lowerlake_ind::Vector{Int} | "-"            # Index of lower lake (linked lakes)
-    area::Vector{T} | "m2"                      # lake area [m²]
-    maxstorage::Vector{Union{T, Missing}} | "m3" # lake maximum storage from rating curve 1 [m³]
-    threshold::Vector{T} | "m"                  # water level threshold H₀ [m] below that level outflow is zero
-    storfunc::Vector{Int} | "-"                 # type of lake storage curve, 1: S = AH, 2: S = f(H) from lake data and interpolation
-    outflowfunc::Vector{Int} | "-"              # type of lake rating curve, 1: Q = f(H) from lake data and interpolation, 2: General Q = b(H - H₀)ᵉ, 3: Case of Puls Approach Q = b(H - H₀)²
-    b::Vector{T} | "m3/2 s-1 (if e=3/2)"        # rating curve coefficient
-    e::Vector{T} | "-"                          # rating curve exponent
-    sh::Vector{Union{SH, Missing}}               # data for storage curve
-    hq::Vector{Union{HQ, Missing}}               # data for rating curve
-    waterlevel::Vector{T} | "m"                 # waterlevel H [m] of lake
-    inflow::Vector{T} | "m3"                    # inflow to the lake [m³]
-    storage::Vector{T} | "m3"                   # storage lake [m³]
-    outflow::Vector{T} | "m3 s-1"               # outflow lake [m³ s⁻¹]
-    totaloutflow::Vector{T} | "m3"              # total outflow lake [m³]
-    precipitation::Vector{T}                    # average precipitation for lake area [mm Δt⁻¹]
-    evaporation::Vector{T}                      # average potential evaporation for lake area [mm Δt⁻¹]
-    actevap::Vector{T}                          # average actual evapotranspiration for lake area [mm Δt⁻¹]
-
-    function Lake{T}(args...) where {T}
-        equal_size_vectors(args)
-        return new(args...)
-    end
+@get_units @grid_loc @with_kw struct LakeParameters{T}
+    dt::T                                           # Model time step [s]
+    lowerlake_ind::Vector{Int} | "-"                # Index of lower lake (linked lakes)
+    area::Vector{T} | "m2"                          # lake area [m²]
+    maxstorage::Vector{Union{T, Missing}} | "m3"    # lake maximum storage from rating curve 1 [m³]
+    threshold::Vector{T} | "m"                      # water level threshold H₀ [m] below that level outflow is zero
+    storfunc::Vector{Int} | "-"                     # type of lake storage curve, 1: S = AH, 2: S = f(H) from lake data and interpolation
+    outflowfunc::Vector{Int} | "-"                  # type of lake rating curve, 1: Q = f(H) from lake data and interpolation, 2: General Q = b(H - H₀)ᵉ, 3: Case of Puls Approach Q = b(H - H₀)²
+    b::Vector{T} | "m3/2 s-1 (if e=3/2)"            # rating curve coefficient
+    e::Vector{T} | "-"                              # rating curve exponent
+    sh::Vector{Union{SH, Missing}}                  # data for storage curve
+    hq::Vector{Union{HQ, Missing}}                  # data for rating curve    
 end
 
-function initialize_lake(config, nc, inds_riv, nriv, pits, dt)
+function LakeParameters(config, nc, inds_riv, nriv, pits, dt)
     # read only lake data if lakes true
     # allow lakes only in river cells
     # note that these locations are only the lake outlet pixels
@@ -396,8 +420,7 @@ function initialize_lake(config, nc, inds_riv, nriv, pits, dt)
             )
         end
     end
-    n = length(lakearea)
-    lakes = Lake{Float}(;
+    parameters = LakeParameters{Float}(;
         dt = dt,
         lowerlake_ind = lowerlake_ind,
         area = lakearea,
@@ -407,26 +430,69 @@ function initialize_lake(config, nc, inds_riv, nriv, pits, dt)
         outflowfunc = lake_outflowfunc,
         b = lake_b,
         e = lake_e,
-        waterlevel = lake_waterlevel,
         sh = sh,
         hq = hq,
+    )
+    lake_indices = (
+        indices_outlet = inds_lake,
+        indices_coverage = inds_lake_cov,
+        reverse_indices = rev_inds_lake,
+    )
+    return parameters, lake_indices, lakeindex, lake_Waterlevel, pits
+end
+
+@get_units @grid_loc @with_kw struct LakeVariables{T}
+    waterlevel::Vector{T} | "m"                 # waterlevel H [m] of lake
+    storage::Vector{T} | "m3"                   # storage lake [m³]
+    outflow::Vector{T} | "m3 s-1"               # outflow lake [m³ s⁻¹]
+    totaloutflow::Vector{T} | "m3"              # total outflow lake [m³]
+    actevap::Vector{T}                          # average actual evapotranspiration for lake area [mm Δt⁻¹] 
+end
+
+function LakeVariables(n, lake_waterlevel)
+    variables = LakeVariables{Float}(;
+        waterlevel = lake_waterlevel,
         inflow = fill(mv, n),
         storage = initialize_storage(lake_storfunc, lakearea, lake_waterlevel, sh),
         outflow = fill(mv, n),
         totaloutflow = fill(mv, n),
-        precipitation = fill(mv, n),
-        evaporation = fill(mv, n),
         actevap = fill(mv, n),
     )
+    return variables
+end
 
-    return lakes,
-    lakeindex,
-    (
-        indices_outlet = inds_lake,
-        indices_coverage = inds_lake_cov,
-        reverse_indices = rev_inds_lake,
-    ),
-    pits
+@get_units @grid_loc @with_kw struct LakeBC{T}
+    inflow::Vector{T} | "m3"                    # inflow to the lake [m³]
+    precipitation::Vector{T}                    # average precipitation for lake area [mm Δt⁻¹]
+    evaporation::Vector{T}                      # average potential evaporation for lake area [mm Δt⁻¹]
+end
+
+function LakeBC(n)
+    bc = LakeBC{Float}(;
+        inflow = fill(mv, n),
+        precipitation = fill(mv, n),
+        evaporation = fill(mv, n),
+    )
+    return bc
+end
+
+@with_kw struct Lake{T}
+    boundary_conditions::LakeBC{T}
+    parameters::LakeParameters{T}
+    variables::LakeVariables{T}
+end
+
+function Lake(config, nc, inds_riv, nriv, pits, dt)
+    parameters, lake_indices, lakeindex, lake_waterlevel, pits =
+        LakeParameters(config, nc, inds_riv, nriv, pits, dt)
+
+    n = length(parameters.area)
+    variables = LakeVariables(n, lake_waterlevel)
+    boundary_conditions = LakeBC(n)
+
+    lakes = Lake{Float}(; boundary_conditions, parameters, variables)
+
+    return lakes, lakeindex, lake_indices, pits
 end
 
 "Determine the initial storage depending on the storage function"
@@ -492,23 +558,28 @@ This is called from within the kinematic wave loop, therefore updating only for 
 element rather than all at once.
 """
 function update!(lake::Lake, i, inflow, doy, timestepsecs)
-    lo = lake.lowerlake_ind[i]
+    lake_bc = lake.boundary_conditions
+    lake_p = lake.parameters
+    lake_v = lake.variables
+
+    lo = lake_p.lowerlake_ind[i]
     has_lowerlake = lo != 0
 
     # limit lake evaporation based on total available volume [m³]
-    precipitation = 0.001 * lake.precipitation[i] * (timestepsecs / lake.dt) * lake.area[i]
-    available_volume = lake.storage[i] + inflow * timestepsecs + precipitation
-    evap = 0.001 * lake.evaporation[i] * (timestepsecs / lake.dt) * lake.area[i]
+    precipitation =
+        0.001 * lake_bc.precipitation[i] * (timestepsecs / lake_p.dt) * lake_p.area[i]
+    available_volume = lake_v.storage[i] + inflow * timestepsecs + precipitation
+    evap = 0.001 * lake_bc.evaporation[i] * (timestepsecs / lake_p.dt) * lake_p.area[i]
     actevap = min(available_volume, evap) # [m³/timestepsecs]
 
     ### Modified Puls Approach (Burek et al., 2013, LISFLOOD) ###
     # outflowfunc = 3
     # Calculate lake factor and SI parameter
-    if lake.outflowfunc[i] == 3
-        lakefactor = lake.area[i] / (timestepsecs * pow(lake.b[i], 0.5))
-        si_factor = (lake.storage[i] + precipitation - actevap) / timestepsecs + inflow
+    if lake_p.outflowfunc[i] == 3
+        lakefactor = lake_p.area[i] / (timestepsecs * pow(lake_p.b[i], 0.5))
+        si_factor = (lake_v.storage[i] + precipitation - actevap) / timestepsecs + inflow
         # Adjust SIFactor for ResThreshold != 0
-        si_factor_adj = si_factor - lake.area[i] * lake.threshold[i] / timestepsecs
+        si_factor_adj = si_factor - lake_p.area[i] * lake_p.threshold[i] / timestepsecs
         # Calculate the new lake outflow/waterlevel/storage
         if si_factor_adj > 0.0
             quadratic_sol_term =
@@ -523,33 +594,37 @@ function update!(lake::Lake, i, inflow, doy, timestepsecs)
         end
         outflow = min(outflow, si_factor)
         storage = (si_factor - outflow) * timestepsecs
-        waterlevel = storage / lake.area[i]
+        waterlevel = storage / lake_p.area[i]
     end
 
     ### Linearisation for specific storage/rating curves ###
-    if lake.outflowfunc[i] == 1 || lake.outflowfunc[i] == 2
-        diff_wl = has_lowerlake ? lake.waterlevel[i] - lake.waterlevel[lo] : 0.0
+    if lake_p.outflowfunc[i] == 1 || lake_p.outflowfunc[i] == 2
+        diff_wl = has_lowerlake ? lake_v.waterlevel[i] - lake_v.waterlevel[lo] : 0.0
 
-        storage_input = (lake.storage[i] + precipitation - actevap) / timestepsecs + inflow
-        if lake.outflowfunc[i] == 1
-            outflow =
-                interpolate_linear(lake.waterlevel[i], lake.hq[i].H, lake.hq[i].Q[:, doy])
+        storage_input =
+            (lake_v.storage[i] + precipitation - actevap) / timestepsecs + inflow
+        if lake_p.outflowfunc[i] == 1
+            outflow = interpolate_linear(
+                lake_v.waterlevel[i],
+                lake_p.hq[i].H,
+                lake_p.hq[i].Q[:, doy],
+            )
             outflow = min(outflow, storage_input)
         else
             if diff_wl >= 0.0
-                if lake.waterlevel[i] > lake.threshold[i]
-                    dh = lake.waterlevel[i] - lake.threshold[i]
-                    outflow = lake.b[i] * pow(dh, lake.e[i])
-                    maxflow = (dh * lake.area[i]) / timestepsecs
+                if lake_v.waterlevel[i] > lake_p.threshold[i]
+                    dh = lake_v.waterlevel[i] - lake_p.threshold[i]
+                    outflow = lake_p.b[i] * pow(dh, lake_p.e[i])
+                    maxflow = (dh * lake_p.area[i]) / timestepsecs
                     outflow = min(outflow, maxflow)
                 else
                     outflow = Float(0)
                 end
             else
-                if lake.waterlevel[lo] > lake.threshold[i]
-                    dh = lake.waterlevel[lo] - lake.threshold[i]
-                    outflow = -1.0 * lake.b[i] * pow(dh, lake.e[i])
-                    maxflow = (dh * lake.area[lo]) / timestepsecs
+                if lake_v.waterlevel[lo] > lake_p.threshold[i]
+                    dh = lake_v.waterlevel[lo] - lake_p.threshold[i]
+                    outflow = -1.0 * lake_p.b[i] * pow(dh, lake_p.e[i])
+                    maxflow = (dh * lake_p.area[lo]) / timestepsecs
                     outflow = max(outflow, -maxflow)
                 else
                     outflow = Float(0)
@@ -559,43 +634,44 @@ function update!(lake::Lake, i, inflow, doy, timestepsecs)
         storage = (storage_input - outflow) * timestepsecs
 
         # update storage and outflow for lake with rating curve of type 1.
-        if lake.outflowfunc[i] == 1
-            overflow = max(0.0, (storage - lake.maxstorage[i]) / timestepsecs)
-            storage = min(storage, lake.maxstorage[i])
+        if lake_p.outflowfunc[i] == 1
+            overflow = max(0.0, (storage - lake_p.maxstorage[i]) / timestepsecs)
+            storage = min(storage, lake_p.maxstorage[i])
             outflow = outflow + overflow
         end
 
-        waterlevel = if lake.storfunc[i] == 1
-            lake.waterlevel[i] + (storage - lake.storage[i]) / lake.area[i]
+        waterlevel = if lake_p.storfunc[i] == 1
+            lake_v.waterlevel[i] + (storage - lake_v.storage[i]) / lake_p.area[i]
         else
-            interpolate_linear(storage, lake.sh[i].S, lake.sh[i].H)
+            interpolate_linear(storage, lake_p.sh[i].S, lake_p.sh[i].H)
         end
 
         # update lower lake (linked lakes) in case flow from lower lake to upper lake occurs
         if diff_wl < 0.0
-            lowerlake_storage = lake.storage[lo] + outflow * timestepsecs
+            lowerlake_storage = lake_v.storage[lo] + outflow * timestepsecs
 
-            lowerlake_waterlevel = if lake.storfunc[lo] == 1
-                lake.waterlevel[lo] + (lowerlake_storage - lake.storage[lo]) / lake.area[lo]
+            lowerlake_waterlevel = if lake_p.storfunc[lo] == 1
+                lake_v.waterlevel[lo] +
+                (lowerlake_storage - lake_v.storage[lo]) / lake_p.area[lo]
             else
-                interpolate_linear(lowerlake_storage, lake.sh[lo].S, lake.sh[lo].H)
+                interpolate_linear(lowerlake_storage, lake_p.sh[lo].S, lake_p.sh[lo].H)
             end
 
             # update values for the lower lake in place
-            lake.outflow[lo] = -outflow
-            lake.totaloutflow[lo] += -outflow * timestepsecs
-            lake.storage[lo] = lowerlake_storage
-            lake.waterlevel[lo] = lowerlake_waterlevel
+            lake_v.outflow[lo] = -outflow
+            lake_v.totaloutflow[lo] += -outflow * timestepsecs
+            lake_v.storage[lo] = lowerlake_storage
+            lake_v.waterlevel[lo] = lowerlake_waterlevel
         end
     end
 
     # update values in place
-    lake.outflow[i] = max(outflow, 0.0) # for a linked lake flow can be negative
-    lake.waterlevel[i] = waterlevel
-    lake.inflow[i] += inflow * timestepsecs
-    lake.totaloutflow[i] += outflow * timestepsecs
-    lake.storage[i] = storage
-    lake.actevap[i] += 1000.0 * (actevap / lake.area[i])
+    lake_v.outflow[i] = max(outflow, 0.0) # for a linked lake flow can be negative
+    lake_v.waterlevel[i] = waterlevel
+    lake_bc.inflow[i] += inflow * timestepsecs
+    lake_v.totaloutflow[i] += outflow * timestepsecs
+    lake_v.storage[i] = storage
+    lake_v.actevap[i] += 1000.0 * (actevap / lake_p.area[i])
 
     return nothing
 end
