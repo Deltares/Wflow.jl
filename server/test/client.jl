@@ -38,7 +38,7 @@ end
         "vertical.soil.parameters.nlayers",
         "vertical.soil.parameters.theta_r",
         "lateral.river.variables.q",
-        "lateral.river.boundary_conditions.reservoir.outflow",
+        "lateral.river.boundary_conditions.reservoir.variables.outflow",
     ]
     retrieved_vars = request((fn = "get_input_var_names",))["input_var_names"]
     @test all(x -> x in retrieved_vars, to_check)

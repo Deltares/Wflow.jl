@@ -36,7 +36,7 @@ h = "h_river"
 h_av = "h_av_river"
 q = "q_river"
 
-[state.lateral.river.boundary_conditions.reservoir]
+[state.lateral.river.boundary_conditions.reservoir.variables]
 volume = "volume_reservoir"
 
 [state.lateral.subsurface.variables]
@@ -165,7 +165,7 @@ snow_water = "snowwater"
 h = "h_river"
 q = "q_river"
 
-[output.lateral.river.boundary_conditions.reservoir]
+[output.lateral.river.boundary_conditions.reservoir.variables]
 volume = "volume_reservoir"
 
 [output.lateral.subsurface.variables]
@@ -208,7 +208,7 @@ reducer = "maximum"
 [[csv.column]]
 header = "volume"
 index = 1
-parameter = "lateral.river.boundary_conditions.reservoir.volume"
+parameter = "lateral.river.boundary_conditions.reservoir.variables.volume"
 
 [[csv.column]]
 coordinate.x = 6.255
@@ -267,5 +267,7 @@ components = [
   "lateral.river.parameters",
   "lateral.river.parameters.flow",
   "lateral.river.boundary_conditions",
-  "lateral.river.boundary_conditions.reservoir",
+  "lateral.river.boundary_conditions.reservoir.boundary_conditions",
+  "lateral.river.boundary_conditions.reservoir.parameters",
+  "lateral.river.boundary_conditions.reservoir.variables",
 ]
