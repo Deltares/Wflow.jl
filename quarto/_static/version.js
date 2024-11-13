@@ -45,7 +45,7 @@ window.onload = function () {
                 // Create a new a element
                 const a = document.createElement('a');
                 a.className = 'dropdown-item';
-                a.href = item.url; // Use the 'url' property as the href
+                a.href = item.href; // Use the 'url' property as the href
                 a.textContent = item.name; // Use the 'name' property as the text
 
                 // Add the a element to the li
@@ -94,7 +94,7 @@ window.onload = function () {
 
                     // Get the clicked item's text
                     var itemText = this.textContent;
-                    // var itemHref = this.getAttribute('href')
+                    var itemHref = this.getAttribute('href')
 
                     // Loop through each dropdown item again to find a match in the current page's path
                     for (var j = 0; j < dropdownItems.length; j++) {
@@ -102,31 +102,36 @@ window.onload = function () {
                         var dropdownText = dropdownItems[j].textContent;
                         console.log('Dropdown item:', dropdownText);
 
-                        // Find the index of the dropdownText in the current page's path
-                        var index = currentPagePath.indexOf(dropdownText);
+                        window.location.href = itemHref;
 
-                        // If the dropdownText is found in the current page's path
-                        if (index !== -1) {
-                            // Construct the new URL relative to the dropdownText and append the itemText
-                            addElements = currentPagePath.slice(index + 1,)
-                            relativePath = '../'.repeat(addElements.length)
-                            var newUrl = relativePath + itemText + '/' + addElements.join('/')
-                            console.log('Clicked item:', newUrl);
+                        // The code below is taken from Delft-FIAT, and is in place to switch
+                        // to the same page but on a different version (if that exists). This
+                        // is currently overruled with the line above this comment, which
+                        // redirects to the new URL (home page).
 
-                            // Redirect to the new URL
-                            checkPathExists(newUrl)
-                                .then(exists => {
-                                    if (exists) {
-                                        window.location.href = newUrl;
-                                    } else {
-                                        console.log('Path does not exist, referring to home page');
-                                        window.location.href = relativePath + itemText + '/';
-                                    }
-                                })
+                        // // Find the index of the dropdownText in the current page's path
+                        // var index = currentPagePath.indexOf(dropdownText);
+                        // // If the dropdownText is found in the current page's path
+                        // if (index !== -1) {
+                        //     // Construct the new URL relative to the dropdownText and append the itemText
+                        //     addElements = currentPagePath.slice(index + 1,)
+                        //     var newUrl = itemHref + '/' + addElements.join('/')
+                        //     console.log('Clicked item:', newUrl);
+                        //     window.location.href = itemHref;
+                        //     // // Redirect to the new URL
+                        //     // checkPathExists(newUrl)
+                        //     //     .then(exists => {
+                        //     //         if (exists) {
+                        //     //             window.location.href = newUrl;
+                        //     //         } else {
+                        //     //             console.log('Path does not exist, referring to home page');
+                        //     //             window.location.href = itemHref;
+                        //     //         }
+                        //     //     })
 
-                            // Exit the loop
-                            break;
-                        }
+                        //     // Exit the loop
+                        //     break;
+                        // }
                     }
                 });
             }
