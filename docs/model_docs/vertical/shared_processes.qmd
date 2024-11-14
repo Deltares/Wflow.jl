@@ -7,8 +7,8 @@ title: Shared processes
 ### Snow modelling
 
 If the air temperature, $T_a$, is below a user-defined threshold `tt` $\SIb{}{\degree C}$
-precipitation occurs as snowfall, whereas it occurs as rainfall if $T_a ≥ \mathrm{tt}$. A
-another parameter `tti` defines how precipitation can occur partly as rain or snowfall.
+precipitation occurs as snowfall, whereas it occurs as rainfall if $T_a ≥ \mathrm{tt}$. Another
+parameter `tti` defines how precipitation can occur partly as rain or snowfall.
 
 ![Division between snow and precipitation based on the threshold temperature](../../images/snowfall.png)
 
