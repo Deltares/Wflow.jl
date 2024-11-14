@@ -398,7 +398,18 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="snow-and-glaciers">Snow and glaciers</h2>
 <section id="snow-modelling" class="level3">
 <h3 class="anchored" data-anchor-id="snow-modelling">Snow modelling</h3>
-<p>If the air temperature, <span class="math inline">\(T_a\)</span>, is below a user-defined threshold <code>tt</code> <span class="math inline">\(\SIb{}{\degree C}\)</span> precipitation occurs as snowfall, whereas it occurs as rainfall if <span class="math inline">\(T_a ≥ \mathrm{tt}\)</span>. A another parameter <code>tti</code> defines how precipitation can occur partly as rain or snowfall (see the figure below). If precipitation occurs as snowfall, it is added to the dry snow component within the snow pack. Otherwise it ends up in the free water reservoir, which represents the liquid water content of the snow pack. Between the two components of the snow pack, interactions take place, either through snow melt (if temperatures are above a threshold <code>tt</code>) or through snow refreezing (if temperatures are below threshold <code>tt</code>).</p>
+<p>If the air temperature, <span class="math inline">\(T_a\)</span>, is below a user-defined threshold <code>tt</code> <span class="math inline">\(\SIb{}{\degree C}\)</span> precipitation occurs as snowfall, whereas it occurs as rainfall if <span class="math inline">\(T_a ≥ \mathrm{tt}\)</span>. A another parameter <code>tti</code> defines how precipitation can occur partly as rain or snowfall.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../../images/snowfall.png" class="img-fluid figure-img"></p>
+<figcaption>Division between snow and precipitation based on the threshold temperature</figcaption>
+</figure>
+</div>
+<!--
+# Figure created using python: # hide
+# https://gist.github.com/JoostBuitink/21dd32e71fd1360117fcd1c532c4fd9d#file-snowfall_fig-py # hide
+-->
+<p>If precipitation occurs as snowfall, it is added to the dry snow component within the snow pack. Otherwise it ends up in the free water reservoir, which represents the liquid water content of the snow pack. Between the two components of the snow pack, interactions take place, either through snow melt (if temperatures are above a threshold <code>tt</code>) or through snow refreezing (if temperatures are below threshold <code>tt</code>).</p>
 <p>The respective rates of snow melt and refreezing are:</p>
 <p><span class="math display">\[
 \begin{align*}

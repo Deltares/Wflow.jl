@@ -426,17 +426,7 @@ window.Quarto = {
 </section>
 <section id="precipitation" class="level2">
 <h2 class="anchored" data-anchor-id="precipitation">Precipitation</h2>
-<p>The division between solid and liquid precipitation (snowfall and rainfall, respectively) is performed based on the air temperature. If the temperature is below a threshold temperature (<code>tt</code>), precipitation will fall as snow. An interval parameter (<code>tti</code>) defines the range over which precipitation is partly falling as snow, and partly as rain. Snowfall is added to the snowpack, where it is subject to melting and refreezing (see the section on <a href="../../model_docs/vertical/shared_processes.html#snow-and-glaciers">snow and glaciers</a>). The amount of rainfall is subject to <a href="#rainfall-interception">interception</a>, and ultimately becomes available for <a href="#evaporation">evaporation</a> and/or <a href="#soil-processes">soil processes</a>.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="../../images/snowfall.png" class="img-fluid figure-img"></p>
-<figcaption>Division between snow and precipitation based on the threshold temperature</figcaption>
-</figure>
-</div>
-<!--
-# Figure created using python: # hide
-# https://gist.github.com/JoostBuitink/21dd32e71fd1360117fcd1c532c4fd9d#file-snowfall_fig-py # hide
--->
+<p>The division between solid and liquid precipitation (snowfall and rainfall, respectively) is performed based on the air temperature (see the section on <a href="../../model_docs/vertical/shared_processes.html#snow-and-glaciers">snow and glaciers</a>). The amount of rainfall is subject to <a href="#rainfall-interception">interception</a>, and ultimately becomes available for <a href="#evaporation">evaporation</a> and/or <a href="#soil-processes">soil processes</a>.</p>
 </section>
 <section id="rainfall-interception" class="level2">
 <h2 class="anchored" data-anchor-id="rainfall-interception">Rainfall interception</h2>
