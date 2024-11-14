@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Wflow.jl</title>
+<title>Installing wflow – Wflow.jl</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -20,27 +20,61 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="site_libs/quarto-search/fuse.min.js"></script>
-<script src="site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="./">
-<link href="./_static/logo.png" rel="icon" type="image/png">
-<script src="site_libs/quarto-html/quarto.js"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../_static/logo.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -67,7 +101,7 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script type="text/javascript" src="./_static/version.js"></script>
+<script type="text/javascript" src="../_static/version.js"></script>
 <script>
   window.MathJax = {
     tex: {
@@ -79,10 +113,9 @@ ul.task-list li input[type="checkbox"] {
     }
   };
 </script>
-<style>figure { padding: 3em 0 0em 0; }</style>
 
 
-<link rel="stylesheet" href="_static/styles.css">
+<link rel="stylesheet" href="../_static/styles.css">
 </head>
 
 <body class="nav-sidebar floating nav-fixed">
@@ -92,10 +125,10 @@ ul.task-list li input[type="checkbox"] {
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a href="./index.html" class="navbar-brand navbar-brand-logo">
-    <img src="./_static/logo.png" alt="" class="navbar-logo">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../_static/logo.png" alt="" class="navbar-logo">
     </a>
-    <a class="navbar-brand" href="./index.html">
+    <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">Wflow.jl</span>
     </a>
   </div>
@@ -106,27 +139,27 @@ ul.task-list li input[type="checkbox"] {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link active" href="./index.html" aria-current="page"> 
+    <a class="nav-link" href="../index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./getting_started/index.html"> 
+    <a class="nav-link active" href="../getting_started/index.html" aria-current="page"> 
 <span class="menu-text">Getting started</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./user_guide/index.html"> 
+    <a class="nav-link" href="../user_guide/index.html"> 
 <span class="menu-text">User guide</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./examples/index.html"> 
+    <a class="nav-link" href="../examples/index.html"> 
 <span class="menu-text">Examples</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./model_docs/index.html"> 
+    <a class="nav-link" href="../model_docs/index.html"> 
 <span class="menu-text">Model documentation</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./developments/index.html"> 
+    <a class="nav-link" href="../developments/index.html"> 
 <span class="menu-text">Developments</span></a>
   </li>  
 </ul>
@@ -168,7 +201,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./index.html">Wflow.jl</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../getting_started/install.html">Installing wflow</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -182,26 +215,32 @@ ul.task-list li input[type="checkbox"] {
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./index.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Wflow.jl</span></a>
+  <a href="../getting_started/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Getting started</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./home/case_studies.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Case studies</span></a>
+  <a href="../getting_started/install.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Installing wflow</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./home/publications.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Publications</span></a>
+  <a href="../getting_started/download_example_models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Download example models</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./changelog.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Changelog</span></a>
+  <a href="../getting_started/building_a_model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Building a model from scratch</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../getting_started/running_wflow.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Running a simulation</span></a>
   </div>
 </li>
     </ul>
@@ -209,13 +248,27 @@ ul.task-list li input[type="checkbox"] {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="99">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#installing-as-julia-package" id="toc-installing-as-julia-package" class="nav-link active" data-scroll-target="#installing-as-julia-package">Installing as Julia package</a>
+  <ul class="collapse">
+  <li><a href="#install-from-julias-package-repository" id="toc-install-from-julias-package-repository" class="nav-link" data-scroll-target="#install-from-julias-package-repository">Install from Julia’s package repository</a></li>
+  <li><a href="#install-from-github" id="toc-install-from-github" class="nav-link" data-scroll-target="#install-from-github">Install from GitHub</a></li>
+  <li><a href="#check-installation-of-wflow" id="toc-check-installation-of-wflow" class="nav-link" data-scroll-target="#check-installation-of-wflow">Check installation of wflow</a></li>
+  </ul></li>
+  <li><a href="#installing-the-compiled-executable" id="toc-installing-the-compiled-executable" class="nav-link" data-scroll-target="#installing-the-compiled-executable">Installing the compiled executable</a></li>
+  </ul>
+</nav>
+    </div>
 <!-- main -->
-<main class="content page-columns page-full" id="quarto-document-content">
+<main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Wflow.jl</h1>
+<h1 class="title">Installing wflow</h1>
 </div>
 
 
@@ -232,136 +285,103 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p><a href="https://github.com/Deltares/Wflow.jl/actions"><img src="https://github.com/Deltares/Wflow.jl/workflows/CI/badge.svg" class="img-fluid" alt="Build Status"></a> <a href="https://codecov.io/gh/Deltares/Wflow.jl"><img src="https://codecov.io/gh/Deltares/Wflow.jl/branch/master/graph/badge.svg" class="img-fluid" alt="Coverage"></a> <a href="https://deltares.github.io/Wflow.jl/dev"><img src="https://img.shields.io/badge/docs-dev-blue.svg" class="img-fluid" alt="Dev"></a> <a href="https://deltares.github.io/Wflow.jl/stable"><img src="https://img.shields.io/badge/docs-stable-blue.svg" class="img-fluid" alt="Stable"></a> <a href="https://zenodo.org/badge/latestdoi/246787232"><img src="https://zenodo.org/badge/246787232.svg" class="img-fluid" alt="DOI"></a> <a href="https://github.com/SciML/ColPrac"><img src="https://img.shields.io/badge/ColPrac-Contributor's%20Guide-blueviolet.png" class="img-fluid" alt="ColPrac: Contributor’s Guide on Collaborative Practices for Community Packages"></a></p>
-<section id="about-wflow" class="level1 page-columns page-full">
-<h1>About wflow</h1>
-<p>Wflow is Deltares’ solution for modelling hydrological processes, allowing users to account for precipitation, interception, snow accumulation and melt, evapotranspiration, soil water, surface water, groundwater recharge, and water demand and allocation in a fully distributed environment. Successfully applied worldwide for analyzing flood hazards, drought, climate change impacts and land use changes, wflow is growing to be a leader in hydrology solutions. Wflow is conceived as a framework, within which multiple distributed model concepts are available, which maximizes the use of open earth observation data, making it the hydrological model of choice for data scarce environments. Based on gridded topography, soil, land use and climate data, wflow calculates all hydrological fluxes at any given grid cell in the model at a given time step.</p>
-<p>Wflow was born out of the creation of Deltares in 2008, when a strategic review identified the need for a distributed hydrological model to allow the simulation of flows at the catchment scale. With the intention being to encourage greater scientific collaboration. For this reason:</p>
+<p>Wflow can be used in two different ways, depending on the required use of the code:</p>
 <ul>
-<li>Wflow is free and open source software.</li>
-<li>Wflow is easily coupled with other models and software applications.</li>
-<li>Contribution to the wflow code development is encouraged.</li>
+<li>If you want to stay up-to-date with the latest version, explore and modify the model code, and write your own Julia scripts around the wflow package, we recommend installing wflow as a <a href="https://julialang.org/">Julia</a> package.</li>
+<li>If you don’t need extra features, but just want to run simulations, a compiled executable version is available. This version includes a single executable, <code>wflow_cli</code>, which allows you to run the model via the command line.</li>
 </ul>
-<p>From 2021 the <a href="https://github.com/Deltares/Wflow.jl">wflow code</a> is distributed under the <a href="https://github.com/Deltares/Wflow.jl/blob/master/LICENSE">MIT License</a>. Wflow is also available as a <a href="https://download.deltares.nl/en/download/wflow/">compiled executable</a> under the Deltares terms and conditions. The wflow computational engine is built in the <a href="https://julialang.org/">Julia</a> language, a high-performance computing language. Wflow does not include a graphical user interface and is designed for maximum user flexibility. Prior to 2021, wflow was developed in Python on top of the PCRaster Python extension. The Python version is <a href="https://github.com/openstreams/wflow">still available</a>, but not actively developed.</p>
-<section id="quick-overview" class="level2 page-columns page-full">
-<h2 class="anchored" data-anchor-id="quick-overview">Quick overview</h2>
-<div class="column-page-inset-right">
-<style type="text/css">
-    .nav-tabs {
-        margin-top: 0.5rem;
-        border-bottom: none;
-    }
-
-    .callout {
-        margin-top: 0;
-    }
-
-    .nav-tabs .nav-link {
-        text-align: center;
-        margin-right: 15px;
-        margin-top: 10px;
-        width: 260px;
-        height: 150px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        /* font-size: 0.8em;
-        font-weight: 600; */
-    }
-
-    .custom-icon {
-    font-size: 1.5rem; /* Adjust the size as needed */
-    }
-
-    .nav-tabs .nav-link,
-    .nav-tabs .nav-link.active,
-    .nav-tabs .nav-item.show .nav-link {
-        /* background-color: rgb(8, 12, 128); */
-        border: 1px solid rgb(222, 226, 230);
-        border-radius: 10px;
-        /* color: rgb(8, 12, 128); */
-        /* color text */
-    }
-
-    .nav-tabs .nav-link:hover {
-        background-color: rgb(222, 226, 230);
-        /* opacity: 0.1; */
-        border-color: #080c80;
-        border: 1px solid #080c80;
-    }
-
-    /* .nav-tabs .nav-link:hover { */
-    /* border-color: rgb(8, 12, 128); */
-    /* border-width: 1px; */
-    /* } */
-
-    /* .nav-tabs .nav-link.active,
-    .nav-tabs .nav-item.show .nav-link {
-        color: rgb(8, 12, 128);
-        border-width: 2px;
-    } */
-
-
-    .nav-tabs .nav-link i {
-        display: block;
-        font-size: 3rem;
-        /* color: rgb(8, 12, 128); */
-        /* color icon */
-        margin-bottom: 5px;
-    }
-
-    /* .quarto-listing {
-        margin-top: 2em;
-    } */
-
-    /* .quarto-listing .listing-name,
-    .quarto-listing .listing-author {
-        white-space: nowrap;
-    }
-
-    .quarto-listing .listing-actions-group h3 {
-        margin-top: 0;
-    } */
-</style>
-
-<ul id="index-chooser" class="nav nav-tabs" role="tablist">
-  <li class="nav-item" role="presentation">
-    <a class="nav-link" href="getting_started/install.html">
-      <i class="bi bi-gear"></i>Installation guide
-    </a>
-  </li>
-  <li class="nav-item" role="presentation">
-    <a class="nav-link" href="user_guide/index.html">
-      <i class="bi bi-laptop"></i>How do I use Wflow.jl?
-    </a>
-  </li>
-  <li class="nav-item" role="presentation">
-    <a class="nav-link" href="examples/index.html">
-      <i class="bi bi-graph-up"></i>Examples
-    </a>
-  </li>
-  <li class="nav-item" role="presentation">
-    <a class="nav-link" href="user_guide/faq.html">
-      <i class="bi bi-question-octagon"></i>Frequently asked questions
-    </a>
-  </li>
-  <li class="nav-item" role="presentation">
-    <a class="nav-link" href="model_docs/index.html">
-      <i class="bi bi-book"></i>Model documentation
-    </a>
-  </li>
-  <li class="nav-item" role="presentation">
-    <a class="nav-link" href="changelog.html">
-      <i class="bi bi-code-slash"></i>Changelog
-    </a>
-  </li>
-</ul>
-
+<p>Below we describe how to install both versions of wflow.</p>
+<section id="installing-as-julia-package" class="level2">
+<h2 class="anchored" data-anchor-id="installing-as-julia-package">Installing as Julia package</h2>
+<p>Wflow is a <a href="https://julialang.org/">Julia</a> package that can be installed in several ways. Below, we show how to install wflow from Julia’s package repository and how to install the latest version from GitHub.</p>
+<p>First, download and install the <a href="https://julialang.org/downloads/#current_stable_release">current stable release of Julia</a>. If you have any issues installing Julia, please see <a href="https://julialang.org/downloads/platform/">platform specific instructions</a> for further instructions.</p>
+<p>If you are new to Julia, it might be a good idea to check out the <a href="https://docs.julialang.org/en/v1/manual/getting-started/">Getting Started section of the Julia Manual</a>. You can also find additional learning resources at <a href="https://julialang.org/learning/">julialang.org/learning</a>.</p>
+<section id="install-from-julias-package-repository" class="level3">
+<h3 class="anchored" data-anchor-id="install-from-julias-package-repository">Install from Julia’s package repository</h3>
+<p>To access Julia’s package manager, press <code>]</code> in the Julia REPL. To get back to the Julia REPL, press backspace or ^C.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If you haven’t used Julia in a while, it’s a good idea to run <code>up</code> to update your packages.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pkg</span><span class="op">&gt;</span> up</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<p>To access Julia’s package manager and install wflow, use:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pkg</span><span class="op">&gt;</span> add Wflow</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This process can take a while, especially on the first run, as compatible dependencies are automatically resolved and installed from the Pkg General registry.</p>
+</section>
+<section id="install-from-github" class="level3">
+<h3 class="anchored" data-anchor-id="install-from-github">Install from GitHub</h3>
+<p>You can also install wflow from the <code>master</code> branch on the repository as follows:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pkg</span><span class="op">&gt;</span> add Wflow#master</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This command tracks the <code>master</code> branch and updates to the latest commit on that branch when you run <code>update</code>, or simply <code>up</code>, in the Pkg REPL. The <code>add</code> installs wflow in your home directory under <code>.julia/packages/Wflow</code>. Note that packages installed under <code>packages</code> by <code>add</code> should not be changed in the directory, as the change could disrupt Pkg’s automatic dependency handling.</p>
+<p>If you want to modify any files in the repository, you need to do a development install. This can be done using:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pkg</span><span class="op">&gt;</span> dev Wflow</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This will clone the git repository, place it under your home directory in <code>.julia/dev/Wflow</code>, and add the wflow package to your project environment. To receive updates, you’ll need to pull the latest changes manually using <code>git pull</code>.</p>
+</section>
+<section id="check-installation-of-wflow" class="level3">
+<h3 class="anchored" data-anchor-id="check-installation-of-wflow">Check installation of wflow</h3>
+<p>Finally, go back to the Julia REPL and try to load wflow:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">julia</span><span class="op">&gt;</span> using Wflow</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The first time you do this, it may take longer as any new or changed packages need to be precompiled to enable faster loading on subsequent uses. No error messages should appear, which indicates that you have successfully installed wflow.</p>
+<p>Before concluding this section, we recommend a few tools that can make using and developing Julia code easier.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>There is a section on editors and IDEs for Julia on <a href="https://julialang.org/" class="uri">https://julialang.org/</a>, scroll down to see it. We use and recommend Microsoft’s free and open source <a href="https://code.visualstudio.com/">Visual Studio Code</a>. When combined with the <a href="https://www.julia-vscode.org/">Julia extension</a> it provides a powerful and interactive development experience.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If you plan to modify the code of wflow, we recommend installing the <code>Revise.jl</code> package. This package allows you to modify code and use the changes without restarting Julia. Install it with <code>add Revise</code> from the Pkg REPL. Then create a file called <code>.julia/config/startup.jl</code>, and put <code>using Revise</code> there. This will load Revise every time you start a Julia session.</p>
+</div>
+</div>
+</section>
+</section>
+<section id="installing-the-compiled-executable" class="level2">
+<h2 class="anchored" data-anchor-id="installing-the-compiled-executable">Installing the compiled executable</h2>
+<p>Binaries of <code>wflow_cli</code> can be downloaded from our website <a href="https://download.deltares.nl/en/download/wflow/">download.deltares.nl</a>, and are currently available for Windows. Download and install the <code>.msi</code> file. After installation, you will see two folders in the installation directory. Only the <code>bin/wflow_cli</code> is used. The <code>artifacts</code> folder contains binary dependencies such as netCDF.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">artifacts</span><span class="dt">\</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">bin\wflow_cli</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>To verify whether the installation was completed successfully, run <code>wflow_cli</code> with no arguments in the command line. This will display the following message:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">Usage:</span> wflow_cli <span class="st">'path/to/config.toml'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The old version of wflow, based on Python and PCRaster libraries is also available to download from our website <a href="https://download.deltares.nl/en/download/wflow/">download.deltares.nl</a>. We recommend installing the Julia version, as this documentation is written to support this version.</p>
+</div>
 </div>
 
 
-</section>
 </section>
 
 <a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
@@ -933,7 +953,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <footer class="footer">
   <div class="nav-footer">
     <div class="nav-footer-left">
-<p>Made possible by: <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener"> <img src="./_static/images/deltares-blue.svg" alt="Deltares" class="footer-image-light" style="height: 40px;"> <img src="./_static/images/deltares-white.svg" alt="Deltares" class="footer-image-dark" style="height: 40px;"> </a></p>
+<p>Made possible by: <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener"> <img src="../_static/images/deltares-blue.svg" alt="Deltares" class="footer-image-light" style="height: 40px;"> <img src="../_static/images/deltares-white.svg" alt="Deltares" class="footer-image-dark" style="height: 40px;"> </a></p>
 </div>   
     <div class="nav-footer-center">
       &nbsp;
