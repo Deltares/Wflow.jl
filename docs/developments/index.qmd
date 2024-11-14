@@ -1,0 +1,28 @@
+---
+title: "Developments"
+---
+
+::: column-page-inset-right
+{{< include /_static/listing_code.html >}}
+```{=html}
+
+<ul id="index-chooser" class="nav nav-tabs" role="tablist">
+  <li class="nav-item" role="presentation">
+    <a class="nav-link" href="../changelog.html">
+      <i class="bi bi-code-slash"></i>Changelog
+    </a>
+  </li>
+  <li class="nav-item" role="presentation">
+    <a class="nav-link" href="guide.html">
+      <i class="bi bi-journal-bookmark"></i>Developers guide
+    </a>
+  </li>
+  <li class="nav-item" role="presentation">
+    <a class="nav-link" href="julia_structs.html">
+      <i class="bi bi-bricks"></i>Julia structures
+    </a>
+  </li>
+</ul>
+
+```
+:::
