@@ -303,6 +303,7 @@ window.Quarto = {
 <ul>
 <li>Initialization of <code>LateralSSF</code> variables <code>ssf</code> and <code>ssfmax</code> with vertical hydraulic conductivity profile <code>exponential_constant</code>. Removed parameter <code>khfrac</code> from the computation, as it is already part of parameter <code>kh_0</code>.</li>
 <li>Mutating BMI model control functions (<code>update</code>, <code>update_until</code> and <code>finalize</code>) and extended mutating BMI functions (<code>load_state</code> and <code>save_state</code>) should return <code>nothing</code>.</li>
+<li>Added downloading of testdata to Dockerfile, to ensure an image was able to build.</li>
 </ul>
 </section>
 <section id="changed" class="level3">
