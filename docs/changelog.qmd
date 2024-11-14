@@ -15,6 +15,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   computation, as it is already part of parameter `kh_0`.
 - Mutating BMI model control functions (`update`, `update_until` and `finalize`) and
   extended mutating BMI functions (`load_state` and `save_state`) should return `nothing`.
+- Added downloading of testdata to Dockerfile, to ensure an image was able to build.
 
 ### Changed
 - Removed vertical concepts `HBV` and `FLEXTopo`.
