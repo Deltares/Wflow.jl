@@ -34,13 +34,13 @@ the `layered` profile, input parameter `kv` is used, and for the `layered_expone
 | Parameter | Description | Unit | Default |
 |:----| -------- | ---- | ---- |
 | **`cfmax`**  | degree-day factor | mm ᵒC$^{-1}$ Δt$^{-1}$ | 3.75653 mm ᵒC$^{-1}$ day$^{-1}$  |
-| **`tt`**  | threshold temperature for snowfall| ᵒC | 0.0  |
+| **`tt`**  | threshold temperature for snowfall | ᵒC | 0.0  |
 | **`tti`**  | threshold temperature interval length | ᵒC | 1.0  |
 | **`ttm`**  | threshold temperature for snowmelt  | ᵒC | 0.0  |
 | **`whc`**  | water holding capacity as fraction of current snow pack  | - | 0.1  |
 | **`w_soil`**  | soil temperature smooth factor  | - | 0.1125  |
 | **`cf_soil`**  | controls soil infiltration reduction factor when soil is frozen  | - | 0.038  |
-| **`g_tt`**  | threshold temperature for snowfall above glacier  | ᵒC| 0.0  |
+| **`g_tt`**  | threshold temperature for glacier melt  | ᵒC | 0.0  |
 | **`g_cfmax`**  | Degree-day factor for glacier  | mm ᵒC$^{-1}$ Δt$^{-1}$| 3.0 mm ᵒC$^{-1}$ day$^{-1}$ |
 | **`g_sifrac`**  | fraction of the snowpack on top of the glacier converted into ice  | Δt$^{-1}$ | 0.001 day$^{-1}$ |
 | **`glacierfrac`**  | fraction covered by a glacier | - | 0.0  |
