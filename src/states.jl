@@ -217,7 +217,7 @@ function extract_required_states(config::Config)
         add_to_required_states(required_states, (:vertical, :soil, :variables), soil_states)
     # Add subsurface states to dict
     if model_type == "sbm_gwf"
-        key_entry = (:lateral, :subsurface, :flow, :aquifer)
+        key_entry = (:lateral, :subsurface, :flow, :aquifer, :variables)
     else
         key_entry = (:lateral, :subsurface, :variables)
     end

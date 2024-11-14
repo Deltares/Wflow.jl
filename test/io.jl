@@ -487,7 +487,7 @@ end
     @test (:vertical, :soil, :variables, :satwaterdepth) in required_states
     @test (:vertical, :soil, :variables, :ustorelayerdepth) in required_states
     @test (:vertical, :interception, :variables, :canopy_storage) in required_states
-    @test (:lateral, :subsurface, :flow, :aquifer, :head) in required_states
+    @test (:lateral, :subsurface, :flow, :aquifer, :variables, :head) in required_states
     @test (:lateral, :river, :variables, :q) in required_states
     @test (:lateral, :river, :variables, :h_av) in required_states
     @test (:lateral, :land, :variables, :h_av) in required_states

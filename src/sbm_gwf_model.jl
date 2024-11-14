@@ -82,7 +82,7 @@ function initialize_sbm_gwf_model(config::Config)
     pits = zeros(Bool, modelsize_2d)
     if do_reservoirs
         reservoirs, resindex, reservoir, pits =
-            initialize_simple_reservoir(config, nc, inds_riv, nriv, pits, tosecond(dt))
+            SimpleReservoir(config, nc, inds_riv, nriv, pits, tosecond(dt))
     else
         reservoir = ()
         reservoirs = nothing
@@ -91,8 +91,7 @@ function initialize_sbm_gwf_model(config::Config)
 
     # lakes
     if do_lakes
-        lakes, lakeindex, lake, pits =
-            initialize_lake(config, nc, inds_riv, nriv, pits, tosecond(dt))
+        lakes, lakeindex, lake, pits = Lake(config, nc, inds_riv, nriv, pits, tosecond(dt))
     else
         lake = ()
         lakes = nothing
@@ -209,91 +208,39 @@ function initialize_sbm_gwf_model(config::Config)
 
     # unconfined aquifer
     if do_constanthead
-        constanthead = ncread(
-            nc,
-            config,
-            "lateral.subsurface.constant_head";
-            sel = inds,
-            type = Float,
-            fill = mv,
-        )
-        index_constanthead = filter(i -> !isequal(constanthead[i], mv), 1:n)
-        constant_head = ConstantHead(constanthead[index_constanthead], index_constanthead)
+        constant_head = ConstantHead(nc, config, inds)
     else
-        constant_head = ConstantHead{Float}(Float[], Int64[])
+        variables = ConstantHeadVariables{Float}(; head = Float[])
+        constant_head = ConstantHead{Float}(; variables, index = Int64[])
     end
 
-    conductivity =
-        ncread(nc, config, "lateral.subsurface.conductivity"; sel = inds, type = Float)
-    specific_yield =
-        ncread(nc, config, "lateral.subsurface.specific_yield"; sel = inds, type = Float)
-    gwf_f = ncread(
-        nc,
-        config,
-        "lateral.subsurface.gwf_f";
-        sel = inds,
-        type = Float,
-        defaults = 3.0,
-    )
-    conductivity_profile =
-        get(config.input.lateral.subsurface, "conductivity_profile", "uniform")::String
-
     connectivity = Connectivity(inds, rev_inds, xl, yl)
+
     initial_head = altitude .- lhm.soil.variables.zi / 1000.0 # cold state for groundwater head based on SBM zi
     initial_head[index_river] = altitude[index_river]
-
     if do_constanthead
-        initial_head[constant_head.index] = constant_head.head
+        initial_head[constant_head.index] = constant_head.variables.head
     end
 
     bottom = altitude .- lhm.soil.parameters.soilthickness ./ Float(1000.0)
     area = xl .* yl
-    volume = @. (min(altitude, initial_head) - bottom) * area * specific_yield # total volume than can be released
-
+    conductance = zeros(Float, connectivity.nconnection)
     aquifer = UnconfinedAquifer(
-        initial_head,
-        conductivity,
+        nc,
+        config,
+        inds,
         altitude,
         bottom,
         area,
-        specific_yield,
-        zeros(Float, connectivity.nconnection),  # conductance
-        volume,
-        gwf_f,
+        conductance,
+        initial_head,
     )
 
     # river boundary of unconfined aquifer
-    infiltration_conductance = ncread(
-        nc,
-        config,
-        "lateral.subsurface.infiltration_conductance";
-        sel = inds_riv,
-        type = Float,
-    )
-    exfiltration_conductance = ncread(
-        nc,
-        config,
-        "lateral.subsurface.exfiltration_conductance";
-        sel = inds_riv,
-        type = Float,
-    )
-    river_bottom =
-        ncread(nc, config, "lateral.subsurface.river_bottom"; sel = inds_riv, type = Float)
-
-    river_flux = fill(mv, nriv)
-    river_stage = fill(mv, nriv)
-    river = River(
-        river_stage,
-        infiltration_conductance,
-        exfiltration_conductance,
-        river_bottom,
-        river_flux,
-        index_river,
-    )
+    river = River(nc, config, inds_riv, index_river)
 
     # recharge boundary of unconfined aquifer
-    r = fill(mv, n)
-    recharge = Recharge(r, zeros(Float, n), collect(1:n))
+    recharge = Recharge(fill(mv, n), zeros(Float, n), collect(1:n))
 
     # drain boundary of unconfined aquifer (optional)
     if do_drains
@@ -310,32 +257,11 @@ function initialize_sbm_gwf_model(config::Config)
             @info "$n_false_drain drain locations are removed that occur where overland flow
              is not possible (overland flow width is zero)"
         end
-        inds_drain, rev_inds_drain = active_indices(drain_2d, 0)
 
-        drain_elevation = ncread(
-            nc,
-            config,
-            "lateral.subsurface.drain_elevation";
-            sel = inds,
-            type = Float,
-            fill = mv,
-        )
-        drain_conductance = ncread(
-            nc,
-            config,
-            "lateral.subsurface.drain_conductance";
-            sel = inds,
-            type = Float,
-            fill = mv,
-        )
+        inds_drain, rev_inds_drain = active_indices(drain_2d, 0)
         index_drain = filter(i -> !isequal(drain[i], 0), 1:n)
-        drain_flux = fill(mv, length(index_drain))
-        drains = Drainage(
-            drain_elevation[index_drain],
-            drain_conductance[index_drain],
-            drain_flux,
-            index_drain,
-        )
+
+        drains = Drainage(nc, config, inds, index_drain)
         drain = (indices = inds_drain, reverse_indices = rev_inds_drain)
         aquifer_boundaries = AquiferBoundaryCondition[recharge, river, drains]
     else
@@ -539,8 +465,8 @@ function update!(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmG
     update!(vertical, lateral, network, config)
 
     # set river stage (groundwater) to average h from kinematic wave
-    lateral.subsurface.river.stage .=
-        lateral.river.variables.h_av .+ lateral.subsurface.river.bottom
+    lateral.subsurface.river.variables.stage .=
+        lateral.river.variables.h_av .+ lateral.subsurface.river.parameters.bottom
 
     # determine stable time step for groundwater flow
     conductivity_profile =
@@ -556,9 +482,10 @@ function update!(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmG
     Q = zeros(lateral.subsurface.flow.connectivity.ncell)
     # exchange of recharge between SBM soil model and groundwater flow domain
     # recharge rate groundwater is required in units [m d⁻¹]
-    @. lateral.subsurface.recharge.rate = soil.variables.recharge / 1000.0 * (1.0 / dt_sbm)
+    @. lateral.subsurface.recharge.variables.rate =
+        soil.variables.recharge / 1000.0 * (1.0 / dt_sbm)
     if do_water_demand
-        @. lateral.subsurface.recharge.rate -=
+        @. lateral.subsurface.recharge.variables.rate -=
             vertical.allocation.variables.act_groundwater_abst / 1000.0 * (1.0 / dt_sbm)
     end
     # update groundwater domain
@@ -568,7 +495,8 @@ function update!(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmG
     update!(soil, (; runoff, demand, subsurface = lateral.subsurface.flow))
 
     ssf_toriver = zeros(length(soil.variables.zi))
-    ssf_toriver[inds_riv] = -lateral.subsurface.river.flux ./ tosecond(basetimestep)
+    ssf_toriver[inds_riv] =
+        -lateral.subsurface.river.variables.flux ./ tosecond(basetimestep)
     surface_routing!(model; ssf_toriver = ssf_toriver)
 
     return nothing

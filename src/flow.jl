@@ -2026,7 +2026,7 @@ function set_land_inwater!(
     do_water_demand = haskey(config.model, "water_demand")
     if do_drains
         drainflux[lateral.subsurface.drain.index] =
-            -lateral.subsurface.drain.flux ./ tosecond(basetimestep)
+            -lateral.subsurface.drain.variables.flux ./ tosecond(basetimestep)
     end
     if do_water_demand
         @. inwater =

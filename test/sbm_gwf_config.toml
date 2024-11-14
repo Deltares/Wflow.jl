@@ -35,7 +35,7 @@ h = "h_land"
 h_av = "h_av_land"
 q = "q_land"
 
-[state.lateral.subsurface.flow.aquifer]
+[state.lateral.subsurface.flow.aquifer.variables]
 head = "head"
 
 [input]
@@ -122,16 +122,16 @@ soilthickness = "soilthickness"
 [output.lateral.river.variables]
 q = "q"
 
-[output.lateral.subsurface.flow.aquifer]
+[output.lateral.subsurface.flow.aquifer.variables]
 head = "head"
 
-[output.lateral.subsurface.recharge]
+[output.lateral.subsurface.recharge.variables]
 rate = "rate"
 
-[output.lateral.subsurface.drain]
+[output.lateral.subsurface.drain.variables]
 flux = "drain_flux"
 
-[output.lateral.subsurface.river]
+[output.lateral.subsurface.river.variables]
 flux = "flux"
 
 [csv]
@@ -145,4 +145,4 @@ parameter = "lateral.river.variables.q_av"
 [[csv.column]]
 header = "head"
 index = 5
-parameter = "lateral.subsurface.flow.aquifer.head"
+parameter = "lateral.subsurface.flow.aquifer.variables.head"

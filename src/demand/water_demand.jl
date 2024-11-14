@@ -784,7 +784,7 @@ return_flow(non_irri::NoNonIrrigationDemand, nonirri_demand_gross, nonirri_alloc
 
 # wrapper methods
 groundwater_volume(model::LateralSSF) = model.variables.volume
-groundwater_volume(model) = model.flow.aquifer.volume
+groundwater_volume(model) = model.flow.aquifer.variables.volume
 
 """
     update_water_allocation!(land_allocation, demand::Demand, lateral, network, dt)

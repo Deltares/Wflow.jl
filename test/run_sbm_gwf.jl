@@ -56,17 +56,17 @@ end
 
 @testset "groundwater" begin
     gw = model.lateral.subsurface
-    @test gw.river.stage[1] ≈ 1.2123636929067039f0
-    @test gw.flow.aquifer.head[17:21] ≈ [
+    @test gw.river.variables.stage[1] ≈ 1.2123636929067039f0
+    @test gw.flow.aquifer.variables.head[17:21] ≈ [
         1.2866380350225155f0,
         1.3477853512604643f0,
         1.7999999523162842f0,
         1.6225103807809076f0,
         1.4053590307668113f0,
     ]
-    @test gw.river.flux[1] ≈ -51.34674583702381f0
-    @test gw.drain.flux[1] ≈ 0.0
-    @test gw.recharge.rate[19] ≈ -0.0014241196552847502f0
+    @test gw.river.variables.flux[1] ≈ -51.34674583702381f0
+    @test gw.drain.variables.flux[1] ≈ 0.0
+    @test gw.recharge.variables.rate[19] ≈ -0.0014241196552847502f0
 end
 
 @testset "no drains" begin
@@ -174,33 +174,17 @@ end
 
 @testset "groundwater warm start" begin
     gw = model.lateral.subsurface
-    @test gw.river.stage[1] ≈ 1.2031171676781156f0
-    @test gw.flow.aquifer.head[17:21] ≈ [
+    @test gw.river.variables.stage[1] ≈ 1.2031171676781156f0
+    @test gw.flow.aquifer.variables.head[17:21] ≈ [
         1.2277456867225283f0,
         1.286902494792006f0,
         1.7999999523162842f0,
         1.5901747932190804f0,
         1.2094238817776854f0,
     ]
-    @test gw.river.flux[1] ≈ -6.692884222603261f0
-    @test gw.drain.flux[1] ≈ 0.0
-    @test gw.recharge.rate[19] ≈ -0.0014241196552847502f0
-end
-
-@testset "Exchange and grid location aquifer, recharge and constant head" begin
-    aquifer = model.lateral.subsurface.flow.aquifer
-    @test Wflow.exchange(aquifer.head) == true
-    @test Wflow.exchange(aquifer.k) == true
-    @test Wflow.grid_loc(aquifer, :head) == "node"
-    @test Wflow.grid_loc(aquifer, :k) == "node"
-    recharge = model.lateral.subsurface.recharge
-    @test Wflow.exchange(recharge.rate) == true
-    @test Wflow.exchange(recharge.flux) == true
-    @test Wflow.grid_loc(recharge, :rate) == "node"
-    @test Wflow.grid_loc(recharge, :flux) == "node"
-    constanthead = model.lateral.subsurface.flow.constanthead
-    @test Wflow.exchange(constanthead) == false
-    @test Wflow.grid_loc(constanthead, :head) == "node"
+    @test gw.river.variables.flux[1] ≈ -6.692884222603261f0
+    @test gw.drain.variables.flux[1] ≈ 0.0
+    @test gw.recharge.variables.rate[19] ≈ -0.0014241196552847502f0
 end
 
 Wflow.close_files(model; delete_output = false)

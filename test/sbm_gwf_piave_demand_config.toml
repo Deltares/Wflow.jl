@@ -71,7 +71,7 @@ glacier_store = "glacierstore"
 [state.vertical.demand.paddy.variables]
 h = "h_paddy"
 
-[state.lateral.subsurface.flow.aquifer]
+[state.lateral.subsurface.flow.aquifer.variables]
 head = "head"
 
 [input.vertical.glacier.parameters]
@@ -203,7 +203,7 @@ q_av = "q_river"
 [output.vertical.soil.variables]
 zi = "zi"
 
-[output.lateral.subsurface.flow.aquifer]
+[output.lateral.subsurface.flow.aquifer.variables]
 head = "head"
 
 [csv]
