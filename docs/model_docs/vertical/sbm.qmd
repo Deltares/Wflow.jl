@@ -15,22 +15,10 @@ The sections below describe the working of the SBM vertical concept in more deta
 
 ## Precipitation
 The division between solid and liquid precipitation (snowfall and rainfall, respectively) is
-performed based on the air temperature. If the temperature is below a threshold temperature
-(`tt`), precipitation will fall as snow. An interval parameter (`tti`) defines the range over
-which precipitation is partly falling as snow, and partly as rain. Snowfall is added to the
-snowpack, where it is subject to melting and refreezing (see the section on [snow and
+performed based on the air temperature (see the section on [snow and
 glaciers](./shared_processes.qmd#snow-and-glaciers)). The amount of rainfall is subject to
 [interception](#rainfall-interception), and ultimately becomes available for
 [evaporation](#evaporation) and/or [soil processes](#soil-processes).
-
-![Division between snow and precipitation based on the threshold temperature](../../images/snowfall.png)
-
-<!--
-# Figure created using python: # hide
-# https://gist.github.com/JoostBuitink/21dd32e71fd1360117fcd1c532c4fd9d#file-snowfall_fig-py # hide
--->
-
-
 
 ## Rainfall interception
 
