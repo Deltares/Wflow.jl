@@ -163,7 +163,7 @@ function SurfaceFlowRiver(
     end
     n = length(inds)
     do_water_demand = haskey(config.model, "water_demand")
-    allocation = do_water_demand ? AllocationRiver(n) : nothing
+    allocation = do_water_demand ? AllocationRiver(n) : NoAllocationRiver{Float}()
 
     variables = FlowVariables(n)
     parameters = RiverFlowParameters(nc, config, inds, dl, width, iterate, dt, tstep)
@@ -661,6 +661,9 @@ end
 get_water_depth(subsurface::SubsurfaceFlow) = subsurface.variables.zi
 get_exfiltwater(subsurface::SubsurfaceFlow) = subsurface.variables.exfiltwater
 
+get_flux_to_river(subsurface::SubsurfaceFlow) =
+    subsurface.variables.to_river ./ tosecond(basetimestep) # [m³ s⁻¹]
+
 @get_units @grid_loc @with_kw struct ShallowWaterRiverParameters{T}
     n::Int                                              # number of cells [-]
     ne::Int                                             # number of edges/links [-]
@@ -938,7 +941,7 @@ function ShallowWaterRiver(
         parameters,
         variables,
         floodplain,
-        allocation = do_water_demand ? initialize_allocation_river(n) : nothing,
+        allocation = do_water_demand ? AllocationRiver(n) : NoAllocationRiver{Float}(),
     )
     return sw_river, nodes_at_link
 end
@@ -1975,91 +1978,57 @@ function FloodPlain(
 end
 
 """
-    set_river_inwater!(model::Model, ssf_toriver)
-
-Set `inwater` of the lateral river component for a `Model`. `ssf_toriver` is the subsurface
-flow to the river.
+Update boundary condition lateral inflow `inwater` of a `river` flow model for a single
+timestep.
 """
-function set_river_inwater!(model::Model, ssf_toriver)
-    (; lateral, vertical, network, config) = model
-    (; net_runoff_river) = vertical.runoff.variables
-    (; inwater) = lateral.river.boundary_conditions
-    inds = network.index_river
-    do_water_demand = haskey(config.model, "water_demand")
-    if do_water_demand
-        @. inwater = (
-            ssf_toriver[inds] +
-            lateral.land.variables.to_river[inds] +
-            # net_runoff_river
-            (net_runoff_river[inds] * network.land.area[inds] * 0.001) / vertical.dt +
-            (
-                lateral.river.allocation.variables.nonirri_returnflow *
-                0.001 *
-                network.river.area
-            ) / vertical.dt
-        )
-    else
-        @. inwater = (
-            ssf_toriver[inds] +
-            lateral.land.variables.to_river[inds] +
-            # net_runoff_river
-            (net_runoff_river[inds] * network.land.area[inds] * 0.001) / vertical.dt
-        )
-    end
+function update_lateral_inflow!(
+    river,
+    external_models::NamedTuple,
+    river_area,
+    land_area,
+    index_river,
+    dt,
+)
+    (; allocation, runoff, land, subsurface) = external_models
+    (; inwater) = river.boundary_conditions
+    (; net_runoff_river) = runoff.variables
+
+    inwater .= (
+        get_flux_to_river(subsurface)[index_river] .+
+        land.variables.to_river[index_river] .+
+        (net_runoff_river[index_river] .* land_area[index_river] .* 0.001) ./ dt .+
+        (get_nonirrigation_returnflow(allocation) .* 0.001 .* river_area) ./ dt
+    )
     return nothing
 end
 
 """
-    set_land_inwater!(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmGwfModel}
-
-Set `inwater` of the lateral land component for the `SbmGwfModel` type.
+Update boundary condition lateral inflow `inwater` of kinematic wave overland flow model
+`SurfaceFlowLand` for a single timestep.
 """
-function set_land_inwater!(
-    model::Model{N, L, V, R, W, T},
-) where {N, L, V, R, W, T <: SbmGwfModel}
-    (; lateral, vertical, network, config) = model
-    (; net_runoff) = vertical.soil.variables
-    (; inwater) = lateral.land.boundary_conditions
+function update_lateral_inflow!(
+    land::SurfaceFlowLand,
+    external_models::NamedTuple,
+    area,
+    config,
+    dt,
+)
+    (; soil, subsurface, allocation) = external_models
+    (; net_runoff) = soil.variables
+    (; inwater) = land.boundary_conditions
 
     do_drains = get(config.model, "drains", false)::Bool
-    drainflux = zeros(length(net_runoff))
-    do_water_demand = haskey(config.model, "water_demand")
     if do_drains
-        drainflux[lateral.subsurface.drain.index] =
-            -lateral.subsurface.drain.variables.flux ./ tosecond(basetimestep)
-    end
-    if do_water_demand
-        @. inwater =
-            (net_runoff + vertical.allocation.variables.nonirri_returnflow) *
-            network.land.area *
-            0.001 / vertical.dt + drainflux
+        drainflux = zeros(length(net_runoff))
+        drainflux[subsurface.drain.index] =
+            -subsurface.drain.variables.flux ./ tosecond(basetimestep)
     else
-        @. inwater = (net_runoff * network.land.area * 0.001) / vertical.dt + drainflux
+        drainflux = 0.0
     end
-    return nothing
-end
+    inwater .=
+        (net_runoff .+ get_nonirrigation_returnflow(allocation)) .* area * 0.001 ./ dt .+
+        drainflux
 
-"""
-    set_land_inwater!(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
-
-Set `inwater` of the lateral land component for the `SbmModel` type.
-"""
-function set_land_inwater!(
-    model::Model{N, L, V, R, W, T},
-) where {N, L, V, R, W, T <: SbmModel}
-    (; lateral, vertical, network, config) = model
-    (; net_runoff) = vertical.soil.variables
-    (; inwater) = lateral.land.boundary_conditions
-
-    do_water_demand = haskey(config.model, "water_demand")
-    if do_water_demand
-        @. inwater =
-            (net_runoff + vertical.allocation.variables.nonirri_returnflow) *
-            network.land.area *
-            0.001 / vertical.dt
-    else
-        @. inwater = (net_runoff * network.land.area * 0.001) / vertical.dt
-    end
     return nothing
 end
 
@@ -2186,17 +2155,33 @@ end
 Run surface routing (land and river). Kinematic wave for overland flow and kinematic wave or
 local inertial model for river flow.
 """
-function surface_routing!(model; ssf_toriver = 0.0)
-    (; lateral, network, clock) = model
+function surface_routing!(model)
+    (; vertical, lateral, network, config, clock) = model
+    (; soil, runoff, allocation) = vertical
+    (; land, river, subsurface) = lateral
 
-    # run kinematic wave for overland flow
-    set_land_inwater!(model)
-    update!(lateral.land, network.land, network.frac_toriver)
+    # update lateral inflow for kinematic wave overland flow
+    update_lateral_inflow!(
+        land,
+        (; soil, allocation, subsurface),
+        network.land.area,
+        config,
+        vertical.dt,
+    )
+    # run kinematic wave overland flow
+    update!(land, network.land, network.frac_toriver)
 
-    # run river flow
-    set_river_inwater!(model, ssf_toriver)
+    # update lateral inflow river flow
+    update_lateral_inflow!(
+        river,
+        (; allocation = river.allocation, runoff, land, subsurface),
+        network.river.area,
+        network.land.area,
+        network.index_river,
+        vertical.dt,
+    )
     set_inflow_waterbody!(model)
-    update!(lateral.river, network.river, julian_day(clock.time - clock.dt))
+    update!(river, network.river, julian_day(clock.time - clock.dt))
     return nothing
 end
 
@@ -2210,8 +2195,7 @@ Run surface routing (land and river) for a model type that contains the lateral 
 `ShallowWaterLand` and `ShallowWaterRiver`.
 """
 function surface_routing!(
-    model::Model{N, L, V, R, W, T};
-    ssf_toriver = 0.0,
+    model::Model{N, L, V, R, W, T},
 ) where {
     N,
     L <: NamedTuple{<:Any, <:Tuple{Any, ShallowWaterLand, ShallowWaterRiver}},
@@ -2224,11 +2208,10 @@ function surface_routing!(
     (; net_runoff) = vertical.soil.variables
     (; net_runoff_river) = vertical.runoff.variables
 
-    @. lateral.land.boundary_conditions.runoff = (
-        (net_runoff / 1000.0) * (network.land.area) / vertical.dt +
-        ssf_toriver +
-        # net_runoff_river
-        ((net_runoff_river * network.land.area * 0.001) / vertical.dt)
+    lateral.land.boundary_conditions.runoff .= (
+        (net_runoff ./ 1000.0) .* (network.land.area) ./ vertical.dt .+
+        get_flux_to_river(lateral.subsurface) .+
+        ((net_runoff_river .* network.land.area .* 0.001) ./ vertical.dt)
     )
     set_inflow_waterbody!(model)
     update!(lateral.land, lateral.river, network, julian_day(clock.time - clock.dt))

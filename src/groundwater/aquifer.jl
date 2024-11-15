@@ -475,3 +475,12 @@ function get_exfiltwater(
     exfiltwater[gwf.constanthead.index] .= 0
     return exfiltwater
 end
+
+function get_flux_to_river(subsurface)
+    (; flow, river) = subsurface
+    ncell = flow.connectivity.ncell
+    flux = zeros(ncell)
+    index = river.index
+    flux[index] = -river.variables.flux ./ tosecond(basetimestep) # [m³ s⁻¹]
+    return flux
+end

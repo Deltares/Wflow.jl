@@ -440,8 +440,7 @@ function update_after_subsurfaceflow!(
     # update SBM soil model (runoff, ustorelayerdepth and satwaterdepth)
     update!(soil, (; runoff, demand, subsurface))
 
-    ssf_toriver = lateral.subsurface.variables.to_river ./ tosecond(basetimestep)
-    surface_routing!(model; ssf_toriver = ssf_toriver)
+    surface_routing!(model)
 
     return nothing
 end

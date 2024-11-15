@@ -494,10 +494,7 @@ function update!(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmG
     # update SBM soil model (runoff, ustorelayerdepth and satwaterdepth)
     update!(soil, (; runoff, demand, subsurface = lateral.subsurface.flow))
 
-    ssf_toriver = zeros(length(soil.variables.zi))
-    ssf_toriver[inds_riv] =
-        -lateral.subsurface.river.variables.flux ./ tosecond(basetimestep)
-    surface_routing!(model; ssf_toriver = ssf_toriver)
+    surface_routing!(model)
 
     return nothing
 end

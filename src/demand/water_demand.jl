@@ -6,6 +6,7 @@ struct NoIrrigationPaddy{T} <: AbstractIrrigationModel{T} end
 struct NoIrrigationNonPaddy{T} <: AbstractIrrigationModel{T} end
 struct NoNonIrrigationDemand <: AbstractDemandModel end
 struct NoAllocationLand{T} <: AbstractAllocationModel{T} end
+struct NoAllocationRiver{T} <: AbstractAllocationModel{T} end
 
 "Struct to store non-irrigation water demand variables"
 @get_units @grid_loc @with_kw struct NonIrrigationDemandVariables{T}
@@ -492,6 +493,9 @@ end
     variables::AllocationRiverVariables{T}
 end
 
+get_nonirrigation_returnflow(model::AllocationRiver) = model.variables.nonirri_returnflow
+get_nonirrigation_returnflow(model::NoAllocationRiver) = 0.0
+
 "Initialize water allocation for the river domain"
 function AllocationRiver(n)
     vars = AllocationRiverVariables(Float, n)
@@ -569,6 +573,8 @@ end
 # wrapper methods
 get_irrigation_allocated(model::AllocationLand) = model.variables.irri_alloc
 get_irrigation_allocated(model::NoAllocationLand) = 0.0
+get_nonirrigation_returnflow(model::AllocationLand) = model.variables.nonirri_returnflow
+get_nonirrigation_returnflow(model::NoAllocationLand) = 0.0
 
 "Return return flow fraction based on gross water demand `demand_gross` and net water demand `demand_net`"
 function return_flow_fraction(demand_gross, demand_net)
