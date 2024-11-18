@@ -2032,128 +2032,78 @@ function update_lateral_inflow!(
     return nothing
 end
 
-# Computation of inflow from the lateral components `land` and `subsurface` to water bodies
-# depends on the routing scheme (see different `get_inflow_waterbody` below). For the river
-# kinematic wave, the variables `to_river` can be excluded, because this part is added to
-# the river kinematic wave (kinematic wave is also solved for the water body cell). For
-# local inertial river routing, `to_river` is included, because for the local inertial
-# solution the water body cells are excluded (boundary condition). For `GroundwaterFlow`
-# (Darcian flow in 4 directions), the lateral subsurface flow is excluded (for now) and
-# inflow consists of overland flow.
 """
-    set_inflow_waterbody!(
-        model::Model{N,L,V,R,W,T},
-    ) where {N,L<:NamedTuple{<:Any,<:Tuple{Any,SurfaceFlowLand,SurfaceFlowRiver}},V,R,W,T}
-
-Set inflow from the subsurface and land components to a water body (reservoir or lake)
-`inflow_wb` from a model type that contains the lateral components `SurfaceFlowLand` and
-`SurfaceFlowRiver`.
+Update boundary condition inflow to a waterbody from land `inflow_wb` of a `river` flow
+model for a single timestep.
 """
-function set_inflow_waterbody!(
-    model::Model{N, L, V, R, W, T},
-) where {
-    N,
-    L <: NamedTuple{<:Any, <:Tuple{Any, SurfaceFlowLand, SurfaceFlowRiver}},
-    V,
-    R,
-    W,
-    T,
-}
-    (; lateral, network) = model
-    (; subsurface, land, river) = lateral
+function update_inflow_waterbody!(river, external_models::NamedTuple, index_river)
+    (; land, subsurface) = external_models
     (; reservoir, lake, inflow_wb) = river.boundary_conditions
-    inds = network.index_river
 
     if !isnothing(reservoir) || !isnothing(lake)
-        if typeof(subsurface) <: LateralSSF || typeof(subsurface) <: GroundwaterExchange
-            @. inflow_wb =
-                subsurface.variables.ssf[inds] / tosecond(basetimestep) +
-                land.variables.q_av[inds]
-        elseif typof(subsurface.flow) <: GroundwaterFlow || isnothing(subsurface)
-            inflow_wb .= land.variables.q_av[inds]
-        end
+        inflow_land = inflow_waterbody(river, land)
+        inflow_subsurface = inflow_waterbody(river, subsurface)
+
+        @. inflow_wb = inflow_land[index_river] + inflow_subsurface[index_river]
     end
     return nothing
 end
 
 """
-    set_inflow_waterbody!(
-        model::Model{N,L,V,R,W,T},
-    ) where {N,L<:NamedTuple{<:Any,<:Tuple{Any,SurfaceFlowLand,ShallowWaterRiver}},V,R,W,T}
-
-Set inflow from the subsurface and land components to a water body (reservoir or lake)
-`inflow_wb` from a model type that contains the lateral components `SurfaceFlowLand` and
-`ShallowWaterRiver`.
+Update boundary conditions `runoff` and inflow to a waterbody from land `inflow_wb` for
+overland flow model `ShallowWaterLand` for a single timestep.
 """
-function set_inflow_waterbody!(
-    model::Model{N, L, V, R, W, T},
-) where {
-    N,
-    L <: NamedTuple{<:Any, <:Tuple{Any, SurfaceFlowLand, ShallowWaterRiver}},
-    V,
-    R,
-    W,
-    T,
-}
-    (; lateral, network) = model
-    (; subsurface, land, river) = lateral
-    inds = network.index_river
-    (; reservoir, lake, inflow_wb) = river.boundary_conditions
-
-    if !isnothing(reservoir) || !isnothing(lake)
-        if typeof(subsurface) <: LateralSSF || typeof(subsurface) <: GroundwaterExchange
-            @. inflow_wb =
-                (subsurface.variables.ssf[inds] + subsurface.variables.to_river[inds]) /
-                tosecond(basetimestep) +
-                land.variables.q_av[inds] +
-                land.variables.to_river[inds]
-        elseif typeof(subsurface.flow) <: GroundwaterFlow || isnothing(subsurface)
-            @. inflow_wb =
-                lateral.land.variables.q_av[inds] + lateral.land.variables.to_river[inds]
-        end
-    end
-    return nothing
-end
-
-"""
-    set_inflow_waterbody!(
-        model::Model{N,L,V,R,W,T},
-    ) where {N,L<:NamedTuple{<:Any,<:Tuple{Any,ShallowWaterLand,ShallowWaterRiver}},V,R,W,T}
-
-Set inflow from the subsurface and land components to a water body (reservoir or lake)
-`inflow_wb` from a model type that contains the lateral components `ShallowWaterLand` and
-`ShallowWaterRiver`.
-"""
-function set_inflow_waterbody!(
-    model::Model{N, L, V, R, W, T},
-) where {
-    N,
-    L <: NamedTuple{<:Any, <:Tuple{Any, ShallowWaterLand, ShallowWaterRiver}},
-    V,
-    R,
-    W,
-    T,
-}
-    (; lateral, network) = model
-    (; subsurface, land, river) = lateral
-    inds = network.index_river
+function update_boundary_conditions!(
+    land::ShallowWaterLand,
+    external_models::NamedTuple,
+    network,
+    dt,
+)
+    (; river, soil, subsurface, runoff) = external_models
+    (; inflow_wb) = land.boundary_conditions
     (; reservoir, lake) = river.boundary_conditions
+    (; net_runoff) = soil.variables
+    (; net_runoff_river) = runoff.variables
+
+    land.boundary_conditions.runoff .=
+        net_runoff ./ 1000.0 .* network.land.area ./ dt .+ get_flux_to_river(subsurface) .+
+        net_runoff_river .* network.land.area .* 0.001 ./ dt
 
     if !isnothing(reservoir) || !isnothing(lake)
-        if typeof(subsurface) <: LateralSSF || typeof(subsurface) <: GroundwaterExchange
-            @. land.boundary_conditions.inflow_wb[inds] =
-                (subsurface.variables.ssf[inds] + subsurface.variabels.to_river[inds]) /
-                tosecond(basetimestep)
-        end
+        inflow_land = inflow_waterbody(river, land)
+        inflow_subsurface = inflow_waterbody(river, subsurface)
+
+        @. inflow_wb[network.index_river] =
+            inflow_land[network.index_river] + inflow_subsurface[network.index_river]
     end
     return nothing
 end
 
-"""
-    surface_routing!(model; ssf_toriver = 0.0)
+# For the river kinematic wave, the variable `to_river` can be excluded, because this part
+# is added to the river kinematic wave.
+inflow_waterbody(::SurfaceFlowRiver, land::SurfaceFlowLand) = land.variables.q_av
+inflow_waterbody(::SurfaceFlowRiver, subsurface::LateralSSF) =
+    subsurface.variables.ssf ./ tosecond(basetimestep)
 
-Run surface routing (land and river). Kinematic wave for overland flow and kinematic wave or
-local inertial model for river flow.
+# Exclude subsurface flow for other groundwater components than `LateralSSF`.
+inflow_waterbody(
+    ::Union{SurfaceFlowRiver, ShallowWaterRiver},
+    subsurface::GroundwaterFlow,
+) = subsurface.flow.connectivity.ncell .* 0.0
+inflow_waterbody(::SurfaceFlowRiver, subsurface) = subsurface.variables.to_river .* 0.0
+
+# For local inertial river routing, `to_river` is included, as water body cells are excluded
+# (boundary condition).
+inflow_waterbody(::ShallowWaterRiver, land::SurfaceFlowLand) =
+    land.variables.q_av .+ land.variables.to_river
+inflow_waterbody(::ShallowWaterRiver, subsurface::LateralSSF) =
+    (subsurface.variables.ssf .+ subsurface.variables.to_river) ./ tosecond(basetimestep)
+
+"""
+    surface_routing!(model)
+
+Run surface routing (land and river) for a single timestep. Kinematic wave for overland flow
+and kinematic wave or local inertial model for river flow.
 """
 function surface_routing!(model)
     (; vertical, lateral, network, config, clock) = model
@@ -2180,19 +2130,18 @@ function surface_routing!(model)
         network.index_river,
         vertical.dt,
     )
-    set_inflow_waterbody!(model)
+    update_inflow_waterbody!(river, (; land, subsurface), network.index_river)
     update!(river, network.river, julian_day(clock.time - clock.dt))
     return nothing
 end
 
 """
-    surface_routing(
-        model::Model{N,L,V,R,W,T};
-        ssf_toriver = 0.0,
+    surface_routing!(
+        model::Model{N,L,V,R,W,T}
     ) where {N,L<:NamedTuple{<:Any,<:Tuple{Any,ShallowWaterLand,ShallowWaterRiver}},V,R,W,T}
 
 Run surface routing (land and river) for a model type that contains the lateral components
-`ShallowWaterLand` and `ShallowWaterRiver`.
+`ShallowWaterLand` and `ShallowWaterRiver` for a single timestep.
 """
 function surface_routing!(
     model::Model{N, L, V, R, W, T},
@@ -2205,15 +2154,16 @@ function surface_routing!(
     T,
 }
     (; lateral, vertical, network, clock) = model
-    (; net_runoff) = vertical.soil.variables
-    (; net_runoff_river) = vertical.runoff.variables
+    (; land, river, subsurface) = lateral
+    (; soil, runoff) = vertical
 
-    lateral.land.boundary_conditions.runoff .= (
-        (net_runoff ./ 1000.0) .* (network.land.area) ./ vertical.dt .+
-        get_flux_to_river(lateral.subsurface) .+
-        ((net_runoff_river .* network.land.area .* 0.001) ./ vertical.dt)
+    update_boundary_conditions!(
+        land,
+        (; river, subsurface, soil, runoff),
+        network,
+        vertical.dt,
     )
-    set_inflow_waterbody!(model)
-    update!(lateral.land, lateral.river, network, julian_day(clock.time - clock.dt))
+    update!(land, river, network, julian_day(clock.time - clock.dt))
+
     return nothing
 end
