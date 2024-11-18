@@ -172,7 +172,6 @@ end
     )
 
     alpha = 0.7
-    dt = 1.0
     h_thresh = 1.0e-03
     froude_limit = true
     h_init = zeros(n - 1)
@@ -186,7 +185,6 @@ end
         g = 9.80665,
         alpha = alpha,
         h_thresh = h_thresh,
-        dt = dt,
         zb_max = zb_max,
         mannings_n_sq = mannings_n_sq,
         mannings_n = n_river,

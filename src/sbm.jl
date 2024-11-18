@@ -9,7 +9,6 @@
     soil::SbmSoilModel
     demand::D
     allocation::A
-    dt::T
 end
 
 "Initialize land hydrology model with SBM soil model"
@@ -69,25 +68,15 @@ function LandHydrologySBM(nc, config, riverfrac, inds)
         soil = soil_model,
         demand = demand,
         allocation = allocation,
-        dt = tosecond(dt),
     )
     return land_hydrology_model
 end
 
 "Update land hydrology model with SBM soil model for a single timestep"
-function update!(model::LandHydrologySBM, lateral, network, config)
+function update!(model::LandHydrologySBM, lateral, network, config, dt)
     do_water_demand = haskey(config.model, "water_demand")::Bool
-    (;
-        glacier,
-        snow,
-        interception,
-        runoff,
-        soil,
-        demand,
-        allocation,
-        atmospheric_forcing,
-        dt,
-    ) = model
+    (; glacier, snow, interception, runoff, soil, demand, allocation, atmospheric_forcing) =
+        model
 
     update!(interception, atmospheric_forcing)
 

@@ -161,7 +161,6 @@ function initialize_sbm_model(config::Config)
             width = map(det_surfacewidth, dw, riverwidth, river),
             iterate = kinwave_it,
             tstep = kw_land_tstep,
-            dt,
         )
     elseif land_routing == "local-inertial"
         index_river_nf = rev_inds_riv[inds] # not filtered (with zeros)
@@ -179,7 +178,6 @@ function initialize_sbm_model(config::Config)
             inds_riv,
             river,
             waterbody = !=(0).(resindex + lakeindex),
-            dt,
         )
     end
 
@@ -200,7 +198,6 @@ function initialize_sbm_model(config::Config)
             lake = lakes,
             iterate = kinwave_it,
             tstep = kw_river_tstep,
-            dt = dt,
         )
     elseif river_routing == "local-inertial"
         rf, nodes_at_link = ShallowWaterRiver(
@@ -215,7 +212,6 @@ function initialize_sbm_model(config::Config)
             reservoir = reservoirs,
             lake_index = lakeindex,
             lake = lakes,
-            dt = dt,
         )
     else
         error(
@@ -388,7 +384,8 @@ end
 
 "update SBM model for a single timestep"
 function update!(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmModel}
-    (; lateral, vertical, network, config) = model
+    (; lateral, vertical, network, clock, config) = model
+    dt = tosecond(clock.dt)
     do_water_demand = haskey(config.model, "water_demand")
     (; kv_profile) = vertical.soil.parameters
 
@@ -403,7 +400,7 @@ function update!(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmM
     lateral.subsurface.boundary_conditions.recharge .*= lateral.subsurface.parameters.dw
     lateral.subsurface.variables.zi .= vertical.soil.variables.zi ./ 1000.0
     # update lateral subsurface flow domain (kinematic wave)
-    kh_layered_profile!(vertical.soil, lateral.subsurface, kv_profile, vertical.dt)
+    kh_layered_profile!(vertical.soil, lateral.subsurface, kv_profile, dt)
     update!(lateral.subsurface, network.land, network.frac_toriver)
     update_after_subsurfaceflow!(model)
     update_total_water_storage!(model)
@@ -419,8 +416,9 @@ through BMI, to couple the SBM model to an external groundwater model.
 function update_until_recharge!(
     model::Model{N, L, V, R, W, T},
 ) where {N, L, V, R, W, T <: SbmModel}
-    (; lateral, vertical, network, config) = model
-    update!(vertical, lateral, network, config)
+    (; lateral, vertical, network, clock, config) = model
+    dt = tosecond(clock.dt)
+    update!(vertical, lateral, network, config, dt)
     return nothing
 end
 

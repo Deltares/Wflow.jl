@@ -140,7 +140,6 @@ function initialize_sbm_gwf_model(config::Config)
             width = map(det_surfacewidth, dw, riverwidth, river),
             iterate = kinwave_it,
             tstep = kw_land_tstep,
-            dt,
         )
     elseif land_routing == "local-inertial"
         index_river_nf = rev_inds_riv[inds] # not filtered (with zeros)
@@ -158,7 +157,6 @@ function initialize_sbm_gwf_model(config::Config)
             inds_riv,
             river,
             waterbody = !=(0).(resindex + lakeindex),
-            dt,
         )
     end
 
@@ -181,7 +179,6 @@ function initialize_sbm_gwf_model(config::Config)
             lake = lakes,
             iterate = kinwave_it,
             tstep = kw_river_tstep,
-            dt = dt,
         )
     elseif river_routing == "local-inertial"
         rf, nodes_at_link = ShallowWaterRiver(
@@ -196,7 +193,6 @@ function initialize_sbm_gwf_model(config::Config)
             reservoir = reservoirs,
             lake_index = lakeindex,
             lake = lakes,
-            dt = dt,
         )
     else
         error(
@@ -459,10 +455,10 @@ function update!(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmG
     (; soil, runoff, demand) = vertical
 
     do_water_demand = haskey(config.model, "water_demand")
-    inds_riv = network.index_river
     aquifer = lateral.subsurface.flow.aquifer
+    dt = tosecond(clock.dt)
 
-    update!(vertical, lateral, network, config)
+    update!(vertical, lateral, network, config, dt)
 
     # set river stage (groundwater) to average h from kinematic wave
     lateral.subsurface.river.variables.stage .=
@@ -472,7 +468,7 @@ function update!(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmG
     conductivity_profile =
         get(config.input.lateral.subsurface, "conductivity_profile", "uniform")
     dt_gw = stable_timestep(aquifer, conductivity_profile) # time step in day (Float64)
-    dt_sbm = (vertical.dt / tosecond(basetimestep)) # vertical.dt is in seconds (Float64)
+    dt_sbm = (dt / tosecond(basetimestep)) # dt is in seconds (Float64)
     if dt_gw < dt_sbm
         @warn(
             "stable time step dt $dt_gw for groundwater flow is smaller than `LandHydrologySBM` model dt $dt_sbm"
