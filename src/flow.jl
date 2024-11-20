@@ -9,9 +9,17 @@
 end
 
 @with_kw struct TimeStepping{T}
-    dt::Union{Vector{T}, T}
+    stable_timesteps::Vector{T} = []
+    dt_fixed::T = 0.0
     adaptive::Bool = true
     cfl::T = 0.70
+end
+
+function check_timestepsize(timestepsize, currenttime, endtime)
+    if currenttime + timestepsize > endtime
+        timestepsize = endtime - currenttime
+    end
+    return timestepsize
 end
 
 function FlowVariables(n)
@@ -158,14 +166,13 @@ function SurfaceFlowRiver(
     @info "Kinematic wave approach is used for river flow, adaptive timestepping = $adaptive."
 
     if adaptive
-        dt = zeros(n)
+        stable_timesteps = zeros(n)
+        timestepping = TimeStepping(; stable_timesteps, adaptive)
     else
         dt_fixed = get(config.model, "kw_river_tstep", 900.0)
         @info "Using a fixed sub-timestep (seconds) $dt_fixed for kinematic wave river flow."
-        dt = dt_fixed
+        timestepping = TimeStepping(; dt_fixed, adaptive)
     end
-
-    timestepping = TimeStepping(; dt, adaptive)
 
     do_water_demand = haskey(config.model, "water_demand")
     allocation = do_water_demand ? AllocationRiver(n) : NoAllocationRiver{Float}()
@@ -226,16 +233,15 @@ function SurfaceFlowLand(nc, config, inds; sl, dl, width)
     @info "Kinematic wave approach is used for river flow, adaptive timestepping = $adaptive."
 
     if adaptive
-        dt = zeros(n)
+        stable_timesteps = zeros(n)
+        timestepping = TimeStepping(; stable_timesteps, adaptive)
     else
         dt_fixed = get(config.model, "kw_river_tstep", 3600.0)
         @info "Using a fixed sub-timestep (seconds) $dt_fixed for kinematic wave river flow."
-        dt = dt_fixed
+        timestepping = TimeStepping(; dt_fixed, adaptive)
     end
 
-    timestepping = TimeStepping(; dt, adaptive)
     variables = LandFlowVariables(; flow = FlowVariables(n), to_river = zeros(Float, n))
-    dt = Float64(config.timestepsecs)
     parameters = ManningFlowParameters(sl, n_land, dl, width)
     boundary_conditions = LandFlowBC(; inwater = zeros(Float, n))
     sf_land = SurfaceFlowLand(; timestepping, boundary_conditions, variables, parameters)
@@ -304,10 +310,8 @@ function update!(sf::SurfaceFlowLand, network, frac_toriver, dt)
 
     t = 0.0
     while t < dt
-        dt_s = adaptive ? stable_timestep(sf, 0.02) : sf.timestepping.dt
-        if t + dt_s > dt
-            dt_s = dt - t
-        end
+        dt_s = adaptive ? stable_timestep(sf, 0.02) : sf.timestepping.dt_fixed
+        dt_s = check_timestepsize(dt_s, t, dt)
         surfaceflow_land_update!(sf, network, frac_toriver, dt_s)
         t = t + dt_s
     end
@@ -447,10 +451,8 @@ function update!(sf::SurfaceFlowRiver, network, doy, dt)
 
     t = 0.0
     while t < dt
-        dt_s = adaptive ? stable_timestep(sf, 0.05) : sf.timestepping.dt
-        if t + dt_s > dt
-            dt_s = dt - t
-        end
+        dt_s = adaptive ? stable_timestep(sf, 0.05) : sf.timestepping.dt_fixed
+        dt_s = check_timestepsize(dt_s, t, dt)
         surfaceflow_river_update!(sf, network, doy, dt_s)
         t = t + dt_s
     end
@@ -463,20 +465,20 @@ end
 function stable_timestep(sf::S, p) where {S <: Union{SurfaceFlowLand, SurfaceFlowRiver}}
     (; q) = sf.variables
     (; alpha, beta, dl) = sf.parameters
-    (; dt) = sf.timestepping
+    (; stable_timesteps) = sf.timestepping
 
     n = length(q)
-    dt .= Inf
+    stable_timesteps .= Inf
     for i in 1:n
         if q[i] > 0.0
             c = 1.0 / (alpha[i] * beta * pow(q[i], (beta - 1.0)))
-            dt[i] = (dl[i] / c)
+            stable_timesteps[i] = (dl[i] / c)
         end
     end
-    dt_filtered = filter(x -> !isinf(x), dt)
+    _stable_timesteps = filter(x -> !isinf(x), stable_timesteps)
 
-    if !isempty(dt_filtered)
-        dt_s = quantile!(dt_filtered, p)
+    if !isempty(_stable_timesteps)
+        dt_s = quantile!(_stable_timesteps, p)
     else
         dt_s = 600.0
     end
