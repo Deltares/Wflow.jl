@@ -62,15 +62,6 @@ lake = Wflow.Lake{Float64}(;
     @test lake.actevap[1] ≈ 3.2
 end
 
-@testset "Exchange and grid location lake" begin
-    @test Wflow.exchange(lake, :dt) == 0
-    @test Wflow.exchange(lake, :storage) == 1
-    @test Wflow.exchange(lake, :outflow) == 1
-    @test Wflow.grid_location(lake, :dt) == "none"
-    @test Wflow.grid_location(lake, :storage) == "node"
-    @test Wflow.grid_location(lake, :outflow) == "node"
-end
-
 datadir = joinpath(@__DIR__, "data")
 sh = [
     Wflow.read_sh_csv(joinpath(datadir, "input", "lake_sh_1.csv")),

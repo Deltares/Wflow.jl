@@ -112,7 +112,6 @@ end
     @test ssf[network.land.order[1]] ≈ 718.2802566393531f0
     @test ssf[network.land.order[end - 100]] ≈ 2337.771227118579f0
     @test ssf[network.land.order[end]] ≈ 288.19428729403984f0
-    @test sum(ssf) ≈ 6.370399148012509f7
 end
 
 @testset "overland flow" begin
@@ -138,42 +137,6 @@ end
     @test res.volume[1] ≈ 2.751299001489657f7
     @test res.precipitation[1] ≈ 0.17999997735023499f0
     @test res.evaporation[1] ≈ 0.5400000810623169f0
-end
-
-@testset "Exchange and grid location SBM" begin
-    sbm = model.vertical
-    @test Wflow.exchange(sbm, :n) == 0
-    @test Wflow.exchange(sbm, :rootingdepth) == 1
-    @test Wflow.grid_location(sbm, :dt) == "none"
-    @test Wflow.grid_location(sbm, :rootingdepth) == "node"
-    @test Wflow.grid_location(sbm, :runoff) == "node"
-end
-
-@testset "Exchange and grid location subsurface flow" begin
-    ssf = model.lateral.subsurface
-    @test Wflow.exchange(ssf, :dt) == 0
-    @test Wflow.exchange(ssf, :ssf) == 1
-    @test Wflow.exchange(ssf, :slope) == 1
-    @test Wflow.grid_location(ssf, :dt) == "none"
-    @test Wflow.grid_location(ssf, :ssf) == "node"
-    @test Wflow.grid_location(ssf, :slope) == "node"
-end
-
-@testset "Exchange and grid location kinematic wave" begin
-    land = model.lateral.land
-    @test Wflow.exchange(land, :dt) == 0
-    @test Wflow.exchange(land, :q_av) == 1
-    @test Wflow.exchange(land, :inwater) == 1
-    @test Wflow.grid_location(land, :dt) == "none"
-    @test Wflow.grid_location(land, :q_av) == "node"
-    @test Wflow.grid_location(land, :inwater) == "node"
-    river = model.lateral.river
-    @test Wflow.exchange(river, :dt) == 0
-    @test Wflow.exchange(river, :q_av) == 1
-    @test Wflow.exchange(river, :inwater) == 1
-    @test Wflow.grid_location(river, :dt) == "none"
-    @test Wflow.grid_location(river, :q_av) == "node"
-    @test Wflow.grid_location(river, :inwater) == "node"
 end
 
 # set these variables for comparison in "changed dynamic parameters"

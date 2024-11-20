@@ -6,28 +6,7 @@ required states (internal names as symbols).
 """
 function get_snow_states(model_type::AbstractString)
     if model_type == "sbm" || model_type == "sbm_gwf"
-        if snow && glacier
-            vertical_states = (
-                :satwaterdepth,
-                :snow,
-                :tsoil,
-                :ustorelayerdepth,
-                :snowwater,
-                :canopystorage,
-                :glacierstore,
-            )
-        elseif snow
-            vertical_states = (
-                :satwaterdepth,
-                :snow,
-                :tsoil,
-                :ustorelayerdepth,
-                :snowwater,
-                :canopystorage,
-            )
-        else
-            vertical_states = (:satwaterdepth, :ustorelayerdepth, :canopystorage)
-        end
+        states = (:snow_storage, :snow_water)
     elseif model_type == "sediment"
         states = ()
     else
