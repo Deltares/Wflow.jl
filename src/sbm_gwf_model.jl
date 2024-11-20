@@ -28,11 +28,7 @@ function initialize_sbm_gwf_model(config::Config)
     do_drains = get(config.model, "drains", false)::Bool
     do_constanthead = get(config.model, "constanthead", false)::Bool
 
-    kw_river_tstep = get(config.model, "kw_river_tstep", 0)
-    kw_land_tstep = get(config.model, "kw_land_tstep", 0)
-    kinwave_it = get(config.model, "kin_wave_iteration", false)::Bool
     routing_options = ("kinematic-wave", "local-inertial")
-    floodplain_1d = get(config.model, "floodplain_1d", false)::Bool
     river_routing = get_options(
         config.model,
         "river_routing",
