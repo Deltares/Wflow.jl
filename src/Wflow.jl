@@ -49,7 +49,7 @@ using Parameters: @with_kw
 using Polyester: @batch
 using ProgressLogging: @progress
 using StaticArrays: SVector, pushfirst, setindex
-using Statistics: mean, median, quantile!
+using Statistics: mean, median, quantile!, quantile
 using TerminalLoggers
 using TOML: TOML
 

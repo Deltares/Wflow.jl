@@ -138,8 +138,6 @@ function initialize_sbm_gwf_model(config::Config)
             sl = landslope,
             dl,
             width = map(det_surfacewidth, dw, riverwidth, river),
-            iterate = kinwave_it,
-            tstep = kw_land_tstep,
         )
     elseif land_routing == "local-inertial"
         index_river_nf = rev_inds_riv[inds] # not filtered (with zeros)
@@ -177,8 +175,6 @@ function initialize_sbm_gwf_model(config::Config)
             reservoir = reservoirs,
             lake_index = lakeindex,
             lake = lakes,
-            iterate = kinwave_it,
-            tstep = kw_river_tstep,
         )
     elseif river_routing == "local-inertial"
         rf, nodes_at_link = ShallowWaterRiver(

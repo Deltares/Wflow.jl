@@ -17,8 +17,8 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 
         @testset "model information functions" begin
             @test BMI.get_component_name(model) == "sbm"
-            @test BMI.get_input_item_count(model) == 206
-            @test BMI.get_output_item_count(model) == 206
+            @test BMI.get_input_item_count(model) == 204
+            @test BMI.get_output_item_count(model) == 204
             to_check = [
                 "vertical.soil.parameters.nlayers",
                 "vertical.soil.parameters.theta_r",
@@ -82,7 +82,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
                 "lateral.river.variables.q",
                 zeros(Float, 3),
                 [1, 100, 5617],
-            ) ≈ [0.623325399343309, 5.227139951657074, 0.027942874327781947]
+            ) ≈ [0.6525631197206111, 7.493760826794606, 0.02319714614721354]
             BMI.set_value(
                 model,
                 "vertical.soil.variables.zi",

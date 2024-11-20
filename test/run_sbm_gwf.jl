@@ -13,7 +13,7 @@ flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
     row = csv_first_row(model.writer.csv_path)
 
     @test row.time == DateTime("2000-06-01T00:00:00")
-    @test row.Q_av ≈ 0.01620324716944374f0
+    @test row.Q_av ≈ 0.01619703129434486f0
     @test row.head ≈ 1.6471323360175287f0
 end
 
@@ -40,18 +40,18 @@ end
 
 @testset "overland flow (kinematic wave)" begin
     q = model.lateral.land.variables.q_av
-    @test sum(q) ≈ 2.229860508650628f-7
+    @test sum(q) ≈ 2.2321111203610908f-7
 end
 
 @testset "river domain (kinematic wave)" begin
     q = model.lateral.river.variables.q_av
     river = model.lateral.river
-    @test sum(q) ≈ 0.035443370536496675f0
-    @test q[6] ≈ 0.008031554512314907f0
+    @test sum(q) ≈ 0.035468154534622556f0
+    @test q[6] ≈ 0.00803825101724232f0
     @test river.variables.volume[6] ≈ 4.532124903256408f0
-    @test river.boundary_conditions.inwater[6] ≈ 0.0004073892212290558f0
+    @test river.boundary_conditions.inwater[6] ≈ 0.00040826084140456616f0
     @test q[13] ≈ 0.0006017024138583771f0
-    @test q[network.river.order[end]] ≈ 0.008559590281509943f0
+    @test q[network.river.order[end]] ≈ 0.00856866488665273f0
 end
 
 @testset "groundwater" begin
@@ -158,7 +158,7 @@ end
 
 @testset "overland flow warm start (kinematic wave)" begin
     q = model.lateral.land.variables.q_av
-    @test sum(q) ≈ 1.4589771292158736f-5
+    @test sum(q) ≈ 1.4224503548471601f-5
 end
 
 @testset "river domain warm start (kinematic wave)" begin
@@ -167,7 +167,7 @@ end
     @test sum(q) ≈ 0.01191742350356312f0
     @test q[6] ≈ 0.0024353072305122064f0
     @test river.variables.volume[6] ≈ 2.2277585577366357f0
-    @test river.boundary_conditions.inwater[6] ≈ -1.3019072795599315f-5
+    @test river.boundary_conditions.inwater[6] ≈ -1.3042629584651168f-5
     @test q[13] ≈ 7.332742814063803f-5
     @test q[network.river.order[end]] ≈ 0.002472526149620472f0
 end

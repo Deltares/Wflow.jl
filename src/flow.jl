@@ -6,7 +6,12 @@
     volume::Vector{T} | "m3"                # Kinematic wave volume [m³] (based on water depth h)
     h::Vector{T} | "m"                      # Water depth [m]
     h_av::Vector{T} | "m"                   # Average water depth [m]
-    celerity::Vector{T} | "m s-1"           # Celerity of the kinematic wave
+end
+
+@with_kw struct TimeStepping{T}
+    dt::Union{Vector{T}, T}
+    adaptive::Bool = true
+    cfl::T = 0.70
 end
 
 function FlowVariables(n)
@@ -18,7 +23,6 @@ function FlowVariables(n)
         volume = zeros(Float, n),
         h = zeros(Float, n),
         h_av = zeros(Float, n),
-        celerity = zeros(Float, n),
     )
     return variables
 end
@@ -32,23 +36,19 @@ end
     alpha_pow::T                            # Used in the power part of alpha [-]
     alpha_term::Vector{T} | "-"             # Term used in computation of alpha [-]
     alpha::Vector{T} | "s3/5 m1/5"          # Constant in momentum equation A = alpha*Q^beta, based on Manning's equation
-    its::Int                                # Number of fixed iterations [-]
-    kinwave_it::Bool                        # Boolean for iterations kinematic wave
 end
 
-function ManningFlowParameters(slope, mannings_n, dl, width, iterate, tstep, dt)
+function ManningFlowParameters(slope, mannings_n, dl, width)
     n = length(slope)
     parameters = ManningFlowParameters(;
         beta = Float(0.6),
         slope,
         mannings_n,
         dl = dl,
-        its = tstep > 0 ? Int(cld(dt, tstep)) : tstep,
         width,
         alpha_pow = Float((2.0 / 3.0) * 0.6),
         alpha_term = fill(mv, n),
         alpha = fill(mv, n),
-        kinwave_it = iterate,
     )
     return parameters
 end
@@ -68,7 +68,7 @@ function Base.getproperty(v::RiverFlowParameters, s::Symbol)
     end
 end
 
-function RiverFlowParameters(nc, config, inds, dl, width, iterate, tstep)
+function RiverFlowParameters(nc, config, inds, dl, width)
     n_river = ncread(
         nc,
         config,
@@ -102,9 +102,7 @@ function RiverFlowParameters(nc, config, inds, dl, width, iterate, tstep)
     )
     clamp!(slope, 0.00001, Inf)
 
-    dt = Float64(config.timestepsecs)
-    flow_parameter_set =
-        ManningFlowParameters(slope, n_river, dl, width, iterate, tstep, dt)
+    flow_parameter_set = ManningFlowParameters(slope, n_river, dl, width)
     parameters =
         RiverFlowParameters(; flow = flow_parameter_set, bankfull_depth = bankfull_depth)
     return parameters
@@ -136,6 +134,7 @@ function RiverFlowBC(n, reservoir, reservoir_index, lake, lake_index)
 end
 
 @with_kw struct SurfaceFlowRiver{T, R, L, A}
+    timestepping::TimeStepping{T}
     boundary_conditions::RiverFlowBC{T, R, L}
     parameters::RiverFlowParameters{T}
     variables::FlowVariables{T}
@@ -152,26 +151,35 @@ function SurfaceFlowRiver(
     reservoir,
     lake_index,
     lake,
-    iterate,
-    tstep,
 )
-    @info "Kinematic wave approach is used for river flow." iterate
-    if tstep > 0
-        @info "Using a fixed sub-timestep (seconds) $tstep for kinematic wave river flow."
-    end
     n = length(inds)
+
+    adaptive = get(config.model, "kin_wave_iteration", false)::Bool
+    @info "Kinematic wave approach is used for river flow, adaptive timestepping = $adaptive."
+
+    if adaptive
+        dt = zeros(n)
+    else
+        dt_fixed = get(config.model, "kw_river_tstep", 900.0)
+        @info "Using a fixed sub-timestep (seconds) $dt_fixed for kinematic wave river flow."
+        dt = dt_fixed
+    end
+
+    timestepping = TimeStepping(; dt, adaptive)
+
     do_water_demand = haskey(config.model, "water_demand")
     allocation = do_water_demand ? AllocationRiver(n) : NoAllocationRiver{Float}()
 
     variables = FlowVariables(n)
-    parameters = RiverFlowParameters(nc, config, inds, dl, width, iterate, tstep)
-    bc = RiverFlowBC(n, reservoir, reservoir_index, lake, lake_index)
+    parameters = RiverFlowParameters(nc, config, inds, dl, width)
+    boundary_conditions = RiverFlowBC(n, reservoir, reservoir_index, lake, lake_index)
 
     sf_river = SurfaceFlowRiver(;
-        boundary_conditions = bc,
-        parameters = parameters,
-        variables = variables,
-        allocation = allocation,
+        timestepping,
+        boundary_conditions,
+        parameters,
+        variables,
+        allocation,
     )
 
     return sf_river
@@ -197,17 +205,13 @@ end
 end
 
 @with_kw struct SurfaceFlowLand{T}
+    timestepping::TimeStepping{T}
     boundary_conditions::LandFlowBC{T}
     parameters::ManningFlowParameters{T}
     variables::LandFlowVariables{T}
 end
 
-function SurfaceFlowLand(nc, config, inds; sl, dl, width, iterate, tstep)
-    @info "Kinematic wave approach is used for overland flow." iterate
-    if tstep > 0
-        @info "Using a fixed sub-timestep (seconds) $tstep for kinematic wave overland flow."
-    end
-
+function SurfaceFlowLand(nc, config, inds; sl, dl, width)
     n_land = ncread(
         nc,
         config,
@@ -216,29 +220,78 @@ function SurfaceFlowLand(nc, config, inds; sl, dl, width, iterate, tstep)
         defaults = 0.072,
         type = Float,
     )
-    n = length(inds)
 
+    n = length(inds)
+    adaptive = get(config.model, "kin_wave_iteration", false)::Bool
+    @info "Kinematic wave approach is used for river flow, adaptive timestepping = $adaptive."
+
+    if adaptive
+        dt = zeros(n)
+    else
+        dt_fixed = get(config.model, "kw_river_tstep", 3600.0)
+        @info "Using a fixed sub-timestep (seconds) $dt_fixed for kinematic wave river flow."
+        dt = dt_fixed
+    end
+
+    timestepping = TimeStepping(; dt, adaptive)
     variables = LandFlowVariables(; flow = FlowVariables(n), to_river = zeros(Float, n))
     dt = Float64(config.timestepsecs)
-    parameters = ManningFlowParameters(sl, n_land, dl, width, iterate, tstep, dt)
-    bc = LandFlowBC(; inwater = zeros(Float, n))
-    sf_land = SurfaceFlowLand(;
-        boundary_conditions = bc,
-        variables = variables,
-        parameters = parameters,
-    )
+    parameters = ManningFlowParameters(sl, n_land, dl, width)
+    boundary_conditions = LandFlowBC(; inwater = zeros(Float, n))
+    sf_land = SurfaceFlowLand(; timestepping, boundary_conditions, variables, parameters)
 
     return sf_land
 end
 
-function update!(sf::SurfaceFlowLand, network, frac_toriver, dt)
+function surfaceflow_land_update!(sf::SurfaceFlowLand, network, frac_toriver, dt)
     (; subdomain_order, topo_subdomain, indices_subdomain, upstream_nodes) = network
 
-    (; inwater) = sf.boundary_conditions
-    (; alpha_term, mannings_n, slope, beta, alpha_pow, alpha, width, dl) = sf.parameters
-    (; h, h_av, q, q_av, qin, qlat, volume, to_river) = sf.variables
+    (; beta, alpha, width, dl) = sf.parameters
+    (; h, h_av, q, q_av, qin, qlat, to_river) = sf.variables
 
     ns = length(subdomain_order)
+    qin .= 0.0
+    for k in 1:ns
+        threaded_foreach(eachindex(subdomain_order[k]); basesize = 1) do i
+            m = subdomain_order[k][i]
+            for (n, v) in zip(indices_subdomain[m], topo_subdomain[m])
+                # for a river cell without a reservoir or lake part of the upstream
+                # surface flow goes to the river (frac_toriver) and part goes to the
+                # surface flow reservoir (1.0 - frac_toriver), upstream nodes with a
+                # reservoir or lake are excluded
+                to_river[v] +=
+                    sum_at(
+                        i -> q[i] * frac_toriver[i],
+                        upstream_nodes[n],
+                        eltype(to_river),
+                    ) * dt
+                if width[v] > 0.0
+                    qin[v] = sum_at(
+                        i -> q[i] * (1.0 - frac_toriver[i]),
+                        upstream_nodes[n],
+                        eltype(q),
+                    )
+                end
+
+                q[v] = kinematic_wave(qin[v], q[v], qlat[v], alpha[v], beta, dt, dl[v])
+
+                # update h, only if surface width > 0.0
+                if width[v] > 0.0
+                    crossarea = alpha[v] * pow(q[v], beta)
+                    h[v] = crossarea / width[v]
+                end
+                q_av[v] += q[v] * dt
+                h_av[v] += h[v] * dt
+            end
+        end
+    end
+end
+
+function update!(sf::SurfaceFlowLand, network, frac_toriver, dt)
+    (; inwater) = sf.boundary_conditions
+    (; alpha_term, mannings_n, slope, beta, alpha_pow, alpha, width, dl) = sf.parameters
+    (; h, h_av, q_av, qlat, volume, to_river) = sf.variables
+    (; adaptive) = sf.timestepping
 
     @. alpha_term = pow(mannings_n / sqrt(slope), beta)
     # use fixed alpha value based flow width
@@ -249,52 +302,23 @@ function update!(sf::SurfaceFlowLand, network, frac_toriver, dt)
     h_av .= 0.0
     to_river .= 0.0
 
-    dt_s, its = stable_timestep(sf, dt)
-    for _ in 1:its
-        qin .= 0.0
-        for k in 1:ns
-            threaded_foreach(eachindex(subdomain_order[k]); basesize = 1) do i
-                m = subdomain_order[k][i]
-                for (n, v) in zip(indices_subdomain[m], topo_subdomain[m])
-                    # for a river cell without a reservoir or lake part of the upstream
-                    # surface flow goes to the river (frac_toriver) and part goes to the
-                    # surface flow reservoir (1.0 - frac_toriver), upstream nodes with a
-                    # reservoir or lake are excluded
-                    to_river[v] += sum_at(
-                        i -> q[i] * frac_toriver[i],
-                        upstream_nodes[n],
-                        eltype(to_river),
-                    )
-                    if width[v] > 0.0
-                        qin[v] = sum_at(
-                            i -> q[i] * (1.0 - frac_toriver[i]),
-                            upstream_nodes[n],
-                            eltype(q),
-                        )
-                    end
-
-                    q[v] =
-                        kinematic_wave(qin[v], q[v], qlat[v], alpha[v], beta, dt_s, dl[v])
-
-                    # update h, only if surface width > 0.0
-                    if width[v] > 0.0
-                        crossarea = alpha[v] * pow(q[v], beta)
-                        h[v] = crossarea / width[v]
-                    end
-                    q_av[v] += q[v]
-                    h_av[v] += h[v]
-                end
-            end
+    t = 0.0
+    while t < dt
+        dt_s = adaptive ? stable_timestep(sf, 0.02) : sf.timestepping.dt
+        if t + dt_s > dt
+            dt_s = dt - t
         end
+        surfaceflow_land_update!(sf, network, frac_toriver, dt_s)
+        t = t + dt_s
     end
-    q_av ./= its
-    h_av ./= its
-    to_river ./= its
+    q_av ./= dt
+    h_av ./= dt
+    to_river ./= dt
     volume .= dl .* width .* h
     return nothing
 end
 
-function update!(sf::SurfaceFlowRiver, network, doy, dt)
+function surfaceflow_river_update!(sf::SurfaceFlowRiver, network, doy, dt)
     (; graph, subdomain_order, topo_subdomain, indices_subdomain, upstream_nodes) = network
 
     (;
@@ -308,17 +332,102 @@ function update!(sf::SurfaceFlowRiver, network, doy, dt)
         inflow_wb,
     ) = sf.boundary_conditions
 
-    (; alpha_term, mannings_n, slope, beta, alpha_pow, alpha, width, dl, bankfull_depth) =
-        sf.parameters
+    (; beta, alpha, width, dl) = sf.parameters
     (; h, h_av, q, q_av, qin, qlat, volume) = sf.variables
 
     ns = length(subdomain_order)
+    qin .= 0.0
+    for k in 1:ns
+        threaded_foreach(eachindex(subdomain_order[k]); basesize = 1) do i
+            m = subdomain_order[k][i]
+            for (n, v) in zip(indices_subdomain[m], topo_subdomain[m])
+                # sf.qin by outflow from upstream reservoir or lake location is added
+                qin[v] += sum_at(q, upstream_nodes[n])
+                # Inflow supply/abstraction is added to qlat (divide by flow length)
+                # If inflow < 0, abstraction is limited
+                if inflow[v] < 0.0
+                    max_abstract =
+                        min((inwater[v] + qin[v] + volume[v] / dt) * 0.80, -inflow[v])
+                    _inflow = -max_abstract / sf.dl[v]
+                else
+                    _inflow = inflow[v] / dl[v]
+                end
+                _inflow -= abstraction[v] / dl[v]
+
+                q[v] = kinematic_wave(
+                    qin[v],
+                    q[v],
+                    qlat[v] + _inflow,
+                    alpha[v],
+                    beta,
+                    dt,
+                    dl[v],
+                )
+
+                if !isnothing(reservoir) && reservoir_index[v] != 0
+                    # run reservoir model and copy reservoir outflow to inflow (qin) of
+                    # downstream river cell
+                    i = reservoir_index[v]
+                    update!(reservoir, i, q[v] + inflow_wb[v], dt)
+
+                    downstream_nodes = outneighbors(graph, v)
+                    n_downstream = length(downstream_nodes)
+                    if n_downstream == 1
+                        j = only(downstream_nodes)
+                        qin[j] = reservoir.variables.outflow[i]
+                    elseif n_downstream == 0
+                        error(
+                            """A reservoir without a downstream river node is not supported.
+                            Add a downstream river node or move the reservoir to an upstream node (model schematization).
+                            """,
+                        )
+                    else
+                        error("bifurcations not supported")
+                    end
+
+                elseif !isnothing(lake) && lake_index[v] != 0
+                    # run lake model and copy lake outflow to inflow (qin) of downstream river
+                    # cell
+                    i = lake_index[v]
+                    update!(lake, i, q[v] + inflow_wb[v], doy, dt)
+
+                    downstream_nodes = outneighbors(graph, v)
+                    n_downstream = length(downstream_nodes)
+                    if n_downstream == 1
+                        j = only(downstream_nodes)
+                        qin[j] = lake.variables.outflow[i]
+                    elseif n_downstream == 0
+                        error(
+                            """A lake without a downstream river node is not supported.
+                            Add a downstream river node or move the lake to an upstream node (model schematization).
+                            """,
+                        )
+                    else
+                        error("bifurcations not supported")
+                    end
+                end
+                # update h
+                crossarea = alpha[v] * pow(q[v], beta)
+                h[v] = crossarea / width[v]
+                volume[v] = dl[v] * width[v] * h[v]
+                q_av[v] += q[v] * dt
+                h_av[v] += h[v] * dt
+            end
+        end
+    end
+end
+
+function update!(sf::SurfaceFlowRiver, network, doy, dt)
+    (; reservoir, lake, inwater) = sf.boundary_conditions
+
+    (; alpha_term, mannings_n, slope, beta, alpha_pow, alpha, width, dl, bankfull_depth) =
+        sf.parameters
+    (; h, h_av, q_av, qlat, volume) = sf.variables
+    (; adaptive) = sf.timestepping
 
     @. alpha_term = pow(mannings_n / sqrt(slope), beta)
     # use fixed alpha value based on 0.5 * bankfull_depth
     @. alpha = alpha_term * pow(width + bankfull_depth, alpha_pow)
-
-    # move qlat to boundary conditions function?
     @. qlat = inwater / dl
 
     q_av .= 0.0
@@ -336,124 +445,43 @@ function update!(sf::SurfaceFlowRiver, network, doy, dt)
         lake.variables.actevap .= 0.0
     end
 
-    dt_s, its = stable_timestep(sf, dt)
-    for _ in 1:its
-        qin .= 0.0
-        for k in 1:ns
-            threaded_foreach(eachindex(subdomain_order[k]); basesize = 1) do i
-                m = subdomain_order[k][i]
-                for (n, v) in zip(indices_subdomain[m], topo_subdomain[m])
-                    # sf.qin by outflow from upstream reservoir or lake location is added
-                    qin[v] += sum_at(q, upstream_nodes[n])
-                    # Inflow supply/abstraction is added to qlat (divide by flow length)
-                    # If inflow < 0, abstraction is limited
-                    if inflow[v] < 0.0
-                        max_abstract =
-                            min((inwater[v] + qin[v] + volume[v] / dt_s) * 0.80, -inflow[v])
-                        _inflow = -max_abstract / sf.dl[v]
-                    else
-                        _inflow = inflow[v] / dl[v]
-                    end
-                    _inflow -= abstraction[v] / dl[v]
-
-                    q[v] = kinematic_wave(
-                        qin[v],
-                        q[v],
-                        qlat[v] + _inflow,
-                        alpha[v],
-                        beta,
-                        dt_s,
-                        dl[v],
-                    )
-
-                    if !isnothing(reservoir) && reservoir_index[v] != 0
-                        # run reservoir model and copy reservoir outflow to inflow (qin) of
-                        # downstream river cell
-                        i = reservoir_index[v]
-                        update!(reservoir, i, q[v] + inflow_wb[v], dt_s)
-
-                        downstream_nodes = outneighbors(graph, v)
-                        n_downstream = length(downstream_nodes)
-                        if n_downstream == 1
-                            j = only(downstream_nodes)
-                            qin[j] = reservoir.variables.outflow[i]
-                        elseif n_downstream == 0
-                            error(
-                                """A reservoir without a downstream river node is not supported.
-                                Add a downstream river node or move the reservoir to an upstream node (model schematization).
-                                """,
-                            )
-                        else
-                            error("bifurcations not supported")
-                        end
-
-                    elseif !isnothing(lake) && lake_index[v] != 0
-                        # run lake model and copy lake outflow to inflow (qin) of downstream river
-                        # cell
-                        i = lake_index[v]
-                        update!(lake, i, q[v] + inflow_wb[v], doy, dt_s)
-
-                        downstream_nodes = outneighbors(graph, v)
-                        n_downstream = length(downstream_nodes)
-                        if n_downstream == 1
-                            j = only(downstream_nodes)
-                            qin[j] = lake.variables.outflow[i]
-                        elseif n_downstream == 0
-                            error(
-                                """A lake without a downstream river node is not supported.
-                                Add a downstream river node or move the lake to an upstream node (model schematization).
-                                """,
-                            )
-                        else
-                            error("bifurcations not supported")
-                        end
-                    end
-
-                    # update h
-                    crossarea = alpha[v] * pow(q[v], beta)
-                    h[v] = crossarea / width[v]
-                    volume[v] = dl[v] * width[v] * h[v]
-                    q_av[v] += q[v]
-                    h_av[v] += h[v]
-                end
-            end
+    t = 0.0
+    while t < dt
+        dt_s = adaptive ? stable_timestep(sf, 0.05) : sf.timestepping.dt
+        if t + dt_s > dt
+            dt_s = dt - t
         end
+        surfaceflow_river_update!(sf, network, doy, dt_s)
+        t = t + dt_s
     end
-    q_av ./= its
-    h_av ./= its
+    q_av ./= dt
+    h_av ./= dt
     volume .= dl .* width .* h
     return nothing
 end
 
-function stable_timestep(sf::S, dt) where {S <: Union{SurfaceFlowLand, SurfaceFlowRiver}}
-    (; q, celerity) = sf.variables
-    (; alpha, beta, dl, its, kinwave_it) = sf.parameters
+function stable_timestep(sf::S, p) where {S <: Union{SurfaceFlowLand, SurfaceFlowRiver}}
+    (; q) = sf.variables
+    (; alpha, beta, dl) = sf.parameters
+    (; dt) = sf.timestepping
 
     n = length(q)
-    # two options for iteration, fixed or based on courant number.
-    if kinwave_it
-        if its > 0
-            n_iterations = its
-        else
-            # calculate celerity
-            courant = zeros(n)
-            for v in 1:n
-                if q[v] > 0.0
-                    celerity[v] = 1.0 / (alpha[v] * beta * pow(q[v], (beta - 1.0)))
-                    courant[v] = (dt / dl[v]) * celerity[v]
-                end
-            end
-            filter!(x -> x ≠ 0.0, courant)
-            n_iterations =
-                isempty(courant) ? 1 : ceil(Int, (1.25 * quantile!(courant, 0.95)))
+    dt .= Inf
+    for i in 1:n
+        if q[i] > 0.0
+            c = 1.0 / (alpha[i] * beta * pow(q[i], (beta - 1.0)))
+            dt[i] = (dl[i] / c)
         end
+    end
+    dt_filtered = filter(x -> !isinf(x), dt)
+
+    if !isempty(dt_filtered)
+        dt_s = quantile!(dt_filtered, p)
     else
-        n_iterations = 1
+        dt_s = 600.0
     end
 
-    # sub time step
-    dt_sub = dt / n_iterations
-    return dt_sub, n_iterations
+    return dt_s
 end
 
 @get_units @grid_loc struct KhExponential{T}

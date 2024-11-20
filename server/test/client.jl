@@ -32,8 +32,8 @@ end
 
 @testset "model information functions" begin
     @test request((fn = "get_component_name",)) == Dict("component_name" => "sbm")
-    @test request((fn = "get_input_item_count",)) == Dict("input_item_count" => 206)
-    @test request((fn = "get_output_item_count",)) == Dict("output_item_count" => 206)
+    @test request((fn = "get_input_item_count",)) == Dict("input_item_count" => 204)
+    @test request((fn = "get_output_item_count",)) == Dict("output_item_count" => 204)
     to_check = [
         "vertical.soil.parameters.nlayers",
         "vertical.soil.parameters.theta_r",
@@ -81,7 +81,7 @@ vwc_1_size = 0
         inds = [1, 5, 10],
     )
     @test request(msg)["value_at_indices"] ≈
-          [2.198747900215207f0, 2.6880427720508515f0, 3.4848783702629564f0]
+          [2.1007361866518766, 2.5702292750107687, 3.2904803551115727]
     msg =
         (fn = "set_value", name = "vertical.soil.variables.zi", src = fill(300.0, zi_size))
     @test request(msg) == Dict("status" => "OK")
