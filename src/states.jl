@@ -115,6 +115,30 @@ function get_sediment_states()
     return states
 end
 
+function get_sediment_states()
+    states = (
+        :leftover_clay,
+        :leftover_silt,
+        :leftover_sand,
+        :leftover_sagg,
+        :leftover_lagg,
+        :leftover_gravel,
+        :store_clay,
+        :store_silt,
+        :store_sand,
+        :store_sagg,
+        :store_lagg,
+        :store_gravel,
+        :clay,
+        :silt,
+        :sand,
+        :sagg,
+        :lagg,
+        :gravel,
+    )
+    return states
+end
+
 """
     add_to_required_states(required_states::Tuple, key_entry::Tuple, states::Tuple)
     add_to_required_states(required_states::Tuple, key_entry::Tuple, states::Nothing)
