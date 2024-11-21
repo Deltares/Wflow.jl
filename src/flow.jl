@@ -15,6 +15,21 @@ end
     cfl::T = 0.70
 end
 
+function init_kinematic_wave_timestepping(config, n; domain, dt_fixed)
+    adaptive = get(config.model, "kin_wave_iteration", false)::Bool
+    @info "Kinematic wave approach is used for $domain flow, adaptive timestepping = $adaptive."
+
+    if adaptive
+        stable_timesteps = zeros(n)
+        timestepping = TimeStepping(; stable_timesteps, adaptive)
+    else
+        dt_fixed = get(config.model, "kw_$(domain)_tstep", dt_fixed)
+        @info "Using a fixed sub-timestep (seconds) $dt_fixed for kinematic wave $domain flow."
+        timestepping = TimeStepping(; dt_fixed, adaptive)
+    end
+    return timestepping
+end
+
 function check_timestepsize(timestepsize, currenttime, endtime)
     if currenttime + timestepsize > endtime
         timestepsize = endtime - currenttime
@@ -162,17 +177,8 @@ function SurfaceFlowRiver(
 )
     n = length(inds)
 
-    adaptive = get(config.model, "kin_wave_iteration", false)::Bool
-    @info "Kinematic wave approach is used for river flow, adaptive timestepping = $adaptive."
-
-    if adaptive
-        stable_timesteps = zeros(n)
-        timestepping = TimeStepping(; stable_timesteps, adaptive)
-    else
-        dt_fixed = get(config.model, "kw_river_tstep", 900.0)
-        @info "Using a fixed sub-timestep (seconds) $dt_fixed for kinematic wave river flow."
-        timestepping = TimeStepping(; dt_fixed, adaptive)
-    end
+    timestepping =
+        init_kinematic_wave_timestepping(config, n; domain = "river", dt_fixed = 900.0)
 
     do_water_demand = haskey(config.model, "water_demand")
     allocation = do_water_demand ? AllocationRiver(n) : NoAllocationRiver{Float}()
@@ -229,17 +235,9 @@ function SurfaceFlowLand(nc, config, inds; sl, dl, width)
     )
 
     n = length(inds)
-    adaptive = get(config.model, "kin_wave_iteration", false)::Bool
-    @info "Kinematic wave approach is used for river flow, adaptive timestepping = $adaptive."
 
-    if adaptive
-        stable_timesteps = zeros(n)
-        timestepping = TimeStepping(; stable_timesteps, adaptive)
-    else
-        dt_fixed = get(config.model, "kw_river_tstep", 3600.0)
-        @info "Using a fixed sub-timestep (seconds) $dt_fixed for kinematic wave river flow."
-        timestepping = TimeStepping(; dt_fixed, adaptive)
-    end
+    timestepping =
+        init_kinematic_wave_timestepping(config, n; domain = "land", dt_fixed = 3600.0)
 
     variables = LandFlowVariables(; flow = FlowVariables(n), to_river = zeros(Float, n))
     parameters = ManningFlowParameters(sl, n_land, dl, width)
@@ -700,7 +698,6 @@ get_flux_to_river(subsurface::SubsurfaceFlow) =
     active_n::Vector{Int} | "-"                         # active nodes [-]
     active_e::Vector{Int} | "-" | "edge"                # active edges/links [-]
     g::T                                                # acceleration due to gravity [m s⁻²]
-    alpha::T                                            # stability coefficient (Bates et al., 2010) [-]
     froude_limit::Bool                                  # if true a check is performed if froude number > 1.0 (algorithm is modified) [-]
     h_thresh::T                                         # depth threshold for calculating flow [m]
     zb::Vector{T} | "m"                                 # river bed elevation   
@@ -728,12 +725,12 @@ function ShallowWaterRiverParameters(
     index_pit,
     inds_pit,
 )
-    alpha = get(config.model, "inertial_flow_alpha", 0.7)::Float64 # stability coefficient for model time step (0.2-0.7)
+    cfl = get(config.model, "inertial_flow_alpha", 0.7)::Float64 # stability coefficient for model time step (0.2-0.7)
     h_thresh = get(config.model, "h_thresh", 1.0e-03)::Float64 # depth threshold for flow at link
     froude_limit = get(config.model, "froude_limit", true)::Bool # limit flow to subcritical according to Froude number
     floodplain_1d = get(config.model, "floodplain_1d", false)::Bool
 
-    @info "Local inertial approach is used for river flow." alpha h_thresh froude_limit floodplain_1d
+    @info "Local inertial approach is used for river flow." cfl h_thresh froude_limit floodplain_1d
     @warn string(
         "Providing the boundary condition `riverlength_bc` as part of the `[model]` setting ",
         "in the TOML file has been deprecated as of Wflow v0.8.0.\n The boundary condition should ",
@@ -811,7 +808,6 @@ function ShallowWaterRiverParameters(
         active_n = active_index,
         active_e = active_index,
         g = 9.80665,
-        alpha,
         froude_limit,
         h_thresh,
         zb,
@@ -883,6 +879,7 @@ function ShallowWaterRiverVariables(nc, config, inds, n_edges, inds_pit)
 end
 
 @with_kw struct ShallowWaterRiver{T, R, L, F, A}
+    timestepping::TimeStepping{T}
     boundary_conditions::RiverFlowBC{T, R, L}
     parameters::ShallowWaterRiverParameters{T}
     variables::ShallowWaterRiverVariables{T}
@@ -915,6 +912,9 @@ function ShallowWaterRiver(
 
     # The following boundary conditions can be set at ghost nodes, downstream of river
     # outlets (pits): river length and river depth
+    cfl = get(config.model, "inertial_flow_alpha", 0.7)::Float64 # stability coefficient for model time step (0.2-0.7)
+    timestepping = TimeStepping(; cfl)
+
     index_pit = findall(x -> x == 5, ldd)
     inds_pit = inds[index_pit]
 
@@ -962,6 +962,7 @@ function ShallowWaterRiver(
 
     do_water_demand = haskey(config.model, "water_demand")
     sw_river = ShallowWaterRiver(;
+        timestepping,
         boundary_conditions,
         parameters,
         variables,
@@ -1285,7 +1286,6 @@ end
     ywidth::Vector{T} | "m" | "edge"                    # effective flow width y direction (floodplain) [m]
     g::T                                                # acceleration due to gravity [m s⁻²]
     theta::T                                            # weighting factor (de Almeida et al., 2012) [-]
-    alpha::T                                            # stability coefficient (de Almeida et al., 2012) [-]
     h_thresh::T                                         # depth threshold for calculating flow [m]
     zx_max::Vector{T} | "m" | "edge"                    # maximum cell elevation (x direction)
     zy_max::Vector{T} | "m" | "edge"                    # maximum cell elevation (y direction)
@@ -1311,11 +1311,11 @@ function ShallowWaterLandParameters(
     waterbody,
 )
     froude_limit = get(config.model, "froude_limit", true)::Bool # limit flow to subcritical according to Froude number
-    alpha = get(config.model, "inertial_flow_alpha", 0.7)::Float64 # stability coefficient for model time step (0.2-0.7)
+    cfl = get(config.model, "inertial_flow_alpha", 0.7)::Float64 # stability coefficient for model time step (0.2-0.7)
     theta = get(config.model, "inertial_flow_theta", 0.8)::Float64 # weighting factor
     h_thresh = get(config.model, "h_thresh", 1.0e-03)::Float64 # depth threshold for flow at link
 
-    @info "Local inertial approach is used for overlandflow." alpha theta h_thresh froude_limit
+    @info "Local inertial approach is used for overlandflow." cfl theta h_thresh froude_limit
 
     mannings_n = ncread(
         nc,
@@ -1395,7 +1395,6 @@ function ShallowWaterLandParameters(
         ywidth = we_y,
         g = 9.80665,
         theta = theta,
-        alpha = alpha,
         h_thresh = h_thresh,
         zx_max = zx_max,
         zy_max = zy_max,
@@ -1418,6 +1417,7 @@ function ShallowWaterLandBC(n)
 end
 
 @with_kw struct ShallowWaterLand{T}
+    timestepping::TimeStepping{T}
     boundary_conditions::ShallowWaterLandBC{T}
     parameters::ShallowWaterLandParameters{T}
     variables::ShallowWaterLandVariables{T}
@@ -1438,6 +1438,9 @@ function ShallowWaterLand(
     river,
     waterbody,
 )
+    cfl = get(config.model, "inertial_flow_alpha", 0.7)::Float64 # stability coefficient for model time step (0.2-0.7)
+    timestepping = TimeStepping(; cfl)
+
     n = length(inds)
     boundary_conditions = ShallowWaterLandBC(n)
     parameters, indices = ShallowWaterLandParameters(
@@ -1457,7 +1460,8 @@ function ShallowWaterLand(
     )
     variables = ShallowWaterLandVariables(n)
 
-    sw_land = ShallowWaterLand{Float}(; boundary_conditions, parameters, variables)
+    sw_land =
+        ShallowWaterLand{Float}(; timestepping, boundary_conditions, parameters, variables)
 
     return sw_land, indices
 end
@@ -1468,14 +1472,15 @@ end
 
 Compute a stable timestep size for the local inertial approach, based on Bates et al. (2010).
 
-dt = alpha * (Δx / sqrt(g max(h))
+dt = cfl * (Δx / sqrt(g max(h))
 """
 function stable_timestep(sw::ShallowWaterRiver{T})::T where {T}
     dt_min = T(Inf)
-    (; n, alpha, dl, g) = sw.parameters
+    (; cfl) = sw.timestepping
+    (; n, dl, g) = sw.parameters
     (; h) = sw.variables
     @batch per = thread reduction = ((min, dt_min),) for i in 1:(n)
-        @fastmath @inbounds dt = alpha * dl[i] / sqrt(g * h[i])
+        @fastmath @inbounds dt = cfl * dl[i] / sqrt(g * h[i])
         dt_min = min(dt, dt_min)
     end
     dt_min = isinf(dt_min) ? T(10.0) : dt_min
@@ -1484,11 +1489,12 @@ end
 
 function stable_timestep(sw::ShallowWaterLand{T})::T where {T}
     dt_min = T(Inf)
-    (; n, alpha, g, xl, yl, rivercells) = sw.parameters
+    (; cfl) = sw.timestepping
+    (; n, g, xl, yl, rivercells) = sw.parameters
     (; h) = sw.variables
     @batch per = thread reduction = ((min, dt_min),) for i in 1:(n)
         @fastmath @inbounds dt = if rivercells[i] == 0
-            alpha * min(xl[i], yl[i]) / sqrt(g * h[i])
+            cfl * min(xl[i], yl[i]) / sqrt(g * h[i])
         else
             T(Inf)
         end

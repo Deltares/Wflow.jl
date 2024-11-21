@@ -171,19 +171,18 @@ end
         links_at_node = Wflow.adjacent_links_at_node(graph, nodes_at_link),
     )
 
-    alpha = 0.7
     h_thresh = 1.0e-03
     froude_limit = true
     h_init = zeros(n - 1)
     push!(h_init, h_a[n])
 
+    timestepping = Wflow.TimeStepping(; cfl = 0.7)
     parameters = Wflow.ShallowWaterRiverParameters(;
         n = n,
         ne = _ne,
         active_n = collect(1:(n - 1)),
         active_e = collect(1:_ne),
         g = 9.80665,
-        alpha = alpha,
         h_thresh = h_thresh,
         zb_max = zb_max,
         mannings_n_sq = mannings_n_sq,
@@ -228,6 +227,7 @@ end
     )
 
     sw_river = Wflow.ShallowWaterRiver(;
+        timestepping,
         boundary_conditions,
         parameters,
         variables,
