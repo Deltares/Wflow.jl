@@ -153,8 +153,8 @@ function update_total_water_storage!(
         total_storage[index_river] = (
             (
                 river_routing.variables.h_av[i] *
-                river_routing.parameters.width[i] *
-                river_routing.parameters.dl[i]
+                river_routing.parameters.flow_width[i] *
+                river_routing.parameters.flow_length[i]
             ) / (area[index_river]) * 1000 # Convert to mm
         )
     end

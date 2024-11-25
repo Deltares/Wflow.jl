@@ -9,23 +9,23 @@
     targetfullfrac::Vector{T} | "-"         # target fraction full (of max storage
 end
 
-function ReservoirParameters(config, nc, inds_riv, nriv, pits, dt)
+function ReservoirParameters(dataset, config, indices_river, n_river_cells, pits, dt)
     # read only reservoir data if reservoirs true
     # allow reservoirs only in river cells
     # note that these locations are only the reservoir outlet pixels
     reslocs = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.reservoir.locs";
         optional = false,
-        sel = inds_riv,
+        sel = indices_river,
         type = Int,
         fill = 0,
     )
 
     # this holds the same ids as reslocs, but covers the entire reservoir
     rescoverage_2d = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.reservoir.areas";
         optional = false,
@@ -38,15 +38,15 @@ function ReservoirParameters(config, nc, inds_riv, nriv, pits, dt)
 
     # construct a map from the rivers to the reservoirs and
     # a map of the reservoirs to the 2D model grid
-    resindex = fill(0, nriv)
+    inds_reservoir_map2river = fill(0, n_river_cells)
     inds_res = CartesianIndex{2}[]
     rescounter = 0
-    for (i, ind) in enumerate(inds_riv)
+    for (i, ind) in enumerate(indices_river)
         res_id = reslocs[i]
         if res_id > 0
             push!(inds_res, ind)
             rescounter += 1
-            resindex[i] = rescounter
+            inds_reservoir_map2river[i] = rescounter
             rev_inds_reservoir[ind] = rescounter
 
             # get all indices related to this reservoir outlet
@@ -58,7 +58,7 @@ function ReservoirParameters(config, nc, inds_riv, nriv, pits, dt)
     end
 
     resdemand = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.reservoir.demand";
         optional = false,
@@ -67,7 +67,7 @@ function ReservoirParameters(config, nc, inds_riv, nriv, pits, dt)
         fill = 0,
     )
     resmaxrelease = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.reservoir.maxrelease";
         optional = false,
@@ -76,7 +76,7 @@ function ReservoirParameters(config, nc, inds_riv, nriv, pits, dt)
         fill = 0,
     )
     resmaxvolume = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.reservoir.maxvolume";
         optional = false,
@@ -85,7 +85,7 @@ function ReservoirParameters(config, nc, inds_riv, nriv, pits, dt)
         fill = 0,
     )
     resarea = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.reservoir.area";
         optional = false,
@@ -94,7 +94,7 @@ function ReservoirParameters(config, nc, inds_riv, nriv, pits, dt)
         fill = 0,
     )
     res_targetfullfrac = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.reservoir.targetfullfrac";
         optional = false,
@@ -103,7 +103,7 @@ function ReservoirParameters(config, nc, inds_riv, nriv, pits, dt)
         fill = 0,
     )
     res_targetminfrac = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.reservoir.targetminfrac";
         optional = false,
@@ -116,10 +116,11 @@ function ReservoirParameters(config, nc, inds_riv, nriv, pits, dt)
     # all upstream flow goes to the river and flows into the reservoir
     pits[inds_res] .= true
 
-    reservoir_indices = (
+    reservoir_network = (
         indices_outlet = inds_res,
         indices_coverage = inds_res_cov,
         reverse_indices = rev_inds_reservoir,
+        river_indices = findall(x -> x ≠ 0, inds_reservoir_map2river),
     )
 
     parameters = ReservoirParameters{Float}(;
@@ -132,7 +133,7 @@ function ReservoirParameters(config, nc, inds_riv, nriv, pits, dt)
         targetminfrac = res_targetminfrac,
     )
 
-    return parameters, reservoir_indices, resindex, pits
+    return parameters, reservoir_network, inds_reservoir_map2river, pits
 end
 
 @get_units @grid_loc @with_kw struct ReservoirVariables{T}
@@ -178,18 +179,18 @@ end
     variables::ReservoirVariables{T}
 end
 
-function SimpleReservoir(config, nc, inds_riv, nriv, pits, dt)
-    parameters, reservoir_indices, resindex, pits =
-        ReservoirParameters(config, nc, inds_riv, nriv, pits, dt)
+function SimpleReservoir(dataset, config, indices_river, n_river_cells, pits, dt)
+    parameters, reservoir_network, inds_reservoir_map2river, pits =
+        ReservoirParameters(dataset, config, indices_river, n_river_cells, pits, dt)
 
-    n = length(parameters.area)
-    @info "Read `$n` reservoir locations."
+    n_reservoirs = length(parameters.area)
+    @info "Read `$n_reservoirs` reservoir locations."
 
-    variables = ReservoirVariables(n, parameters)
-    boundary_conditions = ReservoirBC(n)
-    reservoirs = SimpleReservoir{Float}(; boundary_conditions, parameters, variables)
+    variables = ReservoirVariables(n_reservoirs, parameters)
+    boundary_conditions = ReservoirBC(n_reservoirs)
+    reservoir = SimpleReservoir{Float}(; boundary_conditions, parameters, variables)
 
-    return reservoirs, resindex, reservoir_indices, pits
+    return reservoir, reservoir_network, inds_reservoir_map2river, pits
 end
 
 """
@@ -283,7 +284,7 @@ function LakeParameters(config, nc, inds_riv, nriv, pits, dt)
 
     # construct a map from the rivers to the lakes and
     # a map of the lakes to the 2D model grid
-    lakeindex = fill(0, nriv)
+    inds_lake_map2river = fill(0, nriv)
     inds_lake = CartesianIndex{2}[]
     lakecounter = 0
     for (i, ind) in enumerate(inds_riv)
@@ -291,7 +292,7 @@ function LakeParameters(config, nc, inds_riv, nriv, pits, dt)
         if lake_id > 0
             push!(inds_lake, ind)
             lakecounter += 1
-            lakeindex[i] = lakecounter
+            inds_lake_map2river[i] = lakecounter
             rev_inds_lake[ind] = lakecounter
 
             # get all indices related to this lake outlet
@@ -433,12 +434,13 @@ function LakeParameters(config, nc, inds_riv, nriv, pits, dt)
         sh = sh,
         hq = hq,
     )
-    lake_indices = (
+    lake_network = (
         indices_outlet = inds_lake,
         indices_coverage = inds_lake_cov,
         reverse_indices = rev_inds_lake,
+        river_indices = findall(x -> x ≠ 0, inds_lake_map2river),
     )
-    return parameters, lake_indices, lakeindex, lake_Waterlevel, pits
+    return parameters, lake_network, inds_lake_map2river, lake_waterlevel, pits
 end
 
 @get_units @grid_loc @with_kw struct LakeVariables{T}
@@ -482,17 +484,17 @@ end
     variables::LakeVariables{T}
 end
 
-function Lake(config, nc, inds_riv, nriv, pits, dt)
-    parameters, lake_indices, lakeindex, lake_waterlevel, pits =
-        LakeParameters(config, nc, inds_riv, nriv, pits, dt)
+function Lake(dataset, config, indices_river, n_river_cells, pits, dt)
+    parameters, lake_network, inds_lake_map2river, lake_waterlevel, pits =
+        LakeParameters(dataset, config, indices_river, n_river_cells, pits, dt)
 
-    n = length(parameters.area)
-    variables = LakeVariables(n, lake_waterlevel)
-    boundary_conditions = LakeBC(n)
+    n_lakes = length(parameters.area)
+    variables = LakeVariables(n_lakes, lake_waterlevel)
+    boundary_conditions = LakeBC(n_lakes)
 
-    lakes = Lake{Float}(; boundary_conditions, parameters, variables)
+    lake = Lake{Float}(; boundary_conditions, parameters, variables)
 
-    return lakes, lakeindex, lake_indices, pits
+    return lake, lake_network, inds_lake_map2river, pits
 end
 
 "Determine the initial storage depending on the storage function"

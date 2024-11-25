@@ -353,34 +353,34 @@ dh = diff(fp.depth)
         297.8700179533214f0,
         463.35655296229805f0,
     ]
-    @test dh .* fp.width[2:end, 3] * river.parameters.dl[3] ≈ Δv
-    @test fp.a[:, 3] * river.parameters.dl[3] ≈ fp.volume[:, 3]
+    @test dh .* fp.width[2:end, 3] * river.parameters.flow_length[3] ≈ Δv
+    @test fp.a[:, 3] * river.parameters.flow_length[3] ≈ fp.volume[:, 3]
     # flood depth from flood volume (8000.0)
     flood_vol = 8000.0f0
     river.variables.volume[3] = flood_vol + river.parameters.bankfull_volume[3]
     i1, i2 = Wflow.interpolation_indices(flood_vol, fp.volume[:, 3])
     @test (i1, i2) == (1, 2)
-    flood_depth = Wflow.flood_depth(fp, flood_vol, river.parameters.dl[3], 3)
+    flood_depth = Wflow.flood_depth(fp, flood_vol, river.parameters.flow_length[3], 3)
     @test flood_depth ≈ 0.46290938548779076f0
-    @test (flood_depth - fp.depth[i1]) * fp.width[i2, 3] * river.parameters.dl[3] +
+    @test (flood_depth - fp.depth[i1]) * fp.width[i2, 3] * river.parameters.flow_length[3] +
           fp.volume[i1, 3] ≈ flood_vol
     # flood depth from flood volume (12000.0)
     flood_vol = 12000.0f0
     river.variables.volume[3] = flood_vol + river.parameters.bankfull_volume[3]
     i1, i2 = Wflow.interpolation_indices(flood_vol, fp.volume[:, 3])
     @test (i1, i2) == (2, 3)
-    flood_depth = Wflow.flood_depth(fp, flood_vol, river.parameters.dl[3], 3)
+    flood_depth = Wflow.flood_depth(fp, flood_vol, river.parameters.flow_length[3], 3)
     @test flood_depth ≈ 0.6619575699132112f0
-    @test (flood_depth - fp.depth[i1]) * fp.width[i2, 3] * river.parameters.dl[3] +
+    @test (flood_depth - fp.depth[i1]) * fp.width[i2, 3] * river.parameters.flow_length[3] +
           fp.volume[i1, 3] ≈ flood_vol
     # test extrapolation of segment
     flood_vol = 95000.0f0
     river.variables.volume[3] = flood_vol + river.parameters.bankfull_volume[3]
     i1, i2 = Wflow.interpolation_indices(flood_vol, fp.volume[:, 3])
     @test (i1, i2) == (6, 6)
-    flood_depth = Wflow.flood_depth(fp, flood_vol, river.parameters.dl[3], 3)
+    flood_depth = Wflow.flood_depth(fp, flood_vol, river.parameters.flow_length[3], 3)
     @test flood_depth ≈ 2.749036625585836f0
-    @test (flood_depth - fp.depth[i1]) * fp.width[i2, 3] * river.parameters.dl[3] +
+    @test (flood_depth - fp.depth[i1]) * fp.width[i2, 3] * river.parameters.flow_length[3] +
           fp.volume[i1, 3] ≈ flood_vol
     river.variables.volume[3] = 0.0 # reset volume
     # flow area and wetted perimeter based on hf

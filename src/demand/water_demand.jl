@@ -603,7 +603,7 @@ function surface_water_allocation_local!(land_allocation, demand, river, network
     (; inflow) = river.boundary_conditions
     (; volume) = river.variables
     # maps from the land domain to the internal river domain (linear index), excluding water bodies
-    index_river = network.land.index_river_wb
+    index_river = network.land.river_inds_excl_waterbody
     for i in eachindex(surfacewater_demand)
         if index_river[i] > 0.0
             # the available volume is limited by a fixed scaling factor of 0.8 to prevent
@@ -634,10 +634,10 @@ end
 
 "Update water allocation for river and land domains based on surface water (river) availability for allocation areas."
 function surface_water_allocation_area!(land_allocation, demand, river, network)
-    inds_river = network.river.indices_allocation_areas
-    inds_land = network.land.indices_allocation_areas
-    res_index = network.river.reservoir_index
-    lake_index = network.river.lake_index
+    inds_river = network.river.allocation_area_indices
+    inds_land = network.land.allocation_area_indices
+    inds_reservoir = network.river.reservoir_indices
+    inds_lake = network.river.lake_indices
 
     (; available_surfacewater, act_surfacewater_abst_vol, act_surfacewater_abst) =
         river.allocation.variables
@@ -655,14 +655,14 @@ function surface_water_allocation_area!(land_allocation, demand, river, network)
         # surface water availability (allocation area)
         sw_available = 0.0
         for j in inds_river[i]
-            if res_index[j] > 0
+            if inds_reservoir[j] > 0
                 # for reservoir locations use reservoir volume
-                k = res_index[j]
+                k = inds_reservoir[j]
                 available_surfacewater[j] = reservoir.volume[k] * 0.98 # limit available reservoir volume
                 sw_available += available_surfacewater[j]
-            elseif lake_index[j] > 0
+            elseif inds_lake[j] > 0
                 # for lake locations use lake volume
-                k = lake_index[j]
+                k = inds_lake[j]
                 available_surfacewater[j] = lake.storage[k] * 0.98 # limit available lake volume
                 sw_available += available_surfacewater[j]
 
@@ -712,8 +712,8 @@ function groundwater_allocation_local!(land_allocation, demand, groundwater_volu
     for i in eachindex(groundwater_demand)
         # groundwater demand based on allocation from surface water.
         groundwater_demand[i] = max(total_gross_demand[i] - surfacewater_alloc[i], 0.0)
-        # land index excluding water bodies
-        if network.index_wb[i]
+        # excluding water bodies
+        if !network.waterbody[i]
             # satisfy groundwater demand with available local groundwater volume
             groundwater_demand_vol = groundwater_demand[i] * 0.001 * network.area[i]
             available_volume = groundwater_volume[i] * 0.75 # limit available groundwater volume
@@ -733,8 +733,8 @@ end
 
 "Update water allocation for land domain based on groundwater availability for allocation areas."
 function groundwater_allocation_area!(land_allocation, demand, network)
-    inds_river = network.river.indices_allocation_areas
-    inds_land = network.land.indices_allocation_areas
+    inds_river = network.river.allocation_area_indices
+    inds_land = network.land.allocation_area_indices
     (;
         act_groundwater_abst_vol,
         available_groundwater,
@@ -805,9 +805,9 @@ allocation areas. Finally, non-irrigation return flows are updated.
 """
 function update_water_allocation!(land_allocation, demand::Demand, lateral, network, dt)
     river = lateral.river
-    index_river = network.land.index_river_wb
-    res_index_f = network.river.reservoir_index_f
-    lake_index_f = network.river.lake_index_f
+    index_river = network.land.river_inds_excl_waterbody
+    inds_reservoir = network.reservoir.river_indices
+    inds_lake = network.lake.river_indices
     (;
         groundwater_alloc,
         surfacewater_alloc,
@@ -843,11 +843,11 @@ function update_water_allocation!(land_allocation, demand::Demand, lateral, netw
     # for reservoir and lake locations set river abstraction at zero and abstract volume
     # from reservoir and lake, including an update of lake waterlevel
     if !isnothing(reservoir)
-        @. abstraction[res_index_f] = 0.0
-        @. reservoir.volume -= act_surfacewater_abst_vol[res_index_f]
+        @. abstraction[inds_reservoir] = 0.0
+        @. reservoir.volume -= act_surfacewater_abst_vol[inds_reservoir]
     elseif !isnothing(lake)
-        @. abstraction[lake_index_f] = 0.0
-        @. lake.storage -= act_surfacewater_abst_vol[lake_index_f]
+        @. abstraction[inds_lake] = 0.0
+        @. lake.storage -= act_surfacewater_abst_vol[inds_lake]
         @. lake.waterlevel = waterlevel(lake.storfunc, lake.area, lake.storage, lake.sh)
     end
 

@@ -316,8 +316,8 @@ function initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
         eroslagg = fill(mv, n),
         ### Transport capacity part ###
         # Parameters
-        dl = map(detdrainlength, ldd, xl, yl),
-        dw = map(detdrainwidth, ldd, xl, yl),
+        dl = map(get_flow_length, ldd, xl, yl),
+        dw = map(get_flow_width, ldd, xl, yl),
         cGovers = cGovers,
         D50 = D50,
         dmclay = dmclay,

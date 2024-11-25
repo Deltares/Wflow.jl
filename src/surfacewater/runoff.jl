@@ -115,7 +115,7 @@ function update_boundary_conditions!(
     network,
 )
     (; water_flux_surface, waterlevel_river, waterlevel_land) = model.boundary_conditions
-    inds_riv = network.index_river
+    (; land_indices) = network.river
     (; snow, glacier, interception) = external_models
 
     get_water_flux_surface!(water_flux_surface, snow, glacier, interception)
@@ -123,7 +123,7 @@ function update_boundary_conditions!(
     # extract water levels h_av [m] from the land and river domains this is used to limit
     # open water evaporation
     waterlevel_land .= lateral.land.variables.h_av .* 1000.0
-    waterlevel_river[inds_riv] .= lateral.river.variables.h_av .* 1000.0
+    waterlevel_river[land_indices] .= lateral.river.variables.h_av .* 1000.0
     return nothing
 end
 

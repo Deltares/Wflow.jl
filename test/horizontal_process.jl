@@ -166,9 +166,14 @@ end
         mannings_n_sq[i] = mannings_n * mannings_n
     end
 
-    network = (
+    river_network = (
         nodes_at_link = nodes_at_link,
         links_at_node = Wflow.adjacent_links_at_node(graph, nodes_at_link),
+    )
+    network = (
+        river = river_network,
+        reservoir = (river_indices = [],),
+        lake = (river_indices = [],),
     )
 
     h_thresh = 1.0e-03
@@ -187,10 +192,10 @@ end
         zb_max = zb_max,
         mannings_n_sq = mannings_n_sq,
         mannings_n = n_river,
-        width = width,
-        width_at_link = width_at_link,
-        dl = dl,
-        dl_at_link = length_at_link,
+        flow_width = width,
+        flow_width_at_link = width_at_link,
+        flow_length = dl,
+        flow_length_at_link = length_at_link,
         bankfull_volume = fill(Wflow.mv, n),
         bankfull_depth = fill(Wflow.mv, n),
         zb = zb,
@@ -220,8 +225,6 @@ end
         abstraction = zeros(n),
         inflow_wb = zeros(n),
         inwater = zeros(n),
-        reservoir_index = Int[],
-        lake_index = Int[],
         reservoir = nothing,
         lake = nothing,
     )
