@@ -293,7 +293,7 @@ function initialize_sbm_model(config::Config)
     if nthreads() > 1
         if river_routing == "kinematic-wave"
             @info "Parallel execution of kinematic wave" min_streamorder_land min_streamorder_river
-        elseif land_routing == "kinematic-wave" || subsurface_flow
+        elseif land_routing == "kinematic-wave" || do_lateral_ssf
             @info "Parallel execution of kinematic wave" min_streamorder_land
         end
     end
