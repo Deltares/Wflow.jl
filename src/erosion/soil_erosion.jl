@@ -1,7 +1,7 @@
 abstract type AbstractSoilErosionModel{T} end
 
 ## Total soil erosion and differentiation structs and functions
-@get_units @with_kw struct SoilErosionModelVariables{T}
+@get_units @grid_loc @with_kw struct SoilErosionModelVariables{T}
     # Total soil erosion
     amount::Vector{T} | "t dt-1"
     # Total clay erosion
@@ -35,7 +35,7 @@ function SoilErosionModelVariables(
     )
 end
 
-@get_units @with_kw struct SoilErosionBC{T}
+@get_units @grid_loc @with_kw struct SoilErosionBC{T}
     # Rainfall erosion
     rainfall_erosion::Vector{T} | "t dt-1"
     # Overland flow erosion
@@ -54,7 +54,7 @@ function SoilErosionBC(
 end
 
 # Parameters for particle differentiation
-@get_units @with_kw struct SoilErosionParameters{T}
+@get_units @grid_loc @with_kw struct SoilErosionParameters{T}
     # Soil content clay
     clay_fraction::Vector{T} | "-"
     # Soil content silt

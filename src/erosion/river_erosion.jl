@@ -1,7 +1,7 @@
 abstract type AbstractRiverErosionModel{T} end
 
 ## Potential direct river erosion structs and functions
-@get_units @with_kw struct RiverErosionModelVariables{T}
+@get_units @grid_loc @with_kw struct RiverErosionModelVariables{T}
     # Potential river bed erosion
     bed::Vector{T} | "t dt-1"
     # Potential river bank erosion
@@ -16,7 +16,7 @@ function RiverErosionModelVariables(
     return RiverErosionModelVariables{T}(; bed = bed, bank = bank)
 end
 
-@get_units @with_kw struct RiverErosionBC{T}
+@get_units @grid_loc @with_kw struct RiverErosionBC{T}
     # Waterlevel
     waterlevel::Vector{T} | "t dt-1"
 end
@@ -26,7 +26,7 @@ function RiverErosionBC(n; waterlevel::Vector{T} = fill(mv, n)) where {T}
 end
 
 # Parameters for the Julian Torres river erosion model
-@get_units @with_kw struct RiverErosionParameters{T}
+@get_units @grid_loc @with_kw struct RiverErosionParameters{T}
     # Mean diameter in the river bed/bank
     d50::Vector{T} | "mm"
 end

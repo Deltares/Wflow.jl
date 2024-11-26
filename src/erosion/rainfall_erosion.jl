@@ -3,7 +3,7 @@ abstract type AbstractRainfallErosionModel{T} end
 struct NoRainfallErosionModel{T} <: AbstractRainfallErosionModel{T} end
 
 ## General rainfall erosion functions and structs
-@get_units @with_kw struct RainfallErosionModelVariables{T}
+@get_units @grid_loc @with_kw struct RainfallErosionModelVariables{T}
     # Total soil erosion from rainfall (splash)
     amount::Vector{T} | "t dt-1"
 end
@@ -13,7 +13,7 @@ function RainfallErosionModelVariables(n; amount::Vector{T} = fill(mv, n)) where
 end
 
 ## EUROSEM specific structs and functions for rainfall erosion
-@get_units @with_kw struct RainfallErosionEurosemBC{T}
+@get_units @grid_loc @with_kw struct RainfallErosionEurosemBC{T}
     # precipitation
     precipitation::Vector{T} | "mm dt-1"
     # Interception
@@ -35,7 +35,7 @@ function RainfallErosionEurosemBC(
     )
 end
 
-@get_units @with_kw struct RainfallErosionEurosemParameters{T}
+@get_units @grid_loc @with_kw struct RainfallErosionEurosemParameters{T}
     # Soil detachability factor
     soil_detachability::Vector{T} | "g J-1"
     # Exponent EUROSEM
@@ -156,7 +156,7 @@ function update!(model::RainfallErosionEurosemModel, geometry::LandGeometry, ts)
 end
 
 ### ANSWERS specific structs and functions for rainfall erosion
-@get_units @with_kw struct RainfallErosionAnswersBC{T}
+@get_units @grid_loc @with_kw struct RainfallErosionAnswersBC{T}
     # precipitation
     precipitation::Vector{T} | "mm dt-1"
 end
@@ -165,7 +165,7 @@ function RainfallErosionAnswersBC(n; precipitation::Vector{T} = fill(mv, n)) whe
     return RainfallErosionAnswersBC{T}(; precipitation = precipitation)
 end
 
-@get_units @with_kw struct RainfallErosionAnswersParameters{T}
+@get_units @grid_loc @with_kw struct RainfallErosionAnswersParameters{T}
     # Soil erodibility factor
     usle_k::Vector{T} | "-"
     # Crop management factor

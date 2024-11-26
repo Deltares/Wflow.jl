@@ -3,7 +3,7 @@ abstract type AbstractOverlandFlowErosionModel{T} end
 struct NoOverlandFlowErosionModel{T} <: AbstractOverlandFlowErosionModel{T} end
 
 ## Overland flow structs and functions
-@get_units @with_kw struct OverlandFlowErosionVariables{T}
+@get_units @grid_loc @with_kw struct OverlandFlowErosionVariables{T}
     # Total soil erosion from overland flow
     amount::Vector{T} | "t dt-1"
 end
@@ -12,7 +12,7 @@ function OverlandFlowErosionVariables(n; amount::Vector{T} = fill(mv, n)) where 
     return OverlandFlowErosionVariables{T}(; amount = amount)
 end
 
-@get_units @with_kw struct OverlandFlowErosionBC{T}
+@get_units @grid_loc @with_kw struct OverlandFlowErosionBC{T}
     # Overland flow [m3 s-1]
     q::Vector{T}
 end
@@ -22,7 +22,7 @@ function OverlandFlowErosionBC(n; q::Vector{T} = fill(mv, n)) where {T}
 end
 
 # ANSWERS specific structs and functions for rainfall erosion
-@get_units @with_kw struct OverlandFlowErosionAnswersParameters{T}
+@get_units @grid_loc @with_kw struct OverlandFlowErosionAnswersParameters{T}
     # Soil erodibility factor
     usle_k::Vector{T} | "-"
     # Crop management factor
