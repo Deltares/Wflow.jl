@@ -34,13 +34,13 @@ end
 end
 
 "Initialize open water runoff parameters"
-function OpenWaterRunoffParameters(nc, config, inds, riverfrac)
+function OpenWaterRunoffParameters(dataset, config, indices, riverfrac)
     # fraction open water
     waterfrac = ncread(
-        nc,
+        dataset,
         config,
         "vertical.runoff.parameters.waterfrac";
-        sel = inds,
+        sel = indices,
         defaults = 0.0,
         type = Float,
     )
@@ -73,11 +73,11 @@ end
 end
 
 "Initialize open water runoff model"
-function OpenWaterRunoff(nc, config, inds, riverfrac)
+function OpenWaterRunoff(dataset, config, indices, riverfrac)
     n = length(riverfrac)
     vars = OpenWaterRunoffVariables(Float, n)
     bc = OpenWaterRunoffBC(Float, n)
-    params = OpenWaterRunoffParameters(nc, config, inds, riverfrac)
+    params = OpenWaterRunoffParameters(dataset, config, indices, riverfrac)
     model =
         OpenWaterRunoff(; boundary_conditions = bc, parameters = params, variables = vars)
     return model

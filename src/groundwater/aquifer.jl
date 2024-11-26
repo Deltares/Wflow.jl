@@ -126,15 +126,26 @@ instead. Specific yield will vary roughly between 0.05 (clay) and 0.45 (peat)
     # conductivity_profile is set to "exponential")
 end
 
-function UnconfinedAquiferParameters(nc, config, inds, top, bottom, area)
-    k = ncread(nc, config, "lateral.subsurface.conductivity"; sel = inds, type = Float)
-    specific_yield =
-        ncread(nc, config, "lateral.subsurface.specific_yield"; sel = inds, type = Float)
+function UnconfinedAquiferParameters(dataset, config, indices, top, bottom, area)
+    k = ncread(
+        dataset,
+        config,
+        "lateral.subsurface.conductivity";
+        sel = indices,
+        type = Float,
+    )
+    specific_yield = ncread(
+        dataset,
+        config,
+        "lateral.subsurface.specific_yield";
+        sel = indices,
+        type = Float,
+    )
     f = ncread(
-        nc,
+        dataset,
         config,
         "lateral.subsurface.gwf_f";
-        sel = inds,
+        sel = indices,
         type = Float,
         defaults = 3.0,
     )
@@ -155,8 +166,8 @@ end
     variables::UnconfinedAquiferVariables{T}
 end
 
-function UnconfinedAquifer(nc, config, inds, top, bottom, area, conductance, head)
-    parameters = UnconfinedAquiferParameters(nc, config, inds, top, bottom, area)
+function UnconfinedAquifer(dataset, config, indices, top, bottom, area, conductance, head)
+    parameters = UnconfinedAquiferParameters(dataset, config, indices, top, bottom, area)
 
     volume = @. (min(top, head) - bottom) * area * parameters.specific_yield
     variables = UnconfinedAquiferVariables{Float}(head, conductance, volume)
@@ -368,16 +379,16 @@ end
     index::Vector{Int} | "-"
 end
 
-function ConstantHead(nc, config, inds)
+function ConstantHead(dataset, config, indices)
     constanthead = ncread(
-        nc,
+        dataset,
         config,
         "lateral.subsurface.constant_head";
-        sel = inds,
+        sel = indices,
         type = Float,
         fill = mv,
     )
-    n = length(inds)
+    n = length(indices)
     index_constanthead = filter(i -> !isequal(constanthead[i], mv), 1:n)
     head = constanthead[index_constanthead]
     variables = ConstantHeadVariables{Float}(head)

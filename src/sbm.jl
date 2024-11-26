@@ -12,29 +12,29 @@
 end
 
 "Initialize land hydrology model with SBM soil model"
-function LandHydrologySBM(nc, config, riverfrac, inds)
+function LandHydrologySBM(dataset, config, riverfrac, indices)
     dt = Second(config.timestepsecs)
-    n = length(inds)
+    n = length(indices)
 
     atmospheric_forcing = AtmosphericForcing(n)
-    vegetation_parameter_set = VegetationParameters(nc, config, inds)
+    vegetation_parameter_set = VegetationParameters(dataset, config, indices)
     if dt >= Hour(23)
         interception_model =
-            GashInterceptionModel(nc, config, inds, vegetation_parameter_set)
+            GashInterceptionModel(dataset, config, indices, vegetation_parameter_set)
     else
         interception_model = RutterInterceptionModel(vegetation_parameter_set, n)
     end
 
     modelsnow = get(config.model, "snow", false)::Bool
     if modelsnow
-        snow_model = SnowHbvModel(nc, config, inds, dt)
+        snow_model = SnowHbvModel(dataset, config, indices, dt)
     else
         snow_model = NoSnowModel{Float}()
     end
     modelglacier = get(config.model, "glacier", false)::Bool
     if modelsnow && modelglacier
         glacier_bc = SnowStateBC{Float}(; snow_storage = snow_model.variables.snow_storage)
-        glacier_model = GlacierHbvModel(nc, config, inds, dt, glacier_bc)
+        glacier_model = GlacierHbvModel(dataset, config, indices, dt, glacier_bc)
     elseif modelsnow == false && modelglacier == true
         @warn string(
             "Glacier processes can be modelled when snow modelling is enabled. To include ",
@@ -44,9 +44,9 @@ function LandHydrologySBM(nc, config, riverfrac, inds)
     else
         glacier_model = NoGlacierModel{Float}()
     end
-    runoff_model = OpenWaterRunoff(nc, config, inds, riverfrac)
+    runoff_model = OpenWaterRunoff(dataset, config, indices, riverfrac)
 
-    soil_model = SbmSoilModel(nc, config, vegetation_parameter_set, inds, dt)
+    soil_model = SbmSoilModel(dataset, config, vegetation_parameter_set, indices, dt)
     @. vegetation_parameter_set.rootingdepth = min(
         soil_model.parameters.soilthickness * 0.99,
         vegetation_parameter_set.rootingdepth,
@@ -54,8 +54,9 @@ function LandHydrologySBM(nc, config, riverfrac, inds)
 
     do_water_demand = haskey(config.model, "water_demand")
     allocation =
-        do_water_demand ? AllocationLand(nc, config, inds) : NoAllocationLand{Float}()
-    demand = do_water_demand ? Demand(nc, config, inds, dt) : NoDemand{Float}()
+        do_water_demand ? AllocationLand(dataset, config, indices) :
+        NoAllocationLand{Float}()
+    demand = do_water_demand ? Demand(dataset, config, indices, dt) : NoDemand{Float}()
 
     args = (demand, allocation)
     land_hydrology_model = LandHydrologySBM{Float, typeof.(args)...}(;

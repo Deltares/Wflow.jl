@@ -885,10 +885,10 @@ end
     error::Vector{T} | "m3"                             # error volume    
 end
 
-function ShallowWaterRiverVariables(nc, config, inds, n_edges, inds_pit)
+function ShallowWaterRiverVariables(dataset, config, indices, n_edges, inds_pit)
     floodplain_1d = get(config.model, "floodplain_1d", false)::Bool
     riverdepth_bc = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.riverdepth_bc";
         sel = inds_pit,
@@ -896,7 +896,7 @@ function ShallowWaterRiverVariables(nc, config, inds, n_edges, inds_pit)
         type = Float,
     )
 
-    n = length(inds)
+    n = length(indices)
     # set river depth h to zero (including reservoir and lake locations)
     h = zeros(n)
     q_av = zeros(n_edges)

@@ -9,12 +9,12 @@ abstract type AbstractGlacierModel{T} end
 end
 
 "Initialize glacier model variables"
-function GlacierVariables(nc, config, inds)
+function GlacierVariables(dataset, config, indices)
     glacier_store = ncread(
-        nc,
+        dataset,
         config,
         "vertical.glacier.variables.glacier_store";
-        sel = inds,
+        sel = indices,
         defaults = 5500.0,
         type = Float,
         fill = 0.0,
@@ -54,41 +54,41 @@ end
 struct NoGlacierModel{T} <: AbstractGlacierModel{T} end
 
 "Initialize glacier HBV model parameters"
-function GlacierHbvParameters(nc, config, inds, dt)
+function GlacierHbvParameters(dataset, config, indices, dt)
     g_tt = ncread(
-        nc,
+        dataset,
         config,
         "vertical.glacier.parameters.g_tt";
-        sel = inds,
+        sel = indices,
         defaults = 0.0,
         type = Float,
         fill = 0.0,
     )
     g_cfmax =
         ncread(
-            nc,
+            dataset,
             config,
             "vertical.glacier.parameters.g_cfmax";
-            sel = inds,
+            sel = indices,
             defaults = 3.0,
             type = Float,
             fill = 0.0,
         ) .* (dt / basetimestep)
     g_sifrac =
         ncread(
-            nc,
+            dataset,
             config,
             "vertical.glacier.parameters.g_sifrac";
-            sel = inds,
+            sel = indices,
             defaults = 0.001,
             type = Float,
             fill = 0.0,
         ) .* (dt / basetimestep)
     glacier_frac = ncread(
-        nc,
+        dataset,
         config,
         "vertical.glacier.parameters.glacier_frac";
-        sel = inds,
+        sel = indices,
         defaults = 0.0,
         type = Float,
         fill = 0.0,
@@ -105,9 +105,9 @@ function GlacierHbvParameters(nc, config, inds, dt)
 end
 
 "Initialize glacier HBV model"
-function GlacierHbvModel(nc, config, inds, dt, bc)
-    params = GlacierHbvParameters(nc, config, inds, dt)
-    vars = GlacierVariables(nc, config, inds)
+function GlacierHbvModel(dataset, config, indices, dt, bc)
+    params = GlacierHbvParameters(dataset, config, indices, dt)
+    vars = GlacierVariables(dataset, config, indices)
     model =
         GlacierHbvModel(; boundary_conditions = bc, parameters = params, variables = vars)
     return model

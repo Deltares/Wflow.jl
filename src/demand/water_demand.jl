@@ -31,26 +31,26 @@ get_demand_gross(model::NonIrrigationDemand) = model.demand.demand_gross
 get_demand_gross(model::NoNonIrrigationDemand) = 0.0
 
 "Initialize non-irrigation water demand model for a water use `sector`"
-function NonIrrigationDemand(nc, config, inds, dt, sector)
+function NonIrrigationDemand(dataset, config, indices, dt, sector)
     demand_gross =
         ncread(
-            nc,
+            dataset,
             config,
             "vertical.demand.$(sector).demand_gross";
-            sel = inds,
+            sel = indices,
             defaults = 0.0,
             type = Float,
         ) .* (dt / basetimestep)
     demand_net =
         ncread(
-            nc,
+            dataset,
             config,
             "vertical.demand.$(sector).demand_net";
-            sel = inds,
+            sel = indices,
             defaults = 0.0,
             type = Float,
         ) .* (dt / basetimestep)
-    n = length(inds)
+    n = length(indices)
     returnflow_f = return_flow_fraction.(demand_gross, demand_net)
 
     demand = PrescibedDemand{Float}(; demand_gross, demand_net)
@@ -83,39 +83,39 @@ end
 end
 
 "Initialize non-paddy irrigation model"
-function NonPaddy(nc, config, inds, dt)
+function NonPaddy(dataset, config, indices, dt)
     efficiency = ncread(
-        nc,
+        dataset,
         config,
         "vertical.demand.nonpaddy.parameters.irrigation_efficiency";
-        sel = inds,
+        sel = indices,
         defaults = 1.0,
         type = Float,
     )
     areas = ncread(
-        nc,
+        dataset,
         config,
         "vertical.demand.nonpaddy.parameters.irrigation_areas";
-        sel = inds,
+        sel = indices,
         defaults = 1,
         optional = false,
         type = Int,
     )
     irrigation_trigger = ncread(
-        nc,
+        dataset,
         config,
         "vertical.demand.nonpaddy.parameters.irrigation_trigger";
-        sel = inds,
+        sel = indices,
         defaults = 1,
         optional = false,
         type = Bool,
     )
     max_irri_rate =
         ncread(
-            nc,
+            dataset,
             config,
             "vertical.demand.nonpaddy.parameters.maximum_irrigation_rate";
-            sel = inds,
+            sel = indices,
             defaults = 25.0,
             type = Float,
         ) .* (dt / basetimestep)
@@ -126,7 +126,7 @@ function NonPaddy(nc, config, inds, dt)
         irrigation_areas = areas,
         irrigation_trigger,
     )
-    vars = NonPaddyVariables{Float}(; demand_gross = fill(mv, length(inds)))
+    vars = NonPaddyVariables{Float}(; demand_gross = fill(mv, length(indices)))
 
     nonpaddy = NonPaddy{Float}(; variables = vars, parameters = params)
 
@@ -229,65 +229,65 @@ end
 end
 
 "Initialize paddy irrigation model"
-function Paddy(nc, config, inds, dt)
+function Paddy(dataset, config, indices, dt)
     h_min = ncread(
-        nc,
+        dataset,
         config,
         "vertical.demand.paddy.parameters.h_min";
-        sel = inds,
+        sel = indices,
         defaults = 20.0,
         type = Float,
     )
     h_opt = ncread(
-        nc,
+        dataset,
         config,
         "vertical.demand.paddy.parameters.h_opt";
-        sel = inds,
+        sel = indices,
         defaults = 50.0,
         type = Float,
     )
     h_max = ncread(
-        nc,
+        dataset,
         config,
         "vertical.demand.paddy.parameters.h_max";
-        sel = inds,
+        sel = indices,
         defaults = 80.0,
         type = Float,
     )
     efficiency = ncread(
-        nc,
+        dataset,
         config,
         "vertical.demand.paddy.parameters.irrigation_efficiency";
-        sel = inds,
+        sel = indices,
         defaults = 1.0,
         type = Float,
     )
     areas = ncread(
-        nc,
+        dataset,
         config,
         "vertical.demand.paddy.parameters.irrigation_areas";
-        sel = inds,
+        sel = indices,
         optional = false,
         type = Bool,
     )
     irrigation_trigger = ncread(
-        nc,
+        dataset,
         config,
         "vertical.demand.paddy.parameters.irrigation_trigger";
-        sel = inds,
+        sel = indices,
         optional = false,
         type = Bool,
     )
     max_irri_rate =
         ncread(
-            nc,
+            dataset,
             config,
             "vertical.demand.paddy.parameters.maximum_irrigation_rate";
-            sel = inds,
+            sel = indices,
             defaults = 25.0,
             type = Float,
         ) .* (dt / basetimestep)
-    n = length(inds)
+    n = length(indices)
     params = PaddyParameters{Float}(;
         irrigation_efficiency = efficiency,
         maximum_irrigation_rate = max_irri_rate,
@@ -437,34 +437,34 @@ end
 end
 
 "Initialize water demand model"
-function Demand(nc, config, inds, dt)
+function Demand(dataset, config, indices, dt)
     domestic = if get(config.model.water_demand, "domestic", false)
-        NonIrrigationDemand(nc, config, inds, dt, "domestic")
+        NonIrrigationDemand(dataset, config, indices, dt, "domestic")
     else
         NoNonIrrigationDemand()
     end
     industry = if get(config.model.water_demand, "industry", false)
-        NonIrrigationDemand(nc, config, inds, dt, "industry")
+        NonIrrigationDemand(dataset, config, indices, dt, "industry")
     else
         NoNonIrrigationDemand()
     end
     livestock = if get(config.model.water_demand, "livestock", false)
-        NonIrrigationDemand(nc, config, inds, dt, "livestock")
+        NonIrrigationDemand(dataset, config, indices, dt, "livestock")
     else
         NoNonIrrigationDemand()
     end
     paddy = if get(config.model.water_demand, "paddy", false)
-        Paddy(nc, config, inds, dt)
+        Paddy(dataset, config, indices, dt)
     else
         NoIrrigationPaddy{Float}()
     end
     nonpaddy = if get(config.model.water_demand, "nonpaddy", false)
-        NonPaddy(nc, config, inds, dt)
+        NonPaddy(dataset, config, indices, dt)
     else
         NoIrrigationNonPaddy{Float}()
     end
 
-    n = length(inds)
+    n = length(indices)
     vars = DemandVariables(Float, n)
     demand = Demand(; domestic, industry, livestock, paddy, nonpaddy, variables = vars)
     return demand
@@ -544,25 +544,25 @@ end
 end
 
 "Initialize water allocation for the land domain"
-function AllocationLand(nc, config, inds)
+function AllocationLand(dataset, config, indices)
     frac_sw_used = ncread(
-        nc,
+        dataset,
         config,
         "vertical.allocation.parameters.frac_sw_used";
-        sel = inds,
+        sel = indices,
         defaults = 1,
         type = Float,
     )
     areas = ncread(
-        nc,
+        dataset,
         config,
         "vertical.allocation.parameters.areas";
-        sel = inds,
+        sel = indices,
         defaults = 1,
         type = Int,
     )
 
-    n = length(inds)
+    n = length(indices)
 
     params = AllocationLandParameters(; areas = areas, frac_sw_used = frac_sw_used)
     vars = AllocationLandVariables(Float, n)

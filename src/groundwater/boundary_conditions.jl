@@ -33,26 +33,32 @@ end
     index::Vector{Int} | "-"
 end
 
-function River(nc, config, inds, index)
+function River(dataset, config, indices, index)
     infiltration_conductance = ncread(
-        nc,
+        dataset,
         config,
         "lateral.subsurface.infiltration_conductance";
-        sel = inds,
+        sel = indices,
         type = Float,
     )
     exfiltration_conductance = ncread(
-        nc,
+        dataset,
         config,
         "lateral.subsurface.exfiltration_conductance";
-        sel = inds,
+        sel = indices,
         type = Float,
     )
-    bottom = ncread(nc, config, "lateral.subsurface.river_bottom"; sel = inds, type = Float)
+    bottom = ncread(
+        dataset,
+        config,
+        "lateral.subsurface.river_bottom";
+        sel = indices,
+        type = Float,
+    )
 
     parameters =
         RiverParameters{Float}(infiltration_conductance, exfiltration_conductance, bottom)
-    n = length(inds)
+    n = length(indices)
     variables = RiverVariables(n)
     river = River(parameters, variables, index)
     return river
@@ -90,20 +96,20 @@ end
     index::Vector{Int} | "-"
 end
 
-function Drainage(nc, config, inds, index)
+function Drainage(dataset, config, indices, index)
     drain_elevation = ncread(
-        nc,
+        dataset,
         config,
         "lateral.subsurface.drain_elevation";
-        sel = inds,
+        sel = indices,
         type = Float,
         fill = mv,
     )
     drain_conductance = ncread(
-        nc,
+        dataset,
         config,
         "lateral.subsurface.drain_conductance";
-        sel = inds,
+        sel = indices,
         type = Float,
         fill = mv,
     )

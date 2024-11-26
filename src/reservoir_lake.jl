@@ -255,12 +255,12 @@ end
     hq::Vector{Union{HQ, Missing}}                  # data for rating curve    
 end
 
-function LakeParameters(config, nc, inds_riv, nriv, pits, dt)
+function LakeParameters(config, dataset, inds_riv, nriv, pits, dt)
     # read only lake data if lakes true
     # allow lakes only in river cells
     # note that these locations are only the lake outlet pixels
     lakelocs_2d = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.lake.locs";
         optional = false,
@@ -271,7 +271,7 @@ function LakeParameters(config, nc, inds_riv, nriv, pits, dt)
 
     # this holds the same ids as lakelocs, but covers the entire lake
     lakecoverage_2d = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.lake.areas";
         optional = false,
@@ -304,7 +304,7 @@ function LakeParameters(config, nc, inds_riv, nriv, pits, dt)
     end
 
     lakearea = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.lake.area";
         optional = false,
@@ -313,7 +313,7 @@ function LakeParameters(config, nc, inds_riv, nriv, pits, dt)
         fill = 0,
     )
     lake_b = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.lake.b";
         optional = false,
@@ -322,7 +322,7 @@ function LakeParameters(config, nc, inds_riv, nriv, pits, dt)
         fill = 0,
     )
     lake_e = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.lake.e";
         optional = false,
@@ -331,7 +331,7 @@ function LakeParameters(config, nc, inds_riv, nriv, pits, dt)
         fill = 0,
     )
     lake_threshold = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.lake.threshold";
         optional = false,
@@ -340,7 +340,7 @@ function LakeParameters(config, nc, inds_riv, nriv, pits, dt)
         fill = 0,
     )
     linked_lakelocs = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.lake.linkedlakelocs";
         sel = inds_lake,
@@ -349,7 +349,7 @@ function LakeParameters(config, nc, inds_riv, nriv, pits, dt)
         fill = 0,
     )
     lake_storfunc = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.lake.storfunc";
         optional = false,
@@ -358,7 +358,7 @@ function LakeParameters(config, nc, inds_riv, nriv, pits, dt)
         fill = 0,
     )
     lake_outflowfunc = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.lake.outflowfunc";
         optional = false,
@@ -367,7 +367,7 @@ function LakeParameters(config, nc, inds_riv, nriv, pits, dt)
         fill = 0,
     )
     lake_waterlevel = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.lake.waterlevel";
         optional = false,
