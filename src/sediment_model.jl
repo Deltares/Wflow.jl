@@ -28,7 +28,7 @@ function initialize_sediment_model(config::Config)
     reservoir = ()
     lake = ()
 
-    soilloss = initialize_soil_loss(nc, config, inds)
+    soilloss = SoilLoss(nc, config, inds)
 
     # Get waterbodies mask
     do_reservoirs = get(config.model, "doreservoir", false)::Bool
@@ -64,8 +64,7 @@ function initialize_sediment_model(config::Config)
     ldd = ldd_2d[inds]
 
     # # lateral part sediment in overland flow
-    overland_flow_sediment =
-        initialize_overland_flow_sediment(nc, config, inds, waterbodies, river)
+    overland_flow_sediment = OverlandFlowSediment(nc, config, inds, waterbodies, river)
 
     graph = flowgraph(ldd, inds, pcr_dir)
 
@@ -93,7 +92,7 @@ function initialize_sediment_model(config::Config)
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
     frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, landslope, n)
 
-    river_sediment = initialize_river_flow_sediment(nc, config, inds_riv, waterbodies)
+    river_sediment = RiverSediment(nc, config, inds_riv, waterbodies)
 
     modelmap = (
         vertical = soilloss,

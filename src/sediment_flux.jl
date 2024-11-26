@@ -9,7 +9,7 @@
     rivers::Vector{Bool} | "-"
 end
 
-function initialize_overland_flow_sediment(nc, config, inds, waterbodies, rivers)
+function OverlandFlowSediment(nc, config, inds, waterbodies, rivers)
     n = length(inds)
     hydrometeo_forcing = HydrometeoForcing(n)
     geometry = LandGeometry(nc, config, inds)
@@ -88,7 +88,7 @@ end
     waterbodies::Vector{Bool} | "-"
 end
 
-function initialize_river_flow_sediment(nc, config, inds, waterbodies)
+function RiverSediment(nc, config, inds, waterbodies)
     n = length(inds)
     hydrometeo_forcing = HydrometeoForcing(n)
     geometry = RiverGeometry(nc, config, inds)

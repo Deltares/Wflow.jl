@@ -6,7 +6,7 @@
     soil_erosion::SE
 end
 
-function initialize_soil_loss(nc, config, inds)
+function SoilLoss(nc, config, inds)
     n = length(inds)
 
     hydrometeo_forcing = HydrometeoForcing(n)
