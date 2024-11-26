@@ -159,7 +159,7 @@ function initialize_sbm_gwf_model(config::Config)
     end
 
     if land_routing == "kinematic-wave"
-        olf = SurfaceFlowLand(
+        overland_flow = SurfaceFlowLand(
             dataset,
             config,
             indices;
@@ -169,7 +169,7 @@ function initialize_sbm_gwf_model(config::Config)
         )
     elseif land_routing == "local-inertial"
         inds_river_map2land = reverse_inds_river[indices] # not filtered (with zeros)
-        olf, staggered_indices = ShallowWaterLand(
+        overland_flow, staggered_indices = ShallowWaterLand(
             dataset,
             config,
             indices;
@@ -193,7 +193,7 @@ function initialize_sbm_gwf_model(config::Config)
     minimum(river_width) > 0 || error("river width must be positive on river cells")
 
     if river_routing == "kinematic-wave"
-        rf = SurfaceFlowRiver(
+        river_flow = SurfaceFlowRiver(
             dataset,
             config,
             inds_river;
@@ -203,7 +203,7 @@ function initialize_sbm_gwf_model(config::Config)
             lake = lake,
         )
     elseif river_routing == "local-inertial"
-        rf, nodes_at_link = ShallowWaterRiver(
+        river_flow, nodes_at_link = ShallowWaterRiver(
             dataset,
             config,
             inds_river;
@@ -294,7 +294,7 @@ function initialize_sbm_gwf_model(config::Config)
         drain = ()
     end
 
-    gwf = GroundwaterFlow{Float}(;
+    groundwater_flow = GroundwaterFlow{Float}(;
         aquifer,
         connectivity,
         constanthead = constant_head,
@@ -304,14 +304,17 @@ function initialize_sbm_gwf_model(config::Config)
     # map GroundwaterFlow and its boundaries
     if do_drains
         subsurface_map = (
-            flow = gwf,
-            recharge = gwf.boundaries[1],
-            river = gwf.boundaries[2],
-            drain = gwf.boundaries[3],
+            flow = groundwater_flow,
+            recharge = groundwater_flow.boundaries[1],
+            river = groundwater_flow.boundaries[2],
+            drain = groundwater_flow.boundaries[3],
         )
     else
-        subsurface_map =
-            (flow = gwf, recharge = gwf.boundaries[1], river = gwf.boundaries[2])
+        subsurface_map = (
+            flow = groundwater_flow,
+            recharge = groundwater_flow.boundaries[1],
+            river = groundwater_flow.boundaries[2],
+        )
     end
 
     # setup subdomains for the land and river kinematic wave domain, if nthreads = 1
@@ -348,7 +351,7 @@ function initialize_sbm_gwf_model(config::Config)
 
     modelmap = (
         vertical = land_hydrology,
-        lateral = (subsurface = subsurface_map, land = olf, river = rf),
+        lateral = (subsurface = subsurface_map, land = overland_flow, river = river_flow),
     )
     indices_reverse = (
         land = reverse_indices,
@@ -476,7 +479,7 @@ function initialize_sbm_gwf_model(config::Config)
     model = Model(
         config,
         (; land, river, reservoir = reservoir_network, lake = lake_network, drain),
-        (subsurface = subsurface_map, land = olf, river = rf),
+        (subsurface = subsurface_map, land = overland_flow, river = river_flow),
         land_hydrology,
         clock,
         reader,

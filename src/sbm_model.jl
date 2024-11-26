@@ -194,7 +194,7 @@ function initialize_sbm_model(config::Config)
     end
 
     if land_routing == "kinematic-wave"
-        olf = SurfaceFlowLand(
+        overland_flow = SurfaceFlowLand(
             dataset,
             config,
             indices;
@@ -204,7 +204,7 @@ function initialize_sbm_model(config::Config)
         )
     elseif land_routing == "local-inertial"
         inds_river_map2land = reverse_inds_river[indices] # not filtered (with zeros)
-        olf, staggered_indices = ShallowWaterLand(
+        overland_flow, staggered_indices = ShallowWaterLand(
             dataset,
             config,
             indices;
@@ -226,7 +226,7 @@ function initialize_sbm_model(config::Config)
     minimum(river_length) > 0 || error("river length must be positive on river cells")
     minimum(river_width) > 0 || error("river width must be positive on river cells")
     if river_routing == "kinematic-wave"
-        rf = SurfaceFlowRiver(
+        river_flow = SurfaceFlowRiver(
             dataset,
             config,
             inds_river;
@@ -236,7 +236,7 @@ function initialize_sbm_model(config::Config)
             lake = lake,
         )
     elseif river_routing == "local-inertial"
-        rf, nodes_at_link = ShallowWaterRiver(
+        river_flow, nodes_at_link = ShallowWaterRiver(
             dataset,
             config,
             inds_river;
@@ -300,7 +300,7 @@ function initialize_sbm_model(config::Config)
 
     modelmap = (
         vertical = land_hydrology,
-        lateral = (subsurface = subsurface_flow, land = olf, river = rf),
+        lateral = (subsurface = subsurface_flow, land = overland_flow, river = river_flow),
     )
     indices_reverse = (
         land = reverse_indices,
@@ -410,7 +410,7 @@ function initialize_sbm_model(config::Config)
     model = Model(
         config,
         (; land, river, reservoir = reservoir_network, lake = lake_network),
-        (subsurface = subsurface_flow, land = olf, river = rf),
+        (subsurface = subsurface_flow, land = overland_flow, river = river_flow),
         land_hydrology,
         clock,
         reader,
