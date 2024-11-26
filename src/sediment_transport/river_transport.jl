@@ -440,7 +440,7 @@ function update!(
         store_gravel,
     ) = model.variables
 
-    @unpack graph, order = network
+    (; graph, order) = network
 
     # Sediment transport - water balance in the river
     for v in order
