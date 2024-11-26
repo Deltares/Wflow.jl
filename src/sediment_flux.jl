@@ -1,10 +1,10 @@
 ### Overland flow ###
-@get_units @with_kw struct OverlandFlowSediment{TT, SF, TR, T}
-    hydrometeo_forcing::HydrometeoForcing | "-"
-    geometry::LandGeometry | "-"
-    transport_capacity::TT | "-"
-    sediment_flux::SF | "-"
-    to_river::TR | "-"
+@get_units @grid_loc @with_kw struct OverlandFlowSediment{TT, SF, TR, T}
+    hydrometeo_forcing::HydrometeoForcing
+    geometry::LandGeometry
+    transport_capacity::TT
+    sediment_flux::SF
+    to_river::TR
     waterbodies::Vector{Bool} | "-"
     rivers::Vector{Bool} | "-"
 end
@@ -78,13 +78,13 @@ function update!(model::OverlandFlowSediment, erosion_model::SoilErosionModel, n
 end
 
 ### River ###
-@get_units @with_kw struct RiverSediment{TTR, ER, SFR, CR, T}
-    hydrometeo_forcing::HydrometeoForcing | "-"
-    geometry::RiverGeometry | "-"
-    transport_capacity::TTR | "-"
-    potential_erosion::ER | "-"
-    sediment_flux::SFR | "-"
-    concentrations::CR | "-"
+@get_units @grid_loc @with_kw struct RiverSediment{TTR, ER, SFR, CR, T}
+    hydrometeo_forcing::HydrometeoForcing
+    geometry::RiverGeometry
+    transport_capacity::TTR
+    potential_erosion::ER
+    sediment_flux::SFR
+    concentrations::CR
     waterbodies::Vector{Bool} | "-"
 end
 

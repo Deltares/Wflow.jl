@@ -1,9 +1,9 @@
-@get_units @with_kw struct SoilLoss{RE, OFE, SE, T}
-    hydrometeo_forcing::HydrometeoForcing | "-"
-    geometry::LandGeometry | "-"
-    rainfall_erosion::RE | "-"
-    overland_flow_erosion::OFE | "-"
-    soil_erosion::SE | "-"
+@with_kw struct SoilLoss{RE, OFE, SE, T}
+    hydrometeo_forcing::HydrometeoForcing
+    geometry::LandGeometry
+    rainfall_erosion::RE
+    overland_flow_erosion::OFE
+    soil_erosion::SE
 end
 
 function initialize_soil_loss(nc, config, inds)

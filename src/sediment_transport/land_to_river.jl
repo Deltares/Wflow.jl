@@ -1,7 +1,7 @@
 abstract type AbstractSedimentToRiverModel{T} end
 
 ## Total sediment transport in overland flow structs and functions
-@get_units @with_kw struct SedimentToRiverVariables{T}
+@get_units @grid_loc @with_kw struct SedimentToRiverVariables{T}
     # Total sediment reaching the river
     amount::Vector{T} | "t dt-1"
 end
@@ -10,7 +10,7 @@ function SedimentToRiverVariables(n; amount::Vector{T} = fill(mv, n)) where {T}
     return SedimentToRiverVariables{T}(; amount = amount)
 end
 
-@get_units @with_kw struct SedimentToRiverBC{T}
+@get_units @grid_loc @with_kw struct SedimentToRiverBC{T}
     # Deposited material
     deposition::Vector{T} | "t dt-1"
 end
@@ -49,7 +49,7 @@ function update!(model::SedimentToRiverModel, rivers)
 end
 
 ## Different particles reaching the river structs and functions
-@get_units @with_kw struct SedimentToRiverDifferentiationVariables{T}
+@get_units @grid_loc @with_kw struct SedimentToRiverDifferentiationVariables{T}
     # Total sediment flux
     amount::Vector{T} | "t dt-1"
     # Clay flux
@@ -83,7 +83,7 @@ function SedimentToRiverDifferentiationVariables(
     )
 end
 
-@get_units @with_kw struct SedimentToRiverDifferentiationBC{T}
+@get_units @grid_loc @with_kw struct SedimentToRiverDifferentiationBC{T}
     # Deposited clay
     deposition_clay::Vector{T} | "t dt-1"
     # Deposited silt
@@ -113,10 +113,9 @@ function SedimentToRiverDifferentiationBC(
     )
 end
 
-@get_units @with_kw struct SedimentToRiverDifferentiationModel{T} <:
-                           AbstractSedimentToRiverModel{T}
-    boundary_conditions::SedimentToRiverDifferentiationBC{T} | "-"
-    variables::SedimentToRiverDifferentiationVariables{T} | "-"
+@with_kw struct SedimentToRiverDifferentiationModel{T} <: AbstractSedimentToRiverModel{T}
+    boundary_conditions::SedimentToRiverDifferentiationBC{T}
+    variables::SedimentToRiverDifferentiationVariables{T}
 end
 
 function SedimentToRiverDifferentiationModel(inds)

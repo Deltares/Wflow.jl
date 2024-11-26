@@ -1,5 +1,5 @@
 "Struct to store atmospheric forcing variables"
-@get_units @with_kw struct AtmosphericForcing{T}
+@get_units @grid_loc @with_kw struct AtmosphericForcing{T}
     # Precipitation [mm Δt⁻¹]
     precipitation::Vector{T}
     # Potential reference evapotranspiration [mm Δt⁻¹]
@@ -18,7 +18,7 @@ function AtmosphericForcing(
     return AtmosphericForcing{T}(; precipitation, potential_evaporation, temperature)
 end
 
-@get_units @with_kw struct HydrometeoForcing{T}
+@get_units @grid_loc @with_kw struct HydrometeoForcing{T}
     # Precipitation [mm Δt⁻¹]
     precipitation::Vector{T}
     # Overland flow depth [m]

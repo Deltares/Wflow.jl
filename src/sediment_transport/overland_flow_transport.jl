@@ -1,7 +1,7 @@
 abstract type AbstractSedimentLandTransportModel{T} end
 
 ## Total sediment transport in overland flow structs and functions
-@get_units @with_kw struct SedimentLandTransportVariables{T}
+@get_units @grid_loc @with_kw struct SedimentLandTransportVariables{T}
     # Total sediment flux
     amount::Vector{T} | "t dt-1"
     deposition::Vector{T} | "t dt-1"
@@ -15,7 +15,7 @@ function SedimentLandTransportVariables(
     return SedimentLandTransportVariables{T}(; amount = amount, deposition = deposition)
 end
 
-@get_units @with_kw struct SedimentLandTransportBC{T}
+@get_units @grid_loc @with_kw struct SedimentLandTransportBC{T}
     # Eroded material
     erosion::Vector{T} | "t dt-1"
     # Transport capacity
@@ -68,7 +68,7 @@ function update!(model::SedimentLandTransportModel, network)
 end
 
 ## Total transport capacity with particle differentiation structs and functions
-@get_units @with_kw struct SedimentLandTransportDifferentiationVariables{T}
+@get_units @grid_loc @with_kw struct SedimentLandTransportDifferentiationVariables{T}
     # Total sediment flux
     amount::Vector{T} | "t dt-1"
     # Deposition
@@ -126,7 +126,7 @@ function SedimentLandTransportDifferentiationVariables(
     )
 end
 
-@get_units @with_kw struct SedimentLandTransportDifferentiationBC{T}
+@get_units @grid_loc @with_kw struct SedimentLandTransportDifferentiationBC{T}
     # Eroded clay
     erosion_clay::Vector{T} | "t dt-1"
     # Eroded silt

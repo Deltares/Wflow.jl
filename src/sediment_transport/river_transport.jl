@@ -1,7 +1,7 @@
 abstract type AbstractSedimentRiverTransportModel{T} end
 
 ## Total sediment transport in overland flow structs and functions
-@get_units @with_kw struct SedimentRiverTransportVariables{T}
+@get_units @grid_loc @with_kw struct SedimentRiverTransportVariables{T}
     # Sediment flux [ton]
     amount::Vector{T} | "t dt-1"
     clay::Vector{T} | "t dt-1"
@@ -79,7 +79,7 @@ function SedimentRiverTransportVariables(
     )
 end
 
-@get_units @with_kw struct SedimentRiverTransportBC{T}
+@get_units @grid_loc @with_kw struct SedimentRiverTransportBC{T}
     # Waterlevel
     waterlevel::Vector{T} | "t dt-1"
     # Discharge
@@ -125,7 +125,7 @@ function SedimentRiverTransportBC(
 end
 
 # Parameters for river transport
-@get_units @with_kw struct SedimentRiverTransportParameters{T}
+@get_units @grid_loc @with_kw struct SedimentRiverTransportParameters{T}
     # River bed/bank content clay
     clay_fraction::Vector{T} | "-"
     # River bed/bank content silt
@@ -773,7 +773,7 @@ end
 abstract type AbstractSedimentConcentrationsRiverModel{T} end
 
 ## Total sediment transport in overland flow structs and functions
-@get_units @with_kw struct SedimentConcentrationsRiverVariables{T}
+@get_units @grid_loc @with_kw struct SedimentConcentrationsRiverVariables{T}
     # Total sediment concentration in the river
     total::Vector{T} | "g m-3"
     # suspended sediemnt concentration in the river
@@ -795,7 +795,7 @@ function SedimentConcentrationsRiverVariables(
     )
 end
 
-@get_units @with_kw struct SedimentConcentrationsRiverBC{T}
+@get_units @grid_loc @with_kw struct SedimentConcentrationsRiverBC{T}
     # Discharge
     q::Vector{T} | "m3 s-1"
     waterlevel::Vector{T} | "m"
@@ -837,7 +837,7 @@ function SedimentConcentrationsRiverBC(
 end
 
 # Common parameters for transport capacity models
-@get_units @with_kw struct SedimentConcentrationsRiverParameters{T}
+@get_units @grid_loc @with_kw struct SedimentConcentrationsRiverParameters{T}
     # Clay mean diameter
     dm_clay::Vector{T} | "µm"
     # Silt mean diameter

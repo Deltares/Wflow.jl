@@ -1,5 +1,5 @@
 
-@get_units @with_kw struct LandGeometry{T}
+@get_units @grid_loc @with_kw struct LandGeometry{T}
     # cell area [m^2]
     area::Vector{T} | "m^2"
     # drain width [m]
@@ -35,7 +35,7 @@ function LandGeometry(nc, config, inds)
     return land_geometry
 end
 
-@get_units @with_kw struct RiverGeometry{T}
+@get_units @grid_loc @with_kw struct RiverGeometry{T}
     # drain width [m]
     width::Vector{T} | "m"
     # drain length
