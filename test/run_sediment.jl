@@ -27,7 +27,7 @@ Wflow.run_timestep!(model)
 end
 
 # run the second timestep
-model = Wflow.run_timestep(model)
+Wflow.run_timestep!(model)
 
 @testset "second timestep sediment model (vertical)" begin
     eros = model.vertical
@@ -78,22 +78,6 @@ end
     @test river.sediment_flux.variables.clay[5649] ≈ 2.840979764480952f-9
 
     @test mean(river.concentrations.variables.suspended) ≈ 0.8260083257660087f0
-end
-
-@testset "Exchange and grid location sediment" begin
-    @test Wflow.exchange(model.vertical.n) == false
-    @test Wflow.exchange(model.vertical.erosk) == true
-    @test Wflow.exchange(model.vertical.leaf_area_index) == true
-    @test Wflow.grid_loc(model.vertical, :n) == "none"
-    @test Wflow.grid_loc(model.vertical, :erosk) == "node"
-    @test Wflow.grid_loc(model.vertical, :leaf_area_index) == "node"
-    land = model.lateral.land
-    @test Wflow.exchange(land.n) == false
-    @test Wflow.exchange(land.soilloss) == true
-    @test Wflow.exchange(land.inlandsed) == true
-    @test Wflow.grid_loc(land, :n) == "none"
-    @test Wflow.grid_loc(land, :soilloss) == "node"
-    @test Wflow.grid_loc(land, :inlandsed) == "node"
 end
 
 Wflow.close_files(model)
