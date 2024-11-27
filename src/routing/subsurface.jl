@@ -1,0 +1,244 @@
+@get_units @grid_loc struct KhExponential{T}
+    # Horizontal hydraulic conductivity at soil surface [m d⁻¹]
+    kh_0::Vector{T} | "m d-1"
+    # A scaling parameter [m⁻¹] (controls exponential decline of kh_0)
+    f::Vector{T} | "m-1"
+end
+
+@get_units @grid_loc struct KhExponentialConstant{T}
+    # Exponential horizontal hydraulic conductivity profile type
+    exponential::KhExponential
+    # Depth [m] from soil surface for which exponential decline of kv_0 is valid
+    z_exp::Vector{T} | "m"
+end
+
+@get_units @grid_loc struct KhLayered{T}
+    # Horizontal hydraulic conductivity [m d⁻¹]
+    kh::Vector{T} | "m d-1"
+end
+
+abstract type SubsurfaceFlow end
+
+@get_units @grid_loc @with_kw struct LateralSsfParameters{T, Kh}
+    kh_profile::Kh                         # Horizontal hydraulic conductivity profile type [-]  
+    khfrac::Vector{T} | "-"                # A muliplication factor applied to vertical hydraulic conductivity `kv` [-]
+    soilthickness::Vector{T} | "m"         # Soil thickness [m]
+    theta_s::Vector{T} | "-"               # Saturated water content (porosity) [-]
+    theta_r::Vector{T} | "-"               # Residual water content [-]   
+    dt::T                                  # model time step [d]
+    slope::Vector{T} | "m m-1"             # Slope [m m⁻¹]
+    flow_length::Vector{T} | "m"           # Flow length [m]
+    flow_width::Vector{T} | "m"            # Flow width [m]
+end
+
+function LateralSsfParameters(
+    dataset,
+    config,
+    indices;
+    soil,
+    slope,
+    flow_length,
+    flow_width,
+    dt,
+)
+    khfrac = ncread(
+        dataset,
+        config,
+        "lateral.subsurface.ksathorfrac";
+        sel = indices,
+        defaults = 1.0,
+        type = Float,
+    )
+    n_cells = length(khfrac)
+
+    (; theta_s, theta_r, soilthickness) = soil
+    soilthickness = soilthickness .* 0.001
+
+    kh_profile_type = get(config.input.vertical, "ksat_profile", "exponential")::String
+    if kh_profile_type == "exponential"
+        (; kv_0, f) = soil.kv_profile
+        kh_0 = khfrac .* kv_0 .* 0.001 .* dt
+        kh_profile = KhExponential(kh_0, f .* 1000.0)
+    elseif kh_profile_type == "exponential_constant"
+        (; z_exp) = soil.kv_profile
+        (; kv_0, f) = soil.kv_profile.exponential
+        kh_0 = khfrac .* kv_0 .* 0.001 .* dt
+        exp_profile = KhExponential(kh_0, f .* 1000.0)
+        kh_profile = KhExponentialConstant(exp_profile, z_exp .* 0.001)
+    elseif kh_profile_type == "layered" || kh_profile_type == "layered_exponential"
+        kh_profile = KhLayered(fill(mv, n_cells))
+    end
+    parameters = LateralSsfParameters(
+        kh_profile,
+        khfrac,
+        soilthickness,
+        theta_s,
+        theta_r,
+        dt,
+        slope,
+        flow_length,
+        flow_width,
+    )
+    return parameters
+end
+
+@get_units @grid_loc @with_kw struct LateralSsfVariables{T}
+    zi::Vector{T} | "m"                    # Pseudo-water table depth [m] (top of the saturated zone)
+    exfiltwater::Vector{T} | "m dt-1"      # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
+    recharge::Vector{T} | "m2 dt-1"        # Net recharge to saturated store [m² Δt⁻¹]
+    ssf::Vector{T} | "m3 d-1"              # Subsurface flow [m³ d⁻¹]
+    ssfin::Vector{T} | "m3 d-1"            # Inflow from upstream cells [m³ d⁻¹]
+    ssfmax::Vector{T} | "m2 d-1"           # Maximum subsurface flow [m² d⁻¹]
+    to_river::Vector{T} | "m3 d-1"         # Part of subsurface flow [m³ d⁻¹] that flows to the river
+    volume::Vector{T} | "m3"               # Subsurface volume [m³]
+end
+
+function LateralSsfVariables(ssf, zi, xl, yl)
+    n = length(zi)
+    volume = @. (ssf.theta_s - ssf.theta_r) * (ssf.soilthickness - zi) * (xl * yl)
+    variables = LateralSsfVariables(;
+        zi,
+        exfiltwater = fill(mv, n),
+        recharge = fill(mv, n),
+        ssf = fill(mv, n),
+        ssfin = fill(mv, n),
+        ssfmax = fill(mv, n),
+        to_river = zeros(n),
+        volume,
+    )
+    return variables
+end
+
+@get_units @grid_loc @with_kw struct LateralSsfBC{T}
+    recharge::Vector{T} | "m2 dt-1"        # Net recharge to saturated store [m² Δt⁻¹]
+end
+
+@with_kw struct LateralSSF{T, Kh} <: SubsurfaceFlow
+    boundary_conditions::LateralSsfBC{T}
+    parameters::LateralSsfParameters{T, Kh}
+    variables::LateralSsfVariables{T}
+end
+
+function LateralSSF(
+    dataset,
+    config,
+    indices;
+    soil,
+    slope,
+    flow_length,
+    flow_width,
+    x_length,
+    y_length,
+    dt,
+)
+    parameters = LateralSsfParameters(
+        dataset,
+        config,
+        indices;
+        soil = soil.parameters,
+        slope,
+        flow_length,
+        flow_width,
+        dt,
+    )
+    zi = 0.001 * soil.variables.zi
+    variables = LateralSsfVariables(parameters, zi, x_length, y_length)
+    boundary_conditions = LateralSsfBC(; recharge = fill(mv, length(zi)))
+    ssf = LateralSSF(; boundary_conditions, parameters, variables)
+    return ssf
+end
+
+function update!(model::LateralSSF, network)
+    (;
+        order_of_subdomains,
+        order_subdomain,
+        subdomain_indices,
+        upstream_nodes,
+        area,
+        frac_to_river,
+    ) = network
+
+    (; recharge) = model.boundary_conditions
+    (; ssfin, ssf, ssfmax, to_river, zi, exfiltwater, volume) = model.variables
+    (; slope, theta_s, theta_r, soilthickness, flow_length, flow_width, dt, kh_profile) =
+        model.parameters
+
+    ns = length(order_of_subdomains)
+    for k in 1:ns
+        threaded_foreach(eachindex(order_of_subdomains[k]); basesize = 1) do i
+            m = order_of_subdomains[k][i]
+            for (n, v) in zip(subdomain_indices[m], order_subdomain[m])
+                # for a river cell without a reservoir or lake part of the upstream
+                # subsurface flow goes to the river (frac_to_river) and part goes to the
+                # subsurface flow reservoir (1.0 - frac_to_river) upstream nodes with a
+                # reservoir or lake are excluded
+                ssfin[v] = sum_at(
+                    i -> ssf[i] * (1.0 - frac_to_river[i]),
+                    upstream_nodes[n],
+                    eltype(ssfin),
+                )
+                to_river[v] = sum_at(
+                    i -> ssf[i] * frac_to_river[i],
+                    upstream_nodes[n],
+                    eltype(to_river),
+                )
+                ssf[v], zi[v], exfiltwater[v] = kinematic_wave_ssf(
+                    ssfin[v],
+                    ssf[v],
+                    zi[v],
+                    recharge[v],
+                    slope[v],
+                    theta_s[v] - theta_r[v],
+                    soilthickness[v],
+                    dt,
+                    flow_length[v],
+                    flow_width[v],
+                    ssfmax[v],
+                    kh_profile,
+                    v,
+                )
+                volume[v] = (theta_s[v] - theta_r[v]) * (soilthickness[v] - zi[v]) * area[v]
+            end
+        end
+    end
+    return nothing
+end
+
+@get_units@grid_loc @with_kw struct GroundwaterExchangeVariables{T}
+    exfiltwater::Vector{T} | "m dt-1"   # Exfiltration [m Δt⁻¹]  (groundwater above surface level, saturated excess conditions)
+    zi::Vector{T} | "m"                 # Pseudo-water table depth [m] (top of the saturated zone)
+    to_river::Vector{T} | "m3 d-1"      # Part of subsurface flow [m³ d⁻¹] that flows to the river
+    ssf::Vector{T} | "m3 d-1"           # Subsurface flow [m³ d⁻¹]
+end
+
+function GroundwaterExchangeVariables(n)
+    variables = GroundwaterExchangeVariables{Float}(;
+        exfiltwater = fill(mv, n),
+        zi = fill(mv, n),
+        to_river = fill(mv, n),
+        ssf = zeros(n),
+    )
+    return variables
+end
+
+@with_kw struct GroundwaterExchangeParameters{T}
+    dt::T       # model time step [d]
+end
+
+@with_kw struct GroundwaterExchange{T} <: SubsurfaceFlow
+    parameters::GroundwaterExchangeParameters{T}
+    variables::GroundwaterExchangeVariables{T}
+end
+
+function GroundwaterExchange(n, dt)
+    parameters = GroundwaterExchangeParameters{Float}(; dt = dt / basetimestep)
+    variables = GroundwaterExchangeVariables(n)
+    ssf = GroundwaterExchange{Float}(; parameters, variables)
+    return ssf
+end
+
+get_water_depth(subsurface::SubsurfaceFlow) = subsurface.variables.zi
+get_exfiltwater(subsurface::SubsurfaceFlow) = subsurface.variables.exfiltwater
+
+get_flux_to_river(subsurface::SubsurfaceFlow) =
+    subsurface.variables.to_river ./ tosecond(basetimestep) # [m³ s⁻¹]
