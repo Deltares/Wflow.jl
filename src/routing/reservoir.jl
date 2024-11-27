@@ -1,3 +1,4 @@
+"Struct for storing reservoir model parameters"
 @get_units @grid_loc @with_kw struct ReservoirParameters{T}
     dt::T                                   # Model time step [s]
     maxvolume::Vector{T} | "m3"             # maximum storage (above which water is spilled) [m³]
@@ -8,6 +9,7 @@
     targetfullfrac::Vector{T} | "-"         # target fraction full (of max storage
 end
 
+"Initialize reservoir model parameters"
 function ReservoirParameters(dataset, config, indices_river, n_river_cells, pits, dt)
     # read only reservoir data if reservoirs true
     # allow reservoirs only in river cells
@@ -135,6 +137,7 @@ function ReservoirParameters(dataset, config, indices_river, n_river_cells, pits
     return parameters, reservoir_network, inds_reservoir_map2river, pits
 end
 
+"Struct for storing reservoir model variables"
 @get_units @grid_loc @with_kw struct ReservoirVariables{T}
     volume::Vector{T} | "m3"                # reservoir volume [m³]
     outflow::Vector{T} | "m3 s-1"           # outflow from reservoir [m³ s⁻¹]
@@ -144,6 +147,7 @@ end
     actevap::Vector{T}                      # average actual evaporation for reservoir area [mm Δt⁻¹]
 end
 
+"Initialize reservoir model variables"
 function ReservoirVariables(n, parameters)
     (; targetfullfrac, maxvolume) = parameters
     variables = ReservoirVariables{Float}(;
@@ -157,12 +161,14 @@ function ReservoirVariables(n, parameters)
     return variables
 end
 
+"Struct for storing reservoir model boundary conditions"
 @get_units @grid_loc @with_kw struct ReservoirBC{T}
     inflow::Vector{T} | "m3"        # total inflow into reservoir [m³]
     precipitation::Vector{T}        # average precipitation for reservoir area [mm Δt⁻¹]
     evaporation::Vector{T}          # average potential evaporation for reservoir area [mm Δt⁻¹]
 end
 
+"Initialize reservoir model boundary conditions"
 function ReservoirBC(n)
     bc = ReservoirBC{Float}(;
         inflow = fill(mv, n),
@@ -172,12 +178,14 @@ function ReservoirBC(n)
     return bc
 end
 
+"Reservoir model `SimpleReservoir`"
 @with_kw struct SimpleReservoir{T}
     boundary_conditions::ReservoirBC{T}
     parameters::ReservoirParameters{T}
     variables::ReservoirVariables{T}
 end
 
+"Initialize reservoir model `SimpleReservoir`"
 function SimpleReservoir(dataset, config, indices_river, n_river_cells, pits, dt)
     parameters, reservoir_network, inds_reservoir_map2river, pits =
         ReservoirParameters(dataset, config, indices_river, n_river_cells, pits, dt)

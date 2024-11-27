@@ -1,5 +1,6 @@
 abstract type AbstractRiverFlowModel end
 
+"Struct for storing (shared) variables for river and overland flow models"
 @get_units @grid_loc @with_kw struct FlowVariables{T}
     q::Vector{T} | "m3 s-1"                 # Discharge [m³ s⁻¹]
     qlat::Vector{T} | "m2 s-1"              # Lateral inflow per unit length [m² s⁻¹]
@@ -10,6 +11,7 @@ abstract type AbstractRiverFlowModel end
     h_av::Vector{T} | "m"                   # Average water depth [m]
 end
 
+"Initialize timestepping for kinematic wave (river and overland flow models)"
 function init_kinematic_wave_timestepping(config, n; domain, dt_fixed)
     adaptive = get(config.model, "kin_wave_iteration", false)::Bool
     @info "Kinematic wave approach is used for $domain flow, adaptive timestepping = $adaptive."
@@ -25,6 +27,7 @@ function init_kinematic_wave_timestepping(config, n; domain, dt_fixed)
     return timestepping
 end
 
+"Initialize variables for river or overland flow models"
 function FlowVariables(n)
     variables = FlowVariables(;
         q = zeros(Float, n),
@@ -38,6 +41,7 @@ function FlowVariables(n)
     return variables
 end
 
+"Struct for storing Manning flow parameters"
 @get_units @grid_loc @with_kw struct ManningFlowParameters{T}
     beta::T                                 # constant in Manning's equation [-]
     slope::Vector{T} | "m m-1"              # Slope [m m⁻¹]
@@ -49,6 +53,7 @@ end
     alpha::Vector{T} | "s3/5 m1/5"          # Constant in momentum equation A = alpha*Q^beta, based on Manning's equation
 end
 
+"Initialize Manning flow parameters"
 function ManningFlowParameters(slope, mannings_n, flow_length, flow_width)
     n = length(slope)
     parameters = ManningFlowParameters(;
@@ -64,11 +69,13 @@ function ManningFlowParameters(slope, mannings_n, flow_length, flow_width)
     return parameters
 end
 
+"Struct for storing river flow model parameters"
 @get_units @grid_loc @with_kw struct RiverFlowParameters{T}
     flow::ManningFlowParameters{T}
     bankfull_depth::Vector{T} | "m"         # Bankfull water level [m]
 end
 
+"Overload `getproperty` for river flow model parameters"
 function Base.getproperty(v::RiverFlowParameters, s::Symbol)
     if s === :bankfull_depth
         getfield(v, s)
@@ -79,6 +86,7 @@ function Base.getproperty(v::RiverFlowParameters, s::Symbol)
     end
 end
 
+"Initialize river flow model parameters"
 function RiverFlowParameters(dataset, config, indices, river_length, river_width)
     mannings_n = ncread(
         dataset,
@@ -119,6 +127,7 @@ function RiverFlowParameters(dataset, config, indices, river_length, river_width
     return parameters
 end
 
+"Struct for storing river flow model boundary conditions"
 @get_units @grid_loc @with_kw struct RiverFlowBC{T, R, L}
     inwater::Vector{T} | "m3 s-1"           # Lateral inflow [m³ s⁻¹]
     inflow::Vector{T} | "m3 s-1"            # External inflow (abstraction/supply/demand) [m³ s⁻¹]
@@ -128,6 +137,7 @@ end
     lake::L                                 # Lake model struct of arrays
 end
 
+"Initialize river flow model boundary conditions"
 function RiverFlowBC(n, reservoir, lake)
     bc = RiverFlowBC(;
         inwater = zeros(Float, n),
@@ -140,6 +150,7 @@ function RiverFlowBC(n, reservoir, lake)
     return bc
 end
 
+"River flow model using the kinematic wave method and the Manning flow equation"
 @with_kw struct SurfaceFlowRiver{T, R, L, A} <: AbstractRiverFlowModel
     timestepping::TimeStepping{T}
     boundary_conditions::RiverFlowBC{T, R, L}
@@ -148,6 +159,7 @@ end
     allocation::A   # Water allocation
 end
 
+"Initialize river flow model `SurfaceFlowRiver`"
 function SurfaceFlowRiver(
     dataset,
     config,
@@ -180,11 +192,13 @@ function SurfaceFlowRiver(
     return sf_river
 end
 
+"Struct for storing overland flow model variables"
 @get_units @grid_loc @with_kw struct LandFlowVariables{T}
     flow::FlowVariables{T}
     to_river::Vector{T} | "m3 s-1"      # Part of overland flow [m³ s⁻¹] that flows to the river
 end
 
+"Overload `getproperty` for overland flow model variables"
 function Base.getproperty(v::LandFlowVariables, s::Symbol)
     if s === :to_river
         getfield(v, s)
@@ -195,10 +209,12 @@ function Base.getproperty(v::LandFlowVariables, s::Symbol)
     end
 end
 
+"Struct for storing overland flow model boundary conditions"
 @get_units @grid_loc @with_kw struct LandFlowBC{T}
     inwater::Vector{T} | "m3 s-1"       # Lateral inflow [m³ s⁻¹]
 end
 
+"Overland flow model using the kinematic wave method and the Manning flow equation"
 @with_kw struct SurfaceFlowLand{T}
     timestepping::TimeStepping{T}
     boundary_conditions::LandFlowBC{T}
@@ -206,6 +222,7 @@ end
     variables::LandFlowVariables{T}
 end
 
+"Initialize Overland flow model `SurfaceFlowLand`"
 function SurfaceFlowLand(dataset, config, indices; slope, flow_length, flow_width)
     mannings_n = ncread(
         dataset,
@@ -228,6 +245,7 @@ function SurfaceFlowLand(dataset, config, indices; slope, flow_length, flow_widt
     return sf_land
 end
 
+"Update overland flow model `SurfaceFlowLand` for a single timestep"
 function surfaceflow_land_update!(model::SurfaceFlowLand, network, dt)
     (;
         order_of_subdomains,
@@ -286,6 +304,10 @@ function surfaceflow_land_update!(model::SurfaceFlowLand, network, dt)
     end
 end
 
+"""
+Update overland flow model `SurfaceFlowLand` for a single timestep `dt`. Timestepping within
+`dt` is either with a fixed timestep `dt_fixed` or adaptive.
+"""
 function update!(model::SurfaceFlowLand, network, dt)
     (; inwater) = model.boundary_conditions
     (; alpha_term, mannings_n, slope, beta, alpha_pow, alpha, flow_width, flow_length) =
@@ -316,6 +338,7 @@ function update!(model::SurfaceFlowLand, network, dt)
     return nothing
 end
 
+"Update river flow model `SurfaceFlowRiver` for a single timestep"
 function surfaceflow_river_update!(model::SurfaceFlowRiver, network, doy, dt)
     (;
         graph,
@@ -415,6 +438,10 @@ function surfaceflow_river_update!(model::SurfaceFlowRiver, network, doy, dt)
     end
 end
 
+"""
+Update river flow model `SurfaceFlowRiver` for a single timestep `dt`. Timestepping within
+`dt` is either with a fixed timestep `dt_fixed` or adaptive.
+"""
 function update!(model::SurfaceFlowRiver, network, doy, dt)
     (; reservoir, lake, inwater) = model.boundary_conditions
 
@@ -465,6 +492,15 @@ function update!(model::SurfaceFlowRiver, network, doy, dt)
     return nothing
 end
 
+"""
+Compute a stable timestep size for the kinematice wave method for a river or overland flow
+model using a nonlinear scheme (Chow et al., 1988). 
+
+A stable time step is computed for each vector element based on the Courant timestep size
+criterion. A quantile of the vector is computed based on probability `p` to remove potential
+very low timestep sizes. Li et al. (1975) found that the nonlinear scheme is unconditonally
+stable and that a wide range of dt/dx values can be used without loss of accuracy.
+"""
 function stable_timestep(model::S, p) where {S <: Union{SurfaceFlowLand, SurfaceFlowRiver}}
     (; q) = model.variables
     (; alpha, beta, flow_length) = model.parameters
@@ -490,7 +526,7 @@ function stable_timestep(model::S, p) where {S <: Union{SurfaceFlowLand, Surface
 end
 
 """
-Update boundary condition lateral inflow `inwater` of a `river` flow model for a single
+Update boundary condition lateral inflow `inwater` of a river flow model for a single
 timestep.
 """
 function update_lateral_inflow!(
@@ -515,7 +551,7 @@ function update_lateral_inflow!(
 end
 
 """
-Update boundary condition lateral inflow `inwater` of kinematic wave overland flow model
+Update boundary condition lateral inflow `inwater` of a kinematic wave overland flow model
 `SurfaceFlowLand` for a single timestep.
 """
 function update_lateral_inflow!(

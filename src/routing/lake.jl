@@ -1,3 +1,4 @@
+"Struct for storing lake model parameters"
 @get_units @grid_loc @with_kw struct LakeParameters{T}
     dt::T                                           # Model time step [s]
     lowerlake_ind::Vector{Int} | "-"                # Index of lower lake (linked lakes)
@@ -12,6 +13,7 @@
     hq::Vector{Union{HQ, Missing}}                  # data for rating curve    
 end
 
+"Initialize lake model parameters"
 function LakeParameters(config, dataset, inds_riv, nriv, pits, dt)
     # read only lake data if lakes true
     # allow lakes only in river cells
@@ -200,6 +202,7 @@ function LakeParameters(config, dataset, inds_riv, nriv, pits, dt)
     return parameters, lake_network, inds_lake_map2river, lake_waterlevel, pits
 end
 
+"Struct for storing Lake model parameters"
 @get_units @grid_loc @with_kw struct LakeVariables{T}
     waterlevel::Vector{T} | "m"                 # waterlevel H [m] of lake
     storage::Vector{T} | "m3"                   # storage lake [m³]
@@ -208,6 +211,7 @@ end
     actevap::Vector{T}                          # average actual evapotranspiration for lake area [mm Δt⁻¹] 
 end
 
+"Initialize lake model variables"
 function LakeVariables(n, lake_waterlevel)
     variables = LakeVariables{Float}(;
         waterlevel = lake_waterlevel,
@@ -220,12 +224,14 @@ function LakeVariables(n, lake_waterlevel)
     return variables
 end
 
+"Struct for storing lake model boundary conditions"
 @get_units @grid_loc @with_kw struct LakeBC{T}
     inflow::Vector{T} | "m3"                    # inflow to the lake [m³]
     precipitation::Vector{T}                    # average precipitation for lake area [mm Δt⁻¹]
     evaporation::Vector{T}                      # average potential evaporation for lake area [mm Δt⁻¹]
 end
 
+"Initialize lake model boundary conditions"
 function LakeBC(n)
     bc = LakeBC{Float}(;
         inflow = fill(mv, n),
@@ -235,12 +241,14 @@ function LakeBC(n)
     return bc
 end
 
+"Lake model"
 @with_kw struct Lake{T}
     boundary_conditions::LakeBC{T}
     parameters::LakeParameters{T}
     variables::LakeVariables{T}
 end
 
+"Initialize lake model"
 function Lake(dataset, config, indices_river, n_river_cells, pits, dt)
     parameters, lake_network, inds_lake_map2river, lake_waterlevel, pits =
         LakeParameters(dataset, config, indices_river, n_river_cells, pits, dt)
