@@ -444,7 +444,7 @@ function update!(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmM
     lateral.subsurface.variables.zi .= vertical.soil.variables.zi ./ 1000.0
     # update lateral subsurface flow domain (kinematic wave)
     kh_layered_profile!(vertical.soil, lateral.subsurface, kv_profile, dt)
-    update!(lateral.subsurface, network.land, network.land.frac_to_river)
+    update!(lateral.subsurface, network.land)
     update_after_subsurfaceflow!(model)
     update_total_water_storage!(model)
     return nothing

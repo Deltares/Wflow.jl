@@ -242,8 +242,14 @@ function SurfaceFlowLand(dataset, config, indices; slope, flow_length, flow_widt
     return sf_land
 end
 
-function surfaceflow_land_update!(model::SurfaceFlowLand, network, frac_to_river, dt)
-    (; order_of_subdomains, order_subdomain, subdomain_indices, upstream_nodes) = network
+function surfaceflow_land_update!(model::SurfaceFlowLand, network, dt)
+    (;
+        order_of_subdomains,
+        order_subdomain,
+        subdomain_indices,
+        upstream_nodes,
+        frac_to_river,
+    ) = network
 
     (; beta, alpha, flow_width, flow_length) = model.parameters
     (; h, h_av, q, q_av, qin, qlat, to_river) = model.variables
@@ -294,7 +300,7 @@ function surfaceflow_land_update!(model::SurfaceFlowLand, network, frac_to_river
     end
 end
 
-function update!(model::SurfaceFlowLand, network, frac_to_river, dt)
+function update!(model::SurfaceFlowLand, network, dt)
     (; inwater) = model.boundary_conditions
     (; alpha_term, mannings_n, slope, beta, alpha_pow, alpha, flow_width, flow_length) =
         model.parameters
@@ -314,7 +320,7 @@ function update!(model::SurfaceFlowLand, network, frac_to_river, dt)
     while t < dt
         dt_s = adaptive ? stable_timestep(model, 0.02) : model.timestepping.dt_fixed
         dt_s = check_timestepsize(dt_s, t, dt)
-        surfaceflow_land_update!(model, network, frac_to_river, dt_s)
+        surfaceflow_land_update!(model, network, dt_s)
         t = t + dt_s
     end
     q_av ./= dt
@@ -647,9 +653,15 @@ function LateralSSF(
     return ssf
 end
 
-function update!(model::LateralSSF, network, frac_to_river)
-    (; order_of_subdomains, order_subdomain, subdomain_indices, upstream_nodes, area) =
-        network
+function update!(model::LateralSSF, network)
+    (;
+        order_of_subdomains,
+        order_subdomain,
+        subdomain_indices,
+        upstream_nodes,
+        area,
+        frac_to_river,
+    ) = network
 
     (; recharge) = model.boundary_conditions
     (; ssfin, ssf, ssfmax, to_river, zi, exfiltwater, volume) = model.variables
@@ -2207,7 +2219,7 @@ function surface_routing!(model)
         dt,
     )
     # run kinematic wave overland flow
-    update!(land, network.land, network.land.frac_to_river, dt)
+    update!(land, network.land, dt)
 
     # update lateral inflow river flow
     update_lateral_inflow!(
