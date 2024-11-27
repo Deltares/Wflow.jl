@@ -388,7 +388,7 @@ function initialize_sbm_model(config::Config)
             order = toposort_river,
             # water allocation areas
             allocation_area_indices = river_allocation_area_inds,
-            area = x_length[inds_land_map2river] .* y_length[inds_land_map2river],
+            cell_area = x_length[inds_land_map2river] .* y_length[inds_land_map2river],
         )
     elseif river_routing == "local-inertial"
         river = (
@@ -403,7 +403,7 @@ function initialize_sbm_model(config::Config)
             links_at_node = adjacent_links_at_node(graph_river, nodes_at_link),
             # water allocation areas
             allocation_area_indices = river_allocation_area_inds,
-            area = x_length[inds_land_map2river] .* y_length[inds_land_map2river],
+            cell_area = x_length[inds_land_map2river] .* y_length[inds_land_map2river],
         )
     end
 

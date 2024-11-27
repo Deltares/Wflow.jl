@@ -138,7 +138,7 @@ get_demand_gross(model::NonPaddy) = model.variables.demand_gross
 get_demand_gross(model::NoIrrigationNonPaddy) = 0.0
 
 """
-    update_demand_gross!(Model::NonPaddy, soil::SbmSoilModel)
+    update_demand_gross!(model::NonPaddy, soil::SbmSoilModel)
 
 Update gross water demand `demand_gross` of the non-paddy irrigation model for a single
 timestep.
@@ -396,7 +396,7 @@ function update_demand_gross!(model::Paddy)
     return nothing
 end
 
-update_demand_gross!(paddy::NoIrrigationPaddy) = nothing
+update_demand_gross!(model::NoIrrigationPaddy) = nothing
 
 "Struct to store water demand model variables"
 @get_units @grid_loc @with_kw struct DemandVariables{T}
@@ -696,7 +696,7 @@ function surface_water_allocation_area!(model::AllocationLand, demand, river, ne
         for j in inds_river[i]
             act_surfacewater_abst_vol[j] += frac_abstract_sw * available_surfacewater[j]
             act_surfacewater_abst[j] =
-                (act_surfacewater_abst_vol[j] / network.river.area[j]) * 1000.0
+                (act_surfacewater_abst_vol[j] / network.river.cell_area[j]) * 1000.0
         end
 
         # water allocated to each land cell.

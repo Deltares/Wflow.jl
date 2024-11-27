@@ -2081,7 +2081,7 @@ timestep.
 function update_lateral_inflow!(
     model::AbstractRiverFlowModel,
     external_models::NamedTuple,
-    river_area,
+    river_cell_area,
     land_area,
     river_indices,
     dt,
@@ -2094,7 +2094,7 @@ function update_lateral_inflow!(
         get_flux_to_river(subsurface)[river_indices] .+
         land.variables.to_river[river_indices] .+
         (net_runoff_river[river_indices] .* land_area[river_indices] .* 0.001) ./ dt .+
-        (get_nonirrigation_returnflow(allocation) .* 0.001 .* river_area) ./ dt
+        (get_nonirrigation_returnflow(allocation) .* 0.001 .* river_cell_area) ./ dt
     )
     return nothing
 end
@@ -2225,7 +2225,7 @@ function surface_routing!(model)
     update_lateral_inflow!(
         river,
         (; allocation = river.allocation, runoff, land, subsurface),
-        network.river.area,
+        network.river.cell_area,
         network.land.area,
         network.river.land_indices,
         dt,
