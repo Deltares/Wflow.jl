@@ -1,3 +1,5 @@
+abstract type AbstractRiverFlowModel end
+
 @get_units @grid_loc @with_kw struct FlowVariables{T}
     q::Vector{T} | "m3 s-1"                 # Discharge [m³ s⁻¹]
     qlat::Vector{T} | "m2 s-1"              # Lateral inflow per unit length [m² s⁻¹]
@@ -134,7 +136,7 @@ end
 @get_units @grid_loc @with_kw struct RiverFlowBC{T, R, L}
     inwater::Vector{T} | "m3 s-1"           # Lateral inflow [m³ s⁻¹]
     inflow::Vector{T} | "m3 s-1"            # External inflow (abstraction/supply/demand) [m³ s⁻¹]
-    inflow_wb::Vector{T} | "m3 s-1"         # inflow waterbody (lake or reservoir model) from land part [m³ s⁻¹]
+    inflow_waterbody::Vector{T} | "m3 s-1"  # inflow waterbody (lake or reservoir model) from land part [m³ s⁻¹]
     abstraction::Vector{T} | "m3 s-1"       # Abstraction (computed as part of water demand and allocation) [m³ s⁻¹]
     reservoir::R                            # Reservoir model struct of arrays
     lake::L                                 # Lake model struct of arrays
@@ -144,7 +146,7 @@ function RiverFlowBC(n, reservoir, lake)
     bc = RiverFlowBC(;
         inwater = zeros(Float, n),
         inflow = zeros(Float, n),
-        inflow_wb = zeros(Float, n),
+        inflow_waterbody = zeros(Float, n),
         abstraction = zeros(Float, n),
         reservoir = reservoir,
         lake = lake,
@@ -152,7 +154,7 @@ function RiverFlowBC(n, reservoir, lake)
     return bc
 end
 
-@with_kw struct SurfaceFlowRiver{T, R, L, A}
+@with_kw struct SurfaceFlowRiver{T, R, L, A} <: AbstractRiverFlowModel
     timestepping::TimeStepping{T}
     boundary_conditions::RiverFlowBC{T, R, L}
     parameters::RiverFlowParameters{T}
@@ -240,11 +242,11 @@ function SurfaceFlowLand(dataset, config, indices; slope, flow_length, flow_widt
     return sf_land
 end
 
-function surfaceflow_land_update!(sf::SurfaceFlowLand, network, frac_to_river, dt)
+function surfaceflow_land_update!(model::SurfaceFlowLand, network, frac_to_river, dt)
     (; order_of_subdomains, order_subdomain, subdomain_indices, upstream_nodes) = network
 
-    (; beta, alpha, flow_width, flow_length) = sf.parameters
-    (; h, h_av, q, q_av, qin, qlat, to_river) = sf.variables
+    (; beta, alpha, flow_width, flow_length) = model.parameters
+    (; h, h_av, q, q_av, qin, qlat, to_river) = model.variables
 
     ns = length(order_of_subdomains)
     qin .= 0.0
@@ -292,12 +294,12 @@ function surfaceflow_land_update!(sf::SurfaceFlowLand, network, frac_to_river, d
     end
 end
 
-function update!(sf::SurfaceFlowLand, network, frac_to_river, dt)
-    (; inwater) = sf.boundary_conditions
+function update!(model::SurfaceFlowLand, network, frac_to_river, dt)
+    (; inwater) = model.boundary_conditions
     (; alpha_term, mannings_n, slope, beta, alpha_pow, alpha, flow_width, flow_length) =
-        sf.parameters
-    (; h, h_av, q_av, qlat, volume, to_river) = sf.variables
-    (; adaptive) = sf.timestepping
+        model.parameters
+    (; h, h_av, q_av, qlat, volume, to_river) = model.variables
+    (; adaptive) = model.timestepping
 
     @. alpha_term = pow(mannings_n / sqrt(slope), beta)
     # use fixed alpha value based flow width
@@ -310,9 +312,9 @@ function update!(sf::SurfaceFlowLand, network, frac_to_river, dt)
 
     t = 0.0
     while t < dt
-        dt_s = adaptive ? stable_timestep(sf, 0.02) : sf.timestepping.dt_fixed
+        dt_s = adaptive ? stable_timestep(model, 0.02) : model.timestepping.dt_fixed
         dt_s = check_timestepsize(dt_s, t, dt)
-        surfaceflow_land_update!(sf, network, frac_to_river, dt_s)
+        surfaceflow_land_update!(model, network, frac_to_river, dt_s)
         t = t + dt_s
     end
     q_av ./= dt
@@ -322,7 +324,7 @@ function update!(sf::SurfaceFlowLand, network, frac_to_river, dt)
     return nothing
 end
 
-function surfaceflow_river_update!(sf::SurfaceFlowRiver, network, doy, dt)
+function surfaceflow_river_update!(model::SurfaceFlowRiver, network, doy, dt)
     (;
         graph,
         order_of_subdomains,
@@ -333,10 +335,11 @@ function surfaceflow_river_update!(sf::SurfaceFlowRiver, network, doy, dt)
         lake_indices,
     ) = network.river
 
-    (; reservoir, lake, inwater, inflow, abstraction, inflow_wb) = sf.boundary_conditions
+    (; reservoir, lake, inwater, inflow, abstraction, inflow_waterbody) =
+        model.boundary_conditions
 
-    (; beta, alpha, flow_width, flow_length) = sf.parameters
-    (; h, h_av, q, q_av, qin, qlat, volume) = sf.variables
+    (; beta, alpha, flow_width, flow_length) = model.parameters
+    (; h, h_av, q, q_av, qin, qlat, volume) = model.variables
 
     ns = length(order_of_subdomains)
     qin .= 0.0
@@ -344,7 +347,7 @@ function surfaceflow_river_update!(sf::SurfaceFlowRiver, network, doy, dt)
         threaded_foreach(eachindex(order_of_subdomains[k]); basesize = 1) do i
             m = order_of_subdomains[k][i]
             for (n, v) in zip(subdomain_indices[m], order_subdomain[m])
-                # sf.qin by outflow from upstream reservoir or lake location is added
+                # qin by outflow from upstream reservoir or lake location is added
                 qin[v] += sum_at(q, upstream_nodes[n])
                 # Inflow supply/abstraction is added to qlat (divide by flow length)
                 # If inflow < 0, abstraction is limited
@@ -371,7 +374,7 @@ function surfaceflow_river_update!(sf::SurfaceFlowRiver, network, doy, dt)
                     # run reservoir model and copy reservoir outflow to inflow (qin) of
                     # downstream river cell
                     i = reservoir_indices[v]
-                    update!(reservoir, i, q[v] + inflow_wb[v], dt)
+                    update!(reservoir, i, q[v] + inflow_waterbody[v], dt)
 
                     downstream_nodes = outneighbors(graph, v)
                     n_downstream = length(downstream_nodes)
@@ -392,7 +395,7 @@ function surfaceflow_river_update!(sf::SurfaceFlowRiver, network, doy, dt)
                     # run lake model and copy lake outflow to inflow (qin) of downstream river
                     # cell
                     i = lake_indices[v]
-                    update!(lake, i, q[v] + inflow_wb[v], doy, dt)
+                    update!(lake, i, q[v] + inflow_waterbody[v], doy, dt)
 
                     downstream_nodes = outneighbors(graph, v)
                     n_downstream = length(downstream_nodes)
@@ -420,8 +423,8 @@ function surfaceflow_river_update!(sf::SurfaceFlowRiver, network, doy, dt)
     end
 end
 
-function update!(sf::SurfaceFlowRiver, network, doy, dt)
-    (; reservoir, lake, inwater) = sf.boundary_conditions
+function update!(model::SurfaceFlowRiver, network, doy, dt)
+    (; reservoir, lake, inwater) = model.boundary_conditions
 
     (;
         alpha_term,
@@ -433,9 +436,9 @@ function update!(sf::SurfaceFlowRiver, network, doy, dt)
         flow_width,
         flow_length,
         bankfull_depth,
-    ) = sf.parameters
-    (; h, h_av, q_av, qlat, volume) = sf.variables
-    (; adaptive) = sf.timestepping
+    ) = model.parameters
+    (; h, h_av, q_av, qlat, volume) = model.variables
+    (; adaptive) = model.timestepping
 
     @. alpha_term = pow(mannings_n / sqrt(slope), beta)
     # use fixed alpha value based on 0.5 * bankfull_depth
@@ -459,9 +462,9 @@ function update!(sf::SurfaceFlowRiver, network, doy, dt)
 
     t = 0.0
     while t < dt
-        dt_s = adaptive ? stable_timestep(sf, 0.05) : sf.timestepping.dt_fixed
+        dt_s = adaptive ? stable_timestep(model, 0.05) : model.timestepping.dt_fixed
         dt_s = check_timestepsize(dt_s, t, dt)
-        surfaceflow_river_update!(sf, network, doy, dt_s)
+        surfaceflow_river_update!(model, network, doy, dt_s)
         t = t + dt_s
     end
     q_av ./= dt
@@ -470,10 +473,10 @@ function update!(sf::SurfaceFlowRiver, network, doy, dt)
     return nothing
 end
 
-function stable_timestep(sf::S, p) where {S <: Union{SurfaceFlowLand, SurfaceFlowRiver}}
-    (; q) = sf.variables
-    (; alpha, beta, flow_length) = sf.parameters
-    (; stable_timesteps) = sf.timestepping
+function stable_timestep(model::S, p) where {S <: Union{SurfaceFlowLand, SurfaceFlowRiver}}
+    (; q) = model.variables
+    (; alpha, beta, flow_length) = model.parameters
+    (; stable_timesteps) = model.timestepping
 
     n = length(q)
     stable_timesteps .= Inf
@@ -921,7 +924,7 @@ function ShallowWaterRiverVariables(dataset, config, indices, n_edges, inds_pit)
     return variables
 end
 
-@with_kw struct ShallowWaterRiver{T, R, L, F, A}
+@with_kw struct ShallowWaterRiver{T, R, L, F, A} <: AbstractRiverFlowModel
     timestepping::TimeStepping{T}
     boundary_conditions::RiverFlowBC{T, R, L}
     parameters::ShallowWaterRiverParameters{T}
@@ -1021,15 +1024,15 @@ function get_inflow_waterbody(sw::ShallowWaterRiver, src_edge)
     return q_in
 end
 
-function shallowwater_river_update!(sw::ShallowWaterRiver, network, dt, doy, update_h)
+function shallowwater_river_update!(model::ShallowWaterRiver, network, dt, doy, update_h)
     (; nodes_at_link, links_at_node) = network.river
-    (; inwater, abstraction, inflow) = sw.boundary_conditions
-    river_v = sw.variables
-    river_p = sw.parameters
+    (; inwater, abstraction, inflow) = model.boundary_conditions
+    river_v = model.variables
+    river_p = model.parameters
 
     river_v.q0 .= river_v.q
-    if !isnothing(sw.floodplain)
-        sw.floodplain.variables.q0 .= sw.floodplain.variables.q
+    if !isnothing(model.floodplain)
+        model.floodplain.variables.q0 .= model.floodplain.variables.q
     end
     @tturbo for j in eachindex(river_p.active_e)
         i = river_p.active_e[j]
@@ -1070,9 +1073,9 @@ function shallowwater_river_update!(sw::ShallowWaterRiver, network, dt, doy, upd
 
         river_v.q_av[i] += river_v.q[i] * dt
     end
-    if !isnothing(sw.floodplain)
-        floodplain_p = sw.floodplain.parameters
-        floodplain_v = sw.floodplain.variables
+    if !isnothing(model.floodplain)
+        floodplain_p = model.floodplain.parameters
+        floodplain_v = model.floodplain.variables
 
         @tturbo @. floodplain_v.hf = max(river_v.zs_max - floodplain_p.zb_max, 0.0)
 
@@ -1171,23 +1174,23 @@ function shallowwater_river_update!(sw::ShallowWaterRiver, network, dt, doy, upd
     # For reservoir and lake locations the local inertial solution is replaced by the
     # reservoir or lake model. These locations are handled as boundary conditions in the
     # local inertial model (fixed h).
-    (; reservoir, inflow_wb) = sw.boundary_conditions
+    (; reservoir, inflow_waterbody) = model.boundary_conditions
     inds_reservoir = network.reservoir.river_indices
     for v in eachindex(inds_reservoir)
         i = inds_reservoir[v]
 
-        q_in = get_inflow_waterbody(sw, links_at_node.src[i])
-        update!(reservoir, v, q_in + inflow_wb[i], dt)
+        q_in = get_inflow_waterbody(model, links_at_node.src[i])
+        update!(reservoir, v, q_in + inflow_waterbody[i], dt)
         river_v.q[i] = reservoir.variables.outflow[v]
         river_v.q_av[i] += river_v.q[i] * dt
     end
-    (; lake, inflow_wb) = sw.boundary_conditions
+    (; lake, inflow_waterbody) = model.boundary_conditions
     inds_lake = network.lake.river_indices
     for v in eachindex(inds_lake)
         i = inds_lake[v]
 
-        q_in = get_inflow_waterbody(sw, links_at_node.src[i])
-        update!(lake, v, q_in + inflow_wb[i], doy, dt)
+        q_in = get_inflow_waterbody(model, links_at_node.src[i])
+        update!(lake, v, q_in + inflow_waterbody[i], doy, dt)
         river_v.q[i] = lake.variables.outflow[v]
         river_v.q_av[i] += river_v.q[i] * dt
     end
@@ -1204,9 +1207,9 @@ function shallowwater_river_update!(sw::ShallowWaterRiver, network, dt, doy, upd
             end
             river_v.volume[i] = max(river_v.volume[i] + inflow[i] * dt, 0.0) # add external inflow
 
-            if !isnothing(sw.floodplain)
-                floodplain_v = sw.floodplain.variables
-                floodplain_p = sw.floodplain.parameters
+            if !isnothing(model.floodplain)
+                floodplain_v = model.floodplain.variables
+                floodplain_p = model.floodplain.parameters
                 q_src = sum_at(floodplain_v.q, links_at_node.src[i])
                 q_dst = sum_at(floodplain_v.q, links_at_node.dst[i])
                 floodplain_v.volume[i] = floodplain_v.volume[i] + (q_src - q_dst) * dt
@@ -1249,8 +1252,8 @@ function shallowwater_river_update!(sw::ShallowWaterRiver, network, dt, doy, upd
     return nothing
 end
 
-function update!(sw::ShallowWaterRiver{T}, network, doy, dt; update_h = true) where {T}
-    (; reservoir, lake) = sw.boundary_conditions
+function update!(model::ShallowWaterRiver{T}, network, doy, dt; update_h = true) where {T}
+    (; reservoir, lake) = model.boundary_conditions
     if !isnothing(reservoir)
         reservoir.boundary_conditions.inflow .= 0.0
         reservoir.variables.totaloutflow .= 0.0
@@ -1261,30 +1264,31 @@ function update!(sw::ShallowWaterRiver{T}, network, doy, dt; update_h = true) wh
         lake.variables.totaloutflow .= 0.0
         lake.variables.actevap .= 0.0
     end
-    if !isnothing(sw.floodplain)
-        sw.floodplain.variables.q_av .= 0.0
-        sw.floodplain.variables.h_av .= 0.0
+    if !isnothing(model.floodplain)
+        model.floodplain.variables.q_av .= 0.0
+        model.floodplain.variables.h_av .= 0.0
     end
-    sw.variables.q_av .= 0.0
-    sw.variables.h_av .= 0.0
+    model.variables.q_av .= 0.0
+    model.variables.h_av .= 0.0
 
     t = T(0.0)
     while t < dt
-        dt_s = stable_timestep(sw)
+        dt_s = stable_timestep(model)
         if t + dt_s > dt
             dt_s = dt - t
         end
-        shallowwater_river_update!(sw, network, dt_s, doy, update_h)
+        shallowwater_river_update!(model, network, dt_s, doy, update_h)
         t = t + dt_s
     end
-    sw.variables.q_av ./= dt
-    sw.variables.h_av ./= dt
+    model.variables.q_av ./= dt
+    model.variables.h_av ./= dt
 
-    if !isnothing(sw.floodplain)
-        sw.floodplain.variables.q_av ./= dt
-        sw.floodplain.variables.h_av ./= dt
-        sw.variables.q_channel_av .= sw.variables.q_av
-        sw.variables.q_av .= sw.variables.q_channel_av .+ sw.floodplain.variables.q_av
+    if !isnothing(model.floodplain)
+        model.floodplain.variables.q_av ./= dt
+        model.floodplain.variables.h_av ./= dt
+        model.variables.q_channel_av .= model.variables.q_av
+        model.variables.q_av .=
+            model.variables.q_channel_av .+ model.floodplain.variables.q_av
     end
 
     return nothing
@@ -1458,12 +1462,12 @@ function ShallowWaterLandParameters(
 end
 
 @get_units @grid_loc @with_kw struct ShallowWaterLandBC{T}
-    runoff::Vector{T} | "m3 s-1"        # runoff from hydrological model
-    inflow_wb::Vector{T} | "m3 s-1"     # inflow to water body from hydrological model
+    runoff::Vector{T} | "m3 s-1"               # runoff from hydrological model
+    inflow_waterbody::Vector{T} | "m3 s-1"     # inflow to water body from hydrological model
 end
 
 function ShallowWaterLandBC(n)
-    bc = ShallowWaterLandBC(; runoff = zeros(n), inflow_wb = zeros(n))
+    bc = ShallowWaterLandBC(; runoff = zeros(n), inflow_waterbody = zeros(n))
     return bc
 end
 
@@ -1556,14 +1560,14 @@ function stable_timestep(sw::ShallowWaterLand{T})::T where {T}
 end
 
 function update!(
-    sw::ShallowWaterLand{T},
-    swr::ShallowWaterRiver{T},
+    land::ShallowWaterLand{T},
+    river::ShallowWaterRiver{T},
     network,
     doy,
     dt;
     update_h = false,
 ) where {T}
-    (; reservoir, lake) = swr.boundary_conditions
+    (; reservoir, lake) = river.boundary_conditions
 
     if !isnothing(reservoir)
         reservoir.boundary_conditions.inflow .= 0.0
@@ -1575,32 +1579,32 @@ function update!(
         lake.variables.totaloutflow .= 0.0
         lake.variables.actevap .= 0.0
     end
-    swr.variables.q_av .= 0.0
-    swr.variables.h_av .= 0.0
-    sw.variables.h_av .= 0.0
+    river.variables.q_av .= 0.0
+    river.variables.h_av .= 0.0
+    land.variables.h_av .= 0.0
 
     t = T(0.0)
     while t < dt
-        dt_river = stable_timestep(swr)
-        dt_land = stable_timestep(sw)
+        dt_river = stable_timestep(river)
+        dt_land = stable_timestep(land)
         dt_s = min(dt_river, dt_land)
         if t + dt_s > dt
             dt_s = dt - t
         end
-        shallowwater_river_update!(swr, network, dt_s, doy, update_h)
-        shallowwater_update!(sw, swr, network, dt_s)
+        shallowwater_river_update!(river, network, dt_s, doy, update_h)
+        shallowwater_update!(land, river, network, dt_s)
         t = t + dt_s
     end
-    swr.variables.q_av ./= dt
-    swr.variables.h_av ./= dt
-    sw.variables.h_av ./= dt
+    river.variables.q_av ./= dt
+    river.variables.h_av ./= dt
+    land.variables.h_av ./= dt
 
     return nothing
 end
 
 function shallowwater_update!(
-    sw::ShallowWaterLand{T},
-    swr::ShallowWaterRiver{T},
+    land::ShallowWaterLand{T},
+    river::ShallowWaterRiver{T},
     network,
     dt,
 ) where {T}
@@ -1609,12 +1613,12 @@ function shallowwater_update!(
 
     (; links_at_node) = network.river
 
-    river_bc = swr.boundary_conditions
-    river_v = swr.variables
-    river_p = swr.parameters
-    land_bc = sw.boundary_conditions
-    land_v = sw.variables
-    land_p = sw.parameters
+    river_bc = river.boundary_conditions
+    river_v = river.variables
+    river_p = river.parameters
+    land_bc = land.boundary_conditions
+    land_v = land.variables
+    land_p = land.parameters
 
     land_v.qx0 .= land_v.qx
     land_v.qy0 .= land_v.qy
@@ -1712,8 +1716,8 @@ function shallowwater_update!(
             if river_p.waterbody[inds_river[i]]
                 # for reservoir or lake set inflow from land part, these are boundary points
                 # and update of volume and h is not required
-                river_bc.inflow_wb[inds_river[i]] =
-                    land_bc.inflow_wb[i] +
+                river_bc.inflow_waterbody[inds_river[i]] =
+                    land_bc.inflow_waterbody[i] +
                     land_bc.runoff[i] +
                     (land_v.qx[xd] - land_v.qx[i] + land_v.qy[yd] - land_v.qy[i])
             else
@@ -2063,7 +2067,7 @@ Update boundary condition lateral inflow `inwater` of a `river` flow model for a
 timestep.
 """
 function update_lateral_inflow!(
-    river,
+    model::AbstractRiverFlowModel,
     external_models::NamedTuple,
     river_area,
     land_area,
@@ -2071,7 +2075,7 @@ function update_lateral_inflow!(
     dt,
 )
     (; allocation, runoff, land, subsurface) = external_models
-    (; inwater) = river.boundary_conditions
+    (; inwater) = model.boundary_conditions
     (; net_runoff_river) = runoff.variables
 
     inwater .= (
@@ -2088,7 +2092,7 @@ Update boundary condition lateral inflow `inwater` of kinematic wave overland fl
 `SurfaceFlowLand` for a single timestep.
 """
 function update_lateral_inflow!(
-    land::SurfaceFlowLand,
+    model::SurfaceFlowLand,
     external_models::NamedTuple,
     area,
     config,
@@ -2096,7 +2100,7 @@ function update_lateral_inflow!(
 )
     (; soil, subsurface, allocation) = external_models
     (; net_runoff) = soil.variables
-    (; inwater) = land.boundary_conditions
+    (; inwater) = model.boundary_conditions
 
     do_drains = get(config.model, "drains", false)::Bool
     if do_drains
@@ -2114,47 +2118,51 @@ function update_lateral_inflow!(
 end
 
 """
-Update boundary condition inflow to a waterbody from land `inflow_wb` of a `river` flow
-model for a single timestep.
+Update boundary condition inflow to a waterbody from land `inflow_waterbody` of a model
+`AbstractRiverFlowModel` for a single timestep.
 """
-function update_inflow_waterbody!(river, external_models::NamedTuple, river_indices)
+function update_inflow_waterbody!(
+    model::AbstractRiverFlowModel,
+    external_models::NamedTuple,
+    river_indices,
+)
     (; land, subsurface) = external_models
-    (; reservoir, lake, inflow_wb) = river.boundary_conditions
+    (; reservoir, lake, inflow_waterbody) = model.boundary_conditions
 
     if !isnothing(reservoir) || !isnothing(lake)
-        inflow_land = inflow_waterbody(river, land)
-        inflow_subsurface = inflow_waterbody(river, subsurface)
+        inflow_land = get_inflow_waterbody(model, land)
+        inflow_subsurface = get_inflow_waterbody(model, subsurface)
 
-        @. inflow_wb = inflow_land[river_indices] + inflow_subsurface[river_indices]
+        @. inflow_waterbody = inflow_land[river_indices] + inflow_subsurface[river_indices]
     end
     return nothing
 end
 
 """
-Update boundary conditions `runoff` and inflow to a waterbody from land `inflow_wb` for
+Update boundary conditions `runoff` and inflow to a waterbody from land `inflow_waterbody` for
 overland flow model `ShallowWaterLand` for a single timestep.
 """
 function update_boundary_conditions!(
-    land::ShallowWaterLand,
+    model::ShallowWaterLand,
     external_models::NamedTuple,
     network,
     dt,
 )
     (; river, soil, subsurface, runoff) = external_models
-    (; inflow_wb) = land.boundary_conditions
+    (; inflow_waterbody) = model.boundary_conditions
     (; reservoir, lake) = river.boundary_conditions
     (; net_runoff) = soil.variables
     (; net_runoff_river) = runoff.variables
 
-    land.boundary_conditions.runoff .=
+    model.boundary_conditions.runoff .=
         net_runoff ./ 1000.0 .* network.land.area ./ dt .+ get_flux_to_river(subsurface) .+
         net_runoff_river .* network.land.area .* 0.001 ./ dt
 
     if !isnothing(reservoir) || !isnothing(lake)
-        inflow_land = inflow_waterbody(river, land)
-        inflow_subsurface = inflow_waterbody(river, subsurface)
+        inflow_land = get_inflow_waterbody(river, model)
+        inflow_subsurface = get_inflow_waterbody(river, subsurface)
 
-        @. inflow_wb[network.river_indices] =
+        @. inflow_waterbody[network.river_indices] =
             inflow_land[network.river_indices] + inflow_subsurface[network.river_indices]
     end
     return nothing
@@ -2162,23 +2170,21 @@ end
 
 # For the river kinematic wave, the variable `to_river` can be excluded, because this part
 # is added to the river kinematic wave.
-inflow_waterbody(::SurfaceFlowRiver, land::SurfaceFlowLand) = land.variables.q_av
-inflow_waterbody(::SurfaceFlowRiver, subsurface::LateralSSF) =
-    subsurface.variables.ssf ./ tosecond(basetimestep)
+get_inflow_waterbody(::SurfaceFlowRiver, model::SurfaceFlowLand) = model.variables.q_av
+get_inflow_waterbody(::SurfaceFlowRiver, model::LateralSSF) =
+    model.variables.ssf ./ tosecond(basetimestep)
 
 # Exclude subsurface flow for other groundwater components than `LateralSSF`.
-inflow_waterbody(
-    ::Union{SurfaceFlowRiver, ShallowWaterRiver},
-    subsurface::GroundwaterFlow,
-) = subsurface.flow.connectivity.ncell .* 0.0
-inflow_waterbody(::SurfaceFlowRiver, subsurface) = subsurface.variables.to_river .* 0.0
+get_inflow_waterbody(::Union{SurfaceFlowRiver, ShallowWaterRiver}, model::GroundwaterFlow) =
+    model.flow.connectivity.ncell .* 0.0
+get_inflow_waterbody(::SurfaceFlowRiver, model) = model.variables.to_river .* 0.0
 
 # For local inertial river routing, `to_river` is included, as water body cells are excluded
 # (boundary condition).
-inflow_waterbody(::ShallowWaterRiver, land::SurfaceFlowLand) =
-    land.variables.q_av .+ land.variables.to_river
-inflow_waterbody(::ShallowWaterRiver, subsurface::LateralSSF) =
-    (subsurface.variables.ssf .+ subsurface.variables.to_river) ./ tosecond(basetimestep)
+get_inflow_waterbody(::ShallowWaterRiver, model::SurfaceFlowLand) =
+    model.variables.q_av .+ model.variables.to_river
+get_inflow_waterbody(::ShallowWaterRiver, model::LateralSSF) =
+    (model.variables.ssf .+ model.variables.to_river) ./ tosecond(basetimestep)
 
 """
     surface_routing!(model)

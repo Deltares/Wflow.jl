@@ -199,10 +199,10 @@ Update a single reservoir at position `i`.
 This is called from within the kinematic wave loop, therefore updating only for a single
 element rather than all at once.
 """
-function update!(res::SimpleReservoir, i, inflow, timestepsecs)
-    res_bc = res.boundary_conditions
-    res_p = res.parameters
-    res_v = res.variables
+function update!(model::SimpleReservoir, i, inflow, timestepsecs)
+    res_bc = model.boundary_conditions
+    res_p = model.parameters
+    res_v = model.variables
 
     # limit lake evaporation based on total available volume [m³]
     precipitation =
@@ -559,10 +559,10 @@ Update a single lake at position `i`.
 This is called from within the kinematic wave loop, therefore updating only for a single
 element rather than all at once.
 """
-function update!(lake::Lake, i, inflow, doy, timestepsecs)
-    lake_bc = lake.boundary_conditions
-    lake_p = lake.parameters
-    lake_v = lake.variables
+function update!(model::Lake, i, inflow, doy, timestepsecs)
+    lake_bc = model.boundary_conditions
+    lake_p = model.parameters
+    lake_v = model.variables
 
     lo = lake_p.lowerlake_ind[i]
     has_lowerlake = lo != 0

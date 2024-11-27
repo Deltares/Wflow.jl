@@ -223,7 +223,7 @@ end
     boundary_conditions = Wflow.RiverFlowBC(;
         inflow = zeros(n),
         abstraction = zeros(n),
-        inflow_wb = zeros(n),
+        inflow_waterbody = zeros(n),
         inwater = zeros(n),
         reservoir = nothing,
         lake = nothing,
