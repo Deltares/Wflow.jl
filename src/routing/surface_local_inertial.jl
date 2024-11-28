@@ -283,10 +283,10 @@ function ShallowWaterRiver(
 end
 
 "Return the upstream inflow for a waterbody in `ShallowWaterRiver`"
-function get_inflow_waterbody(sw::ShallowWaterRiver, src_edge)
-    q_in = sum_at(sw.variables.q, src_edge)
-    if !isnothing(sw.floodplain)
-        q_in = q_in + sum_at(sw.floodplain.variables.q, src_edge)
+function get_inflow_waterbody(model::ShallowWaterRiver, src_edge)
+    q_in = sum_at(model.variables.q, src_edge)
+    if !isnothing(model.floodplain)
+        q_in = q_in + sum_at(model.floodplain.variables.q, src_edge)
     end
     return q_in
 end
