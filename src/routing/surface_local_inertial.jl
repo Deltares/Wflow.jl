@@ -616,8 +616,8 @@ end
 "Struct to store shallow water overland flow model parameters"
 @get_units @grid_loc @with_kw struct ShallowWaterLandParameters{T}
     n::Int                                              # number of cells [-]
-    xl::Vector{T} | "m"                                 # cell length x direction [m]
-    yl::Vector{T} | "m"                                 # cell length y direction [m]
+    x_length::Vector{T} | "m"                           # cell length x direction [m]
+    y_length::Vector{T} | "m"                           # cell length y direction [m]
     xwidth::Vector{T} | "m" | "edge"                    # effective flow width x direction (floodplain) [m]
     ywidth::Vector{T} | "m" | "edge"                    # effective flow width y direction (floodplain) [m]
     g::T                                                # acceleration due to gravity [m s⁻²]
@@ -726,19 +726,19 @@ function ShallowWaterLandParameters(
         reverse_indices[inds_river],
     )
     parameters = ShallowWaterLandParameters(;
-        n = n,
-        xl = x_length,
-        yl = y_length,
+        n,
+        x_length,
+        y_length,
         xwidth = we_x,
         ywidth = we_y,
         g = 9.80665,
-        theta = theta,
-        h_thresh = h_thresh,
-        zx_max = zx_max,
-        zy_max = zy_max,
+        theta,
+        h_thresh,
+        zx_max,
+        zy_max,
         mannings_n_sq = mannings_n .* mannings_n,
         z = elevation,
-        froude_limit = froude_limit,
+        froude_limit,
         rivercells = river_location,
     )
     return parameters, staggered_indices
@@ -832,11 +832,11 @@ end
 function stable_timestep(sw::ShallowWaterLand{T})::T where {T}
     dt_min = T(Inf)
     (; cfl) = sw.timestepping
-    (; n, g, xl, yl, rivercells) = sw.parameters
+    (; n, g, x_length, y_length, rivercells) = sw.parameters
     (; h) = sw.variables
     @batch per = thread reduction = ((min, dt_min),) for i in 1:(n)
         @fastmath @inbounds dt = if rivercells[i] == 0
-            cfl * min(xl[i], yl[i]) / sqrt(g * h[i])
+            cfl * min(x_length[i], y_length[i]) / sqrt(g * h[i])
         else
             T(Inf)
         end
@@ -965,7 +965,7 @@ function shallowwater_update!(
             hf = (zs_max - land_p.zx_max[i])
 
             if hf > land_p.h_thresh
-                length = T(0.5) * (land_p.xl[i] + land_p.xl[xu]) # can be precalculated
+                length = T(0.5) * (land_p.x_length[i] + land_p.x_length[xu]) # can be precalculated
                 land_v.qx[i] = local_inertial_flow(
                     land_p.theta,
                     land_v.qx0[i],
@@ -1004,7 +1004,7 @@ function shallowwater_update!(
             hf = (zs_max - land_p.zy_max[i])
 
             if hf > land_p.h_thresh
-                length = T(0.5) * (land_p.yl[i] + land_p.yl[yu]) # can be precalculated
+                length = T(0.5) * (land_p.y_length[i] + land_p.y_length[yu]) # can be precalculated
                 land_v.qy[i] = local_inertial_flow(
                     land_p.theta,
                     land_v.qy0[i],
@@ -1063,7 +1063,7 @@ function shallowwater_update!(
                     river_v.h[inds_river[i]] =
                         river_p.bankfull_depth[inds_river[i]] +
                         (land_v.volume[i] - river_p.bankfull_volume[inds_river[i]]) /
-                        (land_p.xl[i] * land_p.yl[i])
+                        (land_p.x_length[i] * land_p.y_length[i])
                     land_v.h[i] =
                         river_v.h[inds_river[i]] - river_p.bankfull_depth[inds_river[i]]
                     river_v.volume[inds_river[i]] =
@@ -1091,7 +1091,7 @@ function shallowwater_update!(
                 land_v.error[i] = land_v.error[i] + abs(land_v.volume[i])
                 land_v.volume[i] = T(0.0) # set volume to zero
             end
-            land_v.h[i] = land_v.volume[i] / (land_p.xl[i] * land_p.yl[i])
+            land_v.h[i] = land_v.volume[i] / (land_p.x_length[i] * land_p.y_length[i])
         end
         land_v.h_av[i] += land_v.h[i] * dt
     end
