@@ -135,7 +135,7 @@ end
     x = [dx:dx:L;]
     zb = first.([quadgk(s, xi, L; rtol = 1e-12) for xi in x])
 
-    # initialize ShallowWaterRiver
+    # initialize local inertial river flow model
     graph = DiGraph(n)
     for i in 1:n
         add_edge!(graph, i, i + 1)
@@ -182,7 +182,7 @@ end
     push!(h_init, h_a[n])
 
     timestepping = Wflow.TimeStepping(; cfl = 0.7)
-    parameters = Wflow.ShallowWaterRiverParameters(;
+    parameters = Wflow.LocalInertialRiverFlowParameters(;
         n = n,
         ne = _ne,
         active_n = collect(1:(n - 1)),
@@ -203,7 +203,7 @@ end
         waterbody = zeros(n),
     )
 
-    variables = Wflow.ShallowWaterRiverVariables(;
+    variables = Wflow.LocalInertialRiverFlowVariables(;
         q0 = zeros(_ne),
         q = zeros(_ne),
         q_av = zeros(_ne),
@@ -229,7 +229,7 @@ end
         lake = nothing,
     )
 
-    sw_river = Wflow.ShallowWaterRiver(;
+    sw_river = Wflow.LocalInertialRiverFlow(;
         timestepping,
         boundary_conditions,
         parameters,
@@ -244,7 +244,7 @@ end
         sw_river.boundary_conditions.inwater[1] = 20.0
         h0 = mean(sw_river.variables.h)
         dt = Wflow.stable_timestep(sw_river)
-        Wflow.shallowwater_river_update!(sw_river, network, dt, 0.0, true)
+        Wflow.local_inertial_river_update!(sw_river, network, dt, 0.0, true)
         d = abs(h0 - mean(sw_river.variables.h))
         if d <= epsilon
             break

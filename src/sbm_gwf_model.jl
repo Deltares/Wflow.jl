@@ -169,7 +169,7 @@ function initialize_sbm_gwf_model(config::Config)
         )
     elseif land_routing == "local-inertial"
         inds_river_map2land = reverse_inds_river[indices] # not filtered (with zeros)
-        overland_flow, staggered_indices = ShallowWaterLand(
+        overland_flow, staggered_indices = LocalInertialOverlandFlow(
             dataset,
             config,
             indices;
@@ -203,7 +203,7 @@ function initialize_sbm_gwf_model(config::Config)
             lake = lake,
         )
     elseif river_routing == "local-inertial"
-        river_flow, nodes_at_edge = ShallowWaterRiver(
+        river_flow, nodes_at_edge = LocalInertialRiverFlow(
             dataset,
             config,
             inds_river;

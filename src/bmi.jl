@@ -161,9 +161,9 @@ function BMI.get_var_grid(model::Model, name::String)
             2
         elseif :river in key
             3
-        elseif type <: ShallowWaterLand && occursin("x", s[end])
+        elseif type <: LocalInertialOverlandFlow && occursin("x", s[end])
             4
-        elseif type <: ShallowWaterLand && occursin("y", s[end])
+        elseif type <: LocalInertialOverlandFlow && occursin("y", s[end])
             5
         else
             6

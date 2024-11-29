@@ -1,5 +1,5 @@
-"Struct for storing shallow water river flow model parameters"
-@get_units @grid_loc @with_kw struct ShallowWaterRiverParameters{T}
+"Struct for storing local inertial river flow model parameters"
+@get_units @grid_loc @with_kw struct LocalInertialRiverFlowParameters{T}
     n::Int                                              # number of cells [-]
     ne::Int                                             # number of edges [-]
     active_n::Vector{Int} | "-"                         # active nodes [-]
@@ -20,8 +20,8 @@
     waterbody::Vector{Bool} | "-"                       # water body cells (reservoir or lake)
 end
 
-"Initialize shallow water river flow model parameters"
-function ShallowWaterRiverParameters(
+"Initialize local inertial river flow model parameters"
+function LocalInertialRiverFlowParameters(
     dataset,
     config,
     indices;
@@ -112,7 +112,7 @@ function ShallowWaterRiverParameters(
     end
     active_index = findall(x -> x == 0, waterbody)
 
-    parameters = ShallowWaterRiverParameters(;
+    parameters = LocalInertialRiverFlowParameters(;
         n,
         ne = n_edges,
         active_n = active_index,
@@ -135,8 +135,8 @@ function ShallowWaterRiverParameters(
     return parameters
 end
 
-"Struct for storing shallow water river flow model variables"
-@get_units @grid_loc @with_kw struct ShallowWaterRiverVariables{T}
+"Struct for storing local inertial river flow model variables"
+@get_units @grid_loc @with_kw struct LocalInertialRiverFlowVariables{T}
     q::Vector{T} | "m3 s-1" | "edge"                    # river discharge (subgrid channel)
     q0::Vector{T} | "m3 s-1" | "edge"                   # river discharge (subgrid channel) at previous time step
     q_av::Vector{T} | "m3 s-1" | "edge"                 # average river channel (+ floodplain) discharge [m³ s⁻¹]
@@ -154,7 +154,7 @@ end
 end
 
 "Initialize shallow water river flow model variables"
-function ShallowWaterRiverVariables(dataset, config, indices, n_edges, inds_pit)
+function LocalInertialRiverFlowVariables(dataset, config, indices, n_edges, inds_pit)
     floodplain_1d = get(config.model, "floodplain_1d", false)::Bool
     riverdepth_bc = ncread(
         dataset,
@@ -171,7 +171,7 @@ function ShallowWaterRiverVariables(dataset, config, indices, n_edges, inds_pit)
     q_av = zeros(n_edges)
     # set ghost points for boundary condition (downstream river outlet): river depth `h`
     append!(h, riverdepth_bc)
-    variables = ShallowWaterRiverVariables(;
+    variables = LocalInertialRiverFlowVariables(;
         q = zeros(n_edges),
         q0 = zeros(n_edges),
         q_av = q_av,
@@ -191,17 +191,17 @@ function ShallowWaterRiverVariables(dataset, config, indices, n_edges, inds_pit)
 end
 
 "Shallow water river flow model using the local inertial method"
-@with_kw struct ShallowWaterRiver{T, R, L, F, A} <: AbstractRiverFlowModel
+@with_kw struct LocalInertialRiverFlow{T, R, L, F, A} <: AbstractRiverFlowModel
     timestepping::TimeStepping{T}
     boundary_conditions::RiverFlowBC{T, R, L}
-    parameters::ShallowWaterRiverParameters{T}
-    variables::ShallowWaterRiverVariables{T}
+    parameters::LocalInertialRiverFlowParameters{T}
+    variables::LocalInertialRiverFlowVariables{T}
     floodplain::F                                       # Floodplain (1D) schematization
     allocation::A                                       # Water allocation
 end
 
-"Initialize shallow water river flow model `ShallowWaterRiver`"
-function ShallowWaterRiver(
+"Initialize shallow water river flow model `LocalIntertialRiverFlow`"
+function LocalInertialRiverFlow(
     dataset,
     config,
     indices;
@@ -235,7 +235,7 @@ function ShallowWaterRiver(
     nodes_at_edge = adjacent_nodes_at_edge(graph_river)
     n_edges = ne(graph_river)
 
-    parameters = ShallowWaterRiverParameters(
+    parameters = LocalInertialRiverFlowParameters(
         dataset,
         config,
         indices;
@@ -247,7 +247,7 @@ function ShallowWaterRiver(
         index_pit,
         inds_pit,
     )
-    variables = ShallowWaterRiverVariables(dataset, config, indices, n_edges, inds_pit)
+    variables = LocalInertialRiverFlowVariables(dataset, config, indices, n_edges, inds_pit)
 
     n = length(indices)
     boundary_conditions = RiverFlowBC(n, reservoir, lake)
@@ -271,7 +271,7 @@ function ShallowWaterRiver(
     end
 
     do_water_demand = haskey(config.model, "water_demand")
-    sw_river = ShallowWaterRiver(;
+    sw_river = LocalInertialRiverFlow(;
         timestepping,
         boundary_conditions,
         parameters,
@@ -282,8 +282,8 @@ function ShallowWaterRiver(
     return sw_river, nodes_at_edge
 end
 
-"Return the upstream inflow for a waterbody in `ShallowWaterRiver`"
-function get_inflow_waterbody(model::ShallowWaterRiver, src_edge)
+"Return the upstream inflow for a waterbody in `LocalInertialRiverFlow`"
+function get_inflow_waterbody(model::LocalInertialRiverFlow, src_edge)
     q_in = sum_at(model.variables.q, src_edge)
     if !isnothing(model.floodplain)
         q_in = q_in + sum_at(model.floodplain.variables.q, src_edge)
@@ -293,13 +293,19 @@ end
 
 # For local inertial river routing, `to_river` is included, as water body cells are excluded
 # (boundary condition).
-get_inflow_waterbody(::ShallowWaterRiver, model::KinWaveOverlandFlow) =
+get_inflow_waterbody(::LocalInertialRiverFlow, model::KinWaveOverlandFlow) =
     model.variables.q_av .+ model.variables.to_river
-get_inflow_waterbody(::ShallowWaterRiver, model::LateralSSF) =
+get_inflow_waterbody(::LocalInertialRiverFlow, model::LateralSSF) =
     (model.variables.ssf .+ model.variables.to_river) ./ tosecond(basetimestep)
 
-"Update shallow water river flow model `ShallowWaterRiver` for a single timestep"
-function shallowwater_river_update!(model::ShallowWaterRiver, network, dt, doy, update_h)
+"Update local inertial river flow model `LocalIntertialRiverFlow` for a single timestep"
+function local_inertial_river_update!(
+    model::LocalInertialRiverFlow,
+    network,
+    dt,
+    doy,
+    update_h,
+)
     (; nodes_at_edge, edges_at_node) = network.river
     (; inwater, abstraction, inflow) = model.boundary_conditions
     river_v = model.variables
@@ -528,10 +534,16 @@ function shallowwater_river_update!(model::ShallowWaterRiver, network, dt, doy, 
 end
 
 """
-Update river flow model `ShallowWaterRiver` for a single timestep `dt`. An adaptive
+Update local inertial river flow model `LocalInertialRiverFlow` for a single timestep `dt`. An adaptive
 timestepping method is used (computing a sub timestep `dt_s`).
 """
-function update!(model::ShallowWaterRiver{T}, network, doy, dt; update_h = true) where {T}
+function update!(
+    model::LocalInertialRiverFlow{T},
+    network,
+    doy,
+    dt;
+    update_h = true,
+) where {T}
     (; reservoir, lake) = model.boundary_conditions
     if !isnothing(reservoir)
         reservoir.boundary_conditions.inflow .= 0.0
@@ -556,7 +568,7 @@ function update!(model::ShallowWaterRiver{T}, network, doy, dt; update_h = true)
         if t + dt_s > dt
             dt_s = dt - t
         end
-        shallowwater_river_update!(model, network, dt_s, doy, update_h)
+        local_inertial_river_update!(model, network, dt_s, doy, update_h)
         t = t + dt_s
     end
     model.variables.q_av ./= dt
@@ -586,8 +598,8 @@ end
 # neigbors.
 const dirs = (:yd, :xd, :xu, :yu)
 
-"Struct to store shallow water overland flow model variables"
-@get_units @grid_loc @with_kw struct ShallowWaterLandVariables{T}
+"Struct to store local inertial overland flow model variables"
+@get_units @grid_loc @with_kw struct LocalInertialOverlandFlowVariables{T}
     qy0::Vector{T} | "m3 s-1" | "edge"      # flow in y direction at previous time step
     qx0::Vector{T} | "m3 s-1" | "edge"      # flow in x direction at previous time step
     qx::Vector{T} | "m3 s-1" | "edge"       # flow in x direction
@@ -598,9 +610,9 @@ const dirs = (:yd, :xd, :xu, :yu)
     h_av::Vector{T} | "m"                   # average water depth (for river cells the reference is the river bed elevation `zb`)
 end
 
-"Initialize shallow water overland flow model variables"
-function ShallowWaterLandVariables(n)
-    variables = ShallowWaterLandVariables(;
+"Initialize local inertial overland flow model variables"
+function LocalInertialOverlandFlowVariables(n)
+    variables = LocalInertialOverlandFlowVariables(;
         qx0 = zeros(n + 1),
         qy0 = zeros(n + 1),
         qx = zeros(n + 1),
@@ -613,8 +625,8 @@ function ShallowWaterLandVariables(n)
     return variables
 end
 
-"Struct to store shallow water overland flow model parameters"
-@get_units @grid_loc @with_kw struct ShallowWaterLandParameters{T}
+"Struct to store local inertial overland flow model parameters"
+@get_units @grid_loc @with_kw struct LocalInertialOverlandFlowParameters{T}
     n::Int                                              # number of cells [-]
     x_length::Vector{T} | "m"                           # cell length x direction [m]
     y_length::Vector{T} | "m"                           # cell length y direction [m]
@@ -632,7 +644,7 @@ end
 end
 
 "Initialize shallow water overland flow model parameters"
-function ShallowWaterLandParameters(
+function LocalInertialOverlandFlowParameters(
     dataset,
     config,
     indices;
@@ -725,7 +737,7 @@ function ShallowWaterLandParameters(
         waterbody,
         reverse_indices[inds_river],
     )
-    parameters = ShallowWaterLandParameters(;
+    parameters = LocalInertialOverlandFlowParameters(;
         n,
         x_length,
         y_length,
@@ -744,28 +756,28 @@ function ShallowWaterLandParameters(
     return parameters, staggered_indices
 end
 
-"Struct to store shallow water overland flow model boundary conditions"
-@get_units @grid_loc @with_kw struct ShallowWaterLandBC{T}
+"Struct to store local inertial overland flow model boundary conditions"
+@get_units @grid_loc @with_kw struct LocalInertialOverlandFlowBC{T}
     runoff::Vector{T} | "m3 s-1"               # runoff from hydrological model
     inflow_waterbody::Vector{T} | "m3 s-1"     # inflow to water body from hydrological model
 end
 
 "Struct to store shallow water overland flow model boundary conditions"
-function ShallowWaterLandBC(n)
-    bc = ShallowWaterLandBC(; runoff = zeros(n), inflow_waterbody = zeros(n))
+function LocalInertialOverlandFlowBC(n)
+    bc = LocalInertialOverlandFlowBC(; runoff = zeros(n), inflow_waterbody = zeros(n))
     return bc
 end
 
-"Shallow water overland flow model using the local inertial method"
-@with_kw struct ShallowWaterLand{T}
+"Local inertial overland flow model using the local inertial method"
+@with_kw struct LocalInertialOverlandFlow{T}
     timestepping::TimeStepping{T}
-    boundary_conditions::ShallowWaterLandBC{T}
-    parameters::ShallowWaterLandParameters{T}
-    variables::ShallowWaterLandVariables{T}
+    boundary_conditions::LocalInertialOverlandFlowBC{T}
+    parameters::LocalInertialOverlandFlowParameters{T}
+    variables::LocalInertialOverlandFlowVariables{T}
 end
 
-"Initialize shallow water overland flow model"
-function ShallowWaterLand(
+"Initialize local inertial overland flow model"
+function LocalInertialOverlandFlow(
     dataset,
     config,
     indices;
@@ -784,8 +796,8 @@ function ShallowWaterLand(
     timestepping = TimeStepping(; cfl)
 
     n = length(indices)
-    boundary_conditions = ShallowWaterLandBC(n)
-    parameters, staggered_indices = ShallowWaterLandParameters(
+    boundary_conditions = LocalInertialOverlandFlowBC(n)
+    parameters, staggered_indices = LocalInertialOverlandFlowParameters(
         dataset,
         config,
         indices;
@@ -800,27 +812,31 @@ function ShallowWaterLand(
         river_location,
         waterbody,
     )
-    variables = ShallowWaterLandVariables(n)
+    variables = LocalInertialOverlandFlowVariables(n)
 
-    sw_land =
-        ShallowWaterLand{Float}(; timestepping, boundary_conditions, parameters, variables)
+    sw_land = LocalInertialOverlandFlow{Float}(;
+        timestepping,
+        boundary_conditions,
+        parameters,
+        variables,
+    )
 
     return sw_land, staggered_indices
 end
 
 """
-    stable_timestep(sw::ShallowWaterRiver)
-    stable_timestep(sw::ShallowWaterLand)
+    stable_timestep(model::LocalInertialRiverFlow)
+    stable_timestep(model::LocalInertialOverlandFlow)
 
 Compute a stable timestep size for the local inertial approach, based on Bates et al. (2010).
 
 dt = cfl * (Δx / sqrt(g max(h))
 """
-function stable_timestep(sw::ShallowWaterRiver{T})::T where {T}
+function stable_timestep(model::LocalInertialRiverFlow{T})::T where {T}
     dt_min = T(Inf)
-    (; cfl) = sw.timestepping
-    (; n, flow_length, g) = sw.parameters
-    (; h) = sw.variables
+    (; cfl) = model.timestepping
+    (; n, flow_length, g) = model.parameters
+    (; h) = model.variables
     @batch per = thread reduction = ((min, dt_min),) for i in 1:(n)
         @fastmath @inbounds dt = cfl * flow_length[i] / sqrt(g * h[i])
         dt_min = min(dt, dt_min)
@@ -829,11 +845,11 @@ function stable_timestep(sw::ShallowWaterRiver{T})::T where {T}
     return dt_min
 end
 
-function stable_timestep(sw::ShallowWaterLand{T})::T where {T}
+function stable_timestep(model::LocalInertialOverlandFlow{T})::T where {T}
     dt_min = T(Inf)
-    (; cfl) = sw.timestepping
-    (; n, g, x_length, y_length, rivercells) = sw.parameters
-    (; h) = sw.variables
+    (; cfl) = model.timestepping
+    (; n, g, x_length, y_length, rivercells) = model.parameters
+    (; h) = model.variables
     @batch per = thread reduction = ((min, dt_min),) for i in 1:(n)
         @fastmath @inbounds dt = if rivercells[i] == 0
             cfl * min(x_length[i], y_length[i]) / sqrt(g * h[i])
@@ -848,10 +864,10 @@ end
 
 """
 Update boundary conditions `runoff` and inflow to a waterbody from land `inflow_waterbody` for
-overland flow model `ShallowWaterLand` for a single timestep.
+overland flow model `LocalInertialOverlandFlow` for a single timestep.
 """
 function update_boundary_conditions!(
-    model::ShallowWaterLand,
+    model::LocalInertialOverlandFlow,
     external_models::NamedTuple,
     network,
     dt,
@@ -877,13 +893,13 @@ function update_boundary_conditions!(
 end
 
 """
-Update combined river `ShallowWaterRiver`and overland flow `ShallowWaterLand` models for a
+Update combined river `LocalInertialRiverFlow` and overland flow `LocalInertialOverlandFlow` models for a
 single timestep `dt`. An adaptive timestepping method is used (computing a sub timestep
 `dt_s`).
 """
 function update!(
-    land::ShallowWaterLand{T},
-    river::ShallowWaterRiver{T},
+    land::LocalInertialOverlandFlow{T},
+    river::LocalInertialRiverFlow{T},
     network,
     doy,
     dt;
@@ -913,8 +929,8 @@ function update!(
         if t + dt_s > dt
             dt_s = dt - t
         end
-        shallowwater_river_update!(river, network, dt_s, doy, update_h)
-        shallowwater_update!(land, river, network, dt_s)
+        local_inertial_river_update!(river, network, dt_s, doy, update_h)
+        local_inertial_update!(land, river, network, dt_s)
         t = t + dt_s
     end
     river.variables.q_av ./= dt
@@ -925,12 +941,12 @@ function update!(
 end
 
 """
-Update combined river `ShallowWaterRiver`and overland flow `ShallowWaterLand` models for a
+Update combined river `LocalInertialRiverFlow`and overland flow `LocalInertialOverlandFlow` models for a
 single timestep `dt`.
 """
-function shallowwater_update!(
-    land::ShallowWaterLand{T},
-    river::ShallowWaterRiver{T},
+function local_inertial_update!(
+    land::LocalInertialOverlandFlow{T},
+    river::LocalInertialRiverFlow{T},
     network,
     dt,
 ) where {T}
