@@ -293,7 +293,7 @@ end
 
 # For local inertial river routing, `to_river` is included, as water body cells are excluded
 # (boundary condition).
-get_inflow_waterbody(::ShallowWaterRiver, model::SurfaceFlowLand) =
+get_inflow_waterbody(::ShallowWaterRiver, model::KinWaveOverlandFlow) =
     model.variables.q_av .+ model.variables.to_river
 get_inflow_waterbody(::ShallowWaterRiver, model::LateralSSF) =
     (model.variables.ssf .+ model.variables.to_river) ./ tosecond(basetimestep)

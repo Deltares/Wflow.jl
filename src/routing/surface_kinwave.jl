@@ -151,7 +151,7 @@ function RiverFlowBC(n, reservoir, lake)
 end
 
 "River flow model using the kinematic wave method and the Manning flow equation"
-@with_kw struct SurfaceFlowRiver{T, R, L, A} <: AbstractRiverFlowModel
+@with_kw struct KinWaveRiverFlow{T, R, L, A} <: AbstractRiverFlowModel
     timestepping::TimeStepping{T}
     boundary_conditions::RiverFlowBC{T, R, L}
     parameters::RiverFlowParameters{T}
@@ -159,8 +159,8 @@ end
     allocation::A   # Water allocation
 end
 
-"Initialize river flow model `SurfaceFlowRiver`"
-function SurfaceFlowRiver(
+"Initialize river flow model `KinWaveRiverFlow`"
+function KinWaveRiverFlow(
     dataset,
     config,
     indices;
@@ -181,7 +181,7 @@ function SurfaceFlowRiver(
     parameters = RiverFlowParameters(dataset, config, indices, river_length, river_width)
     boundary_conditions = RiverFlowBC(n, reservoir, lake)
 
-    sf_river = SurfaceFlowRiver(;
+    sf_river = KinWaveRiverFlow(;
         timestepping,
         boundary_conditions,
         parameters,
@@ -215,15 +215,15 @@ end
 end
 
 "Overland flow model using the kinematic wave method and the Manning flow equation"
-@with_kw struct SurfaceFlowLand{T}
+@with_kw struct KinWaveOverlandFlow{T}
     timestepping::TimeStepping{T}
     boundary_conditions::LandFlowBC{T}
     parameters::ManningFlowParameters{T}
     variables::LandFlowVariables{T}
 end
 
-"Initialize Overland flow model `SurfaceFlowLand`"
-function SurfaceFlowLand(dataset, config, indices; slope, flow_length, flow_width)
+"Initialize Overland flow model `KinWaveOverlandFlow`"
+function KinWaveOverlandFlow(dataset, config, indices; slope, flow_length, flow_width)
     mannings_n = ncread(
         dataset,
         config,
@@ -240,13 +240,14 @@ function SurfaceFlowLand(dataset, config, indices; slope, flow_length, flow_widt
     variables = LandFlowVariables(; flow = FlowVariables(n), to_river = zeros(Float, n))
     parameters = ManningFlowParameters(slope, mannings_n, flow_length, flow_width)
     boundary_conditions = LandFlowBC(; inwater = zeros(Float, n))
-    sf_land = SurfaceFlowLand(; timestepping, boundary_conditions, variables, parameters)
+    sf_land =
+        KinWaveOverlandFlow(; timestepping, boundary_conditions, variables, parameters)
 
     return sf_land
 end
 
-"Update overland flow model `SurfaceFlowLand` for a single timestep"
-function surfaceflow_land_update!(model::SurfaceFlowLand, network, dt)
+"Update overland flow model `KinWaveOverlandFlow` for a single timestep"
+function surfaceflow_land_update!(model::KinWaveOverlandFlow, network, dt)
     (;
         order_of_subdomains,
         order_subdomain,
@@ -305,10 +306,10 @@ function surfaceflow_land_update!(model::SurfaceFlowLand, network, dt)
 end
 
 """
-Update overland flow model `SurfaceFlowLand` for a single timestep `dt`. Timestepping within
+Update overland flow model `KinWaveOverlandFlow` for a single timestep `dt`. Timestepping within
 `dt` is either with a fixed timestep `dt_fixed` or adaptive.
 """
-function update!(model::SurfaceFlowLand, network, dt)
+function update!(model::KinWaveOverlandFlow, network, dt)
     (; inwater) = model.boundary_conditions
     (; alpha_term, mannings_n, slope, beta, alpha_pow, alpha, flow_width, flow_length) =
         model.parameters
@@ -338,8 +339,8 @@ function update!(model::SurfaceFlowLand, network, dt)
     return nothing
 end
 
-"Update river flow model `SurfaceFlowRiver` for a single timestep"
-function surfaceflow_river_update!(model::SurfaceFlowRiver, network, doy, dt)
+"Update river flow model `KinWaveRiverFlow` for a single timestep"
+function surfaceflow_river_update!(model::KinWaveRiverFlow, network, doy, dt)
     (;
         graph,
         order_of_subdomains,
@@ -439,10 +440,10 @@ function surfaceflow_river_update!(model::SurfaceFlowRiver, network, doy, dt)
 end
 
 """
-Update river flow model `SurfaceFlowRiver` for a single timestep `dt`. Timestepping within
+Update river flow model `KinWaveRiverFlow` for a single timestep `dt`. Timestepping within
 `dt` is either with a fixed timestep `dt_fixed` or adaptive.
 """
-function update!(model::SurfaceFlowRiver, network, doy, dt)
+function update!(model::KinWaveRiverFlow, network, doy, dt)
     (; reservoir, lake, inwater) = model.boundary_conditions
 
     (;
@@ -501,7 +502,10 @@ criterion. A quantile of the vector is computed based on probability `p` to remo
 very low timestep sizes. Li et al. (1975) found that the nonlinear scheme is unconditonally
 stable and that a wide range of dt/dx values can be used without loss of accuracy.
 """
-function stable_timestep(model::S, p) where {S <: Union{SurfaceFlowLand, SurfaceFlowRiver}}
+function stable_timestep(
+    model::S,
+    p,
+) where {S <: Union{KinWaveOverlandFlow, KinWaveRiverFlow}}
     (; q) = model.variables
     (; alpha, beta, flow_length) = model.parameters
     (; stable_timesteps) = model.timestepping
@@ -552,10 +556,10 @@ end
 
 """
 Update boundary condition lateral inflow `inwater` of a kinematic wave overland flow model
-`SurfaceFlowLand` for a single timestep.
+`KinWaveOverlandFlow` for a single timestep.
 """
 function update_lateral_inflow!(
-    model::SurfaceFlowLand,
+    model::KinWaveOverlandFlow,
     external_models::NamedTuple,
     area,
     config,
@@ -603,11 +607,11 @@ end
 
 # For the river kinematic wave, the variable `to_river` can be excluded, because this part
 # is added to the river kinematic wave.
-get_inflow_waterbody(::SurfaceFlowRiver, model::SurfaceFlowLand) = model.variables.q_av
-get_inflow_waterbody(::SurfaceFlowRiver, model::LateralSSF) =
+get_inflow_waterbody(::KinWaveRiverFlow, model::KinWaveOverlandFlow) = model.variables.q_av
+get_inflow_waterbody(::KinWaveRiverFlow, model::LateralSSF) =
     model.variables.ssf ./ tosecond(basetimestep)
 
 # Exclude subsurface flow for other groundwater components than `LateralSSF`.
 get_inflow_waterbody(::AbstractRiverFlowModel, model::GroundwaterFlow) =
     model.flow.connectivity.ncell .* 0.0
-get_inflow_waterbody(::SurfaceFlowRiver, model) = model.variables.to_river .* 0.0
+get_inflow_waterbody(::KinWaveRiverFlow, model) = model.variables.to_river .* 0.0

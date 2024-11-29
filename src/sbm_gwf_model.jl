@@ -159,7 +159,7 @@ function initialize_sbm_gwf_model(config::Config)
     end
 
     if land_routing == "kinematic-wave"
-        overland_flow = SurfaceFlowLand(
+        overland_flow = KinWaveOverlandFlow(
             dataset,
             config,
             indices;
@@ -193,7 +193,7 @@ function initialize_sbm_gwf_model(config::Config)
     minimum(river_width) > 0 || error("river width must be positive on river cells")
 
     if river_routing == "kinematic-wave"
-        river_flow = SurfaceFlowRiver(
+        river_flow = KinWaveRiverFlow(
             dataset,
             config,
             inds_river;
