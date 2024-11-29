@@ -373,7 +373,7 @@ function BMI.get_grid_edge_nodes(model::Model, grid::Int, edge_nodes::Vector{Int
     m = div(n, 2)
     # inactive nodes (boundary/ghost points) are set at -999
     if grid == 3
-        nodes_at_edge = adjacent_nodes_at_link(network.river.graph)
+        nodes_at_edge = adjacent_nodes_at_edge(network.river.graph)
         nodes_at_edge.dst[nodes_at_edge.dst .== m + 1] .= -999
         edge_nodes[range(1, n; step = 2)] = nodes_at_edge.src
         edge_nodes[range(2, n; step = 2)] = nodes_at_edge.dst

@@ -145,30 +145,30 @@ end
     width = fill(10.0, n)
     n_river = fill(0.03, n)
 
-    # for each link the src and dst node is required
-    nodes_at_link = Wflow.adjacent_nodes_at_link(graph)
+    # for each edge the src and dst node is required
+    nodes_at_edge = Wflow.adjacent_nodes_at_edge(graph)
     _ne = ne(graph)
 
-    # determine z, width, length and manning's n at links
+    # determine z, width, length and manning's n at edges
     zb_max = fill(0.0, _ne)
-    width_at_link = fill(0.0, _ne)
-    length_at_link = fill(0.0, _ne)
+    width_at_edge = fill(0.0, _ne)
+    length_at_edge = fill(0.0, _ne)
     mannings_n_sq = fill(0.0, _ne)
     for i in 1:_ne
-        zb_max[i] = max(zb[nodes_at_link.src[i]], zb[nodes_at_link.dst[i]])
-        width_at_link[i] = min(width[nodes_at_link.dst[i]], width[nodes_at_link.src[i]])
-        length_at_link[i] = 0.5 * (dl[nodes_at_link.dst[i]] + dl[nodes_at_link.src[i]])
+        zb_max[i] = max(zb[nodes_at_edge.src[i]], zb[nodes_at_edge.dst[i]])
+        width_at_edge[i] = min(width[nodes_at_edge.dst[i]], width[nodes_at_edge.src[i]])
+        length_at_edge[i] = 0.5 * (dl[nodes_at_edge.dst[i]] + dl[nodes_at_edge.src[i]])
         mannings_n =
             (
-                n_river[nodes_at_link.dst[i]] * dl[nodes_at_link.dst[i]] +
-                n_river[nodes_at_link.src[i]] * dl[nodes_at_link.src[i]]
-            ) / (dl[nodes_at_link.dst[i]] + dl[nodes_at_link.src[i]])
+                n_river[nodes_at_edge.dst[i]] * dl[nodes_at_edge.dst[i]] +
+                n_river[nodes_at_edge.src[i]] * dl[nodes_at_edge.src[i]]
+            ) / (dl[nodes_at_edge.dst[i]] + dl[nodes_at_edge.src[i]])
         mannings_n_sq[i] = mannings_n * mannings_n
     end
 
     river_network = (
-        nodes_at_link = nodes_at_link,
-        links_at_node = Wflow.adjacent_links_at_node(graph, nodes_at_link),
+        nodes_at_edge = nodes_at_edge,
+        edges_at_node = Wflow.adjacent_edges_at_node(graph, nodes_at_edge),
     )
     network = (
         river = river_network,
@@ -193,9 +193,9 @@ end
         mannings_n_sq = mannings_n_sq,
         mannings_n = n_river,
         flow_width = width,
-        flow_width_at_link = width_at_link,
+        flow_width_at_edge = width_at_edge,
         flow_length = dl,
-        flow_length_at_link = length_at_link,
+        flow_length_at_edge = length_at_edge,
         bankfull_volume = fill(Wflow.mv, n),
         bankfull_depth = fill(Wflow.mv, n),
         zb = zb,

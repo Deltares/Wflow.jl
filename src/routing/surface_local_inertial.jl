@@ -1,9 +1,9 @@
 "Struct for storing shallow water river flow model parameters"
 @get_units @grid_loc @with_kw struct ShallowWaterRiverParameters{T}
     n::Int                                              # number of cells [-]
-    ne::Int                                             # number of edges/links [-]
+    ne::Int                                             # number of edges [-]
     active_n::Vector{Int} | "-"                         # active nodes [-]
-    active_e::Vector{Int} | "-" | "edge"                # active edges/links [-]
+    active_e::Vector{Int} | "-" | "edge"                # active edges [-]
     g::T                                                # acceleration due to gravity [m s⁻²]
     froude_limit::Bool                                  # if true a check is performed if froude number > 1.0 (algorithm is modified) [-]
     h_thresh::T                                         # depth threshold for calculating flow [m]
@@ -14,9 +14,9 @@
     mannings_n_sq::Vector{T} | "(s m-1/3)2" | "edge"    # Manning's roughness squared at edge
     mannings_n::Vector{T} | "s m-1/3"                   # Manning's roughness at node
     flow_length::Vector{T} | "m"                        # flow (river) length
-    flow_length_at_link::Vector{T} | "m" | "edge"       # flow (river) length at edge
+    flow_length_at_edge::Vector{T} | "m" | "edge"       # flow (river) length at edge
     flow_width::Vector{T} | "m"                         # flow (river) width
-    flow_width_at_link::Vector{T} | "m" | "edge"        # flow (river) width at edge
+    flow_width_at_edge::Vector{T} | "m" | "edge"        # flow (river) width at edge
     waterbody::Vector{Bool} | "-"                       # water body cells (reservoir or lake)
 end
 
@@ -29,12 +29,12 @@ function ShallowWaterRiverParameters(
     river_width,
     waterbody,
     n_edges,
-    nodes_at_link,
+    nodes_at_edge,
     index_pit,
     inds_pit,
 )
     cfl = get(config.model, "inertial_flow_alpha", 0.7)::Float64 # stability coefficient for model time step (0.2-0.7)
-    h_thresh = get(config.model, "h_thresh", 1.0e-03)::Float64 # depth threshold for flow at link
+    h_thresh = get(config.model, "h_thresh", 1.0e-03)::Float64 # depth threshold for flow at edge
     froude_limit = get(config.model, "froude_limit", true)::Bool # limit flow to subcritical according to Froude number
     floodplain_1d = get(config.model, "floodplain_1d", false)::Bool
 
@@ -92,17 +92,17 @@ function ShallowWaterRiverParameters(
     append!(mannings_n, mannings_n[index_pit])
     append!(bankfull_depth, bankfull_depth[index_pit])
 
-    # determine z, width, length and manning's n at links
+    # determine z, width, length and manning's n at edges
     zb_max = fill(Float(0), n_edges)
-    width_at_link = fill(Float(0), n_edges)
-    length_at_link = fill(Float(0), n_edges)
+    width_at_edge = fill(Float(0), n_edges)
+    length_at_edge = fill(Float(0), n_edges)
     mannings_n_sq = fill(Float(0), n_edges)
     for i in 1:n_edges
-        src_node = nodes_at_link.src[i]
-        dst_node = nodes_at_link.dst[i]
+        src_node = nodes_at_edge.src[i]
+        dst_node = nodes_at_edge.dst[i]
         zb_max[i] = max(zb[src_node], zb[dst_node])
-        width_at_link[i] = min(river_width[src_node], river_width[dst_node])
-        length_at_link[i] = 0.5 * (river_length[dst_node] + river_length[src_node])
+        width_at_edge[i] = min(river_width[src_node], river_width[dst_node])
+        length_at_edge[i] = 0.5 * (river_length[dst_node] + river_length[src_node])
         mannings_n_i =
             (
                 mannings_n[dst_node] * river_length[dst_node] +
@@ -127,9 +127,9 @@ function ShallowWaterRiverParameters(
         mannings_n,
         mannings_n_sq,
         flow_length = river_length,
-        flow_length_at_link = length_at_link,
+        flow_length_at_edge = length_at_edge,
         flow_width = river_width,
-        flow_width_at_link = width_at_link,
+        flow_width_at_edge = width_at_edge,
         waterbody,
     )
     return parameters
@@ -145,10 +145,10 @@ end
     zs_max::Vector{T} | "m" | "edge"                    # maximum water elevation at edge
     zs_src::Vector{T} | "m"                             # water elevation of source node of edge
     zs_dst::Vector{T} | "m"                             # water elevation of downstream node of edge
-    hf::Vector{T} | "m" | "edge"                        # water depth at edge/link
+    hf::Vector{T} | "m" | "edge"                        # water depth at edge
     h_av::Vector{T} | "m"                               # average water depth
-    a::Vector{T} | "m2" | "edge"                        # flow area at edge/link
-    r::Vector{T} | "m" | "edge"                         # wetted perimeter at edge/link
+    a::Vector{T} | "m2" | "edge"                        # flow area at edge
+    r::Vector{T} | "m" | "edge"                         # wetted perimeter at edge
     volume::Vector{T} | "m3"                            # river volume
     error::Vector{T} | "m3"                             # error volume    
 end
@@ -214,9 +214,9 @@ function ShallowWaterRiver(
     waterbody,
 )
     # The local inertial approach makes use of a staggered grid (Bates et al. (2010)),
-    # with nodes and links. This information is extracted from the directed graph of the
-    # river. Discharge q is calculated at links between nodes and mapped to the source
-    # nodes for gridded output (index of link is equal to source node index, e.g.:
+    # with nodes and edges. This information is extracted from the directed graph of the
+    # river. Discharge q is calculated at edges between nodes and mapped to the source
+    # nodes for gridded output (index of edge is equal to source node index, e.g.:
     # Edge 1 => 5
     # Edge 2 => 1
     # Edge 3 => 2
@@ -232,7 +232,7 @@ function ShallowWaterRiver(
     inds_pit = indices[index_pit]
 
     add_vertex_edge_graph!(graph_river, index_pit)
-    nodes_at_link = adjacent_nodes_at_link(graph_river)
+    nodes_at_edge = adjacent_nodes_at_edge(graph_river)
     n_edges = ne(graph_river)
 
     parameters = ShallowWaterRiverParameters(
@@ -243,7 +243,7 @@ function ShallowWaterRiver(
         river_width,
         waterbody,
         n_edges,
-        nodes_at_link,
+        nodes_at_edge,
         index_pit,
         inds_pit,
     )
@@ -264,7 +264,7 @@ function ShallowWaterRiver(
             zb_floodplain,
             index_pit,
             n_edges,
-            nodes_at_link,
+            nodes_at_edge,
         )
     else
         floodplain = nothing
@@ -279,7 +279,7 @@ function ShallowWaterRiver(
         floodplain,
         allocation = do_water_demand ? AllocationRiver(n) : NoAllocationRiver{Float}(),
     )
-    return sw_river, nodes_at_link
+    return sw_river, nodes_at_edge
 end
 
 "Return the upstream inflow for a waterbody in `ShallowWaterRiver`"
@@ -300,7 +300,7 @@ get_inflow_waterbody(::ShallowWaterRiver, model::LateralSSF) =
 
 "Update shallow water river flow model `ShallowWaterRiver` for a single timestep"
 function shallowwater_river_update!(model::ShallowWaterRiver, network, dt, doy, update_h)
-    (; nodes_at_link, links_at_node) = network.river
+    (; nodes_at_edge, edges_at_node) = network.river
     (; inwater, abstraction, inflow) = model.boundary_conditions
     river_v = model.variables
     river_p = model.parameters
@@ -311,16 +311,16 @@ function shallowwater_river_update!(model::ShallowWaterRiver, network, dt, doy, 
     end
     @tturbo for j in eachindex(river_p.active_e)
         i = river_p.active_e[j]
-        i_src = nodes_at_link.src[i]
-        i_dst = nodes_at_link.dst[i]
+        i_src = nodes_at_edge.src[i]
+        i_dst = nodes_at_edge.dst[i]
         river_v.zs_src[i] = river_p.zb[i_src] + river_v.h[i_src]
         river_v.zs_dst[i] = river_p.zb[i_dst] + river_v.h[i_dst]
 
         river_v.zs_max[i] = max(river_v.zs_src[i], river_v.zs_dst[i])
         river_v.hf[i] = (river_v.zs_max[i] - river_p.zb_max[i])
 
-        river_v.a[i] = river_p.flow_width_at_link[i] * river_v.hf[i] # flow area (rectangular channel)
-        river_v.r[i] = river_v.a[i] / (river_p.flow_width_at_link[i] + 2.0 * river_v.hf[i]) # hydraulic radius (rectangular channel)
+        river_v.a[i] = river_p.flow_width_at_edge[i] * river_v.hf[i] # flow area (rectangular channel)
+        river_v.r[i] = river_v.a[i] / (river_p.flow_width_at_edge[i] + 2.0 * river_v.hf[i]) # hydraulic radius (rectangular channel)
 
         river_v.q[i] = IfElse.ifelse(
             river_v.hf[i] > river_p.h_thresh,
@@ -331,7 +331,7 @@ function shallowwater_river_update!(model::ShallowWaterRiver, network, dt, doy, 
                 river_v.hf[i],
                 river_v.a[i],
                 river_v.r[i],
-                river_p.flow_length_at_link[i],
+                river_p.flow_length_at_edge[i],
                 river_p.mannings_n_sq[i],
                 river_p.g,
                 river_p.froude_limit,
@@ -366,8 +366,8 @@ function shallowwater_river_update!(model::ShallowWaterRiver, network, dt, doy, 
 
         @tturbo for j in 1:n
             i = floodplain_v.hf_index[j]
-            i_src = nodes_at_link.src[i]
-            i_dst = nodes_at_link.dst[i]
+            i_src = nodes_at_edge.src[i]
+            i_dst = nodes_at_edge.dst[i]
 
             i0 = 0
             for k in eachindex(floodplain_p.profile.depth)
@@ -417,7 +417,7 @@ function shallowwater_river_update!(model::ShallowWaterRiver, network, dt, doy, 
                     floodplain_v.hf[i],
                     floodplain_v.a[i],
                     floodplain_v.r[i],
-                    river_p.flow_length_at_link[i],
+                    river_p.flow_length_at_edge[i],
                     floodplain_p.mannings_n_sq[i],
                     river_p.g,
                     river_p.froude_limit,
@@ -454,7 +454,7 @@ function shallowwater_river_update!(model::ShallowWaterRiver, network, dt, doy, 
     for v in eachindex(inds_reservoir)
         i = inds_reservoir[v]
 
-        q_in = get_inflow_waterbody(model, links_at_node.src[i])
+        q_in = get_inflow_waterbody(model, edges_at_node.src[i])
         update!(reservoir, v, q_in + inflow_waterbody[i], dt)
         river_v.q[i] = reservoir.variables.outflow[v]
         river_v.q_av[i] += river_v.q[i] * dt
@@ -464,15 +464,15 @@ function shallowwater_river_update!(model::ShallowWaterRiver, network, dt, doy, 
     for v in eachindex(inds_lake)
         i = inds_lake[v]
 
-        q_in = get_inflow_waterbody(model, links_at_node.src[i])
+        q_in = get_inflow_waterbody(model, edges_at_node.src[i])
         update!(lake, v, q_in + inflow_waterbody[i], doy, dt)
         river_v.q[i] = lake.variables.outflow[v]
         river_v.q_av[i] += river_v.q[i] * dt
     end
     if update_h
         @batch per = thread minbatch = 2000 for i in river_p.active_n
-            q_src = sum_at(river_v.q, links_at_node.src[i])
-            q_dst = sum_at(river_v.q, links_at_node.dst[i])
+            q_src = sum_at(river_v.q, edges_at_node.src[i])
+            q_dst = sum_at(river_v.q, edges_at_node.dst[i])
             river_v.volume[i] =
                 river_v.volume[i] + (q_src - q_dst + inwater[i] - abstraction[i]) * dt
 
@@ -485,8 +485,8 @@ function shallowwater_river_update!(model::ShallowWaterRiver, network, dt, doy, 
             if !isnothing(model.floodplain)
                 floodplain_v = model.floodplain.variables
                 floodplain_p = model.floodplain.parameters
-                q_src = sum_at(floodplain_v.q, links_at_node.src[i])
-                q_dst = sum_at(floodplain_v.q, links_at_node.dst[i])
+                q_src = sum_at(floodplain_v.q, edges_at_node.src[i])
+                q_dst = sum_at(floodplain_v.q, edges_at_node.dst[i])
                 floodplain_v.volume[i] = floodplain_v.volume[i] + (q_src - q_dst) * dt
                 # TODO check following approach:
                 # if floodplain volume negative, extract from river volume first
@@ -573,7 +573,7 @@ function update!(model::ShallowWaterRiver{T}, network, doy, dt; update_h = true)
     return nothing
 end
 
-# Stores links in x and y direction between cells of a Vector with CartesianIndex(x, y), for
+# Stores edges in x and y direction between cells of a Vector with CartesianIndex(x, y), for
 # staggered grid calculations.
 @with_kw struct Indices
     xu::Vector{Int}     # index of neighbor cell in the (+1, 0) direction
@@ -650,7 +650,7 @@ function ShallowWaterLandParameters(
     froude_limit = get(config.model, "froude_limit", true)::Bool # limit flow to subcritical according to Froude number
     cfl = get(config.model, "inertial_flow_alpha", 0.7)::Float64 # stability coefficient for model time step (0.2-0.7)
     theta = get(config.model, "inertial_flow_theta", 0.8)::Float64 # weighting factor
-    h_thresh = get(config.model, "h_thresh", 1.0e-03)::Float64 # depth threshold for flow at link
+    h_thresh = get(config.model, "h_thresh", 1.0e-03)::Float64 # depth threshold for flow at edge
 
     @info "Local inertial approach is used for overlandflow." cfl theta h_thresh froude_limit
 
@@ -677,7 +677,7 @@ function ShallowWaterLandParameters(
     staggered_indices =
         Indices(; xu = zeros(n), xd = zeros(n), yu = zeros(n), yd = zeros(n))
 
-    # edges without neigbors are handled by an extra index (at n + 1, with n links), which
+    # edges without neigbors are handled by an extra index (at n + 1, with n edges), which
     # is set to a value of 0.0 m³ s⁻¹ for qx and qy fields at initialization.
     # edges are defined as follows for the x and y direction, respectively:
     # node i => node xu (node i + CartesianIndex(1, 0))
@@ -696,7 +696,7 @@ function ShallowWaterLandParameters(
         end
     end
 
-    # determine z at links in x and y direction
+    # determine z at edges in x and y direction
     zx_max = fill(Float(0), n)
     zy_max = fill(Float(0), n)
     for i in 1:n
@@ -937,7 +937,7 @@ function shallowwater_update!(
     indices = network.land.staggered_indices
     inds_river = network.land.river_indices
 
-    (; links_at_node) = network.river
+    (; edges_at_node) = network.river
 
     river_bc = river.boundary_conditions
     river_v = river.variables
@@ -1049,8 +1049,8 @@ function shallowwater_update!(
             else
                 land_v.volume[i] +=
                     (
-                        sum_at(river_v.q, links_at_node.src[inds_river[i]]) -
-                        sum_at(river_v.q, links_at_node.dst[inds_river[i]]) +
+                        sum_at(river_v.q, edges_at_node.src[inds_river[i]]) -
+                        sum_at(river_v.q, edges_at_node.dst[inds_river[i]]) +
                         land_v.qx[xd] - land_v.qx[i] + land_v.qy[yd] - land_v.qy[i] +
                         river_bc.inflow[inds_river[i]] +
                         land_bc.runoff[i] - river_bc.abstraction[inds_river[i]]
@@ -1207,7 +1207,7 @@ end
     profile::P                                          # floodplain profile
     mannings_n::Vector{T} | "s m-1/3"                   # manning's roughness
     mannings_n_sq::Vector{T} | "(s m-1/3)2" | "edge"    # manning's roughness squared
-    zb_max::Vector{T} | "m" | "edge"                    # maximum bankfull elevation (edge/link)
+    zb_max::Vector{T} | "m" | "edge"                    # maximum bankfull elevation (edge)
 end
 
 "Initialize floodplain flow model parameters"
@@ -1218,7 +1218,7 @@ function FloodPlainParameters(
     river_width,
     river_length,
     zb_floodplain,
-    nodes_at_link,
+    nodes_at_edge,
     n_edges,
     index_pit,
 )
@@ -1238,8 +1238,8 @@ function FloodPlainParameters(
     mannings_n_sq = fill(Float(0), n_edges)
     zb_max = fill(Float(0), n_edges)
     for i in 1:n_edges
-        src_node = nodes_at_link.src[i]
-        dst_node = nodes_at_link.dst[i]
+        src_node = nodes_at_edge.src[i]
+        dst_node = nodes_at_edge.dst[i]
         mannings_n_i =
             (
                 mannings_n[dst_node] * river_length[dst_node] +
@@ -1260,7 +1260,7 @@ end
     error::Vector{T} | "m3"                             # error volume
     a::Vector{T} | "m2" | "edge"                        # flow area
     r::Vector{T} | "m" | "edge"                         # hydraulic radius
-    hf::Vector{T} | "m" | "edge"                        # water depth at edge/link
+    hf::Vector{T} | "m" | "edge"                        # water depth at edge
     q0::Vector{T} | "m3 s-1" | "edge"                   # discharge at previous time step
     q::Vector{T} | "m3 s-1" | "edge"                    # discharge
     q_av::Vector{T} | "m" | "edge"                      # average river discharge
@@ -1374,7 +1374,7 @@ function FloodPlain(
     zb_floodplain,
     index_pit,
     n_edges,
-    nodes_at_link,
+    nodes_at_edge,
 )
     n = length(indices)
     parameters = FloodPlainParameters(
@@ -1384,7 +1384,7 @@ function FloodPlain(
         river_width,
         river_length,
         zb_floodplain,
-        nodes_at_link,
+        nodes_at_edge,
         n_edges,
         index_pit,
     )

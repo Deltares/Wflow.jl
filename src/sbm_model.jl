@@ -236,7 +236,7 @@ function initialize_sbm_model(config::Config)
             lake = lake,
         )
     elseif river_routing == "local-inertial"
-        river_flow, nodes_at_link = ShallowWaterRiver(
+        river_flow, nodes_at_edge = ShallowWaterRiver(
             dataset,
             config,
             inds_river;
@@ -399,8 +399,8 @@ function initialize_sbm_model(config::Config)
             lake_indices = inds_lake_map2river,
             land_indices = inds_land_map2river,
             # specific for local-inertial
-            nodes_at_link = nodes_at_link,
-            links_at_node = adjacent_links_at_node(graph_river, nodes_at_link),
+            nodes_at_edge = nodes_at_edge,
+            edges_at_node = adjacent_edges_at_node(graph_river, nodes_at_edge),
             # water allocation areas
             allocation_area_indices = river_allocation_area_inds,
             cell_area = x_length[inds_land_map2river] .* y_length[inds_land_map2river],

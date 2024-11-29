@@ -522,29 +522,29 @@ tosecond(x::T) where {T <: DatePeriod} = Float64(Dates.value(Second(x)))
 tosecond(x::T) where {T <: TimePeriod} = x / convert(T, Second(1))
 
 """
-    adjacent_nodes_at_link(graph)
+    adjacent_nodes_at_edge(graph)
 
-Return the source node `src` and destination node `dst` of each link of a directed `graph`.
+Return the source node `src` and destination node `dst` of each edge of a directed `graph`.
 """
-function adjacent_nodes_at_link(graph)
-    links = collect(edges(graph))
-    return (src = src.(links), dst = dst.(links))
+function adjacent_nodes_at_edge(graph)
+    _edges = collect(edges(graph))
+    return (src = src.(_edges), dst = dst.(_edges))
 end
 
 """
-    adjacent_links_at_node(graph, nodes_at_link)
+    adjacent_edges_at_node(graph, nodes_at_edge)
 
-Return the source link `src` and destination link `dst` of each node of a directed `graph`.
+Return the source edge `src` and destination edge `dst` of each node of a directed `graph`.
 """
-function adjacent_links_at_node(graph, nodes_at_link)
+function adjacent_edges_at_node(graph, nodes_at_edge)
     nodes = vertices(graph)
-    src_link = Vector{Int}[]
-    dst_link = copy(src_link)
+    src_edge = Vector{Int}[]
+    dst_edge = copy(src_edge)
     for i in 1:nv(graph)
-        push!(src_link, findall(isequal(nodes[i]), nodes_at_link.dst))
-        push!(dst_link, findall(isequal(nodes[i]), nodes_at_link.src))
+        push!(src_edge, findall(isequal(nodes[i]), nodes_at_edge.dst))
+        push!(dst_edge, findall(isequal(nodes[i]), nodes_at_edge.src))
     end
-    return (src = src_link, dst = dst_link)
+    return (src = src_edge, dst = dst_edge)
 end
 
 "Add `vertex` and `edge` to `pits` of a directed `graph`"
