@@ -1,6 +1,5 @@
 "Struct for storing lake model parameters"
 @get_units @grid_loc @with_kw struct LakeParameters{T}
-    dt::T                                           # Model time step [s]
     lowerlake_ind::Vector{Int} | "-"                # Index of lower lake (linked lakes)
     area::Vector{T} | "m2"                          # lake area [m²]
     maxstorage::Vector{Union{T, Missing}} | "m3"    # lake maximum storage from rating curve 1 [m³]
@@ -14,7 +13,7 @@
 end
 
 "Initialize lake model parameters"
-function LakeParameters(config, dataset, inds_riv, nriv, pits, dt)
+function LakeParameters(config, dataset, inds_riv, nriv, pits)
     # read only lake data if lakes true
     # allow lakes only in river cells
     # note that these locations are only the lake outlet pixels
@@ -181,7 +180,6 @@ function LakeParameters(config, dataset, inds_riv, nriv, pits, dt)
         end
     end
     parameters = LakeParameters{Float}(;
-        dt = dt,
         lowerlake_ind = lowerlake_ind,
         area = lakearea,
         maxstorage = maximum_storage(lake_storfunc, lake_outflowfunc, lakearea, sh, hq),
@@ -249,9 +247,9 @@ end
 end
 
 "Initialize lake model"
-function Lake(dataset, config, indices_river, n_river_cells, pits, dt)
+function Lake(dataset, config, indices_river, n_river_cells, pits)
     parameters, lake_network, inds_lake_map2river, lake_waterlevel, pits =
-        LakeParameters(dataset, config, indices_river, n_river_cells, pits, dt)
+        LakeParameters(dataset, config, indices_river, n_river_cells, pits)
 
     n_lakes = length(parameters.area)
     variables = LakeVariables(n_lakes, lake_waterlevel)
@@ -324,7 +322,7 @@ Update a single lake at position `i`.
 This is called from within the kinematic wave loop, therefore updating only for a single
 element rather than all at once.
 """
-function update!(model::Lake, i, inflow, doy, timestepsecs)
+function update!(model::Lake, i, inflow, doy, dt, dt_forcing)
     lake_bc = model.boundary_conditions
     lake_p = model.parameters
     lake_v = model.variables
@@ -333,20 +331,19 @@ function update!(model::Lake, i, inflow, doy, timestepsecs)
     has_lowerlake = lo != 0
 
     # limit lake evaporation based on total available volume [m³]
-    precipitation =
-        0.001 * lake_bc.precipitation[i] * (timestepsecs / lake_p.dt) * lake_p.area[i]
-    available_volume = lake_v.storage[i] + inflow * timestepsecs + precipitation
-    evap = 0.001 * lake_bc.evaporation[i] * (timestepsecs / lake_p.dt) * lake_p.area[i]
-    actevap = min(available_volume, evap) # [m³/timestepsecs]
+    precipitation = 0.001 * lake_bc.precipitation[i] * (dt / dt_forcing) * lake_p.area[i]
+    available_volume = lake_v.storage[i] + inflow * dt + precipitation
+    evap = 0.001 * lake_bc.evaporation[i] * (dt / dt_forcing) * lake_p.area[i]
+    actevap = min(available_volume, evap) # [m³/dt]
 
     ### Modified Puls Approach (Burek et al., 2013, LISFLOOD) ###
     # outflowfunc = 3
     # Calculate lake factor and SI parameter
     if lake_p.outflowfunc[i] == 3
-        lakefactor = lake_p.area[i] / (timestepsecs * pow(lake_p.b[i], 0.5))
-        si_factor = (lake_v.storage[i] + precipitation - actevap) / timestepsecs + inflow
+        lakefactor = lake_p.area[i] / (dt * pow(lake_p.b[i], 0.5))
+        si_factor = (lake_v.storage[i] + precipitation - actevap) / dt + inflow
         # Adjust SIFactor for ResThreshold != 0
-        si_factor_adj = si_factor - lake_p.area[i] * lake_p.threshold[i] / timestepsecs
+        si_factor_adj = si_factor - lake_p.area[i] * lake_p.threshold[i] / dt
         # Calculate the new lake outflow/waterlevel/storage
         if si_factor_adj > 0.0
             quadratic_sol_term =
@@ -360,7 +357,7 @@ function update!(model::Lake, i, inflow, doy, timestepsecs)
             outflow = 0.0
         end
         outflow = min(outflow, si_factor)
-        storage = (si_factor - outflow) * timestepsecs
+        storage = (si_factor - outflow) * dt
         waterlevel = storage / lake_p.area[i]
     end
 
@@ -368,8 +365,7 @@ function update!(model::Lake, i, inflow, doy, timestepsecs)
     if lake_p.outflowfunc[i] == 1 || lake_p.outflowfunc[i] == 2
         diff_wl = has_lowerlake ? lake_v.waterlevel[i] - lake_v.waterlevel[lo] : 0.0
 
-        storage_input =
-            (lake_v.storage[i] + precipitation - actevap) / timestepsecs + inflow
+        storage_input = (lake_v.storage[i] + precipitation - actevap) / dt + inflow
         if lake_p.outflowfunc[i] == 1
             outflow = interpolate_linear(
                 lake_v.waterlevel[i],
@@ -382,7 +378,7 @@ function update!(model::Lake, i, inflow, doy, timestepsecs)
                 if lake_v.waterlevel[i] > lake_p.threshold[i]
                     dh = lake_v.waterlevel[i] - lake_p.threshold[i]
                     outflow = lake_p.b[i] * pow(dh, lake_p.e[i])
-                    maxflow = (dh * lake_p.area[i]) / timestepsecs
+                    maxflow = (dh * lake_p.area[i]) / dt
                     outflow = min(outflow, maxflow)
                 else
                     outflow = Float(0)
@@ -391,18 +387,18 @@ function update!(model::Lake, i, inflow, doy, timestepsecs)
                 if lake_v.waterlevel[lo] > lake_p.threshold[i]
                     dh = lake_v.waterlevel[lo] - lake_p.threshold[i]
                     outflow = -1.0 * lake_p.b[i] * pow(dh, lake_p.e[i])
-                    maxflow = (dh * lake_p.area[lo]) / timestepsecs
+                    maxflow = (dh * lake_p.area[lo]) / dt
                     outflow = max(outflow, -maxflow)
                 else
                     outflow = Float(0)
                 end
             end
         end
-        storage = (storage_input - outflow) * timestepsecs
+        storage = (storage_input - outflow) * dt
 
         # update storage and outflow for lake with rating curve of type 1.
         if lake_p.outflowfunc[i] == 1
-            overflow = max(0.0, (storage - lake_p.maxstorage[i]) / timestepsecs)
+            overflow = max(0.0, (storage - lake_p.maxstorage[i]) / dt)
             storage = min(storage, lake_p.maxstorage[i])
             outflow = outflow + overflow
         end
@@ -415,7 +411,7 @@ function update!(model::Lake, i, inflow, doy, timestepsecs)
 
         # update lower lake (linked lakes) in case flow from lower lake to upper lake occurs
         if diff_wl < 0.0
-            lowerlake_storage = lake_v.storage[lo] + outflow * timestepsecs
+            lowerlake_storage = lake_v.storage[lo] + outflow * dt
 
             lowerlake_waterlevel = if lake_p.storfunc[lo] == 1
                 lake_v.waterlevel[lo] +
@@ -426,7 +422,7 @@ function update!(model::Lake, i, inflow, doy, timestepsecs)
 
             # update values for the lower lake in place
             lake_v.outflow[lo] = -outflow
-            lake_v.totaloutflow[lo] += -outflow * timestepsecs
+            lake_v.totaloutflow[lo] += -outflow * dt
             lake_v.storage[lo] = lowerlake_storage
             lake_v.waterlevel[lo] = lowerlake_waterlevel
         end
@@ -435,8 +431,8 @@ function update!(model::Lake, i, inflow, doy, timestepsecs)
     # update values in place
     lake_v.outflow[i] = max(outflow, 0.0) # for a linked lake flow can be negative
     lake_v.waterlevel[i] = waterlevel
-    lake_bc.inflow[i] += inflow * timestepsecs
-    lake_v.totaloutflow[i] += outflow * timestepsecs
+    lake_bc.inflow[i] += inflow * dt
+    lake_v.totaloutflow[i] += outflow * dt
     lake_v.storage[i] = storage
     lake_v.actevap[i] += 1000.0 * (actevap / lake_p.area[i])
 

@@ -340,7 +340,7 @@ function update!(model::KinWaveOverlandFlow, network, dt)
 end
 
 "Update river flow model `KinWaveRiverFlow` for a single timestep"
-function surfaceflow_river_update!(model::KinWaveRiverFlow, network, doy, dt)
+function surfaceflow_river_update!(model::KinWaveRiverFlow, network, doy, dt, dt_forcing)
     (;
         graph,
         order_of_subdomains,
@@ -390,7 +390,7 @@ function surfaceflow_river_update!(model::KinWaveRiverFlow, network, doy, dt)
                     # run reservoir model and copy reservoir outflow to inflow (qin) of
                     # downstream river cell
                     i = reservoir_indices[v]
-                    update!(reservoir, i, q[v] + inflow_waterbody[v], dt)
+                    update!(reservoir, i, q[v] + inflow_waterbody[v], dt, dt_forcing)
 
                     downstream_nodes = outneighbors(graph, v)
                     n_downstream = length(downstream_nodes)
@@ -411,7 +411,7 @@ function surfaceflow_river_update!(model::KinWaveRiverFlow, network, doy, dt)
                     # run lake model and copy lake outflow to inflow (qin) of downstream river
                     # cell
                     i = lake_indices[v]
-                    update!(lake, i, q[v] + inflow_waterbody[v], doy, dt)
+                    update!(lake, i, q[v] + inflow_waterbody[v], doy, dt, dt_forcing)
 
                     downstream_nodes = outneighbors(graph, v)
                     n_downstream = length(downstream_nodes)
@@ -484,7 +484,7 @@ function update!(model::KinWaveRiverFlow, network, doy, dt)
     while t < dt
         dt_s = adaptive ? stable_timestep(model, 0.05) : model.timestepping.dt_fixed
         dt_s = check_timestepsize(dt_s, t, dt)
-        surfaceflow_river_update!(model, network, doy, dt_s)
+        surfaceflow_river_update!(model, network, doy, dt_s, dt)
         t = t + dt_s
     end
     q_av ./= dt

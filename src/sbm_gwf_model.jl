@@ -100,7 +100,7 @@ function initialize_sbm_gwf_model(config::Config)
     pits = zeros(Bool, modelsize_2d)
     if do_reservoirs
         reservoir, reservoir_network, inds_reservoir_map2river, pits =
-            SimpleReservoir(dataset, config, inds_river, n_river_cells, pits, tosecond(dt))
+            SimpleReservoir(dataset, config, inds_river, n_river_cells, pits)
     else
         reservoir_network = (river_indices = [],)
         inds_reservoir_map2river = fill(0, n_river_cells)
@@ -110,7 +110,7 @@ function initialize_sbm_gwf_model(config::Config)
     # lakes
     if do_lakes
         lake, lake_network, inds_lake_map2river, pits =
-            Lake(dataset, config, inds_river, n_river_cells, pits, tosecond(dt))
+            Lake(dataset, config, inds_river, n_river_cells, pits)
     else
         lake_network = (river_indices = [],)
         inds_lake_map2river = fill(0, n_river_cells)

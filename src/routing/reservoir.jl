@@ -1,6 +1,5 @@
 "Struct for storing reservoir model parameters"
 @get_units @grid_loc @with_kw struct ReservoirParameters{T}
-    dt::T                                   # Model time step [s]
     maxvolume::Vector{T} | "m3"             # maximum storage (above which water is spilled) [m³]
     area::Vector{T} | "m2"                  # reservoir area [m²]
     maxrelease::Vector{T} | "m3 s-1"        # maximum amount that can be released if below spillway [m³ s⁻¹]
@@ -10,7 +9,7 @@
 end
 
 "Initialize reservoir model parameters"
-function ReservoirParameters(dataset, config, indices_river, n_river_cells, pits, dt)
+function ReservoirParameters(dataset, config, indices_river, n_river_cells, pits)
     # read only reservoir data if reservoirs true
     # allow reservoirs only in river cells
     # note that these locations are only the reservoir outlet pixels
@@ -125,7 +124,6 @@ function ReservoirParameters(dataset, config, indices_river, n_river_cells, pits
     )
 
     parameters = ReservoirParameters{Float}(;
-        dt = dt,
         demand = resdemand,
         maxrelease = resmaxrelease,
         maxvolume = resmaxvolume,
@@ -186,9 +184,9 @@ end
 end
 
 "Initialize reservoir model `SimpleReservoir`"
-function SimpleReservoir(dataset, config, indices_river, n_river_cells, pits, dt)
+function SimpleReservoir(dataset, config, indices_river, n_river_cells, pits)
     parameters, reservoir_network, inds_reservoir_map2river, pits =
-        ReservoirParameters(dataset, config, indices_river, n_river_cells, pits, dt)
+        ReservoirParameters(dataset, config, indices_river, n_river_cells, pits)
 
     n_reservoirs = length(parameters.area)
     @info "Read `$n_reservoirs` reservoir locations."
@@ -206,41 +204,39 @@ Update a single reservoir at position `i`.
 This is called from within the kinematic wave loop, therefore updating only for a single
 element rather than all at once.
 """
-function update!(model::SimpleReservoir, i, inflow, timestepsecs)
+function update!(model::SimpleReservoir, i, inflow, dt, dt_forcing)
     res_bc = model.boundary_conditions
     res_p = model.parameters
     res_v = model.variables
 
     # limit lake evaporation based on total available volume [m³]
-    precipitation =
-        0.001 * res_bc.precipitation[i] * (timestepsecs / res_p.dt) * res_p.area[i]
-    available_volume = res_v.volume[i] + inflow * timestepsecs + precipitation
-    evap = 0.001 * res_bc.evaporation[i] * (timestepsecs / res_p.dt) * res_p.area[i]
-    actevap = min(available_volume, evap) # [m³/timestepsecs]
+    precipitation = 0.001 * res_bc.precipitation[i] * (dt / dt_forcing) * res_p.area[i]
+    available_volume = res_v.volume[i] + inflow * dt + precipitation
+    evap = 0.001 * res_bc.evaporation[i] * (dt / dt_forcing) * res_p.area[i]
+    actevap = min(available_volume, evap) # [m³/dt]
 
-    vol = res_v.volume[i] + (inflow * timestepsecs) + precipitation - actevap
+    vol = res_v.volume[i] + (inflow * dt) + precipitation - actevap
     vol = max(vol, 0.0)
 
     percfull = vol / res_p.maxvolume[i]
     # first determine minimum (environmental) flow using a simple sigmoid curve to scale for target level
     fac = scurve(percfull, res_p.targetminfrac[i], Float(1.0), Float(30.0))
-    demandrelease = min(fac * res_p.demand[i] * timestepsecs, vol)
+    demandrelease = min(fac * res_p.demand[i] * dt, vol)
     vol = vol - demandrelease
 
     wantrel = max(0.0, vol - (res_p.maxvolume[i] * res_p.targetfullfrac[i]))
     # Assume extra maximum Q if spilling
     overflow_q = max((vol - res_p.maxvolume[i]), 0.0)
-    torelease =
-        min(wantrel, overflow_q + res_p.maxrelease[i] * timestepsecs - demandrelease)
+    torelease = min(wantrel, overflow_q + res_p.maxrelease[i] * dt - demandrelease)
     vol = vol - torelease
     outflow = torelease + demandrelease
     percfull = vol / res_p.maxvolume[i]
 
     # update values in place
-    res_v.outflow[i] = outflow / timestepsecs
-    res_bc.inflow[i] += inflow * timestepsecs
+    res_v.outflow[i] = outflow / dt
+    res_bc.inflow[i] += inflow * dt
     res_v.totaloutflow[i] += outflow
-    res_v.demandrelease[i] = demandrelease / timestepsecs
+    res_v.demandrelease[i] = demandrelease / dt
     res_v.percfull[i] = percfull
     res_v.volume[i] = vol
     res_v.actevap[i] += 1000.0 * (actevap / res_p.area[i])

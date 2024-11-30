@@ -303,6 +303,7 @@ function local_inertial_river_update!(
     model::LocalInertialRiverFlow,
     network,
     dt,
+    dt_forcing,
     doy,
     update_h,
 )
@@ -461,7 +462,7 @@ function local_inertial_river_update!(
         i = inds_reservoir[v]
 
         q_in = get_inflow_waterbody(model, edges_at_node.src[i])
-        update!(reservoir, v, q_in + inflow_waterbody[i], dt)
+        update!(reservoir, v, q_in + inflow_waterbody[i], dt, dt_forcing)
         river_v.q[i] = reservoir.variables.outflow[v]
         river_v.q_av[i] += river_v.q[i] * dt
     end
@@ -471,7 +472,7 @@ function local_inertial_river_update!(
         i = inds_lake[v]
 
         q_in = get_inflow_waterbody(model, edges_at_node.src[i])
-        update!(lake, v, q_in + inflow_waterbody[i], doy, dt)
+        update!(lake, v, q_in + inflow_waterbody[i], doy, dt, dt_forcing)
         river_v.q[i] = lake.variables.outflow[v]
         river_v.q_av[i] += river_v.q[i] * dt
     end
@@ -568,7 +569,7 @@ function update!(
         if t + dt_s > dt
             dt_s = dt - t
         end
-        local_inertial_river_update!(model, network, dt_s, doy, update_h)
+        local_inertial_river_update!(model, network, dt_s, dt, doy, update_h)
         t = t + dt_s
     end
     model.variables.q_av ./= dt
@@ -929,7 +930,7 @@ function update!(
         if t + dt_s > dt
             dt_s = dt - t
         end
-        local_inertial_river_update!(river, network, dt_s, doy, update_h)
+        local_inertial_river_update!(river, network, dt_s, dt, doy, update_h)
         local_inertial_update!(land, river, network, dt_s)
         t = t + dt_s
     end

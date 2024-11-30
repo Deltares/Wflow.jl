@@ -29,7 +29,6 @@ end
     soilthickness::Vector{T} | "m"         # Soil thickness [m]
     theta_s::Vector{T} | "-"               # Saturated water content (porosity) [-]
     theta_r::Vector{T} | "-"               # Residual water content [-]   
-    dt::T                                  # model time step [d]
     slope::Vector{T} | "m m-1"             # Slope [m m⁻¹]
     flow_length::Vector{T} | "m"           # Flow length [m]
     flow_width::Vector{T} | "m"            # Flow width [m]
@@ -44,7 +43,6 @@ function LateralSsfParameters(
     slope,
     flow_length,
     flow_width,
-    dt,
 )
     khfrac = ncread(
         dataset,
@@ -60,6 +58,7 @@ function LateralSsfParameters(
     soilthickness = soilthickness .* 0.001
 
     kh_profile_type = get(config.input.vertical, "ksat_profile", "exponential")::String
+    dt = Second(config.timestepsecs) / basetimestep
     if kh_profile_type == "exponential"
         (; kv_0, f) = soil.kv_profile
         kh_0 = khfrac .* kv_0 .* 0.001 .* dt
@@ -79,7 +78,6 @@ function LateralSsfParameters(
         soilthickness,
         theta_s,
         theta_r,
-        dt,
         slope,
         flow_length,
         flow_width,
@@ -139,7 +137,6 @@ function LateralSSF(
     flow_width,
     x_length,
     y_length,
-    dt,
 )
     parameters = LateralSsfParameters(
         dataset,
@@ -149,7 +146,6 @@ function LateralSSF(
         slope,
         flow_length,
         flow_width,
-        dt,
     )
     zi = 0.001 * soil.variables.zi
     variables = LateralSsfVariables(parameters, zi, x_length, y_length)
@@ -159,7 +155,7 @@ function LateralSSF(
 end
 
 "Update lateral subsurface model for a single timestep"
-function update!(model::LateralSSF, network)
+function update!(model::LateralSSF, network, dt)
     (;
         order_of_subdomains,
         order_subdomain,
@@ -171,7 +167,7 @@ function update!(model::LateralSSF, network)
 
     (; recharge) = model.boundary_conditions
     (; ssfin, ssf, ssfmax, to_river, zi, exfiltwater, volume) = model.variables
-    (; slope, theta_s, theta_r, soilthickness, flow_length, flow_width, dt, kh_profile) =
+    (; slope, theta_s, theta_r, soilthickness, flow_length, flow_width, kh_profile) =
         model.parameters
 
     ns = length(order_of_subdomains)
@@ -237,23 +233,15 @@ function GroundwaterExchangeVariables(n)
     return variables
 end
 
-"Struct for storing groundwater exchange parameters for coupling with an external groundwater
-model."
-@with_kw struct GroundwaterExchangeParameters{T}
-    dt::T       # model time step [d]
-end
-
 "Groundwater exchange"
 @with_kw struct GroundwaterExchange{T} <: SubsurfaceFlow
-    parameters::GroundwaterExchangeParameters{T}
     variables::GroundwaterExchangeVariables{T}
 end
 
 "Initialize groundwater exchange"
-function GroundwaterExchange(n, dt)
-    parameters = GroundwaterExchangeParameters{Float}(; dt = dt / basetimestep)
+function GroundwaterExchange(n)
     variables = GroundwaterExchangeVariables(n)
-    ssf = GroundwaterExchange{Float}(; parameters, variables)
+    ssf = GroundwaterExchange{Float}(; variables)
     return ssf
 end
 

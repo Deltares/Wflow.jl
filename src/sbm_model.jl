@@ -94,7 +94,7 @@ function initialize_sbm_model(config::Config)
     pits = zeros(Bool, modelsize_2d)
     if do_reservoirs
         reservoir, reservoir_network, inds_reservoir_map2river, pits =
-            SimpleReservoir(dataset, config, inds_river, n_river_cells, pits, tosecond(dt))
+            SimpleReservoir(dataset, config, inds_river, n_river_cells, pits)
     else
         reservoir_network = (river_indices = [],)
         inds_reservoir_map2river = fill(0, n_river_cells)
@@ -104,7 +104,7 @@ function initialize_sbm_model(config::Config)
     # lakes
     if do_lakes
         lake, lake_network, inds_lake_map2river, pits =
-            Lake(dataset, config, inds_river, n_river_cells, pits, tosecond(dt))
+            Lake(dataset, config, inds_river, n_river_cells, pits)
     else
         lake_network = (river_indices = [],)
         inds_lake_map2river = fill(0, n_river_cells)
@@ -135,7 +135,6 @@ function initialize_sbm_model(config::Config)
     # to another groundwater model, this component is not defined in the TOML file.
     do_lateral_ssf = haskey(config.input.lateral, "subsurface")
     if do_lateral_ssf
-        dt_ssf = dt / basetimestep
         subsurface_flow = LateralSSF(
             dataset,
             config,
@@ -146,7 +145,6 @@ function initialize_sbm_model(config::Config)
             flow_width,
             x_length,
             y_length,
-            dt = dt_ssf,
         )
         # update variables `ssf`, `ssfmax` and `kh` (layered profile) based on ksat_profile
         kh_profile_type = get(config.input.vertical, "ksat_profile", "exponential")::String
@@ -164,7 +162,7 @@ function initialize_sbm_model(config::Config)
     else
         # when the SBM model is coupled (BMI) to a groundwater model, the following
         # variables are expected to be exchanged from the groundwater model.
-        subsurface_flow = GroundwaterExchange(n_land_cells, dt)
+        subsurface_flow = GroundwaterExchange(n_land_cells)
     end
 
     graph = flowgraph(ldd, indices, pcr_dir)
@@ -444,7 +442,7 @@ function update!(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmM
     lateral.subsurface.variables.zi .= vertical.soil.variables.zi ./ 1000.0
     # update lateral subsurface flow domain (kinematic wave)
     kh_layered_profile!(vertical.soil, lateral.subsurface, kv_profile, dt)
-    update!(lateral.subsurface, network.land)
+    update!(lateral.subsurface, network.land, clock.dt / basetimestep)
     update_after_subsurfaceflow!(model)
     update_total_water_storage!(model)
     return nothing

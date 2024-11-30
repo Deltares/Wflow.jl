@@ -244,7 +244,7 @@ end
         sw_river.boundary_conditions.inwater[1] = 20.0
         h0 = mean(sw_river.variables.h)
         dt = Wflow.stable_timestep(sw_river)
-        Wflow.local_inertial_river_update!(sw_river, network, dt, 0.0, true)
+        Wflow.local_inertial_river_update!(sw_river, network, dt, 86400.0, 0.0, true)
         d = abs(h0 - mean(sw_river.variables.h))
         if d <= epsilon
             break
