@@ -247,7 +247,7 @@ function KinWaveOverlandFlow(dataset, config, indices; slope, flow_length, flow_
 end
 
 "Update overland flow model `KinWaveOverlandFlow` for a single timestep"
-function surfaceflow_land_update!(model::KinWaveOverlandFlow, network, dt)
+function kinwave_land_update!(model::KinWaveOverlandFlow, network, dt)
     (;
         order_of_subdomains,
         order_subdomain,
@@ -329,7 +329,7 @@ function update!(model::KinWaveOverlandFlow, network, dt)
     while t < dt
         dt_s = adaptive ? stable_timestep(model, 0.02) : model.timestepping.dt_fixed
         dt_s = check_timestepsize(dt_s, t, dt)
-        surfaceflow_land_update!(model, network, dt_s)
+        kinwave_land_update!(model, network, dt_s)
         t = t + dt_s
     end
     q_av ./= dt
@@ -340,7 +340,7 @@ function update!(model::KinWaveOverlandFlow, network, dt)
 end
 
 "Update river flow model `KinWaveRiverFlow` for a single timestep"
-function surfaceflow_river_update!(model::KinWaveRiverFlow, network, doy, dt, dt_forcing)
+function kinwave_river_update!(model::KinWaveRiverFlow, network, doy, dt, dt_forcing)
     (;
         graph,
         order_of_subdomains,
@@ -484,7 +484,7 @@ function update!(model::KinWaveRiverFlow, network, doy, dt)
     while t < dt
         dt_s = adaptive ? stable_timestep(model, 0.05) : model.timestepping.dt_fixed
         dt_s = check_timestepsize(dt_s, t, dt)
-        surfaceflow_river_update!(model, network, doy, dt_s, dt)
+        kinwave_river_update!(model, network, doy, dt_s, dt)
         t = t + dt_s
     end
     q_av ./= dt
@@ -512,20 +512,19 @@ function stable_timestep(
 
     n = length(q)
     stable_timesteps .= Inf
+    k = 0
     for i in 1:n
         if q[i] > 0.0
+            k += 1
             c = 1.0 / (alpha[i] * beta * pow(q[i], (beta - 1.0)))
-            stable_timesteps[i] = (flow_length[i] / c)
+            stable_timesteps[k] = (flow_length[i] / c)
         end
     end
-    _stable_timesteps = filter(x -> !isinf(x), stable_timesteps)
-
-    if !isempty(_stable_timesteps)
-        dt_s = quantile!(_stable_timesteps, p)
+    if k > 0
+        dt_s = quantile!(@view(stable_timesteps[1:k]), p)
     else
         dt_s = 600.0
     end
-
     return dt_s
 end
 
