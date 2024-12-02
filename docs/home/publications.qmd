@@ -148,9 +148,10 @@ tracer data: Application to the data-scarce area of the Bandung groundwater basi
 Indonesia, Journal of Hydrology: Regional Studies, 50,
 <https://doi.org/10.1016/j.ejrh.2023.101585>.
 
-Rusli, S. R., Bense, V. F., Mustafa, S. M. T., and Weerts, A. H.,2024. The impact of future changes in climate 
-variables and groundwater abstraction on basin-scale groundwater availability, Hydrol. Earth Syst. Sci., 
-28, 5107–5131, https://doi.org/10.5194/hess-28-5107-2024, <https://doi.org/10.5194/hess-28-5107-2024>.
+Rusli, S. R., Bense, V. F., Mustafa, S. M. T., and Weerts, A. H.,2024. The impact of future
+changes in climate variables and groundwater abstraction on basin-scale groundwater
+availability, Hydrol. Earth Syst. Sci., 28, 5107–5131,
+https://doi.org/10.5194/hess-28-5107-2024, <https://doi.org/10.5194/hess-28-5107-2024>.
 
 Schaller, N., Sillmann, J., Müller, M., Haarsma, R., Hazeleger, W., Hegdahl, T.J., Kelder, T.,
 van den Oord, G., Weerts, A., Whan, K., 2020. The role of spatial and temporal model resolution
