@@ -246,6 +246,29 @@ function KinWaveOverlandFlow(dataset, config, indices; slope, flow_length, flow_
     return sf_land
 end
 
+"""
+Helper function to set waterbody variables `inflow`,`outflow_av` and `actevap` to zero. This
+is done at the start of each simulation timestep, during the timestep the total (weighted)
+sum is computed from values at each sub timestep.
+"""
+function set_waterbody_vars!(waterbody::W) where {W <: Union{SimpleReservoir, Lake}}
+    waterbody.boundary_conditions.inflow .= 0.0
+    waterbody.variables.outflow_av .= 0.0
+    waterbody.variables.actevap .= 0.0
+    return nothing
+end
+set_waterbody_vars!(waterbody) = nothing
+
+"""
+Helper function to compute the average of waterbody variables `inflow` and `outflow_av`. This
+is done at the end of each simulation timestep.
+"""
+function average_waterbody_vars!(waterbody::W, dt) where {W <: Union{SimpleReservoir, Lake}}
+    waterbody.variables.outflow_av ./= dt
+    waterbody.boundary_conditions.inflow ./= dt
+end
+average_waterbody_vars!(waterbody, dt) = nothing
+
 "Update overland flow model `KinWaveOverlandFlow` for a single timestep"
 function kinwave_land_update!(model::KinWaveOverlandFlow, network, dt)
     (;
@@ -417,7 +440,7 @@ function kinwave_river_update!(model::KinWaveRiverFlow, network, doy, dt, dt_for
                     n_downstream = length(downstream_nodes)
                     if n_downstream == 1
                         j = only(downstream_nodes)
-                        qin[j] = lake.variables.outflow[i]
+                        qin[j] = max(lake.variables.outflow[i], 0.0)
                     elseif n_downstream == 0
                         error(
                             """A lake without a downstream river node is not supported.
@@ -467,18 +490,9 @@ function update!(model::KinWaveRiverFlow, network, doy, dt)
 
     q_av .= 0.0
     h_av .= 0.0
-    # because of possible iterations set reservoir and lake inflow and total outflow at
-    # start to zero, the total sum of inflow and outflow at each sub time step is calculated
-    if !isnothing(reservoir)
-        reservoir.boundary_conditions.inflow .= 0.0
-        reservoir.variables.totaloutflow .= 0.0
-        reservoir.variables.actevap .= 0.0
-    end
-    if !isnothing(lake)
-        lake.boundary_conditions.inflow .= 0.0
-        lake.variables.totaloutflow .= 0.0
-        lake.variables.actevap .= 0.0
-    end
+
+    set_waterbody_vars!(reservoir)
+    set_waterbody_vars!(lake)
 
     t = 0.0
     while t < dt
@@ -487,6 +501,10 @@ function update!(model::KinWaveRiverFlow, network, doy, dt)
         kinwave_river_update!(model, network, doy, dt_s, dt)
         t = t + dt_s
     end
+
+    average_waterbody_vars!(reservoir, dt)
+    average_waterbody_vars!(lake, dt)
+
     q_av ./= dt
     h_av ./= dt
     volume .= flow_length .* flow_width .* h

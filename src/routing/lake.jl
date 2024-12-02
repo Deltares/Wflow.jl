@@ -204,8 +204,8 @@ end
 @get_units @grid_loc @with_kw struct LakeVariables{T}
     waterlevel::Vector{T} | "m"                 # waterlevel H [m] of lake
     storage::Vector{T} | "m3"                   # storage lake [m³]
-    outflow::Vector{T} | "m3 s-1"               # outflow lake [m³ s⁻¹]
-    totaloutflow::Vector{T} | "m3"              # total outflow lake [m³]
+    outflow::Vector{T} | "m3 s-1"               # outflow of lake outlet [m³ s⁻¹]
+    outflow_av::Vector{T} | "m3 s-1"            # average outflow lake [m³ s⁻¹] for model timestep Δt (including flow from lower to upper lake)
     actevap::Vector{T}                          # average actual evapotranspiration for lake area [mm Δt⁻¹] 
 end
 
@@ -216,7 +216,7 @@ function LakeVariables(n, lake_waterlevel)
         inflow = fill(mv, n),
         storage = initialize_storage(lake_storfunc, lakearea, lake_waterlevel, sh),
         outflow = fill(mv, n),
-        totaloutflow = fill(mv, n),
+        outflow_av = fill(mv, n),
         actevap = fill(mv, n),
     )
     return variables
@@ -224,7 +224,7 @@ end
 
 "Struct for storing lake model boundary conditions"
 @get_units @grid_loc @with_kw struct LakeBC{T}
-    inflow::Vector{T} | "m3"                    # inflow to the lake [m³]
+    inflow::Vector{T} | "m3 s-1"                # inflow to the lake [m³ s⁻¹] for model timestep Δt
     precipitation::Vector{T}                    # average precipitation for lake area [mm Δt⁻¹]
     evaporation::Vector{T}                      # average potential evaporation for lake area [mm Δt⁻¹]
 end
@@ -422,17 +422,17 @@ function update!(model::Lake, i, inflow, doy, dt, dt_forcing)
 
             # update values for the lower lake in place
             lake_v.outflow[lo] = -outflow
-            lake_v.totaloutflow[lo] += -outflow * dt
+            lake_v.outflow_av[lo] += -outflow * dt
             lake_v.storage[lo] = lowerlake_storage
             lake_v.waterlevel[lo] = lowerlake_waterlevel
         end
     end
 
     # update values in place
-    lake_v.outflow[i] = max(outflow, 0.0) # for a linked lake flow can be negative
+    lake_v.outflow[i] = outflow
     lake_v.waterlevel[i] = waterlevel
     lake_bc.inflow[i] += inflow * dt
-    lake_v.totaloutflow[i] += outflow * dt
+    lake_v.outflow_av[i] += outflow * dt
     lake_v.storage[i] = storage
     lake_v.actevap[i] += 1000.0 * (actevap / lake_p.area[i])
 

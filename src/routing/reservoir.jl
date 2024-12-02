@@ -139,7 +139,7 @@ end
 @get_units @grid_loc @with_kw struct ReservoirVariables{T}
     volume::Vector{T} | "m3"                # reservoir volume [m³]
     outflow::Vector{T} | "m3 s-1"           # outflow from reservoir [m³ s⁻¹]
-    totaloutflow::Vector{T} | "m3"          # total outflow from reservoir [m³]
+    outflow_av::Vector{T} | "m3 s-1"        # average outflow from reservoir [m³ s⁻¹] for model timestep Δt
     percfull::Vector{T} | "-"               # fraction full (of max storage) [-]
     demandrelease::Vector{T} | "m3 s-1"     # minimum (environmental) flow released from reservoir [m³ s⁻¹]
     actevap::Vector{T}                      # average actual evaporation for reservoir area [mm Δt⁻¹]
@@ -151,7 +151,7 @@ function ReservoirVariables(n, parameters)
     variables = ReservoirVariables{Float}(;
         volume = targetfullfrac .* maxvolume,
         outflow = fill(mv, n),
-        totaloutflow = fill(mv, n),
+        outflow_av = fill(mv, n),
         percfull = fill(mv, n),
         demandrelease = fill(mv, n),
         actevap = fill(mv, n),
@@ -161,7 +161,7 @@ end
 
 "Struct for storing reservoir model boundary conditions"
 @get_units @grid_loc @with_kw struct ReservoirBC{T}
-    inflow::Vector{T} | "m3"        # total inflow into reservoir [m³]
+    inflow::Vector{T} | "m3 s-1"    # inflow into reservoir [m³ s⁻¹] for model timestep Δt
     precipitation::Vector{T}        # average precipitation for reservoir area [mm Δt⁻¹]
     evaporation::Vector{T}          # average potential evaporation for reservoir area [mm Δt⁻¹]
 end
@@ -235,7 +235,7 @@ function update!(model::SimpleReservoir, i, inflow, dt, dt_forcing)
     # update values in place
     res_v.outflow[i] = outflow / dt
     res_bc.inflow[i] += inflow * dt
-    res_v.totaloutflow[i] += outflow
+    res_v.outflow_av[i] += outflow
     res_v.demandrelease[i] = demandrelease / dt
     res_v.percfull[i] = percfull
     res_v.volume[i] = vol

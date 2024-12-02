@@ -133,7 +133,7 @@ end
 @testset "reservoir simple" begin
     res = model.lateral.river.boundary_conditions.reservoir
     @test res.variables.outflow[1] ≈ 0.21750000119148086f0
-    @test res.boundary_conditions.inflow[1] ≈ 44.312772458823474f0
+    @test res.boundary_conditions.inflow[1] ≈ 0.00051287944327482
     @test res.variables.volume[1] ≈ 2.751299001489657f7
     @test res.boundary_conditions.precipitation[1] ≈ 0.17999997735023499f0
     @test res.boundary_conditions.evaporation[1] ≈ 0.5400000810623169f0

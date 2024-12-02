@@ -473,7 +473,7 @@ function local_inertial_river_update!(
 
         q_in = get_inflow_waterbody(model, edges_at_node.src[i])
         update!(lake, v, q_in + inflow_waterbody[i], doy, dt, dt_forcing)
-        river_v.q[i] = lake.variables.outflow[v]
+        river_v.q[i] = max(lake.variables.outflow[v], 0.0)
         river_v.q_av[i] += river_v.q[i] * dt
     end
     if update_h
@@ -546,16 +546,10 @@ function update!(
     update_h = true,
 ) where {T}
     (; reservoir, lake) = model.boundary_conditions
-    if !isnothing(reservoir)
-        reservoir.boundary_conditions.inflow .= 0.0
-        reservoir.variables.totaloutflow .= 0.0
-        reservoir.variables.actevap .= 0.0
-    end
-    if !isnothing(lake)
-        lake.boundary_conditions.inflow .= 0.0
-        lake.variables.totaloutflow .= 0.0
-        lake.variables.actevap .= 0.0
-    end
+
+    set_waterbody_vars!(reservoir)
+    set_waterbody_vars!(lake)
+
     if !isnothing(model.floodplain)
         model.floodplain.variables.q_av .= 0.0
         model.floodplain.variables.h_av .= 0.0
@@ -574,6 +568,9 @@ function update!(
     end
     model.variables.q_av ./= dt
     model.variables.h_av ./= dt
+
+    average_waterbody_vars!(reservoir, dt)
+    average_waterbody_vars!(lake, dt)
 
     if !isnothing(model.floodplain)
         model.floodplain.variables.q_av ./= dt
