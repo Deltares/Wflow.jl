@@ -1,0 +1,31 @@
+---
+title: "User guide"
+---
+
+Use the buttons below to quickly navigate to the most visited pages. Note that more pages are
+available in the sidebar.
+
+::: column-page-inset-right
+{{< include /_static/listing_code.html >}}
+```{=html}
+
+<ul id="index-chooser" class="nav nav-tabs" role="tablist">
+  <li class="nav-item" role="presentation">
+    <a class="nav-link" href="required_files.html">
+      <i class="bi bi-files"></i>Required files
+    </a>
+  </li>
+  <li class="nav-item" role="presentation">
+    <a class="nav-link" href="toml_file.html">
+      <i class="bi bi-info-square"></i>Explanation .toml file
+    </a>
+  </li>
+  <li class="nav-item" role="presentation">
+    <a class="nav-link" href="faq.html">
+      <i class="bi bi-question-circle"></i>Frequently asked questions
+    </a>
+  </li>
+</ul>
+
+```
+:::

@@ -32,7 +32,7 @@ end
 
 "Struct for storing glacier HBV model parameters"
 @get_units @grid_loc @with_kw struct GlacierHbvParameters{T}
-    # Threshold temperature for snowfall above glacier [ᵒC]
+    # Threshold temperature for glacier melt [ᵒC]
     g_tt::Vector{T} | "ᵒC"
     # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹] for glacier
     g_cfmax::Vector{T} | "mm ᵒC-1 dt-1"

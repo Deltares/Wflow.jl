@@ -55,7 +55,7 @@ function BMI.update(model::Model; run = nothing)
     elseif run == "sbm_after_subsurfaceflow"
         run_timestep!(model; update_func = update_after_subsurfaceflow!)
     end
-    return model
+    return nothing
 end
 
 function BMI.update_until(model::Model, time::Float64)
@@ -74,7 +74,7 @@ function BMI.update_until(model::Model, time::Float64)
     for _ in 1:steps
         run_timestep!(model)
     end
-    return model
+    return nothing
 end
 
 "Write state output to netCDF and close files."
@@ -85,7 +85,8 @@ function BMI.finalize(model::Model)
         write_netcdf_timestep(model, writer.state_dataset, writer.state_parameters)
     end
     reset_clock!(model.clock, config)
-    return close_files(model; delete_output = false)
+    close_files(model; delete_output = false)
+    return nothing
 end
 
 function BMI.get_component_name(model::Model)
@@ -401,7 +402,7 @@ end
 # May also be useful for other external software packages.
 function load_state(model::Model)
     set_states!(model)
-    return model
+    return nothing
 end
 
 function save_state(model::Model)
@@ -410,7 +411,8 @@ function save_state(model::Model)
         @info "Write output states to netCDF file `$(model.writer.state_nc_path)`."
     end
     write_netcdf_timestep(model, writer.state_dataset, writer.state_parameters)
-    return close(writer.state_dataset)
+    close(writer.state_dataset)
+    return nothing
 end
 
 function get_start_unix_time(model::Model)

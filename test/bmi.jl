@@ -57,7 +57,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             ) BMI.get_var_itemsize(model, "lateral.land.parameters.alpha_pow")
         end
 
-        model = BMI.update(model)
+        BMI.update(model)
 
         @testset "update and get and set functions" begin
             @test BMI.get_current_time(model) == 86400.0
@@ -136,12 +136,14 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 
         @testset "update until and finalize" begin
             time = BMI.get_current_time(model) + 2 * BMI.get_time_step(model)
-            model = BMI.update_until(model, time)
+            BMI.update_until(model, time)
             @test model.clock.iteration == 3
             time_off = BMI.get_current_time(model) + 1 * BMI.get_time_step(model) + 1e-06
-            @test_throws ErrorException model = BMI.update_until(model, time_off)
-            @test_throws ErrorException model =
-                BMI.update_until(model, time - BMI.get_time_step(model))
+            @test_throws ErrorException BMI.update_until(model, time_off)
+            @test_throws ErrorException BMI.update_until(
+                model,
+                time - BMI.get_time_step(model),
+            )
             BMI.finalize(model)
         end
     end
@@ -168,7 +170,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
         model = BMI.initialize(Wflow.Model, tomlpath)
 
         # update the recharge part of the SBM model
-        model = BMI.update(model; run = "sbm_until_recharge")
+        BMI.update(model; run = "sbm_until_recharge")
 
         @testset "recharge part of SBM" begin
             sbm = model.vertical
@@ -191,7 +193,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             fill(1.0e-5, BMI.get_grid_node_count(model, 6)),
         )
         # update SBM after subsurface flow
-        model = BMI.update(model; run = "sbm_after_subsurfaceflow")
+        BMI.update(model; run = "sbm_after_subsurfaceflow")
 
         @testset "SBM after subsurface flow" begin
             sbm = model.vertical
@@ -215,7 +217,7 @@ end
     @test Wflow.get_start_unix_time(model) == 9.466848e8
     satwaterdepth = mean(model.vertical.soil.variables.satwaterdepth)
     model.config.model.reinit = false
-    model = Wflow.load_state(model)
+    Wflow.load_state(model)
     @test satwaterdepth ≠ mean(model.vertical.soil.variables.satwaterdepth)
     @test_logs (
         :info,
