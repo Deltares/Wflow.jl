@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initialization of `LateralSSF` variables `ssf` and `ssfmax` with vertical hydraulic
   conductivity profile `exponential_constant`. Removed parameter `khfrac` from the
   computation, as it is already part of parameter `kh_0`.
+- The reservoir (`reservoir_index_f`) and lake (`lake_index_f`) indices as part of
+  `network.river` were not correct. These were mapped to their own index in the
+  `SimpleReservoir` and `Lake` struct, and not to the corresponding river index. This
+  resulted in incorrect surface water abstractions from reservoir and lake volumes, and
+  surface water abstractions were set at zero at the wrong river locations.
 
 ### Changed
 - Removed vertical concepts `HBV` and `FLEXTopo`.
@@ -25,7 +30,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `LandHydrologySBM` (with soil model `SbmSoilModel`). The model component structs have
   model `variables`, `parameters` and `boundary_conditions` (if applicable), including
   associated functions for initializing and updating these model components. The original
-  long update function of the `SBM` soil part has been split into separate functions. 
+  long update function of the `SBM` soil part has been split into separate functions.
+- Refactor the lateral (routing) components: as for the vertical `SBM` concept split the
+  structs into `variables`, `parameters` and `boundary_conditions` (if applicable).
+- Timestepping method parameters for solving the kinematic wave and local inertial
+  approaches for river and overland flow are moved to a `TimeStepping` struct. The
+  timestepping implementation for the kinematic wave is now similar to the local inertial
+  method: a stable timestep is computed for each sub timestep (or a fixed sub timestep is
+  used) as part of a while loop (for each model timestep).
 
 ### Added
 - Support direct output of snow and glacier melt, and add computation of snow water
