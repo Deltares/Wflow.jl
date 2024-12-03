@@ -77,7 +77,7 @@ head = "head"
 [input.vertical.glacier.parameters]
 glacier_frac = "wflow_glacierfrac"
 g_cfmax = "G_Cfmax"
-g_tt = "G_TT"
+g_ttm = "G_TT"
 g_sifrac = "G_SIfrac"
 
 [input.vertical.glacier.variables]

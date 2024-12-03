@@ -12,7 +12,7 @@ occurs if the snow storage < 10 mm.
 - `glacierstore` volume of the glacier [mm] w.e.
 - `snow_storage` snow storage on top of glacier [mm]
 - `temperature` air temperature [°C]
-- `tt` temperature threshold for ice melting [°C]
+- `ttm` temperature threshold for ice melting [°C]
 - `cfmax` ice degree-day factor in [mm/(°C/day)]
 - `g_sifrac` fraction of the snow turned into ice [-]
 - `max_snow_to_glacier` maximum snow to glacier conversion rate
@@ -29,7 +29,7 @@ function glacier_hbv(
     glacierstore,
     snow,
     temperature,
-    tt,
+    ttm,
     cfmax,
     g_sifrac,
     max_snow_to_glacier,
@@ -46,7 +46,7 @@ function glacier_hbv(
     glacierstore = glacierstore + snow_to_glacier
 
     # Potential snow melt, based on temperature
-    potmelt = temperature > tt ? cfmax * (temperature - tt) : 0.0
+    potmelt = temperature > ttm ? cfmax * (temperature - ttm) : 0.0
 
     # actual Glacier melt
     glaciermelt = snow < 10.0 ? min(potmelt, glacierstore) : 0.0
