@@ -538,12 +538,16 @@ function stable_timestep(
             stable_timesteps[k] = (flow_length[i] / c)
         end
     end
-    if k > 0
-        dt_s = quantile!(@view(stable_timesteps[1:k]), p)
+
+    dt_min = if k == 1
+        stable_timesteps[k]
+    elseif k > 0
+        quantile!(@view(stable_timesteps[1:k]), p)
     else
-        dt_s = 600.0
+        600.0
     end
-    return dt_s
+
+    return dt_min
 end
 
 """

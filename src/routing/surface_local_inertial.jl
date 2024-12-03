@@ -839,7 +839,7 @@ function stable_timestep(model::LocalInertialRiverFlow{T})::T where {T}
         @fastmath @inbounds dt = cfl * flow_length[i] / sqrt(g * h[i])
         dt_min = min(dt, dt_min)
     end
-    dt_min = isinf(dt_min) ? T(10.0) : dt_min
+    dt_min = isinf(dt_min) ? T(60.0) : dt_min
     return dt_min
 end
 
@@ -856,7 +856,7 @@ function stable_timestep(model::LocalInertialOverlandFlow{T})::T where {T}
         end
         dt_min = min(dt, dt_min)
     end
-    dt_min = isinf(dt_min) ? T(10.0) : dt_min
+    dt_min = isinf(dt_min) ? T(60.0) : dt_min
     return dt_min
 end
 

@@ -266,11 +266,11 @@ Wflow.run_timestep!(model)
 @testset "river flow and depth (local inertial)" begin
     q = model.lateral.river.variables.q_av
     @test sum(q) ≈ 3854.717278465037f0
-    @test q[1622] ≈ 7.311274274855274f-5
+    @test q[1622] ≈ 7.296767063082754f-5
     @test q[43] ≈ 11.716766734364437f0
     @test q[501] ≈ 3.4819773071884716f0
     h = model.lateral.river.variables.h_av
-    @test h[1622] ≈ 0.001987887644883981f0
+    @test h[1622] ≈ 0.001986669483044286f0
     @test h[43] ≈ 0.43311924038778815f0
     @test h[501] ≈ 0.05635210581824346f0
     q_channel = model.lateral.river.variables.q_channel_av
@@ -289,17 +289,17 @@ Wflow.run_timestep!(model)
 @testset "river and overland flow and depth (local inertial)" begin
     q = model.lateral.river.variables.q_av
     @test sum(q) ≈ 2380.64389229669f0
-    @test q[1622] ≈ 7.328535246760549f-5
+    @test q[1622] ≈ 7.30561606758937f-5
     @test q[43] ≈ 5.3566292152594155f0
-    @test q[501] ≈ 1.6042388573126602f0
+    @test q[501] ≈ 1.602564408503896f0
     h = model.lateral.river.variables.h_av
-    @test h[1622] ≈ 0.0019891342000364796f0
+    @test h[1622] ≈ 0.001987528017923597f0
     @test h[43] ≈ 0.30026439683630496f0
-    @test h[501] ≈ 0.03195324587192846f0
+    @test h[501] ≈ 0.031933708617123746f0
     qx = model.lateral.land.variables.qx
     qy = model.lateral.land.variables.qy
-    @test qx[[26, 35, 631]] ≈ [0.1939736998417174f0, 0.026579954465883678f0, 0.0f0]
-    @test qy[[26, 35, 631]] ≈ [0.12906530420401777f0, 1.7225115950614904f0, 0.0f0]
+    @test qx[[26, 35, 631]] ≈ [0.18343478752498582f0, 0.000553471702071059f0, 0.0f0]
+    @test qy[[26, 35, 631]] ≈ [0.12607229901243375f0, 0.019605967561619194f0, 0.0f0]
     h = model.lateral.land.variables.h
     @test h[[26, 35, 631]] ≈
           [0.07367301172613304f0, 0.009139882310161706f0, 0.0007482998926237368f0]
@@ -420,12 +420,12 @@ Wflow.run_timestep!(model)
 @testset "river flow (local inertial) with floodplain schematization simulation" begin
     q = model.lateral.river.variables.q_av
     @test sum(q) ≈ 3843.944494991296f0
-    @test q[1622] ≈ 7.311274278896417f-5
+    @test q[1622] ≈ 7.296767071929629f-5
     @test q[43] ≈ 11.716766734364418f0
     @test q[501] ≈ 3.424364314225289f0
-    @test q[5808] ≈ 0.0022274679501657693f0
+    @test q[5808] ≈ 0.002228981516146531f0
     h = model.lateral.river.variables.h_av
-    @test h[1622] ≈ 0.001987887580593841f0
+    @test h[1622] ≈ 0.0019866694251020806f0
     @test h[43] ≈ 0.433119240388070f0
     @test h[501] ≈ 0.055832770820860404f0
     @test h[5808] ≈ 0.005935591961908253f0
@@ -441,12 +441,12 @@ Wflow.run_timestep!(model)
 @testset "change boundary condition for local inertial routing (including floodplain)" begin
     q = model.lateral.river.variables.q_av
     @test sum(q) ≈ 3844.1544889903134f0
-    @test q[1622] ≈ 7.311151138631112f-5
+    @test q[1622] ≈ 7.296767071929629f-5
     @test q[43] ≈ 11.716766734416717f0
     @test q[501] ≈ 3.424329413571391f0
-    @test q[5808] ≈ 0.060518234525259465f0
+    @test q[5808] ≈ 0.055269620065756024f0
     h = model.lateral.river.variables.h_av
-    @test h[1622] ≈ 0.0019878952928530183f0
+    @test h[1622] ≈ 0.0019866694251020806f0
     @test h[43] ≈ 0.4331192403230577f0
     @test h[501] ≈ 0.0558281185092927f0
     @test h[5808] ≈ 2.0000006940603936f0

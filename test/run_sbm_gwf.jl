@@ -96,7 +96,7 @@ Wflow.run_timestep!(model)
     @test sum(q) ≈ 0.02727911500112358f0
     @test q[6] ≈ 0.006111263175002127f0
     @test river.variables.volume[6] ≈ 7.6120096530771075f0
-    @test river.boundary_conditions.inwater[6] ≈ 0.00022087679662860144f0
+    @test river.boundary_conditions.inwater[6] ≈ 0.0002210785332342944f0
     @test q[13] ≈ 0.0004638698607639214f0
     @test q[5] ≈ 0.0064668491697542786f0
 end
