@@ -10,7 +10,7 @@ ZMQ.connect(socket, "tcp://localhost:5555")
 
 function request(message)
     ZMQ.send(socket, JSON3.write(message))
-    ret_value = JSON3.read(ZMQ.recv(socket), Dict)
+    ret_value = JSON3.read(ZMQ.recv(socket), Dict; allow_inf = true)
     return ret_value
 end
 
