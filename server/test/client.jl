@@ -24,6 +24,12 @@ end
     @test request((fn = "get_time_units",)) == Dict("time_units" => "s")
 end
 
+@testset "Reading and writing NaN values allowed" begin
+    msg =
+        (fn = "get_value", name = "vertical.soil.variables.vwc[1]", dest = fill(0.0, 50063))
+    @test isnan(mean(request(msg)["value"]))
+end
+
 @testset "update functions" begin
     @test request((fn = "update_until", time = 86400.0)) == Dict("status" => "OK")
     @test request((fn = "get_current_time",)) == Dict("current_time" => 86400)
