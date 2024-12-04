@@ -49,7 +49,7 @@ using Parameters: @with_kw
 using Polyester: @batch
 using ProgressLogging: @progress
 using StaticArrays: SVector, pushfirst, setindex
-using Statistics: mean, median, quantile!
+using Statistics: mean, median, quantile!, quantile
 using TerminalLoggers
 using TOML: TOML
 
@@ -141,8 +141,17 @@ Base.show(io::IO, m::Model) = print(io, "model of type ", typeof(m))
 
 include("forcing.jl")
 include("parameters.jl")
-include("flow.jl")
-include("horizontal_process.jl")
+include("groundwater/connectivity.jl")
+include("groundwater/aquifer.jl")
+include("groundwater/boundary_conditions.jl")
+include("routing/timestepping.jl")
+include("routing/subsurface.jl")
+include("routing/reservoir.jl")
+include("routing/lake.jl")
+include("routing/surface_kinwave.jl")
+include("routing/surface_local_inertial.jl")
+include("routing/surface_routing.jl")
+include("routing/routing_process.jl")
 include("vegetation/rainfall_interception.jl")
 include("vegetation/canopy.jl")
 include("snow/snow_process.jl")
@@ -155,12 +164,8 @@ include("soil/soil_process.jl")
 include("sbm.jl")
 include("demand/water_demand.jl")
 include("sediment.jl")
-include("reservoir_lake.jl")
 include("sbm_model.jl")
 include("sediment_model.jl")
-include("groundwater/connectivity.jl")
-include("groundwater/aquifer.jl")
-include("groundwater/boundary_conditions.jl")
 include("sbm_gwf_model.jl")
 include("utils.jl")
 include("bmi.jl")

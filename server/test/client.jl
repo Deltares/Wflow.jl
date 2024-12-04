@@ -38,13 +38,13 @@ end
 
 @testset "model information functions" begin
     @test request((fn = "get_component_name",)) == Dict("component_name" => "sbm")
-    @test request((fn = "get_input_item_count",)) == Dict("input_item_count" => 203)
-    @test request((fn = "get_output_item_count",)) == Dict("output_item_count" => 203)
+    @test request((fn = "get_input_item_count",)) == Dict("input_item_count" => 202)
+    @test request((fn = "get_output_item_count",)) == Dict("output_item_count" => 202)
     to_check = [
         "vertical.soil.parameters.nlayers",
         "vertical.soil.parameters.theta_r",
-        "lateral.river.q",
-        "lateral.river.reservoir.outflow",
+        "lateral.river.variables.q",
+        "lateral.river.boundary_conditions.reservoir.variables.outflow",
     ]
     retrieved_vars = request((fn = "get_input_var_names",))["input_var_names"]
     @test all(x -> x in retrieved_vars, to_check)
@@ -55,12 +55,12 @@ end
 zi_size = 0
 vwc_1_size = 0
 @testset "variable information and get and set functions" begin
-    @test request((fn = "get_var_itemsize", name = "lateral.subsurface.ssf")) ==
+    @test request((fn = "get_var_itemsize", name = "lateral.subsurface.variables.ssf")) ==
           Dict("var_itemsize" => sizeof(Wflow.Float))
     @test request((fn = "get_var_type", name = "vertical.n"))["status"] == "ERROR"
     @test request((fn = "get_var_units", name = "vertical.soil.parameters.theta_s")) ==
           Dict("var_units" => "-")
-    @test request((fn = "get_var_location", name = "lateral.river.q")) ==
+    @test request((fn = "get_var_location", name = "lateral.river.variables.q")) ==
           Dict("var_location" => "node")
     zi_nbytes =
         request((fn = "get_var_nbytes", name = "vertical.soil.variables.zi"))["var_nbytes"]
@@ -74,19 +74,20 @@ vwc_1_size = 0
     vwc_1_itemsize =
         request((fn = "get_var_itemsize", name = "vertical.soil.variables.vwc[1]"))["var_itemsize"]
     vwc_1_size = Int(vwc_1_nbytes / vwc_1_itemsize)
-    @test request((fn = "get_var_grid", name = "lateral.river.h")) == Dict("var_grid" => 3)
+    @test request((fn = "get_var_grid", name = "lateral.river.variables.h")) ==
+          Dict("var_grid" => 3)
     msg = (fn = "get_value", name = "vertical.soil.variables.zi", dest = fill(0.0, zi_size))
     @test mean(request(msg)["value"]) ≈ 277.3620724821974
     msg = (fn = "get_value_ptr", name = "vertical.soil.parameters.theta_s")
     @test mean(request(msg)["value_ptr"]) ≈ 0.4409211971535584
     msg = (
         fn = "get_value_at_indices",
-        name = "lateral.river.q",
+        name = "lateral.river.variables.q",
         dest = [0.0, 0.0, 0.0],
         inds = [1, 5, 10],
     )
     @test request(msg)["value_at_indices"] ≈
-          [2.198747900215207f0, 2.6880427720508515f0, 3.4848783702629564f0]
+          [2.1007361866518766, 2.5702292750107687, 3.2904803551115727]
     msg =
         (fn = "set_value", name = "vertical.soil.variables.zi", src = fill(300.0, zi_size))
     @test request(msg) == Dict("status" => "OK")

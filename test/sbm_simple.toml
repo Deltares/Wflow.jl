@@ -99,7 +99,7 @@ path = "output_moselle_simple.csv"
 coordinate.x = 7.378
 coordinate.y = 50.204
 header = "Q"
-parameter = "lateral.river.q"
+parameter = "lateral.river.variables.q"
 
 [[csv.column]]
 header = "recharge"

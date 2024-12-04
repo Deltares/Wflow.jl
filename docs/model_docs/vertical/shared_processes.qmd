@@ -17,18 +17,18 @@ parameter `tti` defines how precipitation can occur partly as rain or snowfall.
 # https://gist.github.com/JoostBuitink/21dd32e71fd1360117fcd1c532c4fd9d#file-snowfall_fig-py # hide
 -->
 
-If precipitation occurs as snowfall, it is added to the dry snow component
-within the snow pack. Otherwise it ends up in the free water reservoir, which represents the
-liquid water content of the snow pack. Between the two components of the snow pack,
-interactions take place, either through snow melt (if temperatures are above a threshold `tt`)
-or through snow refreezing (if temperatures are below threshold `tt`).
+If precipitation occurs as snowfall, it is added to the dry snow component within the snow
+pack. Otherwise it ends up in the free water reservoir, which represents the liquid water
+content of the snow pack. Between the two components of the snow pack, interactions take
+place, either through snow melt (if temperatures are above a threshold `ttm`) or through
+snow refreezing (if temperatures are below threshold `ttm`).
 
 The respective rates of snow melt and refreezing are:
 
 $$
 \begin{align*}
-    Q_m &=& \subtext{\mathrm{cf}}{max}(T_a−\mathrm{tt})\, &&T_a > \mathrm{tt} \\
-    Q_r &=& \subtext{\mathrm{cf}}{max} \, \mathrm{cf}_r(\mathrm{tt}−T_a) &&T_a < \mathrm{tt}
+    Q_m &=& \subtext{\mathrm{cf}}{max}(T_a−\mathrm{ttm})\, &&T_a > \mathrm{ttm} \\
+    Q_r &=& \subtext{\mathrm{cf}}{max} \, \mathrm{cf}_r(\mathrm{ttm}−T_a) &&T_a < \mathrm{ttm}
 \end{align*}
 $$
 
@@ -61,12 +61,12 @@ into firn/ice (using the HBV-light model) and glacier melt (using a temperature 
 model).
 
 The definition of glacier boundaries and initial volume is defined by two parameters. The
-parameter `glacierfrac` gives the fraction of each grid cell covered by a glacier as a number
-between zero and one. The state parameter `glacierstore` gives the amount of water (in mm w.e.)
-within the glaciers at each grid cell. Because the glacier store (`glacierstore`) cannot be
-initialized by running thFe model for a couple of years, a default initial state should be
-supplied by adding this parameter to the input static file. The required glacier data can be
-prepared from available glacier datasets.
+parameter `glacierfrac` gives the fraction of each grid cell covered by a glacier as a
+number between zero and one. The state parameter `glacierstore` gives the amount of water
+(in mm w.e.) within the glaciers at each grid cell. Because the glacier store
+(`glacierstore`) cannot be initialized by running the model for a couple of years, a default
+initial state should be supplied by adding this parameter to the input static file. The
+required glacier data can be prepared from available glacier datasets.
 
 First, a fixed fraction of the snowpack on top of the glacier is converted into ice for each
 timestep and added to the `glacierstore` using the HBV-light model (Seibert et al., 2018). This
@@ -74,21 +74,21 @@ fraction `g_sifrac` typically ranges from $0.001$ to $0.006$.
 
 Then, when the snowpack on top of the glacier is almost all melted (snow cover $<
 \SI{10}{mm}$), glacier melt is enabled and estimated with a degree-day model. If the air
-temperature, $T_a$, is below a certain threshold `g_tt` ($\SIb{}{\degree C}$) precipitation
-occurs as snowfall, whereas it occurs as rainfall if $T_a ≥$ `g_tt`.
+temperature, $T_a$, is above a certain threshold `g_ttm` ($\SIb{}{\degree C}$) glacier melt
+occurs.
 
 With this the rate of glacier melt in mm is estimated as:
 
 $$
-Q_m = \subtext{g}{cfmax}(T_a − \subtext{g}{tt})\, ; \, T_a > \subtext{g}{tt}
+Q_m = \subtext{g}{cfmax}(T_a − \subtext{g}{ttm})\, ; \, T_a > \subtext{g}{ttm}
 $$
 
 where $Q_m$ is the rate of glacier melt and $\SIb{\subtext{g}{cfmax}}{mm (\degree
-C)^{-1}day^{-1}}$ is the melting factor. Parameter `g_tt` can be taken as equal to the snow
-`tt` parameter. Values of the melting factor `g_cfmax` normally varies from one glacier to
+C)^{-1}day^{-1}}$ is the melting factor. Parameter `g_ttm` can be taken as equal to the snow
+`ttm` parameter. Values of the melting factor `g_cfmax` normally varies from one glacier to
 another and some values are reported in the literature. `g_cfmax` can also be estimated by
-multiplying snow `cfmax` by a factor between 1 and 2, to take into account the higher albedo of
-ice compared to snow.
+multiplying snow `cfmax` by a factor between 1 and 2, to take into account the higher albedo
+of ice compared to snow.
 
 ## Rainfall interception
 Both the Gash and Rutter models are available to estimate rainfall interception by the

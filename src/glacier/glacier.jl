@@ -9,12 +9,12 @@ abstract type AbstractGlacierModel{T} end
 end
 
 "Initialize glacier model variables"
-function GlacierVariables(nc, config, inds)
+function GlacierVariables(dataset, config, indices)
     glacier_store = ncread(
-        nc,
+        dataset,
         config,
         "vertical.glacier.variables.glacier_store";
-        sel = inds,
+        sel = indices,
         defaults = 5500.0,
         type = Float,
         fill = 0.0,
@@ -33,7 +33,7 @@ end
 "Struct for storing glacier HBV model parameters"
 @get_units @grid_loc @with_kw struct GlacierHbvParameters{T}
     # Threshold temperature for glacier melt [ᵒC]
-    g_tt::Vector{T} | "ᵒC"
+    g_ttm::Vector{T} | "ᵒC"
     # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹] for glacier
     g_cfmax::Vector{T} | "mm ᵒC-1 dt-1"
     # Fraction of the snowpack on top of the glacier converted into ice [Δt⁻¹]
@@ -54,60 +54,55 @@ end
 struct NoGlacierModel{T} <: AbstractGlacierModel{T} end
 
 "Initialize glacier HBV model parameters"
-function GlacierHbvParameters(nc, config, inds, dt)
-    g_tt = ncread(
-        nc,
+function GlacierHbvParameters(dataset, config, indices, dt)
+    g_ttm = ncread(
+        dataset,
         config,
-        "vertical.glacier.parameters.g_tt";
-        sel = inds,
+        "vertical.glacier.parameters.g_ttm";
+        sel = indices,
         defaults = 0.0,
         type = Float,
         fill = 0.0,
     )
     g_cfmax =
         ncread(
-            nc,
+            dataset,
             config,
             "vertical.glacier.parameters.g_cfmax";
-            sel = inds,
+            sel = indices,
             defaults = 3.0,
             type = Float,
             fill = 0.0,
         ) .* (dt / basetimestep)
     g_sifrac =
         ncread(
-            nc,
+            dataset,
             config,
             "vertical.glacier.parameters.g_sifrac";
-            sel = inds,
+            sel = indices,
             defaults = 0.001,
             type = Float,
             fill = 0.0,
         ) .* (dt / basetimestep)
     glacier_frac = ncread(
-        nc,
+        dataset,
         config,
         "vertical.glacier.parameters.glacier_frac";
-        sel = inds,
+        sel = indices,
         defaults = 0.0,
         type = Float,
         fill = 0.0,
     )
     max_snow_to_glacier = 8.0 * (dt / basetimestep)
-    glacier_hbv_params = GlacierHbvParameters(;
-        g_tt = g_tt,
-        g_cfmax = g_cfmax,
-        g_sifrac = g_sifrac,
-        glacier_frac = glacier_frac,
-        max_snow_to_glacier = max_snow_to_glacier,
-    )
+    glacier_hbv_params =
+        GlacierHbvParameters(; g_ttm, g_cfmax, g_sifrac, glacier_frac, max_snow_to_glacier)
     return glacier_hbv_params
 end
 
 "Initialize glacier HBV model"
-function GlacierHbvModel(nc, config, inds, dt, bc)
-    params = GlacierHbvParameters(nc, config, inds, dt)
-    vars = GlacierVariables(nc, config, inds)
+function GlacierHbvModel(dataset, config, indices, dt, bc)
+    params = GlacierHbvParameters(dataset, config, indices, dt)
+    vars = GlacierVariables(dataset, config, indices)
     model =
         GlacierHbvModel(; boundary_conditions = bc, parameters = params, variables = vars)
     return model
@@ -118,7 +113,7 @@ function update!(model::GlacierHbvModel, atmospheric_forcing::AtmosphericForcing
     (; temperature) = atmospheric_forcing
     (; glacier_store, glacier_melt) = model.variables
     (; snow_storage) = model.boundary_conditions
-    (; g_tt, g_cfmax, g_sifrac, glacier_frac, max_snow_to_glacier) = model.parameters
+    (; g_ttm, g_cfmax, g_sifrac, glacier_frac, max_snow_to_glacier) = model.parameters
 
     n = length(temperature)
 
@@ -128,7 +123,7 @@ function update!(model::GlacierHbvModel, atmospheric_forcing::AtmosphericForcing
             glacier_store[i],
             snow_storage[i],
             temperature[i],
-            g_tt[i],
+            g_ttm[i],
             g_cfmax[i],
             g_sifrac[i],
             max_snow_to_glacier,

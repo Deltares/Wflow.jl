@@ -153,7 +153,7 @@ function BMI.get_var_grid(model::Model, name::String)
     s = split(name, "[")
     key = symbols(first(s))
     if exchange(param(model, key))
-        type = typeof(param(model, key[1:(end - 1)]))
+        type = typeof(param(model, key[1:2]))
         return if :reservoir in key
             0
         elseif :lake in key
@@ -162,9 +162,9 @@ function BMI.get_var_grid(model::Model, name::String)
             2
         elseif :river in key
             3
-        elseif type <: ShallowWaterLand && occursin("x", s[end])
+        elseif type <: LocalInertialOverlandFlow && occursin("x", s[end])
             4
-        elseif type <: ShallowWaterLand && occursin("y", s[end])
+        elseif type <: LocalInertialOverlandFlow && occursin("y", s[end])
             5
         else
             6
@@ -374,7 +374,7 @@ function BMI.get_grid_edge_nodes(model::Model, grid::Int, edge_nodes::Vector{Int
     m = div(n, 2)
     # inactive nodes (boundary/ghost points) are set at -999
     if grid == 3
-        nodes_at_edge = adjacent_nodes_at_link(network.river.graph)
+        nodes_at_edge = adjacent_nodes_at_edge(network.river.graph)
         nodes_at_edge.dst[nodes_at_edge.dst .== m + 1] .= -999
         edge_nodes[range(1, n; step = 2)] = nodes_at_edge.src
         edge_nodes[range(2, n; step = 2)] = nodes_at_edge.dst

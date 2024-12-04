@@ -135,7 +135,7 @@ end
     x = [dx:dx:L;]
     zb = first.([quadgk(s, xi, L; rtol = 1e-12) for xi in x])
 
-    # initialize ShallowWaterRiver
+    # initialize local inertial river flow model
     graph = DiGraph(n)
     for i in 1:n
         add_edge!(graph, i, i + 1)
@@ -145,82 +145,95 @@ end
     width = fill(10.0, n)
     n_river = fill(0.03, n)
 
-    # for each link the src and dst node is required
-    nodes_at_link = Wflow.adjacent_nodes_at_link(graph)
+    # for each edge the src and dst node is required
+    nodes_at_edge = Wflow.adjacent_nodes_at_edge(graph)
     _ne = ne(graph)
 
-    # determine z, width, length and manning's n at links
+    # determine z, width, length and manning's n at edges
     zb_max = fill(0.0, _ne)
-    width_at_link = fill(0.0, _ne)
-    length_at_link = fill(0.0, _ne)
+    width_at_edge = fill(0.0, _ne)
+    length_at_edge = fill(0.0, _ne)
     mannings_n_sq = fill(0.0, _ne)
     for i in 1:_ne
-        zb_max[i] = max(zb[nodes_at_link.src[i]], zb[nodes_at_link.dst[i]])
-        width_at_link[i] = min(width[nodes_at_link.dst[i]], width[nodes_at_link.src[i]])
-        length_at_link[i] = 0.5 * (dl[nodes_at_link.dst[i]] + dl[nodes_at_link.src[i]])
+        zb_max[i] = max(zb[nodes_at_edge.src[i]], zb[nodes_at_edge.dst[i]])
+        width_at_edge[i] = min(width[nodes_at_edge.dst[i]], width[nodes_at_edge.src[i]])
+        length_at_edge[i] = 0.5 * (dl[nodes_at_edge.dst[i]] + dl[nodes_at_edge.src[i]])
         mannings_n =
             (
-                n_river[nodes_at_link.dst[i]] * dl[nodes_at_link.dst[i]] +
-                n_river[nodes_at_link.src[i]] * dl[nodes_at_link.src[i]]
-            ) / (dl[nodes_at_link.dst[i]] + dl[nodes_at_link.src[i]])
+                n_river[nodes_at_edge.dst[i]] * dl[nodes_at_edge.dst[i]] +
+                n_river[nodes_at_edge.src[i]] * dl[nodes_at_edge.src[i]]
+            ) / (dl[nodes_at_edge.dst[i]] + dl[nodes_at_edge.src[i]])
         mannings_n_sq[i] = mannings_n * mannings_n
     end
 
+    river_network = (
+        nodes_at_edge = nodes_at_edge,
+        edges_at_node = Wflow.adjacent_edges_at_node(graph, nodes_at_edge),
+    )
     network = (
-        nodes_at_link = nodes_at_link,
-        links_at_node = Wflow.adjacent_links_at_node(graph, nodes_at_link),
+        river = river_network,
+        reservoir = (river_indices = [],),
+        lake = (river_indices = [],),
     )
 
-    alpha = 0.7
-    dt = 1.0
     h_thresh = 1.0e-03
     froude_limit = true
     h_init = zeros(n - 1)
     push!(h_init, h_a[n])
 
-    sw_river = Wflow.ShallowWaterRiver(;
+    timestepping = Wflow.TimeStepping(; cfl = 0.7)
+    parameters = Wflow.LocalInertialRiverFlowParameters(;
         n = n,
         ne = _ne,
         active_n = collect(1:(n - 1)),
         active_e = collect(1:_ne),
         g = 9.80665,
-        alpha = alpha,
         h_thresh = h_thresh,
-        dt = dt,
+        zb_max = zb_max,
+        mannings_n_sq = mannings_n_sq,
+        mannings_n = n_river,
+        flow_width = width,
+        flow_width_at_edge = width_at_edge,
+        flow_length = dl,
+        flow_length_at_edge = length_at_edge,
+        bankfull_volume = fill(Wflow.mv, n),
+        bankfull_depth = fill(Wflow.mv, n),
+        zb = zb,
+        froude_limit = froude_limit,
+        waterbody = zeros(n),
+    )
+
+    variables = Wflow.LocalInertialRiverFlowVariables(;
         q0 = zeros(_ne),
         q = zeros(_ne),
         q_av = zeros(_ne),
         q_channel_av = zeros(_ne),
-        zb_max = zb_max,
-        mannings_n_sq = mannings_n_sq,
-        mannings_n = n_river,
         h = h_init,
         zs_max = zeros(_ne),
         zs_src = zeros(_ne),
         zs_dst = zeros(_ne),
         hf = zeros(_ne),
         h_av = zeros(n),
-        width = width,
-        width_at_link = width_at_link,
         a = zeros(_ne),
         r = zeros(_ne),
         volume = fill(0.0, n),
         error = zeros(n),
+    )
+
+    boundary_conditions = Wflow.RiverFlowBC(;
         inflow = zeros(n),
         abstraction = zeros(n),
-        inflow_wb = zeros(n),
+        inflow_waterbody = zeros(n),
         inwater = zeros(n),
-        dl = dl,
-        dl_at_link = length_at_link,
-        bankfull_volume = fill(Wflow.mv, n),
-        bankfull_depth = fill(Wflow.mv, n),
-        zb = zb,
-        froude_limit = froude_limit,
-        reservoir_index = Int[],
-        lake_index = Int[],
-        waterbody = zeros(n),
         reservoir = nothing,
         lake = nothing,
+    )
+
+    sw_river = Wflow.LocalInertialRiverFlow(;
+        timestepping,
+        boundary_conditions,
+        parameters,
+        variables,
         floodplain = nothing,
         allocation = nothing,
     )
@@ -228,16 +241,16 @@ end
     # run until steady state is reached
     epsilon = 1.0e-12
     while true
-        sw_river.inwater[1] = 20.0
-        h0 = mean(sw_river.h)
+        sw_river.boundary_conditions.inwater[1] = 20.0
+        h0 = mean(sw_river.variables.h)
         dt = Wflow.stable_timestep(sw_river)
-        Wflow.shallowwater_river_update!(sw_river, network, dt, 0.0, true)
-        d = abs(h0 - mean(sw_river.h))
+        Wflow.local_inertial_river_update!(sw_river, network, dt, 86400.0, 0.0, true)
+        d = abs(h0 - mean(sw_river.variables.h))
         if d <= epsilon
             break
         end
     end
 
     # test for mean absolute error [cm]
-    @test mean(abs.(sw_river.h .- h_a)) * 100.0 ≈ 1.873574206931199
+    @test mean(abs.(sw_river.variables.h .- h_a)) * 100.0 ≈ 1.873574206931199
 end

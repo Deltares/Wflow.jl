@@ -71,13 +71,13 @@ glacier_store = "glacierstore"
 [state.vertical.demand.paddy.variables]
 h = "h_paddy"
 
-[state.lateral.subsurface.flow.aquifer]
+[state.lateral.subsurface.flow.aquifer.variables]
 head = "head"
 
 [input.vertical.glacier.parameters]
 glacier_frac = "wflow_glacierfrac"
 g_cfmax = "G_Cfmax"
-g_tt = "G_TT"
+g_ttm = "G_TT"
 g_sifrac = "G_SIfrac"
 
 [input.vertical.glacier.variables]
@@ -136,15 +136,15 @@ livestock = true
 paddy = true
 nonpaddy = true
 
-[state.lateral.river]
+[state.lateral.river.variables]
 q = "q_river"
 h = "h_river"
 h_av = "h_av_river"
 
-[state.lateral.subsurface]
+[state.lateral.subsurface.variables]
 ssf = "ssf"
 
-[state.lateral.land]
+[state.lateral.land.variables]
 q = "q_land"
 h = "h_land"
 h_av = "h_av_land"
@@ -191,19 +191,19 @@ specific_yield = "specific_yield"
 gwf_f = "gwf_f"
 
 [input.lateral.land]
-n = "N"
+mannings_n = "N"
 slope = "Slope"
 
 [output]
 path = "output-piave-gwf.nc"
 
-[output.lateral.river]
+[output.lateral.river.variables]
 q_av = "q_river"
 
 [output.vertical.soil.variables]
 zi = "zi"
 
-[output.lateral.subsurface.flow.aquifer]
+[output.lateral.subsurface.flow.aquifer.variables]
 head = "head"
 
 [csv]
@@ -212,9 +212,9 @@ path = "output.csv"
 [[csv.column]]
 header = "Q"
 map = "gauges"
-parameter = "lateral.river.q_av"
+parameter = "lateral.river.variables.q_av"
 
 [[csv.column]]
 header = "Q"
 map = "gauges_grdc"
-parameter = "lateral.river.q_av"
+parameter = "lateral.river.variables.q_av"

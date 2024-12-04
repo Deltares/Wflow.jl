@@ -31,18 +31,18 @@ ustorelayerdepth = "ustorelayerdepth"
 snow_storage = "snow"
 snow_water = "snowwater"
 
-[state.lateral.river]
+[state.lateral.river.variables]
 h = "h_river"
 h_av = "h_av_river"
 q = "q_river"
 
-[state.lateral.river.reservoir]
+[state.lateral.river.boundary_conditions.reservoir.variables]
 volume = "volume_reservoir"
 
-[state.lateral.subsurface]
+[state.lateral.subsurface.variables]
 ssf = "ssf"
 
-[state.lateral.land]
+[state.lateral.land.variables]
 h = "h_land"
 h_av = "h_av_land"
 q = "q_land"
@@ -112,7 +112,7 @@ offset = 0.0
 
 [input.lateral.river]
 length = "wflow_riverlength"
-n = "N_River"
+mannings_n = "N_River"
 slope = "RiverSlope"
 width = "wflow_riverwidth"
 bankfull_elevation = "RiverZ"
@@ -132,7 +132,7 @@ targetminfrac = "ResTargetMinFrac"
 ksathorfrac = "KsatHorFrac"
 
 [input.lateral.land]
-n = "N"
+mannings_n = "N"
 slope = "Slope"
 
 [model]
@@ -161,17 +161,17 @@ ustorelayerdepth = "ustorelayerdepth"
 snow_storage = "snow"
 snow_water = "snowwater"
 
-[output.lateral.river]
+[output.lateral.river.variables]
 h = "h_river"
 q = "q_river"
 
-[output.lateral.river.reservoir]
+[output.lateral.river.boundary_conditions.reservoir.variables]
 volume = "volume_reservoir"
 
-[output.lateral.subsurface]
+[output.lateral.subsurface.variables]
 ssf = "ssf"
 
-[output.lateral.land]
+[output.lateral.land.variables]
 h = "h_land"
 q = "q_land"
 
@@ -181,7 +181,7 @@ path = "output_scalar_moselle.nc"
 [[netcdf.variable]]
 name = "Q"
 map = "gauges"
-parameter = "lateral.river.q"
+parameter = "lateral.river.variables.q"
 
 [[netcdf.variable]]
 coordinate.x = 6.255
@@ -202,13 +202,13 @@ path = "output_moselle.csv"
 
 [[csv.column]]
 header = "Q"
-parameter = "lateral.river.q"
+parameter = "lateral.river.variables.q"
 reducer = "maximum"
 
 [[csv.column]]
 header = "volume"
 index = 1
-parameter = "lateral.river.reservoir.volume"
+parameter = "lateral.river.boundary_conditions.reservoir.variables.volume"
 
 [[csv.column]]
 coordinate.x = 6.255
@@ -232,7 +232,7 @@ parameter = "vertical.atmospheric_forcing.temperature"
 [[csv.column]]
 header = "Q"
 map = "gauges"
-parameter = "lateral.river.q"
+parameter = "lateral.river.variables.q"
 
 [[csv.column]]
 header = "recharge"
@@ -255,8 +255,19 @@ components = [
   "vertical.snow.boundary_conditions",
   "vertical.snow.variables",
   "vertical.snow.parameters",
-  "lateral.subsurface",
-  "lateral.land",
-  "lateral.river",
-  "lateral.river.reservoir",
+  "lateral.subsurface.boundary_conditions",
+  "lateral.subsurface.variables",
+  "lateral.subsurface.parameters",
+  "lateral.subsurface.parameters.kh_profile",
+  "lateral.land.boundary_conditions",
+  "lateral.land.variables",
+  "lateral.land.variables.flow",
+  "lateral.land.parameters",
+  "lateral.river.variables",
+  "lateral.river.parameters",
+  "lateral.river.parameters.flow",
+  "lateral.river.boundary_conditions",
+  "lateral.river.boundary_conditions.reservoir.boundary_conditions",
+  "lateral.river.boundary_conditions.reservoir.parameters",
+  "lateral.river.boundary_conditions.reservoir.variables",
 ]
