@@ -39,16 +39,16 @@ end
 end
 
 "Initialize Gash interception model"
-function GashInterceptionModel(nc, config, inds, vegetation_parameter_set)
+function GashInterceptionModel(dataset, config, indices, vegetation_parameter_set)
     e_r = ncread(
-        nc,
+        dataset,
         config,
         "vertical.interception.parameters.e_r";
-        sel = inds,
+        sel = indices,
         defaults = 0.1,
         type = Float,
     )
-    n = length(inds)
+    n = length(indices)
     params =
         GashParameters(; e_r = e_r, vegetation_parameter_set = vegetation_parameter_set)
     vars = InterceptionVariables(Float, n)

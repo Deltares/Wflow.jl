@@ -213,7 +213,10 @@ end
 @test Wflow.param(model, "lateral.doesnt_exist", -1) == -1
 
 @testset "warm states" begin
-    @test Wflow.param(model, "lateral.river.reservoir.volume")[1] ≈ 3.2807224993363418e7
+    @test Wflow.param(
+        model,
+        "lateral.river.boundary_conditions.reservoir.variables.volume",
+    )[1] ≈ 3.2807224993363418e7
     @test Wflow.param(model, "vertical.soil.variables.satwaterdepth")[9115] ≈
           477.13548089422125
     @test Wflow.param(model, "vertical.snow.variables.snow_storage")[5] ≈ 11.019233179897599
@@ -223,13 +226,13 @@ end
     @test Wflow.param(model, "vertical.snow.variables.snow_water")[5] ≈ 0.0
     @test Wflow.param(model, "vertical.interception.variables.canopy_storage")[50063] ≈ 0.0
     @test Wflow.param(model, "vertical.soil.variables.zi")[50063] ≈ 296.8028609104624
-    @test Wflow.param(model, "lateral.subsurface.ssf")[10606] ≈ 39.972334552895816
-    @test Wflow.param(model, "lateral.river.q")[149] ≈ 53.48673634956338
-    @test Wflow.param(model, "lateral.river.h")[149] ≈ 1.167635369628945
-    @test Wflow.param(model, "lateral.river.volume")[149] ≈ 63854.60119358985
-    @test Wflow.param(model, "lateral.land.q")[2075] ≈ 3.285909284322251
-    @test Wflow.param(model, "lateral.land.h")[2075] ≈ 0.052076262033771775
-    @test Wflow.param(model, "lateral.land.volume")[2075] ≈ 29920.754983235012
+    @test Wflow.param(model, "lateral.subsurface.variables.ssf")[10606] ≈ 39.972334552895816
+    @test Wflow.param(model, "lateral.river.variables.q")[149] ≈ 53.48673634956338
+    @test Wflow.param(model, "lateral.river.variables.h")[149] ≈ 1.167635369628945
+    @test Wflow.param(model, "lateral.river.variables.volume")[149] ≈ 63854.60119358985
+    @test Wflow.param(model, "lateral.land.variables.q")[2075] ≈ 3.285909284322251
+    @test Wflow.param(model, "lateral.land.variables.h")[2075] ≈ 0.052076262033771775
+    @test Wflow.param(model, "lateral.land.variables.volume")[2075] ≈ 29920.754983235012
 end
 
 @testset "reducer" begin
@@ -453,11 +456,14 @@ end
     @test (:vertical, :soil, :variables, :satwaterdepth) in required_states
     @test (:vertical, :soil, :variables, :ustorelayerdepth) in required_states
     @test (:vertical, :interception, :variables, :canopy_storage) in required_states
-    @test (:lateral, :subsurface, :ssf) in required_states
-    @test (:lateral, :river, :q) in required_states
-    @test (:lateral, :river, :h_av) in required_states
-    @test (:lateral, :land, :h_av) in required_states
-    @test !((:lateral, :river, :lake, :waterlevel) in required_states)
+    @test (:lateral, :subsurface, :variables, :ssf) in required_states
+    @test (:lateral, :river, :variables, :q) in required_states
+    @test (:lateral, :river, :variables, :h_av) in required_states
+    @test (:lateral, :land, :variables, :h_av) in required_states
+    @test !(
+        (:lateral, :river, :boundary_conditions, :lake, :variables, :waterlevel) in
+        required_states
+    )
 
     # Adding an unused state the see if the right warning message is thrown
     config.state.vertical.soil.variables.additional_state = "additional_state"
@@ -481,8 +487,8 @@ end
     @test (:vertical, :soil, :variables, :satwaterdepth) in required_states
     @test (:vertical, :soil, :variables, :ustorelayerdepth) in required_states
     @test (:vertical, :interception, :variables, :canopy_storage) in required_states
-    @test (:lateral, :subsurface, :flow, :aquifer, :head) in required_states
-    @test (:lateral, :river, :q) in required_states
-    @test (:lateral, :river, :h_av) in required_states
-    @test (:lateral, :land, :h_av) in required_states
+    @test (:lateral, :subsurface, :flow, :aquifer, :variables, :head) in required_states
+    @test (:lateral, :river, :variables, :q) in required_states
+    @test (:lateral, :river, :variables, :h_av) in required_states
+    @test (:lateral, :land, :variables, :h_av) in required_states
 end

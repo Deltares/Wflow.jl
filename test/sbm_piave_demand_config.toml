@@ -131,15 +131,15 @@ livestock = true
 paddy = true
 nonpaddy = true
 
-[state.lateral.river]
+[state.lateral.river.variables]
 q = "q_river"
 h = "h_river"
 h_av = "h_av_river"
 
-[state.lateral.subsurface]
+[state.lateral.subsurface.variables]
 ssf = "ssf"
 
-[state.lateral.land]
+[state.lateral.land.variables]
 q = "q_land"
 h = "h_land"
 h_av = "h_av_land"
@@ -170,7 +170,7 @@ irrigation_trigger = "irrigation_trigger"
 
 [input.lateral.river]
 length = "wflow_riverlength"
-n = "N_River"
+mannings_n = "N_River"
 slope = "RiverSlope"
 width = "wflow_riverwidth"
 bankfull_depth = "RiverDepth"
@@ -179,13 +179,13 @@ bankfull_depth = "RiverDepth"
 ksathorfrac = "KsatHorFrac"
 
 [input.lateral.land]
-n = "N"
+mannings_n = "N"
 slope = "Slope"
 
 [output]
 path = "output-piave-demand.nc"
 
-[output.lateral.river]
+[output.lateral.river.variables]
 q_av = "q_river"
 
 [output.vertical.soil.variables]
@@ -197,12 +197,12 @@ path = "output-piave-demand.csv"
 [[csv.column]]
 header = "Q"
 map = "gauges"
-parameter = "lateral.river.q_av"
+parameter = "lateral.river.variables.q_av"
 
 [[csv.column]]
 header = "Q"
 map = "gauges_grdc"
-parameter = "lateral.river.q_av"
+parameter = "lateral.river.variables.q_av"
 
 [[csv.column]]
 coordinate.x = 12.7243

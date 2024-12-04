@@ -124,23 +124,23 @@ function cell_lengths(y::AbstractVector, cellength::Real, sizeinmetres::Bool)
     return xl, yl
 end
 
-function river_fraction(
+function get_river_fraction(
     river::AbstractVector,
     riverlength::AbstractVector,
     riverwidth::AbstractVector,
-    xl::AbstractVector,
-    yl::AbstractVector,
+    x_length::AbstractVector,
+    y_length::AbstractVector,
 )
     n = length(river)
-    riverfrac = fill(mv, n)
+    river_fraction = fill(mv, n)
     for i in 1:n
-        riverfrac[i] = if river[i]
-            min((riverlength[i] * riverwidth[i]) / (xl[i] * yl[i]), 1.0)
+        river_fraction[i] = if river[i]
+            min((riverlength[i] * riverwidth[i]) / (x_length[i] * y_length[i]), 1.0)
         else
             0.0
         end
     end
-    return riverfrac
+    return river_fraction
 end
 
 """
@@ -382,42 +382,42 @@ function number_of_active_layers(thickness::SVector)
 end
 
 """
-    detdrainlength(ldd, xl, yl)
+    get_flow_length(ldd, x_length, y_length)
 
-Determines the drainaige length for a non square grid. Input `ldd` (drainage network), `xl` (length of cells in x direction),
-`yl` (length of cells in y direction). Output is drainage length.
+Return the flow length for a non square grid. Input `ldd` (drainage network), `x_length`
+(length of cells in x direction), `y_length` (length of cells in y direction). Output is
+flow length.
 """
-function detdrainlength(ldd, xl, yl)
+function get_flow_length(ldd, x_length, y_length)
     # take into account non-square cells
-    # if ldd is 8 or 2 use ylength
-    # if ldd is 4 or 6 use xlength
+    # if ldd is 8 or 2 use y_length
+    # if ldd is 4 or 6 use x_length
     if ldd == 2 || ldd == 8
-        yl
+        y_length
     elseif ldd == 4 || ldd == 6
-        xl
+        x_length
     else
-        hypot(xl, yl)
+        hypot(x_length, y_length)
     end
 end
 
 """
-    detdrainwidth(ldd, xl, yl)
+    get_flow_width(ldd, x_length, y_length)
 
-Determines the drainaige width for a non square grid. Input `ldd` (drainage network), `xl`
-(length of cells in x direction), `yl` (length of cells in y direction). Output is drainage
-width.
+Return the Flow width for a non square grid. Input `ldd` (drainage network), `x_length`
+(length of cells in x direction), `y_length` (length of cells in y direction). Output is
+flow width.
 """
-function detdrainwidth(ldd, xl, yl)
+function get_flow_width(ldd, x_length, y_length)
     # take into account non-square cells
-    # if ldd is 8 or 2 use xlength
-    # if ldd is 4 or 6 use ylength
-    slantwidth = (xl + yl) * 0.5
+    # if ldd is 8 or 2 use x_length
+    # if ldd is 4 or 6 use y_length
     if ldd == 2 || ldd == 8
-        xl
+        x_length
     elseif ldd == 4 || ldd == 6
-        yl
+        y_length
     else
-        slantwidth
+        (x_length + y_length) * 0.5
     end
 end
 
@@ -462,22 +462,23 @@ function svectorscopy(x::Matrix{T}, ::Val{N}) where {T, N}
 end
 
 """
-    fraction_runoff_toriver(graph, ldd, index_river, slope, n)
+    fraction_runoff_to_river(graph, ldd, index_river, slope)
 
-Determine ratio `frac` between `slope` river cell `index_river` and `slope` of each upstream
-neighbor (based on directed acyclic graph `graph`).
+Return ratio `fraction` between `slope` river cell `inds_river` and `slope` of each
+upstream neighbor (based on directed acyclic graph `graph`).
 """
-function fraction_runoff_toriver(graph, ldd, index_river, slope, n)
-    frac = zeros(n)
-    for i in index_river
+function fraction_runoff_to_river(graph, ldd, inds_river, slope)
+    n = length(slope)
+    fraction = zeros(n)
+    for i in inds_river
         nbs = inneighbors(graph, i)
         for j in nbs
             if ldd[j] != ldd[i]
-                frac[j] = slope[j] / (slope[i] + slope[j])
+                fraction[j] = slope[j] / (slope[i] + slope[j])
             end
         end
     end
-    return frac
+    return fraction
 end
 
 """
@@ -521,29 +522,29 @@ tosecond(x::T) where {T <: DatePeriod} = Float64(Dates.value(Second(x)))
 tosecond(x::T) where {T <: TimePeriod} = x / convert(T, Second(1))
 
 """
-    adjacent_nodes_at_link(graph)
+    adjacent_nodes_at_edge(graph)
 
-Return the source node `src` and destination node `dst` of each link of a directed `graph`.
+Return the source node `src` and destination node `dst` of each edge of a directed `graph`.
 """
-function adjacent_nodes_at_link(graph)
-    links = collect(edges(graph))
-    return (src = src.(links), dst = dst.(links))
+function adjacent_nodes_at_edge(graph)
+    _edges = collect(edges(graph))
+    return (src = src.(_edges), dst = dst.(_edges))
 end
 
 """
-    adjacent_links_at_node(graph, nodes_at_link)
+    adjacent_edges_at_node(graph, nodes_at_edge)
 
-Return the source link `src` and destination link `dst` of each node of a directed `graph`.
+Return the source edge `src` and destination edge `dst` of each node of a directed `graph`.
 """
-function adjacent_links_at_node(graph, nodes_at_link)
+function adjacent_edges_at_node(graph, nodes_at_edge)
     nodes = vertices(graph)
-    src_link = Vector{Int}[]
-    dst_link = copy(src_link)
+    src_edge = Vector{Int}[]
+    dst_edge = copy(src_edge)
     for i in 1:nv(graph)
-        push!(src_link, findall(isequal(nodes[i]), nodes_at_link.dst))
-        push!(dst_link, findall(isequal(nodes[i]), nodes_at_link.src))
+        push!(src_edge, findall(isequal(nodes[i]), nodes_at_edge.dst))
+        push!(dst_edge, findall(isequal(nodes[i]), nodes_at_edge.src))
     end
-    return (src = src_link, dst = dst_link)
+    return (src = src_edge, dst = dst_edge)
 end
 
 "Add `vertex` and `edge` to `pits` of a directed `graph`"
@@ -557,34 +558,34 @@ function add_vertex_edge_graph!(graph, pits)
 end
 
 """
-    set_effective_flowwidth!(we_x, we_y, indices, graph_riv, riverwidth, ldd_riv, inds_rev_riv)
+    set_effective_flowwidth!(we_x, we_y, indices, graph_river, river_width, ldd_river, rev_inds_river)
 
 For river cells (D8 flow direction) in a staggered grid the effective flow width at cell
 edges (floodplain) `we_x` in the x-direction and `we_y` in the y-direction is corrected by
-subtracting the river width `riverwidth` from the cell edges. For diagonal directions, the
-`riverwidth` is split between the two adjacent cell edges. A cell edge at linear index `idx`
-is defined as the edge between node `idx` and the adjacent node (+ CartesianIndex(1, 0)) for
-x and (+ CartesianIndex(0, 1)) for y. For cells that contain a `waterbody` (reservoir or
-lake), the effective flow width is set to zero.
+subtracting the river width `river_width` from the cell edges. For diagonal directions, the
+`river_width` is split between the two adjacent cell edges. A cell edge at linear index
+`idx` is defined as the edge between node `idx` and the adjacent node (+ CartesianIndex(1,
+0)) for x and (+ CartesianIndex(0, 1)) for y. For cells that contain a `waterbody`
+(reservoir or lake), the effective flow width is set to zero.
 """
 function set_effective_flowwidth!(
     we_x,
     we_y,
     indices,
-    graph_riv,
-    riverwidth,
-    ldd_riv,
+    graph_river,
+    river_width,
+    ldd_river,
     waterbody,
-    inds_rev_riv,
+    rev_inds_river,
 )
-    toposort = topological_sort_by_dfs(graph_riv)
+    toposort = topological_sort_by_dfs(graph_river)
     n = length(we_x)
     for v in toposort
-        dst = outneighbors(graph_riv, v)
+        dst = outneighbors(graph_river, v)
         isempty(dst) && continue
-        w = min(riverwidth[v], riverwidth[only(dst)])
-        dir = pcr_dir[ldd_riv[v]]
-        idx = inds_rev_riv[v]
+        w = min(river_width[v], river_width[only(dst)])
+        dir = pcr_dir[ldd_river[v]]
+        idx = rev_inds_river[v]
         # loop over river D8 directions
         if dir == CartesianIndex(1, 1)
             we_x[idx] = waterbody[v] ? 0.0 : max(we_x[idx] - 0.5 * w, 0.0)
@@ -727,8 +728,8 @@ function kh_layered_profile!(
 )
     (; nlayers, sumlayers, act_thickl, soilthickness) = soil.parameters
     (; n_unsatlayers, zi) = soil.variables
-    (; kh) = subsurface.kh_profile
-    (; khfrac) = subsurface
+    (; kh) = subsurface.parameters.kh_profile
+    (; khfrac) = subsurface.parameters
 
     t_factor = (tosecond(basetimestep) / dt)
     for i in eachindex(kh)
@@ -764,8 +765,8 @@ function kh_layered_profile!(
     (; nlayers, sumlayers, act_thickl, soilthickness) = soil.parameters
     (; nlayers_kv, z_layered, kv, f) = kv_profile
     (; n_unsatlayers, zi) = soil.variables
-    (; kh) = subsurface.kh_profile
-    (; khfrac) = subsurface
+    (; kh) = subsurface.parameters.kh_profile
+    (; khfrac) = subsurface.parameters
     t_factor = (tosecond(basetimestep) / dt)
 
     for i in eachindex(kh)
@@ -834,17 +835,19 @@ conductivity profile `kh_profile`.
 """
 function initialize_lateralssf!(model::LateralSSF, kh_profile::KhExponential)
     (; kh_0, f) = kh_profile
-    (; ssf, ssfmax, zi, slope, soilthickness, dw) = model
+    (; ssf, ssfmax, zi) = model.variables
+    (; slope, soilthickness, flow_width) = model.parameters
 
     @. ssfmax = ((kh_0 * slope) / f) * (1.0 - exp(-f * soilthickness))
-    @. ssf = ((kh_0 * slope) / f) * (exp(-f * zi) - exp(-f * soilthickness)) * dw
+    @. ssf = ((kh_0 * slope) / f) * (exp(-f * zi) - exp(-f * soilthickness)) * flow_width
     return nothing
 end
 
 function initialize_lateralssf!(model::LateralSSF, kh_profile::KhExponentialConstant)
     (; kh_0, f) = kh_profile.exponential
     (; z_exp) = kh_profile
-    (; ssf, ssfmax, zi, slope, soilthickness, dw) = model
+    (; ssf, ssfmax, zi) = model.variables
+    (; slope, soilthickness, flow_width) = model.parameters
     ssf_constant = @. kh_0 * exp(-f * z_exp) * slope * (soilthickness - z_exp)
     for i in eachindex(ssf)
         ssfmax[i] =
@@ -854,10 +857,14 @@ function initialize_lateralssf!(model::LateralSSF, kh_profile::KhExponentialCons
                 (
                     ((kh_0[i] * slope[i]) / f[i]) *
                     (exp(-f[i] * zi[i]) - exp(-f[i] * z_exp[i])) + ssf_constant[i]
-                ) * dw[i]
+                ) * flow_width[i]
         else
             ssf[i] =
-                kh_0[i] * exp(-f[i] * zi[i]) * slope[i] * (soilthickness[i] - zi[i]) * dw[i]
+                kh_0[i] *
+                exp(-f[i] * zi[i]) *
+                slope[i] *
+                (soilthickness[i] - zi[i]) *
+                flow_width[i]
         end
     end
     return nothing
@@ -876,12 +883,14 @@ function initialize_lateralssf!(
     kv_profile::KvLayered,
     dt,
 )
-    (; kh) = subsurface.kh_profile
+    (; kh) = subsurface.parameters.kh_profile
     (; nlayers, act_thickl) = soil.parameters
-    (; ssf, ssfmax, zi, khfrac, soilthickness, slope, dw) = subsurface
+    (; ssf, ssfmax, zi) = subsurface.variables
+    (; khfrac, soilthickness, slope, flow_width) = subsurface.parameters
+
     kh_layered_profile!(soil, subsurface, kv_profile, dt)
     for i in eachindex(ssf)
-        ssf[i] = kh[i] * (soilthickness[i] - zi[i]) * slope[i] * dw[i]
+        ssf[i] = kh[i] * (soilthickness[i] - zi[i]) * slope[i] * flow_width[i]
         kh_max = 0.0
         for j in 1:nlayers[i]
             kh_max += kv_profile.kv[i][j] * act_thickl[i][j]
@@ -898,14 +907,15 @@ function initialize_lateralssf!(
     kv_profile::KvLayeredExponential,
     dt,
 )
-    (; ssf, ssfmax, zi, khfrac, soilthickness, slope, dw) = subsurface
+    (; ssf, ssfmax, zi) = subsurface.variables
+    (; khfrac, soilthickness, slope, flow_width) = subsurface.parameters
     (; nlayers, act_thickl) = soil.parameters
-    (; kh) = subsurface.kh_profile
+    (; kh) = subsurface.parameters.kh_profile
     (; kv, f, nlayers_kv, z_layered) = kv_profile
 
     kh_layered_profile!(soil, subsurface, kv_profile, dt)
     for i in eachindex(ssf)
-        ssf[i] = kh[i] * (soilthickness[i] - zi[i]) * slope[i] * dw[i]
+        ssf[i] = kh[i] * (soilthickness[i] - zi[i]) * slope[i] * flow_width[i]
         kh_max = 0.0
         for j in 1:nlayers[i]
             if j <= nlayers_kv[i]

@@ -51,7 +51,7 @@ function initialize_sediment_model(config::Config)
 
     sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
     xl, yl = cell_lengths(y, cellength, sizeinmetres)
-    riverfrac = river_fraction(river, riverlength, riverwidth, xl, yl)
+    riverfrac = get_river_fraction(river, riverlength, riverwidth, xl, yl)
 
     eros = initialize_landsed(nc, config, river, riverfrac, xl, yl, inds)
 
@@ -107,7 +107,7 @@ function initialize_sediment_model(config::Config)
     graph_riv = flowgraph(ldd_riv, inds_riv, pcr_dir)
 
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
-    frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, landslope, n)
+    frac_toriver = fraction_runoff_to_river(graph, ldd, index_river, landslope)
 
     rs = initialize_riversed(nc, config, riverwidth, riverlength, inds_riv)
 

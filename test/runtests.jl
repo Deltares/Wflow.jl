@@ -78,7 +78,7 @@ include("testing_utils.jl")
 with_logger(NullLogger()) do
     ## run all tests
     @testset "Wflow.jl" begin
-        include("horizontal_process.jl")
+        include("routing_process.jl")
         include("io.jl")
         include("vertical_process.jl")
         include("reservoir_lake.jl")

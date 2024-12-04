@@ -184,18 +184,18 @@ end
 function get_param_res(model)
     return Dict(
         symbols"vertical.atmospheric_forcing.precipitation" =>
-            model.lateral.river.reservoir.precipitation,
+            model.lateral.river.boundary_conditions.reservoir.boundary_conditions.precipitation,
         symbols"vertical.atmospheric_forcing.potential_evaporation" =>
-            model.lateral.river.reservoir.evaporation,
+            model.lateral.river.boundary_conditions.reservoir.boundary_conditions.evaporation,
     )
 end
 
 function get_param_lake(model)
     return Dict(
         symbols"vertical.atmospheric_forcing.precipitation" =>
-            model.lateral.river.lake.precipitation,
+            model.lateral.river.boundary_conditions.lake.boundary_conditions.precipitation,
         symbols"vertical.atmospheric_forcing.potential_evaporation" =>
-            model.lateral.river.lake.evaporation,
+            model.lateral.river.boundary_conditions.lake.boundary_conditions.evaporation,
     )
 end
 
