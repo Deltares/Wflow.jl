@@ -18,7 +18,7 @@ water_holding_capacity = "WHC"
 glacierstore = "wflow_glacierstore"
 glacierfrac = "wflow_glacierfrac"
 g_cfmax = "G_Cfmax"
-g_tt = "G_TT"
+g_ttm = "G_TT"
 g_sifrac = "G_SIfrac"
 
 [state.vertical]
