@@ -1,6 +1,6 @@
 @with_kw struct SoilLoss{RE, OFE, SE, T}
     hydrometeo_forcing::HydrometeoForcing
-    geometry::LandGeometry
+    geometry::LandParameters
     rainfall_erosion::RE
     overland_flow_erosion::OFE
     soil_erosion::SE
@@ -10,7 +10,7 @@ function SoilLoss(nc, config, inds)
     n = length(inds)
 
     hydrometeo_forcing = HydrometeoForcing(n)
-    geometry = LandGeometry(nc, config, inds)
+    geometry = LandParameters(nc, config, inds)
 
     # Rainfall erosion
     rainfallerosionmodel = get(config.model, "rainfall_erosion", "answers")::String

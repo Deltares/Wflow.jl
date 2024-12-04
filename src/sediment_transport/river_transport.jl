@@ -385,7 +385,7 @@ end
 function update!(
     model::SedimentRiverTransportModel,
     network,
-    geometry::RiverGeometry,
+    geometry::RiverParameters,
     waterbodies,
     ts,
 )
@@ -952,7 +952,7 @@ function update_boundary_conditions!(
     @. gravel = sediment_flux_model.variables.gravel
 end
 
-function update!(model::SedimentConcentrationsRiverModel, geometry::RiverGeometry, ts)
+function update!(model::SedimentConcentrationsRiverModel, geometry::RiverParameters, ts)
     (; q, waterlevel, clay, silt, sand, sagg, lagg, gravel) = model.boundary_conditions
     (; dm_clay, dm_silt, dm_sand, dm_sagg, dm_lagg, dm_gravel) = model.parameters
     (; total, suspended, bed) = model.variables

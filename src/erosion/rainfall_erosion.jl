@@ -127,7 +127,7 @@ function update_boundary_conditions!(
     @. waterlevel = model.boundary_conditions.waterlevel_land
 end
 
-function update!(model::RainfallErosionEurosemModel, geometry::LandGeometry, ts)
+function update!(model::RainfallErosionEurosemModel, geometry::LandParameters, ts)
     (; precipitation, interception, waterlevel) = model.boundary_conditions
     (;
         soil_detachability,
@@ -221,7 +221,7 @@ function update_boundary_conditions!(
     @. precipitation = hydrometeo_forcing.precipitation
 end
 
-function update!(model::RainfallErosionAnswersModel, geometry::LandGeometry, ts)
+function update!(model::RainfallErosionAnswersModel, geometry::LandParameters, ts)
     (; precipitation) = model.boundary_conditions
     (; usle_k, usle_c) = model.parameters
     (; amount) = model.variables

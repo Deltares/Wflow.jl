@@ -73,7 +73,7 @@ function update_boundary_conditions!(
     @. waterlevel = waterlevel_river
 end
 
-function update!(model::RiverErosionJulianTorresModel, geometry::RiverGeometry, ts)
+function update!(model::RiverErosionJulianTorresModel, geometry::RiverParameters, ts)
     (; waterlevel) = model.boundary_conditions
     (; d50) = model.parameters
     (; bed, bank) = model.variables

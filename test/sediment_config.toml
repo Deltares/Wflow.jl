@@ -79,7 +79,7 @@ waterlevel_land = "levKinL"
 #interception = "int"
 q_land = "runL"
 
-[input.vertical.geometry]
+[input.vertical.land_parameter_set]
 slope = "Slope"
 
 [input.vertical.rainfall_erosion.parameters]
@@ -122,7 +122,7 @@ dm_lagg = "dm_lagg"
 waterlevel_river = "h"
 q_river = "q"
 
-[input.lateral.river.geometry]
+[input.lateral.river_parameter_set]
 length = "wflow_riverlength"
 slope = "RiverSlope"
 width = "wflow_riverwidth"

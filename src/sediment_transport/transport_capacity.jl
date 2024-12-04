@@ -355,7 +355,7 @@ end
 
 function update!(
     model::TransportCapacityYalinDifferentiationModel,
-    geometry::LandGeometry,
+    geometry::LandParameters,
     waterbodies,
     rivers,
     ts,
@@ -520,7 +520,7 @@ function TransportCapacityBagnoldModel(nc, config, inds)
     return model
 end
 
-function update!(model::TransportCapacityBagnoldModel, geometry::RiverGeometry, ts)
+function update!(model::TransportCapacityBagnoldModel, geometry::RiverParameters, ts)
     (; q, waterlevel) = model.boundary_conditions
     (; c_bagnold, e_bagnold) = model.parameters
     (; amount) = model.variables
@@ -561,7 +561,7 @@ function TransportCapacityEngelundModel(nc, config, inds)
     return model
 end
 
-function update!(model::TransportCapacityEngelundModel, geometry::RiverGeometry, ts)
+function update!(model::TransportCapacityEngelundModel, geometry::RiverParameters, ts)
     (; q, waterlevel) = model.boundary_conditions
     (; density, d50) = model.parameters
     (; amount) = model.variables
@@ -655,7 +655,7 @@ function TransportCapacityKodatieModel(nc, config, inds)
     return model
 end
 
-function update!(model::TransportCapacityKodatieModel, geometry::RiverGeometry, ts)
+function update!(model::TransportCapacityKodatieModel, geometry::RiverParameters, ts)
     (; q, waterlevel) = model.boundary_conditions
     (; a_kodatie, b_kodatie, c_kodatie, d_kodatie) = model.parameters
     (; amount) = model.variables
@@ -697,7 +697,7 @@ function TransportCapacityYangModel(nc, config, inds)
     return model
 end
 
-function update!(model::TransportCapacityYangModel, geometry::RiverGeometry, ts)
+function update!(model::TransportCapacityYangModel, geometry::RiverParameters, ts)
     (; q, waterlevel) = model.boundary_conditions
     (; density, d50) = model.parameters
     (; amount) = model.variables
@@ -737,7 +737,7 @@ function TransportCapacityMolinasModel(nc, config, inds)
     return model
 end
 
-function update!(model::TransportCapacityMolinasModel, geometry::RiverGeometry, ts)
+function update!(model::TransportCapacityMolinasModel, geometry::RiverParameters, ts)
     (; q, waterlevel) = model.boundary_conditions
     (; density, d50) = model.parameters
     (; amount) = model.variables
