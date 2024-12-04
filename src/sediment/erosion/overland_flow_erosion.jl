@@ -90,7 +90,7 @@ function update_boundary_conditions!(
     @. q = q_land
 end
 
-function update!(model::OverlandFlowErosionAnswersModel, geometry::LandParameters, ts)
+function update!(model::OverlandFlowErosionAnswersModel, geometry::LandParameters, dt)
     (; q) = model.boundary_conditions
     (; usle_k, usle_c, answers_k) = model.parameters
     (; amount) = model.variables
@@ -104,7 +104,7 @@ function update!(model::OverlandFlowErosionAnswersModel, geometry::LandParameter
             answers_k[i],
             geometry.slope[i],
             geometry.area[i],
-            ts,
+            dt,
         )
     end
 end

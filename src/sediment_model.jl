@@ -152,7 +152,7 @@ end
 
 function update!(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SedimentModel}
     (; lateral, vertical, network, config, clock) = model
-    dt = clock.dt
+    dt = tosecond(clock.dt)
 
     # Soil erosion
     update!(vertical, dt)

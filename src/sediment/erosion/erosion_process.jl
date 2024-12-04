@@ -9,7 +9,7 @@
         canopygapfraction,
         soilcover_fraction,
         area,
-        ts,
+        dt,
     )
 
 Rainfall erosion model based on EUROSEM.
@@ -24,7 +24,7 @@ Rainfall erosion model based on EUROSEM.
 - `canopygapfraction` (canopy gap fraction [-])
 - `soilcover_fraction` (soil cover fraction [-])
 - `area` (area [m2])
-- `ts` (timestep [seconds])
+- `dt` (timestep [seconds])
 
 # Output
 - `rainfall_erosion` (soil loss [t Δt⁻¹])
@@ -39,10 +39,10 @@ function rainfall_erosion_eurosem(
     canopygapfraction,
     soilcover_fraction,
     area,
-    ts,
+    dt,
 )
     # calculate rainfall intensity [mm/h]
-    rintnsty = precip / (ts / 3600)
+    rintnsty = precip / (dt / 3600)
     # Kinetic energy of direct throughfall [J/m2/mm]
     # kedir = max(11.87 + 8.73 * log10(max(0.0001, rintnsty)),0.0) #basis used in USLE
     kedir = max(8.95 + 8.44 * log10(max(0.0001, rintnsty)), 0.0) #variant used in most distributed mdoels
@@ -72,7 +72,7 @@ end
         usle_k,
         usle_c,
         area,
-        ts,
+        dt,
     )
 
 Rainfall erosion model based on ANSWERS.
@@ -83,18 +83,18 @@ Rainfall erosion model based on ANSWERS.
 - `usle_c` (USLE cover and management factor [-])
 - `soilcover_fraction` (soil cover fraction [-])
 - `area` (area [m2])
-- `ts` (timestep [seconds])
+- `dt` (timestep [seconds])
 
 # Output
 - `rainfall_erosion` (soil loss [t Δt⁻¹])
 """
-function rainfall_erosion_answers(precip, usle_k, usle_c, area, ts)
+function rainfall_erosion_answers(precip, usle_k, usle_c, area, dt)
     # calculate rainfall intensity [mm/min]
-    rintnsty = precip / (ts / 60)
+    rintnsty = precip / (dt / 60)
     # splash erosion [kg/min]
     rainfall_erosion = 0.108 * usle_c * usle_k * area * rintnsty^2
     # [ton/timestep]
-    rainfall_erosion = rainfall_erosion * (ts / 60) * 1e-3
+    rainfall_erosion = rainfall_erosion * (dt / 60) * 1e-3
     return rainfall_erosion
 end
 
@@ -108,7 +108,7 @@ end
         slope,
         soilcover_fraction,
         area,
-        ts,
+        dt,
     )
 
 Overland flow erosion model based on ANSWERS.
@@ -121,7 +121,7 @@ Overland flow erosion model based on ANSWERS.
 - `answers_k` (ANSWERS overland flow factor [-])
 - `slope` (slope [-])
 - `area` (area [m2])
-- `ts` (timestep [seconds])
+- `dt` (timestep [seconds])
 
 # Output
 - `overland_flow_erosion` (soil loss [t Δt⁻¹])
@@ -133,7 +133,7 @@ function overland_flow_erosion_answers(
     answers_k,
     slope,
     area,
-    ts,
+    dt,
 )
     # Overland flow rate [m2/min]
     qr_land = overland_flow * 60 / (area .^ 0.5)
@@ -144,7 +144,7 @@ function overland_flow_erosion_answers(
     # For a wide range of slope, it is better to use the sine of slope rather than tangeant
     erosion = answers_k * usle_c * usle_k * area * sinslope * qr_land
     # [ton/timestep]
-    erosion = erosion * (ts / 60) * 1e-3
+    erosion = erosion * (dt / 60) * 1e-3
     return erosion
 end
 
@@ -210,7 +210,7 @@ end
         width,
         length,
         slope,
-        ts,
+        dt,
     )
 
 River erosion model based on Julian Torres.
@@ -222,13 +222,13 @@ Repartition of the effective shear stress between the bank and the bed from Knig
 - `width` (width [m])
 - `length` (length [m])
 - `slope` (slope [-])
-- `ts` (timestep [seconds])
+- `dt` (timestep [seconds])
 
 # Output
 - `bed` (potential river erosion [t Δt⁻¹])
 - `bank` (potential bank erosion [t Δt⁻¹])
 """
-function river_erosion_julian_torres(waterlevel, d50, width, length, slope, ts)
+function river_erosion_julian_torres(waterlevel, d50, width, length, slope, dt)
     if waterlevel > 0.0
         # Bed and Bank from Shields diagram, Da Silva & Yalin (2017)
         E_ = (2.65 - 1) * 9.81
@@ -257,9 +257,9 @@ function river_erosion_julian_torres(waterlevel, d50, width, length, slope, ts)
         #(assuming only one bank is eroding)
         Tex = max(TEffbank - TCrbank, 0.0)
         # 1.4 is bank default bulk density
-        ERbank = kdbank * Tex * length * waterlevel * 1.4 * ts
+        ERbank = kdbank * Tex * length * waterlevel * 1.4 * dt
         # 1.5 is bed default bulk density
-        ERbed = kdbed * (TEffbed - TCrbed) * length * width * 1.5 * ts
+        ERbed = kdbed * (TEffbed - TCrbed) * length * width * 1.5 * dt
 
         # Potential maximum bed/bank erosion
         bed = max(ERbed, 0.0)

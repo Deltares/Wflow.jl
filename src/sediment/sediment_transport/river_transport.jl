@@ -387,7 +387,7 @@ function update!(
     network,
     geometry::RiverParameters,
     waterbodies,
-    ts,
+    dt,
 )
     (;
         waterlevel,
@@ -744,7 +744,7 @@ function update!(
         # Reduce the fraction so that there is still some sediment staying in the river cell
         if waterlevel[v] > 0.0
             fwaterout = min(
-                q[v] * ts / (waterlevel[v] * geometry.width[v] * geometry.length[v]),
+                q[v] * dt / (waterlevel[v] * geometry.width[v] * geometry.length[v]),
                 1.0,
             )
         else
@@ -952,14 +952,14 @@ function update_boundary_conditions!(
     @. gravel = sediment_flux_model.variables.gravel
 end
 
-function update!(model::SedimentConcentrationsRiverModel, geometry::RiverParameters, ts)
+function update!(model::SedimentConcentrationsRiverModel, geometry::RiverParameters, dt)
     (; q, waterlevel, clay, silt, sand, sagg, lagg, gravel) = model.boundary_conditions
     (; dm_clay, dm_silt, dm_sand, dm_sagg, dm_lagg, dm_gravel) = model.parameters
     (; total, suspended, bed) = model.variables
 
     zeros = fill(0.0, length(q))
     # Conversion from load [ton] to concentration for rivers [mg/L]
-    toconc = ifelse.(q .> 0.0, 1e6 ./ (q .* ts), zeros)
+    toconc = ifelse.(q .> 0.0, 1e6 ./ (q .* dt), zeros)
 
     # Differentiation of bed and suspended load using Rouse number for suspension
     # threshold diameter between bed load and mixed load using Rouse number

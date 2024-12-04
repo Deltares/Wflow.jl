@@ -63,17 +63,16 @@ function update!(model::SoilLoss, dt)
         overland_flow_erosion,
         soil_erosion,
     ) = model
-    # Convert dt to integer
-    ts = tosecond(dt)
+
     #TODO add interception/canopygapfraction calculation here for eurosem
     #need SBM refactor
 
     # Rainfall erosion
     update_boundary_conditions!(rainfall_erosion, atmospheric_forcing, hydrological_forcing)
-    update!(rainfall_erosion, geometry, ts)
+    update!(rainfall_erosion, geometry, dt)
     # Overland flow erosion
     update_boundary_conditions!(overland_flow_erosion, hydrological_forcing)
-    update!(overland_flow_erosion, geometry, ts)
+    update!(overland_flow_erosion, geometry, dt)
     # Total soil erosion and particle differentiation
     update_boundary_conditions!(soil_erosion, rainfall_erosion, overland_flow_erosion)
     update!(soil_erosion)

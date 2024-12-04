@@ -136,7 +136,7 @@ function update_boundary_conditions!(
 end
 
 "Update EUROSEM rainfall erosion model for a single timestep"
-function update!(model::RainfallErosionEurosemModel, geometry::LandParameters, ts)
+function update!(model::RainfallErosionEurosemModel, geometry::LandParameters, dt)
     (; precipitation, interception, waterlevel) = model.boundary_conditions
     (;
         soil_detachability,
@@ -159,7 +159,7 @@ function update!(model::RainfallErosionEurosemModel, geometry::LandParameters, t
             canopygapfraction[i],
             soilcover_fraction[i],
             geometry.area[i],
-            ts,
+            dt,
         )
     end
 end
@@ -239,7 +239,7 @@ function update_boundary_conditions!(
 end
 
 "Update ANSWERS rainfall erosion model for a single timestep"
-function update!(model::RainfallErosionAnswersModel, geometry::LandParameters, ts)
+function update!(model::RainfallErosionAnswersModel, geometry::LandParameters, dt)
     (; precipitation) = model.boundary_conditions
     (; usle_k, usle_c) = model.parameters
     (; amount) = model.variables
@@ -251,7 +251,7 @@ function update!(model::RainfallErosionAnswersModel, geometry::LandParameters, t
             usle_k[i],
             usle_c[i],
             geometry.area[i],
-            ts,
+            dt,
         )
     end
 end

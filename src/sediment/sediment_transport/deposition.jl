@@ -38,7 +38,7 @@ function reservoir_deposition_camp(
     # Natural deposition
     deposition = input * min(1.0, (DCres * (dm / 1000)^2))
 
-    # Check if the particles was travelling in suspension or bed load using Rouse number
+    # Check if particles are travelling in suspension or bed load using Rouse number
     dsuspf = 1e3 * (1.2 * 3600 * 0.41 / 411 * (9.81 * waterlevel * slope)^0.5)^0.5
     # If bed load, we have extra deposition depending on the reservoir type 
     if dm > dsuspf

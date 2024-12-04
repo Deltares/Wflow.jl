@@ -54,12 +54,9 @@ function OverlandFlowSediment(dataset, config, indices, waterbodies, rivers)
 end
 
 function update!(model::OverlandFlowSediment, erosion_model::SoilErosionModel, network, dt)
-    # Convert dt to integer
-    ts = tosecond(dt)
-
     # Transport capacity
     update_boundary_conditions!(model.transport_capacity, model.hydrological_forcing, :land)
-    update!(model.transport_capacity, model.geometry, model.waterbodies, model.rivers, ts)
+    update!(model.transport_capacity, model.geometry, model.waterbodies, model.rivers, dt)
 
     # Update boundary conditions before transport
     update_boundary_conditions!(
@@ -142,20 +139,17 @@ function update!(
     indices_river,
     dt,
 )
-    # Convert dt to integer
-    ts = tosecond(dt)
-
     # Transport capacity
     update_boundary_conditions!(
         model.transport_capacity,
         model.hydrological_forcing,
         :river,
     )
-    update!(model.transport_capacity, model.geometry, ts)
+    update!(model.transport_capacity, model.geometry, dt)
 
     # Potential maximum river erosion
     update_boundary_conditions!(model.potential_erosion, model.hydrological_forcing)
-    update!(model.potential_erosion, model.geometry, ts)
+    update!(model.potential_erosion, model.geometry, dt)
 
     # River transport
     update_boundary_conditions!(
@@ -166,7 +160,7 @@ function update!(
         model.potential_erosion,
         indices_river,
     )
-    update!(model.sediment_flux, network, model.geometry, model.waterbodies, ts)
+    update!(model.sediment_flux, network, model.geometry, model.waterbodies, dt)
 
     # Concentrations
     update_boundary_conditions!(
@@ -174,5 +168,5 @@ function update!(
         model.hydrological_forcing,
         model.sediment_flux,
     )
-    update!(model.concentrations, model.geometry, ts)
+    update!(model.concentrations, model.geometry, dt)
 end

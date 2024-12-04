@@ -56,12 +56,12 @@ end
     n_govers::Vector{T} | "-"
 end
 
-function TransportCapacityGoversParameters(dataset, config, inds)
+function TransportCapacityGoversParameters(dataset, config, indices)
     slope = ncread(
         dataset,
         config,
         "lateral.land.transport_capacity.parameters.slope";
-        sel = inds,
+        sel = indices,
         defaults = 0.01,
         type = Float,
     )
@@ -69,7 +69,7 @@ function TransportCapacityGoversParameters(dataset, config, inds)
         dataset,
         config,
         "lateral.land.transport_capacity.parameters.density";
-        sel = inds,
+        sel = indices,
         defaults = 2650.0,
         type = Float,
     )
@@ -77,7 +77,7 @@ function TransportCapacityGoversParameters(dataset, config, inds)
         dataset,
         config,
         "lateral.land.transport_capacity.parameters.c_govers";
-        sel = inds,
+        sel = indices,
         defaults = 0.000505,
         type = Float,
     )
@@ -85,7 +85,7 @@ function TransportCapacityGoversParameters(dataset, config, inds)
         dataset,
         config,
         "lateral.land.transport_capacity.parameters.n_govers";
-        sel = inds,
+        sel = indices,
         defaults = 4.27,
         type = Float,
     )
@@ -105,10 +105,10 @@ end
     variables::TransportCapacityModelVariables{T}
 end
 
-function TransportCapacityGoversModel(dataset, config, inds)
-    n = length(inds)
+function TransportCapacityGoversModel(dataset, config, indices)
+    n = length(indices)
     vars = TransportCapacityModelVariables(n)
-    params = TransportCapacityGoversParameters(dataset, config, inds)
+    params = TransportCapacityGoversParameters(dataset, config, indices)
     bc = TransportCapacityBC(n)
     model = TransportCapacityGoversModel(;
         boundary_conditions = bc,
@@ -118,7 +118,7 @@ function TransportCapacityGoversModel(dataset, config, inds)
     return model
 end
 
-function update!(model::TransportCapacityGoversModel, width, waterbodies, rivers, ts)
+function update!(model::TransportCapacityGoversModel, width, waterbodies, rivers, dt)
     (; q, waterlevel) = model.boundary_conditions
     (; slope, density, c_govers, n_govers) = model.parameters
     (; amount) = model.variables
@@ -135,7 +135,7 @@ function update!(model::TransportCapacityGoversModel, width, waterbodies, rivers
             width[i],
             waterbodies[i],
             rivers[i],
-            ts,
+            dt,
         )
     end
 end
@@ -150,12 +150,12 @@ end
     d50::Vector{T} | "mm"
 end
 
-function TransportCapacityYalinParameters(dataset, config, inds)
+function TransportCapacityYalinParameters(dataset, config, indices)
     slope = ncread(
         dataset,
         config,
         "lateral.land.transport_capacity.parameters.slope";
-        sel = inds,
+        sel = indices,
         defaults = 0.01,
         type = Float,
     )
@@ -163,7 +163,7 @@ function TransportCapacityYalinParameters(dataset, config, inds)
         dataset,
         config,
         "lateral.land.transport_capacity.parameters.density";
-        sel = inds,
+        sel = indices,
         defaults = 2650.0,
         type = Float,
     )
@@ -171,7 +171,7 @@ function TransportCapacityYalinParameters(dataset, config, inds)
         dataset,
         config,
         "lateral.land.transport_capacity.parameters.d50";
-        sel = inds,
+        sel = indices,
         defaults = 0.1,
         type = Float,
     )
@@ -187,10 +187,10 @@ end
     variables::TransportCapacityModelVariables{T}
 end
 
-function TransportCapacityYalinModel(dataset, config, inds)
-    n = length(inds)
+function TransportCapacityYalinModel(dataset, config, indices)
+    n = length(indices)
     vars = TransportCapacityModelVariables(n)
-    params = TransportCapacityYalinParameters(dataset, config, inds)
+    params = TransportCapacityYalinParameters(dataset, config, indices)
     bc = TransportCapacityBC(n)
     model = TransportCapacityYalinModel(;
         boundary_conditions = bc,
@@ -200,7 +200,7 @@ function TransportCapacityYalinModel(dataset, config, inds)
     return model
 end
 
-function update!(model::TransportCapacityYalinModel, width, waterbodies, rivers, ts)
+function update!(model::TransportCapacityYalinModel, width, waterbodies, rivers, dt)
     (; q, waterlevel) = model.boundary_conditions
     (; slope, density, d50) = model.parameters
     (; amount) = model.variables
@@ -216,7 +216,7 @@ function update!(model::TransportCapacityYalinModel, width, waterbodies, rivers,
             width[i],
             waterbodies[i],
             rivers[i],
-            ts,
+            dt,
         )
     end
 end
@@ -272,12 +272,12 @@ end
     dm_lagg::Vector{T} | "µm"
 end
 
-function TransportCapacityYalinDifferentiationParameters(dataset, config, inds)
+function TransportCapacityYalinDifferentiationParameters(dataset, config, indices)
     density = ncread(
         dataset,
         config,
         "lateral.land.transport_capacity.parameters.density";
-        sel = inds,
+        sel = indices,
         defaults = 2650.0,
         type = Float,
     )
@@ -285,7 +285,7 @@ function TransportCapacityYalinDifferentiationParameters(dataset, config, inds)
         dataset,
         config,
         "lateral.land.transport_capacity.parameters.dm_clay";
-        sel = inds,
+        sel = indices,
         defaults = 2.0,
         type = Float,
     )
@@ -293,7 +293,7 @@ function TransportCapacityYalinDifferentiationParameters(dataset, config, inds)
         dataset,
         config,
         "lateral.land.transport_capacity.parameters.dm_silt";
-        sel = inds,
+        sel = indices,
         defaults = 10.0,
         type = Float,
     )
@@ -301,7 +301,7 @@ function TransportCapacityYalinDifferentiationParameters(dataset, config, inds)
         dataset,
         config,
         "lateral.land.transport_capacity.parameters.dm_sand";
-        sel = inds,
+        sel = indices,
         defaults = 200.0,
         type = Float,
     )
@@ -309,7 +309,7 @@ function TransportCapacityYalinDifferentiationParameters(dataset, config, inds)
         dataset,
         config,
         "lateral.land.transport_capacity.parameters.dm_sagg";
-        sel = inds,
+        sel = indices,
         defaults = 30.0,
         type = Float,
     )
@@ -317,7 +317,7 @@ function TransportCapacityYalinDifferentiationParameters(dataset, config, inds)
         dataset,
         config,
         "lateral.land.transport_capacity.parameters.dm_lagg";
-        sel = inds,
+        sel = indices,
         defaults = 500.0,
         type = Float,
     )
@@ -340,10 +340,10 @@ end
     variables::TransportCapacityYalinDifferentiationModelVariables{T}
 end
 
-function TransportCapacityYalinDifferentiationModel(dataset, config, inds)
-    n = length(inds)
+function TransportCapacityYalinDifferentiationModel(dataset, config, indices)
+    n = length(indices)
     vars = TransportCapacityYalinDifferentiationModelVariables(n)
-    params = TransportCapacityYalinDifferentiationParameters(dataset, config, inds)
+    params = TransportCapacityYalinDifferentiationParameters(dataset, config, indices)
     bc = TransportCapacityBC(n)
     model = TransportCapacityYalinDifferentiationModel(;
         boundary_conditions = bc,
@@ -358,7 +358,7 @@ function update!(
     geometry::LandParameters,
     waterbodies,
     rivers,
-    ts,
+    dt,
 )
     (; q, waterlevel) = model.boundary_conditions
     (; density, dm_clay, dm_silt, dm_sand, dm_sagg, dm_lagg) = model.parameters
@@ -386,7 +386,7 @@ function update!(
             waterbodies[i],
             rivers[i],
             dtot,
-            ts,
+            dt,
         )
         silt[i] = transport_capacity_yalin_differentiation(
             q[i],
@@ -398,7 +398,7 @@ function update!(
             waterbodies[i],
             rivers[i],
             dtot,
-            ts,
+            dt,
         )
         sand[i] = transport_capacity_yalin_differentiation(
             q[i],
@@ -410,7 +410,7 @@ function update!(
             waterbodies[i],
             rivers[i],
             dtot,
-            ts,
+            dt,
         )
         sagg[i] = transport_capacity_yalin_differentiation(
             q[i],
@@ -422,7 +422,7 @@ function update!(
             waterbodies[i],
             rivers[i],
             dtot,
-            ts,
+            dt,
         )
         lagg[i] = transport_capacity_yalin_differentiation(
             q[i],
@@ -434,7 +434,7 @@ function update!(
             waterbodies[i],
             rivers[i],
             dtot,
-            ts,
+            dt,
         )
         amount[i] = clay[i] + silt[i] + sand[i] + sagg[i] + lagg[i]
     end
@@ -448,12 +448,12 @@ end
     d50::Vector{T} | "mm"
 end
 
-function TransportCapacityRiverParameters(dataset, config, inds)
+function TransportCapacityRiverParameters(dataset, config, indices)
     density = ncread(
         dataset,
         config,
         "lateral.river.transport_capacity.parameters.density";
-        sel = inds,
+        sel = indices,
         defaults = 2650.0,
         type = Float,
     )
@@ -461,7 +461,7 @@ function TransportCapacityRiverParameters(dataset, config, inds)
         dataset,
         config,
         "lateral.river.transport_capacity.parameters.d50";
-        sel = inds,
+        sel = indices,
         defaults = 0.1,
         type = Float,
     )
@@ -478,12 +478,12 @@ end
     e_bagnold::Vector{T} | "-"
 end
 
-function TransportCapacityBagnoldParameters(dataset, config, inds)
+function TransportCapacityBagnoldParameters(dataset, config, indices)
     c_bagnold = ncread(
         dataset,
         config,
         "lateral.river.transport_capacity.parameters.c_bagnold";
-        sel = inds,
+        sel = indices,
         optional = false,
         type = Float,
     )
@@ -491,7 +491,7 @@ function TransportCapacityBagnoldParameters(dataset, config, inds)
         dataset,
         config,
         "lateral.river.transport_capacity.parameters.e_bagnold";
-        sel = inds,
+        sel = indices,
         optional = false,
         type = Float,
     )
@@ -507,10 +507,10 @@ end
     variables::TransportCapacityModelVariables{T}
 end
 
-function TransportCapacityBagnoldModel(dataset, config, inds)
-    n = length(inds)
+function TransportCapacityBagnoldModel(dataset, config, indices)
+    n = length(indices)
     vars = TransportCapacityModelVariables(n)
-    params = TransportCapacityBagnoldParameters(dataset, config, inds)
+    params = TransportCapacityBagnoldParameters(dataset, config, indices)
     bc = TransportCapacityBC(n)
     model = TransportCapacityBagnoldModel(;
         boundary_conditions = bc,
@@ -520,7 +520,7 @@ function TransportCapacityBagnoldModel(dataset, config, inds)
     return model
 end
 
-function update!(model::TransportCapacityBagnoldModel, geometry::RiverParameters, ts)
+function update!(model::TransportCapacityBagnoldModel, geometry::RiverParameters, dt)
     (; q, waterlevel) = model.boundary_conditions
     (; c_bagnold, e_bagnold) = model.parameters
     (; amount) = model.variables
@@ -536,7 +536,7 @@ function update!(model::TransportCapacityBagnoldModel, geometry::RiverParameters
             e_bagnold[i],
             geometry.width[i],
             geometry.length[i],
-            ts,
+            dt,
         )
     end
 end
@@ -548,10 +548,10 @@ end
     variables::TransportCapacityModelVariables{T}
 end
 
-function TransportCapacityEngelundModel(dataset, config, inds)
-    n = length(inds)
+function TransportCapacityEngelundModel(dataset, config, indices)
+    n = length(indices)
     vars = TransportCapacityModelVariables(n)
-    params = TransportCapacityRiverParameters(dataset, config, inds)
+    params = TransportCapacityRiverParameters(dataset, config, indices)
     bc = TransportCapacityBC(n)
     model = TransportCapacityEngelundModel(;
         boundary_conditions = bc,
@@ -561,7 +561,7 @@ function TransportCapacityEngelundModel(dataset, config, inds)
     return model
 end
 
-function update!(model::TransportCapacityEngelundModel, geometry::RiverParameters, ts)
+function update!(model::TransportCapacityEngelundModel, geometry::RiverParameters, dt)
     (; q, waterlevel) = model.boundary_conditions
     (; density, d50) = model.parameters
     (; amount) = model.variables
@@ -576,7 +576,7 @@ function update!(model::TransportCapacityEngelundModel, geometry::RiverParameter
             geometry.width[i],
             geometry.length[i],
             geometry.slope[i],
-            ts,
+            dt,
         )
     end
 end
@@ -593,12 +593,12 @@ end
     d_kodatie::Vector{T} | "-"
 end
 
-function TransportCapacityKodatieParameters(dataset, config, inds)
+function TransportCapacityKodatieParameters(dataset, config, indices)
     a_kodatie = ncread(
         dataset,
         config,
         "lateral.river.transport_capacity.parameters.a_kodatie";
-        sel = inds,
+        sel = indices,
         optional = false,
         type = Float,
     )
@@ -606,7 +606,7 @@ function TransportCapacityKodatieParameters(dataset, config, inds)
         dataset,
         config,
         "lateral.river.transport_capacity.parameters.b_kodatie";
-        sel = inds,
+        sel = indices,
         optional = false,
         type = Float,
     )
@@ -614,7 +614,7 @@ function TransportCapacityKodatieParameters(dataset, config, inds)
         dataset,
         config,
         "lateral.river.transport_capacity.parameters.c_kodatie";
-        sel = inds,
+        sel = indices,
         optional = false,
         type = Float,
     )
@@ -622,7 +622,7 @@ function TransportCapacityKodatieParameters(dataset, config, inds)
         dataset,
         config,
         "lateral.river.transport_capacity.parameters.d_kodatie";
-        sel = inds,
+        sel = indices,
         optional = false,
         type = Float,
     )
@@ -642,10 +642,10 @@ end
     variables::TransportCapacityModelVariables{T}
 end
 
-function TransportCapacityKodatieModel(dataset, config, inds)
-    n = length(inds)
+function TransportCapacityKodatieModel(dataset, config, indices)
+    n = length(indices)
     vars = TransportCapacityModelVariables(n)
-    params = TransportCapacityKodatieParameters(dataset, config, inds)
+    params = TransportCapacityKodatieParameters(dataset, config, indices)
     bc = TransportCapacityBC(n)
     model = TransportCapacityKodatieModel(;
         boundary_conditions = bc,
@@ -655,7 +655,7 @@ function TransportCapacityKodatieModel(dataset, config, inds)
     return model
 end
 
-function update!(model::TransportCapacityKodatieModel, geometry::RiverParameters, ts)
+function update!(model::TransportCapacityKodatieModel, geometry::RiverParameters, dt)
     (; q, waterlevel) = model.boundary_conditions
     (; a_kodatie, b_kodatie, c_kodatie, d_kodatie) = model.parameters
     (; amount) = model.variables
@@ -672,7 +672,7 @@ function update!(model::TransportCapacityKodatieModel, geometry::RiverParameters
             geometry.width[i],
             geometry.length[i],
             geometry.slope[i],
-            ts,
+            dt,
         )
     end
 end
@@ -684,10 +684,10 @@ end
     variables::TransportCapacityModelVariables{T}
 end
 
-function TransportCapacityYangModel(dataset, config, inds)
-    n = length(inds)
+function TransportCapacityYangModel(dataset, config, indices)
+    n = length(indices)
     vars = TransportCapacityModelVariables(n)
-    params = TransportCapacityRiverParameters(dataset, config, inds)
+    params = TransportCapacityRiverParameters(dataset, config, indices)
     bc = TransportCapacityBC(n)
     model = TransportCapacityYangModel(;
         boundary_conditions = bc,
@@ -697,7 +697,7 @@ function TransportCapacityYangModel(dataset, config, inds)
     return model
 end
 
-function update!(model::TransportCapacityYangModel, geometry::RiverParameters, ts)
+function update!(model::TransportCapacityYangModel, geometry::RiverParameters, dt)
     (; q, waterlevel) = model.boundary_conditions
     (; density, d50) = model.parameters
     (; amount) = model.variables
@@ -712,7 +712,7 @@ function update!(model::TransportCapacityYangModel, geometry::RiverParameters, t
             geometry.width[i],
             geometry.length[i],
             geometry.slope[i],
-            ts,
+            dt,
         )
     end
 end
@@ -724,10 +724,10 @@ end
     variables::TransportCapacityModelVariables{T}
 end
 
-function TransportCapacityMolinasModel(dataset, config, inds)
-    n = length(inds)
+function TransportCapacityMolinasModel(dataset, config, indices)
+    n = length(indices)
     vars = TransportCapacityModelVariables(n)
-    params = TransportCapacityRiverParameters(dataset, config, inds)
+    params = TransportCapacityRiverParameters(dataset, config, indices)
     bc = TransportCapacityBC(n)
     model = TransportCapacityMolinasModel(;
         boundary_conditions = bc,
@@ -737,7 +737,7 @@ function TransportCapacityMolinasModel(dataset, config, inds)
     return model
 end
 
-function update!(model::TransportCapacityMolinasModel, geometry::RiverParameters, ts)
+function update!(model::TransportCapacityMolinasModel, geometry::RiverParameters, dt)
     (; q, waterlevel) = model.boundary_conditions
     (; density, d50) = model.parameters
     (; amount) = model.variables
@@ -752,7 +752,7 @@ function update!(model::TransportCapacityMolinasModel, geometry::RiverParameters
             geometry.width[i],
             geometry.length[i],
             geometry.slope[i],
-            ts,
+            dt,
         )
     end
 end
