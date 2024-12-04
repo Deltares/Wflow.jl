@@ -154,37 +154,37 @@ end
     waterbodies_trapping_efficiency::Vector{T} | "-"
 end
 
-function SedimentRiverTransportParameters(nc, config, inds)
-    n = length(inds)
+function SedimentRiverTransportParameters(dataset, config, indices)
+    n = length(indices)
     clay_fraction = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.sediment_flux.parameters.clay_fraction";
-        sel = inds,
+        sel = indices,
         defaults = 0.15,
         type = Float,
     )
     silt_fraction = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.sediment_flux.parameters.silt_fraction";
-        sel = inds,
+        sel = indices,
         defaults = 0.65,
         type = Float,
     )
     sand_fraction = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.sediment_flux.parameters.sand_fraction";
-        sel = inds,
+        sel = indices,
         defaults = 0.15,
         type = Float,
     )
     gravel_fraction = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.sediment_flux.parameters.sagg_fraction";
-        sel = inds,
+        sel = indices,
         defaults = 0.05,
         type = Float,
     )
@@ -194,50 +194,50 @@ function SedimentRiverTransportParameters(nc, config, inds)
         error("Particle fractions in the river bed must sum to 1")
     end
     dm_clay = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.sediment_flux.parameters.dm_clay";
-        sel = inds,
+        sel = indices,
         defaults = 2.0,
         type = Float,
     )
     dm_silt = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.sediment_flux.parameters.dm_silt";
-        sel = inds,
+        sel = indices,
         defaults = 10.0,
         type = Float,
     )
     dm_sand = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.sediment_flux.parameters.dm_sand";
-        sel = inds,
+        sel = indices,
         defaults = 200.0,
         type = Float,
     )
     dm_sagg = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.sediment_flux.parameters.dm_sagg";
-        sel = inds,
+        sel = indices,
         defaults = 30.0,
         type = Float,
     )
     dm_lagg = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.sediment_flux.parameters.dm_lagg";
-        sel = inds,
+        sel = indices,
         defaults = 500.0,
         type = Float,
     )
     dm_gravel = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.sediment_flux.parameters.dm_gravel";
-        sel = inds,
+        sel = indices,
         defaults = 2000.0,
         type = Float,
     )
@@ -250,29 +250,29 @@ function SedimentRiverTransportParameters(nc, config, inds)
 
     if do_reservoirs
         reslocs = ncread(
-            nc,
+            dataset,
             config,
             "lateral.river.sediment_flux.parameters.reslocs";
             optional = false,
-            sel = inds,
+            sel = indices,
             type = Float,
             fill = 0,
         )
         resarea = ncread(
-            nc,
+            dataset,
             config,
             "lateral.river.sediment_flux.parameters.resarea";
             optional = false,
-            sel = inds,
+            sel = indices,
             type = Float,
             fill = 0.0,
         )
         restrapefficiency = ncread(
-            nc,
+            dataset,
             config,
             "lateral.river.sediment_flux.parameters.restrapeff";
             optional = false,
-            sel = inds,
+            sel = indices,
             type = Float,
             defaults = 1.0,
             fill = 0.0,
@@ -284,20 +284,20 @@ function SedimentRiverTransportParameters(nc, config, inds)
 
     if do_lakes
         lakelocs = ncread(
-            nc,
+            dataset,
             config,
             "lateral.river.sediment_flux.parameters.lakelocs";
             optional = false,
-            sel = inds,
+            sel = indices,
             type = Float,
             fill = 0,
         )
         lakearea = ncread(
-            nc,
+            dataset,
             config,
             "lateral.river.sediment_flux.parameters.lakearea";
             optional = false,
-            sel = inds,
+            sel = indices,
             type = Float,
             fill = 0.0,
         )
@@ -330,10 +330,10 @@ end
     variables::SedimentRiverTransportVariables{T}
 end
 
-function SedimentRiverTransportModel(nc, config, inds)
-    n = length(inds)
+function SedimentRiverTransportModel(dataset, config, indices)
+    n = length(indices)
     vars = SedimentRiverTransportVariables(n)
-    params = SedimentRiverTransportParameters(nc, config, inds)
+    params = SedimentRiverTransportParameters(dataset, config, indices)
     bc = SedimentRiverTransportBC(n)
     model = SedimentRiverTransportModel(;
         boundary_conditions = bc,
@@ -349,7 +349,7 @@ function update_boundary_conditions!(
     transport_capacity_model::AbstractTransportCapacityModel,
     to_river_model::SedimentToRiverDifferentiationModel,
     potential_erosion_model::AbstractRiverErosionModel,
-    inds_riv,
+    indices_riv,
 )
     (;
         waterlevel,
@@ -372,11 +372,11 @@ function update_boundary_conditions!(
     @. transport_capacity = transport_capacity_model.variables.amount
     # Input from soil erosion
     (; clay, silt, sand, sagg, lagg) = to_river_model.variables
-    @. erosion_land_clay = clay[inds_riv]
-    @. erosion_land_silt = silt[inds_riv]
-    @. erosion_land_sand = sand[inds_riv]
-    @. erosion_land_sagg = sagg[inds_riv]
-    @. erosion_land_lagg = lagg[inds_riv]
+    @. erosion_land_clay = clay[indices_riv]
+    @. erosion_land_silt = silt[indices_riv]
+    @. erosion_land_sand = sand[indices_riv]
+    @. erosion_land_sagg = sagg[indices_riv]
+    @. erosion_land_lagg = lagg[indices_riv]
     # Maximum direct river bed/bank erosion
     @. potential_erosion_river_bed = potential_erosion_model.variables.bed
     @. potential_erosion_river_bank = potential_erosion_model.variables.bank
@@ -852,52 +852,52 @@ end
     dm_gravel::Vector{T} | "µm"
 end
 
-function SedimentConcentrationsRiverParameters(nc, config, inds)
+function SedimentConcentrationsRiverParameters(dataset, config, indices)
     dm_clay = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.concentrations.parameters.dm_clay";
-        sel = inds,
+        sel = indices,
         defaults = 2.0,
         type = Float,
     )
     dm_silt = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.concentrations.parameters.dm_silt";
-        sel = inds,
+        sel = indices,
         defaults = 10.0,
         type = Float,
     )
     dm_sand = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.concentrations.parameters.dm_sand";
-        sel = inds,
+        sel = indices,
         defaults = 200.0,
         type = Float,
     )
     dm_sagg = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.concentrations.parameters.dm_sagg";
-        sel = inds,
+        sel = indices,
         defaults = 30.0,
         type = Float,
     )
     dm_lagg = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.concentrations.parameters.dm_lagg";
-        sel = inds,
+        sel = indices,
         defaults = 500.0,
         type = Float,
     )
     dm_gravel = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.concentrations.parameters.dm_gravel";
-        sel = inds,
+        sel = indices,
         defaults = 2000.0,
         type = Float,
     )
@@ -920,10 +920,10 @@ end
     variables::SedimentConcentrationsRiverVariables{T}
 end
 
-function SedimentConcentrationsRiverModel(nc, config, inds)
-    n = length(inds)
+function SedimentConcentrationsRiverModel(dataset, config, indices)
+    n = length(indices)
     vars = SedimentConcentrationsRiverVariables(n)
-    params = SedimentConcentrationsRiverParameters(nc, config, inds)
+    params = SedimentConcentrationsRiverParameters(dataset, config, indices)
     bc = SedimentConcentrationsRiverBC(n)
     model = SedimentConcentrationsRiverModel(;
         boundary_conditions = bc,

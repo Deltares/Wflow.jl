@@ -37,12 +37,12 @@ end
     variables::RiverErosionModelVariables{T}
 end
 
-function RiverErosionParameters(nc, config, inds)
+function RiverErosionParameters(dataset, config, indices)
     d50 = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.potential_erosion.parameters.d50";
-        sel = inds,
+        sel = indices,
         defaults = 0.1,
         type = Float,
     )
@@ -51,10 +51,10 @@ function RiverErosionParameters(nc, config, inds)
     return river_parameters
 end
 
-function RiverErosionJulianTorresModel(nc, config, inds)
-    n = length(inds)
+function RiverErosionJulianTorresModel(dataset, config, indices)
+    n = length(indices)
     vars = RiverErosionModelVariables(n)
-    params = RiverErosionParameters(nc, config, inds)
+    params = RiverErosionParameters(dataset, config, indices)
     bc = RiverErosionBC(n)
     model = RiverErosionJulianTorresModel(;
         boundary_conditions = bc,

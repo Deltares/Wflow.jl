@@ -13,22 +13,29 @@ function initialize_sediment_model(config::Config)
 
     reader = prepare_reader(config)
     clock = Clock(config, reader)
-    nc = NCDataset(static_path)
+    dataset = NCDataset(static_path)
 
-    subcatch_2d = ncread(nc, config, "subcatchment"; optional = false, allow_missing = true)
+    subcatch_2d =
+        ncread(dataset, config, "subcatchment"; optional = false, allow_missing = true)
     # indices based on catchment
-    inds, rev_inds = active_indices(subcatch_2d, missing)
-    n = length(inds)
+    indices, rev_indices = active_indices(subcatch_2d, missing)
+    n = length(indices)
 
-    river_2d =
-        ncread(nc, config, "river_location"; optional = false, type = Bool, fill = false)
-    river = river_2d[inds]
+    river_2d = ncread(
+        dataset,
+        config,
+        "river_location";
+        optional = false,
+        type = Bool,
+        fill = false,
+    )
+    river = river_2d[indices]
 
     # Needed to update the forcing
     reservoir = ()
     lake = ()
 
-    soilloss = SoilLoss(nc, config, inds)
+    soilloss = SoilLoss(dataset, config, indices)
 
     # Get waterbodies mask
     do_reservoirs = get(config.model, "doreservoir", false)::Bool
@@ -36,11 +43,11 @@ function initialize_sediment_model(config::Config)
     waterbodies = fill(0.0, n)
     if do_reservoirs
         reservoirs = ncread(
-            nc,
+            dataset,
             config,
             "reservoir_areas";
             optional = false,
-            sel = inds,
+            sel = indices,
             type = Float,
             fill = 0,
         )
@@ -48,11 +55,11 @@ function initialize_sediment_model(config::Config)
     end
     if do_lakes
         lakes = ncread(
-            nc,
+            dataset,
             config,
             "lake_areas";
             optional = false,
-            sel = inds,
+            sel = indices,
             type = Float,
             fill = 0,
         )
@@ -60,31 +67,32 @@ function initialize_sediment_model(config::Config)
     end
     waterbodies = waterbodies .> 0
 
-    ldd_2d = ncread(nc, config, "ldd"; optional = false, allow_missing = true)
-    ldd = ldd_2d[inds]
+    ldd_2d = ncread(dataset, config, "ldd"; optional = false, allow_missing = true)
+    ldd = ldd_2d[indices]
 
     # # lateral part sediment in overland flow
-    overland_flow_sediment = OverlandFlowSediment(nc, config, inds, waterbodies, river)
+    overland_flow_sediment =
+        OverlandFlowSediment(dataset, config, indices, waterbodies, river)
 
-    graph = flowgraph(ldd, inds, pcr_dir)
+    graph = flowgraph(ldd, indices, pcr_dir)
 
     # River processes
     do_river = get(config.model, "runrivermodel", false)::Bool
     # TODO: see if we can skip init if the river model is not needed
     # or if we leave it when we restructure the Wflow Model struct
 
-    inds_riv, rev_inds_riv = active_indices(river_2d, 0)
+    indices_riv, rev_indices_riv = active_indices(river_2d, 0)
 
-    ldd_riv = ldd_2d[inds_riv]
-    graph_riv = flowgraph(ldd_riv, inds_riv, pcr_dir)
+    ldd_riv = ldd_2d[indices_riv]
+    graph_riv = flowgraph(ldd_riv, indices_riv, pcr_dir)
 
     # Needed for frac_to_river?
     landslope = ncread(
-        nc,
+        dataset,
         config,
         "vertical.land_parameter_set.slope";
         optional = false,
-        sel = inds,
+        sel = indices,
         type = Float,
     )
     clamp!(landslope, 0.00001, Inf)
@@ -92,36 +100,37 @@ function initialize_sediment_model(config::Config)
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
     frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, landslope, n)
 
-    river_sediment = RiverSediment(nc, config, inds_riv, waterbodies)
+    river_sediment = RiverSediment(dataset, config, indices_riv, waterbodies)
 
     modelmap = (
         vertical = soilloss,
         lateral = (land = overland_flow_sediment, river = river_sediment),
     )
     indices_reverse = (
-        land = rev_inds,
-        river = rev_inds_riv,
+        land = rev_indices,
+        river = rev_indices_riv,
         reservoir = isempty(reservoir) ? nothing : reservoir.reverse_indices,
         lake = isempty(lake) ? nothing : lake.reverse_indices,
     )
-    y_nc = read_y_axis(nc)
-    x_nc = read_x_axis(nc)
-    writer = prepare_writer(config, modelmap, indices_reverse, x_nc, y_nc, nc)
-    close(nc)
+    y_dataset = read_y_axis(dataset)
+    x_dataset = read_x_axis(dataset)
+    writer =
+        prepare_writer(config, modelmap, indices_reverse, x_dataset, y_dataset, dataset)
+    close(dataset)
 
     # for each domain save the directed acyclic graph, the traversion order,
     # and the indices that map it back to the two dimensional grid
     land = (
         graph = graph,
         order = topological_sort_by_dfs(graph),
-        indices = inds,
-        reverse_indices = rev_inds,
+        indices = indices,
+        reverse_indices = rev_indices,
     )
     river = (
         graph = graph_riv,
         order = topological_sort_by_dfs(graph_riv),
-        indices = inds_riv,
-        reverse_indices = rev_inds_riv,
+        indices = indices_riv,
+        reverse_indices = rev_indices_riv,
     )
 
     model = Model(
@@ -154,8 +163,8 @@ function update!(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: Sedi
     # River sediment transport
     do_river = get(config.model, "runrivermodel", false)::Bool
     if do_river
-        inds_riv = network.index_river
-        update!(lateral.river, lateral.land.to_river, network.river, inds_riv, dt)
+        indices_riv = network.index_river
+        update!(lateral.river, lateral.land.to_river, network.river, indices_riv, dt)
     end
 
     return nothing

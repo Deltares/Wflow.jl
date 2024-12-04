@@ -29,28 +29,28 @@ end
     answers_k::Vector{T} | "-"
 end
 
-function OverlandFlowErosionAnswersParameters(nc, config, inds)
+function OverlandFlowErosionAnswersParameters(dataset, config, indices)
     usle_k = ncread(
-        nc,
+        dataset,
         config,
         "vertical.overland_flow_erosion.parameters.usle_k";
-        sel = inds,
+        sel = indices,
         defaults = 0.1,
         type = Float,
     )
     usle_c = ncread(
-        nc,
+        dataset,
         config,
         "vertical.overland_flow_erosion.parameters.usle_c";
-        sel = inds,
+        sel = indices,
         defaults = 0.01,
         type = Float,
     )
     answers_k = ncread(
-        nc,
+        dataset,
         config,
         "vertical.overland_flow_erosion.parameters.answers_k";
-        sel = inds,
+        sel = indices,
         defaults = 0.9,
         type = Float,
     )
@@ -68,10 +68,10 @@ end
     variables::OverlandFlowErosionVariables{T}
 end
 
-function OverlandFlowErosionAnswersModel(nc, config, inds)
-    n = length(inds)
+function OverlandFlowErosionAnswersModel(dataset, config, indices)
+    n = length(indices)
     vars = OverlandFlowErosionVariables(n)
-    params = OverlandFlowErosionAnswersParameters(nc, config, inds)
+    params = OverlandFlowErosionAnswersParameters(dataset, config, indices)
     bc = OverlandFlowErosionBC(n)
     model = OverlandFlowErosionAnswersModel(;
         boundary_conditions = bc,

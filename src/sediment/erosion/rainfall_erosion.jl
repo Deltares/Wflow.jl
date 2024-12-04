@@ -52,44 +52,44 @@ end
 end
 
 "Initialize EUROSEM rainfall erosion model parameters"
-function RainfallErosionEurosemParameters(nc, config, inds)
+function RainfallErosionEurosemParameters(dataset, config, indices)
     soil_detachability = ncread(
-        nc,
+        dataset,
         config,
         "vertical.rainfall_erosion.parameters.soil_detachability";
-        sel = inds,
+        sel = indices,
         defaults = 0.6,
         type = Float,
     )
     eurosem_exponent = ncread(
-        nc,
+        dataset,
         config,
         "vertical.rainfall_erosion.parameters.eurosem_exponent";
-        sel = inds,
+        sel = indices,
         defaults = 2.0,
         type = Float,
     )
     canopyheight = ncread(
-        nc,
+        dataset,
         config,
         "vertical.rainfall_erosion.parameters.canopyheight";
-        sel = inds,
+        sel = indices,
         defaults = 0.5,
         type = Float,
     )
     canopygapfraction = ncread(
-        nc,
+        dataset,
         config,
         "vertical.rainfall_erosion.parameters.canopygapfraction";
-        sel = inds,
+        sel = indices,
         defaults = 0.1,
         type = Float,
     )
     soilcover_fraction = ncread(
-        nc,
+        dataset,
         config,
         "vertical.rainfall_erosion.parameters.pathfrac";
-        sel = inds,
+        sel = indices,
         defaults = 0.01,
         type = Float,
     )
@@ -111,10 +111,10 @@ end
 end
 
 "Initialize EUROSEM rainfall erosion model"
-function RainfallErosionEurosemModel(nc, config, inds)
-    n = length(inds)
+function RainfallErosionEurosemModel(dataset, config, indices)
+    n = length(indices)
     vars = RainfallErosionModelVariables(n)
-    params = RainfallErosionEurosemParameters(nc, config, inds)
+    params = RainfallErosionEurosemParameters(dataset, config, indices)
     bc = RainfallErosionEurosemBC(n)
     model = RainfallErosionEurosemModel(;
         boundary_conditions = bc,
@@ -185,20 +185,20 @@ end
 end
 
 "Initialize ANSWERS rainfall erosion model parameters"
-function RainfallErosionAnswersParameters(nc, config, inds)
+function RainfallErosionAnswersParameters(dataset, config, indices)
     usle_k = ncread(
-        nc,
+        dataset,
         config,
         "vertical.rainfall_erosion.parameters.usle_k";
-        sel = inds,
+        sel = indices,
         defaults = 0.1,
         type = Float,
     )
     usle_c = ncread(
-        nc,
+        dataset,
         config,
         "vertical.rainfall_erosion.parameters.usle_c";
-        sel = inds,
+        sel = indices,
         defaults = 0.01,
         type = Float,
     )
@@ -215,11 +215,11 @@ end
 end
 
 "Initialize ANSWERS rainfall erosion model"
-function RainfallErosionAnswersModel(nc, config, inds)
-    n = length(inds)
+function RainfallErosionAnswersModel(dataset, config, indices)
+    n = length(indices)
     bc = RainfallErosionAnswersBC(n)
     vars = RainfallErosionModelVariables(n)
-    params = RainfallErosionAnswersParameters(nc, config, inds)
+    params = RainfallErosionAnswersParameters(dataset, config, indices)
     model = RainfallErosionAnswersModel(;
         boundary_conditions = bc,
         parameters = params,

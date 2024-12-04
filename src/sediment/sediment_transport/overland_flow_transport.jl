@@ -38,8 +38,8 @@ end
     variables::SedimentLandTransportVariables{T}
 end
 
-function SedimentLandTransportModel(inds)
-    n = length(inds)
+function SedimentLandTransportModel(indices)
+    n = length(indices)
     vars = SedimentLandTransportVariables(n)
     bc = SedimentLandTransportBC(n)
     model = SedimentLandTransportModel(; boundary_conditions = bc, variables = vars)
@@ -182,8 +182,8 @@ end
     variables::SedimentLandTransportDifferentiationVariables{T}
 end
 
-function SedimentLandTransportDifferentiationModel(inds)
-    n = length(inds)
+function SedimentLandTransportDifferentiationModel(indices)
+    n = length(indices)
     vars = SedimentLandTransportDifferentiationVariables(n)
     bc = SedimentLandTransportDifferentiationBC(n)
     model = SedimentLandTransportDifferentiationModel(;

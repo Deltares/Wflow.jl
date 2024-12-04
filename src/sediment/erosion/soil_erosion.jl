@@ -67,44 +67,44 @@ end
     lagg_fraction::Vector{T} | "-"
 end
 
-function SoilErosionParameters(nc, config, inds)
+function SoilErosionParameters(dataset, config, indices)
     clay_fraction = ncread(
-        nc,
+        dataset,
         config,
         "vertical.soil_erosion.parameters.clay_fraction";
-        sel = inds,
+        sel = indices,
         defaults = 0.4,
         type = Float,
     )
     silt_fraction = ncread(
-        nc,
+        dataset,
         config,
         "vertical.soil_erosion.parameters.silt_fraction";
-        sel = inds,
+        sel = indices,
         defaults = 0.3,
         type = Float,
     )
     sand_fraction = ncread(
-        nc,
+        dataset,
         config,
         "vertical.soil_erosion.parameters.sand_fraction";
-        sel = inds,
+        sel = indices,
         defaults = 0.3,
         type = Float,
     )
     sagg_fraction = ncread(
-        nc,
+        dataset,
         config,
         "vertical.soil_erosion.parameters.sagg_fraction";
-        sel = inds,
+        sel = indices,
         defaults = 0.0,
         type = Float,
     )
     lagg_fraction = ncread(
-        nc,
+        dataset,
         config,
         "vertical.soil_erosion.parameters.lagg_fraction";
-        sel = inds,
+        sel = indices,
         defaults = 0.0,
         type = Float,
     )
@@ -131,10 +131,10 @@ end
     variables::SoilErosionModelVariables{T}
 end
 
-function SoilErosionModel(nc, config, inds)
-    n = length(inds)
+function SoilErosionModel(dataset, config, indices)
+    n = length(indices)
     vars = SoilErosionModelVariables(n)
-    params = SoilErosionParameters(nc, config, inds)
+    params = SoilErosionParameters(dataset, config, indices)
     bc = SoilErosionBC(n)
     model =
         SoilErosionModel(; boundary_conditions = bc, parameters = params, variables = vars)

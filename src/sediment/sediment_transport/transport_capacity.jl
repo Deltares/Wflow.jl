@@ -56,9 +56,9 @@ end
     n_govers::Vector{T} | "-"
 end
 
-function TransportCapacityGoversParameters(nc, config, inds)
+function TransportCapacityGoversParameters(dataset, config, inds)
     slope = ncread(
-        nc,
+        dataset,
         config,
         "lateral.land.transport_capacity.parameters.slope";
         sel = inds,
@@ -66,7 +66,7 @@ function TransportCapacityGoversParameters(nc, config, inds)
         type = Float,
     )
     density = ncread(
-        nc,
+        dataset,
         config,
         "lateral.land.transport_capacity.parameters.density";
         sel = inds,
@@ -74,7 +74,7 @@ function TransportCapacityGoversParameters(nc, config, inds)
         type = Float,
     )
     c_govers = ncread(
-        nc,
+        dataset,
         config,
         "lateral.land.transport_capacity.parameters.c_govers";
         sel = inds,
@@ -82,7 +82,7 @@ function TransportCapacityGoversParameters(nc, config, inds)
         type = Float,
     )
     n_govers = ncread(
-        nc,
+        dataset,
         config,
         "lateral.land.transport_capacity.parameters.n_govers";
         sel = inds,
@@ -105,10 +105,10 @@ end
     variables::TransportCapacityModelVariables{T}
 end
 
-function TransportCapacityGoversModel(nc, config, inds)
+function TransportCapacityGoversModel(dataset, config, inds)
     n = length(inds)
     vars = TransportCapacityModelVariables(n)
-    params = TransportCapacityGoversParameters(nc, config, inds)
+    params = TransportCapacityGoversParameters(dataset, config, inds)
     bc = TransportCapacityBC(n)
     model = TransportCapacityGoversModel(;
         boundary_conditions = bc,
@@ -150,9 +150,9 @@ end
     d50::Vector{T} | "mm"
 end
 
-function TransportCapacityYalinParameters(nc, config, inds)
+function TransportCapacityYalinParameters(dataset, config, inds)
     slope = ncread(
-        nc,
+        dataset,
         config,
         "lateral.land.transport_capacity.parameters.slope";
         sel = inds,
@@ -160,7 +160,7 @@ function TransportCapacityYalinParameters(nc, config, inds)
         type = Float,
     )
     density = ncread(
-        nc,
+        dataset,
         config,
         "lateral.land.transport_capacity.parameters.density";
         sel = inds,
@@ -168,7 +168,7 @@ function TransportCapacityYalinParameters(nc, config, inds)
         type = Float,
     )
     d50 = ncread(
-        nc,
+        dataset,
         config,
         "lateral.land.transport_capacity.parameters.d50";
         sel = inds,
@@ -187,10 +187,10 @@ end
     variables::TransportCapacityModelVariables{T}
 end
 
-function TransportCapacityYalinModel(nc, config, inds)
+function TransportCapacityYalinModel(dataset, config, inds)
     n = length(inds)
     vars = TransportCapacityModelVariables(n)
-    params = TransportCapacityYalinParameters(nc, config, inds)
+    params = TransportCapacityYalinParameters(dataset, config, inds)
     bc = TransportCapacityBC(n)
     model = TransportCapacityYalinModel(;
         boundary_conditions = bc,
@@ -272,9 +272,9 @@ end
     dm_lagg::Vector{T} | "µm"
 end
 
-function TransportCapacityYalinDifferentiationParameters(nc, config, inds)
+function TransportCapacityYalinDifferentiationParameters(dataset, config, inds)
     density = ncread(
-        nc,
+        dataset,
         config,
         "lateral.land.transport_capacity.parameters.density";
         sel = inds,
@@ -282,7 +282,7 @@ function TransportCapacityYalinDifferentiationParameters(nc, config, inds)
         type = Float,
     )
     dm_clay = ncread(
-        nc,
+        dataset,
         config,
         "lateral.land.transport_capacity.parameters.dm_clay";
         sel = inds,
@@ -290,7 +290,7 @@ function TransportCapacityYalinDifferentiationParameters(nc, config, inds)
         type = Float,
     )
     dm_silt = ncread(
-        nc,
+        dataset,
         config,
         "lateral.land.transport_capacity.parameters.dm_silt";
         sel = inds,
@@ -298,7 +298,7 @@ function TransportCapacityYalinDifferentiationParameters(nc, config, inds)
         type = Float,
     )
     dm_sand = ncread(
-        nc,
+        dataset,
         config,
         "lateral.land.transport_capacity.parameters.dm_sand";
         sel = inds,
@@ -306,7 +306,7 @@ function TransportCapacityYalinDifferentiationParameters(nc, config, inds)
         type = Float,
     )
     dm_sagg = ncread(
-        nc,
+        dataset,
         config,
         "lateral.land.transport_capacity.parameters.dm_sagg";
         sel = inds,
@@ -314,7 +314,7 @@ function TransportCapacityYalinDifferentiationParameters(nc, config, inds)
         type = Float,
     )
     dm_lagg = ncread(
-        nc,
+        dataset,
         config,
         "lateral.land.transport_capacity.parameters.dm_lagg";
         sel = inds,
@@ -340,10 +340,10 @@ end
     variables::TransportCapacityYalinDifferentiationModelVariables{T}
 end
 
-function TransportCapacityYalinDifferentiationModel(nc, config, inds)
+function TransportCapacityYalinDifferentiationModel(dataset, config, inds)
     n = length(inds)
     vars = TransportCapacityYalinDifferentiationModelVariables(n)
-    params = TransportCapacityYalinDifferentiationParameters(nc, config, inds)
+    params = TransportCapacityYalinDifferentiationParameters(dataset, config, inds)
     bc = TransportCapacityBC(n)
     model = TransportCapacityYalinDifferentiationModel(;
         boundary_conditions = bc,
@@ -448,9 +448,9 @@ end
     d50::Vector{T} | "mm"
 end
 
-function TransportCapacityRiverParameters(nc, config, inds)
+function TransportCapacityRiverParameters(dataset, config, inds)
     density = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.transport_capacity.parameters.density";
         sel = inds,
@@ -458,7 +458,7 @@ function TransportCapacityRiverParameters(nc, config, inds)
         type = Float,
     )
     d50 = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.transport_capacity.parameters.d50";
         sel = inds,
@@ -478,9 +478,9 @@ end
     e_bagnold::Vector{T} | "-"
 end
 
-function TransportCapacityBagnoldParameters(nc, config, inds)
+function TransportCapacityBagnoldParameters(dataset, config, inds)
     c_bagnold = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.transport_capacity.parameters.c_bagnold";
         sel = inds,
@@ -488,7 +488,7 @@ function TransportCapacityBagnoldParameters(nc, config, inds)
         type = Float,
     )
     e_bagnold = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.transport_capacity.parameters.e_bagnold";
         sel = inds,
@@ -507,10 +507,10 @@ end
     variables::TransportCapacityModelVariables{T}
 end
 
-function TransportCapacityBagnoldModel(nc, config, inds)
+function TransportCapacityBagnoldModel(dataset, config, inds)
     n = length(inds)
     vars = TransportCapacityModelVariables(n)
-    params = TransportCapacityBagnoldParameters(nc, config, inds)
+    params = TransportCapacityBagnoldParameters(dataset, config, inds)
     bc = TransportCapacityBC(n)
     model = TransportCapacityBagnoldModel(;
         boundary_conditions = bc,
@@ -548,10 +548,10 @@ end
     variables::TransportCapacityModelVariables{T}
 end
 
-function TransportCapacityEngelundModel(nc, config, inds)
+function TransportCapacityEngelundModel(dataset, config, inds)
     n = length(inds)
     vars = TransportCapacityModelVariables(n)
-    params = TransportCapacityRiverParameters(nc, config, inds)
+    params = TransportCapacityRiverParameters(dataset, config, inds)
     bc = TransportCapacityBC(n)
     model = TransportCapacityEngelundModel(;
         boundary_conditions = bc,
@@ -593,9 +593,9 @@ end
     d_kodatie::Vector{T} | "-"
 end
 
-function TransportCapacityKodatieParameters(nc, config, inds)
+function TransportCapacityKodatieParameters(dataset, config, inds)
     a_kodatie = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.transport_capacity.parameters.a_kodatie";
         sel = inds,
@@ -603,7 +603,7 @@ function TransportCapacityKodatieParameters(nc, config, inds)
         type = Float,
     )
     b_kodatie = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.transport_capacity.parameters.b_kodatie";
         sel = inds,
@@ -611,7 +611,7 @@ function TransportCapacityKodatieParameters(nc, config, inds)
         type = Float,
     )
     c_kodatie = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.transport_capacity.parameters.c_kodatie";
         sel = inds,
@@ -619,7 +619,7 @@ function TransportCapacityKodatieParameters(nc, config, inds)
         type = Float,
     )
     d_kodatie = ncread(
-        nc,
+        dataset,
         config,
         "lateral.river.transport_capacity.parameters.d_kodatie";
         sel = inds,
@@ -642,10 +642,10 @@ end
     variables::TransportCapacityModelVariables{T}
 end
 
-function TransportCapacityKodatieModel(nc, config, inds)
+function TransportCapacityKodatieModel(dataset, config, inds)
     n = length(inds)
     vars = TransportCapacityModelVariables(n)
-    params = TransportCapacityKodatieParameters(nc, config, inds)
+    params = TransportCapacityKodatieParameters(dataset, config, inds)
     bc = TransportCapacityBC(n)
     model = TransportCapacityKodatieModel(;
         boundary_conditions = bc,
@@ -684,10 +684,10 @@ end
     variables::TransportCapacityModelVariables{T}
 end
 
-function TransportCapacityYangModel(nc, config, inds)
+function TransportCapacityYangModel(dataset, config, inds)
     n = length(inds)
     vars = TransportCapacityModelVariables(n)
-    params = TransportCapacityRiverParameters(nc, config, inds)
+    params = TransportCapacityRiverParameters(dataset, config, inds)
     bc = TransportCapacityBC(n)
     model = TransportCapacityYangModel(;
         boundary_conditions = bc,
@@ -724,10 +724,10 @@ end
     variables::TransportCapacityModelVariables{T}
 end
 
-function TransportCapacityMolinasModel(nc, config, inds)
+function TransportCapacityMolinasModel(dataset, config, inds)
     n = length(inds)
     vars = TransportCapacityModelVariables(n)
-    params = TransportCapacityRiverParameters(nc, config, inds)
+    params = TransportCapacityRiverParameters(dataset, config, inds)
     bc = TransportCapacityBC(n)
     model = TransportCapacityMolinasModel(;
         boundary_conditions = bc,

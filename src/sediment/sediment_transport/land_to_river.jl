@@ -24,8 +24,8 @@ end
     variables::SedimentToRiverVariables{T}
 end
 
-function SedimentToRiverModel(inds)
-    n = length(inds)
+function SedimentToRiverModel(indices)
+    n = length(indices)
     vars = SedimentToRiverVariables(n)
     bc = SedimentToRiverBC(n)
     model = SedimentToRiverModel(; boundary_conditions = bc, variables = vars)
@@ -118,8 +118,8 @@ end
     variables::SedimentToRiverDifferentiationVariables{T}
 end
 
-function SedimentToRiverDifferentiationModel(inds)
-    n = length(inds)
+function SedimentToRiverDifferentiationModel(indices)
+    n = length(indices)
     vars = SedimentToRiverDifferentiationVariables(n)
     bc = SedimentToRiverDifferentiationBC(n)
     model =
