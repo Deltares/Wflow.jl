@@ -82,7 +82,7 @@ function initialize_sediment_model(config::Config)
     landslope = ncread(
         nc,
         config,
-        "vertical.geometry.slope";
+        "vertical.land_parameter_set.slope";
         optional = false,
         sel = inds,
         type = Float,
