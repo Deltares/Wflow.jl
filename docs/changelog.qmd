@@ -21,6 +21,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `SimpleReservoir` and `Lake` struct, and not to the corresponding river index. This
   resulted in incorrect surface water abstractions from reservoir and lake volumes, and
   surface water abstractions were set at zero at the wrong river locations.
+- Wflow ZMQ server: allow JSON reading and writing of `NaN` and `Inf` values to avoid a JSON
+  spec error. For example, during initialization of a wflow model, some (diagnostic) model
+  variables are initialized with `NaN` values.
 
 ### Changed
 - Removed vertical concepts `HBV` and `FLEXTopo`.
