@@ -345,7 +345,7 @@ end
 
 function update_boundary_conditions!(
     model::SedimentRiverTransportModel,
-    hydrometeo_forcing::HydrometeoForcing,
+    hydrological_forcing::HydrologicalForcing,
     transport_capacity_model::AbstractTransportCapacityModel,
     to_river_model::SedimentToRiverDifferentiationModel,
     potential_erosion_model::AbstractRiverErosionModel,
@@ -364,8 +364,8 @@ function update_boundary_conditions!(
         potential_erosion_river_bank,
     ) = model.boundary_conditions
 
-    # HydroMeteo forcing
-    (; q_river, waterlevel_river) = hydrometeo_forcing
+    # Hydrological forcing
+    (; q_river, waterlevel_river) = hydrological_forcing
     @. q = q_river
     @. waterlevel = waterlevel_river
     # Transport capacity
@@ -935,12 +935,12 @@ end
 
 function update_boundary_conditions!(
     model::SedimentConcentrationsRiverModel,
-    hydrometeo_forcing::HydrometeoForcing,
+    hydrological_forcing::HydrologicalForcing,
     sediment_flux_model::AbstractSedimentRiverTransportModel,
 )
     (; q, waterlevel, clay, silt, sand, sagg, lagg, gravel) = model.boundary_conditions
-    # Hydrometeo forcing
-    (; q_river, waterlevel_river) = hydrometeo_forcing
+    # Hydrological forcing
+    (; q_river, waterlevel_river) = hydrological_forcing
     @. q = q_river
     @. waterlevel = waterlevel_river
     # Sediment flux per particle

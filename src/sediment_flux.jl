@@ -1,6 +1,6 @@
 ### Overland flow ###
 @get_units @grid_loc @with_kw struct OverlandFlowSediment{TT, SF, TR, T}
-    hydrometeo_forcing::HydrometeoForcing
+    hydrological_forcing::HydrologicalForcing
     geometry::LandParameters
     transport_capacity::TT
     sediment_flux::SF
@@ -11,7 +11,7 @@ end
 
 function OverlandFlowSediment(nc, config, inds, waterbodies, rivers)
     n = length(inds)
-    hydrometeo_forcing = HydrometeoForcing(n)
+    hydrological_forcing = HydrologicalForcing(n)
     geometry = LandParameters(nc, config, inds)
     # Check what transport capacity equation will be used
     do_river = get(config.model, "runrivermodel", false)::Bool
@@ -43,7 +43,7 @@ function OverlandFlowSediment(nc, config, inds, waterbodies, rivers)
         typeof(to_river_model),
         Float,
     }(;
-        hydrometeo_forcing = hydrometeo_forcing,
+        hydrological_forcing = hydrological_forcing,
         geometry = geometry,
         transport_capacity = transport_capacity_model,
         sediment_flux = sediment_flux_model,
@@ -59,7 +59,7 @@ function update!(model::OverlandFlowSediment, erosion_model::SoilErosionModel, n
     ts = tosecond(dt)
 
     # Transport capacity
-    update_boundary_conditions!(model.transport_capacity, model.hydrometeo_forcing, :land)
+    update_boundary_conditions!(model.transport_capacity, model.hydrological_forcing, :land)
     update!(model.transport_capacity, model.geometry, model.waterbodies, model.rivers, ts)
 
     # Update boundary conditions before transport
@@ -79,7 +79,7 @@ end
 
 ### River ###
 @get_units @grid_loc @with_kw struct RiverSediment{TTR, ER, SFR, CR, T}
-    hydrometeo_forcing::HydrometeoForcing
+    hydrological_forcing::HydrologicalForcing
     geometry::RiverParameters
     transport_capacity::TTR
     potential_erosion::ER
@@ -90,7 +90,7 @@ end
 
 function RiverSediment(nc, config, inds, waterbodies)
     n = length(inds)
-    hydrometeo_forcing = HydrometeoForcing(n)
+    hydrological_forcing = HydrologicalForcing(n)
     geometry = RiverParameters(nc, config, inds)
 
     # Check what transport capacity equation will be used
@@ -126,7 +126,7 @@ function RiverSediment(nc, config, inds, waterbodies)
         typeof(concentrations_model),
         Float,
     }(;
-        hydrometeo_forcing = hydrometeo_forcing,
+        hydrological_forcing = hydrological_forcing,
         geometry = geometry,
         transport_capacity = transport_capacity_model,
         potential_erosion = potential_erosion_model,
@@ -148,17 +148,21 @@ function update!(
     ts = tosecond(dt)
 
     # Transport capacity
-    update_boundary_conditions!(model.transport_capacity, model.hydrometeo_forcing, :river)
+    update_boundary_conditions!(
+        model.transport_capacity,
+        model.hydrological_forcing,
+        :river,
+    )
     update!(model.transport_capacity, model.geometry, ts)
 
     # Potential maximum river erosion
-    update_boundary_conditions!(model.potential_erosion, model.hydrometeo_forcing)
+    update_boundary_conditions!(model.potential_erosion, model.hydrological_forcing)
     update!(model.potential_erosion, model.geometry, ts)
 
     # River transport
     update_boundary_conditions!(
         model.sediment_flux,
-        model.hydrometeo_forcing,
+        model.hydrological_forcing,
         model.transport_capacity,
         to_river_model,
         model.potential_erosion,
@@ -169,7 +173,7 @@ function update!(
     # Concentrations
     update_boundary_conditions!(
         model.concentrations,
-        model.hydrometeo_forcing,
+        model.hydrological_forcing,
         model.sediment_flux,
     )
     update!(model.concentrations, model.geometry, ts)

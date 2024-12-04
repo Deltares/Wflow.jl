@@ -1,7 +1,5 @@
 abstract type AbstractOverlandFlowErosionModel{T} end
 
-struct NoOverlandFlowErosionModel{T} <: AbstractOverlandFlowErosionModel{T} end
-
 ## Overland flow structs and functions
 @get_units @grid_loc @with_kw struct OverlandFlowErosionVariables{T}
     # Total soil erosion from overland flow
@@ -85,18 +83,11 @@ end
 
 function update_boundary_conditions!(
     model::OverlandFlowErosionAnswersModel,
-    hydrometeo_forcing::HydrometeoForcing,
+    hydrological_forcing::HydrologicalForcing,
 )
     (; q) = model.boundary_conditions
-    (; q_land) = hydrometeo_forcing
+    (; q_land) = hydrological_forcing
     @. q = q_land
-end
-
-function update_boundary_conditions!(
-    model::NoOverlandFlowErosionModel,
-    hydrometeo_forcing::HydrometeoForcing,
-)
-    return nothing
 end
 
 function update!(model::OverlandFlowErosionAnswersModel, geometry::LandParameters, ts)
@@ -117,10 +108,3 @@ function update!(model::OverlandFlowErosionAnswersModel, geometry::LandParameter
         )
     end
 end
-
-function update!(model::NoOverlandFlowErosionModel)
-    return nothing
-end
-
-get_overland_flow_erosion(model::NoOverlandFlowErosionModel) = 0.0
-get_overland_flow_erosion(model::OverlandFlowErosionAnswersModel) = model.variables.amount

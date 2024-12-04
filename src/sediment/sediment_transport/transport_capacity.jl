@@ -27,11 +27,11 @@ end
 
 function update_boundary_conditions!(
     model::AbstractTransportCapacityModel,
-    hydrometeo_forcing::HydrometeoForcing,
+    hydrological_forcing::HydrologicalForcing,
     model_type::Symbol,
 )
     (; q, waterlevel) = model.boundary_conditions
-    (; q_land, waterlevel_land, q_river, waterlevel_river) = hydrometeo_forcing
+    (; q_land, waterlevel_land, q_river, waterlevel_river) = hydrological_forcing
 
     if model_type == :land
         @. q = q_land

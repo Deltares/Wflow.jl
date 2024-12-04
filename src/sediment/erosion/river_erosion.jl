@@ -66,10 +66,10 @@ end
 
 function update_boundary_conditions!(
     model::RiverErosionJulianTorresModel,
-    hydrometeo_forcing::HydrometeoForcing,
+    hydrological_forcing::HydrologicalForcing,
 )
     (; waterlevel) = model.boundary_conditions
-    (; waterlevel_river) = hydrometeo_forcing
+    (; waterlevel_river) = hydrological_forcing
     @. waterlevel = waterlevel_river
 end
 

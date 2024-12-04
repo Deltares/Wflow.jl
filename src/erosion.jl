@@ -1,6 +1,8 @@
+"Total soil erosion model"
 @with_kw struct SoilLoss{RE, OFE, SE, T}
-    hydrometeo_forcing::HydrometeoForcing
-    geometry::LandParameters
+    atmospheric_forcing::AtmosphericForcing{T}
+    hydrological_forcing::HydrologicalForcing{T}
+    geometry::LandParameters{T}
     rainfall_erosion::RE
     overland_flow_erosion::OFE
     soil_erosion::SE
@@ -9,7 +11,8 @@ end
 function SoilLoss(nc, config, inds)
     n = length(inds)
 
-    hydrometeo_forcing = HydrometeoForcing(n)
+    atmospheric_forcing = AtmosphericForcing(n)
+    hydrological_forcing = HydrologicalForcing(n)
     geometry = LandParameters(nc, config, inds)
 
     # Rainfall erosion
@@ -40,7 +43,8 @@ function SoilLoss(nc, config, inds)
         typeof(soil_erosion_model),
         Float,
     }(;
-        hydrometeo_forcing = hydrometeo_forcing,
+        atmospheric_forcing = atmospheric_forcing,
+        hydrological_forcing = hydrological_forcing,
         geometry = geometry,
         rainfall_erosion = rainfall_erosion_model,
         overland_flow_erosion = overland_flow_erosion_model,
@@ -51,7 +55,8 @@ end
 
 function update!(model::SoilLoss, dt)
     (;
-        hydrometeo_forcing,
+        atmospheric_forcing,
+        hydrological_forcing,
         geometry,
         rainfall_erosion,
         overland_flow_erosion,
@@ -63,10 +68,10 @@ function update!(model::SoilLoss, dt)
     #need SBM refactor
 
     # Rainfall erosion
-    update_boundary_conditions!(rainfall_erosion, hydrometeo_forcing)
+    update_boundary_conditions!(rainfall_erosion, atmospheric_forcing, hydrological_forcing)
     update!(rainfall_erosion, geometry, ts)
     # Overland flow erosion
-    update_boundary_conditions!(overland_flow_erosion, hydrometeo_forcing)
+    update_boundary_conditions!(overland_flow_erosion, hydrological_forcing)
     update!(overland_flow_erosion, geometry, ts)
     # Total soil erosion and particle differentiation
     update_boundary_conditions!(soil_erosion, rainfall_erosion, overland_flow_erosion)

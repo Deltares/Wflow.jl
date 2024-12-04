@@ -11,8 +11,8 @@ Wflow.run_timestep!(model)
 @testset "first timestep sediment model (vertical)" begin
     eros = model.vertical
 
-    @test eros.hydrometeo_forcing.precipitation[1] ≈ 4.086122035980225f0
-    @test eros.hydrometeo_forcing.q_land[1] ≈ 0.0f0
+    @test eros.atmospheric_forcing.precipitation[1] ≈ 4.086122035980225f0
+    @test eros.hydrological_forcing.q_land[1] ≈ 0.0f0
     @test eros.overland_flow_erosion.parameters.usle_k[1] ≈ 0.026510488241910934f0
     @test eros.overland_flow_erosion.parameters.usle_c[1] ≈ 0.014194443821907043f0
     @test eros.overland_flow_erosion.parameters.answers_k[1] ≈ 0.9f0
@@ -57,8 +57,8 @@ end
     @test sum(land.to_river.variables.sand) ≈ 1289.4785484597958f0
     @test mean(land.sediment_flux.variables.clay) ≈ 0.006578791733506439f0
 
-    @test mean(river.hydrometeo_forcing.q_river) ≈ 0.6975180562953642f0
-    @test river.hydrometeo_forcing.waterlevel_river[network.river.order[end]] ≈
+    @test mean(river.hydrological_forcing.q_river) ≈ 0.6975180562953642f0
+    @test river.hydrological_forcing.waterlevel_river[network.river.order[end]] ≈
           0.006103649735450745f0
     @test mean(river.geometry.width) ≈ 22.628250814095523f0
 

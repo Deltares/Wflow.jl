@@ -146,8 +146,8 @@ function update_boundary_conditions!(
     rainfall_erosion::AbstractRainfallErosionModel,
     overland_flow_erosion::AbstractOverlandFlowErosionModel,
 )
-    re = get_rainfall_erosion(rainfall_erosion)
-    ole = get_overland_flow_erosion(overland_flow_erosion)
+    re = rainfall_erosion.variables.amount
+    ole = overland_flow_erosion.variables.amount
     (; rainfall_erosion, overland_flow_erosion) = model.boundary_conditions
     @. rainfall_erosion = re
     @. overland_flow_erosion = ole

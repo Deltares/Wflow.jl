@@ -54,13 +54,13 @@ lake_areas = "wflow_lakeareas"
 # the external name mapping needs to be below together with the other mappings
 forcing = [
   #"vertical.interception",
-  "vertical.hydrometeo_forcing.precipitation",
-  "vertical.hydrometeo_forcing.waterlevel_land",
-  "lateral.land.hydrometeo_forcing.waterlevel_land",
-  "vertical.hydrometeo_forcing.q_land",
-  "lateral.land.hydrometeo_forcing.q_land",
-  "lateral.river.hydrometeo_forcing.waterlevel_river",
-  "lateral.river.hydrometeo_forcing.q_river",
+  "vertical.atmospheric_forcing.precipitation",
+  "vertical.hydrological_forcing.waterlevel_land",
+  "lateral.land.hydrological_forcing.waterlevel_land",
+  "vertical.hydrological_forcing.q_land",
+  "lateral.land.hydrological_forcing.q_land",
+  "lateral.river.hydrological_forcing.waterlevel_river",
+  "lateral.river.hydrological_forcing.q_river",
 ]
 
 #cyclic = ["vertical.leaf_area_index"]
@@ -73,8 +73,10 @@ forcing = [
 #storage_wood = "Swood"
 ## other parameters
 
-[input.vertical.hydrometeo_forcing]
+[input.vertical.atmospheric_forcing]
 precipitation = "P"
+
+[input.vertical.hydrological_forcing]
 waterlevel_land = "levKinL"
 #interception = "int"
 q_land = "runL"
@@ -103,7 +105,7 @@ sand_fraction = "fsand_soil"
 sagg_fraction = "fsagg_soil"
 lagg_fraction = "flagg_soil"
 
-[input.lateral.land.hydrometeo_forcing]
+[input.lateral.land.hydrological_forcing]
 waterlevel_land = "levKinL"
 q_land = "runL"
 
@@ -118,7 +120,7 @@ dm_sand = "dm_sand"
 dm_sagg = "dm_sagg"
 dm_lagg = "dm_lagg"
 
-[input.lateral.river.hydrometeo_forcing]
+[input.lateral.river.hydrological_forcing]
 waterlevel_river = "h"
 q_river = "q"
 
@@ -207,7 +209,7 @@ bed = "Bedconc"
 suspended = "SSconc"
 total = "Sedconc"
 
-[output.lateral.river.hydrometeo_forcing]
+[output.lateral.river.hydrological_forcing]
 waterlevel_river = "h_riv"
 
 [output.lateral.river.sediment_flux.variables]
@@ -245,13 +247,13 @@ parameter = "vertical.overland_flow_erosion.variables.amount"
 coordinate.x = 6.931
 coordinate.y = 48.085
 header = "P"
-parameter = "vertical.hydrometeo_forcing.precipitation"
+parameter = "vertical.atmospheric_forcing.precipitation"
 
 [[csv.column]]
 coordinate.x = 6.931
 coordinate.y = 48.085
 header = "ql"
-parameter = "vertical.hydrometeo_forcing.q_land"
+parameter = "vertical.hydrological_forcing.q_land"
 
 # [[csv.column]]
 # coordinate.x = 6.931

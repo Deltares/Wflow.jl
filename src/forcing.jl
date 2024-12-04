@@ -18,9 +18,8 @@ function AtmosphericForcing(
     return AtmosphericForcing{T}(; precipitation, potential_evaporation, temperature)
 end
 
-@get_units @grid_loc @with_kw struct HydrometeoForcing{T}
-    # Precipitation [mm Δt⁻¹]
-    precipitation::Vector{T}
+"Struct to store hydrological forcing variables"
+@get_units @grid_loc @with_kw struct HydrologicalForcing{T}
     # Overland flow depth [m]
     waterlevel_land::Vector{T} | "m"
     # Overland flow discharge [m3 s-1]
@@ -31,13 +30,13 @@ end
     q_river::Vector{T} | "m3 s-1"
 end
 
-function HydrometeoForcing(n)
-    hydrometeo_forcing = HydrometeoForcing(;
-        precipitation = fill(mv, n),
-        waterlevel_land = fill(mv, n),
-        q_land = fill(mv, n),
-        waterlevel_river = fill(mv, n),
-        q_river = fill(mv, n),
-    )
-    return hydrometeo_forcing
+"Initialize hydrological forcing"
+function HydrologicalForcing(
+    n;
+    waterlevel_land::Vector{T} = fill(mv, n),
+    q_land::Vector{T} = fill(mv, n),
+    waterlevel_river::Vector{T} = fill(mv, n),
+    q_river::Vector{T} = fill(mv, n),
+) where {T}
+    return HydrologicalForcing{T}(; waterlevel_land, q_land, waterlevel_river, q_river)
 end
