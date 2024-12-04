@@ -409,12 +409,12 @@ window.Quarto = {
 # Figure created using python: # hide
 # https://gist.github.com/JoostBuitink/21dd32e71fd1360117fcd1c532c4fd9d#file-snowfall_fig-py # hide
 -->
-<p>If precipitation occurs as snowfall, it is added to the dry snow component within the snow pack. Otherwise it ends up in the free water reservoir, which represents the liquid water content of the snow pack. Between the two components of the snow pack, interactions take place, either through snow melt (if temperatures are above a threshold <code>tt</code>) or through snow refreezing (if temperatures are below threshold <code>tt</code>).</p>
+<p>If precipitation occurs as snowfall, it is added to the dry snow component within the snow pack. Otherwise it ends up in the free water reservoir, which represents the liquid water content of the snow pack. Between the two components of the snow pack, interactions take place, either through snow melt (if temperatures are above a threshold <code>ttm</code>) or through snow refreezing (if temperatures are below threshold <code>ttm</code>).</p>
 <p>The respective rates of snow melt and refreezing are:</p>
 <p><span class="math display">\[
 \begin{align*}
-    Q_m &amp;=&amp; \subtext{\mathrm{cf}}{max}(T_a−\mathrm{tt})\, &amp;&amp;T_a &gt; \mathrm{tt} \\
-    Q_r &amp;=&amp; \subtext{\mathrm{cf}}{max} \, \mathrm{cf}_r(\mathrm{tt}−T_a) &amp;&amp;T_a &lt; \mathrm{tt}
+    Q_m &amp;=&amp; \subtext{\mathrm{cf}}{max}(T_a−\mathrm{ttm})\, &amp;&amp;T_a &gt; \mathrm{ttm} \\
+    Q_r &amp;=&amp; \subtext{\mathrm{cf}}{max} \, \mathrm{cf}_r(\mathrm{ttm}−T_a) &amp;&amp;T_a &lt; \mathrm{ttm}
 \end{align*}
 \]</span></p>
 <p>where <span class="math inline">\(Q_m\)</span> is the rate of snow melt, <span class="math inline">\(Q_r\)</span> is the rate of snow refreezing, and <span class="math inline">\(\SIb{\subtext{\mathrm{cf}}{max}}{mm\;(\degree C)^{-1} day^{-1}}\)</span> and <span class="math inline">\(\mathrm{cf}_r\)</span> are user defined model parameters (the melting factor and the refreezing factor respectively).</p>
@@ -435,16 +435,16 @@ window.Quarto = {
 <section id="glacier-modelling" class="level3">
 <h3 class="anchored" data-anchor-id="glacier-modelling">Glacier modelling</h3>
 <p>Glacier processes can be modelled if the snow model is enabled. Glacier modelling is very similar to snow modelling and considers two main processes: glacier build-up from snow turning into firn/ice (using the HBV-light model) and glacier melt (using a temperature degree-day model).</p>
-<p>The definition of glacier boundaries and initial volume is defined by two parameters. The parameter <code>glacierfrac</code> gives the fraction of each grid cell covered by a glacier as a number between zero and one. The state parameter <code>glacierstore</code> gives the amount of water (in mm w.e.) within the glaciers at each grid cell. Because the glacier store (<code>glacierstore</code>) cannot be initialized by running thFe model for a couple of years, a default initial state should be supplied by adding this parameter to the input static file. The required glacier data can be prepared from available glacier datasets.</p>
+<p>The definition of glacier boundaries and initial volume is defined by two parameters. The parameter <code>glacierfrac</code> gives the fraction of each grid cell covered by a glacier as a number between zero and one. The state parameter <code>glacierstore</code> gives the amount of water (in mm w.e.) within the glaciers at each grid cell. Because the glacier store (<code>glacierstore</code>) cannot be initialized by running the model for a couple of years, a default initial state should be supplied by adding this parameter to the input static file. The required glacier data can be prepared from available glacier datasets.</p>
 <p>First, a fixed fraction of the snowpack on top of the glacier is converted into ice for each timestep and added to the <code>glacierstore</code> using the HBV-light model (Seibert et al., 2018). This fraction <code>g_sifrac</code> typically ranges from <span class="math inline">\(0.001\)</span> to <span class="math inline">\(0.006\)</span>.</p>
 <p>Then, when the snowpack on top of the glacier is almost all melted (snow cover <span class="math inline">\(&lt;
-\SI{10}{mm}\)</span>), glacier melt is enabled and estimated with a degree-day model. If the air temperature, <span class="math inline">\(T_a\)</span>, is below a certain threshold <code>g_tt</code> (<span class="math inline">\(\SIb{}{\degree C}\)</span>) precipitation occurs as snowfall, whereas it occurs as rainfall if <span class="math inline">\(T_a ≥\)</span> <code>g_tt</code>.</p>
+\SI{10}{mm}\)</span>), glacier melt is enabled and estimated with a degree-day model. If the air temperature, <span class="math inline">\(T_a\)</span>, is above a certain threshold <code>g_ttm</code> (<span class="math inline">\(\SIb{}{\degree C}\)</span>) glacier melt occurs.</p>
 <p>With this the rate of glacier melt in mm is estimated as:</p>
 <p><span class="math display">\[
-Q_m = \subtext{g}{cfmax}(T_a − \subtext{g}{tt})\, ; \, T_a &gt; \subtext{g}{tt}
+Q_m = \subtext{g}{cfmax}(T_a − \subtext{g}{ttm})\, ; \, T_a &gt; \subtext{g}{ttm}
 \]</span></p>
 <p>where <span class="math inline">\(Q_m\)</span> is the rate of glacier melt and <span class="math inline">\(\SIb{\subtext{g}{cfmax}}{mm (\degree
-C)^{-1}day^{-1}}\)</span> is the melting factor. Parameter <code>g_tt</code> can be taken as equal to the snow <code>tt</code> parameter. Values of the melting factor <code>g_cfmax</code> normally varies from one glacier to another and some values are reported in the literature. <code>g_cfmax</code> can also be estimated by multiplying snow <code>cfmax</code> by a factor between 1 and 2, to take into account the higher albedo of ice compared to snow.</p>
+C)^{-1}day^{-1}}\)</span> is the melting factor. Parameter <code>g_ttm</code> can be taken as equal to the snow <code>ttm</code> parameter. Values of the melting factor <code>g_cfmax</code> normally varies from one glacier to another and some values are reported in the literature. <code>g_cfmax</code> can also be estimated by multiplying snow <code>cfmax</code> by a factor between 1 and 2, to take into account the higher albedo of ice compared to snow.</p>
 </section>
 </section>
 <section id="rainfall-interception" class="level2">
