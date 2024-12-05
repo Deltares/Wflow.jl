@@ -26,7 +26,7 @@ ustorelayerdepth = "ustorelayerdepth"
 snow_storage = "snow"
 snow_water = "snowwater"
 
-[state.lateral.river]
+[state.lateral.river.variables]
 h = "h_river"
 h_av = "h_av_river"
 q = "q_river"
@@ -34,10 +34,10 @@ q = "q_river"
 [state.lateral.river.reservoir]
 volume = "volume_reservoir"
 
-[state.lateral.subsurface]
+[state.lateral.subsurface.variables]
 ssf = "ssf"
 
-[state.lateral.land]
+[state.lateral.land.variables]
 h = "h_land"
 h_av = "h_av_land"
 qx = "qx_land"
@@ -103,7 +103,7 @@ cfmax = "Cfmax"
 
 [input.lateral.river]
 length = "wflow_riverlength"
-n = "N_River"
+mannings_n = "N_River"
 slope = "RiverSlope"
 width = "wflow_riverwidth"
 bankfull_elevation = "RiverZ"
@@ -118,11 +118,12 @@ maxrelease = "ResMaxRelease"
 maxvolume = "ResMaxVolume"
 targetfullfrac = "ResTargetFullFrac"
 targetminfrac = "ResTargetMinFrac"
+
 [input.lateral.subsurface]
 ksathorfrac = "KsatHorFrac"
 
 [input.lateral.land]
-n = "N"
+mannings_n = "N"
 slope = "Slope"
 elevation = "FloodplainZ"
 
@@ -152,16 +153,16 @@ ustorelayerdepth = "ustorelayerdepth"
 snow_storage = "snow"
 snow_water = "snowwater"
 
-[output.lateral.river]
+[output.lateral.river.variables]
 h = "h_river"
 h_av = "hav_river"
 q = "q_river"
 q_av = "qav_river"
 
-[output.lateral.subsurface]
+[output.lateral.subsurface.variables]
 ssf = "ssf"
 
-[output.lateral.land]
+[output.lateral.land.variables]
 h = "h_land"
 qx = "qx_land"
 qy = "qy_land"
@@ -172,5 +173,5 @@ path = "output_moselle_swf.csv"
 [[csv.column]]
 header = "Q"
 map = "gauges"
-parameter = "lateral.river.q_av"
+parameter = "lateral.river.variables.q_av"
 

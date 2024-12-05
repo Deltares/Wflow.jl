@@ -98,7 +98,7 @@ function initialize_sediment_model(config::Config)
     clamp!(landslope, 0.00001, Inf)
 
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
-    frac_toriver = fraction_runoff_toriver(graph, ldd, index_river, landslope, n)
+    frac_toriver = fraction_runoff_to_river(graph, ldd, index_river, landslope)
 
     river_sediment = RiverSediment(dataset, config, indices_riv, waterbodies)
 

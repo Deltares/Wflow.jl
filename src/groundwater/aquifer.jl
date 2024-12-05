@@ -84,16 +84,24 @@ NOTA BENE: **specific** storage is per m of aquifer (conf. specific weight).
 **Storativity** or (**storage coefficient**) is for the entire aquifer (conf.
 transmissivity).
 """
-@get_units @grid_loc struct ConfinedAquifer{T} <: Aquifer
-    head::Vector{T} | "m"  # hydraulic head [m]
+@get_units @grid_loc @with_kw struct ConfinedAquiferParameters{T}
     k::Vector{T} | "m d-1"  # horizontal conductivity [m d⁻¹]
     top::Vector{T} | "m" # top of groundwater layer [m]
     bottom::Vector{T} | "m" # bottom of groundwater layer
     area::Vector{T} | "m2" # area of cell
     specific_storage::Vector{T} | "m m-1 m-1" # [m m⁻¹ m⁻¹]
     storativity::Vector{T} | "m m-1" # [m m⁻¹]
+end
+
+@get_units @grid_loc @with_kw struct ConfinedAquiferVariables{T}
+    head::Vector{T} | "m"  # hydraulic head [m]
     conductance::Vector{T} | "m2 d-1" # Confined aquifer conductance is constant
     volume::Vector{T} | "m3" # total volume of water that can be released
+end
+
+@with_kw struct ConfinedAquifer{T} <: Aquifer
+    parameters::ConfinedAquiferParameters{T}
+    variables::ConfinedAquiferVariables{T}
 end
 
 """
@@ -107,22 +115,68 @@ aquifer will yield when all water drains and the pore volume is filled by air
 instead. Specific yield will vary roughly between 0.05 (clay) and 0.45 (peat)
 (Johnson, 1967).
 """
-@get_units @grid_loc struct UnconfinedAquifer{T} <: Aquifer
-    head::Vector{T} | "m"  # hydraulic head [m]
+@get_units @grid_loc @with_kw struct UnconfinedAquiferParameters{T}
     k::Vector{T} | "m d-1"  # reference horizontal conductivity [m d⁻¹]
     top::Vector{T} | "m" # top of groundwater layer [m]
     bottom::Vector{T} | "m" # bottom of groundwater layer
     area::Vector{T} | "m2"
     specific_yield::Vector{T} | "m m-1" # [m m⁻¹]
-    conductance::Vector{T} | "m2 d-1" #
-    volume::Vector{T} | "m3" # total volume of water that can be released
     f::Vector{T} | "-" # factor controlling the reduction of reference horizontal conductivity
     # Unconfined aquifer conductance is computed with degree of saturation (only when
     # conductivity_profile is set to "exponential")
 end
 
-storativity(A::UnconfinedAquifer) = A.specific_yield
-storativity(A::ConfinedAquifer) = A.storativity
+function UnconfinedAquiferParameters(dataset, config, indices, top, bottom, area)
+    k = ncread(
+        dataset,
+        config,
+        "lateral.subsurface.conductivity";
+        sel = indices,
+        type = Float,
+    )
+    specific_yield = ncread(
+        dataset,
+        config,
+        "lateral.subsurface.specific_yield";
+        sel = indices,
+        type = Float,
+    )
+    f = ncread(
+        dataset,
+        config,
+        "lateral.subsurface.gwf_f";
+        sel = indices,
+        type = Float,
+        defaults = 3.0,
+    )
+
+    parameters =
+        UnconfinedAquiferParameters{Float}(; k, top, bottom, area, specific_yield, f)
+    return parameters
+end
+
+@get_units @grid_loc @with_kw struct UnconfinedAquiferVariables{T}
+    head::Vector{T} | "m"  # hydraulic head [m]
+    conductance::Vector{T} | "m2 d-1" # conductance 
+    volume::Vector{T} | "m3" # total volume of water that can be released m   
+end
+
+@with_kw struct UnconfinedAquifer{T} <: Aquifer
+    parameters::UnconfinedAquiferParameters{T}
+    variables::UnconfinedAquiferVariables{T}
+end
+
+function UnconfinedAquifer(dataset, config, indices, top, bottom, area, conductance, head)
+    parameters = UnconfinedAquiferParameters(dataset, config, indices, top, bottom, area)
+
+    volume = @. (min(top, head) - bottom) * area * parameters.specific_yield
+    variables = UnconfinedAquiferVariables{Float}(head, conductance, volume)
+    aquifer = UnconfinedAquifer{Float}(parameters, variables)
+    return aquifer
+end
+
+storativity(A::UnconfinedAquifer) = A.parameters.specific_yield
+storativity(A::ConfinedAquifer) = A.parameters.storativity
 
 """
     harmonicmean_conductance(kH1, kH2, l1, l2, width)
@@ -147,19 +201,20 @@ function harmonicmean_conductance(kH1, kH2, l1, l2, width)
 end
 
 function saturated_thickness(aquifer::UnconfinedAquifer, index::Int)
-    return min(aquifer.top[index], aquifer.head[index]) - aquifer.bottom[index]
+    return min(aquifer.parameters.top[index], aquifer.variables.head[index]) -
+           aquifer.parameters.bottom[index]
 end
 
 function saturated_thickness(aquifer::ConfinedAquifer, index::Int)
-    return aquifer.top[index] - aquifer.bottom[index]
+    return aquifer.parameters.top[index] - aquifer.parameters.bottom[index]
 end
 
 function saturated_thickness(aquifer::UnconfinedAquifer)
-    @. min(aquifer.top, aquifer.head) - aquifer.bottom
+    @. min(aquifer.parameters.top, aquifer.variables.head) - aquifer.parameters.bottom
 end
 
 function saturated_thickness(aquifer::ConfinedAquifer)
-    @. aquifer.top - aquifer.bottom
+    @. aquifer.parameters.top - aquifer.parameters.bottom
 end
 
 """
@@ -177,10 +232,10 @@ function horizontal_conductance(
     aquifer::A,
     connectivity::Connectivity,
 ) where {A <: Aquifer}
-    k1 = aquifer.k[i]
-    k2 = aquifer.k[j]
-    H1 = aquifer.top[i] - aquifer.bottom[i]
-    H2 = aquifer.top[j] - aquifer.bottom[j]
+    k1 = aquifer.parameters.k[i]
+    k2 = aquifer.parameters.k[j]
+    H1 = aquifer.parameters.top[i] - aquifer.parameters.bottom[i]
+    H2 = aquifer.parameters.top[j] - aquifer.parameters.bottom[j]
     length1 = connectivity.length1[nzi]
     length2 = connectivity.length2[nzi]
     width = connectivity.width[nzi]
@@ -204,7 +259,7 @@ function initialize_conductance!(
         # Loop over connections for cell j
         for nzi in connections(connectivity, i)
             j = connectivity.rowval[nzi]
-            aquifer.conductance[nzi] =
+            aquifer.variables.conductance[nzi] =
                 horizontal_conductance(i, j, nzi, aquifer, connectivity)
         end
     end
@@ -218,7 +273,7 @@ function conductance(
     conductivity_profile::String,
     connectivity::Connectivity,
 )
-    return aquifer.conductance[nzi]
+    return aquifer.variables.conductance[nzi]
 end
 
 """
@@ -257,17 +312,21 @@ function conductance(
 )
     if conductivity_profile == "exponential"
         # Extract required variables
-        zi1 = aquifer.top[i] - aquifer.head[i]
-        zi2 = aquifer.top[j] - aquifer.head[j]
-        thickness1 = aquifer.top[i] - aquifer.bottom[i]
-        thickness2 = aquifer.top[j] - aquifer.bottom[j]
+        zi1 = aquifer.parameters.top[i] - aquifer.variables.head[i]
+        zi2 = aquifer.parameters.top[j] - aquifer.variables.head[j]
+        thickness1 = aquifer.parameters.top[i] - aquifer.parameters.bottom[i]
+        thickness2 = aquifer.parameters.top[j] - aquifer.parameters.bottom[j]
         # calculate conductivity values corrected for depth of water table
         k1 =
-            (aquifer.k[i] / aquifer.f[i]) *
-            (exp(-aquifer.f[i] * zi1) - exp(-aquifer.f[i] * thickness1))
+            (aquifer.parameters.k[i] / aquifer.parameters.f[i]) * (
+                exp(-aquifer.parameters.f[i] * zi1) -
+                exp(-aquifer.parameters.f[i] * thickness1)
+            )
         k2 =
-            (aquifer.k[j] / aquifer.f[j]) *
-            (exp(-aquifer.f[j] * zi2) - exp(-aquifer.f[j] * thickness2))
+            (aquifer.parameters.k[j] / aquifer.parameters.f[j]) * (
+                exp(-aquifer.parameters.f[j] * zi2) -
+                exp(-aquifer.parameters.f[j] * thickness2)
+            )
         return harmonicmean_conductance(
             k1,
             k2,
@@ -276,16 +335,18 @@ function conductance(
             connectivity.width[nzi],
         )
     elseif conductivity_profile == "uniform"
-        head_i = aquifer.head[i]
-        head_j = aquifer.head[j]
+        head_i = aquifer.variables.head[i]
+        head_j = aquifer.variables.head[j]
         if head_i >= head_j
             saturation =
-                saturated_thickness(aquifer, i) / (aquifer.top[i] - aquifer.bottom[i])
+                saturated_thickness(aquifer, i) /
+                (aquifer.parameters.top[i] - aquifer.parameters.bottom[i])
         else
             saturation =
-                saturated_thickness(aquifer, j) / (aquifer.top[j] - aquifer.bottom[j])
+                saturated_thickness(aquifer, j) /
+                (aquifer.parameters.top[j] - aquifer.parameters.bottom[j])
         end
-        return saturation * aquifer.conductance[nzi]
+        return saturation * aquifer.variables.conductance[nzi]
     else
         error(
             """An unknown "conductivity_profile" is specified in the TOML file ($conductivity_profile).
@@ -301,7 +362,7 @@ function flux!(Q, aquifer, connectivity, conductivity_profile)
         for nzi in connections(connectivity, i)
             # connection from i -> j
             j = connectivity.rowval[nzi]
-            delta_head = aquifer.head[i] - aquifer.head[j]
+            delta_head = aquifer.variables.head[i] - aquifer.variables.head[j]
             cond = conductance(aquifer, i, j, nzi, conductivity_profile, connectivity)
             Q[i] -= cond * delta_head
         end
@@ -309,9 +370,30 @@ function flux!(Q, aquifer, connectivity, conductivity_profile)
     return Q
 end
 
-@get_units @grid_loc struct ConstantHead{T}
+@get_units @grid_loc @with_kw struct ConstantHeadVariables{T}
     head::Vector{T} | "m"
+end
+
+@get_units @grid_loc @with_kw struct ConstantHead{T}
+    variables::ConstantHeadVariables{T}
     index::Vector{Int} | "-"
+end
+
+function ConstantHead(dataset, config, indices)
+    constanthead = ncread(
+        dataset,
+        config,
+        "lateral.subsurface.constant_head";
+        sel = indices,
+        type = Float,
+        fill = mv,
+    )
+    n = length(indices)
+    index_constanthead = filter(i -> !isequal(constanthead[i], mv), 1:n)
+    head = constanthead[index_constanthead]
+    variables = ConstantHeadVariables{Float}(head)
+    constant_head = ConstantHead{Float}(; variables, index = index_constanthead)
+    return constant_head
 end
 
 """
@@ -324,25 +406,28 @@ The following criterion can be found in Chu & Willis (1984)
 """
 function stable_timestep(aquifer, conductivity_profile::String)
     dt_min = Inf
-    for i in eachindex(aquifer.head)
+    for i in eachindex(aquifer.variables.head)
         if conductivity_profile == "exponential"
-            zi = aquifer.top[i] - aquifer.head[i]
-            thickness = aquifer.top[i] - aquifer.bottom[i]
+            zi = aquifer.parameters.top[i] - aquifer.variables.head[i]
+            thickness = aquifer.parameters.top[i] - aquifer.parameters.bottom[i]
             value =
-                (aquifer.k[i] / aquifer.f[i]) *
-                (exp(-aquifer.f[i] * zi) - exp(-aquifer.f[i] * thickness))
+                (aquifer.parameters.k[i] / aquifer.parameters.f[i]) * (
+                    exp(-aquifer.parameters.f[i] * zi) -
+                    exp(-aquifer.parameters.f[i] * thickness)
+                )
         elseif conductivity_profile == "uniform"
-            value = aquifer.k[i] * saturated_thickness(aquifer, i)
+            value = aquifer.parameters.k[i] * saturated_thickness(aquifer, i)
         end
 
-        dt = aquifer.area[i] * storativity(aquifer)[i] / value
+        dt = aquifer.parameters.area[i] * storativity(aquifer)[i] / value
         dt_min = dt < dt_min ? dt : dt_min
     end
     return 0.25 * dt_min
 end
 
-minimum_head(aquifer::ConfinedAquifer) = aquifer.head
-minimum_head(aquifer::UnconfinedAquifer) = max.(aquifer.head, aquifer.bottom)
+minimum_head(aquifer::ConfinedAquifer) = aquifer.variables.head
+minimum_head(aquifer::UnconfinedAquifer) =
+    max.(aquifer.variables.head, aquifer.parameters.bottom)
 
 function update!(gwf, Q, dt, conductivity_profile)
     Q .= 0.0  # TODO: Probably remove this when linking with other components
@@ -350,13 +435,15 @@ function update!(gwf, Q, dt, conductivity_profile)
     for boundary in gwf.boundaries
         flux!(Q, boundary, gwf.aquifer)
     end
-    gwf.aquifer.head .+= (Q ./ gwf.aquifer.area .* dt ./ storativity(gwf.aquifer))
+    gwf.aquifer.variables.head .+=
+        (Q ./ gwf.aquifer.parameters.area .* dt ./ storativity(gwf.aquifer))
     # Set constant head (dirichlet) boundaries
-    gwf.aquifer.head[gwf.constanthead.index] .= gwf.constanthead.head
+    gwf.aquifer.variables.head[gwf.constanthead.index] .= gwf.constanthead.variables.head
     # Make sure no heads ends up below an unconfined aquifer bottom
-    gwf.aquifer.head .= minimum_head(gwf.aquifer)
-    gwf.aquifer.volume .=
-        saturated_thickness(gwf.aquifer) .* gwf.aquifer.area .* storativity(gwf.aquifer)
+    gwf.aquifer.variables.head .= minimum_head(gwf.aquifer)
+    gwf.aquifer.variables.volume .=
+        saturated_thickness(gwf.aquifer) .* gwf.aquifer.parameters.area .*
+        storativity(gwf.aquifer)
     return nothing
 end
 
@@ -381,9 +468,10 @@ end
 function get_water_depth(
     gwf::GroundwaterFlow{A, C, CH, B},
 ) where {A <: UnconfinedAquifer, C, CH, B}
-    gwf.aquifer.head .= min.(gwf.aquifer.head, gwf.aquifer.top)
-    gwf.aquifer.head[gwf.constanthead.index] .= gwf.constanthead.head
-    wtd = gwf.aquifer.top .- gwf.aquifer.head
+    gwf.aquifer.variables.head .=
+        min.(gwf.aquifer.variables.head, gwf.aquifer.parameters.top)
+    gwf.aquifer.variables.head[gwf.constanthead.index] .= gwf.constanthead.variables.head
+    wtd = gwf.aquifer.parameters.top .- gwf.aquifer.variables.head
     return wtd
 end
 
@@ -391,8 +479,19 @@ function get_exfiltwater(
     gwf::GroundwaterFlow{A, C, CH, B},
 ) where {A <: UnconfinedAquifer, C, CH, B}
     exfiltwater =
-        (gwf.aquifer.head .- min.(gwf.aquifer.head, gwf.aquifer.top)) .*
-        storativity(gwf.aquifer)
+        (
+            gwf.aquifer.variables.head .-
+            min.(gwf.aquifer.variables.head, gwf.aquifer.parameters.top)
+        ) .* storativity(gwf.aquifer)
     exfiltwater[gwf.constanthead.index] .= 0
     return exfiltwater
+end
+
+function get_flux_to_river(subsurface)
+    (; flow, river) = subsurface
+    ncell = flow.connectivity.ncell
+    flux = zeros(ncell)
+    index = river.index
+    flux[index] = -river.variables.flux ./ tosecond(basetimestep) # [m³ s⁻¹]
+    return flux
 end

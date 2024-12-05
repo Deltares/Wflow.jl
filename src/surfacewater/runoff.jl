@@ -34,13 +34,13 @@ end
 end
 
 "Initialize open water runoff parameters"
-function OpenWaterRunoffParameters(nc, config, inds, riverfrac)
+function OpenWaterRunoffParameters(dataset, config, indices, riverfrac)
     # fraction open water
     waterfrac = ncread(
-        nc,
+        dataset,
         config,
         "vertical.runoff.parameters.waterfrac";
-        sel = inds,
+        sel = indices,
         defaults = 0.0,
         type = Float,
     )
@@ -73,11 +73,11 @@ end
 end
 
 "Initialize open water runoff model"
-function OpenWaterRunoff(nc, config, inds, riverfrac)
+function OpenWaterRunoff(dataset, config, indices, riverfrac)
     n = length(riverfrac)
     vars = OpenWaterRunoffVariables(Float, n)
     bc = OpenWaterRunoffBC(Float, n)
-    params = OpenWaterRunoffParameters(nc, config, inds, riverfrac)
+    params = OpenWaterRunoffParameters(dataset, config, indices, riverfrac)
     model =
         OpenWaterRunoff(; boundary_conditions = bc, parameters = params, variables = vars)
     return model
@@ -115,15 +115,15 @@ function update_boundary_conditions!(
     network,
 )
     (; water_flux_surface, waterlevel_river, waterlevel_land) = model.boundary_conditions
-    inds_riv = network.index_river
+    (; land_indices) = network.river
     (; snow, glacier, interception) = external_models
 
     get_water_flux_surface!(water_flux_surface, snow, glacier, interception)
 
     # extract water levels h_av [m] from the land and river domains this is used to limit
     # open water evaporation
-    waterlevel_land .= lateral.land.h_av .* 1000.0
-    waterlevel_river[inds_riv] .= lateral.river.h_av .* 1000.0
+    waterlevel_land .= lateral.land.variables.h_av .* 1000.0
+    waterlevel_river[land_indices] .= lateral.river.variables.h_av .* 1000.0
     return nothing
 end
 

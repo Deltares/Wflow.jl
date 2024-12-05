@@ -68,45 +68,45 @@ end
 struct NoSnowModel{T} <: AbstractSnowModel{T} end
 
 "Initialize snow HBV model parameters"
-function SnowHbvParameters(nc, config, inds, dt)
+function SnowHbvParameters(dataset, config, indices, dt)
     cfmax =
         ncread(
-            nc,
+            dataset,
             config,
             "vertical.snow.parameters.cfmax";
-            sel = inds,
+            sel = indices,
             defaults = 3.75653,
             type = Float,
         ) .* (dt / basetimestep)
     tt = ncread(
-        nc,
+        dataset,
         config,
         "vertical.snow.parameters.tt";
-        sel = inds,
+        sel = indices,
         defaults = 0.0,
         type = Float,
     )
     tti = ncread(
-        nc,
+        dataset,
         config,
         "vertical.snow.parameters.tti";
-        sel = inds,
+        sel = indices,
         defaults = 1.0,
         type = Float,
     )
     ttm = ncread(
-        nc,
+        dataset,
         config,
         "vertical.snow.parameters.ttm";
-        sel = inds,
+        sel = indices,
         defaults = 0.0,
         type = Float,
     )
     whc = ncread(
-        nc,
+        dataset,
         config,
         "vertical.snow.parameters.whc";
-        sel = inds,
+        sel = indices,
         defaults = 0.1,
         type = Float,
     )
@@ -116,9 +116,9 @@ function SnowHbvParameters(nc, config, inds, dt)
 end
 
 "Initialize snow HBV model"
-function SnowHbvModel(nc, config, inds, dt)
-    n = length(inds)
-    params = SnowHbvParameters(nc, config, inds, dt)
+function SnowHbvModel(dataset, config, indices, dt)
+    n = length(indices)
+    params = SnowHbvParameters(dataset, config, indices, dt)
     vars = SnowVariables(Float, n)
     bc = SnowBC(Float, n)
     model = SnowHbvModel(; boundary_conditions = bc, parameters = params, variables = vars)

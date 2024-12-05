@@ -222,15 +222,15 @@ function extract_required_states(config::Config)
         add_to_required_states(required_states, (:vertical, :soil, :variables), soil_states)
     # Add subsurface states to dict
     if model_type == "sbm_gwf"
-        key_entry = (:lateral, :subsurface, :flow, :aquifer)
+        key_entry = (:lateral, :subsurface, :flow, :aquifer, :variables)
     else
-        key_entry = (:lateral, :subsurface)
+        key_entry = (:lateral, :subsurface, :variables)
     end
     required_states = add_to_required_states(required_states, key_entry, ssf_states)
     # Add land states to dict
     required_states =
-        add_to_required_states(required_states, (:lateral, :land), land_states)
-    # Add river states to dict
+        add_to_required_states(required_states, (:lateral, :land, :variables), land_states)
+    # Add sediment states to dict
     if model_type == "sediment"
         required_states = add_to_required_states(
             required_states,
@@ -244,16 +244,19 @@ function extract_required_states(config::Config)
     # Add floodplain states to dict
     required_states = add_to_required_states(
         required_states,
-        (:lateral, :river, :floodplain),
+        (:lateral, :river, :floodplain, :variables),
         floodplain_states,
     )
     # Add lake states to dict
-    required_states =
-        add_to_required_states(required_states, (:lateral, :river, :lake), lake_states)
+    required_states = add_to_required_states(
+        required_states,
+        (:lateral, :river, :boundary_conditions, :lake, :variables),
+        lake_states,
+    )
     # Add reservoir states to dict
     required_states = add_to_required_states(
         required_states,
-        (:lateral, :river, :reservoir),
+        (:lateral, :river, :boundary_conditions, :reservoir, :variables),
         reservoir_states,
     )
     # Add paddy states to dict
