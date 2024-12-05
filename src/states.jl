@@ -238,8 +238,11 @@ function extract_required_states(config::Config)
             river_states,
         )
     else
-        required_states =
-            add_to_required_states(required_states, (:lateral, :river), river_states)
+        required_states = add_to_required_states(
+            required_states,
+            (:lateral, :river, :variables),
+            river_states,
+        )
     end
     # Add floodplain states to dict
     required_states = add_to_required_states(

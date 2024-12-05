@@ -11,29 +11,29 @@ end
 # Do nothing for a confined aquifer: aquifer can always provide flux
 check_flux(flux, aquifer::ConfinedAquifer, index::Int) = flux
 
-@get_units @grid_loc @with_kw struct RiverParameters{T}
+@get_units @grid_loc @with_kw struct HyporheicParameters{T}
     infiltration_conductance::Vector{T} | "m2 d-1"
     exfiltration_conductance::Vector{T} | "m2 d-1"
     bottom::Vector{T} | "m"
 end
 
-@get_units @grid_loc @with_kw struct RiverVariables{T}
+@get_units @grid_loc @with_kw struct HyporheicVariables{T}
     stage::Vector{T} | "m"
     flux::Vector{T} | "m3 d-1"
 end
 
-function RiverVariables(n)
-    variables = RiverVariables{Float}(; stage = fill(mv, n), flux = fill(mv, n))
+function HyporheicVariables(n)
+    variables = HyporheicVariables{Float}(; stage = fill(mv, n), flux = fill(mv, n))
     return variables
 end
 
-@get_units @grid_loc @with_kw struct River{T} <: AquiferBoundaryCondition
-    parameters::RiverParameters{T}
-    variables::RiverVariables{T}
+@get_units @grid_loc @with_kw struct Hyporheic{T} <: AquiferBoundaryCondition
+    parameters::HyporheicParameters{T}
+    variables::HyporheicVariables{T}
     index::Vector{Int} | "-"
 end
 
-function River(dataset, config, indices, index)
+function Hyporheic(dataset, config, indices, index)
     infiltration_conductance = ncread(
         dataset,
         config,
@@ -56,15 +56,18 @@ function River(dataset, config, indices, index)
         type = Float,
     )
 
-    parameters =
-        RiverParameters{Float}(infiltration_conductance, exfiltration_conductance, bottom)
+    parameters = HyporheicParameters{Float}(
+        infiltration_conductance,
+        exfiltration_conductance,
+        bottom,
+    )
     n = length(indices)
-    variables = RiverVariables(n)
-    river = River(parameters, variables, index)
+    variables = HyporheicVariables(n)
+    river = Hyporheic(parameters, variables, index)
     return river
 end
 
-function flux!(Q, river::River, aquifer)
+function flux!(Q, river::Hyporheic, aquifer)
     for (i, index) in enumerate(river.index)
         head = aquifer.variables.head[index]
         stage = river.variables.stage[i]

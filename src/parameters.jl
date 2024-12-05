@@ -123,7 +123,7 @@ function LandParameters(nc, config, inds)
     xl, yl = cell_lengths(y, cellength, sizeinmetres)
     area = xl .* yl
     ldd = ncread(nc, config, "ldd"; optional = false, sel = inds, allow_missing = true)
-    drain_width = map(detdrainwidth, ldd, xl, yl)
+    drain_width = map(get_flow_width, ldd, xl, yl)
     landslope = ncread(
         nc,
         config,
