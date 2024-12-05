@@ -1,15 +1,17 @@
 abstract type AbstractTransportCapacityModel{T} end
 
-## Total sediment transport capacity structs and functions
+"Struct to store total transport capacity model variables"
 @get_units @grid_loc @with_kw struct TransportCapacityModelVariables{T}
     # Total sediment transport capacity
     amount::Vector{T} | "t dt-1"
 end
 
+"Initialize total transport capacity model variables"
 function TransportCapacityModelVariables(n; amount::Vector{T} = fill(mv, n)) where {T}
     return TransportCapacityModelVariables{T}(; amount = amount)
 end
 
+"Struct to store total transport capacity model boundary conditions"
 @get_units @grid_loc @with_kw struct TransportCapacityBC{T}
     # Discharge
     q::Vector{T} | "m3 s-1"
@@ -17,6 +19,7 @@ end
     waterlevel::Vector{T} | "m"
 end
 
+"Initialize total transport capacity model boundary conditions"
 function TransportCapacityBC(
     n;
     q::Vector{T} = fill(mv, n),
@@ -25,6 +28,7 @@ function TransportCapacityBC(
     return TransportCapacityBC{T}(; q = q, waterlevel = waterlevel)
 end
 
+"Update total transport capacity model boundary conditions"
 function update_boundary_conditions!(
     model::AbstractTransportCapacityModel,
     hydrological_forcing::HydrologicalForcing,
@@ -44,7 +48,7 @@ end
 
 ##################### Overland Flow #####################
 
-# Govers parameters for transport capacity models
+"Struct to store Govers overland flow transport capacity model parameters"
 @get_units @grid_loc @with_kw struct TransportCapacityGoversParameters{T}
     # Drain slope
     slope::Vector{T} | "m m-1"
@@ -56,6 +60,7 @@ end
     n_govers::Vector{T} | "-"
 end
 
+"Initialize Govers overland flow transport capacity model parameters"
 function TransportCapacityGoversParameters(dataset, config, indices)
     slope = ncread(
         dataset,
@@ -99,12 +104,14 @@ function TransportCapacityGoversParameters(dataset, config, indices)
     return tc_parameters
 end
 
+"Govers overland flow transport capacity model"
 @with_kw struct TransportCapacityGoversModel{T} <: AbstractTransportCapacityModel{T}
     boundary_conditions::TransportCapacityBC{T}
     parameters::TransportCapacityGoversParameters{T}
     variables::TransportCapacityModelVariables{T}
 end
 
+"Initialize Govers overland flow transport capacity model"
 function TransportCapacityGoversModel(dataset, config, indices)
     n = length(indices)
     vars = TransportCapacityModelVariables(n)
@@ -118,6 +125,7 @@ function TransportCapacityGoversModel(dataset, config, indices)
     return model
 end
 
+"Update Govers overland flow transport capacity model for a single timestep"
 function update!(model::TransportCapacityGoversModel, width, waterbodies, rivers, dt)
     (; q, waterlevel) = model.boundary_conditions
     (; slope, density, c_govers, n_govers) = model.parameters
@@ -140,7 +148,7 @@ function update!(model::TransportCapacityGoversModel, width, waterbodies, rivers
     end
 end
 
-# Common parameters for transport capacity models
+"Struct to store Yalin overland flow transport capacity model parameters"
 @get_units @grid_loc @with_kw struct TransportCapacityYalinParameters{T}
     # Drain slope
     slope::Vector{T} | "m m-1"
@@ -150,6 +158,7 @@ end
     d50::Vector{T} | "mm"
 end
 
+"Initialize Yalin overland flow transport capacity model parameters"
 function TransportCapacityYalinParameters(dataset, config, indices)
     slope = ncread(
         dataset,
@@ -181,12 +190,14 @@ function TransportCapacityYalinParameters(dataset, config, indices)
     return tc_parameters
 end
 
+"Yalin overland flow transport capacity model"
 @with_kw struct TransportCapacityYalinModel{T} <: AbstractTransportCapacityModel{T}
     boundary_conditions::TransportCapacityBC{T}
     parameters::TransportCapacityYalinParameters{T}
     variables::TransportCapacityModelVariables{T}
 end
 
+"Initialize Yalin overland flow transport capacity model"
 function TransportCapacityYalinModel(dataset, config, indices)
     n = length(indices)
     vars = TransportCapacityModelVariables(n)
@@ -200,6 +211,7 @@ function TransportCapacityYalinModel(dataset, config, indices)
     return model
 end
 
+"Update Yalin overland flow transport capacity model for a single timestep"
 function update!(model::TransportCapacityYalinModel, width, waterbodies, rivers, dt)
     (; q, waterlevel) = model.boundary_conditions
     (; slope, density, d50) = model.parameters
@@ -221,7 +233,7 @@ function update!(model::TransportCapacityYalinModel, width, waterbodies, rivers,
     end
 end
 
-## Total transport capacity with particle differentiation structs and functions
+"Struct to store Yalin differentiated overland flow transport capacity model variables"
 @get_units @grid_loc @with_kw struct TransportCapacityYalinDifferentiationModelVariables{T}
     # Total sediment transport capacity
     amount::Vector{T} | "t dt-1"
@@ -237,6 +249,7 @@ end
     lagg::Vector{T} | "t dt-1"
 end
 
+"Initialize Yalin differentiated overland flow transport capacity model variables"
 function TransportCapacityYalinDifferentiationModelVariables(
     n;
     amount::Vector{T} = fill(mv, n),
@@ -256,7 +269,7 @@ function TransportCapacityYalinDifferentiationModelVariables(
     )
 end
 
-# Common parameters for transport capacity models
+"Struct to store Yalin differentiated overland flow transport capacity model parameters"
 @get_units @grid_loc @with_kw struct TransportCapacityYalinDifferentiationParameters{T}
     # Particle density
     density::Vector{T} | "kg m-3"
@@ -272,6 +285,7 @@ end
     dm_lagg::Vector{T} | "µm"
 end
 
+"Initialize Yalin differentiated overland flow transport capacity model parameters"
 function TransportCapacityYalinDifferentiationParameters(dataset, config, indices)
     density = ncread(
         dataset,
@@ -333,6 +347,7 @@ function TransportCapacityYalinDifferentiationParameters(dataset, config, indice
     return tc_parameters
 end
 
+"Yalin differentiated overland flow transport capacity model"
 @with_kw struct TransportCapacityYalinDifferentiationModel{T} <:
                 AbstractTransportCapacityModel{T}
     boundary_conditions::TransportCapacityBC{T}
@@ -340,6 +355,7 @@ end
     variables::TransportCapacityYalinDifferentiationModelVariables{T}
 end
 
+"Initialize Yalin differentiated overland flow transport capacity model"
 function TransportCapacityYalinDifferentiationModel(dataset, config, indices)
     n = length(indices)
     vars = TransportCapacityYalinDifferentiationModelVariables(n)
@@ -353,6 +369,7 @@ function TransportCapacityYalinDifferentiationModel(dataset, config, indices)
     return model
 end
 
+"Update Yalin differentiated overland flow transport capacity model for a single timestep"
 function update!(
     model::TransportCapacityYalinDifferentiationModel,
     geometry::LandParameters,
@@ -440,7 +457,7 @@ function update!(
     end
 end
 
-##################### River Flow #####################
+"Struct to store common river transport capacity model parameters"
 @get_units @grid_loc @with_kw struct TransportCapacityRiverParameters{T}
     # Particle density
     density::Vector{T} | "kg m-3"
@@ -448,6 +465,7 @@ end
     d50::Vector{T} | "mm"
 end
 
+"Initialize common river transport capacity model parameters"
 function TransportCapacityRiverParameters(dataset, config, indices)
     density = ncread(
         dataset,
@@ -470,7 +488,7 @@ function TransportCapacityRiverParameters(dataset, config, indices)
     return tc_parameters
 end
 
-# Bagnold parameters for transport capacity models
+"Struct to store Bagnold transport capacity model parameters"
 @get_units @grid_loc @with_kw struct TransportCapacityBagnoldParameters{T}
     # Bagnold transport capacity coefficient
     c_bagnold::Vector{T} | "-"
@@ -478,6 +496,7 @@ end
     e_bagnold::Vector{T} | "-"
 end
 
+"Initialize Bagnold transport capacity model parameters"
 function TransportCapacityBagnoldParameters(dataset, config, indices)
     c_bagnold = ncread(
         dataset,
@@ -501,12 +520,14 @@ function TransportCapacityBagnoldParameters(dataset, config, indices)
     return tc_parameters
 end
 
+"Bagnold river transport capacity model"
 @with_kw struct TransportCapacityBagnoldModel{T} <: AbstractTransportCapacityModel{T}
     boundary_conditions::TransportCapacityBC{T}
     parameters::TransportCapacityBagnoldParameters{T}
     variables::TransportCapacityModelVariables{T}
 end
 
+"Initialize Bagnold river transport capacity model"
 function TransportCapacityBagnoldModel(dataset, config, indices)
     n = length(indices)
     vars = TransportCapacityModelVariables(n)
@@ -520,6 +541,7 @@ function TransportCapacityBagnoldModel(dataset, config, indices)
     return model
 end
 
+"Update Bagnold river transport capacity model for a single timestep"
 function update!(model::TransportCapacityBagnoldModel, geometry::RiverParameters, dt)
     (; q, waterlevel) = model.boundary_conditions
     (; c_bagnold, e_bagnold) = model.parameters
@@ -541,13 +563,14 @@ function update!(model::TransportCapacityBagnoldModel, geometry::RiverParameters
     end
 end
 
-# Engelund and Hansen parameters for transport capacity models
+"Engelund and Hansen river transport capacity model parameters"
 @with_kw struct TransportCapacityEngelundModel{T} <: AbstractTransportCapacityModel{T}
     boundary_conditions::TransportCapacityBC{T}
     parameters::TransportCapacityRiverParameters{T}
     variables::TransportCapacityModelVariables{T}
 end
 
+"Initialize Engelund and Hansen river transport capacity model"
 function TransportCapacityEngelundModel(dataset, config, indices)
     n = length(indices)
     vars = TransportCapacityModelVariables(n)
@@ -561,6 +584,7 @@ function TransportCapacityEngelundModel(dataset, config, indices)
     return model
 end
 
+"Update Engelund and Hansen river transport capacity model for a single timestep"
 function update!(model::TransportCapacityEngelundModel, geometry::RiverParameters, dt)
     (; q, waterlevel) = model.boundary_conditions
     (; density, d50) = model.parameters
@@ -581,7 +605,7 @@ function update!(model::TransportCapacityEngelundModel, geometry::RiverParameter
     end
 end
 
-# Kodatie parameters for transport capacity models
+"Struct to store Kodatie river transport capacity model parameters"
 @get_units @grid_loc @with_kw struct TransportCapacityKodatieParameters{T}
     # Kodatie transport capacity coefficient a
     a_kodatie::Vector{T} | "-"
@@ -593,6 +617,7 @@ end
     d_kodatie::Vector{T} | "-"
 end
 
+"Initialize Kodatie river transport capacity model parameters"
 function TransportCapacityKodatieParameters(dataset, config, indices)
     a_kodatie = ncread(
         dataset,
@@ -636,12 +661,14 @@ function TransportCapacityKodatieParameters(dataset, config, indices)
     return tc_parameters
 end
 
+"Kodatie river transport capacity model"
 @with_kw struct TransportCapacityKodatieModel{T} <: AbstractTransportCapacityModel{T}
     boundary_conditions::TransportCapacityBC{T}
     parameters::TransportCapacityKodatieParameters{T}
     variables::TransportCapacityModelVariables{T}
 end
 
+"Initialize Kodatie river transport capacity model"
 function TransportCapacityKodatieModel(dataset, config, indices)
     n = length(indices)
     vars = TransportCapacityModelVariables(n)
@@ -655,6 +682,7 @@ function TransportCapacityKodatieModel(dataset, config, indices)
     return model
 end
 
+"Update Kodatie river transport capacity model for a single timestep"
 function update!(model::TransportCapacityKodatieModel, geometry::RiverParameters, dt)
     (; q, waterlevel) = model.boundary_conditions
     (; a_kodatie, b_kodatie, c_kodatie, d_kodatie) = model.parameters
@@ -677,13 +705,14 @@ function update!(model::TransportCapacityKodatieModel, geometry::RiverParameters
     end
 end
 
-# Yang parameters for transport capacity models
+"Yang river transport capacity model"
 @with_kw struct TransportCapacityYangModel{T} <: AbstractTransportCapacityModel{T}
     boundary_conditions::TransportCapacityBC{T}
     parameters::TransportCapacityRiverParameters{T}
     variables::TransportCapacityModelVariables{T}
 end
 
+"Initialize Yang river transport capacity model"
 function TransportCapacityYangModel(dataset, config, indices)
     n = length(indices)
     vars = TransportCapacityModelVariables(n)
@@ -697,6 +726,7 @@ function TransportCapacityYangModel(dataset, config, indices)
     return model
 end
 
+"Update Yang river transport capacity model for a single timestep"
 function update!(model::TransportCapacityYangModel, geometry::RiverParameters, dt)
     (; q, waterlevel) = model.boundary_conditions
     (; density, d50) = model.parameters
@@ -717,13 +747,14 @@ function update!(model::TransportCapacityYangModel, geometry::RiverParameters, d
     end
 end
 
-# Molinas and Wu parameters for transport capacity models
+"Molinas and Wu river transport capacity model"
 @with_kw struct TransportCapacityMolinasModel{T} <: AbstractTransportCapacityModel{T}
     boundary_conditions::TransportCapacityBC{T}
     parameters::TransportCapacityRiverParameters{T}
     variables::TransportCapacityModelVariables{T}
 end
 
+"Initialize Molinas and Wu river transport capacity model"
 function TransportCapacityMolinasModel(dataset, config, indices)
     n = length(indices)
     vars = TransportCapacityModelVariables(n)
@@ -737,6 +768,7 @@ function TransportCapacityMolinasModel(dataset, config, indices)
     return model
 end
 
+"Update Molinas and Wu river transport capacity model for a single timestep"
 function update!(model::TransportCapacityMolinasModel, geometry::RiverParameters, dt)
     (; q, waterlevel) = model.boundary_conditions
     (; density, d50) = model.parameters

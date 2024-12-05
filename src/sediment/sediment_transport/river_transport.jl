@@ -1,6 +1,6 @@
 abstract type AbstractSedimentRiverTransportModel{T} end
 
-## Total sediment transport in overland flow structs and functions
+"Struct to store river sediment transport model variables"
 @get_units @grid_loc @with_kw struct SedimentRiverTransportVariables{T}
     # Sediment flux [ton]
     amount::Vector{T} | "t dt-1"
@@ -30,6 +30,7 @@ abstract type AbstractSedimentRiverTransportModel{T} end
     store_gravel::Vector{T} | "t dt-1"
 end
 
+"Initialize river sediment transport model variables"
 function SedimentRiverTransportVariables(
     n;
     amount::Vector{T} = fill(mv, n),
@@ -79,6 +80,7 @@ function SedimentRiverTransportVariables(
     )
 end
 
+"Struct to store river sediment transport model boundary conditions"
 @get_units @grid_loc @with_kw struct SedimentRiverTransportBC{T}
     # Waterlevel
     waterlevel::Vector{T} | "t dt-1"
@@ -97,6 +99,7 @@ end
     potential_erosion_river_bank::Vector{T} | "t dt-1"
 end
 
+"Initialize river sediment transport model boundary conditions"
 function SedimentRiverTransportBC(
     n;
     waterlevel::Vector{T} = fill(mv, n),
@@ -124,7 +127,7 @@ function SedimentRiverTransportBC(
     )
 end
 
-# Parameters for river transport
+"Struct to store river sediment transport model parameters"
 @get_units @grid_loc @with_kw struct SedimentRiverTransportParameters{T}
     # River bed/bank content clay
     clay_fraction::Vector{T} | "-"
@@ -154,6 +157,7 @@ end
     waterbodies_trapping_efficiency::Vector{T} | "-"
 end
 
+"Initialize river sediment transport model parameters"
 function SedimentRiverTransportParameters(dataset, config, indices)
     n = length(indices)
     clay_fraction = ncread(
@@ -324,12 +328,14 @@ function SedimentRiverTransportParameters(dataset, config, indices)
     return river_parameters
 end
 
+"Struct to store river sediment transport model"
 @with_kw struct SedimentRiverTransportModel{T} <: AbstractSedimentRiverTransportModel{T}
     boundary_conditions::SedimentRiverTransportBC{T}
     parameters::SedimentRiverTransportParameters{T}
     variables::SedimentRiverTransportVariables{T}
 end
 
+"Initialize river sediment transport model"
 function SedimentRiverTransportModel(dataset, config, indices)
     n = length(indices)
     vars = SedimentRiverTransportVariables(n)
@@ -343,6 +349,7 @@ function SedimentRiverTransportModel(dataset, config, indices)
     return model
 end
 
+"Update boundary conditions for river sediment transport model"
 function update_boundary_conditions!(
     model::SedimentRiverTransportModel,
     hydrological_forcing::HydrologicalForcing,
@@ -382,6 +389,7 @@ function update_boundary_conditions!(
     @. potential_erosion_river_bank = potential_erosion_model.variables.bank
 end
 
+"Update river sediment transport model for a single timestep"
 function update!(
     model::SedimentRiverTransportModel,
     network,
@@ -772,7 +780,7 @@ end
 
 abstract type AbstractSedimentConcentrationsRiverModel{T} end
 
-## Total sediment transport in overland flow structs and functions
+"Struct to store river sediment concentrations model variables"
 @get_units @grid_loc @with_kw struct SedimentConcentrationsRiverVariables{T}
     # Total sediment concentration in the river
     total::Vector{T} | "g m-3"
@@ -782,6 +790,7 @@ abstract type AbstractSedimentConcentrationsRiverModel{T} end
     bed::Vector{T} | "g m-3"
 end
 
+"Initialize river sediment concentrations model variables"
 function SedimentConcentrationsRiverVariables(
     n;
     total::Vector{T} = fill(mv, n),
@@ -795,6 +804,7 @@ function SedimentConcentrationsRiverVariables(
     )
 end
 
+"Struct to store river sediment concentrations model boundary conditions"
 @get_units @grid_loc @with_kw struct SedimentConcentrationsRiverBC{T}
     # Discharge
     q::Vector{T} | "m3 s-1"
@@ -813,6 +823,7 @@ end
     gravel::Vector{T} | "g m-3"
 end
 
+"Initialize river sediment concentrations model boundary conditions"
 function SedimentConcentrationsRiverBC(
     n;
     q::Vector{T} = fill(mv, n),
@@ -836,7 +847,7 @@ function SedimentConcentrationsRiverBC(
     )
 end
 
-# Common parameters for transport capacity models
+"Struct to store river sediment concentrations model parameters"
 @get_units @grid_loc @with_kw struct SedimentConcentrationsRiverParameters{T}
     # Clay mean diameter
     dm_clay::Vector{T} | "µm"
@@ -852,6 +863,7 @@ end
     dm_gravel::Vector{T} | "µm"
 end
 
+"Initialize river sediment concentrations model parameters"
 function SedimentConcentrationsRiverParameters(dataset, config, indices)
     dm_clay = ncread(
         dataset,
@@ -913,6 +925,7 @@ function SedimentConcentrationsRiverParameters(dataset, config, indices)
     return conc_parameters
 end
 
+"Struct to store river sediment concentrations model"
 @with_kw struct SedimentConcentrationsRiverModel{T} <:
                 AbstractSedimentConcentrationsRiverModel{T}
     boundary_conditions::SedimentConcentrationsRiverBC{T}
@@ -920,6 +933,7 @@ end
     variables::SedimentConcentrationsRiverVariables{T}
 end
 
+"Initialize river sediment concentrations model"
 function SedimentConcentrationsRiverModel(dataset, config, indices)
     n = length(indices)
     vars = SedimentConcentrationsRiverVariables(n)
@@ -933,6 +947,7 @@ function SedimentConcentrationsRiverModel(dataset, config, indices)
     return model
 end
 
+"Update boundary conditions for river sediment concentrations model"
 function update_boundary_conditions!(
     model::SedimentConcentrationsRiverModel,
     hydrological_forcing::HydrologicalForcing,
@@ -952,6 +967,7 @@ function update_boundary_conditions!(
     @. gravel = sediment_flux_model.variables.gravel
 end
 
+"Update river sediment concentrations model for a single timestep"
 function update!(model::SedimentConcentrationsRiverModel, geometry::RiverParameters, dt)
     (; q, waterlevel, clay, silt, sand, sagg, lagg, gravel) = model.boundary_conditions
     (; dm_clay, dm_silt, dm_sand, dm_sagg, dm_lagg, dm_gravel) = model.parameters

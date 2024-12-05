@@ -1,4 +1,4 @@
-### Overland flow ###
+"Sediment transport in overland flow model"
 @get_units @grid_loc @with_kw struct OverlandFlowSediment{TT, SF, TR}
     hydrological_forcing::HydrologicalForcing
     geometry::LandParameters
@@ -9,6 +9,7 @@
     rivers::Vector{Bool} | "-"
 end
 
+"Initialize the overland flow sediment transport model"
 function OverlandFlowSediment(dataset, config, indices, waterbodies, rivers)
     n = length(indices)
     hydrological_forcing = HydrologicalForcing(n)
@@ -53,6 +54,7 @@ function OverlandFlowSediment(dataset, config, indices, waterbodies, rivers)
     return overland_flow_sediment
 end
 
+"Update the overland flow sediment transport model for a single timestep"
 function update!(model::OverlandFlowSediment, erosion_model::SoilErosionModel, network, dt)
     # Transport capacity
     update_boundary_conditions!(model.transport_capacity, model.hydrological_forcing, :land)
@@ -74,6 +76,7 @@ function update!(model::OverlandFlowSediment, erosion_model::SoilErosionModel, n
 end
 
 ### River ###
+"Sediment transport in river model"
 @get_units @grid_loc @with_kw struct RiverSediment{TTR, ER, SFR, CR}
     hydrological_forcing::HydrologicalForcing
     geometry::RiverParameters
@@ -84,6 +87,7 @@ end
     waterbodies::Vector{Bool} | "-"
 end
 
+"Initialize the river sediment transport model"
 function RiverSediment(dataset, config, indices, waterbodies)
     n = length(indices)
     hydrological_forcing = HydrologicalForcing(n)
@@ -132,6 +136,7 @@ function RiverSediment(dataset, config, indices, waterbodies)
     return river_sediment
 end
 
+"Update the river sediment transport model for a single timestep"
 function update!(
     model::RiverSediment,
     to_river_model::SedimentToRiverDifferentiationModel,

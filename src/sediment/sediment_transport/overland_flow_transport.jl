@@ -1,12 +1,13 @@
 abstract type AbstractSedimentLandTransportModel{T} end
 
-## Total sediment transport in overland flow structs and functions
+"Struct to store total sediment flux in overland flow model variables"
 @get_units @grid_loc @with_kw struct SedimentLandTransportVariables{T}
     # Total sediment flux
     amount::Vector{T} | "t dt-1"
     deposition::Vector{T} | "t dt-1"
 end
 
+"Initialize total sediment flux in overland flow model variables"
 function SedimentLandTransportVariables(
     n;
     amount::Vector{T} = fill(mv, n),
@@ -15,6 +16,7 @@ function SedimentLandTransportVariables(
     return SedimentLandTransportVariables{T}(; amount = amount, deposition = deposition)
 end
 
+"Struct to store total sediment flux in overland flow model boundary conditions"
 @get_units @grid_loc @with_kw struct SedimentLandTransportBC{T}
     # Eroded material
     erosion::Vector{T} | "t dt-1"
@@ -22,6 +24,7 @@ end
     transport_capacity::Vector{T} | "t dt-1"
 end
 
+"Initialize total sediment flux in overland flow model boundary conditions"
 function SedimentLandTransportBC(
     n;
     erosion::Vector{T} = fill(mv, n),
@@ -33,11 +36,13 @@ function SedimentLandTransportBC(
     )
 end
 
+"Struct to store total sediment flux in overland flow model"
 @with_kw struct SedimentLandTransportModel{T} <: AbstractSedimentLandTransportModel{T}
     boundary_conditions::SedimentLandTransportBC{T}
     variables::SedimentLandTransportVariables{T}
 end
 
+"Initialize total sediment flux in overland flow model"
 function SedimentLandTransportModel(indices)
     n = length(indices)
     vars = SedimentLandTransportVariables(n)
@@ -46,6 +51,7 @@ function SedimentLandTransportModel(indices)
     return model
 end
 
+"Update total sediment flux in overland flow model boundary conditions"
 function update_boundary_conditions!(
     model::SedimentLandTransportModel,
     erosion_model::SoilErosionModel,
@@ -59,6 +65,7 @@ function update_boundary_conditions!(
     @. transport_capacity = amount
 end
 
+"Update total sediment flux in overland flow model for a single timestep"
 function update!(model::SedimentLandTransportModel, network)
     (; erosion, transport_capacity) = model.boundary_conditions
     (; amount, deposition) = model.variables
@@ -67,7 +74,7 @@ function update!(model::SedimentLandTransportModel, network)
     deposition .= erosion
 end
 
-## Total transport capacity with particle differentiation structs and functions
+"Struct to store differentiated sediment flux in overland flow model variables"
 @get_units @grid_loc @with_kw struct SedimentLandTransportDifferentiationVariables{T}
     # Total sediment flux
     amount::Vector{T} | "t dt-1"
@@ -95,6 +102,7 @@ end
     deposition_lagg::Vector{T} | "t dt-1"
 end
 
+"Initialize differentiated sediment flux in overland flow model variables"
 function SedimentLandTransportDifferentiationVariables(
     n;
     amount::Vector{T} = fill(mv, n),
@@ -126,6 +134,7 @@ function SedimentLandTransportDifferentiationVariables(
     )
 end
 
+"Struct to store differentiated sediment flux in overland flow model boundary conditions"
 @get_units @grid_loc @with_kw struct SedimentLandTransportDifferentiationBC{T}
     # Eroded clay
     erosion_clay::Vector{T} | "t dt-1"
@@ -149,6 +158,7 @@ end
     transport_capacity_lagg::Vector{T} | "t dt-1"
 end
 
+"Initialize differentiated sediment flux in overland flow model boundary conditions"
 function SedimentLandTransportDifferentiationBC(
     n;
     erosion_clay::Vector{T} = fill(mv, n),
@@ -176,12 +186,14 @@ function SedimentLandTransportDifferentiationBC(
     )
 end
 
+"Struct to store differentiated sediment flux in overland flow model"
 @with_kw struct SedimentLandTransportDifferentiationModel{T} <:
                 AbstractSedimentLandTransportModel{T}
     boundary_conditions::SedimentLandTransportDifferentiationBC{T}
     variables::SedimentLandTransportDifferentiationVariables{T}
 end
 
+"Initialize differentiated sediment flux in overland flow model"
 function SedimentLandTransportDifferentiationModel(indices)
     n = length(indices)
     vars = SedimentLandTransportDifferentiationVariables(n)
@@ -193,6 +205,7 @@ function SedimentLandTransportDifferentiationModel(indices)
     return model
 end
 
+"Update differentiated sediment flux in overland flow model boundary conditions"
 function update_boundary_conditions!(
     model::SedimentLandTransportDifferentiationModel,
     erosion_model::SoilErosionModel,
@@ -225,6 +238,7 @@ function update_boundary_conditions!(
     @. transport_capacity_lagg = lagg
 end
 
+"Update differentiated sediment flux in overland flow model for a single timestep"
 function update!(model::SedimentLandTransportDifferentiationModel, network)
     (;
         erosion_clay,

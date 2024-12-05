@@ -1,4 +1,4 @@
-"Total soil erosion model"
+"Soil loss model"
 @with_kw struct SoilLoss{RE, OFE, SE, T}
     atmospheric_forcing::AtmosphericForcing{T}
     hydrological_forcing::HydrologicalForcing{T}
@@ -8,6 +8,7 @@
     soil_erosion::SE
 end
 
+"Initialize soil loss model"
 function SoilLoss(dataset, config, indices)
     n = length(indices)
 
@@ -54,6 +55,7 @@ function SoilLoss(dataset, config, indices)
     return soil_loss
 end
 
+"Update soil loss model for a single timestep"
 function update!(model::SoilLoss, dt)
     (;
         atmospheric_forcing,

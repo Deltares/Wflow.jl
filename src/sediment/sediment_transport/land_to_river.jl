@@ -1,29 +1,34 @@
 abstract type AbstractSedimentToRiverModel{T} end
 
-## Total sediment transport in overland flow structs and functions
+"Struct to store total sediment reaching the river model variables"
 @get_units @grid_loc @with_kw struct SedimentToRiverVariables{T}
     # Total sediment reaching the river
     amount::Vector{T} | "t dt-1"
 end
 
+"Initialize total sediment reaching the river model variables"
 function SedimentToRiverVariables(n; amount::Vector{T} = fill(mv, n)) where {T}
     return SedimentToRiverVariables{T}(; amount = amount)
 end
 
+"Struct to store total sediment reaching the river model boundary conditions"
 @get_units @grid_loc @with_kw struct SedimentToRiverBC{T}
     # Deposited material
     deposition::Vector{T} | "t dt-1"
 end
 
+"Initialize total sediment reaching the river model boundary conditions"
 function SedimentToRiverBC(n; deposition::Vector{T} = fill(mv, n)) where {T}
     return SedimentToRiverBC{T}(; deposition = deposition)
 end
 
+"Struct to store total sediment reaching the river model"
 @with_kw struct SedimentToRiverModel{T} <: AbstractSedimentToRiverModel{T}
     boundary_conditions::SedimentToRiverBC{T}
     variables::SedimentToRiverVariables{T}
 end
 
+"Initialize total sediment reaching the river model"
 function SedimentToRiverModel(indices)
     n = length(indices)
     vars = SedimentToRiverVariables(n)
@@ -32,6 +37,7 @@ function SedimentToRiverModel(indices)
     return model
 end
 
+"Update total sediment reaching the river model boundary conditions"
 function update_boundary_conditions!(
     model::SedimentToRiverModel,
     transport_model::SedimentLandTransportModel,
@@ -40,6 +46,7 @@ function update_boundary_conditions!(
     @. deposition = transport_model.variables.deposition
 end
 
+"Update total sediment reaching the river model for a single timestep"
 function update!(model::SedimentToRiverModel, rivers)
     (; deposition) = model.boundary_conditions
     (; amount) = model.variables
@@ -48,7 +55,7 @@ function update!(model::SedimentToRiverModel, rivers)
     amount .= ifelse.(rivers, deposition, zeros)
 end
 
-## Different particles reaching the river structs and functions
+"Struct to store differentiated sediment reaching the river model variables"
 @get_units @grid_loc @with_kw struct SedimentToRiverDifferentiationVariables{T}
     # Total sediment flux
     amount::Vector{T} | "t dt-1"
@@ -64,6 +71,7 @@ end
     lagg::Vector{T} | "t dt-1"
 end
 
+"Initialize differentiated sediment reaching the river model variables"
 function SedimentToRiverDifferentiationVariables(
     n;
     amount::Vector{T} = fill(mv, n),
@@ -83,6 +91,7 @@ function SedimentToRiverDifferentiationVariables(
     )
 end
 
+"Struct to store differentiated sediment reaching the river model boundary conditions"
 @get_units @grid_loc @with_kw struct SedimentToRiverDifferentiationBC{T}
     # Deposited clay
     deposition_clay::Vector{T} | "t dt-1"
@@ -96,6 +105,7 @@ end
     deposition_lagg::Vector{T} | "t dt-1"
 end
 
+"Initialize differentiated sediment reaching the river model boundary conditions"
 function SedimentToRiverDifferentiationBC(
     n;
     deposition_clay::Vector{T} = fill(mv, n),
@@ -113,11 +123,13 @@ function SedimentToRiverDifferentiationBC(
     )
 end
 
+"Struct to store differentiated sediment reaching the river model"
 @with_kw struct SedimentToRiverDifferentiationModel{T} <: AbstractSedimentToRiverModel{T}
     boundary_conditions::SedimentToRiverDifferentiationBC{T}
     variables::SedimentToRiverDifferentiationVariables{T}
 end
 
+"Initialize differentiated sediment reaching the river model"
 function SedimentToRiverDifferentiationModel(indices)
     n = length(indices)
     vars = SedimentToRiverDifferentiationVariables(n)
@@ -127,6 +139,7 @@ function SedimentToRiverDifferentiationModel(indices)
     return model
 end
 
+"Update differentiated sediment reaching the river model boundary conditions"
 function update_boundary_conditions!(
     model::SedimentToRiverDifferentiationModel,
     transport_model::SedimentLandTransportDifferentiationModel,
@@ -145,6 +158,7 @@ function update_boundary_conditions!(
     @. deposition_lagg = transport_model.variables.deposition_lagg
 end
 
+"Update differentiated sediment reaching the river model for a single timestep"
 function update!(model::SedimentToRiverDifferentiationModel, rivers)
     (;
         deposition_clay,

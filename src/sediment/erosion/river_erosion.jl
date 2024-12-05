@@ -1,6 +1,6 @@
 abstract type AbstractRiverErosionModel{T} end
 
-## Potential direct river erosion structs and functions
+"Struct for storing river bed and bank erosion model variables"
 @get_units @grid_loc @with_kw struct RiverErosionModelVariables{T}
     # Potential river bed erosion
     bed::Vector{T} | "t dt-1"
@@ -8,6 +8,7 @@ abstract type AbstractRiverErosionModel{T} end
     bank::Vector{T} | "t dt-1"
 end
 
+"Initialize river bed and bank erosion model variables"
 function RiverErosionModelVariables(
     n;
     bed::Vector{T} = fill(mv, n),
@@ -16,27 +17,31 @@ function RiverErosionModelVariables(
     return RiverErosionModelVariables{T}(; bed = bed, bank = bank)
 end
 
+"Struct for storing river erosion model boundary conditions"
 @get_units @grid_loc @with_kw struct RiverErosionBC{T}
     # Waterlevel
     waterlevel::Vector{T} | "t dt-1"
 end
 
+"Initialize river erosion model boundary conditions"
 function RiverErosionBC(n; waterlevel::Vector{T} = fill(mv, n)) where {T}
     return RiverErosionBC{T}(; waterlevel = waterlevel)
 end
 
-# Parameters for the Julian Torres river erosion model
+"Struct for storing river erosion model parameters"
 @get_units @grid_loc @with_kw struct RiverErosionParameters{T}
     # Mean diameter in the river bed/bank
     d50::Vector{T} | "mm"
 end
 
+"Julian and Torres river erosion model"
 @with_kw struct RiverErosionJulianTorresModel{T} <: AbstractRiverErosionModel{T}
     boundary_conditions::RiverErosionBC{T}
     parameters::RiverErosionParameters{T}
     variables::RiverErosionModelVariables{T}
 end
 
+"Initialize Julian and Torres river erosion parameters"
 function RiverErosionParameters(dataset, config, indices)
     d50 = ncread(
         dataset,
@@ -51,6 +56,7 @@ function RiverErosionParameters(dataset, config, indices)
     return river_parameters
 end
 
+"Initialize Julian and Torres river erosion model"
 function RiverErosionJulianTorresModel(dataset, config, indices)
     n = length(indices)
     vars = RiverErosionModelVariables(n)
@@ -64,6 +70,7 @@ function RiverErosionJulianTorresModel(dataset, config, indices)
     return model
 end
 
+"Update river erosion model boundary conditions"
 function update_boundary_conditions!(
     model::RiverErosionJulianTorresModel,
     hydrological_forcing::HydrologicalForcing,
@@ -73,6 +80,7 @@ function update_boundary_conditions!(
     @. waterlevel = waterlevel_river
 end
 
+"Update Julian and Torres river erosion model for a single timestep"
 function update!(model::RiverErosionJulianTorresModel, geometry::RiverParameters, dt)
     (; waterlevel) = model.boundary_conditions
     (; d50) = model.parameters

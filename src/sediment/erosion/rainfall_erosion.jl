@@ -1,6 +1,5 @@
 abstract type AbstractRainfallErosionModel{T} end
 
-## General rainfall erosion functions and structs
 "Struct for storing rainfall erosion model variables"
 @get_units @grid_loc @with_kw struct RainfallErosionModelVariables{T}
     # Total soil erosion from rainfall (splash)
@@ -12,7 +11,6 @@ function RainfallErosionModelVariables(n; amount::Vector{T} = fill(mv, n)) where
     return RainfallErosionModelVariables{T}(; amount = amount)
 end
 
-## EUROSEM specific structs and functions for rainfall erosion
 "Struct for storing EUROSEM rainfall erosion model boundary conditions"
 @get_units @grid_loc @with_kw struct RainfallErosionEurosemBC{T}
     # precipitation
@@ -164,7 +162,6 @@ function update!(model::RainfallErosionEurosemModel, geometry::LandParameters, d
     end
 end
 
-### ANSWERS specific structs and functions for rainfall erosion
 "Struct for storing ANSWERS rainfall erosion model boundary conditions"
 @get_units @grid_loc @with_kw struct RainfallErosionAnswersBC{T}
     # precipitation

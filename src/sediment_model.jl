@@ -150,6 +150,7 @@ function initialize_sediment_model(config::Config)
     return model
 end
 
+"update sediment model for a single timestep"
 function update!(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SedimentModel}
     (; lateral, vertical, network, config, clock) = model
     dt = tosecond(clock.dt)
@@ -170,6 +171,7 @@ function update!(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: Sedi
     return nothing
 end
 
+"set the initial states of the sediment model"
 function set_states!(
     model::Model{N, L, V, R, W, T},
 ) where {N, L, V, R, W, T <: SedimentModel}

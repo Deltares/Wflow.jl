@@ -1,6 +1,6 @@
 abstract type AbstractSoilErosionModel{T} end
 
-## Total soil erosion and differentiation structs and functions
+"Struct for storing total soil erosion with differentiation model variables"
 @get_units @grid_loc @with_kw struct SoilErosionModelVariables{T}
     # Total soil erosion
     amount::Vector{T} | "t dt-1"
@@ -16,6 +16,7 @@ abstract type AbstractSoilErosionModel{T} end
     lagg::Vector{T} | "t dt-1"
 end
 
+"Initialize soil erosion model variables"
 function SoilErosionModelVariables(
     n;
     amount::Vector{T} = fill(mv, n),
@@ -35,6 +36,7 @@ function SoilErosionModelVariables(
     )
 end
 
+"Struct for storing soil erosion model boundary conditions"
 @get_units @grid_loc @with_kw struct SoilErosionBC{T}
     # Rainfall erosion
     rainfall_erosion::Vector{T} | "t dt-1"
@@ -42,6 +44,7 @@ end
     overland_flow_erosion::Vector{T} | "m dt-1"
 end
 
+"Initialize soil erosion model boundary conditions"
 function SoilErosionBC(
     n;
     rainfall_erosion::Vector{T} = fill(mv, n),
@@ -53,7 +56,7 @@ function SoilErosionBC(
     )
 end
 
-# Parameters for particle differentiation
+"Struct for storing soil erosion model parameters"
 @get_units @grid_loc @with_kw struct SoilErosionParameters{T}
     # Soil content clay
     clay_fraction::Vector{T} | "-"
@@ -67,6 +70,7 @@ end
     lagg_fraction::Vector{T} | "-"
 end
 
+"Initialize soil erosion model parameters"
 function SoilErosionParameters(dataset, config, indices)
     clay_fraction = ncread(
         dataset,
@@ -125,12 +129,14 @@ function SoilErosionParameters(dataset, config, indices)
     return soil_parameters
 end
 
+"Total soil erosion with differentiation model"
 @with_kw struct SoilErosionModel{T} <: AbstractSoilErosionModel{T}
     boundary_conditions::SoilErosionBC{T}
     parameters::SoilErosionParameters{T}
     variables::SoilErosionModelVariables{T}
 end
 
+"Initialize soil erosion model"
 function SoilErosionModel(dataset, config, indices)
     n = length(indices)
     vars = SoilErosionModelVariables(n)
@@ -141,6 +147,7 @@ function SoilErosionModel(dataset, config, indices)
     return model
 end
 
+"Update boundary conditions for soil erosion model"
 function update_boundary_conditions!(
     model::SoilErosionModel,
     rainfall_erosion::AbstractRainfallErosionModel,
@@ -153,6 +160,7 @@ function update_boundary_conditions!(
     @. overland_flow_erosion = ole
 end
 
+"Update soil erosion model for a single timestep"
 function update!(model::SoilErosionModel)
     (; rainfall_erosion, overland_flow_erosion) = model.boundary_conditions
     (; clay_fraction, silt_fraction, sand_fraction, sagg_fraction, lagg_fraction) =
