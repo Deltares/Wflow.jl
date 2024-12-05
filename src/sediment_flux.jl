@@ -15,9 +15,9 @@ function OverlandFlowSediment(dataset, config, indices, waterbodies, rivers)
     hydrological_forcing = HydrologicalForcing(n)
     geometry = LandParameters(dataset, config, indices)
     # Check what transport capacity equation will be used
-    do_river = get(config.model, "runrivermodel", false)::Bool
+    do_river = get(config.model, "run_river_model", false)::Bool
     # Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]
-    landtransportmethod = get(config.model, "landtransportmethod", "yalinpart")::String
+    landtransportmethod = get(config.model, "land_transport", "yalinpart")::String
 
     if do_river || landtransportmethod == "yalinpart"
         transport_capacity_model =
@@ -95,7 +95,7 @@ function RiverSediment(dataset, config, indices, waterbodies)
 
     # Check what transport capacity equation will be used
     # River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]
-    transport_method = get(config.model, "rivtransportmethod", "bagnold")::String
+    transport_method = get(config.model, "river_transport", "bagnold")::String
     if transport_method == "bagnold"
         transport_capacity_model = TransportCapacityBagnoldModel(dataset, config, indices)
     elseif transport_method == "engelund"

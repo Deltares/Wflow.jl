@@ -77,7 +77,7 @@ function initialize_sediment_model(config::Config)
     graph = flowgraph(ldd, indices, pcr_dir)
 
     # River processes
-    do_river = get(config.model, "runrivermodel", false)::Bool
+    do_river = get(config.model, "run_river_model", false)::Bool
     # TODO: see if we can skip init if the river model is not needed
     # or if we leave it when we restructure the Wflow Model struct
 
@@ -162,7 +162,7 @@ function update!(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: Sedi
     update!(lateral.land, vertical.soil_erosion, network.land, dt)
 
     # River sediment transport
-    do_river = get(config.model, "runrivermodel", false)::Bool
+    do_river = get(config.model, "run_river_model", false)::Bool
     if do_river
         indices_riv = network.index_river
         update!(lateral.river, lateral.land.to_river, network.river, indices_riv, dt)

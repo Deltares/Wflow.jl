@@ -50,8 +50,6 @@ end
 
 "Struct to store Govers overland flow transport capacity model parameters"
 @get_units @grid_loc @with_kw struct TransportCapacityGoversParameters{T}
-    # Drain slope
-    slope::Vector{T} | "m m-1"
     # Particle density
     density::Vector{T} | "kg m-3"
     # Govers transport capacity coefficient
@@ -62,14 +60,6 @@ end
 
 "Initialize Govers overland flow transport capacity model parameters"
 function TransportCapacityGoversParameters(dataset, config, indices)
-    slope = ncread(
-        dataset,
-        config,
-        "lateral.land.transport_capacity.parameters.slope";
-        sel = indices,
-        defaults = 0.01,
-        type = Float,
-    )
     density = ncread(
         dataset,
         config,
@@ -95,7 +85,6 @@ function TransportCapacityGoversParameters(dataset, config, indices)
         type = Float,
     )
     tc_parameters = TransportCapacityGoversParameters(;
-        slope = slope,
         density = density,
         c_govers = c_govers,
         n_govers = n_govers,
@@ -126,9 +115,15 @@ function TransportCapacityGoversModel(dataset, config, indices)
 end
 
 "Update Govers overland flow transport capacity model for a single timestep"
-function update!(model::TransportCapacityGoversModel, width, waterbodies, rivers, dt)
+function update!(
+    model::TransportCapacityGoversModel,
+    geometry::LandParameters,
+    waterbodies,
+    rivers,
+    dt,
+)
     (; q, waterlevel) = model.boundary_conditions
-    (; slope, density, c_govers, n_govers) = model.parameters
+    (; density, c_govers, n_govers) = model.parameters
     (; amount) = model.variables
 
     n = length(q)
@@ -139,8 +134,8 @@ function update!(model::TransportCapacityGoversModel, width, waterbodies, rivers
             c_govers[i],
             n_govers[i],
             density[i],
-            slope[i],
-            width[i],
+            geometry.slope[i],
+            geometry.width[i],
             waterbodies[i],
             rivers[i],
             dt,
@@ -150,8 +145,6 @@ end
 
 "Struct to store Yalin overland flow transport capacity model parameters"
 @get_units @grid_loc @with_kw struct TransportCapacityYalinParameters{T}
-    # Drain slope
-    slope::Vector{T} | "m m-1"
     # Particle density
     density::Vector{T} | "kg m-3"
     # Particle mean diameter
@@ -160,14 +153,6 @@ end
 
 "Initialize Yalin overland flow transport capacity model parameters"
 function TransportCapacityYalinParameters(dataset, config, indices)
-    slope = ncread(
-        dataset,
-        config,
-        "lateral.land.transport_capacity.parameters.slope";
-        sel = indices,
-        defaults = 0.01,
-        type = Float,
-    )
     density = ncread(
         dataset,
         config,
@@ -184,8 +169,7 @@ function TransportCapacityYalinParameters(dataset, config, indices)
         defaults = 0.1,
         type = Float,
     )
-    tc_parameters =
-        TransportCapacityYalinParameters(; slope = slope, density = density, d50 = d50)
+    tc_parameters = TransportCapacityYalinParameters(; density = density, d50 = d50)
 
     return tc_parameters
 end
@@ -212,9 +196,15 @@ function TransportCapacityYalinModel(dataset, config, indices)
 end
 
 "Update Yalin overland flow transport capacity model for a single timestep"
-function update!(model::TransportCapacityYalinModel, width, waterbodies, rivers, dt)
+function update!(
+    model::TransportCapacityYalinModel,
+    geometry::LandParameters,
+    waterbodies,
+    rivers,
+    dt,
+)
     (; q, waterlevel) = model.boundary_conditions
-    (; slope, density, d50) = model.parameters
+    (; density, d50) = model.parameters
     (; amount) = model.variables
 
     n = length(q)
@@ -224,8 +214,8 @@ function update!(model::TransportCapacityYalinModel, width, waterbodies, rivers,
             waterlevel[i],
             density[i],
             d50[i],
-            slope[i],
-            width[i],
+            geometry.slope[i],
+            geometry.width[i],
             waterbodies[i],
             rivers[i],
             dt,

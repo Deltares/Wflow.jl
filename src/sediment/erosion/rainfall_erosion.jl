@@ -25,7 +25,7 @@ end
 function RainfallErosionEurosemBC(
     n;
     precipitation::Vector{T} = fill(mv, n),
-    interception::Vector{T} = fill(0.0, n),
+    interception::Vector{T} = fill(mv, n),
     waterlevel::Vector{T} = fill(mv, n),
 ) where {T}
     return RainfallErosionEurosemBC{T}(;
@@ -128,9 +128,10 @@ function update_boundary_conditions!(
     atmospheric_forcing::AtmosphericForcing,
     hydrological_forcing::HydrologicalForcing,
 )
-    (; precipitation, waterlevel) = model.boundary_conditions
+    (; precipitation, interception, waterlevel) = model.boundary_conditions
     @. precipitation = atmospheric_forcing.precipitation
     @. waterlevel = hydrological_forcing.waterlevel_land
+    @. interception = hydrological_forcing.interception
 end
 
 "Update EUROSEM rainfall erosion model for a single timestep"

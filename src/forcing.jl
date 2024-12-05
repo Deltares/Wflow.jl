@@ -20,6 +20,8 @@ end
 
 "Struct to store hydrological forcing variables"
 @get_units @grid_loc @with_kw struct HydrologicalForcing{T}
+    # Rainfall interception by the vegetation [mm]
+    interception::Vector{T} | "mm"
     # Overland flow depth [m]
     waterlevel_land::Vector{T} | "m"
     # Overland flow discharge [m3 s-1]
@@ -33,10 +35,17 @@ end
 "Initialize hydrological forcing"
 function HydrologicalForcing(
     n;
+    interception::Vector{T} = fill(mv, n),
     waterlevel_land::Vector{T} = fill(mv, n),
     q_land::Vector{T} = fill(mv, n),
     waterlevel_river::Vector{T} = fill(mv, n),
     q_river::Vector{T} = fill(mv, n),
 ) where {T}
-    return HydrologicalForcing{T}(; waterlevel_land, q_land, waterlevel_river, q_river)
+    return HydrologicalForcing{T}(;
+        interception,
+        waterlevel_land,
+        q_land,
+        waterlevel_river,
+        q_river,
+    )
 end

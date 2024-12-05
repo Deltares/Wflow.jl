@@ -54,6 +54,7 @@ lake_areas = "wflow_lakeareas"
 # the external name mapping needs to be below together with the other mappings
 forcing = [
   "vertical.atmospheric_forcing.precipitation",
+  "vertical.hydrological_forcing.interception",
   "vertical.hydrological_forcing.waterlevel_land",
   "lateral.land.hydrological_forcing.waterlevel_land",
   "vertical.hydrological_forcing.q_land",
@@ -68,6 +69,7 @@ precipitation = "P"
 [input.vertical.hydrological_forcing]
 waterlevel_land = "levKinL"
 q_land = "runL"
+interception = "int"
 
 [input.vertical.land_parameter_set]
 slope = "Slope"
@@ -75,7 +77,7 @@ slope = "Slope"
 [input.vertical.rainfall_erosion.parameters]
 soil_detachability = "soil_detachability"
 eurosem_exponent = "eros_spl_EUROSEM"
-canopygapfraction = "CanopyGapFraction"
+canopyheight = "CanopyHeight"
 usle_k = "usle_k"
 usle_c = "USLE_C"
 pathfrac = "PathFrac"
@@ -121,10 +123,10 @@ density = "sediment_density"
 d50 = "D50_River"
 c_bagnold = "c_Bagnold"
 e_bagnold = "exp_Bagnold"
-a_kodatie = "a_kodatie"
-b_kodatie = "b_kodatie"
-c_kodatie = "c_kodatie"
-d_kodatie = "d_kodatie"
+a_kodatie.value = 2829.6
+b_kodatie.value = 3.646
+c_kodatie.value = 0.406
+d_kodatie.value = 0.412
 
 [input.lateral.river.potential_erosion.parameters]
 d50 = "D50_River"
@@ -161,102 +163,8 @@ reinit = true
 run_river_model = true
 dolake = false
 doreservoir = true # cannot use reservoirs as in sbm because then states/volume need to be added
-rainfall_erosion = "answers" # Rainfall erosion equation: ["answers", "eurosem"]
+rainfall_erosion = "eurosem" # Rainfall erosion equation: ["answers", "eurosem"]
 overland_flow_erosion = "answers" # Overland flow erosion equation: ["answers"]
 land_transport = "yalinpart" # Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]
-river_transport = "bagnold" # River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]
+river_transport = "engelund" # River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]
 type = "sediment"
-
-[output]
-path = "output-moselle-sed.nc"
-
-[output.vertical.rainfall_erosion.variables]
-amount = "rainfall_erosion"
-
-[output.vertical.overland_flow_erosion.variables]
-amount = "overland_flow_erosion"
-
-[output.vertical.soil_erosion.variables]
-amount = "soilloss"
-clay = "erosclay"
-
-[output.lateral.land.transport_capacity.variables]
-clay = "TCclay"
-amount = "TCsed"
-
-[output.lateral.land.to_river.variables]
-clay = "inlandclay"
-amount = "inlandsed"
-
-[output.lateral.land.sediment_flux.variables]
-clay = "olclay"
-amount = "olsed"
-
-[output.lateral.river.concentrations.variables]
-bed = "Bedconc"
-suspended = "SSconc"
-total = "Sedconc"
-
-[output.lateral.river.hydrological_forcing]
-waterlevel_river = "h_riv"
-
-[output.lateral.river.sediment_flux.variables]
-leftover_clay = "clayload"
-clay = "outclay"
-erosion = "erosion_riv"
-deposition = "deposition_riv"
-
-[output.lateral.river.sediment_flux.boundary_conditions]
-erosion_land_clay = "inlandclayriv"
-transport_capacity = "TCsed_riv"
-
-[csv]
-path = "output-moselle-sediment.csv"
-
-[[csv.column]]
-coordinate.x = 6.931
-coordinate.y = 48.085
-header = "SL"
-parameter = "vertical.soil_erosion.variables.amount"
-
-[[csv.column]]
-coordinate.x = 6.931
-coordinate.y = 48.085
-header = "SSPL"
-parameter = "vertical.rainfall_erosion.variables.amount"
-
-[[csv.column]]
-coordinate.x = 6.931
-coordinate.y = 48.085
-header = "SOV"
-parameter = "vertical.overland_flow_erosion.variables.amount"
-
-[[csv.column]]
-coordinate.x = 6.931
-coordinate.y = 48.085
-header = "P"
-parameter = "vertical.atmospheric_forcing.precipitation"
-
-[[csv.column]]
-coordinate.x = 6.931
-coordinate.y = 48.085
-header = "ql"
-parameter = "vertical.hydrological_forcing.q_land"
-
-# [[csv.column]]
-# coordinate.x = 6.931
-# coordinate.y = 48.085
-# header = "TCsed"
-# parameter = "lateral.land.transport_capacity.variables.amount"
-
-# [[csv.column]]
-# coordinate.x = 6.931
-# coordinate.y = 48.085
-# header = "TCclay"
-# parameter = "lateral.land.transport_capacity.variables.clay"
-
-# [[csv.column]]
-# coordinate.x = 6.931
-# coordinate.y = 48.085
-# header = "inlandsed"
-# parameter = "lateral.land.to_river.variables.amount"
