@@ -254,7 +254,7 @@ function initialize_sbm_gwf_model(config::Config)
     )
 
     # river boundary of unconfined aquifer
-    river = Hyporheic(dataset, config, inds_river, inds_land_map2river)
+    river = River(dataset, config, inds_river, inds_land_map2river)
 
     # recharge boundary of unconfined aquifer
     recharge = Recharge(

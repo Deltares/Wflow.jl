@@ -103,7 +103,8 @@ function VegetationParameters(dataset, config, indices)
     return vegetation_parameter_set
 end
 
-@get_units @grid_loc @with_kw struct LandParameters{T}
+"Struct to store land geometry parameters"
+@get_units @grid_loc @with_kw struct LandGeometry{T}
     # cell area [m^2]
     area::Vector{T} | "m^2"
     # drain width [m]
@@ -112,7 +113,8 @@ end
     slope::Vector{T} | "-"
 end
 
-function LandParameters(nc, config, inds)
+"Initialize land geometry parameters"
+function LandGeometry(nc, config, inds)
     # read x, y coordinates and calculate cell length [m]
     y_nc = read_y_axis(nc)
     x_nc = read_x_axis(nc)
@@ -135,11 +137,12 @@ function LandParameters(nc, config, inds)
     clamp!(landslope, 0.00001, Inf)
 
     land_parameter_set =
-        LandParameters{Float}(; area = area, width = drain_width, slope = landslope)
+        LandGeometry{Float}(; area = area, width = drain_width, slope = landslope)
     return land_parameter_set
 end
 
-@get_units @grid_loc @with_kw struct RiverParameters{T}
+"Struct to store river geometry parameters"
+@get_units @grid_loc @with_kw struct RiverGeometry{T}
     # river width [m]
     width::Vector{T} | "m"
     # river length
@@ -148,7 +151,8 @@ end
     slope::Vector{T} | "-"
 end
 
-function RiverParameters(nc, config, inds)
+"Initialize river geometry parameters"
+function RiverGeometry(nc, config, inds)
     riverwidth = ncread(
         nc,
         config,
@@ -177,10 +181,7 @@ function RiverParameters(nc, config, inds)
     minimum(riverwidth) > 0 || error("river width must be positive on river cells")
     clamp!(riverslope, 0.00001, Inf)
 
-    river_parameter_set = RiverParameters{Float}(;
-        width = riverwidth,
-        length = riverlength,
-        slope = riverslope,
-    )
+    river_parameter_set =
+        RiverGeometry{Float}(; width = riverwidth, length = riverlength, slope = riverslope)
     return river_parameter_set
 end
