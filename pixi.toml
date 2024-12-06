@@ -11,10 +11,11 @@ platforms = ["win-64", "linux-64"]
 
 [tasks]
 # Installation
-install-julia = "juliaup add 1.10.5 && juliaup override unset && juliaup override set 1.10.5"
+install-julia = "juliaup add 1.10.7 && juliaup override set 1.10.7"
 # Julia
-update-registry-julia = "julia --eval='using Pkg; Registry.update()'"
-instantiate-julia = {cmd = "julia --project --eval='using Pkg; Pkg.instantiate()'",env = { JULIA_SSL_CA_ROOTS_PATH = "" } }
+# Clear SSL_CERT_DIR to avoid Julia warnings, see https://github.com/JuliaLang/Downloads.jl/issues/244
+update-registry-julia = { cmd = "julia --eval='using Pkg; Registry.update()'", env = { SSL_CERT_DIR = "" } }
+instantiate-julia = {cmd = "julia --project --eval='using Pkg; Pkg.instantiate()'",env = { SSL_CERT_DIR = "" } }
 initialize-julia = { depends_on = [
     "update-registry-julia",
     "instantiate-julia",
@@ -29,7 +30,7 @@ download-test-data = { cmd = "julia --project download_test_data.jl", cwd = "bui
 build-wflow-cli = { cmd = "julia --project create_app.jl", cwd = "build/create_binaries", depends_on = [
     "download-test-data",
     "instantiate-wflow-cli",
-], env = { JULIA_SSL_CA_ROOTS_PATH = "" } }
+], env = { SSL_CERT_DIR = "", JULIA_SSL_CA_ROOTS_PATH = "" } }
 # Test
 test-wflow-cli = { cmd = "julia --project --eval 'using Pkg; Pkg.test()'", cwd = "build/wflow_cli", depends_on = [
     "download-test-data",
