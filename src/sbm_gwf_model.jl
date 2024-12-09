@@ -486,10 +486,13 @@ function initialize_sbm_gwf_model(config::Config)
         drain = NetworkDrain(; drain...),
     )
 
+    lateral =
+        Lateral(; subsurface = subsurface_map, land = overland_flow, river = river_flow)
+
     model = Model(
         config,
         network,
-        (subsurface = subsurface_map, land = overland_flow, river = river_flow),
+        lateral,
         land_hydrology,
         clock,
         reader,

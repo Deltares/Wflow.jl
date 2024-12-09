@@ -45,9 +45,7 @@ Run surface routing (land and river) for a model type that contains the lateral 
 """
 function surface_routing!(
     model::Model{L},
-) where {
-    L <: NamedTuple{<:Any, <:Tuple{Any, LocalInertialOverlandFlow, LocalInertialRiverFlow}},
-}
+) where {L <: Lateral{<:LocalInertialOverlandFlow, <:LocalInertialRiverFlow}}
     (; lateral, vertical, network, clock) = model
     (; land, river, subsurface) = lateral
     (; soil, runoff) = vertical

@@ -80,3 +80,9 @@ end
     frac_to_river::Vector{Float64} = Float64[]
     index_river::Vector{Int} = Int[]
 end
+
+@kwdef struct Lateral{L, R, S}
+    land::L = nothing
+    river::R = nothing
+    subsurface::S = nothing
+end

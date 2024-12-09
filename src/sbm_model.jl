@@ -414,16 +414,11 @@ function initialize_sbm_model(config::Config)
         lake = NetworkLake(; lake_network...),
     )
 
-    model = Model(
-        config,
-        network,
-        (subsurface = subsurface_flow, land = overland_flow, river = river_flow),
-        land_hydrology,
-        clock,
-        reader,
-        writer,
-        SbmModel(),
-    )
+    lateral =
+        Lateral(; subsurface = subsurface_flow, land = overland_flow, river = river_flow)
+
+    model =
+        Model(config, network, lateral, land_hydrology, clock, reader, writer, SbmModel())
 
     set_states!(model)
 

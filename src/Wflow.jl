@@ -114,7 +114,7 @@ function Clock(config, reader)
 end
 
 include("io.jl")
-include("connectivity.jl")
+include("network.jl")
 
 abstract type AbstractModel{T} end
 
@@ -124,7 +124,7 @@ abstract type AbstractModel{T} end
 Composite type that represents all different aspects of a Wflow Model, such as the
 network, parameters, clock, configuration and input and output.
 """
-struct Model{L, V, R, W, T} <: AbstractModel{T}
+struct Model{L <: Lateral, V, R, W, T} <: AbstractModel{T}
     config::Config  # all configuration options
     network::Network  # connectivity information, directed graph
     lateral::L  # lateral model that holds lateral state, moves along network

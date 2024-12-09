@@ -142,16 +142,10 @@ function initialize_sediment_model(config::Config)
         frac_to_river,
     )
 
-    model = Model(
-        config,
-        network,
-        (land = overland_flow_sediment, river = river_sediment),
-        soilloss,
-        clock,
-        reader,
-        writer,
-        SedimentModel(),
-    )
+    lateral = Lateral(; land = overland_flow_sediment, river = river_sediment)
+
+    model =
+        Model(config, network, lateral, soilloss, clock, reader, writer, SedimentModel())
 
     set_states!(model)
     @info "Initialized model"
