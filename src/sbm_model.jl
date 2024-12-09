@@ -397,17 +397,26 @@ function initialize_sbm_model(config::Config)
             lake_indices = inds_lake_map2river,
             land_indices = inds_land_map2river,
             # specific for local-inertial
-            nodes_at_edge = nodes_at_edge,
-            edges_at_node = adjacent_edges_at_node(graph_river, nodes_at_edge),
+            nodes_at_edge = NodesAtEdge(; nodes_at_edge...),
+            edges_at_node = EdgesAtNode(;
+                adjacent_edges_at_node(graph_river, nodes_at_edge)...,
+            ),
             # water allocation areas
             allocation_area_indices = river_allocation_area_inds,
             cell_area = x_length[inds_land_map2river] .* y_length[inds_land_map2river],
         )
     end
 
+    network = Network(;
+        land = NetworkLand(; land...),
+        river = NetworkRiver(; river...),
+        reservoir = NetworkReservoir(; reservoir_network...),
+        lake = NetworkLake(; lake_network...),
+    )
+
     model = Model(
         config,
-        (; land, river, reservoir = reservoir_network, lake = lake_network),
+        network,
         (subsurface = subsurface_flow, land = overland_flow, river = river_flow),
         land_hydrology,
         clock,
@@ -449,7 +458,7 @@ function update!(model::AbstractModel{<:SbmModel})
 end
 
 """
-    update_until_recharge!(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
+    update_until_recharge!model::AbstractModel{<:SbmModel})
 
 Update SBM model until recharge for a single timestep. This function is also accessible
 through BMI, to couple the SBM model to an external groundwater model.
@@ -462,7 +471,7 @@ function update_until_recharge!(model::AbstractModel{<:SbmModel})
 end
 
 """
-    update_after_subsurfaceflow!(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
+    update_after_subsurfaceflow!(model::AbstractModel{<:SbmModel})
 
 Update SBM model after subsurface flow for a single timestep. This function is also
 accessible through BMI, to couple the SBM model to an external groundwater model.

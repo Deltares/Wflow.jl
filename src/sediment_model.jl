@@ -98,7 +98,7 @@ function initialize_sediment_model(config::Config)
     clamp!(landslope, 0.00001, Inf)
 
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
-    frac_toriver = fraction_runoff_to_river(graph, ldd, index_river, landslope)
+    frac_to_river = fraction_runoff_to_river(graph, ldd, index_river, landslope)
 
     river_sediment = RiverSediment(dataset, config, indices_riv, waterbodies)
 
@@ -133,9 +133,18 @@ function initialize_sediment_model(config::Config)
         reverse_indices = rev_indices_riv,
     )
 
+    network = Network(;
+        land = NetworkLand(; land...),
+        river = NetworkRiver(; river...),
+        reservoir = NetworkReservoir(; reservoir...),
+        lake = NetworkLake(; lake...),
+        index_river,
+        frac_to_river,
+    )
+
     model = Model(
         config,
-        (; land, river, reservoir, lake, index_river, frac_toriver),
+        network,
         (land = overland_flow_sediment, river = river_sediment),
         soilloss,
         clock,

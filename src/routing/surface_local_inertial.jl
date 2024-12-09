@@ -583,15 +583,6 @@ function update!(
     return nothing
 end
 
-# Stores edges in x and y direction between cells of a Vector with CartesianIndex(x, y), for
-# staggered grid calculations.
-@with_kw struct Indices
-    xu::Vector{Int}     # index of neighbor cell in the (+1, 0) direction
-    xd::Vector{Int}     # index of neighbor cell in the (-1, 0) direction
-    yu::Vector{Int}     # index of neighbor cell in the (0, +1) direction
-    yd::Vector{Int}     # index of neighbor cell in the (0, -1) direction
-end
-
 # maps the fields of struct Indices to the defined Wflow cartesian indices of const
 # neigbors.
 const dirs = (:yd, :xd, :xu, :yu)

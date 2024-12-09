@@ -37,16 +37,15 @@ end
 
 """
     surface_routing!(
-        model::Model{N,L,V,R,W,T}
-    ) where {N,L<:NamedTuple{<:Any,<:Tuple{Any,LocalInertialOverlandFlow,LocalInertialRiverFlow}},V,R,W,T}
+        model::Model{L}
+    ) where {L<:NamedTuple{<:Any,<:Tuple{Any,LocalInertialOverlandFlow,LocalInertialRiverFlow}},V,R,W,T}
 
 Run surface routing (land and river) for a model type that contains the lateral components
 `LocalInertialOverlandFlow` and `LocalInertialRiverFlow` for a single timestep.
 """
 function surface_routing!(
-    model::Model{N, L},
+    model::Model{L},
 ) where {
-    N,
     L <: NamedTuple{<:Any, <:Tuple{Any, LocalInertialOverlandFlow, LocalInertialRiverFlow}},
 }
     (; lateral, vertical, network, clock) = model
