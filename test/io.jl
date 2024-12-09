@@ -266,7 +266,7 @@ end
           [9.152995289601465, 8.919674421902961, 8.70537452585209, 8.690681062890977]
 end
 
-config.input.vertical.snow.parameters.cfmax = Dict("value" => 2.0)
+config.input["snowpack__degree-day_coefficient"] = Dict("value" => 2.0)
 config.input.vertical.soil.parameters.soilthickness = Dict(
     "scale" => 3.0,
     "offset" => 100.0,

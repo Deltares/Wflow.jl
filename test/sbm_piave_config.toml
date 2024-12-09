@@ -20,6 +20,11 @@ subcatchment = "wflow_subcatch"
 gauges = "wflow_gauges"
 gauges_grdc = "wflow_gauges_grdc"
 
+atmosphere_air__snowfall_temperature_threshold = "TT"
+atmosphere_air__snowfall_temperature_interval = "TTI"
+snowpack__melting_temperature_threshold = "TTM"
+snowpack__degree-day_coefficient = "Cfmax"
+
 forcing = [
   "vertical.atmospheric_forcing.precipitation",
   "vertical.atmospheric_forcing.temperature",
@@ -104,12 +109,6 @@ pathfrac = "PathFrac"
 rootdistpar = "rootdistpar"
 soilthickness = "SoilThickness"
 kv_0 = "KsatVer"
-
-[input.vertical.snow.parameters]
-tt = "TT"
-tti = "TTI"
-ttm = "TTM"
-cfmax = "Cfmax"
 
 [state.lateral.river.variables]
 q = "q_river"

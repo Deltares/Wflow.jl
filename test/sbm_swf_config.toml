@@ -53,6 +53,11 @@ ldd = "wflow_ldd"
 river_location = "wflow_river"
 subcatchment = "wflow_subcatch"
 
+atmosphere_air__snowfall_temperature_threshold = "TT"
+atmosphere_air__snowfall_temperature_interval = "TTI"
+snowpack__melting_temperature_threshold = "TTM"
+snowpack__degree-day_coefficient = "Cfmax"
+
 # specify the internal IDs of the parameters which vary over time
 # the external name mapping needs to be below together with the other mappings
 forcing = [
@@ -94,12 +99,6 @@ pathfrac = "PathFrac"
 rootdistpar = "rootdistpar"
 soilthickness = "SoilThickness"
 kv_0 = "KsatVer"
-
-[input.vertical.snow.parameters]
-tt = "TT"
-tti = "TTI"
-ttm = "TTM"
-cfmax = "Cfmax"
 
 [input.lateral.river]
 length = "wflow_riverlength"

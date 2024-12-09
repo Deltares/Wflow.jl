@@ -73,7 +73,7 @@ function SnowHbvParameters(dataset, config, indices, dt)
         ncread(
             dataset,
             config,
-            "vertical.snow.parameters.cfmax";
+            "snowpack__degree-day_coefficient";
             sel = indices,
             defaults = 3.75653,
             type = Float,
@@ -81,7 +81,7 @@ function SnowHbvParameters(dataset, config, indices, dt)
     tt = ncread(
         dataset,
         config,
-        "vertical.snow.parameters.tt";
+        "atmosphere_air__snowfall_temperature_threshold";
         sel = indices,
         defaults = 0.0,
         type = Float,
@@ -89,7 +89,7 @@ function SnowHbvParameters(dataset, config, indices, dt)
     tti = ncread(
         dataset,
         config,
-        "vertical.snow.parameters.tti";
+        "atmosphere_air__snowfall_temperature_interval";
         sel = indices,
         defaults = 1.0,
         type = Float,
@@ -97,7 +97,7 @@ function SnowHbvParameters(dataset, config, indices, dt)
     ttm = ncread(
         dataset,
         config,
-        "vertical.snow.parameters.ttm";
+        "snowpack__melting_temperature_threshold";
         sel = indices,
         defaults = 0.0,
         type = Float,
@@ -105,7 +105,7 @@ function SnowHbvParameters(dataset, config, indices, dt)
     whc = ncread(
         dataset,
         config,
-        "vertical.snow.parameters.whc";
+        "snowpack__liquid_water_holding_capacity";
         sel = indices,
         defaults = 0.1,
         type = Float,
