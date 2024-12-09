@@ -277,15 +277,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="model" class="level2">
 <h2 class="anchored" data-anchor-id="model">Model</h2>
 <p>Below the composite type that represents all different aspects of a <code>Wflow.Model</code>, such as the network, parameters, clock, model type, configuration and input and output.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Model{N,L,V,R,W,T}</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    config<span class="op">::</span><span class="dt">Config  </span><span class="co"># all configuration options</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    network<span class="op">::</span><span class="dt">N      </span><span class="co"># connectivity information, directed graph</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    lateral<span class="op">::</span><span class="dt">L      </span><span class="co"># lateral model that holds lateral state, moves along network</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    vertical<span class="op">::</span><span class="dt">V     </span><span class="co"># vertical model that holds vertical state, independent of each other</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    clock<span class="op">::</span><span class="dt">Clock    </span><span class="co"># to keep track of simulation time</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    reader<span class="op">::</span><span class="dt">R       </span><span class="co"># provides the model with dynamic input</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    writer<span class="op">::</span><span class="dt">W       </span><span class="co"># writes model output</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">type</span><span class="op">::</span><span class="dt">T         </span><span class="co"># model type</span></span>
+<div class="sourceCode" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Model{L,V,R,W,T}</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    config<span class="op">::</span><span class="dt">Config   </span><span class="co"># all configuration options</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    network<span class="op">::</span><span class="dt">Network </span><span class="co"># connectivity information, directed graph</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    lateral<span class="op">::</span><span class="dt">L       </span><span class="co"># lateral model that holds lateral state, moves along network</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    vertical<span class="op">::</span><span class="dt">V      </span><span class="co"># vertical model that holds vertical state, independent of each other</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    clock<span class="op">::</span><span class="dt">Clock     </span><span class="co"># to keep track of simulation time</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    reader<span class="op">::</span><span class="dt">R        </span><span class="co"># provides the model with dynamic input</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    writer<span class="op">::</span><span class="dt">W        </span><span class="co"># writes model output</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">type</span><span class="op">::</span><span class="dt">T          </span><span class="co"># model type</span></span>
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>The <code>lateral</code> field of the <code>struct Model</code> can contain different lateral concepts. For each wflow model these different lateral concepts are mapped through the use of a <code>NamedTuple</code>. The <code>vertical</code> field of the <code>struct Model</code> always contains one vertical concept, for example the SBM vertical concept.</p>
 <p>Below an example how lateral concepts are mapped for the SBM model through a <code>NamedTuple</code>:</p>
