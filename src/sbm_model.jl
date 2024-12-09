@@ -397,24 +397,28 @@ function initialize_sbm_model(config::Config)
             lake_indices = inds_lake_map2river,
             land_indices = inds_land_map2river,
             # specific for local-inertial
-            nodes_at_edge = nodes_at_edge,
-            edges_at_node = adjacent_edges_at_node(graph_river, nodes_at_edge),
+            nodes_at_edge = NodesAtEdge(; nodes_at_edge...),
+            edges_at_node = EdgesAtNode(;
+                adjacent_edges_at_node(graph_river, nodes_at_edge)...,
+            ),
             # water allocation areas
             allocation_area_indices = river_allocation_area_inds,
             cell_area = x_length[inds_land_map2river] .* y_length[inds_land_map2river],
         )
     end
 
-    model = Model(
-        config,
-        (; land, river, reservoir = reservoir_network, lake = lake_network),
-        (subsurface = subsurface_flow, land = overland_flow, river = river_flow),
-        land_hydrology,
-        clock,
-        reader,
-        writer,
-        SbmModel(),
+    network = Network(;
+        land = NetworkLand(; land...),
+        river = NetworkRiver(; river...),
+        reservoir = NetworkReservoir(; reservoir_network...),
+        lake = NetworkLake(; lake_network...),
     )
+
+    lateral =
+        Lateral(; subsurface = subsurface_flow, land = overland_flow, river = river_flow)
+
+    model =
+        Model(config, network, lateral, land_hydrology, clock, reader, writer, SbmModel())
 
     set_states!(model)
 
@@ -423,7 +427,7 @@ function initialize_sbm_model(config::Config)
 end
 
 "update SBM model for a single timestep"
-function update!(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmModel}
+function update!(model::AbstractModel{<:SbmModel})
     (; lateral, vertical, network, clock, config) = model
     dt = tosecond(clock.dt)
     do_water_demand = haskey(config.model, "water_demand")
@@ -449,14 +453,12 @@ function update!(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmM
 end
 
 """
-    update_until_recharge!(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
+    update_until_recharge!model::AbstractModel{<:SbmModel})
 
 Update SBM model until recharge for a single timestep. This function is also accessible
 through BMI, to couple the SBM model to an external groundwater model.
 """
-function update_until_recharge!(
-    model::Model{N, L, V, R, W, T},
-) where {N, L, V, R, W, T <: SbmModel}
+function update_until_recharge!(model::AbstractModel{<:SbmModel})
     (; lateral, vertical, network, clock, config) = model
     dt = tosecond(clock.dt)
     update!(vertical, lateral, network, config, dt)
@@ -464,14 +466,12 @@ function update_until_recharge!(
 end
 
 """
-    update_after_subsurfaceflow!(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
+    update_after_subsurfaceflow!(model::AbstractModel{<:SbmModel})
 
 Update SBM model after subsurface flow for a single timestep. This function is also
 accessible through BMI, to couple the SBM model to an external groundwater model.
 """
-function update_after_subsurfaceflow!(
-    model::Model{N, L, V, R, W, T},
-) where {N, L, V, R, W, T <: SbmModel}
+function update_after_subsurfaceflow!(model::AbstractModel{<:SbmModel})
     (; lateral, vertical) = model
     (; soil, runoff, demand) = vertical
     (; subsurface) = lateral
@@ -489,9 +489,7 @@ Update of the total water storage at the end of each timestep per model cell.
 
 This is done here at model level.
 """
-function update_total_water_storage!(
-    model::Model{N, L, V, R, W, T},
-) where {N, L, V, R, W, T <: SbmModel}
+function update_total_water_storage!(model::AbstractModel{<:SbmModel})
     (; lateral, vertical, network) = model
 
     # Update the total water storage based on vertical states
@@ -506,9 +504,7 @@ function update_total_water_storage!(
     return nothing
 end
 
-function set_states!(
-    model::Model{N, L, V, R, W, T},
-) where {N, L, V, R, W, T <: Union{SbmModel, SbmGwfModel}}
+function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
     (; lateral, vertical, network, config) = model
     land_v = lateral.land.variables
     land_p = lateral.land.parameters

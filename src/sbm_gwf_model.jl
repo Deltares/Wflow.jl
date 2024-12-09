@@ -468,18 +468,31 @@ function initialize_sbm_gwf_model(config::Config)
             lake_indices = inds_lake_map2river,
             land_indices = inds_land_map2river,
             # specific for local-inertial
-            nodes_at_edge = nodes_at_edge,
-            edges_at_node = adjacent_edges_at_node(graph_river, nodes_at_edge),
+            nodes_at_edge = NodesAtEdge(nodes_at_edge...),
+            edges_at_node = EdgesAtNode(
+                adjacent_edges_at_node(graph_river, nodes_at_edge)...,
+            ),
             # water allocation areas
             allocation_area_indices = river_allocation_area_inds,
             cell_area = x_length[inds_land_map2river] .* y_length[inds_land_map2river],
         )
     end
 
+    network = Network(;
+        land = NetworkLand(; land...),
+        river = NetworkRiver(; river...),
+        reservoir = NetworkReservoir(; reservoir_network...),
+        lake = NetworkLake(; lake_network...),
+        drain = NetworkDrain(; drain...),
+    )
+
+    lateral =
+        Lateral(; subsurface = subsurface_map, land = overland_flow, river = river_flow)
+
     model = Model(
         config,
-        (; land, river, reservoir = reservoir_network, lake = lake_network, drain),
-        (subsurface = subsurface_map, land = overland_flow, river = river_flow),
+        network,
+        lateral,
         land_hydrology,
         clock,
         reader,
@@ -493,7 +506,7 @@ function initialize_sbm_gwf_model(config::Config)
 end
 
 "update the sbm_gwf model for a single timestep"
-function update!(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmGwfModel}
+function update!(model::AbstractModel{<:SbmGwfModel})
     (; lateral, vertical, network, clock, config) = model
     (; soil, runoff, demand) = vertical
 

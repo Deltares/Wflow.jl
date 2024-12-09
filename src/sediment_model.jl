@@ -98,7 +98,7 @@ function initialize_sediment_model(config::Config)
     clamp!(landslope, 0.00001, Inf)
 
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
-    frac_toriver = fraction_runoff_to_river(graph, ldd, index_river, landslope)
+    frac_to_river = fraction_runoff_to_river(graph, ldd, index_river, landslope)
 
     river_sediment = RiverSediment(dataset, config, indices_riv, waterbodies)
 
@@ -133,16 +133,19 @@ function initialize_sediment_model(config::Config)
         reverse_indices = rev_indices_riv,
     )
 
-    model = Model(
-        config,
-        (; land, river, reservoir, lake, index_river, frac_toriver),
-        (land = overland_flow_sediment, river = river_sediment),
-        soilloss,
-        clock,
-        reader,
-        writer,
-        SedimentModel(),
+    network = Network(;
+        land = NetworkLand(; land...),
+        river = NetworkRiver(; river...),
+        reservoir = NetworkReservoir(; reservoir...),
+        lake = NetworkLake(; lake...),
+        index_river,
+        frac_to_river,
     )
+
+    lateral = Lateral(; land = overland_flow_sediment, river = river_sediment)
+
+    model =
+        Model(config, network, lateral, soilloss, clock, reader, writer, SedimentModel())
 
     set_states!(model)
     @info "Initialized model"
@@ -151,7 +154,7 @@ function initialize_sediment_model(config::Config)
 end
 
 "update sediment model for a single timestep"
-function update!(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SedimentModel}
+function update!(model::AbstractModel{<:SedimentModel})
     (; lateral, vertical, network, config, clock) = model
     dt = tosecond(clock.dt)
 
@@ -172,9 +175,7 @@ function update!(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: Sedi
 end
 
 "set the initial states of the sediment model"
-function set_states!(
-    model::Model{N, L, V, R, W, T},
-) where {N, L, V, R, W, T <: SedimentModel}
+function set_states!(model::AbstractModel{<:SedimentModel})
     # read and set states in model object if reinit=false
     (; config) = model
     reinit = get(config.model, "reinit", true)::Bool
