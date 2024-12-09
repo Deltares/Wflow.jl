@@ -423,7 +423,7 @@ function initialize_sbm_model(config::Config)
 end
 
 "update SBM model for a single timestep"
-function update!(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmModel}
+function update!(model::AbstractModel{<:SbmModel})
     (; lateral, vertical, network, clock, config) = model
     dt = tosecond(clock.dt)
     do_water_demand = haskey(config.model, "water_demand")
@@ -454,9 +454,7 @@ end
 Update SBM model until recharge for a single timestep. This function is also accessible
 through BMI, to couple the SBM model to an external groundwater model.
 """
-function update_until_recharge!(
-    model::Model{N, L, V, R, W, T},
-) where {N, L, V, R, W, T <: SbmModel}
+function update_until_recharge!(model::AbstractModel{<:SbmModel})
     (; lateral, vertical, network, clock, config) = model
     dt = tosecond(clock.dt)
     update!(vertical, lateral, network, config, dt)
@@ -469,9 +467,7 @@ end
 Update SBM model after subsurface flow for a single timestep. This function is also
 accessible through BMI, to couple the SBM model to an external groundwater model.
 """
-function update_after_subsurfaceflow!(
-    model::Model{N, L, V, R, W, T},
-) where {N, L, V, R, W, T <: SbmModel}
+function update_after_subsurfaceflow!(model::AbstractModel{<:SbmModel})
     (; lateral, vertical) = model
     (; soil, runoff, demand) = vertical
     (; subsurface) = lateral
@@ -489,9 +485,7 @@ Update of the total water storage at the end of each timestep per model cell.
 
 This is done here at model level.
 """
-function update_total_water_storage!(
-    model::Model{N, L, V, R, W, T},
-) where {N, L, V, R, W, T <: SbmModel}
+function update_total_water_storage!(model::AbstractModel{<:SbmModel})
     (; lateral, vertical, network) = model
 
     # Update the total water storage based on vertical states
@@ -506,9 +500,7 @@ function update_total_water_storage!(
     return nothing
 end
 
-function set_states!(
-    model::Model{N, L, V, R, W, T},
-) where {N, L, V, R, W, T <: Union{SbmModel, SbmGwfModel}}
+function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
     (; lateral, vertical, network, config) = model
     land_v = lateral.land.variables
     land_p = lateral.land.parameters

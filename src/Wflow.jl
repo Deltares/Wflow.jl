@@ -114,13 +114,15 @@ end
 
 include("io.jl")
 
+abstract type AbstractModel{T} end
+
 """
     Model{N,L,V,R,W}
 
 Composite type that represents all different aspects of a Wflow Model, such as the
 network, parameters, clock, configuration and input and output.
 """
-struct Model{N, L, V, R, W, T}
+struct Model{N, L, V, R, W, T} <: AbstractModel{T}
     config::Config  # all configuration options
     network::N  # connectivity information, directed graph
     lateral::L  # lateral model that holds lateral state, moves along network

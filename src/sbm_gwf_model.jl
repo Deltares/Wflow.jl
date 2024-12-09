@@ -493,7 +493,7 @@ function initialize_sbm_gwf_model(config::Config)
 end
 
 "update the sbm_gwf model for a single timestep"
-function update!(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmGwfModel}
+function update!(model::AbstractModel{<:SbmGwfModel})
     (; lateral, vertical, network, clock, config) = model
     (; soil, runoff, demand) = vertical
 
