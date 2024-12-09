@@ -25,6 +25,11 @@ atmosphere_air__snowfall_temperature_interval = "TTI"
 snowpack__melting_temperature_threshold = "TTM"
 snowpack__degree-day_coefficient = "Cfmax"
 
+glacier_surface__area_fraction = "wflow_glacierfrac"
+glacier_ice__degree-day_coefficient = "G_Cfmax"
+glacier_ice__melting_temperature_threshold = "G_TT"
+"glacier_firn_accumulation__snowpack~dry_leq-depth_fraction" = "G_SIfrac"
+
 forcing = [
   "vertical.atmospheric_forcing.precipitation",
   "vertical.atmospheric_forcing.temperature",
@@ -73,12 +78,6 @@ glacier_store = "glacierstore"
 
 [state.vertical.demand.paddy.variables]
 h = "h_paddy"
-
-[input.vertical.glacier.parameters]
-glacier_frac = "wflow_glacierfrac"
-g_cfmax = "G_Cfmax"
-g_ttm = "G_TT"
-g_sifrac = "G_SIfrac"
 
 [input.vertical.glacier.variables]
 glacier_store = "wflow_glacierstore"

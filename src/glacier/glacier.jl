@@ -58,7 +58,7 @@ function GlacierHbvParameters(dataset, config, indices, dt)
     g_ttm = ncread(
         dataset,
         config,
-        "vertical.glacier.parameters.g_ttm";
+        "glacier_ice__melting_temperature_threshold";
         sel = indices,
         defaults = 0.0,
         type = Float,
@@ -68,7 +68,7 @@ function GlacierHbvParameters(dataset, config, indices, dt)
         ncread(
             dataset,
             config,
-            "vertical.glacier.parameters.g_cfmax";
+            "glacier_ice__degree-day_coefficient";
             sel = indices,
             defaults = 3.0,
             type = Float,
@@ -78,7 +78,7 @@ function GlacierHbvParameters(dataset, config, indices, dt)
         ncread(
             dataset,
             config,
-            "vertical.glacier.parameters.g_sifrac";
+            "glacier_firn_accumulation__snowpack~dry_leq-depth_fraction";
             sel = indices,
             defaults = 0.001,
             type = Float,
@@ -87,7 +87,7 @@ function GlacierHbvParameters(dataset, config, indices, dt)
     glacier_frac = ncread(
         dataset,
         config,
-        "vertical.glacier.parameters.glacier_frac";
+        "glacier_surface__area_fraction";
         sel = indices,
         defaults = 0.0,
         type = Float,
