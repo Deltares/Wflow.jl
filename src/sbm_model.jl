@@ -147,7 +147,7 @@ function initialize_sbm_model(config::Config)
             y_length,
         )
         # update variables `ssf`, `ssfmax` and `kh` (layered profile) based on ksat_profile
-        kh_profile_type = get(config.input, "ksat_profile", "exponential")::String
+        kh_profile_type = get(config.model, "saturated_hydraulic_conductivity_profile", "exponential")::String
         if kh_profile_type == "exponential" || kh_profile_type == "exponential_constant"
             initialize_lateralssf!(subsurface_flow, subsurface_flow.parameters.kh_profile)
         elseif kh_profile_type == "layered" || kh_profile_type == "layered_exponential"

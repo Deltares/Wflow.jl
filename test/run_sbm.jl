@@ -476,7 +476,7 @@ Wflow.close_files(model; delete_output = false)
     end
 
     @testset "exponential constant profile" begin
-        config.input.ksat_profile = "exponential_constant"
+        config.model.saturated_hydraulic_conductivity_profile = "exponential_constant"
         model = Wflow.initialize_sbm_model(config)
         (; soil) = model.vertical
         (; kv_profile) = soil.parameters
@@ -497,7 +497,7 @@ Wflow.close_files(model; delete_output = false)
     end
 
     @testset "layered profile" begin
-        config.input.ksat_profile = "layered"
+        config.model.saturated_hydraulic_conductivity_profile = "layered"
         model = Wflow.initialize_sbm_model(config)
         (; soil) = model.vertical
         (; kv_profile) = soil.parameters
@@ -513,7 +513,7 @@ Wflow.close_files(model; delete_output = false)
     end
 
     @testset "layered exponential profile" begin
-        config.input.ksat_profile = "layered_exponential"
+        config.model.saturated_hydraulic_conductivity_profile = "layered_exponential"
         model = Wflow.initialize_sbm_model(config)
         (; soil) = model.vertical
         (; kv_profile) = soil.parameters

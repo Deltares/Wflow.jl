@@ -211,7 +211,7 @@ function sbm_kv_profiles(
     sumlayers,
     dt,
 )
-    kv_profile_type = get(config.input, "ksat_profile", "exponential")::String
+    kv_profile_type = get(config.model, "saturated_hydraulic_conductivity_profile", "exponential")::String
     n = length(indices)
     if kv_profile_type == "exponential"
         kv_profile = KvExponential(kv_0, f)
@@ -268,9 +268,9 @@ function sbm_kv_profiles(
             )
         end
     else
-        error("""An unknown "ksat_profile" is specified in the TOML file ($ksat_profile).
-              This should be "exponential", "exponential_constant", "layered" or
-              "layered_exponential".
+        error("""An unknown "saturated_hydraulic_conductivity_profile" is specified in the
+              TOML file ($ksat_profile). This should be "exponential",
+              "exponential_constant", "layered" or "layered_exponential".
               """)
     end
     return kv_profile
