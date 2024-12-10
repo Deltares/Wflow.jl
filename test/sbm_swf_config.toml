@@ -58,6 +58,19 @@ atmosphere_air__snowfall_temperature_interval = "TTI"
 snowpack__melting_temperature_threshold = "TTM"
 snowpack__degree-day_coefficient = "Cfmax"
 
+soil_water__brooks-corey_epsilon_parameter = "c"
+soil_surface_water__infiltration_reduction_parameter = "cf_soil"
+soil_surface_water__vertical_saturated_hydraulic_conductivity = "KsatVer"
+soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter = "f"
+"soil~compacted_surface_water__infiltration_capacity" = "InfiltCapPath"
+"soil~non-compacted_surface_water__infiltration_capacity" = "InfiltCapSoil"
+soil_water__residual_volume_fraction = "thetaR"
+soil_water__saturated_volume_fraction = "thetaS"
+soil_water_sat-zone_bottom__max_leakage_volume_flux = "MaxLeakage"
+"soil~compacted__area_fraction" = "PathFrac"
+"soil_root~wet__sigmoid_function_shape_parameter" = "rootdistpar"
+soil__thickness = "SoilThickness"
+
 # specify the internal IDs of the parameters which vary over time
 # the external name mapping needs to be below together with the other mappings
 forcing = [
@@ -85,20 +98,6 @@ temperature = "temp"
 
 [input.vertical.runoff.parameters]
 waterfrac = "WaterFrac"
-
-[input.vertical.soil.parameters]
-c = "c"
-cf_soil = "cf_soil"
-f = "f"
-infiltcappath = "InfiltCapPath"
-infiltcapsoil = "InfiltCapSoil"
-theta_r = "thetaR"
-theta_s = "thetaS"
-maxleakage = "MaxLeakage"
-pathfrac = "PathFrac"
-rootdistpar = "rootdistpar"
-soilthickness = "SoilThickness"
-kv_0 = "KsatVer"
 
 [input.lateral.river]
 length = "wflow_riverlength"

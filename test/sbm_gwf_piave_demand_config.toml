@@ -25,11 +25,33 @@ atmosphere_air__snowfall_temperature_threshold = "TT"
 atmosphere_air__snowfall_temperature_interval = "TTI"
 snowpack__melting_temperature_threshold = "TTM"
 snowpack__degree-day_coefficient = "Cfmax"
+snowpack__liquid_water_holding_capacity =  "WHC"
 
 glacier_surface__area_fraction = "wflow_glacierfrac"
 glacier_ice__degree-day_coefficient = "G_Cfmax"
 glacier_ice__melting_temperature_threshold = "G_TT"
 "glacier_firn_accumulation__snowpack~dry_leq-depth_fraction"  = "G_SIfrac"
+
+soil_water__brooks-corey_epsilon_parameter = "c"
+soil_surface_water__infiltration_reduction_parameter = "cf_soil"
+soil_surface_water__vertical_saturated_hydraulic_conductivity = "KsatVer"
+soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter = "f"
+"soil~compacted_surface_water__infiltration_capacity" = "InfiltCapPath"
+"soil~non-compacted_surface_water__infiltration_capacity" = "InfiltCapSoil"
+soil_water__residual_volume_fraction = "thetaR"
+soil_water__saturated_volume_fraction = "thetaS"
+soil_water_sat-zone_bottom__max_leakage_volume_flux = "MaxLeakage"
+"soil~compacted__area_fraction" = "PathFrac"
+"soil_root~wet__sigmoid_function_shape_parameter" = "rootdistpar"
+soil__thickness = "SoilThickness_gw"
+soil_water__vertical_saturated_hydraulic_conductivity_factor = "kvfrac"
+
+"vegetation_root__feddes_critial_pressure_head_h~1_reduction_coefficient" = "alpha_h1"
+"vegetation_root__feddes_critial_pressure_head_h~1" = "h1"
+"vegetation_root__feddes_critial_pressure_head_h~2" = "h2"
+"vegetation_root__feddes_critial_pressure_head_h~3~high" = "h3_high"
+"vegetation_root__feddes_critial_pressure_head_h~3~low" = "h3_low"
+"vegetation_root__feddes_critial_pressure_head_h~4" = "h4"
 
 forcing = [
   "vertical.atmospheric_forcing.precipitation",
@@ -105,27 +127,6 @@ temperature = "temp"
 
 [input.vertical.runoff.parameters]
 waterfrac = "WaterFrac"
-
-[input.vertical.soil.parameters]
-alpha_h1 = "alpha_h1"
-c = "c"
-cf_soil = "cf_soil"
-f = "f"
-h1 = "h1"
-h2 = "h2"
-h3_high = "h3_high"
-h3_low = "h3_low"
-h4 = "h4"
-infiltcappath = "InfiltCapPath"
-infiltcapsoil = "InfiltCapSoil"
-theta_r = "thetaR"
-theta_s = "thetaS"
-maxleakage = "MaxLeakage"
-pathfrac = "PathFrac"
-rootdistpar = "rootdistpar"
-soilthickness = "SoilThickness_gw"
-kv_0 = "KsatVer"
-kvfrac = "kvfrac"
 
 [model.water_demand]
 domestic = true

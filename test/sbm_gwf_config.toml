@@ -48,6 +48,13 @@ river_location = "wflow_river"
 subcatchment = "wflow_subcatch"
 altitude = "wflow_dem"
 
+soil_surface_water__vertical_saturated_hydraulic_conductivity = "kv"
+"soil~non-compacted_surface_water__infiltration_capacity" = "InfiltCapSoil"
+soil_water__residual_volume_fraction = "thetaR"
+soil_water__saturated_volume_fraction = "thetaS"
+"soil~compacted__area_fraction" = "PathFrac"
+soil__thickness = "soilthickness"
+
 # specify the internal IDs of the parameters which vary over time
 # the external name mapping needs to be below together with the other mappings
 forcing = [
@@ -66,14 +73,6 @@ e_r = "EoverR"
 [input.vertical.atmospheric_forcing]
 potential_evaporation = "PET"
 precipitation = "P"
-
-[input.vertical.soil.parameters]
-infiltcapsoil = "InfiltCapSoil"
-kv_0 = "kv"
-pathfrac = "PathFrac"
-soilthickness = "soilthickness"
-theta_r = "thetaR"
-theta_s = "thetaS"
 
 [input.lateral.river]
 length = "wflow_riverlength"

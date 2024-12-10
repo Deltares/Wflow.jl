@@ -61,6 +61,19 @@ atmosphere_air__snowfall_temperature_threshold = "TT"
 atmosphere_air__snowfall_temperature_interval = "TTI"
 snowpack__melting_temperature_threshold = "TTM"
 snowpack__degree-day_coefficient = "Cfmax"
+snowpack__liquid_water_holding_capacity =  "WHC"
+
+soil_water__brooks-corey_epsilon_parameter = "c"
+soil_surface_water__infiltration_reduction_parameter = "cf_soil"
+soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter = "f"
+"soil~compacted_surface_water__infiltration_capacity" = "InfiltCapPath"
+"soil~non-compacted_surface_water__infiltration_capacity" = "InfiltCapSoil"
+soil_water__residual_volume_fraction = "thetaR"
+soil_water__saturated_volume_fraction = "thetaS"
+soil_water_sat-zone_bottom__max_leakage_volume_flux = "MaxLeakage"
+"soil~compacted__area_fraction" = "PathFrac"
+"soil_root~wet__sigmoid_function_shape_parameter" = "rootdistpar"
+soil__thickness = "SoilThickness"
 
 # specify the internal IDs of the parameters which vary over time
 # the external name mapping needs to be below together with the other mappings
@@ -104,7 +117,7 @@ pathfrac = "PathFrac"
 rootdistpar = "rootdistpar"
 soilthickness = "SoilThickness"
 
-[input.vertical.soil.parameters.kv_0]
+[input.soil_surface_water__vertical_saturated_hydraulic_conductivity]
 netcdf.variable.name = "KsatVer"
 scale = 1.0
 offset = 0.0

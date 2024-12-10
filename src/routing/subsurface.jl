@@ -57,7 +57,7 @@ function LateralSsfParameters(
     (; theta_s, theta_r, soilthickness) = soil
     soilthickness = soilthickness .* 0.001
 
-    kh_profile_type = get(config.input.vertical, "ksat_profile", "exponential")::String
+    kh_profile_type = get(config.input, "ksat_profile", "exponential")::String
     dt = Second(config.timestepsecs) / basetimestep
     if kh_profile_type == "exponential"
         (; kv_0, f) = soil.kv_profile

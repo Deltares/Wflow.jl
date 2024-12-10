@@ -23,24 +23,8 @@ config = Wflow.Config(tomlpath)
     @test config.output isa Wflow.Config
     @test collect(keys(config.output)) == ["lateral", "vertical", "path"]
 
-    # theta_s can also be provided under the alias theta_s
-    @test Wflow.get_alias(
-        config.input.vertical.soil.parameters,
-        "theta_s",
-        "theta_s",
-        nothing,
-    ) == "thetaS"
-    val = pop!(config.input.vertical.soil.parameters, "theta_s")
-    config.input.vertical.soil.parameters["theta_s"] = val
-    @test Wflow.get_alias(
-        config.input.vertical.soil.parameters,
-        "theta_s",
-        "theta_s",
-        nothing,
-    ) == "thetaS"
-
     # modifiers can also be applied
-    kvconf = Wflow.get_alias(config.input.vertical.soil.parameters, "kv_0", "kv_0", nothing)
+    kvconf = Wflow.param(config.input, "soil_surface_water__vertical_saturated_hydraulic_conductivity", nothing)
     @test kvconf isa Wflow.Config
     ncname, modifier = Wflow.ncvar_name_modifier(kvconf; config = config)
     @test ncname === "KsatVer"
@@ -267,14 +251,14 @@ end
 end
 
 config.input["snowpack__degree-day_coefficient"] = Dict("value" => 2.0)
-config.input.vertical.soil.parameters.soilthickness = Dict(
+config.input.soil__thickness = Dict(
     "scale" => 3.0,
     "offset" => 100.0,
     "netcdf" => Dict("variable" => Dict("name" => "SoilThickness")),
 )
 config.input.vertical.atmospheric_forcing.precipitation =
     Dict("scale" => 1.5, "netcdf" => Dict("variable" => Dict("name" => "precip")))
-config.input.vertical.soil.parameters.c = Dict(
+config.input["soil_water__brooks-corey_epsilon_parameter"] = Dict(
     "scale" => [2.0, 3.0],
     "offset" => [0.0, 0.0],
     "layer" => [1, 3],
