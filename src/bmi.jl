@@ -43,7 +43,7 @@ Update the model for a single timestep.
 # Arguments
 - `run = nothing`: to update a model partially.
 """
-function BMI.update(model::Model; run = nothing)
+function BMI.update(model::Model; run::Union{Nothing, String} = nothing)
     if isnothing(run)
         run_timestep!(model)
     elseif run == "sbm_until_recharge"

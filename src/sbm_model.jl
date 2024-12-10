@@ -13,7 +13,6 @@ function initialize_sbm_model(config::Config)
 
     reader = prepare_reader(config)
     clock = Clock(config, reader)
-    dt = clock.dt
 
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
     do_lakes = get(config.model, "lakes", false)::Bool
@@ -95,8 +94,9 @@ function initialize_sbm_model(config::Config)
     if do_reservoirs
         reservoir, reservoir_network, inds_reservoir_map2river, pits =
             SimpleReservoir(dataset, config, inds_river, n_river_cells, pits)
+        network_reservoir = NetworkReservoir(; reservoir_network...)
     else
-        reservoir_network = (river_indices = [],)
+        network_reservoir = NetworkReservoir()
         inds_reservoir_map2river = fill(0, n_river_cells)
         reservoir = nothing
     end
@@ -105,8 +105,9 @@ function initialize_sbm_model(config::Config)
     if do_lakes
         lake, lake_network, inds_lake_map2river, pits =
             Lake(dataset, config, inds_river, n_river_cells, pits)
+        network_lake = NetworkLake(; lake_network)
     else
-        lake_network = (river_indices = [],)
+        network_lake = NetworkLake()
         inds_lake_map2river = fill(0, n_river_cells)
         lake = nothing
     end
@@ -156,7 +157,7 @@ function initialize_sbm_model(config::Config)
                 subsurface_flow,
                 land_hydrology.soil,
                 kv_profile,
-                tosecond(dt),
+                tosecond(clock.dt),
             )
         end
     else
@@ -303,7 +304,7 @@ function initialize_sbm_model(config::Config)
     indices_reverse = (
         land = reverse_indices,
         river = reverse_inds_river,
-        reservoir = isnothing(reservoir) ? nothing : reservoir_network.reverse_indices,
+        reservoir = isnothing(reservoir) ? nothing : network_reservoir.reverse_indices,
         lake = isnothing(lake) ? nothing : lake_network.reverse_indices,
     )
     (; maxlayers) = land_hydrology.soil.parameters
@@ -331,8 +332,8 @@ function initialize_sbm_model(config::Config)
     # for the land domain the x and y length [m] of the grid cells are stored
     # for reservoirs and lakes indices information is available from the initialization
     # functions
-    land = (
-        graph = graph,
+    network_land = NetworkLand(;
+        graph,
         upstream_nodes = filter_upsteam_nodes(graph, pits[indices]),
         order_of_subdomains,
         order_subdomain = toposort_subdomain,
@@ -346,14 +347,15 @@ function initialize_sbm_model(config::Config)
         allocation_area_indices = allocation_area_inds,
     )
     if land_routing == "local-inertial"
-        land = merge(land, (river_indices = inds_river_map2land, staggered_indices))
+        @reset network_land.river_indices = inds_river_map2land
+        @reset network_land.staggered_indices = staggered_indices
     end
     if do_water_demand
         # exclude waterbodies for local surface and ground water abstraction
         inds_riv_2d = copy(reverse_inds_river)
         inds_2d = zeros(Bool, modelsize_2d)
         if !isnothing(reservoir)
-            inds_cov = collect(Iterators.flatten(reservoir_network.indices_coverage))
+            inds_cov = collect(Iterators.flatten(network_reservoir.indices_coverage))
             inds_riv_2d[inds_cov] .= 0
             inds_2d[inds_cov] .= 1
         end
@@ -362,59 +364,45 @@ function initialize_sbm_model(config::Config)
             inds_riv_2d[inds_cov] .= 0
             inds_2d[inds_cov] .= 1
         end
-        land = merge(
-            land,
-            (
-                river_inds_excl_waterbody = inds_riv_2d[indices],
-                waterbody = inds_2d[indices],
-            ),
-        )
+        @reset network_land.river_inds_excl_waterbody = inds_riv_2d[indices]
+        @reset network_land.waterbody = inds_2d[indices]
     end
+    network_river = NetworkRiver(;
+        graph = graph_river,
+        indices = inds_river,
+        reverse_indices = reverse_inds_river,
+        reservoir_indices = inds_reservoir_map2river,
+        lake_indices = inds_lake_map2river,
+        land_indices = inds_land_map2river,
+        # water allocation areas
+        allocation_area_indices = river_allocation_area_inds,
+        cell_area = x_length[inds_land_map2river] .* y_length[inds_land_map2river],
+    )
     if river_routing == "kinematic-wave"
-        river = (
-            graph = graph_river,
-            indices = inds_river,
-            reverse_indices = reverse_inds_river,
-            reservoir_indices = inds_reservoir_map2river,
-            lake_indices = inds_lake_map2river,
-            land_indices = inds_land_map2river,
-            # specific for kinematic_wave
-            upstream_nodes = filter_upsteam_nodes(graph_river, pits[inds_river]),
-            order_of_subdomains = order_of_river_subdomains,
-            order_subdomain = toposort_river_subdomain,
-            subdomain_indices = river_subdomain_inds,
-            order = toposort_river,
-            # water allocation areas
-            allocation_area_indices = river_allocation_area_inds,
-            cell_area = x_length[inds_land_map2river] .* y_length[inds_land_map2river],
-        )
+        @reset network_river.upstream_nodes =
+            filter_upsteam_nodes(graph_river, pits[inds_river])
+        @reset network_river.order_of_subdomains = order_of_river_subdomains
+        @reset network_river.order_subdomain = toposort_river_subdomain
+        @reset network_river.subdomain_indices = river_subdomain_inds
+        @reset network_river.order = toposort_river
     elseif river_routing == "local-inertial"
-        river = (
-            graph = graph_river,
-            indices = inds_river,
-            reverse_indices = reverse_inds_river,
-            reservoir_indices = inds_reservoir_map2river,
-            lake_indices = inds_lake_map2river,
-            land_indices = inds_land_map2river,
-            # specific for local-inertial
-            nodes_at_edge = nodes_at_edge,
-            edges_at_node = adjacent_edges_at_node(graph_river, nodes_at_edge),
-            # water allocation areas
-            allocation_area_indices = river_allocation_area_inds,
-            cell_area = x_length[inds_land_map2river] .* y_length[inds_land_map2river],
-        )
+        @reset network_river.nodes_at_edge = NodesAtEdge(; nodes_at_edge...)
+        @reset network_river.edges_at_node =
+            EdgesAtNode(; adjacent_edges_at_node(graph_river, nodes_at_edge)...)
     end
 
-    model = Model(
-        config,
-        (; land, river, reservoir = reservoir_network, lake = lake_network),
-        (subsurface = subsurface_flow, land = overland_flow, river = river_flow),
-        land_hydrology,
-        clock,
-        reader,
-        writer,
-        SbmModel(),
+    network = Network(;
+        land = network_land,
+        river = network_river,
+        reservoir = network_reservoir,
+        lake = network_lake,
     )
+
+    lateral =
+        Lateral(; subsurface = subsurface_flow, land = overland_flow, river = river_flow)
+
+    model =
+        Model(config, network, lateral, land_hydrology, clock, reader, writer, SbmModel())
 
     set_states!(model)
 
@@ -423,7 +411,7 @@ function initialize_sbm_model(config::Config)
 end
 
 "update SBM model for a single timestep"
-function update!(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmModel}
+function update!(model::AbstractModel{<:SbmModel})
     (; lateral, vertical, network, clock, config) = model
     dt = tosecond(clock.dt)
     do_water_demand = haskey(config.model, "water_demand")
@@ -449,14 +437,12 @@ function update!(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmM
 end
 
 """
-    update_until_recharge!(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
+    update_until_recharge!model::AbstractModel{<:SbmModel})
 
 Update SBM model until recharge for a single timestep. This function is also accessible
 through BMI, to couple the SBM model to an external groundwater model.
 """
-function update_until_recharge!(
-    model::Model{N, L, V, R, W, T},
-) where {N, L, V, R, W, T <: SbmModel}
+function update_until_recharge!(model::AbstractModel{<:SbmModel})
     (; lateral, vertical, network, clock, config) = model
     dt = tosecond(clock.dt)
     update!(vertical, lateral, network, config, dt)
@@ -464,14 +450,12 @@ function update_until_recharge!(
 end
 
 """
-    update_after_subsurfaceflow!(model::Model{N,L,V,R,W,T}) where {N,L,V,R,W,T<:SbmModel}
+    update_after_subsurfaceflow!(model::AbstractModel{<:SbmModel})
 
 Update SBM model after subsurface flow for a single timestep. This function is also
 accessible through BMI, to couple the SBM model to an external groundwater model.
 """
-function update_after_subsurfaceflow!(
-    model::Model{N, L, V, R, W, T},
-) where {N, L, V, R, W, T <: SbmModel}
+function update_after_subsurfaceflow!(model::AbstractModel{<:SbmModel})
     (; lateral, vertical) = model
     (; soil, runoff, demand) = vertical
     (; subsurface) = lateral
@@ -489,9 +473,7 @@ Update of the total water storage at the end of each timestep per model cell.
 
 This is done here at model level.
 """
-function update_total_water_storage!(
-    model::Model{N, L, V, R, W, T},
-) where {N, L, V, R, W, T <: SbmModel}
+function update_total_water_storage!(model::AbstractModel{<:SbmModel})
     (; lateral, vertical, network) = model
 
     # Update the total water storage based on vertical states
@@ -506,9 +488,7 @@ function update_total_water_storage!(
     return nothing
 end
 
-function set_states!(
-    model::Model{N, L, V, R, W, T},
-) where {N, L, V, R, W, T <: Union{SbmModel, SbmGwfModel}}
+function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
     (; lateral, vertical, network, config) = model
     land_v = lateral.land.variables
     land_p = lateral.land.parameters

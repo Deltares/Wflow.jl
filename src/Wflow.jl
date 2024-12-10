@@ -2,6 +2,7 @@ module Wflow
 
 import BasicModelInterface as BMI
 
+using Accessors: @reset
 using Base.Threads: nthreads
 using CFTime: CFTime, monthday, dayofyear
 using Dates:
@@ -25,22 +26,23 @@ using DelimitedFiles: readdlm
 using FieldMetadata: @metadata
 using Glob: glob
 using Graphs:
-    Graphs,
-    Graph,
-    DiGraph,
     add_edge!,
-    is_cyclic,
-    inneighbors,
-    outneighbors,
-    edges,
-    topological_sort_by_dfs,
-    src,
+    add_vertex!,
+    DiGraph,
     dst,
-    vertices,
-    nv,
-    ne,
+    edges,
+    Graph,
+    Graphs,
     induced_subgraph,
-    add_vertex!
+    inneighbors,
+    is_cyclic,
+    ne,
+    nv,
+    outneighbors,
+    SimpleDiGraph,
+    src,
+    topological_sort_by_dfs,
+    vertices
 using IfElse: IfElse
 using LoggingExtras
 using LoopVectorization: @tturbo
@@ -113,31 +115,41 @@ function Clock(config, reader)
 end
 
 include("io.jl")
+include("network.jl")
+
+abstract type AbstractModel{T} end
+abstract type AbstractLandSurface end
+
+# different model types (used for dispatch)
+abstract type AbstractModelType end
+struct SbmModel <: AbstractModelType end         # "sbm" type / sbm_model.jl
+struct SbmGwfModel <: AbstractModelType end      # "sbm_gwf" type / sbm_gwf_model.jl
+struct SedimentModel <: AbstractModelType end    # "sediment" type / sediment_model.jl
 
 """
-    Model{N,L,V,R,W}
+    Model{L, V, R, W, T}
 
 Composite type that represents all different aspects of a Wflow Model, such as the
 network, parameters, clock, configuration and input and output.
 """
-struct Model{N, L, V, R, W, T}
+struct Model{
+    L <: Lateral,
+    V <: AbstractLandSurface,
+    R <: NCReader,
+    T <: AbstractModelType,
+} <: AbstractModel{T}
     config::Config  # all configuration options
-    network::N  # connectivity information, directed graph
+    network::Network  # connectivity information, directed graph
     lateral::L  # lateral model that holds lateral state, moves along network
     vertical::V  # vertical model that holds vertical state, independent of each other
     clock::Clock  # to keep track of simulation time
     reader::R  # provides the model with dynamic input
-    writer::W  # writes model output
+    writer::Writer  # writes model output
     type::T # model type
 end
 
-# different model types (used for dispatch)
-struct SbmModel end         # "sbm" type / sbm_model.jl
-struct SbmGwfModel end      # "sbm_gwf" type / sbm_gwf_model.jl
-struct SedimentModel end    # "sediment" type / sediment_model.jl
-
 # prevent a large printout of model components and arrays
-Base.show(io::IO, m::Model) = print(io, "model of type ", typeof(m))
+Base.show(io::IO, ::AbstractModel{T}) where {T} = print(io, "model of type ", T)
 
 include("forcing.jl")
 include("parameters.jl")
