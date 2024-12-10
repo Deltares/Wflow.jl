@@ -31,10 +31,6 @@ function initialize_sediment_model(config::Config)
     )
     river = river_2d[indices]
 
-    # Needed to update the forcing
-    reservoir = ()
-    lake = ()
-
     soilloss = SoilLoss(dataset, config, indices)
 
     # Get waterbodies mask
@@ -77,10 +73,6 @@ function initialize_sediment_model(config::Config)
     graph = flowgraph(ldd, indices, pcr_dir)
 
     # River processes
-    do_river = get(config.model, "run_river_model", false)::Bool
-    # TODO: see if we can skip init if the river model is not needed
-    # or if we leave it when we restructure the Wflow Model struct
-
     indices_riv, rev_indices_riv = active_indices(river_2d, 0)
 
     ldd_riv = ldd_2d[indices_riv]
@@ -106,12 +98,7 @@ function initialize_sediment_model(config::Config)
         vertical = soilloss,
         lateral = (land = overland_flow_sediment, river = river_sediment),
     )
-    indices_reverse = (
-        land = rev_indices,
-        river = rev_indices_riv,
-        reservoir = isempty(reservoir) ? nothing : reservoir.reverse_indices,
-        lake = isempty(lake) ? nothing : lake.reverse_indices,
-    )
+    indices_reverse = (land = rev_indices, river = rev_indices_riv)
     y_dataset = read_y_axis(dataset)
     x_dataset = read_x_axis(dataset)
     writer =
@@ -120,27 +107,21 @@ function initialize_sediment_model(config::Config)
 
     # for each domain save the directed acyclic graph, the traversion order,
     # and the indices that map it back to the two dimensional grid
-    land = (
+    network_land = NetworkLand(;
         graph = graph,
         order = topological_sort_by_dfs(graph),
         indices = indices,
         reverse_indices = rev_indices,
     )
-    river = (
+    network_river = NetworkRiver(;
         graph = graph_riv,
         order = topological_sort_by_dfs(graph_riv),
         indices = indices_riv,
         reverse_indices = rev_indices_riv,
     )
 
-    network = Network(;
-        land = NetworkLand(; land...),
-        river = NetworkRiver(; river...),
-        reservoir = NetworkReservoir(; reservoir...),
-        lake = NetworkLake(; lake...),
-        index_river,
-        frac_to_river,
-    )
+    network =
+        Network(; land = network_land, river = network_river, index_river, frac_to_river)
 
     lateral = Lateral(; land = overland_flow_sediment, river = river_sediment)
 
