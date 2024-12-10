@@ -334,7 +334,7 @@ function initialize_sbm_model(config::Config)
     # for reservoirs and lakes indices information is available from the initialization
     # functions
     network_land = NetworkLand(;
-        graph = graph,
+        graph,
         upstream_nodes = filter_upsteam_nodes(graph, pits[indices]),
         order_of_subdomains,
         order_subdomain = toposort_subdomain,
