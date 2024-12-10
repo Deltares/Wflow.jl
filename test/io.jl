@@ -23,6 +23,12 @@ config = Wflow.Config(tomlpath)
     @test config.output isa Wflow.Config
     @test collect(keys(config.output)) == ["lateral", "vertical", "path"]
 
+    # test removal of key with pop!
+    val = pop!(config.input, "soil_water__saturated_volume_fraction")
+    @test val == "thetaS"
+    @test_throws KeyError config.input.soil_water__saturated_volume_fraction
+    config.input.soil_water__saturated_volume_fraction = "thetaS"
+
     # modifiers can also be applied
     kvconf = Wflow.param(config.input, "soil_surface_water__vertical_saturated_hydraulic_conductivity", nothing)
     @test kvconf isa Wflow.Config
