@@ -13,7 +13,6 @@ function initialize_sbm_model(config::Config)
 
     reader = prepare_reader(config)
     clock = Clock(config, reader)
-    dt = clock.dt
 
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
     do_lakes = get(config.model, "lakes", false)::Bool
@@ -158,7 +157,7 @@ function initialize_sbm_model(config::Config)
                 subsurface_flow,
                 land_hydrology.soil,
                 kv_profile,
-                tosecond(dt),
+                tosecond(clock.dt),
             )
         end
     else
