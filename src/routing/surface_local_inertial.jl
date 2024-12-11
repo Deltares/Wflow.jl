@@ -662,7 +662,7 @@ function LocalInertialOverlandFlowParameters(
     mannings_n = ncread(
         dataset,
         config,
-        "lateral.land.mannings_n";
+        "land_surface_water_flow__manning_n_parameter";
         sel = indices,
         defaults = 0.072,
         type = Float,
@@ -670,7 +670,7 @@ function LocalInertialOverlandFlowParameters(
     elevation_2d = ncread(
         dataset,
         config,
-        "lateral.land.elevation";
+        "land_surface_water_flow__ground_elevation";
         optional = false,
         type = Float,
         fill = 0,

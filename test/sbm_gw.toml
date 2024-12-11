@@ -85,6 +85,9 @@ river_water_flow__manning_n_parameter = "N_River"
 river__slope = "RiverSlope"
 river__width = "wflow_riverwidth"
 
+land_surface_water_flow__manning_n_parameter = "N"
+land_surface__slope = "Slope"
+
 # specify the internal IDs of the parameters which vary over time
 # the external name mapping needs to be below together with the other mappings
 forcing = [
@@ -109,10 +112,6 @@ maxrelease = "ResMaxRelease"
 maxvolume = "ResMaxVolume"
 targetfullfrac = "ResTargetFullFrac"
 targetminfrac = "ResTargetMinFrac"
-
-[input.lateral.land]
-mannings_n = "N"
-slope = "Slope"
 
 [model]
 kin_wave_iteration = true

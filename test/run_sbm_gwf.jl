@@ -110,7 +110,7 @@ config.model.land_routing = "local-inertial"
 
 config.input.river_bank_water__elevation = "bankfull_elevation"
 config.input.river_bank_water__depth = "bankfull_depth"
-config.input.lateral.land.elevation = "wflow_dem"
+config.input.land_surface_water_flow__ground_elevation = "wflow_dem"
 
 pop!(Dict(config.state.lateral.land.variables), "q")
 config.state.lateral.land.variables.h_av = "h_av_land"

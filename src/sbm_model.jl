@@ -122,7 +122,7 @@ function initialize_sbm_model(config::Config)
     land_slope = ncread(
         dataset,
         config,
-        "lateral.land.slope";
+        "land_surface__slope";
         optional = false,
         sel = indices,
         type = Float,

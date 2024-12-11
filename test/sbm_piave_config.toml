@@ -66,6 +66,9 @@ river__slope = "RiverSlope"
 river__width = "wflow_riverwidth"
 river_bank_water__depth = "RiverDepth"
 
+land_surface_water_flow__manning_n_parameter = "N"
+land_surface__slope = "Slope"
+
 forcing = [
   "vertical.atmospheric_forcing.precipitation",
   "vertical.atmospheric_forcing.temperature",
@@ -126,10 +129,6 @@ h_av = "h_av_land"
 
 [input.lateral.subsurface]
 ksathorfrac = "KsatHorFrac"
-
-[input.lateral.land]
-mannings_n = "N"
-slope = "Slope"
 
 [output]
 path = "output-piave.nc"

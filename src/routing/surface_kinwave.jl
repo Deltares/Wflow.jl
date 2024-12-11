@@ -220,7 +220,7 @@ function KinWaveOverlandFlow(dataset, config, indices; slope, flow_length, flow_
     mannings_n = ncread(
         dataset,
         config,
-        "lateral.land.mannings_n";
+        "land_surface_water_flow__manning_n_parameter";
         sel = indices,
         defaults = 0.072,
         type = Float,

@@ -50,6 +50,9 @@ river_water_flow__manning_n_parameter = "N_River"
 river__slope = "RiverSlope"
 river__width = "wflow_riverwidth"
 
+land_surface_water_flow__manning_n_parameter = "N"
+land_surface__slope = "Slope"
+
 # specify the internal IDs of the parameters which vary over time
 # the external name mapping needs to be below together with the other mappings
 forcing = [
@@ -84,10 +87,6 @@ targetminfrac = "ResTargetMinFrac"
 
 [input.lateral.subsurface]
 ksathorfrac = "KsatHorFrac"
-
-[input.lateral.land]
-n = "N"
-slope = "Slope"
 
 [model]
 thicknesslayers = [100, 300, 800]

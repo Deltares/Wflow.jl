@@ -92,6 +92,9 @@ river__width = "wflow_riverwidth"
 river_bank_water__depth = "RiverDepth"
 river_bank_water__elevation = "RiverZ"
 
+land_surface_water_flow__manning_n_parameter = "N"
+land_surface__slope = "Slope"
+
 # specify the internal IDs of the parameters which vary over time
 # the external name mapping needs to be below together with the other mappings
 forcing = [
@@ -124,10 +127,6 @@ targetminfrac = "ResTargetMinFrac"
 
 [input.lateral.subsurface]
 ksathorfrac = "KsatHorFrac"
-
-[input.lateral.land]
-mannings_n = "N"
-slope = "Slope"
 
 [model]
 kin_wave_iteration = true
