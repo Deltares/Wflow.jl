@@ -49,6 +49,13 @@ soil__thickness = "SoilThickness"
 "vegetation_root__feddes_critial_pressure_head_h~3~high" = "h3_high"
 "vegetation_root__feddes_critial_pressure_head_h~3~low" = "h3_low"
 "vegetation_root__feddes_critial_pressure_head_h~4" = "h4"
+vegetation_canopy_water__mean_evaporation-to-mean_precipitation_ratio = "EoverR"
+vegetation__leaf-area_index = "LAI"
+vegetation_canopy__light-extinction_coefficient = "Kext"
+vegetation__specific-leaf_storage = "Sl"
+vegetation_woody-part__storage_capacity = "Swood"
+vegetation_root__depth = "RootingDepth"
+vegetation__crop_factor = "crop_factor"
 
 forcing = [
   "vertical.atmospheric_forcing.precipitation",
@@ -56,7 +63,7 @@ forcing = [
   "vertical.atmospheric_forcing.potential_evaporation",
 ]
 
-cyclic = ["vertical.vegetation_parameter_set.leaf_area_index"]
+cyclic = ["vegetation__leaf-area_index"]
 
 [model]
 type = "sbm"
@@ -89,17 +96,6 @@ glacier_store = "glacierstore"
 
 [input.vertical.glacier.variables]
 glacier_store = "wflow_glacierstore"
-
-[input.vertical.vegetation_parameter_set]
-leaf_area_index = "LAI"
-kext = "Kext"
-storage_specific_leaf = "Sl"
-storage_wood = "Swood"
-rootingdepth = "RootingDepth"
-kc = "crop_factor"
-
-[input.vertical.interception.parameters]
-e_r = "EoverR"
 
 [input.vertical.atmospheric_forcing]
 potential_evaporation = "pet"

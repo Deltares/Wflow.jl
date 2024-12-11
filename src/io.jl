@@ -26,6 +26,7 @@ function param(obj, fields, default)
         return default
     end
 end
+get_fields(name) = haskey(standard_name_map, name) ? standard_name_map[name] : name
 
 """
     Config(path::AbstractString)
@@ -718,8 +719,8 @@ function prepare_reader(config)
         cyclic_parameters = Dict{Tuple{Symbol, Vararg{Symbol}}, NamedTuple}()
         cyclic_times = Dict{Tuple{Symbol, Vararg{Symbol}}, Vector{Tuple{Int, Int}}}()
         for par in config.input.cyclic
-            fields = symbols(par)
-            ncname, mod = ncvar_name_modifier(param(config.input, fields))
+            fields = symbols(get_fields(par)) #TODO: make this more restrict (only allow variables in `standard_name_map`)
+            ncname, mod = ncvar_name_modifier(param(config.input, par))
             i = findfirst(x -> startswith(x, "time"), dimnames(cyclic_dataset[ncname]))
             dimname = dimnames(cyclic_dataset[ncname])[i]
             cyclic_nc_times = collect(cyclic_dataset[dimname])

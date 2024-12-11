@@ -75,6 +75,13 @@ soil_water_sat-zone_bottom__max_leakage_volume_flux = "MaxLeakage"
 "soil_root~wet__sigmoid_function_shape_parameter" = "rootdistpar"
 soil__thickness = "SoilThickness"
 
+vegetation_canopy_water__mean_evaporation-to-mean_precipitation_ratio = "EoverR"
+vegetation__leaf-area_index = "LAI"
+vegetation_canopy__light-extinction_coefficient = "Kext"
+vegetation__specific-leaf_storage = "Sl"
+vegetation_woody-part__storage_capacity = "Swood"
+vegetation_root__depth = "RootingDepth"
+
 # specify the internal IDs of the parameters which vary over time
 # the external name mapping needs to be below together with the other mappings
 forcing = [
@@ -83,14 +90,7 @@ forcing = [
   "vertical.atmospheric_forcing.potential_evaporation",
 ]
 
-cyclic = ["vertical.vegetation_parameter_set.leaf_area_index"]
-
-[input.vertical.vegetation_parameter_set]
-leaf_area_index = "LAI"
-kext = "Kext"
-storage_specific_leaf = "Sl"
-storage_wood = "Swood"
-rootingdepth = "RootingDepth"
+cyclic = ["vegetation__leaf-area_index"]
 
 [input.vertical.runoff.parameters]
 waterfrac = "WaterFrac"
@@ -102,20 +102,6 @@ e_r = "EoverR"
 potential_evaporation = "pet"
 precipitation = "precip"
 temperature = "temp"
-
-[input.vertical.soil.parameters]
-c = "c"
-cf_soil = "cf_soil"
-f = "f"
-infiltcappath = "InfiltCapPath"
-infiltcapsoil = "InfiltCapSoil"
-water_holding_capacity = "WHC"
-theta_r = "thetaR"
-theta_s = "thetaS"
-maxleakage = "MaxLeakage"
-pathfrac = "PathFrac"
-rootdistpar = "rootdistpar"
-soilthickness = "SoilThickness"
 
 [input.soil_surface_water__vertical_saturated_hydraulic_conductivity]
 netcdf.variable.name = "KsatVer"

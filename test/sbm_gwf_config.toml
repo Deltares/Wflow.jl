@@ -55,20 +55,17 @@ soil_water__saturated_volume_fraction = "thetaS"
 "soil~compacted__area_fraction" = "PathFrac"
 soil__thickness = "soilthickness"
 
+vegetation_canopy_water__mean_evaporation-to-mean_precipitation_ratio = "EoverR"
+vegetation_root__depth = "rootingdepth"
+vegetation_canopy__gap_fraction = "canopygapfraction"
+vegetation_water__storage_capacity = "cmax"
+
 # specify the internal IDs of the parameters which vary over time
 # the external name mapping needs to be below together with the other mappings
 forcing = [
   "vertical.atmospheric_forcing.precipitation",
   "vertical.atmospheric_forcing.potential_evaporation",
 ]
-
-[input.vertical.vegetation_parameter_set]
-rootingdepth = "rootingdepth"
-canopygapfraction = "canopygapfraction"
-cmax = "cmax"
-
-[input.vertical.interception.parameters]
-e_r = "EoverR"
 
 [input.vertical.atmospheric_forcing]
 potential_evaporation = "PET"

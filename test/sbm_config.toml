@@ -75,6 +75,13 @@ soil_water_sat-zone_bottom__max_leakage_volume_flux = "MaxLeakage"
 "soil_root~wet__sigmoid_function_shape_parameter" = "rootdistpar"
 soil__thickness = "SoilThickness"
 
+vegetation_canopy_water__mean_evaporation-to-mean_precipitation_ratio = "EoverR"
+vegetation__leaf-area_index = "LAI"
+vegetation_canopy__light-extinction_coefficient = "Kext"
+vegetation__specific-leaf_storage = "Sl"
+vegetation_woody-part__storage_capacity = "Swood"
+vegetation_root__depth = "RootingDepth"
+
 # specify the internal IDs of the parameters which vary over time
 # the external name mapping needs to be below together with the other mappings
 forcing = [
@@ -83,20 +90,10 @@ forcing = [
   "vertical.atmospheric_forcing.potential_evaporation",
 ]
 
-cyclic = ["vertical.vegetation_parameter_set.leaf_area_index"]
-
-[input.vertical.vegetation_parameter_set]
-leaf_area_index = "LAI"
-kext = "Kext"
-storage_specific_leaf = "Sl"
-storage_wood = "Swood"
-rootingdepth = "RootingDepth"
+cyclic = ["vegetation__leaf-area_index"]
 
 [input.vertical.runoff.parameters]
 waterfrac = "WaterFrac"
-
-[input.vertical.interception.parameters]
-e_r = "EoverR"
 
 [input.vertical.atmospheric_forcing]
 potential_evaporation = "pet"

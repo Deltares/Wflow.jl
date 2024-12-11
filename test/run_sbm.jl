@@ -185,7 +185,7 @@ config.input.vertical.atmospheric_forcing.potential_evaporation = Dict(
     "offset" => 1.50,
     "netcdf" => Dict("variable" => Dict("name" => "pet")),
 )
-config.input.vertical.vegetation_parameter_set.leaf_area_index =
+config.input["vegetation__leaf-area_index"] =
     Dict("scale" => 1.6, "netcdf" => Dict("variable" => Dict("name" => "LAI")))
 
 model = Wflow.initialize_sbm_model(config)
@@ -208,10 +208,10 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 
 config.input.cyclic = [
-    "vertical.vegetation_parameter_set.leaf_area_index",
-    "lateral.river.boundary_conditions.inflow",
+    "vegetation__leaf-area_index",
+    "river_water__volume_inflow_rate",
 ]
-Dict(config.input.lateral.river)["boundary_conditions"] = Dict("inflow" => "inflow")
+config.input.river_water__volume_inflow_rate = "inflow"
 
 model = Wflow.initialize_sbm_model(config)
 Wflow.run_timestep!(model)
