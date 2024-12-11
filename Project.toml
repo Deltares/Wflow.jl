@@ -6,6 +6,7 @@ version = "0.8.1"
 [deps]
 BasicModelInterface = "59605e27-edc0-445a-b93d-c09a3a50b330"
 CFTime = "179af706-886a-5703-950a-314cd64e0468"
+Configurations = "5218b696-f38b-4ac9-8b61-a12ec717816d"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 FieldMetadata = "bf96fef3-21d2-5d20-8afa-0e7d4c32a885"

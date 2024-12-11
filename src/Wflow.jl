@@ -113,6 +113,8 @@ function Clock(config, reader)
 end
 
 include("io.jl")
+include("config.jl")
+using .config
 
 """
     Model{N,L,V,R,W}
