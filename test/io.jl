@@ -396,7 +396,7 @@ end
 
     # Final run to test error handling during simulation
     tomlpath_error = joinpath(@__DIR__, "sbm_simple-error.toml")
-    config.input.lateral.river.width = Dict(
+    config.input.river__width = Dict(
         "scale" => 0.0,
         "offset" => 0.0,
         "netcdf" => Dict("variable" => Dict("name" => "wflow_riverwidth")),

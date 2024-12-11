@@ -95,6 +95,15 @@ river_bank_water__elevation = "RiverZ"
 land_surface_water_flow__manning_n_parameter = "N"
 land_surface__slope = "Slope"
 
+reservoir_areas__number = "wflow_reservoirareas"
+reservoir_locations__number = "wflow_reservoirlocs"
+reservoir_surface__area = "ResSimpleArea"
+"reservoir_water_demand~required~downstream__volume_flow_rate" = "ResDemand"
+reservoir_water_release-below-spillway__max_volume_flow_rate = "ResMaxRelease"
+reservoir_water__max_volume = "ResMaxVolume"
+"reservoir_water~full-target__volume_fraction" = "ResTargetFullFrac"
+"reservoir_water~min-target__volume_fraction" = "ResTargetMinFrac"
+
 # specify the internal IDs of the parameters which vary over time
 # the external name mapping needs to be below together with the other mappings
 forcing = [
@@ -114,16 +123,6 @@ temperature = "temp"
 netcdf.variable.name = "KsatVer"
 scale = 1.0
 offset = 0.0
-
-[input.lateral.river.reservoir]
-area = "ResSimpleArea"
-areas = "wflow_reservoirareas"
-demand = "ResDemand"
-locs = "wflow_reservoirlocs"
-maxrelease = "ResMaxRelease"
-maxvolume = "ResMaxVolume"
-targetfullfrac = "ResTargetFullFrac"
-targetminfrac = "ResTargetMinFrac"
 
 [input.lateral.subsurface]
 ksathorfrac = "KsatHorFrac"

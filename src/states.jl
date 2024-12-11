@@ -157,8 +157,11 @@ function extract_required_states(config::Config)
     # Subsurface states
     if model_type == "sbm_gwf"
         ssf_states = (:head,)
+    elseif model_type == "sediment"
+        ssf_states = nothing
     else
-        ssf_states = haskey(config.input.lateral, "subsurface") ? (:ssf,) : nothing
+        do_subsurface_flow = get(config.model, "kinematic-wave_subsurface", true)::Bool
+        ssf_states = do_subsurface_flow ? (:ssf,) : nothing
     end
 
     # Land states

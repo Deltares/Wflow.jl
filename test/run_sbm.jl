@@ -314,7 +314,7 @@ config = Wflow.Config(tomlpath)
 config.model.floodplain_1d = true
 config.model.river_routing = "local-inertial"
 config.model.land_routing = "kinematic-wave"
-Dict(config.input.lateral.river)["floodplain"] = Dict("volume" => "floodplain_volume")
+config.input["floodplain_water__sum_of_volume-per-depth"] = "floodplain_volume"
 Dict(config.state.lateral.river)["floodplain.variables"] =
     Dict("q" => "q_floodplain", "h" => "h_floodplain")
 

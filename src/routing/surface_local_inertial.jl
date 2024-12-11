@@ -1127,7 +1127,7 @@ function FloodPlainProfile(dataset, config, indices; river_width, river_length, 
     volume = ncread(
         dataset,
         config,
-        "lateral.river.floodplain.volume";
+        "floodplain_water__sum_of_volume-per-depth";
         sel = indices,
         type = Float,
         dimname = :flood_depth,
