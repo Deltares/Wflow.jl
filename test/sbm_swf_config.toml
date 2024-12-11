@@ -55,6 +55,9 @@ subcatchment = "wflow_subcatch"
 
 atmosphere_air__snowfall_temperature_threshold = "TT"
 atmosphere_air__snowfall_temperature_interval = "TTI"
+
+"land~water-covered__area_fraction" = "WaterFrac"
+
 snowpack__melting_temperature_threshold = "TTM"
 snowpack__degree-day_coefficient = "Cfmax"
 
@@ -92,9 +95,6 @@ cyclic = ["vegetation__leaf-area_index"]
 potential_evaporation = "pet"
 precipitation = "precip"
 temperature = "temp"
-
-[input.vertical.runoff.parameters]
-waterfrac = "WaterFrac"
 
 [input.lateral.river]
 length = "wflow_riverlength"
