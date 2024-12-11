@@ -432,8 +432,8 @@ Wflow.run_timestep!(model)
 end
 
 # set boundary condition local inertial routing from netCDF file
-config.input.lateral.river.riverlength_bc = "riverlength_bc"
-config.input.lateral.river.riverdepth_bc = "riverdepth_bc"
+config.input["model_boundary_condition~river__length"] = "riverlength_bc"
+config.input["model_boundary_condition~river_bank_water__depth"] = "riverdepth_bc"
 model = Wflow.initialize_sbm_model(config)
 Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
