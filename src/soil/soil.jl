@@ -219,7 +219,7 @@ function sbm_kv_profiles(
         z_exp = ncread(
             dataset,
             config,
-            "z_exp";
+            "soil_vertical_saturated_hydraulic_conductivity_profile~exponential_below-surface__depth";
             optional = false,
             sel = indices,
             type = Float,
@@ -231,7 +231,7 @@ function sbm_kv_profiles(
             ncread(
                 dataset,
                 config,
-                "kv";
+                "soil_water__vertical_saturated_hydraulic_conductivity";
                 sel = indices,
                 defaults = 1000.0,
                 type = Float,
@@ -248,7 +248,7 @@ function sbm_kv_profiles(
             z_layered = ncread(
                 dataset,
                 config,
-                "z_layered";
+                "soil_vertical_saturated_hydraulic_conductivity_profile~layered_below-surface__depth";
                 optional = false,
                 sel = indices,
                 type = Float,

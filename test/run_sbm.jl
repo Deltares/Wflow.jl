@@ -458,9 +458,9 @@ Wflow.close_files(model; delete_output = false)
     i = 100
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
-    config.input.kv = "kv"
-    config.input.z_exp = Dict("value" => 400.0)
-    config.input.z_layered = Dict("value" => 400.0)
+    config.input.soil_water__vertical_saturated_hydraulic_conductivity = "kv"
+    config.input["soil_vertical_saturated_hydraulic_conductivity_profile~exponential_below-surface__depth"] = Dict("value" => 400.0)
+    config.input["soil_vertical_saturated_hydraulic_conductivity_profile~layered_below-surface__depth"] = Dict("value" => 400.0)
 
     @testset "exponential profile" begin
         model = Wflow.initialize_sbm_model(config)
