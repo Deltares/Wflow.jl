@@ -60,6 +60,11 @@ vegetation_root__depth = "rootingdepth"
 vegetation_canopy__gap_fraction = "canopygapfraction"
 vegetation_water__storage_capacity = "cmax"
 
+river__length = "wflow_riverlength"
+river_water_flow__manning_n_parameter = "N_river"
+river__slope = "RiverSlope"
+river__width = "wflow_riverwidth"
+
 # specify the internal IDs of the parameters which vary over time
 # the external name mapping needs to be below together with the other mappings
 forcing = [
@@ -70,12 +75,6 @@ forcing = [
 [input.vertical.atmospheric_forcing]
 potential_evaporation = "PET"
 precipitation = "P"
-
-[input.lateral.river]
-length = "wflow_riverlength"
-mannings_n = "N_river"
-slope = "RiverSlope"
-width = "wflow_riverwidth"
 
 [input.lateral.land]
 mannings_n = "N"

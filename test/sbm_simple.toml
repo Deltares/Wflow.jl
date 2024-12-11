@@ -45,6 +45,11 @@ vegetation__specific-leaf_storage = "Sl"
 vegetation_woody-part__storage_capacity = "Swood"
 vegetation_root__depth = "RootingDepth"
 
+river__length = "wflow_riverlength"
+river_water_flow__manning_n_parameter = "N_River"
+river__slope = "RiverSlope"
+river__width = "wflow_riverwidth"
+
 # specify the internal IDs of the parameters which vary over time
 # the external name mapping needs to be below together with the other mappings
 forcing = [
@@ -66,12 +71,6 @@ rootingdepth = "RootingDepth"
 potential_evaporation = "pet"
 precipitation = "precip"
 temperature = "temp"
-
-[input.lateral.river]
-length = "wflow_riverlength"
-n = "N_River"
-slope = "RiverSlope"
-width = "wflow_riverwidth"
 
 [input.lateral.river.reservoir]
 area = "ResSimpleArea"

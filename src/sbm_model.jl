@@ -58,7 +58,7 @@ function initialize_sbm_model(config::Config)
     river_width_2d = ncread(
         dataset,
         config,
-        "lateral.river.width";
+        "river__width";
         optional = false,
         type = Float,
         fill = 0,
@@ -67,7 +67,7 @@ function initialize_sbm_model(config::Config)
     river_length_2d = ncread(
         dataset,
         config,
-        "lateral.river.length";
+        "river__length";
         optional = false,
         type = Float,
         fill = 0,

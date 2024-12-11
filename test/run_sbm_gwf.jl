@@ -83,8 +83,8 @@ tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
 config = Wflow.Config(tomlpath)
 config.model.river_routing = "local-inertial"
 
-config.input.lateral.river.bankfull_elevation = "bankfull_elevation"
-config.input.lateral.river.bankfull_depth = "bankfull_depth"
+config.input.river_bank_water__elevation = "bankfull_elevation"
+config.input.river_bank_water__depth = "bankfull_depth"
 
 model = Wflow.initialize_sbm_gwf_model(config)
 Wflow.run_timestep!(model)
@@ -108,8 +108,8 @@ config = Wflow.Config(tomlpath)
 config.model.river_routing = "local-inertial"
 config.model.land_routing = "local-inertial"
 
-config.input.lateral.river.bankfull_elevation = "bankfull_elevation"
-config.input.lateral.river.bankfull_depth = "bankfull_depth"
+config.input.river_bank_water__elevation = "bankfull_elevation"
+config.input.river_bank_water__depth = "bankfull_depth"
 config.input.lateral.land.elevation = "wflow_dem"
 
 pop!(Dict(config.state.lateral.land.variables), "q")

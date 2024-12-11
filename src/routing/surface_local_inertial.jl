@@ -56,7 +56,7 @@ function LocalInertialRiverFlowParameters(
     bankfull_elevation_2d = ncread(
         dataset,
         config,
-        "lateral.river.bankfull_elevation";
+        "river_bank_water__elevation";
         optional = false,
         type = Float,
         fill = 0,
@@ -64,7 +64,7 @@ function LocalInertialRiverFlowParameters(
     bankfull_depth_2d = ncread(
         dataset,
         config,
-        "lateral.river.bankfull_depth";
+        "river_bank_water__depth";
         optional = false,
         type = Float,
         fill = 0,
@@ -76,7 +76,7 @@ function LocalInertialRiverFlowParameters(
     mannings_n = ncread(
         dataset,
         config,
-        "lateral.river.mannings_n";
+        "river_water_flow__manning_n_parameter";
         sel = indices,
         defaults = 0.036,
         type = Float,

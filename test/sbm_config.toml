@@ -85,6 +85,13 @@ vegetation__specific-leaf_storage = "Sl"
 vegetation_woody-part__storage_capacity = "Swood"
 vegetation_root__depth = "RootingDepth"
 
+river__length = "wflow_riverlength"
+river_water_flow__manning_n_parameter = "N_River"
+river__slope = "RiverSlope"
+river__width = "wflow_riverwidth"
+river_bank_water__depth = "RiverDepth"
+river_bank_water__elevation = "RiverZ"
+
 # specify the internal IDs of the parameters which vary over time
 # the external name mapping needs to be below together with the other mappings
 forcing = [
@@ -104,14 +111,6 @@ temperature = "temp"
 netcdf.variable.name = "KsatVer"
 scale = 1.0
 offset = 0.0
-
-[input.lateral.river]
-length = "wflow_riverlength"
-mannings_n = "N_River"
-slope = "RiverSlope"
-width = "wflow_riverwidth"
-bankfull_elevation = "RiverZ"
-bankfull_depth = "RiverDepth"
 
 [input.lateral.river.reservoir]
 area = "ResSimpleArea"

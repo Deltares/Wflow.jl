@@ -63,6 +63,12 @@ vegetation_woody-part__storage_capacity = "Swood"
 vegetation_root__depth = "RootingDepth"
 vegetation__crop_factor = "crop_factor"
 
+river__length = "wflow_riverlength"
+river_water_flow__manning_n_parameter = "N_River"
+river__slope = "RiverSlope"
+river__width = "wflow_riverwidth"
+river_bank_water__depth = "RiverDepth"
+
 forcing = [
   "vertical.atmospheric_forcing.precipitation",
   "vertical.atmospheric_forcing.temperature",
@@ -167,13 +173,6 @@ irrigation_trigger = "irrigation_trigger"
 [input.vertical.demand.nonpaddy.parameters]
 irrigation_areas = "nonpaddy_irrigation_areas"
 irrigation_trigger = "irrigation_trigger"
-
-[input.lateral.river]
-length = "wflow_riverlength"
-n = "N_River"
-slope = "RiverSlope"
-width = "wflow_riverwidth"
-bankfull_depth = "RiverDepth"
 
 [input.lateral.subsurface]
 constant_head = "constant_head"
