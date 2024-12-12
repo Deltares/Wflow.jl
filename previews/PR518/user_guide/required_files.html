@@ -446,49 +446,48 @@ Click to show example .toml file
 <span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a><span class="dt">"reservoir_water~full-target__volume_fraction"</span> <span class="op">=</span> <span class="st">"ResTargetFullFrac"</span></span>
 <span id="cb1-64"><a href="#cb1-64" aria-hidden="true" tabindex="-1"></a><span class="dt">"reservoir_water~min-target__volume_fraction"</span> <span class="op">=</span> <span class="st">"ResTargetMinFrac"</span></span>
 <span id="cb1-65"><a href="#cb1-65" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-66"><a href="#cb1-66" aria-hidden="true" tabindex="-1"></a><span class="co"># specify the internal IDs of the parameters which vary over time</span></span>
-<span id="cb1-67"><a href="#cb1-67" aria-hidden="true" tabindex="-1"></a><span class="co"># the external name mapping needs to be below together with the other mappings</span></span>
-<span id="cb1-68"><a href="#cb1-68" aria-hidden="true" tabindex="-1"></a><span class="dt">forcing</span> <span class="op">=</span> <span class="op">[</span></span>
-<span id="cb1-69"><a href="#cb1-69" aria-hidden="true" tabindex="-1"></a>  <span class="st">"vertical.atmospheric_forcing.precipitation"</span><span class="op">,</span></span>
-<span id="cb1-70"><a href="#cb1-70" aria-hidden="true" tabindex="-1"></a>  <span class="st">"vertical.atmospheric_forcing.temperature"</span><span class="op">,</span></span>
-<span id="cb1-71"><a href="#cb1-71" aria-hidden="true" tabindex="-1"></a>  <span class="st">"vertical.atmospheric_forcing.potential_evaporation"</span><span class="op">,</span></span>
-<span id="cb1-72"><a href="#cb1-72" aria-hidden="true" tabindex="-1"></a><span class="op">]</span></span>
-<span id="cb1-73"><a href="#cb1-73" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-74"><a href="#cb1-74" aria-hidden="true" tabindex="-1"></a><span class="dt">cyclic</span> <span class="op">=</span> <span class="op">[</span><span class="st">"vegetation__leaf-area_index"</span><span class="op">]</span></span>
+<span id="cb1-66"><a href="#cb1-66" aria-hidden="true" tabindex="-1"></a><span class="dt">subsurface_water__horizontal-to-vertical_saturated_hydraulic_conductivity_ratio</span> <span class="op">=</span> <span class="st">"KsatHorFrac"</span></span>
+<span id="cb1-67"><a href="#cb1-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-68"><a href="#cb1-68" aria-hidden="true" tabindex="-1"></a><span class="co"># specify the internal IDs of the parameters which vary over time</span></span>
+<span id="cb1-69"><a href="#cb1-69" aria-hidden="true" tabindex="-1"></a><span class="co"># the external name mapping needs to be below together with the other mappings</span></span>
+<span id="cb1-70"><a href="#cb1-70" aria-hidden="true" tabindex="-1"></a><span class="dt">forcing</span> <span class="op">=</span> <span class="op">[</span></span>
+<span id="cb1-71"><a href="#cb1-71" aria-hidden="true" tabindex="-1"></a>  <span class="st">"vertical.atmospheric_forcing.precipitation"</span><span class="op">,</span></span>
+<span id="cb1-72"><a href="#cb1-72" aria-hidden="true" tabindex="-1"></a>  <span class="st">"vertical.atmospheric_forcing.temperature"</span><span class="op">,</span></span>
+<span id="cb1-73"><a href="#cb1-73" aria-hidden="true" tabindex="-1"></a>  <span class="st">"vertical.atmospheric_forcing.potential_evaporation"</span><span class="op">,</span></span>
+<span id="cb1-74"><a href="#cb1-74" aria-hidden="true" tabindex="-1"></a><span class="op">]</span></span>
 <span id="cb1-75"><a href="#cb1-75" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-76"><a href="#cb1-76" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.vertical.vegetation_parameter_set]</span></span>
-<span id="cb1-77"><a href="#cb1-77" aria-hidden="true" tabindex="-1"></a><span class="dt">leaf_area_index</span> <span class="op">=</span> <span class="st">"LAI"</span></span>
-<span id="cb1-78"><a href="#cb1-78" aria-hidden="true" tabindex="-1"></a><span class="dt">kext</span> <span class="op">=</span> <span class="st">"Kext"</span></span>
-<span id="cb1-79"><a href="#cb1-79" aria-hidden="true" tabindex="-1"></a><span class="dt">storage_specific_leaf</span> <span class="op">=</span> <span class="st">"Sl"</span></span>
-<span id="cb1-80"><a href="#cb1-80" aria-hidden="true" tabindex="-1"></a><span class="dt">storage_wood</span> <span class="op">=</span> <span class="st">"Swood"</span></span>
-<span id="cb1-81"><a href="#cb1-81" aria-hidden="true" tabindex="-1"></a><span class="dt">rootingdepth</span> <span class="op">=</span> <span class="st">"RootingDepth"</span></span>
-<span id="cb1-82"><a href="#cb1-82" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-83"><a href="#cb1-83" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.vertical.atmospheric_forcing]</span></span>
-<span id="cb1-84"><a href="#cb1-84" aria-hidden="true" tabindex="-1"></a><span class="dt">potential_evaporation</span> <span class="op">=</span> <span class="st">"pet"</span></span>
-<span id="cb1-85"><a href="#cb1-85" aria-hidden="true" tabindex="-1"></a><span class="dt">precipitation</span> <span class="op">=</span> <span class="st">"precip"</span></span>
-<span id="cb1-86"><a href="#cb1-86" aria-hidden="true" tabindex="-1"></a><span class="dt">temperature</span> <span class="op">=</span> <span class="st">"temp"</span></span>
-<span id="cb1-87"><a href="#cb1-87" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-88"><a href="#cb1-88" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.lateral.subsurface]</span></span>
-<span id="cb1-89"><a href="#cb1-89" aria-hidden="true" tabindex="-1"></a><span class="dt">ksathorfrac</span> <span class="op">=</span> <span class="st">"KsatHorFrac"</span></span>
-<span id="cb1-90"><a href="#cb1-90" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-91"><a href="#cb1-91" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb1-92"><a href="#cb1-92" aria-hidden="true" tabindex="-1"></a><span class="dt">thicknesslayers</span> <span class="op">=</span> <span class="op">[</span><span class="dv">100</span><span class="op">,</span> <span class="dv">300</span><span class="op">,</span> <span class="dv">800</span><span class="op">]</span></span>
-<span id="cb1-93"><a href="#cb1-93" aria-hidden="true" tabindex="-1"></a><span class="dt">type</span> <span class="op">=</span> <span class="st">"sbm"</span></span>
-<span id="cb1-94"><a href="#cb1-94" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-95"><a href="#cb1-95" aria-hidden="true" tabindex="-1"></a><span class="kw">[csv]</span></span>
-<span id="cb1-96"><a href="#cb1-96" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">"output_moselle_simple.csv"</span></span>
-<span id="cb1-97"><a href="#cb1-97" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-98"><a href="#cb1-98" aria-hidden="true" tabindex="-1"></a><span class="kw">[[csv.column]]</span></span>
-<span id="cb1-99"><a href="#cb1-99" aria-hidden="true" tabindex="-1"></a><span class="dt">coordinate.x</span> <span class="op">=</span> <span class="fl">7.378</span></span>
-<span id="cb1-100"><a href="#cb1-100" aria-hidden="true" tabindex="-1"></a><span class="dt">coordinate.y</span> <span class="op">=</span> <span class="fl">50.204</span></span>
-<span id="cb1-101"><a href="#cb1-101" aria-hidden="true" tabindex="-1"></a><span class="dt">header</span> <span class="op">=</span> <span class="st">"Q"</span></span>
-<span id="cb1-102"><a href="#cb1-102" aria-hidden="true" tabindex="-1"></a><span class="dt">parameter</span> <span class="op">=</span> <span class="st">"lateral.river.variables.q"</span></span>
-<span id="cb1-103"><a href="#cb1-103" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-104"><a href="#cb1-104" aria-hidden="true" tabindex="-1"></a><span class="kw">[[csv.column]]</span></span>
-<span id="cb1-105"><a href="#cb1-105" aria-hidden="true" tabindex="-1"></a><span class="dt">header</span> <span class="op">=</span> <span class="st">"recharge"</span></span>
-<span id="cb1-106"><a href="#cb1-106" aria-hidden="true" tabindex="-1"></a><span class="dt">parameter</span> <span class="op">=</span> <span class="st">"vertical.soil.variables.recharge"</span></span>
-<span id="cb1-107"><a href="#cb1-107" aria-hidden="true" tabindex="-1"></a><span class="dt">reducer</span> <span class="op">=</span> <span class="st">"mean"</span></span>
-<span id="cb1-108"><a href="#cb1-108" aria-hidden="true" tabindex="-1"></a></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-76"><a href="#cb1-76" aria-hidden="true" tabindex="-1"></a><span class="dt">cyclic</span> <span class="op">=</span> <span class="op">[</span><span class="st">"vegetation__leaf-area_index"</span><span class="op">]</span></span>
+<span id="cb1-77"><a href="#cb1-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-78"><a href="#cb1-78" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.vertical.vegetation_parameter_set]</span></span>
+<span id="cb1-79"><a href="#cb1-79" aria-hidden="true" tabindex="-1"></a><span class="dt">leaf_area_index</span> <span class="op">=</span> <span class="st">"LAI"</span></span>
+<span id="cb1-80"><a href="#cb1-80" aria-hidden="true" tabindex="-1"></a><span class="dt">kext</span> <span class="op">=</span> <span class="st">"Kext"</span></span>
+<span id="cb1-81"><a href="#cb1-81" aria-hidden="true" tabindex="-1"></a><span class="dt">storage_specific_leaf</span> <span class="op">=</span> <span class="st">"Sl"</span></span>
+<span id="cb1-82"><a href="#cb1-82" aria-hidden="true" tabindex="-1"></a><span class="dt">storage_wood</span> <span class="op">=</span> <span class="st">"Swood"</span></span>
+<span id="cb1-83"><a href="#cb1-83" aria-hidden="true" tabindex="-1"></a><span class="dt">rootingdepth</span> <span class="op">=</span> <span class="st">"RootingDepth"</span></span>
+<span id="cb1-84"><a href="#cb1-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-85"><a href="#cb1-85" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.vertical.atmospheric_forcing]</span></span>
+<span id="cb1-86"><a href="#cb1-86" aria-hidden="true" tabindex="-1"></a><span class="dt">potential_evaporation</span> <span class="op">=</span> <span class="st">"pet"</span></span>
+<span id="cb1-87"><a href="#cb1-87" aria-hidden="true" tabindex="-1"></a><span class="dt">precipitation</span> <span class="op">=</span> <span class="st">"precip"</span></span>
+<span id="cb1-88"><a href="#cb1-88" aria-hidden="true" tabindex="-1"></a><span class="dt">temperature</span> <span class="op">=</span> <span class="st">"temp"</span></span>
+<span id="cb1-89"><a href="#cb1-89" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-90"><a href="#cb1-90" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb1-91"><a href="#cb1-91" aria-hidden="true" tabindex="-1"></a><span class="dt">thicknesslayers</span> <span class="op">=</span> <span class="op">[</span><span class="dv">100</span><span class="op">,</span> <span class="dv">300</span><span class="op">,</span> <span class="dv">800</span><span class="op">]</span></span>
+<span id="cb1-92"><a href="#cb1-92" aria-hidden="true" tabindex="-1"></a><span class="dt">type</span> <span class="op">=</span> <span class="st">"sbm"</span></span>
+<span id="cb1-93"><a href="#cb1-93" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-94"><a href="#cb1-94" aria-hidden="true" tabindex="-1"></a><span class="kw">[csv]</span></span>
+<span id="cb1-95"><a href="#cb1-95" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">"output_moselle_simple.csv"</span></span>
+<span id="cb1-96"><a href="#cb1-96" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-97"><a href="#cb1-97" aria-hidden="true" tabindex="-1"></a><span class="kw">[[csv.column]]</span></span>
+<span id="cb1-98"><a href="#cb1-98" aria-hidden="true" tabindex="-1"></a><span class="dt">coordinate.x</span> <span class="op">=</span> <span class="fl">7.378</span></span>
+<span id="cb1-99"><a href="#cb1-99" aria-hidden="true" tabindex="-1"></a><span class="dt">coordinate.y</span> <span class="op">=</span> <span class="fl">50.204</span></span>
+<span id="cb1-100"><a href="#cb1-100" aria-hidden="true" tabindex="-1"></a><span class="dt">header</span> <span class="op">=</span> <span class="st">"Q"</span></span>
+<span id="cb1-101"><a href="#cb1-101" aria-hidden="true" tabindex="-1"></a><span class="dt">parameter</span> <span class="op">=</span> <span class="st">"lateral.river.variables.q"</span></span>
+<span id="cb1-102"><a href="#cb1-102" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-103"><a href="#cb1-103" aria-hidden="true" tabindex="-1"></a><span class="kw">[[csv.column]]</span></span>
+<span id="cb1-104"><a href="#cb1-104" aria-hidden="true" tabindex="-1"></a><span class="dt">header</span> <span class="op">=</span> <span class="st">"recharge"</span></span>
+<span id="cb1-105"><a href="#cb1-105" aria-hidden="true" tabindex="-1"></a><span class="dt">parameter</span> <span class="op">=</span> <span class="st">"vertical.soil.variables.recharge"</span></span>
+<span id="cb1-106"><a href="#cb1-106" aria-hidden="true" tabindex="-1"></a><span class="dt">reducer</span> <span class="op">=</span> <span class="st">"mean"</span></span>
+<span id="cb1-107"><a href="#cb1-107" aria-hidden="true" tabindex="-1"></a></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </section>
 <section id="the-static-input-data-staticmaps.nc" class="level2">
