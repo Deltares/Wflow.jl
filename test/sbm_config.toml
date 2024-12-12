@@ -104,6 +104,8 @@ reservoir_water__max_volume = "ResMaxVolume"
 "reservoir_water~full-target__volume_fraction" = "ResTargetFullFrac"
 "reservoir_water~min-target__volume_fraction" = "ResTargetMinFrac"
 
+subsurface_water__horizontal-to-vertical_saturated_hydraulic_conductivity_ratio = "KsatHorFrac"
+
 # specify the internal IDs of the parameters which vary over time
 # the external name mapping needs to be below together with the other mappings
 forcing = [
@@ -123,9 +125,6 @@ temperature = "temp"
 netcdf.variable.name = "KsatVer"
 scale = 1.0
 offset = 0.0
-
-[input.lateral.subsurface]
-ksathorfrac = "KsatHorFrac"
 
 [model]
 kin_wave_iteration = true

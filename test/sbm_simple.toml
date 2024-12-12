@@ -62,6 +62,8 @@ reservoir_water__max_volume = "ResMaxVolume"
 "reservoir_water~full-target__volume_fraction" = "ResTargetFullFrac"
 "reservoir_water~min-target__volume_fraction" = "ResTargetMinFrac"
 
+subsurface_water__horizontal-to-vertical_saturated_hydraulic_conductivity_ratio = "KsatHorFrac"
+
 # specify the internal IDs of the parameters which vary over time
 # the external name mapping needs to be below together with the other mappings
 forcing = [
@@ -83,9 +85,6 @@ rootingdepth = "RootingDepth"
 potential_evaporation = "pet"
 precipitation = "precip"
 temperature = "temp"
-
-[input.lateral.subsurface]
-ksathorfrac = "KsatHorFrac"
 
 [model]
 thicknesslayers = [100, 300, 800]
