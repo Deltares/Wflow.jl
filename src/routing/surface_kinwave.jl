@@ -91,7 +91,7 @@ function RiverFlowParameters(dataset, config, indices, river_length, river_width
     mannings_n = ncread(
         dataset,
         config,
-        "lateral.river.mannings_n";
+        "river_water_flow__manning_n_parameter";
         sel = indices,
         defaults = 0.036,
         type = Float,
@@ -99,22 +99,15 @@ function RiverFlowParameters(dataset, config, indices, river_length, river_width
     bankfull_depth = ncread(
         dataset,
         config,
-        "lateral.river.bankfull_depth";
-        alias = "lateral.river.h_bankfull",
+        "river_bank_water__depth";
         sel = indices,
         defaults = 1.0,
         type = Float,
     )
-    if haskey(config.input.lateral.river, "h_bankfull")
-        @warn string(
-            "The `h_bankfull` key in `[input.lateral.river]` is now called ",
-            "`bankfull_depth`. Please update your TOML file.",
-        )
-    end
     slope = ncread(
         dataset,
         config,
-        "lateral.river.slope";
+        "river__slope";
         optional = false,
         sel = indices,
         type = Float,
@@ -227,7 +220,7 @@ function KinWaveOverlandFlow(dataset, config, indices; slope, flow_length, flow_
     mannings_n = ncread(
         dataset,
         config,
-        "lateral.land.mannings_n";
+        "land_surface_water_flow__manning_n_parameter";
         sel = indices,
         defaults = 0.072,
         type = Float,

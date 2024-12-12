@@ -43,7 +43,7 @@ function GashInterceptionModel(dataset, config, indices, vegetation_parameter_se
     e_r = ncread(
         dataset,
         config,
-        "vertical.interception.parameters.e_r";
+        "vegetation_canopy_water__mean_evaporation-to-mean_precipitation_ratio";
         sel = indices,
         defaults = 0.1,
         type = Float,

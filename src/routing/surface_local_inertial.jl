@@ -39,16 +39,11 @@ function LocalInertialRiverFlowParameters(
     floodplain_1d = get(config.model, "floodplain_1d", false)::Bool
 
     @info "Local inertial approach is used for river flow." cfl h_thresh froude_limit floodplain_1d
-    @warn string(
-        "Providing the boundary condition `riverlength_bc` as part of the `[model]` setting ",
-        "in the TOML file has been deprecated as of Wflow v0.8.0.\n The boundary condition should ",
-        "be provided as part of the file `$(config.input.path_static)`.",
-    )
 
     riverlength_bc = ncread(
         dataset,
         config,
-        "lateral.river.riverlength_bc";
+        "model_boundary_condition~river__length";
         sel = inds_pit,
         defaults = 1.0e04,
         type = Float,
@@ -56,7 +51,7 @@ function LocalInertialRiverFlowParameters(
     bankfull_elevation_2d = ncread(
         dataset,
         config,
-        "lateral.river.bankfull_elevation";
+        "river_bank_water__elevation";
         optional = false,
         type = Float,
         fill = 0,
@@ -64,7 +59,7 @@ function LocalInertialRiverFlowParameters(
     bankfull_depth_2d = ncread(
         dataset,
         config,
-        "lateral.river.bankfull_depth";
+        "river_bank_water__depth";
         optional = false,
         type = Float,
         fill = 0,
@@ -76,7 +71,7 @@ function LocalInertialRiverFlowParameters(
     mannings_n = ncread(
         dataset,
         config,
-        "lateral.river.mannings_n";
+        "river_water_flow__manning_n_parameter";
         sel = indices,
         defaults = 0.036,
         type = Float,
@@ -159,7 +154,7 @@ function LocalInertialRiverFlowVariables(dataset, config, indices, n_edges, inds
     riverdepth_bc = ncread(
         dataset,
         config,
-        "lateral.river.riverdepth_bc";
+        "model_boundary_condition~river_bank_water__depth";
         sel = inds_pit,
         defaults = 0.0,
         type = Float,
@@ -667,7 +662,7 @@ function LocalInertialOverlandFlowParameters(
     mannings_n = ncread(
         dataset,
         config,
-        "lateral.land.mannings_n";
+        "land_surface_water_flow__manning_n_parameter";
         sel = indices,
         defaults = 0.072,
         type = Float,
@@ -675,7 +670,7 @@ function LocalInertialOverlandFlowParameters(
     elevation_2d = ncread(
         dataset,
         config,
-        "lateral.land.elevation";
+        "land_surface_water_flow__ground_elevation";
         optional = false,
         type = Float,
         fill = 0,
@@ -1132,7 +1127,7 @@ function FloodPlainProfile(dataset, config, indices; river_width, river_length, 
     volume = ncread(
         dataset,
         config,
-        "lateral.river.floodplain.volume";
+        "floodplain_water__sum_of_volume-per-depth";
         sel = indices,
         type = Float,
         dimname = :flood_depth,

@@ -185,7 +185,7 @@ config.input.vertical.atmospheric_forcing.potential_evaporation = Dict(
     "offset" => 1.50,
     "netcdf" => Dict("variable" => Dict("name" => "pet")),
 )
-config.input.vertical.vegetation_parameter_set.leaf_area_index =
+config.input["vegetation__leaf-area_index"] =
     Dict("scale" => 1.6, "netcdf" => Dict("variable" => Dict("name" => "LAI")))
 
 model = Wflow.initialize_sbm_model(config)
@@ -208,10 +208,10 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 
 config.input.cyclic = [
-    "vertical.vegetation_parameter_set.leaf_area_index",
-    "lateral.river.boundary_conditions.inflow",
+    "vegetation__leaf-area_index",
+    "river_water__volume_inflow_rate",
 ]
-Dict(config.input.lateral.river)["boundary_conditions"] = Dict("inflow" => "inflow")
+config.input.river_water__volume_inflow_rate = "inflow"
 
 model = Wflow.initialize_sbm_model(config)
 Wflow.run_timestep!(model)
@@ -314,7 +314,7 @@ config = Wflow.Config(tomlpath)
 config.model.floodplain_1d = true
 config.model.river_routing = "local-inertial"
 config.model.land_routing = "kinematic-wave"
-Dict(config.input.lateral.river)["floodplain"] = Dict("volume" => "floodplain_volume")
+config.input["floodplain_water__sum_of_volume-per-depth"] = "floodplain_volume"
 Dict(config.state.lateral.river)["floodplain.variables"] =
     Dict("q" => "q_floodplain", "h" => "h_floodplain")
 
@@ -432,8 +432,8 @@ Wflow.run_timestep!(model)
 end
 
 # set boundary condition local inertial routing from netCDF file
-config.input.lateral.river.riverlength_bc = "riverlength_bc"
-config.input.lateral.river.riverdepth_bc = "riverdepth_bc"
+config.input["model_boundary_condition~river__length"] = "riverlength_bc"
+config.input["model_boundary_condition~river_bank_water__depth"] = "riverdepth_bc"
 model = Wflow.initialize_sbm_model(config)
 Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
@@ -458,9 +458,9 @@ Wflow.close_files(model; delete_output = false)
     i = 100
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
-    config.input.vertical.soil.parameters.kv = "kv"
-    config.input.vertical.soil.parameters.z_exp = Dict("value" => 400.0)
-    config.input.vertical.soil.parameters.z_layered = Dict("value" => 400.0)
+    config.input.soil_water__vertical_saturated_hydraulic_conductivity = "kv"
+    config.input["soil_vertical_saturated_hydraulic_conductivity_profile~exponential_below-surface__depth"] = Dict("value" => 400.0)
+    config.input["soil_vertical_saturated_hydraulic_conductivity_profile~layered_below-surface__depth"] = Dict("value" => 400.0)
 
     @testset "exponential profile" begin
         model = Wflow.initialize_sbm_model(config)
@@ -476,7 +476,7 @@ Wflow.close_files(model; delete_output = false)
     end
 
     @testset "exponential constant profile" begin
-        config.input.vertical.ksat_profile = "exponential_constant"
+        config.model.saturated_hydraulic_conductivity_profile = "exponential_constant"
         model = Wflow.initialize_sbm_model(config)
         (; soil) = model.vertical
         (; kv_profile) = soil.parameters
@@ -497,7 +497,7 @@ Wflow.close_files(model; delete_output = false)
     end
 
     @testset "layered profile" begin
-        config.input.vertical.ksat_profile = "layered"
+        config.model.saturated_hydraulic_conductivity_profile = "layered"
         model = Wflow.initialize_sbm_model(config)
         (; soil) = model.vertical
         (; kv_profile) = soil.parameters
@@ -513,7 +513,7 @@ Wflow.close_files(model; delete_output = false)
     end
 
     @testset "layered exponential profile" begin
-        config.input.vertical.ksat_profile = "layered_exponential"
+        config.model.saturated_hydraulic_conductivity_profile = "layered_exponential"
         model = Wflow.initialize_sbm_model(config)
         (; soil) = model.vertical
         (; kv_profile) = soil.parameters

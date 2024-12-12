@@ -16,7 +16,7 @@ function ReservoirParameters(dataset, config, indices_river, n_river_cells, pits
     reslocs = ncread(
         dataset,
         config,
-        "lateral.river.reservoir.locs";
+        "reservoir_locations__number";
         optional = false,
         sel = indices_river,
         type = Int,
@@ -27,7 +27,7 @@ function ReservoirParameters(dataset, config, indices_river, n_river_cells, pits
     rescoverage_2d = ncread(
         dataset,
         config,
-        "lateral.river.reservoir.areas";
+        "reservoir_areas__number";
         optional = false,
         allow_missing = true,
     )
@@ -60,7 +60,7 @@ function ReservoirParameters(dataset, config, indices_river, n_river_cells, pits
     resdemand = ncread(
         dataset,
         config,
-        "lateral.river.reservoir.demand";
+        "reservoir_water_demand~required~downstream__volume_flow_rate";
         optional = false,
         sel = inds_res,
         type = Float,
@@ -69,7 +69,7 @@ function ReservoirParameters(dataset, config, indices_river, n_river_cells, pits
     resmaxrelease = ncread(
         dataset,
         config,
-        "lateral.river.reservoir.maxrelease";
+        "reservoir_water_release-below-spillway__max_volume_flow_rate";
         optional = false,
         sel = inds_res,
         type = Float,
@@ -78,7 +78,7 @@ function ReservoirParameters(dataset, config, indices_river, n_river_cells, pits
     resmaxvolume = ncread(
         dataset,
         config,
-        "lateral.river.reservoir.maxvolume";
+        "reservoir_water__max_volume";
         optional = false,
         sel = inds_res,
         type = Float,
@@ -87,7 +87,7 @@ function ReservoirParameters(dataset, config, indices_river, n_river_cells, pits
     resarea = ncread(
         dataset,
         config,
-        "lateral.river.reservoir.area";
+        "reservoir_surface__area";
         optional = false,
         sel = inds_res,
         type = Float,
@@ -96,7 +96,7 @@ function ReservoirParameters(dataset, config, indices_river, n_river_cells, pits
     res_targetfullfrac = ncread(
         dataset,
         config,
-        "lateral.river.reservoir.targetfullfrac";
+        "reservoir_water~full-target__volume_fraction";
         optional = false,
         sel = inds_res,
         type = Float,
@@ -105,7 +105,7 @@ function ReservoirParameters(dataset, config, indices_river, n_river_cells, pits
     res_targetminfrac = ncread(
         dataset,
         config,
-        "lateral.river.reservoir.targetminfrac";
+        "reservoir_water~min-target__volume_fraction";
         optional = false,
         sel = inds_res,
         type = Float,

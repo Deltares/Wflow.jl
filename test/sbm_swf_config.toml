@@ -53,6 +53,56 @@ ldd = "wflow_ldd"
 river_location = "wflow_river"
 subcatchment = "wflow_subcatch"
 
+atmosphere_air__snowfall_temperature_threshold = "TT"
+atmosphere_air__snowfall_temperature_interval = "TTI"
+
+"land~water-covered__area_fraction" = "WaterFrac"
+
+snowpack__melting_temperature_threshold = "TTM"
+snowpack__degree-day_coefficient = "Cfmax"
+
+soil_water__brooks-corey_epsilon_parameter = "c"
+soil_surface_water__infiltration_reduction_parameter = "cf_soil"
+soil_surface_water__vertical_saturated_hydraulic_conductivity = "KsatVer"
+soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter = "f"
+"soil~compacted_surface_water__infiltration_capacity" = "InfiltCapPath"
+"soil~non-compacted_surface_water__infiltration_capacity" = "InfiltCapSoil"
+soil_water__residual_volume_fraction = "thetaR"
+soil_water__saturated_volume_fraction = "thetaS"
+soil_water_sat-zone_bottom__max_leakage_volume_flux = "MaxLeakage"
+"soil~compacted__area_fraction" = "PathFrac"
+"soil_root~wet__sigmoid_function_shape_parameter" = "rootdistpar"
+soil__thickness = "SoilThickness"
+
+vegetation_canopy_water__mean_evaporation-to-mean_precipitation_ratio = "EoverR"
+vegetation__leaf-area_index = "LAI"
+vegetation_canopy__light-extinction_coefficient = "Kext"
+vegetation__specific-leaf_storage = "Sl"
+vegetation_woody-part__storage_capacity = "Swood"
+vegetation_root__depth = "RootingDepth"
+
+river__length = "wflow_riverlength"
+river_water_flow__manning_n_parameter = "N_River"
+river__slope = "RiverSlope"
+river__width = "wflow_riverwidth"
+river_bank_water__depth = "RiverDepth"
+river_bank_water__elevation = "RiverZ"
+
+land_surface_water_flow__manning_n_parameter = "N"
+land_surface_water_flow__ground_elevation = "FloodplainZ"
+land_surface__slope = "Slope"
+
+reservoir_areas__number = "wflow_reservoirareas"
+reservoir_locations__number = "wflow_reservoirlocs"
+reservoir_surface__area = "ResSimpleArea"
+"reservoir_water_demand~required~downstream__volume_flow_rate" = "ResDemand"
+reservoir_water_release-below-spillway__max_volume_flow_rate = "ResMaxRelease"
+reservoir_water__max_volume = "ResMaxVolume"
+"reservoir_water~full-target__volume_fraction" = "ResTargetFullFrac"
+"reservoir_water~min-target__volume_fraction" = "ResTargetMinFrac"
+
+subsurface_water__horizontal-to-vertical_saturated_hydraulic_conductivity_ratio = "KsatHorFrac"
+
 # specify the internal IDs of the parameters which vary over time
 # the external name mapping needs to be below together with the other mappings
 forcing = [
@@ -61,71 +111,12 @@ forcing = [
   "vertical.atmospheric_forcing.potential_evaporation",
 ]
 
-cyclic = ["vertical.vegetation_parameter_set.leaf_area_index"]
-
-[input.vertical.vegetation_parameter_set]
-leaf_area_index = "LAI"
-kext = "Kext"
-storage_specific_leaf = "Sl"
-storage_wood = "Swood"
-rootingdepth = "RootingDepth"
-
-[input.vertical.interception.parameters]
-e_r = "EoverR"
+cyclic = ["vegetation__leaf-area_index"]
 
 [input.vertical.atmospheric_forcing]
 potential_evaporation = "pet"
 precipitation = "precip"
 temperature = "temp"
-
-[input.vertical.runoff.parameters]
-waterfrac = "WaterFrac"
-
-[input.vertical.soil.parameters]
-c = "c"
-cf_soil = "cf_soil"
-f = "f"
-infiltcappath = "InfiltCapPath"
-infiltcapsoil = "InfiltCapSoil"
-theta_r = "thetaR"
-theta_s = "thetaS"
-maxleakage = "MaxLeakage"
-pathfrac = "PathFrac"
-rootdistpar = "rootdistpar"
-soilthickness = "SoilThickness"
-kv_0 = "KsatVer"
-
-[input.vertical.snow.parameters]
-tt = "TT"
-tti = "TTI"
-ttm = "TTM"
-cfmax = "Cfmax"
-
-[input.lateral.river]
-length = "wflow_riverlength"
-mannings_n = "N_River"
-slope = "RiverSlope"
-width = "wflow_riverwidth"
-bankfull_elevation = "RiverZ"
-bankfull_depth = "RiverDepth"
-
-[input.lateral.river.reservoir]
-area = "ResSimpleArea"
-areas = "wflow_reservoirareas"
-demand = "ResDemand"
-locs = "wflow_reservoirlocs"
-maxrelease = "ResMaxRelease"
-maxvolume = "ResMaxVolume"
-targetfullfrac = "ResTargetFullFrac"
-targetminfrac = "ResTargetMinFrac"
-
-[input.lateral.subsurface]
-ksathorfrac = "KsatHorFrac"
-
-[input.lateral.land]
-mannings_n = "N"
-slope = "Slope"
-elevation = "FloodplainZ"
 
 [model]
 kin_wave_iteration = true

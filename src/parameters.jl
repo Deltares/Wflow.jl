@@ -24,7 +24,7 @@ function VegetationParameters(dataset, config, indices)
     rootingdepth = ncread(
         dataset,
         config,
-        "vertical.vegetation_parameter_set.rootingdepth";
+        "vegetation_root__depth";
         sel = indices,
         defaults = 750.0,
         type = Float,
@@ -32,16 +32,16 @@ function VegetationParameters(dataset, config, indices)
     kc = ncread(
         dataset,
         config,
-        "vertical.vegetation_parameter_set.kc";
+        "vegetation__crop_factor";
         sel = indices,
         defaults = 1.0,
         type = Float,
     )
-    if haskey(config.input.vertical.vegetation_parameter_set, "leaf_area_index")
+    if haskey(config.input, "vegetation__leaf-area_index")
         storage_specific_leaf = ncread(
             dataset,
             config,
-            "vertical.vegetation_parameter_set.storage_specific_leaf";
+            "vegetation__specific-leaf_storage";
             optional = false,
             sel = indices,
             type = Float,
@@ -49,7 +49,7 @@ function VegetationParameters(dataset, config, indices)
         storage_wood = ncread(
             dataset,
             config,
-            "vertical.vegetation_parameter_set.storage_wood";
+            "vegetation_woody-part__storage_capacity";
             optional = false,
             sel = indices,
             type = Float,
@@ -57,7 +57,7 @@ function VegetationParameters(dataset, config, indices)
         kext = ncread(
             dataset,
             config,
-            "vertical.vegetation_parameter_set.kext";
+            "vegetation_canopy__light-extinction_coefficient";
             optional = false,
             sel = indices,
             type = Float,
@@ -76,7 +76,7 @@ function VegetationParameters(dataset, config, indices)
         canopygapfraction = ncread(
             dataset,
             config,
-            "vertical.vegetation_parameter_set.canopygapfraction";
+            "vegetation_canopy__gap_fraction";
             sel = indices,
             defaults = 0.1,
             type = Float,
@@ -84,7 +84,7 @@ function VegetationParameters(dataset, config, indices)
         cmax = ncread(
             dataset,
             config,
-            "vertical.vegetation_parameter_set.cmax";
+            "vegetation_water__storage_capacity";
             sel = indices,
             defaults = 1.0,
             type = Float,
