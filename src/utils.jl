@@ -77,14 +77,14 @@ function active_indices(subcatch_2d::AbstractMatrix, nodata)
     return indices, reverse_indices
 end
 
-function active_indices(network::NamedTuple, key::Tuple)
-    if :reservoir in key
+function active_indices(network::NamedTuple, key::AbstractString)
+    if occursin("reservoir", key)
         return network.reservoir.indices_outlet
-    elseif :lake in key
+    elseif occursin("lake", key)
         return network.lake.indices_outlet
-    elseif :river in key
+    elseif occursin("river", key)
         return network.river.indices
-    elseif :drain in key
+    elseif occursin("drain", key)
         return network.drain.indices
     else
         return network.land.indices
@@ -157,7 +157,9 @@ function set_states!(instate_path, model; type = nothing, dimname = nothing)
     (; network, config) = model
 
     # Check if required states are covered
-    state_ncnames = check_states(config)
+    # TODO: revert back to state checking
+    # state_ncnames = check_states(config)
+    state_ncnames = ncnames(config.state.variables)
 
     # states in netCDF include dim time (one value) at index 3 or 4, 3 or 4 dims are allowed
     NCDataset(instate_path) do ds
@@ -188,7 +190,8 @@ function set_states!(instate_path, model; type = nothing, dimname = nothing)
                     end
                 end
                 # set state in model object
-                param(model, state) .= svectorscopy(A, Val{size(A)[1]}())
+                lens = standard_name_map[state]
+                lens(model) .= svectorscopy(A, Val{size(A)[1]}())
                 # 3 dims (x,y,time)
             elseif dims == 3
                 A = read_standardized(ds, ncname, (x = :, y = :, time = 1))
@@ -201,7 +204,8 @@ function set_states!(instate_path, model; type = nothing, dimname = nothing)
                     end
                 end
                 # set state in model object, only set active cells ([1:n]) (ignore boundary conditions/ghost points)
-                param(model, state)[1:n] .= A
+                lens = standard_name_map[state]
+                lens(model)[1:n] .= A
             else
                 error(
                     "Number of state dims should be 3 or 4, number of dims = ",
@@ -239,7 +243,7 @@ arguments to get selections of data in desired types, with or without missing va
 function ncread(
     nc,
     config::Config,
-    parameter::AbstractString;
+    parameter::NamedTuple;
     alias = nothing,
     optional = true,
     sel = nothing,
@@ -253,12 +257,13 @@ function ncread(
     # if var has type Config, input parameters can be changed.
     if isnothing(alias)
         if optional
-            var = param(config.input, parameter, nothing)
+            var = _lens(config, parameter.lens, nothing)
         else
-            var = param(config.input, parameter)
+            var = parameter.lens(config)
+            var = var isa AbstractDict ? Config(var, pathof(config)) : var
         end
     else
-        var = get_alias(config.input, parameter, alias, nothing)
+        var = get_alias(config, parameter.lens, alias, nothing)
     end
 
     # dim `time` is also included in `dim_sel`: this allows for cyclic parameters (read
@@ -274,7 +279,7 @@ function ncread(
     end
 
     if isnothing(var)
-        @info "Set `$parameter` using default value `$defaults`."
+        @info "Set `$(parameter.name)` using default value `$defaults`."
         @assert !isnothing(defaults)
         if !isnothing(type)
             defaults = convert(type, defaults)
@@ -292,7 +297,7 @@ function ncread(
     var, mod = ncvar_name_modifier(var; config = config)
 
     if !isnothing(mod.value)
-        @info "Set `$parameter` using default value `$(mod.value)`."
+        @info "Set `$(parameter.name)` using default value `$(mod.value)`."
         if isnothing(dimname)
             return Base.fill(mod.value, length(sel))
             # set to one uniform value
@@ -304,7 +309,7 @@ function ncread(
             return repeat(mod.value, 1, length(sel))
         end
     else
-        @info "Set `$parameter` using netCDF variable `$var`."
+        @info "Set `$(parameter.name)` using netCDF variable `$var`."
         A = read_standardized(nc, var, dim_sel)
         if !isnothing(mod.index)
             # the modifier index is only set in combination with scale and offset for SVectors,
@@ -356,6 +361,9 @@ function ncread(
 
     return A
 end
+
+lens_input_parameter(p::AbstractString) = (name = p, lens = @optic(_.input.parameters[p]))
+lens_input(p::AbstractString) = (name = p, lens = @optic(_.input[p]))
 
 """
     set_layerthickness(reference_depth::Real, cum_depth::SVector, thickness::SVector)

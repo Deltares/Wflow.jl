@@ -36,14 +36,8 @@ end
 "Initialize open water runoff parameters"
 function OpenWaterRunoffParameters(dataset, config, indices, riverfrac)
     # fraction open water
-    waterfrac = ncread(
-        dataset,
-        config,
-        "land~water-covered__area_fraction";
-        sel = indices,
-        defaults = 0.0,
-        type = Float,
-    )
+    lens = lens_input_parameter("land~water-covered__area_fraction")
+    waterfrac = ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float)
     waterfrac = max.(waterfrac .- riverfrac, Float(0.0))
     params = OpenWaterRunoffParameters(; waterfrac = waterfrac, riverfrac = riverfrac)
     return params

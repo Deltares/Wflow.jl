@@ -2,6 +2,7 @@ module Wflow
 
 import BasicModelInterface as BMI
 
+using Accessors: @optic
 using Base.Threads: nthreads
 using CFTime: CFTime, monthday, dayofyear
 using Dates:

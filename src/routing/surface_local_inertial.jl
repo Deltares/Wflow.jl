@@ -39,46 +39,24 @@ function LocalInertialRiverFlowParameters(
     floodplain_1d = get(config.model, "floodplain_1d", false)::Bool
 
     @info "Local inertial approach is used for river flow." cfl h_thresh froude_limit floodplain_1d
-
-    riverlength_bc = ncread(
-        dataset,
-        config,
-        "model_boundary_condition~river__length";
-        sel = inds_pit,
-        defaults = 1.0e04,
-        type = Float,
-    )
-    bankfull_elevation_2d = ncread(
-        dataset,
-        config,
-        "river_bank_water__elevation";
-        optional = false,
-        type = Float,
-        fill = 0,
-    )
-    bankfull_depth_2d = ncread(
-        dataset,
-        config,
-        "river_bank_water__depth";
-        optional = false,
-        type = Float,
-        fill = 0,
-    )
+    lens = lens_input_parameter("model_boundary_condition~river__length")
+    riverlength_bc =
+        ncread(dataset, config, lens; sel = inds_pit, defaults = 1.0e04, type = Float)
+    lens = lens_input_parameter("river_bank_water__elevation")
+    bankfull_elevation_2d =
+        ncread(dataset, config, lens; optional = false, type = Float, fill = 0)
+    lens = lens_input_parameter("river_bank_water__depth")
+    bankfull_depth_2d =
+        ncread(dataset, config, lens; optional = false, type = Float, fill = 0)
     bankfull_depth = bankfull_depth_2d[indices]
     zb = bankfull_elevation_2d[indices] - bankfull_depth # river bed elevation
 
     bankfull_volume = bankfull_depth .* river_width .* river_length
-    mannings_n = ncread(
-        dataset,
-        config,
-        "river_water_flow__manning_n_parameter";
-        sel = indices,
-        defaults = 0.036,
-        type = Float,
-    )
+    lens = lens_input_parameter("river_water_flow__manning_n_parameter")
+    mannings_n =
+        ncread(dataset, config, lens; sel = indices, defaults = 0.036, type = Float)
 
     n = length(indices)
-
     # set ghost points for boundary condition (downstream river outlet): river width, bed
     # elevation, manning n is copied from the upstream cell.
     append!(river_length, riverlength_bc)
@@ -151,14 +129,10 @@ end
 "Initialize shallow water river flow model variables"
 function LocalInertialRiverFlowVariables(dataset, config, indices, n_edges, inds_pit)
     floodplain_1d = get(config.model, "floodplain_1d", false)::Bool
-    riverdepth_bc = ncread(
-        dataset,
-        config,
-        "model_boundary_condition~river_bank_water__depth";
-        sel = inds_pit,
-        defaults = 0.0,
-        type = Float,
-    )
+
+    lens = lens_input_parameter("model_boundary_condition~river_bank_water__depth")
+    riverdepth_bc =
+        ncread(dataset, config, lens; sel = inds_pit, defaults = 0.0, type = Float)
 
     n = length(indices)
     # set river depth h to zero (including reservoir and lake locations)
@@ -659,22 +633,11 @@ function LocalInertialOverlandFlowParameters(
 
     @info "Local inertial approach is used for overlandflow." cfl theta h_thresh froude_limit
 
-    mannings_n = ncread(
-        dataset,
-        config,
-        "land_surface_water_flow__manning_n_parameter";
-        sel = indices,
-        defaults = 0.072,
-        type = Float,
-    )
-    elevation_2d = ncread(
-        dataset,
-        config,
-        "land_surface_water_flow__ground_elevation";
-        optional = false,
-        type = Float,
-        fill = 0,
-    )
+    lens = lens_input_parameter("land_surface_water_flow__manning_n_parameter")
+    mannings_n =
+        ncread(dataset, config, lens; sel = indices, defaults = 0.072, type = Float)
+    lens = lens_input_parameter("land_surface_water_flow__ground_elevation")
+    elevation_2d = ncread(dataset, config, lens; optional = false, type = Float, fill = 0)
     elevation = elevation_2d[indices]
     n = length(indices)
 
@@ -876,11 +839,10 @@ function update_boundary_conditions!(
         net_runoff_river .* network.land.area .* 0.001 ./ dt
 
     if !isnothing(reservoir) || !isnothing(lake)
-        inflow_land = get_inflow_waterbody(river, model)
         inflow_subsurface = get_inflow_waterbody(river, subsurface)
 
-        @. inflow_waterbody[network.river_indices] =
-            inflow_land[network.river_indices] + inflow_subsurface[network.river_indices]
+        @. inflow_waterbody[network.river.land_indices] =
+            inflow_subsurface[network.river.land_indices]
     end
     return nothing
 end
@@ -900,16 +862,9 @@ function update!(
 ) where {T}
     (; reservoir, lake) = river.boundary_conditions
 
-    if !isnothing(reservoir)
-        reservoir.boundary_conditions.inflow .= 0.0
-        reservoir.variables.totaloutflow .= 0.0
-        reservoir.variables.actevap .= 0.0
-    end
-    if !isnothing(lake)
-        lake.boundary_conditions.inflow .= 0.0
-        lake.variables.totaloutflow .= 0.0
-        lake.variables.actevap .= 0.0
-    end
+    set_waterbody_vars!(reservoir)
+    set_waterbody_vars!(lake)
+
     river.variables.q_av .= 0.0
     river.variables.h_av .= 0.0
     land.variables.h_av .= 0.0
@@ -929,6 +884,9 @@ function update!(
     river.variables.q_av ./= dt
     river.variables.h_av ./= dt
     land.variables.h_av ./= dt
+
+    average_waterbody_vars!(reservoir, dt)
+    average_waterbody_vars!(lake, dt)
 
     return nothing
 end
@@ -1124,14 +1082,9 @@ end
 
 "Initialize floodplain profile `FloodPlainProfile`"
 function FloodPlainProfile(dataset, config, indices; river_width, river_length, index_pit)
-    volume = ncread(
-        dataset,
-        config,
-        "floodplain_water__sum_of_volume-per-depth";
-        sel = indices,
-        type = Float,
-        dimname = :flood_depth,
-    )
+    lens = lens_input_parameter("floodplain_water__sum_of_volume-per-depth")
+    volume =
+        ncread(dataset, config, lens; sel = indices, type = Float, dimname = :flood_depth)
     n = length(indices)
 
     # for convenience (interpolation) flood depth 0.0 m is added, with associated area (a),
@@ -1234,14 +1187,9 @@ function FloodPlainParameters(
     profile =
         FloodPlainProfile(dataset, config, indices; river_width, river_length, index_pit)
 
-    mannings_n = ncread(
-        dataset,
-        config,
-        "lateral.river.floodplain.mannings_n";
-        sel = indices,
-        defaults = 0.072,
-        type = Float,
-    )
+    lens = lens_input_parameter("floodplain_water_flow__manning_n_parameter")
+    mannings_n =
+        ncread(dataset, config, lens; sel = indices, defaults = 0.072, type = Float)
     # manning roughness at edges
     append!(mannings_n, mannings_n[index_pit]) # copy to ghost nodes
     mannings_n_sq = fill(Float(0), n_edges)

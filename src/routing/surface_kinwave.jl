@@ -88,30 +88,14 @@ end
 
 "Initialize river flow model parameters"
 function RiverFlowParameters(dataset, config, indices, river_length, river_width)
-    mannings_n = ncread(
-        dataset,
-        config,
-        "river_water_flow__manning_n_parameter";
-        sel = indices,
-        defaults = 0.036,
-        type = Float,
-    )
-    bankfull_depth = ncread(
-        dataset,
-        config,
-        "river_bank_water__depth";
-        sel = indices,
-        defaults = 1.0,
-        type = Float,
-    )
-    slope = ncread(
-        dataset,
-        config,
-        "river__slope";
-        optional = false,
-        sel = indices,
-        type = Float,
-    )
+    lens = lens_input_parameter("river_water_flow__manning_n_parameter")
+    mannings_n =
+        ncread(dataset, config, lens; sel = indices, defaults = 0.036, type = Float)
+    lens = lens_input_parameter("river_bank_water__depth")
+    bankfull_depth =
+        ncread(dataset, config, lens; sel = indices, defaults = 1.0, type = Float)
+    lens = lens_input_parameter("river__slope")
+    slope = ncread(dataset, config, lens; optional = false, sel = indices, type = Float)
     clamp!(slope, 0.00001, Inf)
 
     flow_parameter_set = ManningFlowParameters(slope, mannings_n, river_length, river_width)
@@ -217,14 +201,9 @@ end
 
 "Initialize Overland flow model `KinWaveOverlandFlow`"
 function KinWaveOverlandFlow(dataset, config, indices; slope, flow_length, flow_width)
-    mannings_n = ncread(
-        dataset,
-        config,
-        "land_surface_water_flow__manning_n_parameter";
-        sel = indices,
-        defaults = 0.072,
-        type = Float,
-    )
+    lens = lens_input_parameter("land_surface_water_flow__manning_n_parameter")
+    mannings_n =
+        ncread(dataset, config, lens; sel = indices, defaults = 0.072, type = Float)
 
     n = length(indices)
     timestepping =

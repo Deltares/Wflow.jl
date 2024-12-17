@@ -41,43 +41,29 @@ function initialize_sbm_gwf_model(config::Config)
 
     dataset = NCDataset(static_path)
 
-    subcatch_2d =
-        ncread(dataset, config, "subcatchment"; optional = false, allow_missing = true)
+    lens = lens_input("subcatchment")
+    subcatch_2d = ncread(dataset, config, lens; optional = false, allow_missing = true)
     # indices based on catchment
     indices, reverse_indices = active_indices(subcatch_2d, missing)
     n_land_cells = length(indices)
     modelsize_2d = size(subcatch_2d)
 
-    river_location_2d = ncread(
-        dataset,
-        config,
-        "river_location";
-        optional = false,
-        type = Bool,
-        fill = false,
-    )
+    lens = lens_input("river_location")
+    river_location_2d =
+        ncread(dataset, config, lens; optional = false, type = Bool, fill = false)
     river_location = river_location_2d[indices]
-    river_width_2d = ncread(
-        dataset,
-        config,
-        "river__width";
-        optional = false,
-        type = Float,
-        fill = 0,
-    )
+
+    lens = lens_input_parameter("river__width")
+    river_width_2d = ncread(dataset, config, lens; optional = false, type = Float, fill = 0)
     river_width = river_width_2d[indices]
-    river_length_2d = ncread(
-        dataset,
-        config,
-        "river__length";
-        optional = false,
-        type = Float,
-        fill = 0,
-    )
+
+    lens = lens_input_parameter("river__length")
+    river_length_2d =
+        ncread(dataset, config, lens; optional = false, type = Float, fill = 0)
     river_length = river_length_2d[indices]
 
-    altitude =
-        ncread(dataset, config, "altitude"; optional = false, sel = indices, type = Float)
+    lens = lens_input("altitude")
+    altitude = ncread(dataset, config, lens; optional = false, sel = indices, type = Float)
 
     # read x, y coordinates and calculate cell length [m]
     y_coords = read_y_axis(dataset)
@@ -118,17 +104,13 @@ function initialize_sbm_gwf_model(config::Config)
     end
 
     # overland flow (kinematic wave)
-    land_slope = ncread(
-        dataset,
-        config,
-        "land_surface__slope";
-        optional = false,
-        sel = indices,
-        type = Float,
-    )
+    lens = lens_input_parameter("land_surface__slope")
+    land_slope =
+        ncread(dataset, config, lens; optional = false, sel = indices, type = Float)
     clamp!(land_slope, 0.00001, Inf)
-    ldd_2d = ncread(dataset, config, "ldd"; optional = false, allow_missing = true)
 
+    lens = lens_input("ldd")
+    ldd_2d = ncread(dataset, config, lens; optional = false, allow_missing = true)
     ldd = ldd_2d[indices]
 
     flow_length = map(get_flow_length, ldd, x_length, y_length)
@@ -265,10 +247,10 @@ function initialize_sbm_gwf_model(config::Config)
 
     # drain boundary of unconfined aquifer (optional)
     if do_drains
-        drain_2d =
-            ncread(dataset, config, "lateral.subsurface.drain"; type = Bool, fill = false)
-
+        lens = lens_input_parameter("land_drain_location__flag")
+        drain_2d = ncread(dataset, config, lens; type = Bool, fill = false)
         drain = drain_2d[indices]
+
         # check if drain occurs where overland flow is not possible (surface_flow_width =
         # 0.0) and correct if this is the case
         false_drain = filter(
@@ -508,8 +490,7 @@ function update!(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmG
         lateral.river.variables.h_av .+ lateral.subsurface.river.parameters.bottom
 
     # determine stable time step for groundwater flow
-    conductivity_profile =
-        get(config.input.lateral.subsurface, "conductivity_profile", "uniform")
+    conductivity_profile = get(config.model, "conductivity_profile", "uniform")
     dt_gw = stable_timestep(aquifer, conductivity_profile) # time step in day (Float64)
     dt_sbm = (dt / tosecond(basetimestep)) # dt is in seconds (Float64)
     if dt_gw < dt_sbm

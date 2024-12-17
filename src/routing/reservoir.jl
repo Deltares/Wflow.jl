@@ -13,10 +13,11 @@ function ReservoirParameters(dataset, config, indices_river, n_river_cells, pits
     # read only reservoir data if reservoirs true
     # allow reservoirs only in river cells
     # note that these locations are only the reservoir outlet pixels
+    lens = lens_input_parameter("reservoir_location__number")
     reslocs = ncread(
         dataset,
         config,
-        "reservoir_locations__number";
+        lens;
         optional = false,
         sel = indices_river,
         type = Int,
@@ -24,13 +25,8 @@ function ReservoirParameters(dataset, config, indices_river, n_river_cells, pits
     )
 
     # this holds the same ids as reslocs, but covers the entire reservoir
-    rescoverage_2d = ncread(
-        dataset,
-        config,
-        "reservoir_areas__number";
-        optional = false,
-        allow_missing = true,
-    )
+    lens = lens_input_parameter("reservoir_area__number")
+    rescoverage_2d = ncread(dataset, config, lens; optional = false, allow_missing = true)
     # for each reservoir, a list of 2D indices, needed for getting the mean precipitation
     inds_res_cov = Vector{CartesianIndex{2}}[]
 
@@ -56,56 +52,63 @@ function ReservoirParameters(dataset, config, indices_river, n_river_cells, pits
             push!(inds_res_cov, res_cov)
         end
     end
-
+    lens =
+        lens_input_parameter("reservoir_water_demand~required~downstream__volume_flow_rate")
     resdemand = ncread(
         dataset,
         config,
-        "reservoir_water_demand~required~downstream__volume_flow_rate";
+        lens;
         optional = false,
         sel = inds_res,
         type = Float,
         fill = 0,
     )
+    lens =
+        lens_input_parameter("reservoir_water_release-below-spillway__max_volume_flow_rate")
     resmaxrelease = ncread(
         dataset,
         config,
-        "reservoir_water_release-below-spillway__max_volume_flow_rate";
+        lens;
         optional = false,
         sel = inds_res,
         type = Float,
         fill = 0,
     )
+    lens = lens_input_parameter("reservoir_water__max_volume")
     resmaxvolume = ncread(
         dataset,
         config,
-        "reservoir_water__max_volume";
+        lens;
         optional = false,
         sel = inds_res,
         type = Float,
         fill = 0,
     )
+    lens = lens_input_parameter("reservoir_surface__area")
     resarea = ncread(
         dataset,
         config,
-        "reservoir_surface__area";
+        lens;
         optional = false,
         sel = inds_res,
         type = Float,
         fill = 0,
     )
+    lens = lens_input_parameter("reservoir_water~full-target__volume_fraction")
     res_targetfullfrac = ncread(
         dataset,
         config,
-        "reservoir_water~full-target__volume_fraction";
+        lens;
         optional = false,
         sel = inds_res,
         type = Float,
         fill = 0,
     )
+    lens = lens_input_parameter("reservoir_water~min-target__volume_fraction")
     res_targetminfrac = ncread(
         dataset,
         config,
-        "reservoir_water~min-target__volume_fraction";
+        lens;
         optional = false,
         sel = inds_res,
         type = Float,

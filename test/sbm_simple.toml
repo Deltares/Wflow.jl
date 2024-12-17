@@ -17,6 +17,12 @@ ldd = "wflow_ldd"
 river_location = "wflow_river"
 subcatchment = "wflow_subcatch"
 
+[input.forcing]
+atmosphere_water__precipitation_volume_flux = "precip"
+land_surface_water__potential_evaporation_volume_flux = "pet"
+atmosphere_air__temperature = "temp"
+
+[input.parameters]
 atmosphere_air__snowfall_temperature_threshold = "TT"
 atmosphere_air__snowfall_temperature_interval = "TTI"
 
@@ -53,8 +59,8 @@ river__width = "wflow_riverwidth"
 land_surface_water_flow__manning_n_parameter = "N"
 land_surface__slope = "Slope"
 
-reservoir_areas__number = "wflow_reservoirareas"
-reservoir_locations__number = "wflow_reservoirlocs"
+reservoir_area__number = "wflow_reservoirareas"
+reservoir_location__number = "wflow_reservoirlocs"
 reservoir_surface__area = "ResSimpleArea"
 "reservoir_water_demand~required~downstream__volume_flow_rate" = "ResDemand"
 reservoir_water_release-below-spillway__max_volume_flow_rate = "ResMaxRelease"
@@ -66,25 +72,14 @@ subsurface_water__horizontal-to-vertical_saturated_hydraulic_conductivity_ratio 
 
 # specify the internal IDs of the parameters which vary over time
 # the external name mapping needs to be below together with the other mappings
+[input.dynamic]
 forcing = [
-  "vertical.atmospheric_forcing.precipitation",
-  "vertical.atmospheric_forcing.temperature",
-  "vertical.atmospheric_forcing.potential_evaporation",
+  "atmosphere_water__precipitation_volume_flux",
+  "atmosphere_air__temperature",
+  "land_surface_water__potential_evaporation_volume_flux",
 ]
 
 cyclic = ["vegetation__leaf-area_index"]
-
-[input.vertical.vegetation_parameter_set]
-leaf_area_index = "LAI"
-kext = "Kext"
-storage_specific_leaf = "Sl"
-storage_wood = "Swood"
-rootingdepth = "RootingDepth"
-
-[input.vertical.atmospheric_forcing]
-potential_evaporation = "pet"
-precipitation = "precip"
-temperature = "temp"
 
 [model]
 thicknesslayers = [100, 300, 800]
@@ -97,9 +92,9 @@ path = "output_moselle_simple.csv"
 coordinate.x = 7.378
 coordinate.y = 50.204
 header = "Q"
-parameter = "lateral.river.variables.q"
+parameter = "river_water__volume_flow_rate"
 
 [[csv.column]]
 header = "recharge"
-parameter = "vertical.soil.variables.recharge"
+parameter = "soil_water_sat-zone_top__recharge_volume_flux"
 reducer = "mean"

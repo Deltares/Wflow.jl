@@ -71,7 +71,10 @@ end
 
 @testset "no drains" begin
     config.model.drains = false
-    delete!(Dict(config.output.lateral.subsurface), "drain")
+    delete!(
+        Dict(config.output.variables),
+        "land_drain_water~to-subsurface__volume_flow_rate",
+    )
     model = Wflow.initialize_sbm_gwf_model(config)
     @test collect(keys(model.lateral.subsurface)) == [:flow, :recharge, :river]
 end
@@ -83,8 +86,8 @@ tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
 config = Wflow.Config(tomlpath)
 config.model.river_routing = "local-inertial"
 
-config.input.river_bank_water__elevation = "bankfull_elevation"
-config.input.river_bank_water__depth = "bankfull_depth"
+config.input.parameters.river_bank_water__elevation = "bankfull_elevation"
+config.input.parameters.river_bank_water__depth = "bankfull_depth"
 
 model = Wflow.initialize_sbm_gwf_model(config)
 Wflow.run_timestep!(model)
@@ -108,14 +111,14 @@ config = Wflow.Config(tomlpath)
 config.model.river_routing = "local-inertial"
 config.model.land_routing = "local-inertial"
 
-config.input.river_bank_water__elevation = "bankfull_elevation"
-config.input.river_bank_water__depth = "bankfull_depth"
-config.input.land_surface_water_flow__ground_elevation = "wflow_dem"
+config.input.parameters.river_bank_water__elevation = "bankfull_elevation"
+config.input.parameters.river_bank_water__depth = "bankfull_depth"
+config.input.parameters.land_surface_water_flow__ground_elevation = "wflow_dem"
 
-pop!(Dict(config.state.lateral.land.variables), "q")
-config.state.lateral.land.variables.h_av = "h_av_land"
-config.state.lateral.land.variables.qx = "qx_land"
-config.state.lateral.land.variables.qy = "qy_land"
+pop!(Dict(config.state.variables), "land_surface_water__volume_flow_rate")
+config.state.variables.land_surface_water__time_average_of_depth = "h_av_land"
+config.state.variables.land_surface_water__x_component_of_volume_flow_rate = "qx_land"
+config.state.variables.land_surface_water__y_component_of_volume_flow_rate = "qy_land"
 
 model = Wflow.initialize_sbm_gwf_model(config)
 Wflow.run_timestep!(model)

@@ -11,6 +11,29 @@ loglevel = "info"
 path_input = "instates-piave.nc"
 path_output = "outstates-piave.nc"
 
+[state.variables]
+vegetation_canopy_water__storage = "canopystorage"
+
+soil_water_sat-zone__depth = "satwaterdepth"
+soil_surface__temperature = "tsoil"
+soil_water_unsat-zone__depth-per-soil_layer = "ustorelayerdepth"
+
+"snowpack~dry__leq-depth" = "snow"
+"snowpack~liquid__depth" = "snowwater"
+
+river_water__depth = "h_river"
+river_water__time_average_of_depth = "h_av_river"
+river_water__volume_flow_rate = "q_river"
+
+land_surface_water__volume_flow_rate = "q_land"
+land_surface_water__depth = "h_land"
+land_surface_water__time_average_of_depth = "h_av_land"
+"land_surface_water~paddy__depth" = "h_paddy"
+
+subsurface_water__volume_flow_rate  = "ssf"
+
+glacier_ice__leq-volume = "glacierstore"
+
 [input]
 path_forcing = "forcing-piave.nc"
 path_static = "staticmaps-piave.nc"
@@ -20,6 +43,12 @@ subcatchment = "wflow_subcatch"
 gauges = "wflow_gauges"
 gauges_grdc = "wflow_gauges_grdc"
 
+[input.forcing]
+atmosphere_water__precipitation_volume_flux = "precip"
+land_surface_water__potential_evaporation_volume_flux = "pet"
+atmosphere_air__temperature = "temp"
+
+[input.parameters]
 atmosphere_air__snowfall_temperature_threshold = "TT"
 atmosphere_air__snowfall_temperature_interval = "TTI"
 
@@ -32,6 +61,7 @@ glacier_surface__area_fraction = "wflow_glacierfrac"
 glacier_ice__degree-day_coefficient = "G_Cfmax"
 glacier_ice__melting_temperature_threshold = "G_TT"
 "glacier_firn_accumulation__snowpack~dry_leq-depth_fraction" = "G_SIfrac"
+glacier_ice__leq-volume = "wflow_glacierstore"
 
 soil_water__brooks-corey_epsilon_parameter = "c"
 soil_surface_water__infiltration_reduction_parameter = "cf_soil"
@@ -72,21 +102,36 @@ land_surface__slope = "Slope"
 
 subsurface_water__horizontal-to-vertical_saturated_hydraulic_conductivity_ratio = "KsatHorFrac"
 
+land_water_allocation_area__number = "allocation_areas"
+"land~domestic__gross_water_demand_flux" = "dom_gross"
+"land~domestic__net_water_demand_flux" = "dom_net"
+"land~industry__gross_water_demand_flux" = "ind_gross"
+"land~industry__net_water_demand_flux" = "ind_net"
+"land~livestock__gross_water_demand_flux" = "lsk_gross"
+"land~livestock__net_water_demand_flux" = "lsk_net"
+land_surface_water__withdrawal_fraction = "SurfaceWaterFrac"
+"land~irrigated-paddy_area__number" = "paddy_irrigation_areas"
+"land~irrigated-non-paddy_area__number" = "nonpaddy_irrigation_areas"
+"land~irrigated-paddy__irrigation_trigger_flag" = "irrigation_trigger"
+"land~irrigated-non-paddy__irrigation_trigger_flag" = "irrigation_trigger"
+
+[input.dynamic]
 forcing = [
-  "vertical.atmospheric_forcing.precipitation",
-  "vertical.atmospheric_forcing.temperature",
-  "vertical.atmospheric_forcing.potential_evaporation",
+  "atmosphere_water__precipitation_volume_flux",
+  "atmosphere_air__temperature",
+  "land_surface_water__potential_evaporation_volume_flux",
 ]
+
 cyclic = [ 
     "vegetation__leaf-area_index",
-    "vertical.demand.domestic.demand.demand_gross", 
-    "vertical.demand.domestic.demand.demand_net", 
-    "vertical.demand.industry.demand.demand_gross", 
-    "vertical.demand.industry.demand.demand_net", 
-    "vertical.demand.livestock.demand.demand_gross", 
-    "vertical.demand.livestock.demand.demand_net", 
-    "vertical.demand.paddy.parameters.irrigation_trigger", 
-    "vertical.demand.nonpaddy.parameters.irrigation_trigger",
+    "land~domestic__gross_water_demand_flux",
+    "land~domestic__net_water_demand_flux", 
+    "land~industry__gross_water_demand_flux", 
+    "land~industry__net_water_demand_flux", 
+    "land~livestock__gross_water_demand_flux", 
+    "land~livestock__net_water_demand_flux", 
+    "land~irrigated-paddy__irrigation_trigger_flag", 
+    "land~irrigated-non-paddy__irrigation_trigger_flag",
 ]
 
 [model]
@@ -103,32 +148,6 @@ kw_land_tstep = 3600
 thicknesslayers = [ 50, 100, 50, 200, 800,]
 river_routing = "kinematic-wave"
 
-[state.vertical.interception.variables]
-canopy_storage = "canopystorage"
-
-[state.vertical.soil.variables]
-satwaterdepth = "satwaterdepth"
-tsoil = "tsoil"
-ustorelayerdepth = "ustorelayerdepth"
-
-[state.vertical.snow.variables]
-snow_storage = "snow"
-snow_water = "snowwater"
-
-[state.vertical.glacier.variables]
-glacier_store = "glacierstore"
-
-[state.vertical.demand.paddy.variables]
-h = "h_paddy"
-
-[input.vertical.glacier.variables]
-glacier_store = "wflow_glacierstore"
-
-[input.vertical.atmospheric_forcing]
-potential_evaporation = "pet"
-precipitation = "precip"
-temperature = "temp"
-
 [model.water_demand]
 domestic = true
 industry = true
@@ -136,51 +155,12 @@ livestock = true
 paddy = true
 nonpaddy = true
 
-[state.lateral.river.variables]
-q = "q_river"
-h = "h_river"
-h_av = "h_av_river"
-
-[state.lateral.subsurface.variables]
-ssf = "ssf"
-
-[state.lateral.land.variables]
-q = "q_land"
-h = "h_land"
-h_av = "h_av_land"
-
-[input.vertical.allocation.parameters]
-areas = "allocation_areas"
-frac_sw_used = "SurfaceWaterFrac"
-
-[input.vertical.demand.domestic.demand]
-demand_gross = "dom_gross"
-demand_net = "dom_net"
-
-[input.vertical.demand.industry.demand]
-demand_gross = "ind_gross"
-demand_net = "ind_net"
-
-[input.vertical.demand.livestock.demand]
-demand_gross = "lsk_gross"
-demand_net = "lsk_net"
-
-[input.vertical.demand.paddy.parameters]
-irrigation_areas = "paddy_irrigation_areas"
-irrigation_trigger = "irrigation_trigger"
-
-[input.vertical.demand.nonpaddy.parameters]
-irrigation_areas = "nonpaddy_irrigation_areas"
-irrigation_trigger = "irrigation_trigger"
-
 [output]
 path = "output-piave-demand.nc"
 
-[output.lateral.river.variables]
-q_av = "q_river"
-
-[output.vertical.soil.variables]
-zi = "zi"
+[output.variables]
+river_water__time_average_of_volume_flow_rate = "q_river"
+soil_water_sat-zone_top__depth = "zi"
 
 [csv]
 path = "output-piave-demand.csv"
@@ -188,21 +168,21 @@ path = "output-piave-demand.csv"
 [[csv.column]]
 header = "Q"
 map = "gauges"
-parameter = "lateral.river.variables.q_av"
+parameter = "river_water__time_average_of_volume_flow_rate"
 
 [[csv.column]]
 header = "Q"
 map = "gauges_grdc"
-parameter = "lateral.river.variables.q_av"
+parameter = "river_water__time_average_of_volume_flow_rate"
 
 [[csv.column]]
 coordinate.x = 12.7243
 coordinate.y = 45.5851
 header = "paddy_h_bycoord"
-parameter = "vertical.demand.paddy.variables.h"
+parameter = "land_surface_water~paddy__depth"
 
 [[csv.column]]
 coordinate.x = 12.7243
 coordinate.y = 45.5851
 header = "irri_bycoord"
-parameter = "vertical.allocation.variables.irri_alloc"
+parameter = "land~irrigated__allocated_water_volume_flux"

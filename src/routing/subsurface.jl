@@ -44,20 +44,17 @@ function LateralSsfParameters(
     flow_length,
     flow_width,
 )
-    khfrac = ncread(
-        dataset,
-        config,
-        "subsurface_water__horizontal-to-vertical_saturated_hydraulic_conductivity_ratio";
-        sel = indices,
-        defaults = 1.0,
-        type = Float,
+    lens = lens_input_parameter(
+        "subsurface_water__horizontal-to-vertical_saturated_hydraulic_conductivity_ratio",
     )
+    khfrac = ncread(dataset, config, lens; sel = indices, defaults = 1.0, type = Float)
     n_cells = length(khfrac)
 
     (; theta_s, theta_r, soilthickness) = soil
     soilthickness = soilthickness .* 0.001
 
-    kh_profile_type = get(config.model, "saturated_hydraulic_conductivity_profile", "exponential")::String
+    kh_profile_type =
+        get(config.model, "saturated_hydraulic_conductivity_profile", "exponential")::String
     dt = Second(config.timestepsecs) / basetimestep
     if kh_profile_type == "exponential"
         (; kv_0, f) = soil.kv_profile

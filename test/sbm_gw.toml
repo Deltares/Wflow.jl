@@ -18,30 +18,27 @@ path_output = "outstates-moselle.nc"
 # if listed, the variable must be present in the NetCDF or error
 # if not listed, the variable can get a default value if it has one
 
-[state.vertical.interception.variables]
-canopy_storage = "canopystorage"
+[state.variables]
+vegetation_canopy_water__storage = "canopystorage"
 
-[state.vertical.soil.variables] 
-satwaterdepth = "satwaterdepth"
-tsoil = "tsoil"
-ustorelayerdepth = "ustorelayerdepth"
+soil_water_sat-zone__depth = "satwaterdepth"
+soil_surface__temperature = "tsoil"
+soil_water_unsat-zone__depth-per-soil_layer = "ustorelayerdepth"
 
-[state.vertical.snow.variables] 
-snow_storage = "snow"
-snow_water = "snowwater"
+"snowpack~dry__leq-depth" = "snow"
+"snowpack~liquid__depth" = "snowwater"
 
-[state.lateral.river.variables]
-h = "h_river"
-h_av = "h_av_river"
-q = "q_river"
+river_water__depth = "h_river"
+river_water__time_average_of_depth = "h_av_river"
+river_water__volume_flow_rate = "q_river"
 
-[state.lateral.river.boundary_conditions.reservoir.variables]
-volume = "volume_reservoir"
+reservoir_water__volume = "volume_reservoir"
 
-[state.lateral.land.variables]
-h = "h_land"
-h_av = "h_av_land"
-q = "q_land"
+subsurface_water__volume_flow_rate  = "ssf"
+
+land_surface_water__volume_flow_rate = "q_land"
+land_surface_water__depth = "h_land"
+land_surface_water__time_average_of_depth = "h_av_land"
 
 [input]
 path_forcing = "forcing-moselle.nc"
@@ -53,6 +50,12 @@ ldd = "wflow_ldd"
 river_location = "wflow_river"
 subcatchment = "wflow_subcatch"
 
+[input.forcing]
+atmosphere_water__precipitation_volume_flux = "precip"
+land_surface_water__potential_evaporation_volume_flux = "pet"
+atmosphere_air__temperature = "temp"
+
+[input.parameters]
 atmosphere_air__snowfall_temperature_threshold = "TT"
 atmosphere_air__snowfall_temperature_interval = "TTI"
 
@@ -88,8 +91,8 @@ river__width = "wflow_riverwidth"
 land_surface_water_flow__manning_n_parameter = "N"
 land_surface__slope = "Slope"
 
-reservoir_areas__number = "wflow_reservoirareas"
-reservoir_locations__number = "wflow_reservoirlocs"
+reservoir_area__number = "wflow_reservoirareas"
+reservoir_location__number = "wflow_reservoirlocs"
 reservoir_surface__area = "ResSimpleArea"
 "reservoir_water_demand~required~downstream__volume_flow_rate" = "ResDemand"
 reservoir_water_release-below-spillway__max_volume_flow_rate = "ResMaxRelease"
@@ -99,18 +102,14 @@ reservoir_water__max_volume = "ResMaxVolume"
 
 # specify the internal IDs of the parameters which vary over time
 # the external name mapping needs to be below together with the other mappings
+[input.dynamic]
 forcing = [
-  "vertical.atmospheric_forcing.precipitation",
-  "vertical.atmospheric_forcing.temperature",
-  "vertical.atmospheric_forcing.potential_evaporation",
+  "atmosphere_water__precipitation_volume_flux",
+  "atmosphere_air__temperature",
+  "land_surface_water__potential_evaporation_volume_flux",
 ]
 
 cyclic = ["vegetation__leaf-area_index"]
-
-[input.vertical.atmospheric_forcing]
-potential_evaporation = "pet"
-precipitation = "precip"
-temperature = "temp"
 
 [model]
 kin_wave_iteration = true
@@ -125,28 +124,18 @@ type = "sbm"
 [output]
 path = "output_moselle.nc"
 
-[output.vertical.interception.variables]
-canopy_storage = "canopystorage"
-
-[output.vertical.soil.variables]
-satwaterdepth = "satwaterdepth"
-tsoil = "tsoil"
-ustorelayerdepth = "ustorelayerdepth"
-
-[output.vertical.snow.variables]
-snow_storage = "snow"
-snow_water = "snowwater"
-
-[output.lateral.river.variables]
-h = "h_river"
-q = "q_river"
-
-[output.lateral.river.boundary_conditions.reservoir.variables]
-volume = "volume_reservoir"
-
-[output.lateral.land.variables]
-h = "h_land"
-q = "q_land"
+[output.variables]
+soil_water_sat-zone__depth = "satwaterdepth"
+soil_surface__temperature = "tsoil"
+soil_water_unsat-zone__depth-per-soil_layer = "ustorelayerdepth"
+"snowpack~dry__leq-depth" = "snow"
+"snowpack~liquid__depth" = "snowwater"
+river_water__depth = "h_river"
+river_water__volume_flow_rate = "q_river"
+reservoir_water__volume = "volume_reservoir"
+land_surface_water__volume_flow_rate = "q_land"
+land_surface_water__depth = "h_land"
+vertical.interception.variables.canopy_storage = "canopystorage"
 
 [netcdf]
 path = "output_scalar_moselle.nc"
@@ -154,56 +143,56 @@ path = "output_scalar_moselle.nc"
 [[netcdf.variable]]
 name = "Q"
 map = "gauges"
-parameter = "lateral.river.variables.q"
+parameter = "river_water__volume_flow_rate"
 
 [[netcdf.variable]]
 coordinate.x = 6.255
 coordinate.y = 50.012
 name = "temp_coord"
 location = "temp_bycoord"
-parameter = "vertical.atmospheric_forcing.temperature"
+parameter = "atmosphere_air__temperature"
 
 [[netcdf.variable]]
 location = "temp_byindex"
 name = "temp_index"
 index.x = 100
 index.y = 264
-parameter = "vertical.atmospheric_forcing.temperature"
+parameter = "atmosphere_air__temperature"
 
 [csv]
 path = "output_moselle.csv"
 
 [[csv.column]]
 header = "Q"
-parameter = "lateral.river.variables.q"
+parameter = "river_water__volume_flow_rate"
 reducer = "maximum"
 
 [[csv.column]]
 header = "volume"
 index = 1
-parameter = "lateral.river.boundary_conditions.reservoir.variables.volume"
+parameter = "reservoir_water__volume"
 
 [[csv.column]]
 coordinate.x = 6.255
 coordinate.y = 50.012
 header = "temp_bycoord"
-parameter = "vertical.atmospheric_forcing.temperature"
+parameter = "atmosphere_air__temperature"
 
 [[csv.column]]
 header = "temp_byindex"
 index.x = 100
 index.y = 264
-parameter = "vertical.atmospheric_forcing.temperature"
+parameter = "atmosphere_air__temperature"
 
 [[csv.column]]
 header = "Q"
 map = "gauges"
-parameter = "lateral.river.variables.q"
+parameter = "river_water__volume_flow_rate"
 
 [[csv.column]]
 header = "recharge"
 map = "subcatchment"
-parameter = "vertical.soil.variables.recharge"
+parameter = "soil_water_sat-zone_top__recharge_volume_flux"
 reducer = "mean"
 
 [API]

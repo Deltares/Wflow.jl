@@ -178,14 +178,14 @@ end
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 
-config.input.vertical.atmospheric_forcing.precipitation =
+config.input.forcing.atmosphere_water__precipitation_volume_flux =
     Dict("scale" => 2.0, "netcdf" => Dict("variable" => Dict("name" => "precip")))
-config.input.vertical.atmospheric_forcing.potential_evaporation = Dict(
+config.input.forcing.land_surface_water__potential_evaporation_volume_flux = Dict(
     "scale" => 3.0,
     "offset" => 1.50,
     "netcdf" => Dict("variable" => Dict("name" => "pet")),
 )
-config.input["vegetation__leaf-area_index"] =
+config.input.parameters["vegetation__leaf-area_index"] =
     Dict("scale" => 1.6, "netcdf" => Dict("variable" => Dict("name" => "LAI")))
 
 model = Wflow.initialize_sbm_model(config)
@@ -207,11 +207,9 @@ end
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 
-config.input.cyclic = [
-    "vegetation__leaf-area_index",
-    "river_water__volume_inflow_rate",
-]
-config.input.river_water__volume_inflow_rate = "inflow"
+config.input.dynamic.cyclic =
+    ["vegetation__leaf-area_index", "river_water__volume_inflow_rate"]
+config.input.parameters.river_water__volume_inflow_rate = "inflow"
 
 model = Wflow.initialize_sbm_model(config)
 Wflow.run_timestep!(model)
@@ -224,7 +222,7 @@ end
 
 # test fixed forcing (precipitation = 2.5)
 config = Wflow.Config(tomlpath)
-config.input.vertical.atmospheric_forcing.precipitation = Dict("value" => 2.5)
+config.input.forcing.atmosphere_water__precipitation_volume_flux = Dict("value" => 2.5)
 model = Wflow.initialize_sbm_model(config)
 Wflow.load_fixed_forcing!(model)
 
@@ -288,7 +286,7 @@ Wflow.run_timestep!(model)
 
 @testset "river and overland flow and depth (local inertial)" begin
     q = model.lateral.river.variables.q_av
-    @test sum(q) ≈ 2380.64389229669f0
+    @test sum(q) ≈ 2495.9830572223946f0
     @test q[1622] ≈ 7.30561606758937f-5
     @test q[43] ≈ 5.3566292152594155f0
     @test q[501] ≈ 1.602564408503896f0
@@ -314,9 +312,9 @@ config = Wflow.Config(tomlpath)
 config.model.floodplain_1d = true
 config.model.river_routing = "local-inertial"
 config.model.land_routing = "kinematic-wave"
-config.input["floodplain_water__sum_of_volume-per-depth"] = "floodplain_volume"
-Dict(config.state.lateral.river)["floodplain.variables"] =
-    Dict("q" => "q_floodplain", "h" => "h_floodplain")
+config.input.parameters["floodplain_water__sum_of_volume-per-depth"] = "floodplain_volume"
+config.state.variables.floodplain_water__volume = "q_floodplain"
+config.state.variables.floodplain_water__depth = "h_floodplain"
 
 model = Wflow.initialize_sbm_model(config)
 
@@ -432,8 +430,8 @@ Wflow.run_timestep!(model)
 end
 
 # set boundary condition local inertial routing from netCDF file
-config.input["model_boundary_condition~river__length"] = "riverlength_bc"
-config.input["model_boundary_condition~river_bank_water__depth"] = "riverdepth_bc"
+config.input.parameters["model_boundary_condition~river__length"] = "riverlength_bc"
+config.input.parameters["model_boundary_condition~river_bank_water__depth"] = "riverdepth_bc"
 model = Wflow.initialize_sbm_model(config)
 Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
@@ -458,9 +456,11 @@ Wflow.close_files(model; delete_output = false)
     i = 100
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
-    config.input.soil_water__vertical_saturated_hydraulic_conductivity = "kv"
-    config.input["soil_vertical_saturated_hydraulic_conductivity_profile~exponential_below-surface__depth"] = Dict("value" => 400.0)
-    config.input["soil_vertical_saturated_hydraulic_conductivity_profile~layered_below-surface__depth"] = Dict("value" => 400.0)
+    config.input.parameters.soil_water__vertical_saturated_hydraulic_conductivity = "kv"
+    config.input.parameters["soil_vertical_saturated_hydraulic_conductivity_profile~exponential_below-surface__depth"] =
+        Dict("value" => 400.0)
+    config.input.parameters["soil_vertical_saturated_hydraulic_conductivity_profile~layered_below-surface__depth"] =
+        Dict("value" => 400.0)
 
     @testset "exponential profile" begin
         model = Wflow.initialize_sbm_model(config)

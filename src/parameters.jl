@@ -21,47 +21,20 @@ end
 "Initialize (shared) vegetation parameters"
 function VegetationParameters(dataset, config, indices)
     n = length(indices)
-    rootingdepth = ncread(
-        dataset,
-        config,
-        "vegetation_root__depth";
-        sel = indices,
-        defaults = 750.0,
-        type = Float,
-    )
-    kc = ncread(
-        dataset,
-        config,
-        "vegetation__crop_factor";
-        sel = indices,
-        defaults = 1.0,
-        type = Float,
-    )
-    if haskey(config.input, "vegetation__leaf-area_index")
-        storage_specific_leaf = ncread(
-            dataset,
-            config,
-            "vegetation__specific-leaf_storage";
-            optional = false,
-            sel = indices,
-            type = Float,
-        )
-        storage_wood = ncread(
-            dataset,
-            config,
-            "vegetation_woody-part__storage_capacity";
-            optional = false,
-            sel = indices,
-            type = Float,
-        )
-        kext = ncread(
-            dataset,
-            config,
-            "vegetation_canopy__light-extinction_coefficient";
-            optional = false,
-            sel = indices,
-            type = Float,
-        )
+    lens = lens_input_parameter("vegetation_root__depth")
+    rootingdepth =
+        ncread(dataset, config, lens; sel = indices, defaults = 750.0, type = Float)
+    lens = lens_input_parameter("vegetation__crop_factor")
+    kc = ncread(dataset, config, lens; sel = indices, defaults = 1.0, type = Float)
+    if haskey(config.input.parameters, "vegetation__leaf-area_index")
+        lens = lens_input_parameter("vegetation__specific-leaf_storage")
+        storage_specific_leaf =
+            ncread(dataset, config, lens; optional = false, sel = indices, type = Float)
+        lens = lens_input_parameter("vegetation_woody-part__storage_capacity")
+        storage_wood =
+            ncread(dataset, config, lens; optional = false, sel = indices, type = Float)
+        lens = lens_input_parameter("vegetation_canopy__light-extinction_coefficient")
+        kext = ncread(dataset, config, lens; optional = false, sel = indices, type = Float)
         vegetation_parameter_set = VegetationParameters(;
             leaf_area_index = fill(mv, n),
             storage_wood,
@@ -73,22 +46,11 @@ function VegetationParameters(dataset, config, indices)
             kc,
         )
     else
-        canopygapfraction = ncread(
-            dataset,
-            config,
-            "vegetation_canopy__gap_fraction";
-            sel = indices,
-            defaults = 0.1,
-            type = Float,
-        )
-        cmax = ncread(
-            dataset,
-            config,
-            "vegetation_water__storage_capacity";
-            sel = indices,
-            defaults = 1.0,
-            type = Float,
-        )
+        lens = lens_input_parameter("vegetation_canopy__gap_fraction")
+        canopygapfraction =
+            ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float)
+        lens = lens_input_parameter("vegetation_water__storage_capacity")
+        cmax = ncread(dataset, config, lens; sel = indices, defaults = 1.0, type = Float)
         vegetation_parameter_set = VegetationParameters(;
             leaf_area_index = nothing,
             storage_wood = nothing,

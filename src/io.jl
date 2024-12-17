@@ -26,7 +26,6 @@ function param(obj, fields, default)
         return default
     end
 end
-get_fields(name) = haskey(standard_name_map, name) ? standard_name_map[name] : name
 
 """
     Config(path::AbstractString)
@@ -60,10 +59,20 @@ function Base.setproperty!(config::Config, f::Symbol, x)
     return nothing
 end
 
+"Access nested Config object using a `lens`"
+function _lens(obj::Config, lens::ComposedFunction, default)
+    try
+        l = lens(obj)
+        return l isa AbstractDict ? Config(l, pathof(obj)) : l
+    catch
+        return default
+    end
+end
+
 "Get a value from the Config with either the key or an alias of the key."
-function get_alias(config::Config, key, alias, default)
-    alias_or_default = param(config, alias, default)
-    return param(config, key, alias_or_default)
+function get_alias(config::Config, key::ComposedFunction, alias::ComposedFunction, default)
+    alias_or_default = _lens(config, alias, default)
+    return _lens(config, key, alias_or_default)
 end
 
 "Get a value from the Config with a key, throwing an error if it is not one of the options."
@@ -184,25 +193,25 @@ end
 
 function get_param_res(model)
     return Dict(
-        symbols"vertical.atmospheric_forcing.precipitation" =>
+        "atmosphere_water__precipitation_volume_flux" =>
             model.lateral.river.boundary_conditions.reservoir.boundary_conditions.precipitation,
-        symbols"vertical.atmospheric_forcing.potential_evaporation" =>
+        "land_surface_water__potential_evaporation_volume_flux" =>
             model.lateral.river.boundary_conditions.reservoir.boundary_conditions.evaporation,
     )
 end
 
 function get_param_lake(model)
     return Dict(
-        symbols"vertical.atmospheric_forcing.precipitation" =>
+        "atmosphere_water__precipitation_volume_flux" =>
             model.lateral.river.boundary_conditions.lake.boundary_conditions.precipitation,
-        symbols"vertical.atmospheric_forcing.potential_evaporation" =>
+        "land_surface_water__potential_evaporation_volume_flux" =>
             model.lateral.river.boundary_conditions.lake.boundary_conditions.evaporation,
     )
 end
 
 mover_params = (
-    symbols"vertical.atmospheric_forcing.precipitation",
-    symbols"vertical.atmospheric_forcing.potential_evaporation",
+    "atmosphere_water__precipitation_volume_flux",
+    "land_surface_water__potential_evaporation_volume_flux",
 )
 
 function load_fixed_forcing!(model)
@@ -225,7 +234,8 @@ function load_fixed_forcing!(model)
     for (par, ncvar) in forcing_parameters
         if ncvar.name === nothing
             val = ncvar.value * ncvar.scale + ncvar.offset
-            param_vector = param(model, par)
+            lens = standard_name_map[par]
+            param_vector = lens(model)
             param_vector .= val
             # set fixed precipitation and evaporation over the lakes and reservoirs and put
             # these into the lakes and reservoirs structs and set the precipitation and
@@ -301,8 +311,8 @@ function update_forcing!(model)
                 end
             end
         end
-
-        param_vector = param(model, par)
+        lens = standard_name_map[par]
+        param_vector = lens(model)
         sel = active_indices(network, par)
         data_sel = data[sel]
         if any(ismissing, data_sel)
@@ -334,7 +344,7 @@ monthday_passed(curr, avail) = (curr[1] >= avail[1]) && (curr[2] >= avail[2])
 "Get dynamic and cyclic netCDF input"
 function load_dynamic_input!(model)
     update_forcing!(model)
-    if haskey(model.config.input, "cyclic")
+    if haskey(model.config.input.dynamic, "cyclic")
         update_cyclic!(model)
     end
     return nothing
@@ -358,7 +368,8 @@ function update_cyclic!(model)
                 error("Could not find applicable cyclic timestep for $month_day")
             # load from netCDF into the model according to the mapping
             data = get_at(cyclic_dataset, ncvar.name, i)
-            param_vector = param(model, par)
+            lens = standard_name_map[par]
+            param_vector = lens(model)
             sel = active_indices(network, par)
             param_vector .= data[sel]
             if ncvar.scale != 1.0 || ncvar.offset != 0.0
@@ -428,7 +439,12 @@ function setup_scalar_netcdf(
             (nc.location_dim,);
             attrib = ["cf_role" => "timeseries_id"],
         )
-        v = param(modelmap, nc.par)
+        v = if haskey(standard_name_map, nc.par)
+            lens = standard_name_map[nc.par]
+            lens(modelmap)
+        else
+            param(modelmap, nc.par)
+        end
         if eltype(v) <: AbstractFloat
             defVar(
                 ds,
@@ -629,9 +645,9 @@ struct NCReader{T}
     dataset::CFDataset
     dataset_times::Vector{T}
     cyclic_dataset::Union{NCDataset, Nothing}
-    cyclic_times::Dict{Tuple{Symbol, Vararg{Symbol}}, Vector{Tuple{Int, Int}}}
-    forcing_parameters::Dict{Tuple{Symbol, Vararg{Symbol}}, NamedTuple}
-    cyclic_parameters::Dict{Tuple{Symbol, Vararg{Symbol}}, NamedTuple}
+    cyclic_times::Dict{String, Vector{Tuple{Int, Int}}}
+    forcing_parameters::Dict{String, NamedTuple}
+    cyclic_parameters::Dict{String, NamedTuple}
 end
 
 struct Writer
@@ -697,14 +713,13 @@ function prepare_reader(config)
     end
 
     # check for cyclic parameters
-    do_cyclic = haskey(config.input, "cyclic")
+    do_cyclic = haskey(config.input.dynamic, "cyclic")
 
     # create map from internal location to netCDF variable name for forcing parameters
-    forcing_parameters = Dict{Tuple{Symbol, Vararg{Symbol}}, NamedTuple}()
-    for par in config.input.forcing
-        fields = symbols(par)
-        ncname, mod = ncvar_name_modifier(param(config.input, fields))
-        forcing_parameters[fields] =
+    forcing_parameters = Dict{String, NamedTuple}()
+    for par in config.input.dynamic.forcing
+        ncname, mod = ncvar_name_modifier(param(config.input.forcing, symbols(par)))
+        forcing_parameters[par] =
             (name = ncname, scale = mod.scale, offset = mod.offset, value = mod.value)
 
         @info "Set `$par` using netCDF variable `$ncname` as forcing parameter."
@@ -716,24 +731,23 @@ function prepare_reader(config)
     # (memory usage))
     if do_cyclic == true
         cyclic_dataset = NCDataset(cyclic_path)
-        cyclic_parameters = Dict{Tuple{Symbol, Vararg{Symbol}}, NamedTuple}()
-        cyclic_times = Dict{Tuple{Symbol, Vararg{Symbol}}, Vector{Tuple{Int, Int}}}()
-        for par in config.input.cyclic
-            fields = symbols(get_fields(par)) #TODO: make this more restrict (only allow variables in `standard_name_map`)
-            ncname, mod = ncvar_name_modifier(param(config.input, par))
+        cyclic_parameters = Dict{String, NamedTuple}()
+        cyclic_times = Dict{String, Vector{Tuple{Int, Int}}}()
+        for par in config.input.dynamic.cyclic
+            #fields = standard_name_map[par]
+            ncname, mod = ncvar_name_modifier(param(config.input.parameters, par))
             i = findfirst(x -> startswith(x, "time"), dimnames(cyclic_dataset[ncname]))
             dimname = dimnames(cyclic_dataset[ncname])[i]
             cyclic_nc_times = collect(cyclic_dataset[dimname])
-            cyclic_times[fields] = timecycles(cyclic_nc_times)
-            cyclic_parameters[fields] =
-                (name = ncname, scale = mod.scale, offset = mod.offset)
+            cyclic_times[par] = timecycles(cyclic_nc_times)
+            cyclic_parameters[par] = (name = ncname, scale = mod.scale, offset = mod.offset)
 
             @info "Set `$par` using netCDF variable `$ncname` as cyclic parameter, with `$(length(cyclic_nc_times))` timesteps."
         end
     else
-        cyclic_parameters = Dict{Tuple{Symbol, Vararg{Symbol}}, NamedTuple}()
+        cyclic_parameters = Dict{String, NamedTuple}()
         cyclic_dataset = nothing
-        cyclic_times = Dict{Tuple{Symbol, Vararg{Symbol}}, Vector{Tuple{Int, Int}}}()
+        cyclic_times = Dict{String, Vector{Tuple{Int, Int}}}()
     end
 
     # check if there is overlap
@@ -759,10 +773,11 @@ end
 
 "Get a Vector of all unique location ids from a 2D map"
 function locations_map(ds, mapname, config)
+    lens = lens_input(mapname)
     map_2d = ncread(
         ds,
         config,
-        mapname;
+        lens;
         optional = false,
         type = Union{Int, Missing},
         allow_missing = true,
@@ -843,7 +858,7 @@ function flat!(d, path, el::Dict)
 end
 
 function flat!(d, path, el)
-    k = symbols(path)
+    k = path
     d[k] = el
     return nothing
 end
@@ -877,11 +892,9 @@ Dict(
 ```
 """
 function ncnames(dict)
-    ncnames_dict = Dict{Tuple{Symbol, Vararg{Symbol}}, String}()
+    ncnames_dict = Dict{String, String}()
     for (k, v) in dict
-        if v isa Dict  # ignore top level values (e.g. output.path)
-            flat!(ncnames_dict, k, v)
-        end
+        flat!(ncnames_dict, k, v)
     end
     return ncnames_dict
 end
@@ -894,7 +907,12 @@ Create a Dict that maps parameter netCDF names to arrays in the Model.
 function out_map(ncnames_dict, modelmap)
     output_map = Dict{String, Any}()
     for (par, ncname) in ncnames_dict
-        A = param(modelmap, par)
+        A = if haskey(standard_name_map, par)
+            lens = standard_name_map[par]
+            lens(modelmap)
+        else
+            param(modelmap, par)
+        end
         output_map[ncname] = (par = par, vector = A)
     end
     return output_map
@@ -936,7 +954,7 @@ function prepare_writer(
         deflatelevel = get(config.output, "compressionlevel", 0)::Int
         @info "Create an output netCDF file `$nc_path` for grid data, using compression level `$deflatelevel`."
         # create a flat mapping from internal parameter locations to netCDF variable names
-        output_ncnames = ncnames(config.output)
+        output_ncnames = ncnames(config.output.variables)
         # fill the output_map by mapping parameter netCDF names to arrays
         output_map = out_map(output_ncnames, modelmap)
         ds = setup_grid_netcdf(
@@ -959,7 +977,9 @@ function prepare_writer(
     # create a separate state output netCDF that will hold the last timestep of all states
     # but only if config.state.path_output has been set
     if haskey(config, "state") && haskey(config.state, "path_output")
-        state_ncnames = check_states(config)
+        # TODO: revert back to state checking
+        # state_ncnames = check_states(config)
+        state_ncnames = ncnames(config.state.variables)
         state_map = out_map(state_ncnames, modelmap)
         nc_state_path = output_path(config, config.state.path_output)
         @info "Create a state output netCDF file `$nc_state_path`."
@@ -1065,7 +1085,12 @@ function write_netcdf_timestep(model, dataset)
 
     time_index = add_time(dataset, clock.time)
     for (nt, nc) in zip(writer.nc_scalar, config.netcdf.variable)
-        A = param(model, nt.parameter)
+        A = if haskey(standard_name_map, nt.parameter)
+            lens = standard_name_map[nt.parameter]
+            lens(model)
+        else
+            param(model, nt.parameter)
+        end
         elemtype = eltype(A)
         # could be a value, or a vector in case of map
         if elemtype <: AbstractFloat
@@ -1189,7 +1214,7 @@ function close_files(model; delete_output::Bool = false)
     (; reader, writer, config) = model
 
     close(reader.dataset)
-    if haskey(config.input, "cyclic")
+    if haskey(config.input.dynamic, "cyclic")
         close(reader.cyclic_dataset)
     end
     writer.dataset === nothing || close(writer.dataset)
@@ -1242,10 +1267,11 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset, fileformat)
         # and makes sense in the case of a gauge map
         reducer_name = get(col, "reducer", "only")
         f = reducerfunction(reducer_name)
+        lens = lens_input(mapname)
         map_2d = ncread(
             dataset,
             config,
-            mapname;
+            lens;
             optional = false,
             type = Union{Int, Missing},
             allow_missing = true,
@@ -1315,7 +1341,12 @@ function write_csv_row(model)
     io = writer.csv_io
     print(io, string(clock.time))
     for (nt, col) in zip(writer.csv_cols, config.csv.column)
-        A = param(model, nt.parameter)
+        A = if haskey(standard_name_map, nt.parameter)
+            lens = standard_name_map[nt.parameter]
+            lens(model)
+        else
+            param(model, nt.parameter)
+        end
         # v could be a value, or a vector in case of map
         if eltype(A) <: SVector
             # indexing is required in case of a SVector and CSV output

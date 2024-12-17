@@ -2,15 +2,15 @@
 # https://github.com/Deltares/BasicModelInterface.jl
 
 # Mapping of grid identifier to a key, to get the active indices of the model domain.
-# See also function active_indices(network, key::Tuple).
-const grids = Dict{Int, Tuple{Symbol}}(
-    0 => (:reservoir,),
-    1 => (:lake,),
-    2 => (:drain,),
-    3 => (:river,),
-    4 => (:land,),
-    5 => (:land,),
-    6 => (:land,),
+# See also function active_indices(network, key::AbstractString).
+const grids = Dict{Int, String}(
+    0 => "reservoir",
+    1 => "lake",
+    2 => "drain",
+    3 => "river",
+    4 => "land",
+    5 => "land",
+    6 => "land",
 )
 
 """
@@ -247,7 +247,7 @@ function BMI.get_value_ptr(model::Model, name::String)
     s = split(name, "[")
     key = symbols(first(s))
     if exchange(param(model, key))
-        n = length(active_indices(network, key))
+        n = length(active_indices(network, first(s)))
         if occursin("[", name)
             ind = tryparse(Int, split(s[end], "]")[1])
             if eltype(param(model, key)) <: SVector
