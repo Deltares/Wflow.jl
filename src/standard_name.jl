@@ -19,6 +19,8 @@ const sbm_standard_name_map = Dict{String, ComposedFunction}(
     "river_water__volume" => @optic(_.lateral.river.variables.volume),
     "floodplain_water__volume" => @optic(_.lateral.river.floodplain.variables.volume),
     "floodplain_water__depth" => @optic(_.lateral.river.floodplain.variables.h),
+    "floodplain_water__volume_flow_rate" =>
+        @optic(_.lateral.river.floodplain.variables.q),
     "reservoir_water__volume" =>
         @optic(_.lateral.river.boundary_conditions.reservoir.variables.volume),
     "soil_water_sat-zone_top__recharge_volume_flux" =>

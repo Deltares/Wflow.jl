@@ -157,9 +157,7 @@ function set_states!(instate_path, model; type = nothing, dimname = nothing)
     (; network, vertical, config) = model
 
     # Check if required states are covered
-    # TODO: revert back to state checking
-    # state_ncnames = check_states(config)
-    state_ncnames = ncnames(config.state.variables)
+    state_ncnames = check_states(config)
 
     # states in netCDF include dim time (one value) at index 3 or 4, 3 or 4 dims are allowed
     NCDataset(instate_path) do ds

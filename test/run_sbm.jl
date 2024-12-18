@@ -313,7 +313,7 @@ config.model.floodplain_1d = true
 config.model.river_routing = "local-inertial"
 config.model.land_routing = "kinematic-wave"
 config.input.parameters["floodplain_water__sum_of_volume-per-depth"] = "floodplain_volume"
-config.state.variables.floodplain_water__volume = "q_floodplain"
+config.state.variables.floodplain_water__volume_flow_rate = "q_floodplain"
 config.state.variables.floodplain_water__depth = "h_floodplain"
 
 model = Wflow.initialize_sbm_model(config)

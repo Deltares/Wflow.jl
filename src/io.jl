@@ -979,9 +979,7 @@ function prepare_writer(
     # create a separate state output netCDF that will hold the last timestep of all states
     # but only if config.state.path_output has been set
     if haskey(config, "state") && haskey(config.state, "path_output")
-        # TODO: revert back to state checking
-        # state_ncnames = check_states(config)
-        state_ncnames = ncnames(config.state.variables)
+        state_ncnames = check_states(config)
         state_map = out_map(state_ncnames, modelmap)
         nc_state_path = output_path(config, config.state.path_output)
         @info "Create a state output netCDF file `$nc_state_path`."
