@@ -72,46 +72,21 @@ end
 
 "Initialize soil erosion model parameters"
 function SoilErosionParameters(dataset, config, indices)
-    clay_fraction = ncread(
-        dataset,
-        config,
-        "vertical.soil_erosion.parameters.clay_fraction";
-        sel = indices,
-        defaults = 0.4,
-        type = Float,
-    )
-    silt_fraction = ncread(
-        dataset,
-        config,
-        "vertical.soil_erosion.parameters.silt_fraction";
-        sel = indices,
-        defaults = 0.3,
-        type = Float,
-    )
-    sand_fraction = ncread(
-        dataset,
-        config,
-        "vertical.soil_erosion.parameters.sand_fraction";
-        sel = indices,
-        defaults = 0.3,
-        type = Float,
-    )
-    sagg_fraction = ncread(
-        dataset,
-        config,
-        "vertical.soil_erosion.parameters.sagg_fraction";
-        sel = indices,
-        defaults = 0.0,
-        type = Float,
-    )
-    lagg_fraction = ncread(
-        dataset,
-        config,
-        "vertical.soil_erosion.parameters.lagg_fraction";
-        sel = indices,
-        defaults = 0.0,
-        type = Float,
-    )
+    lens = lens_input_parameter("soil_clay__mass_fraction")
+    clay_fraction =
+        ncread(dataset, config, lens; sel = indices, defaults = 0.4, type = Float)
+    lens = lens_input_parameter("soil_silt__mass_fraction")
+    silt_fraction =
+        ncread(dataset, config, lens; sel = indices, defaults = 0.3, type = Float)
+    lens = lens_input_parameter("soil_sand__mass_fraction")
+    sand_fraction =
+        ncread(dataset, config, lens; sel = indices, defaults = 0.3, type = Float)
+    lens = lens_input_parameter("soil_aggregates~small__mass_fraction")
+    sagg_fraction =
+        ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float)
+    lens = lens_input_parameter("soil_aggregates~large__mass_fraction")
+    lagg_fraction =
+        ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float)
     # Check that soil fractions sum to 1
     soil_fractions =
         clay_fraction + silt_fraction + sand_fraction + sagg_fraction + lagg_fraction

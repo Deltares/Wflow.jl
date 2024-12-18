@@ -127,28 +127,18 @@ instead. Specific yield will vary roughly between 0.05 (clay) and 0.45 (peat)
 end
 
 function UnconfinedAquiferParameters(dataset, config, indices, top, bottom, area)
-    k = ncread(
-        dataset,
-        config,
-        "lateral.subsurface.conductivity";
-        sel = indices,
-        type = Float,
+    lens = lens_input_parameter(
+        "subsurface_surface_water__horizontal_saturated_hydraulic_conductivity",
     )
-    specific_yield = ncread(
-        dataset,
-        config,
-        "lateral.subsurface.specific_yield";
-        sel = indices,
-        type = Float,
+    k = ncread(dataset, config, lens; sel = indices, type = Float)
+
+    lens = lens_input_parameter("subsurface_water__specific_yield")
+    specific_yield = ncread(dataset, config, lens; sel = indices, type = Float)
+
+    lens = lens_input_parameter(
+        "subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter",
     )
-    f = ncread(
-        dataset,
-        config,
-        "lateral.subsurface.gwf_f";
-        sel = indices,
-        type = Float,
-        defaults = 3.0,
-    )
+    f = ncread(dataset, config, lens; sel = indices, type = Float, defaults = 3.0)
 
     parameters =
         UnconfinedAquiferParameters{Float}(; k, top, bottom, area, specific_yield, f)
@@ -380,14 +370,9 @@ end
 end
 
 function ConstantHead(dataset, config, indices)
-    constanthead = ncread(
-        dataset,
-        config,
-        "lateral.subsurface.constant_head";
-        sel = indices,
-        type = Float,
-        fill = mv,
-    )
+    lens = lens_input_parameter("model_boundary_condition~constant_hydraulic_head")
+    constanthead = ncread(dataset, config, lens; sel = indices, type = Float, fill = mv)
+
     n = length(indices)
     index_constanthead = filter(i -> !isequal(constanthead[i], mv), 1:n)
     head = constanthead[index_constanthead]

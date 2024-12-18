@@ -18,25 +18,25 @@ path_output = "outstates-moselle-sed.nc"
 # if listed, the variable must be present in the NetCDF or error
 # if not listed, the variable can get a default value if it has one
 
-[state.lateral.river.sediment_flux.variables]
-leftover_clay = "clayload"
-store_clay = "claystore"
-leftover_gravel = "gravload"
-store_gravel = "gravstore"
-leftover_lagg = "laggload"
-store_lagg = "laggstore"
-clay = "outclay"
-gravel = "outgrav"
-lagg= "outlagg"
-sagg = "outsagg"
-sand = "outsand"
-silt = "outsilt"
-leftover_sagg= "saggload"
-store_sagg = "saggstore"
-leftover_sand = "sandload"
-store_sand = "sandstore"
-leftover_silt = "siltload"
-store_silt = "siltstore"
+[state.variables]
+river_water_clay__mass = "clayload"
+river_bed_clay__mass = "claystore"
+river_water_gravel__mass = "gravload"
+river_bed_gravel__mass = "gravstore"
+"river_water_aggregates~large__mass" = "laggload"
+"river_bed_aggregates~large__mass" = "laggstore"
+river_water_clay__mass_flow_rate = "outclay"
+river_water_gravel__mass_flow_rate = "outgrav"
+"river_water_aggregates~large__mass_flow_rate" = "outlagg"
+"river_water_aggregates~small__mass_flow_rate" = "outsagg"
+river_water_sand__mass_flow_rate = "outsand"
+river_water_silt__mass_flow_rate = "outsilt"
+"river_water_aggregates~small__mass" = "saggload" 
+"river_bed_aggregates~small__mass" = "saggstore"
+river_water_sand__mass = "sandload" 
+river_bed_sand__mass = "sandstore"
+river_water_silt__mass = "siltload" 
+river_bed_silt__mass = "siltstore"
 
 [input]
 path_forcing = "forcing-moselle-sed.nc"
@@ -47,116 +47,92 @@ gauges = "wflow_gauges"
 ldd = "wflow_ldd"
 river_location = "wflow_river"
 subcatchment = "wflow_subcatch"
-reservoir_areas = "wflow_reservoirareas"
-lake_areas = "wflow_lakeareas"
+reservoir_area__number = "wflow_reservoirareas"
+lake_area__number = "wflow_lakeareas"
+
+[input.forcing]
+atmosphere_water__precipitation_volume_flux = "P"
+land_surface_water__depth = "levKinL"
+river_water__depth = "h"
+land_surface_water__volume_flow_rate = "runL"
+river_water__volume_flow_rate = "q"
+vegetation_canopy_water__interception_volume_flux = "int"
+
+[input.parameters]
+land_surface__slope = "Slope"
+river__length = "wflow_riverlength"
+river__slope = "RiverSlope"
+river__width = "wflow_riverwidth"
+
+reservoir_surface__area = "ResSimpleArea"
+reservoir_location__number = "wflow_reservoirlocs"
+lake_surface__area = "LakeArea"
+lake_location__number = "wflow_lakelocs"
+"reservoir_sediment~bedload__trapping_efficiency_coefficient" = "ResTrapEff"
+
+vegetation_canopy__height = "CanopyHeight"
+soil_erosion__rainfall_soil_detachability_factor = "soil_detachability"
+soil_erosion__eurosem_exponent = "eros_spl_EUROSEM"
+soil_erosion__usle_k_factor = "usle_k"
+soil_erosion__usle_c_factor = "USLE_C"
+soil_erosion__answers_overland_flow_factor = "eros_ov"
+"soil~compacted__area_fraction" = "PathFrac"
+
+soil_clay__mass_fraction = "fclay_soil"
+soil_silt__mass_fraction = "fsilt_soil"
+soil_sand__mass_fraction = "fsand_soil"
+"soil_aggregates~small__mass_fraction" = "fsagg_soil"
+"soil_aggregates~large__mass_fraction" = "flagg_soil"
+
+land_surface_water_sediment__particle_density = "sediment_density"
+land_surface_water_sediment__d50_diameter = "d50_soil"
+land_surface_water_sediment__govers_transport_capacity_coefficient = "c_govers"
+land_surface_water_sediment__govers_transport_capacity_exponent = "n_govers"
+land_surface_water_clay__d50_diameter = "dm_clay"
+land_surface_water_silt__d50_diameter = "dm_silt"
+land_surface_water_sand__d50_diameter = "dm_sand"
+"land_surface_water_aggregates~small__d50_diameter" = "dm_sagg"
+"land_surface_water_aggregates~large__d50_diameter" = "dm_lagg"
+
+river_water_sediment__particle_density = "sediment_density"
+river_water_sediment__d50_diameter = "D50_River"
+river_water_sediment__bagnold_transport_capacity_coefficient = "c_Bagnold"
+river_water_sediment__bagnold_transport_capacity_exponent = "exp_Bagnold"
+river_water_sediment__kodatie_transport_capacity_a-coefficient.value = 2829.6
+river_water_sediment__kodatie_transport_capacity_b-coefficient.value = 3.646
+river_water_sediment__kodatie_transport_capacity_c-coefficient.value = 0.406
+river_water_sediment__kodatie_transport_capacity_d-coefficient.value = 0.412
+
+river_bottom-and-bank_sediment__d50_diameter = "D50_River"
+river_bottom-and-bank_clay__mass_fraction = "ClayF_River"
+river_bottom-and-bank_silt__mass_fraction = "SiltF_River"
+river_bottom-and-bank_sand__mass_fraction = "SandF_River"
+river_bottom-and-bank_gravel__mass_fraction = "GravelF_River"
+river_bottom-and-bank_clay__d50_diameter = "dm_clay"
+river_bottom-and-bank_silt__d50_diameter = "dm_silt"
+river_bottom-and-bank_sand__d50_diameter = "dm_sand"
+"river_bottom-and-bank_aggregates~small__d50_diameter" = "dm_sagg"
+"river_bottom-and-bank_aggregates~large__d50_diameter" = "dm_lagg"
+river_bottom-and-bank_gravel__d50_diameter = "dm_gravel"
+
+river_water_clay__d50_diameter = "dm_clay"
+river_water_silt__d50_diameter = "dm_silt"
+river_water_sand__d50_diameter = "dm_sand"
+"river_water_aggregates~small__d50_diameter" = "dm_sagg"
+"river_water_aggregates~large__d50_diameter" = "dm_lagg"
+river_water_gravel__d50_diameter = "dm_gravel"
 
 # specify the internal IDs of the parameters which vary over time
 # the external name mapping needs to be below together with the other mappings
+[input.dynamic]
 forcing = [
-  "vertical.atmospheric_forcing.precipitation",
-  "vertical.hydrological_forcing.interception",
-  "vertical.hydrological_forcing.waterlevel_land",
-  "lateral.land.hydrological_forcing.waterlevel_land",
-  "vertical.hydrological_forcing.q_land",
-  "lateral.land.hydrological_forcing.q_land",
-  "lateral.river.hydrological_forcing.waterlevel_river",
-  "lateral.river.hydrological_forcing.q_river",
+  "atmosphere_water__precipitation_volume_flux",
+  "land_surface_water__depth",
+  "river_water__depth",
+  "land_surface_water__volume_flow_rate",
+  "river_water__volume_flow_rate",
+  "vegetation_canopy_water__interception_volume_flux",
 ]
-
-[input.vertical.atmospheric_forcing]
-precipitation = "P"
-
-[input.vertical.hydrological_forcing]
-waterlevel_land = "levKinL"
-q_land = "runL"
-interception = "int"
-
-[input.vertical.land_parameter_set]
-slope = "Slope"
-
-[input.vertical.rainfall_erosion.parameters]
-soil_detachability = "soil_detachability"
-eurosem_exponent = "eros_spl_EUROSEM"
-canopyheight = "CanopyHeight"
-usle_k = "usle_k"
-usle_c = "USLE_C"
-pathfrac = "PathFrac"
-
-[input.vertical.overland_flow_erosion.parameters]
-usle_k = "usle_k"
-usle_c = "USLE_C"
-answers_k = "eros_ov"
-
-[input.vertical.soil_erosion.parameters]
-clay_fraction = "fclay_soil"
-silt_fraction = "fsilt_soil"
-sand_fraction = "fsand_soil"
-sagg_fraction = "fsagg_soil"
-lagg_fraction = "flagg_soil"
-
-[input.lateral.land.hydrological_forcing]
-waterlevel_land = "levKinL"
-q_land = "runL"
-
-[input.lateral.land.transport_capacity.parameters]
-density = "sediment_density"
-d50 = "d50_soil"
-c_govers = "c_govers"
-n_govers = "n_govers"
-dm_clay = "dm_clay"
-dm_silt = "dm_silt"
-dm_sand = "dm_sand"
-dm_sagg = "dm_sagg"
-dm_lagg = "dm_lagg"
-
-[input.lateral.river.hydrological_forcing]
-waterlevel_river = "h"
-q_river = "q"
-
-[input.lateral.river_parameter_set]
-length = "wflow_riverlength"
-slope = "RiverSlope"
-width = "wflow_riverwidth"
-
-[input.lateral.river.transport_capacity.parameters]
-density = "sediment_density"
-d50 = "D50_River"
-c_bagnold = "c_Bagnold"
-e_bagnold = "exp_Bagnold"
-a_kodatie.value = 2829.6
-b_kodatie.value = 3.646
-c_kodatie.value = 0.406
-d_kodatie.value = 0.412
-
-[input.lateral.river.potential_erosion.parameters]
-d50 = "D50_River"
-
-[input.lateral.river.sediment_flux.parameters]
-clay_fraction = "ClayF_River"
-silt_fraction = "SiltF_River"
-sand_fraction = "SandF_River"
-gravel_fraction = "GravelF_River"
-dm_clay = "dm_clay"
-dm_silt = "dm_silt"
-dm_sand = "dm_sand"
-dm_sagg = "dm_sagg"
-dm_lagg = "dm_lagg"
-dm_gravel = "dm_gravel"
-# Reservoir
-resarea = "ResSimpleArea"
-restrapeff = "ResTrapEff"
-reslocs = "wflow_reservoirlocs"
-# Lake
-lakearea = "LakeArea"
-lakelocs = "wflow_lakelocs"
-
-[input.lateral.river.concentrations.parameters]
-dm_clay = "dm_clay"
-dm_silt = "dm_silt"
-dm_sand = "dm_sand"
-dm_sagg = "dm_sagg"
-dm_lagg = "dm_lagg"
-dm_gravel = "dm_gravel"
 
 [model]
 reinit = true
