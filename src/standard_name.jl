@@ -1,5 +1,5 @@
 
-const standard_name_map = Dict{String, ComposedFunction}(
+const sbm_standard_name_map = Dict{String, ComposedFunction}(
     "atmosphere_water__precipitation_volume_flux" =>
         @optic(_.vertical.atmospheric_forcing.precipitation),
     "land_surface_water__potential_evaporation_volume_flux" =>
@@ -69,3 +69,86 @@ const standard_name_map = Dict{String, ComposedFunction}(
     "river_water~to-subsurface__volume_flow_rate" =>
         @optic(_.lateral.subsurface.river.variables.flux),
 )
+
+const sediment_standard_name_map = Dict{String, ComposedFunction}(
+    "atmosphere_water__precipitation_volume_flux" =>
+        @optic(_.vertical.atmospheric_forcing.precipitation),
+    "river_water__volume_flow_rate" =>
+        @optic(_.lateral.river.hydrological_forcing.q_river),
+    "river_water__depth" =>
+        @optic(_.lateral.river.hydrological_forcing.waterlevel_river),
+    "land_surface_water__volume_flow_rate" =>
+        @optic(_.vertical.hydrological_forcing.q_land),
+    "land_surface_water__depth" =>
+        @optic(_.vertical.hydrological_forcing.waterlevel_land),
+    "vegetation_canopy_water__interception_volume_flux" =>
+        @optic(_.vertical.hydrological_forcing.interception),
+    "soil_erosion~rainfall__mass_flow_rate" =>
+        @optic(_.vertical.rainfall_erosion.variables.amount),
+    "soil_erosion~overland_flow__mass_flow_rate" =>
+        @optic(_.vertical.overland_flow_erosion.variables.amount),
+    "soil_erosion__mass_flow_rate" => @optic(_.vertical.soil_erosion.variables.amount),
+    "soil_erosion_clay__mass_flow_rate" =>
+        @optic(_.vertical.soil_erosion.variables.clay),
+    "land_surface_water_sediment_transport_capacity__mass_flow_rate" =>
+        @optic(_.lateral.land.transport_capacity.variables.amount),
+    "land_surface_water_clay_transport_capacity__mass_flow_rate" =>
+        @optic(_.lateral.land.transport_capacity.variables.clay),
+    "land_surface_water_sediment~to-river__mass_flow_rate" =>
+        @optic(_.lateral.land.to_river.variables.amount),
+    "land_surface_water_clay~to-river__mass_flow_rate" =>
+        @optic(_.lateral.land.to_river.variables.clay),
+    "land_surface_water_sediment__mass_flow_rate" =>
+        @optic(_.lateral.land.sediment_flux.variables.amount),
+    "land_surface_water_clay__mass_flow_rate" =>
+        @optic(_.lateral.land.sediment_flux.variables.clay),
+    "river_water_sediment~bedload__mass_concentration" =>
+        @optic(_.lateral.river.concentrations.variables.bed),
+    "river_water_sediment~suspended__mass_concentration" =>
+        @optic(_.lateral.river.concentrations.variables.suspended),
+    "river_water_sediment__mass_concentration" =>
+        @optic(_.lateral.river.concentrations.variables.total),
+    "river_water_clay__mass" =>
+        @optic(_.lateral.river.sediment_flux.variables.leftover_clay),
+    "river_bed_clay__mass" =>
+        @optic(_.lateral.river.sediment_flux.variables.store_clay),
+    "river_water_gravel__mass" =>
+        @optic(_.lateral.river.sediment_flux.variables.leftover_gravel),
+    "river_bed_gravel__mass" =>
+        @optic(_.lateral.river.sediment_flux.variables.store_gravel),
+    "river_water_aggregates~large__mass" =>
+        @optic(_.lateral.river.sediment_flux.variables.leftover_lagg),
+    "river_bed_aggregates~large__mass" =>
+        @optic(_.lateral.river.sediment_flux.variables.store_lagg),
+    "river_water_clay__mass_flow_rate" =>
+        @optic(_.lateral.river.sediment_flux.variables.clay),
+    "river_water_gravel__mass_flow_rate" =>
+        @optic(_.lateral.river.sediment_flux.variables.gravel),
+    "river_water_aggregates~large__mass_flow_rate" =>
+        @optic(_.lateral.river.sediment_flux.variables.lagg),
+    "river_water_aggregates~small__mass_flow_rate" =>
+        @optic(_.lateral.river.sediment_flux.variables.sagg),
+    "river_water_sand__mass_flow_rate" =>
+        @optic(_.lateral.river.sediment_flux.variables.sand),
+    "river_water_silt__mass_flow_rate" =>
+        @optic(_.lateral.river.sediment_flux.variables.silt),
+    "river_water_aggregates~small__mass" =>
+        @optic(_.lateral.river.sediment_flux.variables.leftover_sagg),
+    "river_bed_aggregates~small__mass" =>
+        @optic(_.lateral.river.sediment_flux.variables.store_sagg),
+    "river_water_sand__mass" =>
+        @optic(_.lateral.river.sediment_flux.variables.leftover_sand),
+    "river_bed_sand__mass" =>
+        @optic(_.lateral.river.sediment_flux.variables.store_sand),
+    "river_water_silt__mass" =>
+        @optic(_.lateral.river.sediment_flux.variables.leftover_silt),
+    "river_bed_silt__mass" =>
+        @optic(_.lateral.river.sediment_flux.variables.store_silt),
+    "river_water_sediment_erosion__mass" =>
+        @optic(_.lateral.river.sediment_flux.variables.erosion),
+    "river_water_sediment_deposition__mass" =>
+        @optic(_.lateral.river.sediment_flux.variables.deposition),
+)
+
+standard_name_map(model::LandHydrologySBM) = sbm_standard_name_map
+standard_name_map(model::SoilLoss) = sediment_standard_name_map

@@ -113,7 +113,6 @@ function Clock(config, reader)
     return Clock(starttime, 0, dt)
 end
 
-include("standard_name.jl")
 include("io.jl")
 
 """
@@ -181,6 +180,7 @@ include("erosion.jl")
 include("sediment_flux.jl")
 include("sediment_model.jl")
 include("sbm_gwf_model.jl")
+include("standard_name.jl")
 include("utils.jl")
 include("bmi.jl")
 include("subdomains.jl")

@@ -215,7 +215,7 @@ mover_params = (
 )
 
 function load_fixed_forcing!(model)
-    (; reader, network, config) = model
+    (; reader, vertical, network, config) = model
     (; forcing_parameters) = reader
 
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
@@ -234,7 +234,7 @@ function load_fixed_forcing!(model)
     for (par, ncvar) in forcing_parameters
         if ncvar.name === nothing
             val = ncvar.value * ncvar.scale + ncvar.offset
-            lens = standard_name_map[par]
+            lens = standard_name_map(vertical)[par]
             param_vector = lens(model)
             param_vector .= val
             # set fixed precipitation and evaporation over the lakes and reservoirs and put
@@ -261,7 +261,7 @@ end
 
 "Get dynamic netCDF input for the given time"
 function update_forcing!(model)
-    (; clock, reader, network, config) = model
+    (; clock, reader, vertical, network, config) = model
     (; dataset, dataset_times, forcing_parameters) = reader
 
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
@@ -311,7 +311,7 @@ function update_forcing!(model)
                 end
             end
         end
-        lens = standard_name_map[par]
+        lens = standard_name_map(vertical)[par]
         param_vector = lens(model)
         sel = active_indices(network, par)
         data_sel = data[sel]
@@ -352,7 +352,7 @@ end
 
 "Get cyclic netCDF input for the given time"
 function update_cyclic!(model)
-    (; clock, reader, network) = model
+    (; clock, reader, vertical, network) = model
     (; cyclic_dataset, cyclic_times, cyclic_parameters) = reader
 
     # pick up the data that is valid for the past model time step
@@ -368,7 +368,7 @@ function update_cyclic!(model)
                 error("Could not find applicable cyclic timestep for $month_day")
             # load from netCDF into the model according to the mapping
             data = get_at(cyclic_dataset, ncvar.name, i)
-            lens = standard_name_map[par]
+            lens = standard_name_map(vertical)[par]
             param_vector = lens(model)
             sel = active_indices(network, par)
             param_vector .= data[sel]
@@ -419,6 +419,7 @@ function setup_scalar_netcdf(
     config,
     float_type = Float32,
 )
+    (; vertical) = modelmap
     ds = create_tracked_netcdf(path)
     defDim(ds, "time", Inf)  # unlimited
     defVar(
@@ -439,8 +440,8 @@ function setup_scalar_netcdf(
             (nc.location_dim,);
             attrib = ["cf_role" => "timeseries_id"],
         )
-        v = if haskey(standard_name_map, nc.par)
-            lens = standard_name_map[nc.par]
+        v = if haskey(standard_name_map(vertical), nc.par)
+            lens = standard_name_map(vertical)[nc.par]
             lens(modelmap)
         else
             param(modelmap, nc.par)
@@ -906,9 +907,10 @@ Create a Dict that maps parameter netCDF names to arrays in the Model.
 """
 function out_map(ncnames_dict, modelmap)
     output_map = Dict{String, Any}()
+    (; vertical) = modelmap
     for (par, ncname) in ncnames_dict
-        A = if haskey(standard_name_map, par)
-            lens = standard_name_map[par]
+        A = if haskey(standard_name_map(vertical), par)
+            lens = standard_name_map(vertical)[par]
             lens(modelmap)
         else
             param(modelmap, par)
@@ -1081,12 +1083,12 @@ end
 
 "Write a new timestep with scalar data to a netCDF file"
 function write_netcdf_timestep(model, dataset)
-    (; writer, clock, config) = model
+    (; writer, vertical, clock, config) = model
 
     time_index = add_time(dataset, clock.time)
     for (nt, nc) in zip(writer.nc_scalar, config.netcdf.variable)
-        A = if haskey(standard_name_map, nt.parameter)
-            lens = standard_name_map[nt.parameter]
+        A = if haskey(standard_name_map(vertical), nt.parameter)
+            lens = standard_name_map(vertical)[nt.parameter]
             lens(model)
         else
             param(model, nt.parameter)
@@ -1336,13 +1338,13 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset, fileformat)
 end
 
 function write_csv_row(model)
-    (; writer, clock, config) = model
+    (; writer, vertical, clock, config) = model
     isnothing(writer.csv_path) && return nothing
     io = writer.csv_io
     print(io, string(clock.time))
     for (nt, col) in zip(writer.csv_cols, config.csv.column)
-        A = if haskey(standard_name_map, nt.parameter)
-            lens = standard_name_map[nt.parameter]
+        A = if haskey(standard_name_map(vertical), nt.parameter)
+            lens = standard_name_map(vertical)[nt.parameter]
             lens(model)
         else
             param(model, nt.parameter)

@@ -86,16 +86,11 @@ function LandGeometry(nc, config, inds)
     sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
     xl, yl = cell_lengths(y, cellength, sizeinmetres)
     area = xl .* yl
-    ldd = ncread(nc, config, "ldd"; optional = false, sel = inds, allow_missing = true)
+    lens = lens_input("ldd")
+    ldd = ncread(nc, config, lens; optional = false, sel = inds, allow_missing = true)
     drain_width = map(get_flow_width, ldd, xl, yl)
-    landslope = ncread(
-        nc,
-        config,
-        "vertical.land_parameter_set.slope";
-        optional = false,
-        sel = inds,
-        type = Float,
-    )
+    lens = lens_input_parameter("land_surface__slope")
+    landslope = ncread(nc, config, lens; optional = false, sel = inds, type = Float)
     clamp!(landslope, 0.00001, Inf)
 
     land_parameter_set =
@@ -115,30 +110,13 @@ end
 
 "Initialize river geometry parameters"
 function RiverGeometry(nc, config, inds)
-    riverwidth = ncread(
-        nc,
-        config,
-        "lateral.river_parameter_set.width";
-        optional = false,
-        sel = inds,
-        type = Float,
-    )
-    riverlength = ncread(
-        nc,
-        config,
-        "lateral.river_parameter_set.length";
-        optional = false,
-        sel = inds,
-        type = Float,
-    )
-    riverslope = ncread(
-        nc,
-        config,
-        "lateral.river_parameter_set.slope";
-        optional = false,
-        sel = inds,
-        type = Float,
-    )
+    lens = lens_input_parameter("river__width")
+    riverwidth = ncread(nc, config, lens; optional = false, sel = inds, type = Float)
+    lens = lens_input_parameter("river__length")
+    riverlength = ncread(nc, config, lens; optional = false, sel = inds, type = Float)
+    lens = lens_input_parameter("river__slope")
+    riverslope = ncread(nc, config, lens; optional = false, sel = inds, type = Float)
+
     minimum(riverlength) > 0 || error("river length must be positive on river cells")
     minimum(riverwidth) > 0 || error("river width must be positive on river cells")
     clamp!(riverslope, 0.00001, Inf)

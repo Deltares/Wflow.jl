@@ -210,31 +210,23 @@ lens = @optic(_.input.parameters.doesnt_exist)
 @test Wflow._lens(config, lens, -1) == -1
 
 @testset "warm states" begin
-    @test Wflow.standard_name_map["reservoir_water__volume"](model)[1] ≈
-          3.2807224993363418e7
-    @test Wflow.standard_name_map["soil_water_sat-zone__depth"](model)[9115] ≈
-          477.13548089422125
-    @test Wflow.standard_name_map["snowpack~dry__leq-depth"](model)[5] ≈ 11.019233179897599
-    @test Wflow.standard_name_map["soil_surface__temperature"](model)[5] ≈
-          0.21814478119608938
-    @test Wflow.standard_name_map["soil_water_unsat-zone__depth-per-soil_layer"](model)[50063][1] ≈
+    map = Wflow.standard_name_map(model.vertical)
+    @test map["reservoir_water__volume"](model)[1] ≈ 3.2807224993363418e7
+    @test map["soil_water_sat-zone__depth"](model)[9115] ≈ 477.13548089422125
+    @test map["snowpack~dry__leq-depth"](model)[5] ≈ 11.019233179897599
+    @test map["soil_surface__temperature"](model)[5] ≈ 0.21814478119608938
+    @test map["soil_water_unsat-zone__depth-per-soil_layer"](model)[50063][1] ≈
           9.969116007201725
-    @test Wflow.standard_name_map["snowpack~liquid__depth"](model)[5] ≈ 0.0
-    @test Wflow.standard_name_map["vegetation_canopy_water__storage"](model)[50063] ≈ 0.0
-    @test Wflow.standard_name_map["soil_water_sat-zone_top__depth"](model)[50063] ≈
-          296.8028609104624
-    @test Wflow.standard_name_map["subsurface_water__volume_flow_rate"](model)[10606] ≈
-          39.972334552895816
-    @test Wflow.standard_name_map["river_water__volume_flow_rate"](model)[149] ≈
-          53.48673634956338
-    @test Wflow.standard_name_map["river_water__depth"](model)[149] ≈ 1.167635369628945
-    @test Wflow.standard_name_map["river_water__volume"](model)[149] ≈ 63854.60119358985
-    @test Wflow.standard_name_map["land_surface_water__volume_flow_rate"](model)[2075] ≈
-          3.285909284322251
-    @test Wflow.standard_name_map["land_surface_water__depth"](model)[2075] ≈
-          0.052076262033771775
-    @test Wflow.standard_name_map["land_surface_water__volume"](model)[2075] ≈
-          29920.754983235012
+    @test map["snowpack~liquid__depth"](model)[5] ≈ 0.0
+    @test map["vegetation_canopy_water__storage"](model)[50063] ≈ 0.0
+    @test map["soil_water_sat-zone_top__depth"](model)[50063] ≈ 296.8028609104624
+    @test map["subsurface_water__volume_flow_rate"](model)[10606] ≈ 39.972334552895816
+    @test map["river_water__volume_flow_rate"](model)[149] ≈ 53.48673634956338
+    @test map["river_water__depth"](model)[149] ≈ 1.167635369628945
+    @test map["river_water__volume"](model)[149] ≈ 63854.60119358985
+    @test map["land_surface_water__volume_flow_rate"](model)[2075] ≈ 3.285909284322251
+    @test map["land_surface_water__depth"](model)[2075] ≈ 0.052076262033771775
+    @test map["land_surface_water__volume"](model)[2075] ≈ 29920.754983235012
 end
 
 @testset "reducer" begin

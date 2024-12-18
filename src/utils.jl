@@ -154,7 +154,7 @@ and set states in `model` object. Active cells are selected with the correspondi
 - `type = nothing`: type to convert data to after reading. By default no conversion is done.
 """
 function set_states!(instate_path, model; type = nothing, dimname = nothing)
-    (; network, config) = model
+    (; network, vertical, config) = model
 
     # Check if required states are covered
     # TODO: revert back to state checking
@@ -190,7 +190,7 @@ function set_states!(instate_path, model; type = nothing, dimname = nothing)
                     end
                 end
                 # set state in model object
-                lens = standard_name_map[state]
+                lens = standard_name_map(vertical)[state]
                 lens(model) .= svectorscopy(A, Val{size(A)[1]}())
                 # 3 dims (x,y,time)
             elseif dims == 3
@@ -204,7 +204,7 @@ function set_states!(instate_path, model; type = nothing, dimname = nothing)
                     end
                 end
                 # set state in model object, only set active cells ([1:n]) (ignore boundary conditions/ghost points)
-                lens = standard_name_map[state]
+                lens = standard_name_map(vertical)[state]
                 lens(model)[1:n] .= A
             else
                 error(
