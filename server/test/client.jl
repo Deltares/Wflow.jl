@@ -25,8 +25,7 @@ end
 end
 
 @testset "Reading and writing NaN values allowed" begin
-    msg =
-        (fn = "get_value", name = "vertical.soil.variables.vwc[1]", dest = fill(0.0, 50063))
+    msg = (fn = "get_value", name = "land.soil.variables.vwc[1]", dest = fill(0.0, 50063))
     @test isnan(mean(request(msg)["value"]))
 end
 
