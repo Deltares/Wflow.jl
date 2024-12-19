@@ -19,15 +19,15 @@ path_output = "outstates-moselle.nc"
 # if listed, the variable must be present in the NetCDF or error
 # if not listed, the variable can get a default value if it has one
 
-[state.vertical.interception.variables]
+[state.land.interception.variables]
 canopy_storage = "canopystorage"
 
-[state.vertical.soil.variables]
+[state.land.soil.variables]
 satwaterdepth = "satwaterdepth"
 tsoil = "tsoil"
 ustorelayerdepth = "ustorelayerdepth"
 
-[state.vertical.snow.variables]
+[state.land.snow.variables]
 snow_storage = "snow"
 snow_water = "snowwater"
 
@@ -60,32 +60,32 @@ subcatchment = "wflow_subcatch"
 # specify the internal IDs of the parameters which vary over time
 # the external name mapping needs to be below together with the other mappings
 forcing = [
-  "vertical.atmospheric_forcing.precipitation",
-  "vertical.atmospheric_forcing.temperature",
-  "vertical.atmospheric_forcing.potential_evaporation",
+  "land.atmospheric_forcing.precipitation",
+  "land.atmospheric_forcing.temperature",
+  "land.atmospheric_forcing.potential_evaporation",
 ]
 
-cyclic = ["vertical.vegetation_parameter_set.leaf_area_index"]
+cyclic = ["land.vegetation_parameter_set.leaf_area_index"]
 
-[input.vertical.vegetation_parameter_set]
+[input.land.vegetation_parameter_set]
 leaf_area_index = "LAI"
 kext = "Kext"
 storage_specific_leaf = "Sl"
 storage_wood = "Swood"
 rootingdepth = "RootingDepth"
 
-[input.vertical.runoff.parameters]
+[input.land.runoff.parameters]
 waterfrac = "WaterFrac"
 
-[input.vertical.interception.parameters]
+[input.land.interception.parameters]
 e_r = "EoverR"
 
-[input.vertical.atmospheric_forcing]
+[input.land.atmospheric_forcing]
 potential_evaporation = "pet"
 precipitation = "precip"
 temperature = "temp"
 
-[input.vertical.soil.parameters]
+[input.land.soil.parameters]
 c = "c"
 cf_soil = "cf_soil"
 f = "f"
@@ -99,13 +99,13 @@ pathfrac = "PathFrac"
 rootdistpar = "rootdistpar"
 soilthickness = "SoilThickness"
 
-[input.vertical.snow.parameters]
+[input.land.snow.parameters]
 tt = "TT"
 tti = "TTI"
 ttm = "TTM"
 cfmax = "Cfmax"
 
-[input.vertical.soil.parameters.kv_0]
+[input.land.soil.parameters.kv_0]
 netcdf.variable.name = "KsatVer"
 scale = 1.0
 offset = 0.0
@@ -149,15 +149,15 @@ min_streamorder_land = 5
 [output]
 path = "output_moselle.nc"
 
-[output.vertical.interception.variables]
+[output.land.interception.variables]
 canopy_storage = "canopystorage"
 
-[output.vertical.soil.variables]
+[output.land.soil.variables]
 satwaterdepth = "satwaterdepth"
 tsoil = "tsoil"
 ustorelayerdepth = "ustorelayerdepth"
 
-[output.vertical.snow.variables]
+[output.land.snow.variables]
 snow_storage = "snow"
 snow_water = "snowwater"
 
@@ -188,14 +188,14 @@ coordinate.x = 6.255
 coordinate.y = 50.012
 name = "temp_coord"
 location = "temp_bycoord"
-parameter = "vertical.atmospheric_forcing.temperature"
+parameter = "land.atmospheric_forcing.temperature"
 
 [[netcdf.variable]]
 location = "temp_byindex"
 name = "temp_index"
 index.x = 100
 index.y = 264
-parameter = "vertical.atmospheric_forcing.temperature"
+parameter = "land.atmospheric_forcing.temperature"
 
 [csv]
 path = "output_moselle.csv"
@@ -214,20 +214,20 @@ parameter = "lateral.river.boundary_conditions.reservoir.variables.volume"
 coordinate.x = 6.255
 coordinate.y = 50.012
 header = "temp_bycoord"
-parameter = "vertical.atmospheric_forcing.temperature"
+parameter = "land.atmospheric_forcing.temperature"
 
 [[csv.column]]
 coordinate.x = 6.255
 coordinate.y = 50.012
 header = "vwc_layer2_bycoord"
-parameter = "vertical.soil.variables.vwc"
+parameter = "land.soil.variables.vwc"
 layer = 2
 
 [[csv.column]]
 header = "temp_byindex"
 index.x = 100
 index.y = 264
-parameter = "vertical.atmospheric_forcing.temperature"
+parameter = "land.atmospheric_forcing.temperature"
 
 [[csv.column]]
 header = "Q"
@@ -237,24 +237,24 @@ parameter = "lateral.river.variables.q"
 [[csv.column]]
 header = "recharge"
 map = "subcatchment"
-parameter = "vertical.soil.variables.recharge"
+parameter = "land.soil.variables.recharge"
 reducer = "mean"
 
 [API]
 components = [
-  "vertical.atmospheric_forcing",
-  "vertical.vegetation_parameter_set",
-  "vertical.runoff.boundary_conditions",
-  "vertical.runoff.variables",
-  "vertical.runoff.parameters",
-  "vertical.soil.boundary_conditions",
-  "vertical.soil.variables",
-  "vertical.soil.parameters",
-  "vertical.interception.variables",
-  "vertical.interception.parameters",
-  "vertical.snow.boundary_conditions",
-  "vertical.snow.variables",
-  "vertical.snow.parameters",
+  "land.atmospheric_forcing",
+  "land.vegetation_parameter_set",
+  "land.runoff.boundary_conditions",
+  "land.runoff.variables",
+  "land.runoff.parameters",
+  "land.soil.boundary_conditions",
+  "land.soil.variables",
+  "land.soil.parameters",
+  "land.interception.variables",
+  "land.interception.parameters",
+  "land.snow.boundary_conditions",
+  "land.snow.variables",
+  "land.snow.parameters",
   "lateral.subsurface.boundary_conditions",
   "lateral.subsurface.variables",
   "lateral.subsurface.parameters",

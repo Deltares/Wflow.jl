@@ -207,19 +207,19 @@ function extract_required_states(config::Config)
     required_states = ()
     # Add snow, glacier, interception and sbm soil states to dict
     required_states =
-        add_to_required_states(required_states, (:vertical, :snow, :variables), snow_states)
+        add_to_required_states(required_states, (:land, :snow, :variables), snow_states)
     required_states = add_to_required_states(
         required_states,
-        (:vertical, :glacier, :variables),
+        (:land, :glacier, :variables),
         glacier_states,
     )
     required_states = add_to_required_states(
         required_states,
-        (:vertical, :interception, :variables),
+        (:land, :interception, :variables),
         interception_states,
     )
     required_states =
-        add_to_required_states(required_states, (:vertical, :soil, :variables), soil_states)
+        add_to_required_states(required_states, (:land, :soil, :variables), soil_states)
     # Add subsurface states to dict
     if model_type == "sbm_gwf"
         key_entry = (:lateral, :subsurface, :flow, :aquifer, :variables)
@@ -265,7 +265,7 @@ function extract_required_states(config::Config)
     # Add paddy states to dict
     required_states = add_to_required_states(
         required_states,
-        (:vertical, :demand, :paddy, :variables),
+        (:land, :demand, :paddy, :variables),
         paddy_states,
     )
     return required_states

@@ -43,7 +43,7 @@ function GashInterceptionModel(dataset, config, indices, vegetation_parameter_se
     e_r = ncread(
         dataset,
         config,
-        "vertical.interception.parameters.e_r";
+        "land.interception.parameters.e_r";
         sel = indices,
         defaults = 0.1,
         type = Float,

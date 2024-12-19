@@ -18,7 +18,7 @@ flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
 end
 
 @testset "first timestep" begin
-    sbm = model.vertical
+    sbm = model.land
 
     @test model.clock.iteration == 1
     @test sbm.soil.parameters.theta_s[1] ≈ 0.44999998807907104f0
@@ -31,7 +31,7 @@ end
 Wflow.run_timestep!(model)
 
 @testset "second timestep" begin
-    sbm = model.vertical
+    sbm = model.land
     @test sbm.soil.parameters.theta_s[1] ≈ 0.44999998807907104f0
     @test sbm.soil.variables.runoff[1] == 0.0
     @test sbm.soil.variables.soilevap[1] == 0.0
@@ -150,7 +150,7 @@ Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
 
 @testset "second timestep warm start" begin
-    sbm = model.vertical
+    sbm = model.land
     @test sbm.soil.variables.runoff[1] == 0.0
     @test sbm.soil.variables.soilevap[1] ≈ 0.2889306511074693f0
     @test sbm.soil.variables.transpiration[1] ≈ 0.8370726722706481f0

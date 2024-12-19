@@ -5,8 +5,8 @@ Run surface routing (land and river) for a single timestep. Kinematic wave for o
 and kinematic wave or local inertial model for river flow.
 """
 function surface_routing!(model)
-    (; vertical, lateral, network, config, clock) = model
-    (; soil, runoff, allocation) = vertical
+    (; land, lateral, network, config, clock) = model
+    (; soil, runoff, allocation) = land
     (; land, river, subsurface) = lateral
 
     dt = tosecond(clock.dt)
@@ -37,25 +37,18 @@ end
 
 """
     surface_routing!(
-        model::Model{N,L,V,R,W,T}
-    ) where {N,L<:NamedTuple{<:Any,<:Tuple{Any,LocalInertialOverlandFlow,LocalInertialRiverFlow}},V,R,W,T}
+        model::Model{L}
+    ) where {L<:NamedTuple{<:Any,<:Tuple{Any,LocalInertialOverlandFlow,LocalInertialRiverFlow}},V,R,W,T}
 
 Run surface routing (land and river) for a model type that contains the lateral components
 `LocalInertialOverlandFlow` and `LocalInertialRiverFlow` for a single timestep.
 """
 function surface_routing!(
-    model::Model{N, L, V, R, W, T},
-) where {
-    N,
-    L <: NamedTuple{<:Any, <:Tuple{Any, LocalInertialOverlandFlow, LocalInertialRiverFlow}},
-    V,
-    R,
-    W,
-    T,
-}
-    (; lateral, vertical, network, clock) = model
+    model::Model{L},
+) where {L <: Lateral{<:LocalInertialOverlandFlow, <:LocalInertialRiverFlow}}
+    (; lateral, land, network, clock) = model
+    (; soil, runoff) = land
     (; land, river, subsurface) = lateral
-    (; soil, runoff) = vertical
 
     dt = tosecond(clock.dt)
     update_boundary_conditions!(land, (; river, subsurface, soil, runoff), network, dt)

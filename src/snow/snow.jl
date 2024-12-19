@@ -73,7 +73,7 @@ function SnowHbvParameters(dataset, config, indices, dt)
         ncread(
             dataset,
             config,
-            "vertical.snow.parameters.cfmax";
+            "land.snow.parameters.cfmax";
             sel = indices,
             defaults = 3.75653,
             type = Float,
@@ -81,7 +81,7 @@ function SnowHbvParameters(dataset, config, indices, dt)
     tt = ncread(
         dataset,
         config,
-        "vertical.snow.parameters.tt";
+        "land.snow.parameters.tt";
         sel = indices,
         defaults = 0.0,
         type = Float,
@@ -89,7 +89,7 @@ function SnowHbvParameters(dataset, config, indices, dt)
     tti = ncread(
         dataset,
         config,
-        "vertical.snow.parameters.tti";
+        "land.snow.parameters.tti";
         sel = indices,
         defaults = 1.0,
         type = Float,
@@ -97,7 +97,7 @@ function SnowHbvParameters(dataset, config, indices, dt)
     ttm = ncread(
         dataset,
         config,
-        "vertical.snow.parameters.ttm";
+        "land.snow.parameters.ttm";
         sel = indices,
         defaults = 0.0,
         type = Float,
@@ -105,7 +105,7 @@ function SnowHbvParameters(dataset, config, indices, dt)
     whc = ncread(
         dataset,
         config,
-        "vertical.snow.parameters.whc";
+        "land.snow.parameters.whc";
         sel = indices,
         defaults = 0.1,
         type = Float,

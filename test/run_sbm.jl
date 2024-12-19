@@ -69,8 +69,8 @@ end
 end
 
 @testset "first timestep" begin
-    sbm = model.vertical.soil
-    snow = model.vertical.snow
+    sbm = model.land.soil
+    snow = model.land.snow
     @test snow.parameters.tt[50063] ≈ 0.0f0
 
     @test model.clock.iteration == 1
@@ -91,8 +91,8 @@ end
 Wflow.run_timestep!(model)
 
 @testset "second timestep" begin
-    sbm = model.vertical.soil
-    snow = model.vertical.snow
+    sbm = model.land.soil
+    snow = model.land.snow
     @test sbm.parameters.theta_s[50063] ≈ 0.48755401372909546f0
     @test sbm.parameters.theta_r[50063] ≈ 0.15943120419979095f0
     @test mean(sbm.variables.net_runoff) ≈ 0.23734052031823816f0
@@ -140,9 +140,9 @@ end
 end
 
 # set these variables for comparison in "changed dynamic parameters"
-precip = copy(model.vertical.atmospheric_forcing.precipitation)
-evap = copy(model.vertical.atmospheric_forcing.potential_evaporation)
-lai = copy(model.vertical.vegetation_parameter_set.leaf_area_index)
+precip = copy(model.land.atmospheric_forcing.precipitation)
+evap = copy(model.land.atmospheric_forcing.potential_evaporation)
+lai = copy(model.land.vegetation_parameter_set.leaf_area_index)
 res_evap =
     copy(model.lateral.river.boundary_conditions.reservoir.boundary_conditions.evaporation)
 
@@ -178,14 +178,14 @@ end
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 
-config.input.vertical.atmospheric_forcing.precipitation =
+config.input.land.atmospheric_forcing.precipitation =
     Dict("scale" => 2.0, "netcdf" => Dict("variable" => Dict("name" => "precip")))
-config.input.vertical.atmospheric_forcing.potential_evaporation = Dict(
+config.input.land.atmospheric_forcing.potential_evaporation = Dict(
     "scale" => 3.0,
     "offset" => 1.50,
     "netcdf" => Dict("variable" => Dict("name" => "pet")),
 )
-config.input.vertical.vegetation_parameter_set.leaf_area_index =
+config.input.land.vegetation_parameter_set.leaf_area_index =
     Dict("scale" => 1.6, "netcdf" => Dict("variable" => Dict("name" => "LAI")))
 
 model = Wflow.initialize_sbm_model(config)
@@ -194,11 +194,10 @@ Wflow.run_timestep!(model)
 
 @testset "changed dynamic parameters" begin
     res = model.lateral.river.boundary_conditions.reservoir
-    vertical = model.vertical
-    @test vertical.atmospheric_forcing.precipitation[2] / precip[2] ≈ 2.0f0
-    @test (vertical.atmospheric_forcing.potential_evaporation[100] - 1.50) / evap[100] ≈
-          3.0f0
-    @test vertical.vegetation_parameter_set.leaf_area_index[100] / lai[100] ≈ 1.6f0
+    land = model.land
+    @test land.atmospheric_forcing.precipitation[2] / precip[2] ≈ 2.0f0
+    @test (land.atmospheric_forcing.potential_evaporation[100] - 1.50) / evap[100] ≈ 3.0f0
+    @test land.vegetation_parameter_set.leaf_area_index[100] / lai[100] ≈ 1.6f0
     @test (res.boundary_conditions.evaporation[2] - 1.50) / res_evap[2] ≈
           3.0000012203408635f0
 end
@@ -208,7 +207,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 
 config.input.cyclic = [
-    "vertical.vegetation_parameter_set.leaf_area_index",
+    "land.vegetation_parameter_set.leaf_area_index",
     "lateral.river.boundary_conditions.inflow",
 ]
 Dict(config.input.lateral.river)["boundary_conditions"] = Dict("inflow" => "inflow")
@@ -224,13 +223,13 @@ end
 
 # test fixed forcing (precipitation = 2.5)
 config = Wflow.Config(tomlpath)
-config.input.vertical.atmospheric_forcing.precipitation = Dict("value" => 2.5)
+config.input.land.atmospheric_forcing.precipitation = Dict("value" => 2.5)
 model = Wflow.initialize_sbm_model(config)
 Wflow.load_fixed_forcing!(model)
 
 @testset "fixed precipitation forcing (initialize)" begin
-    @test maximum(model.vertical.atmospheric_forcing.precipitation) ≈ 2.5
-    @test minimum(model.vertical.atmospheric_forcing.precipitation) ≈ 0.0
+    @test maximum(model.land.atmospheric_forcing.precipitation) ≈ 2.5
+    @test minimum(model.land.atmospheric_forcing.precipitation) ≈ 0.0
     @test all(
         isapprox.(
             model.lateral.river.boundary_conditions.reservoir.boundary_conditions.precipitation,
@@ -242,8 +241,8 @@ end
 Wflow.run_timestep!(model)
 
 @testset "fixed precipitation forcing (first timestep)" begin
-    @test maximum(model.vertical.atmospheric_forcing.precipitation) ≈ 2.5
-    @test minimum(model.vertical.atmospheric_forcing.precipitation) ≈ 0.0
+    @test maximum(model.land.atmospheric_forcing.precipitation) ≈ 2.5
+    @test minimum(model.land.atmospheric_forcing.precipitation) ≈ 0.0
     @test all(
         isapprox.(
             model.lateral.river.boundary_conditions.reservoir.boundary_conditions.precipitation,
@@ -458,13 +457,13 @@ Wflow.close_files(model; delete_output = false)
     i = 100
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
-    config.input.vertical.soil.parameters.kv = "kv"
-    config.input.vertical.soil.parameters.z_exp = Dict("value" => 400.0)
-    config.input.vertical.soil.parameters.z_layered = Dict("value" => 400.0)
+    config.input.land.soil.parameters.kv = "kv"
+    config.input.land.soil.parameters.z_exp = Dict("value" => 400.0)
+    config.input.land.soil.parameters.z_layered = Dict("value" => 400.0)
 
     @testset "exponential profile" begin
         model = Wflow.initialize_sbm_model(config)
-        (; soil) = model.vertical
+        (; soil) = model.land
         (; kv_profile) = soil.parameters
         (; subsurface) = model.lateral
         z = soil.variables.zi[i]
@@ -476,9 +475,9 @@ Wflow.close_files(model; delete_output = false)
     end
 
     @testset "exponential constant profile" begin
-        config.input.vertical.ksat_profile = "exponential_constant"
+        config.input.land.ksat_profile = "exponential_constant"
         model = Wflow.initialize_sbm_model(config)
-        (; soil) = model.vertical
+        (; soil) = model.land
         (; kv_profile) = soil.parameters
         (; subsurface) = model.lateral
         z = soil.variables.zi[i]
@@ -497,9 +496,9 @@ Wflow.close_files(model; delete_output = false)
     end
 
     @testset "layered profile" begin
-        config.input.vertical.ksat_profile = "layered"
+        config.input.land.ksat_profile = "layered"
         model = Wflow.initialize_sbm_model(config)
-        (; soil) = model.vertical
+        (; soil) = model.land
         (; kv_profile) = soil.parameters
         (; subsurface) = model.lateral
         z = soil.variables.zi[i]
@@ -513,9 +512,9 @@ Wflow.close_files(model; delete_output = false)
     end
 
     @testset "layered exponential profile" begin
-        config.input.vertical.ksat_profile = "layered_exponential"
+        config.input.land.ksat_profile = "layered_exponential"
         model = Wflow.initialize_sbm_model(config)
-        (; soil) = model.vertical
+        (; soil) = model.land
         (; kv_profile) = soil.parameters
         (; subsurface) = model.lateral
         z = soil.variables.zi[i]

@@ -14,15 +14,15 @@ dir_output = "data/output"
 # if listed, the variable must be present in the NetCDF or error
 # if not listed, the variable can get a default value if it has one
 
-[state.vertical.interception.variables]
+[state.land.interception.variables]
 canopy_storage = "canopystorage"
 
-[state.vertical.soil.variables]
+[state.land.soil.variables]
 satwaterdepth = "satwaterdepth"
 tsoil = "tsoil"
 ustorelayerdepth = "ustorelayerdepth"
 
-[state.vertical.snow.variables]
+[state.land.snow.variables]
 snow_storage = "snow"
 snow_water = "snowwater"
 
@@ -56,32 +56,32 @@ subcatchment = "wflow_subcatch"
 # specify the internal IDs of the parameters which vary over time
 # the external name mapping needs to be below together with the other mappings
 forcing = [
-  "vertical.atmospheric_forcing.precipitation",
-  "vertical.atmospheric_forcing.temperature",
-  "vertical.atmospheric_forcing.potential_evaporation",
+  "land.atmospheric_forcing.precipitation",
+  "land.atmospheric_forcing.temperature",
+  "land.atmospheric_forcing.potential_evaporation",
 ]
 
-cyclic = ["vertical.vegetation_parameter_set.leaf_area_index"]
+cyclic = ["land.vegetation_parameter_set.leaf_area_index"]
 
-[input.vertical.vegetation_parameter_set]
+[input.land.vegetation_parameter_set]
 leaf_area_index = "LAI"
 kext = "Kext"
 storage_specific_leaf = "Sl"
 storage_wood = "Swood"
 rootingdepth = "RootingDepth"
 
-[input.vertical.interception.parameters]
+[input.land.interception.parameters]
 e_r = "EoverR"
 
-[input.vertical.atmospheric_forcing]
+[input.land.atmospheric_forcing]
 potential_evaporation = "pet"
 precipitation = "precip"
 temperature = "temp"
 
-[input.vertical.runoff.parameters]
+[input.land.runoff.parameters]
 waterfrac = "WaterFrac"
 
-[input.vertical.soil.parameters]
+[input.land.soil.parameters]
 c = "c"
 cf_soil = "cf_soil"
 f = "f"
@@ -95,7 +95,7 @@ rootdistpar = "rootdistpar"
 soilthickness = "SoilThickness"
 kv_0 = "KsatVer"
 
-[input.vertical.snow.parameters]
+[input.land.snow.parameters]
 tt = "TT"
 tti = "TTI"
 ttm = "TTM"
@@ -141,15 +141,15 @@ type = "sbm"
 [output]
 path = "output_moselle_swf.nc"
 
-[output.vertical.interception.variables]
+[output.land.interception.variables]
 canopy_storage = "canopystorage"
 
-[output.vertical.soil.variables]
+[output.land.soil.variables]
 satwaterdepth = "satwaterdepth"
 tsoil = "tsoil"
 ustorelayerdepth = "ustorelayerdepth"
 
-[output.vertical.snow.variables]
+[output.land.snow.variables]
 snow_storage = "snow"
 snow_water = "snowwater"
 

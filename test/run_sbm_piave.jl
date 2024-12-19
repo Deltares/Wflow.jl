@@ -104,8 +104,8 @@ tomlpath = joinpath(@__DIR__, "sbm_piave_demand_config.toml")
 config = Wflow.Config(tomlpath)
 model = Wflow.initialize_sbm_model(config)
 Wflow.run_timestep!(model)
-sbm = model.vertical
-(; paddy, nonpaddy, industry, livestock, domestic) = model.vertical.demand
+sbm = model.land
+(; paddy, nonpaddy, industry, livestock, domestic) = model.land.demand
 (; total_alloc, irri_alloc, nonirri_alloc, surfacewater_alloc, act_groundwater_abst) =
     sbm.allocation.variables
 
@@ -138,8 +138,8 @@ sbm = model.vertical
 end
 
 Wflow.run_timestep!(model)
-sbm = model.vertical
-(; paddy, nonpaddy, industry, livestock, domestic) = model.vertical.demand
+sbm = model.land
+(; paddy, nonpaddy, industry, livestock, domestic) = model.land.demand
 (; total_alloc, irri_alloc, nonirri_alloc, surfacewater_alloc, act_groundwater_abst) =
     sbm.allocation.variables
 @testset "piave water demand and allocation second timestep" begin
