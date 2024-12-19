@@ -10,7 +10,7 @@ ZMQ.connect(socket, "tcp://localhost:5555")
 
 function request(message)
     ZMQ.send(socket, JSON3.write(message))
-    ret_value = JSON3.read(ZMQ.recv(socket), Dict)
+    ret_value = JSON3.read(ZMQ.recv(socket), Dict; allow_inf = true)
     return ret_value
 end
 
@@ -22,6 +22,12 @@ end
     @test request((fn = "get_start_unix_time",)) == Dict("start_unix_time" => 946684800)
     @test request((fn = "get_time_step",)) == Dict("time_step" => 86400)
     @test request((fn = "get_time_units",)) == Dict("time_units" => "s")
+end
+
+@testset "Reading and writing NaN values allowed" begin
+    msg =
+        (fn = "get_value", name = "vertical.soil.variables.vwc[1]", dest = fill(0.0, 50063))
+    @test isnan(mean(request(msg)["value"]))
 end
 
 @testset "update functions" begin

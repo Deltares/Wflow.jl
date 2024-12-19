@@ -89,7 +89,7 @@ function wflow_bmi(s::ZMQ.Socket, handler::ModelHandler, f)
             response(s)
         else
             @info "Send response including output from Wflow function `$(f.fn)`"
-            ZMQ.send(s, JSON3.write(ret))
+            ZMQ.send(s, JSON3.write(ret; allow_inf = true))
         end
     catch e
         @error "Wflow function `$(f.fn)` failed" exception = (e, catch_backtrace())
@@ -151,7 +151,7 @@ function start(port::Int)
         while true
             # Wait for next request from client
             req = ZMQ.recv(socket)
-            json = JSON3.read(req)
+            json = JSON3.read(req; allow_inf = true)
             @info "Received request to run function `$(json.fn)`..."
 
             if haskey(map_structs, json.fn)
