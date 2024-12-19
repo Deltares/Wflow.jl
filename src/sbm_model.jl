@@ -148,7 +148,7 @@ function initialize_sbm_model(config::Config)
             y_length,
         )
         # update variables `ssf`, `ssfmax` and `kh` (layered profile) based on ksat_profile
-        kh_profile_type = get(config.input.vertical, "ksat_profile", "exponential")::String
+        kh_profile_type = get(config.input.land, "ksat_profile", "exponential")::String
         if kh_profile_type == "exponential" || kh_profile_type == "exponential_constant"
             initialize_lateralssf!(subsurface_flow, subsurface_flow.parameters.kh_profile)
         elseif kh_profile_type == "layered" || kh_profile_type == "layered_exponential"
@@ -298,7 +298,7 @@ function initialize_sbm_model(config::Config)
     end
 
     modelmap = (
-        vertical = land_hydrology,
+        land = land_hydrology,
         lateral = (subsurface = subsurface_flow, land = overland_flow, river = river_flow),
     )
     indices_reverse = (
@@ -412,24 +412,24 @@ end
 
 "update SBM model for a single timestep"
 function update!(model::AbstractModel{<:SbmModel})
-    (; lateral, vertical, network, clock, config) = model
+    (; lateral, land, network, clock, config) = model
     dt = tosecond(clock.dt)
     do_water_demand = haskey(config.model, "water_demand")
-    (; kv_profile) = vertical.soil.parameters
+    (; kv_profile) = land.soil.parameters
 
     update_until_recharge!(model)
     # exchange of recharge between SBM soil model and subsurface flow domain
     lateral.subsurface.boundary_conditions.recharge .=
-        vertical.soil.variables.recharge ./ 1000.0
+        land.soil.variables.recharge ./ 1000.0
     if do_water_demand
         @. lateral.subsurface.boundary_conditions.recharge -=
-            vertical.allocation.variables.act_groundwater_abst / 1000.0
+            land.allocation.variables.act_groundwater_abst / 1000.0
     end
     lateral.subsurface.boundary_conditions.recharge .*=
         lateral.subsurface.parameters.flow_width
-    lateral.subsurface.variables.zi .= vertical.soil.variables.zi ./ 1000.0
+    lateral.subsurface.variables.zi .= land.soil.variables.zi ./ 1000.0
     # update lateral subsurface flow domain (kinematic wave)
-    kh_layered_profile!(vertical.soil, lateral.subsurface, kv_profile, dt)
+    kh_layered_profile!(land.soil, lateral.subsurface, kv_profile, dt)
     update!(lateral.subsurface, network.land, clock.dt / basetimestep)
     update_after_subsurfaceflow!(model)
     update_total_water_storage!(model)
@@ -443,9 +443,9 @@ Update SBM model until recharge for a single timestep. This function is also acc
 through BMI, to couple the SBM model to an external groundwater model.
 """
 function update_until_recharge!(model::AbstractModel{<:SbmModel})
-    (; lateral, vertical, network, clock, config) = model
+    (; lateral, land, network, clock, config) = model
     dt = tosecond(clock.dt)
-    update!(vertical, lateral, network, config, dt)
+    update!(land, lateral, network, config, dt)
     return nothing
 end
 
@@ -456,8 +456,8 @@ Update SBM model after subsurface flow for a single timestep. This function is a
 accessible through BMI, to couple the SBM model to an external groundwater model.
 """
 function update_after_subsurfaceflow!(model::AbstractModel{<:SbmModel})
-    (; lateral, vertical) = model
-    (; soil, runoff, demand) = vertical
+    (; lateral, land) = model
+    (; soil, runoff, demand) = land
     (; subsurface) = lateral
 
     # update SBM soil model (runoff, ustorelayerdepth and satwaterdepth)
@@ -474,12 +474,12 @@ Update of the total water storage at the end of each timestep per model cell.
 This is done here at model level.
 """
 function update_total_water_storage!(model::AbstractModel{<:SbmModel})
-    (; lateral, vertical, network) = model
+    (; lateral, land, network) = model
 
-    # Update the total water storage based on vertical states
+    # Update the total water storage based on land states
     # TODO Maybe look at routing in the near future
     update_total_water_storage!(
-        vertical,
+        land,
         network.river.land_indices,
         network.land.area,
         lateral.river,
@@ -489,7 +489,7 @@ function update_total_water_storage!(model::AbstractModel{<:SbmModel})
 end
 
 function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
-    (; lateral, vertical, network, config) = model
+    (; lateral, land, network, config) = model
     land_v = lateral.land.variables
     land_p = lateral.land.parameters
     river_v = lateral.river.variables
@@ -512,11 +512,11 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
         zi =
             max.(
                 0.0,
-                vertical.soil.parameters.soilthickness .-
-                vertical.soil.variables.satwaterdepth ./
-                (vertical.soil.parameters.theta_s .- vertical.soil.parameters.theta_r),
+                land.soil.parameters.soilthickness .-
+                land.soil.variables.satwaterdepth ./
+                (land.soil.parameters.theta_s .- land.soil.parameters.theta_r),
             )
-        vertical.soil.variables.zi .= zi
+        land.soil.variables.zi .= zi
         if land_routing == "kinematic-wave"
             # make sure land cells with zero flow width are set to zero q and h
             for i in eachindex(land_p.flow_width)

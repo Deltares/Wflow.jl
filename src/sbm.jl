@@ -1,5 +1,5 @@
 "Land hydrology model with SBM soil model"
-@with_kw struct LandHydrologySBM{T, D, A} <: AbstractLandSurface
+@with_kw struct LandHydrologySBM{T, D, A} <: AbstractLandModel
     atmospheric_forcing::AtmosphericForcing{T}
     vegetation_parameter_set::VegetationParameters{T}
     interception::AbstractInterceptionModel{T}

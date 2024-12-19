@@ -53,26 +53,26 @@ lake_areas = "wflow_lakeareas"
 # specify the internal IDs of the parameters which vary over time
 # the external name mapping needs to be below together with the other mappings
 forcing = [
-  "vertical.atmospheric_forcing.precipitation",
-  "vertical.hydrological_forcing.waterlevel_land",
+  "land.atmospheric_forcing.precipitation",
+  "land.hydrological_forcing.waterlevel_land",
   "lateral.land.hydrological_forcing.waterlevel_land",
-  "vertical.hydrological_forcing.q_land",
+  "land.hydrological_forcing.q_land",
   "lateral.land.hydrological_forcing.q_land",
   "lateral.river.hydrological_forcing.waterlevel_river",
   "lateral.river.hydrological_forcing.q_river",
 ]
 
-[input.vertical.atmospheric_forcing]
+[input.land.atmospheric_forcing]
 precipitation = "P"
 
-[input.vertical.hydrological_forcing]
+[input.land.hydrological_forcing]
 waterlevel_land = "levKinL"
 q_land = "runL"
 
-[input.vertical.land_parameter_set]
+[input.land.land_parameter_set]
 slope = "Slope"
 
-[input.vertical.rainfall_erosion.parameters]
+[input.land.rainfall_erosion.parameters]
 soil_detachability = "soil_detachability"
 eurosem_exponent = "eros_spl_EUROSEM"
 canopygapfraction = "CanopyGapFraction"
@@ -80,12 +80,12 @@ usle_k = "usle_k"
 usle_c = "USLE_C"
 pathfrac = "PathFrac"
 
-[input.vertical.overland_flow_erosion.parameters]
+[input.land.overland_flow_erosion.parameters]
 usle_k = "usle_k"
 usle_c = "USLE_C"
 answers_k = "eros_ov"
 
-[input.vertical.soil_erosion.parameters]
+[input.land.soil_erosion.parameters]
 clay_fraction = "fclay_soil"
 silt_fraction = "fsilt_soil"
 sand_fraction = "fsand_soil"
@@ -170,13 +170,13 @@ type = "sediment"
 [output]
 path = "output-moselle-sed.nc"
 
-[output.vertical.rainfall_erosion.variables]
+[output.land.rainfall_erosion.variables]
 amount = "rainfall_erosion"
 
-[output.vertical.overland_flow_erosion.variables]
+[output.land.overland_flow_erosion.variables]
 amount = "overland_flow_erosion"
 
-[output.vertical.soil_erosion.variables]
+[output.land.soil_erosion.variables]
 amount = "soilloss"
 clay = "erosclay"
 
@@ -217,31 +217,31 @@ path = "output-moselle-sediment.csv"
 coordinate.x = 6.931
 coordinate.y = 48.085
 header = "SL"
-parameter = "vertical.soil_erosion.variables.amount"
+parameter = "land.soil_erosion.variables.amount"
 
 [[csv.column]]
 coordinate.x = 6.931
 coordinate.y = 48.085
 header = "SSPL"
-parameter = "vertical.rainfall_erosion.variables.amount"
+parameter = "land.rainfall_erosion.variables.amount"
 
 [[csv.column]]
 coordinate.x = 6.931
 coordinate.y = 48.085
 header = "SOV"
-parameter = "vertical.overland_flow_erosion.variables.amount"
+parameter = "land.overland_flow_erosion.variables.amount"
 
 [[csv.column]]
 coordinate.x = 6.931
 coordinate.y = 48.085
 header = "P"
-parameter = "vertical.atmospheric_forcing.precipitation"
+parameter = "land.atmospheric_forcing.precipitation"
 
 [[csv.column]]
 coordinate.x = 6.931
 coordinate.y = 48.085
 header = "ql"
-parameter = "vertical.hydrological_forcing.q_land"
+parameter = "land.hydrological_forcing.q_land"
 
 # [[csv.column]]
 # coordinate.x = 6.931

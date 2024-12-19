@@ -18,10 +18,10 @@ path_output = "outstates-example-sbm-gwf.nc"
 # if listed, the variable must be present in the NetCDF or error
 # if not listed, the variable can get a default value if it has one
 
-[state.vertical.interception.variables]
+[state.land.interception.variables]
 canopy_storage = "canopystorage"
 
-[state.vertical.soil.variables]
+[state.land.soil.variables]
 satwaterdepth = "satwaterdepth"
 ustorelayerdepth = "ustorelayerdepth"
 
@@ -51,23 +51,23 @@ altitude = "wflow_dem"
 # specify the internal IDs of the parameters which vary over time
 # the external name mapping needs to be below together with the other mappings
 forcing = [
-  "vertical.atmospheric_forcing.precipitation",
-  "vertical.atmospheric_forcing.potential_evaporation",
+  "land.atmospheric_forcing.precipitation",
+  "land.atmospheric_forcing.potential_evaporation",
 ]
 
-[input.vertical.vegetation_parameter_set]
+[input.land.vegetation_parameter_set]
 rootingdepth = "rootingdepth"
 canopygapfraction = "canopygapfraction"
 cmax = "cmax"
 
-[input.vertical.interception.parameters]
+[input.land.interception.parameters]
 e_r = "EoverR"
 
-[input.vertical.atmospheric_forcing]
+[input.land.atmospheric_forcing]
 potential_evaporation = "PET"
 precipitation = "P"
 
-[input.vertical.soil.parameters]
+[input.land.soil.parameters]
 infiltcapsoil = "InfiltCapSoil"
 kv_0 = "kv"
 pathfrac = "PathFrac"
@@ -109,14 +109,14 @@ type = "sbm_gwf"
 [output]
 path = "output_example-sbm-gwf.nc"
 
-[output.vertical.interception.variables]
+[output.land.interception.variables]
 canopy_storage = "canopystorage"
 
-[output.vertical.soil.variables]
+[output.land.soil.variables]
 satwaterdepth = "satwaterdepth"
 ustorelayerdepth = "ustorelayerdepth"
 
-[output.vertical.soil.parameters]
+[output.land.soil.parameters]
 soilthickness = "soilthickness"
 
 [output.lateral.river.variables]

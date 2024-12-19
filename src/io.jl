@@ -183,25 +183,25 @@ end
 
 function get_param_res(model)
     return Dict(
-        symbols"vertical.atmospheric_forcing.precipitation" =>
+        symbols"land.atmospheric_forcing.precipitation" =>
             model.lateral.river.boundary_conditions.reservoir.boundary_conditions.precipitation,
-        symbols"vertical.atmospheric_forcing.potential_evaporation" =>
+        symbols"land.atmospheric_forcing.potential_evaporation" =>
             model.lateral.river.boundary_conditions.reservoir.boundary_conditions.evaporation,
     )
 end
 
 function get_param_lake(model)
     return Dict(
-        symbols"vertical.atmospheric_forcing.precipitation" =>
+        symbols"land.atmospheric_forcing.precipitation" =>
             model.lateral.river.boundary_conditions.lake.boundary_conditions.precipitation,
-        symbols"vertical.atmospheric_forcing.potential_evaporation" =>
+        symbols"land.atmospheric_forcing.potential_evaporation" =>
             model.lateral.river.boundary_conditions.lake.boundary_conditions.evaporation,
     )
 end
 
 mover_params = (
-    symbols"vertical.atmospheric_forcing.precipitation",
-    symbols"vertical.atmospheric_forcing.potential_evaporation",
+    symbols"land.atmospheric_forcing.precipitation",
+    symbols"land.atmospheric_forcing.potential_evaporation",
 )
 
 function load_fixed_forcing!(model)
@@ -228,7 +228,7 @@ function load_fixed_forcing!(model)
             param_vector .= val
             # set fixed precipitation and evaporation over the lakes and reservoirs and put
             # these into the lakes and reservoirs structs and set the precipitation and
-            # evaporation to 0 in the vertical model
+            # evaporation to 0 in the land model
             if par in mover_params
                 if do_reservoirs
                     for (i, sel_reservoir) in enumerate(sel_reservoirs)
@@ -283,7 +283,7 @@ function update_forcing!(model)
 
         # calculate the mean precipitation and evaporation over the lakes and reservoirs
         # and put these into the lakes and reservoirs structs
-        # and set the precipitation and evaporation to 0 in the vertical model
+        # and set the precipitation and evaporation to 0 in the land model
         if par in mover_params
             if do_reservoirs
                 for (i, sel_reservoir) in enumerate(sel_reservoirs)
@@ -858,7 +858,7 @@ Ignores top level values in the Dict. This function is used to convert a TOML su
 [output]
 path = "path/to/file.nc"
 
-[output.vertical]
+[output.land]
 canopystorage = "my_canopystorage"
 
 [output.lateral.river]
@@ -870,7 +870,7 @@ values are ignored since the output path is not a netCDF name.
 
 ```julia
 Dict(
-    (:vertical, :canopystorage) => "my_canopystorage,
+    (:land, :canopystorage) => "my_canopystorage,
     (:lateral, :river, :q) => "my_q,
 )
 ```
@@ -1623,9 +1623,9 @@ end
 
 "Get `index` for dimension name `layer` based on `model`"
 function get_index_dimension(var, model)::Int
-    (; vertical) = model
+    (; land) = model
     if haskey(var, "layer")
-        inds = collect(1:(vertical.soil.parameters.maxlayers))
+        inds = collect(1:(land.soil.parameters.maxlayers))
         index = inds[var["layer"]]
     else
         error("Unrecognized or missing dimension name to index $(var)")

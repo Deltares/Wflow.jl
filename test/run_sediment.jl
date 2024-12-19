@@ -8,8 +8,8 @@ model = Wflow.initialize_sediment_model(config)
 
 Wflow.run_timestep!(model)
 
-@testset "first timestep sediment model (vertical)" begin
-    eros = model.vertical
+@testset "first timestep sediment model (land part)" begin
+    eros = model.land
 
     @test eros.atmospheric_forcing.precipitation[1] ≈ 4.086122035980225f0
     @test eros.hydrological_forcing.q_land[1] ≈ 0.0f0
@@ -27,8 +27,8 @@ end
 # run the second timestep
 Wflow.run_timestep!(model)
 
-@testset "second timestep sediment model (vertical)" begin
-    eros = model.vertical
+@testset "second timestep sediment model (land part)" begin
+    eros = model.land
 
     @test mean(eros.soil_erosion.variables.amount) ≈ 0.07765800489746684f0
     @test mean(eros.soil_erosion.variables.clay) ≈ 0.002287480354866626f0
@@ -89,8 +89,8 @@ model = Wflow.initialize_sediment_model(config)
 
 Wflow.run_timestep!(model)
 
-@testset "first timestep sediment model eurosem (vertical)" begin
-    eros = model.vertical
+@testset "first timestep sediment model eurosem (land part)" begin
+    eros = model.land
 
     @test eros.atmospheric_forcing.precipitation[1] ≈ 4.086122035980225f0
     @test eros.hydrological_forcing.interception[1] ≈ 0.6329902410507202f0
@@ -138,7 +138,7 @@ Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
 
 @testset "second timestep sediment model govers" begin
-    eros = model.vertical
+    eros = model.land
     land = model.lateral.land
 
     @test mean(eros.soil_erosion.variables.amount) ≈ 0.0776983847440198f0
@@ -164,7 +164,7 @@ Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
 
 @testset "second timestep sediment model yalin" begin
-    eros = model.vertical
+    eros = model.land
     land = model.lateral.land
 
     @test mean(eros.soil_erosion.variables.amount) ≈ 0.0776983847440198f0

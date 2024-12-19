@@ -92,7 +92,7 @@ function initialize_sbm_gwf_model(config::Config)
     inds_river, reverse_inds_river = active_indices(river_location_2d, 0)
     n_river_cells = length(inds_river)
 
-    # initialize vertical SBM concept
+    # initialize SBM concept
     land_hydrology = LandHydrologySBM(dataset, config, river_fraction, indices)
 
     # reservoirs
@@ -352,7 +352,7 @@ function initialize_sbm_gwf_model(config::Config)
     end
 
     modelmap = (
-        vertical = land_hydrology,
+        land = land_hydrology,
         lateral = (subsurface = subsurface_map, land = overland_flow, river = river_flow),
     )
     indices_reverse = (
@@ -480,14 +480,14 @@ end
 
 "update the sbm_gwf model for a single timestep"
 function update!(model::AbstractModel{<:SbmGwfModel})
-    (; lateral, vertical, network, clock, config) = model
-    (; soil, runoff, demand) = vertical
+    (; lateral, land, network, clock, config) = model
+    (; soil, runoff, demand) = land
 
     do_water_demand = haskey(config.model, "water_demand")
     aquifer = lateral.subsurface.flow.aquifer
     dt = tosecond(clock.dt)
 
-    update!(vertical, lateral, network, config, dt)
+    update!(land, lateral, network, config, dt)
 
     # set river stage (groundwater) to average h from kinematic wave
     lateral.subsurface.river.variables.stage .=
@@ -511,7 +511,7 @@ function update!(model::AbstractModel{<:SbmGwfModel})
         soil.variables.recharge / 1000.0 * (1.0 / dt_sbm)
     if do_water_demand
         @. lateral.subsurface.recharge.variables.rate -=
-            vertical.allocation.variables.act_groundwater_abst / 1000.0 * (1.0 / dt_sbm)
+            land.allocation.variables.act_groundwater_abst / 1000.0 * (1.0 / dt_sbm)
     end
     # update groundwater domain
     update!(lateral.subsurface.flow, Q, dt_sbm, conductivity_profile)

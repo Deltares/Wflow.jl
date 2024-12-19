@@ -13,7 +13,7 @@ function GlacierVariables(dataset, config, indices)
     glacier_store = ncread(
         dataset,
         config,
-        "vertical.glacier.variables.glacier_store";
+        "land.glacier.variables.glacier_store";
         sel = indices,
         defaults = 5500.0,
         type = Float,
@@ -58,7 +58,7 @@ function GlacierHbvParameters(dataset, config, indices, dt)
     g_ttm = ncread(
         dataset,
         config,
-        "vertical.glacier.parameters.g_ttm";
+        "land.glacier.parameters.g_ttm";
         sel = indices,
         defaults = 0.0,
         type = Float,
@@ -68,7 +68,7 @@ function GlacierHbvParameters(dataset, config, indices, dt)
         ncread(
             dataset,
             config,
-            "vertical.glacier.parameters.g_cfmax";
+            "land.glacier.parameters.g_cfmax";
             sel = indices,
             defaults = 3.0,
             type = Float,
@@ -78,7 +78,7 @@ function GlacierHbvParameters(dataset, config, indices, dt)
         ncread(
             dataset,
             config,
-            "vertical.glacier.parameters.g_sifrac";
+            "land.glacier.parameters.g_sifrac";
             sel = indices,
             defaults = 0.001,
             type = Float,
@@ -87,7 +87,7 @@ function GlacierHbvParameters(dataset, config, indices, dt)
     glacier_frac = ncread(
         dataset,
         config,
-        "vertical.glacier.parameters.glacier_frac";
+        "land.glacier.parameters.glacier_frac";
         sel = indices,
         defaults = 0.0,
         type = Float,

@@ -82,7 +82,7 @@ function initialize_sediment_model(config::Config)
     landslope = ncread(
         dataset,
         config,
-        "vertical.land_parameter_set.slope";
+        "land.land_parameter_set.slope";
         optional = false,
         sel = indices,
         type = Float,
@@ -94,10 +94,8 @@ function initialize_sediment_model(config::Config)
 
     river_sediment = RiverSediment(dataset, config, indices_riv, waterbodies)
 
-    modelmap = (
-        vertical = soilloss,
-        lateral = (land = overland_flow_sediment, river = river_sediment),
-    )
+    modelmap =
+        (land = soilloss, lateral = (land = overland_flow_sediment, river = river_sediment))
     indices_reverse = (land = rev_indices, river = rev_indices_riv)
     y_dataset = read_y_axis(dataset)
     x_dataset = read_x_axis(dataset)
@@ -136,14 +134,14 @@ end
 
 "update sediment model for a single timestep"
 function update!(model::AbstractModel{<:SedimentModel})
-    (; lateral, vertical, network, config, clock) = model
+    (; lateral, land, network, config, clock) = model
     dt = tosecond(clock.dt)
 
     # Soil erosion
-    update!(vertical, dt)
+    update!(land, dt)
 
     # Overland flow sediment transport
-    update!(lateral.land, vertical.soil_erosion, network.land, dt)
+    update!(lateral.land, land.soil_erosion, network.land, dt)
 
     # River sediment transport
     do_river = get(config.model, "run_river_model", false)::Bool

@@ -20,8 +20,8 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test BMI.get_input_item_count(model) == 202
             @test BMI.get_output_item_count(model) == 202
             to_check = [
-                "vertical.soil.parameters.nlayers",
-                "vertical.soil.parameters.theta_r",
+                "land.soil.parameters.nlayers",
+                "land.soil.parameters.theta_r",
                 "lateral.river.variables.q",
                 "lateral.river.boundary_conditions.reservoir.variables.outflow",
             ]
@@ -32,7 +32,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
         end
 
         @testset "variable information functions" begin
-            @test BMI.get_var_grid(model, "vertical.soil.parameters.theta_s") == 6
+            @test BMI.get_var_grid(model, "land.soil.parameters.theta_s") == 6
             @test BMI.get_var_grid(model, "lateral.river.variables.h") == 3
             @test BMI.get_var_grid(
                 model,
@@ -46,7 +46,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
                 model,
                 "lateral.river.boundary_conditions.reservoir.boundary_conditions.inflow",
             ) == "$Float"
-            @test BMI.get_var_units(model, "vertical.soil.parameters.theta_s") == "-"
+            @test BMI.get_var_units(model, "land.soil.parameters.theta_s") == "-"
             @test BMI.get_var_itemsize(model, "lateral.subsurface.variables.ssf") ==
                   sizeof(Float)
             @test BMI.get_var_nbytes(model, "lateral.river.variables.q") ==
@@ -61,22 +61,22 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 
         @testset "update and get and set functions" begin
             @test BMI.get_current_time(model) == 86400.0
-            @test_throws ErrorException BMI.get_value_ptr(model, "vertical.")
-            dest = zeros(Float, size(model.vertical.soil.variables.zi))
-            BMI.get_value(model, "vertical.soil.variables.zi", dest)
+            @test_throws ErrorException BMI.get_value_ptr(model, "land.")
+            dest = zeros(Float, size(model.land.soil.variables.zi))
+            BMI.get_value(model, "land.soil.variables.zi", dest)
             @test mean(dest) ≈ 276.1625022866973
             @test BMI.get_value_at_indices(
                 model,
-                "vertical.soil.variables.vwc[1]",
+                "land.soil.variables.vwc[1]",
                 zeros(Float, 3),
                 [1, 2, 3],
-            ) ≈ getindex.(model.vertical.soil.variables.vwc, 1)[1:3]
+            ) ≈ getindex.(model.land.soil.variables.vwc, 1)[1:3]
             BMI.set_value_at_indices(
                 model,
-                "vertical.soil.variables.vwc[2]",
+                "land.soil.variables.vwc[2]",
                 [1, 2, 3],
                 [0.10, 0.15, 0.20],
-            ) ≈ getindex.(model.vertical.soil.variables.vwc, 2)[1:3]
+            ) ≈ getindex.(model.land.soil.variables.vwc, 2)[1:3]
             @test BMI.get_value_at_indices(
                 model,
                 "lateral.river.variables.q",
@@ -85,20 +85,20 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             ) ≈ [0.6525631197206111, 7.493760826794606, 0.02319714614721354]
             BMI.set_value(
                 model,
-                "vertical.soil.variables.zi",
-                fill(300.0, length(model.vertical.soil.variables.zi)),
+                "land.soil.variables.zi",
+                fill(300.0, length(model.land.soil.variables.zi)),
             )
             @test mean(
                 BMI.get_value(
                     model,
-                    "vertical.soil.variables.zi",
-                    zeros(Float, size(model.vertical.soil.variables.zi)),
+                    "land.soil.variables.zi",
+                    zeros(Float, size(model.land.soil.variables.zi)),
                 ),
             ) == 300.0
-            BMI.set_value_at_indices(model, "vertical.soil.variables.zi", [1], [250.0])
+            BMI.set_value_at_indices(model, "land.soil.variables.zi", [1], [250.0])
             @test BMI.get_value_at_indices(
                 model,
-                "vertical.soil.variables.zi",
+                "land.soil.variables.zi",
                 zeros(Float, 2),
                 [1, 2],
             ) == [250.0, 300.0]
@@ -173,7 +173,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
         BMI.update(model; run = "sbm_until_recharge")
 
         @testset "recharge part of SBM" begin
-            sbm = model.vertical
+            sbm = model.land
             @test sbm.interception.variables.interception_rate[1] ≈ 0.32734913737568716f0
             @test sbm.soil.variables.ustorelayerdepth[1][1] ≈ 0.0f0
             @test sbm.snow.variables.snow_storage[1] ≈ 3.4847899611762876f0
@@ -196,7 +196,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
         BMI.update(model; run = "sbm_after_subsurfaceflow")
 
         @testset "SBM after subsurface flow" begin
-            sbm = model.vertical
+            sbm = model.land
             sub = model.lateral.subsurface
             @test sbm.interception.variables.interception_rate[1] ≈ 0.32734913737568716f0
             @test sbm.soil.variables.ustorelayerdepth[1][1] ≈ 0.0f0
@@ -215,10 +215,10 @@ end
 @testset "BMI extension functions" begin
     model = BMI.initialize(Wflow.Model, tomlpath)
     @test Wflow.get_start_unix_time(model) == 9.466848e8
-    satwaterdepth = mean(model.vertical.soil.variables.satwaterdepth)
+    satwaterdepth = mean(model.land.soil.variables.satwaterdepth)
     model.config.model.reinit = false
     Wflow.load_state(model)
-    @test satwaterdepth ≠ mean(model.vertical.soil.variables.satwaterdepth)
+    @test satwaterdepth ≠ mean(model.land.soil.variables.satwaterdepth)
     @test_logs (
         :info,
         "Write output states to netCDF file `$(model.writer.state_nc_path)`.",

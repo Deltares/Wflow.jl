@@ -39,7 +39,7 @@ function OpenWaterRunoffParameters(dataset, config, indices, riverfrac)
     waterfrac = ncread(
         dataset,
         config,
-        "vertical.runoff.parameters.waterfrac";
+        "land.runoff.parameters.waterfrac";
         sel = indices,
         defaults = 0.0,
         type = Float,
