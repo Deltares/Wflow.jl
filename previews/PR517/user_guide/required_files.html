@@ -449,13 +449,13 @@ Click to show example .toml file
 <span id="cb1-66"><a href="#cb1-66" aria-hidden="true" tabindex="-1"></a><span class="dt">ttm</span> <span class="op">=</span> <span class="st">"TTM"</span></span>
 <span id="cb1-67"><a href="#cb1-67" aria-hidden="true" tabindex="-1"></a><span class="dt">cfmax</span> <span class="op">=</span> <span class="st">"Cfmax"</span></span>
 <span id="cb1-68"><a href="#cb1-68" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-69"><a href="#cb1-69" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.lateral.river]</span></span>
+<span id="cb1-69"><a href="#cb1-69" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.routing.river_flow]</span></span>
 <span id="cb1-70"><a href="#cb1-70" aria-hidden="true" tabindex="-1"></a><span class="dt">length</span> <span class="op">=</span> <span class="st">"wflow_riverlength"</span></span>
 <span id="cb1-71"><a href="#cb1-71" aria-hidden="true" tabindex="-1"></a><span class="dt">n</span> <span class="op">=</span> <span class="st">"N_River"</span></span>
 <span id="cb1-72"><a href="#cb1-72" aria-hidden="true" tabindex="-1"></a><span class="dt">slope</span> <span class="op">=</span> <span class="st">"RiverSlope"</span></span>
 <span id="cb1-73"><a href="#cb1-73" aria-hidden="true" tabindex="-1"></a><span class="dt">width</span> <span class="op">=</span> <span class="st">"wflow_riverwidth"</span></span>
 <span id="cb1-74"><a href="#cb1-74" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-75"><a href="#cb1-75" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.lateral.river.reservoir]</span></span>
+<span id="cb1-75"><a href="#cb1-75" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.routing.river_flow.reservoir]</span></span>
 <span id="cb1-76"><a href="#cb1-76" aria-hidden="true" tabindex="-1"></a><span class="dt">area</span> <span class="op">=</span> <span class="st">"ResSimpleArea"</span></span>
 <span id="cb1-77"><a href="#cb1-77" aria-hidden="true" tabindex="-1"></a><span class="dt">areas</span> <span class="op">=</span> <span class="st">"wflow_reservoirareas"</span></span>
 <span id="cb1-78"><a href="#cb1-78" aria-hidden="true" tabindex="-1"></a><span class="dt">demand</span> <span class="op">=</span> <span class="st">"ResDemand"</span></span>
@@ -465,10 +465,10 @@ Click to show example .toml file
 <span id="cb1-82"><a href="#cb1-82" aria-hidden="true" tabindex="-1"></a><span class="dt">targetfullfrac</span> <span class="op">=</span> <span class="st">"ResTargetFullFrac"</span></span>
 <span id="cb1-83"><a href="#cb1-83" aria-hidden="true" tabindex="-1"></a><span class="dt">targetminfrac</span> <span class="op">=</span> <span class="st">"ResTargetMinFrac"</span></span>
 <span id="cb1-84"><a href="#cb1-84" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-85"><a href="#cb1-85" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.lateral.subsurface]</span></span>
+<span id="cb1-85"><a href="#cb1-85" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.routing.subsurface_flow]</span></span>
 <span id="cb1-86"><a href="#cb1-86" aria-hidden="true" tabindex="-1"></a><span class="dt">ksathorfrac</span> <span class="op">=</span> <span class="st">"KsatHorFrac"</span></span>
 <span id="cb1-87"><a href="#cb1-87" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-88"><a href="#cb1-88" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.lateral.land]</span></span>
+<span id="cb1-88"><a href="#cb1-88" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.routing.overland_flow]</span></span>
 <span id="cb1-89"><a href="#cb1-89" aria-hidden="true" tabindex="-1"></a><span class="dt">n</span> <span class="op">=</span> <span class="st">"N"</span></span>
 <span id="cb1-90"><a href="#cb1-90" aria-hidden="true" tabindex="-1"></a><span class="dt">slope</span> <span class="op">=</span> <span class="st">"Slope"</span></span>
 <span id="cb1-91"><a href="#cb1-91" aria-hidden="true" tabindex="-1"></a></span>
@@ -483,7 +483,7 @@ Click to show example .toml file
 <span id="cb1-100"><a href="#cb1-100" aria-hidden="true" tabindex="-1"></a><span class="dt">coordinate.x</span> <span class="op">=</span> <span class="fl">7.378</span></span>
 <span id="cb1-101"><a href="#cb1-101" aria-hidden="true" tabindex="-1"></a><span class="dt">coordinate.y</span> <span class="op">=</span> <span class="fl">50.204</span></span>
 <span id="cb1-102"><a href="#cb1-102" aria-hidden="true" tabindex="-1"></a><span class="dt">header</span> <span class="op">=</span> <span class="st">"Q"</span></span>
-<span id="cb1-103"><a href="#cb1-103" aria-hidden="true" tabindex="-1"></a><span class="dt">parameter</span> <span class="op">=</span> <span class="st">"lateral.river.variables.q"</span></span>
+<span id="cb1-103"><a href="#cb1-103" aria-hidden="true" tabindex="-1"></a><span class="dt">parameter</span> <span class="op">=</span> <span class="st">"routing.river_flow.variables.q"</span></span>
 <span id="cb1-104"><a href="#cb1-104" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-105"><a href="#cb1-105" aria-hidden="true" tabindex="-1"></a><span class="kw">[[csv.column]]</span></span>
 <span id="cb1-106"><a href="#cb1-106" aria-hidden="true" tabindex="-1"></a><span class="dt">header</span> <span class="op">=</span> <span class="st">"recharge"</span></span>
