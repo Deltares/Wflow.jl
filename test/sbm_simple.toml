@@ -65,13 +65,13 @@ tti = "TTI"
 ttm = "TTM"
 cfmax = "Cfmax"
 
-[input.lateral.river]
+[input.routing.river_flow]
 length = "wflow_riverlength"
 n = "N_River"
 slope = "RiverSlope"
 width = "wflow_riverwidth"
 
-[input.lateral.river.reservoir]
+[input.routing.river_flow.reservoir]
 area = "ResSimpleArea"
 areas = "wflow_reservoirareas"
 demand = "ResDemand"
@@ -81,10 +81,10 @@ maxvolume = "ResMaxVolume"
 targetfullfrac = "ResTargetFullFrac"
 targetminfrac = "ResTargetMinFrac"
 
-[input.lateral.subsurface]
+[input.routing.subsurface_flow]
 ksathorfrac = "KsatHorFrac"
 
-[input.lateral.land]
+[input.routing.overland_flow]
 n = "N"
 slope = "Slope"
 
@@ -99,7 +99,7 @@ path = "output_moselle_simple.csv"
 coordinate.x = 7.378
 coordinate.y = 50.204
 header = "Q"
-parameter = "lateral.river.variables.q"
+parameter = "routing.river_flow.variables.q"
 
 [[csv.column]]
 header = "recharge"

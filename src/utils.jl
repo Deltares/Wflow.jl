@@ -82,7 +82,7 @@ function active_indices(network::Network, key::Tuple)
         return network.reservoir.indices_outlet
     elseif :lake in key
         return network.lake.indices_outlet
-    elseif :river in key
+    elseif :river in key || :river_flow in key
         return network.river.indices
     elseif :drain in key
         return network.drain.indices

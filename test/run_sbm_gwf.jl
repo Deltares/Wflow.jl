@@ -39,13 +39,13 @@ Wflow.run_timestep!(model)
 end
 
 @testset "overland flow (kinematic wave)" begin
-    q = model.lateral.land.variables.q_av
+    q = model.routing.overland_flow.variables.q_av
     @test sum(q) ≈ 2.2321111203610908f-7
 end
 
 @testset "river domain (kinematic wave)" begin
-    q = model.lateral.river.variables.q_av
-    river = model.lateral.river
+    q = model.routing.river_flow.variables.q_av
+    river = model.routing.river_flow
     @test sum(q) ≈ 0.035468154534622556f0
     @test q[6] ≈ 0.00803825101724232f0
     @test river.variables.volume[6] ≈ 4.532124903256408f0
@@ -55,25 +55,26 @@ end
 end
 
 @testset "groundwater" begin
-    gw = model.lateral.subsurface
-    @test gw.river.variables.stage[1] ≈ 1.2123636929067039f0
-    @test gw.flow.aquifer.variables.head[17:21] ≈ [
+    gw = model.routing.subsurface_flow
+    @test gw.boundaries.river.variables.stage[1] ≈ 1.2123636929067039f0
+    @test gw.aquifer.variables.head[17:21] ≈ [
         1.2866380350225155f0,
         1.3477853512604643f0,
         1.7999999523162842f0,
         1.6225103807809076f0,
         1.4053590307668113f0,
     ]
-    @test gw.river.variables.flux[1] ≈ -51.34674583702381f0
-    @test gw.drain.variables.flux[1] ≈ 0.0
-    @test gw.recharge.variables.rate[19] ≈ -0.0014241196552847502f0
+    @test gw.boundaries.river.variables.flux[1] ≈ -51.34674583702381f0
+    @test gw.boundaries.drain.variables.flux[1] ≈ 0.0
+    @test gw.boundaries.recharge.variables.rate[19] ≈ -0.0014241196552847502f0
 end
 
 @testset "no drains" begin
     config.model.drains = false
-    delete!(Dict(config.output.lateral.subsurface), "drain")
+    delete!(Dict(config.output.routing.subsurface_flow), "drains")
+    delete!(Dict(config.output.routing.subsurface_flow.boundaries.drain.variables), "flux")
     model = Wflow.initialize_sbm_gwf_model(config)
-    @test collect(keys(model.lateral.subsurface)) == [:flow, :recharge, :river]
+    @test collect(keys(model.routing.subsurface_flow.boundaries)) == [:recharge, :river]
 end
 
 Wflow.close_files(model; delete_output = false)
@@ -83,16 +84,16 @@ tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
 config = Wflow.Config(tomlpath)
 config.model.river_routing = "local-inertial"
 
-config.input.lateral.river.bankfull_elevation = "bankfull_elevation"
-config.input.lateral.river.bankfull_depth = "bankfull_depth"
+config.input.routing.river_flow.bankfull_elevation = "bankfull_elevation"
+config.input.routing.river_flow.bankfull_depth = "bankfull_depth"
 
 model = Wflow.initialize_sbm_gwf_model(config)
 Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
 
 @testset "river domain (local inertial)" begin
-    q = model.lateral.river.variables.q_av
-    river = model.lateral.river
+    q = model.routing.river_flow.variables.q_av
+    river = model.routing.river_flow
     @test sum(q) ≈ 0.02727911500112358f0
     @test q[6] ≈ 0.006111263175002127f0
     @test river.variables.volume[6] ≈ 7.6120096530771075f0
@@ -108,31 +109,31 @@ config = Wflow.Config(tomlpath)
 config.model.river_routing = "local-inertial"
 config.model.land_routing = "local-inertial"
 
-config.input.lateral.river.bankfull_elevation = "bankfull_elevation"
-config.input.lateral.river.bankfull_depth = "bankfull_depth"
-config.input.lateral.land.elevation = "wflow_dem"
+config.input.routing.river_flow.bankfull_elevation = "bankfull_elevation"
+config.input.routing.river_flow.bankfull_depth = "bankfull_depth"
+config.input.routing.overland_flow.elevation = "wflow_dem"
 
-pop!(Dict(config.state.lateral.land.variables), "q")
-config.state.lateral.land.variables.h_av = "h_av_land"
-config.state.lateral.land.variables.qx = "qx_land"
-config.state.lateral.land.variables.qy = "qy_land"
+pop!(Dict(config.state.routing.overland_flow.variables), "q")
+config.state.routing.overland_flow.variables.h_av = "h_av_land"
+config.state.routing.overland_flow.variables.qx = "qx_land"
+config.state.routing.overland_flow.variables.qy = "qy_land"
 
 model = Wflow.initialize_sbm_gwf_model(config)
 Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
 
 @testset "river and land domain (local inertial)" begin
-    q = model.lateral.river.variables.q_av
+    q = model.routing.river_flow.variables.q_av
     @test sum(q) ≈ 0.027286431923384962f0
     @test q[6] ≈ 0.00611309161099138f0
     @test q[13] ≈ 0.0004639786629631376f0
     @test q[5] ≈ 0.006468859889145798f0
-    h = model.lateral.river.variables.h_av
+    h = model.routing.river_flow.variables.h_av
     @test h[6] ≈ 0.08120137914886108f0
     @test h[5] ≈ 0.07854966203902745f0
     @test h[13] ≈ 0.08323543174453409f0
-    qx = model.lateral.land.variables.qx
-    qy = model.lateral.land.variables.qy
+    qx = model.routing.overland_flow.variables.qx
+    qy = model.routing.overland_flow.variables.qy
     @test all(qx .== 0.0f0)
     @test all(qy .== 0.0f0)
 end
@@ -157,13 +158,13 @@ Wflow.run_timestep!(model)
 end
 
 @testset "overland flow warm start (kinematic wave)" begin
-    q = model.lateral.land.variables.q_av
+    q = model.routing.overland_flow.variables.q_av
     @test sum(q) ≈ 1.4224503548471601f-5
 end
 
 @testset "river domain warm start (kinematic wave)" begin
-    q = model.lateral.river.variables.q_av
-    river = model.lateral.river
+    q = model.routing.river_flow.variables.q_av
+    river = model.routing.river_flow
     @test sum(q) ≈ 0.01191742350356312f0
     @test q[6] ≈ 0.0024353072305122064f0
     @test river.variables.volume[6] ≈ 2.2277585577366357f0
@@ -173,18 +174,18 @@ end
 end
 
 @testset "groundwater warm start" begin
-    gw = model.lateral.subsurface
-    @test gw.river.variables.stage[1] ≈ 1.2031171676781156f0
-    @test gw.flow.aquifer.variables.head[17:21] ≈ [
+    gw = model.routing.subsurface_flow
+    @test gw.boundaries.river.variables.stage[1] ≈ 1.2031171676781156f0
+    @test gw.aquifer.variables.head[17:21] ≈ [
         1.2277456867225283f0,
         1.286902494792006f0,
         1.7999999523162842f0,
         1.5901747932190804f0,
         1.2094238817776854f0,
     ]
-    @test gw.river.variables.flux[1] ≈ -6.692884222603261f0
-    @test gw.drain.variables.flux[1] ≈ 0.0
-    @test gw.recharge.variables.rate[19] ≈ -0.0014241196552847502f0
+    @test gw.boundaries.river.variables.flux[1] ≈ -6.692884222603261f0
+    @test gw.boundaries.drain.variables.flux[1] ≈ 0.0
+    @test gw.boundaries.recharge.variables.rate[19] ≈ -0.0014241196552847502f0
 end
 
 Wflow.close_files(model; delete_output = false)

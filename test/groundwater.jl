@@ -363,7 +363,7 @@ end
             aquifer = aquifer,
             connectivity = connectivity,
             constanthead = constanthead,
-            boundaries = Wflow.AquiferBoundaryCondition[],
+            boundaries = NamedTuple(),
         )
         # Set constant head (dirichlet) boundaries
         gwf.aquifer.variables.head[gwf.constanthead.index] .=
@@ -387,7 +387,7 @@ end
             aquifer = aquifer,
             connectivity = connectivity,
             constanthead = constanthead,
-            boundaries = Wflow.AquiferBoundaryCondition[],
+            boundaries = NamedTuple(),
         )
         # Set constant head (dirichlet) boundaries
         gwf.aquifer.variables.head[gwf.constanthead.index] .=
@@ -447,7 +447,7 @@ end
             aquifer = aquifer,
             connectivity = connectivity,
             constanthead = constanthead,
-            boundaries = Wflow.AquiferBoundaryCondition[],
+            boundaries = NamedTuple(),
         )
 
         dt = Wflow.stable_timestep(gwf.aquifer, conductivity_profile)
@@ -521,7 +521,7 @@ end
             aquifer = aquifer,
             connectivity = connectivity,
             constanthead = constanthead,
-            boundaries = Wflow.AquiferBoundaryCondition[],
+            boundaries = NamedTuple(),
         )
 
         dt = Wflow.stable_timestep(gwf.aquifer, conductivity_profile)
@@ -602,7 +602,7 @@ end
             aquifer = aquifer,
             connectivity = connectivity,
             constanthead = constanthead,
-            boundaries = Wflow.AquiferBoundaryCondition[well],
+            boundaries = (; well,),
         )
 
         dt = Wflow.stable_timestep(gwf.aquifer, conductivity_profile)

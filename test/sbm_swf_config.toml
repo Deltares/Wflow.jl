@@ -26,18 +26,18 @@ ustorelayerdepth = "ustorelayerdepth"
 snow_storage = "snow"
 snow_water = "snowwater"
 
-[state.lateral.river.variables]
+[state.routing.river_flow.variables]
 h = "h_river"
 h_av = "h_av_river"
 q = "q_river"
 
-[state.lateral.river.reservoir]
+[state.routing.river_flow.reservoir]
 volume = "volume_reservoir"
 
-[state.lateral.subsurface.variables]
+[state.routing.subsurface_flow.variables]
 ssf = "ssf"
 
-[state.lateral.land.variables]
+[state.routing.overland_flow.variables]
 h = "h_land"
 h_av = "h_av_land"
 qx = "qx_land"
@@ -101,7 +101,7 @@ tti = "TTI"
 ttm = "TTM"
 cfmax = "Cfmax"
 
-[input.lateral.river]
+[input.routing.river_flow]
 length = "wflow_riverlength"
 mannings_n = "N_River"
 slope = "RiverSlope"
@@ -109,7 +109,7 @@ width = "wflow_riverwidth"
 bankfull_elevation = "RiverZ"
 bankfull_depth = "RiverDepth"
 
-[input.lateral.river.reservoir]
+[input.routing.river_flow.reservoir]
 area = "ResSimpleArea"
 areas = "wflow_reservoirareas"
 demand = "ResDemand"
@@ -119,10 +119,10 @@ maxvolume = "ResMaxVolume"
 targetfullfrac = "ResTargetFullFrac"
 targetminfrac = "ResTargetMinFrac"
 
-[input.lateral.subsurface]
+[input.routing.subsurface_flow]
 ksathorfrac = "KsatHorFrac"
 
-[input.lateral.land]
+[input.routing.overland_flow]
 mannings_n = "N"
 slope = "Slope"
 elevation = "FloodplainZ"
@@ -153,16 +153,16 @@ ustorelayerdepth = "ustorelayerdepth"
 snow_storage = "snow"
 snow_water = "snowwater"
 
-[output.lateral.river.variables]
+[output.routing.river_flow.variables]
 h = "h_river"
 h_av = "hav_river"
 q = "q_river"
 q_av = "qav_river"
 
-[output.lateral.subsurface.variables]
+[output.routing.subsurface_flow.variables]
 ssf = "ssf"
 
-[output.lateral.land.variables]
+[output.routing.overland_flow.variables]
 h = "h_land"
 qx = "qx_land"
 qy = "qy_land"
@@ -173,5 +173,5 @@ path = "output_moselle_swf.csv"
 [[csv.column]]
 header = "Q"
 map = "gauges"
-parameter = "lateral.river.variables.q_av"
+parameter = "routing.river_flow.variables.q_av"
 

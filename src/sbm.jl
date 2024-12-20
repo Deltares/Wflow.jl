@@ -74,7 +74,7 @@ function LandHydrologySBM(dataset, config, riverfrac, indices)
 end
 
 "Update land hydrology model with SBM soil model for a single timestep"
-function update!(model::LandHydrologySBM, lateral, network, config, dt)
+function update!(model::LandHydrologySBM, routing, network, config, dt)
     do_water_demand = haskey(config.model, "water_demand")::Bool
     (; glacier, snow, interception, runoff, soil, demand, allocation, atmospheric_forcing) =
         model
@@ -96,7 +96,7 @@ function update!(model::LandHydrologySBM, lateral, network, config, dt)
 
     update!(glacier, atmospheric_forcing)
 
-    update_boundary_conditions!(runoff, (; glacier, snow, interception), lateral, network)
+    update_boundary_conditions!(runoff, (; glacier, snow, interception), routing, network)
     update!(runoff, atmospheric_forcing)
 
     if do_water_demand
@@ -106,7 +106,7 @@ function update!(model::LandHydrologySBM, lateral, network, config, dt)
         @. soil.variables.h3 = feddes_h3(h3_high, h3_low, potential_transpiration, dt)
     end
     update_water_demand!(demand, soil)
-    update_water_allocation!(allocation, demand, lateral, network, dt)
+    update_water_allocation!(allocation, demand, routing, network, dt)
 
     soil_fraction!(soil, runoff, glacier)
     update_boundary_conditions!(
@@ -131,9 +131,9 @@ Takes the following parameters:
 - area:
     Area of the cells acquired from model.network.land.area
 - river_routing:
-    The river routing struct, i.e. model.lateral.river
+    The river routing struct, i.e. model.routing.river
 - land_routing:
-    The land routing struct, i.e. model.lateral.land
+    The land routing struct, i.e. model.routing.overland
 """
 function update_total_water_storage!(
     model::LandHydrologySBM,

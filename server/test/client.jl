@@ -42,8 +42,8 @@ end
     to_check = [
         "land.soil.parameters.nlayers",
         "land.soil.parameters.theta_r",
-        "lateral.river.variables.q",
-        "lateral.river.boundary_conditions.reservoir.variables.outflow",
+        "routing.river_flow.variables.q",
+        "routing.river_flow.boundary_conditions.reservoir.variables.outflow",
     ]
     retrieved_vars = request((fn = "get_input_var_names",))["input_var_names"]
     @test all(x -> x in retrieved_vars, to_check)
@@ -54,12 +54,14 @@ end
 zi_size = 0
 vwc_1_size = 0
 @testset "variable information and get and set functions" begin
-    @test request((fn = "get_var_itemsize", name = "lateral.subsurface.variables.ssf")) ==
-          Dict("var_itemsize" => sizeof(Wflow.Float))
+    @test request((
+        fn = "get_var_itemsize",
+        name = "routing.subsurface_flow.variables.ssf",
+    )) == Dict("var_itemsize" => sizeof(Wflow.Float))
     @test request((fn = "get_var_type", name = "land.n"))["status"] == "ERROR"
     @test request((fn = "get_var_units", name = "land.soil.parameters.theta_s")) ==
           Dict("var_units" => "-")
-    @test request((fn = "get_var_location", name = "lateral.river.variables.q")) ==
+    @test request((fn = "get_var_location", name = "routing.river_flow.variables.q")) ==
           Dict("var_location" => "node")
     zi_nbytes =
         request((fn = "get_var_nbytes", name = "land.soil.variables.zi"))["var_nbytes"]
@@ -73,7 +75,7 @@ vwc_1_size = 0
     vwc_1_itemsize =
         request((fn = "get_var_itemsize", name = "land.soil.variables.vwc[1]"))["var_itemsize"]
     vwc_1_size = Int(vwc_1_nbytes / vwc_1_itemsize)
-    @test request((fn = "get_var_grid", name = "lateral.river.variables.h")) ==
+    @test request((fn = "get_var_grid", name = "routing.river_flow.variables.h")) ==
           Dict("var_grid" => 3)
     msg = (fn = "get_value", name = "land.soil.variables.zi", dest = fill(0.0, zi_size))
     @test mean(request(msg)["value"]) ≈ 277.3620724821974
@@ -81,7 +83,7 @@ vwc_1_size = 0
     @test mean(request(msg)["value_ptr"]) ≈ 0.4409211971535584
     msg = (
         fn = "get_value_at_indices",
-        name = "lateral.river.variables.q",
+        name = "routing.river_flow.variables.q",
         dest = [0.0, 0.0, 0.0],
         inds = [1, 5, 10],
     )

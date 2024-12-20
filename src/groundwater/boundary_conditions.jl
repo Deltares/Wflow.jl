@@ -37,21 +37,21 @@ function River(dataset, config, indices, index)
     infiltration_conductance = ncread(
         dataset,
         config,
-        "lateral.subsurface.infiltration_conductance";
+        "routing.subsurface_flow.infiltration_conductance";
         sel = indices,
         type = Float,
     )
     exfiltration_conductance = ncread(
         dataset,
         config,
-        "lateral.subsurface.exfiltration_conductance";
+        "routing.subsurface_flow.exfiltration_conductance";
         sel = indices,
         type = Float,
     )
     bottom = ncread(
         dataset,
         config,
-        "lateral.subsurface.river_bottom";
+        "routing.subsurface_flow.river_bottom";
         sel = indices,
         type = Float,
     )
@@ -100,7 +100,7 @@ function Drainage(dataset, config, indices, index)
     drain_elevation = ncread(
         dataset,
         config,
-        "lateral.subsurface.drain_elevation";
+        "routing.subsurface_flow.drain_elevation";
         sel = indices,
         type = Float,
         fill = mv,
@@ -108,7 +108,7 @@ function Drainage(dataset, config, indices, index)
     drain_conductance = ncread(
         dataset,
         config,
-        "lateral.subsurface.drain_conductance";
+        "routing.subsurface_flow.drain_conductance";
         sel = indices,
         type = Float,
         fill = mv,

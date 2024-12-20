@@ -807,21 +807,21 @@ return_flow(model::NoNonIrrigationDemand, nonirri_demand_gross, nonirri_alloc) =
 
 # wrapper methods
 groundwater_volume(model::LateralSSF) = model.variables.volume
-groundwater_volume(model) = model.flow.aquifer.variables.volume
+groundwater_volume(model) = model.aquifer.variables.volume
 
 """
-    update_water_allocation!((model::AllocationLand, demand, lateral, network, dt)
+    update_water_allocation!((model::AllocationLand, demand, routing, network, dt)
 
 Update water allocation for the land domain `AllocationLand` and water allocation for the
-river domain (part of `lateral`) based on the water `demand` model for a single timestep.
+river domain (part of `routing`) based on the water `demand` model for a single timestep.
 First, surface water abstraction is computed to satisfy local water demand (non-irrigation
 and irrigation), and then updated (including lakes and reservoirs) to satisfy the remaining
 water demand for allocation areas. Then groundwater abstraction is computed to satisfy the
 remaining local water demand, and then updated to satisfy the remaining water demand for
 allocation areas. Finally, non-irrigation return flows are updated.
 """
-function update_water_allocation!(model::AllocationLand, demand, lateral, network, dt)
-    river = lateral.river
+function update_water_allocation!(model::AllocationLand, demand, routing, network, dt)
+    river = routing.river_flow
     index_river = network.land.river_inds_excl_waterbody
     inds_reservoir = network.reservoir.river_indices
     inds_lake = network.lake.river_indices
@@ -875,7 +875,7 @@ function update_water_allocation!(model::AllocationLand, demand, lateral, networ
     groundwater_allocation_local!(
         model,
         demand,
-        groundwater_volume(lateral.subsurface),
+        groundwater_volume(routing.subsurface_flow),
         network.land,
     )
     # groundwater demand and allocation for areas
@@ -907,7 +907,7 @@ function update_water_allocation!(model::AllocationLand, demand, lateral, networ
         end
     end
 end
-update_water_allocation!(model::NoAllocationLand, demand, lateral, network, dt) = nothing
+update_water_allocation!(model::NoAllocationLand, demand, routing, network, dt) = nothing
 
 """
     update_demand_gross!(model::Demand)

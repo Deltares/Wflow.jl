@@ -160,7 +160,7 @@ function BMI.get_var_grid(model::Model, name::String)
             1
         elseif :drain in key
             2
-        elseif :river in key
+        elseif :river in key || :river_flow in key
             3
         elseif type <: LocalInertialOverlandFlow && occursin("x", s[end])
             4

@@ -21,7 +21,7 @@ config = Wflow.Config(tomlpath)
     @test config.endtime === DateTime(2000, 2)
     @test config.output.path == "output_moselle.nc"
     @test config.output isa Wflow.Config
-    @test collect(keys(config.output)) == ["land", "lateral", "path"]
+    @test collect(keys(config.output)) == ["routing", "land", "path"]
 
     # theta_s can also be provided under the alias theta_s
     @test Wflow.get_alias(
@@ -210,12 +210,12 @@ Wflow.load_dynamic_input!(model)
 end
 
 # get a default value if the parameter does not exist
-@test Wflow.param(model, "lateral.doesnt_exist", -1) == -1
+@test Wflow.param(model, "routing.doesnt_exist", -1) == -1
 
 @testset "warm states" begin
     @test Wflow.param(
         model,
-        "lateral.river.boundary_conditions.reservoir.variables.volume",
+        "routing.river_flow.boundary_conditions.reservoir.variables.volume",
     )[1] ≈ 3.2807224993363418e7
     @test Wflow.param(model, "land.soil.variables.satwaterdepth")[9115] ≈ 477.13548089422125
     @test Wflow.param(model, "land.snow.variables.snow_storage")[5] ≈ 11.019233179897599
@@ -225,13 +225,16 @@ end
     @test Wflow.param(model, "land.snow.variables.snow_water")[5] ≈ 0.0
     @test Wflow.param(model, "land.interception.variables.canopy_storage")[50063] ≈ 0.0
     @test Wflow.param(model, "land.soil.variables.zi")[50063] ≈ 296.8028609104624
-    @test Wflow.param(model, "lateral.subsurface.variables.ssf")[10606] ≈ 39.972334552895816
-    @test Wflow.param(model, "lateral.river.variables.q")[149] ≈ 53.48673634956338
-    @test Wflow.param(model, "lateral.river.variables.h")[149] ≈ 1.167635369628945
-    @test Wflow.param(model, "lateral.river.variables.volume")[149] ≈ 63854.60119358985
-    @test Wflow.param(model, "lateral.land.variables.q")[2075] ≈ 3.285909284322251
-    @test Wflow.param(model, "lateral.land.variables.h")[2075] ≈ 0.052076262033771775
-    @test Wflow.param(model, "lateral.land.variables.volume")[2075] ≈ 29920.754983235012
+    @test Wflow.param(model, "routing.subsurface_flow.variables.ssf")[10606] ≈
+          39.972334552895816
+    @test Wflow.param(model, "routing.river_flow.variables.q")[149] ≈ 53.48673634956338
+    @test Wflow.param(model, "routing.river_flow.variables.h")[149] ≈ 1.167635369628945
+    @test Wflow.param(model, "routing.river_flow.variables.volume")[149] ≈ 63854.60119358985
+    @test Wflow.param(model, "routing.overland_flow.variables.q")[2075] ≈ 3.285909284322251
+    @test Wflow.param(model, "routing.overland_flow.variables.h")[2075] ≈
+          0.052076262033771775
+    @test Wflow.param(model, "routing.overland_flow.variables.volume")[2075] ≈
+          29920.754983235012
 end
 
 @testset "reducer" begin
@@ -405,7 +408,7 @@ end
 
     # Final run to test error handling during simulation
     tomlpath_error = joinpath(@__DIR__, "sbm_simple-error.toml")
-    config.input.lateral.river.width = Dict(
+    config.input.routing.river_flow.width = Dict(
         "scale" => 0.0,
         "offset" => 0.0,
         "netcdf" => Dict("variable" => Dict("name" => "wflow_riverwidth")),
@@ -455,12 +458,12 @@ end
     @test (:land, :soil, :variables, :satwaterdepth) in required_states
     @test (:land, :soil, :variables, :ustorelayerdepth) in required_states
     @test (:land, :interception, :variables, :canopy_storage) in required_states
-    @test (:lateral, :subsurface, :variables, :ssf) in required_states
-    @test (:lateral, :river, :variables, :q) in required_states
-    @test (:lateral, :river, :variables, :h_av) in required_states
-    @test (:lateral, :land, :variables, :h_av) in required_states
+    @test (:routing, :subsurface_flow, :variables, :ssf) in required_states
+    @test (:routing, :river_flow, :variables, :q) in required_states
+    @test (:routing, :river_flow, :variables, :h_av) in required_states
+    @test (:routing, :overland_flow, :variables, :h_av) in required_states
     @test !(
-        (:lateral, :river, :boundary_conditions, :lake, :variables, :waterlevel) in
+        (:routing, :river_flow, :boundary_conditions, :lake, :variables, :waterlevel) in
         required_states
     )
 
@@ -486,8 +489,8 @@ end
     @test (:land, :soil, :variables, :satwaterdepth) in required_states
     @test (:land, :soil, :variables, :ustorelayerdepth) in required_states
     @test (:land, :interception, :variables, :canopy_storage) in required_states
-    @test (:lateral, :subsurface, :flow, :aquifer, :variables, :head) in required_states
-    @test (:lateral, :river, :variables, :q) in required_states
-    @test (:lateral, :river, :variables, :h_av) in required_states
-    @test (:lateral, :land, :variables, :h_av) in required_states
+    @test (:routing, :subsurface_flow, :aquifer, :variables, :head) in required_states
+    @test (:routing, :river_flow, :variables, :q) in required_states
+    @test (:routing, :river_flow, :variables, :h_av) in required_states
+    @test (:routing, :overland_flow, :variables, :h_av) in required_states
 end

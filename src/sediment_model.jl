@@ -66,7 +66,7 @@ function initialize_sediment_model(config::Config)
     ldd_2d = ncread(dataset, config, "ldd"; optional = false, allow_missing = true)
     ldd = ldd_2d[indices]
 
-    # # lateral part sediment in overland flow
+    # # sediment in overland flow
     overland_flow_sediment =
         OverlandFlowSediment(dataset, config, indices, waterbodies, river)
 
@@ -94,8 +94,10 @@ function initialize_sediment_model(config::Config)
 
     river_sediment = RiverSediment(dataset, config, indices_riv, waterbodies)
 
-    modelmap =
-        (land = soilloss, lateral = (land = overland_flow_sediment, river = river_sediment))
+    modelmap = (
+        land = soilloss,
+        routing = (overland_flow = overland_flow_sediment, river_flow = river_sediment),
+    )
     indices_reverse = (land = rev_indices, river = rev_indices_riv)
     y_dataset = read_y_axis(dataset)
     x_dataset = read_x_axis(dataset)
@@ -121,10 +123,10 @@ function initialize_sediment_model(config::Config)
     network =
         Network(; land = network_land, river = network_river, index_river, frac_to_river)
 
-    lateral = Lateral(; land = overland_flow_sediment, river = river_sediment)
+    routing = Routing(; overland_flow = overland_flow_sediment, river_flow = river_sediment)
 
     model =
-        Model(config, network, lateral, soilloss, clock, reader, writer, SedimentModel())
+        Model(config, network, routing, soilloss, clock, reader, writer, SedimentModel())
 
     set_states!(model)
     @info "Initialized model"
@@ -134,20 +136,26 @@ end
 
 "update sediment model for a single timestep"
 function update!(model::AbstractModel{<:SedimentModel})
-    (; lateral, land, network, config, clock) = model
+    (; routing, land, network, config, clock) = model
     dt = tosecond(clock.dt)
 
     # Soil erosion
     update!(land, dt)
 
     # Overland flow sediment transport
-    update!(lateral.land, land.soil_erosion, network.land, dt)
+    update!(routing.overland_flow, land.soil_erosion, network.land, dt)
 
     # River sediment transport
     do_river = get(config.model, "run_river_model", false)::Bool
     if do_river
         indices_riv = network.index_river
-        update!(lateral.river, lateral.land.to_river, network.river, indices_riv, dt)
+        update!(
+            routing.river_flow,
+            routing.overland_flow.to_river,
+            network.river,
+            indices_riv,
+            dt,
+        )
     end
 
     return nothing

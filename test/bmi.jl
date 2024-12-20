@@ -22,8 +22,8 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             to_check = [
                 "land.soil.parameters.nlayers",
                 "land.soil.parameters.theta_r",
-                "lateral.river.variables.q",
-                "lateral.river.boundary_conditions.reservoir.variables.outflow",
+                "routing.river_flow.variables.q",
+                "routing.river_flow.boundary_conditions.reservoir.variables.outflow",
             ]
             retrieved_vars = BMI.get_input_var_names(model)
             @test all(x -> x in retrieved_vars, to_check)
@@ -33,28 +33,28 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 
         @testset "variable information functions" begin
             @test BMI.get_var_grid(model, "land.soil.parameters.theta_s") == 6
-            @test BMI.get_var_grid(model, "lateral.river.variables.h") == 3
+            @test BMI.get_var_grid(model, "routing.river_flow.variables.h") == 3
             @test BMI.get_var_grid(
                 model,
-                "lateral.river.boundary_conditions.reservoir.boundary_conditions.inflow",
+                "routing.river_flow.boundary_conditions.reservoir.boundary_conditions.inflow",
             ) == 0
             @test_throws ErrorException BMI.get_var_grid(
                 model,
-                "lateral.river.boundary_conditions.lake.volume",
+                "routing.river_flow.boundary_conditions.lake.volume",
             )
             @test BMI.get_var_type(
                 model,
-                "lateral.river.boundary_conditions.reservoir.boundary_conditions.inflow",
+                "routing.river_flow.boundary_conditions.reservoir.boundary_conditions.inflow",
             ) == "$Float"
             @test BMI.get_var_units(model, "land.soil.parameters.theta_s") == "-"
-            @test BMI.get_var_itemsize(model, "lateral.subsurface.variables.ssf") ==
+            @test BMI.get_var_itemsize(model, "routing.subsurface_flow.variables.ssf") ==
                   sizeof(Float)
-            @test BMI.get_var_nbytes(model, "lateral.river.variables.q") ==
-                  length(model.lateral.river.variables.q) * sizeof(Float)
-            @test BMI.get_var_location(model, "lateral.river.variables.q") == "node"
+            @test BMI.get_var_nbytes(model, "routing.river_flow.variables.q") ==
+                  length(model.routing.river_flow.variables.q) * sizeof(Float)
+            @test BMI.get_var_location(model, "routing.river_flow.variables.q") == "node"
             @test_throws ErrorException(
-                "lateral.land.parameters.alpha_pow not listed as variable for BMI exchange",
-            ) BMI.get_var_itemsize(model, "lateral.land.parameters.alpha_pow")
+                "routing.overland_flow.parameters.alpha_pow not listed as variable for BMI exchange",
+            ) BMI.get_var_itemsize(model, "routing.overland_flow.parameters.alpha_pow")
         end
 
         BMI.update(model)
@@ -79,7 +79,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             ) ≈ getindex.(model.land.soil.variables.vwc, 2)[1:3]
             @test BMI.get_value_at_indices(
                 model,
-                "lateral.river.variables.q",
+                "routing.river_flow.variables.q",
                 zeros(Float, 3),
                 [1, 100, 5617],
             ) ≈ [0.6525631197206111, 7.493760826794606, 0.02319714614721354]
@@ -151,8 +151,8 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     @testset "BMI grid edges" begin
         tomlpath = joinpath(@__DIR__, "sbm_swf_config.toml")
         model = BMI.initialize(Wflow.Model, tomlpath)
-        @test BMI.get_var_grid(model, "lateral.land.variables.qx") == 4
-        @test BMI.get_var_grid(model, "lateral.land.variables.qy") == 5
+        @test BMI.get_var_grid(model, "routing.overland_flow.variables.qx") == 4
+        @test BMI.get_var_grid(model, "routing.overland_flow.variables.qy") == 5
         @test BMI.get_grid_edge_count(model, 4) == 50063
         @test BMI.get_grid_edge_count(model, 5) == 50063
         @test BMI.get_grid_edge_nodes(model, 4, fill(0, 2 * 50063))[1:4] == [1, -999, 2, 3]
@@ -184,12 +184,12 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
         # set zi and exfiltwater from external source (e.g. a groundwater model)
         BMI.set_value(
             model,
-            "lateral.subsurface.variables.zi",
+            "routing.subsurface_flow.variables.zi",
             fill(0.25, BMI.get_grid_node_count(model, 6)),
         )
         BMI.set_value(
             model,
-            "lateral.subsurface.variables.exfiltwater",
+            "routing.subsurface_flow.variables.exfiltwater",
             fill(1.0e-5, BMI.get_grid_node_count(model, 6)),
         )
         # update SBM after subsurface flow
@@ -197,7 +197,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 
         @testset "SBM after subsurface flow" begin
             sbm = model.land
-            sub = model.lateral.subsurface
+            sub = model.routing.subsurface_flow
             @test sbm.interception.variables.interception_rate[1] ≈ 0.32734913737568716f0
             @test sbm.soil.variables.ustorelayerdepth[1][1] ≈ 0.0f0
             @test sbm.snow.variables.snow_storage[1] ≈ 3.4847899611762876f0

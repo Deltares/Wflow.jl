@@ -38,9 +38,9 @@ Wflow.run_timestep!(model)
     @test mean(eros.soil_erosion.variables.sagg) ≈ 0.022874695590802723f0
 end
 
-@testset "second timestep sediment model (lateral)" begin
-    land = model.lateral.land
-    river = model.lateral.river
+@testset "second timestep sediment model (routing)" begin
+    land = model.routing.overland_flow
+    river = model.routing.river_flow
 
     @test land.transport_capacity.parameters.dm_sand[1] == 200.0f0
     @test land.transport_capacity.parameters.dm_lagg[1] == 500.0f0
@@ -108,9 +108,9 @@ end
 # run the second timestep
 Wflow.run_timestep!(model)
 
-@testset "second timestep sediment model engelund (lateral)" begin
-    land = model.lateral.land
-    river = model.lateral.river
+@testset "second timestep sediment model engelund (routing)" begin
+    land = model.routing.overland_flow
+    river = model.routing.river_flow
 
     @test river.transport_capacity.parameters.d50[1] == 0.05000000074505806f0
     @test mean(river.transport_capacity.boundary_conditions.q) ≈ 0.6975180562953642f0
@@ -139,7 +139,7 @@ Wflow.run_timestep!(model)
 
 @testset "second timestep sediment model govers" begin
     eros = model.land
-    land = model.lateral.land
+    land = model.routing.overland_flow
 
     @test mean(eros.soil_erosion.variables.amount) ≈ 0.0776983847440198f0
     @test mean(land.transport_capacity.parameters.c_govers) ≈ 0.16393911236592437f0
@@ -165,7 +165,7 @@ Wflow.run_timestep!(model)
 
 @testset "second timestep sediment model yalin" begin
     eros = model.land
-    land = model.lateral.land
+    land = model.routing.overland_flow
 
     @test mean(eros.soil_erosion.variables.amount) ≈ 0.0776983847440198f0
     @test mean(land.transport_capacity.parameters.d50) ≈ 0.001534350291334408f0
@@ -189,8 +189,8 @@ model = Wflow.initialize_sediment_model(config)
 Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
 
-@testset "second timestep sediment model yang (lateral)" begin
-    river = model.lateral.river
+@testset "second timestep sediment model yang (routing)" begin
+    river = model.routing.river_flow
 
     @test river.transport_capacity.parameters.d50[1] == 0.05000000074505806f0
     @test mean(river.transport_capacity.boundary_conditions.q) ≈ 0.6975180562953642f0
@@ -213,8 +213,8 @@ model = Wflow.initialize_sediment_model(config)
 Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
 
-@testset "second timestep sediment model kodatie (lateral)" begin
-    river = model.lateral.river
+@testset "second timestep sediment model kodatie (routing)" begin
+    river = model.routing.river_flow
 
     @test river.transport_capacity.parameters.a_kodatie[1] == 2829.6
     @test river.transport_capacity.parameters.b_kodatie[1] == 3.646
@@ -238,8 +238,8 @@ model = Wflow.initialize_sediment_model(config)
 Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
 
-@testset "second timestep sediment model molinas (lateral)" begin
-    river = model.lateral.river
+@testset "second timestep sediment model molinas (routing)" begin
+    river = model.routing.river_flow
 
     @test river.transport_capacity.parameters.d50[1] == 0.05000000074505806f0
     @test mean(river.transport_capacity.boundary_conditions.q) ≈ 0.6975180562953642f0

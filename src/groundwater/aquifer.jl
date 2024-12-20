@@ -130,21 +130,21 @@ function UnconfinedAquiferParameters(dataset, config, indices, top, bottom, area
     k = ncread(
         dataset,
         config,
-        "lateral.subsurface.conductivity";
+        "routing.subsurface_flow.conductivity";
         sel = indices,
         type = Float,
     )
     specific_yield = ncread(
         dataset,
         config,
-        "lateral.subsurface.specific_yield";
+        "routing.subsurface_flow.specific_yield";
         sel = indices,
         type = Float,
     )
     f = ncread(
         dataset,
         config,
-        "lateral.subsurface.gwf_f";
+        "routing.subsurface_flow.gwf_f";
         sel = indices,
         type = Float,
         defaults = 3.0,
@@ -383,7 +383,7 @@ function ConstantHead(dataset, config, indices)
     constanthead = ncread(
         dataset,
         config,
-        "lateral.subsurface.constant_head";
+        "routing.subsurface_flow.constant_head";
         sel = indices,
         type = Float,
         fill = mv,
@@ -458,7 +458,7 @@ function GroundwaterFlow{T}(;
     aquifer::Aquifer,
     connectivity::Connectivity{T},
     constanthead::ConstantHead{T},
-    boundaries::Vector{AquiferBoundaryCondition},
+    boundaries::NamedTuple,
 ) where {T}
     initialize_conductance!(aquifer, connectivity)
     args = (aquifer, connectivity, constanthead, boundaries)
@@ -487,9 +487,9 @@ function get_exfiltwater(
     return exfiltwater
 end
 
-function get_flux_to_river(subsurface)
-    (; flow, river) = subsurface
-    ncell = flow.connectivity.ncell
+function get_flux_to_river(subsurface_flow)
+    (; river) = subsurface_flow.boundaries
+    ncell = subsurface_flow.connectivity.ncell
     flux = zeros(ncell)
     index = river.index
     flux[index] = -river.variables.flux ./ tosecond(basetimestep) # [m³ s⁻¹]

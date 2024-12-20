@@ -156,7 +156,7 @@ function RiverGeometry(nc, config, inds)
     riverwidth = ncread(
         nc,
         config,
-        "lateral.river_parameter_set.width";
+        "routing.river_parameter_set.width";
         optional = false,
         sel = inds,
         type = Float,
@@ -164,7 +164,7 @@ function RiverGeometry(nc, config, inds)
     riverlength = ncread(
         nc,
         config,
-        "lateral.river_parameter_set.length";
+        "routing.river_parameter_set.length";
         optional = false,
         sel = inds,
         type = Float,
@@ -172,7 +172,7 @@ function RiverGeometry(nc, config, inds)
     riverslope = ncread(
         nc,
         config,
-        "lateral.river_parameter_set.slope";
+        "routing.river_parameter_set.slope";
         optional = false,
         sel = inds,
         type = Float,

@@ -81,8 +81,8 @@ end
     index_river::Vector{Int} = Int[]
 end
 
-@kwdef struct Lateral{L, R, S}
-    land::L = nothing
-    river::R = nothing
-    subsurface::S = nothing
+@kwdef struct Routing{O, R, S}
+    overland_flow::O = nothing
+    river_flow::R = nothing
+    subsurface_flow::S = nothing
 end

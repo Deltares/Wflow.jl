@@ -47,7 +47,7 @@ function LateralSsfParameters(
     khfrac = ncread(
         dataset,
         config,
-        "lateral.subsurface.ksathorfrac";
+        "routing.subsurface_flow.ksathorfrac";
         sel = indices,
         defaults = 1.0,
         type = Float,
@@ -246,8 +246,8 @@ function GroundwaterExchange(n)
 end
 
 # wrapper methods
-get_water_depth(subsurface::SubsurfaceFlow) = subsurface.variables.zi
-get_exfiltwater(subsurface::SubsurfaceFlow) = subsurface.variables.exfiltwater
+get_water_depth(model::SubsurfaceFlow) = model.variables.zi
+get_exfiltwater(model::SubsurfaceFlow) = model.variables.exfiltwater
 
-get_flux_to_river(subsurface::SubsurfaceFlow) =
-    subsurface.variables.to_river ./ tosecond(basetimestep) # [m³ s⁻¹]
+get_flux_to_river(model::SubsurfaceFlow) =
+    model.variables.to_river ./ tosecond(basetimestep) # [m³ s⁻¹]

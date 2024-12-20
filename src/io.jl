@@ -184,18 +184,18 @@ end
 function get_param_res(model)
     return Dict(
         symbols"land.atmospheric_forcing.precipitation" =>
-            model.lateral.river.boundary_conditions.reservoir.boundary_conditions.precipitation,
+            model.routing.river_flow.boundary_conditions.reservoir.boundary_conditions.precipitation,
         symbols"land.atmospheric_forcing.potential_evaporation" =>
-            model.lateral.river.boundary_conditions.reservoir.boundary_conditions.evaporation,
+            model.routing.river_flow.boundary_conditions.reservoir.boundary_conditions.evaporation,
     )
 end
 
 function get_param_lake(model)
     return Dict(
         symbols"land.atmospheric_forcing.precipitation" =>
-            model.lateral.river.boundary_conditions.lake.boundary_conditions.precipitation,
+            model.routing.river_flow.boundary_conditions.lake.boundary_conditions.precipitation,
         symbols"land.atmospheric_forcing.potential_evaporation" =>
-            model.lateral.river.boundary_conditions.lake.boundary_conditions.evaporation,
+            model.routing.river_flow.boundary_conditions.lake.boundary_conditions.evaporation,
     )
 end
 
@@ -861,7 +861,7 @@ path = "path/to/file.nc"
 [output.land]
 canopystorage = "my_canopystorage"
 
-[output.lateral.river]
+[output.routing.river_flow]
 q = "my_q"
 ```
 
@@ -871,7 +871,7 @@ values are ignored since the output path is not a netCDF name.
 ```julia
 Dict(
     (:land, :canopystorage) => "my_canopystorage,
-    (:lateral, :river, :q) => "my_q,
+    (:routing, :river_flow, :q) => "my_q,
 )
 ```
 """

@@ -31,18 +31,18 @@ ustorelayerdepth = "ustorelayerdepth"
 snow_storage = "snow"
 snow_water = "snowwater"
 
-[state.lateral.river.variables]
+[state.routing.river_flow.variables]
 h = "h_river"
 h_av = "h_av_river"
 q = "q_river"
 
-[state.lateral.river.boundary_conditions.reservoir.variables]
+[state.routing.river_flow.boundary_conditions.reservoir.variables]
 volume = "volume_reservoir"
 
-[state.lateral.subsurface.variables]
+[state.routing.subsurface_flow.variables]
 ssf = "ssf"
 
-[state.lateral.land.variables]
+[state.routing.overland_flow.variables]
 h = "h_land"
 h_av = "h_av_land"
 q = "q_land"
@@ -110,7 +110,7 @@ netcdf.variable.name = "KsatVer"
 scale = 1.0
 offset = 0.0
 
-[input.lateral.river]
+[input.routing.river_flow]
 length = "wflow_riverlength"
 mannings_n = "N_River"
 slope = "RiverSlope"
@@ -118,7 +118,7 @@ width = "wflow_riverwidth"
 bankfull_elevation = "RiverZ"
 bankfull_depth = "RiverDepth"
 
-[input.lateral.river.reservoir]
+[input.routing.river_flow.reservoir]
 area = "ResSimpleArea"
 areas = "wflow_reservoirareas"
 demand = "ResDemand"
@@ -128,10 +128,10 @@ maxvolume = "ResMaxVolume"
 targetfullfrac = "ResTargetFullFrac"
 targetminfrac = "ResTargetMinFrac"
 
-[input.lateral.subsurface]
+[input.routing.subsurface_flow]
 ksathorfrac = "KsatHorFrac"
 
-[input.lateral.land]
+[input.routing.overland_flow]
 mannings_n = "N"
 slope = "Slope"
 
@@ -161,17 +161,17 @@ ustorelayerdepth = "ustorelayerdepth"
 snow_storage = "snow"
 snow_water = "snowwater"
 
-[output.lateral.river.variables]
+[output.routing.river_flow.variables]
 h = "h_river"
 q = "q_river"
 
-[output.lateral.river.boundary_conditions.reservoir.variables]
+[output.routing.river_flow.boundary_conditions.reservoir.variables]
 volume = "volume_reservoir"
 
-[output.lateral.subsurface.variables]
+[output.routing.subsurface_flow.variables]
 ssf = "ssf"
 
-[output.lateral.land.variables]
+[output.routing.overland_flow.variables]
 h = "h_land"
 q = "q_land"
 
@@ -181,7 +181,7 @@ path = "output_scalar_moselle.nc"
 [[netcdf.variable]]
 name = "Q"
 map = "gauges"
-parameter = "lateral.river.variables.q"
+parameter = "routing.river_flow.variables.q"
 
 [[netcdf.variable]]
 coordinate.x = 6.255
@@ -202,13 +202,13 @@ path = "output_moselle.csv"
 
 [[csv.column]]
 header = "Q"
-parameter = "lateral.river.variables.q"
+parameter = "routing.river_flow.variables.q"
 reducer = "maximum"
 
 [[csv.column]]
 header = "volume"
 index = 1
-parameter = "lateral.river.boundary_conditions.reservoir.variables.volume"
+parameter = "routing.river_flow.boundary_conditions.reservoir.variables.volume"
 
 [[csv.column]]
 coordinate.x = 6.255
@@ -232,7 +232,7 @@ parameter = "land.atmospheric_forcing.temperature"
 [[csv.column]]
 header = "Q"
 map = "gauges"
-parameter = "lateral.river.variables.q"
+parameter = "routing.river_flow.variables.q"
 
 [[csv.column]]
 header = "recharge"
@@ -255,19 +255,19 @@ components = [
   "land.snow.boundary_conditions",
   "land.snow.variables",
   "land.snow.parameters",
-  "lateral.subsurface.boundary_conditions",
-  "lateral.subsurface.variables",
-  "lateral.subsurface.parameters",
-  "lateral.subsurface.parameters.kh_profile",
-  "lateral.land.boundary_conditions",
-  "lateral.land.variables",
-  "lateral.land.variables.flow",
-  "lateral.land.parameters",
-  "lateral.river.variables",
-  "lateral.river.parameters",
-  "lateral.river.parameters.flow",
-  "lateral.river.boundary_conditions",
-  "lateral.river.boundary_conditions.reservoir.boundary_conditions",
-  "lateral.river.boundary_conditions.reservoir.parameters",
-  "lateral.river.boundary_conditions.reservoir.variables",
+  "routing.subsurface_flow.boundary_conditions",
+  "routing.subsurface_flow.variables",
+  "routing.subsurface_flow.parameters",
+  "routing.subsurface_flow.parameters.kh_profile",
+  "routing.overland_flow.boundary_conditions",
+  "routing.overland_flow.variables",
+  "routing.overland_flow.variables.flow",
+  "routing.overland_flow.parameters",
+  "routing.river_flow.variables",
+  "routing.river_flow.parameters",
+  "routing.river_flow.parameters.flow",
+  "routing.river_flow.boundary_conditions",
+  "routing.river_flow.boundary_conditions.reservoir.boundary_conditions",
+  "routing.river_flow.boundary_conditions.reservoir.parameters",
+  "routing.river_flow.boundary_conditions.reservoir.variables",
 ]

@@ -127,23 +127,19 @@ struct SbmGwfModel <: AbstractModelType end      # "sbm_gwf" type / sbm_gwf_mode
 struct SedimentModel <: AbstractModelType end    # "sediment" type / sediment_model.jl
 
 """
-    Model{L, LM, NR, W, T}
+    Model{R, L, T}
 
 Composite type that represents all different aspects of a Wflow Model, such as the
 network, parameters, clock, configuration and input and output.
 """
-struct Model{
-    L <: Lateral,
-    LM <: AbstractLandModel,
-    NR <: NCReader,
-    T <: AbstractModelType,
-} <: AbstractModel{T}
+struct Model{R <: Routing, L <: AbstractLandModel, T <: AbstractModelType} <:
+       AbstractModel{T}
     config::Config  # all configuration options
     network::Network  # connectivity information, directed graph
-    lateral::L  # lateral model that holds lateral state, moves along network
-    land::LM  # land model simulating vertical fluxes, independent of each other
+    routing::R  # routing model (horizontal fluxes), moves along network
+    land::L  # land model simulating vertical fluxes, independent of each other
     clock::Clock  # to keep track of simulation time
-    reader::NR  # provides the model with dynamic input
+    reader::NCReader  # provides the model with dynamic input
     writer::Writer  # writes model output
     type::T # model type
 end

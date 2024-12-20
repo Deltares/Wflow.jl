@@ -91,7 +91,7 @@ function RiverFlowParameters(dataset, config, indices, river_length, river_width
     mannings_n = ncread(
         dataset,
         config,
-        "lateral.river.mannings_n";
+        "routing.river_flow.mannings_n";
         sel = indices,
         defaults = 0.036,
         type = Float,
@@ -99,22 +99,22 @@ function RiverFlowParameters(dataset, config, indices, river_length, river_width
     bankfull_depth = ncread(
         dataset,
         config,
-        "lateral.river.bankfull_depth";
-        alias = "lateral.river.h_bankfull",
+        "routing.river_flow.bankfull_depth";
+        alias = "routing.river_flow.h_bankfull",
         sel = indices,
         defaults = 1.0,
         type = Float,
     )
-    if haskey(config.input.lateral.river, "h_bankfull")
+    if haskey(config.input.routing.river_flow, "h_bankfull")
         @warn string(
-            "The `h_bankfull` key in `[input.lateral.river]` is now called ",
+            "The `h_bankfull` key in `[input.routing.river_flow]` is now called ",
             "`bankfull_depth`. Please update your TOML file.",
         )
     end
     slope = ncread(
         dataset,
         config,
-        "lateral.river.slope";
+        "routing.river_flow.slope";
         optional = false,
         sel = indices,
         type = Float,
@@ -227,7 +227,7 @@ function KinWaveOverlandFlow(dataset, config, indices; slope, flow_length, flow_
     mannings_n = ncread(
         dataset,
         config,
-        "lateral.land.mannings_n";
+        "routing.overland_flow.mannings_n";
         sel = indices,
         defaults = 0.072,
         type = Float,
@@ -562,13 +562,13 @@ function update_lateral_inflow!(
     river_indices,
     dt,
 )
-    (; allocation, runoff, land, subsurface) = external_models
+    (; allocation, runoff, overland_flow, subsurface_flow) = external_models
     (; inwater) = model.boundary_conditions
     (; net_runoff_river) = runoff.variables
 
     inwater .= (
-        get_flux_to_river(subsurface)[river_indices] .+
-        land.variables.to_river[river_indices] .+
+        get_flux_to_river(subsurface_flow)[river_indices] .+
+        overland_flow.variables.to_river[river_indices] .+
         (net_runoff_river[river_indices] .* land_area[river_indices] .* 0.001) ./ dt .+
         (get_nonirrigation_returnflow(allocation) .* 0.001 .* river_cell_area) ./ dt
     )
@@ -586,15 +586,15 @@ function update_lateral_inflow!(
     config,
     dt,
 )
-    (; soil, subsurface, allocation) = external_models
+    (; soil, subsurface_flow, allocation) = external_models
     (; net_runoff) = soil.variables
     (; inwater) = model.boundary_conditions
 
     do_drains = get(config.model, "drains", false)::Bool
     if do_drains
+        drain = subsurface_flow.boundaries.drain
         drainflux = zeros(length(net_runoff))
-        drainflux[subsurface.drain.index] =
-            -subsurface.drain.variables.flux ./ tosecond(basetimestep)
+        drainflux[drain.index] = -drain.variables.flux ./ tosecond(basetimestep)
     else
         drainflux = 0.0
     end
@@ -614,12 +614,12 @@ function update_inflow_waterbody!(
     external_models::NamedTuple,
     river_indices,
 )
-    (; land, subsurface) = external_models
+    (; overland_flow, subsurface_flow) = external_models
     (; reservoir, lake, inflow_waterbody) = model.boundary_conditions
 
     if !isnothing(reservoir) || !isnothing(lake)
-        inflow_land = get_inflow_waterbody(model, land)
-        inflow_subsurface = get_inflow_waterbody(model, subsurface)
+        inflow_land = get_inflow_waterbody(model, overland_flow)
+        inflow_subsurface = get_inflow_waterbody(model, subsurface_flow)
 
         @. inflow_waterbody = inflow_land[river_indices] + inflow_subsurface[river_indices]
     end

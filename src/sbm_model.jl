@@ -57,7 +57,7 @@ function initialize_sbm_model(config::Config)
     river_width_2d = ncread(
         dataset,
         config,
-        "lateral.river.width";
+        "routing.river_flow.width";
         optional = false,
         type = Float,
         fill = 0,
@@ -66,7 +66,7 @@ function initialize_sbm_model(config::Config)
     river_length_2d = ncread(
         dataset,
         config,
-        "lateral.river.length";
+        "routing.river_flow.length";
         optional = false,
         type = Float,
         fill = 0,
@@ -123,7 +123,7 @@ function initialize_sbm_model(config::Config)
     land_slope = ncread(
         dataset,
         config,
-        "lateral.land.slope";
+        "routing.overland_flow.slope";
         optional = false,
         sel = indices,
         type = Float,
@@ -134,7 +134,7 @@ function initialize_sbm_model(config::Config)
 
     # check if lateral subsurface flow component is defined for the SBM model, when coupled
     # to another groundwater model, this component is not defined in the TOML file.
-    do_lateral_ssf = haskey(config.input.lateral, "subsurface")
+    do_lateral_ssf = haskey(config.input.routing, "subsurface_flow")
     if do_lateral_ssf
         subsurface_flow = LateralSSF(
             dataset,
@@ -297,10 +297,8 @@ function initialize_sbm_model(config::Config)
         end
     end
 
-    modelmap = (
-        land = land_hydrology,
-        lateral = (subsurface = subsurface_flow, land = overland_flow, river = river_flow),
-    )
+    modelmap =
+        (land = land_hydrology, routing = (; subsurface_flow, overland_flow, river_flow))
     indices_reverse = (
         land = reverse_indices,
         river = reverse_inds_river,
@@ -398,11 +396,10 @@ function initialize_sbm_model(config::Config)
         lake = network_lake,
     )
 
-    lateral =
-        Lateral(; subsurface = subsurface_flow, land = overland_flow, river = river_flow)
+    routing = Routing(; subsurface_flow, overland_flow, river_flow)
 
     model =
-        Model(config, network, lateral, land_hydrology, clock, reader, writer, SbmModel())
+        Model(config, network, routing, land_hydrology, clock, reader, writer, SbmModel())
 
     set_states!(model)
 
@@ -412,25 +409,25 @@ end
 
 "update SBM model for a single timestep"
 function update!(model::AbstractModel{<:SbmModel})
-    (; lateral, land, network, clock, config) = model
+    (; routing, land, network, clock, config) = model
     dt = tosecond(clock.dt)
     do_water_demand = haskey(config.model, "water_demand")
     (; kv_profile) = land.soil.parameters
 
     update_until_recharge!(model)
     # exchange of recharge between SBM soil model and subsurface flow domain
-    lateral.subsurface.boundary_conditions.recharge .=
+    routing.subsurface_flow.boundary_conditions.recharge .=
         land.soil.variables.recharge ./ 1000.0
     if do_water_demand
-        @. lateral.subsurface.boundary_conditions.recharge -=
+        @. routing.subsurface_flow.boundary_conditions.recharge -=
             land.allocation.variables.act_groundwater_abst / 1000.0
     end
-    lateral.subsurface.boundary_conditions.recharge .*=
-        lateral.subsurface.parameters.flow_width
-    lateral.subsurface.variables.zi .= land.soil.variables.zi ./ 1000.0
+    routing.subsurface_flow.boundary_conditions.recharge .*=
+        routing.subsurface_flow.parameters.flow_width
+    routing.subsurface_flow.variables.zi .= land.soil.variables.zi ./ 1000.0
     # update lateral subsurface flow domain (kinematic wave)
-    kh_layered_profile!(land.soil, lateral.subsurface, kv_profile, dt)
-    update!(lateral.subsurface, network.land, clock.dt / basetimestep)
+    kh_layered_profile!(land.soil, routing.subsurface_flow, kv_profile, dt)
+    update!(routing.subsurface_flow, network.land, clock.dt / basetimestep)
     update_after_subsurfaceflow!(model)
     update_total_water_storage!(model)
     return nothing
@@ -443,9 +440,9 @@ Update SBM model until recharge for a single timestep. This function is also acc
 through BMI, to couple the SBM model to an external groundwater model.
 """
 function update_until_recharge!(model::AbstractModel{<:SbmModel})
-    (; lateral, land, network, clock, config) = model
+    (; routing, land, network, clock, config) = model
     dt = tosecond(clock.dt)
-    update!(land, lateral, network, config, dt)
+    update!(land, routing, network, config, dt)
     return nothing
 end
 
@@ -456,12 +453,12 @@ Update SBM model after subsurface flow for a single timestep. This function is a
 accessible through BMI, to couple the SBM model to an external groundwater model.
 """
 function update_after_subsurfaceflow!(model::AbstractModel{<:SbmModel})
-    (; lateral, land) = model
+    (; routing, land) = model
     (; soil, runoff, demand) = land
-    (; subsurface) = lateral
+    (; subsurface_flow) = routing
 
     # update SBM soil model (runoff, ustorelayerdepth and satwaterdepth)
-    update!(soil, (; runoff, demand, subsurface))
+    update!(soil, (; runoff, demand, subsurface_flow))
 
     surface_routing!(model)
 
@@ -474,7 +471,7 @@ Update of the total water storage at the end of each timestep per model cell.
 This is done here at model level.
 """
 function update_total_water_storage!(model::AbstractModel{<:SbmModel})
-    (; lateral, land, network) = model
+    (; routing, land, network) = model
 
     # Update the total water storage based on land states
     # TODO Maybe look at routing in the near future
@@ -482,18 +479,18 @@ function update_total_water_storage!(model::AbstractModel{<:SbmModel})
         land,
         network.river.land_indices,
         network.land.area,
-        lateral.river,
-        lateral.land,
+        routing.river_flow,
+        routing.overland_flow,
     )
     return nothing
 end
 
 function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
-    (; lateral, land, network, config) = model
-    land_v = lateral.land.variables
-    land_p = lateral.land.parameters
-    river_v = lateral.river.variables
-    river_p = lateral.river.parameters
+    (; routing, land, network, config) = model
+    land_v = routing.overland_flow.variables
+    land_p = routing.overland_flow.parameters
+    river_v = routing.river_flow.variables
+    river_p = routing.river_flow.parameters
 
     reinit = get(config.model, "reinit", true)::Bool
     routing_options = ("kinematic-wave", "local-inertial")
@@ -527,7 +524,7 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
             end
             land_v.volume .= land_v.h .* land_p.flow_width .* land_p.flow_length
         elseif land_routing == "local-inertial"
-            for i in eachindex(lateral.land.volume)
+            for i in eachindex(routing.overland_flow.volume)
                 if land_p.rivercells[i]
                     j = network.land.index_river[i]
                     if land_v.h[i] > 0.0
@@ -539,8 +536,10 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
                             river_v.h[j] * river_p.flow_width[j] * river_p.flow_length[j]
                     end
                 else
-                    lateral.land.volume[i] =
-                        lateral.land.h[i] * lateral.land.xl[i] * lateral.land.yl[i]
+                    routing.overland_flow.volume[i] =
+                        routing.overland_flow.h[i] *
+                        routing.overland_flow.xl[i] *
+                        routing.overland_flow.yl[i]
                 end
             end
         end
@@ -549,13 +548,13 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
             river_v.h[1:nriv] .* river_p.flow_width[1:nriv] .* river_p.flow_length[1:nriv]
 
         if floodplain_1d
-            initialize_volume!(lateral.river, nriv)
+            initialize_volume!(routing.river_flow, nriv)
         end
 
         if do_lakes
             # storage must be re-initialized after loading the state with the current
             # waterlevel otherwise the storage will be based on the initial water level
-            lakes = lateral.river.lake
+            lakes = routing.river_flow.boundary_conditions.lake
             lakes.storage .=
                 initialize_storage(lakes.storfunc, lakes.area, lakes.waterlevel, lakes.sh)
         end

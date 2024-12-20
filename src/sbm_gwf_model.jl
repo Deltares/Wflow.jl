@@ -59,7 +59,7 @@ function initialize_sbm_gwf_model(config::Config)
     river_width_2d = ncread(
         dataset,
         config,
-        "lateral.river.width";
+        "routing.river_flow.width";
         optional = false,
         type = Float,
         fill = 0,
@@ -68,7 +68,7 @@ function initialize_sbm_gwf_model(config::Config)
     river_length_2d = ncread(
         dataset,
         config,
-        "lateral.river.length";
+        "routing.river_flow.length";
         optional = false,
         type = Float,
         fill = 0,
@@ -122,7 +122,7 @@ function initialize_sbm_gwf_model(config::Config)
     land_slope = ncread(
         dataset,
         config,
-        "lateral.land.slope";
+        "routing.overland_flow.slope";
         optional = false,
         sel = indices,
         type = Float,
@@ -266,8 +266,13 @@ function initialize_sbm_gwf_model(config::Config)
 
     # drain boundary of unconfined aquifer (optional)
     if do_drains
-        drain_2d =
-            ncread(dataset, config, "lateral.subsurface.drain"; type = Bool, fill = false)
+        drain_2d = ncread(
+            dataset,
+            config,
+            "routing.subsurface_flow.drain";
+            type = Bool,
+            fill = false,
+        )
 
         drain = drain_2d[indices]
         # check if drain occurs where overland flow is not possible (surface_flow_width =
@@ -287,37 +292,21 @@ function initialize_sbm_gwf_model(config::Config)
         indices_drain, reverse_inds_drain = active_indices(drain_2d, 0)
         inds_land_map2drain = filter(i -> !isequal(drain[i], 0), 1:n_land_cells)
 
-        drains = Drainage(dataset, config, indices, inds_land_map2drain)
+        drain = Drainage(dataset, config, indices, inds_land_map2drain)
         network_drain =
             NetworkDrain(; indices = indices_drain, reverse_indices = reverse_inds_drain)
-        aquifer_boundaries = AquiferBoundaryCondition[recharge, river, drains]
+        aquifer_boundaries = (; recharge, river, drain)
     else
-        aquifer_boundaries = AquiferBoundaryCondition[recharge, river]
+        aquifer_boundaries = (; recharge, river)
         network_drain = NetworkDrain()
     end
 
-    groundwater_flow = GroundwaterFlow{Float}(;
+    subsurface_flow = GroundwaterFlow{Float}(;
         aquifer,
         connectivity,
         constanthead = constant_head,
         boundaries = aquifer_boundaries,
     )
-
-    # map GroundwaterFlow and its boundaries
-    if do_drains
-        subsurface_map = (
-            flow = groundwater_flow,
-            recharge = groundwater_flow.boundaries[1],
-            river = groundwater_flow.boundaries[2],
-            drain = groundwater_flow.boundaries[3],
-        )
-    else
-        subsurface_map = (
-            flow = groundwater_flow,
-            recharge = groundwater_flow.boundaries[1],
-            river = groundwater_flow.boundaries[2],
-        )
-    end
 
     # setup subdomains for the land and river kinematic wave domain, if nthreads = 1
     # subdomain is equal to the complete domain
@@ -351,10 +340,8 @@ function initialize_sbm_gwf_model(config::Config)
             )
     end
 
-    modelmap = (
-        land = land_hydrology,
-        lateral = (subsurface = subsurface_map, land = overland_flow, river = river_flow),
-    )
+    modelmap =
+        (land = land_hydrology, routing = (; subsurface_flow, overland_flow, river_flow))
     indices_reverse = (
         land = reverse_indices,
         river = reverse_inds_river,
@@ -459,13 +446,12 @@ function initialize_sbm_gwf_model(config::Config)
         drain = network_drain,
     )
 
-    lateral =
-        Lateral(; subsurface = subsurface_map, land = overland_flow, river = river_flow)
+    routing = Routing(; subsurface_flow, overland_flow, river_flow)
 
     model = Model(
         config,
         network,
-        lateral,
+        routing,
         land_hydrology,
         clock,
         reader,
@@ -480,22 +466,22 @@ end
 
 "update the sbm_gwf model for a single timestep"
 function update!(model::AbstractModel{<:SbmGwfModel})
-    (; lateral, land, network, clock, config) = model
+    (; routing, land, network, clock, config) = model
     (; soil, runoff, demand) = land
 
     do_water_demand = haskey(config.model, "water_demand")
-    aquifer = lateral.subsurface.flow.aquifer
+    (; aquifer, boundaries) = routing.subsurface_flow
     dt = tosecond(clock.dt)
 
-    update!(land, lateral, network, config, dt)
+    update!(land, routing, network, config, dt)
 
     # set river stage (groundwater) to average h from kinematic wave
-    lateral.subsurface.river.variables.stage .=
-        lateral.river.variables.h_av .+ lateral.subsurface.river.parameters.bottom
+    boundaries.river.variables.stage .=
+        routing.river_flow.variables.h_av .+ boundaries.river.parameters.bottom
 
     # determine stable time step for groundwater flow
     conductivity_profile =
-        get(config.input.lateral.subsurface, "conductivity_profile", "uniform")
+        get(config.input.routing.subsurface_flow, "conductivity_profile", "uniform")
     dt_gw = stable_timestep(aquifer, conductivity_profile) # time step in day (Float64)
     dt_sbm = (dt / tosecond(basetimestep)) # dt is in seconds (Float64)
     if dt_gw < dt_sbm
@@ -504,20 +490,20 @@ function update!(model::AbstractModel{<:SbmGwfModel})
         )
     end
 
-    Q = zeros(lateral.subsurface.flow.connectivity.ncell)
+    Q = zeros(routing.subsurface_flow.connectivity.ncell)
     # exchange of recharge between SBM soil model and groundwater flow domain
     # recharge rate groundwater is required in units [m d⁻¹]
-    @. lateral.subsurface.recharge.variables.rate =
+    @. boundaries.recharge.variables.rate =
         soil.variables.recharge / 1000.0 * (1.0 / dt_sbm)
     if do_water_demand
-        @. lateral.subsurface.recharge.variables.rate -=
+        @. boundaries.recharge.variables.rate -=
             land.allocation.variables.act_groundwater_abst / 1000.0 * (1.0 / dt_sbm)
     end
     # update groundwater domain
-    update!(lateral.subsurface.flow, Q, dt_sbm, conductivity_profile)
+    update!(routing.subsurface_flow, Q, dt_sbm, conductivity_profile)
 
     # update SBM soil model (runoff, ustorelayerdepth and satwaterdepth)
-    update!(soil, (; runoff, demand, subsurface = lateral.subsurface.flow))
+    update!(soil, (; runoff, demand, subsurface_flow = routing.subsurface_flow))
 
     surface_routing!(model)
 

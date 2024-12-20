@@ -48,7 +48,7 @@ function LocalInertialRiverFlowParameters(
     riverlength_bc = ncread(
         dataset,
         config,
-        "lateral.river.riverlength_bc";
+        "routing.river_flow.riverlength_bc";
         sel = inds_pit,
         defaults = 1.0e04,
         type = Float,
@@ -56,7 +56,7 @@ function LocalInertialRiverFlowParameters(
     bankfull_elevation_2d = ncread(
         dataset,
         config,
-        "lateral.river.bankfull_elevation";
+        "routing.river_flow.bankfull_elevation";
         optional = false,
         type = Float,
         fill = 0,
@@ -64,7 +64,7 @@ function LocalInertialRiverFlowParameters(
     bankfull_depth_2d = ncread(
         dataset,
         config,
-        "lateral.river.bankfull_depth";
+        "routing.river_flow.bankfull_depth";
         optional = false,
         type = Float,
         fill = 0,
@@ -76,7 +76,7 @@ function LocalInertialRiverFlowParameters(
     mannings_n = ncread(
         dataset,
         config,
-        "lateral.river.mannings_n";
+        "routing.river_flow.mannings_n";
         sel = indices,
         defaults = 0.036,
         type = Float,
@@ -159,7 +159,7 @@ function LocalInertialRiverFlowVariables(dataset, config, indices, n_edges, inds
     riverdepth_bc = ncread(
         dataset,
         config,
-        "lateral.river.riverdepth_bc";
+        "routing.river_flow.riverdepth_bc";
         sel = inds_pit,
         defaults = 0.0,
         type = Float,
@@ -658,7 +658,7 @@ function LocalInertialOverlandFlowParameters(
     mannings_n = ncread(
         dataset,
         config,
-        "lateral.land.mannings_n";
+        "routing.overland_flow.mannings_n";
         sel = indices,
         defaults = 0.072,
         type = Float,
@@ -666,7 +666,7 @@ function LocalInertialOverlandFlowParameters(
     elevation_2d = ncread(
         dataset,
         config,
-        "lateral.land.elevation";
+        "routing.overland_flow.elevation";
         optional = false,
         type = Float,
         fill = 0,
@@ -861,19 +861,20 @@ function update_boundary_conditions!(
     network,
     dt,
 )
-    (; river, soil, subsurface, runoff) = external_models
+    (; river_flow, soil, subsurface_flow, runoff) = external_models
     (; inflow_waterbody) = model.boundary_conditions
-    (; reservoir, lake) = river.boundary_conditions
+    (; reservoir, lake) = river_flow.boundary_conditions
     (; net_runoff) = soil.variables
     (; net_runoff_river) = runoff.variables
 
     model.boundary_conditions.runoff .=
-        net_runoff ./ 1000.0 .* network.land.area ./ dt .+ get_flux_to_river(subsurface) .+
+        net_runoff ./ 1000.0 .* network.land.area ./ dt .+
+        get_flux_to_river(subsurface_flow) .+
         net_runoff_river .* network.land.area .* 0.001 ./ dt
 
     if !isnothing(reservoir) || !isnothing(lake)
-        inflow_land = get_inflow_waterbody(river, model)
-        inflow_subsurface = get_inflow_waterbody(river, subsurface)
+        inflow_land = get_inflow_waterbody(river_flow, model)
+        inflow_subsurface = get_inflow_waterbody(river_flow, subsurface_flow)
 
         @. inflow_waterbody[network.river_indices] =
             inflow_land[network.river_indices] + inflow_subsurface[network.river_indices]
@@ -1123,7 +1124,7 @@ function FloodPlainProfile(dataset, config, indices; river_width, river_length, 
     volume = ncread(
         dataset,
         config,
-        "lateral.river.floodplain.volume";
+        "routing.river_flow.floodplain.volume";
         sel = indices,
         type = Float,
         dimname = :flood_depth,
@@ -1233,7 +1234,7 @@ function FloodPlainParameters(
     mannings_n = ncread(
         dataset,
         config,
-        "lateral.river.floodplain.mannings_n";
+        "routing.river_flow.floodplain.mannings_n";
         sel = indices,
         defaults = 0.072,
         type = Float,

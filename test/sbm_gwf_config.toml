@@ -25,17 +25,17 @@ canopy_storage = "canopystorage"
 satwaterdepth = "satwaterdepth"
 ustorelayerdepth = "ustorelayerdepth"
 
-[state.lateral.river.variables]
+[state.routing.river_flow.variables]
 h = "h_river"
 h_av = "h_av_river"
 q = "q_river"
 
-[state.lateral.land.variables]
+[state.routing.overland_flow.variables]
 h = "h_land"
 h_av = "h_av_land"
 q = "q_land"
 
-[state.lateral.subsurface.flow.aquifer.variables]
+[state.routing.subsurface_flow.aquifer.variables]
 head = "head"
 
 [input]
@@ -75,17 +75,17 @@ soilthickness = "soilthickness"
 theta_r = "thetaR"
 theta_s = "thetaS"
 
-[input.lateral.river]
+[input.routing.river_flow]
 length = "wflow_riverlength"
 mannings_n = "N_river"
 slope = "RiverSlope"
 width = "wflow_riverwidth"
 
-[input.lateral.land]
+[input.routing.overland_flow]
 mannings_n = "N"
 slope = "Slope"
 
-[input.lateral.subsurface]
+[input.routing.subsurface_flow]
 conductivity = "k"
 constant_head = "constant_head"
 drain = "drain"
@@ -119,19 +119,19 @@ ustorelayerdepth = "ustorelayerdepth"
 [output.land.soil.parameters]
 soilthickness = "soilthickness"
 
-[output.lateral.river.variables]
+[output.routing.river_flow.variables]
 q = "q"
 
-[output.lateral.subsurface.flow.aquifer.variables]
+[output.routing.subsurface_flow.aquifer.variables]
 head = "head"
 
-[output.lateral.subsurface.recharge.variables]
+[output.routing.subsurface_flow.boundaries.recharge.variables]
 rate = "rate"
 
-[output.lateral.subsurface.drain.variables]
+[output.routing.subsurface_flow.boundaries.drain.variables]
 flux = "drain_flux"
 
-[output.lateral.subsurface.river.variables]
+[output.routing.subsurface_flow.boundaries.river.variables]
 flux = "flux"
 
 [csv]
@@ -140,9 +140,9 @@ path = "output_example-sbm-gwf.csv"
 [[csv.column]]
 header = "Q_av"
 index = 5
-parameter = "lateral.river.variables.q_av"
+parameter = "routing.river_flow.variables.q_av"
 
 [[csv.column]]
 header = "head"
 index = 5
-parameter = "lateral.subsurface.flow.aquifer.variables.head"
+parameter = "routing.subsurface_flow.aquifer.variables.head"
