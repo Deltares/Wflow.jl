@@ -3,10 +3,6 @@
     reverse_indices::Matrix{Int64} = zeros(Int, 0, 0)
 end
 
-@kwdef struct NetworkLake
-    river_indices::Vector{Int} = Int[]
-end
-
 # Stores edges in x and y direction between cells of a Vector with CartesianIndex(x, y), for
 # staggered grid calculations.
 @with_kw struct Indices
@@ -36,7 +32,7 @@ end
     waterbody::Vector{Bool} = Bool[]
 end
 
-@kwdef struct NetworkReservoir
+@kwdef struct NetworkWaterBody
     indices_coverage::Vector{Vector{CartesianIndex{2}}} = Vector{CartesianIndex{2}}[]
     indices_outlet::Vector{CartesianIndex{2}} = CartesianIndex{2}[]
     reverse_indices::Matrix{Int} = zeros(Int, 0, 0)
@@ -73,9 +69,9 @@ end
 
 @kwdef struct Network
     drain::NetworkDrain = NetworkDrain()
-    lake::NetworkLake = NetworkLake()
+    lake::NetworkWaterBody = NetworkWaterBody()
     land::NetworkLand = NetworkLand()
-    reservoir::NetworkReservoir = NetworkReservoir()
+    reservoir::NetworkWaterBody = NetworkWaterBody()
     river::NetworkRiver = NetworkRiver()
     frac_to_river::Vector{Float64} = Float64[]
     index_river::Vector{Int} = Int[]

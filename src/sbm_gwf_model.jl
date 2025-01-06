@@ -100,9 +100,9 @@ function initialize_sbm_gwf_model(config::Config)
     if do_reservoirs
         reservoir, reservoir_network, inds_reservoir_map2river, pits =
             SimpleReservoir(dataset, config, inds_river, n_river_cells, pits)
-        network_reservoir = NetworkReservoir(; reservoir_network...)
+        network_reservoir = NetworkWaterBody(; reservoir_network...)
     else
-        network_reservoir = NetworkReservoir()
+        network_reservoir = NetworkWaterBody()
         inds_reservoir_map2river = fill(0, n_river_cells)
         reservoir = nothing
     end
@@ -111,9 +111,9 @@ function initialize_sbm_gwf_model(config::Config)
     if do_lakes
         lake, lake_network, inds_lake_map2river, pits =
             Lake(dataset, config, inds_river, n_river_cells, pits)
-        network_lake = NetworkLake(; lake_network...)
+        network_lake = NetworkWaterBody(; lake_network...)
     else
-        network_lake = NetworkLake()
+        network_lake = NetworkWaterBody()
         inds_lake_map2river = fill(0, n_river_cells)
         lake = nothing
     end
