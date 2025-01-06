@@ -77,20 +77,7 @@ function initialize_sediment_model(config::Config)
 
     ldd_riv = ldd_2d[indices_riv]
     graph_riv = flowgraph(ldd_riv, indices_riv, pcr_dir)
-
-    # Needed for frac_to_river?
-    landslope = ncread(
-        dataset,
-        config,
-        "land.land_parameter_set.slope";
-        optional = false,
-        sel = indices,
-        type = Float,
-    )
-    clamp!(landslope, 0.00001, Inf)
-
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
-    frac_to_river = fraction_runoff_to_river(graph, ldd, index_river, landslope)
 
     river_sediment = RiverSediment(dataset, config, indices_riv, waterbodies)
 
