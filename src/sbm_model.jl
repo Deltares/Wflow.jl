@@ -317,19 +317,6 @@ function initialize_sbm_model(config::Config)
     )
     close(dataset)
 
-    # for each domain save:
-    # - the directed acyclic graph (graph),
-    # - the traversion order (order),
-    # - upstream_nodes,
-    # - subdomains for the kinematic wave domains for parallel execution (execution order of
-    #   subbasins (subdomain_order), traversion order per subbasin (topo_subdomain) and
-    #   Vector indices per subbasin matching the traversion order of the complete domain
-    #   (indices_subdomain))
-    # - the indices that map it back to the two dimensional grid (indices)
-
-    # for the land domain the x and y length [m] of the grid cells are stored
-    # for reservoirs and lakes indices information is available from the initialization
-    # functions
     network_land = NetworkLand(;
         graph,
         upstream_nodes = filter_upsteam_nodes(graph, pits[indices]),
@@ -372,7 +359,6 @@ function initialize_sbm_model(config::Config)
         reservoir_indices = inds_reservoir_map2river,
         lake_indices = inds_lake_map2river,
         land_indices = inds_land_map2river,
-        # water allocation areas
         allocation_area_indices = river_allocation_area_inds,
         cell_area = x_length[inds_land_map2river] .* y_length[inds_land_map2river],
     )
