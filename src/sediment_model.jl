@@ -105,8 +105,6 @@ function initialize_sediment_model(config::Config)
         prepare_writer(config, modelmap, indices_reverse, x_dataset, y_dataset, dataset)
     close(dataset)
 
-    # for each domain save the directed acyclic graph, the traversion order,
-    # and the indices that map it back to the two dimensional grid
     network_land = NetworkLand(;
         graph = graph,
         order = topological_sort_by_dfs(graph),
@@ -117,11 +115,11 @@ function initialize_sediment_model(config::Config)
         graph = graph_riv,
         order = topological_sort_by_dfs(graph_riv),
         indices = indices_riv,
+        land_indices = index_river,
         reverse_indices = rev_indices_riv,
     )
 
-    network =
-        Network(; land = network_land, river = network_river, index_river, frac_to_river)
+    network = Network(; land = network_land, river = network_river)
 
     routing = Routing(; overland_flow = overland_flow_sediment, river_flow = river_sediment)
 
@@ -148,14 +146,7 @@ function update!(model::AbstractModel{<:SedimentModel})
     # River sediment transport
     do_river = get(config.model, "run_river_model", false)::Bool
     if do_river
-        indices_riv = network.index_river
-        update!(
-            routing.river_flow,
-            routing.overland_flow.to_river,
-            network.river,
-            indices_riv,
-            dt,
-        )
+        update!(routing.river_flow, routing.overland_flow.to_river, network.river, dt)
     end
 
     return nothing

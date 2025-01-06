@@ -39,7 +39,7 @@ end
     reverse_indices::Matrix{Int} = zeros(Int, 0, 0)
     # maps from the land domain to the river domain (zero value represents no river)
     river_indices::Vector{Int} = Int[]
-    # maps from the land domain to the river domain excluding reservoir and lake
+    # maps from the land domain to the river domain excluding reservoir and lake locations
     river_inds_excl_waterbody::Vector{Int} = Int[]
     # slope [m m⁻¹]
     slope::Vector{Float64} = Float64[]
@@ -91,7 +91,7 @@ end
     indices::Vector{CartesianIndex{2}} = CartesianIndex{2}[]
     # maps lakes to the river domain (zero value represents no lake)
     lake_indices::Vector{Int} = Int[]
-    # maps land indices to the river domain
+    # land domain indices masked by river domain (zero value represents no river)
     land_indices::Vector{Int} = Int[]
     # source and destination node of an edge
     nodes_at_edge::NodesAtEdge = NodesAtEdge()
@@ -121,13 +121,11 @@ boundary condition of groundwater flow), `river`, `reservoir` and `lake`.
     land::NetworkLand = NetworkLand()
     reservoir::NetworkWaterBody = NetworkWaterBody()
     river::NetworkRiver = NetworkRiver()
-    frac_to_river::Vector{Float64} = Float64[]
-    index_river::Vector{Int} = Int[]
 end
 
 """ 
-Struct for storing routing components overland flow `overland_flow`, river flow `river_flow`
-and subsurface flow `subsurface_flow`.
+Struct for storing routing model components overland flow `overland_flow`, river flow
+`river_flow` and subsurface flow `subsurface_flow`.
 """
 @kwdef struct Routing{O, R, S}
     overland_flow::O = nothing

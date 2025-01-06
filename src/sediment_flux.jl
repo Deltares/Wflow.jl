@@ -141,7 +141,6 @@ function update!(
     model::RiverSediment,
     to_river_model::SedimentToRiverDifferentiationModel,
     network,
-    indices_river,
     dt,
 )
     # Transport capacity
@@ -163,7 +162,7 @@ function update!(
         model.transport_capacity,
         to_river_model,
         model.potential_erosion,
-        indices_river,
+        network.land_indices,
     )
     update!(model.sediment_flux, network, model.geometry, model.waterbodies, dt)
 
