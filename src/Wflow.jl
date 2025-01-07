@@ -116,6 +116,7 @@ end
 
 include("io.jl")
 include("network.jl")
+include("routing/routing.jl")
 
 abstract type AbstractModel{T} end
 abstract type AbstractLandModel end
@@ -134,14 +135,14 @@ network, parameters, clock, configuration and input and output.
 """
 struct Model{R <: Routing, L <: AbstractLandModel, T <: AbstractModelType} <:
        AbstractModel{T}
-    config::Config  # all configuration options
-    network::Network  # connectivity information, directed graph
-    routing::R  # routing model (horizontal fluxes), moves along network
-    land::L  # land model simulating vertical fluxes, independent of each other
-    clock::Clock  # to keep track of simulation time
-    reader::NCReader  # provides the model with dynamic input
-    writer::Writer  # writes model output
-    type::T # model type
+    config::Config      # all configuration options
+    network::Network    # connectivity information, directed graph
+    routing::R          # routing model (horizontal fluxes), moves along network
+    land::L             # land model simulating vertical fluxes, independent of each other
+    clock::Clock        # to keep track of simulation time
+    reader::NCReader    # provides the model with dynamic input
+    writer::Writer      # writes model output
+    type::T             # model type
 end
 
 # prevent a large printout of model components and arrays

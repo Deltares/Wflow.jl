@@ -758,7 +758,7 @@ function LocalInertialOverlandFlowBC(n)
 end
 
 "Local inertial overland flow model using the local inertial method"
-@with_kw struct LocalInertialOverlandFlow{T}
+@with_kw struct LocalInertialOverlandFlow{T} <: AbstractOverlandFlowModel
     timestepping::TimeStepping{T}
     boundary_conditions::LocalInertialOverlandFlowBC{T}
     parameters::LocalInertialOverlandFlowParameters{T}

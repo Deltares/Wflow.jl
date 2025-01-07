@@ -447,7 +447,7 @@ function update!(gwf, Q, dt, conductivity_profile)
     return nothing
 end
 
-Base.@kwdef struct GroundwaterFlow{A, C, CH, B}
+Base.@kwdef struct GroundwaterFlow{A, C, CH, B} <: AbstractSubsurfaceFlowModel
     aquifer::A
     connectivity::C
     constanthead::CH

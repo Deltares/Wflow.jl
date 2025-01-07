@@ -1,5 +1,3 @@
-abstract type SubsurfaceFlow end
-
 "Exponential depth profile of horizontal hydraulic conductivity at the soil surface"
 @get_units @grid_loc struct KhExponential{T}
     # Horizontal hydraulic conductivity at soil surface [m d⁻¹]
@@ -120,7 +118,7 @@ end
 end
 
 "Lateral subsurface flow model"
-@with_kw struct LateralSSF{T, Kh} <: SubsurfaceFlow
+@with_kw struct LateralSSF{T, Kh} <: AbstractSubsurfaceFlowModel
     boundary_conditions::LateralSsfBC{T}
     parameters::LateralSsfParameters{T, Kh}
     variables::LateralSsfVariables{T}
@@ -234,7 +232,7 @@ function GroundwaterExchangeVariables(n)
 end
 
 "Groundwater exchange"
-@with_kw struct GroundwaterExchange{T} <: SubsurfaceFlow
+@with_kw struct GroundwaterExchange{T} <: AbstractSubsurfaceFlowModel
     variables::GroundwaterExchangeVariables{T}
 end
 
@@ -246,8 +244,8 @@ function GroundwaterExchange(n)
 end
 
 # wrapper methods
-get_water_depth(model::SubsurfaceFlow) = model.variables.zi
-get_exfiltwater(model::SubsurfaceFlow) = model.variables.exfiltwater
+get_water_depth(model::Union{LateralSSF, GroundwaterExchange}) = model.variables.zi
+get_exfiltwater(model::Union{LateralSSF, GroundwaterExchange}) = model.variables.exfiltwater
 
-get_flux_to_river(model::SubsurfaceFlow) =
+get_flux_to_river(model::Union{LateralSSF, GroundwaterExchange}) =
     model.variables.to_river ./ tosecond(basetimestep) # [m³ s⁻¹]

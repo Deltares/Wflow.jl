@@ -122,13 +122,3 @@ boundary condition of groundwater flow), `river`, `reservoir` and `lake`.
     reservoir::NetworkWaterBody = NetworkWaterBody()
     river::NetworkRiver = NetworkRiver()
 end
-
-""" 
-Struct for storing routing model components overland flow `overland_flow`, river flow
-`river_flow` and subsurface flow `subsurface_flow`.
-"""
-@kwdef struct Routing{O, R, S}
-    overland_flow::O = nothing
-    river_flow::R = nothing
-    subsurface_flow::S = nothing
-end

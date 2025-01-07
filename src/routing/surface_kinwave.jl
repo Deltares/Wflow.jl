@@ -1,5 +1,3 @@
-abstract type AbstractRiverFlowModel end
-
 "Struct for storing (shared) variables for river and overland flow models"
 @get_units @grid_loc @with_kw struct FlowVariables{T}
     q::Vector{T} | "m3 s-1"                 # Discharge [m³ s⁻¹]
@@ -214,8 +212,8 @@ end
     inwater::Vector{T} | "m3 s-1"       # Lateral inflow [m³ s⁻¹]
 end
 
-"Overland flow model using the kinematic wave method and the Manning flow equation"
-@with_kw struct KinWaveOverlandFlow{T}
+"Overland flow model using the kinematic wave method and the Manning flow{ equation"
+@with_kw struct KinWaveOverlandFlow{T} <: AbstractOverlandFlowModel
     timestepping::TimeStepping{T}
     boundary_conditions::LandFlowBC{T}
     parameters::ManningFlowParameters{T}
