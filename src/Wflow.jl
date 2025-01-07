@@ -128,10 +128,10 @@ struct SbmGwfModel <: AbstractModelType end      # "sbm_gwf" type / sbm_gwf_mode
 struct SedimentModel <: AbstractModelType end    # "sediment" type / sediment_model.jl
 
 """
-    Model{R, L, T}
+    Model{R <: Routing, L <: AbstractLandModel, T <: AbstractModelType} <:AbstractModel{T}
 
-Composite type that represents all different aspects of a Wflow Model, such as the
-network, parameters, clock, configuration and input and output.
+Composite type that represents all different aspects of a Wflow Model, such as the network,
+parameters, clock, configuration and input and output.
 """
 struct Model{R <: Routing, L <: AbstractLandModel, T <: AbstractModelType} <:
        AbstractModel{T}
