@@ -1,37 +1,65 @@
 module Wflow
 
-using Dates
-using TOML
-using Graphs
-using NCDatasets
-using StaticArrays
-using Statistics
-using UnPack
-using Random
-using BasicModelInterface
-using FieldMetadata
-using Parameters
-using DelimitedFiles
-using ProgressLogging
+import BasicModelInterface as BMI
+
+using Base.Threads: nthreads
+using CFTime: CFTime, monthday, dayofyear
+using Dates:
+    Dates,
+    Second,
+    Minute,
+    Hour,
+    Day,
+    Month,
+    year,
+    TimeType,
+    DatePeriod,
+    TimePeriod,
+    Date,
+    DateTime,
+    now,
+    isleapyear,
+    datetime2unix,
+    canonicalize
+using DelimitedFiles: readdlm
+using FieldMetadata: @metadata
+using Glob: glob
+using Graphs:
+    Graphs,
+    Graph,
+    DiGraph,
+    add_edge!,
+    is_cyclic,
+    inneighbors,
+    outneighbors,
+    edges,
+    topological_sort_by_dfs,
+    src,
+    dst,
+    vertices,
+    nv,
+    ne,
+    induced_subgraph,
+    add_vertex!
+using IfElse: IfElse
 using LoggingExtras
+using LoopVectorization: @tturbo
+using NCDatasets: NCDatasets, NCDataset, dimnames, dimsize, nomissing, defDim, defVar
+using Parameters: @with_kw
+using Polyester: @batch
+using ProgressLogging: @progress
+using StaticArrays: SVector, pushfirst, setindex
+using Statistics: mean, median, quantile!, quantile
 using TerminalLoggers
-using CFTime
-using Base.Threads
-using Glob
-using Polyester
-using LoopVectorization
-using IfElse
+using TOML: TOML
 
+# metadata is used in combination with BMI functions `get_var_units` and `get_var_location`
 @metadata get_units "mm dt-1" String
-# metadata for BMI grid
-@metadata exchange 1 Integer
-@metadata grid_type "unstructured" String
-@metadata grid_location "node" String
+@metadata grid_loc "node" String # BMI grid location
 
-const BMI = BasicModelInterface
 const Float = Float64
-const CFDataset = Union{NCDataset,NCDatasets.MFDataset}
-const CFVariable_MF = Union{NCDatasets.CFVariable,NCDatasets.MFCFVariable}
+const CFDataset = Union{NCDataset, NCDatasets.MFDataset}
+const CFVariable_MF = Union{NCDatasets.CFVariable, NCDatasets.MFCFVariable}
 const version =
     VersionNumber(TOML.parsefile(joinpath(@__DIR__, "..", "Project.toml"))["version"])
 
@@ -47,7 +75,7 @@ function Clock(config)
     calendar = get(config, "calendar", "standard")::String
     starttime = cftime(config.starttime, calendar)
     dt = Second(config.timestepsecs)
-    Clock(starttime, 0, dt)
+    return Clock(starttime, 0, dt)
 end
 
 function Clock(config, reader)
@@ -81,7 +109,7 @@ function Clock(config, reader)
     end
     starttime = cftime(config.starttime, calendar)
 
-    Clock(starttime, 0, dt)
+    return Clock(starttime, 0, dt)
 end
 
 include("io.jl")
@@ -92,7 +120,7 @@ include("io.jl")
 Composite type that represents all different aspects of a Wflow Model, such as the
 network, parameters, clock, configuration and input and output.
 """
-struct Model{N,L,V,R,W,T}
+struct Model{N, L, V, R, W, T}
     config::Config  # all configuration options
     network::N  # connectivity information, directed graph
     lateral::L  # lateral model that holds lateral state, moves along network
@@ -106,29 +134,50 @@ end
 # different model types (used for dispatch)
 struct SbmModel end         # "sbm" type / sbm_model.jl
 struct SbmGwfModel end      # "sbm_gwf" type / sbm_gwf_model.jl
-struct HbvModel end         # "hbv" type / hbv_model.jl
-struct FlextopoModel end    # "flextopo" type / flextopo_model.jl
 struct SedimentModel end    # "sediment" type / sediment_model.jl
 
 # prevent a large printout of model components and arrays
 Base.show(io::IO, m::Model) = print(io, "model of type ", typeof(m))
 
-include("horizontal_process.jl")
-include("flow.jl")
-include("hbv.jl")
-include("water_demand.jl")
-include("sbm.jl")
-include("flextopo.jl")
-include("sediment.jl")
-include("reservoir_lake.jl")
-include("hbv_model.jl")
-include("sbm_model.jl")
-include("flextopo_model.jl")
-include("sediment_model.jl")
-include("vertical_process.jl")
+include("forcing.jl")
+include("parameters.jl")
 include("groundwater/connectivity.jl")
 include("groundwater/aquifer.jl")
 include("groundwater/boundary_conditions.jl")
+include("routing/timestepping.jl")
+include("routing/subsurface.jl")
+include("routing/reservoir.jl")
+include("routing/lake.jl")
+include("routing/surface_kinwave.jl")
+include("routing/surface_local_inertial.jl")
+include("routing/surface_routing.jl")
+include("routing/routing_process.jl")
+include("vegetation/rainfall_interception.jl")
+include("vegetation/canopy.jl")
+include("snow/snow_process.jl")
+include("snow/snow.jl")
+include("glacier/glacier_process.jl")
+include("glacier/glacier.jl")
+include("surfacewater/runoff.jl")
+include("soil/soil.jl")
+include("soil/soil_process.jl")
+include("sbm.jl")
+include("demand/water_demand.jl")
+include("sbm_model.jl")
+include("sediment/erosion/erosion_process.jl")
+include("sediment/erosion/rainfall_erosion.jl")
+include("sediment/erosion/overland_flow_erosion.jl")
+include("sediment/erosion/soil_erosion.jl")
+include("sediment/erosion/river_erosion.jl")
+include("sediment/sediment_transport/deposition.jl")
+include("sediment/sediment_transport/transport_capacity_process.jl")
+include("sediment/sediment_transport/transport_capacity.jl")
+include("sediment/sediment_transport/overland_flow_transport.jl")
+include("sediment/sediment_transport/land_to_river.jl")
+include("sediment/sediment_transport/river_transport.jl")
+include("erosion.jl")
+include("sediment_flux.jl")
+include("sediment_model.jl")
 include("sbm_gwf_model.jl")
 include("utils.jl")
 include("bmi.jl")
@@ -139,7 +188,7 @@ include("states.jl")
 """
     run(tomlpath::AbstractString; silent=false)
     run(config::Config)
-    run(model::Model)
+    run!(model::Model)
     run()
 
 Run an entire simulation starting either from a path to a TOML settings file,
@@ -180,6 +229,7 @@ function run(tomlpath::AbstractString; silent = nothing)
             close(logfile)
         end
     end
+    return nothing
 end
 
 function run(config::Config)
@@ -189,31 +239,28 @@ function run(config::Config)
         initialize_sbm_model(config)
     elseif modeltype == "sbm_gwf"
         initialize_sbm_gwf_model(config)
-    elseif modeltype == "hbv"
-        initialize_hbv_model(config)
     elseif modeltype == "sediment"
         initialize_sediment_model(config)
-    elseif modeltype == "flextopo"
-        initialize_flextopo_model(config)
     else
         error("unknown model type")
     end
-    load_fixed_forcing(model)
-    run(model)
-end
-
-function run_timestep(model::Model; update_func = update, write_model_output = true)
-    advance!(model.clock)
-    load_dynamic_input!(model)
-    model = update_func(model)
-    if write_model_output
-        write_output(model)
-    end
+    load_fixed_forcing!(model)
+    run!(model)
     return model
 end
 
-function run(model::Model; close_files = true)
-    @unpack network, config, writer, clock = model
+function run_timestep!(model::Model; update_func = update!, write_model_output = true)
+    advance!(model.clock)
+    load_dynamic_input!(model)
+    update_func(model)
+    if write_model_output
+        write_output(model)
+    end
+    return nothing
+end
+
+function run!(model::Model; close_files = true)
+    (; config, writer, clock) = model
 
     model_type = config.model.type::String
 
@@ -227,13 +274,13 @@ function run(model::Model; close_files = true)
     starttime = clock.time
     dt = clock.dt
     endtime = cftime(config.endtime, calendar)
-    times = range(starttime + dt, endtime, step = dt)
+    times = range(starttime + dt, endtime; step = dt)
 
     @info "Run information" model_type starttime dt endtime nthreads()
     runstart_time = now()
     @progress for (i, time) in enumerate(times)
         @debug "Starting timestep." time i now()
-        model = run_timestep(model)
+        run_timestep!(model)
     end
     @info "Simulation duration: $(canonicalize(now() - runstart_time))"
 
@@ -248,7 +295,7 @@ function run(model::Model; close_files = true)
     # option to support running function twice without re-initializing
     # and thus opening the netCDF files
     if close_files
-        Wflow.close_files(model, delete_output = false)
+        Wflow.close_files(model; delete_output = false)
     end
 
     # copy TOML to dir_output, to archive what settings were used
@@ -257,10 +304,10 @@ function run(model::Model; close_files = true)
         dst = output_path(config, basename(src))
         if src != dst
             @debug "Copying TOML file." src dst
-            cp(src, dst, force = true)
+            cp(src, dst; force = true)
         end
     end
-    return model
+    return nothing
 end
 
 function run()
@@ -273,7 +320,7 @@ function run()
     if !isfile(toml_path)
         throw(ArgumentError("File not found: $(toml_path)\n" * usage))
     end
-    run(toml_path)
+    return run(toml_path)
 end
 
 end # module

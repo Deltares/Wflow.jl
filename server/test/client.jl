@@ -10,7 +10,7 @@ ZMQ.connect(socket, "tcp://localhost:5555")
 
 function request(message)
     ZMQ.send(socket, JSON3.write(message))
-    ret_value = JSON3.read(ZMQ.recv(socket), Dict)
+    ret_value = JSON3.read(ZMQ.recv(socket), Dict; allow_inf = true)
     return ret_value
 end
 
@@ -24,6 +24,12 @@ end
     @test request((fn = "get_time_units",)) == Dict("time_units" => "s")
 end
 
+@testset "Reading and writing NaN values allowed" begin
+    msg =
+        (fn = "get_value", name = "vertical.soil.variables.vwc[1]", dest = fill(0.0, 50063))
+    @test isnan(mean(request(msg)["value"]))
+end
+
 @testset "update functions" begin
     @test request((fn = "update_until", time = 86400.0)) == Dict("status" => "OK")
     @test request((fn = "get_current_time",)) == Dict("current_time" => 86400)
@@ -32,13 +38,13 @@ end
 
 @testset "model information functions" begin
     @test request((fn = "get_component_name",)) == Dict("component_name" => "sbm")
-    @test request((fn = "get_input_item_count",)) == Dict("input_item_count" => 207)
-    @test request((fn = "get_output_item_count",)) == Dict("output_item_count" => 207)
+    @test request((fn = "get_input_item_count",)) == Dict("input_item_count" => 202)
+    @test request((fn = "get_output_item_count",)) == Dict("output_item_count" => 202)
     to_check = [
-        "vertical.nlayers",
-        "vertical.theta_r",
-        "lateral.river.q",
-        "lateral.river.reservoir.outflow",
+        "vertical.soil.parameters.nlayers",
+        "vertical.soil.parameters.theta_r",
+        "lateral.river.variables.q",
+        "lateral.river.boundary_conditions.reservoir.variables.outflow",
     ]
     retrieved_vars = request((fn = "get_input_var_names",))["input_var_names"]
     @test all(x -> x in retrieved_vars, to_check)
@@ -49,83 +55,101 @@ end
 zi_size = 0
 vwc_1_size = 0
 @testset "variable information and get and set functions" begin
-    @test request((fn = "get_var_itemsize", name = "lateral.subsurface.ssf")) ==
+    @test request((fn = "get_var_itemsize", name = "lateral.subsurface.variables.ssf")) ==
           Dict("var_itemsize" => sizeof(Wflow.Float))
     @test request((fn = "get_var_type", name = "vertical.n"))["status"] == "ERROR"
-    @test request((fn = "get_var_units", name = "vertical.theta_s")) == Dict("var_units" => "-")
-    @test request((fn = "get_var_location", name = "lateral.river.q")) ==
+    @test request((fn = "get_var_units", name = "vertical.soil.parameters.theta_s")) ==
+          Dict("var_units" => "-")
+    @test request((fn = "get_var_location", name = "lateral.river.variables.q")) ==
           Dict("var_location" => "node")
-    zi_nbytes = request((fn = "get_var_nbytes", name = "vertical.zi"))["var_nbytes"]
+    zi_nbytes =
+        request((fn = "get_var_nbytes", name = "vertical.soil.variables.zi"))["var_nbytes"]
     @test zi_nbytes == 400504
-    zi_itemsize = request((fn = "get_var_itemsize", name = "vertical.zi"))["var_itemsize"]
+    zi_itemsize =
+        request((fn = "get_var_itemsize", name = "vertical.soil.variables.zi"))["var_itemsize"]
     zi_size = Int(zi_nbytes / zi_itemsize)
-    vwc_1_nbytes = request((fn = "get_var_nbytes", name = "vertical.vwc[1]"))["var_nbytes"]
+    vwc_1_nbytes =
+        request((fn = "get_var_nbytes", name = "vertical.soil.variables.vwc[1]"))["var_nbytes"]
     @test vwc_1_nbytes == 400504
     vwc_1_itemsize =
-        request((fn = "get_var_itemsize", name = "vertical.vwc[1]"))["var_itemsize"]
+        request((fn = "get_var_itemsize", name = "vertical.soil.variables.vwc[1]"))["var_itemsize"]
     vwc_1_size = Int(vwc_1_nbytes / vwc_1_itemsize)
-    @test request((fn = "get_var_grid", name = "lateral.river.h")) == Dict("var_grid" => 3)
-    msg = (fn = "get_value", name = "vertical.zi", dest = fill(0.0, zi_size))
+    @test request((fn = "get_var_grid", name = "lateral.river.variables.h")) ==
+          Dict("var_grid" => 3)
+    msg = (fn = "get_value", name = "vertical.soil.variables.zi", dest = fill(0.0, zi_size))
     @test mean(request(msg)["value"]) ≈ 277.3620724821974
-    msg = (fn = "get_value_ptr", name = "vertical.theta_s")
+    msg = (fn = "get_value_ptr", name = "vertical.soil.parameters.theta_s")
     @test mean(request(msg)["value_ptr"]) ≈ 0.4409211971535584
     msg = (
         fn = "get_value_at_indices",
-        name = "lateral.river.q",
+        name = "lateral.river.variables.q",
         dest = [0.0, 0.0, 0.0],
         inds = [1, 5, 10],
     )
     @test request(msg)["value_at_indices"] ≈
-          [2.198747900215207f0, 2.6880427720508515f0, 3.4848783702629564f0]
-    msg = (fn = "set_value", name = "vertical.zi", src = fill(300.0, zi_size))
+          [2.1007361866518766, 2.5702292750107687, 3.2904803551115727]
+    msg =
+        (fn = "set_value", name = "vertical.soil.variables.zi", src = fill(300.0, zi_size))
     @test request(msg) == Dict("status" => "OK")
-    msg = (fn = "get_value", name = "vertical.zi", dest = fill(0.0, zi_size))
+    msg = (fn = "get_value", name = "vertical.soil.variables.zi", dest = fill(0.0, zi_size))
     @test mean(request(msg)["value"]) == 300.0
     msg = (
         fn = "set_value_at_indices",
-        name = "vertical.zi",
+        name = "vertical.soil.variables.zi",
         src = [250.0, 350.0],
         inds = [1, 2],
     )
     @test request(msg) == Dict("status" => "OK")
     msg = (
         fn = "get_value_at_indices",
-        name = "vertical.zi",
+        name = "vertical.soil.variables.zi",
         dest = [0.0, 0.0, 0.0],
         inds = [1, 2, 3],
     )
     @test request(msg)["value_at_indices"] == [250.0, 350.0, 300.0]
-    msg = (fn = "get_value", name = "vertical.vwc[1]", dest = fill(0.0, vwc_1_size))
+    msg = (
+        fn = "get_value",
+        name = "vertical.soil.variables.vwc[1]",
+        dest = fill(0.0, vwc_1_size),
+    )
     @test mean(request(msg)["value"]) ≈ 0.18600013563085036f0
     msg = (
         fn = "get_value_at_indices",
-        name = "vertical.vwc[1]",
+        name = "vertical.soil.variables.vwc[1]",
         dest = [0.0, 0.0, 0.0],
         inds = [1, 2, 3],
     )
     @test request(msg)["value_at_indices"] ≈
           [0.12089607119560242f0, 0.11968416924304527f0, 0.14602328618707333f0]
-    msg = (fn = "set_value", name = "vertical.vwc[1]", src = fill(0.3, vwc_1_size))
+    msg = (
+        fn = "set_value",
+        name = "vertical.soil.variables.vwc[1]",
+        src = fill(0.3, vwc_1_size),
+    )
     @test request(msg) == Dict("status" => "OK")
-    msg = (fn = "get_value", name = "vertical.vwc[1]", dest = fill(0.0, vwc_1_size))
+    msg = (
+        fn = "get_value",
+        name = "vertical.soil.variables.vwc[1]",
+        dest = fill(0.0, vwc_1_size),
+    )
     @test mean(request(msg)["value"]) ≈ 0.3f0
     msg = (
         fn = "get_value_at_indices",
-        name = "vertical.vwc[1]",
+        name = "vertical.soil.variables.vwc[1]",
         dest = [0.0, 0.0, 0.0],
         inds = [1, 2, 3],
     )
     @test request(msg)["value_at_indices"] == [0.3, 0.3, 0.3]
     msg = (
         fn = "set_value_at_indices",
-        name = "vertical.vwc[1]",
+        name = "vertical.soil.variables.vwc[1]",
         src = [0.1, 0.25],
         inds = [1, 2],
     )
     @test request(msg) == Dict("status" => "OK")
     msg = (
         fn = "get_value_at_indices",
-        name = "vertical.vwc[1]",
+        name = "vertical.soil.variables.vwc[1]",
         dest = [0.0, 0.0],
         inds = [1, 2],
     )

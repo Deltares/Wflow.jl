@@ -1,6 +1,6 @@
 function check_flux(flux, aquifer::UnconfinedAquifer, index::Int)
     # Check if cell is dry
-    if aquifer.head[index] <= aquifer.bottom[index]
+    if aquifer.variables.head[index] <= aquifer.parameters.bottom[index]
         # If cell is dry, no negative flux is allowed
         return max(0, flux)
     else
@@ -8,107 +8,199 @@ function check_flux(flux, aquifer::UnconfinedAquifer, index::Int)
     end
 end
 
-
 # Do nothing for a confined aquifer: aquifer can always provide flux
 check_flux(flux, aquifer::ConfinedAquifer, index::Int) = flux
 
-
-@get_units @exchange @grid_type @grid_location struct River{T} <: AquiferBoundaryCondition
-    stage::Vector{T} | "m"
+@get_units @grid_loc @with_kw struct RiverParameters{T}
     infiltration_conductance::Vector{T} | "m2 d-1"
     exfiltration_conductance::Vector{T} | "m2 d-1"
     bottom::Vector{T} | "m"
+end
+
+@get_units @grid_loc @with_kw struct RiverVariables{T}
+    stage::Vector{T} | "m"
     flux::Vector{T} | "m3 d-1"
+end
+
+function RiverVariables(n)
+    variables = RiverVariables{Float}(; stage = fill(mv, n), flux = fill(mv, n))
+    return variables
+end
+
+@get_units @grid_loc @with_kw struct River{T} <: AquiferBoundaryCondition
+    parameters::RiverParameters{T}
+    variables::RiverVariables{T}
     index::Vector{Int} | "-"
 end
 
+function River(dataset, config, indices, index)
+    infiltration_conductance = ncread(
+        dataset,
+        config,
+        "lateral.subsurface.infiltration_conductance";
+        sel = indices,
+        type = Float,
+    )
+    exfiltration_conductance = ncread(
+        dataset,
+        config,
+        "lateral.subsurface.exfiltration_conductance";
+        sel = indices,
+        type = Float,
+    )
+    bottom = ncread(
+        dataset,
+        config,
+        "lateral.subsurface.river_bottom";
+        sel = indices,
+        type = Float,
+    )
+
+    parameters =
+        RiverParameters{Float}(infiltration_conductance, exfiltration_conductance, bottom)
+    n = length(indices)
+    variables = RiverVariables(n)
+    river = River(parameters, variables, index)
+    return river
+end
 
 function flux!(Q, river::River, aquifer)
     for (i, index) in enumerate(river.index)
-        head = aquifer.head[index]
-        stage = river.stage[i]
+        head = aquifer.variables.head[index]
+        stage = river.variables.stage[i]
         if stage > head
-            cond = river.infiltration_conductance[i]
-            delta_head = min(stage - river.bottom[i], stage - head)
+            cond = river.parameters.infiltration_conductance[i]
+            delta_head = min(stage - river.parameters.bottom[i], stage - head)
         else
-            cond = river.exfiltration_conductance[i]
+            cond = river.parameters.exfiltration_conductance[i]
             delta_head = stage - head
         end
-        river.flux[i] = check_flux(cond * delta_head, aquifer, index)
-        Q[index] += river.flux[i]
+        river.variables.flux[i] = check_flux(cond * delta_head, aquifer, index)
+        Q[index] += river.variables.flux[i]
     end
     return Q
 end
 
-
-@get_units @exchange @grid_type @grid_location struct Drainage{T} <:
-                                                      AquiferBoundaryCondition
+@get_units @grid_loc @with_kw struct DrainageParameters{T}
     elevation::Vector{T} | "m"
     conductance::Vector{T} | "m2 d-1"
+end
+
+@get_units @grid_loc @with_kw struct DrainageVariables{T}
     flux::Vector{T} | "m3 d-1"
+end
+
+@get_units @grid_loc @with_kw struct Drainage{T} <: AquiferBoundaryCondition
+    parameters::DrainageParameters{T}
+    variables::DrainageVariables{T}
     index::Vector{Int} | "-"
 end
 
+function Drainage(dataset, config, indices, index)
+    drain_elevation = ncread(
+        dataset,
+        config,
+        "lateral.subsurface.drain_elevation";
+        sel = indices,
+        type = Float,
+        fill = mv,
+    )
+    drain_conductance = ncread(
+        dataset,
+        config,
+        "lateral.subsurface.drain_conductance";
+        sel = indices,
+        type = Float,
+        fill = mv,
+    )
+    elevation = drain_elevation[index]
+    conductance = drain_conductance[index]
+    parameters = DrainageParameters{Float}(; elevation, conductance)
+    variables = DrainageVariables{Float}(; flux = fill(mv, length(index)))
+
+    drains = Drainage{Float}(parameters, variables, index)
+    return drains
+end
 
 function flux!(Q, drainage::Drainage, aquifer)
     for (i, index) in enumerate(drainage.index)
-        cond = drainage.conductance[i]
-        delta_head = min(0, drainage.elevation[i] - aquifer.head[index])
-        drainage.flux[i] = check_flux(cond * delta_head, aquifer, index)
-        Q[index] += drainage.flux[i]
+        cond = drainage.parameters.conductance[i]
+        delta_head =
+            min(0, drainage.parameters.elevation[i] - aquifer.variables.head[index])
+        drainage.variables.flux[i] = check_flux(cond * delta_head, aquifer, index)
+        Q[index] += drainage.variables.flux[i]
     end
     return Q
 end
 
-
-@get_units struct HeadBoundary{T} <: AquiferBoundaryCondition
-    head::Vector{T} | "m"
+@get_units @grid_loc @with_kw struct HeadBoundaryParameters{T}
     conductance::Vector{T} | "m2 d-1"
-    flux::Vector{T} | "m3 d-1"
-    index::Vector{Int} | "-"
 end
 
+@get_units @grid_loc @with_kw struct HeadBoundaryVariables{T}
+    head::Vector{T} | "m"
+    flux::Vector{T} | "m3 d-1"
+end
+
+@get_units @grid_loc @with_kw struct HeadBoundary{T} <: AquiferBoundaryCondition
+    parameters::HeadBoundaryParameters{T}
+    variables::HeadBoundaryVariables{T}
+    index::Vector{Int} | "-"
+end
 
 function flux!(Q, headboundary::HeadBoundary, aquifer)
     for (i, index) in enumerate(headboundary.index)
-        cond = headboundary.conductance[i]
-        delta_head = headboundary.head[i] - aquifer.head[index]
-        headboundary.flux[i] = check_flux(cond * delta_head, aquifer, index)
-        Q[index] += headboundary.flux[i]
+        cond = headboundary.parameters.conductance[i]
+        delta_head = headboundary.variables.head[i] - aquifer.variables.head[index]
+        headboundary.variables.flux[i] = check_flux(cond * delta_head, aquifer, index)
+        Q[index] += headboundary.variables.flux[i]
     end
     return Q
 end
 
-
-@get_units @exchange @grid_type @grid_location struct Recharge{T} <:
-                                                      AquiferBoundaryCondition
+@get_units @grid_loc @with_kw struct RechargeVariables{T}
     rate::Vector{T} | "m d-1"
     flux::Vector{T} | "m3 d-1"
+end
+
+@get_units @grid_loc @with_kw struct Recharge{T} <: AquiferBoundaryCondition
+    variables::RechargeVariables{T}
     index::Vector{Int} | "-"
 end
 
+function Recharge(rate, flux, index)
+    variables = RechargeVariables{Float}(rate, flux)
+    recharge = Recharge{Float}(variables, index)
+    return recharge
+end
 
 function flux!(Q, recharge::Recharge, aquifer)
     for (i, index) in enumerate(recharge.index)
-        recharge.flux[i] =
-            check_flux(recharge.rate[i] * aquifer.area[index], aquifer, index)
-        Q[index] += recharge.flux[i]
+        recharge.variables.flux[i] = check_flux(
+            recharge.variables.rate[i] * aquifer.parameters.area[index],
+            aquifer,
+            index,
+        )
+        Q[index] += recharge.variables.flux[i]
     end
     return Q
 end
 
-
-@get_units struct Well{T} <: AquiferBoundaryCondition
+@get_units @grid_loc @with_kw struct WellVariables{T}
     volumetric_rate::Vector{T} | "m3 d-1"
     flux::Vector{T} | "m3 d-1"
+end
+
+@get_units @grid_loc @with_kw struct Well{T} <: AquiferBoundaryCondition
+    variables::WellVariables{T}
     index::Vector{Int} | "-"
 end
 
-
 function flux!(Q, well::Well, aquifer)
     for (i, index) in enumerate(well.index)
-        well.flux[i] = check_flux(well.volumetric_rate[i], aquifer, index)
-        Q[index] += well.flux[i]
+        well.variables.flux[i] =
+            check_flux(well.variables.volumetric_rate[i], aquifer, index)
+        Q[index] += well.variables.flux[i]
     end
     return Q
 end

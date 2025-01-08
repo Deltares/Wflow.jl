@@ -176,7 +176,7 @@ struct SaveState
     fn::String
 end
 
-function wflow_bmi(m::Initialize, model::Union{Wflow.Model,Nothing})
+function wflow_bmi(m::Initialize, model::Union{Wflow.Model, Nothing})
     model = getfield(Wflow.BMI, Symbol(m.fn))(Wflow.Model, m.config_file)
     return model
 end
@@ -227,13 +227,13 @@ function wflow_bmi(m::GetCurrentTime, model::Wflow.Model)
 end
 
 function wflow_bmi(m::UpdateUntil, model::Wflow.Model)
-    model = getfield(Wflow.BMI, Symbol(m.fn))(model, m.time)
-    return model
+    getfield(Wflow.BMI, Symbol(m.fn))(model, m.time)
+    return nothing
 end
 
 function wflow_bmi(m::Update, model::Wflow.Model)
-    model = getfield(Wflow.BMI, Symbol(m.fn))(model)
-    return model
+    getfield(Wflow.BMI, Symbol(m.fn))(model)
+    return nothing
 end
 
 function wflow_bmi(m::GetInputVarNames, model::Wflow.Model)
@@ -347,8 +347,8 @@ function wflow_bmi(m::Finalize, model::Wflow.Model)
 end
 
 function wflow_bmi(m::LoadState, model::Wflow.Model)
-    model = getfield(Wflow, Symbol(m.fn))(model)
-    return model
+    getfield(Wflow, Symbol(m.fn))(model)
+    return nothing
 end
 
 function wflow_bmi(m::SaveState, model::Wflow.Model)

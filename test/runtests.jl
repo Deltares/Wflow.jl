@@ -6,16 +6,15 @@ using NCDatasets
 using StaticArrays
 using Statistics
 using Test
-using UnPack
 using Wflow
 using Base.MathConstants: eulergamma
 using Base.Threads
 using BasicModelInterface
-import Polynomials
+using Polynomials: Polynomials
 using DelimitedFiles
 using LoggingExtras
 using QuadGK
-import Aqua
+using Aqua: Aqua
 
 const BMI = BasicModelInterface
 const Float = Wflow.Float
@@ -38,15 +37,11 @@ end
 staticmaps_rhine_path = testdata(v"0.1", "staticmaps.nc", "staticmaps-rhine.nc")
 staticmaps_moselle_path =
     testdata(v"0.2.9", "staticmaps-moselle.nc", "staticmaps-moselle.nc")
-staticmaps_lahn_path = testdata(v"0.2.1", "staticmaps-lahn.nc", "staticmaps-lahn.nc")
-staticmaps_meuse_path =
-    testdata(v"0.2.8", "staticmaps_flex_meuse.nc", "staticmaps_flex_meuse.nc")
 forcing_moselle_path = testdata(v"0.2.6", "forcing-moselle.nc", "forcing-moselle.nc")
-forcing_lahn_path = testdata(v"0.2", "forcing-lahn.nc", "forcing-lahn.nc")
 forcing_moselle_sed_path =
     testdata(v"0.2.3", "forcing-moselle-sed.nc", "forcing-moselle-sed.nc")
 staticmaps_moselle_sed_path =
-    testdata(v"0.2.3", "staticmaps-moselle-sed.nc", "staticmaps-moselle-sed.nc")
+    testdata(v"0.3.0", "staticmaps-moselle-sed.nc", "staticmaps-moselle-sed.nc")
 instates_moselle_sed_path =
     testdata(v"0.2", "instates-moselle-sed.nc", "instates-moselle-sed.nc")
 instates_moselle_path = testdata(v"0.2.6", "instates-moselle.nc", "instates-moselle.nc")
@@ -60,7 +55,6 @@ forcing_sbm_gw_path = testdata(
     "forcing-sbm-groundwater-part2.nc",
     "forcing-sbm-groundwater-part2.nc",
 )
-forcing_meuse_path = testdata(v"0.2.8", "forcing_meuse.nc", "forcing_meuse.nc")
 staticmaps_sbm_gw_path =
     testdata(v"0.2.3", "staticmaps-sbm-groundwater.nc", "staticmaps-sbm-groundwater.nc")
 instates_sbm_gw_path =
@@ -73,7 +67,8 @@ forcing_calendar_noleap_path =
 forcing_piave_path = testdata(v"0.2.9", "inmaps-era5-2010-piave.nc", "forcing-piave.nc")
 staticmaps_piave_path = testdata(v"0.2.9", "staticmaps-piave.nc", "staticmaps-piave.nc")
 instates_piave_path = testdata(v"0.2.9", "instates-piave.nc", "instates-piave.nc")
-instates_piave_gwf_path = testdata(v"0.2.9", "instates-piave-gwf.nc", "instates-piave-gwf.nc")
+instates_piave_gwf_path =
+    testdata(v"0.2.9", "instates-piave-gwf.nc", "instates-piave-gwf.nc")
 
 include("testing_utils.jl")
 
@@ -83,14 +78,13 @@ include("testing_utils.jl")
 with_logger(NullLogger()) do
     ## run all tests
     @testset "Wflow.jl" begin
-        include("horizontal_process.jl")
+        include("routing_process.jl")
         include("io.jl")
         include("vertical_process.jl")
         include("reservoir_lake.jl")
         include("run_sbm.jl")
         include("run_sbm_piave.jl")
         include("run_sbm_gwf_piave.jl")
-        include("run_hbv.jl")
         include("run_sbm_gwf.jl")
         include("run.jl")
         include("groundwater.jl")
@@ -98,8 +92,7 @@ with_logger(NullLogger()) do
         include("bmi.jl")
         include("run_sediment.jl")
         include("subdomains.jl")
-        include("run_flextopo.jl")
 
-        Aqua.test_all(Wflow; ambiguities = false)
+        Aqua.test_all(Wflow; ambiguities = false, persistent_tasks = false)
     end
 end

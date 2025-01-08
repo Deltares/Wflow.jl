@@ -17,10 +17,16 @@ path_static = "staticmaps-piave.nc"
 ldd = "wflow_ldd"
 river_location = "wflow_river"
 subcatchment = "wflow_subcatch"
-forcing = [ "vertical.precipitation", "vertical.temperature", "vertical.potential_evaporation",]
-cyclic = [ "vertical.leaf_area_index",]
 gauges = "wflow_gauges"
 gauges_grdc = "wflow_gauges_grdc"
+
+forcing = [
+  "vertical.atmospheric_forcing.precipitation",
+  "vertical.atmospheric_forcing.temperature",
+  "vertical.atmospheric_forcing.potential_evaporation",
+]
+
+cyclic = ["vertical.vegetation_parameter_set.leaf_area_index"]
 
 [model]
 type = "sbm"
@@ -36,75 +42,91 @@ kw_land_tstep = 3600
 thicknesslayers = [ 50, 100, 50, 200, 800,]
 river_routing = "kinematic-wave"
 
-[state.vertical]
+[state.vertical.interception.variables]
+canopy_storage = "canopystorage"
+
+[state.vertical.soil.variables]
 satwaterdepth = "satwaterdepth"
-snow = "snow"
 tsoil = "tsoil"
 ustorelayerdepth = "ustorelayerdepth"
-snowwater = "snowwater"
-canopystorage = "canopystorage"
-glacierstore = "glacierstore"
 
-[input.vertical]
-alpha_h1 = "alpha_h1"
-altitude = "wflow_dem"
-c = "c"
-cf_soil = "cf_soil"
-cfmax = "Cfmax"
-e_r = "EoverR"
-f = "f"
-infiltcappath = "InfiltCapPath"
-infiltcapsoil = "InfiltCapSoil"
-kext = "Kext"
-kv_0 = "KsatVer"
+[state.vertical.snow.variables]
+snow_storage = "snow"
+snow_water = "snowwater"
+
+[state.vertical.glacier.variables]
+glacier_store = "glacierstore"
+
+[input.vertical.glacier.parameters]
+glacier_frac = "wflow_glacierfrac"
+g_cfmax = "G_Cfmax"
+g_ttm = "G_TT"
+g_sifrac = "G_SIfrac"
+
+[input.vertical.glacier.variables]
+glacier_store = "wflow_glacierstore"
+
+[input.vertical.vegetation_parameter_set]
 leaf_area_index = "LAI"
-m = "M_"
-maxleakage = "MaxLeakage"
-pathfrac = "PathFrac"
+kext = "Kext"
+storage_specific_leaf = "Sl"
+storage_wood = "Swood"
+rootingdepth = "RootingDepth"
+kc = "crop_factor"
+
+[input.vertical.interception.parameters]
+e_r = "EoverR"
+
+[input.vertical.atmospheric_forcing]
 potential_evaporation = "pet"
 precipitation = "precip"
-rootdistpar = "rootdistpar"
-rootingdepth = "RootingDepth"
-soilminthickness = "SoilMinThickness"
-soilthickness = "SoilThickness"
-specific_leaf = "Sl"
-storage_wood = "Swood"
 temperature = "temp"
-tt = "TT"
-tti = "TTI"
-ttm = "TTM"
-water_holding_capacity = "WHC"
+
+[input.vertical.runoff.parameters]
 waterfrac = "WaterFrac"
-theta_s = "thetaS"
-theta_r = "thetaR"
-glacierstore = "wflow_glacierstore"
-glacierfrac = "wflow_glacierfrac"
-g_cfmax = "G_Cfmax"
-g_tt = "G_TT"
-g_sifrac = "G_SIfrac"
-kc = "crop_factor"
+
+[input.vertical.soil.parameters]
+alpha_h1 = "alpha_h1"
+c = "c"
+cf_soil = "cf_soil"
+f = "f"
 h1 = "h1"
 h2 = "h2"
 h3_high = "h3_high"
 h3_low = "h3_low"
 h4 = "h4"
+infiltcappath = "InfiltCapPath"
+infiltcapsoil = "InfiltCapSoil"
+theta_r = "thetaR"
+theta_s = "thetaS"
+maxleakage = "MaxLeakage"
+pathfrac = "PathFrac"
+rootdistpar = "rootdistpar"
+soilthickness = "SoilThickness"
+kv_0 = "KsatVer"
 
-[state.lateral.river]
+[input.vertical.snow.parameters]
+tt = "TT"
+tti = "TTI"
+ttm = "TTM"
+cfmax = "Cfmax"
+
+[state.lateral.river.variables]
 q = "q_river"
 h = "h_river"
 h_av = "h_av_river"
 
-[state.lateral.subsurface]
+[state.lateral.subsurface.variables]
 ssf = "ssf"
 
-[state.lateral.land]
+[state.lateral.land.variables]
 q = "q_land"
 h = "h_land"
 h_av = "h_av_land"
 
 [input.lateral.river]
 length = "wflow_riverlength"
-n = "N_River"
+mannings_n = "N_River"
 slope = "RiverSlope"
 width = "wflow_riverwidth"
 bankfull_depth = "RiverDepth"
@@ -113,13 +135,13 @@ bankfull_depth = "RiverDepth"
 ksathorfrac = "KsatHorFrac"
 
 [input.lateral.land]
-n = "N"
+mannings_n = "N"
 slope = "Slope"
 
 [output]
 path = "output-piave.nc"
 
-[output.lateral.river]
+[output.lateral.river.variables]
 q_av = "q_river"
 
 [csv]
@@ -128,9 +150,9 @@ path = "output-piave.csv"
 [[csv.column]]
 header = "Q"
 map = "gauges"
-parameter = "lateral.river.q_av"
+parameter = "lateral.river.variables.q_av"
 
 [[csv.column]]
 header = "Q"
 map = "gauges_grdc"
-parameter = "lateral.river.q_av"
+parameter = "lateral.river.variables.q_av"

@@ -1,0 +1,155 @@
+---
+title: Different model configurations
+---
+
+## Enabling snow and glacier processes
+
+```toml
+[model]
+snow = true
+masswasting = true
+glacier = true
+
+[input.vertical]
+tt = "TT"
+tti = "TTI"
+ttm = "TTM"
+water_holding_capacity = "WHC"
+glacierstore = "wflow_glacierstore"
+glacierfrac = "wflow_glacierfrac"
+g_cfmax = "G_Cfmax"
+g_ttm = "G_TT"
+g_sifrac = "G_SIfrac"
+
+[state.vertical]
+snow = "snow"
+tsoil = "tsoil"
+snowwater = "snowwater"
+glacierstorage = "glacierstorage"
+```
+
+## Enabling reservoirs
+
+```toml
+[model]
+reservoirs = true
+
+[input.lateral.river.reservoir]
+area = "ResSimpleArea"
+areas = "wflow_reservoirareas"
+demand = "ResDemand"
+locs = "wflow_reservoirlocs"
+maxrelease = "ResMaxRelease"
+maxvolume = "ResMaxVolume"
+targetfullfrac = "ResTargetFullFrac"
+targetminfrac = "ResTargetMinFrac"
+
+[state.lateral.river.reservoir]
+volume = "volume_reservoir"
+```
+
+## Enabling lakes
+
+```toml
+[model]
+lakes = true
+
+[input.lateral.river.lake]
+area = "lake_area"
+areas = "wflow_lakeareas"
+b = "lake_b"
+e = "lake_e"
+locs = "wflow_lakelocs"
+outflowfunc = "lake_outflowfunc"
+storfunc  = "lake_storfunc"
+threshold  = "lake_threshold"
+waterlevel = "lake_waterlevel"
+
+[state.lateral.river.lake]
+waterlevel = "waterlevel_lake"
+```
+
+## Enabling floodplain routing
+As part of the local inertial model for river flow.
+
+### 1D floodplains
+
+```toml
+[model]
+floodplain_1d = true
+
+[input.lateral.river.floodplain]
+volume = "floodplain_volume"
+n = "floodplain_n"
+
+[state.lateral.river.floodplain]
+q = "q_floodplain"
+h = "h_floodplain"
+```
+
+### 2D floodplains
+
+```toml
+[model]
+land_routing = "local-inertial"
+
+[input.lateral.river]
+bankfull_elevation = "hydrodem_avg_D4"
+
+[input.lateral.land]
+elevation = "hydrodem_avg_D4"
+
+[state.lateral.land]
+qx = "qx_land"
+qy = "qy_land"
+
+```
+
+## Enabling water demand and allocation
+The model types `sbm` and `sbm_gwf` support water demand and allocation computations, in
+combination with the kinematic wave and local inertial runoff routing scheme for river and
+overland flow.
+
+```toml
+# example of water demand and allocation input parameters as cyclic data
+[input]
+cyclic = ["vertical.domestic.demand_gross", "vertical.domestic.demand_net",
+"vertical.industry.demand_gross", "vertical.industry.demand_net",
+"vertical.livestock.demand_gross", "vertical.livestock.demand_net",
+"vertical.paddy.irrigation_trigger", "vertical.nonpaddy.irrigation_trigger",]
+
+[model.water_demand]
+domestic = true     # optional, default is "false"
+industry = true     # optional, default is "false"
+livestock = true    # optional, default is "false"
+paddy = true        # optional, default is "false"
+nonpaddy = true     # optional, default is "false"
+
+[input.vertical.allocation]
+areas = "allocation_areas"
+frac_sw_used = "SurfaceWaterFrac"
+
+[input.vertical.domestic]
+demand_gross = "dom_gross"
+demand_net = "dom_net"
+
+[input.vertical.industry]
+demand_gross = "ind_gross"
+demand_net = "ind_net"
+
+[input.vertical.livestock]
+demand_gross = "lsk_gross"
+demand_net = "lsk_net"
+
+[input.vertical.paddy]
+irrigation_areas = "paddy_irrigation_areas"
+irrigation_trigger = "irrigation_trigger"
+
+[input.vertical.nonpaddy]
+irrigation_areas = "nonpaddy_irrigation_areas"
+irrigation_trigger = "irrigation_trigger"
+
+# required if paddy is set to "true"
+[state.vertical.paddy]
+h = "h_paddy"
+```

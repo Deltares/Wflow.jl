@@ -20,44 +20,50 @@ subcatchment = "wflow_subcatch"
 # specify the internal IDs of the parameters which vary over time
 # the external name mapping needs to be below together with the other mappings
 forcing = [
-  "vertical.precipitation",
-  "vertical.temperature",
-  "vertical.potential_evaporation",
+  "vertical.atmospheric_forcing.precipitation",
+  "vertical.atmospheric_forcing.temperature",
+  "vertical.atmospheric_forcing.potential_evaporation",
 ]
 
-cyclic = ["vertical.leaf_area_index"]
+cyclic = ["vertical.vegetation_parameter_set.leaf_area_index"]
 
-[input.vertical]
-altitude = "wflow_dem"
-c = "c"
-cf_soil = "cf_soil"
-cfmax = "Cfmax"
-e_r = "EoverR"
-infiltcappath = "InfiltCapPath"
-infiltcapsoil = "InfiltCapSoil"
-kext = "Kext"
-kv_0 = "KsatVer"
+[input.vertical.vegetation_parameter_set]
 leaf_area_index = "LAI"
-m = "M"
-maxleakage = "MaxLeakage"
-pathfrac = "PathFrac"
+kext = "Kext"
+storage_specific_leaf = "Sl"
+storage_wood = "Swood"
+rootingdepth = "RootingDepth"
+
+[input.vertical.interception.parameters]
+e_r = "EoverR"
+
+[input.vertical.atmospheric_forcing]
 potential_evaporation = "pet"
 precipitation = "precip"
-rootdistpar = "rootdistpar"
-rootingdepth = "RootingDepth"
-soilminthickness = "SoilMinThickness"
-soilthickness = "SoilThickness"
-specific_leaf = "Sl"
-storage_wood = "Swood"
 temperature = "temp"
+
+[input.vertical.runoff.parameters]
+waterfrac = "WaterFrac"
+
+[input.vertical.soil.parameters]
+c = "c"
+cf_soil = "cf_soil"
+f = "f"
+infiltcappath = "InfiltCapPath"
+infiltcapsoil = "InfiltCapSoil"
+theta_r = "thetaR"
+theta_s = "thetaS"
+maxleakage = "MaxLeakage"
+pathfrac = "PathFrac"
+rootdistpar = "rootdistpar"
+soilthickness = "SoilThickness"
+kv_0 = "KsatVer"
+
+[input.vertical.snow.parameters]
 tt = "TT"
 tti = "TTI"
 ttm = "TTM"
-w_soil = "wflow_soil"
-water_holding_capacity = "WHC"
-waterfrac = "WaterFrac"
-theta_r = "thetaR"
-theta_s = "thetaS"
+cfmax = "Cfmax"
 
 [input.lateral.river]
 length = "wflow_riverlength"
@@ -93,9 +99,9 @@ path = "output_moselle_simple.csv"
 coordinate.x = 7.378
 coordinate.y = 50.204
 header = "Q"
-parameter = "lateral.river.q"
+parameter = "lateral.river.variables.q"
 
 [[csv.column]]
 header = "recharge"
-parameter = "vertical.recharge"
+parameter = "vertical.soil.variables.recharge"
 reducer = "mean"

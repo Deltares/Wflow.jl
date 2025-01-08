@@ -3,7 +3,7 @@ config = Wflow.Config(tomlpath)
 
 model = Wflow.initialize_sbm_model(config)
 
-@unpack network = model
+(; network) = model
 
 min_sto_river = get(config.model, "min_streamorder_river", 6)
 min_sto_land = get(config.model, "min_streamorder_land", 5)
@@ -19,7 +19,7 @@ subbas_order, indices_subbas, topo_subbas = Wflow.kinwave_set_subdomains(
     min_sto_land,
 )
 
-Wflow.close_files(model, delete_output = false)
+Wflow.close_files(model; delete_output = false)
 
 if nthreads() == 1
     @testset "Nonparallel subdomains kinematic wave (nthreads = 1)" begin

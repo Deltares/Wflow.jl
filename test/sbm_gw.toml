@@ -18,23 +18,27 @@ path_output = "outstates-moselle.nc"
 # if listed, the variable must be present in the NetCDF or error
 # if not listed, the variable can get a default value if it has one
 
-[state.vertical]
-canopystorage = "canopystorage"
+[state.vertical.interception.variables]
+canopy_storage = "canopystorage"
+
+[state.vertical.soil.variables] 
 satwaterdepth = "satwaterdepth"
-snow = "snow"
-snowwater = "snowwater"
 tsoil = "tsoil"
 ustorelayerdepth = "ustorelayerdepth"
 
-[state.lateral.river]
+[state.vertical.snow.variables] 
+snow_storage = "snow"
+snow_water = "snowwater"
+
+[state.lateral.river.variables]
 h = "h_river"
 h_av = "h_av_river"
 q = "q_river"
 
-[state.lateral.river.reservoir]
+[state.lateral.river.boundary_conditions.reservoir.variables]
 volume = "volume_reservoir"
 
-[state.lateral.land]
+[state.lateral.land.variables]
 h = "h_land"
 h_av = "h_av_land"
 q = "q_land"
@@ -52,14 +56,29 @@ subcatchment = "wflow_subcatch"
 # specify the internal IDs of the parameters which vary over time
 # the external name mapping needs to be below together with the other mappings
 forcing = [
-  "vertical.precipitation",
-  "vertical.temperature",
-  "vertical.potential_evaporation",
+  "vertical.atmospheric_forcing.precipitation",
+  "vertical.atmospheric_forcing.temperature",
+  "vertical.atmospheric_forcing.potential_evaporation",
 ]
 
-cyclic = ["vertical.leaf_area_index"]
+cyclic = ["vertical.vegetation_parameter_set.leaf_area_index"]
 
-[input.vertical]
+[input.vertical.atmospheric_forcing]
+potential_evaporation = "pet"
+precipitation = "precip"
+temperature = "temp"
+
+[input.vertical.vegetation_parameter_set]
+leaf_area_index = "LAI"
+kext = "Kext"
+storage_specific_leaf = "Sl"
+storage_wood = "Swood"
+rootingdepth = "RootingDepth"
+
+[input.vertical.runoff.parameters]
+waterfrac = "WaterFrac"
+
+[input.vertical.soil.parameters]
 c = "c"
 cf_soil = "cf_soil"
 cfmax = "Cfmax"
@@ -67,30 +86,23 @@ e_r = "EoverR"
 f = "f"
 infiltcappath = "InfiltCapPath"
 infiltcapsoil = "InfiltCapSoil"
-kext = "Kext"
 kv_0 = "KsatVer"
-leaf_area_index = "LAI"
 maxleakage = "MaxLeakage"
 pathfrac = "PathFrac"
-potential_evaporation = "pet"
-precipitation = "precip"
 rootdistpar = "rootdistpar"
 rootingdepth = "RootingDepth"
 soilthickness = "SoilThickness"
-specific_leaf = "Sl"
-storage_wood = "Swood"
-temperature = "temp"
-tt = "TT"
-tti = "TTI"
-ttm = "TTM"
-water_holding_capacity = "WHC"
-waterfrac = "WaterFrac"
 theta_r = "thetaR"
 theta_s = "thetaS"
 
+[input.vertical.snow.parameters]
+tt = "TT"
+tti = "TTI"
+ttm = "TTM"
+
 [input.lateral.river]
 length = "wflow_riverlength"
-n = "N_River"
+mannings_n = "N_River"
 slope = "RiverSlope"
 width = "wflow_riverwidth"
 
@@ -105,7 +117,7 @@ targetfullfrac = "ResTargetFullFrac"
 targetminfrac = "ResTargetMinFrac"
 
 [input.lateral.land]
-n = "N"
+mannings_n = "N"
 slope = "Slope"
 
 [model]
@@ -120,22 +132,26 @@ type = "sbm"
 [output]
 path = "output_moselle.nc"
 
-[output.vertical]
-canopystorage = "canopystorage"
+[output.vertical.interception.variables]
+canopy_storage = "canopystorage"
+
+[output.vertical.soil.variables]
 satwaterdepth = "satwaterdepth"
-snow = "snow"
-snowwater = "snowwater"
 tsoil = "tsoil"
 ustorelayerdepth = "ustorelayerdepth"
 
-[output.lateral.river]
+[output.vertical.snow.variables]
+snow_storage = "snow"
+snow_water = "snowwater"
+
+[output.lateral.river.variables]
 h = "h_river"
 q = "q_river"
 
-[output.lateral.river.reservoir]
+[output.lateral.river.boundary_conditions.reservoir.variables]
 volume = "volume_reservoir"
 
-[output.lateral.land]
+[output.lateral.land.variables]
 h = "h_land"
 q = "q_land"
 
@@ -145,63 +161,69 @@ path = "output_scalar_moselle.nc"
 [[netcdf.variable]]
 name = "Q"
 map = "gauges"
-parameter = "lateral.river.q"
+parameter = "lateral.river.variables.q"
 
 [[netcdf.variable]]
 coordinate.x = 6.255
 coordinate.y = 50.012
 name = "temp_coord"
 location = "temp_bycoord"
-parameter = "vertical.temperature"
+parameter = "vertical.atmospheric_forcing.temperature"
 
 [[netcdf.variable]]
 location = "temp_byindex"
 name = "temp_index"
 index.x = 100
 index.y = 264
-parameter = "vertical.temperature"
+parameter = "vertical.atmospheric_forcing.temperature"
 
 [csv]
 path = "output_moselle.csv"
 
 [[csv.column]]
 header = "Q"
-parameter = "lateral.river.q"
+parameter = "lateral.river.variables.q"
 reducer = "maximum"
 
 [[csv.column]]
 header = "volume"
 index = 1
-parameter = "lateral.river.reservoir.volume"
+parameter = "lateral.river.boundary_conditions.reservoir.variables.volume"
 
 [[csv.column]]
 coordinate.x = 6.255
 coordinate.y = 50.012
 header = "temp_bycoord"
-parameter = "vertical.temperature"
+parameter = "vertical.atmospheric_forcing.temperature"
 
 [[csv.column]]
 header = "temp_byindex"
 index.x = 100
 index.y = 264
-parameter = "vertical.temperature"
+parameter = "vertical.atmospheric_forcing.temperature"
 
 [[csv.column]]
 header = "Q"
 map = "gauges"
-parameter = "lateral.river.q"
+parameter = "lateral.river.variables.q"
 
 [[csv.column]]
 header = "recharge"
 map = "subcatchment"
-parameter = "vertical.recharge"
+parameter = "vertical.soil.variables.recharge"
 reducer = "mean"
 
 [API]
 components = [
-  "vertical",
-  "lateral.subsurface",
-  "lateral.land",
-  "lateral.river",
-  "lateral.river.reservoir",
+  "vertical.variables",
+  "vertical.parameters",
+  "lateral.subsurface.variables",
+  "lateral.subsurface.parameters",
+  "lateral.land.variables",
+  "lateral.land.parameters",
+  "lateral.river.variables",
+  "lateral.river.parameters",
+  "lateral.river.boundary_conditions.reservoir.boundary_conditions",
+  "lateral.river.boundary_conditions.reservoir.parameters",
+  "lateral.river.boundary_conditions.reservoir.variables",
 ]

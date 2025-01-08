@@ -18,22 +18,24 @@ path_output = "outstates-example-sbm-gwf.nc"
 # if listed, the variable must be present in the NetCDF or error
 # if not listed, the variable can get a default value if it has one
 
-[state.vertical]
-canopystorage = "canopystorage"
+[state.vertical.interception.variables]
+canopy_storage = "canopystorage"
+
+[state.vertical.soil.variables]
 satwaterdepth = "satwaterdepth"
 ustorelayerdepth = "ustorelayerdepth"
 
-[state.lateral.river]
+[state.lateral.river.variables]
 h = "h_river"
 h_av = "h_av_river"
 q = "q_river"
 
-[state.lateral.land]
+[state.lateral.land.variables]
 h = "h_land"
 h_av = "h_av_land"
 q = "q_land"
 
-[state.lateral.subsurface.flow.aquifer]
+[state.lateral.subsurface.flow.aquifer.variables]
 head = "head"
 
 [input]
@@ -49,33 +51,38 @@ altitude = "wflow_dem"
 # specify the internal IDs of the parameters which vary over time
 # the external name mapping needs to be below together with the other mappings
 forcing = [
-  "vertical.precipitation",
-  "vertical.potential_evaporation",
+  "vertical.atmospheric_forcing.precipitation",
+  "vertical.atmospheric_forcing.potential_evaporation",
 ]
 
-[input.vertical]
+[input.vertical.vegetation_parameter_set]
+rootingdepth = "rootingdepth"
 canopygapfraction = "canopygapfraction"
 cmax = "cmax"
+
+[input.vertical.interception.parameters]
 e_r = "EoverR"
-infiltcapsoil = "InfiltCapSoil"
-kv_0 = "kv"
-m = "M"
-pathfrac = "PathFrac"
+
+[input.vertical.atmospheric_forcing]
 potential_evaporation = "PET"
 precipitation = "P"
-rootingdepth = "rootingdepth"
+
+[input.vertical.soil.parameters]
+infiltcapsoil = "InfiltCapSoil"
+kv_0 = "kv"
+pathfrac = "PathFrac"
 soilthickness = "soilthickness"
 theta_r = "thetaR"
 theta_s = "thetaS"
 
 [input.lateral.river]
 length = "wflow_riverlength"
-n = "N_river"
+mannings_n = "N_river"
 slope = "RiverSlope"
 width = "wflow_riverwidth"
 
 [input.lateral.land]
-n = "N"
+mannings_n = "N"
 slope = "Slope"
 
 [input.lateral.subsurface]
@@ -102,25 +109,29 @@ type = "sbm_gwf"
 [output]
 path = "output_example-sbm-gwf.nc"
 
-[output.vertical]
-canopystorage = "canopystorage"
+[output.vertical.interception.variables]
+canopy_storage = "canopystorage"
+
+[output.vertical.soil.variables]
 satwaterdepth = "satwaterdepth"
-soilthickness = "soilthickness"
 ustorelayerdepth = "ustorelayerdepth"
 
-[output.lateral.river]
+[output.vertical.soil.parameters]
+soilthickness = "soilthickness"
+
+[output.lateral.river.variables]
 q = "q"
 
-[output.lateral.subsurface.flow.aquifer]
+[output.lateral.subsurface.flow.aquifer.variables]
 head = "head"
 
-[output.lateral.subsurface.recharge]
+[output.lateral.subsurface.recharge.variables]
 rate = "rate"
 
-[output.lateral.subsurface.drain]
+[output.lateral.subsurface.drain.variables]
 flux = "drain_flux"
 
-[output.lateral.subsurface.river]
+[output.lateral.subsurface.river.variables]
 flux = "flux"
 
 [csv]
@@ -129,9 +140,9 @@ path = "output_example-sbm-gwf.csv"
 [[csv.column]]
 header = "Q_av"
 index = 5
-parameter = "lateral.river.q_av"
+parameter = "lateral.river.variables.q_av"
 
 [[csv.column]]
 header = "head"
 index = 5
-parameter = "lateral.subsurface.flow.aquifer.head"
+parameter = "lateral.subsurface.flow.aquifer.variables.head"

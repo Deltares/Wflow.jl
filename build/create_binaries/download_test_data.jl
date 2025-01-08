@@ -1,7 +1,6 @@
-using Wflow
 using Downloads
 
-testdir = abspath(dirname(pathof(Wflow)), "..", "test")
+testdir = normpath(@__DIR__, "../../test")
 
 # ensure test data is present
 # this code is copied from runtests.jl, and is a temporary solution to get the data in place
@@ -20,16 +19,12 @@ end
 
 staticmaps_rhine_path = testdata(v"0.1", "staticmaps.nc", "staticmaps-rhine.nc")
 staticmaps_moselle_path =
-    testdata(v"0.2.8", "staticmaps-moselle.nc", "staticmaps-moselle.nc")
-staticmaps_lahn_path = testdata(v"0.2.1", "staticmaps-lahn.nc", "staticmaps-lahn.nc")
-staticmaps_meuse_path =
-    testdata(v"0.2.8", "staticmaps_flex_meuse.nc", "staticmaps_flex_meuse.nc")
+    testdata(v"0.2.9", "staticmaps-moselle.nc", "staticmaps-moselle.nc")
 forcing_moselle_path = testdata(v"0.2.6", "forcing-moselle.nc", "forcing-moselle.nc")
-forcing_lahn_path = testdata(v"0.2", "forcing-lahn.nc", "forcing-lahn.nc")
 forcing_moselle_sed_path =
     testdata(v"0.2.3", "forcing-moselle-sed.nc", "forcing-moselle-sed.nc")
 staticmaps_moselle_sed_path =
-    testdata(v"0.2.3", "staticmaps-moselle-sed.nc", "staticmaps-moselle-sed.nc")
+    testdata(v"0.3.0", "staticmaps-moselle-sed.nc", "staticmaps-moselle-sed.nc")
 instates_moselle_sed_path =
     testdata(v"0.2", "instates-moselle-sed.nc", "instates-moselle-sed.nc")
 instates_moselle_path = testdata(v"0.2.6", "instates-moselle.nc", "instates-moselle.nc")
@@ -43,7 +38,6 @@ forcing_sbm_gw_path = testdata(
     "forcing-sbm-groundwater-part2.nc",
     "forcing-sbm-groundwater-part2.nc",
 )
-forcing_meuse_path = testdata(v"0.2.8", "forcing_meuse.nc", "forcing_meuse.nc")
 staticmaps_sbm_gw_path =
     testdata(v"0.2.3", "staticmaps-sbm-groundwater.nc", "staticmaps-sbm-groundwater.nc")
 instates_sbm_gw_path =
@@ -56,4 +50,5 @@ forcing_calendar_noleap_path =
 forcing_piave_path = testdata(v"0.2.9", "inmaps-era5-2010-piave.nc", "forcing-piave.nc")
 staticmaps_piave_path = testdata(v"0.2.9", "staticmaps-piave.nc", "staticmaps-piave.nc")
 instates_piave_path = testdata(v"0.2.9", "instates-piave.nc", "instates-piave.nc")
-instates_piave_gwf_path = testdata(v"0.2.9", "instates-piave-gwf.nc", "instates-piave-gwf.nc")
+instates_piave_gwf_path =
+    testdata(v"0.2.9", "instates-piave-gwf.nc", "instates-piave-gwf.nc")

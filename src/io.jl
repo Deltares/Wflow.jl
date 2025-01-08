@@ -5,12 +5,15 @@ Output data can be written to netCDF or CSV files.
 For configuration files we use TOML.
 =#
 
+#TODO (v1.0): check if mapping of variables (input and output) in TOML file should be
+#simplified. Direct mapping is now used.
+
 """Turn "a.aa.aaa" into (:a, :aa, :aaa)"""
 symbols(s) = Tuple(Symbol(x) for x in split(s, '.'))
 
 """Turn symbols"a.aa.aaa" into (:a, :aa, :aaa)"""
 macro symbols_str(s)
-    Tuple(Symbol(x) for x in split(s, '.'))
+    return Tuple(Symbol(x) for x in split(s, '.'))
 end
 
 "Get a nested field using a tuple of Symbols"
@@ -34,8 +37,8 @@ if it exists. It behaves largely like a distionary, but it overloads `getpropert
 `setproperty` to support syntax like `config.model.reinit = false`.
 """
 struct Config
-    dict::Dict{String,Any}  # nested key value mapping of all settings
-    path::Union{String,Nothing}  # path to the TOML file, or nothing
+    dict::Dict{String, Any}  # nested key value mapping of all settings
+    path::Union{String, Nothing}  # path to the TOML file, or nothing
 end
 
 Config(path::AbstractString) = Config(TOML.parsefile(path), path)
@@ -52,7 +55,8 @@ end
 
 function Base.setproperty!(config::Config, f::Symbol, x)
     dict = Dict(config)
-    return dict[String(f)] = x
+    dict[String(f)] = x
+    return nothing
 end
 
 "Get a value from the Config with either the key or an alias of the key."
@@ -127,7 +131,7 @@ function ncvar_name_modifier(var; config = nothing)
                 if length(var[dim_name]) > 1
                     # if modifier is provided as a list for each dim item
                     indices = []
-                    for i = 1:length(var[dim_name])
+                    for i in 1:length(var[dim_name])
                         index = get_index_dimension(var, config, var[dim_name][i])
                         @info "NetCDF parameter `$ncname` is modified with scale `$(scale[i])` and offset `$(offset[i])` at index `$index`."
                         push!(indices, index)
@@ -178,31 +182,35 @@ function get_at(ds::CFDataset, varname::AbstractString, i)
 end
 
 function get_param_res(model)
-    Dict(
-        symbols"vertical.precipitation" => model.lateral.river.reservoir.precipitation,
-        symbols"vertical.potential_evaporation" =>
-            model.lateral.river.reservoir.evaporation,
+    return Dict(
+        symbols"vertical.atmospheric_forcing.precipitation" =>
+            model.lateral.river.boundary_conditions.reservoir.boundary_conditions.precipitation,
+        symbols"vertical.atmospheric_forcing.potential_evaporation" =>
+            model.lateral.river.boundary_conditions.reservoir.boundary_conditions.evaporation,
     )
 end
 
 function get_param_lake(model)
-    Dict(
-        symbols"vertical.precipitation" => model.lateral.river.lake.precipitation,
-        symbols"vertical.potential_evaporation" => model.lateral.river.lake.evaporation,
+    return Dict(
+        symbols"vertical.atmospheric_forcing.precipitation" =>
+            model.lateral.river.boundary_conditions.lake.boundary_conditions.precipitation,
+        symbols"vertical.atmospheric_forcing.potential_evaporation" =>
+            model.lateral.river.boundary_conditions.lake.boundary_conditions.evaporation,
     )
 end
 
-mover_params = (symbols"vertical.precipitation", symbols"vertical.potential_evaporation")
+mover_params = (
+    symbols"vertical.atmospheric_forcing.precipitation",
+    symbols"vertical.atmospheric_forcing.potential_evaporation",
+)
 
-function load_fixed_forcing(model)
-    @unpack reader, network, config = model
-    @unpack forcing_parameters = reader
+function load_fixed_forcing!(model)
+    (; reader, network, config) = model
+    (; forcing_parameters) = reader
 
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
     do_lakes = get(config.model, "lakes", false)::Bool
 
-    mover_params =
-        (symbols"vertical.precipitation", symbols"vertical.potential_evaporation")
     reverse_indices = network.land.reverse_indices
     if do_reservoirs
         sel_reservoirs = network.reservoir.indices_coverage
@@ -237,12 +245,13 @@ function load_fixed_forcing(model)
             end
         end
     end
+    return nothing
 end
 
 "Get dynamic netCDF input for the given time"
 function update_forcing!(model)
-    @unpack vertical, clock, reader, network, config = model
-    @unpack dataset, dataset_times, forcing_parameters = reader
+    (; clock, reader, network, config) = model
+    (; dataset, dataset_times, forcing_parameters) = reader
 
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
     do_lakes = get(config.model, "lakes", false)::Bool
@@ -303,7 +312,7 @@ function update_forcing!(model)
         param_vector .= data_sel
     end
 
-    return model
+    return nothing
 end
 
 """
@@ -327,12 +336,13 @@ function load_dynamic_input!(model)
     if haskey(model.config.input, "cyclic")
         update_cyclic!(model)
     end
+    return nothing
 end
 
 "Get cyclic netCDF input for the given time"
 function update_cyclic!(model)
-    @unpack vertical, clock, reader, network, config = model
-    @unpack cyclic_dataset, cyclic_times, cyclic_parameters = reader
+    (; clock, reader, network) = model
+    (; cyclic_dataset, cyclic_times, cyclic_parameters) = reader
 
     # pick up the data that is valid for the past model time step
     month_day = monthday(clock.time - clock.dt)
@@ -355,6 +365,7 @@ function update_cyclic!(model)
             end
         end
     end
+    return nothing
 end
 
 """
@@ -368,7 +379,7 @@ https://github.com/Alexander-Barth/NCDatasets.jl/issues/106
 Note that using this will prevent automatic garbage collection and thus closure of the
 NCDataset.
 """
-const nc_handles = Dict{String,NCDataset{Nothing}}()
+const nc_handles = Dict{String, NCDataset{Nothing}}()
 
 "Safely create a netCDF file, even if it has already been opened for creation"
 function create_tracked_netcdf(path)
@@ -402,7 +413,7 @@ function setup_scalar_netcdf(
         ds,
         "time",
         Float64,
-        ("time",),
+        ("time",);
         attrib = ["units" => time_units, "calendar" => calendar],
     )
     set_extradim_netcdf(ds, extra_dim)
@@ -413,7 +424,7 @@ function setup_scalar_netcdf(
             ds,
             nc.location_dim,
             nc.locations,
-            (nc.location_dim,),
+            (nc.location_dim,);
             attrib = ["cf_role" => "timeseries_id"],
         )
         v = param(modelmap, nc.par)
@@ -422,7 +433,7 @@ function setup_scalar_netcdf(
                 ds,
                 nc.var,
                 float_type,
-                (nc.location_dim, "time"),
+                (nc.location_dim, "time");
                 attrib = ["_FillValue" => float_type(NaN)],
             )
         elseif eltype(v) <: SVector
@@ -432,7 +443,7 @@ function setup_scalar_netcdf(
                     ds,
                     nc.var,
                     float_type,
-                    (nc.location_dim, "time"),
+                    (nc.location_dim, "time");
                     attrib = ["_FillValue" => float_type(NaN)],
                 )
             else
@@ -440,7 +451,7 @@ function setup_scalar_netcdf(
                     ds,
                     nc.var,
                     float_type,
-                    (nc.location_dim, extra_dim.name, "time"),
+                    (nc.location_dim, extra_dim.name, "time");
                     attrib = ["_FillValue" => float_type(NaN)],
                 )
             end
@@ -456,22 +467,16 @@ function set_extradim_netcdf(
     ds,
     extra_dim::NamedTuple{
         (:name, :value),
-        Tuple{String,Vector{T}},
-    } where {T<:Union{String,Float64}},
+        Tuple{String, Vector{T}},
+    } where {T <: Union{String, Float64}},
 )
     # the axis attribute `Z` is required to import this type of 3D data by Delft-FEWS the
     # values of this dimension `extra_dim.value` should be of type Float64
     if extra_dim.name == "layer"
         attributes =
             ["long_name" => "layer_index", "standard_name" => "layer_index", "axis" => "Z"]
-    elseif extra_dim.name == "classes"
-        attributes = [
-            "long_name" => extra_dim.name,
-            "standard_name" => extra_dim.name,
-            "axis" => "Z",
-        ]
     end
-    defVar(ds, extra_dim.name, extra_dim.value, (extra_dim.name,), attrib = attributes)
+    defVar(ds, extra_dim.name, extra_dim.value, (extra_dim.name,); attrib = attributes)
     return nothing
 end
 
@@ -490,7 +495,6 @@ function setup_grid_netcdf(
     float_type = Float32,
     deflatelevel = 0,
 )
-
     ds = create_tracked_netcdf(path)
     defDim(ds, "time", Inf)  # unlimited
     if sizeinmetres
@@ -498,7 +502,7 @@ function setup_grid_netcdf(
             ds,
             "x",
             ncx,
-            ("x",),
+            ("x",);
             attrib = [
                 "long_name" => "x coordinate of projection",
                 "standard_name" => "projection_x_coordinate",
@@ -511,7 +515,7 @@ function setup_grid_netcdf(
             ds,
             "y",
             ncy,
-            ("y",),
+            ("y",);
             attrib = [
                 "long_name" => "y coordinate of projection",
                 "standard_name" => "projection_y_coordinate",
@@ -526,7 +530,7 @@ function setup_grid_netcdf(
             ds,
             "lon",
             ncx,
-            ("lon",),
+            ("lon",);
             attrib = [
                 "long_name" => "longitude",
                 "standard_name" => "longitude",
@@ -538,7 +542,7 @@ function setup_grid_netcdf(
             ds,
             "lat",
             ncy,
-            ("lat",),
+            ("lat",);
             attrib = [
                 "long_name" => "latitude",
                 "standard_name" => "latitude",
@@ -553,7 +557,7 @@ function setup_grid_netcdf(
         ds,
         "time",
         Float64,
-        ("time",),
+        ("time",);
         attrib = ["units" => time_units, "calendar" => calendar],
         deflatelevel = deflatelevel,
     )
@@ -565,7 +569,7 @@ function setup_grid_netcdf(
                     ds,
                     key,
                     float_type,
-                    ("x", "y", "time"),
+                    ("x", "y", "time");
                     attrib = ["_FillValue" => float_type(NaN)],
                     deflatelevel = deflatelevel,
                 )
@@ -575,7 +579,7 @@ function setup_grid_netcdf(
                     ds,
                     key,
                     float_type,
-                    ("x", "y", extra_dim.name, "time"),
+                    ("x", "y", extra_dim.name, "time");
                     attrib = ["_FillValue" => float_type(NaN)],
                     deflatelevel = deflatelevel,
                 )
@@ -591,7 +595,7 @@ function setup_grid_netcdf(
                     ds,
                     key,
                     float_type,
-                    ("lon", "lat", "time"),
+                    ("lon", "lat", "time");
                     attrib = ["_FillValue" => float_type(NaN)],
                     deflatelevel = deflatelevel,
                 )
@@ -601,7 +605,7 @@ function setup_grid_netcdf(
                     ds,
                     key,
                     float_type,
-                    ("lon", "lat", extra_dim.name, "time"),
+                    ("lon", "lat", extra_dim.name, "time");
                     attrib = ["_FillValue" => float_type(NaN)],
                     deflatelevel = deflatelevel,
                 )
@@ -623,27 +627,27 @@ end
 struct NCReader{T}
     dataset::CFDataset
     dataset_times::Vector{T}
-    cyclic_dataset::Union{NCDataset,Nothing}
-    cyclic_times::Dict{Tuple{Symbol,Vararg{Symbol}},Vector{Tuple{Int,Int}}}
-    forcing_parameters::Dict{Tuple{Symbol,Vararg{Symbol}},NamedTuple}
-    cyclic_parameters::Dict{Tuple{Symbol,Vararg{Symbol}},NamedTuple}
+    cyclic_dataset::Union{NCDataset, Nothing}
+    cyclic_times::Dict{Tuple{Symbol, Vararg{Symbol}}, Vector{Tuple{Int, Int}}}
+    forcing_parameters::Dict{Tuple{Symbol, Vararg{Symbol}}, NamedTuple}
+    cyclic_parameters::Dict{Tuple{Symbol, Vararg{Symbol}}, NamedTuple}
 end
 
 struct Writer
-    dataset::Union{NCDataset,Nothing}           # dataset (netCDF) for grid data
-    parameters::Dict{String,Any}                # mapping of netCDF variable names to model parameters (arrays)
-    nc_path::Union{String,Nothing}              # path netCDF file (grid data)
-    csv_path::Union{String,Nothing}             # path of CSV file
+    dataset::Union{NCDataset, Nothing}           # dataset (netCDF) for grid data
+    parameters::Dict{String, Any}                # mapping of netCDF variable names to model parameters (arrays)
+    nc_path::Union{String, Nothing}              # path netCDF file (grid data)
+    csv_path::Union{String, Nothing}             # path of CSV file
     csv_cols::Vector                            # model parameter (arrays) and associated reducer function for CSV output
     csv_io::IO                                  # file handle to CSV file
-    state_dataset::Union{NCDataset,Nothing}     # dataset with model states (netCDF)
-    state_parameters::Dict{String,Any}          # mapping of netCDF variable names to model states (arrays)
-    state_nc_path::Union{String,Nothing}        # path netCDF file with states
-    dataset_scalar::Union{NCDataset,Nothing}    # dataset (netCDF) for scalar data
+    state_dataset::Union{NCDataset, Nothing}     # dataset with model states (netCDF)
+    state_parameters::Dict{String, Any}          # mapping of netCDF variable names to model states (arrays)
+    state_nc_path::Union{String, Nothing}        # path netCDF file with states
+    dataset_scalar::Union{NCDataset, Nothing}    # dataset (netCDF) for scalar data
     nc_scalar::Vector                           # model parameter (arrays) and associated reducer function for netCDF scalar output
     ncvars_dims::Vector                         # model parameter (String) and associated netCDF variable, location dimension and location name for scalar data
-    nc_scalar_path::Union{String,Nothing}       # path netCDF file (scalar data)
-    extra_dim::Union{NamedTuple,Nothing}        # name and values for extra dimension (to store SVectors)
+    nc_scalar_path::Union{String, Nothing}       # path netCDF file (scalar data)
+    extra_dim::Union{NamedTuple, Nothing}        # name and values for extra dimension (to store SVectors)
 end
 
 function prepare_reader(config)
@@ -672,7 +676,7 @@ function prepare_reader(config)
     if isempty(dynamic_paths)
         error("No files found with name '$glob_path' in '$glob_dir'")
     end
-    dataset = NCDataset(dynamic_paths, aggdim = "time", deferopen = false)
+    dataset = NCDataset(dynamic_paths; aggdim = "time", deferopen = false)
 
     if haskey(dataset["time"].attrib, "_FillValue")
         @warn "Time dimension contains `_FillValue` attribute, this is not in line with CF conventions."
@@ -695,7 +699,7 @@ function prepare_reader(config)
     do_cyclic = haskey(config.input, "cyclic")
 
     # create map from internal location to netCDF variable name for forcing parameters
-    forcing_parameters = Dict{Tuple{Symbol,Vararg{Symbol}},NamedTuple}()
+    forcing_parameters = Dict{Tuple{Symbol, Vararg{Symbol}}, NamedTuple}()
     for par in config.input.forcing
         fields = symbols(par)
         ncname, mod = ncvar_name_modifier(param(config.input, fields))
@@ -711,8 +715,8 @@ function prepare_reader(config)
     # (memory usage))
     if do_cyclic == true
         cyclic_dataset = NCDataset(cyclic_path)
-        cyclic_parameters = Dict{Tuple{Symbol,Vararg{Symbol}},NamedTuple}()
-        cyclic_times = Dict{Tuple{Symbol,Vararg{Symbol}},Vector{Tuple{Int,Int}}}()
+        cyclic_parameters = Dict{Tuple{Symbol, Vararg{Symbol}}, NamedTuple}()
+        cyclic_times = Dict{Tuple{Symbol, Vararg{Symbol}}, Vector{Tuple{Int, Int}}}()
         for par in config.input.cyclic
             fields = symbols(par)
             ncname, mod = ncvar_name_modifier(param(config.input, fields))
@@ -726,9 +730,9 @@ function prepare_reader(config)
             @info "Set `$par` using netCDF variable `$ncname` as cyclic parameter, with `$(length(cyclic_nc_times))` timesteps."
         end
     else
-        cyclic_parameters = Dict{Tuple{Symbol,Vararg{Symbol}},NamedTuple}()
+        cyclic_parameters = Dict{Tuple{Symbol, Vararg{Symbol}}, NamedTuple}()
         cyclic_dataset = nothing
-        cyclic_times = Dict{Tuple{Symbol,Vararg{Symbol}},Vector{Tuple{Int,Int}}}()
+        cyclic_times = Dict{Tuple{Symbol, Vararg{Symbol}}, Vector{Tuple{Int, Int}}}()
     end
 
     # check if there is overlap
@@ -759,7 +763,7 @@ function locations_map(ds, mapname, config)
         config,
         mapname;
         optional = false,
-        type = Union{Int,Missing},
+        type = Union{Int, Missing},
         allow_missing = true,
     )
     ids = unique(skipmissing(map_2d))
@@ -834,13 +838,13 @@ function flat!(d, path, el::Dict)
     for (k, v) in pairs(el)
         flat!(d, string(path, '.', k), v)
     end
-    return d
+    return nothing
 end
 
 function flat!(d, path, el)
     k = symbols(path)
     d[k] = el
-    return d
+    return nothing
 end
 
 """
@@ -872,7 +876,7 @@ Dict(
 ```
 """
 function ncnames(dict)
-    ncnames_dict = Dict{Tuple{Symbol,Vararg{Symbol}},String}()
+    ncnames_dict = Dict{Tuple{Symbol, Vararg{Symbol}}, String}()
     for (k, v) in dict
         if v isa Dict  # ignore top level values (e.g. output.path)
             flat!(ncnames_dict, k, v)
@@ -887,14 +891,13 @@ end
 Create a Dict that maps parameter netCDF names to arrays in the Model.
 """
 function out_map(ncnames_dict, modelmap)
-    output_map = Dict{String,Any}()
+    output_map = Dict{String, Any}()
     for (par, ncname) in ncnames_dict
         A = param(modelmap, par)
         output_map[ncname] = (par = par, vector = A)
     end
     return output_map
 end
-
 
 function get_reducer_func(col, rev_inds, args...)
     parameter = col["parameter"]
@@ -943,12 +946,12 @@ function prepare_writer(
             calendar,
             time_units,
             extra_dim,
-            sizeinmetres,
+            sizeinmetres;
             deflatelevel = deflatelevel,
         )
     else
         nc_path = nothing
-        output_map = Dict{String,Any}()
+        output_map = Dict{String, Any}()
         ds = nothing
     end
 
@@ -972,7 +975,7 @@ function prepare_writer(
         )
     else
         ds_outstate = nothing
-        state_map = Dict{String,Any}()
+        state_map = Dict{String, Any}()
         nc_state_path = nothing
     end
 
@@ -1037,7 +1040,6 @@ function prepare_writer(
         csv_io = IOBuffer()
     end
 
-
     return Writer(
         ds,
         output_map,
@@ -1058,7 +1060,7 @@ end
 
 "Write a new timestep with scalar data to a netCDF file"
 function write_netcdf_timestep(model, dataset)
-    @unpack writer, clock, config = model
+    (; writer, clock, config) = model
 
     time_index = add_time(dataset, clock.time)
     for (nt, nc) in zip(writer.nc_scalar, config.netcdf.variable)
@@ -1076,7 +1078,7 @@ function write_netcdf_timestep(model, dataset)
                 dataset[nc["name"]][:, time_index] .= v
             else
                 nlayer = length(first(A))
-                for i = 1:nlayer
+                for i in 1:nlayer
                     v = nt.reducer(getindex.(A, i))
                     dataset[nc["name"]][:, i, time_index] .= v
                 end
@@ -1090,13 +1092,13 @@ end
 
 "Write a new timestep with grid data to a netCDF file"
 function write_netcdf_timestep(model, dataset, parameters)
-    @unpack vertical, clock, reader, network = model
+    (; clock, network) = model
 
     time_index = add_time(dataset, clock.time)
 
-    buffer = zeros(Union{Float,Missing}, size(model.network.land.reverse_indices))
+    buffer = zeros(Union{Float, Missing}, size(model.network.land.reverse_indices))
     for (key, val) in parameters
-        @unpack par, vector = val
+        (; par, vector) = val
         sel = active_indices(network, par)
         # write the active cells vector to the 2d buffer matrix
         elemtype = eltype(vector)
@@ -1108,7 +1110,7 @@ function write_netcdf_timestep(model, dataset, parameters)
             dataset[key][:, :, time_index] = buffer
         elseif elemtype <: SVector
             nlayer = length(first(vector))
-            for i = 1:nlayer
+            for i in 1:nlayer
                 # ensure no other information is written
                 fill!(buffer, missing)
                 buffer[sel] .= getindex.(vector, i)
@@ -1128,8 +1130,8 @@ write_netcdf_timestep(model, dataset::Nothing) = model
 
 "Write model output"
 function write_output(model)
-    @unpack vertical, clock, reader, network, writer = model
-    @unpack dataset, dataset_scalar, parameters = writer
+    (; writer) = model
+    (; dataset, dataset_scalar, parameters) = writer
 
     write_csv_row(model)
     write_netcdf_timestep(model, dataset, parameters)
@@ -1183,7 +1185,7 @@ end
 
 "Close input and output datasets that are opened on model initialization"
 function close_files(model; delete_output::Bool = false)
-    @unpack reader, writer, config = model
+    (; reader, writer, config) = model
 
     close(reader.dataset)
     if haskey(config.input, "cyclic")
@@ -1213,7 +1215,7 @@ end
 
 "Mapping from reducer strings in the TOML to functions"
 function reducerfunction(reducer::AbstractString)
-    functionmap = Dict{String,Function}(
+    functionmap = Dict{String, Function}(
         "maximum" => maximum,
         "minimum" => minimum,
         "mean" => mean,
@@ -1244,13 +1246,13 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset, fileformat)
             config,
             mapname;
             optional = false,
-            type = Union{Int,Missing},
+            type = Union{Int, Missing},
             allow_missing = true,
         )
         @info "Adding scalar output for a map with a reducer function." fileformat param mapname reducer_name
         ids = unique(skipmissing(map_2d))
         # from id to list of internal indices
-        inds = Dict{Int,Vector{Int}}(id => Vector{Int}() for id in ids)
+        inds = Dict{Int, Vector{Int}}(id => Vector{Int}() for id in ids)
         for i in eachindex(map_2d)
             v = map_2d[i]
             ismissing(v) && continue
@@ -1307,7 +1309,7 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset, fileformat)
 end
 
 function write_csv_row(model)
-    @unpack writer, clock, config = model
+    (; writer, clock, config) = model
     isnothing(writer.csv_path) && return nothing
     io = writer.csv_io
     print(io, string(clock.time))
@@ -1326,7 +1328,7 @@ function write_csv_row(model)
             print(io, ',', el)
         end
     end
-    println(io)
+    return println(io)
 end
 
 "From a time and a calendar, create the right CFTime DateTimeX type"
@@ -1346,24 +1348,24 @@ function reset_clock!(clock::Clock, config)
     clock.time = new_clock.time
     clock.iteration = new_clock.iteration
     clock.dt = new_clock.dt
-    return clock
+    return nothing
 end
 
 function advance!(clock)
     clock.iteration += 1
     clock.time += clock.dt
-    return clock
+    return nothing
 end
 
 function rewind!(clock)
     clock.iteration -= 1
     clock.time -= clock.dt
-    return clock
+    return nothing
 end
 
 "Read a rating curve from CSV into a NamedTuple of vectors"
 function read_sh_csv(path)
-    data, header = readdlm(path, ',', Float, header = true)
+    data, header = readdlm(path, ',', Float; header = true)
     names = vec(uppercase.(header))
     idx_h = findfirst(==("H"), names)
     idx_s = findfirst(==("S"), names)
@@ -1377,14 +1379,14 @@ end
 
 "Read a specific storage curve from CSV into a NamedTuple of vectors"
 function read_hq_csv(path)
-    data = readdlm(path, ',', Float, skipstart = 1)
+    data = readdlm(path, ',', Float; skipstart = 1)
     # Q is a matrix with 365 columns, one for each day in the year
     return (H = data[:, 1], Q = data[:, 2:end])
 end
 
 # these represent the type of the rating curve and specific storage data
-const SH = NamedTuple{(:H, :S),Tuple{Vector{Float},Vector{Float}}}
-const HQ = NamedTuple{(:H, :Q),Tuple{Vector{Float},Matrix{Float}}}
+const SH = NamedTuple{(:H, :S), Tuple{Vector{Float}, Vector{Float}}}
+const HQ = NamedTuple{(:H, :Q), Tuple{Vector{Float}, Matrix{Float}}}
 
 is_increasing(v) = last(v) > first(v)
 
@@ -1426,7 +1428,6 @@ using `nc_dim_name`.
 """
 nc_dim(ds::CFDataset, name) = ds[nc_dim_name(ds, name)]
 
-
 """
     internal_dim_name(name::Symbol)
 
@@ -1437,7 +1438,7 @@ function internal_dim_name(name::Symbol)
         return :x
     elseif name in (:y, :lat, :latitude)
         return :y
-    elseif name in (:time, :layer, :flood_depth, :classes)
+    elseif name in (:time, :layer, :flood_depth)
         return name
     elseif startswith(string(name), "time")
         return :time
@@ -1497,7 +1498,7 @@ consider it increasing, going from the top layer (1) to deeper layers. This is t
 accepting data that we have accepted before.
 """
 function dim_directions(ds::CFDataset, dim_names)
-    pairs = Pair{Symbol,Bool}[]
+    pairs = Pair{Symbol, Bool}[]
     for d in dim_names
         if d == :layer && !(haskey(ds, "layer"))
             inc = true
@@ -1522,8 +1523,6 @@ function permute_data(data, dim_names)
     @assert ndims(data) == length(dim_names)
     if :layer in dim_names
         desired_order = (:x, :y, :layer)
-    elseif :classes in dim_names
-        desired_order = (:x, :y, :classes)
     elseif :flood_depth in dim_names
         desired_order = (:x, :y, :flood_depth)
     else
@@ -1567,12 +1566,6 @@ function reverse_data!(data, dims_increasing)
             y = dims_increasing.y,
             flood_depth = dims_increasing.flood_depth,
         )
-    elseif length(dims_increasing) == 3 && haskey(dims_increasing, :classes)
-        dims_increasing_ordered = (
-            x = dims_increasing.x,
-            y = dims_increasing.y,
-            classes = dims_increasing.classes,
-        )
     else
         error("Unsupported number of dimensions")
     end
@@ -1609,7 +1602,7 @@ function read_x_axis(ds::CFDataset)::Vector{Float64}
             return sort!(Float64.(ds[candidate][:]))
         end
     end
-    error("no x axis found in $(path(ds))")
+    return error("no x axis found in $(path(ds))")
 end
 
 """
@@ -1625,32 +1618,27 @@ function read_y_axis(ds::CFDataset)::Vector{Float64}
             return sort!(Float64.(ds[candidate][:]))
         end
     end
-    error("no y axis found in $(path(ds))")
+    return error("no y axis found in $(path(ds))")
 end
 
-"Get `index` for dimension name `layer` or `classes` based on `model`"
+"Get `index` for dimension name `layer` based on `model`"
 function get_index_dimension(var, model)::Int
-    @unpack vertical = model
+    (; vertical) = model
     if haskey(var, "layer")
-        inds = collect(1:vertical.maxlayers)
+        inds = collect(1:(vertical.soil.parameters.maxlayers))
         index = inds[var["layer"]]
-    elseif haskey(var, "class")
-        index = findfirst(x -> x == var["class"], vertical.classes)
     else
         error("Unrecognized or missing dimension name to index $(var)")
     end
     return index
 end
 
-"Get `index` for dimension name `layer` or `classes` based on `config` (TOML file)"
+"Get `index` for dimension name `layer` based on `config` (TOML file)"
 function get_index_dimension(var, config::Config, dim_value)::Int
     if haskey(var, "layer")
         v = get(config.model, "thicknesslayers", Float[])
-        inds = collect(1:length(v)+1)
+        inds = collect(1:(length(v) + 1))
         index = inds[dim_value]
-    elseif haskey(var, "class")
-        classes = get(config.model, "classes", "")
-        index = findfirst(x -> x == dim_value, classes)
     else
         error("Unrecognized or missing dimension name to index $(var)")
     end
