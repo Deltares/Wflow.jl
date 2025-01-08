@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Wflow.jl</title>
+<title>Julia structures – Wflow.jl</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -20,27 +20,61 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="site_libs/quarto-search/fuse.min.js"></script>
-<script src="site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="./">
-<link href="./_static/logo.png" rel="icon" type="image/png">
-<script src="site_libs/quarto-html/quarto.js"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-8ea72dc5fed832574809a9c94082fbbb.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-843f94843d5ab9024453cdada002b834.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="site_libs/bootstrap/bootstrap-dark-60bccf4dc2412d3594bbdccdad79ccad.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../_static/logo.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-8ea72dc5fed832574809a9c94082fbbb.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-843f94843d5ab9024453cdada002b834.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-60bccf4dc2412d3594bbdccdad79ccad.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -67,7 +101,7 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script type="text/javascript" src="./_static/version.js"></script>
+<script type="text/javascript" src="../_static/version.js"></script>
 <script>
   window.MathJax = {
     tex: {
@@ -79,10 +113,9 @@ ul.task-list li input[type="checkbox"] {
     }
   };
 </script>
-<style>figure { padding: 3em 0 0em 0; }</style>
 
 
-<link rel="stylesheet" href="_static/styles.css">
+<link rel="stylesheet" href="../_static/styles.css">
 </head>
 
 <body class="nav-sidebar floating nav-fixed">
@@ -92,10 +125,10 @@ ul.task-list li input[type="checkbox"] {
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a href="./index.html" class="navbar-brand navbar-brand-logo">
-    <img src="./_static/logo.png" alt="" class="navbar-logo">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../_static/logo.png" alt="" class="navbar-logo">
     </a>
-    <a class="navbar-brand" href="./index.html">
+    <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">Wflow.jl</span>
     </a>
   </div>
@@ -106,27 +139,27 @@ ul.task-list li input[type="checkbox"] {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link active" href="./index.html" aria-current="page"> 
+    <a class="nav-link" href="../index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./getting_started/index.html"> 
+    <a class="nav-link" href="../getting_started/index.html"> 
 <span class="menu-text">Getting started</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./user_guide/index.html"> 
+    <a class="nav-link" href="../user_guide/index.html"> 
 <span class="menu-text">User guide</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./examples/index.html"> 
+    <a class="nav-link" href="../examples/index.html"> 
 <span class="menu-text">Examples</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./model_docs/index.html"> 
+    <a class="nav-link" href="../model_docs/index.html"> 
 <span class="menu-text">Model documentation</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./developments/index.html"> 
+    <a class="nav-link active" href="../developments/index.html" aria-current="page"> 
 <span class="menu-text">Developments</span></a>
   </li>  
 </ul>
@@ -168,7 +201,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./index.html">Wflow.jl</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../developments/julia_structs.html">Julia structures</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -182,26 +215,26 @@ ul.task-list li input[type="checkbox"] {
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./index.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Wflow.jl</span></a>
+  <a href="../developments/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Developments</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./home/case_studies.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Case studies</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./home/publications.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Publications</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./changelog.html" class="sidebar-item-text sidebar-link">
+  <a href="../changelog.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Changelog</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../developments/guide.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Developers guide</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../developments/julia_structs.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Julia structures</span></a>
   </div>
 </li>
     </ul>
@@ -209,13 +242,22 @@ ul.task-list li input[type="checkbox"] {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="99">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#model" id="toc-model" class="nav-link active" data-scroll-target="#model">Model</a></li>
+  <li><a href="#vertical-and-lateral-models" id="toc-vertical-and-lateral-models" class="nav-link" data-scroll-target="#vertical-and-lateral-models">Vertical and lateral models</a></li>
+  </ul>
+</nav>
+    </div>
 <!-- main -->
-<main class="content page-columns page-full" id="quarto-document-content">
+<main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Wflow.jl</h1>
+<h1 class="title">Julia structures</h1>
 </div>
 
 
@@ -232,136 +274,56 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p><a href="https://github.com/Deltares/Wflow.jl/actions"><img src="https://github.com/Deltares/Wflow.jl/workflows/CI/badge.svg" class="img-fluid" alt="Build Status"></a> <a href="https://codecov.io/gh/Deltares/Wflow.jl"><img src="https://codecov.io/gh/Deltares/Wflow.jl/branch/master/graph/badge.svg" class="img-fluid" alt="Coverage"></a> <a href="https://deltares.github.io/Wflow.jl/dev"><img src="https://img.shields.io/badge/docs-dev-blue.svg" class="img-fluid" alt="Dev"></a> <a href="https://deltares.github.io/Wflow.jl/stable"><img src="https://img.shields.io/badge/docs-stable-blue.svg" class="img-fluid" alt="Stable"></a> <a href="https://zenodo.org/badge/latestdoi/246787232"><img src="https://zenodo.org/badge/246787232.svg" class="img-fluid" alt="DOI"></a> <a href="https://github.com/SciML/ColPrac"><img src="https://img.shields.io/badge/ColPrac-Contributor's%20Guide-blueviolet.png" class="img-fluid" alt="ColPrac: Contributor’s Guide on Collaborative Practices for Community Packages"></a></p>
-<section id="about-wflow" class="level1 page-columns page-full">
-<h1>About wflow</h1>
-<p>Wflow is Deltares’ solution for modelling hydrological processes, allowing users to account for precipitation, interception, snow accumulation and melt, evapotranspiration, soil water, surface water, groundwater recharge, and water demand and allocation in a fully distributed environment. Successfully applied worldwide for analyzing flood hazards, drought, climate change impacts and land use changes, wflow is growing to be a leader in hydrology solutions. Wflow is conceived as a framework, within which multiple distributed model concepts are available, which maximizes the use of open earth observation data, making it the hydrological model of choice for data scarce environments. Based on gridded topography, soil, land use and climate data, wflow calculates all hydrological fluxes at any given grid cell in the model at a given time step.</p>
-<p>Wflow was born out of the creation of Deltares in 2008, when a strategic review identified the need for a distributed hydrological model to allow the simulation of flows at the catchment scale. With the intention being to encourage greater scientific collaboration. For this reason:</p>
-<ul>
-<li>Wflow is free and open source software.</li>
-<li>Wflow is easily coupled with other models and software applications.</li>
-<li>Contribution to the wflow code development is encouraged.</li>
-</ul>
-<p>From 2021 the <a href="https://github.com/Deltares/Wflow.jl">wflow code</a> is distributed under the <a href="https://github.com/Deltares/Wflow.jl/blob/master/LICENSE">MIT License</a>. Wflow is also available as a <a href="https://download.deltares.nl/en/download/wflow/">compiled executable</a> under the Deltares terms and conditions. The wflow computational engine is built in the <a href="https://julialang.org/">Julia</a> language, a high-performance computing language. Wflow does not include a graphical user interface and is designed for maximum user flexibility. Prior to 2021, wflow was developed in Python on top of the PCRaster Python extension. The Python version is <a href="https://github.com/openstreams/wflow">still available</a>, but not actively developed.</p>
-<section id="quick-overview" class="level2 page-columns page-full">
-<h2 class="anchored" data-anchor-id="quick-overview">Quick overview</h2>
-<div class="column-page-inset-right">
-<style type="text/css">
-    .nav-tabs {
-        margin-top: 0.5rem;
-        border-bottom: none;
-    }
-
-    .callout {
-        margin-top: 0;
-    }
-
-    .nav-tabs .nav-link {
-        text-align: center;
-        margin-right: 15px;
-        margin-top: 10px;
-        width: 260px;
-        height: 150px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        /* font-size: 0.8em;
-        font-weight: 600; */
-    }
-
-    .custom-icon {
-    font-size: 1.5rem; /* Adjust the size as needed */
-    }
-
-    .nav-tabs .nav-link,
-    .nav-tabs .nav-link.active,
-    .nav-tabs .nav-item.show .nav-link {
-        /* background-color: rgb(8, 12, 128); */
-        border: 1px solid rgb(222, 226, 230);
-        border-radius: 10px;
-        /* color: rgb(8, 12, 128); */
-        /* color text */
-    }
-
-    .nav-tabs .nav-link:hover {
-        background-color: rgb(222, 226, 230);
-        /* opacity: 0.1; */
-        border-color: #080c80;
-        border: 1px solid #080c80;
-    }
-
-    /* .nav-tabs .nav-link:hover { */
-    /* border-color: rgb(8, 12, 128); */
-    /* border-width: 1px; */
-    /* } */
-
-    /* .nav-tabs .nav-link.active,
-    .nav-tabs .nav-item.show .nav-link {
-        color: rgb(8, 12, 128);
-        border-width: 2px;
-    } */
-
-
-    .nav-tabs .nav-link i {
-        display: block;
-        font-size: 3rem;
-        /* color: rgb(8, 12, 128); */
-        /* color icon */
-        margin-bottom: 5px;
-    }
-
-    /* .quarto-listing {
-        margin-top: 2em;
-    } */
-
-    /* .quarto-listing .listing-name,
-    .quarto-listing .listing-author {
-        white-space: nowrap;
-    }
-
-    .quarto-listing .listing-actions-group h3 {
-        margin-top: 0;
-    } */
-</style>
-
-<ul id="index-chooser" class="nav nav-tabs" role="tablist">
-  <li class="nav-item" role="presentation">
-    <a class="nav-link" href="getting_started/install.html">
-      <i class="bi bi-gear"></i>Installation guide
-    </a>
-  </li>
-  <li class="nav-item" role="presentation">
-    <a class="nav-link" href="user_guide/index.html">
-      <i class="bi bi-laptop"></i>How do I use Wflow.jl?
-    </a>
-  </li>
-  <li class="nav-item" role="presentation">
-    <a class="nav-link" href="examples/index.html">
-      <i class="bi bi-graph-up"></i>Examples
-    </a>
-  </li>
-  <li class="nav-item" role="presentation">
-    <a class="nav-link" href="user_guide/faq.html">
-      <i class="bi bi-question-octagon"></i>Frequently asked questions
-    </a>
-  </li>
-  <li class="nav-item" role="presentation">
-    <a class="nav-link" href="model_docs/index.html">
-      <i class="bi bi-book"></i>Model documentation
-    </a>
-  </li>
-  <li class="nav-item" role="presentation">
-    <a class="nav-link" href="changelog.html">
-      <i class="bi bi-code-slash"></i>Changelog
-    </a>
-  </li>
-</ul>
-
-</div>
-
-
+<section id="model" class="level2">
+<h2 class="anchored" data-anchor-id="model">Model</h2>
+<p>Below the composite type that represents all different aspects of a <code>Wflow.Model</code>, such as the network, parameters, clock, model type, configuration and input and output.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Model{N,L,V,R,W,T}</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    config<span class="op">::</span><span class="dt">Config  </span><span class="co"># all configuration options</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    network<span class="op">::</span><span class="dt">N      </span><span class="co"># connectivity information, directed graph</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    lateral<span class="op">::</span><span class="dt">L      </span><span class="co"># lateral model that holds lateral state, moves along network</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    vertical<span class="op">::</span><span class="dt">V     </span><span class="co"># vertical model that holds vertical state, independent of each other</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    clock<span class="op">::</span><span class="dt">Clock    </span><span class="co"># to keep track of simulation time</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    reader<span class="op">::</span><span class="dt">R       </span><span class="co"># provides the model with dynamic input</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    writer<span class="op">::</span><span class="dt">W       </span><span class="co"># writes model output</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">type</span><span class="op">::</span><span class="dt">T         </span><span class="co"># model type</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The <code>lateral</code> field of the <code>struct Model</code> can contain different lateral concepts. For each wflow model these different lateral concepts are mapped through the use of a <code>NamedTuple</code>. The <code>vertical</code> field of the <code>struct Model</code> always contains one vertical concept, for example the SBM vertical concept.</p>
+<p>Below an example how lateral concepts are mapped for the SBM model through a <code>NamedTuple</code>:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>(subsurface <span class="op">=</span> ssf, land <span class="op">=</span> olf, river <span class="op">=</span> rf)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The <code>subsurface</code> part is mapped to the lateral subsurface flow kinematic wave concept, the <code>land</code> part is mapped the overland flow kinematic wave concept and the <code>river</code> part is mapped to the river flow kinematic wave concept. Knowledge of this specific mapping is required to understand and correctly set input, output and state variables in the TOML configuration file, see also <a href="../user_guide/toml_file.html">Config and TOML</a>. This mapping is described in more detail for each model in the section Models. Also the <code>struct</code> of each mapped concept is provided, so one can check the internal variables in the code. These structs are defined as a parametric composite type, with type parameters between curly braces after the <code>struct</code> name. See also the next paragraph <a href="#vertical-and-lateral-models">Vertical and lateral models</a> for a more detailed description.</p>
 </section>
+<section id="vertical-and-lateral-models" class="level2">
+<h2 class="anchored" data-anchor-id="vertical-and-lateral-models">Vertical and lateral models</h2>
+<p>The different model concepts used in wflow are defined as parametric <a href="https://docs.julialang.org/en/v1/manual/types/#Composite-Types">composite types</a>. For example the vertical <code>SBM</code> concept is defined as follows: <code>struct SBM{T,N,M}</code>. <code>T</code>, <code>N</code> and <code>M</code> between curly braces after the <code>struct</code> name refer to type parameters, for more information about type parameters you can check out <a href="https://docs.julialang.org/en/v1/manual/types/#man-parametric-composite-types">Type parameters</a>. Since these parameters can be of any type, it is possible to declare an unlimited number of composite types. The type parameters are used to set the type of <code>struct</code> fields, below an example with a part of the <code>SBM</code> struct:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="pp">@get_units</span> <span class="pp">@with_kw</span> <span class="kw">struct</span> SBM{T,N,M}</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Model time step [s]</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    dt<span class="op">::</span><span class="dt">T </span><span class="op">|</span> <span class="st">"s"</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Maximum number of soil layers</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    maxlayers<span class="op">::</span><span class="dt">Int </span><span class="op">|</span> <span class="st">"-"</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># number of cells</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    n<span class="op">::</span><span class="dt">Int </span><span class="op">|</span> <span class="st">"-"</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Number of soil layers</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    nlayers<span class="op">::</span><span class="dt">Vector{Int} </span><span class="op">|</span> <span class="st">"-"</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Number of unsaturated soil layers</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    n_unsatlayers<span class="op">::</span><span class="dt">Vector{Int} </span><span class="op">|</span> <span class="st">"-"</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Fraction of river [-]</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    riverfrac<span class="op">::</span><span class="dt">Vector{T} </span><span class="op">|</span> <span class="st">"-"</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Saturated water content (porosity) [mm mm⁻¹]</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    theta_s<span class="op">::</span><span class="dt">Vector{T} </span><span class="op">|</span> <span class="st">"mm mm-1"</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Residual water content [mm mm⁻¹]</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    theta_r<span class="op">::</span><span class="dt">Vector{T} </span><span class="op">|</span> <span class="st">"mm mm-1"</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Vertical hydraulic conductivity [mm Δt⁻¹] at soil surface</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    kv_0<span class="op">::</span><span class="dt">Vector{T} </span><span class="op">|</span> <span class="st">"mm dt-1"</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Muliplication factor [-] applied to kv_z (vertical flow)</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>    kvfrac<span class="op">::</span><span class="dt">Vector{SVector{N,T}} </span><span class="op">|</span> <span class="st">"-"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The type parameter <code>T</code> is used in wflow as a subtype of <code>AbstractFloat</code>, allowing to store fields with a certain floating point precision (e.g.&nbsp;<code>Float64</code> or <code>Float32</code>) in a flexible way. <code>N</code> refers to the maximum number of soil layers of the <code>SBM</code> soil column, and <code>M</code> refers to the maximum number of soil layers + 1. See also part of the following instance of <code>SBM</code>:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>sbm <span class="op">=</span> <span class="fu">SBM</span><span class="dt">{Float,maxlayers,maxlayers + 1}</span>(</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    dt <span class="op">=</span> <span class="fu">tosecond</span>(dt),</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    maxlayers <span class="op">=</span> maxlayers,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    n <span class="op">=</span> n,</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>For the other model concepts, we refer to the code to check these type parameters.</p>
+
+
 </section>
 
 <a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
@@ -930,7 +892,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <footer class="footer">
   <div class="nav-footer">
     <div class="nav-footer-left">
-<p>Made possible by: <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener"> <img src="./_static/images/deltares-blue.svg" alt="Deltares" class="footer-image-light" style="height: 40px;"> <img src="./_static/images/deltares-white.svg" alt="Deltares" class="footer-image-dark" style="height: 40px;"> </a></p>
+<p>Made possible by: <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener"> <img src="../_static/images/deltares-blue.svg" alt="Deltares" class="footer-image-light" style="height: 40px;"> <img src="../_static/images/deltares-white.svg" alt="Deltares" class="footer-image-dark" style="height: 40px;"> </a></p>
 </div>   
     <div class="nav-footer-center">
       &nbsp;

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Wflow.jl</title>
+<title>Run wflow as a ZMQ Server – Wflow.jl</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -23,24 +23,24 @@ ul.task-list li input[type="checkbox"] {
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="site_libs/quarto-search/fuse.min.js"></script>
-<script src="site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="./">
-<link href="./_static/logo.png" rel="icon" type="image/png">
-<script src="site_libs/quarto-html/quarto.js"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-8ea72dc5fed832574809a9c94082fbbb.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-843f94843d5ab9024453cdada002b834.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="site_libs/bootstrap/bootstrap-dark-60bccf4dc2412d3594bbdccdad79ccad.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../_static/logo.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-8ea72dc5fed832574809a9c94082fbbb.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-843f94843d5ab9024453cdada002b834.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-60bccf4dc2412d3594bbdccdad79ccad.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -67,7 +67,7 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script type="text/javascript" src="./_static/version.js"></script>
+<script type="text/javascript" src="../_static/version.js"></script>
 <script>
   window.MathJax = {
     tex: {
@@ -79,10 +79,9 @@ ul.task-list li input[type="checkbox"] {
     }
   };
 </script>
-<style>figure { padding: 3em 0 0em 0; }</style>
 
 
-<link rel="stylesheet" href="_static/styles.css">
+<link rel="stylesheet" href="../_static/styles.css">
 </head>
 
 <body class="nav-sidebar floating nav-fixed">
@@ -92,10 +91,10 @@ ul.task-list li input[type="checkbox"] {
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a href="./index.html" class="navbar-brand navbar-brand-logo">
-    <img src="./_static/logo.png" alt="" class="navbar-logo">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../_static/logo.png" alt="" class="navbar-logo">
     </a>
-    <a class="navbar-brand" href="./index.html">
+    <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">Wflow.jl</span>
     </a>
   </div>
@@ -106,27 +105,27 @@ ul.task-list li input[type="checkbox"] {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link active" href="./index.html" aria-current="page"> 
+    <a class="nav-link" href="../index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./getting_started/index.html"> 
+    <a class="nav-link" href="../getting_started/index.html"> 
 <span class="menu-text">Getting started</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./user_guide/index.html"> 
+    <a class="nav-link active" href="../user_guide/index.html" aria-current="page"> 
 <span class="menu-text">User guide</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./examples/index.html"> 
+    <a class="nav-link" href="../examples/index.html"> 
 <span class="menu-text">Examples</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./model_docs/index.html"> 
+    <a class="nav-link" href="../model_docs/index.html"> 
 <span class="menu-text">Model documentation</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./developments/index.html"> 
+    <a class="nav-link" href="../developments/index.html"> 
 <span class="menu-text">Developments</span></a>
   </li>  
 </ul>
@@ -168,7 +167,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./index.html">Wflow.jl</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../user_guide/bmi.html">Integrations</a></li><li class="breadcrumb-item"><a href="../user_guide/zmq_server.html">Run wflow as a ZMQ Server</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -182,26 +181,90 @@ ul.task-list li input[type="checkbox"] {
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./index.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Wflow.jl</span></a>
+  <a href="../user_guide/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">User guide</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./home/case_studies.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Case studies</span></a>
+  <a href="../user_guide/required_files.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Required files</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./home/publications.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Publications</span></a>
+  <a href="../user_guide/toml_file.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Simulation settings</span></a>
   </div>
 </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
+ <span class="menu-text">Supported options</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../user_guide/warm_states.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Starting with “warm” states</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../user_guide/model_config.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Different model configurations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../user_guide/multi_threading.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Multithreading</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./changelog.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Changelog</span></a>
+  <a href="../user_guide/output.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Handling model output</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
+ <span class="menu-text">Integrations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../user_guide/bmi.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Basic Model Interface (BMI)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../user_guide/fews.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Run from Delft-FEWS</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../user_guide/zmq_server.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Run wflow as a ZMQ Server</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../user_guide/faq.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Frequently asked questions</span></a>
   </div>
 </li>
     </ul>
@@ -209,13 +272,15 @@ ul.task-list li input[type="checkbox"] {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+        
+    </div>
 <!-- main -->
-<main class="content page-columns page-full" id="quarto-document-content">
+<main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default">
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../user_guide/bmi.html">Integrations</a></li><li class="breadcrumb-item"><a href="../user_guide/zmq_server.html">Run wflow as a ZMQ Server</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Wflow.jl</h1>
+<h1 class="title">Run wflow as a ZMQ Server</h1>
 </div>
 
 
@@ -232,137 +297,9 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p><a href="https://github.com/Deltares/Wflow.jl/actions"><img src="https://github.com/Deltares/Wflow.jl/workflows/CI/badge.svg" class="img-fluid" alt="Build Status"></a> <a href="https://codecov.io/gh/Deltares/Wflow.jl"><img src="https://codecov.io/gh/Deltares/Wflow.jl/branch/master/graph/badge.svg" class="img-fluid" alt="Coverage"></a> <a href="https://deltares.github.io/Wflow.jl/dev"><img src="https://img.shields.io/badge/docs-dev-blue.svg" class="img-fluid" alt="Dev"></a> <a href="https://deltares.github.io/Wflow.jl/stable"><img src="https://img.shields.io/badge/docs-stable-blue.svg" class="img-fluid" alt="Stable"></a> <a href="https://zenodo.org/badge/latestdoi/246787232"><img src="https://zenodo.org/badge/246787232.svg" class="img-fluid" alt="DOI"></a> <a href="https://github.com/SciML/ColPrac"><img src="https://img.shields.io/badge/ColPrac-Contributor's%20Guide-blueviolet.png" class="img-fluid" alt="ColPrac: Contributor’s Guide on Collaborative Practices for Community Packages"></a></p>
-<section id="about-wflow" class="level1 page-columns page-full">
-<h1>About wflow</h1>
-<p>Wflow is Deltares’ solution for modelling hydrological processes, allowing users to account for precipitation, interception, snow accumulation and melt, evapotranspiration, soil water, surface water, groundwater recharge, and water demand and allocation in a fully distributed environment. Successfully applied worldwide for analyzing flood hazards, drought, climate change impacts and land use changes, wflow is growing to be a leader in hydrology solutions. Wflow is conceived as a framework, within which multiple distributed model concepts are available, which maximizes the use of open earth observation data, making it the hydrological model of choice for data scarce environments. Based on gridded topography, soil, land use and climate data, wflow calculates all hydrological fluxes at any given grid cell in the model at a given time step.</p>
-<p>Wflow was born out of the creation of Deltares in 2008, when a strategic review identified the need for a distributed hydrological model to allow the simulation of flows at the catchment scale. With the intention being to encourage greater scientific collaboration. For this reason:</p>
-<ul>
-<li>Wflow is free and open source software.</li>
-<li>Wflow is easily coupled with other models and software applications.</li>
-<li>Contribution to the wflow code development is encouraged.</li>
-</ul>
-<p>From 2021 the <a href="https://github.com/Deltares/Wflow.jl">wflow code</a> is distributed under the <a href="https://github.com/Deltares/Wflow.jl/blob/master/LICENSE">MIT License</a>. Wflow is also available as a <a href="https://download.deltares.nl/en/download/wflow/">compiled executable</a> under the Deltares terms and conditions. The wflow computational engine is built in the <a href="https://julialang.org/">Julia</a> language, a high-performance computing language. Wflow does not include a graphical user interface and is designed for maximum user flexibility. Prior to 2021, wflow was developed in Python on top of the PCRaster Python extension. The Python version is <a href="https://github.com/openstreams/wflow">still available</a>, but not actively developed.</p>
-<section id="quick-overview" class="level2 page-columns page-full">
-<h2 class="anchored" data-anchor-id="quick-overview">Quick overview</h2>
-<div class="column-page-inset-right">
-<style type="text/css">
-    .nav-tabs {
-        margin-top: 0.5rem;
-        border-bottom: none;
-    }
-
-    .callout {
-        margin-top: 0;
-    }
-
-    .nav-tabs .nav-link {
-        text-align: center;
-        margin-right: 15px;
-        margin-top: 10px;
-        width: 260px;
-        height: 150px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        /* font-size: 0.8em;
-        font-weight: 600; */
-    }
-
-    .custom-icon {
-    font-size: 1.5rem; /* Adjust the size as needed */
-    }
-
-    .nav-tabs .nav-link,
-    .nav-tabs .nav-link.active,
-    .nav-tabs .nav-item.show .nav-link {
-        /* background-color: rgb(8, 12, 128); */
-        border: 1px solid rgb(222, 226, 230);
-        border-radius: 10px;
-        /* color: rgb(8, 12, 128); */
-        /* color text */
-    }
-
-    .nav-tabs .nav-link:hover {
-        background-color: rgb(222, 226, 230);
-        /* opacity: 0.1; */
-        border-color: #080c80;
-        border: 1px solid #080c80;
-    }
-
-    /* .nav-tabs .nav-link:hover { */
-    /* border-color: rgb(8, 12, 128); */
-    /* border-width: 1px; */
-    /* } */
-
-    /* .nav-tabs .nav-link.active,
-    .nav-tabs .nav-item.show .nav-link {
-        color: rgb(8, 12, 128);
-        border-width: 2px;
-    } */
+<p>It is possible to run wflow as a ZMQ Server, for example for the coupling to the <a href="https://openda.org/">OpenDA</a> software for data-assimilation. The code for the wflow ZMQ Server is not part of the Wflow.jl package, and is located <a href="https://github.com/Deltares/Wflow.jl/tree/master/server">here</a>.</p>
 
 
-    .nav-tabs .nav-link i {
-        display: block;
-        font-size: 3rem;
-        /* color: rgb(8, 12, 128); */
-        /* color icon */
-        margin-bottom: 5px;
-    }
-
-    /* .quarto-listing {
-        margin-top: 2em;
-    } */
-
-    /* .quarto-listing .listing-name,
-    .quarto-listing .listing-author {
-        white-space: nowrap;
-    }
-
-    .quarto-listing .listing-actions-group h3 {
-        margin-top: 0;
-    } */
-</style>
-
-<ul id="index-chooser" class="nav nav-tabs" role="tablist">
-  <li class="nav-item" role="presentation">
-    <a class="nav-link" href="getting_started/install.html">
-      <i class="bi bi-gear"></i>Installation guide
-    </a>
-  </li>
-  <li class="nav-item" role="presentation">
-    <a class="nav-link" href="user_guide/index.html">
-      <i class="bi bi-laptop"></i>How do I use Wflow.jl?
-    </a>
-  </li>
-  <li class="nav-item" role="presentation">
-    <a class="nav-link" href="examples/index.html">
-      <i class="bi bi-graph-up"></i>Examples
-    </a>
-  </li>
-  <li class="nav-item" role="presentation">
-    <a class="nav-link" href="user_guide/faq.html">
-      <i class="bi bi-question-octagon"></i>Frequently asked questions
-    </a>
-  </li>
-  <li class="nav-item" role="presentation">
-    <a class="nav-link" href="model_docs/index.html">
-      <i class="bi bi-book"></i>Model documentation
-    </a>
-  </li>
-  <li class="nav-item" role="presentation">
-    <a class="nav-link" href="changelog.html">
-      <i class="bi bi-code-slash"></i>Changelog
-    </a>
-  </li>
-</ul>
-
-</div>
-
-
-</section>
-</section>
 
 <a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -930,7 +867,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <footer class="footer">
   <div class="nav-footer">
     <div class="nav-footer-left">
-<p>Made possible by: <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener"> <img src="./_static/images/deltares-blue.svg" alt="Deltares" class="footer-image-light" style="height: 40px;"> <img src="./_static/images/deltares-white.svg" alt="Deltares" class="footer-image-dark" style="height: 40px;"> </a></p>
+<p>Made possible by: <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener"> <img src="../_static/images/deltares-blue.svg" alt="Deltares" class="footer-image-light" style="height: 40px;"> <img src="../_static/images/deltares-white.svg" alt="Deltares" class="footer-image-dark" style="height: 40px;"> </a></p>
 </div>   
     <div class="nav-footer-center">
       &nbsp;

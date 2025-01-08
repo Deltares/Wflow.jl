@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Wflow.jl</title>
+<title>Download example models – Wflow.jl</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -20,27 +20,61 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="site_libs/quarto-search/fuse.min.js"></script>
-<script src="site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="./">
-<link href="./_static/logo.png" rel="icon" type="image/png">
-<script src="site_libs/quarto-html/quarto.js"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-8ea72dc5fed832574809a9c94082fbbb.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-843f94843d5ab9024453cdada002b834.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="site_libs/bootstrap/bootstrap-dark-60bccf4dc2412d3594bbdccdad79ccad.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../_static/logo.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-8ea72dc5fed832574809a9c94082fbbb.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-843f94843d5ab9024453cdada002b834.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-60bccf4dc2412d3594bbdccdad79ccad.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -67,7 +101,7 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script type="text/javascript" src="./_static/version.js"></script>
+<script type="text/javascript" src="../_static/version.js"></script>
 <script>
   window.MathJax = {
     tex: {
@@ -79,10 +113,9 @@ ul.task-list li input[type="checkbox"] {
     }
   };
 </script>
-<style>figure { padding: 3em 0 0em 0; }</style>
 
 
-<link rel="stylesheet" href="_static/styles.css">
+<link rel="stylesheet" href="../_static/styles.css">
 </head>
 
 <body class="nav-sidebar floating nav-fixed">
@@ -92,10 +125,10 @@ ul.task-list li input[type="checkbox"] {
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a href="./index.html" class="navbar-brand navbar-brand-logo">
-    <img src="./_static/logo.png" alt="" class="navbar-logo">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../_static/logo.png" alt="" class="navbar-logo">
     </a>
-    <a class="navbar-brand" href="./index.html">
+    <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">Wflow.jl</span>
     </a>
   </div>
@@ -106,27 +139,27 @@ ul.task-list li input[type="checkbox"] {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link active" href="./index.html" aria-current="page"> 
+    <a class="nav-link" href="../index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./getting_started/index.html"> 
+    <a class="nav-link active" href="../getting_started/index.html" aria-current="page"> 
 <span class="menu-text">Getting started</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./user_guide/index.html"> 
+    <a class="nav-link" href="../user_guide/index.html"> 
 <span class="menu-text">User guide</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./examples/index.html"> 
+    <a class="nav-link" href="../examples/index.html"> 
 <span class="menu-text">Examples</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./model_docs/index.html"> 
+    <a class="nav-link" href="../model_docs/index.html"> 
 <span class="menu-text">Model documentation</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./developments/index.html"> 
+    <a class="nav-link" href="../developments/index.html"> 
 <span class="menu-text">Developments</span></a>
   </li>  
 </ul>
@@ -168,7 +201,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./index.html">Wflow.jl</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../getting_started/download_example_models.html">Download example models</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -182,26 +215,32 @@ ul.task-list li input[type="checkbox"] {
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./index.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Wflow.jl</span></a>
+  <a href="../getting_started/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Getting started</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./home/case_studies.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Case studies</span></a>
+  <a href="../getting_started/install.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Installing wflow</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./home/publications.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Publications</span></a>
+  <a href="../getting_started/download_example_models.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Download example models</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./changelog.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Changelog</span></a>
+  <a href="../getting_started/building_a_model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Building a model from scratch</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../getting_started/running_wflow.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Running a simulation</span></a>
   </div>
 </li>
     </ul>
@@ -209,13 +248,23 @@ ul.task-list li input[type="checkbox"] {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="99">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#wflow_sbm-kinematic-wave" id="toc-wflow_sbm-kinematic-wave" class="nav-link active" data-scroll-target="#wflow_sbm-kinematic-wave">wflow_sbm + kinematic wave</a></li>
+  <li><a href="#wflow_sbm-groundwater-flow" id="toc-wflow_sbm-groundwater-flow" class="nav-link" data-scroll-target="#wflow_sbm-groundwater-flow">wflow_sbm + groundwater flow</a></li>
+  <li><a href="#wflow_sediment" id="toc-wflow_sediment" class="nav-link" data-scroll-target="#wflow_sediment">wflow_sediment</a></li>
+  </ul>
+</nav>
+    </div>
 <!-- main -->
-<main class="content page-columns page-full" id="quarto-document-content">
+<main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Wflow.jl</h1>
+<h1 class="title">Download example models</h1>
 </div>
 
 
@@ -232,136 +281,86 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p><a href="https://github.com/Deltares/Wflow.jl/actions"><img src="https://github.com/Deltares/Wflow.jl/workflows/CI/badge.svg" class="img-fluid" alt="Build Status"></a> <a href="https://codecov.io/gh/Deltares/Wflow.jl"><img src="https://codecov.io/gh/Deltares/Wflow.jl/branch/master/graph/badge.svg" class="img-fluid" alt="Coverage"></a> <a href="https://deltares.github.io/Wflow.jl/dev"><img src="https://img.shields.io/badge/docs-dev-blue.svg" class="img-fluid" alt="Dev"></a> <a href="https://deltares.github.io/Wflow.jl/stable"><img src="https://img.shields.io/badge/docs-stable-blue.svg" class="img-fluid" alt="Stable"></a> <a href="https://zenodo.org/badge/latestdoi/246787232"><img src="https://zenodo.org/badge/246787232.svg" class="img-fluid" alt="DOI"></a> <a href="https://github.com/SciML/ColPrac"><img src="https://img.shields.io/badge/ColPrac-Contributor's%20Guide-blueviolet.png" class="img-fluid" alt="ColPrac: Contributor’s Guide on Collaborative Practices for Community Packages"></a></p>
-<section id="about-wflow" class="level1 page-columns page-full">
-<h1>About wflow</h1>
-<p>Wflow is Deltares’ solution for modelling hydrological processes, allowing users to account for precipitation, interception, snow accumulation and melt, evapotranspiration, soil water, surface water, groundwater recharge, and water demand and allocation in a fully distributed environment. Successfully applied worldwide for analyzing flood hazards, drought, climate change impacts and land use changes, wflow is growing to be a leader in hydrology solutions. Wflow is conceived as a framework, within which multiple distributed model concepts are available, which maximizes the use of open earth observation data, making it the hydrological model of choice for data scarce environments. Based on gridded topography, soil, land use and climate data, wflow calculates all hydrological fluxes at any given grid cell in the model at a given time step.</p>
-<p>Wflow was born out of the creation of Deltares in 2008, when a strategic review identified the need for a distributed hydrological model to allow the simulation of flows at the catchment scale. With the intention being to encourage greater scientific collaboration. For this reason:</p>
-<ul>
-<li>Wflow is free and open source software.</li>
-<li>Wflow is easily coupled with other models and software applications.</li>
-<li>Contribution to the wflow code development is encouraged.</li>
-</ul>
-<p>From 2021 the <a href="https://github.com/Deltares/Wflow.jl">wflow code</a> is distributed under the <a href="https://github.com/Deltares/Wflow.jl/blob/master/LICENSE">MIT License</a>. Wflow is also available as a <a href="https://download.deltares.nl/en/download/wflow/">compiled executable</a> under the Deltares terms and conditions. The wflow computational engine is built in the <a href="https://julialang.org/">Julia</a> language, a high-performance computing language. Wflow does not include a graphical user interface and is designed for maximum user flexibility. Prior to 2021, wflow was developed in Python on top of the PCRaster Python extension. The Python version is <a href="https://github.com/openstreams/wflow">still available</a>, but not actively developed.</p>
-<section id="quick-overview" class="level2 page-columns page-full">
-<h2 class="anchored" data-anchor-id="quick-overview">Quick overview</h2>
-<div class="column-page-inset-right">
-<style type="text/css">
-    .nav-tabs {
-        margin-top: 0.5rem;
-        border-bottom: none;
-    }
-
-    .callout {
-        margin-top: 0;
-    }
-
-    .nav-tabs .nav-link {
-        text-align: center;
-        margin-right: 15px;
-        margin-top: 10px;
-        width: 260px;
-        height: 150px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        /* font-size: 0.8em;
-        font-weight: 600; */
-    }
-
-    .custom-icon {
-    font-size: 1.5rem; /* Adjust the size as needed */
-    }
-
-    .nav-tabs .nav-link,
-    .nav-tabs .nav-link.active,
-    .nav-tabs .nav-item.show .nav-link {
-        /* background-color: rgb(8, 12, 128); */
-        border: 1px solid rgb(222, 226, 230);
-        border-radius: 10px;
-        /* color: rgb(8, 12, 128); */
-        /* color text */
-    }
-
-    .nav-tabs .nav-link:hover {
-        background-color: rgb(222, 226, 230);
-        /* opacity: 0.1; */
-        border-color: #080c80;
-        border: 1px solid #080c80;
-    }
-
-    /* .nav-tabs .nav-link:hover { */
-    /* border-color: rgb(8, 12, 128); */
-    /* border-width: 1px; */
-    /* } */
-
-    /* .nav-tabs .nav-link.active,
-    .nav-tabs .nav-item.show .nav-link {
-        color: rgb(8, 12, 128);
-        border-width: 2px;
-    } */
-
-
-    .nav-tabs .nav-link i {
-        display: block;
-        font-size: 3rem;
-        /* color: rgb(8, 12, 128); */
-        /* color icon */
-        margin-bottom: 5px;
-    }
-
-    /* .quarto-listing {
-        margin-top: 2em;
-    } */
-
-    /* .quarto-listing .listing-name,
-    .quarto-listing .listing-author {
-        white-space: nowrap;
-    }
-
-    .quarto-listing .listing-actions-group h3 {
-        margin-top: 0;
-    } */
-</style>
-
-<ul id="index-chooser" class="nav nav-tabs" role="tablist">
-  <li class="nav-item" role="presentation">
-    <a class="nav-link" href="getting_started/install.html">
-      <i class="bi bi-gear"></i>Installation guide
-    </a>
-  </li>
-  <li class="nav-item" role="presentation">
-    <a class="nav-link" href="user_guide/index.html">
-      <i class="bi bi-laptop"></i>How do I use Wflow.jl?
-    </a>
-  </li>
-  <li class="nav-item" role="presentation">
-    <a class="nav-link" href="examples/index.html">
-      <i class="bi bi-graph-up"></i>Examples
-    </a>
-  </li>
-  <li class="nav-item" role="presentation">
-    <a class="nav-link" href="user_guide/faq.html">
-      <i class="bi bi-question-octagon"></i>Frequently asked questions
-    </a>
-  </li>
-  <li class="nav-item" role="presentation">
-    <a class="nav-link" href="model_docs/index.html">
-      <i class="bi bi-book"></i>Model documentation
-    </a>
-  </li>
-  <li class="nav-item" role="presentation">
-    <a class="nav-link" href="changelog.html">
-      <i class="bi bi-code-slash"></i>Changelog
-    </a>
-  </li>
-</ul>
-
-</div>
-
-
+<p>For each wflow Model a test model is available that can help to understand the data requirements and the usage of each Model. The TOML configuration file per available model are listed in the Table below:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">model</th>
+<th>TOML configuration file</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">wflow_sbm + kinematic wave</td>
+<td><a href="https://raw.githubusercontent.com/Deltares/Wflow.jl/master/test/sbm_config.toml">sbm_config.toml</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">wflow_sbm + groundwater flow</td>
+<td><a href="https://raw.githubusercontent.com/Deltares/Wflow.jl/master/test/sbm_gwf_config.toml">sbm_gwf_config.toml</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">wflow_sediment</td>
+<td><a href="https://raw.githubusercontent.com/Deltares/Wflow.jl/master/test/sediment_config.toml">sediment_config.toml</a></td>
+</tr>
+</tbody>
+</table>
+<p>The associated Model files (input static, forcing and state files) can easily be downloaded and for this we share the following Julia code (per Model) that downloads the required files to your current working directory. For running these test model see also <a href="../getting_started/running_wflow.html#running-a-simulation">Usage</a> and <a href="../getting_started/running_wflow.html#using-the-command-line-interface">Command Line Interface</a>.</p>
+<section id="wflow_sbm-kinematic-wave" class="level2">
+<h2 class="anchored" data-anchor-id="wflow_sbm-kinematic-wave">wflow_sbm + kinematic wave</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># urls to TOML and netCDF of the Moselle example model</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>toml_url <span class="op">=</span> <span class="st">"https://raw.githubusercontent.com/Deltares/Wflow.jl/master/test/sbm_config.toml"</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>staticmaps <span class="op">=</span> <span class="st">"https://github.com/visr/wflow-artifacts/releases/download/v0.2.9/staticmaps-moselle.nc"</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>forcing <span class="op">=</span> <span class="st">"https://github.com/visr/wflow-artifacts/releases/download/v0.2.6/forcing-moselle.nc"</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>instates <span class="op">=</span> <span class="st">"https://github.com/visr/wflow-artifacts/releases/download/v0.2.6/instates-moselle.nc"</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># create a "data" directory in the current directory</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>datadir <span class="op">=</span> <span class="fu">joinpath</span>(<span class="pp">@__DIR__</span>, <span class="st">"data"</span>)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">mkpath</span>(datadir)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>toml_path <span class="op">=</span> <span class="fu">joinpath</span>(<span class="pp">@__DIR__</span>, <span class="st">"sbm_config.toml"</span>)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="co"># download resources to current and data dirs</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="fu">download</span>(staticmaps, <span class="fu">joinpath</span>(datadir, <span class="st">"staticmaps-moselle.nc"</span>))</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="fu">download</span>(forcing, <span class="fu">joinpath</span>(datadir, <span class="st">"forcing-moselle.nc"</span>))</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="fu">download</span>(instates, <span class="fu">joinpath</span>(datadir, <span class="st">"instates-moselle.nc"</span>))</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="fu">download</span>(toml_url, toml_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
+<section id="wflow_sbm-groundwater-flow" class="level2">
+<h2 class="anchored" data-anchor-id="wflow_sbm-groundwater-flow">wflow_sbm + groundwater flow</h2>
+<div class="sourceCode" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># urls to TOML and netCDF of the Moselle example model</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>toml_url <span class="op">=</span> <span class="st">"https://raw.githubusercontent.com/Deltares/Wflow.jl/master/test/sbm_gwf_config.toml"</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>staticmaps <span class="op">=</span> <span class="st">"https://github.com/visr/wflow-artifacts/releases/download/v0.2.3/staticmaps-sbm-groundwater.nc"</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>forcing <span class="op">=</span> <span class="st">"https://github.com/visr/wflow-artifacts/releases/download/v0.2.1/forcing-sbm-groundwater.nc"</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># create a "data" directory in the current directory</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>datadir <span class="op">=</span> <span class="fu">joinpath</span>(<span class="pp">@__DIR__</span>, <span class="st">"data"</span>)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="fu">mkpath</span>(datadir)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>toml_path <span class="op">=</span> <span class="fu">joinpath</span>(<span class="pp">@__DIR__</span>, <span class="st">"sbm_gwf_config.toml"</span>)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co"># download resources to current and data dirs</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="fu">download</span>(staticmaps, <span class="fu">joinpath</span>(datadir, <span class="st">"staticmaps-sbm-groundwater.nc"</span>))</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="fu">download</span>(forcing, <span class="fu">joinpath</span>(datadir, <span class="st">"forcing-sbm-groundwater.nc"</span>))</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="fu">download</span>(toml_url, toml_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="wflow_sediment" class="level2">
+<h2 class="anchored" data-anchor-id="wflow_sediment">wflow_sediment</h2>
+<div class="sourceCode" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># urls to TOML and netCDF of the Moselle example model</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>toml_url <span class="op">=</span> <span class="st">"https://raw.githubusercontent.com/Deltares/Wflow.jl/master/test/sediment_config.toml"</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>staticmaps <span class="op">=</span> <span class="st">"https://github.com/visr/wflow-artifacts/releases/download/v0.2.3/staticmaps-moselle-sed.nc"</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>forcing <span class="op">=</span> <span class="st">"https://github.com/visr/wflow-artifacts/releases/download/v0.2.3/forcing-moselle-sed.nc"</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>instates <span class="op">=</span> <span class="st">"https://github.com/visr/wflow-artifacts/releases/download/v0.2.0/instates-moselle-sed.nc"</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co"># create a "data" directory in the current directory</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>datadir <span class="op">=</span> <span class="fu">joinpath</span>(<span class="pp">@__DIR__</span>, <span class="st">"data"</span>)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="fu">mkpath</span>(datadir)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>toml_path <span class="op">=</span> <span class="fu">joinpath</span>(<span class="pp">@__DIR__</span>, <span class="st">"sediment_config.toml"</span>)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="co"># download resources to current and data dirs</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="fu">download</span>(staticmaps, <span class="fu">joinpath</span>(datadir, <span class="st">"staticmaps-moselle-sed.nc"</span>))</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="fu">download</span>(forcing, <span class="fu">joinpath</span>(datadir, <span class="st">"forcing-moselle-sed.nc"</span>))</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="fu">download</span>(instates, <span class="fu">joinpath</span>(datadir, <span class="st">"instates-moselle-sed.nc"</span>))</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="fu">download</span>(toml_url, toml_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+
+
 </section>
 
 <a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
@@ -930,7 +929,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <footer class="footer">
   <div class="nav-footer">
     <div class="nav-footer-left">
-<p>Made possible by: <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener"> <img src="./_static/images/deltares-blue.svg" alt="Deltares" class="footer-image-light" style="height: 40px;"> <img src="./_static/images/deltares-white.svg" alt="Deltares" class="footer-image-dark" style="height: 40px;"> </a></p>
+<p>Made possible by: <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener"> <img src="../_static/images/deltares-blue.svg" alt="Deltares" class="footer-image-light" style="height: 40px;"> <img src="../_static/images/deltares-white.svg" alt="Deltares" class="footer-image-dark" style="height: 40px;"> </a></p>
 </div>   
     <div class="nav-footer-center">
       &nbsp;
