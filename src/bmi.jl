@@ -358,9 +358,9 @@ function BMI.get_grid_edge_count(model::Model, grid::Int)
     if grid == 3
         return ne(network.river.graph)
     elseif grid == 4
-        return length(network.land.staggered_indices.xu)
+        return length(network.land.edge_indices.xu)
     elseif grid == 5
-        return length(network.land.staggered_indices.yu)
+        return length(network.land.edge_indices.yu)
     elseif grid in 0:2 || grid == 6
         warn("edges are not provided for grid type $grid (variables are located at nodes)")
     else
@@ -380,13 +380,13 @@ function BMI.get_grid_edge_nodes(model::Model, grid::Int, edge_nodes::Vector{Int
         edge_nodes[range(2, n; step = 2)] = nodes_at_edge.dst
         return edge_nodes
     elseif grid == 4
-        xu = network.land.staggered_indices.xu
+        xu = network.land.edge_indices.xu
         edge_nodes[range(1, n; step = 2)] = 1:m
         xu[xu .== m + 1] .= -999
         edge_nodes[range(2, n; step = 2)] = xu
         return edge_nodes
     elseif grid == 5
-        yu = network.land.staggered_indices.yu
+        yu = network.land.edge_indices.yu
         edge_nodes[range(1, n; step = 2)] = 1:m
         yu[yu .== m + 1] .= -999
         edge_nodes[range(2, n; step = 2)] = yu

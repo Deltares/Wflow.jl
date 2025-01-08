@@ -203,7 +203,7 @@ function initialize_sbm_model(config::Config)
         )
     elseif land_routing == "local-inertial"
         inds_river_map2land = reverse_inds_river[indices] # not filtered (with zeros)
-        overland_flow, staggered_indices = LocalInertialOverlandFlow(
+        overland_flow, edge_indices = LocalInertialOverlandFlow(
             dataset,
             config,
             indices;
@@ -333,7 +333,7 @@ function initialize_sbm_model(config::Config)
     )
     if land_routing == "local-inertial"
         @reset network_land.river_indices = inds_river_map2land
-        @reset network_land.staggered_indices = staggered_indices
+        @reset network_land.edge_indices = edge_indices
     end
     if do_water_demand
         # exclude waterbodies for local surface and ground water abstraction

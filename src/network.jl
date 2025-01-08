@@ -1,3 +1,7 @@
+# maps the fields of struct `EdgeConnectivity` to the defined Wflow cartesian indices of
+# const `neigbors`.
+const dirs = (:yd, :xd, :xu, :yu)
+
 """
 Struct for storing forward `indices` and reverse indices `reverse_indices` of `Drainage`
 cells (boundary condition groundwater flow) in the 2D external model domain.
@@ -7,12 +11,31 @@ cells (boundary condition groundwater flow) in the 2D external model domain.
     reverse_indices::Matrix{Int64} = zeros(Int, 0, 0)
 end
 
-"Struct for storing 2D staggered grid topology."
-@with_kw struct Indices
-    xu::Vector{Int} = Int[]     # index of neighbor cell in the (+1, 0) direction
-    xd::Vector{Int} = Int[]     # index of neighbor cell in the (-1, 0) direction
-    yu::Vector{Int} = Int[]     # index of neighbor cell in the (0, +1) direction
-    yd::Vector{Int} = Int[]     # index of neighbor cell in the (0, -1) direction
+"""
+Struct for storing 2D staggered grid edge connectivity in `x` and `y` directions. For
+example used by the q-centered numerical scheme of Almeida et al. (2012), that uses
+information on both neighboring cell edges (interfaces).
+
+See also: de Almeida, G. A. M., P. D.Bates, J. Freer, and M. Souvignet (2012), Improving the
+stability of a simple formulation of the shallow water equations for 2D flood modelling,
+Water Resour. Res., 48, doi:10.1029/2011WR011570.
+
+Edges without neigbors are handled by an extra index (at `n + 1`, with `n` edges). The
+linear index `i` of the `EdgeConnectivity` fields represents the edge between node index `i`
+and the neighboring nodes in the CartesianIndex(-1,0) and CartesianIndex(0,-1) directions.
+The edges are defined as follows:
+- `xu` is the edge between node `i` and node `xu` in the `CartesianIndex(1,0)` direction.
+- `xd` is the edge between node `xd` in the `CartesianIndex(-1,0)` direction and the
+  neighboring node (CartesianIndex(-2,0) direction).
+- `yu` is the edge between node `i` and node `yu` in the `CartesianIndex(0,1)` direction.
+- `yd` is the edge between node `yd` in the `CartesianIndex(0,-1)` direction and the
+  neighboring node (`CartesianIndex(0,-2)` direction).
+"""
+@with_kw struct EdgeConnectivity
+    xu::Vector{Int} = Int[]
+    xd::Vector{Int} = Int[]
+    yu::Vector{Int} = Int[]
+    yd::Vector{Int} = Int[]
 end
 
 "Struct for storing network information land domain."
@@ -43,8 +66,8 @@ end
     river_inds_excl_waterbody::Vector{Int} = Int[]
     # slope [m m⁻¹]
     slope::Vector{Float64} = Float64[]
-    # staggered grid topology
-    staggered_indices::Indices = Indices()
+    # 2D staggered grid edge indices
+    edge_indices::EdgeConnectivity = EdgeConnectivity()
     # maps `order_subdomain` to traversion order of the complete domain
     subdomain_indices::Vector{Vector{Int}} = Vector{Int}[]
     # upstream nodes (directed graph)
