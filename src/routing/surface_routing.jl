@@ -5,62 +5,64 @@ Run surface routing (land and river) for a single timestep. Kinematic wave for o
 and kinematic wave or local inertial model for river flow.
 """
 function surface_routing!(model)
-    (; vertical, lateral, network, config, clock) = model
-    (; soil, runoff, allocation) = vertical
-    (; land, river, subsurface) = lateral
+    (; land, routing, network, config, clock) = model
+    (; soil, runoff, allocation) = land
+    (; overland_flow, river_flow, subsurface_flow) = routing
 
     dt = tosecond(clock.dt)
     # update lateral inflow for kinematic wave overland flow
     update_lateral_inflow!(
-        land,
-        (; soil, allocation, subsurface),
+        overland_flow,
+        (; soil, allocation, subsurface_flow),
         network.land.area,
         config,
         dt,
     )
     # run kinematic wave overland flow
-    update!(land, network.land, dt)
+    update!(overland_flow, network.land, dt)
 
     # update lateral inflow river flow
     update_lateral_inflow!(
-        river,
-        (; allocation = river.allocation, runoff, land, subsurface),
+        river_flow,
+        (; allocation = river_flow.allocation, runoff, overland_flow, subsurface_flow),
         network.river.cell_area,
         network.land.area,
         network.river.land_indices,
         dt,
     )
-    update_inflow_waterbody!(river, (; land, subsurface), network.river.land_indices)
-    update!(river, network, julian_day(clock.time - clock.dt), dt)
+    update_inflow_waterbody!(
+        river_flow,
+        (; overland_flow, subsurface_flow),
+        network.river.land_indices,
+    )
+    update!(river_flow, network, julian_day(clock.time - clock.dt), dt)
     return nothing
 end
 
 """
     surface_routing!(
-        model::Model{N,L,V,R,W,T}
-    ) where {N,L<:NamedTuple{<:Any,<:Tuple{Any,LocalInertialOverlandFlow,LocalInertialRiverFlow}},V,R,W,T}
+        model::Model{R}
+    ) where {R <: Routing{<:LocalInertialOverlandFlow, <:LocalInertialRiverFlow}}
 
-Run surface routing (land and river) for a model type that contains the lateral components
+Run surface routing (land and river) for a model type that contains the routing components
 `LocalInertialOverlandFlow` and `LocalInertialRiverFlow` for a single timestep.
 """
 function surface_routing!(
-    model::Model{N, L, V, R, W, T},
-) where {
-    N,
-    L <: NamedTuple{<:Any, <:Tuple{Any, LocalInertialOverlandFlow, LocalInertialRiverFlow}},
-    V,
-    R,
-    W,
-    T,
-}
-    (; lateral, vertical, network, clock) = model
-    (; land, river, subsurface) = lateral
-    (; soil, runoff) = vertical
+    model::Model{R},
+) where {R <: Routing{<:LocalInertialOverlandFlow, <:LocalInertialRiverFlow}}
+    (; routing, land, network, clock) = model
+    (; soil, runoff) = land
+    (; overland_flow, river_flow, subsurface_flow) = routing
 
     dt = tosecond(clock.dt)
-    update_boundary_conditions!(land, (; river, subsurface, soil, runoff), network, dt)
+    update_boundary_conditions!(
+        overland_flow,
+        (; river_flow, subsurface_flow, soil, runoff),
+        network,
+        dt,
+    )
 
-    update!(land, river, network, julian_day(clock.time - clock.dt), dt)
+    update!(overland_flow, river_flow, network, julian_day(clock.time - clock.dt), dt)
 
     return nothing
 end

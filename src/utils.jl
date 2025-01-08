@@ -77,12 +77,12 @@ function active_indices(subcatch_2d::AbstractMatrix, nodata)
     return indices, reverse_indices
 end
 
-function active_indices(network::NamedTuple, key::Tuple)
+function active_indices(network::Network, key::Tuple)
     if :reservoir in key
         return network.reservoir.indices_outlet
     elseif :lake in key
         return network.lake.indices_outlet
-    elseif :river in key
+    elseif :river in key || :river_flow in key
         return network.river.indices
     elseif :drain in key
         return network.drain.indices
@@ -176,7 +176,7 @@ function set_states!(instate_path, model; type = nothing, dimname = nothing)
                 end
                 A = read_standardized(ds, ncname, dimensions)
                 A = permutedims(A[sel, :])
-                # note that this array is allowed to have missings, since not every vertical
+                # note that this array is allowed to have missings, since not every land
                 # column is `maxlayers` layers deep
                 if dimname == :layer
                     A = replace!(A, missing => NaN)

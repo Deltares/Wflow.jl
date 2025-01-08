@@ -1,5 +1,6 @@
 "Sediment transport in overland flow model"
-@get_units @grid_loc @with_kw struct OverlandFlowSediment{TT, SF, TR}
+@get_units @grid_loc @with_kw struct OverlandFlowSediment{TT, SF, TR} <:
+                                     AbstractOverlandFlowModel
     hydrological_forcing::HydrologicalForcing
     geometry::LandGeometry
     transport_capacity::TT
@@ -77,7 +78,8 @@ end
 
 ### River ###
 "Sediment transport in river model"
-@get_units @grid_loc @with_kw struct RiverSediment{TTR, ER, SFR, CR}
+@get_units @grid_loc @with_kw struct RiverSediment{TTR, ER, SFR, CR} <:
+                                     AbstractRiverFlowModel
     hydrological_forcing::HydrologicalForcing
     geometry::RiverGeometry
     transport_capacity::TTR
@@ -141,7 +143,6 @@ function update!(
     model::RiverSediment,
     to_river_model::SedimentToRiverDifferentiationModel,
     network,
-    indices_river,
     dt,
 )
     # Transport capacity
@@ -163,7 +164,7 @@ function update!(
         model.transport_capacity,
         to_river_model,
         model.potential_erosion,
-        indices_river,
+        network.land_indices,
     )
     update!(model.sediment_flux, network, model.geometry, model.waterbodies, dt)
 

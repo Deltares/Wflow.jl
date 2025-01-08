@@ -3,9 +3,9 @@ config = Wflow.Config(tomlpath)
 model = Wflow.initialize_sbm_gwf_model(config)
 Wflow.run_timestep!(model)
 
-(; paddy, nonpaddy, industry, livestock, domestic) = model.vertical.demand
+(; paddy, nonpaddy, industry, livestock, domestic) = model.land.demand
 (; total_alloc, irri_alloc, nonirri_alloc, surfacewater_alloc, act_groundwater_abst) =
-    model.vertical.allocation.variables
+    model.land.allocation.variables
 @testset "piave water demand and allocation first timestep" begin
     sum_total_alloc = sum(total_alloc)
     @test sum(irri_alloc) + sum(nonirri_alloc) ≈ sum_total_alloc
@@ -35,9 +35,9 @@ Wflow.run_timestep!(model)
 end
 
 Wflow.run_timestep!(model)
-(; paddy, nonpaddy, industry, livestock, domestic) = model.vertical.demand
+(; paddy, nonpaddy, industry, livestock, domestic) = model.land.demand
 (; total_alloc, irri_alloc, nonirri_alloc, surfacewater_alloc, act_groundwater_abst) =
-    model.vertical.allocation.variables
+    model.land.allocation.variables
 
 @testset "piave water demand and allocation second timestep" begin
     sum_total_alloc = sum(total_alloc)
