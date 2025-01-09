@@ -103,12 +103,12 @@ land_surface__slope = "Slope"
 subsurface_water__horizontal-to-vertical_saturated_hydraulic_conductivity_ratio = "KsatHorFrac"
 
 land_water_allocation_area__number = "allocation_areas"
-"land~domestic__gross_water_demand_flux" = "dom_gross"
-"land~domestic__net_water_demand_flux" = "dom_net"
-"land~industry__gross_water_demand_flux" = "ind_gross"
-"land~industry__net_water_demand_flux" = "ind_net"
-"land~livestock__gross_water_demand_flux" = "lsk_gross"
-"land~livestock__net_water_demand_flux" = "lsk_net"
+"land~domestic__gross_water_demand_volume_flux" = "dom_gross"
+"land~domestic__net_water_demand_volume_flux" = "dom_net"
+"land~industry__gross_water_demand_volume_flux" = "ind_gross"
+"land~industry__net_water_demand_volume_flux" = "ind_net"
+"land~livestock__gross_water_demand_volume_flux" = "lsk_gross"
+"land~livestock__net_water_demand_volume_flux" = "lsk_net"
 land_surface_water__withdrawal_fraction = "SurfaceWaterFrac"
 "land~irrigated-paddy_area__number" = "paddy_irrigation_areas"
 "land~irrigated-non-paddy_area__number" = "nonpaddy_irrigation_areas"
@@ -124,12 +124,12 @@ forcing = [
 
 cyclic = [ 
     "vegetation__leaf-area_index",
-    "land~domestic__gross_water_demand_flux",
-    "land~domestic__net_water_demand_flux", 
-    "land~industry__gross_water_demand_flux", 
-    "land~industry__net_water_demand_flux", 
-    "land~livestock__gross_water_demand_flux", 
-    "land~livestock__net_water_demand_flux", 
+    "land~domestic__gross_water_demand_volume_flux",
+    "land~domestic__net_water_demand_volume_flux", 
+    "land~industry__gross_water_demand_volume_flux", 
+    "land~industry__net_water_demand_volume_flux", 
+    "land~livestock__gross_water_demand_volume_flux", 
+    "land~livestock__net_water_demand_volume_flux", 
     "land~irrigated-paddy__irrigation_trigger_flag", 
     "land~irrigated-non-paddy__irrigation_trigger_flag",
 ]

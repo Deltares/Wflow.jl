@@ -93,25 +93,25 @@ const sbm_standard_name_map = Dict{String, ComposedFunction}(
     "land_surface_water__y_component_of_volume_flow_rate" =>
         @optic(_.lateral.land.variables.qy),
     "land_surface_water~paddy__depth" => @optic(_.vertical.demand.paddy.variables.h),
-    "land~domestic__gross_water_demand_flux" =>
+    "land~domestic__gross_water_demand_volume_flux" =>
         @optic(_.vertical.demand.domestic.demand.demand_gross),
-    "land~domestic__net_water_demand_flux" =>
+    "land~domestic__net_water_demand_volume_flux" =>
         @optic(_.vertical.demand.domestic.demand.demand_net),
-    "land~industry__gross_water_demand_flux" =>
+    "land~industry__gross_water_demand_volume_flux" =>
         @optic(_.vertical.demand.industry.demand.demand_gross),
-    "land~industry__net_water_demand_flux" =>
+    "land~industry__net_water_demand_volume_flux" =>
         @optic(_.vertical.demand.industry.demand.demand_net),
-    "land~livestock__gross_water_demand_flux" =>
+    "land~livestock__gross_water_demand_volume_flux" =>
         @optic(_.vertical.demand.livestock.demand.demand_gross),
-    "land~livestock__net_water_demand_flux" =>
+    "land~livestock__net_water_demand_volume_flux" =>
         @optic(_.vertical.demand.livestock.demand.demand_net),
     "land~irrigated-paddy__irrigation_trigger_flag" =>
         @optic(_.vertical.demand.paddy.parameters.irrigation_trigger),
-    "land~irrigated-paddy__gross_water_demand_flux" =>
+    "land~irrigated-paddy__gross_water_demand_volume_flux" =>
         @optic(_.vertical.demand.paddy.variables.demand_gross),
     "land~irrigated-non-paddy__irrigation_trigger_flag" =>
         @optic(_.vertical.demand.nonpaddy.parameters.irrigation_trigger),
-    "land~irrigated-non-paddy__gross_water_demand_flux" =>
+    "land~irrigated-non-paddy__gross_water_demand_volume_flux" =>
         @optic(_.vertical.demand.nonpaddy.variables.demand_gross),
     "land~irrigated__allocated_water_volume_flux" =>
         @optic(_.vertical.allocation.variables.irri_alloc),

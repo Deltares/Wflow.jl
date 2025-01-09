@@ -32,11 +32,11 @@ get_demand_gross(model::NoNonIrrigationDemand) = 0.0
 
 "Initialize non-irrigation water demand model for a water use `sector`"
 function NonIrrigationDemand(dataset, config, indices, dt, sector)
-    lens = lens_input_parameter("land~$(sector)__gross_water_demand_flux")
+    lens = lens_input_parameter("land~$(sector)__gross_water_demand_volume_flux")
     demand_gross =
         ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float) .*
         (dt / basetimestep)
-    lens = lens_input_parameter("land~$(sector)__net_water_demand_flux")
+    lens = lens_input_parameter("land~$(sector)__net_water_demand_volume_flux")
     demand_net =
         ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float) .*
         (dt / basetimestep)
