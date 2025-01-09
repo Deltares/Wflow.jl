@@ -212,7 +212,7 @@ parameter = "river_water__volume_flow_rate"
 [[csv.column]]
 header = "recharge"
 map = "subcatchment"
-parameter = "soil_water_sat-zone_top__recharge_volume_flux"
+parameter = "soil_water_sat-zone_top__net_recharge_volume_flux"
 reducer = "mean"
 
 [API]
