@@ -224,7 +224,9 @@ function sbm_kv_profiles(
         exp_profile = KvExponential(kv_0, f)
         kv_profile = KvExponentialConstant(exp_profile, z_exp)
     elseif kv_profile_type == "layered" || kv_profile_type == "layered_exponential"
-        lens = lens_input_parameter("soil_water__vertical_saturated_hydraulic_conductivity")
+        lens = lens_input_parameter(
+            "soil_water__vertical_saturated_hydraulic_conductivity-per-soil_layer",
+        )
         kv =
             ncread(
                 dataset,
@@ -418,7 +420,7 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
         ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float) .*
         (dt / basetimestep)
 
-    lens = lens_input_parameter("soil_water__brooks-corey_epsilon_parameter")
+    lens = lens_input_parameter("soil_water__brooks-corey_epsilon_parameter-per-soil_layer")
     c = ncread(
         dataset,
         config,
@@ -434,8 +436,9 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
         error("$parname needs a layer dimension of size $maxlayers, but is $size1")
     end
 
-    lens =
-        lens_input_parameter("soil_water__vertical_saturated_hydraulic_conductivity_factor")
+    lens = lens_input_parameter(
+        "soil_water__vertical_saturated_hydraulic_conductivity_factor-per-soil_layer",
+    )
     kvfrac = ncread(
         dataset,
         config,

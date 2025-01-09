@@ -268,7 +268,7 @@ config.input.parameters.soil__thickness = Dict(
 )
 config.input.forcing.atmosphere_water__precipitation_volume_flux =
     Dict("scale" => 1.5, "netcdf" => Dict("variable" => Dict("name" => "precip")))
-config.input.parameters["soil_water__brooks-corey_epsilon_parameter"] = Dict(
+config.input.parameters["soil_water__brooks-corey_epsilon_parameter-per-soil_layer"] = Dict(
     "scale" => [2.0, 3.0],
     "offset" => [0.0, 0.0],
     "layer" => [1, 3],
