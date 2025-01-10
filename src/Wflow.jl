@@ -2,6 +2,7 @@ module Wflow
 
 import BasicModelInterface as BMI
 
+using Accessors: @optic
 using Base.Threads: nthreads
 using CFTime: CFTime, monthday, dayofyear
 using Dates:
@@ -179,6 +180,7 @@ include("erosion.jl")
 include("sediment_flux.jl")
 include("sediment_model.jl")
 include("sbm_gwf_model.jl")
+include("standard_name.jl")
 include("utils.jl")
 include("bmi.jl")
 include("subdomains.jl")

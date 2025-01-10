@@ -18,6 +18,7 @@ function initialize_sbm_model(config::Config)
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
     do_lakes = get(config.model, "lakes", false)::Bool
     do_pits = get(config.model, "pits", false)::Bool
+    do_subsurface_flow = get(config.model, "kinematic-wave_subsurface", true)::Bool
 
     routing_options = ("kinematic-wave", "local-inertial")
     river_routing = get_options(
@@ -39,39 +40,25 @@ function initialize_sbm_model(config::Config)
 
     dataset = NCDataset(static_path)
 
-    subcatch_2d =
-        ncread(dataset, config, "subcatchment"; optional = false, allow_missing = true)
+    lens = lens_input("subcatchment")
+    subcatch_2d = ncread(dataset, config, lens; optional = false, allow_missing = true)
     # indices based on sub-catchments
     indices, reverse_indices = active_indices(subcatch_2d, missing)
     n_land_cells = length(indices)
     modelsize_2d = size(subcatch_2d)
 
-    river_location_2d = ncread(
-        dataset,
-        config,
-        "river_location";
-        optional = false,
-        type = Bool,
-        fill = false,
-    )
+    lens = lens_input("river_location")
+    river_location_2d =
+        ncread(dataset, config, lens; optional = false, type = Bool, fill = false)
     river_location = river_location_2d[indices]
-    river_width_2d = ncread(
-        dataset,
-        config,
-        "lateral.river.width";
-        optional = false,
-        type = Float,
-        fill = 0,
-    )
+
+    lens = lens_input_parameter("river__width")
+    river_width_2d = ncread(dataset, config, lens; optional = false, type = Float, fill = 0)
     river_width = river_width_2d[indices]
-    river_length_2d = ncread(
-        dataset,
-        config,
-        "lateral.river.length";
-        optional = false,
-        type = Float,
-        fill = 0,
-    )
+
+    lens = lens_input_parameter("river__length")
+    river_length_2d =
+        ncread(dataset, config, lens; optional = false, type = Float, fill = 0)
     river_length = river_length_2d[indices]
 
     # read x, y coordinates and calculate cell length [m]
@@ -111,30 +98,25 @@ function initialize_sbm_model(config::Config)
         lake = nothing
     end
 
-    ldd_2d = ncread(dataset, config, "ldd"; optional = false, allow_missing = true)
+    lens = lens_input("ldd")
+    ldd_2d = ncread(dataset, config, lens; optional = false, allow_missing = true)
     ldd = ldd_2d[indices]
     if do_pits
-        pits_2d =
-            ncread(dataset, config, "pits"; optional = false, type = Bool, fill = false)
+        lens = lens_input("pits")
+        pits_2d = ncread(dataset, config, lens; optional = false, type = Bool, fill = false)
         ldd = set_pit_ldd(pits_2d, ldd, indices)
     end
 
-    land_slope = ncread(
-        dataset,
-        config,
-        "lateral.land.slope";
-        optional = false,
-        sel = indices,
-        type = Float,
-    )
+    lens = lens_input_parameter("land_surface__slope")
+    land_slope =
+        ncread(dataset, config, lens; optional = false, sel = indices, type = Float)
     clamp!(land_slope, 0.00001, Inf)
     flow_length = map(get_flow_length, ldd, x_length, y_length)
     flow_width = (x_length .* y_length) ./ flow_length
 
-    # check if lateral subsurface flow component is defined for the SBM model, when coupled
-    # to another groundwater model, this component is not defined in the TOML file.
-    do_lateral_ssf = haskey(config.input.lateral, "subsurface")
-    if do_lateral_ssf
+    # check if lateral subsurface flow is included, when coupled to another groundwater
+    # model, this component is not defined in the TOML file.
+    if do_subsurface_flow
         subsurface_flow = LateralSSF(
             dataset,
             config,
@@ -147,7 +129,11 @@ function initialize_sbm_model(config::Config)
             y_length,
         )
         # update variables `ssf`, `ssfmax` and `kh` (layered profile) based on ksat_profile
-        kh_profile_type = get(config.input.vertical, "ksat_profile", "exponential")::String
+        kh_profile_type = get(
+            config.model,
+            "saturated_hydraulic_conductivity_profile",
+            "exponential",
+        )::String
         if kh_profile_type == "exponential" || kh_profile_type == "exponential_constant"
             initialize_lateralssf!(subsurface_flow, subsurface_flow.parameters.kh_profile)
         elseif kh_profile_type == "layered" || kh_profile_type == "layered_exponential"
@@ -259,10 +245,10 @@ function initialize_sbm_model(config::Config)
     toposort = topological_sort_by_dfs(graph)
     if land_routing == "kinematic-wave" ||
        river_routing == "kinematic-wave" ||
-       do_lateral_ssf
+       do_subsurface_flow
         streamorder = stream_order(graph, toposort)
     end
-    if land_routing == "kinematic-wave" || do_lateral_ssf
+    if land_routing == "kinematic-wave" || do_subsurface_flow
         toposort = topological_sort_by_dfs(graph)
         land_pit_inds = findall(x -> x == 5, ldd)
         min_streamorder_land = get(config.model, "min_streamorder_land", 5)
@@ -291,7 +277,7 @@ function initialize_sbm_model(config::Config)
     if nthreads() > 1
         if river_routing == "kinematic-wave"
             @info "Parallel execution of kinematic wave" min_streamorder_land min_streamorder_river
-        elseif land_routing == "kinematic-wave" || do_lateral_ssf
+        elseif land_routing == "kinematic-wave" || do_subsurface_flow
             @info "Parallel execution of kinematic wave" min_streamorder_land
         end
     end

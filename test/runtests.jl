@@ -1,4 +1,5 @@
 ## load test dependencies and set paths to testing data
+using Accessors
 using Dates
 using Downloads
 using Graphs
@@ -92,7 +93,6 @@ with_logger(NullLogger()) do
         include("bmi.jl")
         include("run_sediment.jl")
         include("subdomains.jl")
-
         Aqua.test_all(Wflow; ambiguities = false, persistent_tasks = false)
     end
 end

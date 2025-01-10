@@ -4,6 +4,7 @@ authors = ["Deltares and contributors"]
 version = "0.8.1"
 
 [deps]
+Accessors = "7d9f7c33-5ae7-4f3b-8dc6-eff91059b697"
 BasicModelInterface = "59605e27-edc0-445a-b93d-c09a3a50b330"
 CFTime = "179af706-886a-5703-950a-314cd64e0468"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
@@ -24,6 +25,7 @@ TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
 TerminalLoggers = "5d786b92-1e48-4d6f-9151-6b4477ca9bed"
 
 [compat]
+Accessors = "0.1"
 Aqua = "0.8"
 BasicModelInterface = "0.1"
 CFTime = "0.1"
