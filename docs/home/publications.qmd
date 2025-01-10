@@ -50,9 +50,9 @@ to climate change: the sensitivity of hydrological predictions to time-dynamic m
 parameters, Hydrol. Earth Syst. Sci., 26, 1295–1318.
 <https://doi.org/10.5194/hess-26-1295-2022>.
 
-Buskop, F.E., F. Sperna Weiland and B. van den Hurk, 2024. Amplifying exploration of regional 
-climate risks: clustering future projections on regionally relevant impact drivers instead of emission 
-scenarios, Environ. Res.: Climate, 3, 045030. 
+Buskop, F.E., F. Sperna Weiland and B. van den Hurk, 2024. Amplifying exploration of
+regional climate risks: clustering future projections on regionally relevant impact drivers
+instead of emission scenarios, Environ. Res.: Climate, 3, 045030.
 <https://iopscience.iop.org/article/10.1088/2752-5295/ad9f8f>.
 
 Casson, D. R., Werner, M., Weerts, A., and Solomatine, D., 2018. Global re-analysis datasets to
