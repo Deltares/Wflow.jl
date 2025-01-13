@@ -268,11 +268,6 @@ function run!(model::Model; close_files = true)
 
     # determine timesteps to run
     calendar = get(config.time, "calendar", "standard")::String
-    @warn string(
-        "The definition of `starttime` has changed (equal to model state time).\n Please",
-        " update your settings TOML file by subtracting one model timestep dt from the",
-        " `starttime`, if it was used with a Wflow version up to v0.6.3.",
-    )
     starttime = clock.time
     dt = clock.dt
     endtime = cftime(config.time.endtime, calendar)
