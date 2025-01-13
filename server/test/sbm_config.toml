@@ -128,7 +128,7 @@ offset = 0.0
 
 [model]
 kin_wave_iteration = true
-masswasting = true
+gravitational_snow_transport = true
 reinit = true
 reservoirs = true
 snow = true

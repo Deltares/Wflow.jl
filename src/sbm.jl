@@ -85,7 +85,7 @@ function update!(model::LandHydrologySBM, lateral, network, config, dt)
     update!(snow, atmospheric_forcing)
 
     # lateral snow transport
-    if get(config.model, "masswasting", false)::Bool
+    if get(config.model, "gravitational_snow_transport", false)::Bool
         lateral_snow_transport!(
             snow.variables.snow_storage,
             snow.variables.snow_water,

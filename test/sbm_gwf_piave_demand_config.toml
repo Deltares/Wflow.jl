@@ -150,7 +150,7 @@ cyclic = [
 [model]
 type = "sbm_gwf"
 constanthead = true
-masswasting = true
+gravitational_snow_transport = true
 snow = true
 reinit = false
 reservoirs = false

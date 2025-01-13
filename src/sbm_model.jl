@@ -35,8 +35,9 @@ function initialize_sbm_model(config::Config)
     reservoirs = do_reservoirs
     lakes = do_lakes
     glacier = get(config.model, "glacier", false)::Bool
-    masswasting = get(config.model, "masswasting", false)::Bool
-    @info "General model settings" reservoirs lakes snow masswasting glacier
+    gravitational_snow_transport =
+        get(config.model, "gravitational_snow_transport", false)::Bool
+    @info "General model settings" reservoirs lakes snow gravitational_snow_transport glacier
 
     dataset = NCDataset(static_path)
 
