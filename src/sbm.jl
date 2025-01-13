@@ -13,7 +13,7 @@ end
 
 "Initialize land hydrology model with SBM soil model"
 function LandHydrologySBM(dataset, config, riverfrac, indices)
-    dt = Second(config.timestepsecs)
+    dt = Second(config.time.timestepsecs)
     n = length(indices)
 
     atmospheric_forcing = AtmosphericForcing(n)

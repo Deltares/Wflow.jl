@@ -73,9 +73,9 @@ end
 function Clock(config)
     # this constructor is used by reset_clock!, since if the Clock has already
     # been constructed before, the config is complete
-    calendar = get(config, "calendar", "standard")::String
-    starttime = cftime(config.starttime, calendar)
-    dt = Second(config.timestepsecs)
+    calendar = get(config.time, "calendar", "standard")::String
+    starttime = cftime(config.time.starttime, calendar)
+    dt = Second(config.time.timestepsecs)
     return Clock(starttime, 0, dt)
 end
 
@@ -83,32 +83,32 @@ function Clock(config, reader)
     nctimes = reader.dataset["time"][:]
 
     # if the timestep is not given, use the difference between netCDF time 1 and 2
-    timestepsecs = get(config, "timestepsecs", nothing)
+    timestepsecs = get(config.time, "timestepsecs", nothing)
     if timestepsecs === nothing
         timestepsecs = Dates.value(Second(nctimes[2] - nctimes[1]))
-        config.timestepsecs = timestepsecs
+        config.time.timestepsecs = timestepsecs
     end
     dt = Second(timestepsecs)
 
     # if the config file does not have a start or endtime, follow the netCDF times
     # and add them to the config
-    starttime = get(config, "starttime", nothing)
+    starttime = get(config.time, "starttime", nothing)
     if starttime === nothing
         starttime = first(nctimes) - dt
-        config.starttime = starttime
+        config.time.starttime = starttime
     end
-    endtime = get(config, "endtime", nothing)
+    endtime = get(config.time, "endtime", nothing)
     if endtime === nothing
         endtime = last(nctimes)
-        config.endtime = endtime
+        config.time.endtime = endtime
     end
 
-    calendar = get(config, "calendar", "standard")::String
+    calendar = get(config.time, "calendar", "standard")::String
     fews_run = get(config, "fews_run", false)::Bool
     if fews_run
-        config.starttime = starttime + dt
+        config.time.starttime = starttime + dt
     end
-    starttime = cftime(config.starttime, calendar)
+    starttime = cftime(config.time.starttime, calendar)
 
     return Clock(starttime, 0, dt)
 end
@@ -208,7 +208,7 @@ function run(tomlpath::AbstractString; silent = nothing)
     config = Config(tomlpath)
     # if the silent kwarg is not set, check if it is set in the TOML
     if silent === nothing
-        silent = get(config, "silent", false)::Bool
+        silent = get(config.logging, "silent", false)::Bool
     end
     fews_run = get(config, "fews_run", false)::Bool
     logger, logfile = init_logger(config; silent)
@@ -267,7 +267,7 @@ function run!(model::Model; close_files = true)
     model_type = config.model.type::String
 
     # determine timesteps to run
-    calendar = get(config, "calendar", "standard")::String
+    calendar = get(config.time, "calendar", "standard")::String
     @warn string(
         "The definition of `starttime` has changed (equal to model state time).\n Please",
         " update your settings TOML file by subtracting one model timestep dt from the",
@@ -275,7 +275,7 @@ function run!(model::Model; close_files = true)
     )
     starttime = clock.time
     dt = clock.dt
-    endtime = cftime(config.endtime, calendar)
+    endtime = cftime(config.time.endtime, calendar)
     times = range(starttime + dt, endtime; step = dt)
 
     @info "Run information" model_type starttime dt endtime nthreads()

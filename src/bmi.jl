@@ -209,7 +209,7 @@ end
 function BMI.get_current_time(model::Model)
     (; config) = model
     calendar = get(config, "calendar", "standard")::String
-    starttime = cftime(config.starttime, calendar)
+    starttime = cftime(config.time.starttime, calendar)
     return 0.001 * Dates.value(model.clock.time - starttime)
 end
 
@@ -220,8 +220,8 @@ end
 function BMI.get_end_time(model::Model)
     (; config) = model
     calendar = get(config, "calendar", "standard")::String
-    starttime = cftime(config.starttime, calendar)
-    endtime = cftime(config.endtime, calendar)
+    starttime = cftime(config.time.starttime, calendar)
+    endtime = cftime(config.time.endtime, calendar)
     return 0.001 * Dates.value(endtime - starttime)
 end
 
@@ -230,7 +230,7 @@ function BMI.get_time_units(model::Model)
 end
 
 function BMI.get_time_step(model::Model)
-    return Float64(model.config.timestepsecs)
+    return Float64(model.config.time.timestepsecs)
 end
 
 function BMI.get_value(
@@ -416,7 +416,7 @@ function save_state(model::Model)
 end
 
 function get_start_unix_time(model::Model)
-    return datetime2unix(DateTime(model.config.starttime))
+    return datetime2unix(DateTime(model.config.time.starttime))
 end
 
 exchange(t::Vector) = true

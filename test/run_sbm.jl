@@ -154,15 +154,15 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 config["model"]["pits"] = true
 config["input"]["pits"] = "wflow_pits"
-config.endtime = DateTime(2000, 1, 9)
-config.loglevel = "info"
+config.time.endtime = DateTime(2000, 1, 9)
+config.logging.loglevel = "info"
 
 model = Wflow.run(config)
 
 @testset "timing" begin
     # clock has been reset
-    calendar = get(config, "calendar", "standard")::String
-    @test model.clock.time == Wflow.cftime(config.starttime, calendar)
+    calendar = get(config.time, "calendar", "standard")::String
+    @test model.clock.time == Wflow.cftime(config.time.starttime, calendar)
     @test model.clock.iteration == 0
 end
 

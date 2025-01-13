@@ -946,8 +946,8 @@ function prepare_writer(
 )
     sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
 
-    calendar = get(config, "calendar", "standard")::String
-    time_units = get(config, "time_units", CFTime.DEFAULT_TIME_UNITS)
+    calendar = get(config.time, "calendar", "standard")::String
+    time_units = get(config.time, "time_units", CFTime.DEFAULT_TIME_UNITS)
 
     # create an output netCDF that will hold all timesteps of selected parameters for grid
     # data but only if config.output.path has been set

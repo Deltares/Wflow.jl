@@ -55,7 +55,7 @@ function LateralSsfParameters(
 
     kh_profile_type =
         get(config.model, "saturated_hydraulic_conductivity_profile", "exponential")::String
-    dt = Second(config.timestepsecs) / basetimestep
+    dt = Second(config.time.timestepsecs) / basetimestep
     if kh_profile_type == "exponential"
         (; kv_0, f) = soil.kv_profile
         kh_0 = khfrac .* kv_0 .* 0.001 .* dt

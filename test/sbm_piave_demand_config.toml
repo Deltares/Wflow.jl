@@ -1,10 +1,14 @@
+dir_input = "data/input"
+dir_output = "data/output"
+
+[time]
 calendar = "proleptic_gregorian"
 starttime = 2010-07-01T00:00:00
 endtime = 2010-10-01T00:00:00
 time_units = "days since 1900-01-01 00:00:00"
 timestepsecs = 86400
-dir_input = "data/input"
-dir_output = "data/output"
+
+[logging]
 loglevel = "info"
 
 [state]

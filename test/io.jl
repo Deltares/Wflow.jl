@@ -17,8 +17,8 @@ config = Wflow.Config(tomlpath)
     @test dirname(config) == dirname(tomlpath)
 
     # test if the values are parsed as expected
-    @test config.starttime === DateTime(2000, 1, 1)
-    @test config.endtime === DateTime(2000, 2)
+    @test config.time.starttime === DateTime(2000, 1, 1)
+    @test config.time.endtime === DateTime(2000, 2)
     @test config.output.path == "output_moselle.nc"
     @test config.output isa Wflow.Config
     @test collect(keys(config.output)) == ["variables", "path"]
@@ -63,24 +63,24 @@ end
     reader = (; dataset = ds)
 
     # if these keys are missing, they are derived from the netCDF
-    pop!(Dict(config), "starttime")
-    pop!(Dict(config), "endtime")
-    pop!(Dict(config), "timestepsecs")
+    pop!(Dict(config.time), "starttime")
+    pop!(Dict(config.time), "endtime")
+    pop!(Dict(config.time), "timestepsecs")
     clock = Wflow.Clock(config, reader)
 
     @test clock.time == DateTimeProlepticGregorian(2000, 1, 1)
     @test clock.iteration == 0
     @test clock.dt == Second(Day(1))
     # test that the missing keys have been added to the config
-    @test config.starttime == DateTime(2000, 1, 1)
-    @test config.endtime == DateTime(2001, 1, 1)
-    @test config.timestepsecs == 86400
+    @test config.time.starttime == DateTime(2000, 1, 1)
+    @test config.time.endtime == DateTime(2001, 1, 1)
+    @test config.time.timestepsecs == 86400
 
     # replace the keys with different values
-    config.starttime = "2003-04-05"
-    config.endtime = "2003-04-06"
-    config.timestepsecs = 3600
-    config.calendar = "standard"
+    config.time.starttime = "2003-04-05"
+    config.time.endtime = "2003-04-06"
+    config.time.timestepsecs = 3600
+    config.time.calendar = "standard"
 
     clock = Wflow.Clock(config, reader)
     @test clock.time == DateTimeStandard(2003, 4, 5)
@@ -109,7 +109,12 @@ end
     @test clock.dt == dt
 
     config = Wflow.Config(
-        Dict("starttime" => starttime, "timestepsecs" => Dates.value(Second(dt))),
+        Dict(
+            "time" => Dict(
+                "starttime" => starttime,
+                "timestepsecs" => Dates.value(Second(dt)),
+            ),
+        ),
     )
     Wflow.reset_clock!(clock, config)
     @test clock.time == starttime
@@ -136,9 +141,11 @@ end
 
     config = Wflow.Config(
         Dict(
-            "starttime" => "2020-02-29",
-            "calendar" => "360_day",
-            "timestepsecs" => Dates.value(Second(dt)),
+            "time" => Dict(
+                "starttime" => "2020-02-29",
+                "calendar" => "360_day",
+                "timestepsecs" => Dates.value(Second(dt)),
+            ),
         ),
     )
     Wflow.reset_clock!(clock, config)
@@ -380,10 +387,10 @@ end
     # applies only to the `Wflow.run(tomlpath)` method.
     # This also add an error to the config.
     tomlpath_debug = joinpath(@__DIR__, "sbm_simple-debug.toml")
-    config.loglevel = "debug"
-    config.path_log = "log-debug.txt"
+    config.logging.loglevel = "debug"
+    config.logging.path_log = "log-debug.txt"
     config.fews_run = true
-    config.silent = true
+    config.logging.silent = true
     config.input.path_forcing = "doesnt-exist.nc"
     open(tomlpath_debug, "w") do io
         TOML.print(io, Dict(config))
@@ -417,7 +424,7 @@ end
 @testset "Calendar noleap (DateTimeNoLeap) for time and clock" begin
     config = Wflow.Config(tomlpath)
     config.input.path_forcing = "forcing-calendar-noleap.nc"
-    config.calendar = "noleap"
+    config.time.calendar = "noleap"
 
     # with `_FillValue` in time dimension Wflow throws a warning
     reader = @test_logs (
