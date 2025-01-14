@@ -36,7 +36,7 @@ function NonIrrigationDemand(dataset, config, indices, dt, sector)
         ncread(
             dataset,
             config,
-            "vertical.demand.$(sector).demand_gross";
+            "land.demand.$(sector).demand_gross";
             sel = indices,
             defaults = 0.0,
             type = Float,
@@ -45,7 +45,7 @@ function NonIrrigationDemand(dataset, config, indices, dt, sector)
         ncread(
             dataset,
             config,
-            "vertical.demand.$(sector).demand_net";
+            "land.demand.$(sector).demand_net";
             sel = indices,
             defaults = 0.0,
             type = Float,
@@ -87,7 +87,7 @@ function NonPaddy(dataset, config, indices, dt)
     efficiency = ncread(
         dataset,
         config,
-        "vertical.demand.nonpaddy.parameters.irrigation_efficiency";
+        "land.demand.nonpaddy.parameters.irrigation_efficiency";
         sel = indices,
         defaults = 1.0,
         type = Float,
@@ -95,7 +95,7 @@ function NonPaddy(dataset, config, indices, dt)
     areas = ncread(
         dataset,
         config,
-        "vertical.demand.nonpaddy.parameters.irrigation_areas";
+        "land.demand.nonpaddy.parameters.irrigation_areas";
         sel = indices,
         defaults = 1,
         optional = false,
@@ -104,7 +104,7 @@ function NonPaddy(dataset, config, indices, dt)
     irrigation_trigger = ncread(
         dataset,
         config,
-        "vertical.demand.nonpaddy.parameters.irrigation_trigger";
+        "land.demand.nonpaddy.parameters.irrigation_trigger";
         sel = indices,
         defaults = 1,
         optional = false,
@@ -114,7 +114,7 @@ function NonPaddy(dataset, config, indices, dt)
         ncread(
             dataset,
             config,
-            "vertical.demand.nonpaddy.parameters.maximum_irrigation_rate";
+            "land.demand.nonpaddy.parameters.maximum_irrigation_rate";
             sel = indices,
             defaults = 25.0,
             type = Float,
@@ -233,7 +233,7 @@ function Paddy(dataset, config, indices, dt)
     h_min = ncread(
         dataset,
         config,
-        "vertical.demand.paddy.parameters.h_min";
+        "land.demand.paddy.parameters.h_min";
         sel = indices,
         defaults = 20.0,
         type = Float,
@@ -241,7 +241,7 @@ function Paddy(dataset, config, indices, dt)
     h_opt = ncread(
         dataset,
         config,
-        "vertical.demand.paddy.parameters.h_opt";
+        "land.demand.paddy.parameters.h_opt";
         sel = indices,
         defaults = 50.0,
         type = Float,
@@ -249,7 +249,7 @@ function Paddy(dataset, config, indices, dt)
     h_max = ncread(
         dataset,
         config,
-        "vertical.demand.paddy.parameters.h_max";
+        "land.demand.paddy.parameters.h_max";
         sel = indices,
         defaults = 80.0,
         type = Float,
@@ -257,7 +257,7 @@ function Paddy(dataset, config, indices, dt)
     efficiency = ncread(
         dataset,
         config,
-        "vertical.demand.paddy.parameters.irrigation_efficiency";
+        "land.demand.paddy.parameters.irrigation_efficiency";
         sel = indices,
         defaults = 1.0,
         type = Float,
@@ -265,7 +265,7 @@ function Paddy(dataset, config, indices, dt)
     areas = ncread(
         dataset,
         config,
-        "vertical.demand.paddy.parameters.irrigation_areas";
+        "land.demand.paddy.parameters.irrigation_areas";
         sel = indices,
         optional = false,
         type = Bool,
@@ -273,7 +273,7 @@ function Paddy(dataset, config, indices, dt)
     irrigation_trigger = ncread(
         dataset,
         config,
-        "vertical.demand.paddy.parameters.irrigation_trigger";
+        "land.demand.paddy.parameters.irrigation_trigger";
         sel = indices,
         optional = false,
         type = Bool,
@@ -282,7 +282,7 @@ function Paddy(dataset, config, indices, dt)
         ncread(
             dataset,
             config,
-            "vertical.demand.paddy.parameters.maximum_irrigation_rate";
+            "land.demand.paddy.parameters.maximum_irrigation_rate";
             sel = indices,
             defaults = 25.0,
             type = Float,
@@ -548,7 +548,7 @@ function AllocationLand(dataset, config, indices)
     frac_sw_used = ncread(
         dataset,
         config,
-        "vertical.allocation.parameters.frac_sw_used";
+        "land.allocation.parameters.frac_sw_used";
         sel = indices,
         defaults = 1,
         type = Float,
@@ -556,7 +556,7 @@ function AllocationLand(dataset, config, indices)
     areas = ncread(
         dataset,
         config,
-        "vertical.allocation.parameters.areas";
+        "land.allocation.parameters.areas";
         sel = indices,
         defaults = 1,
         type = Int,
@@ -807,21 +807,21 @@ return_flow(model::NoNonIrrigationDemand, nonirri_demand_gross, nonirri_alloc) =
 
 # wrapper methods
 groundwater_volume(model::LateralSSF) = model.variables.volume
-groundwater_volume(model) = model.flow.aquifer.variables.volume
+groundwater_volume(model) = model.aquifer.variables.volume
 
 """
-    update_water_allocation!((model::AllocationLand, demand, lateral, network, dt)
+    update_water_allocation!((model::AllocationLand, demand, routing, network, dt)
 
 Update water allocation for the land domain `AllocationLand` and water allocation for the
-river domain (part of `lateral`) based on the water `demand` model for a single timestep.
+river domain (part of `routing`) based on the water `demand` model for a single timestep.
 First, surface water abstraction is computed to satisfy local water demand (non-irrigation
 and irrigation), and then updated (including lakes and reservoirs) to satisfy the remaining
 water demand for allocation areas. Then groundwater abstraction is computed to satisfy the
 remaining local water demand, and then updated to satisfy the remaining water demand for
 allocation areas. Finally, non-irrigation return flows are updated.
 """
-function update_water_allocation!(model::AllocationLand, demand, lateral, network, dt)
-    river = lateral.river
+function update_water_allocation!(model::AllocationLand, demand, routing, network, dt)
+    river = routing.river_flow
     index_river = network.land.river_inds_excl_waterbody
     inds_reservoir = network.reservoir.river_indices
     inds_lake = network.lake.river_indices
@@ -875,7 +875,7 @@ function update_water_allocation!(model::AllocationLand, demand, lateral, networ
     groundwater_allocation_local!(
         model,
         demand,
-        groundwater_volume(lateral.subsurface),
+        groundwater_volume(routing.subsurface_flow),
         network.land,
     )
     # groundwater demand and allocation for areas
@@ -907,7 +907,7 @@ function update_water_allocation!(model::AllocationLand, demand, lateral, networ
         end
     end
 end
-update_water_allocation!(model::NoAllocationLand, demand, lateral, network, dt) = nothing
+update_water_allocation!(model::NoAllocationLand, demand, routing, network, dt) = nothing
 
 """
     update_demand_gross!(model::Demand)

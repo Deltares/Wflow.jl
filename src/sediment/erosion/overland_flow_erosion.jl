@@ -37,7 +37,7 @@ function OverlandFlowErosionAnswersParameters(dataset, config, indices)
     usle_k = ncread(
         dataset,
         config,
-        "vertical.overland_flow_erosion.parameters.usle_k";
+        "land.overland_flow_erosion.parameters.usle_k";
         sel = indices,
         defaults = 0.1,
         type = Float,
@@ -45,7 +45,7 @@ function OverlandFlowErosionAnswersParameters(dataset, config, indices)
     usle_c = ncread(
         dataset,
         config,
-        "vertical.overland_flow_erosion.parameters.usle_c";
+        "land.overland_flow_erosion.parameters.usle_c";
         sel = indices,
         defaults = 0.01,
         type = Float,
@@ -53,7 +53,7 @@ function OverlandFlowErosionAnswersParameters(dataset, config, indices)
     answers_k = ncread(
         dataset,
         config,
-        "vertical.overland_flow_erosion.parameters.answers_k";
+        "land.overland_flow_erosion.parameters.answers_k";
         sel = indices,
         defaults = 0.9,
         type = Float,

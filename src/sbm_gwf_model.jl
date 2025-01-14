@@ -21,7 +21,6 @@ function initialize_sbm_gwf_model(config::Config)
 
     reader = prepare_reader(config)
     clock = Clock(config, reader)
-    dt = clock.dt
 
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
     do_lakes = get(config.model, "lakes", false)::Bool
@@ -60,7 +59,7 @@ function initialize_sbm_gwf_model(config::Config)
     river_width_2d = ncread(
         dataset,
         config,
-        "lateral.river.width";
+        "routing.river_flow.width";
         optional = false,
         type = Float,
         fill = 0,
@@ -69,7 +68,7 @@ function initialize_sbm_gwf_model(config::Config)
     river_length_2d = ncread(
         dataset,
         config,
-        "lateral.river.length";
+        "routing.river_flow.length";
         optional = false,
         type = Float,
         fill = 0,
@@ -93,7 +92,7 @@ function initialize_sbm_gwf_model(config::Config)
     inds_river, reverse_inds_river = active_indices(river_location_2d, 0)
     n_river_cells = length(inds_river)
 
-    # initialize vertical SBM concept
+    # initialize SBM concept
     land_hydrology = LandHydrologySBM(dataset, config, river_fraction, indices)
 
     # reservoirs
@@ -101,8 +100,9 @@ function initialize_sbm_gwf_model(config::Config)
     if do_reservoirs
         reservoir, reservoir_network, inds_reservoir_map2river, pits =
             SimpleReservoir(dataset, config, inds_river, n_river_cells, pits)
+        network_reservoir = NetworkWaterBody(; reservoir_network...)
     else
-        reservoir_network = (river_indices = [],)
+        network_reservoir = NetworkWaterBody()
         inds_reservoir_map2river = fill(0, n_river_cells)
         reservoir = nothing
     end
@@ -111,8 +111,9 @@ function initialize_sbm_gwf_model(config::Config)
     if do_lakes
         lake, lake_network, inds_lake_map2river, pits =
             Lake(dataset, config, inds_river, n_river_cells, pits)
+        network_lake = NetworkWaterBody(; lake_network...)
     else
-        lake_network = (river_indices = [],)
+        network_lake = NetworkWaterBody()
         inds_lake_map2river = fill(0, n_river_cells)
         lake = nothing
     end
@@ -121,7 +122,7 @@ function initialize_sbm_gwf_model(config::Config)
     land_slope = ncread(
         dataset,
         config,
-        "lateral.land.slope";
+        "routing.overland_flow.slope";
         optional = false,
         sel = indices,
         type = Float,
@@ -169,7 +170,7 @@ function initialize_sbm_gwf_model(config::Config)
         )
     elseif land_routing == "local-inertial"
         inds_river_map2land = reverse_inds_river[indices] # not filtered (with zeros)
-        overland_flow, staggered_indices = LocalInertialOverlandFlow(
+        overland_flow, edge_indices = LocalInertialOverlandFlow(
             dataset,
             config,
             indices;
@@ -199,8 +200,8 @@ function initialize_sbm_gwf_model(config::Config)
             inds_river;
             river_length,
             river_width,
-            reservoir = reservoir,
-            lake = lake,
+            reservoir,
+            lake,
         )
     elseif river_routing == "local-inertial"
         river_flow, nodes_at_edge = LocalInertialRiverFlow(
@@ -265,8 +266,13 @@ function initialize_sbm_gwf_model(config::Config)
 
     # drain boundary of unconfined aquifer (optional)
     if do_drains
-        drain_2d =
-            ncread(dataset, config, "lateral.subsurface.drain"; type = Bool, fill = false)
+        drain_2d = ncread(
+            dataset,
+            config,
+            "routing.subsurface_flow.drain";
+            type = Bool,
+            fill = false,
+        )
 
         drain = drain_2d[indices]
         # check if drain occurs where overland flow is not possible (surface_flow_width =
@@ -286,36 +292,21 @@ function initialize_sbm_gwf_model(config::Config)
         indices_drain, reverse_inds_drain = active_indices(drain_2d, 0)
         inds_land_map2drain = filter(i -> !isequal(drain[i], 0), 1:n_land_cells)
 
-        drains = Drainage(dataset, config, indices, inds_land_map2drain)
-        drain = (indices = indices_drain, reverse_indices = reverse_inds_drain)
-        aquifer_boundaries = AquiferBoundaryCondition[recharge, river, drains]
+        drain = Drainage(dataset, config, indices, inds_land_map2drain)
+        network_drain =
+            NetworkDrain(; indices = indices_drain, reverse_indices = reverse_inds_drain)
+        aquifer_boundaries = (; recharge, river, drain)
     else
-        aquifer_boundaries = AquiferBoundaryCondition[recharge, river]
-        drain = ()
+        aquifer_boundaries = (; recharge, river)
+        network_drain = NetworkDrain()
     end
 
-    groundwater_flow = GroundwaterFlow{Float}(;
+    subsurface_flow = GroundwaterFlow{Float}(;
         aquifer,
         connectivity,
         constanthead = constant_head,
         boundaries = aquifer_boundaries,
     )
-
-    # map GroundwaterFlow and its boundaries
-    if do_drains
-        subsurface_map = (
-            flow = groundwater_flow,
-            recharge = groundwater_flow.boundaries[1],
-            river = groundwater_flow.boundaries[2],
-            drain = groundwater_flow.boundaries[3],
-        )
-    else
-        subsurface_map = (
-            flow = groundwater_flow,
-            recharge = groundwater_flow.boundaries[1],
-            river = groundwater_flow.boundaries[2],
-        )
-    end
 
     # setup subdomains for the land and river kinematic wave domain, if nthreads = 1
     # subdomain is equal to the complete domain
@@ -349,16 +340,14 @@ function initialize_sbm_gwf_model(config::Config)
             )
     end
 
-    modelmap = (
-        vertical = land_hydrology,
-        lateral = (subsurface = subsurface_map, land = overland_flow, river = river_flow),
-    )
+    modelmap =
+        (land = land_hydrology, routing = (; subsurface_flow, overland_flow, river_flow))
     indices_reverse = (
         land = reverse_indices,
         river = reverse_inds_river,
-        reservoir = isnothing(reservoir) ? nothing : reservoir.reverse_indices,
+        reservoir = network_reservoir.reverse_indices,
         lake = isnothing(lake) ? nothing : lake.reverse_indices,
-        drain = isempty(drain) ? nothing : reverse_inds_drain,
+        drain = network_drain.reverse_indices,
     )
     writer = prepare_writer(
         config,
@@ -374,112 +363,80 @@ function initialize_sbm_gwf_model(config::Config)
     )
     close(dataset)
 
-    # for each domain save:
-    # - the directed acyclic graph (graph),
-    # - the traversion order (order),
-    # - upstream_nodes,
-    # - subdomains for the kinematic wave domains for parallel execution (execution order of
-    #   subbasins (subdomain_order), traversion order per subbasin (topo_subdomain) and
-    #   Vector indices per subbasin matching the traversion order of the complete domain
-    #   (indices_subdomain))
-    # - the indices that map it back to the two dimensional grid (indices)
-
-    # for the land domain the x and y length [m] of the grid cells are stored
-    # for reservoirs and lakes indices information is available from the initialization
-    # functions
+    network_land = NetworkLand(;
+        graph,
+        order = toposort,
+        indices,
+        reverse_indices,
+        area = x_length .* y_length,
+        slope = land_slope,
+        frac_to_river,
+        altitude,
+        allocation_area_indices = allocation_area_inds,
+    )
     if land_routing == "kinematic-wave"
-        land = (
-            graph,
-            upstream_nodes = filter_upsteam_nodes(graph, pits[indices]),
-            order_of_subdomains,
-            order_subdomain = toposort_subdomain,
-            subdomain_indices = subdomain_inds,
-            order = toposort,
-            indices,
-            reverse_indices,
-            area = x_length .* y_length,
-            slope = land_slope,
-            frac_to_river,
-            altitude,
-            allocation_area_indices = allocation_area_inds,
-        )
+        @reset network_land.upstream_nodes = filter_upsteam_nodes(graph, pits[indices])
+        @reset network_land.order_of_subdomains = order_of_subdomains
+        @reset network_land.order_subdomain = toposort_subdomain
+        @reset network_land.subdomain_indices = subdomain_inds
     elseif land_routing == "local-inertial"
-        land = (
-            graph,
-            order = toposort,
-            indices,
-            reverse_indices,
-            area = x_length .* y_length,
-            slope = land_slope,
-            frac_to_river,
-            altitude,
-            river_indices = inds_river_map2land,
-            staggered_indices,
-            allocation_area_indices = allocation_area_inds,
-        )
+        @reset network_land.river_indices = inds_river_map2land
+        @reset network_land.edge_indices = edge_indices
     end
     if do_water_demand
         # exclude waterbodies for local surface and ground water abstraction
         inds_riv_2d = copy(reverse_inds_river)
         inds_2d = zeros(Bool, modelsize_2d)
-        if !isnothing(reservoir)
-            inds_cov = collect(Iterators.flatten(reservoir_network.indices_coverage))
+        if do_reservoirs
+            inds_cov = collect(Iterators.flatten(network_reservoir.indices_coverage))
             inds_riv_2d[inds_cov] .= 0
             inds_2d[inds_cov] .= 1
         end
-        if !isnothing(lake)
-            inds_cov = collect(Iterators.flatten(lake_network.indices_coverage))
+        if do_lakes
+            inds_cov = collect(Iterators.flatten(network_lake.indices_coverage))
             inds_riv_2d[inds_cov] .= 0
             inds_2d[inds_cov] .= 1
         end
-        land = merge(
-            land,
-            (
-                river_inds_excl_waterbody = inds_riv_2d[indices],
-                waterbody = inds_2d[indices],
-            ),
-        )
+        @reset network_land.river_inds_excl_waterbody = inds_riv_2d[indices]
+        @reset network_land.waterbody = inds_2d[indices]
     end
+    network_river = NetworkRiver(;
+        graph = graph_river,
+        indices = inds_river,
+        reverse_indices = reverse_inds_river,
+        reservoir_indices = inds_reservoir_map2river,
+        lake_indices = inds_lake_map2river,
+        land_indices = inds_land_map2river,
+        allocation_area_indices = river_allocation_area_inds,
+        cell_area = x_length[inds_land_map2river] .* y_length[inds_land_map2river],
+    )
     if river_routing == "kinematic-wave"
-        river = (
-            graph = graph_river,
-            indices = inds_river,
-            reverse_indices = reverse_inds_river,
-            # reservoir and lake index
-            reservoir_indices = inds_reservoir_map2river,
-            lake_indices = inds_lake_map2river,
-            land_indices = inds_land_map2river,
-            # specific for kinematic_wave
-            upstream_nodes = filter_upsteam_nodes(graph_river, pits[inds_river]),
-            order_of_subdomains = order_of_river_subdomains,
-            order_subdomain = toposort_river_subdomain,
-            subdomain_indices = river_subdomain_inds,
-            order = toposort_river,
-            # water allocation areas
-            allocation_area_indices = river_allocation_area_inds,
-            cell_area = x_length[inds_land_map2river] .* y_length[inds_land_map2river],
-        )
+        @reset network_river.upstream_nodes =
+            filter_upsteam_nodes(graph_river, pits[inds_river])
+        @reset network_river.order_of_subdomains = order_of_river_subdomains
+        @reset network_river.order_subdomain = toposort_river_subdomain
+        @reset network_river.subdomain_indices = river_subdomain_inds
+        @reset network_river.order = toposort_river
     elseif river_routing == "local-inertial"
-        river = (
-            graph = graph_river,
-            indices = inds_river,
-            reverse_indices = reverse_inds_river,
-            reservoir_indices = inds_reservoir_map2river,
-            lake_indices = inds_lake_map2river,
-            land_indices = inds_land_map2river,
-            # specific for local-inertial
-            nodes_at_edge = nodes_at_edge,
-            edges_at_node = adjacent_edges_at_node(graph_river, nodes_at_edge),
-            # water allocation areas
-            allocation_area_indices = river_allocation_area_inds,
-            cell_area = x_length[inds_land_map2river] .* y_length[inds_land_map2river],
-        )
+        @reset network_river.nodes_at_edge = NodesAtEdge(nodes_at_edge...)
+        @reset network_river.edges_at_node =
+            EdgesAtNode(adjacent_edges_at_node(graph_river, nodes_at_edge)...)
     end
+
+    network = Network(;
+        land = network_land,
+        river = network_river,
+        reservoir = network_reservoir,
+        lake = network_lake,
+        drain = network_drain,
+    )
+
+    routing = Routing(; subsurface_flow, overland_flow, river_flow)
 
     model = Model(
         config,
-        (; land, river, reservoir = reservoir_network, lake = lake_network, drain),
-        (subsurface = subsurface_map, land = overland_flow, river = river_flow),
+        network,
+        routing,
         land_hydrology,
         clock,
         reader,
@@ -493,23 +450,23 @@ function initialize_sbm_gwf_model(config::Config)
 end
 
 "update the sbm_gwf model for a single timestep"
-function update!(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmGwfModel}
-    (; lateral, vertical, network, clock, config) = model
-    (; soil, runoff, demand) = vertical
+function update!(model::AbstractModel{<:SbmGwfModel})
+    (; routing, land, network, clock, config) = model
+    (; soil, runoff, demand) = land
 
     do_water_demand = haskey(config.model, "water_demand")
-    aquifer = lateral.subsurface.flow.aquifer
+    (; aquifer, boundaries) = routing.subsurface_flow
     dt = tosecond(clock.dt)
 
-    update!(vertical, lateral, network, config, dt)
+    update!(land, routing, network, config, dt)
 
     # set river stage (groundwater) to average h from kinematic wave
-    lateral.subsurface.river.variables.stage .=
-        lateral.river.variables.h_av .+ lateral.subsurface.river.parameters.bottom
+    boundaries.river.variables.stage .=
+        routing.river_flow.variables.h_av .+ boundaries.river.parameters.bottom
 
     # determine stable time step for groundwater flow
     conductivity_profile =
-        get(config.input.lateral.subsurface, "conductivity_profile", "uniform")
+        get(config.input.routing.subsurface_flow, "conductivity_profile", "uniform")
     dt_gw = stable_timestep(aquifer, conductivity_profile) # time step in day (Float64)
     dt_sbm = (dt / tosecond(basetimestep)) # dt is in seconds (Float64)
     if dt_gw < dt_sbm
@@ -518,20 +475,20 @@ function update!(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SbmG
         )
     end
 
-    Q = zeros(lateral.subsurface.flow.connectivity.ncell)
+    Q = zeros(routing.subsurface_flow.connectivity.ncell)
     # exchange of recharge between SBM soil model and groundwater flow domain
     # recharge rate groundwater is required in units [m d⁻¹]
-    @. lateral.subsurface.recharge.variables.rate =
+    @. boundaries.recharge.variables.rate =
         soil.variables.recharge / 1000.0 * (1.0 / dt_sbm)
     if do_water_demand
-        @. lateral.subsurface.recharge.variables.rate -=
-            vertical.allocation.variables.act_groundwater_abst / 1000.0 * (1.0 / dt_sbm)
+        @. boundaries.recharge.variables.rate -=
+            land.allocation.variables.act_groundwater_abst / 1000.0 * (1.0 / dt_sbm)
     end
     # update groundwater domain
-    update!(lateral.subsurface.flow, Q, dt_sbm, conductivity_profile)
+    update!(routing.subsurface_flow, Q, dt_sbm, conductivity_profile)
 
     # update SBM soil model (runoff, ustorelayerdepth and satwaterdepth)
-    update!(soil, (; runoff, demand, subsurface = lateral.subsurface.flow))
+    update!(soil, (; runoff, demand, subsurface_flow = routing.subsurface_flow))
 
     surface_routing!(model)
 

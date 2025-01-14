@@ -54,7 +54,7 @@ function RainfallErosionEurosemParameters(dataset, config, indices)
     soil_detachability = ncread(
         dataset,
         config,
-        "vertical.rainfall_erosion.parameters.soil_detachability";
+        "land.rainfall_erosion.parameters.soil_detachability";
         sel = indices,
         defaults = 0.6,
         type = Float,
@@ -62,7 +62,7 @@ function RainfallErosionEurosemParameters(dataset, config, indices)
     eurosem_exponent = ncread(
         dataset,
         config,
-        "vertical.rainfall_erosion.parameters.eurosem_exponent";
+        "land.rainfall_erosion.parameters.eurosem_exponent";
         sel = indices,
         defaults = 2.0,
         type = Float,
@@ -70,7 +70,7 @@ function RainfallErosionEurosemParameters(dataset, config, indices)
     canopyheight = ncread(
         dataset,
         config,
-        "vertical.rainfall_erosion.parameters.canopyheight";
+        "land.rainfall_erosion.parameters.canopyheight";
         sel = indices,
         defaults = 0.5,
         type = Float,
@@ -78,7 +78,7 @@ function RainfallErosionEurosemParameters(dataset, config, indices)
     canopygapfraction = ncread(
         dataset,
         config,
-        "vertical.rainfall_erosion.parameters.canopygapfraction";
+        "land.rainfall_erosion.parameters.canopygapfraction";
         sel = indices,
         defaults = 0.1,
         type = Float,
@@ -86,7 +86,7 @@ function RainfallErosionEurosemParameters(dataset, config, indices)
     soilcover_fraction = ncread(
         dataset,
         config,
-        "vertical.rainfall_erosion.parameters.pathfrac";
+        "land.rainfall_erosion.parameters.pathfrac";
         sel = indices,
         defaults = 0.01,
         type = Float,
@@ -187,7 +187,7 @@ function RainfallErosionAnswersParameters(dataset, config, indices)
     usle_k = ncread(
         dataset,
         config,
-        "vertical.rainfall_erosion.parameters.usle_k";
+        "land.rainfall_erosion.parameters.usle_k";
         sel = indices,
         defaults = 0.1,
         type = Float,
@@ -195,7 +195,7 @@ function RainfallErosionAnswersParameters(dataset, config, indices)
     usle_c = ncread(
         dataset,
         config,
-        "vertical.rainfall_erosion.parameters.usle_c";
+        "land.rainfall_erosion.parameters.usle_c";
         sel = indices,
         defaults = 0.01,
         type = Float,

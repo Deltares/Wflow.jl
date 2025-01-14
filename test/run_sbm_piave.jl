@@ -5,9 +5,9 @@ function run_piave(model, steps)
     riv_vol = zeros(steps)
     for i in 1:steps
         Wflow.run_timestep!(model)
-        ssf_vol[i] = mean(model.lateral.subsurface.variables.volume)
-        riv_vol[i] = mean(model.lateral.river.variables.volume)
-        q[i] = model.lateral.river.variables.q_av[1]
+        ssf_vol[i] = mean(model.routing.subsurface_flow.variables.volume)
+        riv_vol[i] = mean(model.routing.river_flow.variables.volume)
+        q[i] = model.routing.river_flow.variables.q_av[1]
     end
     return q, riv_vol, ssf_vol
 end
@@ -104,8 +104,8 @@ tomlpath = joinpath(@__DIR__, "sbm_piave_demand_config.toml")
 config = Wflow.Config(tomlpath)
 model = Wflow.initialize_sbm_model(config)
 Wflow.run_timestep!(model)
-sbm = model.vertical
-(; paddy, nonpaddy, industry, livestock, domestic) = model.vertical.demand
+sbm = model.land
+(; paddy, nonpaddy, industry, livestock, domestic) = model.land.demand
 (; total_alloc, irri_alloc, nonirri_alloc, surfacewater_alloc, act_groundwater_abst) =
     sbm.allocation.variables
 
@@ -138,8 +138,8 @@ sbm = model.vertical
 end
 
 Wflow.run_timestep!(model)
-sbm = model.vertical
-(; paddy, nonpaddy, industry, livestock, domestic) = model.vertical.demand
+sbm = model.land
+(; paddy, nonpaddy, industry, livestock, domestic) = model.land.demand
 (; total_alloc, irri_alloc, nonirri_alloc, surfacewater_alloc, act_groundwater_abst) =
     sbm.allocation.variables
 @testset "piave water demand and allocation second timestep" begin

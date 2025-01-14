@@ -163,7 +163,7 @@ function SedimentRiverTransportParameters(dataset, config, indices)
     clay_fraction = ncread(
         dataset,
         config,
-        "lateral.river.sediment_flux.parameters.clay_fraction";
+        "routing.river_flow.sediment_flux.parameters.clay_fraction";
         sel = indices,
         defaults = 0.15,
         type = Float,
@@ -171,7 +171,7 @@ function SedimentRiverTransportParameters(dataset, config, indices)
     silt_fraction = ncread(
         dataset,
         config,
-        "lateral.river.sediment_flux.parameters.silt_fraction";
+        "routing.river_flow.sediment_flux.parameters.silt_fraction";
         sel = indices,
         defaults = 0.65,
         type = Float,
@@ -179,7 +179,7 @@ function SedimentRiverTransportParameters(dataset, config, indices)
     sand_fraction = ncread(
         dataset,
         config,
-        "lateral.river.sediment_flux.parameters.sand_fraction";
+        "routing.river_flow.sediment_flux.parameters.sand_fraction";
         sel = indices,
         defaults = 0.15,
         type = Float,
@@ -187,7 +187,7 @@ function SedimentRiverTransportParameters(dataset, config, indices)
     gravel_fraction = ncread(
         dataset,
         config,
-        "lateral.river.sediment_flux.parameters.sagg_fraction";
+        "routing.river_flow.sediment_flux.parameters.sagg_fraction";
         sel = indices,
         defaults = 0.05,
         type = Float,
@@ -200,7 +200,7 @@ function SedimentRiverTransportParameters(dataset, config, indices)
     dm_clay = ncread(
         dataset,
         config,
-        "lateral.river.sediment_flux.parameters.dm_clay";
+        "routing.river_flow.sediment_flux.parameters.dm_clay";
         sel = indices,
         defaults = 2.0,
         type = Float,
@@ -208,7 +208,7 @@ function SedimentRiverTransportParameters(dataset, config, indices)
     dm_silt = ncread(
         dataset,
         config,
-        "lateral.river.sediment_flux.parameters.dm_silt";
+        "routing.river_flow.sediment_flux.parameters.dm_silt";
         sel = indices,
         defaults = 10.0,
         type = Float,
@@ -216,7 +216,7 @@ function SedimentRiverTransportParameters(dataset, config, indices)
     dm_sand = ncread(
         dataset,
         config,
-        "lateral.river.sediment_flux.parameters.dm_sand";
+        "routing.river_flow.sediment_flux.parameters.dm_sand";
         sel = indices,
         defaults = 200.0,
         type = Float,
@@ -224,7 +224,7 @@ function SedimentRiverTransportParameters(dataset, config, indices)
     dm_sagg = ncread(
         dataset,
         config,
-        "lateral.river.sediment_flux.parameters.dm_sagg";
+        "routing.river_flow.sediment_flux.parameters.dm_sagg";
         sel = indices,
         defaults = 30.0,
         type = Float,
@@ -232,7 +232,7 @@ function SedimentRiverTransportParameters(dataset, config, indices)
     dm_lagg = ncread(
         dataset,
         config,
-        "lateral.river.sediment_flux.parameters.dm_lagg";
+        "routing.river_flow.sediment_flux.parameters.dm_lagg";
         sel = indices,
         defaults = 500.0,
         type = Float,
@@ -240,7 +240,7 @@ function SedimentRiverTransportParameters(dataset, config, indices)
     dm_gravel = ncread(
         dataset,
         config,
-        "lateral.river.sediment_flux.parameters.dm_gravel";
+        "routing.river_flow.sediment_flux.parameters.dm_gravel";
         sel = indices,
         defaults = 2000.0,
         type = Float,
@@ -256,7 +256,7 @@ function SedimentRiverTransportParameters(dataset, config, indices)
         reslocs = ncread(
             dataset,
             config,
-            "lateral.river.sediment_flux.parameters.reslocs";
+            "routing.river_flow.sediment_flux.parameters.reslocs";
             optional = false,
             sel = indices,
             type = Float,
@@ -265,7 +265,7 @@ function SedimentRiverTransportParameters(dataset, config, indices)
         resarea = ncread(
             dataset,
             config,
-            "lateral.river.sediment_flux.parameters.resarea";
+            "routing.river_flow.sediment_flux.parameters.resarea";
             optional = false,
             sel = indices,
             type = Float,
@@ -274,7 +274,7 @@ function SedimentRiverTransportParameters(dataset, config, indices)
         restrapefficiency = ncread(
             dataset,
             config,
-            "lateral.river.sediment_flux.parameters.restrapeff";
+            "routing.river_flow.sediment_flux.parameters.restrapeff";
             optional = false,
             sel = indices,
             type = Float,
@@ -290,7 +290,7 @@ function SedimentRiverTransportParameters(dataset, config, indices)
         lakelocs = ncread(
             dataset,
             config,
-            "lateral.river.sediment_flux.parameters.lakelocs";
+            "routing.river_flow.sediment_flux.parameters.lakelocs";
             optional = false,
             sel = indices,
             type = Float,
@@ -299,7 +299,7 @@ function SedimentRiverTransportParameters(dataset, config, indices)
         lakearea = ncread(
             dataset,
             config,
-            "lateral.river.sediment_flux.parameters.lakearea";
+            "routing.river_flow.sediment_flux.parameters.lakearea";
             optional = false,
             sel = indices,
             type = Float,
@@ -868,7 +868,7 @@ function SedimentConcentrationsRiverParameters(dataset, config, indices)
     dm_clay = ncread(
         dataset,
         config,
-        "lateral.river.concentrations.parameters.dm_clay";
+        "routing.river_flow.concentrations.parameters.dm_clay";
         sel = indices,
         defaults = 2.0,
         type = Float,
@@ -876,7 +876,7 @@ function SedimentConcentrationsRiverParameters(dataset, config, indices)
     dm_silt = ncread(
         dataset,
         config,
-        "lateral.river.concentrations.parameters.dm_silt";
+        "routing.river_flow.concentrations.parameters.dm_silt";
         sel = indices,
         defaults = 10.0,
         type = Float,
@@ -884,7 +884,7 @@ function SedimentConcentrationsRiverParameters(dataset, config, indices)
     dm_sand = ncread(
         dataset,
         config,
-        "lateral.river.concentrations.parameters.dm_sand";
+        "routing.river_flow.concentrations.parameters.dm_sand";
         sel = indices,
         defaults = 200.0,
         type = Float,
@@ -892,7 +892,7 @@ function SedimentConcentrationsRiverParameters(dataset, config, indices)
     dm_sagg = ncread(
         dataset,
         config,
-        "lateral.river.concentrations.parameters.dm_sagg";
+        "routing.river_flow.concentrations.parameters.dm_sagg";
         sel = indices,
         defaults = 30.0,
         type = Float,
@@ -900,7 +900,7 @@ function SedimentConcentrationsRiverParameters(dataset, config, indices)
     dm_lagg = ncread(
         dataset,
         config,
-        "lateral.river.concentrations.parameters.dm_lagg";
+        "routing.river_flow.concentrations.parameters.dm_lagg";
         sel = indices,
         defaults = 500.0,
         type = Float,
@@ -908,7 +908,7 @@ function SedimentConcentrationsRiverParameters(dataset, config, indices)
     dm_gravel = ncread(
         dataset,
         config,
-        "lateral.river.concentrations.parameters.dm_gravel";
+        "routing.river_flow.concentrations.parameters.dm_gravel";
         sel = indices,
         defaults = 2000.0,
         type = Float,

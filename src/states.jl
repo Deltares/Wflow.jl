@@ -158,7 +158,7 @@ function extract_required_states(config::Config)
     if model_type == "sbm_gwf"
         ssf_states = (:head,)
     else
-        ssf_states = haskey(config.input.lateral, "subsurface") ? (:ssf,) : nothing
+        ssf_states = haskey(config.input.routing, "subsurface_flow") ? (:ssf,) : nothing
     end
 
     # Land states
@@ -207,65 +207,68 @@ function extract_required_states(config::Config)
     required_states = ()
     # Add snow, glacier, interception and sbm soil states to dict
     required_states =
-        add_to_required_states(required_states, (:vertical, :snow, :variables), snow_states)
+        add_to_required_states(required_states, (:land, :snow, :variables), snow_states)
     required_states = add_to_required_states(
         required_states,
-        (:vertical, :glacier, :variables),
+        (:land, :glacier, :variables),
         glacier_states,
     )
     required_states = add_to_required_states(
         required_states,
-        (:vertical, :interception, :variables),
+        (:land, :interception, :variables),
         interception_states,
     )
     required_states =
-        add_to_required_states(required_states, (:vertical, :soil, :variables), soil_states)
+        add_to_required_states(required_states, (:land, :soil, :variables), soil_states)
     # Add subsurface states to dict
     if model_type == "sbm_gwf"
-        key_entry = (:lateral, :subsurface, :flow, :aquifer, :variables)
+        key_entry = (:routing, :subsurface_flow, :aquifer, :variables)
     else
-        key_entry = (:lateral, :subsurface, :variables)
+        key_entry = (:routing, :subsurface_flow, :variables)
     end
     required_states = add_to_required_states(required_states, key_entry, ssf_states)
     # Add land states to dict
-    required_states =
-        add_to_required_states(required_states, (:lateral, :land, :variables), land_states)
+    required_states = add_to_required_states(
+        required_states,
+        (:routing, :overland_flow, :variables),
+        land_states,
+    )
     # Add sediment states to dict
     if model_type == "sediment"
         required_states = add_to_required_states(
             required_states,
-            (:lateral, :river, :sediment_flux, :variables),
+            (:routing, :river_flow, :sediment_flux, :variables),
             river_states,
         )
     else
         required_states = add_to_required_states(
             required_states,
-            (:lateral, :river, :variables),
+            (:routing, :river_flow, :variables),
             river_states,
         )
     end
     # Add floodplain states to dict
     required_states = add_to_required_states(
         required_states,
-        (:lateral, :river, :floodplain, :variables),
+        (:routing, :river_flow, :floodplain, :variables),
         floodplain_states,
     )
     # Add lake states to dict
     required_states = add_to_required_states(
         required_states,
-        (:lateral, :river, :boundary_conditions, :lake, :variables),
+        (:routing, :river_flow, :boundary_conditions, :lake, :variables),
         lake_states,
     )
     # Add reservoir states to dict
     required_states = add_to_required_states(
         required_states,
-        (:lateral, :river, :boundary_conditions, :reservoir, :variables),
+        (:routing, :river_flow, :boundary_conditions, :reservoir, :variables),
         reservoir_states,
     )
     # Add paddy states to dict
     required_states = add_to_required_states(
         required_states,
-        (:vertical, :demand, :paddy, :variables),
+        (:land, :demand, :paddy, :variables),
         paddy_states,
     )
     return required_states
