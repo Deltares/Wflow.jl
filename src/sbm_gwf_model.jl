@@ -476,11 +476,15 @@ function initialize_sbm_gwf_model(config::Config)
         )
     end
 
+    # n = ?
+    # water_balance = WaterBalance(n, Float64)
+
     model = Model(
         config,
         (; land, river, reservoir = reservoir_network, lake = lake_network, drain),
         (subsurface = subsurface_map, land = overland_flow, river = river_flow),
         land_hydrology,
+        # water_balance,
         clock,
         reader,
         writer,
