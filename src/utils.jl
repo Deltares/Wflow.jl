@@ -77,7 +77,7 @@ function active_indices(subcatch_2d::AbstractMatrix, nodata)
     return indices, reverse_indices
 end
 
-function active_indices(network::NamedTuple, key::AbstractString)
+function active_indices(network::Network, key::AbstractString)
     if occursin("reservoir", key)
         return network.reservoir.indices_outlet
     elseif occursin("lake", key)
@@ -154,7 +154,7 @@ and set states in `model` object. Active cells are selected with the correspondi
 - `type = nothing`: type to convert data to after reading. By default no conversion is done.
 """
 function set_states!(instate_path, model; type = nothing, dimname = nothing)
-    (; network, vertical, config) = model
+    (; network, land, config) = model
 
     # Check if required states are covered
     state_ncnames = check_states(config)
@@ -176,7 +176,7 @@ function set_states!(instate_path, model; type = nothing, dimname = nothing)
                 end
                 A = read_standardized(ds, ncname, dimensions)
                 A = permutedims(A[sel, :])
-                # note that this array is allowed to have missings, since not every vertical
+                # note that this array is allowed to have missings, since not every land
                 # column is `maxlayers` layers deep
                 if dimname == :layer
                     A = replace!(A, missing => NaN)
@@ -188,7 +188,7 @@ function set_states!(instate_path, model; type = nothing, dimname = nothing)
                     end
                 end
                 # set state in model object
-                lens = standard_name_map(vertical)[state]
+                lens = standard_name_map(land)[state]
                 lens(model) .= svectorscopy(A, Val{size(A)[1]}())
                 # 3 dims (x,y,time)
             elseif dims == 3
@@ -202,7 +202,7 @@ function set_states!(instate_path, model; type = nothing, dimname = nothing)
                     end
                 end
                 # set state in model object, only set active cells ([1:n]) (ignore boundary conditions/ghost points)
-                lens = standard_name_map(vertical)[state]
+                lens = standard_name_map(land)[state]
                 lens(model)[1:n] .= A
             else
                 error(

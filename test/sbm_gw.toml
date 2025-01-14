@@ -137,7 +137,7 @@ river_water__volume_flow_rate = "q_river"
 reservoir_water__volume = "volume_reservoir"
 land_surface_water__volume_flow_rate = "q_land"
 land_surface_water__depth = "h_land"
-vertical.interception.variables.canopy_storage = "canopystorage"
+land.interception.variables.canopy_storage = "canopystorage"
 
 [netcdf]
 path = "output_scalar_moselle.nc"
@@ -199,15 +199,15 @@ reducer = "mean"
 
 [API]
 components = [
-  "vertical.variables",
-  "vertical.parameters",
-  "lateral.subsurface.variables",
-  "lateral.subsurface.parameters",
-  "lateral.land.variables",
-  "lateral.land.parameters",
-  "lateral.river.variables",
-  "lateral.river.parameters",
-  "lateral.river.boundary_conditions.reservoir.boundary_conditions",
-  "lateral.river.boundary_conditions.reservoir.parameters",
-  "lateral.river.boundary_conditions.reservoir.variables",
+  "land.variables",
+  "land.parameters",
+  "routing.subsurface_flow.variables",
+  "routing.subsurface_flow.parameters",
+  "routing.subsurface_flow.variables",
+  "routing.subsurface_flow.parameters",
+  "routing.river_flow.variables",
+  "routing.river_flow.parameters",
+  "routing.river_flow.boundary_conditions.reservoir.boundary_conditions",
+  "routing.river_flow.boundary_conditions.reservoir.parameters",
+  "routing.river_flow.boundary_conditions.reservoir.variables",
 ]

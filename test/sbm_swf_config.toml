@@ -146,7 +146,7 @@ subsurface_water__volume_flow_rate  = "ssf"
 land_surface_water__depth = "h_land"
 land_surface_water__x_component_of_volume_flow_rate = "qx_land"
 land_surface_water__y_component_of_volume_flow_rate = "qy_land"
-vertical.interception.variables.canopy_storage = "canopystorage"
+land.interception.variables.canopy_storage = "canopystorage"
 
 [csv]
 path = "output_moselle_swf.csv"

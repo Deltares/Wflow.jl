@@ -152,7 +152,7 @@ reservoir_water__volume = "volume_reservoir"
 subsurface_water__volume_flow_rate  = "ssf"
 land_surface_water__volume_flow_rate = "q_land"
 land_surface_water__depth = "h_land"
-vertical.interception.variables.canopy_storage = "canopystorage"
+land.interception.variables.canopy_storage = "canopystorage"
 
 [netcdf]
 path = "output_scalar_moselle.nc"
@@ -160,7 +160,7 @@ path = "output_scalar_moselle.nc"
 [[netcdf.variable]]
 name = "Q"
 map = "gauges"
-parameter = "lateral.river.variables.q"
+parameter = "routing.river_flow.variables.q"
 
 [[netcdf.variable]]
 coordinate.x = 6.255
@@ -199,7 +199,7 @@ parameter = "atmosphere_air__temperature"
 coordinate.x = 6.255
 coordinate.y = 50.012
 header = "vwc_layer2_bycoord"
-parameter = "vertical.soil.variables.vwc"
+parameter = "land.soil.variables.vwc"
 layer = 2
 
 [[csv.column]]
@@ -221,32 +221,32 @@ reducer = "mean"
 
 [API]
 components = [
-  "vertical.atmospheric_forcing",
-  "vertical.vegetation_parameter_set",
-  "vertical.runoff.boundary_conditions",
-  "vertical.runoff.variables",
-  "vertical.runoff.parameters",
-  "vertical.soil.boundary_conditions",
-  "vertical.soil.variables",
-  "vertical.soil.parameters",
-  "vertical.interception.variables",
-  "vertical.interception.parameters",
-  "vertical.snow.boundary_conditions",
-  "vertical.snow.variables",
-  "vertical.snow.parameters",
-  "lateral.subsurface.boundary_conditions",
-  "lateral.subsurface.variables",
-  "lateral.subsurface.parameters",
-  "lateral.subsurface.parameters.kh_profile",
-  "lateral.land.boundary_conditions",
-  "lateral.land.variables",
-  "lateral.land.variables.flow",
-  "lateral.land.parameters",
-  "lateral.river.variables",
-  "lateral.river.parameters",
-  "lateral.river.parameters.flow",
-  "lateral.river.boundary_conditions",
-  "lateral.river.boundary_conditions.reservoir.boundary_conditions",
-  "lateral.river.boundary_conditions.reservoir.parameters",
-  "lateral.river.boundary_conditions.reservoir.variables",
+  "land.atmospheric_forcing",
+  "land.vegetation_parameter_set",
+  "land.runoff.boundary_conditions",
+  "land.runoff.variables",
+  "land.runoff.parameters",
+  "land.soil.boundary_conditions",
+  "land.soil.variables",
+  "land.soil.parameters",
+  "land.interception.variables",
+  "land.interception.parameters",
+  "land.snow.boundary_conditions",
+  "land.snow.variables",
+  "land.snow.parameters",
+  "routing.subsurface_flow.boundary_conditions",
+  "routing.subsurface_flow.variables",
+  "routing.subsurface_flow.parameters",
+  "routing.subsurface_flow.parameters.kh_profile",
+  "routing.overland_flow.boundary_conditions",
+  "routing.overland_flow.variables",
+  "routing.overland_flow.variables.flow",
+  "routing.overland_flow.parameters",
+  "routing.river_flow.variables",
+  "routing.river_flow.parameters",
+  "routing.river_flow.parameters.flow",
+  "routing.river_flow.boundary_conditions",
+  "routing.river_flow.boundary_conditions.reservoir.boundary_conditions",
+  "routing.river_flow.boundary_conditions.reservoir.parameters",
+  "routing.river_flow.boundary_conditions.reservoir.variables",
 ]

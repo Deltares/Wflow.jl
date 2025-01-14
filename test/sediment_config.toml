@@ -163,9 +163,9 @@ land_surface_water_clay_transport_capacity__mass_flow_rate = "TCclay"
 land_surface_water_sediment__mass_flow_rate = "olsed"
 land_surface_water_clay__mass_flow_rate = "olclay"
 
-lateral.river.hydrological_forcing.waterlevel_river = "h_riv"
-lateral.river.sediment_flux.boundary_conditions.erosion_land_clay = "inlandclayriv"
-lateral.river.sediment_flux.boundary_conditions.transport_capacity =  "TCsed_riv"
+routing.river_flow.hydrological_forcing.waterlevel_river = "h_riv"
+routing.river_flow.sediment_flux.boundary_conditions.erosion_land_clay = "inlandclayriv"
+routing.river_flow.sediment_flux.boundary_conditions.transport_capacity =  "TCsed_riv"
 
 river_water_sediment__mass_concentration = "Sedconc"
 "river_water_sediment~suspended__mass_concentration" = "SSconc"
@@ -207,22 +207,22 @@ parameter = "atmosphere_water__precipitation_volume_flux"
 coordinate.x = 6.931
 coordinate.y = 48.085
 header = "ql"
-parameter = "vertical.hydrological_forcing.q_land"
+parameter = "land.hydrological_forcing.q_land"
 
 # [[csv.column]]
 # coordinate.x = 6.931
 # coordinate.y = 48.085
 # header = "TCsed"
-# parameter = "lateral.land.transport_capacity.variables.amount"
+# parameter = "routing.overland_flow.transport_capacity.variables.amount"
 
 # [[csv.column]]
 # coordinate.x = 6.931
 # coordinate.y = 48.085
 # header = "TCclay"
-# parameter = "lateral.land.transport_capacity.variables.clay"
+# parameter = "routing.overland_flow.transport_capacity.variables.clay"
 
 # [[csv.column]]
 # coordinate.x = 6.931
 # coordinate.y = 48.085
 # header = "inlandsed"
-# parameter = "lateral.land.to_river.variables.amount"
+# parameter = "routing.overland_flow.to_river.variables.amount"

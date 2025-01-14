@@ -1118,13 +1118,13 @@ the unsaturated store `exfiltustore`, land `runoff` and `net_runoff`, the satura
 the root zone are updated.
 """
 function update!(model::SbmSoilModel, external_models::NamedTuple)
-    (; runoff, demand, subsurface) = external_models
+    (; runoff, demand, subsurface_flow) = external_models
     (; runoff_land, ae_openw_l) = runoff.variables
     p = model.parameters
     v = model.variables
 
-    zi = get_water_depth(subsurface) * 1000.0
-    exfiltsatwater = get_exfiltwater(subsurface) * 1000.0
+    zi = get_water_depth(subsurface_flow) * 1000.0
+    exfiltsatwater = get_exfiltwater(subsurface_flow) * 1000.0
     rootingdepth = get_rootingdepth(model)
 
     n = length(model.variables.zi)

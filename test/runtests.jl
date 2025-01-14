@@ -81,7 +81,7 @@ with_logger(NullLogger()) do
     @testset "Wflow.jl" begin
         include("routing_process.jl")
         include("io.jl")
-        include("vertical_process.jl")
+        include("land_process.jl")
         include("reservoir_lake.jl")
         include("run_sbm.jl")
         include("run_sbm_piave.jl")

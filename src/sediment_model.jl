@@ -25,10 +25,6 @@ function initialize_sediment_model(config::Config)
     river_2d = ncread(dataset, config, lens; optional = false, type = Bool, fill = false)
     river = river_2d[indices]
 
-    # Needed to update the forcing
-    reservoir = ()
-    lake = ()
-
     soilloss = SoilLoss(dataset, config, indices)
 
     # Get waterbodies mask
@@ -67,73 +63,52 @@ function initialize_sediment_model(config::Config)
     ldd_2d = ncread(dataset, config, lens; optional = false, allow_missing = true)
     ldd = ldd_2d[indices]
 
-    # # lateral part sediment in overland flow
+    # # sediment in overland flow
     overland_flow_sediment =
         OverlandFlowSediment(dataset, soilloss, config, indices, waterbodies, river)
 
     graph = flowgraph(ldd, indices, pcr_dir)
 
     # River processes
-    do_river = get(config.model, "run_river_model", false)::Bool
-    # TODO: see if we can skip init if the river model is not needed
-    # or if we leave it when we restructure the Wflow Model struct
-
     indices_riv, rev_indices_riv = active_indices(river_2d, 0)
 
     ldd_riv = ldd_2d[indices_riv]
     graph_riv = flowgraph(ldd_riv, indices_riv, pcr_dir)
-
-    # Needed for frac_to_river?
-    lens = lens_input_parameter("land_surface__slope")
-    landslope = ncread(dataset, config, lens; optional = false, sel = indices, type = Float)
-    clamp!(landslope, 0.00001, Inf)
-
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
-    frac_toriver = fraction_runoff_to_river(graph, ldd, index_river, landslope)
 
     river_sediment = RiverSediment(dataset, config, indices_riv, waterbodies)
 
     modelmap = (
-        vertical = soilloss,
-        lateral = (land = overland_flow_sediment, river = river_sediment),
+        land = soilloss,
+        routing = (overland_flow = overland_flow_sediment, river_flow = river_sediment),
     )
-    indices_reverse = (
-        land = rev_indices,
-        river = rev_indices_riv,
-        reservoir = isempty(reservoir) ? nothing : reservoir.reverse_indices,
-        lake = isempty(lake) ? nothing : lake.reverse_indices,
-    )
+    indices_reverse = (land = rev_indices, river = rev_indices_riv)
     y_dataset = read_y_axis(dataset)
     x_dataset = read_x_axis(dataset)
     writer =
         prepare_writer(config, modelmap, indices_reverse, x_dataset, y_dataset, dataset)
     close(dataset)
 
-    # for each domain save the directed acyclic graph, the traversion order,
-    # and the indices that map it back to the two dimensional grid
-    land = (
+    network_land = NetworkLand(;
         graph = graph,
         order = topological_sort_by_dfs(graph),
         indices = indices,
         reverse_indices = rev_indices,
     )
-    river = (
+    network_river = NetworkRiver(;
         graph = graph_riv,
         order = topological_sort_by_dfs(graph_riv),
         indices = indices_riv,
+        land_indices = index_river,
         reverse_indices = rev_indices_riv,
     )
 
-    model = Model(
-        config,
-        (; land, river, reservoir, lake, index_river, frac_toriver),
-        (land = overland_flow_sediment, river = river_sediment),
-        soilloss,
-        clock,
-        reader,
-        writer,
-        SedimentModel(),
-    )
+    network = Network(; land = network_land, river = network_river)
+
+    routing = Routing(; overland_flow = overland_flow_sediment, river_flow = river_sediment)
+
+    model =
+        Model(config, network, routing, soilloss, clock, reader, writer, SedimentModel())
 
     set_states!(model)
     @info "Initialized model"
@@ -142,30 +117,27 @@ function initialize_sediment_model(config::Config)
 end
 
 "update sediment model for a single timestep"
-function update!(model::Model{N, L, V, R, W, T}) where {N, L, V, R, W, T <: SedimentModel}
-    (; lateral, vertical, network, config, clock) = model
+function update!(model::AbstractModel{<:SedimentModel})
+    (; routing, land, network, config, clock) = model
     dt = tosecond(clock.dt)
 
     # Soil erosion
-    update!(vertical, dt)
+    update!(land, dt)
 
     # Overland flow sediment transport
-    update!(lateral.land, vertical.soil_erosion, network.land, dt)
+    update!(routing.overland_flow, land.soil_erosion, network.land, dt)
 
     # River sediment transport
     do_river = get(config.model, "run_river_model", false)::Bool
     if do_river
-        indices_riv = network.index_river
-        update!(lateral.river, lateral.land.to_river, network.river, indices_riv, dt)
+        update!(routing.river_flow, routing.overland_flow.to_river, network.river, dt)
     end
 
     return nothing
 end
 
 "set the initial states of the sediment model"
-function set_states!(
-    model::Model{N, L, V, R, W, T},
-) where {N, L, V, R, W, T <: SedimentModel}
+function set_states!(model::AbstractModel{<:SedimentModel})
     # read and set states in model object if reinit=false
     (; config) = model
     reinit = get(config.model, "reinit", true)::Bool

@@ -1,5 +1,3 @@
-abstract type AbstractRiverFlowModel end
-
 "Struct for storing (shared) variables for river and overland flow models"
 @get_units @grid_loc @with_kw struct FlowVariables{T}
     q::Vector{T} | "m3 s-1"                 # Discharge [m³ s⁻¹]
@@ -191,8 +189,8 @@ end
     inwater::Vector{T} | "m3 s-1"       # Lateral inflow [m³ s⁻¹]
 end
 
-"Overland flow model using the kinematic wave method and the Manning flow equation"
-@with_kw struct KinWaveOverlandFlow{T}
+"Overland flow model using the kinematic wave method and the Manning flow{ equation"
+@with_kw struct KinWaveOverlandFlow{T} <: AbstractOverlandFlowModel
     timestepping::TimeStepping{T}
     boundary_conditions::LandFlowBC{T}
     parameters::ManningFlowParameters{T}
@@ -534,13 +532,13 @@ function update_lateral_inflow!(
     river_indices,
     dt,
 )
-    (; allocation, runoff, land, subsurface) = external_models
+    (; allocation, runoff, overland_flow, subsurface_flow) = external_models
     (; inwater) = model.boundary_conditions
     (; net_runoff_river) = runoff.variables
 
     inwater .= (
-        get_flux_to_river(subsurface)[river_indices] .+
-        land.variables.to_river[river_indices] .+
+        get_flux_to_river(subsurface_flow)[river_indices] .+
+        overland_flow.variables.to_river[river_indices] .+
         (net_runoff_river[river_indices] .* land_area[river_indices] .* 0.001) ./ dt .+
         (get_nonirrigation_returnflow(allocation) .* 0.001 .* river_cell_area) ./ dt
     )
@@ -558,15 +556,15 @@ function update_lateral_inflow!(
     config,
     dt,
 )
-    (; soil, subsurface, allocation) = external_models
+    (; soil, subsurface_flow, allocation) = external_models
     (; net_runoff) = soil.variables
     (; inwater) = model.boundary_conditions
 
     do_drains = get(config.model, "drains", false)::Bool
     if do_drains
+        drain = subsurface_flow.boundaries.drain
         drainflux = zeros(length(net_runoff))
-        drainflux[subsurface.drain.index] =
-            -subsurface.drain.variables.flux ./ tosecond(basetimestep)
+        drainflux[drain.index] = -drain.variables.flux ./ tosecond(basetimestep)
     else
         drainflux = 0.0
     end
@@ -586,12 +584,12 @@ function update_inflow_waterbody!(
     external_models::NamedTuple,
     river_indices,
 )
-    (; land, subsurface) = external_models
+    (; overland_flow, subsurface_flow) = external_models
     (; reservoir, lake, inflow_waterbody) = model.boundary_conditions
 
     if !isnothing(reservoir) || !isnothing(lake)
-        inflow_land = get_inflow_waterbody(model, land)
-        inflow_subsurface = get_inflow_waterbody(model, subsurface)
+        inflow_land = get_inflow_waterbody(model, overland_flow)
+        inflow_subsurface = get_inflow_waterbody(model, subsurface_flow)
 
         @. inflow_waterbody = inflow_land[river_indices] + inflow_subsurface[river_indices]
     end

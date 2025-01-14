@@ -69,8 +69,8 @@ end
 end
 
 @testset "first timestep" begin
-    sbm = model.vertical.soil
-    snow = model.vertical.snow
+    sbm = model.land.soil
+    snow = model.land.snow
     @test snow.parameters.tt[50063] ≈ 0.0f0
 
     @test model.clock.iteration == 1
@@ -91,8 +91,8 @@ end
 Wflow.run_timestep!(model)
 
 @testset "second timestep" begin
-    sbm = model.vertical.soil
-    snow = model.vertical.snow
+    sbm = model.land.soil
+    snow = model.land.snow
     @test sbm.parameters.theta_s[50063] ≈ 0.48755401372909546f0
     @test sbm.parameters.theta_r[50063] ≈ 0.15943120419979095f0
     @test mean(sbm.variables.net_runoff) ≈ 0.23734052031823816f0
@@ -107,7 +107,7 @@ Wflow.run_timestep!(model)
 end
 
 @testset "subsurface flow" begin
-    ssf = model.lateral.subsurface.variables.ssf
+    ssf = model.routing.subsurface_flow.variables.ssf
     @test sum(ssf) ≈ 6.3761585406186976f7
     @test ssf[network.land.order[1]] ≈ 718.2802566393531f0
     @test ssf[network.land.order[end - 100]] ≈ 2337.771227118579f0
@@ -115,7 +115,7 @@ end
 end
 
 @testset "overland flow" begin
-    q = model.lateral.land.variables.q_av
+    q = model.routing.overland_flow.variables.q_av
     @test sum(q) ≈ 285.59889671823953f0
     @test q[26625] ≈ 0.0
     @test q[39308] ≈ 0.0
@@ -123,7 +123,7 @@ end
 end
 
 @testset "river flow" begin
-    q = model.lateral.river.variables.q_av
+    q = model.routing.river_flow.variables.q_av
     @test sum(q) ≈ 3848.832553197247f0
     @test q[1622] ≈ 0.0007520477205381629f0
     @test q[43] ≈ 11.936893577401598f0
@@ -131,7 +131,7 @@ end
 end
 
 @testset "reservoir simple" begin
-    res = model.lateral.river.boundary_conditions.reservoir
+    res = model.routing.river_flow.boundary_conditions.reservoir
     @test res.variables.outflow[1] ≈ 0.21750000119148086f0
     @test res.boundary_conditions.inflow[1] ≈ 0.00051287944327482
     @test res.variables.volume[1] ≈ 2.751299001489657f7
@@ -140,11 +140,12 @@ end
 end
 
 # set these variables for comparison in "changed dynamic parameters"
-precip = copy(model.vertical.atmospheric_forcing.precipitation)
-evap = copy(model.vertical.atmospheric_forcing.potential_evaporation)
-lai = copy(model.vertical.vegetation_parameter_set.leaf_area_index)
-res_evap =
-    copy(model.lateral.river.boundary_conditions.reservoir.boundary_conditions.evaporation)
+precip = copy(model.land.atmospheric_forcing.precipitation)
+evap = copy(model.land.atmospheric_forcing.potential_evaporation)
+lai = copy(model.land.vegetation_parameter_set.leaf_area_index)
+res_evap = copy(
+    model.routing.river_flow.boundary_conditions.reservoir.boundary_conditions.evaporation,
+)
 
 Wflow.close_files(model; delete_output = false)
 
@@ -167,7 +168,7 @@ model = Wflow.run(config)
 end
 
 @testset "river flow at basin outlets and downstream of one pit" begin
-    q = model.lateral.river.variables.q_av
+    q = model.routing.river_flow.variables.q_av
     @test q[4009] ≈ 8.556311783589425f0 # pit/ outlet, CartesianIndex(141, 228)
     @test q[4020] ≈ 0.006779014715290862f0 # downstream of pit 4009, CartesianIndex(141, 229)
     @test q[2508] ≈ 150.5479054707659f0 # pit/ outlet
@@ -193,12 +194,11 @@ Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
 
 @testset "changed dynamic parameters" begin
-    res = model.lateral.river.boundary_conditions.reservoir
-    vertical = model.vertical
-    @test vertical.atmospheric_forcing.precipitation[2] / precip[2] ≈ 2.0f0
-    @test (vertical.atmospheric_forcing.potential_evaporation[100] - 1.50) / evap[100] ≈
-          3.0f0
-    @test vertical.vegetation_parameter_set.leaf_area_index[100] / lai[100] ≈ 1.6f0
+    res = model.routing.river_flow.boundary_conditions.reservoir
+    land = model.land
+    @test land.atmospheric_forcing.precipitation[2] / precip[2] ≈ 2.0f0
+    @test (land.atmospheric_forcing.potential_evaporation[100] - 1.50) / evap[100] ≈ 3.0f0
+    @test land.vegetation_parameter_set.leaf_area_index[100] / lai[100] ≈ 1.6f0
     @test (res.boundary_conditions.evaporation[2] - 1.50) / res_evap[2] ≈
           3.0000012203408635f0
 end
@@ -216,8 +216,8 @@ Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
 
 @testset "river inflow (cyclic)" begin
-    @test model.lateral.river.boundary_conditions.inflow[44] ≈ 0.75
-    @test model.lateral.river.variables.q_av[44] ≈ 10.554267976107754f0
+    @test model.routing.river_flow.boundary_conditions.inflow[44] ≈ 0.75
+    @test model.routing.river_flow.variables.q_av[44] ≈ 10.554267976107754f0
 end
 
 # test fixed forcing (precipitation = 2.5)
@@ -227,11 +227,11 @@ model = Wflow.initialize_sbm_model(config)
 Wflow.load_fixed_forcing!(model)
 
 @testset "fixed precipitation forcing (initialize)" begin
-    @test maximum(model.vertical.atmospheric_forcing.precipitation) ≈ 2.5
-    @test minimum(model.vertical.atmospheric_forcing.precipitation) ≈ 0.0
+    @test maximum(model.land.atmospheric_forcing.precipitation) ≈ 2.5
+    @test minimum(model.land.atmospheric_forcing.precipitation) ≈ 0.0
     @test all(
         isapprox.(
-            model.lateral.river.boundary_conditions.reservoir.boundary_conditions.precipitation,
+            model.routing.river_flow.boundary_conditions.reservoir.boundary_conditions.precipitation,
             2.5,
         ),
     )
@@ -240,11 +240,11 @@ end
 Wflow.run_timestep!(model)
 
 @testset "fixed precipitation forcing (first timestep)" begin
-    @test maximum(model.vertical.atmospheric_forcing.precipitation) ≈ 2.5
-    @test minimum(model.vertical.atmospheric_forcing.precipitation) ≈ 0.0
+    @test maximum(model.land.atmospheric_forcing.precipitation) ≈ 2.5
+    @test minimum(model.land.atmospheric_forcing.precipitation) ≈ 0.0
     @test all(
         isapprox.(
-            model.lateral.river.boundary_conditions.reservoir.boundary_conditions.precipitation,
+            model.routing.river_flow.boundary_conditions.reservoir.boundary_conditions.precipitation,
             2.5,
         ),
     )
@@ -262,16 +262,16 @@ Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
 
 @testset "river flow and depth (local inertial)" begin
-    q = model.lateral.river.variables.q_av
+    q = model.routing.river_flow.variables.q_av
     @test sum(q) ≈ 3854.717278465037f0
     @test q[1622] ≈ 7.296767063082754f-5
     @test q[43] ≈ 11.716766734364437f0
     @test q[501] ≈ 3.4819773071884716f0
-    h = model.lateral.river.variables.h_av
+    h = model.routing.river_flow.variables.h_av
     @test h[1622] ≈ 0.001986669483044286f0
     @test h[43] ≈ 0.43311924038778815f0
     @test h[501] ≈ 0.05635210581824346f0
-    q_channel = model.lateral.river.variables.q_channel_av
+    q_channel = model.routing.river_flow.variables.q_channel_av
     @test q ≈ q_channel
 end
 Wflow.close_files(model; delete_output = false)
@@ -285,20 +285,20 @@ Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
 
 @testset "river and overland flow and depth (local inertial)" begin
-    q = model.lateral.river.variables.q_av
+    q = model.routing.river_flow.variables.q_av
     @test sum(q) ≈ 2495.9830572223946f0
     @test q[1622] ≈ 7.30561606758937f-5
     @test q[43] ≈ 5.3566292152594155f0
     @test q[501] ≈ 1.602564408503896f0
-    h = model.lateral.river.variables.h_av
+    h = model.routing.river_flow.variables.h_av
     @test h[1622] ≈ 0.001987528017923597f0
     @test h[43] ≈ 0.30026439683630496f0
     @test h[501] ≈ 0.031933708617123746f0
-    qx = model.lateral.land.variables.qx
-    qy = model.lateral.land.variables.qy
+    qx = model.routing.overland_flow.variables.qx
+    qy = model.routing.overland_flow.variables.qy
     @test qx[[26, 35, 631]] ≈ [0.18343478752498582f0, 0.000553471702071059f0, 0.0f0]
     @test qy[[26, 35, 631]] ≈ [0.12607229901243375f0, 0.019605967561619194f0, 0.0f0]
-    h = model.lateral.land.variables.h
+    h = model.routing.overland_flow.variables.h
     @test h[[26, 35, 631]] ≈
           [0.07367301172613304f0, 0.009139882310161706f0, 0.0007482998926237368f0]
 end
@@ -318,8 +318,8 @@ config.state.variables.floodplain_water__depth = "h_floodplain"
 
 model = Wflow.initialize_sbm_model(config)
 
-fp = model.lateral.river.floodplain.parameters.profile
-river = model.lateral.river
+fp = model.routing.river_flow.floodplain.parameters.profile
+river = model.routing.river_flow
 dh = diff(fp.depth)
 Δv = diff(fp.volume[:, 3])
 Δa = diff(fp.a[:, 3])
@@ -416,13 +416,13 @@ Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
 
 @testset "river flow (local inertial) with floodplain schematization simulation" begin
-    q = model.lateral.river.variables.q_av
+    q = model.routing.river_flow.variables.q_av
     @test sum(q) ≈ 3843.944494991296f0
     @test q[1622] ≈ 7.296767071929629f-5
     @test q[43] ≈ 11.716766734364418f0
     @test q[501] ≈ 3.424364314225289f0
     @test q[5808] ≈ 0.002228981516146531f0
-    h = model.lateral.river.variables.h_av
+    h = model.routing.river_flow.variables.h_av
     @test h[1622] ≈ 0.0019866694251020806f0
     @test h[43] ≈ 0.433119240388070f0
     @test h[501] ≈ 0.055832770820860404f0
@@ -437,13 +437,13 @@ Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
 
 @testset "change boundary condition for local inertial routing (including floodplain)" begin
-    q = model.lateral.river.variables.q_av
+    q = model.routing.river_flow.variables.q_av
     @test sum(q) ≈ 3844.1544889903134f0
     @test q[1622] ≈ 7.296767071929629f-5
     @test q[43] ≈ 11.716766734416717f0
     @test q[501] ≈ 3.424329413571391f0
     @test q[5808] ≈ 0.055269620065756024f0
-    h = model.lateral.river.variables.h_av
+    h = model.routing.river_flow.variables.h_av
     @test h[1622] ≈ 0.0019866694251020806f0
     @test h[43] ≈ 0.4331192403230577f0
     @test h[501] ≈ 0.0558281185092927f0
@@ -464,23 +464,23 @@ Wflow.close_files(model; delete_output = false)
 
     @testset "exponential profile" begin
         model = Wflow.initialize_sbm_model(config)
-        (; soil) = model.vertical
+        (; soil) = model.land
         (; kv_profile) = soil.parameters
-        (; subsurface) = model.lateral
+        (; subsurface_flow) = model.routing
         z = soil.variables.zi[i]
         kvfrac = soil.parameters.kvfrac
         kv_z = Wflow.hydraulic_conductivity_at_depth(kv_profile, kvfrac, z, i, 2)
         @test kv_z ≈ kvfrac[i][2] * kv_profile.kv_0[i] * exp(-kv_profile.f[i] * z)
-        @test subsurface.variables.ssfmax[i] ≈ 28.32720603576582f0
-        @test subsurface.variables.ssf[i] ≈ 11683.330684556406f0
+        @test subsurface_flow.variables.ssfmax[i] ≈ 28.32720603576582f0
+        @test subsurface_flow.variables.ssf[i] ≈ 11683.330684556406f0
     end
 
     @testset "exponential constant profile" begin
         config.model.saturated_hydraulic_conductivity_profile = "exponential_constant"
         model = Wflow.initialize_sbm_model(config)
-        (; soil) = model.vertical
+        (; soil) = model.land
         (; kv_profile) = soil.parameters
-        (; subsurface) = model.lateral
+        (; subsurface_flow) = model.routing
         z = soil.variables.zi[i]
         kvfrac = soil.parameters.kvfrac
         kv_z = Wflow.hydraulic_conductivity_at_depth(kv_profile, kvfrac, z, i, 2)
@@ -492,49 +492,49 @@ Wflow.close_files(model; delete_output = false)
         kv_1000 = Wflow.hydraulic_conductivity_at_depth(kv_profile, kvfrac, 1000.0, i, 3)
         @test kv_400 ≈ kv_1000
         @test all(kv_profile.z_exp .== 400.0)
-        @test subsurface.variables.ssfmax[i] ≈ 49.38558575188426f0
-        @test subsurface.variables.ssf[i] ≈ 24810.460986497365f0
+        @test subsurface_flow.variables.ssfmax[i] ≈ 49.38558575188426f0
+        @test subsurface_flow.variables.ssf[i] ≈ 24810.460986497365f0
     end
 
     @testset "layered profile" begin
         config.model.saturated_hydraulic_conductivity_profile = "layered"
         model = Wflow.initialize_sbm_model(config)
-        (; soil) = model.vertical
+        (; soil) = model.land
         (; kv_profile) = soil.parameters
-        (; subsurface) = model.lateral
+        (; subsurface_flow) = model.routing
         z = soil.variables.zi[i]
         kvfrac = soil.parameters.kvfrac
         @test Wflow.hydraulic_conductivity_at_depth(kv_profile, kvfrac, z, i, 2) ≈
               kv_profile.kv[i][2]
-        Wflow.kh_layered_profile!(soil, subsurface, kv_profile, 86400.0)
-        @test subsurface.parameters.kh_profile.kh[i] ≈ 47.508932674632355f0
-        @test subsurface.variables.ssfmax[i] ≈ 30.237094380100316f0
-        @test subsurface.variables.ssf[i] ≈ 14546.518932613191f0
+        Wflow.kh_layered_profile!(soil, subsurface_flow, kv_profile, 86400.0)
+        @test subsurface_flow.parameters.kh_profile.kh[i] ≈ 47.508932674632355f0
+        @test subsurface_flow.variables.ssfmax[i] ≈ 30.237094380100316f0
+        @test subsurface_flow.variables.ssf[i] ≈ 14546.518932613191f0
     end
 
     @testset "layered exponential profile" begin
         config.model.saturated_hydraulic_conductivity_profile = "layered_exponential"
         model = Wflow.initialize_sbm_model(config)
-        (; soil) = model.vertical
+        (; soil) = model.land
         (; kv_profile) = soil.parameters
-        (; subsurface) = model.lateral
+        (; subsurface_flow) = model.routing
         z = soil.variables.zi[i]
         kvfrac = soil.parameters.kvfrac
         @test Wflow.hydraulic_conductivity_at_depth(kv_profile, kvfrac, z, i, 2) ≈
               kv_profile.kv[i][2]
         @test kv_profile.nlayers_kv[i] == 2
-        Wflow.kh_layered_profile!(soil, subsurface, kv_profile, 86400.0)
-        @test subsurface.parameters.kh_profile.kh[i] ≈ 33.76026208801769f0
+        Wflow.kh_layered_profile!(soil, subsurface_flow, kv_profile, 86400.0)
+        @test subsurface_flow.parameters.kh_profile.kh[i] ≈ 33.76026208801769f0
         @test all(kv_profile.z_layered[1:10] .== 400.0)
-        @test subsurface.variables.ssfmax[i] ≈ 23.4840490395906f0
-        @test subsurface.variables.ssf[i] ≈ 10336.88327617503f0
+        @test subsurface_flow.variables.ssfmax[i] ≈ 23.4840490395906f0
+        @test subsurface_flow.variables.ssf[i] ≈ 10336.88327617503f0
     end
 
     @testset "river flow layered exponential profile" begin
         model = Wflow.initialize_sbm_model(config)
         Wflow.run_timestep!(model)
         Wflow.run_timestep!(model)
-        q = model.lateral.river.variables.q_av
+        q = model.routing.river_flow.variables.q_av
         @test sum(q) ≈ 3302.1390089922525f0
         @test q[1622] ≈ 0.0006990391393246408f0
         @test q[43] ≈ 9.673592182882691f0

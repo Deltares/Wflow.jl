@@ -217,7 +217,7 @@ lens = @optic(_.input.parameters.doesnt_exist)
 @test Wflow._lens(config, lens, -1) == -1
 
 @testset "warm states" begin
-    map = Wflow.standard_name_map(model.vertical)
+    map = Wflow.standard_name_map(model.land)
     @test map["reservoir_water__volume"](model)[1] ≈ 3.2807224993363418e7
     @test map["soil_water_sat-zone__depth"](model)[9115] ≈ 477.13548089422125
     @test map["snowpack~dry__leq-depth"](model)[5] ≈ 11.019233179897599
@@ -259,11 +259,11 @@ end
 end
 
 @testset "initial parameter values" begin
-    (; vertical) = model
-    @test vertical.snow.parameters.cfmax[1] ≈ 3.7565300464630127
-    @test vertical.soil.parameters.soilthickness[1] ≈ 2000.0
-    @test vertical.atmospheric_forcing.precipitation[49951] ≈ 2.2100000381469727
-    @test vertical.soil.parameters.c[1] ≈
+    (; land) = model
+    @test land.snow.parameters.cfmax[1] ≈ 3.7565300464630127
+    @test land.soil.parameters.soilthickness[1] ≈ 2000.0
+    @test land.atmospheric_forcing.precipitation[49951] ≈ 2.2100000381469727
+    @test land.soil.parameters.c[1] ≈
           [9.152995289601465, 8.919674421902961, 8.70537452585209, 8.690681062890977]
 end
 
@@ -287,11 +287,11 @@ Wflow.advance!(model.clock)
 Wflow.load_dynamic_input!(model)
 
 @testset "changed parameter values" begin
-    (; vertical) = model
-    @test vertical.snow.parameters.cfmax[1] == 2.0
-    @test vertical.soil.parameters.soilthickness[1] ≈ 2000.0 * 3.0 + 100.0
-    @test vertical.atmospheric_forcing.precipitation[49951] ≈ 1.5 * 2.2100000381469727
-    @test vertical.soil.parameters.c[1] ≈ [
+    (; land) = model
+    @test land.snow.parameters.cfmax[1] == 2.0
+    @test land.soil.parameters.soilthickness[1] ≈ 2000.0 * 3.0 + 100.0
+    @test land.atmospheric_forcing.precipitation[49951] ≈ 1.5 * 2.2100000381469727
+    @test land.soil.parameters.c[1] ≈ [
         2.0 * 9.152995289601465,
         8.919674421902961,
         3.0 * 8.70537452585209,
@@ -454,31 +454,31 @@ end
 
     # Extracting required states and test if some are covered (not all are tested!)
     required_states = Wflow.extract_required_states(config)
-    @test (:vertical, :soil, :variables, :satwaterdepth) in required_states
-    @test (:vertical, :soil, :variables, :ustorelayerdepth) in required_states
-    @test (:vertical, :interception, :variables, :canopy_storage) in required_states
-    @test (:lateral, :subsurface, :variables, :ssf) in required_states
-    @test (:lateral, :river, :variables, :q) in required_states
-    @test (:lateral, :river, :variables, :h_av) in required_states
-    @test (:lateral, :land, :variables, :h_av) in required_states
+    @test (:land, :soil, :variables, :satwaterdepth) in required_states
+    @test (:land, :soil, :variables, :ustorelayerdepth) in required_states
+    @test (:land, :interception, :variables, :canopy_storage) in required_states
+    @test (:routing, :subsurface_flow, :variables, :ssf) in required_states
+    @test (:routing, :river_flow, :variables, :q) in required_states
+    @test (:routing, :river_flow, :variables, :h_av) in required_states
+    @test (:routing, :overland_flow, :variables, :h_av) in required_states
     @test !(
-        (:lateral, :river, :boundary_conditions, :lake, :variables, :waterlevel) in
+        (:routing, :river_flow, :boundary_conditions, :lake, :variables, :waterlevel) in
         required_states
     )
 
     # Adding an unused state the see if the right warning message is thrown
-    config.state.vertical.soil.variables.additional_state = "additional_state"
+    config.state.land.soil.variables.additional_state = "additional_state"
     @test_logs (
         :warn,
         string(
-            "State variable `(:vertical, :soil, :variables, :additional_state)` provided, but is not used in ",
+            "State variable `(:land, :soil, :variables, :additional_state)` provided, but is not used in ",
             "model setup, skipping.",
         ),
     ) Wflow.check_states(config)
 
     # Removing the unused and required state, to test the exception being thrown
-    delete!(config.state.vertical.soil["variables"], "additional_state")
-    delete!(config.state.vertical.snow["variables"], "snow_storage")
+    delete!(config.state.land.soil["variables"], "additional_state")
+    delete!(config.state.land.snow["variables"], "snow_storage")
     @test_throws ArgumentError Wflow.check_states(config)
 
     # Extracting required states for model type sbm_gwf and test if some are covered

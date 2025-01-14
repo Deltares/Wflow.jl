@@ -194,18 +194,18 @@ end
 function get_param_res(model)
     return Dict(
         "atmosphere_water__precipitation_volume_flux" =>
-            model.lateral.river.boundary_conditions.reservoir.boundary_conditions.precipitation,
+            model.routing.river_flow.boundary_conditions.reservoir.boundary_conditions.precipitation,
         "land_surface_water__potential_evaporation_volume_flux" =>
-            model.lateral.river.boundary_conditions.reservoir.boundary_conditions.evaporation,
+            model.routing.river_flow.boundary_conditions.reservoir.boundary_conditions.evaporation,
     )
 end
 
 function get_param_lake(model)
     return Dict(
         "atmosphere_water__precipitation_volume_flux" =>
-            model.lateral.river.boundary_conditions.lake.boundary_conditions.precipitation,
+            model.routing.river_flow.river.boundary_conditions.lake.boundary_conditions.precipitation,
         "land_surface_water__potential_evaporation_volume_flux" =>
-            model.lateral.river.boundary_conditions.lake.boundary_conditions.evaporation,
+            model.routing.river_flow.river.boundary_conditions.lake.boundary_conditions.evaporation,
     )
 end
 
@@ -215,7 +215,7 @@ mover_params = (
 )
 
 function load_fixed_forcing!(model)
-    (; reader, vertical, network, config) = model
+    (; reader, land, network, config) = model
     (; forcing_parameters) = reader
 
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
@@ -234,12 +234,12 @@ function load_fixed_forcing!(model)
     for (par, ncvar) in forcing_parameters
         if ncvar.name === nothing
             val = ncvar.value * ncvar.scale + ncvar.offset
-            lens = standard_name_map(vertical)[par]
+            lens = standard_name_map(land)[par]
             param_vector = lens(model)
             param_vector .= val
             # set fixed precipitation and evaporation over the lakes and reservoirs and put
             # these into the lakes and reservoirs structs and set the precipitation and
-            # evaporation to 0 in the vertical model
+            # evaporation to 0 in the land model
             if par in mover_params
                 if do_reservoirs
                     for (i, sel_reservoir) in enumerate(sel_reservoirs)
@@ -261,7 +261,7 @@ end
 
 "Get dynamic netCDF input for the given time"
 function update_forcing!(model)
-    (; clock, reader, vertical, network, config) = model
+    (; clock, reader, land, network, config) = model
     (; dataset, dataset_times, forcing_parameters) = reader
 
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
@@ -294,7 +294,7 @@ function update_forcing!(model)
 
         # calculate the mean precipitation and evaporation over the lakes and reservoirs
         # and put these into the lakes and reservoirs structs
-        # and set the precipitation and evaporation to 0 in the vertical model
+        # and set the precipitation and evaporation to 0 in the land model
         if par in mover_params
             if do_reservoirs
                 for (i, sel_reservoir) in enumerate(sel_reservoirs)
@@ -311,7 +311,7 @@ function update_forcing!(model)
                 end
             end
         end
-        lens = standard_name_map(vertical)[par]
+        lens = standard_name_map(land)[par]
         param_vector = lens(model)
         sel = active_indices(network, par)
         data_sel = data[sel]
@@ -352,7 +352,7 @@ end
 
 "Get cyclic netCDF input for the given time"
 function update_cyclic!(model)
-    (; clock, reader, vertical, network) = model
+    (; clock, reader, land, network) = model
     (; cyclic_dataset, cyclic_times, cyclic_parameters) = reader
 
     # pick up the data that is valid for the past model time step
@@ -368,7 +368,7 @@ function update_cyclic!(model)
                 error("Could not find applicable cyclic timestep for $month_day")
             # load from netCDF into the model according to the mapping
             data = get_at(cyclic_dataset, ncvar.name, i)
-            lens = standard_name_map(vertical)[par]
+            lens = standard_name_map(land)[par]
             param_vector = lens(model)
             sel = active_indices(network, par)
             param_vector .= data[sel]
@@ -419,7 +419,7 @@ function setup_scalar_netcdf(
     config,
     float_type = Float32,
 )
-    (; vertical) = modelmap
+    (; land) = modelmap
     ds = create_tracked_netcdf(path)
     defDim(ds, "time", Inf)  # unlimited
     defVar(
@@ -440,8 +440,8 @@ function setup_scalar_netcdf(
             (nc.location_dim,);
             attrib = ["cf_role" => "timeseries_id"],
         )
-        v = if haskey(standard_name_map(vertical), nc.par)
-            lens = standard_name_map(vertical)[nc.par]
+        v = if haskey(standard_name_map(land), nc.par)
+            lens = standard_name_map(land)[nc.par]
             lens(modelmap)
         else
             param(modelmap, nc.par)
@@ -875,10 +875,10 @@ Ignores top level values in the Dict. This function is used to convert a TOML su
 [output]
 path = "path/to/file.nc"
 
-[output.vertical]
+[output.land]
 canopystorage = "my_canopystorage"
 
-[output.lateral.river]
+[output.routing.river_flow]
 q = "my_q"
 ```
 
@@ -887,8 +887,8 @@ values are ignored since the output path is not a netCDF name.
 
 ```julia
 Dict(
-    (:vertical, :canopystorage) => "my_canopystorage,
-    (:lateral, :river, :q) => "my_q,
+    (:land, :canopystorage) => "my_canopystorage,
+    (:routing, :river_flow, :q) => "my_q,
 )
 ```
 """
@@ -907,10 +907,10 @@ Create a Dict that maps parameter netCDF names to arrays in the Model.
 """
 function out_map(ncnames_dict, modelmap)
     output_map = Dict{String, Any}()
-    (; vertical) = modelmap
+    (; land) = modelmap
     for (par, ncname) in ncnames_dict
-        A = if haskey(standard_name_map(vertical), par)
-            lens = standard_name_map(vertical)[par]
+        A = if haskey(standard_name_map(land), par)
+            lens = standard_name_map(land)[par]
             lens(modelmap)
         else
             param(modelmap, par)
@@ -1081,12 +1081,12 @@ end
 
 "Write a new timestep with scalar data to a netCDF file"
 function write_netcdf_timestep(model, dataset)
-    (; writer, vertical, clock, config) = model
+    (; writer, land, clock, config) = model
 
     time_index = add_time(dataset, clock.time)
     for (nt, nc) in zip(writer.nc_scalar, config.netcdf.variable)
-        A = if haskey(standard_name_map(vertical), nt.parameter)
-            lens = standard_name_map(vertical)[nt.parameter]
+        A = if haskey(standard_name_map(land), nt.parameter)
+            lens = standard_name_map(land)[nt.parameter]
             lens(model)
         else
             param(model, nt.parameter)
@@ -1336,13 +1336,13 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset, fileformat)
 end
 
 function write_csv_row(model)
-    (; writer, vertical, clock, config) = model
+    (; writer, land, clock, config) = model
     isnothing(writer.csv_path) && return nothing
     io = writer.csv_io
     print(io, string(clock.time))
     for (nt, col) in zip(writer.csv_cols, config.csv.column)
-        A = if haskey(standard_name_map(vertical), nt.parameter)
-            lens = standard_name_map(vertical)[nt.parameter]
+        A = if haskey(standard_name_map(land), nt.parameter)
+            lens = standard_name_map(land)[nt.parameter]
             lens(model)
         else
             param(model, nt.parameter)
@@ -1655,9 +1655,9 @@ end
 
 "Get `index` for dimension name `layer` based on `model`"
 function get_index_dimension(var, model)::Int
-    (; vertical) = model
+    (; land) = model
     if haskey(var, "layer")
-        inds = collect(1:(vertical.soil.parameters.maxlayers))
+        inds = collect(1:(land.soil.parameters.maxlayers))
         index = inds[var["layer"]]
     else
         error("Unrecognized or missing dimension name to index $(var)")

@@ -432,7 +432,7 @@ function update!(gwf, Q, dt, conductivity_profile)
     return nothing
 end
 
-Base.@kwdef struct GroundwaterFlow{A, C, CH, B}
+Base.@kwdef struct GroundwaterFlow{A, C, CH, B} <: AbstractSubsurfaceFlowModel
     aquifer::A
     connectivity::C
     constanthead::CH
@@ -443,7 +443,7 @@ function GroundwaterFlow{T}(;
     aquifer::Aquifer,
     connectivity::Connectivity{T},
     constanthead::ConstantHead{T},
-    boundaries::Vector{AquiferBoundaryCondition},
+    boundaries::NamedTuple,
 ) where {T}
     initialize_conductance!(aquifer, connectivity)
     args = (aquifer, connectivity, constanthead, boundaries)
@@ -472,9 +472,9 @@ function get_exfiltwater(
     return exfiltwater
 end
 
-function get_flux_to_river(subsurface)
-    (; flow, river) = subsurface
-    ncell = flow.connectivity.ncell
+function get_flux_to_river(subsurface_flow)
+    (; river) = subsurface_flow.boundaries
+    ncell = subsurface_flow.connectivity.ncell
     flux = zeros(ncell)
     index = river.index
     flux[index] = -river.variables.flux ./ tosecond(basetimestep) # [m³ s⁻¹]
