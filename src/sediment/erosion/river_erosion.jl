@@ -46,7 +46,7 @@ function RiverErosionParameters(dataset, config, indices)
     d50 = ncread(
         dataset,
         config,
-        "lateral.river.potential_erosion.parameters.d50";
+        "routing.river_flow.potential_erosion.parameters.d50";
         sel = indices,
         defaults = 0.1,
         type = Float,

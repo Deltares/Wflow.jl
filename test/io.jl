@@ -21,26 +21,26 @@ config = Wflow.Config(tomlpath)
     @test config.endtime === DateTime(2000, 2)
     @test config.output.path == "output_moselle.nc"
     @test config.output isa Wflow.Config
-    @test collect(keys(config.output)) == ["lateral", "vertical", "path"]
+    @test collect(keys(config.output)) == ["routing", "land", "path"]
 
     # theta_s can also be provided under the alias theta_s
     @test Wflow.get_alias(
-        config.input.vertical.soil.parameters,
+        config.input.land.soil.parameters,
         "theta_s",
         "theta_s",
         nothing,
     ) == "thetaS"
-    val = pop!(config.input.vertical.soil.parameters, "theta_s")
-    config.input.vertical.soil.parameters["theta_s"] = val
+    val = pop!(config.input.land.soil.parameters, "theta_s")
+    config.input.land.soil.parameters["theta_s"] = val
     @test Wflow.get_alias(
-        config.input.vertical.soil.parameters,
+        config.input.land.soil.parameters,
         "theta_s",
         "theta_s",
         nothing,
     ) == "thetaS"
 
     # modifiers can also be applied
-    kvconf = Wflow.get_alias(config.input.vertical.soil.parameters, "kv_0", "kv_0", nothing)
+    kvconf = Wflow.get_alias(config.input.land.soil.parameters, "kv_0", "kv_0", nothing)
     @test kvconf isa Wflow.Config
     ncname, modifier = Wflow.ncvar_name_modifier(kvconf; config = config)
     @test ncname === "KsatVer"
@@ -197,7 +197,7 @@ model = Wflow.initialize_sbm_model(config)
 Wflow.advance!(model.clock)
 Wflow.load_dynamic_input!(model)
 
-(; vertical, clock, reader, writer) = model
+(; land, clock, reader, writer) = model
 
 @testset "output and state names" begin
     ncdims = ("lon", "lat", "layer", "time")
@@ -210,29 +210,31 @@ Wflow.load_dynamic_input!(model)
 end
 
 # get a default value if the parameter does not exist
-@test Wflow.param(model, "lateral.doesnt_exist", -1) == -1
+@test Wflow.param(model, "routing.doesnt_exist", -1) == -1
 
 @testset "warm states" begin
     @test Wflow.param(
         model,
-        "lateral.river.boundary_conditions.reservoir.variables.volume",
+        "routing.river_flow.boundary_conditions.reservoir.variables.volume",
     )[1] ≈ 3.2807224993363418e7
-    @test Wflow.param(model, "vertical.soil.variables.satwaterdepth")[9115] ≈
-          477.13548089422125
-    @test Wflow.param(model, "vertical.snow.variables.snow_storage")[5] ≈ 11.019233179897599
-    @test Wflow.param(model, "vertical.soil.variables.tsoil")[5] ≈ 0.21814478119608938
-    @test Wflow.param(model, "vertical.soil.variables.ustorelayerdepth")[50063][1] ≈
+    @test Wflow.param(model, "land.soil.variables.satwaterdepth")[9115] ≈ 477.13548089422125
+    @test Wflow.param(model, "land.snow.variables.snow_storage")[5] ≈ 11.019233179897599
+    @test Wflow.param(model, "land.soil.variables.tsoil")[5] ≈ 0.21814478119608938
+    @test Wflow.param(model, "land.soil.variables.ustorelayerdepth")[50063][1] ≈
           9.969116007201725
-    @test Wflow.param(model, "vertical.snow.variables.snow_water")[5] ≈ 0.0
-    @test Wflow.param(model, "vertical.interception.variables.canopy_storage")[50063] ≈ 0.0
-    @test Wflow.param(model, "vertical.soil.variables.zi")[50063] ≈ 296.8028609104624
-    @test Wflow.param(model, "lateral.subsurface.variables.ssf")[10606] ≈ 39.972334552895816
-    @test Wflow.param(model, "lateral.river.variables.q")[149] ≈ 53.48673634956338
-    @test Wflow.param(model, "lateral.river.variables.h")[149] ≈ 1.167635369628945
-    @test Wflow.param(model, "lateral.river.variables.volume")[149] ≈ 63854.60119358985
-    @test Wflow.param(model, "lateral.land.variables.q")[2075] ≈ 3.285909284322251
-    @test Wflow.param(model, "lateral.land.variables.h")[2075] ≈ 0.052076262033771775
-    @test Wflow.param(model, "lateral.land.variables.volume")[2075] ≈ 29920.754983235012
+    @test Wflow.param(model, "land.snow.variables.snow_water")[5] ≈ 0.0
+    @test Wflow.param(model, "land.interception.variables.canopy_storage")[50063] ≈ 0.0
+    @test Wflow.param(model, "land.soil.variables.zi")[50063] ≈ 296.8028609104624
+    @test Wflow.param(model, "routing.subsurface_flow.variables.ssf")[10606] ≈
+          39.972334552895816
+    @test Wflow.param(model, "routing.river_flow.variables.q")[149] ≈ 53.48673634956338
+    @test Wflow.param(model, "routing.river_flow.variables.h")[149] ≈ 1.167635369628945
+    @test Wflow.param(model, "routing.river_flow.variables.volume")[149] ≈ 63854.60119358985
+    @test Wflow.param(model, "routing.overland_flow.variables.q")[2075] ≈ 3.285909284322251
+    @test Wflow.param(model, "routing.overland_flow.variables.h")[2075] ≈
+          0.052076262033771775
+    @test Wflow.param(model, "routing.overland_flow.variables.volume")[2075] ≈
+          29920.754983235012
 end
 
 @testset "reducer" begin
@@ -258,23 +260,23 @@ end
 end
 
 @testset "initial parameter values" begin
-    (; vertical) = model
-    @test vertical.snow.parameters.cfmax[1] ≈ 3.7565300464630127
-    @test vertical.soil.parameters.soilthickness[1] ≈ 2000.0
-    @test vertical.atmospheric_forcing.precipitation[49951] ≈ 2.2100000381469727
-    @test vertical.soil.parameters.c[1] ≈
+    (; land) = model
+    @test land.snow.parameters.cfmax[1] ≈ 3.7565300464630127
+    @test land.soil.parameters.soilthickness[1] ≈ 2000.0
+    @test land.atmospheric_forcing.precipitation[49951] ≈ 2.2100000381469727
+    @test land.soil.parameters.c[1] ≈
           [9.152995289601465, 8.919674421902961, 8.70537452585209, 8.690681062890977]
 end
 
-config.input.vertical.snow.parameters.cfmax = Dict("value" => 2.0)
-config.input.vertical.soil.parameters.soilthickness = Dict(
+config.input.land.snow.parameters.cfmax = Dict("value" => 2.0)
+config.input.land.soil.parameters.soilthickness = Dict(
     "scale" => 3.0,
     "offset" => 100.0,
     "netcdf" => Dict("variable" => Dict("name" => "SoilThickness")),
 )
-config.input.vertical.atmospheric_forcing.precipitation =
+config.input.land.atmospheric_forcing.precipitation =
     Dict("scale" => 1.5, "netcdf" => Dict("variable" => Dict("name" => "precip")))
-config.input.vertical.soil.parameters.c = Dict(
+config.input.land.soil.parameters.c = Dict(
     "scale" => [2.0, 3.0],
     "offset" => [0.0, 0.0],
     "layer" => [1, 3],
@@ -286,11 +288,11 @@ Wflow.advance!(model.clock)
 Wflow.load_dynamic_input!(model)
 
 @testset "changed parameter values" begin
-    (; vertical) = model
-    @test vertical.snow.parameters.cfmax[1] == 2.0
-    @test vertical.soil.parameters.soilthickness[1] ≈ 2000.0 * 3.0 + 100.0
-    @test vertical.atmospheric_forcing.precipitation[49951] ≈ 1.5 * 2.2100000381469727
-    @test vertical.soil.parameters.c[1] ≈ [
+    (; land) = model
+    @test land.snow.parameters.cfmax[1] == 2.0
+    @test land.soil.parameters.soilthickness[1] ≈ 2000.0 * 3.0 + 100.0
+    @test land.atmospheric_forcing.precipitation[49951] ≈ 1.5 * 2.2100000381469727
+    @test land.soil.parameters.c[1] ≈ [
         2.0 * 9.152995289601465,
         8.919674421902961,
         3.0 * 8.70537452585209,
@@ -406,7 +408,7 @@ end
 
     # Final run to test error handling during simulation
     tomlpath_error = joinpath(@__DIR__, "sbm_simple-error.toml")
-    config.input.lateral.river.width = Dict(
+    config.input.routing.river_flow.width = Dict(
         "scale" => 0.0,
         "offset" => 0.0,
         "netcdf" => Dict("variable" => Dict("name" => "wflow_riverwidth")),
@@ -453,42 +455,42 @@ end
 
     # Extracting required states and test if some are covered (not all are tested!)
     required_states = Wflow.extract_required_states(config)
-    @test (:vertical, :soil, :variables, :satwaterdepth) in required_states
-    @test (:vertical, :soil, :variables, :ustorelayerdepth) in required_states
-    @test (:vertical, :interception, :variables, :canopy_storage) in required_states
-    @test (:lateral, :subsurface, :variables, :ssf) in required_states
-    @test (:lateral, :river, :variables, :q) in required_states
-    @test (:lateral, :river, :variables, :h_av) in required_states
-    @test (:lateral, :land, :variables, :h_av) in required_states
+    @test (:land, :soil, :variables, :satwaterdepth) in required_states
+    @test (:land, :soil, :variables, :ustorelayerdepth) in required_states
+    @test (:land, :interception, :variables, :canopy_storage) in required_states
+    @test (:routing, :subsurface_flow, :variables, :ssf) in required_states
+    @test (:routing, :river_flow, :variables, :q) in required_states
+    @test (:routing, :river_flow, :variables, :h_av) in required_states
+    @test (:routing, :overland_flow, :variables, :h_av) in required_states
     @test !(
-        (:lateral, :river, :boundary_conditions, :lake, :variables, :waterlevel) in
+        (:routing, :river_flow, :boundary_conditions, :lake, :variables, :waterlevel) in
         required_states
     )
 
     # Adding an unused state the see if the right warning message is thrown
-    config.state.vertical.soil.variables.additional_state = "additional_state"
+    config.state.land.soil.variables.additional_state = "additional_state"
     @test_logs (
         :warn,
         string(
-            "State variable `(:vertical, :soil, :variables, :additional_state)` provided, but is not used in ",
+            "State variable `(:land, :soil, :variables, :additional_state)` provided, but is not used in ",
             "model setup, skipping.",
         ),
     ) Wflow.check_states(config)
 
     # Removing the unused and required state, to test the exception being thrown
-    delete!(config.state.vertical.soil["variables"], "additional_state")
-    delete!(config.state.vertical.snow["variables"], "snow_storage")
+    delete!(config.state.land.soil["variables"], "additional_state")
+    delete!(config.state.land.snow["variables"], "snow_storage")
     @test_throws ArgumentError Wflow.check_states(config)
 
     # Extracting required states for model type sbm_gwf and test if some are covered
     tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
     config = Wflow.Config(tomlpath)
     required_states = Wflow.extract_required_states(config)
-    @test (:vertical, :soil, :variables, :satwaterdepth) in required_states
-    @test (:vertical, :soil, :variables, :ustorelayerdepth) in required_states
-    @test (:vertical, :interception, :variables, :canopy_storage) in required_states
-    @test (:lateral, :subsurface, :flow, :aquifer, :variables, :head) in required_states
-    @test (:lateral, :river, :variables, :q) in required_states
-    @test (:lateral, :river, :variables, :h_av) in required_states
-    @test (:lateral, :land, :variables, :h_av) in required_states
+    @test (:land, :soil, :variables, :satwaterdepth) in required_states
+    @test (:land, :soil, :variables, :ustorelayerdepth) in required_states
+    @test (:land, :interception, :variables, :canopy_storage) in required_states
+    @test (:routing, :subsurface_flow, :aquifer, :variables, :head) in required_states
+    @test (:routing, :river_flow, :variables, :q) in required_states
+    @test (:routing, :river_flow, :variables, :h_av) in required_states
+    @test (:routing, :overland_flow, :variables, :h_av) in required_states
 end

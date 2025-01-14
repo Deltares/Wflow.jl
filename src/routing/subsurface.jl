@@ -1,5 +1,3 @@
-abstract type SubsurfaceFlow end
-
 "Exponential depth profile of horizontal hydraulic conductivity at the soil surface"
 @get_units @grid_loc struct KhExponential{T}
     # Horizontal hydraulic conductivity at soil surface [m d⁻¹]
@@ -47,7 +45,7 @@ function LateralSsfParameters(
     khfrac = ncread(
         dataset,
         config,
-        "lateral.subsurface.ksathorfrac";
+        "routing.subsurface_flow.ksathorfrac";
         sel = indices,
         defaults = 1.0,
         type = Float,
@@ -57,7 +55,7 @@ function LateralSsfParameters(
     (; theta_s, theta_r, soilthickness) = soil
     soilthickness = soilthickness .* 0.001
 
-    kh_profile_type = get(config.input.vertical, "ksat_profile", "exponential")::String
+    kh_profile_type = get(config.input.land, "ksat_profile", "exponential")::String
     dt = Second(config.timestepsecs) / basetimestep
     if kh_profile_type == "exponential"
         (; kv_0, f) = soil.kv_profile
@@ -120,7 +118,7 @@ end
 end
 
 "Lateral subsurface flow model"
-@with_kw struct LateralSSF{T, Kh} <: SubsurfaceFlow
+@with_kw struct LateralSSF{T, Kh} <: AbstractSubsurfaceFlowModel
     boundary_conditions::LateralSsfBC{T}
     parameters::LateralSsfParameters{T, Kh}
     variables::LateralSsfVariables{T}
@@ -234,7 +232,7 @@ function GroundwaterExchangeVariables(n)
 end
 
 "Groundwater exchange"
-@with_kw struct GroundwaterExchange{T} <: SubsurfaceFlow
+@with_kw struct GroundwaterExchange{T} <: AbstractSubsurfaceFlowModel
     variables::GroundwaterExchangeVariables{T}
 end
 
@@ -246,8 +244,8 @@ function GroundwaterExchange(n)
 end
 
 # wrapper methods
-get_water_depth(subsurface::SubsurfaceFlow) = subsurface.variables.zi
-get_exfiltwater(subsurface::SubsurfaceFlow) = subsurface.variables.exfiltwater
+get_water_depth(model::Union{LateralSSF, GroundwaterExchange}) = model.variables.zi
+get_exfiltwater(model::Union{LateralSSF, GroundwaterExchange}) = model.variables.exfiltwater
 
-get_flux_to_river(subsurface::SubsurfaceFlow) =
-    subsurface.variables.to_river ./ tosecond(basetimestep) # [m³ s⁻¹]
+get_flux_to_river(model::Union{LateralSSF, GroundwaterExchange}) =
+    model.variables.to_river ./ tosecond(basetimestep) # [m³ s⁻¹]

@@ -48,7 +48,7 @@ function LocalInertialRiverFlowParameters(
     riverlength_bc = ncread(
         dataset,
         config,
-        "lateral.river.riverlength_bc";
+        "routing.river_flow.riverlength_bc";
         sel = inds_pit,
         defaults = 1.0e04,
         type = Float,
@@ -56,7 +56,7 @@ function LocalInertialRiverFlowParameters(
     bankfull_elevation_2d = ncread(
         dataset,
         config,
-        "lateral.river.bankfull_elevation";
+        "routing.river_flow.bankfull_elevation";
         optional = false,
         type = Float,
         fill = 0,
@@ -64,7 +64,7 @@ function LocalInertialRiverFlowParameters(
     bankfull_depth_2d = ncread(
         dataset,
         config,
-        "lateral.river.bankfull_depth";
+        "routing.river_flow.bankfull_depth";
         optional = false,
         type = Float,
         fill = 0,
@@ -76,7 +76,7 @@ function LocalInertialRiverFlowParameters(
     mannings_n = ncread(
         dataset,
         config,
-        "lateral.river.mannings_n";
+        "routing.river_flow.mannings_n";
         sel = indices,
         defaults = 0.036,
         type = Float,
@@ -159,7 +159,7 @@ function LocalInertialRiverFlowVariables(dataset, config, indices, n_edges, inds
     riverdepth_bc = ncread(
         dataset,
         config,
-        "lateral.river.riverdepth_bc";
+        "routing.river_flow.riverdepth_bc";
         sel = inds_pit,
         defaults = 0.0,
         type = Float,
@@ -583,19 +583,6 @@ function update!(
     return nothing
 end
 
-# Stores edges in x and y direction between cells of a Vector with CartesianIndex(x, y), for
-# staggered grid calculations.
-@with_kw struct Indices
-    xu::Vector{Int}     # index of neighbor cell in the (+1, 0) direction
-    xd::Vector{Int}     # index of neighbor cell in the (-1, 0) direction
-    yu::Vector{Int}     # index of neighbor cell in the (0, +1) direction
-    yd::Vector{Int}     # index of neighbor cell in the (0, -1) direction
-end
-
-# maps the fields of struct Indices to the defined Wflow cartesian indices of const
-# neigbors.
-const dirs = (:yd, :xd, :xu, :yu)
-
 "Struct to store local inertial overland flow model variables"
 @get_units @grid_loc @with_kw struct LocalInertialOverlandFlowVariables{T}
     qy0::Vector{T} | "m3 s-1" | "edge"      # flow in y direction at previous time step
@@ -667,7 +654,7 @@ function LocalInertialOverlandFlowParameters(
     mannings_n = ncread(
         dataset,
         config,
-        "lateral.land.mannings_n";
+        "routing.overland_flow.mannings_n";
         sel = indices,
         defaults = 0.072,
         type = Float,
@@ -675,7 +662,7 @@ function LocalInertialOverlandFlowParameters(
     elevation_2d = ncread(
         dataset,
         config,
-        "lateral.land.elevation";
+        "routing.overland_flow.elevation";
         optional = false,
         type = Float,
         fill = 0,
@@ -683,25 +670,19 @@ function LocalInertialOverlandFlowParameters(
     elevation = elevation_2d[indices]
     n = length(indices)
 
-    # initialize edges between cells in x and y direction.
-    staggered_indices =
-        Indices(; xu = zeros(n), xd = zeros(n), yu = zeros(n), yd = zeros(n))
+    # initialize edge connectivity of 2D staggered grid
+    edge_indices =
+        EdgeConnectivity(; xu = zeros(n), xd = zeros(n), yu = zeros(n), yd = zeros(n))
 
-    # edges without neigbors are handled by an extra index (at n + 1, with n edges), which
-    # is set to a value of 0.0 m³ s⁻¹ for qx and qy fields at initialization.
-    # edges are defined as follows for the x and y direction, respectively:
-    # node i => node xu (node i + CartesianIndex(1, 0))
-    # node i => node yu (node i + CartesianIndex(0, 1))
-    # where i is the index of indices
     nrow, ncol = modelsize_2d
     for (v, i) in enumerate(indices)
         for (m, neighbor) in enumerate(neighbors)
             j = i + neighbor
             dir = dirs[m]
             if (1 <= j[1] <= nrow) && (1 <= j[2] <= ncol) && (reverse_indices[j] != 0)
-                getfield(staggered_indices, dir)[v] = reverse_indices[j]
+                getfield(edge_indices, dir)[v] = reverse_indices[j]
             else
-                getfield(staggered_indices, dir)[v] = n + 1
+                getfield(edge_indices, dir)[v] = n + 1
             end
         end
     end
@@ -710,11 +691,11 @@ function LocalInertialOverlandFlowParameters(
     zx_max = fill(Float(0), n)
     zy_max = fill(Float(0), n)
     for i in 1:n
-        xu = staggered_indices.xu[i]
+        xu = edge_indices.xu[i]
         if xu <= n
             zx_max[i] = max(elevation[i], elevation[xu])
         end
-        yu = staggered_indices.yu[i]
+        yu = edge_indices.yu[i]
         if yu <= n
             zy_max[i] = max(elevation[i], elevation[yu])
         end
@@ -728,7 +709,7 @@ function LocalInertialOverlandFlowParameters(
     set_effective_flowwidth!(
         we_x,
         we_y,
-        staggered_indices,
+        edge_indices,
         graph_river,
         river_width,
         ldd_river,
@@ -751,7 +732,7 @@ function LocalInertialOverlandFlowParameters(
         froude_limit,
         rivercells = river_location,
     )
-    return parameters, staggered_indices
+    return parameters, edge_indices
 end
 
 "Struct to store local inertial overland flow model boundary conditions"
@@ -767,7 +748,7 @@ function LocalInertialOverlandFlowBC(n)
 end
 
 "Local inertial overland flow model using the local inertial method"
-@with_kw struct LocalInertialOverlandFlow{T}
+@with_kw struct LocalInertialOverlandFlow{T} <: AbstractOverlandFlowModel
     timestepping::TimeStepping{T}
     boundary_conditions::LocalInertialOverlandFlowBC{T}
     parameters::LocalInertialOverlandFlowParameters{T}
@@ -795,7 +776,7 @@ function LocalInertialOverlandFlow(
 
     n = length(indices)
     boundary_conditions = LocalInertialOverlandFlowBC(n)
-    parameters, staggered_indices = LocalInertialOverlandFlowParameters(
+    parameters, edge_indices = LocalInertialOverlandFlowParameters(
         dataset,
         config,
         indices;
@@ -819,7 +800,7 @@ function LocalInertialOverlandFlow(
         variables,
     )
 
-    return sw_land, staggered_indices
+    return sw_land, edge_indices
 end
 
 """
@@ -870,19 +851,20 @@ function update_boundary_conditions!(
     network,
     dt,
 )
-    (; river, soil, subsurface, runoff) = external_models
+    (; river_flow, soil, subsurface_flow, runoff) = external_models
     (; inflow_waterbody) = model.boundary_conditions
-    (; reservoir, lake) = river.boundary_conditions
+    (; reservoir, lake) = river_flow.boundary_conditions
     (; net_runoff) = soil.variables
     (; net_runoff_river) = runoff.variables
 
     model.boundary_conditions.runoff .=
-        net_runoff ./ 1000.0 .* network.land.area ./ dt .+ get_flux_to_river(subsurface) .+
+        net_runoff ./ 1000.0 .* network.land.area ./ dt .+
+        get_flux_to_river(subsurface_flow) .+
         net_runoff_river .* network.land.area .* 0.001 ./ dt
 
     if !isnothing(reservoir) || !isnothing(lake)
-        inflow_land = get_inflow_waterbody(river, model)
-        inflow_subsurface = get_inflow_waterbody(river, subsurface)
+        inflow_land = get_inflow_waterbody(river_flow, model)
+        inflow_subsurface = get_inflow_waterbody(river_flow, subsurface_flow)
 
         @. inflow_waterbody[network.river_indices] =
             inflow_land[network.river_indices] + inflow_subsurface[network.river_indices]
@@ -948,7 +930,7 @@ function local_inertial_update!(
     network,
     dt,
 ) where {T}
-    indices = network.land.staggered_indices
+    indices = network.land.edge_indices
     inds_river = network.land.river_indices
 
     (; edges_at_node) = network.river
@@ -1132,7 +1114,7 @@ function FloodPlainProfile(dataset, config, indices; river_width, river_length, 
     volume = ncread(
         dataset,
         config,
-        "lateral.river.floodplain.volume";
+        "routing.river_flow.floodplain.volume";
         sel = indices,
         type = Float,
         dimname = :flood_depth,
@@ -1242,7 +1224,7 @@ function FloodPlainParameters(
     mannings_n = ncread(
         dataset,
         config,
-        "lateral.river.floodplain.mannings_n";
+        "routing.river_flow.floodplain.mannings_n";
         sel = indices,
         defaults = 0.072,
         type = Float,

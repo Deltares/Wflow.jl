@@ -20,7 +20,7 @@ function LakeParameters(config, dataset, inds_riv, nriv, pits)
     lakelocs_2d = ncread(
         dataset,
         config,
-        "lateral.river.lake.locs";
+        "routing.river_flow.lake.locs";
         optional = false,
         type = Int,
         fill = 0,
@@ -31,7 +31,7 @@ function LakeParameters(config, dataset, inds_riv, nriv, pits)
     lakecoverage_2d = ncread(
         dataset,
         config,
-        "lateral.river.lake.areas";
+        "routing.river_flow.lake.areas";
         optional = false,
         allow_missing = true,
     )
@@ -64,7 +64,7 @@ function LakeParameters(config, dataset, inds_riv, nriv, pits)
     lakearea = ncread(
         dataset,
         config,
-        "lateral.river.lake.area";
+        "routing.river_flow.lake.area";
         optional = false,
         sel = inds_lake,
         type = Float,
@@ -73,7 +73,7 @@ function LakeParameters(config, dataset, inds_riv, nriv, pits)
     lake_b = ncread(
         dataset,
         config,
-        "lateral.river.lake.b";
+        "routing.river_flow.lake.b";
         optional = false,
         sel = inds_lake,
         type = Float,
@@ -82,7 +82,7 @@ function LakeParameters(config, dataset, inds_riv, nriv, pits)
     lake_e = ncread(
         dataset,
         config,
-        "lateral.river.lake.e";
+        "routing.river_flow.lake.e";
         optional = false,
         sel = inds_lake,
         type = Float,
@@ -91,7 +91,7 @@ function LakeParameters(config, dataset, inds_riv, nriv, pits)
     lake_threshold = ncread(
         dataset,
         config,
-        "lateral.river.lake.threshold";
+        "routing.river_flow.lake.threshold";
         optional = false,
         sel = inds_lake,
         type = Float,
@@ -100,7 +100,7 @@ function LakeParameters(config, dataset, inds_riv, nriv, pits)
     linked_lakelocs = ncread(
         dataset,
         config,
-        "lateral.river.lake.linkedlakelocs";
+        "routing.river_flow.lake.linkedlakelocs";
         sel = inds_lake,
         defaults = 0,
         type = Int,
@@ -109,7 +109,7 @@ function LakeParameters(config, dataset, inds_riv, nriv, pits)
     lake_storfunc = ncread(
         dataset,
         config,
-        "lateral.river.lake.storfunc";
+        "routing.river_flow.lake.storfunc";
         optional = false,
         sel = inds_lake,
         type = Int,
@@ -118,7 +118,7 @@ function LakeParameters(config, dataset, inds_riv, nriv, pits)
     lake_outflowfunc = ncread(
         dataset,
         config,
-        "lateral.river.lake.outflowfunc";
+        "routing.river_flow.lake.outflowfunc";
         optional = false,
         sel = inds_lake,
         type = Int,
@@ -127,7 +127,7 @@ function LakeParameters(config, dataset, inds_riv, nriv, pits)
     lake_waterlevel = ncread(
         dataset,
         config,
-        "lateral.river.lake.waterlevel";
+        "routing.river_flow.lake.waterlevel";
         optional = false,
         sel = inds_lake,
         type = Float,

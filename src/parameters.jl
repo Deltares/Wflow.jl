@@ -24,7 +24,7 @@ function VegetationParameters(dataset, config, indices)
     rootingdepth = ncread(
         dataset,
         config,
-        "vertical.vegetation_parameter_set.rootingdepth";
+        "land.vegetation_parameter_set.rootingdepth";
         sel = indices,
         defaults = 750.0,
         type = Float,
@@ -32,16 +32,16 @@ function VegetationParameters(dataset, config, indices)
     kc = ncread(
         dataset,
         config,
-        "vertical.vegetation_parameter_set.kc";
+        "land.vegetation_parameter_set.kc";
         sel = indices,
         defaults = 1.0,
         type = Float,
     )
-    if haskey(config.input.vertical.vegetation_parameter_set, "leaf_area_index")
+    if haskey(config.input.land.vegetation_parameter_set, "leaf_area_index")
         storage_specific_leaf = ncread(
             dataset,
             config,
-            "vertical.vegetation_parameter_set.storage_specific_leaf";
+            "land.vegetation_parameter_set.storage_specific_leaf";
             optional = false,
             sel = indices,
             type = Float,
@@ -49,7 +49,7 @@ function VegetationParameters(dataset, config, indices)
         storage_wood = ncread(
             dataset,
             config,
-            "vertical.vegetation_parameter_set.storage_wood";
+            "land.vegetation_parameter_set.storage_wood";
             optional = false,
             sel = indices,
             type = Float,
@@ -57,7 +57,7 @@ function VegetationParameters(dataset, config, indices)
         kext = ncread(
             dataset,
             config,
-            "vertical.vegetation_parameter_set.kext";
+            "land.vegetation_parameter_set.kext";
             optional = false,
             sel = indices,
             type = Float,
@@ -76,7 +76,7 @@ function VegetationParameters(dataset, config, indices)
         canopygapfraction = ncread(
             dataset,
             config,
-            "vertical.vegetation_parameter_set.canopygapfraction";
+            "land.vegetation_parameter_set.canopygapfraction";
             sel = indices,
             defaults = 0.1,
             type = Float,
@@ -84,7 +84,7 @@ function VegetationParameters(dataset, config, indices)
         cmax = ncread(
             dataset,
             config,
-            "vertical.vegetation_parameter_set.cmax";
+            "land.vegetation_parameter_set.cmax";
             sel = indices,
             defaults = 1.0,
             type = Float,
@@ -129,7 +129,7 @@ function LandGeometry(nc, config, inds)
     landslope = ncread(
         nc,
         config,
-        "vertical.land_parameter_set.slope";
+        "land.land_parameter_set.slope";
         optional = false,
         sel = inds,
         type = Float,
@@ -156,7 +156,7 @@ function RiverGeometry(nc, config, inds)
     riverwidth = ncread(
         nc,
         config,
-        "lateral.river_parameter_set.width";
+        "routing.river_parameter_set.width";
         optional = false,
         sel = inds,
         type = Float,
@@ -164,7 +164,7 @@ function RiverGeometry(nc, config, inds)
     riverlength = ncread(
         nc,
         config,
-        "lateral.river_parameter_set.length";
+        "routing.river_parameter_set.length";
         optional = false,
         sel = inds,
         type = Float,
@@ -172,7 +172,7 @@ function RiverGeometry(nc, config, inds)
     riverslope = ncread(
         nc,
         config,
-        "lateral.river_parameter_set.slope";
+        "routing.river_parameter_set.slope";
         optional = false,
         sel = inds,
         type = Float,
