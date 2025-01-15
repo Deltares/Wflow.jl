@@ -26,7 +26,7 @@ const sbm_standard_name_map = Dict{String, ComposedFunction}(
     "river_water__depth" => @optic(_.routing.river_flow.variables.h),
     "river_water__time_average_of_depth" => @optic(_.routing.river_flow.variables.h_av),
     "river_water__volume" => @optic(_.routing.river_flow.variables.volume),
-    "land_surface_water_use~abstraction__volume_flux" =>
+    "land_surface_water_abstraction__volume_flux" =>
         @optic(_.routing.river_flow.allocation.variables.act_surfacewater_abst),
     "floodplain_water__volume" =>
         @optic(_.routing.river_flow.floodplain.variables.volume),
@@ -115,7 +115,7 @@ const sbm_standard_name_map = Dict{String, ComposedFunction}(
         @optic(_.land.allocation.variables.irri_alloc),
     "land~non-irrigated__allocated_water_volume_flux" =>
         @optic(_.land.allocation.variables.nonirri_alloc),
-    "subsurface_water_use~abstraction__volume_flux" =>
+    "subsurface_water_abstraction__volume_flux" =>
         @optic(_.land.allocation.variables.act_groundwater_abst),
     "subsurface_water__hydraulic_head" =>
         @optic(_.routing.subsurface_flow.aquifer.variables.head),

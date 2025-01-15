@@ -461,10 +461,13 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
     lens = lens_input_parameter("soil_root~wet__sigmoid_function_shape_parameter")
     rootdistpar =
         ncread(dataset, config, lens; sel = indices, defaults = -500.0, type = Float)
-    lens = lens_input_parameter("soil_capillary-rise__max_water-table_depth")
+    lens = lens_input_parameter(
+        "soil_water_sat-zone_top_capillary-rise__max_water-table_depth",
+    )
     cap_hmax = ncread(dataset, config, lens; sel = indices, defaults = 2000.0, type = Float)
 
-    lens = lens_input_parameter("soil_capillary-rise__averianov_exponent")
+    lens =
+        lens_input_parameter("soil_water_sat-zone_top_capillary-rise__averianov_exponent")
     cap_n = ncread(dataset, config, lens; sel = indices, defaults = 2.0, type = Float)
 
     act_thickl = set_layerthickness.(soilthickness, (cum_depth_layers,), (thicknesslayers,))
@@ -474,8 +477,8 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
     if length(config_thicknesslayers) > 0
         # root fraction read from dataset file, in case of multiple soil layers and TOML file
         # includes "vertical.rootfraction"
-        if haskey(config.input.parameters, "soil_layer_root__length_density_fraction")
-            lens = lens_input_parameter("soil_layer_root__length_density_fraction")
+        if haskey(config.input.parameters, "soil_root__length_density_fraction")
+            lens = lens_input_parameter("soil_root__length_density_fraction")
             rootfraction = ncread(
                 dataset,
                 config,

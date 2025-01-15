@@ -30,7 +30,7 @@ function VegetationParameters(dataset, config, indices)
         lens = lens_input_parameter("vegetation__specific-leaf_storage")
         storage_specific_leaf =
             ncread(dataset, config, lens; optional = false, sel = indices, type = Float)
-        lens = lens_input_parameter("vegetation_woody-part__storage_capacity")
+        lens = lens_input_parameter("vegetation_wood_water__storage_capacity")
         storage_wood =
             ncread(dataset, config, lens; optional = false, sel = indices, type = Float)
         lens = lens_input_parameter("vegetation_canopy__light-extinction_coefficient")

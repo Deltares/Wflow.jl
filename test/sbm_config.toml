@@ -86,7 +86,7 @@ vegetation_canopy_water__mean_evaporation-to-mean_precipitation_ratio = "EoverR"
 vegetation__leaf-area_index = "LAI"
 vegetation_canopy__light-extinction_coefficient = "Kext"
 vegetation__specific-leaf_storage = "Sl"
-vegetation_woody-part__storage_capacity = "Swood"
+vegetation_wood_water__storage_capacity = "Swood"
 vegetation_root__depth = "RootingDepth"
 
 river__length = "wflow_riverlength"
