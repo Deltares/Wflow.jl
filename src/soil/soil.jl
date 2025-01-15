@@ -225,7 +225,7 @@ function sbm_kv_profiles(
         kv_profile = KvExponentialConstant(exp_profile, z_exp)
     elseif kv_profile_type == "layered" || kv_profile_type == "layered_exponential"
         lens = lens_input_parameter(
-            "soil_water__vertical_saturated_hydraulic_conductivity-per-soil_layer",
+            "soil_layer_water__vertical_saturated_hydraulic_conductivity",
         )
         kv =
             ncread(
@@ -420,7 +420,7 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
         ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float) .*
         (dt / basetimestep)
 
-    lens = lens_input_parameter("soil_water__brooks-corey_epsilon_parameter-per-soil_layer")
+    lens = lens_input_parameter("soil_layer_water__brooks-corey_epsilon_parameter")
     c = ncread(
         dataset,
         config,
@@ -437,7 +437,7 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
     end
 
     lens = lens_input_parameter(
-        "soil_water__vertical_saturated_hydraulic_conductivity_factor-per-soil_layer",
+        "soil_layer_water__vertical_saturated_hydraulic_conductivity_factor",
     )
     kvfrac = ncread(
         dataset,

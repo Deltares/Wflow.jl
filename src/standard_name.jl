@@ -51,15 +51,14 @@ const sbm_standard_name_map = Dict{String, ComposedFunction}(
     "soil_surface_water__runoff_volume_flux" => @optic(_.land.soil.variables.runoff),
     "soil_surface_water__net_runoff_volume_flux" =>
         @optic(_.land.soil.variables.net_runoff),
-    "soil_water__volume_fraction-per-soil_layer" => @optic(_.land.soil.variables.vwc),
-    "soil_water__volume_percentage-per-soil_layer" =>
-        @optic(_.land.soil.variables.vwc_perc),
+    "soil_layer_water__volume_fraction" => @optic(_.land.soil.variables.vwc),
+    "soil_layer_water__volume_percentage" => @optic(_.land.soil.variables.vwc_perc),
     "soil_water_root-zone__volume_fraction" => @optic(_.land.soil.variables.vwc_root),
     "soil_water_root-zone__volume_percentage" =>
         @optic(_.land.soil.variables.vwc_percroot),
     "soil_water_sat-zone_top__recharge_volume_flux" =>
         @optic(_.land.soil.variables.recharge),
-    "soil_water_unsat-zone__depth-per-soil_layer" =>
+    "soil_layer_water_unsat-zone__depth" =>
         @optic(_.land.soil.variables.ustorelayerdepth),
     "soil_water_sat-zone_top__capillary_volume_flux" =>
         @optic(_.land.soil.variables.actcapflux),

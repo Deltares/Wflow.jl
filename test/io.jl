@@ -222,8 +222,7 @@ lens = @optic(_.input.parameters.doesnt_exist)
     @test map["soil_water_sat-zone__depth"](model)[9115] ≈ 477.13548089422125
     @test map["snowpack~dry__leq-depth"](model)[5] ≈ 11.019233179897599
     @test map["soil_surface__temperature"](model)[5] ≈ 0.21814478119608938
-    @test map["soil_water_unsat-zone__depth-per-soil_layer"](model)[50063][1] ≈
-          9.969116007201725
+    @test map["soil_layer_water_unsat-zone__depth"](model)[50063][1] ≈ 9.969116007201725
     @test map["snowpack~liquid__depth"](model)[5] ≈ 0.0
     @test map["vegetation_canopy_water__storage"](model)[50063] ≈ 0.0
     @test map["soil_water_sat-zone_top__depth"](model)[50063] ≈ 296.8028609104624
@@ -275,7 +274,7 @@ config.input.parameters.soil__thickness = Dict(
 )
 config.input.forcing.atmosphere_water__precipitation_volume_flux =
     Dict("scale" => 1.5, "netcdf" => Dict("variable" => Dict("name" => "precip")))
-config.input.parameters["soil_water__brooks-corey_epsilon_parameter-per-soil_layer"] = Dict(
+config.input.parameters["soil_layer_water__brooks-corey_epsilon_parameter"] = Dict(
     "scale" => [2.0, 3.0],
     "offset" => [0.0, 0.0],
     "layer" => [1, 3],
@@ -455,7 +454,7 @@ end
     # Extracting required states and test if some are covered (not all are tested!)
     required_states = Wflow.extract_required_states(config)
     @test "soil_water_sat-zone__depth" in required_states
-    @test "soil_water_unsat-zone__depth-per-soil_layer" in required_states
+    @test "soil_layer_water_unsat-zone__depth" in required_states
     @test "vegetation_canopy_water__storage" in required_states
     @test "subsurface_water__volume_flow_rate" in required_states
     @test "river_water__volume_flow_rate" in required_states
@@ -483,7 +482,7 @@ end
     config = Wflow.Config(tomlpath)
     required_states = Wflow.extract_required_states(config)
     @test "soil_water_sat-zone__depth" in required_states
-    @test "soil_water_unsat-zone__depth-per-soil_layer" in required_states
+    @test "soil_layer_water_unsat-zone__depth" in required_states
     @test "vegetation_canopy_water__storage" in required_states
     @test "subsurface_water__hydraulic_head" in required_states
     @test "river_water__volume_flow_rate" in required_states

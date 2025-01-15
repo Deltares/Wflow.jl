@@ -61,13 +61,10 @@ function get_soil_states(model_type::AbstractString; snow = false)
             states = (
                 "soil_water_sat-zone__depth",
                 "soil_surface__temperature",
-                "soil_water_unsat-zone__depth-per-soil_layer",
+                "soil_layer_water_unsat-zone__depth",
             )
         else
-            states = (
-                "soil_water_sat-zone__depth",
-                "soil_water_unsat-zone__depth-per-soil_layer",
-            )
+            states = ("soil_water_sat-zone__depth", "soil_layer_water_unsat-zone__depth")
         end
     elseif model_type == "sediment"
         states = ()

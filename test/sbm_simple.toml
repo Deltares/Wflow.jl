@@ -35,7 +35,7 @@ atmosphere_air__snowfall_temperature_interval = "TTI"
 snowpack__melting_temperature_threshold = "TTM"
 snowpack__degree-day_coefficient = "Cfmax"
 
-soil_water__brooks-corey_epsilon_parameter-per-soil_layer = "c"
+soil_layer_water__brooks-corey_epsilon_parameter = "c"
 soil_surface_water__infiltration_reduction_parameter = "cf_soil"
 soil_surface_water__vertical_saturated_hydraulic_conductivity = "KsatVer"
 soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter = "f"

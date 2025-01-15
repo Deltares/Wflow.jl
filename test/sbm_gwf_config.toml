@@ -24,7 +24,7 @@ path_output = "outstates-example-sbm-gwf.nc"
 vegetation_canopy_water__storage = "canopystorage"
 
 soil_water_sat-zone__depth = "satwaterdepth"
-soil_water_unsat-zone__depth-per-soil_layer = "ustorelayerdepth"
+soil_layer_water_unsat-zone__depth = "ustorelayerdepth"
 
 river_water__depth = "h_river"
 river_water__time_average_of_depth = "h_av_river"
@@ -105,7 +105,7 @@ path = "output_example-sbm-gwf.nc"
 [output.variables]
 vegetation_canopy_water__storage = "canopystorage"
 soil_water_sat-zone__depth = "satwaterdepth"
-soil_water_unsat-zone__depth-per-soil_layer = "ustorelayerdepth"
+soil_layer_water_unsat-zone__depth = "ustorelayerdepth"
 land.soil.parameters.soilthickness = "soilthickness"
 river_water__volume_flow_rate = "q"
 subsurface_water__hydraulic_head = "head"
