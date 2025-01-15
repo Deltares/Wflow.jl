@@ -448,48 +448,45 @@ end
     @test clock.time == DateTimeNoLeap(2000, 3, 1)
 end
 
-#= @testset "State checking" begin
+@testset "State checking" begin
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
 
     # Extracting required states and test if some are covered (not all are tested!)
     required_states = Wflow.extract_required_states(config)
-    @test (:land, :soil, :variables, :satwaterdepth) in required_states
-    @test (:land, :soil, :variables, :ustorelayerdepth) in required_states
-    @test (:land, :interception, :variables, :canopy_storage) in required_states
-    @test (:routing, :subsurface_flow, :variables, :ssf) in required_states
-    @test (:routing, :river_flow, :variables, :q) in required_states
-    @test (:routing, :river_flow, :variables, :h_av) in required_states
-    @test (:routing, :overland_flow, :variables, :h_av) in required_states
-    @test !(
-        (:routing, :river_flow, :boundary_conditions, :lake, :variables, :waterlevel) in
-        required_states
-    )
+    @test "soil_water_sat-zone__depth" in required_states
+    @test "soil_water_unsat-zone__depth-per-soil_layer" in required_states
+    @test "vegetation_canopy_water__storage" in required_states
+    @test "subsurface_water__volume_flow_rate" in required_states
+    @test "river_water__volume_flow_rate" in required_states
+    @test "river_water__time_average_of_depth" in required_states
+    @test "land_surface_water__time_average_of_depth" in required_states
+    @test !("lake_water_level__elevation" in required_states)
 
     # Adding an unused state the see if the right warning message is thrown
-    config.state.land.soil.variables.additional_state = "additional_state"
+    config.state.variables.additional_state = "additional_state"
     @test_logs (
         :warn,
         string(
-            "State variable `(:land, :soil, :variables, :additional_state)` provided, but is not used in ",
+            "State variable `additional_state` provided, but is not used in ",
             "model setup, skipping.",
         ),
     ) Wflow.check_states(config)
 
     # Removing the unused and required state, to test the exception being thrown
-    delete!(config.state.land.soil["variables"], "additional_state")
-    delete!(config.state.land.snow["variables"], "snow_storage")
+    delete!(config.state["variables"], "additional_state")
+    delete!(config.state["variables"], "snowpack~dry__leq-depth")
     @test_throws ArgumentError Wflow.check_states(config)
 
     # Extracting required states for model type sbm_gwf and test if some are covered
     tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
     config = Wflow.Config(tomlpath)
     required_states = Wflow.extract_required_states(config)
-    @test (:vertical, :soil, :variables, :satwaterdepth) in required_states
-    @test (:vertical, :soil, :variables, :ustorelayerdepth) in required_states
-    @test (:vertical, :interception, :variables, :canopy_storage) in required_states
-    @test (:lateral, :subsurface, :flow, :aquifer, :variables, :head) in required_states
-    @test (:lateral, :river, :variables, :q) in required_states
-    @test (:lateral, :river, :variables, :h_av) in required_states
-    @test (:lateral, :land, :variables, :h_av) in required_states
-end =#
+    @test "soil_water_sat-zone__depth" in required_states
+    @test "soil_water_unsat-zone__depth-per-soil_layer" in required_states
+    @test "vegetation_canopy_water__storage" in required_states
+    @test "subsurface_water__hydraulic_head" in required_states
+    @test "river_water__volume_flow_rate" in required_states
+    @test "river_water__time_average_of_depth" in required_states
+    @test "land_surface_water__time_average_of_depth" in required_states
+end
