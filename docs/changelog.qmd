@@ -51,6 +51,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   timestepping implementation for the kinematic wave is now similar to the local inertial
   method: a stable timestep is computed for each sub timestep (or a fixed sub timestep is
   used) as part of a while loop (for each model timestep).
+- Map internal model variable and parameter names to [CSDMS Standard
+  Names](https://csdms.colorado.edu/wiki/CSDMS_Standard_Names). The previous one to one
+  mapping can be used to output model variables and parameters (TOML config file), but is
+  not considered as part of the public API.
 
 ### Added
 - Support direct output of snow and glacier melt, and add computation of snow water
