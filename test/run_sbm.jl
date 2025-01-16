@@ -3,7 +3,7 @@ using Dates
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 
-model = Wflow.initialize_sbm_model(config)
+model = Wflow.Model(config)
 (; network) = model
 
 Wflow.run_timestep!(model)
@@ -189,7 +189,7 @@ config.input.land.atmospheric_forcing.potential_evaporation = Dict(
 config.input.land.vegetation_parameter_set.leaf_area_index =
     Dict("scale" => 1.6, "netcdf" => Dict("variable" => Dict("name" => "LAI")))
 
-model = Wflow.initialize_sbm_model(config)
+model = Wflow.Model(config)
 Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
 
@@ -213,7 +213,7 @@ config.input.cyclic = [
 ]
 Dict(config.input.routing.river_flow)["boundary_conditions"] = Dict("inflow" => "inflow")
 
-model = Wflow.initialize_sbm_model(config)
+model = Wflow.Model(config)
 Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
 
@@ -225,7 +225,7 @@ end
 # test fixed forcing (precipitation = 2.5)
 config = Wflow.Config(tomlpath)
 config.input.land.atmospheric_forcing.precipitation = Dict("value" => 2.5)
-model = Wflow.initialize_sbm_model(config)
+model = Wflow.Model(config)
 Wflow.load_fixed_forcing!(model)
 
 @testset "fixed precipitation forcing (initialize)" begin
@@ -259,7 +259,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 config.model.river_routing = "local-inertial"
 
-model = Wflow.initialize_sbm_model(config)
+model = Wflow.Model(config)
 Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
 
@@ -282,7 +282,7 @@ Wflow.close_files(model; delete_output = false)
 tomlpath = joinpath(@__DIR__, "sbm_swf_config.toml")
 config = Wflow.Config(tomlpath)
 
-model = Wflow.initialize_sbm_model(config)
+model = Wflow.Model(config)
 Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
 
@@ -318,7 +318,7 @@ Dict(config.input.routing.river_flow)["floodplain"] = Dict("volume" => "floodpla
 Dict(config.state.routing.river_flow)["floodplain.variables"] =
     Dict("q" => "q_floodplain", "h" => "h_floodplain")
 
-model = Wflow.initialize_sbm_model(config)
+model = Wflow.Model(config)
 
 fp = model.routing.river_flow.floodplain.parameters.profile
 river = model.routing.river_flow
@@ -434,7 +434,7 @@ end
 # set boundary condition local inertial routing from netCDF file
 config.input.routing.river_flow.riverlength_bc = "riverlength_bc"
 config.input.routing.river_flow.riverdepth_bc = "riverdepth_bc"
-model = Wflow.initialize_sbm_model(config)
+model = Wflow.Model(config)
 Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
 
@@ -463,7 +463,7 @@ Wflow.close_files(model; delete_output = false)
     config.input.land.soil.parameters.z_layered = Dict("value" => 400.0)
 
     @testset "exponential profile" begin
-        model = Wflow.initialize_sbm_model(config)
+        model = Wflow.Model(config)
         (; soil) = model.land
         (; kv_profile) = soil.parameters
         (; subsurface_flow) = model.routing
@@ -477,7 +477,7 @@ Wflow.close_files(model; delete_output = false)
 
     @testset "exponential constant profile" begin
         config.input.land.ksat_profile = "exponential_constant"
-        model = Wflow.initialize_sbm_model(config)
+        model = Wflow.Model(config)
         (; soil) = model.land
         (; kv_profile) = soil.parameters
         (; subsurface_flow) = model.routing
@@ -498,7 +498,7 @@ Wflow.close_files(model; delete_output = false)
 
     @testset "layered profile" begin
         config.input.land.ksat_profile = "layered"
-        model = Wflow.initialize_sbm_model(config)
+        model = Wflow.Model(config)
         (; soil) = model.land
         (; kv_profile) = soil.parameters
         (; subsurface_flow) = model.routing
@@ -514,7 +514,7 @@ Wflow.close_files(model; delete_output = false)
 
     @testset "layered exponential profile" begin
         config.input.land.ksat_profile = "layered_exponential"
-        model = Wflow.initialize_sbm_model(config)
+        model = Wflow.Model(config)
         (; soil) = model.land
         (; kv_profile) = soil.parameters
         (; subsurface_flow) = model.routing
@@ -531,7 +531,7 @@ Wflow.close_files(model; delete_output = false)
     end
 
     @testset "river flow layered exponential profile" begin
-        model = Wflow.initialize_sbm_model(config)
+        model = Wflow.Model(config)
         Wflow.run_timestep!(model)
         Wflow.run_timestep!(model)
         q = model.routing.river_flow.variables.q_av

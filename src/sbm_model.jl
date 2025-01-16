@@ -5,19 +5,6 @@ Initial part of the SBM model concept. Reads the input settings and data as defi
 Config object. Will return a Model that is ready to run.
 """
 function initialize_sbm_model(config::Config)
-    model_type = config.model.type::String
-    @info "Initialize model variables for model type `$model_type`."
-
-    # unpack the paths to the netCDF files
-    static_path = input_path(config, config.input.path_static)
-
-    reader = prepare_reader(config)
-    clock = Clock(config, reader)
-
-    do_reservoirs = get(config.model, "reservoirs", false)::Bool
-    do_lakes = get(config.model, "lakes", false)::Bool
-    do_pits = get(config.model, "pits", false)::Bool
-
     routing_options = ("kinematic-wave", "local-inertial")
     river_routing = get_options(
         config.model,
@@ -27,23 +14,14 @@ function initialize_sbm_model(config::Config)
     )::String
     land_routing =
         get_options(config.model, "land_routing", routing_options, "kinematic-wave")::String
-    do_water_demand = haskey(config.model, "water_demand")
 
-    snow = get(config.model, "snow", false)::Bool
     reservoirs = do_reservoirs
     lakes = do_lakes
     glacier = get(config.model, "glacier", false)::Bool
     masswasting = get(config.model, "masswasting", false)::Bool
     @info "General model settings" reservoirs lakes snow masswasting glacier
 
-    dataset = NCDataset(static_path)
-
-    subcatch_2d =
-        ncread(dataset, config, "subcatchment"; optional = false, allow_missing = true)
-    # indices based on sub-catchments
-    indices, reverse_indices = active_indices(subcatch_2d, missing)
     n_land_cells = length(indices)
-    modelsize_2d = size(subcatch_2d)
 
     river_location_2d = ncread(
         dataset,
@@ -72,15 +50,6 @@ function initialize_sbm_model(config::Config)
         fill = 0,
     )
     river_length = river_length_2d[indices]
-
-    # read x, y coordinates and calculate cell length [m]
-    y_coords = read_y_axis(dataset)
-    x_coords = read_x_axis(dataset)
-    y = permutedims(repeat(y_coords; outer = (1, length(x_coords))))[indices]
-    cell_length = abs(mean(diff(x_coords)))
-
-    size_in_metres = get(config.model, "sizeinmetres", false)::Bool
-    x_length, y_length = cell_lengths(y, cell_length, size_in_metres)
     river_fraction =
         get_river_fraction(river_location, river_length, river_width, x_length, y_length)
 
@@ -90,7 +59,6 @@ function initialize_sbm_model(config::Config)
     n_river_cells = length(inds_river)
 
     # reservoirs
-    pits = zeros(Bool, modelsize_2d)
     if do_reservoirs
         reservoir, reservoir_network, inds_reservoir_map2river, pits =
             SimpleReservoir(dataset, config, inds_river, n_river_cells, pits)
@@ -101,17 +69,6 @@ function initialize_sbm_model(config::Config)
         reservoir = nothing
     end
 
-    # lakes
-    if do_lakes
-        lake, lake_network, inds_lake_map2river, pits =
-            Lake(dataset, config, inds_river, n_river_cells, pits)
-        network_lake = NetworkWaterBody(; lake_network...)
-    else
-        network_lake = NetworkWaterBody()
-        inds_lake_map2river = fill(0, n_river_cells)
-        lake = nothing
-    end
-
     ldd_2d = ncread(dataset, config, "ldd"; optional = false, allow_missing = true)
     ldd = ldd_2d[indices]
     if do_pits
@@ -119,16 +76,6 @@ function initialize_sbm_model(config::Config)
             ncread(dataset, config, "pits"; optional = false, type = Bool, fill = false)
         ldd = set_pit_ldd(pits_2d, ldd, indices)
     end
-
-    land_slope = ncread(
-        dataset,
-        config,
-        "routing.overland_flow.slope";
-        optional = false,
-        sel = indices,
-        type = Float,
-    )
-    clamp!(land_slope, 0.00001, Inf)
     flow_length = map(get_flow_length, ldd, x_length, y_length)
     flow_width = (x_length .* y_length) ./ flow_length
 
@@ -175,22 +122,6 @@ function initialize_sbm_model(config::Config)
 
     # land indices where river is located
     inds_land_map2river = filter(i -> !isequal(river_location[i], 0), 1:n_land_cells)
-    frac_to_river = fraction_runoff_to_river(graph, ldd, inds_land_map2river, land_slope)
-
-    allocation_area_inds = Vector{Int}[]
-    river_allocation_area_inds = Vector{Int}[]
-    if do_water_demand
-        areas = unique(land_hydrology.allocation.parameters.areas)
-        for a in areas
-            area_index = findall(x -> x == a, land_hydrology.allocation.parameters.areas)
-            push!(allocation_area_inds, area_index)
-            area_riv_index = findall(
-                x -> x == a,
-                land_hydrology.allocation.parameters.areas[inds_land_map2river],
-            )
-            push!(river_allocation_area_inds, area_riv_index)
-        end
-    end
 
     if land_routing == "kinematic-wave"
         overland_flow = KinWaveOverlandFlow(
@@ -257,23 +188,11 @@ function initialize_sbm_model(config::Config)
 
     # setup subdomains for the land and river kinematic wave domain, if nthreads = 1
     # subdomain is equal to the complete domain
-    toposort = topological_sort_by_dfs(graph)
     if land_routing == "kinematic-wave" ||
        river_routing == "kinematic-wave" ||
        do_lateral_ssf
-        streamorder = stream_order(graph, toposort)
     end
     if land_routing == "kinematic-wave" || do_lateral_ssf
-        toposort = topological_sort_by_dfs(graph)
-        land_pit_inds = findall(x -> x == 5, ldd)
-        min_streamorder_land = get(config.model, "min_streamorder_land", 5)
-        order_of_subdomains, subdomain_inds, toposort_subdomain = kinwave_set_subdomains(
-            graph,
-            toposort,
-            land_pit_inds,
-            streamorder,
-            min_streamorder_land,
-        )
     end
     if river_routing == "kinematic-wave"
         min_streamorder_river = get(config.model, "min_streamorder_river", 6)
@@ -317,20 +236,6 @@ function initialize_sbm_model(config::Config)
     )
     close(dataset)
 
-    network_land = NetworkLand(;
-        graph,
-        upstream_nodes = filter_upsteam_nodes(graph, pits[indices]),
-        order_of_subdomains,
-        order_subdomain = toposort_subdomain,
-        subdomain_indices = subdomain_inds,
-        order = toposort,
-        indices,
-        reverse_indices,
-        area = x_length .* y_length,
-        slope = land_slope,
-        frac_to_river,
-        allocation_area_indices = allocation_area_inds,
-    )
     if land_routing == "local-inertial"
         @reset network_land.river_indices = inds_river_map2land
         @reset network_land.edge_indices = edge_indices
@@ -352,16 +257,6 @@ function initialize_sbm_model(config::Config)
         @reset network_land.river_inds_excl_waterbody = inds_riv_2d[indices]
         @reset network_land.waterbody = inds_2d[indices]
     end
-    network_river = NetworkRiver(;
-        graph = graph_river,
-        indices = inds_river,
-        reverse_indices = reverse_inds_river,
-        reservoir_indices = inds_reservoir_map2river,
-        lake_indices = inds_lake_map2river,
-        land_indices = inds_land_map2river,
-        allocation_area_indices = river_allocation_area_inds,
-        cell_area = x_length[inds_land_map2river] .* y_length[inds_land_map2river],
-    )
     if river_routing == "kinematic-wave"
         @reset network_river.upstream_nodes =
             filter_upsteam_nodes(graph_river, pits[inds_river])
@@ -375,22 +270,7 @@ function initialize_sbm_model(config::Config)
             EdgesAtNode(; adjacent_edges_at_node(graph_river, nodes_at_edge)...)
     end
 
-    network = Network(;
-        land = network_land,
-        river = network_river,
-        reservoir = network_reservoir,
-        lake = network_lake,
-    )
-
     routing = Routing(; subsurface_flow, overland_flow, river_flow)
-
-    model =
-        Model(config, network, routing, land_hydrology, clock, reader, writer, SbmModel())
-
-    set_states!(model)
-
-    @info "Initialized model"
-    return model
 end
 
 "update SBM model for a single timestep"

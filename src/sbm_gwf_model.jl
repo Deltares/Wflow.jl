@@ -15,18 +15,6 @@ The initial part reads the input settings and data as defined in the Config obje
 Will return a Model that is ready to run.
 """
 function initialize_sbm_gwf_model(config::Config)
-
-    # unpack the paths to the netCDF files
-    static_path = input_path(config, config.input.path_static)
-
-    reader = prepare_reader(config)
-    clock = Clock(config, reader)
-
-    do_reservoirs = get(config.model, "reservoirs", false)::Bool
-    do_lakes = get(config.model, "lakes", false)::Bool
-    do_drains = get(config.model, "drains", false)::Bool
-    do_constanthead = get(config.model, "constanthead", false)::Bool
-
     routing_options = ("kinematic-wave", "local-inertial")
     river_routing = get_options(
         config.model,
@@ -36,7 +24,6 @@ function initialize_sbm_gwf_model(config::Config)
     )::String
     land_routing =
         get_options(config.model, "land_routing", routing_options, "kinematic-wave")::String
-    do_water_demand = haskey(config.model, "water_demand")
 
     dataset = NCDataset(static_path)
 
@@ -190,8 +177,8 @@ function initialize_sbm_gwf_model(config::Config)
     # river flow (kinematic wave)
     river_length = river_length_2d[inds_river]
     river_width = river_width_2d[inds_river]
-    minimum(river_length) > 0 || error("river length must be positive on river cells")
-    minimum(river_width) > 0 || error("river width must be positive on river cells")
+    @assert minimum(river_length) > 0 "river length must be positive on river cells"
+    @assert minimum(river_width) > 0 "river width must be positive on river cells"
 
     if river_routing == "kinematic-wave"
         river_flow = KinWaveRiverFlow(
@@ -214,7 +201,7 @@ function initialize_sbm_gwf_model(config::Config)
             river_width,
             reservoir,
             lake,
-            waterbody = !=(0).(inds_reservoir_map2river + inds_lake_map2river),
+            waterbody = !iszero.(inds_reservoir_map2river + inds_lake_map2river),
         )
     else
         error(
@@ -423,29 +410,7 @@ function initialize_sbm_gwf_model(config::Config)
             EdgesAtNode(adjacent_edges_at_node(graph_river, nodes_at_edge)...)
     end
 
-    network = Network(;
-        land = network_land,
-        river = network_river,
-        reservoir = network_reservoir,
-        lake = network_lake,
-        drain = network_drain,
-    )
-
     routing = Routing(; subsurface_flow, overland_flow, river_flow)
-
-    model = Model(
-        config,
-        network,
-        routing,
-        land_hydrology,
-        clock,
-        reader,
-        writer,
-        SbmGwfModel(),
-    )
-
-    set_states!(model)
-
     return model
 end
 

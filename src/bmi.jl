@@ -22,16 +22,7 @@ run.
 """
 function BMI.initialize(::Type{<:Model}, config_file)
     config = Config(config_file)
-    modeltype = config.model.type
-    model = if modeltype == "sbm"
-        initialize_sbm_model(config)
-    elseif modeltype == "sbm_gwf"
-        initialize_sbm_gwf_model(config)
-    elseif modeltype == "sediment"
-        initialize_sediment_model(config)
-    else
-        error("unknown model type")
-    end
+    model = Model(config)
     load_fixed_forcing!(model)
     return model
 end

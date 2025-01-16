@@ -2,7 +2,7 @@
 tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
 config = Wflow.Config(tomlpath)
 
-model = Wflow.initialize_sbm_gwf_model(config)
+model = Wflow.Model(config)
 (; network) = model
 
 Wflow.run_timestep!(model)
@@ -73,7 +73,7 @@ end
     config.model.drains = false
     delete!(Dict(config.output.routing.subsurface_flow), "drains")
     delete!(Dict(config.output.routing.subsurface_flow.boundaries.drain.variables), "flux")
-    model = Wflow.initialize_sbm_gwf_model(config)
+    model = Wflow.Model(config)
     @test collect(keys(model.routing.subsurface_flow.boundaries)) == [:recharge, :river]
 end
 
@@ -87,7 +87,7 @@ config.model.river_routing = "local-inertial"
 config.input.routing.river_flow.bankfull_elevation = "bankfull_elevation"
 config.input.routing.river_flow.bankfull_depth = "bankfull_depth"
 
-model = Wflow.initialize_sbm_gwf_model(config)
+model = Wflow.Model(config)
 Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
 
@@ -118,7 +118,7 @@ config.state.routing.overland_flow.variables.h_av = "h_av_land"
 config.state.routing.overland_flow.variables.qx = "qx_land"
 config.state.routing.overland_flow.variables.qy = "qy_land"
 
-model = Wflow.initialize_sbm_gwf_model(config)
+model = Wflow.Model(config)
 Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
 
@@ -144,7 +144,7 @@ tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
 config = Wflow.Config(tomlpath)
 config.model.reinit = false
 
-model = Wflow.initialize_sbm_gwf_model(config)
+model = Wflow.Model(config)
 (; network) = model
 
 Wflow.run_timestep!(model)
