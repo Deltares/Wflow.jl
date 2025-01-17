@@ -15,13 +15,13 @@ function initialize_sediment_model(config::Config)
     clock = Clock(config, reader)
     dataset = NCDataset(static_path)
 
-    lens = lens_input("subcatchment")
+    lens = lens_input("subcatchment_location__count")
     subcatch_2d = ncread(dataset, config, lens; optional = false, allow_missing = true)
     # indices based on catchment
     indices, rev_indices = active_indices(subcatch_2d, missing)
     n = length(indices)
 
-    lens = lens_input("river_location")
+    lens = lens_input("river_location__mask")
     river_2d = ncread(dataset, config, lens; optional = false, type = Bool, fill = false)
     river = river_2d[indices]
 
@@ -32,7 +32,7 @@ function initialize_sediment_model(config::Config)
     do_lakes = get(config.model, "dolake", false)::Bool
     waterbodies = fill(0.0, n)
     if do_reservoirs
-        lens = lens_input("reservoir_area__number")
+        lens = lens_input("reservoir_area__count")
         reservoirs = ncread(
             dataset,
             config,
@@ -45,7 +45,7 @@ function initialize_sediment_model(config::Config)
         waterbodies = waterbodies .+ reservoirs
     end
     if do_lakes
-        lens = lens_input("lake_area__number")
+        lens = lens_input("lake_area__count")
         lakes = ncread(
             dataset,
             config,

@@ -50,10 +50,12 @@ path_forcing = "forcing-moselle.nc"
 path_static = "staticmaps-moselle.nc"
 
 # these are not directly part of the model
-gauges = "wflow_gauges_grdc"
+river_gauge = "wflow_gauges_grdc"
 local_drain_direction = "wflow_ldd"
-river_location = "wflow_river"
-subcatchment = "wflow_subcatch"
+river_location__mask = "wflow_river"
+reservoir_area__count = "wflow_reservoirareas"
+reservoir_location__count = "wflow_reservoirlocs"
+subcatchment_location__count = "wflow_subcatch"
 
 [input.forcing]
 atmosphere_water__precipitation_volume_flux = "precip"
@@ -99,8 +101,6 @@ river_bank_water__elevation = "RiverZ"
 land_surface_water_flow__manning_n_parameter = "N"
 land_surface__slope = "Slope"
 
-reservoir_area__number = "wflow_reservoirareas"
-reservoir_location__number = "wflow_reservoirlocs"
 reservoir_surface__area = "ResSimpleArea"
 "reservoir_water_demand~required~downstream__volume_flow_rate" = "ResDemand"
 reservoir_water_release-below-spillway__max_volume_flow_rate = "ResMaxRelease"
@@ -159,7 +159,7 @@ path = "output_scalar_moselle.nc"
 
 [[netcdf.variable]]
 name = "Q"
-map = "gauges"
+map = "river_gauge"
 parameter = "routing.river_flow.variables.q"
 
 [[netcdf.variable]]
@@ -210,12 +210,12 @@ parameter = "atmosphere_air__temperature"
 
 [[csv.column]]
 header = "Q"
-map = "gauges"
+map = "river_gauge"
 parameter = "river_water__volume_flow_rate"
 
 [[csv.column]]
 header = "recharge"
-map = "subcatchment"
+map = "subcatchment_location__count"
 parameter = "soil_water_sat-zone_top__recharge_volume_flux"
 reducer = "mean"
 

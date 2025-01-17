@@ -40,14 +40,14 @@ function initialize_sbm_gwf_model(config::Config)
 
     dataset = NCDataset(static_path)
 
-    lens = lens_input("subcatchment")
+    lens = lens_input("subcatchment_location__count")
     subcatch_2d = ncread(dataset, config, lens; optional = false, allow_missing = true)
     # indices based on catchment
     indices, reverse_indices = active_indices(subcatch_2d, missing)
     n_land_cells = length(indices)
     modelsize_2d = size(subcatch_2d)
 
-    lens = lens_input("river_location")
+    lens = lens_input("river_location__mask")
     river_location_2d =
         ncread(dataset, config, lens; optional = false, type = Bool, fill = false)
     river_location = river_location_2d[indices]
@@ -61,7 +61,7 @@ function initialize_sbm_gwf_model(config::Config)
         ncread(dataset, config, lens; optional = false, type = Float, fill = 0)
     river_length = river_length_2d[indices]
 
-    lens = lens_input("altitude")
+    lens = lens_input_parameter("land_surface__elevation")
     altitude = ncread(dataset, config, lens; optional = false, sel = indices, type = Float)
 
     # read x, y coordinates and calculate cell length [m]

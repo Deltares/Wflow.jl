@@ -20,10 +20,10 @@ path_forcing = "forcing-piave.nc"
 path_static = "staticmaps-piave.nc"
 
 local_drain_direction = "wflow_ldd"
-river_location = "wflow_river"
-subcatchment = "wflow_subcatch"
-gauges = "wflow_gauges"
-gauges_grdc = "wflow_gauges_grdc"
+river_location__mask = "wflow_river"
+subcatchment_location__count = "wflow_subcatch"
+river_gauge = "wflow_gauges"
+river_gauge_grdc = "wflow_gauges_grdc"
 
 [input.forcing]
 atmosphere_water__precipitation_volume_flux = "precip"
@@ -139,10 +139,10 @@ path = "output-piave.csv"
 
 [[csv.column]]
 header = "Q"
-map = "gauges"
+map = "river_gauge"
 parameter = "river_water__time_average_of_volume_flow_rate"
 
 [[csv.column]]
 header = "Q"
-map = "gauges_grdc"
+map = "river_gauge_grdc"
 parameter = "river_water__time_average_of_volume_flow_rate"

@@ -17,12 +17,12 @@ function LakeParameters(config, dataset, inds_riv, nriv, pits)
     # read only lake data if lakes true
     # allow lakes only in river cells
     # note that these locations are only the lake outlet pixels
-    lens = lens_input("lake_location__number")
+    lens = lens_input("lake_location__count")
     lakelocs_2d = ncread(dataset, config, lens; optional = false, type = Int, fill = 0)
     lakelocs = lakelocs_2d[inds_riv]
 
     # this holds the same ids as lakelocs, but covers the entire lake
-    lens = lens_input("lakes_area__number")
+    lens = lens_input("lakes_area__count")
     lakecoverage_2d = ncread(dataset, config, lens; optional = false, allow_missing = true)
     # for each lake, a list of 2D indices, needed for getting the mean precipitation
     inds_lake_cov = Vector{CartesianIndex{2}}[]
@@ -90,10 +90,10 @@ function LakeParameters(config, dataset, inds_riv, nriv, pits)
         type = Float,
         fill = 0,
     )
-    lens = lens_input_parameter("lake~lower_location__number")
+    lens = lens_input("lake~lower_location__count")
     linked_lakelocs =
         ncread(dataset, config, lens; sel = inds_lake, defaults = 0, type = Int, fill = 0)
-    lens = lens_input_parameter("lake_water__storage_curve_type_number")
+    lens = lens_input_parameter("lake_water__storage_curve_type_count")
     lake_storfunc = ncread(
         dataset,
         config,
@@ -103,7 +103,7 @@ function LakeParameters(config, dataset, inds_riv, nriv, pits)
         type = Int,
         fill = 0,
     )
-    lens = lens_input_parameter("lake_water__rating_curve_type_number")
+    lens = lens_input_parameter("lake_water__rating_curve_type_count")
     lake_outflowfunc = ncread(
         dataset,
         config,

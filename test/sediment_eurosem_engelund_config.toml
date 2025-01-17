@@ -45,12 +45,13 @@ path_forcing = "forcing-moselle-sed.nc"
 path_static = "staticmaps-moselle-sed.nc"
 
 # these are not directly part of the model
-gauges = "wflow_gauges"
 local_drain_direction = "wflow_ldd"
-river_location = "wflow_river"
-subcatchment = "wflow_subcatch"
-reservoir_area__number = "wflow_reservoirareas"
-lake_area__number = "wflow_lakeareas"
+river_location__mask = "wflow_river"
+subcatchment_location__count = "wflow_subcatch"
+reservoir_location__count = "wflow_reservoirlocs"
+reservoir_area__count = "wflow_reservoirareas"
+lake_location__count = "wflow_lakelocs"
+lake_area__count = "wflow_lakeareas"
 
 [input.forcing]
 atmosphere_water__precipitation_volume_flux = "P"
@@ -67,9 +68,7 @@ river__slope = "RiverSlope"
 river__width = "wflow_riverwidth"
 
 reservoir_surface__area = "ResSimpleArea"
-reservoir_location__number = "wflow_reservoirlocs"
 lake_surface__area = "LakeArea"
-lake_location__number = "wflow_lakelocs"
 "reservoir_sediment~bedload__trapping_efficiency_coefficient" = "ResTrapEff"
 
 vegetation_canopy__height = "CanopyHeight"

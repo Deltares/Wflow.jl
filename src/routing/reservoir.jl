@@ -13,7 +13,7 @@ function ReservoirParameters(dataset, config, indices_river, n_river_cells, pits
     # read only reservoir data if reservoirs true
     # allow reservoirs only in river cells
     # note that these locations are only the reservoir outlet pixels
-    lens = lens_input_parameter("reservoir_location__number")
+    lens = lens_input("reservoir_location__count")
     reslocs = ncread(
         dataset,
         config,
@@ -25,7 +25,7 @@ function ReservoirParameters(dataset, config, indices_river, n_river_cells, pits
     )
 
     # this holds the same ids as reslocs, but covers the entire reservoir
-    lens = lens_input_parameter("reservoir_area__number")
+    lens = lens_input("reservoir_area__count")
     rescoverage_2d = ncread(dataset, config, lens; optional = false, allow_missing = true)
     # for each reservoir, a list of 2D indices, needed for getting the mean precipitation
     inds_res_cov = Vector{CartesianIndex{2}}[]

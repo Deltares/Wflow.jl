@@ -63,7 +63,7 @@ end
     irrigation_efficiency::Vector{T} | "-"      # irrigation efficiency [-]
     maximum_irrigation_rate::Vector{T}          # maximum irrigation rate [mm Δt⁻¹]
     irrigation_areas::Vector{Bool} | "-"        # irrigation areas [-]
-    irrigation_trigger::Vector{Bool} | "-"      # irrigation on or off [-]end
+    irrigation_trigger::Vector{Bool} | "-"      # irrigation on or off [-]
 end
 
 "Non-paddy (other crops than flooded rice) irrigation model"

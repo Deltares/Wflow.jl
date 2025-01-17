@@ -198,7 +198,7 @@ function SedimentRiverTransportParameters(dataset, config, indices)
     do_lakes = get(config.model, "dolake", false)::Bool
 
     if do_reservoirs
-        lens = lens_input_parameter("reservoir_location__number")
+        lens = lens_input("reservoir_location__count")
         reslocs = ncread(
             dataset,
             config,
@@ -237,7 +237,7 @@ function SedimentRiverTransportParameters(dataset, config, indices)
     end
 
     if do_lakes
-        lens = lens_input_parameter("lake_location__number")
+        lens = lens_input("lake_location__count")
         lakelocs = ncread(
             dataset,
             config,
