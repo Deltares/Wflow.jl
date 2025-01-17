@@ -86,7 +86,7 @@ function LandGeometry(nc, config, inds)
     sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
     xl, yl = cell_lengths(y, cellength, sizeinmetres)
     area = xl .* yl
-    lens = lens_input("ldd")
+    lens = lens_input("local_drain_direction")
     ldd = ncread(nc, config, lens; optional = false, sel = inds, allow_missing = true)
     drain_width = map(get_flow_width, ldd, xl, yl)
     lens = lens_input_parameter("land_surface__slope")

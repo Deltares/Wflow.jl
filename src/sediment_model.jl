@@ -59,7 +59,7 @@ function initialize_sediment_model(config::Config)
     end
     waterbodies = waterbodies .> 0
 
-    lens = lens_input("ldd")
+    lens = lens_input("local_drain_direction")
     ldd_2d = ncread(dataset, config, lens; optional = false, allow_missing = true)
     ldd = ldd_2d[indices]
 

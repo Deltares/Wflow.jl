@@ -19,7 +19,7 @@ path_output = "outstates-piave.nc"
 path_forcing = "forcing-piave.nc"
 path_static = "staticmaps-piave.nc"
 
-ldd = "wflow_ldd"
+local_drain_direction = "wflow_ldd"
 river_location = "wflow_river"
 subcatchment = "wflow_subcatch"
 gauges = "wflow_gauges"

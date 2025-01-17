@@ -17,7 +17,7 @@ path_forcing = "forcing-moselle.nc"
 path_static = "staticmaps-moselle.nc"
 
 # these are not directly part of the model
-ldd = "wflow_ldd"
+local_drain_direction = "wflow_ldd"
 river_location = "wflow_river"
 subcatchment = "wflow_subcatch"
 

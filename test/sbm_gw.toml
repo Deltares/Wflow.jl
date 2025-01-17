@@ -48,7 +48,7 @@ path_static = "staticmaps-moselle.nc"
 
 # these are not directly part of the model
 gauges = "wflow_gauges_grdc"
-ldd = "wflow_ldd"
+local_drain_direction = "wflow_ldd"
 river_location = "wflow_river"
 subcatchment = "wflow_subcatch"
 

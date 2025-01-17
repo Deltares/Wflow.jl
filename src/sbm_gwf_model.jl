@@ -110,7 +110,7 @@ function initialize_sbm_gwf_model(config::Config)
         ncread(dataset, config, lens; optional = false, sel = indices, type = Float)
     clamp!(land_slope, 0.00001, Inf)
 
-    lens = lens_input("ldd")
+    lens = lens_input("local_drain_direction")
     ldd_2d = ncread(dataset, config, lens; optional = false, allow_missing = true)
     ldd = ldd_2d[indices]
 
