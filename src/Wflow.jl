@@ -114,10 +114,6 @@ function Clock(config, reader)
     return Clock(starttime, 0, dt)
 end
 
-include("io.jl")
-include("network.jl")
-include("routing/routing.jl")
-
 abstract type AbstractModel{T} end
 abstract type AbstractLandModel end
 
@@ -127,6 +123,10 @@ abstract type AbstractSbmModelType <: AbstractModelType end
 struct SbmModel <: AbstractSbmModelType end      # "sbm" type / sbm_model.jl
 struct SbmGwfModel <: AbstractSbmModelType end   # "sbm_gwf" type / sbm_gwf_model.jl
 struct SedimentModel <: AbstractModelType end    # "sediment" type / sediment_model.jl
+
+include("io.jl")
+include("network.jl")
+include("routing/routing.jl")
 
 """
     Model{R <: Routing, L <: AbstractLandModel, T <: AbstractModelType} <:AbstractModel{T}

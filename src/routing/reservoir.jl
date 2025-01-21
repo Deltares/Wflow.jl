@@ -132,7 +132,7 @@ function ReservoirParameters(dataset, config, indices_river, n_river_cells, pits
         targetminfrac = res_targetminfrac,
     )
 
-    return parameters, reservoir_network, inds_reservoir_map2river, pits
+    return parameters, reservoir_network, inds_reservoir_map2river
 end
 
 "Struct for storing reservoir model variables"
@@ -185,7 +185,7 @@ end
 
 "Initialize reservoir model `SimpleReservoir`"
 function SimpleReservoir(dataset, config, indices_river, n_river_cells, pits)
-    parameters, reservoir_network, inds_reservoir_map2river, pits =
+    parameters, reservoir_network, inds_reservoir_map2river =
         ReservoirParameters(dataset, config, indices_river, n_river_cells, pits)
 
     n_reservoirs = length(parameters.area)
@@ -195,7 +195,7 @@ function SimpleReservoir(dataset, config, indices_river, n_river_cells, pits)
     boundary_conditions = ReservoirBC(n_reservoirs)
     reservoir = SimpleReservoir{Float}(; boundary_conditions, parameters, variables)
 
-    return reservoir, reservoir_network, inds_reservoir_map2river, pits
+    return reservoir, reservoir_network, inds_reservoir_map2river
 end
 
 """
