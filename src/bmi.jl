@@ -362,7 +362,7 @@ function BMI.get_grid_edge_count(model::Model, grid::Int)
     elseif grid == 5
         return length(network.land.edge_indices.yu)
     elseif grid in 0:2 || grid == 6
-        warn("edges are not provided for grid type $grid (variables are located at nodes)")
+        @warn("edges are not provided for grid type $grid (variables are located at nodes)")
     else
         error("unknown grid type $grid")
     end
