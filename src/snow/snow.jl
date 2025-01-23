@@ -19,9 +19,9 @@ function SnowVariables(T::Type{<:AbstractFloat}, n::Int)
     return SnowVariables{T}(;
         snow_storage = fill(0.0, n),
         snow_water = fill(0.0, n),
-        swe = fill(mv, n),
-        runoff = fill(mv, n),
-        snow_melt = fill(mv, n),
+        swe = fill(MISSING_VALUE, n),
+        runoff = fill(MISSING_VALUE, n),
+        snow_melt = fill(MISSING_VALUE, n),
     )
 end
 
@@ -38,9 +38,9 @@ end
 "Initialize snow model boundary conditions"
 function SnowBC(T::Type{<:AbstractFloat}, n::Int)
     return SnowBC{T}(;
-        effective_precip = fill(mv, n),
-        snow_precip = fill(mv, n),
-        liquid_precip = fill(mv, n),
+        effective_precip = fill(MISSING_VALUE, n),
+        snow_precip = fill(MISSING_VALUE, n),
+        liquid_precip = fill(MISSING_VALUE, n),
     )
 end
 
@@ -76,15 +76,15 @@ function SnowHbvParameters(dataset, config, indices, dt)
             "land.snow.parameters.cfmax";
             sel = indices,
             defaults = 3.75653,
-            type = Float,
-        ) .* (dt / basetimestep)
+            type = FLOAT,
+        ) .* (dt / BASETIMESTEP)
     tt = ncread(
         dataset,
         config,
         "land.snow.parameters.tt";
         sel = indices,
         defaults = 0.0,
-        type = Float,
+        type = FLOAT,
     )
     tti = ncread(
         dataset,
@@ -92,7 +92,7 @@ function SnowHbvParameters(dataset, config, indices, dt)
         "land.snow.parameters.tti";
         sel = indices,
         defaults = 1.0,
-        type = Float,
+        type = FLOAT,
     )
     ttm = ncread(
         dataset,
@@ -100,7 +100,7 @@ function SnowHbvParameters(dataset, config, indices, dt)
         "land.snow.parameters.ttm";
         sel = indices,
         defaults = 0.0,
-        type = Float,
+        type = FLOAT,
     )
     whc = ncread(
         dataset,
@@ -108,7 +108,7 @@ function SnowHbvParameters(dataset, config, indices, dt)
         "land.snow.parameters.whc";
         sel = indices,
         defaults = 0.1,
-        type = Float,
+        type = FLOAT,
     )
     snow_hbv_params =
         SnowHbvParameters(; cfmax = cfmax, tt = tt, tti = tti, ttm = ttm, whc = whc)
@@ -119,8 +119,8 @@ end
 function SnowHbvModel(dataset, config, indices, dt)
     n = length(indices)
     params = SnowHbvParameters(dataset, config, indices, dt)
-    vars = SnowVariables(Float, n)
-    bc = SnowBC(Float, n)
+    vars = SnowVariables(FLOAT, n)
+    bc = SnowBC(FLOAT, n)
     model = SnowHbvModel(; boundary_conditions = bc, parameters = params, variables = vars)
     return model
 end

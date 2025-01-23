@@ -132,26 +132,26 @@ function UnconfinedAquiferParameters(dataset, config, indices, top, bottom, area
         config,
         "routing.subsurface_flow.conductivity";
         sel = indices,
-        type = Float,
+        type = FLOAT,
     )
     specific_yield = ncread(
         dataset,
         config,
         "routing.subsurface_flow.specific_yield";
         sel = indices,
-        type = Float,
+        type = FLOAT,
     )
     f = ncread(
         dataset,
         config,
         "routing.subsurface_flow.gwf_f";
         sel = indices,
-        type = Float,
+        type = FLOAT,
         defaults = 3.0,
     )
 
     parameters =
-        UnconfinedAquiferParameters{Float}(; k, top, bottom, area, specific_yield, f)
+        UnconfinedAquiferParameters{FLOAT}(; k, top, bottom, area, specific_yield, f)
     return parameters
 end
 
@@ -170,8 +170,8 @@ function UnconfinedAquifer(dataset, config, indices, top, bottom, area, conducta
     parameters = UnconfinedAquiferParameters(dataset, config, indices, top, bottom, area)
 
     volume = @. (min(top, head) - bottom) * area * parameters.specific_yield
-    variables = UnconfinedAquiferVariables{Float}(head, conductance, volume)
-    aquifer = UnconfinedAquifer{Float}(parameters, variables)
+    variables = UnconfinedAquiferVariables{FLOAT}(head, conductance, volume)
+    aquifer = UnconfinedAquifer{FLOAT}(parameters, variables)
     return aquifer
 end
 
@@ -385,14 +385,14 @@ function ConstantHead(dataset, config, indices)
         config,
         "routing.subsurface_flow.constant_head";
         sel = indices,
-        type = Float,
-        fill = mv,
+        type = FLOAT,
+        fill = MISSING_VALUE,
     )
     n = length(indices)
-    index_constanthead = filter(i -> !isequal(constanthead[i], mv), 1:n)
+    index_constanthead = filter(i -> !isequal(constanthead[i], MISSING_VALUE), 1:n)
     head = constanthead[index_constanthead]
-    variables = ConstantHeadVariables{Float}(head)
-    constant_head = ConstantHead{Float}(; variables, index = index_constanthead)
+    variables = ConstantHeadVariables{FLOAT}(head)
+    constant_head = ConstantHead{FLOAT}(; variables, index = index_constanthead)
     return constant_head
 end
 
@@ -492,6 +492,6 @@ function get_flux_to_river(subsurface_flow)
     ncell = subsurface_flow.connectivity.ncell
     flux = zeros(ncell)
     index = river.index
-    flux[index] = -river.variables.flux ./ tosecond(basetimestep) # [m³ s⁻¹]
+    flux[index] = -river.variables.flux ./ tosecond(BASETIMESTEP) # [m³ s⁻¹]
     return flux
 end

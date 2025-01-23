@@ -63,7 +63,7 @@ function ReservoirParameters(dataset, config, indices_river, n_river_cells, pits
         "routing.river_flow.reservoir.demand";
         optional = false,
         sel = inds_res,
-        type = Float,
+        type = FLOAT,
         fill = 0,
     )
     resmaxrelease = ncread(
@@ -72,7 +72,7 @@ function ReservoirParameters(dataset, config, indices_river, n_river_cells, pits
         "routing.river_flow.reservoir.maxrelease";
         optional = false,
         sel = inds_res,
-        type = Float,
+        type = FLOAT,
         fill = 0,
     )
     resmaxvolume = ncread(
@@ -81,7 +81,7 @@ function ReservoirParameters(dataset, config, indices_river, n_river_cells, pits
         "routing.river_flow.reservoir.maxvolume";
         optional = false,
         sel = inds_res,
-        type = Float,
+        type = FLOAT,
         fill = 0,
     )
     resarea = ncread(
@@ -90,7 +90,7 @@ function ReservoirParameters(dataset, config, indices_river, n_river_cells, pits
         "routing.river_flow.reservoir.area";
         optional = false,
         sel = inds_res,
-        type = Float,
+        type = FLOAT,
         fill = 0,
     )
     res_targetfullfrac = ncread(
@@ -99,7 +99,7 @@ function ReservoirParameters(dataset, config, indices_river, n_river_cells, pits
         "routing.river_flow.reservoir.targetfullfrac";
         optional = false,
         sel = inds_res,
-        type = Float,
+        type = FLOAT,
         fill = 0,
     )
     res_targetminfrac = ncread(
@@ -108,7 +108,7 @@ function ReservoirParameters(dataset, config, indices_river, n_river_cells, pits
         "routing.river_flow.reservoir.targetminfrac";
         optional = false,
         sel = inds_res,
-        type = Float,
+        type = FLOAT,
         fill = 0,
     )
 
@@ -123,7 +123,7 @@ function ReservoirParameters(dataset, config, indices_river, n_river_cells, pits
         river_indices = findall(x -> x ≠ 0, inds_reservoir_map2river),
     )
 
-    parameters = ReservoirParameters{Float}(;
+    parameters = ReservoirParameters{FLOAT}(;
         demand = resdemand,
         maxrelease = resmaxrelease,
         maxvolume = resmaxvolume,
@@ -148,13 +148,13 @@ end
 "Initialize reservoir model variables"
 function ReservoirVariables(n, parameters)
     (; targetfullfrac, maxvolume) = parameters
-    variables = ReservoirVariables{Float}(;
+    variables = ReservoirVariables{FLOAT}(;
         volume = targetfullfrac .* maxvolume,
-        outflow = fill(mv, n),
-        outflow_av = fill(mv, n),
-        percfull = fill(mv, n),
-        demandrelease = fill(mv, n),
-        actevap = fill(mv, n),
+        outflow = fill(MISSING_VALUE, n),
+        outflow_av = fill(MISSING_VALUE, n),
+        percfull = fill(MISSING_VALUE, n),
+        demandrelease = fill(MISSING_VALUE, n),
+        actevap = fill(MISSING_VALUE, n),
     )
     return variables
 end
@@ -168,10 +168,10 @@ end
 
 "Initialize reservoir model boundary conditions"
 function ReservoirBC(n)
-    bc = ReservoirBC{Float}(;
-        inflow = fill(mv, n),
-        precipitation = fill(mv, n),
-        evaporation = fill(mv, n),
+    bc = ReservoirBC{FLOAT}(;
+        inflow = fill(MISSING_VALUE, n),
+        precipitation = fill(MISSING_VALUE, n),
+        evaporation = fill(MISSING_VALUE, n),
     )
     return bc
 end
@@ -193,7 +193,7 @@ function SimpleReservoir(dataset, config, indices_river, n_river_cells, pits)
 
     variables = ReservoirVariables(n_reservoirs, parameters)
     boundary_conditions = ReservoirBC(n_reservoirs)
-    reservoir = SimpleReservoir{Float}(; boundary_conditions, parameters, variables)
+    reservoir = SimpleReservoir{FLOAT}(; boundary_conditions, parameters, variables)
 
     return reservoir, reservoir_network, inds_reservoir_map2river, pits
 end
@@ -220,7 +220,7 @@ function update!(model::SimpleReservoir, i, inflow, dt, dt_forcing)
 
     percfull = vol / res_p.maxvolume[i]
     # first determine minimum (environmental) flow using a simple sigmoid curve to scale for target level
-    fac = scurve(percfull, res_p.targetminfrac[i], Float(1.0), Float(30.0))
+    fac = scurve(percfull, res_p.targetminfrac[i], FLOAT(1.0), FLOAT(30.0))
     demandrelease = min(fac * res_p.demand[i] * dt, vol)
     vol = vol - demandrelease
 

@@ -369,7 +369,7 @@ function update_cyclic!(model)
 end
 
 """
-    nc_handles::Dict{String, NCDataset{Nothing}}
+    NC_HANDLES::Dict{String, NCDataset{Nothing}}
 
 For each netCDF file that will be opened for writing, store an entry in this Dict from the
 absolute path of the file to the NCDataset. This allows us to close the NCDataset if we try
@@ -379,20 +379,20 @@ https://github.com/Alexander-Barth/NCDatasets.jl/issues/106
 Note that using this will prevent automatic garbage collection and thus closure of the
 NCDataset.
 """
-const nc_handles = Dict{String, NCDataset{Nothing}}()
+const NC_HANDLES = Dict{String, NCDataset{Nothing}}()
 
 "Safely create a netCDF file, even if it has already been opened for creation"
 function create_tracked_netcdf(path)
     abs_path = abspath(path)
     # close existing NCDataset if it exists
-    if haskey(nc_handles, abs_path)
+    if haskey(NC_HANDLES, abs_path)
         # fine if it was already closed
-        close(nc_handles[abs_path])
+        close(NC_HANDLES[abs_path])
     end
     # create directory if needed
     mkpath(dirname(path))
     ds = NCDataset(path, "c")
-    nc_handles[abs_path] = ds
+    NC_HANDLES[abs_path] = ds
     return ds
 end
 
@@ -971,7 +971,7 @@ function prepare_writer(
             time_units,
             extra_dim,
             sizeinmetres;
-            float_type = Float,
+            float_type = FLOAT,
         )
     else
         ds_outstate = nothing
@@ -1096,7 +1096,7 @@ function write_netcdf_timestep(model, dataset, parameters)
 
     time_index = add_time(dataset, clock.time)
 
-    buffer = zeros(Union{Float, Missing}, size(model.network.land.reverse_indices))
+    buffer = zeros(Union{FLOAT, Missing}, size(model.network.land.reverse_indices))
     for (key, val) in parameters
         (; par, vector) = val
         sel = active_indices(network, par)
@@ -1365,7 +1365,7 @@ end
 
 "Read a rating curve from CSV into a NamedTuple of vectors"
 function read_sh_csv(path)
-    data, header = readdlm(path, ',', Float; header = true)
+    data, header = readdlm(path, ',', FLOAT; header = true)
     names = vec(uppercase.(header))
     idx_h = findfirst(==("H"), names)
     idx_s = findfirst(==("S"), names)
@@ -1379,14 +1379,14 @@ end
 
 "Read a specific storage curve from CSV into a NamedTuple of vectors"
 function read_hq_csv(path)
-    data = readdlm(path, ',', Float; skipstart = 1)
+    data = readdlm(path, ',', FLOAT; skipstart = 1)
     # Q is a matrix with 365 columns, one for each day in the year
     return (H = data[:, 1], Q = data[:, 2:end])
 end
 
 # these represent the type of the rating curve and specific storage data
-const SH = NamedTuple{(:H, :S), Tuple{Vector{Float}, Vector{Float}}}
-const HQ = NamedTuple{(:H, :Q), Tuple{Vector{Float}, Matrix{Float}}}
+const SH = NamedTuple{(:H, :S), Tuple{Vector{FLOAT}, Vector{FLOAT}}}
+const HQ = NamedTuple{(:H, :Q), Tuple{Vector{FLOAT}, Matrix{FLOAT}}}
 
 is_increasing(v) = last(v) > first(v)
 
@@ -1636,7 +1636,7 @@ end
 "Get `index` for dimension name `layer` based on `config` (TOML file)"
 function get_index_dimension(var, config::Config, dim_value)::Int
     if haskey(var, "layer")
-        v = get(config.model, "thicknesslayers", Float[])
+        v = get(config.model, "thicknesslayers", FLOAT[])
         inds = collect(1:(length(v) + 1))
         index = inds[dim_value]
     else

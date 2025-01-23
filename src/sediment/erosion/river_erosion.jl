@@ -11,8 +11,8 @@ end
 "Initialize river bed and bank erosion model variables"
 function RiverErosionModelVariables(
     n;
-    bed::Vector{T} = fill(mv, n),
-    bank::Vector{T} = fill(mv, n),
+    bed::Vector{T} = fill(MISSING_VALUE, n),
+    bank::Vector{T} = fill(MISSING_VALUE, n),
 ) where {T}
     return RiverErosionModelVariables{T}(; bed = bed, bank = bank)
 end
@@ -24,7 +24,7 @@ end
 end
 
 "Initialize river erosion model boundary conditions"
-function RiverErosionBC(n; waterlevel::Vector{T} = fill(mv, n)) where {T}
+function RiverErosionBC(n; waterlevel::Vector{T} = fill(MISSING_VALUE, n)) where {T}
     return RiverErosionBC{T}(; waterlevel = waterlevel)
 end
 
@@ -49,7 +49,7 @@ function RiverErosionParameters(dataset, config, indices)
         "routing.river_flow.potential_erosion.parameters.d50";
         sel = indices,
         defaults = 0.1,
-        type = Float,
+        type = FLOAT,
     )
     river_parameters = RiverErosionParameters(; d50 = d50)
 

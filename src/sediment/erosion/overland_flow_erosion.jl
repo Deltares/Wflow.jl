@@ -7,7 +7,10 @@ abstract type AbstractOverlandFlowErosionModel{T} end
 end
 
 "Initialize overland flow erosion model variables"
-function OverlandFlowErosionVariables(n; amount::Vector{T} = fill(mv, n)) where {T}
+function OverlandFlowErosionVariables(
+    n;
+    amount::Vector{T} = fill(MISSING_VALUE, n),
+) where {T}
     return OverlandFlowErosionVariables{T}(; amount = amount)
 end
 
@@ -18,7 +21,7 @@ end
 end
 
 "Initialize overland flow erosion model boundary conditions"
-function OverlandFlowErosionBC(n; q::Vector{T} = fill(mv, n)) where {T}
+function OverlandFlowErosionBC(n; q::Vector{T} = fill(MISSING_VALUE, n)) where {T}
     return OverlandFlowErosionBC{T}(; q = q)
 end
 
@@ -40,7 +43,7 @@ function OverlandFlowErosionAnswersParameters(dataset, config, indices)
         "land.overland_flow_erosion.parameters.usle_k";
         sel = indices,
         defaults = 0.1,
-        type = Float,
+        type = FLOAT,
     )
     usle_c = ncread(
         dataset,
@@ -48,7 +51,7 @@ function OverlandFlowErosionAnswersParameters(dataset, config, indices)
         "land.overland_flow_erosion.parameters.usle_c";
         sel = indices,
         defaults = 0.01,
-        type = Float,
+        type = FLOAT,
     )
     answers_k = ncread(
         dataset,
@@ -56,7 +59,7 @@ function OverlandFlowErosionAnswersParameters(dataset, config, indices)
         "land.overland_flow_erosion.parameters.answers_k";
         sel = indices,
         defaults = 0.9,
-        type = Float,
+        type = FLOAT,
     )
     answers_parameters = OverlandFlowErosionAnswersParameters(;
         usle_k = usle_k,

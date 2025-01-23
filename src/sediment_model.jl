@@ -44,7 +44,7 @@ function initialize_sediment_model(config::Config)
             "reservoir_areas";
             optional = false,
             sel = indices,
-            type = Float,
+            type = FLOAT,
             fill = 0,
         )
         waterbodies = waterbodies .+ reservoirs
@@ -56,7 +56,7 @@ function initialize_sediment_model(config::Config)
             "lake_areas";
             optional = false,
             sel = indices,
-            type = Float,
+            type = FLOAT,
             fill = 0,
         )
         waterbodies = waterbodies .+ lakes
@@ -70,13 +70,13 @@ function initialize_sediment_model(config::Config)
     overland_flow_sediment =
         OverlandFlowSediment(dataset, config, indices, waterbodies, river)
 
-    graph = flowgraph(ldd, indices, pcr_dir)
+    graph = flowgraph(ldd, indices, PCR_DIR)
 
     # River processes
     indices_riv, rev_indices_riv = active_indices(river_2d, 0)
 
     ldd_riv = ldd_2d[indices_riv]
-    graph_riv = flowgraph(ldd_riv, indices_riv, pcr_dir)
+    graph_riv = flowgraph(ldd_riv, indices_riv, PCR_DIR)
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
 
     river_sediment = RiverSediment(dataset, config, indices_riv, waterbodies)
@@ -147,7 +147,7 @@ function set_states!(model::AbstractModel{<:SedimentModel})
     if reinit == false
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
-        set_states!(instate_path, model; type = Float)
+        set_states!(instate_path, model; type = FLOAT)
     else
         @info "Set initial conditions from default values."
     end

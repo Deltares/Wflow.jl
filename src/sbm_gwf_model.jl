@@ -61,7 +61,7 @@ function initialize_sbm_gwf_model(config::Config)
         config,
         "routing.river_flow.width";
         optional = false,
-        type = Float,
+        type = FLOAT,
         fill = 0,
     )
     river_width = river_width_2d[indices]
@@ -70,13 +70,13 @@ function initialize_sbm_gwf_model(config::Config)
         config,
         "routing.river_flow.length";
         optional = false,
-        type = Float,
+        type = FLOAT,
         fill = 0,
     )
     river_length = river_length_2d[indices]
 
     altitude =
-        ncread(dataset, config, "altitude"; optional = false, sel = indices, type = Float)
+        ncread(dataset, config, "altitude"; optional = false, sel = indices, type = FLOAT)
 
     # read x, y coordinates and calculate cell length [m]
     y_coords = read_y_axis(dataset)
@@ -125,7 +125,7 @@ function initialize_sbm_gwf_model(config::Config)
         "routing.overland_flow.slope";
         optional = false,
         sel = indices,
-        type = Float,
+        type = FLOAT,
     )
     clamp!(land_slope, 0.00001, Inf)
     ldd_2d = ncread(dataset, config, "ldd"; optional = false, allow_missing = true)
@@ -136,9 +136,9 @@ function initialize_sbm_gwf_model(config::Config)
     flow_width = (x_length .* y_length) ./ flow_length
     surface_flow_width = map(det_surfacewidth, flow_width, river_width, river_location)
 
-    graph = flowgraph(ldd, indices, pcr_dir)
+    graph = flowgraph(ldd, indices, PCR_DIR)
     ldd_river = ldd_2d[inds_river]
-    graph_river = flowgraph(ldd_river, inds_river, pcr_dir)
+    graph_river = flowgraph(ldd_river, inds_river, PCR_DIR)
 
     # land indices where river is located
     inds_land_map2river = filter(i -> !isequal(river_location[i], 0), 1:n_land_cells)
@@ -228,8 +228,8 @@ function initialize_sbm_gwf_model(config::Config)
     if do_constanthead
         constant_head = ConstantHead(dataset, config, indices)
     else
-        variables = ConstantHeadVariables{Float}(; head = Float[])
-        constant_head = ConstantHead{Float}(; variables, index = Int64[])
+        variables = ConstantHeadVariables{FLOAT}(; head = FLOAT[])
+        constant_head = ConstantHead{FLOAT}(; variables, index = Int64[])
     end
 
     connectivity = Connectivity(indices, reverse_indices, x_length, y_length)
@@ -240,9 +240,9 @@ function initialize_sbm_gwf_model(config::Config)
         initial_head[constant_head.index] = constant_head.variables.head
     end
 
-    bottom = altitude .- land_hydrology.soil.parameters.soilthickness ./ Float(1000.0)
+    bottom = altitude .- land_hydrology.soil.parameters.soilthickness ./ FLOAT(1000.0)
     area = x_length .* y_length
-    conductance = zeros(Float, connectivity.nconnection)
+    conductance = zeros(FLOAT, connectivity.nconnection)
     aquifer = UnconfinedAquifer(
         dataset,
         config,
@@ -259,8 +259,8 @@ function initialize_sbm_gwf_model(config::Config)
 
     # recharge boundary of unconfined aquifer
     recharge = Recharge(
-        fill(mv, n_land_cells),
-        zeros(Float, n_land_cells),
+        fill(MISSING_VALUE, n_land_cells),
+        zeros(FLOAT, n_land_cells),
         collect(1:n_land_cells),
     )
 
@@ -278,7 +278,7 @@ function initialize_sbm_gwf_model(config::Config)
         # check if drain occurs where overland flow is not possible (surface_flow_width =
         # 0.0) and correct if this is the case
         false_drain = filter(
-            i -> !isequal(drain[i], 0) && surface_flow_width[i] == Float(0),
+            i -> !isequal(drain[i], 0) && surface_flow_width[i] == FLOAT(0),
             1:n_land_cells,
         )
         n_false_drain = length(false_drain)
@@ -301,7 +301,7 @@ function initialize_sbm_gwf_model(config::Config)
         network_drain = NetworkDrain()
     end
 
-    subsurface_flow = GroundwaterFlow{Float}(;
+    subsurface_flow = GroundwaterFlow{FLOAT}(;
         aquifer,
         connectivity,
         constanthead = constant_head,
@@ -468,7 +468,7 @@ function update!(model::AbstractModel{<:SbmGwfModel})
     conductivity_profile =
         get(config.input.routing.subsurface_flow, "conductivity_profile", "uniform")
     dt_gw = stable_timestep(aquifer, conductivity_profile) # time step in day (Float64)
-    dt_sbm = (dt / tosecond(basetimestep)) # dt is in seconds (Float64)
+    dt_sbm = (dt / tosecond(BASETIMESTEP)) # dt is in seconds (Float64)
     if dt_gw < dt_sbm
         @warn(
             "stable time step dt $dt_gw for groundwater flow is smaller than `LandHydrologySBM` model dt $dt_sbm"

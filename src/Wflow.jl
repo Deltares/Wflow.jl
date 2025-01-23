@@ -59,10 +59,10 @@ using TOML: TOML
 @metadata get_units "mm dt-1" String
 @metadata grid_loc "node" String # BMI grid location
 
-const Float = Float64
+const FLOAT = Float64
 const CFDataset = Union{NCDataset, NCDatasets.MFDataset}
 const CFVariable_MF = Union{NCDatasets.CFVariable, NCDatasets.MFCFVariable}
-const version =
+const VERSION =
     VersionNumber(TOML.parsefile(joinpath(@__DIR__, "..", "Project.toml"))["version"])
 
 mutable struct Clock{T}
@@ -220,7 +220,7 @@ function run(tomlpath::AbstractString; silent = nothing)
     fews_run = get(config, "fews_run", false)::Bool
     logger, logfile = init_logger(config; silent)
     with_logger(logger) do
-        @info "Wflow version `v$version`"
+        @info "Wflow version `v$VERSION`"
         # to catch stacktraces in the log file a try-catch is required
         try
             run(config)

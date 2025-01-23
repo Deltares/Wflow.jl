@@ -17,11 +17,11 @@ end
 "Initialize open water runoff model variables"
 function OpenWaterRunoffVariables(T::Type{<:AbstractFloat}, n::Int)
     return OpenWaterRunoffVariables{T}(;
-        runoff_river = fill(mv, n),
-        runoff_land = fill(mv, n),
-        ae_openw_l = fill(mv, n),
-        ae_openw_r = fill(mv, n),
-        net_runoff_river = fill(mv, n),
+        runoff_river = fill(MISSING_VALUE, n),
+        runoff_land = fill(MISSING_VALUE, n),
+        ae_openw_l = fill(MISSING_VALUE, n),
+        ae_openw_r = fill(MISSING_VALUE, n),
+        net_runoff_river = fill(MISSING_VALUE, n),
     )
 end
 
@@ -42,9 +42,9 @@ function OpenWaterRunoffParameters(dataset, config, indices, riverfrac)
         "land.runoff.parameters.waterfrac";
         sel = indices,
         defaults = 0.0,
-        type = Float,
+        type = FLOAT,
     )
-    waterfrac = max.(waterfrac .- riverfrac, Float(0.0))
+    waterfrac = max.(waterfrac .- riverfrac, FLOAT(0.0))
     params = OpenWaterRunoffParameters(; waterfrac = waterfrac, riverfrac = riverfrac)
     return params
 end
@@ -59,8 +59,8 @@ end
 "Initialize open water runoff boundary conditions"
 function OpenWaterRunoffBC(T::Type{<:AbstractFloat}, n::Int)
     return OpenWaterRunoffBC{T}(;
-        water_flux_surface = fill(mv, n),
-        waterlevel_land = fill(mv, n),
+        water_flux_surface = fill(MISSING_VALUE, n),
+        waterlevel_land = fill(MISSING_VALUE, n),
         waterlevel_river = zeros(T, n),
     )
 end
@@ -75,8 +75,8 @@ end
 "Initialize open water runoff model"
 function OpenWaterRunoff(dataset, config, indices, riverfrac)
     n = length(riverfrac)
-    vars = OpenWaterRunoffVariables(Float, n)
-    bc = OpenWaterRunoffBC(Float, n)
+    vars = OpenWaterRunoffVariables(FLOAT, n)
+    bc = OpenWaterRunoffBC(FLOAT, n)
     params = OpenWaterRunoffParameters(dataset, config, indices, riverfrac)
     model =
         OpenWaterRunoff(; boundary_conditions = bc, parameters = params, variables = vars)

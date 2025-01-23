@@ -11,9 +11,9 @@ end
 "Initialize atmospheric forcing"
 function AtmosphericForcing(
     n;
-    precipitation::Vector{T} = fill(mv, n),
-    potential_evaporation::Vector{T} = fill(mv, n),
-    temperature::Vector{T} = fill(mv, n),
+    precipitation::Vector{T} = fill(MISSING_VALUE, n),
+    potential_evaporation::Vector{T} = fill(MISSING_VALUE, n),
+    temperature::Vector{T} = fill(MISSING_VALUE, n),
 ) where {T}
     return AtmosphericForcing{T}(; precipitation, potential_evaporation, temperature)
 end
@@ -35,11 +35,11 @@ end
 "Initialize hydrological forcing"
 function HydrologicalForcing(
     n;
-    interception::Vector{T} = fill(mv, n),
-    waterlevel_land::Vector{T} = fill(mv, n),
-    q_land::Vector{T} = fill(mv, n),
-    waterlevel_river::Vector{T} = fill(mv, n),
-    q_river::Vector{T} = fill(mv, n),
+    interception::Vector{T} = fill(MISSING_VALUE, n),
+    waterlevel_land::Vector{T} = fill(MISSING_VALUE, n),
+    q_land::Vector{T} = fill(MISSING_VALUE, n),
+    waterlevel_river::Vector{T} = fill(MISSING_VALUE, n),
+    q_river::Vector{T} = fill(MISSING_VALUE, n),
 ) where {T}
     return HydrologicalForcing{T}(;
         interception,

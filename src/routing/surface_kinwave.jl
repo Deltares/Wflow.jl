@@ -28,13 +28,13 @@ end
 "Initialize variables for river or overland flow models"
 function FlowVariables(n)
     variables = FlowVariables(;
-        q = zeros(Float, n),
-        qlat = zeros(Float, n),
-        qin = zeros(Float, n),
-        q_av = zeros(Float, n),
-        volume = zeros(Float, n),
-        h = zeros(Float, n),
-        h_av = zeros(Float, n),
+        q = zeros(FLOAT, n),
+        qlat = zeros(FLOAT, n),
+        qin = zeros(FLOAT, n),
+        q_av = zeros(FLOAT, n),
+        volume = zeros(FLOAT, n),
+        h = zeros(FLOAT, n),
+        h_av = zeros(FLOAT, n),
     )
     return variables
 end
@@ -55,14 +55,14 @@ end
 function ManningFlowParameters(slope, mannings_n, flow_length, flow_width)
     n = length(slope)
     parameters = ManningFlowParameters(;
-        beta = Float(0.6),
+        beta = FLOAT(0.6),
         slope,
         mannings_n,
         flow_length,
         flow_width,
-        alpha_pow = Float((2.0 / 3.0) * 0.6),
-        alpha_term = fill(mv, n),
-        alpha = fill(mv, n),
+        alpha_pow = FLOAT((2.0 / 3.0) * 0.6),
+        alpha_term = fill(MISSING_VALUE, n),
+        alpha = fill(MISSING_VALUE, n),
     )
     return parameters
 end
@@ -92,7 +92,7 @@ function RiverFlowParameters(dataset, config, indices, river_length, river_width
         "routing.river_flow.mannings_n";
         sel = indices,
         defaults = 0.036,
-        type = Float,
+        type = FLOAT,
     )
     bankfull_depth = ncread(
         dataset,
@@ -101,7 +101,7 @@ function RiverFlowParameters(dataset, config, indices, river_length, river_width
         alias = "routing.river_flow.h_bankfull",
         sel = indices,
         defaults = 1.0,
-        type = Float,
+        type = FLOAT,
     )
     if haskey(config.input.routing.river_flow, "h_bankfull")
         @warn string(
@@ -115,7 +115,7 @@ function RiverFlowParameters(dataset, config, indices, river_length, river_width
         "routing.river_flow.slope";
         optional = false,
         sel = indices,
-        type = Float,
+        type = FLOAT,
     )
     clamp!(slope, 0.00001, Inf)
 
@@ -138,10 +138,10 @@ end
 "Initialize river flow model boundary conditions"
 function RiverFlowBC(n, reservoir, lake)
     bc = RiverFlowBC(;
-        inwater = zeros(Float, n),
-        inflow = zeros(Float, n),
-        inflow_waterbody = zeros(Float, n),
-        abstraction = zeros(Float, n),
+        inwater = zeros(FLOAT, n),
+        inflow = zeros(FLOAT, n),
+        inflow_waterbody = zeros(FLOAT, n),
+        abstraction = zeros(FLOAT, n),
         reservoir = reservoir,
         lake = lake,
     )
@@ -173,7 +173,7 @@ function KinWaveRiverFlow(
         init_kinematic_wave_timestepping(config, n; domain = "river", dt_fixed = 900.0)
 
     do_water_demand = haskey(config.model, "water_demand")
-    allocation = do_water_demand ? AllocationRiver(n) : NoAllocationRiver{Float}()
+    allocation = do_water_demand ? AllocationRiver(n) : NoAllocationRiver{FLOAT}()
 
     variables = FlowVariables(n)
     parameters = RiverFlowParameters(dataset, config, indices, river_length, river_width)
@@ -228,16 +228,16 @@ function KinWaveOverlandFlow(dataset, config, indices; slope, flow_length, flow_
         "routing.overland_flow.mannings_n";
         sel = indices,
         defaults = 0.072,
-        type = Float,
+        type = FLOAT,
     )
 
     n = length(indices)
     timestepping =
         init_kinematic_wave_timestepping(config, n; domain = "land", dt_fixed = 3600.0)
 
-    variables = LandFlowVariables(; flow = FlowVariables(n), to_river = zeros(Float, n))
+    variables = LandFlowVariables(; flow = FlowVariables(n), to_river = zeros(FLOAT, n))
     parameters = ManningFlowParameters(slope, mannings_n, flow_length, flow_width)
-    boundary_conditions = LandFlowBC(; inwater = zeros(Float, n))
+    boundary_conditions = LandFlowBC(; inwater = zeros(FLOAT, n))
     sf_land =
         KinWaveOverlandFlow(; timestepping, boundary_conditions, variables, parameters)
 
@@ -592,7 +592,7 @@ function update_lateral_inflow!(
     if do_drains
         drain = subsurface_flow.boundaries.drain
         drainflux = zeros(length(net_runoff))
-        drainflux[drain.index] = -drain.variables.flux ./ tosecond(basetimestep)
+        drainflux[drain.index] = -drain.variables.flux ./ tosecond(BASETIMESTEP)
     else
         drainflux = 0.0
     end
@@ -628,7 +628,7 @@ end
 # is added to the river kinematic wave.
 get_inflow_waterbody(::KinWaveRiverFlow, model::KinWaveOverlandFlow) = model.variables.q_av
 get_inflow_waterbody(::KinWaveRiverFlow, model::LateralSSF) =
-    model.variables.ssf ./ tosecond(basetimestep)
+    model.variables.ssf ./ tosecond(BASETIMESTEP)
 
 # Exclude subsurface flow for other groundwater components than `LateralSSF`.
 get_inflow_waterbody(::AbstractRiverFlowModel, model::GroundwaterFlow) =

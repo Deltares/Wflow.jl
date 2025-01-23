@@ -16,11 +16,14 @@ function GlacierVariables(dataset, config, indices)
         "land.glacier.variables.glacier_store";
         sel = indices,
         defaults = 5500.0,
-        type = Float,
+        type = FLOAT,
         fill = 0.0,
     )
     n = length(glacier_store)
-    vars = GlacierVariables(; glacier_store = glacier_store, glacier_melt = fill(mv, n))
+    vars = GlacierVariables(;
+        glacier_store = glacier_store,
+        glacier_melt = fill(MISSING_VALUE, n),
+    )
     return vars
 end
 
@@ -61,7 +64,7 @@ function GlacierHbvParameters(dataset, config, indices, dt)
         "land.glacier.parameters.g_ttm";
         sel = indices,
         defaults = 0.0,
-        type = Float,
+        type = FLOAT,
         fill = 0.0,
     )
     g_cfmax =
@@ -71,9 +74,9 @@ function GlacierHbvParameters(dataset, config, indices, dt)
             "land.glacier.parameters.g_cfmax";
             sel = indices,
             defaults = 3.0,
-            type = Float,
+            type = FLOAT,
             fill = 0.0,
-        ) .* (dt / basetimestep)
+        ) .* (dt / BASETIMESTEP)
     g_sifrac =
         ncread(
             dataset,
@@ -81,19 +84,19 @@ function GlacierHbvParameters(dataset, config, indices, dt)
             "land.glacier.parameters.g_sifrac";
             sel = indices,
             defaults = 0.001,
-            type = Float,
+            type = FLOAT,
             fill = 0.0,
-        ) .* (dt / basetimestep)
+        ) .* (dt / BASETIMESTEP)
     glacier_frac = ncread(
         dataset,
         config,
         "land.glacier.parameters.glacier_frac";
         sel = indices,
         defaults = 0.0,
-        type = Float,
+        type = FLOAT,
         fill = 0.0,
     )
-    max_snow_to_glacier = 8.0 * (dt / basetimestep)
+    max_snow_to_glacier = 8.0 * (dt / BASETIMESTEP)
     glacier_hbv_params =
         GlacierHbvParameters(; g_ttm, g_cfmax, g_sifrac, glacier_frac, max_snow_to_glacier)
     return glacier_hbv_params

@@ -43,7 +43,7 @@ function SoilLoss(dataset, config, indices)
         typeof(rainfall_erosion_model),
         typeof(overland_flow_erosion_model),
         typeof(soil_erosion_model),
-        Float,
+        FLOAT,
     }(;
         atmospheric_forcing = atmospheric_forcing,
         hydrological_forcing = hydrological_forcing,

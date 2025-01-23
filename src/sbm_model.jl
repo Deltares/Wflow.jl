@@ -59,7 +59,7 @@ function initialize_sbm_model(config::Config)
         config,
         "routing.river_flow.width";
         optional = false,
-        type = Float,
+        type = FLOAT,
         fill = 0,
     )
     river_width = river_width_2d[indices]
@@ -68,7 +68,7 @@ function initialize_sbm_model(config::Config)
         config,
         "routing.river_flow.length";
         optional = false,
-        type = Float,
+        type = FLOAT,
         fill = 0,
     )
     river_length = river_length_2d[indices]
@@ -126,7 +126,7 @@ function initialize_sbm_model(config::Config)
         "routing.overland_flow.slope";
         optional = false,
         sel = indices,
-        type = Float,
+        type = FLOAT,
     )
     clamp!(land_slope, 0.00001, Inf)
     flow_length = map(get_flow_length, ldd, x_length, y_length)
@@ -166,12 +166,12 @@ function initialize_sbm_model(config::Config)
         subsurface_flow = GroundwaterExchange(n_land_cells)
     end
 
-    graph = flowgraph(ldd, indices, pcr_dir)
+    graph = flowgraph(ldd, indices, PCR_DIR)
     ldd_river = ldd_2d[inds_river]
     if do_pits
         ldd_river = set_pit_ldd(pits_2d, ldd_river, inds_river)
     end
-    graph_river = flowgraph(ldd_river, inds_river, pcr_dir)
+    graph_river = flowgraph(ldd_river, inds_river, PCR_DIR)
 
     # land indices where river is located
     inds_land_map2river = filter(i -> !isequal(river_location[i], 0), 1:n_land_cells)
@@ -413,7 +413,7 @@ function update!(model::AbstractModel{<:SbmModel})
     routing.subsurface_flow.variables.zi .= land.soil.variables.zi ./ 1000.0
     # update lateral subsurface flow domain (kinematic wave)
     kh_layered_profile!(land.soil, routing.subsurface_flow, kv_profile, dt)
-    update!(routing.subsurface_flow, network.land, clock.dt / basetimestep)
+    update!(routing.subsurface_flow, network.land, clock.dt / BASETIMESTEP)
     update_after_subsurfaceflow!(model)
     update_total_water_storage!(model)
     return nothing
@@ -490,7 +490,7 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
         nriv = length(network.river.indices)
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
-        set_states!(instate_path, model; type = Float, dimname = :layer)
+        set_states!(instate_path, model; type = FLOAT, dimname = :layer)
         # update zi for SBM soil model
         zi =
             max.(

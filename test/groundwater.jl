@@ -359,7 +359,7 @@ end
         variables = Wflow.ConstantHeadVariables(; head = [2.0, 4.0])
         constanthead = Wflow.ConstantHead(; variables, index = [1, 3])
         conductivity_profile = "uniform"
-        gwf = Wflow.GroundwaterFlow{Wflow.Float}(;
+        gwf = Wflow.GroundwaterFlow{Wflow.FLOAT}(;
             aquifer = aquifer,
             connectivity = connectivity,
             constanthead = constanthead,
@@ -383,7 +383,7 @@ end
         variables = Wflow.ConstantHeadVariables(; head = [2.0, 4.0])
         constanthead = Wflow.ConstantHead(; variables, index = [1, 3])
         conductivity_profile = "exponential"
-        gwf = Wflow.GroundwaterFlow{Wflow.Float}(;
+        gwf = Wflow.GroundwaterFlow{Wflow.FLOAT}(;
             aquifer = aquifer,
             connectivity = connectivity,
             constanthead = constanthead,
@@ -443,7 +443,7 @@ end
         # constant head on left boundary, 0 at 0
         variables = Wflow.ConstantHeadVariables(; head = [0.0])
         constanthead = Wflow.ConstantHead(; variables, index = [1])
-        gwf = Wflow.GroundwaterFlow{Wflow.Float}(;
+        gwf = Wflow.GroundwaterFlow{Wflow.FLOAT}(;
             aquifer = aquifer,
             connectivity = connectivity,
             constanthead = constanthead,
@@ -517,7 +517,7 @@ end
         # constant head on left boundary, 0 at 0
         variables = Wflow.ConstantHeadVariables(; head = [0.0])
         constanthead = Wflow.ConstantHead(; variables, index = [1])
-        gwf = Wflow.GroundwaterFlow{Wflow.Float}(;
+        gwf = Wflow.GroundwaterFlow{Wflow.FLOAT}(;
             aquifer = aquifer,
             connectivity = connectivity,
             constanthead = constanthead,
@@ -598,7 +598,7 @@ end
         # Place a well in the middle of the domain
         variables = Wflow.WellVariables(; volumetric_rate = [discharge], flux = [0.0])
         well = Wflow.Well(; variables, index = [reverse_indices[wellrow, wellrow]])
-        gwf = Wflow.GroundwaterFlow{Wflow.Float}(;
+        gwf = Wflow.GroundwaterFlow{Wflow.FLOAT}(;
             aquifer = aquifer,
             connectivity = connectivity,
             constanthead = constanthead,

@@ -67,7 +67,7 @@ function LakeParameters(config, dataset, inds_riv, nriv, pits)
         "routing.river_flow.lake.area";
         optional = false,
         sel = inds_lake,
-        type = Float,
+        type = FLOAT,
         fill = 0,
     )
     lake_b = ncread(
@@ -76,7 +76,7 @@ function LakeParameters(config, dataset, inds_riv, nriv, pits)
         "routing.river_flow.lake.b";
         optional = false,
         sel = inds_lake,
-        type = Float,
+        type = FLOAT,
         fill = 0,
     )
     lake_e = ncread(
@@ -85,7 +85,7 @@ function LakeParameters(config, dataset, inds_riv, nriv, pits)
         "routing.river_flow.lake.e";
         optional = false,
         sel = inds_lake,
-        type = Float,
+        type = FLOAT,
         fill = 0,
     )
     lake_threshold = ncread(
@@ -94,7 +94,7 @@ function LakeParameters(config, dataset, inds_riv, nriv, pits)
         "routing.river_flow.lake.threshold";
         optional = false,
         sel = inds_lake,
-        type = Float,
+        type = FLOAT,
         fill = 0,
     )
     linked_lakelocs = ncread(
@@ -130,7 +130,7 @@ function LakeParameters(config, dataset, inds_riv, nriv, pits)
         "routing.river_flow.lake.waterlevel";
         optional = false,
         sel = inds_lake,
-        type = Float,
+        type = FLOAT,
         fill = 0,
     )
 
@@ -179,7 +179,7 @@ function LakeParameters(config, dataset, inds_riv, nriv, pits)
             )
         end
     end
-    parameters = LakeParameters{Float}(;
+    parameters = LakeParameters{FLOAT}(;
         lowerlake_ind = lowerlake_ind,
         area = lakearea,
         maxstorage = maximum_storage(lake_storfunc, lake_outflowfunc, lakearea, sh, hq),
@@ -211,13 +211,13 @@ end
 
 "Initialize lake model variables"
 function LakeVariables(n, lake_waterlevel)
-    variables = LakeVariables{Float}(;
+    variables = LakeVariables{FLOAT}(;
         waterlevel = lake_waterlevel,
-        inflow = fill(mv, n),
+        inflow = fill(MISSING_VALUE, n),
         storage = initialize_storage(lake_storfunc, lakearea, lake_waterlevel, sh),
-        outflow = fill(mv, n),
-        outflow_av = fill(mv, n),
-        actevap = fill(mv, n),
+        outflow = fill(MISSING_VALUE, n),
+        outflow_av = fill(MISSING_VALUE, n),
+        actevap = fill(MISSING_VALUE, n),
     )
     return variables
 end
@@ -231,10 +231,10 @@ end
 
 "Initialize lake model boundary conditions"
 function LakeBC(n)
-    bc = LakeBC{Float}(;
-        inflow = fill(mv, n),
-        precipitation = fill(mv, n),
-        evaporation = fill(mv, n),
+    bc = LakeBC{FLOAT}(;
+        inflow = fill(MISSING_VALUE, n),
+        precipitation = fill(MISSING_VALUE, n),
+        evaporation = fill(MISSING_VALUE, n),
     )
     return bc
 end
@@ -255,7 +255,7 @@ function Lake(dataset, config, indices_river, n_river_cells, pits)
     variables = LakeVariables(n_lakes, lake_waterlevel)
     boundary_conditions = LakeBC(n_lakes)
 
-    lake = Lake{Float}(; boundary_conditions, parameters, variables)
+    lake = Lake{FLOAT}(; boundary_conditions, parameters, variables)
 
     return lake, lake_network, inds_lake_map2river, pits
 end
@@ -288,7 +288,7 @@ end
 
 "Determine the maximum storage for lakes with a rating curve of type 1"
 function maximum_storage(storfunc, outflowfunc, area, sh, hq)
-    maxstorage = Vector{Union{Float, Missing}}(missing, length(area))
+    maxstorage = Vector{Union{FLOAT, Missing}}(missing, length(area))
     # maximum storage is based on the maximum water level (H) value in the H-Q table
     for i in eachindex(maxstorage)
         if outflowfunc[i] == 1
@@ -381,7 +381,7 @@ function update!(model::Lake, i, inflow, doy, dt, dt_forcing)
                     maxflow = (dh * lake_p.area[i]) / dt
                     outflow = min(outflow, maxflow)
                 else
-                    outflow = Float(0)
+                    outflow = FLOAT(0)
                 end
             else
                 if lake_v.waterlevel[lo] > lake_p.threshold[i]
@@ -390,7 +390,7 @@ function update!(model::Lake, i, inflow, doy, dt, dt_forcing)
                     maxflow = (dh * lake_p.area[lo]) / dt
                     outflow = max(outflow, -maxflow)
                 else
-                    outflow = Float(0)
+                    outflow = FLOAT(0)
                 end
             end
         end

@@ -7,7 +7,10 @@ abstract type AbstractRainfallErosionModel{T} end
 end
 
 "Initialize rainfall erosion model variables"
-function RainfallErosionModelVariables(n; amount::Vector{T} = fill(mv, n)) where {T}
+function RainfallErosionModelVariables(
+    n;
+    amount::Vector{T} = fill(MISSING_VALUE, n),
+) where {T}
     return RainfallErosionModelVariables{T}(; amount = amount)
 end
 
@@ -24,9 +27,9 @@ end
 "Initialize EUROSEM rainfall erosion model boundary conditions"
 function RainfallErosionEurosemBC(
     n;
-    precipitation::Vector{T} = fill(mv, n),
-    interception::Vector{T} = fill(mv, n),
-    waterlevel::Vector{T} = fill(mv, n),
+    precipitation::Vector{T} = fill(MISSING_VALUE, n),
+    interception::Vector{T} = fill(MISSING_VALUE, n),
+    waterlevel::Vector{T} = fill(MISSING_VALUE, n),
 ) where {T}
     return RainfallErosionEurosemBC{T}(;
         precipitation = precipitation,
@@ -57,7 +60,7 @@ function RainfallErosionEurosemParameters(dataset, config, indices)
         "land.rainfall_erosion.parameters.soil_detachability";
         sel = indices,
         defaults = 0.6,
-        type = Float,
+        type = FLOAT,
     )
     eurosem_exponent = ncread(
         dataset,
@@ -65,7 +68,7 @@ function RainfallErosionEurosemParameters(dataset, config, indices)
         "land.rainfall_erosion.parameters.eurosem_exponent";
         sel = indices,
         defaults = 2.0,
-        type = Float,
+        type = FLOAT,
     )
     canopyheight = ncread(
         dataset,
@@ -73,7 +76,7 @@ function RainfallErosionEurosemParameters(dataset, config, indices)
         "land.rainfall_erosion.parameters.canopyheight";
         sel = indices,
         defaults = 0.5,
-        type = Float,
+        type = FLOAT,
     )
     canopygapfraction = ncread(
         dataset,
@@ -81,7 +84,7 @@ function RainfallErosionEurosemParameters(dataset, config, indices)
         "land.rainfall_erosion.parameters.canopygapfraction";
         sel = indices,
         defaults = 0.1,
-        type = Float,
+        type = FLOAT,
     )
     soilcover_fraction = ncread(
         dataset,
@@ -89,7 +92,7 @@ function RainfallErosionEurosemParameters(dataset, config, indices)
         "land.rainfall_erosion.parameters.pathfrac";
         sel = indices,
         defaults = 0.01,
-        type = Float,
+        type = FLOAT,
     )
     eurosem_parameters = RainfallErosionEurosemParameters(;
         soil_detachability = soil_detachability,
@@ -170,7 +173,10 @@ end
 end
 
 "Initialize ANSWERS rainfall erosion model boundary conditions"
-function RainfallErosionAnswersBC(n; precipitation::Vector{T} = fill(mv, n)) where {T}
+function RainfallErosionAnswersBC(
+    n;
+    precipitation::Vector{T} = fill(MISSING_VALUE, n),
+) where {T}
     return RainfallErosionAnswersBC{T}(; precipitation = precipitation)
 end
 
@@ -190,7 +196,7 @@ function RainfallErosionAnswersParameters(dataset, config, indices)
         "land.rainfall_erosion.parameters.usle_k";
         sel = indices,
         defaults = 0.1,
-        type = Float,
+        type = FLOAT,
     )
     usle_c = ncread(
         dataset,
@@ -198,7 +204,7 @@ function RainfallErosionAnswersParameters(dataset, config, indices)
         "land.rainfall_erosion.parameters.usle_c";
         sel = indices,
         defaults = 0.01,
-        type = Float,
+        type = FLOAT,
     )
     answers_parameters =
         RainfallErosionAnswersParameters(; usle_k = usle_k, usle_c = usle_c)

@@ -17,11 +17,11 @@ end
 "Initialize interception model variables"
 function InterceptionVariables(T::Type{<:AbstractFloat}, n::Int)
     return InterceptionVariables(;
-        canopy_potevap = fill(mv, n),
-        interception_rate = fill(mv, n),
+        canopy_potevap = fill(MISSING_VALUE, n),
+        interception_rate = fill(MISSING_VALUE, n),
         canopy_storage = zeros(T, n),
-        stemflow = fill(mv, n),
-        throughfall = fill(mv, n),
+        stemflow = fill(MISSING_VALUE, n),
+        throughfall = fill(MISSING_VALUE, n),
     )
 end
 
@@ -46,12 +46,12 @@ function GashInterceptionModel(dataset, config, indices, vegetation_parameter_se
         "land.interception.parameters.e_r";
         sel = indices,
         defaults = 0.1,
-        type = Float,
+        type = FLOAT,
     )
     n = length(indices)
     params =
         GashParameters(; e_r = e_r, vegetation_parameter_set = vegetation_parameter_set)
-    vars = InterceptionVariables(Float, n)
+    vars = InterceptionVariables(FLOAT, n)
     model = GashInterceptionModel(; parameters = params, variables = vars)
     return model
 end

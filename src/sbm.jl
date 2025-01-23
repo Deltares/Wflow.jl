@@ -29,20 +29,20 @@ function LandHydrologySBM(dataset, config, riverfrac, indices)
     if modelsnow
         snow_model = SnowHbvModel(dataset, config, indices, dt)
     else
-        snow_model = NoSnowModel{Float}()
+        snow_model = NoSnowModel{FLOAT}()
     end
     modelglacier = get(config.model, "glacier", false)::Bool
     if modelsnow && modelglacier
-        glacier_bc = SnowStateBC{Float}(; snow_storage = snow_model.variables.snow_storage)
+        glacier_bc = SnowStateBC{FLOAT}(; snow_storage = snow_model.variables.snow_storage)
         glacier_model = GlacierHbvModel(dataset, config, indices, dt, glacier_bc)
     elseif modelsnow == false && modelglacier == true
         @warn string(
             "Glacier processes can be modelled when snow modelling is enabled. To include ",
             "glacier modelling, set `snow` to `true` in the Model section of the TOML file.",
         )
-        glacier_model = NoGlacierModel{Float}()
+        glacier_model = NoGlacierModel{FLOAT}()
     else
-        glacier_model = NoGlacierModel{Float}()
+        glacier_model = NoGlacierModel{FLOAT}()
     end
     runoff_model = OpenWaterRunoff(dataset, config, indices, riverfrac)
 
@@ -55,11 +55,11 @@ function LandHydrologySBM(dataset, config, riverfrac, indices)
     do_water_demand = haskey(config.model, "water_demand")
     allocation =
         do_water_demand ? AllocationLand(dataset, config, indices) :
-        NoAllocationLand{Float}()
-    demand = do_water_demand ? Demand(dataset, config, indices, dt) : NoDemand{Float}()
+        NoAllocationLand{FLOAT}()
+    demand = do_water_demand ? Demand(dataset, config, indices, dt) : NoDemand{FLOAT}()
 
     args = (demand, allocation)
-    land_hydrology_model = LandHydrologySBM{Float, typeof.(args)...}(;
+    land_hydrology_model = LandHydrologySBM{FLOAT, typeof.(args)...}(;
         atmospheric_forcing = atmospheric_forcing,
         vegetation_parameter_set = vegetation_parameter_set,
         interception = interception_model,

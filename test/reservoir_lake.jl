@@ -1,6 +1,6 @@
 
 res_bc =
-    Wflow.ReservoirBC{Float}(; inflow = [0.0], precipitation = [4.2], evaporation = [1.5])
+    Wflow.ReservoirBC{FLOAT}(; inflow = [0.0], precipitation = [4.2], evaporation = [1.5])
 res_params = Wflow.ReservoirParameters{Float64}(;
     demand = [52.523],
     maxrelease = [420.184],
@@ -36,8 +36,8 @@ res = Wflow.SimpleReservoir{Float64}(;
     @test res.variables.actevap[1] ≈ 1.5
 end
 
-lake_bc = Wflow.LakeBC{Float}(; inflow = [0.0], precipitation = [20.0], evaporation = [3.2])
-lake_params = Wflow.LakeParameters{Float}(;
+lake_bc = Wflow.LakeBC{FLOAT}(; inflow = [0.0], precipitation = [20.0], evaporation = [3.2])
+lake_params = Wflow.LakeParameters{FLOAT}(;
     lowerlake_ind = [0],
     area = [180510409.0],
     maxstorage = Wflow.maximum_storage([1], [3], [180510409.0], [missing], [missing]),
@@ -49,7 +49,7 @@ lake_params = Wflow.LakeParameters{Float}(;
     sh = [missing],
     hq = [missing],
 )
-lake_vars = Wflow.LakeVariables{Float}(;
+lake_vars = Wflow.LakeVariables{FLOAT}(;
     outflow_av = [0.0],
     storage = Wflow.initialize_storage([1], [180510409.0], [18.5], [missing]),
     waterlevel = [18.5],
@@ -86,9 +86,9 @@ sh = [
 ]
 @testset "linked lakes (HBV)" begin
     @test keys(sh[1]) == (:H, :S)
-    @test typeof(values(sh[1])) == Tuple{Vector{Float}, Vector{Float}}
+    @test typeof(values(sh[1])) == Tuple{Vector{FLOAT}, Vector{FLOAT}}
 
-    lake_params = Wflow.LakeParameters{Float}(;
+    lake_params = Wflow.LakeParameters{FLOAT}(;
         lowerlake_ind = [2, 0],
         area = [472461536.0, 60851088.0],
         maxstorage = Wflow.maximum_storage(
@@ -106,7 +106,7 @@ sh = [
         sh = sh,
         hq = [missing, Wflow.read_hq_csv(joinpath(datadir, "input", "lake_hq_2.csv"))],
     )
-    lake_vars = Wflow.LakeVariables{Float}(;
+    lake_vars = Wflow.LakeVariables{FLOAT}(;
         outflow_av = [0.0, 0.0],
         waterlevel = [395.03027, 394.87833],
         actevap = [0.0, 0.0],
@@ -118,13 +118,13 @@ sh = [
             sh,
         ),
     )
-    lake_bc = Wflow.LakeBC{Float}(;
+    lake_bc = Wflow.LakeBC{FLOAT}(;
         inflow = [0.0, 0.0],
         precipitation = [10.0, 10.0],
         evaporation = [2.0, 2.0],
     )
 
-    lake = Wflow.Lake{Float}(;
+    lake = Wflow.Lake{FLOAT}(;
         boundary_conditions = lake_bc,
         parameters = lake_params,
         variables = lake_vars,
@@ -153,8 +153,8 @@ end
 
 @testset "overflowing lake with sh and hq" begin
     lake_bc =
-        Wflow.LakeBC{Float}(; inflow = [0.00], precipitation = [10.0], evaporation = [2.0])
-    lake_params = Wflow.LakeParameters{Float}(;
+        Wflow.LakeBC{FLOAT}(; inflow = [0.00], precipitation = [10.0], evaporation = [2.0])
+    lake_params = Wflow.LakeParameters{FLOAT}(;
         lowerlake_ind = [0],
         area = [200_000_000],
         maxstorage = Wflow.maximum_storage(
@@ -172,14 +172,14 @@ end
         sh = [Wflow.read_sh_csv(joinpath(datadir, "input", "lake_sh_2.csv"))],
         hq = [Wflow.read_hq_csv(joinpath(datadir, "input", "lake_hq_2.csv"))],
     )
-    lake_vars = Wflow.LakeVariables{Float}(;
+    lake_vars = Wflow.LakeVariables{FLOAT}(;
         outflow_av = [0.0],
         waterlevel = [397.75],
         actevap = [0.0],
         outflow = [NaN],
         storage = [410_760_000],
     )
-    lake = Wflow.Lake{Float}(;
+    lake = Wflow.Lake{FLOAT}(;
         boundary_conditions = lake_bc,
         parameters = lake_params,
         variables = lake_vars,

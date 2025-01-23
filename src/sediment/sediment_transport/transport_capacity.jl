@@ -7,7 +7,10 @@ abstract type AbstractTransportCapacityModel{T} end
 end
 
 "Initialize total transport capacity model variables"
-function TransportCapacityModelVariables(n; amount::Vector{T} = fill(mv, n)) where {T}
+function TransportCapacityModelVariables(
+    n;
+    amount::Vector{T} = fill(MISSING_VALUE, n),
+) where {T}
     return TransportCapacityModelVariables{T}(; amount = amount)
 end
 
@@ -22,8 +25,8 @@ end
 "Initialize total transport capacity model boundary conditions"
 function TransportCapacityBC(
     n;
-    q::Vector{T} = fill(mv, n),
-    waterlevel::Vector{T} = fill(mv, n),
+    q::Vector{T} = fill(MISSING_VALUE, n),
+    waterlevel::Vector{T} = fill(MISSING_VALUE, n),
 ) where {T}
     return TransportCapacityBC{T}(; q = q, waterlevel = waterlevel)
 end
@@ -66,7 +69,7 @@ function TransportCapacityGoversParameters(dataset, config, indices)
         "routing.overland_flow.transport_capacity.parameters.density";
         sel = indices,
         defaults = 2650.0,
-        type = Float,
+        type = FLOAT,
     )
     c_govers = ncread(
         dataset,
@@ -74,7 +77,7 @@ function TransportCapacityGoversParameters(dataset, config, indices)
         "routing.overland_flow.transport_capacity.parameters.c_govers";
         sel = indices,
         defaults = 0.000505,
-        type = Float,
+        type = FLOAT,
     )
     n_govers = ncread(
         dataset,
@@ -82,7 +85,7 @@ function TransportCapacityGoversParameters(dataset, config, indices)
         "routing.overland_flow.transport_capacity.parameters.n_govers";
         sel = indices,
         defaults = 4.27,
-        type = Float,
+        type = FLOAT,
     )
     tc_parameters = TransportCapacityGoversParameters(;
         density = density,
@@ -159,7 +162,7 @@ function TransportCapacityYalinParameters(dataset, config, indices)
         "routing.overland_flow.transport_capacity.parameters.density";
         sel = indices,
         defaults = 2650.0,
-        type = Float,
+        type = FLOAT,
     )
     d50 = ncread(
         dataset,
@@ -167,7 +170,7 @@ function TransportCapacityYalinParameters(dataset, config, indices)
         "routing.overland_flow.transport_capacity.parameters.d50";
         sel = indices,
         defaults = 0.1,
-        type = Float,
+        type = FLOAT,
     )
     tc_parameters = TransportCapacityYalinParameters(; density = density, d50 = d50)
 
@@ -242,12 +245,12 @@ end
 "Initialize Yalin differentiated overland flow transport capacity model variables"
 function TransportCapacityYalinDifferentiationModelVariables(
     n;
-    amount::Vector{T} = fill(mv, n),
-    clay::Vector{T} = fill(mv, n),
-    silt::Vector{T} = fill(mv, n),
-    sand::Vector{T} = fill(mv, n),
-    sagg::Vector{T} = fill(mv, n),
-    lagg::Vector{T} = fill(mv, n),
+    amount::Vector{T} = fill(MISSING_VALUE, n),
+    clay::Vector{T} = fill(MISSING_VALUE, n),
+    silt::Vector{T} = fill(MISSING_VALUE, n),
+    sand::Vector{T} = fill(MISSING_VALUE, n),
+    sagg::Vector{T} = fill(MISSING_VALUE, n),
+    lagg::Vector{T} = fill(MISSING_VALUE, n),
 ) where {T}
     return TransportCapacityYalinDifferentiationModelVariables{T}(;
         amount = amount,
@@ -283,7 +286,7 @@ function TransportCapacityYalinDifferentiationParameters(dataset, config, indice
         "routing.overland_flow.transport_capacity.parameters.density";
         sel = indices,
         defaults = 2650.0,
-        type = Float,
+        type = FLOAT,
     )
     dm_clay = ncread(
         dataset,
@@ -291,7 +294,7 @@ function TransportCapacityYalinDifferentiationParameters(dataset, config, indice
         "routing.overland_flow.transport_capacity.parameters.dm_clay";
         sel = indices,
         defaults = 2.0,
-        type = Float,
+        type = FLOAT,
     )
     dm_silt = ncread(
         dataset,
@@ -299,7 +302,7 @@ function TransportCapacityYalinDifferentiationParameters(dataset, config, indice
         "routing.overland_flow.transport_capacity.parameters.dm_silt";
         sel = indices,
         defaults = 10.0,
-        type = Float,
+        type = FLOAT,
     )
     dm_sand = ncread(
         dataset,
@@ -307,7 +310,7 @@ function TransportCapacityYalinDifferentiationParameters(dataset, config, indice
         "routing.overland_flow.transport_capacity.parameters.dm_sand";
         sel = indices,
         defaults = 200.0,
-        type = Float,
+        type = FLOAT,
     )
     dm_sagg = ncread(
         dataset,
@@ -315,7 +318,7 @@ function TransportCapacityYalinDifferentiationParameters(dataset, config, indice
         "routing.overland_flow.transport_capacity.parameters.dm_sagg";
         sel = indices,
         defaults = 30.0,
-        type = Float,
+        type = FLOAT,
     )
     dm_lagg = ncread(
         dataset,
@@ -323,7 +326,7 @@ function TransportCapacityYalinDifferentiationParameters(dataset, config, indice
         "routing.overland_flow.transport_capacity.parameters.dm_lagg";
         sel = indices,
         defaults = 500.0,
-        type = Float,
+        type = FLOAT,
     )
     tc_parameters = TransportCapacityYalinDifferentiationParameters(;
         density = density,
@@ -463,7 +466,7 @@ function TransportCapacityRiverParameters(dataset, config, indices)
         "routing.river_flow.transport_capacity.parameters.density";
         sel = indices,
         defaults = 2650.0,
-        type = Float,
+        type = FLOAT,
     )
     d50 = ncread(
         dataset,
@@ -471,7 +474,7 @@ function TransportCapacityRiverParameters(dataset, config, indices)
         "routing.river_flow.transport_capacity.parameters.d50";
         sel = indices,
         defaults = 0.1,
-        type = Float,
+        type = FLOAT,
     )
     tc_parameters = TransportCapacityRiverParameters(; density = density, d50 = d50)
 
@@ -494,7 +497,7 @@ function TransportCapacityBagnoldParameters(dataset, config, indices)
         "routing.river_flow.transport_capacity.parameters.c_bagnold";
         sel = indices,
         optional = false,
-        type = Float,
+        type = FLOAT,
     )
     e_bagnold = ncread(
         dataset,
@@ -502,7 +505,7 @@ function TransportCapacityBagnoldParameters(dataset, config, indices)
         "routing.river_flow.transport_capacity.parameters.e_bagnold";
         sel = indices,
         optional = false,
-        type = Float,
+        type = FLOAT,
     )
     tc_parameters =
         TransportCapacityBagnoldParameters(; c_bagnold = c_bagnold, e_bagnold = e_bagnold)
@@ -615,7 +618,7 @@ function TransportCapacityKodatieParameters(dataset, config, indices)
         "routing.river_flow.transport_capacity.parameters.a_kodatie";
         sel = indices,
         optional = false,
-        type = Float,
+        type = FLOAT,
     )
     b_kodatie = ncread(
         dataset,
@@ -623,7 +626,7 @@ function TransportCapacityKodatieParameters(dataset, config, indices)
         "routing.river_flow.transport_capacity.parameters.b_kodatie";
         sel = indices,
         optional = false,
-        type = Float,
+        type = FLOAT,
     )
     c_kodatie = ncread(
         dataset,
@@ -631,7 +634,7 @@ function TransportCapacityKodatieParameters(dataset, config, indices)
         "routing.river_flow.transport_capacity.parameters.c_kodatie";
         sel = indices,
         optional = false,
-        type = Float,
+        type = FLOAT,
     )
     d_kodatie = ncread(
         dataset,
@@ -639,7 +642,7 @@ function TransportCapacityKodatieParameters(dataset, config, indices)
         "routing.river_flow.transport_capacity.parameters.d_kodatie";
         sel = indices,
         optional = false,
-        type = Float,
+        type = FLOAT,
     )
     tc_parameters = TransportCapacityKodatieParameters(;
         a_kodatie = a_kodatie,

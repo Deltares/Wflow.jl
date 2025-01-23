@@ -33,15 +33,15 @@ end
 "Initialize river sediment transport model variables"
 function SedimentRiverTransportVariables(
     n;
-    amount::Vector{T} = fill(mv, n),
+    amount::Vector{T} = fill(MISSING_VALUE, n),
     clay::Vector{T} = fill(0.0, n),
     silt::Vector{T} = fill(0.0, n),
     sand::Vector{T} = fill(0.0, n),
     sagg::Vector{T} = fill(0.0, n),
     lagg::Vector{T} = fill(0.0, n),
     gravel::Vector{T} = fill(0.0, n),
-    deposition::Vector{T} = fill(mv, n),
-    erosion::Vector{T} = fill(mv, n),
+    deposition::Vector{T} = fill(MISSING_VALUE, n),
+    erosion::Vector{T} = fill(MISSING_VALUE, n),
     leftover_clay::Vector{T} = fill(0.0, n),
     leftover_silt::Vector{T} = fill(0.0, n),
     leftover_sand::Vector{T} = fill(0.0, n),
@@ -102,16 +102,16 @@ end
 "Initialize river sediment transport model boundary conditions"
 function SedimentRiverTransportBC(
     n;
-    waterlevel::Vector{T} = fill(mv, n),
-    q::Vector{T} = fill(mv, n),
-    transport_capacity::Vector{T} = fill(mv, n),
-    erosion_land_clay::Vector{T} = fill(mv, n),
-    erosion_land_silt::Vector{T} = fill(mv, n),
-    erosion_land_sand::Vector{T} = fill(mv, n),
-    erosion_land_sagg::Vector{T} = fill(mv, n),
-    erosion_land_lagg::Vector{T} = fill(mv, n),
-    potential_erosion_river_bed::Vector{T} = fill(mv, n),
-    potential_erosion_river_bank::Vector{T} = fill(mv, n),
+    waterlevel::Vector{T} = fill(MISSING_VALUE, n),
+    q::Vector{T} = fill(MISSING_VALUE, n),
+    transport_capacity::Vector{T} = fill(MISSING_VALUE, n),
+    erosion_land_clay::Vector{T} = fill(MISSING_VALUE, n),
+    erosion_land_silt::Vector{T} = fill(MISSING_VALUE, n),
+    erosion_land_sand::Vector{T} = fill(MISSING_VALUE, n),
+    erosion_land_sagg::Vector{T} = fill(MISSING_VALUE, n),
+    erosion_land_lagg::Vector{T} = fill(MISSING_VALUE, n),
+    potential_erosion_river_bed::Vector{T} = fill(MISSING_VALUE, n),
+    potential_erosion_river_bank::Vector{T} = fill(MISSING_VALUE, n),
 ) where {T}
     return SedimentRiverTransportBC{T}(;
         waterlevel = waterlevel,
@@ -166,7 +166,7 @@ function SedimentRiverTransportParameters(dataset, config, indices)
         "routing.river_flow.sediment_flux.parameters.clay_fraction";
         sel = indices,
         defaults = 0.15,
-        type = Float,
+        type = FLOAT,
     )
     silt_fraction = ncread(
         dataset,
@@ -174,7 +174,7 @@ function SedimentRiverTransportParameters(dataset, config, indices)
         "routing.river_flow.sediment_flux.parameters.silt_fraction";
         sel = indices,
         defaults = 0.65,
-        type = Float,
+        type = FLOAT,
     )
     sand_fraction = ncread(
         dataset,
@@ -182,7 +182,7 @@ function SedimentRiverTransportParameters(dataset, config, indices)
         "routing.river_flow.sediment_flux.parameters.sand_fraction";
         sel = indices,
         defaults = 0.15,
-        type = Float,
+        type = FLOAT,
     )
     gravel_fraction = ncread(
         dataset,
@@ -190,7 +190,7 @@ function SedimentRiverTransportParameters(dataset, config, indices)
         "routing.river_flow.sediment_flux.parameters.sagg_fraction";
         sel = indices,
         defaults = 0.05,
-        type = Float,
+        type = FLOAT,
     )
     # Check that river fractions sum to 1
     river_fractions = clay_fraction + silt_fraction + sand_fraction + gravel_fraction
@@ -203,7 +203,7 @@ function SedimentRiverTransportParameters(dataset, config, indices)
         "routing.river_flow.sediment_flux.parameters.dm_clay";
         sel = indices,
         defaults = 2.0,
-        type = Float,
+        type = FLOAT,
     )
     dm_silt = ncread(
         dataset,
@@ -211,7 +211,7 @@ function SedimentRiverTransportParameters(dataset, config, indices)
         "routing.river_flow.sediment_flux.parameters.dm_silt";
         sel = indices,
         defaults = 10.0,
-        type = Float,
+        type = FLOAT,
     )
     dm_sand = ncread(
         dataset,
@@ -219,7 +219,7 @@ function SedimentRiverTransportParameters(dataset, config, indices)
         "routing.river_flow.sediment_flux.parameters.dm_sand";
         sel = indices,
         defaults = 200.0,
-        type = Float,
+        type = FLOAT,
     )
     dm_sagg = ncread(
         dataset,
@@ -227,7 +227,7 @@ function SedimentRiverTransportParameters(dataset, config, indices)
         "routing.river_flow.sediment_flux.parameters.dm_sagg";
         sel = indices,
         defaults = 30.0,
-        type = Float,
+        type = FLOAT,
     )
     dm_lagg = ncread(
         dataset,
@@ -235,7 +235,7 @@ function SedimentRiverTransportParameters(dataset, config, indices)
         "routing.river_flow.sediment_flux.parameters.dm_lagg";
         sel = indices,
         defaults = 500.0,
-        type = Float,
+        type = FLOAT,
     )
     dm_gravel = ncread(
         dataset,
@@ -243,12 +243,12 @@ function SedimentRiverTransportParameters(dataset, config, indices)
         "routing.river_flow.sediment_flux.parameters.dm_gravel";
         sel = indices,
         defaults = 2000.0,
-        type = Float,
+        type = FLOAT,
     )
     # Waterbodies
-    wblocs = zeros(Float, n)
-    wbarea = zeros(Float, n)
-    wbtrap = zeros(Float, n)
+    wblocs = zeros(FLOAT, n)
+    wbarea = zeros(FLOAT, n)
+    wbtrap = zeros(FLOAT, n)
     do_reservoirs = get(config.model, "doreservoir", false)::Bool
     do_lakes = get(config.model, "dolake", false)::Bool
 
@@ -259,7 +259,7 @@ function SedimentRiverTransportParameters(dataset, config, indices)
             "routing.river_flow.sediment_flux.parameters.reslocs";
             optional = false,
             sel = indices,
-            type = Float,
+            type = FLOAT,
             fill = 0,
         )
         resarea = ncread(
@@ -268,7 +268,7 @@ function SedimentRiverTransportParameters(dataset, config, indices)
             "routing.river_flow.sediment_flux.parameters.resarea";
             optional = false,
             sel = indices,
-            type = Float,
+            type = FLOAT,
             fill = 0.0,
         )
         restrapefficiency = ncread(
@@ -277,7 +277,7 @@ function SedimentRiverTransportParameters(dataset, config, indices)
             "routing.river_flow.sediment_flux.parameters.restrapeff";
             optional = false,
             sel = indices,
-            type = Float,
+            type = FLOAT,
             defaults = 1.0,
             fill = 0.0,
         )
@@ -293,7 +293,7 @@ function SedimentRiverTransportParameters(dataset, config, indices)
             "routing.river_flow.sediment_flux.parameters.lakelocs";
             optional = false,
             sel = indices,
-            type = Float,
+            type = FLOAT,
             fill = 0,
         )
         lakearea = ncread(
@@ -302,7 +302,7 @@ function SedimentRiverTransportParameters(dataset, config, indices)
             "routing.river_flow.sediment_flux.parameters.lakearea";
             optional = false,
             sel = indices,
-            type = Float,
+            type = FLOAT,
             fill = 0.0,
         )
         wblocs = wblocs .+ lakelocs
@@ -793,9 +793,9 @@ end
 "Initialize river sediment concentrations model variables"
 function SedimentConcentrationsRiverVariables(
     n;
-    total::Vector{T} = fill(mv, n),
-    suspended::Vector{T} = fill(mv, n),
-    bed::Vector{T} = fill(mv, n),
+    total::Vector{T} = fill(MISSING_VALUE, n),
+    suspended::Vector{T} = fill(MISSING_VALUE, n),
+    bed::Vector{T} = fill(MISSING_VALUE, n),
 ) where {T}
     return SedimentConcentrationsRiverVariables{T}(;
         total = total,
@@ -826,14 +826,14 @@ end
 "Initialize river sediment concentrations model boundary conditions"
 function SedimentConcentrationsRiverBC(
     n;
-    q::Vector{T} = fill(mv, n),
-    waterlevel::Vector{T} = fill(mv, n),
-    clay::Vector{T} = fill(mv, n),
-    silt::Vector{T} = fill(mv, n),
-    sand::Vector{T} = fill(mv, n),
-    sagg::Vector{T} = fill(mv, n),
-    lagg::Vector{T} = fill(mv, n),
-    gravel::Vector{T} = fill(mv, n),
+    q::Vector{T} = fill(MISSING_VALUE, n),
+    waterlevel::Vector{T} = fill(MISSING_VALUE, n),
+    clay::Vector{T} = fill(MISSING_VALUE, n),
+    silt::Vector{T} = fill(MISSING_VALUE, n),
+    sand::Vector{T} = fill(MISSING_VALUE, n),
+    sagg::Vector{T} = fill(MISSING_VALUE, n),
+    lagg::Vector{T} = fill(MISSING_VALUE, n),
+    gravel::Vector{T} = fill(MISSING_VALUE, n),
 ) where {T}
     return SedimentConcentrationsRiverBC{T}(;
         q = q,
@@ -871,7 +871,7 @@ function SedimentConcentrationsRiverParameters(dataset, config, indices)
         "routing.river_flow.concentrations.parameters.dm_clay";
         sel = indices,
         defaults = 2.0,
-        type = Float,
+        type = FLOAT,
     )
     dm_silt = ncread(
         dataset,
@@ -879,7 +879,7 @@ function SedimentConcentrationsRiverParameters(dataset, config, indices)
         "routing.river_flow.concentrations.parameters.dm_silt";
         sel = indices,
         defaults = 10.0,
-        type = Float,
+        type = FLOAT,
     )
     dm_sand = ncread(
         dataset,
@@ -887,7 +887,7 @@ function SedimentConcentrationsRiverParameters(dataset, config, indices)
         "routing.river_flow.concentrations.parameters.dm_sand";
         sel = indices,
         defaults = 200.0,
-        type = Float,
+        type = FLOAT,
     )
     dm_sagg = ncread(
         dataset,
@@ -895,7 +895,7 @@ function SedimentConcentrationsRiverParameters(dataset, config, indices)
         "routing.river_flow.concentrations.parameters.dm_sagg";
         sel = indices,
         defaults = 30.0,
-        type = Float,
+        type = FLOAT,
     )
     dm_lagg = ncread(
         dataset,
@@ -903,7 +903,7 @@ function SedimentConcentrationsRiverParameters(dataset, config, indices)
         "routing.river_flow.concentrations.parameters.dm_lagg";
         sel = indices,
         defaults = 500.0,
-        type = Float,
+        type = FLOAT,
     )
     dm_gravel = ncread(
         dataset,
@@ -911,7 +911,7 @@ function SedimentConcentrationsRiverParameters(dataset, config, indices)
         "routing.river_flow.concentrations.parameters.dm_gravel";
         sel = indices,
         defaults = 2000.0,
-        type = Float,
+        type = FLOAT,
     )
     conc_parameters = SedimentConcentrationsRiverParameters(;
         dm_clay = dm_clay,

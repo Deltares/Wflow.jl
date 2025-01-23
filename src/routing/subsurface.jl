@@ -48,7 +48,7 @@ function LateralSsfParameters(
         "routing.subsurface_flow.ksathorfrac";
         sel = indices,
         defaults = 1.0,
-        type = Float,
+        type = FLOAT,
     )
     n_cells = length(khfrac)
 
@@ -56,7 +56,7 @@ function LateralSsfParameters(
     soilthickness = soilthickness .* 0.001
 
     kh_profile_type = get(config.input.land, "ksat_profile", "exponential")::String
-    dt = Second(config.timestepsecs) / basetimestep
+    dt = Second(config.timestepsecs) / BASETIMESTEP
     if kh_profile_type == "exponential"
         (; kv_0, f) = soil.kv_profile
         kh_0 = khfrac .* kv_0 .* 0.001 .* dt
@@ -68,7 +68,7 @@ function LateralSsfParameters(
         exp_profile = KhExponential(kh_0, f .* 1000.0)
         kh_profile = KhExponentialConstant(exp_profile, z_exp .* 0.001)
     elseif kh_profile_type == "layered" || kh_profile_type == "layered_exponential"
-        kh_profile = KhLayered(fill(mv, n_cells))
+        kh_profile = KhLayered(fill(MISSING_VALUE, n_cells))
     end
     parameters = LateralSsfParameters(
         kh_profile,
@@ -101,11 +101,11 @@ function LateralSsfVariables(ssf, zi, xl, yl)
     volume = @. (ssf.theta_s - ssf.theta_r) * (ssf.soilthickness - zi) * (xl * yl)
     variables = LateralSsfVariables(;
         zi,
-        exfiltwater = fill(mv, n),
-        recharge = fill(mv, n),
-        ssf = fill(mv, n),
-        ssfin = fill(mv, n),
-        ssfmax = fill(mv, n),
+        exfiltwater = fill(MISSING_VALUE, n),
+        recharge = fill(MISSING_VALUE, n),
+        ssf = fill(MISSING_VALUE, n),
+        ssfin = fill(MISSING_VALUE, n),
+        ssfmax = fill(MISSING_VALUE, n),
         to_river = zeros(n),
         volume,
     )
@@ -147,7 +147,7 @@ function LateralSSF(
     )
     zi = 0.001 * soil.variables.zi
     variables = LateralSsfVariables(parameters, zi, x_length, y_length)
-    boundary_conditions = LateralSsfBC(; recharge = fill(mv, length(zi)))
+    boundary_conditions = LateralSsfBC(; recharge = fill(MISSING_VALUE, length(zi)))
     ssf = LateralSSF(; boundary_conditions, parameters, variables)
     return ssf
 end
@@ -222,10 +222,10 @@ end
 
 "Initialize groundwater exchange variables"
 function GroundwaterExchangeVariables(n)
-    variables = GroundwaterExchangeVariables{Float}(;
-        exfiltwater = fill(mv, n),
-        zi = fill(mv, n),
-        to_river = fill(mv, n),
+    variables = GroundwaterExchangeVariables{FLOAT}(;
+        exfiltwater = fill(MISSING_VALUE, n),
+        zi = fill(MISSING_VALUE, n),
+        to_river = fill(MISSING_VALUE, n),
         ssf = zeros(n),
     )
     return variables
@@ -239,7 +239,7 @@ end
 "Initialize groundwater exchange"
 function GroundwaterExchange(n)
     variables = GroundwaterExchangeVariables(n)
-    ssf = GroundwaterExchange{Float}(; variables)
+    ssf = GroundwaterExchange{FLOAT}(; variables)
     return ssf
 end
 
@@ -248,4 +248,4 @@ get_water_depth(model::Union{LateralSSF, GroundwaterExchange}) = model.variables
 get_exfiltwater(model::Union{LateralSSF, GroundwaterExchange}) = model.variables.exfiltwater
 
 get_flux_to_river(model::Union{LateralSSF, GroundwaterExchange}) =
-    model.variables.to_river ./ tosecond(basetimestep) # [m³ s⁻¹]
+    model.variables.to_river ./ tosecond(BASETIMESTEP) # [m³ s⁻¹]
