@@ -155,6 +155,11 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
         @test BMI.get_var_grid(model, "routing.overland_flow.variables.qy") == 5
         @test BMI.get_grid_edge_count(model, 4) == 50063
         @test BMI.get_grid_edge_count(model, 5) == 50063
+        @test_logs (
+            :warn,
+            "edges are not provided for grid type 2 (variables are located at nodes)",
+        ) BMI.get_grid_edge_count(model, 2)
+        @test_throws ErrorException BMI.get_grid_edge_count(model, 7)
         @test BMI.get_grid_edge_nodes(model, 4, fill(0, 2 * 50063))[1:4] == [1, -999, 2, 3]
         @test BMI.get_grid_edge_nodes(model, 5, fill(0, 2 * 50063))[1:4] == [1, 4, 2, 10]
         @test_logs (
