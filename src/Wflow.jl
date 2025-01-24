@@ -43,7 +43,6 @@ using Graphs:
     src,
     topological_sort_by_dfs,
     vertices
-using IfElse: IfElse
 using LoggingExtras
 using LoopVectorization: @tturbo
 using NCDatasets: NCDatasets, NCDataset, dimnames, dimsize, nomissing, defDim, defVar

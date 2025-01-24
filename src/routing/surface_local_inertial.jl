@@ -7,7 +7,7 @@
     g::T                                                # acceleration due to gravity [m s⁻²]
     froude_limit::Bool                                  # if true a check is performed if froude number > 1.0 (algorithm is modified) [-]
     h_thresh::T                                         # depth threshold for calculating flow [m]
-    zb::Vector{T} | "m"                                 # river bed elevation   
+    zb::Vector{T} | "m"                                 # river bed elevation
     zb_max::Vector{T} | "m"                             # maximum channel bed elevation
     bankfull_volume::Vector{T} | "m3"                   # bankfull volume
     bankfull_depth::Vector{T} | "m"                     # bankfull depth
@@ -123,7 +123,7 @@ end
     a::Vector{T} | "m2" | "edge"                        # flow area at edge
     r::Vector{T} | "m" | "edge"                         # wetted perimeter at edge
     volume::Vector{T} | "m3"                            # river volume
-    error::Vector{T} | "m3"                             # error volume    
+    error::Vector{T} | "m3"                             # error volume
 end
 
 "Initialize shallow water river flow model variables"
@@ -298,7 +298,7 @@ function local_inertial_river_update!(
         river_v.a[i] = river_p.flow_width_at_edge[i] * river_v.hf[i] # flow area (rectangular channel)
         river_v.r[i] = river_v.a[i] / (river_p.flow_width_at_edge[i] + 2.0 * river_v.hf[i]) # hydraulic radius (rectangular channel)
 
-        river_v.q[i] = IfElse.ifelse(
+        river_v.q[i] = ifelse(
             river_v.hf[i] > river_p.h_thresh,
             local_inertial_flow(
                 river_v.q0[i],
@@ -318,9 +318,9 @@ function local_inertial_river_update!(
 
         # limit q in case water is not available
         river_v.q[i] =
-            IfElse.ifelse(river_v.h[i_src] <= 0.0, min(river_v.q[i], 0.0), river_v.q[i])
+            ifelse(river_v.h[i_src] <= 0.0, min(river_v.q[i], 0.0), river_v.q[i])
         river_v.q[i] =
-            IfElse.ifelse(river_v.h[i_dst] <= 0.0, max(river_v.q[i], 0.0), river_v.q[i])
+            ifelse(river_v.h[i_dst] <= 0.0, max(river_v.q[i], 0.0), river_v.q[i])
 
         river_v.q_av[i] += river_v.q[i] * dt
     end
@@ -350,7 +350,7 @@ function local_inertial_river_update!(
                 i0 += 1 * (floodplain_p.profile.depth[k] <= floodplain_v.hf[i])
             end
             i1 = max(i0, 1)
-            i2 = IfElse.ifelse(i1 == length(floodplain_p.profile.depth), i1, i1 + 1)
+            i2 = ifelse(i1 == length(floodplain_p.profile.depth), i1, i1 + 1)
 
             a_src = flow_area(
                 floodplain_p.profile.width[i2, i_src],
@@ -370,7 +370,7 @@ function local_inertial_river_update!(
 
             floodplain_v.a[i] = min(a_src, a_dst)
 
-            floodplain_v.r[i] = IfElse.ifelse(
+            floodplain_v.r[i] = ifelse(
                 a_src < a_dst,
                 a_src / wetted_perimeter(
                     floodplain_p.profile.p[i1, i_src],
@@ -384,7 +384,7 @@ function local_inertial_river_update!(
                 ),
             )
 
-            floodplain_v.q[i] = IfElse.ifelse(
+            floodplain_v.q[i] = ifelse(
                 floodplain_v.a[i] > 1.0e-05,
                 local_inertial_flow(
                     floodplain_v.q0[i],
@@ -403,18 +403,18 @@ function local_inertial_river_update!(
             )
 
             # limit floodplain q in case water is not available
-            floodplain_v.q[i] = IfElse.ifelse(
+            floodplain_v.q[i] = ifelse(
                 floodplain_v.h[i_src] <= 0.0,
                 min(floodplain_v.q[i], 0.0),
                 floodplain_v.q[i],
             )
-            floodplain_v.q[i] = IfElse.ifelse(
+            floodplain_v.q[i] = ifelse(
                 floodplain_v.h[i_dst] <= 0.0,
                 max(floodplain_v.q[i], 0.0),
                 floodplain_v.q[i],
             )
 
-            floodplain_v.q[i] = IfElse.ifelse(
+            floodplain_v.q[i] = ifelse(
                 floodplain_v.q[i] * river_v.q[i] < 0.0,
                 0.0,
                 floodplain_v.q[i],
