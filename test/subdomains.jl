@@ -1,7 +1,7 @@
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 
-model = Wflow.initialize_sbm_model(config)
+model = Wflow.Model(config)
 
 (; network) = model
 

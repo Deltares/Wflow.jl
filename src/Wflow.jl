@@ -113,18 +113,19 @@ function Clock(config, reader)
     return Clock(starttime, 0, dt)
 end
 
-include("io.jl")
-include("network.jl")
-include("routing/routing.jl")
-
 abstract type AbstractModel{T} end
 abstract type AbstractLandModel end
 
 # different model types (used for dispatch)
 abstract type AbstractModelType end
-struct SbmModel <: AbstractModelType end         # "sbm" type / sbm_model.jl
-struct SbmGwfModel <: AbstractModelType end      # "sbm_gwf" type / sbm_gwf_model.jl
+abstract type AbstractSbmModelType <: AbstractModelType end
+struct SbmModel <: AbstractSbmModelType end      # "sbm" type / sbm_model.jl
+struct SbmGwfModel <: AbstractSbmModelType end   # "sbm_gwf" type / sbm_gwf_model.jl
 struct SedimentModel <: AbstractModelType end    # "sediment" type / sediment_model.jl
+
+include("io.jl")
+include("network.jl")
+include("routing/routing.jl")
 
 """
     Model{R <: Routing, L <: AbstractLandModel, T <: AbstractModelType} <:AbstractModel{T}
@@ -190,6 +191,7 @@ include("sbm_gwf_model.jl")
 include("utils.jl")
 include("bmi.jl")
 include("subdomains.jl")
+include("initialize_model.jl")
 include("logging.jl")
 include("states.jl")
 
@@ -241,17 +243,7 @@ function run(tomlpath::AbstractString; silent = nothing)
 end
 
 function run(config::Config)
-    modeltype = config.model.type
-
-    model = if modeltype == "sbm"
-        initialize_sbm_model(config)
-    elseif modeltype == "sbm_gwf"
-        initialize_sbm_gwf_model(config)
-    elseif modeltype == "sediment"
-        initialize_sediment_model(config)
-    else
-        error("unknown model type")
-    end
+    model = Model(config)
     load_fixed_forcing!(model)
     run!(model)
     return model

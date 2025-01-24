@@ -145,3 +145,188 @@ boundary condition of groundwater flow), `river`, `reservoir` and `lake`.
     reservoir::NetworkWaterBody = NetworkWaterBody()
     river::NetworkRiver = NetworkRiver()
 end
+
+function NetworkReservoir(
+    config::Config,
+    dataset::NCDataset,
+    to_do::NamedTuple,
+    data::NamedTuple,
+    ::AbstractSbmModelType,
+)::Tuple{NetworkWaterBody, Vector{Int}, Union{Nothing, SimpleReservoir}}
+    (; river_data, pits) = data
+    (; inds_river) = river_data
+    n_river_cells = length(inds_river)
+    if to_do.reservoirs
+        reservoir, reservoir_network, inds_reservoir_map2river =
+            SimpleReservoir(dataset, config, inds_river, n_river_cells, pits)
+        network_reservoir = NetworkWaterBody(; reservoir_network...)
+    else
+        network_reservoir = NetworkWaterBody()
+        inds_reservoir_map2river = zeros(Int, n_river_cells)
+        reservoir = nothing
+    end
+    return network_reservoir, inds_reservoir_map2river, reservoir
+end
+
+function NetworkLake(
+    config::Config,
+    dataset::NCDataset,
+    to_do::NamedTuple,
+    data::NamedTuple,
+    ::AbstractSbmModelType,
+)
+    (; inds_river) = data.river_data
+    n_river_cells = length(inds_river)
+    if to_do.lakes
+        lake, lake_network, inds_lake_map2river, pits =
+            Lake(dataset, config, inds_river, n_river_cells, pits)
+        network_lake = NetworkWaterBody(; lake_network...)
+    else
+        network_lake = NetworkWaterBody()
+        inds_lake_map2river = fill(0, n_river_cells)
+        lake = nothing
+    end
+    network_lake, inds_lake_map2river, lake
+end
+
+function NetworkLand(
+    config::Config,
+    to_do::NamedTuple,
+    data::NamedTuple,
+    ::AbstractSbmModelType,
+)::Tuple{NetworkLand, NamedTuple}
+    (; sub_catchment_data, cell_data, river_data, pits, routing_types) = data
+    (; ldd, indices, reverse_indices, land_slope) = sub_catchment_data
+
+    graph = flowgraph(ldd, indices, pcr_dir)
+
+    (;
+        streamorder,
+        toposort,
+        order_of_subdomains,
+        subdomain_inds,
+        toposort_subdomain,
+        min_streamorder_land,
+    ) = get_kinwave_subdomains_land(config, graph, data, to_do)
+
+    data = (; data..., min_streamorder_land, streamorder)
+
+    frac_to_river =
+        fraction_runoff_to_river(graph, ldd, river_data.inds_land_map2river, land_slope)
+
+    network_land = NetworkLand(;
+        graph,
+        upstream_nodes = filter_upsteam_nodes(graph, pits[indices]),
+        order_of_subdomains,
+        order_subdomain = toposort_subdomain,
+        subdomain_indices = subdomain_inds,
+        order = toposort,
+        indices,
+        reverse_indices,
+        area = cell_data.x_length .* cell_data.y_length,
+        slope = land_slope,
+        frac_to_river,
+    )
+
+    return network_land, data
+end
+
+function NetworkRiver(
+    config::Config,
+    data::NamedTuple,
+    to_do::NamedTuple,
+    ::AbstractSbmModelType,
+)::Tuple{NetworkRiver, NamedTuple}
+    (;
+        sub_catchment_data,
+        cell_data,
+        reservoir_data,
+        lake_data,
+        river_data,
+        land_hydrology,
+    ) = data
+    (; inds_land_map2river, ldd_river, inds_river, reverse_inds_river) = river_data
+
+    if to_do.pits
+        ldd_river = set_pit_ldd(pits_2d, ldd_river, inds_river)
+    end
+
+    allocation_area_inds, river_allocation_area_inds =
+        get_allocation_area_inds(land_hydrology, data, to_do)
+
+    graph_river = flowgraph(ldd_river, inds_river, pcr_dir)
+
+    (;
+        min_streamorder_river,
+        order_of_river_subdomains,
+        river_subdomain_inds,
+        toposort_river,
+    ) = get_kinwave_subdomains_river(config, graph_river, data)
+
+    data = (; data..., min_streamorder_river)
+
+    network_river = NetworkRiver(;
+        graph = graph_river,
+        indices = inds_river,
+        reverse_indices = reverse_inds_river,
+        reservoir_indices = reservoir_data.inds_reservoir_map2river,
+        land_indices = inds_land_map2river,
+        lake_indices = lake_data.inds_lake_map2river,
+        allocation_area_indices = river_allocation_area_inds,
+        cell_area = cell_data.x_length[inds_land_map2river] .*
+                    cell_data.y_length[inds_land_map2river],
+        order_of_subdomains = order_of_river_subdomains,
+        subdomain_indices = river_subdomain_inds,
+        order = toposort_river,
+    )
+
+    return network_river, data
+end
+
+function Network(
+    config::Config,
+    dataset::NCDataset,
+    data::NamedTuple,
+    to_do::NamedTuple,
+    type::AbstractModelType,
+)
+    (; routing_types) = data
+    (; river_routing, land_routing) = routing_types
+    pits = zeros(Bool, size(data.sub_catchment_data.subcatch_2d))
+    data = (; data..., pits)
+
+    network_land, data = NetworkLand(config, to_do, data, type)
+    network_reservoir, inds_reservoir_map2river, reservoir =
+        NetworkReservoir(config, dataset, to_do, data, type)
+    network_lake, inds_lake_map2river, lake =
+        NetworkLake(config, dataset, to_do, data, type)
+
+    reservoir_data = (; inds_reservoir_map2river)
+    lake_data = (; inds_lake_map2river)
+    data = (; data..., reservoir_data, lake_data, reservoir, lake)
+    network_river, data = NetworkRiver(config, data, to_do, type)
+
+    network_drain = NetworkDrain(config, dataset, data, to_do, type)
+    network = Network(;
+        land = network_land,
+        reservoir = network_reservoir,
+        lake = network_lake,
+        river = network_river,
+        drain = network_drain,
+    )
+    data = (; data..., network)
+
+    if nthreads() > 1
+        if river_routing == "kinematic-wave"
+            @info "Parallel execution of kinematic wave" data.min_streamorder_land data.min_streamorder_river
+        elseif land_routing == "kinematic-wave" || to_do.lateral_ssf
+            @info "Parallel execution of kinematic wave" data.min_streamorder_land
+        end
+    end
+
+    return network, data
+end
+
+NetworkReservoir(config, dataset, data, to_do, ::AbstractModelType) = NetworkWaterBody()
+NetworkLake(config, dataset, data, to_do, ::AbstractModelType) = NetworkWaterBody()
+NetworkDrain(config, dataset, data, to_do, ::AbstractModelType) = NetworkDrain()

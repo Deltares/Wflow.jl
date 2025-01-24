@@ -14,13 +14,13 @@ end
 
 tomlpath = joinpath(@__DIR__, "sbm_piave_demand_config.toml")
 config = Wflow.Config(tomlpath)
-model = Wflow.initialize_sbm_model(config)
+model = Wflow.Model(config)
 q_demand, riv_vol_demand, ssf_vol_demand = run_piave(model, 30)
 Wflow.close_files(model; delete_output = false)
 
 tomlpath = joinpath(@__DIR__, "sbm_piave_config.toml")
 config = Wflow.Config(tomlpath)
-model = Wflow.initialize_sbm_model(config)
+model = Wflow.Model(config)
 q_, riv_vol, ssf_vol = run_piave(model, 30)
 Wflow.close_files(model; delete_output = false)
 
@@ -102,7 +102,7 @@ end
 
 tomlpath = joinpath(@__DIR__, "sbm_piave_demand_config.toml")
 config = Wflow.Config(tomlpath)
-model = Wflow.initialize_sbm_model(config)
+model = Wflow.Model(config)
 Wflow.run_timestep!(model)
 sbm = model.land
 (; paddy, nonpaddy, industry, livestock, domestic) = model.land.demand

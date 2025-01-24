@@ -193,7 +193,7 @@ abs_path_forcing = Wflow.input_path(config, config.input.path_forcing)
 config.input["path_forcing"] = abs_path_forcing
 @test isabspath(config.input.path_forcing)
 
-model = Wflow.initialize_sbm_model(config)
+model = Wflow.Model(config)
 Wflow.advance!(model.clock)
 Wflow.load_dynamic_input!(model)
 
@@ -283,7 +283,7 @@ config.input.land.soil.parameters.c = Dict(
     "netcdf" => Dict("variable" => Dict("name" => "c")),
 )
 
-model = Wflow.initialize_sbm_model(config)
+model = Wflow.Model(config)
 Wflow.advance!(model.clock)
 Wflow.load_dynamic_input!(model)
 

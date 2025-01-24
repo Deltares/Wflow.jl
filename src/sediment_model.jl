@@ -5,23 +5,13 @@ Initial part of the sediment model concept. Reads the input settings and data as
 Config object. Will return a Model that is ready to run.
 """
 function initialize_sediment_model(config::Config)
-    model_type = config.model.type::String
-    @info "Initialize model variables for model type `$model_type`."
-
-    # unpack the paths to the netCDF files
-    static_path = input_path(config, config.input.path_static)
-
-    reader = prepare_reader(config)
-    clock = Clock(config, reader)
-    dataset = NCDataset(static_path)
-
     subcatch_2d =
         ncread(dataset, config, "subcatchment"; optional = false, allow_missing = true)
     # indices based on catchment
     indices, rev_indices = active_indices(subcatch_2d, missing)
     n = length(indices)
 
-    river_2d = ncread(
+    river_location_2d = ncread(
         dataset,
         config,
         "river_location";
@@ -29,7 +19,7 @@ function initialize_sediment_model(config::Config)
         type = Bool,
         fill = false,
     )
-    river = river_2d[indices]
+    river_location = river_location_2d[indices]
 
     soilloss = SoilLoss(dataset, config, indices)
 
@@ -47,7 +37,7 @@ function initialize_sediment_model(config::Config)
             type = Float,
             fill = 0,
         )
-        waterbodies = waterbodies .+ reservoirs
+        waterbodies .+= reservoirs
     end
     if do_lakes
         lakes = ncread(
@@ -59,7 +49,7 @@ function initialize_sediment_model(config::Config)
             type = Float,
             fill = 0,
         )
-        waterbodies = waterbodies .+ lakes
+        waterbodies .+= lakes
     end
     waterbodies = waterbodies .> 0
 
@@ -73,7 +63,7 @@ function initialize_sediment_model(config::Config)
     graph = flowgraph(ldd, indices, pcr_dir)
 
     # River processes
-    indices_riv, rev_indices_riv = active_indices(river_2d, 0)
+    indices_riv, rev_indices_riv = active_indices(river_location_2d, 0)
 
     ldd_riv = ldd_2d[indices_riv]
     graph_riv = flowgraph(ldd_riv, indices_riv, pcr_dir)
@@ -106,17 +96,7 @@ function initialize_sediment_model(config::Config)
         reverse_indices = rev_indices_riv,
     )
 
-    network = Network(; land = network_land, river = network_river)
-
     routing = Routing(; overland_flow = overland_flow_sediment, river_flow = river_sediment)
-
-    model =
-        Model(config, network, routing, soilloss, clock, reader, writer, SedimentModel())
-
-    set_states!(model)
-    @info "Initialized model"
-
-    return model
 end
 
 "update sediment model for a single timestep"

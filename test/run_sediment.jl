@@ -3,7 +3,7 @@ using Wflow
 tomlpath = joinpath(@__DIR__, "sediment_config.toml")
 config = Wflow.Config(tomlpath)
 
-model = Wflow.initialize_sediment_model(config)
+model = Wflow.Model(config)
 (; network) = model
 
 Wflow.run_timestep!(model)
@@ -84,7 +84,7 @@ Wflow.close_files(model)
 tomlpath = joinpath(@__DIR__, "sediment_eurosem_engelund_config.toml")
 config = Wflow.Config(tomlpath)
 
-model = Wflow.initialize_sediment_model(config)
+model = Wflow.Model(config)
 (; network) = model
 
 Wflow.run_timestep!(model)
@@ -130,7 +130,7 @@ config.model.run_river_model = false
 # Use govers equation for land transport capacity
 config.model.land_transport = "govers"
 
-model = Wflow.initialize_sediment_model(config)
+model = Wflow.Model(config)
 (; network) = model
 
 # run the first and second timestep
@@ -156,7 +156,7 @@ config.model.run_river_model = false
 # Use yalin equation for land transport capacity
 config.model.land_transport = "yalin"
 
-model = Wflow.initialize_sediment_model(config)
+model = Wflow.Model(config)
 (; network) = model
 
 # run the first and second timestep
@@ -182,7 +182,7 @@ config = Wflow.Config(tomlpath)
 # Use yang equation for river transport capacity
 config.model.river_transport = "yang"
 
-model = Wflow.initialize_sediment_model(config)
+model = Wflow.Model(config)
 (; network) = model
 
 # run the first and second timestep
@@ -206,7 +206,7 @@ config = Wflow.Config(tomlpath)
 # Use kodatie equation for river transport capacity
 config.model.river_transport = "kodatie"
 
-model = Wflow.initialize_sediment_model(config)
+model = Wflow.Model(config)
 (; network) = model
 
 # run the first and second timestep
@@ -231,7 +231,7 @@ config = Wflow.Config(tomlpath)
 # Use molinas equation for river transport capacity
 config.model.river_transport = "molinas"
 
-model = Wflow.initialize_sediment_model(config)
+model = Wflow.Model(config)
 (; network) = model
 
 # run the first and second timestep
