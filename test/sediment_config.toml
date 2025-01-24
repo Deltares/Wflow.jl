@@ -160,7 +160,7 @@ land_surface_water_clay_transport_capacity__mass_flow_rate = "TCclay"
 "land_surface_water_clay~to-river__mass_flow_rate" = "inlandclay"
 
 land_surface_water_sediment__mass_flow_rate = "olsed"
-land_surface_water_clay__mass_flow_rate = "olclay"
+routing.overland_flow.sediment_flux.variables.clay = "olclay"
 
 routing.river_flow.hydrological_forcing.waterlevel_river = "h_riv"
 routing.river_flow.sediment_flux.boundary_conditions.erosion_land_clay = "inlandclayriv"

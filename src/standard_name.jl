@@ -154,8 +154,6 @@ const sediment_standard_name_map = Dict{String, ComposedFunction}(
         @optic(_.routing.overland_flow.to_river.variables.clay),
     "land_surface_water_sediment__mass_flow_rate" =>
         @optic(_.routing.overland_flow.sediment_flux.variables.amount),
-    "land_surface_water_clay__mass_flow_rate" =>
-        @optic(_.routing.overland_flow.sediment_flux.variables.clay),
     "river_water_sediment~bedload__mass_concentration" =>
         @optic(_.routing.river_flow.concentrations.variables.bed),
     "river_water_sediment~suspended__mass_concentration" =>
