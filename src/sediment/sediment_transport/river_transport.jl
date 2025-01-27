@@ -251,7 +251,7 @@ function SedimentRiverTransportParameters(dataset, config, indices)
         lakearea = ncread(
             dataset,
             config,
-            lems;
+            lens;
             optional = false,
             sel = indices,
             type = Float,
