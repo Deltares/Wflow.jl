@@ -18,8 +18,10 @@ const sbm_standard_name_map = Dict{String, ComposedFunction}(
     "snowpack__liquid-equivalent_depth" => @optic(_.land.snow.variables.swe),
     "snowpack_meltwater__volume_flux" => @optic(_.land.snow.variables.snow_melt),
     "snowpack_water__runoff_volume_flux" => @optic(_.land.snow.variables.runoff),
-    "river_water__volume_inflow_rate" =>
+    "river_water_inflow~external__volume_flow_rate" =>
         @optic(_.routing.river_flow.boundary_conditions.inflow),
+    "river_water_inflow~lateral__volume_flow_rate" =>
+        @optic(_.routing.river_flow.boundary_conditions.inwater),
     "river_water__volume_flow_rate" => @optic(_.routing.river_flow.variables.q),
     "river_water__time_average_of_volume_flow_rate" =>
         @optic(_.routing.river_flow.variables.q_av),
@@ -146,8 +148,10 @@ const sediment_standard_name_map = Dict{String, ComposedFunction}(
     "soil_erosion_clay__mass_flow_rate" => @optic(_.land.soil_erosion.variables.clay),
     "soil_erosion_silt__mass_flow_rate" => @optic(_.land.soil_erosion.variables.silt),
     "soil_erosion_sand__mass_flow_rate" => @optic(_.land.soil_erosion.variables.sand),
-    "soil_erosion_aggregates~small__mass_flow_rate" => @optic(_.land.soil_erosion.variables.sagg),
-    "soil_erosion_aggregates~large__mass_flow_rate" => @optic(_.land.soil_erosion.variables.lagg),
+    "soil_erosion_aggregates~small__mass_flow_rate" =>
+        @optic(_.land.soil_erosion.variables.sagg),
+    "soil_erosion_aggregates~large__mass_flow_rate" =>
+        @optic(_.land.soil_erosion.variables.lagg),
     "land_surface_water_sediment_transport_capacity__mass_flow_rate" =>
         @optic(_.routing.overland_flow.transport_capacity.variables.amount),
     "land_surface_water_clay_transport_capacity__mass_flow_rate" =>

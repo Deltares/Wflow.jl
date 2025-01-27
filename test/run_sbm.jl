@@ -208,8 +208,8 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 
 config.input.dynamic.cyclic =
-    ["vegetation__leaf-area_index", "river_water__volume_inflow_rate"]
-config.input.parameters.river_water__volume_inflow_rate = "inflow"
+    ["vegetation__leaf-area_index", "river_water_inflow~external__volume_flow_rate"]
+config.input.parameters["river_water_inflow~external__volume_flow_rate"] = "inflow"
 
 model = Wflow.initialize_sbm_model(config)
 Wflow.run_timestep!(model)
