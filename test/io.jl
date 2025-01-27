@@ -29,7 +29,7 @@ config = Wflow.Config(tomlpath)
     @test Wflow.get_alias(config, lens, lens_alias, nothing) == "thetaS"
     val = pop!(config.input.parameters, "soil_water__saturated_volume_fraction")
     config.input.parameters["theta_s"] = val
-    @test Wflow.get_alias(config, lens, lens_alias, nothing) == "thetaS" == "thetaS"
+    @test Wflow.get_alias(config, lens, lens_alias, nothing) == "thetaS"
     config.input.parameters.soil_water__saturated_volume_fraction = "thetaS"
 
     # modifiers can also be applied
