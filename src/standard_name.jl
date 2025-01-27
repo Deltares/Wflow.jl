@@ -144,6 +144,10 @@ const sediment_standard_name_map = Dict{String, ComposedFunction}(
         @optic(_.land.overland_flow_erosion.variables.amount),
     "soil_erosion__mass_flow_rate" => @optic(_.land.soil_erosion.variables.amount),
     "soil_erosion_clay__mass_flow_rate" => @optic(_.land.soil_erosion.variables.clay),
+    "soil_erosion_silt__mass_flow_rate" => @optic(_.land.soil_erosion.variables.silt),
+    "soil_erosion_sand__mass_flow_rate" => @optic(_.land.soil_erosion.variables.sand),
+    "soil_erosion_aggregates~small__mass_flow_rate" => @optic(_.land.soil_erosion.variables.sagg),
+    "soil_erosion_aggregates~large__mass_flow_rate" => @optic(_.land.soil_erosion.variables.lagg),
     "land_surface_water_sediment_transport_capacity__mass_flow_rate" =>
         @optic(_.routing.overland_flow.transport_capacity.variables.amount),
     "land_surface_water_clay_transport_capacity__mass_flow_rate" =>
@@ -152,6 +156,14 @@ const sediment_standard_name_map = Dict{String, ComposedFunction}(
         @optic(_.routing.overland_flow.to_river.variables.amount),
     "land_surface_water_clay~to-river__mass_flow_rate" =>
         @optic(_.routing.overland_flow.to_river.variables.clay),
+    "land_surface_water_silt~to-river__mass_flow_rate" =>
+        @optic(_.routing.overland_flow.to_river.variables.silt),
+    "land_surface_water_sand~to-river__mass_flow_rate" =>
+        @optic(_.routing.overland_flow.to_river.variables.sand),
+    "land_surface_water_aggregates~small~to-river__mass_flow_rate" =>
+        @optic(_.routing.overland_flow.to_river.variables.sagg),
+    "land_surface_water_aggregates~large~to-river__mass_flow_rate" =>
+        @optic(_.routing.overland_flow.to_river.variables.lagg),
     "land_surface_water_sediment__mass_flow_rate" =>
         @optic(_.routing.overland_flow.sediment_flux.variables.amount),
     "river_water_sediment~bedload__mass_concentration" =>
