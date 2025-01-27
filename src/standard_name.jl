@@ -22,20 +22,21 @@ const sbm_standard_name_map = Dict{String, ComposedFunction}(
         @optic(_.routing.river_flow.boundary_conditions.inflow),
     "river_water_inflow~lateral__volume_flow_rate" =>
         @optic(_.routing.river_flow.boundary_conditions.inwater),
-    "river_water__volume_flow_rate" => @optic(_.routing.river_flow.variables.q),
-    "river_water__time_average_of_volume_flow_rate" =>
-        @optic(_.routing.river_flow.variables.q_av),
-    "river_water__depth" => @optic(_.routing.river_flow.variables.h),
-    "river_water__time_average_of_depth" => @optic(_.routing.river_flow.variables.h_av),
+    "river_water__instantaneous_volume_flow_rate" =>
+        @optic(_.routing.river_flow.variables.q),
+    "river_water__volume_flow_rate" => @optic(_.routing.river_flow.variables.q_av),
+    "river_water__instantaneous_depth" => @optic(_.routing.river_flow.variables.h),
+    "river_water__depth" => @optic(_.routing.river_flow.variables.h_av),
     "river_water__volume" => @optic(_.routing.river_flow.variables.volume),
     "land_surface_water_abstraction__volume_flux" =>
         @optic(_.routing.river_flow.allocation.variables.act_surfacewater_abst),
     "floodplain_water__volume" =>
         @optic(_.routing.river_flow.floodplain.variables.volume),
-    "floodplain_water__depth" => @optic(_.routing.river_flow.floodplain.variables.h),
-    "floodplain_water__volume_flow_rate" =>
+    "floodplain_water__instantaneous_depth" =>
+        @optic(_.routing.river_flow.floodplain.variables.h),
+    "floodplain_water__instantaneous_volume_flow_rate" =>
         @optic(_.routing.river_flow.floodplain.variables.q),
-    "floodplain_water__time_average_of_volume_flow_rate" =>
+    "floodplain_water__volume_flow_rate" =>
         @optic(_.routing.river_flow.floodplain.variables.q_av),
     "reservoir_water__volume" =>
         @optic(_.routing.river_flow.boundary_conditions.reservoir.variables.volume),
@@ -79,17 +80,17 @@ const sbm_standard_name_map = Dict{String, ComposedFunction}(
     "snowpack~dry__leq-depth" => @optic(_.land.snow.variables.snow_storage),
     "glacier_ice__leq-volume" => @optic(_.land.glacier.variables.glacier_store),
     "glacier_ice__melt_volume_flux" => @optic(_.land.glacier.variables.glacier_melt),
-    "land_surface_water__volume_flow_rate" =>
+    "land_surface_water__instantaneous_volume_flow_rate" =>
         @optic(_.routing.overland_flow.variables.q),
-    "land_surface_water__time_average_of_volume_flow_rate" =>
+    "land_surface_water__volume_flow_rate" =>
         @optic(_.routing.overland_flow.variables.q_av),
-    "land_surface_water__depth" => @optic(_.routing.overland_flow.variables.h),
-    "land_surface_water__time_average_of_depth" =>
-        @optic(_.routing.overland_flow.variables.h_av),
+    "land_surface_water__instantaneous_depth" =>
+        @optic(_.routing.overland_flow.variables.h),
+    "land_surface_water__depth" => @optic(_.routing.overland_flow.variables.h_av),
     "land_surface_water__volume" => @optic(_.routing.overland_flow.variables.volume),
-    "land_surface_water__x_component_of_volume_flow_rate" =>
+    "land_surface_water__x_component_of_instantaneous_volume_flow_rate" =>
         @optic(_.routing.overland_flow.variables.qx),
-    "land_surface_water__y_component_of_volume_flow_rate" =>
+    "land_surface_water__y_component_of_instantaneous_volume_flow_rate" =>
         @optic(_.routing.overland_flow.variables.qy),
     "land_surface_water~paddy__depth" => @optic(_.land.demand.paddy.variables.h),
     "land~domestic__gross_water_demand_volume_flux" =>

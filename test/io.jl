@@ -207,8 +207,8 @@ Wflow.load_dynamic_input!(model)
     @test dimnames(writer.dataset["ustorelayerdepth"]) == ncdims
     ncvars = [k for k in keys(writer.dataset) if !in(k, ncdims)]
     @test "snow" in ncvars
-    @test "q_river" in ncvars
-    @test "q_land" in ncvars
+    @test "q_av_river" in ncvars
+    @test "q_av_land" in ncvars
     @test length(writer.state_parameters) == 14
 end
 
@@ -227,11 +227,12 @@ lens = @optic(_.input.parameters.doesnt_exist)
     @test map["vegetation_canopy_water__storage"](model)[50063] ≈ 0.0
     @test map["soil_water_sat-zone_top__depth"](model)[50063] ≈ 296.8028609104624
     @test map["subsurface_water__volume_flow_rate"](model)[10606] ≈ 39.972334552895816
-    @test map["river_water__volume_flow_rate"](model)[149] ≈ 53.48673634956338
-    @test map["river_water__depth"](model)[149] ≈ 1.167635369628945
+    @test map["river_water__instantaneous_volume_flow_rate"](model)[149] ≈ 53.48673634956338
+    @test map["river_water__instantaneous_depth"](model)[149] ≈ 1.167635369628945
     @test map["river_water__volume"](model)[149] ≈ 63854.60119358985
-    @test map["land_surface_water__volume_flow_rate"](model)[2075] ≈ 3.285909284322251
-    @test map["land_surface_water__depth"](model)[2075] ≈ 0.052076262033771775
+    @test map["land_surface_water__instantaneous_volume_flow_rate"](model)[2075] ≈
+          3.285909284322251
+    @test map["land_surface_water__instantaneous_depth"](model)[2075] ≈ 0.052076262033771775
     @test map["land_surface_water__volume"](model)[2075] ≈ 29920.754983235012
 end
 
@@ -457,9 +458,9 @@ end
     @test "soil_layer_water_unsat-zone__depth" in required_states
     @test "vegetation_canopy_water__storage" in required_states
     @test "subsurface_water__volume_flow_rate" in required_states
-    @test "river_water__volume_flow_rate" in required_states
-    @test "river_water__time_average_of_depth" in required_states
-    @test "land_surface_water__time_average_of_depth" in required_states
+    @test "river_water__instantaneous_volume_flow_rate" in required_states
+    @test "river_water__depth" in required_states
+    @test "land_surface_water__depth" in required_states
     @test !("lake_water_level__elevation" in required_states)
 
     # Adding an unused state the see if the right warning message is thrown
@@ -485,7 +486,7 @@ end
     @test "soil_layer_water_unsat-zone__depth" in required_states
     @test "vegetation_canopy_water__storage" in required_states
     @test "subsurface_water__hydraulic_head" in required_states
-    @test "river_water__volume_flow_rate" in required_states
-    @test "river_water__time_average_of_depth" in required_states
-    @test "land_surface_water__time_average_of_depth" in required_states
+    @test "river_water__instantaneous_volume_flow_rate" in required_states
+    @test "river_water__depth" in required_states
+    @test "land_surface_water__depth" in required_states
 end

@@ -14,26 +14,26 @@ flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
     row = csv_first_row(model.writer.csv_path)
 
     @test row.time == DateTime("2000-01-02T00:00:00")
-    @test row.Q ≈ 14.283603959245331f0
+    @test row.Q ≈ 6.873112103276999f0
     @test row.volume ≈ 2.7535003939625636f7
     @test row.temp_bycoord ≈ 2.390000104904175f0
     @test row.vwc_layer2_bycoord ≈ 0.25938809638672006f0
     @test row.temp_byindex ≈ 2.390000104904175f0
-    @test row.Q_6336050 ≈ 0.0077488610359143706f0
-    @test row.Q_6336510 ≈ 0.029475452452069627f0
-    @test row.Q_6836100 ≈ 0.018908801563313697f0
-    @test row.Q_6336500 ≈ 0.006568230884299706f0
-    @test row.Q_6836190 ≈ 0.004495680971248625f0
-    @test row.Q_6336800 ≈ 0.00916756751611816f0
-    @test row.Q_6336900 ≈ 0.008200812406926841f0
-    @test row.Q_6336930 ≈ 0.026477954532813916f0
-    @test row.Q_6336910 ≈ 0.009127079213306247f0
-    @test row.Q_6136500 ≈ 0.001154334630885042f0
-    @test row.Q_6136520 ≈ 0.0014432161225527867f0
-    @test row.Q_6136150 ≈ 0.0073146444422822225f0
-    @test row.Q_6136151 ≈ 0.006614628762328246f0
-    @test row.Q_6136160 ≈ 6.186486795085275f0
-    @test row.Q_6136202 ≈ 1.8472398588556238f0
+    @test row.Q_6336050 ≈ 0.003199581692927209f0
+    @test row.Q_6336510 ≈ 0.012862611828173352f0
+    @test row.Q_6836100 ≈ 0.00875995439640751f0
+    @test row.Q_6336500 ≈ 0.0024066827961781796f0
+    @test row.Q_6836190 ≈ 0.002527417212072159f0
+    @test row.Q_6336800 ≈ 0.004389783779801617f0
+    @test row.Q_6336900 ≈ 0.003937679133692149f0
+    @test row.Q_6336930 ≈ 0.013838197736695087f0
+    @test row.Q_6336910 ≈ 0.0030751270360095326f0
+    @test row.Q_6136500 ≈ 0.00043529085301572757f0
+    @test row.Q_6136520 ≈ 0.0004120247680628514f0
+    @test row.Q_6136150 ≈ 0.002963633332122439f0
+    @test row.Q_6136151 ≈ 0.0027878183390109136f0
+    @test row.Q_6136160 ≈ 3.5800958698165535f0
+    @test row.Q_6136202 ≈ 1.3581067685417394f0
     @test row.recharge_1 ≈ -0.0020800523945940217f0
 end
 
@@ -313,8 +313,8 @@ config.model.floodplain_1d = true
 config.model.river_routing = "local-inertial"
 config.model.land_routing = "kinematic-wave"
 config.input.parameters["floodplain_water__sum_of_volume-per-depth"] = "floodplain_volume"
-config.state.variables.floodplain_water__volume_flow_rate = "q_floodplain"
-config.state.variables.floodplain_water__depth = "h_floodplain"
+config.state.variables.floodplain_water__instantaneous_volume_flow_rate = "q_floodplain"
+config.state.variables.floodplain_water__instantaneous_depth = "h_floodplain"
 
 model = Wflow.initialize_sbm_model(config)
 

@@ -118,21 +118,21 @@ soil_layer_water_unsat-zone__depth = "ustorelayerdepth"
 
 glacier_ice__leq-volume = "glacierstore"
 
-river_water__depth = "h_river"
-river_water__time_average_of_depth = "h_av_river"
-river_water__volume_flow_rate = "q_river"
+river_water__instantaneous_depth = "h_river"
+river_water__depth = "h_av_river"
+river_water__instantaneous_volume_flow_rate = "q_river"
 
 subsurface_water__volume_flow_rate  = "ssf"
 
-land_surface_water__volume_flow_rate = "q_land"
-land_surface_water__depth = "h_land"
-land_surface_water__time_average_of_depth = "h_av_land"
+land_surface_water__instantaneous_volume_flow_rate = "q_land"
+land_surface_water__instantaneous_depth = "h_land"
+land_surface_water__depth = "h_av_land"
 
 [output]
 path = "output-piave.nc"
 
 [output.variables]
-river_water__time_average_of_volume_flow_rate = "q_river"
+river_water__volume_flow_rate = "q_av_river"
 
 [csv]
 path = "output-piave.csv"
@@ -140,9 +140,9 @@ path = "output-piave.csv"
 [[csv.column]]
 header = "Q"
 map = "river_gauge"
-parameter = "river_water__time_average_of_volume_flow_rate"
+parameter = "river_water__volume_flow_rate"
 
 [[csv.column]]
 header = "Q"
 map = "river_gauge_grdc"
-parameter = "river_water__time_average_of_volume_flow_rate"
+parameter = "river_water__volume_flow_rate"

@@ -26,13 +26,13 @@ vegetation_canopy_water__storage = "canopystorage"
 soil_water_sat-zone__depth = "satwaterdepth"
 soil_layer_water_unsat-zone__depth = "ustorelayerdepth"
 
-river_water__depth = "h_river"
-river_water__time_average_of_depth = "h_av_river"
-river_water__volume_flow_rate = "q_river"
+river_water__instantaneous_depth = "h_river"
+river_water__depth = "h_av_river"
+river_water__instantaneous_volume_flow_rate = "q_river"
 
-land_surface_water__volume_flow_rate = "q_land"
-land_surface_water__depth = "h_land"
-land_surface_water__time_average_of_depth = "h_av_land"
+land_surface_water__instantaneous_volume_flow_rate = "q_land"
+land_surface_water__instantaneous_depth = "h_land"
+land_surface_water__depth = "h_av_land"
 
 subsurface_water__hydraulic_head = "head"
 
@@ -107,7 +107,7 @@ vegetation_canopy_water__storage = "canopystorage"
 soil_water_sat-zone__depth = "satwaterdepth"
 soil_layer_water_unsat-zone__depth = "ustorelayerdepth"
 land.soil.parameters.soilthickness = "soilthickness"
-river_water__volume_flow_rate = "q"
+river_water__volume_flow_rate = "q_av"
 subsurface_water__hydraulic_head = "head"
 subsurface_water_sat-zone_top__net_recharge_volume_flux = "rate"
 "land_drain_water~to-subsurface__volume_flow_rate" = "drain_flux"
@@ -119,7 +119,7 @@ path = "output_example-sbm-gwf.csv"
 [[csv.column]]
 header = "Q_av"
 index = 5
-parameter = "river_water__time_average_of_volume_flow_rate"
+parameter = "river_water__volume_flow_rate"
 
 [[csv.column]]
 header = "head"

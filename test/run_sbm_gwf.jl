@@ -115,10 +115,10 @@ config.input.parameters.river_bank_water__elevation = "bankfull_elevation"
 config.input.parameters.river_bank_water__depth = "bankfull_depth"
 config.input.parameters.land_surface_water_flow__ground_elevation = "wflow_dem"
 
-pop!(Dict(config.state.variables), "land_surface_water__volume_flow_rate")
-config.state.variables.land_surface_water__time_average_of_depth = "h_av_land"
-config.state.variables.land_surface_water__x_component_of_volume_flow_rate = "qx_land"
-config.state.variables.land_surface_water__y_component_of_volume_flow_rate = "qy_land"
+pop!(Dict(config.state.variables), "land_surface_water__instantaneous_volume_flow_rate")
+config.state.variables.land_surface_water__depth = "h_av_land"
+config.state.variables.land_surface_water__x_component_of_instantaneous_volume_flow_rate = "qx_land"
+config.state.variables.land_surface_water__y_component_of_instantaneous_volume_flow_rate = "qy_land"
 
 model = Wflow.initialize_sbm_gwf_model(config)
 Wflow.run_timestep!(model)

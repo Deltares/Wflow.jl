@@ -158,16 +158,16 @@ function extract_required_states(config::Config)
         )::String
         if land_routing == "local-inertial"
             land_states = (
-                "land_surface_water__x_component_of_volume_flow_rate",
-                "land_surface_water__y_component_of_volume_flow_rate",
+                "land_surface_water__x_component_of_instantaneous_volume_flow_rate",
+                "land_surface_water__y_component_of_instantaneous_volume_flow_rate",
+                "land_surface_water__instantaneous_depth",
                 "land_surface_water__depth",
-                "land_surface_water__time_average_of_depth",
             )
         else
             land_states = (
-                "land_surface_water__volume_flow_rate",
+                "land_surface_water__instantaneous_volume_flow_rate",
                 "land_surface_water__depth",
-                "land_surface_water__time_average_of_depth",
+                "land_surface_water__instantaneous_depth",
             )
         end
     end
@@ -177,16 +177,19 @@ function extract_required_states(config::Config)
         river_states = get_sediment_states()
     else
         river_states = (
-            "river_water__volume_flow_rate",
+            "river_water__instantaneous_volume_flow_rate",
+            "river_water__instantaneous_depth",
             "river_water__depth",
-            "river_water__time_average_of_depth",
         )
     end
 
     # Floodplain states
     floodplain_states =
-        do_floodplains ? ("floodplain_water__volume_flow_rate", "floodplain_water__depth") :
-        ()
+        do_floodplains ?
+        (
+            "floodplain_water__instantaneous_volume_flow_rate",
+            "floodplain_water__instantaneous_depth",
+        ) : ()
 
     # Lake and reservoir states
     lake_states = do_lakes ? ("lake_water_level__elevation",) : ()

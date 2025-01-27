@@ -25,13 +25,13 @@ soil_layer_water_unsat-zone__depth = "ustorelayerdepth"
 "snowpack~dry__leq-depth" = "snow"
 "snowpack~liquid__depth" = "snowwater"
 
-river_water__depth = "h_river"
-river_water__time_average_of_depth = "h_av_river"
-river_water__volume_flow_rate = "q_river"
+river_water__instantaneous_depth = "h_river"
+river_water__depth = "h_av_river"
+river_water__instantaneous_volume_flow_rate = "q_river"
 
-land_surface_water__volume_flow_rate = "q_land"
-land_surface_water__depth = "h_land"
-land_surface_water__time_average_of_depth = "h_av_land"
+land_surface_water__instantaneous_volume_flow_rate = "q_land"
+land_surface_water__instantaneous_depth = "h_land"
+land_surface_water__depth = "h_av_land"
 "land_surface_water~paddy__depth" = "h_paddy"
 
 subsurface_water__hydraulic_head = "head"
@@ -174,7 +174,7 @@ nonpaddy = true
 path = "output-piave-gwf.nc"
 
 [output.variables]
-river_water__time_average_of_volume_flow_rate = "q_river"
+river_water__volume_flow_rate = "q_av_river"
 subsurface_water__hydraulic_head = "head"
 soil_water_sat-zone_top__depth = "zi"
 
@@ -184,9 +184,9 @@ path = "output.csv"
 [[csv.column]]
 header = "Q"
 map = "river_gauge"
-parameter = "river_water__time_average_of_volume_flow_rate"
+parameter = "river_water__volume_flow_rate"
 
 [[csv.column]]
 header = "Q"
 map = "river_gauge_grdc"
-parameter = "river_water__time_average_of_volume_flow_rate"
+parameter = "river_water__volume_flow_rate"
