@@ -60,7 +60,7 @@ end
 
 "Initialize Govers overland flow transport capacity model parameters"
 function TransportCapacityGoversParameters(dataset, config, indices)
-    lens = lens_input_parameter("land_surface_water_sediment__particle_density")
+    lens = lens_input_parameter("land_surface_sediment__particle_density")
     density = ncread(dataset, config, lens; sel = indices, defaults = 2650.0, type = Float)
     lens = lens_input_parameter(
         "land_surface_water_sediment__govers_transport_capacity_coefficient",
@@ -140,10 +140,10 @@ end
 
 "Initialize Yalin overland flow transport capacity model parameters"
 function TransportCapacityYalinParameters(dataset, config, indices)
-    lens = lens_input_parameter("land_surface_water_sediment__particle_density")
+    lens = lens_input_parameter("land_surface_sediment__particle_density")
     density = ncread(dataset, config, lens; sel = indices, defaults = 2650.0, type = Float)
 
-    lens = lens_input_parameter("land_surface_water_sediment__d50_diameter")
+    lens = lens_input_parameter("land_surface_sediment__d50_diameter")
     d50 = ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float)
 
     tc_parameters = TransportCapacityYalinParameters(; density = density, d50 = d50)
@@ -254,7 +254,7 @@ end
 
 "Initialize Yalin differentiated overland flow transport capacity model parameters"
 function TransportCapacityYalinDifferentiationParameters(dataset, config, indices)
-    lens = lens_input_parameter("land_surface_water_sediment__particle_density")
+    lens = lens_input_parameter("land_surface_sediment__particle_density")
     density = ncread(dataset, config, lens; sel = indices, defaults = 2650.0, type = Float)
     lens = lens_input_parameter("clay__d50_diameter")
     dm_clay = ncread(dataset, config, lens; sel = indices, defaults = 2.0, type = Float)
@@ -399,9 +399,9 @@ end
 
 "Initialize common river transport capacity model parameters"
 function TransportCapacityRiverParameters(dataset, config, indices)
-    lens = lens_input_parameter("river_water_sediment__particle_density")
+    lens = lens_input_parameter("river_sediment__particle_density")
     density = ncread(dataset, config, lens; sel = indices, defaults = 2650.0, type = Float)
-    lens = lens_input_parameter("river_water_sediment__d50_diameter")
+    lens = lens_input_parameter("river_sediment__d50_diameter")
     d50 = ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float)
 
     tc_parameters = TransportCapacityRiverParameters(; density = density, d50 = d50)
