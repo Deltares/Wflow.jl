@@ -16,7 +16,7 @@ path_input = "instates-piave-gwf.nc"
 path_output = "outstates-piave-gwf.nc"
 
 [state.variables]
-vegetation_canopy_water__storage = "canopystorage"
+vegetation_canopy_water__depth = "canopystorage"
 
 soil_water_sat-zone__depth = "satwaterdepth"
 soil_surface__temperature = "tsoil"

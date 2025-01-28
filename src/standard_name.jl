@@ -5,11 +5,11 @@ const sbm_standard_name_map = Dict{String, ComposedFunction}(
         @optic(_.land.atmospheric_forcing.potential_evaporation),
     "land_surface__evapotranspiration_volume_flux" =>
         @optic(_.land.soil.variables.actevap),
-    "land_water__total_storage" => @optic(_.land.soil.variables.total_storage),
+    "land_water~storage~total__depth" => @optic(_.land.soil.variables.total_storage),
     "atmosphere_air__temperature" => @optic(_.land.atmospheric_forcing.temperature),
     "vegetation__leaf-area_index" =>
         @optic(_.land.vegetation_parameter_set.leaf_area_index),
-    "vegetation_canopy_water__storage" =>
+    "vegetation_canopy_water__depth" =>
         @optic(_.land.interception.variables.canopy_storage),
     "vegetation_canopy_water__stemflow_volume_flux" =>
         @optic(_.land.interception.variables.stemflow),
@@ -85,10 +85,12 @@ const sbm_standard_name_map = Dict{String, ComposedFunction}(
     "soil_water_root-zone__volume_fraction" => @optic(_.land.soil.variables.vwc_root),
     "soil_water_root-zone__volume_percentage" =>
         @optic(_.land.soil.variables.vwc_percroot),
+    "soil_water_root-zone__depth" => @optic(_.land.soil.variables.rootstore),
     "soil_water_sat-zone_top__recharge_volume_flux" =>
         @optic(_.land.soil.variables.recharge),
     "soil_layer_water_unsat-zone__depth" =>
         @optic(_.land.soil.variables.ustorelayerdepth),
+    "soil_water_unsat-zone__depth" => @optic(_.land.soil.variables.ustoredepth),
     "soil_water_sat-zone_top__capillary_volume_flux" =>
         @optic(_.land.soil.variables.actcapflux),
     "soil_water_sat-zone_top__recharge_volume_flux" =>

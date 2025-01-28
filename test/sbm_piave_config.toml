@@ -107,7 +107,7 @@ thicknesslayers = [ 50, 100, 50, 200, 800,]
 river_routing = "kinematic-wave"
 
 [state.variables]
-vegetation_canopy_water__storage = "canopystorage"
+vegetation_canopy_water__depth = "canopystorage"
 
 soil_water_sat-zone__depth = "satwaterdepth"
 soil_surface__temperature = "tsoil"

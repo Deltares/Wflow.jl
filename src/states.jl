@@ -40,7 +40,7 @@ with the required states (standard name).
 """
 function get_interception_states(model_type::AbstractString)
     if model_type == "sbm" || model_type == "sbm_gwf"
-        states = ("vegetation_canopy_water__storage",)
+        states = ("vegetation_canopy_water__depth",)
     elseif model_type == "sediment"
         states = ()
     else

@@ -224,7 +224,7 @@ lens = @optic(_.input.parameters.doesnt_exist)
     @test map["soil_surface__temperature"](model)[5] ≈ 0.21814478119608938
     @test map["soil_layer_water_unsat-zone__depth"](model)[50063][1] ≈ 9.969116007201725
     @test map["snowpack~liquid__depth"](model)[5] ≈ 0.0
-    @test map["vegetation_canopy_water__storage"](model)[50063] ≈ 0.0
+    @test map["vegetation_canopy_water__depth"](model)[50063] ≈ 0.0
     @test map["soil_water_sat-zone_top__depth"](model)[50063] ≈ 296.8028609104624
     @test map["subsurface_water__volume_flow_rate"](model)[10606] ≈ 39.972334552895816
     @test map["river_water__instantaneous_volume_flow_rate"](model)[149] ≈ 53.48673634956338
@@ -456,7 +456,7 @@ end
     required_states = Wflow.extract_required_states(config)
     @test "soil_water_sat-zone__depth" in required_states
     @test "soil_layer_water_unsat-zone__depth" in required_states
-    @test "vegetation_canopy_water__storage" in required_states
+    @test "vegetation_canopy_water__depth" in required_states
     @test "subsurface_water__volume_flow_rate" in required_states
     @test "river_water__instantaneous_volume_flow_rate" in required_states
     @test "river_water__depth" in required_states
@@ -484,7 +484,7 @@ end
     required_states = Wflow.extract_required_states(config)
     @test "soil_water_sat-zone__depth" in required_states
     @test "soil_layer_water_unsat-zone__depth" in required_states
-    @test "vegetation_canopy_water__storage" in required_states
+    @test "vegetation_canopy_water__depth" in required_states
     @test "subsurface_water__hydraulic_head" in required_states
     @test "river_water__instantaneous_volume_flow_rate" in required_states
     @test "river_water__depth" in required_states

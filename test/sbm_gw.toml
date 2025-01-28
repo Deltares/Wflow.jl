@@ -21,7 +21,7 @@ path_output = "outstates-moselle.nc"
 # if not listed, the variable can get a default value if it has one
 
 [state.variables]
-vegetation_canopy_water__storage = "canopystorage"
+vegetation_canopy_water__depth = "canopystorage"
 
 soil_water_sat-zone__depth = "satwaterdepth"
 soil_surface__temperature = "tsoil"
