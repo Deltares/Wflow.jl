@@ -30,7 +30,7 @@ river_water__instantaneous_depth = "h_river"
 river_water__depth = "h_av_river"
 river_water__instantaneous_volume_flow_rate = "q_river"
 
-reservoir_water__volume = "volume_reservoir"
+reservoir_water__instantaneous_volume = "volume_reservoir"
 
 subsurface_water__volume_flow_rate  = "ssf"
 

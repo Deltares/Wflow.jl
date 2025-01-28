@@ -218,7 +218,7 @@ lens = @optic(_.input.parameters.doesnt_exist)
 
 @testset "warm states" begin
     map = Wflow.standard_name_map(model.land)
-    @test map["reservoir_water__volume"](model)[1] ≈ 3.2807224993363418e7
+    @test map["reservoir_water__instantaneous_volume"](model)[1] ≈ 3.2807224993363418e7
     @test map["soil_water_sat-zone__depth"](model)[9115] ≈ 477.13548089422125
     @test map["snowpack~dry__leq-depth"](model)[5] ≈ 11.019233179897599
     @test map["soil_surface__temperature"](model)[5] ≈ 0.21814478119608938

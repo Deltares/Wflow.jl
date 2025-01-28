@@ -38,15 +38,19 @@ const sbm_standard_name_map = Dict{String, ComposedFunction}(
         @optic(_.routing.river_flow.floodplain.variables.q),
     "floodplain_water__volume_flow_rate" =>
         @optic(_.routing.river_flow.floodplain.variables.q_av),
+    "reservoir_water__instantaneous_volume" =>
+        @optic(_.routing.river_flow.boundary_conditions.reservoir.variables.storage),
     "reservoir_water__volume" =>
-        @optic(_.routing.river_flow.boundary_conditions.reservoir.variables.volume),
-    "reservoir_water~outgoing__time_average_of_volume_flow_rate" =>
+        @optic(_.routing.river_flow.boundary_conditions.reservoir.variables.storage_av),
+    "reservoir_water~outgoing__volume_flow_rate" =>
         @optic(_.routing.river_flow.boundary_conditions.reservoir.variables.outflow_av),
-    "reservoir_water__volume_fraction" =>
-        @optic(_.routing.river_flow.boundary_conditions.reservoir.variables.percfull),
     "lake_water__volume" =>
-        @optic(_.routing.river_flow.boundary_conditions.lake.variables.storage),
-    "lake_water~outgoing__time_average_of_volume_flow_rate" =>
+        @optic(_.routing.river_flow.boundary_conditions.lake.variables.storage_av),
+    "lake_water_level__instantaneous_elevation" =>
+        @optic(_.routing.river_flow.boundary_conditions.lake.variables.waterlevel),
+    "lake_water_level__elevation" =>
+        @optic(_.routing.river_flow.boundary_conditions.lake.variables.waterlevel_av),
+    "lake_water~outgoing__volume_flow_rate" =>
         @optic(_.routing.river_flow.boundary_conditions.lake.variables.outflow_av),
     "soil_water__infiltration_volume_flux" => @optic(_.land.soil.variables.actinfilt),
     "soil_water__transpiration_volume_flux" =>

@@ -224,7 +224,11 @@ sum is computed from values at each sub timestep.
 function set_waterbody_vars!(waterbody::W) where {W <: Union{SimpleReservoir, Lake}}
     waterbody.boundary_conditions.inflow .= 0.0
     waterbody.variables.outflow_av .= 0.0
+    waterbody.variables.storage_av .= 0.0
     waterbody.variables.actevap .= 0.0
+    if isa(waterbody, Lake)
+        waterbody.variables.waterlevel_av .= 0.0
+    end
     return nothing
 end
 set_waterbody_vars!(waterbody) = nothing
@@ -235,7 +239,12 @@ is done at the end of each simulation timestep.
 """
 function average_waterbody_vars!(waterbody::W, dt) where {W <: Union{SimpleReservoir, Lake}}
     waterbody.variables.outflow_av ./= dt
+    waterbody.variables.storage_av ./= dt
     waterbody.boundary_conditions.inflow ./= dt
+    if isa(waterbody, Lake)
+        waterbody.variables.waterlevel_av ./= dt
+    end
+    return nothing
 end
 average_waterbody_vars!(waterbody, dt) = nothing
 

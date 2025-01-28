@@ -37,7 +37,7 @@ river_water__instantaneous_depth = "h_river"
 river_water__depth = "h_av_river"
 river_water__instantaneous_volume_flow_rate = "q_river"
 
-reservoir_water__volume = "volume_reservoir"
+reservoir_water__instantaneous_volume = "volume_reservoir"
 
 subsurface_water__volume_flow_rate  = "ssf"
 
@@ -148,7 +148,7 @@ soil_layer_water_unsat-zone__depth = "ustorelayerdepth"
 "snowpack~liquid__depth" = "snowwater"
 river_water__depth = "h_av_river"
 river_water__volume_flow_rate = "q_av_river"
-reservoir_water__volume = "volume_reservoir"
+reservoir_water__volume = "storage_reservoir"
 subsurface_water__volume_flow_rate  = "ssf"
 land_surface_water__volume_flow_rate = "q_av_land"
 land_surface_water__depth = "h_av_land"
@@ -185,7 +185,7 @@ parameter = "river_water__volume_flow_rate"
 reducer = "maximum"
 
 [[csv.column]]
-header = "volume"
+header = "storage"
 index = 1
 parameter = "reservoir_water__volume"
 

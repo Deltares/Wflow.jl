@@ -15,7 +15,7 @@ flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
 
     @test row.time == DateTime("2000-01-02T00:00:00")
     @test row.Q ≈ 6.873112103276999f0
-    @test row.volume ≈ 2.7535003939625636f7
+    @test row.storage ≈ 2.7535003939625636f7
     @test row.temp_bycoord ≈ 2.390000104904175f0
     @test row.vwc_layer2_bycoord ≈ 0.25938809638672006f0
     @test row.temp_byindex ≈ 2.390000104904175f0
@@ -133,8 +133,11 @@ end
 @testset "reservoir simple" begin
     res = model.routing.river_flow.boundary_conditions.reservoir
     @test res.variables.outflow[1] ≈ 0.21750000119148086f0
+    @test res.variables.outflow_av[1] ≈ 0.21749986282401396f0
     @test res.boundary_conditions.inflow[1] ≈ 0.00051287944327482
-    @test res.variables.volume[1] ≈ 2.751299001489657f7
+    @test res.variables.storage[1] ≈ 2.751299001489657f7
+    @test res.variables.storage_av[1] ≈ 2.752388968718314f7
+    @test res.variables.actevap[1] ≈ 0.5400000810623169f0
     @test res.boundary_conditions.precipitation[1] ≈ 0.17999997735023499f0
     @test res.boundary_conditions.evaporation[1] ≈ 0.5400000810623169f0
 end
