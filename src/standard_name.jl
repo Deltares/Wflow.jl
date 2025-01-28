@@ -44,6 +44,17 @@ const sbm_standard_name_map = Dict{String, ComposedFunction}(
         @optic(_.routing.river_flow.boundary_conditions.reservoir.variables.storage_av),
     "reservoir_water~outgoing__volume_flow_rate" =>
         @optic(_.routing.river_flow.boundary_conditions.reservoir.variables.outflow_av),
+    "reservoir_water~incoming__volume_flow_rate" => @optic(
+        _.routing.river_flow.boundary_conditions.reservoir.boundary_conditions.inflow
+    ),
+    "reservoir_water__evaporation_volume_flux" =>
+        @optic(_.routing.river_flow.boundary_conditions.reservoir.variables.actevap),
+    "reservoir_water__precipitation_volume_flux" => @optic(
+        _.routing.river_flow.boundary_conditions.reservoir.boundary_conditions.precipitation
+    ),
+    "reservoir_water__potential_evaporation_volume_flux" => @optic(
+        _.routing.river_flow.boundary_conditions.reservoir.boundary_conditions.evaporation
+    ),
     "lake_water__volume" =>
         @optic(_.routing.river_flow.boundary_conditions.lake.variables.storage_av),
     "lake_water_level__instantaneous_elevation" =>
@@ -52,6 +63,17 @@ const sbm_standard_name_map = Dict{String, ComposedFunction}(
         @optic(_.routing.river_flow.boundary_conditions.lake.variables.waterlevel_av),
     "lake_water~outgoing__volume_flow_rate" =>
         @optic(_.routing.river_flow.boundary_conditions.lake.variables.outflow_av),
+    "lake_water~incoming__volume_flow_rate" => @optic(
+        _.routing.river_flow.boundary_conditions.lake.boundary_conditions.inflow
+    ),
+    "lake_water__evaporation_volume_flux" =>
+        @optic(_.routing.river_flow.boundary_conditions.lake.variables.actevap),
+    "lake_water__precipitation_volume_flux" => @optic(
+        _.routing.river_flow.boundary_conditions.lake.boundary_conditions.precipitation
+    ),
+    "lake_water__potential_evaporation_volume_flux" => @optic(
+        _.routing.river_flow.boundary_conditions.lake.boundary_conditions.evaporation
+    ),
     "soil_water__infiltration_volume_flux" => @optic(_.land.soil.variables.actinfilt),
     "soil_water__transpiration_volume_flux" =>
         @optic(_.land.soil.variables.transpiration),
