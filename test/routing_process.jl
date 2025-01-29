@@ -1,5 +1,5 @@
 const dt_sec = 86400.0
-const ldd_mv = 255
+const ldd_MISSING_VALUE = 255
 
 # read the staticmaps into memory
 nc = NCDataset(staticmaps_rhine_path)
@@ -7,7 +7,7 @@ nc = NCDataset(staticmaps_rhine_path)
 read_right(nc, var) = reverse(permutedims(Array(nc[var])); dims = 2)
 ldd_2d = read_right(nc, "ldd")
 
-inds, _ = Wflow.active_indices(ldd_2d, ldd_mv)
+inds, _ = Wflow.active_indices(ldd_2d, ldd_MISSING_VALUE)
 n = length(inds)
 
 # take out only the active cells
@@ -21,7 +21,7 @@ DCL = read_right(nc, "DCL")[inds]
 close(nc)
 
 # create the directed acyclic graph from the drainage direction array
-graph = Wflow.flowgraph(ldd, inds, Wflow.pcr_dir)
+graph = Wflow.flowgraph(ldd, inds, Wflow.PCR_DIR)
 # a topological sort is used for visiting nodes in order from upstream to downstream
 toposort = topological_sort_by_dfs(graph)
 sink = toposort[end]
@@ -196,8 +196,8 @@ end
         flow_width_at_edge = width_at_edge,
         flow_length = dl,
         flow_length_at_edge = length_at_edge,
-        bankfull_volume = fill(Wflow.mv, n),
-        bankfull_depth = fill(Wflow.mv, n),
+        bankfull_volume = fill(Wflow.MISSING_VALUE, n),
+        bankfull_depth = fill(Wflow.MISSING_VALUE, n),
         zb = zb,
         froude_limit = froude_limit,
         waterbody = zeros(n),

@@ -58,7 +58,7 @@ function connection_geometry(I, J, dx, dy)
 end
 
 # Define cartesian indices for neighbors
-const neighbors = (
+const NEIGHBORS = (
     CartesianIndex(0, -1),
     CartesianIndex(-1, 0),
     CartesianIndex(1, 0),
@@ -85,7 +85,7 @@ function Connectivity(indices, reverse_indices, dx::Vector{T}, dy::Vector{T}) wh
         colptr[j] = i
         # Strictly increasing numbering for any row
         # (Required by a CSCSparseMatrix, if you want to convert)
-        for neighbor in neighbors
+        for neighbor in NEIGHBORS
             J = I + neighbor
             if (1 <= J[1] <= nrow) && (1 <= J[2] <= ncol && reverse_indices[J] != 0) # Check if it's inbounds and neighbor is active
                 rowval[i] = reverse_indices[J]

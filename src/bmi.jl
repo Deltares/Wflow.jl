@@ -3,7 +3,7 @@
 
 # Mapping of grid identifier to a key, to get the active indices of the model domain.
 # See also function active_indices(network, key::Tuple).
-const grids = Dict{Int, Tuple{Symbol}}(
+const GRIDS = Dict{Int, Tuple{Symbol}}(
     0 => (:reservoir,),
     1 => (:lake,),
     2 => (:drain,),
@@ -328,7 +328,7 @@ end
 function BMI.get_grid_x(model::Model, grid::Int, x::Vector{T}) where {T <: AbstractFloat}
     (; reader, network) = model
     (; dataset) = reader
-    sel = active_indices(network, grids[grid])
+    sel = active_indices(network, GRIDS[grid])
     inds = [sel[i][1] for i in eachindex(sel)]
     x_nc = read_x_axis(dataset)
     x .= x_nc[inds]
@@ -338,7 +338,7 @@ end
 function BMI.get_grid_y(model::Model, grid::Int, y::Vector{T}) where {T <: AbstractFloat}
     (; reader, network) = model
     (; dataset) = reader
-    sel = active_indices(network, grids[grid])
+    sel = active_indices(network, GRIDS[grid])
     inds = [sel[i][2] for i in eachindex(sel)]
     y_nc = read_y_axis(dataset)
     y .= y_nc[inds]
@@ -346,11 +346,11 @@ function BMI.get_grid_y(model::Model, grid::Int, y::Vector{T}) where {T <: Abstr
 end
 
 function BMI.get_grid_node_count(model::Model, grid::Int)
-    return length(active_indices(model.network, grids[grid]))
+    return length(active_indices(model.network, GRIDS[grid]))
 end
 
 function BMI.get_grid_size(model::Model, grid::Int)
-    return length(active_indices(model.network, grids[grid]))
+    return length(active_indices(model.network, GRIDS[grid]))
 end
 
 function BMI.get_grid_edge_count(model::Model, grid::Int)

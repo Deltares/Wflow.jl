@@ -17,7 +17,6 @@ using QuadGK
 using Aqua: Aqua
 
 const BMI = BasicModelInterface
-const Float = Wflow.Float
 
 # ensure test data is present
 testdir = @__DIR__
@@ -72,7 +71,8 @@ instates_piave_gwf_path =
 
 include("testing_utils.jl")
 
-@info "testing Wflow with" nthreads() VERSION Float
+FLOAT = Float64
+@info "testing Wflow with" nthreads() VERSION FLOAT
 
 # disable logging output during testing
 with_logger(NullLogger()) do

@@ -7,7 +7,7 @@ abstract type AbstractSedimentToRiverModel{T} end
 end
 
 "Initialize total sediment reaching the river model variables"
-function SedimentToRiverVariables(n; amount::Vector{T} = fill(mv, n)) where {T}
+function SedimentToRiverVariables(n; amount::Vector{T} = fill(MISSING_VALUE, n)) where {T}
     return SedimentToRiverVariables{T}(; amount = amount)
 end
 
@@ -18,7 +18,7 @@ end
 end
 
 "Initialize total sediment reaching the river model boundary conditions"
-function SedimentToRiverBC(n; deposition::Vector{T} = fill(mv, n)) where {T}
+function SedimentToRiverBC(n; deposition::Vector{T} = fill(MISSING_VALUE, n)) where {T}
     return SedimentToRiverBC{T}(; deposition = deposition)
 end
 
@@ -74,12 +74,12 @@ end
 "Initialize differentiated sediment reaching the river model variables"
 function SedimentToRiverDifferentiationVariables(
     n;
-    amount::Vector{T} = fill(mv, n),
-    clay::Vector{T} = fill(mv, n),
-    silt::Vector{T} = fill(mv, n),
-    sand::Vector{T} = fill(mv, n),
-    sagg::Vector{T} = fill(mv, n),
-    lagg::Vector{T} = fill(mv, n),
+    amount::Vector{T} = fill(MISSING_VALUE, n),
+    clay::Vector{T} = fill(MISSING_VALUE, n),
+    silt::Vector{T} = fill(MISSING_VALUE, n),
+    sand::Vector{T} = fill(MISSING_VALUE, n),
+    sagg::Vector{T} = fill(MISSING_VALUE, n),
+    lagg::Vector{T} = fill(MISSING_VALUE, n),
 ) where {T}
     return SedimentToRiverDifferentiationVariables{T}(;
         amount = amount,
@@ -108,11 +108,11 @@ end
 "Initialize differentiated sediment reaching the river model boundary conditions"
 function SedimentToRiverDifferentiationBC(
     n;
-    deposition_clay::Vector{T} = fill(mv, n),
-    deposition_silt::Vector{T} = fill(mv, n),
-    deposition_sand::Vector{T} = fill(mv, n),
-    deposition_sagg::Vector{T} = fill(mv, n),
-    deposition_lagg::Vector{T} = fill(mv, n),
+    deposition_clay::Vector{T} = fill(MISSING_VALUE, n),
+    deposition_silt::Vector{T} = fill(MISSING_VALUE, n),
+    deposition_sand::Vector{T} = fill(MISSING_VALUE, n),
+    deposition_sagg::Vector{T} = fill(MISSING_VALUE, n),
+    deposition_lagg::Vector{T} = fill(MISSING_VALUE, n),
 ) where {T}
     return SedimentToRiverDifferentiationBC{T}(;
         deposition_clay = deposition_clay,

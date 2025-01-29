@@ -23,7 +23,10 @@ end
 end
 
 function RiverVariables(n)
-    variables = RiverVariables{Float}(; stage = fill(mv, n), flux = fill(mv, n))
+    variables = RiverVariables{Float64}(;
+        stage = fill(MISSING_VALUE, n),
+        flux = fill(MISSING_VALUE, n),
+    )
     return variables
 end
 
@@ -39,25 +42,25 @@ function River(dataset, config, indices, index)
         config,
         "routing.subsurface_flow.infiltration_conductance";
         sel = indices,
-        type = Float,
+        type = Float64,
     )
     exfiltration_conductance = ncread(
         dataset,
         config,
         "routing.subsurface_flow.exfiltration_conductance";
         sel = indices,
-        type = Float,
+        type = Float64,
     )
     bottom = ncread(
         dataset,
         config,
         "routing.subsurface_flow.river_bottom";
         sel = indices,
-        type = Float,
+        type = Float64,
     )
 
     parameters =
-        RiverParameters{Float}(infiltration_conductance, exfiltration_conductance, bottom)
+        RiverParameters{Float64}(infiltration_conductance, exfiltration_conductance, bottom)
     n = length(indices)
     variables = RiverVariables(n)
     river = River(parameters, variables, index)
@@ -102,23 +105,23 @@ function Drainage(dataset, config, indices, index)
         config,
         "routing.subsurface_flow.drain_elevation";
         sel = indices,
-        type = Float,
-        fill = mv,
+        type = Float64,
+        fill = MISSING_VALUE,
     )
     drain_conductance = ncread(
         dataset,
         config,
         "routing.subsurface_flow.drain_conductance";
         sel = indices,
-        type = Float,
-        fill = mv,
+        type = Float64,
+        fill = MISSING_VALUE,
     )
     elevation = drain_elevation[index]
     conductance = drain_conductance[index]
-    parameters = DrainageParameters{Float}(; elevation, conductance)
-    variables = DrainageVariables{Float}(; flux = fill(mv, length(index)))
+    parameters = DrainageParameters{Float64}(; elevation, conductance)
+    variables = DrainageVariables{Float64}(; flux = fill(MISSING_VALUE, length(index)))
 
-    drains = Drainage{Float}(parameters, variables, index)
+    drains = Drainage{Float64}(parameters, variables, index)
     return drains
 end
 
@@ -169,8 +172,8 @@ end
 end
 
 function Recharge(rate, flux, index)
-    variables = RechargeVariables{Float}(rate, flux)
-    recharge = Recharge{Float}(variables, index)
+    variables = RechargeVariables{Float64}(rate, flux)
+    recharge = Recharge{Float64}(variables, index)
     return recharge
 end
 
