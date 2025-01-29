@@ -37,8 +37,8 @@ end
 
 @testset "model information functions" begin
     @test request((fn = "get_component_name",)) == Dict("component_name" => "sbm")
-    @test request((fn = "get_input_item_count",)) == Dict("input_item_count" => 203)
-    @test request((fn = "get_output_item_count",)) == Dict("output_item_count" => 203)
+    @test request((fn = "get_input_item_count",)) == Dict("input_item_count" => 205)
+    @test request((fn = "get_output_item_count",)) == Dict("output_item_count" => 205)
     to_check = [
         "land.soil.parameters.nlayers",
         "land.soil.parameters.theta_r",

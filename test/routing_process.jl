@@ -217,6 +217,7 @@ end
         a = zeros(_ne),
         r = zeros(_ne),
         storage = fill(0.0, n),
+        storage_av = fill(0.0, n),
         error = zeros(n),
     )
 

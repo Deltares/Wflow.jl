@@ -3,10 +3,11 @@
     q::Vector{T} | "m3 s-1"                 # Discharge [m³ s⁻¹]
     qlat::Vector{T} | "m2 s-1"              # Lateral inflow per unit length [m² s⁻¹]
     qin::Vector{T} | "m3 s-1"               # Inflow from upstream cells [m³ s⁻¹]
-    q_av::Vector{T} | "m3 s-1"              # Average discharge [m³ s⁻¹]
+    q_av::Vector{T} | "m3 s-1"              # Average discharge [m³ s⁻¹] for model timestep Δt
     storage::Vector{T} | "m3"               # Kinematic wave storage [m³] (based on water depth h)
+    storage_av::Vector{T} | "m3"            # Average kinematic wave storage [m³] for model timestep Δt
     h::Vector{T} | "m"                      # Water depth [m]
-    h_av::Vector{T} | "m"                   # Average water depth [m]
+    h_av::Vector{T} | "m"                   # Average water depth [m] for model timestep Δt
 end
 
 "Initialize timestepping for kinematic wave (river and overland flow models)"
@@ -33,6 +34,7 @@ function FlowVariables(n)
         qin = zeros(Float, n),
         q_av = zeros(Float, n),
         storage = zeros(Float, n),
+        storage_av = zeros(Float, n),
         h = zeros(Float, n),
         h_av = zeros(Float, n),
     )
@@ -234,8 +236,8 @@ end
 set_waterbody_vars!(waterbody) = nothing
 
 """
-Helper function to compute the average of waterbody variables `inflow` and `outflow_av`. This
-is done at the end of each simulation timestep.
+Helper function to compute the average of waterbody variables inflow, storage, outflow and
+water level. This is done at the end of each simulation timestep.
 """
 function average_waterbody_vars!(waterbody::W, dt) where {W <: Union{SimpleReservoir, Lake}}
     waterbody.variables.outflow_av ./= dt
@@ -248,6 +250,47 @@ function average_waterbody_vars!(waterbody::W, dt) where {W <: Union{SimpleReser
 end
 average_waterbody_vars!(waterbody, dt) = nothing
 
+"""
+Helper function to set flow routing variables discharge, water depth and storage to zero.
+This is done at the start of each simulation timestep, during the timestep the total
+(weighted) sum is computed from values at each sub timestep.
+"""
+function set_flow_vars!(variables)
+    (; q_av, h_av, storage_av) = variables
+    q_av .= 0.0
+    h_av .= 0.0
+    storage_av .= 0.0
+    return nothing
+end
+
+"""
+Helper function to compute average flow routing variables. This is done at the end of each
+simulation timestep.
+"""
+function average_flow_vars!(variables, dt)
+    (; q_av, h_av, storage_av) = variables
+    q_av ./= dt
+    h_av ./= dt
+    storage_av ./= dt
+    return nothing
+end
+
+"""
+Helper function to compute weighted sum of flow variables during a simulation timestep.
+"""
+function weighted_sum_flow_vars!(variables, dt_s; update_h_av = true)
+    (; q, h, storage, q_av, h_av, storage_av) = variables
+    @. q_av += q * dt_s
+    if update_h_av
+        n = length(h_av) # vector h can contain boundary conditions (length h > length h_av)
+        for i in 1:n
+            h_av[i] += h[i] * dt_s
+            storage_av[i] += storage[i] * dt_s
+        end
+    end
+    return nothing
+end
+
 "Update overland flow model `KinWaveOverlandFlow` for a single timestep"
 function kinwave_land_update!(model::KinWaveOverlandFlow, network, dt)
     (;
@@ -259,7 +302,7 @@ function kinwave_land_update!(model::KinWaveOverlandFlow, network, dt)
     ) = network
 
     (; beta, alpha, flow_width, flow_length) = model.parameters
-    (; h, h_av, q, q_av, qin, qlat, to_river) = model.variables
+    (; h, q, storage, qin, qlat, to_river) = model.variables
 
     ns = length(order_of_subdomains)
     qin .= 0.0
@@ -300,8 +343,7 @@ function kinwave_land_update!(model::KinWaveOverlandFlow, network, dt)
                     crossarea = alpha[v] * pow(q[v], beta)
                     h[v] = crossarea / flow_width[v]
                 end
-                q_av[v] += q[v] * dt
-                h_av[v] += h[v] * dt
+                storage[v] = flow_length[v] * flow_width[v] * h[v]
             end
         end
     end
@@ -315,7 +357,7 @@ function update!(model::KinWaveOverlandFlow, network, dt)
     (; inwater) = model.boundary_conditions
     (; alpha_term, mannings_n, slope, beta, alpha_pow, alpha, flow_width, flow_length) =
         model.parameters
-    (; h, h_av, q_av, qlat, storage, to_river) = model.variables
+    (; qlat, to_river) = model.variables
     (; adaptive) = model.timestepping
 
     @. alpha_term = pow(mannings_n / sqrt(slope), beta)
@@ -323,8 +365,7 @@ function update!(model::KinWaveOverlandFlow, network, dt)
     @. alpha = alpha_term * pow(flow_width, alpha_pow)
     @. qlat = inwater / flow_length
 
-    q_av .= 0.0
-    h_av .= 0.0
+    set_flow_vars!(model.variables)
     to_river .= 0.0
 
     t = 0.0
@@ -332,12 +373,11 @@ function update!(model::KinWaveOverlandFlow, network, dt)
         dt_s = adaptive ? stable_timestep(model, 0.02) : model.timestepping.dt_fixed
         dt_s = check_timestepsize(dt_s, t, dt)
         kinwave_land_update!(model, network, dt_s)
+        weighted_sum_flow_vars!(model.variables, dt_s)
         t = t + dt_s
     end
-    q_av ./= dt
-    h_av ./= dt
+    average_flow_vars!(model.variables, dt)
     to_river ./= dt
-    storage .= flow_length .* flow_width .* h
     return nothing
 end
 
@@ -357,7 +397,7 @@ function kinwave_river_update!(model::KinWaveRiverFlow, network, doy, dt, dt_for
         model.boundary_conditions
 
     (; beta, alpha, flow_width, flow_length) = model.parameters
-    (; h, h_av, q, q_av, qin, qlat, storage) = model.variables
+    (; h, q, storage, qin, qlat, storage) = model.variables
 
     ns = length(order_of_subdomains)
     qin .= 0.0
@@ -430,12 +470,10 @@ function kinwave_river_update!(model::KinWaveRiverFlow, network, doy, dt, dt_for
                         error("bifurcations not supported")
                     end
                 end
-                # update h
+                # update h and storage
                 crossarea = alpha[v] * pow(q[v], beta)
                 h[v] = crossarea / flow_width[v]
                 storage[v] = flow_length[v] * flow_width[v] * h[v]
-                q_av[v] += q[v] * dt
-                h_av[v] += h[v] * dt
             end
         end
     end
@@ -459,7 +497,7 @@ function update!(model::KinWaveRiverFlow, network, doy, dt)
         flow_length,
         bankfull_depth,
     ) = model.parameters
-    (; h, h_av, q_av, qlat, storage) = model.variables
+    (; qlat) = model.variables
     (; adaptive) = model.timestepping
 
     @. alpha_term = pow(mannings_n / sqrt(slope), beta)
@@ -467,9 +505,7 @@ function update!(model::KinWaveRiverFlow, network, doy, dt)
     @. alpha = alpha_term * pow(flow_width + bankfull_depth, alpha_pow)
     @. qlat = inwater / flow_length
 
-    q_av .= 0.0
-    h_av .= 0.0
-
+    set_flow_vars!(model.variables)
     set_waterbody_vars!(reservoir)
     set_waterbody_vars!(lake)
 
@@ -478,15 +514,13 @@ function update!(model::KinWaveRiverFlow, network, doy, dt)
         dt_s = adaptive ? stable_timestep(model, 0.05) : model.timestepping.dt_fixed
         dt_s = check_timestepsize(dt_s, t, dt)
         kinwave_river_update!(model, network, doy, dt_s, dt)
+        weighted_sum_flow_vars!(model.variables, dt_s)
         t = t + dt_s
     end
 
     average_waterbody_vars!(reservoir, dt)
     average_waterbody_vars!(lake, dt)
-
-    q_av ./= dt
-    h_av ./= dt
-    storage .= flow_length .* flow_width .* h
+    average_flow_vars!(model.variables, dt)
     return nothing
 end
 

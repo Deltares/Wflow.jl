@@ -112,17 +112,18 @@ end
 @get_units @grid_loc @with_kw struct LocalInertialRiverFlowVariables{T}
     q::Vector{T} | "m3 s-1" | "edge"                    # river discharge (subgrid channel)
     q0::Vector{T} | "m3 s-1" | "edge"                   # river discharge (subgrid channel) at previous time step
-    q_av::Vector{T} | "m3 s-1" | "edge"                 # average river channel (+ floodplain) discharge [m³ s⁻¹]
-    q_channel_av::Vector{T} | "m3 s-1"                  # average river channel discharge [m³ s⁻¹]
+    q_av::Vector{T} | "m3 s-1" | "edge"                 # average river channel (+ floodplain) discharge [m³ s⁻¹] (model timestep Δt)
+    q_channel_av::Vector{T} | "m3 s-1"                  # average river channel discharge [m³ s⁻¹] (for model timestep Δt)
     h::Vector{T} | "m"                                  # water depth
     zs_max::Vector{T} | "m" | "edge"                    # maximum water elevation at edge
     zs_src::Vector{T} | "m"                             # water elevation of source node of edge
     zs_dst::Vector{T} | "m"                             # water elevation of downstream node of edge
     hf::Vector{T} | "m" | "edge"                        # water depth at edge
-    h_av::Vector{T} | "m"                               # average water depth
+    h_av::Vector{T} | "m"                               # average water depth for model timestep Δt
     a::Vector{T} | "m2" | "edge"                        # flow area at edge
     r::Vector{T} | "m" | "edge"                         # wetted perimeter at edge
     storage::Vector{T} | "m3"                           # river storage
+    storage_av::Vector{T} | "m3"                        # average river storage for model timestep Δt
     error::Vector{T} | "m3"                             # error storage
 end
 
@@ -154,6 +155,7 @@ function LocalInertialRiverFlowVariables(dataset, config, indices, n_edges, inds
         a = zeros(n_edges),
         r = zeros(n_edges),
         storage = zeros(n),
+        storage_av = zeros(n),
         error = zeros(n),
     )
     return variables
@@ -319,8 +321,6 @@ function local_inertial_river_update!(
         # limit q in case water is not available
         river_v.q[i] = ifelse(river_v.h[i_src] <= 0.0, min(river_v.q[i], 0.0), river_v.q[i])
         river_v.q[i] = ifelse(river_v.h[i_dst] <= 0.0, max(river_v.q[i], 0.0), river_v.q[i])
-
-        river_v.q_av[i] += river_v.q[i] * dt
     end
     if !isnothing(model.floodplain)
         floodplain_p = model.floodplain.parameters
@@ -414,7 +414,6 @@ function local_inertial_river_update!(
 
             floodplain_v.q[i] =
                 ifelse(floodplain_v.q[i] * river_v.q[i] < 0.0, 0.0, floodplain_v.q[i])
-            floodplain_v.q_av[i] += floodplain_v.q[i] * dt
         end
     end
     # For reservoir and lake locations the local inertial solution is replaced by the
@@ -428,7 +427,6 @@ function local_inertial_river_update!(
         q_in = get_inflow_waterbody(model, edges_at_node.src[i])
         update!(reservoir, v, q_in + inflow_waterbody[i], dt, dt_forcing)
         river_v.q[i] = reservoir.variables.outflow[v]
-        river_v.q_av[i] += river_v.q[i] * dt
     end
     (; lake, inflow_waterbody) = model.boundary_conditions
     inds_lake = network.lake.river_indices
@@ -438,7 +436,6 @@ function local_inertial_river_update!(
         q_in = get_inflow_waterbody(model, edges_at_node.src[i])
         update!(lake, v, q_in + inflow_waterbody[i], doy, dt, dt_forcing)
         river_v.q[i] = max(lake.variables.outflow[v], 0.0)
-        river_v.q_av[i] += river_v.q[i] * dt
     end
     if update_h
         @batch per = thread minbatch = 2000 for i in river_p.active_n
@@ -487,12 +484,10 @@ function local_inertial_river_update!(
                     floodplain_v.h[i] = 0.0
                     floodplain_v.storage[i] = 0.0
                 end
-                floodplain_v.h_av[i] += floodplain_v.h[i] * dt
             else
                 river_v.h[i] =
                     river_v.storage[i] / (river_p.flow_length[i] * river_p.flow_width[i])
             end
-            river_v.h_av[i] += river_v.h[i] * dt
         end
     end
     return nothing
@@ -515,11 +510,9 @@ function update!(
     set_waterbody_vars!(lake)
 
     if !isnothing(model.floodplain)
-        model.floodplain.variables.q_av .= 0.0
-        model.floodplain.variables.h_av .= 0.0
+        set_flow_vars!(model.floodplain.variables)
     end
-    model.variables.q_av .= 0.0
-    model.variables.h_av .= 0.0
+    set_flow_vars!(model.variables)
 
     t = T(0.0)
     while t < dt
@@ -528,17 +521,18 @@ function update!(
             dt_s = dt - t
         end
         local_inertial_river_update!(model, network, dt_s, dt, doy, update_h)
+        weighted_sum_flow_vars!(model.variables, dt_s; update_h_av = update_h)
+        if !isnothing(model.floodplain)
+            weighted_sum_flow_vars!(model.floodplain.variables, dt_s)
+        end
         t = t + dt_s
     end
-    model.variables.q_av ./= dt
-    model.variables.h_av ./= dt
-
+    average_flow_vars!(model.variables, dt)
     average_waterbody_vars!(reservoir, dt)
     average_waterbody_vars!(lake, dt)
 
     if !isnothing(model.floodplain)
-        model.floodplain.variables.q_av ./= dt
-        model.floodplain.variables.h_av ./= dt
+        average_flow_vars!(model.floodplain.variables, dt)
         model.variables.q_channel_av .= model.variables.q_av
         model.variables.q_av .=
             model.variables.q_channel_av .+ model.floodplain.variables.q_av
@@ -554,9 +548,10 @@ end
     qx::Vector{T} | "m3 s-1" | "edge"       # flow in x direction
     qy::Vector{T} | "m3 s-1" | "edge"       # flow in y direction
     storage::Vector{T} | "m3"               # total storage of cell (including river storage for river cells)
+    storage_av::Vector{T} | "m3"            # average total storage of cell (including river storage for river cells) (model timestep Δt)
     error::Vector{T} | "m3"                 # error storage
     h::Vector{T} | "m"                      # water depth of cell (for river cells the reference is the river bed elevation `zb`)
-    h_av::Vector{T} | "m"                   # average water depth (for river cells the reference is the river bed elevation `zb`)
+    h_av::Vector{T} | "m"                   # average water depth (for river cells the reference is the river bed elevation `zb`) (model timestep Δt)
 end
 
 "Initialize local inertial overland flow model variables"
@@ -567,6 +562,7 @@ function LocalInertialOverlandFlowVariables(n)
         qx = zeros(n + 1),
         qy = zeros(n + 1),
         storage = zeros(n),
+        storage_av = zeros(n),
         error = zeros(n),
         h = zeros(n),
         h_av = zeros(n),
@@ -825,6 +821,38 @@ function update_boundary_conditions!(
 end
 
 """
+Helper function to set storage and water depth variables of the `LocalInertialOverlandFlow`
+model to zero. This is done at the start of each simulation timestep, during the timestep
+the total (weighted) sum is computed from values at each sub timestep.
+"""
+function set_flow_vars!(variables::LocalInertialOverlandFlowVariables)
+    variables.h_av .= 0.0
+    variables.storage_av .= 0.0
+    return nothing
+end
+
+"""
+Helper function to compute average flow variables of the `LocalInertialOverlandFlow` model.
+This is done at the end of each simulation timestep.
+"""
+function average_flow_vars!(variables::LocalInertialOverlandFlowVariables, dt)
+    variables.h_av ./= dt
+    variables.storage_av ./= dt
+    return nothing
+end
+
+"""
+Helper function to compute weighted sum of flow variables of the `LocalInertialOverlandFlow`
+model during a simulation timestep.
+"""
+function weighted_sum_flow_vars!(variables::LocalInertialOverlandFlowVariables, dt_s)
+    (; h, storage, h_av, storage_av) = variables
+    @. h_av += h * dt_s
+    @. storage_av += storage * dt_s
+    return nothing
+end
+
+"""
 Update combined river `LocalInertialRiverFlow` and overland flow `LocalInertialOverlandFlow` models for a
 single timestep `dt`. An adaptive timestepping method is used (computing a sub timestep
 `dt_s`).
@@ -841,10 +869,8 @@ function update!(
 
     set_waterbody_vars!(reservoir)
     set_waterbody_vars!(lake)
-
-    river.variables.q_av .= 0.0
-    river.variables.h_av .= 0.0
-    land.variables.h_av .= 0.0
+    set_flow_vars!(river.variables)
+    set_flow_vars!(land.variables)
 
     t = T(0.0)
     while t < dt
@@ -855,12 +881,13 @@ function update!(
             dt_s = dt - t
         end
         local_inertial_river_update!(river, network, dt_s, dt, doy, update_h)
+        weighted_sum_flow_vars!(river.variables, dt_s; update_h_av = update_h)
         local_inertial_update!(land, river, network, dt_s)
+        weighted_sum_flow_vars!(land.variables, dt_s)
         t = t + dt_s
     end
-    river.variables.q_av ./= dt
-    river.variables.h_av ./= dt
-    land.variables.h_av ./= dt
+    average_flow_vars!(river.variables, dt)
+    average_flow_vars!(land.variables, dt)
 
     average_waterbody_vars!(reservoir, dt)
     average_waterbody_vars!(lake, dt)
@@ -1038,6 +1065,7 @@ function local_inertial_update!(
             land_v.h[i] = land_v.storage[i] / (land_p.x_length[i] * land_p.y_length[i])
         end
         land_v.h_av[i] += land_v.h[i] * dt
+        land_v.storage_av[i] += land_v.storage[i] * dt
     end
     return nothing
 end
@@ -1189,15 +1217,16 @@ end
 "Struct to store floodplain flow model variables"
 @get_units @grid_loc @with_kw struct FloodPlainVariables{T}
     storage::Vector{T} | "m3"                           # storage
+    storage_av::Vector{T} | "m3"                        # average storage for model timestep Δt
     h::Vector{T} | "m"                                  # water depth
-    h_av::Vector{T} | "m"                               # average water depth
+    h_av::Vector{T} | "m"                               # average water depth for model timestep Δt
     error::Vector{T} | "m3"                             # error storage
     a::Vector{T} | "m2" | "edge"                        # flow area
     r::Vector{T} | "m" | "edge"                         # hydraulic radius
     hf::Vector{T} | "m" | "edge"                        # water depth at edge
     q0::Vector{T} | "m3 s-1" | "edge"                   # discharge at previous time step
     q::Vector{T} | "m3 s-1" | "edge"                    # discharge
-    q_av::Vector{T} | "m" | "edge"                      # average river discharge
+    q_av::Vector{T} | "m" | "edge"                      # average river discharge for model timestep Δt
     hf_index::Vector{Int} | "-" | "edge"                # index with `hf` above depth threshold
 end
 
@@ -1205,6 +1234,7 @@ end
 function FloodPlainVariables(n, n_edges, index_pit)
     variables = FloodPlainVariables(;
         storage = zeros(n),
+        storage_av = zeros(n),
         error = zeros(n),
         h = zeros(n + length(index_pit)),
         h_av = zeros(n),
