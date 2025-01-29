@@ -57,9 +57,9 @@ const sbm_standard_name_map = Dict{String, ComposedFunction}(
     ),
     "lake_water__volume" =>
         @optic(_.routing.river_flow.boundary_conditions.lake.variables.storage_av),
-    "lake_water_level__instantaneous_elevation" =>
+    "lake_water_surface__instantaneous_elevation" =>
         @optic(_.routing.river_flow.boundary_conditions.lake.variables.waterlevel),
-    "lake_water_level__elevation" =>
+    "lake_water_surface__elevation" =>
         @optic(_.routing.river_flow.boundary_conditions.lake.variables.waterlevel_av),
     "lake_water~outgoing__volume_flow_rate" =>
         @optic(_.routing.river_flow.boundary_conditions.lake.variables.outflow_av),

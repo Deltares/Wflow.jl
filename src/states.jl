@@ -192,7 +192,7 @@ function extract_required_states(config::Config)
         ) : ()
 
     # Lake and reservoir states
-    lake_states = do_lakes ? ("lake_water_level__instantaneous_elevation",) : ()
+    lake_states = do_lakes ? ("lake_water_surface__instantaneous_elevation",) : ()
     reservoir_states = do_reservoirs ? ("reservoir_water__instantaneous_volume",) : ()
 
     # Paddy states
