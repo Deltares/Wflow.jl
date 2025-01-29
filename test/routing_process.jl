@@ -196,7 +196,7 @@ end
         flow_width_at_edge = width_at_edge,
         flow_length = dl,
         flow_length_at_edge = length_at_edge,
-        bankfull_volume = fill(Wflow.mv, n),
+        bankfull_storage = fill(Wflow.mv, n),
         bankfull_depth = fill(Wflow.mv, n),
         zb = zb,
         froude_limit = froude_limit,
@@ -216,7 +216,7 @@ end
         h_av = zeros(n),
         a = zeros(_ne),
         r = zeros(_ne),
-        volume = fill(0.0, n),
+        storage = fill(0.0, n),
         error = zeros(n),
     )
 

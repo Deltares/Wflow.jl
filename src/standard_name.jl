@@ -27,11 +27,11 @@ const sbm_standard_name_map = Dict{String, ComposedFunction}(
     "river_water__volume_flow_rate" => @optic(_.routing.river_flow.variables.q_av),
     "river_water__instantaneous_depth" => @optic(_.routing.river_flow.variables.h),
     "river_water__depth" => @optic(_.routing.river_flow.variables.h_av),
-    "river_water__volume" => @optic(_.routing.river_flow.variables.volume),
+    "river_water__volume" => @optic(_.routing.river_flow.variables.storage),
     "land_surface_water_abstraction__volume_flux" =>
         @optic(_.routing.river_flow.allocation.variables.act_surfacewater_abst),
     "floodplain_water__volume" =>
-        @optic(_.routing.river_flow.floodplain.variables.volume),
+        @optic(_.routing.river_flow.floodplain.variables.storage),
     "floodplain_water__instantaneous_depth" =>
         @optic(_.routing.river_flow.floodplain.variables.h),
     "floodplain_water__instantaneous_volume_flow_rate" =>
@@ -115,7 +115,7 @@ const sbm_standard_name_map = Dict{String, ComposedFunction}(
     "land_surface_water__instantaneous_depth" =>
         @optic(_.routing.overland_flow.variables.h),
     "land_surface_water__depth" => @optic(_.routing.overland_flow.variables.h_av),
-    "land_surface_water__volume" => @optic(_.routing.overland_flow.variables.volume),
+    "land_surface_water__volume" => @optic(_.routing.overland_flow.variables.storage),
     "land_surface_water__x_component_of_instantaneous_volume_flow_rate" =>
         @optic(_.routing.overland_flow.variables.qx),
     "land_surface_water__y_component_of_instantaneous_volume_flow_rate" =>

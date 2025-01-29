@@ -4,7 +4,7 @@
     qlat::Vector{T} | "m2 s-1"              # Lateral inflow per unit length [m² s⁻¹]
     qin::Vector{T} | "m3 s-1"               # Inflow from upstream cells [m³ s⁻¹]
     q_av::Vector{T} | "m3 s-1"              # Average discharge [m³ s⁻¹]
-    volume::Vector{T} | "m3"                # Kinematic wave volume [m³] (based on water depth h)
+    storage::Vector{T} | "m3"               # Kinematic wave storage [m³] (based on water depth h)
     h::Vector{T} | "m"                      # Water depth [m]
     h_av::Vector{T} | "m"                   # Average water depth [m]
 end
@@ -32,7 +32,7 @@ function FlowVariables(n)
         qlat = zeros(Float, n),
         qin = zeros(Float, n),
         q_av = zeros(Float, n),
-        volume = zeros(Float, n),
+        storage = zeros(Float, n),
         h = zeros(Float, n),
         h_av = zeros(Float, n),
     )
@@ -315,7 +315,7 @@ function update!(model::KinWaveOverlandFlow, network, dt)
     (; inwater) = model.boundary_conditions
     (; alpha_term, mannings_n, slope, beta, alpha_pow, alpha, flow_width, flow_length) =
         model.parameters
-    (; h, h_av, q_av, qlat, volume, to_river) = model.variables
+    (; h, h_av, q_av, qlat, storage, to_river) = model.variables
     (; adaptive) = model.timestepping
 
     @. alpha_term = pow(mannings_n / sqrt(slope), beta)
@@ -337,7 +337,7 @@ function update!(model::KinWaveOverlandFlow, network, dt)
     q_av ./= dt
     h_av ./= dt
     to_river ./= dt
-    volume .= flow_length .* flow_width .* h
+    storage .= flow_length .* flow_width .* h
     return nothing
 end
 
@@ -357,7 +357,7 @@ function kinwave_river_update!(model::KinWaveRiverFlow, network, doy, dt, dt_for
         model.boundary_conditions
 
     (; beta, alpha, flow_width, flow_length) = model.parameters
-    (; h, h_av, q, q_av, qin, qlat, volume) = model.variables
+    (; h, h_av, q, q_av, qin, qlat, storage) = model.variables
 
     ns = length(order_of_subdomains)
     qin .= 0.0
@@ -371,7 +371,7 @@ function kinwave_river_update!(model::KinWaveRiverFlow, network, doy, dt, dt_for
                 # If inflow < 0, abstraction is limited
                 if inflow[v] < 0.0
                     max_abstract =
-                        min((inwater[v] + qin[v] + volume[v] / dt) * 0.80, -inflow[v])
+                        min((inwater[v] + qin[v] + storage[v] / dt) * 0.80, -inflow[v])
                     _inflow = -max_abstract / flow_length[v]
                 else
                     _inflow = inflow[v] / flow_length[v]
@@ -433,7 +433,7 @@ function kinwave_river_update!(model::KinWaveRiverFlow, network, doy, dt, dt_for
                 # update h
                 crossarea = alpha[v] * pow(q[v], beta)
                 h[v] = crossarea / flow_width[v]
-                volume[v] = flow_length[v] * flow_width[v] * h[v]
+                storage[v] = flow_length[v] * flow_width[v] * h[v]
                 q_av[v] += q[v] * dt
                 h_av[v] += h[v] * dt
             end
@@ -459,7 +459,7 @@ function update!(model::KinWaveRiverFlow, network, doy, dt)
         flow_length,
         bankfull_depth,
     ) = model.parameters
-    (; h, h_av, q_av, qlat, volume) = model.variables
+    (; h, h_av, q_av, qlat, storage) = model.variables
     (; adaptive) = model.timestepping
 
     @. alpha_term = pow(mannings_n / sqrt(slope), beta)
@@ -486,7 +486,7 @@ function update!(model::KinWaveRiverFlow, network, doy, dt)
 
     q_av ./= dt
     h_av ./= dt
-    volume .= flow_length .* flow_width .* h
+    storage .= flow_length .* flow_width .* h
     return nothing
 end
 

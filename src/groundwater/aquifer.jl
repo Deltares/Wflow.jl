@@ -96,7 +96,7 @@ end
 @get_units @grid_loc @with_kw struct ConfinedAquiferVariables{T}
     head::Vector{T} | "m"  # hydraulic head [m]
     conductance::Vector{T} | "m2 d-1" # Confined aquifer conductance is constant
-    volume::Vector{T} | "m3" # total volume of water that can be released
+    storage::Vector{T} | "m3" # total storage of water that can be released
 end
 
 @with_kw struct ConfinedAquifer{T} <: Aquifer
@@ -148,7 +148,7 @@ end
 @get_units @grid_loc @with_kw struct UnconfinedAquiferVariables{T}
     head::Vector{T} | "m"  # hydraulic head [m]
     conductance::Vector{T} | "m2 d-1" # conductance 
-    volume::Vector{T} | "m3" # total volume of water that can be released m   
+    storage::Vector{T} | "m3" # total storage of water that can be released
 end
 
 @with_kw struct UnconfinedAquifer{T} <: Aquifer
@@ -159,8 +159,8 @@ end
 function UnconfinedAquifer(dataset, config, indices, top, bottom, area, conductance, head)
     parameters = UnconfinedAquiferParameters(dataset, config, indices, top, bottom, area)
 
-    volume = @. (min(top, head) - bottom) * area * parameters.specific_yield
-    variables = UnconfinedAquiferVariables{Float}(head, conductance, volume)
+    storage = @. (min(top, head) - bottom) * area * parameters.specific_yield
+    variables = UnconfinedAquiferVariables{Float}(head, conductance, storage)
     aquifer = UnconfinedAquifer{Float}(parameters, variables)
     return aquifer
 end
@@ -426,7 +426,7 @@ function update!(gwf, Q, dt, conductivity_profile)
     gwf.aquifer.variables.head[gwf.constanthead.index] .= gwf.constanthead.variables.head
     # Make sure no heads ends up below an unconfined aquifer bottom
     gwf.aquifer.variables.head .= minimum_head(gwf.aquifer)
-    gwf.aquifer.variables.volume .=
+    gwf.aquifer.variables.storage .=
         saturated_thickness(gwf.aquifer) .* gwf.aquifer.parameters.area .*
         storativity(gwf.aquifer)
     return nothing

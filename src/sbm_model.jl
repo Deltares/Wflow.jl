@@ -495,21 +495,21 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
                     land_v.h[i] = 0.0
                 end
             end
-            land_v.volume .= land_v.h .* land_p.flow_width .* land_p.flow_length
+            land_v.storage .= land_v.h .* land_p.flow_width .* land_p.flow_length
         elseif land_routing == "local-inertial"
-            for i in eachindex(routing.overland_flow.volume)
+            for i in eachindex(routing.overland_flow.storage)
                 if land_p.rivercells[i]
                     j = network.land.index_river[i]
                     if land_v.h[i] > 0.0
-                        land_v.volume[i] =
+                        land_v.storage[i] =
                             land_v.h[i] * land_p.xl[i] * land_p.yl[i] +
-                            land_p.bankfull_volume[j]
+                            land_p.bankfull_storage[j]
                     else
-                        land_v.volume[i] =
+                        land_v.storage[i] =
                             river_v.h[j] * river_p.flow_width[j] * river_p.flow_length[j]
                     end
                 else
-                    routing.overland_flow.volume[i] =
+                    routing.overland_flow.storage[i] =
                         routing.overland_flow.h[i] *
                         routing.overland_flow.xl[i] *
                         routing.overland_flow.yl[i]
@@ -517,11 +517,11 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
             end
         end
         # only set active cells for river (ignore boundary conditions/ghost points)
-        river_v.volume[1:nriv] .=
+        river_v.storage[1:nriv] .=
             river_v.h[1:nriv] .* river_p.flow_width[1:nriv] .* river_p.flow_length[1:nriv]
 
         if floodplain_1d
-            initialize_volume!(routing.river_flow, nriv)
+            initialize_storage!(routing.river_flow, nriv)
         end
 
         if do_lakes

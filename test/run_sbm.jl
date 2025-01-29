@@ -324,12 +324,12 @@ model = Wflow.initialize_sbm_model(config)
 fp = model.routing.river_flow.floodplain.parameters.profile
 river = model.routing.river_flow
 dh = diff(fp.depth)
-Δv = diff(fp.volume[:, 3])
+Δv = diff(fp.storage[:, 3])
 Δa = diff(fp.a[:, 3])
 
 @testset "river flow (local inertial) floodplain schematization" begin
     # floodplain geometry checks (index 3)
-    @test fp.volume[:, 3] ≈ [0.0f0, 8641.0f0, 19011.0f0, 31685.0f0, 51848.0f0, 80653.0f0]
+    @test fp.storage[:, 3] ≈ [0.0f0, 8641.0f0, 19011.0f0, 31685.0f0, 51848.0f0, 80653.0f0]
     @test fp.width[:, 3] ≈ [
         30.0f0,
         99.28617594254938f0,
@@ -355,35 +355,35 @@ dh = diff(fp.depth)
         463.35655296229805f0,
     ]
     @test dh .* fp.width[2:end, 3] * river.parameters.flow_length[3] ≈ Δv
-    @test fp.a[:, 3] * river.parameters.flow_length[3] ≈ fp.volume[:, 3]
-    # flood depth from flood volume (8000.0)
+    @test fp.a[:, 3] * river.parameters.flow_length[3] ≈ fp.storage[:, 3]
+    # flood depth from flood storage (8000.0)
     flood_vol = 8000.0f0
-    river.variables.volume[3] = flood_vol + river.parameters.bankfull_volume[3]
-    i1, i2 = Wflow.interpolation_indices(flood_vol, fp.volume[:, 3])
+    river.variables.storage[3] = flood_vol + river.parameters.bankfull_storage[3]
+    i1, i2 = Wflow.interpolation_indices(flood_vol, fp.storage[:, 3])
     @test (i1, i2) == (1, 2)
     flood_depth = Wflow.flood_depth(fp, flood_vol, river.parameters.flow_length[3], 3)
     @test flood_depth ≈ 0.46290938548779076f0
     @test (flood_depth - fp.depth[i1]) * fp.width[i2, 3] * river.parameters.flow_length[3] +
-          fp.volume[i1, 3] ≈ flood_vol
-    # flood depth from flood volume (12000.0)
+          fp.storage[i1, 3] ≈ flood_vol
+    # flood depth from flood storage (12000.0)
     flood_vol = 12000.0f0
-    river.variables.volume[3] = flood_vol + river.parameters.bankfull_volume[3]
-    i1, i2 = Wflow.interpolation_indices(flood_vol, fp.volume[:, 3])
+    river.variables.storage[3] = flood_vol + river.parameters.bankfull_storage[3]
+    i1, i2 = Wflow.interpolation_indices(flood_vol, fp.storage[:, 3])
     @test (i1, i2) == (2, 3)
     flood_depth = Wflow.flood_depth(fp, flood_vol, river.parameters.flow_length[3], 3)
     @test flood_depth ≈ 0.6619575699132112f0
     @test (flood_depth - fp.depth[i1]) * fp.width[i2, 3] * river.parameters.flow_length[3] +
-          fp.volume[i1, 3] ≈ flood_vol
+          fp.storage[i1, 3] ≈ flood_vol
     # test extrapolation of segment
     flood_vol = 95000.0f0
-    river.variables.volume[3] = flood_vol + river.parameters.bankfull_volume[3]
-    i1, i2 = Wflow.interpolation_indices(flood_vol, fp.volume[:, 3])
+    river.variables.storage[3] = flood_vol + river.parameters.bankfull_storage[3]
+    i1, i2 = Wflow.interpolation_indices(flood_vol, fp.storage[:, 3])
     @test (i1, i2) == (6, 6)
     flood_depth = Wflow.flood_depth(fp, flood_vol, river.parameters.flow_length[3], 3)
     @test flood_depth ≈ 2.749036625585836f0
     @test (flood_depth - fp.depth[i1]) * fp.width[i2, 3] * river.parameters.flow_length[3] +
-          fp.volume[i1, 3] ≈ flood_vol
-    river.variables.volume[3] = 0.0 # reset volume
+          fp.storage[i1, 3] ≈ flood_vol
+    river.variables.storage[3] = 0.0 # reset storage
     # flow area and wetted perimeter based on hf
     h = 0.5
     i1, i2 = Wflow.interpolation_indices(h, fp.depth)

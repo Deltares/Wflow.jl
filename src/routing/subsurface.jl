@@ -89,13 +89,13 @@ end
     ssfin::Vector{T} | "m3 d-1"            # Inflow from upstream cells [m³ d⁻¹]
     ssfmax::Vector{T} | "m2 d-1"           # Maximum subsurface flow [m² d⁻¹]
     to_river::Vector{T} | "m3 d-1"         # Part of subsurface flow [m³ d⁻¹] that flows to the river
-    volume::Vector{T} | "m3"               # Subsurface volume [m³]
+    storage::Vector{T} | "m3"              # Subsurface storage [m³]
 end
 
 "Initialize lateral subsurface flow model variables"
 function LateralSsfVariables(ssf, zi, xl, yl)
     n = length(zi)
-    volume = @. (ssf.theta_s - ssf.theta_r) * (ssf.soilthickness - zi) * (xl * yl)
+    storage = @. (ssf.theta_s - ssf.theta_r) * (ssf.soilthickness - zi) * (xl * yl)
     variables = LateralSsfVariables(;
         zi,
         exfiltwater = fill(mv, n),
@@ -104,7 +104,7 @@ function LateralSsfVariables(ssf, zi, xl, yl)
         ssfin = fill(mv, n),
         ssfmax = fill(mv, n),
         to_river = zeros(n),
-        volume,
+        storage,
     )
     return variables
 end
@@ -161,7 +161,7 @@ function update!(model::LateralSSF, network, dt)
     ) = network
 
     (; recharge) = model.boundary_conditions
-    (; ssfin, ssf, ssfmax, to_river, zi, exfiltwater, volume) = model.variables
+    (; ssfin, ssf, ssfmax, to_river, zi, exfiltwater, storage) = model.variables
     (; slope, theta_s, theta_r, soilthickness, flow_length, flow_width, kh_profile) =
         model.parameters
 
@@ -199,7 +199,8 @@ function update!(model::LateralSSF, network, dt)
                     kh_profile,
                     v,
                 )
-                volume[v] = (theta_s[v] - theta_r[v]) * (soilthickness[v] - zi[v]) * area[v]
+                storage[v] =
+                    (theta_s[v] - theta_r[v]) * (soilthickness[v] - zi[v]) * area[v]
             end
         end
     end

@@ -48,7 +48,7 @@ end
     river = model.routing.river_flow
     @test sum(q) ≈ 0.035468154534622556f0
     @test q[6] ≈ 0.00803825101724232f0
-    @test river.variables.volume[6] ≈ 4.532124903256408f0
+    @test river.variables.storage[6] ≈ 4.532124903256408f0
     @test river.boundary_conditions.inwater[6] ≈ 0.00040826084140456616f0
     @test q[13] ≈ 0.0006017024138583771f0
     @test q[network.river.order[end]] ≈ 0.00856866488665273f0
@@ -98,7 +98,7 @@ Wflow.run_timestep!(model)
     river = model.routing.river_flow
     @test sum(q) ≈ 0.02727911500112358f0
     @test q[6] ≈ 0.006111263175002127f0
-    @test river.variables.volume[6] ≈ 7.6120096530771075f0
+    @test river.variables.storage[6] ≈ 7.6120096530771075f0
     @test river.boundary_conditions.inwater[6] ≈ 0.0002210785332342944f0
     @test q[13] ≈ 0.0004638698607639214f0
     @test q[5] ≈ 0.0064668491697542786f0
@@ -169,7 +169,7 @@ end
     river = model.routing.river_flow
     @test sum(q) ≈ 0.01191742350356312f0
     @test q[6] ≈ 0.0024353072305122064f0
-    @test river.variables.volume[6] ≈ 2.2277585577366357f0
+    @test river.variables.storage[6] ≈ 2.2277585577366357f0
     @test river.boundary_conditions.inwater[6] ≈ -1.3042629584651168f-5
     @test q[13] ≈ 7.332742814063803f-5
     @test q[network.river.order[end]] ≈ 0.002472526149620472f0

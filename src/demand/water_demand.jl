@@ -543,7 +543,7 @@ function surface_water_allocation_local!(model::AllocationLand, demand, river, n
     (; act_surfacewater_abst_vol, act_surfacewater_abst, available_surfacewater) =
         river.allocation.variables
     (; inflow) = river.boundary_conditions
-    (; volume) = river.variables
+    (; storage) = river.variables
     # maps from the land domain to the internal river domain (linear index), excluding water bodies
     index_river = network.land.river_inds_excl_waterbody
     for i in eachindex(surfacewater_demand)
@@ -555,7 +555,7 @@ function surface_water_allocation_local!(model::AllocationLand, demand, river, n
                 river_inflow = inflow[index_river[i]] * dt
                 available_volume = max(volume[index_river[i]] * 0.80 + river_inflow, 0.0)
             else
-                available_volume = volume[index_river[i]] * 0.80
+                available_volume = storage[index_river[i]] * 0.80
             end
             # satisfy surface water demand with available local river volume
             surfacewater_demand_vol = surfacewater_demand[i] * 0.001 * network.land.area[i]
@@ -647,7 +647,7 @@ end
 function groundwater_allocation_local!(
     model::AllocationLand,
     demand,
-    groundwater_volume,
+    groundwater_storage,
     network,
 )
     (;
@@ -666,7 +666,7 @@ function groundwater_allocation_local!(
         if !network.waterbody[i]
             # satisfy groundwater demand with available local groundwater volume
             groundwater_demand_vol = groundwater_demand[i] * 0.001 * network.area[i]
-            available_volume = groundwater_volume[i] * 0.75 # limit available groundwater volume
+            available_volume = groundwater_storage[i] * 0.75 # limit available groundwater volume
             abstraction_vol = min(groundwater_demand_vol, available_volume)
             act_groundwater_abst_vol[i] = abstraction_vol
             # remaining available groundwater and demand 
@@ -742,8 +742,8 @@ end
 return_flow(model::NoNonIrrigationDemand, nonirri_demand_gross, nonirri_alloc) = 0.0
 
 # wrapper methods
-groundwater_volume(model::LateralSSF) = model.variables.volume
-groundwater_volume(model) = model.aquifer.variables.volume
+groundwater_storage(model::LateralSSF) = model.variables.storage
+groundwater_storage(model) = model.aquifer.variables.storage
 
 """
     update_water_allocation!((model::AllocationLand, demand, routing, network, dt)
@@ -811,7 +811,7 @@ function update_water_allocation!(model::AllocationLand, demand, routing, networ
     groundwater_allocation_local!(
         model,
         demand,
-        groundwater_volume(routing.subsurface_flow),
+        groundwater_storage(routing.subsurface_flow),
         network.land,
     )
     # groundwater demand and allocation for areas
