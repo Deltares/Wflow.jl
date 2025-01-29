@@ -59,7 +59,6 @@ using TOML: TOML
 @metadata get_units "mm dt-1" String
 @metadata grid_loc "node" String # BMI grid location
 
-const FLOAT = Float64
 const CFDataset = Union{NCDataset, NCDatasets.MFDataset}
 const CFVariable_MF = Union{NCDatasets.CFVariable, NCDatasets.MFCFVariable}
 const VERSION =

@@ -42,9 +42,9 @@ function OpenWaterRunoffParameters(dataset, config, indices, riverfrac)
         "land.runoff.parameters.waterfrac";
         sel = indices,
         defaults = 0.0,
-        type = FLOAT,
+        type = Float64,
     )
-    waterfrac = max.(waterfrac .- riverfrac, FLOAT(0.0))
+    waterfrac = max.(waterfrac .- riverfrac, Float64(0.0))
     params = OpenWaterRunoffParameters(; waterfrac = waterfrac, riverfrac = riverfrac)
     return params
 end
@@ -75,8 +75,8 @@ end
 "Initialize open water runoff model"
 function OpenWaterRunoff(dataset, config, indices, riverfrac)
     n = length(riverfrac)
-    vars = OpenWaterRunoffVariables(FLOAT, n)
-    bc = OpenWaterRunoffBC(FLOAT, n)
+    vars = OpenWaterRunoffVariables(Float64, n)
+    bc = OpenWaterRunoffBC(Float64, n)
     params = OpenWaterRunoffParameters(dataset, config, indices, riverfrac)
     model =
         OpenWaterRunoff(; boundary_conditions = bc, parameters = params, variables = vars)

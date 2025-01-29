@@ -971,7 +971,7 @@ function prepare_writer(
             time_units,
             extra_dim,
             sizeinmetres;
-            float_type = FLOAT,
+            float_type = Float64,
         )
     else
         ds_outstate = nothing
@@ -1096,7 +1096,7 @@ function write_netcdf_timestep(model, dataset, parameters)
 
     time_index = add_time(dataset, clock.time)
 
-    buffer = zeros(Union{FLOAT, Missing}, size(model.network.land.reverse_indices))
+    buffer = zeros(Union{Float64, Missing}, size(model.network.land.reverse_indices))
     for (key, val) in parameters
         (; par, vector) = val
         sel = active_indices(network, par)
@@ -1365,7 +1365,7 @@ end
 
 "Read a rating curve from CSV into a NamedTuple of vectors"
 function read_sh_csv(path)
-    data, header = readdlm(path, ',', FLOAT; header = true)
+    data, header = readdlm(path, ',', Float64; header = true)
     names = vec(uppercase.(header))
     idx_h = findfirst(==("H"), names)
     idx_s = findfirst(==("S"), names)
@@ -1379,14 +1379,14 @@ end
 
 "Read a specific storage curve from CSV into a NamedTuple of vectors"
 function read_hq_csv(path)
-    data = readdlm(path, ',', FLOAT; skipstart = 1)
+    data = readdlm(path, ',', Float64; skipstart = 1)
     # Q is a matrix with 365 columns, one for each day in the year
     return (H = data[:, 1], Q = data[:, 2:end])
 end
 
 # these represent the type of the rating curve and specific storage data
-const SH = NamedTuple{(:H, :S), Tuple{Vector{FLOAT}, Vector{FLOAT}}}
-const HQ = NamedTuple{(:H, :Q), Tuple{Vector{FLOAT}, Matrix{FLOAT}}}
+const SH = NamedTuple{(:H, :S), Tuple{Vector{T}, Vector{T}}} where {T <: AbstractFloat}
+const HQ = NamedTuple{(:H, :Q), Tuple{Vector{T}, Matrix{T}}} where {T <: AbstractFloat}
 
 is_increasing(v) = last(v) > first(v)
 
@@ -1636,7 +1636,7 @@ end
 "Get `index` for dimension name `layer` based on `config` (TOML file)"
 function get_index_dimension(var, config::Config, dim_value)::Int
     if haskey(var, "layer")
-        v = get(config.model, "thicknesslayers", FLOAT[])
+        v = get(config.model, "thicknesslayers", Float64[])
         inds = collect(1:(length(v) + 1))
         index = inds[dim_value]
     else

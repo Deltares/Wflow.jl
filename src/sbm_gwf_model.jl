@@ -61,7 +61,7 @@ function initialize_sbm_gwf_model(config::Config)
         config,
         "routing.river_flow.width";
         optional = false,
-        type = FLOAT,
+        type = Float64,
         fill = 0,
     )
     river_width = river_width_2d[indices]
@@ -70,13 +70,13 @@ function initialize_sbm_gwf_model(config::Config)
         config,
         "routing.river_flow.length";
         optional = false,
-        type = FLOAT,
+        type = Float64,
         fill = 0,
     )
     river_length = river_length_2d[indices]
 
     altitude =
-        ncread(dataset, config, "altitude"; optional = false, sel = indices, type = FLOAT)
+        ncread(dataset, config, "altitude"; optional = false, sel = indices, type = Float64)
 
     # read x, y coordinates and calculate cell length [m]
     y_coords = read_y_axis(dataset)
@@ -125,7 +125,7 @@ function initialize_sbm_gwf_model(config::Config)
         "routing.overland_flow.slope";
         optional = false,
         sel = indices,
-        type = FLOAT,
+        type = Float64,
     )
     clamp!(land_slope, 0.00001, Inf)
     ldd_2d = ncread(dataset, config, "ldd"; optional = false, allow_missing = true)
@@ -228,8 +228,8 @@ function initialize_sbm_gwf_model(config::Config)
     if do_constanthead
         constant_head = ConstantHead(dataset, config, indices)
     else
-        variables = ConstantHeadVariables{FLOAT}(; head = FLOAT[])
-        constant_head = ConstantHead{FLOAT}(; variables, index = Int64[])
+        variables = ConstantHeadVariables{Float64}(; head = Float64[])
+        constant_head = ConstantHead{Float64}(; variables, index = Int64[])
     end
 
     connectivity = Connectivity(indices, reverse_indices, x_length, y_length)
@@ -240,9 +240,9 @@ function initialize_sbm_gwf_model(config::Config)
         initial_head[constant_head.index] = constant_head.variables.head
     end
 
-    bottom = altitude .- land_hydrology.soil.parameters.soilthickness ./ FLOAT(1000.0)
+    bottom = altitude .- land_hydrology.soil.parameters.soilthickness ./ Float64(1000.0)
     area = x_length .* y_length
-    conductance = zeros(FLOAT, connectivity.nconnection)
+    conductance = zeros(Float64, connectivity.nconnection)
     aquifer = UnconfinedAquifer(
         dataset,
         config,
@@ -260,7 +260,7 @@ function initialize_sbm_gwf_model(config::Config)
     # recharge boundary of unconfined aquifer
     recharge = Recharge(
         fill(MISSING_VALUE, n_land_cells),
-        zeros(FLOAT, n_land_cells),
+        zeros(Float64, n_land_cells),
         collect(1:n_land_cells),
     )
 
@@ -278,7 +278,7 @@ function initialize_sbm_gwf_model(config::Config)
         # check if drain occurs where overland flow is not possible (surface_flow_width =
         # 0.0) and correct if this is the case
         false_drain = filter(
-            i -> !isequal(drain[i], 0) && surface_flow_width[i] == FLOAT(0),
+            i -> !isequal(drain[i], 0) && surface_flow_width[i] == Float64(0),
             1:n_land_cells,
         )
         n_false_drain = length(false_drain)
@@ -301,7 +301,7 @@ function initialize_sbm_gwf_model(config::Config)
         network_drain = NetworkDrain()
     end
 
-    subsurface_flow = GroundwaterFlow{FLOAT}(;
+    subsurface_flow = GroundwaterFlow{Float64}(;
         aquifer,
         connectivity,
         constanthead = constant_head,

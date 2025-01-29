@@ -27,7 +27,7 @@ function VegetationParameters(dataset, config, indices)
         "land.vegetation_parameter_set.rootingdepth";
         sel = indices,
         defaults = 750.0,
-        type = FLOAT,
+        type = Float64,
     )
     kc = ncread(
         dataset,
@@ -35,7 +35,7 @@ function VegetationParameters(dataset, config, indices)
         "land.vegetation_parameter_set.kc";
         sel = indices,
         defaults = 1.0,
-        type = FLOAT,
+        type = Float64,
     )
     if haskey(config.input.land.vegetation_parameter_set, "leaf_area_index")
         storage_specific_leaf = ncread(
@@ -44,7 +44,7 @@ function VegetationParameters(dataset, config, indices)
             "land.vegetation_parameter_set.storage_specific_leaf";
             optional = false,
             sel = indices,
-            type = FLOAT,
+            type = Float64,
         )
         storage_wood = ncread(
             dataset,
@@ -52,7 +52,7 @@ function VegetationParameters(dataset, config, indices)
             "land.vegetation_parameter_set.storage_wood";
             optional = false,
             sel = indices,
-            type = FLOAT,
+            type = Float64,
         )
         kext = ncread(
             dataset,
@@ -60,7 +60,7 @@ function VegetationParameters(dataset, config, indices)
             "land.vegetation_parameter_set.kext";
             optional = false,
             sel = indices,
-            type = FLOAT,
+            type = Float64,
         )
         vegetation_parameter_set = VegetationParameters(;
             leaf_area_index = fill(MISSING_VALUE, n),
@@ -79,7 +79,7 @@ function VegetationParameters(dataset, config, indices)
             "land.vegetation_parameter_set.canopygapfraction";
             sel = indices,
             defaults = 0.1,
-            type = FLOAT,
+            type = Float64,
         )
         cmax = ncread(
             dataset,
@@ -87,7 +87,7 @@ function VegetationParameters(dataset, config, indices)
             "land.vegetation_parameter_set.cmax";
             sel = indices,
             defaults = 1.0,
-            type = FLOAT,
+            type = Float64,
         )
         vegetation_parameter_set = VegetationParameters(;
             leaf_area_index = nothing,
@@ -132,12 +132,12 @@ function LandGeometry(nc, config, inds)
         "land.land_parameter_set.slope";
         optional = false,
         sel = inds,
-        type = FLOAT,
+        type = Float64,
     )
     clamp!(landslope, 0.00001, Inf)
 
     land_parameter_set =
-        LandGeometry{FLOAT}(; area = area, width = drain_width, slope = landslope)
+        LandGeometry{Float64}(; area = area, width = drain_width, slope = landslope)
     return land_parameter_set
 end
 
@@ -159,7 +159,7 @@ function RiverGeometry(nc, config, inds)
         "routing.river_parameter_set.width";
         optional = false,
         sel = inds,
-        type = FLOAT,
+        type = Float64,
     )
     riverlength = ncread(
         nc,
@@ -167,7 +167,7 @@ function RiverGeometry(nc, config, inds)
         "routing.river_parameter_set.length";
         optional = false,
         sel = inds,
-        type = FLOAT,
+        type = Float64,
     )
     riverslope = ncread(
         nc,
@@ -175,13 +175,16 @@ function RiverGeometry(nc, config, inds)
         "routing.river_parameter_set.slope";
         optional = false,
         sel = inds,
-        type = FLOAT,
+        type = Float64,
     )
     minimum(riverlength) > 0 || error("river length must be positive on river cells")
     minimum(riverwidth) > 0 || error("river width must be positive on river cells")
     clamp!(riverslope, 0.00001, Inf)
 
-    river_parameter_set =
-        RiverGeometry{FLOAT}(; width = riverwidth, length = riverlength, slope = riverslope)
+    river_parameter_set = RiverGeometry{Float64}(;
+        width = riverwidth,
+        length = riverlength,
+        slope = riverslope,
+    )
     return river_parameter_set
 end

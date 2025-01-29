@@ -46,12 +46,12 @@ function GashInterceptionModel(dataset, config, indices, vegetation_parameter_se
         "land.interception.parameters.e_r";
         sel = indices,
         defaults = 0.1,
-        type = FLOAT,
+        type = Float64,
     )
     n = length(indices)
     params =
         GashParameters(; e_r = e_r, vegetation_parameter_set = vegetation_parameter_set)
-    vars = InterceptionVariables(FLOAT, n)
+    vars = InterceptionVariables(Float64, n)
     model = GashInterceptionModel(; parameters = params, variables = vars)
     return model
 end

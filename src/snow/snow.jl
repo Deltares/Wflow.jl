@@ -76,7 +76,7 @@ function SnowHbvParameters(dataset, config, indices, dt)
             "land.snow.parameters.cfmax";
             sel = indices,
             defaults = 3.75653,
-            type = FLOAT,
+            type = Float64,
         ) .* (dt / BASETIMESTEP)
     tt = ncread(
         dataset,
@@ -84,7 +84,7 @@ function SnowHbvParameters(dataset, config, indices, dt)
         "land.snow.parameters.tt";
         sel = indices,
         defaults = 0.0,
-        type = FLOAT,
+        type = Float64,
     )
     tti = ncread(
         dataset,
@@ -92,7 +92,7 @@ function SnowHbvParameters(dataset, config, indices, dt)
         "land.snow.parameters.tti";
         sel = indices,
         defaults = 1.0,
-        type = FLOAT,
+        type = Float64,
     )
     ttm = ncread(
         dataset,
@@ -100,7 +100,7 @@ function SnowHbvParameters(dataset, config, indices, dt)
         "land.snow.parameters.ttm";
         sel = indices,
         defaults = 0.0,
-        type = FLOAT,
+        type = Float64,
     )
     whc = ncread(
         dataset,
@@ -108,7 +108,7 @@ function SnowHbvParameters(dataset, config, indices, dt)
         "land.snow.parameters.whc";
         sel = indices,
         defaults = 0.1,
-        type = FLOAT,
+        type = Float64,
     )
     snow_hbv_params =
         SnowHbvParameters(; cfmax = cfmax, tt = tt, tti = tti, ttm = ttm, whc = whc)
@@ -119,8 +119,8 @@ end
 function SnowHbvModel(dataset, config, indices, dt)
     n = length(indices)
     params = SnowHbvParameters(dataset, config, indices, dt)
-    vars = SnowVariables(FLOAT, n)
-    bc = SnowBC(FLOAT, n)
+    vars = SnowVariables(Float64, n)
+    bc = SnowBC(Float64, n)
     model = SnowHbvModel(; boundary_conditions = bc, parameters = params, variables = vars)
     return model
 end

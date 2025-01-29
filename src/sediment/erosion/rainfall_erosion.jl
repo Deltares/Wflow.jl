@@ -60,7 +60,7 @@ function RainfallErosionEurosemParameters(dataset, config, indices)
         "land.rainfall_erosion.parameters.soil_detachability";
         sel = indices,
         defaults = 0.6,
-        type = FLOAT,
+        type = Float64,
     )
     eurosem_exponent = ncread(
         dataset,
@@ -68,7 +68,7 @@ function RainfallErosionEurosemParameters(dataset, config, indices)
         "land.rainfall_erosion.parameters.eurosem_exponent";
         sel = indices,
         defaults = 2.0,
-        type = FLOAT,
+        type = Float64,
     )
     canopyheight = ncread(
         dataset,
@@ -76,7 +76,7 @@ function RainfallErosionEurosemParameters(dataset, config, indices)
         "land.rainfall_erosion.parameters.canopyheight";
         sel = indices,
         defaults = 0.5,
-        type = FLOAT,
+        type = Float64,
     )
     canopygapfraction = ncread(
         dataset,
@@ -84,7 +84,7 @@ function RainfallErosionEurosemParameters(dataset, config, indices)
         "land.rainfall_erosion.parameters.canopygapfraction";
         sel = indices,
         defaults = 0.1,
-        type = FLOAT,
+        type = Float64,
     )
     soilcover_fraction = ncread(
         dataset,
@@ -92,7 +92,7 @@ function RainfallErosionEurosemParameters(dataset, config, indices)
         "land.rainfall_erosion.parameters.pathfrac";
         sel = indices,
         defaults = 0.01,
-        type = FLOAT,
+        type = Float64,
     )
     eurosem_parameters = RainfallErosionEurosemParameters(;
         soil_detachability = soil_detachability,
@@ -196,7 +196,7 @@ function RainfallErosionAnswersParameters(dataset, config, indices)
         "land.rainfall_erosion.parameters.usle_k";
         sel = indices,
         defaults = 0.1,
-        type = FLOAT,
+        type = Float64,
     )
     usle_c = ncread(
         dataset,
@@ -204,7 +204,7 @@ function RainfallErosionAnswersParameters(dataset, config, indices)
         "land.rainfall_erosion.parameters.usle_c";
         sel = indices,
         defaults = 0.01,
-        type = FLOAT,
+        type = Float64,
     )
     answers_parameters =
         RainfallErosionAnswersParameters(; usle_k = usle_k, usle_c = usle_c)

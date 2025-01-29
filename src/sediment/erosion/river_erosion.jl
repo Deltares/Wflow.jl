@@ -49,7 +49,7 @@ function RiverErosionParameters(dataset, config, indices)
         "routing.river_flow.potential_erosion.parameters.d50";
         sel = indices,
         defaults = 0.1,
-        type = FLOAT,
+        type = Float64,
     )
     river_parameters = RiverErosionParameters(; d50 = d50)
 

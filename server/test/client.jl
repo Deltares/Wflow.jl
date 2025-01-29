@@ -57,7 +57,7 @@ vwc_1_size = 0
     @test request((
         fn = "get_var_itemsize",
         name = "routing.subsurface_flow.variables.ssf",
-    )) == Dict("var_itemsize" => sizeof(Wflow.FLOAT))
+    )) == Dict("var_itemsize" => sizeof(Float64))
     @test request((fn = "get_var_type", name = "land.n"))["status"] == "ERROR"
     @test request((fn = "get_var_units", name = "land.soil.parameters.theta_s")) ==
           Dict("var_units" => "-")

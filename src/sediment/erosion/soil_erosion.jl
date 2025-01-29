@@ -78,7 +78,7 @@ function SoilErosionParameters(dataset, config, indices)
         "land.soil_erosion.parameters.clay_fraction";
         sel = indices,
         defaults = 0.4,
-        type = FLOAT,
+        type = Float64,
     )
     silt_fraction = ncread(
         dataset,
@@ -86,7 +86,7 @@ function SoilErosionParameters(dataset, config, indices)
         "land.soil_erosion.parameters.silt_fraction";
         sel = indices,
         defaults = 0.3,
-        type = FLOAT,
+        type = Float64,
     )
     sand_fraction = ncread(
         dataset,
@@ -94,7 +94,7 @@ function SoilErosionParameters(dataset, config, indices)
         "land.soil_erosion.parameters.sand_fraction";
         sel = indices,
         defaults = 0.3,
-        type = FLOAT,
+        type = Float64,
     )
     sagg_fraction = ncread(
         dataset,
@@ -102,7 +102,7 @@ function SoilErosionParameters(dataset, config, indices)
         "land.soil_erosion.parameters.sagg_fraction";
         sel = indices,
         defaults = 0.0,
-        type = FLOAT,
+        type = Float64,
     )
     lagg_fraction = ncread(
         dataset,
@@ -110,7 +110,7 @@ function SoilErosionParameters(dataset, config, indices)
         "land.soil_erosion.parameters.lagg_fraction";
         sel = indices,
         defaults = 0.0,
-        type = FLOAT,
+        type = Float64,
     )
     # Check that soil fractions sum to 1
     soil_fractions =

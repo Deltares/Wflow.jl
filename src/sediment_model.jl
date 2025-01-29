@@ -44,7 +44,7 @@ function initialize_sediment_model(config::Config)
             "reservoir_areas";
             optional = false,
             sel = indices,
-            type = FLOAT,
+            type = Float64,
             fill = 0,
         )
         waterbodies = waterbodies .+ reservoirs
@@ -56,7 +56,7 @@ function initialize_sediment_model(config::Config)
             "lake_areas";
             optional = false,
             sel = indices,
-            type = FLOAT,
+            type = Float64,
             fill = 0,
         )
         waterbodies = waterbodies .+ lakes
@@ -147,7 +147,7 @@ function set_states!(model::AbstractModel{<:SedimentModel})
     if reinit == false
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
-        set_states!(instate_path, model; type = FLOAT)
+        set_states!(instate_path, model; type = Float64)
     else
         @info "Set initial conditions from default values."
     end

@@ -1,7 +1,7 @@
 
 "Timestepping for solving kinematic wave and local inertial river and overland flow routing."
 @with_kw struct TimeStepping{T}
-    stable_timesteps::Vector{T} = FLOAT[]
+    stable_timesteps::Vector{T} = Float64[]
     dt_fixed::T = 0.0
     adaptive::Bool = true
     cfl::T = 0.70

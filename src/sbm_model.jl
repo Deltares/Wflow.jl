@@ -59,7 +59,7 @@ function initialize_sbm_model(config::Config)
         config,
         "routing.river_flow.width";
         optional = false,
-        type = FLOAT,
+        type = Float64,
         fill = 0,
     )
     river_width = river_width_2d[indices]
@@ -68,7 +68,7 @@ function initialize_sbm_model(config::Config)
         config,
         "routing.river_flow.length";
         optional = false,
-        type = FLOAT,
+        type = Float64,
         fill = 0,
     )
     river_length = river_length_2d[indices]
@@ -126,7 +126,7 @@ function initialize_sbm_model(config::Config)
         "routing.overland_flow.slope";
         optional = false,
         sel = indices,
-        type = FLOAT,
+        type = Float64,
     )
     clamp!(land_slope, 0.00001, Inf)
     flow_length = map(get_flow_length, ldd, x_length, y_length)
@@ -490,7 +490,7 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
         nriv = length(network.river.indices)
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
-        set_states!(instate_path, model; type = FLOAT, dimname = :layer)
+        set_states!(instate_path, model; type = Float64, dimname = :layer)
         # update zi for SBM soil model
         zi =
             max.(

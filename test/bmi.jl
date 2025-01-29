@@ -45,12 +45,12 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test BMI.get_var_type(
                 model,
                 "routing.river_flow.boundary_conditions.reservoir.boundary_conditions.inflow",
-            ) == "$FLOAT"
+            ) == "Float64"
             @test BMI.get_var_units(model, "land.soil.parameters.theta_s") == "-"
             @test BMI.get_var_itemsize(model, "routing.subsurface_flow.variables.ssf") ==
-                  sizeof(FLOAT)
+                  sizeof(Float64)
             @test BMI.get_var_nbytes(model, "routing.river_flow.variables.q") ==
-                  length(model.routing.river_flow.variables.q) * sizeof(FLOAT)
+                  length(model.routing.river_flow.variables.q) * sizeof(Float64)
             @test BMI.get_var_location(model, "routing.river_flow.variables.q") == "node"
             @test_throws ErrorException(
                 "routing.overland_flow.parameters.alpha_pow not listed as variable for BMI exchange",
@@ -62,13 +62,13 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
         @testset "update and get and set functions" begin
             @test BMI.get_current_time(model) == 86400.0
             @test_throws ErrorException BMI.get_value_ptr(model, "land.")
-            dest = zeros(FLOAT, size(model.land.soil.variables.zi))
+            dest = zeros(Float64, size(model.land.soil.variables.zi))
             BMI.get_value(model, "land.soil.variables.zi", dest)
             @test mean(dest) ≈ 276.1625022866973
             @test BMI.get_value_at_indices(
                 model,
                 "land.soil.variables.vwc[1]",
-                zeros(FLOAT, 3),
+                zeros(Float64, 3),
                 [1, 2, 3],
             ) ≈ getindex.(model.land.soil.variables.vwc, 1)[1:3]
             BMI.set_value_at_indices(
@@ -80,7 +80,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test BMI.get_value_at_indices(
                 model,
                 "routing.river_flow.variables.q",
-                zeros(FLOAT, 3),
+                zeros(Float64, 3),
                 [1, 100, 5617],
             ) ≈ [0.6525631197206111, 7.493760826794606, 0.02319714614721354]
             BMI.set_value(
@@ -92,14 +92,14 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
                 BMI.get_value(
                     model,
                     "land.soil.variables.zi",
-                    zeros(FLOAT, size(model.land.soil.variables.zi)),
+                    zeros(Float64, size(model.land.soil.variables.zi)),
                 ),
             ) == 300.0
             BMI.set_value_at_indices(model, "land.soil.variables.zi", [1], [250.0])
             @test BMI.get_value_at_indices(
                 model,
                 "land.soil.variables.zi",
-                zeros(FLOAT, 2),
+                zeros(Float64, 2),
                 [1, 2],
             ) == [250.0, 300.0]
         end
@@ -120,13 +120,13 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test BMI.get_grid_size(model, 3) == 5809
             @test BMI.get_grid_size(model, 4) == 50063
             @test BMI.get_grid_size(model, 5) == 50063
-            @test minimum(BMI.get_grid_x(model, 5, zeros(FLOAT, 50063))) ≈
+            @test minimum(BMI.get_grid_x(model, 5, zeros(Float64, 50063))) ≈
                   5.426666666666667f0
-            @test maximum(BMI.get_grid_x(model, 5, zeros(FLOAT, 50063))) ≈
+            @test maximum(BMI.get_grid_x(model, 5, zeros(Float64, 50063))) ≈
                   7.843333333333344f0
-            @test BMI.get_grid_x(model, 0, zeros(FLOAT, 2)) ≈
+            @test BMI.get_grid_x(model, 0, zeros(Float64, 2)) ≈
                   [5.760000000000002f0, 5.918333333333336f0]
-            @test BMI.get_grid_y(model, 0, zeros(FLOAT, 2)) ≈
+            @test BMI.get_grid_y(model, 0, zeros(Float64, 2)) ≈
                   [48.92583333333333f0, 49.909166666666664f0]
             @test BMI.get_grid_node_count(model, 0) == 2
             @test BMI.get_grid_edge_count(model, 3) == 5808

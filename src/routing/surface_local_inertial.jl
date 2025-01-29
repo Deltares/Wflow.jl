@@ -51,14 +51,14 @@ function LocalInertialRiverFlowParameters(
         "routing.river_flow.riverlength_bc";
         sel = inds_pit,
         defaults = 1.0e04,
-        type = FLOAT,
+        type = Float64,
     )
     bankfull_elevation_2d = ncread(
         dataset,
         config,
         "routing.river_flow.bankfull_elevation";
         optional = false,
-        type = FLOAT,
+        type = Float64,
         fill = 0,
     )
     bankfull_depth_2d = ncread(
@@ -66,7 +66,7 @@ function LocalInertialRiverFlowParameters(
         config,
         "routing.river_flow.bankfull_depth";
         optional = false,
-        type = FLOAT,
+        type = Float64,
         fill = 0,
     )
     bankfull_depth = bankfull_depth_2d[indices]
@@ -79,7 +79,7 @@ function LocalInertialRiverFlowParameters(
         "routing.river_flow.mannings_n";
         sel = indices,
         defaults = 0.036,
-        type = FLOAT,
+        type = Float64,
     )
 
     n = length(indices)
@@ -93,10 +93,10 @@ function LocalInertialRiverFlowParameters(
     append!(bankfull_depth, bankfull_depth[index_pit])
 
     # determine z, width, length and manning's n at edges
-    zb_max = fill(FLOAT(0), n_edges)
-    width_at_edge = fill(FLOAT(0), n_edges)
-    length_at_edge = fill(FLOAT(0), n_edges)
-    mannings_n_sq = fill(FLOAT(0), n_edges)
+    zb_max = fill(Float64(0), n_edges)
+    width_at_edge = fill(Float64(0), n_edges)
+    length_at_edge = fill(Float64(0), n_edges)
+    mannings_n_sq = fill(Float64(0), n_edges)
     for i in 1:n_edges
         src_node = nodes_at_edge.src[i]
         dst_node = nodes_at_edge.dst[i]
@@ -162,7 +162,7 @@ function LocalInertialRiverFlowVariables(dataset, config, indices, n_edges, inds
         "routing.river_flow.riverdepth_bc";
         sel = inds_pit,
         defaults = 0.0,
-        type = FLOAT,
+        type = Float64,
     )
 
     n = length(indices)
@@ -277,7 +277,7 @@ function LocalInertialRiverFlow(
         parameters,
         variables,
         floodplain,
-        allocation = do_water_demand ? AllocationRiver(n) : NoAllocationRiver{FLOAT}(),
+        allocation = do_water_demand ? AllocationRiver(n) : NoAllocationRiver{Float64}(),
     )
     return sw_river, nodes_at_edge
 end
@@ -657,14 +657,14 @@ function LocalInertialOverlandFlowParameters(
         "routing.overland_flow.mannings_n";
         sel = indices,
         defaults = 0.072,
-        type = FLOAT,
+        type = Float64,
     )
     elevation_2d = ncread(
         dataset,
         config,
         "routing.overland_flow.elevation";
         optional = false,
-        type = FLOAT,
+        type = Float64,
         fill = 0,
     )
     elevation = elevation_2d[indices]
@@ -688,8 +688,8 @@ function LocalInertialOverlandFlowParameters(
     end
 
     # determine z at edges in x and y direction
-    zx_max = fill(FLOAT(0), n)
-    zy_max = fill(FLOAT(0), n)
+    zx_max = fill(Float64(0), n)
+    zy_max = fill(Float64(0), n)
     for i in 1:n
         xu = edge_indices.xu[i]
         if xu <= n
@@ -793,7 +793,7 @@ function LocalInertialOverlandFlow(
     )
     variables = LocalInertialOverlandFlowVariables(n)
 
-    sw_land = LocalInertialOverlandFlow{FLOAT}(;
+    sw_land = LocalInertialOverlandFlow{Float64}(;
         timestepping,
         boundary_conditions,
         parameters,
@@ -1116,23 +1116,23 @@ function FloodPlainProfile(dataset, config, indices; river_width, river_length, 
         config,
         "routing.river_flow.floodplain.volume";
         sel = indices,
-        type = FLOAT,
+        type = Float64,
         dimname = :flood_depth,
     )
     n = length(indices)
 
     # for convenience (interpolation) flood depth 0.0 m is added, with associated area (a),
     # volume, width (river width) and wetted perimeter (p).
-    volume = vcat(fill(FLOAT(0), n)', volume)
+    volume = vcat(fill(Float64(0), n)', volume)
     start_volume = volume
-    flood_depths = FLOAT.(dataset["flood_depth"][:])
+    flood_depths = Float64.(dataset["flood_depth"][:])
     pushfirst!(flood_depths, 0.0)
     n_depths = length(flood_depths)
 
-    p = zeros(FLOAT, n_depths, n)
-    a = zeros(FLOAT, n_depths, n)
-    segment_volume = zeros(FLOAT, n_depths, n)
-    width = zeros(FLOAT, n_depths, n)
+    p = zeros(Float64, n_depths, n)
+    a = zeros(Float64, n_depths, n)
+    segment_volume = zeros(Float64, n_depths, n)
+    width = zeros(Float64, n_depths, n)
     width[1, :] = river_width[1:n]
 
     # determine flow area (a), width and wetted perimeter (p) FloodPlain
@@ -1194,7 +1194,7 @@ function FloodPlainProfile(dataset, config, indices; river_width, river_length, 
 
     # initialize floodplain profile parameters
     profile =
-        FloodPlainProfile{FLOAT, n_depths}(; volume, width, depth = flood_depths, a, p)
+        FloodPlainProfile{Float64, n_depths}(; volume, width, depth = flood_depths, a, p)
     return profile
 end
 
@@ -1227,12 +1227,12 @@ function FloodPlainParameters(
         "routing.river_flow.floodplain.mannings_n";
         sel = indices,
         defaults = 0.072,
-        type = FLOAT,
+        type = Float64,
     )
     # manning roughness at edges
     append!(mannings_n, mannings_n[index_pit]) # copy to ghost nodes
-    mannings_n_sq = fill(FLOAT(0), n_edges)
-    zb_max = fill(FLOAT(0), n_edges)
+    mannings_n_sq = fill(Float64(0), n_edges)
+    zb_max = fill(Float64(0), n_edges)
     for i in 1:n_edges
         src_node = nodes_at_edge.src[i]
         dst_node = nodes_at_edge.dst[i]

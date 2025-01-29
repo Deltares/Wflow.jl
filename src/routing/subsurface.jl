@@ -48,7 +48,7 @@ function LateralSsfParameters(
         "routing.subsurface_flow.ksathorfrac";
         sel = indices,
         defaults = 1.0,
-        type = FLOAT,
+        type = Float64,
     )
     n_cells = length(khfrac)
 
@@ -222,7 +222,7 @@ end
 
 "Initialize groundwater exchange variables"
 function GroundwaterExchangeVariables(n)
-    variables = GroundwaterExchangeVariables{FLOAT}(;
+    variables = GroundwaterExchangeVariables{Float64}(;
         exfiltwater = fill(MISSING_VALUE, n),
         zi = fill(MISSING_VALUE, n),
         to_river = fill(MISSING_VALUE, n),
@@ -239,7 +239,7 @@ end
 "Initialize groundwater exchange"
 function GroundwaterExchange(n)
     variables = GroundwaterExchangeVariables(n)
-    ssf = GroundwaterExchange{FLOAT}(; variables)
+    ssf = GroundwaterExchange{Float64}(; variables)
     return ssf
 end
 

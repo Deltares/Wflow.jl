@@ -39,7 +39,7 @@ function NonIrrigationDemand(dataset, config, indices, dt, sector)
             "land.demand.$(sector).demand_gross";
             sel = indices,
             defaults = 0.0,
-            type = FLOAT,
+            type = Float64,
         ) .* (dt / BASETIMESTEP)
     demand_net =
         ncread(
@@ -48,17 +48,17 @@ function NonIrrigationDemand(dataset, config, indices, dt, sector)
             "land.demand.$(sector).demand_net";
             sel = indices,
             defaults = 0.0,
-            type = FLOAT,
+            type = Float64,
         ) .* (dt / BASETIMESTEP)
     n = length(indices)
     returnflow_f = return_flow_fraction.(demand_gross, demand_net)
 
-    demand = PrescibedDemand{FLOAT}(; demand_gross, demand_net)
-    vars = NonIrrigationDemandVariables{FLOAT}(;
+    demand = PrescibedDemand{Float64}(; demand_gross, demand_net)
+    vars = NonIrrigationDemandVariables{Float64}(;
         returnflow_fraction = returnflow_f,
-        returnflow = fill(FLOAT(0), n),
+        returnflow = fill(Float64(0), n),
     )
-    non_irrigation_demand = NonIrrigationDemand{FLOAT}(; demand, variables = vars)
+    non_irrigation_demand = NonIrrigationDemand{Float64}(; demand, variables = vars)
 
     return non_irrigation_demand
 end
@@ -90,7 +90,7 @@ function NonPaddy(dataset, config, indices, dt)
         "land.demand.nonpaddy.parameters.irrigation_efficiency";
         sel = indices,
         defaults = 1.0,
-        type = FLOAT,
+        type = Float64,
     )
     areas = ncread(
         dataset,
@@ -117,18 +117,18 @@ function NonPaddy(dataset, config, indices, dt)
             "land.demand.nonpaddy.parameters.maximum_irrigation_rate";
             sel = indices,
             defaults = 25.0,
-            type = FLOAT,
+            type = Float64,
         ) .* (dt / BASETIMESTEP)
 
-    params = NonPaddyParameters{FLOAT}(;
+    params = NonPaddyParameters{Float64}(;
         maximum_irrigation_rate = max_irri_rate,
         irrigation_efficiency = efficiency,
         irrigation_areas = areas,
         irrigation_trigger,
     )
-    vars = NonPaddyVariables{FLOAT}(; demand_gross = fill(MISSING_VALUE, length(indices)))
+    vars = NonPaddyVariables{Float64}(; demand_gross = fill(MISSING_VALUE, length(indices)))
 
-    nonpaddy = NonPaddy{FLOAT}(; variables = vars, parameters = params)
+    nonpaddy = NonPaddy{Float64}(; variables = vars, parameters = params)
 
     return nonpaddy
 end
@@ -236,7 +236,7 @@ function Paddy(dataset, config, indices, dt)
         "land.demand.paddy.parameters.h_min";
         sel = indices,
         defaults = 20.0,
-        type = FLOAT,
+        type = Float64,
     )
     h_opt = ncread(
         dataset,
@@ -244,7 +244,7 @@ function Paddy(dataset, config, indices, dt)
         "land.demand.paddy.parameters.h_opt";
         sel = indices,
         defaults = 50.0,
-        type = FLOAT,
+        type = Float64,
     )
     h_max = ncread(
         dataset,
@@ -252,7 +252,7 @@ function Paddy(dataset, config, indices, dt)
         "land.demand.paddy.parameters.h_max";
         sel = indices,
         defaults = 80.0,
-        type = FLOAT,
+        type = Float64,
     )
     efficiency = ncread(
         dataset,
@@ -260,7 +260,7 @@ function Paddy(dataset, config, indices, dt)
         "land.demand.paddy.parameters.irrigation_efficiency";
         sel = indices,
         defaults = 1.0,
-        type = FLOAT,
+        type = Float64,
     )
     areas = ncread(
         dataset,
@@ -285,10 +285,10 @@ function Paddy(dataset, config, indices, dt)
             "land.demand.paddy.parameters.maximum_irrigation_rate";
             sel = indices,
             defaults = 25.0,
-            type = FLOAT,
+            type = Float64,
         ) .* (dt / BASETIMESTEP)
     n = length(indices)
-    params = PaddyParameters{FLOAT}(;
+    params = PaddyParameters{Float64}(;
         irrigation_efficiency = efficiency,
         maximum_irrigation_rate = max_irri_rate,
         irrigation_trigger,
@@ -297,12 +297,12 @@ function Paddy(dataset, config, indices, dt)
         h_opt,
         irrigation_areas = areas,
     )
-    vars = PaddyVariables{FLOAT}(;
+    vars = PaddyVariables{Float64}(;
         demand_gross = fill(MISSING_VALUE, n),
         h = fill(0.0, n),
         evaporation = fill(0.0, n),
     )
-    paddy = Paddy{FLOAT}(; parameters = params, variables = vars)
+    paddy = Paddy{Float64}(; parameters = params, variables = vars)
     return paddy
 end
 
@@ -456,16 +456,16 @@ function Demand(dataset, config, indices, dt)
     paddy = if get(config.model.water_demand, "paddy", false)
         Paddy(dataset, config, indices, dt)
     else
-        NoIrrigationPaddy{FLOAT}()
+        NoIrrigationPaddy{Float64}()
     end
     nonpaddy = if get(config.model.water_demand, "nonpaddy", false)
         NonPaddy(dataset, config, indices, dt)
     else
-        NoIrrigationNonPaddy{FLOAT}()
+        NoIrrigationNonPaddy{Float64}()
     end
 
     n = length(indices)
-    vars = DemandVariables(FLOAT, n)
+    vars = DemandVariables(Float64, n)
     demand = Demand(; domestic, industry, livestock, paddy, nonpaddy, variables = vars)
     return demand
 end
@@ -498,8 +498,8 @@ get_nonirrigation_returnflow(model::NoAllocationRiver) = 0.0
 
 "Initialize water allocation for the river domain"
 function AllocationRiver(n)
-    vars = AllocationRiverVariables(FLOAT, n)
-    allocation = AllocationRiver{FLOAT}(; variables = vars)
+    vars = AllocationRiverVariables(Float64, n)
+    allocation = AllocationRiver{Float64}(; variables = vars)
     return allocation
 end
 
@@ -551,7 +551,7 @@ function AllocationLand(dataset, config, indices)
         "land.allocation.parameters.frac_sw_used";
         sel = indices,
         defaults = 1,
-        type = FLOAT,
+        type = Float64,
     )
     areas = ncread(
         dataset,
@@ -565,7 +565,7 @@ function AllocationLand(dataset, config, indices)
     n = length(indices)
 
     params = AllocationLandParameters(; areas = areas, frac_sw_used = frac_sw_used)
-    vars = AllocationLandVariables(FLOAT, n)
+    vars = AllocationLandVariables(Float64, n)
     allocation = AllocationLand(; parameters = params, variables = vars)
     return allocation
 end

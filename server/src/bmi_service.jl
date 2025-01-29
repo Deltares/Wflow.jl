@@ -85,10 +85,10 @@ struct GetVarLocation
     name::String
 end
 
-struct GetValue
+struct GetValue{T}
     fn::String
     name::String
-    dest::Vector{Wflow.FLOAT}
+    dest::Vector{T}
 end
 
 struct GetValuePtr
@@ -96,24 +96,24 @@ struct GetValuePtr
     name::String
 end
 
-struct GetValueAtIndices
+struct GetValueAtIndices{T}
     fn::String
     inds::Vector{Int}
-    dest::Vector{Wflow.FLOAT}
+    dest::Vector{T}
     name::String
 end
 
-struct SetValue
+struct SetValue{T}
     fn::String
     name::String
-    src::Vector{Wflow.FLOAT}
+    src::Vector{T}
 end
 
 struct SetValueAtIndices
     fn::String
     inds::Vector{Int}
     name::String
-    src::Vector{Wflow.FLOAT}
+    src::Vector{T}
 end
 
 struct GetGridType
@@ -131,16 +131,16 @@ struct GetGridSize
     grid::Int
 end
 
-struct GetGridX
+struct GetGridX{T}
     fn::String
     grid::Int
-    x::Vector{Wflow.FLOAT}
+    x::Vector{T}
 end
 
-struct GetGridY
+struct GetGridY{T}
     fn::String
     grid::Int
-    y::Vector{Wflow.FLOAT}
+    y::Vector{T}
 end
 
 struct GetGridNodeCount

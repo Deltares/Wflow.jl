@@ -12,7 +12,7 @@ const PCR_DIR = [
     CartesianIndex(1, 1),  # 9
 ]
 
-const MISSING_VALUE = FLOAT(NaN)
+const MISSING_VALUE = Float64(NaN)
 
 # timestep that the parameter units are defined in
 const BASETIMESTEP = Second(Day(1))

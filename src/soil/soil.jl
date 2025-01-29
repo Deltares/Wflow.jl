@@ -114,7 +114,7 @@ function SbmSoilVariables(n, parameters)
         actcapflux = fill(MISSING_VALUE, n),
         actevapsat = fill(MISSING_VALUE, n),
         actevap = fill(MISSING_VALUE, n),
-        f_infiltration_reduction = fill(FLOAT(1), n),
+        f_infiltration_reduction = fill(1.0, n),
         actinfilt = fill(MISSING_VALUE, n),
         actinfiltsoil = fill(MISSING_VALUE, n),
         actinfiltpath = fill(MISSING_VALUE, n),
@@ -136,8 +136,8 @@ function SbmSoilVariables(n, parameters)
         transfer = fill(MISSING_VALUE, n),
         recharge = fill(MISSING_VALUE, n),
         actleakage = fill(MISSING_VALUE, n),
-        tsoil = fill(FLOAT(10.0), n),
-        total_storage = zeros(FLOAT, n), # Set the total water storage from initialized values
+        tsoil = fill(10.0, n),
+        total_storage = zeros(Float64, n), # Set the total water storage from initialized values
     )
     return vars
 end
@@ -222,7 +222,7 @@ function sbm_kv_profiles(
             "land.soil.parameters.z_exp";
             optional = false,
             sel = indices,
-            type = FLOAT,
+            type = Float64,
         )
         exp_profile = KvExponential(kv_0, f)
         kv_profile = KvExponentialConstant(exp_profile, z_exp)
@@ -234,7 +234,7 @@ function sbm_kv_profiles(
                 "land.soil.parameters.kv";
                 sel = indices,
                 defaults = 1000.0,
-                type = FLOAT,
+                type = Float64,
                 dimname = :layer,
             ) .* (dt / BASETIMESTEP)
         if size(kv, 1) != maxlayers
@@ -251,7 +251,7 @@ function sbm_kv_profiles(
                 "land.soil.parameters.z_layered";
                 optional = false,
                 sel = indices,
-                type = FLOAT,
+                type = Float64,
             )
             nlayers_kv = fill(0, n)
             for i in eachindex(nlayers_kv)
@@ -342,10 +342,10 @@ end
 
 "Initialize SBM soil model parameters"
 function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, dt)
-    config_thicknesslayers = get(config.model, "thicknesslayers", FLOAT[])
+    config_thicknesslayers = get(config.model, "thicknesslayers", Float64[])
     if length(config_thicknesslayers) > 0
         thicknesslayers =
-            SVector(Tuple(push!(FLOAT.(config_thicknesslayers), MISSING_VALUE)))
+            SVector(Tuple(push!(Float64.(config_thicknesslayers), MISSING_VALUE)))
         cum_depth_layers = pushfirst(cumsum(thicknesslayers), 0.0)
         maxlayers = length(thicknesslayers) # max number of soil layers
     else
@@ -360,7 +360,7 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
             "land.soil.parameters.w_soil";
             sel = indices,
             defaults = 0.1125,
-            type = FLOAT,
+            type = Float64,
         ) .* (dt / BASETIMESTEP)
     cf_soil = ncread(
         dataset,
@@ -368,7 +368,7 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
         "land.soil.parameters.cf_soil";
         sel = indices,
         defaults = 0.038,
-        type = FLOAT,
+        type = Float64,
     )
     # soil parameters
     theta_s = ncread(
@@ -377,7 +377,7 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
         "land.soil.parameters.theta_s";
         sel = indices,
         defaults = 0.6,
-        type = FLOAT,
+        type = Float64,
     )
     theta_r = ncread(
         dataset,
@@ -385,7 +385,7 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
         "land.soil.parameters.theta_r";
         sel = indices,
         defaults = 0.01,
-        type = FLOAT,
+        type = Float64,
     )
     kv_0 =
         ncread(
@@ -394,7 +394,7 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
             "land.soil.parameters.kv_0";
             sel = indices,
             defaults = 3000.0,
-            type = FLOAT,
+            type = Float64,
         ) .* (dt / BASETIMESTEP)
     f = ncread(
         dataset,
@@ -402,7 +402,7 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
         "land.soil.parameters.f";
         sel = indices,
         defaults = 0.001,
-        type = FLOAT,
+        type = Float64,
     )
     hb = ncread(
         dataset,
@@ -410,7 +410,7 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
         "land.soil.parameters.hb";
         sel = indices,
         defaults = -10.0,
-        type = FLOAT,
+        type = Float64,
     )
     h1 = ncread(
         dataset,
@@ -418,7 +418,7 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
         "land.soil.parameters.h1";
         sel = indices,
         defaults = 0.0,
-        type = FLOAT,
+        type = Float64,
     )
     h2 = ncread(
         dataset,
@@ -426,7 +426,7 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
         "land.soil.parameters.h2";
         sel = indices,
         defaults = -100.0,
-        type = FLOAT,
+        type = Float64,
     )
     h3_high = ncread(
         dataset,
@@ -434,7 +434,7 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
         "land.soil.parameters.h3_high";
         sel = indices,
         defaults = -400.0,
-        type = FLOAT,
+        type = Float64,
     )
     h3_low = ncread(
         dataset,
@@ -442,7 +442,7 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
         "land.soil.parameters.h3_low";
         sel = indices,
         defaults = -1000.0,
-        type = FLOAT,
+        type = Float64,
     )
     h4 = ncread(
         dataset,
@@ -450,7 +450,7 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
         "land.soil.parameters.h4";
         sel = indices,
         defaults = -15849.0,
-        type = FLOAT,
+        type = Float64,
     )
     alpha_h1 = ncread(
         dataset,
@@ -458,7 +458,7 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
         "land.soil.parameters.alpha_h1";
         sel = indices,
         defaults = 1.0,
-        type = FLOAT,
+        type = Float64,
     )
     soilthickness = ncread(
         dataset,
@@ -466,7 +466,7 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
         "land.soil.parameters.soilthickness";
         sel = indices,
         defaults = 2000.0,
-        type = FLOAT,
+        type = Float64,
     )
     infiltcappath =
         ncread(
@@ -475,7 +475,7 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
             "land.soil.parameters.infiltcappath";
             sel = indices,
             defaults = 10.0,
-            type = FLOAT,
+            type = Float64,
         ) .* (dt / BASETIMESTEP)
     infiltcapsoil =
         ncread(
@@ -484,7 +484,7 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
             "land.soil.parameters.infiltcapsoil";
             sel = indices,
             defaults = 100.0,
-            type = FLOAT,
+            type = Float64,
         ) .* (dt / BASETIMESTEP)
     maxleakage =
         ncread(
@@ -493,7 +493,7 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
             "land.soil.parameters.maxleakage";
             sel = indices,
             defaults = 0.0,
-            type = FLOAT,
+            type = Float64,
         ) .* (dt / BASETIMESTEP)
 
     c = ncread(
@@ -502,7 +502,7 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
         "land.soil.parameters.c";
         sel = indices,
         defaults = 10.0,
-        type = FLOAT,
+        type = Float64,
         dimname = :layer,
     )
     if size(c, 1) != maxlayers
@@ -516,7 +516,7 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
         "land.soil.parameters.kvfrac";
         sel = indices,
         defaults = 1.0,
-        type = FLOAT,
+        type = Float64,
         dimname = :layer,
     )
     if size(kvfrac, 1) != maxlayers
@@ -531,7 +531,7 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
         "land.soil.parameters.pathfrac";
         sel = indices,
         defaults = 0.01,
-        type = FLOAT,
+        type = Float64,
     )
 
     # vegetation parameters
@@ -541,7 +541,7 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
         "land.soil.parameters.rootdistpar";
         sel = indices,
         defaults = -500.0,
-        type = FLOAT,
+        type = Float64,
     )
     cap_hmax = ncread(
         dataset,
@@ -549,7 +549,7 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
         "land.soil.parameters.cap_hmax";
         sel = indices,
         defaults = 2000.0,
-        type = FLOAT,
+        type = Float64,
     )
     cap_n = ncread(
         dataset,
@@ -557,7 +557,7 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
         "land.soil.parameters.cap_n";
         sel = indices,
         defaults = 2.0,
-        type = FLOAT,
+        type = Float64,
     )
 
     act_thickl = set_layerthickness.(soilthickness, (cum_depth_layers,), (thicknesslayers,))
@@ -574,14 +574,14 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
                 "land.soil.parameters.rootfraction";
                 sel = indices,
                 optional = false,
-                type = FLOAT,
+                type = Float64,
                 dimname = :layer,
             )
         else
             n = length(indices)
             (; rootingdepth) = vegetation_parameter_set
             # default root fraction in case of multiple soil layers
-            rootfraction = zeros(FLOAT, maxlayers, n)
+            rootfraction = zeros(Float64, maxlayers, n)
             for i in 1:n
                 if rootingdepth[i] > 0.0
                     for k in 1:maxlayers
@@ -598,7 +598,7 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
         end
     else
         # for the case of 1 soil layer
-        rootfraction = ones(FLOAT, maxlayers, n)
+        rootfraction = ones(Float64, maxlayers, n)
     end
 
     kv_profile = sbm_kv_profiles(
@@ -909,7 +909,7 @@ function transpiration!(model::SbmSoilModel, dt; ust = false)
         for k in 1:v.n_unsatlayers[i]
             vwc = max(
                 v.ustorelayerdepth[i][k] / v.ustorelayerthickness[i][k],
-                FLOAT(0.0000001),
+                Float64(0.0000001),
             )
             head = head_brooks_corey(vwc, p.theta_s[i], p.theta_r[i], p.c[i][k], p.hb[i])
             alpha = rwu_reduction_feddes(
@@ -952,9 +952,9 @@ function transpiration!(model::SbmSoilModel, dt; ust = false)
         end
 
         # transpiration from saturated store
-        wetroots = scurve(v.zi[i], rootingdepth[i], FLOAT(1.0), p.rootdistpar[i])
+        wetroots = scurve(v.zi[i], rootingdepth[i], Float64(1.0), p.rootdistpar[i])
         alpha = rwu_reduction_feddes(
-            FLOAT(0.0),
+            Float64(0.0),
             p.h1[i],
             p.h2[i],
             v.h3[i],

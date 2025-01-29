@@ -132,26 +132,26 @@ function UnconfinedAquiferParameters(dataset, config, indices, top, bottom, area
         config,
         "routing.subsurface_flow.conductivity";
         sel = indices,
-        type = FLOAT,
+        type = Float64,
     )
     specific_yield = ncread(
         dataset,
         config,
         "routing.subsurface_flow.specific_yield";
         sel = indices,
-        type = FLOAT,
+        type = Float64,
     )
     f = ncread(
         dataset,
         config,
         "routing.subsurface_flow.gwf_f";
         sel = indices,
-        type = FLOAT,
+        type = Float64,
         defaults = 3.0,
     )
 
     parameters =
-        UnconfinedAquiferParameters{FLOAT}(; k, top, bottom, area, specific_yield, f)
+        UnconfinedAquiferParameters{Float64}(; k, top, bottom, area, specific_yield, f)
     return parameters
 end
 
@@ -170,8 +170,8 @@ function UnconfinedAquifer(dataset, config, indices, top, bottom, area, conducta
     parameters = UnconfinedAquiferParameters(dataset, config, indices, top, bottom, area)
 
     volume = @. (min(top, head) - bottom) * area * parameters.specific_yield
-    variables = UnconfinedAquiferVariables{FLOAT}(head, conductance, volume)
-    aquifer = UnconfinedAquifer{FLOAT}(parameters, variables)
+    variables = UnconfinedAquiferVariables{Float64}(head, conductance, volume)
+    aquifer = UnconfinedAquifer{Float64}(parameters, variables)
     return aquifer
 end
 
@@ -385,14 +385,14 @@ function ConstantHead(dataset, config, indices)
         config,
         "routing.subsurface_flow.constant_head";
         sel = indices,
-        type = FLOAT,
+        type = Float64,
         fill = MISSING_VALUE,
     )
     n = length(indices)
     index_constanthead = filter(i -> !isequal(constanthead[i], MISSING_VALUE), 1:n)
     head = constanthead[index_constanthead]
-    variables = ConstantHeadVariables{FLOAT}(head)
-    constant_head = ConstantHead{FLOAT}(; variables, index = index_constanthead)
+    variables = ConstantHeadVariables{Float64}(head)
+    constant_head = ConstantHead{Float64}(; variables, index = index_constanthead)
     return constant_head
 end
 

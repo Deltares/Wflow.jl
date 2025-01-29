@@ -219,7 +219,7 @@ function infiltration_reduction_factor(
 )
     if modelsnow && soilinfreduction
         bb = 1.0 / (1.0 - cf_soil)
-        f_infiltration_reduction = scurve(tsoil, FLOAT(0.0), bb, FLOAT(8.0)) + cf_soil
+        f_infiltration_reduction = scurve(tsoil, 0.0, bb, 8.0) + cf_soil
     else
         f_infiltration_reduction = 1.0
     end
