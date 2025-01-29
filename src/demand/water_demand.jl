@@ -601,14 +601,14 @@ function surface_water_allocation_area!(model::AllocationLand, demand, river, ne
         sw_available = 0.0
         for j in inds_river[i]
             if inds_reservoir[j] > 0
-                # for reservoir locations use reservoir volume
+                # for reservoir locations use reservoir storage
                 k = inds_reservoir[j]
-                available_surfacewater[j] = reservoir.volume[k] * 0.98 # limit available reservoir volume
+                available_surfacewater[j] = reservoir.storage[k] * 0.98 # limit available reservoir storage
                 sw_available += available_surfacewater[j]
             elseif inds_lake[j] > 0
-                # for lake locations use lake volume
+                # for lake locations use lake storage
                 k = inds_lake[j]
-                available_surfacewater[j] = lake.storage[k] * 0.98 # limit available lake volume
+                available_surfacewater[j] = lake.storage[k] * 0.98 # limit available lake storage
                 sw_available += available_surfacewater[j]
 
             else
@@ -797,7 +797,7 @@ function update_water_allocation!(model::AllocationLand, demand, routing, networ
     # from reservoir and lake, including an update of lake waterlevel
     if !isnothing(reservoir)
         @. abstraction[inds_reservoir] = 0.0
-        @. reservoir.volume -= act_surfacewater_abst_vol[inds_reservoir]
+        @. reservoir.storage -= act_surfacewater_abst_vol[inds_reservoir]
     elseif !isnothing(lake)
         @. abstraction[inds_lake] = 0.0
         @. lake.storage -= act_surfacewater_abst_vol[inds_lake]
