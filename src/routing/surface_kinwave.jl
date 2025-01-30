@@ -275,22 +275,6 @@ function average_flow_vars!(variables, dt)
     return nothing
 end
 
-"""
-Helper function to compute weighted sum of flow variables during a simulation timestep.
-"""
-function weighted_sum_flow_vars!(variables, dt_s; update_h_av = true)
-    (; q, h, storage, q_av, h_av, storage_av) = variables
-    @. q_av += q * dt_s
-    if update_h_av
-        n = length(h_av) # vector h can contain boundary conditions (length h > length h_av)
-        for i in 1:n
-            h_av[i] += h[i] * dt_s
-            storage_av[i] += storage[i] * dt_s
-        end
-    end
-    return nothing
-end
-
 "Update overland flow model `KinWaveOverlandFlow` for a single timestep"
 function kinwave_land_update!(model::KinWaveOverlandFlow, network, dt)
     (;
@@ -302,7 +286,7 @@ function kinwave_land_update!(model::KinWaveOverlandFlow, network, dt)
     ) = network
 
     (; beta, alpha, flow_width, flow_length) = model.parameters
-    (; h, q, storage, qin, qlat, to_river) = model.variables
+    (; h, h_av, q, q_av, storage, storage_av, qin, qlat, to_river) = model.variables
 
     ns = length(order_of_subdomains)
     qin .= 0.0
@@ -344,6 +328,11 @@ function kinwave_land_update!(model::KinWaveOverlandFlow, network, dt)
                     h[v] = crossarea / flow_width[v]
                 end
                 storage[v] = flow_length[v] * flow_width[v] * h[v]
+
+                # average variables (here accumulated for model timestep Δt)
+                storage_av[v] += storage[v] * dt
+                h_av[v] += h[v] * dt
+                q_av[v] += q[v] * dt
             end
         end
     end
@@ -373,7 +362,6 @@ function update!(model::KinWaveOverlandFlow, network, dt)
         dt_s = adaptive ? stable_timestep(model, 0.02) : model.timestepping.dt_fixed
         dt_s = check_timestepsize(dt_s, t, dt)
         kinwave_land_update!(model, network, dt_s)
-        weighted_sum_flow_vars!(model.variables, dt_s)
         t = t + dt_s
     end
     average_flow_vars!(model.variables, dt)
@@ -397,7 +385,7 @@ function kinwave_river_update!(model::KinWaveRiverFlow, network, doy, dt, dt_for
         model.boundary_conditions
 
     (; beta, alpha, flow_width, flow_length) = model.parameters
-    (; h, q, storage, qin, qlat, storage) = model.variables
+    (; h, h_av, q, q_av, storage, storage_av, qin, qlat, storage) = model.variables
 
     ns = length(order_of_subdomains)
     qin .= 0.0
@@ -474,6 +462,11 @@ function kinwave_river_update!(model::KinWaveRiverFlow, network, doy, dt, dt_for
                 crossarea = alpha[v] * pow(q[v], beta)
                 h[v] = crossarea / flow_width[v]
                 storage[v] = flow_length[v] * flow_width[v] * h[v]
+
+                # average variables (here accumulated for model timestep Δt)
+                storage_av[v] += storage[v] * dt
+                h_av[v] += h[v] * dt
+                q_av[v] += q[v] * dt
             end
         end
     end
@@ -514,7 +507,6 @@ function update!(model::KinWaveRiverFlow, network, doy, dt)
         dt_s = adaptive ? stable_timestep(model, 0.05) : model.timestepping.dt_fixed
         dt_s = check_timestepsize(dt_s, t, dt)
         kinwave_river_update!(model, network, doy, dt_s, dt)
-        weighted_sum_flow_vars!(model.variables, dt_s)
         t = t + dt_s
     end
 

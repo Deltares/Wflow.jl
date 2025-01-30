@@ -321,6 +321,8 @@ function local_inertial_river_update!(
         # limit q in case water is not available
         river_v.q[i] = ifelse(river_v.h[i_src] <= 0.0, min(river_v.q[i], 0.0), river_v.q[i])
         river_v.q[i] = ifelse(river_v.h[i_dst] <= 0.0, max(river_v.q[i], 0.0), river_v.q[i])
+        # average river discharge (here accumulated for model timestep Δt)
+        river_v.q_av[i] += river_v.q[i] * dt
     end
     if !isnothing(model.floodplain)
         floodplain_p = model.floodplain.parameters
@@ -414,6 +416,8 @@ function local_inertial_river_update!(
 
             floodplain_v.q[i] =
                 ifelse(floodplain_v.q[i] * river_v.q[i] < 0.0, 0.0, floodplain_v.q[i])
+            # average floodplain discharge (here accumulated for model timestep Δt)
+            floodplain_v.q_av[i] += floodplain_v.q[i] * dt
         end
     end
     # For reservoir and lake locations the local inertial solution is replaced by the
@@ -427,6 +431,8 @@ function local_inertial_river_update!(
         q_in = get_inflow_waterbody(model, edges_at_node.src[i])
         update!(reservoir, v, q_in + inflow_waterbody[i], dt, dt_forcing)
         river_v.q[i] = reservoir.variables.outflow[v]
+        # average river discharge (here accumulated for model timestep Δt)
+        river_v.q_av[i] += river_v.q[i] * dt
     end
     (; lake, inflow_waterbody) = model.boundary_conditions
     inds_lake = network.lake.river_indices
@@ -436,6 +442,8 @@ function local_inertial_river_update!(
         q_in = get_inflow_waterbody(model, edges_at_node.src[i])
         update!(lake, v, q_in + inflow_waterbody[i], doy, dt, dt_forcing)
         river_v.q[i] = max(lake.variables.outflow[v], 0.0)
+        # average river discharge (here accumulated for model timestep Δt)
+        river_v.q_av[i] += river_v.q[i] * dt
     end
     if update_h
         @batch per = thread minbatch = 2000 for i in river_p.active_n
@@ -449,6 +457,8 @@ function local_inertial_river_update!(
                 river_v.storage[i] = 0.0 # set storage to zero
             end
             river_v.storage[i] = max(river_v.storage[i] + inflow[i] * dt, 0.0) # add external inflow
+            river_v.h[i] =
+                river_v.storage[i] / (river_p.flow_length[i] * river_p.flow_width[i])
 
             if !isnothing(model.floodplain)
                 floodplain_v = model.floodplain.variables
@@ -484,10 +494,13 @@ function local_inertial_river_update!(
                     floodplain_v.h[i] = 0.0
                     floodplain_v.storage[i] = 0.0
                 end
-            else
-                river_v.h[i] =
-                    river_v.storage[i] / (river_p.flow_length[i] * river_p.flow_width[i])
+                # average variables (here accumulated for model timestep Δt)
+                floodplain_v.storage_av[i] += floodplain_v.storage[i] * dt
+                floodplain_v.h_av[i] += floodplain_v.h_av[i] * dt
             end
+            # average variables (here accumulated for model timestep Δt)
+            river_v.storage_av[i] += river_v.storage[i] * dt
+            river_v.h_av[i] += river_v.h[i] * dt
         end
     end
     return nothing
@@ -521,10 +534,6 @@ function update!(
             dt_s = dt - t
         end
         local_inertial_river_update!(model, network, dt_s, dt, doy, update_h)
-        weighted_sum_flow_vars!(model.variables, dt_s; update_h_av = update_h)
-        if !isnothing(model.floodplain)
-            weighted_sum_flow_vars!(model.floodplain.variables, dt_s)
-        end
         t = t + dt_s
     end
     average_flow_vars!(model.variables, dt)
@@ -842,17 +851,6 @@ function average_flow_vars!(variables::LocalInertialOverlandFlowVariables, dt)
 end
 
 """
-Helper function to compute weighted sum of flow variables of the `LocalInertialOverlandFlow`
-model during a simulation timestep.
-"""
-function weighted_sum_flow_vars!(variables::LocalInertialOverlandFlowVariables, dt_s)
-    (; h, storage, h_av, storage_av) = variables
-    @. h_av += h * dt_s
-    @. storage_av += storage * dt_s
-    return nothing
-end
-
-"""
 Update combined river `LocalInertialRiverFlow` and overland flow `LocalInertialOverlandFlow` models for a
 single timestep `dt`. An adaptive timestepping method is used (computing a sub timestep
 `dt_s`).
@@ -881,9 +879,7 @@ function update!(
             dt_s = dt - t
         end
         local_inertial_river_update!(river, network, dt_s, dt, doy, update_h)
-        weighted_sum_flow_vars!(river.variables, dt_s; update_h_av = update_h)
         local_inertial_update!(land, river, network, dt_s)
-        weighted_sum_flow_vars!(land.variables, dt_s)
         t = t + dt_s
     end
     average_flow_vars!(river.variables, dt)
@@ -1050,7 +1046,9 @@ function local_inertial_update!(
                     land_v.h[i] = T(0.0)
                     river_v.storage[inds_river[i]] = land_v.storage[i]
                 end
+                # average variables (here accumulated for model timestep Δt)
                 river_v.h_av[inds_river[i]] += river_v.h[inds_river[i]] * dt
+                river_v.storage_av[inds_river[i]] += river_v.storage[inds_river[i]] * dt
             end
         else
             land_v.storage[i] +=
@@ -1064,6 +1062,7 @@ function local_inertial_update!(
             end
             land_v.h[i] = land_v.storage[i] / (land_p.x_length[i] * land_p.y_length[i])
         end
+        # average variables (here accumulated for model timestep Δt)
         land_v.h_av[i] += land_v.h[i] * dt
         land_v.storage_av[i] += land_v.storage[i] * dt
     end
