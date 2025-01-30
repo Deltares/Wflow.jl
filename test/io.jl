@@ -229,11 +229,11 @@ lens = @optic(_.input.parameters.doesnt_exist)
     @test map["subsurface_water__volume_flow_rate"](model)[10606] ≈ 39.972334552895816
     @test map["river_water__instantaneous_volume_flow_rate"](model)[149] ≈ 53.48673634956338
     @test map["river_water__instantaneous_depth"](model)[149] ≈ 1.167635369628945
-    @test map["river_water__volume"](model)[149] ≈ 63854.60119358985
+    @test model.routing.river_flow.variables.storage[149] ≈ 63854.60119358985
     @test map["land_surface_water__instantaneous_volume_flow_rate"](model)[2075] ≈
           3.285909284322251
     @test map["land_surface_water__instantaneous_depth"](model)[2075] ≈ 0.052076262033771775
-    @test map["land_surface_water__volume"](model)[2075] ≈ 29920.754983235012
+    @test model.routing.overland_flow.variables.storage[2075] ≈ 29920.754983235012
 end
 
 @testset "reducer" begin
