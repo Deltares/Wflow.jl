@@ -256,6 +256,15 @@ end
     cartesian_index = indices[linear_index]
     @test cartesian_index === CartesianIndex(168, 8)
     @test reverse_indices[cartesian_index] === linear_index
+    # test active indices of different domains
+    floodplain_inds = Wflow.active_indices(network, "floodplain_water__volume")
+    river_inds = Wflow.active_indices(network, "river_water__volume")
+    reservoir_inds = Wflow.active_indices(network, "reservoir_water__volume")
+    land_inds = Wflow.active_indices(network, "soil_surface_water__runoff_volume_flux")
+    @test floodplain_inds == river_inds
+    @test length(land_inds) == 50063
+    @test land_inds[100] == CartesianIndex(168, 8)
+    @test reservoir_inds == [CartesianIndex(41, 134), CartesianIndex(60, 252)]
 end
 
 @testset "initial parameter values" begin
