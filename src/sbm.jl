@@ -13,7 +13,7 @@ end
 
 "Initialize land hydrology model with SBM soil model"
 function LandHydrologySBM(dataset, config, riverfrac, indices)
-    dt = Second(config.timestepsecs)
+    dt = Second(config.time.timestepsecs)
     n = length(indices)
 
     atmospheric_forcing = AtmosphericForcing(n)
@@ -85,7 +85,7 @@ function update!(model::LandHydrologySBM, routing, network, config, dt)
     update!(snow, atmospheric_forcing)
 
     # lateral snow transport
-    if get(config.model, "masswasting", false)::Bool
+    if get(config.model, "gravitational_snow_transport", false)::Bool
         lateral_snow_transport!(
             snow.variables.snow_storage,
             snow.variables.snow_water,

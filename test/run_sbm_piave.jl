@@ -1,27 +1,27 @@
 
 function run_piave(model, steps)
     q = zeros(steps)
-    ssf_vol = zeros(steps)
-    riv_vol = zeros(steps)
+    ssf_storage = zeros(steps)
+    riv_storage = zeros(steps)
     for i in 1:steps
         Wflow.run_timestep!(model)
-        ssf_vol[i] = mean(model.routing.subsurface_flow.variables.volume)
-        riv_vol[i] = mean(model.routing.river_flow.variables.volume)
+        ssf_storage[i] = mean(model.routing.subsurface_flow.variables.storage)
+        riv_storage[i] = mean(model.routing.river_flow.variables.storage)
         q[i] = model.routing.river_flow.variables.q_av[1]
     end
-    return q, riv_vol, ssf_vol
+    return q, riv_storage, ssf_storage
 end
 
 tomlpath = joinpath(@__DIR__, "sbm_piave_demand_config.toml")
 config = Wflow.Config(tomlpath)
 model = Wflow.initialize_sbm_model(config)
-q_demand, riv_vol_demand, ssf_vol_demand = run_piave(model, 30)
+q_demand, riv_storage_demand, ssf_storage_demand = run_piave(model, 30)
 Wflow.close_files(model; delete_output = false)
 
 tomlpath = joinpath(@__DIR__, "sbm_piave_config.toml")
 config = Wflow.Config(tomlpath)
 model = Wflow.initialize_sbm_model(config)
-q_, riv_vol, ssf_vol = run_piave(model, 30)
+q_, riv_storage, ssf_storage = run_piave(model, 30)
 Wflow.close_files(model; delete_output = false)
 
 @testset "piave with and without water demand" begin
@@ -50,7 +50,7 @@ Wflow.close_files(model; delete_output = false)
         178.8207608992179f0,
         110.0540286256144f0,
     ]
-    @test riv_vol_demand[idx] ≈ [
+    @test riv_storage_demand[idx] ≈ [
         60108.85346812383f0,
         55483.137044195726f0,
         62098.68355844664f0,
@@ -62,7 +62,7 @@ Wflow.close_files(model; delete_output = false)
         44664.51932077705f0,
         39490.08957716613f0,
     ]
-    @test riv_vol[idx] ≈ [
+    @test riv_storage[idx] ≈ [
         60612.8152223446f0,
         55934.74021061718f0,
         62385.538865370385f0,
@@ -74,7 +74,7 @@ Wflow.close_files(model; delete_output = false)
         44586.63915460806f0,
         39296.07358095679f0,
     ]
-    @test ssf_vol_demand[idx] ≈ [
+    @test ssf_storage_demand[idx] ≈ [
         244149.81771426898f0,
         239205.5037877743f0,
         237749.2625556856f0,
@@ -86,7 +86,7 @@ Wflow.close_files(model; delete_output = false)
         216112.96364731618f0,
         212731.17253347262f0,
     ]
-    @test ssf_vol[idx] ≈ [
+    @test ssf_storage[idx] ≈ [
         244138.43308252218f0,
         239156.33098526628f0,
         237706.4375652105f0,

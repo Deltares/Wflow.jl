@@ -3,9 +3,13 @@
 # Wflow documentation https://deltares.github.io/Wflow.jl/dev/
 # TOML documentation: https://github.com/toml-lang/toml
 
-endtime = 2000-01-10T00:00:00
 dir_input = "data/input"
 dir_output = "data/output"
+
+[time]
+endtime = 2000-01-10T00:00:00
+
+[logging]
 loglevel = "info"
 
 [input]
@@ -13,80 +17,73 @@ path_forcing = "forcing-moselle.nc"
 path_static = "staticmaps-moselle.nc"
 
 # these are not directly part of the model
-ldd = "wflow_ldd"
-river_location = "wflow_river"
-subcatchment = "wflow_subcatch"
+local_drain_direction = "wflow_ldd"
+river_location__mask = "wflow_river"
+reservoir_area__count = "wflow_reservoirareas"
+reservoir_location__count = "wflow_reservoirlocs"
+subcatchment_location__count = "wflow_subcatch"
+
+[input.forcing]
+atmosphere_water__precipitation_volume_flux = "precip"
+land_surface_water__potential_evaporation_volume_flux = "pet"
+atmosphere_air__temperature = "temp"
+
+[input.parameters]
+atmosphere_air__snowfall_temperature_threshold = "TT"
+atmosphere_air__snowfall_temperature_interval = "TTI"
+
+"land~water-covered__area_fraction" = "WaterFrac"
+
+snowpack__melting_temperature_threshold = "TTM"
+snowpack__degree-day_coefficient = "Cfmax"
+
+soil_layer_water__brooks-corey_epsilon_parameter = "c"
+soil_surface_water__infiltration_reduction_parameter = "cf_soil"
+soil_surface_water__vertical_saturated_hydraulic_conductivity = "KsatVer"
+soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter = "f"
+"soil~compacted_surface_water__infiltration_capacity" = "InfiltCapPath"
+"soil~non-compacted_surface_water__infiltration_capacity" = "InfiltCapSoil"
+soil_water__residual_volume_fraction = "thetaR"
+soil_water__saturated_volume_fraction = "thetaS"
+soil_water_sat-zone_bottom__max_leakage_volume_flux = "MaxLeakage"
+"soil~compacted__area_fraction" = "PathFrac"
+"soil_root~wet__sigmoid_function_shape_parameter" = "rootdistpar"
+soil__thickness = "SoilThickness"
+
+vegetation_canopy_water__mean_evaporation-to-mean_precipitation_ratio = "EoverR"
+vegetation__leaf-area_index = "LAI"
+vegetation_canopy__light-extinction_coefficient = "Kext"
+vegetation__specific-leaf_storage = "Sl"
+vegetation_wood_water__storage_capacity = "Swood"
+vegetation_root__depth = "RootingDepth"
+
+river__length = "wflow_riverlength"
+river_water_flow__manning_n_parameter = "N_River"
+river__slope = "RiverSlope"
+river__width = "wflow_riverwidth"
+
+land_surface_water_flow__manning_n_parameter = "N"
+land_surface__slope = "Slope"
+
+reservoir_surface__area = "ResSimpleArea"
+"reservoir_water_demand~required~downstream__volume_flow_rate" = "ResDemand"
+reservoir_water_release-below-spillway__max_volume_flow_rate = "ResMaxRelease"
+reservoir_water__max_volume = "ResMaxVolume"
+"reservoir_water~full-target__volume_fraction" = "ResTargetFullFrac"
+"reservoir_water~min-target__volume_fraction" = "ResTargetMinFrac"
+
+subsurface_water__horizontal-to-vertical_saturated_hydraulic_conductivity_ratio = "KsatHorFrac"
 
 # specify the internal IDs of the parameters which vary over time
 # the external name mapping needs to be below together with the other mappings
+[input.dynamic]
 forcing = [
-  "land.atmospheric_forcing.precipitation",
-  "land.atmospheric_forcing.temperature",
-  "land.atmospheric_forcing.potential_evaporation",
+  "atmosphere_water__precipitation_volume_flux",
+  "atmosphere_air__temperature",
+  "land_surface_water__potential_evaporation_volume_flux",
 ]
 
-cyclic = ["land.vegetation_parameter_set.leaf_area_index"]
-
-[input.land.vegetation_parameter_set]
-leaf_area_index = "LAI"
-kext = "Kext"
-storage_specific_leaf = "Sl"
-storage_wood = "Swood"
-rootingdepth = "RootingDepth"
-
-[input.land.interception.parameters]
-e_r = "EoverR"
-
-[input.land.atmospheric_forcing]
-potential_evaporation = "pet"
-precipitation = "precip"
-temperature = "temp"
-
-[input.land.runoff.parameters]
-waterfrac = "WaterFrac"
-
-[input.land.soil.parameters]
-c = "c"
-cf_soil = "cf_soil"
-f = "f"
-infiltcappath = "InfiltCapPath"
-infiltcapsoil = "InfiltCapSoil"
-theta_r = "thetaR"
-theta_s = "thetaS"
-maxleakage = "MaxLeakage"
-pathfrac = "PathFrac"
-rootdistpar = "rootdistpar"
-soilthickness = "SoilThickness"
-kv_0 = "KsatVer"
-
-[input.land.snow.parameters]
-tt = "TT"
-tti = "TTI"
-ttm = "TTM"
-cfmax = "Cfmax"
-
-[input.routing.river_flow]
-length = "wflow_riverlength"
-n = "N_River"
-slope = "RiverSlope"
-width = "wflow_riverwidth"
-
-[input.routing.river_flow.reservoir]
-area = "ResSimpleArea"
-areas = "wflow_reservoirareas"
-demand = "ResDemand"
-locs = "wflow_reservoirlocs"
-maxrelease = "ResMaxRelease"
-maxvolume = "ResMaxVolume"
-targetfullfrac = "ResTargetFullFrac"
-targetminfrac = "ResTargetMinFrac"
-
-[input.routing.subsurface_flow]
-ksathorfrac = "KsatHorFrac"
-
-[input.routing.overland_flow]
-n = "N"
-slope = "Slope"
+cyclic = ["vegetation__leaf-area_index"]
 
 [model]
 thicknesslayers = [100, 300, 800]
@@ -99,9 +96,9 @@ path = "output_moselle_simple.csv"
 coordinate.x = 7.378
 coordinate.y = 50.204
 header = "Q"
-parameter = "routing.river_flow.variables.q"
+parameter = "river_water__volume_flow_rate"
 
 [[csv.column]]
 header = "recharge"
-parameter = "land.soil.variables.recharge"
+parameter = "soil_water_sat-zone_top__recharge_volume_flux"
 reducer = "mean"

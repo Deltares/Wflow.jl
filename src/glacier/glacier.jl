@@ -10,10 +10,11 @@ end
 
 "Initialize glacier model variables"
 function GlacierVariables(dataset, config, indices)
+    lens = lens_input_parameter("glacier_ice__leq-volume")
     glacier_store = ncread(
         dataset,
         config,
-        "land.glacier.variables.glacier_store";
+        lens;
         sel = indices,
         defaults = 5500.0,
         type = Float,
@@ -55,39 +56,44 @@ struct NoGlacierModel{T} <: AbstractGlacierModel{T} end
 
 "Initialize glacier HBV model parameters"
 function GlacierHbvParameters(dataset, config, indices, dt)
+    lens = lens_input_parameter("glacier_ice__melting_temperature_threshold")
     g_ttm = ncread(
         dataset,
         config,
-        "land.glacier.parameters.g_ttm";
+        lens;
         sel = indices,
         defaults = 0.0,
         type = Float,
         fill = 0.0,
     )
+    lens = lens_input_parameter("glacier_ice__degree-day_coefficient")
     g_cfmax =
         ncread(
             dataset,
             config,
-            "land.glacier.parameters.g_cfmax";
+            lens;
             sel = indices,
             defaults = 3.0,
             type = Float,
             fill = 0.0,
         ) .* (dt / basetimestep)
+    lens =
+        lens_input_parameter("glacier_firn_accumulation__snowpack~dry_leq-depth_fraction")
     g_sifrac =
         ncread(
             dataset,
             config,
-            "land.glacier.parameters.g_sifrac";
+            lens;
             sel = indices,
             defaults = 0.001,
             type = Float,
             fill = 0.0,
         ) .* (dt / basetimestep)
+    lens = lens_input_parameter("glacier_surface__area_fraction")
     glacier_frac = ncread(
         dataset,
         config,
-        "land.glacier.parameters.glacier_frac";
+        lens;
         sel = indices,
         defaults = 0.0,
         type = Float,

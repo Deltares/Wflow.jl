@@ -11,9 +11,10 @@
 end
 
 "Initialize the overland flow sediment transport model"
-function OverlandFlowSediment(dataset, config, indices, waterbodies, rivers)
+function OverlandFlowSediment(dataset, soilloss, config, indices, waterbodies, rivers)
     n = length(indices)
-    hydrological_forcing = HydrologicalForcing(n)
+    (; hydrological_forcing) = soilloss
+
     geometry = LandGeometry(dataset, config, indices)
     # Check what transport capacity equation will be used
     do_river = get(config.model, "run_river_model", false)::Bool

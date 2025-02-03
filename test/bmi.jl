@@ -11,14 +11,14 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test BMI.get_start_time(model) == 0.0
             @test BMI.get_current_time(model) == 0.0
             @test BMI.get_end_time(model) == 31 * 86400.0
-            model.config.endtime = "2000-02-01T00:00:00"
+            model.config.time.endtime = "2000-02-01T00:00:00"
             @test BMI.get_end_time(model) == 31 * 86400.0
         end
 
         @testset "model information functions" begin
             @test BMI.get_component_name(model) == "sbm"
-            @test BMI.get_input_item_count(model) == 202
-            @test BMI.get_output_item_count(model) == 202
+            @test BMI.get_input_item_count(model) == 205
+            @test BMI.get_output_item_count(model) == 205
             to_check = [
                 "land.soil.parameters.nlayers",
                 "land.soil.parameters.theta_r",

@@ -2,11 +2,11 @@
     get_snow_states(model_type::AbstractString)
 
 Extract required snow model states, given a certain `model_type`. Returns a tuple with the
-required states (internal names as symbols).
+required states (standard name).
 """
 function get_snow_states(model_type::AbstractString)
     if model_type == "sbm" || model_type == "sbm_gwf"
-        states = (:snow_storage, :snow_water)
+        states = ("snowpack~dry__leq-depth", "snowpack~liquid__depth")
     elseif model_type == "sediment"
         states = ()
     else
@@ -19,11 +19,11 @@ end
     get_glacier_states(model_type::AbstractString)
 
 Extract required glacier model states, given a certain `model_type`. Returns a tuple with
-the required states (internal names as symbols).
+the required states (standard name).
 """
 function get_glacier_states(model_type::AbstractString)
     if model_type == "sbm" || model_type == "sbm_gwf"
-        states = (:glacier_store,)
+        states = ("glacier_ice__leq-volume",)
     elseif model_type == "sediment"
         states = ()
     else
@@ -36,11 +36,11 @@ end
     get_interception_states(model_type::AbstractString)
 
 Extract required interception model states, given a certain `model_type`. Returns a tuple
-with the required states (internal names as symbols).
+with the required states (standard name).
 """
 function get_interception_states(model_type::AbstractString)
     if model_type == "sbm" || model_type == "sbm_gwf"
-        states = (:canopy_storage,)
+        states = ("vegetation_canopy_water__depth",)
     elseif model_type == "sediment"
         states = ()
     else
@@ -58,9 +58,13 @@ modelled. Returns a tuple with the required states (internal names as symbols).
 function get_soil_states(model_type::AbstractString; snow = false)
     if model_type == "sbm" || model_type == "sbm_gwf"
         if snow
-            states = (:satwaterdepth, :tsoil, :ustorelayerdepth)
+            states = (
+                "soil_water_sat-zone__depth",
+                "soil_surface__temperature",
+                "soil_layer_water_unsat-zone__depth",
+            )
         else
-            states = (:satwaterdepth, :ustorelayerdepth)
+            states = ("soil_water_sat-zone__depth", "soil_layer_water_unsat-zone__depth")
         end
     elseif model_type == "sediment"
         states = ()
@@ -72,49 +76,26 @@ end
 
 function get_sediment_states()
     states = (
-        :leftover_clay,
-        :leftover_silt,
-        :leftover_sand,
-        :leftover_sagg,
-        :leftover_lagg,
-        :leftover_gravel,
-        :store_clay,
-        :store_silt,
-        :store_sand,
-        :store_sagg,
-        :store_lagg,
-        :store_gravel,
-        :clay,
-        :silt,
-        :sand,
-        :sagg,
-        :lagg,
-        :gravel,
+        "river_water_clay__mass",
+        "river_bed_clay__mass",
+        "river_water_gravel__mass",
+        "river_bed_gravel__mass",
+        "river_water_aggregates~large__mass",
+        "river_bed_aggregates~large__mass",
+        "river_water_clay__mass_flow_rate",
+        "river_water_gravel__mass_flow_rate",
+        "river_water_aggregates~large__mass_flow_rate",
+        "river_water_aggregates~small__mass_flow_rate",
+        "river_water_sand__mass_flow_rate",
+        "river_water_silt__mass_flow_rate",
+        "river_water_aggregates~small__mass",
+        "river_bed_aggregates~small__mass",
+        "river_water_sand__mass",
+        "river_bed_sand__mass",
+        "river_water_silt__mass",
+        "river_bed_silt__mass",
     )
     return states
-end
-
-"""
-    add_to_required_states(required_states::Tuple, key_entry::Tuple, states::Tuple)
-    add_to_required_states(required_states::Tuple, key_entry::Tuple, states::Nothing)
-
-Function to iterate through the list of `states` and add these to the `required_states`
-variable. This is a tuple of tuples, that contains the correct "prefix" to the state
-category (provided by the `key_entry` variable). This is added in front of each element in
-the list of `states`, and the `required_states` tuple is returned.
-
-When `nothing` is passed as the `states`, the `required_states` variable is simply returned.
-"""
-function add_to_required_states(required_states::Tuple, key_entry::Tuple, states::Tuple)
-    for state in states
-        required_states = (required_states..., (key_entry..., state))
-    end
-
-    return required_states
-end
-
-function add_to_required_states(required_states::Tuple, key_entry::Tuple, states::Nothing)
-    return required_states
 end
 
 """
@@ -156,9 +137,12 @@ function extract_required_states(config::Config)
 
     # Subsurface states
     if model_type == "sbm_gwf"
-        ssf_states = (:head,)
+        ssf_states = ("subsurface_water__hydraulic_head",)
+    elseif model_type == "sediment"
+        ssf_states = ()
     else
-        ssf_states = haskey(config.input.routing, "subsurface_flow") ? (:ssf,) : nothing
+        do_subsurface_flow = get(config.model, "kinematic-wave_subsurface", true)::Bool
+        ssf_states = do_subsurface_flow ? ("subsurface_water__volume_flow_rate",) : ()
     end
 
     # Land states
@@ -173,104 +157,61 @@ function extract_required_states(config::Config)
             "kinematic-wave",
         )::String
         if land_routing == "local-inertial"
-            land_states = (:qx, :qy, :h, :h_av)
-        elseif land_routing == "kinematic-wave"
-            if model_type == "sbm" || model_type == "sbm_gwf"
-                land_states = (:q, :h, :h_av)
-            else
-                land_states = (:q, :h)
-            end
+            land_states = (
+                "land_surface_water__x_component_of_instantaneous_volume_flow_rate",
+                "land_surface_water__y_component_of_instantaneous_volume_flow_rate",
+                "land_surface_water__instantaneous_depth",
+                "land_surface_water__depth",
+            )
+        else
+            land_states = (
+                "land_surface_water__instantaneous_volume_flow_rate",
+                "land_surface_water__depth",
+                "land_surface_water__instantaneous_depth",
+            )
         end
     end
 
     # River states
     if model_type == "sediment"
         river_states = get_sediment_states()
-    elseif model_type == "sbm" || model_type == "sbm_gwf"
-        river_states = (:q, :h, :h_av)
     else
-        river_states = (:q, :h)
+        river_states = (
+            "river_water__instantaneous_volume_flow_rate",
+            "river_water__instantaneous_depth",
+            "river_water__depth",
+        )
     end
 
     # Floodplain states
-    floodplain_states = do_floodplains ? (:q, :h) : nothing
+    floodplain_states =
+        do_floodplains ?
+        (
+            "floodplain_water__instantaneous_volume_flow_rate",
+            "floodplain_water__instantaneous_depth",
+        ) : ()
 
     # Lake and reservoir states
-    lake_states = do_lakes ? (:waterlevel,) : nothing
-    reservoir_states = do_reservoirs ? (:volume,) : nothing
+    lake_states = do_lakes ? ("lake_water_surface__instantaneous_elevation",) : ()
+    reservoir_states = do_reservoirs ? ("reservoir_water__instantaneous_volume",) : ()
 
     # Paddy states
-    paddy_states = do_paddy ? (:h,) : nothing
+    paddy_states = do_paddy ? ("land_surface_water~paddy__depth",) : ()
 
-    # Build required states in a tuple, similar to the keys in the output of
-    # `ncnames(config.state)`
-    required_states = ()
-    # Add snow, glacier, interception and sbm soil states to dict
-    required_states =
-        add_to_required_states(required_states, (:land, :snow, :variables), snow_states)
-    required_states = add_to_required_states(
-        required_states,
-        (:land, :glacier, :variables),
-        glacier_states,
-    )
-    required_states = add_to_required_states(
-        required_states,
-        (:land, :interception, :variables),
-        interception_states,
-    )
-    required_states =
-        add_to_required_states(required_states, (:land, :soil, :variables), soil_states)
-    # Add subsurface states to dict
-    if model_type == "sbm_gwf"
-        key_entry = (:routing, :subsurface_flow, :aquifer, :variables)
-    else
-        key_entry = (:routing, :subsurface_flow, :variables)
-    end
-    required_states = add_to_required_states(required_states, key_entry, ssf_states)
-    # Add land states to dict
-    required_states = add_to_required_states(
-        required_states,
-        (:routing, :overland_flow, :variables),
-        land_states,
-    )
-    # Add sediment states to dict
-    if model_type == "sediment"
-        required_states = add_to_required_states(
-            required_states,
-            (:routing, :river_flow, :sediment_flux, :variables),
-            river_states,
-        )
-    else
-        required_states = add_to_required_states(
-            required_states,
-            (:routing, :river_flow, :variables),
-            river_states,
-        )
-    end
-    # Add floodplain states to dict
-    required_states = add_to_required_states(
-        required_states,
-        (:routing, :river_flow, :floodplain, :variables),
-        floodplain_states,
-    )
-    # Add lake states to dict
-    required_states = add_to_required_states(
-        required_states,
-        (:routing, :river_flow, :boundary_conditions, :lake, :variables),
-        lake_states,
-    )
-    # Add reservoir states to dict
-    required_states = add_to_required_states(
-        required_states,
-        (:routing, :river_flow, :boundary_conditions, :reservoir, :variables),
-        reservoir_states,
-    )
-    # Add paddy states to dict
-    required_states = add_to_required_states(
-        required_states,
-        (:land, :demand, :paddy, :variables),
-        paddy_states,
-    )
+    # Add required states to a tuple, similar to the keys in the output of
+    # `ncnames(config.state.variables)`
+    required_states = snow_states...,
+    glacier_states...,
+    interception_states...,
+    soil_states...,
+    ssf_states...,
+    land_states...,
+    river_states...,
+    floodplain_states...,
+    lake_states...,
+    reservoir_states...,
+    paddy_states...
+
     return required_states
 end
 
@@ -283,7 +224,7 @@ required states. If not all states are covered, an error is thrown to warn the u
 provided than required, a warning is logged, and the unnecessary state is removed.
 """
 function check_states(config::Config)
-    state_ncnames = ncnames(config.state)
+    state_ncnames = ncnames(config.state.variables)
 
     # Get required states
     required_states = extract_required_states(config)

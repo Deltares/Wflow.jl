@@ -48,7 +48,7 @@ end
     river = model.routing.river_flow
     @test sum(q) ≈ 0.035468154534622556f0
     @test q[6] ≈ 0.00803825101724232f0
-    @test river.variables.volume[6] ≈ 4.532124903256408f0
+    @test river.variables.storage[6] ≈ 4.532124903256408f0
     @test river.boundary_conditions.inwater[6] ≈ 0.00040826084140456616f0
     @test q[13] ≈ 0.0006017024138583771f0
     @test q[network.river.order[end]] ≈ 0.00856866488665273f0
@@ -71,8 +71,10 @@ end
 
 @testset "no drains" begin
     config.model.drains = false
-    delete!(Dict(config.output.routing.subsurface_flow), "drains")
-    delete!(Dict(config.output.routing.subsurface_flow.boundaries.drain.variables), "flux")
+    delete!(
+        Dict(config.output.variables),
+        "land_drain_water~to-subsurface__volume_flow_rate",
+    )
     model = Wflow.initialize_sbm_gwf_model(config)
     @test collect(keys(model.routing.subsurface_flow.boundaries)) == [:recharge, :river]
 end
@@ -84,8 +86,8 @@ tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
 config = Wflow.Config(tomlpath)
 config.model.river_routing = "local-inertial"
 
-config.input.routing.river_flow.bankfull_elevation = "bankfull_elevation"
-config.input.routing.river_flow.bankfull_depth = "bankfull_depth"
+config.input.parameters.river_bank_water__elevation = "bankfull_elevation"
+config.input.parameters.river_bank_water__depth = "bankfull_depth"
 
 model = Wflow.initialize_sbm_gwf_model(config)
 Wflow.run_timestep!(model)
@@ -96,7 +98,7 @@ Wflow.run_timestep!(model)
     river = model.routing.river_flow
     @test sum(q) ≈ 0.02727911500112358f0
     @test q[6] ≈ 0.006111263175002127f0
-    @test river.variables.volume[6] ≈ 7.6120096530771075f0
+    @test river.variables.storage[6] ≈ 7.6120096530771075f0
     @test river.boundary_conditions.inwater[6] ≈ 0.0002210785332342944f0
     @test q[13] ≈ 0.0004638698607639214f0
     @test q[5] ≈ 0.0064668491697542786f0
@@ -109,14 +111,14 @@ config = Wflow.Config(tomlpath)
 config.model.river_routing = "local-inertial"
 config.model.land_routing = "local-inertial"
 
-config.input.routing.river_flow.bankfull_elevation = "bankfull_elevation"
-config.input.routing.river_flow.bankfull_depth = "bankfull_depth"
-config.input.routing.overland_flow.elevation = "wflow_dem"
+config.input.parameters.river_bank_water__elevation = "bankfull_elevation"
+config.input.parameters.river_bank_water__depth = "bankfull_depth"
+config.input.parameters.land_surface_water_flow__ground_elevation = "wflow_dem"
 
-pop!(Dict(config.state.routing.overland_flow.variables), "q")
-config.state.routing.overland_flow.variables.h_av = "h_av_land"
-config.state.routing.overland_flow.variables.qx = "qx_land"
-config.state.routing.overland_flow.variables.qy = "qy_land"
+pop!(Dict(config.state.variables), "land_surface_water__instantaneous_volume_flow_rate")
+config.state.variables.land_surface_water__depth = "h_av_land"
+config.state.variables.land_surface_water__x_component_of_instantaneous_volume_flow_rate = "qx_land"
+config.state.variables.land_surface_water__y_component_of_instantaneous_volume_flow_rate = "qy_land"
 
 model = Wflow.initialize_sbm_gwf_model(config)
 Wflow.run_timestep!(model)
@@ -167,7 +169,7 @@ end
     river = model.routing.river_flow
     @test sum(q) ≈ 0.01191742350356312f0
     @test q[6] ≈ 0.0024353072305122064f0
-    @test river.variables.volume[6] ≈ 2.2277585577366357f0
+    @test river.variables.storage[6] ≈ 2.2277585577366357f0
     @test river.boundary_conditions.inwater[6] ≈ -1.3042629584651168f-5
     @test q[13] ≈ 7.332742814063803f-5
     @test q[network.river.order[end]] ≈ 0.002472526149620472f0

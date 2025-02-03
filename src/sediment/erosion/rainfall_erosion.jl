@@ -51,46 +51,22 @@ end
 
 "Initialize EUROSEM rainfall erosion model parameters"
 function RainfallErosionEurosemParameters(dataset, config, indices)
-    soil_detachability = ncread(
-        dataset,
-        config,
-        "land.rainfall_erosion.parameters.soil_detachability";
-        sel = indices,
-        defaults = 0.6,
-        type = Float,
-    )
-    eurosem_exponent = ncread(
-        dataset,
-        config,
-        "land.rainfall_erosion.parameters.eurosem_exponent";
-        sel = indices,
-        defaults = 2.0,
-        type = Float,
-    )
-    canopyheight = ncread(
-        dataset,
-        config,
-        "land.rainfall_erosion.parameters.canopyheight";
-        sel = indices,
-        defaults = 0.5,
-        type = Float,
-    )
-    canopygapfraction = ncread(
-        dataset,
-        config,
-        "land.rainfall_erosion.parameters.canopygapfraction";
-        sel = indices,
-        defaults = 0.1,
-        type = Float,
-    )
-    soilcover_fraction = ncread(
-        dataset,
-        config,
-        "land.rainfall_erosion.parameters.pathfrac";
-        sel = indices,
-        defaults = 0.01,
-        type = Float,
-    )
+    lens = lens_input_parameter("soil_erosion__rainfall_soil_detachability_factor")
+    soil_detachability =
+        ncread(dataset, config, lens; sel = indices, defaults = 0.6, type = Float)
+    lens = lens_input_parameter("soil_erosion__eurosem_exponent")
+    eurosem_exponent =
+        ncread(dataset, config, lens; sel = indices, defaults = 2.0, type = Float)
+    lens = lens_input_parameter("vegetation_canopy__height")
+    canopyheight =
+        ncread(dataset, config, lens; sel = indices, defaults = 0.5, type = Float)
+    lens = lens_input_parameter("vegetation_canopy__gap_fraction")
+    canopygapfraction =
+        ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float)
+    lens = lens_input_parameter("soil~compacted__area_fraction")
+    soilcover_fraction =
+        ncread(dataset, config, lens; sel = indices, defaults = 0.01, type = Float)
+
     eurosem_parameters = RainfallErosionEurosemParameters(;
         soil_detachability = soil_detachability,
         eurosem_exponent = eurosem_exponent,
@@ -184,22 +160,10 @@ end
 
 "Initialize ANSWERS rainfall erosion model parameters"
 function RainfallErosionAnswersParameters(dataset, config, indices)
-    usle_k = ncread(
-        dataset,
-        config,
-        "land.rainfall_erosion.parameters.usle_k";
-        sel = indices,
-        defaults = 0.1,
-        type = Float,
-    )
-    usle_c = ncread(
-        dataset,
-        config,
-        "land.rainfall_erosion.parameters.usle_c";
-        sel = indices,
-        defaults = 0.01,
-        type = Float,
-    )
+    lens = lens_input_parameter("soil_erosion__usle_k_factor")
+    usle_k = ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float)
+    lens = lens_input_parameter("soil_erosion__usle_c_factor")
+    usle_c = ncread(dataset, config, lens; sel = indices, defaults = 0.01, type = Float)
     answers_parameters =
         RainfallErosionAnswersParameters(; usle_k = usle_k, usle_c = usle_c)
     return answers_parameters

@@ -1,6 +1,6 @@
 "Struct for storing reservoir model parameters"
 @get_units @grid_loc @with_kw struct ReservoirParameters{T}
-    maxvolume::Vector{T} | "m3"             # maximum storage (above which water is spilled) [m³]
+    maxstorage::Vector{T} | "m3"             # maximum storage (above which water is spilled) [m³]
     area::Vector{T} | "m2"                  # reservoir area [m²]
     maxrelease::Vector{T} | "m3 s-1"        # maximum amount that can be released if below spillway [m³ s⁻¹]
     demand::Vector{T} | "m3 s-1"            # minimum (environmental) flow requirement downstream of the reservoir [m³ s⁻¹]
@@ -13,10 +13,11 @@ function ReservoirParameters(dataset, config, indices_river, n_river_cells, pits
     # read only reservoir data if reservoirs true
     # allow reservoirs only in river cells
     # note that these locations are only the reservoir outlet pixels
+    lens = lens_input("reservoir_location__count")
     reslocs = ncread(
         dataset,
         config,
-        "routing.river_flow.reservoir.locs";
+        lens;
         optional = false,
         sel = indices_river,
         type = Int,
@@ -24,13 +25,8 @@ function ReservoirParameters(dataset, config, indices_river, n_river_cells, pits
     )
 
     # this holds the same ids as reslocs, but covers the entire reservoir
-    rescoverage_2d = ncread(
-        dataset,
-        config,
-        "routing.river_flow.reservoir.areas";
-        optional = false,
-        allow_missing = true,
-    )
+    lens = lens_input("reservoir_area__count")
+    rescoverage_2d = ncread(dataset, config, lens; optional = false, allow_missing = true)
     # for each reservoir, a list of 2D indices, needed for getting the mean precipitation
     inds_res_cov = Vector{CartesianIndex{2}}[]
 
@@ -56,56 +52,63 @@ function ReservoirParameters(dataset, config, indices_river, n_river_cells, pits
             push!(inds_res_cov, res_cov)
         end
     end
-
+    lens =
+        lens_input_parameter("reservoir_water_demand~required~downstream__volume_flow_rate")
     resdemand = ncread(
         dataset,
         config,
-        "routing.river_flow.reservoir.demand";
+        lens;
         optional = false,
         sel = inds_res,
         type = Float,
         fill = 0,
     )
+    lens =
+        lens_input_parameter("reservoir_water_release-below-spillway__max_volume_flow_rate")
     resmaxrelease = ncread(
         dataset,
         config,
-        "routing.river_flow.reservoir.maxrelease";
+        lens;
         optional = false,
         sel = inds_res,
         type = Float,
         fill = 0,
     )
-    resmaxvolume = ncread(
+    lens = lens_input_parameter("reservoir_water__max_volume")
+    resmaxstorage = ncread(
         dataset,
         config,
-        "routing.river_flow.reservoir.maxvolume";
+        lens;
         optional = false,
         sel = inds_res,
         type = Float,
         fill = 0,
     )
+    lens = lens_input_parameter("reservoir_surface__area")
     resarea = ncread(
         dataset,
         config,
-        "routing.river_flow.reservoir.area";
+        lens;
         optional = false,
         sel = inds_res,
         type = Float,
         fill = 0,
     )
+    lens = lens_input_parameter("reservoir_water~full-target__volume_fraction")
     res_targetfullfrac = ncread(
         dataset,
         config,
-        "routing.river_flow.reservoir.targetfullfrac";
+        lens;
         optional = false,
         sel = inds_res,
         type = Float,
         fill = 0,
     )
+    lens = lens_input_parameter("reservoir_water~min-target__volume_fraction")
     res_targetminfrac = ncread(
         dataset,
         config,
-        "routing.river_flow.reservoir.targetminfrac";
+        lens;
         optional = false,
         sel = inds_res,
         type = Float,
@@ -126,7 +129,7 @@ function ReservoirParameters(dataset, config, indices_river, n_river_cells, pits
     parameters = ReservoirParameters{Float}(;
         demand = resdemand,
         maxrelease = resmaxrelease,
-        maxvolume = resmaxvolume,
+        maxstorage = resmaxstorage,
         area = resarea,
         targetfullfrac = res_targetfullfrac,
         targetminfrac = res_targetminfrac,
@@ -137,7 +140,8 @@ end
 
 "Struct for storing reservoir model variables"
 @get_units @grid_loc @with_kw struct ReservoirVariables{T}
-    volume::Vector{T} | "m3"                # reservoir volume [m³]
+    storage::Vector{T} | "m3"               # reservoir storage [m³]
+    storage_av::Vector{T} | "m3"            # average reservoir storage [m³] for model timestep Δt
     outflow::Vector{T} | "m3 s-1"           # outflow from reservoir [m³ s⁻¹]
     outflow_av::Vector{T} | "m3 s-1"        # average outflow from reservoir [m³ s⁻¹] for model timestep Δt
     percfull::Vector{T} | "-"               # fraction full (of max storage) [-]
@@ -147,9 +151,10 @@ end
 
 "Initialize reservoir model variables"
 function ReservoirVariables(n, parameters)
-    (; targetfullfrac, maxvolume) = parameters
+    (; targetfullfrac, maxstorage) = parameters
     variables = ReservoirVariables{Float}(;
-        volume = targetfullfrac .* maxvolume,
+        storage = targetfullfrac .* maxstorage,
+        storage_av = fill(mv, n),
         outflow = fill(mv, n),
         outflow_av = fill(mv, n),
         percfull = fill(mv, n),
@@ -211,34 +216,37 @@ function update!(model::SimpleReservoir, i, inflow, dt, dt_forcing)
 
     # limit lake evaporation based on total available volume [m³]
     precipitation = 0.001 * res_bc.precipitation[i] * (dt / dt_forcing) * res_p.area[i]
-    available_volume = res_v.volume[i] + inflow * dt + precipitation
+    available_storage = res_v.storage[i] + inflow * dt + precipitation
     evap = 0.001 * res_bc.evaporation[i] * (dt / dt_forcing) * res_p.area[i]
-    actevap = min(available_volume, evap) # [m³/dt]
+    actevap = min(available_storage, evap) # [m³/dt]
 
-    vol = res_v.volume[i] + (inflow * dt) + precipitation - actevap
-    vol = max(vol, 0.0)
+    storage = res_v.storage[i] + (inflow * dt) + precipitation - actevap
+    storage = max(storage, 0.0)
 
-    percfull = vol / res_p.maxvolume[i]
+    percfull = storage / res_p.maxstorage[i]
     # first determine minimum (environmental) flow using a simple sigmoid curve to scale for target level
     fac = scurve(percfull, res_p.targetminfrac[i], Float(1.0), Float(30.0))
-    demandrelease = min(fac * res_p.demand[i] * dt, vol)
-    vol = vol - demandrelease
+    demandrelease = min(fac * res_p.demand[i] * dt, storage)
+    storage = storage - demandrelease
 
-    wantrel = max(0.0, vol - (res_p.maxvolume[i] * res_p.targetfullfrac[i]))
+    wantrel = max(0.0, storage - (res_p.maxstorage[i] * res_p.targetfullfrac[i]))
     # Assume extra maximum Q if spilling
-    overflow_q = max((vol - res_p.maxvolume[i]), 0.0)
+    overflow_q = max((storage - res_p.maxstorage[i]), 0.0)
     torelease = min(wantrel, overflow_q + res_p.maxrelease[i] * dt - demandrelease)
-    vol = vol - torelease
+    storage = storage - torelease
     outflow = torelease + demandrelease
-    percfull = vol / res_p.maxvolume[i]
+    percfull = storage / res_p.maxstorage[i]
 
     # update values in place
-    res_v.outflow[i] = outflow / dt
-    res_bc.inflow[i] += inflow * dt
-    res_v.outflow_av[i] += outflow
+    # instantaneous variables
     res_v.demandrelease[i] = demandrelease / dt
     res_v.percfull[i] = percfull
-    res_v.volume[i] = vol
+    res_v.storage[i] = storage
+    res_v.outflow[i] = outflow / dt
+    # average variables (here accumulated for model timestep Δt)
+    res_bc.inflow[i] += inflow * dt
+    res_v.outflow_av[i] += outflow
+    res_v.storage_av[i] += storage * dt
     res_v.actevap[i] += 1000.0 * (actevap / res_p.area[i])
 
     return nothing

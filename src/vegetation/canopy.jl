@@ -40,14 +40,10 @@ end
 
 "Initialize Gash interception model"
 function GashInterceptionModel(dataset, config, indices, vegetation_parameter_set)
-    e_r = ncread(
-        dataset,
-        config,
-        "land.interception.parameters.e_r";
-        sel = indices,
-        defaults = 0.1,
-        type = Float,
+    lens = lens_input_parameter(
+        "vegetation_canopy_water__mean_evaporation-to-mean_precipitation_ratio",
     )
+    e_r = ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float)
     n = length(indices)
     params =
         GashParameters(; e_r = e_r, vegetation_parameter_set = vegetation_parameter_set)
