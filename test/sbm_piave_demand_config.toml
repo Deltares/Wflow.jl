@@ -121,12 +121,6 @@ land_surface_water__withdrawal_fraction = "SurfaceWaterFrac"
 "land~irrigated-non-paddy__irrigation_trigger_flag" = "irrigation_trigger"
 
 [input.dynamic]
-forcing = [
-  "atmosphere_water__precipitation_volume_flux",
-  "atmosphere_air__temperature",
-  "land_surface_water__potential_evaporation_volume_flux",
-]
-
 cyclic = [ 
     "vegetation__leaf-area_index",
     "land~domestic__gross_water_demand_volume_flux",

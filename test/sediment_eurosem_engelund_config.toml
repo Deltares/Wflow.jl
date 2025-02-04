@@ -112,17 +112,7 @@ sand__d50_diameter = "dm_sand"
 "sediment_aggregates~large__d50_diameter" = "dm_lagg"
 gravel__d50_diameter = "dm_gravel"
 
-# specify the internal IDs of the parameters which vary over time
-# the external name mapping needs to be below together with the other mappings
 [input.dynamic]
-forcing = [
-  "atmosphere_water__precipitation_volume_flux",
-  "land_surface_water__depth",
-  "river_water__depth",
-  "land_surface_water__volume_flow_rate",
-  "river_water__volume_flow_rate",
-  "vegetation_canopy_water__interception_volume_flux",
-]
 
 [model]
 reinit = true

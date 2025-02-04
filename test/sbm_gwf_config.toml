@@ -81,13 +81,7 @@ river_bottom__elevation = "river_bottom"
 river_water__infiltration_conductance = "infiltration_conductance"
 river_water__exfiltration_conductance = "infiltration_conductance"
 
-# specify the internal IDs of the parameters which vary over time
-# the external name mapping needs to be below together with the other mappings
 [input.dynamic]
-forcing = [
-  "atmosphere_water__precipitation_volume_flux",
-  "land_surface_water__potential_evaporation_volume_flux",
-]
 
 [model]
 constanthead = true

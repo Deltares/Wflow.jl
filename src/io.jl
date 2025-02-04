@@ -5,9 +5,6 @@ Output data can be written to netCDF or CSV files.
 For configuration files we use TOML.
 =#
 
-#TODO (v1.0): check if mapping of variables (input and output) in TOML file should be
-#simplified. Direct mapping is now used.
-
 """Turn "a.aa.aaa" into (:a, :aa, :aaa)"""
 symbols(s) = Tuple(Symbol(x) for x in split(s, '.'))
 
@@ -718,7 +715,7 @@ function prepare_reader(config)
 
     # create map from internal location to netCDF variable name for forcing parameters
     forcing_parameters = Dict{String, NamedTuple}()
-    for par in config.input.dynamic.forcing
+    for par in keys(config.input.forcing)
         ncname, mod = ncvar_name_modifier(param(config.input.forcing, symbols(par)))
         forcing_parameters[par] =
             (name = ncname, scale = mod.scale, offset = mod.offset, value = mod.value)
