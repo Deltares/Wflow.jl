@@ -364,13 +364,9 @@ function lens_input_parameter(config::Config, p::AbstractString; optional = true
     elseif optional
         return (name = p, lens = nothing)
     else
-        if do_cyclic
-            toml_section = "[input.cyclic]"
-        else
-            toml_section = "[input.static]"
-        end
         error(
-            "Required input model parameter with standard name $p not set in TOML file (below `$toml_section`)",
+            """Required input static or cyclic model parameter with standard name $p not set 
+            in TOML file (below `[input.static]` or `[input.cyclic]` section)""",
         )
     end
 end
@@ -387,7 +383,8 @@ function lens_input(config::Config, p::AbstractString; optional = true)
         return (name = p, lens = nothing)
     else
         error(
-            "Required input model parameter with standard name $p not set in TOML file (below `[input]` section)",
+            """Required input model parameter with standard name $p not set in TOML file 
+            (below `[input]` section)""",
         )
     end
 end
