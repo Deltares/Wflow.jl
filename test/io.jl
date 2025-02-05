@@ -45,6 +45,19 @@ config = Wflow.Config(tomlpath)
           joinpath(@__DIR__, "data", "input", "instates-moselle.nc")
     @test Wflow.output_path(config, config.state.path_output) ==
           joinpath(@__DIR__, "data", "output", "outstates-moselle.nc")
+
+    # test error is thrown for required model parameter when mapping internal standard name
+    # to a `lens` (access to nested Config object)
+    @test_throws ErrorException Wflow.lens_input_parameter(
+        config,
+        "not_set_in_TOML";
+        optional = false,
+    )
+    @test_throws ErrorException Wflow.lens_input(
+        config,
+        "not_set_in_TOML";
+        optional = false,
+    )
 end
 
 @testset "Clock constructor" begin
