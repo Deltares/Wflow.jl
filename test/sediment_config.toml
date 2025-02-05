@@ -60,7 +60,7 @@ river_water__depth = "h"
 land_surface_water__volume_flow_rate = "runL"
 river_water__volume_flow_rate = "q"
 
-[input.parameters]
+[input.static]
 land_surface__slope = "Slope"
 river__length = "wflow_riverlength"
 river__slope = "RiverSlope"
@@ -110,8 +110,6 @@ sand__d50_diameter = "dm_sand"
 "sediment_aggregates~small__d50_diameter" = "dm_sagg"
 "sediment_aggregates~large__d50_diameter" = "dm_lagg"
 gravel__d50_diameter = "dm_gravel"
-
-[input.dynamic]
 
 [model]
 reinit = true

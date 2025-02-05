@@ -128,14 +128,16 @@ end
 
 function UnconfinedAquiferParameters(dataset, config, indices, top, bottom, area)
     lens = lens_input_parameter(
+        config,
         "subsurface_surface_water__horizontal_saturated_hydraulic_conductivity",
     )
     k = ncread(dataset, config, lens; sel = indices, type = Float)
 
-    lens = lens_input_parameter("subsurface_water__specific_yield")
+    lens = lens_input_parameter(config, "subsurface_water__specific_yield")
     specific_yield = ncread(dataset, config, lens; sel = indices, type = Float)
 
     lens = lens_input_parameter(
+        config,
         "subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter",
     )
     f = ncread(dataset, config, lens; sel = indices, type = Float, defaults = 3.0)
@@ -370,7 +372,7 @@ end
 end
 
 function ConstantHead(dataset, config, indices)
-    lens = lens_input_parameter("model_boundary_condition~constant_hydraulic_head")
+    lens = lens_input_parameter(config, "model_boundary_condition~constant_hydraulic_head")
     constanthead = ncread(dataset, config, lens; sel = indices, type = Float, fill = mv)
 
     n = length(indices)

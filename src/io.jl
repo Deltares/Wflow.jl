@@ -56,22 +56,6 @@ function Base.setproperty!(config::Config, f::Symbol, x)
     return nothing
 end
 
-"Access nested Config object using a `lens`"
-function _lens(obj::Config, lens::ComposedFunction, default)
-    try
-        l = lens(obj)
-        return l isa AbstractDict ? Config(l, pathof(obj)) : l
-    catch
-        return default
-    end
-end
-
-"Get a value from the Config with either the key or an alias of the key."
-function get_alias(config::Config, key::ComposedFunction, alias::ComposedFunction, default)
-    alias_or_default = _lens(config, alias, default)
-    return _lens(config, key, alias_or_default)
-end
-
 "Get a value from the Config with a key, throwing an error if it is not one of the options."
 function get_options(config::Config, key, options, default)
     dict = Dict(config)
@@ -341,7 +325,7 @@ monthday_passed(curr, avail) = (curr[1] >= avail[1]) && (curr[2] >= avail[2])
 "Get dynamic and cyclic netCDF input"
 function load_dynamic_input!(model)
     update_forcing!(model)
-    if haskey(model.config.input.dynamic, "cyclic")
+    if haskey(model.config.input, "cyclic")
         update_cyclic!(model)
     end
     return nothing
@@ -711,7 +695,7 @@ function prepare_reader(config)
     end
 
     # check for cyclic parameters
-    do_cyclic = haskey(config.input.dynamic, "cyclic")
+    do_cyclic = haskey(config.input, "cyclic")
 
     # create map from internal location to netCDF variable name for forcing parameters
     forcing_parameters = Dict{String, NamedTuple}()
@@ -731,9 +715,8 @@ function prepare_reader(config)
         cyclic_dataset = NCDataset(cyclic_path)
         cyclic_parameters = Dict{String, NamedTuple}()
         cyclic_times = Dict{String, Vector{Tuple{Int, Int}}}()
-        for par in config.input.dynamic.cyclic
-            #fields = standard_name_map[par]
-            ncname, mod = ncvar_name_modifier(param(config.input.parameters, par))
+        for par in keys(config.input.cyclic)
+            ncname, mod = ncvar_name_modifier(param(config.input.cyclic, par))
             i = findfirst(x -> startswith(x, "time"), dimnames(cyclic_dataset[ncname]))
             dimname = dimnames(cyclic_dataset[ncname])[i]
             cyclic_nc_times = collect(cyclic_dataset[dimname])
@@ -771,15 +754,8 @@ end
 
 "Get a Vector of all unique location ids from a 2D map"
 function locations_map(ds, mapname, config)
-    lens = lens_input(mapname)
-    map_2d = ncread(
-        ds,
-        config,
-        lens;
-        optional = false,
-        type = Union{Int, Missing},
-        allow_missing = true,
-    )
+    lens = lens_input(config, mapname; optional = false)
+    map_2d = ncread(ds, config, lens; type = Union{Int, Missing}, allow_missing = true)
     ids = unique(skipmissing(map_2d))
     return ids
 end
@@ -1211,7 +1187,7 @@ function close_files(model; delete_output::Bool = false)
     (; reader, writer, config) = model
 
     close(reader.dataset)
-    if haskey(config.input.dynamic, "cyclic")
+    if haskey(config.input, "cyclic")
         close(reader.cyclic_dataset)
     end
     writer.dataset === nothing || close(writer.dataset)
@@ -1264,15 +1240,9 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset, fileformat)
         # and makes sense in the case of a gauge map
         reducer_name = get(col, "reducer", "only")
         f = reducerfunction(reducer_name)
-        lens = lens_input(mapname)
-        map_2d = ncread(
-            dataset,
-            config,
-            lens;
-            optional = false,
-            type = Union{Int, Missing},
-            allow_missing = true,
-        )
+        lens = lens_input(config, mapname; optional = false)
+        map_2d =
+            ncread(dataset, config, lens; type = Union{Int, Missing}, allow_missing = true)
         @info "Adding scalar output for a map with a reducer function." fileformat param mapname reducer_name
         ids = unique(skipmissing(map_2d))
         # from id to list of internal indices

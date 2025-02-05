@@ -13,20 +13,12 @@ function ReservoirParameters(dataset, config, indices_river, n_river_cells, pits
     # read only reservoir data if reservoirs true
     # allow reservoirs only in river cells
     # note that these locations are only the reservoir outlet pixels
-    lens = lens_input("reservoir_location__count")
-    reslocs = ncread(
-        dataset,
-        config,
-        lens;
-        optional = false,
-        sel = indices_river,
-        type = Int,
-        fill = 0,
-    )
+    lens = lens_input(config, "reservoir_location__count"; optional = false)
+    reslocs = ncread(dataset, config, lens; sel = indices_river, type = Int, fill = 0)
 
     # this holds the same ids as reslocs, but covers the entire reservoir
-    lens = lens_input("reservoir_area__count")
-    rescoverage_2d = ncread(dataset, config, lens; optional = false, allow_missing = true)
+    lens = lens_input(config, "reservoir_area__count"; optional = false)
+    rescoverage_2d = ncread(dataset, config, lens; allow_missing = true)
     # for each reservoir, a list of 2D indices, needed for getting the mean precipitation
     inds_res_cov = Vector{CartesianIndex{2}}[]
 
@@ -52,68 +44,36 @@ function ReservoirParameters(dataset, config, indices_river, n_river_cells, pits
             push!(inds_res_cov, res_cov)
         end
     end
-    lens =
-        lens_input_parameter("reservoir_water_demand~required~downstream__volume_flow_rate")
-    resdemand = ncread(
-        dataset,
+    lens = lens_input_parameter(
         config,
-        lens;
+        "reservoir_water_demand~required~downstream__volume_flow_rate";
         optional = false,
-        sel = inds_res,
-        type = Float,
-        fill = 0,
     )
-    lens =
-        lens_input_parameter("reservoir_water_release-below-spillway__max_volume_flow_rate")
-    resmaxrelease = ncread(
-        dataset,
+    resdemand = ncread(dataset, config, lens; sel = inds_res, type = Float, fill = 0)
+    lens = lens_input_parameter(
         config,
-        lens;
+        "reservoir_water_release-below-spillway__max_volume_flow_rate";
         optional = false,
-        sel = inds_res,
-        type = Float,
-        fill = 0,
     )
-    lens = lens_input_parameter("reservoir_water__max_volume")
-    resmaxstorage = ncread(
-        dataset,
+    resmaxrelease = ncread(dataset, config, lens; sel = inds_res, type = Float, fill = 0)
+    lens = lens_input_parameter(config, "reservoir_water__max_volume"; optional = false)
+    resmaxstorage = ncread(dataset, config, lens; sel = inds_res, type = Float, fill = 0)
+    lens = lens_input_parameter(config, "reservoir_surface__area"; optional = false)
+    resarea = ncread(dataset, config, lens; sel = inds_res, type = Float, fill = 0)
+    lens = lens_input_parameter(
         config,
-        lens;
+        "reservoir_water~full-target__volume_fraction";
         optional = false,
-        sel = inds_res,
-        type = Float,
-        fill = 0,
     )
-    lens = lens_input_parameter("reservoir_surface__area")
-    resarea = ncread(
-        dataset,
+    res_targetfullfrac =
+        ncread(dataset, config, lens; sel = inds_res, type = Float, fill = 0)
+    lens = lens_input_parameter(
         config,
-        lens;
+        "reservoir_water~min-target__volume_fraction";
         optional = false,
-        sel = inds_res,
-        type = Float,
-        fill = 0,
     )
-    lens = lens_input_parameter("reservoir_water~full-target__volume_fraction")
-    res_targetfullfrac = ncread(
-        dataset,
-        config,
-        lens;
-        optional = false,
-        sel = inds_res,
-        type = Float,
-        fill = 0,
-    )
-    lens = lens_input_parameter("reservoir_water~min-target__volume_fraction")
-    res_targetminfrac = ncread(
-        dataset,
-        config,
-        lens;
-        optional = false,
-        sel = inds_res,
-        type = Float,
-        fill = 0,
-    )
+    res_targetminfrac =
+        ncread(dataset, config, lens; sel = inds_res, type = Float, fill = 0)
 
     # for surface water routing reservoir locations are considered pits in the flow network
     # all upstream flow goes to the river and flows into the reservoir

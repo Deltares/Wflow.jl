@@ -51,19 +51,19 @@ end
 
 "Initialize EUROSEM rainfall erosion model parameters"
 function RainfallErosionEurosemParameters(dataset, config, indices)
-    lens = lens_input_parameter("soil_erosion__rainfall_soil_detachability_factor")
+    lens = lens_input_parameter(config, "soil_erosion__rainfall_soil_detachability_factor")
     soil_detachability =
         ncread(dataset, config, lens; sel = indices, defaults = 0.6, type = Float)
-    lens = lens_input_parameter("soil_erosion__eurosem_exponent")
+    lens = lens_input_parameter(config, "soil_erosion__eurosem_exponent")
     eurosem_exponent =
         ncread(dataset, config, lens; sel = indices, defaults = 2.0, type = Float)
-    lens = lens_input_parameter("vegetation_canopy__height")
+    lens = lens_input_parameter(config, "vegetation_canopy__height")
     canopyheight =
         ncread(dataset, config, lens; sel = indices, defaults = 0.5, type = Float)
-    lens = lens_input_parameter("vegetation_canopy__gap_fraction")
+    lens = lens_input_parameter(config, "vegetation_canopy__gap_fraction")
     canopygapfraction =
         ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float)
-    lens = lens_input_parameter("soil~compacted__area_fraction")
+    lens = lens_input_parameter(config, "soil~compacted__area_fraction")
     soilcover_fraction =
         ncread(dataset, config, lens; sel = indices, defaults = 0.01, type = Float)
 
@@ -160,9 +160,9 @@ end
 
 "Initialize ANSWERS rainfall erosion model parameters"
 function RainfallErosionAnswersParameters(dataset, config, indices)
-    lens = lens_input_parameter("soil_erosion__usle_k_factor")
+    lens = lens_input_parameter(config, "soil_erosion__usle_k_factor")
     usle_k = ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float)
-    lens = lens_input_parameter("soil_erosion__usle_c_factor")
+    lens = lens_input_parameter(config, "soil_erosion__usle_c_factor")
     usle_c = ncread(dataset, config, lens; sel = indices, defaults = 0.01, type = Float)
     answers_parameters =
         RainfallErosionAnswersParameters(; usle_k = usle_k, usle_c = usle_c)

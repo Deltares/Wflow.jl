@@ -56,7 +56,7 @@ atmosphere_water__precipitation_volume_flux = "precip"
 land_surface_water__potential_evaporation_volume_flux = "pet"
 atmosphere_air__temperature = "temp"
 
-[input.parameters]
+[input.static]
 atmosphere_air__snowfall_temperature_threshold = "TT"
 atmosphere_air__snowfall_temperature_interval = "TTI"
 
@@ -79,7 +79,6 @@ soil_water_sat-zone_bottom__max_leakage_volume_flux = "MaxLeakage"
 soil__thickness = "SoilThickness"
 
 vegetation_canopy_water__mean_evaporation-to-mean_precipitation_ratio = "EoverR"
-vegetation__leaf-area_index = "LAI"
 vegetation_canopy__light-extinction_coefficient = "Kext"
 vegetation__specific-leaf_storage = "Sl"
 vegetation_wood_water__storage_capacity = "Swood"
@@ -105,10 +104,8 @@ reservoir_water__max_volume = "ResMaxVolume"
 
 subsurface_water__horizontal-to-vertical_saturated_hydraulic_conductivity_ratio = "KsatHorFrac"
 
-# specify the internal IDs of the parameters which vary over time
-# the external name mapping needs to be below together with the other mappings
-[input.dynamic]
-cyclic = ["vegetation__leaf-area_index"]
+[input.cyclic]
+vegetation__leaf-area_index = "LAI"
 
 [model]
 kin_wave_iteration = true

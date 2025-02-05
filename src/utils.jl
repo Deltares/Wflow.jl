@@ -242,8 +242,6 @@ function ncread(
     nc,
     config::Config,
     parameter::NamedTuple;
-    alias = nothing,
-    optional = true,
     sel = nothing,
     defaults = nothing,
     type = nothing,
@@ -253,15 +251,20 @@ function ncread(
 )
     # get var (netCDF variable or type Config) from TOML file.
     # if var has type Config, input parameters can be changed.
-    if isnothing(alias)
-        if optional
-            var = _lens(config, parameter.lens, nothing)
+    if isnothing(parameter.lens)
+        @info "Set `$(parameter.name)` using default value `$defaults`."
+        @assert !isnothing(defaults)
+        if !isnothing(type)
+            defaults = convert(type, defaults)
+        end
+        if isnothing(dimname)
+            return Base.fill(defaults, length(sel))
         else
-            var = parameter.lens(config)
-            var = var isa AbstractDict ? Config(var, pathof(config)) : var
+            return Base.fill(defaults, (nc.dim[String(dimname)], length(sel)))
         end
     else
-        var = get_alias(config, parameter.lens, alias, nothing)
+        var = parameter.lens(config)
+        var = var isa AbstractDict ? Config(var, pathof(config)) : var
     end
 
     # dim `time` is also included in `dim_sel`: this allows for cyclic parameters (read
@@ -274,19 +277,6 @@ function ncread(
         dim_sel = (x = :, y = :, flood_depth = :, time = 1)
     else
         error("Unrecognized dimension name $dimname")
-    end
-
-    if isnothing(var)
-        @info "Set `$(parameter.name)` using default value `$defaults`."
-        @assert !isnothing(defaults)
-        if !isnothing(type)
-            defaults = convert(type, defaults)
-        end
-        if isnothing(dimname)
-            return Base.fill(defaults, length(sel))
-        else
-            return Base.fill(defaults, (nc.dim[String(dimname)], length(sel)))
-        end
     end
 
     # If var has type Config, input parameters can be changed (through scale, offset and
@@ -360,8 +350,28 @@ function ncread(
     return A
 end
 
-lens_input_parameter(p::AbstractString) = (name = p, lens = @optic(_.input.parameters[p]))
-lens_input(p::AbstractString) = (name = p, lens = @optic(_.input[p]))
+function lens_input_parameter(config::Config, p::AbstractString; optional = true)
+    do_cyclic = haskey(config.input, "cyclic")
+    if haskey(config.input.static, p)
+        return (name = p, lens = @optic(_.input.static[p]))
+    elseif do_cyclic && haskey(config.input.cyclic, p)
+        return (name = p, lens = @optic(_.input.cyclic[p]))
+    elseif optional
+        return (name = p, lens = nothing)
+    else
+        error("Required parameter $p is missing")
+    end
+end
+
+function lens_input(config::Config, p::AbstractString; optional = true)
+    if haskey(config.input, p)
+        return (name = p, lens = @optic(_.input[p]))
+    elseif optional
+        return (name = p, lens = nothing)
+    else
+        error("Required parameter $p is missing")
+    end
+end
 
 """
     set_layerthickness(reference_depth::Real, cum_depth::SVector, thickness::SVector)

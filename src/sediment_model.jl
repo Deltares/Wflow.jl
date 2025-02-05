@@ -15,14 +15,14 @@ function initialize_sediment_model(config::Config)
     clock = Clock(config, reader)
     dataset = NCDataset(static_path)
 
-    lens = lens_input("subcatchment_location__count")
-    subcatch_2d = ncread(dataset, config, lens; optional = false, allow_missing = true)
+    lens = lens_input(config, "subcatchment_location__count"; optional = false)
+    subcatch_2d = ncread(dataset, config, lens; allow_missing = true)
     # indices based on catchment
     indices, rev_indices = active_indices(subcatch_2d, missing)
     n = length(indices)
 
-    lens = lens_input("river_location__mask")
-    river_2d = ncread(dataset, config, lens; optional = false, type = Bool, fill = false)
+    lens = lens_input(config, "river_location__mask"; optional = false)
+    river_2d = ncread(dataset, config, lens; type = Bool, fill = false)
     river = river_2d[indices]
 
     soilloss = SoilLoss(dataset, config, indices)
@@ -32,35 +32,19 @@ function initialize_sediment_model(config::Config)
     do_lakes = get(config.model, "dolake", false)::Bool
     waterbodies = fill(0.0, n)
     if do_reservoirs
-        lens = lens_input("reservoir_area__count")
-        reservoirs = ncread(
-            dataset,
-            config,
-            lens;
-            optional = false,
-            sel = indices,
-            type = Float,
-            fill = 0,
-        )
+        lens = lens_input(config, "reservoir_area__count"; optional = false)
+        reservoirs = ncread(dataset, config, lens; sel = indices, type = Float, fill = 0)
         waterbodies = waterbodies .+ reservoirs
     end
     if do_lakes
-        lens = lens_input("lake_area__count")
-        lakes = ncread(
-            dataset,
-            config,
-            lens;
-            optional = false,
-            sel = indices,
-            type = Float,
-            fill = 0,
-        )
+        lens = lens_input(config, "lake_area__count"; optional = false)
+        lakes = ncread(dataset, config, lens; sel = indices, type = Float, fill = 0)
         waterbodies = waterbodies .+ lakes
     end
     waterbodies = waterbodies .> 0
 
-    lens = lens_input("local_drain_direction")
-    ldd_2d = ncread(dataset, config, lens; optional = false, allow_missing = true)
+    lens = lens_input(config, "local_drain_direction"; optional = false)
+    ldd_2d = ncread(dataset, config, lens; allow_missing = true)
     ldd = ldd_2d[indices]
 
     # # sediment in overland flow
