@@ -82,7 +82,7 @@ function active_indices(network::Network, key::AbstractString)
         return network.reservoir.indices_outlet
     elseif occursin("lake", key)
         return network.lake.indices_outlet
-    elseif occursin("river", key)
+    elseif occursin("river", key) || occursin("floodplain", key)
         return network.river.indices
     elseif occursin("drain", key)
         return network.drain.indices
