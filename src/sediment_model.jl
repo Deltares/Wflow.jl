@@ -126,6 +126,8 @@ function set_states!(model::AbstractModel{<:SedimentModel})
     (; config) = model
     reinit = get(config.model, "reinit", true)::Bool
     if reinit == false
+        state_settings = check_config_states(config, "path_input")
+        state_settings || error("The state section in the TOML file is incomplete")
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
         set_states!(instate_path, model; type = Float)

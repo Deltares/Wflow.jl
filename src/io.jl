@@ -923,8 +923,10 @@ function prepare_writer(
     time_units = get(config.time, "time_units", CFTime.DEFAULT_TIME_UNITS)
 
     # create an output netCDF that will hold all timesteps of selected parameters for grid
-    # data but only if config.output.path has been set
-    if haskey(config, "output") && haskey(config.output, "path")
+    # data but only if config.output.path and config.output.variables have been set
+    if haskey(config, "output") &&
+       haskey(config.output, "path") &&
+       haskey(config.output, "variables")
         nc_path = output_path(config, config.output.path)
         deflatelevel = get(config.output, "compressionlevel", 0)::Int
         @info "Create an output netCDF file `$nc_path` for grid data, using compression level `$deflatelevel`."
@@ -950,8 +952,8 @@ function prepare_writer(
     end
 
     # create a separate state output netCDF that will hold the last timestep of all states
-    # but only if config.state.path_output has been set
-    if haskey(config, "state") && haskey(config.state, "path_output")
+    # but only if config.state.path_output and config.state.variables have been set
+    if check_config_states(config, "path_output")
         state_ncnames = check_states(config)
         state_map = out_map(state_ncnames, modelmap)
         nc_state_path = output_path(config, config.state.path_output)
@@ -974,8 +976,10 @@ function prepare_writer(
     end
 
     # create an output netCDF that will hold all timesteps of selected parameters for scalar
-    # data, but only if config.netcdf.variable has been set.
-    if haskey(config, "netcdf") && haskey(config.netcdf, "variable")
+    # data, but only if config.netcdf.path and config.netcdf.variable have been set.
+    if haskey(config, "netcdf") &&
+       haskey(config.netcdf, "path") &&
+       haskey(config.netcdf, "variable")
         nc_scalar_path = output_path(config, config.netcdf.path)
         @info "Create an output netCDF file `$nc_scalar_path` for scalar data."
         # get netCDF info for scalar data (variable name, locationset (dim) and
@@ -1006,7 +1010,7 @@ function prepare_writer(
         nc_scalar_path = nothing
     end
 
-    if haskey(config, "csv") && haskey(config.csv, "column")
+    if haskey(config, "csv") && haskey(config.csv, "path") && haskey(config.csv, "column")
         # open CSV file and write header
         csv_path = output_path(config, config.csv.path)
         @info "Create an output CSV file `$csv_path` for scalar data."
@@ -1642,4 +1646,13 @@ function get_index_dimension(var, config::Config, dim_value)::Int
         error("Unrecognized or missing dimension name to index $(var)")
     end
     return index
+end
+
+"Check state settings in `config` object (parsed TOML file)"
+function check_config_states(config::Config, path::AbstractString)
+    state_settings =
+        haskey(config, "state") &&
+        haskey(config.state, path) &&
+        haskey(config.state, "variables")
+    return state_settings
 end
