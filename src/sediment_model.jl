@@ -107,8 +107,20 @@ function initialize_sediment_model(config::Config)
 
     routing = Routing(; overland_flow = overland_flow_sediment, river_flow = river_sediment)
 
-    model =
-        Model(config, network, routing, soilloss, clock, reader, writer, SedimentModel())
+    # n = ?
+    # water_balance = WaterBalance(n, Float64)
+
+    model = Model(
+        config,
+        network,
+        routing,
+        soilloss,
+        # water_balance,
+        clock,
+        reader,
+        writer,
+        SedimentModel(),
+    )
 
     set_states!(model)
     @info "Initialized model"
