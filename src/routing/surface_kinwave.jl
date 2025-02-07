@@ -385,7 +385,7 @@ function kinwave_river_update!(model::KinWaveRiverFlow, network, doy, dt, dt_for
         model.boundary_conditions
 
     (; beta, alpha, flow_width, flow_length) = model.parameters
-    (; h, h_av, q, q_av, storage, storage_av, qin, qlat, storage) = model.variables
+    (; h, h_av, q, q_av, storage, storage_av, qin, qlat) = model.variables
 
     ns = length(order_of_subdomains)
     qin .= 0.0
