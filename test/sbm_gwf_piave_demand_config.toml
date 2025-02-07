@@ -153,23 +153,23 @@ livestock = true
 paddy = true
 nonpaddy = true
 
-[output]
+[output.netcdf_grid]
 path = "output-piave-gwf.nc"
 
-[output.variables]
+[output.netcdf_grid.variables]
 river_water__volume_flow_rate = "q_av_river"
 subsurface_water__hydraulic_head = "head"
 soil_water_sat-zone_top__depth = "zi"
 
-[csv]
+[output.csv]
 path = "output.csv"
 
-[[csv.column]]
+[[output.csv.column]]
 header = "Q"
 map = "river_gauge"
 parameter = "river_water__volume_flow_rate"
 
-[[csv.column]]
+[[output.csv.column]]
 header = "Q"
 map = "river_gauge_grdc"
 parameter = "river_water__volume_flow_rate"

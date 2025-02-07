@@ -121,21 +121,21 @@ land_surface_water__instantaneous_volume_flow_rate = "q_land"
 land_surface_water__instantaneous_depth = "h_land"
 land_surface_water__depth = "h_av_land"
 
-[output]
+[output.netcdf_grid]
 path = "output-piave.nc"
 
-[output.variables]
+[output.netcdf_grid.variables]
 river_water__volume_flow_rate = "q_av_river"
 
-[csv]
+[output.csv]
 path = "output-piave.csv"
 
-[[csv.column]]
+[[output.csv.column]]
 header = "Q"
 map = "river_gauge"
 parameter = "river_water__volume_flow_rate"
 
-[[csv.column]]
+[[output.csv.column]]
 header = "Q"
 map = "river_gauge_grdc"
 parameter = "river_water__volume_flow_rate"

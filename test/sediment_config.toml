@@ -122,10 +122,10 @@ land_transport = "yalinpart" # Overland flow transport capacity method: ["yalinp
 river_transport = "bagnold" # River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]
 type = "sediment"
 
-[output]
+[output.netcdf_grid]
 path = "output-moselle-sed.nc"
 
-[output.variables]
+[output.netcdf_grid.variables]
 "soil_erosion~rainfall__mass_flow_rate" = "rainfall_erosion"
 "soil_erosion~overland_flow__mass_flow_rate" = "overland_flow_erosion"
 soil_erosion__mass_flow_rate = "soilloss"
@@ -153,52 +153,52 @@ river_water_sediment_erosion__mass = "erosion_riv"
 river_water_clay__mass_flow_rate = "outclay"
 river_water_clay__mass = "clayload"
 
-[csv]
+[output.csv]
 path = "output-moselle-sediment.csv"
 
-[[csv.column]]
+[[output.csv.column]]
 coordinate.x = 6.931
 coordinate.y = 48.085
 header = "SL"
 parameter = "soil_erosion__mass_flow_rate"
 
-[[csv.column]]
+[[output.csv.column]]
 coordinate.x = 6.931
 coordinate.y = 48.085
 header = "SSPL"
 parameter = "soil_erosion~rainfall__mass_flow_rate"
 
-[[csv.column]]
+[[output.csv.column]]
 coordinate.x = 6.931
 coordinate.y = 48.085
 header = "SOV"
 parameter = "soil_erosion~overland_flow__mass_flow_rate"
 
-[[csv.column]]
+[[output.csv.column]]
 coordinate.x = 6.931
 coordinate.y = 48.085
 header = "P"
 parameter = "atmosphere_water__precipitation_volume_flux"
 
-[[csv.column]]
+[[output.csv.column]]
 coordinate.x = 6.931
 coordinate.y = 48.085
 header = "ql"
 parameter = "land.hydrological_forcing.q_land"
 
-# [[csv.column]]
+# [[output.csv.column]]
 # coordinate.x = 6.931
 # coordinate.y = 48.085
 # header = "TCsed"
 # parameter = "routing.overland_flow.transport_capacity.variables.amount"
 
-# [[csv.column]]
+# [[output.csv.column]]
 # coordinate.x = 6.931
 # coordinate.y = 48.085
 # header = "TCclay"
 # parameter = "routing.overland_flow.transport_capacity.variables.clay"
 
-# [[csv.column]]
+# [[output.csv.column]]
 # coordinate.x = 6.931
 # coordinate.y = 48.085
 # header = "inlandsed"

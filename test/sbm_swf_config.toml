@@ -119,10 +119,10 @@ river_routing = "local-inertial"
 land_routing = "local-inertial"
 type = "sbm"
 
-[output]
+[output.netcdf_grid]
 path = "output_moselle_swf.nc"
 
-[output.variables]
+[output.netcdf_grid.variables]
 soil_water_sat-zone__depth = "satwaterdepth"
 soil_surface__temperature = "tsoil"
 soil_layer_water_unsat-zone__depth= "ustorelayerdepth"
@@ -135,10 +135,10 @@ subsurface_water__volume_flow_rate  = "ssf"
 land_surface_water__depth = "h_land"
 land.interception.variables.canopy_storage = "canopystorage"
 
-[csv]
+[output.csv]
 path = "output_moselle_swf.csv"
 
-[[csv.column]]
+[[output.csv.column]]
 header = "Q"
 map = "river_gauge"
 parameter = "river_water__volume_flow_rate"

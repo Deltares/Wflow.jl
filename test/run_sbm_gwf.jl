@@ -72,7 +72,7 @@ end
 @testset "no drains" begin
     config.model.drains = false
     delete!(
-        Dict(config.output.variables),
+        Dict(config.output.netcdf_grid.variables),
         "land_drain_water~to-subsurface__volume_flow_rate",
     )
     model = Wflow.initialize_sbm_gwf_model(config)

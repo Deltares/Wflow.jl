@@ -80,16 +80,16 @@ vegetation__leaf-area_index = "LAI"
 thicknesslayers = [100, 300, 800]
 type = "sbm"
 
-[csv]
+[output.csv]
 path = "output_moselle_simple.csv"
 
-[[csv.column]]
+[[output.csv.column]]
 coordinate.x = 7.378
 coordinate.y = 50.204
 header = "Q"
 parameter = "river_water__volume_flow_rate"
 
-[[csv.column]]
+[[output.csv.column]]
 header = "recharge"
 parameter = "soil_water_sat-zone_top__recharge_volume_flux"
 reducer = "mean"

@@ -411,7 +411,7 @@ function setup_scalar_netcdf(
         attrib = ["units" => time_units, "calendar" => calendar],
     )
     set_extradim_netcdf(ds, extra_dim)
-    for (nc, netcdfvars) in zip(ncvars, config.netcdf.variable)
+    for (nc, netcdfvars) in zip(ncvars, config.output.netcdf_scalar.variable)
         # Delft-FEWS requires the attribute :cf_role = "timeseries_id" when a netCDF file
         # contains more than one location list
         defVar(
@@ -923,15 +923,13 @@ function prepare_writer(
     time_units = get(config.time, "time_units", CFTime.DEFAULT_TIME_UNITS)
 
     # create an output netCDF that will hold all timesteps of selected parameters for grid
-    # data but only if config.output.path and config.output.variables have been set
-    if haskey(config, "output") &&
-       haskey(config.output, "path") &&
-       haskey(config.output, "variables")
-        nc_path = output_path(config, config.output.path)
-        deflatelevel = get(config.output, "compressionlevel", 0)::Int
+    # data
+    if check_config_output(config, "netcdf_grid", "variables")
+        nc_path = output_path(config, config.output.netcdf_grid.path)
+        deflatelevel = get(config.output.netcdf_grid, "compressionlevel", 0)::Int
         @info "Create an output netCDF file `$nc_path` for grid data, using compression level `$deflatelevel`."
         # create a flat mapping from internal parameter locations to netCDF variable names
-        output_ncnames = ncnames(config.output.variables)
+        output_ncnames = ncnames(config.output.netcdf_grid.variables)
         # fill the output_map by mapping parameter netCDF names to arrays
         output_map = out_map(output_ncnames, modelmap)
         ds = setup_grid_netcdf(
@@ -977,14 +975,13 @@ function prepare_writer(
 
     # create an output netCDF that will hold all timesteps of selected parameters for scalar
     # data, but only if config.netcdf.path and config.netcdf.variable have been set.
-    if haskey(config, "netcdf") &&
-       haskey(config.netcdf, "path") &&
-       haskey(config.netcdf, "variable")
-        nc_scalar_path = output_path(config, config.netcdf.path)
+    if check_config_output(config, "netcdf_scalar", "variable")
+        nc_scalar_path = output_path(config, config.output.netcdf_scalar.path)
         @info "Create an output netCDF file `$nc_scalar_path` for scalar data."
         # get netCDF info for scalar data (variable name, locationset (dim) and
         # location ids)
-        ncvars_dims = nc_variables_dims(config.netcdf.variable, nc_static, config)
+        ncvars_dims =
+            nc_variables_dims(config.output.netcdf_scalar.variable, nc_static, config)
         ds_scalar = setup_scalar_netcdf(
             nc_scalar_path,
             ncvars_dims,
@@ -997,7 +994,7 @@ function prepare_writer(
         # create a vector of (parameter, reducer) named tuples which will be used to
         # retrieve and reduce data during a model run
         nc_scalar = []
-        for var in config.netcdf.variable
+        for var in config.output.netcdf_scalar.variable
             parameter = var["parameter"]
             reducer_func =
                 get_reducer_func(var, rev_inds, x_nc, y_nc, config, nc_static, "netCDF")
@@ -1010,22 +1007,22 @@ function prepare_writer(
         nc_scalar_path = nothing
     end
 
-    if haskey(config, "csv") && haskey(config.csv, "path") && haskey(config.csv, "column")
+    if check_config_output(config, "csv", "column")
         # open CSV file and write header
-        csv_path = output_path(config, config.csv.path)
+        csv_path = output_path(config, config.output.csv.path)
         @info "Create an output CSV file `$csv_path` for scalar data."
         # create directory if needed
         mkpath(dirname(csv_path))
         csv_io = open(csv_path, "w")
         print(csv_io, "time,")
-        header = csv_header(config.csv.column, nc_static, config)
+        header = csv_header(config.output.csv.column, nc_static, config)
         println(csv_io, join(header, ','))
         flush(csv_io)
 
         # create a vector of (parameter, reducer) named tuples which will be used to
         # retrieve and reduce the CSV data during a model run
         csv_cols = []
-        for col in config.csv.column
+        for col in config.output.csv.column
             parameter = col["parameter"]
             reducer_func =
                 get_reducer_func(col, rev_inds, x_nc, y_nc, config, nc_static, "CSV")
@@ -1061,7 +1058,7 @@ function write_netcdf_timestep(model, dataset)
     (; writer, land, clock, config) = model
 
     time_index = add_time(dataset, clock.time)
-    for (nt, nc) in zip(writer.nc_scalar, config.netcdf.variable)
+    for (nt, nc) in zip(writer.nc_scalar, config.output.netcdf_scalar.variable)
         A = if haskey(standard_name_map(land), nt.parameter)
             lens = standard_name_map(land)[nt.parameter]
             lens(model)
@@ -1311,7 +1308,7 @@ function write_csv_row(model)
     isnothing(writer.csv_path) && return nothing
     io = writer.csv_io
     print(io, string(clock.time))
-    for (nt, col) in zip(writer.csv_cols, config.csv.column)
+    for (nt, col) in zip(writer.csv_cols, config.output.csv.column)
         A = if haskey(standard_name_map(land), nt.parameter)
             lens = standard_name_map(land)[nt.parameter]
             lens(model)
@@ -1655,4 +1652,21 @@ function check_config_states(config::Config, path::AbstractString)
         haskey(config.state, path) &&
         haskey(config.state, "variables")
     return state_settings
+end
+
+"""
+Check output settings for file description (e.g. file format and data type), file path and
+TOML `key`(e.g. containing variable name) in `config` object (parsed TOML file).
+"""
+function check_config_output(
+    config::Config,
+    file_description::AbstractString,
+    key::AbstractString,
+)
+    output_settings =
+        haskey(config, "output") &&
+        haskey(config.output, file_description) &&
+        haskey(config.output[file_description], "path") &&
+        haskey(config.output[file_description], key)
+    return output_settings
 end

@@ -129,10 +129,10 @@ type = "sbm"
 min_streamorder_river = 6
 min_streamorder_land = 5
 
-[output]
+[output.netcdf_grid]
 path = "output_moselle.nc"
 
-[output.variables]
+[output.netcdf_grid.variables]
 soil_water_sat-zone__depth = "satwaterdepth"
 soil_surface__temperature = "tsoil"
 soil_layer_water_unsat-zone__depth = "ustorelayerdepth"
@@ -146,66 +146,66 @@ land_surface_water__volume_flow_rate = "q_av_land"
 land_surface_water__depth = "h_av_land"
 land.interception.variables.canopy_storage = "canopystorage"
 
-[netcdf]
+[output.netcdf_scalar]
 path = "output_scalar_moselle.nc"
 
-[[netcdf.variable]]
+[[output.netcdf_scalar.variable]]
 name = "Q"
 map = "river_gauge"
 parameter = "routing.river_flow.variables.q"
 
-[[netcdf.variable]]
+[[output.netcdf_scalar.variable]]
 coordinate.x = 6.255
 coordinate.y = 50.012
 name = "temp_coord"
 location = "temp_bycoord"
 parameter = "atmosphere_air__temperature"
 
-[[netcdf.variable]]
+[[output.netcdf_scalar.variable]]
 location = "temp_byindex"
 name = "temp_index"
 index.x = 100
 index.y = 264
 parameter = "atmosphere_air__temperature"
 
-[csv]
+[output.csv]
 path = "output_moselle.csv"
 
-[[csv.column]]
+[[output.csv.column]]
 header = "Q"
 parameter = "river_water__volume_flow_rate"
 reducer = "maximum"
 
-[[csv.column]]
+[[output.csv.column]]
 header = "storage"
 index = 1
 parameter = "reservoir_water__volume"
 
-[[csv.column]]
+[[output.csv.column]]
 coordinate.x = 6.255
 coordinate.y = 50.012
 header = "temp_bycoord"
 parameter = "atmosphere_air__temperature"
 
-[[csv.column]]
+[[output.csv.column]]
 coordinate.x = 6.255
 coordinate.y = 50.012
 header = "vwc_layer2_bycoord"
 parameter = "land.soil.variables.vwc"
 layer = 2
 
-[[csv.column]]
+[[output.csv.column]]
 header = "temp_byindex"
 index.x = 100
 index.y = 264
 parameter = "atmosphere_air__temperature"
 
-[[csv.column]]
+[[output.csv.column]]
 header = "Q"
 map = "river_gauge"
 parameter = "river_water__volume_flow_rate"
 
-[[csv.column]]
+[[output.csv.column]]
 header = "recharge"
 map = "subcatchment_location__count"
 parameter = "soil_water_sat-zone_top__net_recharge_volume_flux"

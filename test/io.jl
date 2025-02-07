@@ -19,9 +19,11 @@ config = Wflow.Config(tomlpath)
     # test if the values are parsed as expected
     @test config.time.starttime === DateTime(2000, 1, 1)
     @test config.time.endtime === DateTime(2000, 2)
-    @test config.output.path == "output_moselle.nc"
+    @test config.output.netcdf_grid.path == "output_moselle.nc"
+    @test config.output.netcdf_scalar.path == "output_scalar_moselle.nc"
+    @test config.output.csv.path == "output_moselle.csv"
     @test config.output isa Wflow.Config
-    @test collect(keys(config.output)) == ["variables", "path"]
+    @test collect(keys(config.output)) == ["netcdf_grid", "csv", "netcdf_scalar"]
 
     # modifiers can also be applied
     parameter = Wflow.lens_input_parameter(

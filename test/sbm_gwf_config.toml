@@ -91,10 +91,10 @@ snow = false
 thicknesslayers = [100, 300, 800]
 type = "sbm_gwf"
 
-[output]
+[output.nectdf_grid]
 path = "output_example-sbm-gwf.nc"
 
-[output.variables]
+[output.netcdf_grid.variables]
 vegetation_canopy_water__depth = "canopystorage"
 soil_water_sat-zone__depth = "satwaterdepth"
 soil_layer_water_unsat-zone__depth = "ustorelayerdepth"
@@ -105,15 +105,15 @@ subsurface_water_sat-zone_top__net_recharge_volume_flux = "rate"
 "land_drain_water~to-subsurface__volume_flow_rate" = "drain_flux"
 "river_water~to-subsurface__volume_flow_rate" = "flux"
 
-[csv]
+[output.csv]
 path = "output_example-sbm-gwf.csv"
 
-[[csv.column]]
+[[output.csv.column]]
 header = "Q_av"
 index = 5
 parameter = "river_water__volume_flow_rate"
 
-[[csv.column]]
+[[output.csv.column]]
 header = "head"
 index = 5
 parameter = "subsurface_water__hydraulic_head"
