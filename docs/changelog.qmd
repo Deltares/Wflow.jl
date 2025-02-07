@@ -60,8 +60,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   and forcing input (`[input.static]`, `[input.cyclic]` and `[input.forcing]`) without the
   need to specify the internal cyclic and forcing variables in a list (only an external name
   mapping is required), state variables are listed below the `[state.variables]` TOML
-  section and gridded output variables are listed below the `[output.variables]` TOML
-  section.
+  section and use of more clearly defined TOML output sections.
 
 ### Added
 - Support direct output of snow and glacier melt, and add computation of snow water
