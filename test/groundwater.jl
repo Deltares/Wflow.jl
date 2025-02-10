@@ -300,7 +300,11 @@ end
                 exfiltration_conductance = [200.0, 200.0],
                 bottom = [1.0, 1.0],
             )
-            variables = Wflow.RiverVariables(; stage = [2.0, 2.0], flux = [0.0, 0.0])
+            variables = Wflow.RiverVariables(;
+                stage = [2.0, 2.0],
+                storage = [20.0, 20.0],
+                flux = [0.0, 0.0],
+            )
             river = Wflow.River(; parameters, variables, index = [1, 3])
             Q = zeros(3)
             Wflow.flux!(Q, river, conf_aqf)

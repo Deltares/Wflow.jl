@@ -437,9 +437,11 @@ function update!(model::AbstractModel{<:SbmGwfModel})
 
     update!(land, routing, network, config, dt)
 
-    # set river stage (groundwater) to average h from kinematic wave
+    # set river stage and storage (groundwater boundary) based on river flow routing
+    # variables
     boundaries.river.variables.stage .=
         routing.river_flow.variables.h_av .+ boundaries.river.parameters.bottom
+    boundaries.river.variables.storage .= routing.river_flow.variables.storage
 
     # determine stable time step for groundwater flow
     conductivity_profile = get(config.model, "conductivity_profile", "uniform")

@@ -19,11 +19,16 @@ end
 
 @get_units @grid_loc @with_kw struct RiverVariables{T}
     stage::Vector{T} | "m"
+    storage::Vector{T} | "m3"
     flux::Vector{T} | "m3 d-1"
 end
 
 function RiverVariables(n)
-    variables = RiverVariables{Float}(; stage = fill(mv, n), flux = fill(mv, n))
+    variables = RiverVariables{Float}(;
+        stage = fill(mv, n),
+        storage = fill(mv, n),
+        flux = fill(mv, n),
+    )
     return variables
 end
 
