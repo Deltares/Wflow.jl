@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.7.4 - 2025-02-12
+### Fixed
+- The internal time step of the local inertial model (`stable_timestep` function) can get zero
+  when `LoopVectorization` is applied (`@tturbo`) to the for loop of these functions. This
+  issue occured on a virtual machine, Windows 10 Enterprise, with Intel(R) Xeon(R) Gold 6144
+  CPU (2 processors). This has been fixed by replacing `@tturbo` with `reduction` of
+  `Polyester.jl`. Note: these changes are originally applied in v0.8.0 (see
+  https://github.com/Deltares/Wflow.jl/pull/390), but are backported to v0.7.3, to ensure
+  stability in operational applications.
+
 ## v0.7.3 - 2024-01-12
 
 ### Fixed
@@ -22,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   terms of the quadratic equation (and solution) were fixed.
 - Use `kvfrac` for the computation of vertical saturated hydraulic conductivity at the
   bottom of the soil layer, since `kvfrac` is also used for the computation of vertical
-  unsaturated flow. 
+  unsaturated flow.
 
 ### Changed
 - For cyclic parameters different cyclic time inputs are supported (only one common cyclic
