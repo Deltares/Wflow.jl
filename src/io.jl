@@ -30,10 +30,9 @@ end
 """
     Config(path::AbstractString)
     Config(dict::AbstractDict)
-    Config(dict::Dict{String,Any}, path::Union{String,Nothing})
 
 Struct that contains the parsed TOML configuration, as well as a reference to the TOML path,
-if it exists. It behaves largely like a distionary, but it overloads `getproperty` and
+if it exists. It behaves largely like a dictionary, but it overloads `getproperty` and
 `setproperty` to support syntax like `config.model.reinit = false`.
 """
 struct Config
@@ -41,8 +40,22 @@ struct Config
     path::Union{String, Nothing}  # path to the TOML file, or nothing
 end
 
-Config(path::AbstractString) = Config(TOML.parsefile(path), path)
+function Config(path::AbstractString)
+    config = Config(TOML.parsefile(path), path)
+    config = optional_keys(config)
+    return config
+end
 Config(dict::AbstractDict) = Config(dict, nothing)
+
+"Add optional TOML keys `logging` and `time` to `config` (if not present in TOML file)"
+function optional_keys(config::Config)
+    if !haskey(config, "logging")
+        config.logging = Dict{String, Any}()
+    elseif !haskey(config, "time")
+        config.time = Dict{String, Any}()
+    end
+    return config
+end
 
 # allows using getproperty, e.g. config.input.time instead of config["input"]["time"]
 function Base.getproperty(config::Config, f::Symbol)

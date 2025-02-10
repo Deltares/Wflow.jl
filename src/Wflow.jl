@@ -213,10 +213,6 @@ This makes it easier to start a run from the command line without having to esca
 """
 function run(tomlpath::AbstractString; silent = nothing)
     config = Config(tomlpath)
-    # check if optional logging entry is set in TOML, otherwise add it 
-    if !haskey(config, "logging")
-        config["logging"] = Dict{String, Any}()
-    end
     # if the silent kwarg is not set, check if it is set in the TOML
     if silent === nothing
         silent = get(config.logging, "silent", false)::Bool
