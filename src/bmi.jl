@@ -406,9 +406,9 @@ function load_state(model::Model)
 end
 
 function save_state(model::Model)
-    (; config, writer) = model
-    if haskey(config, "state") && haskey(config.state, "path_output")
-        @info "Write output states to netCDF file `$(model.writer.state_nc_path)`."
+    (; writer) = model
+    if !isnothing(writer.state_nc_path)
+        @info "Write output states to netCDF file `$(writer.state_nc_path)`."
     end
     write_netcdf_timestep(model, writer.state_dataset, writer.state_parameters)
     close(writer.state_dataset)

@@ -19,24 +19,19 @@ config = Wflow.Config(tomlpath)
     # test if the values are parsed as expected
     @test config.time.starttime === DateTime(2000, 1, 1)
     @test config.time.endtime === DateTime(2000, 2)
-    @test config.output.path == "output_moselle.nc"
+    @test config.output.netcdf_grid.path == "output_moselle.nc"
+    @test config.output.netcdf_scalar.path == "output_scalar_moselle.nc"
+    @test config.output.csv.path == "output_moselle.csv"
     @test config.output isa Wflow.Config
-    @test collect(keys(config.output)) == ["variables", "path"]
-
-    # test if soil_water__saturated_volume_fraction can also be provided under the alias theta_s
-    lens = @optic(_.input.parameters.soil_water__saturated_volume_fraction)
-    lens_alias = @optic(_.input.parameters.theta_s)
-    @test Wflow.get_alias(config, lens, lens_alias, nothing) == "thetaS"
-    val = pop!(config.input.parameters, "soil_water__saturated_volume_fraction")
-    config.input.parameters["theta_s"] = val
-    @test Wflow.get_alias(config, lens, lens_alias, nothing) == "thetaS"
-    config.input.parameters.soil_water__saturated_volume_fraction = "thetaS"
+    @test collect(keys(config.output)) == ["netcdf_grid", "csv", "netcdf_scalar"]
 
     # modifiers can also be applied
     parameter = Wflow.lens_input_parameter(
+        config,
         "soil_surface_water__vertical_saturated_hydraulic_conductivity",
     )
-    kvconf = Wflow._lens(config, parameter.lens, nothing)
+    kvconf = parameter.lens(config)
+    kvconf = kvconf isa AbstractDict ? Wflow.Config(kvconf, pathof(config)) : kvconf
     @test kvconf isa Wflow.Config
     ncname, modifier = Wflow.ncvar_name_modifier(kvconf; config = config)
     @test ncname === "KsatVer"
@@ -52,6 +47,19 @@ config = Wflow.Config(tomlpath)
           joinpath(@__DIR__, "data", "input", "instates-moselle.nc")
     @test Wflow.output_path(config, config.state.path_output) ==
           joinpath(@__DIR__, "data", "output", "outstates-moselle.nc")
+
+    # test error is thrown for required model parameter when mapping internal standard name
+    # to a `lens` (access to nested Config object)
+    @test_throws ErrorException Wflow.lens_input_parameter(
+        config,
+        "not_set_in_TOML";
+        optional = false,
+    )
+    @test_throws ErrorException Wflow.lens_input(
+        config,
+        "not_set_in_TOML";
+        optional = false,
+    )
 end
 
 @testset "Clock constructor" begin
@@ -212,10 +220,6 @@ Wflow.load_dynamic_input!(model)
     @test length(writer.state_parameters) == 14
 end
 
-# get a default value if the parameter does not exist
-lens = @optic(_.input.parameters.doesnt_exist)
-@test Wflow._lens(config, lens, -1) == -1
-
 @testset "warm states" begin
     map = Wflow.standard_name_map(model.land)
     @test map["reservoir_water__instantaneous_volume"](model)[1] ≈ 3.2807224993363418e7
@@ -256,6 +260,15 @@ end
     cartesian_index = indices[linear_index]
     @test cartesian_index === CartesianIndex(168, 8)
     @test reverse_indices[cartesian_index] === linear_index
+    # test active indices of different domains
+    floodplain_inds = Wflow.active_indices(network, "floodplain_water__volume")
+    river_inds = Wflow.active_indices(network, "river_water__volume")
+    reservoir_inds = Wflow.active_indices(network, "reservoir_water__volume")
+    land_inds = Wflow.active_indices(network, "soil_surface_water__runoff_volume_flux")
+    @test floodplain_inds == river_inds
+    @test length(land_inds) == 50063
+    @test land_inds[100] == CartesianIndex(168, 8)
+    @test reservoir_inds == [CartesianIndex(41, 134), CartesianIndex(60, 252)]
 end
 
 @testset "initial parameter values" begin
@@ -267,15 +280,15 @@ end
           [9.152995289601465, 8.919674421902961, 8.70537452585209, 8.690681062890977]
 end
 
-config.input.parameters["snowpack__degree-day_coefficient"] = Dict("value" => 2.0)
-config.input.parameters.soil__thickness = Dict(
+config.input.static["snowpack__degree-day_coefficient"] = Dict("value" => 2.0)
+config.input.static.soil__thickness = Dict(
     "scale" => 3.0,
     "offset" => 100.0,
     "netcdf" => Dict("variable" => Dict("name" => "SoilThickness")),
 )
 config.input.forcing.atmosphere_water__precipitation_volume_flux =
     Dict("scale" => 1.5, "netcdf" => Dict("variable" => Dict("name" => "precip")))
-config.input.parameters["soil_layer_water__brooks-corey_epsilon_parameter"] = Dict(
+config.input.static["soil_layer_water__brooks-corey_epsilon_parameter"] = Dict(
     "scale" => [2.0, 3.0],
     "offset" => [0.0, 0.0],
     "layer" => [1, 3],
@@ -407,7 +420,7 @@ end
 
     # Final run to test error handling during simulation
     tomlpath_error = joinpath(@__DIR__, "sbm_simple-error.toml")
-    config.input.parameters.river__width = Dict(
+    config.input.static.river__width = Dict(
         "scale" => 0.0,
         "offset" => 0.0,
         "netcdf" => Dict("variable" => Dict("name" => "wflow_riverwidth")),

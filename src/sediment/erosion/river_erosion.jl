@@ -43,7 +43,7 @@ end
 
 "Initialize Julian and Torres river erosion parameters"
 function RiverErosionParameters(dataset, config, indices)
-    lens = lens_input_parameter("river_bottom-and-bank_sediment__d50_diameter")
+    lens = lens_input_parameter(config, "river_bottom-and-bank_sediment__d50_diameter")
     d50 = ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float)
     river_parameters = RiverErosionParameters(; d50 = d50)
 

@@ -49,7 +49,7 @@ subcatchment_location__count = "wflow_subcatch"
 atmosphere_water__precipitation_volume_flux = "P"
 land_surface_water__potential_evaporation_volume_flux = "PET"
 
-[input.parameters]
+[input.static]
 soil_surface_water__vertical_saturated_hydraulic_conductivity = "kv"
 "soil~non-compacted_surface_water__infiltration_capacity" = "InfiltCapSoil"
 soil_water__residual_volume_fraction = "thetaR"
@@ -81,14 +81,6 @@ river_bottom__elevation = "river_bottom"
 river_water__infiltration_conductance = "infiltration_conductance"
 river_water__exfiltration_conductance = "infiltration_conductance"
 
-# specify the internal IDs of the parameters which vary over time
-# the external name mapping needs to be below together with the other mappings
-[input.dynamic]
-forcing = [
-  "atmosphere_water__precipitation_volume_flux",
-  "land_surface_water__potential_evaporation_volume_flux",
-]
-
 [model]
 constanthead = true
 drains = true
@@ -99,10 +91,10 @@ snow = false
 thicknesslayers = [100, 300, 800]
 type = "sbm_gwf"
 
-[output]
+[output.nectdf_grid]
 path = "output_example-sbm-gwf.nc"
 
-[output.variables]
+[output.netcdf_grid.variables]
 vegetation_canopy_water__depth = "canopystorage"
 soil_water_sat-zone__depth = "satwaterdepth"
 soil_layer_water_unsat-zone__depth = "ustorelayerdepth"
@@ -113,15 +105,15 @@ subsurface_water_sat-zone_top__net_recharge_volume_flux = "rate"
 "land_drain_water~to-subsurface__volume_flow_rate" = "drain_flux"
 "river_water~to-subsurface__volume_flow_rate" = "flux"
 
-[csv]
+[output.csv]
 path = "output_example-sbm-gwf.csv"
 
-[[csv.column]]
+[[output.csv.column]]
 header = "Q_av"
 index = 5
 parameter = "river_water__volume_flow_rate"
 
-[[csv.column]]
+[[output.csv.column]]
 header = "head"
 index = 5
 parameter = "subsurface_water__hydraulic_head"

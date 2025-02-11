@@ -34,11 +34,11 @@ end
 
 "Initialize ANSWERS overland flow erosion model parameters"
 function OverlandFlowErosionAnswersParameters(dataset, config, indices)
-    lens = lens_input_parameter("soil_erosion__usle_k_factor")
+    lens = lens_input_parameter(config, "soil_erosion__usle_k_factor")
     usle_k = ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float)
-    lens = lens_input_parameter("soil_erosion__usle_c_factor")
+    lens = lens_input_parameter(config, "soil_erosion__usle_c_factor")
     usle_c = ncread(dataset, config, lens; sel = indices, defaults = 0.01, type = Float)
-    lens = lens_input_parameter("soil_erosion__answers_overland_flow_factor")
+    lens = lens_input_parameter(config, "soil_erosion__answers_overland_flow_factor")
     answers_k = ncread(dataset, config, lens; sel = indices, defaults = 0.9, type = Float)
 
     answers_parameters = OverlandFlowErosionAnswersParameters(;

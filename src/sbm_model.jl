@@ -40,25 +40,23 @@ function initialize_sbm_model(config::Config)
 
     dataset = NCDataset(static_path)
 
-    lens = lens_input("subcatchment_location__count")
-    subcatch_2d = ncread(dataset, config, lens; optional = false, allow_missing = true)
+    lens = lens_input(config, "subcatchment_location__count"; optional = false)
+    subcatch_2d = ncread(dataset, config, lens; allow_missing = true)
     # indices based on sub-catchments
     indices, reverse_indices = active_indices(subcatch_2d, missing)
     n_land_cells = length(indices)
     modelsize_2d = size(subcatch_2d)
 
-    lens = lens_input("river_location__mask")
-    river_location_2d =
-        ncread(dataset, config, lens; optional = false, type = Bool, fill = false)
+    lens = lens_input(config, "river_location__mask"; optional = false)
+    river_location_2d = ncread(dataset, config, lens; type = Bool, fill = false)
     river_location = river_location_2d[indices]
 
-    lens = lens_input_parameter("river__width")
-    river_width_2d = ncread(dataset, config, lens; optional = false, type = Float, fill = 0)
+    lens = lens_input_parameter(config, "river__width"; optional = false)
+    river_width_2d = ncread(dataset, config, lens; type = Float, fill = 0)
     river_width = river_width_2d[indices]
 
-    lens = lens_input_parameter("river__length")
-    river_length_2d =
-        ncread(dataset, config, lens; optional = false, type = Float, fill = 0)
+    lens = lens_input_parameter(config, "river__length"; optional = false)
+    river_length_2d = ncread(dataset, config, lens; type = Float, fill = 0)
     river_length = river_length_2d[indices]
 
     # read x, y coordinates and calculate cell length [m]
@@ -100,18 +98,17 @@ function initialize_sbm_model(config::Config)
         lake = nothing
     end
 
-    lens = lens_input("local_drain_direction")
-    ldd_2d = ncread(dataset, config, lens; optional = false, allow_missing = true)
+    lens = lens_input(config, "local_drain_direction"; optional = false)
+    ldd_2d = ncread(dataset, config, lens; allow_missing = true)
     ldd = ldd_2d[indices]
     if do_pits
-        lens = lens_input("pits")
-        pits_2d = ncread(dataset, config, lens; optional = false, type = Bool, fill = false)
+        lens = lens_input(config, "pits"; optional = false)
+        pits_2d = ncread(dataset, config, lens; type = Bool, fill = false)
         ldd = set_pit_ldd(pits_2d, ldd, indices)
     end
 
-    lens = lens_input_parameter("land_surface__slope")
-    land_slope =
-        ncread(dataset, config, lens; optional = false, sel = indices, type = Float)
+    lens = lens_input_parameter(config, "land_surface__slope"; optional = false)
+    land_slope = ncread(dataset, config, lens; sel = indices, type = Float)
     clamp!(land_slope, 0.00001, Inf)
     flow_length = map(get_flow_length, ldd, x_length, y_length)
     flow_width = (x_length .* y_length) ./ flow_length
@@ -474,6 +471,8 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
 
     # read and set states in model object if reinit=false
     if reinit == false
+        state_settings = check_config_states(config, "path_input")
+        state_settings || error("The state section in the TOML file is incomplete")
         nriv = length(network.river.indices)
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
