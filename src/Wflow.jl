@@ -289,8 +289,8 @@ function run!(model::Model; close_files = true)
     @info "Simulation duration: $(canonicalize(now() - runstart_time))"
 
     # write output state netCDF
-    if haskey(config, "state") && haskey(config.state, "path_output")
-        @info "Write output states to netCDF file `$(model.writer.state_nc_path)`."
+    if !isnothing(writer.state_nc_path)
+        @info "Write output states to netCDF file `$(writer.state_nc_path)`."
     end
     write_netcdf_timestep(model, writer.state_dataset, writer.state_parameters)
 

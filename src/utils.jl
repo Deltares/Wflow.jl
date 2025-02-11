@@ -216,16 +216,15 @@ function set_states!(instate_path, model; type = nothing, dimname = nothing)
 end
 
 """
-    ncread(nc, config::Config, parameter::AbstractString; <keyword arguments>)
+    ncread(nc, config::Config, parameter::NamedTuple; <keyword arguments>)
 
 Read a netCDF variable `var` from file `nc`, based on `config` (parsed TOML file) and the
-model `parameter` specified in the TOML configuration file. Supports various keyword
-arguments to get selections of data in desired types, with or without missing values.
+`parameter` specifying the internal standard `name` in the TOML configuration file and a
+`lens` to access the external netCDF variable name in the nested `config` object. Supports
+various keyword arguments to get selections of data in desired types, with or without
+missing values.
 
 # Arguments
-- `alias`=nothing` : An `alias` for the TOML key, by default an `alias` is not expected.
-- `optional=true` : By default specifying a model `parameter` in the TOML file is optional.
-        Set to false if the model `parameter` is required.
 - `sel=nothing`: A selection of indices, such as a `Vector{CartesianIndex}` of active cells,
         to return from the netCDF. By default all cells are returned.
 - `defaults=nothing`: A default value if `var` is not in `nc`. By default it gives an error
@@ -242,8 +241,6 @@ function ncread(
     nc,
     config::Config,
     parameter::NamedTuple;
-    alias = nothing,
-    optional = true,
     sel = nothing,
     defaults = nothing,
     type = nothing,
@@ -251,17 +248,23 @@ function ncread(
     fill = nothing,
     dimname = nothing,
 )
-    # get var (netCDF variable or type Config) from TOML file.
-    # if var has type Config, input parameters can be changed.
-    if isnothing(alias)
-        if optional
-            var = _lens(config, parameter.lens, nothing)
+    # for optional parameters (`lens` set to `nothing`) default values are used.
+    if isnothing(parameter.lens)
+        @info "Set `$(parameter.name)` using default value `$defaults`."
+        @assert !isnothing(defaults)
+        if !isnothing(type)
+            defaults = convert(type, defaults)
+        end
+        if isnothing(dimname)
+            return Base.fill(defaults, length(sel))
         else
-            var = parameter.lens(config)
-            var = var isa AbstractDict ? Config(var, pathof(config)) : var
+            return Base.fill(defaults, (nc.dim[String(dimname)], length(sel)))
         end
     else
-        var = get_alias(config, parameter.lens, alias, nothing)
+        # get var (netCDF variable or type Config) from TOML file.
+        # if var has type Config, input parameters can be changed.
+        var = parameter.lens(config)
+        var = var isa AbstractDict ? Config(var, pathof(config)) : var
     end
 
     # dim `time` is also included in `dim_sel`: this allows for cyclic parameters (read
@@ -274,19 +277,6 @@ function ncread(
         dim_sel = (x = :, y = :, flood_depth = :, time = 1)
     else
         error("Unrecognized dimension name $dimname")
-    end
-
-    if isnothing(var)
-        @info "Set `$(parameter.name)` using default value `$defaults`."
-        @assert !isnothing(defaults)
-        if !isnothing(type)
-            defaults = convert(type, defaults)
-        end
-        if isnothing(dimname)
-            return Base.fill(defaults, length(sel))
-        else
-            return Base.fill(defaults, (nc.dim[String(dimname)], length(sel)))
-        end
     end
 
     # If var has type Config, input parameters can be changed (through scale, offset and
@@ -360,8 +350,44 @@ function ncread(
     return A
 end
 
-lens_input_parameter(p::AbstractString) = (name = p, lens = @optic(_.input.parameters[p]))
-lens_input(p::AbstractString) = (name = p, lens = @optic(_.input[p]))
+"""
+Return `NamedTuple` with internal standard `name` and a `lens` to access the external static
+or cyclic input model parameter name in the nested `config` object (parsed TOML file). By
+default specifying a model parameter is `optional` in the TOML file.
+"""
+function lens_input_parameter(config::Config, p::AbstractString; optional = true)
+    do_cyclic = haskey(config.input, "cyclic")
+    if haskey(config.input.static, p)
+        return (name = p, lens = @optic(_.input.static[p]))
+    elseif do_cyclic && haskey(config.input.cyclic, p)
+        return (name = p, lens = @optic(_.input.cyclic[p]))
+    elseif optional
+        return (name = p, lens = nothing)
+    else
+        error(
+            """Required input static or cyclic model parameter with standard name $p not set 
+            in TOML file (below `[input.static]` or `[input.cyclic]` section)""",
+        )
+    end
+end
+
+"""
+Return `NamedTuple` with internal standard `name` and a `lens` to access the external input
+(not directly part of a model) parameter name in the nested `config` object (parsed TOML
+file). By default specifying a model parameter is `optional` in the TOML file.
+"""
+function lens_input(config::Config, p::AbstractString; optional = true)
+    if haskey(config.input, p)
+        return (name = p, lens = @optic(_.input[p]))
+    elseif optional
+        return (name = p, lens = nothing)
+    else
+        error(
+            """Required input model parameter with standard name $p not set in TOML file 
+            (below `[input]` section)""",
+        )
+    end
+end
 
 """
     set_layerthickness(reference_depth::Real, cum_depth::SVector, thickness::SVector)

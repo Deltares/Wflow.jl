@@ -10,7 +10,7 @@ end
 
 "Initialize glacier model variables"
 function GlacierVariables(dataset, config, indices)
-    lens = lens_input_parameter("glacier_ice__leq-volume")
+    lens = lens_input_parameter(config, "glacier_ice__leq-volume")
     glacier_store = ncread(
         dataset,
         config,
@@ -56,7 +56,7 @@ struct NoGlacierModel{T} <: AbstractGlacierModel{T} end
 
 "Initialize glacier HBV model parameters"
 function GlacierHbvParameters(dataset, config, indices, dt)
-    lens = lens_input_parameter("glacier_ice__melting_temperature_threshold")
+    lens = lens_input_parameter(config, "glacier_ice__melting_temperature_threshold")
     g_ttm = ncread(
         dataset,
         config,
@@ -66,7 +66,7 @@ function GlacierHbvParameters(dataset, config, indices, dt)
         type = Float,
         fill = 0.0,
     )
-    lens = lens_input_parameter("glacier_ice__degree-day_coefficient")
+    lens = lens_input_parameter(config, "glacier_ice__degree-day_coefficient")
     g_cfmax =
         ncread(
             dataset,
@@ -77,8 +77,10 @@ function GlacierHbvParameters(dataset, config, indices, dt)
             type = Float,
             fill = 0.0,
         ) .* (dt / basetimestep)
-    lens =
-        lens_input_parameter("glacier_firn_accumulation__snowpack~dry_leq-depth_fraction")
+    lens = lens_input_parameter(
+        config,
+        "glacier_firn_accumulation__snowpack~dry_leq-depth_fraction",
+    )
     g_sifrac =
         ncread(
             dataset,
@@ -89,7 +91,7 @@ function GlacierHbvParameters(dataset, config, indices, dt)
             type = Float,
             fill = 0.0,
         ) .* (dt / basetimestep)
-    lens = lens_input_parameter("glacier_surface__area_fraction")
+    lens = lens_input_parameter(config, "glacier_surface__area_fraction")
     glacier_frac = ncread(
         dataset,
         config,

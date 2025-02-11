@@ -17,13 +17,13 @@ function LakeParameters(config, dataset, inds_riv, nriv, pits)
     # read only lake data if lakes true
     # allow lakes only in river cells
     # note that these locations are only the lake outlet pixels
-    lens = lens_input("lake_location__count")
-    lakelocs_2d = ncread(dataset, config, lens; optional = false, type = Int, fill = 0)
+    lens = lens_input(config, "lake_location__count"; optional = false)
+    lakelocs_2d = ncread(dataset, config, lens; type = Int, fill = 0)
     lakelocs = lakelocs_2d[inds_riv]
 
     # this holds the same ids as lakelocs, but covers the entire lake
-    lens = lens_input("lakes_area__count")
-    lakecoverage_2d = ncread(dataset, config, lens; optional = false, allow_missing = true)
+    lens = lens_input(config, "lakes_area__count"; optional = false)
+    lakecoverage_2d = ncread(dataset, config, lens; allow_missing = true)
     # for each lake, a list of 2D indices, needed for getting the mean precipitation
     inds_lake_cov = Vector{CartesianIndex{2}}[]
 
@@ -50,79 +50,44 @@ function LakeParameters(config, dataset, inds_riv, nriv, pits)
         end
     end
 
-    lens = lens_input_parameter("lake_surface__area")
-    lakearea = ncread(
-        dataset,
+    lens = lens_input_parameter(config, "lake_surface__area"; optional = false)
+    lakearea = ncread(dataset, config, lens; sel = inds_lake, type = Float, fill = 0)
+    lens = lens_input_parameter(
         config,
-        lens;
+        "lake_water__rating_curve_coefficient";
         optional = false,
-        sel = inds_lake,
-        type = Float,
-        fill = 0,
     )
-    lens = lens_input_parameter("lake_water__rating_curve_coefficient")
-    lake_b = ncread(
-        dataset,
+    lake_b = ncread(dataset, config, lens; sel = inds_lake, type = Float, fill = 0)
+    lens =
+        lens_input_parameter(config, "lake_water__rating_curve_exponent"; optional = false)
+    lake_e = ncread(dataset, config, lens; sel = inds_lake, type = Float, fill = 0)
+    lens = lens_input_parameter(
         config,
-        lens;
+        "lake_water_flow_threshold-level__elevation";
         optional = false,
-        sel = inds_lake,
-        type = Float,
-        fill = 0,
     )
-    lens = lens_input_parameter("lake_water__rating_curve_exponent")
-    lake_e = ncread(
-        dataset,
-        config,
-        lens;
-        optional = false,
-        sel = inds_lake,
-        type = Float,
-        fill = 0,
-    )
-    lens = lens_input_parameter("lake_water_flow_threshold-level__elevation")
-    lake_threshold = ncread(
-        dataset,
-        config,
-        lens;
-        optional = false,
-        sel = inds_lake,
-        type = Float,
-        fill = 0,
-    )
-    lens = lens_input("lake~lower_location__count")
+    lake_threshold = ncread(dataset, config, lens; sel = inds_lake, type = Float, fill = 0)
+    lens = lens_input(config, "lake~lower_location__count")
     linked_lakelocs =
         ncread(dataset, config, lens; sel = inds_lake, defaults = 0, type = Int, fill = 0)
-    lens = lens_input_parameter("lake_water__storage_curve_type_count")
-    lake_storfunc = ncread(
-        dataset,
+    lens = lens_input_parameter(
         config,
-        lens;
+        "lake_water__storage_curve_type_count";
         optional = false,
-        sel = inds_lake,
-        type = Int,
-        fill = 0,
     )
-    lens = lens_input_parameter("lake_water__rating_curve_type_count")
-    lake_outflowfunc = ncread(
-        dataset,
+    lake_storfunc = ncread(dataset, config, lens; sel = inds_lake, type = Int, fill = 0)
+    lens = lens_input_parameter(
         config,
-        lens;
+        "lake_water__rating_curve_type_count";
         optional = false,
-        sel = inds_lake,
-        type = Int,
-        fill = 0,
     )
-    lens = lens_input_parameter("lake_water_level__initial_elevation")
-    lake_waterlevel = ncread(
-        dataset,
+    lake_outflowfunc = ncread(dataset, config, lens; sel = inds_lake, type = Int, fill = 0)
+    lens = lens_input_parameter(
         config,
-        lens;
+        "lake_water_level__initial_elevation";
         optional = false,
-        sel = inds_lake,
-        type = Float,
-        fill = 0,
     )
+    lake_waterlevel = ncread(dataset, config, lens; sel = inds_lake, type = Float, fill = 0)
 
     # for surface water routing lake locations are considered pits in the flow network
     # all upstream flow goes to the river and flows into the lake
