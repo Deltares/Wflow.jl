@@ -40,6 +40,7 @@ end
 function Config(path::AbstractString)
     config = Config(TOML.parsefile(path), path)
     config = optional_keys(config)
+    check_config_states(config)
     return config
 end
 Config(dict::AbstractDict) = Config(dict, nothing)
@@ -963,8 +964,8 @@ function prepare_writer(
     end
 
     # create a separate state output netCDF that will hold the last timestep of all states
-    # but only if config.state.path_output and config.state.variables have been set
-    if check_config_states(config, "path_output")
+    # but only if config.state.path_output has been set
+    if haskey(config, "state") && haskey(config.state, "path_output")
         state_ncnames = check_states(config)
         state_map = out_map(state_ncnames, modelmap)
         nc_state_path = output_path(config, config.state.path_output)
@@ -1658,13 +1659,31 @@ function get_index_dimension(var, config::Config, dim_value)::Int
     return index
 end
 
-"Check state settings in `config` object (parsed TOML file)"
+"Check if state TOML keys are set in `config` object (parsed TOML file)"
 function check_config_states(config::Config, path::AbstractString)
     state_settings =
         haskey(config, "state") &&
         haskey(config.state, path) &&
         haskey(config.state, "variables")
     return state_settings
+end
+
+"""
+Check if required state settings in `config` object (parsed TOML file) are set for reading
+or writing states.
+"""
+function check_config_states(config::Config)
+    reinit = get(config.model, "reinit", true)::Bool
+    if !reinit
+        state_settings = check_config_states(config, "path_input")
+        state_settings ||
+            error("The state section for reading states in the TOML file is incomplete")
+    elseif haskey(config, "state") && haskey(config.state, "path_output")
+        state_settings = check_config_states(config, "path_output")
+        state_settings ||
+            error("The state section for writing states in the TOML file is incomplete")
+    end
+    return nothing
 end
 
 """
