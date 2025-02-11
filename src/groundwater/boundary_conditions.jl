@@ -1,7 +1,11 @@
 function check_flux(flux, aquifer::UnconfinedAquifer, index::Int; dt = 1.0)
     # Limit flux, not smaller than negative flux based on aquifer storage
-    max_flux = aquifer.variables.storage[index] / dt
-    return max(flux, -max_flux)
+    if flux < 0.0
+        max_outflux = -aquifer.variables.storage[index] / dt
+        return max(flux, max_outflux)
+    else
+        return flux
+    end
 end
 
 # Do nothing for a confined aquifer: aquifer can always provide flux
@@ -59,12 +63,14 @@ function flux!(Q, river::River, aquifer; dt = 1.0)
         if stage > head
             cond = river.parameters.infiltration_conductance[i]
             delta_head = min(stage - river.parameters.bottom[i], stage - head)
+            flux = min(cond * delta_head, river.variables.storage[i] / dt)
         else
             cond = river.parameters.exfiltration_conductance[i]
             delta_head = stage - head
+            flux = check_flux(cond * delta_head, aquifer, index; dt)
         end
-        river.variables.flux[i] = check_flux(cond * delta_head, aquifer, index; dt)
-        Q[index] += min(river.variables.flux[i], river.variables.storage[i] / dt)
+        river.variables.flux[i] = flux
+        Q[index] += flux
     end
     return Q
 end
