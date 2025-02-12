@@ -39,13 +39,13 @@ end
 end
 
 function River(dataset, config, indices, index)
-    lens = lens_input_parameter("river_water__infiltration_conductance")
+    lens = lens_input_parameter(config, "river_water__infiltration_conductance")
     infiltration_conductance = ncread(dataset, config, lens; sel = indices, type = Float)
 
-    lens = lens_input_parameter("river_water__exfiltration_conductance")
+    lens = lens_input_parameter(config, "river_water__exfiltration_conductance")
     exfiltration_conductance = ncread(dataset, config, lens; sel = indices, type = Float)
 
-    lens = lens_input_parameter("river_bottom__elevation")
+    lens = lens_input_parameter(config, "river_bottom__elevation")
     bottom = ncread(dataset, config, lens; sel = indices, type = Float)
 
     parameters =
@@ -91,10 +91,10 @@ end
 end
 
 function Drainage(dataset, config, indices, index)
-    lens = lens_input_parameter("land_drain__elevation")
+    lens = lens_input_parameter(config, "land_drain__elevation")
     drain_elevation = ncread(dataset, config, lens; sel = indices, type = Float, fill = mv)
 
-    lens = lens_input_parameter("land_drain__conductance")
+    lens = lens_input_parameter(config, "land_drain__conductance")
     drain_conductance =
         ncread(dataset, config, lens; sel = indices, type = Float, fill = mv)
     elevation = drain_elevation[index]

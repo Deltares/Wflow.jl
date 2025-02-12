@@ -5,9 +5,6 @@ Output data can be written to netCDF or CSV files.
 For configuration files we use TOML.
 =#
 
-#TODO (v1.0): check if mapping of variables (input and output) in TOML file should be
-#simplified. Direct mapping is now used.
-
 """Turn "a.aa.aaa" into (:a, :aa, :aaa)"""
 symbols(s) = Tuple(Symbol(x) for x in split(s, '.'))
 
@@ -57,22 +54,6 @@ function Base.setproperty!(config::Config, f::Symbol, x)
     dict = Dict(config)
     dict[String(f)] = x
     return nothing
-end
-
-"Access nested Config object using a `lens`"
-function _lens(obj::Config, lens::ComposedFunction, default)
-    try
-        l = lens(obj)
-        return l isa AbstractDict ? Config(l, pathof(obj)) : l
-    catch
-        return default
-    end
-end
-
-"Get a value from the Config with either the key or an alias of the key."
-function get_alias(config::Config, key::ComposedFunction, alias::ComposedFunction, default)
-    alias_or_default = _lens(config, alias, default)
-    return _lens(config, key, alias_or_default)
 end
 
 "Get a value from the Config with a key, throwing an error if it is not one of the options."
@@ -344,7 +325,7 @@ monthday_passed(curr, avail) = (curr[1] >= avail[1]) && (curr[2] >= avail[2])
 "Get dynamic and cyclic netCDF input"
 function load_dynamic_input!(model)
     update_forcing!(model)
-    if haskey(model.config.input.dynamic, "cyclic")
+    if haskey(model.config.input, "cyclic")
         update_cyclic!(model)
     end
     return nothing
@@ -430,7 +411,7 @@ function setup_scalar_netcdf(
         attrib = ["units" => time_units, "calendar" => calendar],
     )
     set_extradim_netcdf(ds, extra_dim)
-    for (nc, netcdfvars) in zip(ncvars, config.netcdf.variable)
+    for (nc, netcdfvars) in zip(ncvars, config.output.netcdf_scalar.variable)
         # Delft-FEWS requires the attribute :cf_role = "timeseries_id" when a netCDF file
         # contains more than one location list
         defVar(
@@ -714,11 +695,11 @@ function prepare_reader(config)
     end
 
     # check for cyclic parameters
-    do_cyclic = haskey(config.input.dynamic, "cyclic")
+    do_cyclic = haskey(config.input, "cyclic")
 
     # create map from internal location to netCDF variable name for forcing parameters
     forcing_parameters = Dict{String, NamedTuple}()
-    for par in config.input.dynamic.forcing
+    for par in keys(config.input.forcing)
         ncname, mod = ncvar_name_modifier(param(config.input.forcing, symbols(par)))
         forcing_parameters[par] =
             (name = ncname, scale = mod.scale, offset = mod.offset, value = mod.value)
@@ -734,9 +715,8 @@ function prepare_reader(config)
         cyclic_dataset = NCDataset(cyclic_path)
         cyclic_parameters = Dict{String, NamedTuple}()
         cyclic_times = Dict{String, Vector{Tuple{Int, Int}}}()
-        for par in config.input.dynamic.cyclic
-            #fields = standard_name_map[par]
-            ncname, mod = ncvar_name_modifier(param(config.input.parameters, par))
+        for par in keys(config.input.cyclic)
+            ncname, mod = ncvar_name_modifier(param(config.input.cyclic, par))
             i = findfirst(x -> startswith(x, "time"), dimnames(cyclic_dataset[ncname]))
             dimname = dimnames(cyclic_dataset[ncname])[i]
             cyclic_nc_times = collect(cyclic_dataset[dimname])
@@ -774,15 +754,8 @@ end
 
 "Get a Vector of all unique location ids from a 2D map"
 function locations_map(ds, mapname, config)
-    lens = lens_input(mapname)
-    map_2d = ncread(
-        ds,
-        config,
-        lens;
-        optional = false,
-        type = Union{Int, Missing},
-        allow_missing = true,
-    )
+    lens = lens_input(config, mapname; optional = false)
+    map_2d = ncread(ds, config, lens; type = Union{Int, Missing}, allow_missing = true)
     ids = unique(skipmissing(map_2d))
     return ids
 end
@@ -950,13 +923,13 @@ function prepare_writer(
     time_units = get(config.time, "time_units", CFTime.DEFAULT_TIME_UNITS)
 
     # create an output netCDF that will hold all timesteps of selected parameters for grid
-    # data but only if config.output.path has been set
-    if haskey(config, "output") && haskey(config.output, "path")
-        nc_path = output_path(config, config.output.path)
-        deflatelevel = get(config.output, "compressionlevel", 0)::Int
+    # data
+    if check_config_output(config, "netcdf_grid", "variables")
+        nc_path = output_path(config, config.output.netcdf_grid.path)
+        deflatelevel = get(config.output.netcdf_grid, "compressionlevel", 0)::Int
         @info "Create an output netCDF file `$nc_path` for grid data, using compression level `$deflatelevel`."
         # create a flat mapping from internal parameter locations to netCDF variable names
-        output_ncnames = ncnames(config.output.variables)
+        output_ncnames = ncnames(config.output.netcdf_grid.variables)
         # fill the output_map by mapping parameter netCDF names to arrays
         output_map = out_map(output_ncnames, modelmap)
         ds = setup_grid_netcdf(
@@ -977,8 +950,8 @@ function prepare_writer(
     end
 
     # create a separate state output netCDF that will hold the last timestep of all states
-    # but only if config.state.path_output has been set
-    if haskey(config, "state") && haskey(config.state, "path_output")
+    # but only if config.state.path_output and config.state.variables have been set
+    if check_config_states(config, "path_output")
         state_ncnames = check_states(config)
         state_map = out_map(state_ncnames, modelmap)
         nc_state_path = output_path(config, config.state.path_output)
@@ -1001,13 +974,14 @@ function prepare_writer(
     end
 
     # create an output netCDF that will hold all timesteps of selected parameters for scalar
-    # data, but only if config.netcdf.variable has been set.
-    if haskey(config, "netcdf") && haskey(config.netcdf, "variable")
-        nc_scalar_path = output_path(config, config.netcdf.path)
+    # data, but only if config.netcdf.path and config.netcdf.variable have been set.
+    if check_config_output(config, "netcdf_scalar", "variable")
+        nc_scalar_path = output_path(config, config.output.netcdf_scalar.path)
         @info "Create an output netCDF file `$nc_scalar_path` for scalar data."
         # get netCDF info for scalar data (variable name, locationset (dim) and
         # location ids)
-        ncvars_dims = nc_variables_dims(config.netcdf.variable, nc_static, config)
+        ncvars_dims =
+            nc_variables_dims(config.output.netcdf_scalar.variable, nc_static, config)
         ds_scalar = setup_scalar_netcdf(
             nc_scalar_path,
             ncvars_dims,
@@ -1020,7 +994,7 @@ function prepare_writer(
         # create a vector of (parameter, reducer) named tuples which will be used to
         # retrieve and reduce data during a model run
         nc_scalar = []
-        for var in config.netcdf.variable
+        for var in config.output.netcdf_scalar.variable
             parameter = var["parameter"]
             reducer_func =
                 get_reducer_func(var, rev_inds, x_nc, y_nc, config, nc_static, "netCDF")
@@ -1033,22 +1007,22 @@ function prepare_writer(
         nc_scalar_path = nothing
     end
 
-    if haskey(config, "csv") && haskey(config.csv, "column")
+    if check_config_output(config, "csv", "column")
         # open CSV file and write header
-        csv_path = output_path(config, config.csv.path)
+        csv_path = output_path(config, config.output.csv.path)
         @info "Create an output CSV file `$csv_path` for scalar data."
         # create directory if needed
         mkpath(dirname(csv_path))
         csv_io = open(csv_path, "w")
         print(csv_io, "time,")
-        header = csv_header(config.csv.column, nc_static, config)
+        header = csv_header(config.output.csv.column, nc_static, config)
         println(csv_io, join(header, ','))
         flush(csv_io)
 
         # create a vector of (parameter, reducer) named tuples which will be used to
         # retrieve and reduce the CSV data during a model run
         csv_cols = []
-        for col in config.csv.column
+        for col in config.output.csv.column
             parameter = col["parameter"]
             reducer_func =
                 get_reducer_func(col, rev_inds, x_nc, y_nc, config, nc_static, "CSV")
@@ -1084,7 +1058,7 @@ function write_netcdf_timestep(model, dataset)
     (; writer, land, clock, config) = model
 
     time_index = add_time(dataset, clock.time)
-    for (nt, nc) in zip(writer.nc_scalar, config.netcdf.variable)
+    for (nt, nc) in zip(writer.nc_scalar, config.output.netcdf_scalar.variable)
         A = if haskey(standard_name_map(land), nt.parameter)
             lens = standard_name_map(land)[nt.parameter]
             lens(model)
@@ -1214,7 +1188,7 @@ function close_files(model; delete_output::Bool = false)
     (; reader, writer, config) = model
 
     close(reader.dataset)
-    if haskey(config.input.dynamic, "cyclic")
+    if haskey(config.input, "cyclic")
         close(reader.cyclic_dataset)
     end
     writer.dataset === nothing || close(writer.dataset)
@@ -1267,15 +1241,9 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset, fileformat)
         # and makes sense in the case of a gauge map
         reducer_name = get(col, "reducer", "only")
         f = reducerfunction(reducer_name)
-        lens = lens_input(mapname)
-        map_2d = ncread(
-            dataset,
-            config,
-            lens;
-            optional = false,
-            type = Union{Int, Missing},
-            allow_missing = true,
-        )
+        lens = lens_input(config, mapname; optional = false)
+        map_2d =
+            ncread(dataset, config, lens; type = Union{Int, Missing}, allow_missing = true)
         @info "Adding scalar output for a map with a reducer function." fileformat param mapname reducer_name
         ids = unique(skipmissing(map_2d))
         # from id to list of internal indices
@@ -1340,7 +1308,7 @@ function write_csv_row(model)
     isnothing(writer.csv_path) && return nothing
     io = writer.csv_io
     print(io, string(clock.time))
-    for (nt, col) in zip(writer.csv_cols, config.csv.column)
+    for (nt, col) in zip(writer.csv_cols, config.output.csv.column)
         A = if haskey(standard_name_map(land), nt.parameter)
             lens = standard_name_map(land)[nt.parameter]
             lens(model)
@@ -1675,4 +1643,30 @@ function get_index_dimension(var, config::Config, dim_value)::Int
         error("Unrecognized or missing dimension name to index $(var)")
     end
     return index
+end
+
+"Check state settings in `config` object (parsed TOML file)"
+function check_config_states(config::Config, path::AbstractString)
+    state_settings =
+        haskey(config, "state") &&
+        haskey(config.state, path) &&
+        haskey(config.state, "variables")
+    return state_settings
+end
+
+"""
+Check output settings for file description (e.g. file format and data type), file path and
+TOML `key`(e.g. containing variable name) in `config` object (parsed TOML file).
+"""
+function check_config_output(
+    config::Config,
+    file_description::AbstractString,
+    key::AbstractString,
+)
+    output_settings =
+        haskey(config, "output") &&
+        haskey(config.output, file_description) &&
+        haskey(config.output[file_description], "path") &&
+        haskey(config.output[file_description], key)
+    return output_settings
 end
