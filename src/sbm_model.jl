@@ -471,8 +471,6 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
 
     # read and set states in model object if reinit=false
     if reinit == false
-        state_settings = check_config_states(config, "path_input")
-        state_settings || error("The state section in the TOML file is incomplete")
         nriv = length(network.river.indices)
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
