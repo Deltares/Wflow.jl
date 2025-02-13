@@ -306,6 +306,7 @@ window.Quarto = {
 <li>Added downloading of testdata to Dockerfile, to ensure an image was able to build.</li>
 <li>The reservoir (<code>reservoir_index_f</code>) and lake (<code>lake_index_f</code>) indices as part of <code>network.river</code> were not correct. These were mapped to their own index in the <code>SimpleReservoir</code> and <code>Lake</code> struct, and not to the corresponding river index. This resulted in incorrect surface water abstractions from reservoir and lake volumes, and surface water abstractions were set at zero at the wrong river locations.</li>
 <li>Wflow ZMQ server: allow JSON reading and writing of <code>NaN</code> and <code>Inf</code> values to avoid a JSON spec error. For example, during initialization of a wflow model, some (diagnostic) model variables are initialized with <code>NaN</code> values.</li>
+<li>Limit flux from <code>River</code> boundary of <code>GroundwaterFlow</code> to unconfined aquifer based on available river storage (from river flow routing).</li>
 </ul>
 </section>
 <section id="changed" class="level3">
