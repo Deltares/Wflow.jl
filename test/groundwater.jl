@@ -300,13 +300,18 @@ end
                 exfiltration_conductance = [200.0, 200.0],
                 bottom = [1.0, 1.0],
             )
-            variables = Wflow.RiverVariables(; stage = [2.0, 2.0], flux = [0.0, 0.0])
+            variables = Wflow.RiverVariables(;
+                stage = [2.0, 2.0],
+                storage = [20.0, 20.0],
+                flux = [0.0, 0.0],
+            )
             river = Wflow.River(; parameters, variables, index = [1, 3])
             Q = zeros(3)
             Wflow.flux!(Q, river, conf_aqf)
-            # infiltration, below bottom, flux is (stage - bottom) * inf_cond
-            @test Q[1] == (2.0 - 1.0) * 100.0
-            # drainage, flux is () * exf_cond
+            # infiltration, below bottom, flux is (stage - bottom) * inf_cond, limited by
+            # river storage (20.0)
+            @test Q[1] == 20.0
+            # drainage, flux is (stage - head) * exf_cond
             @test Q[3] == (2.0 - 20.0) * 200.0
         end
 
