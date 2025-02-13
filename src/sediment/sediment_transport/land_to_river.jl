@@ -1,9 +1,9 @@
 abstract type AbstractSedimentToRiverModel{T} end
 
 "Struct to store total sediment reaching the river model variables"
-@get_units @grid_loc @with_kw struct SedimentToRiverVariables{T}
-    # Total sediment reaching the river
-    amount::Vector{T} | "t dt-1"
+@grid_loc @with_kw struct SedimentToRiverVariables{T}
+    # Total sediment rate to the river [t dt-1]
+    amount::Vector{T}
 end
 
 "Initialize total sediment reaching the river model variables"
@@ -12,9 +12,9 @@ function SedimentToRiverVariables(n; amount::Vector{T} = fill(mv, n)) where {T}
 end
 
 "Struct to store total sediment reaching the river model boundary conditions"
-@get_units @grid_loc @with_kw struct SedimentToRiverBC{T}
-    # Deposited material
-    deposition::Vector{T} | "t dt-1"
+@grid_loc @with_kw struct SedimentToRiverBC{T}
+    # Deposition material rate [t dt-1]
+    deposition::Vector{T}
 end
 
 "Initialize total sediment reaching the river model boundary conditions"
@@ -56,19 +56,19 @@ function update!(model::SedimentToRiverModel, rivers)
 end
 
 "Struct to store differentiated sediment reaching the river model variables"
-@get_units @grid_loc @with_kw struct SedimentToRiverDifferentiationVariables{T}
-    # Total sediment flux
-    amount::Vector{T} | "t dt-1"
-    # Clay flux
-    clay::Vector{T} | "t dt-1"
-    # Silt
-    silt::Vector{T} | "t dt-1"
-    # Sand flux
-    sand::Vector{T} | "t dt-1"
-    # Small aggregates flux
-    sagg::Vector{T} | "t dt-1"
-    # Large aggregates flux
-    lagg::Vector{T} | "t dt-1"
+@grid_loc @with_kw struct SedimentToRiverDifferentiationVariables{T}
+    # Total sediment rate [t dt-1]
+    amount::Vector{T}
+    # Clay rate [t dt-1]
+    clay::Vector{T}
+    # Silt rate [t dt-1]
+    silt::Vector{T}
+    # Sand rate [t dt-1]
+    sand::Vector{T}
+    # Small aggregates rate [t dt-1]
+    sagg::Vector{T}
+    # Large aggregates rate [t dt-1]
+    lagg::Vector{T}
 end
 
 "Initialize differentiated sediment reaching the river model variables"
@@ -92,17 +92,17 @@ function SedimentToRiverDifferentiationVariables(
 end
 
 "Struct to store differentiated sediment reaching the river model boundary conditions"
-@get_units @grid_loc @with_kw struct SedimentToRiverDifferentiationBC{T}
-    # Deposited clay
-    deposition_clay::Vector{T} | "t dt-1"
-    # Deposited silt
-    deposition_silt::Vector{T} | "t dt-1"
-    # Deposited sand
-    deposition_sand::Vector{T} | "t dt-1"
-    # Deposited small aggregates
-    deposition_sagg::Vector{T} | "t dt-1"
-    # Deposited large aggregates
-    deposition_lagg::Vector{T} | "t dt-1"
+@grid_loc @with_kw struct SedimentToRiverDifferentiationBC{T}
+    # Clay deposition rate [t dt-1]
+    deposition_clay::Vector{T}
+    # Silt deposition rate [t dt-1]
+    deposition_silt::Vector{T}
+    # Sand deposition rate [t dt-1]
+    deposition_sand::Vector{T}
+    # Small aggregates deposition rate [t dt-1]
+    deposition_sagg::Vector{T}
+    # Large aggregates deposition rate [t dt-1]
+    deposition_lagg::Vector{T}
 end
 
 "Initialize differentiated sediment reaching the river model boundary conditions"

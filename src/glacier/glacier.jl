@@ -1,9 +1,9 @@
 abstract type AbstractGlacierModel{T} end
 
 "Struct for storing glacier model variables"
-@get_units @grid_loc @with_kw struct GlacierVariables{T}
+@grid_loc @with_kw struct GlacierVariables{T}
     # Water within the glacier [mm]
-    glacier_store::Vector{T} | "mm"
+    glacier_store::Vector{T}
     # Glacier melt [mm Δt⁻¹]  
     glacier_melt::Vector{T}
 end
@@ -26,21 +26,21 @@ function GlacierVariables(dataset, config, indices)
 end
 
 "Struct for storing boundary condition (snow storage from a snow model) of a glacier model"
-@get_units @grid_loc @with_kw struct SnowStateBC{T}
+@grid_loc @with_kw struct SnowStateBC{T}
     # Snow storage [mm]
-    snow_storage::Vector{T} | "mm"
+    snow_storage::Vector{T}
 end
 
 "Struct for storing glacier HBV model parameters"
-@get_units @grid_loc @with_kw struct GlacierHbvParameters{T}
+@grid_loc @with_kw struct GlacierHbvParameters{T}
     # Threshold temperature for glacier melt [ᵒC]
-    g_ttm::Vector{T} | "ᵒC"
+    g_ttm::Vector{T}
     # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹] for glacier
-    g_cfmax::Vector{T} | "mm ᵒC-1 dt-1"
+    g_cfmax::Vector{T}
     # Fraction of the snowpack on top of the glacier converted into ice [Δt⁻¹]
-    g_sifrac::Vector{T} | "dt-1"
+    g_sifrac::Vector{T}
     # Fraction covered by a glacier [-]
-    glacier_frac::Vector{T} | "-"
+    glacier_frac::Vector{T}
     # Maximum snow to glacier conversion rate [mm Δt⁻¹]
     max_snow_to_glacier::T
 end

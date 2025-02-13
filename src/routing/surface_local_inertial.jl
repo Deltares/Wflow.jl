@@ -1,23 +1,23 @@
 "Struct for storing local inertial river flow model parameters"
-@get_units @grid_loc @with_kw struct LocalInertialRiverFlowParameters{T}
-    n::Int                                              # number of cells [-]
-    ne::Int                                             # number of edges [-]
-    active_n::Vector{Int} | "-"                         # active nodes [-]
-    active_e::Vector{Int} | "-" | "edge"                # active edges [-]
-    g::T                                                # acceleration due to gravity [m s⁻²]
-    froude_limit::Bool                                  # if true a check is performed if froude number > 1.0 (algorithm is modified) [-]
-    h_thresh::T                                         # depth threshold for calculating flow [m]
-    zb::Vector{T} | "m"                                 # river bed elevation
-    zb_max::Vector{T} | "m"                             # maximum channel bed elevation
-    bankfull_storage::Vector{T} | "m3"                  # bankfull storage
-    bankfull_depth::Vector{T} | "m"                     # bankfull depth
-    mannings_n_sq::Vector{T} | "(s m-1/3)2" | "edge"    # Manning's roughness squared at edge
-    mannings_n::Vector{T} | "s m-1/3"                   # Manning's roughness at node
-    flow_length::Vector{T} | "m"                        # flow (river) length
-    flow_length_at_edge::Vector{T} | "m" | "edge"       # flow (river) length at edge
-    flow_width::Vector{T} | "m"                         # flow (river) width
-    flow_width_at_edge::Vector{T} | "m" | "edge"        # flow (river) width at edge
-    waterbody::Vector{Bool} | "-"                       # water body cells (reservoir or lake)
+@grid_loc @with_kw struct LocalInertialRiverFlowParameters{T}
+    n::Int                                  # number of cells [-]
+    ne::Int                                 # number of edges [-]
+    active_n::Vector{Int}                   # active nodes [-]
+    active_e::Vector{Int} | "edge"          # active edges [-]
+    g::T                                    # acceleration due to gravity [m s⁻²]
+    froude_limit::Bool                      # if true a check is performed if froude number > 1.0 (algorithm is modified) [-]
+    h_thresh::T                             # depth threshold for calculating flow [m]
+    zb::Vector{T}                           # river bed elevation [m]
+    zb_max::Vector{T}                       # maximum channel bed elevation [m]
+    bankfull_storage::Vector{T}             # bankfull storage [m³]
+    bankfull_depth::Vector{T}               # bankfull depth [m]
+    mannings_n_sq::Vector{T} | "edge"       # Manning's roughness squared at edge [(s m-1/3)2]
+    mannings_n::Vector{T}                   # Manning's roughness [s m-1/3] at node
+    flow_length::Vector{T} | "m"            # flow (river) length [m]
+    flow_length_at_edge::Vector{T} | "edge" # flow (river) length at edge [m]
+    flow_width::Vector{T}                   # flow (river) width [m]
+    flow_width_at_edge::Vector{T} | "edge"  # flow (river) width at edge [m]
+    waterbody::Vector{Bool}                 # water body cells (reservoir or lake)
 end
 
 "Initialize local inertial river flow model parameters"
@@ -107,22 +107,22 @@ function LocalInertialRiverFlowParameters(
 end
 
 "Struct for storing local inertial river flow model variables"
-@get_units @grid_loc @with_kw struct LocalInertialRiverFlowVariables{T}
-    q::Vector{T} | "m3 s-1" | "edge"                    # river discharge (subgrid channel)
-    q0::Vector{T} | "m3 s-1" | "edge"                   # river discharge (subgrid channel) at previous time step
-    q_av::Vector{T} | "m3 s-1" | "edge"                 # average river channel (+ floodplain) discharge [m³ s⁻¹] (model timestep Δt)
-    q_channel_av::Vector{T} | "m3 s-1"                  # average river channel discharge [m³ s⁻¹] (for model timestep Δt)
-    h::Vector{T} | "m"                                  # water depth
-    zs_max::Vector{T} | "m" | "edge"                    # maximum water elevation at edge
-    zs_src::Vector{T} | "m"                             # water elevation of source node of edge
-    zs_dst::Vector{T} | "m"                             # water elevation of downstream node of edge
-    hf::Vector{T} | "m" | "edge"                        # water depth at edge
-    h_av::Vector{T} | "m"                               # average water depth for model timestep Δt
-    a::Vector{T} | "m2" | "edge"                        # flow area at edge
-    r::Vector{T} | "m" | "edge"                         # wetted perimeter at edge
-    storage::Vector{T} | "m3"                           # river storage
-    storage_av::Vector{T} | "m3"                        # average river storage for model timestep Δt
-    error::Vector{T} | "m3"                             # error storage
+@grid_loc @with_kw struct LocalInertialRiverFlowVariables{T}
+    q::Vector{T} | "edge"               # river discharge (subgrid channel) [m³ s⁻¹]
+    q0::Vector{T} | "edge"              # river discharge (subgrid channel) at previous time step [m³ s⁻¹]
+    q_av::Vector{T} | "edge"            # average river channel (+ floodplain) discharge [m³ s⁻¹] (model timestep Δt)
+    q_channel_av::Vector{T} | "edge"    # average river channel discharge [m³ s⁻¹] (for model timestep Δt)
+    h::Vector{T}                        # water depth [m]
+    zs_max::Vector{T} | "edge"          # maximum water elevation at edge [m]
+    zs_src::Vector{T}                   # water elevation of source node of edge [m]
+    zs_dst::Vector{T}                   # water elevation of downstream node of edge [m]
+    hf::Vector{T} | "edge"              # water depth at edge [m]
+    h_av::Vector{T}                     # average water depth for model timestep Δt [m]
+    a::Vector{T} | "edge"               # flow area at edge [m²]
+    r::Vector{T} | "edge"               # wetted perimeter at edge [m]
+    storage::Vector{T}                  # river storage [m³]
+    storage_av::Vector{T}               # average river storage for model timestep Δt [m³]
+    error::Vector{T}                    # error storage [m³]
 end
 
 "Initialize shallow water river flow model variables"
@@ -549,16 +549,16 @@ function update!(
 end
 
 "Struct to store local inertial overland flow model variables"
-@get_units @grid_loc @with_kw struct LocalInertialOverlandFlowVariables{T}
-    qy0::Vector{T} | "m3 s-1" | "edge"      # flow in y direction at previous time step
-    qx0::Vector{T} | "m3 s-1" | "edge"      # flow in x direction at previous time step
-    qx::Vector{T} | "m3 s-1" | "edge"       # flow in x direction
-    qy::Vector{T} | "m3 s-1" | "edge"       # flow in y direction
-    storage::Vector{T} | "m3"               # total storage of cell (including river storage for river cells)
-    storage_av::Vector{T} | "m3"            # average total storage of cell (including river storage for river cells) (model timestep Δt)
-    error::Vector{T} | "m3"                 # error storage
-    h::Vector{T} | "m"                      # water depth of cell (for river cells the reference is the river bed elevation `zb`)
-    h_av::Vector{T} | "m"                   # average water depth (for river cells the reference is the river bed elevation `zb`) (model timestep Δt)
+@grid_loc @with_kw struct LocalInertialOverlandFlowVariables{T}
+    qy0::Vector{T} | "edge"     # flow in y direction at previous time step [m³ s⁻¹]
+    qx0::Vector{T} | "edge"     # flow in x direction at previous time step [m³ s⁻¹]
+    qx::Vector{T} | "edge"      # flow in x direction [m³ s⁻¹]
+    qy::Vector{T} | "edge"      # flow in y direction [m³ s⁻¹]
+    storage::Vector{T}          # total storage of cell [m³] (including river storage for river cells) 
+    storage_av::Vector{T}       # average total storage of cell [m³] (including river storage for river cells) (model timestep Δt)
+    error::Vector{T}            # error storage [m³]
+    h::Vector{T}                # water depth of cell [m] (for river cells the reference is the river bed elevation `zb`)
+    h_av::Vector{T}             # average water depth [m] (for river cells the reference is the river bed elevation `zb`) (model timestep Δt)
 end
 
 "Initialize local inertial overland flow model variables"
@@ -578,21 +578,21 @@ function LocalInertialOverlandFlowVariables(n)
 end
 
 "Struct to store local inertial overland flow model parameters"
-@get_units @grid_loc @with_kw struct LocalInertialOverlandFlowParameters{T}
-    n::Int                                              # number of cells [-]
-    x_length::Vector{T} | "m"                           # cell length x direction [m]
-    y_length::Vector{T} | "m"                           # cell length y direction [m]
-    xwidth::Vector{T} | "m" | "edge"                    # effective flow width x direction (floodplain) [m]
-    ywidth::Vector{T} | "m" | "edge"                    # effective flow width y direction (floodplain) [m]
-    g::T                                                # acceleration due to gravity [m s⁻²]
-    theta::T                                            # weighting factor (de Almeida et al., 2012) [-]
-    h_thresh::T                                         # depth threshold for calculating flow [m]
-    zx_max::Vector{T} | "m" | "edge"                    # maximum cell elevation (x direction)
-    zy_max::Vector{T} | "m" | "edge"                    # maximum cell elevation (y direction)
-    mannings_n_sq::Vector{T} | "(s m-1/3)2" | "edge"    # Manning's roughness squared
-    z::Vector{T} | "m"                                  # elevation of cell
-    froude_limit::Bool                                  # if true a check is performed if froude number > 1.0 (algorithm is modified) [-]
-    rivercells::Vector{Bool} | "-"                      # river cells
+@grid_loc @with_kw struct LocalInertialOverlandFlowParameters{T}
+    n::Int                              # number of cells [-]
+    x_length::Vector{T}                 # cell length x direction [m]
+    y_length::Vector{T}                 # cell length y direction [m]
+    xwidth::Vector{T} | "edge"          # effective flow width x direction (floodplain) [m]
+    ywidth::Vector{T} | "edge"          # effective flow width y direction (floodplain) [m]
+    g::T                                # acceleration due to gravity [m s⁻²]
+    theta::T                            # weighting factor (de Almeida et al., 2012) [-]
+    h_thresh::T                         # depth threshold for calculating flow [m]
+    zx_max::Vector{T} | "edge"          # maximum cell elevation [m] (x direction)
+    zy_max::Vector{T} | "edge"          # maximum cell elevation [m] (y direction)
+    mannings_n_sq::Vector{T} | "edge"   # Manning's roughness squared [(s m-1/3)2]
+    z::Vector{T}                        # elevation [m] of cell
+    froude_limit::Bool                  # if true a check is performed if froude number > 1.0 (algorithm is modified) [-]
+    rivercells::Vector{Bool}            # river cells [-]
 end
 
 "Initialize shallow water overland flow model parameters"
@@ -696,9 +696,9 @@ function LocalInertialOverlandFlowParameters(
 end
 
 "Struct to store local inertial overland flow model boundary conditions"
-@get_units @grid_loc @with_kw struct LocalInertialOverlandFlowBC{T}
-    runoff::Vector{T} | "m3 s-1"               # runoff from hydrological model
-    inflow_waterbody::Vector{T} | "m3 s-1"     # inflow to water body from hydrological model
+@grid_loc @with_kw struct LocalInertialOverlandFlowBC{T}
+    runoff::Vector{T}           # runoff from hydrological model [m³ s⁻¹]
+    inflow_waterbody::Vector{T} # inflow to water body from hydrological model [m³ s⁻¹]
 end
 
 "Struct to store shallow water overland flow model boundary conditions"
@@ -1078,12 +1078,12 @@ Floodplain `storage` is a function of `depth` (flood depth intervals). Based on 
 cumulative floodplain `storage` a floodplain profile as a function of `flood_depth` is
 derived with floodplain area `a` (cumulative) and wetted perimeter radius `p` (cumulative).
 """
-@get_units @grid_loc @with_kw struct FloodPlainProfile{T, N}
-    depth::Vector{T} | "m"                     # Flood depth
-    storage::Array{T, 2} | "m3"                # Flood storage (cumulative)
-    width::Array{T, 2} | "m"                   # Flood width
-    a::Array{T, 2} | "m2"                      # Flow area (cumulative)
-    p::Array{T, 2} | "m"                       # Wetted perimeter (cumulative)
+@grid_loc @with_kw struct FloodPlainProfile{T, N}
+    depth::Vector{T}        # Flood depth [m]
+    storage::Array{T, 2}    # Flood storage (cumulative) [m³]
+    width::Array{T, 2}      # Flood width [m]
+    a::Array{T, 2}          # Flow area (cumulative) [m²]
+    p::Array{T, 2}          # Wetted perimeter (cumulative) [m]
 end
 
 "Initialize floodplain profile `FloodPlainProfile`"
@@ -1171,11 +1171,11 @@ function FloodPlainProfile(dataset, config, indices; river_width, river_length, 
 end
 
 "Struct to store floodplain flow model parameters"
-@get_units @grid_loc @with_kw struct FloodPlainParameters{T, P}
-    profile::P                                          # floodplain profile
-    mannings_n::Vector{T} | "s m-1/3"                   # manning's roughness
-    mannings_n_sq::Vector{T} | "(s m-1/3)2" | "edge"    # manning's roughness squared
-    zb_max::Vector{T} | "m" | "edge"                    # maximum bankfull elevation (edge)
+@grid_loc @with_kw struct FloodPlainParameters{T, P}
+    profile::P                          # floodplain profile
+    mannings_n::Vector{T}               # manning's roughness [s m-1/3]
+    mannings_n_sq::Vector{T} | "edge"   # manning's roughness squared [(s m-1/3)2]
+    zb_max::Vector{T} | "edge"          # maximum bankfull elevation [m] (edge)
 end
 
 "Initialize floodplain flow model parameters"
@@ -1216,19 +1216,19 @@ function FloodPlainParameters(
 end
 
 "Struct to store floodplain flow model variables"
-@get_units @grid_loc @with_kw struct FloodPlainVariables{T}
-    storage::Vector{T} | "m3"                           # storage
-    storage_av::Vector{T} | "m3"                        # average storage for model timestep Δt
-    h::Vector{T} | "m"                                  # water depth
-    h_av::Vector{T} | "m"                               # average water depth for model timestep Δt
-    error::Vector{T} | "m3"                             # error storage
-    a::Vector{T} | "m2" | "edge"                        # flow area
-    r::Vector{T} | "m" | "edge"                         # hydraulic radius
-    hf::Vector{T} | "m" | "edge"                        # water depth at edge
-    q0::Vector{T} | "m3 s-1" | "edge"                   # discharge at previous time step
-    q::Vector{T} | "m3 s-1" | "edge"                    # discharge
-    q_av::Vector{T} | "m" | "edge"                      # average river discharge for model timestep Δt
-    hf_index::Vector{Int} | "-" | "edge"                # index with `hf` above depth threshold
+@grid_loc @with_kw struct FloodPlainVariables{T}
+    storage::Vector{T}              # storage [m³]
+    storage_av::Vector{T}           # average storage for model timestep Δt [m³]
+    h::Vector{T}                    # water depth [m]
+    h_av::Vector{T}                 # average water depth [m] for model timestep Δt
+    error::Vector{T}                # error storage [m³]
+    a::Vector{T} | "edge"           # flow area [m²]
+    r::Vector{T} | "edge"           # hydraulic radius [m]
+    hf::Vector{T} | "edge"          # water depth at edge [m]
+    q0::Vector{T} | "edge"          # discharge at previous time step
+    q::Vector{T} | "edge"           # discharge  [m³ s⁻¹]
+    q_av::Vector{T} | "edge"        # average river discharge  [m³ s⁻¹] for model timestep Δt
+    hf_index::Vector{Int} | "edge"  # index with `hf` [-] above depth threshold
 end
 
 "Initialize floodplain flow model variables"

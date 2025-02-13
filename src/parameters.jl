@@ -1,21 +1,21 @@
 "Struct to store (shared) vegetation parameters"
-@get_units @grid_loc @with_kw struct VegetationParameters{T}
+@grid_loc @with_kw struct VegetationParameters{T}
     # Leaf area index [m² m⁻²]
-    leaf_area_index::Union{Vector{T}, Nothing} | "m2 m-2"
+    leaf_area_index::Union{Vector{T}, Nothing}
     # Storage woody part of vegetation [mm]
-    storage_wood::Union{Vector{T}, Nothing} | "mm"
+    storage_wood::Union{Vector{T}, Nothing}
     # Extinction coefficient [-] (to calculate canopy gap fraction)
-    kext::Union{Vector{T}, Nothing} | "-"
+    kext::Union{Vector{T}, Nothing}
     # Specific leaf storage [mm]
-    storage_specific_leaf::Union{Vector{T}, Nothing} | "mm"
+    storage_specific_leaf::Union{Vector{T}, Nothing}
     # Canopy gap fraction [-]
-    canopygapfraction::Vector{T} | "-"
+    canopygapfraction::Vector{T}
     # Maximum canopy storage [mm] 
-    cmax::Vector{T} | "mm"
+    cmax::Vector{T}
     # Rooting depth [mm]
-    rootingdepth::Vector{T} | "mm"
+    rootingdepth::Vector{T}
     # Crop coefficient Kc [-]
-    kc::Vector{T} | "-"
+    kc::Vector{T}
 end
 
 "Initialize (shared) vegetation parameters"
@@ -77,13 +77,13 @@ function VegetationParameters(dataset, config, indices)
 end
 
 "Struct to store land geometry parameters"
-@get_units @grid_loc @with_kw struct LandGeometry{T}
-    # cell area [m^2]
-    area::Vector{T} | "m^2"
+@grid_loc @with_kw struct LandGeometry{T}
+    # cell area [m²]
+    area::Vector{T}
     # drain width [m]
-    width::Vector{T} | "m"
-    # drain slope
-    slope::Vector{T} | "-"
+    width::Vector{T}
+    # drain slope [-]
+    slope::Vector{T}
 end
 
 "Initialize land geometry parameters"
@@ -110,13 +110,13 @@ function LandGeometry(nc, config, inds)
 end
 
 "Struct to store river geometry parameters"
-@get_units @grid_loc @with_kw struct RiverGeometry{T}
+@grid_loc @with_kw struct RiverGeometry{T}
     # river width [m]
-    width::Vector{T} | "m"
-    # river length
-    length::Vector{T} | "m"
-    # slope
-    slope::Vector{T} | "-"
+    width::Vector{T}
+    # river length [m]
+    length::Vector{T}
+    # slope [-]
+    slope::Vector{T}
 end
 
 "Initialize river geometry parameters"

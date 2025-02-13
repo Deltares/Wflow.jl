@@ -46,7 +46,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
                 model,
                 "routing.river_flow.boundary_conditions.reservoir.boundary_conditions.inflow",
             ) == "$Float"
-            @test BMI.get_var_units(model, "land.soil.parameters.theta_s") == "-"
+            @test BMI.get_var_units(model, "river_water__volume_flow_rate") == "m3 s-1"
             @test BMI.get_var_itemsize(model, "routing.subsurface_flow.variables.ssf") ==
                   sizeof(Float)
             @test BMI.get_var_nbytes(model, "routing.river_flow.variables.q") ==

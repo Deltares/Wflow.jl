@@ -180,9 +180,10 @@ function BMI.get_var_type(model::Model, name::String)
 end
 
 function BMI.get_var_units(model::Model, name::String)
-    key = symbols(first(split(name, "[")))
-    if exchange(param(model, key))
-        get_units(param(model, key[1:(end - 1)]), key[end])
+    (; land) = model
+    if haskey(standard_name_map(land), name)
+        nt = standard_name_map(land)[name]
+        return nt.unit
     else
         error("$name not listed as variable for BMI exchange")
     end

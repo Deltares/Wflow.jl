@@ -84,19 +84,19 @@ NOTA BENE: **specific** storage is per m of aquifer (conf. specific weight).
 **Storativity** or (**storage coefficient**) is for the entire aquifer (conf.
 transmissivity).
 """
-@get_units @grid_loc @with_kw struct ConfinedAquiferParameters{T}
-    k::Vector{T} | "m d-1"  # horizontal conductivity [m d⁻¹]
-    top::Vector{T} | "m" # top of groundwater layer [m]
-    bottom::Vector{T} | "m" # bottom of groundwater layer
-    area::Vector{T} | "m2" # area of cell
-    specific_storage::Vector{T} | "m m-1 m-1" # [m m⁻¹ m⁻¹]
-    storativity::Vector{T} | "m m-1" # [m m⁻¹]
+@grid_loc @with_kw struct ConfinedAquiferParameters{T}
+    k::Vector{T}                    # horizontal conductivity [m d⁻¹]
+    top::Vector{T}                  # top of groundwater layer [m]
+    bottom::Vector{T}               # bottom of groundwater layer [m]
+    area::Vector{T}                 # area of cell [m²]
+    specific_storage::Vector{T}     # [m m⁻¹ m⁻¹]
+    storativity::Vector{T}          # [m m⁻¹]
 end
 
-@get_units @grid_loc @with_kw struct ConfinedAquiferVariables{T}
-    head::Vector{T} | "m"  # hydraulic head [m]
-    conductance::Vector{T} | "m2 d-1" # Confined aquifer conductance is constant
-    storage::Vector{T} | "m3" # total storage of water that can be released
+@grid_loc @with_kw struct ConfinedAquiferVariables{T}
+    head::Vector{T}             # hydraulic head [m]
+    conductance::Vector{T}      # Confined aquifer conductance is constant [m² d⁻¹]
+    storage::Vector{T}          # total storage of water that can be released [m³]
 end
 
 @with_kw struct ConfinedAquifer{T} <: Aquifer
@@ -115,13 +115,13 @@ aquifer will yield when all water drains and the pore volume is filled by air
 instead. Specific yield will vary roughly between 0.05 (clay) and 0.45 (peat)
 (Johnson, 1967).
 """
-@get_units @grid_loc @with_kw struct UnconfinedAquiferParameters{T}
-    k::Vector{T} | "m d-1"  # reference horizontal conductivity [m d⁻¹]
-    top::Vector{T} | "m" # top of groundwater layer [m]
-    bottom::Vector{T} | "m" # bottom of groundwater layer
-    area::Vector{T} | "m2"
-    specific_yield::Vector{T} | "m m-1" # [m m⁻¹]
-    f::Vector{T} | "-" # factor controlling the reduction of reference horizontal conductivity
+@grid_loc @with_kw struct UnconfinedAquiferParameters{T}
+    k::Vector{T}                # reference horizontal conductivity [m d⁻¹]
+    top::Vector{T}              # top of groundwater layer [m]
+    bottom::Vector{T}           # bottom of groundwater layer [m]
+    area::Vector{T}             # area of cell [m²]
+    specific_yield::Vector{T}   # [m m⁻¹]
+    f::Vector{T}                # factor controlling the reduction of reference horizontal conductivity [-]
     # Unconfined aquifer conductance is computed with degree of saturation (only when
     # conductivity_profile is set to "exponential")
 end
@@ -147,10 +147,10 @@ function UnconfinedAquiferParameters(dataset, config, indices, top, bottom, area
     return parameters
 end
 
-@get_units @grid_loc @with_kw struct UnconfinedAquiferVariables{T}
-    head::Vector{T} | "m"  # hydraulic head [m]
-    conductance::Vector{T} | "m2 d-1" # conductance 
-    storage::Vector{T} | "m3" # total storage of water that can be released
+@grid_loc @with_kw struct UnconfinedAquiferVariables{T}
+    head::Vector{T}         # hydraulic head [m]
+    conductance::Vector{T}  # conductance [m² d⁻¹]
+    storage::Vector{T}      # total storage of water that can be released [m³]
 end
 
 @with_kw struct UnconfinedAquifer{T} <: Aquifer
@@ -362,13 +362,13 @@ function flux!(Q, aquifer, connectivity, conductivity_profile)
     return Q
 end
 
-@get_units @grid_loc @with_kw struct ConstantHeadVariables{T}
-    head::Vector{T} | "m"
+@grid_loc @with_kw struct ConstantHeadVariables{T}
+    head::Vector{T} # [m]
 end
 
-@get_units @grid_loc @with_kw struct ConstantHead{T}
+@grid_loc @with_kw struct ConstantHead{T}
     variables::ConstantHeadVariables{T}
-    index::Vector{Int} | "-"
+    index::Vector{Int} # [-]
 end
 
 function ConstantHead(dataset, config, indices)

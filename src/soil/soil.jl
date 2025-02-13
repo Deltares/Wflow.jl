@@ -1,21 +1,21 @@
 abstract type AbstractSoilModel{T} end
 
 "Struct for storing SBM soil model variables"
-@get_units @grid_loc @with_kw struct SbmSoilVariables{T, N}
+@grid_loc @with_kw struct SbmSoilVariables{T, N}
     # Calculated soil water pressure head h3 of the root water uptake reduction function (Feddes) [cm]
-    h3::Vector{T} | "cm"
+    h3::Vector{T}
     # Unsaturated store capacity [mm]
-    ustorecapacity::Vector{T} | "mm"
+    ustorecapacity::Vector{T}
     # Amount of water in the unsaturated store, per layer [mm]
-    ustorelayerdepth::Vector{SVector{N, T}} | "mm"
+    ustorelayerdepth::Vector{SVector{N, T}}
     # Thickness of unsaturated zone, per layer [mm]
-    ustorelayerthickness::Vector{SVector{N, T}} | "mm"
+    ustorelayerthickness::Vector{SVector{N, T}}
     # Saturated store [mm]
-    satwaterdepth::Vector{T} | "mm"
+    satwaterdepth::Vector{T}
     # Pseudo-water table depth [mm] (top of the saturated zone)
-    zi::Vector{T} | "mm"
+    zi::Vector{T}
     # Number of unsaturated soil layers
-    n_unsatlayers::Vector{Int} | "-"
+    n_unsatlayers::Vector{Int}
     # Transpiration [mm Δt⁻¹]
     transpiration::Vector{T}
     # Actual evaporation from unsaturated store [mm Δt⁻¹]
@@ -55,17 +55,17 @@ abstract type AbstractSoilModel{T} end
     # Net surface runoff (surface runoff - actual open water evaporation) [mm Δt⁻¹]
     net_runoff::Vector{T}
     # Volumetric water content [-] per soil layer (including theta_r and saturated zone)
-    vwc::Vector{SVector{N, T}} | "-"
+    vwc::Vector{SVector{N, T}}
     # Volumetric water content [%] per soil layer (including theta_r and saturated zone)
-    vwc_perc::Vector{SVector{N, T}} | "%"
+    vwc_perc::Vector{SVector{N, T}}
     # Root water storage [mm] in unsaturated and saturated zone (excluding theta_r)
-    rootstore::Vector{T} | "mm"
+    rootstore::Vector{T}
     # Volumetric water content [-] in root zone (including theta_r and saturated zone)
-    vwc_root::Vector{T} | "-"
+    vwc_root::Vector{T}
     # Volumetric water content [%] in root zone (including theta_r and saturated zone)
-    vwc_percroot::Vector{T} | "%"
+    vwc_percroot::Vector{T}
     # Amount of available water in the unsaturated zone [mm]
-    ustoredepth::Vector{T} | "mm"
+    ustoredepth::Vector{T}
     # Downward flux from unsaturated to saturated zone [mm Δt⁻¹]
     transfer::Vector{T}
     # Net recharge to saturated store [mm Δt⁻¹]
@@ -73,11 +73,11 @@ abstract type AbstractSoilModel{T} end
     # Actual leakage from saturated store [mm Δt⁻¹]
     actleakage::Vector{T}
     # Total water storage (excluding floodplain volume, lakes and reservoirs) [mm]
-    total_storage::Vector{T} | "mm"
+    total_storage::Vector{T}
     # Top soil temperature [ᵒC]
-    tsoil::Vector{T} | "ᵒC"
+    tsoil::Vector{T}
     # Soil infiltration reduction factor (when soil is frozen) [-]
-    f_infiltration_reduction::Vector{T} | "-"
+    f_infiltration_reduction::Vector{T}
 end
 
 "Initialize SBM soil model variables"
@@ -143,7 +143,7 @@ function SbmSoilVariables(n, parameters)
 end
 
 "Struct for storing SBM soil model boundary conditions"
-@get_units @grid_loc @with_kw struct SbmSoilBC{T}
+@grid_loc @with_kw struct SbmSoilBC{T}
     # Water flux at the soil surface [mm Δt⁻¹]
     water_flux_surface::Vector{T}
     # Potential transpiration rate [mm Δt⁻¹]
@@ -167,36 +167,36 @@ function SbmSoilBC(
 end
 
 "Exponential depth profile of vertical hydraulic conductivity at the soil surface"
-@get_units @grid_loc struct KvExponential{T}
+@grid_loc struct KvExponential{T}
     # Vertical hydraulic conductivity [mm Δt⁻¹] at soil surface
     kv_0::Vector{T}
     # A scaling parameter [mm⁻¹] (controls exponential decline of kv_0)
-    f::Vector{T} | "mm-1"
+    f::Vector{T}
 end
 
 "Exponential constant depth profile of vertical hydraulic conductivity"
-@get_units @grid_loc struct KvExponentialConstant{T}
+@grid_loc struct KvExponentialConstant{T}
     exponential::KvExponential{T}
     # Depth [mm] from soil surface for which exponential decline of kv_0 is valid
-    z_exp::Vector{T} | "mm"
+    z_exp::Vector{T}
 end
 
 "Layered depth profile of vertical hydraulic conductivity"
-@get_units @grid_loc struct KvLayered{T, N}
+@grid_loc struct KvLayered{T, N}
     # Vertical hydraulic conductivity [mm Δt⁻¹] per soil layer
     kv::Vector{SVector{N, T}}
 end
 
 "Layered exponential depth profile of vertical hydraulic conductivity"
-@get_units @grid_loc struct KvLayeredExponential{T, N}
+@grid_loc struct KvLayeredExponential{T, N}
     # A scaling parameter [mm⁻¹] (controls exponential decline of kv_0)
-    f::Vector{T} | "mm-1"
+    f::Vector{T}
     # Vertical hydraulic conductivity [mm Δt⁻¹] per soil layer
     kv::Vector{SVector{N, T}}
-    # Number of soil layers with vertical hydraulic conductivity value `kv`
-    nlayers_kv::Vector{Int} | "-"
+    # Number of soil layers [-] with vertical hydraulic conductivity value `kv`
+    nlayers_kv::Vector{Int}
     # Depth [mm] from soil surface for which layered profile is valid
-    z_layered::Vector{T} | "mm"
+    z_layered::Vector{T}
 end
 
 "Initialize SBM soil model hydraulic conductivity depth profile"
@@ -278,27 +278,27 @@ function sbm_kv_profiles(
 end
 
 "Struct for storing SBM soil model parameters"
-@get_units @grid_loc @with_kw struct SbmSoilParameters{T, N, M, Kv}
+@grid_loc @with_kw struct SbmSoilParameters{T, N, M, Kv}
     # Maximum number of soil layers [-]
     maxlayers::Int
-    # Number of soil layers
-    nlayers::Vector{Int} | "-"
+    # Number of soil layers [-]
+    nlayers::Vector{Int}
     # Saturated water content (porosity) [-]
-    theta_s::Vector{T} | "-"
+    theta_s::Vector{T}
     # Residual water content [-]
-    theta_r::Vector{T} | "-"
+    theta_r::Vector{T}
     # Soilwater capacity [mm]
-    soilwatercapacity::Vector{T} | "mm"
+    soilwatercapacity::Vector{T}
     # Muliplication factor [-] applied to kv_z (vertical flow)
-    kvfrac::Vector{SVector{N, T}} | "-"
+    kvfrac::Vector{SVector{N, T}}
     # Air entry pressure [cm] of soil (Brooks-Corey)
-    hb::Vector{T} | "cm"
+    hb::Vector{T}
     # Soil thickness [mm]
-    soilthickness::Vector{T} | "mm"
+    soilthickness::Vector{T}
     # Thickness of soil layers [mm]
-    act_thickl::Vector{SVector{N, T}} | "mm"
+    act_thickl::Vector{SVector{N, T}}
     # Cumulative sum of soil layers [mm], starting at soil surface (0)
-    sumlayers::Vector{SVector{M, T}} | "mm"
+    sumlayers::Vector{SVector{M, T}}
     # Infiltration capacity of the compacted areas [mm Δt⁻¹]
     infiltcappath::Vector{T}
     # Soil infiltration capacity [mm Δt⁻¹]
@@ -306,35 +306,35 @@ end
     # Maximum leakage [mm Δt⁻¹] from saturated zone
     maxleakage::Vector{T}
     # Parameter [mm] controlling capillary rise
-    cap_hmax::Vector{T} | "mm"
+    cap_hmax::Vector{T}
     # Coefficient [-] controlling capillary rise
-    cap_n::Vector{T} | "-"
+    cap_n::Vector{T}
     # Brooks-Corey power coefﬁcient [-] for each soil layer
-    c::Vector{SVector{N, T}} | "-"
+    c::Vector{SVector{N, T}}
     # Soil temperature smooth factor [-]
-    w_soil::Vector{T} | "-"
+    w_soil::Vector{T}
     # Controls soil infiltration reduction factor when soil is frozen [-]
-    cf_soil::Vector{T} | "-"
+    cf_soil::Vector{T}
     # Fraction of compacted area  [-]
-    pathfrac::Vector{T} | "-"
+    pathfrac::Vector{T}
     # Controls how roots are linked to water table [-]
-    rootdistpar::Vector{T} | "-"
+    rootdistpar::Vector{T}
     # Fraction of the root length density in each soil layer [-]
-    rootfraction::Vector{SVector{N, T}} | "-"
+    rootfraction::Vector{SVector{N, T}}
     # Soil water pressure head h1 of the root water uptake reduction function (Feddes) [cm]
-    h1::Vector{T} | "cm"
+    h1::Vector{T}
     # Soil water pressure head h2 of the root water uptake reduction function (Feddes) [cm]
-    h2::Vector{T} | "cm"
+    h2::Vector{T}
     # Soil water pressure head h3_high of the root water uptake reduction function (Feddes) [cm]
-    h3_high::Vector{T} | "cm"
+    h3_high::Vector{T}
     # Soil water pressure head h3_low of the root water uptake reduction function (Feddes) [cm]
-    h3_low::Vector{T} | "cm"
+    h3_low::Vector{T}
     # Soil water pressure head h4 of the root water uptake reduction function (Feddes) [cm]
-    h4::Vector{T} | "cm"
+    h4::Vector{T}
     # Root water uptake reduction at soil water pressure head h1 (0.0 or 1.0) [-]
-    alpha_h1::Vector{T} | "-"
+    alpha_h1::Vector{T}
     # Soil fraction [-]
-    soil_fraction::Vector{T} | "-"
+    soil_fraction::Vector{T}
     # Vertical hydraulic conductivity profile type
     kv_profile::Kv
     # Vegetation parameter set

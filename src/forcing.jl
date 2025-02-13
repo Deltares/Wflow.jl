@@ -1,11 +1,11 @@
 "Struct to store atmospheric forcing variables"
-@get_units @grid_loc @with_kw struct AtmosphericForcing{T}
+@grid_loc @with_kw struct AtmosphericForcing{T}
     # Precipitation [mm Δt⁻¹]
     precipitation::Vector{T}
     # Potential reference evapotranspiration [mm Δt⁻¹]
     potential_evaporation::Vector{T}
     # Temperature [ᵒC]
-    temperature::Vector{T} | "°C"
+    temperature::Vector{T}
 end
 
 "Initialize atmospheric forcing"
@@ -19,17 +19,17 @@ function AtmosphericForcing(
 end
 
 "Struct to store hydrological forcing variables"
-@get_units @grid_loc @with_kw struct HydrologicalForcing{T}
+@grid_loc @with_kw struct HydrologicalForcing{T}
     # Rainfall interception by the vegetation [mm]
-    interception::Vector{T} | "mm"
+    interception::Vector{T}
     # Overland flow depth [m]
-    waterlevel_land::Vector{T} | "m"
+    waterlevel_land::Vector{T}
     # Overland flow discharge [m3 s-1]
-    q_land::Vector{T} | "m3 s-1"
+    q_land::Vector{T}
     # River depth [m]
-    waterlevel_river::Vector{T} | "m"
+    waterlevel_river::Vector{T}
     # River discharge [m3 s-1]
-    q_river::Vector{T} | "m3 s-1"
+    q_river::Vector{T}
 end
 
 "Initialize hydrological forcing"

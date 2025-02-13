@@ -1,33 +1,33 @@
 abstract type AbstractSedimentRiverTransportModel{T} end
 
 "Struct to store river sediment transport model variables"
-@get_units @grid_loc @with_kw struct SedimentRiverTransportVariables{T}
-    # Sediment flux [ton]
-    amount::Vector{T} | "t dt-1"
-    clay::Vector{T} | "t dt-1"
-    silt::Vector{T} | "t dt-1"
-    sand::Vector{T} | "t dt-1"
-    sagg::Vector{T} | "t dt-1"
-    lagg::Vector{T} | "t dt-1"
-    gravel::Vector{T} | "t dt-1"
-    # Total Sediment deposition [ton]
-    deposition::Vector{T} | "t dt-1"
-    # Total sediment erosion (from store + direct river bed/bank) [ton]
-    erosion::Vector{T} | "t dt-1"
-    # Sediment / particle left in the cell [ton] - states
-    leftover_clay::Vector{T} | "t dt-1"
-    leftover_silt::Vector{T} | "t dt-1"
-    leftover_sand::Vector{T} | "t dt-1"
-    leftover_sagg::Vector{T} | "t dt-1"
-    leftover_lagg::Vector{T} | "t dt-1"
-    leftover_gravel::Vector{T} | "t dt-1"
-    # Sediment / particle stored on the river bed after deposition [ton] -states
-    store_clay::Vector{T} | "t dt-1"
-    store_silt::Vector{T} | "t dt-1"
-    store_sand::Vector{T} | "t dt-1"
-    store_sagg::Vector{T} | "t dt-1"
-    store_lagg::Vector{T} | "t dt-1"
-    store_gravel::Vector{T} | "t dt-1"
+@grid_loc @with_kw struct SedimentRiverTransportVariables{T}
+    # Sediment flux [t dt-1]
+    amount::Vector{T}
+    clay::Vector{T}
+    silt::Vector{T}
+    sand::Vector{T}
+    sagg::Vector{T}
+    lagg::Vector{T}
+    gravel::Vector{T}
+    # Total Sediment deposition rate [t dt-1]
+    deposition::Vector{T}
+    # Total sediment erosion rate (from store + direct river bed/bank) [t dt-1]
+    erosion::Vector{T}
+    # Sediment / particle left in the cell [t] - states
+    leftover_clay::Vector{T}
+    leftover_silt::Vector{T}
+    leftover_sand::Vector{T}
+    leftover_sagg::Vector{T}
+    leftover_lagg::Vector{T}
+    leftover_gravel::Vector{T}
+    # Sediment / particle stored on the river bed after deposition [t] -states
+    store_clay::Vector{T}
+    store_silt::Vector{T}
+    store_sand::Vector{T}
+    store_sagg::Vector{T}
+    store_lagg::Vector{T}
+    store_gravel::Vector{T}
 end
 
 "Initialize river sediment transport model variables"
@@ -81,22 +81,22 @@ function SedimentRiverTransportVariables(
 end
 
 "Struct to store river sediment transport model boundary conditions"
-@get_units @grid_loc @with_kw struct SedimentRiverTransportBC{T}
-    # Waterlevel
-    waterlevel::Vector{T} | "t dt-1"
-    # Discharge
-    q::Vector{T} | "m3 s-1"
-    # Transport capacity of the flow
-    transport_capacity::Vector{T} | "t dt-1"
-    # Sediment input from land erosion
-    erosion_land_clay::Vector{T} | "t dt-1"
-    erosion_land_silt::Vector{T} | "t dt-1"
-    erosion_land_sand::Vector{T} | "t dt-1"
-    erosion_land_sagg::Vector{T} | "t dt-1"
-    erosion_land_lagg::Vector{T} | "t dt-1"
-    # Sediment available from direct river erosion
-    potential_erosion_river_bed::Vector{T} | "t dt-1"
-    potential_erosion_river_bank::Vector{T} | "t dt-1"
+@grid_loc @with_kw struct SedimentRiverTransportBC{T}
+    # Waterlevel [m]
+    waterlevel::Vector{T}
+    # Discharge [m³ s⁻¹]
+    q::Vector{T}
+    # Transport capacity of the flow [t dt-1]
+    transport_capacity::Vector{T}
+    # Sediment input rate from land erosion [t dt-1]
+    erosion_land_clay::Vector{T}
+    erosion_land_silt::Vector{T}
+    erosion_land_sand::Vector{T}
+    erosion_land_sagg::Vector{T}
+    erosion_land_lagg::Vector{T}
+    # Sediment erosion rate from direct river erosion [t dt-1]
+    potential_erosion_river_bed::Vector{T}
+    potential_erosion_river_bank::Vector{T}
 end
 
 "Initialize river sediment transport model boundary conditions"
@@ -128,33 +128,33 @@ function SedimentRiverTransportBC(
 end
 
 "Struct to store river sediment transport model parameters"
-@get_units @grid_loc @with_kw struct SedimentRiverTransportParameters{T}
-    # River bed/bank content clay
-    clay_fraction::Vector{T} | "-"
-    # River bed/bank content silt
-    silt_fraction::Vector{T} | "-"
-    # River bed/bank content sand
-    sand_fraction::Vector{T} | "-"
-    # River bed/bank content gravel
-    gravel_fraction::Vector{T} | "-"
-    # Clay mean diameter
-    dm_clay::Vector{T} | "µm"
-    # Silt mean diameter
-    dm_silt::Vector{T} | "µm"
-    # Sand mean diameter
-    dm_sand::Vector{T} | "µm"
-    # Small aggregates mean diameter
-    dm_sagg::Vector{T} | "µm"
-    # Large aggregates mean diameter
-    dm_lagg::Vector{T} | "µm"
-    # Gravel mean diameter
-    dm_gravel::Vector{T} | "µm"
-    # Waterbodies outlets
-    waterbodies_locs::Vector{Bool} | "-"
-    # Waterbodies area
-    waterbodies_area::Vector{T} | "m2"
-    # Waterbodies trapping efficiency
-    waterbodies_trapping_efficiency::Vector{T} | "-"
+@grid_loc @with_kw struct SedimentRiverTransportParameters{T}
+    # River bed/bank content clay [-]
+    clay_fraction::Vector{T}
+    # River bed/bank content silt [-]
+    silt_fraction::Vector{T}
+    # River bed/bank content sand [-]
+    sand_fraction::Vector{T}
+    # River bed/bank content gravel [-]
+    gravel_fraction::Vector{T}
+    # Clay mean diameter [µm]
+    dm_clay::Vector{T}
+    # Silt mean diameter [µm]
+    dm_silt::Vector{T}
+    # Sand mean diameter [µm]
+    dm_sand::Vector{T}
+    # Small aggregates mean diameter [µm]
+    dm_sagg::Vector{T}
+    # Large aggregates mean diameter [µm]
+    dm_lagg::Vector{T}
+    # Gravel mean diameter [µm]
+    dm_gravel::Vector{T}
+    # Waterbodies outlets [-]
+    waterbodies_locs::Vector{Bool}
+    # Waterbodies area [m²]
+    waterbodies_area::Vector{T}
+    # Waterbodies trapping efficiency [-]
+    waterbodies_trapping_efficiency::Vector{T}
 end
 
 "Initialize river sediment transport model parameters"
@@ -702,13 +702,13 @@ end
 abstract type AbstractSedimentConcentrationsRiverModel{T} end
 
 "Struct to store river sediment concentrations model variables"
-@get_units @grid_loc @with_kw struct SedimentConcentrationsRiverVariables{T}
-    # Total sediment concentration in the river
-    total::Vector{T} | "g m-3"
-    # suspended sediemnt concentration in the river
-    suspended::Vector{T} | "g m-3"
-    # bed load sediment concentration in the river
-    bed::Vector{T} | "g m-3"
+@grid_loc @with_kw struct SedimentConcentrationsRiverVariables{T}
+    # Total sediment concentration in the river [g m-3]
+    total::Vector{T}
+    # suspended sediemnt concentration in the river [g m-3]
+    suspended::Vector{T}
+    # bed load sediment concentration in the river [g m-3]
+    bed::Vector{T}
 end
 
 "Initialize river sediment concentrations model variables"
@@ -726,22 +726,22 @@ function SedimentConcentrationsRiverVariables(
 end
 
 "Struct to store river sediment concentrations model boundary conditions"
-@get_units @grid_loc @with_kw struct SedimentConcentrationsRiverBC{T}
-    # Discharge
-    q::Vector{T} | "m3 s-1"
-    waterlevel::Vector{T} | "m"
-    # Clay load
-    clay::Vector{T} | "g m-3"
-    # Silt load
-    silt::Vector{T} | "g m-3"
-    # Sand load
-    sand::Vector{T} | "g m-3"
-    # Small aggregates load
-    sagg::Vector{T} | "g m-3"
-    # Large aggregates load
-    lagg::Vector{T} | "g m-3"
-    # Gravel load
-    gravel::Vector{T} | "g m-3"
+@grid_loc @with_kw struct SedimentConcentrationsRiverBC{T}
+    # Discharge [m³ s⁻¹]
+    q::Vector{T}
+    waterlevel::Vector{T} # [m]
+    # Clay load [g m-3]
+    clay::Vector{T}
+    # Silt load [g m-3]
+    silt::Vector{T}
+    # Sand load [g m-3]
+    sand::Vector{T}
+    # Small aggregates load [g m-3]
+    sagg::Vector{T}
+    # Large aggregates load [g m-3]
+    lagg::Vector{T}
+    # Gravel load [g m-3]
+    gravel::Vector{T}
 end
 
 "Initialize river sediment concentrations model boundary conditions"
@@ -769,19 +769,19 @@ function SedimentConcentrationsRiverBC(
 end
 
 "Struct to store river sediment concentrations model parameters"
-@get_units @grid_loc @with_kw struct SedimentConcentrationsRiverParameters{T}
-    # Clay mean diameter
-    dm_clay::Vector{T} | "µm"
-    # Silt mean diameter
-    dm_silt::Vector{T} | "µm"
-    # Sand mean diameter
-    dm_sand::Vector{T} | "µm"
-    # Small aggregates mean diameter
-    dm_sagg::Vector{T} | "µm"
-    # Large aggregates mean diameter
-    dm_lagg::Vector{T} | "µm"
-    # Gravel mean diameter
-    dm_gravel::Vector{T} | "µm"
+@grid_loc @with_kw struct SedimentConcentrationsRiverParameters{T}
+    # Clay mean diameter [µm]
+    dm_clay::Vector{T}
+    # Silt mean diameter [µm]
+    dm_silt::Vector{T}
+    # Sand mean diameter [µm]
+    dm_sand::Vector{T}
+    # Small aggregates mean diameter [µm]
+    dm_sagg::Vector{T}
+    # Large aggregates mean diameter [µm]
+    dm_lagg::Vector{T}
+    # Gravel mean diameter [µm]
+    dm_gravel::Vector{T}
 end
 
 "Initialize river sediment concentrations model parameters"

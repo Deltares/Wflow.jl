@@ -1,13 +1,12 @@
 "Sediment transport in overland flow model"
-@get_units @grid_loc @with_kw struct OverlandFlowSediment{TT, SF, TR} <:
-                                     AbstractOverlandFlowModel
+@grid_loc @with_kw struct OverlandFlowSediment{TT, SF, TR} <: AbstractOverlandFlowModel
     hydrological_forcing::HydrologicalForcing
     geometry::LandGeometry
     transport_capacity::TT
     sediment_flux::SF
     to_river::TR
-    waterbodies::Vector{Bool} | "-"
-    rivers::Vector{Bool} | "-"
+    waterbodies::Vector{Bool}
+    rivers::Vector{Bool}
 end
 
 "Initialize the overland flow sediment transport model"
@@ -79,15 +78,14 @@ end
 
 ### River ###
 "Sediment transport in river model"
-@get_units @grid_loc @with_kw struct RiverSediment{TTR, ER, SFR, CR} <:
-                                     AbstractRiverFlowModel
+@grid_loc @with_kw struct RiverSediment{TTR, ER, SFR, CR} <: AbstractRiverFlowModel
     hydrological_forcing::HydrologicalForcing
     geometry::RiverGeometry
     transport_capacity::TTR
     potential_erosion::ER
     sediment_flux::SFR
     concentrations::CR
-    waterbodies::Vector{Bool} | "-"
+    waterbodies::Vector{Bool}
 end
 
 "Initialize the river sediment transport model"

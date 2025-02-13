@@ -1,15 +1,15 @@
 "Struct for storing lake model parameters"
-@get_units @grid_loc @with_kw struct LakeParameters{T}
-    lowerlake_ind::Vector{Int} | "-"                # Index of lower lake (linked lakes)
-    area::Vector{T} | "m2"                          # lake area [m²]
-    maxstorage::Vector{Union{T, Missing}} | "m3"    # lake maximum storage from rating curve 1 [m³]
-    threshold::Vector{T} | "m"                      # water level threshold H₀ [m] below that level outflow is zero
-    storfunc::Vector{Int} | "-"                     # type of lake storage curve, 1: S = AH, 2: S = f(H) from lake data and interpolation
-    outflowfunc::Vector{Int} | "-"                  # type of lake rating curve, 1: Q = f(H) from lake data and interpolation, 2: General Q = b(H - H₀)ᵉ, 3: Case of Puls Approach Q = b(H - H₀)²
-    b::Vector{T} | "m3/2 s-1 (if e=3/2)"            # rating curve coefficient
-    e::Vector{T} | "-"                              # rating curve exponent
-    sh::Vector{Union{SH, Missing}}                  # data for storage curve
-    hq::Vector{Union{HQ, Missing}}                  # data for rating curve    
+@grid_loc @with_kw struct LakeParameters{T}
+    lowerlake_ind::Vector{Int}                  # Index of lower lake (linked lakes) [-]
+    area::Vector{T}                             # lake area [m²]
+    maxstorage::Vector{Union{T, Missing}}       # lake maximum storage from rating curve 1 [m³]
+    threshold::Vector{T}                        # water level threshold H₀ [m] below that level outflow is zero
+    storfunc::Vector{Int}                       # type of lake storage curve, 1: S = AH, 2: S = f(H) from lake data and interpolation
+    outflowfunc::Vector{Int}                    # type of lake rating curve, 1: Q = f(H) from lake data and interpolation, 2: General Q = b(H - H₀)ᵉ, 3: Case of Puls Approach Q = b(H - H₀)²
+    b::Vector{T}                                # rating curve coefficient [m3/2 s-1] (if e=3/2)
+    e::Vector{T}                                # rating curve exponent [-]
+    sh::Vector{Union{SH, Missing}}              # data for storage curve
+    hq::Vector{Union{HQ, Missing}}              # data for rating curve    
 end
 
 "Initialize lake model parameters"
@@ -156,14 +156,14 @@ function LakeParameters(config, dataset, inds_riv, nriv, pits)
 end
 
 "Struct for storing Lake model parameters"
-@get_units @grid_loc @with_kw struct LakeVariables{T}
-    waterlevel::Vector{T} | "m"                 # waterlevel H [m] of lake
-    waterlevel_av::Vector{T} | "m"              # average waterlevel H [m] of lake for model timestep Δt
-    storage::Vector{T} | "m3"                   # storage lake [m³]
-    storage_av::Vector{T} | "m3"                # average storage lake for model timestep Δt [m³]
-    outflow::Vector{T} | "m3 s-1"               # outflow of lake outlet [m³ s⁻¹]
-    outflow_av::Vector{T} | "m3 s-1"            # average outflow lake [m³ s⁻¹] for model timestep Δt (including flow from lower to upper lake)
-    actevap::Vector{T}                          # average actual evapotranspiration for lake area [mm Δt⁻¹] 
+@grid_loc @with_kw struct LakeVariables{T}
+    waterlevel::Vector{T}       # waterlevel H [m] of lake
+    waterlevel_av::Vector{T}    # average waterlevel H [m] of lake for model timestep Δt
+    storage::Vector{T}          # storage lake [m³]
+    storage_av::Vector{T}       # average storage lake for model timestep Δt [m³]
+    outflow::Vector{T}          # outflow of lake outlet [m³ s⁻¹]
+    outflow_av::Vector{T}       # average outflow lake [m³ s⁻¹] for model timestep Δt (including flow from lower to upper lake)
+    actevap::Vector{T}          # average actual evapotranspiration for lake area [mm Δt⁻¹] 
 end
 
 "Initialize lake model variables"
@@ -182,10 +182,10 @@ function LakeVariables(n, lake_waterlevel)
 end
 
 "Struct for storing lake model boundary conditions"
-@get_units @grid_loc @with_kw struct LakeBC{T}
-    inflow::Vector{T} | "m3 s-1"                # inflow to the lake [m³ s⁻¹] for model timestep Δt
-    precipitation::Vector{T}                    # average precipitation for lake area [mm Δt⁻¹]
-    evaporation::Vector{T}                      # average potential evaporation for lake area [mm Δt⁻¹]
+@grid_loc @with_kw struct LakeBC{T}
+    inflow::Vector{T}           # inflow to the lake [m³ s⁻¹] for model timestep Δt
+    precipitation::Vector{T}    # average precipitation for lake area [mm Δt⁻¹]
+    evaporation::Vector{T}      # average potential evaporation for lake area [mm Δt⁻¹]
 end
 
 "Initialize lake model boundary conditions"

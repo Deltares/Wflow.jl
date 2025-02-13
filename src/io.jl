@@ -215,7 +215,7 @@ function load_fixed_forcing!(model)
     for (par, ncvar) in forcing_parameters
         if ncvar.name === nothing
             val = ncvar.value * ncvar.scale + ncvar.offset
-            lens = standard_name_map(land)[par]
+            lens = standard_name_map(land)[par].lens
             param_vector = lens(model)
             param_vector .= val
             # set fixed precipitation and evaporation over the lakes and reservoirs and put
@@ -292,7 +292,7 @@ function update_forcing!(model)
                 end
             end
         end
-        lens = standard_name_map(land)[par]
+        lens = standard_name_map(land)[par].lens
         param_vector = lens(model)
         sel = active_indices(network, par)
         data_sel = data[sel]
@@ -349,7 +349,7 @@ function update_cyclic!(model)
                 error("Could not find applicable cyclic timestep for $month_day")
             # load from netCDF into the model according to the mapping
             data = get_at(cyclic_dataset, ncvar.name, i)
-            lens = standard_name_map(land)[par]
+            lens = standard_name_map(land)[par].lens
             param_vector = lens(model)
             sel = active_indices(network, par)
             param_vector .= data[sel]
@@ -422,7 +422,7 @@ function setup_scalar_netcdf(
             attrib = ["cf_role" => "timeseries_id"],
         )
         v = if haskey(standard_name_map(land), nc.par)
-            lens = standard_name_map(land)[nc.par]
+            lens = standard_name_map(land)[nc.par].lens
             lens(modelmap)
         else
             param(modelmap, nc.par)
@@ -883,7 +883,7 @@ function out_map(ncnames_dict, modelmap)
     (; land) = modelmap
     for (par, ncname) in ncnames_dict
         A = if haskey(standard_name_map(land), par)
-            lens = standard_name_map(land)[par]
+            lens = standard_name_map(land)[par].lens
             lens(modelmap)
         else
             param(modelmap, par)
@@ -1060,7 +1060,7 @@ function write_netcdf_timestep(model, dataset)
     time_index = add_time(dataset, clock.time)
     for (nt, nc) in zip(writer.nc_scalar, config.output.netcdf_scalar.variable)
         A = if haskey(standard_name_map(land), nt.parameter)
-            lens = standard_name_map(land)[nt.parameter]
+            lens = standard_name_map(land)[nt.parameter].lens
             lens(model)
         else
             param(model, nt.parameter)
@@ -1310,7 +1310,7 @@ function write_csv_row(model)
     print(io, string(clock.time))
     for (nt, col) in zip(writer.csv_cols, config.output.csv.column)
         A = if haskey(standard_name_map(land), nt.parameter)
-            lens = standard_name_map(land)[nt.parameter]
+            lens = standard_name_map(land)[nt.parameter].lens
             lens(model)
         else
             param(model, nt.parameter)

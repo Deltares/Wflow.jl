@@ -1,13 +1,13 @@
 abstract type AbstractSnowModel{T} end
 
 "Struct for storing snow model variables"
-@get_units @grid_loc @with_kw struct SnowVariables{T}
+@grid_loc @with_kw struct SnowVariables{T}
     # Snow storage [mm]
-    snow_storage::Vector{T} | "mm"
+    snow_storage::Vector{T}
     # Liquid water content in the snow pack [mm]
-    snow_water::Vector{T} | "mm"
+    snow_water::Vector{T}
     # Snow water equivalent (SWE) [mm]
-    swe::Vector{T} | "mm"
+    swe::Vector{T}
     # Snow melt [mm Δt⁻¹]
     snow_melt::Vector{T}
     # Runoff from snowpack [mm Δt⁻¹]
@@ -26,7 +26,7 @@ function SnowVariables(T::Type{<:AbstractFloat}, n::Int)
 end
 
 "Struct for storing snow model boundary conditions"
-@get_units @grid_loc @with_kw struct SnowBC{T}
+@grid_loc @with_kw struct SnowBC{T}
     # Effective precipitation [mm Δt⁻¹]
     effective_precip::Vector{T}
     # Snow precipitation [mm Δt⁻¹]
@@ -45,17 +45,17 @@ function SnowBC(T::Type{<:AbstractFloat}, n::Int)
 end
 
 "Struct for storing snow HBV model parameters"
-@get_units @grid_loc @with_kw struct SnowHbvParameters{T}
+@grid_loc @with_kw struct SnowHbvParameters{T}
     # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹]
-    cfmax::Vector{T} | "mm ᵒC-1 dt-1"
+    cfmax::Vector{T}
     # Threshold temperature for snowfall [ᵒC]
-    tt::Vector{T} | "ᵒC"
+    tt::Vector{T}
     # Threshold temperature interval length [ᵒC]
-    tti::Vector{T} | "ᵒC"
+    tti::Vector{T}
     # Threshold temperature for snowmelt [ᵒC]
-    ttm::Vector{T} | "ᵒC"
+    ttm::Vector{T}
     # Water holding capacity as fraction of current snow pack [-]
-    whc::Vector{T} | "-"
+    whc::Vector{T}
 end
 
 "Snow HBV model"
