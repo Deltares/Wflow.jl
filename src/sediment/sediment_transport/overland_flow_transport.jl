@@ -1,7 +1,7 @@
 abstract type AbstractSedimentLandTransportModel{T} end
 
 "Struct to store total sediment flux in overland flow model variables"
-@grid_loc @with_kw struct SedimentLandTransportVariables{T}
+@with_kw struct SedimentLandTransportVariables{T}
     # Total sediment rate [t dt-1]
     amount::Vector{T}
     # Total sediment deposition rate [t dt-1]
@@ -18,7 +18,7 @@ function SedimentLandTransportVariables(
 end
 
 "Struct to store total sediment flux in overland flow model boundary conditions"
-@grid_loc @with_kw struct SedimentLandTransportBC{T}
+@with_kw struct SedimentLandTransportBC{T}
     # Erosion rate material [t dt-1]
     erosion::Vector{T}
     # Transport capacity [t dt-1]
@@ -76,7 +76,7 @@ function update!(model::SedimentLandTransportModel, network)
 end
 
 "Struct to store differentiated sediment flux in overland flow model variables"
-@grid_loc @with_kw struct SedimentLandTransportDifferentiationVariables{T}
+@with_kw struct SedimentLandTransportDifferentiationVariables{T}
     # Total sediment rate [t dt-1]
     amount::Vector{T}
     # Deposition rate [t dt-1]
@@ -136,7 +136,7 @@ function SedimentLandTransportDifferentiationVariables(
 end
 
 "Struct to store differentiated sediment flux in overland flow model boundary conditions"
-@grid_loc @with_kw struct SedimentLandTransportDifferentiationBC{T}
+@with_kw struct SedimentLandTransportDifferentiationBC{T}
     # Erosion rate clay [t dt-1]
     erosion_clay::Vector{T}
     # Erosion rate silt [t dt-1]

@@ -1,7 +1,7 @@
 abstract type AbstractRunoffModel{T} end
 
 "Struct for storing open water runoff variables"
-@grid_loc @with_kw struct OpenWaterRunoffVariables{T}
+@with_kw struct OpenWaterRunoffVariables{T}
     # Runoff from river based on riverfrac [mm Δt⁻¹]
     runoff_river::Vector{T}
     # Net runoff from river [mm Δt⁻¹]
@@ -26,7 +26,7 @@ function OpenWaterRunoffVariables(T::Type{<:AbstractFloat}, n::Int)
 end
 
 "Struct for storing open water runoff parameters"
-@grid_loc @with_kw struct OpenWaterRunoffParameters{T}
+@with_kw struct OpenWaterRunoffParameters{T}
     # Fraction of river [-]
     riverfrac::Vector{T}
     # Fraction of open water (excluding rivers) [-]
@@ -44,7 +44,7 @@ function OpenWaterRunoffParameters(dataset, config, indices, riverfrac)
 end
 
 "Struct for storing open water runoff boundary conditions"
-@grid_loc @with_kw struct OpenWaterRunoffBC{T}
+@with_kw struct OpenWaterRunoffBC{T}
     water_flux_surface::Vector{T} # [mm dt-1]
     waterlevel_land::Vector{T} # [mm]
     waterlevel_river::Vector{T} # [mm]

@@ -51,7 +51,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
                   sizeof(Float)
             @test BMI.get_var_nbytes(model, "routing.river_flow.variables.q") ==
                   length(model.routing.river_flow.variables.q) * sizeof(Float)
-            @test BMI.get_var_location(model, "routing.river_flow.variables.q") == "node"
+            @test BMI.get_var_location(model, "river_water__volume_flow_rate") == "node"
             @test_throws ErrorException(
                 "routing.overland_flow.parameters.alpha_pow not listed as variable for BMI exchange",
             ) BMI.get_var_itemsize(model, "routing.overland_flow.parameters.alpha_pow")

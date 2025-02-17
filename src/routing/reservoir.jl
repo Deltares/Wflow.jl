@@ -1,5 +1,5 @@
 "Struct for storing reservoir model parameters"
-@grid_loc @with_kw struct ReservoirParameters{T}
+@with_kw struct ReservoirParameters{T}
     maxstorage::Vector{T}       # maximum storage (above which water is spilled) [m³]
     area::Vector{T}             # reservoir area [m²]
     maxrelease::Vector{T}       # maximum amount that can be released if below spillway [m³ s⁻¹]
@@ -99,7 +99,7 @@ function ReservoirParameters(dataset, config, indices_river, n_river_cells, pits
 end
 
 "Struct for storing reservoir model variables"
-@grid_loc @with_kw struct ReservoirVariables{T}
+@with_kw struct ReservoirVariables{T}
     storage::Vector{T}          # reservoir storage [m³]
     storage_av::Vector{T}       # average reservoir storage [m³] for model timestep Δt
     outflow::Vector{T}          # outflow from reservoir [m³ s⁻¹]
@@ -125,7 +125,7 @@ function ReservoirVariables(n, parameters)
 end
 
 "Struct for storing reservoir model boundary conditions"
-@grid_loc @with_kw struct ReservoirBC{T}
+@with_kw struct ReservoirBC{T}
     inflow::Vector{T}               # inflow into reservoir [m³ s⁻¹] for model timestep Δt
     precipitation::Vector{T}        # average precipitation for reservoir area [mm Δt⁻¹]
     evaporation::Vector{T}          # average potential evaporation for reservoir area [mm Δt⁻¹]

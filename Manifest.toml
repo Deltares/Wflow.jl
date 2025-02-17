@@ -2,7 +2,7 @@
 
 julia_version = "1.11.3"
 manifest_format = "2.0"
-project_hash = "35822b2f5023c4ec768af7bd1527850197cdf7a7"
+project_hash = "44cc74f2b4a6e659cd8ece26dc1e45d7e401e0b3"
 
 [[deps.AbstractTrees]]
 git-tree-sha1 = "2d9c9a55f9c93e8887ad391fbae72f8ef55e1177"
@@ -229,11 +229,6 @@ version = "0.9.3"
 deps = ["ArgTools", "FileWatching", "LibCURL", "NetworkOptions"]
 uuid = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 version = "1.6.0"
-
-[[deps.FieldMetadata]]
-git-tree-sha1 = "c279c6eab9767a3f62685e5276c850512e0a1afd"
-uuid = "bf96fef3-21d2-5d20-8afa-0e7d4c32a885"
-version = "0.3.1"
 
 [[deps.FileWatching]]
 uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"

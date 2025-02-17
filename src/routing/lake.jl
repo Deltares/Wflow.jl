@@ -1,5 +1,5 @@
 "Struct for storing lake model parameters"
-@grid_loc @with_kw struct LakeParameters{T}
+@with_kw struct LakeParameters{T}
     lowerlake_ind::Vector{Int}                  # Index of lower lake (linked lakes) [-]
     area::Vector{T}                             # lake area [m²]
     maxstorage::Vector{Union{T, Missing}}       # lake maximum storage from rating curve 1 [m³]
@@ -156,7 +156,7 @@ function LakeParameters(config, dataset, inds_riv, nriv, pits)
 end
 
 "Struct for storing Lake model parameters"
-@grid_loc @with_kw struct LakeVariables{T}
+@with_kw struct LakeVariables{T}
     waterlevel::Vector{T}       # waterlevel H [m] of lake
     waterlevel_av::Vector{T}    # average waterlevel H [m] of lake for model timestep Δt
     storage::Vector{T}          # storage lake [m³]
@@ -182,7 +182,7 @@ function LakeVariables(n, lake_waterlevel)
 end
 
 "Struct for storing lake model boundary conditions"
-@grid_loc @with_kw struct LakeBC{T}
+@with_kw struct LakeBC{T}
     inflow::Vector{T}           # inflow to the lake [m³ s⁻¹] for model timestep Δt
     precipitation::Vector{T}    # average precipitation for lake area [mm Δt⁻¹]
     evaporation::Vector{T}      # average potential evaporation for lake area [mm Δt⁻¹]

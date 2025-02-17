@@ -1,7 +1,7 @@
 abstract type AbstractSoilModel{T} end
 
 "Struct for storing SBM soil model variables"
-@grid_loc @with_kw struct SbmSoilVariables{T, N}
+@with_kw struct SbmSoilVariables{T, N}
     # Calculated soil water pressure head h3 of the root water uptake reduction function (Feddes) [cm]
     h3::Vector{T}
     # Unsaturated store capacity [mm]
@@ -143,7 +143,7 @@ function SbmSoilVariables(n, parameters)
 end
 
 "Struct for storing SBM soil model boundary conditions"
-@grid_loc @with_kw struct SbmSoilBC{T}
+@with_kw struct SbmSoilBC{T}
     # Water flux at the soil surface [mm Δt⁻¹]
     water_flux_surface::Vector{T}
     # Potential transpiration rate [mm Δt⁻¹]
@@ -167,7 +167,7 @@ function SbmSoilBC(
 end
 
 "Exponential depth profile of vertical hydraulic conductivity at the soil surface"
-@grid_loc struct KvExponential{T}
+struct KvExponential{T}
     # Vertical hydraulic conductivity [mm Δt⁻¹] at soil surface
     kv_0::Vector{T}
     # A scaling parameter [mm⁻¹] (controls exponential decline of kv_0)
@@ -175,20 +175,20 @@ end
 end
 
 "Exponential constant depth profile of vertical hydraulic conductivity"
-@grid_loc struct KvExponentialConstant{T}
+struct KvExponentialConstant{T}
     exponential::KvExponential{T}
     # Depth [mm] from soil surface for which exponential decline of kv_0 is valid
     z_exp::Vector{T}
 end
 
 "Layered depth profile of vertical hydraulic conductivity"
-@grid_loc struct KvLayered{T, N}
+struct KvLayered{T, N}
     # Vertical hydraulic conductivity [mm Δt⁻¹] per soil layer
     kv::Vector{SVector{N, T}}
 end
 
 "Layered exponential depth profile of vertical hydraulic conductivity"
-@grid_loc struct KvLayeredExponential{T, N}
+struct KvLayeredExponential{T, N}
     # A scaling parameter [mm⁻¹] (controls exponential decline of kv_0)
     f::Vector{T}
     # Vertical hydraulic conductivity [mm Δt⁻¹] per soil layer
@@ -278,7 +278,7 @@ function sbm_kv_profiles(
 end
 
 "Struct for storing SBM soil model parameters"
-@grid_loc @with_kw struct SbmSoilParameters{T, N, M, Kv}
+@with_kw struct SbmSoilParameters{T, N, M, Kv}
     # Maximum number of soil layers [-]
     maxlayers::Int
     # Number of soil layers [-]

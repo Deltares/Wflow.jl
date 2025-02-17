@@ -1,7 +1,7 @@
 abstract type AbstractSedimentToRiverModel{T} end
 
 "Struct to store total sediment reaching the river model variables"
-@grid_loc @with_kw struct SedimentToRiverVariables{T}
+@with_kw struct SedimentToRiverVariables{T}
     # Total sediment rate to the river [t dt-1]
     amount::Vector{T}
 end
@@ -12,7 +12,7 @@ function SedimentToRiverVariables(n; amount::Vector{T} = fill(mv, n)) where {T}
 end
 
 "Struct to store total sediment reaching the river model boundary conditions"
-@grid_loc @with_kw struct SedimentToRiverBC{T}
+@with_kw struct SedimentToRiverBC{T}
     # Deposition material rate [t dt-1]
     deposition::Vector{T}
 end
@@ -56,7 +56,7 @@ function update!(model::SedimentToRiverModel, rivers)
 end
 
 "Struct to store differentiated sediment reaching the river model variables"
-@grid_loc @with_kw struct SedimentToRiverDifferentiationVariables{T}
+@with_kw struct SedimentToRiverDifferentiationVariables{T}
     # Total sediment rate [t dt-1]
     amount::Vector{T}
     # Clay rate [t dt-1]
@@ -92,7 +92,7 @@ function SedimentToRiverDifferentiationVariables(
 end
 
 "Struct to store differentiated sediment reaching the river model boundary conditions"
-@grid_loc @with_kw struct SedimentToRiverDifferentiationBC{T}
+@with_kw struct SedimentToRiverDifferentiationBC{T}
     # Clay deposition rate [t dt-1]
     deposition_clay::Vector{T}
     # Silt deposition rate [t dt-1]

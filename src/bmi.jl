@@ -199,9 +199,11 @@ function BMI.get_var_nbytes(model::Model, name::String)
 end
 
 function BMI.get_var_location(model::Model, name::String)
-    key = symbols(first(split(name, "[")))
-    if exchange(param(model, key))
-        return grid_loc(param(model, key[1:(end - 1)]), key[end])
+    (; land) = model
+    if haskey(standard_name_map(land), name)
+        lens = standard_name_map(land)[name].lens
+        element_type = grid_element_type(model, lens)
+        return element_type
     else
         error("$name not listed as variable for BMI exchange")
     end
@@ -397,6 +399,34 @@ function BMI.get_grid_edge_nodes(model::Model, grid::Int, edge_nodes::Vector{Int
     else
         error("unknown grid type $grid")
     end
+end
+
+function grid_element_type(
+    ::T,
+    var::PropertyLens,
+) where {T <: Union{LocalInertialRiverFlow, LocalInertialOverlandFlow}}
+    vars = (PropertyLens(x) for x in (:q, :q_av, :qx, :qy))
+    element_type = if var in vars
+        "edge"
+    else
+        "node"
+    end
+    return element_type
+end
+
+grid_element_type(model, var::PropertyLens) = "node"
+
+function grid_element_type(model, lens::ComposedFunction)
+    lens_components = decompose(lens)
+    var = lens_components[1]
+    element_type = if PropertyLens(:river_flow) in lens_components
+        grid_element_type(model.routing.river_flow, var)
+    elseif PropertyLens(:overland_flow) in lens_components
+        grid_element_type(model.routing.overland_flow, var)
+    else
+        grid_element_type(model, var)
+    end
+    return element_type
 end
 
 # Extension of BMI functions (state handling and start time), required for OpenDA coupling.

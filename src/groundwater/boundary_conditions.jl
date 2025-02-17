@@ -11,13 +11,13 @@ end
 # Do nothing for a confined aquifer: aquifer can always provide flux
 check_flux(flux, aquifer::ConfinedAquifer, index::Int) = flux
 
-@grid_loc @with_kw struct RiverParameters{T}
+@with_kw struct RiverParameters{T}
     infiltration_conductance::Vector{T} # [m² d⁻¹]
     exfiltration_conductance::Vector{T} # [m² d⁻¹]
     bottom::Vector{T} # [m]
 end
 
-@grid_loc @with_kw struct RiverVariables{T}
+@with_kw struct RiverVariables{T}
     stage::Vector{T} # [m]
     flux::Vector{T}  # [m³ d⁻¹]
 end
@@ -27,7 +27,7 @@ function RiverVariables(n)
     return variables
 end
 
-@grid_loc @with_kw struct River{T} <: AquiferBoundaryCondition
+@with_kw struct River{T} <: AquiferBoundaryCondition
     parameters::RiverParameters{T}
     variables::RiverVariables{T}
     index::Vector{Int} # [-]
@@ -68,16 +68,16 @@ function flux!(Q, river::River, aquifer)
     return Q
 end
 
-@grid_loc @with_kw struct DrainageParameters{T}
+@with_kw struct DrainageParameters{T}
     elevation::Vector{T} # [m]
     conductance::Vector{T} # [m² d⁻¹]
 end
 
-@grid_loc @with_kw struct DrainageVariables{T}
+@with_kw struct DrainageVariables{T}
     flux::Vector{T} # [m³ d⁻¹]
 end
 
-@grid_loc @with_kw struct Drainage{T} <: AquiferBoundaryCondition
+@with_kw struct Drainage{T} <: AquiferBoundaryCondition
     parameters::DrainageParameters{T}
     variables::DrainageVariables{T}
     index::Vector{Int} # [-]
@@ -110,16 +110,16 @@ function flux!(Q, drainage::Drainage, aquifer)
     return Q
 end
 
-@grid_loc @with_kw struct HeadBoundaryParameters{T}
+@with_kw struct HeadBoundaryParameters{T}
     conductance::Vector{T} # [m² d⁻¹]
 end
 
-@grid_loc @with_kw struct HeadBoundaryVariables{T}
+@with_kw struct HeadBoundaryVariables{T}
     head::Vector{T} # [m]
     flux::Vector{T} # [m³ d⁻¹]
 end
 
-@grid_loc @with_kw struct HeadBoundary{T} <: AquiferBoundaryCondition
+@with_kw struct HeadBoundary{T} <: AquiferBoundaryCondition
     parameters::HeadBoundaryParameters{T}
     variables::HeadBoundaryVariables{T}
     index::Vector{Int} # [-]
@@ -135,12 +135,12 @@ function flux!(Q, headboundary::HeadBoundary, aquifer)
     return Q
 end
 
-@grid_loc @with_kw struct RechargeVariables{T}
+@with_kw struct RechargeVariables{T}
     rate::Vector{T} # [m d⁻¹]
     flux::Vector{T} # [m³ d⁻¹]
 end
 
-@grid_loc @with_kw struct Recharge{T} <: AquiferBoundaryCondition
+@with_kw struct Recharge{T} <: AquiferBoundaryCondition
     variables::RechargeVariables{T}
     index::Vector{Int}  # [-]
 end
@@ -163,12 +163,12 @@ function flux!(Q, recharge::Recharge, aquifer)
     return Q
 end
 
-@grid_loc @with_kw struct WellVariables{T}
+@with_kw struct WellVariables{T}
     volumetric_rate::Vector{T} # [m³ d⁻¹]
     flux::Vector{T} # [m³ d⁻¹]
 end
 
-@grid_loc @with_kw struct Well{T} <: AquiferBoundaryCondition
+@with_kw struct Well{T} <: AquiferBoundaryCondition
     variables::WellVariables{T}
     index::Vector{Int} # [-]
 end

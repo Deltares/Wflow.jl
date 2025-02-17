@@ -1,7 +1,7 @@
 abstract type AbstractSedimentRiverTransportModel{T} end
 
 "Struct to store river sediment transport model variables"
-@grid_loc @with_kw struct SedimentRiverTransportVariables{T}
+@with_kw struct SedimentRiverTransportVariables{T}
     # Sediment flux [t dt-1]
     amount::Vector{T}
     clay::Vector{T}
@@ -81,7 +81,7 @@ function SedimentRiverTransportVariables(
 end
 
 "Struct to store river sediment transport model boundary conditions"
-@grid_loc @with_kw struct SedimentRiverTransportBC{T}
+@with_kw struct SedimentRiverTransportBC{T}
     # Waterlevel [m]
     waterlevel::Vector{T}
     # Discharge [m³ s⁻¹]
@@ -128,7 +128,7 @@ function SedimentRiverTransportBC(
 end
 
 "Struct to store river sediment transport model parameters"
-@grid_loc @with_kw struct SedimentRiverTransportParameters{T}
+@with_kw struct SedimentRiverTransportParameters{T}
     # River bed/bank content clay [-]
     clay_fraction::Vector{T}
     # River bed/bank content silt [-]
@@ -702,7 +702,7 @@ end
 abstract type AbstractSedimentConcentrationsRiverModel{T} end
 
 "Struct to store river sediment concentrations model variables"
-@grid_loc @with_kw struct SedimentConcentrationsRiverVariables{T}
+@with_kw struct SedimentConcentrationsRiverVariables{T}
     # Total sediment concentration in the river [g m-3]
     total::Vector{T}
     # suspended sediemnt concentration in the river [g m-3]
@@ -726,7 +726,7 @@ function SedimentConcentrationsRiverVariables(
 end
 
 "Struct to store river sediment concentrations model boundary conditions"
-@grid_loc @with_kw struct SedimentConcentrationsRiverBC{T}
+@with_kw struct SedimentConcentrationsRiverBC{T}
     # Discharge [m³ s⁻¹]
     q::Vector{T}
     waterlevel::Vector{T} # [m]
@@ -769,7 +769,7 @@ function SedimentConcentrationsRiverBC(
 end
 
 "Struct to store river sediment concentrations model parameters"
-@grid_loc @with_kw struct SedimentConcentrationsRiverParameters{T}
+@with_kw struct SedimentConcentrationsRiverParameters{T}
     # Clay mean diameter [µm]
     dm_clay::Vector{T}
     # Silt mean diameter [µm]

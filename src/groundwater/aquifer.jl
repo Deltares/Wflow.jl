@@ -84,7 +84,7 @@ NOTA BENE: **specific** storage is per m of aquifer (conf. specific weight).
 **Storativity** or (**storage coefficient**) is for the entire aquifer (conf.
 transmissivity).
 """
-@grid_loc @with_kw struct ConfinedAquiferParameters{T}
+@with_kw struct ConfinedAquiferParameters{T}
     k::Vector{T}                    # horizontal conductivity [m d⁻¹]
     top::Vector{T}                  # top of groundwater layer [m]
     bottom::Vector{T}               # bottom of groundwater layer [m]
@@ -93,7 +93,7 @@ transmissivity).
     storativity::Vector{T}          # [m m⁻¹]
 end
 
-@grid_loc @with_kw struct ConfinedAquiferVariables{T}
+@with_kw struct ConfinedAquiferVariables{T}
     head::Vector{T}             # hydraulic head [m]
     conductance::Vector{T}      # Confined aquifer conductance is constant [m² d⁻¹]
     storage::Vector{T}          # total storage of water that can be released [m³]
@@ -115,7 +115,7 @@ aquifer will yield when all water drains and the pore volume is filled by air
 instead. Specific yield will vary roughly between 0.05 (clay) and 0.45 (peat)
 (Johnson, 1967).
 """
-@grid_loc @with_kw struct UnconfinedAquiferParameters{T}
+@with_kw struct UnconfinedAquiferParameters{T}
     k::Vector{T}                # reference horizontal conductivity [m d⁻¹]
     top::Vector{T}              # top of groundwater layer [m]
     bottom::Vector{T}           # bottom of groundwater layer [m]
@@ -147,7 +147,7 @@ function UnconfinedAquiferParameters(dataset, config, indices, top, bottom, area
     return parameters
 end
 
-@grid_loc @with_kw struct UnconfinedAquiferVariables{T}
+@with_kw struct UnconfinedAquiferVariables{T}
     head::Vector{T}         # hydraulic head [m]
     conductance::Vector{T}  # conductance [m² d⁻¹]
     storage::Vector{T}      # total storage of water that can be released [m³]
@@ -362,11 +362,11 @@ function flux!(Q, aquifer, connectivity, conductivity_profile)
     return Q
 end
 
-@grid_loc @with_kw struct ConstantHeadVariables{T}
+@with_kw struct ConstantHeadVariables{T}
     head::Vector{T} # [m]
 end
 
-@grid_loc @with_kw struct ConstantHead{T}
+@with_kw struct ConstantHead{T}
     variables::ConstantHeadVariables{T}
     index::Vector{Int} # [-]
 end

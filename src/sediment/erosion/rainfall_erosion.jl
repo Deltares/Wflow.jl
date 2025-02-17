@@ -1,7 +1,7 @@
 abstract type AbstractRainfallErosionModel{T} end
 
 "Struct for storing rainfall erosion model variables"
-@grid_loc @with_kw struct RainfallErosionModelVariables{T}
+@with_kw struct RainfallErosionModelVariables{T}
     # Total soil erosion rate [t dt-1] from rainfall (splash)
     amount::Vector{T}
 end
@@ -12,7 +12,7 @@ function RainfallErosionModelVariables(n; amount::Vector{T} = fill(mv, n)) where
 end
 
 "Struct for storing EUROSEM rainfall erosion model boundary conditions"
-@grid_loc @with_kw struct RainfallErosionEurosemBC{T}
+@with_kw struct RainfallErosionEurosemBC{T}
     # precipitation [mm dt-1]
     precipitation::Vector{T}
     # Interception [mm dt-1]
@@ -36,7 +36,7 @@ function RainfallErosionEurosemBC(
 end
 
 "Struct for storing EUROSEM rainfall erosion model parameters"
-@grid_loc @with_kw struct RainfallErosionEurosemParameters{T}
+@with_kw struct RainfallErosionEurosemParameters{T}
     # Soil detachability factor [g J-1]
     soil_detachability::Vector{T}
     # Exponent EUROSEM [-]
@@ -140,7 +140,7 @@ function update!(model::RainfallErosionEurosemModel, geometry::LandGeometry, dt)
 end
 
 "Struct for storing ANSWERS rainfall erosion model boundary conditions"
-@grid_loc @with_kw struct RainfallErosionAnswersBC{T}
+@with_kw struct RainfallErosionAnswersBC{T}
     # precipitation ["mm dt-1]
     precipitation::Vector{T}
 end
@@ -151,7 +151,7 @@ function RainfallErosionAnswersBC(n; precipitation::Vector{T} = fill(mv, n)) whe
 end
 
 "Struct for storing ANSWERS rainfall erosion model parameters"
-@grid_loc @with_kw struct RainfallErosionAnswersParameters{T}
+@with_kw struct RainfallErosionAnswersParameters{T}
     # Soil erodibility factor [-]
     usle_k::Vector{T}
     # Crop management factor [-]

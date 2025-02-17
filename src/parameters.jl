@@ -1,5 +1,5 @@
 "Struct to store (shared) vegetation parameters"
-@grid_loc @with_kw struct VegetationParameters{T}
+@with_kw struct VegetationParameters{T}
     # Leaf area index [m² m⁻²]
     leaf_area_index::Union{Vector{T}, Nothing}
     # Storage woody part of vegetation [mm]
@@ -77,7 +77,7 @@ function VegetationParameters(dataset, config, indices)
 end
 
 "Struct to store land geometry parameters"
-@grid_loc @with_kw struct LandGeometry{T}
+@with_kw struct LandGeometry{T}
     # cell area [m²]
     area::Vector{T}
     # drain width [m]
@@ -110,7 +110,7 @@ function LandGeometry(nc, config, inds)
 end
 
 "Struct to store river geometry parameters"
-@grid_loc @with_kw struct RiverGeometry{T}
+@with_kw struct RiverGeometry{T}
     # river width [m]
     width::Vector{T}
     # river length [m]

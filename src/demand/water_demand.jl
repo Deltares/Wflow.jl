@@ -9,13 +9,13 @@ struct NoAllocationLand{T} <: AbstractAllocationModel{T} end
 struct NoAllocationRiver{T} <: AbstractAllocationModel{T} end
 
 "Struct to store non-irrigation water demand variables"
-@grid_loc @with_kw struct NonIrrigationDemandVariables{T}
+@with_kw struct NonIrrigationDemandVariables{T}
     returnflow::Vector{T}               # return flow [mm Δt⁻¹]
     returnflow_fraction::Vector{T}      # return flow fraction [-]
 end
 
 "Struct to store prescribed water demand variables"
-@grid_loc @with_kw struct PrescibedDemand{T}
+@with_kw struct PrescibedDemand{T}
     demand_gross::Vector{T}     # gross water demand [mm Δt⁻¹]
     demand_net::Vector{T}       # net water demand [mm Δt⁻¹]
 end
@@ -54,12 +54,12 @@ function NonIrrigationDemand(dataset, config, indices, dt, sector)
 end
 
 "Struct to store non-paddy irrigation model variables"
-@grid_loc @with_kw struct NonPaddyVariables{T}
+@with_kw struct NonPaddyVariables{T}
     demand_gross::Vector{T}     # irrigation gross demand [mm Δt⁻¹] 
 end
 
 "Struct to store non-paddy irrigation model parameters"
-@grid_loc @with_kw struct NonPaddyParameters{T}
+@with_kw struct NonPaddyParameters{T}
     irrigation_efficiency::Vector{T}        # irrigation efficiency [-]
     maximum_irrigation_rate::Vector{T}      # maximum irrigation rate [mm Δt⁻¹]
     irrigation_areas::Vector{Bool}          # irrigation areas [-]
@@ -180,14 +180,14 @@ end
 update_demand_gross!(model::NoIrrigationNonPaddy, soil::SbmSoilModel) = nothing
 
 "Struct to store paddy irrigation model variables"
-@grid_loc @with_kw struct PaddyVariables{T}
+@with_kw struct PaddyVariables{T}
     demand_gross::Vector{T}     # irrigation gross demand [mm Δt⁻¹]
     h::Vector{T}                # actual water depth in rice field [mm]
     evaporation::Vector{T}      # evaporation rate [mm Δt⁻¹] 
 end
 
 "Struct to store paddy irrigation model parameters"
-@grid_loc @with_kw struct PaddyParameters{T}
+@with_kw struct PaddyParameters{T}
     irrigation_efficiency::Vector{T}        # irrigation efficiency [-]
     maximum_irrigation_rate::Vector{T}      # maximum irrigation rate [mm Δt⁻¹]
     irrigation_areas::Vector{Bool}          # irrigation areas [-]
@@ -343,7 +343,7 @@ end
 update_demand_gross!(model::NoIrrigationPaddy) = nothing
 
 "Struct to store water demand model variables"
-@grid_loc @with_kw struct DemandVariables{T}
+@with_kw struct DemandVariables{T}
     irri_demand_gross::Vector{T}        # irrigation gross demand [mm Δt⁻¹]
     nonirri_demand_gross::Vector{T}     # non-irrigation gross demand [mm Δt⁻¹]
     total_gross_demand::Vector{T}       # total gross demand [mm Δt⁻¹]
@@ -415,7 +415,7 @@ function Demand(dataset, config, indices, dt)
 end
 
 "Struct to store river allocation model variables"
-@grid_loc @with_kw struct AllocationRiverVariables{T}
+@with_kw struct AllocationRiverVariables{T}
     act_surfacewater_abst::Vector{T}        # actual surface water abstraction [mm Δt⁻¹]
     act_surfacewater_abst_vol::Vector{T}    # actual surface water abstraction [m³ Δt⁻¹]
     available_surfacewater::Vector{T}       # available surface water [m³]
@@ -448,13 +448,13 @@ function AllocationRiver(n)
 end
 
 "Struct to store land allocation allocation model parameters"
-@grid_loc @with_kw struct AllocationLandParameters{T}
+@with_kw struct AllocationLandParameters{T}
     frac_sw_used::Vector{T}     # fraction surface water used [-]
     areas::Vector{Int}          # allocation areas [-]
 end
 
 "Struct to store land allocation model variables"
-@grid_loc @with_kw struct AllocationLandVariables{T}
+@with_kw struct AllocationLandVariables{T}
     surfacewater_alloc::Vector{T}           # allocation from surface water [mm Δt⁻¹]
     act_groundwater_abst::Vector{T}         # actual groundwater abstraction [mm Δt⁻¹]
     act_groundwater_abst_vol::Vector{T}     # actual groundwater abstraction [m³ Δt⁻¹]

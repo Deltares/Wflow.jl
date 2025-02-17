@@ -1,7 +1,7 @@
 abstract type AbstractGlacierModel{T} end
 
 "Struct for storing glacier model variables"
-@grid_loc @with_kw struct GlacierVariables{T}
+@with_kw struct GlacierVariables{T}
     # Water within the glacier [mm]
     glacier_store::Vector{T}
     # Glacier melt [mm Δt⁻¹]  
@@ -26,13 +26,13 @@ function GlacierVariables(dataset, config, indices)
 end
 
 "Struct for storing boundary condition (snow storage from a snow model) of a glacier model"
-@grid_loc @with_kw struct SnowStateBC{T}
+@with_kw struct SnowStateBC{T}
     # Snow storage [mm]
     snow_storage::Vector{T}
 end
 
 "Struct for storing glacier HBV model parameters"
-@grid_loc @with_kw struct GlacierHbvParameters{T}
+@with_kw struct GlacierHbvParameters{T}
     # Threshold temperature for glacier melt [ᵒC]
     g_ttm::Vector{T}
     # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹] for glacier

@@ -1,5 +1,5 @@
 "Struct for storing (shared) variables for river and overland flow models"
-@grid_loc @with_kw struct FlowVariables{T}
+@with_kw struct FlowVariables{T}
     q::Vector{T}            # Discharge [m³ s⁻¹]
     qlat::Vector{T}         # Lateral inflow per unit length [m² s⁻¹]
     qin::Vector{T}          # Inflow from upstream cells [m³ s⁻¹]
@@ -42,7 +42,7 @@ function FlowVariables(n)
 end
 
 "Struct for storing Manning flow parameters"
-@grid_loc @with_kw struct ManningFlowParameters{T}
+@with_kw struct ManningFlowParameters{T}
     beta::T                 # constant in Manning's equation [-]
     slope::Vector{T}        # Slope [m m⁻¹]
     mannings_n::Vector{T}   # Manning's roughness [s m⁻⅓]
@@ -70,7 +70,7 @@ function ManningFlowParameters(slope, mannings_n, flow_length, flow_width)
 end
 
 "Struct for storing river flow model parameters"
-@grid_loc @with_kw struct RiverFlowParameters{T}
+@with_kw struct RiverFlowParameters{T}
     flow::ManningFlowParameters{T}
     bankfull_depth::Vector{T}   # Bankfull water level [m]
 end
@@ -105,7 +105,7 @@ function RiverFlowParameters(dataset, config, indices, river_length, river_width
 end
 
 "Struct for storing river flow model boundary conditions"
-@grid_loc @with_kw struct RiverFlowBC{T, R, L}
+@with_kw struct RiverFlowBC{T, R, L}
     inwater::Vector{T}              # Lateral inflow [m³ s⁻¹]
     inflow::Vector{T}               # External inflow (abstraction/supply/demand) [m³ s⁻¹]
     inflow_waterbody::Vector{T}     # inflow waterbody (lake or reservoir model) from land part [m³ s⁻¹]
@@ -170,7 +170,7 @@ function KinWaveRiverFlow(
 end
 
 "Struct for storing overland flow model variables"
-@grid_loc @with_kw struct LandFlowVariables{T}
+@with_kw struct LandFlowVariables{T}
     flow::FlowVariables{T}
     to_river::Vector{T} # Part of overland flow [m³ s⁻¹] that flows to the river
 end
@@ -187,7 +187,7 @@ function Base.getproperty(v::LandFlowVariables, s::Symbol)
 end
 
 "Struct for storing overland flow model boundary conditions"
-@grid_loc @with_kw struct LandFlowBC{T}
+@with_kw struct LandFlowBC{T}
     inwater::Vector{T} # Lateral inflow [m³ s⁻¹]
 end
 

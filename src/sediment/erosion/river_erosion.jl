@@ -1,7 +1,7 @@
 abstract type AbstractRiverErosionModel{T} end
 
 "Struct for storing river bed and bank erosion model variables"
-@grid_loc @with_kw struct RiverErosionModelVariables{T}
+@with_kw struct RiverErosionModelVariables{T}
     # Potential river bed erosion rate [t dt-1]
     bed::Vector{T}
     # Potential river bank erosion rate [t dt-1]
@@ -18,7 +18,7 @@ function RiverErosionModelVariables(
 end
 
 "Struct for storing river erosion model boundary conditions"
-@grid_loc @with_kw struct RiverErosionBC{T}
+@with_kw struct RiverErosionBC{T}
     # Waterlevel [m]
     waterlevel::Vector{T}
 end
@@ -29,7 +29,7 @@ function RiverErosionBC(n; waterlevel::Vector{T} = fill(mv, n)) where {T}
 end
 
 "Struct for storing river erosion model parameters"
-@grid_loc @with_kw struct RiverErosionParameters{T}
+@with_kw struct RiverErosionParameters{T}
     # Mean diameter [μm] in the river bed/bank
     d50::Vector{T}
 end

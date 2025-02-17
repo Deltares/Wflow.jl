@@ -1,7 +1,7 @@
 abstract type AbstractOverlandFlowErosionModel{T} end
 
 "Struct for storing overland flow erosion model variables"
-@grid_loc @with_kw struct OverlandFlowErosionVariables{T}
+@with_kw struct OverlandFlowErosionVariables{T}
     # Total soil erosion rate [t dt-1] from overland flow
     amount::Vector{T}
 end
@@ -12,7 +12,7 @@ function OverlandFlowErosionVariables(n; amount::Vector{T} = fill(mv, n)) where 
 end
 
 "Struct for storing overland flow erosion model boundary conditions"
-@grid_loc @with_kw struct OverlandFlowErosionBC{T}
+@with_kw struct OverlandFlowErosionBC{T}
     # Overland flow [m3 s-1]
     q::Vector{T}
 end
@@ -23,7 +23,7 @@ function OverlandFlowErosionBC(n; q::Vector{T} = fill(mv, n)) where {T}
 end
 
 "Struct for storing ANSWERS overland flow erosion model parameters"
-@grid_loc @with_kw struct OverlandFlowErosionAnswersParameters{T}
+@with_kw struct OverlandFlowErosionAnswersParameters{T}
     # Soil erodibility factor [-]
     usle_k::Vector{T}
     # Crop management factor [-]

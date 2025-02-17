@@ -1,7 +1,7 @@
 abstract type AbstractSoilErosionModel{T} end
 
 "Struct for storing total soil erosion with differentiation model variables"
-@grid_loc @with_kw struct SoilErosionModelVariables{T}
+@with_kw struct SoilErosionModelVariables{T}
     # Total soil erosion rate [t dt-1]
     amount::Vector{T}
     # Total clay erosion rate [t dt-1]
@@ -13,7 +13,7 @@ abstract type AbstractSoilErosionModel{T} end
     # Total small aggregates erosion rate [t dt-1]
     sagg::Vector{T}
     # Total large aggregates erosion rate [t dt-1]
-    lagg::Vector{T} | "t dt-1"
+    lagg::Vector{T}
 end
 
 "Initialize soil erosion model variables"
@@ -37,7 +37,7 @@ function SoilErosionModelVariables(
 end
 
 "Struct for storing soil erosion model boundary conditions"
-@grid_loc @with_kw struct SoilErosionBC{T}
+@with_kw struct SoilErosionBC{T}
     # Rainfall erosion rate [t dt-1]
     rainfall_erosion::Vector{T}
     # Overland flow erosion rate [t dt-1]
@@ -57,7 +57,7 @@ function SoilErosionBC(
 end
 
 "Struct for storing soil erosion model parameters"
-@grid_loc @with_kw struct SoilErosionParameters{T}
+@with_kw struct SoilErosionParameters{T}
     # Soil content clay [-]
     clay_fraction::Vector{T}
     # Soil content silt [-]

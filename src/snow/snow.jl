@@ -1,7 +1,7 @@
 abstract type AbstractSnowModel{T} end
 
 "Struct for storing snow model variables"
-@grid_loc @with_kw struct SnowVariables{T}
+@with_kw struct SnowVariables{T}
     # Snow storage [mm]
     snow_storage::Vector{T}
     # Liquid water content in the snow pack [mm]
@@ -26,7 +26,7 @@ function SnowVariables(T::Type{<:AbstractFloat}, n::Int)
 end
 
 "Struct for storing snow model boundary conditions"
-@grid_loc @with_kw struct SnowBC{T}
+@with_kw struct SnowBC{T}
     # Effective precipitation [mm Δt⁻¹]
     effective_precip::Vector{T}
     # Snow precipitation [mm Δt⁻¹]
@@ -45,7 +45,7 @@ function SnowBC(T::Type{<:AbstractFloat}, n::Int)
 end
 
 "Struct for storing snow HBV model parameters"
-@grid_loc @with_kw struct SnowHbvParameters{T}
+@with_kw struct SnowHbvParameters{T}
     # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹]
     cfmax::Vector{T}
     # Threshold temperature for snowfall [ᵒC]

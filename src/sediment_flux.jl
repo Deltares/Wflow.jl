@@ -1,5 +1,5 @@
 "Sediment transport in overland flow model"
-@grid_loc @with_kw struct OverlandFlowSediment{TT, SF, TR} <: AbstractOverlandFlowModel
+@with_kw struct OverlandFlowSediment{TT, SF, TR} <: AbstractOverlandFlowModel
     hydrological_forcing::HydrologicalForcing
     geometry::LandGeometry
     transport_capacity::TT
@@ -78,7 +78,7 @@ end
 
 ### River ###
 "Sediment transport in river model"
-@grid_loc @with_kw struct RiverSediment{TTR, ER, SFR, CR} <: AbstractRiverFlowModel
+@with_kw struct RiverSediment{TTR, ER, SFR, CR} <: AbstractRiverFlowModel
     hydrological_forcing::HydrologicalForcing
     geometry::RiverGeometry
     transport_capacity::TTR
