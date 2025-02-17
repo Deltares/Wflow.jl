@@ -86,8 +86,6 @@ const sbm_standard_name_map = Dict{String, ComposedFunction}(
     "soil_water_root-zone__volume_percentage" =>
         @optic(_.land.soil.variables.vwc_percroot),
     "soil_water_root-zone__depth" => @optic(_.land.soil.variables.rootstore),
-    "soil_water_sat-zone_top__recharge_volume_flux" =>
-        @optic(_.land.soil.variables.recharge),
     "soil_layer_water_unsat-zone__depth" =>
         @optic(_.land.soil.variables.ustorelayerdepth),
     "soil_water_unsat-zone__depth" => @optic(_.land.soil.variables.ustoredepth),
