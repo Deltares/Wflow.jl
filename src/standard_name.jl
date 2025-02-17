@@ -148,7 +148,7 @@ const sbm_standard_name_map = Dict{String, ComposedFunction}(
         @optic(_.land.allocation.variables.act_groundwater_abst),
     "subsurface_water__hydraulic_head" =>
         @optic(_.routing.subsurface_flow.aquifer.variables.head),
-    "subsurface_water_sat-zone_top__net_recharge_volume_flux" =>
+    "subsurface_water_sat-zone_top__net_recharge_volume_flow_rate" =>
         @optic(_.routing.subsurface_flow.boundaries.recharge.variables.flux),
     "land_drain_water~to-subsurface__volume_flow_rate" =>
         @optic(_.routing.subsurface_flow.boundaries.drain.variables.flux),
