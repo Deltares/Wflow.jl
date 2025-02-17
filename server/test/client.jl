@@ -59,9 +59,9 @@ vwc_1_size = 0
         name = "routing.subsurface_flow.variables.ssf",
     )) == Dict("var_itemsize" => sizeof(Wflow.Float))
     @test request((fn = "get_var_type", name = "land.n"))["status"] == "ERROR"
-    @test request((fn = "get_var_units", name = "land.soil.parameters.theta_s")) ==
-          Dict("var_units" => "-")
-    @test request((fn = "get_var_location", name = "routing.river_flow.variables.q")) ==
+    @test request((fn = "get_var_units", name = "river_water__volume_flow_rate")) ==
+          Dict("var_units" => "m3 s-1")
+    @test request((fn = "get_var_location", name = "river_water__volume_flow_rate")) ==
           Dict("var_location" => "node")
     zi_nbytes =
         request((fn = "get_var_nbytes", name = "land.soil.variables.zi"))["var_nbytes"]
