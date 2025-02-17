@@ -157,8 +157,6 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         (lens = @optic(_.land.soil.variables.vwc_percroot), unit = "%"),
     "soil_water_root-zone__depth" =>
         (lens = @optic(_.land.soil.variables.rootstore), unit = "mm"),
-    "soil_water_sat-zone_top__recharge_volume_flux" =>
-        (lens = @optic(_.land.soil.variables.recharge), unit = "mm dt-1"),
     "soil_layer_water_unsat-zone__depth" =>
         (lens = @optic(_.land.soil.variables.ustorelayerdepth), unit = "mm"),
     "soil_water_unsat-zone__depth" =>

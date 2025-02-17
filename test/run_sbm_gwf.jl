@@ -81,6 +81,9 @@ end
 
 Wflow.close_files(model; delete_output = false)
 
+# test complete run including logging entry TOML file (not set)
+Wflow.run(tomlpath; silent = true)
+
 # test local-inertial option for river flow routing
 tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
 config = Wflow.Config(tomlpath)

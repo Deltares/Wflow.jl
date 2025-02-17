@@ -27,10 +27,9 @@ end
 """
     Config(path::AbstractString)
     Config(dict::AbstractDict)
-    Config(dict::Dict{String,Any}, path::Union{String,Nothing})
 
 Struct that contains the parsed TOML configuration, as well as a reference to the TOML path,
-if it exists. It behaves largely like a distionary, but it overloads `getproperty` and
+if it exists. It behaves largely like a dictionary, but it overloads `getproperty` and
 `setproperty` to support syntax like `config.model.reinit = false`.
 """
 struct Config
@@ -38,8 +37,23 @@ struct Config
     path::Union{String, Nothing}  # path to the TOML file, or nothing
 end
 
-Config(path::AbstractString) = Config(TOML.parsefile(path), path)
+function Config(path::AbstractString)
+    config = Config(TOML.parsefile(path), path)
+    config = optional_keys(config)
+    check_config_states(config)
+    return config
+end
 Config(dict::AbstractDict) = Config(dict, nothing)
+
+"Add optional TOML keys `logging` and `time` to `config` (if not present in TOML file)"
+function optional_keys(config::Config)
+    if !haskey(config, "logging")
+        config.logging = Dict{String, Any}()
+    elseif !haskey(config, "time")
+        config.time = Dict{String, Any}()
+    end
+    return config
+end
 
 # allows using getproperty, e.g. config.input.time instead of config["input"]["time"]
 function Base.getproperty(config::Config, f::Symbol)
@@ -950,8 +964,8 @@ function prepare_writer(
     end
 
     # create a separate state output netCDF that will hold the last timestep of all states
-    # but only if config.state.path_output and config.state.variables have been set
-    if check_config_states(config, "path_output")
+    # but only if config.state.path_output has been set
+    if haskey(config, "state") && haskey(config.state, "path_output")
         state_ncnames = check_states(config)
         state_map = out_map(state_ncnames, modelmap)
         nc_state_path = output_path(config, config.state.path_output)
@@ -1645,13 +1659,31 @@ function get_index_dimension(var, config::Config, dim_value)::Int
     return index
 end
 
-"Check state settings in `config` object (parsed TOML file)"
+"Check if state TOML keys are set in `config` object (parsed TOML file)"
 function check_config_states(config::Config, path::AbstractString)
     state_settings =
         haskey(config, "state") &&
         haskey(config.state, path) &&
         haskey(config.state, "variables")
     return state_settings
+end
+
+"""
+Check if required state settings in `config` object (parsed TOML file) are set for reading
+or writing states.
+"""
+function check_config_states(config::Config)
+    reinit = get(config.model, "reinit", true)::Bool
+    if !reinit
+        state_settings = check_config_states(config, "path_input")
+        state_settings ||
+            error("The state section for reading states in the TOML file is incomplete")
+    elseif haskey(config, "state") && haskey(config.state, "path_output")
+        state_settings = check_config_states(config, "path_output")
+        state_settings ||
+            error("The state section for writing states in the TOML file is incomplete")
+    end
+    return nothing
 end
 
 """
