@@ -2,6 +2,16 @@
 title: Vertical concepts
 ---
 
+<style>
+table {
+  table-layout: fixed;
+  width: 100%;
+}
+td, th {
+  word-wrap: break-word;
+}
+</style>
+
 ## SBM
 The Table below shows the parameters (fields) of struct `SBM`, including a description of these
 parameters, the unit, and default value if applicable. The parameters in bold represent model
@@ -228,89 +238,311 @@ the internal model parameter to the external netCDF variable.
 | `total_alloc` | total allocated water |mm Δt$^{-1}$ | - |
 | `nonirri_returnflow` | return flow from non-irrigation |mm Δt$^{-1}$ | - |
 
-## Sediment
 
-The Table below shows external parameters that can be set through static input data (netCDF),
-and can be listed in the TOML configuration file under `[input.vertical]`. These external
-parameters are not part of struct `LandSediment`, but used to calculate parameters of struct
-`LandSediment`.
 
-| Parameter | Description | Unit | Default |
-|:----| -------- | ---- | ---- |
-| `pclay` | percentage clay | %  | 0.1 |
-| `psilt` | percentage silt  | % | 0.1 |
-| `resareas` | reservoir coverage | - | - |
-| `lakeareas` | lake coverage | - | - |
+# Model settings to explain (at other page need to move this)
+| Standard Name | Description | Unit | Default |
+| ---- | ---- | - | - |
+| `thicknesslayers` | ToDo | ToDo | ToDo |
+| `saturated_hydraulic_conductivity_profile` | ToDo | ToDo | ToDo |
+| `conductivity profile` | ToDo | ToDo | ToDo |
+
+## Local inertial (river)
+| Standard Name | Description | Unit | Default |
+| --- | ---- | - | - |
+| `inertial_flow_alpha` | ToDo | ToDo | ToDo |
+| `h_thresh` | ToDo | ToDo | ToDo |
+| `froude_limit` | ToDo | ToDo | ToDo |
+| `floodplain_1d` | ToDo | ToDo | ToDo |
 : {.striped .hover}
 
-The Table below shows the parameters (fields) of struct `LandSediment`, including a description
-of these parameters, the unit, and default value if applicable. The parameters in bold
-represent model parameters that can be set through static and forcing input data (netCDF), and
-can be listed in the TOML configuration file under `[input.vertical]`, to map the internal
-model parameter to the external netCDF variable. For some input parameters the parameter listed
-under `[input.vertical]` is not equal to the internal model parameter, these are listed in the
-Table below between parentheses after the internal model parameter. For example, internal model
-parameter `sl` is mapped as follows in the TOML file to the external netCDF variable `Sl`:
-
-```toml
-[input.vertical]
-specific_leaf = "Sl"
-```
-
-| Parameter | Description | Unit | Default |
-|:----| -------- | ---- | ---- |
-| **`canopyheight`**  | canopy height | m | 3.0  |
-| **`erosk`**  | coefficient for EUROSEM rainfall erosion | - | 0.6  |
-| **`erosspl`**  | exponent for EUROSEM rainfall erosion | - | 2.0  |
-| **`erosov`**  | coefficient for ANSWERS overland flow erosion | - | 0.9  |
-| **`pathfrac`**  | fraction of impervious area per grid cell | - | 0.01  |
-| **`slope`**  | land slope | - | 0.01  |
-| **`usleC`**  | USLE crop management factor | - | 0.01  |
-| **`usleK`**  | USLE soil erodibility factor | - | 0.1 |
-| **`sl`** (`specific_leaf`) | specific leaf storage  | mm | - |
-| **`swood`** (`storage_wood`) | storage woody part of vegetation | mm | - |
-| **`kext`** | extinction coefficient (to calculate canopy gap fraction) | - | - |
-| **`cmax`** | maximum canopy storage | mm | 1.0 |
-| **`canopygapfraction`** | canopy gap fraction | - | 0.1 |
-| **`dmclay`** | median diameter particle size class clay | µm | 2.0 |
-| **`dmsilt`** | median diameter particle size class silt | µm| 10.0 |
-| **`dmsand`** | median diameter particle size class sand | µm | 200.0 |
-| **`dmsagg`** | median diameter particle size class small aggregates | µm | 30.0 |
-| **`dmlagg`** | median diameter particle size class large aggregates | µm | 500.0 |
-| **`rhos`** (`rhosed`) | density of sediment | kg m$^{-3}1$ | 2650.0 |
-| `n`             | number of cells     | - | - |
-| `yl`            | length of cells in y direction | m | - |
-| `xl`            | length of cells in x direction     | m | - |
-| `riverfrac`     | fraction of river   | - | - |
-| `wbcover`     | waterbody coverage   | - | - |
-| **`h_land`**     | depth of overland flow   | m | - |
-| **`interception`**     | canopy interception   | mm Δt$^{-1}$ | - |
-| **`precipitation`**     | precipitation  | mm Δt$^{-1}$ | - |
-| **`q_land`**     | overland flow  | m$^3$ s$^{-1}$ | - |
-| `sedspl`     | sediment eroded by rainfall  | ton Δt$^{-1}$ | - |
-| `sedov`     | sediment eroded by overland flow  | ton Δt$^{-1}$ | - |
-| `soilloss`     | total eroded soil  | ton Δt$^{-1}$ | - |
-| `erosclay`     | eroded soil for particle class clay  | ton Δt$^{-1}$ | - |
-| `erossilt`     | eroded soil for particle class silt  | ton Δt$^{-1}$ | - |
-| `erossand`     | eroded soil for particle class sand  | ton Δt$^{-1}$ | - |
-| `erossagg`     | eroded soil for particle class small aggregates | ton Δt$^{-1}$ | - |
-| `eroslagg`     | eroded soil for particle class large aggregates | ton Δt$^{-1}$ | - |
-| **`leaf_area_index`** | leaf area index | m$^2$ m$^{-2}$ | - |
-| `dl` | drain length | m | - |
-| `dw` | flow width | m | - |
-| `cGovers` | Govers transport capacity coefficient | - | - |
-| `nGovers` | Govers transport capacity coefficient | - | - |
-| `D50` | median particle diameter of the topsoil | mm | - |
-| `fclay` | fraction of particle class clay | - | - |
-| `fsilt` | fraction of particle class silt | - | - |
-| `fsand` | fraction of particle class sand | - | - |
-| `fsagg` | fraction of particle class small aggregates | - | - |
-| `flagg` | fraction of particle class large aggregates  | - | - |
-| `rivcell` | river cells  | - | - |
-| `TCsed` | total transport capacity of overland flow  | ton Δt$^{-1}$ | - |
-| `TCclay` | transport capacity of overland flow for particle class clay | ton Δt$^{-1}$| - |
-| `TCsilt` | transport capacity of overland flow for particle class silt  | ton Δt$^{-1}$ | - |
-| `TCsand` | transport capacity of overland flow for particle class sand  | ton Δt$^{-1}$ | - |
-| `TCsagg` | transport capacity of overland flow for particle class small aggregates  | ton Δt$^{-1}$ | - |
-| `TClagg` | transport capacity of overland flow for particle class large aggregates  | ton Δt$^{-1}$ | - |
+## Subsurface flow
+| Standard Name | Description | Unit | Default |
+| --- | ---- | - | - |
+| `saturated_hydraulic_conductivity_profile` | ToDo | ToDo | ToDo |
 : {.striped .hover}
+
+## Kinematic wave (river)
+| Standard Name | Description | Unit | Default |
+| --- | ---- | - | - |
+| `kin_wave_iteration` | ToDo | ToDo | ToDo |
+| `kw_river_tstep` | ToDo | ToDo | ToDo |
+| `kw_land_tstep` | ToDo | ToDo | ToDo |
+: {.striped .hover}
+
+# wflow_sbm
+
+## Generic maps
+
+| Standard Name | Description | Unit | Default value |
+| --- | ---- | - | - |
+| `local_drain_direction` | Local drainage direction | - | - |
+| `land_surface__slope` | Land slope | - | - |
+| `subcatchment_location__count` | Mask with the subcatchment to simulate | - | - |
+| `river_location__mask` | Mask with the river pixels | - | - |
+| `river__width` | Width of the river | m | - |
+| `river__length` | Length of the river | m | - |
+| `land_surface__elevation` | Surface elevation, only used when only when `model = sbm_gwf` | mm? | - |
+: {.striped .hover}
+
+## Atmospheric forcing (input)
+| Standard Name | Description | Unit | Default |
+| --- | ---- | - | - |
+| `atmosphere_water__precipitation_volume_flux` | Precipitation | mm Δt⁻¹ | - |
+| `land_surface_water__potential_evaporation_volume_flux` | Potential evaporation | mm Δt⁻¹ | - |
+| `atmosphere_air__temperature` | Temperature | ᵒC | - |
+: {.striped .hover}
+
+## Soil
+| Standard Name | Description | Unit | Default |
+| --- | ---- | - | - |
+| `soil_vertical_saturated_hydraulic_conductivity_profile~exponential_below-surface__depth` |  Depth from soil surface for which exponential decline of `kv_0` is valid, only used when `ksat_profile = exponential_constant` | mm | - |
+| `soil_layer_water__vertical_saturated_hydraulic_conductivity` | Vertical hydraulic conductivity per soil layer, when `ksat_profile = layered` or `ksat_profile = layered_exponential` | mm | 1000.0 mm day⁻¹
+| `soil_vertical_saturated_hydraulic_conductivity_profile~layered_below-surface__depth`| Depth from soil surface for which layered profile (of layered_exponential) is valid, when `ksat_profile = layered_exponential` | mm | - |
+: {.striped .hover}
+
+### Input
+| Standard Name | Description | Unit | Default |
+| --- | ---- | - | - |
+| `soil_surface_temperature__weight_coefficient` | Weight coefficient for soil surface temperature | - | 0.1125 |
+| `soil_surface_water__infiltration_reduction_parameter` | Infiltration reduction parameter for soil surface water | - | 0.038 |
+| `soil_water__saturated_volume_fraction` | Saturated volume fraction of soil water | - | 0.6 |
+| `soil_water__residual_volume_fraction` | Residual volume fraction of soil water | - | 0.01 |
+| `soil_surface_water__vertical_saturated_hydraulic_conductivity` | Vertical saturated hydraulic conductivity of soil surface water | mm day⁻¹ | 3000.0 |
+| `soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter` | Scale parameter for vertical saturated hydraulic conductivity of soil water | mm⁻¹ | 0.001 |
+| `soil_water__air_entry_pressure_head` | Air entry pressure head of soil water | cm | -10.0 |
+| `vegetation_root__feddes_critial_pressure_head_h~1` | Critical pressure head h1 of the root water uptake reduction function (Feddes) | cm | 0.0 |
+| `vegetation_root__feddes_critial_pressure_head_h~2` | Critical pressure head h2 of the root water uptake reduction function (Feddes) | cm | -100.0 |
+| `vegetation_root__feddes_critial_pressure_head_h~3~high` | Critical pressure head h3_high of the root water uptake reduction function (Feddes) | cm | -400.0 |
+| `vegetation_root__feddes_critial_pressure_head_h~3~low` | Critical pressure head h3_low of the root water uptake reduction function (Feddes) | cm | -1000.0 |
+| `vegetation_root__feddes_critial_pressure_head_h~4` | Critical pressure head h4 of the root water uptake reduction function (Feddes) | cm | -15849.0 |
+| `vegetation_root__feddes_critial_pressure_head_h~1_reduction_coefficient` | Root water uptake reduction at soil water pressure head h1 (0.0 or 1.0) | - | 1.0 |
+| `soil__thickness` | Soil thickness | mm | 2000.0 |
+| `soil~compacted_surface_water__infiltration_capacity` | Infiltration capacity of the compacted areas | mm Δt⁻¹ | 10 mm day⁻¹ |
+| `soil~non-compacted_surface_water__infiltration_capacity` | Soil infiltration capacity | mm Δt⁻¹ | 100.0 mm day⁻¹ |
+| `soil_water_sat-zone_bottom__max_leakage_volume_flux` | Maximum leakage from saturated zone | mm Δt⁻¹ | 0.0 mm day⁻¹ |
+| `soil_layer_water__brooks-corey_epsilon_parameter` | Brooks-Corey power coefficient for each soil layer | - | 10.0 |
+| `land~water-covered__area_fraction` | Fraction of open water (excluding rivers) | - | 0.0 |
+| `soil_layer_water__vertical_saturated_hydraulic_conductivity_factor` | Vertical saturated hydraulic conductivity factor for soil layer water | - | 1.0 |
+| `soil~compacted__area_fraction` | Fraction of compacted soil area | - | 0.01 |
+| `soil_root~wet__sigmoid_function_shape_parameter` | Sigmoid function shape parameter for wet soil root | - | -500.0 |
+| `soil_root__length_density_fraction` | Length density fraction of soil root | - | - |
+| `soil_water_sat-zone_bottom__max_leakage_volume_flux` | Maximum leakage volume flux from the bottom of the saturated zone | mm day⁻¹ | 0.0 |
+| `soil_layer_water__brooks-corey_epsilon_parameter` | Brooks-Corey epsilon parameter for soil layer water | - | 10.0 |
+| `soil_water_sat-zone_top_capillary-rise__max_water-table_depth` | Maximum water table depth for capillary rise in the top of the saturated zone | mm | 2000.0 |
+| `soil_water_sat-zone_top_capillary-rise__averianov_exponent` | Averianov exponent for capillary rise in the top of the saturated zone | - | 2.0 |
+: {.striped .hover}
+
+### States
+| Standard Name | Description | Unit |
+| --- | ---- | - |
+| `soil_surface__temperature` | Top soil temperature, only when `snow = true` | ᵒC |
+| `soil_water_sat-zone__depth` | Amount of water in the saturated store | mm |
+| `soil_layer_water_unsat-zone__depth` | Amount of water in the unsaturated store, per layer | mm |
+: {.striped .hover}
+
+### Output
+| Standard Name | Description | Unit |
+| --- | ---- | - |
+| `land_surface__evapotranspiration_volume_flux` | Total actual evapotranspiration | mm |
+| `land_water~storage~total__depth` | Total water storage (excluding floodplains, lakes and reservoirs) | mm |
+| `soil_water__infiltration_volume_flux` | Actual infiltration into the unsaturated zone | mm Δt⁻¹ |
+| `soil_water__transpiration_volume_flux` | Transpiration from vegetation | mm Δt⁻¹ |
+| `soil_surface_water__runoff_volume_flux` | Total surface runoff from infiltration and saturation excess | mm Δt⁻¹ |
+| `soil_surface_water__net_runoff_volume_flux` | Net surface runoff (after open water ET) | mm Δt⁻¹ |
+| `soil_layer_water__volume_fraction` | Volumetric water content per soil layer (including theta_r and saturated zone) | - |
+| `soil_layer_water__volume_percentage` | Volumetric water content per soil layer (including theta_r and saturated zone) | % |
+| `soil_water_root-zone__volume_fraction` | Volumetric water content in root zone (including `theta_r` and saturated zone) | - |
+| `soil_water_root-zone__volume_percentage` | Volumetric water content in root zone (including `theta_r` and saturated zone) | % |
+| `soil_water_root-zone__depth` | Root water storage in unsaturated and saturated zone (excluding `theta_r`) | mm |
+| `soil_layer_water_unsat-zone__depth` |  Amount of water in the unsaturated store, per layer | mm |
+| `soil_water_unsat-zone__depth` | Amount of water in the unsaturated store | mm |
+| `soil_water_sat-zone_top__capillary_volume_flux` | Actual capillary rise | mm Δt⁻¹ |
+| `soil_water_sat-zone_top__recharge_volume_flux` | Downward flux from unsaturated to saturated zone | mm Δt⁻¹ |
+| `soil_water_sat-zone_top__net_recharge_volume_flux` | Net recharge to saturated zone | mm Δt⁻¹ |
+| `soil_water_sat-zone_bottom__leakage_volume_flux` | Actual leakage from saturated store | mm Δt⁻¹ |
+| `soil_water_sat-zone__depth` | Amount of water in the saturated store | mm |
+| `soil_water_sat-zone_top__depth` | Pseudo-water table depth (top of the saturated zone) | mm |
+| `soil_surface__temperature` | Top soil temperature, only when `snow = true` | ᵒC |
+: {.striped .hover}
+
+## Vegetation
+
+### Input
+| Standard Name | Description | Unit | Default |
+| --- | ---- | - | - |
+| `vegetation__leaf-area_index` | Leaf area index | m² m⁻² | - |
+| `vegetation_root__depth` | Rooting depth | mm | 750.0 |
+| `vegetation__crop_factor` | Crop coefficient (Kc) | - | 1.0 |
+| `vegetation__specific-leaf_storage` | Specific leaf storage | mm | - |
+| `vegetation_wood_water__storage_capacity` | Storage woody part of vegetation | mm | - |
+| `vegetation_canopy__light-extinction_coefficient` | Extinction coefficient (to calculate canopy gap fraction) | - | - |
+| `vegetation_canopy_water__mean_evaporation-to-mean_precipitation_ratio` | Gash interception model parameter | - | 0.1 |
+| `vegetation_canopy__gap_fraction` | Canopy gap fraction | - | 0.1 |
+| `vegetation_water__storage_capacity` | Maximum canopy storage | mm | 1.0 |
+: {.striped .hover}
+
+### States
+| Standard Name | Description | Unit |
+| --- | ---- | - |
+| `vegetation_canopy_water__depth` | Canopy storage | mm |
+: {.striped .hover}
+
+### Output
+| Standard Name | Description | Unit |
+| --- | ---- | - |
+| `vegetation_canopy_water__depth` | Canopy storage | mm |
+| `vegetation_canopy_water__stemflow_volume_flux` | Stemflow | mm Δt⁻¹ |
+| `vegetation_canopy_water__throughfall_volume_flux` | Throughfall | mm Δt⁻¹ |
+: {.striped .hover}
+
+## Snow
+### Input
+| Standard Name | Description | Unit | Default |
+| --- | ---- | - | - |
+| `atmosphere_air__snowfall_temperature_threshold` | Threshold temperature for snowfall | ᵒC | 0.0 |
+| `atmosphere_air__snowfall_temperature_interval` | Threshold temperature interval length | ᵒC | 1.0 |
+| `snowpack__melting_temperature_threshold` | Threshold temperature for snowmelt | ᵒC | 0.0 |
+| `snowpack__degree-day_coefficient` | Degree-day factor for snowmelt | mm ᵒC⁻¹ Δt⁻¹ | 3.75653 |
+| `snowpack__liquid_water_holding_capacity` | Water holding capacity as fraction of current snow pack | - | 0.1 |
+: {.striped .hover}
+
+### States
+| Standard Name | Description | Unit |
+| --- | ---- | - |
+| `snowpack~dry__leq-depth` | Snow storage | mm |
+| `snowpack~liquid__depth` | Liquid water content in the snow pack | mm |
+: {.striped .hover}
+
+### Output
+| Standard Name | Description | Unit |
+| --- | ---- | - |
+| `snowpack__liquid-equivalent_depth` | Total amount of water stored in snow pack (SWE) | mm |
+| `snowpack_meltwater__volume_flux` | Amount of snow melt |  mm Δt⁻¹ |
+| `snowpack_water__runoff_volume_flux` | Runoff from snowpack | mm Δt⁻¹ |
+: {.striped .hover}
+
+## Glacier
+### Input
+| Standard Name | Description | Unit | Default |
+| --- | ---- | - | - |
+| `glacier_ice__leq-volume` | Water stored within the glacier (used for initial glacier volume) | mm | 5500.0 |
+| `glacier_ice__melting_temperature_threshold` | Threshold temperature for glacier melt | ᵒC | 0.0 |
+| `glacier_ice__degree-day_coefficient` | Degree-day factor for melt from glacier | mm ᵒC⁻¹ Δt⁻¹ | 3.0 |
+| `glacier_firn_accumulation__snowpack~dry_leq-depth_fraction` | Fraction of the snowpack on top of the glacier converted into ice | Δt⁻¹ | 0.001  day⁻¹ |
+| `glacier_surface__area_fraction` | Fraction covered by a glacier | - | 0.0 |
+: {.striped .hover}
+
+### States
+| Standard Name | Description | Unit |
+| --- | ---- | - |
+| `glacier_ice__leq-volume` | Water stored within the glacier | mm |
+: {.striped .hover}
+
+### Output
+| Standard Name | Description | Unit |
+| --- | ---- | - |
+| `glacier_ice__leq-volume` | Water stored within the glacier | mm |
+| `glacier_ice__melt_volume_flux` | Melt from the glacier | mm Δt⁻¹ |
+: {.striped .hover}
+
+## Water demand
+
+### Domestic, industry, livestock (non-irrigation)
+| Standard Name | Description | Unit | Default |
+| --- | ---- | - | - |
+| `land~domestic__gross_water_demand_volume_flux` | Gross domestic water demand | mm Δt⁻¹ | 0.0 |
+| `land~domestic__net_water_demand_volume_flux` | Net domestic water demand | mm Δt⁻¹ | 0.0 |
+| `land~industry__gross_water_demand_volume_flux` | Gross indstury water demand | mm Δt⁻¹ | 0.0 |
+| `land~industry__net_water_demand_volume_flux` | Net industry water demand | mm Δt⁻¹ | 0.0 |
+| `land~livestock__gross_water_demand_volume_flux` | Gross livestock water demand | mm Δt⁻¹ | 0.0 |
+| `land~livestock__net_water_demand_volume_flux` | Net livestock water demand | mm Δt⁻¹ | 0.0 |
+: {.striped .hover}
+
+### Irrigation - non paddy
+| Standard Name | Description | Unit | Default |
+| --- | ---- | - | - |
+| `land~irrigated-non-paddy__irrigation_efficiency` | Irrigation efficiency | - | - |
+| `land~irrigated-non-paddy_area__number` | Irrigation areas (non-paddy) | - | - |
+| `land~irrigated-non-paddy__irrigation_trigger_flag` | Irrigtation trigger (off or on, 0 or 1) | - | - |
+| `land~irrigated-non-paddy__max_irrigation_rate` | Maximum irrigation rate | mm Δt⁻¹ | 25.0 mm day⁻¹ |
+: {.striped .hover}
+
+#### Output
+| Standard Name | Description | Unit |
+| --- | ---- | - |
+| `land~irrigated-non-paddy__gross_water_demand_volume_flux` | Irrigation (non-paddy) gross demand | mm Δt⁻¹ |
+: {.striped .hover}
+
+### Irrigation - paddy
+| Standard Name | Description | Unit | Default |
+| --- | ---- | - | - |
+| `land~irrigated-paddy__min_depth` | Minimum required water depth in the irrigated paddy fields | mm | 20.0 |
+| `land~irrigated-paddy__optimal_depth` | Optimal water depth in the irrigated paddy fields | mm | 50.0 |
+| `land~irrigated-paddy__max_depth` | Water depth when paddy field starts spilling water (overflow) | mm | 80.0 |
+| `land~irrigated-paddy__irrigation_efficiency` | Irrigation efficiency | - | - |
+| `land~irrigated-paddy_area__number` | Irrigation areas (paddy) | - | - |
+| `land~irrigated-paddy__irrigation_trigger_flag` | Irrigtation trigger (off or on, 0 or 1) | - | - |
+| `land~irrigate-paddy__max_irrigation_rate` | Maximum irrigation rate | mm Δt⁻¹ | 25.0 mm day⁻¹ |
+: {.striped .hover}
+
+#### States
+| Standard Name | Description | Unit |
+| --- | ---- | - |
+| `land_surface_water~paddy__depth` | Water depth in paddy field | mm |
+: {.striped .hover}
+
+#### Output
+| Standard Name | Description | Unit |
+| --- | ---- | - |
+| `land_surface_water~paddy__depth` | tWater depth in paddy field | mm |
+| `land~irrigated-paddy__gross_water_demand_volume_flux` | Irrigation (paddy) gross demand | mm Δt⁻¹ |
+: {.striped .hover}
+
+### Allocation
+#### Input
+| Standard Name | Description | Unit | Default |
+| --- | ---- | - | - |
+| `land_surface_water__withdrawal_fraction` | Fraction of surface water used | - | 1.0 |
+| `land_water_allocation_area__number` | Allocation areas | - | 1 |
+: {.striped .hover}
+
+#### Output
+| Standard Name | Description | Unit |
+| --- | ---- | - |
+| `land_surface_water_abstraction__volume_flux` | Actual surface water abstraction | mm Δt⁻¹ |
+| `subsurface_water_abstraction__volume_flux` | Actual groundwater abstraction | mm Δt⁻¹ |
+| `land~irrigated__allocated_water_volume_flux` | Allocated water for irrigation | mm Δt⁻¹ |
+| `land~non-irrigated__allocated_water_volume_flux` | Allocated water for non-irrigation | mm Δt⁻¹ |
+: {.striped .hover}
+
+
+
+
+
+
+
+
+# wflow_sediment
+
+## States
+`river_water_clay__mass`
+`river_bed_clay__mass`
+`river_water_gravel__mass`
+`river_bed_gravel__mass`
+`river_water_aggregates~large__mass`
+`river_bed_aggregates~large__mass`
+`river_water_clay__mass_flow_rate`
+`river_water_gravel__mass_flow_rate`
+`river_water_aggregates~large__mass_flow_rate`
+`river_water_aggregates~small__mass_flow_rate`
+`river_water_sand__mass_flow_rate`
+`river_water_silt__mass_flow_rate`
+`river_water_aggregates~small__mass`
+`river_bed_aggregates~small__mass`
+`river_water_sand__mass`
+`river_bed_sand__mass`
+`river_water_silt__mass`
+`river_bed_silt__mass`
+
+
