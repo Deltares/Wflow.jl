@@ -72,7 +72,7 @@ end
 @testset "no drains" begin
     config.model.drains = false
     delete!(
-        Dict(config.output.variables),
+        Dict(config.output.netcdf_grid.variables),
         "land_drain_water~to-subsurface__volume_flow_rate",
     )
     model = Wflow.initialize_sbm_gwf_model(config)
@@ -81,13 +81,16 @@ end
 
 Wflow.close_files(model; delete_output = false)
 
+# test complete run including logging entry TOML file (not set)
+Wflow.run(tomlpath; silent = true)
+
 # test local-inertial option for river flow routing
 tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
 config = Wflow.Config(tomlpath)
 config.model.river_routing = "local-inertial"
 
-config.input.parameters.river_bank_water__elevation = "bankfull_elevation"
-config.input.parameters.river_bank_water__depth = "bankfull_depth"
+config.input.static.river_bank_water__elevation = "bankfull_elevation"
+config.input.static.river_bank_water__depth = "bankfull_depth"
 
 model = Wflow.initialize_sbm_gwf_model(config)
 Wflow.run_timestep!(model)
@@ -111,9 +114,9 @@ config = Wflow.Config(tomlpath)
 config.model.river_routing = "local-inertial"
 config.model.land_routing = "local-inertial"
 
-config.input.parameters.river_bank_water__elevation = "bankfull_elevation"
-config.input.parameters.river_bank_water__depth = "bankfull_depth"
-config.input.parameters.land_surface_water_flow__ground_elevation = "wflow_dem"
+config.input.static.river_bank_water__elevation = "bankfull_elevation"
+config.input.static.river_bank_water__depth = "bankfull_depth"
+config.input.static.land_surface_water_flow__ground_elevation = "wflow_dem"
 
 pop!(Dict(config.state.variables), "land_surface_water__instantaneous_volume_flow_rate")
 config.state.variables.land_surface_water__depth = "h_av_land"

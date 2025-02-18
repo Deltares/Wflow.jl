@@ -24,6 +24,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Wflow ZMQ server: allow JSON reading and writing of `NaN` and `Inf` values to avoid a JSON
   spec error. For example, during initialization of a wflow model, some (diagnostic) model
   variables are initialized with `NaN` values.
+- Limit flux from `River` boundary of `GroundwaterFlow` to unconfined aquifer based on
+  available river storage (from river flow routing).
 
 ### Changed
 - Removed vertical concepts `HBV` and `FLEXTopo`.
@@ -55,6 +57,12 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   Names](https://csdms.colorado.edu/wiki/CSDMS_Standard_Names). The previous one to one
   mapping can be used to output model variables and parameters (TOML config file), but is
   not considered as part of the public API.
+- Refactor TOML configuration file, also as a result of using internal (CSDMS) standard
+  names. Most important changes include: there is now a distinction between static, cyclic
+  and forcing input (`[input.static]`, `[input.cyclic]` and `[input.forcing]`) without the
+  need to specify the internal cyclic and forcing variables in a list (only an external name
+  mapping is required), state variables are listed below the `[state.variables]` TOML
+  section and use of more clearly defined TOML output sections.
 
 ### Added
 - Support direct output of snow and glacier melt, and add computation of snow water

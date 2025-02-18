@@ -32,11 +32,11 @@ get_demand_gross(model::NoNonIrrigationDemand) = 0.0
 
 "Initialize non-irrigation water demand model for a water use `sector`"
 function NonIrrigationDemand(dataset, config, indices, dt, sector)
-    lens = lens_input_parameter("land~$(sector)__gross_water_demand_volume_flux")
+    lens = lens_input_parameter(config, "land~$(sector)__gross_water_demand_volume_flux")
     demand_gross =
         ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float) .*
         (dt / basetimestep)
-    lens = lens_input_parameter("land~$(sector)__net_water_demand_volume_flux")
+    lens = lens_input_parameter(config, "land~$(sector)__net_water_demand_volume_flux")
     demand_net =
         ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float) .*
         (dt / basetimestep)
@@ -74,30 +74,23 @@ end
 
 "Initialize non-paddy irrigation model"
 function NonPaddy(dataset, config, indices, dt)
-    lens = lens_input_parameter("land~irrigated-non-paddy__irrigation_efficiency")
+    lens = lens_input_parameter(config, "land~irrigated-non-paddy__irrigation_efficiency")
     efficiency = ncread(dataset, config, lens; sel = indices, defaults = 1.0, type = Float)
 
-    lens = lens_input_parameter("land~irrigated-non-paddy_area__number")
-    areas = ncread(
-        dataset,
+    lens = lens_input_parameter(
         config,
-        lens;
-        sel = indices,
-        defaults = 1,
+        "land~irrigated-non-paddy_area__number";
         optional = false,
-        type = Int,
     )
-    lens = lens_input_parameter("land~irrigated-non-paddy__irrigation_trigger_flag")
-    irrigation_trigger = ncread(
-        dataset,
+    areas = ncread(dataset, config, lens; sel = indices, defaults = 1, type = Int)
+    lens = lens_input_parameter(
         config,
-        lens;
-        sel = indices,
-        defaults = 1,
+        "land~irrigated-non-paddy__irrigation_trigger_flag";
         optional = false,
-        type = Bool,
     )
-    lens = lens_input_parameter("land~irrigated-non-paddy__max_irrigation_rate")
+    irrigation_trigger =
+        ncread(dataset, config, lens; sel = indices, defaults = 1, type = Bool)
+    lens = lens_input_parameter(config, "land~irrigated-non-paddy__max_irrigation_rate")
     max_irri_rate =
         ncread(dataset, config, lens; sel = indices, defaults = 25.0, type = Float) .*
         (dt / basetimestep)
@@ -212,25 +205,29 @@ end
 
 "Initialize paddy irrigation model"
 function Paddy(dataset, config, indices, dt)
-    lens = lens_input_parameter("land~irrigated-paddy__min_depth")
+    lens = lens_input_parameter(config, "land~irrigated-paddy__min_depth")
     h_min = ncread(dataset, config, lens; sel = indices, defaults = 20.0, type = Float)
 
-    lens = lens_input_parameter("land~irrigated-paddy__optimal_depth")
+    lens = lens_input_parameter(config, "land~irrigated-paddy__optimal_depth")
     h_opt = ncread(dataset, config, lens; sel = indices, defaults = 50.0, type = Float)
 
-    lens = lens_input_parameter("land~irrigated-paddy__max_depth")
+    lens = lens_input_parameter(config, "land~irrigated-paddy__max_depth")
     h_max = ncread(dataset, config, lens; sel = indices, defaults = 80.0, type = Float)
 
-    lens = lens_input_parameter("land~irrigated-paddy__irrigation_efficiency")
+    lens = lens_input_parameter(config, "land~irrigated-paddy__irrigation_efficiency")
     efficiency = ncread(dataset, config, lens; sel = indices, defaults = 1.0, type = Float)
 
-    lens = lens_input_parameter("land~irrigated-paddy_area__number")
-    areas = ncread(dataset, config, lens; sel = indices, optional = false, type = Bool)
+    lens =
+        lens_input_parameter(config, "land~irrigated-paddy_area__number"; optional = false)
+    areas = ncread(dataset, config, lens; sel = indices, type = Bool)
 
-    lens = lens_input_parameter("land~irrigated-paddy__irrigation_trigger_flag")
-    irrigation_trigger =
-        ncread(dataset, config, lens; sel = indices, optional = false, type = Bool)
-    lens = lens_input_parameter("land~irrigate-paddy__max_irrigation_rate")
+    lens = lens_input_parameter(
+        config,
+        "land~irrigated-paddy__irrigation_trigger_flag";
+        optional = false,
+    )
+    irrigation_trigger = ncread(dataset, config, lens; sel = indices, type = Bool)
+    lens = lens_input_parameter(config, "land~irrigate-paddy__max_irrigation_rate")
     max_irri_rate =
         ncread(dataset, config, lens; sel = indices, defaults = 25.0, type = Float) .*
         (dt / basetimestep)
@@ -492,10 +489,10 @@ end
 
 "Initialize water allocation for the land domain"
 function AllocationLand(dataset, config, indices)
-    lens = lens_input_parameter("land_surface_water__withdrawal_fraction")
+    lens = lens_input_parameter(config, "land_surface_water__withdrawal_fraction")
     frac_sw_used = ncread(dataset, config, lens; sel = indices, defaults = 1, type = Float)
 
-    lens = lens_input_parameter("land_water_allocation_area__number")
+    lens = lens_input_parameter(config, "land_water_allocation_area__number")
     areas = ncread(dataset, config, lens; sel = indices, defaults = 1, type = Int)
 
     n = length(indices)
