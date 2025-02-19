@@ -175,8 +175,16 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         (lens = @optic(_.land.soil.variables.zi), unit = "mm"),
     "soil_surface__temperature" =>
         (lens = @optic(_.land.soil.variables.tsoil), unit = "ᵒC"),
+    "subsurface_water_sat-zone_top__depth" =>
+        (lens = @optic(_.routing.subsurface_flow.variables.zi), unit = "m"),
+    "subsurface_water__exfiltration_volume_flux" => (
+        lens = @optic(_.routing.subsurface_flow.variables.exfiltwater),
+        unit = "m dt-1",
+    ),
     "subsurface_water__volume_flow_rate" =>
         (lens = @optic(_.routing.subsurface_flow.variables.ssf), unit = "m3 d-1"),
+    "subsurface_water~to-river__volume_flow_rate" =>
+        (lens = @optic(_.routing.subsurface_flow.variables.to_river), unit = "m3 d-1"),
     "snowpack~liquid__depth" =>
         (lens = @optic(_.land.snow.variables.snow_water), unit = "mm"),
     "snowpack~dry__leq-depth" =>
@@ -416,3 +424,11 @@ const sediment_standard_name_map = Dict{String, NamedTuple}(
 
 standard_name_map(model::LandHydrologySBM) = sbm_standard_name_map
 standard_name_map(model::SoilLoss) = sediment_standard_name_map
+
+# idea for indexing lens in standard_name_map
+# b = (a=[1,2,3,4,5,), c=(1,2),)
+# f = [1,2,3]
+# l=@optic _.a[f]
+# l(b) = (1,2,3)
+
+# https://discourse.julialang.org/t/simplify-type-information-when-reinterpreting-reshaping/66909/4

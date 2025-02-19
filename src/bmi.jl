@@ -109,33 +109,22 @@ This `API` sections contains a list of `Model` components for which variables ca
 exchanged.
 """
 function BMI.get_input_var_names(model::Model)
-    (; config) = model
-    if haskey(config, "API")
-        var_names = Vector{String}()
-        for c in config.API.components
-            type = typeof(param(model, c))
-            field_names = fieldnames(type)
-
-            for name in field_names
-                var = string(c, ".", name)
-                if exchange(param(model, var))
-                    model_var = param(model, var)
-                    if eltype(model_var) <: SVector
-                        for i in 1:length(first(model_var))
-                            push!(var_names, string(var, "[", i, "]"))
-                        end
-                    elseif ndims(model_var) > 1
-                        for i in 1:length(first(model_var))
-                            push!(var_names, string(var, "[", i, "]"))
-                        end
-                    else
-                        push!(var_names, var)
-                    end
-                else
-                    @warn("$var is not listed as variable for BMI exchange")
-                end
+    (; config, land) = model
+    if haskey(config, "API") && haskey(config.API, "variables")
+        var_names = config.API.variables
+        idx = []
+        for (i, var) in enumerate(var_names)
+            if occursin("soil_layer~", var)
+                var, _ = soil_layer_standard_name(var)
+            end
+            if !haskey(standard_name_map(land), var)
+                push!(idx, i)
+                @warn(
+                    "$var is not listed as variable for BMI exchange and removed from list"
+                )
             end
         end
+        deleteat!(var_names, idx)
         return var_names
     else
         @warn("TOML file does not contain section [API] to extract model var names")
@@ -150,27 +139,20 @@ function BMI.get_output_var_names(model::Model)
 end
 
 function BMI.get_var_grid(model::Model, name::String)
-    s = split(name, "[")
-    key = symbols(first(s))
-    if exchange(param(model, key))
-        type = typeof(param(model, key[1:2]))
-        return if :reservoir in key
-            0
-        elseif :lake in key
-            1
-        elseif :drain in key
-            2
-        elseif :river in key || :river_flow in key
-            3
-        elseif type <: LocalInertialOverlandFlow && occursin("x", s[end])
-            4
-        elseif type <: LocalInertialOverlandFlow && occursin("y", s[end])
-            5
-        else
-            6
-        end
+    return if occursin("reservoir", name)
+        0
+    elseif occursin("lake", name)
+        1
+    elseif occursin("drain", name)
+        2
+    elseif occursin("river", name) || occursin("floodplain", name)
+        3
+    elseif occursin("land_surface_water__x_component", name) # LocalInertialOverlandFlow
+        4
+    elseif occursin("land_surface_water__y_component", name) # LocalInertialOverlandFlow
+        5
     else
-        error("$name not listed as variable for BMI exchange")
+        6
     end
 end
 
@@ -181,12 +163,8 @@ end
 
 function BMI.get_var_units(model::Model, name::String)
     (; land) = model
-    if haskey(standard_name_map(land), name)
-        nt = standard_name_map(land)[name]
-        return nt.unit
-    else
-        error("$name not listed as variable for BMI exchange")
-    end
+    nt = standard_name_map(land)[name]
+    return nt.unit
 end
 
 function BMI.get_var_itemsize(model::Model, name::String)
@@ -200,13 +178,9 @@ end
 
 function BMI.get_var_location(model::Model, name::String)
     (; land) = model
-    if haskey(standard_name_map(land), name)
-        lens = standard_name_map(land)[name].lens
-        element_type = grid_element_type(model, lens)
-        return element_type
-    else
-        error("$name not listed as variable for BMI exchange")
-    end
+    lens = standard_name_map(land)[name].lens
+    element_type = grid_element_type(model, lens)
+    return element_type
 end
 
 function BMI.get_current_time(model::Model)
@@ -246,28 +220,20 @@ function BMI.get_value(
 end
 
 function BMI.get_value_ptr(model::Model, name::String)
-    (; network) = model
-    s = split(name, "[")
-    key = symbols(first(s))
-    if exchange(param(model, key))
-        n = length(active_indices(network, first(s)))
-        if occursin("[", name)
-            ind = tryparse(Int, split(s[end], "]")[1])
-            if eltype(param(model, key)) <: SVector
-                model_vals = param(model, key)
-                el_type = eltype(first(model_vals))
-                dim = length(first(model_vals))
-                value = reshape(reinterpret(el_type, model_vals), dim, :)
-                return @view value[ind, 1:n]
-            else
-                value = @view param(model, key)[ind, 1:n]
-                return value
-            end
-        else
-            return @view(param(model, key)[1:n])
-        end
+    (; land, network) = model
+    n = length(active_indices(network, name))
+
+    if occursin("soil_layer~", name)
+        name_2d, ind = soil_layer_standard_name(name)
+        lens = standard_name_map(land)[name_2d].lens
+        model_vals = lens(model)
+        el_type = eltype(first(model_vals))
+        dim = length(first(model_vals))
+        value = reshape(reinterpret(el_type, model_vals), dim, :)
+        return @view value[ind, 1:n]
     else
-        error("$name not listed as variable for BMI exchange")
+        lens = standard_name_map(land)[name].lens
+        return @view(lens(model)[1:n])
     end
 end
 
@@ -399,6 +365,13 @@ function BMI.get_grid_edge_nodes(model::Model, grid::Int, edge_nodes::Vector{Int
     else
         error("unknown grid type $grid")
     end
+end
+
+function soil_layer_standard_name(name::AbstractString)
+    layer = split(name, "_")[2]
+    j = split(layer, "~")[2]
+    name_2d = replace(name, "~" * j => "")
+    return name_2d, tryparse(Int, j)
 end
 
 function grid_element_type(
