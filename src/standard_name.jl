@@ -1,3 +1,8 @@
+"""
+Mapping of (CSDMS) standard names to model variables and units for models with a land model
+of type `LandHydrologySBM`. The `lens` of the NamedTuple allows access to a nested model
+variable.
+"""
 const sbm_standard_name_map = Dict{String, NamedTuple}(
     "atmosphere_water__precipitation_volume_flux" =>
         (lens = @optic(_.land.atmospheric_forcing.precipitation), unit = "mm dt-1"),
@@ -259,6 +264,10 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
     ),
 )
 
+"""
+Mapping of (CSDMS) standard names to model variables and units for models with a land model
+of type `SoilLoss`. The `lens` of the NamedTuple allows access to a nested model variable.
+"""
 const sediment_standard_name_map = Dict{String, NamedTuple}(
     "atmosphere_water__precipitation_volume_flux" =>
         (lens = @optic(_.land.atmospheric_forcing.precipitation), unit = "mm dt-1"),
@@ -422,13 +431,6 @@ const sediment_standard_name_map = Dict{String, NamedTuple}(
     ),
 )
 
+# wrapper methods for standard name mapping
 standard_name_map(model::LandHydrologySBM) = sbm_standard_name_map
 standard_name_map(model::SoilLoss) = sediment_standard_name_map
-
-# idea for indexing lens in standard_name_map
-# b = (a=[1,2,3,4,5,), c=(1,2),)
-# f = [1,2,3]
-# l=@optic _.a[f]
-# l(b) = (1,2,3)
-
-# https://discourse.julialang.org/t/simplify-type-information-when-reinterpreting-reshaping/66909/4

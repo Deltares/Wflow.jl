@@ -367,13 +367,49 @@ function BMI.get_grid_edge_nodes(model::Model, grid::Int, edge_nodes::Vector{Int
     end
 end
 
-function soil_layer_standard_name(name::AbstractString)
-    layer = split(name, "_")[2]
-    j = split(layer, "~")[2]
-    name_2d = replace(name, "~" * j => "")
-    return name_2d, tryparse(Int, j)
+# Extension of BMI functions (state handling and start time), required for OpenDA coupling.
+# May also be useful for other external software packages.
+function load_state(model::Model)
+    set_states!(model)
+    return nothing
 end
 
+function save_state(model::Model)
+    (; writer) = model
+    if !isnothing(writer.state_nc_path)
+        @info "Write output states to netCDF file `$(writer.state_nc_path)`."
+    end
+    write_netcdf_timestep(model, writer.state_dataset, writer.state_parameters)
+    close(writer.state_dataset)
+    return nothing
+end
+
+function get_start_unix_time(model::Model)
+    return datetime2unix(DateTime(model.config.time.starttime))
+end
+
+# BMI helper functions.
+"""
+Return the standard name `name_layered` representing a layered soil model variable (vector
+of svectors) and the layer index `layer_index` based on a standard `name` representing a
+layer of a layered soil model variable.
+"""
+function soil_layer_standard_name(name::AbstractString)
+    layer_part = split(name, "_")[2]
+    j = split(layer_part, "~")[2]
+    name_layered = replace(name, "~" * j => "")
+    layer_index = tryparse(Int, j)
+    return name_layered, layer_index
+end
+
+"""
+    grid_element_type(model, lens::ComposedFunction)
+    grid_element_type(::T, var::PropertyLens)
+    grid_element_type(model, var::PropertyLens)
+
+Return the grid element type of a model variable (PropertyLens `var`) based on a `lens`. A
+`lens` allows access to a nested model variable.
+"""
 function grid_element_type(
     ::T,
     var::PropertyLens,
@@ -401,27 +437,3 @@ function grid_element_type(model, lens::ComposedFunction)
     end
     return element_type
 end
-
-# Extension of BMI functions (state handling and start time), required for OpenDA coupling.
-# May also be useful for other external software packages.
-function load_state(model::Model)
-    set_states!(model)
-    return nothing
-end
-
-function save_state(model::Model)
-    (; writer) = model
-    if !isnothing(writer.state_nc_path)
-        @info "Write output states to netCDF file `$(writer.state_nc_path)`."
-    end
-    write_netcdf_timestep(model, writer.state_dataset, writer.state_parameters)
-    close(writer.state_dataset)
-    return nothing
-end
-
-function get_start_unix_time(model::Model)
-    return datetime2unix(DateTime(model.config.time.starttime))
-end
-
-exchange(t::Vector) = true
-exchange(t) = false
