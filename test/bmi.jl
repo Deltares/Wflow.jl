@@ -137,8 +137,8 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
         end
     end
 
-    @testset "BMI grid edges" begin
-        tomlpath = joinpath(@__DIR__, "sbm_swf_config.toml")
+    @testset "BMI grid edges and element type" begin
+        tomlpath = joinpath(@__DIR__, "sbm_river-land-local-inertial_config.toml")
         model = BMI.initialize(Wflow.Model, tomlpath)
         @test BMI.get_var_grid(
             model,
@@ -162,6 +162,12 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             "edges are not provided for grid type 2 (variables are located at nodes)",
         ) BMI.get_grid_edge_nodes(model, 2, fill(0, 2 * 50063))
         @test_throws ErrorException BMI.get_grid_edge_nodes(model, 7, fill(0, 2 * 50063))
+        @test BMI.get_var_location(model, "river_water__volume_flow_rate") == "edge"
+        @test BMI.get_var_location(
+            model,
+            "land_surface_water__y_component_of_instantaneous_volume_flow_rate",
+        ) == "edge"
+        @test BMI.get_var_location(model, "river_water__depth") == "node"
         BMI.finalize(model)
     end
 
