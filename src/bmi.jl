@@ -115,6 +115,7 @@ function BMI.get_input_var_names(model::Model)
         idx = []
         for (i, var) in enumerate(var_names)
             if occursin("soil_layer~", var)
+                # map to standard name for layered soil model variable (not available per layer)
                 var, _ = soil_layer_standard_name(var)
             end
             if !haskey(standard_name_map(land), var)
