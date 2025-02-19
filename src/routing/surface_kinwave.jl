@@ -1,13 +1,13 @@
 "Struct for storing (shared) variables for river and overland flow models"
-@get_units @grid_loc @with_kw struct FlowVariables{T}
-    q::Vector{T} | "m3 s-1"                 # Discharge [m³ s⁻¹]
-    qlat::Vector{T} | "m2 s-1"              # Lateral inflow per unit length [m² s⁻¹]
-    qin::Vector{T} | "m3 s-1"               # Inflow from upstream cells [m³ s⁻¹]
-    q_av::Vector{T} | "m3 s-1"              # Average discharge [m³ s⁻¹] for model timestep Δt
-    storage::Vector{T} | "m3"               # Kinematic wave storage [m³] (based on water depth h)
-    storage_av::Vector{T} | "m3"            # Average kinematic wave storage [m³] for model timestep Δt
-    h::Vector{T} | "m"                      # Water depth [m]
-    h_av::Vector{T} | "m"                   # Average water depth [m] for model timestep Δt
+@with_kw struct FlowVariables{T}
+    q::Vector{T}            # Discharge [m³ s⁻¹]
+    qlat::Vector{T}         # Lateral inflow per unit length [m² s⁻¹]
+    qin::Vector{T}          # Inflow from upstream cells [m³ s⁻¹]
+    q_av::Vector{T}         # Average discharge [m³ s⁻¹] for model timestep Δt
+    storage::Vector{T}      # Kinematic wave storage [m³] (based on water depth h)
+    storage_av::Vector{T}   # Average kinematic wave storage [m³] for model timestep Δt
+    h::Vector{T}            # Water depth [m]
+    h_av::Vector{T}         # Average water depth [m] for model timestep Δt
 end
 
 "Initialize timestepping for kinematic wave (river and overland flow models)"
@@ -42,15 +42,15 @@ function FlowVariables(n)
 end
 
 "Struct for storing Manning flow parameters"
-@get_units @grid_loc @with_kw struct ManningFlowParameters{T}
-    beta::T                                 # constant in Manning's equation [-]
-    slope::Vector{T} | "m m-1"              # Slope [m m⁻¹]
-    mannings_n::Vector{T} | "s m-1/3"       # Manning's roughness [s m⁻⅓]
-    flow_length::Vector{T} | "m"            # Flow length [m]
-    flow_width::Vector{T} | "m"             # Flow width [m]
-    alpha_pow::T                            # Used in the power part of alpha [-]
-    alpha_term::Vector{T} | "-"             # Term used in computation of alpha [-]
-    alpha::Vector{T} | "s3/5 m1/5"          # Constant in momentum equation A = alpha*Q^beta, based on Manning's equation
+@with_kw struct ManningFlowParameters{T}
+    beta::T                 # constant in Manning's equation [-]
+    slope::Vector{T}        # Slope [m m⁻¹]
+    mannings_n::Vector{T}   # Manning's roughness [s m⁻⅓]
+    flow_length::Vector{T}  # Flow length [m]
+    flow_width::Vector{T}   # Flow width [m]
+    alpha_pow::T            # Used in the power part of alpha [-]
+    alpha_term::Vector{T}   # Term used in computation of alpha [-]
+    alpha::Vector{T}        # Constant in momentum equation A = alpha*Q^beta, based on Manning's equation [s3/5 m1/5]
 end
 
 "Initialize Manning flow parameters"
@@ -70,9 +70,9 @@ function ManningFlowParameters(slope, mannings_n, flow_length, flow_width)
 end
 
 "Struct for storing river flow model parameters"
-@get_units @grid_loc @with_kw struct RiverFlowParameters{T}
+@with_kw struct RiverFlowParameters{T}
     flow::ManningFlowParameters{T}
-    bankfull_depth::Vector{T} | "m"         # Bankfull water level [m]
+    bankfull_depth::Vector{T}   # Bankfull water level [m]
 end
 
 "Overload `getproperty` for river flow model parameters"
@@ -105,13 +105,13 @@ function RiverFlowParameters(dataset, config, indices, river_length, river_width
 end
 
 "Struct for storing river flow model boundary conditions"
-@get_units @grid_loc @with_kw struct RiverFlowBC{T, R, L}
-    inwater::Vector{T} | "m3 s-1"           # Lateral inflow [m³ s⁻¹]
-    inflow::Vector{T} | "m3 s-1"            # External inflow (abstraction/supply/demand) [m³ s⁻¹]
-    inflow_waterbody::Vector{T} | "m3 s-1"  # inflow waterbody (lake or reservoir model) from land part [m³ s⁻¹]
-    abstraction::Vector{T} | "m3 s-1"       # Abstraction (computed as part of water demand and allocation) [m³ s⁻¹]
-    reservoir::R                            # Reservoir model struct of arrays
-    lake::L                                 # Lake model struct of arrays
+@with_kw struct RiverFlowBC{T, R, L}
+    inwater::Vector{T}              # Lateral inflow [m³ s⁻¹]
+    inflow::Vector{T}               # External inflow (abstraction/supply/demand) [m³ s⁻¹]
+    inflow_waterbody::Vector{T}     # inflow waterbody (lake or reservoir model) from land part [m³ s⁻¹]
+    abstraction::Vector{T}          # Abstraction (computed as part of water demand and allocation) [m³ s⁻¹]
+    reservoir::R                    # Reservoir model struct of arrays
+    lake::L                         # Lake model struct of arrays
 end
 
 "Initialize river flow model boundary conditions"
@@ -170,9 +170,9 @@ function KinWaveRiverFlow(
 end
 
 "Struct for storing overland flow model variables"
-@get_units @grid_loc @with_kw struct LandFlowVariables{T}
+@with_kw struct LandFlowVariables{T}
     flow::FlowVariables{T}
-    to_river::Vector{T} | "m3 s-1"      # Part of overland flow [m³ s⁻¹] that flows to the river
+    to_river::Vector{T} # Part of overland flow [m³ s⁻¹] that flows to the river
 end
 
 "Overload `getproperty` for overland flow model variables"
@@ -187,8 +187,8 @@ function Base.getproperty(v::LandFlowVariables, s::Symbol)
 end
 
 "Struct for storing overland flow model boundary conditions"
-@get_units @grid_loc @with_kw struct LandFlowBC{T}
-    inwater::Vector{T} | "m3 s-1"       # Lateral inflow [m³ s⁻¹]
+@with_kw struct LandFlowBC{T}
+    inwater::Vector{T} # Lateral inflow [m³ s⁻¹]
 end
 
 "Overland flow model using the kinematic wave method and the Manning flow{ equation"

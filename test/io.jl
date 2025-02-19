@@ -221,22 +221,24 @@ Wflow.load_dynamic_input!(model)
 end
 
 @testset "warm states" begin
-    map = Wflow.standard_name_map(model.land)
-    @test map["reservoir_water__instantaneous_volume"](model)[1] ≈ 3.2807224993363418e7
-    @test map["soil_water_sat-zone__depth"](model)[9115] ≈ 477.13548089422125
-    @test map["snowpack~dry__leq-depth"](model)[5] ≈ 11.019233179897599
-    @test map["soil_surface__temperature"](model)[5] ≈ 0.21814478119608938
-    @test map["soil_layer_water_unsat-zone__depth"](model)[50063][1] ≈ 9.969116007201725
-    @test map["snowpack~liquid__depth"](model)[5] ≈ 0.0
-    @test map["vegetation_canopy_water__depth"](model)[50063] ≈ 0.0
-    @test map["soil_water_sat-zone_top__depth"](model)[50063] ≈ 296.8028609104624
-    @test map["subsurface_water__volume_flow_rate"](model)[10606] ≈ 39.972334552895816
-    @test map["river_water__instantaneous_volume_flow_rate"](model)[149] ≈ 53.48673634956338
-    @test map["river_water__instantaneous_depth"](model)[149] ≈ 1.167635369628945
+    nt = Wflow.standard_name_map(model.land)
+    @test nt["reservoir_water__instantaneous_volume"].lens(model)[1] ≈ 3.2807224993363418e7
+    @test nt["soil_water_sat-zone__depth"].lens(model)[9115] ≈ 477.13548089422125
+    @test nt["snowpack~dry__leq-depth"].lens(model)[5] ≈ 11.019233179897599
+    @test nt["soil_surface__temperature"].lens(model)[5] ≈ 0.21814478119608938
+    @test nt["soil_layer_water_unsat-zone__depth"].lens(model)[50063][1] ≈ 9.969116007201725
+    @test nt["snowpack~liquid__depth"].lens(model)[5] ≈ 0.0
+    @test nt["vegetation_canopy_water__depth"].lens(model)[50063] ≈ 0.0
+    @test nt["soil_water_sat-zone_top__depth"].lens(model)[50063] ≈ 296.8028609104624
+    @test nt["subsurface_water__volume_flow_rate"].lens(model)[10606] ≈ 39.972334552895816
+    @test nt["river_water__instantaneous_volume_flow_rate"].lens(model)[149] ≈
+          53.48673634956338
+    @test nt["river_water__instantaneous_depth"].lens(model)[149] ≈ 1.167635369628945
     @test model.routing.river_flow.variables.storage[149] ≈ 63854.60119358985
-    @test map["land_surface_water__instantaneous_volume_flow_rate"](model)[2075] ≈
+    @test nt["land_surface_water__instantaneous_volume_flow_rate"].lens(model)[2075] ≈
           3.285909284322251
-    @test map["land_surface_water__instantaneous_depth"](model)[2075] ≈ 0.052076262033771775
+    @test nt["land_surface_water__instantaneous_depth"].lens(model)[2075] ≈
+          0.052076262033771775
     @test model.routing.overland_flow.variables.storage[2075] ≈ 29920.754983235012
 end
 

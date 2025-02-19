@@ -11,16 +11,16 @@ end
 # Do nothing for a confined aquifer: aquifer can always provide flux
 check_flux(flux, aquifer::ConfinedAquifer, index::Int; dt = 1.0) = flux
 
-@get_units @grid_loc @with_kw struct RiverParameters{T}
-    infiltration_conductance::Vector{T} | "m2 d-1"
-    exfiltration_conductance::Vector{T} | "m2 d-1"
-    bottom::Vector{T} | "m"
+@with_kw struct RiverParameters{T}
+    infiltration_conductance::Vector{T} # [m² d⁻¹]
+    exfiltration_conductance::Vector{T} # [m² d⁻¹]
+    bottom::Vector{T} # [m]
 end
 
-@get_units @grid_loc @with_kw struct RiverVariables{T}
-    stage::Vector{T} | "m"
-    storage::Vector{T} | "m3"
-    flux::Vector{T} | "m3 d-1"
+@with_kw struct RiverVariables{T}
+    stage::Vector{T} # [m]
+    storage::Vector{T} # [m³]
+    flux::Vector{T}  # [m³ d⁻¹]
 end
 
 function RiverVariables(n)
@@ -32,10 +32,10 @@ function RiverVariables(n)
     return variables
 end
 
-@get_units @grid_loc @with_kw struct River{T} <: AquiferBoundaryCondition
+@with_kw struct River{T} <: AquiferBoundaryCondition
     parameters::RiverParameters{T}
     variables::RiverVariables{T}
-    index::Vector{Int} | "-"
+    index::Vector{Int} # [-]
 end
 
 function River(dataset, config, indices, index)
@@ -75,19 +75,19 @@ function flux!(Q, river::River, aquifer; dt = 1.0)
     return Q
 end
 
-@get_units @grid_loc @with_kw struct DrainageParameters{T}
-    elevation::Vector{T} | "m"
-    conductance::Vector{T} | "m2 d-1"
+@with_kw struct DrainageParameters{T}
+    elevation::Vector{T} # [m]
+    conductance::Vector{T} # [m² d⁻¹]
 end
 
-@get_units @grid_loc @with_kw struct DrainageVariables{T}
-    flux::Vector{T} | "m3 d-1"
+@with_kw struct DrainageVariables{T}
+    flux::Vector{T} # [m³ d⁻¹]
 end
 
-@get_units @grid_loc @with_kw struct Drainage{T} <: AquiferBoundaryCondition
+@with_kw struct Drainage{T} <: AquiferBoundaryCondition
     parameters::DrainageParameters{T}
     variables::DrainageVariables{T}
-    index::Vector{Int} | "-"
+    index::Vector{Int} # [-]
 end
 
 function Drainage(dataset, config, indices, index)
@@ -117,19 +117,19 @@ function flux!(Q, drainage::Drainage, aquifer; dt = 1.0)
     return Q
 end
 
-@get_units @grid_loc @with_kw struct HeadBoundaryParameters{T}
-    conductance::Vector{T} | "m2 d-1"
+@with_kw struct HeadBoundaryParameters{T}
+    conductance::Vector{T} # [m² d⁻¹]
 end
 
-@get_units @grid_loc @with_kw struct HeadBoundaryVariables{T}
-    head::Vector{T} | "m"
-    flux::Vector{T} | "m3 d-1"
+@with_kw struct HeadBoundaryVariables{T}
+    head::Vector{T} # [m]
+    flux::Vector{T} # [m³ d⁻¹]
 end
 
-@get_units @grid_loc @with_kw struct HeadBoundary{T} <: AquiferBoundaryCondition
+@with_kw struct HeadBoundary{T} <: AquiferBoundaryCondition
     parameters::HeadBoundaryParameters{T}
     variables::HeadBoundaryVariables{T}
-    index::Vector{Int} | "-"
+    index::Vector{Int} # [-]
 end
 
 function flux!(Q, headboundary::HeadBoundary, aquifer; dt = 1.0)
@@ -142,14 +142,14 @@ function flux!(Q, headboundary::HeadBoundary, aquifer; dt = 1.0)
     return Q
 end
 
-@get_units @grid_loc @with_kw struct RechargeVariables{T}
-    rate::Vector{T} | "m d-1"
-    flux::Vector{T} | "m3 d-1"
+@with_kw struct RechargeVariables{T}
+    rate::Vector{T} # [m d⁻¹]
+    flux::Vector{T} # [m³ d⁻¹]
 end
 
-@get_units @grid_loc @with_kw struct Recharge{T} <: AquiferBoundaryCondition
+@with_kw struct Recharge{T} <: AquiferBoundaryCondition
     variables::RechargeVariables{T}
-    index::Vector{Int} | "-"
+    index::Vector{Int}  # [-]
 end
 
 function Recharge(rate, flux, index)
@@ -171,14 +171,14 @@ function flux!(Q, recharge::Recharge, aquifer; dt = 1.0)
     return Q
 end
 
-@get_units @grid_loc @with_kw struct WellVariables{T}
-    volumetric_rate::Vector{T} | "m3 d-1"
-    flux::Vector{T} | "m3 d-1"
+@with_kw struct WellVariables{T}
+    volumetric_rate::Vector{T} # [m³ d⁻¹]
+    flux::Vector{T} # [m³ d⁻¹]
 end
 
-@get_units @grid_loc @with_kw struct Well{T} <: AquiferBoundaryCondition
+@with_kw struct Well{T} <: AquiferBoundaryCondition
     variables::WellVariables{T}
-    index::Vector{Int} | "-"
+    index::Vector{Int} # [-]
 end
 
 function flux!(Q, well::Well, aquifer; dt = 1.0)
