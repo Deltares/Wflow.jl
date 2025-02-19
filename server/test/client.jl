@@ -192,6 +192,9 @@ end
 end
 
 @testset "Error handling and shutdown" begin
+    msg = (fn = "initialize", config_file = joinpath(@__DIR__, "not_existing.toml"))
+    @test request(msg)["status"] == "ERROR"
+    @test split(request(msg)["error"], "\n")[1] == "Wflow function `initialize` failed"
     @test request((fn = "not_existing_function",)) == Dict(
         "status" => "ERROR",
         "error" => "Received invalid Wflow function: `not_existing_function`",
