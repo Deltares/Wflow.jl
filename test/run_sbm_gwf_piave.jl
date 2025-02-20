@@ -42,10 +42,10 @@ Wflow.run_timestep!(model)
 @testset "piave water demand and allocation second timestep" begin
     sum_total_alloc = sum(total_alloc)
     @test sum(irri_alloc) + sum(nonirri_alloc) ≈ sum_total_alloc
-    @test sum(surfacewater_alloc) ≈ 1057.2573971583527f0
-    @test sum(act_groundwater_abst) ≈ 189.12436534660375f0
+    @test sum(surfacewater_alloc) ≈ 1058.8052175705648f0
+    @test sum(act_groundwater_abst) ≈ 189.5040823394481f0
     @test paddy.variables.h[[45, 76, 296]] ≈
-          [28.197082339552537f0, 25.873022895247782f0, 30.066801639786547f0]
+          [28.197082339552537f0, 24.547545670400083f0, 30.066801639786547f0]
     @test paddy.parameters.irrigation_trigger[[45, 76, 296]] == [1, 1, 1]
     @test paddy.variables.demand_gross[[45, 76, 296]] ≈ [0.0f0, 0.0f0, 0.0f0]
     @test nonpaddy.parameters.irrigation_trigger[[10, 33, 1293]] == [1, 1, 1]

@@ -161,12 +161,10 @@ function extract_required_states(config::Config)
                 "land_surface_water__x_component_of_instantaneous_volume_flow_rate",
                 "land_surface_water__y_component_of_instantaneous_volume_flow_rate",
                 "land_surface_water__instantaneous_depth",
-                "land_surface_water__depth",
             )
         else
             land_states = (
                 "land_surface_water__instantaneous_volume_flow_rate",
-                "land_surface_water__depth",
                 "land_surface_water__instantaneous_depth",
             )
         end
@@ -179,7 +177,6 @@ function extract_required_states(config::Config)
         river_states = (
             "river_water__instantaneous_volume_flow_rate",
             "river_water__instantaneous_depth",
-            "river_water__depth",
         )
     end
 

@@ -63,6 +63,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   need to specify the internal cyclic and forcing variables in a list (only an external name
   mapping is required), state variables are listed below the `[state.variables]` TOML
   section and use of more clearly defined TOML output sections.
+- Use the instantaneous routing water depth `h` at the previous model time step to limit
+  open water evaporation and to set the river `stage` of the `GroundwaterFlow` model for the
+  current model time step, as it is more accurate then using the average water depth `h_av`
+  at the previous model time step.
 
 ### Added
 - Support direct output of snow and glacier melt, and add computation of snow water

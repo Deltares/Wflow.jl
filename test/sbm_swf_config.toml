@@ -27,7 +27,6 @@ soil_layer_water_unsat-zone__depth = "ustorelayerdepth"
 "snowpack~liquid__depth" = "snowwater"
 
 river_water__instantaneous_depth = "h_river"
-river_water__depth = "h_av_river"
 river_water__instantaneous_volume_flow_rate = "q_river"
 
 reservoir_water__instantaneous_volume = "volume_reservoir"
@@ -35,7 +34,6 @@ reservoir_water__instantaneous_volume = "volume_reservoir"
 subsurface_water__volume_flow_rate  = "ssf"
 
 land_surface_water__instantaneous_depth = "h_land"
-land_surface_water__depth = "h_av_land"
 land_surface_water__x_component_of_instantaneous_volume_flow_rate = "qx_land"
 land_surface_water__y_component_of_instantaneous_volume_flow_rate = "qy_land"
 
