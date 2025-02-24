@@ -454,10 +454,11 @@ function get_flow_width(ldd, x_length, y_length)
 end
 
 """
-    get_surface_width(flow_width, flow_length,land_area, river_location)
+    get_surface_width(flow_width, flow_length, land_area, river_location)
 
-Return the surface flow width. Input `flow_width`, `flow_length`, `land_area` and
-`river_location` (boolean). Output is surface flow width `surface_width`.
+Return the surface flow width. Input `flow_width` (flow width), `flow_length` (flow length),
+`land_area` (area covered by land (excluding river coverage)) and `river_location` (river
+cell, boolean). Output is surface flow width `surface_width`.
 """
 function get_surface_width(flow_width, flow_length, land_area, river_location)
     surface_width = river_location ? land_area / flow_length : flow_width
