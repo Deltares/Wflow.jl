@@ -82,7 +82,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
                 "routing.river_flow.variables.q",
                 zeros(Float, 3),
                 [1, 100, 5617],
-            ) ≈ [0.6525631197206111, 7.493760826794606, 0.02319714614721354]
+            ) ≈ [0.6525634030110335, 7.493560511070567, 0.023197145979653312]
             BMI.set_value(
                 model,
                 "land.soil.variables.zi",

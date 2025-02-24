@@ -436,7 +436,7 @@ end
 """
     get_flow_width(ldd, x_length, y_length)
 
-Return the Flow width for a non square grid. Input `ldd` (drainage network), `x_length`
+Return the flow width for a non square grid. Input `ldd` (drainage network), `x_length`
 (length of cells in x direction), `y_length` (length of cells in y direction). Output is
 flow width.
 """
@@ -449,19 +449,19 @@ function get_flow_width(ldd, x_length, y_length)
     elseif ldd == 4 || ldd == 6
         y_length
     else
-        (x_length + y_length) * 0.5
+        (x_length * y_length) / hypot(x_length, y_length)
     end
 end
 
 """
-    det_surfacewidth(ldd, xl, yl)
+    get_surface_width(flow_width, flow_length,land_area, river_location)
 
-Determines the surface flow width. Input `dw` (drainage width), `riverwidth` and `river`
-(boolean). Output is surface flow width `sw`.
+Return the surface flow width. Input `flow_width`, `flow_length`, `land_area` and
+`river_location` (boolean). Output is surface flow width `surface_width`.
 """
-function det_surfacewidth(dw, riverwidth, river)
-    sw = river ? max(dw - riverwidth, 0.0) : dw
-    return sw
+function get_surface_width(flow_width, flow_length, land_area, river_location)
+    surface_width = river_location ? land_area / flow_length : flow_width
+    return surface_width
 end
 
 # 2.5x faster power method

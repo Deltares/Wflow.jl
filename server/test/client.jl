@@ -88,7 +88,7 @@ vwc_1_size = 0
         inds = [1, 5, 10],
     )
     @test request(msg)["value_at_indices"] ≈
-          [2.1007361866518766, 2.5702292750107687, 3.2904803551115727]
+          [2.100780004751114, 2.570700286406515, 3.2920027047674347]
     msg = (fn = "set_value", name = "land.soil.variables.zi", src = fill(300.0, zi_size))
     @test request(msg) == Dict("status" => "OK")
     msg = (fn = "get_value", name = "land.soil.variables.zi", dest = fill(0.0, zi_size))
