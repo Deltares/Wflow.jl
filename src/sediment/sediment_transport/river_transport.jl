@@ -705,7 +705,7 @@ abstract type AbstractSedimentConcentrationsRiverModel{T} end
 @get_units @grid_loc @with_kw struct SedimentConcentrationsRiverVariables{T}
     # Total sediment concentration in the river
     total::Vector{T} | "g m-3"
-    # suspended sediemnt concentration in the river
+    # suspended sediment concentration in the river
     suspended::Vector{T} | "g m-3"
     # bed load sediment concentration in the river
     bed::Vector{T} | "g m-3"

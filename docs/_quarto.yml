@@ -116,10 +116,11 @@ website:
           - file: model_docs/lateral/waterbodies.qmd
           - file: model_docs/lateral/gwf.qmd
           - file: model_docs/lateral/sediment_flux.qmd
-        - text: Parameters
+        - text: List of variables
           contents:
           - file: model_docs/parameters_vertical.qmd
           - file: model_docs/parameters_lateral.qmd
+          - file: model_docs/parameters_sediment.qmd
     - title: Developments
       contents:
         - developments/index.qmd

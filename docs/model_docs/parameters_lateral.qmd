@@ -561,7 +561,7 @@ these parameters, the unit, and default value if applicable.
 | Standard Name | Description | Unit | Default |
 | --- | ---- | - | - |
 | `lake_location__count` | Lake outlet locations (physical location in the model) | - | - |
-| `lakes_area__count` | Lake area (cells covered by the lake) | - | - |
+| `lake_area__count` | Lake mask (cells covered by the lake) | - | - |
 | `lake_surface__area` | Area of the lake | m² | - |
 | `lake_water__rating_curve_coefficient` | Rating curve coefficient | - | - |
 | `lake_water__rating_curve_exponent` | Rating curve exponent | - | - |

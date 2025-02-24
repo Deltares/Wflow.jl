@@ -523,26 +523,5 @@ the internal model parameter to the external netCDF variable.
 
 
 
-# wflow_sediment
-
-## States
-`river_water_clay__mass`
-`river_bed_clay__mass`
-`river_water_gravel__mass`
-`river_bed_gravel__mass`
-`river_water_aggregates~large__mass`
-`river_bed_aggregates~large__mass`
-`river_water_clay__mass_flow_rate`
-`river_water_gravel__mass_flow_rate`
-`river_water_aggregates~large__mass_flow_rate`
-`river_water_aggregates~small__mass_flow_rate`
-`river_water_sand__mass_flow_rate`
-`river_water_silt__mass_flow_rate`
-`river_water_aggregates~small__mass`
-`river_bed_aggregates~small__mass`
-`river_water_sand__mass`
-`river_bed_sand__mass`
-`river_water_silt__mass`
-`river_bed_silt__mass`
 
 

@@ -1,225 +1,190 @@
-# TODO!
-## Sediment (vertical)
+<style>
+table {
+  table-layout: fixed;
+  width: 100%;
+}
+td, th {
+  word-wrap: break-word;
+}
+</style>
 
-The Table below shows external parameters that can be set through static input data (netCDF),
-and can be listed in the TOML configuration file under `[input.vertical]`. These external
-parameters are not part of struct `LandSediment`, but used to calculate parameters of struct
-`LandSediment`.
+## Generic maps
 
-| Parameter | Description | Unit | Default |
-|:----| -------- | ---- | ---- |
-| `pclay` | percentage clay | %  | 0.1 |
-| `psilt` | percentage silt  | % | 0.1 |
-| `resareas` | reservoir coverage | - | - |
-| `lakeareas` | lake coverage | - | - |
+| Standard Name | Description | Unit | Default |
+| --- | ---- | - | - |
+| `local_drain_direction` | Local drainage direction | - | - |
+| `subcatchment_location__count` | Mask with the subcatchment to simulate | - | - |
+| `river_location__mask` | Mask with the river pixels | - | - |
+| `reservoir_area__count` | Reservoir mask (cells covered by the lake) | - | - |
+| `reservoir_location__count` | Reservoir outlet locations (physical location in the model) | | |
+| `lake_area__count` | Lake mask (cells covered by the lake) | - | - |
+| `lake_location__count` | Lake outlet locations (physical location in the model) | - | - |
 : {.striped .hover}
 
-The Table below shows the parameters (fields) of struct `LandSediment`, including a description
-of these parameters, the unit, and default value if applicable. The parameters in bold
-represent model parameters that can be set through static and forcing input data (netCDF), and
-can be listed in the TOML configuration file under `[input.vertical]`, to map the internal
-model parameter to the external netCDF variable. For some input parameters the parameter listed
-under `[input.vertical]` is not equal to the internal model parameter, these are listed in the
-Table below between parentheses after the internal model parameter. For example, internal model
-parameter `sl` is mapped as follows in the TOML file to the external netCDF variable `Sl`:
-
-```toml
-[input.vertical]
-specific_leaf = "Sl"
-```
-
-| Parameter | Description | Unit | Default |
-|:----| -------- | ---- | ---- |
-| **`canopyheight`**  | canopy height | m | 3.0  |
-| **`erosk`**  | coefficient for EUROSEM rainfall erosion | - | 0.6  |
-| **`erosspl`**  | exponent for EUROSEM rainfall erosion | - | 2.0  |
-| **`erosov`**  | coefficient for ANSWERS overland flow erosion | - | 0.9  |
-| **`pathfrac`**  | fraction of impervious area per grid cell | - | 0.01  |
-| **`slope`**  | land slope | - | 0.01  |
-| **`usleC`**  | USLE crop management factor | - | 0.01  |
-| **`usleK`**  | USLE soil erodibility factor | - | 0.1 |
-| **`sl`** (`specific_leaf`) | specific leaf storage  | mm | - |
-| **`swood`** (`storage_wood`) | storage woody part of vegetation | mm | - |
-| **`kext`** | extinction coefficient (to calculate canopy gap fraction) | - | - |
-| **`cmax`** | maximum canopy storage | mm | 1.0 |
-| **`canopygapfraction`** | canopy gap fraction | - | 0.1 |
-| **`dmclay`** | median diameter particle size class clay | µm | 2.0 |
-| **`dmsilt`** | median diameter particle size class silt | µm| 10.0 |
-| **`dmsand`** | median diameter particle size class sand | µm | 200.0 |
-| **`dmsagg`** | median diameter particle size class small aggregates | µm | 30.0 |
-| **`dmlagg`** | median diameter particle size class large aggregates | µm | 500.0 |
-| **`rhos`** (`rhosed`) | density of sediment | kg m$^{-3}1$ | 2650.0 |
-| `n`             | number of cells     | - | - |
-| `yl`            | length of cells in y direction | m | - |
-| `xl`            | length of cells in x direction     | m | - |
-| `riverfrac`     | fraction of river   | - | - |
-| `wbcover`     | waterbody coverage   | - | - |
-| **`h_land`**     | depth of overland flow   | m | - |
-| **`interception`**     | canopy interception   | mm Δt$^{-1}$ | - |
-| **`precipitation`**     | precipitation  | mm Δt$^{-1}$ | - |
-| **`q_land`**     | overland flow  | m$^3$ s$^{-1}$ | - |
-| `sedspl`     | sediment eroded by rainfall  | ton Δt$^{-1}$ | - |
-| `sedov`     | sediment eroded by overland flow  | ton Δt$^{-1}$ | - |
-| `soilloss`     | total eroded soil  | ton Δt$^{-1}$ | - |
-| `erosclay`     | eroded soil for particle class clay  | ton Δt$^{-1}$ | - |
-| `erossilt`     | eroded soil for particle class silt  | ton Δt$^{-1}$ | - |
-| `erossand`     | eroded soil for particle class sand  | ton Δt$^{-1}$ | - |
-| `erossagg`     | eroded soil for particle class small aggregates | ton Δt$^{-1}$ | - |
-| `eroslagg`     | eroded soil for particle class large aggregates | ton Δt$^{-1}$ | - |
-| **`leaf_area_index`** | leaf area index | m$^2$ m$^{-2}$ | - |
-| `dl` | drain length | m | - |
-| `dw` | flow width | m | - |
-| `cGovers` | Govers transport capacity coefficient | - | - |
-| `nGovers` | Govers transport capacity coefficient | - | - |
-| `D50` | median particle diameter of the topsoil | mm | - |
-| `fclay` | fraction of particle class clay | - | - |
-| `fsilt` | fraction of particle class silt | - | - |
-| `fsand` | fraction of particle class sand | - | - |
-| `fsagg` | fraction of particle class small aggregates | - | - |
-| `flagg` | fraction of particle class large aggregates  | - | - |
-| `rivcell` | river cells  | - | - |
-| `TCsed` | total transport capacity of overland flow  | ton Δt$^{-1}$ | - |
-| `TCclay` | transport capacity of overland flow for particle class clay | ton Δt$^{-1}$| - |
-| `TCsilt` | transport capacity of overland flow for particle class silt  | ton Δt$^{-1}$ | - |
-| `TCsand` | transport capacity of overland flow for particle class sand  | ton Δt$^{-1}$ | - |
-| `TCsagg` | transport capacity of overland flow for particle class small aggregates  | ton Δt$^{-1}$ | - |
-| `TClagg` | transport capacity of overland flow for particle class large aggregates  | ton Δt$^{-1}$ | - |
+## Atmospheric forcing
+| Standard Name | Description | Unit | Default |
+| --- | ---- | - | - |
+| `atmosphere_water__precipitation_volume_flux` | Precipitation | mm Δt⁻¹ | - |
 : {.striped .hover}
 
-## Sediment (lateral)
-
-### Overland flow
-The Table below shows the parameters (fields) of struct `OverlandFlowSediment`, including a
-description of these parameters, the unit, and default value if applicable.
-
-| Parameter | Description | Unit | Default |
-|:----| -------- | ---- | ---- |
-| `n`             | number of cells     | - | - |
-| `rivcell`       | river cells | - | - |
-| `soilloss`       | total eroded soil | ton Δt$^{-1}$ | - |
-| `erosclay`       | eroded soil for particle class clay | ton Δt$^{-1}$ | - |
-| `erossilt`       | eroded soil for particle class silt | ton Δt$^{-1}$ | - |
-| `erossand`       | eroded soil for particle class sand | ton Δt$^{-1}$ | - |
-| `erossagg`       | eroded soil for particle class small aggregates | ton Δt$^{-1}$ | - |
-| `eroslagg`       | eroded soil for particle class large aggregates | ton Δt$^{-1}$ | - |
-| `TCsed`        | total transport capacity of overland flow | ton Δt$^{-1}$ | - |
-| `TCclay`       | transport capacity of overland flow for particle class clay | ton Δt$^{-1}$ | - |
-| `TCsilt`       | transport capacity of overland flow for particle class silt | ton Δt$^{-1}$ | - |
-| `TCsand`       | transport capacity of overland flow for particle class sand | ton Δt$^{-1}$ | - |
-| `TCsagg`       | transport capacity of overland flow for particle class small aggregates | ton Δt$^{-1}$ | - |
-| `TClagg`       | transport capacity of overland flow for particle class large aggregates | ton Δt$^{-1}$ | - |
-| `inlandsed`       | sediment reaching the river with overland flow | ton Δt$^{-1}$ | - |
-| `inlandclay`       | sediment with particle class clay reaching the river with overland flow | ton Δt$^{-1}$ | - |
-| `inlandsilt`       | sediment with particle class silt reaching the river with overland flow | ton Δt$^{-1}$ | - |
-| `inlandsand`       | sediment with particle class sand reaching the river with overland flow | ton Δt$^{-1}$ | - |
-| `inlandsagg`       | sediment with particle class small aggregates reaching the river with overland flow | ton Δt$^{-1}$ | - |
-| `inlandlagg`       | sediment with particle class large aggregates reaching the river with overland flow | ton Δt$^{-1}$ | - |
+## Hydrological forcing
+| Standard Name | Description | Unit | Default |
+| --- | ---- | - | - |
+| `river_water__volume_flow_rate` | River discharge | m³ s⁻¹ | - |
+| `river_water__depth` | River water level | m | - |
+| `land_surface_water__volume_flow_rate` | Overland flow discharge | m³ s⁻¹ | - |
+| `land_surface_water__depth` | Overland flow water level | m | - |
+| `vegetation_canopy_water__interception_volume_flux` | Rainfall interception by the vegetation | mm SHOULD THIS BE mm Δt⁻¹? | - |
 : {.striped .hover}
 
-### River flow
-The Table below shows external parameters that can be set through static input data (netCDF),
-and can be listed in the TOML configuration file under `[input.lateral.river]`. These external
-parameters are not part of struct `RiverSediment`, but used to calculate parameters of struct
-`RiverSediment`.
-
-| Parameter | Description | Unit | Default |
-|:----| -------- | ---- | ---- |
-| `reslocs`  | reservoir location (outlet) | - | -  |
-| `resareas`  | reservoir coverage | - | -  |
-| `resarea`  | reservoir area | - | m$^2$  |
-| `restrapeff`  | reservoir trapping efficiency coefficient | - | -  |
-| `lakelocs`  | lake location (outlet) | - | -  |
-| `lakeareas`  | lake coverage | - | -  |
-| `lakearea`  | lake area | - | m$^2$  | - |
+## Rainfall erosion
+### Input
+| Standard Name | Description | Unit | Default |
+| --- | ---- | - | - |
+| `soil_erosion__rainfall_soil_detachability_factor` |  Soil detachability factor | g J⁻¹ | 0.6 |
+| `soil_erosion__eurosem_exponent` | Exponent EUROSEM | - | 2.0 |
+| `vegetation_canopy__height` | Canopy height | m | 0.5 |
+| `vegetation_canopy__gap_fraction` | Canopy gap fraction | - | 0.1 |
+| `soil~compacted__area_fraction` | Fraction of the soil that is covered (eg paved, snow, etc) | - | 0.01 |
+| `soil_erosion__usle_k_factor` | Soil erodibility factor | - | 0.1 |
+| `soil_erosion__usle_c_factor` | Crop management factor | - | 0.01 |
 : {.striped .hover}
 
-The Table below shows the parameters (fields) of struct `RiverSediment`, including a
-description of these parameters, the unit, and default value if applicable. The parameters in
-bold represent model parameters that can be set through static and forcing input data (netCDF),
-and can be listed in the TOML configuration file under `[input.lateral.river]`, to map the
-internal model parameter to the external netCDF variable. For some input parameters the
-parameter listed under `[input.lateral.river]` is not equal to the internal model parameter,
-these are listed in the Table below between parentheses after the internal model parameter. For
-example, internal model parameter `sl` is mapped as follows in the TOML file to the external
-netCDF variable `RiverSlope`:
+### Output
+| Standard Name | Description | Unit |
+| --- | ---- | - |
+| `soil_erosion~rainfall__mass_flow_rate` | Total soil erosion from rainfall (splash) | ton Δt⁻¹ |
+: {.striped .hover}
 
-```toml
-[input.vertical]
-slope = "RiverSlope"
-```
+## Soil erosion
+### Input
+| Standard Name | Description | Unit | Default |
+| --- | ---- | - | - |
+| `soil_clay__mass_fraction` | Soil content clay | - | 0.4 |
+| `soil_silt__mass_fraction` | Soil content silt | - | 0.3 |
+| `soil_sand__mass_fraction` | Soil content sand | - | 0.3 |
+| `soil_aggregates~small__mass_fraction` | Soil content small aggregates | - | 0.0 |
+| `soil_aggregates~large__mass_fraction` | Soil content large aggregates | - | 0.0 |
+: {.striped .hover}
 
-| Parameter | Description | Unit | Default |
-|:----| -------- | ---- | ---- |
-| **`dl`** (`length`)            | river length    | m | - |
-| **`width`**           | river width    | m | - |
-| **`sl`** (`slope`)  | river slope | - | -  |
-| **`rhos`** (`rhosed`)  | density of sediment | kg m$^{-3}1$ | 2650.0 |
-| **`dmclay`** | median diameter particle size class clay | mm | 2.0 |
-| **`dmsilt`** | median diameter particle size class silt | mm| 10.0 |
-| **`dmsand`** | median diameter particle size class sand | mm | 200.0 |
-| **`dmsagg`** | median diameter particle size class small aggregates | mm | 30.0 |
-| **`dmlagg`** | median diameter particle size class large aggregates | mm | 500.0 |
-| **`dmgrav`** | median diameter particle size class gravel | mm | 2000.0 |
-| **`fclayriv`** | fraction of particle class clay | - | - |
-| **`fsiltriv`** | fraction of particle class silt | - | - |
-| **`fsandriv`** | fraction of particle class sand | - | - |
-| **`fsaggriv`** | fraction of particle class small aggregates | - | - |
-| **`flaggriv`** | fraction of particle class large aggregates  | - | - |
-| **`fgravriv`** | fraction of particle class gravel  | - | - |
-| **`d50`** (`d50riv`) | river sediment median diameter  | mm | - |
-| **`d50engelund`**| river mean diameter  | mm | - |
-| **`cbagnold`**| Bagnold c coefficient  | - | - |
-| **`ebagnold`**| Bagnold exponent | - | - |
-| `n`             | number of cells     | - |  - |
-| `dt`             | model time step     | s |  - |
-| `ak`             | Kodatie coefficient `a`    | - |  - |
-| `bk`             | Kodatie coefficient `b`    | - |  - |
-| `ck`             | Kodatie coefficient `c`    | - |  - |
-| `dk`             | Kodatie coefficient `d`    | - |  - |
-| `kdbank`             | bank erodibilty    | m$^3$ N$^{-1}$ s$^{-1}$ | - |
-| `kdbed`             | bed erodibility    | m$^3$ N$^{-1}$ s$^{-1}$ | - |
-| `TCrbank`             | critical bed bank shear stress    | m$^3$ N$^{-2}$ | - |
-| `TCrbed`             | critical bed shear stress    | m$^3$ N$^{-2}$ | - |
-| **`h_riv`**             | river water level  | m| - |
-| **`q_riv`**            | river discharge  | m$^3$ s$^{-1}$ | - |
-| `inlandclay`             | sediment input with particle class clay from land erosion  | t Δt$^{-1}$ | - |
-| `inlandsilt`             | sediment input with particle class silt from land erosion  | t Δt$^{-1}$ | - |
-| `inlandsand`             | sediment input with particle class sand from land erosion  | t Δt$^{-1}$ | - |
-| `inlandsagg`             | sediment input with particle class small aggregates from land erosion  | t Δt$^{-1}$ | - |
-| `inlandlagg`             | sediment input with particle class large aggregates from land erosion  | t Δt$^{-1}$ | - |
-| `inlandsed`             | sediment input from land erosion  | t Δt$^{-1}$ | - |
-| `sedload`             | sediment left in the cell  | t | - |
-| `clayload`             | sediment with particle class clay left in the cell  | t | - |
-| `siltload`             | sediment with particle class silt left in the cell  | t  | - |
-| `sandload`             | sediment with particle class sand left in the cell  | t  | - |
-| `saggload`             | sediment with particle class small aggregates left in the cell  | t  | - |
-| `laggload`             | sediment with particle class large aggregates in the cell  | t  | - |
-| `gravload`             | sediment with particle class gravel left in the cell  | t  | - |
-| `sedstore`              | sediment stored on the river bed after deposition  | t Δt$^{-1}$| - |
-| `claystore`             | sediment with particle class clay stored on the river bed after deposition  | t Δt$^{-1}$ | - |
-| `siltstore`             | sediment with particle class silt stored on the river bed after deposition | t Δt$^{-1}$ | - |
-| `sandstore`             | sediment with particle class sand stored on the river bed after deposition | t Δt$^{-1}$ | - |
-| `saggstore`             | sediment with particle class small aggregates stored on the river bed after deposition  | t Δt$^{-1}$ | - |
-| `laggstore`             | sediment with particle class large aggregates stored on the river bed after deposition  | t Δt$^{-1}$ | - |
-| `gravstore`             | sediment with particle class gravel stored on the river bed after deposition  | t Δt$^{-1}$| - |
-| `outsed`              | sediment flux   | t Δt$^{-1}$| - |
-| `outclay`              | sediment with particle class clay flux  | t Δt$^{-1}$| - |
-| `outsilt`              | sediment with particle class silt  | t Δt$^{-1}$| - |
-| `outsand`              | sediment with particle class sand  | t Δt$^{-1}$| - |
-| `outsagg`              | sediment with particle class small aggregates  | t Δt$^{-1}$| - |
-| `outlagg`              | sediment with particle class large aggregates  | t Δt$^{-1}$| - |
-| `outgrav`              | sediment with particle class gravel  | t Δt$^{-1}$| - |
-| `Sedconc`              | total sediment concentration (`SSconc` + `Bedconc`)  | g m$^{-3}$| - |
-| `SSconc`               | suspended load concentration | g m$^{-3}$| - |
-| `Bedconc`              | bed load concentration  | g m$^{-3}$| - |
-| `maxsed`              | river transport capacity | t Δt$^{-1}$| - |
-| `erodsed`              | total eroded sediment | t Δt$^{-1}$| - |
-| `erodsedbank`          | eroded bank sediment | t Δt$^{-1}$| - |
-| `erodsedbed`           | eroded bed sediment  | t Δt$^{-1}$| - |
-| `depsed`           | deposited sediment  | t Δt$^{-1}$| - |
-| `insed`           | sediment input flux  | t Δt$^{-1}$| - |
-| `wbcover`           | waterbody coverage  | - | - |
-| `wblocs`           | waterbody locations  | - | - |
-| `wbarea`           | waterbody area  | m$^2$ | - |
-| `wbtrap`           | waterbody trapping efficiency coefficient  | - |  - |
+### Output
+| Standard Name | Description | Unit |
+| --- | ---- | - |
+| `soil_erosion__mass_flow_rate` | Total soil erosion | ton Δt⁻¹ |
+| `soil_erosion_clay__mass_flow_rate` | Total clay erosion | ton Δt⁻¹ |
+| `soil_erosion_silt__mass_flow_rate` | Total silt erosion | ton Δt⁻¹ |
+| `soil_erosion_sand__mass_flow_rate` | Total sand erosion | ton Δt⁻¹ |
+| `soil_erosion_aggregates~small__mass_flow_rate` | Total small aggregates erosion | ton Δt⁻¹ |
+| `soil_erosion_aggregates~large__mass_flow_rate` | Total large aggregates erosion | ton Δt⁻¹ |
+: {.striped .hover}
+
+## River transport
+
+### Input
+| Standard Name | Description | Unit | Default |
+| --- | ---- | - | - |
+| `reservoir_surface__area` | Surface area of the reservoir | m² | - |
+| `lake_surface__area` | Surface area of the lake | m² | - |
+| `reservoir_sediment~bedload__trapping_efficiency_coefficient` | Reservoir sediment trapping efficiency | - | 1.0 |
+| `river_bottom-and-bank_clay__mass_fraction` | River bed/bank content clay | - | 0.15 |
+| `river_bottom-and-bank_silt__mass_fraction` | River bed/bank content silt | - | 0.65 |
+| `river_bottom-and-bank_sand__mass_fraction` | River bed/bank content sand | - | 0.15 |
+| `river_bottom-and-bank_gravel__mass_fraction` | River bed/bank content gravel | - | 0.05 |
+| `clay__d50_diameter` | Clay mean diameter | µm | 2.0 |
+| `silt__d50_diameter` | Silt mean diameter | µm | 10.0 |
+| `sand__d50_diameter` | Sand mean diameter | µm | 200.0 |
+| `sediment_aggregates~small__d50_diameter` | Small aggregates mean diameter | µm | 30.0 |
+| `sediment_aggregates~large__d50_diameter` | Large aggregates mean diameter | µm | 500.0 |
+| `gravel__d50_diameter` | Gravel mean diameter | µm | 2000.0 |
+: {.striped .hover}
+
+## Duplicates
+| `clay__d50_diameter` | Clay mean diameter | µm | 2.0 |
+| `silt__d50_diameter` | Silt mean diameter | µm | 10.0 |
+| `sand__d50_diameter` | Sand mean diameter | µm | 200.0 |
+| `sediment_aggregates~small__d50_diameter` | Small aggregates mean diameter | µm | 30.0 |
+| `sediment_aggregates~large__d50_diameter` | Large aggregates mean diameter | µm | 500.0 |
+`soil_erosion__usle_k_factor`
+`soil_erosion__usle_c_factor`
+: {.striped .hover}
+
+## Transport capacity
+### Input
+| Standard Name | Description | Unit | Default |
+| --- | ---- | - | - |
+| `land_surface_sediment__particle_density` | Particle density | kg m⁻³ | 2650.0 |
+| `land_surface_sediment__d50_diameter` | Particle mean diameter | mm | 0.1 |
+| `land_surface_water_sediment__govers_transport_capacity_coefficient` | Govers transport capacity coefficient | - | 0.000505 |
+| `land_surface_water_sediment__govers_transport_capacity_exponent` | Govers transport capacity exponent | - | 4.27 |
+| `river_sediment__particle_density` | Particle density | kg m⁻³ | 2650.0 |
+| `river_sediment__d50_diameter` | Particle mean diameter | mm | 0.1 |
+| `river_water_sediment__bagnold_transport_capacity_coefficient` | Bagnold transport capacity coefficient | - | - |
+| `river_water_sediment__bagnold_transport_capacity_exponent` | Bagnold transport capacity exponent | - | - |
+| `river_water_sediment__kodatie_transport_capacity_a-coefficient` | Kodatie transport capacity coefficient a | - | - |
+| `river_water_sediment__kodatie_transport_capacity_b-coefficient` | Kodatie transport capacity coefficient b | - | - |
+| `river_water_sediment__kodatie_transport_capacity_c-coefficient` | Kodatie transport capacity coefficient c | - | - |
+| `river_water_sediment__kodatie_transport_capacity_d-coefficient` | Kodatie transport capacity coefficient d | - | - |
+: {.striped .hover}
+
+## Overland flow erosion
+
+### Input
+| Standard Name | Description | Unit | Default |
+| --- | ---- | - | - |
+| `soil_erosion__answers_overland_flow_factor` | Answers overland flow factor | - | 0.9
+: {.striped .hover}
+
+### Output
+| Standard Name | Description | Unit |
+| --- | ---- | - |
+| `soil_erosion~overland_flow__mass_flow_rate` | Total soil erosion from overland flow | ton Δt⁻¹ |
+| `land_surface_water_sediment_transport_capacity__mass_flow_rate` | Total sediment transport capacity | ton Δt⁻¹ |
+| `land_surface_water_clay_transport_capacity__mass_flow_rate` | Clray transport capacity | ton Δt⁻¹ |
+| `land_surface_water_sediment~to-river__mass_flow_rate` | Total sediment flux flowing into the river | ton Δt⁻¹ |
+| `land_surface_water_clay~to-river__mass_flow_rate` | Clay flux flowing into the river | ton Δt⁻¹ |
+| `land_surface_water_silt~to-river__mass_flow_rate` | Silt flux flowing into the river | ton Δt⁻¹ |
+| `land_surface_water_sand~to-river__mass_flow_rate` | Sand flux flowing into the river | ton Δt⁻¹ |
+| `land_surface_water_aggregates~small~to-river__mass_flow_rate` | Small aggregates flux flowing into the river | ton Δt⁻¹ |
+| `land_surface_water_aggregates~large~to-river__mass_flow_rate` | Large aggregates flux flowing into the river | ton Δt⁻¹ |
+| `land_surface_water_sediment__mass_flow_rate` | Total sediment flux | ton Δt⁻¹ |
+: {.striped .hover}
+
+## River erosion
+### Input
+| Standard Name | Description | Unit | Default |
+| --- | ---- | - | - |
+| `river_bottom-and-bank_sediment__d50_diameter` | Mean diameter in the river bed/bank | mm | 0.1
+: {.striped .hover}
+
+### States
+| Standard Name | Description | Unit |
+| --- | ---- | - |
+| `river_bed_clay__mass` | Clay stored on the river bed after deposition | ton?/code says ton Δt⁻¹ |
+| `river_bed_silt__mass` | Silt stored on the river bed after deposition | ton?/code says ton Δt⁻¹ |
+| `river_bed_sand__mass` | Sand stored on the river bed after deposition | ton?/code says ton Δt⁻¹ |
+| `river_bed_aggregates~small__mass` | Small aggregates stored on the river bed after deposition | ton?/code says ton Δt⁻¹ |
+| `river_bed_aggregates~large__mass` | Large aggregates stored on the river bed after deposition | ton?/code says ton Δt⁻¹ |
+| `river_bed_gravel__mass` | Gravel stored on the river bed after deposition | ton?/code says ton Δt⁻¹ |
+| `river_water_clay__mass` | Clay left in cell | ton?/code says ton Δt⁻¹ |
+| `river_water_silt__mass` | Silt left in cell | ton?/code says ton Δt⁻¹ |
+| `river_water_sand__mass` | Sand left in cell | ton?/code says ton Δt⁻¹ |
+| `river_water_aggregates~small__mass` | Small aggregates left in cell | ton?/code says ton Δt⁻¹ |
+| `river_water_aggregates~large__mass` | Large aggregates left in cell | ton?/code says ton Δt⁻¹ |
+| `river_water_gravel__mass` | Gravel left in cell | ton?/code says ton Δt⁻¹ |
+| `river_water_clay__mass_flow_rate` | Sediment flux (clay) | ton Δt⁻¹ |
+| `river_water_silt__mass_flow_rate` | Sediment flux (silt) | ton Δt⁻¹ |
+| `river_water_sand__mass_flow_rate` | Sediment flux (sand) | ton Δt⁻¹ |
+| `river_water_aggregates~small__mass_flow_rate` | Sediment flux (small aggregates) | ton Δt⁻¹ |
+| `river_water_aggregates~large__mass_flow_rate` | Sediment flux (large aggregates) | ton Δt⁻¹ |
+| `river_water_gravel__mass_flow_rate` | Sediment flux (gravel) | ton Δt⁻¹ |
+: {.striped .hover}
+
+### Output
+| Standard Name | Description | Unit |
+| --- | ---- | - |
+| `river_water_sediment~bedload__mass_concentration` | Bed load sediment concentration in the river | g m⁻³ |
+| `river_water_sediment~suspended__mass_concentration` | Suspended sediemnt concentration in the river | g m⁻³ |
+| `river_water_sediment__mass_concentration` | Total sediment concentration in the river | g m⁻³ |
+| `river_water_sediment_erosion__mass` | Total sediment erosion (from store + direct river bed/bank) | ton Δt⁻¹ |
+| `river_water_sediment_deposition__mass` | Total sediment deposition | ton Δt⁻¹ |
 : {.striped .hover}
