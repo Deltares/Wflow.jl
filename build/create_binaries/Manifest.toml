@@ -230,11 +230,6 @@ deps = ["ArgTools", "FileWatching", "LibCURL", "NetworkOptions"]
 uuid = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 version = "1.6.0"
 
-[[deps.FieldMetadata]]
-git-tree-sha1 = "c279c6eab9767a3f62685e5276c850512e0a1afd"
-uuid = "bf96fef3-21d2-5d20-8afa-0e7d4c32a885"
-version = "0.3.1"
-
 [[deps.FileWatching]]
 uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
 version = "1.11.0"
@@ -718,7 +713,7 @@ uuid = "3d5dd08c-fd9d-11e8-17fa-ed2836048c2f"
 version = "0.21.71"
 
 [[deps.Wflow]]
-deps = ["Accessors", "BasicModelInterface", "CFTime", "Dates", "DelimitedFiles", "FieldMetadata", "Glob", "Graphs", "LoggingExtras", "LoopVectorization", "NCDatasets", "Parameters", "Polyester", "ProgressLogging", "StaticArrays", "Statistics", "TOML", "TerminalLoggers"]
+deps = ["Accessors", "BasicModelInterface", "CFTime", "CompositionsBase", "Dates", "DelimitedFiles", "Glob", "Graphs", "LoggingExtras", "LoopVectorization", "NCDatasets", "Parameters", "Polyester", "ProgressLogging", "StaticArrays", "Statistics", "TOML", "TerminalLoggers"]
 path = "../.."
 uuid = "d48b7d99-76e7-47ae-b1d5-ff0c1cf9a818"
 version = "0.8.1"

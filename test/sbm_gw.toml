@@ -185,18 +185,3 @@ header = "recharge"
 map = "subcatchment_location__count"
 parameter = "soil_water_sat-zone_top__recharge_volume_flux"
 reducer = "mean"
-
-[API]
-components = [
-  "land.variables",
-  "land.parameters",
-  "routing.subsurface_flow.variables",
-  "routing.subsurface_flow.parameters",
-  "routing.subsurface_flow.variables",
-  "routing.subsurface_flow.parameters",
-  "routing.river_flow.variables",
-  "routing.river_flow.parameters",
-  "routing.river_flow.boundary_conditions.reservoir.boundary_conditions",
-  "routing.river_flow.boundary_conditions.reservoir.parameters",
-  "routing.river_flow.boundary_conditions.reservoir.variables",
-]
