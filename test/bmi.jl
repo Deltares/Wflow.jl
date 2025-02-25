@@ -51,7 +51,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 
         @testset "update and get and set functions" begin
             @test BMI.get_current_time(model) == 86400.0
-            dest = zeros(Float, size(model.land.soil.variables.zi))
+            dest = zeros(Float64, size(model.land.soil.variables.zi))
             BMI.get_value(model, "soil_water_sat-zone_top__depth", dest)
             @test mean(dest) ≈ 276.1625022866973
             @test BMI.get_value_at_indices(
