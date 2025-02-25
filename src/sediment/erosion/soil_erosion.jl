@@ -1,19 +1,19 @@
 abstract type AbstractSoilErosionModel{T} end
 
 "Struct for storing total soil erosion with differentiation model variables"
-@get_units @grid_loc @with_kw struct SoilErosionModelVariables{T}
-    # Total soil erosion
-    amount::Vector{T} | "t dt-1"
-    # Total clay erosion
-    clay::Vector{T} | "t dt-1"
-    # Total silt erosion
-    silt::Vector{T} | "t dt-1"
-    # Total sand erosion
-    sand::Vector{T} | "t dt-1"
-    # Total small aggregates erosion
-    sagg::Vector{T} | "t dt-1"
-    # Total large aggregates erosion
-    lagg::Vector{T} | "t dt-1"
+@with_kw struct SoilErosionModelVariables{T}
+    # Total soil erosion rate [t dt-1]
+    amount::Vector{T}
+    # Total clay erosion rate [t dt-1]
+    clay::Vector{T}
+    # Total silt erosion rate [t dt-1]
+    silt::Vector{T}
+    # Total sand erosion rate [t dt-1]
+    sand::Vector{T}
+    # Total small aggregates erosion rate [t dt-1]
+    sagg::Vector{T}
+    # Total large aggregates erosion rate [t dt-1]
+    lagg::Vector{T}
 end
 
 "Initialize soil erosion model variables"
@@ -37,11 +37,11 @@ function SoilErosionModelVariables(
 end
 
 "Struct for storing soil erosion model boundary conditions"
-@get_units @grid_loc @with_kw struct SoilErosionBC{T}
-    # Rainfall erosion
-    rainfall_erosion::Vector{T} | "t dt-1"
-    # Overland flow erosion
-    overland_flow_erosion::Vector{T} | "m dt-1"
+@with_kw struct SoilErosionBC{T}
+    # Rainfall erosion rate [t dt-1]
+    rainfall_erosion::Vector{T}
+    # Overland flow erosion rate [t dt-1]
+    overland_flow_erosion::Vector{T}
 end
 
 "Initialize soil erosion model boundary conditions"
@@ -57,17 +57,17 @@ function SoilErosionBC(
 end
 
 "Struct for storing soil erosion model parameters"
-@get_units @grid_loc @with_kw struct SoilErosionParameters{T}
-    # Soil content clay
-    clay_fraction::Vector{T} | "-"
-    # Soil content silt
-    silt_fraction::Vector{T} | "-"
-    # Soil content sand
-    sand_fraction::Vector{T} | "-"
-    # Soil content small aggregates
-    sagg_fraction::Vector{T} | "-"
-    # Soil content large aggregates
-    lagg_fraction::Vector{T} | "-"
+@with_kw struct SoilErosionParameters{T}
+    # Soil content clay [-]
+    clay_fraction::Vector{T}
+    # Soil content silt [-]
+    silt_fraction::Vector{T}
+    # Soil content sand [-]
+    sand_fraction::Vector{T}
+    # Soil content small aggregates [-]
+    sagg_fraction::Vector{T}
+    # Soil content large aggregates [-]
+    lagg_fraction::Vector{T}
 end
 
 "Initialize soil erosion model parameters"

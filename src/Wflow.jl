@@ -2,9 +2,10 @@ module Wflow
 
 import BasicModelInterface as BMI
 
-using Accessors: @optic, @reset
+using Accessors: @optic, @reset, PropertyLens
 using Base.Threads: nthreads
 using CFTime: CFTime, monthday, dayofyear
+using CompositionsBase: decompose
 using Dates:
     Dates,
     Second,
@@ -23,7 +24,6 @@ using Dates:
     datetime2unix,
     canonicalize
 using DelimitedFiles: readdlm
-using FieldMetadata: @metadata
 using Glob: glob
 using Graphs:
     add_edge!,
@@ -53,10 +53,6 @@ using StaticArrays: SVector, pushfirst, setindex
 using Statistics: mean, median, quantile!, quantile
 using TerminalLoggers
 using TOML: TOML
-
-# metadata is used in combination with BMI functions `get_var_units` and `get_var_location`
-@metadata get_units "mm dt-1" String
-@metadata grid_loc "node" String # BMI grid location
 
 const CFDataset = Union{NCDataset, NCDatasets.MFDataset}
 const CFVariable_MF = Union{NCDatasets.CFVariable, NCDatasets.MFCFVariable}

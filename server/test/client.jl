@@ -25,7 +25,11 @@ end
 end
 
 @testset "Reading and writing NaN values allowed" begin
-    msg = (fn = "get_value", name = "land.soil.variables.vwc[1]", dest = fill(0.0, 50063))
+    msg = (
+        fn = "get_value",
+        name = "soil_layer~1_water__volume_fraction",
+        dest = fill(0.0, 50063),
+    )
     @test isnan(mean(request(msg)["value"]))
 end
 
@@ -37,13 +41,13 @@ end
 
 @testset "model information functions" begin
     @test request((fn = "get_component_name",)) == Dict("component_name" => "sbm")
-    @test request((fn = "get_input_item_count",)) == Dict("input_item_count" => 205)
-    @test request((fn = "get_output_item_count",)) == Dict("output_item_count" => 205)
+    @test request((fn = "get_input_item_count",)) == Dict("input_item_count" => 7)
+    @test request((fn = "get_output_item_count",)) == Dict("output_item_count" => 7)
     to_check = [
-        "land.soil.parameters.nlayers",
-        "land.soil.parameters.theta_r",
-        "routing.river_flow.variables.q",
-        "routing.river_flow.boundary_conditions.reservoir.variables.outflow",
+        "river_water__volume_flow_rate",
+        "soil_water_unsat-zone__depth",
+        "soil_water__transpiration_volume_flux",
+        "soil_layer~2_water_unsat-zone__depth",
     ]
     retrieved_vars = request((fn = "get_input_var_names",))["input_var_names"]
     @test all(x -> x in retrieved_vars, to_check)
@@ -54,99 +58,111 @@ end
 zi_size = 0
 vwc_1_size = 0
 @testset "variable information and get and set functions" begin
-    @test request((
-        fn = "get_var_itemsize",
-        name = "routing.subsurface_flow.variables.ssf",
-    )) == Dict("var_itemsize" => sizeof(Float64))
-    @test request((fn = "get_var_type", name = "land.n"))["status"] == "ERROR"
-    @test request((fn = "get_var_units", name = "land.soil.parameters.theta_s")) ==
-          Dict("var_units" => "-")
-    @test request((fn = "get_var_location", name = "routing.river_flow.variables.q")) ==
+    @test request((fn = "get_var_itemsize", name = "subsurface_water__volume_flow_rate")) ==
+          Dict("var_itemsize" => sizeof(Float64))
+    @test request((fn = "get_var_units", name = "river_water__volume_flow_rate")) ==
+          Dict("var_units" => "m3 s-1")
+    @test request((fn = "get_var_location", name = "river_water__volume_flow_rate")) ==
           Dict("var_location" => "node")
     zi_nbytes =
-        request((fn = "get_var_nbytes", name = "land.soil.variables.zi"))["var_nbytes"]
+        request((fn = "get_var_nbytes", name = "soil_water_sat-zone_top__depth"))["var_nbytes"]
     @test zi_nbytes == 400504
     zi_itemsize =
-        request((fn = "get_var_itemsize", name = "land.soil.variables.zi"))["var_itemsize"]
+        request((fn = "get_var_itemsize", name = "soil_water_sat-zone_top__depth"))["var_itemsize"]
     zi_size = Int(zi_nbytes / zi_itemsize)
     vwc_1_nbytes =
-        request((fn = "get_var_nbytes", name = "land.soil.variables.vwc[1]"))["var_nbytes"]
+        request((fn = "get_var_nbytes", name = "soil_layer~1_water__volume_fraction"))["var_nbytes"]
     @test vwc_1_nbytes == 400504
     vwc_1_itemsize =
-        request((fn = "get_var_itemsize", name = "land.soil.variables.vwc[1]"))["var_itemsize"]
+        request((fn = "get_var_itemsize", name = "soil_layer~1_water__volume_fraction"))["var_itemsize"]
     vwc_1_size = Int(vwc_1_nbytes / vwc_1_itemsize)
-    @test request((fn = "get_var_grid", name = "routing.river_flow.variables.h")) ==
+    @test request((fn = "get_var_grid", name = "river_water__depth")) ==
           Dict("var_grid" => 3)
-    msg = (fn = "get_value", name = "land.soil.variables.zi", dest = fill(0.0, zi_size))
+    msg = (
+        fn = "get_value",
+        name = "soil_water_sat-zone_top__depth",
+        dest = fill(0.0, zi_size),
+    )
     @test mean(request(msg)["value"]) ≈ 277.3620724821974
-    msg = (fn = "get_value_ptr", name = "land.soil.parameters.theta_s")
-    @test mean(request(msg)["value_ptr"]) ≈ 0.4409211971535584
+    msg = (fn = "get_value_ptr", name = "soil_water_root-zone__depth")
+    @test mean(request(msg)["value_ptr"]) ≈ 29.00870713806498
     msg = (
         fn = "get_value_at_indices",
-        name = "routing.river_flow.variables.q",
+        name = "river_water__instantaneous_volume_flow_rate",
         dest = [0.0, 0.0, 0.0],
         inds = [1, 5, 10],
     )
     @test request(msg)["value_at_indices"] ≈
           [2.1007361866518766, 2.5702292750107687, 3.2904803551115727]
-    msg = (fn = "set_value", name = "land.soil.variables.zi", src = fill(300.0, zi_size))
+    msg = (
+        fn = "set_value",
+        name = "soil_water_sat-zone_top__depth",
+        src = fill(300.0, zi_size),
+    )
     @test request(msg) == Dict("status" => "OK")
-    msg = (fn = "get_value", name = "land.soil.variables.zi", dest = fill(0.0, zi_size))
+    msg = (
+        fn = "get_value",
+        name = "soil_water_sat-zone_top__depth",
+        dest = fill(0.0, zi_size),
+    )
     @test mean(request(msg)["value"]) == 300.0
     msg = (
         fn = "set_value_at_indices",
-        name = "land.soil.variables.zi",
+        name = "soil_water_sat-zone_top__depth",
         src = [250.0, 350.0],
         inds = [1, 2],
     )
     @test request(msg) == Dict("status" => "OK")
     msg = (
         fn = "get_value_at_indices",
-        name = "land.soil.variables.zi",
+        name = "soil_water_sat-zone_top__depth",
         dest = [0.0, 0.0, 0.0],
         inds = [1, 2, 3],
     )
     @test request(msg)["value_at_indices"] == [250.0, 350.0, 300.0]
     msg = (
         fn = "get_value",
-        name = "land.soil.variables.vwc[1]",
+        name = "soil_layer~1_water__volume_fraction",
         dest = fill(0.0, vwc_1_size),
     )
     @test mean(request(msg)["value"]) ≈ 0.18600013563085036f0
     msg = (
         fn = "get_value_at_indices",
-        name = "land.soil.variables.vwc[1]",
+        name = "soil_layer~1_water__volume_fraction",
         dest = [0.0, 0.0, 0.0],
         inds = [1, 2, 3],
     )
     @test request(msg)["value_at_indices"] ≈
           [0.12089607119560242f0, 0.11968416924304527f0, 0.14602328618707333f0]
-    msg =
-        (fn = "set_value", name = "land.soil.variables.vwc[1]", src = fill(0.3, vwc_1_size))
+    msg = (
+        fn = "set_value",
+        name = "soil_layer~1_water__volume_fraction",
+        src = fill(0.3, vwc_1_size),
+    )
     @test request(msg) == Dict("status" => "OK")
     msg = (
         fn = "get_value",
-        name = "land.soil.variables.vwc[1]",
+        name = "soil_layer~1_water__volume_fraction",
         dest = fill(0.0, vwc_1_size),
     )
     @test mean(request(msg)["value"]) ≈ 0.3f0
     msg = (
         fn = "get_value_at_indices",
-        name = "land.soil.variables.vwc[1]",
+        name = "soil_layer~1_water__volume_fraction",
         dest = [0.0, 0.0, 0.0],
         inds = [1, 2, 3],
     )
     @test request(msg)["value_at_indices"] == [0.3, 0.3, 0.3]
     msg = (
         fn = "set_value_at_indices",
-        name = "land.soil.variables.vwc[1]",
+        name = "soil_layer~1_water__volume_fraction",
         src = [0.1, 0.25],
         inds = [1, 2],
     )
     @test request(msg) == Dict("status" => "OK")
     msg = (
         fn = "get_value_at_indices",
-        name = "land.soil.variables.vwc[1]",
+        name = "soil_layer~1_water__volume_fraction",
         dest = [0.0, 0.0],
         inds = [1, 2],
     )
@@ -176,6 +192,9 @@ end
 end
 
 @testset "Error handling and shutdown" begin
+    msg = (fn = "initialize", config_file = joinpath(@__DIR__, "not_existing.toml"))
+    @test request(msg)["status"] == "ERROR"
+    @test split(request(msg)["error"], "\n")[1] == "Wflow function `initialize` failed"
     @test request((fn = "not_existing_function",)) == Dict(
         "status" => "ERROR",
         "error" => "Received invalid Wflow function: `not_existing_function`",

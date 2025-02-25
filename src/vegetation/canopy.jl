@@ -1,13 +1,13 @@
 abstract type AbstractInterceptionModel{T} end
 
 "Struct for storing interception model variables"
-@get_units @grid_loc @with_kw struct InterceptionVariables{T}
+@with_kw struct InterceptionVariables{T}
     # Canopy potential evaporation [mm Δt⁻¹]
     canopy_potevap::Vector{T}
     # Interception loss by evaporation [mm Δt⁻¹]
     interception_rate::Vector{T}
     # Canopy storage [mm]
-    canopy_storage::Vector{T} | "mm"
+    canopy_storage::Vector{T}
     # Stemflow [mm Δt⁻¹]
     stemflow::Vector{T}
     # Throughfall [mm Δt⁻¹]
@@ -26,9 +26,9 @@ function InterceptionVariables(T::Type{<:AbstractFloat}, n::Int)
 end
 
 "Struct for storing Gash interception model parameters"
-@get_units @grid_loc @with_kw struct GashParameters{T}
-    # wet canopy [mm Δt⁻¹] and the average precipitation intensity [mm Δt⁻¹] on a saturated canopy
-    e_r::Vector{T} | "-"
+@with_kw struct GashParameters{T}
+    # ratio [-] of wet canopy [mm Δt⁻¹] and the average precipitation intensity [mm Δt⁻¹] on a saturated canopy
+    e_r::Vector{T}
     vegetation_parameter_set::VegetationParameters{T}
 end
 

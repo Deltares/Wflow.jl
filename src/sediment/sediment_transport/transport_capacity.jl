@@ -1,9 +1,9 @@
 abstract type AbstractTransportCapacityModel{T} end
 
 "Struct to store total transport capacity model variables"
-@get_units @grid_loc @with_kw struct TransportCapacityModelVariables{T}
-    # Total sediment transport capacity
-    amount::Vector{T} | "t dt-1"
+@with_kw struct TransportCapacityModelVariables{T}
+    # Total sediment transport capacity [t dt-1]
+    amount::Vector{T}
 end
 
 "Initialize total transport capacity model variables"
@@ -15,11 +15,11 @@ function TransportCapacityModelVariables(
 end
 
 "Struct to store total transport capacity model boundary conditions"
-@get_units @grid_loc @with_kw struct TransportCapacityBC{T}
-    # Discharge
-    q::Vector{T} | "m3 s-1"
-    # Flow depth
-    waterlevel::Vector{T} | "m"
+@with_kw struct TransportCapacityBC{T}
+    # Discharge [m³ s⁻¹]
+    q::Vector{T}
+    # Flow depth [m]
+    waterlevel::Vector{T}
 end
 
 "Initialize total transport capacity model boundary conditions"
@@ -52,13 +52,13 @@ end
 ##################### Overland Flow #####################
 
 "Struct to store Govers overland flow transport capacity model parameters"
-@get_units @grid_loc @with_kw struct TransportCapacityGoversParameters{T}
-    # Particle density
-    density::Vector{T} | "kg m-3"
-    # Govers transport capacity coefficient
-    c_govers::Vector{T} | "-"
-    # Govers transport capacity exponent
-    n_govers::Vector{T} | "-"
+@with_kw struct TransportCapacityGoversParameters{T}
+    # Particle density [kg m-3]
+    density::Vector{T}
+    # Govers transport capacity coefficient [-]
+    c_govers::Vector{T}
+    # Govers transport capacity exponent [-]
+    n_govers::Vector{T}
 end
 
 "Initialize Govers overland flow transport capacity model parameters"
@@ -137,11 +137,11 @@ function update!(
 end
 
 "Struct to store Yalin overland flow transport capacity model parameters"
-@get_units @grid_loc @with_kw struct TransportCapacityYalinParameters{T}
-    # Particle density
-    density::Vector{T} | "kg m-3"
-    # Particle mean diameter
-    d50::Vector{T} | "mm"
+@with_kw struct TransportCapacityYalinParameters{T}
+    # Particle density [kg m-3]
+    density::Vector{T}
+    # Particle mean diameter [mm]
+    d50::Vector{T}
 end
 
 "Initialize Yalin overland flow transport capacity model parameters"
@@ -208,19 +208,19 @@ function update!(
 end
 
 "Struct to store Yalin differentiated overland flow transport capacity model variables"
-@get_units @grid_loc @with_kw struct TransportCapacityYalinDifferentiationModelVariables{T}
-    # Total sediment transport capacity
-    amount::Vector{T} | "t dt-1"
-    # Transport capacity clay
-    clay::Vector{T} | "t dt-1"
-    # Transport capacity silt
-    silt::Vector{T} | "t dt-1"
-    # Transport capacity sand
-    sand::Vector{T} | "t dt-1"
-    # Transport capacity small aggregates
-    sagg::Vector{T} | "t dt-1"
-    # Transport capacity large aggregates
-    lagg::Vector{T} | "t dt-1"
+@with_kw struct TransportCapacityYalinDifferentiationModelVariables{T}
+    # Total sediment transport capacity [t dt-1]
+    amount::Vector{T}
+    # Transport capacity clay [t dt-1]
+    clay::Vector{T}
+    # Transport capacity silt [t dt-1]
+    silt::Vector{T}
+    # Transport capacity sand [t dt-1]
+    sand::Vector{T}
+    # Transport capacity small aggregates [t dt-1]
+    sagg::Vector{T}
+    # Transport capacity large aggregates [t dt-1]
+    lagg::Vector{T}
 end
 
 "Initialize Yalin differentiated overland flow transport capacity model variables"
@@ -244,19 +244,19 @@ function TransportCapacityYalinDifferentiationModelVariables(
 end
 
 "Struct to store Yalin differentiated overland flow transport capacity model parameters"
-@get_units @grid_loc @with_kw struct TransportCapacityYalinDifferentiationParameters{T}
-    # Particle density
-    density::Vector{T} | "kg m-3"
-    # Clay mean diameter
-    dm_clay::Vector{T} | "µm"
-    # Silt mean diameter
-    dm_silt::Vector{T} | "µm"
-    # Sand mean diameter
-    dm_sand::Vector{T} | "µm"
-    # Small aggregates mean diameter
-    dm_sagg::Vector{T} | "µm"
-    # Large aggregates mean diameter
-    dm_lagg::Vector{T} | "µm"
+@with_kw struct TransportCapacityYalinDifferentiationParameters{T}
+    # Particle density [kg m-3]
+    density::Vector{T}
+    # Clay mean diameter [μm]
+    dm_clay::Vector{T}
+    # Silt mean diameter [μm]
+    dm_silt::Vector{T}
+    # Sand mean diameter [μm]
+    dm_sand::Vector{T}
+    # Small aggregates mean diameter [μm]
+    dm_sagg::Vector{T}
+    # Large aggregates mean diameter [μm]
+    dm_lagg::Vector{T}
 end
 
 "Initialize Yalin differentiated overland flow transport capacity model parameters"
@@ -398,11 +398,11 @@ function update!(
 end
 
 "Struct to store common river transport capacity model parameters"
-@get_units @grid_loc @with_kw struct TransportCapacityRiverParameters{T}
-    # Particle density
-    density::Vector{T} | "kg m-3"
-    # Particle mean diameter
-    d50::Vector{T} | "mm"
+@with_kw struct TransportCapacityRiverParameters{T}
+    # Particle density [kg m-3]
+    density::Vector{T}
+    # Particle mean diameter [mm]
+    d50::Vector{T}
 end
 
 "Initialize common river transport capacity model parameters"
@@ -419,11 +419,11 @@ function TransportCapacityRiverParameters(dataset, config, indices)
 end
 
 "Struct to store Bagnold transport capacity model parameters"
-@get_units @grid_loc @with_kw struct TransportCapacityBagnoldParameters{T}
-    # Bagnold transport capacity coefficient
-    c_bagnold::Vector{T} | "-"
-    # Bagnold transport capacity exponent
-    e_bagnold::Vector{T} | "-"
+@with_kw struct TransportCapacityBagnoldParameters{T}
+    # Bagnold transport capacity coefficient [-]
+    c_bagnold::Vector{T}
+    # Bagnold transport capacity exponent [-]
+    e_bagnold::Vector{T}
 end
 
 "Initialize Bagnold transport capacity model parameters"
@@ -533,15 +533,15 @@ function update!(model::TransportCapacityEngelundModel, geometry::RiverGeometry,
 end
 
 "Struct to store Kodatie river transport capacity model parameters"
-@get_units @grid_loc @with_kw struct TransportCapacityKodatieParameters{T}
-    # Kodatie transport capacity coefficient a
-    a_kodatie::Vector{T} | "-"
-    # Kodatie transport capacity coefficient b
-    b_kodatie::Vector{T} | "-"
-    # Kodatie transport capacity coefficient c
-    c_kodatie::Vector{T} | "-"
-    # Kodatie transport capacity coefficient d
-    d_kodatie::Vector{T} | "-"
+@with_kw struct TransportCapacityKodatieParameters{T}
+    # Kodatie transport capacity coefficient a [-]
+    a_kodatie::Vector{T}
+    # Kodatie transport capacity coefficient b [-]
+    b_kodatie::Vector{T}
+    # Kodatie transport capacity coefficient c [-]
+    c_kodatie::Vector{T}
+    # Kodatie transport capacity coefficient d [-]
+    d_kodatie::Vector{T}
 end
 
 "Initialize Kodatie river transport capacity model parameters"

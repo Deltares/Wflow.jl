@@ -1,9 +1,9 @@
 abstract type AbstractRainfallErosionModel{T} end
 
 "Struct for storing rainfall erosion model variables"
-@get_units @grid_loc @with_kw struct RainfallErosionModelVariables{T}
-    # Total soil erosion from rainfall (splash)
-    amount::Vector{T} | "t dt-1"
+@with_kw struct RainfallErosionModelVariables{T}
+    # Total soil erosion rate [t dt-1] from rainfall (splash)
+    amount::Vector{T}
 end
 
 "Initialize rainfall erosion model variables"
@@ -15,13 +15,13 @@ function RainfallErosionModelVariables(
 end
 
 "Struct for storing EUROSEM rainfall erosion model boundary conditions"
-@get_units @grid_loc @with_kw struct RainfallErosionEurosemBC{T}
-    # precipitation
-    precipitation::Vector{T} | "mm dt-1"
-    # Interception
-    interception::Vector{T} | "mm dt-1"
-    # Waterlevel on land
-    waterlevel::Vector{T} | "m"
+@with_kw struct RainfallErosionEurosemBC{T}
+    # precipitation [mm dt-1]
+    precipitation::Vector{T}
+    # Interception [mm dt-1]
+    interception::Vector{T}
+    # Waterlevel on land [m]
+    waterlevel::Vector{T}
 end
 
 "Initialize EUROSEM rainfall erosion model boundary conditions"
@@ -39,17 +39,17 @@ function RainfallErosionEurosemBC(
 end
 
 "Struct for storing EUROSEM rainfall erosion model parameters"
-@get_units @grid_loc @with_kw struct RainfallErosionEurosemParameters{T}
-    # Soil detachability factor
-    soil_detachability::Vector{T} | "g J-1"
-    # Exponent EUROSEM
-    eurosem_exponent::Vector{T} | "-"
-    # Canopy height
-    canopyheight::Vector{T} | "m"
-    # Canopy gap fraction
-    canopygapfraction::Vector{T} | "-"
-    # Fraction of the soil that is covered (eg paved, snow, etc)
-    soilcover_fraction::Vector{T} | "-"
+@with_kw struct RainfallErosionEurosemParameters{T}
+    # Soil detachability factor [g J-1]
+    soil_detachability::Vector{T}
+    # Exponent EUROSEM [-]
+    eurosem_exponent::Vector{T}
+    # Canopy height [m]
+    canopyheight::Vector{T}
+    # Canopy gap fraction [-]
+    canopygapfraction::Vector{T}
+    # Fraction of the soil that is covered (eg paved, snow, etc) [-]
+    soilcover_fraction::Vector{T}
 end
 
 "Initialize EUROSEM rainfall erosion model parameters"
@@ -143,9 +143,9 @@ function update!(model::RainfallErosionEurosemModel, geometry::LandGeometry, dt)
 end
 
 "Struct for storing ANSWERS rainfall erosion model boundary conditions"
-@get_units @grid_loc @with_kw struct RainfallErosionAnswersBC{T}
-    # precipitation
-    precipitation::Vector{T} | "mm dt-1"
+@with_kw struct RainfallErosionAnswersBC{T}
+    # precipitation [mm dt-1]
+    precipitation::Vector{T}
 end
 
 "Initialize ANSWERS rainfall erosion model boundary conditions"
@@ -157,11 +157,11 @@ function RainfallErosionAnswersBC(
 end
 
 "Struct for storing ANSWERS rainfall erosion model parameters"
-@get_units @grid_loc @with_kw struct RainfallErosionAnswersParameters{T}
-    # Soil erodibility factor
-    usle_k::Vector{T} | "-"
-    # Crop management factor
-    usle_c::Vector{T} | "-"
+@with_kw struct RainfallErosionAnswersParameters{T}
+    # Soil erodibility factor [-]
+    usle_k::Vector{T}
+    # Crop management factor [-]
+    usle_c::Vector{T}
 end
 
 "Initialize ANSWERS rainfall erosion model parameters"
