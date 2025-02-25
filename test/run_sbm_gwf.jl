@@ -46,12 +46,12 @@ end
 @testset "river domain (kinematic wave)" begin
     q = model.routing.river_flow.variables.q_av
     river = model.routing.river_flow
-    @test sum(q) ≈ 0.035468154534622556f0
-    @test q[6] ≈ 0.00803825101724232f0
-    @test river.variables.storage[6] ≈ 4.532124903256408f0
-    @test river.boundary_conditions.inwater[6] ≈ 0.00040826084140456616f0
+    @test sum(q) ≈ 0.035425926757567935f0
+    @test q[6] ≈ 0.00802617565138912f0
+    @test river.variables.storage[6] ≈ 4.528690358701646f0
+    @test river.boundary_conditions.inwater[6] ≈ 0.0004037674722635451f0
     @test q[13] ≈ 0.0006017024138583771f0
-    @test q[network.river.order[end]] ≈ 0.00856866488665273f0
+    @test q[network.river.order[end]] ≈ 0.008553261399338265f0
 end
 
 @testset "groundwater" begin
@@ -64,7 +64,7 @@ end
         1.6225103807809076f0,
         1.4053590307668113f0,
     ]
-    @test gw.boundaries.river.variables.flux[1] ≈ -51.34674583702381f0
+    @test gw.boundaries.river.variables.flux[1] ≈ -51.32817280138138f0
     @test gw.boundaries.drain.variables.flux[1] ≈ 0.0
     @test gw.boundaries.recharge.variables.rate[19] ≈ -0.0014241196552847502f0
 end
@@ -99,12 +99,12 @@ Wflow.run_timestep!(model)
 @testset "river domain (local inertial)" begin
     q = model.routing.river_flow.variables.q_av
     river = model.routing.river_flow
-    @test sum(q) ≈ 0.02727911500112358f0
-    @test q[6] ≈ 0.006111263175002127f0
-    @test river.variables.storage[6] ≈ 7.6120096530771075f0
-    @test river.boundary_conditions.inwater[6] ≈ 0.0002210785332342944f0
-    @test q[13] ≈ 0.0004638698607639214f0
-    @test q[5] ≈ 0.0064668491697542786f0
+    @test sum(q) ≈ 0.025966484848150714f0
+    @test q[6] ≈ 0.0057918662111618585f0
+    @test river.variables.storage[6] ≈ 7.347727838567257f0
+    @test river.boundary_conditions.inwater[6] ≈ 0.00017632250611970184f0
+    @test q[13] ≈ 0.00044406241604129745f0
+    @test q[5] ≈ 0.006109927807397471f0
 end
 Wflow.close_files(model; delete_output = false)
 
@@ -129,14 +129,14 @@ Wflow.run_timestep!(model)
 
 @testset "river and land domain (local inertial)" begin
     q = model.routing.river_flow.variables.q_av
-    @test sum(q) ≈ 0.027286431923384962f0
-    @test q[6] ≈ 0.00611309161099138f0
-    @test q[13] ≈ 0.0004639786629631376f0
-    @test q[5] ≈ 0.006468859889145798f0
+    @test sum(q) ≈ 0.02596647126178727f0
+    @test q[6] ≈ 0.0057918687419759255f0
+    @test q[13] ≈ 0.00044406258154064935f0
+    @test q[5] ≈ 0.00610990650349414f0
     h = model.routing.river_flow.variables.h_av
-    @test h[6] ≈ 0.08120137914886108f0
-    @test h[5] ≈ 0.07854966203902745f0
-    @test h[13] ≈ 0.08323543174453409f0
+    @test h[6] ≈ 0.07894230285870471f0
+    @test h[5] ≈ 0.07635048570353754f0
+    @test h[13] ≈ 0.08095204525673293f0
     qx = model.routing.overland_flow.variables.qx
     qy = model.routing.overland_flow.variables.qy
     @test all(qx .== 0.0f0)
@@ -173,7 +173,7 @@ end
     @test sum(q) ≈ 0.01191742350356312f0
     @test q[6] ≈ 0.0024353072305122064f0
     @test river.variables.storage[6] ≈ 2.2277585577366357f0
-    @test river.boundary_conditions.inwater[6] ≈ -1.3042629584651168f-5
+    @test river.boundary_conditions.inwater[6] ≈ -1.298187928273214f-5
     @test q[13] ≈ 7.332742814063803f-5
     @test q[network.river.order[end]] ≈ 0.002472526149620472f0
 end

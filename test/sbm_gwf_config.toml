@@ -27,12 +27,10 @@ soil_water_sat-zone__depth = "satwaterdepth"
 soil_layer_water_unsat-zone__depth = "ustorelayerdepth"
 
 river_water__instantaneous_depth = "h_river"
-river_water__depth = "h_av_river"
 river_water__instantaneous_volume_flow_rate = "q_river"
 
 land_surface_water__instantaneous_volume_flow_rate = "q_land"
 land_surface_water__instantaneous_depth = "h_land"
-land_surface_water__depth = "h_av_land"
 
 subsurface_water__hydraulic_head = "head"
 

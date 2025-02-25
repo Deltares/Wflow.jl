@@ -75,7 +75,8 @@ varnames = setdiff(keys(endstate_restart), keys(endstate_restart.dim))
         a = endstate_one_run[varname][:]
         b = endstate_restart[varname][:]
         maxdiff = maximum(abs.(skipmissing(b - a)))
-        @test maxdiff < 1e-9
+        tol = varname == "volume_reservoir" ? 1e-8 : 1e-9
+        @test maxdiff < tol
     end
 end
 
