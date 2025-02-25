@@ -141,7 +141,7 @@ end
 
 "Struct for storing ANSWERS rainfall erosion model boundary conditions"
 @with_kw struct RainfallErosionAnswersBC{T}
-    # precipitation ["mm dt-1]
+    # precipitation [mm dt-1]
     precipitation::Vector{T}
 end
 
