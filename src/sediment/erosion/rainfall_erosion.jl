@@ -41,7 +41,7 @@ end
     soil_detachability::Vector{T}
     # Exponent EUROSEM [-]
     eurosem_exponent::Vector{T}
-    # Canopy height [M]
+    # Canopy height [m]
     canopyheight::Vector{T}
     # Canopy gap fraction [-]
     canopygapfraction::Vector{T}
