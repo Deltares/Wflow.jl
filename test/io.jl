@@ -217,7 +217,7 @@ Wflow.load_dynamic_input!(model)
     @test "snow" in ncvars
     @test "q_av_river" in ncvars
     @test "q_av_land" in ncvars
-    @test length(writer.state_parameters) == 14
+    @test length(writer.state_parameters) == 12
 end
 
 @testset "warm states" begin
@@ -474,8 +474,8 @@ end
     @test "vegetation_canopy_water__depth" in required_states
     @test "subsurface_water__volume_flow_rate" in required_states
     @test "river_water__instantaneous_volume_flow_rate" in required_states
-    @test "river_water__depth" in required_states
-    @test "land_surface_water__depth" in required_states
+    @test "reservoir_water__instantaneous_volume" in required_states
+    @test "snowpack~liquid__depth" in required_states
     @test !("lake_water_level__elevation" in required_states)
 
     # Adding an unused state the see if the right warning message is thrown
@@ -502,6 +502,6 @@ end
     @test "vegetation_canopy_water__depth" in required_states
     @test "subsurface_water__hydraulic_head" in required_states
     @test "river_water__instantaneous_volume_flow_rate" in required_states
-    @test "river_water__depth" in required_states
-    @test "land_surface_water__depth" in required_states
+    @test "river_water__instantaneous_depth" in required_states
+    @test "land_surface_water__instantaneous_depth" in required_states
 end
