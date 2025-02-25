@@ -30,7 +30,7 @@ end
 
 "Struct for storing river erosion model parameters"
 @with_kw struct RiverErosionParameters{T}
-    # Mean diameter [μm] in the river bed/bank
+    # Mean diameter [mm] in the river bed/bank
     d50::Vector{T}
 end
 

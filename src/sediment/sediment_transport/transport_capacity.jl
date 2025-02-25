@@ -136,7 +136,7 @@ end
 @with_kw struct TransportCapacityYalinParameters{T}
     # Particle density [kg m-3]
     density::Vector{T}
-    # Particle mean diameter [μm]
+    # Particle mean diameter [mm]
     d50::Vector{T}
 end
 
@@ -395,7 +395,7 @@ end
 @with_kw struct TransportCapacityRiverParameters{T}
     # Particle density [kg m-3]
     density::Vector{T}
-    # Particle mean diameter [μm]
+    # Particle mean diameter [mm]
     d50::Vector{T}
 end
 
