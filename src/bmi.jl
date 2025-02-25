@@ -2,15 +2,15 @@
 # https://github.com/Deltares/BasicModelInterface.jl
 
 # Mapping of grid identifier to a key, to get the active indices of the model domain.
-# See also function active_indices(network, key::Tuple).
-const GRIDS = Dict{Int, Tuple{Symbol}}(
-    0 => (:reservoir,),
-    1 => (:lake,),
-    2 => (:drain,),
-    3 => (:river,),
-    4 => (:land,),
-    5 => (:land,),
-    6 => (:land,),
+# See also function active_indices(network, key::AbstractString).
+const GRIDS = Dict{Int, String}(
+    0 => "reservoir",
+    1 => "lake",
+    2 => "drain",
+    3 => "river",
+    4 => "land",
+    5 => "land",
+    6 => "land",
 )
 
 """
@@ -209,7 +209,7 @@ end
 function BMI.get_current_time(model::Model)
     (; config) = model
     calendar = get(config, "calendar", "standard")::String
-    starttime = cftime(config.starttime, calendar)
+    starttime = cftime(config.time.starttime, calendar)
     return 0.001 * Dates.value(model.clock.time - starttime)
 end
 
@@ -220,8 +220,8 @@ end
 function BMI.get_end_time(model::Model)
     (; config) = model
     calendar = get(config, "calendar", "standard")::String
-    starttime = cftime(config.starttime, calendar)
-    endtime = cftime(config.endtime, calendar)
+    starttime = cftime(config.time.starttime, calendar)
+    endtime = cftime(config.time.endtime, calendar)
     return 0.001 * Dates.value(endtime - starttime)
 end
 
@@ -230,7 +230,7 @@ function BMI.get_time_units(model::Model)
 end
 
 function BMI.get_time_step(model::Model)
-    return Float64(model.config.timestepsecs)
+    return Float64(model.config.time.timestepsecs)
 end
 
 function BMI.get_value(
@@ -247,7 +247,7 @@ function BMI.get_value_ptr(model::Model, name::String)
     s = split(name, "[")
     key = symbols(first(s))
     if exchange(param(model, key))
-        n = length(active_indices(network, key))
+        n = length(active_indices(network, first(s)))
         if occursin("[", name)
             ind = tryparse(Int, split(s[end], "]")[1])
             if eltype(param(model, key)) <: SVector
@@ -362,7 +362,7 @@ function BMI.get_grid_edge_count(model::Model, grid::Int)
     elseif grid == 5
         return length(network.land.edge_indices.yu)
     elseif grid in 0:2 || grid == 6
-        warn("edges are not provided for grid type $grid (variables are located at nodes)")
+        @warn("edges are not provided for grid type $grid (variables are located at nodes)")
     else
         error("unknown grid type $grid")
     end
@@ -406,9 +406,9 @@ function load_state(model::Model)
 end
 
 function save_state(model::Model)
-    (; config, writer) = model
-    if haskey(config, "state") && haskey(config.state, "path_output")
-        @info "Write output states to netCDF file `$(model.writer.state_nc_path)`."
+    (; writer) = model
+    if !isnothing(writer.state_nc_path)
+        @info "Write output states to netCDF file `$(writer.state_nc_path)`."
     end
     write_netcdf_timestep(model, writer.state_dataset, writer.state_parameters)
     close(writer.state_dataset)
@@ -416,7 +416,7 @@ function save_state(model::Model)
 end
 
 function get_start_unix_time(model::Model)
-    return datetime2unix(DateTime(model.config.starttime))
+    return datetime2unix(DateTime(model.config.time.starttime))
 end
 
 exchange(t::Vector) = true

@@ -77,14 +77,14 @@ function active_indices(subcatch_2d::AbstractMatrix, nodata)
     return indices, reverse_indices
 end
 
-function active_indices(network::Network, key::Tuple)
-    if :reservoir in key
+function active_indices(network::Network, key::AbstractString)
+    if occursin("reservoir", key)
         return network.reservoir.indices_outlet
-    elseif :lake in key
+    elseif occursin("lake", key)
         return network.lake.indices_outlet
-    elseif :river in key || :river_flow in key
+    elseif occursin("river", key) || occursin("floodplain", key)
         return network.river.indices
-    elseif :drain in key
+    elseif occursin("drain", key)
         return network.drain.indices
     else
         return network.land.indices
@@ -154,7 +154,7 @@ and set states in `model` object. Active cells are selected with the correspondi
 - `type = nothing`: type to convert data to after reading. By default no conversion is done.
 """
 function set_states!(instate_path, model; type = nothing, dimname = nothing)
-    (; network, config) = model
+    (; network, land, config) = model
 
     # Check if required states are covered
     state_ncnames = check_states(config)
@@ -188,7 +188,8 @@ function set_states!(instate_path, model; type = nothing, dimname = nothing)
                     end
                 end
                 # set state in model object
-                param(model, state) .= svectorscopy(A, Val{size(A)[1]}())
+                lens = standard_name_map(land)[state]
+                lens(model) .= svectorscopy(A, Val{size(A)[1]}())
                 # 3 dims (x,y,time)
             elseif dims == 3
                 A = read_standardized(ds, ncname, (x = :, y = :, time = 1))
@@ -201,7 +202,8 @@ function set_states!(instate_path, model; type = nothing, dimname = nothing)
                     end
                 end
                 # set state in model object, only set active cells ([1:n]) (ignore boundary conditions/ghost points)
-                param(model, state)[1:n] .= A
+                lens = standard_name_map(land)[state]
+                lens(model)[1:n] .= A
             else
                 error(
                     "Number of state dims should be 3 or 4, number of dims = ",
@@ -214,16 +216,15 @@ function set_states!(instate_path, model; type = nothing, dimname = nothing)
 end
 
 """
-    ncread(nc, config::Config, parameter::AbstractString; <keyword arguments>)
+    ncread(nc, config::Config, parameter::NamedTuple; <keyword arguments>)
 
 Read a netCDF variable `var` from file `nc`, based on `config` (parsed TOML file) and the
-model `parameter` specified in the TOML configuration file. Supports various keyword
-arguments to get selections of data in desired types, with or without missing values.
+`parameter` specifying the internal standard `name` in the TOML configuration file and a
+`lens` to access the external netCDF variable name in the nested `config` object. Supports
+various keyword arguments to get selections of data in desired types, with or without
+missing values.
 
 # Arguments
-- `alias`=nothing` : An `alias` for the TOML key, by default an `alias` is not expected.
-- `optional=true` : By default specifying a model `parameter` in the TOML file is optional.
-        Set to false if the model `parameter` is required.
 - `sel=nothing`: A selection of indices, such as a `Vector{CartesianIndex}` of active cells,
         to return from the netCDF. By default all cells are returned.
 - `defaults=nothing`: A default value if `var` is not in `nc`. By default it gives an error
@@ -239,9 +240,7 @@ arguments to get selections of data in desired types, with or without missing va
 function ncread(
     nc,
     config::Config,
-    parameter::AbstractString;
-    alias = nothing,
-    optional = true,
+    parameter::NamedTuple;
     sel = nothing,
     defaults = nothing,
     type = nothing,
@@ -249,16 +248,23 @@ function ncread(
     fill = nothing,
     dimname = nothing,
 )
-    # get var (netCDF variable or type Config) from TOML file.
-    # if var has type Config, input parameters can be changed.
-    if isnothing(alias)
-        if optional
-            var = param(config.input, parameter, nothing)
+    # for optional parameters (`lens` set to `nothing`) default values are used.
+    if isnothing(parameter.lens)
+        @info "Set `$(parameter.name)` using default value `$defaults`."
+        @assert !isnothing(defaults)
+        if !isnothing(type)
+            defaults = convert(type, defaults)
+        end
+        if isnothing(dimname)
+            return Base.fill(defaults, length(sel))
         else
-            var = param(config.input, parameter)
+            return Base.fill(defaults, (nc.dim[String(dimname)], length(sel)))
         end
     else
-        var = get_alias(config.input, parameter, alias, nothing)
+        # get var (netCDF variable or type Config) from TOML file.
+        # if var has type Config, input parameters can be changed.
+        var = parameter.lens(config)
+        var = var isa AbstractDict ? Config(var, pathof(config)) : var
     end
 
     # dim `time` is also included in `dim_sel`: this allows for cyclic parameters (read
@@ -273,26 +279,13 @@ function ncread(
         error("Unrecognized dimension name $dimname")
     end
 
-    if isnothing(var)
-        @info "Set `$parameter` using default value `$defaults`."
-        @assert !isnothing(defaults)
-        if !isnothing(type)
-            defaults = convert(type, defaults)
-        end
-        if isnothing(dimname)
-            return Base.fill(defaults, length(sel))
-        else
-            return Base.fill(defaults, (nc.dim[String(dimname)], length(sel)))
-        end
-    end
-
     # If var has type Config, input parameters can be changed (through scale, offset and
     # input netCDF var) or set to a uniform value (providing a value). Otherwise, input
     # NetCDF var is read directly.
     var, mod = ncvar_name_modifier(var; config = config)
 
     if !isnothing(mod.value)
-        @info "Set `$parameter` using default value `$(mod.value)`."
+        @info "Set `$(parameter.name)` using default value `$(mod.value)`."
         if isnothing(dimname)
             return Base.fill(mod.value, length(sel))
             # set to one uniform value
@@ -304,7 +297,7 @@ function ncread(
             return repeat(mod.value, 1, length(sel))
         end
     else
-        @info "Set `$parameter` using netCDF variable `$var`."
+        @info "Set `$(parameter.name)` using netCDF variable `$var`."
         A = read_standardized(nc, var, dim_sel)
         if !isnothing(mod.index)
             # the modifier index is only set in combination with scale and offset for SVectors,
@@ -355,6 +348,45 @@ function ncread(
     end
 
     return A
+end
+
+"""
+Return `NamedTuple` with internal standard `name` and a `lens` to access the external static
+or cyclic input model parameter name in the nested `config` object (parsed TOML file). By
+default specifying a model parameter is `optional` in the TOML file.
+"""
+function lens_input_parameter(config::Config, p::AbstractString; optional = true)
+    do_cyclic = haskey(config.input, "cyclic")
+    if haskey(config.input.static, p)
+        return (name = p, lens = @optic(_.input.static[p]))
+    elseif do_cyclic && haskey(config.input.cyclic, p)
+        return (name = p, lens = @optic(_.input.cyclic[p]))
+    elseif optional
+        return (name = p, lens = nothing)
+    else
+        error(
+            """Required input static or cyclic model parameter with standard name $p not set 
+            in TOML file (below `[input.static]` or `[input.cyclic]` section)""",
+        )
+    end
+end
+
+"""
+Return `NamedTuple` with internal standard `name` and a `lens` to access the external input
+(not directly part of a model) parameter name in the nested `config` object (parsed TOML
+file). By default specifying a model parameter is `optional` in the TOML file.
+"""
+function lens_input(config::Config, p::AbstractString; optional = true)
+    if haskey(config.input, p)
+        return (name = p, lens = @optic(_.input[p]))
+    elseif optional
+        return (name = p, lens = nothing)
+    else
+        error(
+            """Required input model parameter with standard name $p not set in TOML file 
+            (below `[input]` section)""",
+        )
+    end
 end
 
 """

@@ -15,20 +15,14 @@ function initialize_sediment_model(config::Config)
     clock = Clock(config, reader)
     dataset = NCDataset(static_path)
 
-    subcatch_2d =
-        ncread(dataset, config, "subcatchment"; optional = false, allow_missing = true)
+    lens = lens_input(config, "subcatchment_location__count"; optional = false)
+    subcatch_2d = ncread(dataset, config, lens; allow_missing = true)
     # indices based on catchment
     indices, rev_indices = active_indices(subcatch_2d, missing)
     n = length(indices)
 
-    river_2d = ncread(
-        dataset,
-        config,
-        "river_location";
-        optional = false,
-        type = Bool,
-        fill = false,
-    )
+    lens = lens_input(config, "river_location__mask"; optional = false)
+    river_2d = ncread(dataset, config, lens; type = Bool, fill = false)
     river = river_2d[indices]
 
     soilloss = SoilLoss(dataset, config, indices)
@@ -38,37 +32,24 @@ function initialize_sediment_model(config::Config)
     do_lakes = get(config.model, "dolake", false)::Bool
     waterbodies = fill(0.0, n)
     if do_reservoirs
-        reservoirs = ncread(
-            dataset,
-            config,
-            "reservoir_areas";
-            optional = false,
-            sel = indices,
-            type = Float64,
-            fill = 0,
-        )
+        lens = lens_input(config, "reservoir_area__count"; optional = false)
+        reservoirs = ncread(dataset, config, lens; sel = indices, type = Float64, fill = 0)
         waterbodies = waterbodies .+ reservoirs
     end
     if do_lakes
-        lakes = ncread(
-            dataset,
-            config,
-            "lake_areas";
-            optional = false,
-            sel = indices,
-            type = Float64,
-            fill = 0,
-        )
+        lens = lens_input(config, "lake_area__count"; optional = false)
+        lakes = ncread(dataset, config, lens; sel = indices, type = Float64, fill = 0)
         waterbodies = waterbodies .+ lakes
     end
     waterbodies = waterbodies .> 0
 
-    ldd_2d = ncread(dataset, config, "ldd"; optional = false, allow_missing = true)
+    lens = lens_input(config, "local_drain_direction"; optional = false)
+    ldd_2d = ncread(dataset, config, lens; allow_missing = true)
     ldd = ldd_2d[indices]
 
     # # sediment in overland flow
     overland_flow_sediment =
-        OverlandFlowSediment(dataset, config, indices, waterbodies, river)
+        OverlandFlowSediment(dataset, soilloss, config, indices, waterbodies, river)
 
     graph = flowgraph(ldd, indices, PCR_DIR)
 

@@ -211,48 +211,49 @@ function sbm_kv_profiles(
     sumlayers,
     dt,
 )
-    kv_profile_type = get(config.input.land, "ksat_profile", "exponential")::String
+    kv_profile_type =
+        get(config.model, "saturated_hydraulic_conductivity_profile", "exponential")::String
     n = length(indices)
     if kv_profile_type == "exponential"
         kv_profile = KvExponential(kv_0, f)
     elseif kv_profile_type == "exponential_constant"
-        z_exp = ncread(
-            dataset,
+        lens = lens_input_parameter(
             config,
-            "land.soil.parameters.z_exp";
+            "soil_vertical_saturated_hydraulic_conductivity_profile~exponential_below-surface__depth";
             optional = false,
-            sel = indices,
-            type = Float64,
         )
+        z_exp = ncread(dataset, config, lens; sel = indices, type = Float64)
         exp_profile = KvExponential(kv_0, f)
         kv_profile = KvExponentialConstant(exp_profile, z_exp)
     elseif kv_profile_type == "layered" || kv_profile_type == "layered_exponential"
+        lens = lens_input_parameter(
+            config,
+            "soil_layer_water__vertical_saturated_hydraulic_conductivity",
+        )
         kv =
             ncread(
                 dataset,
                 config,
-                "land.soil.parameters.kv";
+                lens;
                 sel = indices,
                 defaults = 1000.0,
                 type = Float64,
                 dimname = :layer,
             ) .* (dt / BASETIMESTEP)
         if size(kv, 1) != maxlayers
-            parname = param(config.input.land.soil.parameter, "kv")
+            parname = lens(config)
             size1 = size(kv, 1)
             error("$parname needs a layer dimension of size $maxlayers, but is $size1")
         end
         if kv_profile_type == "layered"
             kv_profile = KvLayered(svectorscopy(kv, Val{maxlayers}()))
         else
-            z_layered = ncread(
-                dataset,
+            lens = lens_input_parameter(
                 config,
-                "land.soil.parameters.z_layered";
+                "soil_vertical_saturated_hydraulic_conductivity_profile~layered_below-surface__depth";
                 optional = false,
-                sel = indices,
-                type = Float64,
             )
+            z_layered = ncread(dataset, config, lens; sel = indices, type = Float64)
             nlayers_kv = fill(0, n)
             for i in eachindex(nlayers_kv)
                 layers = @view sumlayers[i][2:nlayers[i]]
@@ -268,9 +269,9 @@ function sbm_kv_profiles(
             )
         end
     else
-        error("""An unknown "ksat_profile" is specified in the TOML file ($ksat_profile).
-              This should be "exponential", "exponential_constant", "layered" or
-              "layered_exponential".
+        error("""An unknown "saturated_hydraulic_conductivity_profile" is specified in the
+              TOML file ($ksat_profile). This should be "exponential",
+              "exponential_constant", "layered" or "layered_exponential".
               """)
     end
     return kv_profile
@@ -343,6 +344,7 @@ end
 "Initialize SBM soil model parameters"
 function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, dt)
     config_thicknesslayers = get(config.model, "thicknesslayers", Float64[])
+
     if length(config_thicknesslayers) > 0
         thicknesslayers =
             SVector(Tuple(push!(Float64.(config_thicknesslayers), MISSING_VALUE)))
@@ -353,212 +355,147 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
         cum_depth_layers = pushfirst(cumsum(thicknesslayers), 0.0)
         maxlayers = 1
     end
+
+    lens = lens_input_parameter(config, "soil_surface_temperature__weight_coefficient")
     w_soil =
-        ncread(
-            dataset,
-            config,
-            "land.soil.parameters.w_soil";
-            sel = indices,
-            defaults = 0.1125,
-            type = Float64,
-        ) .* (dt / BASETIMESTEP)
-    cf_soil = ncread(
-        dataset,
-        config,
-        "land.soil.parameters.cf_soil";
-        sel = indices,
-        defaults = 0.038,
-        type = Float64,
-    )
+        ncread(dataset, config, lens; sel = indices, defaults = 0.1125, type = Float64) .*
+        (dt / BASETIMESTEP)
+
+    lens =
+        lens_input_parameter(config, "soil_surface_water__infiltration_reduction_parameter")
+    cf_soil = ncread(dataset, config, lens; sel = indices, defaults = 0.038, type = Float64)
+
     # soil parameters
-    theta_s = ncread(
-        dataset,
+    lens = lens_input_parameter(config, "soil_water__saturated_volume_fraction")
+    theta_s = ncread(dataset, config, lens; sel = indices, defaults = 0.6, type = Float64)
+
+    lens = lens_input_parameter(config, "soil_water__residual_volume_fraction")
+    theta_r = ncread(dataset, config, lens; sel = indices, defaults = 0.01, type = Float64)
+
+    lens = lens_input_parameter(
         config,
-        "land.soil.parameters.theta_s";
-        sel = indices,
-        defaults = 0.6,
-        type = Float64,
-    )
-    theta_r = ncread(
-        dataset,
-        config,
-        "land.soil.parameters.theta_r";
-        sel = indices,
-        defaults = 0.01,
-        type = Float64,
+        "soil_surface_water__vertical_saturated_hydraulic_conductivity",
     )
     kv_0 =
-        ncread(
-            dataset,
-            config,
-            "land.soil.parameters.kv_0";
-            sel = indices,
-            defaults = 3000.0,
-            type = Float64,
-        ) .* (dt / BASETIMESTEP)
-    f = ncread(
-        dataset,
-        config,
-        "land.soil.parameters.f";
-        sel = indices,
-        defaults = 0.001,
-        type = Float64,
-    )
-    hb = ncread(
-        dataset,
-        config,
-        "land.soil.parameters.hb";
-        sel = indices,
-        defaults = -10.0,
-        type = Float64,
-    )
-    h1 = ncread(
-        dataset,
-        config,
-        "land.soil.parameters.h1";
-        sel = indices,
-        defaults = 0.0,
-        type = Float64,
-    )
-    h2 = ncread(
-        dataset,
-        config,
-        "land.soil.parameters.h2";
-        sel = indices,
-        defaults = -100.0,
-        type = Float64,
-    )
-    h3_high = ncread(
-        dataset,
-        config,
-        "land.soil.parameters.h3_high";
-        sel = indices,
-        defaults = -400.0,
-        type = Float64,
-    )
-    h3_low = ncread(
-        dataset,
-        config,
-        "land.soil.parameters.h3_low";
-        sel = indices,
-        defaults = -1000.0,
-        type = Float64,
-    )
-    h4 = ncread(
-        dataset,
-        config,
-        "land.soil.parameters.h4";
-        sel = indices,
-        defaults = -15849.0,
-        type = Float64,
-    )
-    alpha_h1 = ncread(
-        dataset,
-        config,
-        "land.soil.parameters.alpha_h1";
-        sel = indices,
-        defaults = 1.0,
-        type = Float64,
-    )
-    soilthickness = ncread(
-        dataset,
-        config,
-        "land.soil.parameters.soilthickness";
-        sel = indices,
-        defaults = 2000.0,
-        type = Float64,
-    )
-    infiltcappath =
-        ncread(
-            dataset,
-            config,
-            "land.soil.parameters.infiltcappath";
-            sel = indices,
-            defaults = 10.0,
-            type = Float64,
-        ) .* (dt / BASETIMESTEP)
-    infiltcapsoil =
-        ncread(
-            dataset,
-            config,
-            "land.soil.parameters.infiltcapsoil";
-            sel = indices,
-            defaults = 100.0,
-            type = Float64,
-        ) .* (dt / BASETIMESTEP)
-    maxleakage =
-        ncread(
-            dataset,
-            config,
-            "land.soil.parameters.maxleakage";
-            sel = indices,
-            defaults = 0.0,
-            type = Float64,
-        ) .* (dt / BASETIMESTEP)
+        ncread(dataset, config, lens; sel = indices, defaults = 3000.0, type = Float64) .*
+        (dt / BASETIMESTEP)
 
+    lens = lens_input_parameter(
+        config,
+        "soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter",
+    )
+    f = ncread(dataset, config, lens; sel = indices, defaults = 0.001, type = Float64)
+
+    lens = lens_input_parameter(config, "soil_water__air_entry_pressure_head")
+    hb = ncread(dataset, config, lens; sel = indices, defaults = -10.0, type = Float64)
+
+    lens = lens_input_parameter(config, "vegetation_root__feddes_critial_pressure_head_h~1")
+    h1 = ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float64)
+
+    lens = lens_input_parameter(config, "vegetation_root__feddes_critial_pressure_head_h~2")
+    h2 = ncread(dataset, config, lens; sel = indices, defaults = -100.0, type = Float64)
+
+    lens = lens_input_parameter(
+        config,
+        "vegetation_root__feddes_critial_pressure_head_h~3~high",
+    )
+    h3_high =
+        ncread(dataset, config, lens; sel = indices, defaults = -400.0, type = Float64)
+
+    lens = lens_input_parameter(
+        config,
+        "vegetation_root__feddes_critial_pressure_head_h~3~low",
+    )
+    h3_low =
+        ncread(dataset, config, lens; sel = indices, defaults = -1000.0, type = Float64)
+
+    lens = lens_input_parameter(config, "vegetation_root__feddes_critial_pressure_head_h~4")
+    h4 = ncread(dataset, config, lens; sel = indices, defaults = -15849.0, type = Float64)
+
+    lens = lens_input_parameter(
+        config,
+        "vegetation_root__feddes_critial_pressure_head_h~1_reduction_coefficient",
+    )
+    alpha_h1 = ncread(dataset, config, lens; sel = indices, defaults = 1.0, type = Float64)
+
+    lens = lens_input_parameter(config, "soil__thickness")
+    soilthickness =
+        ncread(dataset, config, lens; sel = indices, defaults = 2000.0, type = Float64)
+
+    lens =
+        lens_input_parameter(config, "soil~compacted_surface_water__infiltration_capacity")
+    infiltcappath =
+        ncread(dataset, config, lens; sel = indices, defaults = 10.0, type = Float64) .*
+        (dt / BASETIMESTEP)
+
+    lens = lens_input_parameter(
+        config,
+        "soil~non-compacted_surface_water__infiltration_capacity",
+    )
+    infiltcapsoil =
+        ncread(dataset, config, lens; sel = indices, defaults = 100.0, type = Float64) .*
+        (dt / BASETIMESTEP)
+
+    lens =
+        lens_input_parameter(config, "soil_water_sat-zone_bottom__max_leakage_volume_flux")
+    maxleakage =
+        ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float64) .*
+        (dt / BASETIMESTEP)
+
+    lens = lens_input_parameter(config, "soil_layer_water__brooks-corey_epsilon_parameter")
     c = ncread(
         dataset,
         config,
-        "land.soil.parameters.c";
+        lens;
         sel = indices,
         defaults = 10.0,
         type = Float64,
         dimname = :layer,
     )
     if size(c, 1) != maxlayers
-        parname = param(config.input.land, "c")
+        parname = lens(config)
         size1 = size(c, 1)
         error("$parname needs a layer dimension of size $maxlayers, but is $size1")
     end
+
+    lens = lens_input_parameter(
+        config,
+        "soil_layer_water__vertical_saturated_hydraulic_conductivity_factor",
+    )
     kvfrac = ncread(
         dataset,
         config,
-        "land.soil.parameters.kvfrac";
+        lens;
         sel = indices,
         defaults = 1.0,
         type = Float64,
         dimname = :layer,
     )
     if size(kvfrac, 1) != maxlayers
-        parname = param(config.input, "land.soil.parameters.kvfrac")
+        parname = lens(config)
         size1 = size(kvfrac, 1)
         error("$parname needs a layer dimension of size $maxlayers, but is $size1")
     end
     # fraction compacted area
-    pathfrac = ncread(
-        dataset,
-        config,
-        "land.soil.parameters.pathfrac";
-        sel = indices,
-        defaults = 0.01,
-        type = Float64,
-    )
+    lens = lens_input_parameter(config, "soil~compacted__area_fraction")
+    pathfrac = ncread(dataset, config, lens; sel = indices, defaults = 0.01, type = Float64)
 
     # vegetation parameters
-    rootdistpar = ncread(
-        dataset,
+    lens = lens_input_parameter(config, "soil_root~wet__sigmoid_function_shape_parameter")
+    rootdistpar =
+        ncread(dataset, config, lens; sel = indices, defaults = -500.0, type = Float64)
+    lens = lens_input_parameter(
         config,
-        "land.soil.parameters.rootdistpar";
-        sel = indices,
-        defaults = -500.0,
-        type = Float64,
+        "soil_water_sat-zone_top_capillary-rise__max_water-table_depth",
     )
-    cap_hmax = ncread(
-        dataset,
+    cap_hmax =
+        ncread(dataset, config, lens; sel = indices, defaults = 2000.0, type = Float64)
+
+    lens = lens_input_parameter(
         config,
-        "land.soil.parameters.cap_hmax";
-        sel = indices,
-        defaults = 2000.0,
-        type = Float64,
+        "soil_water_sat-zone_top_capillary-rise__averianov_exponent",
     )
-    cap_n = ncread(
-        dataset,
-        config,
-        "land.soil.parameters.cap_n";
-        sel = indices,
-        defaults = 2.0,
-        type = Float64,
-    )
+    cap_n = ncread(dataset, config, lens; sel = indices, defaults = 2.0, type = Float64)
 
     act_thickl = set_layerthickness.(soilthickness, (cum_depth_layers,), (thicknesslayers,))
     sumlayers = @. pushfirst(cumsum(act_thickl), 0.0)
@@ -566,14 +503,19 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
 
     if length(config_thicknesslayers) > 0
         # root fraction read from dataset file, in case of multiple soil layers and TOML file
-        # includes "land.rootfraction"
-        if haskey(config.input.land.soil.parameters, "rootfraction")
+        # includes "soil_root__length_density_fraction"
+        par_name = "soil_root__length_density_fraction"
+        do_cyclic = haskey(config.input, "cyclic")
+        do_root_fraction =
+            do_cyclic ? haskey(config.input.cyclic, par_name) :
+            haskey(config.input.static, par_name)
+        if do_root_fraction
+            lens = lens_input_parameter(config, par_name; optional = false)
             rootfraction = ncread(
                 dataset,
                 config,
-                "land.soil.parameters.rootfraction";
+                lens;
                 sel = indices,
-                optional = false,
                 type = Float64,
                 dimname = :layer,
             )

@@ -63,30 +63,20 @@ end
 
 "Initialize Govers overland flow transport capacity model parameters"
 function TransportCapacityGoversParameters(dataset, config, indices)
-    density = ncread(
-        dataset,
+    lens = lens_input_parameter(config, "land_surface_sediment__particle_density")
+    density =
+        ncread(dataset, config, lens; sel = indices, defaults = 2650.0, type = Float64)
+    lens = lens_input_parameter(
         config,
-        "routing.overland_flow.transport_capacity.parameters.density";
-        sel = indices,
-        defaults = 2650.0,
-        type = Float64,
+        "land_surface_water_sediment__govers_transport_capacity_coefficient",
     )
-    c_govers = ncread(
-        dataset,
+    c_govers =
+        ncread(dataset, config, lens; sel = indices, defaults = 0.000505, type = Float64)
+    lens = lens_input_parameter(
         config,
-        "routing.overland_flow.transport_capacity.parameters.c_govers";
-        sel = indices,
-        defaults = 0.000505,
-        type = Float64,
+        "land_surface_water_sediment__govers_transport_capacity_exponent",
     )
-    n_govers = ncread(
-        dataset,
-        config,
-        "routing.overland_flow.transport_capacity.parameters.n_govers";
-        sel = indices,
-        defaults = 4.27,
-        type = Float64,
-    )
+    n_govers = ncread(dataset, config, lens; sel = indices, defaults = 4.27, type = Float64)
     tc_parameters = TransportCapacityGoversParameters(;
         density = density,
         c_govers = c_govers,
@@ -156,22 +146,13 @@ end
 
 "Initialize Yalin overland flow transport capacity model parameters"
 function TransportCapacityYalinParameters(dataset, config, indices)
-    density = ncread(
-        dataset,
-        config,
-        "routing.overland_flow.transport_capacity.parameters.density";
-        sel = indices,
-        defaults = 2650.0,
-        type = Float64,
-    )
-    d50 = ncread(
-        dataset,
-        config,
-        "routing.overland_flow.transport_capacity.parameters.d50";
-        sel = indices,
-        defaults = 0.1,
-        type = Float64,
-    )
+    lens = lens_input_parameter(config, "land_surface_sediment__particle_density")
+    density =
+        ncread(dataset, config, lens; sel = indices, defaults = 2650.0, type = Float64)
+
+    lens = lens_input_parameter(config, "land_surface_sediment__d50_diameter")
+    d50 = ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float64)
+
     tc_parameters = TransportCapacityYalinParameters(; density = density, d50 = d50)
 
     return tc_parameters
@@ -280,54 +261,20 @@ end
 
 "Initialize Yalin differentiated overland flow transport capacity model parameters"
 function TransportCapacityYalinDifferentiationParameters(dataset, config, indices)
-    density = ncread(
-        dataset,
-        config,
-        "routing.overland_flow.transport_capacity.parameters.density";
-        sel = indices,
-        defaults = 2650.0,
-        type = Float64,
-    )
-    dm_clay = ncread(
-        dataset,
-        config,
-        "routing.overland_flow.transport_capacity.parameters.dm_clay";
-        sel = indices,
-        defaults = 2.0,
-        type = Float64,
-    )
-    dm_silt = ncread(
-        dataset,
-        config,
-        "routing.overland_flow.transport_capacity.parameters.dm_silt";
-        sel = indices,
-        defaults = 10.0,
-        type = Float64,
-    )
-    dm_sand = ncread(
-        dataset,
-        config,
-        "routing.overland_flow.transport_capacity.parameters.dm_sand";
-        sel = indices,
-        defaults = 200.0,
-        type = Float64,
-    )
-    dm_sagg = ncread(
-        dataset,
-        config,
-        "routing.overland_flow.transport_capacity.parameters.dm_sagg";
-        sel = indices,
-        defaults = 30.0,
-        type = Float64,
-    )
-    dm_lagg = ncread(
-        dataset,
-        config,
-        "routing.overland_flow.transport_capacity.parameters.dm_lagg";
-        sel = indices,
-        defaults = 500.0,
-        type = Float64,
-    )
+    lens = lens_input_parameter(config, "land_surface_sediment__particle_density")
+    density =
+        ncread(dataset, config, lens; sel = indices, defaults = 2650.0, type = Float64)
+    lens = lens_input_parameter(config, "clay__d50_diameter")
+    dm_clay = ncread(dataset, config, lens; sel = indices, defaults = 2.0, type = Float64)
+    lens = lens_input_parameter(config, "silt__d50_diameter")
+    dm_silt = ncread(dataset, config, lens; sel = indices, defaults = 10.0, type = Float64)
+    lens = lens_input_parameter(config, "sand__d50_diameter")
+    dm_sand = ncread(dataset, config, lens; sel = indices, defaults = 200.0, type = Float64)
+    lens = lens_input_parameter(config, "sediment_aggregates~small__d50_diameter")
+    dm_sagg = ncread(dataset, config, lens; sel = indices, defaults = 30.0, type = Float64)
+    lens = lens_input_parameter(config, "sediment_aggregates~large__d50_diameter")
+    dm_lagg = ncread(dataset, config, lens; sel = indices, defaults = 500.0, type = Float64)
+
     tc_parameters = TransportCapacityYalinDifferentiationParameters(;
         density = density,
         dm_clay = dm_clay,
@@ -460,22 +407,12 @@ end
 
 "Initialize common river transport capacity model parameters"
 function TransportCapacityRiverParameters(dataset, config, indices)
-    density = ncread(
-        dataset,
-        config,
-        "routing.river_flow.transport_capacity.parameters.density";
-        sel = indices,
-        defaults = 2650.0,
-        type = Float64,
-    )
-    d50 = ncread(
-        dataset,
-        config,
-        "routing.river_flow.transport_capacity.parameters.d50";
-        sel = indices,
-        defaults = 0.1,
-        type = Float64,
-    )
+    lens = lens_input_parameter(config, "river_sediment__particle_density")
+    density =
+        ncread(dataset, config, lens; sel = indices, defaults = 2650.0, type = Float64)
+    lens = lens_input_parameter(config, "river_sediment__d50_diameter")
+    d50 = ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float64)
+
     tc_parameters = TransportCapacityRiverParameters(; density = density, d50 = d50)
 
     return tc_parameters
@@ -491,22 +428,19 @@ end
 
 "Initialize Bagnold transport capacity model parameters"
 function TransportCapacityBagnoldParameters(dataset, config, indices)
-    c_bagnold = ncread(
-        dataset,
+    lens = lens_input_parameter(
         config,
-        "routing.river_flow.transport_capacity.parameters.c_bagnold";
-        sel = indices,
+        "river_water_sediment__bagnold_transport_capacity_coefficient";
         optional = false,
-        type = Float64,
     )
-    e_bagnold = ncread(
-        dataset,
+    c_bagnold = ncread(dataset, config, lens; sel = indices, type = Float64)
+    lens = lens_input_parameter(
         config,
-        "routing.river_flow.transport_capacity.parameters.e_bagnold";
-        sel = indices,
+        "river_water_sediment__bagnold_transport_capacity_exponent";
         optional = false,
-        type = Float64,
     )
+    e_bagnold = ncread(dataset, config, lens; sel = indices, type = Float64)
+
     tc_parameters =
         TransportCapacityBagnoldParameters(; c_bagnold = c_bagnold, e_bagnold = e_bagnold)
 
@@ -612,38 +546,31 @@ end
 
 "Initialize Kodatie river transport capacity model parameters"
 function TransportCapacityKodatieParameters(dataset, config, indices)
-    a_kodatie = ncread(
-        dataset,
+    lens = lens_input_parameter(
         config,
-        "routing.river_flow.transport_capacity.parameters.a_kodatie";
-        sel = indices,
+        "river_water_sediment__kodatie_transport_capacity_a-coefficient";
         optional = false,
-        type = Float64,
     )
-    b_kodatie = ncread(
-        dataset,
+    a_kodatie = ncread(dataset, config, lens; sel = indices, type = Float64)
+    lens = lens_input_parameter(
         config,
-        "routing.river_flow.transport_capacity.parameters.b_kodatie";
-        sel = indices,
+        "river_water_sediment__kodatie_transport_capacity_b-coefficient";
         optional = false,
-        type = Float64,
     )
-    c_kodatie = ncread(
-        dataset,
+    b_kodatie = ncread(dataset, config, lens; sel = indices, type = Float64)
+    lens = lens_input_parameter(
         config,
-        "routing.river_flow.transport_capacity.parameters.c_kodatie";
-        sel = indices,
+        "river_water_sediment__kodatie_transport_capacity_c-coefficient";
         optional = false,
-        type = Float64,
     )
-    d_kodatie = ncread(
-        dataset,
+    c_kodatie = ncread(dataset, config, lens; sel = indices, type = Float64)
+    lens = lens_input_parameter(
         config,
-        "routing.river_flow.transport_capacity.parameters.d_kodatie";
-        sel = indices,
+        "river_water_sediment__kodatie_transport_capacity_d-coefficient";
         optional = false,
-        type = Float64,
     )
+    d_kodatie = ncread(dataset, config, lens; sel = indices, type = Float64)
+
     tc_parameters = TransportCapacityKodatieParameters(;
         a_kodatie = a_kodatie,
         b_kodatie = b_kodatie,

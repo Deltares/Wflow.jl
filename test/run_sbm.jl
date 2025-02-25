@@ -14,26 +14,26 @@ flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
     row = csv_first_row(model.writer.csv_path)
 
     @test row.time == DateTime("2000-01-02T00:00:00")
-    @test row.Q ≈ 14.283603959245331f0
-    @test row.volume ≈ 2.7535003939625636f7
+    @test row.Q ≈ 6.873112103276999f0
+    @test row.storage ≈ 2.7535003939625636f7
     @test row.temp_bycoord ≈ 2.390000104904175f0
     @test row.vwc_layer2_bycoord ≈ 0.25938809638672006f0
     @test row.temp_byindex ≈ 2.390000104904175f0
-    @test row.Q_6336050 ≈ 0.0077488610359143706f0
-    @test row.Q_6336510 ≈ 0.029475452452069627f0
-    @test row.Q_6836100 ≈ 0.018908801563313697f0
-    @test row.Q_6336500 ≈ 0.006568230884299706f0
-    @test row.Q_6836190 ≈ 0.004495680971248625f0
-    @test row.Q_6336800 ≈ 0.00916756751611816f0
-    @test row.Q_6336900 ≈ 0.008200812406926841f0
-    @test row.Q_6336930 ≈ 0.026477954532813916f0
-    @test row.Q_6336910 ≈ 0.009127079213306247f0
-    @test row.Q_6136500 ≈ 0.001154334630885042f0
-    @test row.Q_6136520 ≈ 0.0014432161225527867f0
-    @test row.Q_6136150 ≈ 0.0073146444422822225f0
-    @test row.Q_6136151 ≈ 0.006614628762328246f0
-    @test row.Q_6136160 ≈ 6.186486795085275f0
-    @test row.Q_6136202 ≈ 1.8472398588556238f0
+    @test row.Q_6336050 ≈ 0.003199581692927209f0
+    @test row.Q_6336510 ≈ 0.012862611828173352f0
+    @test row.Q_6836100 ≈ 0.00875995439640751f0
+    @test row.Q_6336500 ≈ 0.0024066827961781796f0
+    @test row.Q_6836190 ≈ 0.002527417212072159f0
+    @test row.Q_6336800 ≈ 0.004389783779801617f0
+    @test row.Q_6336900 ≈ 0.003937679133692149f0
+    @test row.Q_6336930 ≈ 0.013838197736695087f0
+    @test row.Q_6336910 ≈ 0.0030751270360095326f0
+    @test row.Q_6136500 ≈ 0.00043529085301572757f0
+    @test row.Q_6136520 ≈ 0.0004120247680628514f0
+    @test row.Q_6136150 ≈ 0.002963633332122439f0
+    @test row.Q_6136151 ≈ 0.0027878183390109136f0
+    @test row.Q_6136160 ≈ 3.5800958698165535f0
+    @test row.Q_6136202 ≈ 1.3581067685417394f0
     @test row.recharge_1 ≈ -0.0020800523945940217f0
 end
 
@@ -62,10 +62,10 @@ end
         8.601765f0,
         2.7730224f0,
     ]
-    @test ds["Q_gauges"].attrib["cf_role"] == "timeseries_id"
+    @test ds["Q_river_gauge"].attrib["cf_role"] == "timeseries_id"
     @test ds["temp_index"][:] ≈ [2.39f0]
     @test ds["temp_coord"][:] ≈ [2.39f0]
-    @test keys(ds.dim) == ["time", "layer", "Q_gauges", "temp_bycoord", "temp_byindex"]
+    @test keys(ds.dim) == ["time", "layer", "Q_river_gauge", "temp_bycoord", "temp_byindex"]
 end
 
 @testset "first timestep" begin
@@ -133,8 +133,11 @@ end
 @testset "reservoir simple" begin
     res = model.routing.river_flow.boundary_conditions.reservoir
     @test res.variables.outflow[1] ≈ 0.21750000119148086f0
+    @test res.variables.outflow_av[1] ≈ 0.21749986282401396f0
     @test res.boundary_conditions.inflow[1] ≈ 0.00051287944327482
-    @test res.variables.volume[1] ≈ 2.751299001489657f7
+    @test res.variables.storage[1] ≈ 2.751299001489657f7
+    @test res.variables.storage_av[1] ≈ 2.752388968718314f7
+    @test res.variables.actevap[1] ≈ 0.5400000810623169f0
     @test res.boundary_conditions.precipitation[1] ≈ 0.17999997735023499f0
     @test res.boundary_conditions.evaporation[1] ≈ 0.5400000810623169f0
 end
@@ -155,15 +158,15 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 config["model"]["pits"] = true
 config["input"]["pits"] = "wflow_pits"
-config.endtime = DateTime(2000, 1, 9)
-config.loglevel = "info"
+config.time.endtime = DateTime(2000, 1, 9)
+config.logging.loglevel = "info"
 
 model = Wflow.run(config)
 
 @testset "timing" begin
     # clock has been reset
-    calendar = get(config, "calendar", "standard")::String
-    @test model.clock.time == Wflow.cftime(config.starttime, calendar)
+    calendar = get(config.time, "calendar", "standard")::String
+    @test model.clock.time == Wflow.cftime(config.time.starttime, calendar)
     @test model.clock.iteration == 0
 end
 
@@ -179,14 +182,14 @@ end
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 
-config.input.land.atmospheric_forcing.precipitation =
+config.input.forcing.atmosphere_water__precipitation_volume_flux =
     Dict("scale" => 2.0, "netcdf" => Dict("variable" => Dict("name" => "precip")))
-config.input.land.atmospheric_forcing.potential_evaporation = Dict(
+config.input.forcing.land_surface_water__potential_evaporation_volume_flux = Dict(
     "scale" => 3.0,
     "offset" => 1.50,
     "netcdf" => Dict("variable" => Dict("name" => "pet")),
 )
-config.input.land.vegetation_parameter_set.leaf_area_index =
+config.input.cyclic["vegetation__leaf-area_index"] =
     Dict("scale" => 1.6, "netcdf" => Dict("variable" => Dict("name" => "LAI")))
 
 model = Wflow.initialize_sbm_model(config)
@@ -207,11 +210,7 @@ end
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 
-config.input.cyclic = [
-    "land.vegetation_parameter_set.leaf_area_index",
-    "routing.river_flow.boundary_conditions.inflow",
-]
-Dict(config.input.routing.river_flow)["boundary_conditions"] = Dict("inflow" => "inflow")
+config.input.cyclic["river_water_inflow~external__volume_flow_rate"] = "inflow"
 
 model = Wflow.initialize_sbm_model(config)
 Wflow.run_timestep!(model)
@@ -224,7 +223,7 @@ end
 
 # test fixed forcing (precipitation = 2.5)
 config = Wflow.Config(tomlpath)
-config.input.land.atmospheric_forcing.precipitation = Dict("value" => 2.5)
+config.input.forcing.atmosphere_water__precipitation_volume_flux = Dict("value" => 2.5)
 model = Wflow.initialize_sbm_model(config)
 Wflow.load_fixed_forcing!(model)
 
@@ -288,7 +287,7 @@ Wflow.run_timestep!(model)
 
 @testset "river and overland flow and depth (local inertial)" begin
     q = model.routing.river_flow.variables.q_av
-    @test sum(q) ≈ 2380.64389229669f0
+    @test sum(q) ≈ 2495.9830572223946f0
     @test q[1622] ≈ 7.30561606758937f-5
     @test q[43] ≈ 5.3566292152594155f0
     @test q[501] ≈ 1.602564408503896f0
@@ -314,21 +313,21 @@ config = Wflow.Config(tomlpath)
 config.model.floodplain_1d = true
 config.model.river_routing = "local-inertial"
 config.model.land_routing = "kinematic-wave"
-Dict(config.input.routing.river_flow)["floodplain"] = Dict("volume" => "floodplain_volume")
-Dict(config.state.routing.river_flow)["floodplain.variables"] =
-    Dict("q" => "q_floodplain", "h" => "h_floodplain")
+config.input.static["floodplain_water__sum_of_volume-per-depth"] = "floodplain_volume"
+config.state.variables.floodplain_water__instantaneous_volume_flow_rate = "q_floodplain"
+config.state.variables.floodplain_water__instantaneous_depth = "h_floodplain"
 
 model = Wflow.initialize_sbm_model(config)
 
 fp = model.routing.river_flow.floodplain.parameters.profile
 river = model.routing.river_flow
 dh = diff(fp.depth)
-Δv = diff(fp.volume[:, 3])
+Δv = diff(fp.storage[:, 3])
 Δa = diff(fp.a[:, 3])
 
 @testset "river flow (local inertial) floodplain schematization" begin
     # floodplain geometry checks (index 3)
-    @test fp.volume[:, 3] ≈ [0.0f0, 8641.0f0, 19011.0f0, 31685.0f0, 51848.0f0, 80653.0f0]
+    @test fp.storage[:, 3] ≈ [0.0f0, 8641.0f0, 19011.0f0, 31685.0f0, 51848.0f0, 80653.0f0]
     @test fp.width[:, 3] ≈ [
         30.0f0,
         99.28617594254938f0,
@@ -354,35 +353,35 @@ dh = diff(fp.depth)
         463.35655296229805f0,
     ]
     @test dh .* fp.width[2:end, 3] * river.parameters.flow_length[3] ≈ Δv
-    @test fp.a[:, 3] * river.parameters.flow_length[3] ≈ fp.volume[:, 3]
-    # flood depth from flood volume (8000.0)
+    @test fp.a[:, 3] * river.parameters.flow_length[3] ≈ fp.storage[:, 3]
+    # flood depth from flood storage (8000.0)
     flood_vol = 8000.0f0
-    river.variables.volume[3] = flood_vol + river.parameters.bankfull_volume[3]
-    i1, i2 = Wflow.interpolation_indices(flood_vol, fp.volume[:, 3])
+    river.variables.storage[3] = flood_vol + river.parameters.bankfull_storage[3]
+    i1, i2 = Wflow.interpolation_indices(flood_vol, fp.storage[:, 3])
     @test (i1, i2) == (1, 2)
     flood_depth = Wflow.flood_depth(fp, flood_vol, river.parameters.flow_length[3], 3)
     @test flood_depth ≈ 0.46290938548779076f0
     @test (flood_depth - fp.depth[i1]) * fp.width[i2, 3] * river.parameters.flow_length[3] +
-          fp.volume[i1, 3] ≈ flood_vol
-    # flood depth from flood volume (12000.0)
+          fp.storage[i1, 3] ≈ flood_vol
+    # flood depth from flood storage (12000.0)
     flood_vol = 12000.0f0
-    river.variables.volume[3] = flood_vol + river.parameters.bankfull_volume[3]
-    i1, i2 = Wflow.interpolation_indices(flood_vol, fp.volume[:, 3])
+    river.variables.storage[3] = flood_vol + river.parameters.bankfull_storage[3]
+    i1, i2 = Wflow.interpolation_indices(flood_vol, fp.storage[:, 3])
     @test (i1, i2) == (2, 3)
     flood_depth = Wflow.flood_depth(fp, flood_vol, river.parameters.flow_length[3], 3)
     @test flood_depth ≈ 0.6619575699132112f0
     @test (flood_depth - fp.depth[i1]) * fp.width[i2, 3] * river.parameters.flow_length[3] +
-          fp.volume[i1, 3] ≈ flood_vol
+          fp.storage[i1, 3] ≈ flood_vol
     # test extrapolation of segment
     flood_vol = 95000.0f0
-    river.variables.volume[3] = flood_vol + river.parameters.bankfull_volume[3]
-    i1, i2 = Wflow.interpolation_indices(flood_vol, fp.volume[:, 3])
+    river.variables.storage[3] = flood_vol + river.parameters.bankfull_storage[3]
+    i1, i2 = Wflow.interpolation_indices(flood_vol, fp.storage[:, 3])
     @test (i1, i2) == (6, 6)
     flood_depth = Wflow.flood_depth(fp, flood_vol, river.parameters.flow_length[3], 3)
     @test flood_depth ≈ 2.749036625585836f0
     @test (flood_depth - fp.depth[i1]) * fp.width[i2, 3] * river.parameters.flow_length[3] +
-          fp.volume[i1, 3] ≈ flood_vol
-    river.variables.volume[3] = 0.0 # reset volume
+          fp.storage[i1, 3] ≈ flood_vol
+    river.variables.storage[3] = 0.0 # reset storage
     # flow area and wetted perimeter based on hf
     h = 0.5
     i1, i2 = Wflow.interpolation_indices(h, fp.depth)
@@ -432,8 +431,8 @@ Wflow.run_timestep!(model)
 end
 
 # set boundary condition local inertial routing from netCDF file
-config.input.routing.river_flow.riverlength_bc = "riverlength_bc"
-config.input.routing.river_flow.riverdepth_bc = "riverdepth_bc"
+config.input.static["model_boundary_condition~river__length"] = "riverlength_bc"
+config.input.static["model_boundary_condition~river_bank_water__depth"] = "riverdepth_bc"
 model = Wflow.initialize_sbm_model(config)
 Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
@@ -458,9 +457,11 @@ Wflow.close_files(model; delete_output = false)
     i = 100
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
-    config.input.land.soil.parameters.kv = "kv"
-    config.input.land.soil.parameters.z_exp = Dict("value" => 400.0)
-    config.input.land.soil.parameters.z_layered = Dict("value" => 400.0)
+    config.input.static["soil_layer_water__vertical_saturated_hydraulic_conductivity"] = "kv"
+    config.input.static["soil_vertical_saturated_hydraulic_conductivity_profile~exponential_below-surface__depth"] =
+        Dict("value" => 400.0)
+    config.input.static["soil_vertical_saturated_hydraulic_conductivity_profile~layered_below-surface__depth"] =
+        Dict("value" => 400.0)
 
     @testset "exponential profile" begin
         model = Wflow.initialize_sbm_model(config)
@@ -476,7 +477,7 @@ Wflow.close_files(model; delete_output = false)
     end
 
     @testset "exponential constant profile" begin
-        config.input.land.ksat_profile = "exponential_constant"
+        config.model.saturated_hydraulic_conductivity_profile = "exponential_constant"
         model = Wflow.initialize_sbm_model(config)
         (; soil) = model.land
         (; kv_profile) = soil.parameters
@@ -497,7 +498,7 @@ Wflow.close_files(model; delete_output = false)
     end
 
     @testset "layered profile" begin
-        config.input.land.ksat_profile = "layered"
+        config.model.saturated_hydraulic_conductivity_profile = "layered"
         model = Wflow.initialize_sbm_model(config)
         (; soil) = model.land
         (; kv_profile) = soil.parameters
@@ -513,7 +514,7 @@ Wflow.close_files(model; delete_output = false)
     end
 
     @testset "layered exponential profile" begin
-        config.input.land.ksat_profile = "layered_exponential"
+        config.model.saturated_hydraulic_conductivity_profile = "layered_exponential"
         model = Wflow.initialize_sbm_model(config)
         (; soil) = model.land
         (; kv_profile) = soil.parameters

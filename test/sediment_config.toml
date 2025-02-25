@@ -3,13 +3,15 @@
 # Wflow documentation https://deltares.github.io/Wflow.jl/dev/
 # TOML documentation: https://github.com/toml-lang/toml
 
+dir_input = "data/input"
+dir_output = "data/output"
+
+[time]
 calendar = "proleptic_gregorian"
 endtime = 2000-01-03T00:00:00
 starttime = 1999-12-31T00:00:00
 time_units = "days since 1900-01-01 00:00:00"
 timestepsecs = 86400
-dir_input = "data/input"
-dir_output = "data/output"
 
 [state]
 path_input = "instates-moselle-sed.nc"
@@ -18,143 +20,96 @@ path_output = "outstates-moselle-sed.nc"
 # if listed, the variable must be present in the NetCDF or error
 # if not listed, the variable can get a default value if it has one
 
-[state.routing.river_flow.sediment_flux.variables]
-leftover_clay = "clayload"
-store_clay = "claystore"
-leftover_gravel = "gravload"
-store_gravel = "gravstore"
-leftover_lagg = "laggload"
-store_lagg = "laggstore"
-clay = "outclay"
-gravel = "outgrav"
-lagg= "outlagg"
-sagg = "outsagg"
-sand = "outsand"
-silt = "outsilt"
-leftover_sagg= "saggload"
-store_sagg = "saggstore"
-leftover_sand = "sandload"
-store_sand = "sandstore"
-leftover_silt = "siltload"
-store_silt = "siltstore"
+[state.variables]
+river_water_clay__mass = "clayload"
+river_bed_clay__mass = "claystore"
+river_water_gravel__mass = "gravload"
+river_bed_gravel__mass = "gravstore"
+"river_water_aggregates~large__mass" = "laggload"
+"river_bed_aggregates~large__mass" = "laggstore"
+river_water_clay__mass_flow_rate = "outclay"
+river_water_gravel__mass_flow_rate = "outgrav"
+"river_water_aggregates~large__mass_flow_rate" = "outlagg"
+"river_water_aggregates~small__mass_flow_rate" = "outsagg"
+river_water_sand__mass_flow_rate = "outsand"
+river_water_silt__mass_flow_rate = "outsilt"
+"river_water_aggregates~small__mass" = "saggload" 
+"river_bed_aggregates~small__mass" = "saggstore"
+river_water_sand__mass = "sandload" 
+river_bed_sand__mass = "sandstore"
+river_water_silt__mass = "siltload" 
+river_bed_silt__mass = "siltstore"
 
 [input]
 path_forcing = "forcing-moselle-sed.nc"
 path_static = "staticmaps-moselle-sed.nc"
 
 # these are not directly part of the model
-gauges = "wflow_gauges"
-ldd = "wflow_ldd"
-river_location = "wflow_river"
-subcatchment = "wflow_subcatch"
-reservoir_areas = "wflow_reservoirareas"
-lake_areas = "wflow_lakeareas"
+local_drain_direction = "wflow_ldd"
+river_location__mask = "wflow_river"
+reservoir_location__count = "wflow_reservoirlocs"
+lake_location__count = "wflow_lakelocs"
+subcatchment_location__count = "wflow_subcatch"
+reservoir_area__count = "wflow_reservoirareas"
+lake_area__count = "wflow_lakeareas"
 
-# specify the internal IDs of the parameters which vary over time
-# the external name mapping needs to be below together with the other mappings
-forcing = [
-  "land.atmospheric_forcing.precipitation",
-  "land.hydrological_forcing.waterlevel_land",
-  "routing.overland_flow.hydrological_forcing.waterlevel_land",
-  "land.hydrological_forcing.q_land",
-  "routing.overland_flow.hydrological_forcing.q_land",
-  "routing.river_flow.hydrological_forcing.waterlevel_river",
-  "routing.river_flow.hydrological_forcing.q_river",
-]
+[input.forcing]
+atmosphere_water__precipitation_volume_flux = "P"
+land_surface_water__depth = "levKinL"
+river_water__depth = "h"
+land_surface_water__volume_flow_rate = "runL"
+river_water__volume_flow_rate = "q"
 
-[input.land.atmospheric_forcing]
-precipitation = "P"
+[input.static]
+land_surface__slope = "Slope"
+river__length = "wflow_riverlength"
+river__slope = "RiverSlope"
+river__width = "wflow_riverwidth"
 
-[input.land.hydrological_forcing]
-waterlevel_land = "levKinL"
-q_land = "runL"
+reservoir_surface__area = "ResSimpleArea"
+lake_surface__area = "LakeArea"
+"reservoir_sediment~bedload__trapping_efficiency_coefficient" = "ResTrapEff"
 
-[input.land.land_parameter_set]
-slope = "Slope"
+vegetation_canopy__gap_fraction = "CanopyGapFraction"
+"soil~compacted__area_fraction" = "PathFrac"
+soil_erosion__rainfall_soil_detachability_factor = "soil_detachability"
+soil_erosion__eurosem_exponent = "eros_spl_EUROSEM"
+soil_erosion__usle_k_factor = "usle_k"
+soil_erosion__usle_c_factor = "USLE_C"
+soil_erosion__answers_overland_flow_factor = "eros_ov"
 
-[input.land.rainfall_erosion.parameters]
-soil_detachability = "soil_detachability"
-eurosem_exponent = "eros_spl_EUROSEM"
-canopygapfraction = "CanopyGapFraction"
-usle_k = "usle_k"
-usle_c = "USLE_C"
-pathfrac = "PathFrac"
+soil_clay__mass_fraction = "fclay_soil"
+soil_silt__mass_fraction = "fsilt_soil"
+soil_sand__mass_fraction = "fsand_soil"
+"soil_aggregates~small__mass_fraction" = "fsagg_soil"
+"soil_aggregates~large__mass_fraction" = "flagg_soil"
 
-[input.land.overland_flow_erosion.parameters]
-usle_k = "usle_k"
-usle_c = "USLE_C"
-answers_k = "eros_ov"
+land_surface_sediment__particle_density = "sediment_density"
+land_surface_water_sediment__govers_transport_capacity_coefficient = "c_govers"
+land_surface_water_sediment__govers_transport_capacity_exponent = "n_govers"
+land_surface_sediment__d50_diameter = "d50_soil"
 
-[input.land.soil_erosion.parameters]
-clay_fraction = "fclay_soil"
-silt_fraction = "fsilt_soil"
-sand_fraction = "fsand_soil"
-sagg_fraction = "fsagg_soil"
-lagg_fraction = "flagg_soil"
+river_sediment__particle_density = "sediment_density"
+river_sediment__d50_diameter = "D50_River"
+river_water_sediment__bagnold_transport_capacity_coefficient = "c_Bagnold"
+river_water_sediment__bagnold_transport_capacity_exponent = "exp_Bagnold"
+river_water_sediment__kodatie_transport_capacity_a-coefficient = "a_kodatie"
+river_water_sediment__kodatie_transport_capacity_b-coefficient = "b_kodatie"
+river_water_sediment__kodatie_transport_capacity_c-coefficient = "c_kodatie"
+river_water_sediment__kodatie_transport_capacity_d-coefficient = "d_kodatie"
 
-[input.routing.overland_flow.hydrological_forcing]
-waterlevel_land = "levKinL"
-q_land = "runL"
+river_bottom-and-bank_sediment__d50_diameter = "D50_River"
+river_bottom-and-bank_clay__mass_fraction = "ClayF_River"
+river_bottom-and-bank_silt__mass_fraction = "SiltF_River"
+river_bottom-and-bank_sand__mass_fraction = "SandF_River"
+river_bottom-and-bank_gravel__mass_fraction = "GravelF_River"
 
-[input.routing.overland_flow.transport_capacity.parameters]
-density = "sediment_density"
-d50 = "d50_soil"
-c_govers = "c_govers"
-n_govers = "n_govers"
-dm_clay = "dm_clay"
-dm_silt = "dm_silt"
-dm_sand = "dm_sand"
-dm_sagg = "dm_sagg"
-dm_lagg = "dm_lagg"
-
-[input.routing.river_flow.hydrological_forcing]
-waterlevel_river = "h"
-q_river = "q"
-
-[input.routing.river_parameter_set]
-length = "wflow_riverlength"
-slope = "RiverSlope"
-width = "wflow_riverwidth"
-
-[input.routing.river_flow.transport_capacity.parameters]
-density = "sediment_density"
-d50 = "D50_River"
-c_bagnold = "c_Bagnold"
-e_bagnold = "exp_Bagnold"
-a_kodatie = "a_kodatie"
-b_kodatie = "b_kodatie"
-c_kodatie = "c_kodatie"
-d_kodatie = "d_kodatie"
-
-[input.routing.river_flow.potential_erosion.parameters]
-d50 = "D50_River"
-
-[input.routing.river_flow.sediment_flux.parameters]
-clay_fraction = "ClayF_River"
-silt_fraction = "SiltF_River"
-sand_fraction = "SandF_River"
-gravel_fraction = "GravelF_River"
-dm_clay = "dm_clay"
-dm_silt = "dm_silt"
-dm_sand = "dm_sand"
-dm_sagg = "dm_sagg"
-dm_lagg = "dm_lagg"
-dm_gravel = "dm_gravel"
-# Reservoir
-resarea = "ResSimpleArea"
-restrapeff = "ResTrapEff"
-reslocs = "wflow_reservoirlocs"
-# Lake
-lakearea = "LakeArea"
-lakelocs = "wflow_lakelocs"
-
-[input.routing.river_flow.concentrations.parameters]
-dm_clay = "dm_clay"
-dm_silt = "dm_silt"
-dm_sand = "dm_sand"
-dm_sagg = "dm_sagg"
-dm_lagg = "dm_lagg"
-dm_gravel = "dm_gravel"
+clay__d50_diameter = "dm_clay"
+silt__d50_diameter = "dm_silt"
+sand__d50_diameter = "dm_sand"
+"sediment_aggregates~small__d50_diameter" = "dm_sagg"
+"sediment_aggregates~large__d50_diameter" = "dm_lagg"
+gravel__d50_diameter = "dm_gravel"
 
 [model]
 reinit = true
@@ -167,95 +122,83 @@ land_transport = "yalinpart" # Overland flow transport capacity method: ["yalinp
 river_transport = "bagnold" # River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]
 type = "sediment"
 
-[output]
+[output.netcdf_grid]
 path = "output-moselle-sed.nc"
 
-[output.land.rainfall_erosion.variables]
-amount = "rainfall_erosion"
+[output.netcdf_grid.variables]
+"soil_erosion~rainfall__mass_flow_rate" = "rainfall_erosion"
+"soil_erosion~overland_flow__mass_flow_rate" = "overland_flow_erosion"
+soil_erosion__mass_flow_rate = "soilloss"
+soil_erosion_clay__mass_flow_rate = "erosclay"
 
-[output.land.overland_flow_erosion.variables]
-amount = "overland_flow_erosion"
+land_surface_water_sediment_transport_capacity__mass_flow_rate = "TCsed"
+land_surface_water_clay_transport_capacity__mass_flow_rate = "TCclay"
 
-[output.land.soil_erosion.variables]
-amount = "soilloss"
-clay = "erosclay"
+"land_surface_water_sediment~to-river__mass_flow_rate" = "inlandsed"
+"land_surface_water_clay~to-river__mass_flow_rate" = "inlandclay"
 
-[output.routing.overland_flow.transport_capacity.variables]
-clay = "TCclay"
-amount = "TCsed"
+land_surface_water_sediment__mass_flow_rate = "olsed"
+routing.overland_flow.sediment_flux.variables.clay = "olclay"
 
-[output.routing.overland_flow.to_river.variables]
-clay = "inlandclay"
-amount = "inlandsed"
+routing.river_flow.hydrological_forcing.waterlevel_river = "h_riv"
+routing.river_flow.sediment_flux.boundary_conditions.erosion_land_clay = "inlandclayriv"
+routing.river_flow.sediment_flux.boundary_conditions.transport_capacity =  "TCsed_riv"
 
-[output.routing.overland_flow.sediment_flux.variables]
-clay = "olclay"
-amount = "olsed"
+river_water_sediment__mass_concentration = "Sedconc"
+"river_water_sediment~suspended__mass_concentration" = "SSconc"
+"river_water_sediment~bedload__mass_concentration" = "Bedconc"
 
-[output.routing.river_flow.concentrations.variables]
-bed = "Bedconc"
-suspended = "SSconc"
-total = "Sedconc"
+river_water_sediment_deposition__mass = "deposition_riv"
+river_water_sediment_erosion__mass = "erosion_riv"
+river_water_clay__mass_flow_rate = "outclay"
+river_water_clay__mass = "clayload"
 
-[output.routing.river_flow.hydrological_forcing]
-waterlevel_river = "h_riv"
-
-[output.routing.river_flow.sediment_flux.variables]
-leftover_clay = "clayload"
-clay = "outclay"
-erosion = "erosion_riv"
-deposition = "deposition_riv"
-
-[output.routing.river_flow.sediment_flux.boundary_conditions]
-erosion_land_clay = "inlandclayriv"
-transport_capacity = "TCsed_riv"
-
-[csv]
+[output.csv]
 path = "output-moselle-sediment.csv"
 
-[[csv.column]]
+[[output.csv.column]]
 coordinate.x = 6.931
 coordinate.y = 48.085
 header = "SL"
-parameter = "land.soil_erosion.variables.amount"
+parameter = "soil_erosion__mass_flow_rate"
 
-[[csv.column]]
+[[output.csv.column]]
 coordinate.x = 6.931
 coordinate.y = 48.085
 header = "SSPL"
-parameter = "land.rainfall_erosion.variables.amount"
+parameter = "soil_erosion~rainfall__mass_flow_rate"
 
-[[csv.column]]
+[[output.csv.column]]
 coordinate.x = 6.931
 coordinate.y = 48.085
 header = "SOV"
-parameter = "land.overland_flow_erosion.variables.amount"
+parameter = "soil_erosion~overland_flow__mass_flow_rate"
 
-[[csv.column]]
+[[output.csv.column]]
 coordinate.x = 6.931
 coordinate.y = 48.085
 header = "P"
-parameter = "land.atmospheric_forcing.precipitation"
+parameter = "atmosphere_water__precipitation_volume_flux"
 
-[[csv.column]]
+[[output.csv.column]]
 coordinate.x = 6.931
 coordinate.y = 48.085
 header = "ql"
 parameter = "land.hydrological_forcing.q_land"
 
-# [[csv.column]]
+# [[output.csv.column]]
 # coordinate.x = 6.931
 # coordinate.y = 48.085
 # header = "TCsed"
 # parameter = "routing.overland_flow.transport_capacity.variables.amount"
 
-# [[csv.column]]
+# [[output.csv.column]]
 # coordinate.x = 6.931
 # coordinate.y = 48.085
 # header = "TCclay"
 # parameter = "routing.overland_flow.transport_capacity.variables.clay"
 
-# [[csv.column]]
+# [[output.csv.column]]
 # coordinate.x = 6.931
 # coordinate.y = 48.085
 # header = "inlandsed"

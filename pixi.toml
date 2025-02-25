@@ -11,7 +11,7 @@ platforms = ["win-64", "linux-64"]
 
 [tasks]
 # Installation
-install-julia = "juliaup add 1.10.7 && juliaup override set 1.10.7"
+install-julia = "juliaup add 1.11.3 && juliaup override set 1.11.3"
 # Julia
 # Clear SSL_CERT_DIR to avoid Julia warnings, see https://github.com/JuliaLang/Downloads.jl/issues/244
 update-registry-julia = { cmd = "julia --eval='using Pkg; Registry.update()'", env = { SSL_CERT_DIR = "" } }

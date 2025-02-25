@@ -46,7 +46,7 @@ function homogenous_aquifer(nrow, ncol)
     variables = Wflow.ConfinedAquiferVariables(;
         head = [0.0, 7.5, 20.0],
         conductance = fill(0.0, connectivity.nconnection),
-        volume = fill(0.0, ncell),
+        storage = fill(0.0, ncell),
     )
     conf_aqf = Wflow.ConfinedAquifer(; parameters, variables)
 
@@ -61,7 +61,7 @@ function homogenous_aquifer(nrow, ncol)
     variables = Wflow.UnconfinedAquiferVariables(;
         head = [0.0, 7.5, 20.0],
         conductance = fill(0.0, connectivity.nconnection),
-        volume = fill(0.0, ncell),
+        storage = fill(0.0, ncell),
     )
     unconf_aqf = Wflow.UnconfinedAquifer(; parameters, variables)
     return (connectivity, conf_aqf, unconf_aqf)
@@ -300,13 +300,18 @@ end
                 exfiltration_conductance = [200.0, 200.0],
                 bottom = [1.0, 1.0],
             )
-            variables = Wflow.RiverVariables(; stage = [2.0, 2.0], flux = [0.0, 0.0])
+            variables = Wflow.RiverVariables(;
+                stage = [2.0, 2.0],
+                storage = [20.0, 20.0],
+                flux = [0.0, 0.0],
+            )
             river = Wflow.River(; parameters, variables, index = [1, 3])
             Q = zeros(3)
             Wflow.flux!(Q, river, conf_aqf)
-            # infiltration, below bottom, flux is (stage - bottom) * inf_cond
-            @test Q[1] == (2.0 - 1.0) * 100.0
-            # drainage, flux is () * exf_cond
+            # infiltration, below bottom, flux is (stage - bottom) * inf_cond, limited by
+            # river storage (20.0)
+            @test Q[1] == 20.0
+            # drainage, flux is (stage - head) * exf_cond
             @test Q[3] == (2.0 - 20.0) * 200.0
         end
 
@@ -428,7 +433,7 @@ end
         variables = Wflow.UnconfinedAquiferVariables(;
             head = initial_head.(xc),
             conductance = fill(0.0, connectivity.nconnection),
-            volume = fill(0.0, ncell),
+            storage = fill(0.0, ncell),
         )
         parameters = Wflow.UnconfinedAquiferParameters(;
             k = fill(conductivity, ncell),
@@ -502,7 +507,7 @@ end
         variables = Wflow.UnconfinedAquiferVariables(;
             head = initial_head.(xc),
             conductance = fill(0.0, connectivity.nconnection),
-            volume = fill(0.0, ncell),
+            storage = fill(0.0, ncell),
         )
         parameters = Wflow.UnconfinedAquiferParameters(;
             k = fill(conductivity, ncell),
@@ -587,7 +592,7 @@ end
         variables = Wflow.ConfinedAquiferVariables(;
             head = fill(startinghead, ncell),
             conductance = fill(0.0, connectivity.nconnection),
-            volume = fill(0.0, ncell),
+            storage = fill(0.0, ncell),
         )
         aquifer = Wflow.ConfinedAquifer(; parameters, variables)
 

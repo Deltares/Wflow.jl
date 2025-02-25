@@ -21,47 +21,31 @@ end
 "Initialize (shared) vegetation parameters"
 function VegetationParameters(dataset, config, indices)
     n = length(indices)
-    rootingdepth = ncread(
-        dataset,
-        config,
-        "land.vegetation_parameter_set.rootingdepth";
-        sel = indices,
-        defaults = 750.0,
-        type = Float64,
-    )
-    kc = ncread(
-        dataset,
-        config,
-        "land.vegetation_parameter_set.kc";
-        sel = indices,
-        defaults = 1.0,
-        type = Float64,
-    )
-    if haskey(config.input.land.vegetation_parameter_set, "leaf_area_index")
-        storage_specific_leaf = ncread(
-            dataset,
+    lens = lens_input_parameter(config, "vegetation_root__depth")
+    rootingdepth =
+        ncread(dataset, config, lens; sel = indices, defaults = 750.0, type = Float64)
+    lens = lens_input_parameter(config, "vegetation__crop_factor")
+    kc = ncread(dataset, config, lens; sel = indices, defaults = 1.0, type = Float64)
+    do_cyclic = haskey(config.input, "cyclic")
+    if do_cyclic && haskey(config.input.cyclic, "vegetation__leaf-area_index")
+        lens = lens_input_parameter(
             config,
-            "land.vegetation_parameter_set.storage_specific_leaf";
+            "vegetation__specific-leaf_storage";
             optional = false,
-            sel = indices,
-            type = Float64,
         )
-        storage_wood = ncread(
-            dataset,
+        storage_specific_leaf = ncread(dataset, config, lens; sel = indices, type = Float64)
+        lens = lens_input_parameter(
             config,
-            "land.vegetation_parameter_set.storage_wood";
+            "vegetation_wood_water__storage_capacity";
             optional = false,
-            sel = indices,
-            type = Float64,
         )
-        kext = ncread(
-            dataset,
+        storage_wood = ncread(dataset, config, lens; sel = indices, type = Float64)
+        lens = lens_input_parameter(
             config,
-            "land.vegetation_parameter_set.kext";
+            "vegetation_canopy__light-extinction_coefficient";
             optional = false,
-            sel = indices,
-            type = Float64,
         )
+        kext = ncread(dataset, config, lens; sel = indices, type = Float64)
         vegetation_parameter_set = VegetationParameters(;
             leaf_area_index = fill(MISSING_VALUE, n),
             storage_wood,
@@ -73,22 +57,11 @@ function VegetationParameters(dataset, config, indices)
             kc,
         )
     else
-        canopygapfraction = ncread(
-            dataset,
-            config,
-            "land.vegetation_parameter_set.canopygapfraction";
-            sel = indices,
-            defaults = 0.1,
-            type = Float64,
-        )
-        cmax = ncread(
-            dataset,
-            config,
-            "land.vegetation_parameter_set.cmax";
-            sel = indices,
-            defaults = 1.0,
-            type = Float64,
-        )
+        lens = lens_input_parameter(config, "vegetation_canopy__gap_fraction")
+        canopygapfraction =
+            ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float64)
+        lens = lens_input_parameter(config, "vegetation_water__storage_capacity")
+        cmax = ncread(dataset, config, lens; sel = indices, defaults = 1.0, type = Float64)
         vegetation_parameter_set = VegetationParameters(;
             leaf_area_index = nothing,
             storage_wood = nothing,
@@ -124,16 +97,11 @@ function LandGeometry(nc, config, inds)
     sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
     xl, yl = cell_lengths(y, cellength, sizeinmetres)
     area = xl .* yl
-    ldd = ncread(nc, config, "ldd"; optional = false, sel = inds, allow_missing = true)
+    lens = lens_input(config, "local_drain_direction"; optional = false)
+    ldd = ncread(nc, config, lens; sel = inds, allow_missing = true)
     drain_width = map(get_flow_width, ldd, xl, yl)
-    landslope = ncread(
-        nc,
-        config,
-        "land.land_parameter_set.slope";
-        optional = false,
-        sel = inds,
-        type = Float64,
-    )
+    lens = lens_input_parameter(config, "land_surface__slope"; optional = false)
+    landslope = ncread(nc, config, lens; sel = inds, type = Float64)
     clamp!(landslope, 0.00001, Inf)
 
     land_parameter_set =
@@ -153,30 +121,13 @@ end
 
 "Initialize river geometry parameters"
 function RiverGeometry(nc, config, inds)
-    riverwidth = ncread(
-        nc,
-        config,
-        "routing.river_parameter_set.width";
-        optional = false,
-        sel = inds,
-        type = Float64,
-    )
-    riverlength = ncread(
-        nc,
-        config,
-        "routing.river_parameter_set.length";
-        optional = false,
-        sel = inds,
-        type = Float64,
-    )
-    riverslope = ncread(
-        nc,
-        config,
-        "routing.river_parameter_set.slope";
-        optional = false,
-        sel = inds,
-        type = Float64,
-    )
+    lens = lens_input_parameter(config, "river__width"; optional = false)
+    riverwidth = ncread(nc, config, lens; sel = inds, type = Float64)
+    lens = lens_input_parameter(config, "river__length"; optional = false)
+    riverlength = ncread(nc, config, lens; sel = inds, type = Float64)
+    lens = lens_input_parameter(config, "river__slope"; optional = false)
+    riverslope = ncread(nc, config, lens; sel = inds, type = Float64)
+
     minimum(riverlength) > 0 || error("river length must be positive on river cells")
     minimum(riverwidth) > 0 || error("river width must be positive on river cells")
     clamp!(riverslope, 0.00001, Inf)

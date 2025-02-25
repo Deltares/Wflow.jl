@@ -3,13 +3,15 @@
 # Wflow documentation https://deltares.github.io/Wflow.jl/dev/
 # TOML documentation: https://github.com/toml-lang/toml
 
+dir_input = "data/input"
+dir_output = "data/output"
+
+[time]
 calendar = "proleptic_gregorian"
 endtime = 2000-06-30T00:00:00
 starttime = 2000-05-31T00:00:00
 time_units = "days since 1900-01-01 00:00:00"
 timestepsecs = 86400
-dir_input = "data/input"
-dir_output = "data/output"
 
 [state]
 path_input = "instates-example-sbm-gwf.nc"
@@ -18,83 +20,66 @@ path_output = "outstates-example-sbm-gwf.nc"
 # if listed, the variable must be present in the NetCDF or error
 # if not listed, the variable can get a default value if it has one
 
-[state.land.interception.variables]
-canopy_storage = "canopystorage"
+[state.variables]
+vegetation_canopy_water__depth = "canopystorage"
 
-[state.land.soil.variables]
-satwaterdepth = "satwaterdepth"
-ustorelayerdepth = "ustorelayerdepth"
+soil_water_sat-zone__depth = "satwaterdepth"
+soil_layer_water_unsat-zone__depth = "ustorelayerdepth"
 
-[state.routing.river_flow.variables]
-h = "h_river"
-h_av = "h_av_river"
-q = "q_river"
+river_water__instantaneous_depth = "h_river"
+river_water__depth = "h_av_river"
+river_water__instantaneous_volume_flow_rate = "q_river"
 
-[state.routing.overland_flow.variables]
-h = "h_land"
-h_av = "h_av_land"
-q = "q_land"
+land_surface_water__instantaneous_volume_flow_rate = "q_land"
+land_surface_water__instantaneous_depth = "h_land"
+land_surface_water__depth = "h_av_land"
 
-[state.routing.subsurface_flow.aquifer.variables]
-head = "head"
+subsurface_water__hydraulic_head = "head"
 
 [input]
 path_forcing = "forcing-sbm-groundwater-part*.nc"
 path_static = "staticmaps-sbm-groundwater.nc"
 
 # these are not directly part of the model
-ldd = "wflow_ldd"
-river_location = "wflow_river"
-subcatchment = "wflow_subcatch"
-altitude = "wflow_dem"
+local_drain_direction = "wflow_ldd"
+river_location__mask = "wflow_river"
+subcatchment_location__count = "wflow_subcatch"
 
-# specify the internal IDs of the parameters which vary over time
-# the external name mapping needs to be below together with the other mappings
-forcing = [
-  "land.atmospheric_forcing.precipitation",
-  "land.atmospheric_forcing.potential_evaporation",
-]
+[input.forcing]
+atmosphere_water__precipitation_volume_flux = "P"
+land_surface_water__potential_evaporation_volume_flux = "PET"
 
-[input.land.vegetation_parameter_set]
-rootingdepth = "rootingdepth"
-canopygapfraction = "canopygapfraction"
-cmax = "cmax"
+[input.static]
+soil_surface_water__vertical_saturated_hydraulic_conductivity = "kv"
+"soil~non-compacted_surface_water__infiltration_capacity" = "InfiltCapSoil"
+soil_water__residual_volume_fraction = "thetaR"
+soil_water__saturated_volume_fraction = "thetaS"
+"soil~compacted__area_fraction" = "PathFrac"
+soil__thickness = "soilthickness"
 
-[input.land.interception.parameters]
-e_r = "EoverR"
+vegetation_canopy_water__mean_evaporation-to-mean_precipitation_ratio = "EoverR"
+vegetation_root__depth = "rootingdepth"
+vegetation_canopy__gap_fraction = "canopygapfraction"
+vegetation_water__storage_capacity = "cmax"
 
-[input.land.atmospheric_forcing]
-potential_evaporation = "PET"
-precipitation = "P"
+river__length = "wflow_riverlength"
+river_water_flow__manning_n_parameter = "N_river"
+river__slope = "RiverSlope"
+river__width = "wflow_riverwidth"
 
-[input.land.soil.parameters]
-infiltcapsoil = "InfiltCapSoil"
-kv_0 = "kv"
-pathfrac = "PathFrac"
-soilthickness = "soilthickness"
-theta_r = "thetaR"
-theta_s = "thetaS"
+land_surface_water_flow__manning_n_parameter = "N"
+land_surface__elevation = "wflow_dem"
+land_surface__slope = "Slope"
 
-[input.routing.river_flow]
-length = "wflow_riverlength"
-mannings_n = "N_river"
-slope = "RiverSlope"
-width = "wflow_riverwidth"
-
-[input.routing.overland_flow]
-mannings_n = "N"
-slope = "Slope"
-
-[input.routing.subsurface_flow]
-conductivity = "k"
-constant_head = "constant_head"
-drain = "drain"
-drain_conductance = "cond_drain"
-drain_elevation = "elev_drain"
-exfiltration_conductance = "exfiltration_conductance"
-infiltration_conductance = "infiltration_conductance"
-river_bottom = "river_bottom"
-specific_yield = "specific_yield"
+subsurface_surface_water__horizontal_saturated_hydraulic_conductivity = "k"
+"model_boundary_condition~constant_hydraulic_head" = "constant_head"
+land_drain_location__flag = "drain"
+land_drain__conductance = "cond_drain"
+land_drain__elevation = "elev_drain"
+subsurface_water__specific_yield = "specific_yield"
+river_bottom__elevation = "river_bottom"
+river_water__infiltration_conductance = "infiltration_conductance"
+river_water__exfiltration_conductance = "infiltration_conductance"
 
 [model]
 constanthead = true
@@ -106,43 +91,29 @@ snow = false
 thicknesslayers = [100, 300, 800]
 type = "sbm_gwf"
 
-[output]
+[output.nectdf_grid]
 path = "output_example-sbm-gwf.nc"
 
-[output.land.interception.variables]
-canopy_storage = "canopystorage"
+[output.netcdf_grid.variables]
+vegetation_canopy_water__depth = "canopystorage"
+soil_water_sat-zone__depth = "satwaterdepth"
+soil_layer_water_unsat-zone__depth = "ustorelayerdepth"
+land.soil.parameters.soilthickness = "soilthickness"
+river_water__volume_flow_rate = "q_av"
+subsurface_water__hydraulic_head = "head"
+subsurface_water_sat-zone_top__net_recharge_volume_flux = "rate"
+"land_drain_water~to-subsurface__volume_flow_rate" = "drain_flux"
+"river_water~to-subsurface__volume_flow_rate" = "flux"
 
-[output.land.soil.variables]
-satwaterdepth = "satwaterdepth"
-ustorelayerdepth = "ustorelayerdepth"
-
-[output.land.soil.parameters]
-soilthickness = "soilthickness"
-
-[output.routing.river_flow.variables]
-q = "q"
-
-[output.routing.subsurface_flow.aquifer.variables]
-head = "head"
-
-[output.routing.subsurface_flow.boundaries.recharge.variables]
-rate = "rate"
-
-[output.routing.subsurface_flow.boundaries.drain.variables]
-flux = "drain_flux"
-
-[output.routing.subsurface_flow.boundaries.river.variables]
-flux = "flux"
-
-[csv]
+[output.csv]
 path = "output_example-sbm-gwf.csv"
 
-[[csv.column]]
+[[output.csv.column]]
 header = "Q_av"
 index = 5
-parameter = "routing.river_flow.variables.q_av"
+parameter = "river_water__volume_flow_rate"
 
-[[csv.column]]
+[[output.csv.column]]
 header = "head"
 index = 5
-parameter = "routing.subsurface_flow.aquifer.variables.head"
+parameter = "subsurface_water__hydraulic_head"

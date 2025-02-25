@@ -17,24 +17,13 @@ function LakeParameters(config, dataset, inds_riv, nriv, pits)
     # read only lake data if lakes true
     # allow lakes only in river cells
     # note that these locations are only the lake outlet pixels
-    lakelocs_2d = ncread(
-        dataset,
-        config,
-        "routing.river_flow.lake.locs";
-        optional = false,
-        type = Int,
-        fill = 0,
-    )
+    lens = lens_input(config, "lake_location__count"; optional = false)
+    lakelocs_2d = ncread(dataset, config, lens; type = Int, fill = 0)
     lakelocs = lakelocs_2d[inds_riv]
 
     # this holds the same ids as lakelocs, but covers the entire lake
-    lakecoverage_2d = ncread(
-        dataset,
-        config,
-        "routing.river_flow.lake.areas";
-        optional = false,
-        allow_missing = true,
-    )
+    lens = lens_input(config, "lakes_area__count"; optional = false)
+    lakecoverage_2d = ncread(dataset, config, lens; allow_missing = true)
     # for each lake, a list of 2D indices, needed for getting the mean precipitation
     inds_lake_cov = Vector{CartesianIndex{2}}[]
 
@@ -61,78 +50,45 @@ function LakeParameters(config, dataset, inds_riv, nriv, pits)
         end
     end
 
-    lakearea = ncread(
-        dataset,
+    lens = lens_input_parameter(config, "lake_surface__area"; optional = false)
+    lakearea = ncread(dataset, config, lens; sel = inds_lake, type = Float, fill = 0)
+    lens = lens_input_parameter(
         config,
-        "routing.river_flow.lake.area";
+        "lake_water__rating_curve_coefficient";
         optional = false,
-        sel = inds_lake,
-        type = Float64,
-        fill = 0,
     )
-    lake_b = ncread(
-        dataset,
+    lake_b = ncread(dataset, config, lens; sel = inds_lake, type = Float64, fill = 0)
+    lens =
+        lens_input_parameter(config, "lake_water__rating_curve_exponent"; optional = false)
+    lake_e = ncread(dataset, config, lens; sel = inds_lake, type = Float64, fill = 0)
+    lens = lens_input_parameter(
         config,
-        "routing.river_flow.lake.b";
+        "lake_water_flow_threshold-level__elevation";
         optional = false,
-        sel = inds_lake,
-        type = Float64,
-        fill = 0,
     )
-    lake_e = ncread(
-        dataset,
+    lake_threshold =
+        ncread(dataset, config, lens; sel = inds_lake, type = Float64, fill = 0)
+    lens = lens_input(config, "lake~lower_location__count")
+    linked_lakelocs =
+        ncread(dataset, config, lens; sel = inds_lake, defaults = 0, type = Int, fill = 0)
+    lens = lens_input_parameter(
         config,
-        "routing.river_flow.lake.e";
+        "lake_water__storage_curve_type_count";
         optional = false,
-        sel = inds_lake,
-        type = Float64,
-        fill = 0,
     )
-    lake_threshold = ncread(
-        dataset,
+    lake_storfunc = ncread(dataset, config, lens; sel = inds_lake, type = Int, fill = 0)
+    lens = lens_input_parameter(
         config,
-        "routing.river_flow.lake.threshold";
+        "lake_water__rating_curve_type_count";
         optional = false,
-        sel = inds_lake,
-        type = Float64,
-        fill = 0,
     )
-    linked_lakelocs = ncread(
-        dataset,
+    lake_outflowfunc = ncread(dataset, config, lens; sel = inds_lake, type = Int, fill = 0)
+    lens = lens_input_parameter(
         config,
-        "routing.river_flow.lake.linkedlakelocs";
-        sel = inds_lake,
-        defaults = 0,
-        type = Int,
-        fill = 0,
-    )
-    lake_storfunc = ncread(
-        dataset,
-        config,
-        "routing.river_flow.lake.storfunc";
+        "lake_water_level__initial_elevation";
         optional = false,
-        sel = inds_lake,
-        type = Int,
-        fill = 0,
     )
-    lake_outflowfunc = ncread(
-        dataset,
-        config,
-        "routing.river_flow.lake.outflowfunc";
-        optional = false,
-        sel = inds_lake,
-        type = Int,
-        fill = 0,
-    )
-    lake_waterlevel = ncread(
-        dataset,
-        config,
-        "routing.river_flow.lake.waterlevel";
-        optional = false,
-        sel = inds_lake,
-        type = Float64,
-        fill = 0,
-    )
+    lake_waterlevel = ncread(dataset, config, lens; sel = inds_lake, type = Float, fill = 0)
 
     # for surface water routing lake locations are considered pits in the flow network
     # all upstream flow goes to the river and flows into the lake
@@ -203,7 +159,9 @@ end
 "Struct for storing Lake model parameters"
 @get_units @grid_loc @with_kw struct LakeVariables{T}
     waterlevel::Vector{T} | "m"                 # waterlevel H [m] of lake
+    waterlevel_av::Vector{T} | "m"              # average waterlevel H [m] of lake for model timestep Δt
     storage::Vector{T} | "m3"                   # storage lake [m³]
+    storage_av::Vector{T} | "m3"                # average storage lake for model timestep Δt [m³]
     outflow::Vector{T} | "m3 s-1"               # outflow of lake outlet [m³ s⁻¹]
     outflow_av::Vector{T} | "m3 s-1"            # average outflow lake [m³ s⁻¹] for model timestep Δt (including flow from lower to upper lake)
     actevap::Vector{T}                          # average actual evapotranspiration for lake area [mm Δt⁻¹] 
@@ -213,8 +171,10 @@ end
 function LakeVariables(n, lake_waterlevel)
     variables = LakeVariables{Float64}(;
         waterlevel = lake_waterlevel,
+        waterlevel_av = fill(MISSING_VALUE, n),
         inflow = fill(MISSING_VALUE, n),
         storage = initialize_storage(lake_storfunc, lakearea, lake_waterlevel, sh),
+        storage_av = fill(MISSING_VALUE, n),
         outflow = fill(MISSING_VALUE, n),
         outflow_av = fill(MISSING_VALUE, n),
         actevap = fill(MISSING_VALUE, n),
@@ -429,11 +389,15 @@ function update!(model::Lake, i, inflow, doy, dt, dt_forcing)
     end
 
     # update values in place
+    # instantaneous variables
     lake_v.outflow[i] = outflow
     lake_v.waterlevel[i] = waterlevel
+    lake_v.storage[i] = storage
+    # average variables (here accumulated for model timestep Δt)
     lake_bc.inflow[i] += inflow * dt
     lake_v.outflow_av[i] += outflow * dt
-    lake_v.storage[i] = storage
+    lake_v.storage_av[i] += storage * dt
+    lake_v.waterlevel_av[i] += waterlevel * dt
     lake_v.actevap[i] += 1000.0 * (actevap / lake_p.area[i])
 
     return nothing

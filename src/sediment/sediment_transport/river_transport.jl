@@ -160,91 +160,36 @@ end
 "Initialize river sediment transport model parameters"
 function SedimentRiverTransportParameters(dataset, config, indices)
     n = length(indices)
-    clay_fraction = ncread(
-        dataset,
-        config,
-        "routing.river_flow.sediment_flux.parameters.clay_fraction";
-        sel = indices,
-        defaults = 0.15,
-        type = Float64,
-    )
-    silt_fraction = ncread(
-        dataset,
-        config,
-        "routing.river_flow.sediment_flux.parameters.silt_fraction";
-        sel = indices,
-        defaults = 0.65,
-        type = Float64,
-    )
-    sand_fraction = ncread(
-        dataset,
-        config,
-        "routing.river_flow.sediment_flux.parameters.sand_fraction";
-        sel = indices,
-        defaults = 0.15,
-        type = Float64,
-    )
-    gravel_fraction = ncread(
-        dataset,
-        config,
-        "routing.river_flow.sediment_flux.parameters.sagg_fraction";
-        sel = indices,
-        defaults = 0.05,
-        type = Float64,
-    )
+    lens = lens_input_parameter(config, "river_bottom-and-bank_clay__mass_fraction")
+    clay_fraction =
+        ncread(dataset, config, lens; sel = indices, defaults = 0.15, type = Float64)
+    lens = lens_input_parameter(config, "river_bottom-and-bank_silt__mass_fraction")
+    silt_fraction =
+        ncread(dataset, config, lens; sel = indices, defaults = 0.65, type = Float64)
+    lens = lens_input_parameter(config, "river_bottom-and-bank_sand__mass_fraction")
+    sand_fraction =
+        ncread(dataset, config, lens; sel = indices, defaults = 0.15, type = Float64)
+    lens = lens_input_parameter(config, "river_bottom-and-bank_gravel__mass_fraction")
+    gravel_fraction =
+        ncread(dataset, config, lens; sel = indices, defaults = 0.05, type = Float64)
     # Check that river fractions sum to 1
     river_fractions = clay_fraction + silt_fraction + sand_fraction + gravel_fraction
     if any(abs.(river_fractions .- 1.0) .> 1e-3)
         error("Particle fractions in the river bed must sum to 1")
     end
-    dm_clay = ncread(
-        dataset,
-        config,
-        "routing.river_flow.sediment_flux.parameters.dm_clay";
-        sel = indices,
-        defaults = 2.0,
-        type = Float64,
-    )
-    dm_silt = ncread(
-        dataset,
-        config,
-        "routing.river_flow.sediment_flux.parameters.dm_silt";
-        sel = indices,
-        defaults = 10.0,
-        type = Float64,
-    )
-    dm_sand = ncread(
-        dataset,
-        config,
-        "routing.river_flow.sediment_flux.parameters.dm_sand";
-        sel = indices,
-        defaults = 200.0,
-        type = Float64,
-    )
-    dm_sagg = ncread(
-        dataset,
-        config,
-        "routing.river_flow.sediment_flux.parameters.dm_sagg";
-        sel = indices,
-        defaults = 30.0,
-        type = Float64,
-    )
-    dm_lagg = ncread(
-        dataset,
-        config,
-        "routing.river_flow.sediment_flux.parameters.dm_lagg";
-        sel = indices,
-        defaults = 500.0,
-        type = Float64,
-    )
-    dm_gravel = ncread(
-        dataset,
-        config,
-        "routing.river_flow.sediment_flux.parameters.dm_gravel";
-        sel = indices,
-        defaults = 2000.0,
-        type = Float64,
-    )
+    lens = lens_input_parameter(config, "clay__d50_diameter")
+    dm_clay = ncread(dataset, config, lens; sel = indices, defaults = 2.0, type = Float64)
+    lens = lens_input_parameter(config, "silt__d50_diameter")
+    dm_silt = ncread(dataset, config, lens; sel = indices, defaults = 10.0, type = Float64)
+    lens = lens_input_parameter(config, "sand__d50_diameter")
+    dm_sand = ncread(dataset, config, lens; sel = indices, defaults = 200.0, type = Float64)
+    lens = lens_input_parameter(config, "sediment_aggregates~small__d50_diameter")
+    dm_sagg = ncread(dataset, config, lens; sel = indices, defaults = 30.0, type = Float64)
+    lens = lens_input_parameter(config, "sediment_aggregates~large__d50_diameter")
+    dm_lagg = ncread(dataset, config, lens; sel = indices, defaults = 500.0, type = Float64)
+    lens = lens_input_parameter(config, "gravel__d50_diameter")
+    dm_gravel =
+        ncread(dataset, config, lens; sel = indices, defaults = 2000.0, type = Float64)
     # Waterbodies
     wblocs = zeros(Float64, n)
     wbarea = zeros(Float64, n)
@@ -253,29 +198,19 @@ function SedimentRiverTransportParameters(dataset, config, indices)
     do_lakes = get(config.model, "dolake", false)::Bool
 
     if do_reservoirs
-        reslocs = ncread(
-            dataset,
+        lens = lens_input(config, "reservoir_location__count"; optional = false)
+        reslocs = ncread(dataset, config, lens; sel = indices, type = Float64, fill = 0)
+        lens = lens_input_parameter(config, "reservoir_surface__area"; optional = false)
+        resarea = ncread(dataset, config, lens; sel = indices, type = Float64, fill = 0.0)
+        lens = lens_input_parameter(
             config,
-            "routing.river_flow.sediment_flux.parameters.reslocs";
+            "reservoir_sediment~bedload__trapping_efficiency_coefficient";
             optional = false,
-            sel = indices,
-            type = Float64,
-            fill = 0,
-        )
-        resarea = ncread(
-            dataset,
-            config,
-            "routing.river_flow.sediment_flux.parameters.resarea";
-            optional = false,
-            sel = indices,
-            type = Float64,
-            fill = 0.0,
         )
         restrapefficiency = ncread(
             dataset,
             config,
-            "routing.river_flow.sediment_flux.parameters.restrapeff";
-            optional = false,
+            lens;
             sel = indices,
             type = Float64,
             defaults = 1.0,
@@ -287,24 +222,10 @@ function SedimentRiverTransportParameters(dataset, config, indices)
     end
 
     if do_lakes
-        lakelocs = ncread(
-            dataset,
-            config,
-            "routing.river_flow.sediment_flux.parameters.lakelocs";
-            optional = false,
-            sel = indices,
-            type = Float64,
-            fill = 0,
-        )
-        lakearea = ncread(
-            dataset,
-            config,
-            "routing.river_flow.sediment_flux.parameters.lakearea";
-            optional = false,
-            sel = indices,
-            type = Float64,
-            fill = 0.0,
-        )
+        lens = lens_input(config, "lake_location__count"; optional = false)
+        lakelocs = ncread(dataset, config, lens; sel = indices, type = Float64, fill = 0)
+        lens = lens_input_parameter(config, "lake_surface__area"; optional = false)
+        lakearea = ncread(dataset, config, lens; sel = indices, type = Float64, fill = 0.0)
         wblocs = wblocs .+ lakelocs
         wbarea = wbarea .+ lakearea
     end
@@ -865,54 +786,19 @@ end
 
 "Initialize river sediment concentrations model parameters"
 function SedimentConcentrationsRiverParameters(dataset, config, indices)
-    dm_clay = ncread(
-        dataset,
-        config,
-        "routing.river_flow.concentrations.parameters.dm_clay";
-        sel = indices,
-        defaults = 2.0,
-        type = Float64,
-    )
-    dm_silt = ncread(
-        dataset,
-        config,
-        "routing.river_flow.concentrations.parameters.dm_silt";
-        sel = indices,
-        defaults = 10.0,
-        type = Float64,
-    )
-    dm_sand = ncread(
-        dataset,
-        config,
-        "routing.river_flow.concentrations.parameters.dm_sand";
-        sel = indices,
-        defaults = 200.0,
-        type = Float64,
-    )
-    dm_sagg = ncread(
-        dataset,
-        config,
-        "routing.river_flow.concentrations.parameters.dm_sagg";
-        sel = indices,
-        defaults = 30.0,
-        type = Float64,
-    )
-    dm_lagg = ncread(
-        dataset,
-        config,
-        "routing.river_flow.concentrations.parameters.dm_lagg";
-        sel = indices,
-        defaults = 500.0,
-        type = Float64,
-    )
-    dm_gravel = ncread(
-        dataset,
-        config,
-        "routing.river_flow.concentrations.parameters.dm_gravel";
-        sel = indices,
-        defaults = 2000.0,
-        type = Float64,
-    )
+    lens = lens_input_parameter(config, "clay__d50_diameter")
+    dm_clay = ncread(dataset, config, lens; sel = indices, defaults = 2.0, type = Float64)
+    lens = lens_input_parameter(config, "silt__d50_diameter")
+    dm_silt = ncread(dataset, config, lens; sel = indices, defaults = 10.0, type = Float64)
+    lens = lens_input_parameter(config, "sand__d50_diameter")
+    dm_sand = ncread(dataset, config, lens; sel = indices, defaults = 200.0, type = Float64)
+    lens = lens_input_parameter(config, "sediment_aggregates~small__d50_diameter")
+    dm_sagg = ncread(dataset, config, lens; sel = indices, defaults = 30.0, type = Float64)
+    lens = lens_input_parameter(config, "sediment_aggregates~large__d50_diameter")
+    dm_lagg = ncread(dataset, config, lens; sel = indices, defaults = 500.0, type = Float64)
+    lens = lens_input_parameter(config, "gravel__d50_diameter")
+    dm_gravel =
+        ncread(dataset, config, lens; sel = indices, defaults = 2000.0, type = Float64)
     conc_parameters = SedimentConcentrationsRiverParameters(;
         dm_clay = dm_clay,
         dm_silt = dm_silt,

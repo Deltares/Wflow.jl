@@ -96,7 +96,7 @@ end
 @get_units @grid_loc @with_kw struct ConfinedAquiferVariables{T}
     head::Vector{T} | "m"  # hydraulic head [m]
     conductance::Vector{T} | "m2 d-1" # Confined aquifer conductance is constant
-    volume::Vector{T} | "m3" # total volume of water that can be released
+    storage::Vector{T} | "m3" # total storage of water that can be released
 end
 
 @with_kw struct ConfinedAquifer{T} <: Aquifer
@@ -127,28 +127,20 @@ instead. Specific yield will vary roughly between 0.05 (clay) and 0.45 (peat)
 end
 
 function UnconfinedAquiferParameters(dataset, config, indices, top, bottom, area)
-    k = ncread(
-        dataset,
+    lens = lens_input_parameter(
         config,
-        "routing.subsurface_flow.conductivity";
-        sel = indices,
-        type = Float64,
+        "subsurface_surface_water__horizontal_saturated_hydraulic_conductivity",
     )
-    specific_yield = ncread(
-        dataset,
+    k = ncread(dataset, config, lens; sel = indices, type = Float64)
+
+    lens = lens_input_parameter(config, "subsurface_water__specific_yield")
+    specific_yield = ncread(dataset, config, lens; sel = indices, type = Float64)
+
+    lens = lens_input_parameter(
         config,
-        "routing.subsurface_flow.specific_yield";
-        sel = indices,
-        type = Float64,
+        "subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter",
     )
-    f = ncread(
-        dataset,
-        config,
-        "routing.subsurface_flow.gwf_f";
-        sel = indices,
-        type = Float64,
-        defaults = 3.0,
-    )
+    f = ncread(dataset, config, lens; sel = indices, type = Float64, defaults = 3.0)
 
     parameters =
         UnconfinedAquiferParameters{Float64}(; k, top, bottom, area, specific_yield, f)
@@ -158,7 +150,7 @@ end
 @get_units @grid_loc @with_kw struct UnconfinedAquiferVariables{T}
     head::Vector{T} | "m"  # hydraulic head [m]
     conductance::Vector{T} | "m2 d-1" # conductance 
-    volume::Vector{T} | "m3" # total volume of water that can be released m   
+    storage::Vector{T} | "m3" # total storage of water that can be released
 end
 
 @with_kw struct UnconfinedAquifer{T} <: Aquifer
@@ -169,8 +161,8 @@ end
 function UnconfinedAquifer(dataset, config, indices, top, bottom, area, conductance, head)
     parameters = UnconfinedAquiferParameters(dataset, config, indices, top, bottom, area)
 
-    volume = @. (min(top, head) - bottom) * area * parameters.specific_yield
-    variables = UnconfinedAquiferVariables{Float64}(head, conductance, volume)
+    storage = @. (min(top, head) - bottom) * area * parameters.specific_yield
+    variables = UnconfinedAquiferVariables{Float64}(head, conductance, storage)
     aquifer = UnconfinedAquifer{Float64}(parameters, variables)
     return aquifer
 end
@@ -380,14 +372,10 @@ end
 end
 
 function ConstantHead(dataset, config, indices)
-    constanthead = ncread(
-        dataset,
-        config,
-        "routing.subsurface_flow.constant_head";
-        sel = indices,
-        type = Float64,
-        fill = MISSING_VALUE,
-    )
+    lens = lens_input_parameter(config, "model_boundary_condition~constant_hydraulic_head")
+    constanthead =
+        ncread(dataset, config, lens; sel = indices, type = Float64, fill = MISSING_VALUE)
+
     n = length(indices)
     index_constanthead = filter(i -> !isequal(constanthead[i], MISSING_VALUE), 1:n)
     head = constanthead[index_constanthead]
@@ -433,7 +421,7 @@ function update!(gwf, Q, dt, conductivity_profile)
     Q .= 0.0  # TODO: Probably remove this when linking with other components
     flux!(Q, gwf.aquifer, gwf.connectivity, conductivity_profile)
     for boundary in gwf.boundaries
-        flux!(Q, boundary, gwf.aquifer)
+        flux!(Q, boundary, gwf.aquifer; dt)
     end
     gwf.aquifer.variables.head .+=
         (Q ./ gwf.aquifer.parameters.area .* dt ./ storativity(gwf.aquifer))
@@ -441,7 +429,7 @@ function update!(gwf, Q, dt, conductivity_profile)
     gwf.aquifer.variables.head[gwf.constanthead.index] .= gwf.constanthead.variables.head
     # Make sure no heads ends up below an unconfined aquifer bottom
     gwf.aquifer.variables.head .= minimum_head(gwf.aquifer)
-    gwf.aquifer.variables.volume .=
+    gwf.aquifer.variables.storage .=
         saturated_thickness(gwf.aquifer) .* gwf.aquifer.parameters.area .*
         storativity(gwf.aquifer)
     return nothing

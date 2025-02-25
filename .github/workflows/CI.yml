@@ -6,6 +6,12 @@ on:
       - master
       - v1
     tags: '*'
+
+# needed to allow julia-actions/cache to delete old caches that it has created
+permissions:
+  actions: write
+  contents: read
+
 jobs:
   test:
     name: Julia - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ matrix.threads }} threads - ${{ github.event_name }}
@@ -24,10 +30,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: julia-actions/cache@v2
-        with:
-          cache-compiled: "true"
-          cache-registries: "true"
-      - uses: prefix-dev/setup-pixi@v0.8.1
+      - uses: prefix-dev/setup-pixi@v0.8.3
         with:
           pixi-version: "latest"
       - name: Prepare pixi

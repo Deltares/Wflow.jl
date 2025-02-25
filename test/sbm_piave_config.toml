@@ -1,10 +1,14 @@
+dir_input = "data/input"
+dir_output = "data/output"
+
+[time]
 calendar = "proleptic_gregorian"
 starttime = 2010-07-01T00:00:00
 endtime = 2010-10-01T00:00:00
 time_units = "days since 1900-01-01 00:00:00"
 timestepsecs = 86400
-dir_input = "data/input"
-dir_output = "data/output"
+
+[logging]
 loglevel = "info"
 
 [state]
@@ -14,23 +18,76 @@ path_output = "outstates-piave.nc"
 [input]
 path_forcing = "forcing-piave.nc"
 path_static = "staticmaps-piave.nc"
-ldd = "wflow_ldd"
-river_location = "wflow_river"
-subcatchment = "wflow_subcatch"
-gauges = "wflow_gauges"
-gauges_grdc = "wflow_gauges_grdc"
 
-forcing = [
-  "land.atmospheric_forcing.precipitation",
-  "land.atmospheric_forcing.temperature",
-  "land.atmospheric_forcing.potential_evaporation",
-]
+local_drain_direction = "wflow_ldd"
+river_location__mask = "wflow_river"
+subcatchment_location__count = "wflow_subcatch"
+river_gauge = "wflow_gauges"
+river_gauge_grdc = "wflow_gauges_grdc"
 
-cyclic = ["land.vegetation_parameter_set.leaf_area_index"]
+[input.forcing]
+atmosphere_water__precipitation_volume_flux = "precip"
+land_surface_water__potential_evaporation_volume_flux = "pet"
+atmosphere_air__temperature = "temp"
+
+[input.static]
+atmosphere_air__snowfall_temperature_threshold = "TT"
+atmosphere_air__snowfall_temperature_interval = "TTI"
+
+"land~water-covered__area_fraction" = "WaterFrac"
+
+snowpack__melting_temperature_threshold = "TTM"
+snowpack__degree-day_coefficient = "Cfmax"
+
+glacier_surface__area_fraction = "wflow_glacierfrac"
+glacier_ice__degree-day_coefficient = "G_Cfmax"
+glacier_ice__melting_temperature_threshold = "G_TT"
+"glacier_firn_accumulation__snowpack~dry_leq-depth_fraction"  = "G_SIfrac"
+glacier_ice__leq-volume = "wflow_glacierstore"
+
+soil_layer_water__brooks-corey_epsilon_parameter = "c"
+soil_surface_water__infiltration_reduction_parameter = "cf_soil"
+soil_surface_water__vertical_saturated_hydraulic_conductivity = "KsatVer"
+soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter = "f"
+"soil~compacted_surface_water__infiltration_capacity" = "InfiltCapPath"
+"soil~non-compacted_surface_water__infiltration_capacity" = "InfiltCapSoil"
+soil_water__residual_volume_fraction = "thetaR"
+soil_water__saturated_volume_fraction = "thetaS"
+soil_water_sat-zone_bottom__max_leakage_volume_flux = "MaxLeakage"
+"soil~compacted__area_fraction" = "PathFrac"
+"soil_root~wet__sigmoid_function_shape_parameter" = "rootdistpar"
+soil__thickness = "SoilThickness"
+
+"vegetation_root__feddes_critial_pressure_head_h~1_reduction_coefficient" = "alpha_h1"
+"vegetation_root__feddes_critial_pressure_head_h~1" = "h1"
+"vegetation_root__feddes_critial_pressure_head_h~2" = "h2"
+"vegetation_root__feddes_critial_pressure_head_h~3~high" = "h3_high"
+"vegetation_root__feddes_critial_pressure_head_h~3~low" = "h3_low"
+"vegetation_root__feddes_critial_pressure_head_h~4" = "h4"
+vegetation_canopy_water__mean_evaporation-to-mean_precipitation_ratio = "EoverR"
+vegetation_canopy__light-extinction_coefficient = "Kext"
+vegetation__specific-leaf_storage = "Sl"
+vegetation_wood_water__storage_capacity = "Swood"
+vegetation_root__depth = "RootingDepth"
+vegetation__crop_factor = "crop_factor"
+
+river__length = "wflow_riverlength"
+river_water_flow__manning_n_parameter = "N_River"
+river__slope = "RiverSlope"
+river__width = "wflow_riverwidth"
+river_bank_water__depth = "RiverDepth"
+
+land_surface_water_flow__manning_n_parameter = "N"
+land_surface__slope = "Slope"
+
+subsurface_water__horizontal-to-vertical_saturated_hydraulic_conductivity_ratio = "KsatHorFrac"
+
+[input.cyclic]
+vegetation__leaf-area_index = "LAI"
 
 [model]
 type = "sbm"
-masswasting = true
+gravitational_snow_transport = true
 snow = true
 reinit = false
 reservoirs = false
@@ -42,117 +99,43 @@ kw_land_tstep = 3600
 thicknesslayers = [ 50, 100, 50, 200, 800,]
 river_routing = "kinematic-wave"
 
-[state.land.interception.variables]
-canopy_storage = "canopystorage"
+[state.variables]
+vegetation_canopy_water__depth = "canopystorage"
 
-[state.land.soil.variables]
-satwaterdepth = "satwaterdepth"
-tsoil = "tsoil"
-ustorelayerdepth = "ustorelayerdepth"
+soil_water_sat-zone__depth = "satwaterdepth"
+soil_surface__temperature = "tsoil"
+soil_layer_water_unsat-zone__depth = "ustorelayerdepth"
 
-[state.land.snow.variables]
-snow_storage = "snow"
-snow_water = "snowwater"
+"snowpack~dry__leq-depth" = "snow"
+"snowpack~liquid__depth" = "snowwater"
 
-[state.land.glacier.variables]
-glacier_store = "glacierstore"
+glacier_ice__leq-volume = "glacierstore"
 
-[input.land.glacier.parameters]
-glacier_frac = "wflow_glacierfrac"
-g_cfmax = "G_Cfmax"
-g_ttm = "G_TT"
-g_sifrac = "G_SIfrac"
+river_water__instantaneous_depth = "h_river"
+river_water__depth = "h_av_river"
+river_water__instantaneous_volume_flow_rate = "q_river"
 
-[input.land.glacier.variables]
-glacier_store = "wflow_glacierstore"
+subsurface_water__volume_flow_rate  = "ssf"
 
-[input.land.vegetation_parameter_set]
-leaf_area_index = "LAI"
-kext = "Kext"
-storage_specific_leaf = "Sl"
-storage_wood = "Swood"
-rootingdepth = "RootingDepth"
-kc = "crop_factor"
+land_surface_water__instantaneous_volume_flow_rate = "q_land"
+land_surface_water__instantaneous_depth = "h_land"
+land_surface_water__depth = "h_av_land"
 
-[input.land.interception.parameters]
-e_r = "EoverR"
-
-[input.land.atmospheric_forcing]
-potential_evaporation = "pet"
-precipitation = "precip"
-temperature = "temp"
-
-[input.land.runoff.parameters]
-waterfrac = "WaterFrac"
-
-[input.land.soil.parameters]
-alpha_h1 = "alpha_h1"
-c = "c"
-cf_soil = "cf_soil"
-f = "f"
-h1 = "h1"
-h2 = "h2"
-h3_high = "h3_high"
-h3_low = "h3_low"
-h4 = "h4"
-infiltcappath = "InfiltCapPath"
-infiltcapsoil = "InfiltCapSoil"
-theta_r = "thetaR"
-theta_s = "thetaS"
-maxleakage = "MaxLeakage"
-pathfrac = "PathFrac"
-rootdistpar = "rootdistpar"
-soilthickness = "SoilThickness"
-kv_0 = "KsatVer"
-
-[input.land.snow.parameters]
-tt = "TT"
-tti = "TTI"
-ttm = "TTM"
-cfmax = "Cfmax"
-
-[state.routing.river_flow.variables]
-q = "q_river"
-h = "h_river"
-h_av = "h_av_river"
-
-[state.routing.subsurface_flow.variables]
-ssf = "ssf"
-
-[state.routing.overland_flow.variables]
-q = "q_land"
-h = "h_land"
-h_av = "h_av_land"
-
-[input.routing.river_flow]
-length = "wflow_riverlength"
-mannings_n = "N_River"
-slope = "RiverSlope"
-width = "wflow_riverwidth"
-bankfull_depth = "RiverDepth"
-
-[input.routing.subsurface_flow]
-ksathorfrac = "KsatHorFrac"
-
-[input.routing.overland_flow]
-mannings_n = "N"
-slope = "Slope"
-
-[output]
+[output.netcdf_grid]
 path = "output-piave.nc"
 
-[output.routing.river_flow.variables]
-q_av = "q_river"
+[output.netcdf_grid.variables]
+river_water__volume_flow_rate = "q_av_river"
 
-[csv]
+[output.csv]
 path = "output-piave.csv"
 
-[[csv.column]]
+[[output.csv.column]]
 header = "Q"
-map = "gauges"
-parameter = "routing.river_flow.variables.q_av"
+map = "river_gauge"
+parameter = "river_water__volume_flow_rate"
 
-[[csv.column]]
+[[output.csv.column]]
 header = "Q"
-map = "gauges_grdc"
-parameter = "routing.river_flow.variables.q_av"
+map = "river_gauge_grdc"
+parameter = "river_water__volume_flow_rate"

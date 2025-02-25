@@ -4,13 +4,14 @@ res_bc =
 res_params = Wflow.ReservoirParameters{Float64}(;
     demand = [52.523],
     maxrelease = [420.184],
-    maxvolume = [25_000_000.0],
+    maxstorage = [25_000_000.0],
     area = [1885665.353626924],
     targetfullfrac = [0.8],
     targetminfrac = [0.2425554726620697],
 )
 res_vars = Wflow.ReservoirVariables{Float64}(;
-    volume = [1.925e7],
+    storage = [1.925e7],
+    storage_av = [0.0],
     outflow_av = [0.0],
     actevap = [0.0],
     outflow = [NaN],
@@ -24,11 +25,13 @@ res = Wflow.SimpleReservoir{Float64}(;
     variables = res_vars,
 )
 @testset "Update reservoir simple" begin
+    Wflow.set_waterbody_vars!(res)
     Wflow.update!(res, 1, 100.0, 86400.0, 86400.0)
-    res.variables.outflow_av ./= 86400.0
+    Wflow.average_waterbody_vars!(res, 86400.0)
     @test res.variables.outflow[1] ≈ 91.3783714867453
     @test res.variables.outflow_av[1] == res.variables.outflow[1]
-    @test res.variables.volume[1] ≈ 2.0e7
+    @test res.variables.storage[1] ≈ 2.0e7
+    @test res.variables.storage[1] == res.variables.storage_av[1]
     @test res.variables.percfull[1] ≈ 0.80
     @test res.variables.demandrelease[1] ≈ 52.5229994727611
     @test res.boundary_conditions.precipitation[1] ≈ 4.2
@@ -53,7 +56,9 @@ lake_params = Wflow.LakeParameters{Float64}(;
 lake_vars = Wflow.LakeVariables{Float64}(;
     outflow_av = [0.0],
     storage = Wflow.initialize_storage([1], [180510409.0], [18.5], [missing]),
+    storage_av = [0.0],
     waterlevel = [18.5],
+    waterlevel_av = [0.0],
     actevap = [0.0],
     outflow = [NaN],
 )
@@ -67,14 +72,17 @@ lake = Wflow.Lake{Float64}(;
     lake_p = lake.parameters
     lake_v = lake.variables
     lake_bc = lake.boundary_conditions
+    Wflow.set_waterbody_vars!(lake)
     Wflow.update!(lake, 1, 2500.0, 181, 86400.0, 86400.0)
-    lake_v.outflow_av ./= 86400.0
+    Wflow.average_waterbody_vars!(lake, 86400.0)
     @test Wflow.waterlevel(lake_p.storfunc, lake_p.area, lake_v.storage, lake_p.sh)[1] ≈
           19.672653848925634
     @test lake_v.outflow[1] ≈ 85.14292808113598
-    @test lake_v.outflow_av[1] ≈ lake_v.outflow[1]
+    @test lake_v.outflow_av ≈ lake_v.outflow
     @test lake_v.storage[1] ≈ 3.55111879238499e9
+    @test lake_v.storage ≈ lake_v.storage_av
     @test lake_v.waterlevel[1] ≈ 19.672653848925634
+    @test lake_v.waterlevel ≈ lake_v.waterlevel_av
     @test lake_bc.precipitation[1] ≈ 20.0
     @test lake_bc.evaporation[1] ≈ 3.2
     @test lake_v.actevap[1] ≈ 3.2
@@ -110,6 +118,7 @@ sh = [
     lake_vars = Wflow.LakeVariables{Float64}(;
         outflow_av = [0.0, 0.0],
         waterlevel = [395.03027, 394.87833],
+        waterlevel_av = [0.0, 0.0],
         actevap = [0.0, 0.0],
         outflow = [NaN, NaN],
         storage = Wflow.initialize_storage(
@@ -118,6 +127,7 @@ sh = [
             [395.03027, 394.87833],
             sh,
         ),
+        storage_av = [0.0, 0.0],
     )
     lake_bc = Wflow.LakeBC{Float64}(;
         inflow = [0.0, 0.0],
@@ -130,25 +140,26 @@ sh = [
         parameters = lake_params,
         variables = lake_vars,
     )
-
+    Wflow.set_waterbody_vars!(lake)
     Wflow.update!(lake, 1, 500.0, 15, 86400.0, 86400.0)
     Wflow.update!(lake, 2, 500.0, 15, 86400.0, 86400.0)
-    lake.variables.outflow_av ./= 86400.0
+    Wflow.average_waterbody_vars!(lake, 86400.0)
     lake_v = lake.variables
     lake_bc = lake.boundary_conditions
     @test lake_v.outflow ≈ [214.80170846121263, 236.83281600000214]
     @test lake_v.outflow_av ≈ lake_v.outflow
     @test lake_v.storage ≈ [1.2737435094769483e9, 2.6019755340159863e8]
-    lake_v.actevap .= 0.0
-    lake_v.outflow_av .= 0.0
-    lake_bc.inflow .= 0.0
+    @test lake_v.storage ≈ lake_v.storage_av
+    Wflow.set_waterbody_vars!(lake)
     Wflow.update!(lake, 1, 500.0, 15, 86400.0, 86400.0)
     Wflow.update!(lake, 2, 500.0, 15, 86400.0, 86400.0)
-    lake.variables.outflow_av ./= 86400.0
+    Wflow.average_waterbody_vars!(lake, 86400.0)
     @test lake_v.outflow ≈ [-259.8005149014703, 239.66710359986183]
     @test lake_v.outflow_av ≈ [-259.8005149014703, 499.4676185013321]
     @test lake_v.storage ≈ [1.3431699662524352e9, 2.6073035986708355e8]
+    @test lake_v.storage ≈ lake_v.storage
     @test lake_v.waterlevel ≈ [395.239782021054, 395.21771942667266]
+    @test lake_v.waterlevel ≈ lake_v.waterlevel_av
     @test lake_v.actevap ≈ [2.0, 2.0]
 end
 
@@ -179,18 +190,20 @@ end
     lake_vars = Wflow.LakeVariables{Float64}(;
         outflow_av = [0.0],
         waterlevel = [397.75],
+        waterlevel_av = [0.0],
         actevap = [0.0],
         outflow = [NaN],
         storage = [410_760_000],
+        storage_av = [0.0],
     )
     lake = Wflow.Lake{Float64}(;
         boundary_conditions = lake_bc,
         parameters = lake_params,
         variables = lake_vars,
     )
-
+    Wflow.set_waterbody_vars!(lake)
     Wflow.update!(lake, 1, 1500.0, 15, 86400.0, 86400.0)
-    lake.variables.outflow_av ./= 86400.0
+    Wflow.average_waterbody_vars!(lake, 86400.0)
     lake_p = lake.parameters
     lake_v = lake.variables
     @test Wflow.waterlevel(lake_p.storfunc, lake_p.area, lake_v.storage, lake_p.sh) ≈
@@ -198,5 +211,7 @@ end
     @test lake_v.outflow ≈ [1303.67476852]
     @test lake_v.outflow_av ≈ lake_v.outflow
     @test lake_v.storage ≈ [4.293225e8]
+    @test lake_v.storage ≈ lake_v.storage_av
     @test lake_v.waterlevel ≈ [398.000000]
+    @test lake_v.waterlevel ≈ lake_v.waterlevel_av
 end
