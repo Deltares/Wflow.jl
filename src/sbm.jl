@@ -1,11 +1,11 @@
 "Land hydrology model with SBM soil model"
-@with_kw struct LandHydrologySBM{T, D, A} <: AbstractLandModel
-    atmospheric_forcing::AtmosphericForcing{T}
-    vegetation_parameter_set::VegetationParameters{T}
-    interception::AbstractInterceptionModel{T}
-    snow::AbstractSnowModel{T}
-    glacier::AbstractGlacierModel{T}
-    runoff::AbstractRunoffModel{T}
+@with_kw struct LandHydrologySBM{D, A} <: AbstractLandModel
+    atmospheric_forcing::AtmosphericForcing
+    vegetation_parameter_set::VegetationParameters
+    interception::AbstractInterceptionModel
+    snow::AbstractSnowModel
+    glacier::AbstractGlacierModel
+    runoff::AbstractRunoffModel
     soil::SbmSoilModel
     demand::D
     allocation::A
@@ -29,21 +29,20 @@ function LandHydrologySBM(dataset, config, riverfrac, indices)
     if modelsnow
         snow_model = SnowHbvModel(dataset, config, indices, dt)
     else
-        snow_model = NoSnowModel{Float64}()
+        snow_model = NoSnowModel()
     end
     modelglacier = get(config.model, "glacier", false)::Bool
     if modelsnow && modelglacier
-        glacier_bc =
-            SnowStateBC{Float64}(; snow_storage = snow_model.variables.snow_storage)
+        glacier_bc = SnowStateBC(; snow_storage = snow_model.variables.snow_storage)
         glacier_model = GlacierHbvModel(dataset, config, indices, dt, glacier_bc)
     elseif modelsnow == false && modelglacier == true
         @warn string(
             "Glacier processes can be modelled when snow modelling is enabled. To include ",
             "glacier modelling, set `snow` to `true` in the Model section of the TOML file.",
         )
-        glacier_model = NoGlacierModel{Float64}()
+        glacier_model = NoGlacierModel()
     else
-        glacier_model = NoGlacierModel{Float64}()
+        glacier_model = NoGlacierModel()
     end
     runoff_model = OpenWaterRunoff(dataset, config, indices, riverfrac)
 
@@ -55,12 +54,11 @@ function LandHydrologySBM(dataset, config, riverfrac, indices)
 
     do_water_demand = haskey(config.model, "water_demand")
     allocation =
-        do_water_demand ? AllocationLand(dataset, config, indices) :
-        NoAllocationLand{Float64}()
-    demand = do_water_demand ? Demand(dataset, config, indices, dt) : NoDemand{Float64}()
+        do_water_demand ? AllocationLand(dataset, config, indices) : NoAllocationLand()
+    demand = do_water_demand ? Demand(dataset, config, indices, dt) : NoDemand()
 
     args = (demand, allocation)
-    land_hydrology_model = LandHydrologySBM{Float64, typeof.(args)...}(;
+    land_hydrology_model = LandHydrologySBM{typeof.(args)...}(;
         atmospheric_forcing = atmospheric_forcing,
         vegetation_parameter_set = vegetation_parameter_set,
         interception = interception_model,

@@ -207,8 +207,8 @@ function initialize_sbm_gwf_model(config::Config)
     if do_constanthead
         constant_head = ConstantHead(dataset, config, indices)
     else
-        variables = ConstantHeadVariables{Float64}(; head = Float64[])
-        constant_head = ConstantHead{Float64}(; variables, index = Int64[])
+        variables = ConstantHeadVariables(; head = Float64[])
+        constant_head = ConstantHead(; variables, index = Int64[])
     end
 
     connectivity = Connectivity(indices, reverse_indices, x_length, y_length)
@@ -275,7 +275,7 @@ function initialize_sbm_gwf_model(config::Config)
         network_drain = NetworkDrain()
     end
 
-    subsurface_flow = GroundwaterFlow{Float64}(;
+    subsurface_flow = GroundwaterFlow(;
         aquifer,
         connectivity,
         constanthead = constant_head,

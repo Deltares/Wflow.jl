@@ -67,7 +67,7 @@ abstract type Aquifer end
 abstract type AquiferBoundaryCondition end
 
 """
-    ConfinedAquifer{T} <: Aquifer
+    ConfinedAquifer <: Aquifer
 
 Confined aquifers are overlain by a poorly permeable confining layer (e.g.
 clay). No air can get in to fill the pore space so that the aquifer always
@@ -84,28 +84,28 @@ NOTA BENE: **specific** storage is per m of aquifer (conf. specific weight).
 **Storativity** or (**storage coefficient**) is for the entire aquifer (conf.
 transmissivity).
 """
-@with_kw struct ConfinedAquiferParameters{T}
-    k::Vector{T}                    # horizontal conductivity [m d⁻¹]
-    top::Vector{T}                  # top of groundwater layer [m]
-    bottom::Vector{T}               # bottom of groundwater layer [m]
-    area::Vector{T}                 # area of cell [m²]
-    specific_storage::Vector{T}     # [m m⁻¹ m⁻¹]
-    storativity::Vector{T}          # [m m⁻¹]
+@with_kw struct ConfinedAquiferParameters
+    k::Vector{Float64}                    # horizontal conductivity [m d⁻¹]
+    top::Vector{Float64}                  # top of groundwater layer [m]
+    bottom::Vector{Float64}               # bottom of groundwater layer [m]
+    area::Vector{Float64}                 # area of cell [m²]
+    specific_storage::Vector{Float64}     # [m m⁻¹ m⁻¹]
+    storativity::Vector{Float64}          # [m m⁻¹]
 end
 
-@with_kw struct ConfinedAquiferVariables{T}
-    head::Vector{T}             # hydraulic head [m]
-    conductance::Vector{T}      # Confined aquifer conductance is constant [m² d⁻¹]
-    storage::Vector{T}          # total storage of water that can be released [m³]
+@with_kw struct ConfinedAquiferVariables
+    head::Vector{Float64}             # hydraulic head [m]
+    conductance::Vector{Float64}      # Confined aquifer conductance is constant [m² d⁻¹]
+    storage::Vector{Float64}          # total storage of water that can be released [m³]
 end
 
-@with_kw struct ConfinedAquifer{T} <: Aquifer
-    parameters::ConfinedAquiferParameters{T}
-    variables::ConfinedAquiferVariables{T}
+@with_kw struct ConfinedAquifer <: Aquifer
+    parameters::ConfinedAquiferParameters
+    variables::ConfinedAquiferVariables
 end
 
 """
-    UnconfinedAquifer{T} <: Aquifer
+    UnconfinedAquifer <: Aquifer
 
 The upper boundary of an unconfined aquifer is the water table (the phreatic
 surface).
@@ -115,18 +115,25 @@ aquifer will yield when all water drains and the pore volume is filled by air
 instead. Specific yield will vary roughly between 0.05 (clay) and 0.45 (peat)
 (Johnson, 1967).
 """
-@with_kw struct UnconfinedAquiferParameters{T}
-    k::Vector{T}                # reference horizontal conductivity [m d⁻¹]
-    top::Vector{T}              # top of groundwater layer [m]
-    bottom::Vector{T}           # bottom of groundwater layer [m]
-    area::Vector{T}             # area of cell [m²]
-    specific_yield::Vector{T}   # [m m⁻¹]
-    f::Vector{T}                # factor controlling the reduction of reference horizontal conductivity [-]
+@with_kw struct UnconfinedAquiferParameters
+    k::Vector{Float64}                # reference horizontal conductivity [m d⁻¹]
+    top::Vector{Float64}              # top of groundwater layer [m]
+    bottom::Vector{Float64}           # bottom of groundwater layer [m]
+    area::Vector{Float64}             # area of cell [m²]
+    specific_yield::Vector{Float64}   # [m m⁻¹]
+    f::Vector{Float64}                # factor controlling the reduction of reference horizontal conductivity [-]
     # Unconfined aquifer conductance is computed with degree of saturation (only when
     # conductivity_profile is set to "exponential")
 end
 
-function UnconfinedAquiferParameters(dataset, config, indices, top, bottom, area)
+function UnconfinedAquiferParameters(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+    top,
+    bottom,
+    area,
+)
     lens = lens_input_parameter(
         config,
         "subsurface_surface_water__horizontal_saturated_hydraulic_conductivity",
@@ -142,28 +149,36 @@ function UnconfinedAquiferParameters(dataset, config, indices, top, bottom, area
     )
     f = ncread(dataset, config, lens; sel = indices, type = Float64, defaults = 3.0)
 
-    parameters =
-        UnconfinedAquiferParameters{Float64}(; k, top, bottom, area, specific_yield, f)
+    parameters = UnconfinedAquiferParameters(; k, top, bottom, area, specific_yield, f)
     return parameters
 end
 
-@with_kw struct UnconfinedAquiferVariables{T}
-    head::Vector{T}         # hydraulic head [m]
-    conductance::Vector{T}  # conductance [m² d⁻¹]
-    storage::Vector{T}      # total storage of water that can be released [m³]
+@with_kw struct UnconfinedAquiferVariables
+    head::Vector{Float64}         # hydraulic head [m]
+    conductance::Vector{Float64}  # conductance [m² d⁻¹]
+    storage::Vector{Float64}      # total storage of water that can be released [m³]
 end
 
-@with_kw struct UnconfinedAquifer{T} <: Aquifer
-    parameters::UnconfinedAquiferParameters{T}
-    variables::UnconfinedAquiferVariables{T}
+@with_kw struct UnconfinedAquifer <: Aquifer
+    parameters::UnconfinedAquiferParameters
+    variables::UnconfinedAquiferVariables
 end
 
-function UnconfinedAquifer(dataset, config, indices, top, bottom, area, conductance, head)
+function UnconfinedAquifer(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+    top,
+    bottom,
+    area,
+    conductance,
+    head,
+)
     parameters = UnconfinedAquiferParameters(dataset, config, indices, top, bottom, area)
 
     storage = @. (min(top, head) - bottom) * area * parameters.specific_yield
-    variables = UnconfinedAquiferVariables{Float64}(head, conductance, storage)
-    aquifer = UnconfinedAquifer{Float64}(parameters, variables)
+    variables = UnconfinedAquiferVariables(head, conductance, storage)
+    aquifer = UnconfinedAquifer(parameters, variables)
     return aquifer
 end
 
@@ -362,16 +377,20 @@ function flux!(Q, aquifer, connectivity, conductivity_profile)
     return Q
 end
 
-@with_kw struct ConstantHeadVariables{T}
-    head::Vector{T} # [m]
+@with_kw struct ConstantHeadVariables
+    head::Vector{Float64} # [m]
 end
 
-@with_kw struct ConstantHead{T}
-    variables::ConstantHeadVariables{T}
+@with_kw struct ConstantHead
+    variables::ConstantHeadVariables
     index::Vector{Int} # [-]
 end
 
-function ConstantHead(dataset, config, indices)
+function ConstantHead(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     lens = lens_input_parameter(config, "model_boundary_condition~constant_hydraulic_head")
     constanthead =
         ncread(dataset, config, lens; sel = indices, type = Float64, fill = MISSING_VALUE)
@@ -379,8 +398,8 @@ function ConstantHead(dataset, config, indices)
     n = length(indices)
     index_constanthead = filter(i -> !isequal(constanthead[i], MISSING_VALUE), 1:n)
     head = constanthead[index_constanthead]
-    variables = ConstantHeadVariables{Float64}(head)
-    constant_head = ConstantHead{Float64}(; variables, index = index_constanthead)
+    variables = ConstantHeadVariables(head)
+    constant_head = ConstantHead(; variables, index = index_constanthead)
     return constant_head
 end
 
@@ -435,27 +454,23 @@ function update!(gwf, Q, dt, conductivity_profile)
     return nothing
 end
 
-Base.@kwdef struct GroundwaterFlow{A, C, CH, B} <: AbstractSubsurfaceFlowModel
+Base.@kwdef struct GroundwaterFlow{A} <: AbstractSubsurfaceFlowModel
     aquifer::A
-    connectivity::C
-    constanthead::CH
-    boundaries::B
+    connectivity::Connectivity
+    constanthead::ConstantHead
+    boundaries::NamedTuple
+    function GroundwaterFlow(
+        aquifer::A,
+        connectivity::Connectivity,
+        constanthead::ConstantHead,
+        boundaries::NamedTuple,
+    ) where {A}
+        initialize_conductance!(aquifer, connectivity)
+        new{A}(aquifer, connectivity, constanthead, boundaries)
+    end
 end
 
-function GroundwaterFlow{T}(;
-    aquifer::Aquifer,
-    connectivity::Connectivity{T},
-    constanthead::ConstantHead{T},
-    boundaries::NamedTuple,
-) where {T}
-    initialize_conductance!(aquifer, connectivity)
-    args = (aquifer, connectivity, constanthead, boundaries)
-    GroundwaterFlow{typeof.(args)...}(args...)
-end
-
-function get_water_depth(
-    gwf::GroundwaterFlow{A, C, CH, B},
-) where {A <: UnconfinedAquifer, C, CH, B}
+function get_water_depth(gwf::GroundwaterFlow{A}) where {A <: UnconfinedAquifer}
     gwf.aquifer.variables.head .=
         min.(gwf.aquifer.variables.head, gwf.aquifer.parameters.top)
     gwf.aquifer.variables.head[gwf.constanthead.index] .= gwf.constanthead.variables.head
@@ -463,9 +478,7 @@ function get_water_depth(
     return wtd
 end
 
-function get_exfiltwater(
-    gwf::GroundwaterFlow{A, C, CH, B},
-) where {A <: UnconfinedAquifer, C, CH, B}
+function get_exfiltwater(gwf::GroundwaterFlow{A}) where {A <: UnconfinedAquifer}
     exfiltwater =
         (
             gwf.aquifer.variables.head .-

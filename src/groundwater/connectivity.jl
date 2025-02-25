@@ -1,5 +1,5 @@
 """
-    Connectivity{T}
+    Connectivity
 
 Stores connection data between cells. Connections are stored in a compressed
 sparse column (CSC) adjacency matrix: only non-zero values are stored.
@@ -19,12 +19,12 @@ non-zero values).
 * colptr: CSC column pointer (size ncell + 1)
 * rowval: CSC row value (size nconnection)
 """
-struct Connectivity{T}
+struct Connectivity
     ncell::Int
     nconnection::Int
-    length1::Vector{T}
-    length2::Vector{T}
-    width::Vector{T}
+    length1::Vector{Float64}
+    length2::Vector{Float64}
+    width::Vector{Float64}
     colptr::Vector{Int}
     rowval::Vector{Int}
 end
@@ -66,7 +66,7 @@ const NEIGHBORS = (
 )
 
 # Constructor for the Connectivity structure for structured input
-function Connectivity(indices, reverse_indices, dx::Vector{T}, dy::Vector{T}) where {T}
+function Connectivity(indices, reverse_indices, dx::Vector{Float64}, dy::Vector{Float64})
     # indices: These map from the 1D internal domain to the 2D external domain.
     # reverse_indices: from the 2D external domain to the 1D internal domain,
     # providing an Int which can be used as a linear index
@@ -75,9 +75,9 @@ function Connectivity(indices, reverse_indices, dx::Vector{T}, dy::Vector{T}) wh
     ncell = length(indices)
     colptr = Vector{Int}(undef, ncell + 1)
     rowval = Vector{Int}(undef, ncell * 4)
-    length1 = similar(rowval, T)
-    length2 = similar(rowval, T)
-    width = similar(rowval, T)
+    length1 = similar(rowval, Float64)
+    length2 = similar(rowval, Float64)
+    width = similar(rowval, Float64)
 
     i = 1  # column index of sparse matrix
     j = 1  # row index of sparse matrix

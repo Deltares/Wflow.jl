@@ -1,35 +1,35 @@
 "Exponential depth profile of horizontal hydraulic conductivity at the soil surface"
-struct KhExponential{T}
+struct KhExponential
     # Horizontal hydraulic conductivity at soil surface [m d⁻¹]
-    kh_0::Vector{T}
+    kh_0::Vector{Float64}
     # A scaling parameter [m⁻¹] (controls exponential decline of kh_0)
-    f::Vector{T}
+    f::Vector{Float64}
 end
 
 "Exponential constant depth profile of horizontal hydraulic conductivity"
-struct KhExponentialConstant{T}
+struct KhExponentialConstant
     # Exponential horizontal hydraulic conductivity profile type
     exponential::KhExponential
     # Depth [m] from soil surface for which exponential decline of kv_0 is valid
-    z_exp::Vector{T}
+    z_exp::Vector{Float64}
 end
 
 "Layered depth profile of horizontal hydraulic conductivity"
-struct KhLayered{T}
+struct KhLayered
     # Horizontal hydraulic conductivity [m d⁻¹]
-    kh::Vector{T}
+    kh::Vector{Float64}
 end
 
 "Struct for storing lateral subsurface flow model parameters"
-@with_kw struct LateralSsfParameters{T, Kh}
-    kh_profile::Kh              # Horizontal hydraulic conductivity profile type [-]  
-    khfrac::Vector{T}           # A muliplication factor applied to vertical hydraulic conductivity `kv` [-]
-    soilthickness::Vector{T}    # Soil thickness [m]
-    theta_s::Vector{T}          # Saturated water content (porosity) [-]
-    theta_r::Vector{T}          # Residual water content [-]   
-    slope::Vector{T}            # Slope [m m⁻¹]
-    flow_length::Vector{T}      # Flow length [m]
-    flow_width::Vector{T}       # Flow width [m]
+@with_kw struct LateralSsfParameters{Kh}
+    kh_profile::Kh                  # Horizontal hydraulic conductivity profile type [-]  
+    khfrac::Vector{Float64}         # A muliplication factor applied to vertical hydraulic conductivity `kv` [-]
+    soilthickness::Vector{Float64}  # Soil thickness [m]
+    theta_s::Vector{Float64}        # Saturated water content (porosity) [-]
+    theta_r::Vector{Float64}        # Residual water content [-]   
+    slope::Vector{Float64}          # Slope [m m⁻¹]
+    flow_length::Vector{Float64}    # Flow length [m]
+    flow_width::Vector{Float64}     # Flow width [m]
 end
 
 "Initialize lateral subsurface flow model parameters"
@@ -82,15 +82,15 @@ function LateralSsfParameters(
 end
 
 "Struct for storing lateral subsurface flow model variables"
-@with_kw struct LateralSsfVariables{T}
-    zi::Vector{T}           # Pseudo-water table depth [m] (top of the saturated zone)
-    exfiltwater::Vector{T}  # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
-    recharge::Vector{T}     # Net recharge to saturated store [m² Δt⁻¹]
-    ssf::Vector{T}          # Subsurface flow [m³ d⁻¹]
-    ssfin::Vector{T}        # Inflow from upstream cells [m³ d⁻¹]
-    ssfmax::Vector{T}       # Maximum subsurface flow [m² d⁻¹]
-    to_river::Vector{T}     # Part of subsurface flow [m³ d⁻¹] that flows to the river
-    storage::Vector{T}      # Subsurface storage [m³]
+@with_kw struct LateralSsfVariables
+    zi::Vector{Float64}           # Pseudo-water table depth [m] (top of the saturated zone)
+    exfiltwater::Vector{Float64}  # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
+    recharge::Vector{Float64}     # Net recharge to saturated store [m² Δt⁻¹]
+    ssf::Vector{Float64}          # Subsurface flow [m³ d⁻¹]
+    ssfin::Vector{Float64}        # Inflow from upstream cells [m³ d⁻¹]
+    ssfmax::Vector{Float64}       # Maximum subsurface flow [m² d⁻¹]
+    to_river::Vector{Float64}     # Part of subsurface flow [m³ d⁻¹] that flows to the river
+    storage::Vector{Float64}      # Subsurface storage [m³]
 end
 
 "Initialize lateral subsurface flow model variables"
@@ -111,15 +111,15 @@ function LateralSsfVariables(ssf, zi, xl, yl)
 end
 
 "Struct for storing lateral subsurface flow model boundary conditions"
-@with_kw struct LateralSsfBC{T}
-    recharge::Vector{T} # Net recharge to saturated store [m² Δt⁻¹]
+@with_kw struct LateralSsfBC
+    recharge::Vector{Float64} # Net recharge to saturated store [m² Δt⁻¹]
 end
 
 "Lateral subsurface flow model"
-@with_kw struct LateralSSF{T, Kh} <: AbstractSubsurfaceFlowModel
-    boundary_conditions::LateralSsfBC{T}
-    parameters::LateralSsfParameters{T, Kh}
-    variables::LateralSsfVariables{T}
+@with_kw struct LateralSSF{Kh} <: AbstractSubsurfaceFlowModel
+    boundary_conditions::LateralSsfBC
+    parameters::LateralSsfParameters{Kh}
+    variables::LateralSsfVariables
 end
 
 "Initialize lateral subsurface flow model"
@@ -212,16 +212,16 @@ end
 Struct for storing groundwater exchange variables for coupling with an external groundwater
 model.
 """
-@with_kw struct GroundwaterExchangeVariables{T}
-    exfiltwater::Vector{T}  # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
-    zi::Vector{T}           # Pseudo-water table depth [m] (top of the saturated zone)
-    to_river::Vector{T}     # Part of subsurface flow [m³ d⁻¹] that flows to the river
-    ssf::Vector{T}          # Subsurface flow [m³ d⁻¹]
+@with_kw struct GroundwaterExchangeVariables
+    exfiltwater::Vector{Float64}  # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
+    zi::Vector{Float64}           # Pseudo-water table depth [m] (top of the saturated zone)
+    to_river::Vector{Float64}     # Part of subsurface flow [m³ d⁻¹] that flows to the river
+    ssf::Vector{Float64}          # Subsurface flow [m³ d⁻¹]
 end
 
 "Initialize groundwater exchange variables"
-function GroundwaterExchangeVariables(n)
-    variables = GroundwaterExchangeVariables{Float64}(;
+function GroundwaterExchangeVariables(n::Int)
+    variables = GroundwaterExchangeVariables(;
         exfiltwater = fill(MISSING_VALUE, n),
         zi = fill(MISSING_VALUE, n),
         to_river = fill(MISSING_VALUE, n),
@@ -231,14 +231,14 @@ function GroundwaterExchangeVariables(n)
 end
 
 "Groundwater exchange"
-@with_kw struct GroundwaterExchange{T} <: AbstractSubsurfaceFlowModel
-    variables::GroundwaterExchangeVariables{T}
+@with_kw struct GroundwaterExchange <: AbstractSubsurfaceFlowModel
+    variables::GroundwaterExchangeVariables
 end
 
 "Initialize groundwater exchange"
-function GroundwaterExchange(n)
+function GroundwaterExchange(n::Int)
     variables = GroundwaterExchangeVariables(n)
-    ssf = GroundwaterExchange{Float64}(; variables)
+    ssf = GroundwaterExchange(; variables)
     return ssf
 end
 

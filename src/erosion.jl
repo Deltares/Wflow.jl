@@ -1,15 +1,15 @@
 "Soil loss model"
-@with_kw struct SoilLoss{RE, OFE, SE, T} <: AbstractLandModel
-    atmospheric_forcing::AtmosphericForcing{T}
-    hydrological_forcing::HydrologicalForcing{T}
-    geometry::LandGeometry{T}
+@with_kw struct SoilLoss{RE, OFE, SE} <: AbstractLandModel
+    atmospheric_forcing::AtmosphericForcing
+    hydrological_forcing::HydrologicalForcing
+    geometry::LandGeometry
     rainfall_erosion::RE
     overland_flow_erosion::OFE
     soil_erosion::SE
 end
 
 "Initialize soil loss model"
-function SoilLoss(dataset, config, indices)
+function SoilLoss(dataset::NCDataset, config::Config, indices::Vector{CartesianIndex{2}})
     n = length(indices)
 
     atmospheric_forcing = AtmosphericForcing(n)
@@ -43,7 +43,6 @@ function SoilLoss(dataset, config, indices)
         typeof(rainfall_erosion_model),
         typeof(overland_flow_erosion_model),
         typeof(soil_erosion_model),
-        Float64,
     }(;
         atmospheric_forcing = atmospheric_forcing,
         hydrological_forcing = hydrological_forcing,

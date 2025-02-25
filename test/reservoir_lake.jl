@@ -1,7 +1,6 @@
 
-res_bc =
-    Wflow.ReservoirBC{Float64}(; inflow = [0.0], precipitation = [4.2], evaporation = [1.5])
-res_params = Wflow.ReservoirParameters{Float64}(;
+res_bc = Wflow.ReservoirBC(; inflow = [0.0], precipitation = [4.2], evaporation = [1.5])
+res_params = Wflow.ReservoirParameters(;
     demand = [52.523],
     maxrelease = [420.184],
     maxstorage = [25_000_000.0],
@@ -9,7 +8,7 @@ res_params = Wflow.ReservoirParameters{Float64}(;
     targetfullfrac = [0.8],
     targetminfrac = [0.2425554726620697],
 )
-res_vars = Wflow.ReservoirVariables{Float64}(;
+res_vars = Wflow.ReservoirVariables(;
     storage = [1.925e7],
     storage_av = [0.0],
     outflow_av = [0.0],
@@ -19,7 +18,7 @@ res_vars = Wflow.ReservoirVariables{Float64}(;
     demandrelease = [NaN],
 )
 
-res = Wflow.SimpleReservoir{Float64}(;
+res = Wflow.SimpleReservoir(;
     boundary_conditions = res_bc,
     parameters = res_params,
     variables = res_vars,
@@ -39,9 +38,8 @@ res = Wflow.SimpleReservoir{Float64}(;
     @test res.variables.actevap[1] ≈ 1.5
 end
 
-lake_bc =
-    Wflow.LakeBC{Float64}(; inflow = [0.0], precipitation = [20.0], evaporation = [3.2])
-lake_params = Wflow.LakeParameters{Float64}(;
+lake_bc = Wflow.LakeBC(; inflow = [0.0], precipitation = [20.0], evaporation = [3.2])
+lake_params = Wflow.LakeParameters(;
     lowerlake_ind = [0],
     area = [180510409.0],
     maxstorage = Wflow.maximum_storage([1], [3], [180510409.0], [missing], [missing]),
@@ -53,7 +51,7 @@ lake_params = Wflow.LakeParameters{Float64}(;
     sh = [missing],
     hq = [missing],
 )
-lake_vars = Wflow.LakeVariables{Float64}(;
+lake_vars = Wflow.LakeVariables(;
     outflow_av = [0.0],
     storage = Wflow.initialize_storage([1], [180510409.0], [18.5], [missing]),
     storage_av = [0.0],
@@ -63,7 +61,7 @@ lake_vars = Wflow.LakeVariables{Float64}(;
     outflow = [NaN],
 )
 
-lake = Wflow.Lake{Float64}(;
+lake = Wflow.Lake(;
     boundary_conditions = lake_bc,
     parameters = lake_params,
     variables = lake_vars,
@@ -97,7 +95,7 @@ sh = [
     @test keys(sh[1]) == (:H, :S)
     @test typeof(values(sh[1])) == Tuple{Vector{Float64}, Vector{Float64}}
 
-    lake_params = Wflow.LakeParameters{Float64}(;
+    lake_params = Wflow.LakeParameters(;
         lowerlake_ind = [2, 0],
         area = [472461536.0, 60851088.0],
         maxstorage = Wflow.maximum_storage(
@@ -115,7 +113,7 @@ sh = [
         sh = sh,
         hq = [missing, Wflow.read_hq_csv(joinpath(datadir, "input", "lake_hq_2.csv"))],
     )
-    lake_vars = Wflow.LakeVariables{Float64}(;
+    lake_vars = Wflow.LakeVariables(;
         outflow_av = [0.0, 0.0],
         waterlevel = [395.03027, 394.87833],
         waterlevel_av = [0.0, 0.0],
@@ -129,13 +127,13 @@ sh = [
         ),
         storage_av = [0.0, 0.0],
     )
-    lake_bc = Wflow.LakeBC{Float64}(;
+    lake_bc = Wflow.LakeBC(;
         inflow = [0.0, 0.0],
         precipitation = [10.0, 10.0],
         evaporation = [2.0, 2.0],
     )
 
-    lake = Wflow.Lake{Float64}(;
+    lake = Wflow.Lake(;
         boundary_conditions = lake_bc,
         parameters = lake_params,
         variables = lake_vars,
@@ -164,12 +162,8 @@ sh = [
 end
 
 @testset "overflowing lake with sh and hq" begin
-    lake_bc = Wflow.LakeBC{Float64}(;
-        inflow = [0.00],
-        precipitation = [10.0],
-        evaporation = [2.0],
-    )
-    lake_params = Wflow.LakeParameters{Float64}(;
+    lake_bc = Wflow.LakeBC(; inflow = [0.00], precipitation = [10.0], evaporation = [2.0])
+    lake_params = Wflow.LakeParameters(;
         lowerlake_ind = [0],
         area = [200_000_000],
         maxstorage = Wflow.maximum_storage(
@@ -187,7 +181,7 @@ end
         sh = [Wflow.read_sh_csv(joinpath(datadir, "input", "lake_sh_2.csv"))],
         hq = [Wflow.read_hq_csv(joinpath(datadir, "input", "lake_hq_2.csv"))],
     )
-    lake_vars = Wflow.LakeVariables{Float64}(;
+    lake_vars = Wflow.LakeVariables(;
         outflow_av = [0.0],
         waterlevel = [397.75],
         waterlevel_av = [0.0],
@@ -196,7 +190,7 @@ end
         storage = [410_760_000],
         storage_av = [0.0],
     )
-    lake = Wflow.Lake{Float64}(;
+    lake = Wflow.Lake(;
         boundary_conditions = lake_bc,
         parameters = lake_params,
         variables = lake_vars,

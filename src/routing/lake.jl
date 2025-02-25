@@ -1,13 +1,13 @@
 "Struct for storing lake model parameters"
-@with_kw struct LakeParameters{T}
+@with_kw struct LakeParameters
     lowerlake_ind::Vector{Int}                  # Index of lower lake (linked lakes) [-]
-    area::Vector{T}                             # lake area [m²]
-    maxstorage::Vector{Union{T, Missing}}       # lake maximum storage from rating curve 1 [m³]
-    threshold::Vector{T}                        # water level threshold H₀ [m] below that level outflow is zero
+    area::Vector{Float64}                       # lake area [m²]
+    maxstorage::Vector{Union{Float64, Missing}} # lake maximum storage from rating curve 1 [m³]
+    threshold::Vector{Float64}                  # water level threshold H₀ [m] below that level outflow is zero
     storfunc::Vector{Int}                       # type of lake storage curve, 1: S = AH, 2: S = f(H) from lake data and interpolation
     outflowfunc::Vector{Int}                    # type of lake rating curve, 1: Q = f(H) from lake data and interpolation, 2: General Q = b(H - H₀)ᵉ, 3: Case of Puls Approach Q = b(H - H₀)²
-    b::Vector{T}                                # rating curve coefficient [m3/2 s-1] (if e=3/2)
-    e::Vector{T}                                # rating curve exponent [-]
+    b::Vector{Float64}                          # rating curve coefficient [m3/2 s-1] (if e=3/2)
+    e::Vector{Float64}                          # rating curve exponent [-]
     sh::Vector{Union{SH, Missing}}              # data for storage curve
     hq::Vector{Union{HQ, Missing}}              # data for rating curve    
 end
@@ -135,7 +135,7 @@ function LakeParameters(config, dataset, inds_riv, nriv, pits)
             )
         end
     end
-    parameters = LakeParameters{Float64}(;
+    parameters = LakeParameters(;
         lowerlake_ind = lowerlake_ind,
         area = lakearea,
         maxstorage = maximum_storage(lake_storfunc, lake_outflowfunc, lakearea, sh, hq),
@@ -157,19 +157,19 @@ function LakeParameters(config, dataset, inds_riv, nriv, pits)
 end
 
 "Struct for storing Lake model parameters"
-@with_kw struct LakeVariables{T}
-    waterlevel::Vector{T}       # waterlevel H [m] of lake
-    waterlevel_av::Vector{T}    # average waterlevel H [m] of lake for model timestep Δt
-    storage::Vector{T}          # storage lake [m³]
-    storage_av::Vector{T}       # average storage lake for model timestep Δt [m³]
-    outflow::Vector{T}          # outflow of lake outlet [m³ s⁻¹]
-    outflow_av::Vector{T}       # average outflow lake [m³ s⁻¹] for model timestep Δt (including flow from lower to upper lake)
-    actevap::Vector{T}          # average actual evapotranspiration for lake area [mm Δt⁻¹] 
+@with_kw struct LakeVariables
+    waterlevel::Vector{Float64}       # waterlevel H [m] of lake
+    waterlevel_av::Vector{Float64}    # average waterlevel H [m] of lake for model timestep Δt
+    storage::Vector{Float64}          # storage lake [m³]
+    storage_av::Vector{Float64}       # average storage lake for model timestep Δt [m³]
+    outflow::Vector{Float64}          # outflow of lake outlet [m³ s⁻¹]
+    outflow_av::Vector{Float64}       # average outflow lake [m³ s⁻¹] for model timestep Δt (including flow from lower to upper lake)
+    actevap::Vector{Float64}          # average actual evapotranspiration for lake area [mm Δt⁻¹] 
 end
 
 "Initialize lake model variables"
 function LakeVariables(n, lake_waterlevel)
-    variables = LakeVariables{Float64}(;
+    variables = LakeVariables(;
         waterlevel = lake_waterlevel,
         waterlevel_av = fill(MISSING_VALUE, n),
         inflow = fill(MISSING_VALUE, n),
@@ -183,15 +183,15 @@ function LakeVariables(n, lake_waterlevel)
 end
 
 "Struct for storing lake model boundary conditions"
-@with_kw struct LakeBC{T}
-    inflow::Vector{T}           # inflow to the lake [m³ s⁻¹] for model timestep Δt
-    precipitation::Vector{T}    # average precipitation for lake area [mm Δt⁻¹]
-    evaporation::Vector{T}      # average potential evaporation for lake area [mm Δt⁻¹]
+@with_kw struct LakeBC
+    inflow::Vector{Float64}           # inflow to the lake [m³ s⁻¹] for model timestep Δt
+    precipitation::Vector{Float64}    # average precipitation for lake area [mm Δt⁻¹]
+    evaporation::Vector{Float64}      # average potential evaporation for lake area [mm Δt⁻¹]
 end
 
 "Initialize lake model boundary conditions"
 function LakeBC(n)
-    bc = LakeBC{Float64}(;
+    bc = LakeBC(;
         inflow = fill(MISSING_VALUE, n),
         precipitation = fill(MISSING_VALUE, n),
         evaporation = fill(MISSING_VALUE, n),
@@ -200,10 +200,10 @@ function LakeBC(n)
 end
 
 "Lake model"
-@with_kw struct Lake{T}
-    boundary_conditions::LakeBC{T}
-    parameters::LakeParameters{T}
-    variables::LakeVariables{T}
+@with_kw struct Lake
+    boundary_conditions::LakeBC
+    parameters::LakeParameters
+    variables::LakeVariables
 end
 
 "Initialize lake model"
@@ -215,7 +215,7 @@ function Lake(dataset, config, indices_river, n_river_cells, pits)
     variables = LakeVariables(n_lakes, lake_waterlevel)
     boundary_conditions = LakeBC(n_lakes)
 
-    lake = Lake{Float64}(; boundary_conditions, parameters, variables)
+    lake = Lake(; boundary_conditions, parameters, variables)
 
     return lake, lake_network, inds_lake_map2river, pits
 end

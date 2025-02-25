@@ -211,11 +211,7 @@ function BMI.get_time_step(model::Model)
     return Float64(model.config.time.timestepsecs)
 end
 
-function BMI.get_value(
-    model::Model,
-    name::String,
-    dest::Vector{T},
-) where {T <: AbstractFloat}
+function BMI.get_value(model::Model, name::String, dest::Vector{Float64})
     dest .= copy(BMI.get_value_ptr(model, name))
     return dest
 end
@@ -241,30 +237,25 @@ end
 function BMI.get_value_at_indices(
     model::Model,
     name::String,
-    dest::Vector{T},
+    dest::Vector{Float64},
     inds::Vector{Int},
-) where {T <: AbstractFloat}
+)
     dest .= BMI.get_value_ptr(model, name)[inds]
     return dest
 end
 
 """
-    BMI.set_value(model::Model, name::String, src::Vector{T}) where T<:AbstractFloat
+    BMI.set_value(model::Model, name::String, src::Vector{Float64})
 
 Set a model variable `name` to the values in vector `src`, overwriting the current contents.
 The type and size of `src` must match the model's internal array.
 """
-function BMI.set_value(
-    model::Model,
-    name::String,
-    src::Vector{T},
-) where {T <: AbstractFloat}
+function BMI.set_value(model::Model, name::String, src::Vector{Float64})
     return BMI.get_value_ptr(model, name) .= src
 end
 
 """
-    BMI.set_value_at_indices(model::Model, name::String, inds::Vector{Int}, src::Vector{T})
-    where T<:AbstractFloat
+    BMI.set_value_at_indices(model::Model, name::String, inds::Vector{Int}, src::Vector{Float64})
 
     Set a model variable `name` to the values in vector `src`, at indices `inds`.
 """
@@ -272,8 +263,8 @@ function BMI.set_value_at_indices(
     model::Model,
     name::String,
     inds::Vector{Int},
-    src::Vector{T},
-) where {T <: AbstractFloat}
+    src::Vector{Float64},
+)
     return BMI.get_value_ptr(model, name)[inds] .= src
 end
 
@@ -295,7 +286,7 @@ function BMI.get_grid_rank(model::Model, grid::Int)
     end
 end
 
-function BMI.get_grid_x(model::Model, grid::Int, x::Vector{T}) where {T <: AbstractFloat}
+function BMI.get_grid_x(model::Model, grid::Int, x::Vector{Float64})
     (; reader, network) = model
     (; dataset) = reader
     sel = active_indices(network, GRIDS[grid])
@@ -305,7 +296,7 @@ function BMI.get_grid_x(model::Model, grid::Int, x::Vector{T}) where {T <: Abstr
     return x
 end
 
-function BMI.get_grid_y(model::Model, grid::Int, y::Vector{T}) where {T <: AbstractFloat}
+function BMI.get_grid_y(model::Model, grid::Int, y::Vector{Float64})
     (; reader, network) = model
     (; dataset) = reader
     sel = active_indices(network, GRIDS[grid])

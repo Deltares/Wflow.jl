@@ -85,10 +85,10 @@ struct GetVarLocation
     name::String
 end
 
-struct GetValue{T}
+struct GetValue
     fn::String
     name::String
-    dest::Vector{T}
+    dest::Vector{Float64}
 end
 
 struct GetValuePtr
@@ -96,24 +96,24 @@ struct GetValuePtr
     name::String
 end
 
-struct GetValueAtIndices{T}
+struct GetValueAtIndices
     fn::String
     inds::Vector{Int}
-    dest::Vector{T}
+    dest::Vector{Float64}
     name::String
 end
 
-struct SetValue{T}
+struct SetValue
     fn::String
     name::String
-    src::Vector{T}
+    src::Vector{Float64}
 end
 
 struct SetValueAtIndices
     fn::String
     inds::Vector{Int}
     name::String
-    src::Vector{T}
+    src::Vector{Float64}
 end
 
 struct GetGridType
@@ -131,16 +131,16 @@ struct GetGridSize
     grid::Int
 end
 
-struct GetGridX{T}
+struct GetGridX
     fn::String
     grid::Int
-    x::Vector{T}
+    x::Vector{Float64}
 end
 
-struct GetGridY{T}
+struct GetGridY
     fn::String
     grid::Int
-    y::Vector{T}
+    y::Vector{Float64}
 end
 
 struct GetGridNodeCount

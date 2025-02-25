@@ -1,11 +1,11 @@
-abstract type AbstractGlacierModel{T} end
+abstract type AbstractGlacierModel end
 
 "Struct for storing glacier model variables"
-@with_kw struct GlacierVariables{T}
+@with_kw struct GlacierVariables
     # Water within the glacier [mm]
-    glacier_store::Vector{T}
+    glacier_store::Vector{Float64}
     # Glacier melt [mm Δt⁻¹]  
-    glacier_melt::Vector{T}
+    glacier_melt::Vector{Float64}
 end
 
 "Initialize glacier model variables"
@@ -29,33 +29,33 @@ function GlacierVariables(dataset, config, indices)
 end
 
 "Struct for storing boundary condition (snow storage from a snow model) of a glacier model"
-@with_kw struct SnowStateBC{T}
+@with_kw struct SnowStateBC
     # Snow storage [mm]
-    snow_storage::Vector{T}
+    snow_storage::Vector{Float64}
 end
 
 "Struct for storing glacier HBV model parameters"
-@with_kw struct GlacierHbvParameters{T}
+@with_kw struct GlacierHbvParameters
     # Threshold temperature for glacier melt [ᵒC]
-    g_ttm::Vector{T}
+    g_ttm::Vector{Float64}
     # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹] for glacier
-    g_cfmax::Vector{T}
+    g_cfmax::Vector{Float64}
     # Fraction of the snowpack on top of the glacier converted into ice [Δt⁻¹]
-    g_sifrac::Vector{T}
+    g_sifrac::Vector{Float64}
     # Fraction covered by a glacier [-]
-    glacier_frac::Vector{T}
+    glacier_frac::Vector{Float64}
     # Maximum snow to glacier conversion rate [mm Δt⁻¹]
-    max_snow_to_glacier::T
+    max_snow_to_glacier::Float64
 end
 
 "Glacier HBV model"
-@with_kw struct GlacierHbvModel{T} <: AbstractGlacierModel{T}
-    boundary_conditions::SnowStateBC{T}
-    parameters::GlacierHbvParameters{T}
-    variables::GlacierVariables{T}
+@with_kw struct GlacierHbvModel <: AbstractGlacierModel
+    boundary_conditions::SnowStateBC
+    parameters::GlacierHbvParameters
+    variables::GlacierVariables
 end
 
-struct NoGlacierModel{T} <: AbstractGlacierModel{T} end
+struct NoGlacierModel <: AbstractGlacierModel end
 
 "Initialize glacier HBV model parameters"
 function GlacierHbvParameters(dataset, config, indices, dt)

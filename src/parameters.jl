@@ -1,25 +1,29 @@
 "Struct to store (shared) vegetation parameters"
-@with_kw struct VegetationParameters{T}
+@with_kw struct VegetationParameters
     # Leaf area index [m² m⁻²]
-    leaf_area_index::Union{Vector{T}, Nothing}
+    leaf_area_index::Union{Vector{Float64}, Nothing}
     # Storage woody part of vegetation [mm]
-    storage_wood::Union{Vector{T}, Nothing}
+    storage_wood::Union{Vector{Float64}, Nothing}
     # Extinction coefficient [-] (to calculate canopy gap fraction)
-    kext::Union{Vector{T}, Nothing}
+    kext::Union{Vector{Float64}, Nothing}
     # Specific leaf storage [mm]
-    storage_specific_leaf::Union{Vector{T}, Nothing}
+    storage_specific_leaf::Union{Vector{Float64}, Nothing}
     # Canopy gap fraction [-]
-    canopygapfraction::Vector{T}
+    canopygapfraction::Vector{Float64}
     # Maximum canopy storage [mm] 
-    cmax::Vector{T}
+    cmax::Vector{Float64}
     # Rooting depth [mm]
-    rootingdepth::Vector{T}
+    rootingdepth::Vector{Float64}
     # Crop coefficient Kc [-]
-    kc::Vector{T}
+    kc::Vector{Float64}
 end
 
 "Initialize (shared) vegetation parameters"
-function VegetationParameters(dataset, config, indices)
+function VegetationParameters(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     n = length(indices)
     lens = lens_input_parameter(config, "vegetation_root__depth")
     rootingdepth =
@@ -77,17 +81,17 @@ function VegetationParameters(dataset, config, indices)
 end
 
 "Struct to store land geometry parameters"
-@with_kw struct LandGeometry{T}
+@with_kw struct LandGeometry
     # cell area [m²]
-    area::Vector{T}
+    area::Vector{Float64}
     # drain width [m]
-    width::Vector{T}
+    width::Vector{Float64}
     # drain slope [-]
-    slope::Vector{T}
+    slope::Vector{Float64}
 end
 
 "Initialize land geometry parameters"
-function LandGeometry(nc, config, inds)
+function LandGeometry(nc::NCDataset, config::Config, inds::Vector{CartesianIndex{2}})
     # read x, y coordinates and calculate cell length [m]
     y_nc = read_y_axis(nc)
     x_nc = read_x_axis(nc)
@@ -104,23 +108,22 @@ function LandGeometry(nc, config, inds)
     landslope = ncread(nc, config, lens; sel = inds, type = Float64)
     clamp!(landslope, 0.00001, Inf)
 
-    land_parameter_set =
-        LandGeometry{Float64}(; area = area, width = drain_width, slope = landslope)
+    land_parameter_set = LandGeometry(; area = area, width = drain_width, slope = landslope)
     return land_parameter_set
 end
 
 "Struct to store river geometry parameters"
-@with_kw struct RiverGeometry{T}
+@with_kw struct RiverGeometry
     # river width [m]
-    width::Vector{T}
+    width::Vector{Float64}
     # river length [m]
-    length::Vector{T}
+    length::Vector{Float64}
     # slope [-]
-    slope::Vector{T}
+    slope::Vector{Float64}
 end
 
 "Initialize river geometry parameters"
-function RiverGeometry(nc, config, inds)
+function RiverGeometry(nc::NCDataset, config::Config, inds::Vector{CartesianIndex{2}})
     lens = lens_input_parameter(config, "river__width"; optional = false)
     riverwidth = ncread(nc, config, lens; sel = inds, type = Float64)
     lens = lens_input_parameter(config, "river__length"; optional = false)
@@ -132,10 +135,7 @@ function RiverGeometry(nc, config, inds)
     minimum(riverwidth) > 0 || error("river width must be positive on river cells")
     clamp!(riverslope, 0.00001, Inf)
 
-    river_parameter_set = RiverGeometry{Float64}(;
-        width = riverwidth,
-        length = riverlength,
-        slope = riverslope,
-    )
+    river_parameter_set =
+        RiverGeometry(; width = riverwidth, length = riverlength, slope = riverslope)
     return river_parameter_set
 end

@@ -1,32 +1,32 @@
-abstract type AbstractSoilErosionModel{T} end
+abstract type AbstractSoilErosionModel end
 
 "Struct for storing total soil erosion with differentiation model variables"
-@with_kw struct SoilErosionModelVariables{T}
+@with_kw struct SoilErosionModelVariables
     # Total soil erosion rate [t dt-1]
-    amount::Vector{T}
+    amount::Vector{Float64}
     # Total clay erosion rate [t dt-1]
-    clay::Vector{T}
+    clay::Vector{Float64}
     # Total silt erosion rate [t dt-1]
-    silt::Vector{T}
+    silt::Vector{Float64}
     # Total sand erosion rate [t dt-1]
-    sand::Vector{T}
+    sand::Vector{Float64}
     # Total small aggregates erosion rate [t dt-1]
-    sagg::Vector{T}
+    sagg::Vector{Float64}
     # Total large aggregates erosion rate [t dt-1]
-    lagg::Vector{T}
+    lagg::Vector{Float64}
 end
 
 "Initialize soil erosion model variables"
 function SoilErosionModelVariables(
-    n;
-    amount::Vector{T} = fill(MISSING_VALUE, n),
-    clay::Vector{T} = fill(MISSING_VALUE, n),
-    silt::Vector{T} = fill(MISSING_VALUE, n),
-    sand::Vector{T} = fill(MISSING_VALUE, n),
-    sagg::Vector{T} = fill(MISSING_VALUE, n),
-    lagg::Vector{T} = fill(MISSING_VALUE, n),
-) where {T}
-    return SoilErosionModelVariables{T}(;
+    n::Int;
+    amount::Vector{Float64} = fill(MISSING_VALUE, n),
+    clay::Vector{Float64} = fill(MISSING_VALUE, n),
+    silt::Vector{Float64} = fill(MISSING_VALUE, n),
+    sand::Vector{Float64} = fill(MISSING_VALUE, n),
+    sagg::Vector{Float64} = fill(MISSING_VALUE, n),
+    lagg::Vector{Float64} = fill(MISSING_VALUE, n),
+)
+    return SoilErosionModelVariables(;
         amount = amount,
         clay = clay,
         silt = silt,
@@ -37,41 +37,45 @@ function SoilErosionModelVariables(
 end
 
 "Struct for storing soil erosion model boundary conditions"
-@with_kw struct SoilErosionBC{T}
+@with_kw struct SoilErosionBC
     # Rainfall erosion rate [t dt-1]
-    rainfall_erosion::Vector{T}
+    rainfall_erosion::Vector{Float64}
     # Overland flow erosion rate [t dt-1]
-    overland_flow_erosion::Vector{T}
+    overland_flow_erosion::Vector{Float64}
 end
 
 "Initialize soil erosion model boundary conditions"
 function SoilErosionBC(
-    n;
-    rainfall_erosion::Vector{T} = fill(MISSING_VALUE, n),
-    overland_flow_erosion::Vector{T} = fill(MISSING_VALUE, n),
-) where {T}
-    return SoilErosionBC{T}(;
+    n::Int;
+    rainfall_erosion::Vector{Float64} = fill(MISSING_VALUE, n),
+    overland_flow_erosion::Vector{Float64} = fill(MISSING_VALUE, n),
+)
+    return SoilErosionBC(;
         rainfall_erosion = rainfall_erosion,
         overland_flow_erosion = overland_flow_erosion,
     )
 end
 
 "Struct for storing soil erosion model parameters"
-@with_kw struct SoilErosionParameters{T}
+@with_kw struct SoilErosionParameters
     # Soil content clay [-]
-    clay_fraction::Vector{T}
+    clay_fraction::Vector{Float64}
     # Soil content silt [-]
-    silt_fraction::Vector{T}
+    silt_fraction::Vector{Float64}
     # Soil content sand [-]
-    sand_fraction::Vector{T}
+    sand_fraction::Vector{Float64}
     # Soil content small aggregates [-]
-    sagg_fraction::Vector{T}
+    sagg_fraction::Vector{Float64}
     # Soil content large aggregates [-]
-    lagg_fraction::Vector{T}
+    lagg_fraction::Vector{Float64}
 end
 
 "Initialize soil erosion model parameters"
-function SoilErosionParameters(dataset, config, indices)
+function SoilErosionParameters(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     lens = lens_input_parameter(config, "soil_clay__mass_fraction")
     clay_fraction =
         ncread(dataset, config, lens; sel = indices, defaults = 0.4, type = Float64)
@@ -105,14 +109,18 @@ function SoilErosionParameters(dataset, config, indices)
 end
 
 "Total soil erosion with differentiation model"
-@with_kw struct SoilErosionModel{T} <: AbstractSoilErosionModel{T}
-    boundary_conditions::SoilErosionBC{T}
-    parameters::SoilErosionParameters{T}
-    variables::SoilErosionModelVariables{T}
+@with_kw struct SoilErosionModel <: AbstractSoilErosionModel
+    boundary_conditions::SoilErosionBC
+    parameters::SoilErosionParameters
+    variables::SoilErosionModelVariables
 end
 
 "Initialize soil erosion model"
-function SoilErosionModel(dataset, config, indices)
+function SoilErosionModel(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     n = length(indices)
     vars = SoilErosionModelVariables(n)
     params = SoilErosionParameters(dataset, config, indices)
