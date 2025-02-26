@@ -72,8 +72,7 @@ instates_piave_gwf_path =
 
 include("testing_utils.jl")
 
-FLOAT = Float64
-@info "testing Wflow with" nthreads() VERSION FLOAT
+@info "testing Wflow with" nthreads() VERSION
 
 # disable logging output during testing
 with_logger(NullLogger()) do

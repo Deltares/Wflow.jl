@@ -125,7 +125,7 @@ vwc_1_size = 0
         name = "soil_layer~1_water__volume_fraction",
         dest = fill(0.0, vwc_1_size),
     )
-    @test mean(request(msg)["value"]) ≈ 0.18600013563085036f0
+    @test mean(request(msg)["value"]) ≈ 0.18602528294012882
     msg = (
         fn = "get_value_at_indices",
         name = "soil_layer~1_water__volume_fraction",
@@ -133,7 +133,7 @@ vwc_1_size = 0
         inds = [1, 2, 3],
     )
     @test request(msg)["value_at_indices"] ≈
-          [0.12089607119560242f0, 0.11968416924304527f0, 0.14602328618707333f0]
+          [0.12089607119560242, 0.11968416924304527, 0.14602328618707333]
     msg = (
         fn = "set_value",
         name = "soil_layer~1_water__volume_fraction",
@@ -145,7 +145,7 @@ vwc_1_size = 0
         name = "soil_layer~1_water__volume_fraction",
         dest = fill(0.0, vwc_1_size),
     )
-    @test mean(request(msg)["value"]) ≈ 0.3f0
+    @test mean(request(msg)["value"]) ≈ 0.3
     msg = (
         fn = "get_value_at_indices",
         name = "soil_layer~1_water__volume_fraction",
