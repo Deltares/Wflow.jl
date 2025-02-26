@@ -166,15 +166,13 @@ end
         mannings_n_sq[i] = mannings_n * mannings_n
     end
 
-    river_network = (
-        nodes_at_edge = nodes_at_edge,
-        edges_at_node = Wflow.adjacent_edges_at_node(graph, nodes_at_edge),
+    river_network = Wflow.NetworkRiver(;
+        nodes_at_edge = Wflow.NodesAtEdge(; nodes_at_edge...),
+        edges_at_node = Wflow.EdgesAtNode(;
+            Wflow.adjacent_edges_at_node(graph, nodes_at_edge)...,
+        ),
     )
-    network = (
-        river = river_network,
-        reservoir = (river_indices = [],),
-        lake = (river_indices = [],),
-    )
+    network = Wflow.Network(; river = river_network)
 
     h_thresh = 1.0e-03
     froude_limit = true
@@ -245,7 +243,7 @@ end
         sw_river.boundary_conditions.inwater[1] = 20.0
         h0 = mean(sw_river.variables.h)
         dt = Wflow.stable_timestep(sw_river)
-        Wflow.local_inertial_river_update!(sw_river, network, dt, 86400.0, 0.0, true)
+        Wflow.local_inertial_river_update!(sw_river, network, dt, 86400.0, 0, true)
         d = abs(h0 - mean(sw_river.variables.h))
         if d <= epsilon
             break

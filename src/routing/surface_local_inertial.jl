@@ -22,16 +22,16 @@ end
 
 "Initialize local inertial river flow model parameters"
 function LocalInertialRiverFlowParameters(
-    dataset,
-    config,
-    indices;
-    river_length,
-    river_width,
-    waterbody,
-    n_edges,
-    nodes_at_edge,
-    index_pit,
-    inds_pit,
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}};
+    river_length::Vector{Float64},
+    river_width::Vector{Float64},
+    waterbody::Vector{Bool},
+    n_edges::Int,
+    nodes_at_edge::NodesAtEdge,
+    index_pit::Vector{Int},
+    inds_pit::Vector{CartesianIndex{2}},
 )
     cfl = get(config.model, "inertial_flow_alpha", 0.7)::Float64 # stability coefficient for model time step (0.2-0.7)
     h_thresh = get(config.model, "h_thresh", 1.0e-03)::Float64 # depth threshold for flow at edge
@@ -126,7 +126,13 @@ end
 end
 
 "Initialize shallow water river flow model variables"
-function LocalInertialRiverFlowVariables(dataset, config, indices, n_edges, inds_pit)
+function LocalInertialRiverFlowVariables(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+    n_edges::Int,
+    inds_pit::Vector{CartesianIndex{2}},
+)
     floodplain_1d = get(config.model, "floodplain_1d", false)::Bool
 
     lens = lens_input_parameter(config, "model_boundary_condition~river_bank_water__depth")
@@ -171,16 +177,16 @@ end
 
 "Initialize shallow water river flow model `LocalIntertialRiverFlow`"
 function LocalInertialRiverFlow(
-    dataset,
-    config,
-    indices;
-    graph_river,
-    ldd_river,
-    river_length,
-    river_width,
-    reservoir,
-    lake,
-    waterbody,
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}};
+    graph_river::DiGraph,
+    ldd_river::Vector{UInt8},
+    river_length::Vector{Float64},
+    river_width::Vector{Float64},
+    reservoir::Union{SimpleReservoir, Nothing},
+    lake::Union{Lake, Nothing},
+    waterbody::Vector{Bool},
 )
     # The local inertial approach makes use of a staggered grid (Bates et al. (2010)),
     # with nodes and edges. This information is extracted from the directed graph of the
@@ -201,7 +207,7 @@ function LocalInertialRiverFlow(
     inds_pit = indices[index_pit]
 
     add_vertex_edge_graph!(graph_river, index_pit)
-    nodes_at_edge = adjacent_nodes_at_edge(graph_river)
+    nodes_at_edge = NodesAtEdge(; adjacent_nodes_at_edge(graph_river)...)
     n_edges = ne(graph_river)
 
     parameters = LocalInertialRiverFlowParameters(
@@ -252,7 +258,7 @@ function LocalInertialRiverFlow(
 end
 
 "Return the upstream inflow for a waterbody in `LocalInertialRiverFlow`"
-function get_inflow_waterbody(model::LocalInertialRiverFlow, src_edge)
+function get_inflow_waterbody(model::LocalInertialRiverFlow, src_edge::Vector{Int})
     q_in = sum_at(model.variables.q, src_edge)
     if !isnothing(model.floodplain)
         q_in = q_in + sum_at(model.floodplain.variables.q, src_edge)
@@ -270,11 +276,11 @@ get_inflow_waterbody(::LocalInertialRiverFlow, model::LateralSSF) =
 "Update local inertial river flow model `LocalIntertialRiverFlow` for a single timestep"
 function local_inertial_river_update!(
     model::LocalInertialRiverFlow,
-    network,
-    dt,
-    dt_forcing,
-    doy,
-    update_h,
+    network::Network,
+    dt::Float64,
+    dt_forcing::Float64,
+    doy::Int,
+    update_h::Bool,
 )
     (; nodes_at_edge, edges_at_node) = network.river
     (; inwater, abstraction, inflow) = model.boundary_conditions
@@ -508,7 +514,13 @@ end
 Update local inertial river flow model `LocalInertialRiverFlow` for a single timestep `dt`. An adaptive
 timestepping method is used (computing a sub timestep `dt_s`).
 """
-function update!(model::LocalInertialRiverFlow, network, doy, dt; update_h = true)
+function update!(
+    model::LocalInertialRiverFlow,
+    network::Network,
+    doy::Int,
+    dt::Float64;
+    update_h = true,
+)
     (; reservoir, lake) = model.boundary_conditions
 
     set_waterbody_vars!(reservoir)
@@ -556,7 +568,7 @@ end
 end
 
 "Initialize local inertial overland flow model variables"
-function LocalInertialOverlandFlowVariables(n)
+function LocalInertialOverlandFlowVariables(n::Int)
     variables = LocalInertialOverlandFlowVariables(;
         qx0 = zeros(n + 1),
         qy0 = zeros(n + 1),
@@ -591,19 +603,19 @@ end
 
 "Initialize shallow water overland flow model parameters"
 function LocalInertialOverlandFlowParameters(
-    dataset,
-    config,
-    indices;
-    modelsize_2d,
-    reverse_indices, # maps from the 2D external domain to the 1D internal domain (Int for linear indexing).
-    x_length,
-    y_length,
-    river_width,
-    graph_river,
-    ldd_river,
-    inds_river,
-    river_location,
-    waterbody,
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}};
+    modelsize_2d::Tuple{Int, Int},
+    reverse_indices::Matrix{Int}, # maps from the 2D external domain to the 1D internal domain (Int for linear indexing).
+    x_length::Vector{Float64},
+    y_length::Vector{Float64},
+    river_width::Vector{Float64},
+    graph_river::DiGraph,
+    ldd_river::Vector{UInt8},
+    inds_river::Vector{CartesianIndex{2}},
+    river_location::Vector{Bool},
+    waterbody::Vector{Bool},
 )
     froude_limit = get(config.model, "froude_limit", true)::Bool # limit flow to subcritical according to Froude number
     cfl = get(config.model, "inertial_flow_alpha", 0.7)::Float64 # stability coefficient for model time step (0.2-0.7)
@@ -696,7 +708,7 @@ end
 end
 
 "Struct to store shallow water overland flow model boundary conditions"
-function LocalInertialOverlandFlowBC(n)
+function LocalInertialOverlandFlowBC(n::Int)
     bc = LocalInertialOverlandFlowBC(; runoff = zeros(n), inflow_waterbody = zeros(n))
     return bc
 end
@@ -711,19 +723,19 @@ end
 
 "Initialize local inertial overland flow model"
 function LocalInertialOverlandFlow(
-    dataset,
-    config,
-    indices;
-    modelsize_2d,
-    reverse_indices, # maps from the 2D external domain to the 1D internal domain (Int for linear indexing).
-    x_length,
-    y_length,
-    river_width,
-    graph_river,
-    ldd_river,
-    inds_river,
-    river_location,
-    waterbody,
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}};
+    modelsize_2d::Tuple{Int, Int},
+    reverse_indices::Matrix{Int}, # maps from the 2D external domain to the 1D internal domain (Int for linear indexing).
+    x_length::Vector{Float64},
+    y_length::Vector{Float64},
+    river_width::Vector{Float64},
+    graph_river::DiGraph,
+    ldd_river::Vector{UInt8},
+    inds_river::Vector{CartesianIndex{2}},
+    river_location::Vector{Bool},
+    waterbody::Vector{Bool},
 )
     cfl = get(config.model, "inertial_flow_alpha", 0.7)::Float64 # stability coefficient for model time step (0.2-0.7)
     timestepping = TimeStepping(; cfl)
@@ -802,8 +814,8 @@ overland flow model `LocalInertialOverlandFlow` for a single timestep.
 function update_boundary_conditions!(
     model::LocalInertialOverlandFlow,
     external_models::NamedTuple,
-    network,
-    dt,
+    network::Network,
+    dt::Float64,
 )
     (; river_flow, soil, subsurface_flow, runoff) = external_models
     (; inflow_waterbody) = model.boundary_conditions
@@ -840,7 +852,7 @@ end
 Helper function to compute average flow variables of the `LocalInertialOverlandFlow` model.
 This is done at the end of each simulation timestep.
 """
-function average_flow_vars!(variables::LocalInertialOverlandFlowVariables, dt)
+function average_flow_vars!(variables::LocalInertialOverlandFlowVariables, dt::Float64)
     variables.h_av ./= dt
     variables.storage_av ./= dt
     return nothing
@@ -854,9 +866,9 @@ single timestep `dt`. An adaptive timestepping method is used (computing a sub t
 function update!(
     land::LocalInertialOverlandFlow,
     river::LocalInertialRiverFlow,
-    network,
-    doy,
-    dt;
+    network::Network,
+    doy::Int,
+    dt::Float64;
     update_h = false,
 )
     (; reservoir, lake) = river.boundary_conditions
@@ -894,8 +906,8 @@ single timestep `dt`.
 function local_inertial_update!(
     land::LocalInertialOverlandFlow,
     river::LocalInertialRiverFlow,
-    network,
-    dt,
+    network::Network,
+    dt::Float64,
 )
     indices = network.land.edge_indices
     inds_river = network.land.river_indices
@@ -1081,7 +1093,14 @@ derived with floodplain area `a` (cumulative) and wetted perimeter radius `p` (c
 end
 
 "Initialize floodplain profile `FloodPlainProfile`"
-function FloodPlainProfile(dataset, config, indices; river_width, river_length, index_pit)
+function FloodPlainProfile(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}};
+    river_width::Vector{Float64},
+    river_length::Vector{Float64},
+    index_pit::Vector{Int},
+)
     lens = lens_input_parameter(config, "floodplain_water__sum_of_volume-per-depth")
     storage =
         ncread(dataset, config, lens; sel = indices, type = Float64, dimname = :flood_depth)
@@ -1173,15 +1192,15 @@ end
 
 "Initialize floodplain flow model parameters"
 function FloodPlainParameters(
-    dataset,
-    config,
-    indices;
-    river_width,
-    river_length,
-    zb_floodplain,
-    nodes_at_edge,
-    n_edges,
-    index_pit,
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}};
+    river_width::Vector{Float64},
+    river_length::Vector{Float64},
+    zb_floodplain::Vector{Float64},
+    nodes_at_edge::NodesAtEdge,
+    n_edges::Int,
+    index_pit::Vector{Int},
 )
     profile =
         FloodPlainProfile(dataset, config, indices; river_width, river_length, index_pit)
@@ -1225,7 +1244,7 @@ end
 end
 
 "Initialize floodplain flow model variables"
-function FloodPlainVariables(n, n_edges, index_pit)
+function FloodPlainVariables(n::Int, n_edges::Int, index_pit::Vector{Int})
     variables = FloodPlainVariables(;
         storage = zeros(n),
         storage_av = zeros(n),
@@ -1309,7 +1328,12 @@ function wetted_perimeter(p, depth, h)
 end
 
 "Compute flood depth by interpolating flood storage `flood_storage` using flood depth intervals."
-function flood_depth(profile::FloodPlainProfile, flood_storage, flow_length, i::Int)
+function flood_depth(
+    profile::FloodPlainProfile,
+    flood_storage::Float64,
+    flow_length::Float64,
+    i::Int,
+)
     i1, i2 = interpolation_indices(flood_storage, @view profile.storage[:, i])
     ΔA = (flood_storage - profile.storage[i1, i]) / flow_length
     dh = ΔA / profile.width[i2, i]
@@ -1319,15 +1343,15 @@ end
 
 "Initialize floodplain geometry and `FloodPlain` variables and parameters"
 function FloodPlain(
-    dataset,
-    config,
-    indices;
-    river_width,
-    river_length,
-    zb_floodplain,
-    index_pit,
-    n_edges,
-    nodes_at_edge,
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}};
+    river_width::Vector{Float64},
+    river_length::Vector{Float64},
+    zb_floodplain::Vector{Float64},
+    index_pit::Vector{Int},
+    n_edges::Int,
+    nodes_at_edge::NodesAtEdge,
 )
     n = length(indices)
     parameters = FloodPlainParameters(

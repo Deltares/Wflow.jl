@@ -13,7 +13,13 @@
 end
 
 "Initialize lake model parameters"
-function LakeParameters(config, dataset, inds_riv, nriv, pits)
+function LakeParameters(
+    config::Config,
+    dataset::NCDataset,
+    inds_riv::Vector{CartesianIndex{2}},
+    nriv::Int,
+    pits::Matrix{Bool},
+)
     # read only lake data if lakes true
     # allow lakes only in river cells
     # note that these locations are only the lake outlet pixels
@@ -168,7 +174,7 @@ end
 end
 
 "Initialize lake model variables"
-function LakeVariables(n, lake_waterlevel)
+function LakeVariables(n::Int, lake_waterlevel::Vector{Float64})
     variables = LakeVariables(;
         waterlevel = lake_waterlevel,
         waterlevel_av = fill(MISSING_VALUE, n),
@@ -190,7 +196,7 @@ end
 end
 
 "Initialize lake model boundary conditions"
-function LakeBC(n)
+function LakeBC(n::Int)
     bc = LakeBC(;
         inflow = fill(MISSING_VALUE, n),
         precipitation = fill(MISSING_VALUE, n),
@@ -207,7 +213,13 @@ end
 end
 
 "Initialize lake model"
-function Lake(dataset, config, indices_river, n_river_cells, pits)
+function Lake(
+    dataset::NCDataset,
+    config::Config,
+    indices_river::Vector{CartesianIndex{2}},
+    n_river_cells::Int,
+    pits::Matrix{Bool},
+)
     parameters, lake_network, inds_lake_map2river, lake_waterlevel, pits =
         LakeParameters(dataset, config, indices_river, n_river_cells, pits)
 
@@ -221,7 +233,12 @@ function Lake(dataset, config, indices_river, n_river_cells, pits)
 end
 
 "Determine the initial storage depending on the storage function"
-function initialize_storage(storfunc, area, waterlevel, sh)
+function initialize_storage(
+    storfunc::Vector{Int},
+    area::Vector{Float64},
+    waterlevel::Vector{Float64},
+    sh::Vector{Union{SH, Missing}},
+)
     storage = similar(area)
     for i in eachindex(storage)
         if storfunc[i] == 1
@@ -234,7 +251,12 @@ function initialize_storage(storfunc, area, waterlevel, sh)
 end
 
 "Determine the water level depending on the storage function"
-function waterlevel(storfunc, area, storage, sh)
+function waterlevel(
+    storfunc::Vector{Int},
+    area::Vector{Float64},
+    storage::Vector{Float64},
+    sh::Vector{Union{SH, Missing}},
+)
     waterlevel = similar(area)
     for i in eachindex(storage)
         if storfunc[i] == 1
@@ -247,7 +269,13 @@ function waterlevel(storfunc, area, storage, sh)
 end
 
 "Determine the maximum storage for lakes with a rating curve of type 1"
-function maximum_storage(storfunc, outflowfunc, area, sh, hq)
+function maximum_storage(
+    storfunc::Vector{Int},
+    outflowfunc::Vector{Int},
+    area::Vector{Float64},
+    sh::Vector{Union{SH, Missing}},
+    hq::Vector{Union{HQ, Missing}},
+)
     maxstorage = Vector{Union{Float64, Missing}}(missing, length(area))
     # maximum storage is based on the maximum water level (H) value in the H-Q table
     for i in eachindex(maxstorage)
@@ -282,7 +310,14 @@ Update a single lake at position `i`.
 This is called from within the kinematic wave loop, therefore updating only for a single
 element rather than all at once.
 """
-function update!(model::Lake, i, inflow, doy, dt, dt_forcing)
+function update!(
+    model::Lake,
+    i::Int,
+    inflow::Float64,
+    doy::Int,
+    dt::Float64,
+    dt_forcing::Float64,
+)
     lake_bc = model.boundary_conditions
     lake_p = model.parameters
     lake_v = model.variables

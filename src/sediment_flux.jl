@@ -10,7 +10,14 @@
 end
 
 "Initialize the overland flow sediment transport model"
-function OverlandFlowSediment(dataset, soilloss, config, indices, waterbodies, rivers)
+function OverlandFlowSediment(
+    dataset::NCDataset,
+    soilloss::SoilLoss,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+    waterbodies::Vector{Bool},
+    rivers::Vector{Bool},
+)
     n = length(indices)
     (; hydrological_forcing) = soilloss
 
@@ -56,7 +63,12 @@ function OverlandFlowSediment(dataset, soilloss, config, indices, waterbodies, r
 end
 
 "Update the overland flow sediment transport model for a single timestep"
-function update!(model::OverlandFlowSediment, erosion_model::SoilErosionModel, network, dt)
+function update!(
+    model::OverlandFlowSediment,
+    erosion_model::SoilErosionModel,
+    network::NetworkLand,
+    dt::Float64,
+)
     # Transport capacity
     update_boundary_conditions!(model.transport_capacity, model.hydrological_forcing, :land)
     update!(model.transport_capacity, model.geometry, model.waterbodies, model.rivers, dt)
@@ -89,7 +101,12 @@ end
 end
 
 "Initialize the river sediment transport model"
-function RiverSediment(dataset, config, indices, waterbodies)
+function RiverSediment(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+    waterbodies::Vector{Bool},
+)
     n = length(indices)
     hydrological_forcing = HydrologicalForcing(n)
     geometry = RiverGeometry(dataset, config, indices)
@@ -141,8 +158,8 @@ end
 function update!(
     model::RiverSediment,
     to_river_model::SedimentToRiverDifferentiationModel,
-    network,
-    dt,
+    network::NetworkRiver,
+    dt::Float64,
 )
     # Transport capacity
     update_boundary_conditions!(

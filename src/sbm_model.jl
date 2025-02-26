@@ -100,7 +100,7 @@ function initialize_sbm_model(config::Config)
 
     lens = lens_input(config, "local_drain_direction"; optional = false)
     ldd_2d = ncread(dataset, config, lens; allow_missing = true)
-    ldd = ldd_2d[indices]
+    ldd = convert(Array{UInt8}, ldd_2d[indices])
     if do_pits
         lens = lens_input(config, "pits"; optional = false)
         pits_2d = ncread(dataset, config, lens; type = Bool, fill = false)
@@ -151,7 +151,7 @@ function initialize_sbm_model(config::Config)
     end
 
     graph = flowgraph(ldd, indices, PCR_DIR)
-    ldd_river = ldd_2d[inds_river]
+    ldd_river = convert(Array{UInt8}, ldd_2d[inds_river])
     if do_pits
         ldd_river = set_pit_ldd(pits_2d, ldd_river, inds_river)
     end
@@ -200,7 +200,9 @@ function initialize_sbm_model(config::Config)
             ldd_river,
             inds_river,
             river_location,
-            waterbody = !=(0).(inds_reservoir_map2river + inds_lake_map2river),
+            waterbody = Vector{Bool}(
+                !=(0).(inds_reservoir_map2river + inds_lake_map2river),
+            ),
         )
     end
 
@@ -229,7 +231,9 @@ function initialize_sbm_model(config::Config)
             river_width,
             reservoir,
             lake,
-            waterbody = !=(0).(inds_reservoir_map2river + inds_lake_map2river),
+            waterbody = Vector{Bool}(
+                !=(0).(inds_reservoir_map2river + inds_lake_map2river),
+            ),
         )
     else
         error(
@@ -354,7 +358,7 @@ function initialize_sbm_model(config::Config)
         @reset network_river.subdomain_indices = river_subdomain_inds
         @reset network_river.order = toposort_river
     elseif river_routing == "local-inertial"
-        @reset network_river.nodes_at_edge = NodesAtEdge(; nodes_at_edge...)
+        @reset network_river.nodes_at_edge = nodes_at_edge
         @reset network_river.edges_at_node =
             EdgesAtNode(; adjacent_edges_at_node(graph_river, nodes_at_edge)...)
     end

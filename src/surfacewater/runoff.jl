@@ -34,7 +34,12 @@ end
 end
 
 "Initialize open water runoff parameters"
-function OpenWaterRunoffParameters(dataset, config, indices, riverfrac)
+function OpenWaterRunoffParameters(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+    riverfrac::Vector{Float64},
+)
     # fraction open water
     lens = lens_input_parameter(config, "land~water-covered__area_fraction")
     waterfrac = ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float64)
@@ -67,7 +72,12 @@ end
 end
 
 "Initialize open water runoff model"
-function OpenWaterRunoff(dataset, config, indices, riverfrac)
+function OpenWaterRunoff(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+    riverfrac::Vector{Float64},
+)
     n = length(riverfrac)
     vars = OpenWaterRunoffVariables(n)
     bc = OpenWaterRunoffBC(n)
@@ -79,10 +89,10 @@ end
 
 "Return the water flux at the surface (boundary condition) when snow is not modelled"
 function get_water_flux_surface!(
-    water_flux_surface,
+    water_flux_surface::Vector{Float64},
     snow::NoSnowModel,
-    glacier,
-    interception,
+    glacier::AbstractGlacierModel,
+    interception::AbstractInterceptionModel,
 )
     (; throughfall, stemflow) = interception.variables
     @. water_flux_surface = throughfall + stemflow
@@ -91,10 +101,10 @@ end
 
 "Return the water flux at the surface (boundary condition) when snow is modelled"
 function get_water_flux_surface!(
-    water_flux_surface,
+    water_flux_surface::Vector{Float64},
     snow::AbstractSnowModel,
-    glacier,
-    interception,
+    glacier::AbstractGlacierModel,
+    interception::AbstractInterceptionModel,
 )
     water_flux_surface .=
         get_runoff(snow) .+ get_glacier_melt(glacier) .* get_glacier_fraction(glacier)
@@ -105,8 +115,8 @@ end
 function update_boundary_conditions!(
     model::OpenWaterRunoff,
     external_models::NamedTuple,
-    routing,
-    network,
+    routing::Routing,
+    network::Network,
 )
     (; water_flux_surface, waterdepth_river, waterdepth_land) = model.boundary_conditions
     (; land_indices) = network.river

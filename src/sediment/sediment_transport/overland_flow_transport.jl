@@ -44,7 +44,7 @@ end
 end
 
 "Initialize total sediment flux in overland flow model"
-function SedimentLandTransportModel(indices)
+function SedimentLandTransportModel(indices::Vector{CartesianIndex{2}})
     n = length(indices)
     vars = SedimentLandTransportVariables(n)
     bc = SedimentLandTransportBC(n)
@@ -67,7 +67,7 @@ function update_boundary_conditions!(
 end
 
 "Update total sediment flux in overland flow model for a single timestep"
-function update!(model::SedimentLandTransportModel, network)
+function update!(model::SedimentLandTransportModel, network::NetworkLand)
     (; erosion, transport_capacity) = model.boundary_conditions
     (; amount, deposition) = model.variables
 
@@ -195,7 +195,7 @@ end
 end
 
 "Initialize differentiated sediment flux in overland flow model"
-function SedimentLandTransportDifferentiationModel(indices)
+function SedimentLandTransportDifferentiationModel(indices::Vector{CartesianIndex{2}})
     n = length(indices)
     vars = SedimentLandTransportDifferentiationVariables(n)
     bc = SedimentLandTransportDifferentiationBC(n)
@@ -240,7 +240,7 @@ function update_boundary_conditions!(
 end
 
 "Update differentiated sediment flux in overland flow model for a single timestep"
-function update!(model::SedimentLandTransportDifferentiationModel, network)
+function update!(model::SedimentLandTransportDifferentiationModel, network::NetworkLand)
     (;
         erosion_clay,
         erosion_silt,

@@ -39,21 +39,23 @@ res = Wflow.SimpleReservoir(;
 end
 
 lake_bc = Wflow.LakeBC(; inflow = [0.0], precipitation = [20.0], evaporation = [3.2])
+sh = Vector{Union{Wflow.SH, Missing}}([missing])
+hq = Vector{Union{Wflow.HQ, Missing}}([missing])
 lake_params = Wflow.LakeParameters(;
     lowerlake_ind = [0],
     area = [180510409.0],
-    maxstorage = Wflow.maximum_storage([1], [3], [180510409.0], [missing], [missing]),
+    maxstorage = Wflow.maximum_storage([1], [3], [180510409.0], sh, hq),
     threshold = [0.0],
     storfunc = [1],
     outflowfunc = [3],
     b = [0.22],
     e = [2.0],
-    sh = [missing],
-    hq = [missing],
+    sh,
+    hq,
 )
 lake_vars = Wflow.LakeVariables(;
     outflow_av = [0.0],
-    storage = Wflow.initialize_storage([1], [180510409.0], [18.5], [missing]),
+    storage = Wflow.initialize_storage([1], [180510409.0], [18.5], sh),
     storage_av = [0.0],
     waterlevel = [18.5],
     waterlevel_av = [0.0],
@@ -87,10 +89,14 @@ lake = Wflow.Lake(;
 end
 
 datadir = joinpath(@__DIR__, "data")
-sh = [
+sh = Vector{Union{Wflow.SH, Missing}}([
     Wflow.read_sh_csv(joinpath(datadir, "input", "lake_sh_1.csv")),
     Wflow.read_sh_csv(joinpath(datadir, "input", "lake_sh_2.csv")),
-]
+])
+hq = Vector{Union{Wflow.HQ, Missing}}([
+    missing,
+    Wflow.read_hq_csv(joinpath(datadir, "input", "lake_hq_2.csv")),
+])
 @testset "linked lakes (HBV)" begin
     @test keys(sh[1]) == (:H, :S)
     @test typeof(values(sh[1])) == Tuple{Vector{Float64}, Vector{Float64}}
@@ -103,15 +109,15 @@ sh = [
             [2, 1],
             [472461536.0, 60851088.0],
             sh,
-            [missing, Wflow.read_hq_csv(joinpath(datadir, "input", "lake_hq_2.csv"))],
+            hq,
         ),
         threshold = [393.7, 0.0],
         storfunc = [2, 2],
         outflowfunc = [2, 1],
         b = [140.0, 0.0],
         e = [1.5, 1.5],
-        sh = sh,
-        hq = [missing, Wflow.read_hq_csv(joinpath(datadir, "input", "lake_hq_2.csv"))],
+        sh,
+        hq,
     )
     lake_vars = Wflow.LakeVariables(;
         outflow_av = [0.0, 0.0],
@@ -162,24 +168,24 @@ sh = [
 end
 
 @testset "overflowing lake with sh and hq" begin
-    lake_bc = Wflow.LakeBC(; inflow = [0.00], precipitation = [10.0], evaporation = [2.0])
+    lake_bc = Wflow.LakeBC(; inflow = [0.0], precipitation = [10.0], evaporation = [2.0])
+    sh = Vector{Union{Wflow.SH, Missing}}([
+        Wflow.read_sh_csv(joinpath(datadir, "input", "lake_sh_2.csv")),
+    ])
+    hq = Vector{Union{Wflow.HQ, Missing}}([
+        Wflow.read_hq_csv(joinpath(datadir, "input", "lake_hq_2.csv")),
+    ])
     lake_params = Wflow.LakeParameters(;
         lowerlake_ind = [0],
         area = [200_000_000],
-        maxstorage = Wflow.maximum_storage(
-            [2],
-            [1],
-            [200_000_000],
-            [Wflow.read_sh_csv(joinpath(datadir, "input", "lake_sh_2.csv"))],
-            [Wflow.read_hq_csv(joinpath(datadir, "input", "lake_hq_2.csv"))],
-        ),
+        maxstorage = Wflow.maximum_storage([2], [1], [200_000_000.0], sh, hq),
         threshold = [0.0],
         storfunc = [2],
         outflowfunc = [1],
         b = [0.0],
         e = [0.0],
-        sh = [Wflow.read_sh_csv(joinpath(datadir, "input", "lake_sh_2.csv"))],
-        hq = [Wflow.read_hq_csv(joinpath(datadir, "input", "lake_hq_2.csv"))],
+        sh,
+        hq,
     )
     lake_vars = Wflow.LakeVariables(;
         outflow_av = [0.0],

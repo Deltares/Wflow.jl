@@ -83,7 +83,7 @@ function update_boundary_conditions!(
 end
 
 "Update Julian and Torres river erosion model for a single timestep"
-function update!(model::RiverErosionJulianTorresModel, geometry::RiverGeometry, dt)
+function update!(model::RiverErosionJulianTorresModel, geometry::RiverGeometry, dt::Float64)
     (; waterlevel) = model.boundary_conditions
     (; d50) = model.parameters
     (; bed, bank) = model.variables

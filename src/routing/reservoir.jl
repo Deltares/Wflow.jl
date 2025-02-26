@@ -9,7 +9,13 @@
 end
 
 "Initialize reservoir model parameters"
-function ReservoirParameters(dataset, config, indices_river, n_river_cells, pits)
+function ReservoirParameters(
+    dataset::NCDataset,
+    config::Config,
+    indices_river::Vector{CartesianIndex{2}},
+    n_river_cells::Int,
+    pits::Matrix{Bool},
+)
     # read only reservoir data if reservoirs true
     # allow reservoirs only in river cells
     # note that these locations are only the reservoir outlet pixels
@@ -110,7 +116,7 @@ end
 end
 
 "Initialize reservoir model variables"
-function ReservoirVariables(n, parameters)
+function ReservoirVariables(n::Int, parameters::ReservoirParameters)
     (; targetfullfrac, maxstorage) = parameters
     variables = ReservoirVariables(;
         storage = targetfullfrac .* maxstorage,
@@ -132,7 +138,7 @@ end
 end
 
 "Initialize reservoir model boundary conditions"
-function ReservoirBC(n)
+function ReservoirBC(n::Int)
     bc = ReservoirBC(;
         inflow = fill(MISSING_VALUE, n),
         precipitation = fill(MISSING_VALUE, n),
@@ -149,7 +155,13 @@ end
 end
 
 "Initialize reservoir model `SimpleReservoir`"
-function SimpleReservoir(dataset, config, indices_river, n_river_cells, pits)
+function SimpleReservoir(
+    dataset::NCDataset,
+    config::Config,
+    indices_river::Vector{CartesianIndex{2}},
+    n_river_cells::Int,
+    pits::Matrix{Bool},
+)
     parameters, reservoir_network, inds_reservoir_map2river, pits =
         ReservoirParameters(dataset, config, indices_river, n_river_cells, pits)
 
@@ -169,7 +181,13 @@ Update a single reservoir at position `i`.
 This is called from within the kinematic wave loop, therefore updating only for a single
 element rather than all at once.
 """
-function update!(model::SimpleReservoir, i, inflow, dt, dt_forcing)
+function update!(
+    model::SimpleReservoir,
+    i::Int,
+    inflow::Float64,
+    dt::Float64,
+    dt_forcing::Float64,
+)
     res_bc = model.boundary_conditions
     res_p = model.parameters
     res_v = model.variables

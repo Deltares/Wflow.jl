@@ -31,7 +31,13 @@ get_demand_gross(model::NonIrrigationDemand) = model.demand.demand_gross
 get_demand_gross(model::NoNonIrrigationDemand) = 0.0
 
 "Initialize non-irrigation water demand model for a water use `sector`"
-function NonIrrigationDemand(dataset, config, indices, dt, sector)
+function NonIrrigationDemand(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+    dt::Second,
+    sector::AbstractString,
+)
     lens = lens_input_parameter(config, "land~$(sector)__gross_water_demand_volume_flux")
     demand_gross =
         ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float64) .*
@@ -73,7 +79,12 @@ end
 end
 
 "Initialize non-paddy irrigation model"
-function NonPaddy(dataset, config, indices, dt)
+function NonPaddy(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+    dt::Second,
+)
     lens = lens_input_parameter(config, "land~irrigated-non-paddy__irrigation_efficiency")
     efficiency =
         ncread(dataset, config, lens; sel = indices, defaults = 1.0, type = Float64)
@@ -205,7 +216,12 @@ end
 end
 
 "Initialize paddy irrigation model"
-function Paddy(dataset, config, indices, dt)
+function Paddy(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+    dt::Second,
+)
     lens = lens_input_parameter(config, "land~irrigated-paddy__min_depth")
     h_min = ncread(dataset, config, lens; sel = indices, defaults = 20.0, type = Float64)
 
@@ -383,7 +399,12 @@ end
 end
 
 "Initialize water demand model"
-function Demand(dataset, config, indices, dt)
+function Demand(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+    dt::Second,
+)
     domestic = if get(config.model.water_demand, "domestic", false)
         NonIrrigationDemand(dataset, config, indices, dt, "domestic")
     else
@@ -520,7 +541,7 @@ get_nonirrigation_returnflow(model::NoAllocationLand) = 0.0
 Return return flow fraction based on gross water demand `demand_gross` and net water demand
 `demand_net`
 """
-function return_flow_fraction(demand_gross, demand_net)
+function return_flow_fraction(demand_gross::Float64, demand_net::Float64)
     fraction = bounded_divide(demand_net, demand_gross)
     returnflow_fraction = 1.0 - fraction
     return returnflow_fraction
@@ -541,7 +562,13 @@ return_flow_fraction!(model::NoNonIrrigationDemand) = nothing
 Update water allocation for river and land domains based on local surface water (river)
 availability.
 """
-function surface_water_allocation_local!(model::AllocationLand, demand, river, network, dt)
+function surface_water_allocation_local!(
+    model::AllocationLand,
+    demand::Demand,
+    river::AbstractRiverFlowModel,
+    network::Network,
+    dt::Float64,
+)
     (; surfacewater_alloc) = model.variables
     (; surfacewater_demand) = demand.variables
     (; act_surfacewater_abst_vol, act_surfacewater_abst, available_surfacewater) =
@@ -582,7 +609,12 @@ end
 Update water allocation for river and land domains based on surface water (river)
 availability for allocation areas.
 """
-function surface_water_allocation_area!(model::AllocationLand, demand, river, network)
+function surface_water_allocation_area!(
+    model::AllocationLand,
+    demand::Demand,
+    river::AbstractRiverFlowModel,
+    network::Network,
+)
     inds_river = network.river.allocation_area_indices
     inds_land = network.land.allocation_area_indices
     inds_reservoir = network.river.reservoir_indices
@@ -650,9 +682,9 @@ end
 "Update water allocation for land domain based on local groundwater availability."
 function groundwater_allocation_local!(
     model::AllocationLand,
-    demand,
-    groundwater_storage,
-    network,
+    demand::Demand,
+    groundwater_storage::Vector{Float64},
+    network::NetworkLand,
 )
     (;
         surfacewater_alloc,
@@ -690,7 +722,11 @@ Update water allocation for land domain based on groundwater availability for al
 areas.
 
 """
-function groundwater_allocation_area!(model::AllocationLand, demand, network)
+function groundwater_allocation_area!(
+    model::AllocationLand,
+    demand::Demand,
+    network::Network,
+)
     inds_river = network.river.allocation_area_indices
     inds_land = network.land.allocation_area_indices
     (;
@@ -733,7 +769,11 @@ function groundwater_allocation_area!(model::AllocationLand, demand, network)
 end
 
 "Return and update non-irrigation sector (domestic, livestock, industry) return flow"
-function return_flow(model::NonIrrigationDemand, nonirri_demand_gross, nonirri_alloc)
+function return_flow(
+    model::NonIrrigationDemand,
+    nonirri_demand_gross::Vector{Float64},
+    nonirri_alloc::Vector{Float64},
+)
     for i in eachindex(model.variables.returnflow)
         frac = bounded_divide(model.demand.demand_gross[i], nonirri_demand_gross[i])
         allocate = frac * nonirri_alloc[i]
@@ -743,14 +783,24 @@ function return_flow(model::NonIrrigationDemand, nonirri_demand_gross, nonirri_a
 end
 
 # return zero (return flow) if non-irrigation sector is not defined
-return_flow(model::NoNonIrrigationDemand, nonirri_demand_gross, nonirri_alloc) = 0.0
+return_flow(
+    model::NoNonIrrigationDemand,
+    nonirri_demand_gross::Vector{Float64},
+    nonirri_alloc::Vector{Float64},
+) = 0.0
 
 # wrapper methods
 groundwater_storage(model::LateralSSF) = model.variables.storage
 groundwater_storage(model) = model.aquifer.variables.storage
 
 """
-    update_water_allocation!((model::AllocationLand, demand, routing, network, dt)
+    update_water_allocation!(
+    model::AllocationLand,
+    demand::Demand,
+    routing::Routing,
+    network::Network,
+    dt::Float64,
+)
 
 Update water allocation for the land domain `AllocationLand` and water allocation for the
 river domain (part of `routing`) based on the water `demand` model for a single timestep.
@@ -760,7 +810,13 @@ water demand for allocation areas. Then groundwater abstraction is computed to s
 remaining local water demand, and then updated to satisfy the remaining water demand for
 allocation areas. Finally, non-irrigation return flows are updated.
 """
-function update_water_allocation!(model::AllocationLand, demand, routing, network, dt)
+function update_water_allocation!(
+    model::AllocationLand,
+    demand::Demand,
+    routing::Routing,
+    network::Network,
+    dt::Float64,
+)
     river = routing.river_flow
     index_river = network.land.river_inds_excl_waterbody
     inds_reservoir = network.reservoir.river_indices
@@ -847,7 +903,13 @@ function update_water_allocation!(model::AllocationLand, demand, routing, networ
         end
     end
 end
-update_water_allocation!(model::NoAllocationLand, demand, routing, network, dt) = nothing
+update_water_allocation!(
+    model::NoAllocationLand,
+    demand::NoDemand,
+    routing::Routing,
+    network::Network,
+    dt::Float64,
+) = nothing
 
 """
     update_demand_gross!(model::Demand)
@@ -876,14 +938,14 @@ end
 update_demand_gross!(model::NoDemand) = nothing
 
 """
-    update_water_demand!(model::Demand, soil)
+    update_water_demand!(model::Demand, soil::SbmSoilModel)
 
 Update the return flow fraction `returnflow_fraction` of `industry`, `domestic` and
 `livestock`, gross water demand `demand_gross` of `paddy` and `nonpaddy` models, and the
 total gross water demand, total irrigation gross water demand and total non-irrigation gross
 water demand as part of the water `demand` model.
 """
-function update_water_demand!(model::Demand, soil)
+function update_water_demand!(model::Demand, soil::SbmSoilModel)
     (; nonpaddy, paddy, domestic, industry, livestock) = model
 
     return_flow_fraction!(industry)
@@ -896,4 +958,4 @@ function update_water_demand!(model::Demand, soil)
 
     return nothing
 end
-update_water_demand!(model::NoDemand, soil) = nothing
+update_water_demand!(model::NoDemand, soil::SbmSoilModel) = nothing

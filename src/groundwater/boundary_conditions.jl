@@ -1,4 +1,4 @@
-function check_flux(flux, aquifer::UnconfinedAquifer, index::Int; dt = 1.0)
+function check_flux(flux::Float64, aquifer::UnconfinedAquifer, index::Int; dt = 1.0)
     # Limit flux, not smaller than negative flux based on aquifer storage
     if flux < 0.0
         max_outflux = -aquifer.variables.storage[index] / dt
@@ -9,7 +9,7 @@ function check_flux(flux, aquifer::UnconfinedAquifer, index::Int; dt = 1.0)
 end
 
 # Do nothing for a confined aquifer: aquifer can always provide flux
-check_flux(flux, aquifer::ConfinedAquifer, index::Int; dt = 1.0) = flux
+check_flux(flux::Float64, aquifer::ConfinedAquifer, index::Int; dt = 1.0) = flux
 
 @with_kw struct RiverParameters
     infiltration_conductance::Vector{Float64} # [m² d⁻¹]
@@ -23,7 +23,7 @@ end
     flux::Vector{Float64}  # [m³ d⁻¹]
 end
 
-function RiverVariables(n)
+function RiverVariables(n::Int)
     variables = RiverVariables(;
         stage = fill(MISSING_VALUE, n),
         storage = fill(MISSING_VALUE, n),
@@ -38,7 +38,12 @@ end
     index::Vector{Int} # [-]
 end
 
-function River(dataset, config, indices, index)
+function River(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+    index::Vector{Int},
+)
     lens = lens_input_parameter(config, "river_water__infiltration_conductance")
     infiltration_conductance = ncread(dataset, config, lens; sel = indices, type = Float64)
 
@@ -55,7 +60,7 @@ function River(dataset, config, indices, index)
     return river
 end
 
-function flux!(Q, river::River, aquifer; dt = 1.0)
+function flux!(Q::Vector{Float64}, river::River, aquifer::Aquifer; dt = 1.0)
     for (i, index) in enumerate(river.index)
         head = aquifer.variables.head[index]
         stage = river.variables.stage[i]
@@ -89,7 +94,12 @@ end
     index::Vector{Int} # [-]
 end
 
-function Drainage(dataset, config, indices, index)
+function Drainage(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+    index::Vector{Int},
+)
     lens = lens_input_parameter(config, "land_drain__elevation")
     drain_elevation =
         ncread(dataset, config, lens; sel = indices, type = Float64, fill = MISSING_VALUE)
@@ -106,7 +116,7 @@ function Drainage(dataset, config, indices, index)
     return drains
 end
 
-function flux!(Q, drainage::Drainage, aquifer; dt = 1.0)
+function flux!(Q::Vector{Float64}, drainage::Drainage, aquifer::Aquifer; dt = 1.0)
     for (i, index) in enumerate(drainage.index)
         cond = drainage.parameters.conductance[i]
         delta_head =
@@ -132,7 +142,7 @@ end
     index::Vector{Int} # [-]
 end
 
-function flux!(Q, headboundary::HeadBoundary, aquifer; dt = 1.0)
+function flux!(Q::Vector{Float64}, headboundary::HeadBoundary, aquifer::Aquifer; dt = 1.0)
     for (i, index) in enumerate(headboundary.index)
         cond = headboundary.parameters.conductance[i]
         delta_head = headboundary.variables.head[i] - aquifer.variables.head[index]
@@ -152,13 +162,13 @@ end
     index::Vector{Int}  # [-]
 end
 
-function Recharge(rate, flux, index)
+function Recharge(rate::Vector{Float64}, flux::Vector{Float64}, index::Vector{Int})
     variables = RechargeVariables(rate, flux)
     recharge = Recharge(variables, index)
     return recharge
 end
 
-function flux!(Q, recharge::Recharge, aquifer; dt = 1.0)
+function flux!(Q::Vector{Float64}, recharge::Recharge, aquifer::Aquifer; dt = 1.0)
     for (i, index) in enumerate(recharge.index)
         recharge.variables.flux[i] = check_flux(
             recharge.variables.rate[i] * aquifer.parameters.area[index],
@@ -181,7 +191,7 @@ end
     index::Vector{Int} # [-]
 end
 
-function flux!(Q, well::Well, aquifer; dt = 1.0)
+function flux!(Q::Vector{Float64}, well::Well, aquifer::Aquifer; dt = 1.0)
     for (i, index) in enumerate(well.index)
         well.variables.flux[i] =
             check_flux(well.variables.volumetric_rate[i], aquifer, index; dt)

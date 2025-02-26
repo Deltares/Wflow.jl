@@ -66,7 +66,12 @@ const NEIGHBORS = (
 )
 
 # Constructor for the Connectivity structure for structured input
-function Connectivity(indices, reverse_indices, dx::Vector{Float64}, dy::Vector{Float64})
+function Connectivity(
+    indices::Vector{CartesianIndex{2}},
+    reverse_indices::Matrix{Int},
+    dx::Vector{Float64},
+    dy::Vector{Float64},
+)
     # indices: These map from the 1D internal domain to the 2D external domain.
     # reverse_indices: from the 2D external domain to the 1D internal domain,
     # providing an Int which can be used as a linear index

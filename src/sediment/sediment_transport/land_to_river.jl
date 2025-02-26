@@ -29,7 +29,7 @@ end
 end
 
 "Initialize total sediment reaching the river model"
-function SedimentToRiverModel(indices)
+function SedimentToRiverModel(indices::Vector{CartesianIndex{2}})
     n = length(indices)
     vars = SedimentToRiverVariables(n)
     bc = SedimentToRiverBC(n)
@@ -47,7 +47,7 @@ function update_boundary_conditions!(
 end
 
 "Update total sediment reaching the river model for a single timestep"
-function update!(model::SedimentToRiverModel, rivers)
+function update!(model::SedimentToRiverModel, rivers::Vector{Bool})
     (; deposition) = model.boundary_conditions
     (; amount) = model.variables
 
@@ -130,7 +130,7 @@ end
 end
 
 "Initialize differentiated sediment reaching the river model"
-function SedimentToRiverDifferentiationModel(indices)
+function SedimentToRiverDifferentiationModel(indices::Vector{CartesianIndex{2}})
     n = length(indices)
     vars = SedimentToRiverDifferentiationVariables(n)
     bc = SedimentToRiverDifferentiationBC(n)
@@ -159,7 +159,7 @@ function update_boundary_conditions!(
 end
 
 "Update differentiated sediment reaching the river model for a single timestep"
-function update!(model::SedimentToRiverDifferentiationModel, rivers)
+function update!(model::SedimentToRiverDifferentiationModel, rivers::Vector{Bool})
     (;
         deposition_clay,
         deposition_silt,

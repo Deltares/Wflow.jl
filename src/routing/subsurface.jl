@@ -1,3 +1,39 @@
+"Struct for storing lateral subsurface flow model variables"
+@with_kw struct LateralSsfVariables
+    zi::Vector{Float64}           # Pseudo-water table depth [m] (top of the saturated zone)
+    exfiltwater::Vector{Float64}  # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
+    recharge::Vector{Float64}     # Net recharge to saturated store [m² Δt⁻¹]
+    ssf::Vector{Float64}          # Subsurface flow [m³ d⁻¹]
+    ssfin::Vector{Float64}        # Inflow from upstream cells [m³ d⁻¹]
+    ssfmax::Vector{Float64}       # Maximum subsurface flow [m² d⁻¹]
+    to_river::Vector{Float64}     # Part of subsurface flow [m³ d⁻¹] that flows to the river
+    storage::Vector{Float64}      # Subsurface storage [m³]
+end
+
+"Struct for storing lateral subsurface flow model parameters"
+@with_kw struct LateralSsfParameters{Kh}
+    kh_profile::Kh                  # Horizontal hydraulic conductivity profile type [-]  
+    khfrac::Vector{Float64}         # A muliplication factor applied to vertical hydraulic conductivity `kv` [-]
+    soilthickness::Vector{Float64}  # Soil thickness [m]
+    theta_s::Vector{Float64}        # Saturated water content (porosity) [-]
+    theta_r::Vector{Float64}        # Residual water content [-]   
+    slope::Vector{Float64}          # Slope [m m⁻¹]
+    flow_length::Vector{Float64}    # Flow length [m]
+    flow_width::Vector{Float64}     # Flow width [m]
+end
+
+"Struct for storing lateral subsurface flow model boundary conditions"
+@with_kw struct LateralSsfBC
+    recharge::Vector{Float64} # Net recharge to saturated store [m² Δt⁻¹]
+end
+
+"Lateral subsurface flow model"
+@with_kw struct LateralSSF{Kh} <: AbstractSubsurfaceFlowModel
+    boundary_conditions::LateralSsfBC
+    parameters::LateralSsfParameters{Kh}
+    variables::LateralSsfVariables
+end
+
 "Exponential depth profile of horizontal hydraulic conductivity at the soil surface"
 struct KhExponential
     # Horizontal hydraulic conductivity at soil surface [m d⁻¹]
@@ -20,27 +56,15 @@ struct KhLayered
     kh::Vector{Float64}
 end
 
-"Struct for storing lateral subsurface flow model parameters"
-@with_kw struct LateralSsfParameters{Kh}
-    kh_profile::Kh                  # Horizontal hydraulic conductivity profile type [-]  
-    khfrac::Vector{Float64}         # A muliplication factor applied to vertical hydraulic conductivity `kv` [-]
-    soilthickness::Vector{Float64}  # Soil thickness [m]
-    theta_s::Vector{Float64}        # Saturated water content (porosity) [-]
-    theta_r::Vector{Float64}        # Residual water content [-]   
-    slope::Vector{Float64}          # Slope [m m⁻¹]
-    flow_length::Vector{Float64}    # Flow length [m]
-    flow_width::Vector{Float64}     # Flow width [m]
-end
-
 "Initialize lateral subsurface flow model parameters"
 function LateralSsfParameters(
-    dataset,
-    config,
-    indices;
-    soil,
-    slope,
-    flow_length,
-    flow_width,
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}};
+    soil::SbmSoilParameters,
+    slope::Vector{Float64},
+    flow_length::Vector{Float64},
+    flow_width::Vector{Float64},
 )
     lens = lens_input_parameter(
         config,
@@ -81,20 +105,13 @@ function LateralSsfParameters(
     return parameters
 end
 
-"Struct for storing lateral subsurface flow model variables"
-@with_kw struct LateralSsfVariables
-    zi::Vector{Float64}           # Pseudo-water table depth [m] (top of the saturated zone)
-    exfiltwater::Vector{Float64}  # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
-    recharge::Vector{Float64}     # Net recharge to saturated store [m² Δt⁻¹]
-    ssf::Vector{Float64}          # Subsurface flow [m³ d⁻¹]
-    ssfin::Vector{Float64}        # Inflow from upstream cells [m³ d⁻¹]
-    ssfmax::Vector{Float64}       # Maximum subsurface flow [m² d⁻¹]
-    to_river::Vector{Float64}     # Part of subsurface flow [m³ d⁻¹] that flows to the river
-    storage::Vector{Float64}      # Subsurface storage [m³]
-end
-
 "Initialize lateral subsurface flow model variables"
-function LateralSsfVariables(ssf, zi, xl, yl)
+function LateralSsfVariables(
+    ssf::LateralSsfParameters,
+    zi::Vector{Float64},
+    xl::Vector{Float64},
+    yl::Vector{Float64},
+)
     n = length(zi)
     storage = @. (ssf.theta_s - ssf.theta_r) * (ssf.soilthickness - zi) * (xl * yl)
     variables = LateralSsfVariables(;
@@ -110,29 +127,17 @@ function LateralSsfVariables(ssf, zi, xl, yl)
     return variables
 end
 
-"Struct for storing lateral subsurface flow model boundary conditions"
-@with_kw struct LateralSsfBC
-    recharge::Vector{Float64} # Net recharge to saturated store [m² Δt⁻¹]
-end
-
-"Lateral subsurface flow model"
-@with_kw struct LateralSSF{Kh} <: AbstractSubsurfaceFlowModel
-    boundary_conditions::LateralSsfBC
-    parameters::LateralSsfParameters{Kh}
-    variables::LateralSsfVariables
-end
-
 "Initialize lateral subsurface flow model"
 function LateralSSF(
-    dataset,
-    config,
-    indices;
-    soil,
-    slope,
-    flow_length,
-    flow_width,
-    x_length,
-    y_length,
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}};
+    soil::SbmSoilModel,
+    slope::Vector{Float64},
+    flow_length::Vector{Float64},
+    flow_width::Vector{Float64},
+    x_length::Vector{Float64},
+    y_length::Vector{Float64},
 )
     parameters = LateralSsfParameters(
         dataset,
@@ -151,7 +156,7 @@ function LateralSSF(
 end
 
 "Update lateral subsurface model for a single timestep"
-function update!(model::LateralSSF, network, dt)
+function update!(model::LateralSSF, network::NetworkLand, dt::Float64)
     (;
         order_of_subdomains,
         order_subdomain,

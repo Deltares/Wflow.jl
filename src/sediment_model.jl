@@ -41,7 +41,7 @@ function initialize_sediment_model(config::Config)
         lakes = ncread(dataset, config, lens; sel = indices, type = Float64, fill = 0)
         waterbodies = waterbodies .+ lakes
     end
-    waterbodies = waterbodies .> 0
+    waterbodies = Vector{Bool}(waterbodies .> 0)
 
     lens = lens_input(config, "local_drain_direction"; optional = false)
     ldd_2d = ncread(dataset, config, lens; allow_missing = true)

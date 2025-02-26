@@ -130,9 +130,9 @@ function UnconfinedAquiferParameters(
     dataset::NCDataset,
     config::Config,
     indices::Vector{CartesianIndex{2}},
-    top,
-    bottom,
-    area,
+    top::Vector{Float64},
+    bottom::Vector{Float64},
+    area::Vector{Float64},
 )
     lens = lens_input_parameter(
         config,
@@ -168,11 +168,11 @@ function UnconfinedAquifer(
     dataset::NCDataset,
     config::Config,
     indices::Vector{CartesianIndex{2}},
-    top,
-    bottom,
-    area,
-    conductance,
-    head,
+    top::Vector{Float64},
+    bottom::Vector{Float64},
+    area::Vector{Float64},
+    conductance::Vector{Float64},
+    head::Vector{Float64},
 )
     parameters = UnconfinedAquiferParameters(dataset, config, indices, top, bottom, area)
 
@@ -363,7 +363,12 @@ function conductance(
     end
 end
 
-function flux!(Q, aquifer, connectivity, conductivity_profile)
+function flux!(
+    Q::Vector{Float64},
+    aquifer::Aquifer,
+    connectivity::Connectivity,
+    conductivity_profile::String,
+)
     for i in 1:(connectivity.ncell)
         # Loop over connections for cell j
         for nzi in connections(connectivity, i)
@@ -411,7 +416,7 @@ The following criterion can be found in Chu & Willis (1984)
 
 Δt * k * H / (Δx * Δy * S) <= 1/4
 """
-function stable_timestep(aquifer, conductivity_profile::String)
+function stable_timestep(aquifer::Aquifer, conductivity_profile::String)
     dt_min = Inf
     for i in eachindex(aquifer.variables.head)
         if conductivity_profile == "exponential"
@@ -436,7 +441,28 @@ minimum_head(aquifer::ConfinedAquifer) = aquifer.variables.head
 minimum_head(aquifer::UnconfinedAquifer) =
     max.(aquifer.variables.head, aquifer.parameters.bottom)
 
-function update!(gwf, Q, dt, conductivity_profile)
+Base.@kwdef struct GroundwaterFlow{A} <: AbstractSubsurfaceFlowModel
+    aquifer::A
+    connectivity::Connectivity
+    constanthead::ConstantHead
+    boundaries::NamedTuple
+    function GroundwaterFlow(
+        aquifer::A,
+        connectivity::Connectivity,
+        constanthead::ConstantHead,
+        boundaries::NamedTuple,
+    ) where {A <: Aquifer}
+        initialize_conductance!(aquifer, connectivity)
+        new{A}(aquifer, connectivity, constanthead, boundaries)
+    end
+end
+
+function update!(
+    gwf::GroundwaterFlow{A},
+    Q::Vector{Float64},
+    dt::Float64,
+    conductivity_profile::String,
+) where {A <: Aquifer}
     Q .= 0.0  # TODO: Probably remove this when linking with other components
     flux!(Q, gwf.aquifer, gwf.connectivity, conductivity_profile)
     for boundary in gwf.boundaries
@@ -452,22 +478,6 @@ function update!(gwf, Q, dt, conductivity_profile)
         saturated_thickness(gwf.aquifer) .* gwf.aquifer.parameters.area .*
         storativity(gwf.aquifer)
     return nothing
-end
-
-Base.@kwdef struct GroundwaterFlow{A} <: AbstractSubsurfaceFlowModel
-    aquifer::A
-    connectivity::Connectivity
-    constanthead::ConstantHead
-    boundaries::NamedTuple
-    function GroundwaterFlow(
-        aquifer::A,
-        connectivity::Connectivity,
-        constanthead::ConstantHead,
-        boundaries::NamedTuple,
-    ) where {A}
-        initialize_conductance!(aquifer, connectivity)
-        new{A}(aquifer, connectivity, constanthead, boundaries)
-    end
 end
 
 function get_water_depth(gwf::GroundwaterFlow{A}) where {A <: UnconfinedAquifer}
@@ -488,7 +498,9 @@ function get_exfiltwater(gwf::GroundwaterFlow{A}) where {A <: UnconfinedAquifer}
     return exfiltwater
 end
 
-function get_flux_to_river(subsurface_flow)
+function get_flux_to_river(
+    subsurface_flow::GroundwaterFlow{A},
+) where {A <: UnconfinedAquifer}
     (; river) = subsurface_flow.boundaries
     ncell = subsurface_flow.connectivity.ncell
     flux = zeros(ncell)

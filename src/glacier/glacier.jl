@@ -9,7 +9,11 @@ abstract type AbstractGlacierModel end
 end
 
 "Initialize glacier model variables"
-function GlacierVariables(dataset, config, indices)
+function GlacierVariables(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     lens = lens_input_parameter(config, "glacier_ice__leq-volume")
     glacier_store = ncread(
         dataset,
@@ -58,7 +62,12 @@ end
 struct NoGlacierModel <: AbstractGlacierModel end
 
 "Initialize glacier HBV model parameters"
-function GlacierHbvParameters(dataset, config, indices, dt)
+function GlacierHbvParameters(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+    dt::Second,
+)
     lens = lens_input_parameter(config, "glacier_ice__melting_temperature_threshold")
     g_ttm = ncread(
         dataset,
@@ -111,7 +120,13 @@ function GlacierHbvParameters(dataset, config, indices, dt)
 end
 
 "Initialize glacier HBV model"
-function GlacierHbvModel(dataset, config, indices, dt, bc)
+function GlacierHbvModel(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+    dt::Second,
+    bc::SnowStateBC,
+)
     params = GlacierHbvParameters(dataset, config, indices, dt)
     vars = GlacierVariables(dataset, config, indices)
     model =

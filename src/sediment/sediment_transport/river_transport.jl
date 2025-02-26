@@ -285,7 +285,7 @@ function update_boundary_conditions!(
     transport_capacity_model::AbstractTransportCapacityModel,
     to_river_model::SedimentToRiverDifferentiationModel,
     potential_erosion_model::AbstractRiverErosionModel,
-    indices_riv,
+    indices_riv::Vector{Int},
 )
     (;
         waterlevel,
@@ -321,10 +321,10 @@ end
 "Update river sediment transport model for a single timestep"
 function update!(
     model::SedimentRiverTransportModel,
-    network,
+    network::NetworkRiver,
     geometry::RiverGeometry,
-    waterbodies,
-    dt,
+    waterbodies::Vector{Bool},
+    dt::Float64,
 )
     (;
         waterlevel,
@@ -869,7 +869,11 @@ function update_boundary_conditions!(
 end
 
 "Update river sediment concentrations model for a single timestep"
-function update!(model::SedimentConcentrationsRiverModel, geometry::RiverGeometry, dt)
+function update!(
+    model::SedimentConcentrationsRiverModel,
+    geometry::RiverGeometry,
+    dt::Float64,
+)
     (; q, waterlevel, clay, silt, sand, sagg, lagg, gravel) = model.boundary_conditions
     (; dm_clay, dm_silt, dm_sand, dm_sagg, dm_lagg, dm_gravel) = model.parameters
     (; total, suspended, bed) = model.variables

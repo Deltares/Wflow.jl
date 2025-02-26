@@ -12,7 +12,12 @@
 end
 
 "Initialize land hydrology model with SBM soil model"
-function LandHydrologySBM(dataset, config, riverfrac, indices)
+function LandHydrologySBM(
+    dataset::NCDataset,
+    config::Config,
+    riverfrac::Vector{Float64},
+    indices::Vector{CartesianIndex{2}},
+)
     dt = Second(config.time.timestepsecs)
     n = length(indices)
 
@@ -73,7 +78,13 @@ function LandHydrologySBM(dataset, config, riverfrac, indices)
 end
 
 "Update land hydrology model with SBM soil model for a single timestep"
-function update!(model::LandHydrologySBM, routing, network, config, dt)
+function update!(
+    model::LandHydrologySBM,
+    routing::Routing,
+    network::Network,
+    config::Config,
+    dt::Float64,
+)
     do_water_demand = haskey(config.model, "water_demand")::Bool
     (; glacier, snow, interception, runoff, soil, demand, allocation, atmospheric_forcing) =
         model
@@ -136,10 +147,10 @@ Takes the following parameters:
 """
 function update_total_water_storage!(
     model::LandHydrologySBM,
-    river_network,
-    area,
-    river_routing,
-    land_routing,
+    river_network::Vector{Int},
+    area::Vector{Float64},
+    river_routing::AbstractRiverFlowModel,
+    land_routing::AbstractOverlandFlowModel,
 )
     (; interception, snow, glacier, runoff, soil, demand) = model
     (; total_storage, ustoredepth, satwaterdepth) = soil.variables

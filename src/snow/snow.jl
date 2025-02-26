@@ -68,7 +68,12 @@ end
 struct NoSnowModel <: AbstractSnowModel end
 
 "Initialize snow HBV model parameters"
-function SnowHbvParameters(dataset, config, indices, dt)
+function SnowHbvParameters(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+    dt::Second,
+)
     lens = lens_input_parameter(config, "snowpack__degree-day_coefficient")
     cfmax =
         ncread(dataset, config, lens; sel = indices, defaults = 3.75653, type = Float64) .*
@@ -90,7 +95,12 @@ function SnowHbvParameters(dataset, config, indices, dt)
 end
 
 "Initialize snow HBV model"
-function SnowHbvModel(dataset, config, indices, dt)
+function SnowHbvModel(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+    dt::Second,
+)
     n = length(indices)
     params = SnowHbvParameters(dataset, config, indices, dt)
     vars = SnowVariables(n)
