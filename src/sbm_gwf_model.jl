@@ -407,11 +407,15 @@ function initialize_sbm_gwf_model(config::Config)
 
     routing = Routing(; subsurface_flow, overland_flow, river_flow)
 
+    # n = ?
+    # water_balance = WaterBalance(n, Float64)
+
     model = Model(
         config,
         network,
         routing,
         land_hydrology,
+        # water_balance,
         clock,
         reader,
         writer,
