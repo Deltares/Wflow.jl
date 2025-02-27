@@ -1,7 +1,7 @@
 abstract type AbstractRunoffModel{T} end
 
 "Struct for storing open water runoff variables"
-@get_units @grid_loc @with_kw struct OpenWaterRunoffVariables{T}
+@with_kw struct OpenWaterRunoffVariables{T}
     # Runoff from river based on riverfrac [mm Δt⁻¹]
     runoff_river::Vector{T}
     # Net runoff from river [mm Δt⁻¹]
@@ -26,11 +26,11 @@ function OpenWaterRunoffVariables(T::Type{<:AbstractFloat}, n::Int)
 end
 
 "Struct for storing open water runoff parameters"
-@get_units @grid_loc @with_kw struct OpenWaterRunoffParameters{T}
+@with_kw struct OpenWaterRunoffParameters{T}
     # Fraction of river [-]
-    riverfrac::Vector{T} | "-"
+    riverfrac::Vector{T}
     # Fraction of open water (excluding rivers) [-]
-    waterfrac::Vector{T} | "-"
+    waterfrac::Vector{T}
 end
 
 "Initialize open water runoff parameters"
@@ -44,18 +44,18 @@ function OpenWaterRunoffParameters(dataset, config, indices, riverfrac)
 end
 
 "Struct for storing open water runoff boundary conditions"
-@get_units @grid_loc @with_kw struct OpenWaterRunoffBC{T}
-    water_flux_surface::Vector{T}
-    waterlevel_land::Vector{T} | "mm"
-    waterlevel_river::Vector{T} | "mm"
+@with_kw struct OpenWaterRunoffBC{T}
+    water_flux_surface::Vector{T} # [mm dt-1]
+    waterdepth_land::Vector{T} # [mm]
+    waterdepth_river::Vector{T} # [mm]
 end
 
 "Initialize open water runoff boundary conditions"
 function OpenWaterRunoffBC(T::Type{<:AbstractFloat}, n::Int)
     return OpenWaterRunoffBC{T}(;
         water_flux_surface = fill(mv, n),
-        waterlevel_land = fill(mv, n),
-        waterlevel_river = zeros(T, n),
+        waterdepth_land = fill(mv, n),
+        waterdepth_river = zeros(T, n),
     )
 end
 
@@ -108,16 +108,18 @@ function update_boundary_conditions!(
     routing,
     network,
 )
-    (; water_flux_surface, waterlevel_river, waterlevel_land) = model.boundary_conditions
+    (; water_flux_surface, waterdepth_river, waterdepth_land) = model.boundary_conditions
     (; land_indices) = network.river
     (; snow, glacier, interception) = external_models
 
     get_water_flux_surface!(water_flux_surface, snow, glacier, interception)
 
-    # extract water levels h_av [m] from the land and river domains this is used to limit
-    # open water evaporation
-    waterlevel_land .= routing.overland_flow.variables.h_av .* 1000.0
-    waterlevel_river[land_indices] .= routing.river_flow.variables.h_av .* 1000.0
+    # extract water depth h [m] from the land and river routing, used to limit open water
+    # evaporation
+    waterdepth_land .= routing.overland_flow.variables.h .* 1000.0
+    for (i, land_index) in enumerate(land_indices)
+        waterdepth_river[land_index] = routing.river_flow.variables.h[i] * 1000.0
+    end
     return nothing
 end
 
@@ -127,12 +129,12 @@ function update!(model::OpenWaterRunoff, atmospheric_forcing::AtmosphericForcing
     (; runoff_river, net_runoff_river, runoff_land, ae_openw_r, ae_openw_l) =
         model.variables
     (; riverfrac, waterfrac) = model.parameters
-    (; water_flux_surface, waterlevel_river, waterlevel_land) = model.boundary_conditions
+    (; water_flux_surface, waterdepth_river, waterdepth_land) = model.boundary_conditions
 
     @. runoff_river = min(1.0, riverfrac) * water_flux_surface
     @. runoff_land = min(1.0, waterfrac) * water_flux_surface
-    @. ae_openw_r = min(waterlevel_river * riverfrac, riverfrac * potential_evaporation)
-    @. ae_openw_l = min(waterlevel_land * waterfrac, waterfrac * potential_evaporation)
+    @. ae_openw_r = min(waterdepth_river * riverfrac, riverfrac * potential_evaporation)
+    @. ae_openw_l = min(waterdepth_land * waterfrac, waterfrac * potential_evaporation)
     @. net_runoff_river = runoff_river - ae_openw_r
 
     return nothing

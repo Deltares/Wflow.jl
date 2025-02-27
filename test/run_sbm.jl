@@ -253,10 +253,9 @@ end
 
 Wflow.close_files(model; delete_output = false)
 
-# test local-inertial option for river flow river_routing
-tomlpath = joinpath(@__DIR__, "sbm_config.toml")
+# test local-inertial option for river flow river_routing"
+tomlpath = joinpath(@__DIR__, "sbm_river-local-inertial_config.toml")
 config = Wflow.Config(tomlpath)
-config.model.river_routing = "local-inertial"
 
 model = Wflow.initialize_sbm_model(config)
 Wflow.run_timestep!(model)
@@ -278,7 +277,7 @@ end
 Wflow.close_files(model; delete_output = false)
 
 # test local-inertial option for river and overland flow
-tomlpath = joinpath(@__DIR__, "sbm_swf_config.toml")
+tomlpath = joinpath(@__DIR__, "sbm_river-land-local-inertial_config.toml")
 config = Wflow.Config(tomlpath)
 
 model = Wflow.initialize_sbm_model(config)
@@ -307,16 +306,8 @@ end
 Wflow.close_files(model; delete_output = false)
 
 # test local-inertial option for river flow including 1D floodplain schematization
-tomlpath = joinpath(@__DIR__, "sbm_config.toml")
+tomlpath = joinpath(@__DIR__, "sbm_river-floodplain-local-inertial_config.toml")
 config = Wflow.Config(tomlpath)
-
-config.model.floodplain_1d = true
-config.model.river_routing = "local-inertial"
-config.model.land_routing = "kinematic-wave"
-config.input.static["floodplain_water__sum_of_volume-per-depth"] = "floodplain_volume"
-config.state.variables.floodplain_water__instantaneous_volume_flow_rate = "q_floodplain"
-config.state.variables.floodplain_water__instantaneous_depth = "h_floodplain"
-
 model = Wflow.initialize_sbm_model(config)
 
 fp = model.routing.river_flow.floodplain.parameters.profile

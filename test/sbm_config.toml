@@ -34,7 +34,6 @@ soil_layer_water_unsat-zone__depth = "ustorelayerdepth"
 "snowpack~liquid__depth" = "snowwater"
 
 river_water__instantaneous_depth = "h_river"
-river_water__depth = "h_av_river"
 river_water__instantaneous_volume_flow_rate = "q_river"
 
 reservoir_water__instantaneous_volume = "volume_reservoir"
@@ -43,7 +42,6 @@ subsurface_water__volume_flow_rate  = "ssf"
 
 land_surface_water__instantaneous_volume_flow_rate = "q_land"
 land_surface_water__instantaneous_depth = "h_land"
-land_surface_water__depth = "h_av_land"
 
 [input]
 path_forcing = "forcing-moselle.nc"
@@ -211,33 +209,12 @@ parameter = "soil_water_sat-zone_top__net_recharge_volume_flux"
 reducer = "mean"
 
 [API]
-components = [
-  "land.atmospheric_forcing",
-  "land.vegetation_parameter_set",
-  "land.runoff.boundary_conditions",
-  "land.runoff.variables",
-  "land.runoff.parameters",
-  "land.soil.boundary_conditions",
-  "land.soil.variables",
-  "land.soil.parameters",
-  "land.interception.variables",
-  "land.interception.parameters",
-  "land.snow.boundary_conditions",
-  "land.snow.variables",
-  "land.snow.parameters",
-  "routing.subsurface_flow.boundary_conditions",
-  "routing.subsurface_flow.variables",
-  "routing.subsurface_flow.parameters",
-  "routing.subsurface_flow.parameters.kh_profile",
-  "routing.overland_flow.boundary_conditions",
-  "routing.overland_flow.variables",
-  "routing.overland_flow.variables.flow",
-  "routing.overland_flow.parameters",
-  "routing.river_flow.variables",
-  "routing.river_flow.parameters",
-  "routing.river_flow.parameters.flow",
-  "routing.river_flow.boundary_conditions",
-  "routing.river_flow.boundary_conditions.reservoir.boundary_conditions",
-  "routing.river_flow.boundary_conditions.reservoir.parameters",
-  "routing.river_flow.boundary_conditions.reservoir.variables",
+variables = [
+  "river_water__volume_flow_rate",
+   "soil_water_unsat-zone__depth",
+   "soil_water__transpiration_volume_flux",
+   "soil_layer~1_water_unsat-zone__depth",
+   "soil_layer~2_water_unsat-zone__depth",
+   "soil_layer~3_water_unsat-zone__depth",
+   "soil_layer~4_water_unsat-zone__depth",
 ]

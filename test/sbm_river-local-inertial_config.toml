@@ -6,15 +6,15 @@
 dir_input = "data/input"
 dir_output = "data/output"
 
+[logging]
+loglevel = "info"
+
 [time]
 calendar = "proleptic_gregorian"
 endtime = 2000-02-01T00:00:00
 starttime = 2000-01-01T00:00:00
 time_units = "days since 1900-01-01 00:00:00"
 timestepsecs = 86400
-
-[logging]
-loglevel = "info"
 
 [state]
 path_input = "instates-moselle.nc"
@@ -50,12 +50,12 @@ path_forcing = "forcing-moselle.nc"
 path_static = "staticmaps-moselle.nc"
 
 # these are not directly part of the model
-river_gauge = "wflow_gauges_grdc"
 local_drain_direction = "wflow_ldd"
 river_location__mask = "wflow_river"
 reservoir_area__count = "wflow_reservoirareas"
 reservoir_location__count = "wflow_reservoirlocs"
 subcatchment_location__count = "wflow_subcatch"
+river_gauge = "wflow_gauges_grdc"
 
 [input.forcing]
 atmosphere_water__precipitation_volume_flux = "precip"
@@ -109,7 +109,6 @@ reservoir_water__max_volume = "ResMaxVolume"
 
 subsurface_water__horizontal-to-vertical_saturated_hydraulic_conductivity_ratio = "KsatHorFrac"
 
-
 [input.cyclic]
 vegetation__leaf-area_index = "LAI"
 
@@ -120,6 +119,7 @@ offset = 0.0
 
 [model]
 kin_wave_iteration = true
+river_routing = "local-inertial"
 gravitational_snow_transport = true
 reinit = true
 reservoirs = true

@@ -438,9 +438,11 @@ function update!(model::AbstractModel{<:SbmGwfModel})
 
     # set river stage and storage (groundwater boundary) based on river flow routing
     # variables
-    boundaries.river.variables.stage .=
-        routing.river_flow.variables.h_av .+ boundaries.river.parameters.bottom
-    boundaries.river.variables.storage .= routing.river_flow.variables.storage
+    for i in eachindex(boundaries.river.variables.stage)
+        boundaries.river.variables.stage[i] =
+            routing.river_flow.variables.h[i] + boundaries.river.parameters.bottom[i]
+        boundaries.river.variables.storage[i] = routing.river_flow.variables.storage[i]
+    end
 
     # determine stable time step for groundwater flow
     conductivity_profile = get(config.model, "conductivity_profile", "uniform")
