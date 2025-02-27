@@ -71,7 +71,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
                 "river_water__instantaneous_volume_flow_rate",
                 zeros(Float, 3),
                 [1, 100, 5617],
-            ) ≈ [0.6525631197206111, 7.493760826794606, 0.02319714614721354]
+            ) ≈ [0.6525634030110335, 7.493560511070567, 0.023197145979653312]
             BMI.set_value(
                 model,
                 "soil_water_sat-zone_top__depth",

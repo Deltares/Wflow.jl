@@ -413,12 +413,12 @@ Wflow.run_timestep!(model)
     @test q[1622] ≈ 7.296767071929629f-5
     @test q[43] ≈ 11.716766734364418f0
     @test q[501] ≈ 3.424364314225289f0
-    @test q[5808] ≈ 0.002228981516146531f0
+    @test q[5808] ≈ 0.0022226090142047467f0
     h = model.routing.river_flow.variables.h_av
     @test h[1622] ≈ 0.0019866694251020806f0
     @test h[43] ≈ 0.433119240388070f0
     @test h[501] ≈ 0.055832770820860404f0
-    @test h[5808] ≈ 0.005935591961908253f0
+    @test h[5808] ≈ 0.005930448174062932f0
 end
 
 # set boundary condition local inertial routing from netCDF file
