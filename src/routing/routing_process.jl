@@ -1,5 +1,5 @@
 "Convert a gridded drainage direction to a directed graph"
-function flowgraph(ldd::AbstractVector, indices::AbstractVector, pcr_dir::AbstractVector)
+function flowgraph(ldd::AbstractVector, indices::AbstractVector, PCR_DIR::AbstractVector)
     # prepare a directed graph to be filled
     n = length(indices)
     graph = DiGraph(n)
@@ -9,7 +9,7 @@ function flowgraph(ldd::AbstractVector, indices::AbstractVector, pcr_dir::Abstra
         ldd_val = ldd[from_node]
         # skip pits to prevent cycles
         ldd_val == 5 && continue
-        to_index = from_index + pcr_dir[ldd_val]
+        to_index = from_index + PCR_DIR[ldd_val]
         # find the node id of the downstream cell
         to_node = searchsortedfirst(indices, to_index)
         add_edge!(graph, from_node, to_node)

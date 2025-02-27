@@ -1,6 +1,6 @@
 # maps the fields of struct `EdgeConnectivity` to the defined Wflow cartesian indices of
 # const `neigbors`.
-const dirs = (:yd, :xd, :xu, :yu)
+const DIRS = (:yd, :xd, :xu, :yu)
 
 """
 Struct for storing forward `indices` and reverse indices `reverse_indices` of `Drainage`

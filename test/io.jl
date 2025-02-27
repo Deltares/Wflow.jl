@@ -347,7 +347,7 @@ end
         data, data_dim_order = Wflow.read_dims(ds["wflow_dem"], (x = :, y = :))
         @test data isa Matrix{Union{Float32, Missing}}
         @test data[end, end] === missing
-        @test data[125, 1] ≈ 647.187f0
+        @test data[125, 1] ≈ 647.187
         @test data_dim_order == (:x, :y)
 
         @test Wflow.dim_directions(ds, (:x, :y)) === (x = true, y = false)

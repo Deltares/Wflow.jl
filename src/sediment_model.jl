@@ -33,15 +33,15 @@ function initialize_sediment_model(config::Config)
     waterbodies = fill(0.0, n)
     if do_reservoirs
         lens = lens_input(config, "reservoir_area__count"; optional = false)
-        reservoirs = ncread(dataset, config, lens; sel = indices, type = Float, fill = 0)
+        reservoirs = ncread(dataset, config, lens; sel = indices, type = Float64, fill = 0)
         waterbodies = waterbodies .+ reservoirs
     end
     if do_lakes
         lens = lens_input(config, "lake_area__count"; optional = false)
-        lakes = ncread(dataset, config, lens; sel = indices, type = Float, fill = 0)
+        lakes = ncread(dataset, config, lens; sel = indices, type = Float64, fill = 0)
         waterbodies = waterbodies .+ lakes
     end
-    waterbodies = waterbodies .> 0
+    waterbodies = Vector{Bool}(waterbodies .> 0)
 
     lens = lens_input(config, "local_drain_direction"; optional = false)
     ldd_2d = ncread(dataset, config, lens; allow_missing = true)
@@ -51,13 +51,13 @@ function initialize_sediment_model(config::Config)
     overland_flow_sediment =
         OverlandFlowSediment(dataset, soilloss, config, indices, waterbodies, river)
 
-    graph = flowgraph(ldd, indices, pcr_dir)
+    graph = flowgraph(ldd, indices, PCR_DIR)
 
     # River processes
     indices_riv, rev_indices_riv = active_indices(river_2d, 0)
 
     ldd_riv = ldd_2d[indices_riv]
-    graph_riv = flowgraph(ldd_riv, indices_riv, pcr_dir)
+    graph_riv = flowgraph(ldd_riv, indices_riv, PCR_DIR)
     index_river = filter(i -> !isequal(river[i], 0), 1:n)
 
     river_sediment = RiverSediment(dataset, config, indices_riv, waterbodies)
@@ -128,7 +128,7 @@ function set_states!(model::AbstractModel{<:SedimentModel})
     if reinit == false
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
-        set_states!(instate_path, model; type = Float)
+        set_states!(instate_path, model; type = Float64)
     else
         @info "Set initial conditions from default values."
     end

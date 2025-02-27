@@ -1,18 +1,23 @@
 "Land hydrology model with SBM soil model"
-@with_kw struct LandHydrologySBM{T, D, A} <: AbstractLandModel
-    atmospheric_forcing::AtmosphericForcing{T}
-    vegetation_parameter_set::VegetationParameters{T}
-    interception::AbstractInterceptionModel{T}
-    snow::AbstractSnowModel{T}
-    glacier::AbstractGlacierModel{T}
-    runoff::AbstractRunoffModel{T}
+@with_kw struct LandHydrologySBM{D, A} <: AbstractLandModel
+    atmospheric_forcing::AtmosphericForcing
+    vegetation_parameter_set::VegetationParameters
+    interception::AbstractInterceptionModel
+    snow::AbstractSnowModel
+    glacier::AbstractGlacierModel
+    runoff::AbstractRunoffModel
     soil::SbmSoilModel
     demand::D
     allocation::A
 end
 
 "Initialize land hydrology model with SBM soil model"
-function LandHydrologySBM(dataset, config, riverfrac, indices)
+function LandHydrologySBM(
+    dataset::NCDataset,
+    config::Config,
+    riverfrac::Vector{Float64},
+    indices::Vector{CartesianIndex{2}},
+)
     dt = Second(config.time.timestepsecs)
     n = length(indices)
 
@@ -29,20 +34,20 @@ function LandHydrologySBM(dataset, config, riverfrac, indices)
     if modelsnow
         snow_model = SnowHbvModel(dataset, config, indices, dt)
     else
-        snow_model = NoSnowModel{Float}()
+        snow_model = NoSnowModel()
     end
     modelglacier = get(config.model, "glacier", false)::Bool
     if modelsnow && modelglacier
-        glacier_bc = SnowStateBC{Float}(; snow_storage = snow_model.variables.snow_storage)
+        glacier_bc = SnowStateBC(; snow_storage = snow_model.variables.snow_storage)
         glacier_model = GlacierHbvModel(dataset, config, indices, dt, glacier_bc)
     elseif modelsnow == false && modelglacier == true
         @warn string(
             "Glacier processes can be modelled when snow modelling is enabled. To include ",
             "glacier modelling, set `snow` to `true` in the Model section of the TOML file.",
         )
-        glacier_model = NoGlacierModel{Float}()
+        glacier_model = NoGlacierModel()
     else
-        glacier_model = NoGlacierModel{Float}()
+        glacier_model = NoGlacierModel()
     end
     runoff_model = OpenWaterRunoff(dataset, config, indices, riverfrac)
 
@@ -54,12 +59,11 @@ function LandHydrologySBM(dataset, config, riverfrac, indices)
 
     do_water_demand = haskey(config.model, "water_demand")
     allocation =
-        do_water_demand ? AllocationLand(dataset, config, indices) :
-        NoAllocationLand{Float}()
-    demand = do_water_demand ? Demand(dataset, config, indices, dt) : NoDemand{Float}()
+        do_water_demand ? AllocationLand(dataset, config, indices) : NoAllocationLand()
+    demand = do_water_demand ? Demand(dataset, config, indices, dt) : NoDemand()
 
     args = (demand, allocation)
-    land_hydrology_model = LandHydrologySBM{Float, typeof.(args)...}(;
+    land_hydrology_model = LandHydrologySBM{typeof.(args)...}(;
         atmospheric_forcing = atmospheric_forcing,
         vegetation_parameter_set = vegetation_parameter_set,
         interception = interception_model,
@@ -74,7 +78,13 @@ function LandHydrologySBM(dataset, config, riverfrac, indices)
 end
 
 "Update land hydrology model with SBM soil model for a single timestep"
-function update!(model::LandHydrologySBM, routing, network, config, dt)
+function update!(
+    model::LandHydrologySBM,
+    routing::Routing,
+    network::Network,
+    config::Config,
+    dt::Float64,
+)
     do_water_demand = haskey(config.model, "water_demand")::Bool
     (; glacier, snow, interception, runoff, soil, demand, allocation, atmospheric_forcing) =
         model
@@ -137,10 +147,10 @@ Takes the following parameters:
 """
 function update_total_water_storage!(
     model::LandHydrologySBM,
-    river_network,
-    area,
-    river_routing,
-    land_routing,
+    river_network::Vector{Int},
+    area::Vector{Float64},
+    river_routing::AbstractRiverFlowModel,
+    land_routing::AbstractOverlandFlowModel,
 )
     (; interception, snow, glacier, runoff, soil, demand) = model
     (; total_storage, ustoredepth, satwaterdepth) = soil.variables

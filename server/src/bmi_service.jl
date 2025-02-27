@@ -88,7 +88,7 @@ end
 struct GetValue
     fn::String
     name::String
-    dest::Vector{Wflow.Float}
+    dest::Vector{Float64}
 end
 
 struct GetValuePtr
@@ -99,21 +99,21 @@ end
 struct GetValueAtIndices
     fn::String
     inds::Vector{Int}
-    dest::Vector{Wflow.Float}
+    dest::Vector{Float64}
     name::String
 end
 
 struct SetValue
     fn::String
     name::String
-    src::Vector{Wflow.Float}
+    src::Vector{Float64}
 end
 
 struct SetValueAtIndices
     fn::String
     inds::Vector{Int}
     name::String
-    src::Vector{Wflow.Float}
+    src::Vector{Float64}
 end
 
 struct GetGridType
@@ -134,13 +134,13 @@ end
 struct GetGridX
     fn::String
     grid::Int
-    x::Vector{Wflow.Float}
+    x::Vector{Float64}
 end
 
 struct GetGridY
     fn::String
     grid::Int
-    y::Vector{Wflow.Float}
+    y::Vector{Float64}
 end
 
 struct GetGridNodeCount
