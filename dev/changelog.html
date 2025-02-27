@@ -39,8 +39,8 @@ ul.task-list li input[type="checkbox"] {
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-b53751a350365c71b6c909e95f209ed1.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-0d5611c72a87cb2e3946673b738f0689.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="site_libs/bootstrap/bootstrap-dark-5674eff87f8a74cbcfa9914424751a41.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-8352b7ccb0c9fcabe109303f7234483b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark-203ae7a31bbdd3824f13122283b91499.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -307,6 +307,7 @@ window.Quarto = {
 <li>The reservoir (<code>reservoir_index_f</code>) and lake (<code>lake_index_f</code>) indices as part of <code>network.river</code> were not correct. These were mapped to their own index in the <code>SimpleReservoir</code> and <code>Lake</code> struct, and not to the corresponding river index. This resulted in incorrect surface water abstractions from reservoir and lake volumes, and surface water abstractions were set at zero at the wrong river locations.</li>
 <li>Wflow ZMQ server: allow JSON reading and writing of <code>NaN</code> and <code>Inf</code> values to avoid a JSON spec error. For example, during initialization of a wflow model, some (diagnostic) model variables are initialized with <code>NaN</code> values.</li>
 <li>Limit flux from <code>River</code> boundary of <code>GroundwaterFlow</code> to unconfined aquifer based on available river storage (from river flow routing).</li>
+<li>Fixed computation of flow width in diagonal flow direction for model type <code>sediment</code> and fixed the computation of the remaining surface flow width (kinematic wave overland flow) for river cells in the diagonal flow direction. For both cases the width should be based on land area and flow length (area conservative).</li>
 </ul>
 </section>
 <section id="changed" class="level3">
