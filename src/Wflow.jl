@@ -54,10 +54,9 @@ using Statistics: mean, median, quantile!, quantile
 using TerminalLoggers
 using TOML: TOML
 
-const Float = Float64
 const CFDataset = Union{NCDataset, NCDatasets.MFDataset}
 const CFVariable_MF = Union{NCDatasets.CFVariable, NCDatasets.MFCFVariable}
-const version =
+const VERSION =
     VersionNumber(TOML.parsefile(joinpath(@__DIR__, "..", "Project.toml"))["version"])
 
 mutable struct Clock{T}
@@ -145,6 +144,16 @@ Base.show(io::IO, ::AbstractModel{T}) where {T} = print(io, "model of type ", T)
 
 include("forcing.jl")
 include("parameters.jl")
+include("vegetation/rainfall_interception.jl")
+include("vegetation/canopy.jl")
+include("snow/snow_process.jl")
+include("snow/snow.jl")
+include("glacier/glacier_process.jl")
+include("glacier/glacier.jl")
+include("surfacewater/runoff.jl")
+include("soil/soil.jl")
+include("soil/soil_process.jl")
+include("sbm.jl")
 include("groundwater/connectivity.jl")
 include("groundwater/aquifer.jl")
 include("groundwater/boundary_conditions.jl")
@@ -156,16 +165,6 @@ include("routing/surface_kinwave.jl")
 include("routing/surface_local_inertial.jl")
 include("routing/surface_routing.jl")
 include("routing/routing_process.jl")
-include("vegetation/rainfall_interception.jl")
-include("vegetation/canopy.jl")
-include("snow/snow_process.jl")
-include("snow/snow.jl")
-include("glacier/glacier_process.jl")
-include("glacier/glacier.jl")
-include("surfacewater/runoff.jl")
-include("soil/soil.jl")
-include("soil/soil_process.jl")
-include("sbm.jl")
 include("demand/water_demand.jl")
 include("sbm_model.jl")
 include("sediment/erosion/erosion_process.jl")
@@ -216,7 +215,7 @@ function run(tomlpath::AbstractString; silent = nothing)
     fews_run = get(config, "fews_run", false)::Bool
     logger, logfile = init_logger(config; silent)
     with_logger(logger) do
-        @info "Wflow version `v$version`"
+        @info "Wflow version `v$VERSION`"
         # to catch stacktraces in the log file a try-catch is required
         try
             run(config)

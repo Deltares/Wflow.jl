@@ -1,6 +1,6 @@
 
 "Map from PCRaster LDD value to a CartesianIndex"
-const pcr_dir = [
+const PCR_DIR = [
     CartesianIndex(-1, -1),  # 1
     CartesianIndex(0, -1),  # 2
     CartesianIndex(1, -1),  # 3
@@ -12,10 +12,10 @@ const pcr_dir = [
     CartesianIndex(1, 1),  # 9
 ]
 
-const mv = Float(NaN)
+const MISSING_VALUE = Float64(NaN)
 
 # timestep that the parameter units are defined in
-const basetimestep = Second(Day(1))
+const BASETIMESTEP = Second(Day(1))
 
 """
     scurve(x, a, b, c)
@@ -109,8 +109,8 @@ end
 
 function cell_lengths(y::AbstractVector, cellength::Real, sizeinmetres::Bool)
     n = length(y)
-    xl = fill(mv, n)
-    yl = fill(mv, n)
+    xl = fill(MISSING_VALUE, n)
+    yl = fill(MISSING_VALUE, n)
     if sizeinmetres
         xl .= cellength
         yl .= cellength
@@ -132,7 +132,7 @@ function get_river_fraction(
     y_length::AbstractVector,
 )
     n = length(river)
-    river_fraction = fill(mv, n)
+    river_fraction = fill(MISSING_VALUE, n)
     for i in 1:n
         river_fraction[i] = if river[i]
             min((riverlength[i] * riverwidth[i]) / (x_length[i] * y_length[i]), 1.0)
@@ -397,7 +397,7 @@ water table depth) `reference_depth`, a SVector `cum_depth` with cumulative soil
 at soil surface (0), and a SVector `thickness` with thickness per soil layer.
 """
 function set_layerthickness(reference_depth::Real, cum_depth::SVector, thickness::SVector)
-    thicknesslayers = thickness .* mv
+    thicknesslayers = thickness .* MISSING_VALUE
     for i in 1:length(thicknesslayers)
         if reference_depth > cum_depth[i + 1]
             thicknesslayers = setindex(thicknesslayers, thickness[i], i)
@@ -617,7 +617,7 @@ function set_effective_flowwidth!(
         dst = outneighbors(graph_river, v)
         isempty(dst) && continue
         w = min(river_width[v], river_width[only(dst)])
-        dir = pcr_dir[ldd_river[v]]
+        dir = PCR_DIR[ldd_river[v]]
         idx = rev_inds_river[v]
         # loop over river D8 directions
         if dir == CartesianIndex(1, 1)
@@ -764,7 +764,7 @@ function kh_layered_profile!(
     (; kh) = subsurface.parameters.kh_profile
     (; khfrac) = subsurface.parameters
 
-    t_factor = (tosecond(basetimestep) / dt)
+    t_factor = (tosecond(BASETIMESTEP) / dt)
     for i in eachindex(kh)
         m = nlayers[i]
 
@@ -800,7 +800,7 @@ function kh_layered_profile!(
     (; n_unsatlayers, zi) = soil.variables
     (; kh) = subsurface.parameters.kh_profile
     (; khfrac) = subsurface.parameters
-    t_factor = (tosecond(basetimestep) / dt)
+    t_factor = (tosecond(BASETIMESTEP) / dt)
 
     for i in eachindex(kh)
         m = nlayers[i]

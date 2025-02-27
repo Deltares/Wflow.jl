@@ -36,14 +36,14 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test BMI.get_var_grid(model, "river_water__volume_flow_rate") == 3
             @test BMI.get_var_grid(model, "reservoir_water~outgoing__volume_flow_rate") == 0
             @test BMI.get_var_type(model, "reservoir_water~incoming__volume_flow_rate") ==
-                  "$Float"
+                  "Float64"
             @test BMI.get_var_units(model, "river_water__volume_flow_rate") == "m3 s-1"
             @test BMI.get_var_itemsize(model, "subsurface_water__volume_flow_rate") ==
-                  sizeof(Float)
+                  sizeof(Float64)
             @test BMI.get_var_nbytes(
                 model,
                 "river_water__instantaneous_volume_flow_rate",
-            ) == length(model.routing.river_flow.variables.q) * sizeof(Float)
+            ) == length(model.routing.river_flow.variables.q) * sizeof(Float64)
             @test BMI.get_var_location(model, "river_water__volume_flow_rate") == "node"
         end
 
@@ -51,13 +51,13 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 
         @testset "update and get and set functions" begin
             @test BMI.get_current_time(model) == 86400.0
-            dest = zeros(Float, size(model.land.soil.variables.zi))
+            dest = zeros(Float64, size(model.land.soil.variables.zi))
             BMI.get_value(model, "soil_water_sat-zone_top__depth", dest)
             @test mean(dest) ≈ 276.1625022866973
             @test BMI.get_value_at_indices(
                 model,
                 "soil_layer~1_water__volume_fraction",
-                zeros(Float, 3),
+                zeros(Float64, 3),
                 [1, 2, 3],
             ) ≈ getindex.(model.land.soil.variables.vwc, 1)[1:3]
             BMI.set_value_at_indices(
@@ -69,7 +69,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test BMI.get_value_at_indices(
                 model,
                 "river_water__instantaneous_volume_flow_rate",
-                zeros(Float, 3),
+                zeros(Float64, 3),
                 [1, 100, 5617],
             ) ≈ [0.6525634030110335, 7.493560511070567, 0.023197145979653312]
             BMI.set_value(
@@ -81,14 +81,14 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
                 BMI.get_value(
                     model,
                     "soil_water_sat-zone_top__depth",
-                    zeros(Float, size(model.land.soil.variables.zi)),
+                    zeros(Float64, size(model.land.soil.variables.zi)),
                 ),
             ) == 300.0
             BMI.set_value_at_indices(model, "soil_water_sat-zone_top__depth", [1], [250.0])
             @test BMI.get_value_at_indices(
                 model,
                 "soil_water_sat-zone_top__depth",
-                zeros(Float, 2),
+                zeros(Float64, 2),
                 [1, 2],
             ) == [250.0, 300.0]
         end
@@ -109,14 +109,14 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test BMI.get_grid_size(model, 3) == 5809
             @test BMI.get_grid_size(model, 4) == 50063
             @test BMI.get_grid_size(model, 5) == 50063
-            @test minimum(BMI.get_grid_x(model, 5, zeros(Float, 50063))) ≈
-                  5.426666666666667f0
-            @test maximum(BMI.get_grid_x(model, 5, zeros(Float, 50063))) ≈
-                  7.843333333333344f0
-            @test BMI.get_grid_x(model, 0, zeros(Float, 2)) ≈
-                  [5.760000000000002f0, 5.918333333333336f0]
-            @test BMI.get_grid_y(model, 0, zeros(Float, 2)) ≈
-                  [48.92583333333333f0, 49.909166666666664f0]
+            @test minimum(BMI.get_grid_x(model, 5, zeros(Float64, 50063))) ≈
+                  5.426666666666667
+            @test maximum(BMI.get_grid_x(model, 5, zeros(Float64, 50063))) ≈
+                  7.843333333333344
+            @test BMI.get_grid_x(model, 0, zeros(Float64, 2)) ≈
+                  [5.760000000000002, 5.918333333333336]
+            @test BMI.get_grid_y(model, 0, zeros(Float64, 2)) ≈
+                  [48.92583333333333, 49.909166666666664]
             @test BMI.get_grid_node_count(model, 0) == 2
             @test BMI.get_grid_edge_count(model, 3) == 5808
             @test BMI.get_grid_edge_nodes(model, 3, fill(0, 2 * 5808))[1:6] ==
@@ -180,11 +180,11 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 
         @testset "recharge part of SBM" begin
             sbm = model.land
-            @test sbm.interception.variables.interception_rate[1] ≈ 0.32734913737568716f0
-            @test sbm.soil.variables.ustorelayerdepth[1][1] ≈ 0.0f0
-            @test sbm.snow.variables.snow_storage[1] ≈ 3.4847899611762876f0
-            @test sbm.soil.variables.recharge[5] ≈ 0.0f0
-            @test sbm.soil.variables.zi[5] ≈ 300.0f0
+            @test sbm.interception.variables.interception_rate[1] ≈ 0.32734913737568716
+            @test sbm.soil.variables.ustorelayerdepth[1][1] ≈ 0.0
+            @test sbm.snow.variables.snow_storage[1] ≈ 3.4847899611762876
+            @test sbm.soil.variables.recharge[5] ≈ 0.0
+            @test sbm.soil.variables.zi[5] ≈ 300.0
         end
 
         # set zi and exfiltwater from external source (e.g. a groundwater model)
@@ -204,14 +204,14 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
         @testset "SBM after subsurface flow" begin
             sbm = model.land
             sub = model.routing.subsurface_flow
-            @test sbm.interception.variables.interception_rate[1] ≈ 0.32734913737568716f0
-            @test sbm.soil.variables.ustorelayerdepth[1][1] ≈ 0.0f0
-            @test sbm.snow.variables.snow_storage[1] ≈ 3.4847899611762876f0
-            @test sbm.soil.variables.recharge[5] ≈ 0.0f0
-            @test sbm.soil.variables.zi[5] ≈ 250.0f0
-            @test sub.variables.zi[5] ≈ 0.25f0
-            @test sub.variables.exfiltwater[1] ≈ 1.0f-5
-            @test sub.variables.ssf[1] ≈ 0.0f0
+            @test sbm.interception.variables.interception_rate[1] ≈ 0.32734913737568716
+            @test sbm.soil.variables.ustorelayerdepth[1][1] ≈ 0.0
+            @test sbm.snow.variables.snow_storage[1] ≈ 3.4847899611762876
+            @test sbm.soil.variables.recharge[5] ≈ 0.0
+            @test sbm.soil.variables.zi[5] ≈ 250.0
+            @test sub.variables.zi[5] ≈ 0.25
+            @test sub.variables.exfiltwater[1] ≈ 1.0e-5
+            @test sub.variables.ssf[1] ≈ 0.0
         end
 
         BMI.finalize(model)

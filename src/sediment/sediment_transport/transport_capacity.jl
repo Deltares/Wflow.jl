@@ -1,31 +1,34 @@
-abstract type AbstractTransportCapacityModel{T} end
+abstract type AbstractTransportCapacityModel end
 
 "Struct to store total transport capacity model variables"
-@with_kw struct TransportCapacityModelVariables{T}
+@with_kw struct TransportCapacityModelVariables
     # Total sediment transport capacity [t dt-1]
-    amount::Vector{T}
+    amount::Vector{Float64}
 end
 
 "Initialize total transport capacity model variables"
-function TransportCapacityModelVariables(n; amount::Vector{T} = fill(mv, n)) where {T}
-    return TransportCapacityModelVariables{T}(; amount = amount)
+function TransportCapacityModelVariables(
+    n::Int;
+    amount::Vector{Float64} = fill(MISSING_VALUE, n),
+)
+    return TransportCapacityModelVariables(; amount = amount)
 end
 
 "Struct to store total transport capacity model boundary conditions"
-@with_kw struct TransportCapacityBC{T}
+@with_kw struct TransportCapacityBC
     # Discharge [m³ s⁻¹]
-    q::Vector{T}
+    q::Vector{Float64}
     # Flow depth [m]
-    waterlevel::Vector{T}
+    waterlevel::Vector{Float64}
 end
 
 "Initialize total transport capacity model boundary conditions"
 function TransportCapacityBC(
-    n;
-    q::Vector{T} = fill(mv, n),
-    waterlevel::Vector{T} = fill(mv, n),
-) where {T}
-    return TransportCapacityBC{T}(; q = q, waterlevel = waterlevel)
+    n::Int;
+    q::Vector{Float64} = fill(MISSING_VALUE, n),
+    waterlevel::Vector{Float64} = fill(MISSING_VALUE, n),
+)
+    return TransportCapacityBC(; q = q, waterlevel = waterlevel)
 end
 
 "Update total transport capacity model boundary conditions"
@@ -49,30 +52,35 @@ end
 ##################### Overland Flow #####################
 
 "Struct to store Govers overland flow transport capacity model parameters"
-@with_kw struct TransportCapacityGoversParameters{T}
+@with_kw struct TransportCapacityGoversParameters
     # Particle density [kg m-3]
-    density::Vector{T}
+    density::Vector{Float64}
     # Govers transport capacity coefficient [-]
-    c_govers::Vector{T}
+    c_govers::Vector{Float64}
     # Govers transport capacity exponent [-]
-    n_govers::Vector{T}
+    n_govers::Vector{Float64}
 end
 
 "Initialize Govers overland flow transport capacity model parameters"
-function TransportCapacityGoversParameters(dataset, config, indices)
+function TransportCapacityGoversParameters(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     lens = lens_input_parameter(config, "land_surface_sediment__particle_density")
-    density = ncread(dataset, config, lens; sel = indices, defaults = 2650.0, type = Float)
+    density =
+        ncread(dataset, config, lens; sel = indices, defaults = 2650.0, type = Float64)
     lens = lens_input_parameter(
         config,
         "land_surface_water_sediment__govers_transport_capacity_coefficient",
     )
     c_govers =
-        ncread(dataset, config, lens; sel = indices, defaults = 0.000505, type = Float)
+        ncread(dataset, config, lens; sel = indices, defaults = 0.000505, type = Float64)
     lens = lens_input_parameter(
         config,
         "land_surface_water_sediment__govers_transport_capacity_exponent",
     )
-    n_govers = ncread(dataset, config, lens; sel = indices, defaults = 4.27, type = Float)
+    n_govers = ncread(dataset, config, lens; sel = indices, defaults = 4.27, type = Float64)
     tc_parameters = TransportCapacityGoversParameters(;
         density = density,
         c_govers = c_govers,
@@ -83,14 +91,18 @@ function TransportCapacityGoversParameters(dataset, config, indices)
 end
 
 "Govers overland flow transport capacity model"
-@with_kw struct TransportCapacityGoversModel{T} <: AbstractTransportCapacityModel{T}
-    boundary_conditions::TransportCapacityBC{T}
-    parameters::TransportCapacityGoversParameters{T}
-    variables::TransportCapacityModelVariables{T}
+@with_kw struct TransportCapacityGoversModel <: AbstractTransportCapacityModel
+    boundary_conditions::TransportCapacityBC
+    parameters::TransportCapacityGoversParameters
+    variables::TransportCapacityModelVariables
 end
 
 "Initialize Govers overland flow transport capacity model"
-function TransportCapacityGoversModel(dataset, config, indices)
+function TransportCapacityGoversModel(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     n = length(indices)
     vars = TransportCapacityModelVariables(n)
     params = TransportCapacityGoversParameters(dataset, config, indices)
@@ -107,9 +119,9 @@ end
 function update!(
     model::TransportCapacityGoversModel,
     geometry::LandGeometry,
-    waterbodies,
-    rivers,
-    dt,
+    waterbodies::Vector{Bool},
+    rivers::Vector{Bool},
+    dt::Float64,
 )
     (; q, waterlevel) = model.boundary_conditions
     (; density, c_govers, n_govers) = model.parameters
@@ -133,20 +145,25 @@ function update!(
 end
 
 "Struct to store Yalin overland flow transport capacity model parameters"
-@with_kw struct TransportCapacityYalinParameters{T}
+@with_kw struct TransportCapacityYalinParameters
     # Particle density [kg m-3]
-    density::Vector{T}
+    density::Vector{Float64}
     # Particle mean diameter [mm]
-    d50::Vector{T}
+    d50::Vector{Float64}
 end
 
 "Initialize Yalin overland flow transport capacity model parameters"
-function TransportCapacityYalinParameters(dataset, config, indices)
+function TransportCapacityYalinParameters(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     lens = lens_input_parameter(config, "land_surface_sediment__particle_density")
-    density = ncread(dataset, config, lens; sel = indices, defaults = 2650.0, type = Float)
+    density =
+        ncread(dataset, config, lens; sel = indices, defaults = 2650.0, type = Float64)
 
     lens = lens_input_parameter(config, "land_surface_sediment__d50_diameter")
-    d50 = ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float)
+    d50 = ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float64)
 
     tc_parameters = TransportCapacityYalinParameters(; density = density, d50 = d50)
 
@@ -154,14 +171,18 @@ function TransportCapacityYalinParameters(dataset, config, indices)
 end
 
 "Yalin overland flow transport capacity model"
-@with_kw struct TransportCapacityYalinModel{T} <: AbstractTransportCapacityModel{T}
-    boundary_conditions::TransportCapacityBC{T}
-    parameters::TransportCapacityYalinParameters{T}
-    variables::TransportCapacityModelVariables{T}
+@with_kw struct TransportCapacityYalinModel <: AbstractTransportCapacityModel
+    boundary_conditions::TransportCapacityBC
+    parameters::TransportCapacityYalinParameters
+    variables::TransportCapacityModelVariables
 end
 
 "Initialize Yalin overland flow transport capacity model"
-function TransportCapacityYalinModel(dataset, config, indices)
+function TransportCapacityYalinModel(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     n = length(indices)
     vars = TransportCapacityModelVariables(n)
     params = TransportCapacityYalinParameters(dataset, config, indices)
@@ -178,9 +199,9 @@ end
 function update!(
     model::TransportCapacityYalinModel,
     geometry::LandGeometry,
-    waterbodies,
-    rivers,
-    dt,
+    waterbodies::Vector{Bool},
+    rivers::Vector{Bool},
+    dt::Float64,
 )
     (; q, waterlevel) = model.boundary_conditions
     (; density, d50) = model.parameters
@@ -203,32 +224,32 @@ function update!(
 end
 
 "Struct to store Yalin differentiated overland flow transport capacity model variables"
-@with_kw struct TransportCapacityYalinDifferentiationModelVariables{T}
+@with_kw struct TransportCapacityYalinDifferentiationModelVariables
     # Total sediment transport capacity [t dt-1]
-    amount::Vector{T}
+    amount::Vector{Float64}
     # Transport capacity clay [t dt-1]
-    clay::Vector{T}
+    clay::Vector{Float64}
     # Transport capacity silt [t dt-1]
-    silt::Vector{T}
+    silt::Vector{Float64}
     # Transport capacity sand [t dt-1]
-    sand::Vector{T}
+    sand::Vector{Float64}
     # Transport capacity small aggregates [t dt-1]
-    sagg::Vector{T}
+    sagg::Vector{Float64}
     # Transport capacity large aggregates [t dt-1]
-    lagg::Vector{T}
+    lagg::Vector{Float64}
 end
 
 "Initialize Yalin differentiated overland flow transport capacity model variables"
 function TransportCapacityYalinDifferentiationModelVariables(
-    n;
-    amount::Vector{T} = fill(mv, n),
-    clay::Vector{T} = fill(mv, n),
-    silt::Vector{T} = fill(mv, n),
-    sand::Vector{T} = fill(mv, n),
-    sagg::Vector{T} = fill(mv, n),
-    lagg::Vector{T} = fill(mv, n),
-) where {T}
-    return TransportCapacityYalinDifferentiationModelVariables{T}(;
+    n::Int;
+    amount::Vector{Float64} = fill(MISSING_VALUE, n),
+    clay::Vector{Float64} = fill(MISSING_VALUE, n),
+    silt::Vector{Float64} = fill(MISSING_VALUE, n),
+    sand::Vector{Float64} = fill(MISSING_VALUE, n),
+    sagg::Vector{Float64} = fill(MISSING_VALUE, n),
+    lagg::Vector{Float64} = fill(MISSING_VALUE, n),
+)
+    return TransportCapacityYalinDifferentiationModelVariables(;
         amount = amount,
         clay = clay,
         silt = silt,
@@ -239,35 +260,40 @@ function TransportCapacityYalinDifferentiationModelVariables(
 end
 
 "Struct to store Yalin differentiated overland flow transport capacity model parameters"
-@with_kw struct TransportCapacityYalinDifferentiationParameters{T}
+@with_kw struct TransportCapacityYalinDifferentiationParameters
     # Particle density [kg m-3]
-    density::Vector{T}
+    density::Vector{Float64}
     # Clay mean diameter [μm]
-    dm_clay::Vector{T}
+    dm_clay::Vector{Float64}
     # Silt mean diameter [μm]
-    dm_silt::Vector{T}
+    dm_silt::Vector{Float64}
     # Sand mean diameter [μm]
-    dm_sand::Vector{T}
+    dm_sand::Vector{Float64}
     # Small aggregates mean diameter [μm]
-    dm_sagg::Vector{T}
+    dm_sagg::Vector{Float64}
     # Large aggregates mean diameter [μm]
-    dm_lagg::Vector{T}
+    dm_lagg::Vector{Float64}
 end
 
 "Initialize Yalin differentiated overland flow transport capacity model parameters"
-function TransportCapacityYalinDifferentiationParameters(dataset, config, indices)
+function TransportCapacityYalinDifferentiationParameters(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     lens = lens_input_parameter(config, "land_surface_sediment__particle_density")
-    density = ncread(dataset, config, lens; sel = indices, defaults = 2650.0, type = Float)
+    density =
+        ncread(dataset, config, lens; sel = indices, defaults = 2650.0, type = Float64)
     lens = lens_input_parameter(config, "clay__d50_diameter")
-    dm_clay = ncread(dataset, config, lens; sel = indices, defaults = 2.0, type = Float)
+    dm_clay = ncread(dataset, config, lens; sel = indices, defaults = 2.0, type = Float64)
     lens = lens_input_parameter(config, "silt__d50_diameter")
-    dm_silt = ncread(dataset, config, lens; sel = indices, defaults = 10.0, type = Float)
+    dm_silt = ncread(dataset, config, lens; sel = indices, defaults = 10.0, type = Float64)
     lens = lens_input_parameter(config, "sand__d50_diameter")
-    dm_sand = ncread(dataset, config, lens; sel = indices, defaults = 200.0, type = Float)
+    dm_sand = ncread(dataset, config, lens; sel = indices, defaults = 200.0, type = Float64)
     lens = lens_input_parameter(config, "sediment_aggregates~small__d50_diameter")
-    dm_sagg = ncread(dataset, config, lens; sel = indices, defaults = 30.0, type = Float)
+    dm_sagg = ncread(dataset, config, lens; sel = indices, defaults = 30.0, type = Float64)
     lens = lens_input_parameter(config, "sediment_aggregates~large__d50_diameter")
-    dm_lagg = ncread(dataset, config, lens; sel = indices, defaults = 500.0, type = Float)
+    dm_lagg = ncread(dataset, config, lens; sel = indices, defaults = 500.0, type = Float64)
 
     tc_parameters = TransportCapacityYalinDifferentiationParameters(;
         density = density,
@@ -282,15 +308,18 @@ function TransportCapacityYalinDifferentiationParameters(dataset, config, indice
 end
 
 "Yalin differentiated overland flow transport capacity model"
-@with_kw struct TransportCapacityYalinDifferentiationModel{T} <:
-                AbstractTransportCapacityModel{T}
-    boundary_conditions::TransportCapacityBC{T}
-    parameters::TransportCapacityYalinDifferentiationParameters{T}
-    variables::TransportCapacityYalinDifferentiationModelVariables{T}
+@with_kw struct TransportCapacityYalinDifferentiationModel <: AbstractTransportCapacityModel
+    boundary_conditions::TransportCapacityBC
+    parameters::TransportCapacityYalinDifferentiationParameters
+    variables::TransportCapacityYalinDifferentiationModelVariables
 end
 
 "Initialize Yalin differentiated overland flow transport capacity model"
-function TransportCapacityYalinDifferentiationModel(dataset, config, indices)
+function TransportCapacityYalinDifferentiationModel(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     n = length(indices)
     vars = TransportCapacityYalinDifferentiationModelVariables(n)
     params = TransportCapacityYalinDifferentiationParameters(dataset, config, indices)
@@ -307,9 +336,9 @@ end
 function update!(
     model::TransportCapacityYalinDifferentiationModel,
     geometry::LandGeometry,
-    waterbodies,
-    rivers,
-    dt,
+    waterbodies::Vector{Bool},
+    rivers::Vector{Bool},
+    dt::Float64,
 )
     (; q, waterlevel) = model.boundary_conditions
     (; density, dm_clay, dm_silt, dm_sand, dm_sagg, dm_lagg) = model.parameters
@@ -392,19 +421,24 @@ function update!(
 end
 
 "Struct to store common river transport capacity model parameters"
-@with_kw struct TransportCapacityRiverParameters{T}
+@with_kw struct TransportCapacityRiverParameters
     # Particle density [kg m-3]
-    density::Vector{T}
+    density::Vector{Float64}
     # Particle mean diameter [mm]
-    d50::Vector{T}
+    d50::Vector{Float64}
 end
 
 "Initialize common river transport capacity model parameters"
-function TransportCapacityRiverParameters(dataset, config, indices)
+function TransportCapacityRiverParameters(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     lens = lens_input_parameter(config, "river_sediment__particle_density")
-    density = ncread(dataset, config, lens; sel = indices, defaults = 2650.0, type = Float)
+    density =
+        ncread(dataset, config, lens; sel = indices, defaults = 2650.0, type = Float64)
     lens = lens_input_parameter(config, "river_sediment__d50_diameter")
-    d50 = ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float)
+    d50 = ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float64)
 
     tc_parameters = TransportCapacityRiverParameters(; density = density, d50 = d50)
 
@@ -412,27 +446,31 @@ function TransportCapacityRiverParameters(dataset, config, indices)
 end
 
 "Struct to store Bagnold transport capacity model parameters"
-@with_kw struct TransportCapacityBagnoldParameters{T}
+@with_kw struct TransportCapacityBagnoldParameters
     # Bagnold transport capacity coefficient [-]
-    c_bagnold::Vector{T}
+    c_bagnold::Vector{Float64}
     # Bagnold transport capacity exponent [-]
-    e_bagnold::Vector{T}
+    e_bagnold::Vector{Float64}
 end
 
 "Initialize Bagnold transport capacity model parameters"
-function TransportCapacityBagnoldParameters(dataset, config, indices)
+function TransportCapacityBagnoldParameters(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     lens = lens_input_parameter(
         config,
         "river_water_sediment__bagnold_transport_capacity_coefficient";
         optional = false,
     )
-    c_bagnold = ncread(dataset, config, lens; sel = indices, type = Float)
+    c_bagnold = ncread(dataset, config, lens; sel = indices, type = Float64)
     lens = lens_input_parameter(
         config,
         "river_water_sediment__bagnold_transport_capacity_exponent";
         optional = false,
     )
-    e_bagnold = ncread(dataset, config, lens; sel = indices, type = Float)
+    e_bagnold = ncread(dataset, config, lens; sel = indices, type = Float64)
 
     tc_parameters =
         TransportCapacityBagnoldParameters(; c_bagnold = c_bagnold, e_bagnold = e_bagnold)
@@ -441,14 +479,18 @@ function TransportCapacityBagnoldParameters(dataset, config, indices)
 end
 
 "Bagnold river transport capacity model"
-@with_kw struct TransportCapacityBagnoldModel{T} <: AbstractTransportCapacityModel{T}
-    boundary_conditions::TransportCapacityBC{T}
-    parameters::TransportCapacityBagnoldParameters{T}
-    variables::TransportCapacityModelVariables{T}
+@with_kw struct TransportCapacityBagnoldModel <: AbstractTransportCapacityModel
+    boundary_conditions::TransportCapacityBC
+    parameters::TransportCapacityBagnoldParameters
+    variables::TransportCapacityModelVariables
 end
 
 "Initialize Bagnold river transport capacity model"
-function TransportCapacityBagnoldModel(dataset, config, indices)
+function TransportCapacityBagnoldModel(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     n = length(indices)
     vars = TransportCapacityModelVariables(n)
     params = TransportCapacityBagnoldParameters(dataset, config, indices)
@@ -462,7 +504,7 @@ function TransportCapacityBagnoldModel(dataset, config, indices)
 end
 
 "Update Bagnold river transport capacity model for a single timestep"
-function update!(model::TransportCapacityBagnoldModel, geometry::RiverGeometry, dt)
+function update!(model::TransportCapacityBagnoldModel, geometry::RiverGeometry, dt::Float64)
     (; q, waterlevel) = model.boundary_conditions
     (; c_bagnold, e_bagnold) = model.parameters
     (; amount) = model.variables
@@ -484,14 +526,18 @@ function update!(model::TransportCapacityBagnoldModel, geometry::RiverGeometry, 
 end
 
 "Engelund and Hansen river transport capacity model parameters"
-@with_kw struct TransportCapacityEngelundModel{T} <: AbstractTransportCapacityModel{T}
-    boundary_conditions::TransportCapacityBC{T}
-    parameters::TransportCapacityRiverParameters{T}
-    variables::TransportCapacityModelVariables{T}
+@with_kw struct TransportCapacityEngelundModel <: AbstractTransportCapacityModel
+    boundary_conditions::TransportCapacityBC
+    parameters::TransportCapacityRiverParameters
+    variables::TransportCapacityModelVariables
 end
 
 "Initialize Engelund and Hansen river transport capacity model"
-function TransportCapacityEngelundModel(dataset, config, indices)
+function TransportCapacityEngelundModel(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     n = length(indices)
     vars = TransportCapacityModelVariables(n)
     params = TransportCapacityRiverParameters(dataset, config, indices)
@@ -505,7 +551,11 @@ function TransportCapacityEngelundModel(dataset, config, indices)
 end
 
 "Update Engelund and Hansen river transport capacity model for a single timestep"
-function update!(model::TransportCapacityEngelundModel, geometry::RiverGeometry, dt)
+function update!(
+    model::TransportCapacityEngelundModel,
+    geometry::RiverGeometry,
+    dt::Float64,
+)
     (; q, waterlevel) = model.boundary_conditions
     (; density, d50) = model.parameters
     (; amount) = model.variables
@@ -526,43 +576,47 @@ function update!(model::TransportCapacityEngelundModel, geometry::RiverGeometry,
 end
 
 "Struct to store Kodatie river transport capacity model parameters"
-@with_kw struct TransportCapacityKodatieParameters{T}
+@with_kw struct TransportCapacityKodatieParameters
     # Kodatie transport capacity coefficient a [-]
-    a_kodatie::Vector{T}
+    a_kodatie::Vector{Float64}
     # Kodatie transport capacity coefficient b [-]
-    b_kodatie::Vector{T}
+    b_kodatie::Vector{Float64}
     # Kodatie transport capacity coefficient c [-]
-    c_kodatie::Vector{T}
+    c_kodatie::Vector{Float64}
     # Kodatie transport capacity coefficient d [-]
-    d_kodatie::Vector{T}
+    d_kodatie::Vector{Float64}
 end
 
 "Initialize Kodatie river transport capacity model parameters"
-function TransportCapacityKodatieParameters(dataset, config, indices)
+function TransportCapacityKodatieParameters(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     lens = lens_input_parameter(
         config,
         "river_water_sediment__kodatie_transport_capacity_a-coefficient";
         optional = false,
     )
-    a_kodatie = ncread(dataset, config, lens; sel = indices, type = Float)
+    a_kodatie = ncread(dataset, config, lens; sel = indices, type = Float64)
     lens = lens_input_parameter(
         config,
         "river_water_sediment__kodatie_transport_capacity_b-coefficient";
         optional = false,
     )
-    b_kodatie = ncread(dataset, config, lens; sel = indices, type = Float)
+    b_kodatie = ncread(dataset, config, lens; sel = indices, type = Float64)
     lens = lens_input_parameter(
         config,
         "river_water_sediment__kodatie_transport_capacity_c-coefficient";
         optional = false,
     )
-    c_kodatie = ncread(dataset, config, lens; sel = indices, type = Float)
+    c_kodatie = ncread(dataset, config, lens; sel = indices, type = Float64)
     lens = lens_input_parameter(
         config,
         "river_water_sediment__kodatie_transport_capacity_d-coefficient";
         optional = false,
     )
-    d_kodatie = ncread(dataset, config, lens; sel = indices, type = Float)
+    d_kodatie = ncread(dataset, config, lens; sel = indices, type = Float64)
 
     tc_parameters = TransportCapacityKodatieParameters(;
         a_kodatie = a_kodatie,
@@ -575,14 +629,18 @@ function TransportCapacityKodatieParameters(dataset, config, indices)
 end
 
 "Kodatie river transport capacity model"
-@with_kw struct TransportCapacityKodatieModel{T} <: AbstractTransportCapacityModel{T}
-    boundary_conditions::TransportCapacityBC{T}
-    parameters::TransportCapacityKodatieParameters{T}
-    variables::TransportCapacityModelVariables{T}
+@with_kw struct TransportCapacityKodatieModel <: AbstractTransportCapacityModel
+    boundary_conditions::TransportCapacityBC
+    parameters::TransportCapacityKodatieParameters
+    variables::TransportCapacityModelVariables
 end
 
 "Initialize Kodatie river transport capacity model"
-function TransportCapacityKodatieModel(dataset, config, indices)
+function TransportCapacityKodatieModel(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     n = length(indices)
     vars = TransportCapacityModelVariables(n)
     params = TransportCapacityKodatieParameters(dataset, config, indices)
@@ -596,7 +654,7 @@ function TransportCapacityKodatieModel(dataset, config, indices)
 end
 
 "Update Kodatie river transport capacity model for a single timestep"
-function update!(model::TransportCapacityKodatieModel, geometry::RiverGeometry, dt)
+function update!(model::TransportCapacityKodatieModel, geometry::RiverGeometry, dt::Float64)
     (; q, waterlevel) = model.boundary_conditions
     (; a_kodatie, b_kodatie, c_kodatie, d_kodatie) = model.parameters
     (; amount) = model.variables
@@ -619,14 +677,18 @@ function update!(model::TransportCapacityKodatieModel, geometry::RiverGeometry, 
 end
 
 "Yang river transport capacity model"
-@with_kw struct TransportCapacityYangModel{T} <: AbstractTransportCapacityModel{T}
-    boundary_conditions::TransportCapacityBC{T}
-    parameters::TransportCapacityRiverParameters{T}
-    variables::TransportCapacityModelVariables{T}
+@with_kw struct TransportCapacityYangModel <: AbstractTransportCapacityModel
+    boundary_conditions::TransportCapacityBC
+    parameters::TransportCapacityRiverParameters
+    variables::TransportCapacityModelVariables
 end
 
 "Initialize Yang river transport capacity model"
-function TransportCapacityYangModel(dataset, config, indices)
+function TransportCapacityYangModel(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     n = length(indices)
     vars = TransportCapacityModelVariables(n)
     params = TransportCapacityRiverParameters(dataset, config, indices)
@@ -640,7 +702,7 @@ function TransportCapacityYangModel(dataset, config, indices)
 end
 
 "Update Yang river transport capacity model for a single timestep"
-function update!(model::TransportCapacityYangModel, geometry::RiverGeometry, dt)
+function update!(model::TransportCapacityYangModel, geometry::RiverGeometry, dt::Float64)
     (; q, waterlevel) = model.boundary_conditions
     (; density, d50) = model.parameters
     (; amount) = model.variables
@@ -661,14 +723,18 @@ function update!(model::TransportCapacityYangModel, geometry::RiverGeometry, dt)
 end
 
 "Molinas and Wu river transport capacity model"
-@with_kw struct TransportCapacityMolinasModel{T} <: AbstractTransportCapacityModel{T}
-    boundary_conditions::TransportCapacityBC{T}
-    parameters::TransportCapacityRiverParameters{T}
-    variables::TransportCapacityModelVariables{T}
+@with_kw struct TransportCapacityMolinasModel <: AbstractTransportCapacityModel
+    boundary_conditions::TransportCapacityBC
+    parameters::TransportCapacityRiverParameters
+    variables::TransportCapacityModelVariables
 end
 
 "Initialize Molinas and Wu river transport capacity model"
-function TransportCapacityMolinasModel(dataset, config, indices)
+function TransportCapacityMolinasModel(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     n = length(indices)
     vars = TransportCapacityModelVariables(n)
     params = TransportCapacityRiverParameters(dataset, config, indices)
@@ -682,7 +748,7 @@ function TransportCapacityMolinasModel(dataset, config, indices)
 end
 
 "Update Molinas and Wu river transport capacity model for a single timestep"
-function update!(model::TransportCapacityMolinasModel, geometry::RiverGeometry, dt)
+function update!(model::TransportCapacityMolinasModel, geometry::RiverGeometry, dt::Float64)
     (; q, waterlevel) = model.boundary_conditions
     (; density, d50) = model.parameters
     (; amount) = model.variables

@@ -1,45 +1,52 @@
-abstract type AbstractOverlandFlowErosionModel{T} end
+abstract type AbstractOverlandFlowErosionModel end
 
 "Struct for storing overland flow erosion model variables"
-@with_kw struct OverlandFlowErosionVariables{T}
+@with_kw struct OverlandFlowErosionVariables
     # Total soil erosion rate [t dt-1] from overland flow
-    amount::Vector{T}
+    amount::Vector{Float64}
 end
 
 "Initialize overland flow erosion model variables"
-function OverlandFlowErosionVariables(n; amount::Vector{T} = fill(mv, n)) where {T}
-    return OverlandFlowErosionVariables{T}(; amount = amount)
+function OverlandFlowErosionVariables(
+    n::Int;
+    amount::Vector{Float64} = fill(MISSING_VALUE, n),
+)
+    return OverlandFlowErosionVariables(; amount = amount)
 end
 
 "Struct for storing overland flow erosion model boundary conditions"
-@with_kw struct OverlandFlowErosionBC{T}
+@with_kw struct OverlandFlowErosionBC
     # Overland flow [m3 s-1]
-    q::Vector{T}
+    q::Vector{Float64}
 end
 
 "Initialize overland flow erosion model boundary conditions"
-function OverlandFlowErosionBC(n; q::Vector{T} = fill(mv, n)) where {T}
-    return OverlandFlowErosionBC{T}(; q = q)
+function OverlandFlowErosionBC(n::Int; q::Vector{Float64} = fill(MISSING_VALUE, n))
+    return OverlandFlowErosionBC(; q = q)
 end
 
 "Struct for storing ANSWERS overland flow erosion model parameters"
-@with_kw struct OverlandFlowErosionAnswersParameters{T}
+@with_kw struct OverlandFlowErosionAnswersParameters
     # Soil erodibility factor [-]
-    usle_k::Vector{T}
+    usle_k::Vector{Float64}
     # Crop management factor [-]
-    usle_c::Vector{T}
+    usle_c::Vector{Float64}
     # Answers overland flow factor [-]
-    answers_k::Vector{T}
+    answers_k::Vector{Float64}
 end
 
 "Initialize ANSWERS overland flow erosion model parameters"
-function OverlandFlowErosionAnswersParameters(dataset, config, indices)
+function OverlandFlowErosionAnswersParameters(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     lens = lens_input_parameter(config, "soil_erosion__usle_k_factor")
-    usle_k = ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float)
+    usle_k = ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float64)
     lens = lens_input_parameter(config, "soil_erosion__usle_c_factor")
-    usle_c = ncread(dataset, config, lens; sel = indices, defaults = 0.01, type = Float)
+    usle_c = ncread(dataset, config, lens; sel = indices, defaults = 0.01, type = Float64)
     lens = lens_input_parameter(config, "soil_erosion__answers_overland_flow_factor")
-    answers_k = ncread(dataset, config, lens; sel = indices, defaults = 0.9, type = Float)
+    answers_k = ncread(dataset, config, lens; sel = indices, defaults = 0.9, type = Float64)
 
     answers_parameters = OverlandFlowErosionAnswersParameters(;
         usle_k = usle_k,
@@ -50,14 +57,18 @@ function OverlandFlowErosionAnswersParameters(dataset, config, indices)
 end
 
 "ANSWERS overland flow erosion model"
-@with_kw struct OverlandFlowErosionAnswersModel{T} <: AbstractOverlandFlowErosionModel{T}
-    boundary_conditions::OverlandFlowErosionBC{T}
-    parameters::OverlandFlowErosionAnswersParameters{T}
-    variables::OverlandFlowErosionVariables{T}
+@with_kw struct OverlandFlowErosionAnswersModel <: AbstractOverlandFlowErosionModel
+    boundary_conditions::OverlandFlowErosionBC
+    parameters::OverlandFlowErosionAnswersParameters
+    variables::OverlandFlowErosionVariables
 end
 
 "Initialize ANSWERS overland flow erosion model"
-function OverlandFlowErosionAnswersModel(dataset, config, indices)
+function OverlandFlowErosionAnswersModel(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     n = length(indices)
     vars = OverlandFlowErosionVariables(n)
     params = OverlandFlowErosionAnswersParameters(dataset, config, indices)
@@ -81,7 +92,11 @@ function update_boundary_conditions!(
 end
 
 "Update ANSWERS overland flow erosion model for a single timestep"
-function update!(model::OverlandFlowErosionAnswersModel, geometry::LandGeometry, dt)
+function update!(
+    model::OverlandFlowErosionAnswersModel,
+    geometry::LandGeometry,
+    dt::Float64,
+)
     (; q) = model.boundary_conditions
     (; usle_k, usle_c, answers_k) = model.parameters
     (; amount) = model.variables
