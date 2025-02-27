@@ -112,8 +112,10 @@ function initialize_sbm_gwf_model(config::Config)
     ldd = convert(Array{UInt8}, ldd_2d[indices])
 
     flow_length = map(get_flow_length, ldd, x_length, y_length)
-    flow_width = (x_length .* y_length) ./ flow_length
-    surface_flow_width = map(det_surfacewidth, flow_width, river_width, river_location)
+    flow_width = map(get_flow_width, ldd, x_length, y_length)
+    land_area = @. (1.0 - river_fraction) * x_length * y_length
+    surface_flow_width =
+        map(get_surface_width, flow_width, flow_length, land_area, river_location)
 
     graph = flowgraph(ldd, indices, PCR_DIR)
     ldd_river = convert(Array{UInt8}, ldd_2d[inds_river])

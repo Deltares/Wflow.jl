@@ -40,7 +40,7 @@ end
 
 @testset "overland flow (kinematic wave)" begin
     q = model.routing.overland_flow.variables.q_av
-    @test sum(q) ≈ 2.2321111203610908e-7
+    @test sum(q) ≈ 2.2319312569903814e-7
 end
 
 @testset "river domain (kinematic wave)" begin
@@ -164,7 +164,7 @@ end
 
 @testset "overland flow warm start (kinematic wave)" begin
     q = model.routing.overland_flow.variables.q_av
-    @test sum(q) ≈ 1.4224503548471601e-5
+    @test sum(q) ≈ 1.4233852635648338e-5
 end
 
 @testset "river domain warm start (kinematic wave)" begin

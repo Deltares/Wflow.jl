@@ -50,9 +50,9 @@ end
     @test mean(land.transport_capacity.variables.sand) ≈ 1.0987090622888755f6
     @test mean(land.transport_capacity.variables.clay) ≈ 1.0992655197016734f6
 
-    @test mean(land.to_river.variables.amount) ≈ 0.07624135182616738
+    @test mean(land.to_river.variables.amount) ≈ 0.0762386279230294
     @test sum(land.to_river.variables.clay) ≈ 114.42704329506047
-    @test sum(land.to_river.variables.sand) ≈ 1289.4785484597958
+    @test sum(land.to_river.variables.sand) ≈ 1289.4173249850346
     @test mean(land.sediment_flux.variables.clay) ≈ 0.006578791733506439
 
     @test mean(river.hydrological_forcing.q_river) ≈ 0.6975180562953642
@@ -66,16 +66,15 @@ end
 
     @test sum(river.sediment_flux.boundary_conditions.erosion_land_clay) ≈
           114.42704329506047
-    @test sum(river.sediment_flux.boundary_conditions.erosion_land_sand) ≈
-          1289.4785484597958
+    @test sum(river.sediment_flux.boundary_conditions.erosion_land_sand) ≈ 1289.417324985034
     @test mean(river.sediment_flux.boundary_conditions.transport_capacity) ≈
           0.4458019733090582
     @test mean(river.sediment_flux.variables.amount) ≈ 0.4333483865969662
-    @test mean(river.sediment_flux.variables.erosion) ≈ 0.019077695621351014
-    @test mean(river.sediment_flux.variables.deposition) ≈ 0.6941274181387916
+    @test mean(river.sediment_flux.variables.erosion) ≈ 0.01907770837584654
+    @test mean(river.sediment_flux.variables.deposition) ≈ 0.6941033131514452
     @test river.sediment_flux.variables.clay[5649] ≈ 2.840979764480952e-9
 
-    @test mean(river.concentrations.variables.suspended) ≈ 0.8260083257660087
+    @test mean(river.concentrations.variables.suspended) ≈ 0.8260075500146108
 end
 
 Wflow.close_files(model)
@@ -170,7 +169,7 @@ Wflow.run_timestep!(model)
     @test mean(eros.soil_erosion.variables.amount) ≈ 0.0776983847440198
     @test mean(land.transport_capacity.parameters.d50) ≈ 0.001534350291334408
     @test mean(land.transport_capacity.variables.amount) ≈ 1.0988158364353527f6
-    @test mean(land.to_river.variables.amount) ≈ 0.07759391658531742
+    @test mean(land.to_river.variables.amount) ≈ 0.07759383356462951
 end
 
 Wflow.close_files(model)
@@ -221,7 +220,7 @@ Wflow.run_timestep!(model)
     @test mean(river.transport_capacity.boundary_conditions.q) ≈ 0.6975180562953642
     @test mean(river.transport_capacity.variables.amount) ≈ 30.332588671299625
 
-    @test mean(river.concentrations.variables.suspended) ≈ 54.75483621753514
+    @test mean(river.concentrations.variables.suspended) ≈ 54.75548200245741
 end
 
 Wflow.close_files(model)
@@ -245,7 +244,7 @@ Wflow.run_timestep!(model)
     @test mean(river.transport_capacity.boundary_conditions.q) ≈ 0.6975180562953642
     @test mean(river.transport_capacity.variables.amount) ≈ 350.6483600591209
 
-    @test mean(river.concentrations.variables.suspended) ≈ 884.4249630198293
+    @test mean(river.concentrations.variables.suspended) ≈ 884.4255449829093
 end
 
 Wflow.close_files(model)

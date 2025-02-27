@@ -93,7 +93,7 @@ vwc_1_size = 0
         inds = [1, 5, 10],
     )
     @test request(msg)["value_at_indices"] ≈
-          [2.1007361866518766, 2.5702292750107687, 3.2904803551115727]
+          [2.100780004751114, 2.5707002864065154, 3.292002704767432]
     msg = (
         fn = "set_value",
         name = "soil_water_sat-zone_top__depth",

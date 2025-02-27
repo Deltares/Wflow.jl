@@ -111,7 +111,7 @@ function initialize_sbm_model(config::Config)
     land_slope = ncread(dataset, config, lens; sel = indices, type = Float64)
     clamp!(land_slope, 0.00001, Inf)
     flow_length = map(get_flow_length, ldd, x_length, y_length)
-    flow_width = (x_length .* y_length) ./ flow_length
+    flow_width = map(get_flow_width, ldd, x_length, y_length)
 
     # check if lateral subsurface flow is included, when coupled to another groundwater
     # model, this component is not defined in the TOML file.
@@ -177,13 +177,20 @@ function initialize_sbm_model(config::Config)
     end
 
     if land_routing == "kinematic-wave"
+        land_area = @. (1.0 - river_fraction) * x_length * y_length
         overland_flow = KinWaveOverlandFlow(
             dataset,
             config,
             indices;
             slope = land_slope,
             flow_length,
-            flow_width = map(det_surfacewidth, flow_width, river_width, river_location),
+            flow_width = map(
+                get_surface_width,
+                flow_width,
+                flow_length,
+                land_area,
+                river_location,
+            ),
         )
     elseif land_routing == "local-inertial"
         inds_river_map2land = reverse_inds_river[indices] # not filtered (with zeros)

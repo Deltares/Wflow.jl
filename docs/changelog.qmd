@@ -26,6 +26,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   variables are initialized with `NaN` values.
 - Limit flux from `River` boundary of `GroundwaterFlow` to unconfined aquifer based on
   available river storage (from river flow routing).
+- Fixed computation of flow width in diagonal flow direction for model type `sediment`
+  and fixed the computation of the remaining surface flow width (kinematic wave overland
+  flow) for river cells in the diagonal flow direction. For both cases the width should be
+  based on land area and flow length (area conservative).
 
 ### Changed
 - Removed vertical concepts `HBV` and `FLEXTopo`.
