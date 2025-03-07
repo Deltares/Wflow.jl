@@ -111,6 +111,7 @@ end
 include("io.jl")
 include("network.jl")
 include("routing/routing.jl")
+include("parameters.jl")
 
 abstract type AbstractModel{T} end
 abstract type AbstractLandModel end
@@ -129,21 +130,39 @@ parameters, clock, configuration and input and output.
 """
 struct Model{R <: Routing, L <: AbstractLandModel, T <: AbstractModelType} <:
        AbstractModel{T}
-    config::Config      # all configuration options
-    network::Network    # connectivity information, directed graph
-    routing::R          # routing model (horizontal fluxes), moves along network
-    land::L             # land model simulating vertical fluxes, independent of each other
-    clock::Clock        # to keep track of simulation time
-    reader::NCReader    # provides the model with dynamic input
-    writer::Writer      # writes model output
-    type::T             # model type
+    config::Config                  # all configuration options
+    network::Network                # connectivity information, directed graph
+    routing::R                      # routing model (horizontal fluxes), moves along network
+    land::L                         # land model simulating vertical fluxes, independent of each other
+    clock::Clock                    # to keep track of simulation time
+    reader::NCReader                # provides the model with dynamic input
+    writer::Writer                  # writes model output
+    type::T                         # model type
+end
+
+function Model(config::Config)::Model
+    model_type = config.model.type
+
+    if model_type ∉ ("sbm", "sbm_gwf", "sediment")
+        error("Unknown model type $model_type.")
+    end
+    @info "Initialize model variables for model type `$model_type`."
+
+    type = if model_type == "sbm"
+        SbmModel()
+    elseif model_type == "sbm_gwf"
+        SbmGwfModel()
+    elseif model_type == "sediment"
+        SedimentModel()
+    end
+
+    return Model(config, type)
 end
 
 # prevent a large printout of model components and arrays
 Base.show(io::IO, ::AbstractModel{T}) where {T} = print(io, "model of type ", T)
 
 include("forcing.jl")
-include("parameters.jl")
 include("vegetation/rainfall_interception.jl")
 include("vegetation/canopy.jl")
 include("snow/snow_process.jl")
@@ -165,6 +184,7 @@ include("routing/surface_kinwave.jl")
 include("routing/surface_local_inertial.jl")
 include("routing/surface_routing.jl")
 include("routing/routing_process.jl")
+include("routing/initialize_routing.jl")
 include("demand/water_demand.jl")
 include("sbm_model.jl")
 include("sediment/erosion/erosion_process.jl")
@@ -237,17 +257,7 @@ function run(tomlpath::AbstractString; silent = nothing)
 end
 
 function run(config::Config)
-    modeltype = config.model.type
-
-    model = if modeltype == "sbm"
-        initialize_sbm_model(config)
-    elseif modeltype == "sbm_gwf"
-        initialize_sbm_gwf_model(config)
-    elseif modeltype == "sediment"
-        initialize_sediment_model(config)
-    else
-        error("unknown model type")
-    end
+    model = Model(config)
     load_fixed_forcing!(model)
     run!(model)
     return model

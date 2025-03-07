@@ -500,7 +500,7 @@ end
 Return ratio `fraction` between `slope` river cell `inds_river` and `slope` of each
 upstream neighbor (based on directed acyclic graph `graph`).
 """
-function fraction_runoff_to_river(graph, ldd, inds_river, slope)
+function flow_fraction_to_river(graph, ldd, inds_river, slope)
     n = length(slope)
     fraction = zeros(n)
     for i in inds_river
@@ -602,60 +602,62 @@ subtracting the river width `river_width` from the cell edges. For diagonal dire
 (reservoir or lake), the effective flow width is set to zero.
 """
 function set_effective_flowwidth!(
-    we_x,
-    we_y,
-    indices,
-    graph_river,
-    river_width,
-    ldd_river,
-    waterbody,
-    rev_inds_river,
+    we_x::Vector{Float64},
+    we_y::Vector{Float64},
+    network::Network,
+    parameters::RiverParameters,
 )
-    toposort = topological_sort_by_dfs(graph_river)
+    (; local_drain_direction, indices) = network.river
+    (; edge_indices, reverse_indices) = network.land
+    (; flow_width, waterbody) = parameters
+    reverse_indices = reverse_indices[indices]
+
+    graph = flowgraph(local_drain_direction, indices, PCR_DIR)
+    toposort = topological_sort_by_dfs(graph)
     n = length(we_x)
     for v in toposort
-        dst = outneighbors(graph_river, v)
+        dst = outneighbors(graph, v)
         isempty(dst) && continue
-        w = min(river_width[v], river_width[only(dst)])
-        dir = PCR_DIR[ldd_river[v]]
-        idx = rev_inds_river[v]
+        w = min(flow_width[v], flow_width[only(dst)])
+        dir = PCR_DIR[local_drain_direction[v]]
+        idx = reverse_indices[v]
         # loop over river D8 directions
         if dir == CartesianIndex(1, 1)
             we_x[idx] = waterbody[v] ? 0.0 : max(we_x[idx] - 0.5 * w, 0.0)
             we_y[idx] = waterbody[v] ? 0.0 : max(we_y[idx] - 0.5 * w, 0.0)
         elseif dir == CartesianIndex(-1, -1)
-            if indices.xd[idx] <= n
-                we_y[indices.xd[idx]] =
-                    waterbody[v] ? 0.0 : max(we_y[indices.xd[idx]] - 0.5 * w, 0.0)
+            if edge_indices.xd[idx] <= n
+                we_y[edge_indices.xd[idx]] =
+                    waterbody[v] ? 0.0 : max(we_y[edge_indices.xd[idx]] - 0.5 * w, 0.0)
             end
-            if indices.yd[idx] <= n
-                we_x[indices.yd[idx]] =
-                    waterbody[v] ? 0.0 : max(we_x[indices.yd[idx]] - 0.5 * w, 0.0)
+            if edge_indices.yd[idx] <= n
+                we_x[edge_indices.yd[idx]] =
+                    waterbody[v] ? 0.0 : max(we_x[edge_indices.yd[idx]] - 0.5 * w, 0.0)
             end
         elseif dir == CartesianIndex(1, 0)
             we_y[idx] = waterbody[v] ? 0.0 : max(we_y[idx] - w, 0.0)
         elseif dir == CartesianIndex(0, 1)
             we_x[idx] = waterbody[v] ? 0.0 : max(we_x[idx] - w, 0.0)
         elseif dir == CartesianIndex(-1, 0)
-            if indices.xd[idx] <= n
-                we_y[indices.xd[idx]] =
-                    waterbody[v] ? 0.0 : max(we_y[indices.xd[idx]] - w, 0.0)
+            if edge_indices.xd[idx] <= n
+                we_y[edge_indices.xd[idx]] =
+                    waterbody[v] ? 0.0 : max(we_y[edge_indices.xd[idx]] - w, 0.0)
             end
         elseif dir == CartesianIndex(0, -1)
-            if indices.yd[idx] <= n
-                we_x[indices.yd[idx]] =
-                    waterbody[v] ? 0.0 : max(we_x[indices.yd[idx]] - w, 0.0)
+            if edge_indices.yd[idx] <= n
+                we_x[edge_indices.yd[idx]] =
+                    waterbody[v] ? 0.0 : max(we_x[edge_indices.yd[idx]] - w, 0.0)
             end
         elseif dir == CartesianIndex(1, -1)
             we_y[idx] = max(we_y[idx] - 0.5 * w, 0.0)
-            if indices.yd[idx] <= n
-                we_x[indices.yd[idx]] =
-                    waterbody[v] ? 0.0 : max(we_x[indices.yd[idx]] - 0.5 * w, 0.0)
+            if edge_indices.yd[idx] <= n
+                we_x[edge_indices.yd[idx]] =
+                    waterbody[v] ? 0.0 : max(we_x[edge_indices.yd[idx]] - 0.5 * w, 0.0)
             end
         elseif dir == CartesianIndex(-1, 1)
-            if indices.xd[idx] <= n
-                we_y[indices.xd[idx]] =
-                    waterbody[v] ? 0.0 : max(we_y[indices.xd[idx]] - 0.5 * w, 0.0)
+            if edge_indices.xd[idx] <= n
+                we_y[edge_indices.xd[idx]] =
+                    waterbody[v] ? 0.0 : max(we_y[edge_indices.xd[idx]] - 0.5 * w, 0.0)
             end
             we_x[idx] = waterbody[v] ? 0.0 : max(we_x[idx] - 0.5 * w, 0.0)
         end
@@ -860,27 +862,27 @@ kh_layered_profile!(
 ) = nothing
 
 """
-    initialize_lateralssf!(model::LateralSSF, kh_profile::KhExponential)
-    initialize_lateralssf!(model::LateralSSF, kh_profile::KhExponentialConstant)
+    initialize_lateral_ssf!(model::LateralSSF, kh_profile::KhExponential)
+    initialize_lateral_ssf!(model::LateralSSF, kh_profile::KhExponentialConstant)
 
 Initialize lateral subsurface variables `ssf` and `ssfmax` using horizontal hydraulic
 conductivity profile `kh_profile`.
 """
-function initialize_lateralssf!(model::LateralSSF, kh_profile::KhExponential)
+function initialize_lateral_ssf!(model::LateralSSF, kh_profile::KhExponential)
     (; kh_0, f) = kh_profile
     (; ssf, ssfmax, zi) = model.variables
-    (; slope, soilthickness, flow_width) = model.parameters
+    (; soilthickness, slope, flow_width) = model.parameters
 
     @. ssfmax = ((kh_0 * slope) / f) * (1.0 - exp(-f * soilthickness))
     @. ssf = ((kh_0 * slope) / f) * (exp(-f * zi) - exp(-f * soilthickness)) * flow_width
     return nothing
 end
 
-function initialize_lateralssf!(model::LateralSSF, kh_profile::KhExponentialConstant)
+function initialize_lateral_ssf!(model::LateralSSF, kh_profile::KhExponentialConstant)
     (; kh_0, f) = kh_profile.exponential
     (; z_exp) = kh_profile
     (; ssf, ssfmax, zi) = model.variables
-    (; slope, soilthickness, flow_width) = model.parameters
+    (; soilthickness, slope, flow_width) = model.parameters
     ssf_constant = @. kh_0 * exp(-f * z_exp) * slope * (soilthickness - z_exp)
     for i in eachindex(ssf)
         ssfmax[i] =
@@ -904,13 +906,13 @@ function initialize_lateralssf!(model::LateralSSF, kh_profile::KhExponentialCons
 end
 
 """
-    initialize_lateralssf!(subsurface::LateralSSF, soil::SbmSoilModel, kv_profile::KvLayered, dt)
-    initialize_lateralssf!(subsurface::LateralSSF, soil::SbmSoilModel, kv_profile::KvLayeredExponential, dt)
+    initialize_lateral_ssf!(subsurface::LateralSSF, soil::SbmSoilModel, kv_profile::KvLayered, dt)
+    initialize_lateral_ssf!(subsurface::LateralSSF, soil::SbmSoilModel, kv_profile::KvLayeredExponential, dt)
 
 Initialize lateral subsurface variables `ssf` and `ssfmax` using  vertical hydraulic
 conductivity profile `kv_profile`.
 """
-function initialize_lateralssf!(
+function initialize_lateral_ssf!(
     subsurface::LateralSSF,
     soil::SbmSoilModel,
     kv_profile::KvLayered,
@@ -934,7 +936,7 @@ function initialize_lateralssf!(
     return nothing
 end
 
-function initialize_lateralssf!(
+function initialize_lateral_ssf!(
     subsurface::LateralSSF,
     soil::SbmSoilModel,
     kv_profile::KvLayeredExponential,

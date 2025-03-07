@@ -1,7 +1,7 @@
 "Sediment transport in overland flow model"
 @with_kw struct OverlandFlowSediment{TT, SF, TR} <: AbstractOverlandFlowModel
     hydrological_forcing::HydrologicalForcing
-    geometry::LandGeometry
+    geometry::LandParameters
     transport_capacity::TT
     sediment_flux::SF
     to_river::TR
@@ -21,7 +21,7 @@ function OverlandFlowSediment(
     n = length(indices)
     (; hydrological_forcing) = soilloss
 
-    geometry = LandGeometry(dataset, config, indices)
+    geometry = LandParameters(dataset, config, indices)
     # Check what transport capacity equation will be used
     do_river = get(config.model, "run_river_model", false)::Bool
     # Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]
@@ -92,7 +92,7 @@ end
 "Sediment transport in river model"
 @with_kw struct RiverSediment{TTR, ER, SFR, CR} <: AbstractRiverFlowModel
     hydrological_forcing::HydrologicalForcing
-    geometry::RiverGeometry
+    geometry::RiverParameters
     transport_capacity::TTR
     potential_erosion::ER
     sediment_flux::SFR
@@ -109,7 +109,7 @@ function RiverSediment(
 )
     n = length(indices)
     hydrological_forcing = HydrologicalForcing(n)
-    geometry = RiverGeometry(dataset, config, indices)
+    geometry = RiverParameters(dataset, config, indices)
 
     # Check what transport capacity equation will be used
     # River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]

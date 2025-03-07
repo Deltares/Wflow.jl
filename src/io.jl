@@ -4,6 +4,7 @@ Input data can be loaded from netCDF files.
 Output data can be written to netCDF or CSV files.
 For configuration files we use TOML.
 =#
+const ROUTING_OPTIONS = (("kinematic-wave", "local-inertial"))
 
 """Turn "a.aa.aaa" into (:a, :aa, :aaa)"""
 symbols(s) = Tuple(Symbol(x) for x in split(s, '.'))
@@ -907,30 +908,33 @@ function out_map(ncnames_dict, modelmap)
     return output_map
 end
 
-function get_reducer_func(col, rev_inds, args...)
+function get_reducer_func(col, network, args...)
     parameter = col["parameter"]
     if occursin("reservoir", parameter)
-        reducer_func = reducer(col, rev_inds.reservoir, args...)
+        reducer_func = reducer(col, network.reservoir.reverse_indices, args...)
     elseif occursin("lake", parameter)
-        reducer_func = reducer(col, rev_inds.lake, args...)
+        reducer_func = reducer(col, network.lake.reverse_indices, args...)
     elseif occursin("river", parameter)
-        reducer_func = reducer(col, rev_inds.river, args...)
+        reducer_func = reducer(col, network.river.reverse_indices, args...)
     elseif occursin("drain", parameter)
-        reducer_func = reducer(col, rev_inds.drain, args...)
+        reducer_func = reducer(col, network.drain.reverse_indices, args...)
     else
-        reducer_func = reducer(col, rev_inds.land, args...)
+        reducer_func = reducer(col, network.land.reverse_indices, args...)
     end
 end
 
 function prepare_writer(
     config,
     modelmap,
-    rev_inds,
-    x_nc,
-    y_nc,
+    network,
+    #rev_inds,
+    #x_nc,
+    #y_nc,
     nc_static;
     extra_dim = nothing,
 )
+    x_coords = read_x_axis(nc_static)
+    y_coords = read_y_axis(nc_static)
     sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
 
     calendar = get(config.time, "calendar", "standard")::String
@@ -948,8 +952,8 @@ function prepare_writer(
         output_map = out_map(output_ncnames, modelmap)
         ds = setup_grid_netcdf(
             nc_path,
-            x_nc,
-            y_nc,
+            x_coords,
+            y_coords,
             output_map,
             calendar,
             time_units,
@@ -972,8 +976,8 @@ function prepare_writer(
         @info "Create a state output netCDF file `$nc_state_path`."
         ds_outstate = setup_grid_netcdf(
             nc_state_path,
-            x_nc,
-            y_nc,
+            x_coords,
+            y_coords,
             state_map,
             calendar,
             time_units,
@@ -1010,8 +1014,15 @@ function prepare_writer(
         nc_scalar = []
         for var in config.output.netcdf_scalar.variable
             parameter = var["parameter"]
-            reducer_func =
-                get_reducer_func(var, rev_inds, x_nc, y_nc, config, nc_static, "netCDF")
+            reducer_func = get_reducer_func(
+                var,
+                network,
+                x_coords,
+                y_coords,
+                config,
+                nc_static,
+                "netCDF",
+            )
             push!(nc_scalar, (parameter = parameter, reducer = reducer_func))
         end
     else
@@ -1039,7 +1050,7 @@ function prepare_writer(
         for col in config.output.csv.column
             parameter = col["parameter"]
             reducer_func =
-                get_reducer_func(col, rev_inds, x_nc, y_nc, config, nc_static, "CSV")
+                get_reducer_func(col, network, x_coords, y_coords, config, nc_static, "CSV")
             push!(csv_cols, (parameter = parameter, reducer = reducer_func))
         end
     else
@@ -1701,4 +1712,18 @@ function check_config_output(
         haskey(config.output[file_description], "path") &&
         haskey(config.output[file_description], key)
     return output_settings
+end
+
+function get_routing_types(config::Config)
+    land =
+        get_options(config.model, "land_routing", ROUTING_OPTIONS, "kinematic-wave")::String
+
+    river = get_options(
+        config.model,
+        "river_routing",
+        ROUTING_OPTIONS,
+        "kinematic-wave",
+    )::String
+
+    return (; land, river)
 end

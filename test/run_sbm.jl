@@ -3,7 +3,7 @@ using Dates
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 
-model = Wflow.initialize_sbm_model(config)
+model = Wflow.Model(config)
 (; network) = model
 
 Wflow.run_timestep!(model)
@@ -145,7 +145,7 @@ end
 # set these variables for comparison in "changed dynamic parameters"
 precip = copy(model.land.atmospheric_forcing.precipitation)
 evap = copy(model.land.atmospheric_forcing.potential_evaporation)
-lai = copy(model.land.vegetation_parameter_set.leaf_area_index)
+lai = copy(model.land.vegetation_parameters.leaf_area_index)
 res_evap = copy(
     model.routing.river_flow.boundary_conditions.reservoir.boundary_conditions.evaporation,
 )
@@ -192,7 +192,7 @@ config.input.forcing.land_surface_water__potential_evaporation_volume_flux = Dic
 config.input.cyclic["vegetation__leaf-area_index"] =
     Dict("scale" => 1.6, "netcdf" => Dict("variable" => Dict("name" => "LAI")))
 
-model = Wflow.initialize_sbm_model(config)
+model = Wflow.Model(config)
 Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
 
@@ -201,7 +201,7 @@ Wflow.run_timestep!(model)
     land = model.land
     @test land.atmospheric_forcing.precipitation[2] / precip[2] ≈ 2.0
     @test (land.atmospheric_forcing.potential_evaporation[100] - 1.50) / evap[100] ≈ 3.0
-    @test land.vegetation_parameter_set.leaf_area_index[100] / lai[100] ≈ 1.6
+    @test land.vegetation_parameters.leaf_area_index[100] / lai[100] ≈ 1.6
     @test (res.boundary_conditions.evaporation[2] - 1.50) / res_evap[2] ≈ 3.0000006747697516
 end
 
@@ -211,7 +211,7 @@ config = Wflow.Config(tomlpath)
 
 config.input.cyclic["river_water_inflow~external__volume_flow_rate"] = "inflow"
 
-model = Wflow.initialize_sbm_model(config)
+model = Wflow.Model(config)
 Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
 
@@ -223,7 +223,7 @@ end
 # test fixed forcing (precipitation = 2.5)
 config = Wflow.Config(tomlpath)
 config.input.forcing.atmosphere_water__precipitation_volume_flux = Dict("value" => 2.5)
-model = Wflow.initialize_sbm_model(config)
+model = Wflow.Model(config)
 Wflow.load_fixed_forcing!(model)
 
 @testset "fixed precipitation forcing (initialize)" begin
@@ -256,7 +256,7 @@ Wflow.close_files(model; delete_output = false)
 tomlpath = joinpath(@__DIR__, "sbm_river-local-inertial_config.toml")
 config = Wflow.Config(tomlpath)
 
-model = Wflow.initialize_sbm_model(config)
+model = Wflow.Model(config)
 Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
 
@@ -279,7 +279,7 @@ Wflow.close_files(model; delete_output = false)
 tomlpath = joinpath(@__DIR__, "sbm_river-land-local-inertial_config.toml")
 config = Wflow.Config(tomlpath)
 
-model = Wflow.initialize_sbm_model(config)
+model = Wflow.Model(config)
 Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
 
@@ -307,7 +307,7 @@ Wflow.close_files(model; delete_output = false)
 # test local-inertial option for river flow including 1D floodplain schematization
 tomlpath = joinpath(@__DIR__, "sbm_river-floodplain-local-inertial_config.toml")
 config = Wflow.Config(tomlpath)
-model = Wflow.initialize_sbm_model(config)
+model = Wflow.Model(config)
 
 fp = model.routing.river_flow.floodplain.parameters.profile
 river = model.routing.river_flow
@@ -418,7 +418,7 @@ end
 # set boundary condition local inertial routing from netCDF file
 config.input.static["model_boundary_condition~river__length"] = "riverlength_bc"
 config.input.static["model_boundary_condition~river_bank_water__depth"] = "riverdepth_bc"
-model = Wflow.initialize_sbm_model(config)
+model = Wflow.Model(config)
 Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
 
@@ -449,7 +449,7 @@ Wflow.close_files(model; delete_output = false)
         Dict("value" => 400.0)
 
     @testset "exponential profile" begin
-        model = Wflow.initialize_sbm_model(config)
+        model = Wflow.Model(config)
         (; soil) = model.land
         (; kv_profile) = soil.parameters
         (; subsurface_flow) = model.routing
@@ -463,7 +463,7 @@ Wflow.close_files(model; delete_output = false)
 
     @testset "exponential constant profile" begin
         config.model.saturated_hydraulic_conductivity_profile = "exponential_constant"
-        model = Wflow.initialize_sbm_model(config)
+        model = Wflow.Model(config)
         (; soil) = model.land
         (; kv_profile) = soil.parameters
         (; subsurface_flow) = model.routing
@@ -484,7 +484,7 @@ Wflow.close_files(model; delete_output = false)
 
     @testset "layered profile" begin
         config.model.saturated_hydraulic_conductivity_profile = "layered"
-        model = Wflow.initialize_sbm_model(config)
+        model = Wflow.Model(config)
         (; soil) = model.land
         (; kv_profile) = soil.parameters
         (; subsurface_flow) = model.routing
@@ -500,7 +500,7 @@ Wflow.close_files(model; delete_output = false)
 
     @testset "layered exponential profile" begin
         config.model.saturated_hydraulic_conductivity_profile = "layered_exponential"
-        model = Wflow.initialize_sbm_model(config)
+        model = Wflow.Model(config)
         (; soil) = model.land
         (; kv_profile) = soil.parameters
         (; subsurface_flow) = model.routing
@@ -517,7 +517,7 @@ Wflow.close_files(model; delete_output = false)
     end
 
     @testset "river flow layered exponential profile" begin
-        model = Wflow.initialize_sbm_model(config)
+        model = Wflow.Model(config)
         Wflow.run_timestep!(model)
         Wflow.run_timestep!(model)
         q = model.routing.river_flow.variables.q_av

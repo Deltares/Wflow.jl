@@ -18,20 +18,15 @@
     flow_width::Vector{Float64}             # flow (river) width [m]
     flow_width_at_edge::Vector{Float64}     # flow (river) width at edge [m]
     waterbody::Vector{Bool}                 # water body cells (reservoir or lake)
+    cell_area::Vector{Float64}              # Area of cell [m²]
 end
 
 "Initialize local inertial river flow model parameters"
 function LocalInertialRiverFlowParameters(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}};
-    river_length::Vector{Float64},
-    river_width::Vector{Float64},
-    waterbody::Vector{Bool},
-    n_edges::Int,
-    nodes_at_edge::NodesAtEdge,
-    index_pit::Vector{Int},
-    inds_pit::Vector{CartesianIndex{2}},
+    network::NetworkRiver,
+    parameters::RiverParameters,
 )
     cfl = get(config.model, "inertial_flow_alpha", 0.7)::Float64 # stability coefficient for model time step (0.2-0.7)
     h_thresh = get(config.model, "h_thresh", 1.0e-03)::Float64 # depth threshold for flow at edge
@@ -39,9 +34,13 @@ function LocalInertialRiverFlowParameters(
     floodplain_1d = get(config.model, "floodplain_1d", false)::Bool
 
     @info "Local inertial approach is used for river flow." cfl h_thresh froude_limit floodplain_1d
+
+    (; pit_indices, indices, graph, local_drain_direction, nodes_at_edge) = network
+    (; flow_width, flow_length, waterbody, cell_area) = parameters
+
     lens = lens_input_parameter(config, "model_boundary_condition~river__length")
     riverlength_bc =
-        ncread(dataset, config, lens; sel = inds_pit, defaults = 1.0e04, type = Float64)
+        ncread(dataset, config, lens; sel = pit_indices, defaults = 1.0e04, type = Float64)
     lens = lens_input_parameter(config, "river_bank_water__elevation"; optional = false)
     bankfull_elevation_2d = ncread(dataset, config, lens; type = Float64, fill = 0)
     lens = lens_input_parameter(config, "river_bank_water__depth"; optional = false)
@@ -49,21 +48,23 @@ function LocalInertialRiverFlowParameters(
     bankfull_depth = bankfull_depth_2d[indices]
     zb = bankfull_elevation_2d[indices] - bankfull_depth # river bed elevation
 
-    bankfull_storage = bankfull_depth .* river_width .* river_length
+    bankfull_storage = bankfull_depth .* flow_width .* flow_length
     lens = lens_input_parameter(config, "river_water_flow__manning_n_parameter")
     mannings_n =
         ncread(dataset, config, lens; sel = indices, defaults = 0.036, type = Float64)
 
     n = length(indices)
+    index_pit = findall(x -> x == 5, local_drain_direction)
     # set ghost points for boundary condition (downstream river outlet): river width, bed
     # elevation, manning n is copied from the upstream cell.
-    append!(river_length, riverlength_bc)
+    append!(flow_length, riverlength_bc)
     append!(zb, zb[index_pit])
-    append!(river_width, river_width[index_pit])
+    append!(flow_width, flow_width[index_pit])
     append!(mannings_n, mannings_n[index_pit])
     append!(bankfull_depth, bankfull_depth[index_pit])
 
     # determine z, width, length and manning's n at edges
+    n_edges = ne(graph)
     zb_max = fill(Float64(0), n_edges)
     width_at_edge = fill(Float64(0), n_edges)
     length_at_edge = fill(Float64(0), n_edges)
@@ -72,13 +73,13 @@ function LocalInertialRiverFlowParameters(
         src_node = nodes_at_edge.src[i]
         dst_node = nodes_at_edge.dst[i]
         zb_max[i] = max(zb[src_node], zb[dst_node])
-        width_at_edge[i] = min(river_width[src_node], river_width[dst_node])
-        length_at_edge[i] = 0.5 * (river_length[dst_node] + river_length[src_node])
+        width_at_edge[i] = min(flow_width[src_node], flow_width[dst_node])
+        length_at_edge[i] = 0.5 * (flow_length[dst_node] + flow_length[src_node])
         mannings_n_i =
             (
-                mannings_n[dst_node] * river_length[dst_node] +
-                mannings_n[src_node] * river_length[src_node]
-            ) / (river_length[dst_node] + river_length[src_node])
+                mannings_n[dst_node] * flow_length[dst_node] +
+                mannings_n[src_node] * flow_length[src_node]
+            ) / (flow_length[dst_node] + flow_length[src_node])
         mannings_n_sq[i] = mannings_n_i * mannings_n_i
     end
     active_index = findall(x -> x == 0, waterbody)
@@ -97,11 +98,12 @@ function LocalInertialRiverFlowParameters(
         bankfull_depth,
         mannings_n,
         mannings_n_sq,
-        flow_length = river_length,
+        flow_length,
         flow_length_at_edge = length_at_edge,
-        flow_width = river_width,
+        flow_width,
         flow_width_at_edge = width_at_edge,
         waterbody,
+        cell_area,
     )
     return parameters
 end
@@ -129,17 +131,17 @@ end
 function LocalInertialRiverFlowVariables(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
-    n_edges::Int,
-    inds_pit::Vector{CartesianIndex{2}},
+    network::NetworkRiver,
 )
+    (; pit_indices, indices, graph) = network
     floodplain_1d = get(config.model, "floodplain_1d", false)::Bool
 
     lens = lens_input_parameter(config, "model_boundary_condition~river_bank_water__depth")
     riverdepth_bc =
-        ncread(dataset, config, lens; sel = inds_pit, defaults = 0.0, type = Float64)
+        ncread(dataset, config, lens; sel = pit_indices, defaults = 0.0, type = Float64)
 
     n = length(indices)
+    n_edges = ne(graph)
     # set river depth h to zero (including reservoir and lake locations)
     h = zeros(n)
     q_av = zeros(n_edges)
@@ -179,14 +181,10 @@ end
 function LocalInertialRiverFlow(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}};
-    graph_river::DiGraph,
-    ldd_river::Vector{UInt8},
-    river_length::Vector{Float64},
-    river_width::Vector{Float64},
+    network::NetworkRiver,
+    river_params::RiverParameters,
     reservoir::Union{SimpleReservoir, Nothing},
     lake::Union{Lake, Nothing},
-    waterbody::Vector{Bool},
 )
     # The local inertial approach makes use of a staggered grid (Bates et al. (2010)),
     # with nodes and edges. This information is extracted from the directed graph of the
@@ -203,50 +201,22 @@ function LocalInertialRiverFlow(
     cfl = get(config.model, "inertial_flow_alpha", 0.7)::Float64 # stability coefficient for model time step (0.2-0.7)
     timestepping = TimeStepping(; cfl)
 
-    index_pit = findall(x -> x == 5, ldd_river)
-    inds_pit = indices[index_pit]
+    parameters = LocalInertialRiverFlowParameters(dataset, config, network, river_params)
+    variables = LocalInertialRiverFlowVariables(dataset, config, network)
 
-    add_vertex_edge_graph!(graph_river, index_pit)
-    nodes_at_edge = NodesAtEdge(; adjacent_nodes_at_edge(graph_river)...)
-    n_edges = ne(graph_river)
-
-    parameters = LocalInertialRiverFlowParameters(
-        dataset,
-        config,
-        indices;
-        river_length,
-        river_width,
-        waterbody,
-        n_edges,
-        nodes_at_edge,
-        index_pit,
-        inds_pit,
-    )
-    variables = LocalInertialRiverFlowVariables(dataset, config, indices, n_edges, inds_pit)
-
-    n = length(indices)
+    n = length(network.indices)
     boundary_conditions = RiverFlowBC(n, reservoir, lake)
 
     floodplain_1d = get(config.model, "floodplain_1d", false)::Bool
     if floodplain_1d
         zb_floodplain = parameters.zb .+ parameters.bankfull_depth
-        floodplain = FloodPlain(
-            dataset,
-            config,
-            indices;
-            river_width,
-            river_length,
-            zb_floodplain,
-            index_pit,
-            n_edges,
-            nodes_at_edge,
-        )
+        floodplain = FloodPlain(dataset, config, network, river_params, zb_floodplain)
     else
         floodplain = nothing
     end
 
     do_water_demand = haskey(config.model, "water_demand")
-    sw_river = LocalInertialRiverFlow(;
+    river_flow = LocalInertialRiverFlow(;
         timestepping,
         boundary_conditions,
         parameters,
@@ -254,7 +224,7 @@ function LocalInertialRiverFlow(
         floodplain,
         allocation = do_water_demand ? AllocationRiver(n) : NoAllocationRiver(),
     )
-    return sw_river, nodes_at_edge
+    return river_flow
 end
 
 "Return the upstream inflow for a waterbody in `LocalInertialRiverFlow`"
@@ -599,28 +569,23 @@ end
     z::Vector{Float64}                  # elevation [m] of cell
     froude_limit::Bool                  # if true a check is performed if froude number > 1.0 (algorithm is modified) [-]
     rivercells::Vector{Bool}            # river cells [-]
+    area::Vector{Float64}               # Area of cell [m²]
 end
 
 "Initialize shallow water overland flow model parameters"
 function LocalInertialOverlandFlowParameters(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}};
-    modelsize_2d::Tuple{Int, Int},
-    reverse_indices::Matrix{Int}, # maps from the 2D external domain to the 1D internal domain (Int for linear indexing).
-    x_length::Vector{Float64},
-    y_length::Vector{Float64},
-    river_width::Vector{Float64},
-    graph_river::DiGraph,
-    ldd_river::Vector{UInt8},
-    inds_river::Vector{CartesianIndex{2}},
-    river_location::Vector{Bool},
-    waterbody::Vector{Bool},
+    network::Network,
+    parameters::SharedParameters,
 )
     froude_limit = get(config.model, "froude_limit", true)::Bool # limit flow to subcritical according to Froude number
     cfl = get(config.model, "inertial_flow_alpha", 0.7)::Float64 # stability coefficient for model time step (0.2-0.7)
     theta = get(config.model, "inertial_flow_theta", 0.8)::Float64 # weighting factor
     h_thresh = get(config.model, "h_thresh", 1.0e-03)::Float64 # depth threshold for flow at edge
+
+    (; edge_indices, indices) = network.land
+    (; x_length, y_length, river, area) = parameters.land
 
     @info "Local inertial approach is used for overlandflow." cfl theta h_thresh froude_limit
 
@@ -634,26 +599,8 @@ function LocalInertialOverlandFlowParameters(
     )
     elevation_2d = ncread(dataset, config, lens; type = Float64, fill = 0)
     elevation = elevation_2d[indices]
-    n = length(indices)
+    n = length(network.land.indices)
 
-    # initialize edge connectivity of 2D staggered grid
-    edge_indices =
-        EdgeConnectivity(; xu = zeros(n), xd = zeros(n), yu = zeros(n), yd = zeros(n))
-
-    nrow, ncol = modelsize_2d
-    for (v, i) in enumerate(indices)
-        for (m, neighbor) in enumerate(NEIGHBORS)
-            j = i + neighbor
-            dir = DIRS[m]
-            if (1 <= j[1] <= nrow) && (1 <= j[2] <= ncol) && (reverse_indices[j] != 0)
-                getfield(edge_indices, dir)[v] = reverse_indices[j]
-            else
-                getfield(edge_indices, dir)[v] = n + 1
-            end
-        end
-    end
-
-    # determine z at edges in x and y direction
     zx_max = fill(Float64(0), n)
     zy_max = fill(Float64(0), n)
     for i in 1:n
@@ -672,16 +619,7 @@ function LocalInertialOverlandFlowParameters(
     # overland flow from a downstream cell is not possible (effective flowwidth is zero).
     we_x = copy(x_length)
     we_y = copy(y_length)
-    set_effective_flowwidth!(
-        we_x,
-        we_y,
-        edge_indices,
-        graph_river,
-        river_width,
-        ldd_river,
-        waterbody,
-        reverse_indices[inds_river],
-    )
+    set_effective_flowwidth!(we_x, we_y, network, parameters.river)
     parameters = LocalInertialOverlandFlowParameters(;
         n,
         x_length,
@@ -696,9 +634,10 @@ function LocalInertialOverlandFlowParameters(
         mannings_n_sq = mannings_n .* mannings_n,
         z = elevation,
         froude_limit,
-        rivercells = river_location,
+        rivercells = river,
+        area,
     )
-    return parameters, edge_indices
+    return parameters
 end
 
 "Struct to store local inertial overland flow model boundary conditions"
@@ -725,48 +664,25 @@ end
 function LocalInertialOverlandFlow(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}};
-    modelsize_2d::Tuple{Int, Int},
-    reverse_indices::Matrix{Int}, # maps from the 2D external domain to the 1D internal domain (Int for linear indexing).
-    x_length::Vector{Float64},
-    y_length::Vector{Float64},
-    river_width::Vector{Float64},
-    graph_river::DiGraph,
-    ldd_river::Vector{UInt8},
-    inds_river::Vector{CartesianIndex{2}},
-    river_location::Vector{Bool},
-    waterbody::Vector{Bool},
+    network::Network,
+    parameters::SharedParameters,
 )
     cfl = get(config.model, "inertial_flow_alpha", 0.7)::Float64 # stability coefficient for model time step (0.2-0.7)
     timestepping = TimeStepping(; cfl)
 
-    n = length(indices)
+    n = length(network.land.indices)
     boundary_conditions = LocalInertialOverlandFlowBC(n)
-    parameters, edge_indices = LocalInertialOverlandFlowParameters(
-        dataset,
-        config,
-        indices;
-        modelsize_2d,
-        reverse_indices, # maps from the 2D external domain to the 1D internal domain (Int for linear indexing).
-        x_length,
-        y_length,
-        river_width,
-        graph_river,
-        ldd_river,
-        inds_river,
-        river_location,
-        waterbody,
-    )
+    parameters = LocalInertialOverlandFlowParameters(dataset, config, network, parameters)
     variables = LocalInertialOverlandFlowVariables(n)
 
-    sw_land = LocalInertialOverlandFlow(;
+    overland_flow = LocalInertialOverlandFlow(;
         timestepping,
         boundary_conditions,
         parameters,
         variables,
     )
 
-    return sw_land, edge_indices
+    return overland_flow
 end
 
 """
@@ -824,9 +740,9 @@ function update_boundary_conditions!(
     (; net_runoff_river) = runoff.variables
 
     model.boundary_conditions.runoff .=
-        net_runoff ./ 1000.0 .* network.land.area ./ dt .+
+        net_runoff ./ 1000.0 .* model.parameters.area ./ dt .+
         get_flux_to_river(subsurface_flow) .+
-        net_runoff_river .* network.land.area .* 0.001 ./ dt
+        net_runoff_river .* model.parameters.area .* 0.001 ./ dt
 
     if !isnothing(reservoir) || !isnothing(lake)
         inflow_subsurface = get_inflow_waterbody(river_flow, subsurface_flow)
@@ -1096,11 +1012,12 @@ end
 function FloodPlainProfile(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}};
-    river_width::Vector{Float64},
-    river_length::Vector{Float64},
+    network::NetworkRiver,
+    parameters::RiverParameters,
     index_pit::Vector{Int},
 )
+    (; indices) = network
+    (; flow_width, flow_length) = parameters
     lens = lens_input_parameter(config, "floodplain_water__sum_of_volume-per-depth")
     storage =
         ncread(dataset, config, lens; sel = indices, type = Float64, dimname = :flood_depth)
@@ -1118,7 +1035,7 @@ function FloodPlainProfile(
     a = zeros(Float64, n_depths, n)
     segment_storage = zeros(Float64, n_depths, n)
     width = zeros(Float64, n_depths, n)
-    width[1, :] = river_width[1:n]
+    width[1, :] = flow_width[1:n]
 
     # determine flow area (a), width and wetted perimeter (p) FloodPlain
     h = diff(flood_depths)
@@ -1131,23 +1048,23 @@ function FloodPlainProfile(
 
         for j in 1:(n_depths - 1)
             # assume rectangular shape of flood depth segment
-            width[j + 1, i] = diff_storage[j] / (h[j] * river_length[i])
+            width[j + 1, i] = diff_storage[j] / (h[j] * flow_length[i])
             # check provided flood storage (floodplain width should be constant or increasing
             # as a function of flood depth)
             if width[j + 1, i] < width[j, i]
                 # raise warning only if difference is larger than rounding error of 0.01 m³
-                if ((width[j, i] - width[j + 1, i]) * h[j] * river_length[i]) > 0.01
+                if ((width[j, i] - width[j + 1, i]) * h[j] * flow_length[i]) > 0.01
                     incorrect_vol += 1
                     riv_cell = 1
                     error_vol =
                         error_vol +
-                        ((width[j, i] - width[j + 1, i]) * h[j] * river_length[i])
+                        ((width[j, i] - width[j + 1, i]) * h[j] * flow_length[i])
                 end
                 width[j + 1, i] = width[j, i]
             end
             a[j + 1, i] = width[j + 1, i] * h[j]
             p[j + 1, i] = (width[j + 1, i] - width[j, i]) + 2.0 * h[j]
-            segment_storage[j + 1, i] = a[j + 1, i] * river_length[i]
+            segment_storage[j + 1, i] = a[j + 1, i] * flow_length[i]
             if j == 1
                 # for interpolation wetted perimeter at flood depth 0.0 is required
                 p[j, i] = p[j + 1, i] - 2.0 * h[j]
@@ -1194,16 +1111,15 @@ end
 function FloodPlainParameters(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}};
-    river_width::Vector{Float64},
-    river_length::Vector{Float64},
+    network::NetworkRiver,
+    parameters::RiverParameters,
     zb_floodplain::Vector{Float64},
-    nodes_at_edge::NodesAtEdge,
-    n_edges::Int,
     index_pit::Vector{Int},
 )
-    profile =
-        FloodPlainProfile(dataset, config, indices; river_width, river_length, index_pit)
+    (; indices, nodes_at_edge, graph) = network
+    (; flow_length) = parameters
+    n_edges = ne(graph)
+    profile = FloodPlainProfile(dataset, config, network, parameters, index_pit)
 
     lens = lens_input_parameter(config, "floodplain_water_flow__manning_n_parameter")
     mannings_n =
@@ -1217,9 +1133,9 @@ function FloodPlainParameters(
         dst_node = nodes_at_edge.dst[i]
         mannings_n_i =
             (
-                mannings_n[dst_node] * river_length[dst_node] +
-                mannings_n[src_node] * river_length[src_node]
-            ) / (river_length[dst_node] + river_length[src_node])
+                mannings_n[dst_node] * flow_length[dst_node] +
+                mannings_n[src_node] * flow_length[src_node]
+            ) / (flow_length[dst_node] + flow_length[src_node])
         mannings_n_sq[i] = mannings_n_i * mannings_n_i
         zb_max[i] = max(zb_floodplain[src_node], zb_floodplain[dst_node])
     end
@@ -1345,26 +1261,16 @@ end
 function FloodPlain(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}};
-    river_width::Vector{Float64},
-    river_length::Vector{Float64},
+    network::NetworkRiver,
+    parameters::RiverParameters,
     zb_floodplain::Vector{Float64},
-    index_pit::Vector{Int},
-    n_edges::Int,
-    nodes_at_edge::NodesAtEdge,
 )
+    (; indices, local_drain_direction, graph) = network
     n = length(indices)
-    parameters = FloodPlainParameters(
-        dataset,
-        config,
-        indices;
-        river_width,
-        river_length,
-        zb_floodplain,
-        nodes_at_edge,
-        n_edges,
-        index_pit,
-    )
+    index_pit = findall(x -> x == 5, local_drain_direction)
+    parameters =
+        FloodPlainParameters(dataset, config, network, parameters, zb_floodplain, index_pit)
+    n_edges = ne(graph)
     variables = FloodPlainVariables(n, n_edges, index_pit)
 
     floodplain = FloodPlain(; parameters, variables)

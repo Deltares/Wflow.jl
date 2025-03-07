@@ -2,7 +2,7 @@
 @with_kw struct SoilLoss{RE, OFE, SE} <: AbstractLandModel
     atmospheric_forcing::AtmosphericForcing
     hydrological_forcing::HydrologicalForcing
-    geometry::LandGeometry
+    geometry::LandParameters
     rainfall_erosion::RE
     overland_flow_erosion::OFE
     soil_erosion::SE
@@ -14,7 +14,7 @@ function SoilLoss(dataset::NCDataset, config::Config, indices::Vector{CartesianI
 
     atmospheric_forcing = AtmosphericForcing(n)
     hydrological_forcing = HydrologicalForcing(n)
-    geometry = LandGeometry(dataset, config, indices)
+    geometry = LandParameters(dataset, config, indices)
 
     # Rainfall erosion
     rainfallerosionmodel = get(config.model, "rainfall_erosion", "answers")::String

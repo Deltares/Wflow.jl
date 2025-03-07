@@ -322,7 +322,7 @@ end
 function update!(
     model::SedimentRiverTransportModel,
     network::NetworkRiver,
-    geometry::RiverGeometry,
+    geometry::RiverParameters,
     waterbodies::Vector{Bool},
     dt::Float64,
 )
@@ -871,7 +871,7 @@ end
 "Update river sediment concentrations model for a single timestep"
 function update!(
     model::SedimentConcentrationsRiverModel,
-    geometry::RiverGeometry,
+    geometry::RiverParameters,
     dt::Float64,
 )
     (; q, waterlevel, clay, silt, sand, sagg, lagg, gravel) = model.boundary_conditions

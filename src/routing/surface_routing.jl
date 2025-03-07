@@ -14,7 +14,7 @@ function surface_routing!(model)
     update_lateral_inflow!(
         overland_flow,
         (; soil, allocation, subsurface_flow),
-        network.land.area,
+        land.parameters.area,
         config,
         dt,
     )
@@ -25,8 +25,7 @@ function surface_routing!(model)
     update_lateral_inflow!(
         river_flow,
         (; allocation = river_flow.allocation, runoff, overland_flow, subsurface_flow),
-        network.river.cell_area,
-        network.land.area,
+        land.parameters.area,
         network.river.land_indices,
         dt,
     )
