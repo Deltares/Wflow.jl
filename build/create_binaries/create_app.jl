@@ -19,7 +19,7 @@ create_app(
     precompile_execution_file = "precompile.jl",
     filter_stdlibs = false,
     force = true,
-    cpu_target = "generic;sandybridge,-xsaveopt,clone_all;skylake-avx512,base(1)",
+    cpu_target = "generic;sandybridge,-xsaveopt,clone_all;x86-64-v4,base(1)",
 )
 
 include("add_metadata.jl")
