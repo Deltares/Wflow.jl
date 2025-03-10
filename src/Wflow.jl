@@ -133,6 +133,7 @@ struct Model{R <: Routing, L <: AbstractLandModel, T <: AbstractModelType} <:
     network::Network    # connectivity information, directed graph
     routing::R          # routing model (horizontal fluxes), moves along network
     land::L             # land model simulating vertical fluxes, independent of each other
+    # water_balance::WaterBalance{Float64}
     clock::Clock        # to keep track of simulation time
     reader::NCReader    # provides the model with dynamic input
     writer::Writer      # writes model output
@@ -142,6 +143,7 @@ end
 # prevent a large printout of model components and arrays
 Base.show(io::IO, ::AbstractModel{T}) where {T} = print(io, "model of type ", T)
 
+include("water_balance.jl")
 include("forcing.jl")
 include("parameters.jl")
 include("vegetation/rainfall_interception.jl")
@@ -260,6 +262,8 @@ function run_timestep!(model::Model; update_func = update!, write_model_output =
     if write_model_output
         write_output(model)
     end
+    # compute_water_balance!(model, model.water_balance.water_balance_vertical)
+    # compute_water_balance!(model, model.water_balance.water_balance_overland)
     return nothing
 end
 
