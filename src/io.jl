@@ -1725,5 +1725,7 @@ function get_routing_types(config::Config)
         "kinematic-wave",
     )::String
 
-    return (; land, river)
+    subsurface = config.model.type == "sbm_gwf" ? "groundwaterflow" : "kinematic-wave"
+
+    return (; land, river, subsurface)
 end

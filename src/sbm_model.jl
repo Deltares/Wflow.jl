@@ -25,6 +25,7 @@ function Model(config::Config, type::SbmModel)
         pits = get(config.model, "pits", false)::Bool,
         subsurface_flow = get(config.model, "kinematic-wave_subsurface", true)::Bool,
         water_demand = haskey(config.model, "water_demand"),
+        drains = get(config.model, "drains", false)::Bool,
         kh_profile_type = get(
             config.model,
             "saturated_hydraulic_conductivity_profile",
@@ -41,14 +42,21 @@ function Model(config::Config, type::SbmModel)
     parameters = SharedParameters(dataset, config, network)
 
     land_hydrology = LandHydrologySBM(dataset, config, parameters.land, network.land)
-    routing =
-        Routing(dataset, config, land_hydrology.soil, network, parameters, routing_types)
+    routing = Routing(
+        dataset,
+        config,
+        land_hydrology.soil,
+        network,
+        parameters,
+        routing_types,
+        type,
+    )
 
     (; maxlayers) = land_hydrology.soil.parameters
-    model_components = (land = land_hydrology, routing)
+    modelmap = (land = land_hydrology, routing)
     writer = prepare_writer(
         config,
-        model_components,
+        modelmap,
         network,
         dataset;
         extra_dim = (name = "layer", value = Float64.(1:(maxlayers))),

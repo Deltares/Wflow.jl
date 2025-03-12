@@ -9,6 +9,7 @@ cells (boundary condition groundwater flow) in the 2D external model domain.
 @kwdef struct NetworkDrain
     indices::Vector{CartesianIndex{2}} = CartesianIndex{2}[]
     reverse_indices::Matrix{Int64} = zeros(Int, 0, 0)
+    land_indices::Vector{Int} = Int[]
 end
 
 """
@@ -137,6 +138,34 @@ boundary condition of groundwater flow), `river`, `reservoir` and `lake`.
     land::NetworkLand = NetworkLand()
     reservoir::NetworkWaterBody = NetworkWaterBody()
     river::NetworkRiver = NetworkRiver()
+end
+
+function NetworkDrain(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+    surface_flow_width::Vector{Float64},
+)
+    n_cells = length(indices)
+    lens = lens_input_parameter(config, "land_drain_location__flag")
+    drain_2d = ncread(dataset, config, lens; type = Bool, fill = false)
+    drain = drain_2d[indices]
+
+    # check if drain occurs where overland flow is not possible (surface_flow_width = 0.0)
+    # and correct if this is the case
+    false_drain =
+        filter(i -> !isequal(drain[i], 0) && surface_flow_width[i] == 0.0, 1:n_cells)
+    n_false_drain = length(false_drain)
+    if n_false_drain > 0
+        drain_2d[indices[false_drain]] .= 0
+        drain[false_drain] .= 0
+        @info "$n_false_drain drain locations are removed that occur where overland flow
+         is not possible (overland flow width is zero)"
+    end
+    land_indices = filter(i -> !isequal(drain[i], 0), 1:n_cells)
+    indices, reverse_indices = active_indices(drain_2d, 0)
+    network = NetworkDrain(; indices, reverse_indices, land_indices)
+    return network
 end
 
 function get_waterbody_locs(
@@ -355,7 +384,9 @@ function NetworkLand(
     routing_types::NamedTuple,
 )
     network = network_catchment(dataset, config, modelsettings)
-    subdomains = routing_types.land == "kinematic-wave" || modelsettings.subsurface_flow
+    subdomains =
+        routing_types.land == "kinematic-wave" ||
+        routing_types.subsurface == "kinematic-wave"
     network, streamorder = network_subdomains_land(config, network; subdomains)
     return network, streamorder
 end
@@ -430,7 +461,8 @@ function Network(
         @reset network_river.edges_at_node = EdgesAtNode(network_river)
     end
 
-    if routing_types.land == "kinematic-wave" || modelsettings.subsurface_flow
+    if routing_types.land == "kinematic-wave" ||
+       routing_types.subsurface == "kinematic-wave"
         @reset network_land.upstream_nodes =
             filter_upsteam_nodes(network_land.graph, pits[network_land.indices])
     end

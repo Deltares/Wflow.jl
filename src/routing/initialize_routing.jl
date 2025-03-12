@@ -1,14 +1,15 @@
 
-function initialize_lateral_ssf(
+function initialize_subsurface_flow(
     dataset::NCDataset,
     config::Config,
     soil::SbmSoilModel,
-    network::NetworkLand,
+    network::Network,
     parameters::LandParameters,
+    type::SbmModel,
 )
     do_subsurface_flow = get(config.model, "kinematic-wave_subsurface", true)::Bool
     if do_subsurface_flow
-        subsurface_flow = LateralSSF(dataset, config, network, soil, parameters)
+        subsurface_flow = LateralSSF(dataset, config, network.land, soil, parameters)
 
         kh_profile_type = get(
             config.model,
@@ -26,9 +27,81 @@ function initialize_lateral_ssf(
     else
         # when the SBM model is coupled (BMI) to a groundwater model, the following
         # variables are expected to be exchanged from the groundwater model.
-        n = length(network.indices)
+        n = length(network.land.indices)
         subsurface_flow = GroundwaterExchange(n)
     end
+    return subsurface_flow
+end
+
+function initialize_subsurface_flow(
+    dataset::NCDataset,
+    config::Config,
+    soil::SbmSoilModel,
+    network::Network,
+    parameters::LandParameters,
+    type::SbmGwfModel,
+)
+    do_drains = get(config.model, "drains", false)::Bool
+    do_constanthead = get(config.model, "constanthead", false)::Bool
+
+    (; indices, reverse_indices) = network.land
+    (; x_length, y_length, area) = parameters
+
+    n_cells = length(indices)
+
+    lens = lens_input_parameter(config, "land_surface__elevation"; optional = false)
+    elevation = ncread(dataset, config, lens; sel = indices, type = Float64)
+
+    # unconfined aquifer
+    if do_constanthead
+        constant_head = ConstantHead(dataset, config, indices)
+    else
+        variables = ConstantHeadVariables(; head = Float64[])
+        constant_head = ConstantHead(; variables, index = Int64[])
+    end
+
+    connectivity = Connectivity(indices, reverse_indices, x_length, y_length)
+
+    # cold state for groundwater head based on water table depth zi
+    initial_head = elevation .- soil.variables.zi / 1000.0
+    initial_head[network.river.land_indices] = elevation[network.river.land_indices]
+    if do_constanthead
+        initial_head[constant_head.index] = constant_head.variables.head
+    end
+
+    bottom = elevation .- soil.parameters.soilthickness ./ 1000.0
+    conductance = zeros(Float64, connectivity.nconnection)
+    aquifer = UnconfinedAquifer(
+        dataset,
+        config,
+        indices,
+        elevation,
+        bottom,
+        area,
+        conductance,
+        initial_head,
+    )
+
+    # river boundary of unconfined aquifer
+    river = GwfRiver(dataset, config, network.river.indices, network.river.land_indices)
+
+    # recharge boundary of unconfined aquifer
+    recharge = Recharge(fill(MISSING_VALUE, n_cells), zeros(n_cells), collect(1:n_cells))
+
+    # drain boundary of unconfined aquifer (optional)
+    if do_drains
+        drain = Drainage(dataset, config, indices, network.drain.land_indices)
+        aquifer_boundaries = (; recharge, river, drain)
+    else
+        aquifer_boundaries = (; recharge, river)
+    end
+
+    subsurface_flow = GroundwaterFlow(;
+        aquifer,
+        connectivity,
+        constanthead = constant_head,
+        boundaries = aquifer_boundaries,
+    )
     return subsurface_flow
 end
 
@@ -100,9 +173,10 @@ function Routing(
     network::Network,
     parameters::SharedParameters,
     routing_types::NamedTuple,
+    type,
 )
     subsurface_flow =
-        initialize_lateral_ssf(dataset, config, soil, network.land, parameters.land)
+        initialize_subsurface_flow(dataset, config, soil, network, parameters.land, type)
     overland_flow =
         initialize_overland_flow(dataset, config, network, parameters, routing_types)
     river_flow =
