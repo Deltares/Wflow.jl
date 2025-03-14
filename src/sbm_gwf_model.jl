@@ -44,50 +44,24 @@ function Model(config::Config, type::SbmGwfModel)
     @info "General model settings" modelsettings[keys(modelsettings)[1:8]]...
 
     routing_types = get_routing_types(config)
-    network = Network(dataset, config, modelsettings, routing_types)
-    parameters = SharedParameters(dataset, config, network)
+    domain = Domain(dataset, config, modelsettings, routing_types)
 
-    if modelsettings.drains
-        @reset network.drain = NetworkDrain(
-            dataset,
-            config,
-            network.land.indices,
-            parameters.land.surface_flow_width,
-        )
-    end
-
-    land_hydrology = LandHydrologySBM(dataset, config, parameters.land, network.land)
-    routing = Routing(
-        dataset,
-        config,
-        land_hydrology.soil,
-        network,
-        parameters,
-        routing_types,
-        type,
-    )
+    land_hydrology = LandHydrologySBM(dataset, config, domain.land)
+    routing = Routing(dataset, config, domain, land_hydrology.soil, routing_types, type)
 
     modelmap = (land = land_hydrology, routing)
     (; maxlayers) = land_hydrology.soil.parameters
     writer = prepare_writer(
         config,
         modelmap,
-        network,
+        domain,
         dataset;
         extra_dim = (name = "layer", value = Float64.(1:(maxlayers))),
     )
     close(dataset)
 
-    model = Model(
-        config,
-        network,
-        routing,
-        land_hydrology,
-        clock,
-        reader,
-        writer,
-        SbmGwfModel(),
-    )
+    model =
+        Model(config, domain, routing, land_hydrology, clock, reader, writer, SbmGwfModel())
 
     set_states!(model)
 
@@ -96,14 +70,14 @@ end
 
 "update the sbm_gwf model for a single timestep"
 function update!(model::AbstractModel{<:SbmGwfModel})
-    (; routing, land, network, clock, config) = model
+    (; routing, land, domain, clock, config) = model
     (; soil, runoff, demand) = land
 
     do_water_demand = haskey(config.model, "water_demand")
     (; aquifer, boundaries) = routing.subsurface_flow
     dt = tosecond(clock.dt)
 
-    update!(land, routing, network, config, dt)
+    update!(land, routing, domain, config, dt)
 
     # set river stage and storage (groundwater boundary) based on river flow routing
     # variables

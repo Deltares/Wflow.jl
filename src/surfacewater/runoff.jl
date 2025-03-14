@@ -84,10 +84,10 @@ function update_boundary_conditions!(
     model::OpenWaterRunoff,
     external_models::NamedTuple,
     routing::Routing,
-    network::Network,
+    network::NetworkRiver,
 )
     (; water_flux_surface, waterdepth_river, waterdepth_land) = model.boundary_conditions
-    (; land_indices) = network.river
+    (; land_indices) = network
     (; snow, glacier, interception) = external_models
 
     get_water_flux_surface!(water_flux_surface, snow, glacier, interception)

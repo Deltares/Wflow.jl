@@ -4,7 +4,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 
 model = Wflow.Model(config)
-(; network) = model
+(; domain) = model
 
 Wflow.run_timestep!(model)
 
@@ -109,9 +109,9 @@ end
 @testset "subsurface flow" begin
     ssf = model.routing.subsurface_flow.variables.ssf
     @test sum(ssf) ≈ 6.3761585406186976f7
-    @test ssf[network.land.order[1]] ≈ 718.2884788334369
-    @test ssf[network.land.order[end - 100]] ≈ 2337.8308149609757
-    @test ssf[network.land.order[end]] ≈ 288.19428729403984
+    @test ssf[domain.land.network.order[1]] ≈ 718.2884788334369
+    @test ssf[domain.land.network.order[end - 100]] ≈ 2337.8308149609757
+    @test ssf[domain.land.network.order[end]] ≈ 288.19428729403984
 end
 
 @testset "overland flow" begin
@@ -119,7 +119,7 @@ end
     @test sum(q) ≈ 285.6002508445645
     @test q[26625] ≈ 0.0
     @test q[39308] ≈ 0.0
-    @test q[network.land.order[end]] ≈ 1.0e-30
+    @test q[domain.land.network.order[end]] ≈ 1.0e-30
 end
 
 @testset "river flow" begin
@@ -127,7 +127,7 @@ end
     @test sum(q) ≈ 3848.506486893073
     @test q[1622] ≈ 0.0007520441883623191
     @test q[43] ≈ 11.93478633795524
-    @test q[network.river.order[end]] ≈ 0.044189065322941805
+    @test q[domain.river.network.order[end]] ≈ 0.044189065322941805
 end
 
 @testset "reservoir simple" begin
@@ -309,6 +309,7 @@ tomlpath = joinpath(@__DIR__, "sbm_river-floodplain-local-inertial_config.toml")
 config = Wflow.Config(tomlpath)
 model = Wflow.Model(config)
 
+(; flow_length, flow_length) = model.domain.river.parameters
 fp = model.routing.river_flow.floodplain.parameters.profile
 river = model.routing.river_flow
 dh = diff(fp.depth)
@@ -342,34 +343,34 @@ dh = diff(fp.depth)
         297.8700179533214,
         463.35655296229805,
     ]
-    @test dh .* fp.width[2:end, 3] * river.parameters.flow_length[3] ≈ Δv
-    @test fp.a[:, 3] * river.parameters.flow_length[3] ≈ fp.storage[:, 3]
+    @test dh .* fp.width[2:end, 3] * flow_length[3] ≈ Δv
+    @test fp.a[:, 3] * flow_length[3] ≈ fp.storage[:, 3]
     # flood depth from flood storage (8000.0)
     flood_vol = 8000.0
     river.variables.storage[3] = flood_vol + river.parameters.bankfull_storage[3]
     i1, i2 = Wflow.interpolation_indices(flood_vol, fp.storage[:, 3])
     @test (i1, i2) == (1, 2)
-    flood_depth = Wflow.flood_depth(fp, flood_vol, river.parameters.flow_length[3], 3)
+    flood_depth = Wflow.flood_depth(fp, flood_vol, flow_length[3], 3)
     @test flood_depth ≈ 0.46290938548779076
-    @test (flood_depth - fp.depth[i1]) * fp.width[i2, 3] * river.parameters.flow_length[3] +
+    @test (flood_depth - fp.depth[i1]) * fp.width[i2, 3] * flow_length[3] +
           fp.storage[i1, 3] ≈ flood_vol
     # flood depth from flood storage (12000.0)
     flood_vol = 12000.0
     river.variables.storage[3] = flood_vol + river.parameters.bankfull_storage[3]
     i1, i2 = Wflow.interpolation_indices(flood_vol, fp.storage[:, 3])
     @test (i1, i2) == (2, 3)
-    flood_depth = Wflow.flood_depth(fp, flood_vol, river.parameters.flow_length[3], 3)
+    flood_depth = Wflow.flood_depth(fp, flood_vol, flow_length[3], 3)
     @test flood_depth ≈ 0.6619575699132112
-    @test (flood_depth - fp.depth[i1]) * fp.width[i2, 3] * river.parameters.flow_length[3] +
+    @test (flood_depth - fp.depth[i1]) * fp.width[i2, 3] * flow_length[3] +
           fp.storage[i1, 3] ≈ flood_vol
     # test extrapolation of segment
     flood_vol = 95000.0
     river.variables.storage[3] = flood_vol + river.parameters.bankfull_storage[3]
     i1, i2 = Wflow.interpolation_indices(flood_vol, fp.storage[:, 3])
     @test (i1, i2) == (6, 6)
-    flood_depth = Wflow.flood_depth(fp, flood_vol, river.parameters.flow_length[3], 3)
+    flood_depth = Wflow.flood_depth(fp, flood_vol, flow_length[3], 3)
     @test flood_depth ≈ 2.749036625585836
-    @test (flood_depth - fp.depth[i1]) * fp.width[i2, 3] * river.parameters.flow_length[3] +
+    @test (flood_depth - fp.depth[i1]) * fp.width[i2, 3] * flow_length[3] +
           fp.storage[i1, 3] ≈ flood_vol
     river.variables.storage[3] = 0.0 # reset storage
     # flow area and wetted perimeter based on hf

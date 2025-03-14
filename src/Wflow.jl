@@ -111,7 +111,7 @@ end
 include("io.jl")
 include("network.jl")
 include("routing/routing.jl")
-include("parameters.jl")
+include("domain.jl")
 
 abstract type AbstractModel{T} end
 abstract type AbstractLandModel end
@@ -131,7 +131,7 @@ parameters, clock, configuration and input and output.
 struct Model{R <: Routing, L <: AbstractLandModel, T <: AbstractModelType} <:
        AbstractModel{T}
     config::Config                  # all configuration options
-    network::Network                # connectivity information, directed graph
+    domain::Domain                  # domain connectivity (network) and shared parameters 
     routing::R                      # routing model (horizontal fluxes), moves along network
     land::L                         # land model simulating vertical fluxes, independent of each other
     clock::Clock                    # to keep track of simulation time
@@ -163,6 +163,7 @@ end
 Base.show(io::IO, ::AbstractModel{T}) where {T} = print(io, "model of type ", T)
 
 include("forcing.jl")
+include("vegetation/parameters.jl")
 include("vegetation/rainfall_interception.jl")
 include("vegetation/canopy.jl")
 include("snow/snow_process.jl")

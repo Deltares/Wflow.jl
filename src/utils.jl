@@ -77,17 +77,17 @@ function active_indices(subcatch_2d::AbstractMatrix, nodata)
     return indices, reverse_indices
 end
 
-function active_indices(network::Network, key::AbstractString)
+function active_indices(domain::Domain, key::AbstractString)
     if occursin("reservoir", key)
-        return network.reservoir.indices_outlet
+        return domain.reservoir.network.indices_outlet
     elseif occursin("lake", key)
-        return network.lake.indices_outlet
+        return domain.lake.network.indices_outlet
     elseif occursin("river", key) || occursin("floodplain", key)
-        return network.river.indices
+        return domain.river.network.indices
     elseif occursin("drain", key)
-        return network.drain.indices
+        return domain.drain.network.indices
     else
-        return network.land.indices
+        return domain.land.network.indices
     end
 end
 
@@ -154,7 +154,7 @@ and set states in `model` object. Active cells are selected with the correspondi
 - `type = nothing`: type to convert data to after reading. By default no conversion is done.
 """
 function set_states!(instate_path, model; type = nothing, dimname = nothing)
-    (; network, land, config) = model
+    (; domain, land, config) = model
 
     # Check if required states are covered
     state_ncnames = check_states(config)
@@ -164,7 +164,7 @@ function set_states!(instate_path, model; type = nothing, dimname = nothing)
         for (state, ncname) in state_ncnames
             @info "Setting initial state from netCDF." ncpath = instate_path ncvarname =
                 ncname state
-            sel = active_indices(network, state)
+            sel = active_indices(domain, state)
             n = length(sel)
             dims = length(dimnames(ds[ncname]))
             # 4 dims, for example (x,y,layer,time) where dim layer is an SVector for soil layers
@@ -604,12 +604,11 @@ subtracting the river width `river_width` from the cell edges. For diagonal dire
 function set_effective_flowwidth!(
     we_x::Vector{Float64},
     we_y::Vector{Float64},
-    network::Network,
-    parameters::RiverParameters,
+    domain::Domain,
 )
-    (; local_drain_direction, indices) = network.river
-    (; edge_indices, reverse_indices) = network.land
-    (; flow_width, waterbody) = parameters
+    (; local_drain_direction, indices) = domain.river.network
+    (; edge_indices, reverse_indices) = domain.land.network
+    (; flow_width, waterbody) = domain.river.parameters
     reverse_indices = reverse_indices[indices]
 
     graph = flowgraph(local_drain_direction, indices, PCR_DIR)
@@ -868,21 +867,32 @@ kh_layered_profile!(
 Initialize lateral subsurface variables `ssf` and `ssfmax` using horizontal hydraulic
 conductivity profile `kh_profile`.
 """
-function initialize_lateral_ssf!(model::LateralSSF, kh_profile::KhExponential)
+function initialize_lateral_ssf!(
+    model::LateralSSF,
+    parameters::LandParameters,
+    kh_profile::KhExponential,
+)
     (; kh_0, f) = kh_profile
     (; ssf, ssfmax, zi) = model.variables
-    (; soilthickness, slope, flow_width) = model.parameters
+    (; soilthickness) = model.parameters
+    (; slope, flow_width) = parameters
 
     @. ssfmax = ((kh_0 * slope) / f) * (1.0 - exp(-f * soilthickness))
     @. ssf = ((kh_0 * slope) / f) * (exp(-f * zi) - exp(-f * soilthickness)) * flow_width
     return nothing
 end
 
-function initialize_lateral_ssf!(model::LateralSSF, kh_profile::KhExponentialConstant)
+function initialize_lateral_ssf!(
+    model::LateralSSF,
+    parameters::LandParameters,
+    kh_profile::KhExponentialConstant,
+)
     (; kh_0, f) = kh_profile.exponential
     (; z_exp) = kh_profile
     (; ssf, ssfmax, zi) = model.variables
-    (; soilthickness, slope, flow_width) = model.parameters
+    (; soilthickness) = model.parameters
+    (; slope, flow_width) = parameters
+
     ssf_constant = @. kh_0 * exp(-f * z_exp) * slope * (soilthickness - z_exp)
     for i in eachindex(ssf)
         ssfmax[i] =
@@ -915,13 +925,15 @@ conductivity profile `kv_profile`.
 function initialize_lateral_ssf!(
     subsurface::LateralSSF,
     soil::SbmSoilModel,
+    parameters::LandParameters,
     kv_profile::KvLayered,
     dt,
 )
     (; kh) = subsurface.parameters.kh_profile
     (; nlayers, act_thickl) = soil.parameters
     (; ssf, ssfmax, zi) = subsurface.variables
-    (; khfrac, soilthickness, slope, flow_width) = subsurface.parameters
+    (; khfrac, soilthickness) = subsurface.parameters
+    (; slope, flow_width) = parameters
 
     kh_layered_profile!(soil, subsurface, kv_profile, dt)
     for i in eachindex(ssf)
@@ -939,11 +951,13 @@ end
 function initialize_lateral_ssf!(
     subsurface::LateralSSF,
     soil::SbmSoilModel,
+    parameters::LandParameters,
     kv_profile::KvLayeredExponential,
     dt,
 )
     (; ssf, ssfmax, zi) = subsurface.variables
-    (; khfrac, soilthickness, slope, flow_width) = subsurface.parameters
+    (; khfrac, soilthickness) = subsurface.parameters
+    (; slope, flow_width) = parameters
     (; nlayers, act_thickl) = soil.parameters
     (; kh) = subsurface.parameters.kh_profile
     (; kv, f, nlayers_kv, z_layered) = kv_profile

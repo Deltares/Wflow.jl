@@ -5,7 +5,7 @@ Run surface routing (land and river) for a single timestep. Kinematic wave for o
 and kinematic wave or local inertial model for river flow.
 """
 function surface_routing!(model)
-    (; land, routing, network, config, clock) = model
+    (; land, routing, domain, config, clock) = model
     (; soil, runoff, allocation) = land
     (; overland_flow, river_flow, subsurface_flow) = routing
 
@@ -14,27 +14,26 @@ function surface_routing!(model)
     update_lateral_inflow!(
         overland_flow,
         (; soil, allocation, subsurface_flow),
-        land.parameters.area,
+        domain.land.parameters.area,
         config,
         dt,
     )
     # run kinematic wave overland flow
-    update!(overland_flow, network.land, dt)
+    update!(overland_flow, domain.land, dt)
 
     # update lateral inflow river flow
     update_lateral_inflow!(
         river_flow,
         (; allocation = river_flow.allocation, runoff, overland_flow, subsurface_flow),
-        land.parameters.area,
-        network.river.land_indices,
+        domain,
         dt,
     )
     update_inflow_waterbody!(
         river_flow,
         (; overland_flow, subsurface_flow),
-        network.river.land_indices,
+        domain.river.network.land_indices,
     )
-    update!(river_flow, network, julian_day(clock.time - clock.dt), dt)
+    update!(river_flow, domain, julian_day(clock.time - clock.dt), dt)
     return nothing
 end
 
@@ -49,7 +48,7 @@ Run surface routing (land and river) for a model type that contains the routing 
 function surface_routing!(
     model::Model{R},
 ) where {R <: Routing{<:LocalInertialOverlandFlow, <:LocalInertialRiverFlow}}
-    (; routing, land, network, clock) = model
+    (; routing, land, domain, clock) = model
     (; soil, runoff) = land
     (; overland_flow, river_flow, subsurface_flow) = routing
 
@@ -57,11 +56,11 @@ function surface_routing!(
     update_boundary_conditions!(
         overland_flow,
         (; river_flow, subsurface_flow, soil, runoff),
-        network,
+        domain,
         dt,
     )
 
-    update!(overland_flow, river_flow, network, julian_day(clock.time - clock.dt), dt)
+    update!(overland_flow, river_flow, domain, julian_day(clock.time - clock.dt), dt)
 
     return nothing
 end

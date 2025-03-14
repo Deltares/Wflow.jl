@@ -211,19 +211,19 @@ mover_params = (
 )
 
 function load_fixed_forcing!(model)
-    (; reader, land, network, config) = model
+    (; reader, land, domain, config) = model
     (; forcing_parameters) = reader
 
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
     do_lakes = get(config.model, "lakes", false)::Bool
 
-    reverse_indices = network.land.reverse_indices
+    reverse_indices = domain.land.network.reverse_indices
     if do_reservoirs
-        sel_reservoirs = network.reservoir.indices_coverage
+        sel_reservoirs = domain.reservoir.network.indices_coverage
         param_res = get_param_res(model)
     end
     if do_lakes
-        sel_lakes = network.lake.indices_coverage
+        sel_lakes = domain.lake.network.indices_coverage
         param_lake = get_param_lake(model)
     end
 
@@ -257,18 +257,18 @@ end
 
 "Get dynamic netCDF input for the given time"
 function update_forcing!(model)
-    (; clock, reader, land, network, config) = model
+    (; clock, reader, land, domain, config) = model
     (; dataset, dataset_times, forcing_parameters) = reader
 
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
     do_lakes = get(config.model, "lakes", false)::Bool
 
     if do_reservoirs
-        sel_reservoirs = network.reservoir.indices_coverage
+        sel_reservoirs = domain.reservoir.network.indices_coverage
         param_res = get_param_res(model)
     end
     if do_lakes
-        sel_lakes = network.lake.indices_coverage
+        sel_lakes = domain.lake.network.indices_coverage
         param_lake = get_param_lake(model)
     end
 
@@ -309,7 +309,7 @@ function update_forcing!(model)
         end
         lens = standard_name_map(land)[par].lens
         param_vector = lens(model)
-        sel = active_indices(network, par)
+        sel = active_indices(domain, par)
         data_sel = data[sel]
         if any(ismissing, data_sel)
             print(par)
@@ -348,7 +348,7 @@ end
 
 "Get cyclic netCDF input for the given time"
 function update_cyclic!(model)
-    (; clock, reader, land, network) = model
+    (; clock, reader, land, domain) = model
     (; cyclic_dataset, cyclic_times, cyclic_parameters) = reader
 
     # pick up the data that is valid for the past model time step
@@ -366,7 +366,7 @@ function update_cyclic!(model)
             data = get_at(cyclic_dataset, ncvar.name, i)
             lens = standard_name_map(land)[par].lens
             param_vector = lens(model)
-            sel = active_indices(network, par)
+            sel = active_indices(domain, par)
             param_vector .= data[sel]
             if ncvar.scale != 1.0 || ncvar.offset != 0.0
                 param_vector .= param_vector .* ncvar.scale .+ ncvar.offset
@@ -908,25 +908,25 @@ function out_map(ncnames_dict, modelmap)
     return output_map
 end
 
-function get_reducer_func(col, network, args...)
+function get_reducer_func(col, domain, args...)
     parameter = col["parameter"]
     if occursin("reservoir", parameter)
-        reducer_func = reducer(col, network.reservoir.reverse_indices, args...)
+        reducer_func = reducer(col, domain.reservoir.network.reverse_indices, args...)
     elseif occursin("lake", parameter)
-        reducer_func = reducer(col, network.lake.reverse_indices, args...)
+        reducer_func = reducer(col, domain.lake.network.reverse_indices, args...)
     elseif occursin("river", parameter)
-        reducer_func = reducer(col, network.river.reverse_indices, args...)
+        reducer_func = reducer(col, domain.river.network.reverse_indices, args...)
     elseif occursin("drain", parameter)
-        reducer_func = reducer(col, network.drain.reverse_indices, args...)
+        reducer_func = reducer(col, domain.drain.network.reverse_indices, args...)
     else
-        reducer_func = reducer(col, network.land.reverse_indices, args...)
+        reducer_func = reducer(col, domain.land.network.reverse_indices, args...)
     end
 end
 
 function prepare_writer(
     config,
     modelmap,
-    network,
+    domain,
     #rev_inds,
     #x_nc,
     #y_nc,
@@ -1016,7 +1016,7 @@ function prepare_writer(
             parameter = var["parameter"]
             reducer_func = get_reducer_func(
                 var,
-                network,
+                domain,
                 x_coords,
                 y_coords,
                 config,
@@ -1050,7 +1050,7 @@ function prepare_writer(
         for col in config.output.csv.column
             parameter = col["parameter"]
             reducer_func =
-                get_reducer_func(col, network, x_coords, y_coords, config, nc_static, "CSV")
+                get_reducer_func(col, domain, x_coords, y_coords, config, nc_static, "CSV")
             push!(csv_cols, (parameter = parameter, reducer = reducer_func))
         end
     else
@@ -1117,14 +1117,14 @@ end
 
 "Write a new timestep with grid data to a netCDF file"
 function write_netcdf_timestep(model, dataset, parameters)
-    (; clock, network) = model
+    (; clock, domain) = model
 
     time_index = add_time(dataset, clock.time)
 
-    buffer = zeros(Union{Float64, Missing}, size(model.network.land.reverse_indices))
+    buffer = zeros(Union{Float64, Missing}, domain.land.network.modelsize)
     for (key, val) in parameters
         (; par, vector) = val
-        sel = active_indices(network, par)
+        sel = active_indices(domain, par)
         # write the active cells vector to the 2d buffer matrix
         elemtype = eltype(vector)
         if elemtype <: AbstractFloat

@@ -38,33 +38,24 @@ function Model(config::Config, type::SbmModel)
     @info "General model settings" modelsettings[keys(modelsettings)[1:8]]...
 
     routing_types = get_routing_types(config)
-    network = Network(dataset, config, modelsettings, routing_types)
-    parameters = SharedParameters(dataset, config, network)
+    domain = Domain(dataset, config, modelsettings, routing_types)
 
-    land_hydrology = LandHydrologySBM(dataset, config, parameters.land, network.land)
-    routing = Routing(
-        dataset,
-        config,
-        land_hydrology.soil,
-        network,
-        parameters,
-        routing_types,
-        type,
-    )
+    land_hydrology = LandHydrologySBM(dataset, config, domain.land)
+    routing = Routing(dataset, config, domain, land_hydrology.soil, routing_types, type)
 
     (; maxlayers) = land_hydrology.soil.parameters
     modelmap = (land = land_hydrology, routing)
     writer = prepare_writer(
         config,
         modelmap,
-        network,
+        domain,
         dataset;
         extra_dim = (name = "layer", value = Float64.(1:(maxlayers))),
     )
     close(dataset)
 
     model =
-        Model(config, network, routing, land_hydrology, clock, reader, writer, SbmModel())
+        Model(config, domain, routing, land_hydrology, clock, reader, writer, SbmModel())
 
     set_states!(model)
 
@@ -74,7 +65,7 @@ end
 
 "update SBM model for a single timestep"
 function update!(model::AbstractModel{<:SbmModel})
-    (; routing, land, network, clock, config) = model
+    (; routing, land, domain, clock, config) = model
     dt = tosecond(clock.dt)
     do_water_demand = haskey(config.model, "water_demand")
     (; kv_profile) = land.soil.parameters
@@ -88,11 +79,11 @@ function update!(model::AbstractModel{<:SbmModel})
             land.allocation.variables.act_groundwater_abst / 1000.0
     end
     routing.subsurface_flow.boundary_conditions.recharge .*=
-        routing.subsurface_flow.parameters.flow_width
+        domain.land.parameters.flow_width
     routing.subsurface_flow.variables.zi .= land.soil.variables.zi ./ 1000.0
     # update lateral subsurface flow domain (kinematic wave)
     kh_layered_profile!(land.soil, routing.subsurface_flow, kv_profile, dt)
-    update!(routing.subsurface_flow, network.land, clock.dt / BASETIMESTEP)
+    update!(routing.subsurface_flow, domain.land, clock.dt / BASETIMESTEP)
     update_after_subsurfaceflow!(model)
     update_total_water_storage!(model)
     return nothing
@@ -105,9 +96,9 @@ Update SBM model until recharge for a single timestep. This function is also acc
 through BMI, to couple the SBM model to an external groundwater model.
 """
 function update_until_recharge!(model::AbstractModel{<:SbmModel})
-    (; routing, land, network, clock, config) = model
+    (; routing, land, domain, clock, config) = model
     dt = tosecond(clock.dt)
-    update!(land, routing, network, config, dt)
+    update!(land, routing, domain, config, dt)
     return nothing
 end
 
@@ -136,21 +127,16 @@ Update of the total water storage at the end of each timestep per model cell.
 This is done here at model level.
 """
 function update_total_water_storage!(model::AbstractModel{<:SbmModel})
-    (; routing, land, network) = model
+    (; routing, land, domain) = model
 
     # Update the total water storage based on land states
     # TODO Maybe look at routing in the near future
-    update_total_water_storage!(
-        land,
-        network.river.land_indices,
-        routing.river_flow,
-        routing.overland_flow,
-    )
+    update_total_water_storage!(land, domain, routing)
     return nothing
 end
 
 function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
-    (; routing, land, network, config) = model
+    (; routing, land, domain, config) = model
     land_v = routing.overland_flow.variables
     land_p = routing.overland_flow.parameters
     river_v = routing.river_flow.variables
@@ -165,7 +151,7 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
 
     # read and set states in model object if reinit=false
     if reinit == false
-        nriv = length(network.river.indices)
+        nriv = length(domain.river.network.indices)
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
         set_states!(instate_path, model; type = Float64, dimname = :layer)
@@ -179,37 +165,38 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
             )
         land.soil.variables.zi .= zi
         if land_routing == "kinematic-wave"
+            (; surface_flow_width, flow_length) = domain.land.parameters
             # make sure land cells with zero flow width are set to zero q and h
-            for i in eachindex(land_p.flow_width)
-                if land_p.flow_width[i] <= 0.0
+            for i in eachindex(surface_flow_width)
+                if surface_flow_width[i] <= 0.0
                     land_v.q[i] = 0.0
                     land_v.h[i] = 0.0
                 end
             end
-            land_v.storage .= land_v.h .* land_p.flow_width .* land_p.flow_length
+            land_v.storage .= land_v.h .* surface_flow_width .* flow_length
         elseif land_routing == "local-inertial"
+            (; river, x_length, y_length) = domain.land.parameters
+            (; flow_width, flow_length) = domain.river.parameters
             for i in eachindex(routing.overland_flow.storage)
-                if land_p.rivercells[i]
-                    j = network.land.index_river[i]
+                if river[i]
+                    j = domain.land.network.river_indices[i]
                     if land_v.h[i] > 0.0
                         land_v.storage[i] =
-                            land_v.h[i] * land_p.xl[i] * land_p.yl[i] +
+                            land_v.h[i] * x_length[i] * y_length[i] +
                             land_p.bankfull_storage[j]
                     else
-                        land_v.storage[i] =
-                            river_v.h[j] * river_p.flow_width[j] * river_p.flow_length[j]
+                        land_v.storage[i] = river_v.h[j] * flow_width[j] * flow_length[j]
                     end
                 else
                     routing.overland_flow.storage[i] =
-                        routing.overland_flow.h[i] *
-                        routing.overland_flow.xl[i] *
-                        routing.overland_flow.yl[i]
+                        routing.overland_flow.h[i] * x_length[i] * y_length[i]
                 end
             end
         end
         # only set active cells for river (ignore boundary conditions/ghost points)
+        (; flow_width, flow_length) = domain.river.parameters
         river_v.storage[1:nriv] .=
-            river_v.h[1:nriv] .* river_p.flow_width[1:nriv] .* river_p.flow_length[1:nriv]
+            river_v.h[1:nriv] .* flow_width[1:nriv] .* flow_length[1:nriv]
 
         if floodplain_1d
             initialize_storage!(routing.river_flow, nriv)

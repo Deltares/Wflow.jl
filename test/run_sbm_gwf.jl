@@ -3,7 +3,7 @@ tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
 config = Wflow.Config(tomlpath)
 
 model = Wflow.Model(config)
-(; network) = model
+(; domain) = model
 
 Wflow.run_timestep!(model)
 
@@ -51,7 +51,7 @@ end
     @test river.variables.storage[6] ≈ 4.528690358701646
     @test river.boundary_conditions.inwater[6] ≈ 0.0004037674722635451
     @test q[13] ≈ 0.0006016241976247014
-    @test q[network.river.order[end]] ≈ 0.008553261399338265
+    @test q[domain.river.network.order[end]] ≈ 0.008553261399338265
 end
 
 @testset "groundwater" begin
@@ -150,7 +150,7 @@ config = Wflow.Config(tomlpath)
 config.model.reinit = false
 
 model = Wflow.Model(config)
-(; network) = model
+(; domain) = model
 
 Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
@@ -175,7 +175,7 @@ end
     @test river.variables.storage[6] ≈ 2.2278920306090555
     @test river.boundary_conditions.inwater[6] ≈ -1.298187928273214e-5
     @test q[13] ≈ 7.335203306033115e-5
-    @test q[network.river.order[end]] ≈ 0.002472763875440307
+    @test q[domain.river.network.order[end]] ≈ 0.002472763875440307
 end
 
 @testset "groundwater warm start" begin

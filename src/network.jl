@@ -128,18 +128,6 @@ end
     upstream_nodes::Vector{Vector{Int}} = Vector{Int}[]
 end
 
-""" 
-Struct for storing network information of different domains: `land`, `drain` (`Drainage`
-boundary condition of groundwater flow), `river`, `reservoir` and `lake`.
-"""
-@kwdef struct Network
-    drain::NetworkDrain = NetworkDrain()
-    lake::NetworkWaterBody = NetworkWaterBody()
-    land::NetworkLand = NetworkLand()
-    reservoir::NetworkWaterBody = NetworkWaterBody()
-    river::NetworkRiver = NetworkRiver()
-end
-
 function NetworkDrain(
     dataset::NCDataset,
     config::Config,
@@ -339,44 +327,6 @@ function EdgeConnectivity(network::NetworkLand)
     return edge_indices
 end
 
-function get_allocation_area_indices(
-    dataset::NCDataset,
-    config::Config,
-    network::NetworkRiver,
-)
-    lens = lens_input_parameter(config, "land_water_allocation_area__number")
-    areas = ncread(dataset, config, lens; sel = indices, defaults = 1, type = Int)
-    areas = unique(areas)
-    allocation_area_inds = Vector{Int}[]
-    river_allocation_area_inds = Vector{Int}[]
-    for a in areas
-        area_index = findall(x -> x == a, areas)
-        push!(allocation_area_inds, area_index)
-        area_river_index = findall(x -> x == a, areas[network.land_indices])
-        push!(river_allocation_area_inds, area_river_index)
-    end
-    return allocation_area_inds, river_allocation_area_inds
-end
-
-function exclude_waterbody_locations!(network::Network, modelsettings::NamedTuple)
-    # exclude waterbodies for local surface and ground water abstraction
-    inds_riv_2d = copy(network.river.reverse_indices)
-    inds_2d = zeros(Bool, network.land.modelsize)
-    if modelsettings.reservoirs
-        inds_cov = collect(Iterators.flatten(network.reservoir.indices_coverage))
-        inds_riv_2d[inds_cov] .= 0
-        inds_2d[inds_cov] .= 1
-    end
-    if modelsettings.lakes
-        inds_cov = collect(Iterators.flatten(network.lake.indices_coverage))
-        inds_riv_2d[inds_cov] .= 0
-        inds_2d[inds_cov] .= 1
-    end
-    @reset network.land.river_inds_excl_waterbody = inds_riv_2d[network.land.indices]
-    @reset network.land.waterbody = inds_2d[network.land.indices]
-    return nothing
-end
-
 function NetworkLand(
     dataset::NCDataset,
     config::Config,
@@ -410,90 +360,5 @@ function NetworkRiver(
         NetworkRiver(; indices, reverse_indices, local_drain_direction, graph, land_indices)
     subdomains = routing_types.river == "kinematic-wave"
     network = network_subdomains_river(config, network, streamorder; subdomains)
-    return network
-end
-
-function Network(
-    dataset::NCDataset,
-    config::Config,
-    modelsettings::NamedTuple,
-    routing_types::NamedTuple,
-)
-    network_land, streamorder = NetworkLand(dataset, config, modelsettings, routing_types)
-    network_river = NetworkRiver(
-        dataset,
-        config,
-        network_land.indices,
-        streamorder,
-        routing_types;
-        do_pits = modelsettings.pits,
-    )
-
-    pits = zeros(Bool, network_land.modelsize)
-    nriv = length(network_river.indices)
-    if modelsettings.reservoirs
-        network_reservoir, inds_reservoir_map2river =
-            NetworkWaterBody(dataset, config, network_river.indices, "reservoir")
-        pits[network_reservoir.indices_outlet] .= true
-    else
-        network_reservoir = NetworkWaterBody()
-        inds_reservoir_map2river = fill(0, nriv)
-    end
-    @reset network_river.reservoir_indices = inds_reservoir_map2river
-
-    if modelsettings.lakes
-        network_lake, inds_lake_map2river =
-            NetworkWaterBody(dataset, config, network_river.indices, "lake")
-        pits[network_lake.indices_outlet] .= true
-    else
-        network_lake = NetworkWaterBody()
-        inds_lake_map2river = fill(0, nriv)
-    end
-    @reset network_river.lake_indices = inds_lake_map2river
-
-    if routing_types.river == "kinematic-wave"
-        @reset network_river.upstream_nodes =
-            filter_upsteam_nodes(network_river.graph, pits[network_river.indices])
-    elseif routing_types.river == "local-inertial"
-        nodes_at_edge, index_pit = NodesAtEdge(network_river)
-        @reset network_river.nodes_at_edge = nodes_at_edge
-        @reset network_river.pit_indices = network_river.indices[index_pit]
-        @reset network_river.edges_at_node = EdgesAtNode(network_river)
-    end
-
-    if routing_types.land == "kinematic-wave" ||
-       routing_types.subsurface == "kinematic-wave"
-        @reset network_land.upstream_nodes =
-            filter_upsteam_nodes(network_land.graph, pits[network_land.indices])
-    end
-    if routing_types.land == "local-inertial"
-        @reset network_land.edge_indices = EdgeConnectivity(network_land)
-        @reset network_land.river_indices =
-            network_river.reverse_indices[network_land.indices]
-    end
-
-    network = Network(;
-        lake = network_lake,
-        reservoir = network_reservoir,
-        river = network_river,
-        land = network_land,
-    )
-
-    if modelsettings.water_demand
-        allocation_area_indices, river_allocation_indices =
-            get_allocation_area_indices(dataset, config, network.river)
-        @reset network.land.allocation_area_indices = allocation_area_indices
-        @reset network.river.allocation_area_indices = river_allocation_indices
-        exclude_waterbody_locations!(network, modelsettings)
-    end
-
-    if nthreads() > 1
-        if routing_types.river == "kinematic-wave"
-            @info "Parallel execution of kinematic wave" modelsettings.min_streamorder_land modelsettings.min_streamorder_river
-        elseif routing_types.land == "kinematic-wave" || modelsettings.subsurface_flow
-            @info "Parallel execution of kinematic wave" modelsettings.min_streamorder_land
-        end
-    end
-
     return network
 end

@@ -17,11 +17,6 @@ end
     soilthickness::Vector{Float64}      # Soil thickness [m]
     theta_s::Vector{Float64}            # Saturated water content (porosity) [-]
     theta_r::Vector{Float64}            # Residual water content [-]
-    slope::Vector{Float64}              # Slope [m m⁻¹]
-    flow_length::Vector{Float64}        # Flow length [m]
-    flow_width::Vector{Float64}         # Flow width [m]
-    fraction_to_river::Vector{Float64}  # Subsurface flow fraction to river [-]
-    area::Vector{Float64}               # Area of cell [m²]
 end
 
 "Struct for storing lateral subsurface flow model boundary conditions"
@@ -62,21 +57,17 @@ end
 function LateralSsfParameters(
     dataset::NCDataset,
     config::Config,
-    network::NetworkLand,
+    indices::Vector{CartesianIndex{2}},
     soil::SbmSoilParameters,
-    land_params::LandParameters,
 )
     lens = lens_input_parameter(
         config,
         "subsurface_water__horizontal-to-vertical_saturated_hydraulic_conductivity_ratio",
     )
-    khfrac =
-        ncread(dataset, config, lens; sel = network.indices, defaults = 1.0, type = Float64)
+    khfrac = ncread(dataset, config, lens; sel = indices, defaults = 1.0, type = Float64)
 
     (; theta_s, theta_r, soilthickness) = soil
     soilthickness = soilthickness .* 0.001
-
-    (; flow_width, flow_length, fraction_to_river, area, slope) = land_params
 
     kh_profile_type =
         get(config.model, "saturated_hydraulic_conductivity_profile", "exponential")::String
@@ -95,25 +86,19 @@ function LateralSsfParameters(
         n_cells = length(khfrac)
         kh_profile = KhLayered(fill(MISSING_VALUE, n_cells))
     end
-    ssf_parameters = LateralSsfParameters(;
-        kh_profile,
-        khfrac,
-        soilthickness,
-        theta_s,
-        theta_r,
-        flow_width,
-        flow_length,
-        fraction_to_river,
-        area,
-        slope,
-    )
+    ssf_parameters =
+        LateralSsfParameters(; kh_profile, khfrac, soilthickness, theta_s, theta_r)
     return ssf_parameters
 end
 
 "Initialize lateral subsurface flow model variables"
-function LateralSsfVariables(ssf::LateralSsfParameters, zi::Vector{Float64})
+function LateralSsfVariables(
+    ssf::LateralSsfParameters,
+    zi::Vector{Float64},
+    area::Vector{Float64},
+)
     n = length(zi)
-    storage = @. (ssf.theta_s - ssf.theta_r) * (ssf.soilthickness - zi) * ssf.area
+    storage = @. (ssf.theta_s - ssf.theta_r) * (ssf.soilthickness - zi) * area
     variables = LateralSsfVariables(;
         zi,
         exfiltwater = fill(MISSING_VALUE, n),
@@ -131,36 +116,28 @@ end
 function LateralSSF(
     dataset::NCDataset,
     config::Config,
-    network::NetworkLand,
+    domain::DomainLand,
     soil::SbmSoilModel,
-    land_params::LandParameters,
 )
-    parameters =
-        LateralSsfParameters(dataset, config, network, soil.parameters, land_params)
+    (; indices) = domain.network
+    (; area) = domain.parameters
+    parameters = LateralSsfParameters(dataset, config, indices, soil.parameters)
     zi = 0.001 * soil.variables.zi
-    variables = LateralSsfVariables(parameters, zi)
+    variables = LateralSsfVariables(parameters, zi, area)
     boundary_conditions = LateralSsfBC(; recharge = fill(MISSING_VALUE, length(zi)))
     ssf = LateralSSF(; boundary_conditions, parameters, variables)
     return ssf
 end
 
 "Update lateral subsurface model for a single timestep"
-function update!(model::LateralSSF, network::NetworkLand, dt::Float64)
-    (; order_of_subdomains, order_subdomain, subdomain_indices, upstream_nodes) = network
+function update!(model::LateralSSF, domain::DomainLand, dt::Float64)
+    (; order_of_subdomains, order_subdomain, subdomain_indices, upstream_nodes) =
+        domain.network
+    (; flow_length, flow_width, area, fraction_to_river, slope) = domain.parameters
 
     (; recharge) = model.boundary_conditions
     (; ssfin, ssf, ssfmax, to_river, zi, exfiltwater, storage) = model.variables
-    (;
-        theta_s,
-        theta_r,
-        soilthickness,
-        kh_profile,
-        flow_length,
-        flow_width,
-        area,
-        fraction_to_river,
-        slope,
-    ) = model.parameters
+    (; theta_s, theta_r, soilthickness, kh_profile) = model.parameters
 
     ns = length(order_of_subdomains)
     for k in 1:ns
