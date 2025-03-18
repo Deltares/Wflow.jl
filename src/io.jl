@@ -255,6 +255,20 @@ function load_fixed_forcing!(model)
     return nothing
 end
 
+function load_fixed_forcing!(model::AbstractModel{<:SedimentModel})
+    (; reader, land) = model
+    (; forcing_parameters) = reader
+    for (par, ncvar) in forcing_parameters
+        if ncvar.name === nothing
+            val = ncvar.value * ncvar.scale + ncvar.offset
+            lens = standard_name_map(land)[par].lens
+            param_vector = lens(model)
+            param_vector .= val
+        end
+    end
+    return nothing
+end
+
 "Get dynamic netCDF input for the given time"
 function update_forcing!(model)
     (; clock, reader, land, domain, config) = model
@@ -307,6 +321,35 @@ function update_forcing!(model)
                 end
             end
         end
+        lens = standard_name_map(land)[par].lens
+        param_vector = lens(model)
+        sel = active_indices(domain, par)
+        data_sel = data[sel]
+        if any(ismissing, data_sel)
+            print(par)
+            msg = "Forcing data has missing values on active model cells for $(ncvar.name)"
+            throw(ArgumentError(msg))
+        end
+        param_vector .= data_sel
+    end
+
+    return nothing
+end
+
+function update_forcing!(model::AbstractModel{<:SedimentModel})
+    (; clock, reader, land, domain) = model
+    (; dataset, dataset_times, forcing_parameters) = reader
+
+    for (par, ncvar) in forcing_parameters
+        ncvar.name === nothing && continue
+
+        time = convert(eltype(dataset_times), clock.time)
+        data = get_at(dataset, ncvar.name, dataset_times, time)
+
+        if ncvar.scale != 1.0 || ncvar.offset != 0.0
+            data .= data .* ncvar.scale .+ ncvar.offset
+        end
+
         lens = standard_name_map(land)[par].lens
         param_vector = lens(model)
         sel = active_indices(domain, par)

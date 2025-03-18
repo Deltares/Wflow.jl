@@ -37,7 +37,7 @@ function initialize_subsurface_flow(
     else
         # when the SBM model is coupled (BMI) to a groundwater model, the following
         # variables are expected to be exchanged from the groundwater model.
-        n = length(indices)
+        n = length(domain.land.network.indices)
         subsurface_flow = GroundwaterExchange(n)
     end
     return subsurface_flow
@@ -182,5 +182,13 @@ function Routing(
     river_flow = initialize_river_flow(dataset, config, domain, routing_types)
 
     routing = Routing(; subsurface_flow, overland_flow, river_flow)
+    return routing
+end
+
+function Routing(dataset::NCDataset, config::Config, domain::Domain, soil::SoilLoss)
+    overland_flow = OverlandFlowSediment(dataset, config, domain.land, soil)
+    river_flow = RiverSediment(dataset, config, domain.river)
+
+    routing = Routing(; overland_flow, river_flow)
     return routing
 end

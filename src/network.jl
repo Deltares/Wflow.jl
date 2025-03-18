@@ -47,6 +47,7 @@ end
     allocation_area_indices::Vector{Vector{Int64}} = Vector{Int}[]
     # directed acyclic graph
     graph::SimpleDiGraph{Int} = DiGraph(0)
+    streamorder::Vector{Int} = Int[]
     # maps from the 1D internal land domain to the 2D model (external) domain
     indices::Vector{CartesianIndex{2}} = CartesianIndex{2}[]
     # traversion order of land domain
@@ -102,6 +103,7 @@ end
     edges_at_node::EdgesAtNode = EdgesAtNode()
     # directed graph
     graph::SimpleDiGraph{Int} = DiGraph(0)
+    streamorder::Vector{Int} = Int[]
     # maps from the 1D internal river domain to the 2D model (external) domain
     indices::Vector{CartesianIndex{2}} = CartesianIndex{2}[]
     # maps lakes to the river domain (zero value represents no lake)
@@ -233,57 +235,63 @@ function get_drainage_network(
     return graph, ldd
 end
 
-function network_catchment(dataset::NCDataset, config::Config, modelsettings::NamedTuple)
+function NetworkLand(dataset::NCDataset, config::Config, modelsettings::NamedTuple)
     lens = lens_input(config, "subcatchment_location__count"; optional = false)
     subcatch_2d = ncread(dataset, config, lens; allow_missing = true)
     indices, reverse_indices = active_indices(subcatch_2d, missing)
     modelsize = size(subcatch_2d)
     graph, local_drain_direction =
         get_drainage_network(dataset, config, indices; do_pits = modelsettings.pits)
+    order = topological_sort_by_dfs(graph)
+    streamorder = stream_order(graph, order)
 
-    network =
-        NetworkLand(; modelsize, indices, reverse_indices, local_drain_direction, graph)
+    network = NetworkLand(;
+        modelsize,
+        indices,
+        reverse_indices,
+        local_drain_direction,
+        graph,
+        order,
+        streamorder,
+    )
     return network
 end
 
-function network_subdomains_land(config::Config, network::NetworkLand; subdomains = false)
-    toposort = topological_sort_by_dfs(network.graph)
-    @reset network.order = toposort
-    streamorder = stream_order(network.graph, toposort)
+function network_subdomains_land(
+    config::Config,
+    network::NetworkLand,
+    routing_types::NamedTuple,
+)
+    subdomains =
+        routing_types.land == "kinematic-wave" ||
+        routing_types.subsurface == "kinematic-wave"
     if subdomains
         pit_inds = findall(x -> x == 5, network.local_drain_direction)
         min_streamorder = get(config.model, "min_streamorder_land", 5)
         order_of_subdomains, subdomain_inds, toposort_subdomain = kinwave_set_subdomains(
             network.graph,
-            toposort,
+            network.order,
             pit_inds,
-            streamorder,
+            network.streamorder,
             min_streamorder,
         )
-        @reset network.order = toposort
         @reset network.order_of_subdomains = order_of_subdomains
         @reset network.order_subdomain = toposort_subdomain
         @reset network.subdomain_indices = subdomain_inds
     end
-    return network, streamorder
+    return network
 end
 
-function network_subdomains_river(
-    config::Config,
-    network::NetworkRiver,
-    streamorder::Vector{Int};
-    subdomains = false,
-)
+function network_subdomains_river(config::Config, network::NetworkRiver, routing_types)
+    subdomains = routing_types.river == "kinematic-wave"
     if subdomains
         min_streamorder = get(config.model, "min_streamorder_river", 6)
-        toposort = topological_sort_by_dfs(network.graph)
-        @reset network.order = toposort
         pit_inds = findall(x -> x == 5, network.local_drain_direction)
         order_of_subdomains, subdomain_inds, toposort_subdomain = kinwave_set_subdomains(
             network.graph,
-            toposort,
+            network.order,
             pit_inds,
-            streamorder[network.land_indices],
+            network.streamorder,
             min_streamorder,
         )
         @reset network.order_of_subdomains = order_of_subdomains
@@ -327,38 +335,30 @@ function EdgeConnectivity(network::NetworkLand)
     return edge_indices
 end
 
-function NetworkLand(
-    dataset::NCDataset,
-    config::Config,
-    modelsettings::NamedTuple,
-    routing_types::NamedTuple,
-)
-    network = network_catchment(dataset, config, modelsettings)
-    subdomains =
-        routing_types.land == "kinematic-wave" ||
-        routing_types.subsurface == "kinematic-wave"
-    network, streamorder = network_subdomains_land(config, network; subdomains)
-    return network, streamorder
-end
-
 function NetworkRiver(
     dataset::NCDataset,
     config::Config,
-    indices_land::Vector{CartesianIndex{2}},
-    streamorder::Vector{Int},
-    routing_types::NamedTuple;
+    network::NetworkLand;
     do_pits = false,
 )
     lens = lens_input(config, "river_location__mask"; optional = false)
     river_location_2d = ncread(dataset, config, lens; type = Bool, fill = false)
     indices, reverse_indices = active_indices(river_location_2d, 0)
     graph, local_drain_direction = get_drainage_network(dataset, config, indices; do_pits)
-    river_location = river_location_2d[indices_land]
-    land_indices = filter(i -> !isequal(river_location[i], 0), 1:length(indices_land))
+    order = topological_sort_by_dfs(graph)
+    river_location = river_location_2d[network.indices]
+    land_indices = filter(i -> !isequal(river_location[i], 0), 1:length(network.indices))
+    streamorder = network.streamorder[land_indices]
 
-    network =
-        NetworkRiver(; indices, reverse_indices, local_drain_direction, graph, land_indices)
-    subdomains = routing_types.river == "kinematic-wave"
-    network = network_subdomains_river(config, network, streamorder; subdomains)
+    network = NetworkRiver(;
+        indices,
+        reverse_indices,
+        local_drain_direction,
+        graph,
+        order,
+        streamorder,
+        land_indices,
+    )
+
     return network
 end

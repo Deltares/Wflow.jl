@@ -31,7 +31,7 @@ function LocalInertialRiverFlowParameters(
     @info "Local inertial approach is used for river flow." cfl h_thresh froude_limit floodplain_1d
 
     (; pit_indices, indices, graph, local_drain_direction, nodes_at_edge) = domain.network
-    (; flow_width, flow_length, waterbody) = domain.parameters
+    (; flow_width, flow_length, waterbody_outlet) = domain.parameters
 
     lens = lens_input_parameter(config, "model_boundary_condition~river__length")
     riverlength_bc =
@@ -77,7 +77,7 @@ function LocalInertialRiverFlowParameters(
             ) / (flow_length[dst_node] + flow_length[src_node])
         mannings_n_sq[i] = mannings_n_i * mannings_n_i
     end
-    active_index = findall(x -> x == 0, waterbody)
+    active_index = findall(x -> x == 0, waterbody_outlet)
 
     parameters = LocalInertialRiverFlowParameters(;
         n,
@@ -908,7 +908,7 @@ function local_inertial_update!(
         xd = indices.xd[i]
 
         if domain.land.parameters.river[i]
-            if domain.river.parameters.waterbody[inds_river[i]]
+            if domain.river.parameters.waterbody_outlet[inds_river[i]]
                 # for reservoir or lake set inflow from land part, these are boundary points
                 # and update of storage and h is not required
                 river_bc.inflow_waterbody[inds_river[i]] =

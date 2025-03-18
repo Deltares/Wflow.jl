@@ -108,11 +108,6 @@ function Clock(config, reader)
     return Clock(starttime, 0, dt)
 end
 
-include("io.jl")
-include("network.jl")
-include("routing/routing.jl")
-include("domain.jl")
-
 abstract type AbstractModel{T} end
 abstract type AbstractLandModel end
 
@@ -121,6 +116,11 @@ abstract type AbstractModelType end
 struct SbmModel <: AbstractModelType end         # "sbm" type / sbm_model.jl
 struct SbmGwfModel <: AbstractModelType end      # "sbm_gwf" type / sbm_gwf_model.jl
 struct SedimentModel <: AbstractModelType end    # "sediment" type / sediment_model.jl
+
+include("io.jl")
+include("network.jl")
+include("routing/routing.jl")
+include("domain.jl")
 
 """
     Model{R <: Routing, L <: AbstractLandModel, T <: AbstractModelType} <:AbstractModel{T}
@@ -185,7 +185,6 @@ include("routing/surface_kinwave.jl")
 include("routing/surface_local_inertial.jl")
 include("routing/surface_routing.jl")
 include("routing/routing_process.jl")
-include("routing/initialize_routing.jl")
 include("demand/water_demand.jl")
 include("sbm_model.jl")
 include("sediment/erosion/erosion_process.jl")
@@ -202,6 +201,7 @@ include("sediment/sediment_transport/river_transport.jl")
 include("erosion.jl")
 include("sediment_flux.jl")
 include("sediment_model.jl")
+include("routing/initialize_routing.jl")
 include("sbm_gwf_model.jl")
 include("standard_name.jl")
 include("utils.jl")

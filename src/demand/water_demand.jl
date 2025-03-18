@@ -577,7 +577,7 @@ function surface_water_allocation_local!(
     (; storage) = river.variables
 
     (; area) = domain.parameters
-    indices_river = domain.river_inds_excl_waterbody
+    indices_river = domain.network.river_inds_excl_waterbody
 
     # maps from the land domain to the internal river domain (linear index), excluding water bodies
     for i in eachindex(surfacewater_demand)
@@ -672,7 +672,8 @@ function surface_water_allocation_area!(
         for j in inds_river[i]
             act_surfacewater_abst_vol[j] += frac_abstract_sw * available_surfacewater[j]
             act_surfacewater_abst[j] =
-                (act_surfacewater_abst_vol[j] / network.river.cell_area[j]) * 1000.0
+                (act_surfacewater_abst_vol[j] / domain.river.parameters.cell_area[j]) *
+                1000.0
         end
 
         # water allocated to each land cell.
@@ -688,7 +689,7 @@ function groundwater_allocation_local!(
     model::AllocationLand,
     demand::Demand,
     groundwater_storage::Vector{Float64},
-    network::NetworkLand,
+    parameters::LandParameters,
 )
     (;
         surfacewater_alloc,
@@ -698,20 +699,21 @@ function groundwater_allocation_local!(
         groundwater_alloc,
     ) = model.variables
     (; groundwater_demand, total_gross_demand) = demand.variables
+    (; area, waterbody_coverage) = parameters
 
     for i in eachindex(groundwater_demand)
         # groundwater demand based on allocation from surface water.
         groundwater_demand[i] = max(total_gross_demand[i] - surfacewater_alloc[i], 0.0)
         # excluding water bodies
-        if !network.waterbody[i]
+        if !waterbody_coverage[i]
             # satisfy groundwater demand with available local groundwater volume
-            groundwater_demand_vol = groundwater_demand[i] * 0.001 * network.area[i]
+            groundwater_demand_vol = groundwater_demand[i] * 0.001 * area[i]
             available_volume = groundwater_storage[i] * 0.75 # limit available groundwater volume
             abstraction_vol = min(groundwater_demand_vol, available_volume)
             act_groundwater_abst_vol[i] = abstraction_vol
             # remaining available groundwater and demand 
             available_groundwater[i] = max(available_volume - abstraction_vol, 0.0)
-            abstraction = (abstraction_vol / network.area[i]) * 1000.0
+            abstraction = (abstraction_vol / area[i]) * 1000.0
             groundwater_demand[i] = max(groundwater_demand[i] - abstraction, 0.0)
             # update actual abstraction from groundwater and groundwater allocation (land cell)
             act_groundwater_abst[i] = abstraction
@@ -737,6 +739,7 @@ function groundwater_allocation_area!(model::AllocationLand, demand::Demand, dom
     ) = model.variables
 
     (; groundwater_demand) = demand.variables
+    (; area) = domain.land.parameters
 
     # loop over allocation areas
     for i in eachindex(inds_river)
@@ -744,7 +747,7 @@ function groundwater_allocation_area!(model::AllocationLand, demand::Demand, dom
         gw_demand_vol = 0.0
         gw_available = 0.0
         for j in inds_land[i]
-            gw_demand_vol += groundwater_demand[j] * 0.001 * network.land.area[j]
+            gw_demand_vol += groundwater_demand[j] * 0.001 * area[j]
             gw_available += available_groundwater[j]
         end
         # total actual groundwater abstraction [m3] in an allocation area, minimum of
@@ -760,8 +763,7 @@ function groundwater_allocation_area!(model::AllocationLand, demand::Demand, dom
         # water abstracted from groundwater and allocated.
         for j in inds_land[i]
             act_groundwater_abst_vol[j] += frac_abstract_gw * available_groundwater[j]
-            act_groundwater_abst[j] =
-                1000.0 * (act_groundwater_abst_vol[j] / network.land.area[j])
+            act_groundwater_abst[j] = 1000.0 * (act_groundwater_abst_vol[j] / area[j])
             groundwater_alloc[j] += frac_allocate_gw * groundwater_demand[j]
         end
     end
@@ -820,7 +822,7 @@ function update_water_allocation!(
     river = routing.river_flow
     inds_river = domain.land.network.river_inds_excl_waterbody
     inds_reservoir = domain.reservoir.network.river_indices
-    inds_lake = domain.lake.network.lake.river_indices
+    inds_lake = domain.lake.network.river_indices
     (;
         groundwater_alloc,
         surfacewater_alloc,
@@ -872,10 +874,10 @@ function update_water_allocation!(
         model,
         demand,
         groundwater_storage(routing.subsurface_flow),
-        network.land,
+        domain.land.parameters,
     )
     # groundwater demand and allocation for areas
-    groundwater_allocation_area!(model, demand, network)
+    groundwater_allocation_area!(model, demand, domain)
 
     # irrigation allocation
     for i in eachindex(total_alloc)

@@ -608,7 +608,7 @@ function set_effective_flowwidth!(
 )
     (; local_drain_direction, indices) = domain.river.network
     (; edge_indices, reverse_indices) = domain.land.network
-    (; flow_width, waterbody) = domain.river.parameters
+    (; flow_width, waterbody_outlet) = domain.river.parameters
     reverse_indices = reverse_indices[indices]
 
     graph = flowgraph(local_drain_direction, indices, PCR_DIR)
@@ -622,43 +622,47 @@ function set_effective_flowwidth!(
         idx = reverse_indices[v]
         # loop over river D8 directions
         if dir == CartesianIndex(1, 1)
-            we_x[idx] = waterbody[v] ? 0.0 : max(we_x[idx] - 0.5 * w, 0.0)
-            we_y[idx] = waterbody[v] ? 0.0 : max(we_y[idx] - 0.5 * w, 0.0)
+            we_x[idx] = waterbody_outlet[v] ? 0.0 : max(we_x[idx] - 0.5 * w, 0.0)
+            we_y[idx] = waterbody_outlet[v] ? 0.0 : max(we_y[idx] - 0.5 * w, 0.0)
         elseif dir == CartesianIndex(-1, -1)
             if edge_indices.xd[idx] <= n
                 we_y[edge_indices.xd[idx]] =
-                    waterbody[v] ? 0.0 : max(we_y[edge_indices.xd[idx]] - 0.5 * w, 0.0)
+                    waterbody_outlet[v] ? 0.0 :
+                    max(we_y[edge_indices.xd[idx]] - 0.5 * w, 0.0)
             end
             if edge_indices.yd[idx] <= n
                 we_x[edge_indices.yd[idx]] =
-                    waterbody[v] ? 0.0 : max(we_x[edge_indices.yd[idx]] - 0.5 * w, 0.0)
+                    waterbody_outlet[v] ? 0.0 :
+                    max(we_x[edge_indices.yd[idx]] - 0.5 * w, 0.0)
             end
         elseif dir == CartesianIndex(1, 0)
-            we_y[idx] = waterbody[v] ? 0.0 : max(we_y[idx] - w, 0.0)
+            we_y[idx] = waterbody_outlet[v] ? 0.0 : max(we_y[idx] - w, 0.0)
         elseif dir == CartesianIndex(0, 1)
-            we_x[idx] = waterbody[v] ? 0.0 : max(we_x[idx] - w, 0.0)
+            we_x[idx] = waterbody_outlet[v] ? 0.0 : max(we_x[idx] - w, 0.0)
         elseif dir == CartesianIndex(-1, 0)
             if edge_indices.xd[idx] <= n
                 we_y[edge_indices.xd[idx]] =
-                    waterbody[v] ? 0.0 : max(we_y[edge_indices.xd[idx]] - w, 0.0)
+                    waterbody_outlet[v] ? 0.0 : max(we_y[edge_indices.xd[idx]] - w, 0.0)
             end
         elseif dir == CartesianIndex(0, -1)
             if edge_indices.yd[idx] <= n
                 we_x[edge_indices.yd[idx]] =
-                    waterbody[v] ? 0.0 : max(we_x[edge_indices.yd[idx]] - w, 0.0)
+                    waterbody_outlet[v] ? 0.0 : max(we_x[edge_indices.yd[idx]] - w, 0.0)
             end
         elseif dir == CartesianIndex(1, -1)
             we_y[idx] = max(we_y[idx] - 0.5 * w, 0.0)
             if edge_indices.yd[idx] <= n
                 we_x[edge_indices.yd[idx]] =
-                    waterbody[v] ? 0.0 : max(we_x[edge_indices.yd[idx]] - 0.5 * w, 0.0)
+                    waterbody_outlet[v] ? 0.0 :
+                    max(we_x[edge_indices.yd[idx]] - 0.5 * w, 0.0)
             end
         elseif dir == CartesianIndex(-1, 1)
             if edge_indices.xd[idx] <= n
                 we_y[edge_indices.xd[idx]] =
-                    waterbody[v] ? 0.0 : max(we_y[edge_indices.xd[idx]] - 0.5 * w, 0.0)
+                    waterbody_outlet[v] ? 0.0 :
+                    max(we_y[edge_indices.xd[idx]] - 0.5 * w, 0.0)
             end
-            we_x[idx] = waterbody[v] ? 0.0 : max(we_x[idx] - 0.5 * w, 0.0)
+            we_x[idx] = waterbody_outlet[v] ? 0.0 : max(we_x[idx] - 0.5 * w, 0.0)
         end
     end
     return nothing

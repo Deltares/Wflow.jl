@@ -198,8 +198,8 @@ function SedimentRiverTransportParameters(
     wblocs = zeros(Float64, n)
     wbarea = zeros(Float64, n)
     wbtrap = zeros(Float64, n)
-    do_reservoirs = get(config.model, "doreservoir", false)::Bool
-    do_lakes = get(config.model, "dolake", false)::Bool
+    do_reservoirs = get(config.model, "reservoirs", false)::Bool
+    do_lakes = get(config.model, "lakes", false)::Bool
 
     if do_reservoirs
         lens = lens_input(config, "reservoir_location__count"; optional = false)
@@ -319,13 +319,7 @@ function update_boundary_conditions!(
 end
 
 "Update river sediment transport model for a single timestep"
-function update!(
-    model::SedimentRiverTransportModel,
-    network::NetworkRiver,
-    geometry::RiverParameters,
-    waterbodies::Vector{Bool},
-    dt::Float64,
-)
+function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Float64)
     (;
         waterlevel,
         q,
@@ -377,7 +371,8 @@ function update!(
         store_gravel,
     ) = model.variables
 
-    (; graph, order) = network
+    (; graph, order) = domain.network
+    (; slope, flow_width, flow_length, waterbody_coverage) = domain.parameters
 
     # Sediment transport - water balance in the river
     for v in order
@@ -411,7 +406,7 @@ function update!(
         # Erosion only if the load is below the transport capacity of the flow.
         sediment_need = max(transport_capacity[v] - input_sediment, 0.0)
         # No erosion in reservoirs
-        if waterbodies[v]
+        if waterbody_coverage[v]
             sediment_need = 0.0
         end
 
@@ -526,7 +521,7 @@ function update!(
                 waterbodies_area[v],
                 waterbodies_trapping_efficiency[v],
                 dm_clay[v],
-                geometry.slope[v],
+                slope[v],
             )
             deposition_silt = reservoir_deposition_camp(
                 (input_silt + erosion_silt),
@@ -535,7 +530,7 @@ function update!(
                 waterbodies_area[v],
                 waterbodies_trapping_efficiency[v],
                 dm_silt[v],
-                geometry.slope[v],
+                slope[v],
             )
             deposition_sand = reservoir_deposition_camp(
                 (input_sand + erosion_sand),
@@ -544,7 +539,7 @@ function update!(
                 waterbodies_area[v],
                 waterbodies_trapping_efficiency[v],
                 dm_sand[v],
-                geometry.slope[v],
+                slope[v],
             )
             deposition_sagg = reservoir_deposition_camp(
                 (input_sagg + erosion_sagg),
@@ -553,7 +548,7 @@ function update!(
                 waterbodies_area[v],
                 waterbodies_trapping_efficiency[v],
                 dm_sagg[v],
-                geometry.slope[v],
+                slope[v],
             )
             deposition_lagg = reservoir_deposition_camp(
                 (input_lagg + erosion_lagg),
@@ -562,7 +557,7 @@ function update!(
                 waterbodies_area[v],
                 waterbodies_trapping_efficiency[v],
                 dm_lagg[v],
-                geometry.slope[v],
+                slope[v],
             )
             deposition_gravel = reservoir_deposition_camp(
                 (input_gravel + erosion_gravel),
@@ -571,9 +566,9 @@ function update!(
                 waterbodies_area[v],
                 waterbodies_trapping_efficiency[v],
                 dm_gravel[v],
-                geometry.slope[v],
+                slope[v],
             )
-        elseif waterbodies[v]
+        elseif waterbody_coverage[v]
             # No deposition in waterbodies, only at the outlets
             deposition_clay = 0.0
             deposition_silt = 0.0
@@ -632,11 +627,8 @@ function update!(
             else
                 # Natural deposition from Einstein's formula (density controlled)
                 # Particle fall velocity [m/s] from Stokes
-                xs = ifelse(
-                    q[v] > 0.0,
-                    1.055 * geometry.length[v] / (q[v] / geometry.width[v]),
-                    0.0,
-                )
+                xs =
+                    ifelse(q[v] > 0.0, 1.055 * flow_length[v] / (q[v] / flow_width[v]), 0.0)
                 xclay =
                     min(1.0, 1.0 - 1.0 / exp(xs * (411.0 * (dm_clay[v] / 1000)^2 / 3600)))
                 deposition_clay = xclay * (input_clay + erosion_clay)
@@ -680,10 +672,8 @@ function update!(
         # 0 in case all sediment are deposited in the cell
         # Reduce the fraction so that there is still some sediment staying in the river cell
         if waterlevel[v] > 0.0
-            fwaterout = min(
-                q[v] * dt / (waterlevel[v] * geometry.width[v] * geometry.length[v]),
-                1.0,
-            )
+            fwaterout =
+                min(q[v] * dt / (waterlevel[v] * flow_width[v] * flow_length[v]), 1.0)
         else
             fwaterout = 1.0
         end
@@ -871,12 +861,13 @@ end
 "Update river sediment concentrations model for a single timestep"
 function update!(
     model::SedimentConcentrationsRiverModel,
-    geometry::RiverParameters,
+    parameters::RiverParameters,
     dt::Float64,
 )
     (; q, waterlevel, clay, silt, sand, sagg, lagg, gravel) = model.boundary_conditions
     (; dm_clay, dm_silt, dm_sand, dm_sagg, dm_lagg, dm_gravel) = model.parameters
     (; total, suspended, bed) = model.variables
+    (; slope) = parameters
 
     zeros = fill(0.0, length(q))
     # Conversion from load [ton] to concentration for rivers [mg/L]
@@ -885,12 +876,10 @@ function update!(
     # Differentiation of bed and suspended load using Rouse number for suspension
     # threshold diameter between bed load and mixed load using Rouse number
     dbedf =
-        1e3 .*
-        (2.5 .* 3600 .* 0.41 ./ 411 .* (9.81 .* waterlevel .* geometry.slope) .^ 0.5) .^ 0.5
+        1e3 .* (2.5 .* 3600 .* 0.41 ./ 411 .* (9.81 .* waterlevel .* slope) .^ 0.5) .^ 0.5
     # threshold diameter between suspended load and mixed load using Rouse number
     dsuspf =
-        1e3 .*
-        (1.2 .* 3600 .* 0.41 ./ 411 .* (9.81 .* waterlevel .* geometry.slope) .^ 0.5) .^ 0.5
+        1e3 .* (1.2 .* 3600 .* 0.41 ./ 411 .* (9.81 .* waterlevel .* slope) .^ 0.5) .^ 0.5
 
     # Rouse with diameter
     SSclay = ifelse.(dm_clay .<= dsuspf, clay, ifelse.(dm_clay .<= dbedf, clay ./ 2, zeros))

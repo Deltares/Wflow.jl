@@ -20,19 +20,26 @@ Initialize the model. Reads the input settings and data as defined in the Config
 generated from the configuration file `config_file`. Will return a Model that is ready to
 run.
 """
+
 function BMI.initialize(::Type{<:Model}, config_file)
     config = Config(config_file)
-    modeltype = config.model.type
-    model = if modeltype == "sbm"
-        initialize_sbm_model(config)
-    elseif modeltype == "sbm_gwf"
-        initialize_sbm_gwf_model(config)
-    elseif modeltype == "sediment"
-        initialize_sediment_model(config)
-    else
-        error("unknown model type")
+    model_type = config.model.type
+
+    if model_type ∉ ("sbm", "sbm_gwf", "sediment")
+        error("Unknown model type $model_type.")
     end
+    @info "Initialize model variables for model type `$model_type`."
+
+    type = if model_type == "sbm"
+        SbmModel()
+    elseif model_type == "sbm_gwf"
+        SbmGwfModel()
+    elseif model_type == "sediment"
+        SedimentModel()
+    end
+    model = Model(config, type)
     load_fixed_forcing!(model)
+
     return model
 end
 
@@ -217,8 +224,8 @@ function BMI.get_value(model::Model, name::String, dest::Vector{Float64})
 end
 
 function BMI.get_value_ptr(model::Model, name::String)
-    (; land, network) = model
-    n = length(active_indices(network, name))
+    (; land, domain) = model
+    n = length(active_indices(domain, name))
 
     if occursin("soil_layer~", name)
         name_2d, ind = soil_layer_standard_name(name)
@@ -287,9 +294,9 @@ function BMI.get_grid_rank(model::Model, grid::Int)
 end
 
 function BMI.get_grid_x(model::Model, grid::Int, x::Vector{Float64})
-    (; reader, network) = model
+    (; reader, domain) = model
     (; dataset) = reader
-    sel = active_indices(network, GRIDS[grid])
+    sel = active_indices(domain, GRIDS[grid])
     inds = [sel[i][1] for i in eachindex(sel)]
     x_nc = read_x_axis(dataset)
     x .= x_nc[inds]
@@ -297,9 +304,9 @@ function BMI.get_grid_x(model::Model, grid::Int, x::Vector{Float64})
 end
 
 function BMI.get_grid_y(model::Model, grid::Int, y::Vector{Float64})
-    (; reader, network) = model
+    (; reader, domain) = model
     (; dataset) = reader
-    sel = active_indices(network, GRIDS[grid])
+    sel = active_indices(domain, GRIDS[grid])
     inds = [sel[i][2] for i in eachindex(sel)]
     y_nc = read_y_axis(dataset)
     y .= y_nc[inds]
@@ -307,21 +314,21 @@ function BMI.get_grid_y(model::Model, grid::Int, y::Vector{Float64})
 end
 
 function BMI.get_grid_node_count(model::Model, grid::Int)
-    return length(active_indices(model.network, GRIDS[grid]))
+    return length(active_indices(model.domain, GRIDS[grid]))
 end
 
 function BMI.get_grid_size(model::Model, grid::Int)
-    return length(active_indices(model.network, GRIDS[grid]))
+    return length(active_indices(model.domain, GRIDS[grid]))
 end
 
 function BMI.get_grid_edge_count(model::Model, grid::Int)
-    (; network) = model
+    (; domain) = model
     if grid == 3
-        return ne(network.river.graph)
+        return ne(domain.river.network.graph)
     elseif grid == 4
-        return length(network.land.edge_indices.xu)
+        return length(domain.land.network.edge_indices.xu)
     elseif grid == 5
-        return length(network.land.edge_indices.yu)
+        return length(domain.land.network.edge_indices.yu)
     elseif grid in 0:2 || grid == 6
         @warn("edges are not provided for grid type $grid (variables are located at nodes)")
     else
@@ -330,24 +337,24 @@ function BMI.get_grid_edge_count(model::Model, grid::Int)
 end
 
 function BMI.get_grid_edge_nodes(model::Model, grid::Int, edge_nodes::Vector{Int})
-    (; network) = model
+    (; domain) = model
     n = length(edge_nodes)
     m = div(n, 2)
     # inactive nodes (boundary/ghost points) are set at -999
     if grid == 3
-        nodes_at_edge = adjacent_nodes_at_edge(network.river.graph)
+        nodes_at_edge = adjacent_nodes_at_edge(domain.river.network.graph)
         nodes_at_edge.dst[nodes_at_edge.dst .== m + 1] .= -999
         edge_nodes[range(1, n; step = 2)] = nodes_at_edge.src
         edge_nodes[range(2, n; step = 2)] = nodes_at_edge.dst
         return edge_nodes
     elseif grid == 4
-        xu = network.land.edge_indices.xu
+        xu = domain.land.network.edge_indices.xu
         edge_nodes[range(1, n; step = 2)] = 1:m
         xu[xu .== m + 1] .= -999
         edge_nodes[range(2, n; step = 2)] = xu
         return edge_nodes
     elseif grid == 5
-        yu = network.land.edge_indices.yu
+        yu = domain.land.network.edge_indices.yu
         edge_nodes[range(1, n; step = 2)] = 1:m
         yu[yu .== m + 1] .= -999
         edge_nodes[range(2, n; step = 2)] = yu

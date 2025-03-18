@@ -85,7 +85,7 @@ end
 "Update Julian and Torres river erosion model for a single timestep"
 function update!(
     model::RiverErosionJulianTorresModel,
-    geometry::RiverParameters,
+    parameters::RiverParameters,
     dt::Float64,
 )
     (; waterlevel) = model.boundary_conditions
@@ -97,9 +97,9 @@ function update!(
         bed[i], bank[i] = river_erosion_julian_torres(
             waterlevel[i],
             d50[i],
-            geometry.width[i],
-            geometry.length[i],
-            geometry.slope[i],
+            parameters.flow_width[i],
+            parameters.flow_length[i],
+            parameters.slope[i],
             dt,
         )
     end

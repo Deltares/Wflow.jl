@@ -138,9 +138,7 @@ end
 function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
     (; routing, land, domain, config) = model
     land_v = routing.overland_flow.variables
-    land_p = routing.overland_flow.parameters
     river_v = routing.river_flow.variables
-    river_p = routing.river_flow.parameters
 
     reinit = get(config.model, "reinit", true)::Bool
     routing_options = ("kinematic-wave", "local-inertial")
@@ -177,13 +175,13 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
         elseif land_routing == "local-inertial"
             (; river, x_length, y_length) = domain.land.parameters
             (; flow_width, flow_length) = domain.river.parameters
+            (; bankfull_storage) = routing.overland_flow.parameters
             for i in eachindex(routing.overland_flow.storage)
                 if river[i]
                     j = domain.land.network.river_indices[i]
                     if land_v.h[i] > 0.0
                         land_v.storage[i] =
-                            land_v.h[i] * x_length[i] * y_length[i] +
-                            land_p.bankfull_storage[j]
+                            land_v.h[i] * x_length[i] * y_length[i] + bankfull_storage[j]
                     else
                         land_v.storage[i] = river_v.h[j] * flow_width[j] * flow_length[j]
                     end
