@@ -3,8 +3,9 @@
 const DIRS = (:yd, :xd, :xu, :yu)
 
 """
-Struct for storing forward `indices` and reverse indices `reverse_indices` of `Drainage`
-cells (boundary condition groundwater flow) in the 2D external model domain.
+Struct for storing forward `indices` and reverse indices `reverse_indices` in the 2D
+external model domain, and 1D land domain indices `land_indices` of `Drainage` cells
+(boundary condition groundwater flow).
 """
 @kwdef struct NetworkDrain
     indices::Vector{CartesianIndex{2}} = CartesianIndex{2}[]
@@ -41,12 +42,15 @@ end
 
 "Struct for storing network information land domain."
 @kwdef struct NetworkLand
+    # dimension of 2D model
     modelsize::Tuple{Int, Int} = (0, 0)
+    # local drain direction using the 8 point pour algorithm
     local_drain_direction::Vector{UInt8} = UInt8[]
     # water allocation areas [-]
     allocation_area_indices::Vector{Vector{Int64}} = Vector{Int}[]
     # directed acyclic graph
     graph::SimpleDiGraph{Int} = DiGraph(0)
+    # Strahler stream order
     streamorder::Vector{Int} = Int[]
     # maps from the 1D internal land domain to the 2D model (external) domain
     indices::Vector{CartesianIndex{2}} = CartesianIndex{2}[]
@@ -96,6 +100,7 @@ end
 
 "Struct for storing network information river domain."
 @kwdef struct NetworkRiver
+    # local drain direction using the 8 point pour algorithm
     local_drain_direction::Vector{UInt8} = UInt8[]
     # water allocation areas [-]
     allocation_area_indices::Vector{Vector{Int64}} = Vector{Int}[]
@@ -103,6 +108,7 @@ end
     edges_at_node::EdgesAtNode = EdgesAtNode()
     # directed graph
     graph::SimpleDiGraph{Int} = DiGraph(0)
+    # Strahler stream order
     streamorder::Vector{Int} = Int[]
     # maps from the 1D internal river domain to the 2D model (external) domain
     indices::Vector{CartesianIndex{2}} = CartesianIndex{2}[]
@@ -110,7 +116,7 @@ end
     lake_indices::Vector{Int} = Int[]
     # land domain indices masked by river domain (zero value represents no river)
     land_indices::Vector{Int} = Int[]
-    # 
+    # maps 1D pits (local drain direction) to the 2D model (external) domain
     pit_indices::Vector{CartesianIndex{2}} = CartesianIndex{2}[]
     # source and destination node of an edge
     nodes_at_edge::NodesAtEdge = NodesAtEdge()

@@ -36,7 +36,7 @@ function Model(config::Config, type::SbmGwfModel)
         drains = get(config.model, "drains", false)::Bool,
         constanthead = get(config.model, "constanthead", false)::Bool,
         water_demand = haskey(config.model, "water_demand"),
-        pits = get(config.model, "pits", false)::Bool,
+        pits = false,
         min_streamorder_river = get(config.model, "min_streamorder_river", 6),
         min_streamorder_land = get(config.model, "min_streamorder_land", 5),
     )

@@ -178,7 +178,8 @@ function Domain(
     if nthreads() > 1
         if routing_types.river == "kinematic-wave"
             @info "Parallel execution of kinematic wave" modelsettings.min_streamorder_land modelsettings.min_streamorder_river
-        elseif routing_types.land == "kinematic-wave" || modelsettings.subsurface_flow
+        elseif routing_types.land == "kinematic-wave" ||
+               routing_types.subsurface == "kinematic-wave"
             @info "Parallel execution of kinematic wave" modelsettings.min_streamorder_land
         end
     end
