@@ -1777,3 +1777,14 @@ function get_routing_types(config::Config)
 
     return (; land, river, subsurface)
 end
+
+function get_waterbody_locs(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+    waterbody_type::String,
+)
+    lens = lens_input(config, "$(waterbody_type)_location__count"; optional = false)
+    locs = ncread(dataset, config, lens; sel = indices, type = Int, fill = 0)
+    return locs
+end

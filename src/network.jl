@@ -3,17 +3,6 @@
 const DIRS = (:yd, :xd, :xu, :yu)
 
 """
-Struct for storing forward `indices` and reverse indices `reverse_indices` in the 2D
-external model domain, and 1D land domain indices `land_indices` of `Drainage` cells
-(boundary condition groundwater flow).
-"""
-@kwdef struct NetworkDrain
-    indices::Vector{CartesianIndex{2}} = CartesianIndex{2}[]
-    reverse_indices::Matrix{Int64} = zeros(Int, 0, 0)
-    land_indices::Vector{Int} = Int[]
-end
-
-"""
 Struct for storing 2D staggered grid edge connectivity in `x` and `y` directions. For
 example used by the q-centered numerical scheme of Almeida et al. (2012), that uses
 information on both neighboring cell edges (interfaces).
@@ -38,6 +27,18 @@ The edges are defined as follows:
     xd::Vector{Int} = Int[]
     yu::Vector{Int} = Int[]
     yd::Vector{Int} = Int[]
+end
+
+"Struct for storing source `src` node and destination `dst` node of an edge."
+@kwdef struct NodesAtEdge
+    src::Vector{Int} = Int[]
+    dst::Vector{Int} = Int[]
+end
+
+"Struct for storing source `src` edge and destination `dst` edge of a node."
+@kwdef struct EdgesAtNode
+    src::Vector{Vector{Int}} = Vector{Int}[]
+    dst::Vector{Vector{Int}} = Vector{Int}[]
 end
 
 "Struct for storing network information land domain."
@@ -74,28 +75,92 @@ end
     upstream_nodes::Vector{Vector{Int}} = Vector{Int}[]
 end
 
-"Struct for storing network information water body (reservoir or lake)."
-@kwdef struct NetworkWaterBody
-    # list of 2D indices representing water body area (coverage)
-    indices_coverage::Vector{Vector{CartesianIndex{2}}} = Vector{CartesianIndex{2}}[]
-    # list of 2D indices representing water body outlet
-    indices_outlet::Vector{CartesianIndex{2}} = CartesianIndex{2}[]
-    # maps from the 2D model (external) domain to a list of water bodies
-    reverse_indices::Matrix{Int} = zeros(Int, 0, 0)
-    # maps from the 1D river domain to a list of water bodies (zero value represents no water body)
-    river_indices::Vector{Int} = Int[]
+"""
+Initialize `NetworkLand` fields related to catchment (active indices model domain) and land
+drainage network.
+"""
+function NetworkLand(dataset::NCDataset, config::Config, modelsettings::NamedTuple)
+    lens = lens_input(config, "subcatchment_location__count"; optional = false)
+    subcatch_2d = ncread(dataset, config, lens; allow_missing = true)
+    indices, reverse_indices = active_indices(subcatch_2d, missing)
+    modelsize = size(subcatch_2d)
+    graph, local_drain_direction =
+        get_drainage_network(dataset, config, indices; do_pits = modelsettings.pits)
+    order = topological_sort_by_dfs(graph)
+    streamorder = stream_order(graph, order)
+
+    network = NetworkLand(;
+        modelsize,
+        indices,
+        reverse_indices,
+        local_drain_direction,
+        graph,
+        order,
+        streamorder,
+    )
+    return network
 end
 
-"Struct for storing source `src` node and destination `dst` node of an edge"
-@kwdef struct NodesAtEdge
-    src::Vector{Int} = Int[]
-    dst::Vector{Int} = Int[]
+"""
+Set subdomain fields of `NetworkLand` for running kinematic wave parallel for land domain if
+nthreads > 1.
+"""
+function network_subdomains_land(config::Config, network::NetworkLand)
+    pit_inds = findall(x -> x == 5, network.local_drain_direction)
+    min_streamorder = get(config.model, "min_streamorder_land", 5)
+    order_of_subdomains, subdomain_inds, toposort_subdomain = kinwave_set_subdomains(
+        network.graph,
+        network.order,
+        pit_inds,
+        network.streamorder,
+        min_streamorder,
+    )
+    @reset network.order_of_subdomains = order_of_subdomains
+    @reset network.order_subdomain = toposort_subdomain
+    @reset network.subdomain_indices = subdomain_inds
+
+    return network
 end
 
-"Struct for storing source `src` edge and destination `dst` edge of a node"
-@kwdef struct EdgesAtNode
-    src::Vector{Vector{Int}} = Vector{Int}[]
-    dst::Vector{Vector{Int}} = Vector{Int}[]
+"Initialize `EdgeConnectivity`"
+function EdgeConnectivity(network::NetworkLand)
+    (; modelsize, indices, reverse_indices) = network
+    n = length(indices)
+    edge_indices =
+        EdgeConnectivity(; xu = zeros(n), xd = zeros(n), yu = zeros(n), yd = zeros(n))
+
+    nrow, ncol = modelsize
+    for (v, i) in enumerate(indices)
+        for (m, neighbor) in enumerate(NEIGHBORS)
+            j = i + neighbor
+            dir = DIRS[m]
+            if (1 <= j[1] <= nrow) && (1 <= j[2] <= ncol) && (reverse_indices[j] != 0)
+                getfield(edge_indices, dir)[v] = reverse_indices[j]
+            else
+                getfield(edge_indices, dir)[v] = n + 1
+            end
+        end
+    end
+    return edge_indices
+end
+
+"Return local drain direction `ldd` and directed `graph` based on `ldd`"
+function get_drainage_network(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}};
+    do_pits = false,
+)
+    lens = lens_input(config, "local_drain_direction"; optional = false)
+    ldd_2d = ncread(dataset, config, lens; allow_missing = true)
+    ldd = convert(Array{UInt8}, ldd_2d[indices])
+    if do_pits
+        lens = lens_input(config, "pits"; optional = false)
+        pits_2d = ncread(dataset, config, lens; type = Bool, fill = false)
+        ldd = set_pit_ldd(pits_2d, ldd, indices)
+    end
+    graph = flowgraph(ldd, indices, PCR_DIR)
+    return graph, ldd
 end
 
 "Struct for storing network information river domain."
@@ -136,54 +201,94 @@ end
     upstream_nodes::Vector{Vector{Int}} = Vector{Int}[]
 end
 
-function NetworkDrain(
+"""
+Initialize `NetworkRiver` fields related to river mask (active indices model domain) and
+river drainage network.
+"""
+function NetworkRiver(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
-    surface_flow_width::Vector{Float64},
+    network::NetworkLand;
+    do_pits = false,
 )
-    n_cells = length(indices)
-    lens = lens_input_parameter(config, "land_drain_location__flag")
-    drain_2d = ncread(dataset, config, lens; type = Bool, fill = false)
-    drain = drain_2d[indices]
+    lens = lens_input(config, "river_location__mask"; optional = false)
+    river_location_2d = ncread(dataset, config, lens; type = Bool, fill = false)
+    indices, reverse_indices = active_indices(river_location_2d, 0)
+    graph, local_drain_direction = get_drainage_network(dataset, config, indices; do_pits)
+    order = topological_sort_by_dfs(graph)
+    river_location = river_location_2d[network.indices]
+    land_indices = filter(i -> !isequal(river_location[i], 0), 1:length(network.indices))
+    streamorder = network.streamorder[land_indices]
 
-    # check if drain occurs where overland flow is not possible (surface_flow_width = 0.0)
-    # and correct if this is the case
-    false_drain =
-        filter(i -> !isequal(drain[i], 0) && surface_flow_width[i] == 0.0, 1:n_cells)
-    n_false_drain = length(false_drain)
-    if n_false_drain > 0
-        drain_2d[indices[false_drain]] .= 0
-        drain[false_drain] .= 0
-        @info "$n_false_drain drain locations are removed that occur where overland flow
-         is not possible (overland flow width is zero)"
-    end
-    land_indices = filter(i -> !isequal(drain[i], 0), 1:n_cells)
-    indices, reverse_indices = active_indices(drain_2d, 0)
-    network = NetworkDrain(; indices, reverse_indices, land_indices)
+    network = NetworkRiver(;
+        indices,
+        reverse_indices,
+        local_drain_direction,
+        graph,
+        order,
+        streamorder,
+        land_indices,
+    )
+
     return network
 end
 
-function get_waterbody_locs(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-    waterbody_type::String,
-)
-    lens = lens_input(config, "$(waterbody_type)_location__count"; optional = false)
-    locs = ncread(dataset, config, lens; sel = indices, type = Int, fill = 0)
-    return locs
+"""
+Set subdomain fields of `NetworkRiver` for running kinematic wave parallel for river domain
+if nthreads > 1.
+"""
+function network_subdomains_river(config::Config, network::NetworkRiver)
+    min_streamorder = get(config.model, "min_streamorder_river", 6)
+    pit_inds = findall(x -> x == 5, network.local_drain_direction)
+    order_of_subdomains, subdomain_inds, toposort_subdomain = kinwave_set_subdomains(
+        network.graph,
+        network.order,
+        pit_inds,
+        network.streamorder,
+        min_streamorder,
+    )
+    @reset network.order_of_subdomains = order_of_subdomains
+    @reset network.order_subdomain = toposort_subdomain
+    @reset network.subdomain_indices = subdomain_inds
+    return network
 end
 
+"Initialize `NodesAtEdge`"
+function NodesAtEdge(network::NetworkRiver)
+    index_pit = findall(x -> x == 5, network.local_drain_direction)
+    add_vertex_edge_graph!(network.graph, index_pit)
+    nodes_at_edge = NodesAtEdge(; adjacent_nodes_at_edge(network.graph)...)
+    return nodes_at_edge, index_pit
+end
+
+"Initialize `EdgesAtNode`"
+function EdgesAtNode(network::NetworkRiver)
+    edges_at_node =
+        EdgesAtNode(; adjacent_edges_at_node(network.graph, network.nodes_at_edge)...)
+    return edges_at_node
+end
+
+"Struct for storing network information water body (reservoir or lake)."
+@kwdef struct NetworkWaterBody
+    # list of 2D indices representing water body area (coverage)
+    indices_coverage::Vector{Vector{CartesianIndex{2}}} = Vector{CartesianIndex{2}}[]
+    # list of 2D indices representing water body outlet
+    indices_outlet::Vector{CartesianIndex{2}} = CartesianIndex{2}[]
+    # maps from the 2D model (external) domain to a list of water bodies
+    reverse_indices::Matrix{Int} = zeros(Int, 0, 0)
+    # maps from the 1D river domain to a list of water bodies (zero value represents no water body)
+    river_indices::Vector{Int} = Int[]
+end
+
+"Initialize `NetworkWaterBody`"
 function NetworkWaterBody(
     dataset::NCDataset,
     config::Config,
     indices::Vector{CartesianIndex{2}},
     waterbody_type::String,
 )
-    # read only reservoir data if waterbody true
     # allow waterbody only in river cells
-    # note that these locations are only the reservoir outlet pixels
+    # note that these locations are only the waterbody outlet pixels
     lens = lens_input(config, "$(waterbody_type)_location__count"; optional = false)
     locs = ncread(dataset, config, lens; sel = indices, type = Int, fill = 0)
 
@@ -223,148 +328,42 @@ function NetworkWaterBody(
     return network, inds_map2river
 end
 
-function get_drainage_network(
+"""
+Struct for storing forward `indices` and reverse indices `reverse_indices` in the 2D
+external model domain, and 1D land domain indices `land_indices` of `Drainage` cells
+(boundary condition groundwater flow).
+"""
+@kwdef struct NetworkDrain
+    indices::Vector{CartesianIndex{2}} = CartesianIndex{2}[]
+    reverse_indices::Matrix{Int64} = zeros(Int, 0, 0)
+    land_indices::Vector{Int} = Int[]
+end
+
+"Initialize `NetworkDrain`"
+function NetworkDrain(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}};
-    do_pits = false,
+    indices::Vector{CartesianIndex{2}},
+    surface_flow_width::Vector{Float64},
 )
-    lens = lens_input(config, "local_drain_direction"; optional = false)
-    ldd_2d = ncread(dataset, config, lens; allow_missing = true)
-    ldd = convert(Array{UInt8}, ldd_2d[indices])
-    if do_pits
-        lens = lens_input(config, "pits"; optional = false)
-        pits_2d = ncread(dataset, config, lens; type = Bool, fill = false)
-        ldd = set_pit_ldd(pits_2d, ldd, indices)
+    n_cells = length(indices)
+    lens = lens_input_parameter(config, "land_drain_location__flag")
+    drain_2d = ncread(dataset, config, lens; type = Bool, fill = false)
+    drain = drain_2d[indices]
+
+    # check if drain occurs where overland flow is not possible (surface_flow_width = 0.0)
+    # and correct if this is the case
+    false_drain =
+        filter(i -> !isequal(drain[i], 0) && surface_flow_width[i] == 0.0, 1:n_cells)
+    n_false_drain = length(false_drain)
+    if n_false_drain > 0
+        drain_2d[indices[false_drain]] .= 0
+        drain[false_drain] .= 0
+        @info "$n_false_drain drain locations are removed that occur where overland flow
+         is not possible (overland flow width is zero)"
     end
-    graph = flowgraph(ldd, indices, PCR_DIR)
-    return graph, ldd
-end
-
-function NetworkLand(dataset::NCDataset, config::Config, modelsettings::NamedTuple)
-    lens = lens_input(config, "subcatchment_location__count"; optional = false)
-    subcatch_2d = ncread(dataset, config, lens; allow_missing = true)
-    indices, reverse_indices = active_indices(subcatch_2d, missing)
-    modelsize = size(subcatch_2d)
-    graph, local_drain_direction =
-        get_drainage_network(dataset, config, indices; do_pits = modelsettings.pits)
-    order = topological_sort_by_dfs(graph)
-    streamorder = stream_order(graph, order)
-
-    network = NetworkLand(;
-        modelsize,
-        indices,
-        reverse_indices,
-        local_drain_direction,
-        graph,
-        order,
-        streamorder,
-    )
-    return network
-end
-
-function network_subdomains_land(
-    config::Config,
-    network::NetworkLand,
-    routing_types::NamedTuple,
-)
-    subdomains =
-        routing_types.land == "kinematic-wave" ||
-        routing_types.subsurface == "kinematic-wave"
-    if subdomains
-        pit_inds = findall(x -> x == 5, network.local_drain_direction)
-        min_streamorder = get(config.model, "min_streamorder_land", 5)
-        order_of_subdomains, subdomain_inds, toposort_subdomain = kinwave_set_subdomains(
-            network.graph,
-            network.order,
-            pit_inds,
-            network.streamorder,
-            min_streamorder,
-        )
-        @reset network.order_of_subdomains = order_of_subdomains
-        @reset network.order_subdomain = toposort_subdomain
-        @reset network.subdomain_indices = subdomain_inds
-    end
-    return network
-end
-
-function network_subdomains_river(config::Config, network::NetworkRiver, routing_types)
-    subdomains = routing_types.river == "kinematic-wave"
-    if subdomains
-        min_streamorder = get(config.model, "min_streamorder_river", 6)
-        pit_inds = findall(x -> x == 5, network.local_drain_direction)
-        order_of_subdomains, subdomain_inds, toposort_subdomain = kinwave_set_subdomains(
-            network.graph,
-            network.order,
-            pit_inds,
-            network.streamorder,
-            min_streamorder,
-        )
-        @reset network.order_of_subdomains = order_of_subdomains
-        @reset network.order_subdomain = toposort_subdomain
-        @reset network.subdomain_indices = subdomain_inds
-    end
-    return network
-end
-
-function NodesAtEdge(network::NetworkRiver)
-    index_pit = findall(x -> x == 5, network.local_drain_direction)
-    add_vertex_edge_graph!(network.graph, index_pit)
-    nodes_at_edge = NodesAtEdge(; adjacent_nodes_at_edge(network.graph)...)
-    return nodes_at_edge, index_pit
-end
-
-function EdgesAtNode(network::NetworkRiver)
-    edges_at_node =
-        EdgesAtNode(; adjacent_edges_at_node(network.graph, network.nodes_at_edge)...)
-    return edges_at_node
-end
-
-function EdgeConnectivity(network::NetworkLand)
-    (; modelsize, indices, reverse_indices) = network
-    n = length(indices)
-    edge_indices =
-        EdgeConnectivity(; xu = zeros(n), xd = zeros(n), yu = zeros(n), yd = zeros(n))
-
-    nrow, ncol = modelsize
-    for (v, i) in enumerate(indices)
-        for (m, neighbor) in enumerate(NEIGHBORS)
-            j = i + neighbor
-            dir = DIRS[m]
-            if (1 <= j[1] <= nrow) && (1 <= j[2] <= ncol) && (reverse_indices[j] != 0)
-                getfield(edge_indices, dir)[v] = reverse_indices[j]
-            else
-                getfield(edge_indices, dir)[v] = n + 1
-            end
-        end
-    end
-    return edge_indices
-end
-
-function NetworkRiver(
-    dataset::NCDataset,
-    config::Config,
-    network::NetworkLand;
-    do_pits = false,
-)
-    lens = lens_input(config, "river_location__mask"; optional = false)
-    river_location_2d = ncread(dataset, config, lens; type = Bool, fill = false)
-    indices, reverse_indices = active_indices(river_location_2d, 0)
-    graph, local_drain_direction = get_drainage_network(dataset, config, indices; do_pits)
-    order = topological_sort_by_dfs(graph)
-    river_location = river_location_2d[network.indices]
-    land_indices = filter(i -> !isequal(river_location[i], 0), 1:length(network.indices))
-    streamorder = network.streamorder[land_indices]
-
-    network = NetworkRiver(;
-        indices,
-        reverse_indices,
-        local_drain_direction,
-        graph,
-        order,
-        streamorder,
-        land_indices,
-    )
-
+    land_indices = filter(i -> !isequal(drain[i], 0), 1:n_cells)
+    indices, reverse_indices = active_indices(drain_2d, 0)
+    network = NetworkDrain(; indices, reverse_indices, land_indices)
     return network
 end

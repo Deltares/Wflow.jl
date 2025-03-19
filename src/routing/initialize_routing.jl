@@ -1,4 +1,5 @@
 
+"Initialize subsurface flow routing for model type `sbm`"
 function initialize_subsurface_flow(
     dataset::NCDataset,
     config::Config,
@@ -35,14 +36,13 @@ function initialize_subsurface_flow(
             )
         end
     else
-        # when the SBM model is coupled (BMI) to a groundwater model, the following
-        # variables are expected to be exchanged from the groundwater model.
         n = length(domain.land.network.indices)
         subsurface_flow = GroundwaterExchange(n)
     end
     return subsurface_flow
 end
 
+"Initialize subsurface flow routing for model type `sbm_gwf`"
 function initialize_subsurface_flow(
     dataset::NCDataset,
     config::Config,
@@ -118,6 +118,7 @@ function initialize_subsurface_flow(
     return subsurface_flow
 end
 
+"Initialize kinematic wave or local inertial overland flow routing"
 function initialize_overland_flow(
     dataset::NCDataset,
     config::Config,
@@ -138,6 +139,10 @@ function initialize_overland_flow(
     return overland_flow
 end
 
+"""
+Initialize kinematic wave or local inertial overland flow routing, including optional
+reservoirs and lakes.
+"""
 function initialize_river_flow(
     dataset::NCDataset,
     config::Config,
@@ -169,6 +174,7 @@ function initialize_river_flow(
     end
 end
 
+"Initialize `Routing` for model types `sbm` and `sbm_gwf`"
 function Routing(
     dataset::NCDataset,
     config::Config,
@@ -185,6 +191,7 @@ function Routing(
     return routing
 end
 
+"Initialize `Routing` for model type `sediment`"
 function Routing(dataset::NCDataset, config::Config, domain::Domain, soil::SoilLoss)
     overland_flow = OverlandFlowSediment(dataset, config, domain.land, soil)
     river_flow = RiverSediment(dataset, config, domain.river)

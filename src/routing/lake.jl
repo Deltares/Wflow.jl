@@ -67,7 +67,7 @@ function LakeParameters(dataset::NCDataset, config::Config, network::NetworkWate
         ncread(dataset, config, lens; sel = indices_outlet, type = Float, fill = 0)
 
     n_lakes = length(indices_outlet)
-    lakelocs = get_waterbody_locs(dataset, config, indices_outlet, "reservoir")
+    lakelocs = get_waterbody_locs(dataset, config, indices_outlet, "lake")
 
     @info "Read `$n_lakes` lake locations."
 
