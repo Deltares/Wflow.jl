@@ -128,9 +128,9 @@ for Optimizing Small Hydropower Sites: A West Java Case Study. EVERGREEN Joint J
 Carbon Resource Sciences & Green Asia Strategy, 11, 3, 2691-2699.
 <https://www.tj.kyushu-u.ac.jp/evergreen/contents/EG2024-11_3_content/pdf/p2691-2699.pdf>
 
-Purnamasari, D., Teuling, A. J., and Weerts, A. H., 2025.  Identifying irrigated areas using land 
-surface temperature and hydrological modelling: application to the Rhine basin. 
-Hydrol. Earth Syst. Sci., 29, 1483–1503. <https://doi.org/10.5194/hess-29-1483-2025>
+Purnamasari, D., Teuling, A. J., and Weerts, A. H., 2025.  Identifying irrigated areas using
+land surface temperature and hydrological modelling: application to the Rhine basin. Hydrol.
+Earth Syst. Sci., 29, 1483–1503. <https://doi.org/10.5194/hess-29-1483-2025>
 
 Rakovec, O., Weerts, A.H., Sumihar, J., Uijlenhoet, R., 2015. Operational aspects of
 asynchronous filtering for flood forecasting. Hydrol. Earth Syst. Sci., 19, 2911–2924,
