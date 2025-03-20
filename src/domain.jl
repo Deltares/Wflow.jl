@@ -12,8 +12,8 @@
     surface_flow_width::Vector{Float64} = Float64[]
     # flow length [m]
     flow_length::Vector{Float64} = Float64[]
-    # flow fraction [-] to river
-    fraction_to_river::Vector{Float64} = Float64[]
+    # flow fraction to river [-] 
+    flow_fraction_to_river::Vector{Float64} = Float64[]
     # slope [-]
     slope::Vector{Float64} = Float64[]
     # water body (reservoir and lake) location [-]
@@ -21,7 +21,7 @@
     # waterbody coverage [-]
     waterbody_coverage::Vector{Bool} = Bool[]
     # river location [-]
-    river::Vector{Bool} = Bool[]
+    river_location::Vector{Bool} = Bool[]
     # fraction of river [-]
     river_fraction = Float64[]
     # fraction of open water (excluding rivers) [-]
@@ -208,7 +208,7 @@ function LandParameters(dataset::NCDataset, config::Config, network::NetworkLand
     slope = get_landsurface_slope(dataset, config, network)
     waterbody_outlet = waterbody_mask(dataset, config, network)
     waterbody_coverage = waterbody_mask(dataset, config, network; region = "area")
-    river = river_mask(dataset, config, network)
+    river_location = river_mask(dataset, config, network)
 
     land_parameters = LandParameters(;
         area,
@@ -216,7 +216,7 @@ function LandParameters(dataset::NCDataset, config::Config, network::NetworkLand
         slope,
         waterbody_outlet,
         waterbody_coverage,
-        river,
+        river_location,
     )
     return land_parameters
 end
@@ -230,15 +230,16 @@ function LandParameters(dataset::NCDataset, config::Config, domain::Domain)
     flow_width = map(get_flow_width, network.local_drain_direction, x_length, y_length)
     flow_length = map(get_flow_length, network.local_drain_direction, x_length, y_length)
     slope = get_landsurface_slope(dataset, config, network)
-    river = river_mask(dataset, config, network)
-    river_fraction = get_river_fraction(dataset, config, network, river, area)
+    river_location = river_mask(dataset, config, network)
+    river_fraction = get_river_fraction(dataset, config, network, river_location, area)
 
     water_fraction = get_water_fraction(dataset, config, network, river_fraction)
 
     land_area = @. (1.0 - river_fraction) * area
-    surface_flow_width = map(get_surface_width, flow_width, flow_length, land_area, river)
+    surface_flow_width =
+        map(get_surface_width, flow_width, flow_length, land_area, river_location)
 
-    fraction_to_river = flow_fraction_to_river(
+    flow_fraction_to_river = get_flow_fraction_to_river(
         network.graph,
         network.local_drain_direction,
         land_indices,
@@ -256,8 +257,8 @@ function LandParameters(dataset::NCDataset, config::Config, domain::Domain)
         surface_flow_width,
         flow_length,
         slope,
-        river,
-        fraction_to_river,
+        river_location,
+        flow_fraction_to_river,
         waterbody_outlet,
         waterbody_coverage,
         river_fraction,
@@ -318,7 +319,7 @@ function get_river_fraction(
     dataset::NCDataset,
     config::Config,
     network::NetworkLand,
-    river::Vector{Bool},
+    river_location::Vector{Bool},
     area::Vector{Float64},
 )
     logging = false
@@ -330,10 +331,10 @@ function get_river_fraction(
     river_length_2d = ncread(dataset, config, lens; type = Float64, fill = 0, logging)
     river_length = river_length_2d[network.indices]
 
-    n = length(river)
+    n = length(river_location)
     river_fraction = fill(MISSING_VALUE, n)
     for i in 1:n
-        river_fraction[i] = if river[i]
+        river_fraction[i] = if river_location[i]
             min((river_length[i] * river_width[i]) / (area[i]), 1.0)
         else
             0.0
@@ -366,8 +367,8 @@ end
 function river_mask(dataset::NCDataset, config::Config, network::NetworkLand)
     lens = lens_input(config, "river_location__mask"; optional = false)
     river_2d = ncread(dataset, config, lens; type = Bool, fill = false)
-    river = river_2d[network.indices]
-    return river
+    river_location = river_2d[network.indices]
+    return river_location
 end
 
 "Return waterbody (reservoir or lake) mask"

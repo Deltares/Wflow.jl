@@ -76,7 +76,7 @@ function update!(
     # Update boundary conditions before computing sediment reaching the river
     update_boundary_conditions!(model.to_river, model.sediment_flux)
     # Compute sediment reaching the river
-    update!(model.to_river, domain.parameters.river)
+    update!(model.to_river, domain.parameters.river_location)
 end
 
 ### River ###

@@ -133,7 +133,7 @@ end
 function update!(model::LateralSSF, domain::DomainLand, dt::Float64)
     (; order_of_subdomains, order_subdomain, subdomain_indices, upstream_nodes) =
         domain.network
-    (; flow_length, flow_width, area, fraction_to_river, slope) = domain.parameters
+    (; flow_length, flow_width, area, flow_fraction_to_river, slope) = domain.parameters
 
     (; recharge) = model.boundary_conditions
     (; ssfin, ssf, ssfmax, to_river, zi, exfiltwater, storage) = model.variables
@@ -145,16 +145,16 @@ function update!(model::LateralSSF, domain::DomainLand, dt::Float64)
             m = order_of_subdomains[k][i]
             for (n, v) in zip(subdomain_indices[m], order_subdomain[m])
                 # for a river cell without a reservoir or lake part of the upstream
-                # subsurface flow goes to the river (fraction_to_river) and part goes to the
-                # subsurface flow reservoir (1.0 - fraction_to_river) upstream nodes with a
-                # reservoir or lake are excluded
+                # subsurface flow goes to the river (flow_fraction_to_river) and part goes
+                # to the subsurface flow reservoir (1.0 - flow_fraction_to_river) upstream
+                # nodes with a reservoir or lake are excluded
                 ssfin[v] = sum_at(
-                    i -> ssf[i] * (1.0 - fraction_to_river[i]),
+                    i -> ssf[i] * (1.0 - flow_fraction_to_river[i]),
                     upstream_nodes[n],
                     eltype(ssfin),
                 )
                 to_river[v] = sum_at(
-                    i -> ssf[i] * fraction_to_river[i],
+                    i -> ssf[i] * flow_fraction_to_river[i],
                     upstream_nodes[n],
                     eltype(to_river),
                 )

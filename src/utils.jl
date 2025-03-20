@@ -480,12 +480,13 @@ function svectorscopy(x::Matrix{T}, ::Val{N}) where {T, N}
 end
 
 """
-    fraction_runoff_to_river(graph, ldd, index_river, slope)
+    get_flow_fraction_to_river(graph, ldd, inds_river, slope)
 
-Return ratio `fraction` between `slope` river cell `inds_river` and `slope` of each
-upstream neighbor (based on directed acyclic graph `graph`).
+Return flow `fraction` to a river cell (at index `j`) based on the ratio of the land surface
+`slope` at index `j` to the sum of the land surface `slope` at index `j` and at river cell
+index `i`.
 """
-function flow_fraction_to_river(graph, ldd, inds_river, slope)
+function get_flow_fraction_to_river(graph, ldd, inds_river, slope)
     n = length(slope)
     fraction = zeros(n)
     for i in inds_river

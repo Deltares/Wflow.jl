@@ -681,10 +681,10 @@ function stable_timestep(model::LocalInertialOverlandFlow, parameters::LandParam
     dt_min = Inf
     (; cfl) = model.timestepping
     (; n, g) = model.parameters
-    (; x_length, y_length, river) = parameters
+    (; x_length, y_length, river_location) = parameters
     (; h) = model.variables
     @batch per = thread reduction = ((min, dt_min),) for i in 1:(n)
-        @fastmath @inbounds dt = if river[i] == 0
+        @fastmath @inbounds dt = if river_location[i] == 0
             cfl * min(x_length[i], y_length[i]) / sqrt(g * h[i])
         else
             Inf
@@ -907,7 +907,7 @@ function local_inertial_update!(
         yd = indices.yd[i]
         xd = indices.xd[i]
 
-        if domain.land.parameters.river[i]
+        if domain.land.parameters.river_location[i]
             if domain.river.parameters.waterbody_outlet[inds_river[i]]
                 # for reservoir or lake set inflow from land part, these are boundary points
                 # and update of storage and h is not required

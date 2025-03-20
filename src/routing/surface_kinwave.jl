@@ -292,7 +292,7 @@ function kinwave_land_update!(model::KinWaveOverlandFlow, domain::DomainLand, dt
 
     (; beta, alpha) = model.parameters
     (; h, h_av, q, q_av, storage, storage_av, qin, qlat, to_river) = model.variables
-    (; surface_flow_width, flow_length, fraction_to_river) = domain.parameters
+    (; surface_flow_width, flow_length, flow_fraction_to_river) = domain.parameters
 
     ns = length(order_of_subdomains)
     qin .= 0.0
@@ -301,18 +301,18 @@ function kinwave_land_update!(model::KinWaveOverlandFlow, domain::DomainLand, dt
             m = order_of_subdomains[k][i]
             for (n, v) in zip(subdomain_indices[m], order_subdomain[m])
                 # for a river cell without a reservoir or lake part of the upstream surface
-                # flow goes to the river (fraction_to_river) and part goes to the surface
-                # flow reservoir (1.0 - fraction_to_river), upstream nodes with a reservoir
-                # or lake are excluded
+                # flow goes to the river (flow_fraction_to_river) and part goes to the
+                # surface flow reservoir (1.0 - flow_fraction_to_river), upstream nodes with
+                # a reservoir or lake are excluded
                 to_river[v] +=
                     sum_at(
-                        i -> q[i] * fraction_to_river[i],
+                        i -> q[i] * flow_fraction_to_river[i],
                         upstream_nodes[n],
                         eltype(to_river),
                     ) * dt
                 if surface_flow_width[v] > 0.0
                     qin[v] = sum_at(
-                        i -> q[i] * (1.0 - fraction_to_river[i]),
+                        i -> q[i] * (1.0 - flow_fraction_to_river[i]),
                         upstream_nodes[n],
                         eltype(q),
                     )
