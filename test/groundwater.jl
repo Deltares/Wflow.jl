@@ -295,17 +295,17 @@ end
         end
 
         @testset "river" begin
-            parameters = Wflow.RiverParameters(;
+            parameters = Wflow.GwfRiverParameters(;
                 infiltration_conductance = [100.0, 100.0],
                 exfiltration_conductance = [200.0, 200.0],
                 bottom = [1.0, 1.0],
             )
-            variables = Wflow.RiverVariables(;
+            variables = Wflow.GwfRiverVariables(;
                 stage = [2.0, 2.0],
                 storage = [20.0, 20.0],
                 flux = [0.0, 0.0],
             )
-            river = Wflow.River(; parameters, variables, index = [1, 3])
+            river = Wflow.GwfRiver(; parameters, variables, index = [1, 3])
             Q = zeros(3)
             Wflow.flux!(Q, river, conf_aqf)
             # infiltration, below bottom, flux is (stage - bottom) * inf_cond, limited by

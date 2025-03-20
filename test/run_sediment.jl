@@ -3,8 +3,8 @@ using Wflow
 tomlpath = joinpath(@__DIR__, "sediment_config.toml")
 config = Wflow.Config(tomlpath)
 
-model = Wflow.initialize_sediment_model(config)
-(; network) = model
+model = Wflow.Model(config)
+(; domain) = model
 
 Wflow.run_timestep!(model)
 
@@ -56,9 +56,9 @@ end
     @test mean(land.sediment_flux.variables.clay) ≈ 0.006578791733506439
 
     @test mean(river.hydrological_forcing.q_river) ≈ 0.6975180562953642
-    @test river.hydrological_forcing.waterlevel_river[network.river.order[end]] ≈
+    @test river.hydrological_forcing.waterlevel_river[domain.river.network.order[end]] ≈
           0.006103649735450745
-    @test mean(river.geometry.width) ≈ 22.628250814095523
+    @test mean(domain.river.parameters.flow_width) ≈ 22.628250814095523
 
     @test mean(river.transport_capacity.boundary_conditions.q) ≈ 0.6975180562953642
     @test mean(river.transport_capacity.variables.amount) ≈ 0.4458019733090582
@@ -69,12 +69,12 @@ end
     @test sum(river.sediment_flux.boundary_conditions.erosion_land_sand) ≈ 1289.417324985034
     @test mean(river.sediment_flux.boundary_conditions.transport_capacity) ≈
           0.4458019733090582
-    @test mean(river.sediment_flux.variables.amount) ≈ 0.4333483865969662
-    @test mean(river.sediment_flux.variables.erosion) ≈ 0.01907770837584654
-    @test mean(river.sediment_flux.variables.deposition) ≈ 0.6941033131514452
+    @test mean(river.sediment_flux.variables.amount) ≈ 0.43330815120929567
+    @test mean(river.sediment_flux.variables.erosion) ≈ 0.018944871787785745
+    @test mean(river.sediment_flux.variables.deposition) ≈ 0.6939704797633529
     @test river.sediment_flux.variables.clay[5649] ≈ 2.840979764480952e-9
 
-    @test mean(river.concentrations.variables.suspended) ≈ 0.8260075500146108
+    @test mean(river.concentrations.variables.suspended) ≈ 0.8261173586131326
 end
 
 Wflow.close_files(model)
@@ -83,8 +83,8 @@ Wflow.close_files(model)
 tomlpath = joinpath(@__DIR__, "sediment_eurosem_engelund_config.toml")
 config = Wflow.Config(tomlpath)
 
-model = Wflow.initialize_sediment_model(config)
-(; network) = model
+model = Wflow.Model(config)
+(; domain) = model
 
 Wflow.run_timestep!(model)
 
@@ -115,7 +115,7 @@ Wflow.run_timestep!(model)
     @test mean(river.transport_capacity.boundary_conditions.q) ≈ 0.6975180562953642
     @test mean(river.transport_capacity.variables.amount) ≈ 0.14184859055736687
 
-    @test mean(river.concentrations.variables.suspended) ≈ 0.24788001458305775
+    @test mean(river.concentrations.variables.suspended) ≈ 0.2478754835662198
 end
 
 Wflow.close_files(model)
@@ -129,8 +129,7 @@ config.model.run_river_model = false
 # Use govers equation for land transport capacity
 config.model.land_transport = "govers"
 
-model = Wflow.initialize_sediment_model(config)
-(; network) = model
+model = Wflow.Model(config)
 
 # run the first and second timestep
 Wflow.run_timestep!(model)
@@ -155,8 +154,7 @@ config.model.run_river_model = false
 # Use yalin equation for land transport capacity
 config.model.land_transport = "yalin"
 
-model = Wflow.initialize_sediment_model(config)
-(; network) = model
+model = Wflow.Model(config)
 
 # run the first and second timestep
 Wflow.run_timestep!(model)
@@ -181,8 +179,7 @@ config = Wflow.Config(tomlpath)
 # Use yang equation for river transport capacity
 config.model.river_transport = "yang"
 
-model = Wflow.initialize_sediment_model(config)
-(; network) = model
+model = Wflow.Model(config)
 
 # run the first and second timestep
 Wflow.run_timestep!(model)
@@ -195,7 +192,7 @@ Wflow.run_timestep!(model)
     @test mean(river.transport_capacity.boundary_conditions.q) ≈ 0.6975180562953642
     @test mean(river.transport_capacity.variables.amount) ≈ 39.959093179632234
 
-    @test mean(river.concentrations.variables.suspended) ≈ 0.004036947448899768
+    @test mean(river.concentrations.variables.suspended) ≈ 0.004036949009419181
 end
 
 Wflow.close_files(model)
@@ -205,8 +202,7 @@ config = Wflow.Config(tomlpath)
 # Use kodatie equation for river transport capacity
 config.model.river_transport = "kodatie"
 
-model = Wflow.initialize_sediment_model(config)
-(; network) = model
+model = Wflow.Model(config)
 
 # run the first and second timestep
 Wflow.run_timestep!(model)
@@ -220,7 +216,7 @@ Wflow.run_timestep!(model)
     @test mean(river.transport_capacity.boundary_conditions.q) ≈ 0.6975180562953642
     @test mean(river.transport_capacity.variables.amount) ≈ 30.332588671299625
 
-    @test mean(river.concentrations.variables.suspended) ≈ 54.75548200245741
+    @test mean(river.concentrations.variables.suspended) ≈ 54.75538040430725
 end
 
 Wflow.close_files(model)
@@ -230,8 +226,7 @@ config = Wflow.Config(tomlpath)
 # Use molinas equation for river transport capacity
 config.model.river_transport = "molinas"
 
-model = Wflow.initialize_sediment_model(config)
-(; network) = model
+model = Wflow.Model(config)
 
 # run the first and second timestep
 Wflow.run_timestep!(model)
@@ -244,7 +239,7 @@ Wflow.run_timestep!(model)
     @test mean(river.transport_capacity.boundary_conditions.q) ≈ 0.6975180562953642
     @test mean(river.transport_capacity.variables.amount) ≈ 350.6483600591209
 
-    @test mean(river.concentrations.variables.suspended) ≈ 884.4255449829093
+    @test mean(river.concentrations.variables.suspended) ≈ 884.4794354416674
 end
 
 Wflow.close_files(model)

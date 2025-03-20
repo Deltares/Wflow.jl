@@ -625,16 +625,16 @@ end
 "Return soil fraction"
 function soil_fraction!(
     soil::AbstractSoilModel,
-    runoff::AbstractRunoffModel,
     glacier::AbstractGlacierModel,
+    parameters::LandParameters,
 )
     (; canopygapfraction) = soil.parameters.vegetation_parameter_set
     (; soil_fraction) = soil.parameters
-    (; waterfrac, riverfrac) = runoff.parameters
+    (; water_fraction, river_fraction) = parameters
     glacier_fraction = get_glacier_fraction(glacier)
 
     @. soil_fraction =
-        max(canopygapfraction - waterfrac - riverfrac - glacier_fraction, 0.0)
+        max(canopygapfraction - water_fraction - river_fraction - glacier_fraction, 0.0)
     return nothing
 end
 
