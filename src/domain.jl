@@ -173,11 +173,12 @@ function Domain(
     end
 
     if nthreads() > 1
+        (; min_streamorder_land, min_streamorder_river) = modelsettings
         if routing_types.river == "kinematic-wave"
-            @info "Parallel execution of kinematic wave" modelsettings.min_streamorder_land modelsettings.min_streamorder_river
+            @info "Parallel execution of kinematic wave" min_streamorder_land min_streamorder_river
         elseif routing_types.land == "kinematic-wave" ||
                routing_types.subsurface == "kinematic-wave"
-            @info "Parallel execution of kinematic wave" modelsettings.min_streamorder_land
+            @info "Parallel execution of kinematic wave" min_streamorder_land
         end
     end
 
@@ -320,12 +321,13 @@ function get_river_fraction(
     river::Vector{Bool},
     area::Vector{Float64},
 )
+    logging = false
     lens = lens_input_parameter(config, "river__width"; optional = false)
-    river_width_2d = ncread(dataset, config, lens; type = Float64, fill = 0)
+    river_width_2d = ncread(dataset, config, lens; type = Float64, fill = 0, logging)
     river_width = river_width_2d[network.indices]
 
     lens = lens_input_parameter(config, "river__length"; optional = false)
-    river_length_2d = ncread(dataset, config, lens; type = Float64, fill = 0)
+    river_length_2d = ncread(dataset, config, lens; type = Float64, fill = 0, logging)
     river_length = river_length_2d[network.indices]
 
     n = length(river)
@@ -418,7 +420,8 @@ end
 function get_allocation_area_indices(dataset::NCDataset, config::Config, domain::Domain)
     (; indices) = domain.land.network
     lens = lens_input_parameter(config, "land_water_allocation_area__number")
-    areas = ncread(dataset, config, lens; sel = indices, defaults = 1, type = Int)
+    logging = false
+    areas = ncread(dataset, config, lens; sel = indices, defaults = 1, type = Int, logging)
     unique_areas = unique(areas)
     allocation_area_inds = Vector{Int}[]
     river_allocation_area_inds = Vector{Int}[]

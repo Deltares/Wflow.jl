@@ -247,6 +247,7 @@ function ncread(
     allow_missing = false,
     fill = nothing,
     dimname = nothing,
+    logging = true,
 )
     # for optional parameters (`lens` set to `nothing`) default values are used.
     if isnothing(parameter.lens)
@@ -297,7 +298,9 @@ function ncread(
             return repeat(mod.value, 1, length(sel))
         end
     else
-        @info "Set `$(parameter.name)` using netCDF variable `$var`."
+        if logging
+            @info "Set `$(parameter.name)` using netCDF variable `$var`."
+        end
         A = read_standardized(nc, var, dim_sel)
         if !isnothing(mod.index)
             # the modifier index is only set in combination with scale and offset for SVectors,

@@ -1310,8 +1310,14 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset, fileformat)
         reducer_name = get(col, "reducer", "only")
         f = reducerfunction(reducer_name)
         lens = lens_input(config, mapname; optional = false)
-        map_2d =
-            ncread(dataset, config, lens; type = Union{Int, Missing}, allow_missing = true)
+        map_2d = ncread(
+            dataset,
+            config,
+            lens;
+            type = Union{Int, Missing},
+            allow_missing = true,
+            logging = false,
+        )
         @info "Adding scalar output for a map with a reducer function." fileformat param mapname reducer_name
         ids = unique(skipmissing(map_2d))
         # from id to list of internal indices

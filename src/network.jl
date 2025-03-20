@@ -150,9 +150,10 @@ function get_drainage_network(
     config::Config,
     indices::Vector{CartesianIndex{2}};
     do_pits = false,
+    logging = true,
 )
     lens = lens_input(config, "local_drain_direction"; optional = false)
-    ldd_2d = ncread(dataset, config, lens; allow_missing = true)
+    ldd_2d = ncread(dataset, config, lens; allow_missing = true, logging)
     ldd = convert(Array{UInt8}, ldd_2d[indices])
     if do_pits
         lens = lens_input(config, "pits"; optional = false)
@@ -211,10 +212,12 @@ function NetworkRiver(
     network::NetworkLand;
     do_pits = false,
 )
+    logging = false
     lens = lens_input(config, "river_location__mask"; optional = false)
-    river_location_2d = ncread(dataset, config, lens; type = Bool, fill = false)
+    river_location_2d = ncread(dataset, config, lens; type = Bool, fill = false, logging)
     indices, reverse_indices = active_indices(river_location_2d, 0)
-    graph, local_drain_direction = get_drainage_network(dataset, config, indices; do_pits)
+    graph, local_drain_direction =
+        get_drainage_network(dataset, config, indices; do_pits, logging)
     order = topological_sort_by_dfs(graph)
     river_location = river_location_2d[network.indices]
     land_indices = filter(i -> !isequal(river_location[i], 0), 1:length(network.indices))
@@ -287,14 +290,15 @@ function NetworkWaterBody(
     indices::Vector{CartesianIndex{2}},
     waterbody_type::String,
 )
+    logging = false
     # allow waterbody only in river cells
     # note that these locations are only the waterbody outlet pixels
     lens = lens_input(config, "$(waterbody_type)_location__count"; optional = false)
-    locs = ncread(dataset, config, lens; sel = indices, type = Int, fill = 0)
+    locs = ncread(dataset, config, lens; sel = indices, type = Int, fill = 0, logging)
 
     # this holds the same ids as locs, but covers the entire reservoir or lake
     lens = lens_input(config, "$(waterbody_type)_area__count"; optional = false)
-    coverage_2d = ncread(dataset, config, lens; allow_missing = true)
+    coverage_2d = ncread(dataset, config, lens; allow_missing = true, logging)
     # for each waterbody, a list of 2D indices, needed for getting the mean precipitation
     inds_coverage = Vector{CartesianIndex{2}}[]
     rev_inds = zeros(Int, size(coverage_2d))
