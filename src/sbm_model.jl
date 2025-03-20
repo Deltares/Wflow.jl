@@ -63,7 +63,7 @@ function Model(config::Config, type::SbmModel)
     return model
 end
 
-"update SBM model for a single timestep"
+"update the `sbm` model type for a single timestep"
 function update!(model::AbstractModel{<:SbmModel})
     (; routing, land, domain, clock, config) = model
     dt = tosecond(clock.dt)
@@ -123,14 +123,10 @@ end
 
 """
 Update of the total water storage at the end of each timestep per model cell.
-
-This is done here at model level.
 """
 function update_total_water_storage!(model::AbstractModel{<:SbmModel})
     (; routing, land, domain) = model
 
-    # Update the total water storage based on land states
-    # TODO Maybe look at routing in the near future
     update_total_water_storage!(land, domain, routing)
     return nothing
 end

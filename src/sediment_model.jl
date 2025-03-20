@@ -1,8 +1,8 @@
 """
-    initialize_sediment_model(config::Config)
+    Model(config::Config, type::SedimentModel)
 
-Initial part of the sediment model concept. Reads the input settings and data as defined in the
-Config object. Will return a Model that is ready to run.
+Initial part of the sediment model concept. Reads the input settings and data as defined in
+the Config object. Will return a Model that is ready to run.
 """
 function Model(config::Config, type::SedimentModel)
     model_type = config.model.type::String
@@ -39,7 +39,7 @@ function Model(config::Config, type::SedimentModel)
     return model
 end
 
-"update sediment model for a single timestep"
+"update `sediment` model for a single timestep"
 function update!(model::AbstractModel{<:SedimentModel})
     (; routing, land, domain, config, clock) = model
     dt = tosecond(clock.dt)
@@ -59,7 +59,7 @@ function update!(model::AbstractModel{<:SedimentModel})
     return nothing
 end
 
-"set the initial states of the sediment model"
+"set the initial states of the `sediment` model"
 function set_states!(model::AbstractModel{<:SedimentModel})
     # read and set states in model object if reinit=false
     (; config) = model

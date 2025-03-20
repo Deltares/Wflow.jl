@@ -124,25 +124,6 @@ function cell_lengths(y::AbstractVector, cellength::Real, sizeinmetres::Bool)
     return xl, yl
 end
 
-function get_river_fraction(
-    river::AbstractVector,
-    riverlength::AbstractVector,
-    riverwidth::AbstractVector,
-    x_length::AbstractVector,
-    y_length::AbstractVector,
-)
-    n = length(river)
-    river_fraction = fill(MISSING_VALUE, n)
-    for i in 1:n
-        river_fraction[i] = if river[i]
-            min((riverlength[i] * riverwidth[i]) / (x_length[i] * y_length[i]), 1.0)
-        else
-            0.0
-        end
-    end
-    return river_fraction
-end
-
 """
     set_states!(instate_path, model, state_ncnames; <keyword arguments>)
 
@@ -234,8 +215,9 @@ missing values.
         `true` to allow missing values.
 - `fill=nothing`: Missing values are replaced by this fill value if `allow_missing` is
   `false`.
-- `dimname` : Name of third dimension of parameter `var`. By default no third dimension is
+- `dimname`: Name of third dimension of parameter `var`. By default no third dimension is
   expected.
+- `logging`: Generate a logging message when reading a netCDF variable. By default `true`.
 """
 function ncread(
     nc,
@@ -594,15 +576,15 @@ function add_vertex_edge_graph!(graph, pits)
 end
 
 """
-    set_effective_flowwidth!(we_x, we_y, indices, graph_river, river_width, ldd_river, rev_inds_river)
+    set_effective_flowwidth!(we_x::Vector{Float64}, we_y::Vector{Float64}, domain::Domain)
 
 For river cells (D8 flow direction) in a staggered grid the effective flow width at cell
 edges (floodplain) `we_x` in the x-direction and `we_y` in the y-direction is corrected by
-subtracting the river width `river_width` from the cell edges. For diagonal directions, the
-`river_width` is split between the two adjacent cell edges. A cell edge at linear index
-`idx` is defined as the edge between node `idx` and the adjacent node (+ CartesianIndex(1,
-0)) for x and (+ CartesianIndex(0, 1)) for y. For cells that contain a `waterbody`
-(reservoir or lake), the effective flow width is set to zero.
+subtracting the river width `flow_width` from the cell edges. For diagonal directions, the
+`flow_width` is split between the two adjacent cell edges. A cell edge at linear index `idx`
+is defined as the edge between node `idx` and the adjacent node (+ CartesianIndex(1, 0)) for
+x and (+ CartesianIndex(0, 1)) for y. For cells that contain a `waterbody_outlet` (reservoir
+or lake), the effective flow width is set to zero.
 """
 function set_effective_flowwidth!(
     we_x::Vector{Float64},
@@ -868,20 +850,20 @@ kh_layered_profile!(
 ) = nothing
 
 """
-    initialize_lateral_ssf!(model::LateralSSF, kh_profile::KhExponential)
-    initialize_lateral_ssf!(model::LateralSSF, kh_profile::KhExponentialConstant)
+    initialize_lateral_ssf!(subsurface::LateralSSF, parameters::LandParameters, kh_profile::KhExponential)
+    initialize_lateral_ssf!(subsurface::LateralSSF, parameters::LandParameters, kh_profile::KhExponentialConstant)
 
 Initialize lateral subsurface variables `ssf` and `ssfmax` using horizontal hydraulic
 conductivity profile `kh_profile`.
 """
 function initialize_lateral_ssf!(
-    model::LateralSSF,
+    subsurface::LateralSSF,
     parameters::LandParameters,
     kh_profile::KhExponential,
 )
     (; kh_0, f) = kh_profile
-    (; ssf, ssfmax, zi) = model.variables
-    (; soilthickness) = model.parameters
+    (; ssf, ssfmax, zi) = subsurface.variables
+    (; soilthickness) = subsurface.parameters
     (; slope, flow_width) = parameters
 
     @. ssfmax = ((kh_0 * slope) / f) * (1.0 - exp(-f * soilthickness))
@@ -890,14 +872,14 @@ function initialize_lateral_ssf!(
 end
 
 function initialize_lateral_ssf!(
-    model::LateralSSF,
+    subsurface::LateralSSF,
     parameters::LandParameters,
     kh_profile::KhExponentialConstant,
 )
     (; kh_0, f) = kh_profile.exponential
     (; z_exp) = kh_profile
-    (; ssf, ssfmax, zi) = model.variables
-    (; soilthickness) = model.parameters
+    (; ssf, ssfmax, zi) = subsurface.variables
+    (; soilthickness) = subsurface.parameters
     (; slope, flow_width) = parameters
 
     ssf_constant = @. kh_0 * exp(-f * z_exp) * slope * (soilthickness - z_exp)
@@ -923,8 +905,8 @@ function initialize_lateral_ssf!(
 end
 
 """
-    initialize_lateral_ssf!(subsurface::LateralSSF, soil::SbmSoilModel, kv_profile::KvLayered, dt)
-    initialize_lateral_ssf!(subsurface::LateralSSF, soil::SbmSoilModel, kv_profile::KvLayeredExponential, dt)
+    initialize_lateral_ssf!(subsurface::LateralSSF, soil::SbmSoilModel, parameters::LandParameters, kv_profile::KvLayered, dt)
+    initialize_lateral_ssf!(subsurface::LateralSSF, soil::SbmSoilModel, parameters::LandParameters, kv_profile::KvLayeredExponential, dt)
 
 Initialize lateral subsurface variables `ssf` and `ssfmax` using  vertical hydraulic
 conductivity profile `kv_profile`.

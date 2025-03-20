@@ -140,6 +140,12 @@ struct Model{R <: Routing, L <: AbstractLandModel, T <: AbstractModelType} <:
     type::T                         # model type
 end
 
+"""
+   Model(config::Config)::Model
+
+Initialization of a `Model` based on the `config` object (parsed configuration TOML file
+with input, model and output settings).
+"""
 function Model(config::Config)::Model
     model_type = config.model.type
 
@@ -216,11 +222,11 @@ include("states.jl")
     run!(model::Model)
     run()
 
-Run an entire simulation starting either from a path to a TOML settings file,
-a prepared `Config` object, or an initialized `Model` object. This allows more flexibility
-if you want to for example modify a `Config` before initializing the `Model`. Logging to a
-file is only part of the `run(tomlpath::AbstractString)` method. To avoid logging to the
-terminal, set the `silent` keyword argument to `true`, or put that in the TOML.
+Run an entire simulation starting either from a path to a TOML settings file, a prepared
+`Config` object, or an initialized `Model` object. This allows more flexibility if you want
+to for example modify a `Config` before initializing the `Model`. Logging to a file is only
+part of the `run(tomlpath::AbstractString)` method. To avoid logging to the terminal, set
+the `silent` keyword argument to `true`, or put that in the TOML.
 
 The 0 argument version expects ARGS to contain a single entry, pointing to the TOML path.
 This makes it easier to start a run from the command line without having to escape quotes:

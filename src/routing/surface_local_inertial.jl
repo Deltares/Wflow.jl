@@ -657,8 +657,8 @@ function LocalInertialOverlandFlow(dataset::NCDataset, config::Config, domain::D
 end
 
 """
-    stable_timestep(model::LocalInertialRiverFlow)
-    stable_timestep(model::LocalInertialOverlandFlow)
+    stable_timestep(model::LocalInertialRiverFlow, flow_length::Vector{Float64})
+    stable_timestep(model::LocalInertialOverlandFlow, parameters::LandParameters)
 
 Compute a stable timestep size for the local inertial approach, based on Bates et al. (2010).
 
@@ -748,9 +748,9 @@ function average_flow_vars!(variables::LocalInertialOverlandFlowVariables, dt::F
 end
 
 """
-Update combined river `LocalInertialRiverFlow` and overland flow `LocalInertialOverlandFlow` models for a
-single timestep `dt`. An adaptive timestepping method is used (computing a sub timestep
-`dt_s`).
+Update combined river `LocalInertialRiverFlow` and overland flow `LocalInertialOverlandFlow`
+models for a single timestep `dt`. An adaptive timestepping method is used (computing a sub
+timestep `dt_s`).
 """
 function update!(
     land::LocalInertialOverlandFlow,
@@ -791,8 +791,8 @@ function update!(
 end
 
 """
-Update combined river `LocalInertialRiverFlow`and overland flow `LocalInertialOverlandFlow` models for a
-single timestep `dt`.
+Update combined river `LocalInertialRiverFlow`and overland flow `LocalInertialOverlandFlow`
+models for a single timestep `dt`.
 """
 function local_inertial_update!(
     land::LocalInertialOverlandFlow,

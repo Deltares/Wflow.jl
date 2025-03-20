@@ -119,9 +119,11 @@ function output_path(config::Config, path::AbstractString)
     return combined_path(config, dir, path)
 end
 
-"Extract netCDF variable name `ncname` from `var` (type `String` or `Config`). If `var` has
+"""
+Extract netCDF variable name `ncname` from `var` (type `String` or `Config`). If `var` has
 type `Config`, either `scale`, `offset` and an optional `index` are expected (with `ncname`)
-or a `value` (uniform value), these are stored as part of `NamedTuple` `modifier`."
+or a `value` (uniform value), these are stored as part of `NamedTuple` `modifier`.
+"""
 function ncvar_name_modifier(var; config = nothing)
     ncname = nothing
     modifier = (scale = 1.0, offset = 0.0, value = nothing, index = nothing)
@@ -210,6 +212,12 @@ mover_params = (
     "land_surface_water__potential_evaporation_volume_flux",
 )
 
+"""
+    load_fixed_forcing!(model)
+    load_fixed_forcing!(model::AbstractModel{<:SedimentModel})
+
+Get fixed netCDF forcing input."
+"""
 function load_fixed_forcing!(model)
     (; reader, land, domain, config) = model
     (; forcing_parameters) = reader
@@ -269,7 +277,14 @@ function load_fixed_forcing!(model::AbstractModel{<:SedimentModel})
     return nothing
 end
 
-"Get dynamic netCDF input for the given time"
+"""
+    update_forcing!(model)
+    update_forcing!(model::AbstractModel{<:SedimentModel})
+
+Get dynamic netCDF input for the given time. Wflow expects `right` labeling of the forcing
+time interval, e.g. daily precipitation at 01-02-2000 00:00:00 is the accumulated total
+precipitation between 01-01-2000 00:00:00 and 01-02-2000 00:00:00.
+"""
 function update_forcing!(model)
     (; clock, reader, land, domain, config) = model
     (; dataset, dataset_times, forcing_parameters) = reader
@@ -285,10 +300,6 @@ function update_forcing!(model)
         sel_lakes = domain.lake.network.indices_coverage
         param_lake = get_param_lake(model)
     end
-
-    # Wflow expects `right` labeling of the forcing time interval, e.g. daily precipitation
-    # at 01-02-2000 00:00:00 is the accumulated total precipitation between 01-01-2000
-    # 00:00:00 and 01-02-2000 00:00:00.
 
     # load from netCDF into the model according to the mapping
     for (par, ncvar) in forcing_parameters
@@ -966,16 +977,7 @@ function get_reducer_func(col, domain, args...)
     end
 end
 
-function prepare_writer(
-    config,
-    modelmap,
-    domain,
-    #rev_inds,
-    #x_nc,
-    #y_nc,
-    nc_static;
-    extra_dim = nothing,
-)
+function prepare_writer(config, modelmap, domain, nc_static; extra_dim = nothing)
     x_coords = read_x_axis(nc_static)
     y_coords = read_y_axis(nc_static)
     sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
@@ -1763,6 +1765,7 @@ function check_config_output(
     return output_settings
 end
 
+"Return routing types for the river, land and subsurface domains"
 function get_routing_types(config::Config)
     land =
         get_options(config.model, "land_routing", ROUTING_OPTIONS, "kinematic-wave")::String
@@ -1784,6 +1787,7 @@ function get_routing_types(config::Config)
     return (; land, river, subsurface)
 end
 
+"Return waterbody (reservoir or lake) locations"
 function get_waterbody_locs(
     dataset::NCDataset,
     config::Config,

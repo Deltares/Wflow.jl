@@ -118,7 +118,7 @@ function update!(
     update_water_demand!(demand, soil)
     update_water_allocation!(allocation, demand, routing, domain, dt)
 
-    soil_fraction!(soil, runoff, glacier, parameters)
+    soil_fraction!(soil, glacier, parameters)
     update_boundary_conditions!(
         soil,
         atmospheric_forcing,
@@ -133,17 +133,11 @@ end
 """
 Update the total water storage per cell at the end of a timestep.
 
-Takes the following parameters:
-- model:
-    The land hydrology model with the SBM soil model `LandHydrologySBM`
-- river_network:
-    The indices of the river cells in relation to the active cells, i.e. model.network.index_river
-- area:
-    Area of the cells acquired from model.network.land.area
-- river_routing:
-    The river routing struct, i.e. model.routing.river
-- land_routing:
-    The land routing struct, i.e. model.routing.overland
+# Arguments
+- `model`: The land hydrology model `LandHydrologySBM` with the SBM soil model.
+- `domain`: Containing shared river and land parameters and network information (e.g. active
+    indices).
+- `routing`: Containing routing models.
 """
 function update_total_water_storage!(
     model::LandHydrologySBM,

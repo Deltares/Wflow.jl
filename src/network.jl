@@ -102,10 +102,11 @@ function NetworkLand(dataset::NCDataset, config::Config, modelsettings::NamedTup
 end
 
 """
-Set subdomain fields of `NetworkLand` for running kinematic wave parallel for land domain if
-nthreads > 1.
+Set subdomain fields of `NetworkLand` for the land domain. Subdomains are created when
+nthreads > 1 to run the kinematic wave parallel, otherwise it is equal to the complete
+domain.
 """
-function network_subdomains_land(config::Config, network::NetworkLand)
+function network_subdomains(config::Config, network::NetworkLand)
     pit_inds = findall(x -> x == 5, network.local_drain_direction)
     min_streamorder = get(config.model, "min_streamorder_land", 5)
     order_of_subdomains, subdomain_inds, toposort_subdomain = kinwave_set_subdomains(
@@ -203,7 +204,7 @@ end
 end
 
 """
-Initialize `NetworkRiver` fields related to river mask (active indices model domain) and
+Initialize `NetworkRiver` fields related to river location (active indices model domain) and
 river drainage network.
 """
 function NetworkRiver(
@@ -237,10 +238,11 @@ function NetworkRiver(
 end
 
 """
-Set subdomain fields of `NetworkRiver` for running kinematic wave parallel for river domain
-if nthreads > 1.
+Set subdomain fields of `NetworkRiver` for the river domain. Subdomains are created when
+nthreads > 1 to run the kinematic wave parallel, otherwise it is equal to the complete
+domain.
 """
-function network_subdomains_river(config::Config, network::NetworkRiver)
+function network_subdomains(config::Config, network::NetworkRiver)
     min_streamorder = get(config.model, "min_streamorder_river", 6)
     pit_inds = findall(x -> x == 5, network.local_drain_direction)
     order_of_subdomains, subdomain_inds, toposort_subdomain = kinwave_set_subdomains(

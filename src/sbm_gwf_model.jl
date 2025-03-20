@@ -1,18 +1,11 @@
 """
-    initialize_sbm_gwf_model(config::Config)
+    Model(config::Config, type::SbmGwfModel)
 
-Initial part of the sbm_gwf model concept. The model contains:
-    - the land hydrology model with the SBM soil model
-    - unconfined aquifer with groundwater flow in four directions (adjacent cells)
-    - the following surface routing options:
-        - 1-D kinematic wave for river flow and 1-D kinematic wave for overland flow
-        - 1-D local inertial model for river flow (optional floodplain) and 1-D kinematic wave for overland flow
-        - 1-D local inertial model for river flow (optional floodplain) and 2-D local inertial model for overland flow
-
-The unconfined aquifer contains a recharge, river and a drain (optional) boundary.
-
-The initial part reads the input settings and data as defined in the Config object.
-Will return a Model that is ready to run.
+Initial part of the `sbm_gwf` model concept. The model contains the land hydrology model
+with the `SBM` soil model, an unconfined aquifer with groundwater flow in four directions
+(adjacent cells). The unconfined aquifer contains a recharge, river and a drain (optional)
+boundary. The initial part reads the input settings and data as defined in the Config
+object. Will return a Model that is ready to run.
 """
 function Model(config::Config, type::SbmGwfModel)
 
@@ -68,7 +61,7 @@ function Model(config::Config, type::SbmGwfModel)
     return model
 end
 
-"update the sbm_gwf model for a single timestep"
+"update the `sbm_gwf` model type for a single timestep"
 function update!(model::AbstractModel{<:SbmGwfModel})
     (; routing, land, domain, clock, config) = model
     (; soil, runoff, demand) = land

@@ -87,13 +87,13 @@ function Domain(
     network_land = NetworkLand(dataset, config, modelsettings)
     if routing_types.land == "kinematic-wave" ||
        routing_types.subsurface == "kinematic-wave"
-        network_land = network_subdomains_land(config, network_land)
+        network_land = network_subdomains(config, network_land)
     end
 
     network_river =
         NetworkRiver(dataset, config, network_land; do_pits = modelsettings.pits)
     if routing_types.river == "kinematic-wave"
-        network_river = network_subdomains_river(config, network_river)
+        network_river = network_subdomains(config, network_river)
     end
 
     pits = zeros(Bool, network_land.modelsize)

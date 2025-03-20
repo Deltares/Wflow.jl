@@ -800,7 +800,7 @@ groundwater_storage(model) = model.aquifer.variables.storage
     model::AllocationLand,
     demand::Demand,
     routing::Routing,
-    network::Network,
+    domain::Domain,
     dt::Float64,
 )
 

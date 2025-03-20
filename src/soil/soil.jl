@@ -625,7 +625,6 @@ end
 "Return soil fraction"
 function soil_fraction!(
     soil::AbstractSoilModel,
-    runoff::AbstractRunoffModel,
     glacier::AbstractGlacierModel,
     parameters::LandParameters,
 )
