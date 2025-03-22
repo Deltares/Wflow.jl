@@ -624,7 +624,7 @@ slope = "RiverSlope"
 | **`flaggriv`** | fraction of particle class large aggregates  | - | - |
 | **`fgravriv`** | fraction of particle class gravel  | - | - |
 | **`d50`** (`d50riv`) | river sediment median diameter  | mm | - |
-| **`d50engelund`**| river mean diameter  | mm | - |
+| **`d50engelund`**| river sediment median diameter  | mm | - |
 | **`cbagnold`**| Bagnold c coefficient  | - | - |
 | **`ebagnold`**| Bagnold exponent | - | - |
 | `n`             | number of cells     | - |  - |
