@@ -6,6 +6,21 @@ config = Wflow.Config(tomlpath)
 model = Wflow.initialize_sediment_model(config)
 (; network) = model
 
+@testset "initial default states" begin
+    river = model.routing.river_flow
+    mean(river.sediment_flux.variables.store_clay) == 0.0
+    mean(river.sediment_flux.variables.leftover_clay) == 0.0
+    mean(river.sediment_flux.variables.clay) == 0.0
+
+    mean(river.sediment_flux.variables.store_silt) == 0.0
+    mean(river.sediment_flux.variables.leftover_silt) == 0.0
+    mean(river.sediment_flux.variables.silt) == 0.0
+
+    mean(river.sediment_flux.variables.store_sand) == 0.0
+    mean(river.sediment_flux.variables.leftover_sand) == 0.0
+    mean(river.sediment_flux.variables.sand) == 0.0
+end
+
 Wflow.run_timestep!(model)
 
 @testset "first timestep sediment model (land part)" begin
@@ -75,6 +90,24 @@ end
     @test river.sediment_flux.variables.clay[5649] ≈ 2.840979764480952e-9
 
     @test mean(river.concentrations.variables.suspended) ≈ 0.8260075500146108
+end
+
+# test reading warm states
+config.model["reinit"] = false
+model = Wflow.initialize_sediment_model(config)
+@testset "initial warm states" begin
+    river = model.routing.river_flow
+    mean(river.sediment_flux.variables.store_clay) ≈ 0.06881654169660432
+    mean(river.sediment_flux.variables.leftover_clay) ≈ 1.8985203566870876e-7
+    mean(river.sediment_flux.variables.clay) ≈ 0.761820269217149
+
+    mean(river.sediment_flux.variables.store_silt) ≈ 0.13222698520947598
+    mean(river.sediment_flux.variables.leftover_silt) ≈ 3.0309355418150914e-9
+    mean(river.sediment_flux.variables.silt) ≈ 0.4054607471933968
+
+    mean(river.sediment_flux.variables.store_sand) ≈ 0.6762573229681987
+    mean(river.sediment_flux.variables.leftover_sand) ≈ 7.890080963256109e-10
+    mean(river.sediment_flux.variables.sand) ≈ 0.005085932599331321
 end
 
 Wflow.close_files(model)
