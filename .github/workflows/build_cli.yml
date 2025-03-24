@@ -1,0 +1,36 @@
+name: Build CLI
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - v1
+    tags: '*'
+  workflow_dispatch:
+
+# needed to allow julia-actions/cache to delete old caches that it has created
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  test:
+    name: Julia - ${{ matrix.os }} - ${{ github.event_name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: julia-actions/cache@v2
+      - uses: prefix-dev/setup-pixi@v0.8.3
+        with:
+          pixi-version: "latest"
+      - name: Prepare pixi
+        run: pixi run install-julia
+      - name: Build CLI
+        run: |
+          pixi run build-wflow-cli
