@@ -697,7 +697,7 @@ uuid = "3d5dd08c-fd9d-11e8-17fa-ed2836048c2f"
 version = "0.21.71"
 
 [[deps.Wflow]]
-deps = ["Accessors", "BasicModelInterface", "CFTime", "CompositionsBase", "Dates", "DelimitedFiles", "Glob", "Graphs", "LoggingExtras", "LoopVectorization", "NCDatasets", "Parameters", "Polyester", "ProgressLogging", "StaticArrays", "Statistics", "TOML", "TerminalLoggers"]
+deps = ["Accessors", "BasicModelInterface", "CFTime", "CompositionsBase", "Dates", "DelimitedFiles", "Glob", "Graphs", "HostCPUFeatures", "LoggingExtras", "LoopVectorization", "NCDatasets", "Parameters", "Polyester", "ProgressLogging", "StaticArrays", "Statistics", "TOML", "TerminalLoggers"]
 path = "../.."
 uuid = "d48b7d99-76e7-47ae-b1d5-ff0c1cf9a818"
 version = "0.8.1"
