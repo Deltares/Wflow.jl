@@ -1,9 +1,14 @@
 module Wflow
 
-__precompile__(false)
+# __precompile__(false)
 
 import BasicModelInterface as BMI
 import HostCPUFeatures
+HostCPUFeatures.has_feature(::Val{:x86_64_avx512vl}) = HostCPUFeatures.False()
+HostCPUFeatures.has_feature(::Val{:x86_64_avx512f}) = HostCPUFeatures.False()
+HostCPUFeatures.has_feature(::Val{:x86_64_avx2}) = HostCPUFeatures.False()
+HostCPUFeatures.has_feature(::Val{:x86_64_3}) = HostCPUFeatures.False()
+HostCPUFeatures.has_feature(::Val{:x86_64_avx}) = HostCPUFeatures.False()
 
 using Accessors: @optic, @reset, PropertyLens
 using Base.Threads: nthreads
@@ -56,14 +61,6 @@ using StaticArrays: SVector, pushfirst, setindex
 using Statistics: mean, median, quantile!, quantile
 using TerminalLoggers
 using TOML: TOML
-
-function __init__()
-    HostCPUFeatures.has_feature(::Val{:x86_64_avx512vl}) = HostCPUFeatures.False()
-    HostCPUFeatures.has_feature(::Val{:x86_64_avx512f}) = HostCPUFeatures.False()
-    HostCPUFeatures.has_feature(::Val{:x86_64_avx2}) = HostCPUFeatures.False()
-    HostCPUFeatures.has_feature(::Val{:x86_64_3}) = HostCPUFeatures.False()
-    HostCPUFeatures.has_feature(::Val{:x86_64_avx}) = HostCPUFeatures.False()
-end
 
 const CFDataset = Union{NCDataset, NCDatasets.MFDataset}
 const CFVariable_MF = Union{NCDatasets.CFVariable, NCDatasets.MFCFVariable}
