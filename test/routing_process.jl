@@ -172,7 +172,14 @@ end
             Wflow.adjacent_edges_at_node(graph, nodes_at_edge)...,
         ),
     )
-    network = Wflow.Network(; river = river_network)
+
+    params_river = Wflow.RiverParameters(;
+        flow_width = width,
+        flow_length = dl,
+        waterbody_outlet = zeros(n),
+    )
+    domain_river = Wflow.DomainRiver(; network = river_network, parameters = params_river)
+    domain = Wflow.Domain(; river = domain_river)
 
     h_thresh = 1.0e-03
     froude_limit = true
@@ -190,15 +197,12 @@ end
         zb_max = zb_max,
         mannings_n_sq = mannings_n_sq,
         mannings_n = n_river,
-        flow_width = width,
         flow_width_at_edge = width_at_edge,
-        flow_length = dl,
         flow_length_at_edge = length_at_edge,
         bankfull_storage = fill(Wflow.MISSING_VALUE, n),
         bankfull_depth = fill(Wflow.MISSING_VALUE, n),
         zb = zb,
         froude_limit = froude_limit,
-        waterbody = zeros(n),
     )
 
     variables = Wflow.LocalInertialRiverFlowVariables(;
@@ -239,11 +243,12 @@ end
 
     # run until steady state is reached
     epsilon = 1.0e-12
+    (; flow_length) = domain_river.parameters
     while true
         sw_river.boundary_conditions.inwater[1] = 20.0
         h0 = mean(sw_river.variables.h)
-        dt = Wflow.stable_timestep(sw_river)
-        Wflow.local_inertial_river_update!(sw_river, network, dt, 86400.0, 0, true)
+        dt = Wflow.stable_timestep(sw_river, flow_length)
+        Wflow.local_inertial_river_update!(sw_river, domain, dt, 86400.0, 0, true)
         d = abs(h0 - mean(sw_river.variables.h))
         if d <= epsilon
             break

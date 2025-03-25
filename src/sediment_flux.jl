@@ -1,63 +1,54 @@
 "Sediment transport in overland flow model"
 @with_kw struct OverlandFlowSediment{TT, SF, TR} <: AbstractOverlandFlowModel
     hydrological_forcing::HydrologicalForcing
-    geometry::LandGeometry
     transport_capacity::TT
     sediment_flux::SF
     to_river::TR
-    waterbodies::Vector{Bool}
-    rivers::Vector{Bool}
 end
 
 "Initialize the overland flow sediment transport model"
 function OverlandFlowSediment(
     dataset::NCDataset,
-    soilloss::SoilLoss,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
-    waterbodies::Vector{Bool},
-    rivers::Vector{Bool},
+    domain::DomainLand,
+    soilloss::SoilLoss,
 )
-    n = length(indices)
+    (; indices) = domain.network
     (; hydrological_forcing) = soilloss
 
-    geometry = LandGeometry(dataset, config, indices)
     # Check what transport capacity equation will be used
     do_river = get(config.model, "run_river_model", false)::Bool
     # Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]
     landtransportmethod = get(config.model, "land_transport", "yalinpart")::String
 
     if do_river || landtransportmethod == "yalinpart"
-        transport_capacity_model =
+        transport_capacity =
             TransportCapacityYalinDifferentiationModel(dataset, config, indices)
     elseif landtransportmethod == "govers"
-        transport_capacity_model = TransportCapacityGoversModel(dataset, config, indices)
+        transport_capacity = TransportCapacityGoversModel(dataset, config, indices)
     elseif landtransportmethod == "yalin"
-        transport_capacity_model = TransportCapacityYalinModel(dataset, config, indices)
+        transport_capacity = TransportCapacityYalinModel(dataset, config, indices)
     else
         error("Unknown land transport method: $landtransportmethod")
     end
 
     if do_river || landtransportmethod == "yalinpart"
-        sediment_flux_model = SedimentLandTransportDifferentiationModel(indices)
-        to_river_model = SedimentToRiverDifferentiationModel(indices)
+        sediment_flux = SedimentLandTransportDifferentiationModel(indices)
+        to_river = SedimentToRiverDifferentiationModel(indices)
     else
-        sediment_flux_model = SedimentLandTransportModel(indices)
-        to_river_model = SedimentToRiverModel(indices)
+        sediment_flux = SedimentLandTransportModel(indices)
+        to_river = SedimentToRiverModel(indices)
     end
 
     overland_flow_sediment = OverlandFlowSediment{
-        typeof(transport_capacity_model),
-        typeof(sediment_flux_model),
-        typeof(to_river_model),
+        typeof(transport_capacity),
+        typeof(sediment_flux),
+        typeof(to_river),
     }(;
-        hydrological_forcing = hydrological_forcing,
-        geometry = geometry,
-        transport_capacity = transport_capacity_model,
-        sediment_flux = sediment_flux_model,
-        to_river = to_river_model,
-        waterbodies = waterbodies,
-        rivers = rivers,
+        hydrological_forcing,
+        transport_capacity,
+        sediment_flux,
+        to_river,
     )
     return overland_flow_sediment
 end
@@ -66,12 +57,12 @@ end
 function update!(
     model::OverlandFlowSediment,
     erosion_model::SoilErosionModel,
-    network::NetworkLand,
+    domain::DomainLand,
     dt::Float64,
 )
     # Transport capacity
     update_boundary_conditions!(model.transport_capacity, model.hydrological_forcing, :land)
-    update!(model.transport_capacity, model.geometry, model.waterbodies, model.rivers, dt)
+    update!(model.transport_capacity, domain.parameters, dt)
 
     # Update boundary conditions before transport
     update_boundary_conditions!(
@@ -80,76 +71,67 @@ function update!(
         model.transport_capacity,
     )
     # Compute transport
-    update!(model.sediment_flux, network)
+    update!(model.sediment_flux, domain.network)
 
     # Update boundary conditions before computing sediment reaching the river
     update_boundary_conditions!(model.to_river, model.sediment_flux)
     # Compute sediment reaching the river
-    update!(model.to_river, model.rivers)
+    update!(model.to_river, domain.parameters.river_location)
 end
 
 ### River ###
 "Sediment transport in river model"
 @with_kw struct RiverSediment{TTR, ER, SFR, CR} <: AbstractRiverFlowModel
     hydrological_forcing::HydrologicalForcing
-    geometry::RiverGeometry
     transport_capacity::TTR
     potential_erosion::ER
     sediment_flux::SFR
     concentrations::CR
-    waterbodies::Vector{Bool}
 end
 
 "Initialize the river sediment transport model"
-function RiverSediment(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-    waterbodies::Vector{Bool},
-)
+function RiverSediment(dataset::NCDataset, config::Config, domain::DomainRiver)
+    (; indices) = domain.network
     n = length(indices)
     hydrological_forcing = HydrologicalForcing(n)
-    geometry = RiverGeometry(dataset, config, indices)
 
     # Check what transport capacity equation will be used
     # River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]
     transport_method = get(config.model, "river_transport", "bagnold")::String
     if transport_method == "bagnold"
-        transport_capacity_model = TransportCapacityBagnoldModel(dataset, config, indices)
+        transport_capacity = TransportCapacityBagnoldModel(dataset, config, indices)
     elseif transport_method == "engelund"
-        transport_capacity_model = TransportCapacityEngelundModel(dataset, config, indices)
+        transport_capacity = TransportCapacityEngelundModel(dataset, config, indices)
     elseif transport_method == "yang"
-        transport_capacity_model = TransportCapacityYangModel(dataset, config, indices)
+        transport_capacity = TransportCapacityYangModel(dataset, config, indices)
     elseif transport_method == "kodatie"
-        transport_capacity_model = TransportCapacityKodatieModel(dataset, config, indices)
+        transport_capacity = TransportCapacityKodatieModel(dataset, config, indices)
     elseif transport_method == "molinas"
-        transport_capacity_model = TransportCapacityMolinasModel(dataset, config, indices)
+        transport_capacity = TransportCapacityMolinasModel(dataset, config, indices)
     else
         error("Unknown river transport method: $transport_method")
     end
 
     # Potential river erosion
-    potential_erosion_model = RiverErosionJulianTorresModel(dataset, config, indices)
+    potential_erosion = RiverErosionJulianTorresModel(dataset, config, indices)
 
     # Sediment flux in river / mass balance
-    sediment_flux_model = SedimentRiverTransportModel(dataset, config, indices)
+    sediment_flux = SedimentRiverTransportModel(dataset, config, indices)
 
     # Concentrations
-    concentrations_model = SedimentConcentrationsRiverModel(dataset, config, indices)
+    concentrations = SedimentConcentrationsRiverModel(dataset, config, indices)
 
     river_sediment = RiverSediment{
-        typeof(transport_capacity_model),
-        typeof(potential_erosion_model),
-        typeof(sediment_flux_model),
-        typeof(concentrations_model),
+        typeof(transport_capacity),
+        typeof(potential_erosion),
+        typeof(sediment_flux),
+        typeof(concentrations),
     }(;
-        hydrological_forcing = hydrological_forcing,
-        geometry = geometry,
-        transport_capacity = transport_capacity_model,
-        potential_erosion = potential_erosion_model,
-        sediment_flux = sediment_flux_model,
-        concentrations = concentrations_model,
-        waterbodies = waterbodies,
+        hydrological_forcing,
+        transport_capacity,
+        potential_erosion,
+        sediment_flux,
+        concentrations,
     )
     return river_sediment
 end
@@ -158,7 +140,7 @@ end
 function update!(
     model::RiverSediment,
     to_river_model::SedimentToRiverDifferentiationModel,
-    network::NetworkRiver,
+    domain::DomainRiver,
     dt::Float64,
 )
     # Transport capacity
@@ -167,11 +149,11 @@ function update!(
         model.hydrological_forcing,
         :river,
     )
-    update!(model.transport_capacity, model.geometry, dt)
+    update!(model.transport_capacity, domain.parameters, dt)
 
     # Potential maximum river erosion
     update_boundary_conditions!(model.potential_erosion, model.hydrological_forcing)
-    update!(model.potential_erosion, model.geometry, dt)
+    update!(model.potential_erosion, domain.parameters, dt)
 
     # River transport
     update_boundary_conditions!(
@@ -180,9 +162,9 @@ function update!(
         model.transport_capacity,
         to_river_model,
         model.potential_erosion,
-        network.land_indices,
+        domain.network.land_indices,
     )
-    update!(model.sediment_flux, network, model.geometry, model.waterbodies, dt)
+    update!(model.sediment_flux, domain, dt)
 
     # Concentrations
     update_boundary_conditions!(
@@ -190,5 +172,5 @@ function update!(
         model.hydrological_forcing,
         model.sediment_flux,
     )
-    update!(model.concentrations, model.geometry, dt)
+    update!(model.concentrations, domain.parameters, dt)
 end

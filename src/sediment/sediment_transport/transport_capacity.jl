@@ -118,14 +118,14 @@ end
 "Update Govers overland flow transport capacity model for a single timestep"
 function update!(
     model::TransportCapacityGoversModel,
-    geometry::LandGeometry,
-    waterbodies::Vector{Bool},
-    rivers::Vector{Bool},
+    parameters::LandParameters,
     dt::Float64,
 )
     (; q, waterlevel) = model.boundary_conditions
     (; density, c_govers, n_govers) = model.parameters
     (; amount) = model.variables
+
+    (; slope, flow_width, waterbody_coverage, river_location) = parameters
 
     n = length(q)
     threaded_foreach(1:n; basesize = 1000) do i
@@ -135,10 +135,10 @@ function update!(
             c_govers[i],
             n_govers[i],
             density[i],
-            geometry.slope[i],
-            geometry.width[i],
-            waterbodies[i],
-            rivers[i],
+            slope[i],
+            flow_width[i],
+            waterbody_coverage[i],
+            river_location[i],
             dt,
         )
     end
@@ -198,14 +198,14 @@ end
 "Update Yalin overland flow transport capacity model for a single timestep"
 function update!(
     model::TransportCapacityYalinModel,
-    geometry::LandGeometry,
-    waterbodies::Vector{Bool},
-    rivers::Vector{Bool},
+    parameters::LandParameters,
     dt::Float64,
 )
     (; q, waterlevel) = model.boundary_conditions
     (; density, d50) = model.parameters
     (; amount) = model.variables
+
+    (; slope, flow_width, waterbody_coverage, river_location) = parameters
 
     n = length(q)
     threaded_foreach(1:n; basesize = 1000) do i
@@ -214,10 +214,10 @@ function update!(
             waterlevel[i],
             density[i],
             d50[i],
-            geometry.slope[i],
-            geometry.width[i],
-            waterbodies[i],
-            rivers[i],
+            slope[i],
+            flow_width[i],
+            waterbody_coverage[i],
+            river_location[i],
             dt,
         )
     end
@@ -335,14 +335,14 @@ end
 "Update Yalin differentiated overland flow transport capacity model for a single timestep"
 function update!(
     model::TransportCapacityYalinDifferentiationModel,
-    geometry::LandGeometry,
-    waterbodies::Vector{Bool},
-    rivers::Vector{Bool},
+    parameters::LandParameters,
     dt::Float64,
 )
     (; q, waterlevel) = model.boundary_conditions
     (; density, dm_clay, dm_silt, dm_sand, dm_sagg, dm_lagg) = model.parameters
     (; amount, clay, silt, sand, sagg, lagg) = model.variables
+
+    (; slope, flow_width, river_location, waterbody_coverage) = parameters
 
     n = length(q)
     threaded_foreach(1:n; basesize = 1000) do i
@@ -354,17 +354,17 @@ function update!(
             dm_sand[i],
             dm_sagg[i],
             dm_lagg[i],
-            geometry.slope[i],
+            slope[i],
         )
         clay[i] = transport_capacity_yalin_differentiation(
             q[i],
             waterlevel[i],
             density[i],
             dm_clay[i],
-            geometry.slope[i],
-            geometry.width[i],
-            waterbodies[i],
-            rivers[i],
+            slope[i],
+            flow_width[i],
+            waterbody_coverage[i],
+            river_location[i],
             dtot,
             dt,
         )
@@ -373,10 +373,10 @@ function update!(
             waterlevel[i],
             density[i],
             dm_silt[i],
-            geometry.slope[i],
-            geometry.width[i],
-            waterbodies[i],
-            rivers[i],
+            slope[i],
+            flow_width[i],
+            waterbody_coverage[i],
+            river_location[i],
             dtot,
             dt,
         )
@@ -385,10 +385,10 @@ function update!(
             waterlevel[i],
             density[i],
             dm_sand[i],
-            geometry.slope[i],
-            geometry.width[i],
-            waterbodies[i],
-            rivers[i],
+            slope[i],
+            flow_width[i],
+            waterbody_coverage[i],
+            river_location[i],
             dtot,
             dt,
         )
@@ -397,10 +397,10 @@ function update!(
             waterlevel[i],
             density[i],
             dm_sagg[i],
-            geometry.slope[i],
-            geometry.width[i],
-            waterbodies[i],
-            rivers[i],
+            slope[i],
+            flow_width[i],
+            waterbody_coverage[i],
+            river_location[i],
             dtot,
             dt,
         )
@@ -409,10 +409,10 @@ function update!(
             waterlevel[i],
             density[i],
             dm_lagg[i],
-            geometry.slope[i],
-            geometry.width[i],
-            waterbodies[i],
-            rivers[i],
+            slope[i],
+            flow_width[i],
+            waterbody_coverage[i],
+            river_location[i],
             dtot,
             dt,
         )
@@ -504,7 +504,11 @@ function TransportCapacityBagnoldModel(
 end
 
 "Update Bagnold river transport capacity model for a single timestep"
-function update!(model::TransportCapacityBagnoldModel, geometry::RiverGeometry, dt::Float64)
+function update!(
+    model::TransportCapacityBagnoldModel,
+    parameters::RiverParameters,
+    dt::Float64,
+)
     (; q, waterlevel) = model.boundary_conditions
     (; c_bagnold, e_bagnold) = model.parameters
     (; amount) = model.variables
@@ -518,8 +522,8 @@ function update!(model::TransportCapacityBagnoldModel, geometry::RiverGeometry, 
             waterlevel[i],
             c_bagnold[i],
             e_bagnold[i],
-            geometry.width[i],
-            geometry.length[i],
+            parameters.flow_width[i],
+            parameters.flow_length[i],
             dt,
         )
     end
@@ -553,7 +557,7 @@ end
 "Update Engelund and Hansen river transport capacity model for a single timestep"
 function update!(
     model::TransportCapacityEngelundModel,
-    geometry::RiverGeometry,
+    parameters::RiverParameters,
     dt::Float64,
 )
     (; q, waterlevel) = model.boundary_conditions
@@ -567,9 +571,9 @@ function update!(
             waterlevel[i],
             density[i],
             d50[i],
-            geometry.width[i],
-            geometry.length[i],
-            geometry.slope[i],
+            parameters.flow_width[i],
+            parameters.flow_length[i],
+            parameters.slope[i],
             dt,
         )
     end
@@ -654,7 +658,11 @@ function TransportCapacityKodatieModel(
 end
 
 "Update Kodatie river transport capacity model for a single timestep"
-function update!(model::TransportCapacityKodatieModel, geometry::RiverGeometry, dt::Float64)
+function update!(
+    model::TransportCapacityKodatieModel,
+    parameters::RiverParameters,
+    dt::Float64,
+)
     (; q, waterlevel) = model.boundary_conditions
     (; a_kodatie, b_kodatie, c_kodatie, d_kodatie) = model.parameters
     (; amount) = model.variables
@@ -668,9 +676,9 @@ function update!(model::TransportCapacityKodatieModel, geometry::RiverGeometry, 
             b_kodatie[i],
             c_kodatie[i],
             d_kodatie[i],
-            geometry.width[i],
-            geometry.length[i],
-            geometry.slope[i],
+            parameters.flow_width[i],
+            parameters.flow_length[i],
+            parameters.slope[i],
             dt,
         )
     end
@@ -702,7 +710,11 @@ function TransportCapacityYangModel(
 end
 
 "Update Yang river transport capacity model for a single timestep"
-function update!(model::TransportCapacityYangModel, geometry::RiverGeometry, dt::Float64)
+function update!(
+    model::TransportCapacityYangModel,
+    parameters::RiverParameters,
+    dt::Float64,
+)
     (; q, waterlevel) = model.boundary_conditions
     (; density, d50) = model.parameters
     (; amount) = model.variables
@@ -714,9 +726,9 @@ function update!(model::TransportCapacityYangModel, geometry::RiverGeometry, dt:
             waterlevel[i],
             density[i],
             d50[i],
-            geometry.width[i],
-            geometry.length[i],
-            geometry.slope[i],
+            parameters.flow_width[i],
+            parameters.flow_length[i],
+            parameters.slope[i],
             dt,
         )
     end
@@ -748,7 +760,11 @@ function TransportCapacityMolinasModel(
 end
 
 "Update Molinas and Wu river transport capacity model for a single timestep"
-function update!(model::TransportCapacityMolinasModel, geometry::RiverGeometry, dt::Float64)
+function update!(
+    model::TransportCapacityMolinasModel,
+    parameters::RiverParameters,
+    dt::Float64,
+)
     (; q, waterlevel) = model.boundary_conditions
     (; density, d50) = model.parameters
     (; amount) = model.variables
@@ -760,9 +776,9 @@ function update!(model::TransportCapacityMolinasModel, geometry::RiverGeometry, 
             waterlevel[i],
             density[i],
             d50[i],
-            geometry.width[i],
-            geometry.length[i],
-            geometry.slope[i],
+            parameters.flow_width[i],
+            parameters.flow_length[i],
+            parameters.slope[i],
             dt,
         )
     end
