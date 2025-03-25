@@ -1,9 +1,7 @@
 module Wflow
 
 import BasicModelInterface as BMI
-
-using HostCPUFeatures:
-    set_feature
+import HostCPUFeatures
 
 using Accessors: @optic, @reset, PropertyLens
 using Base.Threads: nthreads
@@ -58,11 +56,11 @@ using TerminalLoggers
 using TOML: TOML
 
 function __init__()
-    set_feature("x86_64_avx512vl", false)
-    set_feature("x86_64_avx512f", false)
-    set_feature("x86_64_avx2", false)
-    set_feature("x86_64_3", false)
-    set_feature("x86_64_avx", false)
+    HostCPUFeatures.has_feature(::Val{:x86_64_avx512vl}) = HostCPUFeatures.False()
+    HostCPUFeatures.has_feature(::Val{:x86_64_avx512f}) = HostCPUFeatures.False()
+    HostCPUFeatures.has_feature(::Val{:x86_64_avx2}) = HostCPUFeatures.False()
+    HostCPUFeatures.has_feature(::Val{:x86_64_3}) = HostCPUFeatures.False()
+    HostCPUFeatures.has_feature(::Val{:x86_64_avx}) = HostCPUFeatures.False()
 end
 
 const CFDataset = Union{NCDataset, NCDatasets.MFDataset}
