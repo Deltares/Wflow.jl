@@ -1,6 +1,6 @@
 module Wflow
 
-# __precompile__(false)
+__precompile__(false)
 
 import BasicModelInterface as BMI
 import HostCPUFeatures
