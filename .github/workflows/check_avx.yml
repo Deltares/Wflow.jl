@@ -1,0 +1,26 @@
+name: Build CLI
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - v1
+    tags: '*'
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: check avx - ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+    steps:
+      - name: check avx
+        run: |
+          grep avx /proc/cpuinfo
+      - name: check avx2
+        run: |
+          grep avx2 /proc/cpuinfo
