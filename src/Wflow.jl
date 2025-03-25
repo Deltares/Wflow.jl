@@ -2,6 +2,9 @@ module Wflow
 
 import BasicModelInterface as BMI
 
+using HostCPUFeatures:
+    set_feature
+
 using Accessors: @optic, @reset, PropertyLens
 using Base.Threads: nthreads
 using CFTime: CFTime, monthday, dayofyear
@@ -53,6 +56,14 @@ using StaticArrays: SVector, pushfirst, setindex
 using Statistics: mean, median, quantile!, quantile
 using TerminalLoggers
 using TOML: TOML
+
+function __init__()
+    set_feature("x86_64_avx512vl", false)
+    set_feature("x86_64_avx512f", false)
+    set_feature("x86_64_avx2", false)
+    set_feature("x86_64_3", false)
+    set_feature("x86_64_avx", false)
+end
 
 const CFDataset = Union{NCDataset, NCDatasets.MFDataset}
 const CFVariable_MF = Union{NCDatasets.CFVariable, NCDatasets.MFCFVariable}
