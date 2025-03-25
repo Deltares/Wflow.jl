@@ -28,7 +28,7 @@ function LakeParameters(
     lakelocs = lakelocs_2d[inds_riv]
 
     # this holds the same ids as lakelocs, but covers the entire lake
-    lens = lens_input(config, "lakes_area__count"; optional = false)
+    lens = lens_input(config, "lake_area__count"; optional = false)
     lakecoverage_2d = ncread(dataset, config, lens; allow_missing = true)
     # for each lake, a list of 2D indices, needed for getting the mean precipitation
     inds_lake_cov = Vector{CartesianIndex{2}}[]
