@@ -1,0 +1,3489 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.42">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Lateral concepts – Wflow.jl</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../_static/logo.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-2f5df379a58b258e96c21c0638c20c03.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-b53751a350365c71b6c909e95f209ed1.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-8352b7ccb0c9fcabe109303f7234483b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-203ae7a31bbdd3824f13122283b91499.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "textbox",
+  "limit": 5,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script type="text/javascript" src="../_static/version.js"></script>
+<script>
+  window.MathJax = {
+    tex: {
+      macros: {
+        SI: ["#1\\;\\mathrm\{#2\}", 2],
+        SIb: ["#1\\;[\\mathrm\{#2\}]", 2],
+        subtext: ["#1_\\text\{#2\}", 2]
+      }
+    }
+  };
+</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../_static/styles.css">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../_static/logo.png" alt="" class="navbar-logo">
+    </a>
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Wflow.jl</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../getting_started/index.html"> 
+<span class="menu-text">Getting started</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../user_guide/index.html"> 
+<span class="menu-text">User guide</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../examples/index.html"> 
+<span class="menu-text">Examples</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link active" href="../model_docs/index.html" aria-current="page"> 
+<span class="menu-text">Model documentation</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../developments/index.html"> 
+<span class="menu-text">Developments</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-bi-github" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+      <i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-bi-github">    
+        <li>
+    <a class="dropdown-item" href="https://github.com/Deltares/Wflow.jl">
+ <span class="dropdown-text">Source Code</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://github.com/Deltares/Wflow.jl/issues/new/choose">
+ <span class="dropdown-text">Report an Issue</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-version" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Version</span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-version">    
+        <li class="dropdown-header">empty</li>
+    </ul>
+  </li>
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../model_docs/parameters_vertical.html">Parameters</a></li><li class="breadcrumb-item"><a href="../model_docs/parameters_lateral.html">Lateral concepts</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../model_docs/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">About</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../model_docs/model_configurations.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Model configurations</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
+ <span class="menu-text">Vertical processes</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../model_docs/vertical/sbm.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SBM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../model_docs/vertical/sediment.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Sediment</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../model_docs/vertical/shared_processes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Shared processes</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
+ <span class="menu-text">Lateral processes</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../model_docs/lateral/kinwave.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Kinematic wave</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../model_docs/lateral/local-inertial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Local inertial</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../model_docs/lateral/waterbodies.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reservoirs and Lakes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../model_docs/lateral/gwf.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Groundwater flow</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../model_docs/lateral/sediment_flux.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Sediment flux</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
+ <span class="menu-text">Parameters</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../model_docs/parameters_vertical.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Vertical concepts</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../model_docs/parameters_lateral.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Lateral concepts</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="99">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#kinematic-wave" id="toc-kinematic-wave" class="nav-link active" data-scroll-target="#kinematic-wave">Kinematic wave</a>
+  <ul class="collapse">
+  <li><a href="#surface-flow" id="toc-surface-flow" class="nav-link" data-scroll-target="#surface-flow">Surface flow</a></li>
+  <li><a href="#lateral-subsurface-flow" id="toc-lateral-subsurface-flow" class="nav-link" data-scroll-target="#lateral-subsurface-flow">Lateral subsurface flow</a></li>
+  </ul></li>
+  <li><a href="#local-inertial" id="toc-local-inertial" class="nav-link" data-scroll-target="#local-inertial">Local inertial</a>
+  <ul class="collapse">
+  <li><a href="#river-flow" id="toc-river-flow" class="nav-link" data-scroll-target="#river-flow">River flow</a></li>
+  <li><a href="#d-floodplain" id="toc-d-floodplain" class="nav-link" data-scroll-target="#d-floodplain">1D floodplain</a></li>
+  <li><a href="#overland-flow" id="toc-overland-flow" class="nav-link" data-scroll-target="#overland-flow">Overland flow</a></li>
+  </ul></li>
+  <li><a href="#water-bodies" id="toc-water-bodies" class="nav-link" data-scroll-target="#water-bodies">Water bodies</a>
+  <ul class="collapse">
+  <li><a href="#reservoirs" id="toc-reservoirs" class="nav-link" data-scroll-target="#reservoirs">Reservoirs</a></li>
+  <li><a href="#lakes" id="toc-lakes" class="nav-link" data-scroll-target="#lakes">Lakes</a></li>
+  </ul></li>
+  <li><a href="#water-allocation-river" id="toc-water-allocation-river" class="nav-link" data-scroll-target="#water-allocation-river">Water allocation river</a></li>
+  <li><a href="#groundwater-flow" id="toc-groundwater-flow" class="nav-link" data-scroll-target="#groundwater-flow">Groundwater flow</a>
+  <ul class="collapse">
+  <li><a href="#confined-aquifer" id="toc-confined-aquifer" class="nav-link" data-scroll-target="#confined-aquifer">Confined aquifer</a></li>
+  <li><a href="#unconfined-aquifer" id="toc-unconfined-aquifer" class="nav-link" data-scroll-target="#unconfined-aquifer">Unconfined aquifer</a></li>
+  <li><a href="#constant-head" id="toc-constant-head" class="nav-link" data-scroll-target="#constant-head">Constant Head</a></li>
+  <li><a href="#boundary-conditions" id="toc-boundary-conditions" class="nav-link" data-scroll-target="#boundary-conditions">Boundary conditions</a></li>
+  </ul></li>
+  <li><a href="#sediment" id="toc-sediment" class="nav-link" data-scroll-target="#sediment">Sediment</a>
+  <ul class="collapse">
+  <li><a href="#overland-flow-1" id="toc-overland-flow-1" class="nav-link" data-scroll-target="#overland-flow-1">Overland flow</a></li>
+  <li><a href="#river-flow-1" id="toc-river-flow-1" class="nav-link" data-scroll-target="#river-flow-1">River flow</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../model_docs/parameters_vertical.html">Parameters</a></li><li class="breadcrumb-item"><a href="../model_docs/parameters_lateral.html">Lateral concepts</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Lateral concepts</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="kinematic-wave" class="level2">
+<h2 class="anchored" data-anchor-id="kinematic-wave">Kinematic wave</h2>
+<section id="surface-flow" class="level3">
+<h3 class="anchored" data-anchor-id="surface-flow">Surface flow</h3>
+<p>The Table below shows the parameters (fields) of struct <code>SurfaceFlowRiver</code> used for river flow, including a description of these parameters, the unit, and default value if applicable. The parameters in bold represent model parameters that can be set through static input data (netCDF), and can be listed in the TOML configuration file under <code>[input.lateral.river]</code> to map the internal model parameter to the external netCDF variable. The input parameter <code>slope</code> (listed under <code>[input.lateral.river]</code>) is not equal to the internal model parameter <code>sl</code>, and is listed in the Table below between parentheses.</p>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 23%">
+<col style="width: 38%">
+<col style="width: 19%">
+<col style="width: 19%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Parameter</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>beta</code></td>
+<td>constant in Manning’s equation</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>sl</code></strong> (<code>slope</code>)</td>
+<td>slope</td>
+<td>m m<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>n</code></strong></td>
+<td>Manning’s roughness</td>
+<td>s m<span class="math inline">\(^{-\frac{1}{3}}\)</span></td>
+<td>0.036</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>dl</code></strong></td>
+<td>length</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>q</code></td>
+<td>discharge</td>
+<td>m<span class="math inline">\(^3\)</span> s<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>qin</code></td>
+<td>inflow from upstream cells</td>
+<td>m<span class="math inline">\(^3\)</span> s<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>q_av</code></td>
+<td>average discharge</td>
+<td>m<span class="math inline">\(^3\)</span> s<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>qlat</code></td>
+<td>lateral inflow per unit length</td>
+<td>m<span class="math inline">\(^2\)</span> s<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>inwater</code></td>
+<td>lateral inflow</td>
+<td>m<span class="math inline">\(^3\)</span> s<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>inflow</code></strong></td>
+<td>external inflow (abstraction/supply/demand)</td>
+<td>m<span class="math inline">\(^3\)</span> s<span class="math inline">\(^{-1}\)</span></td>
+<td>0.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>inflow_wb</code></td>
+<td>inflow waterbody (lake or reservoir model) from land part</td>
+<td>m<span class="math inline">\(^3\)</span> s<span class="math inline">\(^{-1}\)</span></td>
+<td>0.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>abstraction</code></td>
+<td>abstraction (computed as part of water demand and allocation)</td>
+<td>m<span class="math inline">\(^3\)</span> s<span class="math inline">\(^{-1}\)</span></td>
+<td>0.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>volume</code></td>
+<td>kinematic wave volume</td>
+<td>m<span class="math inline">\(^3\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>h</code></td>
+<td>water level</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>h_av</code></td>
+<td>average water level</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>bankfull_depth</code></strong></td>
+<td>bankfull river depth</td>
+<td>m</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>dt</code></td>
+<td>model time step</td>
+<td>s</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>its</code></td>
+<td>number of fixed iterations</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>width</code></strong></td>
+<td>width</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>alpha_pow</code></td>
+<td>used in the power part of <span class="math inline">\(\alpha\)</span></td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>alpha_term</code></td>
+<td>term used in computation of <span class="math inline">\(\alpha\)</span></td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>alpha</code></td>
+<td>constant in momentum equation <span class="math inline">\(A = \alpha Q^{\beta}\)</span></td>
+<td>s<span class="math inline">\(^{\frac{3}{5}}\)</span> m<span class="math inline">\(^{\frac{1}{5}}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>cel</code></td>
+<td>celerity of kinematic wave</td>
+<td>m s<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>reservoir_index</code></td>
+<td>map cell to 0 (no reservoir) or i (pick reservoir i in reservoir field)</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>lake_index</code></td>
+<td>map cell to 0 (no lake) or i (pick lake i in lake field)</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>reservoir</code></td>
+<td>an array of reservoir models <code>SimpleReservoir</code></td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>lake</code></td>
+<td>an array of lake models <code>Lake</code></td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>allocation</code></td>
+<td>water allocation of type <code>AllocationRiver</code></td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>kinwave_it</code></td>
+<td>boolean for kinematic wave iterations</td>
+<td>-</td>
+<td>false</td>
+</tr>
+</tbody>
+</table>
+<p>The Table below shows the parameters (fields) of struct <code>SurfaceFlowLand</code> used for overland flow, including a description of these parameters, the unit, and default value if applicable. The parameters in bold represent model parameters that can be set through static input data (netCDF), and can be listed in the TOML configuration file under <code>[input.lateral.land]</code> to map the internal model parameter to the external netCDF variable. The input parameter <code>slope</code> (listed under <code>[input.lateral.land]</code>) is not equal to the internal model parameter <code>sl</code>, and is listed in the Table below between parentheses.</p>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 23%">
+<col style="width: 38%">
+<col style="width: 19%">
+<col style="width: 19%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Parameter</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>beta</code></td>
+<td>constant in Manning’s equation</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>sl</code></strong> (<code>slope</code>)</td>
+<td>slope</td>
+<td>m m<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>n</code></strong></td>
+<td>Manning’s roughness</td>
+<td>s m<span class="math inline">\(^{-\frac{1}{3}}\)</span></td>
+<td>0.072</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>dl</code></td>
+<td>length</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>q</code></td>
+<td>discharge</td>
+<td>m<span class="math inline">\(^3\)</span> s<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>qin</code></td>
+<td>inflow from upstream cells</td>
+<td>m<span class="math inline">\(^3\)</span> s<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>q_av</code></td>
+<td>average discharge</td>
+<td>m<span class="math inline">\(^3\)</span> s<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>qlat</code></td>
+<td>lateral inflow per unit length</td>
+<td>m<span class="math inline">\(^2\)</span> s<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>inwater</code></td>
+<td>lateral inflow</td>
+<td>m<span class="math inline">\(^3\)</span> s<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>volume</code></td>
+<td>kinematic wave volume</td>
+<td>m<span class="math inline">\(^3\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>h</code></td>
+<td>water level</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>h_av</code></td>
+<td>average water level</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>dt</code></td>
+<td>model time step</td>
+<td>s</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>its</code></td>
+<td>number of fixed iterations</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>width</code></td>
+<td>width</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>alpha_pow</code></td>
+<td>used in the power part of <span class="math inline">\(\alpha\)</span></td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>alpha_term</code></td>
+<td>term used in computation of <span class="math inline">\(\alpha\)</span></td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>alpha</code></td>
+<td>constant in momentum equation <span class="math inline">\(A = \alpha Q^{\beta}\)</span></td>
+<td>s<span class="math inline">\(^{\frac{3}{5}}\)</span> m<span class="math inline">\(^{\frac{1}{5}}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>cel</code></td>
+<td>celerity of kinematic wave</td>
+<td>m s<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>to_river</code></td>
+<td>part of overland flow that flows to the river</td>
+<td>m<span class="math inline">\(^3\)</span> s<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>kinwave_it</code></td>
+<td>boolean for kinematic wave iterations</td>
+<td>-</td>
+<td>false</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="lateral-subsurface-flow" class="level3">
+<h3 class="anchored" data-anchor-id="lateral-subsurface-flow">Lateral subsurface flow</h3>
+<p>The Table below shows the parameters (fields) of struct <code>LateralSSF</code>, including a description of these parameters, the unit, and default value if applicable. The parameters in bold represent model parameters that can be set through static input data (netCDF). The soil related parameters <code>f</code>, <code>soilthickness</code>, <code>z_exp</code>, <code>theta_s</code> and <code>theta_r</code> are derived from the vertical <code>SBM</code> concept (including unit conversion for <code>f</code>, <code>z_exp</code> and <code>soilthickness</code>), and can be listed in the TOML configuration file under <code>[input.vertical]</code>, to map the internal model parameter to the external netCDF variable. The internal slope model parameter <code>slope</code> is set through the TOML file as follows:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.lateral.land]</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">slope</span> <span class="op">=</span> <span class="st">"Slope"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The parameter <code>kh_0</code> is computed by multiplying the vertical hydraulic conductivity at the soil surface <code>kv_0</code> (including unit conversion) of the vertical <code>SBM</code> concept with the internal parameter <code>khfrac</code> [-] (default value of 1.0). The internal model parameter <code>khfrac</code> is set through the TOML file as follows:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.lateral.subsurface]</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">ksathorfrac</span> <span class="op">=</span> <span class="st">"KsatHorFrac"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The <code>khfrac</code> parameter compensates for anisotropy, small scale <code>kv_0</code> measurements (soil core) that do not represent larger scale hydraulic conductivity, and smaller flow length scales (hillslope) in reality, not represented by the model resolution.</p>
+<p>For the vertical <a href="../model_docs/parameters_vertical.html#sbm">SBM</a> concept different vertical hydraulic conductivity depth profiles are possible, and these also determine which <code>LateralSSF</code> parameters are used including the input requirements for the computation of lateral subsurface flow. For the <code>exponential</code> profile the model parameters <code>kh_0</code> and <code>f</code> are used. For the <code>exponential_constant</code> profile <code>kh_0</code> and <code>f</code> are used, and <code>z_exp</code> is required as part of <code>[input.vertical]</code>. For the <code>layered</code> profile, <code>SBM</code> model parameter <code>kv</code> is used, and for the <code>layered_exponential</code> profile <code>kv</code> is used and <code>z_exp</code> is required as part of <code>[input.vertical]</code>.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 23%">
+<col style="width: 38%">
+<col style="width: 19%">
+<col style="width: 19%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Parameter</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>kh_0</code></td>
+<td>horizontal hydraulic conductivity at soil surface</td>
+<td>m d<span class="math inline">\(^{-1}\)</span></td>
+<td>3.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>f</code></strong></td>
+<td>a scaling parameter (controls exponential decline of <code>kh_0</code>)</td>
+<td>m<span class="math inline">\(^{-1}\)</span></td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>kh</code></td>
+<td>horizontal hydraulic conductivity</td>
+<td>m d<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>khfrac</code></strong> (<code>ksathorfrac</code>)</td>
+<td>a muliplication factor applied to vertical hydraulic conductivity <code>kv</code></td>
+<td>-</td>
+<td>100.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>soilthickness</code></strong></td>
+<td>soil thickness</td>
+<td>m</td>
+<td>2.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>theta_s</code></strong></td>
+<td>saturated water content (porosity)</td>
+<td>-</td>
+<td>0.6</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>theta_r</code></strong></td>
+<td>residual water content</td>
+<td>-</td>
+<td>0.01</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>dt</code></td>
+<td>model time step</td>
+<td>d</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>slope</code></strong></td>
+<td>slope</td>
+<td>m m<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>dl</code></td>
+<td>drain length</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>dw</code></td>
+<td>drain width</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>zi</code></td>
+<td>pseudo-water table depth (top of the saturated zone)</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>z_exp</code></strong></td>
+<td>depth from soil surface for which exponential decline of <code>kh_0</code> is valid</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>exfiltwater</code></td>
+<td>exfiltration (groundwater above surface level, saturated excess conditions)</td>
+<td>m Δt⁻¹</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>recharge</code></td>
+<td>net recharge to saturated store</td>
+<td>m<span class="math inline">\(^2\)</span> Δt⁻¹</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>ssf</code></td>
+<td>subsurface flow</td>
+<td>m<span class="math inline">\(^3\)</span> d<span class="math inline">\({-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>ssfin</code></td>
+<td>inflow from upstream cells</td>
+<td>m<span class="math inline">\(^3\)</span> d<span class="math inline">\({-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>ssfmax</code></td>
+<td>maximum subsurface flow</td>
+<td>m<span class="math inline">\(^2\)</span> d<span class="math inline">\({-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>to_river</code></td>
+<td>part of subsurface flow that flows to the river</td>
+<td>m<span class="math inline">\(^3\)</span> d<span class="math inline">\({-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>volume</code></td>
+<td>subsurface water volume</td>
+<td>m<span class="math inline">\(^3\)</span></td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="local-inertial" class="level2">
+<h2 class="anchored" data-anchor-id="local-inertial">Local inertial</h2>
+<section id="river-flow" class="level3">
+<h3 class="anchored" data-anchor-id="river-flow">River flow</h3>
+<p>The Table below shows the parameters (fields) of struct <code>ShallowWaterRiver</code>, including a description of these parameters, the unit, and default value if applicable. The parameters in bold represent model parameters that can be set through static input data (netCDF), and can be listed in the TOML configuration file under <code>[input.lateral.river]</code>, to map the internal model parameter to the external netCDF variable. The parameter river bed elevation <code>zb</code> is based on the bankfull elevation and depth input data:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.lateral.river]</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">bankfull_elevation</span> <span class="op">=</span> <span class="st">"RiverZ"</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="dt">bankfull_depth</span> <span class="op">=</span> <span class="st">"RiverDepth"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>When floodplain routing (parameter <code>floodplain</code>) is included as part of local inertial river flow, parameter <code>q_av</code> represents the total average discharge of the river channel and floodplain routing, and parameter <code>q_channel_av</code> represents average river channel discharge. Otherwise parameters <code>q_av</code> and <code>q_channel_av</code> represent both average river channel discharge (are equal).</p>
+<p>The input parameter <code>n</code> (listed under <code>[input.lateral.river]</code>) is not equal to the internal model parameter <code>mannings_n</code>, and is listed in the Table below between parentheses.</p>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 23%">
+<col style="width: 38%">
+<col style="width: 19%">
+<col style="width: 19%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Parameter</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>mannings_n</code></strong> (<code>n</code>)</td>
+<td>Manning’s roughness</td>
+<td>s m<span class="math inline">\(^{-\frac{1}{3}}\)</span></td>
+<td>0.036</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>width</code></strong></td>
+<td>river width</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>zb</code></td>
+<td>river bed elevation</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>length</code></strong></td>
+<td>river length</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>n</code></td>
+<td>number of cells</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>ne</code></td>
+<td>number of edges/links</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>active_n</code></td>
+<td>active nodes</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>active_e</code></td>
+<td>active edges</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>g</code></td>
+<td>acceleration due to gravity</td>
+<td>m s<span class="math inline">\(^{-2}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>alpha</code></td>
+<td>stability coefficient (Bates et al., 2010)</td>
+<td>-</td>
+<td>0.7</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>h_thresh</code></td>
+<td>depth threshold for calculating flow</td>
+<td>m</td>
+<td>0.001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>dt</code></td>
+<td>model time step</td>
+<td>s</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>q</code></td>
+<td>river discharge (subgrid channel)</td>
+<td>m<span class="math inline">\(^3\)</span> s<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>q_av</code></td>
+<td>average river channel (+ floodplain) discharge</td>
+<td>m<span class="math inline">\(^3\)</span> s<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>q_channel_av</code></td>
+<td>average river channel discharge</td>
+<td>m<span class="math inline">\(^3\)</span> s<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>zb_max</code></td>
+<td>maximum channel bed elevation</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>mannings_n_sq</code></td>
+<td>Manning’s roughness squared at edge/link</td>
+<td>(s m<span class="math inline">\(^{-\frac{1}{3}}\)</span>)<span class="math inline">\(^2\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>h</code></td>
+<td>water depth</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>zs_max</code></td>
+<td>maximum water elevation</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>zs_src</code></td>
+<td>water elevation of source node of edge</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>zs_dst</code></td>
+<td>water elevation of downstream node of edge</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>hf</code></td>
+<td>water depth at edge/link</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>h_av</code></td>
+<td>average water depth</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>dl</code></td>
+<td>river length</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>dl_at_link</code></td>
+<td>river length at edge/link</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>width</code></td>
+<td>river width</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>width_at_link</code></td>
+<td>river width at edge/link</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>a</code></td>
+<td>flow area at edge/link</td>
+<td>m<span class="math inline">\(^2\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>r</code></td>
+<td>hydraulic radius at edge/link</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>volume</code></td>
+<td>river volume</td>
+<td>m<span class="math inline">\(^3\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>error</code></td>
+<td>error volume</td>
+<td>m<span class="math inline">\(^3\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>inwater</code></td>
+<td>lateral inflow</td>
+<td>m<span class="math inline">\(^3\)</span> s<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>inflow</code></strong></td>
+<td>external inflow (abstraction/supply/demand)</td>
+<td>m<span class="math inline">\(^3\)</span> s<span class="math inline">\(^{-1}\)</span></td>
+<td>0.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>abstraction</code></td>
+<td>abstraction (computed as part of water demand and allocation)</td>
+<td>m<span class="math inline">\(^3\)</span> s<span class="math inline">\(^{-1}\)</span></td>
+<td>0.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>inflow_wb</code></td>
+<td>inflow waterbody (lake or reservoir model) from land part</td>
+<td>m<span class="math inline">\(^3\)</span> s<span class="math inline">\(^{-1}\)</span></td>
+<td>0.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>bankfull_volume</code></td>
+<td>bankfull volume</td>
+<td>m<span class="math inline">\(^3\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>bankfull_depth</code></strong></td>
+<td>bankfull depth</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>froude_limit</code></td>
+<td>if true a check is performed if froude number &gt; 1.0 (algorithm is modified)</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>reservoir_index</code></td>
+<td>river cell index with a reservoir</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>lake_index</code></td>
+<td>river cell index with a lake</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>waterbody</code></td>
+<td>water body cells (reservoir or lake)</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>reservoir</code></td>
+<td>an array of reservoir models <code>SimpleReservoir</code></td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>lake</code></td>
+<td>an array of lake models <code>Lake</code></td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>allocation</code></td>
+<td>optional water allocation of type <code>AllocationRiver</code></td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>floodplain</code></td>
+<td>optional 1D floodplain routing <code>FloodPlain</code></td>
+<td>-</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="d-floodplain" class="level3">
+<h3 class="anchored" data-anchor-id="d-floodplain">1D floodplain</h3>
+<p>The Table below shows the parameters (fields) of struct <code>FloodPlain</code> (part of struct <code>ShallowWaterRiver</code>), including a description of these parameters, the unit, and default value if applicable. The parameters in bold represent model parameters that can be set through static input data (netCDF), and can be listed in the TOML configuration file under <code>[input.lateral.river.floodplain]</code>, to map the internal model parameter to the external netCDF variable. The input parameter <code>n</code> (listed under <code>[input.lateral.river.floodplain]</code>) is not equal to the internal model parameter <code>mannings_n</code>, and is listed in the Table below between parentheses.</p>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 23%">
+<col style="width: 38%">
+<col style="width: 19%">
+<col style="width: 19%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Parameter</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>profile</code></strong></td>
+<td>Floodplain profile <code>FloodPlainProfile</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>mannings_n</code></strong> (<code>n</code>)</td>
+<td>Manning’s roughness for the floodplain</td>
+<td>s m<span class="math inline">\(^{-\frac{1}{3}}\)</span></td>
+<td>0.072</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>mannings_n_sq</code></td>
+<td>Manning’s roughness squared at edge/link</td>
+<td>(s m<span class="math inline">\(^{-\frac{1}{3}}\)</span>)<span class="math inline">\(^2\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>volume</code></td>
+<td>flood volume</td>
+<td>m<span class="math inline">\(^3\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>h</code></td>
+<td>flood depth</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>h_av</code></td>
+<td>average flood depth</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>error</code></td>
+<td></td>
+<td>error volume</td>
+<td>m<span class="math inline">\(^3\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>a</code></td>
+<td>flow area at edge/link</td>
+<td>m<span class="math inline">\(^2\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>r</code></td>
+<td>hydraulic radius at edge/link</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>hf</code></td>
+<td>flood depth at edge/link</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>zb_max</code></td>
+<td>maximum bankfull elevation at edge</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>q0</code></td>
+<td>discharge at previous time step</td>
+<td>m<span class="math inline">\(^3\)</span> s<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>q</code></td>
+<td>discharge</td>
+<td>m<span class="math inline">\(^3\)</span> s<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>q_av</code></td>
+<td>average discharge</td>
+<td>m<span class="math inline">\(^3\)</span> s<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>hf_index</code></td>
+<td>index with <code>hf</code> above depth threshold</td>
+<td>-</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<p>The floodplain profile <code>FloodPlainProfile</code> contains the following parameters:</p>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 23%">
+<col style="width: 38%">
+<col style="width: 19%">
+<col style="width: 19%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Parameter</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>depth</code></strong> (<code>flood_depth</code>)</td>
+<td>flood depths</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>volume</code></strong></td>
+<td>cumulative flood volume (per flood depth)</td>
+<td>m<span class="math inline">\(^3\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>width</code></td>
+<td>cumulative floodplain width (per flood depth)</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>a</code></td>
+<td>cumulative floodplain flow area (per flood depth)</td>
+<td>m<span class="math inline">\(^2\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>p</code></td>
+<td>cumulative floodplain wetted perimeter (per flood depth)</td>
+<td>m</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<p>The floodplain volumes (per flood <code>depth</code> interval) can be set as follows through the TOML file:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.lateral.river.floodplain]</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">volume</span> <span class="op">=</span> <span class="st">"floodplain_volume"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The input parameter <code>flood_depth</code> (dimension of floodplain <code>volume</code>) is not equal to the internal model parameter <code>depth</code>, and is listed in the Table below between parentheses.</p>
+</section>
+<section id="overland-flow" class="level3">
+<h3 class="anchored" data-anchor-id="overland-flow">Overland flow</h3>
+<p>The Table below shows the parameters (fields) of struct <code>ShallowWaterLand</code>, including a description of these parameters, the unit, and default value if applicable. The parameters in bold represent model parameters that can be set through static input data (netCDF), and can be listed in the TOML configuration file under <code>[input.lateral.land]</code>, to map the internal model parameter to the external netCDF variable.</p>
+<p>The mannings roughness (for the computation of <code>mannings_n_sq</code>) should be provided as follows in the TOML file:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.lateral.land]</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="dt">n</span> <span class="op">=</span> <span class="st">"n_land"</span> <span class="co"># mannings roughness</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The input parameter <code>elevation</code> (listed under <code>[input.lateral.land]</code>) is not equal to the internal model parameter <code>z</code>, and is listed in the Table below between parentheses.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 23%">
+<col style="width: 38%">
+<col style="width: 19%">
+<col style="width: 19%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Parameter</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>n</code></td>
+<td>number of cells</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>xl</code></td>
+<td>cell length x direction</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>yl</code></td>
+<td>cell length y direction</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>xwidth</code></td>
+<td>effective flow width x direction (floodplain)</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>ywidth</code></td>
+<td>effective flow width y direction (floodplain)</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>g</code></td>
+<td>acceleration due to gravity</td>
+<td>m s<span class="math inline">\(^{-2}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>theta</code></td>
+<td>weighting factor (de Almeida et al., 2012)</td>
+<td>-</td>
+<td>0.8</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>alpha</code></td>
+<td>stability coefficient (Bates et al., 2010)</td>
+<td>-</td>
+<td>0.7</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>h_thresh</code></td>
+<td>depth threshold for calculating flow</td>
+<td>m</td>
+<td>0.001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>dt</code></td>
+<td>model time step</td>
+<td>s</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>qy0</code></td>
+<td>flow in y direction at previous time step</td>
+<td>m<span class="math inline">\(^3\)</span> s<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>qx0</code></td>
+<td>flow in x direction at previous time step</td>
+<td>m<span class="math inline">\(^3\)</span> s<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>qx</code></td>
+<td>flow in x direction</td>
+<td>m<span class="math inline">\(^3\)</span> s<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>qy</code></td>
+<td>flow in y direction</td>
+<td>m<span class="math inline">\(^3\)</span> s<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>zx_max</code></td>
+<td>maximum cell elevation (x direction)</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>zy_max</code></td>
+<td>maximum cell elevation (y direction)</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>mannings_n_sq</code></td>
+<td>Manning’s roughness squared</td>
+<td>s m<span class="math inline">\(^{-\frac{1}{3}}\)</span></td>
+<td>based on 0.072</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>volume</code></td>
+<td>total volume of cell (including river volume for river cells)</td>
+<td>m<span class="math inline">\(^3\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>error</code></td>
+<td>error volume</td>
+<td>m<span class="math inline">\(^3\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>runoff</code></td>
+<td>runoff from hydrological model</td>
+<td>m<span class="math inline">\(^3\)</span> s<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>h</code></td>
+<td>water depth of cell</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>z</code></strong> (<code>elevation</code>)</td>
+<td>elevation of cell</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>froude_limit</code></td>
+<td>if true a check is performed if froude number &gt; 1.0 (algorithm is modified)</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>rivercells</code></td>
+<td>river cells</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>h_av</code></td>
+<td>average water depth</td>
+<td>m</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="water-bodies" class="level2">
+<h2 class="anchored" data-anchor-id="water-bodies">Water bodies</h2>
+<section id="reservoirs" class="level3">
+<h3 class="anchored" data-anchor-id="reservoirs">Reservoirs</h3>
+<p>The Table below shows the parameters (fields) of struct <code>SimpleReservoir</code>, including a description of these parameters, the unit, and default value if applicable. The parameters in bold represent model parameters that can be set through static input data (netCDF), and can be listed in the TOML configuration file under <code>[input.lateral.river.reservoir]</code>, to map the internal model parameter to the external netCDF variable.</p>
+<p>Two parameters reservoir coverage <code>areas</code> and the outlet of reservoirs (unique id) <code>locs</code> that are not part of the <code>SimpleReservoir</code> struct are also required, and can be set as follows through the TOML file:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.lateral.river.reservoir]</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="dt">areas</span> <span class="op">=</span> <span class="st">"wflow_reservoirareas"</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="dt">locs</span> <span class="op">=</span> <span class="st">"wflow_reservoirlocs"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 27%">
+<col style="width: 25%">
+<col style="width: 37%">
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">parameter</th>
+<th>description</th>
+<th>unit</th>
+<th>default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>area</code></strong></td>
+<td>area</td>
+<td>m<code>^2</code></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>demand</code></strong></td>
+<td>minimum (environmental) flow requirement downstream of the reservoir</td>
+<td>m<code>^3</code> s<code>^{-1}</code></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>maxrelease</code></strong></td>
+<td>maximum amount that can be released if below spillway</td>
+<td>m<code>^3</code> s<code>^{-1}</code></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>maxvolume</code></strong></td>
+<td>maximum storage (above which water is spilled)</td>
+<td>m<code>^3</code></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>targetfullfrac</code></strong></td>
+<td>target fraction full (of max storage)</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>targetminfrac</code></strong></td>
+<td>target minimum full fraction (of max storage)</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>demandrelease</code></td>
+<td>minimum (environmental) flow released from reservoir</td>
+<td>m<code>^3</code> s<code>^{-1}</code></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>dt</code></td>
+<td>model time step</td>
+<td>s</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>volume</code></td>
+<td>volume</td>
+<td>m<code>^3</code></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>inflow</code></td>
+<td>total inflow into reservoir</td>
+<td>m<code>^3</code></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>outflow</code></td>
+<td>outflow of reservoir</td>
+<td>m<code>^3</code> s<code>^{-1}</code></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>totaloutflow</code></td>
+<td>total outflow of reservoir</td>
+<td>m<code>^3</code></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>percfull</code></td>
+<td>fraction full (of max storage)</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>precipitation</code></td>
+<td>average precipitation for reservoir area</td>
+<td>mm Δt⁻¹</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>evaporation</code></td>
+<td>average potential evaporation for reservoir area</td>
+<td>mm Δt⁻¹</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>actevap</code></td>
+<td>average actual evaporation for lake area</td>
+<td>mm Δt⁻¹</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="lakes" class="level3">
+<h3 class="anchored" data-anchor-id="lakes">Lakes</h3>
+<p>The Table below shows the parameters (fields) of struct <code>Lake</code>, including a description of these parameters, the unit, and default value if applicable. The parameters in bold represent model parameters that can be set through static input data (netCDF), and can be listed in the TOML configuration file under <code>[input.lateral.river.lake]</code>, to map the internal model parameter to the external netCDF variable.</p>
+<p>Two parameters lake coverage <code>areas</code> and the outlet of lakes (unique id) <code>locs</code> that are not part of the <code>Lake</code> struct are also required, and can be set as follows through the TOML file:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.lateral.river.lake]</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="dt">areas</span> <span class="op">=</span> <span class="st">"wflow_lakeareas"</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="dt">locs</span> <span class="op">=</span> <span class="st">"wflow_lakelocs"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The input parameter <code>linkedlakelocs</code> (listed under <code>[input.lateral.river.lake]</code>) is not equal to the internal model parameter <code>lowerlake_ind</code>, and is listed in the Table below between parentheses.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 27%">
+<col style="width: 25%">
+<col style="width: 37%">
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">parameter</th>
+<th>description</th>
+<th>unit</th>
+<th>default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>area</code></strong></td>
+<td>area</td>
+<td>m<code>^2</code></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>b</code></strong></td>
+<td>Rating curve coefficient</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>e</code></strong></td>
+<td>Rating curve exponent</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>outflowfunc</code></strong></td>
+<td>type of lake rating curve</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>storfunc</code></strong></td>
+<td>type of lake storage curve</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>threshold</code></strong></td>
+<td>water level threshold <code>H_0</code> below that level outflow is zero</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>waterlevel</code></strong></td>
+<td>waterlevel <code>H</code> of lake</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>lowerlake_ind</code></strong> (<code>linkedlakelocs</code>)</td>
+<td>Index of lower lake (linked lakes)</td>
+<td>-</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>sh</code></strong></td>
+<td>data for storage curve</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>hq</code></strong></td>
+<td>data rating curve</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>dt</code></td>
+<td>model time step</td>
+<td>s</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>inflow</code></td>
+<td>total inflow to the lake</td>
+<td>m<code>^3</code></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>storage</code></td>
+<td>storage lake</td>
+<td>m<code>^3</code></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>maxstorage</code></td>
+<td>maximum storage lake with rating curve type 1</td>
+<td>m<code>^3</code></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>outflow</code></td>
+<td>outflow lake</td>
+<td>m<code>^3</code> s<code>^{-1}</code></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>totaloutflow</code></td>
+<td>total outflow lake</td>
+<td>m<code>^3</code></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>precipitation</code></td>
+<td>average precipitation for lake area</td>
+<td>mm Δt⁻¹</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>evaporation</code></td>
+<td>average potential evaporation for lake area</td>
+<td>mm Δt⁻¹</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>actevap</code></td>
+<td>average actual evaporation for lake area</td>
+<td>mm Δt⁻¹</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="water-allocation-river" class="level2">
+<h2 class="anchored" data-anchor-id="water-allocation-river">Water allocation river</h2>
+<p>The Table below shows the parameters (fields) of struct <code>AllocationRiver</code>, used when water demand and allocation is computed (optional), including a description of these parameters, the unit, and default value if applicable.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 34%">
+<col style="width: 38%">
+<col style="width: 10%">
+<col style="width: 17%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">parameter</th>
+<th>description</th>
+<th>unit</th>
+<th>default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>act_surfacewater_abst</code></td>
+<td>actual surface water abstraction</td>
+<td>mm Δt⁻¹</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>act_surfacewater_abst_vol</code></td>
+<td>actual surface water abstraction</td>
+<td>m<span class="math inline">\(^3\)</span> Δt⁻¹</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>available_surfacewater</code></td>
+<td>available surface water</td>
+<td>m<span class="math inline">\(^3\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>nonirri_returnflow</code></td>
+<td>return flow from non-irrigation (industry, domestic and livestock)</td>
+<td>mm Δt⁻¹</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="groundwater-flow" class="level2">
+<h2 class="anchored" data-anchor-id="groundwater-flow">Groundwater flow</h2>
+<section id="confined-aquifer" class="level3">
+<h3 class="anchored" data-anchor-id="confined-aquifer">Confined aquifer</h3>
+<p>The Table below shows the parameters (fields) of struct <code>ConfinedAquifer</code>, including a description of these parameters, the unit, and default value if applicable. Struct <code>ConfinedAquifer</code> is not (yet) part of a wflow model.</p>
+<table class="table-striped table-hover caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Parameter</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>k</code></td>
+<td>horizontal conductivity</td>
+<td>m d<span class="math inline">\(^{-1}\)</span>s</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>storativity</code></td>
+<td>storativity</td>
+<td>m m<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>specific_storage</code></td>
+<td>specific storage</td>
+<td>m<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>top</code></td>
+<td>top groundwater layers</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>bottom</code></td>
+<td>bottom groundwater layers</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>area</code></td>
+<td>cell area</td>
+<td>m<span class="math inline">\(^2\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>head</code></td>
+<td>groundwater head</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>conductance</code></td>
+<td>conductance</td>
+<td>m<span class="math inline">\(^2\)</span> d<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="unconfined-aquifer" class="level3">
+<h3 class="anchored" data-anchor-id="unconfined-aquifer">Unconfined aquifer</h3>
+<p>The Table below shows the parameters (fields) of struct <code>UnconfinedAquifer</code>, including a description of these parameters, the unit, and default value if applicable. The parameters in bold represent model parameters that can be set through static input data (netCDF), and can be listed in the TOML configuration file under <code>[input.lateral.subsurface]</code>, to map the internal model parameter to the external netCDF variable. For some input parameters the parameter listed under <code>[input.lateral.subsurface]</code> is not equal to the internal model parameter, these are listed in the Table below between parentheses after the internal model parameter. The <code>top</code> parameter is provided by the external parameter <code>altitude</code> as part of the static input data and set as follows through the TOML file:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input]</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co"># these are not directly part of the model</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="dt">altitude</span> <span class="op">=</span> <span class="st">"wflow_dem"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The input parameter <code>conductivity</code> (listed under <code>[input.lateral.subsurface]</code>) is not equal to the internal model parameter <code>kh_0</code>, and is listed in the Table below between parentheses.</p>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 23%">
+<col style="width: 38%">
+<col style="width: 19%">
+<col style="width: 19%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Parameter</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>kh_0</code></strong> (<code>conductivity</code>)</td>
+<td>horizontal conductivity</td>
+<td>m d<span class="math inline">\(^{-1}\)</span>s</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>specific_yield</code></strong></td>
+<td>specific yield</td>
+<td>m m<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>top</code></strong> (<code>altitude</code>)</td>
+<td>top groundwater layer</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>bottom</code></td>
+<td>bottom groundwater layer</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>area</code></td>
+<td>cell area</td>
+<td>m<span class="math inline">\(^2\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>head</code></td>
+<td>groundwater head</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>conductance</code></td>
+<td>conductance</td>
+<td>m<span class="math inline">\(^2\)</span> d<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>f</code></td>
+<td>factor controlling the reduction of reference horizontal conductivity</td>
+<td>-</td>
+<td>3.0</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="constant-head" class="level3">
+<h3 class="anchored" data-anchor-id="constant-head">Constant Head</h3>
+<p>The Table below shows the parameters (fields) of struct <code>ConstantHead</code>, including a description of these parameters, the unit, and default value if applicable. The parameters in bold represent model parameters that can be set through static input data (netCDF), and can be listed in the TOML configuration file under <code>[input.lateral.subsurface]</code>, to map the internal model parameter to the external netCDF variable. The input parameter <code>constant_head</code> (listed under <code>[input.lateral.subsurface]</code>) is not equal to the internal model parameter <code>head</code>, and is listed in the Table below between parentheses.</p>
+<table class="table-striped table-hover caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Parameter</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>head</code></strong> (<code>constant_head</code>)</td>
+<td>groundwater head</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>index</code></td>
+<td>constant head cell index</td>
+<td>-</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="boundary-conditions" class="level3">
+<h3 class="anchored" data-anchor-id="boundary-conditions">Boundary conditions</h3>
+<section id="river" class="level4">
+<h4 class="anchored" data-anchor-id="river">River</h4>
+<p>The Table below shows the parameters (fields) of struct <code>River</code>, including a description of these parameters, the unit, and default value if applicable. The parameters in bold represent model parameters that can be set through static input data (netCDF), and can be listed in the TOML configuration file under <code>[input.lateral.subsurface]</code>, to map the internal model parameter to the external netCDF variable. The input parameter <code>river_bottom</code> (listed under <code>[input.lateral.subsurface]</code>) is not equal to the internal model parameter <code>bottom</code>, and is listed in the Table below between parentheses.</p>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 23%">
+<col style="width: 38%">
+<col style="width: 19%">
+<col style="width: 19%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Parameter</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>stage</code></td>
+<td>river stage</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>infiltration_conductance</code></strong></td>
+<td>river bed infiltration conductance</td>
+<td>m<span class="math inline">\(^2\)</span> day<span class="math inline">\(^{-1}\)</span> m<span class="math inline">\(^2\)</span> day<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>exfiltration_conductance</code></strong></td>
+<td>river bed exfiltration conductance</td>
+<td>m<span class="math inline">\(^2\)</span> day<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>bottom</code></strong> (<code>river_bottom</code>)</td>
+<td>river bottom elevation</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>index</code></td>
+<td>river cell index</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>flux</code></td>
+<td>exchange flux (river to aquifer)</td>
+<td>m<span class="math inline">\(^3\)</span> d<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="drainage" class="level4">
+<h4 class="anchored" data-anchor-id="drainage">Drainage</h4>
+<p>The Table below shows the parameters (fields) of struct <code>Drainage</code>, including a description of these parameters, the unit, and default value if applicable. The parameters in bold represent model parameters that can be set through static input data (netCDF), and can be listed in the TOML configuration file under <code>[input.lateral.subsurface]</code>, to map the internal model parameter to the external netCDF variable. For some input parameters the parameter listed under <code>[input.lateral.subsurface]</code> is not equal to the internal model parameter, these are listed in the Table below between parentheses after the internal model parameter.</p>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 23%">
+<col style="width: 38%">
+<col style="width: 19%">
+<col style="width: 19%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Parameter</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>elevation</code></strong> (<code>drain_elevation</code>)</td>
+<td>drain elevation</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>conductance</code></strong> (<code>drain_conductance</code>)</td>
+<td>drain conductance</td>
+<td>m<span class="math inline">\(^2\)</span> day<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>index</code></strong> (<code>drain</code>)</td>
+<td>drain cell index</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>flux</code></td>
+<td>exchange flux (drains to aquifer)</td>
+<td>m<span class="math inline">\(^3\)</span> day<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="recharge" class="level4">
+<h4 class="anchored" data-anchor-id="recharge">Recharge</h4>
+<p>The Table below shows the parameters (fields) of struct <code>Recharge</code>, including a description of these parameters, the unit, and default value if applicable.</p>
+<table class="table-striped table-hover caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Parameter</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>rate</code></td>
+<td>recharge rate</td>
+<td>m<span class="math inline">\(^3\)</span> day<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>index</code></td>
+<td>recharge cell index</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>flux</code></td>
+<td>recharge flux</td>
+<td>m<span class="math inline">\(^3\)</span> day<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="head-boundary" class="level4">
+<h4 class="anchored" data-anchor-id="head-boundary">Head boundary</h4>
+<p>The Table below shows the parameters (fields) of struct <code>HeadBoundary</code>, including a description of these parameters, the unit, and default value if applicable.</p>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 23%">
+<col style="width: 38%">
+<col style="width: 19%">
+<col style="width: 19%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Parameter</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>head</code></td>
+<td>head</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>conductance</code></td>
+<td>conductance of the head boundary</td>
+<td>m<span class="math inline">\(^2\)</span> day<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>index</code></td>
+<td>head boundary cell index</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>flux</code></td>
+<td>conductance of the head boundary</td>
+<td>m<span class="math inline">\(^3\)</span> day<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="well-boundary" class="level4">
+<h4 class="anchored" data-anchor-id="well-boundary">Well boundary</h4>
+<p>The Table below shows the parameters (fields) of struct <code>Well</code>, including a description of these parameters, the unit, and default value if applicable.</p>
+<table class="table-striped table-hover caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Parameter</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>volumetric_rate</code></td>
+<td>volumetric well rate</td>
+<td>m<span class="math inline">\(^3\)</span> d<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>index</code></td>
+<td>well index</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>flux</code></td>
+<td>actual well flux</td>
+<td>m<span class="math inline">\(^3\)</span> day<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+</section>
+<section id="sediment" class="level2">
+<h2 class="anchored" data-anchor-id="sediment">Sediment</h2>
+<section id="overland-flow-1" class="level3">
+<h3 class="anchored" data-anchor-id="overland-flow-1">Overland flow</h3>
+<p>The Table below shows the parameters (fields) of struct <code>OverlandFlowSediment</code>, including a description of these parameters, the unit, and default value if applicable.</p>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 23%">
+<col style="width: 38%">
+<col style="width: 19%">
+<col style="width: 19%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Parameter</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>n</code></td>
+<td>number of cells</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>rivcell</code></td>
+<td>river cells</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>soilloss</code></td>
+<td>total eroded soil</td>
+<td>ton Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>erosclay</code></td>
+<td>eroded soil for particle class clay</td>
+<td>ton Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>erossilt</code></td>
+<td>eroded soil for particle class silt</td>
+<td>ton Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>erossand</code></td>
+<td>eroded soil for particle class sand</td>
+<td>ton Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>erossagg</code></td>
+<td>eroded soil for particle class small aggregates</td>
+<td>ton Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>eroslagg</code></td>
+<td>eroded soil for particle class large aggregates</td>
+<td>ton Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>TCsed</code></td>
+<td>total transport capacity of overland flow</td>
+<td>ton Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>TCclay</code></td>
+<td>transport capacity of overland flow for particle class clay</td>
+<td>ton Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>TCsilt</code></td>
+<td>transport capacity of overland flow for particle class silt</td>
+<td>ton Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>TCsand</code></td>
+<td>transport capacity of overland flow for particle class sand</td>
+<td>ton Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>TCsagg</code></td>
+<td>transport capacity of overland flow for particle class small aggregates</td>
+<td>ton Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>TClagg</code></td>
+<td>transport capacity of overland flow for particle class large aggregates</td>
+<td>ton Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>inlandsed</code></td>
+<td>sediment reaching the river with overland flow</td>
+<td>ton Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>inlandclay</code></td>
+<td>sediment with particle class clay reaching the river with overland flow</td>
+<td>ton Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>inlandsilt</code></td>
+<td>sediment with particle class silt reaching the river with overland flow</td>
+<td>ton Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>inlandsand</code></td>
+<td>sediment with particle class sand reaching the river with overland flow</td>
+<td>ton Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>inlandsagg</code></td>
+<td>sediment with particle class small aggregates reaching the river with overland flow</td>
+<td>ton Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>inlandlagg</code></td>
+<td>sediment with particle class large aggregates reaching the river with overland flow</td>
+<td>ton Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="river-flow-1" class="level3">
+<h3 class="anchored" data-anchor-id="river-flow-1">River flow</h3>
+<p>The Table below shows external parameters that can be set through static input data (netCDF), and can be listed in the TOML configuration file under <code>[input.lateral.river]</code>. These external parameters are not part of struct <code>RiverSediment</code>, but used to calculate parameters of struct <code>RiverSediment</code>.</p>
+<table class="table-striped table-hover caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Parameter</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>reslocs</code></td>
+<td>reservoir location (outlet)</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>resareas</code></td>
+<td>reservoir coverage</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>resarea</code></td>
+<td>reservoir area</td>
+<td>-</td>
+<td>m<span class="math inline">\(^2\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>restrapeff</code></td>
+<td>reservoir trapping efficiency coefficient</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>lakelocs</code></td>
+<td>lake location (outlet)</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>lakeareas</code></td>
+<td>lake coverage</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>lakearea</code></td>
+<td>lake area</td>
+<td>-</td>
+<td>m<span class="math inline">\(^2\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The Table below shows the parameters (fields) of struct <code>RiverSediment</code>, including a description of these parameters, the unit, and default value if applicable. The parameters in bold represent model parameters that can be set through static and forcing input data (netCDF), and can be listed in the TOML configuration file under <code>[input.lateral.river]</code>, to map the internal model parameter to the external netCDF variable. For some input parameters the parameter listed under <code>[input.lateral.river]</code> is not equal to the internal model parameter, these are listed in the Table below between parentheses after the internal model parameter. For example, internal model parameter <code>sl</code> is mapped as follows in the TOML file to the external netCDF variable <code>RiverSlope</code>:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.vertical]</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="dt">slope</span> <span class="op">=</span> <span class="st">"RiverSlope"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 23%">
+<col style="width: 38%">
+<col style="width: 19%">
+<col style="width: 19%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Parameter</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>dl</code></strong> (<code>length</code>)</td>
+<td>river length</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>width</code></strong></td>
+<td>river width</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>sl</code></strong> (<code>slope</code>)</td>
+<td>river slope</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>rhos</code></strong> (<code>rhosed</code>)</td>
+<td>density of sediment</td>
+<td>kg m<span class="math inline">\(^{-3}1\)</span></td>
+<td>2650.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>dmclay</code></strong></td>
+<td>median diameter particle size class clay</td>
+<td>mm</td>
+<td>2.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>dmsilt</code></strong></td>
+<td>median diameter particle size class silt</td>
+<td>mm</td>
+<td>10.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>dmsand</code></strong></td>
+<td>median diameter particle size class sand</td>
+<td>mm</td>
+<td>200.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>dmsagg</code></strong></td>
+<td>median diameter particle size class small aggregates</td>
+<td>mm</td>
+<td>30.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>dmlagg</code></strong></td>
+<td>median diameter particle size class large aggregates</td>
+<td>mm</td>
+<td>500.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>dmgrav</code></strong></td>
+<td>median diameter particle size class gravel</td>
+<td>mm</td>
+<td>2000.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>fclayriv</code></strong></td>
+<td>fraction of particle class clay</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>fsiltriv</code></strong></td>
+<td>fraction of particle class silt</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>fsandriv</code></strong></td>
+<td>fraction of particle class sand</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>fsaggriv</code></strong></td>
+<td>fraction of particle class small aggregates</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>flaggriv</code></strong></td>
+<td>fraction of particle class large aggregates</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>fgravriv</code></strong></td>
+<td>fraction of particle class gravel</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>d50</code></strong> (<code>d50riv</code>)</td>
+<td>river sediment median diameter</td>
+<td>mm</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>d50engelund</code></strong></td>
+<td>river mean diameter</td>
+<td>mm</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>cbagnold</code></strong></td>
+<td>Bagnold c coefficient</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>ebagnold</code></strong></td>
+<td>Bagnold exponent</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>n</code></td>
+<td>number of cells</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>dt</code></td>
+<td>model time step</td>
+<td>s</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>ak</code></td>
+<td>Kodatie coefficient <code>a</code></td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>bk</code></td>
+<td>Kodatie coefficient <code>b</code></td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>ck</code></td>
+<td>Kodatie coefficient <code>c</code></td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>dk</code></td>
+<td>Kodatie coefficient <code>d</code></td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>kdbank</code></td>
+<td>bank erodibilty</td>
+<td>m<span class="math inline">\(^3\)</span> N<span class="math inline">\(^{-1}\)</span> s<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>kdbed</code></td>
+<td>bed erodibility</td>
+<td>m<span class="math inline">\(^3\)</span> N<span class="math inline">\(^{-1}\)</span> s<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>TCrbank</code></td>
+<td>critical bed bank shear stress</td>
+<td>m<span class="math inline">\(^3\)</span> N<span class="math inline">\(^{-2}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>TCrbed</code></td>
+<td>critical bed shear stress</td>
+<td>m<span class="math inline">\(^3\)</span> N<span class="math inline">\(^{-2}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong><code>h_riv</code></strong></td>
+<td>river water level</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong><code>q_riv</code></strong></td>
+<td>river discharge</td>
+<td>m<span class="math inline">\(^3\)</span> s<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>inlandclay</code></td>
+<td>sediment input with particle class clay from land erosion</td>
+<td>t Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>inlandsilt</code></td>
+<td>sediment input with particle class silt from land erosion</td>
+<td>t Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>inlandsand</code></td>
+<td>sediment input with particle class sand from land erosion</td>
+<td>t Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>inlandsagg</code></td>
+<td>sediment input with particle class small aggregates from land erosion</td>
+<td>t Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>inlandlagg</code></td>
+<td>sediment input with particle class large aggregates from land erosion</td>
+<td>t Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>inlandsed</code></td>
+<td>sediment input from land erosion</td>
+<td>t Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>sedload</code></td>
+<td>sediment left in the cell</td>
+<td>t</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>clayload</code></td>
+<td>sediment with particle class clay left in the cell</td>
+<td>t</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>siltload</code></td>
+<td>sediment with particle class silt left in the cell</td>
+<td>t</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>sandload</code></td>
+<td>sediment with particle class sand left in the cell</td>
+<td>t</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>saggload</code></td>
+<td>sediment with particle class small aggregates left in the cell</td>
+<td>t</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>laggload</code></td>
+<td>sediment with particle class large aggregates in the cell</td>
+<td>t</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>gravload</code></td>
+<td>sediment with particle class gravel left in the cell</td>
+<td>t</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>sedstore</code></td>
+<td>sediment stored on the river bed after deposition</td>
+<td>t Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>claystore</code></td>
+<td>sediment with particle class clay stored on the river bed after deposition</td>
+<td>t Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>siltstore</code></td>
+<td>sediment with particle class silt stored on the river bed after deposition</td>
+<td>t Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>sandstore</code></td>
+<td>sediment with particle class sand stored on the river bed after deposition</td>
+<td>t Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>saggstore</code></td>
+<td>sediment with particle class small aggregates stored on the river bed after deposition</td>
+<td>t Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>laggstore</code></td>
+<td>sediment with particle class large aggregates stored on the river bed after deposition</td>
+<td>t Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>gravstore</code></td>
+<td>sediment with particle class gravel stored on the river bed after deposition</td>
+<td>t Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>outsed</code></td>
+<td>sediment flux</td>
+<td>t Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>outclay</code></td>
+<td>sediment with particle class clay flux</td>
+<td>t Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>outsilt</code></td>
+<td>sediment with particle class silt</td>
+<td>t Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>outsand</code></td>
+<td>sediment with particle class sand</td>
+<td>t Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>outsagg</code></td>
+<td>sediment with particle class small aggregates</td>
+<td>t Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>outlagg</code></td>
+<td>sediment with particle class large aggregates</td>
+<td>t Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>outgrav</code></td>
+<td>sediment with particle class gravel</td>
+<td>t Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>Sedconc</code></td>
+<td>total sediment concentration (<code>SSconc</code> + <code>Bedconc</code>)</td>
+<td>g m<span class="math inline">\(^{-3}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>SSconc</code></td>
+<td>suspended load concentration</td>
+<td>g m<span class="math inline">\(^{-3}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>Bedconc</code></td>
+<td>bed load concentration</td>
+<td>g m<span class="math inline">\(^{-3}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>maxsed</code></td>
+<td>river transport capacity</td>
+<td>t Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>erodsed</code></td>
+<td>total eroded sediment</td>
+<td>t Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>erodsedbank</code></td>
+<td>eroded bank sediment</td>
+<td>t Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>erodsedbed</code></td>
+<td>eroded bed sediment</td>
+<td>t Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>depsed</code></td>
+<td>deposited sediment</td>
+<td>t Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>insed</code></td>
+<td>sediment input flux</td>
+<td>t Δt<span class="math inline">\(^{-1}\)</span></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>wbcover</code></td>
+<td>waterbody coverage</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>wblocs</code></td>
+<td>waterbody locations</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>wbarea</code></td>
+<td>waterbody area</td>
+<td>m<span class="math inline">\(^2\)</span></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>wbtrap</code></td>
+<td>waterbody trapping efficiency coefficient</td>
+<td>-</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+
+
+</section>
+</section>
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Made possible by: <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener"> <img src="../_static/images/deltares-blue.svg" alt="Deltares" class="footer-image-light" style="height: 40px;"> <img src="../_static/images/deltares-white.svg" alt="Deltares" class="footer-image-dark" style="height: 40px;"> </a></p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
