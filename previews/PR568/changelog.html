@@ -323,6 +323,7 @@ window.Quarto = {
 <li>Refactor TOML configuration file, also as a result of using internal (CSDMS) standard names. Most important changes include: there is now a distinction between static, cyclic and forcing input (<code>[input.static]</code>, <code>[input.cyclic]</code> and <code>[input.forcing]</code>) without the need to specify the internal cyclic and forcing variables in a list (only an external name mapping is required), state variables are listed below the <code>[state.variables]</code> TOML section and use of more clearly defined TOML output sections.</li>
 <li>Replaced the variables that can exchange through <code>BMI</code> (list of model components) by a list of standard names below the <code>[API]</code> TOML section.</li>
 <li>Use the instantaneous routing water depth <code>h</code> at the previous model time step to limit open water evaporation and to set the river <code>stage</code> of the <code>GroundwaterFlow</code> model for the current model time step, as it is more accurate then using the average water depth <code>h_av</code> at the previous model time step.</li>
+<li>Removed <code>LoopVectorization</code> dependency because of compilation issues and the risk of deprecation for newer Julia versions. The <code>tturbo</code> macro has been replaced by the <code>batch</code> macro of <code>Polyester</code>, performance loss is acceptable.</li>
 </ul>
 </section>
 <section id="added" class="level3">
