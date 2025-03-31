@@ -43,7 +43,7 @@ forcing_moselle_sed_path =
 staticmaps_moselle_sed_path =
     testdata(v"0.3.0", "staticmaps-moselle-sed.nc", "staticmaps-moselle-sed.nc")
 instates_moselle_sed_path =
-    testdata(v"0.2", "instates-moselle-sed.nc", "instates-moselle-sed.nc")
+    testdata(v"0.3.0", "instates-moselle-sed.nc", "instates-moselle-sed.nc")
 instates_moselle_path = testdata(v"0.2.6", "instates-moselle.nc", "instates-moselle.nc")
 forcing_sbm_gw_path = testdata(
     v"0.2.1",
