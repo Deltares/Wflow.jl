@@ -18,8 +18,8 @@ title: "Developments"
     </a>
   </li>
   <li class="nav-item" role="presentation">
-    <a class="nav-link" href="julia_structs.html">
-      <i class="bi bi-bricks"></i>Julia structures
+    <a class="nav-link" href="model_struct.html">
+      <i class="bi bi-bricks"></i>Model structure
     </a>
   </li>
 </ul>
