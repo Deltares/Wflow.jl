@@ -70,10 +70,11 @@ routing scheme for river flow.
 
 ## Subsurface flow routing
 In the SBM model the kinematic wave approach is used to route subsurface flow laterally.
-Different vertical hydraulic conductivity depth profiles are possible as part of the vertical
-[SBM](../vertical/sbm.qmd#soil-processes) concept, and these profiles (after unit conversion)
-are also used to compute lateral subsurface flow. The following profiles (see
-[SBM](../vertical/sbm.qmd#soil-processes) for a detailed description) are available:
+Different vertical hydraulic conductivity depth profiles are possible as part of the
+vertical [SBM](../land/landhydrology_sbm.qmd#soil-processes) concept, and these profiles
+(after unit conversion) are also used to compute lateral subsurface flow. The following
+profiles (see [SBM](../land/landhydrology_sbm.qmd#soil-processes) for a detailed
+description) are available:
 - `exponential` (default)
 - `exponential_constant`
 - `layered`

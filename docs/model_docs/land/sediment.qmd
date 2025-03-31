@@ -12,7 +12,7 @@ a change of topography in depressions, footslopes or valley bottoms, and/or can 
 stopped by a change in vegetation such as ﬁeld boundaries.
 
 The inland part of the sediment gathers these different processes, separated in a vertical
-structure for the soil loss and lateral structure for the transport in overland flow.
+structure for the soil loss and routing structure for the transport in overland flow.
 
 ![Overview of the different processes for a land cell in wflow\_sediment.](../../images/soilloss-scheme.png)
 
@@ -173,7 +173,7 @@ slope angle.
 ## Delivery to the river system
 Once soil is detached, it can be transported by overland flow and reach the river system. This
 process is described in [Sediment Flux in overland
-flow](../lateral/sediment_flux.qmd#sediment-flux-in-overland-flow).
+flow](../routing/sediment_flux.qmd#sediment-flux-in-overland-flow).
 
 ## References
 + D.B Beasley and L.F Huggins. ANSWERS - Users Manual. Technical report, EPA, 1991.

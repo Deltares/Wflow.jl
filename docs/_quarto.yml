@@ -104,22 +104,22 @@ website:
       contents:
         - file: model_docs/index.qmd
         - file: model_docs/model_configurations.qmd
-        - text: Vertical processes
+        - text: Land models
           contents:
-          - file: model_docs/vertical/sbm.qmd
-          - file: model_docs/vertical/sediment.qmd
-          - file: model_docs/vertical/shared_processes.qmd
-        - text: Lateral processes
+          - file: model_docs/land/landhydrology_sbm.qmd
+          - file: model_docs/land/sediment.qmd
+          - file: model_docs/land/shared_processes.qmd
+        - text: Routing concepts
           contents:
-          - file: model_docs/lateral/kinwave.qmd
-          - file: model_docs/lateral/local-inertial.qmd
-          - file: model_docs/lateral/waterbodies.qmd
-          - file: model_docs/lateral/gwf.qmd
-          - file: model_docs/lateral/sediment_flux.qmd
+          - file: model_docs/routing/kinwave.qmd
+          - file: model_docs/routing/local-inertial.qmd
+          - file: model_docs/routing/waterbodies.qmd
+          - file: model_docs/routing/gwf.qmd
+          - file: model_docs/routing/sediment_flux.qmd
         - text: List of variables
           contents:
-          - file: model_docs/parameters_vertical.qmd
-          - file: model_docs/parameters_lateral.qmd
+          - file: model_docs/parameters_landhydrology_sbm.qmd
+          - file: model_docs/parameters_routing.qmd
           - file: model_docs/parameters_sediment.qmd
     - title: Developments
       contents:

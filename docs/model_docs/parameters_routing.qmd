@@ -117,14 +117,14 @@ The `khfrac` parameter compensates for anisotropy, small scale `kv_0` measuremen
 that do not represent larger scale hydraulic conductivity, and smaller flow length scales
 (hillslope) in reality, not represented by the model resolution.
 
-For the vertical [SBM](./parameters_vertical.qmd#sbm) concept different vertical hydraulic
-conductivity depth profiles are possible, and these also determine which `LateralSSF`
-parameters are used including the input requirements for the computation of lateral subsurface
-flow. For the `exponential` profile the model parameters `kh_0` and `f` are used. For the
-`exponential_constant` profile `kh_0` and `f` are used, and `z_exp` is required as part of
-`[input.vertical]`. For the `layered` profile, `SBM` model parameter `kv` is used, and for the
-`layered_exponential` profile `kv` is used and `z_exp` is required as part of
-`[input.vertical]`.
+For the vertical [SBM](./parameters_landhydrology_sbm.qmd#sbm) concept different vertical
+hydraulic conductivity depth profiles are possible, and these also determine which
+`LateralSSF` parameters are used including the input requirements for the computation of
+lateral subsurface flow. For the `exponential` profile the model parameters `kh_0` and `f`
+are used. For the `exponential_constant` profile `kh_0` and `f` are used, and `z_exp` is
+required as part of `[input.vertical]`. For the `layered` profile, `SBM` model parameter
+`kv` is used, and for the `layered_exponential` profile `kv` is used and `z_exp` is required
+as part of `[input.vertical]`.
 
 | Parameter | Description | Unit | Default |
 |:----| -------- | ---- | ---- |

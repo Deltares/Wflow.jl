@@ -27,7 +27,7 @@ parameter `sl` is mapped as follows in the TOML file to the external netCDF vari
 specific_leaf = "Sl"
 ```
 
-Different [vertical hydraulic conductivity depth profiles](./vertical/sbm.qmd#soil-processes):
+Different [vertical hydraulic conductivity depth profiles](./land/landhydrology_sbm.qmd#soil-processes):
 `exponential` (default), `exponential_constant`, `layered` and `layered_exponential` can be
 provided through the TOML file. Below an example for the `exponential_constant` profile:
 

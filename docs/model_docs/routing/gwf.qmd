@@ -164,7 +164,7 @@ the river bed exfiltration conductance, $\SIb{\subtext{B}{riv}}{L}$ the bottom o
 bed, $\SIb{\subtext{h}{riv}}{L}$ is the river stage and $\SIb{\phi}{L}$ is the hydraulic head
 in the river cell.
 
-The Table in the Groundwater flow [river boundary condition](../parameters_lateral.qmd#river)
+The Table in the Groundwater flow [river boundary condition](../parameters_routing.qmd#river)
 section of the Model parameters provides the parameters of the struct `River`. Parameters that
 can be set directly from the static input data (netCDF) are marked in this Table.
 
@@ -185,7 +185,7 @@ $\SIb{\subtext{C}{drain}}{L^2 T^{-1}}$ is the drain conductance, $\SIb{\subtext{
 is the drain elevation and $\SIb{\phi}{L}$ is the hydraulic head in the cell with drainage.
 
 The table in the Groundwater flow [drainage boundary
-condition](../parameters_lateral.qmd#drainage) section of the Model parameters provides the
+condition](../parameters_routing.qmd#drainage) section of the Model parameters provides the
 parameters of the struct `Drainage`. Parameters that can be set directly from the static input
 data (netCDF) are marked in this Table.
 
@@ -210,7 +210,7 @@ $$
 with $\SIb{}{L T^{-1}}$ the recharge rate and $\SIb{A}{L^2}$ the area of the aquifer cell.
 
 The table in the Groundwater flow [recharge boundary
-condition](../parameters_lateral.qmd#recharge) section of the Model parameters section provides
+condition](../parameters_routing.qmd#recharge) section of the Model parameters section provides
 the parameters of the struct `Recharge`. Parameters that can be set directly from the static
 input data (netCDF) are marked in this Table.
 
@@ -234,7 +234,7 @@ with $\SIb{C_{hb}}{L^2 T^{-1}}$ the conductance of the head boundary, $\SIb{\phi
 head of the head boundary and $\phi$ the head of the aquifer cell.
 
 The table in the Groundwater flow [head boundary
-condition](../parameters_lateral.qmd#head-boundary) section of the Model parameters provides
+condition](../parameters_routing.qmd#head-boundary) section of the Model parameters provides
 the parameters of the struct `HeadBoundary`.
 
 The head boundary flux $Q_{hb}$ is an output variable (field `flux` of struct `HeadBoundary`),
@@ -248,7 +248,7 @@ This boundary is not (yet) part of the model `SBM + Groundwater flow`.
 ### Well boundary
 A volumetric well rate $\SIb{}{L^3 T^{-1}}$ can be specified as a boundary condition.
 
-The Table in the [well boundary condition](../parameters_lateral.qmd#well-boundary) section of
+The Table in the [well boundary condition](../parameters_routing.qmd#well-boundary) section of
 the Model parameters provides the parameters of the struct `Well`.
 
 The volumetric well rate $\subtext{Q}{well}$ can be can be specified as a fixed or time

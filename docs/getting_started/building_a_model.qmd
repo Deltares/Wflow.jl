@@ -32,7 +32,7 @@ The actual data requirements depend on the application of the Model and the Mode
 forcing and static data should be provided in netCDF format, with the same grid definition for
 forcing and static data. The only exception is storage and rating curves for lakes, that should
 be provided in CSV format, see also [Additional settings for
-waterbodies](../model_docs/lateral/waterbodies.qmd#additional-settings).
+waterbodies](../model_docs/routing/waterbodies.qmd#additional-settings).
 
 * Forcing data:
   - Precipitation
@@ -68,32 +68,33 @@ used to extract gridded data from certain locations.
 
 The different supported model configurations are described in the section [Model
 configurations](../model_docs/model_configurations.qmd). Wflow\_sbm models have the vertical
-concept [SBM](../model_docs/vertical/sbm.qmd) in common and input parameters for this component
-are described in the [SBM model parameters table](../model_docs/parameters_vertical.qmd#sbm).
-For wflow\_sbm models there are two ways to include subsurface flow:
+concept [SBM](../model_docs/land/landhydrology_sbm.qmd) in common and input parameters for
+this component are described in the [SBM model parameters
+table](../model_docs/parameters_landhydrology_sbm.qmd#sbm). For wflow\_sbm models there are
+two ways to include subsurface flow:
 
 1. The kinematic wave approach (see section [Subsurface flow
-   routing](../model_docs/lateral/kinwave.qmd#subsurface-flow-routing)) as part of the `sbm`
+   routing](../model_docs/routing/kinwave.qmd#subsurface-flow-routing)) as part of the `sbm`
    model type. Parameters that are part of this component are described in the [Lateral
-   subsurface flow](../model_docs/parameters_lateral.qmd#lateral-subsurface-flow) section of
+   subsurface flow](../model_docs/parameters_routing.qmd#lateral-subsurface-flow) section of
    Model parameters. Input parameters for this component are derived from the SBM vertical
    concept and the land slope. One external parameter (`ksathorfrac`) is used to calculate the
    horizontal hydraulic conductivity at the soil surface `kh_0`.
-2. Groundwater flow (see section [Groundwater flow component](../model_docs/lateral/gwf.qmd))
+2. Groundwater flow (see section [Groundwater flow component](../model_docs/routing/gwf.qmd))
    as part of the `sbm_gwf` model type. For the unconfined aquifer the input parameters are
    described in the section [Unconfined
-   aquifer](../model_docs/parameters_lateral.qmd#unconfined-aquifer) of Model parameters. The
+   aquifer](../model_docs/parameters_routing.qmd#unconfined-aquifer) of Model parameters. The
    bottom (`bottom`) of the groundwater layer is derived from from the `soilthickness` [mm]
    parameter of `SBM` and the provided surface elevation `altitude` [m] as part of the static
    input. The `area` parameter is derived from the model grid. Parameters that are part of the
    boundary conditions of the unconfined aquifer are listed under [Constant
-   Head](../model_docs/lateral/gwf.qmd#head-boundary) and [Boundary
-   conditions](../model_docs/parameters_lateral.qmd#boundary-conditions) of the Model
+   Head](../model_docs/routing/gwf.qmd#head-boundary) and [Boundary
+   conditions](../model_docs/parameters_routing.qmd#boundary-conditions) of the Model
    parameters section.
 
 Most hydrological model configurations make use of the kinematic wave surface routing (river
 flow, overland flow or both) and input data required for the river and overland flow components
-is described in [Surface flow](../model_docs/parameters_lateral.qmd#surface-flow). There is
+is described in [Surface flow](../model_docs/parameters_routing.qmd#surface-flow). There is
 also the option to use the local inertial model as part of the wflow\_sbm models (model types
 `sbm` and `sbm_gwf`):
 
@@ -104,27 +105,27 @@ also the option to use the local inertial model as part of the wflow\_sbm models
   model.
 
 Input parameters for this approach are described in [River flow (local
-inertial)](../model_docs/parameters_lateral.qmd#local-inertial), including the optional 1D
-[floodplain schematization](../model_docs/parameters_lateral.qmd#d-floodplain), and [Overland
-flow (local inertial)](../model_docs/parameters_lateral.qmd#overland-flow) of the Model
+inertial)](../model_docs/parameters_routing.qmd#local-inertial), including the optional 1D
+[floodplain schematization](../model_docs/parameters_routing.qmd#d-floodplain), and [Overland
+flow (local inertial)](../model_docs/parameters_routing.qmd#overland-flow) of the Model
 parameters section.
 
 Reservoirs or lakes can be part of the kinematic wave or local inertial model for river flow
 and input parameters are described in
-[Reservoirs](../model_docs/parameters_lateral.qmd#reservoirs) and
-[Lakes](../model_docs/parameters_lateral.qmd#lakes).
+[Reservoirs](../model_docs/parameters_routing.qmd#reservoirs) and
+[Lakes](../model_docs/parameters_routing.qmd#lakes).
 
 The [wflow\_sediment](../model_docs/model_configurations.qmd#wflow_sediment) model
-configuration consists of the vertical [Soil Erosion](../model_docs/vertical/sediment.qmd)
+configuration consists of the vertical [Soil Erosion](../model_docs/land/sediment.qmd)
 concept and the input parameters for this concept are described in the
-[Sediment](../model_docs/parameters_vertical.qmd#sediment) section of the Model parameters. The
-parameters of the lateral [Sediment Flux in overland
-flow](../model_docs/lateral/sediment_flux.qmd#sediment-flux-in-overland-flow) concept are
-described in the [Overland flow](../model_docs/parameters_lateral.qmd#overland-flow-1) section
+[Sediment](../model_docs/parameters_sediment.qmd#sediment) section of the Model parameters. The
+parameters of the routing [Sediment Flux in overland
+flow](../model_docs/routing/sediment_flux.qmd#sediment-flux-in-overland-flow) concept are
+described in the [Overland flow](../model_docs/parameters_routing.qmd#overland-flow-1) section
 of the Model parameters. Parameters of this component are not directly set by data from static
-input. The input parameters of the lateral concept [River Sediment
-Model](../model_docs/lateral/sediment_flux.qmd#river-sediment-model) are listed in [River
-flow](../model_docs/parameters_lateral.qmd#river-flow-1) of the Model parameters section.
+input. The input parameters of the routing concept [River Sediment
+Model](../model_docs/routing/sediment_flux.qmd#river-sediment-model) are listed in [River
+flow](../model_docs/parameters_routing.qmd#river-flow-1) of the Model parameters section.
 
 The Model parameters section lists all the parameters per Model component and these Tables can
 also be used to check which parameters can be part of the output, see also [Output netCDF
