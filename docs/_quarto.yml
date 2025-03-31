@@ -126,7 +126,7 @@ website:
         - developments/index.qmd
         - changelog.qmd
         - developments/guide.qmd
-        - developments/julia_structs.qmd
+        - developments/model_struct.qmd
 
 format:
   html:
