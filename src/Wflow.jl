@@ -58,6 +58,7 @@ const CFDataset = Union{NCDataset, NCDatasets.MFDataset}
 const CFVariable_MF = Union{NCDatasets.CFVariable, NCDatasets.MFCFVariable}
 const VERSION =
     VersionNumber(TOML.parsefile(joinpath(@__DIR__, "..", "Project.toml"))["version"])
+const ROUTING_OPTIONS = (("kinematic-wave", "local-inertial"))
 
 mutable struct Clock{T}
     time::T

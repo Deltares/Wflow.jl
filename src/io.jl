@@ -4,7 +4,6 @@ Input data can be loaded from netCDF files.
 Output data can be written to netCDF or CSV files.
 For configuration files we use TOML.
 =#
-const ROUTING_OPTIONS = (("kinematic-wave", "local-inertial"))
 
 """Turn "a.aa.aaa" into (:a, :aa, :aaa)"""
 symbols(s) = Tuple(Symbol(x) for x in split(s, '.'))
@@ -1777,11 +1776,9 @@ function get_routing_types(config::Config)
         "kinematic-wave",
     )::String
 
-    kinematic_wave = if config.model.type == "sbm"
+    kinematic_wave =
+        config.model.type == "sbm" &&
         get(config.model, "kinematic-wave_subsurface", true)::Bool
-    else
-        false
-    end
     subsurface = kinematic_wave ? "kinematic-wave" : "groundwaterflow"
 
     return (; land, river, subsurface)

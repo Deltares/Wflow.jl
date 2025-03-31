@@ -168,9 +168,11 @@ function initialize_river_flow(
     elseif routing_types.river == "local-inertial"
         river_flow = LocalInertialRiverFlow(dataset, config, domain.river, reservoir, lake)
     else
-        error("""An unknown "river_routing" method is specified in the TOML file
-              ($river_routing). This should be "kinematic-wave" or "local-inertial".
-              """)
+        error(
+            """An unknown "river_routing" method is specified in the TOML file
+             ($(routing_types.river)). This should be "kinematic-wave" or "local-inertial".
+            """,
+        )
     end
 end
 

@@ -78,7 +78,7 @@ end
 
 "Overload `getproperty` for river flow model parameters"
 function Base.getproperty(v::RiverFlowParameters, s::Symbol)
-    if s == :bankfull_depth
+    if s === :bankfull_depth
         getfield(v, s)
     elseif s === :flow
         getfield(v, :flow)
