@@ -116,11 +116,11 @@ website:
           - file: model_docs/routing/waterbodies.qmd
           - file: model_docs/routing/gwf.qmd
           - file: model_docs/routing/sediment_flux.qmd
-        - text: List of variables
+        - text: List of parameters and variables
           contents:
           - file: model_docs/parameters_landhydrology_sbm.qmd
-          - file: model_docs/parameters_routing.qmd
           - file: model_docs/parameters_sediment.qmd
+          - file: model_docs/parameters_routing.qmd
     - title: Developments
       contents:
         - developments/index.qmd
@@ -139,6 +139,7 @@ format:
     page-layout: article
     grid:
       content-mode: standard
+      sidebar-width: 300px
     html-math-method:
       method: mathjax  # or katex
       # MathJax specific options
