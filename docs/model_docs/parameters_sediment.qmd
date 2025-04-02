@@ -12,58 +12,45 @@ td, th {
 }
 </style>
 
-## Generic maps
-
-| Standard Name | Description | Unit | Default |
-| --- | ---- | - | - |
-| `local_drain_direction` | Local drainage direction | - | - |
-| `subcatchment_location__count` | Mask with the subcatchment to simulate | - | - |
-| `river_location__mask` | Mask with the river pixels | - | - |
-| `reservoir_area__count` | Reservoir mask (cells covered by the lake) | - | - |
-| `reservoir_location__count` | Reservoir outlet locations (physical location in the model) | | |
-| `lake_area__count` | Lake mask (cells covered by the lake) | - | - |
-| `lake_location__count` | Lake outlet locations (physical location in the model) | - | - |
-: {.striped .hover}
-
 ## Atmospheric forcing
 | Standard Name | Description | Unit | Default |
-| --- | ---- | - | - |
+| ------ | ---- | -- | -- |
 | `atmosphere_water__precipitation_volume_flux` | Precipitation | mm Δt⁻¹ | - |
 : {.striped .hover}
 
 ## Hydrological forcing
 | Standard Name | Description | Unit | Default |
-| --- | ---- | - | - |
+| ------ | ---- | -- | -- |
 | `river_water__volume_flow_rate` | River discharge | m³ s⁻¹ | - |
-| `river_water__depth` | River water level | m | - |
+| `river_water__depth` | River water depth | m | - |
 | `land_surface_water__volume_flow_rate` | Overland flow discharge | m³ s⁻¹ | - |
-| `land_surface_water__depth` | Overland flow water level | m | - |
-| `vegetation_canopy_water__interception_volume_flux` | Rainfall interception by the vegetation | mm SHOULD THIS BE mm Δt⁻¹? | - |
+| `land_surface_water__depth` | Overland flow water depth | m | - |
+| `vegetation_canopy_water__interception_volume_flux` | Rainfall interception by the vegetation | mm Δt⁻¹ | - |
 : {.striped .hover}
 
 ## Rainfall erosion
 ### Input
 | Standard Name | Description | Unit | Default |
-| --- | ---- | - | - |
+| ------ | ---- | -- | -- |
 | `soil_erosion__rainfall_soil_detachability_factor` |  Soil detachability factor | g J⁻¹ | 0.6 |
 | `soil_erosion__eurosem_exponent` | Exponent EUROSEM | - | 2.0 |
 | `vegetation_canopy__height` | Canopy height | m | 0.5 |
 | `vegetation_canopy__gap_fraction` | Canopy gap fraction | - | 0.1 |
 | `soil~compacted__area_fraction` | Fraction of the soil that is covered (eg paved, snow, etc) | - | 0.01 |
-| `soil_erosion__usle_k_factor` | Soil erodibility factor | - | 0.1 |
-| `soil_erosion__usle_c_factor` | Crop management factor | - | 0.01 |
+| `soil_erosion__usle_k_factor` | USLE soil erodibility factor | - | 0.1 |
+| `soil_erosion__usle_c_factor` | USLE crop management factor | - | 0.01 |
 : {.striped .hover}
 
 ### Output
 | Standard Name | Description | Unit |
-| --- | ---- | - |
+| --- | --- | - |
 | `soil_erosion~rainfall__mass_flow_rate` | Total soil erosion from rainfall (splash) | ton Δt⁻¹ |
 : {.striped .hover}
 
 ## Soil erosion
 ### Input
 | Standard Name | Description | Unit | Default |
-| --- | ---- | - | - |
+| ------ | ---- | -- | -- |
 | `soil_clay__mass_fraction` | Soil content clay | - | 0.4 |
 | `soil_silt__mass_fraction` | Soil content silt | - | 0.3 |
 | `soil_sand__mass_fraction` | Soil content sand | - | 0.3 |
@@ -73,122 +60,11 @@ td, th {
 
 ### Output
 | Standard Name | Description | Unit |
-| --- | ---- | - |
+| --- | --- | - |
 | `soil_erosion__mass_flow_rate` | Total soil erosion | ton Δt⁻¹ |
 | `soil_erosion_clay__mass_flow_rate` | Total clay erosion | ton Δt⁻¹ |
 | `soil_erosion_silt__mass_flow_rate` | Total silt erosion | ton Δt⁻¹ |
 | `soil_erosion_sand__mass_flow_rate` | Total sand erosion | ton Δt⁻¹ |
 | `soil_erosion_aggregates~small__mass_flow_rate` | Total small aggregates erosion | ton Δt⁻¹ |
 | `soil_erosion_aggregates~large__mass_flow_rate` | Total large aggregates erosion | ton Δt⁻¹ |
-: {.striped .hover}
-
-## River transport
-
-### Input
-| Standard Name | Description | Unit | Default |
-| --- | ---- | - | - |
-| `reservoir_surface__area` | Surface area of the reservoir | m² | - |
-| `lake_surface__area` | Surface area of the lake | m² | - |
-| `reservoir_sediment~bedload__trapping_efficiency_coefficient` | Reservoir sediment trapping efficiency | - | 1.0 |
-| `river_bottom-and-bank_clay__mass_fraction` | River bed/bank content clay | - | 0.15 |
-| `river_bottom-and-bank_silt__mass_fraction` | River bed/bank content silt | - | 0.65 |
-| `river_bottom-and-bank_sand__mass_fraction` | River bed/bank content sand | - | 0.15 |
-| `river_bottom-and-bank_gravel__mass_fraction` | River bed/bank content gravel | - | 0.05 |
-| `clay__d50_diameter` | Clay mean diameter | µm | 2.0 |
-| `silt__d50_diameter` | Silt mean diameter | µm | 10.0 |
-| `sand__d50_diameter` | Sand mean diameter | µm | 200.0 |
-| `sediment_aggregates~small__d50_diameter` | Small aggregates mean diameter | µm | 30.0 |
-| `sediment_aggregates~large__d50_diameter` | Large aggregates mean diameter | µm | 500.0 |
-| `gravel__d50_diameter` | Gravel mean diameter | µm | 2000.0 |
-: {.striped .hover}
-
-## Duplicates
-| `clay__d50_diameter` | Clay mean diameter | µm | 2.0 |
-| `silt__d50_diameter` | Silt mean diameter | µm | 10.0 |
-| `sand__d50_diameter` | Sand mean diameter | µm | 200.0 |
-| `sediment_aggregates~small__d50_diameter` | Small aggregates mean diameter | µm | 30.0 |
-| `sediment_aggregates~large__d50_diameter` | Large aggregates mean diameter | µm | 500.0 |
-`soil_erosion__usle_k_factor`
-`soil_erosion__usle_c_factor`
-: {.striped .hover}
-
-## Transport capacity
-### Input
-| Standard Name | Description | Unit | Default |
-| --- | ---- | - | - |
-| `land_surface_sediment__particle_density` | Particle density | kg m⁻³ | 2650.0 |
-| `land_surface_sediment__d50_diameter` | Particle mean diameter | mm | 0.1 |
-| `land_surface_water_sediment__govers_transport_capacity_coefficient` | Govers transport capacity coefficient | - | 0.000505 |
-| `land_surface_water_sediment__govers_transport_capacity_exponent` | Govers transport capacity exponent | - | 4.27 |
-| `river_sediment__particle_density` | Particle density | kg m⁻³ | 2650.0 |
-| `river_sediment__d50_diameter` | Particle mean diameter | mm | 0.1 |
-| `river_water_sediment__bagnold_transport_capacity_coefficient` | Bagnold transport capacity coefficient | - | - |
-| `river_water_sediment__bagnold_transport_capacity_exponent` | Bagnold transport capacity exponent | - | - |
-| `river_water_sediment__kodatie_transport_capacity_a-coefficient` | Kodatie transport capacity coefficient a | - | - |
-| `river_water_sediment__kodatie_transport_capacity_b-coefficient` | Kodatie transport capacity coefficient b | - | - |
-| `river_water_sediment__kodatie_transport_capacity_c-coefficient` | Kodatie transport capacity coefficient c | - | - |
-| `river_water_sediment__kodatie_transport_capacity_d-coefficient` | Kodatie transport capacity coefficient d | - | - |
-: {.striped .hover}
-
-## Overland flow erosion
-
-### Input
-| Standard Name | Description | Unit | Default |
-| --- | ---- | - | - |
-| `soil_erosion__answers_overland_flow_factor` | Answers overland flow factor | - | 0.9
-: {.striped .hover}
-
-### Output
-| Standard Name | Description | Unit |
-| --- | ---- | - |
-| `soil_erosion~overland_flow__mass_flow_rate` | Total soil erosion from overland flow | ton Δt⁻¹ |
-| `land_surface_water_sediment_transport_capacity__mass_flow_rate` | Total sediment transport capacity | ton Δt⁻¹ |
-| `land_surface_water_clay_transport_capacity__mass_flow_rate` | Clray transport capacity | ton Δt⁻¹ |
-| `land_surface_water_sediment~to-river__mass_flow_rate` | Total sediment flux flowing into the river | ton Δt⁻¹ |
-| `land_surface_water_clay~to-river__mass_flow_rate` | Clay flux flowing into the river | ton Δt⁻¹ |
-| `land_surface_water_silt~to-river__mass_flow_rate` | Silt flux flowing into the river | ton Δt⁻¹ |
-| `land_surface_water_sand~to-river__mass_flow_rate` | Sand flux flowing into the river | ton Δt⁻¹ |
-| `land_surface_water_aggregates~small~to-river__mass_flow_rate` | Small aggregates flux flowing into the river | ton Δt⁻¹ |
-| `land_surface_water_aggregates~large~to-river__mass_flow_rate` | Large aggregates flux flowing into the river | ton Δt⁻¹ |
-| `land_surface_water_sediment__mass_flow_rate` | Total sediment flux | ton Δt⁻¹ |
-: {.striped .hover}
-
-## River erosion
-### Input
-| Standard Name | Description | Unit | Default |
-| --- | ---- | - | - |
-| `river_bottom-and-bank_sediment__d50_diameter` | Mean diameter in the river bed/bank | mm | 0.1
-: {.striped .hover}
-
-### States
-| Standard Name | Description | Unit |
-| --- | ---- | - |
-| `river_bed_clay__mass` | Clay stored on the river bed after deposition | ton?/code says ton Δt⁻¹ |
-| `river_bed_silt__mass` | Silt stored on the river bed after deposition | ton?/code says ton Δt⁻¹ |
-| `river_bed_sand__mass` | Sand stored on the river bed after deposition | ton?/code says ton Δt⁻¹ |
-| `river_bed_aggregates~small__mass` | Small aggregates stored on the river bed after deposition | ton?/code says ton Δt⁻¹ |
-| `river_bed_aggregates~large__mass` | Large aggregates stored on the river bed after deposition | ton?/code says ton Δt⁻¹ |
-| `river_bed_gravel__mass` | Gravel stored on the river bed after deposition | ton?/code says ton Δt⁻¹ |
-| `river_water_clay__mass` | Clay left in cell | ton?/code says ton Δt⁻¹ |
-| `river_water_silt__mass` | Silt left in cell | ton?/code says ton Δt⁻¹ |
-| `river_water_sand__mass` | Sand left in cell | ton?/code says ton Δt⁻¹ |
-| `river_water_aggregates~small__mass` | Small aggregates left in cell | ton?/code says ton Δt⁻¹ |
-| `river_water_aggregates~large__mass` | Large aggregates left in cell | ton?/code says ton Δt⁻¹ |
-| `river_water_gravel__mass` | Gravel left in cell | ton?/code says ton Δt⁻¹ |
-| `river_water_clay__mass_flow_rate` | Sediment flux (clay) | ton Δt⁻¹ |
-| `river_water_silt__mass_flow_rate` | Sediment flux (silt) | ton Δt⁻¹ |
-| `river_water_sand__mass_flow_rate` | Sediment flux (sand) | ton Δt⁻¹ |
-| `river_water_aggregates~small__mass_flow_rate` | Sediment flux (small aggregates) | ton Δt⁻¹ |
-| `river_water_aggregates~large__mass_flow_rate` | Sediment flux (large aggregates) | ton Δt⁻¹ |
-| `river_water_gravel__mass_flow_rate` | Sediment flux (gravel) | ton Δt⁻¹ |
-: {.striped .hover}
-
-### Output
-| Standard Name | Description | Unit |
-| --- | ---- | - |
-| `river_water_sediment~bedload__mass_concentration` | Bed load sediment concentration in the river | g m⁻³ |
-| `river_water_sediment~suspended__mass_concentration` | Suspended sediemnt concentration in the river | g m⁻³ |
-| `river_water_sediment__mass_concentration` | Total sediment concentration in the river | g m⁻³ |
-| `river_water_sediment_erosion__mass` | Total sediment erosion (from store + direct river bed/bank) | ton Δt⁻¹ |
-| `river_water_sediment_deposition__mass` | Total sediment deposition | ton Δt⁻¹ |
 : {.striped .hover}
