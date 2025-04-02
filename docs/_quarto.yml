@@ -140,6 +140,7 @@ format:
     grid:
       content-mode: standard
       sidebar-width: 300px
+      body-width: 1000px
     html-math-method:
       method: mathjax  # or katex
       # MathJax specific options
