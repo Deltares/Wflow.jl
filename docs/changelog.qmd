@@ -72,6 +72,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   open water evaporation and to set the river `stage` of the `GroundwaterFlow` model for the
   current model time step, as it is more accurate then using the average water depth `h_av`
   at the previous model time step.
+- Removed `LoopVectorization` dependency because of compilation issues and the risk of
+  deprecation for newer Julia versions. The `tturbo` macro has been replaced by the `batch`
+  macro of `Polyester`, performance loss is acceptable.
 
 ### Added
 - Support direct output of snow and glacier melt, and add computation of snow water
