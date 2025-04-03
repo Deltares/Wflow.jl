@@ -9,88 +9,42 @@
 end
 
 "Initialize reservoir model parameters"
-function ReservoirParameters(
-    dataset::NCDataset,
-    config::Config,
-    indices_river::Vector{CartesianIndex{2}},
-    n_river_cells::Int,
-    pits::Matrix{Bool},
-)
-    # read only reservoir data if reservoirs true
-    # allow reservoirs only in river cells
-    # note that these locations are only the reservoir outlet pixels
-    lens = lens_input(config, "reservoir_location__count"; optional = false)
-    reslocs = ncread(dataset, config, lens; sel = indices_river, type = Int, fill = 0)
+function ReservoirParameters(dataset::NCDataset, config::Config, network::NetworkWaterBody)
+    (; indices_outlet) = network
 
-    # this holds the same ids as reslocs, but covers the entire reservoir
-    lens = lens_input(config, "reservoir_area__count"; optional = false)
-    rescoverage_2d = ncread(dataset, config, lens; allow_missing = true)
-    # for each reservoir, a list of 2D indices, needed for getting the mean precipitation
-    inds_res_cov = Vector{CartesianIndex{2}}[]
-
-    rev_inds_reservoir = zeros(Int, size(rescoverage_2d))
-
-    # construct a map from the rivers to the reservoirs and
-    # a map of the reservoirs to the 2D model grid
-    inds_reservoir_map2river = fill(0, n_river_cells)
-    inds_res = CartesianIndex{2}[]
-    rescounter = 0
-    for (i, ind) in enumerate(indices_river)
-        res_id = reslocs[i]
-        if res_id > 0
-            push!(inds_res, ind)
-            rescounter += 1
-            inds_reservoir_map2river[i] = rescounter
-            rev_inds_reservoir[ind] = rescounter
-
-            # get all indices related to this reservoir outlet
-            # done in this loop to ensure that the order is equal to the order in the
-            # SimpleReservoir struct
-            res_cov = findall(isequal(res_id), rescoverage_2d)
-            push!(inds_res_cov, res_cov)
-        end
-    end
     lens = lens_input_parameter(
         config,
         "reservoir_water_demand~required~downstream__volume_flow_rate";
         optional = false,
     )
-    resdemand = ncread(dataset, config, lens; sel = inds_res, type = Float64, fill = 0)
+    resdemand =
+        ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
     lens = lens_input_parameter(
         config,
         "reservoir_water_release-below-spillway__max_volume_flow_rate";
         optional = false,
     )
-    resmaxrelease = ncread(dataset, config, lens; sel = inds_res, type = Float64, fill = 0)
+    resmaxrelease =
+        ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
     lens = lens_input_parameter(config, "reservoir_water__max_volume"; optional = false)
-    resmaxstorage = ncread(dataset, config, lens; sel = inds_res, type = Float64, fill = 0)
+    resmaxstorage =
+        ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
     lens = lens_input_parameter(config, "reservoir_surface__area"; optional = false)
-    resarea = ncread(dataset, config, lens; sel = inds_res, type = Float64, fill = 0)
+    resarea = ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
     lens = lens_input_parameter(
         config,
         "reservoir_water~full-target__volume_fraction";
         optional = false,
     )
     res_targetfullfrac =
-        ncread(dataset, config, lens; sel = inds_res, type = Float64, fill = 0)
+        ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
     lens = lens_input_parameter(
         config,
         "reservoir_water~min-target__volume_fraction";
         optional = false,
     )
     res_targetminfrac =
-        ncread(dataset, config, lens; sel = inds_res, type = Float64, fill = 0)
-
-    # for surface water routing reservoir locations are considered pits in the flow network
-    # all upstream flow goes to the river and flows into the reservoir
-    pits[inds_res] .= true
-
-    reservoir_network = (
-        indices_outlet = inds_res,
-        indices_coverage = inds_res_cov,
-        reverse_indices = rev_inds_reservoir,
-        river_indices = findall(x -> x ≠ 0, inds_reservoir_map2river),
-    )
+        ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
 
     parameters = ReservoirParameters(;
         demand = resdemand,
@@ -101,7 +55,7 @@ function ReservoirParameters(
         targetminfrac = res_targetminfrac,
     )
 
-    return parameters, reservoir_network, inds_reservoir_map2river, pits
+    return parameters
 end
 
 "Struct for storing reservoir model variables"
@@ -155,15 +109,8 @@ end
 end
 
 "Initialize reservoir model `SimpleReservoir`"
-function SimpleReservoir(
-    dataset::NCDataset,
-    config::Config,
-    indices_river::Vector{CartesianIndex{2}},
-    n_river_cells::Int,
-    pits::Matrix{Bool},
-)
-    parameters, reservoir_network, inds_reservoir_map2river, pits =
-        ReservoirParameters(dataset, config, indices_river, n_river_cells, pits)
+function SimpleReservoir(dataset::NCDataset, config::Config, network::NetworkWaterBody)
+    parameters = ReservoirParameters(dataset, config, network)
 
     n_reservoirs = length(parameters.area)
     @info "Read `$n_reservoirs` reservoir locations."
@@ -172,7 +119,7 @@ function SimpleReservoir(
     boundary_conditions = ReservoirBC(n_reservoirs)
     reservoir = SimpleReservoir(; boundary_conditions, parameters, variables)
 
-    return reservoir, reservoir_network, inds_reservoir_map2river, pits
+    return reservoir
 end
 
 """

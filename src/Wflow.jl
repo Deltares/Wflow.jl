@@ -58,6 +58,7 @@ const CFDataset = Union{NCDataset, NCDatasets.MFDataset}
 const CFVariable_MF = Union{NCDatasets.CFVariable, NCDatasets.MFCFVariable}
 const VERSION =
     VersionNumber(TOML.parsefile(joinpath(@__DIR__, "..", "Project.toml"))["version"])
+const ROUTING_OPTIONS = (("kinematic-wave", "local-inertial"))
 
 mutable struct Clock{T}
     time::T
@@ -108,10 +109,6 @@ function Clock(config, reader)
     return Clock(starttime, 0, dt)
 end
 
-include("io.jl")
-include("network.jl")
-include("routing/routing.jl")
-
 abstract type AbstractModel{T} end
 abstract type AbstractLandModel end
 
@@ -121,6 +118,11 @@ struct SbmModel <: AbstractModelType end         # "sbm" type / sbm_model.jl
 struct SbmGwfModel <: AbstractModelType end      # "sbm_gwf" type / sbm_gwf_model.jl
 struct SedimentModel <: AbstractModelType end    # "sediment" type / sediment_model.jl
 
+include("io.jl")
+include("network.jl")
+include("routing/routing.jl")
+include("domain.jl")
+
 """
     Model{R <: Routing, L <: AbstractLandModel, T <: AbstractModelType} <:AbstractModel{T}
 
@@ -129,21 +131,46 @@ parameters, clock, configuration and input and output.
 """
 struct Model{R <: Routing, L <: AbstractLandModel, T <: AbstractModelType} <:
        AbstractModel{T}
-    config::Config      # all configuration options
-    network::Network    # connectivity information, directed graph
-    routing::R          # routing model (horizontal fluxes), moves along network
-    land::L             # land model simulating vertical fluxes, independent of each other
-    clock::Clock        # to keep track of simulation time
-    reader::NCReader    # provides the model with dynamic input
-    writer::Writer      # writes model output
-    type::T             # model type
+    config::Config                  # all configuration options
+    domain::Domain                  # domain connectivity (network) and shared parameters 
+    routing::R                      # routing model (horizontal fluxes), moves along network
+    land::L                         # land model simulating vertical fluxes, independent of each other
+    clock::Clock                    # to keep track of simulation time
+    reader::NCReader                # provides the model with dynamic input
+    writer::Writer                  # writes model output
+    type::T                         # model type
+end
+
+"""
+   Model(config::Config)::Model
+
+Initialization of a `Model` based on the `config` object (parsed configuration TOML file
+with input, model and output settings).
+"""
+function Model(config::Config)::Model
+    model_type = config.model.type
+
+    if model_type ∉ ("sbm", "sbm_gwf", "sediment")
+        error("Unknown model type $model_type.")
+    end
+    @info "Initialize model variables for model type `$model_type`."
+
+    type = if model_type == "sbm"
+        SbmModel()
+    elseif model_type == "sbm_gwf"
+        SbmGwfModel()
+    elseif model_type == "sediment"
+        SedimentModel()
+    end
+
+    return Model(config, type)
 end
 
 # prevent a large printout of model components and arrays
 Base.show(io::IO, ::AbstractModel{T}) where {T} = print(io, "model of type ", T)
 
 include("forcing.jl")
-include("parameters.jl")
+include("vegetation/parameters.jl")
 include("vegetation/rainfall_interception.jl")
 include("vegetation/canopy.jl")
 include("snow/snow_process.jl")
@@ -181,6 +208,7 @@ include("sediment/sediment_transport/river_transport.jl")
 include("erosion.jl")
 include("sediment_flux.jl")
 include("sediment_model.jl")
+include("routing/initialize_routing.jl")
 include("sbm_gwf_model.jl")
 include("standard_name.jl")
 include("utils.jl")
@@ -195,11 +223,11 @@ include("states.jl")
     run!(model::Model)
     run()
 
-Run an entire simulation starting either from a path to a TOML settings file,
-a prepared `Config` object, or an initialized `Model` object. This allows more flexibility
-if you want to for example modify a `Config` before initializing the `Model`. Logging to a
-file is only part of the `run(tomlpath::AbstractString)` method. To avoid logging to the
-terminal, set the `silent` keyword argument to `true`, or put that in the TOML.
+Run an entire simulation starting either from a path to a TOML settings file, a prepared
+`Config` object, or an initialized `Model` object. This allows more flexibility if you want
+to for example modify a `Config` before initializing the `Model`. Logging to a file is only
+part of the `run(tomlpath::AbstractString)` method. To avoid logging to the terminal, set
+the `silent` keyword argument to `true`, or put that in the TOML.
 
 The 0 argument version expects ARGS to contain a single entry, pointing to the TOML path.
 This makes it easier to start a run from the command line without having to escape quotes:
@@ -237,17 +265,7 @@ function run(tomlpath::AbstractString; silent = nothing)
 end
 
 function run(config::Config)
-    modeltype = config.model.type
-
-    model = if modeltype == "sbm"
-        initialize_sbm_model(config)
-    elseif modeltype == "sbm_gwf"
-        initialize_sbm_gwf_model(config)
-    elseif modeltype == "sediment"
-        initialize_sediment_model(config)
-    else
-        error("unknown model type")
-    end
+    model = Model(config)
     load_fixed_forcing!(model)
     run!(model)
     return model
