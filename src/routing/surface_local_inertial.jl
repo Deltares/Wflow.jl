@@ -253,7 +253,7 @@ function local_inertial_river_update!(
     if !isnothing(model.floodplain)
         model.floodplain.variables.q0 .= model.floodplain.variables.q
     end
-    @tturbo for j in eachindex(river_p.active_e)
+    @batch per = thread minbatch = 1000 for j in eachindex(river_p.active_e)
         i = river_p.active_e[j]
         i_src = nodes_at_edge.src[i]
         i_dst = nodes_at_edge.dst[i]
@@ -294,7 +294,9 @@ function local_inertial_river_update!(
         floodplain_p = model.floodplain.parameters
         floodplain_v = model.floodplain.variables
 
-        @tturbo @. floodplain_v.hf = max(river_v.zs_max - floodplain_p.zb_max, 0.0)
+        @batch per = thread minbatch = 1000 for i in 1:length(floodplain_v.hf)
+            floodplain_v.hf[i] = max(river_v.zs_max[i] - floodplain_p.zb_max[i], 0.0)
+        end
 
         n = 0
         @inbounds for i in river_p.active_e
@@ -306,7 +308,7 @@ function local_inertial_river_update!(
             end
         end
 
-        @tturbo for j in 1:n
+        @batch per = thread minbatch = 1000 for j in 1:n
             i = floodplain_v.hf_index[j]
             i_src = nodes_at_edge.src[i]
             i_dst = nodes_at_edge.dst[i]
@@ -412,7 +414,7 @@ function local_inertial_river_update!(
         river_v.q_av[i] += river_v.q[i] * dt
     end
     if update_h
-        @batch per = thread minbatch = 2000 for i in river_p.active_n
+        @batch per = thread minbatch = 1000 for i in river_p.active_n
             q_src = sum_at(river_v.q, edges_at_node.src[i])
             q_dst = sum_at(river_v.q, edges_at_node.dst[i])
             river_v.storage[i] =

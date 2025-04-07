@@ -44,7 +44,6 @@ using Graphs:
     topological_sort_by_dfs,
     vertices
 using LoggingExtras
-using LoopVectorization: @tturbo
 using NCDatasets: NCDatasets, NCDataset, dimnames, dimsize, nomissing, defDim, defVar
 using Parameters: @with_kw
 using Polyester: @batch
