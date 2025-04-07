@@ -3,16 +3,13 @@ title: About
 ---
 
 As opposed to the user guide, which describes the steps needed to build and apply a model in
-the software, this section explains the different model concepts that are available within the
-modelling framework of wflow. Descriptions are given regarding the model concepts with links to
-the original scientific papers which explain the concepts in more detail. The model parameters
-which influence the processes are also shown, using inline code blocks. An overview of all
-model parameters is also provided for easy reference, including their short names, long
-descriptions and their units (see [parameters vertical concepts](./parameters_landhydrology_sbm.qmd) and
-[parameters routing concepts](./parameters_routing.qmd)).
-
-## Division between vertical and lateral
-
-In the documentation we talk of `vertical` and `lateral` concepts. These are components in the
-model that describe the vertical movement of water in each model grid cell and the lateral
-movement of water across grid cells.
+the software, this section explains the different model concepts that are available within
+the wflow modelling framework. Descriptions are given regarding the model concepts with
+references to scientific papers that explain the concepts in more detail. The model
+parameters which influence the processes are also shown, using inline code blocks. An
+overview of all model parameters, states and output variables is also provided for easy
+reference, including their standard names, descriptions, units and default values for input
+parameters (see [Land Hydrology SBM parameters and
+variables](./parameters_landhydrology_sbm.qmd), [Land Model Sediment parameters and
+variables](./parameters_sediment.qmd) and [Routing concepts parameters and
+variables](./parameters_routing.qmd)).

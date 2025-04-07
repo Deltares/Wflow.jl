@@ -108,7 +108,6 @@ website:
           contents:
           - file: model_docs/land/landhydrology_sbm.qmd
           - file: model_docs/land/sediment.qmd
-          - file: model_docs/land/shared_processes.qmd
         - text: Routing concepts
           contents:
           - file: model_docs/routing/kinwave.qmd
