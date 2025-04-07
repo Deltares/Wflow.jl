@@ -15,7 +15,7 @@ Struct for storing routing model components overland flow `overland_flow`, river
     R <: AbstractRiverFlowModel,
     S <: AbstractSubsurfaceFlowModel,
 }
-    overland_flow::O = NoSubsurfaceFlow()
-    river_flow::R = NoOverlandFlow()
+    overland_flow::O = NoOverlandFlow()
+    river_flow::R = NoRiverFlow()
     subsurface_flow::S = NoSubsurfaceFlow()
 end

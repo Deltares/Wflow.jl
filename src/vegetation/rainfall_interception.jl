@@ -2,9 +2,9 @@
 """
     rainfall_interception_gash(cmax, e_r, canopygapfraction, precipitation, canopystorage, maxevap)
 
-Interception according to the Gash model (for daily timesteps). `cmax` is the maximum canopy storage and
-`e_r` is the ratio of the average evaporation from the wet canopy and the average precipitation intensity on
-a saturated canopy.
+Interception according to the Gash model (for daily timesteps). `cmax` is the maximum canopy
+storage and `e_r` is the ratio of the average evaporation from the wet canopy and the
+average precipitation intensity on a saturated canopy.
 """
 function rainfall_interception_gash(
     cmax,
@@ -54,8 +54,8 @@ end
 """
     rainfall_interception_modrut(precipitation, potential_evaporation, canopystorage, canopygapfraction, cmax)
 
-Interception according to a modified Rutter model. The model is solved explicitly and there is no
-drainage below `cmax`.
+Interception according to a modified Rutter model. The model is solved explicitly and there
+is no drainage below `cmax`.
 """
 function rainfall_interception_modrut(
     precipitation,

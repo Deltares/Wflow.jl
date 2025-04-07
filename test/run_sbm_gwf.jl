@@ -2,8 +2,8 @@
 tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
 config = Wflow.Config(tomlpath)
 
-model = Wflow.initialize_sbm_gwf_model(config)
-(; network) = model
+model = Wflow.Model(config)
+(; domain) = model
 
 Wflow.run_timestep!(model)
 
@@ -51,7 +51,7 @@ end
     @test river.variables.storage[6] ≈ 4.528690358701646
     @test river.boundary_conditions.inwater[6] ≈ 0.0004037674722635451
     @test q[13] ≈ 0.0006016241976247014
-    @test q[network.river.order[end]] ≈ 0.008553261399338265
+    @test q[domain.river.network.order[end]] ≈ 0.008553261399338265
 end
 
 @testset "groundwater" begin
@@ -75,7 +75,7 @@ end
         Dict(config.output.netcdf_grid.variables),
         "land_drain_water~to-subsurface__volume_flow_rate",
     )
-    model = Wflow.initialize_sbm_gwf_model(config)
+    model = Wflow.Model(config)
     @test collect(keys(model.routing.subsurface_flow.boundaries)) == [:recharge, :river]
 end
 
@@ -92,7 +92,7 @@ config.model.river_routing = "local-inertial"
 config.input.static.river_bank_water__elevation = "bankfull_elevation"
 config.input.static.river_bank_water__depth = "bankfull_depth"
 
-model = Wflow.initialize_sbm_gwf_model(config)
+model = Wflow.Model(config)
 Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
 
@@ -123,7 +123,7 @@ config.state.variables.land_surface_water__depth = "h_av_land"
 config.state.variables.land_surface_water__x_component_of_instantaneous_volume_flow_rate = "qx_land"
 config.state.variables.land_surface_water__y_component_of_instantaneous_volume_flow_rate = "qy_land"
 
-model = Wflow.initialize_sbm_gwf_model(config)
+model = Wflow.Model(config)
 Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
 
@@ -149,8 +149,8 @@ tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
 config = Wflow.Config(tomlpath)
 config.model.reinit = false
 
-model = Wflow.initialize_sbm_gwf_model(config)
-(; network) = model
+model = Wflow.Model(config)
+(; domain) = model
 
 Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
@@ -175,7 +175,7 @@ end
     @test river.variables.storage[6] ≈ 2.2278920306090555
     @test river.boundary_conditions.inwater[6] ≈ -1.298187928273214e-5
     @test q[13] ≈ 7.335203306033115e-5
-    @test q[network.river.order[end]] ≈ 0.002472763875440307
+    @test q[domain.river.network.order[end]] ≈ 0.002472763875440307
 end
 
 @testset "groundwater warm start" begin

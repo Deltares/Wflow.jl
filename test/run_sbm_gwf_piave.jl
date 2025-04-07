@@ -1,6 +1,6 @@
 tomlpath = joinpath(@__DIR__, "sbm_gwf_piave_demand_config.toml")
 config = Wflow.Config(tomlpath)
-model = Wflow.initialize_sbm_gwf_model(config)
+model = Wflow.Model(config)
 Wflow.run_timestep!(model)
 
 (; paddy, nonpaddy, industry, livestock, domestic) = model.land.demand

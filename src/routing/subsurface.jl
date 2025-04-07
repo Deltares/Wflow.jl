@@ -12,14 +12,11 @@ end
 
 "Struct for storing lateral subsurface flow model parameters"
 @with_kw struct LateralSsfParameters{Kh}
-    kh_profile::Kh                  # Horizontal hydraulic conductivity profile type [-]  
-    khfrac::Vector{Float64}         # A muliplication factor applied to vertical hydraulic conductivity `kv` [-]
-    soilthickness::Vector{Float64}  # Soil thickness [m]
-    theta_s::Vector{Float64}        # Saturated water content (porosity) [-]
-    theta_r::Vector{Float64}        # Residual water content [-]   
-    slope::Vector{Float64}          # Slope [m m⁻¹]
-    flow_length::Vector{Float64}    # Flow length [m]
-    flow_width::Vector{Float64}     # Flow width [m]
+    kh_profile::Kh                      # Horizontal hydraulic conductivity profile type [-]  
+    khfrac::Vector{Float64}             # A muliplication factor applied to vertical hydraulic conductivity `kv` [-]
+    soilthickness::Vector{Float64}      # Soil thickness [m]
+    theta_s::Vector{Float64}            # Saturated water content (porosity) [-]
+    theta_r::Vector{Float64}            # Residual water content [-]
 end
 
 "Struct for storing lateral subsurface flow model boundary conditions"
@@ -60,18 +57,14 @@ end
 function LateralSsfParameters(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}};
+    indices::Vector{CartesianIndex{2}},
     soil::SbmSoilParameters,
-    slope::Vector{Float64},
-    flow_length::Vector{Float64},
-    flow_width::Vector{Float64},
 )
     lens = lens_input_parameter(
         config,
         "subsurface_water__horizontal-to-vertical_saturated_hydraulic_conductivity_ratio",
     )
     khfrac = ncread(dataset, config, lens; sel = indices, defaults = 1.0, type = Float64)
-    n_cells = length(khfrac)
 
     (; theta_s, theta_r, soilthickness) = soil
     soilthickness = soilthickness .* 0.001
@@ -90,30 +83,22 @@ function LateralSsfParameters(
         exp_profile = KhExponential(kh_0, f .* 1000.0)
         kh_profile = KhExponentialConstant(exp_profile, z_exp .* 0.001)
     elseif kh_profile_type == "layered" || kh_profile_type == "layered_exponential"
+        n_cells = length(khfrac)
         kh_profile = KhLayered(fill(MISSING_VALUE, n_cells))
     end
-    parameters = LateralSsfParameters(
-        kh_profile,
-        khfrac,
-        soilthickness,
-        theta_s,
-        theta_r,
-        slope,
-        flow_length,
-        flow_width,
-    )
-    return parameters
+    ssf_parameters =
+        LateralSsfParameters(; kh_profile, khfrac, soilthickness, theta_s, theta_r)
+    return ssf_parameters
 end
 
 "Initialize lateral subsurface flow model variables"
 function LateralSsfVariables(
     ssf::LateralSsfParameters,
     zi::Vector{Float64},
-    xl::Vector{Float64},
-    yl::Vector{Float64},
+    area::Vector{Float64},
 )
     n = length(zi)
-    storage = @. (ssf.theta_s - ssf.theta_r) * (ssf.soilthickness - zi) * (xl * yl)
+    storage = @. (ssf.theta_s - ssf.theta_r) * (ssf.soilthickness - zi) * area
     variables = LateralSsfVariables(;
         zi,
         exfiltwater = fill(MISSING_VALUE, n),
@@ -131,45 +116,28 @@ end
 function LateralSSF(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}};
+    domain::DomainLand,
     soil::SbmSoilModel,
-    slope::Vector{Float64},
-    flow_length::Vector{Float64},
-    flow_width::Vector{Float64},
-    x_length::Vector{Float64},
-    y_length::Vector{Float64},
 )
-    parameters = LateralSsfParameters(
-        dataset,
-        config,
-        indices;
-        soil = soil.parameters,
-        slope,
-        flow_length,
-        flow_width,
-    )
+    (; indices) = domain.network
+    (; area) = domain.parameters
+    parameters = LateralSsfParameters(dataset, config, indices, soil.parameters)
     zi = 0.001 * soil.variables.zi
-    variables = LateralSsfVariables(parameters, zi, x_length, y_length)
+    variables = LateralSsfVariables(parameters, zi, area)
     boundary_conditions = LateralSsfBC(; recharge = fill(MISSING_VALUE, length(zi)))
     ssf = LateralSSF(; boundary_conditions, parameters, variables)
     return ssf
 end
 
 "Update lateral subsurface model for a single timestep"
-function update!(model::LateralSSF, network::NetworkLand, dt::Float64)
-    (;
-        order_of_subdomains,
-        order_subdomain,
-        subdomain_indices,
-        upstream_nodes,
-        area,
-        frac_to_river,
-    ) = network
+function update!(model::LateralSSF, domain::DomainLand, dt::Float64)
+    (; order_of_subdomains, order_subdomain, subdomain_indices, upstream_nodes) =
+        domain.network
+    (; flow_length, flow_width, area, flow_fraction_to_river, slope) = domain.parameters
 
     (; recharge) = model.boundary_conditions
     (; ssfin, ssf, ssfmax, to_river, zi, exfiltwater, storage) = model.variables
-    (; slope, theta_s, theta_r, soilthickness, flow_length, flow_width, kh_profile) =
-        model.parameters
+    (; theta_s, theta_r, soilthickness, kh_profile) = model.parameters
 
     ns = length(order_of_subdomains)
     for k in 1:ns
@@ -177,16 +145,16 @@ function update!(model::LateralSSF, network::NetworkLand, dt::Float64)
             m = order_of_subdomains[k][i]
             for (n, v) in zip(subdomain_indices[m], order_subdomain[m])
                 # for a river cell without a reservoir or lake part of the upstream
-                # subsurface flow goes to the river (frac_to_river) and part goes to the
-                # subsurface flow reservoir (1.0 - frac_to_river) upstream nodes with a
-                # reservoir or lake are excluded
+                # subsurface flow goes to the river (flow_fraction_to_river) and part goes
+                # to the subsurface flow reservoir (1.0 - flow_fraction_to_river) upstream
+                # nodes with a reservoir or lake are excluded
                 ssfin[v] = sum_at(
-                    i -> ssf[i] * (1.0 - frac_to_river[i]),
+                    i -> ssf[i] * (1.0 - flow_fraction_to_river[i]),
                     upstream_nodes[n],
                     eltype(ssfin),
                 )
                 to_river[v] = sum_at(
-                    i -> ssf[i] * frac_to_river[i],
+                    i -> ssf[i] * flow_fraction_to_river[i],
                     upstream_nodes[n],
                     eltype(to_river),
                 )

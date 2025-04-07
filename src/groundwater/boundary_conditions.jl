@@ -11,20 +11,20 @@ end
 # Do nothing for a confined aquifer: aquifer can always provide flux
 check_flux(flux::Float64, aquifer::ConfinedAquifer, index::Int; dt = 1.0) = flux
 
-@with_kw struct RiverParameters
+@with_kw struct GwfRiverParameters
     infiltration_conductance::Vector{Float64} # [m² d⁻¹]
     exfiltration_conductance::Vector{Float64} # [m² d⁻¹]
     bottom::Vector{Float64} # [m]
 end
 
-@with_kw struct RiverVariables
+@with_kw struct GwfRiverVariables
     stage::Vector{Float64} # [m]
     storage::Vector{Float64} # [m³]
     flux::Vector{Float64}  # [m³ d⁻¹]
 end
 
-function RiverVariables(n::Int)
-    variables = RiverVariables(;
+function GwfRiverVariables(n::Int)
+    variables = GwfRiverVariables(;
         stage = fill(MISSING_VALUE, n),
         storage = fill(MISSING_VALUE, n),
         flux = fill(MISSING_VALUE, n),
@@ -32,13 +32,13 @@ function RiverVariables(n::Int)
     return variables
 end
 
-@with_kw struct River <: AquiferBoundaryCondition
-    parameters::RiverParameters
-    variables::RiverVariables
+@with_kw struct GwfRiver <: AquiferBoundaryCondition
+    parameters::GwfRiverParameters
+    variables::GwfRiverVariables
     index::Vector{Int} # [-]
 end
 
-function River(
+function GwfRiver(
     dataset::NCDataset,
     config::Config,
     indices::Vector{CartesianIndex{2}},
@@ -53,14 +53,15 @@ function River(
     lens = lens_input_parameter(config, "river_bottom__elevation")
     bottom = ncread(dataset, config, lens; sel = indices, type = Float64)
 
-    parameters = RiverParameters(infiltration_conductance, exfiltration_conductance, bottom)
+    parameters =
+        GwfRiverParameters(infiltration_conductance, exfiltration_conductance, bottom)
     n = length(indices)
-    variables = RiverVariables(n)
-    river = River(parameters, variables, index)
+    variables = GwfRiverVariables(n)
+    river = GwfRiver(parameters, variables, index)
     return river
 end
 
-function flux!(Q::Vector{Float64}, river::River, aquifer::Aquifer; dt = 1.0)
+function flux!(Q::Vector{Float64}, river::GwfRiver, aquifer::Aquifer; dt = 1.0)
     for (i, index) in enumerate(river.index)
         head = aquifer.variables.head[index]
         stage = river.variables.stage[i]

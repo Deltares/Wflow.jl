@@ -13,51 +13,11 @@
 end
 
 "Initialize lake model parameters"
-function LakeParameters(
-    config::Config,
-    dataset::NCDataset,
-    inds_riv::Vector{CartesianIndex{2}},
-    nriv::Int,
-    pits::Matrix{Bool},
-)
-    # read only lake data if lakes true
-    # allow lakes only in river cells
-    # note that these locations are only the lake outlet pixels
-    lens = lens_input(config, "lake_location__count"; optional = false)
-    lakelocs_2d = ncread(dataset, config, lens; type = Int, fill = 0)
-    lakelocs = lakelocs_2d[inds_riv]
-
-    # this holds the same ids as lakelocs, but covers the entire lake
-    lens = lens_input(config, "lake_area__count"; optional = false)
-    lakecoverage_2d = ncread(dataset, config, lens; allow_missing = true)
-    # for each lake, a list of 2D indices, needed for getting the mean precipitation
-    inds_lake_cov = Vector{CartesianIndex{2}}[]
-
-    rev_inds_lake = zeros(Int, size(lakecoverage_2d))
-
-    # construct a map from the rivers to the lakes and
-    # a map of the lakes to the 2D model grid
-    inds_lake_map2river = fill(0, nriv)
-    inds_lake = CartesianIndex{2}[]
-    lakecounter = 0
-    for (i, ind) in enumerate(inds_riv)
-        lake_id = lakelocs[i]
-        if lake_id > 0
-            push!(inds_lake, ind)
-            lakecounter += 1
-            inds_lake_map2river[i] = lakecounter
-            rev_inds_lake[ind] = lakecounter
-
-            # get all indices related to this lake outlet
-            # done in this loop to ensure that the order is equal to the order in the
-            # NaturalLake struct
-            lake_cov = findall(isequal(lake_id), lakecoverage_2d)
-            push!(inds_lake_cov, lake_cov)
-        end
-    end
+function LakeParameters(dataset::NCDataset, config::Config, network::NetworkWaterBody)
+    (; indices_outlet) = network
 
     lens = lens_input_parameter(config, "lake_surface__area"; optional = false)
-    lakearea = ncread(dataset, config, lens; sel = inds_lake, type = Float, fill = 0)
+    lakearea = ncread(dataset, config, lens; sel = indices_outlet, type = Float, fill = 0)
     lens = lens_input_parameter(
         config,
         "lake_water__rating_curve_coefficient";
@@ -66,44 +26,48 @@ function LakeParameters(
     lake_b = ncread(dataset, config, lens; sel = inds_lake, type = Float64, fill = 0)
     lens =
         lens_input_parameter(config, "lake_water__rating_curve_exponent"; optional = false)
-    lake_e = ncread(dataset, config, lens; sel = inds_lake, type = Float64, fill = 0)
+    lake_e = ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
     lens = lens_input_parameter(
         config,
         "lake_water_flow_threshold-level__elevation";
         optional = false,
     )
     lake_threshold =
-        ncread(dataset, config, lens; sel = inds_lake, type = Float64, fill = 0)
+        ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
     lens = lens_input(config, "lake~lower_location__count")
-    linked_lakelocs =
-        ncread(dataset, config, lens; sel = inds_lake, defaults = 0, type = Int, fill = 0)
+    linked_lakelocs = ncread(
+        dataset,
+        config,
+        lens;
+        sel = indices_outlet,
+        defaults = 0,
+        type = Int,
+        fill = 0,
+    )
     lens = lens_input_parameter(
         config,
         "lake_water__storage_curve_type_count";
         optional = false,
     )
-    lake_storfunc = ncread(dataset, config, lens; sel = inds_lake, type = Int, fill = 0)
+    lake_storfunc =
+        ncread(dataset, config, lens; sel = indices_outlet, type = Int, fill = 0)
     lens = lens_input_parameter(
         config,
         "lake_water__rating_curve_type_count";
         optional = false,
     )
-    lake_outflowfunc = ncread(dataset, config, lens; sel = inds_lake, type = Int, fill = 0)
+    lake_outflowfunc =
+        ncread(dataset, config, lens; sel = indices_outlet, type = Int, fill = 0)
     lens = lens_input_parameter(
         config,
         "lake_water_level__initial_elevation";
         optional = false,
     )
-    lake_waterlevel = ncread(dataset, config, lens; sel = inds_lake, type = Float, fill = 0)
+    lake_waterlevel =
+        ncread(dataset, config, lens; sel = indices_outlet, type = Float, fill = 0)
 
-    # for surface water routing lake locations are considered pits in the flow network
-    # all upstream flow goes to the river and flows into the lake
-    pits[inds_lake] .= true
-
-    # This is currently the same length as all river cells, but will be the
-    # length of all lake cells. To do that we need to introduce a mapping.
-    n_lakes = length(inds_lake)
-    lakelocs = lakelocs_2d[inds_lake]
+    n_lakes = length(indices_outlet)
+    lakelocs = get_waterbody_locs(dataset, config, indices_outlet, "lake")
 
     @info "Read `$n_lakes` lake locations."
 
@@ -153,13 +117,8 @@ function LakeParameters(
         sh = sh,
         hq = hq,
     )
-    lake_network = (
-        indices_outlet = inds_lake,
-        indices_coverage = inds_lake_cov,
-        reverse_indices = rev_inds_lake,
-        river_indices = findall(x -> x ≠ 0, inds_lake_map2river),
-    )
-    return parameters, lake_network, inds_lake_map2river, lake_waterlevel, pits
+
+    return parameters, lake_waterlevel
 end
 
 "Struct for storing Lake model parameters"
@@ -213,15 +172,8 @@ end
 end
 
 "Initialize lake model"
-function Lake(
-    dataset::NCDataset,
-    config::Config,
-    indices_river::Vector{CartesianIndex{2}},
-    n_river_cells::Int,
-    pits::Matrix{Bool},
-)
-    parameters, lake_network, inds_lake_map2river, lake_waterlevel, pits =
-        LakeParameters(dataset, config, indices_river, n_river_cells, pits)
+function Lake(dataset::NCDataset, config::Config, network::NetworkWaterBody)
+    parameters, lake_waterlevel = LakeParameters(dataset, config, network)
 
     n_lakes = length(parameters.area)
     variables = LakeVariables(n_lakes, lake_waterlevel)
