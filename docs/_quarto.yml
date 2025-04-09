@@ -91,7 +91,6 @@ website:
           - file: user_guide/warm_states.qmd
           - file: user_guide/model_config.qmd
           - file: user_guide/multi_threading.qmd
-        - file: user_guide/output.qmd
         - text: Integrations
           contents:
           - file: user_guide/bmi.qmd
