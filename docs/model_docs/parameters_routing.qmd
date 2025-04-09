@@ -13,6 +13,14 @@ td, th {
 
 ## Water bodies
 ### Lakes
+
+#### Generic input
+| Standard Name | Description | Unit | Default |
+| ------ | ----- | -- | -- |
+| `lake_location__count` | Outlet of the lakes in which each lake has a unique id | - | - |
+| `lake_area__count` | Lake coverage | - | - |
+: {.striped .hover}
+
 #### Input
 | Standard Name | Description | Unit | Default |
 | ------ | ----- | -- | -- |
@@ -45,6 +53,13 @@ td, th {
 : {.striped .hover}
 
 ### Reservoirs
+#### Generic input {#sec-reservoir-generic-input}
+| Standard Name | Description | Unit | Default |
+| ------ | ----- | -- | -- |
+| `reservoir_location__count` | Outlet of the reservoirs in which each reservoir has a unique id | - | - |
+| `reservoir_area__count` | Reservoir coverage | - | - |
+: {.striped .hover}
+
 #### Input
 | Standard Name | Description | Unit | Default |
 | ------ | ----- | -- | -- |
@@ -233,7 +248,7 @@ td, th {
 : {.striped .hover}
 
 ### River boundary
-#### Input
+#### Input {#input-gwf-river} 
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
 | `river_water__infiltration_conductance` | River bed infiltration conductance | m² day⁻¹ | - |
@@ -241,14 +256,14 @@ td, th {
 | `river_bottom__elevation` | River bottom elevation | m | - |
 : {.striped .hover}
 
-#### Output
+#### Output {#output-gwf-river}
 | Standard Name | Description | Unit |
 | --- | --- | - |
 | `river_water~to-subsurface__volume_flow_rate` | Exchange flux (river to aquifer) | m³ day⁻¹ |
 : {.striped .hover}
 
 ### Drainage boundary
-#### Input
+#### Input {#input-gwf-drainage} 
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
 | `land_drain__elevation` | Drain elevation | m | - |
@@ -256,14 +271,14 @@ td, th {
 | `land_drain_location__flag` | Drain location | - | - |
 : {.striped .hover}
 
-#### Output
+#### Output {#output-gwf-drainage}
 | Standard Name | Description | Unit |
 | --- | --- | - |
 | `land_drain_water~to-subsurface__volume_flow_rate` | Exchange flux (drain to aquifer) | m³ day⁻¹ |
 : {.striped .hover}
 
 ### Recharge boundary
-#### Output
+#### Output {#output-gwf-recharge}
 | Standard Name | Description | Unit |
 | --- | --- | - |
 | `subsurface_water_sat-zone_top__net_recharge_volume_flow_rate` | Net recharge flux | m³ day⁻¹ |

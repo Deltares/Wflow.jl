@@ -11,11 +11,11 @@ $$
 Q_{t+\Delta t} = \frac{Q_t - g A_t \Delta t S_t}{(1+g\Delta t n^2 |Q_t| / (R_t^{4/3} A_t))}
 $$
 
-where $\SIb{Q_{t+\Delta t}}{m^3 s^{-1}}$ is the river flow at time step $t+\Delta t$,
-$\SIb{g}{m s^{-2}}$ is acceleration due to gravity, $\SIb{A_t}{m^2}$ is the cross sectional
+where $\SIb{Q_{t+\Delta t}}{m^3\ s^{-1}}$ is the river flow at time step $t+\Delta t$,
+$\SIb{g}{m\ s^{-2}}$ is acceleration due to gravity, $\SIb{A_t}{m^2}$ is the cross sectional
 flow area at the previous time step, $\SIb{R_t}{m}$ is the hydraulic radius at the previous
-time step, $\SIb{Q_t}{m^3 s^{-1}}$ is the river flow at the previous time step, $S_t$ is the
-water surface slope at the previous time step and $\SIb{n}{m^{-\frac{1}{3}} s}$ is the
+time step, $\SIb{Q_t}{m^3\ s^{-1}}$ is the river flow at the previous time step, $S_t$ is
+the water surface slope at the previous time step and $\SIb{n}{m^{-\frac{1}{3}}\ s}$ is the
 Manning's roughness coefficient.
 
 The momentum equation is applied to each link between two river grid cells, while the
@@ -25,19 +25,19 @@ $$
 h^{t+\Delta t} = h^t + \Delta t \frac{\subtext{Q^{t+\Delta t}}{src} - \subtext{Q^{t+\Delta t}}{dst}}{A}
 $$
 
-where $\SIb{h^{t+\Delta t}}{m}$ is the water depthat time step $t+\Delta t$, $\SIb{h^t}{m}$ is
-the water depth at the previous time step, $\SIb{A}{m^2}$ is the river area and
-$\SIb{\subtext{Q}{src}}{m^3 s^{-1}}$ and $\SIb{\subtext{Q}{dst}}{m^3 s^{-1}}$ represent river
-flow at the upstream and downstream link of the river cell, respectively.
+where $\SIb{h^{t+\Delta t}}{m}$ is the water depthat time step $t+\Delta t$, $\SIb{h^t}{m}$
+is the water depth at the previous time step, $\SIb{A}{m^2}$ is the river area and
+$\SIb{\subtext{Q}{src}}{m^3\ s^{-1}}$ and $\SIb{\subtext{Q}{dst}}{m^3\ s^{-1}}$ represent
+river flow at the upstream and downstream link of the river cell, respectively.
 
 The model time step $\Delta t$ for the local inertial model is estimated based on the
 Courant-Friedrichs-Lewy condition (Bates et al., 2010):
 
 $$
-\Delta t = \alpha \min_i\left(\frac{\Delta x_i}{\sqrt{gh_i}}\right)
+\Delta t = \alpha \min\left(\frac{\Delta x_i}{\sqrt{gh_i}}\right)
 $$
 
-where $\sqrt{gh_i}$ is the wave celerity for river cell $i$ , $\SIb{\Delta x_i}{m}$ is the
+where $\sqrt{gh_i}$ is the wave celerity for river cell $i$, $\SIb{\Delta x_i}{m}$ is the
 river length for river cell $i$ and $\alpha$ is a coefficient (typically between $0.2$ and
 $0.7$) to enhance the stability of the simulation.
 
@@ -53,17 +53,18 @@ h_thresh = 0.1                    # water depth [m] threshold for calculating fl
 floodplain_1d = true              # include 1D floodplain schematization (default = false)
 ```
 
-Two optional constant boundary conditions `riverlength_bc` and `riverdepth_bc` can be provided
-at a river outlet node (or multiple river outlet nodes) through the model parameter netCDF
-file, as follows:
+Two optional constant model boundary conditions for the river length $\SIb{}{m}$ (default
+value of $\SI{10,000}{m}$) and depth $\SIb{}{m}$ (default $\SI{0}{m}$) can be provided at a
+river outlet node (or multiple river outlet nodes) through the model parameter netCDF file,
+as follows:
 
 ```toml
-[input.lateral.river]
-riverlength_bc = "riverlength_bc"   # optional river length [m], default = 1e04
-riverdepth_bc = "riverdepth_bc"     # optional river depth [m], default = 0.0
+[input.static]
+"model_boundary_condition~river__length" = "riverlength_bc"           # optional river length [m], default = 1e04
+"model_boundary_condition~river_bank_water__depth" = "riverdepth_bc"  # optional river depth [m], default = 0.0
 ```
-These boundary conditions are copied to a ghost node (downstream of the river outlet node) in
-the code.
+These boundary conditions and river bed elevation and Manning's roughness coefficient are
+copied to a ghost node (downstream of the river outlet node) in the code.
 
 The optional 1D floodplain schematization is based on provided flood volumes as a function of
 flood depth (per flood depth interval) for each river cell. Wflow calculates from these flood
@@ -86,20 +87,13 @@ the water velocity from the local inertial model is causing the Froude number to
 than $1.0$ , the water velocity (and flow) is reduced in order to maintain a Froude number of
 $1.0$.
 
-The downstream boundary condition basically simulates a zero water depth boundary condition at
-a set distance, as follows. For the downstream boundary condition (ghost point) the river
-width, river bed elevation and Manning's roughness coefficient are copied from the upstream
-river cell. The river length $\SIb{}{m}$ of the boundary cell can be set through the TOML file
-with `riverlength_bc`, and has a default value of $\SI{10}{km}$. The water depth at the
-boundary cell is fixed at $\SI{0.0}{m}$.
-
-Simplified [reservoir and lake](./waterbodies.qmd) models can be included as part of the local
-inertial model for river flow (1D) and river and overland flow combined (see next section).
-Reservoir and lake models are included as a boundary point with zero water depth for both river
-and overland flow. For river flow the reservoir or lake model replaces the local inertial model
-at the reservoir or lake location, and $Q$ is set by the outflow from the reservoir or lake.
-Overland flow at a reservoir or lake location is not allowed to or from the downstream river
-grid cell.
+[Reservoir and lake](./waterbodies.qmd) models can be included as part of the local inertial
+model for river flow (1D) and river and overland flow combined (see next section). Reservoir
+and lake models are included as a boundary point with zero water depth for both river and
+overland flow. For river flow the reservoir or lake model replaces the local inertial model
+at the reservoir or lake location, and river flow $Q$ is set by the outflow from the
+reservoir or lake. Overland flow at a reservoir or lake location is not allowed to or from
+the downstream river grid cell.
 
 ## Overland flow (2D)
 For the simulation of 2D overland flow on a staggered grid the numerical scheme proposed by de
@@ -117,13 +111,13 @@ $$
 where subscripts $i$ and $n$ refer to space and time indices, respectively. Subscript
 $i-\frac{1}{2}$ is to the link between node $i$ and $i-1$, subscript $i+\frac{1}{2}$ is the
 link between node $i$ and node $i+1$, and subscript $i-\frac{3}{2}$ is the link between node
-$i-1$ and node $i-2$. $\SIb{Q}{m^3 s^{-1}}$ is the water discharge, $\SIb{\eta}{m}$ is the
+$i-1$ and node $i-2$. $\SIb{Q}{m^3\ s^{-1}}$ is the water discharge, $\SIb{\eta}{m}$ is the
 water surface elevation, $\SIb{h_f}{m}$ is the water depth between cells,
-$\SIb{n}{m^{-\frac{1}{3}} s}$ is the Manning's roughness coefficient, $\SIb{g}{m s^{-2}}$ is
-acceleration due to gravity, $\SIb{\Delta t}{s}$ is the adaptive model time step, $\SIb{\Delta
-x}{m}$ is the distance between two cells and $\SIb{\Delta y}{m}$ is the flow width. Below the
-staggered grid and variables of the numerical solution in the x-direction, based on Almeida et
-al. (2012):
+$\SIb{n}{m^{-\frac{1}{3}} s}$ is the Manning's roughness coefficient, $\SIb{g}{m\ s^{-2}}$
+is acceleration due to gravity, $\SIb{\Delta t}{s}$ is the adaptive model time step,
+$\SIb{\Delta x}{m}$ is the distance between two cells and $\SIb{\Delta y}{m}$ is the flow
+width. Below the staggered grid and variables of the numerical solution in the x-direction,
+based on Almeida et al. (2012):
 
 ![](../../images/numerical_scheme_almeida.png)
 
@@ -134,7 +128,7 @@ al. (2012) make use of a D4 (four direction) scheme, while here a D8 (eight dire
 is used, in combination with the D4 scheme for 2D overland flow.
 
 In the TOML file the following properties related to the local inertial model with 1D river
-routing and 2D overland flow can be provided for the `sbm` model type:
+routing and 2D overland flow can be provided for the `sbm` and `sbm_gwf` model types:
 
 ```toml
 [model]
@@ -150,17 +144,24 @@ as well as 2D overland flow. The properties `inertial_flow_alpha` and `froude_li
 adaptive model time step $\Delta t$ are explained in more detail in the [River and floodplain
 routing](#river-and-floodplain-routing) section of the local inertial model.
 
-## Inflow
-External water (supply/abstraction) `inflow` $\SIb{}{m^3 s^{-1}}$ can be added to the local
-inertial model for river flow (1D) and river and overland flow combined (1D-2D), as a cyclic
-parameter or as part of forcing (see also [Input
-section](../../user_guide/required_files.qmd)).
+## External inflows
+External inflows $\SIb{}{m^3\ s^{-1}}$ for example water supply or abstractions can to added
+the local inertial model for river flow (1D) and river and overland flow combined (1D-2D),
+as a cyclic parameter or as part of forcing. For example, cyclic inflow can be provided in
+the TOML file as follows:
+
+```toml
+[input.cyclic]
+"river_water_inflow~external__volume_flow_rate" = "river_inflow"
+```
+These inflows are added or subtracted as part of the continuity equation of the local
+inertial model.
 
 ## Abstractions
-Abstractions from the river through the variable `abstraction` $\SIb{}{m^3 s^{-1}}$ are
-possible when water demand and allocation is computed. The variable `abstraction` is set from
-the water demand and allocation module each time step. Abstractions are subtracted as part of
-the continuity equation of the local inertial model.
+Internal abstractions $\SIb{}{m^3\ s^{-1}}$ from the river are possible when water demand and
+allocation is computed. The abstraction is set from the water demand and allocation module
+each time step. Abstractions are subtracted as part of the continuity equation of the local
+inertial model.
 
 ## Multi-Threading
 The local inertial model for river flow (1D) and river and overland flow combined (1D-2D) can

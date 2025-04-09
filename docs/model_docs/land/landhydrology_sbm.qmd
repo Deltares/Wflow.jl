@@ -468,14 +468,14 @@ hydraulic conductivity $\SIb{K_\mathrm{vz}}{mm\ t^{-1}}$ declines with soil dept
 $\SIb{z}{mm}$ in the model according to:
 
 $$
-    K_\mathrm{vz} = K_0 e^{-f z},
+    K_\mathrm{vz} = K_0 e^{-\subtext{f}{Kv} z},
 $$
 
 where $\SIb{K_0}{mm\ t^{-1}}$ is the vertical saturated hydraulic conductivity at the soil
-surface and $\SIb{f}{mm^{-1}}$ is a scaling parameter.
+surface and $\SIb{\subtext{f}{Kv}}{mm^{-1}}$ is a scaling parameter.
 
 The plot below shows the relation between soil depth $z$ and vertical saturated hydraulic
-conductivity $K_\mathrm{vz}$ for different values of $f$.
+conductivity $K_\mathrm{vz}$ for different values of $\subtext{f}{Kv}$.
 
 ```{julia}
 # | code-fold: true
@@ -495,7 +495,7 @@ let
         lines!(ax, kv .* exp.(-fi .* z), -z, label=@sprintf("%.2e", fi))
     end
 
-    Legend(fig[1, 2], ax, L"f")
+    Legend(fig[1, 2], ax, L"f_\mathrm{Kv}")
     fig
 end
 ```
@@ -506,8 +506,8 @@ below the soil surface, and stays constant at and beyond soil depth $z_\mathrm{e
 
 $$
     K_\mathrm{vz} = \begin{cases}
-    K_0e^{-fz} & \text{if $z < \subtext{z}{exp}$}\\
-    K_0e^{-f\subtext{z}{exp}} & \text{if $z \ge \subtext{z}{exp}$}.
+    K_0e^{-\subtext{f}{Kv} z} & \text{if $z < \subtext{z}{exp}$}\\
+    K_0e^{-\subtext{f}{Kv}\subtext{z}{exp}} & \text{if $z \ge \subtext{z}{exp}$}.
     \end{cases}
 $$
 
