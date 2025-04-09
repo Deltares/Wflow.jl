@@ -40,15 +40,15 @@ model (see [here](../getting_started/download_example_models.qmd#wflow_sbm--kine
 Example data for the other model configurations can be found
 [here](../getting_started/download_example_models.qmd).
 
-Description | NC variable name | unit
---- | --- | ---
-Flow direction (1-9) | `wflow_ldd` | -
-Map indicating the river cells (0-1) | `wflow_river` | -
-The length of the river | `wflow_riverlength` | m
-The width of the river | `wflow_riverwidth` | m
-Mask of the basin | `wflow_subcatch` | -
-Land slope | `Slope` | m m$^{-1}$
-River slope | `RiverSlope` | m m$^{-1}$
+Standard Name | Description | NC variable name | unit
+---- | --- | -- | -
+`local_drain_direction` | Flow direction (1-9) | `wflow_ldd` | -
+`river_location__mask` | Map indicating the river cells (0-1) | `wflow_river` | -
+`river__length` | The length of the river | `wflow_riverlength` | m
+`river__width ` | The width of the river | `wflow_riverwidth` | m
+`subcatchment_location__count` | Mask of the basin | `wflow_subcatch` | -
+`land_surface__slope ` | Land slope | `Slope` | m m$^{-1}$
+`river__slope` | River slope | `RiverSlope` | m m$^{-1}$
 
 As mentioned before, the model parameters can also be defined as spatial maps. They can be
 included in the same netCDF file, as long as their variable names are correctly mapped in the
