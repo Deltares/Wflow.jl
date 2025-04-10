@@ -17,13 +17,13 @@ function LakeParameters(dataset::NCDataset, config::Config, network::NetworkWate
     (; indices_outlet) = network
 
     lens = lens_input_parameter(config, "lake_surface__area"; optional = false)
-    lakearea = ncread(dataset, config, lens; sel = indices_outlet, type = Float, fill = 0)
+    lakearea = ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
     lens = lens_input_parameter(
         config,
         "lake_water__rating_curve_coefficient";
         optional = false,
     )
-    lake_b = ncread(dataset, config, lens; sel = inds_lake, type = Float64, fill = 0)
+    lake_b = ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
     lens =
         lens_input_parameter(config, "lake_water__rating_curve_exponent"; optional = false)
     lake_e = ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
@@ -64,7 +64,7 @@ function LakeParameters(dataset::NCDataset, config::Config, network::NetworkWate
         optional = false,
     )
     lake_waterlevel =
-        ncread(dataset, config, lens; sel = indices_outlet, type = Float, fill = 0)
+        ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
 
     n_lakes = length(indices_outlet)
     lakelocs = get_waterbody_locs(dataset, config, indices_outlet, "lake")
@@ -133,12 +133,13 @@ end
 end
 
 "Initialize lake model variables"
-function LakeVariables(n::Int, lake_waterlevel::Vector{Float64})
+function LakeVariables(n::Int, parameters::LakeParameters, lake_waterlevel::Vector{Float64})
+    (; storfunc, area, sh) = parameters
     variables = LakeVariables(;
         waterlevel = lake_waterlevel,
         waterlevel_av = fill(MISSING_VALUE, n),
         inflow = fill(MISSING_VALUE, n),
-        storage = initialize_storage(lake_storfunc, lakearea, lake_waterlevel, sh),
+        storage = initialize_storage(storfunc, area, lake_waterlevel, sh),
         storage_av = fill(MISSING_VALUE, n),
         outflow = fill(MISSING_VALUE, n),
         outflow_av = fill(MISSING_VALUE, n),
