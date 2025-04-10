@@ -73,7 +73,7 @@ snowpack__melting_temperature_threshold = "TTM"
 snowpack__degree-day_coefficient = "Cfmax"
 snowpack__liquid_water_holding_capacity =  "WHC"
 
-soil_layer_water__brooks-corey_epsilon_parameter = "c"
+soil_layer_water__brooks-corey_exponent = "c"
 soil_surface_water__infiltration_reduction_parameter = "cf_soil"
 soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter = "f"
 "soil~compacted_surface_water__infiltration_capacity" = "InfiltCapPath"

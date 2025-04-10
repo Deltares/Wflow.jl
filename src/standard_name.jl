@@ -24,8 +24,7 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         (lens = @optic(_.land.interception.variables.stemflow), unit = "mm dt-1"),
     "vegetation_canopy_water__throughfall_volume_flux" =>
         (lens = @optic(_.land.interception.variables.throughfall), unit = "mm dt-1"),
-    "snowpack__liquid-equivalent_depth" =>
-        (lens = @optic(_.land.snow.variables.swe), unit = "mm"),
+    "snowpack__leq-depth" => (lens = @optic(_.land.snow.variables.swe), unit = "mm"),
     "snowpack_meltwater__volume_flux" =>
         (lens = @optic(_.land.snow.variables.snow_melt), unit = "mm dt-1"),
     "snowpack_water__runoff_volume_flux" =>
@@ -192,7 +191,7 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         (lens = @optic(_.land.snow.variables.snow_water), unit = "mm"),
     "snowpack~dry__leq-depth" =>
         (lens = @optic(_.land.snow.variables.snow_storage), unit = "mm"),
-    "glacier_ice__leq-volume" =>
+    "glacier_ice__leq-depth" =>
         (lens = @optic(_.land.glacier.variables.glacier_store), unit = "mm"),
     "glacier_ice__melt_volume_flux" =>
         (lens = @optic(_.land.glacier.variables.glacier_melt), unit = "mm dt-1"),

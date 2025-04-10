@@ -14,7 +14,7 @@ function GlacierVariables(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    lens = lens_input_parameter(config, "glacier_ice__leq-volume")
+    lens = lens_input_parameter(config, "glacier_ice__initial_leq-depth")
     glacier_store = ncread(
         dataset,
         config,

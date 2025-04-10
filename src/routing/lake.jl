@@ -60,7 +60,7 @@ function LakeParameters(dataset::NCDataset, config::Config, network::NetworkWate
         ncread(dataset, config, lens; sel = indices_outlet, type = Int, fill = 0)
     lens = lens_input_parameter(
         config,
-        "lake_water_level__initial_elevation";
+        "lake_water_surface__initial_elevation";
         optional = false,
     )
     lake_waterlevel =
