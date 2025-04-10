@@ -114,8 +114,9 @@ website:
           - file: model_docs/routing/waterbodies.qmd
           - file: model_docs/routing/gwf.qmd
           - file: model_docs/routing/sediment_flux.qmd
-        - text: List of parameters and variables
+        - text: Model parameters and variables
           contents:
+          - file: model_docs/parameters_intro.qmd
           - file: model_docs/parameters_landhydrology_sbm.qmd
           - file: model_docs/parameters_sediment.qmd
           - file: model_docs/parameters_routing.qmd

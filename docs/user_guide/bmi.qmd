@@ -21,57 +21,60 @@ parameters) is structured (uniform rectilinear), internally wflow works with one
 arrays based on the active grid cells of the 2D model domain.
 
 ## Configuration
-The variables that wflow can exchange through BMI are based on the different model components
-and these components should be listed under the `API` section of the TOML configuration file of
-the model type. Below an example of this `API` section, that lists the `vertical` component and
-different `lateral` components:
+The variables that wflow can exchange through BMI are model state and output variables. The
+standard names of these variables based on [CSDMS Standard
+Names](https://csdms.colorado.edu/wiki/CSDMS_Standard_Names) should be listed below the
+`API` section in the `variables` list of the TOML configuration file. Below an example of
+this `API` section, that lists the variables that wflow can exchange through BMI:
 
 ```toml
 [API]
-components = [
-  "vertical",
-  "lateral.subsurface",
-  "lateral.land",
-  "lateral.river",
-  "lateral.river.reservoir"
+variables = [
+   "river_water__volume_flow_rate",
+   "soil_water_unsat-zone__depth",
+   "soil_water__transpiration_volume_flux",
+   "soil_layer~1_water_unsat-zone__depth",
+   "soil_layer~2_water_unsat-zone__depth",
+   "soil_layer~3_water_unsat-zone__depth",
+   "soil_layer~4_water_unsat-zone__depth",
 ]
 ```
 
-See also:
-```@docs
-Wflow.BMI.initialize
-Wflow.BMI.get_input_var_names
-```
+Variables with a third dimension, for example `layer` as part of the `SBM` `soil` model, are
+exposed as two-dimensional grids through the wflow BMI implementation. For these variables
+the index of this third dimension is required, by adding `k` to the `layer` part of the
+variable standard name (`k` refers to the index of the third dimension): `layer~k`. For
+example, the variable `soil_layer~1_water_unsat-zone__depth` refers to the amount of water
+in the unsaturated store of the first soil layer of the `SBM` `soil` model.
 
-Variables with a third dimension, for example `layer` as part of the vertical `SBM` concept,
-are exposed as two-dimensional grids through the wflow BMI implementation. For these variables
-the index of this third dimension is required, by adding `[k]` to the variable name (`k` refers
-to the index of the third dimension). For example, the variable `vertical.vwc[1]` refers to the
-first soil layer of the vertical `SBM` concept.
+The model state and output variable standard names are provided in the "Model parameters and
+variables" section of the [Model documentation](../model_docs/index.qmd).
 
 ## Couple to a groundwater model
-For the coupling of wflow\_sbm (SBM + kinematic wave) with a groundwater model (e.g. MODFLOW)
-it is possible to run:
+For the coupling of wflow\_sbm with kinematic wave routing for subsurface flow with a
+groundwater model (e.g. MODFLOW) it is possible to run:
 - wflow\_sbm in parts from the BMI, and
-- to switch off the lateral subsurface flow component of wflow\_sbm.
+- to switch off the lateral subsurface kinematic flow component of wflow\_sbm.
 
-The lateral subsurface component of wflow\_sbm is not initialized by wflow when the
-`[input.lateral.subsurface]` part of the TOML file is not included. Then from the BMI it is
-possible to run first the recharge part of SBM:
+The lateral subsurface kinematic flow component of wflow\_sbm is not initialized by wflow when the
+`model` setting `kinematic-wave_subsurface` is set to `false` in the TOML file:
+
+```toml
+[model]
+kinematic-wave_subsurface = false # optional, default is false
+```
+
+Then from the BMI it is possible to run first the recharge part of SBM:
 
 ```julia
 model = BMI.update(model, run="sbm_until_recharge")
 ```
-and to exchange recharge and for example river waterlevels to the groundwater model. After the
-groundwater model update, and the exchange of groundwater head and for example drain and river
-flux to wflow\_sbm, the SBM part that mainly determines exfiltration of water from the
-unsaturated store, and the kinematic wave for river - and overland flow can be run as follows:
+and to exchange recharge and for example river waterlevels to the groundwater model. After
+the groundwater model update, and the exchange of groundwater head and for example drain and
+river flux to wflow\_sbm, the SBM part that mainly determines exfiltration of water from the
+unsaturated store, and the kinematic wave for river - and overland flow can be run as
+follows:
 
 ```julia
 model = BMI.update(model, run="sbm_after_subsurfaceflow")
-```
-
-See also:
-```@docs
-Wflow.BMI.update
 ```
