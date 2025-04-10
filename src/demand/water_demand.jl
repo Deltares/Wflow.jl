@@ -245,7 +245,7 @@ function Paddy(
         optional = false,
     )
     irrigation_trigger = ncread(dataset, config, lens; sel = indices, type = Bool)
-    lens = lens_input_parameter(config, "land~irrigate-paddy__max_irrigation_rate")
+    lens = lens_input_parameter(config, "land~irrigated-paddy__max_irrigation_rate")
     max_irri_rate =
         ncread(dataset, config, lens; sel = indices, defaults = 25.0, type = Float64) .*
         (dt / BASETIMESTEP)
