@@ -26,12 +26,10 @@ soil_layer_water_unsat-zone__depth = "ustorelayerdepth"
 "snowpack~liquid__depth" = "snowwater"
 
 river_water__instantaneous_depth = "h_river"
-river_water__depth = "h_av_river"
 river_water__instantaneous_volume_flow_rate = "q_river"
 
 land_surface_water__instantaneous_volume_flow_rate = "q_land"
 land_surface_water__instantaneous_depth = "h_land"
-land_surface_water__depth = "h_av_land"
 "land_surface_water~paddy__depth" = "h_paddy"
 
 subsurface_water__volume_flow_rate  = "ssf"
@@ -153,23 +151,23 @@ soil_water_sat-zone_top__depth = "zi"
 [output.csv]
 path = "output-piave-demand.csv"
 
-[[output.column]]
+[[output.csv.column]]
 header = "Q"
 map = "river_gauge"
 parameter = "river_water__volume_flow_rate"
 
-[[output.column]]
+[[output.csv.column]]
 header = "Q"
 map = "river_gauge_grdc"
 parameter = "river_water__volume_flow_rate"
 
-[[output.column]]
+[[output.csv.column]]
 coordinate.x = 12.7243
 coordinate.y = 45.5851
 header = "paddy_h_bycoord"
 parameter = "land_surface_water~paddy__depth"
 
-[[output.column]]
+[[output.csv.column]]
 coordinate.x = 12.7243
 coordinate.y = 45.5851
 header = "irri_bycoord"

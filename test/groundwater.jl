@@ -295,17 +295,17 @@ end
         end
 
         @testset "river" begin
-            parameters = Wflow.RiverParameters(;
+            parameters = Wflow.GwfRiverParameters(;
                 infiltration_conductance = [100.0, 100.0],
                 exfiltration_conductance = [200.0, 200.0],
                 bottom = [1.0, 1.0],
             )
-            variables = Wflow.RiverVariables(;
+            variables = Wflow.GwfRiverVariables(;
                 stage = [2.0, 2.0],
                 storage = [20.0, 20.0],
                 flux = [0.0, 0.0],
             )
-            river = Wflow.River(; parameters, variables, index = [1, 3])
+            river = Wflow.GwfRiver(; parameters, variables, index = [1, 3])
             Q = zeros(3)
             Wflow.flux!(Q, river, conf_aqf)
             # infiltration, below bottom, flux is (stage - bottom) * inf_cond, limited by
@@ -364,7 +364,7 @@ end
         variables = Wflow.ConstantHeadVariables(; head = [2.0, 4.0])
         constanthead = Wflow.ConstantHead(; variables, index = [1, 3])
         conductivity_profile = "uniform"
-        gwf = Wflow.GroundwaterFlow{Wflow.Float}(;
+        gwf = Wflow.GroundwaterFlow(;
             aquifer = aquifer,
             connectivity = connectivity,
             constanthead = constanthead,
@@ -388,7 +388,7 @@ end
         variables = Wflow.ConstantHeadVariables(; head = [2.0, 4.0])
         constanthead = Wflow.ConstantHead(; variables, index = [1, 3])
         conductivity_profile = "exponential"
-        gwf = Wflow.GroundwaterFlow{Wflow.Float}(;
+        gwf = Wflow.GroundwaterFlow(;
             aquifer = aquifer,
             connectivity = connectivity,
             constanthead = constanthead,
@@ -448,7 +448,7 @@ end
         # constant head on left boundary, 0 at 0
         variables = Wflow.ConstantHeadVariables(; head = [0.0])
         constanthead = Wflow.ConstantHead(; variables, index = [1])
-        gwf = Wflow.GroundwaterFlow{Wflow.Float}(;
+        gwf = Wflow.GroundwaterFlow(;
             aquifer = aquifer,
             connectivity = connectivity,
             constanthead = constanthead,
@@ -522,7 +522,7 @@ end
         # constant head on left boundary, 0 at 0
         variables = Wflow.ConstantHeadVariables(; head = [0.0])
         constanthead = Wflow.ConstantHead(; variables, index = [1])
-        gwf = Wflow.GroundwaterFlow{Wflow.Float}(;
+        gwf = Wflow.GroundwaterFlow(;
             aquifer = aquifer,
             connectivity = connectivity,
             constanthead = constanthead,
@@ -603,7 +603,7 @@ end
         # Place a well in the middle of the domain
         variables = Wflow.WellVariables(; volumetric_rate = [discharge], flux = [0.0])
         well = Wflow.Well(; variables, index = [reverse_indices[wellrow, wellrow]])
-        gwf = Wflow.GroundwaterFlow{Wflow.Float}(;
+        gwf = Wflow.GroundwaterFlow(;
             aquifer = aquifer,
             connectivity = connectivity,
             constanthead = constanthead,

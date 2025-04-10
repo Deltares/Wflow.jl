@@ -1,87 +1,151 @@
-abstract type AbstractSoilModel{T} end
+abstract type AbstractSoilModel end
 
 "Struct for storing SBM soil model variables"
-@get_units @grid_loc @with_kw struct SbmSoilVariables{T, N}
+@with_kw struct SbmSoilVariables{N}
     # Calculated soil water pressure head h3 of the root water uptake reduction function (Feddes) [cm]
-    h3::Vector{T} | "cm"
+    h3::Vector{Float64}
     # Unsaturated store capacity [mm]
-    ustorecapacity::Vector{T} | "mm"
+    ustorecapacity::Vector{Float64}
     # Amount of water in the unsaturated store, per layer [mm]
-    ustorelayerdepth::Vector{SVector{N, T}} | "mm"
+    ustorelayerdepth::Vector{SVector{N, Float64}}
     # Thickness of unsaturated zone, per layer [mm]
-    ustorelayerthickness::Vector{SVector{N, T}} | "mm"
+    ustorelayerthickness::Vector{SVector{N, Float64}}
     # Saturated store [mm]
-    satwaterdepth::Vector{T} | "mm"
+    satwaterdepth::Vector{Float64}
     # Pseudo-water table depth [mm] (top of the saturated zone)
-    zi::Vector{T} | "mm"
+    zi::Vector{Float64}
     # Number of unsaturated soil layers
-    n_unsatlayers::Vector{Int} | "-"
+    n_unsatlayers::Vector{Int}
     # Transpiration [mm Δt⁻¹]
-    transpiration::Vector{T}
+    transpiration::Vector{Float64}
     # Actual evaporation from unsaturated store [mm Δt⁻¹]
-    ae_ustore::Vector{T}
+    ae_ustore::Vector{Float64}
     # Soil evaporation from unsaturated and saturated store [mm Δt⁻¹]
-    soilevap::Vector{T}
+    soilevap::Vector{Float64}
     # Soil evaporation from saturated store [mm Δt⁻¹]
-    soilevapsat::Vector{T}
+    soilevapsat::Vector{Float64}
     # Actual capillary rise [mm Δt⁻¹]
-    actcapflux::Vector{T}
+    actcapflux::Vector{Float64}
     # Actual transpiration from saturated store [mm Δt⁻¹]
-    actevapsat::Vector{T}
+    actevapsat::Vector{Float64}
     # Total actual evapotranspiration [mm Δt⁻¹]
-    actevap::Vector{T}
+    actevap::Vector{Float64}
     # Actual infiltration into the unsaturated zone [mm Δt⁻¹]
-    actinfilt::Vector{T}
+    actinfilt::Vector{Float64}
     # Actual infiltration non-compacted fraction [mm Δt⁻¹]
-    actinfiltsoil::Vector{T}
+    actinfiltsoil::Vector{Float64}
     # Actual infiltration compacted fraction [mm Δt⁻¹]
-    actinfiltpath::Vector{T}
+    actinfiltpath::Vector{Float64}
     # Actual infiltration (compacted and the non-compacted areas) [mm Δt⁻¹]
-    infiltsoilpath::Vector{T}
+    infiltsoilpath::Vector{Float64}
     # Infiltration excess water [mm Δt⁻¹]
-    infiltexcess::Vector{T}
+    infiltexcess::Vector{Float64}
     # Water that cannot infiltrate due to saturated soil (saturation excess) [mm Δt⁻¹]
-    excesswater::Vector{T}
+    excesswater::Vector{Float64}
     # Water exfiltrating during saturation excess conditions [mm Δt⁻¹]
-    exfiltsatwater::Vector{T}
+    exfiltsatwater::Vector{Float64}
     # Water exfiltrating from unsaturated store because of change in water table [mm Δt⁻¹]
-    exfiltustore::Vector{T}
+    exfiltustore::Vector{Float64}
     # Excess water for non-compacted fraction [mm Δt⁻¹]
-    excesswatersoil::Vector{T}
+    excesswatersoil::Vector{Float64}
     # Excess water for compacted fraction [mm Δt⁻¹]
-    excesswaterpath::Vector{T}
+    excesswaterpath::Vector{Float64}
     # Total surface runoff from infiltration and saturation excess (excluding actual open water evaporation) [mm Δt⁻¹]
-    runoff::Vector{T}
+    runoff::Vector{Float64}
     # Net surface runoff (surface runoff - actual open water evaporation) [mm Δt⁻¹]
-    net_runoff::Vector{T}
+    net_runoff::Vector{Float64}
     # Volumetric water content [-] per soil layer (including theta_r and saturated zone)
-    vwc::Vector{SVector{N, T}} | "-"
+    vwc::Vector{SVector{N, Float64}}
     # Volumetric water content [%] per soil layer (including theta_r and saturated zone)
-    vwc_perc::Vector{SVector{N, T}} | "%"
+    vwc_perc::Vector{SVector{N, Float64}}
     # Root water storage [mm] in unsaturated and saturated zone (excluding theta_r)
-    rootstore::Vector{T} | "mm"
+    rootstore::Vector{Float64}
     # Volumetric water content [-] in root zone (including theta_r and saturated zone)
-    vwc_root::Vector{T} | "-"
+    vwc_root::Vector{Float64}
     # Volumetric water content [%] in root zone (including theta_r and saturated zone)
-    vwc_percroot::Vector{T} | "%"
+    vwc_percroot::Vector{Float64}
     # Amount of available water in the unsaturated zone [mm]
-    ustoredepth::Vector{T} | "mm"
+    ustoredepth::Vector{Float64}
     # Downward flux from unsaturated to saturated zone [mm Δt⁻¹]
-    transfer::Vector{T}
+    transfer::Vector{Float64}
     # Net recharge to saturated store [mm Δt⁻¹]
-    recharge::Vector{T}
+    recharge::Vector{Float64}
     # Actual leakage from saturated store [mm Δt⁻¹]
-    actleakage::Vector{T}
+    actleakage::Vector{Float64}
     # Total water storage (excluding floodplain volume, lakes and reservoirs) [mm]
-    total_storage::Vector{T} | "mm"
+    total_storage::Vector{Float64}
     # Top soil temperature [ᵒC]
-    tsoil::Vector{T} | "ᵒC"
+    tsoil::Vector{Float64}
     # Soil infiltration reduction factor (when soil is frozen) [-]
-    f_infiltration_reduction::Vector{T} | "-"
+    f_infiltration_reduction::Vector{Float64}
+end
+
+"Struct for storing SBM soil model parameters"
+@with_kw struct SbmSoilParameters{N, M, Kv}
+    # Maximum number of soil layers [-]
+    maxlayers::Int
+    # Number of soil layers [-]
+    nlayers::Vector{Int}
+    # Saturated water content (porosity) [-]
+    theta_s::Vector{Float64}
+    # Residual water content [-]
+    theta_r::Vector{Float64}
+    # Soilwater capacity [mm]
+    soilwatercapacity::Vector{Float64}
+    # Muliplication factor [-] applied to kv_z (vertical flow)
+    kvfrac::Vector{SVector{N, Float64}}
+    # Air entry pressure [cm] of soil (Brooks-Corey)
+    hb::Vector{Float64}
+    # Soil thickness [mm]
+    soilthickness::Vector{Float64}
+    # Thickness of soil layers [mm]
+    act_thickl::Vector{SVector{N, Float64}}
+    # Cumulative sum of soil layers [mm], starting at soil surface (0)
+    sumlayers::Vector{SVector{M, Float64}}
+    # Infiltration capacity of the compacted areas [mm Δt⁻¹]
+    infiltcappath::Vector{Float64}
+    # Soil infiltration capacity [mm Δt⁻¹]
+    infiltcapsoil::Vector{Float64}
+    # Maximum leakage [mm Δt⁻¹] from saturated zone
+    maxleakage::Vector{Float64}
+    # Parameter [mm] controlling capillary rise
+    cap_hmax::Vector{Float64}
+    # Coefficient [-] controlling capillary rise
+    cap_n::Vector{Float64}
+    # Brooks-Corey power coefﬁcient [-] for each soil layer
+    c::Vector{SVector{N, Float64}}
+    # Soil temperature smooth factor [-]
+    w_soil::Vector{Float64}
+    # Controls soil infiltration reduction factor when soil is frozen [-]
+    cf_soil::Vector{Float64}
+    # Fraction of compacted area  [-]
+    pathfrac::Vector{Float64}
+    # Controls how roots are linked to water table [-]
+    rootdistpar::Vector{Float64}
+    # Fraction of the root length density in each soil layer [-]
+    rootfraction::Vector{SVector{N, Float64}}
+    # Soil water pressure head h1 of the root water uptake reduction function (Feddes) [cm]
+    h1::Vector{Float64}
+    # Soil water pressure head h2 of the root water uptake reduction function (Feddes) [cm]
+    h2::Vector{Float64}
+    # Soil water pressure head h3_high of the root water uptake reduction function (Feddes) [cm]
+    h3_high::Vector{Float64}
+    # Soil water pressure head h3_low of the root water uptake reduction function (Feddes) [cm]
+    h3_low::Vector{Float64}
+    # Soil water pressure head h4 of the root water uptake reduction function (Feddes) [cm]
+    h4::Vector{Float64}
+    # Root water uptake reduction at soil water pressure head h1 (0.0 or 1.0) [-]
+    alpha_h1::Vector{Float64}
+    # Soil fraction [-]
+    soil_fraction::Vector{Float64}
+    # Vertical hydraulic conductivity profile type
+    kv_profile::Kv
+    # Vegetation parameter set
+    vegetation_parameter_set::VegetationParameters
 end
 
 "Initialize SBM soil model variables"
-function SbmSoilVariables(n, parameters)
+function SbmSoilVariables(n::Int, parameters::SbmSoilParameters)
     (;
         soilthickness,
         maxlayers,
@@ -96,8 +160,8 @@ function SbmSoilVariables(n, parameters)
     ustorelayerthickness = set_layerthickness.(zi, sumlayers, act_thickl)
     n_unsatlayers = number_of_active_layers.(ustorelayerthickness)
 
-    vwc = fill(mv, maxlayers, n)
-    vwc_perc = fill(mv, maxlayers, n)
+    vwc = fill(MISSING_VALUE, maxlayers, n)
+    vwc_perc = fill(MISSING_VALUE, maxlayers, n)
 
     vars = SbmSoilVariables(;
         ustorelayerdepth = zero(act_thickl),
@@ -106,60 +170,60 @@ function SbmSoilVariables(n, parameters)
         satwaterdepth,
         zi,
         n_unsatlayers,
-        transpiration = fill(mv, n),
-        h3 = fill(mv, n),
-        ae_ustore = fill(mv, n),
-        soilevap = fill(mv, n),
-        soilevapsat = fill(mv, n),
-        actcapflux = fill(mv, n),
-        actevapsat = fill(mv, n),
-        actevap = fill(mv, n),
-        f_infiltration_reduction = fill(Float(1), n),
-        actinfilt = fill(mv, n),
-        actinfiltsoil = fill(mv, n),
-        actinfiltpath = fill(mv, n),
-        infiltsoilpath = fill(mv, n),
-        infiltexcess = fill(mv, n),
-        excesswater = fill(mv, n),
-        exfiltsatwater = fill(mv, n),
-        exfiltustore = fill(mv, n),
-        excesswatersoil = fill(mv, n),
-        excesswaterpath = fill(mv, n),
-        runoff = fill(mv, n),
-        net_runoff = fill(mv, n),
+        transpiration = fill(MISSING_VALUE, n),
+        h3 = fill(MISSING_VALUE, n),
+        ae_ustore = fill(MISSING_VALUE, n),
+        soilevap = fill(MISSING_VALUE, n),
+        soilevapsat = fill(MISSING_VALUE, n),
+        actcapflux = fill(MISSING_VALUE, n),
+        actevapsat = fill(MISSING_VALUE, n),
+        actevap = fill(MISSING_VALUE, n),
+        f_infiltration_reduction = fill(1.0, n),
+        actinfilt = fill(MISSING_VALUE, n),
+        actinfiltsoil = fill(MISSING_VALUE, n),
+        actinfiltpath = fill(MISSING_VALUE, n),
+        infiltsoilpath = fill(MISSING_VALUE, n),
+        infiltexcess = fill(MISSING_VALUE, n),
+        excesswater = fill(MISSING_VALUE, n),
+        exfiltsatwater = fill(MISSING_VALUE, n),
+        exfiltustore = fill(MISSING_VALUE, n),
+        excesswatersoil = fill(MISSING_VALUE, n),
+        excesswaterpath = fill(MISSING_VALUE, n),
+        runoff = fill(MISSING_VALUE, n),
+        net_runoff = fill(MISSING_VALUE, n),
         vwc = svectorscopy(vwc, Val{maxlayers}()),
         vwc_perc = svectorscopy(vwc_perc, Val{maxlayers}()),
-        rootstore = fill(mv, n),
-        vwc_root = fill(mv, n),
-        vwc_percroot = fill(mv, n),
-        ustoredepth = fill(mv, n),
-        transfer = fill(mv, n),
-        recharge = fill(mv, n),
-        actleakage = fill(mv, n),
-        tsoil = fill(Float(10.0), n),
-        total_storage = zeros(Float, n), # Set the total water storage from initialized values
+        rootstore = fill(MISSING_VALUE, n),
+        vwc_root = fill(MISSING_VALUE, n),
+        vwc_percroot = fill(MISSING_VALUE, n),
+        ustoredepth = fill(MISSING_VALUE, n),
+        transfer = fill(MISSING_VALUE, n),
+        recharge = fill(MISSING_VALUE, n),
+        actleakage = fill(MISSING_VALUE, n),
+        tsoil = fill(10.0, n),
+        total_storage = zeros(Float64, n), # Set the total water storage from initialized values
     )
     return vars
 end
 
 "Struct for storing SBM soil model boundary conditions"
-@get_units @grid_loc @with_kw struct SbmSoilBC{T}
+@with_kw struct SbmSoilBC
     # Water flux at the soil surface [mm Δt⁻¹]
-    water_flux_surface::Vector{T}
+    water_flux_surface::Vector{Float64}
     # Potential transpiration rate [mm Δt⁻¹]
-    potential_transpiration::Vector{T}
+    potential_transpiration::Vector{Float64}
     # Potential soil evaporation rate [mm Δt⁻¹]
-    potential_soilevaporation::Vector{T}
+    potential_soilevaporation::Vector{Float64}
 end
 
 "Initialize SBM soil model boundary conditions"
 function SbmSoilBC(
-    n;
-    water_flux_surface::Vector{T} = fill(mv, n),
-    potential_transpiration::Vector{T} = fill(mv, n),
-    potential_soilevaporation::Vector{T} = fill(mv, n),
-) where {T}
-    return SbmSoilBC{T}(;
+    n::Int;
+    water_flux_surface::Vector{Float64} = fill(MISSING_VALUE, n),
+    potential_transpiration::Vector{Float64} = fill(MISSING_VALUE, n),
+    potential_soilevaporation::Vector{Float64} = fill(MISSING_VALUE, n),
+)
+    return SbmSoilBC(;
         water_flux_surface = water_flux_surface,
         potential_transpiration = potential_transpiration,
         potential_soilevaporation = potential_soilevaporation,
@@ -167,49 +231,49 @@ function SbmSoilBC(
 end
 
 "Exponential depth profile of vertical hydraulic conductivity at the soil surface"
-@get_units @grid_loc struct KvExponential{T}
+struct KvExponential
     # Vertical hydraulic conductivity [mm Δt⁻¹] at soil surface
-    kv_0::Vector{T}
+    kv_0::Vector{Float64}
     # A scaling parameter [mm⁻¹] (controls exponential decline of kv_0)
-    f::Vector{T} | "mm-1"
+    f::Vector{Float64}
 end
 
 "Exponential constant depth profile of vertical hydraulic conductivity"
-@get_units @grid_loc struct KvExponentialConstant{T}
-    exponential::KvExponential{T}
+struct KvExponentialConstant
+    exponential::KvExponential
     # Depth [mm] from soil surface for which exponential decline of kv_0 is valid
-    z_exp::Vector{T} | "mm"
+    z_exp::Vector{Float64}
 end
 
 "Layered depth profile of vertical hydraulic conductivity"
-@get_units @grid_loc struct KvLayered{T, N}
+struct KvLayered{N}
     # Vertical hydraulic conductivity [mm Δt⁻¹] per soil layer
-    kv::Vector{SVector{N, T}}
+    kv::Vector{SVector{N, Float64}}
 end
 
 "Layered exponential depth profile of vertical hydraulic conductivity"
-@get_units @grid_loc struct KvLayeredExponential{T, N}
+struct KvLayeredExponential{N}
     # A scaling parameter [mm⁻¹] (controls exponential decline of kv_0)
-    f::Vector{T} | "mm-1"
+    f::Vector{Float64}
     # Vertical hydraulic conductivity [mm Δt⁻¹] per soil layer
-    kv::Vector{SVector{N, T}}
-    # Number of soil layers with vertical hydraulic conductivity value `kv`
-    nlayers_kv::Vector{Int} | "-"
+    kv::Vector{SVector{N, Float64}}
+    # Number of soil layers [-] with vertical hydraulic conductivity value `kv`
+    nlayers_kv::Vector{Int}
     # Depth [mm] from soil surface for which layered profile is valid
-    z_layered::Vector{T} | "mm"
+    z_layered::Vector{Float64}
 end
 
 "Initialize SBM soil model hydraulic conductivity depth profile"
 function sbm_kv_profiles(
-    dataset,
-    config,
-    indices,
-    kv_0,
-    f,
-    maxlayers,
-    nlayers,
-    sumlayers,
-    dt,
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+    kv_0::Vector{Float64},
+    f::Vector{Float64},
+    maxlayers::Int,
+    nlayers::Vector{Int},
+    sumlayers::Vector,
+    dt::Second,
 )
     kv_profile_type =
         get(config.model, "saturated_hydraulic_conductivity_profile", "exponential")::String
@@ -222,7 +286,7 @@ function sbm_kv_profiles(
             "soil_vertical_saturated_hydraulic_conductivity_profile~exponential_below-surface__depth";
             optional = false,
         )
-        z_exp = ncread(dataset, config, lens; sel = indices, type = Float)
+        z_exp = ncread(dataset, config, lens; sel = indices, type = Float64)
         exp_profile = KvExponential(kv_0, f)
         kv_profile = KvExponentialConstant(exp_profile, z_exp)
     elseif kv_profile_type == "layered" || kv_profile_type == "layered_exponential"
@@ -237,9 +301,9 @@ function sbm_kv_profiles(
                 lens;
                 sel = indices,
                 defaults = 1000.0,
-                type = Float,
+                type = Float64,
                 dimname = :layer,
-            ) .* (dt / basetimestep)
+            ) .* (dt / BASETIMESTEP)
         if size(kv, 1) != maxlayers
             parname = lens(config)
             size1 = size(kv, 1)
@@ -253,7 +317,7 @@ function sbm_kv_profiles(
                 "soil_vertical_saturated_hydraulic_conductivity_profile~layered_below-surface__depth";
                 optional = false,
             )
-            z_layered = ncread(dataset, config, lens; sel = indices, type = Float)
+            z_layered = ncread(dataset, config, lens; sel = indices, type = Float64)
             nlayers_kv = fill(0, n)
             for i in eachindex(nlayers_kv)
                 layers = @view sumlayers[i][2:nlayers[i]]
@@ -277,76 +341,19 @@ function sbm_kv_profiles(
     return kv_profile
 end
 
-"Struct for storing SBM soil model parameters"
-@get_units @grid_loc @with_kw struct SbmSoilParameters{T, N, M, Kv}
-    # Maximum number of soil layers [-]
-    maxlayers::Int
-    # Number of soil layers
-    nlayers::Vector{Int} | "-"
-    # Saturated water content (porosity) [-]
-    theta_s::Vector{T} | "-"
-    # Residual water content [-]
-    theta_r::Vector{T} | "-"
-    # Soilwater capacity [mm]
-    soilwatercapacity::Vector{T} | "mm"
-    # Muliplication factor [-] applied to kv_z (vertical flow)
-    kvfrac::Vector{SVector{N, T}} | "-"
-    # Air entry pressure [cm] of soil (Brooks-Corey)
-    hb::Vector{T} | "cm"
-    # Soil thickness [mm]
-    soilthickness::Vector{T} | "mm"
-    # Thickness of soil layers [mm]
-    act_thickl::Vector{SVector{N, T}} | "mm"
-    # Cumulative sum of soil layers [mm], starting at soil surface (0)
-    sumlayers::Vector{SVector{M, T}} | "mm"
-    # Infiltration capacity of the compacted areas [mm Δt⁻¹]
-    infiltcappath::Vector{T}
-    # Soil infiltration capacity [mm Δt⁻¹]
-    infiltcapsoil::Vector{T}
-    # Maximum leakage [mm Δt⁻¹] from saturated zone
-    maxleakage::Vector{T}
-    # Parameter [mm] controlling capillary rise
-    cap_hmax::Vector{T} | "mm"
-    # Coefficient [-] controlling capillary rise
-    cap_n::Vector{T} | "-"
-    # Brooks-Corey power coefﬁcient [-] for each soil layer
-    c::Vector{SVector{N, T}} | "-"
-    # Soil temperature smooth factor [-]
-    w_soil::Vector{T} | "-"
-    # Controls soil infiltration reduction factor when soil is frozen [-]
-    cf_soil::Vector{T} | "-"
-    # Fraction of compacted area  [-]
-    pathfrac::Vector{T} | "-"
-    # Controls how roots are linked to water table [-]
-    rootdistpar::Vector{T} | "-"
-    # Fraction of the root length density in each soil layer [-]
-    rootfraction::Vector{SVector{N, T}} | "-"
-    # Soil water pressure head h1 of the root water uptake reduction function (Feddes) [cm]
-    h1::Vector{T} | "cm"
-    # Soil water pressure head h2 of the root water uptake reduction function (Feddes) [cm]
-    h2::Vector{T} | "cm"
-    # Soil water pressure head h3_high of the root water uptake reduction function (Feddes) [cm]
-    h3_high::Vector{T} | "cm"
-    # Soil water pressure head h3_low of the root water uptake reduction function (Feddes) [cm]
-    h3_low::Vector{T} | "cm"
-    # Soil water pressure head h4 of the root water uptake reduction function (Feddes) [cm]
-    h4::Vector{T} | "cm"
-    # Root water uptake reduction at soil water pressure head h1 (0.0 or 1.0) [-]
-    alpha_h1::Vector{T} | "-"
-    # Soil fraction [-]
-    soil_fraction::Vector{T} | "-"
-    # Vertical hydraulic conductivity profile type
-    kv_profile::Kv
-    # Vegetation parameter set
-    vegetation_parameter_set::VegetationParameters{T}
-end
-
 "Initialize SBM soil model parameters"
-function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, dt)
-    config_thicknesslayers = get(config.model, "thicknesslayers", Float[])
+function SbmSoilParameters(
+    dataset::NCDataset,
+    config::Config,
+    vegetation_parameter_set::VegetationParameters,
+    indices::Vector{CartesianIndex{2}},
+    dt::Second,
+)
+    config_thicknesslayers = get(config.model, "thicknesslayers", Float64[])
 
     if length(config_thicknesslayers) > 0
-        thicknesslayers = SVector(Tuple(push!(Float.(config_thicknesslayers), mv)))
+        thicknesslayers =
+            SVector(Tuple(push!(Float64.(config_thicknesslayers), MISSING_VALUE)))
         cum_depth_layers = pushfirst(cumsum(thicknesslayers), 0.0)
         maxlayers = length(thicknesslayers) # max number of soil layers
     else
@@ -357,87 +364,89 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
 
     lens = lens_input_parameter(config, "soil_surface_temperature__weight_coefficient")
     w_soil =
-        ncread(dataset, config, lens; sel = indices, defaults = 0.1125, type = Float) .*
-        (dt / basetimestep)
+        ncread(dataset, config, lens; sel = indices, defaults = 0.1125, type = Float64) .*
+        (dt / BASETIMESTEP)
 
     lens =
         lens_input_parameter(config, "soil_surface_water__infiltration_reduction_parameter")
-    cf_soil = ncread(dataset, config, lens; sel = indices, defaults = 0.038, type = Float)
+    cf_soil = ncread(dataset, config, lens; sel = indices, defaults = 0.038, type = Float64)
 
     # soil parameters
     lens = lens_input_parameter(config, "soil_water__saturated_volume_fraction")
-    theta_s = ncread(dataset, config, lens; sel = indices, defaults = 0.6, type = Float)
+    theta_s = ncread(dataset, config, lens; sel = indices, defaults = 0.6, type = Float64)
 
     lens = lens_input_parameter(config, "soil_water__residual_volume_fraction")
-    theta_r = ncread(dataset, config, lens; sel = indices, defaults = 0.01, type = Float)
+    theta_r = ncread(dataset, config, lens; sel = indices, defaults = 0.01, type = Float64)
 
     lens = lens_input_parameter(
         config,
         "soil_surface_water__vertical_saturated_hydraulic_conductivity",
     )
     kv_0 =
-        ncread(dataset, config, lens; sel = indices, defaults = 3000.0, type = Float) .*
-        (dt / basetimestep)
+        ncread(dataset, config, lens; sel = indices, defaults = 3000.0, type = Float64) .*
+        (dt / BASETIMESTEP)
 
     lens = lens_input_parameter(
         config,
         "soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter",
     )
-    f = ncread(dataset, config, lens; sel = indices, defaults = 0.001, type = Float)
+    f = ncread(dataset, config, lens; sel = indices, defaults = 0.001, type = Float64)
 
     lens = lens_input_parameter(config, "soil_water__air_entry_pressure_head")
-    hb = ncread(dataset, config, lens; sel = indices, defaults = -10.0, type = Float)
+    hb = ncread(dataset, config, lens; sel = indices, defaults = -10.0, type = Float64)
 
     lens = lens_input_parameter(config, "vegetation_root__feddes_critial_pressure_head_h~1")
-    h1 = ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float)
+    h1 = ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float64)
 
     lens = lens_input_parameter(config, "vegetation_root__feddes_critial_pressure_head_h~2")
-    h2 = ncread(dataset, config, lens; sel = indices, defaults = -100.0, type = Float)
+    h2 = ncread(dataset, config, lens; sel = indices, defaults = -100.0, type = Float64)
 
     lens = lens_input_parameter(
         config,
         "vegetation_root__feddes_critial_pressure_head_h~3~high",
     )
-    h3_high = ncread(dataset, config, lens; sel = indices, defaults = -400.0, type = Float)
+    h3_high =
+        ncread(dataset, config, lens; sel = indices, defaults = -400.0, type = Float64)
 
     lens = lens_input_parameter(
         config,
         "vegetation_root__feddes_critial_pressure_head_h~3~low",
     )
-    h3_low = ncread(dataset, config, lens; sel = indices, defaults = -1000.0, type = Float)
+    h3_low =
+        ncread(dataset, config, lens; sel = indices, defaults = -1000.0, type = Float64)
 
     lens = lens_input_parameter(config, "vegetation_root__feddes_critial_pressure_head_h~4")
-    h4 = ncread(dataset, config, lens; sel = indices, defaults = -15849.0, type = Float)
+    h4 = ncread(dataset, config, lens; sel = indices, defaults = -15849.0, type = Float64)
 
     lens = lens_input_parameter(
         config,
         "vegetation_root__feddes_critial_pressure_head_h~1_reduction_coefficient",
     )
-    alpha_h1 = ncread(dataset, config, lens; sel = indices, defaults = 1.0, type = Float)
+    alpha_h1 = ncread(dataset, config, lens; sel = indices, defaults = 1.0, type = Float64)
 
     lens = lens_input_parameter(config, "soil__thickness")
     soilthickness =
-        ncread(dataset, config, lens; sel = indices, defaults = 2000.0, type = Float)
+        ncread(dataset, config, lens; sel = indices, defaults = 2000.0, type = Float64)
 
     lens =
         lens_input_parameter(config, "soil~compacted_surface_water__infiltration_capacity")
     infiltcappath =
-        ncread(dataset, config, lens; sel = indices, defaults = 10.0, type = Float) .*
-        (dt / basetimestep)
+        ncread(dataset, config, lens; sel = indices, defaults = 10.0, type = Float64) .*
+        (dt / BASETIMESTEP)
 
     lens = lens_input_parameter(
         config,
         "soil~non-compacted_surface_water__infiltration_capacity",
     )
     infiltcapsoil =
-        ncread(dataset, config, lens; sel = indices, defaults = 100.0, type = Float) .*
-        (dt / basetimestep)
+        ncread(dataset, config, lens; sel = indices, defaults = 100.0, type = Float64) .*
+        (dt / BASETIMESTEP)
 
     lens =
         lens_input_parameter(config, "soil_water_sat-zone_bottom__max_leakage_volume_flux")
     maxleakage =
-        ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float) .*
-        (dt / basetimestep)
+        ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float64) .*
+        (dt / BASETIMESTEP)
 
     lens = lens_input_parameter(config, "soil_layer_water__brooks-corey_epsilon_parameter")
     c = ncread(
@@ -446,7 +455,7 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
         lens;
         sel = indices,
         defaults = 10.0,
-        type = Float,
+        type = Float64,
         dimname = :layer,
     )
     if size(c, 1) != maxlayers
@@ -465,7 +474,7 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
         lens;
         sel = indices,
         defaults = 1.0,
-        type = Float,
+        type = Float64,
         dimname = :layer,
     )
     if size(kvfrac, 1) != maxlayers
@@ -475,23 +484,24 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
     end
     # fraction compacted area
     lens = lens_input_parameter(config, "soil~compacted__area_fraction")
-    pathfrac = ncread(dataset, config, lens; sel = indices, defaults = 0.01, type = Float)
+    pathfrac = ncread(dataset, config, lens; sel = indices, defaults = 0.01, type = Float64)
 
     # vegetation parameters
     lens = lens_input_parameter(config, "soil_root~wet__sigmoid_function_shape_parameter")
     rootdistpar =
-        ncread(dataset, config, lens; sel = indices, defaults = -500.0, type = Float)
+        ncread(dataset, config, lens; sel = indices, defaults = -500.0, type = Float64)
     lens = lens_input_parameter(
         config,
         "soil_water_sat-zone_top_capillary-rise__max_water-table_depth",
     )
-    cap_hmax = ncread(dataset, config, lens; sel = indices, defaults = 2000.0, type = Float)
+    cap_hmax =
+        ncread(dataset, config, lens; sel = indices, defaults = 2000.0, type = Float64)
 
     lens = lens_input_parameter(
         config,
         "soil_water_sat-zone_top_capillary-rise__averianov_exponent",
     )
-    cap_n = ncread(dataset, config, lens; sel = indices, defaults = 2.0, type = Float)
+    cap_n = ncread(dataset, config, lens; sel = indices, defaults = 2.0, type = Float64)
 
     act_thickl = set_layerthickness.(soilthickness, (cum_depth_layers,), (thicknesslayers,))
     sumlayers = @. pushfirst(cumsum(act_thickl), 0.0)
@@ -507,13 +517,19 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
             haskey(config.input.static, par_name)
         if do_root_fraction
             lens = lens_input_parameter(config, par_name; optional = false)
-            rootfraction =
-                ncread(dataset, config, lens; sel = indices, type = Float, dimname = :layer)
+            rootfraction = ncread(
+                dataset,
+                config,
+                lens;
+                sel = indices,
+                type = Float64,
+                dimname = :layer,
+            )
         else
             n = length(indices)
             (; rootingdepth) = vegetation_parameter_set
             # default root fraction in case of multiple soil layers
-            rootfraction = zeros(Float, maxlayers, n)
+            rootfraction = zeros(Float64, maxlayers, n)
             for i in 1:n
                 if rootingdepth[i] > 0.0
                     for k in 1:maxlayers
@@ -530,7 +546,7 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
         end
     else
         # for the case of 1 soil layer
-        rootfraction = ones(Float, maxlayers, n)
+        rootfraction = ones(Float64, maxlayers, n)
     end
 
     kv_profile = sbm_kv_profiles(
@@ -576,7 +592,7 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
         c = svectorscopy(c, Val{maxlayers}()),
         w_soil,
         cf_soil,
-        soil_fraction = fill(mv, n),
+        soil_fraction = fill(MISSING_VALUE, n),
         kv_profile,
         vegetation_parameter_set,
     )
@@ -584,14 +600,20 @@ function SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, d
 end
 
 "SBM soil model"
-@with_kw struct SbmSoilModel{T, N, M, Kv} <: AbstractSoilModel{T}
-    boundary_conditions::SbmSoilBC{T}
-    parameters::SbmSoilParameters{T, N, M, Kv}
-    variables::SbmSoilVariables{T, N}
+@with_kw struct SbmSoilModel{N, M, Kv} <: AbstractSoilModel
+    boundary_conditions::SbmSoilBC
+    parameters::SbmSoilParameters{N, M, Kv}
+    variables::SbmSoilVariables{N}
 end
 
 "Initialize SBM soil model"
-function SbmSoilModel(dataset, config, vegetation_parameter_set, indices, dt)
+function SbmSoilModel(
+    dataset::NCDataset,
+    config::Config,
+    vegetation_parameter_set::VegetationParameters,
+    indices::Vector{CartesianIndex{2}},
+    dt::Second,
+)
     n = length(indices)
     params = SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, dt)
     vars = SbmSoilVariables(n, params)
@@ -601,14 +623,18 @@ function SbmSoilModel(dataset, config, vegetation_parameter_set, indices, dt)
 end
 
 "Return soil fraction"
-function soil_fraction!(soil, runoff, glacier)
+function soil_fraction!(
+    soil::AbstractSoilModel,
+    glacier::AbstractGlacierModel,
+    parameters::LandParameters,
+)
     (; canopygapfraction) = soil.parameters.vegetation_parameter_set
     (; soil_fraction) = soil.parameters
-    (; waterfrac, riverfrac) = runoff.parameters
+    (; water_fraction, river_fraction) = parameters
     glacier_fraction = get_glacier_fraction(glacier)
 
     @. soil_fraction =
-        max(canopygapfraction - waterfrac - riverfrac - glacier_fraction, 0.0)
+        max(canopygapfraction - water_fraction - river_fraction - glacier_fraction, 0.0)
     return nothing
 end
 
@@ -640,14 +666,19 @@ function update_boundary_conditions!(
 end
 
 "Update soil temperature of the SBM soil model for a single timestep"
-function soil_temperature!(model::SbmSoilModel, snow::AbstractSnowModel, temperature)
+function soil_temperature!(
+    model::SbmSoilModel,
+    snow::AbstractSnowModel,
+    temperature::Vector{Float64},
+)
     v = model.variables
     p = model.parameters
     @. v.tsoil = soil_temperature(v.tsoil, p.w_soil, temperature)
     return nothing
 end
 
-soil_temperature!(model::SbmSoilModel, snow::NoSnowModel, temperature) = nothing
+soil_temperature!(model::SbmSoilModel, snow::NoSnowModel, temperature::Vector{Float64}) =
+    nothing
 
 "Update total available water in the unsaturated zone of the SBM soil model for a single timestep"
 function ustoredepth!(model::SbmSoilModel)
@@ -827,7 +858,7 @@ Update total `transpiration`, transpiration from the unsaturated store `ae_ustor
 saturated store `actevapsat` of the SBM soil model for a single timestep. Also unsaturated
 storage `ustorelayerdepth` and the saturated store `satwaterdepth` are updated.
 """
-function transpiration!(model::SbmSoilModel, dt; ust = false)
+function transpiration!(model::SbmSoilModel, dt::Float64; ust = false)
     (; potential_transpiration) = model.boundary_conditions
     v = model.variables
     p = model.parameters
@@ -841,7 +872,7 @@ function transpiration!(model::SbmSoilModel, dt; ust = false)
         for k in 1:v.n_unsatlayers[i]
             vwc = max(
                 v.ustorelayerdepth[i][k] / v.ustorelayerthickness[i][k],
-                Float(0.0000001),
+                Float64(0.0000001),
             )
             head = head_brooks_corey(vwc, p.theta_s[i], p.theta_r[i], p.c[i][k], p.hb[i])
             alpha = rwu_reduction_feddes(
@@ -884,9 +915,9 @@ function transpiration!(model::SbmSoilModel, dt; ust = false)
         end
 
         # transpiration from saturated store
-        wetroots = scurve(v.zi[i], rootingdepth[i], Float(1.0), p.rootdistpar[i])
+        wetroots = scurve(v.zi[i], rootingdepth[i], Float64(1.0), p.rootdistpar[i])
         alpha = rwu_reduction_feddes(
-            Float(0.0),
+            Float64(0.0),
             p.h1[i],
             p.h2[i],
             v.h3[i],
@@ -1063,8 +1094,8 @@ end
         model::SbmSoilModel,
         atmospheric_forcing::AtmosphericForcing,
         external_models::NamedTuple,
-        config,
-        dt,
+        config::Config,
+        dt::Float64,
     )
 
 Update the SBM soil model (infiltration, unsaturated zone flow, soil evaporation and
@@ -1074,8 +1105,8 @@ function update!(
     model::SbmSoilModel,
     atmospheric_forcing::AtmosphericForcing,
     external_models::NamedTuple,
-    config,
-    dt,
+    config::Config,
+    dt::Float64,
 )
     soilinfreduction = get(config.model, "soilinfreduction", false)::Bool
     modelsnow = get(config.model, "snow", false)::Bool

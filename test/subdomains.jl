@@ -1,19 +1,19 @@
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 
-model = Wflow.initialize_sbm_model(config)
+model = Wflow.Model(config)
 
-(; network) = model
+(; domain) = model
 
 min_sto_river = get(config.model, "min_streamorder_river", 6)
 min_sto_land = get(config.model, "min_streamorder_land", 5)
-index_pit = [network.land.order[end]]
+index_pit = [domain.land.network.order[end]]
 @test min_sto_river == 6
 
-streamorder = Wflow.stream_order(network.land.graph, network.land.order)
+streamorder = Wflow.stream_order(domain.land.network.graph, domain.land.network.order)
 subbas_order, indices_subbas, topo_subbas = Wflow.kinwave_set_subdomains(
-    network.land.graph,
-    network.land.order,
+    domain.land.network.graph,
+    domain.land.network.order,
     index_pit,
     streamorder,
     min_sto_land,
@@ -24,8 +24,8 @@ Wflow.close_files(model; delete_output = false)
 if nthreads() == 1
     @testset "Nonparallel subdomains kinematic wave (nthreads = 1)" begin
         @test subbas_order == [[1]]
-        @test indices_subbas == [[1:length(network.land.order);]]
-        @test topo_subbas == [network.land.order]
+        @test indices_subbas == [[1:length(domain.land.network.order);]]
+        @test topo_subbas == [domain.land.network.order]
     end
 else
     @testset "Parallel subdomains kinematic wave (nthreads > 1)" begin

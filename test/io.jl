@@ -204,7 +204,7 @@ abs_path_forcing = Wflow.input_path(config, config.input.path_forcing)
 config.input["path_forcing"] = abs_path_forcing
 @test isabspath(config.input.path_forcing)
 
-model = Wflow.initialize_sbm_model(config)
+model = Wflow.Model(config)
 Wflow.advance!(model.clock)
 Wflow.load_dynamic_input!(model)
 
@@ -217,26 +217,28 @@ Wflow.load_dynamic_input!(model)
     @test "snow" in ncvars
     @test "q_av_river" in ncvars
     @test "q_av_land" in ncvars
-    @test length(writer.state_parameters) == 14
+    @test length(writer.state_parameters) == 12
 end
 
 @testset "warm states" begin
-    map = Wflow.standard_name_map(model.land)
-    @test map["reservoir_water__instantaneous_volume"](model)[1] ≈ 3.2807224993363418e7
-    @test map["soil_water_sat-zone__depth"](model)[9115] ≈ 477.13548089422125
-    @test map["snowpack~dry__leq-depth"](model)[5] ≈ 11.019233179897599
-    @test map["soil_surface__temperature"](model)[5] ≈ 0.21814478119608938
-    @test map["soil_layer_water_unsat-zone__depth"](model)[50063][1] ≈ 9.969116007201725
-    @test map["snowpack~liquid__depth"](model)[5] ≈ 0.0
-    @test map["vegetation_canopy_water__depth"](model)[50063] ≈ 0.0
-    @test map["soil_water_sat-zone_top__depth"](model)[50063] ≈ 296.8028609104624
-    @test map["subsurface_water__volume_flow_rate"](model)[10606] ≈ 39.972334552895816
-    @test map["river_water__instantaneous_volume_flow_rate"](model)[149] ≈ 53.48673634956338
-    @test map["river_water__instantaneous_depth"](model)[149] ≈ 1.167635369628945
+    nt = Wflow.standard_name_map(model.land)
+    @test nt["reservoir_water__instantaneous_volume"].lens(model)[1] ≈ 3.2807224993363418e7
+    @test nt["soil_water_sat-zone__depth"].lens(model)[9115] ≈ 477.13548089422125
+    @test nt["snowpack~dry__leq-depth"].lens(model)[5] ≈ 11.019233179897599
+    @test nt["soil_surface__temperature"].lens(model)[5] ≈ 0.21814478119608938
+    @test nt["soil_layer_water_unsat-zone__depth"].lens(model)[50063][1] ≈ 9.969116007201725
+    @test nt["snowpack~liquid__depth"].lens(model)[5] ≈ 0.0
+    @test nt["vegetation_canopy_water__depth"].lens(model)[50063] ≈ 0.0
+    @test nt["soil_water_sat-zone_top__depth"].lens(model)[50063] ≈ 296.8028609104624
+    @test nt["subsurface_water__volume_flow_rate"].lens(model)[10606] ≈ 39.972334552895816
+    @test nt["river_water__instantaneous_volume_flow_rate"].lens(model)[149] ≈
+          53.48673634956338
+    @test nt["river_water__instantaneous_depth"].lens(model)[149] ≈ 1.167635369628945
     @test model.routing.river_flow.variables.storage[149] ≈ 63854.60119358985
-    @test map["land_surface_water__instantaneous_volume_flow_rate"](model)[2075] ≈
+    @test nt["land_surface_water__instantaneous_volume_flow_rate"].lens(model)[2075] ≈
           3.285909284322251
-    @test map["land_surface_water__instantaneous_depth"](model)[2075] ≈ 0.052076262033771775
+    @test nt["land_surface_water__instantaneous_depth"].lens(model)[2075] ≈
+          0.052076262033771775
     @test model.routing.overland_flow.variables.storage[2075] ≈ 29920.754983235012
 end
 
@@ -252,19 +254,19 @@ end
     @test_throws ErrorException Wflow.reducerfunction("other")
 end
 
-@testset "network" begin
-    (; network) = model
-    (; indices, reverse_indices) = model.network.land
+@testset "domain" begin
+    (; domain) = model
+    (; indices, reverse_indices) = domain.land.network
     # test if the reverse index reverses the index
     linear_index = 100
     cartesian_index = indices[linear_index]
     @test cartesian_index === CartesianIndex(168, 8)
     @test reverse_indices[cartesian_index] === linear_index
     # test active indices of different domains
-    floodplain_inds = Wflow.active_indices(network, "floodplain_water__volume")
-    river_inds = Wflow.active_indices(network, "river_water__volume")
-    reservoir_inds = Wflow.active_indices(network, "reservoir_water__volume")
-    land_inds = Wflow.active_indices(network, "soil_surface_water__runoff_volume_flux")
+    floodplain_inds = Wflow.active_indices(domain, "floodplain_water__volume")
+    river_inds = Wflow.active_indices(domain, "river_water__volume")
+    reservoir_inds = Wflow.active_indices(domain, "reservoir_water__volume")
+    land_inds = Wflow.active_indices(domain, "soil_surface_water__runoff_volume_flux")
     @test floodplain_inds == river_inds
     @test length(land_inds) == 50063
     @test land_inds[100] == CartesianIndex(168, 8)
@@ -295,7 +297,7 @@ config.input.static["soil_layer_water__brooks-corey_epsilon_parameter"] = Dict(
     "netcdf" => Dict("variable" => Dict("name" => "c")),
 )
 
-model = Wflow.initialize_sbm_model(config)
+model = Wflow.Model(config)
 Wflow.advance!(model.clock)
 Wflow.load_dynamic_input!(model)
 
@@ -345,7 +347,7 @@ end
         data, data_dim_order = Wflow.read_dims(ds["wflow_dem"], (x = :, y = :))
         @test data isa Matrix{Union{Float32, Missing}}
         @test data[end, end] === missing
-        @test data[125, 1] ≈ 647.187f0
+        @test data[125, 1] ≈ 647.187
         @test data_dim_order == (:x, :y)
 
         @test Wflow.dim_directions(ds, (:x, :y)) === (x = true, y = false)
@@ -472,8 +474,8 @@ end
     @test "vegetation_canopy_water__depth" in required_states
     @test "subsurface_water__volume_flow_rate" in required_states
     @test "river_water__instantaneous_volume_flow_rate" in required_states
-    @test "river_water__depth" in required_states
-    @test "land_surface_water__depth" in required_states
+    @test "reservoir_water__instantaneous_volume" in required_states
+    @test "snowpack~liquid__depth" in required_states
     @test !("lake_water_level__elevation" in required_states)
 
     # Adding an unused state the see if the right warning message is thrown
@@ -500,6 +502,6 @@ end
     @test "vegetation_canopy_water__depth" in required_states
     @test "subsurface_water__hydraulic_head" in required_states
     @test "river_water__instantaneous_volume_flow_rate" in required_states
-    @test "river_water__depth" in required_states
-    @test "land_surface_water__depth" in required_states
+    @test "river_water__instantaneous_depth" in required_states
+    @test "land_surface_water__instantaneous_depth" in required_states
 end

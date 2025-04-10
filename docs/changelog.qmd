@@ -26,13 +26,16 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   variables are initialized with `NaN` values.
 - Limit flux from `River` boundary of `GroundwaterFlow` to unconfined aquifer based on
   available river storage (from river flow routing).
+- Fixed computation of flow width in diagonal flow direction for model type `sediment`
+  and fixed the computation of the remaining surface flow width (kinematic wave overland
+  flow) for river cells in the diagonal flow direction. For both cases the width should be
+  based on land area and flow length (area conservative).
 
 ### Changed
 - Removed vertical concepts `HBV` and `FLEXTopo`.
-- Removed metadata macros `exchange` and `grid_type`. The macro `grid_type` is not required
-  because this functionality is already part of `BMI`. The macro `exchange` is replaced by a
-  function used by `BMI`. Remaining metadata macros `get_units` and `grid_loc` are only used
-  by `BMI`.
+- Removed metadata macros (used by `BMI`). The variable unit is moved to the standard
+  name mapping dictionaries, and the grid element type information is moved to a `BMI`
+  helper function.
 - Refactor the vertical `SBM` concept: divide the long struct `SBM` into different model
   components for interception, snow, glacier, (open water) runoff, soil, water demand and
   allocation stored in the struct `LandHydrologySBM`. Additionally, the atmospheric forcing
@@ -63,6 +66,15 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   need to specify the internal cyclic and forcing variables in a list (only an external name
   mapping is required), state variables are listed below the `[state.variables]` TOML
   section and use of more clearly defined TOML output sections.
+- Replaced the variables that can exchange through `BMI` (list of model components) by a
+  list of standard names below the `[API]` TOML section.
+- Use the instantaneous routing water depth `h` at the previous model time step to limit
+  open water evaporation and to set the river `stage` of the `GroundwaterFlow` model for the
+  current model time step, as it is more accurate then using the average water depth `h_av`
+  at the previous model time step.
+- Removed `LoopVectorization` dependency because of compilation issues and the risk of
+  deprecation for newer Julia versions. The `tturbo` macro has been replaced by the `batch`
+  macro of `Polyester`, performance loss is acceptable.
 
 ### Added
 - Support direct output of snow and glacier melt, and add computation of snow water

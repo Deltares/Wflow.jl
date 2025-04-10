@@ -118,9 +118,11 @@ function output_path(config::Config, path::AbstractString)
     return combined_path(config, dir, path)
 end
 
-"Extract netCDF variable name `ncname` from `var` (type `String` or `Config`). If `var` has
+"""
+Extract netCDF variable name `ncname` from `var` (type `String` or `Config`). If `var` has
 type `Config`, either `scale`, `offset` and an optional `index` are expected (with `ncname`)
-or a `value` (uniform value), these are stored as part of `NamedTuple` `modifier`."
+or a `value` (uniform value), these are stored as part of `NamedTuple` `modifier`.
+"""
 function ncvar_name_modifier(var; config = nothing)
     ncname = nothing
     modifier = (scale = 1.0, offset = 0.0, value = nothing, index = nothing)
@@ -209,27 +211,33 @@ mover_params = (
     "land_surface_water__potential_evaporation_volume_flux",
 )
 
+"""
+    load_fixed_forcing!(model)
+    load_fixed_forcing!(model::AbstractModel{<:SedimentModel})
+
+Get fixed netCDF forcing input."
+"""
 function load_fixed_forcing!(model)
-    (; reader, land, network, config) = model
+    (; reader, land, domain, config) = model
     (; forcing_parameters) = reader
 
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
     do_lakes = get(config.model, "lakes", false)::Bool
 
-    reverse_indices = network.land.reverse_indices
+    reverse_indices = domain.land.network.reverse_indices
     if do_reservoirs
-        sel_reservoirs = network.reservoir.indices_coverage
+        sel_reservoirs = domain.reservoir.network.indices_coverage
         param_res = get_param_res(model)
     end
     if do_lakes
-        sel_lakes = network.lake.indices_coverage
+        sel_lakes = domain.lake.network.indices_coverage
         param_lake = get_param_lake(model)
     end
 
     for (par, ncvar) in forcing_parameters
         if ncvar.name === nothing
             val = ncvar.value * ncvar.scale + ncvar.offset
-            lens = standard_name_map(land)[par]
+            lens = standard_name_map(land)[par].lens
             param_vector = lens(model)
             param_vector .= val
             # set fixed precipitation and evaporation over the lakes and reservoirs and put
@@ -254,26 +262,43 @@ function load_fixed_forcing!(model)
     return nothing
 end
 
-"Get dynamic netCDF input for the given time"
+function load_fixed_forcing!(model::AbstractModel{<:SedimentModel})
+    (; reader, land) = model
+    (; forcing_parameters) = reader
+    for (par, ncvar) in forcing_parameters
+        if ncvar.name === nothing
+            val = ncvar.value * ncvar.scale + ncvar.offset
+            lens = standard_name_map(land)[par].lens
+            param_vector = lens(model)
+            param_vector .= val
+        end
+    end
+    return nothing
+end
+
+"""
+    update_forcing!(model)
+    update_forcing!(model::AbstractModel{<:SedimentModel})
+
+Get dynamic netCDF input for the given time. Wflow expects `right` labeling of the forcing
+time interval, e.g. daily precipitation at 01-02-2000 00:00:00 is the accumulated total
+precipitation between 01-01-2000 00:00:00 and 01-02-2000 00:00:00.
+"""
 function update_forcing!(model)
-    (; clock, reader, land, network, config) = model
+    (; clock, reader, land, domain, config) = model
     (; dataset, dataset_times, forcing_parameters) = reader
 
     do_reservoirs = get(config.model, "reservoirs", false)::Bool
     do_lakes = get(config.model, "lakes", false)::Bool
 
     if do_reservoirs
-        sel_reservoirs = network.reservoir.indices_coverage
+        sel_reservoirs = domain.reservoir.network.indices_coverage
         param_res = get_param_res(model)
     end
     if do_lakes
-        sel_lakes = network.lake.indices_coverage
+        sel_lakes = domain.lake.network.indices_coverage
         param_lake = get_param_lake(model)
     end
-
-    # Wflow expects `right` labeling of the forcing time interval, e.g. daily precipitation
-    # at 01-02-2000 00:00:00 is the accumulated total precipitation between 01-01-2000
-    # 00:00:00 and 01-02-2000 00:00:00.
 
     # load from netCDF into the model according to the mapping
     for (par, ncvar) in forcing_parameters
@@ -306,9 +331,38 @@ function update_forcing!(model)
                 end
             end
         end
-        lens = standard_name_map(land)[par]
+        lens = standard_name_map(land)[par].lens
         param_vector = lens(model)
-        sel = active_indices(network, par)
+        sel = active_indices(domain, par)
+        data_sel = data[sel]
+        if any(ismissing, data_sel)
+            print(par)
+            msg = "Forcing data has missing values on active model cells for $(ncvar.name)"
+            throw(ArgumentError(msg))
+        end
+        param_vector .= data_sel
+    end
+
+    return nothing
+end
+
+function update_forcing!(model::AbstractModel{<:SedimentModel})
+    (; clock, reader, land, domain) = model
+    (; dataset, dataset_times, forcing_parameters) = reader
+
+    for (par, ncvar) in forcing_parameters
+        ncvar.name === nothing && continue
+
+        time = convert(eltype(dataset_times), clock.time)
+        data = get_at(dataset, ncvar.name, dataset_times, time)
+
+        if ncvar.scale != 1.0 || ncvar.offset != 0.0
+            data .= data .* ncvar.scale .+ ncvar.offset
+        end
+
+        lens = standard_name_map(land)[par].lens
+        param_vector = lens(model)
+        sel = active_indices(domain, par)
         data_sel = data[sel]
         if any(ismissing, data_sel)
             print(par)
@@ -347,7 +401,7 @@ end
 
 "Get cyclic netCDF input for the given time"
 function update_cyclic!(model)
-    (; clock, reader, land, network) = model
+    (; clock, reader, land, domain) = model
     (; cyclic_dataset, cyclic_times, cyclic_parameters) = reader
 
     # pick up the data that is valid for the past model time step
@@ -363,9 +417,9 @@ function update_cyclic!(model)
                 error("Could not find applicable cyclic timestep for $month_day")
             # load from netCDF into the model according to the mapping
             data = get_at(cyclic_dataset, ncvar.name, i)
-            lens = standard_name_map(land)[par]
+            lens = standard_name_map(land)[par].lens
             param_vector = lens(model)
-            sel = active_indices(network, par)
+            sel = active_indices(domain, par)
             param_vector .= data[sel]
             if ncvar.scale != 1.0 || ncvar.offset != 0.0
                 param_vector .= param_vector .* ncvar.scale .+ ncvar.offset
@@ -376,7 +430,7 @@ function update_cyclic!(model)
 end
 
 """
-    nc_handles::Dict{String, NCDataset{Nothing}}
+    NC_HANDLES::Dict{String, NCDataset{Nothing}}
 
 For each netCDF file that will be opened for writing, store an entry in this Dict from the
 absolute path of the file to the NCDataset. This allows us to close the NCDataset if we try
@@ -386,20 +440,20 @@ https://github.com/Alexander-Barth/NCDatasets.jl/issues/106
 Note that using this will prevent automatic garbage collection and thus closure of the
 NCDataset.
 """
-const nc_handles = Dict{String, NCDataset{Nothing}}()
+const NC_HANDLES = Dict{String, NCDataset{Nothing}}()
 
 "Safely create a netCDF file, even if it has already been opened for creation"
 function create_tracked_netcdf(path)
     abs_path = abspath(path)
     # close existing NCDataset if it exists
-    if haskey(nc_handles, abs_path)
+    if haskey(NC_HANDLES, abs_path)
         # fine if it was already closed
-        close(nc_handles[abs_path])
+        close(NC_HANDLES[abs_path])
     end
     # create directory if needed
     mkpath(dirname(path))
     ds = NCDataset(path, "c")
-    nc_handles[abs_path] = ds
+    NC_HANDLES[abs_path] = ds
     return ds
 end
 
@@ -436,7 +490,7 @@ function setup_scalar_netcdf(
             attrib = ["cf_role" => "timeseries_id"],
         )
         v = if haskey(standard_name_map(land), nc.par)
-            lens = standard_name_map(land)[nc.par]
+            lens = standard_name_map(land)[nc.par].lens
             lens(modelmap)
         else
             param(modelmap, nc.par)
@@ -897,7 +951,7 @@ function out_map(ncnames_dict, modelmap)
     (; land) = modelmap
     for (par, ncname) in ncnames_dict
         A = if haskey(standard_name_map(land), par)
-            lens = standard_name_map(land)[par]
+            lens = standard_name_map(land)[par].lens
             lens(modelmap)
         else
             param(modelmap, par)
@@ -907,30 +961,24 @@ function out_map(ncnames_dict, modelmap)
     return output_map
 end
 
-function get_reducer_func(col, rev_inds, args...)
+function get_reducer_func(col, domain, args...)
     parameter = col["parameter"]
     if occursin("reservoir", parameter)
-        reducer_func = reducer(col, rev_inds.reservoir, args...)
+        reducer_func = reducer(col, domain.reservoir.network.reverse_indices, args...)
     elseif occursin("lake", parameter)
-        reducer_func = reducer(col, rev_inds.lake, args...)
+        reducer_func = reducer(col, domain.lake.network.reverse_indices, args...)
     elseif occursin("river", parameter)
-        reducer_func = reducer(col, rev_inds.river, args...)
+        reducer_func = reducer(col, domain.river.network.reverse_indices, args...)
     elseif occursin("drain", parameter)
-        reducer_func = reducer(col, rev_inds.drain, args...)
+        reducer_func = reducer(col, domain.drain.network.reverse_indices, args...)
     else
-        reducer_func = reducer(col, rev_inds.land, args...)
+        reducer_func = reducer(col, domain.land.network.reverse_indices, args...)
     end
 end
 
-function prepare_writer(
-    config,
-    modelmap,
-    rev_inds,
-    x_nc,
-    y_nc,
-    nc_static;
-    extra_dim = nothing,
-)
+function prepare_writer(config, modelmap, domain, nc_static; extra_dim = nothing)
+    x_coords = read_x_axis(nc_static)
+    y_coords = read_y_axis(nc_static)
     sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
 
     calendar = get(config.time, "calendar", "standard")::String
@@ -948,8 +996,8 @@ function prepare_writer(
         output_map = out_map(output_ncnames, modelmap)
         ds = setup_grid_netcdf(
             nc_path,
-            x_nc,
-            y_nc,
+            x_coords,
+            y_coords,
             output_map,
             calendar,
             time_units,
@@ -972,14 +1020,14 @@ function prepare_writer(
         @info "Create a state output netCDF file `$nc_state_path`."
         ds_outstate = setup_grid_netcdf(
             nc_state_path,
-            x_nc,
-            y_nc,
+            x_coords,
+            y_coords,
             state_map,
             calendar,
             time_units,
             extra_dim,
             sizeinmetres;
-            float_type = Float,
+            float_type = Float64,
         )
     else
         ds_outstate = nothing
@@ -1010,8 +1058,15 @@ function prepare_writer(
         nc_scalar = []
         for var in config.output.netcdf_scalar.variable
             parameter = var["parameter"]
-            reducer_func =
-                get_reducer_func(var, rev_inds, x_nc, y_nc, config, nc_static, "netCDF")
+            reducer_func = get_reducer_func(
+                var,
+                domain,
+                x_coords,
+                y_coords,
+                config,
+                nc_static,
+                "netCDF",
+            )
             push!(nc_scalar, (parameter = parameter, reducer = reducer_func))
         end
     else
@@ -1039,7 +1094,7 @@ function prepare_writer(
         for col in config.output.csv.column
             parameter = col["parameter"]
             reducer_func =
-                get_reducer_func(col, rev_inds, x_nc, y_nc, config, nc_static, "CSV")
+                get_reducer_func(col, domain, x_coords, y_coords, config, nc_static, "CSV")
             push!(csv_cols, (parameter = parameter, reducer = reducer_func))
         end
     else
@@ -1074,7 +1129,7 @@ function write_netcdf_timestep(model, dataset)
     time_index = add_time(dataset, clock.time)
     for (nt, nc) in zip(writer.nc_scalar, config.output.netcdf_scalar.variable)
         A = if haskey(standard_name_map(land), nt.parameter)
-            lens = standard_name_map(land)[nt.parameter]
+            lens = standard_name_map(land)[nt.parameter].lens
             lens(model)
         else
             param(model, nt.parameter)
@@ -1106,14 +1161,14 @@ end
 
 "Write a new timestep with grid data to a netCDF file"
 function write_netcdf_timestep(model, dataset, parameters)
-    (; clock, network) = model
+    (; clock, domain) = model
 
     time_index = add_time(dataset, clock.time)
 
-    buffer = zeros(Union{Float, Missing}, size(model.network.land.reverse_indices))
+    buffer = zeros(Union{Float64, Missing}, domain.land.network.modelsize)
     for (key, val) in parameters
         (; par, vector) = val
-        sel = active_indices(network, par)
+        sel = active_indices(domain, par)
         # write the active cells vector to the 2d buffer matrix
         elemtype = eltype(vector)
         if elemtype <: AbstractFloat
@@ -1256,8 +1311,14 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset, fileformat)
         reducer_name = get(col, "reducer", "only")
         f = reducerfunction(reducer_name)
         lens = lens_input(config, mapname; optional = false)
-        map_2d =
-            ncread(dataset, config, lens; type = Union{Int, Missing}, allow_missing = true)
+        map_2d = ncread(
+            dataset,
+            config,
+            lens;
+            type = Union{Int, Missing},
+            allow_missing = true,
+            logging = false,
+        )
         @info "Adding scalar output for a map with a reducer function." fileformat param mapname reducer_name
         ids = unique(skipmissing(map_2d))
         # from id to list of internal indices
@@ -1324,7 +1385,7 @@ function write_csv_row(model)
     print(io, string(clock.time))
     for (nt, col) in zip(writer.csv_cols, config.output.csv.column)
         A = if haskey(standard_name_map(land), nt.parameter)
-            lens = standard_name_map(land)[nt.parameter]
+            lens = standard_name_map(land)[nt.parameter].lens
             lens(model)
         else
             param(model, nt.parameter)
@@ -1379,7 +1440,7 @@ end
 
 "Read a rating curve from CSV into a NamedTuple of vectors"
 function read_sh_csv(path)
-    data, header = readdlm(path, ',', Float; header = true)
+    data, header = readdlm(path, ',', Float64; header = true)
     names = vec(uppercase.(header))
     idx_h = findfirst(==("H"), names)
     idx_s = findfirst(==("S"), names)
@@ -1393,14 +1454,14 @@ end
 
 "Read a specific storage curve from CSV into a NamedTuple of vectors"
 function read_hq_csv(path)
-    data = readdlm(path, ',', Float; skipstart = 1)
+    data = readdlm(path, ',', Float64; skipstart = 1)
     # Q is a matrix with 365 columns, one for each day in the year
     return (H = data[:, 1], Q = data[:, 2:end])
 end
 
 # these represent the type of the rating curve and specific storage data
-const SH = NamedTuple{(:H, :S), Tuple{Vector{Float}, Vector{Float}}}
-const HQ = NamedTuple{(:H, :Q), Tuple{Vector{Float}, Matrix{Float}}}
+const SH = NamedTuple{(:H, :S), Tuple{Vector{Float64}, Vector{Float64}}}
+const HQ = NamedTuple{(:H, :Q), Tuple{Vector{Float64}, Matrix{Float64}}}
 
 is_increasing(v) = last(v) > first(v)
 
@@ -1650,7 +1711,7 @@ end
 "Get `index` for dimension name `layer` based on `config` (TOML file)"
 function get_index_dimension(var, config::Config, dim_value)::Int
     if haskey(var, "layer")
-        v = get(config.model, "thicknesslayers", Float[])
+        v = get(config.model, "thicknesslayers", Float64[])
         inds = collect(1:(length(v) + 1))
         index = inds[dim_value]
     else
@@ -1701,4 +1762,36 @@ function check_config_output(
         haskey(config.output[file_description], "path") &&
         haskey(config.output[file_description], key)
     return output_settings
+end
+
+"Return routing types for the river, land and subsurface domains"
+function get_routing_types(config::Config)
+    land =
+        get_options(config.model, "land_routing", ROUTING_OPTIONS, "kinematic-wave")::String
+
+    river = get_options(
+        config.model,
+        "river_routing",
+        ROUTING_OPTIONS,
+        "kinematic-wave",
+    )::String
+
+    kinematic_wave =
+        config.model.type == "sbm" &&
+        get(config.model, "kinematic-wave_subsurface", true)::Bool
+    subsurface = kinematic_wave ? "kinematic-wave" : "groundwaterflow"
+
+    return (; land, river, subsurface)
+end
+
+"Return waterbody (reservoir or lake) locations"
+function get_waterbody_locs(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+    waterbody_type::String,
+)
+    lens = lens_input(config, "$(waterbody_type)_location__count"; optional = false)
+    locs = ncread(dataset, config, lens; sel = indices, type = Int, fill = 0)
+    return locs
 end

@@ -1,5 +1,5 @@
 # map JSON function name to Struct (bmi_service.jl)
-const map_structs = Dict(
+const MAP_STRUCTS = Dict(
     "initialize" => Initialize,
     "get_component_name" => GetComponentName,
     "get_input_item_count" => GetInputItemCount,
@@ -65,7 +65,7 @@ end
 
 "Validate JSON request against mapped Struct"
 function valid_request(json)
-    for f in fieldnames(map_structs[json.fn])
+    for f in fieldnames(MAP_STRUCTS[json.fn])
         if f ∉ keys(json)
             return f
             break
@@ -154,10 +154,10 @@ function start(port::Int)
             json = JSON3.read(req; allow_inf = true)
             @info "Received request to run function `$(json.fn)`..."
 
-            if haskey(map_structs, json.fn)
+            if haskey(MAP_STRUCTS, json.fn)
                 v = valid_request(json)
                 if isnothing(v)
-                    f = StructTypes.constructfrom(map_structs[json.fn], json)
+                    f = StructTypes.constructfrom(MAP_STRUCTS[json.fn], json)
                     wflow_bmi(socket, handler, f)
                 else
                     err = (

@@ -114,8 +114,8 @@ gravel__d50_diameter = "dm_gravel"
 [model]
 reinit = true
 run_river_model = true
-dolake = false
-doreservoir = true # cannot use reservoirs as in sbm because then states/volume need to be added
+lakes = false
+reservoirs = true # cannot use reservoirs as in sbm because then states/volume need to be added
 rainfall_erosion = "answers" # Rainfall erosion equation: ["answers", "eurosem"]
 overland_flow_erosion = "answers" # Overland flow erosion equation: ["answers"]
 land_transport = "yalinpart" # Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]

@@ -1,100 +1,110 @@
-abstract type AbstractSnowModel{T} end
+abstract type AbstractSnowModel end
 
 "Struct for storing snow model variables"
-@get_units @grid_loc @with_kw struct SnowVariables{T}
+@with_kw struct SnowVariables
     # Snow storage [mm]
-    snow_storage::Vector{T} | "mm"
+    snow_storage::Vector{Float64}
     # Liquid water content in the snow pack [mm]
-    snow_water::Vector{T} | "mm"
+    snow_water::Vector{Float64}
     # Snow water equivalent (SWE) [mm]
-    swe::Vector{T} | "mm"
+    swe::Vector{Float64}
     # Snow melt [mm Δt⁻¹]
-    snow_melt::Vector{T}
+    snow_melt::Vector{Float64}
     # Runoff from snowpack [mm Δt⁻¹]
-    runoff::Vector{T}
+    runoff::Vector{Float64}
 end
 
 "Initialize snow model variables"
-function SnowVariables(T::Type{<:AbstractFloat}, n::Int)
-    return SnowVariables{T}(;
+function SnowVariables(n::Int)
+    return SnowVariables(;
         snow_storage = fill(0.0, n),
         snow_water = fill(0.0, n),
-        swe = fill(mv, n),
-        runoff = fill(mv, n),
-        snow_melt = fill(mv, n),
+        swe = fill(MISSING_VALUE, n),
+        runoff = fill(MISSING_VALUE, n),
+        snow_melt = fill(MISSING_VALUE, n),
     )
 end
 
 "Struct for storing snow model boundary conditions"
-@get_units @grid_loc @with_kw struct SnowBC{T}
+@with_kw struct SnowBC
     # Effective precipitation [mm Δt⁻¹]
-    effective_precip::Vector{T}
+    effective_precip::Vector{Float64}
     # Snow precipitation [mm Δt⁻¹]
-    snow_precip::Vector{T}
+    snow_precip::Vector{Float64}
     # Liquid precipitation [mm Δt⁻¹]
-    liquid_precip::Vector{T}
+    liquid_precip::Vector{Float64}
 end
 
 "Initialize snow model boundary conditions"
-function SnowBC(T::Type{<:AbstractFloat}, n::Int)
-    return SnowBC{T}(;
-        effective_precip = fill(mv, n),
-        snow_precip = fill(mv, n),
-        liquid_precip = fill(mv, n),
+function SnowBC(n::Int)
+    return SnowBC(;
+        effective_precip = fill(MISSING_VALUE, n),
+        snow_precip = fill(MISSING_VALUE, n),
+        liquid_precip = fill(MISSING_VALUE, n),
     )
 end
 
 "Struct for storing snow HBV model parameters"
-@get_units @grid_loc @with_kw struct SnowHbvParameters{T}
+@with_kw struct SnowHbvParameters
     # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹]
-    cfmax::Vector{T} | "mm ᵒC-1 dt-1"
+    cfmax::Vector{Float64}
     # Threshold temperature for snowfall [ᵒC]
-    tt::Vector{T} | "ᵒC"
+    tt::Vector{Float64}
     # Threshold temperature interval length [ᵒC]
-    tti::Vector{T} | "ᵒC"
+    tti::Vector{Float64}
     # Threshold temperature for snowmelt [ᵒC]
-    ttm::Vector{T} | "ᵒC"
+    ttm::Vector{Float64}
     # Water holding capacity as fraction of current snow pack [-]
-    whc::Vector{T} | "-"
+    whc::Vector{Float64}
 end
 
 "Snow HBV model"
-@with_kw struct SnowHbvModel{T} <: AbstractSnowModel{T}
-    boundary_conditions::SnowBC{T}
-    parameters::SnowHbvParameters{T}
-    variables::SnowVariables{T}
+@with_kw struct SnowHbvModel <: AbstractSnowModel
+    boundary_conditions::SnowBC
+    parameters::SnowHbvParameters
+    variables::SnowVariables
 end
 
-struct NoSnowModel{T} <: AbstractSnowModel{T} end
+struct NoSnowModel <: AbstractSnowModel end
 
 "Initialize snow HBV model parameters"
-function SnowHbvParameters(dataset, config, indices, dt)
+function SnowHbvParameters(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+    dt::Second,
+)
     lens = lens_input_parameter(config, "snowpack__degree-day_coefficient")
     cfmax =
-        ncread(dataset, config, lens; sel = indices, defaults = 3.75653, type = Float) .*
-        (dt / basetimestep)
+        ncread(dataset, config, lens; sel = indices, defaults = 3.75653, type = Float64) .*
+        (dt / BASETIMESTEP)
     lens = lens_input_parameter(config, "atmosphere_air__snowfall_temperature_threshold")
-    tt = ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float)
+    tt = ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float64)
 
     lens = lens_input_parameter(config, "atmosphere_air__snowfall_temperature_interval")
-    tti = ncread(dataset, config, lens; sel = indices, defaults = 1.0, type = Float)
+    tti = ncread(dataset, config, lens; sel = indices, defaults = 1.0, type = Float64)
 
     lens = lens_input_parameter(config, "snowpack__melting_temperature_threshold")
-    ttm = ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float)
+    ttm = ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float64)
 
     lens = lens_input_parameter(config, "snowpack__liquid_water_holding_capacity")
-    whc = ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float)
+    whc = ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float64)
     snow_hbv_params =
         SnowHbvParameters(; cfmax = cfmax, tt = tt, tti = tti, ttm = ttm, whc = whc)
     return snow_hbv_params
 end
 
 "Initialize snow HBV model"
-function SnowHbvModel(dataset, config, indices, dt)
+function SnowHbvModel(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+    dt::Second,
+)
     n = length(indices)
     params = SnowHbvParameters(dataset, config, indices, dt)
-    vars = SnowVariables(Float, n)
-    bc = SnowBC(Float, n)
+    vars = SnowVariables(n)
+    bc = SnowBC(n)
     model = SnowHbvModel(; boundary_conditions = bc, parameters = params, variables = vars)
     return model
 end

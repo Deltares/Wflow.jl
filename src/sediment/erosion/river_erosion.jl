@@ -1,57 +1,65 @@
-abstract type AbstractRiverErosionModel{T} end
+abstract type AbstractRiverErosionModel end
 
 "Struct for storing river bed and bank erosion model variables"
-@get_units @grid_loc @with_kw struct RiverErosionModelVariables{T}
-    # Potential river bed erosion
-    bed::Vector{T} | "t dt-1"
-    # Potential river bank erosion
-    bank::Vector{T} | "t dt-1"
+@with_kw struct RiverErosionModelVariables
+    # Potential river bed erosion rate [t dt-1]
+    bed::Vector{Float64}
+    # Potential river bank erosion rate [t dt-1]
+    bank::Vector{Float64}
 end
 
 "Initialize river bed and bank erosion model variables"
 function RiverErosionModelVariables(
-    n;
-    bed::Vector{T} = fill(mv, n),
-    bank::Vector{T} = fill(mv, n),
-) where {T}
-    return RiverErosionModelVariables{T}(; bed = bed, bank = bank)
+    n::Int;
+    bed::Vector{Float64} = fill(MISSING_VALUE, n),
+    bank::Vector{Float64} = fill(MISSING_VALUE, n),
+)
+    return RiverErosionModelVariables(; bed = bed, bank = bank)
 end
 
 "Struct for storing river erosion model boundary conditions"
-@get_units @grid_loc @with_kw struct RiverErosionBC{T}
-    # Waterlevel
-    waterlevel::Vector{T} | "t dt-1"
+@with_kw struct RiverErosionBC
+    # Waterlevel [m]
+    waterlevel::Vector{Float64}
 end
 
 "Initialize river erosion model boundary conditions"
-function RiverErosionBC(n; waterlevel::Vector{T} = fill(mv, n)) where {T}
-    return RiverErosionBC{T}(; waterlevel = waterlevel)
+function RiverErosionBC(n::Int; waterlevel::Vector{Float64} = fill(MISSING_VALUE, n))
+    return RiverErosionBC(; waterlevel = waterlevel)
 end
 
 "Struct for storing river erosion model parameters"
-@get_units @grid_loc @with_kw struct RiverErosionParameters{T}
-    # Mean diameter in the river bed/bank
-    d50::Vector{T} | "mm"
+@with_kw struct RiverErosionParameters
+    # Mean diameter [mm] in the river bed/bank
+    d50::Vector{Float64}
 end
 
 "Julian and Torres river erosion model"
-@with_kw struct RiverErosionJulianTorresModel{T} <: AbstractRiverErosionModel{T}
-    boundary_conditions::RiverErosionBC{T}
-    parameters::RiverErosionParameters{T}
-    variables::RiverErosionModelVariables{T}
+@with_kw struct RiverErosionJulianTorresModel <: AbstractRiverErosionModel
+    boundary_conditions::RiverErosionBC
+    parameters::RiverErosionParameters
+    variables::RiverErosionModelVariables
 end
 
 "Initialize Julian and Torres river erosion parameters"
-function RiverErosionParameters(dataset, config, indices)
+function RiverErosionParameters(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     lens = lens_input_parameter(config, "river_bottom-and-bank_sediment__d50_diameter")
-    d50 = ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float)
+    d50 = ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float64)
     river_parameters = RiverErosionParameters(; d50 = d50)
 
     return river_parameters
 end
 
 "Initialize Julian and Torres river erosion model"
-function RiverErosionJulianTorresModel(dataset, config, indices)
+function RiverErosionJulianTorresModel(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     n = length(indices)
     vars = RiverErosionModelVariables(n)
     params = RiverErosionParameters(dataset, config, indices)
@@ -75,7 +83,11 @@ function update_boundary_conditions!(
 end
 
 "Update Julian and Torres river erosion model for a single timestep"
-function update!(model::RiverErosionJulianTorresModel, geometry::RiverGeometry, dt)
+function update!(
+    model::RiverErosionJulianTorresModel,
+    parameters::RiverParameters,
+    dt::Float64,
+)
     (; waterlevel) = model.boundary_conditions
     (; d50) = model.parameters
     (; bed, bank) = model.variables
@@ -85,9 +97,9 @@ function update!(model::RiverErosionJulianTorresModel, geometry::RiverGeometry, 
         bed[i], bank[i] = river_erosion_julian_torres(
             waterlevel[i],
             d50[i],
-            geometry.width[i],
-            geometry.length[i],
-            geometry.slope[i],
+            parameters.flow_width[i],
+            parameters.flow_length[i],
+            parameters.slope[i],
             dt,
         )
     end

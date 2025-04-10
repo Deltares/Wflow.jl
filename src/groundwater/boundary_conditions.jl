@@ -1,4 +1,4 @@
-function check_flux(flux, aquifer::UnconfinedAquifer, index::Int; dt = 1.0)
+function check_flux(flux::Float64, aquifer::UnconfinedAquifer, index::Int; dt = 1.0)
     # Limit flux, not smaller than negative flux based on aquifer storage
     if flux < 0.0
         max_outflux = -aquifer.variables.storage[index] / dt
@@ -9,54 +9,59 @@ function check_flux(flux, aquifer::UnconfinedAquifer, index::Int; dt = 1.0)
 end
 
 # Do nothing for a confined aquifer: aquifer can always provide flux
-check_flux(flux, aquifer::ConfinedAquifer, index::Int; dt = 1.0) = flux
+check_flux(flux::Float64, aquifer::ConfinedAquifer, index::Int; dt = 1.0) = flux
 
-@get_units @grid_loc @with_kw struct RiverParameters{T}
-    infiltration_conductance::Vector{T} | "m2 d-1"
-    exfiltration_conductance::Vector{T} | "m2 d-1"
-    bottom::Vector{T} | "m"
+@with_kw struct GwfRiverParameters
+    infiltration_conductance::Vector{Float64} # [m² d⁻¹]
+    exfiltration_conductance::Vector{Float64} # [m² d⁻¹]
+    bottom::Vector{Float64} # [m]
 end
 
-@get_units @grid_loc @with_kw struct RiverVariables{T}
-    stage::Vector{T} | "m"
-    storage::Vector{T} | "m3"
-    flux::Vector{T} | "m3 d-1"
+@with_kw struct GwfRiverVariables
+    stage::Vector{Float64} # [m]
+    storage::Vector{Float64} # [m³]
+    flux::Vector{Float64}  # [m³ d⁻¹]
 end
 
-function RiverVariables(n)
-    variables = RiverVariables{Float}(;
-        stage = fill(mv, n),
-        storage = fill(mv, n),
-        flux = fill(mv, n),
+function GwfRiverVariables(n::Int)
+    variables = GwfRiverVariables(;
+        stage = fill(MISSING_VALUE, n),
+        storage = fill(MISSING_VALUE, n),
+        flux = fill(MISSING_VALUE, n),
     )
     return variables
 end
 
-@get_units @grid_loc @with_kw struct River{T} <: AquiferBoundaryCondition
-    parameters::RiverParameters{T}
-    variables::RiverVariables{T}
-    index::Vector{Int} | "-"
+@with_kw struct GwfRiver <: AquiferBoundaryCondition
+    parameters::GwfRiverParameters
+    variables::GwfRiverVariables
+    index::Vector{Int} # [-]
 end
 
-function River(dataset, config, indices, index)
+function GwfRiver(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+    index::Vector{Int},
+)
     lens = lens_input_parameter(config, "river_water__infiltration_conductance")
-    infiltration_conductance = ncread(dataset, config, lens; sel = indices, type = Float)
+    infiltration_conductance = ncread(dataset, config, lens; sel = indices, type = Float64)
 
     lens = lens_input_parameter(config, "river_water__exfiltration_conductance")
-    exfiltration_conductance = ncread(dataset, config, lens; sel = indices, type = Float)
+    exfiltration_conductance = ncread(dataset, config, lens; sel = indices, type = Float64)
 
     lens = lens_input_parameter(config, "river_bottom__elevation")
-    bottom = ncread(dataset, config, lens; sel = indices, type = Float)
+    bottom = ncread(dataset, config, lens; sel = indices, type = Float64)
 
     parameters =
-        RiverParameters{Float}(infiltration_conductance, exfiltration_conductance, bottom)
+        GwfRiverParameters(infiltration_conductance, exfiltration_conductance, bottom)
     n = length(indices)
-    variables = RiverVariables(n)
-    river = River(parameters, variables, index)
+    variables = GwfRiverVariables(n)
+    river = GwfRiver(parameters, variables, index)
     return river
 end
 
-function flux!(Q, river::River, aquifer; dt = 1.0)
+function flux!(Q::Vector{Float64}, river::GwfRiver, aquifer::Aquifer; dt = 1.0)
     for (i, index) in enumerate(river.index)
         head = aquifer.variables.head[index]
         stage = river.variables.stage[i]
@@ -75,38 +80,44 @@ function flux!(Q, river::River, aquifer; dt = 1.0)
     return Q
 end
 
-@get_units @grid_loc @with_kw struct DrainageParameters{T}
-    elevation::Vector{T} | "m"
-    conductance::Vector{T} | "m2 d-1"
+@with_kw struct DrainageParameters
+    elevation::Vector{Float64} # [m]
+    conductance::Vector{Float64} # [m² d⁻¹]
 end
 
-@get_units @grid_loc @with_kw struct DrainageVariables{T}
-    flux::Vector{T} | "m3 d-1"
+@with_kw struct DrainageVariables
+    flux::Vector{Float64} # [m³ d⁻¹]
 end
 
-@get_units @grid_loc @with_kw struct Drainage{T} <: AquiferBoundaryCondition
-    parameters::DrainageParameters{T}
-    variables::DrainageVariables{T}
-    index::Vector{Int} | "-"
+@with_kw struct Drainage <: AquiferBoundaryCondition
+    parameters::DrainageParameters
+    variables::DrainageVariables
+    index::Vector{Int} # [-]
 end
 
-function Drainage(dataset, config, indices, index)
+function Drainage(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+    index::Vector{Int},
+)
     lens = lens_input_parameter(config, "land_drain__elevation")
-    drain_elevation = ncread(dataset, config, lens; sel = indices, type = Float, fill = mv)
+    drain_elevation =
+        ncread(dataset, config, lens; sel = indices, type = Float64, fill = MISSING_VALUE)
 
     lens = lens_input_parameter(config, "land_drain__conductance")
     drain_conductance =
-        ncread(dataset, config, lens; sel = indices, type = Float, fill = mv)
+        ncread(dataset, config, lens; sel = indices, type = Float64, fill = MISSING_VALUE)
     elevation = drain_elevation[index]
     conductance = drain_conductance[index]
-    parameters = DrainageParameters{Float}(; elevation, conductance)
-    variables = DrainageVariables{Float}(; flux = fill(mv, length(index)))
+    parameters = DrainageParameters(; elevation, conductance)
+    variables = DrainageVariables(; flux = fill(MISSING_VALUE, length(index)))
 
-    drains = Drainage{Float}(parameters, variables, index)
+    drains = Drainage(parameters, variables, index)
     return drains
 end
 
-function flux!(Q, drainage::Drainage, aquifer; dt = 1.0)
+function flux!(Q::Vector{Float64}, drainage::Drainage, aquifer::Aquifer; dt = 1.0)
     for (i, index) in enumerate(drainage.index)
         cond = drainage.parameters.conductance[i]
         delta_head =
@@ -117,22 +128,22 @@ function flux!(Q, drainage::Drainage, aquifer; dt = 1.0)
     return Q
 end
 
-@get_units @grid_loc @with_kw struct HeadBoundaryParameters{T}
-    conductance::Vector{T} | "m2 d-1"
+@with_kw struct HeadBoundaryParameters
+    conductance::Vector{Float64} # [m² d⁻¹]
 end
 
-@get_units @grid_loc @with_kw struct HeadBoundaryVariables{T}
-    head::Vector{T} | "m"
-    flux::Vector{T} | "m3 d-1"
+@with_kw struct HeadBoundaryVariables
+    head::Vector{Float64} # [m]
+    flux::Vector{Float64} # [m³ d⁻¹]
 end
 
-@get_units @grid_loc @with_kw struct HeadBoundary{T} <: AquiferBoundaryCondition
-    parameters::HeadBoundaryParameters{T}
-    variables::HeadBoundaryVariables{T}
-    index::Vector{Int} | "-"
+@with_kw struct HeadBoundary <: AquiferBoundaryCondition
+    parameters::HeadBoundaryParameters
+    variables::HeadBoundaryVariables
+    index::Vector{Int} # [-]
 end
 
-function flux!(Q, headboundary::HeadBoundary, aquifer; dt = 1.0)
+function flux!(Q::Vector{Float64}, headboundary::HeadBoundary, aquifer::Aquifer; dt = 1.0)
     for (i, index) in enumerate(headboundary.index)
         cond = headboundary.parameters.conductance[i]
         delta_head = headboundary.variables.head[i] - aquifer.variables.head[index]
@@ -142,23 +153,23 @@ function flux!(Q, headboundary::HeadBoundary, aquifer; dt = 1.0)
     return Q
 end
 
-@get_units @grid_loc @with_kw struct RechargeVariables{T}
-    rate::Vector{T} | "m d-1"
-    flux::Vector{T} | "m3 d-1"
+@with_kw struct RechargeVariables
+    rate::Vector{Float64} # [m d⁻¹]
+    flux::Vector{Float64} # [m³ d⁻¹]
 end
 
-@get_units @grid_loc @with_kw struct Recharge{T} <: AquiferBoundaryCondition
-    variables::RechargeVariables{T}
-    index::Vector{Int} | "-"
+@with_kw struct Recharge <: AquiferBoundaryCondition
+    variables::RechargeVariables
+    index::Vector{Int}  # [-]
 end
 
-function Recharge(rate, flux, index)
-    variables = RechargeVariables{Float}(rate, flux)
-    recharge = Recharge{Float}(variables, index)
+function Recharge(rate::Vector{Float64}, flux::Vector{Float64}, index::Vector{Int})
+    variables = RechargeVariables(rate, flux)
+    recharge = Recharge(variables, index)
     return recharge
 end
 
-function flux!(Q, recharge::Recharge, aquifer; dt = 1.0)
+function flux!(Q::Vector{Float64}, recharge::Recharge, aquifer::Aquifer; dt = 1.0)
     for (i, index) in enumerate(recharge.index)
         recharge.variables.flux[i] = check_flux(
             recharge.variables.rate[i] * aquifer.parameters.area[index],
@@ -171,17 +182,17 @@ function flux!(Q, recharge::Recharge, aquifer; dt = 1.0)
     return Q
 end
 
-@get_units @grid_loc @with_kw struct WellVariables{T}
-    volumetric_rate::Vector{T} | "m3 d-1"
-    flux::Vector{T} | "m3 d-1"
+@with_kw struct WellVariables
+    volumetric_rate::Vector{Float64} # [m³ d⁻¹]
+    flux::Vector{Float64} # [m³ d⁻¹]
 end
 
-@get_units @grid_loc @with_kw struct Well{T} <: AquiferBoundaryCondition
-    variables::WellVariables{T}
-    index::Vector{Int} | "-"
+@with_kw struct Well <: AquiferBoundaryCondition
+    variables::WellVariables
+    index::Vector{Int} # [-]
 end
 
-function flux!(Q, well::Well, aquifer; dt = 1.0)
+function flux!(Q::Vector{Float64}, well::Well, aquifer::Aquifer; dt = 1.0)
     for (i, index) in enumerate(well.index)
         well.variables.flux[i] =
             check_flux(well.variables.volumetric_rate[i], aquifer, index; dt)

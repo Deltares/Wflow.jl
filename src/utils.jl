@@ -1,6 +1,6 @@
 
 "Map from PCRaster LDD value to a CartesianIndex"
-const pcr_dir = [
+const PCR_DIR = [
     CartesianIndex(-1, -1),  # 1
     CartesianIndex(0, -1),  # 2
     CartesianIndex(1, -1),  # 3
@@ -12,10 +12,10 @@ const pcr_dir = [
     CartesianIndex(1, 1),  # 9
 ]
 
-const mv = Float(NaN)
+const MISSING_VALUE = Float64(NaN)
 
 # timestep that the parameter units are defined in
-const basetimestep = Second(Day(1))
+const BASETIMESTEP = Second(Day(1))
 
 """
     scurve(x, a, b, c)
@@ -77,17 +77,17 @@ function active_indices(subcatch_2d::AbstractMatrix, nodata)
     return indices, reverse_indices
 end
 
-function active_indices(network::Network, key::AbstractString)
+function active_indices(domain::Domain, key::AbstractString)
     if occursin("reservoir", key)
-        return network.reservoir.indices_outlet
+        return domain.reservoir.network.indices_outlet
     elseif occursin("lake", key)
-        return network.lake.indices_outlet
+        return domain.lake.network.indices_outlet
     elseif occursin("river", key) || occursin("floodplain", key)
-        return network.river.indices
+        return domain.river.network.indices
     elseif occursin("drain", key)
-        return network.drain.indices
+        return domain.drain.network.indices
     else
-        return network.land.indices
+        return domain.land.network.indices
     end
 end
 
@@ -109,8 +109,8 @@ end
 
 function cell_lengths(y::AbstractVector, cellength::Real, sizeinmetres::Bool)
     n = length(y)
-    xl = fill(mv, n)
-    yl = fill(mv, n)
+    xl = fill(MISSING_VALUE, n)
+    yl = fill(MISSING_VALUE, n)
     if sizeinmetres
         xl .= cellength
         yl .= cellength
@@ -124,25 +124,6 @@ function cell_lengths(y::AbstractVector, cellength::Real, sizeinmetres::Bool)
     return xl, yl
 end
 
-function get_river_fraction(
-    river::AbstractVector,
-    riverlength::AbstractVector,
-    riverwidth::AbstractVector,
-    x_length::AbstractVector,
-    y_length::AbstractVector,
-)
-    n = length(river)
-    river_fraction = fill(mv, n)
-    for i in 1:n
-        river_fraction[i] = if river[i]
-            min((riverlength[i] * riverwidth[i]) / (x_length[i] * y_length[i]), 1.0)
-        else
-            0.0
-        end
-    end
-    return river_fraction
-end
-
 """
     set_states!(instate_path, model, state_ncnames; <keyword arguments>)
 
@@ -154,7 +135,7 @@ and set states in `model` object. Active cells are selected with the correspondi
 - `type = nothing`: type to convert data to after reading. By default no conversion is done.
 """
 function set_states!(instate_path, model; type = nothing, dimname = nothing)
-    (; network, land, config) = model
+    (; domain, land, config) = model
 
     # Check if required states are covered
     state_ncnames = check_states(config)
@@ -164,7 +145,7 @@ function set_states!(instate_path, model; type = nothing, dimname = nothing)
         for (state, ncname) in state_ncnames
             @info "Setting initial state from netCDF." ncpath = instate_path ncvarname =
                 ncname state
-            sel = active_indices(network, state)
+            sel = active_indices(domain, state)
             n = length(sel)
             dims = length(dimnames(ds[ncname]))
             # 4 dims, for example (x,y,layer,time) where dim layer is an SVector for soil layers
@@ -188,7 +169,7 @@ function set_states!(instate_path, model; type = nothing, dimname = nothing)
                     end
                 end
                 # set state in model object
-                lens = standard_name_map(land)[state]
+                lens = standard_name_map(land)[state].lens
                 lens(model) .= svectorscopy(A, Val{size(A)[1]}())
                 # 3 dims (x,y,time)
             elseif dims == 3
@@ -202,7 +183,7 @@ function set_states!(instate_path, model; type = nothing, dimname = nothing)
                     end
                 end
                 # set state in model object, only set active cells ([1:n]) (ignore boundary conditions/ghost points)
-                lens = standard_name_map(land)[state]
+                lens = standard_name_map(land)[state].lens
                 lens(model)[1:n] .= A
             else
                 error(
@@ -234,8 +215,9 @@ missing values.
         `true` to allow missing values.
 - `fill=nothing`: Missing values are replaced by this fill value if `allow_missing` is
   `false`.
-- `dimname` : Name of third dimension of parameter `var`. By default no third dimension is
+- `dimname`: Name of third dimension of parameter `var`. By default no third dimension is
   expected.
+- `logging`: Generate a logging message when reading a netCDF variable. By default `true`.
 """
 function ncread(
     nc,
@@ -247,6 +229,7 @@ function ncread(
     allow_missing = false,
     fill = nothing,
     dimname = nothing,
+    logging = true,
 )
     # for optional parameters (`lens` set to `nothing`) default values are used.
     if isnothing(parameter.lens)
@@ -297,7 +280,9 @@ function ncread(
             return repeat(mod.value, 1, length(sel))
         end
     else
-        @info "Set `$(parameter.name)` using netCDF variable `$var`."
+        if logging
+            @info "Set `$(parameter.name)` using netCDF variable `$var`."
+        end
         A = read_standardized(nc, var, dim_sel)
         if !isnothing(mod.index)
             # the modifier index is only set in combination with scale and offset for SVectors,
@@ -397,7 +382,7 @@ water table depth) `reference_depth`, a SVector `cum_depth` with cumulative soil
 at soil surface (0), and a SVector `thickness` with thickness per soil layer.
 """
 function set_layerthickness(reference_depth::Real, cum_depth::SVector, thickness::SVector)
-    thicknesslayers = thickness .* mv
+    thicknesslayers = thickness .* MISSING_VALUE
     for i in 1:length(thicknesslayers)
         if reference_depth > cum_depth[i + 1]
             thicknesslayers = setindex(thicknesslayers, thickness[i], i)
@@ -436,7 +421,7 @@ end
 """
     get_flow_width(ldd, x_length, y_length)
 
-Return the Flow width for a non square grid. Input `ldd` (drainage network), `x_length`
+Return the flow width for a non square grid. Input `ldd` (drainage network), `x_length`
 (length of cells in x direction), `y_length` (length of cells in y direction). Output is
 flow width.
 """
@@ -449,19 +434,20 @@ function get_flow_width(ldd, x_length, y_length)
     elseif ldd == 4 || ldd == 6
         y_length
     else
-        (x_length + y_length) * 0.5
+        (x_length * y_length) / hypot(x_length, y_length)
     end
 end
 
 """
-    det_surfacewidth(ldd, xl, yl)
+    get_surface_width(flow_width, flow_length, land_area, river_location)
 
-Determines the surface flow width. Input `dw` (drainage width), `riverwidth` and `river`
-(boolean). Output is surface flow width `sw`.
+Return the surface flow width. Input `flow_width` (flow width), `flow_length` (flow length),
+`land_area` (area covered by land (excluding river coverage)) and `river_location` (river
+cell, boolean). Output is surface flow width `surface_width`.
 """
-function det_surfacewidth(dw, riverwidth, river)
-    sw = river ? max(dw - riverwidth, 0.0) : dw
-    return sw
+function get_surface_width(flow_width, flow_length, land_area, river_location)
+    surface_width = river_location ? land_area / flow_length : flow_width
+    return surface_width
 end
 
 # 2.5x faster power method
@@ -494,12 +480,13 @@ function svectorscopy(x::Matrix{T}, ::Val{N}) where {T, N}
 end
 
 """
-    fraction_runoff_to_river(graph, ldd, index_river, slope)
+    get_flow_fraction_to_river(graph, ldd, inds_river, slope)
 
-Return ratio `fraction` between `slope` river cell `inds_river` and `slope` of each
-upstream neighbor (based on directed acyclic graph `graph`).
+Return flow `fraction` to a river cell (at index `j`) based on the ratio of the land surface
+`slope` at index `j` to the sum of the land surface `slope` at index `j` and at river cell
+index `i`.
 """
-function fraction_runoff_to_river(graph, ldd, inds_river, slope)
+function get_flow_fraction_to_river(graph, ldd, inds_river, slope)
     n = length(slope)
     fraction = zeros(n)
     for i in inds_river
@@ -590,73 +577,78 @@ function add_vertex_edge_graph!(graph, pits)
 end
 
 """
-    set_effective_flowwidth!(we_x, we_y, indices, graph_river, river_width, ldd_river, rev_inds_river)
+    set_effective_flowwidth!(we_x::Vector{Float64}, we_y::Vector{Float64}, domain::Domain)
 
 For river cells (D8 flow direction) in a staggered grid the effective flow width at cell
 edges (floodplain) `we_x` in the x-direction and `we_y` in the y-direction is corrected by
-subtracting the river width `river_width` from the cell edges. For diagonal directions, the
-`river_width` is split between the two adjacent cell edges. A cell edge at linear index
-`idx` is defined as the edge between node `idx` and the adjacent node (+ CartesianIndex(1,
-0)) for x and (+ CartesianIndex(0, 1)) for y. For cells that contain a `waterbody`
-(reservoir or lake), the effective flow width is set to zero.
+subtracting the river width `flow_width` from the cell edges. For diagonal directions, the
+`flow_width` is split between the two adjacent cell edges. A cell edge at linear index `idx`
+is defined as the edge between node `idx` and the adjacent node (+ CartesianIndex(1, 0)) for
+x and (+ CartesianIndex(0, 1)) for y. For cells that contain a `waterbody_outlet` (reservoir
+or lake), the effective flow width is set to zero.
 """
 function set_effective_flowwidth!(
-    we_x,
-    we_y,
-    indices,
-    graph_river,
-    river_width,
-    ldd_river,
-    waterbody,
-    rev_inds_river,
+    we_x::Vector{Float64},
+    we_y::Vector{Float64},
+    domain::Domain,
 )
-    toposort = topological_sort_by_dfs(graph_river)
+    (; local_drain_direction, indices) = domain.river.network
+    (; edge_indices, reverse_indices) = domain.land.network
+    (; flow_width, waterbody_outlet) = domain.river.parameters
+    reverse_indices = reverse_indices[indices]
+
+    graph = flowgraph(local_drain_direction, indices, PCR_DIR)
+    toposort = topological_sort_by_dfs(graph)
     n = length(we_x)
     for v in toposort
-        dst = outneighbors(graph_river, v)
+        dst = outneighbors(graph, v)
         isempty(dst) && continue
-        w = min(river_width[v], river_width[only(dst)])
-        dir = pcr_dir[ldd_river[v]]
-        idx = rev_inds_river[v]
+        w = min(flow_width[v], flow_width[only(dst)])
+        dir = PCR_DIR[local_drain_direction[v]]
+        idx = reverse_indices[v]
         # loop over river D8 directions
         if dir == CartesianIndex(1, 1)
-            we_x[idx] = waterbody[v] ? 0.0 : max(we_x[idx] - 0.5 * w, 0.0)
-            we_y[idx] = waterbody[v] ? 0.0 : max(we_y[idx] - 0.5 * w, 0.0)
+            we_x[idx] = waterbody_outlet[v] ? 0.0 : max(we_x[idx] - 0.5 * w, 0.0)
+            we_y[idx] = waterbody_outlet[v] ? 0.0 : max(we_y[idx] - 0.5 * w, 0.0)
         elseif dir == CartesianIndex(-1, -1)
-            if indices.xd[idx] <= n
-                we_y[indices.xd[idx]] =
-                    waterbody[v] ? 0.0 : max(we_y[indices.xd[idx]] - 0.5 * w, 0.0)
+            if edge_indices.xd[idx] <= n
+                we_y[edge_indices.xd[idx]] =
+                    waterbody_outlet[v] ? 0.0 :
+                    max(we_y[edge_indices.xd[idx]] - 0.5 * w, 0.0)
             end
-            if indices.yd[idx] <= n
-                we_x[indices.yd[idx]] =
-                    waterbody[v] ? 0.0 : max(we_x[indices.yd[idx]] - 0.5 * w, 0.0)
+            if edge_indices.yd[idx] <= n
+                we_x[edge_indices.yd[idx]] =
+                    waterbody_outlet[v] ? 0.0 :
+                    max(we_x[edge_indices.yd[idx]] - 0.5 * w, 0.0)
             end
         elseif dir == CartesianIndex(1, 0)
-            we_y[idx] = waterbody[v] ? 0.0 : max(we_y[idx] - w, 0.0)
+            we_y[idx] = waterbody_outlet[v] ? 0.0 : max(we_y[idx] - w, 0.0)
         elseif dir == CartesianIndex(0, 1)
-            we_x[idx] = waterbody[v] ? 0.0 : max(we_x[idx] - w, 0.0)
+            we_x[idx] = waterbody_outlet[v] ? 0.0 : max(we_x[idx] - w, 0.0)
         elseif dir == CartesianIndex(-1, 0)
-            if indices.xd[idx] <= n
-                we_y[indices.xd[idx]] =
-                    waterbody[v] ? 0.0 : max(we_y[indices.xd[idx]] - w, 0.0)
+            if edge_indices.xd[idx] <= n
+                we_y[edge_indices.xd[idx]] =
+                    waterbody_outlet[v] ? 0.0 : max(we_y[edge_indices.xd[idx]] - w, 0.0)
             end
         elseif dir == CartesianIndex(0, -1)
-            if indices.yd[idx] <= n
-                we_x[indices.yd[idx]] =
-                    waterbody[v] ? 0.0 : max(we_x[indices.yd[idx]] - w, 0.0)
+            if edge_indices.yd[idx] <= n
+                we_x[edge_indices.yd[idx]] =
+                    waterbody_outlet[v] ? 0.0 : max(we_x[edge_indices.yd[idx]] - w, 0.0)
             end
         elseif dir == CartesianIndex(1, -1)
             we_y[idx] = max(we_y[idx] - 0.5 * w, 0.0)
-            if indices.yd[idx] <= n
-                we_x[indices.yd[idx]] =
-                    waterbody[v] ? 0.0 : max(we_x[indices.yd[idx]] - 0.5 * w, 0.0)
+            if edge_indices.yd[idx] <= n
+                we_x[edge_indices.yd[idx]] =
+                    waterbody_outlet[v] ? 0.0 :
+                    max(we_x[edge_indices.yd[idx]] - 0.5 * w, 0.0)
             end
         elseif dir == CartesianIndex(-1, 1)
-            if indices.xd[idx] <= n
-                we_y[indices.xd[idx]] =
-                    waterbody[v] ? 0.0 : max(we_y[indices.xd[idx]] - 0.5 * w, 0.0)
+            if edge_indices.xd[idx] <= n
+                we_y[edge_indices.xd[idx]] =
+                    waterbody_outlet[v] ? 0.0 :
+                    max(we_y[edge_indices.xd[idx]] - 0.5 * w, 0.0)
             end
-            we_x[idx] = waterbody[v] ? 0.0 : max(we_x[idx] - 0.5 * w, 0.0)
+            we_x[idx] = waterbody_outlet[v] ? 0.0 : max(we_x[idx] - 0.5 * w, 0.0)
         end
     end
     return nothing
@@ -763,7 +755,7 @@ function kh_layered_profile!(
     (; kh) = subsurface.parameters.kh_profile
     (; khfrac) = subsurface.parameters
 
-    t_factor = (tosecond(basetimestep) / dt)
+    t_factor = (tosecond(BASETIMESTEP) / dt)
     for i in eachindex(kh)
         m = nlayers[i]
 
@@ -799,7 +791,7 @@ function kh_layered_profile!(
     (; n_unsatlayers, zi) = soil.variables
     (; kh) = subsurface.parameters.kh_profile
     (; khfrac) = subsurface.parameters
-    t_factor = (tosecond(basetimestep) / dt)
+    t_factor = (tosecond(BASETIMESTEP) / dt)
 
     for i in eachindex(kh)
         m = nlayers[i]
@@ -859,27 +851,38 @@ kh_layered_profile!(
 ) = nothing
 
 """
-    initialize_lateralssf!(model::LateralSSF, kh_profile::KhExponential)
-    initialize_lateralssf!(model::LateralSSF, kh_profile::KhExponentialConstant)
+    initialize_lateral_ssf!(subsurface::LateralSSF, parameters::LandParameters, kh_profile::KhExponential)
+    initialize_lateral_ssf!(subsurface::LateralSSF, parameters::LandParameters, kh_profile::KhExponentialConstant)
 
 Initialize lateral subsurface variables `ssf` and `ssfmax` using horizontal hydraulic
 conductivity profile `kh_profile`.
 """
-function initialize_lateralssf!(model::LateralSSF, kh_profile::KhExponential)
+function initialize_lateral_ssf!(
+    subsurface::LateralSSF,
+    parameters::LandParameters,
+    kh_profile::KhExponential,
+)
     (; kh_0, f) = kh_profile
-    (; ssf, ssfmax, zi) = model.variables
-    (; slope, soilthickness, flow_width) = model.parameters
+    (; ssf, ssfmax, zi) = subsurface.variables
+    (; soilthickness) = subsurface.parameters
+    (; slope, flow_width) = parameters
 
     @. ssfmax = ((kh_0 * slope) / f) * (1.0 - exp(-f * soilthickness))
     @. ssf = ((kh_0 * slope) / f) * (exp(-f * zi) - exp(-f * soilthickness)) * flow_width
     return nothing
 end
 
-function initialize_lateralssf!(model::LateralSSF, kh_profile::KhExponentialConstant)
+function initialize_lateral_ssf!(
+    subsurface::LateralSSF,
+    parameters::LandParameters,
+    kh_profile::KhExponentialConstant,
+)
     (; kh_0, f) = kh_profile.exponential
     (; z_exp) = kh_profile
-    (; ssf, ssfmax, zi) = model.variables
-    (; slope, soilthickness, flow_width) = model.parameters
+    (; ssf, ssfmax, zi) = subsurface.variables
+    (; soilthickness) = subsurface.parameters
+    (; slope, flow_width) = parameters
+
     ssf_constant = @. kh_0 * exp(-f * z_exp) * slope * (soilthickness - z_exp)
     for i in eachindex(ssf)
         ssfmax[i] =
@@ -903,22 +906,24 @@ function initialize_lateralssf!(model::LateralSSF, kh_profile::KhExponentialCons
 end
 
 """
-    initialize_lateralssf!(subsurface::LateralSSF, soil::SbmSoilModel, kv_profile::KvLayered, dt)
-    initialize_lateralssf!(subsurface::LateralSSF, soil::SbmSoilModel, kv_profile::KvLayeredExponential, dt)
+    initialize_lateral_ssf!(subsurface::LateralSSF, soil::SbmSoilModel, parameters::LandParameters, kv_profile::KvLayered, dt)
+    initialize_lateral_ssf!(subsurface::LateralSSF, soil::SbmSoilModel, parameters::LandParameters, kv_profile::KvLayeredExponential, dt)
 
 Initialize lateral subsurface variables `ssf` and `ssfmax` using  vertical hydraulic
 conductivity profile `kv_profile`.
 """
-function initialize_lateralssf!(
+function initialize_lateral_ssf!(
     subsurface::LateralSSF,
     soil::SbmSoilModel,
+    parameters::LandParameters,
     kv_profile::KvLayered,
     dt,
 )
     (; kh) = subsurface.parameters.kh_profile
     (; nlayers, act_thickl) = soil.parameters
     (; ssf, ssfmax, zi) = subsurface.variables
-    (; khfrac, soilthickness, slope, flow_width) = subsurface.parameters
+    (; khfrac, soilthickness) = subsurface.parameters
+    (; slope, flow_width) = parameters
 
     kh_layered_profile!(soil, subsurface, kv_profile, dt)
     for i in eachindex(ssf)
@@ -933,14 +938,16 @@ function initialize_lateralssf!(
     return nothing
 end
 
-function initialize_lateralssf!(
+function initialize_lateral_ssf!(
     subsurface::LateralSSF,
     soil::SbmSoilModel,
+    parameters::LandParameters,
     kv_profile::KvLayeredExponential,
     dt,
 )
     (; ssf, ssfmax, zi) = subsurface.variables
-    (; khfrac, soilthickness, slope, flow_width) = subsurface.parameters
+    (; khfrac, soilthickness) = subsurface.parameters
+    (; slope, flow_width) = parameters
     (; nlayers, act_thickl) = soil.parameters
     (; kh) = subsurface.parameters.kh_profile
     (; kv, f, nlayers_kv, z_layered) = kv_profile
