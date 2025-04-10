@@ -138,7 +138,6 @@ function LakeVariables(n::Int, parameters::LakeParameters, lake_waterlevel::Vect
     variables = LakeVariables(;
         waterlevel = lake_waterlevel,
         waterlevel_av = fill(MISSING_VALUE, n),
-        inflow = fill(MISSING_VALUE, n),
         storage = initialize_storage(storfunc, area, lake_waterlevel, sh),
         storage_av = fill(MISSING_VALUE, n),
         outflow = fill(MISSING_VALUE, n),
@@ -177,12 +176,12 @@ function Lake(dataset::NCDataset, config::Config, network::NetworkWaterBody)
     parameters, lake_waterlevel = LakeParameters(dataset, config, network)
 
     n_lakes = length(parameters.area)
-    variables = LakeVariables(n_lakes, lake_waterlevel)
+    variables = LakeVariables(n_lakes, parameters, lake_waterlevel)
     boundary_conditions = LakeBC(n_lakes)
 
     lake = Lake(; boundary_conditions, parameters, variables)
 
-    return lake, lake_network, inds_lake_map2river, pits
+    return lake
 end
 
 "Determine the initial storage depending on the storage function"
