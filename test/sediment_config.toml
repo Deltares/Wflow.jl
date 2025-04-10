@@ -132,7 +132,7 @@ soil_erosion__mass_flow_rate = "soilloss"
 soil_erosion_clay__mass_flow_rate = "erosclay"
 
 land_surface_water_sediment_transport_capacity__mass_flow_rate = "TCsed"
-land_surface_water_clay_transport_capacity__mass_flow_rate = "TCclay"
+routing.overland_flow.transport_capacity.variables.clay = "TCclay"
 
 "land_surface_water_sediment~to-river__mass_flow_rate" = "inlandsed"
 "land_surface_water_clay~to-river__mass_flow_rate" = "inlandclay"

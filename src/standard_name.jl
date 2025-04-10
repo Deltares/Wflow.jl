@@ -302,10 +302,6 @@ const sediment_standard_name_map = Dict{String, NamedTuple}(
         lens = @optic(_.routing.overland_flow.transport_capacity.variables.amount),
         unit = "t dt-1",
     ),
-    "land_surface_water_clay_transport_capacity__mass_flow_rate" => (
-        lens = @optic(_.routing.overland_flow.transport_capacity.variables.clay),
-        unit = "t dt-1",
-    ),
     "land_surface_water_sediment~to-river__mass_flow_rate" => (
         lens = @optic(_.routing.overland_flow.to_river.variables.amount),
         unit = "t dt-1",
