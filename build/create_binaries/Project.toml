@@ -1,9 +1,0 @@
-[deps]
-LibGit2 = "76f85450-5226-5b5a-8eaa-529ad045b433"
-PackageCompiler = "9b87118b-4619-50d2-8e1e-99f35a4d4d9d"
-TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
-Wflow = "d48b7d99-76e7-47ae-b1d5-ff0c1cf9a818"
-
-[compat]
-PackageCompiler = "2"
-julia = "1.10"

@@ -1,6 +1,7 @@
 name = "WflowServer"
 uuid = "6f3aa2dc-f527-41f4-85fc-b3cbabe74cf6"
 authors = ["Deltares and contributors"]
+manifest = "../Manifest.toml"
 version = "0.1.0"
 
 [deps]
