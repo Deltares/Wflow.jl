@@ -40,7 +40,7 @@ function add_metadata(project_dir, license_file, output_dir, git_repo)
             error("Manifest.toml is in the old format, run Pkg.upgrade_manifest()")
         end
         julia_version = manifest["julia_version"]
-        version = TOML.parsefile(normpath(git_repo, "Project.toml"))["version"]
+        version = TOML.parsefile(normpath(git_repo, "Wflow/Project.toml"))["version"]
         repo = GitRepo(git_repo)
         branch = LibGit2.head(repo)
         commit = LibGit2.peel(LibGit2.GitCommit, branch)
