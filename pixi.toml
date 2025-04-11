@@ -42,11 +42,11 @@ test-wflow-cov = { cmd = "julia --project --eval 'using Pkg; Pkg.test(coverage=t
 test-wflow-server = { cmd = "julia --project=server --eval 'using Pkg; Pkg.test(\"WflowServer\", coverage=true)'", depends-on = [
     "instantiate-wflow-server",
 ] }
-instantiate-wflow-server = "julia --project=server --eval 'using Pkg; Pkg.instantiate(); Pkg.develop(path=\"Wflow/\")'"
+instantiate-wflow-server = "julia --project=server --eval 'using Pkg; Pkg.instantiate()'"
 # Docs
 install-ci = { depends-on = ["install-julia", "update-registry-julia"] }
 quarto-check = { cmd = "quarto check all" }
-quarto-render = { cmd = "julia --project=docs --eval 'using Pkg; Pkg.build(\"IJulia\")' && quarto render docs --to html --execute" }
+quarto-render = { cmd = "julia --project --eval 'using Pkg; Pkg.build(\"IJulia\")' && quarto render docs --to html --execute" }
 quarto-preview = { cmd = "quarto preview docs" }
 
 [dependencies]
