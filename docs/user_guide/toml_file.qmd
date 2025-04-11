@@ -25,6 +25,7 @@ provided by the [CFTime.jl package](https://juliageo.org/CFTime.jl/latest/), suc
 provided in these alternative calendars.
 
 ```toml
+[time]                                          # optional entry
 calendar = "standard"                           # optional, this is the default value
 starttime = 2000-01-01T00:00:00                 # optional, default from forcing netCDF
 endtime = 2000-02-01T00:00:00                   # optional, default from forcing netCDF
@@ -42,6 +43,7 @@ can be helpful to set `loglevel = "debug"` in the TOML. To avoid flooding the sc
 messages are only sent to the log file. The following settings will affect the logging:
 
 ```toml
+[logging]               # optional entry
 silent = false          # optional, default is "false"
 loglevel = "debug"      # optional, default is "info"
 path_log = "log.txt"    # optional, default is "log.txt"
