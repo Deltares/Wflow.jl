@@ -200,9 +200,9 @@ end
 function get_param_lake(model)
     return Dict(
         "atmosphere_water__precipitation_volume_flux" =>
-            model.routing.river_flow.river.boundary_conditions.lake.boundary_conditions.precipitation,
+            model.routing.river_flow.boundary_conditions.lake.boundary_conditions.precipitation,
         "land_surface_water__potential_evaporation_volume_flux" =>
-            model.routing.river_flow.river.boundary_conditions.lake.boundary_conditions.evaporation,
+            model.routing.river_flow.boundary_conditions.lake.boundary_conditions.evaporation,
     )
 end
 

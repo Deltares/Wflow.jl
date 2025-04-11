@@ -448,7 +448,7 @@ function SbmSoilParameters(
         ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float64) .*
         (dt / BASETIMESTEP)
 
-    lens = lens_input_parameter(config, "soil_layer_water__brooks-corey_epsilon_parameter")
+    lens = lens_input_parameter(config, "soil_layer_water__brooks-corey_exponent")
     c = ncread(
         dataset,
         config,
