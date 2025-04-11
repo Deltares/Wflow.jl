@@ -659,7 +659,7 @@ version = "1.11.0"
 
 [[deps.Wflow]]
 deps = ["Accessors", "BasicModelInterface", "CFTime", "CompositionsBase", "Dates", "DelimitedFiles", "Glob", "Graphs", "LoggingExtras", "NCDatasets", "Parameters", "Polyester", "ProgressLogging", "StaticArrays", "Statistics", "TOML", "TerminalLoggers"]
-path = "../.."
+path = "../../Wflow"
 uuid = "d48b7d99-76e7-47ae-b1d5-ff0c1cf9a818"
 version = "0.8.1"
 

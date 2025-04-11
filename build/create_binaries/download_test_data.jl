@@ -1,6 +1,6 @@
 using Downloads
 
-testdir = normpath(@__DIR__, "../../test")
+testdir = normpath(@__DIR__, "../../Wflow/test")
 
 # ensure test data is present
 # this code is copied from runtests.jl, and is a temporary solution to get the data in place
