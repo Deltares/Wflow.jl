@@ -2,7 +2,55 @@
 title: Introduction
 ---
 
+This section provides an overview of all model parameters, states and variables in tables
+that can be exchanged (input and output) with standard names (subsection below) for:
+
++ [The Land Hydrology SBM model](./parameters_landhydrology_sbm.qmd).
++ [The Land Sediment model](./parameters_sediment.qmd)
++ [Routing concepts](./parameters_routing.qmd)
+
+These tables include standard names, descriptions, units and default values (input
+parameters) for model parameters, states and variables.
+
 ## Standard names
+The standard names of model parameters, states and variables are based on [CSDMS Standard
+Names](https://csdms.colorado.edu/wiki/CSDMS_Standard_Names). These standard names are used
+in the TOML configuration file and mapped to internal model parameters, states and
+variables. Model output of model parameters (`[output]` section of TOML file) is not
+possible by providing standard names as these are only used for setting model parameters
+during model initialization, except for parameters that can also have cyclic input. These
+parameters are listed in tables below "Input static and cyclic" subsections (for
+[example](./parameters_landhydrology_sbm.qmd#input-cyclic-lai)). To output model parameters
+and variables without a standard name one to one mapping (dot notation) can be used in the
+TOML configuration file, but this is not considered as part of the public API, e.g.:
 
+```toml
+[output.netcdf_grid.variables]
+land.interception.variables.canopy_storage = "canopystorage"
+```
 
-## Generic input maps
+Standard names that contain `instantaneous` in the `quantity` part of the standard name are
+valid for an internal time step and thus considered instantaneous compared to the model
+simulation time step. Standard names can contain a tilde that are used to to distinguish
+nouns and adjectives in the `object` part of the standard name. These standard names should
+be quoted in the TOML configuration file, e.g.:
+
+```toml
+[input.static]
+"soil~compacted__area_fraction".value = 0.2
+```
+
+## Generic input maps {#input-generic}
+The table below lists static input maps that are not directly part of wflow models and are
+required to run wflow. 
+
+| Standard Name | Description | Unit | Default value |
+| ---- | ----- | - | -- |
+| `local_drain_direction` | Local drain direction (1-9) | - | - |
+| `subcatchment_location__count` | Subcatchment ids | - | - |
+| `river_location__mask` | River mask (0-1) | - | - |
+: {.striped .hover}
+
+For lake and reservoir generic input see
+[lake-input](./parameters_routing.qmd#input-generic-lake) and
+[reservoir-input](./parameters_routing.qmd#input-generic-reservoir), respectively.

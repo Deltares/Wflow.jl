@@ -14,7 +14,7 @@ td, th {
 ## Water bodies
 ### Lakes
 
-#### Generic input
+#### Generic input {#input-generic-lake}
 | Standard Name | Description | Unit | Default |
 | ------ | ----- | -- | -- |
 | `lake_location__count` | Outlet of the lakes in which each lake has a unique id | - | - |
@@ -37,7 +37,7 @@ td, th {
 #### States
 | Standard Name | Description | Unit |
 | --- | --- | - |
-| `lake_water_surface__instantaneous_elevation` | Lake water level (internal timestep) | m |
+| `lake_water_surface__instantaneous_elevation` | Lake water level | m |
 : {.striped .hover}
 
 #### Output
@@ -53,7 +53,7 @@ td, th {
 : {.striped .hover}
 
 ### Reservoirs
-#### Generic input {#sec-reservoir-generic-input}
+#### Generic input {#input-generic-reservoir}
 | Standard Name | Description | Unit | Default |
 | ------ | ----- | -- | -- |
 | `reservoir_location__count` | Outlet of the reservoirs in which each reservoir has a unique id | - | - |
@@ -74,7 +74,7 @@ td, th {
 #### States
 | Standard Name | Description | Unit |
 | --- | --- | - |
-| `reservoir_water__instantaneous_volume` | Reservoir volume (internal timestep) | m³ |
+| `reservoir_water__instantaneous_volume` | Reservoir volume | m³ |
 : {.striped .hover}
 
 #### Output
@@ -101,8 +101,8 @@ td, th {
 #### States
 | Standard Name | Description | Unit |
 | --- | --- | - |
-| `river_water__instantaneous_volume_flow_rate` | River discharge (internal timesep) | m³ s⁻¹ |
-| `river_water__instantaneous_depth` | River water depth (internal timestep) | m |
+| `river_water__instantaneous_volume_flow_rate` | River discharge  | m³ s⁻¹ |
+| `river_water__instantaneous_depth` | River water depth  | m |
 : {.striped .hover}
 
 #### Output
@@ -124,8 +124,8 @@ td, th {
 #### States
 | Standard Name | Description | Unit |
 | --- | --- | - |
-| `land_surface_water__instantaneous_volume_flow_rate` | Discharge overland flow (internal timesep) | m³ s⁻¹ |
-| `land_surface_water__instantaneous_depth` | Water depth overland flow (internal timestep) | m |
+| `land_surface_water__instantaneous_volume_flow_rate` | Discharge overland flow  | m³ s⁻¹ |
+| `land_surface_water__instantaneous_depth` | Water depth overland flow  | m |
 : {.striped .hover}
 
 #### Output
@@ -174,8 +174,8 @@ td, th {
 #### States
 | Standard Name | Description | Unit |
 | --- | --- | - |
-| `river_water__instantaneous_volume_flow_rate` | River discharge (internal timesep) | m³ s⁻¹ |
-| `river_water__instantaneous_depth` | River water depth (internal timestep) | m |
+| `river_water__instantaneous_volume_flow_rate` | River discharge  | m³ s⁻¹ |
+| `river_water__instantaneous_depth` | River water depth  | m |
 : {.striped .hover}
 
 #### Output
@@ -197,8 +197,8 @@ td, th {
 #### States
 | Standard Name | Description | Unit | |
 | --- | --- | - |
-| `floodplain_water__instantaneous_volume_flow_rate` | Floodplain discharge (internal timestep) | m³ s⁻¹ |
-| `floodplain_water__instantaneous_depth` | Floodplain water depth (internal timestep) | m |
+| `floodplain_water__instantaneous_volume_flow_rate` | Floodplain discharge  | m³ s⁻¹ |
+| `floodplain_water__instantaneous_depth` | Floodplain water depth  | m |
 : {.striped .hover}
 
 #### Output
@@ -219,9 +219,9 @@ td, th {
 #### States
 | Standard Name | Description | Unit |
 | --- | ---- | - |
-| `land_surface_water__x_component_of_instantaneous_volume_flow_rate` | Flow in x direction (internal timestep) | m³ s⁻¹ |
-| `land_surface_water__y_component_of_instantaneous_volume_flow_rate` | Flow in y direction (internal timestep) | m³ s⁻¹ |
-| `land_surface_water__instantaneous_depth` | Water depth (internal timestep) | m |
+| `land_surface_water__x_component_of_instantaneous_volume_flow_rate` | Flow in x direction  | m³ s⁻¹ |
+| `land_surface_water__y_component_of_instantaneous_volume_flow_rate` | Flow in y direction  | m³ s⁻¹ |
+| `land_surface_water__instantaneous_depth` | Water depth  | m |
 : {.striped .hover}
 
 #### Output
