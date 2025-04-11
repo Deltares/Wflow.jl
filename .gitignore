@@ -13,7 +13,7 @@
 
 # Temporary files
 /dev/
-/test/data/
+/Wflow/test/data/
 /tmp/
 
 # Build files
