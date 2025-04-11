@@ -27,7 +27,7 @@ file is presented below.
 <details>
   <summary>Click to show example .toml file</summary>
   ```toml
-  {{< include ../../test/sbm_simple.toml >}}
+  {{< include ../../Wflow/test/sbm_simple.toml >}}
   ```
 </details>
 
