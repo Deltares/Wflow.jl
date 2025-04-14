@@ -22,10 +22,10 @@ erosion. The main processes behind soil loss are rainfall erosion and overland f
 In order to model such processes at a fine time and space scale, physics-based models such
 as ANSWERS and EUROSEM were chosen here.
 
-The choice of rainfall erosion method is set up in the model section of the TOML:
+The choice of rainfall erosion model is set up in the model section of the TOML:
 ```toml
 [model]
-rainerosmethod = "answers" # Rainfall erosion equation: ["answers", "eurosem"]
+rainfall_erosion = "answers" # Rainfall erosion model: ["answers", "eurosem"]
 ```
 
 ### Rainfall erosion
