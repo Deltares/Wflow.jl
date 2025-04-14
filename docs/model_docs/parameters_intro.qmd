@@ -31,9 +31,9 @@ land.interception.variables.canopy_storage = "canopystorage"
 
 Standard names that contain `instantaneous` in the `quantity` part of the standard name are
 valid for an internal time step and thus considered instantaneous compared to the model
-simulation time step. Standard names can contain a tilde that are used to to distinguish
-nouns and adjectives in the `object` part of the standard name. These standard names should
-be quoted in the TOML configuration file, e.g.:
+simulation time step. Standard names can contain a tilde that are used to distinguish nouns
+and adjectives in the `object` part of the standard name. These standard names should be
+quoted in the TOML configuration file, e.g.:
 
 ```toml
 [input.static]
