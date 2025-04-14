@@ -587,7 +587,7 @@ function surface_water_allocation_local!(
             # negative inflow) and adjust available volume.
             if inflow[indices_river[i]] < 0.0
                 river_inflow = inflow[indices_river[i]] * dt
-                available_volume = max(volume[indices_river[i]] * 0.80 + river_inflow, 0.0)
+                available_volume = max(storage[indices_river[i]] * 0.80 + river_inflow, 0.0)
             else
                 available_volume = storage[indices_river[i]] * 0.80
             end
