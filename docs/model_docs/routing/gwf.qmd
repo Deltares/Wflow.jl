@@ -2,13 +2,16 @@
 title: Groundwater flow
 ---
 
-Single layer groundwater flow requires the four following components, and each is described in
-more detail below:
+Single layer groundwater flow requires the four following components:
 
 + aquifer
 + connectivity
 + constanthead
 + boundaries
+
+The aquifer types, constanthead boundary and other boundaries (e.g. river and drainage) are
+described in more detail below. Which functionality of these components is supported by
+model type `sbm_gwf` is also clarified below.
 
 ## Aquifer types
 Groundwater flow can occur either in a confined or unconfined aquifer. Confined aquifers are
@@ -113,6 +116,25 @@ Boundary conditions can be classified into three categories:
 Neumann and Robin conditions are implemented by adding to or subtracting from a net (lumped)
 cell flux. Dirichlet conditions are special cased, since they cannot (easily) be implemented
 via the flux, but the head is set directly instead.
+
+The groundwater flow component of model type `sbm_gwf` consists of a single layer unconfined
+aquifer. The list of input parameters for an unconfined aquifer can be found
+[here](../parameters_routing.qmd#input-gwf-unconfined). Hydraulic head $\SIb{\phi}{m}$ is a
+state and [output variable](../parameters_routing.qmd#output-gwf-unconfined).
+
+Below an example of setting the `conductivity_profile` and input parameters in the TOML
+configuration file for an unconfined aquifer:
+
+```toml
+[model]
+conductivity_profile = "exponential"  # saturated hydraulic conductivity depth profile, default is "uniform"
+
+[input.static]
+land_surface__elevation = "wflow_dem"
+subsurface_surface_water__horizontal_saturated_hydraulic_conductivity = "kh_surface"
+subsurface_water__specific_yield = "specific_yield"
+subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter = "gwf_f"
+```
 
 ## Constant head
 For model type `sbm_gwf` Dirichlet boundary conditions can be specified (optional) in the

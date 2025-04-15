@@ -232,7 +232,7 @@ td, th {
 
 ## Groundwater flow
 ### Unconfined aquifer
-#### Input
+#### Input {#input-gwf-unconfined}
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
 | `land_surface__elevation ` | Land surface elevation conductivity | m  | - |
@@ -241,7 +241,7 @@ td, th {
 | `subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter` | Factor controlling the reduction of horizontal conductivity with depth | - | 3.0 |
 : {.striped .hover}
 
-#### States
+#### States {#output-gwf-unconfined}
 | Standard Name | Description | Unit |
 | --- | --- | - |
 | `subsurface_water__hydraulic_head` | Groundwater head | m |
