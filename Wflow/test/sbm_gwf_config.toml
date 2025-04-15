@@ -49,7 +49,6 @@ land_surface_water__potential_evaporation_volume_flux = "PET"
 
 [input.static]
 soil_surface_water__vertical_saturated_hydraulic_conductivity = "kv"
-"soil~non-compacted_surface_water__infiltration_capacity" = "InfiltCapSoil"
 soil_water__residual_volume_fraction = "thetaR"
 soil_water__saturated_volume_fraction = "thetaS"
 "soil~compacted__area_fraction" = "PathFrac"
