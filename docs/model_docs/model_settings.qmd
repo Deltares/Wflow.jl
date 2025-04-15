@@ -30,7 +30,6 @@ The Tables in this subsection show the available models settings for the model t
 | `thicknesslayers` | Thickness of soil layers | mm | - |
 | `transfermethod` | Enable original Topog_SBM vertical transfer formulation  | - | `false` |
 | `saturated_hydraulic_conductivity_profile` | Saturated hydraulic conductivity depth profile for `SBM` `soil` model (also used for kinematic wave lateral subsurface flow) | - | "exponential" |
-| `whole_ust_available` | Enable to use complete unsaturated storage (99%) for transpiration, independent of the rooting depth | - | `false` |
 : {.striped .hover}
 
 ### Routing method

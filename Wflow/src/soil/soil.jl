@@ -852,13 +852,13 @@ function soil_evaporation!(model::SbmSoilModel)
 end
 
 """
-    transpiration!(model::SbmSoilModel, dt; ust = false)
+    transpiration!(model::SbmSoilModel, dt)
 
 Update total `transpiration`, transpiration from the unsaturated store `ae_ustore` and
 saturated store `actevapsat` of the SBM soil model for a single timestep. Also unsaturated
 storage `ustorelayerdepth` and the saturated store `satwaterdepth` are updated.
 """
-function transpiration!(model::SbmSoilModel, dt::Float64; ust = false)
+function transpiration!(model::SbmSoilModel, dt::Float64)
     (; potential_transpiration) = model.boundary_conditions
     v = model.variables
     p = model.parameters
@@ -884,18 +884,13 @@ function transpiration!(model::SbmSoilModel, dt::Float64; ust = false)
                 p.alpha_h1[i],
             )
 
-            if ust
-                availcap = ustorelayerdepth[i][k] * 0.99
-            else
-                availcap = min(
-                    1.0,
-                    max(
-                        0.0,
-                        (rootingdepth[i] - p.sumlayers[i][k]) /
-                        v.ustorelayerthickness[i][k],
-                    ),
-                )
-            end
+            availcap = min(
+                1.0,
+                max(
+                    0.0,
+                    (rootingdepth[i] - p.sumlayers[i][k]) / v.ustorelayerthickness[i][k],
+                ),
+            )
             maxextr = v.ustorelayerdepth[i][k] * availcap
             # the rootfraction is valid for the root length in a soil layer, if zi decreases the root length
             # the rootfraction needs to be adapted
@@ -1111,7 +1106,6 @@ function update!(
     soilinfreduction = get(config.model, "soilinfreduction", false)::Bool
     modelsnow = get(config.model, "snow", false)::Bool
     transfermethod = get(config.model, "transfermethod", false)::Bool
-    ust = get(config.model, "whole_ust_available", false)::Bool # should be removed from optional setting and code?
 
     (; snow, runoff, demand) = external_models
     (; temperature) = atmospheric_forcing
@@ -1136,7 +1130,7 @@ function update!(
     unsaturated_zone_flow!(model; transfermethod = transfermethod)
     # soil evaporation and transpiration
     soil_evaporation!(model)
-    transpiration!(model, dt; ust = ust)
+    transpiration!(model, dt)
     # actual infiltration and excess water
     actual_infiltration!(model)
     @. v.excesswater = water_flux_surface - v.actinfilt - v.infiltexcess
