@@ -114,10 +114,11 @@ link between node $i$ and node $i+1$, and subscript $i-\frac{3}{2}$ is the link 
 $i-1$ and node $i-2$. $\SIb{Q}{m^3\ s^{-1}}$ is the water discharge, $\SIb{\eta}{m}$ is the
 water surface elevation, $\SIb{h_f}{m}$ is the water depth between cells,
 $\SIb{n}{m^{-\frac{1}{3}} s}$ is the Manning's roughness coefficient, $\SIb{g}{m\ s^{-2}}$
-is acceleration due to gravity, $\SIb{\Delta t}{s}$ is the adaptive model time step,
-$\SIb{\Delta x}{m}$ is the distance between two cells and $\SIb{\Delta y}{m}$ is the flow
-width. Below the staggered grid and variables of the numerical solution in the x-direction,
-based on Almeida et al. (2012):
+is acceleration due to gravity, $\SIb{\Delta t}{s}$ is the adaptive internal model time
+step, $\SIb{\Delta x}{m}$ is the distance between two cells, $\SIb{\Delta y}{m}$ is the flow
+width and $\SIb{\theta}{-}$ is a weighting factor that adjusts the amount of artificial
+numerical diffusion. Below the staggered grid and variables of the numerical solution in the
+x-direction, based on Almeida et al. (2012):
 
 ![](../../images/numerical_scheme_almeida.png)
 
