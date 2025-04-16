@@ -433,15 +433,6 @@ function SbmSoilParameters(
     infiltcappath =
         ncread(dataset, config, lens; sel = indices, defaults = 10.0, type = Float64) .*
         (dt / BASETIMESTEP)
-
-    lens = lens_input_parameter(
-        config,
-        "soil~non-compacted_surface_water__infiltration_capacity",
-    )
-    infiltcapsoil =
-        ncread(dataset, config, lens; sel = indices, defaults = 100.0, type = Float64) .*
-        (dt / BASETIMESTEP)
-
     lens =
         lens_input_parameter(config, "soil_water_sat-zone_bottom__max_leakage_volume_flux")
     maxleakage =
@@ -482,6 +473,9 @@ function SbmSoilParameters(
         size1 = size(kvfrac, 1)
         error("$parname needs a layer dimension of size $maxlayers, but is $size1")
     end
+
+    # soil infiltration capacity based on kv_0 and kvfrac upper soil layer
+    infiltcapsoil = kv_0 .* @view kvfrac[1, :]
     # fraction compacted area
     lens = lens_input_parameter(config, "soil~compacted__area_fraction")
     pathfrac = ncread(dataset, config, lens; sel = indices, defaults = 0.01, type = Float64)
