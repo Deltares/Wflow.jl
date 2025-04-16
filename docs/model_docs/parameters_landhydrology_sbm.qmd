@@ -210,7 +210,7 @@ td, th {
 | `land~irrigated-paddy__max_depth` | Water depth when paddy field starts spilling water (overflow) | mm | 80.0 |
 | `land~irrigated-paddy__irrigation_efficiency` | Irrigation efficiency | - | - |
 | `land~irrigated-paddy_area__number` | Irrigation areas (paddy) | - | - |
-| `land~irrigate-paddy__max_irrigation_rate` | Maximum irrigation rate | mm Δt⁻¹ | 25.0 mm day⁻¹ |
+| `land~irrigated-paddy__max_irrigation_rate` | Maximum irrigation rate | mm Δt⁻¹ | 25.0 mm day⁻¹ |
 : {.striped .hover}
 
 #### Input static and cyclic
